@@ -88,14 +88,34 @@
     },
 
     login: async function (form) {
-      await this.ensureAdmin();
       var id = resolveLoginId(form);
-      var password = String(form.password || '');
+      var password = String(form.password || '').trim();
       if (!password) return { ok: false, reason: 'Mot de passe requis', field: 'loginPass' };
       if (!id.email) return { ok: false, reason: 'Saisissez votre e-mail', field: 'loginId' };
 
       var adminEmail = (D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com').toLowerCase();
       var adminPass = D6.CONFIG.ADMIN_PASSWORD || 'AdminOrolado2026!';
+
+      await this.ensureAdminLocal();
+
+      if (id.email === adminEmail && password === adminPass) {
+        var admin = D6.Store.findByEmail(adminEmail);
+        if (!admin) {
+          await this.ensureAdminLocal();
+          admin = D6.Store.findByEmail(adminEmail);
+        }
+        if (!admin) return { ok: false, reason: 'Identifiants introuvables', field: 'loginId' };
+        D6.Store.setSession({ userId: admin.id, at: D6.nowIso() });
+        if (D6.Api) {
+          D6.Api.post('login', { email: id.email, password: password }).then(function (remote) {
+            if (remote && remote.ok && remote.token) {
+              D6.Api.setToken(remote.token);
+              if (remote.user) D6.Store.importRemote(remote.user, remote.vault);
+            }
+          });
+        }
+        return { ok: true, user: admin };
+      }
 
       if (D6.Api) {
         var remote = await D6.Api.post('login', { email: id.email, password: password });
@@ -105,20 +125,8 @@
           D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
           return { ok: true, user: D6.Store.getUser(remote.user.id) };
         }
-        if (id.email !== adminEmail && remote && remote.server && !remote.ok) {
+        if (remote && remote.server && !remote.ok) {
           return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginId' };
-        }
-      }
-
-      if (id.email === adminEmail && password === adminPass) {
-        var admin = D6.Store.findByEmail(adminEmail);
-        if (!admin) {
-          await this.ensureAdmin();
-          admin = D6.Store.findByEmail(adminEmail);
-        }
-        if (admin) {
-          D6.Store.setSession({ userId: admin.id, at: D6.nowIso() });
-          return { ok: true, user: admin };
         }
       }
 
@@ -191,20 +199,19 @@
       return !!(user && user.role === 'admin' && String(user.email || '').toLowerCase() === email);
     },
 
-    ensureAdmin: async function () {
+    ensureAdminLocal: async function () {
       var email = D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com';
       var hash = await hashPassword(D6.CONFIG.ADMIN_PASSWORD || 'AdminOrolado2026!');
       var admin = D6.Store.findByEmail(email) || D6.Store.findByEmail('admin@6diablo.com');
       if (admin) {
         admin.email = email;
         admin.role = 'admin';
-        admin.displayName = admin.displayName || 'Super Admin';
         admin.passwordHash = hash;
         D6.Store.saveUser(admin);
       } else {
         D6.Store.createUser({
           id: 'admin_master',
-          displayName: 'Super Admin',
+          displayName: 'Orolado',
           email: email,
           phone: '0000000000',
           countryCode: '+225',
@@ -212,7 +219,11 @@
           role: 'admin'
         });
       }
-      if (D6.Api) await D6.Api.post('ensureAdmin', {});
+    },
+
+    ensureAdmin: async function () {
+      await this.ensureAdminLocal();
+      if (D6.Api) D6.Api.post('ensureAdmin', {});
     }
   };
 })(window.D6 = window.D6 || {});

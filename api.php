@@ -63,7 +63,7 @@ function ensure_admin_user(array &$db, string $email, string $hash): array {
   if (!$admin) {
     $admin = [
       'id' => 'admin_master',
-      'displayName' => 'Super Admin',
+      'displayName' => 'Orolado',
       'email' => $email,
       'phone' => '0000000000',
       'countryCode' => '+225',

@@ -116,9 +116,7 @@
   }
 
   function setAdminBtns(u) {
-    var on = D6.Auth.isAdmin(u);
-    $('btnAdmin').classList.toggle('hidden', !on);
-    $('btnAdmin2').classList.toggle('hidden', !on);
+    $('btnAdmin2').classList.toggle('hidden', !D6.Auth.isAdmin(u));
   }
 
   function setModeUi(u) {
@@ -569,7 +567,6 @@
       renderAdmin();
       showScreen('screenAdmin');
     }
-    $('btnAdmin').addEventListener('click', openAdmin);
     $('btnAdmin2').addEventListener('click', openAdmin);
     $('btnCloseAdmin').addEventListener('click', function () {
       showScreen('screenTrade');
@@ -616,7 +613,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=5').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=6').catch(function () { /* ignore */ });
     }
   }
 
@@ -689,24 +686,18 @@
         if (!$('screenTrade').classList.contains('hidden')) updatePriceHud();
       });
       setInterval(updatePayoutUi, 500);
-      D6.Auth.ensureAdmin().then(function () {
-        if (location.hash.indexOf('#admin') === 0) {
-          D6.Auth.logout();
-          showScreen('screenAuth');
-          return;
-        }
-        if (location.hash.indexOf('#preview') === 0) {
-          (async function () {
-            var existing = D6.Store.findByEmail('preview@orolado.local');
-            if (existing) D6.Store.setSession({ userId: existing.id, at: D6.nowIso() });
-            else await D6.Auth.register({ displayName: 'Preview', email: 'preview@orolado.local', phone: '0700000001', countryCode: '+225', password: 'preview1', passwordConfirm: 'preview1', acceptTerms: true });
-            enterApp();
-          })();
-          return;
-        }
-        if (D6.Auth.current()) enterApp();
-        else showScreen('screenAuth');
-      });
+      D6.Auth.ensureAdmin();
+      if (location.hash.indexOf('#preview') === 0) {
+        (async function () {
+          var existing = D6.Store.findByEmail('preview@orolado.local');
+          if (existing) D6.Store.setSession({ userId: existing.id, at: D6.nowIso() });
+          else await D6.Auth.register({ displayName: 'Preview', email: 'preview@orolado.local', phone: '0700000001', countryCode: '+225', password: 'preview1', passwordConfirm: 'preview1', acceptTerms: true });
+          enterApp();
+        })();
+        return;
+      }
+      if (D6.Auth.current()) enterApp();
+      else showScreen('screenAuth');
     }
   };
 

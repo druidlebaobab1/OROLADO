@@ -15,12 +15,17 @@
 
     post: async function (action, data) {
       try {
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, 6000);
         var body = Object.assign({ action: action, token: D6.Api.token() }, data || {});
         var r = await fetch('api.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
+          cache: 'no-store',
+          signal: ctrl.signal
         });
+        clearTimeout(timer);
         if (!r.ok) return null;
         var json = await r.json();
         D6.Api.ready = true;
