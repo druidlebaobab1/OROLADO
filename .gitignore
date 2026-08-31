@@ -1,0 +1,4 @@
+cloudflared.exe
+*.exe
+Thumbs.db
+.DS_Store
