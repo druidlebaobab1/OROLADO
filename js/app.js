@@ -606,7 +606,10 @@
       $('installBanner').classList.add('hidden');
     });
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(function () { /* ignore */ });
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (r) { r.update(); });
+      });
+      navigator.serviceWorker.register('sw.js?v=3').catch(function () { /* ignore */ });
     }
   }
 

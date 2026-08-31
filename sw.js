@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v2';
+const CACHE = 'orolado-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -40,15 +40,14 @@ self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
   event.respondWith(
-    caches.match(req).then(function (hit) {
-      if (hit) return hit;
-      return fetch(req).then(function (res) {
-        if (!res || res.status !== 200 || req.url.indexOf('http') !== 0) return res;
-        var copy = res.clone();
-        caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
-        return res;
-      }).catch(function () {
-        return caches.match('./index.html');
+    fetch(req).then(function (res) {
+      if (!res || res.status !== 200 || req.url.indexOf('http') !== 0) return res;
+      var copy = res.clone();
+      caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
+      return res;
+    }).catch(function () {
+      return caches.match(req).then(function (hit) {
+        return hit || caches.match('./index.html');
       });
     })
   );
