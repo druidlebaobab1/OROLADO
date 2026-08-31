@@ -278,13 +278,15 @@
     $('drawerProfile').classList.remove('on');
   }
 
-  function renderAdmin() {
-    var m = D6.Store.metrics();
+  async function renderAdmin() {
+    var remote = D6.Api ? await D6.Api.post('admin', {}) : null;
+    var m = (remote && remote.ok && remote.metrics) ? remote.metrics : D6.Store.metrics();
+    var users = (remote && remote.ok && remote.users) ? remote.users : D6.Store.listUsers();
+    var wd = (remote && remote.ok && remote.withdrawals) ? remote.withdrawals : D6.Store.listWithdrawals();
     $('mDeposits').textContent = D6.fmtFCFA(m.deposits);
     $('mPending').textContent = D6.fmtFCFA(m.withdrawals != null ? m.withdrawals : m.pending);
     $('mProfit').textContent = D6.fmtFCFA(m.profit);
     $('mUsers').textContent = String(m.users);
-    var users = D6.Store.listUsers();
     if (!users.length) $('adminUsers').innerHTML = '<div class="empty-feed">' + t('noUsers') + '</div>';
     else {
       var rows = users.map(function (u) {
@@ -295,7 +297,6 @@
       }).join('');
       $('adminUsers').innerHTML = '<table class="admin-table"><thead><tr><th>Nom</th><th>E-mail</th><th>WhatsApp</th><th>Solde réel</th><th>Date</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
     }
-    var wd = D6.Store.listWithdrawals();
     if (!wd.length) $('adminWithdrawals').innerHTML = '<div class="empty-feed">' + t('noWithdraw') + '</div>';
     else {
       var wrows = wd.map(function (w) {
@@ -303,7 +304,7 @@
         var acts = w.status === 'pending'
           ? '<button class="mini ok" data-wd="' + w.id + '" data-ok="1">' + t('approve') + '</button> <button class="mini bad" data-wd="' + w.id + '" data-ok="0">' + t('reject') + '</button>'
           : w.status;
-        return '<tr><td>' + w.name + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + w.clock + badge + '</td><td>' + acts + '</td></tr>';
+        return '<tr><td>' + w.name + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + (w.clock || '') + badge + '</td><td>' + acts + '</td></tr>';
       }).join('');
       $('adminWithdrawals').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Info</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table>';
     }
@@ -538,8 +539,12 @@
     $('closeFinance').addEventListener('click', function () { closeModal('financeModal'); });
     $('btnWithdraw').addEventListener('click', function () { closeDrawer(); openModal('withdrawModal'); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
-    $('btnSendWithdraw').addEventListener('click', function () {
+    $('btnSendWithdraw').addEventListener('click', async function () {
       var u = user();
+      if (D6.Api && D6.Api.token()) {
+        var remote = await D6.Api.post('withdraw', { amount: Number($('withdrawAmt').value) });
+        if (remote && remote.server && !remote.ok) { toast(remote.reason, 'err'); return; }
+      }
       var res = D6.Store.requestWithdraw(u, $('withdrawAmt').value);
       if (!res.ok) { toast(res.reason, 'err'); return; }
       closeModal('withdrawModal');
@@ -570,16 +575,18 @@
       showScreen('screenTrade');
       requestAnimationFrame(D6.Chart.resize);
     });
-    $('adminUsers').addEventListener('click', function (e) {
+    $('adminUsers').addEventListener('click', async function (e) {
       var btn = e.target.closest('[data-adj]');
       if (!btn) return;
+      if (D6.Api && D6.Api.token()) await D6.Api.post('adjust', { userId: btn.dataset.adj, delta: Number(btn.dataset.d) });
       D6.Store.adjustReal(btn.dataset.adj, Number(btn.dataset.d));
       renderAdmin();
       updateBalance(false);
     });
-    $('adminWithdrawals').addEventListener('click', function (e) {
+    $('adminWithdrawals').addEventListener('click', async function (e) {
       var btn = e.target.closest('[data-wd]');
       if (!btn) return;
+      if (D6.Api && D6.Api.token()) await D6.Api.post('resolveWithdraw', { id: btn.dataset.wd, approve: btn.dataset.ok === '1' });
       D6.Store.resolveWithdraw(btn.dataset.wd, btn.dataset.ok === '1');
       renderAdmin();
     });
@@ -609,7 +616,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=3').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=4').catch(function () { /* ignore */ });
     }
   }
 
@@ -683,6 +690,11 @@
       });
       setInterval(updatePayoutUi, 500);
       D6.Auth.ensureAdmin().then(function () {
+        if (location.hash.indexOf('#admin') === 0) {
+          D6.Auth.logout();
+          showScreen('screenAuth');
+          return;
+        }
         if (location.hash.indexOf('#preview') === 0) {
           (async function () {
             var existing = D6.Store.findByEmail('preview@orolado.local');

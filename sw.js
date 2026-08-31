@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v3';
+const CACHE = 'orolado-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   './js/config.js',
   './js/i18n.js',
   './js/store.js',
+  './js/api.js',
   './js/auth.js',
   './js/engine.js',
   './js/chart.js',
