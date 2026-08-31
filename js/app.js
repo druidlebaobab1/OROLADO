@@ -378,7 +378,7 @@
     $('formLogin').addEventListener('submit', async function (e) {
       e.preventDefault();
       clearErrors();
-      var res = await D6.Auth.login({ identifier: $('loginId').value, countryCode: $('loginCountry').value, password: $('loginPass').value });
+      var res = await D6.Auth.login({ identifier: $('loginId').value, password: $('loginPass').value });
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
       enterApp();
     });
@@ -391,8 +391,8 @@
       clearErrors();
       if ($('regPass').value !== $('regPass2').value) { showFieldError('regPass2', 'Les mots de passe ne correspondent pas'); return; }
       var res = await D6.Auth.register({
-        displayName: $('regName').value, email: $('regEmail').value, phone: $('regPhone').value,
-        countryCode: $('regCountry').value, password: $('regPass').value, passwordConfirm: $('regPass2').value,
+        displayName: $('regName').value, email: $('regEmail').value,
+        password: $('regPass').value, passwordConfirm: $('regPass2').value,
         acceptTerms: $('regAge').checked
       });
       if (!res.ok) { showFieldError(res.field || 'regName', res.reason); return; }
@@ -402,14 +402,13 @@
     $('btnForgot').addEventListener('click', function () {
       clearErrors();
       $('resetId').value = $('loginId').value;
-      $('resetCountry').value = $('loginCountry').value;
       openModal('forgotModal');
     });
     $('formReset').addEventListener('submit', async function (e) {
       e.preventDefault();
       clearErrors();
       var res = await D6.Auth.resetPassword({
-        identifier: $('resetId').value, countryCode: $('resetCountry').value,
+        identifier: $('resetId').value,
         password: $('resetPass').value, passwordConfirm: $('resetPass2').value
       });
       if (!res.ok) { showFieldError(res.field || 'resetId', res.reason); return; }

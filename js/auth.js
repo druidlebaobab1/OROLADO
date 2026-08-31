@@ -35,10 +35,7 @@
 
   function resolveLoginId(form) {
     var raw = String(form.identifier || form.email || '').trim();
-    var phone = normalizePhone(form.phone || raw);
-    if (raw.indexOf('@') >= 0) return { email: normalizeEmail(raw), phone: '', countryCode: form.countryCode };
-    if (phone) return { email: '', phone: phone, countryCode: form.countryCode || '+225' };
-    return { email: normalizeEmail(raw), phone: '', countryCode: form.countryCode };
+    return { email: normalizeEmail(raw), phone: '', countryCode: form.countryCode || '+225' };
   }
 
   D6.Auth = {
@@ -61,12 +58,10 @@
 
       if (!validName(displayName)) return { ok: false, reason: 'Indiquez votre nom ou pseudo (2 caractères min.)', field: 'regName' };
       if (!validEmail(email)) return { ok: false, reason: 'Adresse e-mail invalide', field: 'regEmail' };
-      if (!validPhone(phone)) return { ok: false, reason: 'Numéro WhatsApp / téléphone invalide', field: 'regPhone' };
       if (password.length < 6) return { ok: false, reason: 'Mot de passe : 6 caractères minimum', field: 'regPass' };
       if (password !== confirm) return { ok: false, reason: 'Les mots de passe ne correspondent pas', field: 'regPass2' };
       if (!form.acceptTerms) return { ok: false, reason: 'Vous devez confirmer avoir plus de 18 ans', field: 'regAge' };
       if (D6.Store.findByEmail(email)) return { ok: false, reason: 'Un compte existe déjà avec cet e-mail', field: 'regEmail' };
-      if (D6.Store.findByPhone(countryCode, phone)) return { ok: false, reason: 'Ce numéro est déjà utilisé', field: 'regPhone' };
 
       var user = D6.Store.createUser({
         id: D6.uid(),
@@ -86,11 +81,9 @@
       var id = resolveLoginId(form);
       var password = String(form.password || '');
       if (!password) return { ok: false, reason: 'Mot de passe requis', field: 'loginPass' };
-      if (!id.email && !id.phone) return { ok: false, reason: 'Saisissez votre e-mail ou votre numéro', field: 'loginId' };
+      if (!id.email) return { ok: false, reason: 'Saisissez votre e-mail', field: 'loginId' };
 
-      var user = null;
-      if (id.email) user = D6.Store.findByEmail(id.email);
-      if (!user && id.phone) user = D6.Store.findByPhone(id.countryCode, id.phone);
+      var user = D6.Store.findByEmail(id.email);
       if (!user) return { ok: false, reason: 'Identifiants introuvables', field: 'loginId' };
 
       var hash = await hashPassword(password);
@@ -110,13 +103,11 @@
       var id = resolveLoginId(form);
       var next = String(form.password || '');
       var confirm = String(form.passwordConfirm || '');
-      if (!id.email && !id.phone) return { ok: false, reason: 'Saisissez l’e-mail ou le numéro du compte', field: 'resetId' };
+      if (!id.email) return { ok: false, reason: 'Saisissez l’e-mail du compte', field: 'resetId' };
       if (next.length < 6) return { ok: false, reason: 'Nouveau mot de passe trop court', field: 'resetPass' };
       if (next !== confirm) return { ok: false, reason: 'Les mots de passe ne correspondent pas', field: 'resetPass2' };
 
-      var user = null;
-      if (id.email) user = D6.Store.findByEmail(id.email);
-      if (!user && id.phone) user = D6.Store.findByPhone(id.countryCode, id.phone);
+      var user = D6.Store.findByEmail(id.email);
       if (!user) return { ok: false, reason: 'Aucun compte associé', field: 'resetId' };
 
       user.passwordHash = await hashPassword(next);

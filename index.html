@@ -47,13 +47,9 @@
         </div>
         <form id="formLogin">
           <div class="field">
-            <label data-i18n="idLabel">E-mail ou téléphone</label>
-            <input id="loginId" autocomplete="username" data-i18n-placeholder="idPh" placeholder="vous@email.com ou 0700000000" required>
+            <label data-i18n="idLabel">E-mail</label>
+            <input id="loginId" type="email" autocomplete="username" data-i18n-placeholder="idPh" placeholder="vous@email.com" required>
             <p class="err-msg" id="err-loginId"></p>
-          </div>
-          <div class="field">
-            <label data-i18n="dial">Indicatif (si téléphone)</label>
-            <select id="loginCountry"></select>
           </div>
           <div class="field">
             <label data-i18n="password">Mot de passe</label>
@@ -73,14 +69,6 @@
             <label data-i18n="email">E-mail</label>
             <input id="regEmail" type="email" autocomplete="email" required>
             <p class="err-msg" id="err-regEmail"></p>
-          </div>
-          <div class="field">
-            <label data-i18n="whatsapp">WhatsApp / Téléphone</label>
-            <div class="phone-row">
-              <select id="regCountry"></select>
-              <input id="regPhone" inputmode="tel" autocomplete="tel" required placeholder="0700000000">
-            </div>
-            <p class="err-msg" id="err-regPhone"></p>
           </div>
           <div class="field">
             <label data-i18n="password">Mot de passe</label>
@@ -265,13 +253,9 @@
       <div class="modal-title" data-i18n="resetTitle">Réinitialiser le mot de passe</div>
       <form id="formReset">
         <div class="field">
-          <label data-i18n="idLabel">E-mail ou téléphone</label>
-          <input id="resetId" required>
+          <label data-i18n="idLabel">E-mail</label>
+          <input id="resetId" type="email" required>
           <p class="err-msg" id="err-resetId"></p>
-        </div>
-        <div class="field">
-          <label data-i18n="dial">Indicatif</label>
-          <select id="resetCountry"></select>
         </div>
         <div class="field">
           <label data-i18n="newPass">Nouveau mot de passe</label>
