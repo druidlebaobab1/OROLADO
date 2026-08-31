@@ -74,14 +74,53 @@
       D6.Store.addSession(user, 'inscription');
       D6.Store.addSession(user, 'connexion');
       D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
+      if (D6.Api) {
+        var remote = await D6.Api.post('register', {
+          user: user,
+          vault: { demo: D6.CONFIG.DEMO_START, real: D6.CONFIG.REAL_START }
+        });
+        if (remote && remote.ok) D6.Api.setToken(remote.token);
+        if (remote && remote.server && !remote.ok) {
+          return { ok: false, reason: remote.reason, field: 'regEmail' };
+        }
+      }
       return { ok: true, user: user };
     },
 
     login: async function (form) {
+      await this.ensureAdmin();
       var id = resolveLoginId(form);
       var password = String(form.password || '');
       if (!password) return { ok: false, reason: 'Mot de passe requis', field: 'loginPass' };
       if (!id.email) return { ok: false, reason: 'Saisissez votre e-mail', field: 'loginId' };
+
+      var adminEmail = (D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com').toLowerCase();
+      var adminPass = D6.CONFIG.ADMIN_PASSWORD || 'AdminOrolado2026!';
+
+      if (D6.Api) {
+        var remote = await D6.Api.post('login', { email: id.email, password: password });
+        if (remote && remote.ok && remote.user) {
+          D6.Store.importRemote(remote.user, remote.vault);
+          D6.Api.setToken(remote.token);
+          D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
+          return { ok: true, user: D6.Store.getUser(remote.user.id) };
+        }
+        if (id.email !== adminEmail && remote && remote.server && !remote.ok) {
+          return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginId' };
+        }
+      }
+
+      if (id.email === adminEmail && password === adminPass) {
+        var admin = D6.Store.findByEmail(adminEmail);
+        if (!admin) {
+          await this.ensureAdmin();
+          admin = D6.Store.findByEmail(adminEmail);
+        }
+        if (admin) {
+          D6.Store.setSession({ userId: admin.id, at: D6.nowIso() });
+          return { ok: true, user: admin };
+        }
+      }
 
       var user = D6.Store.findByEmail(id.email);
       if (!user) return { ok: false, reason: 'Identifiants introuvables', field: 'loginId' };
@@ -120,6 +159,7 @@
       var user = D6.Store.current();
       if (user) D6.Store.addSession(user, 'déconnexion');
       D6.Store.clearSession();
+      if (D6.Api) D6.Api.setToken('');
     },
 
     changePassword: async function (user, current, next) {
@@ -147,7 +187,8 @@
     },
 
     isAdmin: function (user) {
-      return !!(user && user.role === 'admin' && user.email === (D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com'));
+      var email = (D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com').toLowerCase();
+      return !!(user && user.role === 'admin' && String(user.email || '').toLowerCase() === email);
     },
 
     ensureAdmin: async function () {
@@ -160,17 +201,18 @@
         admin.displayName = admin.displayName || 'Super Admin';
         admin.passwordHash = hash;
         D6.Store.saveUser(admin);
-        return;
+      } else {
+        D6.Store.createUser({
+          id: 'admin_master',
+          displayName: 'Super Admin',
+          email: email,
+          phone: '0000000000',
+          countryCode: '+225',
+          passwordHash: hash,
+          role: 'admin'
+        });
       }
-      D6.Store.createUser({
-        id: 'admin_master',
-        displayName: 'Super Admin',
-        email: email,
-        phone: '0000000000',
-        countryCode: '+225',
-        passwordHash: hash,
-        role: 'admin'
-      });
+      if (D6.Api) await D6.Api.post('ensureAdmin', {});
     }
   };
 })(window.D6 = window.D6 || {});

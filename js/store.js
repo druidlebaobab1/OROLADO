@@ -128,7 +128,7 @@
   var db = loadAll();
   Object.keys(db.users).forEach(function (id) { hydrate(db.users[id]); });
 
-  function persist() {
+  function persist(skipRemote) {
     var publicUsers = {};
     Object.keys(db.users).forEach(function (id) {
       var copy = Object.assign({}, db.users[id]);
@@ -143,10 +143,19 @@
       vault: vault
     });
     localStorage.setItem(KEY, JSON.stringify({ enc: xorCrypt(payload, false), sum: fnv(payload) }));
+    if (!skipRemote && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
+      var u = db.users[db.session.userId];
+      D6.Api.post('upsert', { user: publicUsers[u.id], vault: vault[u.id] });
+    }
   }
 
   D6.Store = {
-    persist: persist,
+    importRemote: function (user, vaultEntry) {
+      if (!user || !user.id) return;
+      db.users[user.id] = hydrate(Object.assign({}, user));
+      if (vaultEntry) vault[user.id] = vaultEntry;
+      persist(true);
+    },
 
     getSession: function () { return db.session; },
     setSession: function (session) { db.session = session; persist(); },
