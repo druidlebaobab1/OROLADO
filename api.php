@@ -45,16 +45,50 @@ function load_db(string $file): array {
   return is_array($data) ? array_merge(blank_db(), $data) : blank_db();
 }
 
-function save_db(string $file, array $db): void {
+function save_db(string $file, array $db): bool {
   $fp = fopen($file, 'c+');
-  if (!$fp) return;
+  if (!$fp) return false;
   flock($fp, LOCK_EX);
   ftruncate($fp, 0);
   rewind($fp);
-  fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE));
+  $ok = fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE)) !== false;
   fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
+  return $ok;
+}
+
+function ensure_admin_user(array &$db, string $email, string $hash): array {
+  $admin = find_user($db, $email);
+  if (!$admin) {
+    $admin = [
+      'id' => 'admin_master',
+      'displayName' => 'Super Admin',
+      'email' => $email,
+      'phone' => '0000000000',
+      'countryCode' => '+225',
+      'passwordHash' => $hash,
+      'role' => 'admin',
+      'createdAt' => date('c'),
+      'mode' => 'demo',
+      'assetId' => 'v100',
+      'duration' => 10,
+      'trades' => 0,
+      'wins' => 0,
+      'realTrades' => 0,
+      'realStakeVolume' => 0,
+      'transactions' => [],
+      'positions' => []
+    ];
+    $db['users']['admin_master'] = $admin;
+    $db['vault']['admin_master'] = ['demo' => 50000, 'real' => 0];
+  } else {
+    $admin['email'] = $email;
+    $admin['role'] = 'admin';
+    $admin['passwordHash'] = $hash;
+    $db['users'][$admin['id']] = $admin;
+  }
+  return $admin;
 }
 
 function make_token(string $userId, string $secret): string {
@@ -113,39 +147,19 @@ $action = $req['action'] ?? '';
 $token = $req['token'] ?? '';
 $db = load_db($file);
 
+if ($action === 'ping') {
+  echo json_encode([
+    'ok' => true,
+    'server' => true,
+    'writable' => is_dir($dir) && is_writable($dir)
+  ]);
+  exit;
+}
+
 if ($action === 'ensureAdmin') {
-  $hash = hash_pw($ADMIN_PASS);
-  $admin = find_user($db, $ADMIN_EMAIL);
-  if (!$admin) {
-    $admin = [
-      'id' => 'admin_master',
-      'displayName' => 'Super Admin',
-      'email' => $ADMIN_EMAIL,
-      'phone' => '0000000000',
-      'countryCode' => '+225',
-      'passwordHash' => $hash,
-      'role' => 'admin',
-      'createdAt' => date('c'),
-      'mode' => 'demo',
-      'assetId' => 'v100',
-      'duration' => 10,
-      'trades' => 0,
-      'wins' => 0,
-      'realTrades' => 0,
-      'realStakeVolume' => 0,
-      'transactions' => [],
-      'positions' => []
-    ];
-    $db['users']['admin_master'] = $admin;
-    $db['vault']['admin_master'] = ['demo' => 50000, 'real' => 0];
-  } else {
-    $admin['email'] = $ADMIN_EMAIL;
-    $admin['role'] = 'admin';
-    $admin['passwordHash'] = $hash;
-    $db['users'][$admin['id']] = $admin;
-  }
-  save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true]);
+  $admin = ensure_admin_user($db, $ADMIN_EMAIL, hash_pw($ADMIN_PASS));
+  $saved = save_db($file, $db);
+  echo json_encode(['ok' => $saved, 'server' => true, 'writable' => $saved, 'id' => $admin['id']]);
   exit;
 }
 
@@ -177,10 +191,8 @@ if ($action === 'login') {
   $password = (string) ($req['password'] ?? '');
   $user = find_user($db, $email);
   if ($email === $ADMIN_EMAIL && $password === $ADMIN_PASS) {
-    if (!$user) {
-      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Admin à initialiser']);
-      exit;
-    }
+    $user = ensure_admin_user($db, $ADMIN_EMAIL, hash_pw($ADMIN_PASS));
+    save_db($file, $db);
   } elseif (!$user || empty($user['passwordHash']) || !hash_equals($user['passwordHash'], hash_pw($password))) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
     exit;

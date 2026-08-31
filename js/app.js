@@ -616,7 +616,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=4').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=5').catch(function () { /* ignore */ });
     }
   }
 
