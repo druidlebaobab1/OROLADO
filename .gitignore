@@ -2,3 +2,5 @@ cloudflared.exe
 *.exe
 Thumbs.db
 .DS_Store
+server.ps1
+
