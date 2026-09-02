@@ -490,6 +490,13 @@
       D6.Store.addPosition(user, position);
       D6.Store.saveUser(user);
 
+      try {
+        console.log('TRADE SETTLED -> TRIGGERING TOAST:', { isWin: won, payout: payoutAmount });
+        document.dispatchEvent(new CustomEvent('orolado-trade-settled', {
+          detail: { isWin: won, payout: payoutAmount, net: net, tradeId: trade.id }
+        }));
+      } catch (e) { /* ignore */ }
+
       var closed = publicTrade(trade);
       trades.splice(idx, 1);
       delete intents[trade.id];
@@ -511,7 +518,9 @@
         if (res) {
           results.push(res);
           if (typeof api.onSettled === 'function') {
-            try { api.onSettled(res); } catch (e) { /* isolate HUD */ }
+            try { api.onSettled(res); } catch (e) {
+              console.log('TRADE SETTLED -> onSettled error', e);
+            }
           }
         }
       }

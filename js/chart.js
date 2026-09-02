@@ -589,7 +589,7 @@
   D6.Chart = {
     attach: function (el, callback) {
       canvas = el;
-      ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+      ctx = canvas.getContext('2d', { alpha: false });
       onFrame = callback;
       resize();
       bindTools();

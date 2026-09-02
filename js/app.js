@@ -4,6 +4,8 @@
   var $ = function (id) { return document.getElementById(id); };
   var stake = 1000;
   var toastTimer = null;
+  var outcomeToastTimer = null;
+  var outcomeToastSeen = {};
   var selectedOp = 'wave';
   var depositOp = 'wave';
   var pendingConvert = false;
@@ -39,6 +41,84 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { el.className = 'toast'; }, 2400);
   }
+
+  function showOutcomeToast(isWin, payout, tradeId) {
+    if (tradeId) {
+      if (outcomeToastSeen[tradeId]) return;
+      outcomeToastSeen[tradeId] = true;
+    }
+    console.log('TRADE SETTLED -> TRIGGERING TOAST:', { isWin: isWin, payout: payout });
+    var el = document.getElementById('outcomeToast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'outcomeToast';
+      el.setAttribute('aria-live', 'assertive');
+      el.setAttribute('role', 'status');
+      document.body.appendChild(el);
+    }
+    el.setAttribute('popover', 'manual');
+    el.textContent = '';
+    var icon = document.createElement('span');
+    icon.textContent = isWin ? '✅' : '❌';
+    var text = document.createElement('span');
+    text.textContent = isWin
+      ? ('PROFIT : +' + D6.fmtFCFA(Math.abs(Number(payout) || 0)))
+      : 'POSITION EXPIRÉE';
+    el.appendChild(icon);
+    el.appendChild(text);
+    var bg = isWin ? '#059669' : '#dc2626';
+    el.style.cssText = [
+      'position:fixed',
+      'inset:unset',
+      'top:max(24px, env(safe-area-inset-top, 0px))',
+      'left:50%',
+      'right:auto',
+      'bottom:auto',
+      'transform:translateX(-50%)',
+      '-webkit-transform:translateX(-50%)',
+      'z-index:2147483647',
+      'pointer-events:none',
+      'background-color:' + bg,
+      'color:#ffffff',
+      'padding:12px 24px',
+      'border-radius:9999px',
+      'font-weight:bold',
+      'font-size:14px',
+      'line-height:1.3',
+      'box-shadow:0 10px 25px rgba(0,0,0,0.5)',
+      'display:flex',
+      'align-items:center',
+      'gap:8px',
+      'opacity:1',
+      'visibility:visible',
+      'max-width:90vw',
+      'width:max-content',
+      'font-family:inherit',
+      'margin:0',
+      'border:0'
+    ].join(';');
+    el.style.setProperty('position', 'fixed', 'important');
+    el.style.setProperty('z-index', '2147483647', 'important');
+    el.style.setProperty('opacity', '1', 'important');
+    el.style.setProperty('display', 'flex', 'important');
+    el.style.setProperty('visibility', 'visible', 'important');
+    try {
+      if (typeof el.showPopover === 'function' && !el.matches(':popover-open')) el.showPopover();
+    } catch (err) { /* already open or unsupported */ }
+    clearTimeout(outcomeToastTimer);
+    outcomeToastTimer = setTimeout(function () {
+      try {
+        if (typeof el.hidePopover === 'function' && el.matches(':popover-open')) el.hidePopover();
+      } catch (err2) { /* ignore */ }
+      el.textContent = '';
+      el.style.display = 'none';
+    }, 3000);
+  }
+
+  document.addEventListener('orolado-trade-settled', function (ev) {
+    var d = (ev && ev.detail) || {};
+    showOutcomeToast(!!d.isWin, d.isWin ? (d.net != null ? d.net : d.payout) : 0, d.tradeId);
+  });
 
   function clearErrors() {
     document.querySelectorAll('.err-msg').forEach(function (el) {
@@ -360,34 +440,11 @@
     if (u.consecutiveWins >= 3) pendingConvert = true;
   }
 
-  function showSettleHud(res) {
-    var host = $('settlePortal') || document.body;
-    var pill = document.createElement('div');
-    pill.className = 'settle-hud ' + (res.won ? 'win' : 'lose');
-    if (res.won) {
-      var profit = res.position ? res.position.net : Math.abs(res.net);
-      var payout = (res.position && res.position.payout) || (res.trade && res.trade.payout) || D6.CONFIG.REAL_PAYOUT;
-      var pct = Math.round((Number(payout) - 1) * 100);
-      var line = t('profitHud').replace('{amt}', D6.fmtFCFA(profit)).replace('{pct}', String(pct));
-      var cut = line.indexOf(' : ');
-      if (cut > 0) {
-        var head = document.createElement('span');
-        head.textContent = line.slice(0, cut + 3);
-        var amt = document.createElement('span');
-        amt.className = 'hud-amt';
-        amt.textContent = line.slice(cut + 3);
-        pill.appendChild(head);
-        pill.appendChild(amt);
-      } else {
-        pill.textContent = line;
-      }
-    } else {
-      pill.textContent = t('expiredHud');
-    }
-    host.appendChild(pill);
-    setTimeout(function () {
-      if (pill.parentNode) pill.parentNode.removeChild(pill);
-    }, 2200);
+  function profitFromResult(res) {
+    if (!res) return 0;
+    if (res.position && res.position.net != null) return res.position.net;
+    if (res.net != null) return res.net;
+    return 0;
   }
 
   function patchHistorySoon() {
@@ -491,7 +548,7 @@
       hudSeen[id] = true;
     }
     updateBalance(true);
-    showSettleHud(res);
+    showOutcomeToast(!!res.won, profitFromResult(res), id);
     if (res.won) {
       playWinChime();
       burstSparkle();
@@ -505,7 +562,7 @@
       pendingConvert = false;
       setTimeout(function () {
         if (!D6.Engine.getTrade()) openModal('convertModal');
-      }, 2600);
+      }, 3500);
     }
     var u = user();
     if (D6.Api && D6.Api.token() && id) {
@@ -1006,7 +1063,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=16').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=17').catch(function () { /* ignore */ });
     }
   }
 
