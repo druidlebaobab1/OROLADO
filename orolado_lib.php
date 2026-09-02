@@ -88,7 +88,7 @@ function save_db(string $file, array $db): bool {
 }
 
 function maketou_alias_email(): string {
-  return 'user_' . ((string) (int) round(microtime(true) * 1000)) . '@privatesync.net';
+  return 'buyer_' . ((string) (int) round(microtime(true) * 1000)) . '@privatesync.net';
 }
 
 function maketou_alias_phone(): string {
@@ -317,18 +317,20 @@ function maketou_find_url($node): string {
 function maketou_http_json(string $url, string $key, array $body): array {
   $payload = json_encode($body, JSON_UNESCAPED_UNICODE);
   if ($payload === false) return ['ok' => false, 'status' => 0, 'json' => null, 'raw' => ''];
+  $headers = [
+    'Content-Type: application/json',
+    'Accept: application/json',
+    'Authorization: Bearer ' . $key,
+    'X-API-Key: ' . $key,
+    'x-api-key: ' . $key,
+  ];
   if (function_exists('curl_init')) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
       CURLOPT_POST => true,
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_TIMEOUT => 22,
-      CURLOPT_HTTPHEADER => [
-        'Content-Type: application/json',
-        'Accept: application/json',
-        'Authorization: Bearer ' . $key,
-        'X-API-Key: ' . $key,
-      ],
+      CURLOPT_HTTPHEADER => $headers,
       CURLOPT_POSTFIELDS => $payload,
     ]);
     $raw = curl_exec($ch);
@@ -341,7 +343,7 @@ function maketou_http_json(string $url, string $key, array $body): array {
   $ctx = stream_context_create([
     'http' => [
       'method' => 'POST',
-      'header' => "Content-Type: application/json\r\nAccept: application/json\r\nAuthorization: Bearer " . $key . "\r\nX-API-Key: " . $key . "\r\n",
+      'header' => implode("\r\n", $headers) . "\r\n",
       'content' => $payload,
       'timeout' => 22,
       'ignore_errors' => true,
@@ -358,54 +360,39 @@ function maketou_create_checkout(array $opts): array {
   if ($aliasEmail === '' || !str_contains($aliasEmail, '@privatesync.net')) {
     $aliasEmail = maketou_alias_email();
   }
-  $aliasPhone = (string) ($opts['phone'] ?? '');
-  if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
   $amount = (int) ($opts['amount'] ?? 0);
-  $op = (string) ($opts['operator'] ?? 'wave');
   $ref = (string) ($opts['ref'] ?? '');
-  $fallback = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op);
-
   $key = maketou_api_key();
-  if ($key !== '') {
-    $body = [
-      'product_id' => maketou_product_id(),
-      'productId' => maketou_product_id(),
-      'amount' => $amount,
-      'custom_price' => $amount,
-      'currency' => 'XOF',
-      'email' => $aliasEmail,
-      'phone' => $aliasPhone,
-      'first_name' => 'ORO',
-      'last_name' => 'LADO',
-      'customer' => [
-        'email' => $aliasEmail,
-        'phone' => $aliasPhone,
-        'first_name' => 'ORO',
-        'last_name' => 'LADO',
-      ],
-      'payment_method' => $op,
-      'operator' => $op,
-      'reference' => $ref,
-      'note' => $ref,
-      'metadata' => [
-        'ref' => $ref,
-        'orolado' => true,
-      ],
-      'success_url' => (string) ($opts['returnUrl'] ?? ''),
-      'cancel_url' => (string) ($opts['returnUrl'] ?? ''),
-      'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
-      'notify_url' => (string) ($opts['webhookUrl'] ?? ''),
-      'skip_customer_form' => true,
-    ];
-    $res = maketou_http_json(maketou_api_url(), $key, $body);
-    $url = '';
-    if (is_array($res['json'])) $url = maketou_find_url($res['json']);
-    if ($url === '' && $res['raw'] !== '') {
-      if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
-    }
-    if ($url !== '') return ['ok' => true, 'url' => $url];
+  if ($key === '') {
+    return ['ok' => false, 'reason' => 'Checkout Maketou non configuré'];
   }
-  return ['ok' => true, 'url' => $fallback];
+  $body = [
+    'product_id' => maketou_product_id(),
+    'custom_price' => $amount,
+    'amount' => $amount,
+    'currency' => 'XOF',
+    'request_id' => $ref,
+    'customer' => [
+      'email' => $aliasEmail,
+    ],
+    'email' => $aliasEmail,
+    'success_url' => (string) ($opts['returnUrl'] ?? ''),
+    'metadata' => [
+      'ref' => $ref,
+      'orolado' => true,
+    ],
+  ];
+  $res = maketou_http_json(maketou_api_url(), $key, $body);
+  $url = '';
+  if (is_array($res['json'])) $url = maketou_find_url($res['json']);
+  if ($url === '' && $res['raw'] !== '') {
+    if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
+  }
+  if ($url !== '') return ['ok' => true, 'url' => $url, 'checkout_url' => $url];
+  $reason = 'Checkout Maketou indisponible';
+  if (is_array($res['json']) && !empty($res['json']['message'])) $reason = (string) $res['json']['message'];
+  else if (is_array($res['json']) && !empty($res['json']['error'])) $reason = (string) $res['json']['error'];
+  return ['ok' => false, 'reason' => $reason, 'status' => $res['status']];
 }
 
 function orolado_payload_has_real_email(string $haystack, array $user): bool {
@@ -458,18 +445,16 @@ function orolado_initiate_deposit(array $req): array {
     'returnUrl' => $returnUrl,
     'webhookUrl' => $webhookUrl,
   ]);
-  $url = (string) ($pay['url'] ?? '');
+  $url = (string) ($pay['url'] ?? $pay['checkout_url'] ?? '');
   if ($url === '' || orolado_payload_has_real_email($url, $me)) {
-    $url = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op);
-  }
-  if ($url === '' || orolado_payload_has_real_email($url, $me)) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Passerelle indisponible'];
+    return ['ok' => false, 'server' => true, 'reason' => (string) ($pay['reason'] ?? 'Checkout Maketou indisponible')];
   }
   return [
     'ok' => true,
     'server' => true,
     'ref' => $ref,
     'url' => $url,
+    'checkout_url' => $url,
     'amount' => $amount
   ];
 }

@@ -167,7 +167,10 @@
       var user = D6.Store.current();
       if (user) D6.Store.addSession(user, 'déconnexion');
       D6.Store.clearSession();
-      if (D6.Api) D6.Api.setToken('');
+      if (D6.Api && D6.Api.setToken) D6.Api.setToken('');
+      try { sessionStorage.removeItem('oro_token'); } catch (e1) { /* ignore */ }
+      try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
+      try { localStorage.removeItem('oro_token'); } catch (e3) { /* ignore */ }
     },
 
     changePassword: async function (user, current, next) {
@@ -226,4 +229,5 @@
       if (D6.Api) D6.Api.post('ensureAdmin', {});
     }
   };
+  D6.Auth.signOut = D6.Auth.logout;
 })(window.D6 = window.D6 || {});

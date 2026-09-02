@@ -62,21 +62,21 @@
     icon.textContent = isWin ? '✅' : '❌';
     var text = document.createElement('span');
     text.textContent = isWin
-      ? ('PROFIT : +' + D6.fmtFCFA(Math.abs(Number(payout) || 0)))
-      : 'POSITION EXPIRÉE';
+      ? ('PROFIT RÉALISÉ : +' + D6.fmtFCFA(Math.abs(Number(payout) || 0)))
+      : 'POSITION EXPIRÉE (0 FCFA)';
     el.appendChild(icon);
     el.appendChild(text);
-    var bg = isWin ? '#059669' : '#dc2626';
+    var bg = isWin ? '#059669' : '#4b1d24';
     el.style.cssText = [
       'position:fixed',
       'inset:unset',
-      'top:max(24px, env(safe-area-inset-top, 0px))',
+      'top:25px',
       'left:50%',
       'right:auto',
       'bottom:auto',
       'transform:translateX(-50%)',
       '-webkit-transform:translateX(-50%)',
-      'z-index:2147483647',
+      'z-index:999999',
       'pointer-events:none',
       'background-color:' + bg,
       'color:#ffffff',
@@ -85,7 +85,8 @@
       'font-weight:bold',
       'font-size:14px',
       'line-height:1.3',
-      'box-shadow:0 10px 25px rgba(0,0,0,0.5)',
+      'box-shadow:' + (isWin ? '0 0 24px rgba(5,150,105,0.75),0 10px 25px rgba(0,0,0,0.5)' : '0 10px 25px rgba(0,0,0,0.5)'),
+      'border:' + (isWin ? '1px solid #34d399' : '1px solid #7f1d1d'),
       'display:flex',
       'align-items:center',
       'gap:8px',
@@ -94,13 +95,15 @@
       'max-width:90vw',
       'width:max-content',
       'font-family:inherit',
-      'margin:0',
-      'border:0'
+      'margin:0'
     ].join(';');
     el.style.setProperty('position', 'fixed', 'important');
-    el.style.setProperty('z-index', '2147483647', 'important');
-    el.style.setProperty('opacity', '1', 'important');
+    el.style.setProperty('z-index', '999999', 'important');
+    el.style.setProperty('top', '25px', 'important');
+    el.style.setProperty('left', '50%', 'important');
+    el.style.setProperty('transform', 'translateX(-50%)', 'important');
     el.style.setProperty('display', 'flex', 'important');
+    el.style.setProperty('opacity', '1', 'important');
     el.style.setProperty('visibility', 'visible', 'important');
     try {
       if (typeof el.showPopover === 'function' && !el.matches(':popover-open')) el.showPopover();
@@ -689,16 +692,20 @@
         operator: depositOp
       });
       if (!remote || !remote.ok) {
-        toast((remote && remote.reason) || 'Passerelle indisponible', 'err');
+        toast((remote && remote.reason) || 'Checkout Maketou indisponible', 'err');
         return;
       }
-      var safe = checkoutUrlSafe(remote.url, u);
-      if (!safe) {
-        toast('Passerelle indisponible', 'err');
+      var url = remote.checkout_url || remote.url || '';
+      if (u && u.email) {
+        var em = String(u.email).toLowerCase();
+        if (url.toLowerCase().indexOf(em) >= 0) url = '';
+      }
+      if (!url || !/^https?:\/\//i.test(url)) {
+        toast((remote && remote.reason) || 'Checkout Maketou indisponible', 'err');
         return;
       }
       try { sessionStorage.setItem('oro_dep_ref', remote.ref || ''); } catch (e) { /* ignore */ }
-      window.location.href = safe;
+      window.location.href = url;
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -887,7 +894,11 @@
     tap($('btnPut'), function () { execute('put'); });
     $('btnOpenDeposit').addEventListener('click', function () { openDeposit(); });
     $('balanceCard').addEventListener('click', function () { /* solde only */ });
-    $('btnProfile').addEventListener('click', openDrawer);
+    $('btnProfile').addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openDrawer();
+    });
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
     $('drawerBackdrop').addEventListener('click', closeDrawer);
     $('btnHistMore').addEventListener('click', function () {
@@ -999,12 +1010,18 @@
       updateBalance(true);
       toast(t('withdrawBtn'), 'ok');
     });
-    $('btnLogout').addEventListener('click', function () {
+    function doLogout(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       closeDrawer();
-      D6.Auth.logout();
+      if (D6.Auth.signOut) D6.Auth.signOut();
+      else D6.Auth.logout();
       D6.Chart.stop();
       showScreen('screenAuth');
-    });
+    }
+    $('btnLogout').addEventListener('click', doLogout);
     document.querySelectorAll('.modal-backdrop').forEach(function (b) {
       b.addEventListener('click', function (e) { if (e.target === b) b.classList.remove('active'); });
     });
@@ -1063,7 +1080,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=17').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=18').catch(function () { /* ignore */ });
     }
   }
 
@@ -1088,6 +1105,7 @@
     renderHistory();
     D6.I18N.apply();
     showScreen('screenTrade');
+    if ($('installBanner')) $('installBanner').classList.add('hidden');
     D6.Chart.setAsset(assetId(u));
     D6.Chart.start();
     requestAnimationFrame(D6.Chart.resize);

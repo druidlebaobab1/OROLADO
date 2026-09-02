@@ -336,47 +336,57 @@
     ctx.fillText('RSI ' + last.toFixed(0), pad.l + 4, top + 10);
   }
 
-  function drawEntry(map, trade, now, badgeIndex, badgeCount) {
+  function drawEntry(map, trade, now, pad) {
     if (!trade || !map || trade.settled) return;
-    var remaining = (trade.expiryTime || trade.expiresAt) - Date.now();
-    if (remaining < 80) return;
+    var exp = trade.expiryTime || trade.expiresAt;
+    if (!exp || Date.now() >= exp) return;
     var ey = map.toY(trade.entryPrice);
-    var pulse = 0.55 + 0.45 * Math.sin(now / 140);
-    var col = trade.side === 'call' ? '#00E676' : '#FF1744';
+    if (!isFinite(ey)) return;
+    var isCall = trade.side === 'call';
+    var col = isCall ? '#00E676' : '#FF1744';
+    var x0 = pad ? pad.l : 8;
+    var x1 = pad ? (pad.l + cssW - pad.l - pad.r) : (cssW - 62);
     ctx.save();
+    ctx.setLineDash([6, 5]);
     ctx.strokeStyle = col;
-    ctx.shadowColor = 'rgba(255,215,0,' + (0.35 + pulse * 0.25) + ')';
-    ctx.shadowBlur = 8;
-    ctx.lineWidth = 1.35;
+    ctx.lineWidth = 1.7;
+    ctx.globalAlpha = 0.95;
     ctx.beginPath();
-    ctx.moveTo(8, ey);
-    ctx.lineTo(cssW - 8, ey);
+    ctx.moveTo(x0, ey);
+    ctx.lineTo(x1, ey);
     ctx.stroke();
+    ctx.setLineDash([]);
     ctx.restore();
-    ctx.fillStyle = col;
+    var tag = (isCall ? 'CALL ' : 'PUT ') + Number(trade.entryPrice).toFixed(2);
     ctx.font = '800 10px "Hanken Grotesk", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText((trade.side === 'call' ? 'CALL ' : 'PUT ') + trade.entryPrice.toFixed(2), 16, ey - 8);
-    var secs = remaining / 1000;
-    if (secs < 0.15) return;
-    var label = secs.toFixed(1) + 's';
-    if (label === '0.0s' || label.charAt(0) === '-') return;
-    var offset = (badgeIndex - (badgeCount - 1) / 2) * 84;
-    var bx = cssW / 2 - 38 + offset;
-    var by = Math.max(10, ey - 36);
-    ctx.fillStyle = 'rgba(10,15,29,0.92)';
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 1.4;
-    ctx.shadowColor = 'rgba(255,215,0,0.55)';
-    ctx.shadowBlur = 10;
-    roundRect(bx, by, 76, 22, 11);
+    var tw = Math.ceil(ctx.measureText(tag).width) + 12;
+    var bx = Math.max(x1 + 2, cssW - tw - 4);
+    var by = Math.max(4, Math.min(cssH - 20, ey - 9));
+    ctx.fillStyle = col;
+    roundRect(bx, by, tw, 18, 5);
     ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#FFD700';
-    ctx.font = '800 12px "Hanken Grotesk", sans-serif';
+    ctx.fillStyle = '#0A0F1D';
     ctx.textAlign = 'center';
-    ctx.fillText(label, bx + 38, by + 16);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tag, bx + tw / 2, by + 9);
+    ctx.textBaseline = 'alphabetic';
+    var remaining = exp - Date.now();
+    var secs = remaining / 1000;
+    if (secs >= 0.15) {
+      var label = secs.toFixed(1) + 's';
+      if (label.charAt(0) !== '-') {
+        ctx.fillStyle = 'rgba(10,15,29,0.92)';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1.2;
+        roundRect(x0 + 4, Math.max(6, ey - 28), 52, 18, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = col;
+        ctx.font = '800 11px "Hanken Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x0 + 30, ey - 15);
+      }
+    }
   }
 
   function roundRect(x, y, w, h, r) {
@@ -425,7 +435,7 @@
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
     var rsiH = inds.rsi ? 36 : 0;
-    var pad = { t: 14, r: 62, b: 22 + rsiH, l: 8 };
+    var pad = { t: 14, r: 78, b: 22 + rsiH, l: 8 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 40) h = Math.max(40, cssH - 36);
@@ -501,8 +511,8 @@
       }
     }
 
-    allTrades.forEach(function (ot, idx) {
-      drawEntry(map, ot, now, idx, allTrades.length);
+    allTrades.forEach(function (ot) {
+      drawEntry(map, ot, now, pad);
     });
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
     if (primary) {
