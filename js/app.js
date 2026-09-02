@@ -94,7 +94,7 @@
       var box = $(boxId);
       if (!box) return;
       var cur = LANGS.filter(function (l) { return l.code === D6.I18N.lang; })[0] || LANGS[0];
-      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1">' + cur.flag + ' ▾</button>' +
+      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span></button>' +
         '<div class="lang-dd-menu hidden">' + LANGS.map(function (l) {
           return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '">' + l.flag + '</button>';
         }).join('') + '</div>';
@@ -108,6 +108,7 @@
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) {
           if (m !== menu) m.classList.add('hidden');
         });
+        closeModeMenu();
         menu.classList.toggle('hidden');
       });
     });
@@ -115,6 +116,7 @@
       btn.addEventListener('click', function () {
         D6.I18N.set(btn.dataset.lang);
         fillLangBars();
+        if (user()) setModeUi(user());
         renderHistory();
         renderCommunity();
         if (!$('screenAdmin').classList.contains('hidden')) renderAdmin();
@@ -136,17 +138,53 @@
     $('btnAdmin2').classList.toggle('hidden', !D6.Auth.isAdmin(u));
   }
 
+  function closeModeMenu() {
+    var menu = $('modeMenu');
+    var pill = $('modePill');
+    if (menu) menu.classList.add('hidden');
+    if (pill) pill.setAttribute('aria-expanded', 'false');
+  }
+
   function setModeUi(u) {
+    if (!u) return;
     var demo = u.mode !== 'real';
-    $('modeDemo').classList.toggle('on', demo);
-    $('modeReal').classList.toggle('on', !demo);
-    $('modeBadge').textContent = demo ? t('demo') : t('real');
+    var pill = $('modePill');
+    if (pill) {
+      pill.classList.toggle('is-demo', demo);
+      pill.classList.toggle('is-real', !demo);
+    }
+    if ($('modePillLabel')) $('modePillLabel').textContent = demo ? t('modeShortDemo') : t('modeShortReal');
+    document.querySelectorAll('.mode-option').forEach(function (el) {
+      el.classList.toggle('on', el.dataset.mode === (demo ? 'demo' : 'real'));
+    });
+    if ($('modeBadge')) $('modeBadge').textContent = demo ? t('demo') : t('real');
+    var virt = D6.Store.demoBalance ? D6.Store.demoBalance(u) : 0;
+    var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    if ($('modeDemoBal')) $('modeDemoBal').textContent = t('virtualBal') + ' : ' + D6.fmtFCFA(virt);
+    if ($('modeRealBal')) $('modeRealBal').textContent = t('realBalHint') + ' : ' + D6.fmtFCFA(real);
+  }
+
+  function switchMode(next) {
+    var u = user();
+    if (!u || D6.Engine.getTrade()) return;
+    u.mode = next === 'real' ? 'real' : 'demo';
+    D6.Store.saveUser(u);
+    setModeUi(u);
+    updateBalance(true);
+    updatePayoutUi();
+    closeModeMenu();
   }
 
   function updateBalance(flash) {
     var u = user();
     if (!u) return;
     $('balanceDisplay').textContent = D6.fmtFCFA(D6.Store.balanceOf(u));
+    if ($('modeDemoBal') && D6.Store.demoBalance) {
+      $('modeDemoBal').textContent = t('virtualBal') + ' : ' + D6.fmtFCFA(D6.Store.demoBalance(u));
+    }
+    if ($('modeRealBal') && D6.Store.realBalance) {
+      $('modeRealBal').textContent = t('realBalHint') + ' : ' + D6.fmtFCFA(D6.Store.realBalance(u));
+    }
     if (flash) {
       var card = $('balanceCard');
       card.classList.remove('flash');
@@ -632,15 +670,29 @@
   }
 
   function bindTrade() {
-    $('modeDemo').addEventListener('click', function () {
-      var u = user();
-      if (!u || D6.Engine.getTrade()) return;
-      u.mode = 'demo'; D6.Store.saveUser(u); setModeUi(u); updateBalance(true); updatePayoutUi();
+    $('modePill').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var menu = $('modeMenu');
+      var open = menu.classList.contains('hidden');
+      document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
+      menu.classList.toggle('hidden', !open);
+      $('modePill').setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-    $('modeReal').addEventListener('click', function () {
+    $('modeSwitcher').addEventListener('click', function (e) { e.stopPropagation(); });
+    $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
+    $('modeReal').addEventListener('click', function () { switchMode('real'); });
+    $('btnResetDemo').addEventListener('click', function (e) {
+      e.stopPropagation();
       var u = user();
-      if (!u || D6.Engine.getTrade()) return;
-      u.mode = 'real'; D6.Store.saveUser(u); setModeUi(u); updateBalance(true); updatePayoutUi();
+      if (!u) return;
+      if (D6.Engine.getTrade()) return;
+      D6.Store.resetDemo(u);
+      u.mode = 'demo';
+      D6.Store.saveUser(u);
+      setModeUi(u);
+      updateBalance(true);
+      updatePayoutUi();
+      toast(t('resetDemo'), 'ok');
     });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
@@ -867,7 +919,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=9').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=10').catch(function () { /* ignore */ });
     }
   }
 
@@ -958,6 +1010,7 @@
       }, 120);
       document.addEventListener('click', function () {
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
+        closeModeMenu();
       });
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) refreshRemoteVault();

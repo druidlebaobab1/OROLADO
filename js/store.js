@@ -206,9 +206,17 @@
       return user.mode === 'real' ? v.real : v.demo;
     },
 
-    realBalance: function (user) {
+    demoBalance: function (user) {
       if (!user) return 0;
-      return (vault[user.id] || { real: 0 }).real;
+      return (vault[user.id] || { demo: 0 }).demo;
+    },
+
+    resetDemo: function (user) {
+      if (!user) return;
+      var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
+      v.demo = D6.CONFIG.DEMO_START;
+      vault[user.id] = v;
+      persist();
     },
 
     setBalance: function (user, value) {

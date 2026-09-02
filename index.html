@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=9">
+  <link rel="stylesheet" href="css/app.css?v=10">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -100,11 +100,36 @@
             <img class="logo-mark sm" src="icons/icon.svg" alt="">
             <div class="brand">ORO<span>LADO</span></div>
           </div>
-          <div class="mode-switch">
-            <button type="button" id="modeDemo" class="on" data-i18n="demo">Compte Démo</button>
-            <button type="button" id="modeReal" data-i18n="real">Compte Réel</button>
-          </div>
           <div class="topbar-actions">
+            <div class="mode-dd" id="modeSwitcher">
+              <button type="button" class="mode-pill is-demo" id="modePill" aria-haspopup="true" aria-expanded="false">
+                <i class="mode-dot" aria-hidden="true"></i>
+                <span id="modePillLabel">DÉMO</span>
+                <span class="mode-chev" aria-hidden="true">▾</span>
+              </button>
+              <div class="mode-dd-menu hidden" id="modeMenu">
+                <div class="mode-option on" data-mode="demo">
+                  <button type="button" class="mode-card" id="modeDemo">
+                    <span class="mode-card-top">
+                      <i class="mode-dot demo" aria-hidden="true"></i>
+                      <span data-i18n="demo">Compte Démo</span>
+                    </span>
+                    <span class="mode-card-bal" id="modeDemoBal">Solde Virtuel : 50 000 FCFA</span>
+                  </button>
+                  <button type="button" class="mode-reset" id="btnResetDemo" data-i18n="resetDemo">Réinitialiser</button>
+                </div>
+                <div class="mode-option" data-mode="real">
+                  <button type="button" class="mode-card" id="modeReal">
+                    <span class="mode-card-top">
+                      <i class="mode-dot real" aria-hidden="true"></i>
+                      <span data-i18n="real">Compte Réel</span>
+                    </span>
+                    <span class="mode-card-bal" id="modeRealBal">Solde Réel : 0 FCFA</span>
+                    <span class="mode-secure" data-i18n="secured">Sécurisé</span>
+                  </button>
+                </div>
+              </div>
+            </div>
             <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
             <div class="lang-dd" id="langBarTrade"></div>
             <button type="button" class="icon-btn" id="btnProfile" title="Profil">👤</button>
@@ -374,13 +399,13 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=9"></script>
-  <script src="js/i18n.js?v=9"></script>
-  <script src="js/store.js?v=9"></script>
-  <script src="js/api.js?v=9"></script>
-  <script src="js/auth.js?v=9"></script>
-  <script src="js/engine.js?v=9"></script>
-  <script src="js/chart.js?v=9"></script>
-  <script src="js/app.js?v=9"></script>
+  <script src="js/config.js?v=10"></script>
+  <script src="js/i18n.js?v=10"></script>
+  <script src="js/store.js?v=10"></script>
+  <script src="js/api.js?v=10"></script>
+  <script src="js/auth.js?v=10"></script>
+  <script src="js/engine.js?v=10"></script>
+  <script src="js/chart.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>
