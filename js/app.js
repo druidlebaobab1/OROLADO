@@ -738,12 +738,14 @@
   }
 
   async function refreshRemoteVault() {
-    if (!D6.Api || !D6.Api.token()) return;
-    var remote = await D6.Api.post('me', {});
     var u = user();
-    if (remote && remote.ok && remote.vault && u) {
-      D6.Store.importRemote(u, remote.vault);
-      updateBalance(false);
+    if (D6.Api && D6.Api.token && D6.Api.token()) {
+      var remote = await D6.Api.post('me', {});
+      if (remote && remote.ok && remote.vault && u) {
+        D6.Store.importRemote(u, remote.vault);
+        updateBalance(false);
+        if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
+      }
     }
   }
 
@@ -1080,7 +1082,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=18').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=19').catch(function () { /* ignore */ });
     }
   }
 
@@ -1199,8 +1201,18 @@
         })();
         return;
       }
-      if (D6.Auth.current()) enterApp();
-      else showScreen('screenAuth');
+      function finishBoot() {
+        if (D6.Auth.current()) enterApp();
+        else showScreen('screenAuth');
+      }
+      if (D6.Supabase && D6.Supabase.restore) {
+        D6.Supabase.restore().then(function (cloud) {
+          if (cloud && cloud.ok) enterApp();
+          else finishBoot();
+        }).catch(finishBoot);
+      } else {
+        finishBoot();
+      }
     }
   };
 

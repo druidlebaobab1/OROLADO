@@ -147,6 +147,7 @@
       var u = db.users[db.session.userId];
       D6.Api.post('upsert', { user: publicUsers[u.id], vault: vault[u.id] });
     }
+    if (!skipRemote && D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
   }
 
   D6.Store = {
@@ -211,6 +212,11 @@
       return (vault[user.id] || { demo: 0 }).demo;
     },
 
+    realBalance: function (user) {
+      if (!user) return 0;
+      return (vault[user.id] || { real: 0 }).real;
+    },
+
     resetDemo: function (user) {
       if (!user) return;
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
@@ -240,7 +246,7 @@
     },
 
     addTransaction: function (user, tx) {
-      user.transactions.unshift({
+      var row = {
         id: D6.uid(),
         at: D6.nowIso(),
         clock: D6.clock(),
@@ -248,9 +254,11 @@
         amount: tx.amount,
         note: tx.note || '',
         mode: tx.mode || user.mode
-      });
+      };
+      user.transactions.unshift(row);
       if (user.transactions.length > 80) user.transactions.length = 80;
       persist();
+      if (D6.Supabase && D6.Supabase.saveTransaction) D6.Supabase.saveTransaction(row);
     },
 
     addSession: function (user, action) {

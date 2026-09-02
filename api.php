@@ -73,7 +73,7 @@ function find_user(array $db, string $email): ?array {
   return null;
 }
 
-function session_user(array $db, ?string $token): ?array {
+function session_user(array &$db, ?string $token): ?array {
   return orolado_session_user($db, $token);
 }
 

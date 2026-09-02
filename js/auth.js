@@ -61,6 +61,20 @@
       if (password.length < 6) return { ok: false, reason: 'Mot de passe : 6 caractères minimum', field: 'regPass' };
       if (password !== confirm) return { ok: false, reason: 'Les mots de passe ne correspondent pas', field: 'regPass2' };
       if (!form.acceptTerms) return { ok: false, reason: 'Vous devez confirmer avoir plus de 18 ans', field: 'regAge' };
+
+      var cloudOk = D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && email.indexOf('.local') < 0;
+      if (cloudOk) {
+        var cloud = await D6.Supabase.register({
+          displayName: displayName,
+          email: email,
+          phone: phone,
+          countryCode: countryCode,
+          password: password
+        });
+        if (!cloud.ok) return cloud;
+        return { ok: true, user: D6.Store.current() };
+      }
+
       if (D6.Store.findByEmail(email)) return { ok: false, reason: 'Un compte existe déjà avec cet e-mail', field: 'regEmail' };
 
       var user = D6.Store.createUser({
@@ -117,6 +131,12 @@
         return { ok: true, user: admin };
       }
 
+      var cloudLogin = D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && id.email.indexOf('.local') < 0;
+      if (cloudLogin) {
+        var cloud = await D6.Supabase.login(id.email, password);
+        if (cloud.ok) return { ok: true, user: D6.Store.current() };
+      }
+
       if (D6.Api) {
         var remote = await D6.Api.post('login', { email: id.email, password: password });
         if (remote && remote.ok && remote.user) {
@@ -171,14 +191,22 @@
       try { sessionStorage.removeItem('oro_token'); } catch (e1) { /* ignore */ }
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
       try { localStorage.removeItem('oro_token'); } catch (e3) { /* ignore */ }
+      if (D6.Supabase && D6.Supabase.signOut) D6.Supabase.signOut();
     },
 
     changePassword: async function (user, current, next) {
       if (!user) return { ok: false, reason: 'Session expirée' };
+      if (String(next || '').length < 6) return { ok: false, reason: 'Nouveau mot de passe trop court' };
+      var uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(user.id || ''));
+      if (uuid && D6.Supabase && D6.Supabase.changePassword) {
+        var cloud = await D6.Supabase.changePassword(next);
+        if (!cloud.ok) return { ok: false, reason: cloud.reason || 'Impossible de modifier le mot de passe' };
+        D6.Store.addSession(user, 'mot de passe modifié');
+        return { ok: true };
+      }
       if ((await hashPassword(current)) !== user.passwordHash) {
         return { ok: false, reason: 'Mot de passe actuel incorrect' };
       }
-      if (String(next || '').length < 6) return { ok: false, reason: 'Nouveau mot de passe trop court' };
       user.passwordHash = await hashPassword(next);
       D6.Store.saveUser(user);
       D6.Store.addSession(user, 'mot de passe modifié');

@@ -385,6 +385,7 @@
       }
       user.lastStake = stake;
       D6.Store.saveUser(user);
+      if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
       return { ok: true, trade: publicTrade(t) };
     },
 
@@ -489,6 +490,21 @@
       };
       D6.Store.addPosition(user, position);
       D6.Store.saveUser(user);
+      if (D6.Supabase && D6.Supabase.saveOrder) {
+        D6.Supabase.saveOrder({
+          id: trade.id,
+          assetId: trade.assetId,
+          side: trade.side,
+          stake: trade.stake,
+          duration: trade.duration,
+          mode: trade.mode,
+          payout: trade.payout,
+          entryPrice: trade.entryPrice,
+          exitPrice: exitPrice,
+          won: won,
+          net: net
+        }, 'closed');
+      }
 
       try {
         console.log('TRADE SETTLED -> TRIGGERING TOAST:', { isWin: won, payout: payoutAmount });

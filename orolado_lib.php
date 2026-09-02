@@ -40,14 +40,116 @@ function blank_db(): array {
   return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => []];
 }
 
-function orolado_session_user(array $db, ?string $token): ?array {
+function supabase_env(string $key): string {
+  orolado_load_env();
+  $v = getenv($key);
+  if ($v === false || $v === '') $v = $_ENV[$key] ?? '';
+  return trim((string) $v);
+}
+
+function supabase_project_url(): string {
+  return rtrim(supabase_env('SUPABASE_URL'), '/');
+}
+
+function supabase_usable_key(string $key): string {
+  $key = trim($key);
+  if ($key === '' || preg_match('#^https?://#i', $key)) return '';
+  return $key;
+}
+
+function supabase_anon_key(): string {
+  return supabase_usable_key(supabase_env('SUPABASE_ANON_KEY'));
+}
+
+function supabase_service_key(): string {
+  return supabase_usable_key(supabase_env('SUPABASE_SERVICE_ROLE_KEY'));
+}
+
+function supabase_http(string $url, array $headers, ?string $body = null, string $method = 'GET'): ?array {
+  if (!function_exists('curl_init')) return null;
+  $ch = curl_init($url);
+  $opts = [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 8,
+    CURLOPT_HTTPHEADER => $headers,
+  ];
+  if ($method === 'POST') {
+    $opts[CURLOPT_POST] = true;
+    $opts[CURLOPT_POSTFIELDS] = $body ?? '{}';
+  }
+  curl_setopt_array($ch, $opts);
+  $raw = curl_exec($ch);
+  $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+  if ($code < 200 || $code >= 300 || !is_string($raw)) return null;
+  $json = json_decode($raw, true);
+  return is_array($json) ? $json : [];
+}
+
+function supabase_fetch_auth_user(string $token): ?array {
+  $url = supabase_project_url();
+  $anon = supabase_anon_key();
+  if ($url === '' || $anon === '' || $token === '' || !str_starts_with($token, 'eyJ')) return null;
+  $json = supabase_http($url . '/auth/v1/user', [
+    'Authorization: Bearer ' . $token,
+    'apikey: ' . $anon,
+  ]);
+  if (!is_array($json) || empty($json['id'])) return null;
+  return $json;
+}
+
+function supabase_credit_real(string $userId, int $amount): void {
+  $url = supabase_project_url();
+  $key = supabase_service_key();
+  if ($url === '' || $key === '' || $amount <= 0) return;
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
+  supabase_http($url . '/rest/v1/rpc/credit_real', [
+    'Content-Type: application/json',
+    'apikey: ' . $key,
+    'Authorization: Bearer ' . $key,
+  ], json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+}
+
+function orolado_session_user(array &$db, ?string $token): ?array {
   if (!$token) return null;
+  if (!isset($db['sessions']) || !is_array($db['sessions'])) $db['sessions'] = [];
+  if (!isset($db['users']) || !is_array($db['users'])) $db['users'] = [];
   foreach ($db['sessions'] as $sid => $sess) {
     if ($sid === $token && isset($db['users'][$sess['userId']])) {
       return $db['users'][$sess['userId']];
     }
   }
-  return null;
+  $sb = supabase_fetch_auth_user($token);
+  if (!$sb || empty($sb['id'])) return null;
+  $id = (string) $sb['id'];
+  if (!isset($db['users'][$id])) {
+    $email = strtolower((string) ($sb['email'] ?? ''));
+    $meta = is_array($sb['user_metadata'] ?? null) ? $sb['user_metadata'] : [];
+    $name = (string) ($meta['display_name'] ?? '');
+    if ($name === '') $name = $email !== '' ? explode('@', $email)[0] : 'Trader';
+    $db['users'][$id] = [
+      'id' => $id,
+      'displayName' => $name,
+      'email' => $email,
+      'phone' => (string) ($meta['phone'] ?? ''),
+      'countryCode' => (string) ($meta['country_code'] ?? '+225'),
+      'passwordHash' => '',
+      'role' => 'user',
+      'createdAt' => date('c'),
+      'mode' => 'demo',
+      'assetId' => 'v100',
+      'duration' => 10,
+      'trades' => 0,
+      'wins' => 0,
+      'realTrades' => 0,
+      'realStakeVolume' => 0,
+      'transactions' => [],
+      'positions' => []
+    ];
+    if (!isset($db['vault'][$id])) $db['vault'][$id] = ['demo' => 50000, 'real' => 0];
+    save_db(orolado_data_file(), $db);
+  }
+  return $db['users'][$id];
 }
 
 function orolado_public_origin(): string {
@@ -283,6 +385,7 @@ function credit_paid_deposit(array $hit): array {
   fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
+  supabase_credit_real((string) $uid, $amount);
   return ['ok' => true, 'amount' => $amount, 'userId' => $uid];
 }
 
