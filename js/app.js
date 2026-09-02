@@ -4,12 +4,12 @@
   var $ = function (id) { return document.getElementById(id); };
   var stake = 1000;
   var toastTimer = null;
-  var resultTimer = null;
-  var resultQueue = [];
   var selectedOp = 'wave';
-  var settlingIds = {};
   var pendingConvert = false;
   var lastClickAt = 0;
+  var cooling = false;
+  var histPatch = 0;
+  var hudSeen = {};
   var community = [];
   var communityTimer = null;
   var deferredPrompt = null;
@@ -53,6 +53,25 @@
     var el = $('err-' + field);
     if (el) { el.textContent = msg; el.classList.add('on'); }
     else toast(msg, 'err');
+  }
+
+  function playWinChime() {
+    var u = user();
+    if (u && u.settings && !u.settings.sound) return;
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch (e) { /* ignore */ }
   }
 
   function playTone(freq, dur) {
@@ -242,18 +261,13 @@
     if (!trade) {
       pnl.textContent = '—';
       pnl.className = 'pnl-value idle';
-      $('timerPanel').classList.remove('active');
-      $('orderHud').classList.add('hidden');
+      if ($('timerPanel')) $('timerPanel').classList.remove('active');
       return;
     }
     var diff = market.price - trade.entryPrice;
     var winning = (trade.side === 'call' && diff > 0) || (trade.side === 'put' && diff < 0);
     pnl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + ' pts';
     pnl.className = 'pnl-value ' + (winning ? 'up' : 'down');
-    var left = trade.timeLeft.toFixed(1) + 's';
-    $('orderTimerVal').textContent = left;
-    $('orderHud').classList.remove('hidden');
-    if (trade.expiresAt && Date.now() >= trade.expiresAt) settleTrade(trade.id);
   }
 
   function isMobileLayout() {
@@ -338,56 +352,52 @@
     if (u.consecutiveWins >= 3) pendingConvert = true;
   }
 
-  function showResult(res) {
-    var box = $('resultBox');
-    box.className = 'result-box ' + (res.won ? 'win' : 'lose');
-    $('resIcon').textContent = res.won ? '✓' : '✕';
-    $('resTitle').textContent = res.won ? t('won') : t('expired');
-    $('resDetail').textContent = (res.net >= 0 ? '+' : '') + D6.fmtFCFA(res.net);
-    $('resSub').textContent = (res.trade.side === 'call' ? 'CALL' : 'PUT') + ' · ' +
-      D6.fmtPrice(res.trade.entryPrice) + ' → ' + D6.fmtPrice(res.exitPrice) + ' · FCFA';
-    $('closeResult').textContent = t('continue');
-    $('resultModal').classList.add('active');
-    if (res.won) burstSparkle();
-    playTone(res.won ? 880 : 210, res.won ? 0.22 : 0.32);
-    clearTimeout(resultTimer);
-    resultTimer = setTimeout(function () { dismissResult(); }, 3500);
+  function showSettleHud(res) {
+    var stack = $('settleStack');
+    if (!stack) return;
+    var pill = document.createElement('div');
+    pill.className = 'settle-hud animate-bounce-subtle ' + (res.won ? 'win' : 'lose');
+    if (res.won) {
+      var credit = res.position ? (res.position.net + res.position.stake) : Math.abs(res.net);
+      pill.textContent = '✅ GAGNANT +' + D6.fmtFCFA(credit);
+    } else {
+      pill.textContent = '❌ NON GAGNANT';
+    }
+    stack.appendChild(pill);
+    setTimeout(function () {
+      if (pill.parentNode) pill.parentNode.removeChild(pill);
+    }, 2500);
+  }
+
+  function patchHistorySoon() {
+    if (histPatch) return;
+    histPatch = setTimeout(function () {
+      histPatch = 0;
+      renderHistory();
+    }, 80);
+  }
+
+  function syncTradeButtons() {
+    var n = D6.Engine.liveCount ? D6.Engine.liveCount() : (D6.Engine.getTrades ? D6.Engine.getTrades().length : 0);
+    var lock = cooling || n >= 5;
+    $('btnCall').disabled = lock;
+    $('btnPut').disabled = lock;
   }
 
   function armTradeCooldown() {
+    cooling = true;
     var row = document.querySelector('.trade-row');
     if (row) row.classList.add('cooldown');
     $('btnCall').classList.add('cooldown');
     $('btnPut').classList.add('cooldown');
     setTradingLocked(true);
     setTimeout(function () {
+      cooling = false;
       if (row) row.classList.remove('cooldown');
       $('btnCall').classList.remove('cooldown');
       $('btnPut').classList.remove('cooldown');
-      if (!$('resultModal').classList.contains('active')) setTradingLocked(false);
-    }, 400);
-  }
-
-  function dismissResult(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if (!$('resultModal').classList.contains('active')) return;
-    clearTimeout(resultTimer);
-    resultTimer = null;
-    $('resultModal').classList.remove('active');
-    if (resultQueue.length) {
-      var next = resultQueue.shift();
-      setTradingLocked(true);
-      showResult(next);
-      return;
-    }
-    armTradeCooldown();
-    if (pendingConvert) {
-      pendingConvert = false;
-      setTimeout(function () { openModal('convertModal'); }, 420);
-    }
+      syncTradeButtons();
+    }, D6.CONFIG.MIN_ORDER_MS);
   }
 
   function fillProfile() {
@@ -444,74 +454,73 @@
   }
 
   function setTradingLocked(on) {
-    $('btnCall').disabled = on;
-    $('btnPut').disabled = on;
-  }
-
-  function settleTrade(tradeId) {
-    var u = user();
-    if (!u) return;
-    var id = tradeId;
-    if (!id) {
-      var list = D6.Engine.getTrades ? D6.Engine.getTrades() : [];
-      var due = list.filter(function (t) {
-        return t && t.expiresAt && Date.now() >= t.expiresAt;
-      })[0];
-      if (!due) return;
-      id = due.id;
-    }
-    if (settlingIds[id]) return;
-    settlingIds[id] = true;
-    var res = D6.Engine.resolve(u, id);
-    if (!res) {
-      delete settlingIds[id];
+    if (on) {
+      $('btnCall').disabled = true;
+      $('btnPut').disabled = true;
       return;
     }
-    delete settlingIds[id];
-    $('orderHud').classList.toggle('hidden', !D6.Engine.getTrade());
-    updateBalance(true);
-    renderHistory();
-    updatePriceHud();
-    maybeConvertPrompt(u, res);
-    if ($('resultModal').classList.contains('active')) {
-      resultQueue.push(res);
-    } else {
-      setTradingLocked(true);
-      showResult(res);
+    syncTradeButtons();
+  }
+
+  function applyOutcome(res) {
+    if (!res) return;
+    var id = res.trade && res.trade.id;
+    if (id) {
+      if (hudSeen[id]) return;
+      hudSeen[id] = true;
     }
-    if (D6.Api && D6.Api.token()) {
+    updateBalance(true);
+    showSettleHud(res);
+    if (res.won) {
+      playWinChime();
+      burstSparkle();
+    }
+    maybeConvertPrompt(user(), res);
+    patchHistorySoon();
+    syncTradeButtons();
+    if (pendingConvert && !(D6.Engine.liveCount && D6.Engine.liveCount())) {
+      pendingConvert = false;
+      setTimeout(function () {
+        if (!D6.Engine.getTrade()) openModal('convertModal');
+      }, 2600);
+    }
+    var u = user();
+    if (D6.Api && D6.Api.token() && id) {
       D6.Api.post('settleOrder', { orderId: id }).then(function (remote) {
-        if (!D6.Engine.getTrade()) D6.holdRemote = false;
-        if (remote && remote.ok && remote.server) {
-          if (remote.vault) D6.Store.importRemote(u, remote.vault);
+        if (remote && remote.ok && remote.server && remote.vault && u) {
+          D6.Store.importRemote(u, remote.vault);
           updateBalance(true);
         }
       });
-    } else if (!D6.Engine.getTrade()) {
-      D6.holdRemote = false;
     }
   }
 
   function execute(side) {
     var now = performance.now();
     if (now - lastClickAt < D6.CONFIG.MIN_ORDER_MS) return;
-    if ($('resultModal').classList.contains('active')) return;
     lastClickAt = now;
     var u = user();
     if (!u) return;
+    var open = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
+    if (open >= 5) {
+      toast(t('maxPositions'), 'err');
+      syncTradeButtons();
+      return;
+    }
     stake = Math.min(D6.CONFIG.MAX_STAKE, Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake)));
     $('inputStake').value = stake;
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
     if (!res.ok) {
       toast(res.reason, 'err');
       playTone(140, 0.18);
+      syncTradeButtons();
       return;
     }
     updateBalance(true);
-    $('orderHud').classList.remove('hidden');
     updatePriceHud();
     playTone(side === 'call' ? 560 : 320, 0.08);
     armTradeCooldown();
+    syncTradeButtons();
     if (D6.Api && D6.Api.token()) {
       D6.Api.post('placeOrder', {
         id: res.trade.id,
@@ -756,17 +765,6 @@
 
   function bindModals() {
     $('closeHistorySheet').addEventListener('click', function () { closeModal('historySheet'); });
-    function onResultClose(e) { dismissResult(e); }
-    $('closeResult').addEventListener('click', onResultClose);
-    $('closeResult').addEventListener('pointerup', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      dismissResult(e);
-    });
-    $('resultModal').addEventListener('pointerdown', function (e) {
-      e.stopPropagation();
-      if (e.target === $('resultModal')) dismissResult(e);
-    });
     $('closeConvert').addEventListener('click', function () { closeModal('convertModal'); });
     $('btnConvertRecharge').addEventListener('click', function () {
       closeModal('convertModal');
@@ -919,7 +917,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=10').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=11').catch(function () { /* ignore */ });
     }
   }
 
@@ -989,25 +987,18 @@
       bindAdmin();
       bindInstall();
       loopParticles();
-      D6.Engine.onExpire = function (id) { settleTrade(id); };
+      D6.Engine.onSettled = applyOutcome;
       var lastHud = 0;
       D6.Chart.attach($('chartCanvas'), function (ts) {
-        var list = D6.Engine.getTrades ? D6.Engine.getTrades() : [];
-        var i;
-        for (i = 0; i < list.length; i++) {
-          if (list[i].expiresAt && Date.now() >= list[i].expiresAt) settleTrade(list[i].id);
-        }
         if ($('screenTrade').classList.contains('hidden') || document.hidden) return;
-        if (ts - lastHud < 50) return;
+        if (ts - lastHud < 80) return;
         lastHud = ts;
         updatePriceHud();
       });
       setInterval(function () {
-        var list = D6.Engine.getTrades ? D6.Engine.getTrades() : [];
-        list.forEach(function (t) {
-          if (t && t.expiresAt && Date.now() >= t.expiresAt) settleTrade(t.id);
-        });
-      }, 120);
+        var u = user();
+        if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
+      }, 100);
       document.addEventListener('click', function () {
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
         closeModeMenu();

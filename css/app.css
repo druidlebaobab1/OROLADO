@@ -141,6 +141,14 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .price-pill,.pnl-pill{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
 .chart-stage{flex:1;position:relative;min-height:0}
 #chartCanvas{width:100%;height:100%;display:block}
+.settle-stack{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:6px;width:max-content;max-width:92%}
+.settle-hud,.animate-bounce-subtle{pointer-events:none;padding:8px 14px;border-radius:999px;font-weight:900;font-size:.78rem;white-space:nowrap;
+  animation:hudBounce .4s ease, hudFade 2.5s ease forwards;letter-spacing:.02em;z-index:50}
+.settle-hud.win{background:linear-gradient(135deg,#00E676,#00C853);color:#04140a;box-shadow:0 0 22px rgba(0,230,118,.55)}
+.settle-hud.lose{background:linear-gradient(135deg,#4a242c,#2e171c);color:#ffcdd2;border:1px solid rgba(255,82,82,.35)}
+@keyframes hudBounce{0%{transform:translateY(8px) scale(.92)}60%{transform:translateY(-3px) scale(1.04)}100%{transform:translateY(0) scale(1)}}
+@keyframes hudFade{0%,72%{opacity:1}100%{opacity:0}}
 .order-hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none}
 .laser-timer{min-width:64px;text-align:center;padding:4px 10px;border-radius:999px;font-weight:900;font-size:.82rem;
   color:#0A0F1D;background:linear-gradient(135deg,#FFD700,#FFA000);border:1px solid rgba(255,255,255,.35);
@@ -216,10 +224,6 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   width:100%;max-width:480px;max-height:88dvh;overflow-y:auto;transform:translateY(18px);transition:.22s;position:relative}
 .modal-box.glass{background:rgba(21,30,48,.88);box-shadow:0 0 0 1px rgba(255,215,0,.14),0 20px 50px rgba(0,0,0,.5)}
 .modal-backdrop.active .modal-box{transform:translateY(0)}
-#resultModal{align-items:center;justify-content:center;background:rgba(0,0,0,.74);z-index:90;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);touch-action:none}
-#resultModal .modal-box{border-radius:18px;width:calc(100% - 32px);max-width:340px;margin:0;padding:22px 18px 18px;
-  transform:scale(.94);padding-bottom:18px}
-#resultModal.active .modal-box{transform:scale(1)}
 .trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
 .btn-close{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}

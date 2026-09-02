@@ -189,17 +189,31 @@
     }
   }
 
+  function expiryOf(t) {
+    return t.expiryTime || t.expiresAt;
+  }
+
+  function isLive(t) {
+    return t && !t.settled && Date.now() < expiryOf(t);
+  }
+
+  function isOpen(t) {
+    return t && !t.settled;
+  }
+
   function syncTime(t) {
-    t.timeLeft = Math.max(0, (t.expiresAt - Date.now()) / 1000);
+    var left = (expiryOf(t) - Date.now()) / 1000;
+    t.timeLeft = left > 0 ? left : 0;
     return t.timeLeft;
   }
 
   function soonestTrade() {
-    if (!trades.length) return null;
-    var best = trades[0];
+    var live = trades.filter(isLive);
+    if (!live.length) return null;
+    var best = live[0];
     var i;
-    for (i = 1; i < trades.length; i++) {
-      if (trades[i].expiresAt < best.expiresAt) best = trades[i];
+    for (i = 1; i < live.length; i++) {
+      if (expiryOf(live[i]) < expiryOf(best)) best = live[i];
     }
     return best;
   }
@@ -217,7 +231,10 @@
       entryPrice: t.entryPrice,
       payout: t.payout,
       startedAt: t.startedAt,
-      expiresAt: t.expiresAt,
+      startTime: t.startTime || t.startedAt,
+      expiryTime: expiryOf(t),
+      expiresAt: expiryOf(t),
+      settled: !!t.settled,
       mode: t.mode
     });
   }
@@ -231,6 +248,7 @@
     markets: markets,
     payoutLive: payoutLive,
     onExpire: null,
+    onSettled: null,
 
     getMarket: function (id) {
       ensureMarkets();
@@ -238,11 +256,22 @@
     },
 
     getTrade: function () {
-      return publicTrade(soonestTrade());
+      var live = trades.filter(isLive);
+      if (!live.length) return null;
+      var best = live[0];
+      var i;
+      for (i = 1; i < live.length; i++) {
+        if (expiryOf(live[i]) < expiryOf(best)) best = live[i];
+      }
+      return publicTrade(best);
     },
 
     getTrades: function () {
-      return trades.map(function (t) { return publicTrade(t); });
+      return trades.filter(isLive).map(function (t) { return publicTrade(t); });
+    },
+
+    liveCount: function () {
+      return trades.filter(isOpen).length;
     },
 
     refreshPayout: function (assetId, mode) {
@@ -263,13 +292,10 @@
       var i;
       for (i = 0; i < trades.length; i++) {
         syncTime(trades[i]);
-        if (now >= trades[i].expiresAt && !trades[i].expireNotified) {
-          trades[i].expireNotified = true;
-          if (D6.Engine.onExpire) D6.Engine.onExpire(trades[i].id);
-        }
       }
       var steer = soonestTrade();
-      applyTick(market, asset, steer && steer.assetId === market.id ? steer : null);
+      if (steer && steer.settled) steer = null;
+      applyTick(market, asset, steer && !steer.settled && steer.assetId === market.id ? steer : null);
     },
 
     placeOrder: function (user, opts) {
@@ -277,7 +303,7 @@
       if (!user || !D6.Store.current() || D6.Store.current().id !== user.id) {
         return { ok: false, reason: 'Session invalide' };
       }
-      if (trades.length >= MAX_OPEN) {
+      if (trades.filter(isOpen).length >= MAX_OPEN) {
         return { ok: false, reason: D6.I18N.t('maxPositions') };
       }
 
@@ -308,6 +334,7 @@
       var target = decideOutcome(user);
       var entry = market.price;
       var wall = Date.now();
+      var durationMs = duration * 1000;
       var seal = makeSeal(user.id + '|' + side + '|' + stake + '|' + entry.toFixed(4) + '|' + duration + '|' + orderSeq);
       var id = D6.uid();
 
@@ -317,15 +344,18 @@
         side: side,
         stake: stake,
         duration: duration,
+        durationMs: durationMs,
         timeLeft: duration,
         entryPrice: entry,
         payout: payout,
+        startTime: wall,
         startedAt: wall,
-        expiresAt: wall + duration * 1000,
+        expiryTime: wall + durationMs,
+        expiresAt: wall + durationMs,
         mode: user.mode,
         userId: user.id,
         seq: orderSeq,
-        expireNotified: false
+        settled: false
       };
       trades.push(t);
       intents[id] = { target: target, seal: seal, userId: user.id, seq: orderSeq };
@@ -349,28 +379,35 @@
         }
       } else {
         for (i = 0; i < trades.length; i++) {
-          if (now >= trades[i].expiresAt) { idx = i; break; }
+          if (!trades[i].settled && now >= expiryOf(trades[i])) { idx = i; break; }
         }
       }
       if (idx < 0) return null;
       var trade = trades[idx];
+      if (trade.settled) return null;
+      if (now < expiryOf(trade)) return null;
+      trade.settled = true;
+
       var intent = intents[trade.id];
-      if (!intent || user.id !== trade.userId || user.id !== intent.userId) return null;
-      if (now < trade.expiresAt - 30) {
-        trade.expireNotified = false;
+      if (user.id !== trade.userId) {
+        trades.splice(idx, 1);
+        delete intents[trade.id];
         return null;
       }
 
-      var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
-      if (expectedSeal !== intent.seal || intent.seq !== trade.seq) {
-        trade.expireNotified = false;
-        return null;
+      var shouldWin = !!(intent && intent.target === 'win');
+      if (intent) {
+        var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
+        if (expectedSeal !== intent.seal || intent.seq !== trade.seq) {
+          shouldWin = false;
+        }
+      } else {
+        shouldWin = false;
       }
 
       var market = markets[trade.assetId];
       var asset = C.ASSETS[trade.assetId];
       var isCall = trade.side === 'call';
-      var shouldWin = intent.target === 'win';
       var exitPrice;
 
       if (shouldWin) {
@@ -381,11 +418,15 @@
         exitPrice = trade.entryPrice + (isCall ? -1 : 1) * miss;
       }
 
-      market.price = exitPrice;
-      market.candle.c = exitPrice;
-      market.candle.h = Math.max(market.candle.h, exitPrice);
-      market.candle.l = Math.min(market.candle.l, exitPrice);
-      if (market.history.length) market.history[market.history.length - 1] = exitPrice;
+      if (market) {
+        market.price = exitPrice;
+        if (market.candle) {
+          market.candle.c = exitPrice;
+          market.candle.h = Math.max(market.candle.h, exitPrice);
+          market.candle.l = Math.min(market.candle.l, exitPrice);
+        }
+        if (market.history.length) market.history[market.history.length - 1] = exitPrice;
+      }
 
       var won = shouldWin;
       var payoutAmount = 0;
@@ -444,8 +485,29 @@
       var closed = publicTrade(trade);
       trades.splice(idx, 1);
       delete intents[trade.id];
-      if (!trades.length) D6.holdRemote = false;
+      if (!trades.filter(isLive).length) D6.holdRemote = false;
       return { trade: closed, position: position, won: won, net: net, exitPrice: exitPrice };
+    },
+
+    flushSettlements: function (user) {
+      if (!user || !trades.length) return [];
+      var now = Date.now();
+      var ids = [];
+      var i;
+      for (i = 0; i < trades.length; i++) {
+        if (!trades[i].settled && now >= expiryOf(trades[i])) ids.push(trades[i].id);
+      }
+      var results = [];
+      for (i = 0; i < ids.length; i++) {
+        var res = api.resolve(user, ids[i]);
+        if (res) {
+          results.push(res);
+          if (typeof api.onSettled === 'function') {
+            try { api.onSettled(res); } catch (e) { /* isolate HUD */ }
+          }
+        }
+      }
+      return results;
     },
 
     maxStakeHint: function (user) {

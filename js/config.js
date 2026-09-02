@@ -14,7 +14,7 @@
     DEMO_WIN_RATE: 0.82,
     REAL_WIN_RATE: 0.44,
     REAL_PAYOUT: 1.88,
-    MIN_ORDER_MS: 400,
+    MIN_ORDER_MS: 300,
     BRAND: 'OROLADO',
     DOMAIN: 'orolado.com',
     ADMIN_EMAIL: 'admin@orolado.com',

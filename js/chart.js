@@ -15,6 +15,12 @@
   var viewMax = 0;
   var onFrame = null;
 
+  function flushDue() {
+    var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
+    if (!u || !D6.Engine.flushSettlements) return [];
+    return D6.Engine.flushSettlements(u);
+  }
+
   function resize() {
     if (!canvas) return;
     var parent = canvas.parentElement;
@@ -153,17 +159,18 @@
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY };
   }
 
-  function drawEntry(map, trade, now, showTimer) {
-    if (!trade || !map) return;
+  function drawEntry(map, trade, now, badgeIndex, badgeCount) {
+    if (!trade || !map || trade.settled) return;
+    var remaining = (trade.expiryTime || trade.expiresAt) - Date.now();
+    if (remaining < 80) return;
     var ey = map.toY(trade.entryPrice);
     var pulse = 0.55 + 0.45 * Math.sin(now / 140);
     var col = trade.side === 'call' ? '#00E676' : '#FF1744';
-    if (showTimer) col = '#FFD700';
     ctx.save();
     ctx.strokeStyle = col;
-    ctx.shadowColor = showTimer ? 'rgba(255,215,0,' + (0.55 + pulse * 0.4) + ')' : 'rgba(255,215,0,0.25)';
-    ctx.shadowBlur = showTimer ? 14 : 6;
-    ctx.lineWidth = showTimer ? 1.7 : 1.1;
+    ctx.shadowColor = 'rgba(255,215,0,' + (0.35 + pulse * 0.25) + ')';
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 1.35;
     ctx.beginPath();
     ctx.moveTo(8, ey);
     ctx.lineTo(cssW - 8, ey);
@@ -175,9 +182,12 @@
     ctx.textAlign = 'left';
     ctx.fillText((trade.side === 'call' ? 'CALL ' : 'PUT ') + trade.entryPrice.toFixed(2), 16, ey - 8);
 
-    if (!showTimer) return;
-    var t = Math.max(0, trade.timeLeft).toFixed(1) + 's';
-    var bx = cssW / 2 - 38;
+    var secs = remaining / 1000;
+    if (secs < 0.15) return;
+    var label = secs.toFixed(1) + 's';
+    if (label === '0.0s' || label.charAt(0) === '-') return;
+    var offset = (badgeIndex - (badgeCount - 1) / 2) * 84;
+    var bx = cssW / 2 - 38 + offset;
     var by = Math.max(10, ey - 36);
     ctx.fillStyle = 'rgba(10,15,29,0.92)';
     ctx.strokeStyle = '#FFD700';
@@ -191,7 +201,7 @@
     ctx.fillStyle = '#FFD700';
     ctx.font = '800 12px "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(t, bx + 38, by + 16);
+    ctx.fillText(label, bx + 38, by + 16);
   }
 
   function roundRect(x, y, w, h, r) {
@@ -231,11 +241,13 @@
     var market = D6.Engine.getMarket(activeAsset);
     var trade = D6.Engine.getTrade();
     var allTrades = (D6.Engine.getTrades ? D6.Engine.getTrades() : (trade ? [trade] : [])).filter(function (ot) {
-      return ot && ot.assetId === activeAsset;
+      if (!ot || ot.settled || ot.assetId !== activeAsset) return false;
+      var exp = ot.expiryTime || ot.expiresAt;
+      return exp && Date.now() < exp;
     });
     var primary = allTrades[0] || null;
     allTrades.forEach(function (ot) {
-      if (!primary || ot.expiresAt < primary.expiresAt) primary = ot;
+      if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
     var pad = { t: 14, r: 62, b: 22, l: 8 };
     var w = cssW - pad.l - pad.r;
@@ -304,8 +316,8 @@
       ? drawCandles(pad, w, h, market, minP, maxP)
       : drawLine(pad, w, h, market, minP, maxP);
 
-    allTrades.forEach(function (ot) {
-      drawEntry(map, ot, now, primary && ot.id === primary.id);
+    allTrades.forEach(function (ot, i) {
+      drawEntry(map, ot, now, i, allTrades.length);
     });
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
     if (primary) {
@@ -321,6 +333,7 @@
     requestAnimationFrame(loop);
     if (document.hidden) {
       D6.Engine.tick(activeAsset);
+      flushDue();
       lastTs = ts;
       return;
     }
@@ -335,6 +348,7 @@
       D6.Engine.tick(activeAsset);
       tickAcc -= asset.tickMs;
     }
+    flushDue();
     if (payoutAcc > 2800) {
       D6.Engine.refreshPayout(activeAsset);
       payoutAcc = 0;
