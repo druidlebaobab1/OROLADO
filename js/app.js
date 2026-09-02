@@ -196,12 +196,25 @@
     pnl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + ' pts';
     pnl.className = 'pnl-value ' + (winning ? 'up' : 'down');
     var left = trade.timeLeft.toFixed(1) + 's';
-    $('timerSeconds').textContent = left;
     $('orderTimerVal').textContent = left;
-    $('timerProgress').style.width = (trade.timeLeft / trade.duration * 100) + '%';
-    $('timerPanel').classList.add('active');
     $('orderHud').classList.remove('hidden');
     if (trade.timeLeft <= 0) settleTrade();
+  }
+
+  function isMobileLayout() {
+    return !window.matchMedia('(min-width:860px)').matches;
+  }
+
+  function histLimit() {
+    return isMobileLayout() ? 2 : 16;
+  }
+
+  function orderRow(h) {
+    return '<div class="h-item ' + (h.won ? 'win' : 'lose') + '">' +
+      '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
+      '<div><div class="h-main">' + h.assetName + ' · ' + h.clock + '</div>' +
+      '<div class="h-time">' + D6.fmtFCFA(h.stake) + '</div></div>' +
+      '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.net >= 0 ? '+' : '') + D6.fmtFCFA(h.net) + '</span></div>';
   }
 
   function renderHistory() {
@@ -211,13 +224,7 @@
       feed.innerHTML = '<div class="empty-feed">' + t('noOrders') + '</div>';
       return;
     }
-    feed.innerHTML = u.positions.slice(0, 16).map(function (h) {
-      return '<div class="h-item ' + (h.won ? 'win' : 'lose') + '">' +
-        '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
-        '<div><div class="h-main">' + h.assetName + ' · ' + h.clock + '</div>' +
-        '<div class="h-time">' + D6.fmtFCFA(h.stake) + '</div></div>' +
-        '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.net >= 0 ? '+' : '') + D6.fmtFCFA(h.net) + '</span></div>';
-    }).join('');
+    feed.innerHTML = u.positions.slice(0, histLimit()).map(orderRow).join('');
   }
 
   function renderCommunity() {
@@ -226,10 +233,29 @@
       feed.innerHTML = '<div class="empty-feed">…</div>';
       return;
     }
-    feed.innerHTML = community.slice(0, 14).map(function (h) {
+    feed.innerHTML = community.slice(0, histLimit()).map(function (h) {
       return '<div class="comm-item"><div><span class="who">' + h.name + '</span> · ' + h.asset +
         '</div><span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.won ? '+' : '−') + D6.fmtFCFA(h.amount) + '</span></div>';
     }).join('');
+  }
+
+  function renderHistorySheet() {
+    var live = !$('communityFeed').classList.contains('hidden');
+    var el = $('historySheetFeed');
+    if (live) {
+      if (!community.length) { el.innerHTML = '<div class="empty-feed">…</div>'; return; }
+      el.innerHTML = community.slice(0, 40).map(function (h) {
+        return '<div class="comm-item"><div><span class="who">' + h.name + '</span> · ' + h.asset +
+          '</div><span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.won ? '+' : '−') + D6.fmtFCFA(h.amount) + '</span></div>';
+      }).join('');
+      return;
+    }
+    var u = user();
+    if (!u || !u.positions.length) {
+      el.innerHTML = '<div class="empty-feed">' + t('noOrders') + '</div>';
+      return;
+    }
+    el.innerHTML = u.positions.slice(0, 40).map(orderRow).join('');
   }
 
   function pushCommunityTick() {
@@ -241,6 +267,7 @@
       asset: Math.random() > 0.45 ? 'Volatility 100' : 'Stable Core'
     });
     if (community.length > 24) community.length = 24;
+    if (document.hidden) return;
     renderCommunity();
   }
 
@@ -248,7 +275,7 @@
     if (communityTimer) return;
     var i;
     for (i = 0; i < 5; i++) pushCommunityTick();
-    communityTimer = setInterval(pushCommunityTick, 2400);
+    communityTimer = setInterval(pushCommunityTick, 5000);
   }
 
   function maybeConvertPrompt(u, res) {
@@ -348,15 +375,23 @@
     var now = performance.now();
     if (now - lastClickAt < D6.CONFIG.MIN_ORDER_MS) return;
     lastClickAt = now;
+    setTradingLocked(true);
     var u = user();
-    if (!u) return;
+    if (!u) {
+      setTimeout(function () { setTradingLocked(false); }, 500);
+      return;
+    }
     stake = Math.min(D6.CONFIG.MAX_STAKE, Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake)));
     $('inputStake').value = stake;
+    updateBalance(false);
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
-    if (!res.ok) { toast(res.reason, 'err'); playTone(140, 0.18); return; }
-    setTradingLocked(true);
+    if (!res.ok) {
+      toast(res.reason, 'err');
+      playTone(140, 0.18);
+      setTimeout(function () { if (!D6.Engine.getTrade()) setTradingLocked(false); }, 500);
+      return;
+    }
     updateBalance(true);
-    $('timerPanel').classList.add('active');
     $('orderHud').classList.remove('hidden');
     playTone(side === 'call' ? 560 : 320, 0.12);
   }
@@ -483,6 +518,10 @@
         $('communityFeed').classList.toggle('hidden', !live);
       });
     });
+    $('btnHistMore').addEventListener('click', function () {
+      renderHistorySheet();
+      openModal('historySheet');
+    });
   }
 
   function bindModals() {
@@ -504,6 +543,7 @@
       setTimeout(function () { closeModal('depositModal'); }, 400);
     });
     $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
+    $('closeHistorySheet').addEventListener('click', function () { closeModal('historySheet'); });
     $('closeResult').addEventListener('click', function () { closeModal('resultModal'); });
     $('closeConvert').addEventListener('click', function () { closeModal('convertModal'); });
     $('btnConvertRecharge').addEventListener('click', function () {
@@ -613,7 +653,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=6').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=7').catch(function () { /* ignore */ });
     }
   }
 
@@ -644,6 +684,7 @@
   }
 
   function loopParticles() {
+    if (window.matchMedia('(max-width: 859px)').matches) return;
     var pCanvas = $('particlesCanvas');
     var pCtx = pCanvas.getContext('2d');
     var particles = [];
@@ -651,20 +692,19 @@
     window.addEventListener('resize', resizeP);
     resizeP();
     var i;
-    for (i = 0; i < 18; i++) {
+    for (i = 0; i < 8; i++) {
       particles.push({ x: Math.random() * pCanvas.width, y: Math.random() * pCanvas.height, s: Math.random() * 1.6 + 0.4, vy: Math.random() * 0.7 + 0.2, vx: (Math.random() - 0.5) * 0.25, a: Math.random() * 0.22 + 0.06, col: Math.random() > 0.45 ? '#FFA000' : '#FFD700' });
     }
     function loop() {
+      if (document.hidden) { requestAnimationFrame(loop); return; }
       pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-      if (!window.matchMedia('(max-width: 380px)').matches) {
-        particles.forEach(function (p) {
-          p.y += p.vy; p.x += p.vx;
-          if (p.y > pCanvas.height) { p.y = -6; p.x = Math.random() * pCanvas.width; }
-          pCtx.globalAlpha = p.a; pCtx.fillStyle = p.col;
-          pCtx.beginPath(); pCtx.arc(p.x, p.y, p.s, 0, Math.PI * 2); pCtx.fill();
-        });
-        pCtx.globalAlpha = 1;
-      }
+      particles.forEach(function (p) {
+        p.y += p.vy; p.x += p.vx;
+        if (p.y > pCanvas.height) { p.y = -6; p.x = Math.random() * pCanvas.width; }
+        pCtx.globalAlpha = p.a; pCtx.fillStyle = p.col;
+        pCtx.beginPath(); pCtx.arc(p.x, p.y, p.s, 0, Math.PI * 2); pCtx.fill();
+      });
+      pCtx.globalAlpha = 1;
       requestAnimationFrame(loop);
     }
     loop();
@@ -682,10 +722,14 @@
       bindAdmin();
       bindInstall();
       loopParticles();
-      D6.Chart.attach($('chartCanvas'), function () {
-        if (!$('screenTrade').classList.contains('hidden')) updatePriceHud();
+      var lastHud = 0;
+      D6.Chart.attach($('chartCanvas'), function (ts) {
+        if ($('screenTrade').classList.contains('hidden') || document.hidden) return;
+        if (ts - lastHud < 80) return;
+        lastHud = ts;
+        updatePriceHud();
       });
-      setInterval(updatePayoutUi, 500);
+      setInterval(updatePayoutUi, 1000);
       D6.Auth.ensureAdmin();
       if (location.hash.indexOf('#preview') === 0) {
         (async function () {

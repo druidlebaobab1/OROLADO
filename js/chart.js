@@ -18,11 +18,15 @@
     var parent = canvas.parentElement;
     if (!parent) return;
     var rect = parent.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    var mobile = (window.innerWidth || 0) <= 859;
+    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 2 : 2.5);
     cssW = Math.max(1, rect.width);
     cssH = Math.max(1, rect.height);
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
+    var bw = Math.round(cssW * dpr);
+    var bh = Math.round(cssH * dpr);
+    if (canvas.width === bw && canvas.height === bh) return;
+    canvas.width = bw;
+    canvas.height = bh;
     canvas.style.width = cssW + 'px';
     canvas.style.height = cssH + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -61,7 +65,7 @@
   }
 
   function drawCandles(pad, w, h, market, minP, maxP) {
-    var candles = market.candles.slice(-42).concat([market.candle]);
+    var candles = market.candles.slice(cssH < 200 ? -24 : -42).concat([market.candle]);
     if (candles.length < 2) return;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
@@ -84,7 +88,7 @@
       var bh = Math.max(1.5, y2 - y1);
       ctx.fillStyle = col;
       ctx.shadowColor = up ? 'rgba(0,230,118,0.55)' : 'rgba(255,23,68,0.5)';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = cssH < 200 ? 0 : 10;
       ctx.fillRect(x - cw / 2, y1, cw, bh);
       ctx.shadowBlur = 0;
     }
@@ -223,7 +227,7 @@
     var series;
     if (asset.chart === 'candle') {
       series = [];
-      market.candles.slice(-42).concat([market.candle]).forEach(function (c) {
+      market.candles.slice(cssH < 200 ? -24 : -42).concat([market.candle]).forEach(function (c) {
         series.push(c.h, c.l);
       });
     } else {
@@ -272,6 +276,8 @@
 
   function loop(ts) {
     if (!running) return;
+    requestAnimationFrame(loop);
+    if (document.hidden) { lastTs = ts; return; }
     if (!lastTs) lastTs = ts;
     var dt = Math.min(50, ts - lastTs);
     lastTs = ts;
@@ -290,16 +296,28 @@
 
     drawFrame(ts);
     if (onFrame) onFrame(ts);
-    requestAnimationFrame(loop);
   }
 
   D6.Chart = {
     attach: function (el, callback) {
       canvas = el;
-      ctx = canvas.getContext('2d', { alpha: false });
+      ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
       onFrame = callback;
       resize();
-      window.addEventListener('resize', resize);
+      window.addEventListener('resize', function () { requestAnimationFrame(resize); });
+      if (window.visualViewport) {
+        visualViewport.addEventListener('resize', function () { requestAnimationFrame(resize); });
+      }
+      if (window.ResizeObserver && canvas.parentElement) {
+        var roWait = 0;
+        new ResizeObserver(function () {
+          if (roWait) return;
+          roWait = requestAnimationFrame(function () {
+            roWait = 0;
+            resize();
+          });
+        }).observe(canvas.parentElement);
+      }
     },
     setAsset: function (id) {
       activeAsset = id;

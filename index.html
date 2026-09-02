@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=6">
+  <link rel="stylesheet" href="css/app.css?v=7">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -132,26 +132,26 @@
 
         <div class="chart-card glass">
           <div class="chart-meta">
-            <div>
+            <div class="chart-meta-left">
               <span class="live-dot"></span>
               <span class="asset-live-name" id="assetLiveName">VOLATILITY 100 INDEX</span>
+              <span class="asset-live-tag" id="assetLiveTag">Haute volatilité</span>
             </div>
-            <span class="asset-live-tag" id="assetLiveTag">Haute volatilité</span>
+            <div class="chart-pills">
+              <div class="price-pill">
+                <span class="strip-label" data-i18n="priceNow">Prix actuel</span>
+                <span class="strip-price" id="currentPrice">13 666.42</span>
+              </div>
+              <div class="pnl-pill">
+                <span class="strip-label" data-i18n="pnlLive">P&amp;L live</span>
+                <span class="pnl-value idle" id="livePnl">—</span>
+              </div>
+            </div>
           </div>
           <div class="chart-stage">
             <canvas id="chartCanvas"></canvas>
             <div class="order-hud hidden" id="orderHud">
               <div class="laser-timer" id="orderTimerVal">10.0s</div>
-            </div>
-            <div class="hud glass">
-              <div>
-                <div class="strip-label" data-i18n="priceNow">Prix actuel</div>
-                <div class="strip-price" id="currentPrice">13 666.42</div>
-              </div>
-              <div style="text-align:right">
-                <div class="strip-label" data-i18n="pnlLive">P&amp;L live</div>
-                <div class="pnl-value idle" id="livePnl">—</div>
-              </div>
             </div>
           </div>
         </div>
@@ -160,6 +160,7 @@
           <div class="hist-tabs">
             <button type="button" class="hist-tab on" data-feed="mine" data-i18n="myOrders">Mes ordres</button>
             <button type="button" class="hist-tab" data-feed="live" data-i18n="community">Trades Communauté (Live)</button>
+            <button type="button" class="hist-more" id="btnHistMore" data-i18n="seeAll">Voir tout</button>
           </div>
           <div class="history-feed" id="historyFeed"></div>
           <div class="history-feed hidden" id="communityFeed"></div>
@@ -173,6 +174,11 @@
           </div>
           <div class="stake-line">
             <input id="inputStake" type="number" inputmode="numeric" value="1000" min="200" max="10000" step="100" placeholder="FCFA">
+            <div class="win-preview">
+              <div class="label" data-i18n="estYield">Rendement estimé</div>
+              <div class="amount" id="previewGain">1 880 FCFA</div>
+              <div class="mult" id="previewMult">×1.88</div>
+            </div>
           </div>
           <div class="quick-row">
             <button type="button" class="qbtn" data-s="500">500</button>
@@ -181,12 +187,7 @@
             <button type="button" class="qbtn" data-a="x2">×2</button>
             <button type="button" class="qbtn" data-a="half">÷2</button>
           </div>
-          <div class="win-preview">
-            <div class="label" data-i18n="estYield">Rendement estimé</div>
-            <div class="amount" id="previewGain">1 880 FCFA</div>
-            <div class="mult" id="previewMult">Gain +88%  ·  ×1.88</div>
-          </div>
-          <div class="timer-panel" id="timerPanel">
+          <div class="timer-panel" id="timerPanel" hidden>
             <div class="timer-num" id="timerSeconds">10.0s</div>
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
@@ -333,6 +334,14 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="historySheet">
+    <div class="modal-box glass sheet">
+      <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
+      <div class="modal-title" data-i18n="histSheet">Historique des ordres</div>
+      <div class="history-feed sheet-feed" id="historySheetFeed"></div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="resultModal">
     <div class="modal-box glass">
       <div class="result-box" id="resultBox">
@@ -345,13 +354,13 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=6"></script>
-  <script src="js/i18n.js?v=6"></script>
-  <script src="js/store.js?v=6"></script>
-  <script src="js/api.js?v=6"></script>
-  <script src="js/auth.js?v=6"></script>
-  <script src="js/engine.js?v=6"></script>
-  <script src="js/chart.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="js/i18n.js?v=7"></script>
+  <script src="js/store.js?v=7"></script>
+  <script src="js/api.js?v=7"></script>
+  <script src="js/auth.js?v=7"></script>
+  <script src="js/engine.js?v=7"></script>
+  <script src="js/chart.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>
