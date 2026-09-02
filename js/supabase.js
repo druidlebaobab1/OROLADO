@@ -121,10 +121,83 @@
     applySession(user, vault);
     var sess = await sb.auth.getSession();
     if (sess && sess.data && sess.data.session && D6.Api) D6.Api.setToken(sess.data.session.access_token);
+    startRealtime(pid);
     return { ok: true, user: D6.Store.getUser(pid), vault: vault };
   }
 
+  var rtChannel = null;
+  var pollTimer = 0;
+
+  function applyIncomingVault(vault, profile) {
+    var u = D6.Store.current();
+    if (!u || !uuidish(u.id) || !vault) return;
+    var live = D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount();
+    var next = {
+      demo: D6.Store.demoBalance(u),
+      real: D6.Store.realBalance ? D6.Store.realBalance(u) : 0
+    };
+    if (!(live && u.mode === 'demo')) next.demo = Number(vault.demo);
+    if (!(live && u.mode === 'real')) next.real = Number(vault.real);
+    if (Number(vault.real) > next.real) next.real = Number(vault.real);
+    if (profile) {
+      if (profile.display_name) u.displayName = profile.display_name;
+      if (profile.phone) u.phone = profile.phone;
+      if (profile.country_code) u.countryCode = profile.country_code;
+    }
+    D6.holdPull = true;
+    D6.Store.importRemote(u, next);
+    D6.holdPull = false;
+    if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount(next);
+  }
+
+  function stopRealtime() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = 0;
+    }
+    if (rtChannel && client) {
+      try { client.removeChannel(rtChannel); } catch (e) { /* ignore */ }
+    }
+    rtChannel = null;
+  }
+
+  function startRealtime(userId) {
+    var sb = getClient();
+    if (!sb || !userId || !uuidish(userId)) return;
+    stopRealtime();
+    rtChannel = sb.channel('oro-live-' + userId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vaults', filter: 'user_id=eq.' + userId }, function (payload) {
+        var row = payload.new;
+        if (row) applyIncomingVault({ demo: row.demo, real: row.real });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'id=eq.' + userId }, function (payload) {
+        var row = payload.new;
+        if (!row) return;
+        var u = D6.Store.current();
+        applyIncomingVault({
+          demo: D6.Store.demoBalance(u),
+          real: D6.Store.realBalance ? D6.Store.realBalance(u) : 0
+        }, row);
+      })
+      .subscribe();
+    pollTimer = setInterval(function () { pullVault(); }, 4000);
+  }
+
+  async function pullVault() {
+    var sb = getClient();
+    var user = D6.Store.current();
+    if (!sb || !user || !uuidish(user.id) || D6.holdPull) return null;
+    var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', user.id).maybeSingle();
+    var profRes = await sb.from('profiles').select('display_name,phone,country_code,mode').eq('id', user.id).maybeSingle();
+    if (vaultRes && vaultRes.data) {
+      applyIncomingVault(vaultRes.data, profRes && profRes.data);
+      return vaultRes.data;
+    }
+    return null;
+  }
+
   function queueSync() {
+    if (D6.holdPull) return;
     if (syncTimer) clearTimeout(syncTimer);
     syncTimer = setTimeout(function () {
       syncTimer = 0;
@@ -133,6 +206,7 @@
   }
 
   function syncNow() {
+    if (D6.holdPull) return;
     var sb = getClient();
     var user = D6.Store.current();
     if (!sb || !user || !uuidish(user.id)) return;
@@ -215,9 +289,17 @@
     },
 
     signOut: async function () {
+      stopRealtime();
       var sb = getClient();
-      if (sb) await sb.auth.signOut();
+      if (sb) {
+        try { await sb.auth.signOut({ scope: 'local' }); } catch (e) { /* ignore */ }
+      }
+      client = null;
     },
+
+    pullVault: pullVault,
+    startRealtime: startRealtime,
+    stopRealtime: stopRealtime,
 
     changePassword: async function (next) {
       var sb = getClient();

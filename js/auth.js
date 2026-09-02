@@ -183,15 +183,29 @@
       return { ok: true };
     },
 
-    logout: function () {
-      var user = D6.Store.current();
-      if (user) D6.Store.addSession(user, 'déconnexion');
+    logout: async function () {
+      D6.holdRemote = true;
+      D6.holdPull = true;
+      if (D6.Supabase && D6.Supabase.stopRealtime) D6.Supabase.stopRealtime();
+      if (D6.Supabase && D6.Supabase.signOut) {
+        try { await D6.Supabase.signOut(); } catch (e) { /* ignore */ }
+      }
+      try {
+        var keys = [];
+        var i;
+        for (i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && (k.indexOf('sb-') === 0 || k.indexOf('supabase') >= 0)) keys.push(k);
+        }
+        keys.forEach(function (k) { localStorage.removeItem(k); });
+      } catch (e4) { /* ignore */ }
       D6.Store.clearSession();
       if (D6.Api && D6.Api.setToken) D6.Api.setToken('');
       try { sessionStorage.removeItem('oro_token'); } catch (e1) { /* ignore */ }
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
       try { localStorage.removeItem('oro_token'); } catch (e3) { /* ignore */ }
-      if (D6.Supabase && D6.Supabase.signOut) D6.Supabase.signOut();
+      D6.holdRemote = false;
+      D6.holdPull = false;
     },
 
     changePassword: async function (user, current, next) {

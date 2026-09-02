@@ -32,6 +32,23 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{border-color:var(--red);color:#ffb3c0}
 .toast.ok{border-color:var(--green);color:#b6ffd6}
+#outcomeToast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);
+  z-index:2147483646;display:none;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;
+  color:#fff;font-weight:800;font-size:.92rem;line-height:1.25;pointer-events:none;max-width:92vw;width:max-content;
+  box-shadow:0 12px 28px rgba(0,0,0,.45)}
+#outcomeToast.show{display:flex}
+#outcomeToast.win{background:#059669;border:1px solid #34d399;box-shadow:0 0 24px rgba(5,150,105,.7),0 10px 25px rgba(0,0,0,.5)}
+#outcomeToast.lose{background:#4b1d24;border:1px solid #7f1d1d}
+.timer-panel{margin:6px 0 4px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(10,15,29,.65);text-align:center}
+.timer-panel.active{display:block}
+.timer-num{font-size:1.05rem;font-weight:900;color:#FFE082;font-variant-numeric:tabular-nums}
+.timer-msg{font-size:.78rem;font-weight:800;margin-top:2px;min-height:1em}
+.timer-panel.win .timer-msg{color:var(--green)}
+.timer-panel.lose .timer-msg{color:#ff8a9b}
+.timer-track{height:4px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden}
+.timer-fill{height:100%;width:0;background:linear-gradient(90deg,#FFD700,#FFA000)}
+.bal-stack{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.bal-sub{font-size:.62rem;font-weight:700;color:var(--muted);letter-spacing:.02em}
 
 .brand-lockup{display:flex;flex-direction:column;align-items:center;gap:4px}
 .brand-lockup.mini{flex-direction:row;gap:6px;flex-shrink:0;min-width:0}
@@ -289,7 +306,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   z-index:90;padding:18px 14px calc(20px + var(--safe));transform:translateX(110%);transition:.25s;overflow-y:auto;backdrop-filter:blur(18px);
   display:flex;flex-direction:column}
 .drawer.on{transform:translateX(0)}
-.drawer .btn-danger{margin-top:auto;position:sticky;bottom:0}
+.drawer .btn-danger{margin-top:auto;position:sticky;bottom:0;z-index:6;min-height:46px}
 [dir=rtl] .drawer{right:auto;left:0;border-left:0;border-right:1px solid var(--line);transform:translateX(-110%)}
 [dir=rtl] .drawer.on{transform:translateX(0)}
 .prof-name{font-weight:900;font-size:1.05rem}

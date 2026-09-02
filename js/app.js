@@ -47,7 +47,6 @@
       if (outcomeToastSeen[tradeId]) return;
       outcomeToastSeen[tradeId] = true;
     }
-    console.log('TRADE SETTLED -> TRIGGERING TOAST:', { isWin: isWin, payout: payout });
     var el = document.getElementById('outcomeToast');
     if (!el) {
       el = document.createElement('div');
@@ -56,71 +55,48 @@
       el.setAttribute('role', 'status');
       document.body.appendChild(el);
     }
-    el.setAttribute('popover', 'manual');
-    el.textContent = '';
+    el.removeAttribute('popover');
+    var amount = Math.abs(Number(payout) || 0);
+    el.className = 'show ' + (isWin ? 'win' : 'lose');
+    el.innerHTML = '';
     var icon = document.createElement('span');
     icon.textContent = isWin ? '✅' : '❌';
     var text = document.createElement('span');
     text.textContent = isWin
-      ? ('PROFIT RÉALISÉ : +' + D6.fmtFCFA(Math.abs(Number(payout) || 0)))
-      : 'POSITION EXPIRÉE (0 FCFA)';
+      ? ('GAGNÉ · +' + D6.fmtFCFA(amount))
+      : ('PERDU · ' + D6.fmtFCFA(0));
     el.appendChild(icon);
     el.appendChild(text);
-    var bg = isWin ? '#059669' : '#4b1d24';
-    el.style.cssText = [
-      'position:fixed',
-      'inset:unset',
-      'top:25px',
-      'left:50%',
-      'right:auto',
-      'bottom:auto',
-      'transform:translateX(-50%)',
-      '-webkit-transform:translateX(-50%)',
-      'z-index:999999',
-      'pointer-events:none',
-      'background-color:' + bg,
-      'color:#ffffff',
-      'padding:12px 24px',
-      'border-radius:9999px',
-      'font-weight:bold',
-      'font-size:14px',
-      'line-height:1.3',
-      'box-shadow:' + (isWin ? '0 0 24px rgba(5,150,105,0.75),0 10px 25px rgba(0,0,0,0.5)' : '0 10px 25px rgba(0,0,0,0.5)'),
-      'border:' + (isWin ? '1px solid #34d399' : '1px solid #7f1d1d'),
-      'display:flex',
-      'align-items:center',
-      'gap:8px',
-      'opacity:1',
-      'visibility:visible',
-      'max-width:90vw',
-      'width:max-content',
-      'font-family:inherit',
-      'margin:0'
-    ].join(';');
-    el.style.setProperty('position', 'fixed', 'important');
-    el.style.setProperty('z-index', '999999', 'important');
-    el.style.setProperty('top', '25px', 'important');
-    el.style.setProperty('left', '50%', 'important');
-    el.style.setProperty('transform', 'translateX(-50%)', 'important');
-    el.style.setProperty('display', 'flex', 'important');
-    el.style.setProperty('opacity', '1', 'important');
-    el.style.setProperty('visibility', 'visible', 'important');
-    try {
-      if (typeof el.showPopover === 'function' && !el.matches(':popover-open')) el.showPopover();
-    } catch (err) { /* already open or unsupported */ }
+    el.style.display = 'flex';
+    var panel = $('timerPanel');
+    if (panel) {
+      panel.hidden = false;
+      panel.classList.add('active');
+      panel.classList.toggle('win', !!isWin);
+      panel.classList.toggle('lose', !isWin);
+      if ($('timerResult')) $('timerResult').textContent = text.textContent;
+      if ($('timerSeconds')) $('timerSeconds').textContent = isWin ? 'GAGNÉ' : 'PERDU';
+    }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
-      try {
-        if (typeof el.hidePopover === 'function' && el.matches(':popover-open')) el.hidePopover();
-      } catch (err2) { /* ignore */ }
-      el.textContent = '';
+      el.className = '';
       el.style.display = 'none';
-    }, 3000);
+      el.textContent = '';
+      if (panel && !(D6.Engine.getTrade && D6.Engine.getTrade())) {
+        panel.hidden = true;
+        panel.classList.remove('active', 'win', 'lose');
+        if ($('timerResult')) $('timerResult').textContent = '';
+      }
+    }, 3500);
   }
 
   document.addEventListener('orolado-trade-settled', function (ev) {
     var d = (ev && ev.detail) || {};
-    showOutcomeToast(!!d.isWin, d.isWin ? (d.net != null ? d.net : d.payout) : 0, d.tradeId);
+    var amount = d.isWin ? (d.net != null ? d.net : d.payout) : 0;
+    showOutcomeToast(!!d.isWin, amount, d.tradeId);
+    updateBalance(true);
+    patchHistorySoon();
+    syncTradeButtons();
   });
 
   function clearErrors() {
@@ -316,7 +292,15 @@
   function updateBalance(flash) {
     var u = user();
     if (!u) return;
-    $('balanceDisplay').textContent = D6.fmtFCFA(D6.Store.balanceOf(u));
+    var demo = D6.Store.demoBalance(u);
+    var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    var active = u.mode === 'real' ? real : demo;
+    $('balanceDisplay').textContent = D6.fmtFCFA(active);
+    if ($('balanceAlt')) {
+      $('balanceAlt').textContent = u.mode === 'real'
+        ? ('Démo ' + D6.fmtFCFA(demo))
+        : ('Réel ' + D6.fmtFCFA(real));
+    }
     if (flash) {
       var card = $('balanceCard');
       card.classList.remove('flash');
@@ -374,9 +358,22 @@
     if (!trade) {
       pnl.textContent = '—';
       pnl.className = 'pnl-value idle';
-      if ($('timerPanel')) $('timerPanel').classList.remove('active');
       return;
     }
+    var left = trade.timeLeft || 0;
+    var panel = $('timerPanel');
+    if (panel) {
+      panel.hidden = false;
+      panel.classList.add('active');
+      panel.classList.remove('win', 'lose');
+      if ($('timerSeconds')) $('timerSeconds').textContent = left.toFixed(1) + 's';
+      if ($('timerResult')) $('timerResult').textContent = '';
+      if ($('timerProgress') && trade.duration) {
+        var pct = Math.max(0, Math.min(100, (left / trade.duration) * 100));
+        $('timerProgress').style.width = pct + '%';
+      }
+    }
+    if (left <= 0.05 && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
     var diff = market.price - trade.entryPrice;
     var winning = (trade.side === 'call' && diff > 0) || (trade.side === 'put' && diff < 0);
     pnl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + ' pts';
@@ -569,13 +566,9 @@
     }
     var u = user();
     if (D6.Api && D6.Api.token() && id) {
-      D6.Api.post('settleOrder', { orderId: id }).then(function (remote) {
-        if (remote && remote.ok && remote.server && remote.vault && u) {
-          D6.Store.importRemote(u, remote.vault);
-          updateBalance(true);
-        }
-      });
+      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice });
     }
+    if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
   }
 
   function execute(side) {
@@ -610,8 +603,6 @@
         side: side,
         duration: u.duration,
         mode: u.mode
-      }).then(function (remote) {
-        if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault);
       });
     }
   }
@@ -739,12 +730,25 @@
 
   async function refreshRemoteVault() {
     var u = user();
+    if (!u) return;
+    if (D6.Supabase && D6.Supabase.pullVault) {
+      await D6.Supabase.pullVault();
+    }
+    if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
       if (remote && remote.ok && remote.vault && u) {
-        D6.Store.importRemote(u, remote.vault);
+        var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+        var phpReal = Number(remote.vault.real || 0);
+        var phpDemo = Number(remote.vault.demo || 0);
+        var merged = {
+          demo: Math.max(D6.Store.demoBalance(u), phpDemo),
+          real: Math.max(localReal, phpReal)
+        };
+        D6.holdPull = true;
+        D6.Store.importRemote(u, merged);
+        D6.holdPull = false;
         updateBalance(false);
-        if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
       }
     }
   }
@@ -1012,18 +1016,21 @@
       updateBalance(true);
       toast(t('withdrawBtn'), 'ok');
     });
-    function doLogout(e) {
+    async function doLogout(e) {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
       }
       closeDrawer();
-      if (D6.Auth.signOut) D6.Auth.signOut();
-      else D6.Auth.logout();
       D6.Chart.stop();
+      if (D6.Auth.logout) await D6.Auth.logout();
+      else if (D6.Auth.signOut) await D6.Auth.signOut();
       showScreen('screenAuth');
     }
-    $('btnLogout').addEventListener('click', doLogout);
+    var logoutBtn = $('btnLogout');
+    logoutBtn.addEventListener('click', doLogout, true);
+    logoutBtn.addEventListener('pointerup', doLogout);
     document.querySelectorAll('.modal-backdrop').forEach(function (b) {
       b.addEventListener('click', function (e) { if (e.target === b) b.classList.remove('active'); });
     });
@@ -1082,7 +1089,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=20').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=21').catch(function () { /* ignore */ });
     }
   }
 
@@ -1113,6 +1120,7 @@
     requestAnimationFrame(D6.Chart.resize);
     refreshRemoteVault();
     checkDepositReturn();
+    if (u && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
   }
 
   function loopParticles() {
@@ -1143,6 +1151,11 @@
   }
 
   D6.App = {
+    onRemoteAccount: function () {
+      updateBalance(true);
+      fillProfile();
+    },
+    updateBalance: updateBalance,
     boot: function () {
       lockGestures();
       fillLangBars();

@@ -237,6 +237,7 @@ if ($action === 'adjust') {
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   $db['vault'][$uid]['real'] = max(0, (int) $db['vault'][$uid]['real'] + $delta);
   save_db($file, $db);
+  supabase_credit_real((string) $uid, $delta);
   echo json_encode(['ok' => true, 'server' => true, 'real' => $db['vault'][$uid]['real']]);
   exit;
 }

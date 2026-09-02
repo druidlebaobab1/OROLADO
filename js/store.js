@@ -143,11 +143,11 @@
       vault: vault
     });
     localStorage.setItem(KEY, JSON.stringify({ enc: xorCrypt(payload, false), sum: fnv(payload) }));
-    if (!skipRemote && !D6.holdRemote && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
+    if (!skipRemote && !D6.holdRemote && !D6.holdPull && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
       var u = db.users[db.session.userId];
       D6.Api.post('upsert', { user: publicUsers[u.id], vault: vault[u.id] });
     }
-    if (!skipRemote && D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
+    if (!skipRemote && !D6.holdPull && D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
   }
 
   D6.Store = {

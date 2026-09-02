@@ -209,9 +209,10 @@ function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $re
   $qs = http_build_query([
     'checkout' => [
       'email' => $aliasEmail,
+      'name' => 'Client Orolado',
       'phone' => $aliasPhone,
-      'custom_price' => $amount,
-      'note' => $ref,
+      'billing_address' => ['country' => 'CI'],
+      'custom' => ['ref' => $ref],
     ],
     'custom_price' => $amount,
     'amount' => $amount,
@@ -417,6 +418,32 @@ function maketou_find_url($node): string {
   return '';
 }
 
+function maketou_collect_urls($node, array &$urls): void {
+  if (is_string($node) && preg_match('#^https?://#i', $node)) {
+    $urls[] = $node;
+    return;
+  }
+  if (!is_array($node)) return;
+  foreach ($node as $v) maketou_collect_urls($v, $urls);
+}
+
+function maketou_pick_checkout_url($node, string $fallback): string {
+  $urls = [];
+  maketou_collect_urls($node, $urls);
+  foreach ($urls as $u) {
+    if (stripos($u, 'paystral.com') !== false) return $u;
+  }
+  foreach ($urls as $u) {
+    $low = strtolower($u);
+    if (str_contains($low, '/checkout/custom') || str_contains($low, '/checkout/buy') || str_contains($low, 'app.paystral')) return $u;
+  }
+  foreach ($urls as $u) {
+    $low = strtolower($u);
+    if (str_contains($low, '/checkout') && !preg_match('#/products/[^/]+$#', parse_url($u, PHP_URL_PATH) ?: '')) return $u;
+  }
+  return $fallback;
+}
+
 function maketou_http_json(string $url, string $key, array $body): array {
   $payload = json_encode($body, JSON_UNESCAPED_UNICODE);
   if ($payload === false) return ['ok' => false, 'status' => 0, 'json' => null, 'raw' => ''];
@@ -463,23 +490,43 @@ function maketou_create_checkout(array $opts): array {
   if ($aliasEmail === '' || !str_contains($aliasEmail, '@privatesync.net')) {
     $aliasEmail = maketou_alias_email();
   }
+  $aliasPhone = (string) ($opts['phone'] ?? '');
+  if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
   $amount = (int) ($opts['amount'] ?? 0);
   $ref = (string) ($opts['ref'] ?? '');
   $key = maketou_api_key();
   if ($key === '') {
     return ['ok' => false, 'reason' => 'Checkout Maketou non configuré'];
   }
+  $direct = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, (string) ($opts['operator'] ?? 'wave'));
   $body = [
     'product_id' => maketou_product_id(),
     'custom_price' => $amount,
     'amount' => $amount,
     'currency' => 'XOF',
     'request_id' => $ref,
+    'skip_cart' => true,
     'customer' => [
       'email' => $aliasEmail,
+      'name' => 'Client Orolado',
+      'first_name' => 'Client',
+      'last_name' => 'Orolado',
+      'phone' => $aliasPhone,
+      'whatsapp' => $aliasPhone,
+    ],
+    'checkout_data' => [
+      'email' => $aliasEmail,
+      'name' => 'Client Orolado',
+      'phone' => $aliasPhone,
+      'billing_address' => ['country' => 'CI'],
+      'custom' => ['ref' => $ref],
     ],
     'email' => $aliasEmail,
+    'phone' => $aliasPhone,
+    'name' => 'Client Orolado',
     'success_url' => (string) ($opts['returnUrl'] ?? ''),
+    'cancel_url' => (string) ($opts['returnUrl'] ?? ''),
+    'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
     'metadata' => [
       'ref' => $ref,
       'orolado' => true,
@@ -487,9 +534,18 @@ function maketou_create_checkout(array $opts): array {
   ];
   $res = maketou_http_json(maketou_api_url(), $key, $body);
   $url = '';
-  if (is_array($res['json'])) $url = maketou_find_url($res['json']);
+  if (is_array($res['json'])) $url = maketou_pick_checkout_url($res['json'], '');
   if ($url === '' && $res['raw'] !== '') {
     if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
+  }
+  $path = strtolower((string) (parse_url((string) $url, PHP_URL_PATH) ?: ''));
+  $lowUrl = strtolower((string) $url);
+  $isProductPage = $url !== '' && (
+    preg_match('#/products/[^/]+/?$#', $path)
+    || (str_contains($lowUrl, '/products/welcome') && !str_contains($lowUrl, '/checkout'))
+  );
+  if ($url === '' || ($isProductPage && !str_contains($lowUrl, 'paystral.com'))) {
+    $url = $direct;
   }
   if ($url !== '') return ['ok' => true, 'url' => $url, 'checkout_url' => $url];
   $reason = 'Checkout Maketou indisponible';

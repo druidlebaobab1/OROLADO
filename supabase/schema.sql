@@ -117,13 +117,13 @@ security definer
 set search_path = public
 as $$
 begin
-  if p_amount is null or p_amount <= 0 then
+  if p_amount is null or p_amount = 0 then
     return;
   end if;
   insert into public.vaults (user_id, demo, real)
-  values (p_user, 50000, p_amount)
+  values (p_user, 50000, greatest(0, p_amount))
   on conflict (user_id) do update
-    set real = public.vaults.real + excluded.real,
+    set real = greatest(0, public.vaults.real + p_amount),
         updated_at = now();
 end;
 $$;
@@ -131,3 +131,20 @@ $$;
 revoke all on function public.credit_real(uuid, bigint) from public;
 revoke all on function public.credit_real(uuid, bigint) from anon, authenticated;
 grant execute on function public.credit_real(uuid, bigint) to service_role;
+
+alter table public.profiles replica identity full;
+alter table public.vaults replica identity full;
+alter table public.orders replica identity full;
+
+do $$ begin
+  alter publication supabase_realtime add table public.profiles;
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.vaults;
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.orders;
+exception when duplicate_object then null;
+end $$;
