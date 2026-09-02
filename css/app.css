@@ -121,14 +121,29 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .price-pill,.pnl-pill{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
 .chart-stage{flex:1;position:relative;min-height:0}
 #chartCanvas{width:100%;height:100%;display:block}
-.settle-stack{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;
-  display:flex;flex-direction:column;align-items:center;gap:6px;width:max-content;max-width:92%}
-.settle-hud,.animate-bounce-subtle{pointer-events:none;padding:8px 14px;border-radius:999px;font-weight:900;font-size:.78rem;white-space:nowrap;
-  animation:hudBounce .4s ease, hudFade 2.5s ease forwards;letter-spacing:.02em;z-index:50}
-.settle-hud.win{background:linear-gradient(135deg,#00E676,#00C853);color:#04140a;box-shadow:0 0 22px rgba(0,230,118,.55)}
-.settle-hud.lose{background:linear-gradient(135deg,#4a242c,#2e171c);color:#ffcdd2;border:1px solid rgba(255,82,82,.35)}
-@keyframes hudBounce{0%{transform:translateY(8px) scale(.92)}60%{transform:translateY(-3px) scale(1.04)}100%{transform:translateY(0) scale(1)}}
-@keyframes hudFade{0%,72%{opacity:1}100%{opacity:0}}
+.settle-portal{position:fixed;inset:0;pointer-events:none;z-index:99999}
+.settle-hud{
+  position:fixed !important;z-index:99999 !important;
+  top:calc(env(safe-area-inset-top, 0px) + 85px);left:50%;
+  transform:translate(-50%, 0) translate3d(0, 0, 999px) !important;
+  -webkit-transform:translate(-50%, 0) translate3d(0, 0, 999px) !important;
+  pointer-events:none;
+  max-width:calc(100vw - 24px);padding:12px 16px;border-radius:14px;
+  font-weight:800;font-size:.72rem;letter-spacing:.02em;text-align:center;line-height:1.35;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;
+  animation:hudFade 2.2s ease forwards}
+.settle-hud.win{
+  color:#C8FFE0;
+  background:linear-gradient(180deg,rgba(8,48,32,.97),rgba(4,22,16,.98));
+  border:1px solid rgba(0,230,118,.85);
+  box-shadow:0 0 0 1px rgba(0,230,118,.28),0 0 28px rgba(0,230,118,.42),0 10px 28px rgba(0,0,0,.45)}
+.settle-hud.win .hud-amt{display:block;margin-top:2px;font-size:.9rem;font-weight:900;color:#69F0AE;
+  font-variant-numeric:tabular-nums;text-shadow:0 0 12px rgba(0,230,118,.45)}
+.settle-hud.lose{
+  color:#B0BEC5;font-size:.68rem;font-weight:800;letter-spacing:.04em;
+  background:rgba(12,16,24,.88);border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 20px rgba(0,0,0,.35);padding:8px 14px;border-radius:999px}
+@keyframes hudFade{0%{opacity:0}10%{opacity:1}78%{opacity:1}100%{opacity:0}}
 .order-hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none}
 .laser-timer{min-width:64px;text-align:center;padding:4px 10px;border-radius:999px;font-weight:900;font-size:.82rem;
   color:#0A0F1D;background:linear-gradient(135deg,#FFD700,#FFA000);border:1px solid rgba(255,255,255,.35);

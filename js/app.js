@@ -53,39 +53,96 @@
     else toast(msg, 'err');
   }
 
-  function playWinChime() {
+  var audioCtx = null;
+
+  function soundOn() {
     var u = user();
-    if (u && u.settings && !u.settings.sound) return;
+    return !(u && u.settings && u.settings.sound === false);
+  }
+
+  function getAudio() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function unlockAudio() {
+    var ctx = getAudio();
+    if (!ctx) return;
+    if (ctx.state !== 'suspended') return;
+    ctx.resume();
     try {
-      var ctx = new (window.AudioContext || window.webkitAudioContext)();
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
+      var buf = ctx.createBuffer(1, 1, 22050);
+      var src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
     } catch (e) { /* ignore */ }
   }
 
-  function playTone(freq, dur) {
-    var u = user();
-    if (u && u.settings && !u.settings.sound) return;
+  function playTap() {
+    if (!soundOn()) return;
+    var ctx = getAudio();
+    if (!ctx) return;
     try {
-      var actx = new (window.AudioContext || window.webkitAudioContext)();
-      var osc = actx.createOscillator();
-      var gain = actx.createGain();
+      var now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 1400;
+      gain.gain.setValueAtTime(0.035, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
       osc.connect(gain);
-      gain.connect(actx.destination);
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.07, actx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
-      osc.start();
-      osc.stop(actx.currentTime + dur);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch (e) { /* ignore */ }
+  }
+
+  function playWinChime() {
+    if (!soundOn()) return;
+    var ctx = getAudio();
+    if (!ctx) return;
+    try {
+      var now = ctx.currentTime;
+      function tone(freq0, freq1, start, dur, vol, type) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq0, now + start);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(1, freq1), now + start + dur * 0.55);
+        gain.gain.setValueAtTime(0.0001, now + start);
+        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + start);
+        osc.stop(now + start + dur + 0.02);
+      }
+      tone(587, 880, 0, 0.32, 0.18, 'sine');
+      tone(880, 880, 0.07, 0.24, 0.1, 'triangle');
+    } catch (e) { /* ignore */ }
+  }
+
+  function playLossThud() {
+    if (!soundOn()) return;
+    var ctx = getAudio();
+    if (!ctx) return;
+    try {
+      var now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now + 0.16);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
     } catch (e) { /* ignore */ }
   }
 
@@ -304,20 +361,33 @@
   }
 
   function showSettleHud(res) {
-    var stack = $('settleStack');
-    if (!stack) return;
+    var host = $('settlePortal') || document.body;
     var pill = document.createElement('div');
-    pill.className = 'settle-hud animate-bounce-subtle ' + (res.won ? 'win' : 'lose');
+    pill.className = 'settle-hud ' + (res.won ? 'win' : 'lose');
     if (res.won) {
-      var credit = res.position ? (res.position.net + res.position.stake) : Math.abs(res.net);
-      pill.textContent = '✅ GAGNANT +' + D6.fmtFCFA(credit);
+      var profit = res.position ? res.position.net : Math.abs(res.net);
+      var payout = (res.position && res.position.payout) || (res.trade && res.trade.payout) || D6.CONFIG.REAL_PAYOUT;
+      var pct = Math.round((Number(payout) - 1) * 100);
+      var line = t('profitHud').replace('{amt}', D6.fmtFCFA(profit)).replace('{pct}', String(pct));
+      var cut = line.indexOf(' : ');
+      if (cut > 0) {
+        var head = document.createElement('span');
+        head.textContent = line.slice(0, cut + 3);
+        var amt = document.createElement('span');
+        amt.className = 'hud-amt';
+        amt.textContent = line.slice(cut + 3);
+        pill.appendChild(head);
+        pill.appendChild(amt);
+      } else {
+        pill.textContent = line;
+      }
     } else {
-      pill.textContent = '❌ NON GAGNANT';
+      pill.textContent = t('expiredHud');
     }
-    stack.appendChild(pill);
+    host.appendChild(pill);
     setTimeout(function () {
       if (pill.parentNode) pill.parentNode.removeChild(pill);
-    }, 2500);
+    }, 2200);
   }
 
   function patchHistorySoon() {
@@ -425,6 +495,8 @@
     if (res.won) {
       playWinChime();
       burstSparkle();
+    } else {
+      playLossThud();
     }
     maybeConvertPrompt(user(), res);
     patchHistorySoon();
@@ -463,14 +535,12 @@
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
     if (!res.ok) {
       toast(res.reason, 'err');
-      playTone(140, 0.18);
       syncTradeButtons();
       return;
     }
     updateBalance(true);
     updatePriceHud();
     patchHistorySoon();
-    playTone(side === 'call' ? 560 : 320, 0.08);
     armTradeCooldown();
     syncTradeButtons();
     if (D6.Api && D6.Api.token()) {
@@ -959,7 +1029,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=13').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=14').catch(function () { /* ignore */ });
     }
   }
 
@@ -1031,6 +1101,16 @@
       bindInstall();
       loopParticles();
       D6.Engine.onSettled = applyOutcome;
+      var tapEv = window.PointerEvent ? 'pointerdown' : 'touchstart';
+      document.addEventListener(tapEv, function (e) {
+        unlockAudio();
+        if ($('screenTrade') && $('screenTrade').classList.contains('hidden')) return;
+        if (e.target && e.target.closest && e.target.closest('button, .qbtn, .dur-chip, .mode-btn, .asset-chip')) {
+          playTap();
+        }
+      }, { capture: true, passive: true });
+      document.addEventListener('touchstart', unlockAudio, { capture: true, passive: true });
+      document.addEventListener('click', unlockAudio, { capture: true, passive: true });
       var lastHud = 0;
       D6.Chart.attach($('chartCanvas'), function (ts) {
         if ($('screenTrade').classList.contains('hidden') || document.hidden) return;
@@ -1047,6 +1127,7 @@
       });
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
+          unlockAudio();
           refreshRemoteVault();
           checkDepositReturn();
         }
