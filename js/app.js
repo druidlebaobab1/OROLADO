@@ -1082,7 +1082,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=19').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=20').catch(function () { /* ignore */ });
     }
   }
 
