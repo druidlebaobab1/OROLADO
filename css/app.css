@@ -188,6 +188,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   width:100%;max-width:480px;max-height:88dvh;overflow-y:auto;transform:translateY(18px);transition:.22s;position:relative}
 .modal-box.glass{background:rgba(21,30,48,.88);box-shadow:0 0 0 1px rgba(255,215,0,.14),0 20px 50px rgba(0,0,0,.5)}
 .modal-backdrop.active .modal-box{transform:translateY(0)}
+#resultModal{align-items:center;justify-content:center;background:rgba(0,0,0,.74);z-index:90;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);touch-action:none}
+#resultModal .modal-box{border-radius:18px;width:calc(100% - 32px);max-width:340px;margin:0;padding:22px 18px 18px;
+  transform:scale(.94);padding-bottom:18px}
+#resultModal.active .modal-box{transform:scale(1)}
+.trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
 .btn-close{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}

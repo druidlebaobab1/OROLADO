@@ -19,8 +19,8 @@
     var ticks = 0;
     var i;
     for (i = 0; i < 220; i++) {
-      var shock = (Math.random() - 0.5) * asset.tickNoise;
-      price = Math.max(asset.basePrice * 0.72, price + shock);
+      var shock = (Math.random() - 0.48) * asset.tickNoise * 0.9;
+      price = Math.max(asset.basePrice * 0.85, price + shock + (asset.basePrice - price) * 0.012);
       history.push(price);
       if (i === 0) candle = { o: price, h: price, l: price, c: price };
       candle.h = Math.max(candle.h, price);
@@ -134,43 +134,56 @@
     return { ok: true, cap: cap };
   }
 
+  function gauss() {
+    var u = 0;
+    var v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
   function applyTick(market, asset, activeTrade) {
-    var noise = (Math.random() - 0.5) * asset.tickNoise;
-    var drift = (asset.basePrice - market.price) * 0.0018;
+    var vol = Math.max(0.04, asset.tickNoise);
+    var mom = market.mom || 0;
+    mom = mom * 0.88 + gauss() * vol * 0.38;
+    market.mom = mom;
+    var reversion = (asset.basePrice - market.price) * 0.00035;
+    var shock = mom + reversion + gauss() * vol * 0.55;
 
     if (activeTrade && intent && activeTrade.assetId === market.id) {
-      var progress = 1 - (activeTrade.timeLeft / activeTrade.duration);
+      var progress = 1 - (activeTrade.timeLeft / Math.max(0.01, activeTrade.duration));
       var shouldWin = intent.target === 'win';
       var isCall = activeTrade.side === 'call';
-      var desired = (isCall && shouldWin) || (!isCall && !shouldWin) ? 1 : -1;
-
-      if (!shouldWin && progress > 0.72) {
-        var loseSign = isCall ? -1 : 1;
-        var near = activeTrade.entryPrice + loseSign * (asset.tickNoise * 0.06);
-        noise = (near - market.price) * 0.42 + (Math.random() - 0.5) * asset.tickNoise * 0.08;
+      var dir = (isCall && shouldWin) || (!isCall && !shouldWin) ? 1 : -1;
+      var targetGap = Math.max(vol * 1.6, 0.08);
+      if (progress < 0.5) {
+        if (Math.random() < 0.2) shock -= dir * vol * 0.45;
+      } else if (progress < 0.78) {
+        shock += dir * vol * 0.22;
       } else {
-        var trend = desired * Math.pow(Math.max(0, progress), 2.15) * asset.tickNoise * 0.92;
-        var fake = 0;
-        if (progress < 0.62 && Math.random() < 0.18) fake = -desired * asset.tickNoise * 0.55;
-        noise += trend + fake;
+        var targetPx = activeTrade.entryPrice + dir * targetGap;
+        shock += (targetPx - market.price) * 0.16 + gauss() * vol * 0.12;
       }
-    } else {
-      noise += drift;
     }
 
-    market.price = Math.max(asset.basePrice * 0.55, market.price + noise);
-    market.history.push(market.price);
+    var prev = market.price;
+    var next = Math.max(asset.basePrice * 0.55, prev + shock);
+    var wick = Math.abs(gauss()) * vol * 0.85;
+    var hi = Math.max(prev, next) + (Math.random() < 0.42 ? wick : wick * 0.12);
+    var lo = Math.min(prev, next) - (Math.random() < 0.42 ? wick : wick * 0.12);
+    market.price = next;
+    market.history.push(next);
     if (market.history.length > 480) market.history.shift();
 
     var c = market.candle;
-    c.h = Math.max(c.h, market.price);
-    c.l = Math.min(c.l, market.price);
-    c.c = market.price;
+    c.h = Math.max(c.h, hi, next);
+    c.l = Math.min(c.l, lo, next);
+    c.c = next;
     market.ticksInCandle++;
     if (market.ticksInCandle >= asset.ticksPerCandle) {
       market.candles.push({ o: c.o, h: c.h, l: c.l, c: c.c, t: Date.now() });
       if (market.candles.length > 90) market.candles.shift();
-      market.candle = { o: market.price, h: market.price, l: market.price, c: market.price };
+      market.candle = { o: next, h: next, l: next, c: next };
       market.ticksInCandle = 0;
     }
   }
@@ -199,6 +212,7 @@
   var api = {
     markets: markets,
     payoutLive: payoutLive,
+    onExpire: null,
 
     getMarket: function (id) {
       ensureMarkets();
@@ -226,6 +240,10 @@
       if (trade && trade.assetId === assetId) {
         var elapsed = (performance.now() - trade.startedAt) / 1000;
         trade.timeLeft = Math.max(0, trade.duration - elapsed);
+        if (trade.timeLeft <= 0 && !trade.expireNotified) {
+          trade.expireNotified = true;
+          if (D6.Engine.onExpire) D6.Engine.onExpire();
+        }
       }
       applyTick(market, asset, trade);
     },
@@ -260,6 +278,7 @@
 
       orderSeq += 1;
       lastOrderAt = now;
+      D6.holdRemote = true;
       var target = decideOutcome(user);
       var entry = market.price;
       var seal = makeSeal(user.id + '|' + side + '|' + stake + '|' + entry.toFixed(4) + '|' + duration);
@@ -293,7 +312,7 @@
       if (!user || user.id !== trade.userId || user.id !== intent.userId) return null;
 
       var elapsed = (performance.now() - trade.startedAt) / 1000;
-      if (elapsed < trade.duration - 0.2) return null;
+      if (elapsed < trade.duration - 0.02) return null;
 
       var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration);
       if (expectedSeal !== intent.seal || intent.seq !== trade.seq) return null;

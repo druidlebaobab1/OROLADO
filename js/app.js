@@ -5,7 +5,8 @@
   var stake = 1000;
   var selectedPack = 10000;
   var toastTimer = null;
-  var resultCanReplay = false;
+  var resultTimer = null;
+  var pendingConvert = null;
   var settling = false;
   var lastClickAt = 0;
   var community = [];
@@ -280,7 +281,53 @@
 
   function maybeConvertPrompt(u, res) {
     if (!u || u.mode !== 'demo' || !res.won) return;
-    if (u.consecutiveWins >= 3) openModal('convertModal');
+    if (u.consecutiveWins >= 3) pendingConvert = true;
+  }
+
+  function showResult(res) {
+    var box = $('resultBox');
+    box.className = 'result-box ' + (res.won ? 'win' : 'lose');
+    $('resIcon').textContent = res.won ? '✓' : '✕';
+    $('resTitle').textContent = res.won ? t('won') : t('expired');
+    $('resDetail').textContent = (res.net >= 0 ? '+' : '') + D6.fmtFCFA(res.net);
+    $('resSub').textContent = (res.trade.side === 'call' ? 'CALL' : 'PUT') + ' · ' +
+      D6.fmtPrice(res.trade.entryPrice) + ' → ' + D6.fmtPrice(res.exitPrice) + ' · FCFA';
+    $('closeResult').textContent = t('continue');
+    $('resultModal').classList.add('active');
+    if (res.won) burstSparkle();
+    playTone(res.won ? 880 : 210, res.won ? 0.22 : 0.32);
+    clearTimeout(resultTimer);
+    resultTimer = setTimeout(function () { dismissResult(); }, 3500);
+  }
+
+  function armTradeCooldown() {
+    var row = document.querySelector('.trade-row');
+    if (row) row.classList.add('cooldown');
+    $('btnCall').classList.add('cooldown');
+    $('btnPut').classList.add('cooldown');
+    setTradingLocked(true);
+    setTimeout(function () {
+      if (row) row.classList.remove('cooldown');
+      $('btnCall').classList.remove('cooldown');
+      $('btnPut').classList.remove('cooldown');
+      if (!D6.Engine.getTrade() && !$('resultModal').classList.contains('active')) setTradingLocked(false);
+    }, 400);
+  }
+
+  function dismissResult(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!$('resultModal').classList.contains('active')) return;
+    clearTimeout(resultTimer);
+    resultTimer = null;
+    $('resultModal').classList.remove('active');
+    armTradeCooldown();
+    if (pendingConvert) {
+      pendingConvert = false;
+      setTimeout(function () { openModal('convertModal'); }, 420);
+    }
   }
 
   function fillProfile() {
@@ -348,52 +395,70 @@
     var live = D6.Engine.getTrade();
     if (!u || !live) return;
     settling = true;
+    var orderId = live.id;
     var res = D6.Engine.resolve(u);
     if (!res) { settling = false; return; }
-    setTradingLocked(false);
+    setTradingLocked(true);
     $('orderHud').classList.add('hidden');
     updateBalance(true);
     renderHistory();
     updatePriceHud();
-    var box = $('resultBox');
-    box.className = 'result-box ' + (res.won ? 'win' : 'lose');
-    $('resIcon').textContent = res.won ? '✓' : '✕';
-    $('resTitle').textContent = res.won ? t('won') : t('expired');
-    $('resDetail').textContent = (res.net >= 0 ? '+' : '') + D6.fmtFCFA(res.net);
-    $('resSub').textContent = (res.trade.side === 'call' ? 'CALL' : 'PUT') + ' · ' +
-      D6.fmtPrice(res.trade.entryPrice) + ' → ' + D6.fmtPrice(res.exitPrice);
-    $('closeResult').textContent = res.won ? t('continue') : t('replay');
-    resultCanReplay = !res.won;
-    $('resultModal').classList.add('active');
-    if (res.won) burstSparkle();
-    playTone(res.won ? 880 : 210, res.won ? 0.22 : 0.32);
+    showResult(res);
     maybeConvertPrompt(u, res);
+    if (D6.Api && D6.Api.token()) {
+      D6.Api.post('settleOrder', { orderId: orderId }).then(function (remote) {
+        D6.holdRemote = false;
+        if (remote && remote.ok && remote.server) {
+          if (remote.vault) D6.Store.importRemote(u, remote.vault);
+          updateBalance(true);
+          if ($('resultModal').classList.contains('active') && remote.won !== undefined && !!remote.won !== res.won) {
+            res.won = !!remote.won;
+            res.net = remote.net;
+            showResult(res);
+          }
+        }
+      });
+    } else {
+      D6.holdRemote = false;
+    }
     settling = false;
   }
 
   function execute(side) {
     var now = performance.now();
     if (now - lastClickAt < D6.CONFIG.MIN_ORDER_MS) return;
+    if ($('resultModal').classList.contains('active')) return;
     lastClickAt = now;
     setTradingLocked(true);
     var u = user();
     if (!u) {
-      setTimeout(function () { setTradingLocked(false); }, 500);
+      setTimeout(function () { setTradingLocked(false); }, 400);
       return;
     }
     stake = Math.min(D6.CONFIG.MAX_STAKE, Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake)));
     $('inputStake').value = stake;
-    updateBalance(false);
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
     if (!res.ok) {
       toast(res.reason, 'err');
       playTone(140, 0.18);
-      setTimeout(function () { if (!D6.Engine.getTrade()) setTradingLocked(false); }, 500);
+      setTimeout(function () { if (!D6.Engine.getTrade()) setTradingLocked(false); }, 400);
       return;
     }
     updateBalance(true);
     $('orderHud').classList.remove('hidden');
-    playTone(side === 'call' ? 560 : 320, 0.12);
+    updatePriceHud();
+    playTone(side === 'call' ? 560 : 320, 0.08);
+    if (D6.Api && D6.Api.token()) {
+      D6.Api.post('placeOrder', {
+        id: res.trade.id,
+        stake: stake,
+        side: side,
+        duration: u.duration,
+        mode: u.mode
+      }).then(function (remote) {
+        if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault);
+      });
+    }
   }
 
   function openModal(id) { $(id).classList.add('active'); }
@@ -544,7 +609,17 @@
     });
     $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
     $('closeHistorySheet').addEventListener('click', function () { closeModal('historySheet'); });
-    $('closeResult').addEventListener('click', function () { closeModal('resultModal'); });
+    function onResultClose(e) { dismissResult(e); }
+    $('closeResult').addEventListener('click', onResultClose);
+    $('closeResult').addEventListener('pointerup', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissResult(e);
+    });
+    $('resultModal').addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
+      if (e.target === $('resultModal')) dismissResult(e);
+    });
     $('closeConvert').addEventListener('click', function () { closeModal('convertModal'); });
     $('btnConvertRecharge').addEventListener('click', function () {
       closeModal('convertModal');
@@ -653,7 +728,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=7').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=8').catch(function () { /* ignore */ });
     }
   }
 
@@ -722,10 +797,13 @@
       bindAdmin();
       bindInstall();
       loopParticles();
+      D6.Engine.onExpire = settleTrade;
       var lastHud = 0;
       D6.Chart.attach($('chartCanvas'), function (ts) {
+        var live = D6.Engine.getTrade();
+        if (live && live.timeLeft <= 0) settleTrade();
         if ($('screenTrade').classList.contains('hidden') || document.hidden) return;
-        if (ts - lastHud < 80) return;
+        if (ts - lastHud < 50) return;
         lastHud = ts;
         updatePriceHud();
       });

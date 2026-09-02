@@ -26,7 +26,7 @@ if (!is_dir($dir)) {
 $file = $dir . '/orolado.json';
 
 function blank_db(): array {
-  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => []];
+  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => []];
 }
 
 function hash_pw(string $pw): string {
@@ -321,6 +321,102 @@ if ($action === 'resolveWithdraw') {
     }
   }
   echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Retrait introuvable']);
+  exit;
+}
+
+if ($action === 'placeOrder') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $stake = (int) ($req['stake'] ?? 0);
+  $side = (($req['side'] ?? '') === 'put') ? 'put' : 'call';
+  $duration = (int) ($req['duration'] ?? 10);
+  if (!in_array($duration, [10, 30, 60], true)) $duration = 10;
+  $mode = (($req['mode'] ?? '') === 'real') ? 'real' : 'demo';
+  $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['id'] ?? ''));
+  if ($stake < 200 || $stake > 10000 || $oid === '') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise invalide']);
+    exit;
+  }
+  if (!isset($db['orders']) || !is_array($db['orders'])) $db['orders'] = [];
+  foreach ($db['orders'] as $o) {
+    if (($o['id'] ?? '') === $oid) {
+      echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $o['payout'] ?? 1.88, 'vault' => $db['vault'][$me['id']] ?? null, 'duplicate' => true]);
+      exit;
+    }
+    if (($o['userId'] ?? '') === $me['id'] && ($o['status'] ?? '') === 'open') {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Une position est déjà ouverte']);
+      exit;
+    }
+  }
+  $uid = $me['id'];
+  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 50000, 'real' => 0];
+  $bal = (int) ($db['vault'][$uid][$mode] ?? 0);
+  if ($stake > $bal) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+    exit;
+  }
+  $db['vault'][$uid][$mode] = $bal - $stake;
+  $pWin = $mode === 'real' ? 0.44 : 0.82;
+  $won = (random_int(0, 10000) / 10000) < $pWin;
+  $payout = $mode === 'real' ? 1.88 : (1.85 + (random_int(0, 100) / 1000));
+  $db['orders'][] = [
+    'id' => $oid,
+    'userId' => $uid,
+    'stake' => $stake,
+    'side' => $side,
+    'duration' => $duration,
+    'mode' => $mode,
+    'payout' => $payout,
+    'won' => $won,
+    'status' => 'open',
+    'at' => microtime(true)
+  ];
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $db['vault'][$uid]]);
+  exit;
+}
+
+if ($action === 'settleOrder') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['orderId'] ?? ''));
+  if (!isset($db['orders']) || !is_array($db['orders'])) $db['orders'] = [];
+  foreach ($db['orders'] as &$o) {
+    if (($o['id'] ?? '') !== $oid || ($o['userId'] ?? '') !== $me['id']) continue;
+    $won = !empty($o['won']);
+    $stake = (int) $o['stake'];
+    $payout = (float) ($o['payout'] ?? 1.88);
+    $credit = $won ? (int) floor($stake * $payout) : 0;
+    $net = $won ? $credit - $stake : -$stake;
+    if (($o['status'] ?? '') === 'open') {
+      $elapsed = microtime(true) - (float) ($o['at'] ?? 0);
+      if ($elapsed < max(0, ((int) $o['duration']) - 0.6)) {
+        echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Position encore ouverte']);
+        exit;
+      }
+      $mode = ($o['mode'] ?? 'demo') === 'real' ? 'real' : 'demo';
+      if (!isset($db['vault'][$me['id']])) $db['vault'][$me['id']] = ['demo' => 0, 'real' => 0];
+      if ($won) $db['vault'][$me['id']][$mode] = (int) $db['vault'][$me['id']][$mode] + $credit;
+      $o['status'] = 'closed';
+      save_db($file, $db);
+    }
+    echo json_encode([
+      'ok' => true,
+      'server' => true,
+      'won' => $won,
+      'net' => $net,
+      'payout' => $payout,
+      'vault' => $db['vault'][$me['id']] ?? null
+    ]);
+    exit;
+  }
+  echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Ordre introuvable']);
   exit;
 }
 

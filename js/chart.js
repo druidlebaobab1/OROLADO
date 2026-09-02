@@ -11,6 +11,8 @@
   var payoutAcc = 0;
   var running = false;
   var activeAsset = 'v100';
+  var viewMin = 0;
+  var viewMax = 0;
   var onFrame = null;
 
   function resize() {
@@ -199,12 +201,25 @@
     ctx.closePath();
   }
 
-  function drawLastTag(map, price, color) {
+  function drawBead(map, price, color, now) {
     if (!map) return;
+    var pulse = 0.55 + 0.45 * Math.sin(now / 150);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,215,0,0.16)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(map.lastX, map.lastY, 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.restore();
     ctx.fillStyle = color;
     ctx.font = '800 10px "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('▸ ' + price.toFixed(2), cssW - 56, map.lastY + 3);
+    ctx.fillText(price.toFixed(2), cssW - 56, map.lastY + 3);
   }
 
   function drawFrame(now) {
@@ -242,13 +257,26 @@
       minP = Math.min.apply(null, series);
       maxP = Math.max.apply(null, series);
     }
-    var range = Math.max(maxP - minP, asset.tickNoise * 3);
-    minP -= range * 0.16;
-    maxP += range * 0.16;
+    var range = Math.max(maxP - minP, asset.tickNoise * 8, 0.35);
+    minP -= range * 0.18;
+    maxP += range * 0.18;
     if (trade) {
       minP = Math.min(minP, trade.entryPrice);
       maxP = Math.max(maxP, trade.entryPrice);
+      var mid = trade.entryPrice;
+      var span = Math.max(maxP - minP, asset.tickNoise * 12, 0.5);
+      minP = Math.min(minP, mid - span * 0.55);
+      maxP = Math.max(maxP, mid + span * 0.55);
     }
+    if (!viewMin || !viewMax) {
+      viewMin = minP;
+      viewMax = maxP;
+    } else {
+      viewMin += (minP - viewMin) * 0.14;
+      viewMax += (maxP - viewMax) * 0.14;
+    }
+    minP = viewMin;
+    maxP = viewMax;
 
     drawGrid(pad, w, h, minP, maxP);
 
@@ -271,7 +299,7 @@
       var liveWin = (trade.side === 'call' && above) || (trade.side === 'put' && !above);
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
-    drawLastTag(map, market.price, tagCol);
+    drawBead(map, market.price, tagCol, now);
   }
 
   function loop(ts) {
@@ -322,6 +350,8 @@
     setAsset: function (id) {
       activeAsset = id;
       tickAcc = 0;
+      viewMin = 0;
+      viewMax = 0;
     },
     start: function () {
       if (running) return;

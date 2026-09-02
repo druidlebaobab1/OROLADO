@@ -25,7 +25,7 @@
       convertTitle: 'Vous maîtrisez le marché !',
       convertCopy: 'Activez vos gains en FCFA réels et passez au compte réel.',
       convertBtn: 'Recharger mon compte',
-      won: 'GAGNANT', expired: 'EXPIRÉ', continue: 'Continuer', replay: 'Rejouer',
+      won: 'GAGNANT', expired: 'PERDANT', continue: 'CONTINUER', replay: 'CONTINUER',
       install: '📲 Installer l’application OROLADO',
       adminBtn: '⚙️ Dashboard Admin',
       verified: 'Compte vérifié',
