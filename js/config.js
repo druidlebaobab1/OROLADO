@@ -15,12 +15,12 @@
     REAL_WIN_RATE: 0.44,
     REAL_PAYOUT: 1.88,
     MIN_ORDER_MS: 300,
+    MIN_DEPOSIT: 2000,
+    DEPOSIT_PACKS: [2000, 5000, 10000, 25000],
     BRAND: 'OROLADO',
     DOMAIN: 'orolado.com',
     ADMIN_EMAIL: 'admin@orolado.com',
     ADMIN_PASSWORD: 'AdminOrolado2026!',
-    MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',
-    MAKETOU_PRODUCT_ID: 'dc38d82a-9074-4f73-9cca-50959ea58e94',
     ASSETS: {
       v100: {
         id: 'v100',

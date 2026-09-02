@@ -263,6 +263,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .wd-pill.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
 .wd-trust{display:flex;flex-direction:column;gap:4px;font-size:.62rem;font-weight:700;color:var(--muted);margin:8px 0 12px;line-height:1.35}
 .withdraw-box{max-height:88dvh}
+.deposit-box .op-grid{margin-top:4px}
 .convert-box{text-align:center;padding-top:22px}
 .convert-fire{font-size:2.4rem;margin-bottom:6px;filter:drop-shadow(0 0 16px rgba(255,215,0,.55))}
 .convert-title{font-size:1.25rem;font-weight:900;color:var(--gold);margin-bottom:8px}

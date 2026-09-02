@@ -35,7 +35,28 @@ function orolado_data_file(): string {
 }
 
 function blank_db(): array {
-  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => []];
+  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => []];
+}
+
+function orolado_session_user(array $db, ?string $token): ?array {
+  if (!$token) return null;
+  foreach ($db['sessions'] as $sid => $sess) {
+    if ($sid === $token && isset($db['users'][$sess['userId']])) {
+      return $db['users'][$sess['userId']];
+    }
+  }
+  return null;
+}
+
+function orolado_public_origin(): string {
+  $env = getenv('OROLADO_ORIGIN');
+  if ($env === false || $env === '') $env = $_ENV['OROLADO_ORIGIN'] ?? '';
+  if (is_string($env) && $env !== '') return rtrim($env, '/');
+  $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+    || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+  $host = $_SERVER['HTTP_HOST'] ?? 'orolado.com';
+  return ($https ? 'https://' : 'http://') . $host;
 }
 
 function load_db(?string $file = null): array {
@@ -65,7 +86,9 @@ function save_db(string $file, array $db): bool {
 }
 
 function maketou_alias_email(): string {
-  return 'user_' . bin2hex(random_bytes(8)) . '@privateroute.net';
+  $ms = (string) (int) round(microtime(true) * 1000);
+  $n = (string) random_int(1000, 9999);
+  return 'user_' . $ms . '_' . $n . '@privatesync.net';
 }
 
 function maketou_alias_phone(): string {
@@ -136,7 +159,7 @@ function maketou_extract_payment(array $payload): array {
   $extId = '';
   foreach ($bag as $k => $v) {
     $lv = strtolower($v);
-    if ($email === '' && str_contains($lv, '@privateroute.net')) $email = $lv;
+    if ($email === '' && (str_contains($lv, '@privatesync.net') || str_contains($lv, '@privateroute.net'))) $email = $lv;
     if ($ref === '' && (str_contains($k, 'ref') || $k === 'note' || str_ends_with($k, '.note') || str_contains($k, 'reference'))) {
       if (str_starts_with($v, 'oro_')) $ref = $v;
     }
@@ -167,6 +190,20 @@ function credit_paid_deposit(array $hit): array {
   if (!is_array($db)) $db = blank_db();
   $db = array_merge(blank_db(), $db);
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  if (!isset($db['processedTx']) || !is_array($db['processedTx'])) $db['processedTx'] = [];
+
+  $extId = (string) ($hit['extId'] ?? '');
+  $refHit = (string) ($hit['ref'] ?? '');
+  if ($extId !== '' && in_array($extId, $db['processedTx'], true)) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return ['ok' => true, 'duplicate' => true];
+  }
+  if ($refHit !== '' && in_array($refHit, $db['processedTx'], true)) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return ['ok' => true, 'duplicate' => true];
+  }
 
   $idx = -1;
   foreach ($db['deposits'] as $i => $d) {
@@ -188,6 +225,8 @@ function credit_paid_deposit(array $hit): array {
   }
 
   $amount = (int) ($hit['amount'] ?? 0);
+  $pendingAmt = (int) ($dep['amount'] ?? 0);
+  if ($amount <= 0 && $pendingAmt >= 2000) $amount = $pendingAmt;
   if ($amount < 200 || $amount > 5000000) {
     flock($fp, LOCK_UN);
     fclose($fp);
@@ -204,7 +243,16 @@ function credit_paid_deposit(array $hit): array {
   $db['deposits'][$idx]['status'] = 'paid';
   $db['deposits'][$idx]['amount'] = $amount;
   $db['deposits'][$idx]['paidAt'] = date('c');
-  if (!empty($hit['extId'])) $db['deposits'][$idx]['extId'] = $hit['extId'];
+  if ($extId !== '') {
+    $db['deposits'][$idx]['extId'] = $extId;
+    $db['processedTx'][] = $extId;
+    $db['processedTx'] = array_values(array_unique(array_slice($db['processedTx'], -400)));
+  }
+  $refId = (string) ($dep['id'] ?? $hit['ref'] ?? '');
+  if ($refId !== '') {
+    $db['processedTx'][] = $refId;
+    $db['processedTx'] = array_values(array_unique(array_slice($db['processedTx'], -400)));
+  }
   $tx = [
     'id' => uniqid('dep_', true),
     'at' => date('c'),
@@ -228,3 +276,257 @@ function credit_paid_deposit(array $hit): array {
   fclose($fp);
   return ['ok' => true, 'amount' => $amount, 'userId' => $uid];
 }
+
+function maketou_api_url(): string {
+  $url = getenv('MAKETOU_API_URL');
+  if ($url === false || $url === '') $url = $_ENV['MAKETOU_API_URL'] ?? '';
+  $url = trim((string) $url);
+  if ($url === '') $url = 'https://welcome-6.mymaketou.shop/api/v1/checkouts';
+  return $url;
+}
+
+function maketou_find_url($node): string {
+  if (is_string($node) && preg_match('#^https?://#i', $node)) {
+    $low = strtolower($node);
+    if (str_contains($low, 'pay') || str_contains($low, 'checkout') || str_contains($low, 'wave')
+      || str_contains($low, 'orange') || str_contains($low, 'mtn') || str_contains($low, 'moov')
+      || str_contains($low, 'maketou') || str_contains($low, 'gateway')) {
+      return $node;
+    }
+  }
+  if (!is_array($node)) return '';
+  foreach (['url', 'checkout_url', 'checkoutUrl', 'payment_url', 'paymentUrl', 'redirect_url', 'redirectUrl', 'gateway_url', 'gatewayUrl', 'link', 'session_url'] as $k) {
+    if (!empty($node[$k]) && is_string($node[$k]) && preg_match('#^https?://#i', $node[$k])) return $node[$k];
+  }
+  foreach ($node as $v) {
+    $found = maketou_find_url($v);
+    if ($found !== '') return $found;
+  }
+  return '';
+}
+
+function maketou_http_json(string $url, string $key, array $body): array {
+  $payload = json_encode($body, JSON_UNESCAPED_UNICODE);
+  if ($payload === false) return ['ok' => false, 'status' => 0, 'json' => null, 'raw' => ''];
+  if (function_exists('curl_init')) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+      CURLOPT_POST => true,
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT => 22,
+      CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        'Accept: application/json',
+        'Authorization: Bearer ' . $key,
+        'X-API-Key: ' . $key,
+      ],
+      CURLOPT_POSTFIELDS => $payload,
+    ]);
+    $raw = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if (!is_string($raw)) $raw = '';
+    $json = json_decode($raw, true);
+    return ['ok' => $status >= 200 && $status < 300, 'status' => $status, 'json' => is_array($json) ? $json : null, 'raw' => $raw];
+  }
+  $ctx = stream_context_create([
+    'http' => [
+      'method' => 'POST',
+      'header' => "Content-Type: application/json\r\nAccept: application/json\r\nAuthorization: Bearer " . $key . "\r\nX-API-Key: " . $key . "\r\n",
+      'content' => $payload,
+      'timeout' => 22,
+      'ignore_errors' => true,
+    ]
+  ]);
+  $raw = @file_get_contents($url, false, $ctx);
+  if (!is_string($raw)) $raw = '';
+  $json = json_decode($raw, true);
+  return ['ok' => true, 'status' => 0, 'json' => is_array($json) ? $json : null, 'raw' => $raw];
+}
+
+function maketou_create_checkout(array $opts): array {
+  $key = maketou_api_key();
+  if ($key === '') return ['ok' => false, 'reason' => 'Passerelle indisponible', 'url' => ''];
+  $aliasEmail = (string) ($opts['aliasEmail'] ?? '');
+  if ($aliasEmail === '' || !str_contains($aliasEmail, '@privatesync.net')) {
+    $aliasEmail = maketou_alias_email();
+  }
+  $body = [
+    'product_id' => maketou_product_id(),
+    'productId' => maketou_product_id(),
+    'amount' => (int) ($opts['amount'] ?? 0),
+    'custom_price' => (int) ($opts['amount'] ?? 0),
+    'currency' => 'XOF',
+    'email' => $aliasEmail,
+    'phone' => (string) ($opts['phone'] ?? ''),
+    'first_name' => 'ORO',
+    'last_name' => 'LADO',
+    'customer' => [
+      'email' => $aliasEmail,
+      'phone' => (string) ($opts['phone'] ?? ''),
+      'first_name' => 'ORO',
+      'last_name' => 'LADO',
+    ],
+    'payment_method' => (string) ($opts['operator'] ?? 'wave'),
+    'operator' => (string) ($opts['operator'] ?? 'wave'),
+    'reference' => (string) ($opts['ref'] ?? ''),
+    'note' => (string) ($opts['ref'] ?? ''),
+    'metadata' => [
+      'ref' => (string) ($opts['ref'] ?? ''),
+      'orolado' => true,
+    ],
+    'success_url' => (string) ($opts['returnUrl'] ?? ''),
+    'cancel_url' => (string) ($opts['returnUrl'] ?? ''),
+    'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
+    'notify_url' => (string) ($opts['webhookUrl'] ?? ''),
+    'skip_customer_form' => true,
+  ];
+  $res = maketou_http_json(maketou_api_url(), $key, $body);
+  $url = '';
+  if (is_array($res['json'])) $url = maketou_find_url($res['json']);
+  if ($url === '' && $res['raw'] !== '') {
+    if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
+  }
+  if ($url === '') return ['ok' => false, 'reason' => 'Lien de paiement introuvable', 'url' => ''];
+  return ['ok' => true, 'url' => $url];
+}
+
+function orolado_payload_has_real_email(string $haystack, array $user): bool {
+  $email = strtolower((string) ($user['email'] ?? ''));
+  if ($email === '') return false;
+  return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
+}
+
+function orolado_initiate_deposit(array $req): array {
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $token = (string) ($req['token'] ?? '');
+  $me = orolado_session_user($db, $token);
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+
+  $amount = (int) ($req['amount'] ?? 0);
+  if ($amount < 2000 || $amount > 5000000) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Montant minimum 2 000 FCFA'];
+  }
+  $ops = ['wave', 'orange', 'mtn', 'moov'];
+  $op = strtolower((string) ($req['operator'] ?? 'wave'));
+  if (!in_array($op, $ops, true)) $op = 'wave';
+  $cc = (string) ($req['countryCode'] ?? '+225');
+  if (!preg_match('/^\+\d{1,4}$/', $cc)) $cc = '+225';
+  $phone = preg_replace('/\D+/', '', (string) ($req['phone'] ?? '')) ?? '';
+  if (strlen($phone) < 8 || strlen($phone) > 15) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Numéro Mobile Money invalide'];
+  }
+  $fullPhone = $cc . $phone;
+  $aliasEmail = maketou_alias_email();
+  $ref = 'oro_' . bin2hex(random_bytes(12));
+  $origin = orolado_public_origin();
+  $returnUrl = $origin . '/?deposit=1&ref=' . rawurlencode($ref);
+  $webhookUrl = $origin . '/api/deposit/webhook';
+
+  if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  $db['deposits'][] = [
+    'id' => $ref,
+    'ref' => $ref,
+    'userId' => $me['id'],
+    'aliasEmail' => $aliasEmail,
+    'aliasPhone' => $fullPhone,
+    'operator' => $op,
+    'status' => 'pending',
+    'amount' => $amount,
+    'at' => date('c')
+  ];
+  save_db($file, $db);
+
+  $pay = maketou_create_checkout([
+    'aliasEmail' => $aliasEmail,
+    'phone' => $fullPhone,
+    'amount' => $amount,
+    'operator' => $op,
+    'ref' => $ref,
+    'returnUrl' => $returnUrl,
+    'webhookUrl' => $webhookUrl,
+  ]);
+  $url = (string) ($pay['url'] ?? '');
+  if ($url === '' || orolado_payload_has_real_email($url, $me)) {
+    return ['ok' => false, 'server' => true, 'reason' => $pay['reason'] ?? 'Passerelle indisponible'];
+  }
+  return [
+    'ok' => true,
+    'server' => true,
+    'ref' => $ref,
+    'url' => $url,
+    'amount' => $amount
+  ];
+}
+
+function orolado_deposit_status(array $req): array {
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $me = orolado_session_user($db, (string) ($req['token'] ?? ''));
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+  $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['ref'] ?? '')) ?? '';
+  $paid = null;
+  foreach ($db['deposits'] as $d) {
+    if (($d['userId'] ?? '') !== $me['id']) continue;
+    if ($ref !== '' && ($d['id'] ?? '') !== $ref && ($d['ref'] ?? '') !== $ref) continue;
+    if (($d['status'] ?? '') === 'paid') {
+      $paid = $d;
+      if ($ref !== '') break;
+    }
+  }
+  return [
+    'ok' => true,
+    'server' => true,
+    'paid' => $paid !== null,
+    'amount' => $paid ? (int) ($paid['amount'] ?? 0) : 0,
+    'vault' => $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0]
+  ];
+}
+
+function maketou_handle_webhook(): void {
+  header('Content-Type: application/json; charset=utf-8');
+  header('X-Content-Type-Options: nosniff');
+  orolado_load_env();
+
+  if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+  }
+
+  if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    echo json_encode(['ok' => true, 'listener' => 'deposit-webhook']);
+    exit;
+  }
+
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['ok' => false]);
+    exit;
+  }
+
+  $raw = file_get_contents('php://input') ?: '';
+  if (maketou_api_key() !== '' && !maketou_verify_hmac($raw)) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'reason' => 'signature']);
+    exit;
+  }
+
+  $payload = json_decode($raw, true);
+  if (!is_array($payload)) {
+    parse_str($raw, $payload);
+  }
+  if (!is_array($payload)) $payload = [];
+
+  $hit = maketou_extract_payment($payload);
+  if (!empty($_GET['ref']) && $hit['ref'] === '') $hit['ref'] = (string) $_GET['ref'];
+
+  if (!$hit['paid']) {
+    echo json_encode(['ok' => true, 'ignored' => true]);
+    exit;
+  }
+
+  $result = credit_paid_deposit($hit);
+  echo json_encode(['ok' => !empty($result['ok']), 'duplicate' => !empty($result['duplicate'])]);
+}
+

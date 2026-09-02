@@ -6,6 +6,8 @@ Options -Indexes
   RewriteCond %{HTTPS} !=on
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   RewriteRule ^api/maketou-webhook/?$ api/maketou-webhook.php [L,QSA]
+  RewriteRule ^api/deposit/initiate/?$ api/deposit-initiate.php [L,QSA]
+  RewriteRule ^api/deposit/webhook/?$ api/deposit-webhook.php [L,QSA]
 </IfModule>
 
 <IfModule mod_mime.c>

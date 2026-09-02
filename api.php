@@ -74,13 +74,7 @@ function find_user(array $db, string $email): ?array {
 }
 
 function session_user(array $db, ?string $token): ?array {
-  if (!$token) return null;
-  foreach ($db['sessions'] as $sid => $sess) {
-    if ($sid === $token && isset($db['users'][$sess['userId']])) {
-      return $db['users'][$sess['userId']];
-    }
-  }
-  return null;
+  return orolado_session_user($db, $token);
 }
 
 function metrics(array $db): array {
@@ -431,34 +425,13 @@ if ($action === 'me') {
   exit;
 }
 
-if ($action === 'startDeposit') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
-    exit;
-  }
-  $aliasEmail = maketou_alias_email();
-  $aliasPhone = maketou_alias_phone();
-  $ref = 'oro_' . bin2hex(random_bytes(12));
-  if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
-  $db['deposits'][] = [
-    'id' => $ref,
-    'ref' => $ref,
-    'userId' => $me['id'],
-    'aliasEmail' => $aliasEmail,
-    'aliasPhone' => $aliasPhone,
-    'status' => 'pending',
-    'amount' => 0,
-    'at' => date('c')
-  ];
-  save_db($file, $db);
-  echo json_encode([
-    'ok' => true,
-    'server' => true,
-    'ref' => $ref,
-    'url' => maketou_checkout_url($aliasEmail, $aliasPhone, $ref),
-    'productId' => maketou_product_id()
-  ]);
+if ($action === 'startDeposit' || $action === 'initiateDeposit') {
+  echo json_encode(orolado_initiate_deposit(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'depositStatus') {
+  echo json_encode(orolado_deposit_status(['token' => $token] + $req));
   exit;
 }
 

@@ -5,6 +5,7 @@
   var stake = 1000;
   var toastTimer = null;
   var selectedOp = 'wave';
+  var depositOp = 'wave';
   var pendingConvert = false;
   var lastClickAt = 0;
   var cooling = false;
@@ -147,7 +148,7 @@
     var html = D6.CONFIG.COUNTRY_CODES.map(function (c) {
       return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + '</option>';
     }).join('');
-    ['loginCountry', 'regCountry', 'resetCountry', 'wdCountry'].forEach(function (id) {
+    ['loginCountry', 'regCountry', 'resetCountry', 'wdCountry', 'depCountry'].forEach(function (id) {
       var el = $(id);
       if (el) el.innerHTML = html;
     });
@@ -534,51 +535,134 @@
     }
   }
 
-  function maskCheckoutEmail() {
-    var salt = '';
-    try {
-      salt = Array.from(crypto.getRandomValues(new Uint8Array(6))).map(function (b) {
-        return b.toString(16).padStart(2, '0');
-      }).join('');
-    } catch (e) {
-      salt = Date.now().toString(16) + Math.floor(Math.random() * 1e8).toString(16);
-    }
-    return 'user_' + Date.now() + '_' + salt + '@privateroute.net';
-  }
-
-  function maskCheckoutPhone() {
-    return '+22507' + String(10000000 + Math.floor(Math.random() * 89999999));
-  }
-
   function checkoutUrlSafe(url, u) {
-    if (!url) return '';
-    if (u && u.email && url.toLowerCase().indexOf(encodeURIComponent(u.email).toLowerCase()) >= 0) return '';
-    if (u && u.phone) {
-      var digits = String(u.phone).replace(/\D/g, '');
-      if (digits.length >= 8 && url.indexOf(digits) >= 0) return '';
+    if (!url || !/^https?:\/\//i.test(url)) return '';
+    if (u && u.email) {
+      var em = String(u.email).toLowerCase();
+      if (url.toLowerCase().indexOf(em) >= 0) return '';
+      if (url.toLowerCase().indexOf(encodeURIComponent(u.email).toLowerCase()) >= 0) return '';
     }
     return url;
   }
 
-  async function startMaketouCheckout() {
-    var base = D6.CONFIG.MAKETOU_CHECKOUT || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
-    var aliasEmail = maskCheckoutEmail();
-    var aliasPhone = maskCheckoutPhone();
+  function setDepositAmt(n) {
+    var min = D6.CONFIG.MIN_DEPOSIT || 2000;
+    var amt = Math.max(min, Math.floor(Number(n) || min));
+    if ($('depositAmt')) $('depositAmt').value = amt;
+    document.querySelectorAll('#depPills .wd-pill').forEach(function (p) {
+      p.classList.toggle('on', String(p.dataset.amt) === String(amt));
+    });
+    return amt;
+  }
+
+  function openDeposit() {
     var u = user();
-    if (D6.Api && D6.Api.token()) {
-      var remote = await D6.Api.post('startDeposit', {});
-      if (remote && remote.ok) {
-        var safe = checkoutUrlSafe(remote.url, u);
-        if (safe) {
-          window.location.href = safe;
-          return;
-        }
+    depositOp = 'wave';
+    document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) {
+      c.classList.toggle('on', c.dataset.op === depositOp);
+    });
+    setDepositAmt(D6.CONFIG.MIN_DEPOSIT || 2000);
+    if ($('depositPhone')) $('depositPhone').value = '';
+    if ($('depCountry')) $('depCountry').value = (u && u.countryCode) || '+225';
+    closeDrawer();
+    closeModal('convertModal');
+    openModal('depositModal');
+  }
+
+  async function postDepositInitiate(payload) {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, 25000);
+    try {
+      var r = await fetch('api/deposit/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      if (r.ok) {
+        var json = await r.json();
+        if (json) return json;
+      }
+    } catch (e) { /* fallback */ }
+    clearTimeout(timer);
+    return D6.Api.post('initiateDeposit', payload);
+  }
+
+  async function confirmDeposit() {
+    var u = user();
+    if (!u) return;
+    var min = D6.CONFIG.MIN_DEPOSIT || 2000;
+    var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
+    var phone = digitsPhone($('depositPhone') && $('depositPhone').value);
+    if (amt < min) {
+      showFieldError('depositAmt', t('depositMin'));
+      toast(t('depositMin'), 'err');
+      return;
+    }
+    if (phone.length < 8) {
+      showFieldError('depositPhone', t('depositPhone'));
+      toast(t('depositPhone'), 'err');
+      return;
+    }
+    var btn = $('btnConfirmDeposit');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = t('depositBusy');
+    }
+    try {
+      if (!D6.Api || !D6.Api.token()) {
+        toast(t('sessionInvalid'), 'err');
+        return;
+      }
+      var remote = await postDepositInitiate({
+        token: D6.Api.token(),
+        amount: amt,
+        operator: depositOp,
+        phone: phone,
+        countryCode: ($('depCountry') && $('depCountry').value) || '+225'
+      });
+      if (!remote || !remote.ok) {
+        toast((remote && remote.reason) || 'Passerelle indisponible', 'err');
+        return;
+      }
+      var safe = checkoutUrlSafe(remote.url, u);
+      if (!safe) {
+        toast('Passerelle indisponible', 'err');
+        return;
+      }
+      try { sessionStorage.setItem('oro_dep_ref', remote.ref || ''); } catch (e) { /* ignore */ }
+      window.location.href = safe;
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = t('depositConfirm');
       }
     }
-    var params = new URLSearchParams();
-    params.set('checkout[email]', aliasEmail);
-    params.set('checkout[phone]', aliasPhone);
-    window.location.href = base + (base.indexOf('?') >= 0 ? '&' : '?') + params.toString();
+  }
+
+  async function checkDepositReturn() {
+    var q = new URLSearchParams(location.search);
+    var ref = q.get('ref') || '';
+    try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || ''; } catch (e) { /* ignore */ }
+    if (q.get('deposit') !== '1' && !ref) return;
+    var tries = 0;
+    async function poll() {
+      var remote = await D6.Api.post('depositStatus', { ref: ref });
+      if (remote && remote.ok && remote.paid && remote.amount > 0) {
+        var u = user();
+        if (remote.vault && u) D6.Store.importRemote(u, remote.vault);
+        updateBalance(true);
+        toast(t('depositOk') + ' : +' + D6.fmtFCFA(remote.amount), 'ok');
+        try { sessionStorage.removeItem('oro_dep_ref'); } catch (e) { /* ignore */ }
+        if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
+        return;
+      }
+      tries += 1;
+      if (tries < 8) setTimeout(poll, 900);
+    }
+    poll();
   }
 
   async function refreshRemoteVault() {
@@ -743,7 +827,7 @@
     }
     tap($('btnCall'), function () { execute('call'); });
     tap($('btnPut'), function () { execute('put'); });
-    $('btnOpenDeposit').addEventListener('click', function () { startMaketouCheckout(); });
+    $('btnOpenDeposit').addEventListener('click', function () { openDeposit(); });
     $('balanceCard').addEventListener('click', function () { /* solde only */ });
     $('btnProfile').addEventListener('click', openDrawer);
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
@@ -772,7 +856,7 @@
       if (u && !D6.Engine.getTrade()) {
         u.mode = 'real'; D6.Store.saveUser(u); setModeUi(u); updateBalance(true); updatePayoutUi();
       }
-      startMaketouCheckout();
+      openDeposit();
     });
     $('btnOpenPass').addEventListener('click', function () { closeDrawer(); openModal('passModal'); });
     $('closePass').addEventListener('click', function () { closeModal('passModal'); });
@@ -797,13 +881,36 @@
     $('closeFinance').addEventListener('click', function () { closeModal('financeModal'); });
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
-    document.querySelectorAll('.op-card').forEach(function (card) {
+    $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
+    document.querySelectorAll('#depOpGrid .op-card').forEach(function (card) {
       card.addEventListener('click', function () {
-        selectedOp = card.dataset.op;
-        document.querySelectorAll('.op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
+        depositOp = card.dataset.op;
+        document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
       });
     });
-    document.querySelectorAll('.wd-pill').forEach(function (pill) {
+    document.querySelectorAll('#depPills .wd-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () { setDepositAmt(pill.dataset.amt); });
+    });
+    if ($('depositAmt')) {
+      $('depositAmt').addEventListener('input', function () {
+        document.querySelectorAll('#depPills .wd-pill').forEach(function (p) {
+          p.classList.toggle('on', String(p.dataset.amt) === String(this.value));
+        }.bind(this));
+      });
+    }
+    if ($('depositPhone')) {
+      $('depositPhone').addEventListener('input', function () {
+        this.value = this.value.replace(/[^\d\s]/g, '').slice(0, 12);
+      });
+    }
+    $('btnConfirmDeposit').addEventListener('click', function () { confirmDeposit(); });
+    document.querySelectorAll('#opGrid .op-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        selectedOp = card.dataset.op;
+        document.querySelectorAll('#opGrid .op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
+      });
+    });
+    document.querySelectorAll('#withdrawModal .wd-pill').forEach(function (pill) {
       pill.addEventListener('click', function () {
         document.querySelectorAll('.wd-pill').forEach(function (p) { p.classList.remove('on'); });
         pill.classList.add('on');
@@ -917,7 +1024,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=11').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=12').catch(function () { /* ignore */ });
     }
   }
 
@@ -946,6 +1053,7 @@
     D6.Chart.start();
     requestAnimationFrame(D6.Chart.resize);
     refreshRemoteVault();
+    checkDepositReturn();
   }
 
   function loopParticles() {
@@ -1004,9 +1112,15 @@
         closeModeMenu();
       });
       document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) refreshRemoteVault();
+        if (!document.hidden) {
+          refreshRemoteVault();
+          checkDepositReturn();
+        }
       });
-      window.addEventListener('pageshow', function () { refreshRemoteVault(); });
+      window.addEventListener('pageshow', function () {
+        refreshRemoteVault();
+        checkDepositReturn();
+      });
       setInterval(updatePayoutUi, 1000);
       D6.Auth.ensureAdmin();
       if (location.hash.indexOf('#preview') === 0) {
