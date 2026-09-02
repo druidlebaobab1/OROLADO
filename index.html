@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=15">
+  <link rel="stylesheet" href="css/app.css?v=16">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -153,6 +153,17 @@
           </div>
           <div class="chart-stage">
             <canvas id="chartCanvas"></canvas>
+            <div class="chart-tools">
+              <div class="ind-pills" role="toolbar" aria-label="Indicateurs">
+                <button type="button" class="ind-btn on" data-ind="ma" title="Moyenne mobile">MA</button>
+                <button type="button" class="ind-btn" data-ind="rsi" title="RSI 14">RSI</button>
+                <button type="button" class="ind-btn" data-ind="bb" title="Bollinger">BB</button>
+              </div>
+              <div class="zoom-btns">
+                <button type="button" id="chartZoomIn" aria-label="Zoom avant">+</button>
+                <button type="button" id="chartZoomOut" aria-label="Zoom arrière">−</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -389,13 +400,13 @@
 
   <div id="settlePortal" class="settle-portal" aria-live="polite"></div>
 
-  <script src="js/config.js?v=15"></script>
-  <script src="js/i18n.js?v=15"></script>
-  <script src="js/store.js?v=15"></script>
-  <script src="js/api.js?v=15"></script>
-  <script src="js/auth.js?v=15"></script>
-  <script src="js/engine.js?v=15"></script>
-  <script src="js/chart.js?v=15"></script>
-  <script src="js/app.js?v=15"></script>
+  <script src="js/config.js?v=16"></script>
+  <script src="js/i18n.js?v=16"></script>
+  <script src="js/store.js?v=16"></script>
+  <script src="js/api.js?v=16"></script>
+  <script src="js/auth.js?v=16"></script>
+  <script src="js/engine.js?v=16"></script>
+  <script src="js/chart.js?v=16"></script>
+  <script src="js/app.js?v=16"></script>
 </body>
 </html>

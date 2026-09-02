@@ -10,40 +10,139 @@
   var sessionNonce = D6.uid();
   var orderSeq = 0;
   var MAX_OPEN = 5;
+  var CANDLE_MS = 1000;
+  var HISTORY_SEC = 240;
+  var synthCache = {};
+
+  function u32(n) {
+    n = Math.imul(n ^ (n >>> 16), 2246822507);
+    n = Math.imul(n ^ (n >>> 13), 3266489909);
+    return (n ^ (n >>> 16)) >>> 0;
+  }
+
+  function uhash01(i, salt) {
+    return u32(Math.imul(i | 0, 374761393) ^ Math.imul(salt | 0, 668265263)) / 4294967296;
+  }
+
+  function valueNoise(t, salt) {
+    var i = Math.floor(t);
+    var f = t - i;
+    var u = f * f * (3 - 2 * f);
+    return uhash01(i, salt) * (1 - u) + uhash01(i + 1, salt) * u;
+  }
+
+  function assetSalt(assetId) {
+    return assetId === 'stable' ? 221713 : 904177;
+  }
+
+  function synthPrice(asset, tSec) {
+    var salt = assetSalt(asset.id);
+    var scale = asset.id === 'stable' ? 0.18 : 1;
+    var t = Number(tSec) || 0;
+    var wave = Math.sin(t * 0.041) * 18 + Math.cos(t * 0.093) * 11 + Math.sin(t * 0.017) * 32;
+    var n = (valueNoise(t, salt) - 0.5) * 16
+      + (valueNoise(t * 2.17, salt + 41) - 0.5) * 7
+      + (valueNoise(t * 8.3, salt + 113) - 0.5) * 2.4;
+    return asset.basePrice + (wave + n) * scale;
+  }
+
+  function candleForBucket(asset, bucket) {
+    var start = bucket * CANDLE_MS;
+    var o = synthPrice(asset, start / 1000);
+    var h = o;
+    var l = o;
+    var c = o;
+    var k;
+    for (k = 1; k <= 4; k++) {
+      var p = synthPrice(asset, (start + k * 200) / 1000);
+      if (p > h) h = p;
+      if (p < l) l = p;
+      c = p;
+    }
+    return { o: o, h: h, l: l, c: c, t: start };
+  }
+
+  function formingCandle(asset, nowMs) {
+    var bucket = Math.floor(nowMs / CANDLE_MS);
+    var start = bucket * CANDLE_MS;
+    var o = synthPrice(asset, start / 1000);
+    var h = o;
+    var l = o;
+    var c = synthPrice(asset, nowMs / 1000);
+    var elapsed = nowMs - start;
+    var k;
+    var steps = Math.max(1, Math.min(5, Math.floor(elapsed / 200) + 1));
+    for (k = 1; k < steps; k++) {
+      var p = synthPrice(asset, (start + k * 200) / 1000);
+      if (p > h) h = p;
+      if (p < l) l = p;
+    }
+    h = Math.max(h, c);
+    l = Math.min(l, c);
+    return { o: o, h: h, l: l, c: c, t: start };
+  }
+
+  function rebuildHistory(asset, nowMs) {
+    var bucket = Math.floor(nowMs / CANDLE_MS);
+    var start = bucket - HISTORY_SEC + 1;
+    var candles = [];
+    var history = [];
+    var i;
+    var b;
+    var c;
+    for (i = 0; i < HISTORY_SEC - 1; i++) {
+      b = start + i;
+      c = candleForBucket(asset, b);
+      candles.push(c);
+      history.push(c.c);
+    }
+    var forming = formingCandle(asset, nowMs);
+    history.push(forming.c);
+    return { candles: candles, forming: forming, history: history, to: bucket - 1 };
+  }
+
+  function syncMarket(market, asset, nowMs) {
+    nowMs = nowMs || Date.now();
+    var bucket = Math.floor(nowMs / CANDLE_MS);
+    var st = synthCache[asset.id];
+    if (!st || st.to !== bucket - 1) {
+      if (st && st.to === bucket - 2 && st.candles && st.candles.length) {
+        var done = candleForBucket(asset, bucket - 1);
+        st.candles.push(done);
+        if (st.candles.length > HISTORY_SEC - 1) st.candles.shift();
+        st.to = bucket - 1;
+      } else {
+        st = rebuildHistory(asset, nowMs);
+        synthCache[asset.id] = st;
+      }
+    }
+    var forming = formingCandle(asset, nowMs);
+    var history = st.history || [];
+    history.length = 0;
+    var hi;
+    for (hi = 0; hi < st.candles.length; hi++) history.push(st.candles[hi].c);
+    history.push(forming.c);
+    st.history = history;
+    market.price = forming.c;
+    market.candles = st.candles;
+    market.candle = forming;
+    market.history = history;
+    market.ticksInCandle = Math.floor((nowMs % CANDLE_MS) / 80);
+    return market;
+  }
 
   function seedMarket(assetId) {
     var asset = C.ASSETS[assetId];
-    var price = asset.basePrice;
-    var history = [];
-    var candles = [];
-    var candle = { o: price, h: price, l: price, c: price };
-    var ticks = 0;
-    var i;
-    for (i = 0; i < 220; i++) {
-      var shock = (Math.random() - 0.48) * asset.tickNoise * 0.9;
-      price = Math.max(asset.basePrice * 0.85, price + shock + (asset.basePrice - price) * 0.012);
-      history.push(price);
-      if (i === 0) candle = { o: price, h: price, l: price, c: price };
-      candle.h = Math.max(candle.h, price);
-      candle.l = Math.min(candle.l, price);
-      candle.c = price;
-      ticks++;
-      if (ticks >= asset.ticksPerCandle) {
-        candles.push({ o: candle.o, h: candle.h, l: candle.l, c: candle.c, t: Date.now() - (220 - i) * asset.tickMs });
-        candle = { o: price, h: price, l: price, c: price };
-        ticks = 0;
-      }
-    }
-    if (ticks > 0) candles.push(candle);
-    return {
+    var market = {
       id: assetId,
-      price: price,
-      history: history,
-      candles: candles,
-      candle: candle,
-      ticksInCandle: ticks,
+      price: asset.basePrice,
+      history: [],
+      candles: [],
+      candle: { o: asset.basePrice, h: asset.basePrice, l: asset.basePrice, c: asset.basePrice },
+      ticksInCandle: 0,
       payout: C.REAL_PAYOUT
     };
+    return syncMarket(market, asset, Date.now());
   }
 
   function rollPayout(asset, mode) {
@@ -108,60 +207,6 @@
       return { ok: false, cap: balance, reason: D6.I18N.t('insufficient') };
     }
     return { ok: true, cap: balance };
-  }
-
-  function gauss() {
-    var u = 0;
-    var v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
-    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-  }
-
-  function applyTick(market, asset, activeTrade) {
-    var vol = Math.max(0.04, asset.tickNoise);
-    var mom = market.mom || 0;
-    mom = mom * 0.88 + gauss() * vol * 0.38;
-    market.mom = mom;
-    var reversion = (asset.basePrice - market.price) * 0.00035;
-    var shock = mom + reversion + gauss() * vol * 0.55;
-
-    if (activeTrade && intents[activeTrade.id] && activeTrade.assetId === market.id) {
-      var progress = 1 - (activeTrade.timeLeft / Math.max(0.01, activeTrade.duration));
-      var shouldWin = intents[activeTrade.id].target === 'win';
-      var isCall = activeTrade.side === 'call';
-      var dir = (isCall && shouldWin) || (!isCall && !shouldWin) ? 1 : -1;
-      var targetGap = Math.max(vol * 1.6, 0.08);
-      if (progress < 0.5) {
-        if (Math.random() < 0.2) shock -= dir * vol * 0.45;
-      } else if (progress < 0.78) {
-        shock += dir * vol * 0.22;
-      } else {
-        var targetPx = activeTrade.entryPrice + dir * targetGap;
-        shock += (targetPx - market.price) * 0.16 + gauss() * vol * 0.12;
-      }
-    }
-
-    var prev = market.price;
-    var next = Math.max(asset.basePrice * 0.55, prev + shock);
-    var wick = Math.abs(gauss()) * vol * 0.85;
-    var hi = Math.max(prev, next) + (Math.random() < 0.42 ? wick : wick * 0.12);
-    var lo = Math.min(prev, next) - (Math.random() < 0.42 ? wick : wick * 0.12);
-    market.price = next;
-    market.history.push(next);
-    if (market.history.length > 480) market.history.shift();
-
-    var c = market.candle;
-    c.h = Math.max(c.h, hi, next);
-    c.l = Math.min(c.l, lo, next);
-    c.c = next;
-    market.ticksInCandle++;
-    if (market.ticksInCandle >= asset.ticksPerCandle) {
-      market.candles.push({ o: c.o, h: c.h, l: c.l, c: c.c, t: Date.now() });
-      if (market.candles.length > 90) market.candles.shift();
-      market.candle = { o: next, h: next, l: next, c: next };
-      market.ticksInCandle = 0;
-    }
   }
 
   function expiryOf(t) {
@@ -260,17 +305,17 @@
 
     tick: function (assetId) {
       ensureMarkets();
-      var market = markets[assetId];
-      var asset = C.ASSETS[assetId];
-      if (!market || !asset) return;
       var now = Date.now();
       var i;
       for (i = 0; i < trades.length; i++) {
         syncTime(trades[i]);
       }
-      var steer = soonestTrade();
-      if (steer && steer.settled) steer = null;
-      applyTick(market, asset, steer && !steer.settled && steer.assetId === market.id ? steer : null);
+      var id;
+      for (id in C.ASSETS) {
+        if (C.ASSETS.hasOwnProperty(id)) {
+          syncMarket(markets[id], C.ASSETS[id], now);
+        }
+      }
     },
 
     placeOrder: function (user, opts) {
@@ -380,32 +425,20 @@
         shouldWin = false;
       }
 
-      var market = markets[trade.assetId];
-      var asset = C.ASSETS[trade.assetId];
       var isCall = trade.side === 'call';
-      var exitPrice;
-
-      if (shouldWin) {
-        var winDelta = Math.max(asset.tickNoise * 0.55, 0.28);
-        exitPrice = trade.entryPrice + (isCall ? 1 : -1) * winDelta;
-      } else {
-        var miss = 0.035 + Math.random() * Math.max(0.08, asset.tickNoise * 0.07);
-        exitPrice = trade.entryPrice + (isCall ? -1 : 1) * miss;
-      }
-
-      if (market) {
-        market.price = exitPrice;
-        if (market.candle) {
-          market.candle.c = exitPrice;
-          market.candle.h = Math.max(market.candle.h, exitPrice);
-          market.candle.l = Math.min(market.candle.l, exitPrice);
-        }
-        if (market.history.length) market.history[market.history.length - 1] = exitPrice;
-      }
-
       var won = shouldWin;
       var payoutAmount = 0;
       var net;
+
+      var market = markets[trade.assetId];
+      var exitPrice = market ? market.price : trade.entryPrice;
+      if (shouldWin) {
+        var winDelta = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.55, 0.28);
+        exitPrice = trade.entryPrice + (isCall ? 1 : -1) * winDelta;
+      } else {
+        var miss = 0.035 + Math.random() * Math.max(0.08, (C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.07);
+        exitPrice = trade.entryPrice + (isCall ? -1 : 1) * miss;
+      }
 
       if (won) {
         payoutAmount = Math.floor(trade.stake * trade.payout);
@@ -489,6 +522,11 @@
       var probe = stakeCap(user, Number.MAX_SAFE_INTEGER);
       return probe.cap;
     }
+  };
+
+  D6.Synth = {
+    price: synthPrice,
+    candleMs: CANDLE_MS
   };
 
   D6.Engine = api;
