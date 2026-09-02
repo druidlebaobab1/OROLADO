@@ -1,4 +1,5 @@
 data/orolado.json
+.env
 cloudflared.exe
 *.exe
 Thumbs.db

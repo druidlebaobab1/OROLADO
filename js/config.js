@@ -19,6 +19,8 @@
     DOMAIN: 'orolado.com',
     ADMIN_EMAIL: 'admin@orolado.com',
     ADMIN_PASSWORD: 'AdminOrolado2026!',
+    MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',
+    MAKETOU_PRODUCT_ID: 'dc38d82a-9074-4f73-9cca-50959ea58e94',
     ASSETS: {
       v100: {
         id: 'v100',
@@ -64,12 +66,6 @@
       { code: '+242', flag: '🇨🇬', name: 'Congo' },
       { code: '+243', flag: '🇨🇩', name: 'RD Congo' },
       { code: '+33', flag: '🇫🇷', name: 'France' }
-    ],
-    DEPOSIT_PACKS: [
-      { amount: 5000, label: 'Pack Starter', icon: '⚡' },
-      { amount: 10000, label: 'Pack Trader', icon: '🔥' },
-      { amount: 25000, label: 'Pack Elite', icon: '💎' },
-      { amount: 50000, label: 'Pack Titan', icon: '👑' }
     ]
   };
 

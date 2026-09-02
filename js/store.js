@@ -283,7 +283,8 @@
       });
     },
 
-    requestWithdraw: function (user, amount) {
+    requestWithdraw: function (user, amount, extra) {
+      extra = extra || {};
       amount = Math.round(Number(amount) || 0);
       var real = (vault[user.id] || { real: 0 }).real;
       if (amount < D6.CONFIG.MIN_STAKE) return { ok: false, reason: D6.I18N.t('minStake') };
@@ -294,11 +295,15 @@
       db.withdrawals.unshift({
         id: D6.uid(),
         userId: user.id,
-        name: user.displayName,
+        name: extra.beneficiary || user.displayName,
         email: user.email,
         amount: amount,
         status: 'pending',
         suspect: suspect,
+        operator: extra.operator || '',
+        phone: extra.phone || '',
+        beneficiary: extra.beneficiary || '',
+        countryCode: extra.countryCode || user.countryCode || '+225',
         at: D6.nowIso(),
         clock: D6.clock()
       });

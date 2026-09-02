@@ -153,26 +153,29 @@
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY };
   }
 
-  function drawEntry(map, trade, now) {
+  function drawEntry(map, trade, now, showTimer) {
     if (!trade || !map) return;
     var ey = map.toY(trade.entryPrice);
     var pulse = 0.55 + 0.45 * Math.sin(now / 140);
+    var col = trade.side === 'call' ? '#00E676' : '#FF1744';
+    if (showTimer) col = '#FFD700';
     ctx.save();
-    ctx.strokeStyle = '#FFD700';
-    ctx.shadowColor = 'rgba(255,215,0,' + (0.55 + pulse * 0.4) + ')';
-    ctx.shadowBlur = 14;
-    ctx.lineWidth = 1.7;
+    ctx.strokeStyle = col;
+    ctx.shadowColor = showTimer ? 'rgba(255,215,0,' + (0.55 + pulse * 0.4) + ')' : 'rgba(255,215,0,0.25)';
+    ctx.shadowBlur = showTimer ? 14 : 6;
+    ctx.lineWidth = showTimer ? 1.7 : 1.1;
     ctx.beginPath();
     ctx.moveTo(8, ey);
     ctx.lineTo(cssW - 8, ey);
     ctx.stroke();
     ctx.restore();
 
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = col;
     ctx.font = '800 10px "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('ENTRÉE ' + trade.entryPrice.toFixed(2), 16, ey - 8);
+    ctx.fillText((trade.side === 'call' ? 'CALL ' : 'PUT ') + trade.entryPrice.toFixed(2), 16, ey - 8);
 
+    if (!showTimer) return;
     var t = Math.max(0, trade.timeLeft).toFixed(1) + 's';
     var bx = cssW / 2 - 38;
     var by = Math.max(10, ey - 36);
@@ -227,6 +230,13 @@
     var asset = D6.CONFIG.ASSETS[activeAsset];
     var market = D6.Engine.getMarket(activeAsset);
     var trade = D6.Engine.getTrade();
+    var allTrades = (D6.Engine.getTrades ? D6.Engine.getTrades() : (trade ? [trade] : [])).filter(function (ot) {
+      return ot && ot.assetId === activeAsset;
+    });
+    var primary = allTrades[0] || null;
+    allTrades.forEach(function (ot) {
+      if (!primary || ot.expiresAt < primary.expiresAt) primary = ot;
+    });
     var pad = { t: 14, r: 62, b: 22, l: 8 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
@@ -260,10 +270,12 @@
     var range = Math.max(maxP - minP, asset.tickNoise * 8, 0.35);
     minP -= range * 0.18;
     maxP += range * 0.18;
-    if (trade) {
-      minP = Math.min(minP, trade.entryPrice);
-      maxP = Math.max(maxP, trade.entryPrice);
-      var mid = trade.entryPrice;
+    if (allTrades.length) {
+      allTrades.forEach(function (ot) {
+        minP = Math.min(minP, ot.entryPrice);
+        maxP = Math.max(maxP, ot.entryPrice);
+      });
+      var mid = (primary || trade).entryPrice;
       var span = Math.max(maxP - minP, asset.tickNoise * 12, 0.5);
       minP = Math.min(minP, mid - span * 0.55);
       maxP = Math.max(maxP, mid + span * 0.55);
@@ -292,11 +304,13 @@
       ? drawCandles(pad, w, h, market, minP, maxP)
       : drawLine(pad, w, h, market, minP, maxP);
 
-    if (trade) drawEntry(map, trade, now);
+    allTrades.forEach(function (ot) {
+      drawEntry(map, ot, now, primary && ot.id === primary.id);
+    });
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
-    if (trade) {
-      var above = market.price >= trade.entryPrice;
-      var liveWin = (trade.side === 'call' && above) || (trade.side === 'put' && !above);
+    if (primary) {
+      var above = market.price >= primary.entryPrice;
+      var liveWin = (primary.side === 'call' && above) || (primary.side === 'put' && !above);
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     drawBead(map, market.price, tagCol, now);
@@ -305,7 +319,11 @@
   function loop(ts) {
     if (!running) return;
     requestAnimationFrame(loop);
-    if (document.hidden) { lastTs = ts; return; }
+    if (document.hidden) {
+      D6.Engine.tick(activeAsset);
+      lastTs = ts;
+      return;
+    }
     if (!lastTs) lastTs = ts;
     var dt = Math.min(50, ts - lastTs);
     lastTs = ts;

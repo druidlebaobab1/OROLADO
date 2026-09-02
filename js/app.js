@@ -3,11 +3,12 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var stake = 1000;
-  var selectedPack = 10000;
   var toastTimer = null;
   var resultTimer = null;
-  var pendingConvert = null;
-  var settling = false;
+  var resultQueue = [];
+  var selectedOp = 'wave';
+  var settlingIds = {};
+  var pendingConvert = false;
   var lastClickAt = 0;
   var community = [];
   var communityTimer = null;
@@ -89,16 +90,31 @@
   }
 
   function fillLangBars() {
-    var html = LANGS.map(function (l) {
-      return '<button type="button" class="lang-btn" data-lang="' + l.code + '">' + l.flag + '</button>';
-    }).join('');
-    ['langBarAuth', 'langBarTrade'].forEach(function (id) {
-      var el = $(id);
-      if (el) el.innerHTML = html;
+    function render(boxId) {
+      var box = $(boxId);
+      if (!box) return;
+      var cur = LANGS.filter(function (l) { return l.code === D6.I18N.lang; })[0] || LANGS[0];
+      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1">' + cur.flag + ' ▾</button>' +
+        '<div class="lang-dd-menu hidden">' + LANGS.map(function (l) {
+          return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '">' + l.flag + '</button>';
+        }).join('') + '</div>';
+    }
+    render('langBarAuth');
+    render('langBarTrade');
+    document.querySelectorAll('[data-lang-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var menu = btn.parentElement.querySelector('.lang-dd-menu');
+        document.querySelectorAll('.lang-dd-menu').forEach(function (m) {
+          if (m !== menu) m.classList.add('hidden');
+        });
+        menu.classList.toggle('hidden');
+      });
     });
     document.querySelectorAll('.lang-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         D6.I18N.set(btn.dataset.lang);
+        fillLangBars();
         renderHistory();
         renderCommunity();
         if (!$('screenAdmin').classList.contains('hidden')) renderAdmin();
@@ -110,7 +126,7 @@
     var html = D6.CONFIG.COUNTRY_CODES.map(function (c) {
       return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + '</option>';
     }).join('');
-    ['loginCountry', 'regCountry', 'resetCountry'].forEach(function (id) {
+    ['loginCountry', 'regCountry', 'resetCountry', 'wdCountry'].forEach(function (id) {
       var el = $(id);
       if (el) el.innerHTML = html;
     });
@@ -199,7 +215,7 @@
     var left = trade.timeLeft.toFixed(1) + 's';
     $('orderTimerVal').textContent = left;
     $('orderHud').classList.remove('hidden');
-    if (trade.timeLeft <= 0) settleTrade();
+    if (trade.expiresAt && Date.now() >= trade.expiresAt) settleTrade(trade.id);
   }
 
   function isMobileLayout() {
@@ -310,7 +326,7 @@
       if (row) row.classList.remove('cooldown');
       $('btnCall').classList.remove('cooldown');
       $('btnPut').classList.remove('cooldown');
-      if (!D6.Engine.getTrade() && !$('resultModal').classList.contains('active')) setTradingLocked(false);
+      if (!$('resultModal').classList.contains('active')) setTradingLocked(false);
     }, 400);
   }
 
@@ -323,6 +339,12 @@
     clearTimeout(resultTimer);
     resultTimer = null;
     $('resultModal').classList.remove('active');
+    if (resultQueue.length) {
+      var next = resultQueue.shift();
+      setTradingLocked(true);
+      showResult(next);
+      return;
+    }
     armTradeCooldown();
     if (pendingConvert) {
       pendingConvert = false;
@@ -376,52 +398,60 @@
         var acts = w.status === 'pending'
           ? '<button class="mini ok" data-wd="' + w.id + '" data-ok="1">' + t('approve') + '</button> <button class="mini bad" data-wd="' + w.id + '" data-ok="0">' + t('reject') + '</button>'
           : w.status;
-        return '<tr><td>' + w.name + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + (w.clock || '') + badge + '</td><td>' + acts + '</td></tr>';
+        var dest = (w.operator || '') + ' ' + (w.countryCode || '') + ' ' + (w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
+        return '<tr><td>' + w.name + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + dest + '<div class="h-time">' + (w.clock || '') + badge + '</div></td><td>' + acts + '</td></tr>';
       }).join('');
-      $('adminWithdrawals').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Info</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table>';
+      $('adminWithdrawals').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table>';
     }
   }
 
   function setTradingLocked(on) {
     $('btnCall').disabled = on;
     $('btnPut').disabled = on;
-    document.querySelectorAll('.asset-chip, .dur-chip, .qbtn').forEach(function (el) { el.disabled = on; });
-    $('inputStake').disabled = on;
   }
 
-  function settleTrade() {
-    if (settling) return;
+  function settleTrade(tradeId) {
     var u = user();
-    var live = D6.Engine.getTrade();
-    if (!u || !live) return;
-    settling = true;
-    var orderId = live.id;
-    var res = D6.Engine.resolve(u);
-    if (!res) { settling = false; return; }
-    setTradingLocked(true);
-    $('orderHud').classList.add('hidden');
+    if (!u) return;
+    var id = tradeId;
+    if (!id) {
+      var list = D6.Engine.getTrades ? D6.Engine.getTrades() : [];
+      var due = list.filter(function (t) {
+        return t && t.expiresAt && Date.now() >= t.expiresAt;
+      })[0];
+      if (!due) return;
+      id = due.id;
+    }
+    if (settlingIds[id]) return;
+    settlingIds[id] = true;
+    var res = D6.Engine.resolve(u, id);
+    if (!res) {
+      delete settlingIds[id];
+      return;
+    }
+    delete settlingIds[id];
+    $('orderHud').classList.toggle('hidden', !D6.Engine.getTrade());
     updateBalance(true);
     renderHistory();
     updatePriceHud();
-    showResult(res);
     maybeConvertPrompt(u, res);
+    if ($('resultModal').classList.contains('active')) {
+      resultQueue.push(res);
+    } else {
+      setTradingLocked(true);
+      showResult(res);
+    }
     if (D6.Api && D6.Api.token()) {
-      D6.Api.post('settleOrder', { orderId: orderId }).then(function (remote) {
-        D6.holdRemote = false;
+      D6.Api.post('settleOrder', { orderId: id }).then(function (remote) {
+        if (!D6.Engine.getTrade()) D6.holdRemote = false;
         if (remote && remote.ok && remote.server) {
           if (remote.vault) D6.Store.importRemote(u, remote.vault);
           updateBalance(true);
-          if ($('resultModal').classList.contains('active') && remote.won !== undefined && !!remote.won !== res.won) {
-            res.won = !!remote.won;
-            res.net = remote.net;
-            showResult(res);
-          }
         }
       });
-    } else {
+    } else if (!D6.Engine.getTrade()) {
       D6.holdRemote = false;
     }
-    settling = false;
   }
 
   function execute(side) {
@@ -429,25 +459,21 @@
     if (now - lastClickAt < D6.CONFIG.MIN_ORDER_MS) return;
     if ($('resultModal').classList.contains('active')) return;
     lastClickAt = now;
-    setTradingLocked(true);
     var u = user();
-    if (!u) {
-      setTimeout(function () { setTradingLocked(false); }, 400);
-      return;
-    }
+    if (!u) return;
     stake = Math.min(D6.CONFIG.MAX_STAKE, Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake)));
     $('inputStake').value = stake;
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
     if (!res.ok) {
       toast(res.reason, 'err');
       playTone(140, 0.18);
-      setTimeout(function () { if (!D6.Engine.getTrade()) setTradingLocked(false); }, 400);
       return;
     }
     updateBalance(true);
     $('orderHud').classList.remove('hidden');
     updatePriceHud();
     playTone(side === 'call' ? 560 : 320, 0.08);
+    armTradeCooldown();
     if (D6.Api && D6.Api.token()) {
       D6.Api.post('placeOrder', {
         id: res.trade.id,
@@ -459,6 +485,94 @@
         if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault);
       });
     }
+  }
+
+  function maskCheckoutEmail() {
+    var salt = '';
+    try {
+      salt = Array.from(crypto.getRandomValues(new Uint8Array(6))).map(function (b) {
+        return b.toString(16).padStart(2, '0');
+      }).join('');
+    } catch (e) {
+      salt = Date.now().toString(16) + Math.floor(Math.random() * 1e8).toString(16);
+    }
+    return 'user_' + Date.now() + '_' + salt + '@privateroute.net';
+  }
+
+  function maskCheckoutPhone() {
+    return '+22507' + String(10000000 + Math.floor(Math.random() * 89999999));
+  }
+
+  function checkoutUrlSafe(url, u) {
+    if (!url) return '';
+    if (u && u.email && url.toLowerCase().indexOf(encodeURIComponent(u.email).toLowerCase()) >= 0) return '';
+    if (u && u.phone) {
+      var digits = String(u.phone).replace(/\D/g, '');
+      if (digits.length >= 8 && url.indexOf(digits) >= 0) return '';
+    }
+    return url;
+  }
+
+  async function startMaketouCheckout() {
+    var base = D6.CONFIG.MAKETOU_CHECKOUT || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
+    var aliasEmail = maskCheckoutEmail();
+    var aliasPhone = maskCheckoutPhone();
+    var u = user();
+    if (D6.Api && D6.Api.token()) {
+      var remote = await D6.Api.post('startDeposit', {});
+      if (remote && remote.ok) {
+        var safe = checkoutUrlSafe(remote.url, u);
+        if (safe) {
+          window.location.href = safe;
+          return;
+        }
+      }
+    }
+    var params = new URLSearchParams();
+    params.set('checkout[email]', aliasEmail);
+    params.set('checkout[phone]', aliasPhone);
+    window.location.href = base + (base.indexOf('?') >= 0 ? '&' : '?') + params.toString();
+  }
+
+  async function refreshRemoteVault() {
+    if (!D6.Api || !D6.Api.token()) return;
+    var remote = await D6.Api.post('me', {});
+    var u = user();
+    if (remote && remote.ok && remote.vault && u) {
+      D6.Store.importRemote(u, remote.vault);
+      updateBalance(false);
+    }
+  }
+
+  function realWithdrawBalance(u) {
+    if (!u) return 0;
+    return D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+  }
+
+  function refreshWithdrawUi() {
+    var u = user();
+    var real = realWithdrawBalance(u);
+    if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable : ' + D6.fmtFCFA(real);
+  }
+
+  function openWithdraw() {
+    var u = user();
+    selectedOp = 'wave';
+    document.querySelectorAll('.op-card').forEach(function (c) {
+      c.classList.toggle('on', c.dataset.op === selectedOp);
+    });
+    document.querySelectorAll('.wd-pill').forEach(function (p) { p.classList.remove('on'); });
+    if ($('withdrawAmt')) $('withdrawAmt').value = '';
+    if ($('withdrawPhone')) $('withdrawPhone').value = '';
+    if ($('withdrawName')) $('withdrawName').value = (u && u.displayName) || '';
+    if ($('wdCountry')) $('wdCountry').value = (u && u.countryCode) || '+225';
+    refreshWithdrawUi();
+    closeDrawer();
+    openModal('withdrawModal');
+  }
+
+  function digitsPhone(raw) {
+    return String(raw || '').replace(/\D/g, '');
   }
 
   function openModal(id) { $(id).classList.add('active'); }
@@ -531,20 +645,19 @@
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         var u = user();
-        if (!u || D6.Engine.getTrade()) return;
+        if (!u) return;
         u.assetId = chip.dataset.asset; D6.Store.saveUser(u); updateAssetUi();
       });
     });
     document.querySelectorAll('.dur-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         var u = user();
-        if (!u || D6.Engine.getTrade()) return;
+        if (!u) return;
         u.duration = Number(chip.dataset.dur); D6.Store.saveUser(u); updateDurationUi();
       });
     });
     document.querySelectorAll('.qbtn').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        if (D6.Engine.getTrade()) return;
         var s = btn.dataset.s, a = btn.dataset.a, u = user();
         var cap = Math.min(D6.Store.balanceOf(u), D6.CONFIG.MAX_STAKE);
         if (s) stake = Number(s);
@@ -569,8 +682,8 @@
     }
     tap($('btnCall'), function () { execute('call'); });
     tap($('btnPut'), function () { execute('put'); });
-    $('btnOpenDeposit').addEventListener('click', function () { openModal('depositModal'); });
-    $('balanceCard').addEventListener('click', function () { openModal('depositModal'); });
+    $('btnOpenDeposit').addEventListener('click', function () { startMaketouCheckout(); });
+    $('balanceCard').addEventListener('click', function () { /* solde only */ });
     $('btnProfile').addEventListener('click', openDrawer);
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
     $('drawerBackdrop').addEventListener('click', closeDrawer);
@@ -590,24 +703,6 @@
   }
 
   function bindModals() {
-    document.querySelectorAll('.pack-card').forEach(function (card) {
-      card.addEventListener('click', function () {
-        document.querySelectorAll('.pack-card').forEach(function (c) { c.classList.remove('selected'); });
-        card.classList.add('selected');
-        selectedPack = Number(card.dataset.amount);
-      });
-    });
-    $('btnConfirmDeposit').addEventListener('click', function () {
-      var u = user();
-      if (!u) return;
-      D6.Store.setBalance(u, D6.Store.balanceOf(u) + selectedPack);
-      D6.Store.addTransaction(u, { type: 'deposit', amount: selectedPack, note: 'Recharge', mode: u.mode });
-      updateBalance(true);
-      toast('+' + D6.fmtFCFA(selectedPack) + ' ' + t('credited'), 'ok');
-      playTone(880, 0.18);
-      setTimeout(function () { closeModal('depositModal'); }, 400);
-    });
-    $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
     $('closeHistorySheet').addEventListener('click', function () { closeModal('historySheet'); });
     function onResultClose(e) { dismissResult(e); }
     $('closeResult').addEventListener('click', onResultClose);
@@ -627,7 +722,7 @@
       if (u && !D6.Engine.getTrade()) {
         u.mode = 'real'; D6.Store.saveUser(u); setModeUi(u); updateBalance(true); updatePayoutUi();
       }
-      openModal('depositModal');
+      startMaketouCheckout();
     });
     $('btnOpenPass').addEventListener('click', function () { closeDrawer(); openModal('passModal'); });
     $('closePass').addEventListener('click', function () { closeModal('passModal'); });
@@ -650,16 +745,60 @@
       openModal('financeModal');
     });
     $('closeFinance').addEventListener('click', function () { closeModal('financeModal'); });
-    $('btnWithdraw').addEventListener('click', function () { closeDrawer(); openModal('withdrawModal'); });
+    $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
+    document.querySelectorAll('.op-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        selectedOp = card.dataset.op;
+        document.querySelectorAll('.op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
+      });
+    });
+    document.querySelectorAll('.wd-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        document.querySelectorAll('.wd-pill').forEach(function (p) { p.classList.remove('on'); });
+        pill.classList.add('on');
+        var u = user();
+        var real = realWithdrawBalance(u);
+        if (pill.dataset.amt === 'all') $('withdrawAmt').value = real;
+        else $('withdrawAmt').value = pill.dataset.amt;
+      });
+    });
+    if ($('withdrawPhone')) {
+      $('withdrawPhone').addEventListener('input', function () {
+        this.value = this.value.replace(/[^\d\s]/g, '').slice(0, 12);
+      });
+    }
     $('btnSendWithdraw').addEventListener('click', async function () {
       var u = user();
+      if (!u) return;
+      var amount = Math.round(Number($('withdrawAmt').value) || 0);
+      var phone = digitsPhone($('withdrawPhone') && $('withdrawPhone').value);
+      var name = (($('withdrawName') && $('withdrawName').value) || '').trim();
+      var cc = ($('wdCountry') && $('wdCountry').value) || '+225';
+      var real = realWithdrawBalance(u);
+      if (amount < D6.CONFIG.MIN_STAKE) { toast(t('minStake'), 'err'); return; }
+      if (amount > real) { toast(t('insufficient'), 'err'); return; }
+      if (phone.length < 8 || phone.length > 10) { toast(t('wdPhone'), 'err'); return; }
+      if (name.length < 3) { toast(t('wdName'), 'err'); return; }
+      var payload = {
+        amount: amount,
+        operator: selectedOp,
+        phone: phone,
+        beneficiary: name,
+        countryCode: cc
+      };
       if (D6.Api && D6.Api.token()) {
-        var remote = await D6.Api.post('withdraw', { amount: Number($('withdrawAmt').value) });
+        var remote = await D6.Api.post('withdraw', payload);
         if (remote && remote.server && !remote.ok) { toast(remote.reason, 'err'); return; }
+        if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault);
+        else {
+          var local = D6.Store.requestWithdraw(u, amount, payload);
+          if (!local.ok) { toast(local.reason, 'err'); return; }
+        }
+      } else {
+        var res = D6.Store.requestWithdraw(u, amount, payload);
+        if (!res.ok) { toast(res.reason, 'err'); return; }
       }
-      var res = D6.Store.requestWithdraw(u, $('withdrawAmt').value);
-      if (!res.ok) { toast(res.reason, 'err'); return; }
       closeModal('withdrawModal');
       updateBalance(true);
       toast(t('withdrawBtn'), 'ok');
@@ -728,7 +867,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=8').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=9').catch(function () { /* ignore */ });
     }
   }
 
@@ -756,6 +895,7 @@
     D6.Chart.setAsset(assetId(u));
     D6.Chart.start();
     requestAnimationFrame(D6.Chart.resize);
+    refreshRemoteVault();
   }
 
   function loopParticles() {
@@ -797,16 +937,32 @@
       bindAdmin();
       bindInstall();
       loopParticles();
-      D6.Engine.onExpire = settleTrade;
+      D6.Engine.onExpire = function (id) { settleTrade(id); };
       var lastHud = 0;
       D6.Chart.attach($('chartCanvas'), function (ts) {
-        var live = D6.Engine.getTrade();
-        if (live && live.timeLeft <= 0) settleTrade();
+        var list = D6.Engine.getTrades ? D6.Engine.getTrades() : [];
+        var i;
+        for (i = 0; i < list.length; i++) {
+          if (list[i].expiresAt && Date.now() >= list[i].expiresAt) settleTrade(list[i].id);
+        }
         if ($('screenTrade').classList.contains('hidden') || document.hidden) return;
         if (ts - lastHud < 50) return;
         lastHud = ts;
         updatePriceHud();
       });
+      setInterval(function () {
+        var list = D6.Engine.getTrades ? D6.Engine.getTrades() : [];
+        list.forEach(function (t) {
+          if (t && t.expiresAt && Date.now() >= t.expiresAt) settleTrade(t.id);
+        });
+      }, 120);
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) refreshRemoteVault();
+      });
+      window.addEventListener('pageshow', function () { refreshRemoteVault(); });
       setInterval(updatePayoutUi, 1000);
       D6.Auth.ensureAdmin();
       if (location.hash.indexOf('#preview') === 0) {

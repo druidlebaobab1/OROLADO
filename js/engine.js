@@ -3,12 +3,13 @@
 
   var C = D6.CONFIG;
   var markets = {};
-  var trade = null;
-  var intent = null;
+  var trades = [];
+  var intents = {};
   var payoutLive = {};
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
+  var MAX_OPEN = 5;
 
   function seedMarket(assetId) {
     var asset = C.ASSETS[assetId];
@@ -150,9 +151,9 @@
     var reversion = (asset.basePrice - market.price) * 0.00035;
     var shock = mom + reversion + gauss() * vol * 0.55;
 
-    if (activeTrade && intent && activeTrade.assetId === market.id) {
+    if (activeTrade && intents[activeTrade.id] && activeTrade.assetId === market.id) {
       var progress = 1 - (activeTrade.timeLeft / Math.max(0.01, activeTrade.duration));
-      var shouldWin = intent.target === 'win';
+      var shouldWin = intents[activeTrade.id].target === 'win';
       var isCall = activeTrade.side === 'call';
       var dir = (isCall && shouldWin) || (!isCall && !shouldWin) ? 1 : -1;
       var targetGap = Math.max(vol * 1.6, 0.08);
@@ -188,19 +189,36 @@
     }
   }
 
-  function publicTrade() {
-    if (!trade) return null;
+  function syncTime(t) {
+    t.timeLeft = Math.max(0, (t.expiresAt - Date.now()) / 1000);
+    return t.timeLeft;
+  }
+
+  function soonestTrade() {
+    if (!trades.length) return null;
+    var best = trades[0];
+    var i;
+    for (i = 1; i < trades.length; i++) {
+      if (trades[i].expiresAt < best.expiresAt) best = trades[i];
+    }
+    return best;
+  }
+
+  function publicTrade(t) {
+    if (!t) return null;
+    syncTime(t);
     return Object.freeze({
-      id: trade.id,
-      assetId: trade.assetId,
-      side: trade.side,
-      stake: trade.stake,
-      duration: trade.duration,
-      timeLeft: trade.timeLeft,
-      entryPrice: trade.entryPrice,
-      payout: trade.payout,
-      startedAt: trade.startedAt,
-      mode: trade.mode
+      id: t.id,
+      assetId: t.assetId,
+      side: t.side,
+      stake: t.stake,
+      duration: t.duration,
+      timeLeft: t.timeLeft,
+      entryPrice: t.entryPrice,
+      payout: t.payout,
+      startedAt: t.startedAt,
+      expiresAt: t.expiresAt,
+      mode: t.mode
     });
   }
 
@@ -220,7 +238,11 @@
     },
 
     getTrade: function () {
-      return publicTrade();
+      return publicTrade(soonestTrade());
+    },
+
+    getTrades: function () {
+      return trades.map(function (t) { return publicTrade(t); });
     },
 
     refreshPayout: function (assetId, mode) {
@@ -237,15 +259,17 @@
       var market = markets[assetId];
       var asset = C.ASSETS[assetId];
       if (!market || !asset) return;
-      if (trade && trade.assetId === assetId) {
-        var elapsed = (performance.now() - trade.startedAt) / 1000;
-        trade.timeLeft = Math.max(0, trade.duration - elapsed);
-        if (trade.timeLeft <= 0 && !trade.expireNotified) {
-          trade.expireNotified = true;
-          if (D6.Engine.onExpire) D6.Engine.onExpire();
+      var now = Date.now();
+      var i;
+      for (i = 0; i < trades.length; i++) {
+        syncTime(trades[i]);
+        if (now >= trades[i].expiresAt && !trades[i].expireNotified) {
+          trades[i].expireNotified = true;
+          if (D6.Engine.onExpire) D6.Engine.onExpire(trades[i].id);
         }
       }
-      applyTick(market, asset, trade);
+      var steer = soonestTrade();
+      applyTick(market, asset, steer && steer.assetId === market.id ? steer : null);
     },
 
     placeOrder: function (user, opts) {
@@ -253,10 +277,12 @@
       if (!user || !D6.Store.current() || D6.Store.current().id !== user.id) {
         return { ok: false, reason: 'Session invalide' };
       }
-      if (trade) return { ok: false, reason: 'Une position est déjà ouverte' };
+      if (trades.length >= MAX_OPEN) {
+        return { ok: false, reason: D6.I18N.t('maxPositions') };
+      }
 
-      var now = performance.now();
-      if (now - lastOrderAt < C.MIN_ORDER_MS) {
+      var nowPerf = performance.now();
+      if (nowPerf - lastOrderAt < C.MIN_ORDER_MS) {
         return { ok: false, reason: D6.I18N.t('antibot') };
       }
 
@@ -277,14 +303,16 @@
       });
 
       orderSeq += 1;
-      lastOrderAt = now;
+      lastOrderAt = nowPerf;
       D6.holdRemote = true;
       var target = decideOutcome(user);
       var entry = market.price;
-      var seal = makeSeal(user.id + '|' + side + '|' + stake + '|' + entry.toFixed(4) + '|' + duration);
+      var wall = Date.now();
+      var seal = makeSeal(user.id + '|' + side + '|' + stake + '|' + entry.toFixed(4) + '|' + duration + '|' + orderSeq);
+      var id = D6.uid();
 
-      trade = {
-        id: D6.uid(),
+      var t = {
+        id: id,
         assetId: assetId,
         side: side,
         stake: stake,
@@ -292,30 +320,52 @@
         timeLeft: duration,
         entryPrice: entry,
         payout: payout,
-        startedAt: now,
+        startedAt: wall,
+        expiresAt: wall + duration * 1000,
         mode: user.mode,
         userId: user.id,
-        seq: orderSeq
+        seq: orderSeq,
+        expireNotified: false
       };
-      intent = { target: target, seal: seal, userId: user.id, seq: orderSeq };
+      trades.push(t);
+      intents[id] = { target: target, seal: seal, userId: user.id, seq: orderSeq };
 
       if (user.mode === 'real') {
         user.realStakeVolume = (user.realStakeVolume || 0) + stake;
       }
       user.lastStake = stake;
       D6.Store.saveUser(user);
-      return { ok: true, trade: publicTrade() };
+      return { ok: true, trade: publicTrade(t) };
     },
 
-    resolve: function (user) {
-      if (!trade || !intent) return null;
-      if (!user || user.id !== trade.userId || user.id !== intent.userId) return null;
+    resolve: function (user, tradeId) {
+      if (!user || !trades.length) return null;
+      var idx = -1;
+      var i;
+      var now = Date.now();
+      if (tradeId) {
+        for (i = 0; i < trades.length; i++) {
+          if (trades[i].id === tradeId) { idx = i; break; }
+        }
+      } else {
+        for (i = 0; i < trades.length; i++) {
+          if (now >= trades[i].expiresAt) { idx = i; break; }
+        }
+      }
+      if (idx < 0) return null;
+      var trade = trades[idx];
+      var intent = intents[trade.id];
+      if (!intent || user.id !== trade.userId || user.id !== intent.userId) return null;
+      if (now < trade.expiresAt - 30) {
+        trade.expireNotified = false;
+        return null;
+      }
 
-      var elapsed = (performance.now() - trade.startedAt) / 1000;
-      if (elapsed < trade.duration - 0.02) return null;
-
-      var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration);
-      if (expectedSeal !== intent.seal || intent.seq !== trade.seq) return null;
+      var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
+      if (expectedSeal !== intent.seal || intent.seq !== trade.seq) {
+        trade.expireNotified = false;
+        return null;
+      }
 
       var market = markets[trade.assetId];
       var asset = C.ASSETS[trade.assetId];
@@ -391,9 +441,10 @@
       D6.Store.addPosition(user, position);
       D6.Store.saveUser(user);
 
-      var closed = publicTrade();
-      trade = null;
-      intent = null;
+      var closed = publicTrade(trade);
+      trades.splice(idx, 1);
+      delete intents[trade.id];
+      if (!trades.length) D6.holdRemote = false;
       return { trade: closed, position: position, won: won, net: net, exitPrice: exitPrice };
     },
 

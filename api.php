@@ -19,43 +19,14 @@ $ADMIN_EMAIL = 'admin@orolado.com';
 $ADMIN_PASS = 'AdminOrolado2026!';
 $SECRET = 'orolado-host-secret-2026';
 
-$dir = __DIR__ . '/data';
-if (!is_dir($dir)) {
-  mkdir($dir, 0755, true);
-}
-$file = $dir . '/orolado.json';
+require_once __DIR__ . '/orolado_lib.php';
+orolado_load_env();
 
-function blank_db(): array {
-  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => []];
-}
+$dir = orolado_data_dir();
+$file = orolado_data_file();
 
 function hash_pw(string $pw): string {
   return hash('sha256', 'orolado|' . $pw);
-}
-
-function load_db(string $file): array {
-  if (!is_file($file)) return blank_db();
-  $fp = fopen($file, 'r');
-  if (!$fp) return blank_db();
-  flock($fp, LOCK_SH);
-  $raw = stream_get_contents($fp);
-  flock($fp, LOCK_UN);
-  fclose($fp);
-  $data = json_decode($raw ?: '', true);
-  return is_array($data) ? array_merge(blank_db(), $data) : blank_db();
-}
-
-function save_db(string $file, array $db): bool {
-  $fp = fopen($file, 'c+');
-  if (!$fp) return false;
-  flock($fp, LOCK_EX);
-  ftruncate($fp, 0);
-  rewind($fp);
-  $ok = fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE)) !== false;
-  fflush($fp);
-  flock($fp, LOCK_UN);
-  fclose($fp);
-  return $ok;
 }
 
 function ensure_admin_user(array &$db, string $email, string $hash): array {
@@ -217,7 +188,13 @@ if ($action === 'upsert') {
   $user['role'] = $existing['role'] ?? 'user';
   if ($id === 'admin_master') $user['role'] = 'admin';
   $db['users'][$id] = $user;
-  if (isset($req['vault'])) $db['vault'][$id] = $req['vault'];
+  if (isset($req['vault']) && is_array($req['vault'])) {
+    $incoming = $req['vault'];
+    $serverReal = (int) ($db['vault'][$id]['real'] ?? 0);
+    $clientReal = (int) ($incoming['real'] ?? 0);
+    if ($serverReal > $clientReal) $incoming['real'] = $serverReal;
+    $db['vault'][$id] = $incoming;
+  }
   save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true]);
   exit;
@@ -282,22 +259,39 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Montant invalide']);
     exit;
   }
+  $operator = preg_replace('/[^a-z]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
+  if (!in_array($operator, ['wave', 'orange', 'mtn', 'moov'], true)) $operator = 'wave';
+  $phone = preg_replace('/\D/', '', (string) ($req['phone'] ?? ''));
+  $beneficiary = trim((string) ($req['beneficiary'] ?? $me['displayName'] ?? ''));
+  $countryCode = preg_replace('/[^\d+]/', '', (string) ($req['countryCode'] ?? $me['countryCode'] ?? '+225'));
+  if (strlen($phone) < 8) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Numéro Mobile Money invalide']);
+    exit;
+  }
+  if (strlen($beneficiary) < 3) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Nom du bénéficiaire requis']);
+    exit;
+  }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
   $db['vault'][$me['id']]['real'] = $real - $amount;
   $db['withdrawals'][] = [
     'id' => uniqid('wd_', true),
     'userId' => $me['id'],
-    'name' => $me['displayName'] ?? '',
+    'name' => $beneficiary,
     'email' => $me['email'] ?? '',
     'amount' => $amount,
     'status' => 'pending',
     'suspect' => $suspect,
+    'operator' => $operator,
+    'phone' => $phone,
+    'beneficiary' => $beneficiary,
+    'countryCode' => $countryCode,
     'at' => date('c'),
     'clock' => date('H:i:s')
   ];
   $db['withdrawals'] = array_values(array_reverse($db['withdrawals']));
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect]);
+  echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect, 'vault' => $db['vault'][$me['id']]]);
   exit;
 }
 
@@ -341,15 +335,17 @@ if ($action === 'placeOrder') {
     exit;
   }
   if (!isset($db['orders']) || !is_array($db['orders'])) $db['orders'] = [];
+  $open = 0;
   foreach ($db['orders'] as $o) {
     if (($o['id'] ?? '') === $oid) {
       echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $o['payout'] ?? 1.88, 'vault' => $db['vault'][$me['id']] ?? null, 'duplicate' => true]);
       exit;
     }
-    if (($o['userId'] ?? '') === $me['id'] && ($o['status'] ?? '') === 'open') {
-      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Une position est déjà ouverte']);
-      exit;
-    }
+    if (($o['userId'] ?? '') === $me['id'] && ($o['status'] ?? '') === 'open') $open++;
+  }
+  if ($open >= 5) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Maximum 5 positions ouvertes']);
+    exit;
   }
   $uid = $me['id'];
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 50000, 'real' => 0];
@@ -417,6 +413,52 @@ if ($action === 'settleOrder') {
     exit;
   }
   echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Ordre introuvable']);
+  exit;
+}
+
+if ($action === 'me') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  echo json_encode([
+    'ok' => true,
+    'server' => true,
+    'user' => $me,
+    'vault' => $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0]
+  ]);
+  exit;
+}
+
+if ($action === 'startDeposit') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $aliasEmail = maketou_alias_email();
+  $aliasPhone = maketou_alias_phone();
+  $ref = 'oro_' . bin2hex(random_bytes(12));
+  if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  $db['deposits'][] = [
+    'id' => $ref,
+    'ref' => $ref,
+    'userId' => $me['id'],
+    'aliasEmail' => $aliasEmail,
+    'aliasPhone' => $aliasPhone,
+    'status' => 'pending',
+    'amount' => 0,
+    'at' => date('c')
+  ];
+  save_db($file, $db);
+  echo json_encode([
+    'ok' => true,
+    'server' => true,
+    'ref' => $ref,
+    'url' => maketou_checkout_url($aliasEmail, $aliasPhone, $ref),
+    'productId' => maketou_product_id()
+  ]);
   exit;
 }
 
