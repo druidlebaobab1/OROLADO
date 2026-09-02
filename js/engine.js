@@ -104,35 +104,10 @@
     if (stake < C.MIN_STAKE) {
       return { ok: false, cap: C.MIN_STAKE, reason: D6.I18N.t('minStake') + ' ' + D6.fmtFCFA(C.MIN_STAKE) };
     }
-    if (stake > C.MAX_STAKE) {
-      return { ok: false, cap: C.MAX_STAKE, reason: D6.I18N.t('maxStake') + ' ' + D6.fmtFCFA(C.MAX_STAKE) };
-    }
     if (stake > balance) {
       return { ok: false, cap: balance, reason: D6.I18N.t('insufficient') };
     }
-    if (user.mode !== 'real') return { ok: true, cap: balance };
-
-    var capPct;
-    var capAbs;
-    if (balance < 10000) { capPct = 0.18; capAbs = 2500; }
-    else if (balance < 25000) { capPct = 0.14; capAbs = 5000; }
-    else if (balance < 100000) { capPct = 0.10; capAbs = 12000; }
-    else { capPct = 0.08; capAbs = 30000; }
-
-    var cap = Math.min(Math.floor(balance * capPct), capAbs, balance);
-    if (user.consecutiveLosses >= 1 && user.lastStake > 0) {
-      var mult = user.consecutiveLosses >= 3 ? 1.2 : 1.45;
-      cap = Math.min(cap, Math.floor(user.lastStake * mult));
-    }
-    cap = Math.max(C.MIN_STAKE, cap);
-    if (stake > cap) {
-      return {
-        ok: false,
-        cap: cap,
-        reason: 'Protection anti-martingale : mise max ' + D6.fmtFCFA(cap)
-      };
-    }
-    return { ok: true, cap: cap };
+    return { ok: true, cap: balance };
   }
 
   function gauss() {

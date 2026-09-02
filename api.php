@@ -324,7 +324,7 @@ if ($action === 'placeOrder') {
   if (!in_array($duration, [10, 30, 60], true)) $duration = 10;
   $mode = (($req['mode'] ?? '') === 'real') ? 'real' : 'demo';
   $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['id'] ?? ''));
-  if ($stake < 200 || $stake > 10000 || $oid === '') {
+  if ($stake < 100 || $oid === '') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise invalide']);
     exit;
   }

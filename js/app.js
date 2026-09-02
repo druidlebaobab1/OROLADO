@@ -11,10 +11,7 @@
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
-  var community = [];
-  var communityTimer = null;
   var deferredPrompt = null;
-  var COMM_NAMES = ['Trader', 'Alpha', 'Kouassi', 'Awa', 'Nana', 'Momo', 'Ibrahim', 'Fatou', 'Koffi', 'Yao'];
   var LANGS = [
     { code: 'fr', flag: '🇫🇷' },
     { code: 'en', flag: '🇬🇧' },
@@ -128,7 +125,6 @@
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) {
           if (m !== menu) m.classList.add('hidden');
         });
-        closeModeMenu();
         menu.classList.toggle('hidden');
       });
     });
@@ -138,7 +134,6 @@
         fillLangBars();
         if (user()) setModeUi(user());
         renderHistory();
-        renderCommunity();
         if (!$('screenAdmin').classList.contains('hidden')) renderAdmin();
       });
     });
@@ -158,53 +153,30 @@
     $('btnAdmin2').classList.toggle('hidden', !D6.Auth.isAdmin(u));
   }
 
-  function closeModeMenu() {
-    var menu = $('modeMenu');
-    var pill = $('modePill');
-    if (menu) menu.classList.add('hidden');
-    if (pill) pill.setAttribute('aria-expanded', 'false');
-  }
-
   function setModeUi(u) {
     if (!u) return;
     var demo = u.mode !== 'real';
-    var pill = $('modePill');
-    if (pill) {
-      pill.classList.toggle('is-demo', demo);
-      pill.classList.toggle('is-real', !demo);
-    }
-    if ($('modePillLabel')) $('modePillLabel').textContent = demo ? t('modeShortDemo') : t('modeShortReal');
-    document.querySelectorAll('.mode-option').forEach(function (el) {
+    document.querySelectorAll('.mode-btn').forEach(function (el) {
       el.classList.toggle('on', el.dataset.mode === (demo ? 'demo' : 'real'));
     });
-    if ($('modeBadge')) $('modeBadge').textContent = demo ? t('demo') : t('real');
-    var virt = D6.Store.demoBalance ? D6.Store.demoBalance(u) : 0;
-    var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
-    if ($('modeDemoBal')) $('modeDemoBal').textContent = t('virtualBal') + ' : ' + D6.fmtFCFA(virt);
-    if ($('modeRealBal')) $('modeRealBal').textContent = t('realBalHint') + ' : ' + D6.fmtFCFA(real);
   }
 
   function switchMode(next) {
     var u = user();
-    if (!u || D6.Engine.getTrade()) return;
+    if (!u) return;
+    if (D6.Engine.liveCount && D6.Engine.liveCount()) return;
     u.mode = next === 'real' ? 'real' : 'demo';
     D6.Store.saveUser(u);
     setModeUi(u);
     updateBalance(true);
     updatePayoutUi();
-    closeModeMenu();
+    renderHistory();
   }
 
   function updateBalance(flash) {
     var u = user();
     if (!u) return;
     $('balanceDisplay').textContent = D6.fmtFCFA(D6.Store.balanceOf(u));
-    if ($('modeDemoBal') && D6.Store.demoBalance) {
-      $('modeDemoBal').textContent = t('virtualBal') + ' : ' + D6.fmtFCFA(D6.Store.demoBalance(u));
-    }
-    if ($('modeRealBal') && D6.Store.realBalance) {
-      $('modeRealBal').textContent = t('realBalHint') + ' : ' + D6.fmtFCFA(D6.Store.realBalance(u));
-    }
     if (flash) {
       var card = $('balanceCard');
       card.classList.remove('flash');
@@ -287,65 +259,43 @@
       '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.net >= 0 ? '+' : '') + D6.fmtFCFA(h.net) + '</span></div>';
   }
 
+  function liveOrderRow(t) {
+    var asset = D6.CONFIG.ASSETS[t.assetId];
+    var name = (asset && (asset.short || asset.name)) || t.assetId;
+    return '<div class="h-item live">' +
+      '<span class="h-badge ' + t.side + '">' + (t.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
+      '<div><div class="h-main">' + name + ' · EN COURS</div>' +
+      '<div class="h-time">' + D6.fmtFCFA(t.stake) + '</div></div>' +
+      '<span class="h-gain">…</span></div>';
+  }
+
+  function ordersForMode(u) {
+    var mode = u && u.mode === 'real' ? 'real' : 'demo';
+    var live = (D6.Engine.getTrades ? D6.Engine.getTrades() : []).filter(function (t) {
+      return !t.mode || t.mode === mode;
+    });
+    live.sort(function (a, b) { return (b.startTime || 0) - (a.startTime || 0); });
+    var settled = ((u && u.positions) || []).filter(function (p) {
+      return !p.mode || p.mode === mode;
+    });
+    return { live: live, settled: settled };
+  }
+
   function renderHistory() {
     var u = user();
     var feed = $('historyFeed');
-    if (!u || !u.positions.length) {
-      feed.innerHTML = '<div class="empty-feed">' + t('noOrders') + '</div>';
-      return;
-    }
-    feed.innerHTML = u.positions.slice(0, histLimit()).map(orderRow).join('');
-  }
-
-  function renderCommunity() {
-    var feed = $('communityFeed');
-    if (!community.length) {
-      feed.innerHTML = '<div class="empty-feed">…</div>';
-      return;
-    }
-    feed.innerHTML = community.slice(0, histLimit()).map(function (h) {
-      return '<div class="comm-item"><div><span class="who">' + h.name + '</span> · ' + h.asset +
-        '</div><span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.won ? '+' : '−') + D6.fmtFCFA(h.amount) + '</span></div>';
-    }).join('');
+    if (!feed) return;
+    var orders = ordersForMode(u);
+    var html = orders.live.map(liveOrderRow).concat(orders.settled.slice(0, histLimit()).map(orderRow)).join('');
+    feed.innerHTML = html || '<div class="empty-feed">' + t('noOrders') + '</div>';
   }
 
   function renderHistorySheet() {
-    var live = !$('communityFeed').classList.contains('hidden');
     var el = $('historySheetFeed');
-    if (live) {
-      if (!community.length) { el.innerHTML = '<div class="empty-feed">…</div>'; return; }
-      el.innerHTML = community.slice(0, 40).map(function (h) {
-        return '<div class="comm-item"><div><span class="who">' + h.name + '</span> · ' + h.asset +
-          '</div><span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.won ? '+' : '−') + D6.fmtFCFA(h.amount) + '</span></div>';
-      }).join('');
-      return;
-    }
-    var u = user();
-    if (!u || !u.positions.length) {
-      el.innerHTML = '<div class="empty-feed">' + t('noOrders') + '</div>';
-      return;
-    }
-    el.innerHTML = u.positions.slice(0, 40).map(orderRow).join('');
-  }
-
-  function pushCommunityTick() {
-    var amounts = [500, 1000, 1500, 2000, 2500, 4750, 5000];
-    community.unshift({
-      name: COMM_NAMES[Math.floor(Math.random() * COMM_NAMES.length)] + '_' + (1000 + Math.floor(Math.random() * 9000)),
-      won: Math.random() < 0.57,
-      amount: amounts[Math.floor(Math.random() * amounts.length)],
-      asset: Math.random() > 0.45 ? 'Volatility 100' : 'Stable Core'
-    });
-    if (community.length > 24) community.length = 24;
-    if (document.hidden) return;
-    renderCommunity();
-  }
-
-  function startCommunity() {
-    if (communityTimer) return;
-    var i;
-    for (i = 0; i < 5; i++) pushCommunityTick();
-    communityTimer = setInterval(pushCommunityTick, 5000);
+    if (!el) return;
+    var orders = ordersForMode(user());
+    var html = orders.live.map(liveOrderRow).concat(orders.settled.slice(0, 40).map(orderRow)).join('');
+    el.innerHTML = html || '<div class="empty-feed">' + t('noOrders') + '</div>';
   }
 
   function maybeConvertPrompt(u, res) {
@@ -508,7 +458,7 @@
       syncTradeButtons();
       return;
     }
-    stake = Math.min(D6.CONFIG.MAX_STAKE, Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake)));
+    stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
     if (!res.ok) {
@@ -519,6 +469,7 @@
     }
     updateBalance(true);
     updatePriceHud();
+    patchHistorySoon();
     playTone(side === 'call' ? 560 : 320, 0.08);
     armTradeCooldown();
     syncTradeButtons();
@@ -763,28 +714,20 @@
   }
 
   function bindTrade() {
-    $('modePill').addEventListener('click', function (e) {
-      e.stopPropagation();
-      var menu = $('modeMenu');
-      var open = menu.classList.contains('hidden');
-      document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
-      menu.classList.toggle('hidden', !open);
-      $('modePill').setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    $('modeSwitcher').addEventListener('click', function (e) { e.stopPropagation(); });
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
     $('btnResetDemo').addEventListener('click', function (e) {
       e.stopPropagation();
       var u = user();
       if (!u) return;
-      if (D6.Engine.getTrade()) return;
+      if (D6.Engine.liveCount && D6.Engine.liveCount()) return;
       D6.Store.resetDemo(u);
       u.mode = 'demo';
       D6.Store.saveUser(u);
       setModeUi(u);
       updateBalance(true);
       updatePayoutUi();
+      renderHistory();
       toast(t('resetDemo'), 'ok');
     });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
@@ -804,11 +747,12 @@
     document.querySelectorAll('.qbtn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var s = btn.dataset.s, a = btn.dataset.a, u = user();
-        var cap = Math.min(D6.Store.balanceOf(u), D6.CONFIG.MAX_STAKE);
+        var cap = D6.Store.balanceOf(u);
         if (s) stake = Number(s);
-        else if (a === 'x2') stake = Math.min(stake * 2, cap);
+        else if (a === 'x2') stake = cap > 0 ? Math.min(stake * 2, cap) : stake * 2;
         else if (a === 'half') stake = Math.max(Math.floor(stake / 2), D6.CONFIG.MIN_STAKE);
-        stake = Math.min(stake, D6.CONFIG.MAX_STAKE);
+        if (cap > 0) stake = Math.min(stake, cap);
+        if (stake < D6.CONFIG.MIN_STAKE) stake = D6.CONFIG.MIN_STAKE;
         $('inputStake').value = stake;
         btn.classList.add('hit');
         setTimeout(function () { btn.classList.remove('hit'); }, 160);
@@ -832,15 +776,6 @@
     $('btnProfile').addEventListener('click', openDrawer);
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
     $('drawerBackdrop').addEventListener('click', closeDrawer);
-    document.querySelectorAll('.hist-tab').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        document.querySelectorAll('.hist-tab').forEach(function (x) { x.classList.remove('on'); });
-        tab.classList.add('on');
-        var live = tab.dataset.feed === 'live';
-        $('historyFeed').classList.toggle('hidden', live);
-        $('communityFeed').classList.toggle('hidden', !live);
-      });
-    });
     $('btnHistMore').addEventListener('click', function () {
       renderHistorySheet();
       openModal('historySheet');
@@ -1024,7 +959,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=12').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=13').catch(function () { /* ignore */ });
     }
   }
 
@@ -1038,7 +973,8 @@
 
   function enterApp() {
     var u = user();
-    stake = Math.min(1000, D6.Store.balanceOf(u) || 1000, D6.CONFIG.MAX_STAKE);
+    var bal = D6.Store.balanceOf(u);
+    stake = Math.max(D6.CONFIG.MIN_STAKE, Math.min(1000, bal > 0 ? bal : 1000));
     $('inputStake').value = stake;
     setModeUi(u);
     setAdminBtns(u);
@@ -1046,7 +982,6 @@
     updateDurationUi();
     updateBalance(false);
     renderHistory();
-    startCommunity();
     D6.I18N.apply();
     showScreen('screenTrade');
     D6.Chart.setAsset(assetId(u));
@@ -1109,7 +1044,6 @@
       }, 100);
       document.addEventListener('click', function () {
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
-        closeModeMenu();
       });
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
