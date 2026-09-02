@@ -17,9 +17,11 @@ function orolado_load_env(?string $path = null): void {
     if ($val !== '' && (($val[0] === '"' && str_ends_with($val, '"')) || ($val[0] === "'" && str_ends_with($val, "'")))) {
       $val = substr($val, 1, -1);
     }
-    if (getenv($key) === false) {
+    $cur = getenv($key);
+    if ($cur === false || $cur === '') {
       putenv($key . '=' . $val);
       $_ENV[$key] = $val;
+      $_SERVER[$key] = $val;
     }
   }
 }
@@ -86,9 +88,7 @@ function save_db(string $file, array $db): bool {
 }
 
 function maketou_alias_email(): string {
-  $ms = (string) (int) round(microtime(true) * 1000);
-  $n = (string) random_int(1000, 9999);
-  return 'user_' . $ms . '_' . $n . '@privatesync.net';
+  return 'user_' . ((string) (int) round(microtime(true) * 1000)) . '@privatesync.net';
 }
 
 function maketou_alias_phone(): string {
@@ -103,21 +103,30 @@ function maketou_product_id(): string {
   return 'dc38d82a-9074-4f73-9cca-50959ea58e94';
 }
 
-function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $ref): string {
+function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $ref, int $amount = 0, string $op = 'wave'): string {
   $qs = http_build_query([
     'checkout' => [
       'email' => $aliasEmail,
       'phone' => $aliasPhone,
+      'custom_price' => $amount,
+      'note' => $ref,
     ],
+    'custom_price' => $amount,
+    'amount' => $amount,
+    'currency' => 'XOF',
+    'product_id' => maketou_product_id(),
     'ref' => $ref,
     'note' => $ref,
+    'payment_method' => $op,
+    'operator' => $op,
   ]);
   return maketou_checkout_base() . '?' . $qs;
 }
 
 function maketou_api_key(): string {
+  orolado_load_env();
   $key = getenv('MAKETOU_API_KEY');
-  if ($key === false || $key === '') $key = $_ENV['MAKETOU_API_KEY'] ?? '';
+  if ($key === false || $key === '') $key = $_ENV['MAKETOU_API_KEY'] ?? ($_SERVER['MAKETOU_API_KEY'] ?? '');
   return trim((string) $key);
 }
 
@@ -226,7 +235,7 @@ function credit_paid_deposit(array $hit): array {
 
   $amount = (int) ($hit['amount'] ?? 0);
   $pendingAmt = (int) ($dep['amount'] ?? 0);
-  if ($amount <= 0 && $pendingAmt >= 2000) $amount = $pendingAmt;
+  if ($amount <= 0 && $pendingAmt >= 1000) $amount = $pendingAmt;
   if ($amount < 200 || $amount > 5000000) {
     flock($fp, LOCK_UN);
     fclose($fp);
@@ -345,50 +354,58 @@ function maketou_http_json(string $url, string $key, array $body): array {
 }
 
 function maketou_create_checkout(array $opts): array {
-  $key = maketou_api_key();
-  if ($key === '') return ['ok' => false, 'reason' => 'Passerelle indisponible', 'url' => ''];
   $aliasEmail = (string) ($opts['aliasEmail'] ?? '');
   if ($aliasEmail === '' || !str_contains($aliasEmail, '@privatesync.net')) {
     $aliasEmail = maketou_alias_email();
   }
-  $body = [
-    'product_id' => maketou_product_id(),
-    'productId' => maketou_product_id(),
-    'amount' => (int) ($opts['amount'] ?? 0),
-    'custom_price' => (int) ($opts['amount'] ?? 0),
-    'currency' => 'XOF',
-    'email' => $aliasEmail,
-    'phone' => (string) ($opts['phone'] ?? ''),
-    'first_name' => 'ORO',
-    'last_name' => 'LADO',
-    'customer' => [
+  $aliasPhone = (string) ($opts['phone'] ?? '');
+  if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
+  $amount = (int) ($opts['amount'] ?? 0);
+  $op = (string) ($opts['operator'] ?? 'wave');
+  $ref = (string) ($opts['ref'] ?? '');
+  $fallback = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op);
+
+  $key = maketou_api_key();
+  if ($key !== '') {
+    $body = [
+      'product_id' => maketou_product_id(),
+      'productId' => maketou_product_id(),
+      'amount' => $amount,
+      'custom_price' => $amount,
+      'currency' => 'XOF',
       'email' => $aliasEmail,
-      'phone' => (string) ($opts['phone'] ?? ''),
+      'phone' => $aliasPhone,
       'first_name' => 'ORO',
       'last_name' => 'LADO',
-    ],
-    'payment_method' => (string) ($opts['operator'] ?? 'wave'),
-    'operator' => (string) ($opts['operator'] ?? 'wave'),
-    'reference' => (string) ($opts['ref'] ?? ''),
-    'note' => (string) ($opts['ref'] ?? ''),
-    'metadata' => [
-      'ref' => (string) ($opts['ref'] ?? ''),
-      'orolado' => true,
-    ],
-    'success_url' => (string) ($opts['returnUrl'] ?? ''),
-    'cancel_url' => (string) ($opts['returnUrl'] ?? ''),
-    'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
-    'notify_url' => (string) ($opts['webhookUrl'] ?? ''),
-    'skip_customer_form' => true,
-  ];
-  $res = maketou_http_json(maketou_api_url(), $key, $body);
-  $url = '';
-  if (is_array($res['json'])) $url = maketou_find_url($res['json']);
-  if ($url === '' && $res['raw'] !== '') {
-    if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
+      'customer' => [
+        'email' => $aliasEmail,
+        'phone' => $aliasPhone,
+        'first_name' => 'ORO',
+        'last_name' => 'LADO',
+      ],
+      'payment_method' => $op,
+      'operator' => $op,
+      'reference' => $ref,
+      'note' => $ref,
+      'metadata' => [
+        'ref' => $ref,
+        'orolado' => true,
+      ],
+      'success_url' => (string) ($opts['returnUrl'] ?? ''),
+      'cancel_url' => (string) ($opts['returnUrl'] ?? ''),
+      'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
+      'notify_url' => (string) ($opts['webhookUrl'] ?? ''),
+      'skip_customer_form' => true,
+    ];
+    $res = maketou_http_json(maketou_api_url(), $key, $body);
+    $url = '';
+    if (is_array($res['json'])) $url = maketou_find_url($res['json']);
+    if ($url === '' && $res['raw'] !== '') {
+      if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
+    }
+    if ($url !== '') return ['ok' => true, 'url' => $url];
   }
-  if ($url === '') return ['ok' => false, 'reason' => 'Lien de paiement introuvable', 'url' => ''];
-  return ['ok' => true, 'url' => $url];
+  return ['ok' => true, 'url' => $fallback];
 }
 
 function orolado_payload_has_real_email(string $haystack, array $user): bool {
@@ -405,20 +422,14 @@ function orolado_initiate_deposit(array $req): array {
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 
   $amount = (int) ($req['amount'] ?? 0);
-  if ($amount < 2000 || $amount > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Montant minimum 2 000 FCFA'];
+  if ($amount < 1000 || $amount > 5000000) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Montant minimum 1 000 FCFA'];
   }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
-  $cc = (string) ($req['countryCode'] ?? '+225');
-  if (!preg_match('/^\+\d{1,4}$/', $cc)) $cc = '+225';
-  $phone = preg_replace('/\D+/', '', (string) ($req['phone'] ?? '')) ?? '';
-  if (strlen($phone) < 8 || strlen($phone) > 15) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Numéro Mobile Money invalide'];
-  }
-  $fullPhone = $cc . $phone;
   $aliasEmail = maketou_alias_email();
+  $aliasPhone = maketou_alias_phone();
   $ref = 'oro_' . bin2hex(random_bytes(12));
   $origin = orolado_public_origin();
   $returnUrl = $origin . '/?deposit=1&ref=' . rawurlencode($ref);
@@ -430,7 +441,7 @@ function orolado_initiate_deposit(array $req): array {
     'ref' => $ref,
     'userId' => $me['id'],
     'aliasEmail' => $aliasEmail,
-    'aliasPhone' => $fullPhone,
+    'aliasPhone' => $aliasPhone,
     'operator' => $op,
     'status' => 'pending',
     'amount' => $amount,
@@ -440,7 +451,7 @@ function orolado_initiate_deposit(array $req): array {
 
   $pay = maketou_create_checkout([
     'aliasEmail' => $aliasEmail,
-    'phone' => $fullPhone,
+    'phone' => $aliasPhone,
     'amount' => $amount,
     'operator' => $op,
     'ref' => $ref,
@@ -449,7 +460,10 @@ function orolado_initiate_deposit(array $req): array {
   ]);
   $url = (string) ($pay['url'] ?? '');
   if ($url === '' || orolado_payload_has_real_email($url, $me)) {
-    return ['ok' => false, 'server' => true, 'reason' => $pay['reason'] ?? 'Passerelle indisponible'];
+    $url = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op);
+  }
+  if ($url === '' || orolado_payload_has_real_email($url, $me)) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Passerelle indisponible'];
   }
   return [
     'ok' => true,

@@ -567,12 +567,9 @@
   }
 
   function setDepositAmt(n) {
-    var min = D6.CONFIG.MIN_DEPOSIT || 2000;
-    var amt = Math.max(min, Math.floor(Number(n) || min));
-    if ($('depositAmt')) $('depositAmt').value = amt;
-    document.querySelectorAll('#depPills .wd-pill').forEach(function (p) {
-      p.classList.toggle('on', String(p.dataset.amt) === String(amt));
-    });
+    var min = D6.CONFIG.MIN_DEPOSIT || 1000;
+    var amt = Math.max(min, Math.floor(Number(n) || 0));
+    if ($('depositAmt')) $('depositAmt').value = amt || '';
     return amt;
   }
 
@@ -582,9 +579,7 @@
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) {
       c.classList.toggle('on', c.dataset.op === depositOp);
     });
-    setDepositAmt(D6.CONFIG.MIN_DEPOSIT || 2000);
-    if ($('depositPhone')) $('depositPhone').value = '';
-    if ($('depCountry')) $('depCountry').value = (u && u.countryCode) || '+225';
+    if ($('depositAmt')) $('depositAmt').value = '';
     closeDrawer();
     closeModal('convertModal');
     openModal('depositModal');
@@ -614,17 +609,11 @@
   async function confirmDeposit() {
     var u = user();
     if (!u) return;
-    var min = D6.CONFIG.MIN_DEPOSIT || 2000;
+    var min = D6.CONFIG.MIN_DEPOSIT || 1000;
     var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
-    var phone = digitsPhone($('depositPhone') && $('depositPhone').value);
     if (amt < min) {
       showFieldError('depositAmt', t('depositMin'));
       toast(t('depositMin'), 'err');
-      return;
-    }
-    if (phone.length < 8) {
-      showFieldError('depositPhone', t('depositPhone'));
-      toast(t('depositPhone'), 'err');
       return;
     }
     var btn = $('btnConfirmDeposit');
@@ -640,9 +629,7 @@
       var remote = await postDepositInitiate({
         token: D6.Api.token(),
         amount: amt,
-        operator: depositOp,
-        phone: phone,
-        countryCode: ($('depCountry') && $('depCountry').value) || '+225'
+        operator: depositOp
       });
       if (!remote || !remote.ok) {
         toast((remote && remote.reason) || 'Passerelle indisponible', 'err');
@@ -893,19 +880,9 @@
         document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
       });
     });
-    document.querySelectorAll('#depPills .wd-pill').forEach(function (pill) {
-      pill.addEventListener('click', function () { setDepositAmt(pill.dataset.amt); });
-    });
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
-        document.querySelectorAll('#depPills .wd-pill').forEach(function (p) {
-          p.classList.toggle('on', String(p.dataset.amt) === String(this.value));
-        }.bind(this));
-      });
-    }
-    if ($('depositPhone')) {
-      $('depositPhone').addEventListener('input', function () {
-        this.value = this.value.replace(/[^\d\s]/g, '').slice(0, 12);
+        this.value = String(this.value || '').replace(/[^\d]/g, '');
       });
     }
     $('btnConfirmDeposit').addEventListener('click', function () { confirmDeposit(); });
@@ -1029,7 +1006,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=14').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=15').catch(function () { /* ignore */ });
     }
   }
 
