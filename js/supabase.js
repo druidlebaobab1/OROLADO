@@ -180,7 +180,7 @@
         }, row);
       })
       .subscribe();
-    pollTimer = setInterval(function () { pullVault(); }, 4000);
+    pollTimer = setInterval(function () { pullVault(); }, 12000);
   }
 
   async function pullVault() {

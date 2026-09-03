@@ -48,7 +48,9 @@ function supabase_env(string $key): string {
 }
 
 function supabase_project_url(): string {
-  return rtrim(supabase_env('SUPABASE_URL'), '/');
+  $url = rtrim(supabase_env('SUPABASE_URL'), '/');
+  if ($url !== '') return $url;
+  return 'https://tubyuyxuswwzebicrhkg.supabase.co';
 }
 
 function supabase_usable_key(string $key): string {
@@ -58,7 +60,9 @@ function supabase_usable_key(string $key): string {
 }
 
 function supabase_anon_key(): string {
-  return supabase_usable_key(supabase_env('SUPABASE_ANON_KEY'));
+  $k = supabase_usable_key(supabase_env('SUPABASE_ANON_KEY'));
+  if ($k !== '') return $k;
+  return 'sb_publishable_zaJSnXA3yY17-I4eBXCtsw_F_-tCW1z';
 }
 
 function supabase_service_key(): string {
@@ -101,7 +105,11 @@ function supabase_fetch_auth_user(string $token): ?array {
 function supabase_credit_real(string $userId, int $amount): void {
   $url = supabase_project_url();
   $key = supabase_service_key();
-  if ($url === '' || $key === '' || $amount <= 0) return;
+  if ($key === '') {
+    error_log('OROLADO: SUPABASE_SERVICE_ROLE_KEY manquante, crédit vaults.real ignoré');
+    return;
+  }
+  if ($url === '' || $amount === 0) return;
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
   supabase_http($url . '/rest/v1/rpc/credit_real', [
     'Content-Type: application/json',

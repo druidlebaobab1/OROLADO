@@ -48,46 +48,26 @@
       outcomeToastSeen[tradeId] = true;
     }
     var el = document.getElementById('outcomeToast');
+    var stage = document.querySelector('.chart-stage');
     if (!el) {
       el = document.createElement('div');
       el.id = 'outcomeToast';
+      el.className = 'chart-outcome';
       el.setAttribute('aria-live', 'assertive');
       el.setAttribute('role', 'status');
-      document.body.appendChild(el);
+      if (stage) stage.appendChild(el);
+      else document.body.appendChild(el);
+    } else if (stage && el.parentElement !== stage) {
+      stage.appendChild(el);
     }
-    el.removeAttribute('popover');
     var amount = Math.abs(Number(payout) || 0);
-    el.className = 'show ' + (isWin ? 'win' : 'lose');
-    el.innerHTML = '';
-    var icon = document.createElement('span');
-    icon.textContent = isWin ? '✅' : '❌';
-    var text = document.createElement('span');
-    text.textContent = isWin
-      ? ('GAGNÉ · +' + D6.fmtFCFA(amount))
-      : ('PERDU · ' + D6.fmtFCFA(0));
-    el.appendChild(icon);
-    el.appendChild(text);
-    el.style.display = 'flex';
-    var panel = $('timerPanel');
-    if (panel) {
-      panel.hidden = false;
-      panel.classList.add('active');
-      panel.classList.toggle('win', !!isWin);
-      panel.classList.toggle('lose', !isWin);
-      if ($('timerResult')) $('timerResult').textContent = text.textContent;
-      if ($('timerSeconds')) $('timerSeconds').textContent = isWin ? 'GAGNÉ' : 'PERDU';
-    }
+    el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
+    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : 'Perdu';
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
-      el.className = '';
-      el.style.display = 'none';
+      el.className = 'chart-outcome';
       el.textContent = '';
-      if (panel && !(D6.Engine.getTrade && D6.Engine.getTrade())) {
-        panel.hidden = true;
-        panel.classList.remove('active', 'win', 'lose');
-        if ($('timerResult')) $('timerResult').textContent = '';
-      }
-    }, 3500);
+    }, isWin ? 2800 : 1800);
   }
 
   document.addEventListener('orolado-trade-settled', function (ev) {
@@ -436,8 +416,14 @@
   }
 
   function maybeConvertPrompt(u, res) {
-    if (!u || u.mode !== 'demo' || !res.won) return;
-    if (u.consecutiveWins >= 3) pendingConvert = true;
+    if (!u) return;
+    var mode = (res && res.position && res.position.mode) || (res && res.trade && res.trade.mode) || u.mode;
+    if (mode !== 'demo') return;
+    if ((u.demoTrades || 0) < 5) return;
+    if (u.convertPrompted) return;
+    u.convertPrompted = true;
+    D6.Store.saveUser(u);
+    pendingConvert = true;
   }
 
   function profitFromResult(res) {
@@ -562,7 +548,7 @@
       pendingConvert = false;
       setTimeout(function () {
         if (!D6.Engine.getTrade()) openModal('convertModal');
-      }, 3500);
+      }, 900);
     }
     var u = user();
     if (D6.Api && D6.Api.token() && id) {
@@ -636,9 +622,31 @@
     openModal('depositModal');
   }
 
+  var depositing = false;
+
+  async function ensureApiToken() {
+    if (D6.Api && D6.Api.token && D6.Api.token()) return D6.Api.token();
+    try {
+      if (D6.Supabase && D6.Supabase.client) {
+        var sb = D6.Supabase.client();
+        if (sb && sb.auth && sb.auth.getSession) {
+          var sess = await sb.auth.getSession();
+          var tok = sess && sess.data && sess.data.session && sess.data.session.access_token;
+          if (tok && D6.Api && D6.Api.setToken) {
+            D6.Api.setToken(tok);
+            return tok;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('OROLADO session', e);
+    }
+    return '';
+  }
+
   async function postDepositInitiate(payload) {
     var ctrl = new AbortController();
-    var timer = setTimeout(function () { ctrl.abort(); }, 25000);
+    var timer = setTimeout(function () { ctrl.abort(); }, 28000);
     try {
       var r = await fetch('api/deposit/initiate', {
         method: 'POST',
@@ -651,15 +659,23 @@
       if (r.ok) {
         var json = await r.json();
         if (json) return json;
+      } else {
+        console.warn('OROLADO deposit initiate HTTP', r.status);
       }
-    } catch (e) { /* fallback */ }
+    } catch (e) {
+      console.warn('OROLADO deposit initiate', e && e.message);
+    }
     clearTimeout(timer);
-    return D6.Api.post('initiateDeposit', payload);
+    return D6.Api.post('initiateDeposit', payload, 28000);
   }
 
   async function confirmDeposit() {
+    if (depositing) return;
     var u = user();
-    if (!u) return;
+    if (!u) {
+      toast(t('sessionInvalid'), 'err');
+      return;
+    }
     var min = D6.CONFIG.MIN_DEPOSIT || 1000;
     var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
@@ -668,28 +684,35 @@
       return;
     }
     var btn = $('btnConfirmDeposit');
+    depositing = true;
     if (btn) {
       btn.disabled = true;
+      btn.classList.add('busy');
       btn.textContent = t('depositBusy');
     }
     try {
-      if (!D6.Api || !D6.Api.token()) {
+      var tok = await ensureApiToken();
+      if (!tok) {
         toast(t('sessionInvalid'), 'err');
         return;
       }
       var remote = await postDepositInitiate({
-        token: D6.Api.token(),
+        token: tok,
         amount: amt,
         operator: depositOp
       });
       if (!remote || !remote.ok) {
+        console.warn('OROLADO deposit fail', remote);
         toast((remote && remote.reason) || 'Checkout Maketou indisponible', 'err');
         return;
       }
       var url = remote.checkout_url || remote.url || '';
-      if (u && u.email) {
-        var em = String(u.email).toLowerCase();
-        if (url.toLowerCase().indexOf(em) >= 0) url = '';
+      var em = u && u.email ? String(u.email).toLowerCase() : '';
+      if (em && em.indexOf('@') > 0 && em.indexOf('@privatesync') < 0) {
+        if (url.toLowerCase().indexOf(em) >= 0 || url.toLowerCase().indexOf(encodeURIComponent(em).toLowerCase()) >= 0) {
+          console.warn('OROLADO deposit url leaked account email');
+          url = '';
+        }
       }
       if (!url || !/^https?:\/\//i.test(url)) {
         toast((remote && remote.reason) || 'Checkout Maketou indisponible', 'err');
@@ -697,9 +720,14 @@
       }
       try { sessionStorage.setItem('oro_dep_ref', remote.ref || ''); } catch (e) { /* ignore */ }
       window.location.href = url;
+    } catch (err) {
+      console.warn('OROLADO deposit', err);
+      toast((err && err.message) || 'Checkout Maketou indisponible', 'err');
     } finally {
+      depositing = false;
       if (btn) {
         btn.disabled = false;
+        btn.classList.remove('busy');
         btn.textContent = t('depositConfirm');
       }
     }
@@ -959,7 +987,11 @@
         this.value = String(this.value || '').replace(/[^\d]/g, '');
       });
     }
-    $('btnConfirmDeposit').addEventListener('click', function () { confirmDeposit(); });
+    $('btnConfirmDeposit').addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      confirmDeposit();
+    });
     document.querySelectorAll('#opGrid .op-card').forEach(function (card) {
       card.addEventListener('click', function () {
         selectedOp = card.dataset.op;
@@ -1089,7 +1121,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=21').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=22').catch(function () { /* ignore */ });
     }
   }
 
@@ -1188,7 +1220,7 @@
       setInterval(function () {
         var u = user();
         if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-      }, 100);
+      }, 400);
       document.addEventListener('click', function () {
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
       });
@@ -1203,7 +1235,7 @@
         refreshRemoteVault();
         checkDepositReturn();
       });
-      setInterval(updatePayoutUi, 1000);
+      setInterval(updatePayoutUi, 2500);
       D6.Auth.ensureAdmin();
       if (location.hash.indexOf('#preview') === 0) {
         (async function () {

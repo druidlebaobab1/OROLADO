@@ -34,7 +34,7 @@
     if (!parent) return;
     var rect = parent.getBoundingClientRect();
     var mobile = (window.innerWidth || 0) <= 859;
-    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 2 : 2.5);
+    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     cssW = Math.max(1, rect.width);
     cssH = Math.max(1, rect.height);
     var bw = Math.round(cssW * dpr);
@@ -505,7 +505,7 @@
       if (inds.ma) {
         ctx.save();
         ctx.shadowBlur = 0;
-        drawPoly(map, closes, 21, 'rgba(0,188,212,0.9)', 1.5, startIdx);
+        if (!((window.innerWidth || 0) <= 859)) drawPoly(map, closes, 21, 'rgba(0,188,212,0.9)', 1.5, startIdx);
         drawPoly(map, closes, 7, 'rgba(255,213,79,0.95)', 1.7, startIdx);
         ctx.restore();
       }
@@ -528,21 +528,37 @@
     }
   }
 
+  var lastDraw = 0;
+  var lastFlush = 0;
+
   function loop(ts) {
     if (!running) return;
     requestAnimationFrame(loop);
+    var mobile = (window.innerWidth || 0) <= 859;
+    var drawEvery = mobile ? 48 : 16;
+    var flushEvery = 120;
     if (document.hidden) {
-      D6.Engine.tick(activeAsset);
-      flushDue();
+      if (ts - lastFlush >= flushEvery) {
+        D6.Engine.tick(activeAsset);
+        flushDue();
+        lastFlush = ts;
+      }
       lastTs = ts;
       return;
     }
+    if (ts - lastFlush >= flushEvery) {
+      D6.Engine.tick(activeAsset);
+      flushDue();
+      lastFlush = ts;
+    }
+    if (ts - lastDraw < drawEvery) return;
+    lastDraw = ts;
     if (!lastTs) lastTs = ts;
     lastTs = ts;
-    payoutAcc += Math.min(50, 16);
+    payoutAcc += drawEvery;
 
-    D6.Engine.tick(activeAsset);
-    flushDue();
+    if (ts - lastFlush < flushEvery) D6.Engine.tick(activeAsset);
+
     if (payoutAcc > 2800) {
       D6.Engine.refreshPayout(activeAsset);
       payoutAcc = 0;
