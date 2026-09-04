@@ -489,7 +489,7 @@ if ($action === 'placeOrder') {
   $stake = (int) ($req['stake'] ?? 0);
   $side = (($req['side'] ?? '') === 'put') ? 'put' : 'call';
   $duration = (int) ($req['duration'] ?? 10);
-  if (!in_array($duration, [10, 30, 60], true)) $duration = 10;
+  if (!in_array($duration, [10, 30, 60, 300, 600], true)) $duration = 10;
   $mode = (($req['mode'] ?? '') === 'real') ? 'real' : 'demo';
   $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['id'] ?? ''));
   if ($stake < 100 || $oid === '') {
@@ -542,8 +542,8 @@ if ($action === 'placeOrder') {
       $deadline = (float) ($o['at'] ?? 0) + (int) ($o['duration'] ?? 10) + 30;
       if ($deadline > $now) $open++;
     }
-    if ($open >= 5) {
-      return ['ok' => false, 'reason' => 'Maximum 5 trades en cours', 'skip_write' => true];
+    if ($open >= 2) {
+      return ['ok' => false, 'reason' => 'Maximum 2 trades en cours', 'skip_write' => true];
     }
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 50000, 'real' => 0];
     $bal = (int) ($locked['vault'][$uid][$mode] ?? 0);
@@ -716,11 +716,15 @@ if ($action === 'financeHistory') {
   }
   foreach (($db['withdrawals'] ?? []) as $w) {
     if (($w['userId'] ?? '') !== $me['id']) continue;
+    $st = strtoupper((string) ($w['status'] ?? 'pending'));
+    if ($st === 'PAID' || $st === 'APPROVED' || $st === 'SUCCESS' || $st === 'COMPLETED') $st = 'COMPLETED';
+    elseif ($st === 'REJECT' || $st === 'REJECTED' || $st === 'DENIED') $st = 'REJECTED';
+    else $st = 'PENDING';
     $rows[] = [
       'at' => $w['at'] ?? '',
       'ref' => $w['id'] ?? '',
       'amount' => -abs((int) ($w['amount'] ?? 0)),
-      'status' => (string) ($w['status'] ?? 'pending'),
+      'status' => $st,
       'label' => 'Retrait'
     ];
   }

@@ -7,17 +7,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="OROLADO.COM — Trading synthétique premium en FCFA. Plateforme mobile-first.">
+  <meta name="description" content="OROLADO.COM — Trading premium en FCFA. Plateforme mobile-first.">
   <meta name="application-name" content="OROLADO.COM">
   <meta property="og:title" content="OROLADO.COM">
-  <meta property="og:description" content="Trading synthétique premium · FCFA">
+  <meta property="og:description" content="Trading premium · FCFA">
   <meta property="og:type" content="website">
   <title>OROLADO.COM</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=36">
+  <link rel="stylesheet" href="css/app.css?v=37">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -39,7 +39,7 @@
         <div class="brand-xl">ORO<span>LADO</span></div>
         <div class="brand-domain">OROLADO.COM</div>
       </div>
-      <p class="brand-sub" data-i18n="tagline">Trading synthétique premium · FCFA</p>
+      <p class="brand-sub" data-i18n="tagline">Indices en FCFA. Démo gratuite. Dépôt Mobile Money.</p>
       <div class="auth-card glass">
         <div class="auth-tabs">
           <button type="button" class="auth-tab on" data-tab="login" data-i18n="login">Connexion</button>
@@ -71,7 +71,7 @@
             <p class="err-msg" id="err-regEmail"></p>
           </div>
           <div class="field">
-            <label data-i18n="whatsapp">WhatsApp / Téléphone</label>
+            <label data-i18n="whatsapp">Numéro de téléphone</label>
             <div class="phone-row">
               <select id="regDial" aria-label="Indicatif">
                 <option value="+225">🇨🇮 +225</option>
@@ -103,7 +103,7 @@
           <button class="btn-gold" type="submit" data-i18n="createAccount">Créer mon compte</button>
         </form>
       </div>
-      <p class="legal" data-i18n="legal">© 2026 OROLADO.COM · Trading synthétique · 18+</p>
+      <p class="legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
     </div>
   </section>
 
@@ -117,6 +117,11 @@
           </div>
           <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
           <div class="topbar-actions">
+            <div class="auth-quick hidden" id="authQuick">
+              <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
+              <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
+            </div>
+            <button type="button" class="icon-btn" id="btnHelp" title="Aide" aria-label="Aide" data-i18n-title="helpBtn">❔</button>
             <div class="lang-dd" id="langBarTrade"></div>
             <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
           </div>
@@ -204,7 +209,6 @@
         <div class="history-card glass">
           <div class="hist-head">
             <span class="hist-title" data-i18n="lastTrades">Derniers trades</span>
-            <button type="button" class="hist-more" id="btnHistMore" data-i18n="seeAll">Historique complet</button>
           </div>
           <div class="history-feed" id="historyFeed"></div>
         </div>
@@ -213,7 +217,9 @@
           <div class="dur-row">
             <button type="button" class="dur-chip on" data-dur="10">10s</button>
             <button type="button" class="dur-chip" data-dur="30">30s</button>
-            <button type="button" class="dur-chip" data-dur="60">60s</button>
+            <button type="button" class="dur-chip" data-dur="60">1 min</button>
+            <button type="button" class="dur-chip" data-dur="300">5 min</button>
+            <button type="button" class="dur-chip" data-dur="600">10 min</button>
           </div>
           <p class="trade-hint" data-i18n="tradeHint">Si ta prédiction est juste à la fin du timer, tu récupères mise + gain affiché. Sinon tu perds la mise.</p>
           <div class="stake-line">
@@ -238,7 +244,7 @@
             <div class="timer-msg" id="timerResult"></div>
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
-          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">⏳ Trade en cours — attends le résultat</div>
+          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">⏳ 2 trades ouverts — attends qu’un trade se termine</div>
           <div class="trade-row">
             <button type="button" class="btn-trade btn-call" id="btnCall">
               <span data-i18n="buy">ACHETER</span>
@@ -249,6 +255,7 @@
               <small>PUT ↘</small>
             </button>
           </div>
+          <button type="button" class="btn-hist-cta" id="btnHistMore" data-i18n="seeAll">Historique des trades</button>
         </div>
       </div>
     </div>
@@ -267,16 +274,15 @@
     <div class="card glass">
       <div class="list-row"><span data-i18n="publicId">ID public</span><strong id="profPublicId">—</strong></div>
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
-      <div class="list-row"><span data-i18n="whatsapp">WhatsApp</span><strong id="profPhone">—</strong></div>
+      <div class="list-row"><span data-i18n="whatsapp">Numéro de téléphone</span><strong id="profPhone">—</strong></div>
     </div>
     <p class="risk-line" data-i18n="riskLine">Les trades courts sont risqués. Tu peux perdre ta mise. 18+</p>
     <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">⚙️ Dashboard Admin</button>
     <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
-    <button type="button" class="btn-gold ghost-gold" id="btnResetDemo" data-i18n="resetDemo">Réinitialiser</button>
     <button type="button" class="btn-gold ghost-gold" id="btnFinance" data-i18n="financeHist">Historique financier</button>
     <button type="button" class="btn-gold ghost-gold" id="btnWithdraw" data-i18n="withdraw">Retirer</button>
     <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">Déconnexion</button>
-    <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · Trading synthétique · 18+</p>
+    <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
   </aside>
 
   <section id="screenAdmin" class="screen admin-screen hidden">
@@ -391,15 +397,11 @@
           <input id="withdrawPhone" type="tel" inputmode="numeric" placeholder="07 00 00 00 00" maxlength="12">
         </div>
       </div>
-      <div class="field">
-        <label data-i18n="wdName">Nom complet du bénéficiaire (tel qu’enregistré sur le compte Mobile Money)</label>
-        <input id="withdrawName" autocomplete="name" maxlength="64">
-      </div>
       <div class="wd-trust">
         <span>🔒 Cryptage bancaire SSL 256-bit</span>
-        <span>⏱ Délai de traitement estimé : 5 à 15 minutes</span>
+        <span data-i18n="wdDelay">⚡ Paiement instantané (Délai moyen : 5 à 15 minutes)</span>
       </div>
-      <button type="button" class="btn-gold" id="btnSendWithdraw" data-i18n="withdrawBtn">Envoyer la demande</button>
+      <button type="button" class="btn-gold" id="btnSendWithdraw" data-i18n="withdrawBtn">RETIRER MES GAINS</button>
     </div>
   </div>
 
@@ -462,12 +464,11 @@
     </div>
   </div>
 
-  <button type="button" class="help-fab" id="btnHelp" data-i18n="helpBtn">Aide</button>
   <div class="modal-backdrop" id="helpModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeHelp">✕</button>
       <div class="modal-title" data-i18n="helpTitle">Aide & support</div>
-      <p class="convert-copy" data-i18n="helpCopy">Un souci de dépôt ou de retrait ? Écris-nous, on te répond ici.</p>
+      <p class="convert-copy" data-i18n="helpCopy">Support client prioritaire — Service d'assistance disponible 24h/24 et 7j/7</p>
       <form id="formHelp">
         <div class="field">
           <label data-i18n="helpSubject">Sujet</label>
@@ -485,20 +486,20 @@
   <div class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
       <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
-      <div class="modal-title" data-i18n="histSheet">Historique des ordres</div>
+      <div class="modal-title" data-i18n="histSheet">Historique des trades</div>
       <div class="history-feed sheet-feed" id="historySheetFeed"></div>
     </div>
   </div>
 
-  <script src="js/config.js?v=36"></script>
-  <script src="js/i18n.js?v=36"></script>
-  <script src="js/store.js?v=36"></script>
-  <script src="js/api.js?v=36"></script>
+  <script src="js/config.js?v=37"></script>
+  <script src="js/i18n.js?v=37"></script>
+  <script src="js/store.js?v=37"></script>
+  <script src="js/api.js?v=37"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=36"></script>
-  <script src="js/auth.js?v=36"></script>
-  <script src="js/engine.js?v=36"></script>
-  <script src="js/chart.js?v=36"></script>
-  <script src="js/app.js?v=36"></script>
+  <script src="js/supabase.js?v=37"></script>
+  <script src="js/auth.js?v=37"></script>
+  <script src="js/engine.js?v=37"></script>
+  <script src="js/chart.js?v=37"></script>
+  <script src="js/app.js?v=37"></script>
 </body>
 </html>

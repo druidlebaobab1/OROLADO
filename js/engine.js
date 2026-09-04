@@ -8,8 +8,8 @@
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
-  // Cap 5 open/compte. Si settlement instable après fix → baisser à 3 ici + CONFIG.MAX_OPEN.
-  var MAX_OPEN = (C.MAX_OPEN || 5);
+  // Max 2 trades ouverts simultanés par compte.
+  var MAX_OPEN = (C.MAX_OPEN || 2);
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 240;
   var synthCache = {};
@@ -520,9 +520,20 @@
       var isCall = trade.side === 'call';
       var expMs = expiryOf(trade);
       var exitPrice = closePriceAt(trade.assetId, expMs);
-      // CALL won si close > open ; PUT won si close < open ; égalité = void.
-      var voided = Math.abs(exitPrice - trade.entryPrice) < 1e-9;
-      var won = !voided && ((isCall && exitPrice > trade.entryPrice) || (!isCall && exitPrice < trade.entryPrice));
+      var voided = false;
+      var won;
+      // Démo : ~65 % pour l’apprentissage. Réel : résolution fair CALL/PUT.
+      if (mode === 'demo') {
+        var pWin = C.DEMO_WIN_RATE != null ? C.DEMO_WIN_RATE : 0.65;
+        won = Math.random() < pWin;
+        var nudge = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.45, 0.28);
+        exitPrice = trade.entryPrice + (won
+          ? (isCall ? 1 : -1)
+          : (isCall ? -1 : 1)) * nudge;
+      } else {
+        voided = Math.abs(exitPrice - trade.entryPrice) < 1e-9;
+        won = !voided && ((isCall && exitPrice > trade.entryPrice) || (!isCall && exitPrice < trade.entryPrice));
+      }
       var payoutAmount = 0;
       var net = 0;
       var status = 'lost';

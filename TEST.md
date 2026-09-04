@@ -36,7 +36,9 @@
 - [ ] Valider dépôt pending → crédit une seule fois (anti double-clic)
 
 ## Profil / inscription
-- [ ] Nouvel inscrit : WhatsApp obligatoire
-- [ ] publicId visible (ORO-…)
-- [ ] Réinitialiser démo → confirm ; réel inchangé
-- [ ] Recharge uniquement en mode réel
+- [ ] Nouvel inscrit : numéro de téléphone obligatoire
+- [ ] Accès démo direct sans login ; Connexion/Inscription en haut
+- [ ] Max 2 trades ouverts ; 6e (3e) bloqué
+- [ ] Durées : 10s / 30s / 1 min / 5 min / 10 min
+- [ ] Aide dans la barre du haut (pas de FAB)
+- [ ] Historique des trades sous CALL/PUT

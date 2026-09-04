@@ -23,6 +23,66 @@
   ];
 
   function user() { return D6.Auth.current(); }
+
+  function isGuest(u) {
+    u = u || user();
+    return !!(u && (u.guest || String(u.email || '').indexOf('@orolado.local') >= 0));
+  }
+
+  function ensureGuest() {
+    var existing = D6.Store.findByEmail('guest@orolado.local');
+    if (!existing) {
+      existing = D6.Store.createUser({
+        id: 'guest_local',
+        displayName: 'Invité',
+        email: 'guest@orolado.local',
+        phone: '0700000000',
+        countryCode: '+225',
+        passwordHash: 'guest',
+        guest: true
+      });
+      existing.guest = true;
+      D6.Store.saveUser(existing);
+    } else {
+      existing.guest = true;
+      existing.mode = 'demo';
+      D6.Store.saveUser(existing);
+    }
+    D6.Store.setSession({ userId: existing.id, at: D6.nowIso() });
+    return D6.Store.current();
+  }
+
+  function requireAccount(msg) {
+    if (!isGuest()) return true;
+    toast(msg || t('needAccount') || 'Connecte-toi ou crée un compte pour continuer', 'err');
+    showAuthScreen('login');
+    return false;
+  }
+
+  function showAuthScreen(tab) {
+    showScreen('screenAuth');
+    document.querySelectorAll('.auth-tab').forEach(function (el) {
+      el.classList.toggle('on', el.dataset.tab === tab);
+    });
+    if ($('formLogin')) $('formLogin').classList.toggle('hidden', tab !== 'login');
+    if ($('formRegister')) $('formRegister').classList.toggle('hidden', tab !== 'register');
+  }
+
+  function syncAuthQuick() {
+    var q = $('authQuick');
+    if (!q) return;
+    q.classList.toggle('hidden', !isGuest());
+  }
+
+  function fmtTimerLeft(sec) {
+    sec = Math.max(0, Number(sec) || 0);
+    if (sec >= 60) {
+      var m = Math.floor(sec / 60);
+      var s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    return sec.toFixed(1) + 's';
+  }
   function t(k) { return D6.I18N.t(k); }
   function assetId(u) { return (u && u.assetId) || 'v100'; }
 
@@ -266,7 +326,12 @@
   function switchMode(next) {
     var u = user();
     if (!u) return;
-    if (D6.Engine.liveCount && D6.Engine.liveCount()) return;
+    if (next === 'real' && !requireAccount()) {
+      setModeUi(u);
+      return;
+    }
+    var mode = u.mode === 'real' ? 'real' : 'demo';
+    if (D6.Engine.liveCount && D6.Engine.liveCount(mode)) return;
     u.mode = next === 'real' ? 'real' : 'demo';
     D6.Store.saveUser(u);
     stake = D6.CONFIG.MIN_STAKE || 100;
@@ -275,6 +340,7 @@
     updateBalance(true);
     updatePayoutUi();
     renderHistory();
+    syncTradeButtons();
   }
 
   function updateBalance(flash) {
@@ -354,7 +420,7 @@
       panel.hidden = false;
       panel.classList.add('active');
       panel.classList.remove('win', 'lose');
-      if ($('timerSeconds')) $('timerSeconds').textContent = left.toFixed(1) + 's';
+      if ($('timerSeconds')) $('timerSeconds').textContent = fmtTimerLeft(left);
       if ($('timerResult')) $('timerResult').textContent = '';
       if ($('timerProgress') && trade.duration) {
         var pct = Math.max(0, Math.min(100, (left / trade.duration) * 100));
@@ -406,9 +472,9 @@
     var left = Math.max(0, Number(t.timeLeft) || 0);
     return '<div class="h-item live">' +
       '<span class="h-badge ' + t.side + '">' + (t.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
-      '<div><div class="h-main">' + name + ' · EN COURS · ' + left.toFixed(1) + 's</div>' +
+      '<div><div class="h-main">' + name + ' · EN COURS · ' + fmtTimerLeft(left) + '</div>' +
       '<div class="h-time">' + D6.fmtFCFA(t.stake) + ' · ' + (t.duration || '') + 's</div></div>' +
-      '<span class="h-gain">' + left.toFixed(1) + 's</span></div>';
+      '<span class="h-gain">' + fmtTimerLeft(left) + '</span></div>';
   }
 
   function ordersForMode(u) {
@@ -440,8 +506,31 @@
     var el = $('historySheetFeed');
     if (!el) return;
     var orders = ordersForMode(user());
-    var html = orders.live.map(liveOrderRow).concat(orders.settled.slice(0, 40).map(orderRow)).join('');
-    el.innerHTML = html || '<div class="empty-feed">' + t('noOrders') + '</div>';
+    var rows = [];
+    function durLabel(d) {
+      d = Number(d) || 0;
+      if (d >= 60) return (d / 60) + ' min';
+      return d + 's';
+    }
+    orders.live.forEach(function (t) {
+      rows.push('<tr><td>' + fmtTimerLeft(t.timeLeft) + '</td><td>' + ((D6.CONFIG.ASSETS[t.assetId] || {}).short || t.assetId) +
+        '</td><td>' + (t.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(t.stake) +
+        '</td><td>EN COURS</td><td>—</td></tr>');
+    });
+    orders.settled.slice(0, 50).forEach(function (h) {
+      var stake = Number(h.stake || 0);
+      var net = h.net != null ? Number(h.net) : (h.won ? Math.floor(stake * Number(h.payout || 1.88)) - stake : -stake);
+      var res = (h.voided || h.status === 'void') ? 'Égalité' : (h.won ? 'Gagné' : 'Perdu');
+      var pnlCls = net > 0 ? 'w' : (net < 0 ? 'l' : '');
+      rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '—') +
+        '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(stake) +
+        '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' +
+        (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net)) + '</td></tr>');
+    });
+    el.innerHTML = rows.length
+      ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Résultat</th><th>P&amp;L</th></tr></thead><tbody>' +
+        rows.join('') + '</tbody></table>'
+      : '<div class="empty-feed">' + t('noOrders') + '</div>';
   }
 
   function maybeConvertPrompt(u, res) {
@@ -481,7 +570,7 @@
     var u = user();
     var mode = u && u.mode === 'real' ? 'real' : 'demo';
     var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : (D6.Engine.getTrades ? D6.Engine.getTrades(mode).length : 0);
-    var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 5;
+    var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
     var busy = n >= max;
     var bal = u ? D6.Store.balanceOf(u) : 0;
     var canAfford = bal >= Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake || 0));
@@ -604,7 +693,7 @@
         return '<tr data-user="' + u.id + '"><td>' + (u.publicId || '') + '</td><td>' + (u.displayName || '') + '</td><td>' + u.email + '</td><td>' + (u.countryCode || '') + ' ' + (u.phone || '') +
           '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td><td>' + d + '</td></tr>';
       }).join('');
-      $('adminUsers').innerHTML = '<table class="admin-table"><thead><tr><th>ID</th><th>Nom</th><th>E-mail</th><th>WhatsApp</th><th>Solde réel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      $('adminUsers').innerHTML = '<table class="admin-table"><thead><tr><th>ID</th><th>Nom</th><th>E-mail</th><th>Téléphone</th><th>Solde réel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
     }
   }
 
@@ -682,7 +771,7 @@
     if (!u) return;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 5;
+    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
     if (open >= maxOpen) {
       toast(t('maxPositions'), 'err');
       syncTradeButtons();
@@ -746,6 +835,7 @@
   }
 
   function openDeposit() {
+    if (!requireAccount()) return;
     var u = user();
     depositOp = 'wave';
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) {
@@ -1225,6 +1315,7 @@
   }
 
   function openWithdraw() {
+    if (!requireAccount()) return;
     var u = user();
     selectedOp = 'wave';
     document.querySelectorAll('.op-card').forEach(function (c) {
@@ -1233,7 +1324,6 @@
     document.querySelectorAll('.wd-pill').forEach(function (p) { p.classList.remove('on'); });
     if ($('withdrawAmt')) $('withdrawAmt').value = '';
     if ($('withdrawPhone')) $('withdrawPhone').value = '';
-    if ($('withdrawName')) $('withdrawName').value = (u && u.displayName) || '';
     if ($('wdCountry')) $('wdCountry').value = (u && u.countryCode) || '+225';
     refreshWithdrawUi();
     closeDrawer();
@@ -1254,6 +1344,14 @@
     return d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
+  function normFinanceStatus(raw, label) {
+    var s = String(raw || '').toUpperCase();
+    if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK') return 'COMPLETED';
+    if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED') return 'REJECTED';
+    if (label === 'Retrait' && (s === 'WITHDRAW' || s === '')) return 'PENDING';
+    return s || 'PENDING';
+  }
+
   async function fillFinanceHistory() {
     var tx = $('txFeed');
     if (!tx) return;
@@ -1267,11 +1365,21 @@
           at: x.at || '',
           ref: x.id || '—',
           amount: Number(x.amount) || 0,
-          status: x.type === 'deposit' ? 'COMPLETED' : (x.note || 'withdraw'),
+          status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type === 'deposit' ? 'Recharge' : 'Retrait'),
           label: x.type === 'deposit' ? 'Recharge' : 'Retrait'
         });
       });
     }
+    (D6.Store.listWithdrawals ? D6.Store.listWithdrawals() : []).forEach(function (w) {
+      if (!u || w.userId !== u.id) return;
+      rows.push({
+        at: w.at || '',
+        ref: w.id || '—',
+        amount: -Math.abs(Number(w.amount) || 0),
+        status: normFinanceStatus(w.status, 'Retrait'),
+        label: 'Retrait'
+      });
+    });
     if (D6.Supabase && D6.Supabase.listFinance) {
       try {
         var cloud = await D6.Supabase.listFinance();
@@ -1280,8 +1388,17 @@
             at: d.created_at || d.completed_at || '',
             ref: d.reference || d.id || '—',
             amount: Number(d.amount) || 0,
-            status: String(d.status || '').toUpperCase() || 'PENDING',
+            status: normFinanceStatus(d.status, 'Recharge'),
             label: 'Recharge'
+          });
+        });
+        (cloud.withdrawals || []).forEach(function (w) {
+          rows.push({
+            at: w.created_at || w.at || '',
+            ref: w.id || w.reference || '—',
+            amount: -Math.abs(Number(w.amount) || 0),
+            status: normFinanceStatus(w.status, 'Retrait'),
+            label: 'Retrait'
           });
         });
         (cloud.txs || []).forEach(function (trow) {
@@ -1291,7 +1408,7 @@
             at: trow.created_at || '',
             ref: trow.id || '—',
             amount: Number(trow.amount) || 0,
-            status: typ === 'deposit' ? 'COMPLETED' : 'withdraw',
+            status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ === 'deposit' ? 'Recharge' : 'Retrait'),
             label: typ === 'deposit' ? 'Recharge' : 'Retrait'
           });
         });
@@ -1299,20 +1416,30 @@
     }
     var remote = await D6.Api.post('financeHistory', {});
     if (remote && remote.ok && remote.rows) {
-      (remote.rows || []).forEach(function (r) { rows.push(r); });
+      (remote.rows || []).forEach(function (r) {
+        rows.push({
+          at: r.at || '',
+          ref: r.ref || '—',
+          amount: Number(r.amount) || 0,
+          status: normFinanceStatus(r.status, r.label),
+          label: r.label || '—'
+        });
+      });
     }
     var seen = {};
     rows = rows.filter(function (r) {
-      var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '');
+      var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '') + '|' + r.label;
       if (seen[k]) return false;
       seen[k] = 1;
       return true;
     });
     rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
     tx.innerHTML = rows.length ? rows.map(function (r) {
-      var st = r.status || '';
-      return '<div class="list-row"><div><strong>' + r.label + '</strong><div class="h-time">' + fmtWhen(r.at) + ' · ' + (r.ref || '—') + '</div></div><span class="' + (r.amount >= 0 ? 'w' : 'l') + '">' + (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + ' · ' + st + '</span></div>';
-    }).join('') : '<div class="empty-feed">—</div>';
+      var st = r.status || 'PENDING';
+      return '<div class="list-row"><div><strong>' + r.label + '</strong><div class="h-time">' + fmtWhen(r.at) +
+        ' · ' + (r.ref || '—') + '</div></div><span><span class="' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</span> · <span class="st-' + st + '">' + st + '</span></span></div>';
+    }).join('') : '<div class="empty-feed">Aucune opération pour l’instant</div>';
   }
 
   function bindAuth() {
@@ -1373,21 +1500,6 @@
   function bindTrade() {
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
-    $('btnResetDemo').addEventListener('click', function (e) {
-      e.preventDefault();
-      if (!window.confirm(t('resetDemoConfirm'))) return;
-      var u = user();
-      if (!u) return;
-      if (D6.Engine.liveCount && D6.Engine.liveCount()) return;
-      D6.Store.resetDemo(u);
-      u.mode = 'demo';
-      D6.Store.saveUser(u);
-      setModeUi(u);
-      updateBalance(true);
-      updatePayoutUi();
-      renderHistory();
-      toast(t('resetDemo'), 'ok');
-    });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         var u = user();
@@ -1548,16 +1660,15 @@
     }
     $('btnSendWithdraw').addEventListener('click', async function () {
       var u = user();
-      if (!u) return;
+      if (!u || !requireAccount()) return;
       var amount = Math.round(Number($('withdrawAmt').value) || 0);
       var phone = digitsPhone($('withdrawPhone') && $('withdrawPhone').value);
-      var name = (($('withdrawName') && $('withdrawName').value) || '').trim();
+      var name = (u.displayName || 'Client').trim();
       var cc = ($('wdCountry') && $('wdCountry').value) || '+225';
       var real = realWithdrawBalance(u);
       if (amount < D6.CONFIG.MIN_STAKE) { toast(t('minStake'), 'err'); return; }
       if (amount > real) { toast(t('insufficient'), 'err'); return; }
       if (phone.length < 8 || phone.length > 10) { toast(t('wdPhone'), 'err'); return; }
-      if (name.length < 3) { toast(t('wdName'), 'err'); return; }
       var payload = {
         amount: amount,
         operator: selectedOp,
@@ -1592,6 +1703,7 @@
       if (D6.Auth.logout) await D6.Auth.logout();
       else if (D6.Auth.signOut) await D6.Auth.signOut();
       showScreen('screenAuth');
+      // Après déconnexion, laisser l’auth visible ; l’utilisateur peut revenir en démo via refresh.
     }
     var logoutBtn = $('btnLogout');
     logoutBtn.addEventListener('click', doLogout, true);
@@ -1740,6 +1852,7 @@
     $('inputStake').value = stake;
     setModeUi(u);
     setAdminBtns(u);
+    syncAuthQuick();
     updateAssetUi();
     updateDurationUi();
     if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
@@ -1755,7 +1868,7 @@
     refreshRemoteVault();
     checkDepositReturn();
     syncTradeButtons();
-    if (u && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
+    if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
   }
 
   function loopParticles() {
@@ -1878,21 +1991,19 @@
         return;
       }
       function finishBoot() {
-        if (D6.Auth.current()) enterApp();
-        else showScreen('screenAuth');
+        if (D6.Auth.current() && !isGuest(D6.Auth.current())) enterApp();
+        else {
+          ensureGuest();
+          enterApp();
+        }
       }
+      if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
+      if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { showAuthScreen('register'); });
       finishBoot();
       if (D6.Supabase && D6.Supabase.restore) {
         D6.Supabase.restore().then(function (cloud) {
-          if (cloud && cloud.ok) {
-            var trade = $('screenTrade');
-            if (trade && trade.classList.contains('hidden')) enterApp();
-            else {
-              updateBalance(false);
-              var u = user();
-              if (u && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
-              checkDepositReturn();
-            }
+          if (cloud && cloud.ok && D6.Auth.current() && !isGuest()) {
+            enterApp();
           }
         }).catch(function () { /* hydratation locale déjà affichée */ });
       }

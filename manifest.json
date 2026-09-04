@@ -1,7 +1,7 @@
 {
   "name": "OROLADO.COM",
   "short_name": "OROLADO",
-  "description": "Trading synthétique premium OROLADO.COM",
+  "description": "Trading premium OROLADO.COM",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

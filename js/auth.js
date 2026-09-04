@@ -58,7 +58,7 @@
 
       if (!validName(displayName)) return { ok: false, reason: 'Indiquez votre nom ou pseudo (2 caractères min.)', field: 'regName' };
       if (!validEmail(email)) return { ok: false, reason: 'Adresse e-mail invalide', field: 'regEmail' };
-      if (!validPhone(phone)) return { ok: false, reason: 'WhatsApp requis (8 à 12 chiffres)', field: 'regPhone' };
+      if (!validPhone(phone)) return { ok: false, reason: 'Numéro de téléphone requis (8 à 12 chiffres)', field: 'regPhone' };
       if (password.length < 6) return { ok: false, reason: 'Mot de passe : 6 caractères minimum', field: 'regPass' };
       if (password !== confirm) return { ok: false, reason: 'Les mots de passe ne correspondent pas', field: 'regPass2' };
       if (!form.acceptTerms) return { ok: false, reason: 'Vous devez confirmer avoir plus de 18 ans', field: 'regAge' };

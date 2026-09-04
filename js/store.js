@@ -52,6 +52,7 @@
       countryCode: partial.countryCode,
       passwordHash: partial.passwordHash,
       role: partial.role || 'user',
+      guest: !!partial.guest,
       createdAt: D6.nowIso(),
       demoStartBalance: D6.CONFIG.DEMO_START,
       mode: 'demo',

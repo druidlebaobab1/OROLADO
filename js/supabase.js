@@ -370,10 +370,18 @@
     listFinance: async function () {
       var sb = getClient();
       var user = D6.Store.current();
-      if (!sb || !user || !uuidish(user.id)) return { deposits: [], txs: [] };
+      if (!sb || !user || !uuidish(user.id)) return { deposits: [], txs: [], withdrawals: [] };
       var dep = await sb.from('deposits').select('id,amount,status,created_at,completed_at,reference').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
       var txRes = await sb.from('transactions').select('id,type,amount,note,created_at,mode').eq('user_id', user.id).in('type', ['deposit', 'withdraw']).order('created_at', { ascending: false }).limit(80);
-      return { deposits: (dep && dep.data) || [], txs: (txRes && txRes.data) || [] };
+      var wd = { data: [] };
+      try {
+        wd = await sb.from('withdrawals').select('id,amount,status,created_at,reference').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
+      } catch (e) { wd = { data: [] }; }
+      return {
+        deposits: (dep && dep.data) || [],
+        txs: (txRes && txRes.data) || [],
+        withdrawals: (wd && wd.data) || []
+      };
     },
 
     pollDeposit: async function (ref) {
@@ -410,7 +418,7 @@
         exit_price: order.exitPrice,
         won: order.won == null ? null : !!order.won,
         net: order.net,
-        status: status || 'open'
+        status: order.status || status || 'open'
       }).then(function () { /* ignore */ });
     },
 
