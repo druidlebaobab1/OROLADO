@@ -165,6 +165,27 @@ function supabase_debit_real(string $userId, int $amount): bool {
   return true;
 }
 
+/**
+ * Crédit de gain confié à la base : `resolve_trade` additionne et refuse le
+ * double règlement d'un même orderId, donc 5 trades simultanés ne s'écrasent pas.
+ */
+function supabase_resolve_trade(string $userId, string $orderId, int $amount): ?array {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $orderId === '') return null;
+  $rpc = supabase_http(
+    supabase_project_url() . '/rest/v1/rpc/resolve_trade',
+    $hdrs,
+    json_encode(['p_user' => $userId, 'p_order' => $orderId, 'p_amount' => $amount]),
+    'POST'
+  );
+  if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
+  if (!is_array($rpc) || empty($rpc['ok'])) return null;
+  return [
+    'real' => (int) ($rpc['real'] ?? 0),
+    'duplicate' => !empty($rpc['duplicate']),
+  ];
+}
+
 function supabase_sync_real_min(string $userId, int $minReal): void {
   if ($minReal <= 0) return;
   $vault = supabase_admin_vault($userId);
@@ -442,6 +463,7 @@ function maketou_extract_payment(array $payload): array {
   $email = '';
   $amount = 0;
   $paid = false;
+  $refused = false;
   $extId = '';
   $sellId = '';
   $phone = '';
@@ -468,7 +490,8 @@ function maketou_extract_payment(array $payload): array {
       if (strlen($digits) >= 8) $phone = $digits;
     }
     if (str_contains($k, 'financial_status') || str_contains($k, 'payment_status') || $k === 'status' || str_ends_with($k, '.status') || str_contains($k, 'event')) {
-      if (preg_match('/paid|success|completed|captured|successful|sale/i', $lv)) $paid = true;
+      if (preg_match('/(unpaid|not_?paid|pending|failed|refused|declined|cancell?ed|expired|refunded|voided)/i', $lv)) $refused = true;
+      elseif (preg_match('/paid|success|completed|captured|successful|sale/i', $lv)) $paid = true;
     }
     if ($amount <= 0 && (str_contains($k, 'total_price') || str_contains($k, 'current_total') || $k === 'amount' || str_ends_with($k, '.amount') || str_contains($k, 'amount_paid'))) {
       $n = (int) round((float) preg_replace('/[^\d.]/', '', $v));
@@ -476,8 +499,108 @@ function maketou_extract_payment(array $payload): array {
     }
   }
   $topic = strtolower((string) ($_SERVER['HTTP_X_SHOPLINE_TOPIC'] ?? $_SERVER['HTTP_X_MAKETOU_TOPIC'] ?? ''));
-  if (str_contains($topic, 'paid') || str_contains($topic, 'orders/create') || str_contains($topic, 'orders/updated') || str_contains($topic, 'sale')) $paid = true;
-  return ['ref' => $ref, 'email' => $email, 'amount' => $amount, 'paid' => $paid, 'extId' => $extId, 'sellId' => $sellId, 'phone' => $phone];
+  if (str_contains($topic, 'paid') || str_contains($topic, 'sale')) $paid = true;
+  return ['ref' => $ref, 'email' => $email, 'amount' => $amount, 'paid' => ($paid && !$refused), 'extId' => $extId, 'sellId' => $sellId, 'phone' => $phone];
+}
+
+/**
+ * Statut de paiement lu de façon stricte : « unpaid », « pending » ou « failed »
+ * ne doivent jamais être interprétés comme un paiement validé.
+ */
+function maketou_payload_is_paid(array $payload): array {
+  $bag = [];
+  maketou_flatten($payload, '', $bag);
+  $paid = false;
+  $refused = false;
+  $amount = 0;
+  foreach ($bag as $k => $v) {
+    $val = strtolower(trim((string) $v));
+    $isStatusKey = str_contains($k, 'financial_status') || str_contains($k, 'payment_status')
+      || $k === 'status' || str_ends_with($k, '.status') || str_contains($k, 'state');
+    if ($isStatusKey) {
+      if (preg_match('/^(paid|completed|complete|success|successful|captured|settled|approved)$/', $val)) $paid = true;
+      if (preg_match('/(unpaid|not_?paid|pending|failed|refused|declined|cancell?ed|expired|refunded|voided)/', $val)) $refused = true;
+    }
+    if ($amount <= 0 && (str_contains($k, 'total_price') || str_contains($k, 'current_total')
+      || $k === 'amount' || str_ends_with($k, '.amount') || str_contains($k, 'amount_paid'))) {
+      $n = (int) round((float) preg_replace('/[^\d.]/', '', (string) $v));
+      if ($n > 0) $amount = $n;
+    }
+  }
+  return ['paid' => ($paid && !$refused), 'amount' => $amount];
+}
+
+function maketou_http_get(string $url, string $key): ?array {
+  if (!function_exists('curl_init')) return null;
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 8,
+    CURLOPT_HTTPHEADER => [
+      'Accept: application/json',
+      'Authorization: Bearer ' . $key,
+      'X-API-Key: ' . $key,
+      'x-api-key: ' . $key,
+    ],
+  ]);
+  $raw = curl_exec($ch);
+  $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+  if ($raw === false || $status < 200 || $status >= 300) return null;
+  $json = json_decode((string) $raw, true);
+  return is_array($json) ? $json : null;
+}
+
+/**
+ * Interroge Maketou de serveur à serveur : seule preuve acceptée pour créditer
+ * quand le webhook signé n'a pas été reçu. Sans clé API, on ne crédite jamais.
+ */
+function maketou_verify_remote_payment(array $dep): array {
+  $key = maketou_api_key();
+  if ($key === '') {
+    error_log('OROLADO: MAKETOU_API_KEY absente — aucun dépôt ne peut être vérifié ni crédité');
+    return ['ok' => false, 'paid' => false, 'reason' => 'unverifiable'];
+  }
+  $ref = (string) ($dep['id'] ?? $dep['ref'] ?? '');
+  $sellId = (string) ($dep['sellId'] ?? '');
+  $base = rtrim(maketou_api_url(), '/');
+  $root = preg_replace('#/checkouts$#', '', $base) ?? $base;
+  $candidates = [];
+  if ($sellId !== '') {
+    $candidates[] = $base . '/' . rawurlencode($sellId);
+    $candidates[] = $root . '/orders/' . rawurlencode($sellId);
+  }
+  if ($ref !== '') {
+    $candidates[] = $base . '?reference=' . rawurlencode($ref);
+    $candidates[] = $root . '/orders?reference=' . rawurlencode($ref);
+  }
+  foreach ($candidates as $url) {
+    $json = maketou_http_get($url, $key);
+    if ($json === null) continue;
+    $verdict = maketou_payload_is_paid($json);
+    if (!empty($verdict['paid'])) {
+      $expected = (int) ($dep['amount'] ?? 0);
+      $got = (int) ($verdict['amount'] ?? 0);
+      if ($expected > 0 && $got > 0 && $got < $expected) {
+        return ['ok' => false, 'paid' => false, 'reason' => 'amount_mismatch'];
+      }
+      return ['ok' => true, 'paid' => true, 'amount' => $got > 0 ? $got : $expected];
+    }
+  }
+  return ['ok' => false, 'paid' => false, 'reason' => 'not_paid'];
+}
+
+/** Retrouve le dépôt local visé par un webhook (ref, alias e-mail, sellId ou extId). */
+function orolado_find_deposit_by_hit(array $hit): ?array {
+  $db = load_db(orolado_data_file());
+  foreach (($db['deposits'] ?? []) as $d) {
+    $matchRef = ($hit['ref'] ?? '') !== '' && (($d['id'] ?? '') === $hit['ref'] || ($d['ref'] ?? '') === $hit['ref']);
+    $matchMail = ($hit['email'] ?? '') !== '' && strtolower((string) ($d['aliasEmail'] ?? '')) === strtolower((string) $hit['email']);
+    $matchExt = ($hit['extId'] ?? '') !== '' && (($d['extId'] ?? '') === $hit['extId']);
+    $matchSell = ($hit['sellId'] ?? '') !== '' && (($d['sellId'] ?? '') === $hit['sellId']);
+    if ($matchRef || $matchMail || $matchExt || $matchSell) return $d;
+  }
+  return null;
 }
 
 function credit_paid_deposit(array $hit): array {
@@ -1087,24 +1210,39 @@ function orolado_confirm_deposit(array $req): array {
   $refId = (string) ($dep['id'] ?? $ref);
   $st = strtoupper((string) ($dep['status'] ?? ''));
   $cred = ['ok' => ($st === 'PAID' || $st === 'COMPLETED')];
+
+  // Un retour de navigateur ne prouve rien : le crédit exige une confirmation
+  // Maketou obtenue de serveur à serveur. Sinon le dépôt reste PENDING.
   if ($st !== 'PAID' && $st !== 'COMPLETED') {
-    $cred = credit_paid_deposit([
-      'ref' => $refId,
-      'amount' => (int) ($dep['amount'] ?? 0),
-      'paid' => true,
-    ]);
-    if (empty($cred['ok'])) {
-      $rpc = supabase_complete_deposit($refId, (int) ($dep['amount'] ?? 0), $uid);
-      if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
+    $proof = maketou_verify_remote_payment($dep);
+    if (!empty($proof['paid'])) {
+      $cred = credit_paid_deposit([
+        'ref' => $refId,
+        'amount' => (int) ($proof['amount'] ?? ($dep['amount'] ?? 0)),
+        'paid' => true,
+        'extId' => (string) ($dep['extId'] ?? ''),
+        'sellId' => (string) ($dep['sellId'] ?? ''),
+      ]);
+      if (empty($cred['ok'])) {
+        $rpc = supabase_complete_deposit($refId, (int) ($proof['amount'] ?? ($dep['amount'] ?? 0)), $uid);
+        if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
+      }
+    } else {
+      $cred = ['ok' => false, 'reason' => (string) ($proof['reason'] ?? 'not_paid')];
     }
   }
 
   $out = orolado_deposit_status(['token' => $req['token'] ?? '', 'ref' => $refId]);
   if (empty($out['paid']) && !empty($cred['ok'])) {
     $out['paid'] = true;
-    $out['amount'] = (int) ($dep['amount'] ?? ($cred['amount'] ?? 0));
+    $out['amount'] = (int) ($cred['amount'] ?? ($dep['amount'] ?? 0));
     $vault = supabase_admin_vault($uid);
     if ($vault) $out['vault'] = $vault;
+  }
+  if (empty($out['paid'])) {
+    $out['status'] = 'PENDING';
+    $out['pending'] = true;
+    $out['reason'] = (string) ($cred['reason'] ?? 'not_paid');
   }
   return $out;
 }
@@ -1151,6 +1289,7 @@ function maketou_handle_webhook(): void {
     echo json_encode(['ok' => false, 'reason' => 'signature']);
     exit;
   }
+  $signed = $hasSig && maketou_api_key() !== '' && maketou_verify_hmac($raw);
 
   $payload = json_decode($raw, true);
   if (!is_array($payload)) {
@@ -1164,6 +1303,25 @@ function maketou_handle_webhook(): void {
   if (!$ident || !$hit['paid']) {
     echo json_encode(['ok' => true, 'ignored' => true]);
     exit;
+  }
+
+  // Un POST non signé peut venir de n'importe qui : on rejoue la vérification
+  // chez Maketou avant tout crédit.
+  if (!$signed) {
+    $dep = orolado_find_deposit_by_hit($hit);
+    if (!$dep) {
+      error_log('OROLADO webhook non signé sans dépôt correspondant');
+      echo json_encode(['ok' => true, 'ignored' => true, 'reason' => 'unknown']);
+      exit;
+    }
+    $proof = maketou_verify_remote_payment($dep);
+    if (empty($proof['paid'])) {
+      error_log('OROLADO webhook non signé refusé (' . (string) ($proof['reason'] ?? 'not_paid') . ')');
+      http_response_code(202);
+      echo json_encode(['ok' => false, 'pending' => true, 'reason' => 'unverified']);
+      exit;
+    }
+    $hit['amount'] = (int) ($proof['amount'] ?? $hit['amount']);
   }
 
   $result = credit_paid_deposit($hit);

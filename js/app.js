@@ -13,6 +13,7 @@
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
+  var pendingSettles = 0;
   var deferredPrompt = null;
   var LANGS = [
     { code: 'fr', flag: '🇫🇷' },
@@ -564,16 +565,17 @@
         if (!D6.Engine.getTrade()) openModal('convertModal');
       }, 900);
     }
-    var u = user();
     if (D6.Api && D6.Api.token() && id) {
-      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice }).then(function (remote) {
-        var cur = user();
-        if (remote && remote.ok && remote.vault && cur) {
-          D6.holdPull = true;
-          D6.Store.importRemote(cur, remote.vault);
-          D6.holdPull = false;
-          updateBalance(true);
-        }
+      pendingSettles += 1;
+      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice }).then(function () {
+        pendingSettles = Math.max(0, pendingSettles - 1);
+        // Les réponses de règlements simultanés arrivent dans le désordre :
+        // on ne recopie aucun instantané de solde, on relit la base une fois
+        // que les 5 trades ont été réglés côté serveur.
+        if (pendingSettles === 0) refreshRemoteVault();
+      }, function () {
+        pendingSettles = Math.max(0, pendingSettles - 1);
+        if (pendingSettles === 0) refreshRemoteVault();
       });
     }
     if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
@@ -613,7 +615,10 @@
         mode: u.mode
       }).then(function (remote) {
         var cur = user();
-        if (remote && remote.ok && remote.vault && cur && u.mode !== 'real') {
+        var busy = (D6.Engine.liveCount ? D6.Engine.liveCount() : 0) > 1 || pendingSettles > 0;
+        // Avec plusieurs positions ouvertes, l'instantané renvoyé peut être
+        // périmé : on ne l'applique que sur un trade isolé.
+        if (remote && remote.ok && remote.vault && cur && u.mode !== 'real' && !busy) {
           D6.Store.importRemote(cur, remote.vault);
           updateBalance(true);
         }
@@ -722,11 +727,24 @@
     }
   }
 
+  var OP_LABELS = { wave: 'Wave', orange: 'Orange Money', mtn: 'MTN MoMo', moov: 'Moov Money' };
+
+  function openDepositWait(ref) {
+    if ($('depositWaitTitle')) {
+      $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', OP_LABELS[depositOp] || 'Wave');
+    }
+    if ($('depositWaitRef')) $('depositWaitRef').textContent = ref ? ('Réf. ' + ref) : '';
+    openModal('depositWaitModal');
+  }
+
   function applyDepositPaid(remote) {
     if (depositApplied) return;
+    // Seul le serveur peut déclarer un dépôt payé : aucun crédit sur simple
+    // retour de page, clic ou fermeture de l'onglet Maketou.
     if (!remote || !remote.ok || !remote.paid || !(remote.amount > 0)) return;
     depositApplied = true;
     stopDepositWatch();
+    closeModal('depositWaitModal');
     try {
       if (payWindow && !payWindow.closed) {
         var blank = ((location && location.origin) || 'https://orolado.com') + '/pay-blank.html';
@@ -768,13 +786,15 @@
       var remote = await D6.Api.post('depositStatus', payload);
       if ((!remote || !remote.paid) && D6.Supabase && D6.Supabase.pollDeposit) {
         var sbDep = await D6.Supabase.pollDeposit(ref);
-        if (sbDep && sbDep.paid) {
-          var confirmed = await postDepositConfirm({ token: payload.token, ref: ref });
-          remote = (confirmed && confirmed.ok && confirmed.paid) ? confirmed : Object.assign({}, remote || {}, sbDep, { paid: true, ok: true });
-        }
+        // La lecture Supabase ne sert qu'à réveiller la vérification serveur :
+        // seule la réponse du serveur peut déclarer le dépôt payé.
+        if (sbDep && sbDep.paid) remote = await postDepositConfirm({ token: payload.token, ref: ref });
       }
       applyDepositPaid(remote);
       if (depositApplied) return;
+      if (ticks === 40 && $('depositWaitRef')) {
+        $('depositWaitRef').textContent = (ref ? 'Réf. ' + ref + ' · ' : '') + 'confirmation opérateur en cours';
+      }
       if (ticks >= 200) stopDepositWatch();
     }
     depositWatch = setInterval(tick, 1500);
@@ -872,13 +892,13 @@
       try { localStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e2) { /* ignore */ }
       var ref = (remote && remote.ref) || '';
       closeModal('depositModal');
-      payWindow = window.open(url, 'orolado_pay', 'width=430,height=740');
-      if (!payWindow) payWindow = window.open(url, '_blank');
+      payWindow = window.open(url, '_blank');
       startDepositWatch(ref);
       if (!payWindow) {
         window.location.href = url;
         return;
       }
+      openDepositWait(ref);
     } catch (err) {
       console.error('OROLADO deposit', err);
       toast((err && err.message) || t('sessionInvalid'), 'err');
@@ -1202,6 +1222,11 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
     $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
+    if ($('btnDepositWaitClose')) {
+      // On masque l'attente sans arrêter la surveillance : si l'opérateur
+      // confirme plus tard, le solde sera crédité par le serveur.
+      $('btnDepositWaitClose').addEventListener('click', function () { closeModal('depositWaitModal'); });
+    }
     if ($('closeDepositSuccess')) $('closeDepositSuccess').addEventListener('click', function () { closeModal('depositSuccessModal'); });
     if ($('btnDepositSuccessOk')) $('btnDepositSuccessOk').addEventListener('click', function () { closeModal('depositSuccessModal'); });
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (card) {
@@ -1349,7 +1374,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=29').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=30').catch(function () { /* ignore */ });
     }
   }
 

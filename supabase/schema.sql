@@ -230,6 +230,59 @@ $$;
 revoke all on function public.complete_deposit(text, bigint) from public, anon, authenticated;
 grant execute on function public.complete_deposit(text, bigint) to service_role;
 
+-- Règlement de trade : additif, atomique et rejouable sans double crédit.
+create table if not exists public.trade_settlements (
+  order_id text primary key,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  amount bigint not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table public.trade_settlements enable row level security;
+drop policy if exists trade_settlements_own_read on public.trade_settlements;
+create policy trade_settlements_own_read on public.trade_settlements
+  for select using (auth.uid() = user_id);
+
+create or replace function public.resolve_trade(p_user uuid, p_order text, p_amount bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v bigint;
+begin
+  if p_user is null or p_order is null or p_order = '' then
+    return jsonb_build_object('ok', false, 'reason', 'args');
+  end if;
+
+  -- Le PK bloque tout second règlement du même trade, même simultané.
+  begin
+    insert into public.trade_settlements (order_id, user_id, amount)
+    values (p_order, p_user, coalesce(p_amount, 0));
+  exception when unique_violation then
+    select real into v from public.vaults where user_id = p_user;
+    return jsonb_build_object('ok', true, 'duplicate', true, 'real', coalesce(v, 0));
+  end;
+
+  if coalesce(p_amount, 0) = 0 then
+    select real into v from public.vaults where user_id = p_user;
+    return jsonb_build_object('ok', true, 'real', coalesce(v, 0));
+  end if;
+
+  -- Addition faite par la base : deux trades qui expirent ensemble s'additionnent.
+  insert into public.vaults (user_id, demo, real)
+  values (p_user, 50000, greatest(0, p_amount))
+  on conflict (user_id) do update
+    set real = greatest(0, public.vaults.real + p_amount),
+        updated_at = now()
+  returning real into v;
+
+  return jsonb_build_object('ok', true, 'real', coalesce(v, 0));
+end;
+$$;
+revoke all on function public.resolve_trade(uuid, text, bigint) from public, anon, authenticated;
+grant execute on function public.resolve_trade(uuid, text, bigint) to service_role;
+
 create or replace function public.protect_vault_real()
 returns trigger
 language plpgsql

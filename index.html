@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=29">
+  <link rel="stylesheet" href="css/app.css?v=30">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -395,6 +395,16 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="depositWaitModal">
+    <div class="modal-box glass convert-box">
+      <div class="wait-spin" aria-hidden="true"></div>
+      <div class="convert-title" id="depositWaitTitle">En attente de validation…</div>
+      <p class="convert-copy" data-i18n="depositWaitCopy">Terminez le paiement dans l’onglet ouvert. Votre solde sera crédité uniquement après confirmation de l’opérateur.</p>
+      <p class="wait-ref" id="depositWaitRef"></p>
+      <button type="button" class="btn-gold ghost-gold" id="btnDepositWaitClose" data-i18n="depositWaitClose">Fermer</button>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="convertModal">
     <div class="modal-box glass convert-box">
       <button type="button" class="btn-close" id="closeConvert">✕</button>
@@ -413,15 +423,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=29"></script>
-  <script src="js/i18n.js?v=29"></script>
-  <script src="js/store.js?v=29"></script>
-  <script src="js/api.js?v=29"></script>
+  <script src="js/config.js?v=30"></script>
+  <script src="js/i18n.js?v=30"></script>
+  <script src="js/store.js?v=30"></script>
+  <script src="js/api.js?v=30"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=29"></script>
-  <script src="js/auth.js?v=29"></script>
-  <script src="js/engine.js?v=29"></script>
-  <script src="js/chart.js?v=29"></script>
-  <script src="js/app.js?v=29"></script>
+  <script src="js/supabase.js?v=30"></script>
+  <script src="js/auth.js?v=30"></script>
+  <script src="js/engine.js?v=30"></script>
+  <script src="js/chart.js?v=30"></script>
+  <script src="js/app.js?v=30"></script>
 </body>
 </html>

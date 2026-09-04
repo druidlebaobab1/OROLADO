@@ -472,12 +472,21 @@ if ($action === 'settleOrder') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $settled['reason'] ?? 'Ordre introuvable']);
     exit;
   }
-  if (!empty($settled['fresh']) && ($settled['mode'] ?? '') === 'real' && (int) ($settled['credit'] ?? 0) > 0) {
-    supabase_credit_real($uid, (int) $settled['credit'], false);
-  }
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
+  $rpcReal = null;
+  if (($settled['mode'] ?? '') === 'real') {
+    // Une seule source de vérité pour le solde réel : l'addition faite par la base.
+    $rpc = supabase_resolve_trade($uid, $oid, (int) ($settled['credit'] ?? 0));
+    if ($rpc !== null) $rpcReal = (int) $rpc['real'];
+    elseif (!empty($settled['fresh']) && (int) ($settled['credit'] ?? 0) > 0) {
+      supabase_credit_real($uid, (int) $settled['credit'], false);
+    }
+  }
   $sbVault = supabase_admin_vault($uid);
-  if ($sbVault) {
+  if ($rpcReal !== null) {
+    $vaultOut['real'] = $rpcReal;
+    if ($sbVault) $vaultOut['demo'] = max((int) $vaultOut['demo'], (int) $sbVault['demo']);
+  } elseif ($sbVault) {
     $vaultOut['real'] = max((int) $vaultOut['real'], (int) $sbVault['real']);
     $vaultOut['demo'] = max((int) $vaultOut['demo'], (int) $sbVault['demo']);
   }
