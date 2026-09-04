@@ -556,31 +556,85 @@ function maketou_extract_payment(array $payload): array {
   return ['ref' => $ref, 'email' => $email, 'amount' => $amount, 'paid' => ($paid && !$refused), 'extId' => $extId, 'sellId' => $sellId, 'phone' => $phone];
 }
 
-/**
- * Statut de paiement lu de façon stricte : « unpaid », « pending » ou « failed »
- * ne doivent jamais être interprétés comme un paiement validé.
- */
-function maketou_payload_is_paid(array $payload): array {
+/** Base officielle de vérification Maketou (surchargeable par MAKETOU_VERIFY_URL). */
+function maketou_verify_base(): string {
+  $url = supabase_env('MAKETOU_VERIFY_URL');
+  if ($url === '') $url = 'https://api.maketou.net';
+  return rtrim($url, '/');
+}
+
+/** Seuls ces statuts valent « payé ». Tout le reste laisse le dépôt en attente. */
+function maketou_is_paid_status($status): bool {
+  $status = strtolower(trim((string) $status));
+  $status = str_replace([' ', '-'], '_', $status);
+  return in_array($status, [
+    'completed', 'complete', 'paid', 'success', 'successful', 'approved',
+    'succeeded', 'settled', 'captured', 'processed', 'confirmed',
+    'payment_success', 'payment_successful', 'done'
+  ], true);
+}
+
+/** Statut du panier Maketou, quel que soit le niveau où il est publié. */
+function maketou_extract_status($data): string {
+  if (!is_array($data)) return '';
+  $nested = is_array($data['data'] ?? null) ? $data['data'] : [];
+  $cart = is_array($data['cart'] ?? null) ? $data['cart'] : (is_array($nested['cart'] ?? null) ? $nested['cart'] : []);
+  $order = is_array($data['order'] ?? null) ? $data['order'] : (is_array($nested['order'] ?? null) ? $nested['order'] : []);
+  $tx = is_array($data['transaction'] ?? null) ? $data['transaction'] : (is_array($nested['transaction'] ?? null) ? $nested['transaction'] : []);
+  $candidates = [
+    $data['status'] ?? '',
+    $data['paymentStatus'] ?? '',
+    $data['payment_status'] ?? '',
+    $data['financial_status'] ?? '',
+    $cart['status'] ?? '',
+    $nested['status'] ?? '',
+    $order['status'] ?? '',
+    $tx['status'] ?? '',
+  ];
+  foreach ($candidates as $c) {
+    if (is_string($c) && trim($c) !== '') return trim($c);
+  }
+  return '';
+}
+
+/** Le panier est-il payé ? Statut d'abord, drapeaux booléens ensuite. */
+function maketou_payload_looks_paid($data): bool {
+  if (maketou_is_paid_status(maketou_extract_status($data))) return true;
+  if (!is_array($data)) return false;
+  $nested = is_array($data['data'] ?? null) ? $data['data'] : [];
+  $flags = [
+    $data['paid'] ?? null, $data['isPaid'] ?? null, $data['is_paid'] ?? null, $data['completed'] ?? null,
+    $nested['paid'] ?? null, $nested['isPaid'] ?? null, $nested['is_paid'] ?? null, $nested['completed'] ?? null,
+  ];
+  foreach ($flags as $flag) {
+    if ($flag === true || $flag === 1 || $flag === '1') return true;
+    if (is_string($flag) && maketou_is_paid_status($flag)) return true;
+  }
+  $event = strtolower(trim((string) ($data['event'] ?? ($data['type'] ?? ($nested['event'] ?? '')))));
+  if ($event !== '' && preg_match('/paid|success|complet|approved|settled/i', $event)) return true;
+  return false;
+}
+
+/** Montant réellement payé, cherché à plat dans toute la réponse. */
+function maketou_extract_amount($data): int {
+  if (!is_array($data)) return 0;
   $bag = [];
-  maketou_flatten($payload, '', $bag);
-  $paid = false;
-  $refused = false;
-  $amount = 0;
+  maketou_flatten($data, '', $bag);
   foreach ($bag as $k => $v) {
-    $val = strtolower(trim((string) $v));
-    $isStatusKey = str_contains($k, 'financial_status') || str_contains($k, 'payment_status')
-      || $k === 'status' || str_ends_with($k, '.status') || str_contains($k, 'state');
-    if ($isStatusKey) {
-      if (preg_match('/^(paid|completed|complete|success|successful|captured|settled|approved)$/', $val)) $paid = true;
-      if (preg_match('/(unpaid|not_?paid|pending|failed|refused|declined|cancell?ed|expired|refunded|voided)/', $val)) $refused = true;
-    }
-    if ($amount <= 0 && (str_contains($k, 'total_price') || str_contains($k, 'current_total')
-      || $k === 'amount' || str_ends_with($k, '.amount') || str_contains($k, 'amount_paid'))) {
+    if (str_contains($k, 'total_price') || str_contains($k, 'current_total') || $k === 'amount'
+      || str_ends_with($k, '.amount') || str_contains($k, 'amount_paid') || str_contains($k, 'totalprice')) {
       $n = (int) round((float) preg_replace('/[^\d.]/', '', (string) $v));
-      if ($n > 0) $amount = $n;
+      if ($n > 0) return $n;
     }
   }
-  return ['paid' => ($paid && !$refused), 'amount' => $amount];
+  return 0;
+}
+
+/** Identifiant utilisable comme référence de panier Maketou. */
+function maketou_looks_like_ref($value): bool {
+  $value = trim((string) $value);
+  if ($value === '' || str_contains($value, '.')) return false;
+  return (bool) preg_match('/^[A-Za-z0-9_-]{8,80}$/', $value);
 }
 
 function maketou_http_get(string $url, string $key, ?int &$status = null): ?array {
@@ -592,12 +646,13 @@ function maketou_http_get(string $url, string $key, ?int &$status = null): ?arra
   $ch = curl_init($url);
   curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 8,
+    CURLOPT_TIMEOUT => 10,
+    CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_HTTPHEADER => [
-      'Accept: application/json',
+      // Format accepté par api.maketou.net : jeton Bearer, réponse JSON.
       'Authorization: Bearer ' . $key,
-      'X-API-Key: ' . $key,
-      'x-api-key: ' . $key,
+      'Content-Type: application/json',
+      'Accept: application/json',
     ],
   ]);
   $raw = curl_exec($ch);
@@ -633,16 +688,19 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
   }
   $ref = (string) ($dep['id'] ?? $dep['ref'] ?? '');
   $sellId = (string) ($dep['sellId'] ?? '');
-  $base = rtrim(maketou_api_url(), '/');
-  $root = preg_replace('#/checkouts$#', '', $base) ?? $base;
+  $extId = (string) ($dep['extId'] ?? '');
+  // Endpoint officiel de vérification : GET /api/v1/stores/cart/{reference}.
+  $cart = maketou_verify_base() . '/api/v1/stores/cart/';
   $candidates = [];
-  if ($sellId !== '') {
-    $candidates[] = $base . '/' . rawurlencode($sellId);
-    $candidates[] = $root . '/orders/' . rawurlencode($sellId);
+  $seen = [];
+  foreach ([$sellId, $ref, $extId] as $id) {
+    if (!maketou_looks_like_ref($id) || isset($seen[$id])) continue;
+    $seen[$id] = true;
+    $candidates[] = $cart . rawurlencode($id);
   }
-  if ($ref !== '') {
-    $candidates[] = $base . '?reference=' . rawurlencode($ref);
-    $candidates[] = $root . '/orders?reference=' . rawurlencode($ref);
+  if (!$candidates) {
+    maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'no_reference']);
+    return ['ok' => false, 'paid' => false, 'reason' => 'no_reference'];
   }
   $attempts = max(1, min(3, $attempts));
   // Maketou peut mettre quelques secondes à publier le paiement : on retente,
@@ -661,17 +719,18 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
       $json = maketou_http_get($url, $key, $code);
       $statuses[] = $code;
       if ($json === null) continue;
-      $verdict = maketou_payload_is_paid($json);
-      if (!empty($verdict['paid'])) {
+      $status = maketou_extract_status($json);
+      if (maketou_payload_looks_paid($json)) {
         $expected = (int) ($dep['amount'] ?? 0);
-        $got = (int) ($verdict['amount'] ?? 0);
+        $got = maketou_extract_amount($json);
         if ($expected > 0 && $got > 0 && $got < $expected) {
           maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'amount_mismatch', 'expected' => $expected, 'got' => $got]);
           return ['ok' => false, 'paid' => false, 'reason' => 'amount_mismatch'];
         }
-        maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'paid', 'amount' => $got > 0 ? $got : $expected]);
+        maketou_log('maketou_verify', ['ref' => $ref, 'url' => $url, 'status' => $status, 'result' => 'paid', 'amount' => $got > 0 ? $got : $expected]);
         return ['ok' => true, 'paid' => true, 'amount' => $got > 0 ? $got : $expected];
       }
+      maketou_log('maketou_verify_step', ['ref' => $ref, 'url' => $url, 'http' => $code, 'status' => $status]);
     }
   }
   // Aucune réponse exploitable : on nomme la cause au lieu de dire « en attente ».
@@ -1499,6 +1558,8 @@ function maketou_handle_webhook(): void {
   $hit = maketou_extract_payment($payload);
   if (!empty($_GET['ref']) && $hit['ref'] === '') $hit['ref'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) $_GET['ref']);
   $ident = ($hit['ref'] !== '' || $hit['email'] !== '' || $hit['sellId'] !== '');
+  // Même logique de statut que la vérification : « paid », « completed »…
+  if (!$hit['paid'] && maketou_payload_looks_paid($payload)) $hit['paid'] = true;
   if (!$ident || !$hit['paid']) {
     echo json_encode(['ok' => true, 'ignored' => true]);
     exit;
@@ -1513,7 +1574,7 @@ function maketou_handle_webhook(): void {
       echo json_encode(['ok' => true, 'ignored' => true, 'reason' => 'unknown']);
       exit;
     }
-    $proof = maketou_verify_remote_payment($dep);
+    $proof = maketou_verify_remote_payment($dep, 2, 2);
     if (empty($proof['paid'])) {
       error_log('OROLADO webhook non signé refusé (' . (string) ($proof['reason'] ?? 'not_paid') . ')');
       http_response_code(202);
