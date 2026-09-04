@@ -715,7 +715,7 @@
   async function postDepositConfirm(payload) {
     // Délai borné : la vérification rend toujours la main à l'interface.
     var ctrl = window.AbortController ? new AbortController() : null;
-    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 12000);
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
     try {
       var r = await fetch('api/deposit/confirm', {
         method: 'POST',
@@ -730,7 +730,7 @@
     } finally {
       clearTimeout(timer);
     }
-    return D6.Api.post('confirmDeposit', payload, 12000);
+    return D6.Api.post('confirmDeposit', payload, 20000);
   }
 
   function stopDepositWatch() {
@@ -753,6 +753,11 @@
     el.className = 'wait-note' + (kind ? ' ' + kind : '');
   }
 
+  function setWaitBusy(on) {
+    var sp = $('depositWaitSpin');
+    if (sp) sp.hidden = !on;
+  }
+
   function openDepositWait(ref) {
     depositRef = ref || '';
     if ($('depositWaitTitle')) $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', opLabel());
@@ -763,6 +768,23 @@
       btn.textContent = t('depositCheckBtn').replace('{op}', opLabel());
     }
     setWaitNote('', '');
+    setWaitBusy(false);
+    openModal('depositWaitModal');
+  }
+
+  // Retour de paiement détecté dans l'URL : on ouvre tout de suite la modale
+  // « Validation de votre dépôt en cours… » avant d'interroger le serveur.
+  function openDepositVerify(ref) {
+    depositRef = ref || depositRef;
+    if ($('depositWaitTitle')) $('depositWaitTitle').textContent = t('depositVerifyTitle');
+    if ($('depositWaitRef')) $('depositWaitRef').textContent = depositRef ? ('Réf. ' + depositRef) : '';
+    var btn = $('btnDepositCheck');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = t('depositChecking').replace('{op}', opLabel());
+    }
+    setWaitNote('', '');
+    setWaitBusy(true);
     openModal('depositWaitModal');
   }
 
@@ -777,6 +799,7 @@
       btn.textContent = t('depositChecking').replace('{op}', opLabel());
     }
     setWaitNote('', '');
+    setWaitBusy(true);
     try {
       var ref = depositRef;
       try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || localStorage.getItem('oro_dep_ref') || ''; } catch (e0) { ref = ''; }
@@ -791,9 +814,13 @@
       setWaitNote(t('depositPending'), 'warn');
     } finally {
       depositChecking = false;
+      setWaitBusy(false);
       if (btn && !depositApplied) {
         btn.disabled = false;
         btn.textContent = t('depositCheckBtn').replace('{op}', opLabel());
+      }
+      if (!depositApplied && $('depositWaitTitle')) {
+        $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', opLabel());
       }
     }
   }
@@ -802,9 +829,12 @@
     if (depositApplied) return;
     // Seul le serveur peut déclarer un dépôt payé : aucun crédit sur simple
     // retour de page, clic ou fermeture de l'onglet Maketou.
-    if (!remote || !remote.ok || !remote.paid || !(remote.amount > 0)) return;
+    if (!remote || !remote.ok) return;
+    if (!(remote.paid || remote.success) || !(remote.amount > 0)) return;
     depositApplied = true;
+    depositChecking = false;
     stopDepositWatch();
+    setWaitBusy(false);
     closeModal('depositWaitModal');
     try {
       if (payWindow && !payWindow.closed) {
@@ -818,7 +848,9 @@
       }
     } catch (e) { /* ignore */ }
     var u = user();
-    if (remote.vault && u) D6.Store.importRemote(u, remote.vault);
+    var vault = remote.vault;
+    if (!vault && remote.new_balance > 0) vault = { real: remote.new_balance };
+    if (vault && u) D6.Store.importRemote(u, vault);
     D6.holdDepositReal = true;
     setTimeout(function () { D6.holdDepositReal = false; }, 25000);
     if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
@@ -826,10 +858,12 @@
       setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
     }
     updateBalance(true);
-    toast(t('depositOk') + ' : +' + D6.fmtFCFA(remote.amount), 'ok');
+    toast(t('depositCredited').replace('{amt}', D6.fmtFCFA(remote.amount)), 'ok');
+    playWinChime();
     if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
     closeModal('depositModal');
     openModal('depositSuccessModal');
+    depositRef = '';
     try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
     try { localStorage.removeItem('oro_dep_ref'); } catch (e3) { /* ignore */ }
     if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
@@ -969,19 +1003,68 @@
     }
   }
 
-  async function checkDepositReturn() {
-    var q = new URLSearchParams(location.search);
-    var ref = q.get('ref') || '';
+  // Paramètres qu'un opérateur peut renvoyer au retour du paiement.
+  var TX_REF_KEYS = ['ref', 'reference', 'tx_id', 'txid', 'tx_ref', 'transaction_id', 'transactionId',
+    'trx_id', 'order_id', 'orderId', 'sell_id', 'sellId', 'checkout_id', 'payment_id', 'invoice_id'];
+  var TX_STATE_KEYS = ['status', 'payment', 'deposit', 'payment_status', 'state', 'result'];
+  var lastSilentConfirm = 0;
+
+  function readDepositReturn() {
+    var q;
+    try { q = new URLSearchParams(location.search); } catch (e) { return { ref: '', fromUrl: false, canceled: false }; }
+    var ref = '';
+    for (var i = 0; i < TX_REF_KEYS.length && !ref; i++) {
+      var raw = q.get(TX_REF_KEYS[i]) || '';
+      ref = String(raw).replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 80);
+    }
+    var state = '';
+    for (var j = 0; j < TX_STATE_KEYS.length && !state; j++) state = String(q.get(TX_STATE_KEYS[j]) || '').toLowerCase();
+    var canceled = /cancel|abort|refus|declin/.test(state);
+    var success = /success|paid|complete|approved|ok|^1$/.test(state);
+    return { ref: ref, fromUrl: !!ref || success || canceled, canceled: canceled };
+  }
+
+  // Nettoie l'URL immédiatement : un rechargement ne rejoue pas la même requête.
+  function scrubDepositUrl() {
+    if (!history.replaceState) return;
+    try {
+      var q = new URLSearchParams(location.search);
+      TX_REF_KEYS.concat(TX_STATE_KEYS).forEach(function (k) { q.delete(k); });
+      var qs = q.toString();
+      history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    } catch (e) { /* ignore */ }
+  }
+
+  async function checkDepositReturn(force) {
+    var info = readDepositReturn();
+    var hadUrlParams = info.fromUrl;
+    if (force) info.fromUrl = true;
+    var ref = info.ref;
     try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || localStorage.getItem('oro_dep_ref') || ''; } catch (e) { /* ignore */ }
-    if (q.get('payment') === 'cancel') {
+    if (hadUrlParams) scrubDepositUrl();
+    if (info.canceled) {
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e0) { /* ignore */ }
       try { localStorage.removeItem('oro_dep_ref'); } catch (e1) { /* ignore */ }
       stopDepositWatch();
       return;
     }
-    var successBack = q.get('deposit') === 'success' || q.get('payment') === 'success' || q.get('deposit') === '1';
-    if (!successBack && !ref) return;
-    if (ref && !depositWatch && !depositApplied) startDepositWatch(ref);
+    if (depositApplied) return;
+    if (!info.fromUrl && !ref) return;
+    if (ref) {
+      depositRef = ref;
+      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', ref); } catch (e3) { /* ignore */ }
+    }
+    if (info.fromUrl) {
+      // Retour de paiement : validation automatique, visible et bornée.
+      openDepositVerify(ref);
+      await checkDepositNow();
+      if (!depositApplied && ref) startDepositWatch(ref);
+      return;
+    }
+    var now = Date.now();
+    if (now - lastSilentConfirm < 30000) return;
+    lastSilentConfirm = now;
     var tok = await ensureApiToken();
     var remote = await postDepositConfirm({ token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref });
     applyDepositPaid(remote);
@@ -1449,7 +1532,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=31').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=32').catch(function () { /* ignore */ });
     }
   }
 
@@ -1532,8 +1615,9 @@
         var ref = d.ref || '';
         if (ref) {
           try { localStorage.setItem('oro_dep_ref', ref); } catch (e) {}
+          depositRef = ref;
         }
-        checkDepositReturn();
+        checkDepositReturn(true);
       });
       document.addEventListener('orolado-deposit-completed', function (ev) {
         var ref = (ev && ev.detail && ev.detail.ref) || '';

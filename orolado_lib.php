@@ -555,7 +555,7 @@ function maketou_http_get(string $url, string $key): ?array {
  * Interroge Maketou de serveur à serveur : seule preuve acceptée pour créditer
  * quand le webhook signé n'a pas été reçu. Sans clé API, on ne crédite jamais.
  */
-function maketou_verify_remote_payment(array $dep): array {
+function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitSec = 2): array {
   $key = maketou_api_key();
   if ($key === '') {
     error_log('OROLADO: MAKETOU_API_KEY absente — aucun dépôt ne peut être vérifié ni crédité');
@@ -574,17 +574,29 @@ function maketou_verify_remote_payment(array $dep): array {
     $candidates[] = $base . '?reference=' . rawurlencode($ref);
     $candidates[] = $root . '/orders?reference=' . rawurlencode($ref);
   }
-  foreach ($candidates as $url) {
-    $json = maketou_http_get($url, $key);
-    if ($json === null) continue;
-    $verdict = maketou_payload_is_paid($json);
-    if (!empty($verdict['paid'])) {
-      $expected = (int) ($dep['amount'] ?? 0);
-      $got = (int) ($verdict['amount'] ?? 0);
-      if ($expected > 0 && $got > 0 && $got < $expected) {
-        return ['ok' => false, 'paid' => false, 'reason' => 'amount_mismatch'];
+  $attempts = max(1, min(3, $attempts));
+  // Maketou peut mettre quelques secondes à publier le paiement : on retente,
+  // mais un montant insuffisant reste un refus immédiat. La butée de temps
+  // garantit une réponse HTTP avant que le client n'abandonne.
+  $deadline = microtime(true) + 14.0;
+  for ($i = 0; $i < $attempts; $i++) {
+    if ($i > 0) {
+      if (microtime(true) + $waitSec >= $deadline) break;
+      sleep(max(1, $waitSec));
+    }
+    foreach ($candidates as $url) {
+      if (microtime(true) >= $deadline) break 2;
+      $json = maketou_http_get($url, $key);
+      if ($json === null) continue;
+      $verdict = maketou_payload_is_paid($json);
+      if (!empty($verdict['paid'])) {
+        $expected = (int) ($dep['amount'] ?? 0);
+        $got = (int) ($verdict['amount'] ?? 0);
+        if ($expected > 0 && $got > 0 && $got < $expected) {
+          return ['ok' => false, 'paid' => false, 'reason' => 'amount_mismatch'];
+        }
+        return ['ok' => true, 'paid' => true, 'amount' => $got > 0 ? $got : $expected];
       }
-      return ['ok' => true, 'paid' => true, 'amount' => $got > 0 ? $got : $expected];
     }
   }
   return ['ok' => false, 'paid' => false, 'reason' => 'not_paid'];
@@ -1204,6 +1216,8 @@ function orolado_confirm_deposit(array $req): array {
   if (!$dep) {
     $out = orolado_deposit_status($req);
     $out['paid'] = !empty($out['paid']);
+    $out['success'] = !empty($out['paid']);
+    $out['new_balance'] = (int) ($out['vault']['real'] ?? 0);
     return $out;
   }
 
@@ -1214,7 +1228,7 @@ function orolado_confirm_deposit(array $req): array {
   // Un retour de navigateur ne prouve rien : le crédit exige une confirmation
   // Maketou obtenue de serveur à serveur. Sinon le dépôt reste PENDING.
   if ($st !== 'PAID' && $st !== 'COMPLETED') {
-    $proof = maketou_verify_remote_payment($dep);
+    $proof = maketou_verify_remote_payment($dep, 3, 2);
     if (!empty($proof['paid'])) {
       $cred = credit_paid_deposit([
         'ref' => $refId,
@@ -1240,10 +1254,16 @@ function orolado_confirm_deposit(array $req): array {
     if ($vault) $out['vault'] = $vault;
   }
   if (empty($out['paid'])) {
+    // Le dépôt reste PENDING : le joueur peut relancer, l'admin peut valider.
     $out['status'] = 'PENDING';
     $out['pending'] = true;
     $out['reason'] = (string) ($cred['reason'] ?? 'not_paid');
+  } else {
+    $out['status'] = 'COMPLETED';
   }
+  $out['ref'] = $refId;
+  $out['success'] = !empty($out['paid']);
+  $out['new_balance'] = (int) ($out['vault']['real'] ?? 0);
   return $out;
 }
 

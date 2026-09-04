@@ -6,6 +6,9 @@ header('X-Content-Type-Options: nosniff');
 
 require_once dirname(__DIR__) . '/orolado_lib.php';
 orolado_load_env();
+// Les 3 tentatives Maketou espacées de 2 s doivent tenir dans la requête.
+@set_time_limit(40);
+@ignore_user_abort(true);
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
   http_response_code(204);
