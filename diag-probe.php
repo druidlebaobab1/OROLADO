@@ -146,4 +146,51 @@ $out['concurrence'] = [
   'lignes_diag_restantes' => is_array($reste['json']) ? count($reste['json']) : null,
 ];
 
+// 5. Tentative de crédit gratuit sur un vrai dépôt PENDING (chemin exploitable).
+$fauxUser = 'ffffffff-0000-4000-8000-' . bin2hex(random_bytes(6));
+$fauxRef = 'oro_diag' . bin2hex(random_bytes(8));
+$fauxAlias = 'trader_diag' . bin2hex(random_bytes(3)) . '@orolado-pay.com';
+with_db_lock(function ($box) use ($fauxRef, $fauxUser, $fauxAlias) {
+  if (!isset($box->db['deposits']) || !is_array($box->db['deposits'])) $box->db['deposits'] = [];
+  $box->db['deposits'][] = [
+    'id' => $fauxRef, 'ref' => $fauxRef, 'userId' => $fauxUser,
+    'aliasEmail' => $fauxAlias, 'operator' => 'wave',
+    'status' => 'PENDING', 'amount' => 1000, 'at' => date('c'),
+  ];
+  return ['ok' => true];
+});
+
+$attaque = probe_http(
+  orolado_public_origin() . '/api/deposit/webhook',
+  ['Content-Type: application/json'],
+  json_encode(['reference' => $fauxRef, 'status' => 'paid', 'amount' => 1000, 'email' => $fauxAlias]),
+  'POST'
+);
+
+$verdict = maketou_verify_remote_payment(['id' => $fauxRef, 'amount' => 1000, 'sellId' => '']);
+
+$apresAttaque = load_db(orolado_data_file());
+$statutFinal = 'introuvable';
+foreach (($apresAttaque['deposits'] ?? []) as $d) {
+  if (($d['id'] ?? '') === $fauxRef) $statutFinal = strtoupper((string) ($d['status'] ?? ''));
+}
+$vaultFaux = (int) ($apresAttaque['vault'][$fauxUser]['real'] ?? 0);
+
+with_db_lock(function ($box) use ($fauxRef, $fauxUser) {
+  $box->db['deposits'] = array_values(array_filter(($box->db['deposits'] ?? []), function ($d) use ($fauxRef) {
+    return ($d['id'] ?? '') !== $fauxRef;
+  }));
+  unset($box->db['vault'][$fauxUser]);
+  return ['ok' => true];
+});
+
+$out['faille_credit_gratuit'] = [
+  'depot_pending_cree' => $fauxRef,
+  'reponse_webhook_non_signe' => $attaque['json'] ?? $attaque['raw'],
+  'verdict_verification_maketou' => $verdict,
+  'statut_du_depot_apres_attaque' => $statutFinal,
+  'montant_credite' => $vaultFaux,
+  'faille_verrouillee' => ($statutFinal === 'PENDING' && $vaultFaux === 0),
+];
+
 echo json_encode($out, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
