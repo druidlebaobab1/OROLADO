@@ -132,13 +132,15 @@
     var u = D6.Store.current();
     if (!u || !uuidish(u.id) || !vault) return;
     var live = D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount();
+    var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
     var next = {
       demo: D6.Store.demoBalance(u),
-      real: D6.Store.realBalance ? D6.Store.realBalance(u) : 0
+      real: localReal
     };
     if (!(live && u.mode === 'demo')) next.demo = Number(vault.demo);
     if (!(live && u.mode === 'real')) next.real = Number(vault.real);
     if (Number(vault.real) > next.real) next.real = Number(vault.real);
+    if (localReal > next.real) next.real = localReal;
     if (profile) {
       if (profile.display_name) u.displayName = profile.display_name;
       if (profile.phone) u.phone = profile.phone;

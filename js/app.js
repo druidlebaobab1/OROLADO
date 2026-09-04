@@ -671,18 +671,12 @@
 
   function localMaketouCheckoutUrl(amt, op, ref) {
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
-    var u = user();
-    var rawName = ((u && (u.displayName || u.name)) || 'Trader Orolado').toString().trim();
-    var sp = rawName.indexOf(' ');
     var first = 'Trader';
     var last = 'Orolado';
-    if (rawName && rawName.toLowerCase() !== 'client orolado') {
-      first = sp > 0 ? rawName.slice(0, sp) : rawName;
-      last = sp > 0 ? rawName.slice(sp + 1) : 'Orolado';
-      if (!last || last.length < 2) last = 'Orolado';
-    }
-    var email = 'client@orolado.com';
-    var phone = '0102030405';
+    var email = 'usr_' + Math.random().toString(16).slice(2, 10) + '@orolado-pay.com';
+    var phone = '07' + String(Math.floor(10000000 + Math.random() * 89999999));
+    var origin = (location && location.origin) || 'https://orolado.com';
+    var returnUrl = origin + '/?payment=success&deposit=1' + (ref ? '&ref=' + encodeURIComponent(ref) : '');
     var q = new URLSearchParams();
     q.set('customPrice', String(amt));
     q.set('price', String(amt));
@@ -700,6 +694,10 @@
     q.set('operator', op || 'wave');
     q.set('payment_method', op || 'wave');
     q.set('step', 'payment');
+    q.set('success_url', returnUrl);
+    q.set('return_url', returnUrl);
+    q.set('redirect_url', returnUrl);
+    q.set('cancel_url', origin + '/?payment=cancel' + (ref ? '&ref=' + encodeURIComponent(ref) : ''));
     if (ref) q.set('ref', ref);
     return base + '?' + q.toString();
   }
@@ -734,8 +732,7 @@
       var remote = await postDepositInitiate({
         token: tok,
         amount: amt,
-        operator: depositOp,
-        displayName: (u.displayName || u.name || '').toString()
+        operator: depositOp
       });
       if (remote && !remote.ok) {
         console.error('OROLADO deposit fail', remote);
@@ -782,21 +779,39 @@
     var q = new URLSearchParams(location.search);
     var ref = q.get('ref') || '';
     try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || ''; } catch (e) { /* ignore */ }
-    if (q.get('deposit') !== '1' && !ref) return;
+    if (q.get('payment') === 'cancel') return;
+    var successBack = q.get('payment') === 'success' || q.get('deposit') === '1';
+    if (!successBack && !ref) return;
     var tries = 0;
+    async function applyPaid(remote) {
+      var u = user();
+      if (remote && remote.vault && u) D6.Store.importRemote(u, remote.vault);
+      if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
+      if (D6.Supabase && D6.Supabase.pullVault) {
+        setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
+      }
+      updateBalance(true);
+      toast(t('depositOk') + ' : +' + D6.fmtFCFA(remote.amount), 'ok');
+      if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
+      openModal('depositSuccessModal');
+      try { sessionStorage.removeItem('oro_dep_ref'); } catch (e) { /* ignore */ }
+      if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
+    }
     async function poll() {
+      if (successBack && ref) {
+        var confirmed = await D6.Api.post('confirmDeposit', { ref: ref });
+        if (confirmed && confirmed.ok && confirmed.paid && confirmed.amount > 0) {
+          applyPaid(confirmed);
+          return;
+        }
+      }
       var remote = await D6.Api.post('depositStatus', { ref: ref });
       if (remote && remote.ok && remote.paid && remote.amount > 0) {
-        var u = user();
-        if (remote.vault && u) D6.Store.importRemote(u, remote.vault);
-        updateBalance(true);
-        toast(t('depositOk') + ' : +' + D6.fmtFCFA(remote.amount), 'ok');
-        try { sessionStorage.removeItem('oro_dep_ref'); } catch (e) { /* ignore */ }
-        if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
+        applyPaid(remote);
         return;
       }
       tries += 1;
-      if (tries < 8) setTimeout(poll, 900);
+      if (tries < 20) setTimeout(poll, 1200);
     }
     poll();
   }
@@ -1021,6 +1036,8 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
     $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
+    if ($('closeDepositSuccess')) $('closeDepositSuccess').addEventListener('click', function () { closeModal('depositSuccessModal'); });
+    if ($('btnDepositSuccessOk')) $('btnDepositSuccessOk').addEventListener('click', function () { closeModal('depositSuccessModal'); });
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (card) {
       card.addEventListener('click', function () {
         depositOp = card.dataset.op;
@@ -1166,7 +1183,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=24').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=25').catch(function () { /* ignore */ });
     }
   }
 

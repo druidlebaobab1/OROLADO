@@ -436,4 +436,9 @@ if ($action === 'depositStatus') {
   exit;
 }
 
+if ($action === 'confirmDeposit') {
+  echo json_encode(orolado_confirm_deposit(['token' => $token] + $req));
+  exit;
+}
+
 echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Action inconnue']);
