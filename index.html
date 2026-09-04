@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=28">
+  <link rel="stylesheet" href="css/app.css?v=29">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -174,7 +174,7 @@
         <div class="history-card glass">
           <div class="hist-head">
             <span class="hist-title" data-i18n="myOrders">Mes ordres</span>
-            <button type="button" class="hist-more" id="btnHistMore" data-i18n="seeAll">Voir tout</button>
+            <button type="button" class="hist-more" id="btnHistMore" data-i18n="seeAll">Historique complet</button>
           </div>
           <div class="history-feed" id="historyFeed"></div>
         </div>
@@ -187,19 +187,18 @@
           </div>
           <div class="stake-line">
             <div class="stake-field">
-              <input id="inputStake" type="number" inputmode="numeric" value="1000" min="100" step="100" placeholder="FCFA">
+              <input id="inputStake" type="number" inputmode="numeric" value="100" min="100" step="100" placeholder="FCFA">
               <div class="stake-min" data-i18n="minHint">Mise min : 100 FCFA</div>
             </div>
             <div class="win-preview">
               <div class="label" data-i18n="estYield">Rendement estimé</div>
-              <div class="amount" id="previewGain">1 880 FCFA</div>
+              <div class="amount" id="previewGain">188 FCFA</div>
               <div class="mult" id="previewMult">×1.88</div>
             </div>
           </div>
           <div class="quick-row">
-            <button type="button" class="qbtn" data-s="500">500</button>
-            <button type="button" class="qbtn" data-s="1000">1 000</button>
-            <button type="button" class="qbtn" data-s="5000">5 000</button>
+            <button type="button" class="qbtn" data-add="500">+500</button>
+            <button type="button" class="qbtn" data-add="1000">+1 000</button>
             <button type="button" class="qbtn" data-a="x2">×2</button>
             <button type="button" class="qbtn" data-a="half">÷2</button>
           </div>
@@ -414,15 +413,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=28"></script>
-  <script src="js/i18n.js?v=28"></script>
-  <script src="js/store.js?v=28"></script>
-  <script src="js/api.js?v=28"></script>
+  <script src="js/config.js?v=29"></script>
+  <script src="js/i18n.js?v=29"></script>
+  <script src="js/store.js?v=29"></script>
+  <script src="js/api.js?v=29"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=28"></script>
-  <script src="js/auth.js?v=28"></script>
-  <script src="js/engine.js?v=28"></script>
-  <script src="js/chart.js?v=28"></script>
-  <script src="js/app.js?v=28"></script>
+  <script src="js/supabase.js?v=29"></script>
+  <script src="js/auth.js?v=29"></script>
+  <script src="js/engine.js?v=29"></script>
+  <script src="js/chart.js?v=29"></script>
+  <script src="js/app.js?v=29"></script>
 </body>
 </html>

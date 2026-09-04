@@ -307,6 +307,30 @@ function save_db(string $file, array $db): bool {
   return $ok;
 }
 
+/** Lecture + écriture atomique du JSON (évite les courses entre trades simultanés). */
+function with_db_lock(callable $fn) {
+  $file = orolado_data_file();
+  $fp = fopen($file, 'c+');
+  if (!$fp) return ['ok' => false, 'reason' => 'Stockage indisponible'];
+  flock($fp, LOCK_EX);
+  $raw = stream_get_contents($fp);
+  $data = json_decode($raw ?: '', true);
+  $box = new stdClass();
+  $box->db = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  $result = $fn($box);
+  $db = $box->db;
+  if (!is_array($result) || empty($result['skip_write'])) {
+    rewind($fp);
+    ftruncate($fp, 0);
+    fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE));
+    fflush($fp);
+  }
+  flock($fp, LOCK_UN);
+  fclose($fp);
+  if (is_array($result)) unset($result['skip_write']);
+  return $result;
+}
+
 function maketou_alias_email(?string $userId = null): string {
   $tag = $userId ? substr(hash('sha256', $userId), 0, 8) : bin2hex(random_bytes(4));
   return 'trader_' . $tag . '_' . bin2hex(random_bytes(3)) . '@orolado-pay.com';
@@ -347,7 +371,7 @@ function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $re
   [$first, $last] = maketou_split_name($name);
   $phoneLocal = preg_replace('/\D/', '', $aliasPhone) ?? '';
   if (str_starts_with($phoneLocal, '225')) $phoneLocal = substr($phoneLocal, 3);
-  if ($returnUrl === '') $returnUrl = orolado_public_origin() . '/pay-done.html?ref=' . rawurlencode($ref);
+  if ($returnUrl === '') $returnUrl = orolado_public_origin() . '/pay-blank.html?ref=' . rawurlencode($ref);
   $dashUrl = orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref);
   $qs = [
     'customPrice' => $amount,
@@ -918,7 +942,7 @@ function orolado_initiate_deposit(array $req): array {
   $aliasPhone = maketou_alias_phone();
   $ref = 'oro_' . bin2hex(random_bytes(12));
   $origin = orolado_public_origin();
-  $returnUrl = $origin . '/pay-done.html?ref=' . rawurlencode($ref);
+  $returnUrl = $origin . '/pay-blank.html?ref=' . rawurlencode($ref);
   $webhookUrl = $origin . '/api/deposit/webhook';
 
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
@@ -1098,7 +1122,7 @@ function maketou_handle_webhook(): void {
   if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($_GET['ref'] ?? '')) ?? '';
     if ($ref !== '') {
-      header('Location: ' . orolado_public_origin() . '/pay-done.html?ref=' . rawurlencode($ref));
+      header('Location: ' . orolado_public_origin() . '/pay-blank.html?ref=' . rawurlencode($ref));
       exit;
     }
     echo json_encode(['ok' => true, 'listener' => 'deposit-webhook']);

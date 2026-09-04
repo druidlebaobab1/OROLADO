@@ -217,7 +217,14 @@
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'deposits', filter: 'user_id=eq.' + userId }, function (payload) {
         var row = payload.new;
-        if (row && String(row.status || '').toUpperCase() === 'COMPLETED') pullVault();
+        if (row && String(row.status || '').toUpperCase() === 'COMPLETED') {
+          pullVault();
+          try {
+            document.dispatchEvent(new CustomEvent('orolado-deposit-completed', {
+              detail: { ref: row.reference || row.id, amount: Number(row.amount) || 0, status: 'COMPLETED' }
+            }));
+          } catch (e) { /* ignore */ }
+        }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'id=eq.' + userId }, function (payload) {
         var row = payload.new;
@@ -359,6 +366,32 @@
 
     queueSync: queueSync,
     syncNow: syncNow,
+
+    listFinance: async function () {
+      var sb = getClient();
+      var user = D6.Store.current();
+      if (!sb || !user || !uuidish(user.id)) return { deposits: [], txs: [] };
+      var dep = await sb.from('deposits').select('id,amount,status,created_at,completed_at,reference').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
+      var txRes = await sb.from('transactions').select('id,type,amount,note,created_at,mode').eq('user_id', user.id).in('type', ['deposit', 'withdraw']).order('created_at', { ascending: false }).limit(80);
+      return { deposits: (dep && dep.data) || [], txs: (txRes && txRes.data) || [] };
+    },
+
+    pollDeposit: async function (ref) {
+      var sb = getClient();
+      var user = D6.Store.current();
+      if (!sb || !user || !uuidish(user.id) || !ref) return null;
+      var row = null;
+      var byRef = await sb.from('deposits').select('id,amount,status,reference').eq('user_id', user.id).eq('reference', ref).maybeSingle();
+      if (byRef && byRef.data) row = byRef.data;
+      if (!row) {
+        var byId = await sb.from('deposits').select('id,amount,status,reference').eq('user_id', user.id).eq('id', ref).maybeSingle();
+        if (byId && byId.data) row = byId.data;
+      }
+      if (!row) return null;
+      var st = String(row.status || '').toUpperCase();
+      if (st !== 'COMPLETED' && st !== 'PAID') return { paid: false, status: st };
+      return { paid: true, ok: true, amount: Number(row.amount) || 0, status: st, ref: row.reference || row.id };
+    },
 
     saveOrder: function (order, status) {
       var sb = getClient();

@@ -180,12 +180,18 @@
     if (user.mode !== 'real') {
       var done = user.demoTrades || 0;
       if (done < (C.DEMO_FORCE_WINS || 3)) return 'win';
-      return Math.random() < (C.DEMO_WIN_RATE || 0.85) ? 'win' : 'lose';
+      var pDemo = C.DEMO_WIN_RATE || 0.80;
+      var wrDemo = recentWinRate(user, 20);
+      if (done >= 8 && wrDemo > 0.86) pDemo = 0.68;
+      else if (done >= 8 && wrDemo < 0.74) pDemo = 0.90;
+      return Math.random() < pDemo ? 'win' : 'lose';
     }
-    var p = C.REAL_WIN_RATE;
+    var p = C.REAL_WIN_RATE || 0.45;
+    var n = user.realTrades || 0;
     var wr = recentWinRate(user, 20);
-    if ((user.realTrades || 0) >= 8 && wr > 0.48) p = 0.32;
-    if (user.consecutiveLosses >= 4) p = Math.min(0.50, p + 0.04);
+    if (n >= 6 && wr < 0.36) p = 0.58;
+    else if (n >= 6 && wr > 0.54) p = 0.34;
+    if ((user.consecutiveLosses || 0) >= 3) p = Math.max(p, 0.62);
     return Math.random() < p ? 'win' : 'lose';
   }
 
@@ -422,29 +428,20 @@
       var isCall = trade.side === 'call';
       var market = markets[trade.assetId];
       var exitPrice = market ? market.price : trade.entryPrice;
-      var won;
-      if (trade.mode === 'real') {
-        won = isCall ? exitPrice >= trade.entryPrice : exitPrice <= trade.entryPrice;
+      var shouldWin = !!(intent && intent.target === 'win');
+      if (intent) {
+        var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
+        if (expectedSeal !== intent.seal || intent.seq !== trade.seq) shouldWin = false;
       } else {
-        var shouldWin = !!(intent && intent.target === 'win');
-        if (intent) {
-          var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
-          if (expectedSeal !== intent.seal || intent.seq !== trade.seq) shouldWin = false;
-        } else {
-          shouldWin = false;
-        }
-        won = shouldWin;
-        if (shouldWin) {
-          var winDelta = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.55, 0.28);
-          exitPrice = trade.entryPrice + (isCall ? 1 : -1) * winDelta;
-        } else {
-          var miss = 0.035 + Math.random() * Math.max(0.08, (C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.07);
-          exitPrice = trade.entryPrice + (isCall ? -1 : 1) * miss;
-        }
+        shouldWin = false;
       }
-      if (intent && trade.mode === 'real') {
-        var sealReal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
-        if (sealReal !== intent.seal || intent.seq !== trade.seq) won = false;
+      var won = shouldWin;
+      if (shouldWin) {
+        var winDelta = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.55, 0.28);
+        exitPrice = trade.entryPrice + (isCall ? 1 : -1) * winDelta;
+      } else {
+        var miss = 0.035 + Math.random() * Math.max(0.08, (C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.07);
+        exitPrice = trade.entryPrice + (isCall ? -1 : 1) * miss;
       }
       var payoutAmount = 0;
       var net;

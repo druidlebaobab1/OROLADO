@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <style>html,body{margin:0;background:#07080c;min-height:100%;}</style>
+</head>
+<body>
+<script>
+(function () {
+  var ref = '';
+  try { ref = new URLSearchParams(location.search).get('ref') || ''; } catch (e) { ref = ''; }
+  try { if (ref) localStorage.setItem('oro_dep_ref', ref); } catch (e1) {}
+  try { if (ref) sessionStorage.setItem('oro_dep_ref', ref); } catch (e2) {}
+  try {
+    if (window.opener) window.opener.postMessage({ orolado: 'deposit-done', ref: ref }, '*');
+  } catch (e3) {}
+  try { window.close(); } catch (e4) {}
+})();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
-  var stake = 1000;
+  var stake = 100;
   var toastTimer = null;
   var outcomeToastTimer = null;
   var outcomeToastSeen = {};
@@ -72,7 +72,7 @@
 
   document.addEventListener('orolado-trade-settled', function (ev) {
     var d = (ev && ev.detail) || {};
-    var amount = d.isWin ? (d.net != null ? d.net : d.payout) : 0;
+    var amount = d.isWin ? (d.payout != null ? d.payout : d.net) : 0;
     showOutcomeToast(!!d.isWin, amount, d.tradeId);
     updateBalance(true);
     patchHistorySoon();
@@ -263,6 +263,8 @@
     if (D6.Engine.liveCount && D6.Engine.liveCount()) return;
     u.mode = next === 'real' ? 'real' : 'demo';
     D6.Store.saveUser(u);
+    stake = D6.CONFIG.MIN_STAKE || 100;
+    if ($('inputStake')) $('inputStake').value = stake;
     setModeUi(u);
     updateBalance(true);
     updatePayoutUi();
@@ -365,15 +367,16 @@
   }
 
   function histLimit() {
-    return isMobileLayout() ? 2 : 16;
+    return 3;
   }
 
   function orderRow(h) {
+    var shown = h.won ? Math.floor(Number(h.stake) * Number(h.payout || 1.88)) : (h.net != null ? h.net : -Number(h.stake || 0));
     return '<div class="h-item ' + (h.won ? 'win' : 'lose') + '">' +
       '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
       '<div><div class="h-main">' + h.assetName + ' · ' + h.clock + '</div>' +
       '<div class="h-time">' + D6.fmtFCFA(h.stake) + '</div></div>' +
-      '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (h.net >= 0 ? '+' : '') + D6.fmtFCFA(h.net) + '</span></div>';
+      '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (shown >= 0 ? '+' : '') + D6.fmtFCFA(shown) + '</span></div>';
   }
 
   function liveOrderRow(t) {
@@ -403,8 +406,12 @@
     var feed = $('historyFeed');
     if (!feed) return;
     var orders = ordersForMode(u);
-    var html = orders.live.map(liveOrderRow).concat(orders.settled.slice(0, histLimit()).map(orderRow)).join('');
-    feed.innerHTML = html || '<div class="empty-feed">' + t('noOrders') + '</div>';
+    var html = [];
+    var remain = histLimit();
+    var i;
+    for (i = 0; i < orders.live.length && remain > 0; i++, remain--) html.push(liveOrderRow(orders.live[i]));
+    for (i = 0; i < orders.settled.length && remain > 0; i++, remain--) html.push(orderRow(orders.settled[i]));
+    feed.innerHTML = html.length ? html.join('') : '<div class="empty-feed">' + t('noOrders') + '</div>';
   }
 
   function renderHistorySheet() {
@@ -428,6 +435,13 @@
 
   function profitFromResult(res) {
     if (!res) return 0;
+    if (res.won) {
+      if (res.position && res.position.stake) {
+        return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88));
+      }
+      if (res.payout > 0 && res.net != null && res.payout >= Number(res.position && res.position.stake || 0)) return res.payout;
+      if (res.net != null && res.position) return Number(res.position.stake) + Number(res.net);
+    }
     if (res.position && res.position.net != null) return res.position.net;
     if (res.net != null) return res.net;
     return 0;
@@ -713,8 +727,17 @@
     if (!remote || !remote.ok || !remote.paid || !(remote.amount > 0)) return;
     depositApplied = true;
     stopDepositWatch();
-    try { if (payWindow && !payWindow.closed) payWindow.close(); } catch (e) { /* ignore */ }
-    payWindow = null;
+    try {
+      if (payWindow && !payWindow.closed) {
+        var blank = ((location && location.origin) || 'https://orolado.com') + '/pay-blank.html';
+        try { payWindow.location.replace(blank); } catch (e0) { /* cross-origin */ }
+        try { payWindow.close(); } catch (eClose) { /* ignore */ }
+        setTimeout(function () {
+          try { if (payWindow && !payWindow.closed) payWindow.close(); } catch (e1) {}
+          payWindow = null;
+        }, 80);
+      }
+    } catch (e) { /* ignore */ }
     var u = user();
     if (remote.vault && u) D6.Store.importRemote(u, remote.vault);
     D6.holdDepositReal = true;
@@ -741,18 +764,20 @@
       ticks += 1;
       var tok = await ensureApiToken();
       var payload = { token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref || '' };
-      if (payWindow && payWindow.closed) {
-        payWindow = null;
-        var credited = await postDepositConfirm(payload);
-        applyDepositPaid(credited);
-        if (depositApplied) return;
-      }
+      if (payWindow && payWindow.closed) payWindow = null;
       var remote = await D6.Api.post('depositStatus', payload);
+      if ((!remote || !remote.paid) && D6.Supabase && D6.Supabase.pollDeposit) {
+        var sbDep = await D6.Supabase.pollDeposit(ref);
+        if (sbDep && sbDep.paid) {
+          var confirmed = await postDepositConfirm({ token: payload.token, ref: ref });
+          remote = (confirmed && confirmed.ok && confirmed.paid) ? confirmed : Object.assign({}, remote || {}, sbDep, { paid: true, ok: true });
+        }
+      }
       applyDepositPaid(remote);
       if (depositApplied) return;
-      if (ticks >= 150) stopDepositWatch();
+      if (ticks >= 200) stopDepositWatch();
     }
-    depositWatch = setInterval(tick, 2000);
+    depositWatch = setInterval(tick, 1500);
     tick();
   }
 
@@ -764,7 +789,7 @@
     var phone = '07' + String(Math.floor(10000000 + Math.random() * 89999999));
     var origin = (location && location.origin) || 'https://orolado.com';
     var dash = origin + '/?deposit=success' + (ref ? ('&ref=' + encodeURIComponent(ref)) : '');
-    var returnUrl = origin + '/pay-done.html' + (ref ? ('?ref=' + encodeURIComponent(ref)) : '');
+    var returnUrl = origin + '/pay-blank.html' + (ref ? ('?ref=' + encodeURIComponent(ref)) : '');
     var q = new URLSearchParams();
     q.set('customPrice', String(amt));
     q.set('price', String(amt));
@@ -847,7 +872,7 @@
       try { localStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e2) { /* ignore */ }
       var ref = (remote && remote.ref) || '';
       closeModal('depositModal');
-      payWindow = window.open(url, 'orolado_pay');
+      payWindow = window.open(url, 'orolado_pay', 'width=430,height=740');
       if (!payWindow) payWindow = window.open(url, '_blank');
       startDepositWatch(ref);
       if (!payWindow) {
@@ -944,6 +969,74 @@
   function openModal(id) { $(id).classList.add('active'); }
   function closeModal(id) { $(id).classList.remove('active'); }
 
+  function fmtWhen(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function fillFinanceHistory() {
+    var tx = $('txFeed');
+    if (!tx) return;
+    tx.innerHTML = '<div class="empty-feed">…</div>';
+    var rows = [];
+    var u = user();
+    if (u && u.transactions) {
+      (u.transactions || []).forEach(function (x) {
+        if (x.type !== 'deposit' && x.type !== 'withdraw') return;
+        rows.push({
+          at: x.at || '',
+          ref: x.id || '—',
+          amount: Number(x.amount) || 0,
+          status: x.type === 'deposit' ? 'COMPLETED' : (x.note || 'withdraw'),
+          label: x.type === 'deposit' ? 'Recharge' : 'Retrait'
+        });
+      });
+    }
+    if (D6.Supabase && D6.Supabase.listFinance) {
+      try {
+        var cloud = await D6.Supabase.listFinance();
+        (cloud.deposits || []).forEach(function (d) {
+          rows.push({
+            at: d.created_at || d.completed_at || '',
+            ref: d.reference || d.id || '—',
+            amount: Number(d.amount) || 0,
+            status: String(d.status || '').toUpperCase() || 'PENDING',
+            label: 'Recharge'
+          });
+        });
+        (cloud.txs || []).forEach(function (trow) {
+          var typ = String(trow.type || '');
+          if (typ !== 'deposit' && typ !== 'withdraw') return;
+          rows.push({
+            at: trow.created_at || '',
+            ref: trow.id || '—',
+            amount: Number(trow.amount) || 0,
+            status: typ === 'deposit' ? 'COMPLETED' : 'withdraw',
+            label: typ === 'deposit' ? 'Recharge' : 'Retrait'
+          });
+        });
+      } catch (e) { /* ignore */ }
+    }
+    var remote = await D6.Api.post('financeHistory', {});
+    if (remote && remote.ok && remote.rows) {
+      (remote.rows || []).forEach(function (r) { rows.push(r); });
+    }
+    var seen = {};
+    rows = rows.filter(function (r) {
+      var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '');
+      if (seen[k]) return false;
+      seen[k] = 1;
+      return true;
+    });
+    rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
+    tx.innerHTML = rows.length ? rows.map(function (r) {
+      var st = r.status || '';
+      return '<div class="list-row"><div><strong>' + r.label + '</strong><div class="h-time">' + fmtWhen(r.at) + ' · ' + (r.ref || '—') + '</div></div><span class="' + (r.amount >= 0 ? 'w' : 'l') + '">' + (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + ' · ' + st + '</span></div>';
+    }).join('') : '<div class="empty-feed">—</div>';
+  }
+
   function bindAuth() {
     document.querySelectorAll('.auth-tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
@@ -1030,13 +1123,17 @@
     });
     document.querySelectorAll('.qbtn').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var s = btn.dataset.s, a = btn.dataset.a, u = user();
+        var add = Number(btn.dataset.add || 0);
+        var a = btn.dataset.a;
+        var u = user();
         var cap = D6.Store.balanceOf(u);
-        if (s) stake = Number(s);
-        else if (a === 'x2') stake = cap > 0 ? Math.min(stake * 2, cap) : stake * 2;
-        else if (a === 'half') stake = Math.max(Math.floor(stake / 2), D6.CONFIG.MIN_STAKE);
-        if (cap > 0) stake = Math.min(stake, cap);
-        if (stake < D6.CONFIG.MIN_STAKE) stake = D6.CONFIG.MIN_STAKE;
+        var min = D6.CONFIG.MIN_STAKE || 100;
+        stake = Math.max(min, Math.floor(Number($('inputStake').value) || stake || min));
+        if (add) stake = stake + add;
+        else if (a === 'x2') stake = stake * 2;
+        else if (a === 'half') stake = Math.max(Math.floor(stake / 2), min);
+        if (cap > 0 && stake > cap) stake = cap;
+        if (stake < min) stake = min;
         $('inputStake').value = stake;
         btn.classList.add('hit');
         setTimeout(function () { btn.classList.remove('hit'); }, 160);
@@ -1091,16 +1188,16 @@
       closeModal('passModal');
       toast(t('passUpdated'), 'ok');
     });
-    $('btnFinance').addEventListener('click', function () {
-      var u = user();
-      var tx = $('txFeed');
-      var list = (u.transactions || []).filter(function (x) { return x.type === 'deposit' || x.type === 'withdraw'; });
-      tx.innerHTML = list.length ? list.map(function (x) {
-        return '<div class="list-row"><div><strong>' + x.note + '</strong><div class="h-time">' + x.clock + '</div></div><span class="' + (x.amount >= 0 ? 'w' : 'l') + '">' + (x.amount >= 0 ? '+' : '') + D6.fmtFCFA(x.amount) + '</span></div>';
-      }).join('') : '<div class="empty-feed">—</div>';
+    $('btnFinance').addEventListener('click', openFinance, true);
+    $('btnFinance').addEventListener('pointerup', openFinance);
+    function openFinance(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      if (openFinance._lock && Date.now() - openFinance._lock < 400) return;
+      openFinance._lock = Date.now();
       closeDrawer();
       openModal('financeModal');
-    });
+      fillFinanceHistory();
+    }
     $('closeFinance').addEventListener('click', function () { closeModal('financeModal'); });
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
@@ -1252,7 +1349,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=28').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=29').catch(function () { /* ignore */ });
     }
   }
 
@@ -1266,8 +1363,7 @@
 
   function enterApp() {
     var u = user();
-    var bal = D6.Store.balanceOf(u);
-    stake = Math.max(D6.CONFIG.MIN_STAKE, Math.min(1000, bal > 0 ? bal : 1000));
+    stake = D6.CONFIG.MIN_STAKE || 100;
     $('inputStake').value = stake;
     setModeUi(u);
     setAdminBtns(u);
@@ -1330,6 +1426,21 @@
       bindAdmin();
       bindInstall();
       loopParticles();
+      window.addEventListener('message', function (ev) {
+        var d = ev && ev.data;
+        if (!d || d.orolado !== 'deposit-done') return;
+        var ref = d.ref || '';
+        if (ref) {
+          try { localStorage.setItem('oro_dep_ref', ref); } catch (e) {}
+        }
+        checkDepositReturn();
+      });
+      document.addEventListener('orolado-deposit-completed', function (ev) {
+        var ref = (ev && ev.detail && ev.detail.ref) || '';
+        try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || localStorage.getItem('oro_dep_ref') || ''; } catch (e) { ref = ref || ''; }
+        if (ref && !depositApplied) startDepositWatch(ref);
+        else checkDepositReturn();
+      });
       D6.Engine.onSettled = applyOutcome;
       var tapEv = window.PointerEvent ? 'pointerdown' : 'touchstart';
       document.addEventListener(tapEv, function (e) {

@@ -23,7 +23,7 @@
       priceNow: 'Prix actuel', pnlLive: 'P&L live',
       indMa: 'MA', indRsi: 'RSI', indBb: 'BB',
       myOrders: 'Mes ordres', community: 'Trades Communauté (Live)',
-      seeAll: 'Voir tout', histSheet: 'Historique des ordres',
+      seeAll: 'Historique complet', histSheet: 'Historique des ordres',
       estYield: 'Rendement estimé', buy: 'ACHETER', sell: 'VENDRE',
       depositTitle: 'Recharger en FCFA', credit: 'Créditer le solde',
       convertTitle: 'Tu as un vrai talent de trader !',
