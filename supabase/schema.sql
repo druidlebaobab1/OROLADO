@@ -145,6 +145,32 @@ $$;
 revoke all on function public.increment_balance(uuid, bigint) from public, anon, authenticated;
 grant execute on function public.increment_balance(uuid, bigint) to service_role;
 
+create or replace function public.debit_real(p_user uuid, p_amount bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v bigint;
+begin
+  if p_amount is null or p_amount <= 0 then
+    return jsonb_build_object('ok', false, 'reason', 'amount');
+  end if;
+  update public.vaults
+    set real = public.vaults.real - p_amount,
+        updated_at = now()
+    where user_id = p_user and public.vaults.real >= p_amount
+    returning real into v;
+  if not found then
+    return jsonb_build_object('ok', false, 'reason', 'insufficient');
+  end if;
+  return jsonb_build_object('ok', true, 'real', v);
+end;
+$$;
+revoke all on function public.debit_real(uuid, bigint) from public, anon, authenticated;
+grant execute on function public.debit_real(uuid, bigint) to service_role;
+
 create table if not exists public.deposits (
   id text primary key,
   user_id uuid not null references public.profiles (id) on delete cascade,

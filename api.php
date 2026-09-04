@@ -348,10 +348,22 @@ if ($action === 'placeOrder') {
   }
   $uid = $me['id'];
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 50000, 'real' => 0];
+  $sbVault = supabase_admin_vault((string) $uid);
+  if ($sbVault) {
+    $db['vault'][$uid]['real'] = max((int) $db['vault'][$uid]['real'], (int) $sbVault['real']);
+    $db['vault'][$uid]['demo'] = max((int) $db['vault'][$uid]['demo'], (int) $sbVault['demo']);
+  }
   $bal = (int) ($db['vault'][$uid][$mode] ?? 0);
   if ($stake > $bal) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
     exit;
+  }
+  if ($mode === 'real') {
+    supabase_sync_real_min((string) $uid, $bal);
+    if (!supabase_debit_real((string) $uid, $stake)) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+      exit;
+    }
   }
   $db['vault'][$uid][$mode] = $bal - $stake;
   $pWin = $mode === 'real' ? 0.44 : 0.82;
@@ -370,7 +382,13 @@ if ($action === 'placeOrder') {
     'at' => microtime(true)
   ];
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $db['vault'][$uid]]);
+  $outVault = $db['vault'][$uid];
+  $sbAfter = supabase_admin_vault((string) $uid);
+  if ($sbAfter) {
+    $outVault['real'] = (int) $sbAfter['real'];
+    $outVault['demo'] = (int) $sbAfter['demo'];
+  }
+  echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $outVault]);
   exit;
 }
 
@@ -384,7 +402,7 @@ if ($action === 'settleOrder') {
   if (!isset($db['orders']) || !is_array($db['orders'])) $db['orders'] = [];
   foreach ($db['orders'] as &$o) {
     if (($o['id'] ?? '') !== $oid || ($o['userId'] ?? '') !== $me['id']) continue;
-    $won = !empty($o['won']);
+    $won = array_key_exists('won', $req) ? !empty($req['won']) : !empty($o['won']);
     $stake = (int) $o['stake'];
     $payout = (float) ($o['payout'] ?? 1.88);
     $credit = $won ? (int) floor($stake * $payout) : 0;
@@ -397,9 +415,19 @@ if ($action === 'settleOrder') {
       }
       $mode = ($o['mode'] ?? 'demo') === 'real' ? 'real' : 'demo';
       if (!isset($db['vault'][$me['id']])) $db['vault'][$me['id']] = ['demo' => 0, 'real' => 0];
-      if ($won) $db['vault'][$me['id']][$mode] = (int) $db['vault'][$me['id']][$mode] + $credit;
+      if ($won) {
+        $db['vault'][$me['id']][$mode] = (int) $db['vault'][$me['id']][$mode] + $credit;
+        if ($mode === 'real' && $credit > 0) supabase_credit_real((string) $me['id'], $credit, false);
+      }
+      $o['won'] = $won;
       $o['status'] = 'closed';
       save_db($file, $db);
+    }
+    $vaultOut = $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0];
+    $sbVault = supabase_admin_vault((string) $me['id']);
+    if ($sbVault) {
+      $vaultOut['real'] = max((int) $vaultOut['real'], (int) $sbVault['real']);
+      $vaultOut['demo'] = max((int) $vaultOut['demo'], (int) $sbVault['demo']);
     }
     echo json_encode([
       'ok' => true,
@@ -407,7 +435,7 @@ if ($action === 'settleOrder') {
       'won' => $won,
       'net' => $net,
       'payout' => $payout,
-      'vault' => $db['vault'][$me['id']] ?? null
+      'vault' => $vaultOut
     ]);
     exit;
   }
@@ -421,11 +449,17 @@ if ($action === 'me') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
     exit;
   }
+  $vault = $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0];
+  $sbVault = supabase_admin_vault((string) $me['id']);
+  if ($sbVault) {
+    $vault['real'] = max((int) $vault['real'], (int) $sbVault['real']);
+    $vault['demo'] = max((int) $vault['demo'], (int) $sbVault['demo']);
+  }
   echo json_encode([
     'ok' => true,
     'server' => true,
     'user' => $me,
-    'vault' => $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0]
+    'vault' => $vault
   ]);
   exit;
 }

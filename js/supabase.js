@@ -138,12 +138,20 @@
         phone: (authUser.user_metadata && authUser.user_metadata.phone) || '',
         country_code: (authUser.user_metadata && authUser.user_metadata.country_code) || '+225'
       });
-      await sb.from('vaults').upsert({ user_id: pid, demo: D6.CONFIG.DEMO_START, real: 0 });
+      var existingVault = await sb.from('vaults').select('user_id,real').eq('user_id', pid).maybeSingle();
+      if (!existingVault.data) {
+        await sb.from('vaults').insert({ user_id: pid, demo: D6.CONFIG.DEMO_START });
+      }
       prof = await sb.from('profiles').select('*').eq('id', pid).maybeSingle();
       row = prof.data;
     }
     var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', pid).maybeSingle();
     var vault = (vaultRes && vaultRes.data) ? { demo: vaultRes.data.demo, real: vaultRes.data.real } : { demo: D6.CONFIG.DEMO_START, real: 0 };
+    var localUser = D6.Store.current && D6.Store.current();
+    if (localUser && localUser.id === pid && D6.Store.realBalance) {
+      var localReal = Number(D6.Store.realBalance(localUser) || 0);
+      if (!(Number(vault.real) > 0) && localReal > 0) vault.real = localReal;
+    }
     var ordRes = await sb.from('orders').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(40);
     var txRes = await sb.from('transactions').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(80);
     var positions = ((ordRes && ordRes.data) || []).filter(function (o) { return o.status === 'closed'; }).map(orderToPosition);
@@ -167,6 +175,8 @@
     var live = D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount();
     var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
     var remoteReal = Number(vault.real);
+    if (!isFinite(remoteReal)) remoteReal = localReal;
+    if (remoteReal <= 0 && localReal > 0) remoteReal = localReal;
     var next = {
       demo: D6.Store.demoBalance(u),
       real: remoteReal

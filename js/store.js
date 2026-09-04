@@ -154,7 +154,15 @@
     importRemote: function (user, vaultEntry) {
       if (!user || !user.id) return;
       db.users[user.id] = hydrate(Object.assign({}, user));
-      if (vaultEntry) vault[user.id] = vaultEntry;
+      if (vaultEntry) {
+        var prev = vault[user.id] || { demo: 0, real: 0 };
+        var nextReal = Number(vaultEntry.real);
+        if (!isFinite(nextReal) || (nextReal <= 0 && Number(prev.real) > 0)) nextReal = Number(prev.real) || 0;
+        vault[user.id] = {
+          demo: vaultEntry.demo != null && isFinite(Number(vaultEntry.demo)) ? Number(vaultEntry.demo) : prev.demo,
+          real: nextReal
+        };
+      }
       persist(true);
     },
 

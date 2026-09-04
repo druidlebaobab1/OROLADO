@@ -125,11 +125,11 @@ function supabase_admin_ready(): bool {
   return supabase_service_key() !== '' && supabase_project_url() !== '';
 }
 
-function supabase_credit_real(string $userId, int $amount): void {
+function supabase_credit_real(string $userId, int $amount, bool $depositTx = true): void {
   $url = supabase_project_url();
   $hdrs = supabase_admin_headers();
   if ($url === '' || $amount === 0 || !$hdrs) {
-    if (!$hdrs) error_log('OROLADO: SUPABASE_SERVICE_ROLE_KEY absente — impossible de créditer via service_role');
+    if (!$hdrs) error_log('OROLADO: SUPABASE_SERVICE_ROLE_KEY absente — impossible d’écrire vaults.real');
     return;
   }
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
@@ -138,14 +138,38 @@ function supabase_credit_real(string $userId, int $amount): void {
     $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
     if ($alt === null) error_log('OROLADO credit_real/increment_balance échec user=' . $userId);
   }
-  supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
-    'id' => 'dep_' . bin2hex(random_bytes(8)),
-    'user_id' => $userId,
-    'type' => 'deposit',
-    'amount' => $amount,
-    'note' => 'Recharge Maketou',
-    'mode' => 'real',
-  ]), 'POST');
+  if ($depositTx && $amount > 0) {
+    supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
+      'id' => 'dep_' . bin2hex(random_bytes(8)),
+      'user_id' => $userId,
+      'type' => 'deposit',
+      'amount' => $amount,
+      'note' => 'Recharge Maketou',
+      'mode' => 'real',
+    ]), 'POST');
+  }
+}
+
+function supabase_debit_real(string $userId, int $amount): bool {
+  if ($amount <= 0) return true;
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return false;
+  $url = supabase_project_url();
+  $rpc = supabase_http($url . '/rest/v1/rpc/debit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+  if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
+  if (is_array($rpc) && !empty($rpc['ok'])) return true;
+  if (is_array($rpc) && isset($rpc['reason']) && $rpc['reason'] === 'insufficient') return false;
+  $vault = supabase_admin_vault($userId);
+  if ($vault && (int) $vault['real'] < $amount) return false;
+  supabase_credit_real($userId, -$amount, false);
+  return true;
+}
+
+function supabase_sync_real_min(string $userId, int $minReal): void {
+  if ($minReal <= 0) return;
+  $vault = supabase_admin_vault($userId);
+  $cur = $vault ? (int) $vault['real'] : 0;
+  if ($minReal > $cur) supabase_credit_real($userId, $minReal - $cur, false);
 }
 
 function supabase_insert_deposit(array $row): void {

@@ -552,7 +552,15 @@
     }
     var u = user();
     if (D6.Api && D6.Api.token() && id) {
-      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice });
+      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice }).then(function (remote) {
+        var cur = user();
+        if (remote && remote.ok && remote.vault && cur) {
+          D6.holdPull = true;
+          D6.Store.importRemote(cur, remote.vault);
+          D6.holdPull = false;
+          updateBalance(true);
+        }
+      });
     }
     if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
   }
@@ -589,6 +597,12 @@
         side: side,
         duration: u.duration,
         mode: u.mode
+      }).then(function (remote) {
+        var cur = user();
+        if (remote && remote.ok && remote.vault && cur && u.mode !== 'real') {
+          D6.Store.importRemote(cur, remote.vault);
+          updateBalance(true);
+        }
       });
     }
   }
@@ -623,6 +637,9 @@
   }
 
   var depositing = false;
+  var depositWatch = 0;
+  var payWindow = null;
+  var depositApplied = false;
 
   async function ensureApiToken() {
     if (D6.Api && D6.Api.token && D6.Api.token()) return D6.Api.token();
@@ -682,6 +699,61 @@
       console.error('OROLADO deposit confirm', e);
     }
     return D6.Api.post('confirmDeposit', payload);
+  }
+
+  function stopDepositWatch() {
+    if (depositWatch) {
+      clearInterval(depositWatch);
+      depositWatch = 0;
+    }
+  }
+
+  function applyDepositPaid(remote) {
+    if (depositApplied) return;
+    if (!remote || !remote.ok || !remote.paid || !(remote.amount > 0)) return;
+    depositApplied = true;
+    stopDepositWatch();
+    try { if (payWindow && !payWindow.closed) payWindow.close(); } catch (e) { /* ignore */ }
+    payWindow = null;
+    var u = user();
+    if (remote.vault && u) D6.Store.importRemote(u, remote.vault);
+    D6.holdDepositReal = true;
+    setTimeout(function () { D6.holdDepositReal = false; }, 25000);
+    if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
+    if (D6.Supabase && D6.Supabase.pullVault) {
+      setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
+    }
+    updateBalance(true);
+    toast(t('depositOk') + ' : +' + D6.fmtFCFA(remote.amount), 'ok');
+    if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
+    closeModal('depositModal');
+    openModal('depositSuccessModal');
+    try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
+    try { localStorage.removeItem('oro_dep_ref'); } catch (e3) { /* ignore */ }
+    if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
+  }
+
+  function startDepositWatch(ref) {
+    if (depositApplied) return;
+    stopDepositWatch();
+    var ticks = 0;
+    async function tick() {
+      ticks += 1;
+      var tok = await ensureApiToken();
+      var payload = { token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref || '' };
+      if (payWindow && payWindow.closed) {
+        payWindow = null;
+        var credited = await postDepositConfirm(payload);
+        applyDepositPaid(credited);
+        if (depositApplied) return;
+      }
+      var remote = await D6.Api.post('depositStatus', payload);
+      applyDepositPaid(remote);
+      if (depositApplied) return;
+      if (ticks >= 150) stopDepositWatch();
+    }
+    depositWatch = setInterval(tick, 2000);
+    tick();
   }
 
   function localMaketouCheckoutUrl(amt, op, ref) {
@@ -773,7 +845,15 @@
       }
       try { sessionStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e2) { /* ignore */ }
-      window.location.href = url;
+      var ref = (remote && remote.ref) || '';
+      closeModal('depositModal');
+      payWindow = window.open(url, 'orolado_pay');
+      if (!payWindow) payWindow = window.open(url, '_blank');
+      startDepositWatch(ref);
+      if (!payWindow) {
+        window.location.href = url;
+        return;
+      }
     } catch (err) {
       console.error('OROLADO deposit', err);
       toast((err && err.message) || t('sessionInvalid'), 'err');
@@ -794,39 +874,15 @@
     if (q.get('payment') === 'cancel') {
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e0) { /* ignore */ }
       try { localStorage.removeItem('oro_dep_ref'); } catch (e1) { /* ignore */ }
+      stopDepositWatch();
       return;
     }
     var successBack = q.get('deposit') === 'success' || q.get('payment') === 'success' || q.get('deposit') === '1';
     if (!successBack && !ref) return;
-    var tries = 0;
-    async function applyPaid(remote) {
-      var u = user();
-      if (remote && remote.vault && u) D6.Store.importRemote(u, remote.vault);
-      D6.holdDepositReal = true;
-      setTimeout(function () { D6.holdDepositReal = false; }, 25000);
-      if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
-      if (D6.Supabase && D6.Supabase.pullVault) {
-        setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
-      }
-      updateBalance(true);
-      toast(t('depositOk') + ' : +' + D6.fmtFCFA(remote.amount), 'ok');
-      if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
-      openModal('depositSuccessModal');
-      try { sessionStorage.removeItem('oro_dep_ref'); } catch (e) { /* ignore */ }
-      try { localStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
-      if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
-    }
-    async function poll() {
-      var tok = await ensureApiToken();
-      var remote = await postDepositConfirm({ token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref });
-      if (remote && remote.ok && remote.paid && remote.amount > 0) {
-        applyPaid(remote);
-        return;
-      }
-      tries += 1;
-      if (tries < 20) setTimeout(poll, 350);
-    }
-    poll();
+    if (ref && !depositWatch && !depositApplied) startDepositWatch(ref);
+    var tok = await ensureApiToken();
+    var remote = await postDepositConfirm({ token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref });
+    applyDepositPaid(remote);
   }
 
   async function refreshRemoteVault() {
@@ -1196,7 +1252,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=27').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=28').catch(function () { /* ignore */ });
     }
   }
 
