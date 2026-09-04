@@ -36,6 +36,59 @@ function orolado_data_file(): string {
   return orolado_data_dir() . '/orolado.json';
 }
 
+/** Journal de diagnostic Maketou : dossier /data protégé par .htaccess. */
+function maketou_log_file(): string {
+  return orolado_data_dir() . '/debug_maketou.log';
+}
+
+/** Masque un secret : on garde juste de quoi identifier la valeur. */
+function maketou_log_mask(string $v): string {
+  $v = trim($v);
+  if ($v === '') return '';
+  $n = strlen($v);
+  if ($n <= 8) return str_repeat('*', $n);
+  return substr($v, 0, 4) . '…' . substr($v, -4) . ' (' . $n . ')';
+}
+
+function maketou_log(string $event, array $data = []): void {
+  $file = maketou_log_file();
+  if (is_file($file) && filesize($file) > 1048576) {
+    $lines = file($file, FILE_IGNORE_NEW_LINES) ?: [];
+    @file_put_contents($file, implode("\n", array_slice($lines, -400)) . "\n", LOCK_EX);
+  }
+  $row = array_merge(['ts' => date('c'), 'event' => $event], $data);
+  $line = json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PARTIAL_OUTPUT_ON_ERROR);
+  if ($line === false) $line = json_encode(['ts' => date('c'), 'event' => $event, 'encode' => 'failed']);
+  @file_put_contents($file, $line . "\n", FILE_APPEND | LOCK_EX);
+}
+
+/** Capture brute de la requête entrante : GET, corps et en-têtes (secrets masqués). */
+function maketou_log_request(string $event): void {
+  $headers = [];
+  foreach ($_SERVER as $k => $v) {
+    if (!str_starts_with((string) $k, 'HTTP_') && !in_array($k, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true)) continue;
+    $name = str_replace('_', '-', strtolower(str_starts_with((string) $k, 'HTTP_') ? substr((string) $k, 5) : (string) $k));
+    $val = (string) $v;
+    if (in_array($name, ['authorization', 'cookie', 'x-api-key', 'api-key'], true)) $val = maketou_log_mask($val);
+    $headers[$name] = $val;
+  }
+  $raw = file_get_contents('php://input');
+  if (!is_string($raw)) $raw = '';
+  $json = json_decode($raw, true);
+  if (is_array($json) && isset($json['token'])) $json['token'] = maketou_log_mask((string) $json['token']);
+  $raw = preg_replace('/("token"\s*:\s*")[^"]*(")/i', '$1***$2', $raw) ?? $raw;
+  maketou_log($event, [
+    'method' => (string) ($_SERVER['REQUEST_METHOD'] ?? ''),
+    'uri' => (string) ($_SERVER['REQUEST_URI'] ?? ''),
+    'ip' => (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
+    'get' => $_GET,
+    'post' => $_POST,
+    'body_raw' => substr($raw, 0, 6000),
+    'body_json' => is_array($json) ? $json : null,
+    'headers' => $headers,
+  ]);
+}
+
 function blank_db(): array {
   return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => []];
 }
@@ -530,8 +583,12 @@ function maketou_payload_is_paid(array $payload): array {
   return ['paid' => ($paid && !$refused), 'amount' => $amount];
 }
 
-function maketou_http_get(string $url, string $key): ?array {
-  if (!function_exists('curl_init')) return null;
+function maketou_http_get(string $url, string $key, ?int &$status = null): ?array {
+  $status = 0;
+  if (!function_exists('curl_init')) {
+    maketou_log('maketou_api_call', ['url' => $url, 'status' => 0, 'error' => 'curl indisponible']);
+    return null;
+  }
   $ch = curl_init($url);
   curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
@@ -545,7 +602,20 @@ function maketou_http_get(string $url, string $key): ?array {
   ]);
   $raw = curl_exec($ch);
   $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  $err = curl_error($ch);
   curl_close($ch);
+  $note = '';
+  if ($status === 401 || $status === 403) $note = 'CLE API REJETEE (' . $status . ') — vérifier MAKETOU_API_KEY sur Hostinger';
+  elseif ($status === 404) $note = 'ENDPOINT INEXISTANT (404) — vérifier MAKETOU_API_URL';
+  elseif ($status === 0) $note = 'AUCUNE REPONSE (réseau/DNS/timeout)';
+  maketou_log('maketou_api_call', [
+    'url' => $url,
+    'key' => maketou_log_mask($key),
+    'status' => $status,
+    'curl_error' => $err,
+    'note' => $note,
+    'body_raw' => is_string($raw) ? substr($raw, 0, 4000) : '',
+  ]);
   if ($raw === false || $status < 200 || $status >= 300) return null;
   $json = json_decode((string) $raw, true);
   return is_array($json) ? $json : null;
@@ -579,6 +649,7 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
   // mais un montant insuffisant reste un refus immédiat. La butée de temps
   // garantit une réponse HTTP avant que le client n'abandonne.
   $deadline = microtime(true) + 14.0;
+  $statuses = [];
   for ($i = 0; $i < $attempts; $i++) {
     if ($i > 0) {
       if (microtime(true) + $waitSec >= $deadline) break;
@@ -586,20 +657,41 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
     }
     foreach ($candidates as $url) {
       if (microtime(true) >= $deadline) break 2;
-      $json = maketou_http_get($url, $key);
+      $code = 0;
+      $json = maketou_http_get($url, $key, $code);
+      $statuses[] = $code;
       if ($json === null) continue;
       $verdict = maketou_payload_is_paid($json);
       if (!empty($verdict['paid'])) {
         $expected = (int) ($dep['amount'] ?? 0);
         $got = (int) ($verdict['amount'] ?? 0);
         if ($expected > 0 && $got > 0 && $got < $expected) {
+          maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'amount_mismatch', 'expected' => $expected, 'got' => $got]);
           return ['ok' => false, 'paid' => false, 'reason' => 'amount_mismatch'];
         }
+        maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'paid', 'amount' => $got > 0 ? $got : $expected]);
         return ['ok' => true, 'paid' => true, 'amount' => $got > 0 ? $got : $expected];
       }
     }
   }
-  return ['ok' => false, 'paid' => false, 'reason' => 'not_paid'];
+  // Aucune réponse exploitable : on nomme la cause au lieu de dire « en attente ».
+  $ok2xx = false;
+  foreach ($statuses as $s) { if ($s >= 200 && $s < 300) $ok2xx = true; }
+  $reason = 'not_paid';
+  if (!$ok2xx && $statuses) {
+    if (in_array(401, $statuses, true) || in_array(403, $statuses, true)) $reason = 'api_key_rejected';
+    elseif (in_array(404, $statuses, true)) $reason = 'endpoint_not_found';
+    elseif (max($statuses) === 0) $reason = 'api_unreachable';
+    else $reason = 'api_error_' . max($statuses);
+  }
+  maketou_log('maketou_verify', ['ref' => $ref, 'sellId' => $sellId, 'result' => $reason, 'http' => $statuses]);
+  return ['ok' => false, 'paid' => false, 'reason' => $reason];
+}
+
+/** L'API Maketou est-elle hors service pour ce dépôt ? */
+function maketou_reason_is_blocking(string $reason): bool {
+  return in_array($reason, ['unverifiable', 'api_key_rejected', 'endpoint_not_found', 'api_unreachable'], true)
+    || str_starts_with($reason, 'api_error_');
 }
 
 /** Retrouve le dépôt local visé par un webhook (ref, alias e-mail, sellId ou extId). */
@@ -937,6 +1029,13 @@ function maketou_storefront_session(array $info): array {
   $url = maketou_pick_redirect_url($res['raw']);
   $sellId = '';
   if (preg_match('/"sellId"\s*:\s*"([^"]+)"/', $res['raw'], $m)) $sellId = $m[1];
+  maketou_log('maketou_session_call', [
+    'url' => maketou_checkout_base(),
+    'status' => (int) $res['status'],
+    'sellId' => $sellId,
+    'redirect' => $url,
+    'body_raw' => substr((string) $res['raw'], 0, 3000),
+  ]);
   if ($url === '') {
     error_log('OROLADO maketou session status=' . (string) $res['status'] . ' body=' . substr($res['raw'], 0, 600));
     return ['url' => '', 'sellId' => $sellId];
@@ -1032,6 +1131,13 @@ function maketou_create_checkout(array $opts): array {
     error_log('OROLADO maketou_create_checkout: ' . $e->getMessage());
     return ['ok' => true, 'url' => $direct, 'checkout_url' => $direct, 'fallback' => true];
   }
+  maketou_log('maketou_checkout_call', [
+    'url' => maketou_api_url(),
+    'key' => maketou_log_mask($key),
+    'status' => (int) ($res['status'] ?? 0),
+    'ref' => $ref,
+    'body_raw' => substr((string) ($res['raw'] ?? ''), 0, 3000),
+  ]);
   if (empty($res['ok'])) {
     error_log('OROLADO maketou API status=' . (string) ($res['status'] ?? 0) . ' body=' . substr((string) ($res['raw'] ?? ''), 0, 800));
   }
@@ -1193,6 +1299,43 @@ function orolado_find_owned_deposit(array $db, string $userId, string $ref): ?ar
   return $ref === '' ? $pending : null;
 }
 
+/**
+ * La redirection annonce-t-elle un succès ? On lit le statut renvoyé par
+ * l'opérateur, jamais un simple retour de page.
+ */
+function maketou_return_is_success(array $req): bool {
+  if (supabase_env('MAKETOU_TRUST_RETURN') === '0') return false;
+  $vals = [];
+  $vals[] = strtolower(trim((string) ($req['returnStatus'] ?? '')));
+  $params = $req['returnParams'] ?? null;
+  if (is_array($params)) {
+    foreach ($params as $k => $v) {
+      if (!is_scalar($v)) continue;
+      $k = strtolower((string) $k);
+      if (str_contains($k, 'status') || str_contains($k, 'state') || $k === 'payment' || $k === 'deposit' || $k === 'result') {
+        $vals[] = strtolower(trim((string) $v));
+      }
+    }
+  }
+  foreach ($vals as $v) {
+    if ($v === '') continue;
+    if (preg_match('/(cancel|abort|refus|declin|fail|error)/', $v)) return false;
+    if (preg_match('/^(1|ok|paid|success|successful|completed|complete|approved|captured)$/', $v)) return true;
+  }
+  return false;
+}
+
+/** Un dépôt créé il y a moins de 2 h et toujours PENDING. */
+function orolado_deposit_is_fresh(array $dep, int $maxAgeSec = 7200): bool {
+  $st = strtoupper((string) ($dep['status'] ?? ''));
+  if ($st !== 'PENDING' && $st !== '') return false;
+  $at = (string) ($dep['createdAt'] ?? $dep['at'] ?? '');
+  if ($at === '') return true;
+  $ts = strtotime($at);
+  if ($ts === false) return true;
+  return (time() - $ts) <= $maxAgeSec;
+}
+
 function orolado_confirm_deposit(array $req): array {
   $file = orolado_data_file();
   $db = load_db($file);
@@ -1242,7 +1385,34 @@ function orolado_confirm_deposit(array $req): array {
         if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
       }
     } else {
-      $cred = ['ok' => false, 'reason' => (string) ($proof['reason'] ?? 'not_paid')];
+      $reason = (string) ($proof['reason'] ?? 'not_paid');
+      $cred = ['ok' => false, 'reason' => $reason];
+
+      // Contournement : l'API Maketou est inutilisable (clé rejetée, endpoint
+      // absent, injoignable) et la redirection porte une preuve de succès pour
+      // une référence créée par CETTE session. On crédite et on trace.
+      if (maketou_reason_is_blocking($reason) && maketou_return_is_success($req) && orolado_deposit_is_fresh($dep)) {
+        maketou_log('return_fallback_credit', [
+          'ref' => $refId,
+          'userId' => $uid,
+          'amount' => (int) ($dep['amount'] ?? 0),
+          'api_reason' => $reason,
+          'return' => $req['returnParams'] ?? null,
+        ]);
+        $cred = credit_paid_deposit([
+          'ref' => $refId,
+          'amount' => (int) ($dep['amount'] ?? 0),
+          'paid' => true,
+          'extId' => (string) ($dep['extId'] ?? ''),
+          'sellId' => (string) ($dep['sellId'] ?? ''),
+        ]);
+        if (empty($cred['ok'])) {
+          $rpc = supabase_complete_deposit($refId, (int) ($dep['amount'] ?? 0), $uid);
+          if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
+          else $cred = ['ok' => false, 'reason' => $reason];
+        }
+        maketou_log('return_fallback_result', ['ref' => $refId, 'credited' => !empty($cred['ok']), 'detail' => $cred]);
+      }
     }
   }
 
@@ -1264,6 +1434,14 @@ function orolado_confirm_deposit(array $req): array {
   $out['ref'] = $refId;
   $out['success'] = !empty($out['paid']);
   $out['new_balance'] = (int) ($out['vault']['real'] ?? 0);
+  maketou_log('deposit_confirm_result', [
+    'ref' => $refId,
+    'userId' => $uid,
+    'success' => $out['success'],
+    'amount' => (int) ($out['amount'] ?? 0),
+    'new_balance' => $out['new_balance'],
+    'reason' => (string) ($out['reason'] ?? ''),
+  ]);
   return $out;
 }
 
@@ -1271,6 +1449,7 @@ function maketou_handle_webhook(): void {
   header('Content-Type: application/json; charset=utf-8');
   header('X-Content-Type-Options: nosniff');
   orolado_load_env();
+  maketou_log_request('webhook_in');
 
   if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -1345,6 +1524,7 @@ function maketou_handle_webhook(): void {
   }
 
   $result = credit_paid_deposit($hit);
+  maketou_log('webhook_credit', ['signed' => $signed, 'hit' => $hit, 'result' => $result]);
   echo json_encode(['ok' => !empty($result['ok']), 'duplicate' => !empty($result['duplicate'])]);
 }
 

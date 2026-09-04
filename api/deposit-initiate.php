@@ -26,4 +26,12 @@ if ($auth !== '' && preg_match('/Bearer\s+(.+)/i', $auth, $m)) {
   $req['token'] = trim($m[1]);
 }
 
-echo json_encode(orolado_initiate_deposit($req));
+maketou_log_request('deposit_initiate_in');
+$outInit = orolado_initiate_deposit($req);
+maketou_log('deposit_initiate_out', [
+  'ref' => (string) ($outInit['ref'] ?? ''),
+  'amount' => (int) ($outInit['amount'] ?? 0),
+  'checkout_url' => (string) ($outInit['url'] ?? ''),
+  'reason' => (string) ($outInit['reason'] ?? ''),
+]);
+echo json_encode($outInit);

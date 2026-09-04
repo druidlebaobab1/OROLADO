@@ -627,6 +627,11 @@ if ($action === 'depositStatus') {
 }
 
 if ($action === 'confirmDeposit') {
+  maketou_log('deposit_confirm_in_api', [
+    'ref' => (string) ($req['ref'] ?? ''),
+    'returnStatus' => (string) ($req['returnStatus'] ?? ''),
+    'returnParams' => $req['returnParams'] ?? null,
+  ]);
   echo json_encode(orolado_confirm_deposit(['token' => $token] + $req));
   exit;
 }

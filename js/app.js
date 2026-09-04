@@ -666,6 +666,7 @@
   var depositApplied = false;
   var depositChecking = false;
   var depositRef = '';
+  var depositReturn = null;
 
   async function ensureApiToken() {
     if (D6.Api && D6.Api.token && D6.Api.token()) return D6.Api.token();
@@ -806,7 +807,9 @@
       var tok = await ensureApiToken();
       var remote = await postDepositConfirm({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
-        ref: ref
+        ref: ref,
+        returnStatus: (depositReturn && depositReturn.state) || '',
+        returnParams: (depositReturn && depositReturn.params) || null
       });
       applyDepositPaid(remote);
       if (!depositApplied) setWaitNote(t('depositPending'), 'warn');
@@ -1019,9 +1022,13 @@
     }
     var state = '';
     for (var j = 0; j < TX_STATE_KEYS.length && !state; j++) state = String(q.get(TX_STATE_KEYS[j]) || '').toLowerCase();
+    // Le backend reçoit les paramètres bruts : ils servent de preuve de retour
+    // et sont tracés dans le journal Maketou.
+    var params = {};
+    q.forEach(function (v, k) { params[String(k).slice(0, 40)] = String(v).slice(0, 200); });
     var canceled = /cancel|abort|refus|declin/.test(state);
     var success = /success|paid|complete|approved|ok|^1$/.test(state);
-    return { ref: ref, fromUrl: !!ref || success || canceled, canceled: canceled };
+    return { ref: ref, state: state, params: params, fromUrl: !!ref || success || canceled, canceled: canceled };
   }
 
   // Nettoie l'URL immédiatement : un rechargement ne rejoue pas la même requête.
@@ -1050,6 +1057,7 @@
     }
     if (depositApplied) return;
     if (!info.fromUrl && !ref) return;
+    if (hadUrlParams) depositReturn = { state: info.state, params: info.params };
     if (ref) {
       depositRef = ref;
       try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
@@ -1066,7 +1074,12 @@
     if (now - lastSilentConfirm < 30000) return;
     lastSilentConfirm = now;
     var tok = await ensureApiToken();
-    var remote = await postDepositConfirm({ token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref });
+    var remote = await postDepositConfirm({
+      token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+      ref: ref,
+      returnStatus: (depositReturn && depositReturn.state) || '',
+      returnParams: (depositReturn && depositReturn.params) || null
+    });
     applyDepositPaid(remote);
   }
 
@@ -1482,6 +1495,13 @@
       renderAdmin();
       updateBalance(false);
     });
+    if ($('btnMaketouLog')) {
+      $('btnMaketouLog').addEventListener('click', function () {
+        var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
+        if (!tok) { toast(t('sessionInvalid'), 'err'); return; }
+        window.open('debug-maketou.php?lines=300&token=' + encodeURIComponent(tok), '_blank');
+      });
+    }
     if ($('adminDeposits')) {
       $('adminDeposits').addEventListener('click', async function (e) {
         var btn = e.target.closest('[data-dep]');
@@ -1532,7 +1552,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=32').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=33').catch(function () { /* ignore */ });
     }
   }
 
@@ -1617,6 +1637,9 @@
           try { localStorage.setItem('oro_dep_ref', ref); } catch (e) {}
           depositRef = ref;
         }
+        // pay-blank.html n'est atteinte qu'au bout du parcours Maketou :
+        // c'est une preuve de retour, transmise au serveur pour le journal.
+        depositReturn = { state: 'success', params: Object.assign({ source: 'pay-blank' }, d.params || {}) };
         checkDepositReturn(true);
       });
       document.addEventListener('orolado-deposit-completed', function (ev) {
