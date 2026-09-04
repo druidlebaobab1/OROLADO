@@ -505,6 +505,8 @@ if ($action === 'placeOrder') {
     }
   }
   $payout = $mode === 'real' ? 1.88 : (1.85 + (random_int(0, 100) / 1000));
+  $assetId = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['assetId'] ?? 'v100'));
+  $openPrice = (float) ($req['entryPrice'] ?? $req['openPrice'] ?? 0);
   if ($mode === 'real') {
     $sbVault = supabase_admin_vault($uid);
     $jsonReal = (int) (($db['vault'][$uid]['real'] ?? 0));
@@ -515,7 +517,7 @@ if ($action === 'placeOrder') {
       exit;
     }
   }
-  $placed = with_db_lock(function ($box) use ($uid, $oid, $stake, $side, $duration, $mode, $payout) {
+  $placed = with_db_lock(function ($box) use ($uid, $oid, $stake, $side, $duration, $mode, $payout, $assetId, $openPrice) {
     $locked =& $box->db;
     if (!isset($locked['orders']) || !is_array($locked['orders'])) $locked['orders'] = [];
     foreach ($locked['orders'] as $o) {
@@ -530,12 +532,13 @@ if ($action === 'placeOrder') {
         ];
       }
     }
-    // Un seul trade actif. Les ordres dont l'échéance est dépassée depuis plus
-    // de 30 s ne bloquent pas : un règlement perdu ne condamne pas le compte.
+    // Cap 5 open PAR compte (demo|real séparés).
     $now = microtime(true);
     $open = 0;
     foreach ($locked['orders'] as $o) {
       if (($o['userId'] ?? '') !== $uid || ($o['status'] ?? '') !== 'open') continue;
+      $oMode = (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo';
+      if ($oMode !== $mode) continue;
       $deadline = (float) ($o['at'] ?? 0) + (int) ($o['duration'] ?? 10) + 30;
       if ($deadline > $now) $open++;
     }
@@ -556,10 +559,16 @@ if ($action === 'placeOrder') {
       'side' => $side,
       'duration' => $duration,
       'mode' => $mode,
+      'accountType' => $mode,
+      'assetId' => $assetId,
+      'openPrice' => $openPrice,
       'payout' => $payout,
+      'payoutMult' => $payout,
       'won' => null,
       'status' => 'open',
-      'at' => microtime(true)
+      'at' => microtime(true),
+      'openedAt' => microtime(true),
+      'expiryAt' => microtime(true) + $duration
     ];
     return ['ok' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $locked['vault'][$uid]];
   });
@@ -589,48 +598,64 @@ if ($action === 'settleOrder') {
   }
   $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['orderId'] ?? ''));
   $wantWon = array_key_exists('won', $req) ? !empty($req['won']) : null;
+  $voided = !empty($req['voided']);
+  $closePrice = isset($req['exitPrice']) ? (float) $req['exitPrice'] : (isset($req['closePrice']) ? (float) $req['closePrice'] : null);
   $uid = (string) $me['id'];
-  $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon) {
+  $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon, $voided, $closePrice) {
     $locked =& $box->db;
     if (!isset($locked['orders']) || !is_array($locked['orders'])) $locked['orders'] = [];
     foreach ($locked['orders'] as &$o) {
       if (($o['id'] ?? '') !== $oid || ($o['userId'] ?? '') !== $uid) continue;
-      $won = $wantWon !== null ? $wantWon : !empty($o['won']);
       $stake = (int) $o['stake'];
       $payout = (float) ($o['payout'] ?? 1.88);
-      $credit = $won ? (int) floor($stake * $payout) : 0;
-      $net = $won ? $credit - $stake : -$stake;
       $mode = ($o['mode'] ?? 'demo') === 'real' ? 'real' : 'demo';
-      if (($o['status'] ?? '') === 'open') {
-        $elapsed = microtime(true) - (float) ($o['at'] ?? 0);
-        if ($elapsed < max(0, ((int) $o['duration']) - 0.6)) {
-          return ['ok' => false, 'reason' => 'Position encore ouverte', 'skip_write' => true];
-        }
-        if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
-        if ($won) $locked['vault'][$uid][$mode] = (int) $locked['vault'][$uid][$mode] + $credit;
-        $o['won'] = $won;
-        $o['status'] = 'closed';
+      $st = (string) ($o['status'] ?? '');
+      // Déjà réglé : idempotent, pas de double crédit.
+      if ($st === 'won' || $st === 'lost' || $st === 'void' || $st === 'closed') {
+        $won = !empty($o['won']);
+        $isVoid = ($st === 'void') || !empty($o['voided']);
+        $credit = $isVoid ? $stake : ($won ? (int) floor($stake * $payout) : 0);
+        $net = $isVoid ? 0 : ($won ? $credit - $stake : -$stake);
         return [
           'ok' => true,
           'won' => $won,
+          'voided' => $isVoid,
           'net' => $net,
           'payout' => $payout,
-          'credit' => $credit,
+          'credit' => 0,
           'mode' => $mode,
-          'fresh' => true,
-          'vault' => $locked['vault'][$uid]
+          'fresh' => false,
+          'vault' => $locked['vault'][$uid] ?? ['demo' => 0, 'real' => 0],
+          'skip_write' => true
         ];
       }
+      if ($st !== 'open') {
+        return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
+      }
+      $elapsed = microtime(true) - (float) ($o['at'] ?? 0);
+      if ($elapsed < max(0, ((int) $o['duration']) - 0.6)) {
+        return ['ok' => false, 'reason' => 'Position encore ouverte', 'skip_write' => true];
+      }
+      $won = $voided ? false : ($wantWon !== null ? $wantWon : !empty($o['won']));
+      $credit = $voided ? $stake : ($won ? (int) floor($stake * $payout) : 0);
+      $net = $voided ? 0 : ($won ? $credit - $stake : -$stake);
+      $final = $voided ? 'void' : ($won ? 'won' : 'lost');
+      if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
+      if ($credit > 0) $locked['vault'][$uid][$mode] = (int) $locked['vault'][$uid][$mode] + $credit;
+      $o['won'] = $won;
+      $o['voided'] = $voided;
+      $o['status'] = $final;
+      $o['closePrice'] = $closePrice;
       return [
         'ok' => true,
         'won' => $won,
+        'voided' => $voided,
         'net' => $net,
         'payout' => $payout,
-        'credit' => 0,
+        'credit' => $credit,
         'mode' => $mode,
-        'fresh' => false,
-        'vault' => $locked['vault'][$uid] ?? ['demo' => 0, 'real' => 0],
-        'skip_write' => true
+        'fresh' => true,
+        'vault' => $locked['vault'][$uid]
       ];
     }
     unset($o);
@@ -643,7 +668,6 @@ if ($action === 'settleOrder') {
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
   $rpcReal = null;
   if (($settled['mode'] ?? '') === 'real') {
-    // Une seule source de vérité pour le solde réel : l'addition faite par la base.
     $rpc = supabase_resolve_trade($uid, $oid, (int) ($settled['credit'] ?? 0));
     if ($rpc !== null) $rpcReal = (int) $rpc['real'];
     elseif (!empty($settled['fresh']) && (int) ($settled['credit'] ?? 0) > 0) {
@@ -665,6 +689,7 @@ if ($action === 'settleOrder') {
     'ok' => true,
     'server' => true,
     'won' => $won,
+    'voided' => !empty($settled['voided']),
     'net' => $net,
     'payout' => $payout,
     'vault' => $vaultOut

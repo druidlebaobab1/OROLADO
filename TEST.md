@@ -14,6 +14,15 @@
 ## Marchés
 - [ ] Scroll horizontal : V100, Stable, V75, Crash 300, Boom 300
 - [ ] Sélection encadrée or ; graphe suit l’actif
+- [ ] Chaque marché a une courbe distincte (pas la même montagne + offset)
+- [ ] Crash = chutes brusques ; Boom = fusées haussières
+
+## Settlement multi (critique)
+- [ ] 5 trades 10s sur actifs différents → les 5 se résolvent (won/lost/void)
+- [ ] Aucun « EN COURS » coincé après expiry
+- [ ] Refresh au milieu → à l’expiry solde correct (mises perdues / gains crédités)
+- [ ] Démo ≠ réel : crédit/débit sur le bon compte
+- [ ] 6e trade → toast max 5
 
 ## Aide
 - [ ] Bouton Aide → formulaire sujet + message

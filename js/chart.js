@@ -336,16 +336,17 @@
     ctx.fillText('RSI ' + last.toFixed(0), pad.l + 4, top + 10);
   }
 
-  function drawEntry(map, trade, now, pad) {
+  function drawEntry(map, trade, now, pad, tagIndex) {
     if (!trade || !map || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
     var ey = map.toY(trade.entryPrice);
     if (!isFinite(ey)) return;
     var isCall = trade.side === 'call';
-    var col = isCall ? '#00E676' : '#FF1744';
+    var col = isCall ? '#22C55E' : '#EF4444';
     var x0 = pad ? pad.l : 8;
     var x1 = pad ? (pad.l + cssW - pad.l - pad.r) : (cssW - 62);
+    var idx = tagIndex || 0;
     ctx.save();
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = col;
@@ -361,7 +362,7 @@
     ctx.font = '800 10px "Hanken Grotesk", sans-serif';
     var tw = Math.ceil(ctx.measureText(tag).width) + 12;
     var bx = Math.max(x1 + 2, cssW - tw - 4);
-    var by = Math.max(4, Math.min(cssH - 20, ey - 9));
+    var by = Math.max(4, Math.min(cssH - 20, ey - 9 + idx * 20));
     ctx.fillStyle = col;
     roundRect(bx, by, tw, 18, 5);
     ctx.fill();
@@ -375,16 +376,17 @@
     if (secs >= 0.15) {
       var label = secs.toFixed(1) + 's';
       if (label.charAt(0) !== '-') {
+        var ty = Math.max(6, ey - 28 - idx * 20);
         ctx.fillStyle = 'rgba(10,15,29,0.92)';
         ctx.strokeStyle = col;
         ctx.lineWidth = 1.2;
-        roundRect(x0 + 4, Math.max(6, ey - 28), 52, 18, 8);
+        roundRect(x0 + 4, ty, 52, 18, 8);
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = col;
         ctx.font = '800 11px "Hanken Grotesk", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(label, x0 + 30, ey - 15);
+        ctx.fillText(label, x0 + 30, ty + 13);
       }
     }
   }
@@ -511,8 +513,8 @@
       }
     }
 
-    allTrades.forEach(function (ot) {
-      drawEntry(map, ot, now, pad);
+    allTrades.slice(0, 5).forEach(function (ot, i) {
+      drawEntry(map, ot, now, pad, i);
     });
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
     if (primary) {

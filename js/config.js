@@ -16,6 +16,7 @@
     REAL_PAYOUT: 1.88,
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 1000,
+    // Cap 5 open/compte (demo≠real). Si settlement instable en prod → baisser à 3.
     MAX_OPEN: 5,
     MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',
     MAKETOU_PRODUCT_ID: 'dc38d82a-9074-4f73-9cca-50959ea58e94',
@@ -33,7 +34,7 @@
         short: 'V100',
         tag: 'Haute volatilité',
         chart: 'candle',
-        basePrice: 13666.42,
+        basePrice: 13000.42,
         tickNoise: 0.72,
         tickMs: 32,
         ticksPerCandle: 10,
@@ -65,7 +66,7 @@
         short: 'V75',
         tag: 'Volatilité moyenne',
         chart: 'candle',
-        basePrice: 8750.18,
+        basePrice: 8700.18,
         tickNoise: 0.48,
         tickMs: 36,
         ticksPerCandle: 10,
@@ -73,7 +74,7 @@
         payoutMax: 1.92,
         accent: '#22C55E',
         accentDim: '34,197,94',
-        feed: 'v100'
+        feed: 'v75'
       },
       crash300: {
         id: 'crash300',
@@ -89,7 +90,7 @@
         payoutMax: 1.98,
         accent: '#EF4444',
         accentDim: '239,68,68',
-        feed: 'v100'
+        feed: 'crash300'
       },
       boom300: {
         id: 'boom300',
@@ -105,7 +106,7 @@
         payoutMax: 1.98,
         accent: '#22C55E',
         accentDim: '34,197,94',
-        feed: 'v100'
+        feed: 'boom300'
       }
     },
     COUNTRY_CODES: [

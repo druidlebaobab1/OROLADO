@@ -69,6 +69,7 @@
       convertPromptShown: false,
       recentResults: [],
       positions: [],
+      openTrades: [],
       transactions: [],
       sessions: [],
       settings: { sound: true, particles: true }
@@ -84,6 +85,7 @@
     if (user.demoTrades == null) user.demoTrades = 0;
     if (user.realTrades == null) user.realTrades = 0;
     if (user.realStakeVolume == null) user.realStakeVolume = 0;
+    if (!Array.isArray(user.openTrades)) user.openTrades = [];
     if (!user.role) user.role = (user.email === 'admin@orolado.com' || user.email === 'admin@6diablo.com') ? 'admin' : 'user';
     if (!user.publicId) {
       var h = 0;
@@ -236,6 +238,12 @@
       return user.mode === 'real' ? v.real : v.demo;
     },
 
+    balanceMode: function (user, mode) {
+      if (!user) return 0;
+      var v = vault[user.id] || { demo: 0, real: 0 };
+      return mode === 'real' ? (v.real || 0) : (v.demo || 0);
+    },
+
     demoBalance: function (user) {
       if (!user) return 0;
       return (vault[user.id] || { demo: 0 }).demo;
@@ -259,6 +267,16 @@
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       var n = Math.max(0, Math.round(Number(value) || 0));
       if (user.mode === 'real') v.real = n;
+      else v.demo = n;
+      vault[user.id] = v;
+      persist();
+    },
+
+    setBalanceMode: function (user, mode, value) {
+      if (!user) return;
+      var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
+      var n = Math.max(0, Math.round(Number(value) || 0));
+      if (mode === 'real') v.real = n;
       else v.demo = n;
       vault[user.id] = v;
       persist();

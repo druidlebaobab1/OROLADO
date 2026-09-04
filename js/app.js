@@ -72,6 +72,12 @@
 
   document.addEventListener('orolado-trade-settled', function (ev) {
     var d = (ev && ev.detail) || {};
+    if (d.voided) {
+      updateBalance(true);
+      patchHistorySoon();
+      syncTradeButtons();
+      return;
+    }
     var amount = d.isWin ? (d.payout != null ? d.payout : d.net) : 0;
     showOutcomeToast(!!d.isWin, amount, d.tradeId);
     updateBalance(true);
@@ -371,27 +377,43 @@
   }
 
   function orderRow(h) {
-    var shown = h.won ? Math.floor(Number(h.stake) * Number(h.payout || 1.88)) : (h.net != null ? h.net : -Number(h.stake || 0));
-    return '<div class="h-item ' + (h.won ? 'win' : 'lose') + '">' +
+    var stake = Number(h.stake || 0);
+    var net = h.net != null ? Number(h.net) : (h.won ? Math.floor(stake * Number(h.payout || 1.88)) - stake : -stake);
+    var label;
+    var cls;
+    if (h.voided || h.status === 'void') {
+      label = 'Égalité 0';
+      cls = 'void';
+      net = 0;
+    } else if (h.won) {
+      label = 'Gagné +' + D6.fmtFCFA(Math.abs(net));
+      cls = 'win';
+    } else {
+      label = 'Perdu −' + D6.fmtFCFA(stake);
+      cls = 'lose';
+    }
+    return '<div class="h-item ' + cls + '">' +
       '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
       '<div><div class="h-main">' + (h.clock || '') + ' · ' + h.assetName + ' · ' + (h.duration || '') + 's</div>' +
-      '<div class="h-time">' + D6.fmtFCFA(h.stake) + ' · ' + (h.won ? ('Gagné +' + D6.fmtFCFA(shown)) : ('Perdu ' + D6.fmtFCFA(shown))) + '</div></div>' +
-      '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (shown >= 0 ? '+' : '') + D6.fmtFCFA(shown) + '</span></div>';
+      '<div class="h-time">' + D6.fmtFCFA(stake) + ' · ' + label + '</div></div>' +
+      '<span class="h-gain ' + (h.won ? 'w' : (h.voided ? '' : 'l')) + '">' +
+      (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net)) + '</span></div>';
   }
 
   function liveOrderRow(t) {
     var asset = D6.CONFIG.ASSETS[t.assetId];
     var name = (asset && (asset.short || asset.name)) || t.assetId;
+    var left = Math.max(0, Number(t.timeLeft) || 0);
     return '<div class="h-item live">' +
       '<span class="h-badge ' + t.side + '">' + (t.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
-      '<div><div class="h-main">' + name + ' · EN COURS</div>' +
-      '<div class="h-time">' + D6.fmtFCFA(t.stake) + '</div></div>' +
-      '<span class="h-gain">…</span></div>';
+      '<div><div class="h-main">' + name + ' · EN COURS · ' + left.toFixed(1) + 's</div>' +
+      '<div class="h-time">' + D6.fmtFCFA(t.stake) + ' · ' + (t.duration || '') + 's</div></div>' +
+      '<span class="h-gain">' + left.toFixed(1) + 's</span></div>';
   }
 
   function ordersForMode(u) {
     var mode = u && u.mode === 'real' ? 'real' : 'demo';
-    var live = (D6.Engine.getTrades ? D6.Engine.getTrades() : []).filter(function (t) {
+    var live = (D6.Engine.getTrades ? D6.Engine.getTrades(mode) : []).filter(function (t) {
       return !t.mode || t.mode === mode;
     });
     live.sort(function (a, b) { return (b.startTime || 0) - (a.startTime || 0); });
@@ -456,10 +478,14 @@
   }
 
   function syncTradeButtons() {
-    var n = D6.Engine.liveCount ? D6.Engine.liveCount() : (D6.Engine.getTrades ? D6.Engine.getTrades().length : 0);
+    var u = user();
+    var mode = u && u.mode === 'real' ? 'real' : 'demo';
+    var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : (D6.Engine.getTrades ? D6.Engine.getTrades(mode).length : 0);
     var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 5;
     var busy = n >= max;
-    var lock = cooling || busy;
+    var bal = u ? D6.Store.balanceOf(u) : 0;
+    var canAfford = bal >= Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake || 0));
+    var lock = cooling || busy || !canAfford;
     $('btnCall').disabled = lock;
     $('btnPut').disabled = lock;
     $('btnCall').classList.toggle('locked', busy);
@@ -616,12 +642,16 @@
       hudSeen[id] = true;
     }
     updateBalance(true);
-    showOutcomeToast(!!res.won, profitFromResult(res), id);
-    if (res.won) {
-      playWinChime();
-      burstSparkle();
+    if (res.voided) {
+      toast('Égalité — mise rendue', '');
     } else {
-      playLossThud();
+      showOutcomeToast(!!res.won, profitFromResult(res), id);
+      if (res.won) {
+        playWinChime();
+        burstSparkle();
+      } else {
+        playLossThud();
+      }
     }
     maybeConvertPrompt(user(), res);
     patchHistorySoon();
@@ -633,9 +663,13 @@
       }, 900);
     }
     if (D6.Api && D6.Api.token() && id) {
-      // Un seul trade actif : le serveur règle, puis on relit le solde de la base.
-      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice })
-        .then(refreshRemoteVault, refreshRemoteVault);
+      D6.Api.post('settleOrder', {
+        orderId: id,
+        won: !!res.won,
+        voided: !!res.voided,
+        net: res.net,
+        exitPrice: res.exitPrice || res.closePrice
+      }).then(refreshRemoteVault, refreshRemoteVault);
     }
     if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
   }
@@ -646,7 +680,8 @@
     lastClickAt = now;
     var u = user();
     if (!u) return;
-    var open = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
+    var mode = u.mode === 'real' ? 'real' : 'demo';
+    var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
     var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 5;
     if (open >= maxOpen) {
       toast(t('maxPositions'), 'err');
@@ -672,12 +707,17 @@
         stake: stake,
         side: side,
         duration: u.duration,
-        mode: u.mode
+        mode: mode,
+        assetId: res.trade.assetId,
+        entryPrice: res.trade.entryPrice
       }).then(function (remote) {
         var cur = user();
-        if (remote && remote.ok && remote.vault && cur && u.mode !== 'real') {
-          D6.Store.importRemote(cur, remote.vault);
-          updateBalance(true);
+        if (remote && remote.ok && remote.vault && cur && mode !== 'real') {
+          // Ne pas écraser le vault local tant que des trades sont ouverts (multi-place).
+          if (!(D6.Engine.liveCount && D6.Engine.liveCount(mode) > 0)) {
+            D6.Store.importRemote(cur, remote.vault);
+            updateBalance(true);
+          }
         }
       });
     }
@@ -1702,6 +1742,8 @@
     setAdminBtns(u);
     updateAssetUi();
     updateDurationUi();
+    if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
+    if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
     updateBalance(false);
     renderHistory();
     D6.I18N.apply();
@@ -1712,6 +1754,7 @@
     requestAnimationFrame(D6.Chart.resize);
     refreshRemoteVault();
     checkDepositReturn();
+    syncTradeButtons();
     if (u && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
   }
 
@@ -1799,13 +1842,18 @@
       setInterval(function () {
         var u = user();
         if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-      }, 400);
+        patchHistorySoon();
+        syncTradeButtons();
+      }, 1000);
       document.addEventListener('click', function () {
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
       });
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
           unlockAudio();
+          var u = user();
+          if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
+          if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
           refreshRemoteVault();
           checkDepositReturn();
           try {

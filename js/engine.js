@@ -4,11 +4,11 @@
   var C = D6.CONFIG;
   var markets = {};
   var trades = [];
-  var intents = {};
   var payoutLive = {};
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
+  // Cap 5 open/compte. Si settlement instable après fix → baisser à 3 ici + CONFIG.MAX_OPEN.
   var MAX_OPEN = (C.MAX_OPEN || 5);
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 240;
@@ -31,19 +31,49 @@
     return uhash01(i, salt) * (1 - u) + uhash01(i + 1, salt) * u;
   }
 
-  function assetSalt(assetId) {
-    return assetId === 'stable' ? 221713 : 904177;
+  // Profils indépendants : seed + vol + dérive + spikes (pas le même tableau + offset).
+  function feedProfile(assetId) {
+    switch (assetId) {
+      case 'stable':
+        return { salt: 221713, vol: 0.14, drift: 0, f1: 0.019, f2: 0.041, f3: 0.007, a1: 6, a2: 3.5, a3: 8, spike: null };
+      case 'v75':
+        return { salt: 551903, vol: 0.62, drift: 0, f1: 0.033, f2: 0.071, f3: 0.014, a1: 14, a2: 9, a3: 22, spike: null };
+      case 'crash300':
+        return { salt: 771001, vol: 0.9, drift: -0.018, f1: 0.028, f2: 0.066, f3: 0.011, a1: 12, a2: 8, a3: 18, spike: 'down' };
+      case 'boom300':
+        return { salt: 882119, vol: 0.9, drift: 0.018, f1: 0.031, f2: 0.069, f3: 0.012, a1: 12, a2: 8, a3: 18, spike: 'up' };
+      case 'v100':
+      default:
+        return { salt: 904177, vol: 1.05, drift: 0, f1: 0.041, f2: 0.093, f3: 0.017, a1: 18, a2: 11, a3: 32, spike: null };
+    }
+  }
+
+  function spikeAt(t, salt, dir) {
+    var period = dir === 'down' ? 9.5 : 10.5;
+    var epoch = Math.floor(t / period);
+    var roll = uhash01(epoch, salt + (dir === 'down' ? 17 : 31));
+    if (roll < 0.78) return 0;
+    var phase = (t - epoch * period) / period;
+    var amp = 28 + uhash01(epoch, salt + 99) * 55;
+    var shape = phase < 0.22
+      ? Math.sin((phase / 0.22) * Math.PI)
+      : Math.max(0, 1 - (phase - 0.22) / 0.55) * 0.35;
+    return (dir === 'down' ? -1 : 1) * amp * shape;
   }
 
   function synthPrice(asset, tSec) {
-    var salt = assetSalt(asset.id);
-    var scale = asset.id === 'stable' ? 0.18 : 1;
+    var id = asset.id || asset;
+    var conf = typeof asset === 'object' ? asset : (C.ASSETS[id] || { id: id, basePrice: 10000 });
+    var p = feedProfile(conf.id);
     var t = Number(tSec) || 0;
-    var wave = Math.sin(t * 0.041) * 18 + Math.cos(t * 0.093) * 11 + Math.sin(t * 0.017) * 32;
-    var n = (valueNoise(t, salt) - 0.5) * 16
-      + (valueNoise(t * 2.17, salt + 41) - 0.5) * 7
-      + (valueNoise(t * 8.3, salt + 113) - 0.5) * 2.4;
-    return asset.basePrice + (wave + n) * scale;
+    var wave = Math.sin(t * p.f1) * p.a1
+      + Math.cos(t * p.f2) * p.a2
+      + Math.sin(t * p.f3) * p.a3;
+    var n = (valueNoise(t, p.salt) - 0.5) * 16
+      + (valueNoise(t * 2.17, p.salt + 41) - 0.5) * 7
+      + (valueNoise(t * 8.3, p.salt + 113) - 0.5) * 2.4;
+    var spike = p.spike ? spikeAt(t, p.salt, p.spike) : 0;
+    return conf.basePrice + (wave + n) * p.vol + spike + p.drift * (t % 86400) * 0.04;
   }
 
   function candleForBucket(asset, bucket) {
@@ -176,31 +206,24 @@
     return false;
   }
 
-  // Même règles démo = réel : pas de biais 80 %, pas de wins forcés.
-  function decideOutcome(user) {
-    var p = C.REAL_WIN_RATE || 0.45;
-    var n = user.mode === 'real' ? (user.realTrades || 0) : (user.demoTrades || 0);
-    var wr = recentWinRate(user, 20);
-    if (n >= 6 && wr < 0.36) p = 0.58;
-    else if (n >= 6 && wr > 0.54) p = 0.34;
-    if ((user.consecutiveLosses || 0) >= 3) p = Math.max(p, 0.62);
-    return Math.random() < p ? 'win' : 'lose';
+  function balOf(user, mode) {
+    if (D6.Store.balanceMode) return D6.Store.balanceMode(user, mode);
+    return D6.Store.balanceOf(user);
   }
 
-  function recentWinRate(user, n) {
-    var list = (user.recentResults || []).filter(function (r) {
-      return !r.mode || r.mode === user.mode;
-    });
-    var slice = list.slice(0, n);
-    if (!slice.length) return C.REAL_WIN_RATE || 0.45;
-    var wins = 0;
-    var i;
-    for (i = 0; i < slice.length; i++) if (slice[i] === true || slice[i] === 1 || (slice[i] && slice[i].won)) wins++;
-    return wins / slice.length;
+  function setBal(user, mode, value) {
+    if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(user, mode, value);
+    else {
+      var prev = user.mode;
+      user.mode = mode;
+      D6.Store.setBalance(user, value);
+      user.mode = prev;
+    }
   }
 
-  function stakeCap(user, stake) {
-    var balance = D6.Store.balanceOf(user);
+  function stakeCap(user, stake, mode) {
+    mode = mode || user.mode;
+    var balance = balOf(user, mode);
     if (stake < C.MIN_STAKE) {
       return { ok: false, cap: C.MIN_STAKE, reason: D6.I18N.t('minStake') + ' ' + D6.fmtFCFA(C.MIN_STAKE) };
     }
@@ -215,28 +238,23 @@
   }
 
   function isLive(t) {
-    return t && !t.settled && Date.now() < expiryOf(t);
+    return t && !t.settled && t.status === 'open' && Date.now() < expiryOf(t);
   }
 
   function isOpen(t) {
-    return t && !t.settled;
+    return t && !t.settled && (t.status === 'open' || !t.status);
+  }
+
+  function openForMode(mode) {
+    return trades.filter(function (t) {
+      return isOpen(t) && t.mode === mode;
+    });
   }
 
   function syncTime(t) {
     var left = (expiryOf(t) - Date.now()) / 1000;
     t.timeLeft = left > 0 ? left : 0;
     return t.timeLeft;
-  }
-
-  function soonestTrade() {
-    var live = trades.filter(isLive);
-    if (!live.length) return null;
-    var best = live[0];
-    var i;
-    for (i = 1; i < live.length; i++) {
-      if (expiryOf(live[i]) < expiryOf(best)) best = live[i];
-    }
-    return best;
   }
 
   function publicTrade(t) {
@@ -250,14 +268,52 @@
       duration: t.duration,
       timeLeft: t.timeLeft,
       entryPrice: t.entryPrice,
+      openPrice: t.entryPrice,
       payout: t.payout,
+      payoutMult: t.payout,
       startedAt: t.startedAt,
       startTime: t.startTime || t.startedAt,
+      openedAt: t.startTime || t.startedAt,
       expiryTime: expiryOf(t),
       expiresAt: expiryOf(t),
+      expiryAt: expiryOf(t),
       settled: !!t.settled,
-      mode: t.mode
+      status: t.status || (t.settled ? 'closed' : 'open'),
+      mode: t.mode,
+      accountType: t.mode
     });
+  }
+
+  function persistOpen(user) {
+    if (!user) return;
+    user.openTrades = trades.filter(isOpen).map(function (t) {
+      return {
+        id: t.id,
+        userId: t.userId,
+        assetId: t.assetId,
+        side: t.side,
+        stake: t.stake,
+        payout: t.payout,
+        entryPrice: t.entryPrice,
+        duration: t.duration,
+        durationMs: t.durationMs,
+        startTime: t.startTime,
+        startedAt: t.startedAt,
+        expiryTime: expiryOf(t),
+        expiresAt: expiryOf(t),
+        mode: t.mode,
+        status: 'open',
+        settled: false,
+        seq: t.seq
+      };
+    });
+    D6.Store.saveUser(user);
+  }
+
+  function closePriceAt(assetId, expiryMs) {
+    var asset = C.ASSETS[assetId];
+    if (!asset) return 0;
+    return synthPrice(asset, expiryMs / 1000);
   }
 
   ensureMarkets();
@@ -287,12 +343,49 @@
       return publicTrade(best);
     },
 
-    getTrades: function () {
-      return trades.filter(isLive).map(function (t) { return publicTrade(t); });
+    getTrades: function (mode) {
+      return trades.filter(isLive).filter(function (t) {
+        return !mode || t.mode === mode;
+      }).map(function (t) { return publicTrade(t); });
     },
 
-    liveCount: function () {
+    liveCount: function (mode) {
+      if (mode) return openForMode(mode).length;
       return trades.filter(isOpen).length;
+    },
+
+    restoreOpen: function (user) {
+      if (!user) return 0;
+      trades = [];
+      var list = user.openTrades || [];
+      var i;
+      for (i = 0; i < list.length; i++) {
+        var raw = list[i];
+        if (!raw || !raw.id) continue;
+        if (raw.userId && raw.userId !== user.id) continue;
+        if (raw.settled || raw.status === 'won' || raw.status === 'lost' || raw.status === 'void') continue;
+        trades.push({
+          id: raw.id,
+          assetId: C.ASSETS[raw.assetId] ? raw.assetId : 'v100',
+          side: raw.side === 'put' ? 'put' : 'call',
+          stake: Math.floor(Number(raw.stake) || 0),
+          duration: raw.duration || 10,
+          durationMs: raw.durationMs || (raw.duration || 10) * 1000,
+          timeLeft: 0,
+          entryPrice: Number(raw.entryPrice) || 0,
+          payout: Number(raw.payout) || C.REAL_PAYOUT,
+          startTime: raw.startTime || raw.startedAt || Date.now(),
+          startedAt: raw.startedAt || raw.startTime || Date.now(),
+          expiryTime: raw.expiryTime || raw.expiresAt || raw.expiryAt,
+          expiresAt: raw.expiresAt || raw.expiryTime || raw.expiryAt,
+          mode: raw.mode === 'real' ? 'real' : 'demo',
+          userId: user.id,
+          seq: raw.seq || 0,
+          settled: false,
+          status: 'open'
+        });
+      }
+      return trades.length;
     },
 
     refreshPayout: function (assetId, mode) {
@@ -324,7 +417,8 @@
       if (!user || !D6.Store.current() || D6.Store.current().id !== user.id) {
         return { ok: false, reason: 'Session invalide' };
       }
-      if (trades.filter(isOpen).length >= MAX_OPEN) {
+      var mode = user.mode === 'real' ? 'real' : 'demo';
+      if (openForMode(mode).length >= MAX_OPEN) {
         return { ok: false, reason: D6.I18N.t('maxPositions') };
       }
 
@@ -337,26 +431,26 @@
       var duration = C.DURATIONS.indexOf(opts.duration) >= 0 ? opts.duration : C.DEFAULT_DURATION;
       var assetId = C.ASSETS[opts.assetId] ? opts.assetId : 'v100';
       var side = opts.side === 'put' ? 'put' : 'call';
-      var gate = stakeCap(user, stake);
+      var gate = stakeCap(user, stake, mode);
       if (!gate.ok) return gate;
 
+      ensureMarkets();
       var market = markets[assetId];
-      var payout = user.mode === 'real' ? C.REAL_PAYOUT : (payoutLive[assetId] || rollPayout(C.ASSETS[assetId], 'demo'));
-      D6.Store.setBalance(user, D6.Store.balanceOf(user) - stake);
+      var payout = mode === 'real' ? C.REAL_PAYOUT : (payoutLive[assetId] || rollPayout(C.ASSETS[assetId], 'demo'));
+      setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
         type: 'stake',
         amount: -stake,
+        mode: mode,
         note: (side === 'call' ? 'CALL' : 'PUT') + ' ' + C.ASSETS[assetId].short
       });
 
       orderSeq += 1;
       lastOrderAt = nowPerf;
       D6.holdRemote = true;
-      var target = decideOutcome(user);
       var entry = market.price;
       var wall = Date.now();
       var durationMs = duration * 1000;
-      var seal = makeSeal(user.id + '|' + side + '|' + stake + '|' + entry.toFixed(4) + '|' + duration + '|' + orderSeq);
       var id = D6.uid();
 
       var t = {
@@ -373,19 +467,19 @@
         startedAt: wall,
         expiryTime: wall + durationMs,
         expiresAt: wall + durationMs,
-        mode: user.mode,
+        mode: mode,
         userId: user.id,
         seq: orderSeq,
-        settled: false
+        settled: false,
+        status: 'open'
       };
       trades.push(t);
-      intents[id] = { target: target, seal: seal, userId: user.id, seq: orderSeq };
 
-      if (user.mode === 'real') {
+      if (mode === 'real') {
         user.realStakeVolume = (user.realStakeVolume || 0) + stake;
       }
       user.lastStake = stake;
-      D6.Store.saveUser(user);
+      persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
       return { ok: true, trade: publicTrade(t) };
     },
@@ -401,46 +495,53 @@
         }
       } else {
         for (i = 0; i < trades.length; i++) {
-          if (!trades[i].settled && now >= expiryOf(trades[i])) { idx = i; break; }
+          if (isOpen(trades[i]) && now >= expiryOf(trades[i])) { idx = i; break; }
         }
       }
       if (idx < 0) return null;
       var trade = trades[idx];
-      if (trade.settled) return null;
+      if (trade.settled || trade.status === 'won' || trade.status === 'lost' || trade.status === 'void') {
+        trades.splice(idx, 1);
+        persistOpen(user);
+        return null;
+      }
       if (now < expiryOf(trade)) return null;
+
+      // Idempotence : marquer avant crédit.
       trade.settled = true;
 
-      var intent = intents[trade.id];
       if (user.id !== trade.userId) {
         trades.splice(idx, 1);
-        delete intents[trade.id];
+        persistOpen(user);
         return null;
       }
 
+      var mode = trade.mode === 'real' ? 'real' : 'demo';
       var isCall = trade.side === 'call';
-      var market = markets[trade.assetId];
-      var exitPrice = market ? market.price : trade.entryPrice;
-      var shouldWin = !!(intent && intent.target === 'win');
-      if (intent) {
-        var expectedSeal = makeSeal(user.id + '|' + trade.side + '|' + trade.stake + '|' + trade.entryPrice.toFixed(4) + '|' + trade.duration + '|' + trade.seq);
-        if (expectedSeal !== intent.seal || intent.seq !== trade.seq) shouldWin = false;
-      } else {
-        shouldWin = false;
-      }
-      var won = shouldWin;
-      if (shouldWin) {
-        var winDelta = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.55, 0.28);
-        exitPrice = trade.entryPrice + (isCall ? 1 : -1) * winDelta;
-      } else {
-        var miss = 0.035 + Math.random() * Math.max(0.08, (C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.07);
-        exitPrice = trade.entryPrice + (isCall ? -1 : 1) * miss;
-      }
+      var expMs = expiryOf(trade);
+      var exitPrice = closePriceAt(trade.assetId, expMs);
+      // CALL won si close > open ; PUT won si close < open ; égalité = void.
+      var voided = Math.abs(exitPrice - trade.entryPrice) < 1e-9;
+      var won = !voided && ((isCall && exitPrice > trade.entryPrice) || (!isCall && exitPrice < trade.entryPrice));
       var payoutAmount = 0;
-      var net;
+      var net = 0;
+      var status = 'lost';
 
-      if (won) {
+      if (voided) {
+        status = 'void';
+        payoutAmount = trade.stake;
+        setBal(user, mode, balOf(user, mode) + trade.stake);
+        net = 0;
+        D6.Store.addTransaction(user, {
+          type: 'void',
+          amount: trade.stake,
+          mode: mode,
+          note: 'Égalité — mise rendue ' + C.ASSETS[trade.assetId].short
+        });
+      } else if (won) {
+        status = 'won';
         payoutAmount = Math.floor(trade.stake * trade.payout);
-        D6.Store.setBalance(user, D6.Store.balanceOf(user) + payoutAmount);
+        setBal(user, mode, balOf(user, mode) + payoutAmount);
         net = payoutAmount - trade.stake;
         user.wins = (user.wins || 0) + 1;
         user.consecutiveWins = (user.consecutiveWins || 0) + 1;
@@ -449,9 +550,11 @@
         D6.Store.addTransaction(user, {
           type: 'win',
           amount: payoutAmount,
+          mode: mode,
           note: 'Position gagnante ' + C.ASSETS[trade.assetId].short
         });
       } else {
+        status = 'lost';
         net = -trade.stake;
         user.consecutiveLosses = (user.consecutiveLosses || 0) + 1;
         user.consecutiveWins = 0;
@@ -459,14 +562,19 @@
         D6.Store.addTransaction(user, {
           type: 'loss',
           amount: -trade.stake,
+          mode: mode,
           note: 'Position expirée ' + C.ASSETS[trade.assetId].short
         });
       }
 
+      trade.status = status;
+      trade.closePrice = exitPrice;
+      trade.exitPrice = exitPrice;
+
       user.trades = (user.trades || 0) + 1;
-      if (trade.mode === 'real') user.realTrades = (user.realTrades || 0) + 1;
+      if (mode === 'real') user.realTrades = (user.realTrades || 0) + 1;
       else user.demoTrades = (user.demoTrades || 0) + 1;
-      user.recentResults.unshift({ won: won, mode: trade.mode });
+      user.recentResults.unshift({ won: won, mode: mode, voided: voided });
       if (user.recentResults.length > 30) user.recentResults.length = 30;
 
       var position = {
@@ -480,13 +588,18 @@
         payout: trade.payout,
         entryPrice: trade.entryPrice,
         exitPrice: exitPrice,
+        closePrice: exitPrice,
         duration: trade.duration,
         won: won,
+        voided: voided,
+        status: status,
         net: net,
-        mode: trade.mode
+        mode: mode,
+        accountType: mode
       };
       D6.Store.addPosition(user, position);
-      D6.Store.saveUser(user);
+      trades.splice(idx, 1);
+      persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) {
         D6.Supabase.saveOrder({
           id: trade.id,
@@ -494,27 +607,35 @@
           side: trade.side,
           stake: trade.stake,
           duration: trade.duration,
-          mode: trade.mode,
+          mode: mode,
           payout: trade.payout,
           entryPrice: trade.entryPrice,
           exitPrice: exitPrice,
           won: won,
+          voided: voided,
+          status: status,
           net: net
         }, 'closed');
       }
 
       try {
-        console.log('TRADE SETTLED -> TRIGGERING TOAST:', { isWin: won, payout: payoutAmount });
         document.dispatchEvent(new CustomEvent('orolado-trade-settled', {
-          detail: { isWin: won, payout: payoutAmount, net: net, tradeId: trade.id }
+          detail: { isWin: won, voided: voided, payout: payoutAmount, net: net, tradeId: trade.id }
         }));
       } catch (e) { /* ignore */ }
 
       var closed = publicTrade(trade);
-      trades.splice(idx, 1);
-      delete intents[trade.id];
       if (!trades.filter(isLive).length) D6.holdRemote = false;
-      return { trade: closed, position: position, won: won, net: net, exitPrice: exitPrice };
+      return {
+        trade: closed,
+        position: position,
+        won: won,
+        voided: voided,
+        net: net,
+        exitPrice: exitPrice,
+        closePrice: exitPrice,
+        status: status
+      };
     },
 
     flushSettlements: function (user) {
@@ -523,7 +644,7 @@
       var ids = [];
       var i;
       for (i = 0; i < trades.length; i++) {
-        if (!trades[i].settled && now >= expiryOf(trades[i])) ids.push(trades[i].id);
+        if (isOpen(trades[i]) && now >= expiryOf(trades[i])) ids.push(trades[i].id);
       }
       var results = [];
       for (i = 0; i < ids.length; i++) {
@@ -531,9 +652,7 @@
         if (res) {
           results.push(res);
           if (typeof api.onSettled === 'function') {
-            try { api.onSettled(res); } catch (e) {
-              console.log('TRADE SETTLED -> onSettled error', e);
-            }
+            try { api.onSettled(res); } catch (e) { /* ignore */ }
           }
         }
       }
@@ -541,14 +660,15 @@
     },
 
     maxStakeHint: function (user) {
-      var probe = stakeCap(user, Number.MAX_SAFE_INTEGER);
+      var probe = stakeCap(user, Number.MAX_SAFE_INTEGER, user && user.mode);
       return probe.cap;
     }
   };
 
   D6.Synth = {
     price: synthPrice,
-    candleMs: CANDLE_MS
+    candleMs: CANDLE_MS,
+    closeAt: closePriceAt
   };
 
   D6.Engine = api;
