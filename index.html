@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=34">
+  <link rel="stylesheet" href="css/app.css?v=35">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -69,6 +69,21 @@
             <label data-i18n="email">E-mail</label>
             <input id="regEmail" type="email" autocomplete="email" required>
             <p class="err-msg" id="err-regEmail"></p>
+          </div>
+          <div class="field">
+            <label data-i18n="whatsapp">WhatsApp / Téléphone</label>
+            <div class="phone-row">
+              <select id="regDial" aria-label="Indicatif">
+                <option value="+225">🇨🇮 +225</option>
+                <option value="+221">🇸🇳 +221</option>
+                <option value="+226">🇧🇫 +226</option>
+                <option value="+223">🇲🇱 +223</option>
+                <option value="+228">🇹🇬 +228</option>
+                <option value="+237">🇨🇲 +237</option>
+              </select>
+              <input id="regPhone" type="tel" inputmode="numeric" autocomplete="tel-national" required minlength="8" maxlength="12" placeholder="07 XX XX XX XX">
+            </div>
+            <p class="err-msg" id="err-regPhone"></p>
           </div>
           <div class="field">
             <label data-i18n="password">Mot de passe</label>
@@ -123,7 +138,7 @@
       </header>
 
       <div class="trade-wrap">
-        <div class="asset-bar">
+        <div class="asset-bar markets-scroll" id="assetBar">
           <button type="button" class="asset-chip on" data-asset="v100">
             <div class="k" data-i18n="highVol">Haute volatilité</div>
             <div class="n">VOLATILITY 100</div>
@@ -133,6 +148,21 @@
             <div class="k" data-i18n="lowVol">Basse volatilité</div>
             <div class="n">STABLE CORE</div>
             <div class="payout-live" id="payoutStable">+88%</div>
+          </button>
+          <button type="button" class="asset-chip" data-asset="v75">
+            <div class="k">Vol. moyenne</div>
+            <div class="n">VOLATILITY 75</div>
+            <div class="payout-live" id="payoutV75">+88%</div>
+          </button>
+          <button type="button" class="asset-chip" data-asset="crash300">
+            <div class="k">Chutes</div>
+            <div class="n">CRASH 300</div>
+            <div class="payout-live" id="payoutCrash300">+88%</div>
+          </button>
+          <button type="button" class="asset-chip" data-asset="boom300">
+            <div class="k">Hausses</div>
+            <div class="n">BOOM 300</div>
+            <div class="payout-live" id="payoutBoom300">+88%</div>
           </button>
         </div>
 
@@ -173,7 +203,7 @@
 
         <div class="history-card glass">
           <div class="hist-head">
-            <span class="hist-title" data-i18n="myOrders">Mes ordres</span>
+            <span class="hist-title" data-i18n="lastTrades">Derniers trades</span>
             <button type="button" class="hist-more" id="btnHistMore" data-i18n="seeAll">Historique complet</button>
           </div>
           <div class="history-feed" id="historyFeed"></div>
@@ -185,6 +215,7 @@
             <button type="button" class="dur-chip" data-dur="30">30s</button>
             <button type="button" class="dur-chip" data-dur="60">60s</button>
           </div>
+          <p class="trade-hint" data-i18n="tradeHint">Si ta prédiction est juste à la fin du timer, tu récupères mise + gain affiché. Sinon tu perds la mise.</p>
           <div class="stake-line">
             <div class="stake-field">
               <input id="inputStake" type="number" inputmode="numeric" value="100" min="100" step="100" placeholder="FCFA">
@@ -234,9 +265,11 @@
       </div>
     </div>
     <div class="card glass">
+      <div class="list-row"><span data-i18n="publicId">ID public</span><strong id="profPublicId">—</strong></div>
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
       <div class="list-row"><span data-i18n="whatsapp">WhatsApp</span><strong id="profPhone">—</strong></div>
     </div>
+    <p class="risk-line" data-i18n="riskLine">Les trades courts sont risqués. Tu peux perdre ta mise. 18+</p>
     <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">⚙️ Dashboard Admin</button>
     <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
     <button type="button" class="btn-gold ghost-gold" id="btnResetDemo" data-i18n="resetDemo">Réinitialiser</button>
@@ -255,15 +288,22 @@
       <div class="metrics">
         <div class="metric glass"><div class="k" data-i18n="metricDeposits">Total dépôts</div><div class="v" id="mDeposits">0</div></div>
         <div class="metric glass"><div class="k" data-i18n="metricWithdrawals">Total retraits</div><div class="v" id="mPending">0</div></div>
-        <div class="metric glass"><div class="k" data-i18n="metricProfit">Bénéfice net</div><div class="v" id="mProfit">0</div></div>
+        <div class="metric glass"><div class="k" data-i18n="metricExposure">Soldes réels</div><div class="v" id="mExposure">0</div></div>
+        <div class="metric glass"><div class="k" data-i18n="metricNet">Net plateforme</div><div class="v" id="mProfit">0</div></div>
         <div class="metric glass"><div class="k" data-i18n="metricUsers">Inscrits</div><div class="v" id="mUsers">0</div></div>
+      </div>
+      <div class="field admin-search">
+        <input id="adminSearch" type="search" data-i18n-placeholder="adminSearch" placeholder="Rechercher ORO-… / e-mail / nom / tel">
       </div>
       <h3 data-i18n="users">Utilisateurs</h3>
       <div class="table-wrap" id="adminUsers"></div>
+      <div id="adminUserDetail" class="admin-detail glass hidden"></div>
       <h3 data-i18n="withdrawals">Retraits</h3>
       <div class="table-wrap" id="adminWithdrawals"></div>
       <h3 data-i18n="depositsPending">Dépôts en attente</h3>
       <div class="table-wrap" id="adminDeposits"></div>
+      <h3 data-i18n="messages">Messages</h3>
+      <div class="table-wrap" id="adminMessages"></div>
       <button type="button" class="mini" id="btnMaketouLog">Journal Maketou</button>
     </div>
   </section>
@@ -371,7 +411,8 @@
       <div class="field">
         <label data-i18n="depositAmtLabel">Montant à recharger (FCFA)</label>
         <input id="depositAmt" type="number" inputmode="numeric" min="1000" step="100" placeholder="1000">
-        <p class="hint-min" data-i18n="depositMin">Minimum 1 000 FCFA</p>
+        <p class="hint-min" data-i18n="depositMin">Minimum 100 FCFA. Wave, Orange Money, MTN, Moov.</p>
+        <p class="risk-line" data-i18n="riskLine">Les trades courts sont risqués. Tu peux perdre ta mise. 18+</p>
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
       <div class="pay-mode-label" data-i18n="payMode">Mode de paiement</div>
@@ -421,6 +462,26 @@
     </div>
   </div>
 
+  <button type="button" class="help-fab" id="btnHelp" data-i18n="helpBtn">Aide</button>
+  <div class="modal-backdrop" id="helpModal">
+    <div class="modal-box glass">
+      <button type="button" class="btn-close" id="closeHelp">✕</button>
+      <div class="modal-title" data-i18n="helpTitle">Aide & support</div>
+      <p class="convert-copy" data-i18n="helpCopy">Un souci de dépôt ou de retrait ? Écris-nous, on te répond ici.</p>
+      <form id="formHelp">
+        <div class="field">
+          <label data-i18n="helpSubject">Sujet</label>
+          <input id="helpSubject" required maxlength="80">
+        </div>
+        <div class="field">
+          <label data-i18n="helpMessage">Message</label>
+          <textarea id="helpMessage" required maxlength="500" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn-gold" data-i18n="helpSend">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
       <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
@@ -429,15 +490,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=34"></script>
-  <script src="js/i18n.js?v=34"></script>
-  <script src="js/store.js?v=34"></script>
-  <script src="js/api.js?v=34"></script>
+  <script src="js/config.js?v=35"></script>
+  <script src="js/i18n.js?v=35"></script>
+  <script src="js/store.js?v=35"></script>
+  <script src="js/api.js?v=35"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=34"></script>
-  <script src="js/auth.js?v=34"></script>
-  <script src="js/engine.js?v=34"></script>
-  <script src="js/chart.js?v=34"></script>
-  <script src="js/app.js?v=34"></script>
+  <script src="js/supabase.js?v=35"></script>
+  <script src="js/auth.js?v=35"></script>
+  <script src="js/engine.js?v=35"></script>
+  <script src="js/chart.js?v=35"></script>
+  <script src="js/app.js?v=35"></script>
 </body>
 </html>

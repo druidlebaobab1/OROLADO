@@ -294,18 +294,18 @@
   function updatePayoutUi() {
     var u = user();
     if (!u || !$('payoutV100')) return;
-    var id = assetId(u);
-    var p = u.mode === 'real' ? D6.CONFIG.REAL_PAYOUT : D6.Engine.payoutLive[id];
-    var pct = Math.round((p - 1) * 100);
-    if (u.mode === 'real') {
-      $('payoutV100').textContent = '+88%';
-      $('payoutStable').textContent = '+88%';
-    } else {
-      $('payoutV100').textContent = '+' + Math.round((D6.Engine.payoutLive.v100 - 1) * 100) + '%';
-      $('payoutStable').textContent = '+' + Math.round((D6.Engine.payoutLive.stable - 1) * 100) + '%';
-    }
-    $('previewGain').textContent = D6.fmtFCFA(Math.floor(stake * p));
-    $('previewMult').textContent = 'Gain +' + pct + '%  ·  ×' + p.toFixed(2);
+    var ids = ['v100', 'stable', 'v75', 'crash300', 'boom300'];
+    var map = { v100: 'payoutV100', stable: 'payoutStable', v75: 'payoutV75', crash300: 'payoutCrash300', boom300: 'payoutBoom300' };
+    ids.forEach(function (id) {
+      var el = $(map[id]);
+      if (!el) return;
+      var live = D6.Engine.payoutLive && D6.Engine.payoutLive[id];
+      el.textContent = live ? ('+' + Math.round((live - 1) * 100) + '%') : '+88%';
+    });
+    var stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || 100));
+    var mult = (D6.Engine.payoutLive && D6.Engine.payoutLive[assetId(u)]) || D6.CONFIG.REAL_PAYOUT || 1.88;
+    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(Math.floor(stake * mult));
+    if ($('previewMult')) $('previewMult').textContent = '×' + Number(mult).toFixed(2);
   }
 
   function updateAssetUi() {
@@ -367,15 +367,15 @@
   }
 
   function histLimit() {
-    return 3;
+    return 2;
   }
 
   function orderRow(h) {
     var shown = h.won ? Math.floor(Number(h.stake) * Number(h.payout || 1.88)) : (h.net != null ? h.net : -Number(h.stake || 0));
     return '<div class="h-item ' + (h.won ? 'win' : 'lose') + '">' +
       '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
-      '<div><div class="h-main">' + h.assetName + ' · ' + h.clock + '</div>' +
-      '<div class="h-time">' + D6.fmtFCFA(h.stake) + '</div></div>' +
+      '<div><div class="h-main">' + (h.clock || '') + ' · ' + h.assetName + ' · ' + (h.duration || '') + 's</div>' +
+      '<div class="h-time">' + D6.fmtFCFA(h.stake) + ' · ' + (h.won ? ('Gagné +' + D6.fmtFCFA(shown)) : ('Perdu ' + D6.fmtFCFA(shown))) + '</div></div>' +
       '<span class="h-gain ' + (h.won ? 'w' : 'l') + '">' + (shown >= 0 ? '+' : '') + D6.fmtFCFA(shown) + '</span></div>';
   }
 
@@ -411,7 +411,7 @@
     var i;
     for (i = 0; i < orders.live.length && remain > 0; i++, remain--) html.push(liveOrderRow(orders.live[i]));
     for (i = 0; i < orders.settled.length && remain > 0; i++, remain--) html.push(orderRow(orders.settled[i]));
-    feed.innerHTML = html.length ? html.join('') : '<div class="empty-feed">' + t('noOrders') + '</div>';
+    feed.innerHTML = html.length ? html.join('') : '<div class="empty-feed">' + t('noTradesHint') + '</div>';
   }
 
   function renderHistorySheet() {
@@ -457,7 +457,8 @@
 
   function syncTradeButtons() {
     var n = D6.Engine.liveCount ? D6.Engine.liveCount() : (D6.Engine.getTrades ? D6.Engine.getTrades().length : 0);
-    var busy = n >= 1;
+    var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 5;
+    var busy = n >= max;
     var lock = cooling || busy;
     $('btnCall').disabled = lock;
     $('btnPut').disabled = lock;
@@ -488,8 +489,12 @@
     if (!u) return;
     $('profName').textContent = u.displayName || 'Trader';
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
+    if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
-    $('profPhone').textContent = (u.countryCode || '') + ' ' + (u.phone || '');
+    var phone = String(u.phone || '').replace(/\D/g, '');
+    $('profPhone').textContent = phone && phone !== '0000000000'
+      ? ((u.countryCode || '') + ' ' + u.phone)
+      : '—';
     setAdminBtns(u);
   }
 
@@ -503,25 +508,22 @@
     $('drawerProfile').classList.remove('on');
   }
 
+  var adminCache = { users: [], messages: [] };
+
   async function renderAdmin() {
     var remote = D6.Api ? await D6.Api.post('admin', {}) : null;
     var m = (remote && remote.ok && remote.metrics) ? remote.metrics : D6.Store.metrics();
     var users = (remote && remote.ok && remote.users) ? remote.users : D6.Store.listUsers();
     var wd = (remote && remote.ok && remote.withdrawals) ? remote.withdrawals : D6.Store.listWithdrawals();
-    $('mDeposits').textContent = D6.fmtFCFA(m.deposits);
-    $('mPending').textContent = D6.fmtFCFA(m.withdrawals != null ? m.withdrawals : m.pending);
-    $('mProfit').textContent = D6.fmtFCFA(m.profit);
-    $('mUsers').textContent = String(m.users);
-    if (!users.length) $('adminUsers').innerHTML = '<div class="empty-feed">' + t('noUsers') + '</div>';
-    else {
-      var rows = users.map(function (u) {
-        var d = (u.createdAt || '').slice(0, 10);
-        return '<tr><td>' + (u.displayName || '') + '</td><td>' + u.email + '</td><td>' + (u.countryCode || '') + ' ' + (u.phone || '') +
-          '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td><td>' + d +
-          '</td><td><button class="mini" data-adj="' + u.id + '" data-d="1000">+</button> <button class="mini" data-adj="' + u.id + '" data-d="-1000">−</button></td></tr>';
-      }).join('');
-      $('adminUsers').innerHTML = '<table class="admin-table"><thead><tr><th>Nom</th><th>E-mail</th><th>WhatsApp</th><th>Solde réel</th><th>Date</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
-    }
+    var msgs = (remote && remote.ok && remote.messages) ? remote.messages : [];
+    adminCache.users = users;
+    adminCache.messages = msgs;
+    $('mDeposits').textContent = D6.fmtFCFA(m.deposits || 0);
+    $('mPending').textContent = D6.fmtFCFA(m.withdrawals != null ? m.withdrawals : m.pending || 0);
+    if ($('mExposure')) $('mExposure').textContent = D6.fmtFCFA(m.exposure || 0);
+    $('mProfit').textContent = D6.fmtFCFA(m.profit != null ? m.profit : 0);
+    $('mUsers').textContent = String(m.users || 0);
+    renderAdminUsers(($('adminSearch') && $('adminSearch').value) || '');
     if (!wd.length) $('adminWithdrawals').innerHTML = '<div class="empty-feed">' + t('noWithdraw') + '</div>';
     else {
       var wrows = wd.map(function (w) {
@@ -535,17 +537,66 @@
       $('adminWithdrawals').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table>';
     }
     var deps = (remote && remote.ok && remote.deposits) ? remote.deposits : [];
-    if (!$('adminDeposits')) return;
-    if (!deps.length) $('adminDeposits').innerHTML = '<div class="empty-feed">' + t('noDeposit') + '</div>';
-    else {
-      var drows = deps.map(function (d) {
-        var acts = '<button class="mini ok" data-dep="' + d.ref + '" data-amt="' + d.amount + '" data-ok="1">' + t('approve') + '</button>' +
-          ' <button class="mini bad" data-dep="' + d.ref + '" data-ok="0">' + t('reject') + '</button>';
-        return '<tr><td>' + (d.name || d.email || '') + '<div class="h-time">' + (d.email || '') + '</div></td><td>' + D6.fmtFCFA(d.amount) +
-          '</td><td>' + (d.operator || '') + '<div class="h-time">' + d.ref + '</div></td><td>' + acts + '</td></tr>';
-      }).join('');
-      $('adminDeposits').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
+    if ($('adminDeposits')) {
+      if (!deps.length) $('adminDeposits').innerHTML = '<div class="empty-feed">' + t('noDeposit') + '</div>';
+      else {
+        var drows = deps.map(function (d) {
+          var acts = '<button class="mini ok" data-dep="' + d.ref + '" data-amt="' + d.amount + '" data-ok="1">' + t('approve') + '</button>' +
+            ' <button class="mini bad" data-dep="' + d.ref + '" data-ok="0">' + t('reject') + '</button>';
+          return '<tr><td>' + (d.publicId || d.name || '') + '<div class="h-time">' + (d.email || '') + '</div></td><td>' + D6.fmtFCFA(d.amount) +
+            '</td><td>' + (d.operator || '') + '<div class="h-time">' + d.ref + '</div></td><td>' + acts + '</td></tr>';
+        }).join('');
+        $('adminDeposits').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
+      }
     }
+    if ($('adminMessages')) {
+      if (!msgs.length) $('adminMessages').innerHTML = '<div class="empty-feed">Aucun message</div>';
+      else {
+        var mrows = msgs.map(function (msg) {
+          var acts = msg.status === 'ouvert'
+            ? '<button class="mini ok" data-msg="' + msg.id + '">Résoudre</button>'
+            : (msg.status || 'resolu');
+          return '<tr><td>' + (msg.publicId || '') + '<div class="h-time">' + (msg.email || '') + '</div></td><td>' + (msg.subject || '') +
+            '<div class="h-time">' + (msg.message || '') + '</div></td><td>' + acts + '</td></tr>';
+        }).join('');
+        $('adminMessages').innerHTML = '<table class="admin-table"><thead><tr><th>User</th><th>Message</th><th></th></tr></thead><tbody>' + mrows + '</tbody></table>';
+      }
+    }
+  }
+
+  function renderAdminUsers(q) {
+    q = String(q || '').trim().toLowerCase();
+    var users = adminCache.users || [];
+    var filtered = !q ? users : users.filter(function (u) {
+      var blob = [(u.publicId || ''), u.email || '', u.displayName || '', u.phone || '', (u.countryCode || '') + (u.phone || '')].join(' ').toLowerCase();
+      return blob.indexOf(q) >= 0;
+    });
+    if (!filtered.length) $('adminUsers').innerHTML = '<div class="empty-feed">' + t('noUsers') + '</div>';
+    else {
+      var rows = filtered.map(function (u) {
+        var d = (u.createdAt || '').slice(0, 10);
+        return '<tr data-user="' + u.id + '"><td>' + (u.publicId || '') + '</td><td>' + (u.displayName || '') + '</td><td>' + u.email + '</td><td>' + (u.countryCode || '') + ' ' + (u.phone || '') +
+          '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td><td>' + d + '</td></tr>';
+      }).join('');
+      $('adminUsers').innerHTML = '<table class="admin-table"><thead><tr><th>ID</th><th>Nom</th><th>E-mail</th><th>WhatsApp</th><th>Solde réel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+  }
+
+  function openAdminUser(uid) {
+    var u = (adminCache.users || []).find(function (x) { return x.id === uid; });
+    var box = $('adminUserDetail');
+    if (!u || !box) return;
+    box.classList.remove('hidden');
+    box.innerHTML = '<div class="convert-title">' + (u.publicId || '') + ' · ' + (u.displayName || '') + '</div>' +
+      '<div class="h-time">' + u.email + ' · ' + (u.countryCode || '') + ' ' + (u.phone || '') + ' · inscrit ' + (u.createdAt || '').slice(0, 10) + '</div>' +
+      '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
+      '<div class="list-row"><span>Démo</span><strong>' + D6.fmtFCFA(u.demoBalance) + '</strong></div>' +
+      '<div class="field"><label>' + t('adjustReason') + '</label><input id="adjMotif" maxlength="120" placeholder="bonus, correction…"></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
+      '<button class="mini ok" data-adj="' + u.id + '" data-d="1000" data-mode="real">Réel +1000</button>' +
+      '<button class="mini bad" data-adj="' + u.id + '" data-d="-1000" data-mode="real">Réel −1000</button>' +
+      '<button class="mini" data-adj="' + u.id + '" data-d="0" data-mode="demo" data-reset="1">Reset démo</button>' +
+      '</div>';
   }
 
   function setTradingLocked(on) {
@@ -596,7 +647,8 @@
     var u = user();
     if (!u) return;
     var open = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
-    if (open >= 1) {
+    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 5;
+    if (open >= maxOpen) {
       toast(t('maxPositions'), 'err');
       syncTradeButtons();
       return;
@@ -1250,6 +1302,8 @@
       if ($('regPass').value !== $('regPass2').value) { showFieldError('regPass2', 'Les mots de passe ne correspondent pas'); return; }
       var res = await D6.Auth.register({
         displayName: $('regName').value, email: $('regEmail').value,
+        phone: $('regPhone') ? $('regPhone').value : '',
+        countryCode: $('regDial') ? $('regDial').value : '+225',
         password: $('regPass').value, passwordConfirm: $('regPass2').value,
         acceptTerms: $('regAge').checked
       });
@@ -1280,7 +1334,8 @@
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
     $('btnResetDemo').addEventListener('click', function (e) {
-      e.stopPropagation();
+      e.preventDefault();
+      if (!window.confirm(t('resetDemoConfirm'))) return;
       var u = user();
       if (!u) return;
       if (D6.Engine.liveCount && D6.Engine.liveCount()) return;
@@ -1394,6 +1449,24 @@
       // confirme plus tard, le solde sera crédité par le serveur.
       $('btnDepositWaitClose').addEventListener('click', function () { closeModal('depositWaitModal'); });
     }
+    if ($('btnHelp')) $('btnHelp').addEventListener('click', function () { openModal('helpModal'); });
+    if ($('closeHelp')) $('closeHelp').addEventListener('click', function () { closeModal('helpModal'); });
+    if ($('formHelp')) {
+      $('formHelp').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var subject = ($('helpSubject') && $('helpSubject').value) || '';
+        var message = ($('helpMessage') && $('helpMessage').value) || '';
+        if (!subject || !message) return;
+        var res = D6.Api && D6.Api.token()
+          ? await D6.Api.post('supportMessage', { subject: subject, message: message })
+          : { ok: false };
+        if (!res || !res.ok) { toast((res && res.reason) || t('sessionInvalid'), 'err'); return; }
+        closeModal('helpModal');
+        $('helpSubject').value = '';
+        $('helpMessage').value = '';
+        toast(t('helpSent'), 'ok');
+      });
+    }
     if ($('closeDepositSuccess')) $('closeDepositSuccess').addEventListener('click', function () { closeModal('depositSuccessModal'); });
     if ($('btnDepositSuccessOk')) $('btnDepositSuccessOk').addEventListener('click', function () { closeModal('depositSuccessModal'); });
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (card) {
@@ -1501,13 +1574,57 @@
       requestAnimationFrame(D6.Chart.resize);
     });
     $('adminUsers').addEventListener('click', async function (e) {
+      var row = e.target.closest('[data-user]');
+      if (row) openAdminUser(row.dataset.user);
       var btn = e.target.closest('[data-adj]');
       if (!btn) return;
-      if (D6.Api && D6.Api.token()) await D6.Api.post('adjust', { userId: btn.dataset.adj, delta: Number(btn.dataset.d) });
-      D6.Store.adjustReal(btn.dataset.adj, Number(btn.dataset.d));
+      var motif = ($('adjMotif') && $('adjMotif').value) || '';
+      if (!motif.trim()) { toast(t('adjustReason'), 'err'); return; }
+      var delta = Number(btn.dataset.d);
+      var mode = btn.dataset.mode || 'real';
+      if (btn.dataset.reset === '1') {
+        var u0 = (adminCache.users || []).find(function (x) { return x.id === btn.dataset.adj; });
+        delta = 50000 - Number((u0 && u0.demoBalance) || 0);
+        mode = 'demo';
+      }
+      if (D6.Api && D6.Api.token()) await D6.Api.post('adjust', { userId: btn.dataset.adj, delta: delta, mode: mode, motif: motif });
+      if (mode === 'real') D6.Store.adjustReal(btn.dataset.adj, delta);
       renderAdmin();
       updateBalance(false);
     });
+    if ($('adminSearch')) {
+      $('adminSearch').addEventListener('input', function () { renderAdminUsers(this.value); });
+      $('adminSearch').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); renderAdminUsers(this.value); }
+      });
+    }
+    if ($('adminUserDetail')) {
+      $('adminUserDetail').addEventListener('click', async function (e) {
+        var btn = e.target.closest('[data-adj]');
+        if (!btn) return;
+        var motif = ($('adjMotif') && $('adjMotif').value) || '';
+        if (!motif.trim()) { toast(t('adjustReason'), 'err'); return; }
+        var delta = Number(btn.dataset.d);
+        var mode = btn.dataset.mode || 'real';
+        if (btn.dataset.reset === '1') {
+          var u0 = (adminCache.users || []).find(function (x) { return x.id === btn.dataset.adj; });
+          delta = 50000 - Number((u0 && u0.demoBalance) || 0);
+          mode = 'demo';
+        }
+        if (D6.Api && D6.Api.token()) await D6.Api.post('adjust', { userId: btn.dataset.adj, delta: delta, mode: mode, motif: motif });
+        renderAdmin();
+        openAdminUser(btn.dataset.adj);
+      });
+    }
+    if ($('adminMessages')) {
+      $('adminMessages').addEventListener('click', async function (e) {
+        var btn = e.target.closest('[data-msg]');
+        if (!btn) return;
+        var reply = window.prompt('Réponse (optionnel)') || '';
+        if (D6.Api && D6.Api.token()) await D6.Api.post('resolveMessage', { id: btn.dataset.msg, reply: reply });
+        renderAdmin();
+      });
+    }
     if ($('btnMaketouLog')) {
       $('btnMaketouLog').addEventListener('click', function () {
         var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
@@ -1565,7 +1682,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=34').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=35').catch(function () { /* ignore */ });
     }
   }
 

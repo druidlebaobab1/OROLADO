@@ -45,6 +45,7 @@
   function blankUser(partial) {
     return {
       id: partial.id,
+      publicId: partial.publicId || '',
       displayName: partial.displayName || '',
       email: partial.email,
       phone: partial.phone,
@@ -84,6 +85,13 @@
     if (user.realTrades == null) user.realTrades = 0;
     if (user.realStakeVolume == null) user.realStakeVolume = 0;
     if (!user.role) user.role = (user.email === 'admin@orolado.com' || user.email === 'admin@6diablo.com') ? 'admin' : 'user';
+    if (!user.publicId) {
+      var h = 0;
+      var s = String(user.id || user.email || 'x');
+      var j;
+      for (j = 0; j < s.length; j++) h = ((h << 5) - h + s.charCodeAt(j)) | 0;
+      user.publicId = 'ORO-' + String(100000 + (Math.abs(h) % 900000));
+    }
     if (!vault[user.id]) {
       vault[user.id] = {
         demo: user.demoBalance != null ? user.demoBalance : D6.CONFIG.DEMO_START,
@@ -192,6 +200,19 @@
     },
 
     createUser: function (partial) {
+      if (!partial.publicId) {
+        var used = {};
+        Object.keys(db.users || {}).forEach(function (id) {
+          var p = String((db.users[id] && db.users[id].publicId) || '');
+          if (p) used[p] = true;
+        });
+        var i;
+        for (i = 0; i < 40; i++) {
+          var pid = 'ORO-' + String(Math.floor(100000 + Math.random() * 900000));
+          if (!used[pid]) { partial.publicId = pid; break; }
+        }
+        if (!partial.publicId) partial.publicId = 'ORO-' + String(Date.now()).slice(-6);
+      }
       var user = blankUser(partial);
       db.users[user.id] = user;
       vault[user.id] = { demo: D6.CONFIG.DEMO_START, real: D6.CONFIG.REAL_START };
@@ -360,22 +381,23 @@
     metrics: function () {
       var users = D6.Store.listUsers();
       var deposits = 0;
-      var pending = 0;
-      var approved = 0;
+      var paidWd = 0;
+      var exposure = 0;
       Object.keys(db.users).forEach(function (id) {
         (db.users[id].transactions || []).forEach(function (tx) {
           if (tx.type === 'deposit' && (tx.mode === 'real' || !tx.mode)) deposits += tx.amount;
         });
+        exposure += Number((vault[id] && vault[id].real) || 0);
       });
       (db.withdrawals || []).forEach(function (w) {
-        if (w.status === 'pending') pending += w.amount;
-        if (w.status === 'approved') approved += w.amount;
+        if (w.status === 'approved') paidWd += w.amount;
       });
       return {
         deposits: deposits,
-        pending: pending,
-        withdrawals: pending + approved,
-        profit: deposits - approved,
+        pending: 0,
+        withdrawals: paidWd,
+        exposure: exposure,
+        profit: deposits - paidWd - exposure,
         users: users.length
       };
     }

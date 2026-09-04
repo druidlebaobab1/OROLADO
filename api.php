@@ -79,26 +79,64 @@ function session_user(array &$db, ?string $token): ?array {
 
 function metrics(array $db): array {
   $deposits = 0;
-  $pending = 0;
-  $approved = 0;
-  foreach ($db['users'] as $u) {
-    foreach ($u['transactions'] ?? [] as $tx) {
-      if (($tx['type'] ?? '') === 'deposit' && (($tx['mode'] ?? 'real') === 'real' || empty($tx['mode']))) {
-        $deposits += (int) ($tx['amount'] ?? 0);
+  $pendingWd = 0;
+  $paidWd = 0;
+  $exposure = 0;
+  // Dépôts validés uniquement (COMPLETED/PAID).
+  foreach (($db['deposits'] ?? []) as $d) {
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'COMPLETED' || $st === 'PAID') $deposits += (int) ($d['amount'] ?? 0);
+  }
+  if ($deposits === 0) {
+    foreach ($db['users'] as $u) {
+      foreach ($u['transactions'] ?? [] as $tx) {
+        if (($tx['type'] ?? '') === 'deposit' && (($tx['mode'] ?? 'real') === 'real' || empty($tx['mode']))) {
+          $deposits += (int) ($tx['amount'] ?? 0);
+        }
       }
     }
   }
   foreach ($db['withdrawals'] as $w) {
-    if (($w['status'] ?? '') === 'pending') $pending += (int) $w['amount'];
-    if (($w['status'] ?? '') === 'approved') $approved += (int) $w['amount'];
+    if (($w['status'] ?? '') === 'pending') $pendingWd += (int) $w['amount'];
+    if (($w['status'] ?? '') === 'approved') $paidWd += (int) $w['amount'];
+  }
+  foreach ($db['vault'] as $v) {
+    $exposure += (int) ($v['real'] ?? 0);
   }
   return [
     'deposits' => $deposits,
-    'pending' => $pending,
-    'withdrawals' => $pending + $approved,
-    'profit' => $deposits - $approved,
+    'pending' => $pendingWd,
+    'withdrawals' => $paidWd,
+    'exposure' => $exposure,
+    'profit' => $deposits - $paidWd - $exposure,
     'users' => count($db['users'])
   ];
+}
+
+function alloc_public_id(array &$db): string {
+  $used = [];
+  foreach ($db['users'] as $u) {
+    $p = (string) ($u['publicId'] ?? '');
+    if ($p !== '') $used[$p] = true;
+  }
+  for ($i = 0; $i < 40; $i++) {
+    $pid = 'ORO-' . (string) random_int(100000, 999999);
+    if (empty($used[$pid])) return $pid;
+  }
+  return 'ORO-' . substr((string) time(), -6);
+}
+
+function admin_log(array &$db, string $adminEmail, string $targetPublicId, string $type, int $amount, string $motif): void {
+  if (!isset($db['admin_logs']) || !is_array($db['admin_logs'])) $db['admin_logs'] = [];
+  array_unshift($db['admin_logs'], [
+    'adminEmail' => $adminEmail,
+    'targetPublicId' => $targetPublicId,
+    'type' => $type,
+    'amount' => $amount,
+    'motif' => $motif,
+    'at' => date('c')
+  ]);
+  $db['admin_logs'] = array_slice($db['admin_logs'], 0, 500);
 }
 
 $raw = file_get_contents('php://input');
@@ -142,6 +180,7 @@ if ($action === 'register') {
   }
   $user['email'] = $email;
   $user['role'] = 'user';
+  if (empty($user['publicId'])) $user['publicId'] = alloc_public_id($db);
   $db['users'][$user['id']] = $user;
   $vault = [
     'demo' => (int) ($vault['demo'] ?? 50000),
@@ -206,9 +245,14 @@ if ($action === 'admin') {
   }
   $list = [];
   foreach ($db['users'] as $id => $u) {
+    if (empty($u['publicId'])) {
+      $db['users'][$id]['publicId'] = alloc_public_id($db);
+      $u = $db['users'][$id];
+    }
     $v = $db['vault'][$id] ?? ['demo' => 0, 'real' => 0];
     $list[] = [
       'id' => $id,
+      'publicId' => (string) ($u['publicId'] ?? ''),
       'displayName' => $u['displayName'] ?? '',
       'email' => $u['email'] ?? '',
       'phone' => $u['phone'] ?? '',
@@ -217,9 +261,12 @@ if ($action === 'admin') {
       'createdAt' => $u['createdAt'] ?? '',
       'realBalance' => $v['real'] ?? 0,
       'demoBalance' => $v['demo'] ?? 0,
-      'realTrades' => $u['realTrades'] ?? 0
+      'realTrades' => $u['realTrades'] ?? 0,
+      'transactions' => array_slice($u['transactions'] ?? [], 0, 40),
+      'positions' => array_slice($u['positions'] ?? [], 0, 20)
     ];
   }
+  save_db($file, $db);
   $deps = [];
   foreach (($db['deposits'] ?? []) as $d) {
     if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
@@ -229,19 +276,22 @@ if ($action === 'admin') {
       'userId' => $uid,
       'name' => (string) ($db['users'][$uid]['displayName'] ?? ''),
       'email' => (string) ($db['users'][$uid]['email'] ?? ''),
+      'publicId' => (string) ($db['users'][$uid]['publicId'] ?? ''),
       'amount' => (int) ($d['amount'] ?? 0),
       'operator' => (string) ($d['operator'] ?? ''),
       'at' => (string) ($d['createdAt'] ?? $d['at'] ?? '')
     ];
   }
   $deps = array_slice(array_reverse($deps), 0, 40);
+  $msgs = array_slice(array_reverse($db['support_messages'] ?? []), 0, 60);
   echo json_encode([
     'ok' => true,
     'server' => true,
     'metrics' => metrics($db),
     'users' => $list,
     'withdrawals' => $db['withdrawals'],
-    'deposits' => $deps
+    'deposits' => $deps,
+    'messages' => $msgs
   ]);
   exit;
 }
@@ -291,13 +341,71 @@ if ($action === 'adjust') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
     exit;
   }
-  $uid = $req['userId'] ?? '';
+  $uid = (string) ($req['userId'] ?? '');
   $delta = (int) ($req['delta'] ?? 0);
+  $mode = (($req['mode'] ?? 'real') === 'demo') ? 'demo' : 'real';
+  $motif = trim((string) ($req['motif'] ?? ''));
+  if ($motif === '') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Motif obligatoire']);
+    exit;
+  }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-  $db['vault'][$uid]['real'] = max(0, (int) $db['vault'][$uid]['real'] + $delta);
+  $db['vault'][$uid][$mode] = max(0, (int) ($db['vault'][$uid][$mode] ?? 0) + $delta);
+  $targetPid = (string) ($db['users'][$uid]['publicId'] ?? $uid);
+  admin_log($db, (string) ($me['email'] ?? ''), $targetPid, 'adjust_' . $mode, $delta, $motif);
   save_db($file, $db);
-  supabase_credit_real((string) $uid, $delta);
-  echo json_encode(['ok' => true, 'server' => true, 'real' => $db['vault'][$uid]['real']]);
+  if ($mode === 'real') supabase_credit_real((string) $uid, $delta);
+  echo json_encode(['ok' => true, 'server' => true, 'vault' => $db['vault'][$uid]]);
+  exit;
+}
+
+if ($action === 'supportMessage') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $subject = trim((string) ($req['subject'] ?? ''));
+  $message = trim((string) ($req['message'] ?? ''));
+  if ($subject === '' || $message === '' || strlen($message) > 500) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Message invalide']);
+    exit;
+  }
+  if (!isset($db['support_messages']) || !is_array($db['support_messages'])) $db['support_messages'] = [];
+  $db['support_messages'][] = [
+    'id' => uniqid('msg_', true),
+    'userId' => $me['id'],
+    'publicId' => (string) ($me['publicId'] ?? ''),
+    'email' => (string) ($me['email'] ?? ''),
+    'subject' => substr($subject, 0, 80),
+    'message' => substr($message, 0, 500),
+    'status' => 'ouvert',
+    'reply' => '',
+    'createdAt' => date('c')
+  ];
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true]);
+  exit;
+}
+
+if ($action === 'resolveMessage') {
+  $me = session_user($db, $token);
+  if (!$me || ($me['role'] ?? '') !== 'admin') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
+    exit;
+  }
+  $id = (string) ($req['id'] ?? '');
+  $reply = trim((string) ($req['reply'] ?? ''));
+  foreach ($db['support_messages'] ?? [] as $i => $m) {
+    if ((string) ($m['id'] ?? '') === $id) {
+      $db['support_messages'][$i]['status'] = 'resolu';
+      if ($reply !== '') $db['support_messages'][$i]['reply'] = substr($reply, 0, 500);
+      save_db($file, $db);
+      echo json_encode(['ok' => true, 'server' => true]);
+      exit;
+    }
+  }
+  echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Message introuvable']);
   exit;
 }
 
@@ -431,8 +539,8 @@ if ($action === 'placeOrder') {
       $deadline = (float) ($o['at'] ?? 0) + (int) ($o['duration'] ?? 10) + 30;
       if ($deadline > $now) $open++;
     }
-    if ($open >= 1) {
-      return ['ok' => false, 'reason' => 'Un trade est déjà en cours', 'skip_write' => true];
+    if ($open >= 5) {
+      return ['ok' => false, 'reason' => 'Maximum 5 trades en cours', 'skip_write' => true];
     }
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 50000, 'real' => 0];
     $bal = (int) ($locked['vault'][$uid][$mode] ?? 0);

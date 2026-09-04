@@ -1,10 +1,10 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0A0F1D;--bg2:#121A2B;--card:#151E30;
-  --line:rgba(255,215,0,.22);
-  --gold:#FFD700;--gold-dim:#FFA000;--gold-soft:rgba(255,215,0,.14);
-  --red:#FF1744;--green:#00E676;
-  --text:#eef2ff;--muted:#8b9bb8;--safe:env(safe-area-inset-bottom,0px);
+  --line:rgba(245,197,24,.22);
+  --gold:#F5C518;--gold-dim:#D4A017;--gold-soft:rgba(245,197,24,.14);
+  --red:#EF4444;--green:#22C55E;
+  --text:#eef2ff;--muted:#C9CDD6;--safe:env(safe-area-inset-bottom,0px);
 }
 html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-family:"Hanken Grotesk",system-ui,sans-serif;
   overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -129,7 +129,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 @keyframes balPulse{50%{transform:scale(1.03);box-shadow:0 0 18px rgba(255,215,0,.5)}}
 
 .trade-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:4px 8px 0;gap:4px;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:250px}
-.asset-bar{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex-shrink:0}
+.asset-bar{display:flex;gap:4px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.asset-bar::-webkit-scrollbar{display:none}
+.asset-chip{min-width:132px;flex:0 0 auto}
 .asset-chip{border:1px solid var(--line);background:rgba(21,30,48,.85);border-radius:10px;padding:4px 8px;text-align:left;
   color:var(--text);font:inherit;cursor:pointer;min-height:0}
 .asset-chip .k{display:none}
@@ -175,6 +177,17 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .hist-title{font-size:.62rem;font-weight:900;letter-spacing:.6px;text-transform:uppercase;color:var(--gold)}
 .hist-more{border:0;background:transparent;color:var(--gold);font:inherit;font-size:.55rem;font-weight:800;cursor:pointer;padding:4px 6px;white-space:nowrap}
 .history-feed{overflow:hidden;max-height:92px}
+.trade-hint{font-size:.62rem;color:var(--muted);margin:0 0 6px;line-height:1.35}
+.risk-line{font-size:.62rem;color:var(--muted);margin:8px 0;line-height:1.35}
+.help-fab{position:fixed;right:14px;bottom:calc(14px + var(--safe));z-index:40;border:1px solid var(--line);
+  background:var(--card);color:var(--gold);font-weight:800;font-size:.72rem;border-radius:999px;padding:10px 14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.admin-search{margin:8px 0 12px}
+.admin-search input{width:100%}
+.admin-detail{padding:12px;margin:10px 0 16px}
+.admin-detail.hidden{display:none}
+#helpMessage{width:100%;resize:vertical;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;
+  color:var(--text);padding:10px;font:inherit}
 .h-item{display:grid;grid-template-columns:36px 1fr auto;gap:6px;align-items:center;padding:3px 6px;border-radius:6px;
   background:rgba(255,255,255,.03);border-left:3px solid transparent;margin-bottom:2px}
 .h-item.live{border-left-color:var(--gold);background:rgba(255,215,0,.06)}

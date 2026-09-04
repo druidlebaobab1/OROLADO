@@ -9,7 +9,7 @@
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
-  var MAX_OPEN = 1;
+  var MAX_OPEN = (C.MAX_OPEN || 5);
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 240;
   var synthCache = {};
@@ -176,18 +176,10 @@
     return false;
   }
 
+  // Même règles démo = réel : pas de biais 80 %, pas de wins forcés.
   function decideOutcome(user) {
-    if (user.mode !== 'real') {
-      var done = user.demoTrades || 0;
-      if (done < (C.DEMO_FORCE_WINS || 3)) return 'win';
-      var pDemo = C.DEMO_WIN_RATE || 0.80;
-      var wrDemo = recentWinRate(user, 20);
-      if (done >= 8 && wrDemo > 0.86) pDemo = 0.68;
-      else if (done >= 8 && wrDemo < 0.74) pDemo = 0.90;
-      return Math.random() < pDemo ? 'win' : 'lose';
-    }
     var p = C.REAL_WIN_RATE || 0.45;
-    var n = user.realTrades || 0;
+    var n = user.mode === 'real' ? (user.realTrades || 0) : (user.demoTrades || 0);
     var wr = recentWinRate(user, 20);
     if (n >= 6 && wr < 0.36) p = 0.58;
     else if (n >= 6 && wr > 0.54) p = 0.34;
@@ -200,7 +192,7 @@
       return !r.mode || r.mode === user.mode;
     });
     var slice = list.slice(0, n);
-    if (!slice.length) return user.mode === 'real' ? C.REAL_WIN_RATE : C.DEMO_WIN_RATE;
+    if (!slice.length) return C.REAL_WIN_RATE || 0.45;
     var wins = 0;
     var i;
     for (i = 0; i < slice.length; i++) if (slice[i] === true || slice[i] === 1 || (slice[i] && slice[i].won)) wins++;
