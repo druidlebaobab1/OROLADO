@@ -669,6 +669,21 @@
     return D6.Api.post('initiateDeposit', payload, 28000);
   }
 
+  async function postDepositConfirm(payload) {
+    try {
+      var r = await fetch('api/deposit/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store'
+      });
+      if (r.ok) return await r.json();
+    } catch (e) {
+      console.error('OROLADO deposit confirm', e);
+    }
+    return D6.Api.post('confirmDeposit', payload);
+  }
+
   function localMaketouCheckoutUrl(amt, op, ref) {
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
     var first = 'Trader';
@@ -776,7 +791,11 @@
     var q = new URLSearchParams(location.search);
     var ref = q.get('ref') || '';
     try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || localStorage.getItem('oro_dep_ref') || ''; } catch (e) { /* ignore */ }
-    if (q.get('payment') === 'cancel') return;
+    if (q.get('payment') === 'cancel') {
+      try { sessionStorage.removeItem('oro_dep_ref'); } catch (e0) { /* ignore */ }
+      try { localStorage.removeItem('oro_dep_ref'); } catch (e1) { /* ignore */ }
+      return;
+    }
     var successBack = q.get('deposit') === 'success' || q.get('payment') === 'success' || q.get('deposit') === '1';
     if (!successBack && !ref) return;
     var tries = 0;
@@ -798,13 +817,14 @@
       if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
     }
     async function poll() {
-      var remote = await D6.Api.post('depositStatus', { ref: ref });
+      var tok = await ensureApiToken();
+      var remote = await postDepositConfirm({ token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref });
       if (remote && remote.ok && remote.paid && remote.amount > 0) {
         applyPaid(remote);
         return;
       }
       tries += 1;
-      if (tries < 40) setTimeout(poll, 400);
+      if (tries < 20) setTimeout(poll, 350);
     }
     poll();
   }
@@ -1176,7 +1196,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=26').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=27').catch(function () { /* ignore */ });
     }
   }
 

@@ -151,7 +151,12 @@ function supabase_credit_real(string $userId, int $amount): void {
 function supabase_insert_deposit(array $row): void {
   $hdrs = supabase_admin_headers();
   if (!$hdrs) return;
-  supabase_http(supabase_project_url() . '/rest/v1/deposits', $hdrs, json_encode($row, JSON_UNESCAPED_UNICODE), 'POST');
+  $url = supabase_project_url() . '/rest/v1/deposits';
+  $res = supabase_http($url, $hdrs, json_encode($row, JSON_UNESCAPED_UNICODE), 'POST');
+  if ($res === null && isset($row['reference'])) {
+    unset($row['reference']);
+    supabase_http($url, $hdrs, json_encode($row, JSON_UNESCAPED_UNICODE), 'POST');
+  }
 }
 
 function supabase_patch_deposit(string $ref, array $fields): void {
@@ -163,6 +168,18 @@ function supabase_patch_deposit(string $ref, array $fields): void {
     json_encode($fields, JSON_UNESCAPED_UNICODE),
     'PATCH'
   );
+}
+
+function supabase_get_deposit(string $ref): ?array {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $ref === '') return null;
+  $url = supabase_project_url();
+  $rows = supabase_http($url . '/rest/v1/deposits?id=eq.' . rawurlencode($ref) . '&select=id,user_id,amount,status', $hdrs);
+  if (!is_array($rows) || !isset($rows[0])) {
+    $rows = supabase_http($url . '/rest/v1/deposits?reference=eq.' . rawurlencode($ref) . '&select=id,user_id,amount,status', $hdrs);
+  }
+  if (!is_array($rows) || !isset($rows[0])) return null;
+  return $rows[0];
 }
 
 function supabase_admin_vault(string $userId): ?array {
@@ -898,6 +915,7 @@ function orolado_initiate_deposit(array $req): array {
     'user_id' => $me['id'],
     'amount' => $amount,
     'status' => 'PENDING',
+    'reference' => $ref,
     'alias_email' => $aliasEmail,
     'alias_phone' => $aliasPhone,
     'operator' => $op,
@@ -953,6 +971,15 @@ function orolado_deposit_status(array $req): array {
       if ($ref !== '') break;
     }
   }
+  if (!$paid && $ref !== '') {
+    $sbDep = supabase_get_deposit($ref);
+    if ($sbDep && (string) ($sbDep['user_id'] ?? '') === (string) $me['id']) {
+      $st = strtoupper((string) ($sbDep['status'] ?? ''));
+      if ($st === 'PAID' || $st === 'COMPLETED') {
+        $paid = ['amount' => (int) ($sbDep['amount'] ?? 0)];
+      }
+    }
+  }
   $jsonVault = $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0];
   $vault = supabase_admin_vault((string) $me['id']);
   if (!$vault) $vault = $jsonVault;
@@ -969,8 +996,69 @@ function orolado_deposit_status(array $req): array {
   ];
 }
 
+function orolado_find_owned_deposit(array $db, string $userId, string $ref): ?array {
+  $pending = null;
+  foreach ($db['deposits'] as $d) {
+    if ((string) ($d['userId'] ?? '') !== $userId) continue;
+    $id = (string) ($d['id'] ?? '');
+    $r = (string) ($d['ref'] ?? '');
+    if ($ref !== '' && $id !== $ref && $r !== $ref) continue;
+    if ($ref !== '' && ($id === $ref || $r === $ref)) return $d;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'PENDING') $pending = $d;
+  }
+  return $ref === '' ? $pending : null;
+}
+
 function orolado_confirm_deposit(array $req): array {
-  return orolado_deposit_status($req);
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $me = orolado_session_user($db, (string) ($req['token'] ?? ''));
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+  $uid = (string) $me['id'];
+  $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['ref'] ?? '')) ?? '';
+
+  $dep = orolado_find_owned_deposit($db, $uid, $ref);
+  if (!$dep && $ref !== '') {
+    $sb = supabase_get_deposit($ref);
+    if ($sb && (string) ($sb['user_id'] ?? '') === $uid) {
+      $dep = [
+        'id' => (string) ($sb['id'] ?? $ref),
+        'amount' => (int) ($sb['amount'] ?? 0),
+        'status' => (string) ($sb['status'] ?? 'PENDING'),
+        'userId' => $uid,
+      ];
+    }
+  }
+  if (!$dep) {
+    $out = orolado_deposit_status($req);
+    $out['paid'] = !empty($out['paid']);
+    return $out;
+  }
+
+  $refId = (string) ($dep['id'] ?? $ref);
+  $st = strtoupper((string) ($dep['status'] ?? ''));
+  $cred = ['ok' => ($st === 'PAID' || $st === 'COMPLETED')];
+  if ($st !== 'PAID' && $st !== 'COMPLETED') {
+    $cred = credit_paid_deposit([
+      'ref' => $refId,
+      'amount' => (int) ($dep['amount'] ?? 0),
+      'paid' => true,
+    ]);
+    if (empty($cred['ok'])) {
+      $rpc = supabase_complete_deposit($refId, (int) ($dep['amount'] ?? 0), $uid);
+      if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
+    }
+  }
+
+  $out = orolado_deposit_status(['token' => $req['token'] ?? '', 'ref' => $refId]);
+  if (empty($out['paid']) && !empty($cred['ok'])) {
+    $out['paid'] = true;
+    $out['amount'] = (int) ($dep['amount'] ?? ($cred['amount'] ?? 0));
+    $vault = supabase_admin_vault($uid);
+    if ($vault) $out['vault'] = $vault;
+  }
+  return $out;
 }
 
 function maketou_handle_webhook(): void {

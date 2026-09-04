@@ -157,6 +157,8 @@ create table if not exists public.deposits (
   created_at timestamptz not null default now(),
   completed_at timestamptz
 );
+alter table public.deposits add column if not exists reference text;
+update public.deposits set reference = id where reference is null;
 alter table public.deposits enable row level security;
 drop policy if exists deposits_own_read on public.deposits;
 create policy deposits_own_read on public.deposits
@@ -174,6 +176,9 @@ declare
 begin
   select * into d from public.deposits where id = p_ref for update;
   if not found then
+    select * into d from public.deposits where reference = p_ref for update;
+  end if;
+  if not found then
     return jsonb_build_object('ok', false, 'reason', 'unknown');
   end if;
   if d.status is distinct from 'PENDING' then
@@ -185,7 +190,7 @@ begin
   end if;
   update public.deposits
     set status = 'COMPLETED', amount = amt, completed_at = now()
-    where id = p_ref;
+    where id = d.id;
   insert into public.vaults (user_id, demo, real)
   values (d.user_id, 50000, amt)
   on conflict (user_id) do update
