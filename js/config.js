@@ -16,6 +16,8 @@
     REAL_PAYOUT: 1.88,
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 1000,
+    MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',
+    MAKETOU_PRODUCT_ID: 'dc38d82a-9074-4f73-9cca-50959ea58e94',
     BRAND: 'OROLADO',
     DOMAIN: 'orolado.com',
     ADMIN_EMAIL: 'admin@orolado.com',

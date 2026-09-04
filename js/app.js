@@ -660,13 +660,45 @@
         var json = await r.json();
         if (json) return json;
       } else {
-        console.warn('OROLADO deposit initiate HTTP', r.status);
+        console.error('OROLADO deposit initiate HTTP', r.status);
       }
     } catch (e) {
-      console.warn('OROLADO deposit initiate', e && e.message);
+      console.error('OROLADO deposit initiate', e);
     }
     clearTimeout(timer);
     return D6.Api.post('initiateDeposit', payload, 28000);
+  }
+
+  function localMaketouCheckoutUrl(amt, op, ref) {
+    var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
+    var productId = (D6.CONFIG && D6.CONFIG.MAKETOU_PRODUCT_ID) || 'dc38d82a-9074-4f73-9cca-50959ea58e94';
+    var u = user();
+    var name = ((u && (u.displayName || u.name)) || 'Client Orolado').toString();
+    var email = 'buyer_' + Date.now() + '@privatesync.net';
+    var phone = '+22507' + String(Math.floor(10000000 + Math.random() * 89999999));
+    var q = new URLSearchParams();
+    q.set('email', email);
+    q.set('name', name);
+    q.set('phone', phone);
+    q.set('checkout[email]', email);
+    q.set('checkout[name]', name);
+    q.set('checkout[phone]', phone);
+    q.set('amount', String(amt));
+    q.set('custom_price', String(amt));
+    q.set('currency', 'XOF');
+    q.set('product_id', productId);
+    q.set('operator', op || 'wave');
+    q.set('payment_method', op || 'wave');
+    q.set('step', 'payment');
+    q.set('skip_address', '1');
+    q.set('skip_shipping', '1');
+    q.set('digital', '1');
+    if (ref) {
+      q.set('ref', ref);
+      q.set('note', ref);
+      q.set('checkout[custom][ref]', ref);
+    }
+    return base + '?' + q.toString();
   }
 
   async function confirmDeposit() {
@@ -699,30 +731,36 @@
       var remote = await postDepositInitiate({
         token: tok,
         amount: amt,
-        operator: depositOp
+        operator: depositOp,
+        displayName: (u.displayName || u.name || '').toString()
       });
-      if (!remote || !remote.ok) {
-        console.warn('OROLADO deposit fail', remote);
-        toast((remote && remote.reason) || 'Checkout Maketou indisponible', 'err');
-        return;
-      }
-      var url = remote.checkout_url || remote.url || '';
-      var em = u && u.email ? String(u.email).toLowerCase() : '';
-      if (em && em.indexOf('@') > 0 && em.indexOf('@privatesync') < 0) {
-        if (url.toLowerCase().indexOf(em) >= 0 || url.toLowerCase().indexOf(encodeURIComponent(em).toLowerCase()) >= 0) {
-          console.warn('OROLADO deposit url leaked account email');
-          url = '';
+      if (remote && !remote.ok) {
+        console.error('OROLADO deposit fail', remote);
+        var reason = String((remote && remote.reason) || '');
+        if (/session/i.test(reason)) {
+          toast(t('sessionInvalid'), 'err');
+          return;
         }
       }
+      var url = (remote && (remote.checkout_url || remote.url)) || '';
       if (!url || !/^https?:\/\//i.test(url)) {
-        toast((remote && remote.reason) || 'Checkout Maketou indisponible', 'err');
+        url = localMaketouCheckoutUrl(amt, depositOp, (remote && remote.ref) || '');
+      }
+      if (!url || !/^https?:\/\//i.test(url)) {
+        console.error('OROLADO deposit: aucune URL checkout', remote);
+        toast((remote && remote.reason) || t('sessionInvalid'), 'err');
         return;
       }
-      try { sessionStorage.setItem('oro_dep_ref', remote.ref || ''); } catch (e) { /* ignore */ }
+      try { sessionStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e) { /* ignore */ }
       window.location.href = url;
     } catch (err) {
-      console.warn('OROLADO deposit', err);
-      toast((err && err.message) || 'Checkout Maketou indisponible', 'err');
+      console.error('OROLADO deposit', err);
+      try {
+        window.location.href = localMaketouCheckoutUrl(amt, depositOp, '');
+        return;
+      } catch (e2) {
+        console.error('OROLADO deposit fallback', e2);
+      }
     } finally {
       depositing = false;
       if (btn) {
@@ -1121,7 +1159,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=22').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=23').catch(function () { /* ignore */ });
     }
   }
 
