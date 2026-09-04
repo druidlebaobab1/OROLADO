@@ -9,7 +9,7 @@
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
-  var MAX_OPEN = 5;
+  var MAX_OPEN = 1;
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 240;
   var synthCache = {};

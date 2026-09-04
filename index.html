@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=30">
+  <link rel="stylesheet" href="css/app.css?v=31">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -207,6 +207,7 @@
             <div class="timer-msg" id="timerResult"></div>
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
+          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">⏳ Trade en cours — attends le résultat</div>
           <div class="trade-row">
             <button type="button" class="btn-trade btn-call" id="btnCall">
               <span data-i18n="buy">ACHETER</span>
@@ -261,6 +262,8 @@
       <div class="table-wrap" id="adminUsers"></div>
       <h3 data-i18n="withdrawals">Retraits</h3>
       <div class="table-wrap" id="adminWithdrawals"></div>
+      <h3 data-i18n="depositsPending">Dépôts en attente</h3>
+      <div class="table-wrap" id="adminDeposits"></div>
     </div>
   </section>
 
@@ -397,10 +400,11 @@
 
   <div class="modal-backdrop" id="depositWaitModal">
     <div class="modal-box glass convert-box">
-      <div class="wait-spin" aria-hidden="true"></div>
-      <div class="convert-title" id="depositWaitTitle">En attente de validation…</div>
-      <p class="convert-copy" data-i18n="depositWaitCopy">Terminez le paiement dans l’onglet ouvert. Votre solde sera crédité uniquement après confirmation de l’opérateur.</p>
+      <div class="convert-title" id="depositWaitTitle">Paiement en cours</div>
+      <p class="convert-copy" data-i18n="depositWaitCopy">Termine ton paiement dans l’onglet ouvert, puis reviens ici et clique sur le bouton ci-dessous.</p>
       <p class="wait-ref" id="depositWaitRef"></p>
+      <button type="button" class="btn-gold" id="btnDepositCheck">J’ai validé mon paiement Wave</button>
+      <p class="wait-note" id="depositWaitNote"></p>
       <button type="button" class="btn-gold ghost-gold" id="btnDepositWaitClose" data-i18n="depositWaitClose">Fermer</button>
     </div>
   </div>
@@ -423,15 +427,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=30"></script>
-  <script src="js/i18n.js?v=30"></script>
-  <script src="js/store.js?v=30"></script>
-  <script src="js/api.js?v=30"></script>
+  <script src="js/config.js?v=31"></script>
+  <script src="js/i18n.js?v=31"></script>
+  <script src="js/store.js?v=31"></script>
+  <script src="js/api.js?v=31"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=30"></script>
-  <script src="js/auth.js?v=30"></script>
-  <script src="js/engine.js?v=30"></script>
-  <script src="js/chart.js?v=30"></script>
-  <script src="js/app.js?v=30"></script>
+  <script src="js/supabase.js?v=31"></script>
+  <script src="js/auth.js?v=31"></script>
+  <script src="js/engine.js?v=31"></script>
+  <script src="js/chart.js?v=31"></script>
+  <script src="js/app.js?v=31"></script>
 </body>
 </html>

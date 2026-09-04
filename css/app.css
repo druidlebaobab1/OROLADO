@@ -207,6 +207,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .win-preview .amount{font-size:.82rem;font-weight:900;font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
 .win-preview .mult{font-size:.62rem;color:var(--green);font-weight:800}
 .timer-panel{display:none!important}
+.trade-lock{display:none;text-align:center;font-size:.62rem;font-weight:800;color:var(--gold);
+  background:var(--gold-soft);border:1px solid var(--line);border-radius:8px;padding:4px 6px;margin-bottom:4px}
+.trade-lock.on{display:block}
+.btn-trade.locked{filter:grayscale(.75);opacity:.4;animation:none;box-shadow:none}
 .trade-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn-trade{border:0;border-radius:12px;min-height:44px;min-width:0;width:100%;font:inherit;font-weight:900;letter-spacing:.6px;text-transform:uppercase;
   cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;color:#fff;padding:6px 4px}
@@ -282,6 +286,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .wait-spin{width:34px;height:34px;margin:2px auto 10px;border-radius:50%;border:3px solid rgba(255,215,0,.22);
   border-top-color:var(--gold);animation:waitSpin .9s linear infinite}
 @keyframes waitSpin{to{transform:rotate(360deg)}}
+.wait-note{margin:8px 0 0;font-size:.66rem;line-height:1.35;color:var(--txt-dim);min-height:1px}
+.wait-note.ok{color:#42d392}
+.wait-note.warn{color:var(--gold)}
+#depositWaitModal #btnDepositWaitClose{margin-top:8px}
 .wait-ref{font-size:.6rem;font-weight:700;color:var(--muted);margin-bottom:12px;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
 .convert-title{font-size:1.25rem;font-weight:900;color:var(--gold);margin-bottom:8px}
 .convert-copy{font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.4}

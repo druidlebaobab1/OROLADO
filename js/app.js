@@ -13,7 +13,6 @@
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
-  var pendingSettles = 0;
   var deferredPrompt = null;
   var LANGS = [
     { code: 'fr', flag: '🇫🇷' },
@@ -458,9 +457,14 @@
 
   function syncTradeButtons() {
     var n = D6.Engine.liveCount ? D6.Engine.liveCount() : (D6.Engine.getTrades ? D6.Engine.getTrades().length : 0);
-    var lock = cooling || n >= 5;
+    var busy = n >= 1;
+    var lock = cooling || busy;
     $('btnCall').disabled = lock;
     $('btnPut').disabled = lock;
+    $('btnCall').classList.toggle('locked', busy);
+    $('btnPut').classList.toggle('locked', busy);
+    var hint = $('tradeLockHint');
+    if (hint) hint.classList.toggle('on', busy);
   }
 
   function armTradeCooldown() {
@@ -530,6 +534,18 @@
       }).join('');
       $('adminWithdrawals').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table>';
     }
+    var deps = (remote && remote.ok && remote.deposits) ? remote.deposits : [];
+    if (!$('adminDeposits')) return;
+    if (!deps.length) $('adminDeposits').innerHTML = '<div class="empty-feed">' + t('noDeposit') + '</div>';
+    else {
+      var drows = deps.map(function (d) {
+        var acts = '<button class="mini ok" data-dep="' + d.ref + '" data-amt="' + d.amount + '" data-ok="1">' + t('approve') + '</button>' +
+          ' <button class="mini bad" data-dep="' + d.ref + '" data-ok="0">' + t('reject') + '</button>';
+        return '<tr><td>' + (d.name || d.email || '') + '<div class="h-time">' + (d.email || '') + '</div></td><td>' + D6.fmtFCFA(d.amount) +
+          '</td><td>' + (d.operator || '') + '<div class="h-time">' + d.ref + '</div></td><td>' + acts + '</td></tr>';
+      }).join('');
+      $('adminDeposits').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
+    }
   }
 
   function setTradingLocked(on) {
@@ -566,17 +582,9 @@
       }, 900);
     }
     if (D6.Api && D6.Api.token() && id) {
-      pendingSettles += 1;
-      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice }).then(function () {
-        pendingSettles = Math.max(0, pendingSettles - 1);
-        // Les réponses de règlements simultanés arrivent dans le désordre :
-        // on ne recopie aucun instantané de solde, on relit la base une fois
-        // que les 5 trades ont été réglés côté serveur.
-        if (pendingSettles === 0) refreshRemoteVault();
-      }, function () {
-        pendingSettles = Math.max(0, pendingSettles - 1);
-        if (pendingSettles === 0) refreshRemoteVault();
-      });
+      // Un seul trade actif : le serveur règle, puis on relit le solde de la base.
+      D6.Api.post('settleOrder', { orderId: id, won: !!res.won, net: res.net, exitPrice: res.exitPrice })
+        .then(refreshRemoteVault, refreshRemoteVault);
     }
     if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
   }
@@ -588,7 +596,7 @@
     var u = user();
     if (!u) return;
     var open = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
-    if (open >= 5) {
+    if (open >= 1) {
       toast(t('maxPositions'), 'err');
       syncTradeButtons();
       return;
@@ -615,10 +623,7 @@
         mode: u.mode
       }).then(function (remote) {
         var cur = user();
-        var busy = (D6.Engine.liveCount ? D6.Engine.liveCount() : 0) > 1 || pendingSettles > 0;
-        // Avec plusieurs positions ouvertes, l'instantané renvoyé peut être
-        // périmé : on ne l'applique que sur un trade isolé.
-        if (remote && remote.ok && remote.vault && cur && u.mode !== 'real' && !busy) {
+        if (remote && remote.ok && remote.vault && cur && u.mode !== 'real') {
           D6.Store.importRemote(cur, remote.vault);
           updateBalance(true);
         }
@@ -659,6 +664,8 @@
   var depositWatch = 0;
   var payWindow = null;
   var depositApplied = false;
+  var depositChecking = false;
+  var depositRef = '';
 
   async function ensureApiToken() {
     if (D6.Api && D6.Api.token && D6.Api.token()) return D6.Api.token();
@@ -706,18 +713,24 @@
   }
 
   async function postDepositConfirm(payload) {
+    // Délai borné : la vérification rend toujours la main à l'interface.
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 12000);
     try {
       var r = await fetch('api/deposit/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        cache: 'no-store'
+        cache: 'no-store',
+        signal: ctrl ? ctrl.signal : undefined
       });
       if (r.ok) return await r.json();
     } catch (e) {
       console.error('OROLADO deposit confirm', e);
+    } finally {
+      clearTimeout(timer);
     }
-    return D6.Api.post('confirmDeposit', payload);
+    return D6.Api.post('confirmDeposit', payload, 12000);
   }
 
   function stopDepositWatch() {
@@ -729,12 +742,60 @@
 
   var OP_LABELS = { wave: 'Wave', orange: 'Orange Money', mtn: 'MTN MoMo', moov: 'Moov Money' };
 
+  function opLabel() {
+    return OP_LABELS[depositOp] || 'Wave';
+  }
+
+  function setWaitNote(msg, kind) {
+    var el = $('depositWaitNote');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'wait-note' + (kind ? ' ' + kind : '');
+  }
+
   function openDepositWait(ref) {
-    if ($('depositWaitTitle')) {
-      $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', OP_LABELS[depositOp] || 'Wave');
-    }
+    depositRef = ref || '';
+    if ($('depositWaitTitle')) $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', opLabel());
     if ($('depositWaitRef')) $('depositWaitRef').textContent = ref ? ('Réf. ' + ref) : '';
+    var btn = $('btnDepositCheck');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = t('depositCheckBtn').replace('{op}', opLabel());
+    }
+    setWaitNote('', '');
     openModal('depositWaitModal');
+  }
+
+  // Clic sur « J'ai validé mon paiement » : une seule interrogation du serveur,
+  // qui vérifie auprès de Maketou. Jamais de chargement infini.
+  async function checkDepositNow() {
+    if (depositChecking) return;
+    var btn = $('btnDepositCheck');
+    depositChecking = true;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = t('depositChecking').replace('{op}', opLabel());
+    }
+    setWaitNote('', '');
+    try {
+      var ref = depositRef;
+      try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || localStorage.getItem('oro_dep_ref') || ''; } catch (e0) { ref = ''; }
+      var tok = await ensureApiToken();
+      var remote = await postDepositConfirm({
+        token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+        ref: ref
+      });
+      applyDepositPaid(remote);
+      if (!depositApplied) setWaitNote(t('depositPending'), 'warn');
+    } catch (e) {
+      setWaitNote(t('depositPending'), 'warn');
+    } finally {
+      depositChecking = false;
+      if (btn && !depositApplied) {
+        btn.disabled = false;
+        btn.textContent = t('depositCheckBtn').replace('{op}', opLabel());
+      }
+    }
   }
 
   function applyDepositPaid(remote) {
@@ -774,30 +835,25 @@
     if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
   }
 
+  // Surveillance silencieuse en arrière-plan : elle crédite si le webhook
+  // Maketou arrive, sans jamais bloquer l'écran.
   function startDepositWatch(ref) {
     if (depositApplied) return;
     stopDepositWatch();
+    depositRef = ref || depositRef;
     var ticks = 0;
     async function tick() {
       ticks += 1;
-      var tok = await ensureApiToken();
-      var payload = { token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''), ref: ref || '' };
       if (payWindow && payWindow.closed) payWindow = null;
-      var remote = await D6.Api.post('depositStatus', payload);
-      if ((!remote || !remote.paid) && D6.Supabase && D6.Supabase.pollDeposit) {
-        var sbDep = await D6.Supabase.pollDeposit(ref);
-        // La lecture Supabase ne sert qu'à réveiller la vérification serveur :
-        // seule la réponse du serveur peut déclarer le dépôt payé.
-        if (sbDep && sbDep.paid) remote = await postDepositConfirm({ token: payload.token, ref: ref });
-      }
+      var tok = await ensureApiToken();
+      var remote = await D6.Api.post('depositStatus', {
+        token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+        ref: ref || ''
+      });
       applyDepositPaid(remote);
-      if (depositApplied) return;
-      if (ticks === 40 && $('depositWaitRef')) {
-        $('depositWaitRef').textContent = (ref ? 'Réf. ' + ref + ' · ' : '') + 'confirmation opérateur en cours';
-      }
-      if (ticks >= 200) stopDepositWatch();
+      if (depositApplied || ticks >= 60) stopDepositWatch();
     }
-    depositWatch = setInterval(tick, 1500);
+    depositWatch = setInterval(tick, 5000);
     tick();
   }
 
@@ -891,14 +947,15 @@
       try { sessionStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e2) { /* ignore */ }
       var ref = (remote && remote.ref) || '';
+      depositApplied = false;
       closeModal('depositModal');
       payWindow = window.open(url, '_blank');
-      startDepositWatch(ref);
       if (!payWindow) {
         window.location.href = url;
         return;
       }
       openDepositWait(ref);
+      startDepositWatch(ref);
     } catch (err) {
       console.error('OROLADO deposit', err);
       toast((err && err.message) || t('sessionInvalid'), 'err');
@@ -1222,6 +1279,7 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
     $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
+    if ($('btnDepositCheck')) $('btnDepositCheck').addEventListener('click', function () { checkDepositNow(); });
     if ($('btnDepositWaitClose')) {
       // On masque l'attente sans arrêter la surveillance : si l'opérateur
       // confirme plus tard, le solde sera crédité par le serveur.
@@ -1341,6 +1399,23 @@
       renderAdmin();
       updateBalance(false);
     });
+    if ($('adminDeposits')) {
+      $('adminDeposits').addEventListener('click', async function (e) {
+        var btn = e.target.closest('[data-dep]');
+        if (!btn || btn.disabled) return;
+        btn.disabled = true;
+        var res = D6.Api && D6.Api.token()
+          ? await D6.Api.post('resolveDeposit', {
+            ref: btn.dataset.dep,
+            amount: Number(btn.dataset.amt || 0),
+            approve: btn.dataset.ok === '1'
+          })
+          : null;
+        if (res && res.ok) toast(btn.dataset.ok === '1' ? (t('depositOk') + ' : +' + D6.fmtFCFA(res.amount || 0)) : t('reject'), 'ok');
+        else toast((res && res.reason) || t('sessionInvalid'), 'err');
+        renderAdmin();
+      });
+    }
     $('adminWithdrawals').addEventListener('click', async function (e) {
       var btn = e.target.closest('[data-wd]');
       if (!btn) return;
@@ -1374,7 +1449,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=30').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=31').catch(function () { /* ignore */ });
     }
   }
 

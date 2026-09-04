@@ -220,12 +220,67 @@ if ($action === 'admin') {
       'realTrades' => $u['realTrades'] ?? 0
     ];
   }
+  $deps = [];
+  foreach (($db['deposits'] ?? []) as $d) {
+    if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
+    $uid = (string) ($d['userId'] ?? '');
+    $deps[] = [
+      'ref' => (string) ($d['id'] ?? $d['ref'] ?? ''),
+      'userId' => $uid,
+      'name' => (string) ($db['users'][$uid]['displayName'] ?? ''),
+      'email' => (string) ($db['users'][$uid]['email'] ?? ''),
+      'amount' => (int) ($d['amount'] ?? 0),
+      'operator' => (string) ($d['operator'] ?? ''),
+      'at' => (string) ($d['createdAt'] ?? $d['at'] ?? '')
+    ];
+  }
+  $deps = array_slice(array_reverse($deps), 0, 40);
   echo json_encode([
     'ok' => true,
     'server' => true,
     'metrics' => metrics($db),
     'users' => $list,
-    'withdrawals' => $db['withdrawals']
+    'withdrawals' => $db['withdrawals'],
+    'deposits' => $deps
+  ]);
+  exit;
+}
+
+// Validation manuelle d'un dépôt par l'admin (paiement reçu mais webhook muet).
+if ($action === 'resolveDeposit') {
+  $me = session_user($db, $token);
+  if (!$me || ($me['role'] ?? '') !== 'admin') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
+    exit;
+  }
+  $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['ref'] ?? '')) ?? '';
+  if ($ref === '') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Référence invalide']);
+    exit;
+  }
+  if (empty($req['approve'])) {
+    foreach ($db['deposits'] as $i => $d) {
+      if ((string) ($d['id'] ?? '') === $ref || (string) ($d['ref'] ?? '') === $ref) {
+        $db['deposits'][$i]['status'] = 'CANCELED';
+        save_db($file, $db);
+        echo json_encode(['ok' => true, 'server' => true, 'status' => 'CANCELED']);
+        exit;
+      }
+    }
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Dépôt introuvable']);
+    exit;
+  }
+  $amount = (int) ($req['amount'] ?? 0);
+  $res = credit_paid_deposit(['ref' => $ref, 'amount' => $amount, 'paid' => true, 'manual' => true]);
+  if (empty($res['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($res['reason'] ?? 'unknown')]);
+    exit;
+  }
+  echo json_encode([
+    'ok' => true,
+    'server' => true,
+    'amount' => (int) ($res['amount'] ?? $amount),
+    'duplicate' => !empty($res['duplicate'])
   ]);
   exit;
 }
@@ -367,12 +422,17 @@ if ($action === 'placeOrder') {
         ];
       }
     }
+    // Un seul trade actif. Les ordres dont l'échéance est dépassée depuis plus
+    // de 30 s ne bloquent pas : un règlement perdu ne condamne pas le compte.
+    $now = microtime(true);
     $open = 0;
     foreach ($locked['orders'] as $o) {
-      if (($o['userId'] ?? '') === $uid && ($o['status'] ?? '') === 'open') $open++;
+      if (($o['userId'] ?? '') !== $uid || ($o['status'] ?? '') !== 'open') continue;
+      $deadline = (float) ($o['at'] ?? 0) + (int) ($o['duration'] ?? 10) + 30;
+      if ($deadline > $now) $open++;
     }
-    if ($open >= 5) {
-      return ['ok' => false, 'reason' => 'Maximum 5 positions ouvertes', 'skip_write' => true];
+    if ($open >= 1) {
+      return ['ok' => false, 'reason' => 'Un trade est déjà en cours', 'skip_write' => true];
     }
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 50000, 'real' => 0];
     $bal = (int) ($locked['vault'][$uid][$mode] ?? 0);
