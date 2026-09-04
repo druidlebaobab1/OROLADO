@@ -30,6 +30,7 @@ maketou_log_request('deposit_initiate_in');
 $outInit = orolado_initiate_deposit($req);
 maketou_log('deposit_initiate_out', [
   'ref' => (string) ($outInit['ref'] ?? ''),
+  'cartId' => (string) ($outInit['cartId'] ?? ''),
   'amount' => (int) ($outInit['amount'] ?? 0),
   'checkout_url' => (string) ($outInit['url'] ?? ''),
   'reason' => (string) ($outInit['reason'] ?? ''),

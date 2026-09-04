@@ -272,9 +272,9 @@ function supabase_get_deposit(string $ref): ?array {
   $hdrs = supabase_admin_headers();
   if (!$hdrs || $ref === '') return null;
   $url = supabase_project_url();
-  $rows = supabase_http($url . '/rest/v1/deposits?id=eq.' . rawurlencode($ref) . '&select=id,user_id,amount,status', $hdrs);
+  $rows = supabase_http($url . '/rest/v1/deposits?id=eq.' . rawurlencode($ref) . '&select=id,user_id,amount,status,sell_id', $hdrs);
   if (!is_array($rows) || !isset($rows[0])) {
-    $rows = supabase_http($url . '/rest/v1/deposits?reference=eq.' . rawurlencode($ref) . '&select=id,user_id,amount,status', $hdrs);
+    $rows = supabase_http($url . '/rest/v1/deposits?reference=eq.' . rawurlencode($ref) . '&select=id,user_id,amount,status,sell_id', $hdrs);
   }
   if (!is_array($rows) || !isset($rows[0])) return null;
   return $rows[0];
@@ -687,20 +687,20 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
     return ['ok' => false, 'paid' => false, 'reason' => 'unverifiable'];
   }
   $ref = (string) ($dep['id'] ?? $dep['ref'] ?? '');
-  $sellId = (string) ($dep['sellId'] ?? '');
+  $sellId = (string) ($dep['sellId'] ?? $dep['cartId'] ?? '');
   $extId = (string) ($dep['extId'] ?? '');
-  // Endpoint officiel de vérification : GET /api/v1/stores/cart/{reference}.
+  // Vérifie d'abord le cartId Maketou (seul ID reconnu par l'API officielle).
   $cart = maketou_verify_base() . '/api/v1/stores/cart/';
   $candidates = [];
   $seen = [];
-  foreach ([$sellId, $ref, $extId] as $id) {
+  foreach ([$sellId, $extId] as $id) {
     if (!maketou_looks_like_ref($id) || isset($seen[$id])) continue;
     $seen[$id] = true;
     $candidates[] = $cart . rawurlencode($id);
   }
   if (!$candidates) {
-    maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'no_reference']);
-    return ['ok' => false, 'paid' => false, 'reason' => 'no_reference'];
+    maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'no_cart_id', 'hint' => 'sellId/cartId manquant']);
+    return ['ok' => false, 'paid' => false, 'reason' => 'no_cart_id'];
   }
   $attempts = max(1, min(3, $attempts));
   // Maketou peut mettre quelques secondes à publier le paiement : on retente,
@@ -881,7 +881,8 @@ function maketou_api_url(): string {
   $url = getenv('MAKETOU_API_URL');
   if ($url === false || $url === '') $url = $_ENV['MAKETOU_API_URL'] ?? '';
   $url = trim((string) $url);
-  if ($url === '') $url = 'https://welcome-6.mymaketou.shop/api/v1/checkouts';
+  // Endpoint officiel de création de panier (comme Crash Predictor).
+  if ($url === '') $url = 'https://api.maketou.net/api/v1/stores/cart/checkout';
   return $url;
 }
 
@@ -938,23 +939,31 @@ function maketou_http_json(string $url, string $key, array $body): array {
     'Content-Type: application/json',
     'Accept: application/json',
     'Authorization: Bearer ' . $key,
-    'X-API-Key: ' . $key,
-    'x-api-key: ' . $key,
   ];
   if (function_exists('curl_init')) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
       CURLOPT_POST => true,
       CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_TIMEOUT => 8,
+      CURLOPT_TIMEOUT => 25,
+      CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_HTTPHEADER => $headers,
       CURLOPT_POSTFIELDS => $payload,
     ]);
     $raw = curl_exec($ch);
     $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
     curl_close($ch);
     if (!is_string($raw)) $raw = '';
     $json = json_decode($raw, true);
+    maketou_log('maketou_api_call', [
+      'method' => 'POST',
+      'url' => $url,
+      'key' => maketou_log_mask($key),
+      'status' => $status,
+      'curl_error' => $err,
+      'body_raw' => substr($raw, 0, 4000),
+    ]);
     return ['ok' => $status >= 200 && $status < 300, 'status' => $status, 'json' => is_array($json) ? $json : null, 'raw' => $raw];
   }
   $ctx = stream_context_create([
@@ -962,7 +971,7 @@ function maketou_http_json(string $url, string $key, array $body): array {
       'method' => 'POST',
       'header' => implode("\r\n", $headers) . "\r\n",
       'content' => $payload,
-      'timeout' => 8,
+      'timeout' => 25,
       'ignore_errors' => true,
     ]
   ]);
@@ -1102,120 +1111,90 @@ function maketou_storefront_session(array $info): array {
   return ['url' => maketou_finalize_pay_url($url, (string) $info['phone'], $returnUrl), 'sellId' => $sellId];
 }
 
+/**
+ * Crée un panier Maketou via l'API officielle :
+ * POST https://api.maketou.net/api/v1/stores/cart/checkout
+ * Montant libre = customerPrice. Meta = userId + amount + reference.
+ */
 function maketou_create_checkout(array $opts): array {
+  $key = maketou_api_key();
+  if ($key === '') {
+    error_log('OROLADO: MAKETOU_API_KEY absente');
+    return ['ok' => false, 'reason' => 'MAKETOU_API_KEY manquante'];
+  }
+
   $aliasEmail = (string) ($opts['aliasEmail'] ?? '');
-  if ($aliasEmail === '') $aliasEmail = maketou_alias_email();
+  if ($aliasEmail === '') $aliasEmail = maketou_alias_email((string) ($opts['userId'] ?? ''));
   $aliasPhone = (string) ($opts['phone'] ?? '');
   if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
   $amount = (int) ($opts['amount'] ?? 0);
   $ref = (string) ($opts['ref'] ?? '');
-  $op = (string) ($opts['operator'] ?? 'wave');
-  $name = trim((string) ($opts['name'] ?? ''));
-  if ($name === '') $name = 'Client Orolado';
-  [$first, $last] = ['Trader', 'Orolado'];
+  $userId = (string) ($opts['userId'] ?? '');
   $returnUrl = (string) ($opts['returnUrl'] ?? '');
-  $direct = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op, 'Trader Orolado', $returnUrl);
-  $session = maketou_storefront_session([
+  if ($returnUrl === '') {
+    $returnUrl = orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref);
+  }
+  [$first, $last] = ['Trader', 'Orolado'];
+
+  $payload = [
+    'productDocumentId' => maketou_product_id(),
     'email' => $aliasEmail,
-    'phone' => $aliasPhone,
     'firstName' => $first,
     'lastName' => $last,
-    'amount' => $amount,
-    'returnUrl' => $returnUrl,
-  ]);
-  $sessionUrl = (string) ($session['url'] ?? '');
-  $sellId = (string) ($session['sellId'] ?? '');
-  if ($sessionUrl !== '') {
-    return ['ok' => true, 'url' => $sessionUrl, 'checkout_url' => $sessionUrl, 'sellId' => $sellId];
-  }
-  $key = maketou_api_key();
-  if ($key === '') {
-    error_log('OROLADO: session Maketou indisponible, checkout prérempli customPrice=' . $amount);
-    return ['ok' => true, 'url' => $direct, 'checkout_url' => $direct, 'fallback' => true];
-  }
-  $catalogId = maketou_catalog_product_id();
-  $body = [
-    'productId' => $catalogId,
-    'product_id' => maketou_product_id(),
-    'storeId' => maketou_store_id(),
-    'forceNew' => true,
-    'custom_price' => $amount,
-    'customPrice' => $amount,
-    'amount' => $amount,
-    'currency' => 'XOF',
-    'request_id' => $ref,
-    'skip_cart' => true,
-    'customerInfo' => [
-      'email' => $aliasEmail,
-      'firstName' => $first,
-      'lastName' => $last,
-      'phone' => $aliasPhone,
-      'countryCode' => 'CI',
-      'customerPrices' => [$catalogId => $amount],
-    ],
-    'customer' => [
-      'email' => $aliasEmail,
-      'name' => $first . ' ' . $last,
-      'first_name' => $first,
-      'last_name' => $last,
-      'phone' => $aliasPhone,
-    ],
-    'checkout_data' => [
-      'email' => $aliasEmail,
-      'name' => $first . ' ' . $last,
-      'phone' => $aliasPhone,
-      'custom' => ['ref' => $ref],
-    ],
-    'email' => $aliasEmail,
     'phone' => $aliasPhone,
-    'name' => $first . ' ' . $last,
-    'firstName' => $first,
-    'lastName' => $last,
-    'success_url' => orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref),
-    'return_url' => (string) ($opts['returnUrl'] ?? ''),
-    'redirect_url' => orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref),
-    'cancel_url' => orolado_public_origin() . '/?payment=cancel&ref=' . rawurlencode($ref),
-    'postPurchaseActionUrl' => (string) ($opts['returnUrl'] ?? ''),
-    'postPurchaseActionType' => 'REDIRECT',
-    'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
-    'metadata' => [
-      'ref' => $ref,
-      'orolado' => true,
-      'operator' => $op,
+    'customerPrice' => $amount,
+    'redirectURL' => $returnUrl,
+    'meta' => [
+      'userId' => $userId,
+      'amount' => $amount,
+      'reference' => $ref,
+      'source' => 'orolado',
     ],
   ];
-  try {
-    $res = maketou_http_json(maketou_api_url(), $key, $body);
-  } catch (Throwable $e) {
-    error_log('OROLADO maketou_create_checkout: ' . $e->getMessage());
-    return ['ok' => true, 'url' => $direct, 'checkout_url' => $direct, 'fallback' => true];
-  }
-  maketou_log('maketou_checkout_call', [
-    'url' => maketou_api_url(),
-    'key' => maketou_log_mask($key),
-    'status' => (int) ($res['status'] ?? 0),
-    'ref' => $ref,
-    'body_raw' => substr((string) ($res['raw'] ?? ''), 0, 3000),
-  ]);
-  if (empty($res['ok'])) {
-    error_log('OROLADO maketou API status=' . (string) ($res['status'] ?? 0) . ' body=' . substr((string) ($res['raw'] ?? ''), 0, 800));
-  }
-  $url = '';
-  if (is_array($res['json'])) $url = maketou_pick_checkout_url($res['json'], '');
-  if ($url === '' && $res['raw'] !== '') {
-    if (preg_match('#https?://[^\s"\']+#', $res['raw'], $m)) $url = $m[0];
-  }
-  $path = strtolower((string) (parse_url((string) $url, PHP_URL_PATH) ?: ''));
-  $lowUrl = strtolower((string) $url);
-  $isProductPage = $url !== '' && (
-    preg_match('#/products/[^/]+/?$#', $path)
-    || (str_contains($lowUrl, '/products/welcome') && !str_contains($lowUrl, '/checkout'))
+
+  $res = maketou_http_json(maketou_api_url(), $key, $payload);
+  $data = is_array($res['json'] ?? null) ? $res['json'] : [];
+  $nested = is_array($data['data'] ?? null) ? $data['data'] : [];
+  $cart = is_array($data['cart'] ?? null) ? $data['cart'] : (is_array($nested['cart'] ?? null) ? $nested['cart'] : []);
+
+  $url = (string) (
+    $data['redirectUrl']
+    ?? $data['redirect_url']
+    ?? $data['checkoutUrl']
+    ?? $data['checkout_url']
+    ?? $nested['redirectUrl']
+    ?? $nested['redirect_url']
+    ?? ''
   );
-  $isBareCheckout = str_contains($lowUrl, '/products/welcome/checkout') && !str_contains($lowUrl, 'customprice=');
-  if ($url === '' || (($isProductPage || $isBareCheckout) && !str_contains($lowUrl, 'paystral.com'))) {
-    $url = $direct;
+  if ($url === '' && is_array($data)) $url = maketou_pick_checkout_url($data, '');
+
+  $cartId = (string) ($cart['id'] ?? $data['id'] ?? $nested['id'] ?? $data['cartId'] ?? '');
+
+  maketou_log('maketou_checkout_create', [
+    'ref' => $ref,
+    'userId' => $userId,
+    'amount' => $amount,
+    'http' => (int) ($res['status'] ?? 0),
+    'cartId' => $cartId,
+    'url' => $url,
+  ]);
+
+  if (empty($res['ok']) || $url === '') {
+    return [
+      'ok' => false,
+      'reason' => 'checkout_failed',
+      'status' => (int) ($res['status'] ?? 0),
+      'raw' => substr((string) ($res['raw'] ?? ''), 0, 500),
+    ];
   }
-  return ['ok' => true, 'url' => $url, 'checkout_url' => $url, 'sellId' => $sellId];
+
+  return [
+    'ok' => true,
+    'url' => $url,
+    'checkout_url' => $url,
+    'sellId' => $cartId,
+    'cartId' => $cartId,
+  ];
 }
 
 function orolado_payload_has_real_email(string $haystack, array $user): bool {
@@ -1251,7 +1230,8 @@ function orolado_initiate_deposit(array $req): array {
   $aliasPhone = maketou_alias_phone();
   $ref = 'oro_' . bin2hex(random_bytes(12));
   $origin = orolado_public_origin();
-  $returnUrl = $origin . '/pay-blank.html?ref=' . rawurlencode($ref);
+  // Retour navigateur : Orolado + référence interne pour retrouver le dépôt.
+  $returnUrl = $origin . '/?deposit=success&ref=' . rawurlencode($ref);
   $webhookUrl = $origin . '/api/deposit/webhook';
 
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
@@ -1281,31 +1261,40 @@ function orolado_initiate_deposit(array $req): array {
   $pay = maketou_create_checkout([
     'aliasEmail' => $aliasEmail,
     'phone' => $aliasPhone,
-    'name' => 'Trader Orolado',
+    'userId' => (string) $me['id'],
     'amount' => $amount,
     'operator' => $op,
     'ref' => $ref,
     'returnUrl' => $returnUrl,
     'webhookUrl' => $webhookUrl,
   ]);
+  if (empty($pay['ok'])) {
+    return [
+      'ok' => false,
+      'server' => true,
+      'reason' => (string) ($pay['reason'] ?? 'Échec création panier Maketou'),
+      'ref' => $ref,
+    ];
+  }
   $url = (string) ($pay['url'] ?? $pay['checkout_url'] ?? '');
-  if ($url === '') $url = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op, 'Trader Orolado', $returnUrl);
-  $sellId = (string) ($pay['sellId'] ?? '');
-  if ($sellId !== '') {
+  $cartId = (string) ($pay['cartId'] ?? $pay['sellId'] ?? '');
+  if ($cartId !== '') {
     $db = load_db($file);
     foreach ($db['deposits'] as $i => $d) {
       if (($d['id'] ?? '') === $ref) {
-        $db['deposits'][$i]['sellId'] = $sellId;
+        $db['deposits'][$i]['sellId'] = $cartId;
+        $db['deposits'][$i]['cartId'] = $cartId;
         break;
       }
     }
     save_db($file, $db);
-    supabase_patch_deposit($ref, ['sell_id' => $sellId]);
+    supabase_patch_deposit($ref, ['sell_id' => $cartId]);
   }
   return [
     'ok' => true,
     'server' => true,
     'ref' => $ref,
+    'cartId' => $cartId,
     'url' => $url,
     'checkout_url' => $url,
     'amount' => $amount
@@ -1442,6 +1431,8 @@ function orolado_confirm_deposit(array $req): array {
         'amount' => (int) ($sb['amount'] ?? 0),
         'status' => (string) ($sb['status'] ?? 'PENDING'),
         'userId' => $uid,
+        'sellId' => (string) ($sb['sell_id'] ?? ''),
+        'cartId' => (string) ($sb['sell_id'] ?? ''),
       ];
     }
   }
@@ -1453,45 +1444,16 @@ function orolado_confirm_deposit(array $req): array {
     return $out;
   }
 
+  // Harmonise cartId / sellId pour la vérification Maketou.
+  if (empty($dep['sellId']) && !empty($dep['cartId'])) $dep['sellId'] = $dep['cartId'];
+
   $refId = (string) ($dep['id'] ?? $ref);
   $st = strtoupper((string) ($dep['status'] ?? ''));
   $cred = ['ok' => ($st === 'PAID' || $st === 'COMPLETED')];
 
-  // Validation directe au retour : l'API Maketou ne notifie pas les références
-  // dynamiques, donc on ne l'interroge plus. La référence doit exister, être
-  // PENDING, appartenir à la session active et dater de moins de 2 h.
-  $pendingLocal = ($st !== 'PAID' && $st !== 'COMPLETED');
-  $direct = maketou_direct_return_enabled();
-  if ($pendingLocal && $direct && $refId !== '' && !maketou_return_is_present($req)) {
-    // Relecture de statut en arrière-plan : aucun crédit, aucun appel externe.
-    $cred = ['ok' => false, 'reason' => 'awaiting_return'];
-  } elseif ($pendingLocal && $direct && $refId !== '') {
-    if (!orolado_deposit_is_fresh($dep)) {
-      maketou_log('direct_return_refused', ['ref' => $refId, 'userId' => $uid, 'status' => $st]);
-      $cred = ['ok' => false, 'reason' => 'expired'];
-    } else {
-      $amount = (int) ($dep['amount'] ?? 0);
-      maketou_log('direct_return_credit', [
-        'ref' => $refId,
-        'userId' => $uid,
-        'amount' => $amount,
-        'return' => $req['returnParams'] ?? null,
-      ]);
-      // Le crédit local marque COMPLETED et déclenche la RPC complete_deposit.
-      $cred = credit_paid_deposit([
-        'ref' => $refId,
-        'amount' => $amount,
-        'paid' => true,
-        'extId' => (string) ($dep['extId'] ?? ''),
-        'sellId' => (string) ($dep['sellId'] ?? ''),
-      ]);
-      if (empty($cred['ok'])) {
-        $rpc = supabase_complete_deposit($refId, $amount, $uid);
-        if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
-      }
-      maketou_log('direct_return_result', ['ref' => $refId, 'credited' => !empty($cred['ok']), 'detail' => $cred]);
-    }
-  } elseif ($pendingLocal) {
+  // Règle stricte : on ne crédite QUE si l'API Maketou confirme "completed"/"paid".
+  // Aucun crédit sur simple retour de page, clic ou redirection.
+  if ($st !== 'PAID' && $st !== 'COMPLETED') {
     $proof = maketou_verify_remote_payment($dep, 3, 2);
     if (!empty($proof['paid'])) {
       $cred = credit_paid_deposit([
@@ -1499,41 +1461,14 @@ function orolado_confirm_deposit(array $req): array {
         'amount' => (int) ($proof['amount'] ?? ($dep['amount'] ?? 0)),
         'paid' => true,
         'extId' => (string) ($dep['extId'] ?? ''),
-        'sellId' => (string) ($dep['sellId'] ?? ''),
+        'sellId' => (string) ($dep['sellId'] ?? $dep['cartId'] ?? ''),
       ]);
       if (empty($cred['ok'])) {
         $rpc = supabase_complete_deposit($refId, (int) ($proof['amount'] ?? ($dep['amount'] ?? 0)), $uid);
         if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
       }
     } else {
-      $reason = (string) ($proof['reason'] ?? 'not_paid');
-      $cred = ['ok' => false, 'reason' => $reason];
-
-      // Contournement : l'API Maketou est inutilisable (clé rejetée, endpoint
-      // absent, injoignable) et la redirection porte une preuve de succès pour
-      // une référence créée par CETTE session. On crédite et on trace.
-      if (maketou_reason_is_blocking($reason) && maketou_return_is_success($req) && orolado_deposit_is_fresh($dep)) {
-        maketou_log('return_fallback_credit', [
-          'ref' => $refId,
-          'userId' => $uid,
-          'amount' => (int) ($dep['amount'] ?? 0),
-          'api_reason' => $reason,
-          'return' => $req['returnParams'] ?? null,
-        ]);
-        $cred = credit_paid_deposit([
-          'ref' => $refId,
-          'amount' => (int) ($dep['amount'] ?? 0),
-          'paid' => true,
-          'extId' => (string) ($dep['extId'] ?? ''),
-          'sellId' => (string) ($dep['sellId'] ?? ''),
-        ]);
-        if (empty($cred['ok'])) {
-          $rpc = supabase_complete_deposit($refId, (int) ($dep['amount'] ?? 0), $uid);
-          if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
-          else $cred = ['ok' => false, 'reason' => $reason];
-        }
-        maketou_log('return_fallback_result', ['ref' => $refId, 'credited' => !empty($cred['ok']), 'detail' => $cred]);
-      }
+      $cred = ['ok' => false, 'reason' => (string) ($proof['reason'] ?? 'not_paid')];
     }
   }
 
@@ -1545,7 +1480,6 @@ function orolado_confirm_deposit(array $req): array {
     if ($vault) $out['vault'] = $vault;
   }
   if (empty($out['paid'])) {
-    // Le dépôt reste PENDING : le joueur peut relancer, l'admin peut valider.
     $out['status'] = 'PENDING';
     $out['pending'] = true;
     $out['reason'] = (string) ($cred['reason'] ?? 'not_paid');
@@ -1557,6 +1491,7 @@ function orolado_confirm_deposit(array $req): array {
   $out['new_balance'] = (int) ($out['vault']['real'] ?? 0);
   maketou_log('deposit_confirm_result', [
     'ref' => $refId,
+    'cartId' => (string) ($dep['sellId'] ?? $dep['cartId'] ?? ''),
     'userId' => $uid,
     'success' => $out['success'],
     'amount' => (int) ($out['amount'] ?? 0),
