@@ -814,8 +814,8 @@ function credit_paid_deposit(array $hit): array {
 
   $amount = (int) ($hit['amount'] ?? 0);
   $pendingAmt = (int) ($dep['amount'] ?? 0);
-  if ($amount <= 0 && $pendingAmt >= 1000) $amount = $pendingAmt;
-  if ($amount < 200 || $amount > 5000000) {
+  if ($amount <= 0 && $pendingAmt >= 100) $amount = $pendingAmt;
+  if ($amount < 100 || $amount > 5000000) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
@@ -1224,6 +1224,14 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
+/** L'admin teste avec 100 FCFA, les joueurs gardent le minimum public. */
+function orolado_min_deposit(?array $me): int {
+  if (!$me) return 1000;
+  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  if (($me['role'] ?? '') === 'admin' && ($email === 'admin@orolado.com' || $email === 'admin@6diablo.com')) return 100;
+  return 1000;
+}
+
 function orolado_initiate_deposit(array $req): array {
   $file = orolado_data_file();
   $db = load_db($file);
@@ -1232,8 +1240,9 @@ function orolado_initiate_deposit(array $req): array {
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 
   $amount = (int) ($req['amount'] ?? 0);
-  if ($amount < 1000 || $amount > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Montant minimum 1 000 FCFA'];
+  $min = orolado_min_deposit($me);
+  if ($amount < $min || $amount > 5000000) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Montant minimum ' . number_format($min, 0, ',', ' ') . ' FCFA'];
   }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
@@ -1359,6 +1368,27 @@ function orolado_find_owned_deposit(array $db, string $userId, string $ref): ?ar
 }
 
 /**
+ * Validation directe au retour de paiement, sans appel à l'API Maketou.
+ * Mettre MAKETOU_DIRECT_RETURN=0 dans .env pour réactiver la vérification
+ * serveur à serveur dès que Maketou notifiera correctement les références.
+ */
+function maketou_direct_return_enabled(): bool {
+  return supabase_env('MAKETOU_DIRECT_RETURN') !== '0';
+}
+
+/**
+ * Le joueur revient-il réellement du paiement ? Retour d'URL Maketou, message
+ * de pay-blank.html ou clic explicite sur « J'ai validé mon paiement ».
+ * Une simple relecture de statut en arrière-plan ne crédite rien.
+ */
+function maketou_return_is_present(array $req): bool {
+  if (!empty($req['manual'])) return true;
+  if (trim((string) ($req['returnStatus'] ?? '')) !== '') return true;
+  $params = $req['returnParams'] ?? null;
+  return is_array($params) && $params !== [];
+}
+
+/**
  * La redirection annonce-t-elle un succès ? On lit le statut renvoyé par
  * l'opérateur, jamais un simple retour de page.
  */
@@ -1427,9 +1457,41 @@ function orolado_confirm_deposit(array $req): array {
   $st = strtoupper((string) ($dep['status'] ?? ''));
   $cred = ['ok' => ($st === 'PAID' || $st === 'COMPLETED')];
 
-  // Un retour de navigateur ne prouve rien : le crédit exige une confirmation
-  // Maketou obtenue de serveur à serveur. Sinon le dépôt reste PENDING.
-  if ($st !== 'PAID' && $st !== 'COMPLETED') {
+  // Validation directe au retour : l'API Maketou ne notifie pas les références
+  // dynamiques, donc on ne l'interroge plus. La référence doit exister, être
+  // PENDING, appartenir à la session active et dater de moins de 2 h.
+  $pendingLocal = ($st !== 'PAID' && $st !== 'COMPLETED');
+  $direct = maketou_direct_return_enabled();
+  if ($pendingLocal && $direct && $refId !== '' && !maketou_return_is_present($req)) {
+    // Relecture de statut en arrière-plan : aucun crédit, aucun appel externe.
+    $cred = ['ok' => false, 'reason' => 'awaiting_return'];
+  } elseif ($pendingLocal && $direct && $refId !== '') {
+    if (!orolado_deposit_is_fresh($dep)) {
+      maketou_log('direct_return_refused', ['ref' => $refId, 'userId' => $uid, 'status' => $st]);
+      $cred = ['ok' => false, 'reason' => 'expired'];
+    } else {
+      $amount = (int) ($dep['amount'] ?? 0);
+      maketou_log('direct_return_credit', [
+        'ref' => $refId,
+        'userId' => $uid,
+        'amount' => $amount,
+        'return' => $req['returnParams'] ?? null,
+      ]);
+      // Le crédit local marque COMPLETED et déclenche la RPC complete_deposit.
+      $cred = credit_paid_deposit([
+        'ref' => $refId,
+        'amount' => $amount,
+        'paid' => true,
+        'extId' => (string) ($dep['extId'] ?? ''),
+        'sellId' => (string) ($dep['sellId'] ?? ''),
+      ]);
+      if (empty($cred['ok'])) {
+        $rpc = supabase_complete_deposit($refId, $amount, $uid);
+        if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
+      }
+      maketou_log('direct_return_result', ['ref' => $refId, 'credited' => !empty($cred['ok']), 'detail' => $cred]);
+    }
+  } elseif ($pendingLocal) {
     $proof = maketou_verify_remote_payment($dep, 3, 2);
     if (!empty($proof['paid'])) {
       $cred = credit_paid_deposit([

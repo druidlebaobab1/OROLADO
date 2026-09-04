@@ -641,8 +641,13 @@
     return url;
   }
 
+  // L'admin peut tester avec 100 FCFA, les joueurs restent au minimum public.
+  function minDeposit() {
+    return D6.Auth.isAdmin(user()) ? 100 : (D6.CONFIG.MIN_DEPOSIT || 1000);
+  }
+
   function setDepositAmt(n) {
-    var min = D6.CONFIG.MIN_DEPOSIT || 1000;
+    var min = minDeposit();
     var amt = Math.max(min, Math.floor(Number(n) || 0));
     if ($('depositAmt')) $('depositAmt').value = amt || '';
     return amt;
@@ -654,7 +659,14 @@
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) {
       c.classList.toggle('on', c.dataset.op === depositOp);
     });
-    if ($('depositAmt')) $('depositAmt').value = '';
+    var min = minDeposit();
+    if ($('depositAmt')) {
+      $('depositAmt').value = '';
+      $('depositAmt').min = String(min);
+      $('depositAmt').placeholder = String(min);
+    }
+    var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
+    if (hint) hint.textContent = 'Minimum ' + D6.fmtFCFA(min);
     closeDrawer();
     closeModal('convertModal');
     openModal('depositModal');
@@ -791,7 +803,7 @@
 
   // Clic sur « J'ai validé mon paiement » : une seule interrogation du serveur,
   // qui vérifie auprès de Maketou. Jamais de chargement infini.
-  async function checkDepositNow() {
+  async function checkDepositNow(manual) {
     if (depositChecking) return;
     var btn = $('btnDepositCheck');
     depositChecking = true;
@@ -808,6 +820,7 @@
       var remote = await postDepositConfirm({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
         ref: ref,
+        manual: !!manual,
         returnStatus: (depositReturn && depositReturn.state) || '',
         returnParams: (depositReturn && depositReturn.params) || null
       });
@@ -935,7 +948,7 @@
       toast(t('sessionInvalid'), 'err');
       return;
     }
-    var min = D6.CONFIG.MIN_DEPOSIT || 1000;
+    var min = minDeposit();
     var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('depositMin'));
@@ -1375,7 +1388,7 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
     $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
-    if ($('btnDepositCheck')) $('btnDepositCheck').addEventListener('click', function () { checkDepositNow(); });
+    if ($('btnDepositCheck')) $('btnDepositCheck').addEventListener('click', function () { checkDepositNow(true); });
     if ($('btnDepositWaitClose')) {
       // On masque l'attente sans arrêter la surveillance : si l'opérateur
       // confirme plus tard, le solde sera crédité par le serveur.
@@ -1552,7 +1565,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=33').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=34').catch(function () { /* ignore */ });
     }
   }
 
