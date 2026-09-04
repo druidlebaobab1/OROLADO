@@ -132,6 +132,102 @@ revoke all on function public.credit_real(uuid, bigint) from public;
 revoke all on function public.credit_real(uuid, bigint) from anon, authenticated;
 grant execute on function public.credit_real(uuid, bigint) to service_role;
 
+create or replace function public.increment_balance(p_user uuid, p_amount bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.credit_real(p_user, p_amount);
+end;
+$$;
+revoke all on function public.increment_balance(uuid, bigint) from public, anon, authenticated;
+grant execute on function public.increment_balance(uuid, bigint) to service_role;
+
+create table if not exists public.deposits (
+  id text primary key,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  amount bigint not null default 0,
+  status text not null default 'PENDING',
+  alias_email text,
+  alias_phone text,
+  sell_id text,
+  operator text,
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+alter table public.deposits enable row level security;
+drop policy if exists deposits_own_read on public.deposits;
+create policy deposits_own_read on public.deposits
+  for select using (auth.uid() = user_id);
+
+create or replace function public.complete_deposit(p_ref text, p_amount bigint default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  d public.deposits%rowtype;
+  amt bigint;
+begin
+  select * into d from public.deposits where id = p_ref for update;
+  if not found then
+    return jsonb_build_object('ok', false, 'reason', 'unknown');
+  end if;
+  if d.status is distinct from 'PENDING' then
+    return jsonb_build_object('ok', true, 'duplicate', true, 'amount', d.amount, 'user_id', d.user_id);
+  end if;
+  amt := coalesce(nullif(p_amount, 0), d.amount);
+  if amt is null or amt < 200 then
+    return jsonb_build_object('ok', false, 'reason', 'amount');
+  end if;
+  update public.deposits
+    set status = 'COMPLETED', amount = amt, completed_at = now()
+    where id = p_ref;
+  insert into public.vaults (user_id, demo, real)
+  values (d.user_id, 50000, amt)
+  on conflict (user_id) do update
+    set real = public.vaults.real + amt,
+        updated_at = now();
+  insert into public.transactions (id, user_id, type, amount, note, mode)
+  values ('dep_' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 16), d.user_id, 'deposit', amt, 'Recharge Maketou', 'real');
+  return jsonb_build_object('ok', true, 'amount', amt, 'user_id', d.user_id);
+end;
+$$;
+revoke all on function public.complete_deposit(text, bigint) from public, anon, authenticated;
+grant execute on function public.complete_deposit(text, bigint) to service_role;
+
+create or replace function public.protect_vault_real()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.role() = 'service_role' then
+    return NEW;
+  end if;
+  if TG_OP = 'UPDATE' then
+    NEW.real := OLD.real;
+  elsif TG_OP = 'INSERT' then
+    NEW.real := 0;
+  end if;
+  return NEW;
+end;
+$$;
+drop trigger if exists vaults_protect_real on public.vaults;
+create trigger vaults_protect_real
+  before insert or update on public.vaults
+  for each row execute procedure public.protect_vault_real();
+
+alter table public.deposits replica identity full;
+do $$ begin
+  alter publication supabase_realtime add table public.deposits;
+exception when duplicate_object then null;
+end $$;
+
 alter table public.profiles replica identity full;
 alter table public.vaults replica identity full;
 alter table public.orders replica identity full;

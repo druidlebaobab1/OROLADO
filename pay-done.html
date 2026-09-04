@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recharge OROLADO</title>
+  <style>
+    html,body{margin:0;min-height:100%;background:#07080c;color:#f5d76e;font-family:system-ui,sans-serif;display:grid;place-items:center}
+    p{opacity:.85}
+  </style>
+</head>
+<body>
+  <p>Recharge réussie. Retour vers OROLADO…</p>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var ref = q.get('ref') || '';
+      try { if (ref) localStorage.setItem('oro_dep_ref', ref); } catch (e) {}
+      try { if (ref) sessionStorage.setItem('oro_dep_ref', ref); } catch (e) {}
+      var next = '/?deposit=success' + (ref ? '&ref=' + encodeURIComponent(ref) : '');
+      location.replace(next);
+    })();
+  </script>
+</body>
+</html>

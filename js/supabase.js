@@ -28,8 +28,41 @@
     if (client) return client;
     if (!enabled()) return null;
     client = window.supabase.createClient(projectUrl(), anonKey(), {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        flowType: 'pkce'
+      }
     });
+    try { client.auth.startAutoRefresh(); } catch (e) { /* ignore */ }
+    client.auth.onAuthStateChange(function (event, session) {
+      if (session && session.access_token && D6.Api && D6.Api.setToken) D6.Api.setToken(session.access_token);
+      if (event === 'SIGNED_OUT' && D6.Api && D6.Api.setToken) D6.Api.setToken('');
+    });
+    if (!client._oroKeepAlive) {
+      function keepJwt() {
+        client.auth.getSession().then(function (res) {
+          var session = res && res.data && res.data.session;
+          if (!session) return;
+          var tok = session.access_token;
+          if (tok && D6.Api && D6.Api.setToken) D6.Api.setToken(tok);
+          var exp = session.expires_at ? (session.expires_at * 1000) : 0;
+          if (exp && exp - Date.now() < 10 * 60 * 1000 && client.auth.refreshSession) {
+            client.auth.refreshSession().then(function (r2) {
+              var t2 = r2 && r2.data && r2.data.session && r2.data.session.access_token;
+              if (t2 && D6.Api && D6.Api.setToken) D6.Api.setToken(t2);
+            }).catch(function () { /* ignore */ });
+          }
+        }).catch(function () { /* ignore */ });
+      }
+      client._oroKeepAlive = setInterval(keepJwt, 120000);
+      window.addEventListener('online', keepJwt);
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) keepJwt();
+      });
+    }
     return client;
   }
 
@@ -133,14 +166,13 @@
     if (!u || !uuidish(u.id) || !vault) return;
     var live = D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount();
     var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    var remoteReal = Number(vault.real);
     var next = {
       demo: D6.Store.demoBalance(u),
-      real: localReal
+      real: remoteReal
     };
     if (!(live && u.mode === 'demo')) next.demo = Number(vault.demo);
-    if (!(live && u.mode === 'real')) next.real = Number(vault.real);
-    if (Number(vault.real) > next.real) next.real = Number(vault.real);
-    if (localReal > next.real) next.real = localReal;
+    if (live && u.mode === 'real') next.real = Math.max(localReal, remoteReal);
     if (profile) {
       if (profile.display_name) u.displayName = profile.display_name;
       if (profile.phone) u.phone = profile.phone;
@@ -171,6 +203,10 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vaults', filter: 'user_id=eq.' + userId }, function (payload) {
         var row = payload.new;
         if (row) applyIncomingVault({ demo: row.demo, real: row.real });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'deposits', filter: 'user_id=eq.' + userId }, function (payload) {
+        var row = payload.new;
+        if (row && String(row.status || '').toUpperCase() === 'COMPLETED') pullVault();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'id=eq.' + userId }, function (payload) {
         var row = payload.new;
@@ -238,7 +274,6 @@
     sb.from('vaults').upsert({
       user_id: user.id,
       demo: vault.demo,
-      real: vault.real,
       updated_at: new Date().toISOString()
     }).then(function () { /* ignore */ });
   }

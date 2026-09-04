@@ -110,24 +110,33 @@ function supabase_fetch_auth_user(string $token): ?array {
   return $json;
 }
 
-function supabase_credit_real(string $userId, int $amount): void {
-  $url = supabase_project_url();
+function supabase_admin_headers(): array {
   $key = supabase_service_key();
-  if ($url === '' || $amount === 0) return;
-  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
-  if ($key === '') {
-    error_log('OROLADO: SUPABASE_SERVICE_ROLE_KEY manquante — crédit via retour utilisateur / vault JSON');
-    return;
-  }
-  $hdrs = [
+  if ($key === '') return [];
+  return [
     'Content-Type: application/json',
     'apikey: ' . $key,
     'Authorization: Bearer ' . $key,
-    'Prefer: return=minimal',
+    'Prefer: return=representation',
   ];
+}
+
+function supabase_admin_ready(): bool {
+  return supabase_service_key() !== '' && supabase_project_url() !== '';
+}
+
+function supabase_credit_real(string $userId, int $amount): void {
+  $url = supabase_project_url();
+  $hdrs = supabase_admin_headers();
+  if ($url === '' || $amount === 0 || !$hdrs) {
+    if (!$hdrs) error_log('OROLADO: SUPABASE_SERVICE_ROLE_KEY absente — impossible de créditer via service_role');
+    return;
+  }
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
   $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
   if ($rpc === null) {
-    error_log('OROLADO credit_real RPC échec user=' . $userId . ' amount=' . $amount);
+    $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+    if ($alt === null) error_log('OROLADO credit_real/increment_balance échec user=' . $userId);
   }
   supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
     'id' => 'dep_' . bin2hex(random_bytes(8)),
@@ -137,6 +146,45 @@ function supabase_credit_real(string $userId, int $amount): void {
     'note' => 'Recharge Maketou',
     'mode' => 'real',
   ]), 'POST');
+}
+
+function supabase_insert_deposit(array $row): void {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return;
+  supabase_http(supabase_project_url() . '/rest/v1/deposits', $hdrs, json_encode($row, JSON_UNESCAPED_UNICODE), 'POST');
+}
+
+function supabase_patch_deposit(string $ref, array $fields): void {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return;
+  supabase_http(
+    supabase_project_url() . '/rest/v1/deposits?id=eq.' . rawurlencode($ref),
+    $hdrs,
+    json_encode($fields, JSON_UNESCAPED_UNICODE),
+    'PATCH'
+  );
+}
+
+function supabase_admin_vault(string $userId): ?array {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || !preg_match('/^[0-9a-f-]{36}$/i', $userId)) return null;
+  $rows = supabase_http(supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId) . '&select=demo,real', $hdrs);
+  if (!is_array($rows) || !isset($rows[0])) return null;
+  return ['demo' => (int) ($rows[0]['demo'] ?? 0), 'real' => (int) ($rows[0]['real'] ?? 0)];
+}
+
+function supabase_complete_deposit(string $ref, int $amount, string $userId): ?array {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return null;
+  $url = supabase_project_url();
+  $rpc = supabase_http($url . '/rest/v1/rpc/complete_deposit', $hdrs, json_encode(['p_ref' => $ref, 'p_amount' => $amount]), 'POST');
+  if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
+  if (is_array($rpc) && !empty($rpc['ok'])) return $rpc;
+  if (is_array($rpc) && !empty($rpc['duplicate'])) return $rpc;
+  if (is_array($rpc) && isset($rpc['reason']) && $rpc['reason'] !== 'unknown') return $rpc;
+  supabase_credit_real($userId, $amount);
+  supabase_patch_deposit($ref, ['status' => 'COMPLETED', 'completed_at' => date('c'), 'amount' => $amount]);
+  return ['ok' => true, 'amount' => $amount, 'user_id' => $userId, 'fallback' => true];
 }
 
 function orolado_session_user(array &$db, ?string $token): ?array {
@@ -218,8 +266,9 @@ function save_db(string $file, array $db): bool {
   return $ok;
 }
 
-function maketou_alias_email(): string {
-  return 'usr_' . bin2hex(random_bytes(4)) . '@orolado-pay.com';
+function maketou_alias_email(?string $userId = null): string {
+  $tag = $userId ? substr(hash('sha256', $userId), 0, 8) : bin2hex(random_bytes(4));
+  return 'trader_' . $tag . '_' . bin2hex(random_bytes(3)) . '@orolado-pay.com';
 }
 
 function maketou_alias_phone(): string {
@@ -257,7 +306,8 @@ function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $re
   [$first, $last] = maketou_split_name($name);
   $phoneLocal = preg_replace('/\D/', '', $aliasPhone) ?? '';
   if (str_starts_with($phoneLocal, '225')) $phoneLocal = substr($phoneLocal, 3);
-  if ($returnUrl === '') $returnUrl = orolado_public_origin() . '/?payment=success&deposit=1&ref=' . rawurlencode($ref);
+  if ($returnUrl === '') $returnUrl = orolado_public_origin() . '/pay-done.html?ref=' . rawurlencode($ref);
+  $dashUrl = orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref);
   $qs = [
     'customPrice' => $amount,
     'price' => $amount,
@@ -277,9 +327,9 @@ function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $re
     'operator' => $op,
     'payment_method' => $op,
     'step' => 'payment',
-    'success_url' => $returnUrl,
+    'success_url' => $dashUrl,
     'return_url' => $returnUrl,
-    'redirect_url' => $returnUrl,
+    'redirect_url' => $dashUrl,
     'cancel_url' => orolado_public_origin() . '/?payment=cancel&ref=' . rawurlencode($ref),
   ];
   return maketou_checkout_base() . '?' . http_build_query($qs);
@@ -361,8 +411,7 @@ function maketou_extract_payment(array $payload): array {
     }
   }
   $topic = strtolower((string) ($_SERVER['HTTP_X_SHOPLINE_TOPIC'] ?? $_SERVER['HTTP_X_MAKETOU_TOPIC'] ?? ''));
-  if (str_contains($topic, 'paid') || str_contains($topic, 'orders/create') || str_contains($topic, 'orders/updated')) $paid = true;
-  if (!$paid && $amount > 0 && ($ref !== '' || $email !== '' || $sellId !== '')) $paid = true;
+  if (str_contains($topic, 'paid') || str_contains($topic, 'orders/create') || str_contains($topic, 'orders/updated') || str_contains($topic, 'sale')) $paid = true;
   return ['ref' => $ref, 'email' => $email, 'amount' => $amount, 'paid' => $paid, 'extId' => $extId, 'sellId' => $sellId, 'phone' => $phone];
 }
 
@@ -397,22 +446,7 @@ function credit_paid_deposit(array $hit): array {
     $matchMail = ($hit['email'] ?? '') !== '' && strtolower((string) ($d['aliasEmail'] ?? '')) === strtolower((string) $hit['email']);
     $matchExt = ($hit['extId'] ?? '') !== '' && (($d['extId'] ?? '') === $hit['extId']);
     $matchSell = ($hit['sellId'] ?? '') !== '' && (($d['sellId'] ?? '') === $hit['sellId']);
-    $hitPhone = preg_replace('/\D/', '', (string) ($hit['phone'] ?? '')) ?? '';
-    $depPhone = preg_replace('/\D/', '', (string) ($d['aliasPhone'] ?? '')) ?? '';
-    $matchPhone = $hitPhone !== '' && $depPhone !== '' && ($hitPhone === $depPhone || str_ends_with($hitPhone, substr($depPhone, -8)) || str_ends_with($depPhone, substr($hitPhone, -8)));
-    if ($matchRef || $matchMail || $matchExt || $matchSell || $matchPhone) { $idx = $i; break; }
-  }
-  if ($idx < 0) {
-    $wantAmt = (int) ($hit['amount'] ?? 0);
-    $bestAt = 0;
-    foreach ($db['deposits'] as $i => $d) {
-      if (($d['status'] ?? '') !== 'pending') continue;
-      $depAmt = (int) ($d['amount'] ?? 0);
-      if ($wantAmt > 0 && $depAmt !== $wantAmt) continue;
-      $ts = strtotime((string) ($d['at'] ?? '')) ?: 0;
-      if ($ts > 0 && (time() - $ts) > 6 * 3600) continue;
-      if ($ts >= $bestAt) { $bestAt = $ts; $idx = $i; }
-    }
+    if ($matchRef || $matchMail || $matchExt || $matchSell) { $idx = $i; break; }
   }
   if ($idx < 0) {
     flock($fp, LOCK_UN);
@@ -420,7 +454,8 @@ function credit_paid_deposit(array $hit): array {
     return ['ok' => false, 'reason' => 'unknown'];
   }
   $dep = $db['deposits'][$idx];
-  if (($dep['status'] ?? '') === 'paid') {
+  $st = strtoupper((string) ($dep['status'] ?? ''));
+  if ($st === 'PAID' || $st === 'COMPLETED') {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => true, 'duplicate' => true, 'amount' => (int) ($dep['amount'] ?? 0), 'userId' => (string) ($dep['userId'] ?? '')];
@@ -453,7 +488,7 @@ function credit_paid_deposit(array $hit): array {
   }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   $db['vault'][$uid]['real'] = (int) ($db['vault'][$uid]['real'] ?? 0) + $amount;
-  $db['deposits'][$idx]['status'] = 'paid';
+  $db['deposits'][$idx]['status'] = 'COMPLETED';
   $db['deposits'][$idx]['amount'] = $amount;
   $db['deposits'][$idx]['paidAt'] = date('c');
   if ($extId !== '') {
@@ -487,7 +522,7 @@ function credit_paid_deposit(array $hit): array {
   fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
-  supabase_credit_real((string) $uid, $amount);
+  supabase_complete_deposit((string) ($dep['id'] ?? $refHit), $amount, (string) $uid);
   return ['ok' => true, 'amount' => $amount, 'userId' => $uid];
 }
 
@@ -644,13 +679,15 @@ function maketou_finalize_pay_url(string $url, string $phone, string $returnUrl 
   if (str_starts_with($digits, '225') && strlen($digits) > 3) $digits = substr($digits, 3);
   if ($digits !== '') $q['phone'] = $digits;
   if ($returnUrl !== '') {
+    $dashUrl = orolado_public_origin() . '/?deposit=success';
+    if (preg_match('/ref=([^&]+)/', $returnUrl, $m)) {
+      $dashUrl .= '&ref=' . $m[1];
+    }
     $q['return_url'] = $returnUrl;
-    $q['redirect_url'] = $returnUrl;
-    $q['success_url'] = $returnUrl;
+    $q['redirect_url'] = $dashUrl;
+    $q['success_url'] = $dashUrl;
     $q['callback_url'] = $returnUrl;
-    $cancel = preg_replace('/payment=success/', 'payment=cancel', $returnUrl);
-    if ($cancel === $returnUrl) $cancel = orolado_public_origin() . '/?payment=cancel';
-    $q['cancel_url'] = $cancel;
+    $q['cancel_url'] = orolado_public_origin() . '/?payment=cancel';
   }
   $port = isset($parts['port']) ? ':' . $parts['port'] : '';
   $path = (string) ($parts['path'] ?? '');
@@ -776,9 +813,9 @@ function maketou_create_checkout(array $opts): array {
     'name' => $first . ' ' . $last,
     'firstName' => $first,
     'lastName' => $last,
-    'success_url' => (string) ($opts['returnUrl'] ?? ''),
+    'success_url' => orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref),
     'return_url' => (string) ($opts['returnUrl'] ?? ''),
-    'redirect_url' => (string) ($opts['returnUrl'] ?? ''),
+    'redirect_url' => orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref),
     'cancel_url' => orolado_public_origin() . '/?payment=cancel&ref=' . rawurlencode($ref),
     'postPurchaseActionUrl' => (string) ($opts['returnUrl'] ?? ''),
     'postPurchaseActionType' => 'REDIRECT',
@@ -836,11 +873,11 @@ function orolado_initiate_deposit(array $req): array {
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
-  $aliasEmail = maketou_alias_email();
+  $aliasEmail = maketou_alias_email((string) $me['id']);
   $aliasPhone = maketou_alias_phone();
   $ref = 'oro_' . bin2hex(random_bytes(12));
   $origin = orolado_public_origin();
-  $returnUrl = $origin . '/?payment=success&deposit=1&ref=' . rawurlencode($ref);
+  $returnUrl = $origin . '/pay-done.html?ref=' . rawurlencode($ref);
   $webhookUrl = $origin . '/api/deposit/webhook';
 
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
@@ -851,11 +888,20 @@ function orolado_initiate_deposit(array $req): array {
     'aliasEmail' => $aliasEmail,
     'aliasPhone' => $aliasPhone,
     'operator' => $op,
-    'status' => 'pending',
+    'status' => 'PENDING',
     'amount' => $amount,
     'at' => date('c')
   ];
   save_db($file, $db);
+  supabase_insert_deposit([
+    'id' => $ref,
+    'user_id' => $me['id'],
+    'amount' => $amount,
+    'status' => 'PENDING',
+    'alias_email' => $aliasEmail,
+    'alias_phone' => $aliasPhone,
+    'operator' => $op,
+  ]);
 
   $pay = maketou_create_checkout([
     'aliasEmail' => $aliasEmail,
@@ -879,6 +925,7 @@ function orolado_initiate_deposit(array $req): array {
       }
     }
     save_db($file, $db);
+    supabase_patch_deposit($ref, ['sell_id' => $sellId]);
   }
   return [
     'ok' => true,
@@ -900,54 +947,30 @@ function orolado_deposit_status(array $req): array {
   foreach ($db['deposits'] as $d) {
     if (($d['userId'] ?? '') !== $me['id']) continue;
     if ($ref !== '' && ($d['id'] ?? '') !== $ref && ($d['ref'] ?? '') !== $ref) continue;
-    if (($d['status'] ?? '') === 'paid') {
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'PAID' || $st === 'COMPLETED') {
       $paid = $d;
       if ($ref !== '') break;
     }
+  }
+  $jsonVault = $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0];
+  $vault = supabase_admin_vault((string) $me['id']);
+  if (!$vault) $vault = $jsonVault;
+  else {
+    $vault['real'] = max((int) $vault['real'], (int) ($jsonVault['real'] ?? 0));
+    $vault['demo'] = max((int) $vault['demo'], (int) ($jsonVault['demo'] ?? 0));
   }
   return [
     'ok' => true,
     'server' => true,
     'paid' => $paid !== null,
     'amount' => $paid ? (int) ($paid['amount'] ?? 0) : 0,
-    'vault' => $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0]
+    'vault' => $vault
   ];
 }
 
 function orolado_confirm_deposit(array $req): array {
-  $file = orolado_data_file();
-  $db = load_db($file);
-  $me = orolado_session_user($db, (string) ($req['token'] ?? ''));
-  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
-  $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['ref'] ?? '')) ?? '';
-  if ($ref === '') {
-    $latest = '';
-    $best = 0;
-    foreach ($db['deposits'] as $d) {
-      if (($d['userId'] ?? '') !== $me['id']) continue;
-      if (($d['status'] ?? '') !== 'pending') continue;
-      $ts = strtotime((string) ($d['at'] ?? '')) ?: 0;
-      if ($ts >= $best) { $best = $ts; $latest = (string) ($d['id'] ?? ''); }
-    }
-    $ref = $latest;
-  }
-  if ($ref === '') return orolado_deposit_status($req);
-  $owned = false;
-  foreach ($db['deposits'] as $d) {
-    if ((($d['id'] ?? '') === $ref || ($d['ref'] ?? '') === $ref) && ($d['userId'] ?? '') === $me['id']) {
-      $owned = true;
-      break;
-    }
-  }
-  if (!$owned) return orolado_deposit_status($req + ['ref' => $ref]);
-  credit_paid_deposit([
-    'ref' => $ref,
-    'email' => '',
-    'amount' => 0,
-    'paid' => true,
-    'extId' => 'return_' . $ref,
-  ]);
-  return orolado_deposit_status($req + ['ref' => $ref]);
+  return orolado_deposit_status($req);
 }
 
 function maketou_handle_webhook(): void {
@@ -962,16 +985,8 @@ function maketou_handle_webhook(): void {
 
   if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($_GET['ref'] ?? '')) ?? '';
-    $st = strtolower((string) ($_GET['status'] ?? $_GET['payment'] ?? $_GET['state'] ?? ''));
-    if ($ref !== '' && preg_match('/success|paid|complete|ok/', $st)) {
-      credit_paid_deposit([
-        'ref' => $ref,
-        'email' => '',
-        'amount' => (int) ($_GET['amount'] ?? 0),
-        'paid' => true,
-        'extId' => 'get_' . $ref,
-      ]);
-      header('Location: ' . orolado_public_origin() . '/?payment=success&deposit=1&ref=' . rawurlencode($ref));
+    if ($ref !== '') {
+      header('Location: ' . orolado_public_origin() . '/pay-done.html?ref=' . rawurlencode($ref));
       exit;
     }
     echo json_encode(['ok' => true, 'listener' => 'deposit-webhook']);
@@ -1008,9 +1023,9 @@ function maketou_handle_webhook(): void {
   if (!is_array($payload)) $payload = [];
 
   $hit = maketou_extract_payment($payload);
-  if (!empty($_GET['ref']) && $hit['ref'] === '') $hit['ref'] = (string) $_GET['ref'];
-
-  if (!$hit['paid']) {
+  if (!empty($_GET['ref']) && $hit['ref'] === '') $hit['ref'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) $_GET['ref']);
+  $ident = ($hit['ref'] !== '' || $hit['email'] !== '' || $hit['sellId'] !== '');
+  if (!$ident || !$hit['paid']) {
     echo json_encode(['ok' => true, 'ignored' => true]);
     exit;
   }

@@ -673,10 +673,11 @@
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
     var first = 'Trader';
     var last = 'Orolado';
-    var email = 'usr_' + Math.random().toString(16).slice(2, 10) + '@orolado-pay.com';
+    var email = 'trader_' + Math.random().toString(16).slice(2, 10) + '@orolado-pay.com';
     var phone = '07' + String(Math.floor(10000000 + Math.random() * 89999999));
     var origin = (location && location.origin) || 'https://orolado.com';
-    var returnUrl = origin + '/?payment=success&deposit=1' + (ref ? '&ref=' + encodeURIComponent(ref) : '');
+    var dash = origin + '/?deposit=success' + (ref ? ('&ref=' + encodeURIComponent(ref)) : '');
+    var returnUrl = origin + '/pay-done.html' + (ref ? ('?ref=' + encodeURIComponent(ref)) : '');
     var q = new URLSearchParams();
     q.set('customPrice', String(amt));
     q.set('price', String(amt));
@@ -694,9 +695,9 @@
     q.set('operator', op || 'wave');
     q.set('payment_method', op || 'wave');
     q.set('step', 'payment');
-    q.set('success_url', returnUrl);
+    q.set('success_url', dash);
     q.set('return_url', returnUrl);
-    q.set('redirect_url', returnUrl);
+    q.set('redirect_url', dash);
     q.set('cancel_url', origin + '/?payment=cancel' + (ref ? '&ref=' + encodeURIComponent(ref) : ''));
     if (ref) q.set('ref', ref);
     return base + '?' + q.toString();
@@ -756,15 +757,11 @@
         return;
       }
       try { sessionStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e2) { /* ignore */ }
       window.location.href = url;
     } catch (err) {
       console.error('OROLADO deposit', err);
-      try {
-        window.location.href = localMaketouCheckoutUrl(amt, depositOp, '');
-        return;
-      } catch (e2) {
-        console.error('OROLADO deposit fallback', e2);
-      }
+      toast((err && err.message) || t('sessionInvalid'), 'err');
     } finally {
       depositing = false;
       if (btn) {
@@ -778,9 +775,9 @@
   async function checkDepositReturn() {
     var q = new URLSearchParams(location.search);
     var ref = q.get('ref') || '';
-    try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || ''; } catch (e) { /* ignore */ }
+    try { if (!ref) ref = sessionStorage.getItem('oro_dep_ref') || localStorage.getItem('oro_dep_ref') || ''; } catch (e) { /* ignore */ }
     if (q.get('payment') === 'cancel') return;
-    var successBack = q.get('payment') === 'success' || q.get('deposit') === '1';
+    var successBack = q.get('deposit') === 'success' || q.get('payment') === 'success' || q.get('deposit') === '1';
     if (!successBack && !ref) return;
     var tries = 0;
     async function applyPaid(remote) {
@@ -795,23 +792,17 @@
       if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
       openModal('depositSuccessModal');
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e) { /* ignore */ }
+      try { localStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
       if (history.replaceState) history.replaceState({}, '', location.pathname + location.hash);
     }
     async function poll() {
-      if (successBack && ref) {
-        var confirmed = await D6.Api.post('confirmDeposit', { ref: ref });
-        if (confirmed && confirmed.ok && confirmed.paid && confirmed.amount > 0) {
-          applyPaid(confirmed);
-          return;
-        }
-      }
       var remote = await D6.Api.post('depositStatus', { ref: ref });
       if (remote && remote.ok && remote.paid && remote.amount > 0) {
         applyPaid(remote);
         return;
       }
       tries += 1;
-      if (tries < 20) setTimeout(poll, 1200);
+      if (tries < 40) setTimeout(poll, 400);
     }
     poll();
   }
@@ -1183,7 +1174,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=25').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=26').catch(function () { /* ignore */ });
     }
   }
 
@@ -1291,6 +1282,10 @@
           unlockAudio();
           refreshRemoteVault();
           checkDepositReturn();
+          try {
+            var sb = D6.Supabase && D6.Supabase.client && D6.Supabase.client();
+            if (sb && sb.auth && sb.auth.refreshSession) sb.auth.refreshSession();
+          } catch (e) { /* ignore */ }
         }
       });
       window.addEventListener('pageshow', function () {
@@ -1312,13 +1307,20 @@
         if (D6.Auth.current()) enterApp();
         else showScreen('screenAuth');
       }
+      finishBoot();
       if (D6.Supabase && D6.Supabase.restore) {
         D6.Supabase.restore().then(function (cloud) {
-          if (cloud && cloud.ok) enterApp();
-          else finishBoot();
-        }).catch(finishBoot);
-      } else {
-        finishBoot();
+          if (cloud && cloud.ok) {
+            var trade = $('screenTrade');
+            if (trade && trade.classList.contains('hidden')) enterApp();
+            else {
+              updateBalance(false);
+              var u = user();
+              if (u && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
+              checkDepositReturn();
+            }
+          }
+        }).catch(function () { /* hydratation locale déjà affichée */ });
       }
     }
   };

@@ -5,12 +5,19 @@
     ready: false,
 
     token: function () {
-      return sessionStorage.getItem('oro_token') || '';
+      try { return localStorage.getItem('oro_token') || sessionStorage.getItem('oro_token') || ''; } catch (e) { return ''; }
     },
 
     setToken: function (tok) {
-      if (tok) sessionStorage.setItem('oro_token', tok);
-      else sessionStorage.removeItem('oro_token');
+      try {
+        if (tok) {
+          localStorage.setItem('oro_token', tok);
+          sessionStorage.removeItem('oro_token');
+        } else {
+          localStorage.removeItem('oro_token');
+          sessionStorage.removeItem('oro_token');
+        }
+      } catch (e) { /* ignore */ }
     },
 
     post: async function (action, data, timeoutMs) {

@@ -143,6 +143,10 @@ if ($action === 'register') {
   $user['email'] = $email;
   $user['role'] = 'user';
   $db['users'][$user['id']] = $user;
+  $vault = [
+    'demo' => (int) ($vault['demo'] ?? 50000),
+    'real' => 0
+  ];
   $db['vault'][$user['id']] = $vault;
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
@@ -183,11 +187,11 @@ if ($action === 'upsert') {
   if ($id === 'admin_master') $user['role'] = 'admin';
   $db['users'][$id] = $user;
   if (isset($req['vault']) && is_array($req['vault'])) {
-    $incoming = $req['vault'];
     $serverReal = (int) ($db['vault'][$id]['real'] ?? 0);
-    $clientReal = (int) ($incoming['real'] ?? 0);
-    if ($serverReal > $clientReal) $incoming['real'] = $serverReal;
-    $db['vault'][$id] = $incoming;
+    $db['vault'][$id] = [
+      'demo' => (int) ($req['vault']['demo'] ?? ($db['vault'][$id]['demo'] ?? 0)),
+      'real' => $serverReal
+    ];
   }
   save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true]);
