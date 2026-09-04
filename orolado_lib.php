@@ -198,11 +198,11 @@ function save_db(string $file, array $db): bool {
 }
 
 function maketou_alias_email(): string {
-  return 'buyer_' . ((string) (int) round(microtime(true) * 1000)) . '@privatesync.net';
+  return 'client.' . bin2hex(random_bytes(5)) . '@orolado.com';
 }
 
 function maketou_alias_phone(): string {
-  return '+22507' . str_pad((string) random_int(10000000, 99999999), 8, '0', STR_PAD_LEFT);
+  return '+2250102030405';
 }
 
 function maketou_checkout_base(): string {
@@ -213,30 +213,48 @@ function maketou_product_id(): string {
   return 'dc38d82a-9074-4f73-9cca-50959ea58e94';
 }
 
+function maketou_catalog_product_id(): string {
+  return '44ea6357-b8da-45e5-9d12-4fb0fe41acfe';
+}
+
+function maketou_store_id(): string {
+  return 'ab0c8fa8-853c-4a01-b9a9-8ff504f6aadf';
+}
+
+function maketou_split_name(string $name): array {
+  $name = trim(preg_replace('/\s+/', ' ', $name) ?? '');
+  if ($name === '' || strcasecmp($name, 'Client Orolado') === 0) return ['Trader', 'Orolado'];
+  $parts = explode(' ', $name, 2);
+  $first = trim((string) ($parts[0] ?? ''));
+  $last = trim((string) ($parts[1] ?? ''));
+  if ($first === '') $first = 'Trader';
+  if (strlen($last) < 2) $last = 'Orolado';
+  return [$first, $last];
+}
+
 function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $ref, int $amount = 0, string $op = 'wave', string $name = 'Client Orolado'): string {
-  if (trim($name) === '') $name = 'Client Orolado';
+  [$first, $last] = maketou_split_name($name);
+  $phoneLocal = preg_replace('/\D/', '', $aliasPhone) ?? '';
+  if (str_starts_with($phoneLocal, '225')) $phoneLocal = substr($phoneLocal, 3);
   $qs = http_build_query([
-    'checkout' => [
-      'email' => $aliasEmail,
-      'name' => $name,
-      'phone' => $aliasPhone,
-      'custom' => ['ref' => $ref],
-    ],
-    'email' => $aliasEmail,
-    'name' => $name,
-    'phone' => $aliasPhone,
-    'custom_price' => $amount,
+    'customPrice' => $amount,
+    'price' => $amount,
     'amount' => $amount,
+    'firstName' => $first,
+    'lastName' => $last,
+    'firstname' => $first,
+    'lastname' => $last,
+    'email' => $aliasEmail,
+    'phone' => $phoneLocal !== '' ? $phoneLocal : $aliasPhone,
+    'phoneNumber' => $phoneLocal !== '' ? $phoneLocal : $aliasPhone,
+    'country' => 'CI',
+    'countryCode' => 'CI',
     'currency' => 'XOF',
     'product_id' => maketou_product_id(),
     'ref' => $ref,
-    'note' => $ref,
-    'payment_method' => $op,
     'operator' => $op,
+    'payment_method' => $op,
     'step' => 'payment',
-    'skip_address' => 1,
-    'skip_shipping' => 1,
-    'digital' => 1,
   ]);
   return maketou_checkout_base() . '?' . $qs;
 }
@@ -286,7 +304,11 @@ function maketou_extract_payment(array $payload): array {
   $extId = '';
   foreach ($bag as $k => $v) {
     $lv = strtolower($v);
-    if ($email === '' && (str_contains($lv, '@privatesync.net') || str_contains($lv, '@privateroute.net'))) $email = $lv;
+    if ($email === '' && str_contains($lv, '@') && (
+      str_contains($lv, '@privatesync.net')
+      || str_contains($lv, '@privateroute.net')
+      || (str_contains($lv, '@orolado.com') && str_starts_with($lv, 'client'))
+    )) $email = $lv;
     if ($ref === '' && (str_contains($k, 'ref') || $k === 'note' || str_ends_with($k, '.note') || str_contains($k, 'reference'))) {
       if (str_starts_with($v, 'oro_')) $ref = $v;
     }
@@ -500,11 +522,118 @@ function maketou_http_json(string $url, string $key, array $body): array {
   return ['ok' => true, 'status' => 0, 'json' => is_array($json) ? $json : null, 'raw' => $raw];
 }
 
+function maketou_curl(string $url, string $method = 'GET', ?string $body = null, array $headers = [], int $timeout = 12): array {
+  if (!function_exists('curl_init')) return ['ok' => false, 'status' => 0, 'raw' => ''];
+  $ch = curl_init($url);
+  $hdrs = array_merge([
+    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept-Language: fr-FR,fr;q=0.9,en;q=0.8',
+  ], $headers);
+  $opts = [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => $timeout,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTPHEADER => $hdrs,
+  ];
+  if (strtoupper($method) === 'POST') {
+    $opts[CURLOPT_POST] = true;
+    $opts[CURLOPT_POSTFIELDS] = $body ?? '';
+  }
+  curl_setopt_array($ch, $opts);
+  $raw = curl_exec($ch);
+  $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+  if (!is_string($raw)) $raw = '';
+  return ['ok' => $status >= 200 && $status < 300, 'status' => $status, 'raw' => $raw];
+}
+
+function maketou_create_action_id(): string {
+  $fallback = '7fc8cd87a6cfada5accfc159783a8cc2256070190f';
+  $cache = sys_get_temp_dir() . '/orolado_maketou_action_id.txt';
+  if (is_file($cache) && (time() - filemtime($cache)) < 3600) {
+    $id = trim((string) @file_get_contents($cache));
+    if (preg_match('/^[a-f0-9]{40,64}$/', $id)) return $id;
+  }
+  $html = maketou_curl(maketou_checkout_base(), 'GET', null, ['Accept: text/html'], 8);
+  $jsUrl = '';
+  if (preg_match('#(/_next/static/chunks/app/[^"\'>\s]+checkout/page-[a-f0-9]+\.js(?:\?[^"\'>\s]*)?)#', $html['raw'], $m)) {
+    $jsUrl = 'https://welcome-6.mymaketou.shop' . html_entity_decode($m[1], ENT_QUOTES);
+  }
+  $id = $fallback;
+  if ($jsUrl !== '') {
+    $js = maketou_curl($jsUrl, 'GET', null, ['Accept: */*'], 8);
+    if (preg_match('/createServerReference\("([a-f0-9]{40,64})"[^)]*createCheckoutSession/', $js['raw'], $m2)) {
+      $id = $m2[1];
+    }
+  }
+  @file_put_contents($cache, $id);
+  return $id;
+}
+
+function maketou_finalize_pay_url(string $url, string $phone): string {
+  $parts = parse_url($url);
+  if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) return $url;
+  $q = [];
+  if (!empty($parts['query'])) parse_str((string) $parts['query'], $q);
+  $q['country'] = 'CI';
+  $digits = preg_replace('/\D/', '', $phone) ?? '';
+  if (str_starts_with($digits, '225') && strlen($digits) > 3) $digits = substr($digits, 3);
+  if ($digits !== '') $q['phone'] = $digits;
+  $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+  $path = (string) ($parts['path'] ?? '');
+  return $parts['scheme'] . '://' . $parts['host'] . $port . $path . '?' . http_build_query($q);
+}
+
+function maketou_pick_redirect_url(string $raw): string {
+  if ($raw === '') return '';
+  if (preg_match('/"redirectUrl"\s*:\s*"((?:\\\\.|[^"\\\\])*)"/', $raw, $m)) {
+    $decoded = json_decode('"' . $m[1] . '"');
+    if (is_string($decoded) && preg_match('#^https?://#i', $decoded)) return $decoded;
+  }
+  if (preg_match('#https?://[^\s"\\\\]+#', $raw, $m)) {
+    $u = stripcslashes($m[0]);
+    $low = strtolower($u);
+    if (str_contains($low, 'paystral') || str_contains($low, '/pay') || str_contains($low, 'checkout/custom')) return $u;
+  }
+  return '';
+}
+
+function maketou_storefront_session(array $info): string {
+  $productId = maketou_catalog_product_id();
+  $payload = [
+    'productId' => $productId,
+    'storeId' => maketou_store_id(),
+    'forceNew' => true,
+    'customerInfo' => [
+      'email' => (string) $info['email'],
+      'firstName' => (string) $info['firstName'],
+      'lastName' => (string) $info['lastName'],
+      'phone' => (string) $info['phone'],
+      'countryCode' => 'CI',
+      'customerPrices' => [$productId => (int) $info['amount']],
+    ],
+  ];
+  $body = json_encode([$payload], JSON_UNESCAPED_UNICODE);
+  if ($body === false) return '';
+  $action = maketou_create_action_id();
+  $res = maketou_curl(maketou_checkout_base(), 'POST', $body, [
+    'Content-Type: text/plain;charset=UTF-8',
+    'Accept: text/x-component',
+    'Next-Action: ' . $action,
+    'Origin: https://welcome-6.mymaketou.shop',
+    'Referer: ' . maketou_checkout_base(),
+  ], 15);
+  $url = maketou_pick_redirect_url($res['raw']);
+  if ($url === '') {
+    error_log('OROLADO maketou session status=' . (string) $res['status'] . ' body=' . substr($res['raw'], 0, 600));
+    return '';
+  }
+  return maketou_finalize_pay_url($url, (string) $info['phone']);
+}
+
 function maketou_create_checkout(array $opts): array {
   $aliasEmail = (string) ($opts['aliasEmail'] ?? '');
-  if ($aliasEmail === '' || !str_contains($aliasEmail, '@privatesync.net')) {
-    $aliasEmail = maketou_alias_email();
-  }
+  if ($aliasEmail === '') $aliasEmail = maketou_alias_email();
   $aliasPhone = (string) ($opts['phone'] ?? '');
   if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
   $amount = (int) ($opts['amount'] ?? 0);
@@ -512,42 +641,61 @@ function maketou_create_checkout(array $opts): array {
   $op = (string) ($opts['operator'] ?? 'wave');
   $name = trim((string) ($opts['name'] ?? ''));
   if ($name === '') $name = 'Client Orolado';
+  [$first, $last] = maketou_split_name($name);
   $direct = maketou_checkout_url($aliasEmail, $aliasPhone, $ref, $amount, $op, $name);
+  $session = maketou_storefront_session([
+    'email' => $aliasEmail,
+    'phone' => $aliasPhone,
+    'firstName' => $first,
+    'lastName' => $last,
+    'amount' => $amount,
+  ]);
+  if ($session !== '') {
+    return ['ok' => true, 'url' => $session, 'checkout_url' => $session];
+  }
   $key = maketou_api_key();
   if ($key === '') {
-    error_log('OROLADO: MAKETOU_API_KEY vide, redirection checkout prérempli');
+    error_log('OROLADO: session Maketou indisponible, checkout prérempli customPrice=' . $amount);
     return ['ok' => true, 'url' => $direct, 'checkout_url' => $direct, 'fallback' => true];
   }
+  $catalogId = maketou_catalog_product_id();
   $body = [
+    'productId' => $catalogId,
     'product_id' => maketou_product_id(),
+    'storeId' => maketou_store_id(),
+    'forceNew' => true,
     'custom_price' => $amount,
+    'customPrice' => $amount,
     'amount' => $amount,
     'currency' => 'XOF',
     'request_id' => $ref,
     'skip_cart' => true,
+    'customerInfo' => [
+      'email' => $aliasEmail,
+      'firstName' => $first,
+      'lastName' => $last,
+      'phone' => $aliasPhone,
+      'countryCode' => 'CI',
+      'customerPrices' => [$catalogId => $amount],
+    ],
     'customer' => [
       'email' => $aliasEmail,
-      'name' => $name,
-      'first_name' => $name,
-      'last_name' => 'Orolado',
+      'name' => $first . ' ' . $last,
+      'first_name' => $first,
+      'last_name' => $last,
       'phone' => $aliasPhone,
-      'whatsapp' => $aliasPhone,
     ],
     'checkout_data' => [
       'email' => $aliasEmail,
-      'name' => $name,
+      'name' => $first . ' ' . $last,
       'phone' => $aliasPhone,
       'custom' => ['ref' => $ref],
     ],
-    'checkout_options' => [
-      'embed' => false,
-      'media' => false,
-      'desc' => false,
-      'discount' => false,
-    ],
     'email' => $aliasEmail,
     'phone' => $aliasPhone,
-    'name' => $name,
+    'name' => $first . ' ' . $last,
+    'firstName' => $first,
+    'lastName' => $last,
     'success_url' => (string) ($opts['returnUrl'] ?? ''),
     'cancel_url' => (string) ($opts['returnUrl'] ?? ''),
     'webhook_url' => (string) ($opts['webhookUrl'] ?? ''),
@@ -577,7 +725,8 @@ function maketou_create_checkout(array $opts): array {
     preg_match('#/products/[^/]+/?$#', $path)
     || (str_contains($lowUrl, '/products/welcome') && !str_contains($lowUrl, '/checkout'))
   );
-  if ($url === '' || ($isProductPage && !str_contains($lowUrl, 'paystral.com'))) {
+  $isBareCheckout = str_contains($lowUrl, '/products/welcome/checkout') && !str_contains($lowUrl, 'customprice=');
+  if ($url === '' || (($isProductPage || $isBareCheckout) && !str_contains($lowUrl, 'paystral.com'))) {
     $url = $direct;
   }
   return ['ok' => true, 'url' => $url, 'checkout_url' => $url];

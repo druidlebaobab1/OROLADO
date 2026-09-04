@@ -671,33 +671,36 @@
 
   function localMaketouCheckoutUrl(amt, op, ref) {
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
-    var productId = (D6.CONFIG && D6.CONFIG.MAKETOU_PRODUCT_ID) || 'dc38d82a-9074-4f73-9cca-50959ea58e94';
     var u = user();
-    var name = ((u && (u.displayName || u.name)) || 'Client Orolado').toString();
-    var email = 'buyer_' + Date.now() + '@privatesync.net';
-    var phone = '+22507' + String(Math.floor(10000000 + Math.random() * 89999999));
+    var rawName = ((u && (u.displayName || u.name)) || 'Trader Orolado').toString().trim();
+    var sp = rawName.indexOf(' ');
+    var first = 'Trader';
+    var last = 'Orolado';
+    if (rawName && rawName.toLowerCase() !== 'client orolado') {
+      first = sp > 0 ? rawName.slice(0, sp) : rawName;
+      last = sp > 0 ? rawName.slice(sp + 1) : 'Orolado';
+      if (!last || last.length < 2) last = 'Orolado';
+    }
+    var email = 'client@orolado.com';
+    var phone = '0102030405';
     var q = new URLSearchParams();
-    q.set('email', email);
-    q.set('name', name);
-    q.set('phone', phone);
-    q.set('checkout[email]', email);
-    q.set('checkout[name]', name);
-    q.set('checkout[phone]', phone);
+    q.set('customPrice', String(amt));
+    q.set('price', String(amt));
     q.set('amount', String(amt));
-    q.set('custom_price', String(amt));
+    q.set('firstName', first);
+    q.set('lastName', last);
+    q.set('firstname', first);
+    q.set('lastname', last);
+    q.set('email', email);
+    q.set('phone', phone);
+    q.set('phoneNumber', phone);
+    q.set('country', 'CI');
+    q.set('countryCode', 'CI');
     q.set('currency', 'XOF');
-    q.set('product_id', productId);
     q.set('operator', op || 'wave');
     q.set('payment_method', op || 'wave');
     q.set('step', 'payment');
-    q.set('skip_address', '1');
-    q.set('skip_shipping', '1');
-    q.set('digital', '1');
-    if (ref) {
-      q.set('ref', ref);
-      q.set('note', ref);
-      q.set('checkout[custom][ref]', ref);
-    }
+    if (ref) q.set('ref', ref);
     return base + '?' + q.toString();
   }
 
@@ -743,6 +746,10 @@
         }
       }
       var url = (remote && (remote.checkout_url || remote.url)) || '';
+      var low = String(url).toLowerCase();
+      if (low.indexOf('/products/welcome/checkout') >= 0 && low.indexOf('customprice=') < 0 && low.indexOf('paystral') < 0) {
+        url = '';
+      }
       if (!url || !/^https?:\/\//i.test(url)) {
         url = localMaketouCheckoutUrl(amt, depositOp, (remote && remote.ref) || '');
       }
@@ -1159,7 +1166,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=23').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=24').catch(function () { /* ignore */ });
     }
   }
 
