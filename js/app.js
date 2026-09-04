@@ -783,6 +783,8 @@
     async function applyPaid(remote) {
       var u = user();
       if (remote && remote.vault && u) D6.Store.importRemote(u, remote.vault);
+      D6.holdDepositReal = true;
+      setTimeout(function () { D6.holdDepositReal = false; }, 25000);
       if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
       if (D6.Supabase && D6.Supabase.pullVault) {
         setTimeout(function () { D6.Supabase.pullVault(); }, 1800);

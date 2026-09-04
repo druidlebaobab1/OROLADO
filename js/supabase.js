@@ -173,6 +173,7 @@
     };
     if (!(live && u.mode === 'demo')) next.demo = Number(vault.demo);
     if (live && u.mode === 'real') next.real = Math.max(localReal, remoteReal);
+    if (D6.holdDepositReal) next.real = Math.max(localReal, remoteReal);
     if (profile) {
       if (profile.display_name) u.displayName = profile.display_name;
       if (profile.phone) u.phone = profile.phone;
