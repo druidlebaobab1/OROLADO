@@ -33,7 +33,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .toast.err{border-color:var(--red);color:#ffb3c0}
 .toast.ok{border-color:var(--green);color:#b6ffd6}
 .btn-gold.busy{opacity:.72;pointer-events:none}
-.chart-outcome{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.86);z-index:8;
+.chart-outcome{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.86);z-index:15;
   display:none;align-items:center;justify-content:center;gap:6px;pointer-events:none;max-width:86%;
   font-weight:900;letter-spacing:.02em;opacity:0}
 .chart-outcome.show{display:flex;opacity:1;transform:translate(-50%,-50%) scale(1);animation:outcomePop .45s ease}
@@ -173,16 +173,13 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .price-pill,.pnl-pill{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
 .chart-stage{flex:1;position:relative;min-height:0}
 #chartCanvas{width:100%;height:100%;display:block;position:relative;z-index:0}
-.chart-tools{position:absolute;inset:0;pointer-events:none;z-index:5}
-.ind-pills{position:absolute;left:6px;top:6px;display:flex;gap:4px;pointer-events:auto}
+.chart-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:10;pointer-events:none;display:block}
+.chart-tools{position:absolute;inset:0;pointer-events:none;z-index:12}
+.ind-pills{position:absolute;left:6px;top:6px;display:flex;flex-wrap:wrap;gap:4px;pointer-events:auto;z-index:13}
 .ind-btn{border:1px solid rgba(255,215,0,.22);background:rgba(10,15,29,.55);color:rgba(168,180,204,.9);
-  font:inherit;font-size:.58rem;font-weight:800;letter-spacing:.04em;padding:4px 7px;border-radius:7px;cursor:pointer;min-height:26px}
+  font:inherit;font-size:.58rem;font-weight:800;letter-spacing:.04em;padding:4px 7px;border-radius:7px;cursor:pointer;min-height:26px;min-width:26px;line-height:1}
 .ind-btn.on{border-color:rgba(255,215,0,.7);color:#FFE082;background:rgba(255,215,0,.12)}
-.zoom-btns{position:absolute;right:8px;bottom:12px;display:flex;flex-direction:column;gap:6px;pointer-events:auto;z-index:20}
-.zoom-btns button{width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,215,0,.65);
-  background:rgba(10,15,29,.92);color:#FFE082;font-size:1.2rem;font-weight:900;line-height:1;cursor:pointer;
-  box-shadow:0 4px 16px rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.zoom-btns button:active{transform:scale(.94)}
+#chartZoomIn,#chartZoomOut{font-size:.72rem;font-weight:900;padding:4px 8px}
 .order-hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none}
 .laser-timer{min-width:64px;text-align:center;padding:4px 10px;border-radius:999px;font-weight:900;font-size:.82rem;
   color:#0A0F1D;background:linear-gradient(135deg,#FFD700,#FFA000);border:1px solid rgba(255,255,255,.35);

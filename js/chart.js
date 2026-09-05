@@ -3,6 +3,8 @@
 
   var canvas;
   var ctx;
+  var overlay;
+  var octx;
   var cssW = 0;
   var cssH = 0;
   var dpr = 1;
@@ -17,6 +19,11 @@
   var zoomIdx = 2;
   var inds = { ma: true, rsi: false, bb: false };
   var tmpCloses = [];
+  var lastPad = null;
+  var lastPlotH = 0;
+  var lastMinP = 0;
+  var lastMaxP = 0;
+  var lastMap = null;
 
   function zoomSec() {
     return ZOOM_STEPS[zoomIdx] || 60;
@@ -39,6 +46,10 @@
     if (w < 8 || h < 8) {
       canvas.style.width = '100%';
       canvas.style.height = '100%';
+      if (overlay) {
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+      }
       return;
     }
     var mobile = (window.innerWidth || 0) <= 859;
@@ -51,9 +62,18 @@
       canvas.width = bw;
       canvas.height = bh;
     }
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
     if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (overlay) {
+      if (overlay.width !== bw || overlay.height !== bh) {
+        overlay.width = bw;
+        overlay.height = bh;
+      }
+      overlay.style.width = cssW + 'px';
+      overlay.style.height = cssH + 'px';
+      if (octx) octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
   }
 
   function visibleCandles(market) {
@@ -352,8 +372,22 @@
     return top + height * (1 - (Number(price) - minP) / span);
   }
 
-  function drawEntry(map, trade, now, pad, tagIndex, minP, maxP, plotH) {
-    if (!trade || trade.settled) return;
+  function roundRectOn(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y);
+    g.arcTo(x + w, y, x + w, y + h, r);
+    g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r);
+    g.arcTo(x, y, x + w, y, r);
+    g.closePath();
+  }
+
+  function roundRect(x, y, w, h, r) {
+    roundRectOn(ctx, x, y, w, h, r);
+  }
+
+  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH) {
+    if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
     var entry = Number(trade.entryPrice);
@@ -362,64 +396,77 @@
       ? map.toY(entry)
       : priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
+    var yTop = pad ? pad.t : 4;
+    var yBot = pad ? (pad.t + plotH) : (cssH - 4);
+    ey = Math.max(yTop + 2, Math.min(yBot - 2, ey));
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
     var x0 = pad ? pad.l : 8;
     var x1 = pad ? (cssW - pad.r) : (cssW - 62);
     if (x1 <= x0 + 8) x1 = Math.max(x0 + 40, cssW - 8);
     var idx = tagIndex || 0;
-    ctx.save();
-    ctx.setLineDash([7, 5]);
-    ctx.strokeStyle = col;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 1;
-    ctx.beginPath();
-    ctx.moveTo(x0, ey);
-    ctx.lineTo(x1, ey);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
+    g.save();
+    g.setLineDash([7, 5]);
+    g.strokeStyle = col;
+    g.lineWidth = 2.2;
+    g.globalAlpha = 1;
+    g.beginPath();
+    g.moveTo(x0, ey);
+    g.lineTo(x1, ey);
+    g.stroke();
+    g.setLineDash([]);
+    g.restore();
     var tag = (isCall ? 'CALL ' : 'PUT ') + entry.toFixed(2);
-    ctx.font = '800 11px "Hanken Grotesk", sans-serif';
-    var tw = Math.ceil(ctx.measureText(tag).width) + 14;
+    g.font = '800 11px "Hanken Grotesk", sans-serif';
+    var tw = Math.ceil(g.measureText(tag).width) + 14;
     var bx = Math.min(Math.max(x1 - tw + 2, x0 + 4), Math.max(4, cssW - tw - 4));
     var by = Math.max(4, Math.min(cssH - 22, ey - 10 + idx * 22));
-    ctx.fillStyle = col;
-    roundRect(bx, by, tw, 20, 5);
-    ctx.fill();
-    ctx.fillStyle = '#0A0F1D';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(tag, bx + tw / 2, by + 10);
-    ctx.textBaseline = 'alphabetic';
+    g.fillStyle = col;
+    roundRectOn(g, bx, by, tw, 20, 5);
+    g.fill();
+    g.fillStyle = '#0A0F1D';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(tag, bx + tw / 2, by + 10);
+    g.textBaseline = 'alphabetic';
     var remaining = exp - Date.now();
     var secs = remaining / 1000;
     if (secs >= 0.15) {
       var label = secs.toFixed(1) + 's';
       if (label.charAt(0) !== '-') {
         var ty = Math.max(6, ey - 30 - idx * 22);
-        ctx.fillStyle = 'rgba(10,15,29,0.94)';
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 1.4;
-        roundRect(x0 + 4, ty, 56, 20, 8);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = col;
-        ctx.font = '800 12px "Hanken Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(label, x0 + 32, ty + 14);
+        g.fillStyle = 'rgba(10,15,29,0.94)';
+        g.strokeStyle = col;
+        g.lineWidth = 1.4;
+        roundRectOn(g, x0 + 4, ty, 56, 20, 8);
+        g.fill();
+        g.stroke();
+        g.fillStyle = col;
+        g.font = '800 12px "Hanken Grotesk", sans-serif';
+        g.textAlign = 'center';
+        g.fillText(label, x0 + 32, ty + 14);
       }
     }
   }
 
-  function roundRect(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
+  function liveTradesForAsset() {
+    var trade = D6.Engine.getTrade && D6.Engine.getTrade();
+    return (D6.Engine.getTrades ? D6.Engine.getTrades() : (trade ? [trade] : [])).filter(function (ot) {
+      if (!ot || ot.settled || ot.assetId !== activeAsset) return false;
+      var exp = ot.expiryTime || ot.expiresAt;
+      return exp && Date.now() < exp;
+    });
+  }
+
+  function paintOverlay(now) {
+    if (!octx || cssW < 8 || cssH < 8) return;
+    octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    octx.clearRect(0, 0, cssW, cssH);
+    var trades = liveTradesForAsset();
+    if (!trades.length || !lastPad) return;
+    trades.slice(0, 5).forEach(function (ot, i) {
+      drawEntryOn(octx, lastMap, ot, now, lastPad, i, lastMinP, lastMaxP, lastPlotH);
+    });
   }
 
   function drawBead(map, price, color, now) {
@@ -487,30 +534,41 @@
     } else {
       for (i = startIdx; i < closes.length; i++) series.push(closes[i]);
     }
-    var minP = series.length ? Math.min.apply(null, series) : market.price;
-    var maxP = series.length ? Math.max.apply(null, series) : market.price;
-    var range = Math.max(maxP - minP, asset.tickNoise * 8, 0.35);
-    minP -= range * 0.18;
-    maxP += range * 0.18;
+    var minPrice = series.length ? Math.min.apply(null, series) : market.price;
+    var maxPrice = series.length ? Math.max.apply(null, series) : market.price;
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
-        minP = Math.min(minP, ot.entryPrice);
-        maxP = Math.max(maxP, ot.entryPrice);
+        var ep = Number(ot.entryPrice);
+        if (isFinite(ep)) {
+          minPrice = Math.min(minPrice, ep);
+          maxPrice = Math.max(maxPrice, ep);
+        }
       });
-      var mid = (primary || trade).entryPrice;
-      var span = Math.max(maxP - minP, asset.tickNoise * 12, 0.5);
-      minP = Math.min(minP, mid - span * 0.55);
-      maxP = Math.max(maxP, mid + span * 0.55);
     }
+    if (isFinite(market.price)) {
+      minPrice = Math.min(minPrice, market.price);
+      maxPrice = Math.max(maxPrice, market.price);
+    }
+    var range = Math.max(maxPrice - minPrice, asset.tickNoise * 8, 0.35);
+    // Marge de respiration obligatoire ~20% haut et bas pour ne jamais tronquer les mèches.
+    var yMin = minPrice - (range * 0.20);
+    var yMax = maxPrice + (range * 0.20);
     if (!viewMin || !viewMax) {
-      viewMin = minP;
-      viewMax = maxP;
+      viewMin = yMin;
+      viewMax = yMax;
     } else {
-      viewMin += (minP - viewMin) * 0.16;
-      viewMax += (maxP - viewMax) * 0.16;
+      var nextMin = viewMin + (yMin - viewMin) * 0.28;
+      var nextMax = viewMax + (yMax - viewMax) * 0.28;
+      // Si le cours sort du cadre, élargit immédiatement (évite les bougies hors écran).
+      if (minPrice < viewMin || maxPrice > viewMax) {
+        nextMin = Math.min(nextMin, yMin);
+        nextMax = Math.max(nextMax, yMax);
+      }
+      viewMin = nextMin;
+      viewMax = nextMax;
     }
-    minP = viewMin;
-    maxP = viewMax;
+    var minP = viewMin;
+    var maxP = viewMax;
 
     drawGrid(pad, w, h, minP, maxP);
 
@@ -537,9 +595,15 @@
       }
     }
 
-    allTrades.slice(0, 5).forEach(function (ot, i) {
-      drawEntry(map, ot, now, pad, i, minP, maxP, h);
-    });
+    lastPad = pad;
+    lastPlotH = h;
+    lastMinP = minP;
+    lastMaxP = maxP;
+    lastMap = map;
+
+    // Ligne de trade sur canvas overlay (z-index supérieur), chaque frame.
+    paintOverlay(now);
+
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
     if (primary) {
       var above = market.price >= primary.entryPrice;
@@ -561,7 +625,9 @@
     if (!running) return;
     requestAnimationFrame(loop);
     var mobile = (window.innerWidth || 0) <= 859;
-    var drawEvery = mobile ? 48 : 16;
+    var liveN = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
+    // Trade actif : dessin à chaque frame (desktop + mobile) pour la ligne de position.
+    var drawEvery = liveN > 0 ? 16 : (mobile ? 48 : 16);
     var flushEvery = 120;
     if (document.hidden) {
       if (ts - lastFlush >= flushEvery) {
@@ -576,6 +642,13 @@
       D6.Engine.tick(activeAsset);
       flushDue();
       lastFlush = ts;
+    }
+    // Même si le graphique principal est throttlé, rafraîchir l'overlay trade.
+    if (liveN > 0 && ts - lastDraw < drawEvery) {
+      if (ts - lastFlush < flushEvery) D6.Engine.tick(activeAsset);
+      paintOverlay(ts);
+      if (onFrame) onFrame(ts);
+      return;
     }
     if (ts - lastDraw < drawEvery) return;
     lastDraw = ts;
@@ -595,7 +668,7 @@
   }
 
   function syncIndButtons() {
-    document.querySelectorAll('.ind-btn').forEach(function (btn) {
+    document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
       var key = btn.dataset.ind;
       btn.classList.toggle('on', !!inds[key]);
     });
@@ -625,7 +698,7 @@
         viewMax = 0;
       }
     });
-    document.querySelectorAll('.ind-btn').forEach(function (btn) {
+    document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -642,6 +715,15 @@
     attach: function (el, callback) {
       canvas = el;
       ctx = canvas.getContext('2d', { alpha: false });
+      overlay = document.getElementById('chartOverlay');
+      if (!overlay && canvas.parentElement) {
+        overlay = document.createElement('canvas');
+        overlay.id = 'chartOverlay';
+        overlay.className = 'chart-overlay';
+        overlay.setAttribute('aria-hidden', 'true');
+        canvas.parentElement.appendChild(overlay);
+      }
+      octx = overlay ? overlay.getContext('2d', { alpha: true }) : null;
       onFrame = callback;
       resize();
       bindTools();
