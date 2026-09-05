@@ -32,7 +32,8 @@
       won: 'GAGNANT', expired: 'PERDANT', continue: 'CONTINUER', replay: 'CONTINUER',
       profitHud: 'PROFIT RÉALISÉ : +{amt} (Rendement +{pct}%)',
       expiredHud: 'POSITION EXPIRÉE (0 FCFA)',
-      install: '📲 Installer l’application OROLADO',
+      install: '📲 Installer l’application',
+      installBtn: 'Installer',
       adminBtn: '⚙️ Dashboard Admin',
       verified: 'Compte vérifié',
       changePass: 'Changer de mot de passe',
@@ -107,7 +108,7 @@
       maxStake: 'Mise maximale',
       antibot: 'Protection anti-bot : ralentissez',
       insufficient: 'Solde insuffisant',
-      installIos: 'Sur iPhone : Partager → Sur l’écran d’accueil',
+      installIos: 'Sur iPhone : Partager → Sur l’écran d’accueil → Ajouter',
       legal: '© 2026 OROLADO.COM · 18+'
     },
     en: {

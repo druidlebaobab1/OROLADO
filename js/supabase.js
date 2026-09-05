@@ -174,16 +174,30 @@
     if (!u || !uuidish(u.id) || !vault) return;
     var live = D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount();
     var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    var localDemo = D6.Store.demoBalance(u);
     var remoteReal = Number(vault.real);
+    var remoteDemo = Number(vault.demo);
     if (!isFinite(remoteReal)) remoteReal = localReal;
+    if (!isFinite(remoteDemo)) remoteDemo = localDemo;
     if (remoteReal <= 0 && localReal > 0) remoteReal = localReal;
-    var next = {
-      demo: D6.Store.demoBalance(u),
-      real: remoteReal
-    };
-    if (!(live && u.mode === 'demo')) next.demo = Number(vault.demo);
-    if (live && u.mode === 'real') next.real = Math.max(localReal, remoteReal);
-    if (D6.holdDepositReal) next.real = Math.max(localReal, remoteReal);
+    var next = { demo: localDemo, real: localReal };
+    var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
+    var locked = locks && Date.now() < locks.until;
+    if (locked) {
+      // Pendant le lock optimistic : ne pas laisser une sync stale écraser le solde local.
+      next.demo = locks.demo != null ? locks.demo : localDemo;
+      next.real = locks.real != null ? locks.real : localReal;
+      // Les dépôts serveur peuvent encore augmenter le réel.
+      if (remoteReal > next.real) next.real = remoteReal;
+    } else if (live) {
+      next.demo = localDemo;
+      next.real = Math.max(localReal, remoteReal);
+    } else {
+      // Hors lock : accepter le serveur, mais ne jamais reculer un solde déjà crédité localement.
+      next.demo = remoteDemo;
+      next.real = Math.max(localReal, remoteReal);
+    }
+    if (D6.holdDepositReal) next.real = Math.max(localReal, remoteReal, next.real);
     if (profile) {
       if (profile.display_name) u.displayName = profile.display_name;
       if (profile.phone) u.phone = profile.phone;

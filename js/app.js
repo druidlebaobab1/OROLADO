@@ -14,6 +14,10 @@
   var histPatch = 0;
   var hudSeen = {};
   var deferredPrompt = null;
+  var balanceLockUntil = 0;
+  var balanceLockDemo = null;
+  var balanceLockReal = null;
+  var lastPaintedBalance = null;
   var LANGS = [
     { code: 'fr', flag: '🇫🇷' },
     { code: 'en', flag: '🇬🇧' },
@@ -89,6 +93,39 @@
     if (q) q.classList.toggle('hidden', !guest);
     if (trade) trade.classList.toggle('is-guest', guest);
     if ($('btnProfile')) $('btnProfile').classList.toggle('hidden', guest);
+    if ($('btnOpenDeposit')) $('btnOpenDeposit').classList.toggle('hidden', guest);
+  }
+
+  function lockBalanceOptimistic(demo, real, ms) {
+    balanceLockUntil = Date.now() + (ms || 8000);
+    if (demo != null && isFinite(Number(demo))) balanceLockDemo = Number(demo);
+    if (real != null && isFinite(Number(real))) balanceLockReal = Number(real);
+  }
+
+  function getBalanceLocks() {
+    return {
+      until: balanceLockUntil,
+      demo: balanceLockDemo,
+      real: balanceLockReal
+    };
+  }
+
+  function paintBalanceNow(amount, flash) {
+    var el = $('balanceDisplay');
+    if (!el) return;
+    var text = D6.fmtFCFA(amount);
+    if (lastPaintedBalance !== text) {
+      el.textContent = text;
+      lastPaintedBalance = text;
+    }
+    if (flash) {
+      var card = $('balanceCard');
+      if (card) {
+        card.classList.remove('flash');
+        void card.offsetWidth;
+        card.classList.add('flash');
+      }
+    }
   }
 
   function setModeChrome(u) {
@@ -385,19 +422,20 @@
     if (!u) return;
     var demo = D6.Store.demoBalance(u);
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    if (Date.now() < balanceLockUntil) {
+      if (balanceLockDemo != null) demo = Math.max(demo, balanceLockDemo);
+      if (balanceLockReal != null) real = Math.max(real, balanceLockReal);
+      // Pendant le lock, privilégie la valeur locale (optimistic) pour éviter le flash ancien→nouveau.
+      if (u.mode !== 'real' && balanceLockDemo != null) demo = balanceLockDemo;
+      if (u.mode === 'real' && balanceLockReal != null) real = balanceLockReal;
+    }
     var active = u.mode === 'real' ? real : demo;
-    $('balanceDisplay').textContent = D6.fmtFCFA(active);
+    paintBalanceNow(active, !!flash);
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
       $('balanceAlt').hidden = true;
     }
     setModeChrome(u);
-    if (flash) {
-      var card = $('balanceCard');
-      card.classList.remove('flash');
-      void card.offsetWidth;
-      card.classList.add('flash');
-    }
   }
 
   function updatePayoutUi() {
@@ -786,6 +824,14 @@
         playNeutralTick();
       }
     }
+    var uSettled = user();
+    if (uSettled) {
+      lockBalanceOptimistic(
+        D6.Store.demoBalance(uSettled),
+        D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0,
+        12000
+      );
+    }
     maybeConvertPrompt(user(), res);
     maybeLossStreakTip(user());
     patchHistorySoon();
@@ -848,6 +894,11 @@
     patchHistorySoon();
     armTradeCooldown();
     syncTradeButtons();
+    lockBalanceOptimistic(
+      mode === 'demo' ? D6.Store.demoBalance(u) : null,
+      mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : 0) : null,
+      10000
+    );
     if (D6.Api && D6.Api.token()) {
       D6.Api.post('placeOrder', {
         id: res.trade.id,
@@ -1110,6 +1161,13 @@
     if (vault && u) D6.Store.importRemote(u, vault);
     D6.holdDepositReal = true;
     setTimeout(function () { D6.holdDepositReal = false; }, 25000);
+    if (u) {
+      lockBalanceOptimistic(
+        D6.Store.demoBalance(u),
+        D6.Store.realBalance ? D6.Store.realBalance(u) : 0,
+        20000
+      );
+    }
     if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
     if (D6.Supabase && D6.Supabase.pullVault) {
       setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
@@ -1348,10 +1406,17 @@
       var remote = await D6.Api.post('me', {});
       if (remote && remote.ok && remote.vault && u) {
         var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+        var localDemo = D6.Store.demoBalance(u);
         var phpReal = Number(remote.vault.real || 0);
         var phpDemo = Number(remote.vault.demo || 0);
+        if (Date.now() < balanceLockUntil) {
+          if (balanceLockReal != null) localReal = Math.max(localReal, balanceLockReal);
+          if (balanceLockDemo != null) localDemo = Math.max(localDemo, balanceLockDemo);
+        }
         var merged = {
-          demo: Math.max(D6.Store.demoBalance(u), phpDemo),
+          demo: Date.now() < balanceLockUntil && balanceLockDemo != null
+            ? balanceLockDemo
+            : Math.max(localDemo, phpDemo),
           real: Math.max(localReal, phpReal)
         };
         D6.holdPull = true;
@@ -1370,7 +1435,8 @@
   function refreshWithdrawUi() {
     var u = user();
     var real = realWithdrawBalance(u);
-    if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable : ' + D6.fmtFCFA(real);
+    if ($('wdBalanceAmt')) $('wdBalanceAmt').textContent = D6.fmtFCFA(real);
+    else if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable\n' + D6.fmtFCFA(real);
   }
 
   function openWithdraw() {
@@ -1883,30 +1949,56 @@
   }
 
   function bindInstall() {
+    function isIos() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+    function isStandalone() {
+      return !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+    }
+    function showInstallBanner() {
+      if (isStandalone() || sessionStorage.getItem('oro_hide_install')) return;
+      if ($('installBanner')) $('installBanner').classList.remove('hidden');
+    }
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault();
       deferredPrompt = e;
-      if (!sessionStorage.getItem('oro_hide_install')) $('installBanner').classList.remove('hidden');
+      showInstallBanner();
     });
-    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
-    if (ios && !sessionStorage.getItem('oro_hide_install')) $('installBanner').classList.remove('hidden');
-    $('btnInstall').addEventListener('click', async function () {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      } else toast(t('installIos'));
-      $('installBanner').classList.add('hidden');
-    });
-    $('btnInstallClose').addEventListener('click', function () {
-      sessionStorage.setItem('oro_hide_install', '1');
-      $('installBanner').classList.add('hidden');
-    });
+    if (isIos() && !isStandalone()) showInstallBanner();
+    // Android Chromium parfois sans beforeinstallprompt immédiat
+    setTimeout(function () {
+      if (!deferredPrompt && !isIos() && !isStandalone()) showInstallBanner();
+    }, 2500);
+    if ($('btnInstall')) {
+      $('btnInstall').addEventListener('click', async function () {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          try { await deferredPrompt.userChoice; } catch (e) { /* ignore */ }
+          deferredPrompt = null;
+          if ($('installBanner')) $('installBanner').classList.add('hidden');
+          return;
+        }
+        if (isIos()) {
+          if ($('installBanner')) $('installBanner').classList.add('hidden');
+          openModal('iosInstallModal');
+          return;
+        }
+        toast(t('installIos') || 'Utilise le menu du navigateur → Installer l’application', '');
+      });
+    }
+    if ($('btnInstallClose')) {
+      $('btnInstallClose').addEventListener('click', function () {
+        sessionStorage.setItem('oro_hide_install', '1');
+        if ($('installBanner')) $('installBanner').classList.add('hidden');
+      });
+    }
+    if ($('closeIosInstall')) $('closeIosInstall').addEventListener('click', function () { closeModal('iosInstallModal'); });
+    if ($('btnIosInstallOk')) $('btnIosInstallOk').addEventListener('click', function () { closeModal('iosInstallModal'); });
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=39').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=40').catch(function () { /* ignore */ });
     }
   }
 
@@ -1935,7 +2027,6 @@
     renderHistory();
     D6.I18N.apply();
     showScreen('screenTrade');
-    if ($('installBanner')) $('installBanner').classList.add('hidden');
     D6.Chart.setAsset(assetId(u));
     D6.Chart.start();
     requestAnimationFrame(function () {
@@ -1947,6 +2038,13 @@
     refreshRemoteVault();
     checkDepositReturn();
     syncTradeButtons();
+    // Bannière PWA discrète (si non installée / non refusée)
+    setTimeout(function () {
+      var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+      if (!standalone && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
+        $('installBanner').classList.remove('hidden');
+      }
+    }, 1800);
     if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
   }
 
@@ -1983,6 +2081,7 @@
       fillProfile();
     },
     updateBalance: updateBalance,
+    getBalanceLocks: getBalanceLocks,
     boot: function () {
       lockGestures();
       fillLangBars();
