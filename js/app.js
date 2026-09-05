@@ -39,11 +39,11 @@
   }
 
   var LANGS = [
-    { code: 'fr', flag: '�Y?��Y?�' },
-    { code: 'en', flag: '�Y?��Y?�' },
-    { code: 'es', flag: '�Y?��Y?�' },
-    { code: 'pt', flag: '�Y?��Y?�' },
-    { code: 'ar', flag: '�Y?��Y?�' }
+    { code: 'fr', flag: '🇫🇷' },
+    { code: 'en', flag: '🇬🇧' },
+    { code: 'es', flag: '🇪🇸' },
+    { code: 'pt', flag: '🇵🇹' },
+    { code: 'ar', flag: '🇸🇦' }
   ];
 
   function user() { return D6.Auth.current(); }
@@ -57,7 +57,7 @@
     if (!u) return;
     var start = D6.CONFIG.DEMO_START || 1000000;
     var cur = Number(D6.Store.demoBalance(u) || 0);
-    // Ancienne valeur résiduelle 50 000 �?' 1 000 000 pour tous.
+    // Ancienne valeur résiduelle 50 000 → 1 000 000 pour tous.
     if (cur === 50000 || cur === 5000 || (u.guest && cur > 0 && cur < start && cur % 50000 === 0 && cur <= 50000)) {
       D6.Store.setBalanceMode(u, 'demo', start);
     } else if (u.guest && (cur <= 0 || cur === 50000)) {
@@ -181,12 +181,13 @@
     var required = Math.floor(deposits * mult);
     var done = Number(u && u.realStakeVolume) || 0;
     var left = Math.max(0, required - done);
+    var loc = (D6.I18N && D6.I18N.lang === 'fr') ? 'fr-FR' : 'en-US';
     return {
       ok: left <= 0,
       required: required,
       done: done,
       left: left,
-      msg: t('wagerBlocked').replace('{amt}', Math.round(left).toLocaleString(D6.I18N.lang === 'fr' ? 'fr-FR' : 'en-US'))
+      msg: t('wagerBlocked').replace('{amt}', Math.round(left).toLocaleString(loc))
     };
   }
 
@@ -221,7 +222,7 @@
 
   function guardLiveTradeView() {
     if (!(D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount())) return true;
-    toast('Trade en cours... Veuillez patienter jusqu�?Tà la fin du compte à rebours pour changer de vue.', '', 3000);
+    toast('Trade en cours... Veuillez patienter jusqu’à la fin du compte à rebours pour changer de vue.', '', 3000);
     return false;
   }
 
@@ -404,7 +405,7 @@
       var box = $(boxId);
       if (!box) return;
       var cur = LANGS.filter(function (l) { return l.code === D6.I18N.lang; })[0] || LANGS[0];
-      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">�-�</span></button>' +
+      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span></button>' +
         '<div class="lang-dd-menu hidden">' + LANGS.map(function (l) {
           return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '">' + l.flag + '</button>';
         }).join('') + '</div>';
@@ -498,7 +499,7 @@
     if (Date.now() < balanceLockUntil) {
       if (balanceLockDemo != null) demo = Math.max(demo, balanceLockDemo);
       if (balanceLockReal != null) real = Math.max(real, balanceLockReal);
-      // Pendant le lock, privilégie la valeur locale (optimistic) pour éviter le flash ancien�?'nouveau.
+      // Pendant le lock, privilégie la valeur locale (optimistic) pour éviter le flash ancien→nouveau.
       if (u.mode !== 'real' && balanceLockDemo != null) demo = balanceLockDemo;
       if (u.mode === 'real' && balanceLockReal != null) real = balanceLockReal;
     }
@@ -525,7 +526,7 @@
     var stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || 100));
     var mult = (D6.Engine.payoutLive && D6.Engine.payoutLive[assetId(u)]) || D6.CONFIG.REAL_PAYOUT || 1.88;
     if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(Math.floor(stake * mult));
-    if ($('previewMult')) $('previewMult').textContent = '�-' + Number(mult).toFixed(2);
+    if ($('previewMult')) $('previewMult').textContent = '×' + Number(mult).toFixed(2);
   }
 
   function updateAssetUi() {
@@ -558,7 +559,7 @@
     $('currentPrice').textContent = D6.fmtPrice(market.price);
     var pnl = $('livePnl');
     if (!trade) {
-      pnl.textContent = '�?"';
+      pnl.textContent = '—';
       pnl.className = 'pnl-value idle';
       return;
     }
@@ -596,7 +597,7 @@
     var label;
     var cls;
     if (h.voided || h.status === 'void') {
-      label = '�?galité 0';
+      label = 'Égalité 0';
       cls = 'void';
       net = 0;
     } else if (h.won) {
@@ -657,7 +658,9 @@
     var u = user();
     var mode = (u && u.mode === 'real') ? 'real' : 'demo';
     if ($('histSheetTitle')) {
-      $('histSheetTitle').textContent = mode === 'real' ? t('histSheetReal') : t('histSheetDemo');
+      $('histSheetTitle').textContent = mode === 'real'
+        ? 'Historique des trades (Compte Réel)'
+        : 'Historique des trades (Compte Démo)';
     }
     var settled = ((u && u.positions) || []).filter(function (p) {
       return (p.mode || 'demo') === mode;
@@ -672,17 +675,17 @@
       var stake = Number(h.stake || 0);
       var payoutAmt = Math.floor(stake * Number(h.payout || 1.88));
       var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
-      var res = (h.voided || h.status === 'void') ? '�?galité' : (h.won ? 'Gagné' : 'Perdu');
+      var res = (h.voided || h.status === 'void') ? 'Égalité' : (h.won ? 'Gagné' : 'Perdu');
       var pnlCls = net > 0 ? 'w' : (net < 0 ? 'l' : '');
-      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '�^'' : '')) + D6.fmtFCFA(Math.abs(net));
-      rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '�?"') +
+      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net));
+      rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '—') +
         '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(stake) +
         '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td></tr>');
     });
     el.innerHTML = rows.length
       ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Résultat</th><th>P&amp;L</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table>'
-      : '<div class="empty-feed">Aucun trade pour l�?Tinstant</div>';
+      : '<div class="empty-feed">Aucun trade pour l’instant</div>';
   }
 
   function maybeLossStreakTip(u) {
@@ -707,7 +710,7 @@
   function profitFromResult(res) {
     if (!res) return 0;
     if (res.won) {
-      // Montant total crédité (mise �- multiplicateur), pas le net.
+      // Montant total crédité (mise × multiplicateur), pas le net.
       if (res.position && res.position.stake) {
         return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88));
       }
@@ -765,12 +768,12 @@
     if (!u) return;
     $('profName').textContent = u.displayName || 'Trader';
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
-    if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '�?"';
+    if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
     var phone = String(u.phone || '').replace(/\D/g, '');
     $('profPhone').textContent = phone && phone !== '0000000000'
       ? ((u.countryCode || '') + ' ' + u.phone)
-      : '�?"';
+      : '—';
     setAdminBtns(u);
   }
 
@@ -800,7 +803,7 @@
     $('mProfit').textContent = D6.fmtFCFA(m.profit != null ? m.profit : 0);
     $('mUsers').textContent = String(m.users || 0);
     if ($('mOnline')) {
-      $('mOnline').textContent = '�?�';
+      $('mOnline').textContent = '…';
       if (D6.Supabase && D6.Supabase.countOnline) {
         D6.Supabase.countOnline().then(function (n) {
           if ($('mOnline')) $('mOnline').textContent = String(n || 0);
@@ -879,14 +882,14 @@
       '<div class="h-time">' + u.email + ' · ' + (u.countryCode || '') + ' ' + (u.phone || '') + ' · inscrit ' + (u.createdAt || '').slice(0, 10) + '</div>' +
       '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
       '<div class="list-row"><span>Démo</span><strong>' + D6.fmtFCFA(u.demoBalance) + '</strong></div>' +
-      '<div class="field"><label>' + t('adjustReason') + '</label><input id="adjMotif" maxlength="120" placeholder="bonus, correction�?�"></div>' +
-      '<div class="field"><label>Montant libre (FCFA)</label><input id="adjAmount" type="number" inputmode="numeric" min="1" step="100" value="100000" placeholder="ex. 50000, 1000000�?�"></div>' +
+      '<div class="field"><label>' + t('adjustReason') + '</label><input id="adjMotif" maxlength="120" placeholder="bonus, correction…"></div>' +
+      '<div class="field"><label>Montant libre (FCFA)</label><input id="adjAmount" type="number" inputmode="numeric" min="1" step="100" value="100000" placeholder="ex. 50000, 1000000…"></div>' +
       '<div class="admin-adj-row">' +
       '<button class="mini ok" type="button" data-adj-act="credit" data-adj="' + u.id + '" data-mode="real">+ Créditer Réel</button>' +
-      '<button class="mini bad" type="button" data-adj-act="debit" data-adj="' + u.id + '" data-mode="real">�^' Débiter Réel</button>' +
+      '<button class="mini bad" type="button" data-adj-act="debit" data-adj="' + u.id + '" data-mode="real">− Débiter Réel</button>' +
       '<button class="mini" type="button" data-adj="' + u.id + '" data-mode="demo" data-reset="1">Reset démo 1M</button>' +
       '</div>' +
-      '<p class="hint-min">Le montant saisi crédite ou débite instantanément le solde R�?EL en base.</p>';
+      '<p class="hint-min">Le montant saisi crédite ou débite instantanément le solde RÉEL en base.</p>';
   }
 
   function setTradingLocked(on) {
@@ -907,7 +910,7 @@
     }
     updateBalance(true);
     if (res.voided) {
-      toast('�?galité �?" mise rendue', '');
+      toast('Égalité — mise rendue', '');
       playNeutralTick();
     } else {
       showOutcomeToast(!!res.won, profitFromResult(res), id);
@@ -983,7 +986,7 @@
       syncTradeButtons();
       return;
     }
-    // P0 : ligne immédiate (file d�?Tattente si chart pas prêt).
+    // P0 : ligne immédiate (file d’attente si chart pas prêt).
     if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) {
       D6.Chart.applyOpenTradeVisual(res.trade);
     }
@@ -1034,7 +1037,7 @@
     return url;
   }
 
-  // Minimum légal dépôt joueur = 1 000 FCFA.
+  // Minimum legal depot joueur = 1000 FCFA.
   function minDeposit() {
     return D6.CONFIG.MIN_DEPOSIT || 1000;
   }
@@ -1186,7 +1189,7 @@
   }
 
   // Retour de paiement détecté dans l'URL : on ouvre tout de suite la modale
-  // « Validation de votre dépôt en cours�?� » avant d'interroger le serveur.
+  // « Validation de votre dépôt en cours… » avant d'interroger le serveur.
   function openDepositVerify(ref) {
     depositRef = ref || depositRef;
     if ($('depositWaitTitle')) $('depositWaitTitle').textContent = t('depositVerifyTitle');
@@ -1556,11 +1559,6 @@
   function openWithdraw() {
     if (!requireAccount()) return;
     var u = user();
-    var gate = wagerStatus(u);
-    if (!gate.ok) {
-      toast(gate.msg, 'err', 5000);
-      return;
-    }
     selectedOp = 'wave';
     document.querySelectorAll('.op-card').forEach(function (c) {
       c.classList.toggle('on', c.dataset.op === selectedOp);
@@ -1594,7 +1592,7 @@
 
   function normFinanceStatus(raw, label) {
     var s = String(raw || '').toUpperCase();
-    if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK' || s === 'VALID�?' || s === 'VALIDE') {
+    if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK' || s === 'VALIDÉ' || s === 'VALIDE') {
       return { code: 'COMPLETED', label: 'Validé', cls: 'ok' };
     }
     if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED' || s === 'CANCELED' || s === 'CANCELLED') {
@@ -1608,7 +1606,7 @@
 
   function gatewayLabel(raw) {
     var k = String(raw || '').toLowerCase();
-    if (!k) return '�?"';
+    if (!k) return '—';
     if (k.indexOf('wave') >= 0) return 'Wave';
     if (k.indexOf('orange') >= 0 || k === 'om') return 'Orange Money';
     if (k.indexOf('mtn') >= 0 || k.indexOf('momo') >= 0) return 'MTN MoMo';
@@ -1634,11 +1632,11 @@
     var html = rows.length ? rows.map(function (r) {
       var st = r.status || { label: 'En cours', cls: 'pending' };
       return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
-        fmtWhen(r.at) + ' · ' + (r.gateway || '�?"') + ' · ' + (r.ref || '�?"') +
+        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
         '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
         st.label + '</span></div></div>';
-    }).join('') : '<div class="empty-feed">Aucune opération pour l�?Tinstant</div>';
+    }).join('') : '<div class="empty-feed">Aucune opération pour l’instant</div>';
     tx.innerHTML = html;
     return html;
   }
@@ -1651,7 +1649,7 @@
         if (x.type !== 'deposit' && x.type !== 'withdraw') return;
         rows.push({
           at: x.at || '',
-          ref: x.id || '�?"',
+          ref: x.id || '—',
           amount: Number(x.amount) || 0,
           status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type === 'deposit' ? 'Dépôt' : 'Retrait'),
           label: x.type === 'deposit' ? 'Dépôt' : 'Retrait',
@@ -1663,7 +1661,7 @@
       if (!u || w.userId !== u.id) return;
       rows.push({
         at: w.at || '',
-        ref: w.id || '�?"',
+        ref: w.id || '—',
         amount: -Math.abs(Number(w.amount) || 0),
         status: normFinanceStatus(w.status, 'Retrait'),
         label: 'Retrait',
@@ -1693,7 +1691,7 @@
         (cloud.deposits || []).forEach(function (d) {
           rows.push({
             at: d.created_at || d.completed_at || '',
-            ref: d.reference || d.id || '�?"',
+            ref: d.reference || d.id || '—',
             amount: Number(d.amount) || 0,
             status: normFinanceStatus(d.status, 'Dépôt'),
             label: 'Dépôt',
@@ -1703,7 +1701,7 @@
         (cloud.withdrawals || []).forEach(function (w) {
           rows.push({
             at: w.created_at || w.at || '',
-            ref: w.id || w.reference || '�?"',
+            ref: w.id || w.reference || '—',
             amount: -Math.abs(Number(w.amount) || 0),
             status: normFinanceStatus(w.status, 'Retrait'),
             label: 'Retrait',
@@ -1715,7 +1713,7 @@
           if (typ !== 'deposit' && typ !== 'withdraw') return;
           rows.push({
             at: trow.created_at || '',
-            ref: trow.id || '�?"',
+            ref: trow.id || '—',
             amount: Number(trow.amount) || 0,
             status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ === 'deposit' ? 'Dépôt' : 'Retrait'),
             label: typ === 'deposit' ? 'Dépôt' : 'Retrait',
@@ -1726,17 +1724,17 @@
         financeCache.at = Date.now();
       } catch (e) { /* ignore */ }
     }
-    // API PHP en arrière-plan (ne bloque plus l�?Touverture).
+    // API PHP en arrière-plan (ne bloque plus l’ouverture).
     if (D6.Api && D6.Api.post) {
       D6.Api.post('financeHistory', {}).then(function (remote) {
         if (!(remote && remote.ok && remote.rows && remote.rows.length)) return;
         (remote.rows || []).forEach(function (r) {
           rows.push({
             at: r.at || '',
-            ref: r.ref || '�?"',
+            ref: r.ref || '—',
             amount: Number(r.amount) || 0,
             status: normFinanceStatus(r.status, r.label),
-            label: r.label === 'Recharge' ? 'Dépôt' : (r.label || '�?"'),
+            label: r.label === 'Recharge' ? 'Dépôt' : (r.label || '—'),
             gateway: gatewayLabel(r.operator || r.gateway || '')
           });
         });
@@ -1756,7 +1754,7 @@
         if (!input) return;
         var show = input.type === 'password';
         input.type = show ? 'text' : 'password';
-        btn.textContent = show ? "\uD83D\uDE48" : "\uD83D\uDC41";
+        btn.textContent = show ? '\uD83D\uDE48' : '\uD83D\uDC41';
         btn.setAttribute('aria-label', show ? t('hidePass') : t('showPass'));
       });
     });
@@ -2117,7 +2115,7 @@
       }
       if (D6.Store.adjustMode) D6.Store.adjustMode(uid, mode, delta);
       else if (mode === 'real') D6.Store.adjustReal(uid, delta);
-      toast((delta >= 0 ? '+' : '�^'') + D6.fmtFCFA(Math.abs(delta)), 'ok');
+      toast((delta >= 0 ? '+' : '−') + D6.fmtFCFA(Math.abs(delta)), 'ok');
       await renderAdmin();
       openAdminUser(uid);
       updateBalance(false);
@@ -2230,7 +2228,7 @@
           openModal('iosInstallModal');
           return;
         }
-        toast(t('installIos') || 'Utilise le menu du navigateur �?' Installer l�?Tapplication', '');
+        toast(t('installIos') || 'Utilise le menu du navigateur → Installer l’application', '');
       });
     }
     if ($('btnInstallClose')) {
@@ -2246,7 +2244,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=52').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=53').catch(function () { /* ignore */ });
     }
   }
 
