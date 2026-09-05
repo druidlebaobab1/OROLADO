@@ -923,11 +923,14 @@
       syncTradeButtons();
       return;
     }
+    // P0 : ligne immédiate (file d’attente si chart pas prêt).
+    if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) {
+      D6.Chart.applyOpenTradeVisual(res.trade);
+    }
+    if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
     if (D6.Chart && D6.Chart.resize) {
       D6.Chart.resize();
-      requestAnimationFrame(function () {
-        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
-      });
+      if (D6.Chart.applyOpenTradeVisual && res.trade) D6.Chart.applyOpenTradeVisual(res.trade);
     }
     updateBalance(true);
     updatePriceHud();
@@ -2128,7 +2131,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=46').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=47').catch(function () { /* ignore */ });
     }
   }
 
@@ -2153,6 +2156,9 @@
     updateDurationUi();
     if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
     if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
+    if (D6.Chart && D6.Chart.applyOpenTradeVisual && D6.Engine.getTrades) {
+      D6.Engine.getTrades().forEach(function (t) { D6.Chart.applyOpenTradeVisual(t); });
+    }
     updateBalance(false);
     renderHistory();
     D6.I18N.apply();

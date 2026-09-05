@@ -24,9 +24,142 @@
   var lastMinP = 0;
   var lastMaxP = 0;
   var lastMap = null;
+  // Lignes CALL/PUT : registre + file si canvas pas prêt (évite « ligne au F5 »).
+  var openTradeVisuals = {};
+  var openTradeVisualQueue = [];
+  var lastDraw = 0;
+  var lastFlush = 0;
 
   function zoomSec() {
     return ZOOM_STEPS[zoomIdx] || 60;
+  }
+
+  function isChartReady() {
+    return !!(ctx && canvas && cssW >= 8 && cssH >= 8);
+  }
+
+  function tradeEntryPrice(trade) {
+    if (!trade) return NaN;
+    var ep = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
+    return isFinite(ep) ? ep : NaN;
+  }
+
+  function snapshotTradeVisual(trade) {
+    if (!trade || !trade.id) return null;
+    var entry = tradeEntryPrice(trade);
+    if (!isFinite(entry)) return null;
+    var exp = trade.expiryTime || trade.expiresAt || trade.expiryAt;
+    return {
+      id: trade.id,
+      assetId: trade.assetId || activeAsset,
+      side: trade.side === 'put' ? 'put' : 'call',
+      entryPrice: entry,
+      openPrice: entry,
+      expiryTime: exp,
+      expiresAt: exp,
+      settled: !!trade.settled,
+      status: trade.status || 'open'
+    };
+  }
+
+  function forceIncludePrice(price) {
+    if (!isFinite(price)) return;
+    if (!viewMin || !viewMax) {
+      viewMin = price - 1;
+      viewMax = price + 1;
+      return;
+    }
+    var span = Math.max(viewMax - viewMin, 0.3);
+    var pad = Math.max(span * 0.12, 0.15);
+    if (price < viewMin + pad) viewMin = price - pad;
+    if (price > viewMax - pad) viewMax = price + pad;
+  }
+
+  function collectOpenTradeVisuals() {
+    var byId = {};
+    var id;
+    var now = Date.now();
+    for (id in openTradeVisuals) {
+      if (!openTradeVisuals.hasOwnProperty(id)) continue;
+      var v = openTradeVisuals[id];
+      if (!v || v.settled) continue;
+      var exp = v.expiryTime || v.expiresAt;
+      if (exp && now >= exp) continue;
+      if (v.assetId !== activeAsset) continue;
+      byId[id] = v;
+    }
+    var engineList = D6.Engine && D6.Engine.getTrades ? D6.Engine.getTrades() : [];
+    var i;
+    for (i = 0; i < engineList.length; i++) {
+      var ot = engineList[i];
+      if (!ot || ot.settled || ot.assetId !== activeAsset) continue;
+      var e2 = ot.expiryTime || ot.expiresAt;
+      if (e2 && now >= e2) continue;
+      var snap = snapshotTradeVisual(ot);
+      if (snap) byId[snap.id] = snap;
+    }
+    var out = [];
+    for (id in byId) {
+      if (byId.hasOwnProperty(id)) out.push(byId[id]);
+    }
+    out.sort(function (a, b) {
+      return (a.expiryTime || a.expiresAt || 0) - (b.expiryTime || b.expiresAt || 0);
+    });
+    return out;
+  }
+
+  function drawNow() {
+    if (!isChartReady()) return false;
+    lastDraw = 0;
+    drawFrame(performance.now());
+    return true;
+  }
+
+  function flushOpenTradeVisualQueue() {
+    if (!isChartReady()) return;
+    if (openTradeVisualQueue.length) {
+      var ids = openTradeVisualQueue.slice();
+      openTradeVisualQueue.length = 0;
+      var i;
+      for (i = 0; i < ids.length; i++) {
+        var v = openTradeVisuals[ids[i]];
+        if (v) forceIncludePrice(v.entryPrice);
+      }
+    }
+    // resize() efface le canvas : toujours redessiner s’il y a des lignes OPEN.
+    var hasVis = false;
+    var id;
+    for (id in openTradeVisuals) {
+      if (openTradeVisuals.hasOwnProperty(id)) { hasVis = true; break; }
+    }
+    if (hasVis || (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount() > 0)) {
+      drawNow();
+    }
+  }
+
+  /** Unique entrée visuelle CALL/PUT — desktop + mobile + TV. */
+  function applyOpenTradeVisual(trade) {
+    var snap = snapshotTradeVisual(trade);
+    if (!snap) return false;
+    if (snap.settled || snap.status === 'won' || snap.status === 'lost' || snap.status === 'void') {
+      delete openTradeVisuals[snap.id];
+      return false;
+    }
+    openTradeVisuals[snap.id] = snap;
+    forceIncludePrice(snap.entryPrice);
+    if (!isChartReady()) {
+      if (openTradeVisualQueue.indexOf(snap.id) < 0) openTradeVisualQueue.push(snap.id);
+      return false;
+    }
+    return drawNow();
+  }
+
+  function removeTradeVisual(tradeId) {
+    if (!tradeId) return;
+    delete openTradeVisuals[tradeId];
+    var qi = openTradeVisualQueue.indexOf(tradeId);
+    if (qi >= 0) openTradeVisualQueue.splice(qi, 1);
+    if (isChartReady()) drawNow();
   }
 
   function flushDue() {
@@ -82,6 +215,8 @@
       overlay.style.height = cssH + 'px';
       if (octx) octx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+    // Même frame que setData/resize : flusher les lignes en attente.
+    flushOpenTradeVisualQueue();
   }
 
   function visibleCandles(market) {
@@ -511,12 +646,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var asset = D6.CONFIG.ASSETS[activeAsset];
     var market = D6.Engine.getMarket(activeAsset);
-    var trade = D6.Engine.getTrade();
-    var allTrades = (D6.Engine.getTrades ? D6.Engine.getTrades() : (trade ? [trade] : [])).filter(function (ot) {
-      if (!ot || ot.settled || ot.assetId !== activeAsset) return false;
-      var exp = ot.expiryTime || ot.expiresAt;
-      return exp && Date.now() < exp;
-    });
+    var allTrades = collectOpenTradeVisuals();
     var primary = allTrades[0] || null;
     allTrades.forEach(function (ot) {
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
@@ -639,9 +769,6 @@
     }
   }
 
-  var lastDraw = 0;
-  var lastFlush = 0;
-
   function loop(ts) {
     if (!running) return;
     requestAnimationFrame(loop);
@@ -763,16 +890,30 @@
       activeAsset = id;
       viewMin = 0;
       viewMax = 0;
+      // Ne pas supprimer les visuals des autres actifs : on les redessine au retour.
+      if (D6.Engine && D6.Engine.getTrades) {
+        D6.Engine.getTrades().forEach(function (t) {
+          if (t) applyOpenTradeVisual(t);
+        });
+      }
+      if (isChartReady()) drawNow();
     },
     start: function () {
       if (running) return;
       running = true;
       lastTs = 0;
-      requestAnimationFrame(loop);
+      requestAnimationFrame(function (ts) {
+        flushOpenTradeVisualQueue();
+        loop(ts);
+      });
     },
     stop: function () {
       running = false;
     },
-    resize: resize
+    resize: resize,
+    applyOpenTradeVisual: applyOpenTradeVisual,
+    removeTradeVisual: removeTradeVisual,
+    drawNow: drawNow,
+    flushOpenTradeVisuals: flushOpenTradeVisualQueue
   };
 })(window.D6 = window.D6 || {});

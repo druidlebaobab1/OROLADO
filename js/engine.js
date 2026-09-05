@@ -385,6 +385,11 @@
           status: 'open'
         });
       }
+      if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
+        for (i = 0; i < trades.length; i++) {
+          try { D6.Chart.applyOpenTradeVisual(publicTrade(trades[i])); } catch (eR) { /* ignore */ }
+        }
+      }
       return trades.length;
     },
 
@@ -481,7 +486,12 @@
       user.lastStake = stake;
       persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
-      return { ok: true, trade: publicTrade(t) };
+      var pub = publicTrade(t);
+      // Ligne CALL/PUT immédiate (sync) — ne pas attendre le prochain tick/F5.
+      if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
+        try { D6.Chart.applyOpenTradeVisual(pub); } catch (eVis) { /* ignore */ }
+      }
+      return { ok: true, trade: pub };
     },
 
     resolve: function (user, tradeId) {
@@ -503,12 +513,18 @@
       if (trade.settled || trade.status === 'won' || trade.status === 'lost' || trade.status === 'void') {
         trades.splice(idx, 1);
         persistOpen(user);
+        if (D6.Chart && D6.Chart.removeTradeVisual) {
+          try { D6.Chart.removeTradeVisual(trade.id); } catch (e0) { /* ignore */ }
+        }
         return null;
       }
       if (now < expiryOf(trade)) return null;
 
       // Idempotence : marquer avant crédit.
       trade.settled = true;
+      if (D6.Chart && D6.Chart.removeTradeVisual) {
+        try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
+      }
 
       if (user.id !== trade.userId) {
         trades.splice(idx, 1);

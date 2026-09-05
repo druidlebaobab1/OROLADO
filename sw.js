@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v46';
+const CACHE = 'orolado-v47';
 const ASSETS = [
   './',
   './index.html',
