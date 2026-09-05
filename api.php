@@ -354,7 +354,10 @@ if ($action === 'adjust') {
   $targetPid = (string) ($db['users'][$uid]['publicId'] ?? $uid);
   admin_log($db, (string) ($me['email'] ?? ''), $targetPid, 'adjust_' . $mode, $delta, $motif);
   save_db($file, $db);
-  if ($mode === 'real') supabase_credit_real((string) $uid, $delta);
+  if ($mode === 'real') {
+    if ($delta >= 0) supabase_credit_real((string) $uid, $delta, false);
+    else supabase_debit_real((string) $uid, abs($delta));
+  }
   echo json_encode(['ok' => true, 'server' => true, 'vault' => $db['vault'][$uid]]);
   exit;
 }

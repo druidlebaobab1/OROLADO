@@ -70,8 +70,23 @@
 
   function syncAuthQuick() {
     var q = $('authQuick');
-    if (!q) return;
-    q.classList.toggle('hidden', !isGuest());
+    var trade = $('screenTrade');
+    var guest = isGuest();
+    if (q) q.classList.toggle('hidden', !guest);
+    if (trade) trade.classList.toggle('is-guest', guest);
+    if ($('btnProfile')) $('btnProfile').classList.toggle('hidden', guest);
+  }
+
+  function setModeChrome(u) {
+    var trade = $('screenTrade');
+    if (!trade || !u) return;
+    trade.classList.toggle('mode-demo', u.mode !== 'real');
+    trade.classList.toggle('mode-real', u.mode === 'real');
+    var plus = $('btnDemoTopup');
+    if (plus) {
+      var show = u.mode !== 'real';
+      plus.classList.toggle('hidden', !show);
+    }
   }
 
   function fmtTimerLeft(sec) {
@@ -122,7 +137,7 @@
     }
     var amount = Math.abs(Number(payout) || 0);
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
-    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : 'Perdu';
+    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : '+0 FCFA';
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
       el.className = 'chart-outcome';
@@ -138,7 +153,7 @@
       syncTradeButtons();
       return;
     }
-    var amount = d.isWin ? (d.payout != null ? d.payout : d.net) : 0;
+    var amount = d.isWin ? (d.net != null ? Math.abs(Number(d.net)) : (d.payout != null ? d.payout : 0)) : 0;
     showOutcomeToast(!!d.isWin, amount, d.tradeId);
     updateBalance(true);
     patchHistorySoon();
@@ -195,14 +210,16 @@
       var now = ctx.currentTime;
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 1400;
-      gain.gain.setValueAtTime(0.035, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(980, now + 0.08);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.09, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.05);
+      osc.stop(now + 0.13);
     } catch (e) { /* ignore */ }
   }
 
@@ -226,8 +243,9 @@
         osc.start(now + start);
         osc.stop(now + start + dur + 0.02);
       }
-      tone(587, 880, 0, 0.32, 0.18, 'sine');
-      tone(880, 880, 0.07, 0.24, 0.1, 'triangle');
+      tone(523, 784, 0, 0.28, 0.16, 'sine');
+      tone(659, 988, 0.08, 0.3, 0.12, 'triangle');
+      tone(784, 1175, 0.16, 0.34, 0.1, 'sine');
     } catch (e) { /* ignore */ }
   }
 
@@ -240,15 +258,19 @@
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(130, now);
-      osc.frequency.exponentialRampToValueAtTime(70, now + 0.16);
-      gain.gain.setValueAtTime(0.14, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(160, now + 0.14);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.2);
+      osc.stop(now + 0.18);
     } catch (e) { /* ignore */ }
+  }
+
+  function playNeutralTick() {
+    playLossThud();
   }
 
   function burstSparkle() {
@@ -321,6 +343,7 @@
     document.querySelectorAll('.mode-btn').forEach(function (el) {
       el.classList.toggle('on', el.dataset.mode === (demo ? 'demo' : 'real'));
     });
+    setModeChrome(u);
   }
 
   function switchMode(next) {
@@ -351,10 +374,10 @@
     var active = u.mode === 'real' ? real : demo;
     $('balanceDisplay').textContent = D6.fmtFCFA(active);
     if ($('balanceAlt')) {
-      $('balanceAlt').textContent = u.mode === 'real'
-        ? ('Démo ' + D6.fmtFCFA(demo))
-        : ('Réel ' + D6.fmtFCFA(real));
+      $('balanceAlt').textContent = '';
+      $('balanceAlt').hidden = true;
     }
+    setModeChrome(u);
     if (flash) {
       var card = $('balanceCard');
       card.classList.remove('flash');
@@ -455,15 +478,16 @@
       label = 'Gagné +' + D6.fmtFCFA(Math.abs(net));
       cls = 'win';
     } else {
-      label = 'Perdu −' + D6.fmtFCFA(stake);
+      label = '+0 FCFA';
       cls = 'lose';
+      net = -stake;
     }
     return '<div class="h-item ' + cls + '">' +
       '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
       '<div><div class="h-main">' + (h.clock || '') + ' · ' + h.assetName + ' · ' + (h.duration || '') + 's</div>' +
       '<div class="h-time">' + D6.fmtFCFA(stake) + ' · ' + label + '</div></div>' +
       '<span class="h-gain ' + (h.won ? 'w' : (h.voided ? '' : 'l')) + '">' +
-      (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net)) + '</span></div>';
+      (h.won ? ('+' + D6.fmtFCFA(Math.abs(net))) : (h.voided ? '0' : '+0')) + '</span></div>';
   }
 
   function liveOrderRow(t) {
@@ -505,32 +529,40 @@
   function renderHistorySheet() {
     var el = $('historySheetFeed');
     if (!el) return;
-    var orders = ordersForMode(user());
+    if ($('histSheetTitle')) $('histSheetTitle').textContent = 'Historique des trades (Compte Réel)';
+    var u = user();
+    var settled = ((u && u.positions) || []).filter(function (p) {
+      return p.mode === 'real';
+    });
     var rows = [];
     function durLabel(d) {
       d = Number(d) || 0;
       if (d >= 60) return (d / 60) + ' min';
       return d + 's';
     }
-    orders.live.forEach(function (t) {
-      rows.push('<tr><td>' + fmtTimerLeft(t.timeLeft) + '</td><td>' + ((D6.CONFIG.ASSETS[t.assetId] || {}).short || t.assetId) +
-        '</td><td>' + (t.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(t.stake) +
-        '</td><td>EN COURS</td><td>—</td></tr>');
-    });
-    orders.settled.slice(0, 50).forEach(function (h) {
+    settled.slice(0, 50).forEach(function (h) {
       var stake = Number(h.stake || 0);
-      var net = h.net != null ? Number(h.net) : (h.won ? Math.floor(stake * Number(h.payout || 1.88)) - stake : -stake);
+      var payoutAmt = Math.floor(stake * Number(h.payout || 1.88));
+      var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
       var res = (h.voided || h.status === 'void') ? 'Égalité' : (h.won ? 'Gagné' : 'Perdu');
       var pnlCls = net > 0 ? 'w' : (net < 0 ? 'l' : '');
+      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net));
       rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '—') +
         '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(stake) +
-        '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' +
-        (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net)) + '</td></tr>');
+        '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td></tr>');
     });
     el.innerHTML = rows.length
       ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Résultat</th><th>P&amp;L</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table>'
-      : '<div class="empty-feed">' + t('noOrders') + '</div>';
+      : '<div class="empty-feed">Aucun trade réel pour l’instant</div>';
+  }
+
+  function maybeLossStreakTip(u) {
+    if (!u || (u.consecutiveLosses || 0) < 5) return;
+    if (u.lossTipShownAt && (Date.now() - Number(u.lossTipShownAt)) < 600000) return;
+    u.lossTipShownAt = Date.now();
+    D6.Store.saveUser(u);
+    openModal('tipModal');
   }
 
   function maybeConvertPrompt(u, res) {
@@ -547,14 +579,11 @@
   function profitFromResult(res) {
     if (!res) return 0;
     if (res.won) {
+      if (res.net != null) return Math.abs(Number(res.net));
       if (res.position && res.position.stake) {
-        return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88));
+        return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88)) - Number(res.position.stake);
       }
-      if (res.payout > 0 && res.net != null && res.payout >= Number(res.position && res.position.stake || 0)) return res.payout;
-      if (res.net != null && res.position) return Number(res.position.stake) + Number(res.net);
     }
-    if (res.position && res.position.net != null) return res.position.net;
-    if (res.net != null) return res.net;
     return 0;
   }
 
@@ -572,9 +601,7 @@
     var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : (D6.Engine.getTrades ? D6.Engine.getTrades(mode).length : 0);
     var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
     var busy = n >= max;
-    var bal = u ? D6.Store.balanceOf(u) : 0;
-    var canAfford = bal >= Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake || 0));
-    var lock = cooling || busy || !canAfford;
+    var lock = cooling || busy;
     $('btnCall').disabled = lock;
     $('btnPut').disabled = lock;
     $('btnCall').classList.toggle('locked', busy);
@@ -707,10 +734,12 @@
       '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
       '<div class="list-row"><span>Démo</span><strong>' + D6.fmtFCFA(u.demoBalance) + '</strong></div>' +
       '<div class="field"><label>' + t('adjustReason') + '</label><input id="adjMotif" maxlength="120" placeholder="bonus, correction…"></div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
-      '<button class="mini ok" data-adj="' + u.id + '" data-d="1000" data-mode="real">Réel +1000</button>' +
-      '<button class="mini bad" data-adj="' + u.id + '" data-d="-1000" data-mode="real">Réel −1000</button>' +
-      '<button class="mini" data-adj="' + u.id + '" data-d="0" data-mode="demo" data-reset="1">Reset démo</button>' +
+      '<div class="field"><label>Montant (FCFA)</label><input id="adjAmount" type="number" inputmode="numeric" min="1" step="100" value="50000"></div>' +
+      '<div class="admin-adj-row">' +
+      '<select id="adjMode"><option value="real">Compte réel</option><option value="demo">Compte démo</option></select>' +
+      '<button class="mini ok" type="button" data-adj-act="credit" data-adj="' + u.id + '">+ Créditer</button>' +
+      '<button class="mini bad" type="button" data-adj-act="debit" data-adj="' + u.id + '">− Débiter</button>' +
+      '<button class="mini" type="button" data-adj="' + u.id + '" data-mode="demo" data-reset="1">Reset démo 1M</button>' +
       '</div>';
   }
 
@@ -733,16 +762,18 @@
     updateBalance(true);
     if (res.voided) {
       toast('Égalité — mise rendue', '');
+      playNeutralTick();
     } else {
       showOutcomeToast(!!res.won, profitFromResult(res), id);
       if (res.won) {
         playWinChime();
         burstSparkle();
       } else {
-        playLossThud();
+        playNeutralTick();
       }
     }
     maybeConvertPrompt(user(), res);
+    maybeLossStreakTip(user());
     patchHistorySoon();
     syncTradeButtons();
     if (pendingConvert && !(D6.Engine.liveCount && D6.Engine.liveCount())) {
@@ -779,9 +810,22 @@
     }
     stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
+    if (D6.Store.balanceOf(u) < stake) {
+      if (mode === 'real') {
+        openDeposit('Solde insuffisant pour miser. Rechargez votre compte');
+      } else {
+        toast(t('insufficient'), 'err');
+      }
+      return;
+    }
+    playTap();
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
     if (!res.ok) {
-      toast(res.reason, 'err');
+      if (mode === 'real' && /insuffisant/i.test(String(res.reason || ''))) {
+        openDeposit('Solde insuffisant pour miser. Rechargez votre compte');
+      } else {
+        toast(res.reason, 'err');
+      }
       syncTradeButtons();
       return;
     }
@@ -834,10 +878,10 @@
     return amt;
   }
 
-  function openDeposit() {
+  function openDeposit(preMsg) {
     if (!requireAccount()) return;
     var u = user();
-    depositOp = 'wave';
+    depositOp = depositOp || 'wave';
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) {
       c.classList.toggle('on', c.dataset.op === depositOp);
     });
@@ -847,6 +891,7 @@
       $('depositAmt').min = String(min);
       $('depositAmt').placeholder = String(min);
     }
+    if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum ' + D6.fmtFCFA(min);
     closeDrawer();
@@ -1702,8 +1747,8 @@
       D6.Chart.stop();
       if (D6.Auth.logout) await D6.Auth.logout();
       else if (D6.Auth.signOut) await D6.Auth.signOut();
-      showScreen('screenAuth');
-      // Après déconnexion, laisser l’auth visible ; l’utilisateur peut revenir en démo via refresh.
+      ensureGuest();
+      enterApp();
     }
     var logoutBtn = $('btnLogout');
     logoutBtn.addEventListener('click', doLogout, true);
@@ -1728,21 +1773,6 @@
     $('adminUsers').addEventListener('click', async function (e) {
       var row = e.target.closest('[data-user]');
       if (row) openAdminUser(row.dataset.user);
-      var btn = e.target.closest('[data-adj]');
-      if (!btn) return;
-      var motif = ($('adjMotif') && $('adjMotif').value) || '';
-      if (!motif.trim()) { toast(t('adjustReason'), 'err'); return; }
-      var delta = Number(btn.dataset.d);
-      var mode = btn.dataset.mode || 'real';
-      if (btn.dataset.reset === '1') {
-        var u0 = (adminCache.users || []).find(function (x) { return x.id === btn.dataset.adj; });
-        delta = 50000 - Number((u0 && u0.demoBalance) || 0);
-        mode = 'demo';
-      }
-      if (D6.Api && D6.Api.token()) await D6.Api.post('adjust', { userId: btn.dataset.adj, delta: delta, mode: mode, motif: motif });
-      if (mode === 'real') D6.Store.adjustReal(btn.dataset.adj, delta);
-      renderAdmin();
-      updateBalance(false);
     });
     if ($('adminSearch')) {
       $('adminSearch').addEventListener('input', function () { renderAdminUsers(this.value); });
@@ -1750,22 +1780,38 @@
         if (e.key === 'Enter') { e.preventDefault(); renderAdminUsers(this.value); }
       });
     }
+    async function runAdminAdjust(btn) {
+      if (!btn) return;
+      var motif = ($('adjMotif') && $('adjMotif').value) || '';
+      if (!motif.trim()) { toast(t('adjustReason'), 'err'); return; }
+      var uid = btn.dataset.adj;
+      var mode = ($('adjMode') && $('adjMode').value) || btn.dataset.mode || 'real';
+      var delta = 0;
+      if (btn.dataset.reset === '1') {
+        var u0 = (adminCache.users || []).find(function (x) { return x.id === uid; });
+        delta = (D6.CONFIG.DEMO_START || 1000000) - Number((u0 && u0.demoBalance) || 0);
+        mode = 'demo';
+      } else {
+        var amt = Math.abs(Math.round(Number(($('adjAmount') && $('adjAmount').value) || 0)));
+        if (!amt) { toast('Montant invalide', 'err'); return; }
+        delta = btn.dataset.adjAct === 'debit' ? -amt : amt;
+      }
+      if (D6.Api && D6.Api.token()) {
+        var remote = await D6.Api.post('adjust', { userId: uid, delta: delta, mode: mode, motif: motif });
+        if (remote && remote.server && !remote.ok) { toast(remote.reason || 'Erreur', 'err'); return; }
+      }
+      if (D6.Store.adjustMode) D6.Store.adjustMode(uid, mode, delta);
+      else if (mode === 'real') D6.Store.adjustReal(uid, delta);
+      toast((delta >= 0 ? '+' : '−') + D6.fmtFCFA(Math.abs(delta)), 'ok');
+      await renderAdmin();
+      openAdminUser(uid);
+      updateBalance(false);
+    }
     if ($('adminUserDetail')) {
       $('adminUserDetail').addEventListener('click', async function (e) {
-        var btn = e.target.closest('[data-adj]');
-        if (!btn) return;
-        var motif = ($('adjMotif') && $('adjMotif').value) || '';
-        if (!motif.trim()) { toast(t('adjustReason'), 'err'); return; }
-        var delta = Number(btn.dataset.d);
-        var mode = btn.dataset.mode || 'real';
-        if (btn.dataset.reset === '1') {
-          var u0 = (adminCache.users || []).find(function (x) { return x.id === btn.dataset.adj; });
-          delta = 50000 - Number((u0 && u0.demoBalance) || 0);
-          mode = 'demo';
-        }
-        if (D6.Api && D6.Api.token()) await D6.Api.post('adjust', { userId: btn.dataset.adj, delta: delta, mode: mode, motif: motif });
-        renderAdmin();
-        openAdminUser(btn.dataset.adj);
+        var btn = e.target.closest('[data-adj-act], [data-reset="1"]');
+        if (!btn || !btn.dataset.adj) return;
+        await runAdminAdjust(btn);
       });
     }
     if ($('adminMessages')) {
@@ -1853,6 +1899,7 @@
     setModeUi(u);
     setAdminBtns(u);
     syncAuthQuick();
+    setModeChrome(u);
     updateAssetUi();
     updateDurationUi();
     if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
@@ -1999,6 +2046,22 @@
       }
       if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
       if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { showAuthScreen('register'); });
+      if ($('btnAuthBack')) $('btnAuthBack').addEventListener('click', function () {
+        ensureGuest();
+        enterApp();
+      });
+      if ($('btnDemoTopup')) $('btnDemoTopup').addEventListener('click', function () {
+        var u = user();
+        if (!u || u.mode === 'real' || isGuest(u)) return;
+        var target = D6.CONFIG.DEMO_START || 1000000;
+        var cur = D6.Store.demoBalance(u);
+        if (cur >= target) { toast('Solde démo déjà au maximum', 'ok'); return; }
+        D6.Store.setBalanceMode(u, 'demo', target);
+        updateBalance(true);
+        toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok');
+      });
+      if ($('closeTip')) $('closeTip').addEventListener('click', function () { closeModal('tipModal'); });
+      if ($('btnTipOk')) $('btnTipOk').addEventListener('click', function () { closeModal('tipModal'); });
       finishBoot();
       if (D6.Supabase && D6.Supabase.restore) {
         D6.Supabase.restore().then(function (cloud) {

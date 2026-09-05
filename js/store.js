@@ -293,6 +293,15 @@
       return v.real;
     },
 
+    adjustMode: function (userId, mode, delta) {
+      var v = vault[userId] || { demo: D6.CONFIG.DEMO_START, real: 0 };
+      var key = mode === 'real' ? 'real' : 'demo';
+      v[key] = Math.max(0, Math.round((v[key] || 0) + Number(delta)));
+      vault[userId] = v;
+      persist();
+      return v[key];
+    },
+
     addTransaction: function (user, tx) {
       var row = {
         id: D6.uid(),

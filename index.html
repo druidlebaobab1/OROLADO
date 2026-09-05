@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=37">
+  <link rel="stylesheet" href="css/app.css?v=38">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -31,6 +31,7 @@
   </div>
 
   <section id="screenAuth" class="screen">
+    <button type="button" class="auth-back" id="btnAuthBack">← Retour</button>
     <div class="lang-dd lang-bar-auth" id="langBarAuth"></div>
     <div class="auth-ambient"></div>
     <div class="auth-wrap">
@@ -111,7 +112,7 @@
     <div class="trade-shell">
       <header class="topbar">
         <div class="topbar-row">
-          <div class="brand-lockup mini">
+          <div class="brand-lockup mini" id="brandLockup">
             <img class="logo-mark sm" src="icons/icon.svg" alt="">
             <div class="brand">ORO<span>LADO</span></div>
           </div>
@@ -121,7 +122,7 @@
               <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
               <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
             </div>
-            <button type="button" class="icon-btn" id="btnHelp" title="Aide" aria-label="Aide" data-i18n-title="helpBtn">❔</button>
+            <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Aide</button>
             <div class="lang-dd" id="langBarTrade"></div>
             <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
           </div>
@@ -135,9 +136,10 @@
         <div class="balance-row">
           <div class="balance-card glass" id="balanceCard">
             <div class="bal-stack">
-              <span class="bal" id="balanceDisplay">50 000 FCFA</span>
-              <span class="bal-sub" id="balanceAlt"></span>
+              <span class="bal" id="balanceDisplay">1 000 000 FCFA</span>
+              <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
+            <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la démo" aria-label="Recharger démo">+</button>
           </div>
         </div>
       </header>
@@ -221,7 +223,7 @@
             <button type="button" class="dur-chip" data-dur="300">5 min</button>
             <button type="button" class="dur-chip" data-dur="600">10 min</button>
           </div>
-          <p class="trade-hint" data-i18n="tradeHint">Si ta prédiction est juste à la fin du timer, tu récupères mise + gain affiché. Sinon tu perds la mise.</p>
+          <p class="trade-hint" data-i18n="tradeHint">Choisis ton montant et ta durée. Anticipe la hausse (ACHETER) ou la baisse (VENDRE) : si le cours termine dans ta direction à la fin du chrono, tu encaisses tes gains !</p>
           <div class="stake-line">
             <div class="stake-field">
               <input id="inputStake" type="number" inputmode="numeric" value="100" min="100" step="100" placeholder="FCFA">
@@ -276,7 +278,6 @@
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
       <div class="list-row"><span data-i18n="whatsapp">Numéro de téléphone</span><strong id="profPhone">—</strong></div>
     </div>
-    <p class="risk-line" data-i18n="riskLine">Les trades courts sont risqués. Tu peux perdre ta mise. 18+</p>
     <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">⚙️ Dashboard Admin</button>
     <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
     <button type="button" class="btn-gold ghost-gold" id="btnFinance" data-i18n="financeHist">Historique financier</button>
@@ -410,19 +411,19 @@
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
       <div class="modal-title" data-i18n="depositTitle">Recharger en FCFA</div>
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
+      <p class="deposit-instant" data-i18n="depositInstant">⚡ Dépôt instantané &amp; sécurisé</p>
+      <div class="pay-mode-label" data-i18n="payMode">Modes de paiement disponibles</div>
+      <div class="op-grid op-grid-deposit" id="depOpGrid">
+        <button type="button" class="op-card op-wave" data-op="wave" style="--op:#1BA0F2"><i class="op-logo">W</i><span>Wave</span></button>
+        <button type="button" class="op-card op-orange" data-op="orange" style="--op:#FF6600"><i class="op-logo">OM</i><span>Orange Money</span></button>
+        <button type="button" class="op-card op-mtn" data-op="mtn" style="--op:#FFCC00"><i class="op-logo">MTN</i><span>MTN</span></button>
+        <button type="button" class="op-card op-moov" data-op="moov" style="--op:#0B3C8A"><i class="op-logo">M</i><span>Moov</span></button>
+      </div>
       <div class="field">
         <label data-i18n="depositAmtLabel">Montant à recharger (FCFA)</label>
         <input id="depositAmt" type="number" inputmode="numeric" min="1000" step="100" placeholder="1000">
         <p class="hint-min" data-i18n="depositMin">Minimum 100 FCFA. Wave, Orange Money, MTN, Moov.</p>
-        <p class="risk-line" data-i18n="riskLine">Les trades courts sont risqués. Tu peux perdre ta mise. 18+</p>
         <p class="err-msg" id="err-depositAmt"></p>
-      </div>
-      <div class="pay-mode-label" data-i18n="payMode">Mode de paiement</div>
-      <div class="op-grid" id="depOpGrid">
-        <button type="button" class="op-card op-wave on" data-op="wave" style="--op:#1BA0F2"><i class="op-logo">W</i><span>Wave</span></button>
-        <button type="button" class="op-card op-orange" data-op="orange" style="--op:#FF6600"><i class="op-logo">OM</i><span>Orange Money</span></button>
-        <button type="button" class="op-card op-mtn" data-op="mtn" style="--op:#FFCC00"><i class="op-logo">MTN</i><span>MTN</span></button>
-        <button type="button" class="op-card op-moov" data-op="moov" style="--op:#0B3C8A"><i class="op-logo">M</i><span>Moov</span></button>
       </div>
       <div class="wd-trust">
         <span>🔒 Vos coordonnées OROLADO ne sont jamais transmises au checkout</span>
@@ -483,23 +484,33 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="tipModal">
+    <div class="modal-box glass convert-box">
+      <button type="button" class="btn-close" id="closeTip">✕</button>
+      <div class="convert-fire">💡</div>
+      <div class="convert-title">Astuce trading</div>
+      <p class="convert-copy" data-i18n="lossStreakTip">Besoin d'aide pour vos prédictions ? Activez les indicateurs MA, RSI et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
+      <button type="button" class="btn-gold" id="btnTipOk" data-i18n="continue">CONTINUER</button>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
       <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
-      <div class="modal-title" data-i18n="histSheet">Historique des trades</div>
+      <div class="modal-title" id="histSheetTitle">Historique des trades (Compte Réel)</div>
       <div class="history-feed sheet-feed" id="historySheetFeed"></div>
     </div>
   </div>
 
-  <script src="js/config.js?v=37"></script>
-  <script src="js/i18n.js?v=37"></script>
-  <script src="js/store.js?v=37"></script>
-  <script src="js/api.js?v=37"></script>
+  <script src="js/config.js?v=38"></script>
+  <script src="js/i18n.js?v=38"></script>
+  <script src="js/store.js?v=38"></script>
+  <script src="js/api.js?v=38"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=37"></script>
-  <script src="js/auth.js?v=37"></script>
-  <script src="js/engine.js?v=37"></script>
-  <script src="js/chart.js?v=37"></script>
-  <script src="js/app.js?v=37"></script>
+  <script src="js/supabase.js?v=38"></script>
+  <script src="js/auth.js?v=38"></script>
+  <script src="js/engine.js?v=38"></script>
+  <script src="js/chart.js?v=38"></script>
+  <script src="js/app.js?v=38"></script>
 </body>
 </html>
