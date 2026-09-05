@@ -476,22 +476,22 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .mini.ok{border-color:var(--green);color:var(--green)}
 .mini.bad{border-color:var(--red);color:var(--red)}
 
-@media (min-width:860px){
-  .trade-shell{max-width:1120px;height:100%;min-height:0;overflow:hidden}
-  .trade-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);grid-template-rows:auto minmax(360px,1fr);
-    gap:10px;padding:12px;padding-bottom:12px;overflow:auto;min-height:0;-webkit-overflow-scrolling:touch}
+@media (min-width:900px){
+  .trade-shell{max-width:1200px;height:100%;min-height:0;overflow:hidden}
+  .trade-wrap{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,360px);grid-template-rows:auto minmax(0,1fr);
+    gap:10px;padding:12px;padding-bottom:12px;overflow:hidden;min-height:0;-webkit-overflow-scrolling:touch}
   .asset-bar{grid-column:1;grid-row:1;min-width:0;max-width:100%;width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;overflow:visible;padding-bottom:0}
   .asset-chip .k{display:block;font-size:.58rem;font-weight:800;color:var(--muted);text-transform:uppercase;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .asset-chip{padding:6px 8px;min-height:66px;min-width:0;flex:1 1 0;width:auto;overflow:visible;
     display:flex;flex-direction:column;justify-content:center;gap:2px}
   .asset-chip .n{font-size:.72rem;line-height:1.15;margin:0}
   .payout-live{font-size:.68rem;line-height:1.1;margin-top:0}
-  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 0 auto;flex-shrink:0!important;height:auto;min-height:360px!important;max-height:none;display:flex!important}
-  .chart-stage{min-height:300px!important}
+  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%;min-height:360px!important;max-height:none;display:flex!important}
+  .chart-stage{min-height:300px!important;flex:1 1 auto}
   .asset-live-tag{display:inline;font-size:.62rem;color:var(--muted);font-weight:700}
   .strip-price,.pnl-value{font-size:1rem}
   .history-card{display:none!important}
-  .pad{position:relative;left:auto;right:auto;bottom:auto;grid-column:2;grid-row:1 / span 2;margin:0;border-radius:14px;
+  .pad{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;grid-column:2;grid-row:1 / span 2;margin:0;border-radius:14px;
     max-width:none;z-index:8;background:rgba(21,30,48,.72);padding-bottom:12px;border-top:0;box-shadow:none;
     overflow-y:auto;min-height:0;max-height:100%;align-self:stretch;isolation:isolate}
   .pad .btn-hist-cta{position:relative;z-index:20;pointer-events:auto!important;touch-action:manipulation}
@@ -499,13 +499,24 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   .win-preview .label{display:block;font-size:.58rem;color:var(--gold);font-weight:800;text-transform:uppercase}
   .win-preview{text-align:center}
   .btn-trade{min-height:58px}
-  .topbar-row{padding:8px 10px}
+  .topbar-row{padding:8px 10px;min-height:36px;flex-wrap:nowrap}
+  .topbar-mode{padding:0 10px 6px}
   .balance-row{padding:0 10px 8px}
   .dur-chip{flex:1 1 auto;min-width:0;font-size:.68rem;min-height:32px;padding:4px 0}
   .trade-hint{font-size:.62rem;-webkit-line-clamp:unset;display:block;overflow:visible}
-  .install-banner{left:10px;right:auto;bottom:10px;width:auto;max-width:280px}
+  .install-banner{left:auto;right:12px;bottom:12px;width:auto;max-width:260px;z-index:25}
+  /* Banner hors du chart : ancrée au pad / shell, pas sur le canvas */
+  #chart .install-banner{display:none!important}
   .pay-logos-strip{height:16px;max-height:16px;margin:4px 0;padding:0;gap:4px}
   .pay-logos-strip .op-logo,.pay-logos-strip i.op-logo,.pay-logos-strip .op-logo.op-card{width:16px!important;height:16px!important;max-height:16px!important;padding:0!important;font-size:7px!important}
+}
+/* Compat 860–899 : même 2 colonnes (TV / tablette large) */
+@media (min-width:860px) and (max-width:899px){
+  .trade-wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,320px);grid-template-rows:auto minmax(0,1fr);
+    gap:8px;padding:10px;overflow:hidden}
+  .chart-card,#chart{grid-column:1;grid-row:2;display:flex!important;min-height:340px!important}
+  .pad{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;grid-column:2;grid-row:1 / span 2}
+  #chart .install-banner{display:none!important}
 }
 @media (max-width:859px){
   .balance-card{padding:6px 12px!important}
