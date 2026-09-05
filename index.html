@@ -17,18 +17,12 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=42">
+  <link rel="stylesheet" href="css/app.css?v=43">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
   <div id="toast" class="toast"></div>
   <div id="sparkle" class="sparkle" hidden></div>
-
-  <div id="installBanner" class="install-banner hidden">
-    <span data-i18n="install">📲 Installer l’application</span>
-    <button type="button" id="btnInstall" data-i18n="installBtn">Installer</button>
-    <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">✕</button>
-  </div>
 
   <div class="modal-backdrop" id="iosInstallModal">
     <div class="modal-box glass install-ios-box">
@@ -142,6 +136,15 @@
             <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
           </div>
         </div>
+        <div class="pay-logos-strip" aria-hidden="true">
+          <i class="op-logo op-wave" title="Wave">W</i>
+          <i class="op-logo op-orange" title="Orange Money">OM</i>
+          <i class="op-logo op-mtn" title="MTN MoMo">MTN</i>
+          <i class="op-logo op-moov" title="Moov Money">M</i>
+          <i class="op-logo op-card" title="Carte">💳</i>
+          <i class="op-logo op-crypto" title="Crypto">₿</i>
+          <i class="op-logo op-paypal" title="PayPal">P</i>
+        </div>
         <div class="topbar-mode">
           <div class="mode-switch" id="modeSwitcher" role="tablist" aria-label="Mode de compte">
             <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="demo">MODE VIRTUEL / DÉMO</button>
@@ -219,6 +222,11 @@
               </div>
             </div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true"></canvas>
+            <div id="installBanner" class="install-banner hidden">
+              <span data-i18n="install">📲 Installer l’application</span>
+              <button type="button" id="btnInstall" data-i18n="installBtn">Installer</button>
+              <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">✕</button>
+            </div>
           </div>
         </div>
 
@@ -523,15 +531,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=42"></script>
-  <script src="js/i18n.js?v=42"></script>
-  <script src="js/store.js?v=42"></script>
-  <script src="js/api.js?v=42"></script>
+  <script src="js/config.js?v=43"></script>
+  <script src="js/i18n.js?v=43"></script>
+  <script src="js/store.js?v=43"></script>
+  <script src="js/api.js?v=43"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=42"></script>
-  <script src="js/auth.js?v=42"></script>
-  <script src="js/engine.js?v=42"></script>
-  <script src="js/chart.js?v=42"></script>
-  <script src="js/app.js?v=42"></script>
+  <script src="js/supabase.js?v=43"></script>
+  <script src="js/auth.js?v=43"></script>
+  <script src="js/engine.js?v=43"></script>
+  <script src="js/chart.js?v=43"></script>
+  <script src="js/app.js?v=43"></script>
 </body>
 </html>

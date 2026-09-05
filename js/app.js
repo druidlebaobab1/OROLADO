@@ -2022,7 +2022,7 @@
       installHideTimer = setTimeout(function () {
         hideInstallBanner();
         try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ }
-      }, 20000);
+      }, 10000);
     }
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault();
@@ -2063,7 +2063,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=41').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=43').catch(function () { /* ignore */ });
     }
   }
 
@@ -2113,7 +2113,7 @@
         setTimeout(function () {
           if ($('installBanner')) $('installBanner').classList.add('hidden');
           try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
-        }, 20000);
+        }, 10000);
       }
     }, 1800);
     if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
