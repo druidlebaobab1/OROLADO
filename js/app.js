@@ -146,6 +146,12 @@
       var show = u.mode !== 'real';
       plus.classList.toggle('hidden', !show);
     }
+    var histBtn = $('btnHistMore');
+    if (histBtn) {
+      histBtn.textContent = u.mode === 'real'
+        ? 'HISTORIQUE DES TRADES DU COMPTE RÉEL'
+        : 'HISTORIQUE DES TRADES DU COMPTE DÉMO';
+    }
   }
 
   function fmtTimerLeft(sec) {
@@ -598,10 +604,15 @@
   function renderHistorySheet() {
     var el = $('historySheetFeed');
     if (!el) return;
-    if ($('histSheetTitle')) $('histSheetTitle').textContent = 'Historique des trades (Compte Réel)';
     var u = user();
+    var mode = (u && u.mode === 'real') ? 'real' : 'demo';
+    if ($('histSheetTitle')) {
+      $('histSheetTitle').textContent = mode === 'real'
+        ? 'Historique des trades (Compte Réel)'
+        : 'Historique des trades (Compte Démo)';
+    }
     var settled = ((u && u.positions) || []).filter(function (p) {
-      return p.mode === 'real';
+      return (p.mode || 'demo') === mode;
     });
     var rows = [];
     function durLabel(d) {
@@ -623,7 +634,7 @@
     el.innerHTML = rows.length
       ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Résultat</th><th>P&amp;L</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table>'
-      : '<div class="empty-feed">Aucun trade réel pour l’instant</div>';
+      : '<div class="empty-feed">Aucun trade pour l’instant</div>';
   }
 
   function maybeLossStreakTip(u) {
@@ -911,6 +922,12 @@
       }
       syncTradeButtons();
       return;
+    }
+    if (D6.Chart && D6.Chart.resize) {
+      D6.Chart.resize();
+      requestAnimationFrame(function () {
+        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+      });
     }
     updateBalance(true);
     updatePriceHud();
@@ -1772,10 +1789,15 @@
     });
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
     $('drawerBackdrop').addEventListener('click', closeDrawer);
-    $('btnHistMore').addEventListener('click', function () {
+    function openHistorySheet(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       renderHistorySheet();
       openModal('historySheet');
-    });
+    }
+    tap($('btnHistMore'), openHistorySheet);
   }
 
   function bindModals() {
@@ -2106,7 +2128,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=45').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=46').catch(function () { /* ignore */ });
     }
   }
 

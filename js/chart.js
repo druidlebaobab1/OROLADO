@@ -42,6 +42,8 @@
     var rect = parent.getBoundingClientRect();
     var w = Math.max(1, Math.floor(parent.clientWidth || rect.width || 0));
     var h = Math.max(1, Math.floor(parent.clientHeight || rect.height || 0));
+    var mobile = (window.innerWidth || 0) <= 859;
+    var minH = mobile ? 220 : 300;
     // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
     if (w < 8 || h < 8) {
       canvas.style.width = '100%';
@@ -50,9 +52,15 @@
         overlay.style.width = '100%';
         overlay.style.height = '100%';
       }
+      requestAnimationFrame(function () {
+        if (canvas && canvas.parentElement) {
+          var r2 = canvas.parentElement.getBoundingClientRect();
+          if ((r2.width || 0) >= 8 && (r2.height || 0) >= 8) resize();
+        }
+      });
       return;
     }
-    var mobile = (window.innerWidth || 0) <= 859;
+    h = Math.max(h, minH);
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     cssW = w;
     cssH = h;
@@ -390,20 +398,26 @@
     if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
-    var entry = Number(trade.entryPrice);
+    var entry = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
     if (!isFinite(entry)) return;
     var ey = map && typeof map.toY === 'function'
       ? map.toY(entry)
       : priceToY(entry, pad, plotH, minP, maxP);
+    if (!isFinite(ey)) {
+      ey = priceToY(entry, pad, plotH, minP, maxP);
+    }
     if (!isFinite(ey)) return;
-    var yTop = pad ? pad.t : 4;
-    var yBot = pad ? (pad.t + plotH) : (cssH - 4);
-    ey = Math.max(yTop + 2, Math.min(yBot - 2, ey));
-    var isCall = trade.side === 'call';
-    var col = isCall ? '#22C55E' : '#EF4444';
+    var plotTop = pad ? pad.t : 4;
+    var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
     var x0 = pad ? pad.l : 8;
     var x1 = pad ? (cssW - pad.r) : (cssW - 62);
     if (x1 <= x0 + 8) x1 = Math.max(x0 + 40, cssW - 8);
+    // Dernier recours : rester dans le plot (l’échelle Y doit déjà inclure entry).
+    if (ey < plotTop || ey > plotBot) {
+      ey = Math.max(plotTop + 4, Math.min(plotBot - 4, ey));
+    }
+    var isCall = trade.side === 'call';
+    var col = isCall ? '#22C55E' : '#EF4444';
     var idx = tagIndex || 0;
     g.save();
     g.setLineDash([7, 5]);
@@ -419,63 +433,54 @@
     var tag = (isCall ? 'CALL ' : 'PUT ') + entry.toFixed(2);
     g.font = '800 11px "Hanken Grotesk", sans-serif';
     var tw = Math.ceil(g.measureText(tag).width) + 14;
-    var bx = Math.min(Math.max(x1 - tw + 2, x0 + 4), Math.max(4, cssW - tw - 4));
-    var by = Math.max(4, Math.min(cssH - 22, ey - 10 + idx * 22));
+    var th = 20;
+    var nearTop = (ey - plotTop) < 40;
+    var nearBot = (plotBot - ey) < 40;
+    var bx = x1 - tw - 4;
+    if (bx < x0 + 4) bx = x0 + 4;
+    var by;
+    if (nearTop) by = ey + 6 + idx * 22;
+    else if (nearBot) by = ey - th - 6 - idx * 22;
+    else by = ey - th - 4 - idx * 22;
+    by = Math.max(plotTop + 2, Math.min(plotBot - th - 2, by));
     g.fillStyle = col;
-    roundRectOn(g, bx, by, tw, 20, 5);
+    roundRectOn(g, bx, by, tw, th, 5);
     g.fill();
     g.fillStyle = '#0A0F1D';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText(tag, bx + tw / 2, by + 10);
+    g.fillText(tag, bx + tw / 2, by + th / 2);
     g.textBaseline = 'alphabetic';
     var remaining = exp - Date.now();
     var secs = remaining / 1000;
     if (secs >= 0.15) {
       var label = secs.toFixed(1) + 's';
       if (label.charAt(0) !== '-') {
-        var ty = Math.max(6, ey - 30 - idx * 22);
+        var timerW = 56;
+        var timerH = 20;
+        var ty = nearTop ? (ey + 6 + (idx ? 0 : th + 4)) : (ey - timerH - 6 - idx * 22);
+        if (nearBot) ty = ey - timerH - 6 - idx * 22;
+        ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
+        // Évite chevauchement avec le tag CALL/PUT à droite.
+        var tx = x0 + 4;
         g.fillStyle = 'rgba(10,15,29,0.94)';
         g.strokeStyle = col;
         g.lineWidth = 1.4;
-        roundRectOn(g, x0 + 4, ty, 56, 20, 8);
+        roundRectOn(g, tx, ty, timerW, timerH, 8);
         g.fill();
         g.stroke();
         g.fillStyle = col;
         g.font = '800 12px "Hanken Grotesk", sans-serif';
         g.textAlign = 'center';
-        g.fillText(label, x0 + 32, ty + 14);
+        g.fillText(label, tx + timerW / 2, ty + 14);
       }
     }
   }
 
-  function liveTradesForAsset() {
-    var trade = D6.Engine.getTrade && D6.Engine.getTrade();
-    return (D6.Engine.getTrades ? D6.Engine.getTrades() : (trade ? [trade] : [])).filter(function (ot) {
-      if (!ot || ot.settled || ot.assetId !== activeAsset) return false;
-      var exp = ot.expiryTime || ot.expiresAt;
-      return exp && Date.now() < exp;
-    });
-  }
-
-  function paintOverlay(now) {
-    if (cssW < 8 || cssH < 8) resize();
+  function paintOverlay() {
     if (!octx || cssW < 8 || cssH < 8) return;
     octx.setTransform(dpr, 0, 0, dpr, 0, 0);
     octx.clearRect(0, 0, cssW, cssH);
-    var trades = liveTradesForAsset();
-    if (!trades.length) return;
-    var pad = lastPad || { t: 14, r: 78, b: 22, l: 8 };
-    var plotH = lastPlotH > 0 ? lastPlotH : Math.max(40, cssH - pad.t - pad.b);
-    var minP = lastMinP;
-    var maxP = lastMaxP;
-    if (!(maxP > minP)) {
-      minP = 0;
-      maxP = 1;
-    }
-    trades.slice(0, 5).forEach(function (ot, i) {
-      drawEntryOn(octx, lastMap, ot, now, pad, i, minP, maxP, plotH);
-    });
   }
 
   function drawBead(map, price, color, now) {
@@ -517,7 +522,8 @@
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
     var rsiH = inds.rsi ? 36 : 0;
-    var pad = { t: 14, r: 78, b: 22 + rsiH, l: 8 };
+    // Marge latérale ~48px pour labels timer / CALL-PUT (overflow:hidden du card).
+    var pad = { t: 14, r: 62, b: 22 + rsiH, l: 12 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 40) h = Math.max(40, cssH - 36);
@@ -547,7 +553,7 @@
     var maxPrice = series.length ? Math.max.apply(null, series) : market.price;
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
-        var ep = Number(ot.entryPrice);
+        var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
         if (isFinite(ep)) {
           minPrice = Math.min(minPrice, ep);
           maxPrice = Math.max(maxPrice, ep);
@@ -558,17 +564,20 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    var range = Math.max(maxPrice - minPrice, asset.tickNoise * 8, 0.35);
-    // Marge de respiration obligatoire ~20% haut et bas pour ne jamais tronquer les mèches.
-    var yMin = minPrice - (range * 0.20);
-    var yMax = maxPrice + (range * 0.20);
-    if (!viewMin || !viewMax) {
+    var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
+    var padding = Math.max(span * 0.12, asset.tickNoise * 2.5, 0.15);
+    var yMin = minPrice - padding;
+    var yMax = maxPrice + padding;
+    // Avec trades OPEN : suivre le marché sans lag (lignes toujours dans le cadre).
+    if (allTrades.length) {
+      viewMin = yMin;
+      viewMax = yMax;
+    } else if (!viewMin || !viewMax) {
       viewMin = yMin;
       viewMax = yMax;
     } else {
       var nextMin = viewMin + (yMin - viewMin) * 0.28;
       var nextMax = viewMax + (yMax - viewMax) * 0.28;
-      // Si le cours sort du cadre, élargit immédiatement (évite les bougies hors écran).
       if (minPrice < viewMin || maxPrice > viewMax) {
         nextMin = Math.min(nextMin, yMin);
         nextMax = Math.max(nextMax, yMax);
@@ -610,11 +619,11 @@
     lastMaxP = maxP;
     lastMap = map;
 
-    // Ligne de trade : canvas principal + overlay (PC & mobile).
+    // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     allTrades.slice(0, 5).forEach(function (ot, i) {
       drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h);
     });
-    paintOverlay(now);
+    paintOverlay();
 
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
     if (primary) {
@@ -654,13 +663,6 @@
       D6.Engine.tick(activeAsset);
       flushDue();
       lastFlush = ts;
-    }
-    // Même si le graphique principal est throttlé, rafraîchir l'overlay trade.
-    if (liveN > 0 && ts - lastDraw < drawEvery) {
-      if (ts - lastFlush < flushEvery) D6.Engine.tick(activeAsset);
-      paintOverlay(ts);
-      if (onFrame) onFrame(ts);
-      return;
     }
     if (ts - lastDraw < drawEvery) return;
     lastDraw = ts;
@@ -740,6 +742,9 @@
       resize();
       bindTools();
       window.addEventListener('resize', function () { requestAnimationFrame(resize); });
+      window.addEventListener('orientationchange', function () {
+        setTimeout(function () { resize(); }, 120);
+      });
       if (window.visualViewport) {
         visualViewport.addEventListener('resize', function () { requestAnimationFrame(resize); });
       }
