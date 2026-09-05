@@ -176,7 +176,7 @@
     var w = Math.max(1, Math.floor(parent.clientWidth || rect.width || 0));
     var h = Math.max(1, Math.floor(parent.clientHeight || rect.height || 0));
     var mobile = (window.innerWidth || 0) <= 859;
-    var minH = mobile ? 220 : 300;
+    var minH = mobile ? 240 : 300;
     // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
     if (w < 8 || h < 8) {
       canvas.style.width = '100%';
@@ -194,12 +194,18 @@
       return;
     }
     h = Math.max(h, minH);
+    // Canvas trop bas (= écran noir) : forcer la hauteur du stage puis recalculer.
+    if (h < 100 && parent) {
+      parent.style.minHeight = (mobile ? 240 : 300) + 'px';
+      h = Math.max(minH, Math.floor(parent.clientHeight || parent.getBoundingClientRect().height || minH));
+    }
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     cssW = w;
     cssH = h;
     var bw = Math.round(cssW * dpr);
     var bh = Math.round(cssH * dpr);
-    if (canvas.width !== bw || canvas.height !== bh) {
+    var sizeChanged = canvas.width !== bw || canvas.height !== bh;
+    if (sizeChanged || h < 100) {
       canvas.width = bw;
       canvas.height = bh;
     }
@@ -207,7 +213,7 @@
     canvas.style.height = cssH + 'px';
     if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (overlay) {
-      if (overlay.width !== bw || overlay.height !== bh) {
+      if (overlay.width !== bw || overlay.height !== bh || sizeChanged) {
         overlay.width = bw;
         overlay.height = bh;
       }
@@ -217,6 +223,7 @@
     }
     // Même frame que setData/resize : flusher les lignes en attente.
     flushOpenTradeVisualQueue();
+    if (sizeChanged && running) drawNow();
   }
 
   function visibleCandles(market) {
