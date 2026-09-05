@@ -430,7 +430,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:5}
 .lang-btn{border:0;background:transparent;font-size:13px;line-height:1;padding:3px;border-radius:6px;cursor:pointer;opacity:.45}
 .lang-btn.on{opacity:1;background:var(--gold-soft)}
-.install-banner{position:absolute;left:8px;right:8px;bottom:8px;z-index:14;display:flex;align-items:center;gap:5px;
+.install-banner{position:absolute;left:8px;right:8px;bottom:8px;z-index:45;display:flex;align-items:center;gap:5px;
   background:rgba(16,22,34,.9);border:1px solid rgba(245,197,24,.28);border-radius:8px;padding:4px 6px;font-size:.62rem;font-weight:800;
   box-shadow:0 4px 12px rgba(0,0,0,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);max-width:100%;pointer-events:auto}
 .install-banner.hidden{display:none!important}
