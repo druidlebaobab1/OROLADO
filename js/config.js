@@ -17,6 +17,8 @@
     REAL_PAYOUT: 1.88,
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 1000,
+    MIN_WITHDRAW: 2000,
+    WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
     MAX_OPEN: 2,
     MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',

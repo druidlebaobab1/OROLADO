@@ -814,8 +814,8 @@ function credit_paid_deposit(array $hit): array {
 
   $amount = (int) ($hit['amount'] ?? 0);
   $pendingAmt = (int) ($dep['amount'] ?? 0);
-  if ($amount <= 0 && $pendingAmt >= 100) $amount = $pendingAmt;
-  if ($amount < 100 || $amount > 5000000) {
+  if ($amount <= 0 && $pendingAmt >= 1000) $amount = $pendingAmt;
+  if ($amount < 1000 || $amount > 5000000) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
@@ -839,6 +839,7 @@ function credit_paid_deposit(array $hit): array {
   }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   $db['vault'][$uid]['real'] = (int) ($db['vault'][$uid]['real'] ?? 0) + $amount;
+  $db['users'][$uid]['realDepositTotal'] = (int) ($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount;
   $db['deposits'][$idx]['status'] = 'COMPLETED';
   $db['deposits'][$idx]['amount'] = $amount;
   $db['deposits'][$idx]['paidAt'] = date('c');
@@ -1203,11 +1204,8 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** L'admin teste avec 100 FCFA, les joueurs gardent le minimum public. */
+/** Minimum dépôt joueur = 1 000 FCFA (légal). */
 function orolado_min_deposit(?array $me): int {
-  if (!$me) return 1000;
-  $email = strtolower(trim((string) ($me['email'] ?? '')));
-  if (($me['role'] ?? '') === 'admin' && ($email === 'admin@orolado.com' || $email === 'admin@6diablo.com')) return 100;
   return 1000;
 }
 
@@ -1221,7 +1219,7 @@ function orolado_initiate_deposit(array $req): array {
   $amount = (int) ($req['amount'] ?? 0);
   $min = orolado_min_deposit($me);
   if ($amount < $min || $amount > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Montant minimum ' . number_format($min, 0, ',', ' ') . ' FCFA'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 1 000 FCFA.'];
   }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));

@@ -132,6 +132,7 @@
       demoTrades: row.demo_trades || 0,
       realTrades: row.real_trades || 0,
       realStakeVolume: row.real_stake_volume || 0,
+      realDepositTotal: row.real_deposit_total || 0,
       passwordHash: '',
       recentResults: [],
       positions: (meta && meta.positions) || [],
@@ -399,6 +400,7 @@
       demo_trades: user.demoTrades || 0,
       real_trades: user.realTrades || 0,
       real_stake_volume: user.realStakeVolume || 0,
+      real_deposit_total: user.realDepositTotal || 0,
       updated_at: new Date().toISOString()
     }).then(function () { /* ignore */ });
     sb.from('vaults').upsert({

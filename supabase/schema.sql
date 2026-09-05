@@ -19,6 +19,7 @@ create table if not exists public.profiles (
   demo_trades int not null default 0,
   real_trades int not null default 0,
   real_stake_volume bigint not null default 0,
+  real_deposit_total bigint not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   last_seen timestamptz
@@ -26,6 +27,7 @@ create table if not exists public.profiles (
 
 -- Presence (ping client ~30s). Compteur admin = last_seen < 90s.
 alter table public.profiles add column if not exists last_seen timestamptz;
+alter table public.profiles add column if not exists real_deposit_total bigint not null default 0;
 
 create table if not exists public.vaults (
   user_id uuid primary key references public.profiles (id) on delete cascade,

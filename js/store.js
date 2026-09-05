@@ -67,6 +67,7 @@
       demoTrades: 0,
       realTrades: 0,
       realStakeVolume: 0,
+      realDepositTotal: 0,
       convertPromptShown: false,
       recentResults: [],
       positions: [],
@@ -86,6 +87,7 @@
     if (user.demoTrades == null) user.demoTrades = 0;
     if (user.realTrades == null) user.realTrades = 0;
     if (user.realStakeVolume == null) user.realStakeVolume = 0;
+    if (user.realDepositTotal == null) user.realDepositTotal = 0;
     if (!Array.isArray(user.openTrades)) user.openTrades = [];
     if (!Array.isArray(user.positions)) user.positions = [];
     if (!Array.isArray(user.transactions)) user.transactions = [];
@@ -375,8 +377,16 @@
       extra = extra || {};
       amount = Math.round(Number(amount) || 0);
       var real = (vault[user.id] || { real: 0 }).real;
-      if (amount < D6.CONFIG.MIN_STAKE) return { ok: false, reason: D6.I18N.t('minStake') };
+      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 2000;
+      if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
+      var deposits = Number(user.realDepositTotal) || 0;
+      var required = Math.floor(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
+      var done = Number(user.realStakeVolume) || 0;
+      if (done < required) {
+        var left = required - done;
+        return { ok: false, reason: D6.I18N.t('wagerBlocked').replace('{amt}', Math.round(left).toLocaleString(D6.I18N.lang === 'fr' ? 'fr-FR' : 'en-US')) };
+      }
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
       vault[user.id].real = real - amount;
       db.withdrawals = db.withdrawals || [];
