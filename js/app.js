@@ -751,6 +751,18 @@
     if ($('mExposure')) $('mExposure').textContent = D6.fmtFCFA(m.exposure || 0);
     $('mProfit').textContent = D6.fmtFCFA(m.profit != null ? m.profit : 0);
     $('mUsers').textContent = String(m.users || 0);
+    if ($('mOnline')) {
+      $('mOnline').textContent = '…';
+      if (D6.Supabase && D6.Supabase.countOnline) {
+        D6.Supabase.countOnline().then(function (n) {
+          if ($('mOnline')) $('mOnline').textContent = String(n || 0);
+        }).catch(function () {
+          if ($('mOnline')) $('mOnline').textContent = '0';
+        });
+      } else {
+        $('mOnline').textContent = '0';
+      }
+    }
     renderAdminUsers(($('adminSearch') && $('adminSearch').value) || '');
     if (!wd.length) $('adminWithdrawals').innerHTML = '<div class="empty-feed">' + t('noWithdraw') + '</div>';
     else {
@@ -1800,7 +1812,11 @@
       renderHistorySheet();
       openModal('historySheet');
     }
-    tap($('btnHistMore'), openHistorySheet);
+    var histBtn = $('btnHistMore');
+    if (histBtn) {
+      tap(histBtn, openHistorySheet);
+      histBtn.addEventListener('click', openHistorySheet, true);
+    }
   }
 
   function bindModals() {
@@ -2131,7 +2147,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=48').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=49').catch(function () { /* ignore */ });
     }
   }
 

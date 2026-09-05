@@ -87,6 +87,9 @@
     if (user.realTrades == null) user.realTrades = 0;
     if (user.realStakeVolume == null) user.realStakeVolume = 0;
     if (!Array.isArray(user.openTrades)) user.openTrades = [];
+    if (!Array.isArray(user.positions)) user.positions = [];
+    if (!Array.isArray(user.transactions)) user.transactions = [];
+    if (!Array.isArray(user.recentResults)) user.recentResults = [];
     if (!user.role) user.role = (user.email === 'admin@orolado.com' || user.email === 'admin@6diablo.com') ? 'admin' : 'user';
     if (!user.publicId) {
       var h = 0;
@@ -164,13 +167,25 @@
   D6.Store = {
     importRemote: function (user, vaultEntry) {
       if (!user || !user.id) return;
+      var prev = db.users[user.id];
+      // Ne jamais écraser l’historique local par un objet distant sans positions.
+      if (prev && Array.isArray(prev.positions) && prev.positions.length) {
+        if (!Array.isArray(user.positions) || !user.positions.length) {
+          user.positions = prev.positions.slice();
+        }
+      }
+      if (prev && Array.isArray(prev.openTrades) && prev.openTrades.length) {
+        if (!Array.isArray(user.openTrades) || !user.openTrades.length) {
+          user.openTrades = prev.openTrades.slice();
+        }
+      }
       db.users[user.id] = hydrate(Object.assign({}, user));
       if (vaultEntry) {
-        var prev = vault[user.id] || { demo: 0, real: 0 };
+        var prevV = vault[user.id] || { demo: 0, real: 0 };
         var nextReal = Number(vaultEntry.real);
-        if (!isFinite(nextReal) || (nextReal <= 0 && Number(prev.real) > 0)) nextReal = Number(prev.real) || 0;
+        if (!isFinite(nextReal) || (nextReal <= 0 && Number(prevV.real) > 0)) nextReal = Number(prevV.real) || 0;
         vault[user.id] = {
-          demo: vaultEntry.demo != null && isFinite(Number(vaultEntry.demo)) ? Number(vaultEntry.demo) : prev.demo,
+          demo: vaultEntry.demo != null && isFinite(Number(vaultEntry.demo)) ? Number(vaultEntry.demo) : prevV.demo,
           real: nextReal
         };
       }
