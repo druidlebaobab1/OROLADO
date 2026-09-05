@@ -2147,7 +2147,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=49').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=50').catch(function () { /* ignore */ });
     }
   }
 

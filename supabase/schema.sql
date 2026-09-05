@@ -350,3 +350,26 @@ do $$ begin
   alter publication supabase_realtime add table public.orders;
 exception when duplicate_object then null;
 end $$;
+
+-- Compteur admin EN LIGNE (bypass RLS : last_seen < N secondes).
+create or replace function public.count_online(p_seconds int default 90)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n bigint;
+  secs int;
+begin
+  secs := greatest(10, coalesce(p_seconds, 90));
+  select count(*) into n
+  from public.profiles
+  where last_seen is not null
+    and last_seen > now() - make_interval(secs => secs);
+  return coalesce(n, 0);
+end;
+$$;
+revoke all on function public.count_online(int) from public;
+grant execute on function public.count_online(int) to authenticated;
+create index if not exists profiles_last_seen_idx on public.profiles (last_seen desc nulls last);

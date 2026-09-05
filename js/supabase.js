@@ -251,6 +251,11 @@
   async function countOnline() {
     var sb = getClient();
     if (!sb) return 0;
+    // RPC security definer : compte tous les last_seen (RLS profiles_own ne suffit pas).
+    try {
+      var rpc = await sb.rpc('count_online', { p_seconds: 90 });
+      if (!rpc.error && rpc.data != null) return Number(rpc.data) || 0;
+    } catch (e0) { /* fallback ci-dessous */ }
     var since = new Date(Date.now() - 90000).toISOString();
     var res = await sb.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', since);
     if (res && typeof res.count === 'number') return res.count;
