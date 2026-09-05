@@ -40,8 +40,8 @@
     var parent = canvas.parentElement;
     if (!parent) return;
     var rect = parent.getBoundingClientRect();
-    var w = Math.max(1, Math.floor(rect.width || parent.clientWidth || 0));
-    var h = Math.max(1, Math.floor(rect.height || parent.clientHeight || 0));
+    var w = Math.max(1, Math.floor(parent.clientWidth || rect.width || 0));
+    var h = Math.max(1, Math.floor(parent.clientHeight || rect.height || 0));
     // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
     if (w < 8 || h < 8) {
       canvas.style.width = '100%';
@@ -459,13 +459,22 @@
   }
 
   function paintOverlay(now) {
+    if (cssW < 8 || cssH < 8) resize();
     if (!octx || cssW < 8 || cssH < 8) return;
     octx.setTransform(dpr, 0, 0, dpr, 0, 0);
     octx.clearRect(0, 0, cssW, cssH);
     var trades = liveTradesForAsset();
-    if (!trades.length || !lastPad) return;
+    if (!trades.length) return;
+    var pad = lastPad || { t: 14, r: 78, b: 22, l: 8 };
+    var plotH = lastPlotH > 0 ? lastPlotH : Math.max(40, cssH - pad.t - pad.b);
+    var minP = lastMinP;
+    var maxP = lastMaxP;
+    if (!(maxP > minP)) {
+      minP = 0;
+      maxP = 1;
+    }
     trades.slice(0, 5).forEach(function (ot, i) {
-      drawEntryOn(octx, lastMap, ot, now, lastPad, i, lastMinP, lastMaxP, lastPlotH);
+      drawEntryOn(octx, lastMap, ot, now, pad, i, minP, maxP, plotH);
     });
   }
 
@@ -601,7 +610,10 @@
     lastMaxP = maxP;
     lastMap = map;
 
-    // Ligne de trade sur canvas overlay (z-index supérieur), chaque frame.
+    // Ligne de trade : canvas principal + overlay (PC & mobile).
+    allTrades.slice(0, 5).forEach(function (ot, i) {
+      drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h);
+    });
     paintOverlay(now);
 
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';

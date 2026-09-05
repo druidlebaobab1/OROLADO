@@ -24,6 +24,46 @@
     return isUsableKey(anonKey()) && !!projectUrl() && !!(window.supabase && window.supabase.createClient);
   }
 
+  function makeAuthStorage() {
+    try {
+      var probe = '__oro_ls_ok__';
+      window.localStorage.setItem(probe, '1');
+      window.localStorage.removeItem(probe);
+      return window.localStorage;
+    } catch (e) {
+      var mem = {};
+      function cookieGet(key) {
+        try {
+          var m = document.cookie.match(new RegExp('(?:^|; )' + key.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
+          return m ? decodeURIComponent(m[1]) : null;
+        } catch (e2) { return null; }
+      }
+      function cookieSet(key, val) {
+        try {
+          document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(val) +
+            '; path=/; max-age=31536000; SameSite=Lax';
+        } catch (e3) { /* ignore */ }
+      }
+      function cookieDel(key) {
+        try { document.cookie = encodeURIComponent(key) + '=; path=/; max-age=0'; } catch (e4) { /* ignore */ }
+      }
+      return {
+        getItem: function (key) {
+          if (Object.prototype.hasOwnProperty.call(mem, key)) return mem[key];
+          return cookieGet(key);
+        },
+        setItem: function (key, value) {
+          mem[key] = String(value);
+          cookieSet(key, String(value));
+        },
+        removeItem: function (key) {
+          delete mem[key];
+          cookieDel(key);
+        }
+      };
+    }
+  }
+
   function getClient() {
     if (client) return client;
     if (!enabled()) return null;
@@ -32,7 +72,7 @@
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storage: window.localStorage,
+        storage: makeAuthStorage(),
         flowType: 'pkce'
       }
     });
@@ -376,7 +416,20 @@
     login: async function (email, password) {
       var sb = getClient();
       if (!sb) return { ok: false, reason: 'Supabase non configuré (clé anon manquante)' };
+      // Nettoie une session expirée sans bloquer signInWithPassword.
+      try {
+        var cur = await sb.auth.getSession();
+        var sess = cur && cur.data && cur.data.session;
+        if (sess && sess.expires_at && (sess.expires_at * 1000) < Date.now()) {
+          await sb.auth.signOut({ scope: 'local' });
+        }
+      } catch (e0) { /* ignore */ }
       var res = await sb.auth.signInWithPassword({ email: email, password: password });
+      if (res.error) {
+        // Nouvelle tentative après purge locale si le navigateur a une session corrompue.
+        try { await sb.auth.signOut({ scope: 'local' }); } catch (e1) { /* ignore */ }
+        res = await sb.auth.signInWithPassword({ email: email, password: password });
+      }
       if (res.error) return { ok: false, reason: res.error.message === 'Invalid login credentials' ? 'Mot de passe incorrect' : res.error.message, field: 'loginPass' };
       return loadAccount(res.data.user);
     },
@@ -409,16 +462,18 @@
       var sb = getClient();
       var user = D6.Store.current();
       if (!sb || !user || !uuidish(user.id)) return { deposits: [], txs: [], withdrawals: [] };
-      var dep = await sb.from('deposits').select('id,amount,status,created_at,completed_at,reference,operator').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
-      var txRes = await sb.from('transactions').select('id,type,amount,note,created_at,mode').eq('user_id', user.id).in('type', ['deposit', 'withdraw']).order('created_at', { ascending: false }).limit(80);
-      var wd = { data: [] };
-      try {
-        wd = await sb.from('withdrawals').select('id,amount,status,created_at,reference,operator').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
-      } catch (e) { wd = { data: [] }; }
+      var depP = sb.from('deposits').select('id,amount,status,created_at,completed_at,reference,operator').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
+      var txP = sb.from('transactions').select('id,type,amount,note,created_at,mode').eq('user_id', user.id).in('type', ['deposit', 'withdraw']).order('created_at', { ascending: false }).limit(20);
+      var wdP = sb.from('withdrawals').select('id,amount,status,created_at,reference,operator').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20);
+      var settled = await Promise.all([
+        depP.then(function (r) { return r; }).catch(function () { return { data: [] }; }),
+        txP.then(function (r) { return r; }).catch(function () { return { data: [] }; }),
+        wdP.then(function (r) { return r; }).catch(function () { return { data: [] }; })
+      ]);
       return {
-        deposits: (dep && dep.data) || [],
-        txs: (txRes && txRes.data) || [],
-        withdrawals: (wd && wd.data) || []
+        deposits: (settled[0] && settled[0].data) || [],
+        txs: (settled[1] && settled[1].data) || [],
+        withdrawals: (settled[2] && settled[2].data) || []
       };
     },
 

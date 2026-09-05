@@ -72,12 +72,14 @@
 
   function requireAccount(msg) {
     if (!isGuest()) return true;
+    if (!guardLiveTradeView()) return false;
     toast(msg || t('needAccount') || 'Connecte-toi ou crée un compte pour continuer', 'err');
     showAuthScreen('login', { fromReal: true });
     return false;
   }
 
   function showAuthScreen(tab, opts) {
+    if (!(opts && opts.force) && !guardLiveTradeView()) return;
     showScreen('screenAuth');
     document.querySelectorAll('.auth-tab').forEach(function (el) {
       el.classList.toggle('on', el.dataset.tab === tab);
@@ -166,12 +168,18 @@
     if (name !== 'screenTrade') closeDrawer();
   }
 
-  function toast(msg, kind) {
+  function toast(msg, kind, ms) {
     var el = $('toast');
     el.textContent = msg;
     el.className = 'toast show ' + (kind || '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.className = 'toast'; }, 2400);
+    toastTimer = setTimeout(function () { el.className = 'toast'; }, ms || 2400);
+  }
+
+  function guardLiveTradeView() {
+    if (!(D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount())) return true;
+    toast('Trade en cours... Veuillez patienter jusqu’à la fin du compte à rebours pour changer de vue.', '', 3000);
+    return false;
   }
 
   function showOutcomeToast(isWin, payout, tradeId) {
@@ -411,8 +419,10 @@
       setModeUi(u);
       return;
     }
-    var mode = u.mode === 'real' ? 'real' : 'demo';
-    if (D6.Engine.liveCount && D6.Engine.liveCount(mode)) return;
+    if (!guardLiveTradeView()) {
+      setModeUi(u);
+      return;
+    }
     u.mode = next === 'real' ? 'real' : 'demo';
     D6.Store.saveUser(u);
     stake = D6.CONFIG.MIN_STAKE || 100;
@@ -1509,10 +1519,31 @@
     return String(raw);
   }
 
-  async function fillFinanceHistory() {
-    var tx = $('txFeed');
-    if (!tx) return;
-    tx.innerHTML = '<div class="empty-feed">…</div>';
+  var financeCache = { at: 0, html: '', userId: '' };
+
+  function renderFinanceRows(tx, rows) {
+    var seen = {};
+    rows = rows.filter(function (r) {
+      var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '') + '|' + r.label;
+      if (seen[k]) return false;
+      seen[k] = 1;
+      return true;
+    });
+    rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
+    rows = rows.slice(0, 20);
+    var html = rows.length ? rows.map(function (r) {
+      var st = r.status || { label: 'En cours', cls: 'pending' };
+      return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
+        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
+        '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
+        st.label + '</span></div></div>';
+    }).join('') : '<div class="empty-feed">Aucune opération pour l’instant</div>';
+    tx.innerHTML = html;
+    return html;
+  }
+
+  function collectLocalFinanceRows() {
     var rows = [];
     var u = user();
     if (u && u.transactions) {
@@ -1539,6 +1570,23 @@
         gateway: gatewayLabel(w.operator || '')
       });
     });
+    return rows;
+  }
+
+  async function fillFinanceHistory() {
+    var tx = $('txFeed');
+    if (!tx) return;
+    var u = user();
+    var uid = u ? u.id : '';
+    if (financeCache.html && financeCache.userId === uid && (Date.now() - financeCache.at) < 60000) {
+      tx.innerHTML = financeCache.html;
+      return;
+    }
+    var rows = collectLocalFinanceRows();
+    financeCache.html = renderFinanceRows(tx, rows);
+    financeCache.at = Date.now();
+    financeCache.userId = uid;
+
     if (D6.Supabase && D6.Supabase.listFinance) {
       try {
         var cloud = await D6.Supabase.listFinance();
@@ -1574,37 +1622,30 @@
             gateway: gatewayLabel(trow.note || '')
           });
         });
+        financeCache.html = renderFinanceRows(tx, rows);
+        financeCache.at = Date.now();
       } catch (e) { /* ignore */ }
     }
-    var remote = await D6.Api.post('financeHistory', {});
-    if (remote && remote.ok && remote.rows) {
-      (remote.rows || []).forEach(function (r) {
-        rows.push({
-          at: r.at || '',
-          ref: r.ref || '—',
-          amount: Number(r.amount) || 0,
-          status: normFinanceStatus(r.status, r.label),
-          label: r.label === 'Recharge' ? 'Dépôt' : (r.label || '—'),
-          gateway: gatewayLabel(r.operator || r.gateway || '')
+    // API PHP en arrière-plan (ne bloque plus l’ouverture).
+    if (D6.Api && D6.Api.post) {
+      D6.Api.post('financeHistory', {}).then(function (remote) {
+        if (!(remote && remote.ok && remote.rows && remote.rows.length)) return;
+        (remote.rows || []).forEach(function (r) {
+          rows.push({
+            at: r.at || '',
+            ref: r.ref || '—',
+            amount: Number(r.amount) || 0,
+            status: normFinanceStatus(r.status, r.label),
+            label: r.label === 'Recharge' ? 'Dépôt' : (r.label || '—'),
+            gateway: gatewayLabel(r.operator || r.gateway || '')
+          });
         });
-      });
+        if ($('txFeed') === tx) {
+          financeCache.html = renderFinanceRows(tx, rows);
+          financeCache.at = Date.now();
+        }
+      }).catch(function () { /* ignore */ });
     }
-    var seen = {};
-    rows = rows.filter(function (r) {
-      var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '') + '|' + r.label;
-      if (seen[k]) return false;
-      seen[k] = 1;
-      return true;
-    });
-    rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
-    tx.innerHTML = rows.length ? rows.map(function (r) {
-      var st = r.status || { label: 'En cours', cls: 'pending' };
-      return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
-        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
-        '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
-        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
-        st.label + '</span></div></div>';
-    }).join('') : '<div class="empty-feed">Aucune opération pour l’instant</div>';
   }
 
   function bindAuth() {
@@ -1669,6 +1710,7 @@
       chip.addEventListener('click', function () {
         var u = user();
         if (!u) return;
+        if (!guardLiveTradeView()) return;
         u.assetId = chip.dataset.asset; D6.Store.saveUser(u); updateAssetUi();
       });
     });
@@ -1676,6 +1718,7 @@
       chip.addEventListener('click', function () {
         var u = user();
         if (!u) return;
+        if (!guardLiveTradeView()) return;
         u.duration = Number(chip.dataset.dur); D6.Store.saveUser(u); updateDurationUi();
       });
     });
@@ -2063,7 +2106,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=44').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=45').catch(function () { /* ignore */ });
     }
   }
 

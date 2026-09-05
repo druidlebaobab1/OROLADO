@@ -328,6 +328,7 @@ drop policy if exists withdrawals_own on public.withdrawals;
 create policy withdrawals_own on public.withdrawals
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create index if not exists withdrawals_user_created_idx on public.withdrawals (user_id, created_at desc);
+create index if not exists deposits_user_created_idx on public.deposits (user_id, created_at desc);
 
 alter table public.profiles replica identity full;
 alter table public.vaults replica identity full;
