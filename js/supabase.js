@@ -227,11 +227,35 @@
     var sess = await sb.auth.getSession();
     if (sess && sess.data && sess.data.session && D6.Api) D6.Api.setToken(sess.data.session.access_token);
     startRealtime(pid);
+    pingPresence();
     return { ok: true, user: D6.Store.getUser(pid), vault: vault };
   }
 
   var rtChannel = null;
   var pollTimer = 0;
+  var presenceTimer = 0;
+
+  function pingPresence() {
+    var sb = getClient();
+    var user = D6.Store.current();
+    if (!sb || !user || !uuidish(user.id)) return;
+    sb.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', user.id).then(function () { /* ignore */ });
+  }
+
+  function startPresencePing() {
+    if (presenceTimer) clearInterval(presenceTimer);
+    pingPresence();
+    presenceTimer = setInterval(pingPresence, 30000);
+  }
+
+  async function countOnline() {
+    var sb = getClient();
+    if (!sb) return 0;
+    var since = new Date(Date.now() - 90000).toISOString();
+    var res = await sb.from('profiles').select('id', { count: 'exact', head: true }).gte('last_seen', since);
+    if (res && typeof res.count === 'number') return res.count;
+    return 0;
+  }
 
   function applyIncomingVault(vault, profile) {
     var u = D6.Store.current();
@@ -278,6 +302,10 @@
       clearInterval(pollTimer);
       pollTimer = 0;
     }
+    if (presenceTimer) {
+      clearInterval(presenceTimer);
+      presenceTimer = 0;
+    }
     if (rtChannel && client) {
       try { client.removeChannel(rtChannel); } catch (e) { /* ignore */ }
     }
@@ -315,6 +343,7 @@
       })
       .subscribe();
     pollTimer = setInterval(function () { pullVault(); }, 12000);
+    startPresencePing();
   }
 
   async function pullVault() {
@@ -416,18 +445,43 @@
     login: async function (email, password) {
       var sb = getClient();
       if (!sb) return { ok: false, reason: 'Supabase non configuré (clé anon manquante)' };
-      // Nettoie une session expirée sans bloquer signInWithPassword.
+      email = String(email || '').trim().toLowerCase();
+      password = String(password || '').trim();
+      function clearStaleLocalSession() {
+        try { return sb.auth.signOut({ scope: 'local' }); } catch (e0) { return Promise.resolve(); }
+      }
+      function scrubAuthStorage() {
+        try {
+          var keys = [];
+          var i;
+          for (i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && (k.indexOf('sb-') === 0 || k.indexOf('supabase.auth') >= 0)) keys.push(k);
+          }
+          keys.forEach(function (k) { localStorage.removeItem(k); });
+        } catch (e1) { /* ignore */ }
+        try {
+          sessionStorage.removeItem('oro_token');
+        } catch (e2) { /* ignore */ }
+        if (D6.Api && D6.Api.setToken) D6.Api.setToken('');
+      }
+      // Session expirée : purge avant tentative.
       try {
         var cur = await sb.auth.getSession();
         var sess = cur && cur.data && cur.data.session;
         if (sess && sess.expires_at && (sess.expires_at * 1000) < Date.now()) {
-          await sb.auth.signOut({ scope: 'local' });
+          await clearStaleLocalSession();
+          scrubAuthStorage();
         }
-      } catch (e0) { /* ignore */ }
+      } catch (e3) { /* ignore */ }
       var res = await sb.auth.signInWithPassword({ email: email, password: password });
       if (res.error) {
-        // Nouvelle tentative après purge locale si le navigateur a une session corrompue.
-        try { await sb.auth.signOut({ scope: 'local' }); } catch (e1) { /* ignore */ }
+        // Échec (souvent Chrome normal + vieux token) : clear puis 1 retry.
+        await clearStaleLocalSession();
+        scrubAuthStorage();
+        client = null;
+        sb = getClient();
+        if (!sb) return { ok: false, reason: res.error.message === 'Invalid login credentials' ? 'Mot de passe incorrect' : res.error.message, field: 'loginPass' };
         res = await sb.auth.signInWithPassword({ email: email, password: password });
       }
       if (res.error) return { ok: false, reason: res.error.message === 'Invalid login credentials' ? 'Mot de passe incorrect' : res.error.message, field: 'loginPass' };
@@ -446,6 +500,8 @@
     pullVault: pullVault,
     startRealtime: startRealtime,
     stopRealtime: stopRealtime,
+    pingPresence: pingPresence,
+    countOnline: countOnline,
 
     changePassword: async function (next) {
       var sb = getClient();
