@@ -18,6 +18,26 @@
   var balanceLockDemo = null;
   var balanceLockReal = null;
   var lastPaintedBalance = null;
+  var metaPvAt = 0;
+  var metaPvScreen = '';
+
+  function metaTrack(eventName, params) {
+    try {
+      if (typeof window.fbq !== 'function') return;
+      if (params) window.fbq('track', eventName, params);
+      else window.fbq('track', eventName);
+    } catch (e) { /* pixel ne doit jamais bloquer le trade */ }
+  }
+
+  function metaPageView(screen) {
+    var now = Date.now();
+    var key = String(screen || 'page');
+    if (key === metaPvScreen && (now - metaPvAt) < 1000) return;
+    metaPvScreen = key;
+    metaPvAt = now;
+    metaTrack('PageView');
+  }
+
   var LANGS = [
     { code: 'fr', flag: '🇫🇷' },
     { code: 'en', flag: '🇬🇧' },
@@ -92,6 +112,7 @@
       pitch.classList.toggle('hidden', !showPitch);
       if (showPitch) pitch.textContent = t('authRealPitch') || pitch.textContent;
     }
+    if (tab === 'register') metaTrack('Lead');
   }
 
   function syncAuthQuick() {
@@ -172,6 +193,7 @@
       if (el) el.classList.toggle('hidden', id !== name);
     });
     if (name !== 'screenTrade') closeDrawer();
+    metaPageView(name);
   }
 
   function toast(msg, kind, ms) {
@@ -1017,6 +1039,7 @@
     closeDrawer();
     closeModal('convertModal');
     openModal('depositModal');
+    metaTrack('InitiateCheckout');
   }
 
   var depositing = false;
@@ -1229,6 +1252,7 @@
     }
     updateBalance(true);
     toast(t('depositCredited').replace('{amt}', D6.fmtFCFA(remote.amount)), 'ok');
+    metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'XOF' });
     playWinChime();
     if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
     closeModal('depositModal');
@@ -1688,6 +1712,7 @@
         $('formLogin').classList.toggle('hidden', tab.dataset.tab !== 'login');
         $('formRegister').classList.toggle('hidden', tab.dataset.tab !== 'register');
         clearErrors();
+        if (tab.dataset.tab === 'register') metaTrack('Lead');
       });
     });
     $('formLogin').addEventListener('submit', async function (e) {
@@ -1713,6 +1738,7 @@
         acceptTerms: $('regAge').checked
       });
       if (!res.ok) { showFieldError(res.field || 'regName', res.reason); return; }
+      metaTrack('CompleteRegistration');
       toast(t('accountCreated'), 'ok');
       enterApp();
     });
@@ -2147,7 +2173,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=50').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=51').catch(function () { /* ignore */ });
     }
   }
 
