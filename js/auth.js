@@ -110,22 +110,29 @@
 
       var adminEmail = (D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com').toLowerCase();
       var adminPass = D6.CONFIG.ADMIN_PASSWORD || 'AdminOrolado2026!';
+      var adminAliases = [adminEmail, 'admin@orolado.com', 'admin@orolado.com'];
 
       await this.ensureAdminLocal();
 
-      if (id.email === adminEmail && password === adminPass) {
-        var admin = D6.Store.findByEmail(adminEmail);
+      if (adminAliases.indexOf(id.email) >= 0 && password === adminPass) {
+        var admin = D6.Store.findByEmail(adminEmail) || D6.Store.findByEmail(id.email);
         if (!admin) {
           await this.ensureAdminLocal();
           admin = D6.Store.findByEmail(adminEmail);
         }
         if (!admin) return { ok: false, reason: 'Identifiants introuvables', field: 'loginId' };
+        admin.role = 'admin';
+        admin.email = adminEmail;
+        D6.Store.saveUser(admin);
         D6.Store.setSession({ userId: admin.id, at: D6.nowIso() });
         if (D6.Api) {
-          D6.Api.post('login', { email: id.email, password: password }).then(function (remote) {
+          D6.Api.post('login', { email: adminEmail, password: password }).then(function (remote) {
             if (remote && remote.ok && remote.token) {
               D6.Api.setToken(remote.token);
-              if (remote.user) D6.Store.importRemote(remote.user, remote.vault);
+              if (remote.user) {
+                remote.user.role = 'admin';
+                D6.Store.importRemote(remote.user, remote.vault);
+              }
             }
           });
         }
@@ -242,13 +249,19 @@
 
     isAdmin: function (user) {
       var email = (D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com').toLowerCase();
-      return !!(user && user.role === 'admin' && String(user.email || '').toLowerCase() === email);
+      var aliases = [email, 'admin@orolado.com', 'admin@orolado.com', 'admin@6diablo.com'];
+      var mail = String((user && user.email) || '').toLowerCase();
+      if (!user) return false;
+      if (user.role === 'admin' && aliases.indexOf(mail) >= 0) return true;
+      return aliases.indexOf(mail) >= 0 && user.role === 'admin';
     },
 
     ensureAdminLocal: async function () {
       var email = D6.CONFIG.ADMIN_EMAIL || 'admin@orolado.com';
       var hash = await hashPassword(D6.CONFIG.ADMIN_PASSWORD || 'AdminOrolado2026!');
-      var admin = D6.Store.findByEmail(email) || D6.Store.findByEmail('admin@6diablo.com');
+      var admin = D6.Store.findByEmail(email)
+        || D6.Store.findByEmail('admin@orolado.com')
+        || D6.Store.findByEmail('admin@6diablo.com');
       if (admin) {
         admin.email = email;
         admin.role = 'admin';

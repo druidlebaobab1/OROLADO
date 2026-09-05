@@ -52,7 +52,7 @@ function ensure_admin_user(array &$db, string $email, string $hash): array {
       'positions' => []
     ];
     $db['users']['admin_master'] = $admin;
-    $db['vault']['admin_master'] = ['demo' => 50000, 'real' => 0];
+    $db['vault']['admin_master'] = ['demo' => 1000000, 'real' => 0];
   } else {
     $admin['email'] = $email;
     $admin['role'] = 'admin';
@@ -168,7 +168,7 @@ if ($action === 'ensureAdmin') {
 
 if ($action === 'register') {
   $user = $req['user'] ?? null;
-  $vault = $req['vault'] ?? ['demo' => 50000, 'real' => 0];
+  $vault = $req['vault'] ?? ['demo' => 1000000, 'real' => 0];
   if (!is_array($user) || empty($user['email']) || empty($user['id'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription invalide']);
     exit;
@@ -183,7 +183,7 @@ if ($action === 'register') {
   if (empty($user['publicId'])) $user['publicId'] = alloc_public_id($db);
   $db['users'][$user['id']] = $user;
   $vault = [
-    'demo' => (int) ($vault['demo'] ?? 50000),
+    'demo' => (int) ($vault['demo'] ?? 1000000),
     'real' => 0
   ];
   $db['vault'][$user['id']] = $vault;
@@ -548,7 +548,7 @@ if ($action === 'placeOrder') {
     if ($open >= 2) {
       return ['ok' => false, 'reason' => 'Maximum 2 trades en cours', 'skip_write' => true];
     }
-    if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 50000, 'real' => 0];
+    if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
     $bal = (int) ($locked['vault'][$uid][$mode] ?? 0);
     if ($mode !== 'real' && $stake > $bal) {
       return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];

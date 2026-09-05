@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=38">
+  <link rel="stylesheet" href="css/app.css?v=39">
 </head>
 <body>
   <canvas id="particlesCanvas"></canvas>
@@ -116,12 +116,23 @@
             <img class="logo-mark sm" src="icons/icon.svg" alt="">
             <div class="brand">ORO<span>LADO</span></div>
           </div>
-          <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
-          <div class="topbar-actions">
-            <div class="auth-quick hidden" id="authQuick">
-              <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
-              <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
+          <div class="auth-quick hidden" id="authQuick">
+            <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
+            <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
+          </div>
+          <div class="deposit-cluster">
+            <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
+            <div class="pay-logos-mini" aria-hidden="true">
+              <span class="pay-mini wave" title="Wave">W</span>
+              <span class="pay-mini orange" title="Orange Money">OM</span>
+              <span class="pay-mini mtn" title="MTN MoMo">MTN</span>
+              <span class="pay-mini moov" title="Moov Money">M</span>
+              <span class="pay-mini card" title="Visa / Mastercard">💳</span>
+              <span class="pay-mini crypto" title="Crypto">₿</span>
+              <span class="pay-mini paypal" title="PayPal">P</span>
             </div>
+          </div>
+          <div class="topbar-actions">
             <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Aide</button>
             <div class="lang-dd" id="langBarTrade"></div>
             <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
@@ -129,8 +140,8 @@
         </div>
         <div class="topbar-mode">
           <div class="mode-switch" id="modeSwitcher" role="tablist" aria-label="Mode de compte">
-            <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="demo">Compte Démo</button>
-            <button type="button" class="mode-btn" id="modeReal" data-mode="real" data-i18n="real">Compte Réel</button>
+            <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="demo">MODE VIRTUEL / DÉMO</button>
+            <button type="button" class="mode-btn" id="modeReal" data-mode="real" data-i18n="real">COMPTE RÉEL</button>
           </div>
         </div>
         <div class="balance-row">
@@ -240,6 +251,7 @@
             <button type="button" class="qbtn" data-add="1000">+1 000</button>
             <button type="button" class="qbtn" data-a="x2">×2</button>
             <button type="button" class="qbtn" data-a="half">÷2</button>
+            <button type="button" class="qbtn qbtn-back" data-a="back" title="Effacer" aria-label="Effacer un chiffre">⌫</button>
           </div>
           <div class="timer-panel" id="timerPanel" hidden>
             <div class="timer-num" id="timerSeconds">10.0s</div>
@@ -257,7 +269,7 @@
               <small>PUT ↘</small>
             </button>
           </div>
-          <button type="button" class="btn-hist-cta" id="btnHistMore" data-i18n="seeAll">Historique des trades</button>
+          <button type="button" class="btn-hist-cta" id="btnHistMore" data-i18n="seeAll">HISTORIQUE DES TRADES DU COMPTE RÉEL</button>
         </div>
       </div>
     </div>
@@ -411,18 +423,21 @@
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
       <div class="modal-title" data-i18n="depositTitle">Recharger en FCFA</div>
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
-      <p class="deposit-instant" data-i18n="depositInstant">⚡ Dépôt instantané &amp; sécurisé</p>
-      <div class="pay-mode-label" data-i18n="payMode">Modes de paiement disponibles</div>
-      <div class="op-grid op-grid-deposit" id="depOpGrid">
-        <button type="button" class="op-card op-wave" data-op="wave" style="--op:#1BA0F2"><i class="op-logo">W</i><span>Wave</span></button>
-        <button type="button" class="op-card op-orange" data-op="orange" style="--op:#FF6600"><i class="op-logo">OM</i><span>Orange Money</span></button>
-        <button type="button" class="op-card op-mtn" data-op="mtn" style="--op:#FFCC00"><i class="op-logo">MTN</i><span>MTN</span></button>
-        <button type="button" class="op-card op-moov" data-op="moov" style="--op:#0B3C8A"><i class="op-logo">M</i><span>Moov</span></button>
+      <p class="deposit-instant" data-i18n="depositInstant">⚡ Dépôt instantané &amp; sécurisé (Choix du mode de paiement sur la page suivante)</p>
+      <div class="pay-mode-label" data-i18n="payMode">Modes de paiement acceptés</div>
+      <div class="pay-showcase" id="depOpGrid" aria-hidden="true">
+        <div class="pay-show-item"><i class="op-logo op-wave">W</i><span>Wave</span></div>
+        <div class="pay-show-item"><i class="op-logo op-orange">OM</i><span>Orange Money</span></div>
+        <div class="pay-show-item"><i class="op-logo op-mtn">MTN</i><span>MTN MoMo</span></div>
+        <div class="pay-show-item"><i class="op-logo op-moov">M</i><span>Moov Money</span></div>
+        <div class="pay-show-item"><i class="op-logo op-card">💳</i><span>Visa / Mastercard</span></div>
+        <div class="pay-show-item"><i class="op-logo op-crypto">₿</i><span>Crypto</span></div>
+        <div class="pay-show-item"><i class="op-logo op-paypal">P</i><span>PayPal</span></div>
       </div>
       <div class="field">
         <label data-i18n="depositAmtLabel">Montant à recharger (FCFA)</label>
         <input id="depositAmt" type="number" inputmode="numeric" min="1000" step="100" placeholder="1000">
-        <p class="hint-min" data-i18n="depositMin">Minimum 100 FCFA. Wave, Orange Money, MTN, Moov.</p>
+        <p class="hint-min" data-i18n="depositMin">Minimum 1 000 FCFA. Paiement sécurisé Maketou.</p>
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
       <div class="wd-trust">
@@ -502,15 +517,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=38"></script>
-  <script src="js/i18n.js?v=38"></script>
-  <script src="js/store.js?v=38"></script>
-  <script src="js/api.js?v=38"></script>
+  <script src="js/config.js?v=39"></script>
+  <script src="js/i18n.js?v=39"></script>
+  <script src="js/store.js?v=39"></script>
+  <script src="js/api.js?v=39"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=38"></script>
-  <script src="js/auth.js?v=38"></script>
-  <script src="js/engine.js?v=38"></script>
-  <script src="js/chart.js?v=38"></script>
-  <script src="js/app.js?v=38"></script>
+  <script src="js/supabase.js?v=39"></script>
+  <script src="js/auth.js?v=39"></script>
+  <script src="js/engine.js?v=39"></script>
+  <script src="js/chart.js?v=39"></script>
+  <script src="js/app.js?v=39"></script>
 </body>
 </html>

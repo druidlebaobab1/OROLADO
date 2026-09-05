@@ -338,7 +338,7 @@ function orolado_session_user(array &$db, ?string $token): ?array {
       'transactions' => [],
       'positions' => []
     ];
-    if (!isset($db['vault'][$id])) $db['vault'][$id] = ['demo' => 50000, 'real' => 0];
+    if (!isset($db['vault'][$id])) $db['vault'][$id] = ['demo' => 1000000, 'real' => 0];
     save_db(orolado_data_file(), $db);
   }
   return $db['users'][$id];

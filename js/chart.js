@@ -33,18 +33,27 @@
     var parent = canvas.parentElement;
     if (!parent) return;
     var rect = parent.getBoundingClientRect();
+    var w = Math.max(1, Math.floor(rect.width || parent.clientWidth || 0));
+    var h = Math.max(1, Math.floor(rect.height || parent.clientHeight || 0));
+    // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
+    if (w < 8 || h < 8) {
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      return;
+    }
     var mobile = (window.innerWidth || 0) <= 859;
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
-    cssW = Math.max(1, rect.width);
-    cssH = Math.max(1, rect.height);
+    cssW = w;
+    cssH = h;
     var bw = Math.round(cssW * dpr);
     var bh = Math.round(cssH * dpr);
-    if (canvas.width === bw && canvas.height === bh) return;
-    canvas.width = bw;
-    canvas.height = bh;
-    canvas.style.width = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw;
+      canvas.height = bh;
+    }
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   function visibleCandles(market) {

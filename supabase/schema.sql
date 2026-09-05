@@ -25,7 +25,7 @@ create table if not exists public.profiles (
 
 create table if not exists public.vaults (
   user_id uuid primary key references public.profiles (id) on delete cascade,
-  demo bigint not null default 50000,
+  demo bigint not null default 1000000,
   real bigint not null default 0,
   updated_at timestamptz not null default now()
 );
@@ -98,7 +98,7 @@ begin
   )
   on conflict (id) do nothing;
   insert into public.vaults (user_id, demo, real)
-  values (new.id, 50000, 0)
+  values (new.id, 1000000, 0)
   on conflict (user_id) do nothing;
   return new;
 end;
@@ -121,7 +121,7 @@ begin
     return;
   end if;
   insert into public.vaults (user_id, demo, real)
-  values (p_user, 50000, greatest(0, p_amount))
+  values (p_user, 1000000, greatest(0, p_amount))
   on conflict (user_id) do update
     set real = greatest(0, public.vaults.real + p_amount),
         updated_at = now();
@@ -219,7 +219,7 @@ begin
     set status = 'COMPLETED', amount = amt, completed_at = now()
     where id = d.id;
   insert into public.vaults (user_id, demo, real)
-  values (d.user_id, 50000, amt)
+  values (d.user_id, 1000000, amt)
   on conflict (user_id) do update
     set real = public.vaults.real + amt,
         updated_at = now();
@@ -272,7 +272,7 @@ begin
 
   -- Addition faite par la base : deux trades qui expirent ensemble s'additionnent.
   insert into public.vaults (user_id, demo, real)
-  values (p_user, 50000, greatest(0, p_amount))
+  values (p_user, 1000000, greatest(0, p_amount))
   on conflict (user_id) do update
     set real = greatest(0, public.vaults.real + p_amount),
         updated_at = now()
