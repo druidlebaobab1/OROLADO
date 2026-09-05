@@ -714,7 +714,8 @@ if ($action === 'financeHistory') {
       'ref' => $d['id'] ?? $d['ref'] ?? '',
       'amount' => (int) ($d['amount'] ?? 0),
       'status' => strtoupper((string) ($d['status'] ?? 'PENDING')),
-      'label' => 'Recharge'
+      'label' => 'Dépôt',
+      'operator' => $d['operator'] ?? ($d['op'] ?? '')
     ];
   }
   foreach (($db['withdrawals'] ?? []) as $w) {
@@ -728,7 +729,8 @@ if ($action === 'financeHistory') {
       'ref' => $w['id'] ?? '',
       'amount' => -abs((int) ($w['amount'] ?? 0)),
       'status' => $st,
-      'label' => 'Retrait'
+      'label' => 'Retrait',
+      'operator' => $w['operator'] ?? ''
     ];
   }
   echo json_encode(['ok' => true, 'server' => true, 'rows' => $rows]);

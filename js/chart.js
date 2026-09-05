@@ -345,57 +345,69 @@
     ctx.fillText('RSI ' + last.toFixed(0), pad.l + 4, top + 10);
   }
 
-  function drawEntry(map, trade, now, pad, tagIndex) {
-    if (!trade || !map || trade.settled) return;
+  function priceToY(price, pad, h, minP, maxP) {
+    var span = Math.max((maxP - minP) || 0.01, 0.01);
+    var top = pad ? pad.t : 14;
+    var height = h > 0 ? h : Math.max(40, cssH - 36);
+    return top + height * (1 - (Number(price) - minP) / span);
+  }
+
+  function drawEntry(map, trade, now, pad, tagIndex, minP, maxP, plotH) {
+    if (!trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
-    var ey = map.toY(trade.entryPrice);
+    var entry = Number(trade.entryPrice);
+    if (!isFinite(entry)) return;
+    var ey = map && typeof map.toY === 'function'
+      ? map.toY(entry)
+      : priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
     var x0 = pad ? pad.l : 8;
-    var x1 = pad ? (pad.l + cssW - pad.l - pad.r) : (cssW - 62);
+    var x1 = pad ? (cssW - pad.r) : (cssW - 62);
+    if (x1 <= x0 + 8) x1 = Math.max(x0 + 40, cssW - 8);
     var idx = tagIndex || 0;
     ctx.save();
-    ctx.setLineDash([6, 5]);
+    ctx.setLineDash([7, 5]);
     ctx.strokeStyle = col;
-    ctx.lineWidth = 1.7;
-    ctx.globalAlpha = 0.95;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 1;
     ctx.beginPath();
     ctx.moveTo(x0, ey);
     ctx.lineTo(x1, ey);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
-    var tag = (isCall ? 'CALL ' : 'PUT ') + Number(trade.entryPrice).toFixed(2);
-    ctx.font = '800 10px "Hanken Grotesk", sans-serif';
-    var tw = Math.ceil(ctx.measureText(tag).width) + 12;
-    var bx = Math.max(x1 + 2, cssW - tw - 4);
-    var by = Math.max(4, Math.min(cssH - 20, ey - 9 + idx * 20));
+    var tag = (isCall ? 'CALL ' : 'PUT ') + entry.toFixed(2);
+    ctx.font = '800 11px "Hanken Grotesk", sans-serif';
+    var tw = Math.ceil(ctx.measureText(tag).width) + 14;
+    var bx = Math.min(Math.max(x1 - tw + 2, x0 + 4), Math.max(4, cssW - tw - 4));
+    var by = Math.max(4, Math.min(cssH - 22, ey - 10 + idx * 22));
     ctx.fillStyle = col;
-    roundRect(bx, by, tw, 18, 5);
+    roundRect(bx, by, tw, 20, 5);
     ctx.fill();
     ctx.fillStyle = '#0A0F1D';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(tag, bx + tw / 2, by + 9);
+    ctx.fillText(tag, bx + tw / 2, by + 10);
     ctx.textBaseline = 'alphabetic';
     var remaining = exp - Date.now();
     var secs = remaining / 1000;
     if (secs >= 0.15) {
       var label = secs.toFixed(1) + 's';
       if (label.charAt(0) !== '-') {
-        var ty = Math.max(6, ey - 28 - idx * 20);
-        ctx.fillStyle = 'rgba(10,15,29,0.92)';
+        var ty = Math.max(6, ey - 30 - idx * 22);
+        ctx.fillStyle = 'rgba(10,15,29,0.94)';
         ctx.strokeStyle = col;
-        ctx.lineWidth = 1.2;
-        roundRect(x0 + 4, ty, 52, 18, 8);
+        ctx.lineWidth = 1.4;
+        roundRect(x0 + 4, ty, 56, 20, 8);
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = col;
-        ctx.font = '800 11px "Hanken Grotesk", sans-serif';
+        ctx.font = '800 12px "Hanken Grotesk", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(label, x0 + 30, ty + 13);
+        ctx.fillText(label, x0 + 32, ty + 14);
       }
     }
   }
@@ -433,6 +445,9 @@
 
   function drawFrame(now) {
     if (!ctx) return;
+    if (cssW < 8 || cssH < 8) resize();
+    if (cssW < 8 || cssH < 8) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var asset = D6.CONFIG.ASSETS[activeAsset];
     var market = D6.Engine.getMarket(activeAsset);
     var trade = D6.Engine.getTrade();
@@ -523,7 +538,7 @@
     }
 
     allTrades.slice(0, 5).forEach(function (ot, i) {
-      drawEntry(map, ot, now, pad, i);
+      drawEntry(map, ot, now, pad, i, minP, maxP, h);
     });
     var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
     if (primary) {
@@ -531,7 +546,7 @@
       var liveWin = (primary.side === 'call' && above) || (primary.side === 'put' && !above);
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
-    drawBead(map, market.price, tagCol, now);
+    if (map) drawBead(map, market.price, tagCol, now);
 
     if (inds.rsi) {
       var rsiVals = rsiSeries(closes, 14);

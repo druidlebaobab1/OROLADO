@@ -6,6 +6,7 @@
   var DICT = {
     fr: {
       tagline: 'Indices en FCFA. Démo gratuite. Dépôt Mobile Money.',
+      authRealPitch: 'Créez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains réels.',
       login: 'Connexion', register: 'Inscription', enter: 'Entrer',
       createAccount: 'Créer mon compte',
       idLabel: 'E-mail', idPh: 'vous@email.com',
@@ -113,6 +114,7 @@
     },
     en: {
       tagline: 'Indices · FCFA. Free demo. Mobile Money deposit.',
+      authRealPitch: 'Create your account or sign in in 30 seconds to top up your balance and withdraw real winnings.',
       login: 'Sign in', register: 'Sign up', enter: 'Enter',
       createAccount: 'Create account',
       idLabel: 'Email', idPh: 'you@email.com',

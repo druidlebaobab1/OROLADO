@@ -73,17 +73,23 @@
   function requireAccount(msg) {
     if (!isGuest()) return true;
     toast(msg || t('needAccount') || 'Connecte-toi ou crée un compte pour continuer', 'err');
-    showAuthScreen('login');
+    showAuthScreen('login', { fromReal: true });
     return false;
   }
 
-  function showAuthScreen(tab) {
+  function showAuthScreen(tab, opts) {
     showScreen('screenAuth');
     document.querySelectorAll('.auth-tab').forEach(function (el) {
       el.classList.toggle('on', el.dataset.tab === tab);
     });
     if ($('formLogin')) $('formLogin').classList.toggle('hidden', tab !== 'login');
     if ($('formRegister')) $('formRegister').classList.toggle('hidden', tab !== 'register');
+    var pitch = $('authRealPitch');
+    if (pitch) {
+      var showPitch = !!(opts && opts.fromReal);
+      pitch.classList.toggle('hidden', !showPitch);
+      if (showPitch) pitch.textContent = t('authRealPitch') || pitch.textContent;
+    }
   }
 
   function syncAuthQuick() {
@@ -204,7 +210,8 @@
       syncTradeButtons();
       return;
     }
-    var amount = d.isWin ? (d.net != null ? Math.abs(Number(d.net)) : (d.payout != null ? d.payout : 0)) : 0;
+    // Affiche le montant brut crédité (mise + gain), pas le profit net.
+    var amount = d.isWin ? Math.abs(Number(d.payout != null ? d.payout : d.net) || 0) : 0;
     showOutcomeToast(!!d.isWin, amount, d.tradeId);
     updateBalance(true);
     patchHistorySoon();
@@ -631,9 +638,15 @@
   function profitFromResult(res) {
     if (!res) return 0;
     if (res.won) {
-      if (res.net != null) return Math.abs(Number(res.net));
+      // Montant total crédité (mise × multiplicateur), pas le net.
       if (res.position && res.position.stake) {
-        return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88)) - Number(res.position.stake);
+        return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88));
+      }
+      if (res.trade && res.trade.stake) {
+        return Math.floor(Number(res.trade.stake) * Number(res.trade.payout || 1.88));
+      }
+      if (res.net != null && res.position && res.position.stake) {
+        return Math.abs(Number(res.net)) + Number(res.position.stake);
       }
     }
     return 0;
@@ -1471,10 +1484,29 @@
 
   function normFinanceStatus(raw, label) {
     var s = String(raw || '').toUpperCase();
-    if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK') return 'COMPLETED';
-    if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED') return 'REJECTED';
-    if (label === 'Retrait' && (s === 'WITHDRAW' || s === '')) return 'PENDING';
-    return s || 'PENDING';
+    if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK' || s === 'VALIDÉ' || s === 'VALIDE') {
+      return { code: 'COMPLETED', label: 'Validé', cls: 'ok' };
+    }
+    if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED' || s === 'CANCELED' || s === 'CANCELLED') {
+      return { code: 'REJECTED', label: 'Rejeté', cls: 'bad' };
+    }
+    if (label === 'Retrait' && (s === 'WITHDRAW' || s === '')) {
+      return { code: 'PENDING', label: 'En cours', cls: 'pending' };
+    }
+    return { code: s || 'PENDING', label: 'En cours', cls: 'pending' };
+  }
+
+  function gatewayLabel(raw) {
+    var k = String(raw || '').toLowerCase();
+    if (!k) return '—';
+    if (k.indexOf('wave') >= 0) return 'Wave';
+    if (k.indexOf('orange') >= 0 || k === 'om') return 'Orange Money';
+    if (k.indexOf('mtn') >= 0 || k.indexOf('momo') >= 0) return 'MTN MoMo';
+    if (k.indexOf('moov') >= 0) return 'Moov Money';
+    if (k.indexOf('paypal') >= 0) return 'PayPal';
+    if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0) return 'Crypto';
+    if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return 'Carte';
+    return String(raw);
   }
 
   async function fillFinanceHistory() {
@@ -1490,8 +1522,9 @@
           at: x.at || '',
           ref: x.id || '—',
           amount: Number(x.amount) || 0,
-          status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type === 'deposit' ? 'Recharge' : 'Retrait'),
-          label: x.type === 'deposit' ? 'Recharge' : 'Retrait'
+          status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type === 'deposit' ? 'Dépôt' : 'Retrait'),
+          label: x.type === 'deposit' ? 'Dépôt' : 'Retrait',
+          gateway: gatewayLabel(x.operator || x.note || '')
         });
       });
     }
@@ -1502,7 +1535,8 @@
         ref: w.id || '—',
         amount: -Math.abs(Number(w.amount) || 0),
         status: normFinanceStatus(w.status, 'Retrait'),
-        label: 'Retrait'
+        label: 'Retrait',
+        gateway: gatewayLabel(w.operator || '')
       });
     });
     if (D6.Supabase && D6.Supabase.listFinance) {
@@ -1513,8 +1547,9 @@
             at: d.created_at || d.completed_at || '',
             ref: d.reference || d.id || '—',
             amount: Number(d.amount) || 0,
-            status: normFinanceStatus(d.status, 'Recharge'),
-            label: 'Recharge'
+            status: normFinanceStatus(d.status, 'Dépôt'),
+            label: 'Dépôt',
+            gateway: gatewayLabel(d.operator || '')
           });
         });
         (cloud.withdrawals || []).forEach(function (w) {
@@ -1523,7 +1558,8 @@
             ref: w.id || w.reference || '—',
             amount: -Math.abs(Number(w.amount) || 0),
             status: normFinanceStatus(w.status, 'Retrait'),
-            label: 'Retrait'
+            label: 'Retrait',
+            gateway: gatewayLabel(w.operator || '')
           });
         });
         (cloud.txs || []).forEach(function (trow) {
@@ -1533,8 +1569,9 @@
             at: trow.created_at || '',
             ref: trow.id || '—',
             amount: Number(trow.amount) || 0,
-            status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ === 'deposit' ? 'Recharge' : 'Retrait'),
-            label: typ === 'deposit' ? 'Recharge' : 'Retrait'
+            status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ === 'deposit' ? 'Dépôt' : 'Retrait'),
+            label: typ === 'deposit' ? 'Dépôt' : 'Retrait',
+            gateway: gatewayLabel(trow.note || '')
           });
         });
       } catch (e) { /* ignore */ }
@@ -1547,7 +1584,8 @@
           ref: r.ref || '—',
           amount: Number(r.amount) || 0,
           status: normFinanceStatus(r.status, r.label),
-          label: r.label || '—'
+          label: r.label === 'Recharge' ? 'Dépôt' : (r.label || '—'),
+          gateway: gatewayLabel(r.operator || r.gateway || '')
         });
       });
     }
@@ -1560,10 +1598,12 @@
     });
     rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
     tx.innerHTML = rows.length ? rows.map(function (r) {
-      var st = r.status || 'PENDING';
-      return '<div class="list-row"><div><strong>' + r.label + '</strong><div class="h-time">' + fmtWhen(r.at) +
-        ' · ' + (r.ref || '—') + '</div></div><span><span class="' + (r.amount >= 0 ? 'w' : 'l') + '">' +
-        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</span> · <span class="st-' + st + '">' + st + '</span></span></div>';
+      var st = r.status || { label: 'En cours', cls: 'pending' };
+      return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
+        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
+        '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
+        st.label + '</span></div></div>';
     }).join('') : '<div class="empty-feed">Aucune opération pour l’instant</div>';
   }
 
@@ -1949,15 +1989,40 @@
   }
 
   function bindInstall() {
+    var installHideTimer = 0;
     function isIos() {
       return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     }
     function isStandalone() {
       return !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
     }
+    function installDismissedForever() {
+      try { return localStorage.getItem('oro_install_dismissed') === '1'; } catch (e) { return false; }
+    }
+    function closeCount() {
+      try { return Math.max(0, parseInt(localStorage.getItem('oro_install_close_n') || '0', 10) || 0); } catch (e) { return 0; }
+    }
+    function bumpClose() {
+      var n = closeCount() + 1;
+      try {
+        localStorage.setItem('oro_install_close_n', String(n));
+        if (n >= 2) localStorage.setItem('oro_install_dismissed', '1');
+      } catch (e) { /* ignore */ }
+      return n;
+    }
+    function hideInstallBanner() {
+      if ($('installBanner')) $('installBanner').classList.add('hidden');
+      if (installHideTimer) { clearTimeout(installHideTimer); installHideTimer = 0; }
+    }
     function showInstallBanner() {
-      if (isStandalone() || sessionStorage.getItem('oro_hide_install')) return;
-      if ($('installBanner')) $('installBanner').classList.remove('hidden');
+      if (isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install')) return;
+      if (!$('installBanner')) return;
+      $('installBanner').classList.remove('hidden');
+      if (installHideTimer) clearTimeout(installHideTimer);
+      installHideTimer = setTimeout(function () {
+        hideInstallBanner();
+        try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ }
+      }, 20000);
     }
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault();
@@ -1965,7 +2030,6 @@
       showInstallBanner();
     });
     if (isIos() && !isStandalone()) showInstallBanner();
-    // Android Chromium parfois sans beforeinstallprompt immédiat
     setTimeout(function () {
       if (!deferredPrompt && !isIos() && !isStandalone()) showInstallBanner();
     }, 2500);
@@ -1975,11 +2039,11 @@
           deferredPrompt.prompt();
           try { await deferredPrompt.userChoice; } catch (e) { /* ignore */ }
           deferredPrompt = null;
-          if ($('installBanner')) $('installBanner').classList.add('hidden');
+          hideInstallBanner();
           return;
         }
         if (isIos()) {
-          if ($('installBanner')) $('installBanner').classList.add('hidden');
+          hideInstallBanner();
           openModal('iosInstallModal');
           return;
         }
@@ -1988,8 +2052,9 @@
     }
     if ($('btnInstallClose')) {
       $('btnInstallClose').addEventListener('click', function () {
-        sessionStorage.setItem('oro_hide_install', '1');
-        if ($('installBanner')) $('installBanner').classList.add('hidden');
+        bumpClose();
+        try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ }
+        hideInstallBanner();
       });
     }
     if ($('closeIosInstall')) $('closeIosInstall').addEventListener('click', function () { closeModal('iosInstallModal'); });
@@ -1998,7 +2063,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=40').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=41').catch(function () { /* ignore */ });
     }
   }
 
@@ -2041,8 +2106,14 @@
     // Bannière PWA discrète (si non installée / non refusée)
     setTimeout(function () {
       var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
-      if (!standalone && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
+      var forever = false;
+      try { forever = localStorage.getItem('oro_install_dismissed') === '1'; } catch (e0) { forever = false; }
+      if (!standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
         $('installBanner').classList.remove('hidden');
+        setTimeout(function () {
+          if ($('installBanner')) $('installBanner').classList.add('hidden');
+          try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
+        }, 20000);
       }
     }, 1800);
     if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
@@ -2178,6 +2249,8 @@
       if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
       if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { showAuthScreen('register'); });
       if ($('btnAuthBack')) $('btnAuthBack').addEventListener('click', function () {
+        var pitch = $('authRealPitch');
+        if (pitch) pitch.classList.add('hidden');
         ensureGuest();
         enterApp();
       });
@@ -2193,14 +2266,17 @@
       });
       if ($('closeTip')) $('closeTip').addEventListener('click', function () { closeModal('tipModal'); });
       if ($('btnTipOk')) $('btnTipOk').addEventListener('click', function () { closeModal('tipModal'); });
-      finishBoot();
-      if (D6.Supabase && D6.Supabase.restore) {
-        D6.Supabase.restore().then(function (cloud) {
-          if (cloud && cloud.ok && D6.Auth.current() && !isGuest()) {
-            enterApp();
-          }
-        }).catch(function () { /* hydratation locale déjà affichée */ });
-      }
+      (async function bootSession() {
+        var cloud = null;
+        if (D6.Supabase && D6.Supabase.restore) {
+          try { cloud = await D6.Supabase.restore(); } catch (e) { cloud = null; }
+        }
+        if (cloud && cloud.ok && D6.Auth.current() && !isGuest()) {
+          enterApp();
+          return;
+        }
+        finishBoot();
+      })();
     }
   };
 

@@ -332,7 +332,7 @@
 
     addPosition: function (user, pos) {
       user.positions.unshift(pos);
-      if (user.positions.length > 40) user.positions.length = 40;
+      if (user.positions.length > 100) user.positions.length = 100;
       persist();
     },
 
@@ -380,8 +380,10 @@
         at: D6.nowIso(),
         clock: D6.clock()
       });
-      D6.Store.addTransaction(user, { type: 'withdraw', amount: -amount, note: 'Retrait demandé', mode: 'real' });
+      var createdWd = db.withdrawals[0];
+      D6.Store.addTransaction(user, { type: 'withdraw', amount: -amount, note: 'Retrait demandé', mode: 'real', operator: extra.operator || '' });
       persist();
+      if (D6.Supabase && D6.Supabase.saveWithdrawal) D6.Supabase.saveWithdrawal(createdWd);
       return { ok: true, suspect: suspect };
     },
 

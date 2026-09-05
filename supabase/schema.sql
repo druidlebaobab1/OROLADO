@@ -313,6 +313,22 @@ do $$ begin
 exception when duplicate_object then null;
 end $$;
 
+create table if not exists public.withdrawals (
+  id text primary key,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  amount bigint not null default 0,
+  status text not null default 'pending',
+  operator text,
+  phone text,
+  reference text,
+  created_at timestamptz not null default now()
+);
+alter table public.withdrawals enable row level security;
+drop policy if exists withdrawals_own on public.withdrawals;
+create policy withdrawals_own on public.withdrawals
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create index if not exists withdrawals_user_created_idx on public.withdrawals (user_id, created_at desc);
+
 alter table public.profiles replica identity full;
 alter table public.vaults replica identity full;
 alter table public.orders replica identity full;
