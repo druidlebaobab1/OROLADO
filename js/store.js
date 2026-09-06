@@ -351,6 +351,18 @@
       user.positions.unshift(pos);
       if (user.positions.length > 100) user.positions.length = 100;
       persist();
+      // Miroir Android-only pour historique demo (guest / cache).
+      try {
+        if (/Android/i.test(navigator.userAgent || '') && pos && (pos.mode || 'demo') === 'demo') {
+          var key = 'orolado_demo_trades_v1';
+          var list = JSON.parse(localStorage.getItem(key) || '[]');
+          if (!Array.isArray(list)) list = [];
+          list = list.filter(function (p) { return !p || !pos.id || p.id !== pos.id; });
+          list.unshift(pos);
+          if (list.length > 80) list.length = 80;
+          localStorage.setItem(key, JSON.stringify(list));
+        }
+      } catch (eDemo) { /* ignore */ }
     },
 
     listUsers: function () {

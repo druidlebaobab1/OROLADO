@@ -359,6 +359,38 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .modal-backdrop.active .modal-box{transform:translate(-50%,-50%) scale(1)}
 .trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
 .btn-close{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
+
+/* ===== Android-only (html.is-android) : ne touche pas PC / iPhone ===== */
+html.is-android .btn-close{
+  min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
+  z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;position:absolute}
+html.is-android .modal-backdrop.active{pointer-events:auto!important}
+html.is-android .modal-backdrop.active .modal-box{pointer-events:auto;z-index:211}
+html.is-android .modal-backdrop.active .btn-gold,
+html.is-android .modal-backdrop.active .btn-close{
+  pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:9999}
+html.is-android .modal-backdrop.active .btn-close{position:absolute}
+html.is-android .trade-hint{
+  font-size:10px!important;line-height:1.2!important;margin:2px 0!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  display:block!important;-webkit-line-clamp:unset!important;max-height:1.4em!important}
+html.is-android .btn-hist-cta{
+  height:30px!important;min-height:30px!important;padding:2px 6px!important;
+  font-size:11px!important;margin-top:2px!important;z-index:60}
+html.is-android .chart-card,html.is-android #chart{
+  min-height:max(310px,calc(46vh + 28px))!important}
+html.is-android .chart-stage{min-height:278px!important}
+@media (max-width:429px){
+  html.is-android .trade-hint{
+    font-size:10px!important;margin:2px 0!important;white-space:nowrap!important;
+    -webkit-line-clamp:1!important;line-clamp:1;max-height:1.35em!important;overflow:hidden!important}
+  html.is-android .btn-hist-cta{
+    height:30px!important;min-height:30px!important;padding:2px 6px!important;font-size:11px!important}
+  html.is-android .chart-card,html.is-android #chart{
+    min-height:max(308px,calc(46vh + 28px))!important}
+  html.is-android .chart-stage{min-height:278px!important}
+}
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .pack-card{border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02)}

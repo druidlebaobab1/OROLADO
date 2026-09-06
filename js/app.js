@@ -20,6 +20,60 @@
   var lastPaintedBalance = null;
   var metaPvAt = 0;
   var metaPvScreen = '';
+  var IS_ANDROID = /Android/i.test(navigator.userAgent || '');
+  if (IS_ANDROID) {
+    try { document.documentElement.classList.add('is-android'); } catch (eAnd) { /* ignore */ }
+  }
+  var DEMO_TRADES_KEY = 'orolado_demo_trades_v1';
+
+  function bindAndroidTap(el, fn) {
+    if (!el || typeof fn !== 'function') return;
+    var last = 0;
+    function run(e) {
+      var now = Date.now();
+      if (now - last < 380) return;
+      last = now;
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      fn(e);
+    }
+    el.addEventListener('click', run);
+    if (IS_ANDROID) {
+      el.style.pointerEvents = 'auto';
+      el.style.touchAction = 'manipulation';
+      el.addEventListener('touchend', run, { passive: false });
+    }
+  }
+
+  function pushDemoTradeCache(pos) {
+    if (!IS_ANDROID || !pos) return;
+    if ((pos.mode || 'demo') !== 'demo') return;
+    try {
+      var list = JSON.parse(localStorage.getItem(DEMO_TRADES_KEY) || '[]');
+      if (!Array.isArray(list)) list = [];
+      list = list.filter(function (p) { return !p || !pos.id || p.id !== pos.id; });
+      list.unshift(pos);
+      if (list.length > 80) list.length = 80;
+      localStorage.setItem(DEMO_TRADES_KEY, JSON.stringify(list));
+    } catch (e0) { /* ignore */ }
+  }
+
+  function readDemoTradeCache() {
+    if (!IS_ANDROID) return [];
+    try {
+      var list = JSON.parse(localStorage.getItem(DEMO_TRADES_KEY) || '[]');
+      return Array.isArray(list) ? list : [];
+    } catch (e1) { return []; }
+  }
+
+  function applyAndroidTradeHint() {
+    if (!IS_ANDROID) return;
+    var el = document.querySelector('.trade-hint');
+    if (!el) return;
+    el.textContent = t('tradeHintAndroid') || t('tradeHint');
+  }
 
   function metaTrack(eventName, params) {
     try {
@@ -444,6 +498,7 @@
       setModeUi(u);
       try { updatePayoutUi(); } catch (e0) { /* ignore */ }
     }
+    applyAndroidTradeHint();
   });
 
   function fillCountrySelects() {
@@ -659,12 +714,29 @@
     var mode = (u && u.mode === 'real') ? 'real' : 'demo';
     if ($('histSheetTitle')) {
       $('histSheetTitle').textContent = mode === 'real'
-        ? 'Historique des trades (Compte Réel)'
-        : 'Historique des trades (Compte Démo)';
+        ? (t('histSheetReal') || 'Historique des trades (Compte Reel)')
+        : (t('histSheetDemo') || 'Historique des trades (Compte Demo)');
     }
     var settled = ((u && u.positions) || []).filter(function (p) {
       return (p.mode || 'demo') === mode;
     });
+    // Android : miroir localStorage pour guests / reseau lent (demo only).
+    if (IS_ANDROID && mode === 'demo') {
+      var cached = readDemoTradeCache();
+      if (cached.length) {
+        var seen = {};
+        settled.forEach(function (p) { if (p && p.id) seen[p.id] = 1; });
+        cached.forEach(function (p) {
+          if (!p || !p.id || seen[p.id]) return;
+          if ((p.mode || 'demo') !== 'demo') return;
+          settled.push(p);
+          seen[p.id] = 1;
+        });
+        settled.sort(function (a, b) {
+          return String(b.at || '').localeCompare(String(a.at || ''));
+        });
+      }
+    }
     var rows = [];
     function durLabel(d) {
       d = Number(d) || 0;
@@ -675,17 +747,17 @@
       var stake = Number(h.stake || 0);
       var payoutAmt = Math.floor(stake * Number(h.payout || 1.88));
       var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
-      var res = (h.voided || h.status === 'void') ? 'Égalité' : (h.won ? 'Gagné' : 'Perdu');
+      var res = (h.voided || h.status === 'void') ? 'Egalite' : (h.won ? 'Gagne' : 'Perdu');
       var pnlCls = net > 0 ? 'w' : (net < 0 ? 'l' : '');
-      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '−' : '')) + D6.fmtFCFA(Math.abs(net));
-      rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '—') +
+      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + D6.fmtFCFA(Math.abs(net));
+      rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
         '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(stake) +
         '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td></tr>');
     });
     el.innerHTML = rows.length
-      ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Résultat</th><th>P&amp;L</th></tr></thead><tbody>' +
+      ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Resultat</th><th>P&amp;L</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table>'
-      : '<div class="empty-feed">Aucun trade pour l’instant</div>';
+      : '<div class="empty-feed">' + (t('noTradesHint') || 'Aucun trade pour l\'instant') + '</div>';
   }
 
   function maybeLossStreakTip(u) {
@@ -1892,29 +1964,36 @@
       var histLastOpen = 0;
       function openHistorySheetSafe() {
         var now = Date.now();
-        if (now - histLastOpen < 450) return;
+        if (now - histLastOpen < 400) return;
         histLastOpen = now;
         openHistorySheet();
       }
       histBtn.style.pointerEvents = 'auto';
       histBtn.style.touchAction = 'manipulation';
-      histBtn.style.minHeight = '44px';
+      histBtn.style.position = 'relative';
       histBtn.style.zIndex = '60';
-      histBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        openHistorySheetSafe();
-      });
-      histBtn.addEventListener('touchend', function (e) {
-        e.stopPropagation();
-        openHistorySheetSafe();
-      }, { passive: true });
+      if (IS_ANDROID) {
+        histBtn.style.minHeight = '30px';
+        // Android : click + touchend sans bloquer la propagation vers le handler.
+        histBtn.addEventListener('click', function () { openHistorySheetSafe(); });
+        histBtn.addEventListener('touchend', function (e) {
+          if (e && e.cancelable) e.preventDefault();
+          openHistorySheetSafe();
+        }, { passive: false });
+      } else {
+        histBtn.style.minHeight = '44px';
+        histBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          openHistorySheetSafe();
+        });
+      }
     }
   }
 
   function bindModals() {
-    $('closeHistorySheet').addEventListener('click', function () { closeModal('historySheet'); });
-    $('closeConvert').addEventListener('click', function () { closeModal('convertModal'); });
-    $('btnConvertRecharge').addEventListener('click', function () {
+    bindAndroidTap($('closeHistorySheet'), function () { closeModal('historySheet'); });
+    bindAndroidTap($('closeConvert'), function () { closeModal('convertModal'); });
+    bindAndroidTap($('btnConvertRecharge'), function () {
       closeModal('convertModal');
       var u = user();
       if (u && !D6.Engine.getTrade()) {
@@ -1923,7 +2002,7 @@
       openDeposit();
     });
     $('btnOpenPass').addEventListener('click', function () { closeDrawer(); openModal('passModal'); });
-    $('closePass').addEventListener('click', function () { closeModal('passModal'); });
+    bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
     $('formPassword').addEventListener('submit', async function (e) {
       e.preventDefault();
       var res = await D6.Auth.changePassword(user(), $('curPass').value, $('newPass').value);
@@ -1942,18 +2021,16 @@
       openModal('financeModal');
       fillFinanceHistory();
     }
-    $('closeFinance').addEventListener('click', function () { closeModal('financeModal'); });
+    bindAndroidTap($('closeFinance'), function () { closeModal('financeModal'); });
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
-    $('closeWithdraw').addEventListener('click', function () { closeModal('withdrawModal'); });
-    $('closeDeposit').addEventListener('click', function () { closeModal('depositModal'); });
+    bindAndroidTap($('closeWithdraw'), function () { closeModal('withdrawModal'); });
+    bindAndroidTap($('closeDeposit'), function () { closeModal('depositModal'); });
     if ($('btnDepositCheck')) $('btnDepositCheck').addEventListener('click', function () { checkDepositNow(true); });
     if ($('btnDepositWaitClose')) {
-      // On masque l'attente sans arrêter la surveillance : si l'opérateur
-      // confirme plus tard, le solde sera crédité par le serveur.
-      $('btnDepositWaitClose').addEventListener('click', function () { closeModal('depositWaitModal'); });
+      bindAndroidTap($('btnDepositWaitClose'), function () { closeModal('depositWaitModal'); });
     }
     if ($('btnHelp')) $('btnHelp').addEventListener('click', function () { openModal('helpModal'); });
-    if ($('closeHelp')) $('closeHelp').addEventListener('click', function () { closeModal('helpModal'); });
+    if ($('closeHelp')) bindAndroidTap($('closeHelp'), function () { closeModal('helpModal'); });
     if ($('formHelp')) {
       $('formHelp').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -1970,8 +2047,32 @@
         toast(t('helpSent'), 'ok');
       });
     }
-    if ($('closeDepositSuccess')) $('closeDepositSuccess').addEventListener('click', function () { closeModal('depositSuccessModal'); });
-    if ($('btnDepositSuccessOk')) $('btnDepositSuccessOk').addEventListener('click', function () { closeModal('depositSuccessModal'); });
+    if ($('closeDepositSuccess')) bindAndroidTap($('closeDepositSuccess'), function () { closeModal('depositSuccessModal'); });
+    if ($('btnDepositSuccessOk')) bindAndroidTap($('btnDepositSuccessOk'), function () { closeModal('depositSuccessModal'); });
+    if ($('closeTip')) bindAndroidTap($('closeTip'), function () { closeModal('tipModal'); });
+    if ($('btnTipOk')) bindAndroidTap($('btnTipOk'), function () { closeModal('tipModal'); });
+    if ($('closeForgot')) bindAndroidTap($('closeForgot'), function () { closeModal('forgotModal'); });
+    if ($('closeIosInstall')) bindAndroidTap($('closeIosInstall'), function () { closeModal('iosInstallModal'); });
+    if ($('btnIosInstallOk')) bindAndroidTap($('btnIosInstallOk'), function () { closeModal('iosInstallModal'); });
+
+    // Android : tap sur l'overlay ferme la modale (sans toucher au contenu).
+    if (IS_ANDROID) {
+      document.querySelectorAll('.modal-backdrop').forEach(function (bd) {
+        function closeIfOverlay(e) {
+          if (!e || e.target !== bd) return;
+          if (e.cancelable) e.preventDefault();
+          if (bd.id) closeModal(bd.id);
+        }
+        bd.addEventListener('click', closeIfOverlay);
+        bd.addEventListener('touchend', closeIfOverlay, { passive: false });
+        var box = bd.querySelector('.modal-box');
+        if (box) {
+          box.addEventListener('click', function (e) { e.stopPropagation(); });
+          box.addEventListener('touchend', function (e) { e.stopPropagation(); }, { passive: true });
+        }
+      });
+    }
+
     document.querySelectorAll('#depOpGrid .op-card').forEach(function (card) {
       card.addEventListener('click', function () {
         depositOp = card.dataset.op;
@@ -2238,13 +2339,13 @@
         hideInstallBanner();
       });
     }
-    if ($('closeIosInstall')) $('closeIosInstall').addEventListener('click', function () { closeModal('iosInstallModal'); });
-    if ($('btnIosInstallOk')) $('btnIosInstallOk').addEventListener('click', function () { closeModal('iosInstallModal'); });
+    if ($('closeIosInstall')) { /* bound in bindModals */ }
+    if ($('btnIosInstallOk')) { /* bound in bindModals */ }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=53').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=54').catch(function () { /* ignore */ });
     }
   }
 
@@ -2342,6 +2443,7 @@
       fillLangBars();
       fillCountrySelects();
       D6.I18N.apply();
+      applyAndroidTradeHint();
       bindAuth();
       bindTrade();
       bindModals();
@@ -2448,8 +2550,8 @@
         updateBalance(true);
         toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok');
       });
-      if ($('closeTip')) $('closeTip').addEventListener('click', function () { closeModal('tipModal'); });
-      if ($('btnTipOk')) $('btnTipOk').addEventListener('click', function () { closeModal('tipModal'); });
+      if ($('closeTip')) { /* bound in bindModals */ }
+      if ($('btnTipOk')) { /* bound in bindModals */ }
       (async function bootSession() {
         var cloud = null;
         if (D6.Supabase && D6.Supabase.restore) {
