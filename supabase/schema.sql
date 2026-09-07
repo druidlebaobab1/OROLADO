@@ -377,12 +377,14 @@ grant execute on function public.count_online(int) to authenticated;
 create index if not exists profiles_last_seen_idx on public.profiles (last_seen desc nulls last);
 
 -- Liste admin EN LIGNE (bypass RLS).
+-- Noms OUT distincts des colonnes profiles (sinon erreur ambiguous / mismatch).
+drop function if exists public.list_online(int);
 create or replace function public.list_online(p_seconds int default 90)
 returns table (
-  id uuid,
-  display_name text,
-  phone text,
-  last_seen timestamptz
+  uid uuid,
+  uname text,
+  uphone text,
+  seen_at timestamptz
 )
 language plpgsql
 security definer
@@ -393,11 +395,15 @@ declare
 begin
   secs := greatest(10, coalesce(p_seconds, 90));
   return query
-  select p.id, coalesce(p.display_name, '')::text, coalesce(p.phone, '')::text, p.last_seen
+  select
+    p.id,
+    coalesce(p.display_name, '')::text,
+    coalesce(p.phone, '')::text,
+    p.last_seen
   from public.profiles p
   where p.last_seen is not null
-    and p.last_seen > now() - make_interval(secs => secs)
-  order by p.last_seen desc;
+    and p.last_seen > (now() - (secs * interval '1 second'))
+  order by p.last_seen desc nulls last;
 end;
 $$;
 revoke all on function public.list_online(int) from public;

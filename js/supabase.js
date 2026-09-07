@@ -268,7 +268,16 @@
     if (!sb) return [];
     try {
       var rpc = await sb.rpc('list_online', { p_seconds: 90 });
-      if (!rpc.error && Array.isArray(rpc.data)) return rpc.data;
+      if (!rpc.error && Array.isArray(rpc.data)) {
+        return rpc.data.map(function (r) {
+          return {
+            id: r.uid || r.id,
+            display_name: r.uname || r.display_name || '',
+            phone: r.uphone || r.phone || '',
+            last_seen: r.seen_at || r.last_seen || null
+          };
+        });
+      }
     } catch (e0) { /* ignore */ }
     return [];
   }
