@@ -288,45 +288,123 @@
     return out;
   }
 
-  function drawGrid(pad, w, h, minP, maxP) {
+  function plotTheme(asset) {
+    var id = (asset && asset.id) || activeAsset;
+    // V100 + STABLE : thème sombre historique (ne pas changer).
+    if (id === 'crash300' || id === 'boom300' || (asset && asset.plotTheme === 'ivoryGold')) {
+      return {
+        id: 'ivoryGold',
+        bg0: '#FFF8EC',
+        bg1: '#F7EBD2',
+        gridH: 'rgba(201,162,39,0.28)',
+        gridHStrong: 'rgba(201,162,39,0.42)',
+        gridV: 'rgba(232,215,168,0.85)',
+        border: '#C9A227',
+        priceTxt: '#5C4A12',
+        timeTxt: 'rgba(92,74,18,0.72)',
+        watermark: 'rgba(201,162,39,0.10)',
+        rsiBg: 'rgba(255,248,236,0.92)',
+        rsiBorder: 'rgba(201,162,39,0.45)',
+        rsiTxt: '#5C4A12',
+        maFast: 'rgba(92,74,18,0.9)',
+        maSlow: 'rgba(47,107,255,0.75)',
+        bbFill: 'rgba(201,162,39,0.10)',
+        bbStroke: 'rgba(201,162,39,0.45)',
+        beadGlow: 'rgba(201,162,39,0.25)'
+      };
+    }
+    if (id === 'v75' || (asset && asset.plotTheme === 'darkPro')) {
+      return {
+        id: 'darkPro',
+        bg0: '#0B1220',
+        bg1: '#070B14',
+        gridH: 'rgba(255,215,0,0.055)',
+        gridHStrong: 'rgba(255,215,0,0.14)',
+        gridV: 'rgba(255,215,0,0.045)',
+        border: 'rgba(255,215,0,0.18)',
+        priceTxt: 'rgba(168,180,204,0.82)',
+        timeTxt: 'rgba(140,154,176,0.7)',
+        watermark: 'rgba(255,215,0,0.055)',
+        rsiBg: 'rgba(8,12,22,0.72)',
+        rsiBorder: 'rgba(255,215,0,0.12)',
+        rsiTxt: 'rgba(168,180,204,0.85)',
+        maFast: 'rgba(255,213,79,0.95)',
+        maSlow: 'rgba(0,188,212,0.9)',
+        bbFill: 'rgba(255,215,0,0.07)',
+        bbStroke: 'rgba(255,215,0,0.28)',
+        beadGlow: 'rgba(0,230,118,0.2)'
+      };
+    }
+    // Défaut = thème sombre actuel (V100 / STABLE).
+    return {
+      id: 'darkLegacy',
+      bg0: '#121A2B',
+      bg1: '#0A0F1D',
+      gridH: 'rgba(255,215,0,0.06)',
+      gridHStrong: 'rgba(255,215,0,0.16)',
+      gridV: 'rgba(255,215,0,0.05)',
+      border: null,
+      priceTxt: 'rgba(168,180,204,0.78)',
+      timeTxt: 'rgba(140,154,176,0.7)',
+      watermark: 'rgba(255,215,0,0.055)',
+      rsiBg: 'rgba(8,12,22,0.72)',
+      rsiBorder: 'rgba(255,215,0,0.12)',
+      rsiTxt: 'rgba(168,180,204,0.85)',
+      maFast: 'rgba(255,213,79,0.95)',
+      maSlow: 'rgba(0,188,212,0.9)',
+      bbFill: 'rgba(255,215,0,0.07)',
+      bbStroke: 'rgba(255,215,0,0.28)',
+      beadGlow: 'rgba(255,215,0,0.16)'
+    };
+  }
+
+  function drawGrid(pad, w, h, minP, maxP, theme) {
+    theme = theme || plotTheme(null);
     var i;
     var span = zoomSec();
     ctx.lineWidth = 1;
     for (i = 0; i <= 5; i++) {
       var y = pad.t + (h / 5) * i;
-      ctx.strokeStyle = i === 5 ? 'rgba(255,215,0,0.16)' : 'rgba(255,215,0,0.06)';
+      ctx.strokeStyle = i === 5 ? theme.gridHStrong : theme.gridH;
       ctx.beginPath();
       ctx.moveTo(pad.l, y);
       ctx.lineTo(pad.l + w, y);
       ctx.stroke();
       var pVal = maxP - (i / 5) * (maxP - minP);
-      ctx.fillStyle = 'rgba(168,180,204,0.78)';
+      ctx.fillStyle = theme.priceTxt;
       ctx.font = '600 10px "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText(pVal.toFixed(2), pad.l + w + 6, y + 3);
     }
     for (i = 0; i <= 4; i++) {
       var x = pad.l + (w / 4) * i;
-      ctx.strokeStyle = 'rgba(255,215,0,0.05)';
+      ctx.strokeStyle = theme.gridV;
       ctx.beginPath();
       ctx.moveTo(x, pad.t);
       ctx.lineTo(x, pad.t + h);
       ctx.stroke();
       var ago = Math.round(((4 - i) / 4) * span);
       var label = ago === 0 ? 'now' : '-' + ago + 's';
-      ctx.fillStyle = 'rgba(140,154,176,0.7)';
+      ctx.fillStyle = theme.timeTxt;
       ctx.font = '600 9px "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, x, pad.t + h + 12);
     }
+    if (theme.border) {
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pad.l + 0.5, pad.t + 0.5, w - 1, h - 1);
+    }
   }
 
-  function drawCandles(pad, w, h, candles, minP, maxP) {
+  function drawCandles(pad, w, h, candles, minP, maxP, opts) {
     if (!candles || candles.length < 2) return null;
+    opts = opts || {};
+    var thin = !!opts.thin;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
     var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
-    var cw = Math.max(2.2, (w / candles.length) * 0.62);
+    var cw = Math.max(thin ? 1.4 : 2.2, (w / candles.length) * (thin ? 0.42 : 0.62));
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
@@ -334,16 +412,16 @@
       var col = up ? '#00E676' : '#FF1744';
       var x = toX(i);
       ctx.strokeStyle = col;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = thin ? 0.9 : 1.2;
       ctx.beginPath();
       ctx.moveTo(x, toY(c.h));
       ctx.lineTo(x, toY(c.l));
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      var bh = Math.max(1.5, y2 - y1);
+      var bh = Math.max(thin ? 1 : 1.5, y2 - y1);
       ctx.fillStyle = col;
-      if (i === candles.length - 1 && cssH >= 200) {
+      if (!thin && i === candles.length - 1 && cssH >= 200) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
         ctx.shadowBlur = 8;
       }
@@ -352,6 +430,27 @@
     }
     var last = candles[candles.length - 1];
     return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
+  }
+
+  function drawTrendLine(pad, w, h, candles, minP, maxP) {
+    if (!candles || candles.length < 2) return;
+    var span = Math.max(maxP - minP, 0.01);
+    var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
+    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var i;
+    for (i = 1; i < candles.length; i++) {
+      var a = candles[i - 1].c;
+      var b = candles[i].c;
+      var up = b >= a;
+      ctx.beginPath();
+      ctx.moveTo(toX(i - 1), toY(a));
+      ctx.lineTo(toX(i), toY(b));
+      ctx.strokeStyle = up ? '#00E676' : '#FF1744';
+      ctx.lineWidth = 2.8;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
   }
 
   function drawLine(pad, w, h, data, minP, maxP) {
@@ -397,6 +496,66 @@
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
   }
 
+  function drawSmoothLine(pad, w, h, data, minP, maxP, color, width) {
+    if (!data || data.length < 2) return null;
+    var span = Math.max(maxP - minP, 0.01);
+    var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
+    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var lastX = toX(data.length - 1);
+    var lastY = toY(data[data.length - 1]);
+    var i;
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(data[0]));
+    for (i = 1; i < data.length; i++) {
+      var cx = (toX(i - 1) + toX(i)) / 2;
+      var cy = (toY(data[i - 1]) + toY(data[i])) / 2;
+      ctx.quadraticCurveTo(toX(i - 1), toY(data[i - 1]), cx, cy);
+    }
+    ctx.lineTo(lastX, lastY);
+    ctx.strokeStyle = color || '#FF7A00';
+    ctx.lineWidth = width || 3;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(255,122,0,0.35)';
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
+  }
+
+  function drawStepLine(pad, w, h, data, minP, maxP, color, accent, width) {
+    if (!data || data.length < 2) return null;
+    var span = Math.max(maxP - minP, 0.01);
+    var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
+    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var i;
+    for (i = 1; i < data.length; i++) {
+      var x0 = toX(i - 1);
+      var y0 = toY(data[i - 1]);
+      var x1 = toX(i);
+      var y1 = toY(data[i]);
+      var rising = data[i] > data[i - 1] + 0.0001;
+      var falling = data[i] < data[i - 1] - 0.0001;
+      // Segments orange rares sur marches montantes marquées.
+      var useAccent = accent && rising && ((i * 17) % 11 === 0);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y0);
+      ctx.lineTo(x1, y1);
+      ctx.strokeStyle = useAccent ? accent : (color || '#2F6BFF');
+      ctx.lineWidth = width || 3;
+      ctx.lineJoin = 'miter';
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+      if (falling) {
+        ctx.strokeStyle = color || '#2F6BFF';
+      }
+    }
+    var lastX = toX(data.length - 1);
+    var lastY = toY(data[data.length - 1]);
+    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
+  }
+
   function drawPoly(map, closes, period, color, width, startIdx) {
     if (!map || !closes) return;
     var started = false;
@@ -417,8 +576,9 @@
     ctx.stroke();
   }
 
-  function drawBollinger(map, closes, startIdx) {
+  function drawBollinger(map, closes, startIdx, theme) {
     if (!map || closes.length < 21) return;
+    theme = theme || plotTheme(null);
     var period = 20;
     var up = [];
     var lo = [];
@@ -450,9 +610,9 @@
       ctx.lineTo(map.toX(i), map.toY(lo[i]));
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,215,0,0.07)';
+    ctx.fillStyle = theme.bbFill;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,215,0,0.28)';
+    ctx.strokeStyle = theme.bbStroke;
     ctx.lineWidth = 1;
     started = false;
     ctx.beginPath();
@@ -472,12 +632,13 @@
     ctx.stroke();
   }
 
-  function drawRsiPanel(pad, w, h, rsiH, rsiVals, startIdx) {
+  function drawRsiPanel(pad, w, h, rsiH, rsiVals, startIdx, theme) {
+    theme = theme || plotTheme(null);
     var top = pad.t + h + 16;
     var boxH = Math.max(22, rsiH - 4);
-    ctx.fillStyle = 'rgba(8,12,22,0.72)';
+    ctx.fillStyle = theme.rsiBg;
     ctx.fillRect(pad.l, top, w, boxH);
-    ctx.strokeStyle = 'rgba(255,215,0,0.12)';
+    ctx.strokeStyle = theme.rsiBorder;
     ctx.strokeRect(pad.l, top, w, boxH);
     var y70 = top + boxH * (1 - 70 / 100);
     var y30 = top + boxH * (1 - 30 / 100);
@@ -506,10 +667,10 @@
       if (!started) { ctx.moveTo(toX(i - startIdx), toY(v)); started = true; }
       else ctx.lineTo(toX(i - startIdx), toY(v));
     }
-    ctx.strokeStyle = last >= 70 ? '#FF1744' : last <= 30 ? '#00E676' : '#FFD54F';
+    ctx.strokeStyle = last >= 70 ? '#FF1744' : last <= 30 ? '#00E676' : '#C9A227';
     ctx.lineWidth = 1.4;
     ctx.stroke();
-    ctx.fillStyle = 'rgba(168,180,204,0.85)';
+    ctx.fillStyle = theme.rsiTxt;
     ctx.font = '700 9px "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('RSI ' + last.toFixed(0), pad.l + 4, top + 10);
@@ -625,13 +786,14 @@
     octx.clearRect(0, 0, cssW, cssH);
   }
 
-  function drawBead(map, price, color, now) {
+  function drawBead(map, price, color, now, theme) {
     if (!map) return;
+    theme = theme || plotTheme(null);
     var pulse = 0.55 + 0.45 * Math.sin(now / 150);
     ctx.save();
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,215,0,0.16)';
+    ctx.fillStyle = theme.beadGlow || 'rgba(255,215,0,0.16)';
     ctx.fill();
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, 4.2, 0, Math.PI * 2);
@@ -640,7 +802,7 @@
     ctx.shadowBlur = 12;
     ctx.fill();
     ctx.restore();
-    ctx.fillStyle = color;
+    ctx.fillStyle = theme.id === 'ivoryGold' ? theme.priceTxt : color;
     ctx.font = '800 10px "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(price.toFixed(2), cssW - 56, map.lastY + 3);
@@ -652,6 +814,7 @@
     if (cssW < 8 || cssH < 8) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var asset = D6.CONFIG.ASSETS[activeAsset];
+    var theme = plotTheme(asset);
     var market = D6.Engine.getMarket(activeAsset);
     var allTrades = collectOpenTradeVisuals();
     var primary = allTrades[0] || null;
@@ -665,11 +828,12 @@
     var h = cssH - pad.t - pad.b;
     if (h < 40) h = Math.max(40, cssH - 36);
 
-    ctx.fillStyle = '#0A0F1D';
+    // Fond du PLOT uniquement (pas la page) — thème par actif.
+    ctx.fillStyle = theme.bg1;
     ctx.fillRect(0, 0, cssW, cssH);
     var bg = ctx.createLinearGradient(0, 0, 0, cssH);
-    bg.addColorStop(0, '#121A2B');
-    bg.addColorStop(1, '#0A0F1D');
+    bg.addColorStop(0, theme.bg0);
+    bg.addColorStop(1, theme.bg1);
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, cssW, cssH);
 
@@ -725,27 +889,36 @@
     var minP = viewMin;
     var maxP = viewMax;
 
-    drawGrid(pad, w, h, minP, maxP);
+    drawGrid(pad, w, h, minP, maxP, theme);
 
     ctx.save();
-    ctx.globalAlpha = 0.055;
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = theme.watermark;
     ctx.font = '800 36px Cinzel, Georgia, serif';
     ctx.textAlign = 'center';
     ctx.fillText('OROLADO', cssW / 2, pad.t + h / 2);
     ctx.restore();
 
-    var map = asset.chart === 'candle'
-      ? drawCandles(pad, w, h, candles, minP, maxP)
-      : drawLine(pad, w, h, closes.slice(startIdx), minP, maxP);
+    var map = null;
+    var lineData = closes.slice(startIdx);
+    if (asset.chart === 'candle') {
+      map = drawCandles(pad, w, h, candles, minP, maxP, { thin: !!asset.candleThin });
+      if (asset.trendLine) drawTrendLine(pad, w, h, candles, minP, maxP);
+    } else if (asset.lineStyle === 'step') {
+      map = drawStepLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
+    } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
+      map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#FF7A00', asset.lineWidth || 3);
+    } else {
+      // STABLE CORE (et lignes legacy) : inchangé.
+      map = drawLine(pad, w, h, lineData, minP, maxP);
+    }
 
     if (map) {
-      if (inds.bb) drawBollinger(map, closes, startIdx);
+      if (inds.bb) drawBollinger(map, closes, startIdx, theme);
       if (inds.ma) {
         ctx.save();
         ctx.shadowBlur = 0;
-        if (!((window.innerWidth || 0) <= 859)) drawPoly(map, closes, 21, 'rgba(0,188,212,0.9)', 1.5, startIdx);
-        drawPoly(map, closes, 7, 'rgba(255,213,79,0.95)', 1.7, startIdx);
+        if (!((window.innerWidth || 0) <= 859)) drawPoly(map, closes, 21, theme.maSlow, 1.5, startIdx);
+        drawPoly(map, closes, 7, theme.maFast, 1.7, startIdx);
         ctx.restore();
       }
     }
@@ -762,17 +935,19 @@
     });
     paintOverlay();
 
-    var tagCol = asset.chart === 'candle' ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744') : '#FFD700';
+    var tagCol = asset.chart === 'candle'
+      ? (market.price >= (market.candle.o) ? '#00E676' : '#FF1744')
+      : (asset.lineColor || asset.accent || '#FFD700');
     if (primary) {
       var above = market.price >= primary.entryPrice;
       var liveWin = (primary.side === 'call' && above) || (primary.side === 'put' && !above);
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
-    if (map) drawBead(map, market.price, tagCol, now);
+    if (map) drawBead(map, market.price, tagCol, now, theme);
 
     if (inds.rsi) {
       var rsiVals = rsiSeries(closes, 14);
-      drawRsiPanel(pad, w, h, rsiH, rsiVals, startIdx);
+      drawRsiPanel(pad, w, h, rsiH, rsiVals, startIdx, theme);
     }
   }
 
@@ -894,10 +1069,10 @@
       }
     },
     setAsset: function (id) {
+      // Switch plot only : reset échelle + redessin immédiat (pas d'écran noir app).
       activeAsset = id;
       viewMin = 0;
       viewMax = 0;
-      // Ne pas supprimer les visuals des autres actifs : on les redessine au retour.
       if (D6.Engine && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) {
           if (t) applyOpenTradeVisual(t);

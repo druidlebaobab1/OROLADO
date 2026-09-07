@@ -35,16 +35,18 @@
   function feedProfile(assetId) {
     switch (assetId) {
       case 'stable':
-        return { salt: 221713, vol: 0.14, drift: 0, f1: 0.019, f2: 0.041, f3: 0.007, a1: 6, a2: 3.5, a3: 8, spike: null };
+        return { salt: 221713, vol: 0.14, drift: 0, f1: 0.019, f2: 0.041, f3: 0.007, a1: 6, a2: 3.5, a3: 8, spike: null, stair: null };
       case 'v75':
-        return { salt: 551903, vol: 0.62, drift: 0, f1: 0.033, f2: 0.071, f3: 0.014, a1: 14, a2: 9, a3: 22, spike: null };
+        return { salt: 551903, vol: 0.62, drift: 0, f1: 0.033, f2: 0.071, f3: 0.014, a1: 14, a2: 9, a3: 22, spike: null, stair: null };
       case 'crash300':
-        return { salt: 771001, vol: 0.9, drift: -0.018, f1: 0.028, f2: 0.066, f3: 0.011, a1: 12, a2: 8, a3: 18, spike: 'down' };
+        // Paliers + chutes (pas un clone V100).
+        return { salt: 771001, vol: 0.42, drift: -0.01, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: 'down', stair: 'down' };
       case 'boom300':
-        return { salt: 882119, vol: 0.9, drift: 0.018, f1: 0.031, f2: 0.069, f3: 0.012, a1: 12, a2: 8, a3: 18, spike: 'up' };
+        // Marches ascendantes (opposé de CRASH).
+        return { salt: 882119, vol: 0.42, drift: 0.01, f1: 0.011, f2: 0.024, f3: 0.006, a1: 2.2, a2: 1.4, a3: 3, spike: 'up', stair: 'up' };
       case 'v100':
       default:
-        return { salt: 904177, vol: 1.05, drift: 0, f1: 0.041, f2: 0.093, f3: 0.017, a1: 18, a2: 11, a3: 32, spike: null };
+        return { salt: 904177, vol: 1.05, drift: 0, f1: 0.041, f2: 0.093, f3: 0.017, a1: 18, a2: 11, a3: 32, spike: null, stair: null };
     }
   }
 
@@ -61,11 +63,37 @@
     return (dir === 'down' ? -1 : 1) * amp * shape;
   }
 
+  function synthStairPrice(conf, p, t) {
+    var stepSec = p.stair === 'down' ? 7.4 : 6.9;
+    var step = Math.floor(t / stepSec);
+    var dir = p.stair === 'down' ? -1 : 1;
+    var stepAmp = 3.2 + uhash01(step, p.salt + 5) * 5.5;
+    var plateau = conf.basePrice + dir * step * stepAmp;
+    var phase = (t / stepSec) - step;
+    var micro = (valueNoise(t * 0.35, p.salt) - 0.5) * 1.1 * p.vol;
+    var jump = 0;
+    if (p.stair === 'down') {
+      // Chute nette en début de palier (sinon plateau calme).
+      if (phase < 0.1 && uhash01(step, p.salt + 19) > 0.48) {
+        jump = - (14 + uhash01(step, p.salt + 23) * 32) * (1 - phase / 0.1);
+      }
+    } else {
+      // Marche ascendante : montée rapide puis palier.
+      if (phase < 0.14 && uhash01(step, p.salt + 19) > 0.42) {
+        jump = (10 + uhash01(step, p.salt + 23) * 24) * Math.min(1, phase / 0.14);
+      }
+    }
+    return plateau + micro + jump + p.drift * (t % 86400) * 0.03;
+  }
+
   function synthPrice(asset, tSec) {
     var id = asset.id || asset;
     var conf = typeof asset === 'object' ? asset : (C.ASSETS[id] || { id: id, basePrice: 10000 });
     var p = feedProfile(conf.id);
     var t = Number(tSec) || 0;
+    if (p.stair === 'down' || p.stair === 'up') {
+      return synthStairPrice(conf, p, t);
+    }
     var wave = Math.sin(t * p.f1) * p.a1
       + Math.cos(t * p.f2) * p.a2
       + Math.sin(t * p.f3) * p.a3;
