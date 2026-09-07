@@ -616,7 +616,7 @@ if ($action === 'placeOrder') {
   $stake = (int) ($req['stake'] ?? 0);
   $side = (($req['side'] ?? '') === 'put') ? 'put' : 'call';
   $duration = (int) ($req['duration'] ?? 10);
-  if (!in_array($duration, [10, 30, 60, 300, 600], true)) $duration = 10;
+  if (!in_array($duration, [3, 10, 30, 60, 300, 600], true)) $duration = 10;
   $mode = (($req['mode'] ?? '') === 'real') ? 'real' : 'demo';
   $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['id'] ?? ''));
   if ($stake < 100 || $oid === '') {
@@ -631,7 +631,12 @@ if ($action === 'placeOrder') {
       exit;
     }
   }
-  $payout = $mode === 'real' ? 1.88 : (1.85 + (random_int(0, 100) / 1000));
+  $oddsAllowed = [1.88, 6.0, 11.0, 51.0];
+  $payoutReq = (float) ($req['payout'] ?? $req['odds'] ?? 1.88);
+  $payout = 1.88;
+  foreach ($oddsAllowed as $od) {
+    if (abs($od - $payoutReq) < 0.001) { $payout = $od; break; }
+  }
   $assetId = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['assetId'] ?? 'v100'));
   $openPrice = (float) ($req['entryPrice'] ?? $req['openPrice'] ?? 0);
   if ($mode === 'real') {

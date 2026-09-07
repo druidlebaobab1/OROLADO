@@ -344,6 +344,16 @@
     return synthPrice(asset, expiryMs / 1000);
   }
 
+  function normalizeOdds(v) {
+    var list = C.ODDS_MULT || [1.88, 6, 11, 51];
+    var n = Number(v);
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (Math.abs(list[i] - n) < 0.001) return list[i];
+    }
+    return C.DEFAULT_ODDS != null ? C.DEFAULT_ODDS : 1.88;
+  }
+
   ensureMarkets();
   Object.keys(C.ASSETS).forEach(function (id) {
     payoutLive[id] = markets[id].payout;
@@ -469,7 +479,9 @@
 
       ensureMarkets();
       var market = markets[assetId];
-      var payout = mode === 'real' ? C.REAL_PAYOUT : (payoutLive[assetId] || rollPayout(C.ASSETS[assetId], 'demo'));
+      syncMarket(market, C.ASSETS[assetId], Date.now());
+      // Côte choisie (×1.88 / ×6 / ×11 / ×51) — même règle démo + réel.
+      var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
         type: 'stake',
@@ -563,23 +575,24 @@
       var mode = trade.mode === 'real' ? 'real' : 'demo';
       var isCall = trade.side === 'call';
       var expMs = expiryOf(trade);
-      var exitPrice = closePriceAt(trade.assetId, expMs);
-      var voided = false;
-      var won;
-      var isAdminUser = !!(user.role === 'admin' || (user.email && String(user.email).toLowerCase() === String((C.ADMIN_EMAIL || 'admin@orolado.com')).toLowerCase()));
-      // Démo ~65 %. Réel admin ~85 %. Réel joueur ~45 %.
-      if (mode === 'demo') {
-        var pWin = C.DEMO_WIN_RATE != null ? C.DEMO_WIN_RATE : 0.65;
-        won = Math.random() < pWin;
-      } else if (isAdminUser) {
-        won = Math.random() < (C.ADMIN_WIN_RATE != null ? C.ADMIN_WIN_RATE : 0.85);
-      } else {
-        won = Math.random() < (C.REAL_WIN_RATE != null ? C.REAL_WIN_RATE : 0.45);
+      // P0 : close = prix dessiné à l’expiry (même synth / même actif), pas de nudge RNG.
+      ensureMarkets();
+      var mkt = markets[trade.assetId];
+      if (mkt && C.ASSETS[trade.assetId]) {
+        syncMarket(mkt, C.ASSETS[trade.assetId], expMs);
       }
-      var nudge = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.45, 0.28);
-      exitPrice = trade.entryPrice + (won
-        ? (isCall ? 1 : -1)
-        : (isCall ? -1 : 1)) * nudge;
+      var exitPrice = mkt && mkt.price != null ? mkt.price : closePriceAt(trade.assetId, expMs);
+      var entry = Number(trade.entryPrice);
+      var voided = false;
+      var won = false;
+      if (exitPrice > entry) {
+        won = isCall;
+      } else if (exitPrice < entry) {
+        won = !isCall;
+      } else {
+        voided = true;
+      }
+      trade.payout = normalizeOdds(trade.payout);
       var payoutAmount = 0;
       var net = 0;
       var status = 'lost';
@@ -722,11 +735,8 @@
     }
   };
 
-  D6.Synth = {
-    price: synthPrice,
-    candleMs: CANDLE_MS,
-    closeAt: closePriceAt
-  };
+  // Pas d’API publique nextPrice / seed / bougies futures.
+  D6.Synth = {};
 
   D6.Engine = api;
   try {

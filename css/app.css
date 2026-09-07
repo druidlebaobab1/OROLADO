@@ -309,8 +309,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .pad{position:fixed;bottom:0;left:0;right:0;z-index:40;margin:0 auto;max-width:28rem;border-radius:12px 12px 0 0;padding:4px 8px;gap:3px;
   padding-bottom:max(10px, env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;background:#0b0e14;
   border-top:1px solid var(--line);box-shadow:0 -12px 28px rgba(0,0,0,.45)}
-.dur-row,.quick-row{display:flex;gap:3px;flex-wrap:wrap}
-.dur-chip{flex:1 1 calc(20% - 3px);min-width:48px;font-size:.55rem}
+.dur-row,.quick-row{display:flex;gap:3px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.dur-row::-webkit-scrollbar,.quick-row::-webkit-scrollbar{display:none}
+.dur-chip{flex:0 0 auto;min-width:44px;font-size:.55rem}
 .dur-chip,.qbtn{flex:1;border:1px solid var(--line);background:rgba(10,15,29,.75);color:var(--text);font:inherit;font-weight:800;
   font-size:.6rem;padding:2px 0;border-radius:7px;cursor:pointer;min-height:28px;transition:transform .12s,border-color .12s,background .12s,box-shadow .12s}
 .dur-chip.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
@@ -322,8 +323,15 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .stake-min{font-size:.58rem;font-weight:700;color:var(--muted);letter-spacing:.02em}
 .win-preview{text-align:right;flex-shrink:0;min-width:96px}
 .win-preview .label{display:none}
-.win-preview .amount{font-size:.82rem;font-weight:900;font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.win-preview .amount{font-size:.82rem;font-weight:900;font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--green)}
 .win-preview .mult{font-size:.62rem;color:var(--green);font-weight:800}
+.odds-label{margin:2px 0 0;font-size:.52rem;font-weight:700;color:var(--muted);line-height:1.2}
+.odds-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:2px 0 0}
+.odds-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 2px;min-height:0;
+  border:1px solid rgba(212,175,55,.35);border-radius:8px;background:rgba(10,15,29,.75);color:var(--gold);font:inherit;cursor:pointer}
+.odds-chip .odds-mult{font-size:.62rem;font-weight:900;line-height:1.1}
+.odds-chip .odds-pct{font-size:.48rem;font-weight:700;color:var(--green);line-height:1.1;opacity:.9}
+.odds-chip.on{border-color:var(--gold);background:rgba(34,197,94,.12);box-shadow:0 0 0 1px rgba(212,175,55,.35)}
 .timer-panel{display:none!important}
 .trade-lock{display:none;text-align:center;font-size:.62rem;font-weight:800;color:var(--gold);
   background:var(--gold-soft);border:1px solid var(--line);border-radius:8px;padding:4px 6px;margin-bottom:4px}
@@ -467,9 +475,9 @@ html.is-android .chart-stage{min-height:278px!important}
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:5}
 .lang-btn{border:0;background:transparent;font-size:13px;line-height:1;padding:3px;border-radius:6px;cursor:pointer;opacity:.45}
 .lang-btn.on{opacity:1;background:var(--gold-soft)}
-.install-banner{position:absolute;left:8px;right:8px;bottom:8px;z-index:45;display:flex;align-items:center;gap:5px;
-  background:rgba(16,22,34,.9);border:1px solid rgba(245,197,24,.28);border-radius:8px;padding:4px 6px;font-size:.62rem;font-weight:800;
-  box-shadow:0 4px 12px rgba(0,0,0,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);max-width:100%;pointer-events:auto}
+.install-banner{position:absolute;left:auto;right:6px;top:4px;bottom:auto;z-index:25;display:flex;align-items:center;gap:4px;
+  max-width:150px;background:rgba(16,22,34,.9);border:1px solid rgba(245,197,24,.28);border-radius:8px;padding:3px 5px;font-size:.52rem;font-weight:800;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:auto}
 .install-banner.hidden{display:none!important}
 .install-banner span{flex:1;min-width:0;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .install-banner button{border:0;border-radius:6px;padding:4px 8px;font:inherit;font-weight:900;font-size:.58rem;background:var(--gold);color:#0A0F1D;cursor:pointer;white-space:nowrap}
@@ -590,20 +598,26 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 /* Android étroit (<430) : maximiser les bougies, compact ticket */
 @media (max-width:429px){
   .trade-lock{display:none!important}
-  .trade-hint{display:-webkit-box!important;-webkit-line-clamp:2;line-clamp:2;overflow:visible;max-height:2.8em;white-space:normal}
+  .trade-hint{display:-webkit-box!important;-webkit-line-clamp:1;line-clamp:1;overflow:hidden;max-height:1.3em;white-space:normal;font-size:.5rem;margin:0}
   .pad{padding:2px 6px;gap:2px;padding-bottom:calc(2px + env(safe-area-inset-bottom,0px))}
   .dur-row{gap:2px;margin:0}
   .dur-chip,.qbtn{min-height:22px;padding:1px 0;font-size:.5rem;border-radius:6px}
-  .stake-row{gap:2px}
-  .stake-box{padding:2px 6px;min-height:0}
-  .stake-box input{min-height:28px;font-size:.9rem}
+  .stake-line{gap:4px}
+  .stake-line input,.stake-field input{min-height:30px;padding:4px 6px;font-size:.9rem}
+  .stake-min{font-size:.5rem}
+  .odds-label{font-size:.46rem;margin:1px 0 0}
+  .odds-row{gap:3px;margin:1px 0 0}
+  .odds-chip{padding:2px 1px;border-radius:6px}
+  .odds-chip .odds-mult{font-size:.55rem}
+  .odds-chip .odds-pct{font-size:.42rem}
   .quick-row{gap:2px}
+  .qbtn{min-height:20px}
   .btn-trade{min-height:36px;border-radius:10px;font-size:.72rem;padding:4px 2px}
   .btn-trade small{font-size:.48rem}
   .btn-hist-cta{min-height:44px!important;height:auto!important;padding:8px 6px!important;font-size:.52rem;margin-top:2px;z-index:60}
   .win-preview{padding:2px 0;margin:0}
   .win-preview .amount{font-size:.72rem}
-  .trade-wrap{padding-bottom:168px}
+  .trade-wrap{padding-bottom:188px}
   .chart-card,#chart{min-height:280px!important;min-height:max(280px,46vh)!important}
   .chart-stage{min-height:250px!important}
 }

@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=56">
+  <link rel="stylesheet" href="css/app.css?v=58">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -243,6 +243,7 @@
                 <button type="button" class="ind-btn on" data-ind="ma" title="Moyenne mobile">MA</button>
                 <button type="button" class="ind-btn" data-ind="rsi" title="RSI 14">RSI</button>
                 <button type="button" class="ind-btn" data-ind="bb" title="Bollinger">BB</button>
+                <button type="button" class="ind-btn" data-ind="macd" title="MACD">MACD</button>
                 <button type="button" class="ind-btn" id="chartZoomIn" aria-label="Zoom avant" title="Zoom +">+</button>
                 <button type="button" class="ind-btn" id="chartZoomOut" aria-label="Zoom arrière" title="Zoom −">−</button>
               </div>
@@ -260,11 +261,12 @@
 
         <div class="pad glass">
           <div id="installBanner" class="install-banner hidden">
-            <span data-i18n="install">📲 Installer l’application</span>
-            <button type="button" id="btnInstall" data-i18n="installBtn">Installer</button>
+            <span>Installer l’app</span>
+            <button type="button" id="btnInstall">Installer</button>
             <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">✕</button>
           </div>
           <div class="dur-row">
+            <button type="button" class="dur-chip" data-dur="3">3s</button>
             <button type="button" class="dur-chip on" data-dur="10">10s</button>
             <button type="button" class="dur-chip" data-dur="30">30s</button>
             <button type="button" class="dur-chip" data-dur="60">1 min</button>
@@ -282,6 +284,13 @@
               <div class="amount" id="previewGain">188 FCFA</div>
               <div class="mult" id="previewMult">×1.88</div>
             </div>
+          </div>
+          <p class="odds-label">Côte — plus haut = plus de gain, plus de risque</p>
+          <div class="odds-row" id="oddsRow" role="group" aria-label="Côtes">
+            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">×1.88</span><span class="odds-pct">+88%</span></button>
+            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">×6</span><span class="odds-pct">+500%</span></button>
+            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">×11</span><span class="odds-pct">+1 000%</span></button>
+            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">×51</span><span class="odds-pct">+5 000%</span></button>
           </div>
           <div class="quick-row">
             <button type="button" class="qbtn" data-add="500">+500</button>
@@ -564,15 +573,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=56"></script>
-  <script src="js/i18n.js?v=56"></script>
-  <script src="js/store.js?v=56"></script>
-  <script src="js/api.js?v=56"></script>
+  <script src="js/config.js?v=58"></script>
+  <script src="js/i18n.js?v=58"></script>
+  <script src="js/store.js?v=58"></script>
+  <script src="js/api.js?v=58"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=57"></script>
-  <script src="js/auth.js?v=56"></script>
-  <script src="js/engine.js?v=56"></script>
-  <script src="js/chart.js?v=56"></script>
-  <script src="js/app.js?v=56"></script>
+  <script src="js/supabase.js?v=58"></script>
+  <script src="js/auth.js?v=58"></script>
+  <script src="js/engine.js?v=58"></script>
+  <script src="js/chart.js?v=58"></script>
+  <script src="js/app.js?v=58"></script>
 </body>
 </html>

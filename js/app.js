@@ -572,16 +572,44 @@
     if (!u || !$('payoutV100')) return;
     var ids = ['v100', 'stable', 'v75', 'crash300', 'boom300'];
     var map = { v100: 'payoutV100', stable: 'payoutStable', v75: 'payoutV75', crash300: 'payoutCrash300', boom300: 'payoutBoom300' };
+    var odds = currentOdds(u);
     ids.forEach(function (id) {
       var el = $(map[id]);
       if (!el) return;
-      var live = D6.Engine.payoutLive && D6.Engine.payoutLive[id];
-      el.textContent = live ? ('+' + Math.round((live - 1) * 100) + '%') : '+88%';
+      el.textContent = '+' + Math.round((odds - 1) * 100) + '%';
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || 100));
-    var mult = (D6.Engine.payoutLive && D6.Engine.payoutLive[assetId(u)]) || D6.CONFIG.REAL_PAYOUT || 1.88;
-    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(Math.floor(stake * mult));
-    if ($('previewMult')) $('previewMult').textContent = '×' + Number(mult).toFixed(2);
+    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(Math.floor(stake * odds));
+    if ($('previewMult')) $('previewMult').textContent = '×' + (Math.abs(odds - Math.round(odds)) < 0.001 ? String(Math.round(odds)) : Number(odds).toFixed(2));
+    document.querySelectorAll('.odds-chip').forEach(function (btn) {
+      btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);
+    });
+  }
+
+  function currentOdds(u) {
+    u = u || user();
+    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 6, 11, 51];
+    var n = Number(u && u.odds != null ? u.odds : (D6.CONFIG.DEFAULT_ODDS || 1.88));
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (Math.abs(list[i] - n) < 0.001) return list[i];
+    }
+    return list[0];
+  }
+
+  function setOdds(mult) {
+    var u = user();
+    if (!u) return;
+    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 6, 11, 51];
+    var n = Number(mult);
+    var i;
+    var ok = list[0];
+    for (i = 0; i < list.length; i++) {
+      if (Math.abs(list[i] - n) < 0.001) { ok = list[i]; break; }
+    }
+    u.odds = ok;
+    D6.Store.saveUser(u);
+    updatePayoutUi();
   }
 
   function updateAssetUi() {
@@ -1307,7 +1335,7 @@
       return;
     }
     playTap();
-    var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u) });
+    var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u), payout: currentOdds(u) });
     if (!res.ok) {
       if (mode === 'real' && /insuffisant/i.test(String(res.reason || ''))) {
         openDeposit('Solde insuffisant pour miser. Rechargez votre compte');
@@ -1344,7 +1372,8 @@
         duration: u.duration,
         mode: mode,
         assetId: res.trade.assetId,
-        entryPrice: res.trade.entryPrice
+        entryPrice: res.trade.entryPrice,
+        payout: res.trade.payout || currentOdds(u)
       }).then(function (remote) {
         var cur = user();
         if (remote && remote.ok && remote.vault && cur && mode !== 'real') {
@@ -2164,6 +2193,12 @@
         u.duration = Number(chip.dataset.dur); D6.Store.saveUser(u); updateDurationUi();
       });
     });
+    document.querySelectorAll('.odds-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        if (!guardLiveTradeView()) return;
+        setOdds(chip.dataset.odds);
+      });
+    });
     document.querySelectorAll('.qbtn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var add = Number(btn.dataset.add || 0);
@@ -2556,6 +2591,9 @@
     function isStandalone() {
       return !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
     }
+    function isMobileUi() {
+      return window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
+    }
     function installDismissedForever() {
       try { return localStorage.getItem('oro_install_dismissed') === '1'; } catch (e) { return false; }
     }
@@ -2575,14 +2613,14 @@
       if (installHideTimer) { clearTimeout(installHideTimer); installHideTimer = 0; }
     }
     function showInstallBanner() {
-      if (isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install')) return;
+      if (!isMobileUi() || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install')) return;
       if (!$('installBanner')) return;
       $('installBanner').classList.remove('hidden');
       if (installHideTimer) clearTimeout(installHideTimer);
       installHideTimer = setTimeout(function () {
         hideInstallBanner();
         try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ }
-      }, 10000);
+      }, 5000);
     }
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault();
@@ -2623,7 +2661,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=56').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=58').catch(function () { /* ignore */ });
     }
   }
 
@@ -2667,17 +2705,18 @@
     checkDepositReturn();
     syncTradeButtons();
     startAdminPresence();
-    // Bannière PWA discrète (si non installée / non refusée)
+    // Bannière PWA discrète mobile 5s (jamais si déjà installée)
     setTimeout(function () {
       var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+      var mobile = window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
       var forever = false;
       try { forever = localStorage.getItem('oro_install_dismissed') === '1'; } catch (e0) { forever = false; }
-      if (!standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
+      if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
         $('installBanner').classList.remove('hidden');
         setTimeout(function () {
           if ($('installBanner')) $('installBanner').classList.add('hidden');
           try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
-        }, 10000);
+        }, 5000);
       }
     }, 1800);
     if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);

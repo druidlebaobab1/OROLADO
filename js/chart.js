@@ -17,7 +17,7 @@
   var onFrame = null;
   var ZOOM_STEPS = [30, 45, 60, 90, 120, 180];
   var zoomIdx = 2;
-  var inds = { ma: true, rsi: false, bb: false };
+  var inds = { ma: true, rsi: false, bb: false, macd: false };
   var tmpCloses = [];
   var lastPad = null;
   var lastPlotH = 0;
@@ -286,6 +286,37 @@
       out[i] = loss === 0 ? 100 : 100 - 100 / (1 + gain / loss);
     }
     return out;
+  }
+
+  function emaSeries(closes, period) {
+    var out = new Array(closes.length);
+    var i;
+    for (i = 0; i < closes.length; i++) out[i] = null;
+    if (!closes.length || period < 1) return out;
+    var k = 2 / (period + 1);
+    var ema = closes[0];
+    out[0] = ema;
+    for (i = 1; i < closes.length; i++) {
+      ema = closes[i] * k + ema * (1 - k);
+      out[i] = ema;
+    }
+    return out;
+  }
+
+  function macdSeries(closes) {
+    var ema12 = emaSeries(closes, 12);
+    var ema26 = emaSeries(closes, 26);
+    var macd = new Array(closes.length);
+    var i;
+    for (i = 0; i < closes.length; i++) {
+      if (ema12[i] == null || ema26[i] == null) macd[i] = null;
+      else macd[i] = ema12[i] - ema26[i];
+    }
+    var signal = emaSeries(macd.map(function (v) { return v == null ? 0 : v; }), 9);
+    for (i = 0; i < closes.length; i++) {
+      if (macd[i] == null) signal[i] = null;
+    }
+    return { macd: macd, signal: signal };
   }
 
   function plotTheme(asset) {
@@ -676,6 +707,58 @@
     ctx.fillText('RSI ' + last.toFixed(0), pad.l + 4, top + 10);
   }
 
+  function drawMacdPanel(pad, w, h, panelH, series, startIdx, theme, yOffset) {
+    theme = theme || plotTheme(null);
+    var top = pad.t + h + 16 + (yOffset || 0);
+    var boxH = Math.max(22, panelH - 4);
+    var macd = series.macd || [];
+    var signal = series.signal || [];
+    var i;
+    var maxAbs = 0.0001;
+    for (i = startIdx; i < macd.length; i++) {
+      if (macd[i] != null) maxAbs = Math.max(maxAbs, Math.abs(macd[i]));
+      if (signal[i] != null) maxAbs = Math.max(maxAbs, Math.abs(signal[i]));
+    }
+    ctx.fillStyle = theme.rsiBg || 'rgba(0,0,0,0.25)';
+    ctx.fillRect(pad.l, top, w, boxH);
+    ctx.strokeStyle = theme.rsiBorder || 'rgba(255,255,255,0.12)';
+    ctx.strokeRect(pad.l, top, w, boxH);
+    var mid = top + boxH / 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath();
+    ctx.moveTo(pad.l, mid);
+    ctx.lineTo(pad.l + w, mid);
+    ctx.stroke();
+    var n = macd.length - startIdx;
+    if (n < 2) return;
+    var toX = function (idx) { return pad.l + (idx / Math.max(1, n - 1)) * w; };
+    var toY = function (v) { return mid - (v / maxAbs) * (boxH * 0.42); };
+    ctx.beginPath();
+    var started = false;
+    for (i = startIdx; i < macd.length; i++) {
+      if (macd[i] == null) continue;
+      if (!started) { ctx.moveTo(toX(i - startIdx), toY(macd[i])); started = true; }
+      else ctx.lineTo(toX(i - startIdx), toY(macd[i]));
+    }
+    ctx.strokeStyle = '#C9A227';
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+    started = false;
+    ctx.beginPath();
+    for (i = startIdx; i < signal.length; i++) {
+      if (signal[i] == null) continue;
+      if (!started) { ctx.moveTo(toX(i - startIdx), toY(signal[i])); started = true; }
+      else ctx.lineTo(toX(i - startIdx), toY(signal[i]));
+    }
+    ctx.strokeStyle = '#5B8CFF';
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
+    ctx.fillStyle = theme.rsiTxt || '#C9A227';
+    ctx.font = '700 9px "Hanken Grotesk", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('MACD', pad.l + 4, top + 10);
+  }
+
   function priceToY(price, pad, h, minP, maxP) {
     var span = Math.max((maxP - minP) || 0.01, 0.01);
     var top = pad ? pad.t : 14;
@@ -821,12 +904,33 @@
     allTrades.forEach(function (ot) {
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
-    var rsiH = inds.rsi ? 36 : 0;
+    var rsiH = inds.rsi ? 34 : 0;
+    var macdH = inds.macd ? 34 : 0;
+    var indH = rsiH + macdH;
     // Marge latérale ~48px pour labels timer / CALL-PUT (overflow:hidden du card).
-    var pad = { t: 14, r: 62, b: 22 + rsiH, l: 12 };
+    var pad = { t: 14, r: 62, b: 22 + indH, l: 12 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
-    if (h < 40) h = Math.max(40, cssH - 36);
+    if (h < 40) {
+      var need = 40 - h;
+      if (indH > 0) {
+        var shrink = Math.min(indH, need);
+        indH -= shrink;
+        if (inds.rsi && inds.macd) {
+          rsiH = Math.max(0, Math.floor(indH / 2));
+          macdH = Math.max(0, indH - rsiH);
+        } else if (inds.rsi) {
+          rsiH = indH;
+          macdH = 0;
+        } else {
+          macdH = indH;
+          rsiH = 0;
+        }
+        pad.b = 22 + indH;
+        h = cssH - pad.t - pad.b;
+      }
+      if (h < 40) h = 40;
+    }
 
     // Fond du PLOT uniquement (pas la page) — thème par actif.
     ctx.fillStyle = theme.bg1;
@@ -945,9 +1049,12 @@
     }
     if (map) drawBead(map, market.price, tagCol, now, theme);
 
-    if (inds.rsi) {
+    if (inds.rsi && rsiH > 0) {
       var rsiVals = rsiSeries(closes, 14);
       drawRsiPanel(pad, w, h, rsiH, rsiVals, startIdx, theme);
+    }
+    if (inds.macd && macdH > 0) {
+      drawMacdPanel(pad, w, h, macdH, macdSeries(closes), startIdx, theme, inds.rsi && rsiH > 0 ? rsiH : 0);
     }
   }
 
