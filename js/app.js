@@ -859,7 +859,122 @@
     $('drawerProfile').classList.remove('on');
   }
 
-  var adminCache = { users: [], messages: [] };
+  var adminCache = {
+    users: [],
+    messages: [],
+    withdrawals: [],
+    deposits: [],
+    depositsPaid: [],
+    metrics: {},
+    gameStats: null,
+    traffic: {},
+    onlineIds: {}
+  };
+  var adminView = 'inscrits';
+  var adminSortDeposit = 'desc';
+  var adminPresenceTimer = 0;
+
+  function captureUtmSource() {
+    try {
+      var p = new URLSearchParams(window.location.search || '');
+      var s = String(p.get('utm_source') || '').toLowerCase().trim();
+      if (s) {
+        localStorage.setItem('orolado_utm_source', s.replace(/[^a-z0-9_\-.]/g, '').slice(0, 40) || 'direct');
+      } else if (!localStorage.getItem('orolado_utm_source')) {
+        localStorage.setItem('orolado_utm_source', 'direct');
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function pingAdminPresence() {
+    if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
+    D6.Api.post('presence', {}).catch(function () { /* ignore */ });
+    if (D6.Supabase && D6.Supabase.pingPresence) D6.Supabase.pingPresence();
+  }
+
+  function startAdminPresence() {
+    pingAdminPresence();
+    if (adminPresenceTimer) clearInterval(adminPresenceTimer);
+    adminPresenceTimer = setInterval(pingAdminPresence, 30000);
+  }
+
+  function adminEsc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function adminEmailCell(email) {
+    var e = adminEsc(email || '');
+    return '<span class="admin-email" title="' + e + '">' + e + '</span>';
+  }
+
+  function adminMatchQ(blob, q) {
+    if (!q) return true;
+    return String(blob || '').toLowerCase().indexOf(q) >= 0;
+  }
+
+  function adminUserBlob(u) {
+    return [(u.publicId || ''), u.email || '', u.displayName || '', u.phone || '', (u.countryCode || '') + (u.phone || ''), u.id || ''].join(' ');
+  }
+
+  function adminIsOnlineUser(u) {
+    if (adminCache.onlineIds && adminCache.onlineIds[u.id]) return true;
+    var ls = u.lastSeen || '';
+    if (!ls) return false;
+    var t = Date.parse(ls);
+    return isFinite(t) && (Date.now() - t) < 90000;
+  }
+
+  function adminActives(users) {
+    return (users || []).filter(function (u) { return Number(u.totalDeposited || 0) > 0; });
+  }
+
+  function setAdminViewActive(view) {
+    adminView = view || 'inscrits';
+    document.querySelectorAll('.metric-btn[data-admin-view]').forEach(function (btn) {
+      btn.classList.toggle('on', btn.getAttribute('data-admin-view') === adminView);
+    });
+  }
+
+  function adminViewTitle(view) {
+    var map = {
+      online: 'En ligne',
+      inscrits: 'Inscrits',
+      actifs: 'Actifs (≥1 dépôt réel)',
+      depositsTotal: 'Total dépôts (validés)',
+      withdrawalsAll: 'Total retraits',
+      net: 'NET / Soldes',
+      depositsPending: 'Dépôts en attente',
+      withdrawalsPending: 'Retraits en cours',
+      top: 'TOP clients',
+      games: 'Jeux',
+      traffic: 'Trafic'
+    };
+    return map[view] || 'Admin';
+  }
+
+  async function refreshOnlineIds() {
+    adminCache.onlineIds = {};
+    var nPhp = 0;
+    (adminCache.users || []).forEach(function (u) {
+      if (adminIsOnlineUser(u)) {
+        adminCache.onlineIds[u.id] = true;
+        nPhp++;
+      }
+    });
+    if (D6.Supabase && D6.Supabase.listOnline) {
+      try {
+        var rows = await D6.Supabase.listOnline();
+        (rows || []).forEach(function (r) {
+          if (r && r.id) adminCache.onlineIds[r.id] = true;
+        });
+      } catch (e) { /* ignore */ }
+    }
+    return Object.keys(adminCache.onlineIds).length || nPhp;
+  }
 
   async function renderAdmin() {
     var remote = D6.Api ? await D6.Api.post('admin', {}) : null;
@@ -869,80 +984,224 @@
     var msgs = (remote && remote.ok && remote.messages) ? remote.messages : [];
     adminCache.users = users;
     adminCache.messages = msgs;
+    adminCache.withdrawals = wd || [];
+    adminCache.deposits = (remote && remote.ok && remote.deposits) ? remote.deposits : [];
+    adminCache.depositsPaid = (remote && remote.ok && remote.depositsPaid) ? remote.depositsPaid : [];
+    adminCache.metrics = m || {};
+    adminCache.gameStats = (remote && remote.ok) ? (remote.gameStats || null) : null;
+    adminCache.traffic = (remote && remote.ok && remote.traffic) ? remote.traffic : {};
+
     $('mDeposits').textContent = D6.fmtFCFA(m.deposits || 0);
     $('mPending').textContent = D6.fmtFCFA(m.withdrawals != null ? m.withdrawals : m.pending || 0);
     if ($('mExposure')) $('mExposure').textContent = D6.fmtFCFA(m.exposure || 0);
     $('mProfit').textContent = D6.fmtFCFA(m.profit != null ? m.profit : 0);
     $('mUsers').textContent = String(m.users || 0);
+    if ($('mDepPending')) $('mDepPending').textContent = String(adminCache.deposits.length);
+    if ($('mWdPending')) {
+      var wp = adminCache.withdrawals.filter(function (w) { return w.status === 'pending'; }).length;
+      $('mWdPending').textContent = String(wp);
+    }
     if ($('mOnline')) {
       $('mOnline').textContent = '…';
+      var nOnline = await refreshOnlineIds();
       if (D6.Supabase && D6.Supabase.countOnline) {
         D6.Supabase.countOnline().then(function (n) {
-          if ($('mOnline')) $('mOnline').textContent = String(n || 0);
+          if ($('mOnline')) $('mOnline').textContent = String(Math.max(Number(n) || 0, nOnline));
         }).catch(function () {
-          if ($('mOnline')) $('mOnline').textContent = '0';
+          if ($('mOnline')) $('mOnline').textContent = String(nOnline);
         });
       } else {
-        $('mOnline').textContent = '0';
+        $('mOnline').textContent = String(nOnline);
       }
     }
-    renderAdminUsers(($('adminSearch') && $('adminSearch').value) || '');
-    if (!wd.length) $('adminWithdrawals').innerHTML = '<div class="empty-feed">' + t('noWithdraw') + '</div>';
+    setAdminViewActive(adminView);
+    renderAdminView();
+    renderAdminMessagesList();
+  }
+
+  function renderAdminMessagesList() {
+    var box = $('adminMessages');
+    if (!box) return;
+    var msgs = adminCache.messages || [];
+    if (!msgs.length) box.innerHTML = '<div class="empty-feed">Aucun message</div>';
     else {
-      var wrows = wd.map(function (w) {
-        var badge = w.suspect ? ' <span class="badge-suspect">' + t('suspect') + '</span>' : '';
-        var acts = w.status === 'pending'
-          ? '<button class="mini ok" data-wd="' + w.id + '" data-ok="1">' + t('approve') + '</button> <button class="mini bad" data-wd="' + w.id + '" data-ok="0">' + t('reject') + '</button>'
-          : w.status;
-        var dest = (w.operator || '') + ' ' + (w.countryCode || '') + ' ' + (w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
-        return '<tr><td>' + w.name + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + dest + '<div class="h-time">' + (w.clock || '') + badge + '</div></td><td>' + acts + '</td></tr>';
+      var mrows = msgs.map(function (msg) {
+        var acts = msg.status === 'ouvert'
+          ? '<button class="mini ok" data-msg="' + adminEsc(msg.id) + '">Résoudre</button>'
+          : adminEsc(msg.status || 'resolu');
+        return '<tr><td>' + adminEsc(msg.publicId || '') + '<div class="h-time">' + adminEmailCell(msg.email) + '</div></td><td>' + adminEsc(msg.subject || '') +
+          '<div class="h-time">' + adminEsc(msg.message || '') + '</div></td><td>' + acts + '</td></tr>';
       }).join('');
-      $('adminWithdrawals').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table>';
-    }
-    var deps = (remote && remote.ok && remote.deposits) ? remote.deposits : [];
-    if ($('adminDeposits')) {
-      if (!deps.length) $('adminDeposits').innerHTML = '<div class="empty-feed">' + t('noDeposit') + '</div>';
-      else {
-        var drows = deps.map(function (d) {
-          var acts = '<button class="mini ok" data-dep="' + d.ref + '" data-amt="' + d.amount + '" data-ok="1">' + t('approve') + '</button>' +
-            ' <button class="mini bad" data-dep="' + d.ref + '" data-ok="0">' + t('reject') + '</button>';
-          return '<tr><td>' + (d.publicId || d.name || '') + '<div class="h-time">' + (d.email || '') + '</div></td><td>' + D6.fmtFCFA(d.amount) +
-            '</td><td>' + (d.operator || '') + '<div class="h-time">' + d.ref + '</div></td><td>' + acts + '</td></tr>';
-        }).join('');
-        $('adminDeposits').innerHTML = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
-      }
-    }
-    if ($('adminMessages')) {
-      if (!msgs.length) $('adminMessages').innerHTML = '<div class="empty-feed">Aucun message</div>';
-      else {
-        var mrows = msgs.map(function (msg) {
-          var acts = msg.status === 'ouvert'
-            ? '<button class="mini ok" data-msg="' + msg.id + '">Résoudre</button>'
-            : (msg.status || 'resolu');
-          return '<tr><td>' + (msg.publicId || '') + '<div class="h-time">' + (msg.email || '') + '</div></td><td>' + (msg.subject || '') +
-            '<div class="h-time">' + (msg.message || '') + '</div></td><td>' + acts + '</td></tr>';
-        }).join('');
-        $('adminMessages').innerHTML = '<table class="admin-table"><thead><tr><th>User</th><th>Message</th><th></th></tr></thead><tbody>' + mrows + '</tbody></table>';
-      }
+      box.innerHTML = '<table class="admin-table"><thead><tr><th>User</th><th>Message</th><th></th></tr></thead><tbody>' + mrows + '</tbody></table>';
     }
   }
 
-  function renderAdminUsers(q) {
-    q = String(q || '').trim().toLowerCase();
-    var users = adminCache.users || [];
-    var filtered = !q ? users : users.filter(function (u) {
-      var blob = [(u.publicId || ''), u.email || '', u.displayName || '', u.phone || '', (u.countryCode || '') + (u.phone || '')].join(' ').toLowerCase();
-      return blob.indexOf(q) >= 0;
-    });
-    if (!filtered.length) $('adminUsers').innerHTML = '<div class="empty-feed">' + t('noUsers') + '</div>';
-    else {
-      var rows = filtered.map(function (u) {
-        var d = (u.createdAt || '').slice(0, 10);
-        return '<tr data-user="' + u.id + '"><td>' + (u.publicId || '') + '</td><td>' + (u.displayName || '') + '</td><td>' + u.email + '</td><td>' + (u.countryCode || '') + ' ' + (u.phone || '') +
-          '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td><td>' + d + '</td></tr>';
-      }).join('');
-      $('adminUsers').innerHTML = '<table class="admin-table"><thead><tr><th>ID</th><th>Nom</th><th>E-mail</th><th>Téléphone</th><th>Solde réel</th><th>Date</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  function renderAdminView() {
+    var panel = $('adminViewPanel');
+    var title = $('adminViewTitle');
+    if (!panel) return;
+    if (title) title.textContent = adminViewTitle(adminView);
+    var q = String(($('adminSearch') && $('adminSearch').value) || '').trim().toLowerCase();
+    var html = '';
+    if (adminView === 'net') {
+      var m = adminCache.metrics || {};
+      html = '<div class="admin-net-panel">' +
+        '<div class="list-row"><span>Total dépôts</span><strong>' + D6.fmtFCFA(m.deposits || 0) + '</strong></div>' +
+        '<div class="list-row"><span>Total retraits</span><strong>' + D6.fmtFCFA(m.withdrawals != null ? m.withdrawals : m.pending || 0) + '</strong></div>' +
+        '<div class="list-row"><span>Soldes réels</span><strong>' + D6.fmtFCFA(m.exposure || 0) + '</strong></div>' +
+        '<div class="list-row"><span>NET plateforme</span><strong>' + D6.fmtFCFA(m.profit != null ? m.profit : 0) + '</strong></div>' +
+        '<p class="hint-min">Chiffres serveur inchangés (pas de recalcul).</p></div>';
+      panel.innerHTML = html;
+      return;
     }
+    if (adminView === 'games') {
+      var gs = adminCache.gameStats;
+      if (!gs || !gs.total) {
+        panel.innerHTML = '<div class="empty-feed">pas de data</div>';
+        return;
+      }
+      function rowsFromMap(map) {
+        return Object.keys(map || {}).sort().map(function (k) {
+          return '<tr><td>' + adminEsc(k) + '</td><td>' + adminEsc(map[k]) + '</td></tr>';
+        }).join('');
+      }
+      html = '<table class="admin-table"><thead><tr><th>Indice</th><th>Nb</th></tr></thead><tbody>' + rowsFromMap(gs.byAsset) + '</tbody></table>';
+      html += '<table class="admin-table" style="margin-top:10px"><thead><tr><th>Durée (s)</th><th>Nb</th></tr></thead><tbody>' + rowsFromMap(gs.byDuration) + '</tbody></table>';
+      if (gs.byAssetMode) {
+        html += '<p class="hint-min" style="margin-top:10px">Réel / démo</p>';
+        html += '<table class="admin-table"><thead><tr><th>Mode · Indice</th><th>Nb</th></tr></thead><tbody>';
+        ['real', 'demo'].forEach(function (mode) {
+          Object.keys(gs.byAssetMode[mode] || {}).forEach(function (aid) {
+            html += '<tr><td>' + mode + ' · ' + adminEsc(aid) + '</td><td>' + gs.byAssetMode[mode][aid] + '</td></tr>';
+          });
+        });
+        html += '</tbody></table>';
+      }
+      panel.innerHTML = html;
+      return;
+    }
+    if (adminView === 'traffic') {
+      var traf = adminCache.traffic || {};
+      var keys = Object.keys(traf);
+      if (!keys.length) {
+        panel.innerHTML = '<div class="empty-feed">pas de data</div>';
+        return;
+      }
+      html = '<table class="admin-table"><thead><tr><th>Source</th><th>Comptes</th></tr></thead><tbody>' +
+        keys.sort().map(function (k) {
+          return '<tr><td>' + adminEsc(k) + '</td><td>' + traf[k] + '</td></tr>';
+        }).join('') + '</tbody></table>';
+      panel.innerHTML = html;
+      return;
+    }
+    if (adminView === 'depositsPending') {
+      var deps = (adminCache.deposits || []).filter(function (d) {
+        return adminMatchQ([d.publicId, d.name, d.email, d.ref, d.operator, String(d.amount || '')].join(' '), q);
+      });
+      if (!deps.length) html = '<div class="empty-feed">' + t('noDeposit') + '</div>';
+      else {
+        var drows = deps.map(function (d) {
+          var acts = '<button class="mini ok" data-dep="' + adminEsc(d.ref) + '" data-amt="' + Number(d.amount || 0) + '" data-ok="1">' + t('approve') + '</button>' +
+            ' <button class="mini bad" data-dep="' + adminEsc(d.ref) + '" data-ok="0">' + t('reject') + '</button>';
+          return '<tr><td>' + adminEsc(d.publicId || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
+            '</td><td>' + adminEsc(d.operator || '') + '<div class="h-time">' + adminEsc(d.ref) + '</div></td><td>' + acts + '</td></tr>';
+        }).join('');
+        html = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
+      }
+      panel.innerHTML = html;
+      return;
+    }
+    if (adminView === 'withdrawalsPending' || adminView === 'withdrawalsAll') {
+      var wdList = (adminCache.withdrawals || []).filter(function (w) {
+        if (adminView === 'withdrawalsPending' && w.status !== 'pending') return false;
+        return adminMatchQ([w.name, w.phone, w.operator, w.id, w.status, String(w.amount || '')].join(' '), q);
+      });
+      if (!wdList.length) html = '<div class="empty-feed">' + t('noWithdraw') + '</div>';
+      else {
+        var wrows = wdList.map(function (w) {
+          var badge = w.suspect ? ' <span class="badge-suspect">' + t('suspect') + '</span>' : '';
+          var acts = w.status === 'pending'
+            ? '<button class="mini ok" data-wd="' + adminEsc(w.id) + '" data-ok="1">' + t('approve') + '</button> <button class="mini bad" data-wd="' + adminEsc(w.id) + '" data-ok="0">' + t('reject') + '</button>'
+            : adminEsc(w.status);
+          var dest = (w.operator || '') + ' ' + (w.countryCode || '') + ' ' + (w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
+          return '<tr><td>' + adminEsc(w.name) + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + adminEsc(dest) + '<div class="h-time">' + adminEsc(w.clock || '') + badge + '</div></td><td>' + acts + '</td></tr>';
+        }).join('');
+        html = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th>Statut</th></tr></thead><tbody>' + wrows + '</tbody></table>';
+      }
+      panel.innerHTML = html;
+      return;
+    }
+    if (adminView === 'depositsTotal') {
+      var paid = (adminCache.depositsPaid || []).filter(function (d) {
+        return adminMatchQ([d.publicId, d.name, d.email, d.ref, d.operator, String(d.amount || ''), d.at].join(' '), q);
+      });
+      if (!paid.length) html = '<div class="empty-feed">Aucun dépôt validé</div>';
+      else {
+        html = '<table class="admin-table"><thead><tr><th>User</th><th>Montant</th><th>Opérateur</th><th>Date</th><th>Réf</th></tr></thead><tbody>' +
+          paid.map(function (d) {
+            return '<tr><td>' + adminEsc(d.publicId || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
+              '</td><td>' + adminEsc(d.operator || '') + '</td><td>' + adminEsc(String(d.at || '').slice(0, 19)) + '</td><td>' + adminEsc(d.ref) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+      panel.innerHTML = html;
+      return;
+    }
+
+    // user-list views: online / inscrits / actifs / top
+    var list = adminCache.users || [];
+    if (adminView === 'online') list = list.filter(adminIsOnlineUser);
+    if (adminView === 'actifs' || adminView === 'top') list = adminActives(list);
+    if (adminView === 'top' || adminView === 'actifs') {
+      var dir = adminSortDeposit === 'asc' ? 1 : -1;
+      list = list.slice().sort(function (a, b) {
+        return dir * (Number(a.totalDeposited || 0) - Number(b.totalDeposited || 0));
+      });
+    }
+    list = list.filter(function (u) { return adminMatchQ(adminUserBlob(u), q); });
+    if (!list.length) {
+      panel.innerHTML = '<div class="empty-feed">' + t('noUsers') + '</div>';
+      return;
+    }
+    if (adminView === 'online') {
+      html = '<table class="admin-table"><thead><tr><th>ID</th><th>Pseudo</th><th>Tél</th><th>Solde réel</th><th>Dernière action</th></tr></thead><tbody>' +
+        list.map(function (u) {
+          return '<tr data-user="' + adminEsc(u.id) + '"><td>' + adminEsc(u.publicId || '') + '</td><td>' + adminEsc(u.displayName || '') +
+            '</td><td>' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) + '</td><td>' + D6.fmtFCFA(u.realBalance) +
+            '</td><td>' + adminEsc(String(u.lastAction || u.lastSeen || '').slice(0, 19)) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    } else if (adminView === 'actifs' || adminView === 'top') {
+      var sortMark = adminSortDeposit === 'asc' ? ' ↑' : ' ↓';
+      html = '<table class="admin-table"><thead><tr>' +
+        (adminView === 'top' ? '<th>Rang</th>' : '') +
+        '<th>ID</th><th>Pseudo</th><th>Tél</th><th class="sortable" data-sort-dep="1">Total déposé' + sortMark + '</th><th>Total retiré</th><th>Solde réel</th>' +
+        (adminView === 'actifs' ? '<th>Nb trades réel</th>' : '') +
+        '</tr></thead><tbody>' +
+        list.map(function (u, i) {
+          return '<tr data-user="' + adminEsc(u.id) + '">' +
+            (adminView === 'top' ? '<td>' + (i + 1) + '</td>' : '') +
+            '<td>' + adminEsc(u.publicId || '') + '</td><td>' + adminEsc(u.displayName || '') +
+            '</td><td>' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) +
+            '</td><td>' + D6.fmtFCFA(u.totalDeposited || 0) + '</td><td>' + D6.fmtFCFA(u.totalWithdrawn || 0) +
+            '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td>' +
+            (adminView === 'actifs' ? '<td>' + Number(u.realTrades || 0) + '</td>' : '') +
+            '</tr>';
+        }).join('') + '</tbody></table>';
+    } else {
+      // inscrits
+      html = '<table class="admin-table"><thead><tr><th>ID</th><th>Pseudo</th><th>E-mail</th><th>Tél</th><th>Date</th><th>Solde réel</th></tr></thead><tbody>' +
+        list.map(function (u) {
+          var d = (u.createdAt || '').slice(0, 10);
+          return '<tr data-user="' + adminEsc(u.id) + '"><td>' + adminEsc(u.publicId || '') + '</td><td>' + adminEsc(u.displayName || '') +
+            '</td><td>' + adminEmailCell(u.email) + '</td><td>' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) +
+            '</td><td>' + adminEsc(d) + '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    panel.innerHTML = html;
+  }
+
+  function renderAdminUsers(q) {
+    if (arguments.length && $('adminSearch') && q != null) $('adminSearch').value = q;
+    renderAdminView();
   }
 
   function openAdminUser(uid) {
@@ -2174,6 +2433,7 @@
     function openAdmin() {
       if (!D6.Auth.isAdmin(user())) return;
       closeDrawer();
+      adminView = 'inscrits';
       renderAdmin();
       showScreen('screenAdmin');
     }
@@ -2182,14 +2442,51 @@
       showScreen('screenTrade');
       requestAnimationFrame(D6.Chart.resize);
     });
-    $('adminUsers').addEventListener('click', async function (e) {
-      var row = e.target.closest('[data-user]');
-      if (row) openAdminUser(row.dataset.user);
+    document.querySelectorAll('.metric-btn[data-admin-view]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        adminView = btn.getAttribute('data-admin-view') || 'inscrits';
+        if (adminView === 'top') adminSortDeposit = 'desc';
+        setAdminViewActive(adminView);
+        renderAdminView();
+      });
     });
+    if ($('adminViewPanel')) {
+      $('adminViewPanel').addEventListener('click', async function (e) {
+        var sortTh = e.target.closest('[data-sort-dep]');
+        if (sortTh && (adminView === 'actifs' || adminView === 'top')) {
+          adminSortDeposit = adminSortDeposit === 'desc' ? 'asc' : 'desc';
+          renderAdminView();
+          return;
+        }
+        var row = e.target.closest('[data-user]');
+        if (row) openAdminUser(row.dataset.user);
+        var depBtn = e.target.closest('[data-dep]');
+        if (depBtn && !depBtn.disabled) {
+          depBtn.disabled = true;
+          var res = D6.Api && D6.Api.token()
+            ? await D6.Api.post('resolveDeposit', {
+              ref: depBtn.dataset.dep,
+              amount: Number(depBtn.dataset.amt || 0),
+              approve: depBtn.dataset.ok === '1'
+            })
+            : null;
+          if (res && res.ok) toast(depBtn.dataset.ok === '1' ? (t('depositOk') + ' : +' + D6.fmtFCFA(res.amount || 0)) : t('reject'), 'ok');
+          else toast((res && res.reason) || t('sessionInvalid'), 'err');
+          renderAdmin();
+          return;
+        }
+        var wdBtn = e.target.closest('[data-wd]');
+        if (wdBtn) {
+          if (D6.Api && D6.Api.token()) await D6.Api.post('resolveWithdraw', { id: wdBtn.dataset.wd, approve: wdBtn.dataset.ok === '1' });
+          D6.Store.resolveWithdraw(wdBtn.dataset.wd, wdBtn.dataset.ok === '1');
+          renderAdmin();
+        }
+      });
+    }
     if ($('adminSearch')) {
-      $('adminSearch').addEventListener('input', function () { renderAdminUsers(this.value); });
+      $('adminSearch').addEventListener('input', function () { renderAdminView(); });
       $('adminSearch').addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); renderAdminUsers(this.value); }
+        if (e.key === 'Enter') { e.preventDefault(); renderAdminView(); }
       });
     }
     async function runAdminAdjust(btn) {
@@ -2228,6 +2525,11 @@
         await runAdminAdjust(btn);
       });
     }
+    if ($('btnAdminMessages')) {
+      $('btnAdminMessages').addEventListener('click', function () {
+        if ($('adminMessages')) $('adminMessages').classList.toggle('hidden');
+      });
+    }
     if ($('adminMessages')) {
       $('adminMessages').addEventListener('click', async function (e) {
         var btn = e.target.closest('[data-msg]');
@@ -2244,30 +2546,6 @@
         window.open('debug-maketou.php?lines=300&token=' + encodeURIComponent(tok), '_blank');
       });
     }
-    if ($('adminDeposits')) {
-      $('adminDeposits').addEventListener('click', async function (e) {
-        var btn = e.target.closest('[data-dep]');
-        if (!btn || btn.disabled) return;
-        btn.disabled = true;
-        var res = D6.Api && D6.Api.token()
-          ? await D6.Api.post('resolveDeposit', {
-            ref: btn.dataset.dep,
-            amount: Number(btn.dataset.amt || 0),
-            approve: btn.dataset.ok === '1'
-          })
-          : null;
-        if (res && res.ok) toast(btn.dataset.ok === '1' ? (t('depositOk') + ' : +' + D6.fmtFCFA(res.amount || 0)) : t('reject'), 'ok');
-        else toast((res && res.reason) || t('sessionInvalid'), 'err');
-        renderAdmin();
-      });
-    }
-    $('adminWithdrawals').addEventListener('click', async function (e) {
-      var btn = e.target.closest('[data-wd]');
-      if (!btn) return;
-      if (D6.Api && D6.Api.token()) await D6.Api.post('resolveWithdraw', { id: btn.dataset.wd, approve: btn.dataset.ok === '1' });
-      D6.Store.resolveWithdraw(btn.dataset.wd, btn.dataset.ok === '1');
-      renderAdmin();
-    });
   }
 
   function bindInstall() {
@@ -2345,7 +2623,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=55').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=56').catch(function () { /* ignore */ });
     }
   }
 
@@ -2388,6 +2666,7 @@
     refreshRemoteVault();
     checkDepositReturn();
     syncTradeButtons();
+    startAdminPresence();
     // Bannière PWA discrète (si non installée / non refusée)
     setTimeout(function () {
       var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
@@ -2439,6 +2718,7 @@
     updateBalance: updateBalance,
     getBalanceLocks: getBalanceLocks,
     boot: function () {
+      captureUtmSource();
       lockGestures();
       fillLangBars();
       fillCountrySelects();

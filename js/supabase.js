@@ -263,6 +263,16 @@
     return 0;
   }
 
+  async function listOnline() {
+    var sb = getClient();
+    if (!sb) return [];
+    try {
+      var rpc = await sb.rpc('list_online', { p_seconds: 90 });
+      if (!rpc.error && Array.isArray(rpc.data)) return rpc.data;
+    } catch (e0) { /* ignore */ }
+    return [];
+  }
+
   function applyIncomingVault(vault, profile) {
     var u = D6.Store.current();
     if (!u || !uuidish(u.id) || !vault) return;
@@ -509,6 +519,7 @@
     stopRealtime: stopRealtime,
     pingPresence: pingPresence,
     countOnline: countOnline,
+    listOnline: listOnline,
 
     changePassword: async function (next) {
       var sb = getClient();

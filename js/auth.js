@@ -73,18 +73,30 @@
           password: password
         });
         if (!cloud.ok) return cloud;
+        try {
+          var uCloud = D6.Store.current();
+          if (uCloud && !uCloud.trafficSource) {
+            uCloud.trafficSource = String(localStorage.getItem('orolado_utm_source') || 'direct').toLowerCase().trim() || 'direct';
+            D6.Store.saveUser(uCloud);
+          }
+        } catch (eTs) { /* ignore */ }
         return { ok: true, user: D6.Store.current() };
       }
 
       if (D6.Store.findByEmail(email)) return { ok: false, reason: 'Un compte existe déjà avec cet e-mail', field: 'regEmail' };
 
+      var trafficSource = 'direct';
+      try {
+        trafficSource = String(localStorage.getItem('orolado_utm_source') || 'direct').toLowerCase().trim() || 'direct';
+      } catch (eUtm) { /* ignore */ }
       var user = D6.Store.createUser({
         id: D6.uid(),
         displayName: displayName,
         email: email,
         phone: phone,
         countryCode: countryCode,
-        passwordHash: await hashPassword(password)
+        passwordHash: await hashPassword(password),
+        trafficSource: trafficSource
       });
       D6.Store.addSession(user, 'inscription');
       D6.Store.addSession(user, 'connexion');

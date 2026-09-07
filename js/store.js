@@ -74,6 +74,7 @@
       openTrades: [],
       transactions: [],
       sessions: [],
+      trafficSource: partial.trafficSource || 'direct',
       settings: { sound: true, particles: true }
     };
   }

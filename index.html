@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=55">
+  <link rel="stylesheet" href="css/app.css?v=56">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -341,26 +341,30 @@
       <h2 data-i18n="adminTitle">Super Admin Dashboard</h2>
     </div>
     <div class="admin-body">
-      <div class="metrics">
-        <div class="metric glass"><div class="k" data-i18n="metricDeposits">Total dépôts</div><div class="v" id="mDeposits">0</div></div>
-        <div class="metric glass"><div class="k" data-i18n="metricWithdrawals">Total retraits</div><div class="v" id="mPending">0</div></div>
-        <div class="metric glass"><div class="k" data-i18n="metricExposure">Soldes réels</div><div class="v" id="mExposure">0</div></div>
-        <div class="metric glass"><div class="k" data-i18n="metricNet">Net plateforme</div><div class="v" id="mProfit">0</div></div>
-        <div class="metric glass"><div class="k" data-i18n="metricUsers">Inscrits</div><div class="v" id="mUsers">0</div></div>
-        <div class="metric glass"><div class="k">EN LIGNE</div><div class="v" id="mOnline">0</div></div>
+      <div class="metrics" id="adminMetricsRow1">
+        <button type="button" class="metric glass metric-btn" data-admin-view="depositsTotal"><div class="k" data-i18n="metricDeposits">Total dépôts</div><div class="v" id="mDeposits">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsAll"><div class="k" data-i18n="metricWithdrawals">Total retraits</div><div class="v" id="mPending">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricExposure">Soldes réels</div><div class="v" id="mExposure">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricNet">Net plateforme</div><div class="v" id="mProfit">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="inscrits"><div class="k" data-i18n="metricUsers">Inscrits</div><div class="v" id="mUsers">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="online"><div class="k">EN LIGNE</div><div class="v" id="mOnline">0</div></button>
+      </div>
+      <div class="metrics metrics-row2" id="adminMetricsRow2">
+        <button type="button" class="metric glass metric-btn" data-admin-view="depositsPending"><div class="k">Dépôts en attente</div><div class="v" id="mDepPending">—</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsPending"><div class="k">Retraits en cours</div><div class="v" id="mWdPending">—</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="top"><div class="k">TOP clients</div><div class="v">depot DESC</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="actifs"><div class="k">Actifs</div><div class="v">payeurs</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="games"><div class="k">Jeux</div><div class="v">stats</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="traffic"><div class="k">Trafic</div><div class="v">sources</div></button>
       </div>
       <div class="field admin-search">
-        <input id="adminSearch" type="search" data-i18n-placeholder="adminSearch" placeholder="Rechercher ORO-… / e-mail / nom / tel">
+        <input id="adminSearch" type="search" data-i18n-placeholder="adminSearch" placeholder="Rechercher ORO-… / e-mail / nom / tél" autocomplete="off">
       </div>
-      <h3 data-i18n="users">Utilisateurs</h3>
-      <div class="table-wrap" id="adminUsers"></div>
+      <h3 id="adminViewTitle">Inscrits</h3>
+      <div class="table-wrap admin-table-wrap" id="adminViewPanel"></div>
       <div id="adminUserDetail" class="admin-detail glass hidden"></div>
-      <h3 data-i18n="withdrawals">Retraits</h3>
-      <div class="table-wrap" id="adminWithdrawals"></div>
-      <h3 data-i18n="depositsPending">Dépôts en attente</h3>
-      <div class="table-wrap" id="adminDeposits"></div>
-      <h3 data-i18n="messages">Messages</h3>
-      <div class="table-wrap" id="adminMessages"></div>
+      <button type="button" class="mini" id="btnAdminMessages">Messages</button>
+      <div class="table-wrap admin-table-wrap hidden" id="adminMessages"></div>
       <button type="button" class="mini" id="btnMaketouLog">Journal Maketou</button>
     </div>
   </section>
@@ -560,15 +564,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=55"></script>
-  <script src="js/i18n.js?v=55"></script>
-  <script src="js/store.js?v=55"></script>
-  <script src="js/api.js?v=55"></script>
+  <script src="js/config.js?v=56"></script>
+  <script src="js/i18n.js?v=56"></script>
+  <script src="js/store.js?v=56"></script>
+  <script src="js/api.js?v=56"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=55"></script>
-  <script src="js/auth.js?v=55"></script>
-  <script src="js/engine.js?v=55"></script>
-  <script src="js/chart.js?v=55"></script>
-  <script src="js/app.js?v=55"></script>
+  <script src="js/supabase.js?v=56"></script>
+  <script src="js/auth.js?v=56"></script>
+  <script src="js/engine.js?v=56"></script>
+  <script src="js/chart.js?v=56"></script>
+  <script src="js/app.js?v=56"></script>
 </body>
 </html>

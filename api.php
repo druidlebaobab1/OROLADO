@@ -159,6 +159,16 @@ if ($action === 'ping') {
   exit;
 }
 
+if ($action === 'presence') {
+  $me = session_user($db, $token);
+  if ($me && !empty($me['id'])) {
+    $db['users'][$me['id']]['lastSeen'] = date('c');
+    save_db($file, $db);
+  }
+  echo json_encode(['ok' => true, 'server' => true]);
+  exit;
+}
+
 if ($action === 'ensureAdmin') {
   $admin = ensure_admin_user($db, $ADMIN_EMAIL, hash_pw($ADMIN_PASS));
   $saved = save_db($file, $db);
@@ -224,6 +234,12 @@ if ($action === 'upsert') {
   $existing = $db['users'][$id] ?? [];
   $user['role'] = $existing['role'] ?? 'user';
   if ($id === 'admin_master') $user['role'] = 'admin';
+  if (!empty($existing['lastSeen']) && empty($user['lastSeen'])) {
+    $user['lastSeen'] = $existing['lastSeen'];
+  }
+  if (!empty($existing['trafficSource']) && empty($user['trafficSource'])) {
+    $user['trafficSource'] = $existing['trafficSource'];
+  }
   $db['users'][$id] = $user;
   if (isset($req['vault']) && is_array($req['vault'])) {
     $serverReal = (int) ($db['vault'][$id]['real'] ?? 0);
@@ -244,12 +260,43 @@ if ($action === 'admin') {
     exit;
   }
   $list = [];
+  $depPaidByUser = [];
+  $wdPaidByUser = [];
+  foreach (($db['deposits'] ?? []) as $d) {
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $uid = (string) ($d['userId'] ?? '');
+    if ($uid === '') continue;
+    if (!isset($depPaidByUser[$uid])) $depPaidByUser[$uid] = 0;
+    $depPaidByUser[$uid] += (int) ($d['amount'] ?? 0);
+  }
+  foreach (($db['withdrawals'] ?? []) as $w) {
+    if (($w['status'] ?? '') !== 'approved') continue;
+    $uid = (string) ($w['userId'] ?? '');
+    if ($uid === '') continue;
+    if (!isset($wdPaidByUser[$uid])) $wdPaidByUser[$uid] = 0;
+    $wdPaidByUser[$uid] += (int) ($w['amount'] ?? 0);
+  }
   foreach ($db['users'] as $id => $u) {
     if (empty($u['publicId'])) {
       $db['users'][$id]['publicId'] = alloc_public_id($db);
       $u = $db['users'][$id];
     }
     $v = $db['vault'][$id] ?? ['demo' => 0, 'real' => 0];
+    $totalDep = (int) ($depPaidByUser[$id] ?? 0);
+    if ($totalDep <= 0) {
+      foreach (($u['transactions'] ?? []) as $tx) {
+        if (($tx['type'] ?? '') === 'deposit' && (($tx['mode'] ?? 'real') === 'real' || empty($tx['mode']))) {
+          $totalDep += (int) ($tx['amount'] ?? 0);
+        }
+      }
+    }
+    $totalWd = (int) ($wdPaidByUser[$id] ?? 0);
+    $lastAction = (string) ($u['updatedAt'] ?? $u['createdAt'] ?? '');
+    $txs = $u['transactions'] ?? [];
+    if (is_array($txs) && count($txs)) {
+      $lastAction = (string) ($txs[0]['at'] ?? $lastAction);
+    }
     $list[] = [
       'id' => $id,
       'publicId' => (string) ($u['publicId'] ?? ''),
@@ -262,16 +309,24 @@ if ($action === 'admin') {
       'realBalance' => $v['real'] ?? 0,
       'demoBalance' => $v['demo'] ?? 0,
       'realTrades' => $u['realTrades'] ?? 0,
+      'totalDeposited' => $totalDep,
+      'totalWithdrawn' => $totalWd,
+      'lastAction' => $lastAction,
+      'lastSeen' => (string) ($u['lastSeen'] ?? ''),
+      'trafficSource' => (string) ($u['trafficSource'] ?? 'direct'),
       'transactions' => array_slice($u['transactions'] ?? [], 0, 40),
       'positions' => array_slice($u['positions'] ?? [], 0, 20)
     ];
   }
+  usort($list, function ($a, $b) {
+    return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
+  });
   save_db($file, $db);
-  $deps = [];
+  $depsPending = [];
+  $depsPaid = [];
   foreach (($db['deposits'] ?? []) as $d) {
-    if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
     $uid = (string) ($d['userId'] ?? '');
-    $deps[] = [
+    $row = [
       'ref' => (string) ($d['id'] ?? $d['ref'] ?? ''),
       'userId' => $uid,
       'name' => (string) ($db['users'][$uid]['displayName'] ?? ''),
@@ -279,19 +334,69 @@ if ($action === 'admin') {
       'publicId' => (string) ($db['users'][$uid]['publicId'] ?? ''),
       'amount' => (int) ($d['amount'] ?? 0),
       'operator' => (string) ($d['operator'] ?? ''),
-      'at' => (string) ($d['createdAt'] ?? $d['at'] ?? '')
+      'status' => strtoupper((string) ($d['status'] ?? '')),
+      'at' => (string) ($d['paidAt'] ?? $d['createdAt'] ?? $d['at'] ?? '')
+    ];
+    $st = $row['status'];
+    if ($st === 'PENDING') $depsPending[] = $row;
+    if ($st === 'COMPLETED' || $st === 'PAID') $depsPaid[] = $row;
+  }
+  $depsPending = array_slice(array_reverse($depsPending), 0, 80);
+  usort($depsPaid, function ($a, $b) {
+    return strcmp((string) ($b['at'] ?? ''), (string) ($a['at'] ?? ''));
+  });
+  $depsPaid = array_slice($depsPaid, 0, 200);
+  $msgs = array_slice(array_reverse($db['support_messages'] ?? []), 0, 60);
+
+  $gameStats = null;
+  $orders = $db['orders'] ?? [];
+  if (is_array($orders) && count($orders) > 0) {
+    $byAsset = [];
+    $byDur = [];
+    $byAssetMode = ['real' => [], 'demo' => []];
+    $byDurMode = ['real' => [], 'demo' => []];
+    foreach ($orders as $o) {
+      if (!is_array($o)) continue;
+      $aid = (string) ($o['assetId'] ?? $o['asset_id'] ?? 'v100');
+      $dur = (int) ($o['duration'] ?? 0);
+      $mode = (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo';
+      if (!isset($byAsset[$aid])) $byAsset[$aid] = 0;
+      $byAsset[$aid]++;
+      if (!isset($byDur[$dur])) $byDur[$dur] = 0;
+      $byDur[$dur]++;
+      if (!isset($byAssetMode[$mode][$aid])) $byAssetMode[$mode][$aid] = 0;
+      $byAssetMode[$mode][$aid]++;
+      if (!isset($byDurMode[$mode][$dur])) $byDurMode[$mode][$dur] = 0;
+      $byDurMode[$mode][$dur]++;
+    }
+    $gameStats = [
+      'byAsset' => $byAsset,
+      'byDuration' => $byDur,
+      'byAssetMode' => $byAssetMode,
+      'byDurationMode' => $byDurMode,
+      'total' => count($orders)
     ];
   }
-  $deps = array_slice(array_reverse($deps), 0, 40);
-  $msgs = array_slice(array_reverse($db['support_messages'] ?? []), 0, 60);
+
+  $traffic = [];
+  foreach ($list as $u) {
+    $src = strtolower(trim((string) ($u['trafficSource'] ?? 'direct')));
+    if ($src === '') $src = 'direct';
+    if (!isset($traffic[$src])) $traffic[$src] = 0;
+    $traffic[$src]++;
+  }
+
   echo json_encode([
     'ok' => true,
     'server' => true,
     'metrics' => metrics($db),
     'users' => $list,
     'withdrawals' => $db['withdrawals'],
-    'deposits' => $deps,
-    'messages' => $msgs
+    'deposits' => $depsPending,
+    'depositsPaid' => $depsPaid,
+    'messages' => $msgs,
+    'gameStats' => $gameStats,
+    'traffic' => $traffic
   ]);
   exit;
 }
