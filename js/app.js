@@ -2204,7 +2204,28 @@
     $('closeForgot').addEventListener('click', function () { closeModal('forgotModal'); });
   }
 
-  function bindTrade() {
+  function startWithdrawTicker() {
+    var el = $('wdTickerText');
+    if (!el) return;
+    function pickAmount() {
+      var r = Math.random();
+      if (r < 0.35) return 6000 + Math.floor(Math.random() * 44000);
+      if (r < 0.65) return 50000 + Math.floor(Math.random() * 250000);
+      if (r < 0.88) return 300000 + Math.floor(Math.random() * 1200000);
+      return 1500000 + Math.floor(Math.random() * 6500000);
+    }
+    function showNext() {
+      var id = 'ORO-' + String(100000 + Math.floor(Math.random() * 900000));
+      var amt = pickAmount().toLocaleString('fr-FR');
+      el.classList.remove('on');
+      setTimeout(function () {
+        el.textContent = '🟢 ' + id + ' • Retrait validé : ' + amt + ' FCFA';
+        el.classList.add('on');
+      }, 380);
+    }
+    showNext();
+    setInterval(showNext, 4500 + Math.floor(Math.random() * 1500));
+  }
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
@@ -2804,6 +2825,7 @@
       applyAndroidTradeHint();
       bindAuth();
       bindTrade();
+      startWithdrawTicker();
       bindModals();
       bindAdmin();
       bindInstall();

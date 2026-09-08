@@ -166,13 +166,16 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="v100"].on{border-color:var(--green)}
 .payout-live{font-size:10px;font-weight:900;color:var(--green);line-height:1.2;margin-top:1px}
 
-.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:300px!important;min-height:max(300px,46vh)!important;height:auto;max-height:none;
+.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:324px!important;min-height:max(324px,50vh)!important;height:auto;max-height:none;
   display:flex;flex-direction:column;border-radius:12px;overflow:hidden;position:relative}
-.chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 6px 1px;flex-shrink:0;border-bottom:1px solid rgba(255,215,0,.08);min-height:24px}
-.chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:auto;pointer-events:none}
+.chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 6px;margin:0;flex-shrink:0;border-bottom:1px solid rgba(255,215,0,.08);min-height:22px}
+.chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:0;pointer-events:none}
 .chart-price-wm{opacity:.72;font-size:.72rem;text-shadow:0 0 10px rgba(0,0,0,.55)}
 .chart-live-price .pnl-value{font-size:.68rem;opacity:.85}
-.chart-stage{flex:1 1 auto;position:relative;min-height:268px!important;flex-shrink:0;overflow:hidden}
+.wd-ticker{flex:1 1 auto;min-width:0;max-height:20px;height:20px;overflow:hidden;text-align:center;padding:0 4px;pointer-events:none;align-self:center}
+.wd-ticker-text{display:block;font-size:10px;font-weight:700;color:#10B981;line-height:20px;max-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s ease}
+.wd-ticker-text.on{opacity:.92}
+.chart-stage{flex:1 1 auto;position:relative;min-height:292px!important;flex-shrink:0;overflow:hidden}
 #chartCanvas{width:100%;height:100%;display:block;position:relative;z-index:0}
 .chart-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:15;pointer-events:none;display:block}
 .ind-pills{display:flex;flex-wrap:nowrap;gap:3px;pointer-events:auto;z-index:13;align-items:center;min-width:0}
@@ -309,11 +312,19 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   font-size:.6rem;padding:2px 0;border-radius:7px;cursor:pointer;min-height:28px;transition:transform .12s,border-color .12s,background .12s,box-shadow .12s}
 .dur-chip.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
 .qbtn.hit,.qbtn:active{transform:scale(.94);border-color:var(--gold);color:var(--gold);background:var(--gold-soft);box-shadow:0 0 12px rgba(255,215,0,.25)}
-.stake-line{display:flex;align-items:center;gap:8px}
-.stake-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.stake-line{display:flex;align-items:center;gap:6px;margin:0}
+.stake-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .stake-line input,.stake-field input{width:100%;background:rgba(10,15,29,.8);border:1px solid var(--line);border-radius:8px;padding:6px 8px;
   color:var(--gold);font:inherit;font-size:1rem;font-weight:900;text-align:right;outline:none;min-width:0;min-height:36px}
-.stake-min{font-size:.58rem;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.stake-min{display:flex!important;justify-content:space-between;align-items:center;padding:2px 0!important;margin:0!important;gap:8px;width:100%;line-height:1.2;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.stake-min-label{font-size:11px!important;opacity:.7;font-weight:700}
+.stake-min-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px;align-items:center;flex-shrink:0}
+.stake-min-actions .qbtn,.stake-min-actions .stake-act{
+  flex:0 0 auto!important;height:22px!important;max-height:22px!important;min-height:22px!important;
+  min-width:36px!important;width:auto!important;max-width:none!important;
+  padding:0 8px!important;font-size:11px!important;border-radius:4px!important;line-height:20px!important;
+  background:rgba(10,15,29,.85)!important;border:1px solid var(--line)!important;color:var(--text)!important;
+  display:inline-flex!important;align-items:center;justify-content:center;box-sizing:border-box}
 .win-preview{text-align:right;flex-shrink:0;min-width:96px}
 .win-preview .label{display:none}
 .win-preview .amount{font-size:.82rem;font-weight:900;font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--green)}
@@ -380,12 +391,12 @@ html.is-android .btn-hist-cta{
   height:22px!important;min-height:22px!important;padding:1px 6px!important;
   font-size:.48rem!important;margin-top:1px!important;z-index:60;line-height:1.1}
 html.is-android .chart-card,html.is-android #chart{
-  flex-shrink:0!important;min-height:max(372px,52vh)!important;min-height:max(372px,52dvh)!important}
-html.is-android .chart-stage{flex-shrink:0!important;min-height:max(340px,48vh)!important}
+  flex-shrink:0!important;min-height:max(372px,54vh)!important;min-height:max(372px,54dvh)!important}
+html.is-android .chart-stage{flex-shrink:0!important;min-height:max(348px,50vh)!important}
 @media (max-width:429px){
   html.is-android .chart-card,html.is-android #chart{
-    min-height:max(372px,52vh)!important;min-height:max(372px,52dvh)!important}
-  html.is-android .chart-stage{min-height:max(340px,48vh)!important}
+    min-height:max(372px,54vh)!important;min-height:max(372px,54dvh)!important}
+  html.is-android .chart-stage{min-height:max(348px,50vh)!important}
 }
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -647,11 +658,11 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
     flex:1 0 auto!important;flex-shrink:0!important;
     min-height:300px!important;min-height:max(300px,44vh)!important;min-height:max(300px,44dvh)!important;
     height:auto;max-height:none}
-  .chart-stage{flex-shrink:0!important;min-height:270px!important;min-height:max(270px,40vh)!important}
+  .chart-stage{flex-shrink:0!important;min-height:292px!important;min-height:max(292px,44vh)!important}
 }
 html.is-android .chart-card,html.is-android #chart{
-  flex-shrink:0!important;min-height:max(372px,52vh)!important;min-height:max(372px,52dvh)!important}
-html.is-android .chart-stage{flex-shrink:0!important;min-height:max(340px,48vh)!important}
+  flex-shrink:0!important;min-height:max(372px,54vh)!important;min-height:max(372px,54dvh)!important}
+html.is-android .chart-stage{flex-shrink:0!important;min-height:max(348px,50vh)!important}
 @media (max-width:429px){
   /* Android : vides du ticket → canvas. HAUT / côtes fonctionnelles inchangés. */
   html.is-android .trade-wrap{padding-bottom:178px!important}
@@ -671,7 +682,9 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(340px,48vh)!
   html.is-android .stake-line{gap:4px!important;margin:0!important}
   html.is-android .stake-line input,html.is-android .stake-field input{
     min-height:28px!important;font-size:.88rem!important;padding:2px 6px!important}
-  html.is-android .stake-min{font-size:.45rem!important;margin:0!important;line-height:1.1!important}
+  html.is-android .stake-min{display:flex!important;flex-direction:row!important;align-items:center!important;font-size:11px!important;margin:0!important;padding:2px 0!important;line-height:1.2!important}
+  html.is-android .stake-min-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important}
+  html.is-android .stake-min-actions .qbtn{min-height:22px!important;height:22px!important;max-height:22px!important;font-size:11px!important;padding:0 8px!important}
   html.is-android .win-preview{min-width:78px!important;margin:0!important;padding:0!important}
   html.is-android .win-preview .amount{font-size:.78rem!important}
   html.is-android .win-preview .mult{font-size:.55rem!important}
@@ -683,8 +696,8 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(340px,48vh)!
     height:20px!important;min-height:20px!important;padding:0 6px!important;margin-top:1px!important;
     font-size:.45rem!important;line-height:20px!important;border-radius:6px!important}
   html.is-android .chart-card,html.is-android #chart{
-    min-height:max(372px,52vh)!important;min-height:max(372px,52dvh)!important}
-  html.is-android .chart-stage{min-height:max(340px,48vh)!important}
+    min-height:max(372px,54vh)!important;min-height:max(372px,54dvh)!important}
+  html.is-android .chart-stage{min-height:max(348px,50vh)!important}
 }
 @media (orientation:landscape) and (min-width:700px){
   .chart-card,#chart{display:flex!important;flex-shrink:0!important;min-height:360px!important;max-height:none}
