@@ -396,7 +396,7 @@
       extra = extra || {};
       amount = Math.round(Number(amount) || 0);
       var real = (vault[user.id] || { real: 0 }).real;
-      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 3500;
+      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 3000;
       if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;

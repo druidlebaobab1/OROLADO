@@ -363,8 +363,8 @@
     return '1.88';
   }
 
-  function winRateForOdds(mult) {
-    var map = C.ODDS_WIN_RATE || {};
+  function winRateForOdds(mult, map) {
+    map = map || C.ODDS_WIN_RATE || {};
     var o = normalizeOdds(mult);
     var k = oddsKey(o);
     if (map[k] != null && isFinite(Number(map[k]))) return Number(map[k]);
@@ -372,6 +372,21 @@
     var m = Math.max(1.01, Number(o) || 1.88);
     var r = 1 / (m * 1.25);
     return Math.max(0.001, Math.min(0.49, r));
+  }
+
+  function isAdminUser(user) {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    var mail = String(user.email || '').toLowerCase();
+    var adminMail = String((C.ADMIN_EMAIL) || 'admin@orolado.com').toLowerCase();
+    return mail !== '' && mail === adminMail;
+  }
+
+  function forceExitPrice(entry, isCall, won, assetId) {
+    var nudge = Math.max((C.ASSETS[assetId].tickNoise || 0.3) * 0.45, 0.28);
+    return entry + (won
+      ? (isCall ? 1 : -1)
+      : (isCall ? -1 : 1)) * nudge;
   }
 
   ensureMarkets();
@@ -608,16 +623,19 @@
       var exitPrice;
 
       if (mode === 'real') {
-        // Risk management réel : win-rate strict par côte + bougie forcée.
-        var winProbability = winRateForOdds(trade.payout);
+        // RÉEL (tous) : cotes plateforme verrouillées + bougie forcée.
+        var winProbability = winRateForOdds(trade.payout, C.ODDS_WIN_RATE);
         won = Math.random() < winProbability;
-        var nudge = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.45, 0.28);
-        exitPrice = entry + (won
-          ? (isCall ? 1 : -1)
-          : (isCall ? -1 : 1)) * nudge;
+        exitPrice = forceExitPrice(entry, isCall, won, trade.assetId);
+        if (mkt) mkt.price = exitPrice;
+      } else if (isAdminUser(user)) {
+        // Démo ADMIN uniquement : taux dopé pour démonstration.
+        var adminProb = winRateForOdds(trade.payout, C.ODDS_WIN_RATE_ADMIN_DEMO || C.ODDS_WIN_RATE);
+        won = Math.random() < adminProb;
+        exitPrice = forceExitPrice(entry, isCall, won, trade.assetId);
         if (mkt) mkt.price = exitPrice;
       } else {
-        // Démo : apprentissage = prix chart à l’expiry (inchangé).
+        // Démo joueurs : règlement chart (taux équilibré / apprentissage).
         exitPrice = mkt && mkt.price != null ? mkt.price : closePriceAt(trade.assetId, expMs);
         if (exitPrice > entry) {
           won = isCall;

@@ -525,9 +525,9 @@ if ($action === 'withdraw') {
   }
   $amount = (int) ($req['amount'] ?? 0);
   $real = (int) ($db['vault'][$me['id']]['real'] ?? 0);
-  $minWithdraw = 3500;
+  $minWithdraw = 3000;
   if ($amount < $minWithdraw) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 3 500 FCFA.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 3 000 FCFA.']);
     exit;
   }
   if ($amount > $real) {

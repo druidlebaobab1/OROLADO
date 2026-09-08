@@ -628,8 +628,8 @@
       el.classList.toggle('on', el.dataset.asset === id);
     });
     var asset = D6.CONFIG.ASSETS[id];
-    $('assetLiveName').textContent = asset.name;
-    $('assetLiveTag').textContent = asset.tag;
+    if ($('assetLiveName')) $('assetLiveName').textContent = asset.name;
+    if ($('assetLiveTag')) $('assetLiveTag').textContent = asset.tag;
     D6.Chart.setAsset(id);
     updatePayoutUi();
   }
@@ -647,8 +647,10 @@
     if (!u) return;
     var market = D6.Engine.getMarket(assetId(u));
     var trade = D6.Engine.getTrade();
-    $('currentPrice').textContent = D6.fmtPrice(market.price);
+    var priceEl = $('currentPrice');
+    if (priceEl) priceEl.textContent = D6.fmtPrice(market.price);
     var pnl = $('livePnl');
+    if (!pnl) return;
     if (!trade) {
       pnl.textContent = '—';
       pnl.className = 'pnl-value idle';
@@ -1412,7 +1414,7 @@
   }
 
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 3500;
+    return D6.CONFIG.MIN_WITHDRAW || 3000;
   }
 
   function setDepositAmt(n) {
