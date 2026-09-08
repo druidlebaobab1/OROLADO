@@ -502,7 +502,7 @@
           id: raw.id,
           assetId: C.ASSETS[raw.assetId] ? raw.assetId : 'v100',
           side: raw.side === 'put' ? 'put' : 'call',
-          stake: Math.floor(Number(raw.stake) || 0),
+          stake: D6.roundMoney(Number(raw.stake) || 0),
           duration: raw.duration || 10,
           durationMs: raw.durationMs || (raw.duration || 10) * 1000,
           timeLeft: 0,
@@ -566,7 +566,7 @@
         return { ok: false, reason: D6.I18N.t('antibot') };
       }
 
-      var stake = Math.floor(Number(opts.stake) || 0);
+      var stake = D6.roundMoney(Number(opts.stake) || 0);
       var duration = C.DURATIONS.indexOf(opts.duration) >= 0 ? opts.duration : C.DEFAULT_DURATION;
       var assetId = C.ASSETS[opts.assetId] ? opts.assetId : 'v100';
       var side = opts.side === 'put' ? 'put' : 'call';
@@ -618,7 +618,7 @@
       if (mode === 'real') {
         user.realStakeVolume = (user.realStakeVolume || 0) + stake;
         user.totalWageredSinceDeposit = Number(user.realStakeVolume) || 0;
-        user.requiredWagering = Math.floor((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
+        user.requiredWagering = D6.roundMoney((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
       }
       user.lastStake = stake;
       // Ne pas écraser lastBetAmount ici : réservé à la clôture (anti-martingale).
@@ -707,7 +707,7 @@
         });
       } else if (won) {
         status = 'won';
-        payoutAmount = Math.floor(trade.stake * trade.payout);
+        payoutAmount = D6.roundMoney(trade.stake * trade.payout);
         setBal(user, mode, balOf(user, mode) + payoutAmount);
         net = payoutAmount - trade.stake;
         user.wins = (user.wins || 0) + 1;

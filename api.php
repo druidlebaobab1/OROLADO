@@ -725,11 +725,11 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
     exit;
   }
-  $amount = (int) ($req['amount'] ?? 0);
-  $real = (int) ($db['vault'][$me['id']]['real'] ?? 0);
-  $minWithdraw = 3000;
+  $amount = orolado_money($req['amount'] ?? 0);
+  $real = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
+  $minWithdraw = orolado_min_withdraw();
   if ($amount < $minWithdraw) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 3 000 FCFA.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de $5.00.']);
     exit;
   }
   if ($amount > $real) {
@@ -737,20 +737,20 @@ if ($action === 'withdraw') {
     exit;
   }
   // Wagering ×2 : volume de MISES réelles ≥ 2 × dépôts réels validés (côté serveur uniquement).
-  $depositTotal = (int) ($me['realDepositTotal'] ?? 0);
+  $depositTotal = orolado_money($me['realDepositTotal'] ?? 0);
   $stakeDone = max(
-    (int) ($me['realStakeVolume'] ?? 0),
-    (int) ($me['totalWageredSinceDeposit'] ?? 0)
+    orolado_money($me['realStakeVolume'] ?? 0),
+    orolado_money($me['totalWageredSinceDeposit'] ?? 0)
   );
-  $required = (int) ($me['requiredWagering'] ?? 0);
-  if ($required <= 0) $required = $depositTotal * 2;
+  $required = orolado_money($me['requiredWagering'] ?? 0);
+  if ($required <= 0) $required = orolado_money($depositTotal * 2);
   if ($stakeDone < $required) {
-    $left = max(0, $required - $stakeDone);
-    $leftFmt = number_format($left, 0, ',', ' ');
+    $left = max(0.0, orolado_money($required - $stakeDone));
+    $leftFmt = number_format($left, 2, '.', ',');
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Vous devez miser encore ' . $leftFmt . ' FCFA avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).',
+      'reason' => 'Vous devez miser encore $' . $leftFmt . ' avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).',
       'wager' => [
         'done' => $stakeDone,
         'required' => $required,
@@ -773,7 +773,7 @@ if ($action === 'withdraw') {
     exit;
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
-  $db['vault'][$me['id']]['real'] = $real - $amount;
+  $db['vault'][$me['id']]['real'] = orolado_money($real - $amount);
   $db['withdrawals'][] = [
     'id' => uniqid('wd_', true),
     'userId' => $me['id'],

@@ -95,7 +95,35 @@ function maketou_log_request(string $event): void {
 }
 
 function blank_db(): array {
-  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => [], 'support_messages' => [], 'admin_logs' => []];
+  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => [], 'support_messages' => [], 'admin_logs' => [], 'currency' => 'USD'];
+}
+
+/** Montants plateforme en USD (2 décimales). */
+function orolado_money($n): float {
+  return round((float) $n, 2);
+}
+
+/** Taux fixe Mobile Money local : 1 USD = 600 FCFA. */
+function orolado_usd_fcfa_rate(): float {
+  orolado_load_env();
+  $r = (float) (getenv('USD_FCFA_RATE') ?: ($_ENV['USD_FCFA_RATE'] ?? 600));
+  return $r > 0 ? $r : 600.0;
+}
+
+function orolado_usd_to_fcfa($usd): int {
+  return (int) round(orolado_money($usd) * orolado_usd_fcfa_rate());
+}
+
+function orolado_fcfa_to_usd($fcfa): float {
+  return orolado_money(((float) $fcfa) / orolado_usd_fcfa_rate());
+}
+
+function orolado_min_withdraw(): float {
+  return 5.0;
+}
+
+function orolado_max_deposit_usd(): float {
+  return 100000.0;
 }
 
 function supabase_env(string $key): string {
@@ -183,10 +211,11 @@ function supabase_admin_ready(): bool {
   return supabase_service_key() !== '' && supabase_project_url() !== '';
 }
 
-function supabase_credit_real(string $userId, int $amount, bool $depositTx = true): void {
+function supabase_credit_real(string $userId, $amount, bool $depositTx = true): void {
+  $amount = orolado_money($amount);
   $url = supabase_project_url();
   $hdrs = supabase_admin_headers();
-  if ($url === '' || $amount === 0 || !$hdrs) {
+  if ($url === '' || abs($amount) < 0.0001 || !$hdrs) {
     if (!$hdrs) error_log('OROLADO: SUPABASE_SERVICE_ROLE_KEY absente — impossible d’écrire vaults.real');
     return;
   }
@@ -208,7 +237,8 @@ function supabase_credit_real(string $userId, int $amount, bool $depositTx = tru
   }
 }
 
-function supabase_debit_real(string $userId, int $amount): bool {
+function supabase_debit_real(string $userId, $amount): bool {
+  $amount = orolado_money($amount);
   if ($amount <= 0) return true;
   $hdrs = supabase_admin_headers();
   if (!$hdrs) return false;
@@ -244,10 +274,11 @@ function supabase_resolve_trade(string $userId, string $orderId, int $amount): ?
   ];
 }
 
-function supabase_sync_real_min(string $userId, int $minReal): void {
+function supabase_sync_real_min(string $userId, $minReal): void {
+  $minReal = orolado_money($minReal);
   if ($minReal <= 0) return;
   $vault = supabase_admin_vault($userId);
-  $cur = $vault ? (int) $vault['real'] : 0;
+  $cur = $vault ? orolado_money($vault['real'] ?? 0) : 0;
   if ($minReal > $cur) supabase_credit_real($userId, $minReal - $cur, false);
 }
 
@@ -293,7 +324,8 @@ function supabase_admin_vault(string $userId): ?array {
   return ['demo' => (int) ($rows[0]['demo'] ?? 0), 'real' => (int) ($rows[0]['real'] ?? 0)];
 }
 
-function supabase_complete_deposit(string $ref, int $amount, string $userId): ?array {
+function supabase_complete_deposit(string $ref, $amount, string $userId): ?array {
+  $amount = orolado_money($amount);
   $hdrs = supabase_admin_headers();
   if (!$hdrs) return null;
   $url = supabase_project_url();
@@ -726,14 +758,15 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
       if ($json === null) continue;
       $status = maketou_extract_status($json);
       if (maketou_payload_looks_paid($json)) {
-        $expected = (int) ($dep['amount'] ?? 0);
-        $got = maketou_extract_amount($json);
-        if ($expected > 0 && $got > 0 && $got < $expected) {
-          maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'amount_mismatch', 'expected' => $expected, 'got' => $got]);
+        $expectedUsd = orolado_money($dep['amount'] ?? 0);
+        $expectedFcfa = orolado_usd_to_fcfa($expectedUsd);
+        $gotFcfa = maketou_extract_amount($json);
+        if ($expectedFcfa > 0 && $gotFcfa > 0 && $gotFcfa < $expectedFcfa) {
+          maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'amount_mismatch', 'expectedUsd' => $expectedUsd, 'expectedFcfa' => $expectedFcfa, 'gotFcfa' => $gotFcfa]);
           return ['ok' => false, 'paid' => false, 'reason' => 'amount_mismatch'];
         }
-        maketou_log('maketou_verify', ['ref' => $ref, 'url' => $url, 'status' => $status, 'result' => 'paid', 'amount' => $got > 0 ? $got : $expected]);
-        return ['ok' => true, 'paid' => true, 'amount' => $got > 0 ? $got : $expected];
+        maketou_log('maketou_verify', ['ref' => $ref, 'url' => $url, 'status' => $status, 'result' => 'paid', 'amountUsd' => $expectedUsd, 'gotFcfa' => $gotFcfa]);
+        return ['ok' => true, 'paid' => true, 'amount' => $expectedUsd];
       }
       maketou_log('maketou_verify_step', ['ref' => $ref, 'url' => $url, 'http' => $code, 'status' => $status]);
     }
@@ -814,17 +847,20 @@ function credit_paid_deposit(array $hit): array {
   if ($st === 'PAID' || $st === 'COMPLETED') {
     flock($fp, LOCK_UN);
     fclose($fp);
-    return ['ok' => true, 'duplicate' => true, 'amount' => (int) ($dep['amount'] ?? 0), 'userId' => (string) ($dep['userId'] ?? '')];
+    return ['ok' => true, 'duplicate' => true, 'amount' => orolado_money($dep['amount'] ?? 0), 'userId' => (string) ($dep['userId'] ?? '')];
   }
 
-  $amount = (int) ($hit['amount'] ?? 0);
-  $pendingAmt = (int) ($dep['amount'] ?? 0);
-  if ($amount <= 0 && $pendingAmt >= 3000) $amount = $pendingAmt;
-  if ($amount < 3000 || $amount > 5000000) {
+  // Crédit toujours le montant USD du dépôt pending (pas le FCFA Maketou).
+  $pendingAmt = orolado_money($dep['amount'] ?? 0);
+  $amount = orolado_money($hit['amount'] ?? 0);
+  if ($amount <= 0 && $pendingAmt >= orolado_min_deposit(null)) $amount = $pendingAmt;
+  if ($amount < orolado_min_deposit(null) || $amount > orolado_max_deposit_usd()) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
   }
+  // Sécurité : ne jamais créditer plus que le pending déclaré.
+  if ($pendingAmt > 0) $amount = min($amount, $pendingAmt);
   $uid = (string) ($dep['userId'] ?? '');
   if ($uid === '') {
     flock($fp, LOCK_UN);
@@ -842,12 +878,12 @@ function credit_paid_deposit(array $hit): array {
       'transactions' => [],
     ];
   }
-  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-  $db['vault'][$uid]['real'] = (int) ($db['vault'][$uid]['real'] ?? 0) + $amount;
-  $db['users'][$uid]['realDepositTotal'] = (int) ($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount;
-  $db['users'][$uid]['requiredWagering'] = (int) ($db['users'][$uid]['realDepositTotal'] ?? 0) * 2;
+  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+  $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amount);
+  $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
+  $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
   if (!isset($db['users'][$uid]['totalWageredSinceDeposit'])) {
-    $db['users'][$uid]['totalWageredSinceDeposit'] = (int) ($db['users'][$uid]['realStakeVolume'] ?? 0);
+    $db['users'][$uid]['totalWageredSinceDeposit'] = orolado_money($db['users'][$uid]['realStakeVolume'] ?? 0);
   }
   $db['deposits'][$idx]['status'] = 'COMPLETED';
   $db['deposits'][$idx]['amount'] = $amount;
@@ -1091,7 +1127,7 @@ function maketou_storefront_session(array $info): array {
       'lastName' => (string) $info['lastName'],
       'phone' => (string) $info['phone'],
       'countryCode' => 'CI',
-      'customerPrices' => [$productId => (int) $info['amount']],
+      'customerPrices' => [$productId => orolado_usd_to_fcfa($info['amountUsd'] ?? orolado_fcfa_to_usd($info['amount'] ?? 0))],
     ],
   ];
   $body = json_encode([$payload], JSON_UNESCAPED_UNICODE);
@@ -1138,6 +1174,13 @@ function maketou_create_checkout(array $opts): array {
   $aliasPhone = (string) ($opts['phone'] ?? '');
   if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
   $amount = (int) ($opts['amount'] ?? 0);
+  // Si amountUsd fourni (dépôt Orolado), facturer Maketou en FCFA au taux fixe.
+  if (isset($opts['amountUsd'])) {
+    $amountUsd = orolado_money($opts['amountUsd']);
+    $amount = orolado_usd_to_fcfa($amountUsd);
+  } else {
+    $amountUsd = orolado_fcfa_to_usd($amount);
+  }
   $ref = (string) ($opts['ref'] ?? '');
   $userId = (string) ($opts['userId'] ?? '');
   $returnUrl = (string) ($opts['returnUrl'] ?? '');
@@ -1156,7 +1199,10 @@ function maketou_create_checkout(array $opts): array {
     'redirectURL' => $returnUrl,
     'meta' => [
       'userId' => $userId,
-      'amount' => $amount,
+      'amount' => $amountUsd,
+      'amountUsd' => $amountUsd,
+      'amountFcfa' => $amount,
+      'currency' => 'USD',
       'reference' => $ref,
       'source' => 'orolado',
     ],
@@ -1213,9 +1259,9 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt joueur = 3 000 FCFA. */
-function orolado_min_deposit(?array $me): int {
-  return 3000;
+/** Minimum dépôt joueur = $5.00 USD. */
+function orolado_min_deposit(?array $me): float {
+  return 5.0;
 }
 
 function orolado_initiate_deposit(array $req): array {
@@ -1225,10 +1271,10 @@ function orolado_initiate_deposit(array $req): array {
   $me = orolado_session_user($db, $token);
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 
-  $amount = (int) ($req['amount'] ?? 0);
+  $amount = orolado_money($req['amount'] ?? 0);
   $min = orolado_min_deposit($me);
-  if ($amount < $min || $amount > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 3 000 FCFA.'];
+  if ($amount < $min || $amount > orolado_max_deposit_usd()) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $5.00.'];
   }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
@@ -1269,7 +1315,7 @@ function orolado_initiate_deposit(array $req): array {
     'aliasEmail' => $aliasEmail,
     'phone' => $aliasPhone,
     'userId' => (string) $me['id'],
-    'amount' => $amount,
+    'amountUsd' => $amount,
     'operator' => $op,
     'ref' => $ref,
     'returnUrl' => $returnUrl,
@@ -1465,13 +1511,13 @@ function orolado_confirm_deposit(array $req): array {
     if (!empty($proof['paid'])) {
       $cred = credit_paid_deposit([
         'ref' => $refId,
-        'amount' => (int) ($proof['amount'] ?? ($dep['amount'] ?? 0)),
+        'amount' => orolado_money($proof['amount'] ?? ($dep['amount'] ?? 0)),
         'paid' => true,
         'extId' => (string) ($dep['extId'] ?? ''),
         'sellId' => (string) ($dep['sellId'] ?? $dep['cartId'] ?? ''),
       ]);
       if (empty($cred['ok'])) {
-        $rpc = supabase_complete_deposit($refId, (int) ($proof['amount'] ?? ($dep['amount'] ?? 0)), $uid);
+        $rpc = supabase_complete_deposit($refId, orolado_money($proof['amount'] ?? ($dep['amount'] ?? 0)), $uid);
         if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
       }
     } else {

@@ -7,17 +7,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="OROLADO.COM — Trading premium en FCFA. Plateforme mobile-first.">
+  <meta name="description" content="OROLADO.COM — Trading premium en USD. Plateforme mobile-first.">
   <meta name="application-name" content="OROLADO.COM">
   <meta property="og:title" content="OROLADO.COM">
-  <meta property="og:description" content="Trading premium · FCFA">
+  <meta property="og:description" content="Trading premium · USD">
   <meta property="og:type" content="website">
   <title>OROLADO.COM</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=77">
+  <link rel="stylesheet" href="css/app.css?v=78">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -65,7 +65,7 @@
         <div class="brand-xl">ORO<span>LADO</span></div>
         <div class="brand-domain">OROLADO.COM</div>
       </div>
-      <p class="brand-sub" data-i18n="tagline">Indices en FCFA. Démo gratuite. Dépôt Mobile Money.</p>
+      <p class="brand-sub" data-i18n="tagline">Plateforme de trading &amp; analyse en USD</p>
       <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">Créez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains réels.</div>
       <div class="auth-card glass">
         <div class="auth-tabs">
@@ -180,7 +180,7 @@
         <div class="balance-row">
           <div class="balance-card glass" id="balanceCard">
             <div class="bal-stack">
-              <span class="bal" id="balanceDisplay">1 000 000 FCFA</span>
+              <span class="bal" id="balanceDisplay">$1,000,000.00</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
             <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la démo" aria-label="Recharger démo">+</button>
@@ -265,19 +265,26 @@
           <p class="trade-hint" data-i18n="tradeHint">Choisis le montant et la dur&#233;e. Si ta pr&#233;diction est juste &#224; la fin du chrono, tu r&#233;cup&#232;res mise + gain.</p>
           <div class="stake-line">
             <div class="stake-field">
-              <input id="inputStake" type="number" inputmode="numeric" value="100" min="100" step="100" placeholder="FCFA">
+              <input id="inputStake" type="number" inputmode="decimal" value="1" min="1" step="1" placeholder="$">
               <div class="stake-min" style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;margin:0;width:100%;gap:8px">
-                <span data-i18n="minHint" class="stake-min-label" style="font-size:11px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mise min : 100 FCFA</span>
+                <span data-i18n="minHint" class="stake-min-label" style="font-size:11px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mise min : $1.00</span>
                 <span class="stake-min-actions" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;flex-shrink:0;align-items:center">
                   <button type="button" class="qbtn stake-act" data-a="half">÷2</button>
                   <button type="button" class="qbtn stake-act" data-a="x2">×2</button>
                   <button type="button" class="qbtn qbtn-back stake-act" data-a="back" title="Effacer" aria-label="Effacer un chiffre">⌫</button>
                 </span>
               </div>
+              <div class="quick-stakes" id="quickStakes" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;width:100%">
+                <button type="button" class="qbtn stake-preset" data-stake="1">$1</button>
+                <button type="button" class="qbtn stake-preset" data-stake="5">$5</button>
+                <button type="button" class="qbtn stake-preset" data-stake="10">$10</button>
+                <button type="button" class="qbtn stake-preset" data-stake="25">$25</button>
+                <button type="button" class="qbtn stake-preset" data-stake="50">$50</button>
+              </div>
             </div>
             <div class="win-preview">
               <div class="label" data-i18n="estYield">Rendement estimé</div>
-              <div class="amount" id="previewGain">188 FCFA</div>
+              <div class="amount" id="previewGain">$1.88</div>
               <div class="mult" id="previewMult">×1.88</div>
             </div>
           </div>
@@ -445,7 +452,7 @@
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
       <div class="wd-bal" id="wdBalanceLabel">
         <div class="wd-bal-caption">Solde retirable</div>
-        <div class="wd-bal-amt" id="wdBalanceAmt">0 FCFA</div>
+        <div class="wd-bal-amt" id="wdBalanceAmt">$0.00</div>
       </div>
       <div id="wdWagerBox" class="wd-wager-box hidden">
         <div class="wd-wager-track"><div class="wd-wager-fill" id="wdWagerFill" style="width:0%"></div></div>
@@ -458,16 +465,16 @@
         <button type="button" class="op-card op-moov" data-op="moov" style="--op:#0B3C8A"><i class="op-logo">M</i><span>Moov Money</span></button>
       </div>
       <div class="wd-pills">
-        <button type="button" class="wd-pill" data-amt="3000">3 000</button>
-        <button type="button" class="wd-pill" data-amt="5000">5 000</button>
-        <button type="button" class="wd-pill" data-amt="10000">10 000</button>
-        <button type="button" class="wd-pill" data-amt="25000">25 000</button>
+        <button type="button" class="wd-pill" data-amt="5">$5</button>
+        <button type="button" class="wd-pill" data-amt="10">$10</button>
+        <button type="button" class="wd-pill" data-amt="25">$25</button>
+        <button type="button" class="wd-pill" data-amt="50">$50</button>
         <button type="button" class="wd-pill" data-amt="all" data-i18n="wdAll">TOUT</button>
       </div>
       <div class="field">
-        <label data-i18n="wdAmount">Montant (FCFA)</label>
-        <input id="withdrawAmt" type="number" inputmode="numeric" min="3000" step="100" placeholder="3000">
-        <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : 3 000 FCFA</p>
+        <label data-i18n="wdAmount">Montant ($)</label>
+        <input id="withdrawAmt" type="number" inputmode="decimal" min="5" step="0.01" placeholder="5">
+        <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : $5.00</p>
         <p class="err-msg" id="err-withdrawAmt"></p>
       </div>
       <div class="field">
@@ -490,9 +497,9 @@
   <div class="modal-backdrop" id="depositModal">
     <div class="modal-box glass withdraw-box deposit-box">
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
-      <div class="modal-title" data-i18n="depositTitle">Recharger en FCFA</div>
+      <div class="modal-title" data-i18n="depositTitle">Recharger en USD</div>
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
-      <p class="deposit-instant" data-i18n="depositInstant">D&#233;p&#244;t Mobile Money. Minimum 3 000 FCFA.</p>
+      <p class="deposit-instant" data-i18n="depositInstant">D&#233;p&#244;t Mobile Money. Minimum $5.00.</p>
       <div class="pay-mode-label" data-i18n="payMode">Modes de paiement acceptés</div>
       <div class="pay-showcase" id="depOpGrid" aria-hidden="true">
         <div class="pay-show-item"><i class="op-logo op-wave">W</i><span>Wave</span></div>
@@ -504,9 +511,15 @@
         <div class="pay-show-item"><i class="op-logo op-paypal">P</i><span>PayPal</span></div>
       </div>
       <div class="field">
-        <label data-i18n="depositAmtLabel">MONTANT &#192; RECHARGER</label>
-        <input id="depositAmt" type="number" inputmode="numeric" min="3000" step="100" value="3000" placeholder="3000">
-        <p class="hint-min" data-i18n="depositMin">Minimum 3 000 FCFA</p>
+        <label data-i18n="depositAmtLabel">MONTANT &#192; RECHARGER ($)</label>
+        <div class="wd-pills" style="margin-bottom:8px">
+          <button type="button" class="wd-pill dep-pill" data-dep="5">$5</button>
+          <button type="button" class="wd-pill dep-pill" data-dep="10">$10</button>
+          <button type="button" class="wd-pill dep-pill" data-dep="25">$25</button>
+          <button type="button" class="wd-pill dep-pill" data-dep="50">$50</button>
+        </div>
+        <input id="depositAmt" type="number" inputmode="decimal" min="5" step="0.01" value="5" placeholder="5">
+        <p class="hint-min" data-i18n="depositMin">Minimum $5.00</p>
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
       <div class="wd-trust">
@@ -586,15 +599,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=77"></script>
-  <script src="js/i18n.js?v=77"></script>
-  <script src="js/store.js?v=77"></script>
-  <script src="js/api.js?v=77"></script>
+  <script src="js/config.js?v=78"></script>
+  <script src="js/i18n.js?v=78"></script>
+  <script src="js/store.js?v=78"></script>
+  <script src="js/api.js?v=78"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=77"></script>
-  <script src="js/auth.js?v=77"></script>
-  <script src="js/engine.js?v=77"></script>
-  <script src="js/chart.js?v=77"></script>
-  <script src="js/app.js?v=77"></script>
+  <script src="js/supabase.js?v=78"></script>
+  <script src="js/auth.js?v=78"></script>
+  <script src="js/engine.js?v=78"></script>
+  <script src="js/chart.js?v=78"></script>
+  <script src="js/app.js?v=78"></script>
 </body>
 </html>

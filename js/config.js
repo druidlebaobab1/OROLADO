@@ -2,12 +2,15 @@
   'use strict';
 
   D6.CONFIG = {
-    CURRENCY: 'FCFA',
-    CURRENCY_CODE: 'XOF',
+    CURRENCY: 'USD',
+    CURRENCY_CODE: 'USD',
+    CURRENCY_SYMBOL: '$',
+    /** Taux fixe paiement local Mobile Money uniquement (1 USD = 600 FCFA). */
+    USD_FCFA_RATE: 600,
     DEMO_START: 1000000,
     REAL_START: 0,
-    MIN_STAKE: 100,
-    QUICK_STAKES: [500, 1000, 5000],
+    MIN_STAKE: 1,
+    QUICK_STAKES: [1, 5, 10, 25, 50],
     DURATIONS: [3, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 10,
     DEMO_WIN_RATE: 0.60,
@@ -25,8 +28,8 @@
     // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; autres cotes ×0.75).
     ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125 },
     MIN_ORDER_MS: 300,
-    MIN_DEPOSIT: 3000,
-    MIN_WITHDRAW: 3000,
+    MIN_DEPOSIT: 5,
+    MIN_WITHDRAW: 5,
     WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
     MAX_OPEN: 2,
@@ -149,9 +152,29 @@
     ]
   };
 
+  D6.roundMoney = function (n) {
+    var x = Number(n);
+    if (!isFinite(x)) return 0;
+    return Math.round(x * 100) / 100;
+  };
+
+  /** Affichage USD : $1,234.56 */
+  D6.fmtMoney = function (n) {
+    var v = D6.roundMoney(n);
+    return '$' + v.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  /** Alias historique — toute l’UI passe par USD. */
   D6.fmtFCFA = function (n) {
-    var v = Math.round(Number(n) || 0);
-    return v.toLocaleString('fr-FR') + ' FCFA';
+    return D6.fmtMoney(n);
+  };
+
+  D6.usdToFcfa = function (usd) {
+    var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600) || 600;
+    return Math.round(D6.roundMoney(usd) * rate);
   };
 
   D6.fmtPrice = function (n, digits) {

@@ -290,7 +290,7 @@
     setBalance: function (user, value) {
       if (!user) return;
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
-      var n = Math.max(0, Math.round(Number(value) || 0));
+      var n = Math.max(0, D6.roundMoney(value));
       if (user.mode === 'real') v.real = n;
       else v.demo = n;
       vault[user.id] = v;
@@ -300,7 +300,7 @@
     setBalanceMode: function (user, mode, value) {
       if (!user) return;
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
-      var n = Math.max(0, Math.round(Number(value) || 0));
+      var n = Math.max(0, D6.roundMoney(value));
       if (mode === 'real') v.real = n;
       else v.demo = n;
       vault[user.id] = v;
@@ -311,7 +311,7 @@
       var user = db.users[userId];
       if (!user) return null;
       var v = vault[userId] || { demo: D6.CONFIG.DEMO_START, real: 0 };
-      v.real = Math.max(0, Math.round((v.real || 0) + Number(delta)));
+      v.real = Math.max(0, D6.roundMoney((v.real || 0) + Number(delta)));
       vault[userId] = v;
       persist();
       return v.real;
@@ -320,7 +320,7 @@
     adjustMode: function (userId, mode, delta) {
       var v = vault[userId] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       var key = mode === 'real' ? 'real' : 'demo';
-      v[key] = Math.max(0, Math.round((v[key] || 0) + Number(delta)));
+      v[key] = Math.max(0, D6.roundMoney((v[key] || 0) + Number(delta)));
       vault[userId] = v;
       persist();
       return v[key];
@@ -394,18 +394,17 @@
 
     requestWithdraw: function (user, amount, extra) {
       extra = extra || {};
-      amount = Math.round(Number(amount) || 0);
+      amount = D6.roundMoney(amount);
       var real = (vault[user.id] || { real: 0 }).real;
-      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 3000;
+      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 5;
       if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;
-      var required = Number(user.requiredWagering) || Math.floor(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
+      var required = Number(user.requiredWagering) || D6.roundMoney(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
       var done = Number(user.totalWageredSinceDeposit != null ? user.totalWageredSinceDeposit : user.realStakeVolume) || 0;
       if (done < required) {
-        var left = required - done;
-        var amt = Math.round(left).toLocaleString(D6.I18N.lang === 'fr' ? 'fr-FR' : 'en-US');
-        return { ok: false, reason: 'Vous devez miser encore ' + amt + ' FCFA avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).' };
+        var left = D6.roundMoney(required - done);
+        return { ok: false, reason: D6.I18N.t('wagerBlocked').replace('{amt}', D6.fmtMoney(left)) };
       }
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
       vault[user.id].real = real - amount;

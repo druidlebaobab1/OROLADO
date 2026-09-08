@@ -232,17 +232,15 @@
     u = u || user();
     var deposits = Number(u && u.realDepositTotal) || 0;
     var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
-    var required = Number(u && u.requiredWagering) || Math.floor(deposits * mult);
+    var required = Number(u && u.requiredWagering) || D6.roundMoney(deposits * mult);
     var done = Number(u && (u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume)) || 0;
     if (u) {
       u.requiredWagering = required;
       u.totalWageredSinceDeposit = done;
     }
-    var left = Math.max(0, required - done);
-    var loc = (D6.I18N && D6.I18N.lang === 'fr') ? 'fr-FR' : 'en-US';
-    var amt = Math.round(left).toLocaleString(loc);
+    var left = Math.max(0, D6.roundMoney(required - done));
     var pct = required > 0 ? Math.min(100, Math.round((done / required) * 100)) : 100;
-    var msg = 'Vous devez miser encore ' + amt + ' FCFA avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).';
+    var msg = t('wagerBlocked').replace('{amt}', D6.fmtMoney(left));
     return {
       ok: left <= 0,
       required: required,
@@ -308,7 +306,7 @@
     }
     var amount = Math.abs(Number(payout) || 0);
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
-    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : '+0 FCFA';
+    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : '+$0.00';
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
       el.className = 'chart-outcome';
@@ -545,7 +543,7 @@
     }
     u.mode = next === 'real' ? 'real' : 'demo';
     D6.Store.saveUser(u);
-    stake = D6.CONFIG.MIN_STAKE || 100;
+    stake = D6.CONFIG.MIN_STAKE || 1;
     if ($('inputStake')) $('inputStake').value = stake;
     setModeUi(u);
     updateBalance(true);
@@ -586,8 +584,8 @@
       if (!el) return;
       el.textContent = '+' + Math.round((odds - 1) * 100) + '%';
     });
-    var stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || 100));
-    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(Math.floor(stake * odds));
+    var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
+    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(D6.roundMoney(stake * odds));
     if ($('previewMult')) $('previewMult').textContent = '×' + (Math.abs(odds - Math.round(odds)) < 0.001 ? String(Math.round(odds)) : Number(odds).toFixed(2));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
       btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);
@@ -697,7 +695,7 @@
       label = 'Gagné +' + D6.fmtFCFA(Math.abs(net));
       cls = 'win';
     } else {
-      label = '+0 FCFA';
+      label = '+$0.00';
       cls = 'lose';
       net = -stake;
     }
@@ -1252,7 +1250,7 @@
       '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
       '<div class="list-row"><span>Démo</span><strong>' + D6.fmtFCFA(u.demoBalance) + '</strong></div>' +
       '<div class="field"><label>' + t('adjustReason') + '</label><input id="adjMotif" maxlength="120" placeholder="bonus, correction…"></div>' +
-      '<div class="field"><label>Montant libre (FCFA)</label><input id="adjAmount" type="number" inputmode="numeric" min="1" step="100" value="100000" placeholder="ex. 50000, 1000000…"></div>' +
+      '<div class="field"><label>Montant libre ($)</label><input id="adjAmount" type="number" inputmode="decimal" min="0.01" step="0.01" value="100" placeholder="ex. 5, 50, 1000…"></div>' +
       '<div class="admin-adj-row">' +
       '<button class="mini ok" type="button" data-adj-act="credit" data-adj="' + u.id + '" data-mode="real">+ Créditer Réel</button>' +
       '<button class="mini bad" type="button" data-adj-act="debit" data-adj="' + u.id + '" data-mode="real">− Débiter Réel</button>' +
@@ -1334,7 +1332,7 @@
       syncTradeButtons();
       return;
     }
-    stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake));
+    stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {
       if (mode === 'real') {
@@ -1408,18 +1406,18 @@
     return url;
   }
 
-  // Minimum dépôt joueur = 3 000 FCFA.
+  // Minimum dépôt joueur = $5.00.
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 3000;
+    return D6.CONFIG.MIN_DEPOSIT || 5;
   }
 
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 3000;
+    return D6.CONFIG.MIN_WITHDRAW || 5;
   }
 
   function setDepositAmt(n) {
     var min = minDeposit();
-    var amt = Math.max(min, Math.floor(Number(n) || min));
+    var amt = Math.max(min, D6.roundMoney(Number(n) || min));
     if ($('depositAmt')) $('depositAmt').value = String(amt);
     return amt;
   }
@@ -1664,7 +1662,7 @@
     }
     updateBalance(true);
     toast(t('depositCredited').replace('{amt}', D6.fmtFCFA(remote.amount)), 'ok');
-    metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'XOF' });
+    metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' });
     playWinChime();
     if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
     closeModal('depositModal');
@@ -1697,7 +1695,7 @@
     tick();
   }
 
-  function localMaketouCheckoutUrl(amt, op, ref) {
+  function localMaketouCheckoutUrl(usdAmt, op, ref) {
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
     var first = 'Trader';
     var last = 'Orolado';
@@ -1706,10 +1704,11 @@
     var origin = (location && location.origin) || 'https://orolado.com';
     var dash = origin + '/?deposit=success' + (ref ? ('&ref=' + encodeURIComponent(ref)) : '');
     var returnUrl = origin + '/pay-blank.html' + (ref ? ('?ref=' + encodeURIComponent(ref)) : '');
+    var fcfa = D6.usdToFcfa(usdAmt);
     var q = new URLSearchParams();
-    q.set('customPrice', String(amt));
-    q.set('price', String(amt));
-    q.set('amount', String(amt));
+    q.set('customPrice', String(fcfa));
+    q.set('price', String(fcfa));
+    q.set('amount', String(fcfa));
     q.set('firstName', first);
     q.set('lastName', last);
     q.set('firstname', first);
@@ -1739,7 +1738,7 @@
       return;
     }
     var min = minDeposit();
-    var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('depositMinErr'));
       toast(t('depositMinErr'), 'err');
@@ -2345,14 +2344,14 @@
     if (!box || !idEl || !amtEl) return;
     function pickAmount() {
       var r = Math.random();
-      if (r < 0.35) return 6000 + Math.floor(Math.random() * 44000);
-      if (r < 0.65) return 50000 + Math.floor(Math.random() * 250000);
-      if (r < 0.88) return 300000 + Math.floor(Math.random() * 1200000);
-      return 1500000 + Math.floor(Math.random() * 6500000);
+      if (r < 0.35) return D6.roundMoney(10 + Math.random() * 90);
+      if (r < 0.65) return D6.roundMoney(100 + Math.random() * 400);
+      if (r < 0.88) return D6.roundMoney(500 + Math.random() * 2000);
+      return D6.roundMoney(2500 + Math.random() * 10000);
     }
     function showNext() {
       var id = 'ORO-' + String(100000 + Math.floor(Math.random() * 900000));
-      var amt = '+' + pickAmount().toLocaleString('fr-FR') + ' FCFA';
+      var amt = '+' + D6.fmtMoney(pickAmount());
       box.classList.remove('on');
       setTimeout(function () {
         idEl.textContent = id + ' :';
@@ -2391,22 +2390,37 @@
     });
     document.querySelectorAll('.qbtn').forEach(function (btn) {
       btn.addEventListener('click', function () {
+        if (btn.classList.contains('stake-preset')) {
+          var preset = D6.roundMoney(Number(btn.dataset.stake) || 0);
+          if (preset > 0) {
+            var u0 = user();
+            var cap0 = D6.Store.balanceOf(u0);
+            stake = Math.min(preset, cap0 > 0 ? cap0 : preset);
+            var min0 = D6.CONFIG.MIN_STAKE || 1;
+            if (stake < min0) stake = min0;
+            $('inputStake').value = stake;
+            btn.classList.add('hit');
+            setTimeout(function () { btn.classList.remove('hit'); }, 160);
+            updatePayoutUi();
+          }
+          return;
+        }
         var add = Number(btn.dataset.add || 0);
         var a = btn.dataset.a;
         var u = user();
         var cap = D6.Store.balanceOf(u);
-        var min = D6.CONFIG.MIN_STAKE || 100;
-        stake = Math.max(0, Math.floor(Number($('inputStake').value) || stake || 0));
+        var min = D6.CONFIG.MIN_STAKE || 1;
+        stake = Math.max(0, D6.roundMoney(Number($('inputStake').value) || stake || 0));
         if (a === 'back') {
           var digits = String(Math.floor(stake || 0));
           digits = digits.length <= 1 ? '0' : digits.slice(0, -1);
-          stake = Math.floor(Number(digits) || 0);
+          stake = D6.roundMoney(Number(digits) || 0);
         } else if (add) {
           stake = Math.max(min, stake || min) + add;
         } else if (a === 'x2') {
-          stake = Math.max(min, stake || min) * 2;
+          stake = D6.roundMoney(Math.max(min, stake || min) * 2);
         } else if (a === 'half') {
-          stake = Math.max(Math.floor(Math.max(stake, min) / 2), min);
+          stake = Math.max(D6.roundMoney(Math.max(stake, min) / 2), min);
         }
         if (a !== 'back') {
           if (cap > 0 && stake > cap) stake = cap;
@@ -2419,7 +2433,7 @@
       });
     });
     $('inputStake').addEventListener('input', function () {
-      stake = Math.max(0, Math.floor(Number(this.value) || 0));
+      stake = Math.max(0, D6.roundMoney(Number(this.value) || 0));
       updatePayoutUi();
     });
     function tap(el, fn) {
@@ -2565,9 +2579,16 @@
     });
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
-        this.value = String(this.value || '').replace(/[^\d]/g, '');
+        this.value = String(this.value || '').replace(/[^\d.]/g, '');
       });
     }
+    document.querySelectorAll('.dep-pill').forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        document.querySelectorAll('.dep-pill').forEach(function (p) { p.classList.remove('on'); });
+        pill.classList.add('on');
+        setDepositAmt(pill.dataset.dep);
+      });
+    });
     $('btnConfirmDeposit').addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -2868,7 +2889,7 @@
   function enterApp() {
     var u = user();
     if (u) migrateLegacyDemo(u);
-    stake = D6.CONFIG.MIN_STAKE || 100;
+    stake = D6.CONFIG.MIN_STAKE || 1;
     $('inputStake').value = stake;
     setModeUi(u);
     setAdminBtns(u);
