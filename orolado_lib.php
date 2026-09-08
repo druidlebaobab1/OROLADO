@@ -2,28 +2,33 @@
 declare(strict_types=1);
 
 function orolado_load_env(?string $path = null): void {
-  $path = $path ?: (__DIR__ . '/.env');
-  if (!is_file($path)) return;
-  $lines = file($path, FILE_IGNORE_NEW_LINES);
-  if (!is_array($lines)) return;
-  foreach ($lines as $line) {
-    $line = trim($line);
-    if ($line === '' || str_starts_with($line, '#')) continue;
-    $eq = strpos($line, '=');
-    if ($eq === false) continue;
-    $key = trim(substr($line, 0, $eq));
-    $val = trim(substr($line, $eq + 1));
-    if ($key === '') continue;
-    if ($val !== '' && (($val[0] === '"' && str_ends_with($val, '"')) || ($val[0] === "'" && str_ends_with($val, "'")))) {
-      $val = substr($val, 1, -1);
-    }
-    $cur = getenv($key);
-    if ($cur === false || $cur === '') {
-      putenv($key . '=' . $val);
-      $_ENV[$key] = $val;
-      $_SERVER[$key] = $val;
+  static $loaded = false;
+  if ($loaded && $path === null) return;
+  $paths = $path ? [$path] : [__DIR__ . '/.env', __DIR__ . '/data/.env'];
+  foreach ($paths as $file) {
+    if (!is_file($file)) continue;
+    $lines = file($file, FILE_IGNORE_NEW_LINES);
+    if (!is_array($lines)) continue;
+    foreach ($lines as $line) {
+      $line = trim($line);
+      if ($line === '' || str_starts_with($line, '#')) continue;
+      $eq = strpos($line, '=');
+      if ($eq === false) continue;
+      $key = trim(substr($line, 0, $eq));
+      $val = trim(substr($line, $eq + 1));
+      if ($key === '') continue;
+      if ($val !== '' && (($val[0] === '"' && str_ends_with($val, '"')) || ($val[0] === "'" && str_ends_with($val, "'")))) {
+        $val = substr($val, 1, -1);
+      }
+      $cur = getenv($key);
+      if ($cur === false || $cur === '') {
+        putenv($key . '=' . $val);
+        $_ENV[$key] = $val;
+        $_SERVER[$key] = $val;
+      }
     }
   }
+  if ($path === null) $loaded = true;
 }
 
 function orolado_data_dir(): string {
@@ -1586,5 +1591,134 @@ function maketou_handle_webhook(): void {
   $result = credit_paid_deposit($hit);
   maketou_log('webhook_credit', ['signed' => $signed, 'hit' => $hit, 'result' => $result]);
   echo json_encode(['ok' => !empty($result['ok']), 'duplicate' => !empty($result['duplicate'])]);
+}
+
+/** --- Brevo transactional mail --- */
+function brevo_env(string $key, string $default = ''): string {
+  orolado_load_env();
+  $v = getenv($key);
+  if ($v === false || $v === '') $v = $_ENV[$key] ?? $_SERVER[$key] ?? $default;
+  return is_string($v) ? trim($v) : $default;
+}
+
+function brevo_api_key(): string {
+  return brevo_env('BREVO_API_KEY');
+}
+
+function brevo_sender(): array {
+  return [
+    'email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'),
+    'name' => brevo_env('BREVO_SENDER_NAME', 'Orolado'),
+  ];
+}
+
+function brevo_escape(string $s): string {
+  return htmlspecialchars($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+function brevo_welcome_html(string $name): string {
+  $safe = brevo_escape($name !== '' ? $name : 'Membre');
+  $origin = rtrim(orolado_public_origin(), '/');
+  if ($origin === '') $origin = 'https://orolado.com';
+  $dash = $origin . '/';
+  return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    . '<title>Bienvenue sur Orolado</title></head>'
+    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:24px 12px;">'
+    . '<tr><td align="center">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#121A2B;border-radius:16px;border:1px solid #243047;overflow:hidden;">'
+    . '<tr><td style="padding:28px 28px 12px;text-align:center;">'
+    . '<div style="font-size:22px;font-weight:800;letter-spacing:.04em;color:#F5C518;">OROLADO</div>'
+    . '<div style="margin-top:6px;font-size:12px;color:#9AA6BF;">orolado.com</div>'
+    . '</td></tr>'
+    . '<tr><td style="padding:8px 28px 28px;color:#E8EEF9;font-size:15px;line-height:1.6;">'
+    . '<p style="margin:0 0 16px;">Bonjour <strong style="color:#FFFFFF;">' . $safe . '</strong>,</p>'
+    . '<p style="margin:0 0 16px;">Bienvenue sur Orolado. Votre inscription est confirmée et votre espace membre est désormais activé.</p>'
+    . '<p style="margin:0 0 16px;">Notre mission est de vous mettre à disposition une plateforme fiable, rapide et sécurisée pour vous aider à suivre vos indicateurs et exploiter vos outils en toute sérénité :</p>'
+    . '<ul style="margin:0 0 20px;padding-left:18px;color:#C9D2E5;">'
+    . '<li style="margin-bottom:10px;"><strong style="color:#FFFFFF;">Données en temps réel :</strong> Une interface fluide conçue pour vous apporter clarté et précision au quotidien.</li>'
+    . '<li style="margin-bottom:10px;"><strong style="color:#FFFFFF;">Environnement sécurisé :</strong> La confidentialité de vos accès et de vos paramètres reste notre priorité absolue.</li>'
+    . '<li style="margin-bottom:10px;"><strong style="color:#FFFFFF;">Assistance dédiée :</strong> Notre support technique se tient à votre disposition pour vous guider lors de vos premières étapes.</li>'
+    . '</ul>'
+    . '<p style="margin:0 0 22px;text-align:center;">'
+    . '<a href="' . brevo_escape($dash) . '" style="display:inline-block;background:linear-gradient(135deg,#FFD700,#FFA000);color:#0A0F1D;text-decoration:none;font-weight:800;font-size:14px;padding:12px 22px;border-radius:10px;">Accéder à mon espace</a>'
+    . '</p>'
+    . '<p style="margin:0 0 12px;"><strong style="color:#FFFFFF;">Pour démarrer :</strong><br>Connectez-vous à votre tableau de bord pour découvrir les fonctionnalités disponibles et configurer vos préférences d\'alertes.</p>'
+    . '<p style="margin:0 0 18px;">Si vous avez besoin d\'aide ou si vous avez des questions, répondez simplement à cet e-mail ou contactez-nous à <a href="mailto:support@orolado.com" style="color:#F5C518;text-decoration:none;">support@orolado.com</a>.</p>'
+    . '<p style="margin:0;color:#C9D2E5;">Bien cordialement,<br><strong style="color:#FFFFFF;">L\'équipe Orolado</strong><br><a href="' . brevo_escape($origin) . '" style="color:#F5C518;text-decoration:none;">orolado.com</a></p>'
+    . '</td></tr>'
+    . '<tr><td style="padding:14px 28px 22px;border-top:1px solid #243047;font-size:11px;color:#7E8AA3;text-align:center;">Cet e-mail a été envoyé suite à votre inscription sur Orolado.</td></tr>'
+    . '</table></td></tr></table></body></html>';
+}
+
+function brevo_send_smtp(array $payload): array {
+  $key = brevo_api_key();
+  if ($key === '') return ['ok' => false, 'reason' => 'BREVO_API_KEY manquante'];
+  $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  if (!is_string($json)) return ['ok' => false, 'reason' => 'Payload invalide'];
+  $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+  if ($ch === false) return ['ok' => false, 'reason' => 'curl indisponible'];
+  curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+      'accept: application/json',
+      'content-type: application/json',
+      'api-key: ' . $key,
+    ],
+    CURLOPT_POSTFIELDS => $json,
+    CURLOPT_TIMEOUT => 18,
+  ]);
+  $raw = curl_exec($ch);
+  $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  $err = curl_error($ch);
+  curl_close($ch);
+  if ($raw === false) return ['ok' => false, 'reason' => $err !== '' ? $err : 'Erreur réseau Brevo'];
+  $decoded = json_decode((string) $raw, true);
+  if ($code >= 200 && $code < 300) {
+    return ['ok' => true, 'messageId' => is_array($decoded) ? ($decoded['messageId'] ?? null) : null];
+  }
+  $reason = is_array($decoded) ? (string) ($decoded['message'] ?? $decoded['error'] ?? 'Erreur Brevo') : 'Erreur Brevo';
+  return ['ok' => false, 'reason' => $reason, 'http' => $code];
+}
+
+function brevo_send_welcome(string $email, string $name): array {
+  $email = strtolower(trim($email));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return ['ok' => false, 'reason' => 'E-mail invalide'];
+  }
+  if (str_contains($email, '@orolado.local') || str_ends_with($email, '.local')) {
+    return ['ok' => true, 'skipped' => true];
+  }
+  $name = trim($name);
+  if ($name === '') $name = explode('@', $email)[0];
+  $sender = brevo_sender();
+  $html = brevo_welcome_html($name);
+  $origin = rtrim(orolado_public_origin(), '/');
+  if ($origin === '') $origin = 'https://orolado.com';
+  $text = "Bonjour $name,\n\n"
+    . "Bienvenue sur Orolado. Votre inscription est confirmée et votre espace membre est désormais activé.\n\n"
+    . "Notre mission est de vous mettre à disposition une plateforme fiable, rapide et sécurisée pour vous aider à suivre vos indicateurs et exploiter vos outils en toute sérénité.\n\n"
+    . "Accédez à votre espace : $origin/\n\n"
+    . "Bien cordialement,\nL'équipe Orolado\norolado.com\n";
+  return brevo_send_smtp([
+    'sender' => $sender,
+    'to' => [['email' => $email, 'name' => $name]],
+    'subject' => 'Bienvenue sur Orolado – Votre espace membre est prêt',
+    'htmlContent' => $html,
+    'textContent' => $text,
+    'replyTo' => ['email' => 'support@orolado.com', 'name' => 'Support Orolado'],
+  ]);
+}
+
+function brevo_welcome_already_sent(array $db, string $email): bool {
+  $email = strtolower(trim($email));
+  return !empty($db['welcomeSent'][$email]);
+}
+
+function brevo_mark_welcome_sent(array &$db, string $email): void {
+  $email = strtolower(trim($email));
+  if (!isset($db['welcomeSent']) || !is_array($db['welcomeSent'])) $db['welcomeSent'] = [];
+  $db['welcomeSent'][$email] = date('c');
 }
 

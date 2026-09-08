@@ -1,4 +1,5 @@
 data/orolado.json
+data/.env
 .env
 cloudflared.exe
 *.exe

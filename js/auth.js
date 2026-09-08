@@ -80,6 +80,11 @@
             D6.Store.saveUser(uCloud);
           }
         } catch (eTs) { /* ignore */ }
+        try {
+          if (D6.Api && D6.Api.post) {
+            await D6.Api.post('welcomeEmail', { email: email, displayName: displayName });
+          }
+        } catch (eWelcome) { /* ignore */ }
         return { ok: true, user: D6.Store.current() };
       }
 

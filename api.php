@@ -199,8 +199,33 @@ if ($action === 'register') {
   $db['vault'][$user['id']] = $vault;
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
+  $welcome = ['ok' => false, 'skipped' => true];
+  if (!brevo_welcome_already_sent($db, $email)) {
+    $welcome = brevo_send_welcome($email, (string) ($user['displayName'] ?? ''));
+    if (!empty($welcome['ok'])) brevo_mark_welcome_sent($db, $email);
+  }
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok]);
+  echo json_encode(['ok' => true, 'server' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok, 'welcome' => !empty($welcome['ok'])]);
+  exit;
+}
+
+if ($action === 'welcomeEmail') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  $name = trim((string) ($req['displayName'] ?? $req['name'] ?? ''));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'E-mail invalide']);
+    exit;
+  }
+  if (brevo_welcome_already_sent($db, $email)) {
+    echo json_encode(['ok' => true, 'server' => true, 'duplicate' => true]);
+    exit;
+  }
+  $sent = brevo_send_welcome($email, $name);
+  if (!empty($sent['ok'])) {
+    brevo_mark_welcome_sent($db, $email);
+    save_db($file, $db);
+  }
+  echo json_encode(['ok' => !empty($sent['ok']), 'server' => true, 'skipped' => !empty($sent['skipped']), 'reason' => $sent['reason'] ?? null]);
   exit;
 }
 
