@@ -19,8 +19,8 @@
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
     MIN_ORDER_MS: 300,
-    MIN_DEPOSIT: 1000,
-    MIN_WITHDRAW: 2000,
+    MIN_DEPOSIT: 3000,
+    MIN_WITHDRAW: 3500,
     WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
     MAX_OPEN: 2,

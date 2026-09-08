@@ -814,8 +814,8 @@ function credit_paid_deposit(array $hit): array {
 
   $amount = (int) ($hit['amount'] ?? 0);
   $pendingAmt = (int) ($dep['amount'] ?? 0);
-  if ($amount <= 0 && $pendingAmt >= 1000) $amount = $pendingAmt;
-  if ($amount < 1000 || $amount > 5000000) {
+  if ($amount <= 0 && $pendingAmt >= 3000) $amount = $pendingAmt;
+  if ($amount < 3000 || $amount > 5000000) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
@@ -1204,9 +1204,9 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt joueur = 1 000 FCFA (légal). */
+/** Minimum dépôt joueur = 3 000 FCFA. */
 function orolado_min_deposit(?array $me): int {
-  return 1000;
+  return 3000;
 }
 
 function orolado_initiate_deposit(array $req): array {
@@ -1219,7 +1219,7 @@ function orolado_initiate_deposit(array $req): array {
   $amount = (int) ($req['amount'] ?? 0);
   $min = orolado_min_deposit($me);
   if ($amount < $min || $amount > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 1 000 FCFA.'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 3 000 FCFA.'];
   }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));

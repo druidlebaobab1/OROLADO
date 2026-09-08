@@ -525,16 +525,16 @@ if ($action === 'withdraw') {
   }
   $amount = (int) ($req['amount'] ?? 0);
   $real = (int) ($db['vault'][$me['id']]['real'] ?? 0);
-  $minWithdraw = 2000;
+  $minWithdraw = 3500;
   if ($amount < $minWithdraw) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 2 000 FCFA.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 3 500 FCFA.']);
     exit;
   }
   if ($amount > $real) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
     exit;
   }
-  // Wager 2× dépôts réels (persisté user + payload client).
+  // Wager 2× dépôts réels validés (mises réelles cumulées, pas le solde).
   $depositTotal = (int) ($me['realDepositTotal'] ?? $req['realDepositTotal'] ?? 0);
   $stakeDone = (int) ($me['realStakeVolume'] ?? $req['realStakeVolume'] ?? 0);
   $required = $depositTotal * 2;
@@ -544,7 +544,7 @@ if ($action === 'withdraw') {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Tu dois d’abord jouer au moins 2× le montant que tu as rechargé avant de retirer. Encore ' . $leftFmt . ' FCFA de mises à faire.'
+      'reason' => 'Tu dois d’abord parier 2× tes dépôts (plusieurs mises). Encore ' . $leftFmt . ' FCFA à miser avant de retirer.'
     ]);
     exit;
   }

@@ -146,12 +146,18 @@
       return false;
     }
     openTradeVisuals[snap.id] = snap;
-    forceIncludePrice(snap.entryPrice);
+    if (snap.assetId === activeAsset) forceIncludePrice(snap.entryPrice);
     if (!isChartReady()) {
       if (openTradeVisualQueue.indexOf(snap.id) < 0) openTradeVisualQueue.push(snap.id);
       return false;
     }
-    return drawNow();
+    var ok = drawNow();
+    // 2e frame : évite ligne manquante juste après place / switch d’indice.
+    requestAnimationFrame(function () {
+      if (snap.assetId === activeAsset) forceIncludePrice(snap.entryPrice);
+      drawNow();
+    });
+    return ok;
   }
 
   function removeTradeVisual(tradeId) {
@@ -1182,10 +1188,18 @@
       viewMax = 0;
       if (D6.Engine && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) {
-          if (t) applyOpenTradeVisual(t);
+          var snap = snapshotTradeVisual(t);
+          if (!snap) return;
+          openTradeVisuals[snap.id] = snap;
+          if (snap.assetId === activeAsset) forceIncludePrice(snap.entryPrice);
         });
       }
-      if (isChartReady()) drawNow();
+      if (isChartReady()) {
+        drawNow();
+        requestAnimationFrame(function () { drawNow(); });
+      } else {
+        flushOpenTradeVisualQueue();
+      }
     },
     start: function () {
       if (running) return;

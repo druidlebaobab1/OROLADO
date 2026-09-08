@@ -390,7 +390,7 @@
       extra = extra || {};
       amount = Math.round(Number(amount) || 0);
       var real = (vault[user.id] || { real: 0 }).real;
-      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 2000;
+      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 3500;
       if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;
@@ -398,7 +398,12 @@
       var done = Number(user.realStakeVolume) || 0;
       if (done < required) {
         var left = required - done;
-        return { ok: false, reason: D6.I18N.t('wagerBlocked').replace('{amt}', Math.round(left).toLocaleString(D6.I18N.lang === 'fr' ? 'fr-FR' : 'en-US')) };
+        var amt = Math.round(left).toLocaleString(D6.I18N.lang === 'fr' ? 'fr-FR' : 'en-US');
+        var msg = D6.I18N.t('wagerBlocked');
+        if (!msg || msg === 'wagerBlocked') {
+          msg = 'Tu dois d’abord parier 2× tes dépôts (plusieurs mises). Encore {amt} FCFA à miser avant de retirer.';
+        }
+        return { ok: false, reason: String(msg).replace('{amt}', amt) };
       }
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
       vault[user.id].real = real - amount;

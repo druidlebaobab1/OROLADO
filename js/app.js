@@ -236,12 +236,17 @@
     var done = Number(u && u.realStakeVolume) || 0;
     var left = Math.max(0, required - done);
     var loc = (D6.I18N && D6.I18N.lang === 'fr') ? 'fr-FR' : 'en-US';
+    var amt = Math.round(left).toLocaleString(loc);
+    var msg = t('wagerBlocked');
+    if (!msg || msg === 'wagerBlocked') {
+      msg = 'Tu dois d’abord parier 2× tes dépôts (plusieurs mises). Encore {amt} FCFA à miser avant de retirer.';
+    }
     return {
       ok: left <= 0,
       required: required,
       done: done,
       left: left,
-      msg: t('wagerBlocked').replace('{amt}', Math.round(left).toLocaleString(loc))
+      msg: String(msg).replace('{amt}', amt)
     };
   }
 
@@ -1350,10 +1355,11 @@
       D6.Chart.applyOpenTradeVisual(res.trade);
     }
     if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
-    if (D6.Chart && D6.Chart.resize) {
-      D6.Chart.resize();
-      if (D6.Chart.applyOpenTradeVisual && res.trade) D6.Chart.applyOpenTradeVisual(res.trade);
-    }
+    requestAnimationFrame(function () {
+      if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+      if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) D6.Chart.applyOpenTradeVisual(res.trade);
+      if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
+    });
     updateBalance(true);
     updatePriceHud();
     patchHistorySoon();
@@ -1397,13 +1403,13 @@
     return url;
   }
 
-  // Minimum legal depot joueur = 1000 FCFA.
+  // Minimum dépôt joueur = 3 000 FCFA.
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 1000;
+    return D6.CONFIG.MIN_DEPOSIT || 3000;
   }
 
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 2000;
+    return D6.CONFIG.MIN_WITHDRAW || 3500;
   }
 
   function setDepositAmt(n) {
@@ -2661,7 +2667,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         regs.forEach(function (r) { r.update(); });
       });
-      navigator.serviceWorker.register('sw.js?v=58').catch(function () { /* ignore */ });
+      navigator.serviceWorker.register('sw.js?v=59').catch(function () { /* ignore */ });
     }
   }
 
@@ -2700,6 +2706,10 @@
       requestAnimationFrame(D6.Chart.resize);
       setTimeout(function () { D6.Chart.resize(); }, 120);
       setTimeout(function () { D6.Chart.resize(); }, 400);
+      setTimeout(function () {
+        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+        if (D6.Chart && D6.Chart.flushOpenTradeVisuals) D6.Chart.flushOpenTradeVisuals();
+      }, 600);
     });
     refreshRemoteVault();
     checkDepositReturn();
