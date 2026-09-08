@@ -2226,6 +2226,8 @@
     showNext();
     setInterval(showNext, 4500 + Math.floor(Math.random() * 1500));
   }
+
+  function bindTrade() {
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
