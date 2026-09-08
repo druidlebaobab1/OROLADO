@@ -1643,7 +1643,7 @@ function brevo_welcome_html(string $name): string {
     . '<p style="margin:0 0 22px;text-align:center;">'
     . '<a href="' . brevo_escape($dash) . '" style="display:inline-block;background:linear-gradient(135deg,#FFD700,#FFA000);color:#0A0F1D;text-decoration:none;font-weight:800;font-size:14px;padding:12px 22px;border-radius:10px;">Accéder à mon espace</a>'
     . '</p>'
-    . '<p style="margin:0 0 12px;"><strong style="color:#FFFFFF;">Pour démarrer :</strong><br>Connectez-vous à votre tableau de bord pour découvrir les fonctionnalités disponibles et configurer vos préférences d\'alertes.</p>'
+    . '<p style="margin:0 0 12px;"><strong style="color:#FFFFFF;">Pour démarrer :</strong><br>Connectez-vous à votre tableau de bord pour découvrir les fonctionnalités disponibles et configurer vos préférences.</p>'
     . '<p style="margin:0 0 18px;">Si vous avez besoin d\'aide ou si vous avez des questions, répondez simplement à cet e-mail ou contactez-nous à <a href="mailto:support@orolado.com" style="color:#F5C518;text-decoration:none;">support@orolado.com</a>.</p>'
     . '<p style="margin:0;color:#C9D2E5;">Bien cordialement,<br><strong style="color:#FFFFFF;">L\'équipe Orolado</strong><br><a href="' . brevo_escape($origin) . '" style="color:#F5C518;text-decoration:none;">orolado.com</a></p>'
     . '</td></tr>'
@@ -1720,5 +1720,66 @@ function brevo_mark_welcome_sent(array &$db, string $email): void {
   $email = strtolower(trim($email));
   if (!isset($db['welcomeSent']) || !is_array($db['welcomeSent'])) $db['welcomeSent'] = [];
   $db['welcomeSent'][$email] = date('c');
+}
+
+function brevo_otp_html(string $code): string {
+  $safe = brevo_escape($code);
+  return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    . '<title>Code de confirmation Orolado</title></head>'
+    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:24px 12px;">'
+    . '<tr><td align="center">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#121A2B;border-radius:16px;border:1px solid #243047;">'
+    . '<tr><td style="padding:28px;color:#E8EEF9;font-size:15px;line-height:1.6;">'
+    . '<div style="text-align:center;font-size:20px;font-weight:800;color:#F5C518;margin-bottom:18px;">OROLADO</div>'
+    . '<p style="margin:0 0 14px;">Bonjour,</p>'
+    . '<p style="margin:0 0 18px;">Voici votre code de sécurité pour valider votre inscription sur Orolado :</p>'
+    . '<p style="margin:0 0 18px;text-align:center;font-size:32px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:16px 12px;">' . $safe . '</p>'
+    . '<p style="margin:0 0 12px;color:#C9D2E5;">Ce code expire dans 10 minutes. Si vous n\'êtes pas à l\'origine de cette demande, vous pouvez ignorer cet e-mail.</p>'
+    . '<p style="margin:18px 0 0;color:#9AA6BF;font-size:12px;">L\'équipe Orolado · orolado.com</p>'
+    . '</td></tr></table></td></tr></table></body></html>';
+}
+
+function brevo_send_otp(string $email, string $code): array {
+  $email = strtolower(trim($email));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return ['ok' => false, 'reason' => 'E-mail invalide'];
+  }
+  if (str_contains($email, '@orolado.local') || str_ends_with($email, '.local')) {
+    return ['ok' => true, 'skipped' => true];
+  }
+  $code = preg_replace('/\D/', '', $code);
+  if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
+  $sender = brevo_sender();
+  $html = brevo_otp_html($code);
+  $text = "Bonjour,\n\nVoici votre code de sécurité pour valider votre inscription sur Orolado :\n\n$code\n\nCe code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.\n\nL'équipe Orolado\norolado.com\n";
+  return brevo_send_smtp([
+    'sender' => $sender,
+    'to' => [['email' => $email]],
+    'subject' => 'Votre code de confirmation Orolado : ' . $code,
+    'htmlContent' => $html,
+    'textContent' => $text,
+    'replyTo' => ['email' => 'support@orolado.com', 'name' => 'Support Orolado'],
+  ]);
+}
+
+function orolado_otp_hash(string $email, string $code): string {
+  return hash('sha256', 'orolado-otp|' . strtolower(trim($email)) . '|' . $code);
+}
+
+function orolado_pending_regs(array &$db): array {
+  if (!isset($db['pendingRegistrations']) || !is_array($db['pendingRegistrations'])) {
+    $db['pendingRegistrations'] = [];
+  }
+  return $db['pendingRegistrations'];
+}
+
+function orolado_purge_expired_pending(array &$db): void {
+  $now = time();
+  if (!isset($db['pendingRegistrations']) || !is_array($db['pendingRegistrations'])) return;
+  foreach ($db['pendingRegistrations'] as $email => $row) {
+    $exp = (int) ($row['expiresAt'] ?? 0);
+    if ($exp > 0 && $exp < $now) unset($db['pendingRegistrations'][$email]);
+  }
 }
 

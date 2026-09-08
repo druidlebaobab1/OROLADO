@@ -2173,14 +2173,25 @@
       e.preventDefault();
       clearErrors();
       if ($('regPass').value !== $('regPass2').value) { showFieldError('regPass2', 'Les mots de passe ne correspondent pas'); return; }
-      var res = await D6.Auth.register({
-        displayName: $('regName').value, email: $('regEmail').value,
-        phone: $('regPhone') ? $('regPhone').value : '',
-        countryCode: $('regDial') ? $('regDial').value : '+225',
-        password: $('regPass').value, passwordConfirm: $('regPass2').value,
-        acceptTerms: $('regAge').checked
-      });
+      var submitBtn = $('formRegister').querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      var res;
+      try {
+        res = await D6.Auth.register({
+          displayName: $('regName').value, email: $('regEmail').value,
+          phone: $('regPhone') ? $('regPhone').value : '',
+          countryCode: $('regDial') ? $('regDial').value : '+225',
+          password: $('regPass').value, passwordConfirm: $('regPass2').value,
+          acceptTerms: $('regAge').checked
+        });
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
       if (!res.ok) { showFieldError(res.field || 'regName', res.reason); return; }
+      if (res.pendingOtp) {
+        openOtpModal(res);
+        return;
+      }
       metaTrack('CompleteRegistration');
       toast(t('accountCreated'), 'ok');
       enterApp();
@@ -2202,6 +2213,129 @@
       toast(t('passUpdated'), 'ok');
     });
     $('closeForgot').addEventListener('click', function () { closeModal('forgotModal'); });
+    bindOtpModal();
+  }
+
+  var otpPending = null;
+  var otpResendTimer = null;
+  var otpResendLeft = 0;
+
+  function setOtpError(msg) {
+    var el = $('err-otpCode');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.classList.toggle('on', !!msg);
+  }
+
+  function updateOtpResendUi() {
+    var btn = $('btnOtpResend');
+    var timer = $('otpTimer');
+    if (!btn || !timer) return;
+    if (otpResendLeft > 0) {
+      btn.disabled = true;
+      timer.textContent = 'Renvoyer dans ' + otpResendLeft + ' s';
+    } else {
+      btn.disabled = false;
+      timer.textContent = '';
+    }
+  }
+
+  function startOtpResendCountdown(seconds) {
+    otpResendLeft = Math.max(0, parseInt(seconds, 10) || 60);
+    if (otpResendTimer) clearInterval(otpResendTimer);
+    updateOtpResendUi();
+    if (otpResendLeft <= 0) return;
+    otpResendTimer = setInterval(function () {
+      otpResendLeft -= 1;
+      if (otpResendLeft <= 0) {
+        clearInterval(otpResendTimer);
+        otpResendTimer = null;
+        otpResendLeft = 0;
+      }
+      updateOtpResendUi();
+    }, 1000);
+  }
+
+  function openOtpModal(pending) {
+    otpPending = pending || null;
+    if (!$('otpModal') || !otpPending) return;
+    if ($('otpEmailLabel')) $('otpEmailLabel').textContent = otpPending.email || '';
+    if ($('otpCode')) $('otpCode').value = '';
+    setOtpError('');
+    openModal('otpModal');
+    startOtpResendCountdown(otpPending.resendIn || 60);
+    setTimeout(function () {
+      if ($('otpCode')) $('otpCode').focus();
+    }, 80);
+  }
+
+  function closeOtpModal() {
+    closeModal('otpModal');
+    if (otpResendTimer) {
+      clearInterval(otpResendTimer);
+      otpResendTimer = null;
+    }
+    otpPending = null;
+    setOtpError('');
+  }
+
+  function bindOtpModal() {
+    if (!$('otpModal')) return;
+    if ($('closeOtp')) {
+      $('closeOtp').addEventListener('click', function () { closeOtpModal(); });
+    }
+    if ($('otpCode')) {
+      $('otpCode').addEventListener('input', function () {
+        this.value = String(this.value || '').replace(/\D/g, '').slice(0, 6);
+        setOtpError('');
+      });
+    }
+    if ($('formOtp')) {
+      $('formOtp').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (!otpPending || !otpPending.email) {
+          setOtpError('Session expirée. Recommencez l’inscription.');
+          return;
+        }
+        var code = $('otpCode') ? $('otpCode').value : '';
+        var btn = $('btnOtpVerify');
+        if (btn) btn.disabled = true;
+        var res;
+        try {
+          res = await D6.Auth.verifyRegisterOtp(otpPending.email, code, otpPending.password);
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+        if (!res.ok) {
+          setOtpError(res.reason || 'Code incorrect ou expiré');
+          return;
+        }
+        closeOtpModal();
+        metaTrack('CompleteRegistration');
+        toast(t('accountCreated'), 'ok');
+        enterApp();
+      });
+    }
+    if ($('btnOtpResend')) {
+      $('btnOtpResend').addEventListener('click', async function () {
+        if (!otpPending || !otpPending.email || otpResendLeft > 0) return;
+        var btn = $('btnOtpResend');
+        btn.disabled = true;
+        var res = await D6.Auth.resendRegisterOtp(otpPending.email);
+        if (!res.ok) {
+          setOtpError(res.reason || 'Renvoi impossible');
+          startOtpResendCountdown(res.retryIn || 60);
+          return;
+        }
+        setOtpError('');
+        toast('Nouveau code envoyé', 'ok');
+        startOtpResendCountdown(res.resendIn || 60);
+        if ($('otpCode')) {
+          $('otpCode').value = '';
+          $('otpCode').focus();
+        }
+      });
+    }
   }
 
   function startWithdrawTicker() {

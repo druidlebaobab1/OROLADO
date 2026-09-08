@@ -176,6 +176,188 @@ if ($action === 'ensureAdmin') {
   exit;
 }
 
+if ($action === 'registerStart') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  $displayName = trim((string) ($req['displayName'] ?? ''));
+  $phone = preg_replace('/\D/', '', (string) ($req['phone'] ?? ''));
+  $countryCode = preg_replace('/[^\d+]/', '', (string) ($req['countryCode'] ?? '+225'));
+  $passwordHash = trim((string) ($req['passwordHash'] ?? ''));
+  $trafficSource = strtolower(trim((string) ($req['trafficSource'] ?? 'direct')));
+  if ($trafficSource === '') $trafficSource = 'direct';
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide', 'field' => 'regEmail']);
+    exit;
+  }
+  if (strlen($displayName) < 2 || strlen($displayName) > 32) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez votre nom ou pseudo (2 caractères min.)', 'field' => 'regName']);
+    exit;
+  }
+  if (strlen($phone) < 8 || strlen($phone) > 12) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Numéro de téléphone requis (8 à 12 chiffres)', 'field' => 'regPhone']);
+    exit;
+  }
+  if (strlen($passwordHash) < 16) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mot de passe invalide', 'field' => 'regPass']);
+    exit;
+  }
+  if (find_user($db, $email)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail', 'field' => 'regEmail']);
+    exit;
+  }
+  orolado_purge_expired_pending($db);
+  orolado_pending_regs($db);
+  $pending =& $db['pendingRegistrations'];
+  if (!is_array($pending)) $pending = [];
+  $prev = $pending[$email] ?? null;
+  $now = time();
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < 60) {
+    $wait = 60 - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Patientez ' . $wait . ' s avant de renvoyer un code', 'retryIn' => $wait]);
+    exit;
+  }
+  $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $pending[$email] = [
+    'displayName' => $displayName,
+    'email' => $email,
+    'phone' => $phone,
+    'countryCode' => $countryCode !== '' ? $countryCode : '+225',
+    'passwordHash' => $passwordHash,
+    'trafficSource' => $trafficSource,
+    'codeHash' => orolado_otp_hash($email, $code),
+    'expiresAt' => $now + 600,
+    'lastSentAt' => $now,
+    'attempts' => 0,
+    'createdAt' => date('c')
+  ];
+  $db['pendingRegistrations'] = $pending;
+  $sent = brevo_send_otp($email, $code);
+  if (empty($sent['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
+    exit;
+  }
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'email' => $email, 'expiresIn' => 600, 'resendIn' => 60]);
+  exit;
+}
+
+if ($action === 'registerResend') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  orolado_purge_expired_pending($db);
+  $row = $db['pendingRegistrations'][$email] ?? null;
+  if (!is_array($row)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Aucune d’inscription introuvable. Recommencez.']);
+    exit;
+  }
+  $now = time();
+  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
+    unset($db['pendingRegistrations'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Recommencez l’inscription.']);
+    exit;
+  }
+  if (!empty($row['lastSentAt']) && ($now - (int) $row['lastSentAt']) < 60) {
+    $wait = 60 - ($now - (int) $row['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Patientez ' . $wait . ' s', 'retryIn' => $wait]);
+    exit;
+  }
+  $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $row['codeHash'] = orolado_otp_hash($email, $code);
+  $row['expiresAt'] = $now + 600;
+  $row['lastSentAt'] = $now;
+  $row['attempts'] = 0;
+  $db['pendingRegistrations'][$email] = $row;
+  $sent = brevo_send_otp($email, $code);
+  if (empty($sent['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Envoi impossible']);
+    exit;
+  }
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'resendIn' => 60, 'expiresIn' => 600]);
+  exit;
+}
+
+if ($action === 'registerVerify') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  $code = preg_replace('/\D/', '', (string) ($req['code'] ?? ''));
+  orolado_purge_expired_pending($db);
+  $row = $db['pendingRegistrations'][$email] ?? null;
+  if (!is_array($row)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session d’inscription introuvable. Recommencez.']);
+    exit;
+  }
+  $now = time();
+  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
+    unset($db['pendingRegistrations'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code ou recommencez.']);
+    exit;
+  }
+  $attempts = (int) ($row['attempts'] ?? 0);
+  if ($attempts >= 8) {
+    unset($db['pendingRegistrations'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives. Recommencez l’inscription.']);
+    exit;
+  }
+  if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
+    $row['attempts'] = $attempts + 1;
+    $db['pendingRegistrations'][$email] = $row;
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code incorrect. Vérifiez votre e-mail.']);
+    exit;
+  }
+  if (find_user($db, $email)) {
+    unset($db['pendingRegistrations'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail']);
+    exit;
+  }
+  $uid = 'u_' . bin2hex(random_bytes(8));
+  $user = [
+    'id' => $uid,
+    'displayName' => (string) ($row['displayName'] ?? 'Membre'),
+    'email' => $email,
+    'phone' => (string) ($row['phone'] ?? ''),
+    'countryCode' => (string) ($row['countryCode'] ?? '+225'),
+    'passwordHash' => (string) ($row['passwordHash'] ?? ''),
+    'role' => 'user',
+    'createdAt' => date('c'),
+    'mode' => 'demo',
+    'assetId' => 'v100',
+    'duration' => 10,
+    'trades' => 0,
+    'wins' => 0,
+    'realTrades' => 0,
+    'realStakeVolume' => 0,
+    'realDepositTotal' => 0,
+    'trafficSource' => (string) ($row['trafficSource'] ?? 'direct'),
+    'publicId' => alloc_public_id($db),
+    'transactions' => [],
+    'positions' => []
+  ];
+  $vault = ['demo' => 1000000, 'real' => 0];
+  $db['users'][$uid] = $user;
+  $db['vault'][$uid] = $vault;
+  unset($db['pendingRegistrations'][$email]);
+  $tok = make_token($uid, $SECRET);
+  $db['sessions'][$tok] = ['userId' => $uid, 'at' => date('c')];
+  $welcome = ['ok' => false];
+  if (!brevo_welcome_already_sent($db, $email)) {
+    $welcome = brevo_send_welcome($email, (string) $user['displayName']);
+    if (!empty($welcome['ok'])) brevo_mark_welcome_sent($db, $email);
+  }
+  save_db($file, $db);
+  echo json_encode([
+    'ok' => true,
+    'server' => true,
+    'user' => $user,
+    'vault' => $vault,
+    'token' => $tok,
+    'welcome' => !empty($welcome['ok'])
+  ]);
+  exit;
+}
+
 if ($action === 'register') {
   $user = $req['user'] ?? null;
   $vault = $req['vault'] ?? ['demo' => 1000000, 'real' => 0];
@@ -199,13 +381,8 @@ if ($action === 'register') {
   $db['vault'][$user['id']] = $vault;
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
-  $welcome = ['ok' => false, 'skipped' => true];
-  if (!brevo_welcome_already_sent($db, $email)) {
-    $welcome = brevo_send_welcome($email, (string) ($user['displayName'] ?? ''));
-    if (!empty($welcome['ok'])) brevo_mark_welcome_sent($db, $email);
-  }
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok, 'welcome' => !empty($welcome['ok'])]);
+  echo json_encode(['ok' => true, 'server' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok]);
   exit;
 }
 

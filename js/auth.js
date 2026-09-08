@@ -63,60 +63,102 @@
       if (password !== confirm) return { ok: false, reason: 'Les mots de passe ne correspondent pas', field: 'regPass2' };
       if (!form.acceptTerms) return { ok: false, reason: 'Vous devez confirmer avoir plus de 18 ans', field: 'regAge' };
 
-      var cloudOk = D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && email.indexOf('.local') < 0;
-      if (cloudOk) {
-        var cloud = await D6.Supabase.register({
+      // Comptes locaux / preview : pas d’OTP.
+      if (email.indexOf('.local') >= 0) {
+        if (D6.Store.findByEmail(email)) return { ok: false, reason: 'Un compte existe déjà avec cet e-mail', field: 'regEmail' };
+        var userLocal = D6.Store.createUser({
+          id: D6.uid(),
           displayName: displayName,
           email: email,
           phone: phone,
           countryCode: countryCode,
-          password: password
+          passwordHash: await hashPassword(password),
+          trafficSource: 'direct'
         });
-        if (!cloud.ok) return cloud;
-        try {
-          var uCloud = D6.Store.current();
-          if (uCloud && !uCloud.trafficSource) {
-            uCloud.trafficSource = String(localStorage.getItem('orolado_utm_source') || 'direct').toLowerCase().trim() || 'direct';
-            D6.Store.saveUser(uCloud);
-          }
-        } catch (eTs) { /* ignore */ }
-        try {
-          if (D6.Api && D6.Api.post) {
-            await D6.Api.post('welcomeEmail', { email: email, displayName: displayName });
-          }
-        } catch (eWelcome) { /* ignore */ }
-        return { ok: true, user: D6.Store.current() };
+        D6.Store.setSession({ userId: userLocal.id, at: D6.nowIso() });
+        return { ok: true, user: userLocal };
       }
 
-      if (D6.Store.findByEmail(email)) return { ok: false, reason: 'Un compte existe déjà avec cet e-mail', field: 'regEmail' };
+      if (!D6.Api || !D6.Api.post) {
+        return { ok: false, reason: 'Service d’inscription indisponible. Réessayez.' };
+      }
 
       var trafficSource = 'direct';
       try {
         trafficSource = String(localStorage.getItem('orolado_utm_source') || 'direct').toLowerCase().trim() || 'direct';
       } catch (eUtm) { /* ignore */ }
-      var user = D6.Store.createUser({
-        id: D6.uid(),
+
+      var passwordHash = await hashPassword(password);
+      var start = await D6.Api.post('registerStart', {
         displayName: displayName,
         email: email,
         phone: phone,
         countryCode: countryCode,
-        passwordHash: await hashPassword(password),
+        passwordHash: passwordHash,
         trafficSource: trafficSource
       });
-      D6.Store.addSession(user, 'inscription');
-      D6.Store.addSession(user, 'connexion');
-      D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
-      if (D6.Api) {
-        var remote = await D6.Api.post('register', {
-          user: user,
-          vault: { demo: D6.CONFIG.DEMO_START, real: D6.CONFIG.REAL_START }
-        });
-        if (remote && remote.ok) D6.Api.setToken(remote.token);
-        if (remote && remote.server && !remote.ok) {
-          return { ok: false, reason: remote.reason, field: 'regEmail' };
-        }
+      if (!start || !start.ok) {
+        return {
+          ok: false,
+          reason: (start && start.reason) || 'Impossible d’envoyer le code de confirmation',
+          field: (start && start.field) || 'regEmail',
+          retryIn: start && start.retryIn
+        };
       }
-      return { ok: true, user: user };
+      return {
+        ok: true,
+        pendingOtp: true,
+        email: email,
+        displayName: displayName,
+        phone: phone,
+        countryCode: countryCode,
+        password: password,
+        resendIn: (start && start.resendIn) || 60
+      };
+    },
+
+    verifyRegisterOtp: async function (email, code, password) {
+      email = normalizeEmail(email);
+      code = String(code || '').replace(/\D/g, '');
+      if (!email || code.length !== 6) {
+        return { ok: false, reason: 'Saisissez le code à 6 chiffres reçu par e-mail.' };
+      }
+      if (!D6.Api || !D6.Api.post) return { ok: false, reason: 'Service indisponible' };
+      var remote = await D6.Api.post('registerVerify', { email: email, code: code });
+      if (!remote || !remote.ok) {
+        return { ok: false, reason: (remote && remote.reason) || 'Code incorrect ou expiré' };
+      }
+      if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
+      if (remote.user) {
+        D6.Store.importRemote(remote.user, remote.vault);
+        D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
+      }
+      // Miroir Supabase optionnel (compte déjà actif côté Orolado).
+      if (password && D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && email.indexOf('.local') < 0) {
+        try {
+          var cloud = await D6.Supabase.register({
+            displayName: (remote.user && remote.user.displayName) || email,
+            email: email,
+            phone: (remote.user && remote.user.phone) || '',
+            countryCode: (remote.user && remote.user.countryCode) || '+225',
+            password: password
+          });
+          if (!cloud.ok && D6.Supabase.login) {
+            await D6.Supabase.login(email, password);
+          }
+        } catch (eCloud) { /* ignore */ }
+      }
+      return { ok: true, user: D6.Store.current() || remote.user };
+    },
+
+    resendRegisterOtp: async function (email) {
+      email = normalizeEmail(email);
+      if (!D6.Api || !D6.Api.post) return { ok: false, reason: 'Service indisponible' };
+      var remote = await D6.Api.post('registerResend', { email: email });
+      if (!remote || !remote.ok) {
+        return { ok: false, reason: (remote && remote.reason) || 'Renvoi impossible', retryIn: remote && remote.retryIn };
+      }
+      return { ok: true, resendIn: remote.resendIn || 60 };
     },
 
     login: async function (form) {

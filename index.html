@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=74">
+  <link rel="stylesheet" href="css/app.css?v=75">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -367,6 +367,26 @@
     </div>
   </section>
 
+  <div class="modal-backdrop" id="otpModal">
+    <div class="modal-box glass otp-box">
+      <button type="button" class="btn-close" id="closeOtp" aria-label="Fermer">✕</button>
+      <div class="modal-title">Confirmez votre e-mail</div>
+      <p class="otp-lead">Un code à 6 chiffres a été envoyé à <strong id="otpEmailLabel"></strong>. Saisissez-le pour activer votre compte.</p>
+      <form id="formOtp" autocomplete="one-time-code">
+        <div class="field">
+          <label for="otpCode">Code de confirmation</label>
+          <input id="otpCode" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="••••••" required autocomplete="one-time-code" aria-describedby="err-otpCode">
+          <p class="err-msg" id="err-otpCode"></p>
+        </div>
+        <button class="btn-gold" type="submit" id="btnOtpVerify">Valider mon compte</button>
+      </form>
+      <div class="otp-resend-row">
+        <button type="button" class="mini" id="btnOtpResend" disabled>Renvoyer le code</button>
+        <span class="otp-timer" id="otpTimer" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="forgotModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeForgot">✕</button>
@@ -566,15 +586,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=74"></script>
-  <script src="js/i18n.js?v=74"></script>
-  <script src="js/store.js?v=74"></script>
-  <script src="js/api.js?v=74"></script>
+  <script src="js/config.js?v=75"></script>
+  <script src="js/i18n.js?v=75"></script>
+  <script src="js/store.js?v=75"></script>
+  <script src="js/api.js?v=75"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=74"></script>
-  <script src="js/auth.js?v=74"></script>
-  <script src="js/engine.js?v=74"></script>
-  <script src="js/chart.js?v=74"></script>
-  <script src="js/app.js?v=74"></script>
+  <script src="js/supabase.js?v=75"></script>
+  <script src="js/auth.js?v=75"></script>
+  <script src="js/engine.js?v=75"></script>
+  <script src="js/chart.js?v=75"></script>
+  <script src="js/app.js?v=75"></script>
 </body>
 </html>
