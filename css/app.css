@@ -384,15 +384,15 @@ html.is-android .trade-hint{
   white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
   display:block!important;-webkit-line-clamp:unset!important;max-height:1.4em!important}
 html.is-android .btn-hist-cta{
-  height:auto!important;min-height:29px!important;padding:4px 7px!important;
-  font-size:.52rem!important;margin-top:2px!important;z-index:60}
+  height:22px!important;min-height:22px!important;padding:1px 6px!important;
+  font-size:.48rem!important;margin-top:1px!important;z-index:60;line-height:1.1}
 html.is-android .chart-card,html.is-android #chart{
-  flex-shrink:0!important;min-height:max(322px,44vh)!important;min-height:max(322px,44dvh)!important}
-html.is-android .chart-stage{flex-shrink:0!important;min-height:max(290px,40vh)!important}
+  flex-shrink:0!important;min-height:max(348px,48vh)!important;min-height:max(348px,48dvh)!important}
+html.is-android .chart-stage{flex-shrink:0!important;min-height:max(318px,44vh)!important}
 @media (max-width:429px){
   html.is-android .chart-card,html.is-android #chart{
-    min-height:max(322px,44vh)!important;min-height:max(322px,44dvh)!important}
-  html.is-android .chart-stage{min-height:max(290px,40vh)!important}
+    min-height:max(348px,48vh)!important;min-height:max(348px,48dvh)!important}
+  html.is-android .chart-stage{min-height:max(318px,44vh)!important}
 }
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -649,32 +649,41 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .chart-stage{flex-shrink:0!important;min-height:250px!important;min-height:max(250px,36vh)!important}
 }
 html.is-android .chart-card,html.is-android #chart{
-  flex-shrink:0!important;min-height:max(322px,44vh)!important;min-height:max(322px,44dvh)!important}
-html.is-android .chart-stage{flex-shrink:0!important;min-height:max(290px,40vh)!important}
+  flex-shrink:0!important;min-height:max(348px,48vh)!important;min-height:max(348px,48dvh)!important}
+html.is-android .chart-stage{flex-shrink:0!important;min-height:max(318px,44vh)!important}
 @media (max-width:429px){
-  /* Micro-ajust Android : hist + durées −10…−15% → chart ; côtes/mise/trade un peu relâchés. HAUT inchangé. */
-  html.is-android .btn-hist-cta{
-    height:auto!important;min-height:29px!important;padding:4px 7px!important;font-size:.52rem!important;margin-top:2px!important}
-  html.is-android .dur-chip{min-height:23px!important;font-size:.54rem!important;padding:1px 0!important}
-  html.is-android .qbtn{min-height:26px!important;font-size:.58rem!important;padding:2px 0!important}
-  html.is-android .pad{padding:5px 7px!important;gap:4px!important;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))!important}
+  /* Android : vides du ticket → canvas. HAUT / côtes fonctionnelles inchangés. */
+  html.is-android .trade-wrap{padding-bottom:178px!important}
+  html.is-android .pad{
+    padding:2px 6px!important;gap:2px!important;
+    padding-bottom:calc(3px + env(safe-area-inset-bottom,0px))!important}
+  html.is-android .dur-row{gap:2px!important;margin:0!important}
+  html.is-android .dur-chip{min-height:22px!important;font-size:.52rem!important;padding:1px 0!important;margin:0!important}
   html.is-android .trade-hint{
-    font-size:.55rem!important;margin:1px 0 0!important;white-space:nowrap!important;
-    -webkit-line-clamp:1!important;line-clamp:1;max-height:1.25em!important;overflow:hidden!important}
-  html.is-android .odds-label{font-size:.55rem!important;margin:2px 0 0!important}
-  html.is-android .odds-row{gap:4px!important;margin:2px 0 0!important}
-  html.is-android .odds-chip{padding:5px 2px!important}
-  html.is-android .odds-chip .odds-mult{font-size:.68rem!important}
-  html.is-android .odds-chip .odds-pct{font-size:.52rem!important}
-  html.is-android .stake-line input,html.is-android .stake-field input{min-height:36px!important;font-size:1rem!important;padding:5px 8px!important}
-  html.is-android .stake-min{font-size:.55rem!important}
-  html.is-android .win-preview .amount{font-size:.88rem!important}
-  html.is-android .win-preview .mult{font-size:.62rem!important}
-  html.is-android .btn-trade{min-height:44px!important;padding:7px 3px!important;font-size:.82rem!important}
-  html.is-android .btn-trade small{font-size:.58rem!important}
+    font-size:.46rem!important;margin:0!important;padding:0!important;line-height:1.1!important;
+    max-height:1.1em!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  html.is-android .odds-label{font-size:.42rem!important;margin:0!important;line-height:1.05!important;padding:0!important}
+  html.is-android .odds-row{gap:3px!important;margin:0!important}
+  html.is-android .odds-chip{padding:3px 1px!important}
+  html.is-android .odds-chip .odds-mult{font-size:.62rem!important}
+  html.is-android .odds-chip .odds-pct{font-size:.46rem!important}
+  html.is-android .stake-line{gap:4px!important;margin:0!important}
+  html.is-android .stake-line input,html.is-android .stake-field input{
+    min-height:28px!important;font-size:.88rem!important;padding:2px 6px!important}
+  html.is-android .stake-min{font-size:.45rem!important;margin:0!important;line-height:1.1!important}
+  html.is-android .win-preview{min-width:78px!important;margin:0!important;padding:0!important}
+  html.is-android .win-preview .amount{font-size:.78rem!important}
+  html.is-android .win-preview .mult{font-size:.55rem!important}
+  html.is-android .quick-row{gap:2px!important;margin:0!important}
+  html.is-android .qbtn{min-height:22px!important;font-size:.52rem!important;padding:1px 0!important}
+  html.is-android .btn-trade{min-height:38px!important;padding:4px 2px!important;font-size:.74rem!important;border-radius:10px!important}
+  html.is-android .btn-trade small{font-size:.5rem!important}
+  html.is-android .btn-hist-cta{
+    height:20px!important;min-height:20px!important;padding:0 6px!important;margin-top:1px!important;
+    font-size:.45rem!important;line-height:20px!important;border-radius:6px!important}
   html.is-android .chart-card,html.is-android #chart{
-    min-height:max(322px,44vh)!important;min-height:max(322px,44dvh)!important}
-  html.is-android .chart-stage{min-height:max(290px,40vh)!important}
+    min-height:max(348px,48vh)!important;min-height:max(348px,48dvh)!important}
+  html.is-android .chart-stage{min-height:max(318px,44vh)!important}
 }
 @media (orientation:landscape) and (min-width:700px){
   .chart-card,#chart{display:flex!important;flex-shrink:0!important;min-height:360px!important;max-height:none}

@@ -913,8 +913,10 @@
     var rsiH = inds.rsi ? 34 : 0;
     var macdH = inds.macd ? 34 : 0;
     var indH = rsiH + macdH;
-    // Marge latérale ~48px pour labels timer / CALL-PUT (overflow:hidden du card).
-    var pad = { t: 14, r: 62, b: 22 + indH, l: 12 };
+    var narrow = (window.innerWidth || 0) <= 430;
+    // Marge bas plus large si trade OPEN (ligne + timer + labels restent dans le canvas).
+    var tradeFloor = (allTrades.length && narrow) ? 30 : (allTrades.length ? 18 : 0);
+    var pad = { t: narrow ? 10 : 14, r: 62, b: 22 + indH + tradeFloor, l: 12 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 40) {
@@ -932,7 +934,7 @@
           macdH = indH;
           rsiH = 0;
         }
-        pad.b = 22 + indH;
+        pad.b = 22 + indH + tradeFloor;
         h = cssH - pad.t - pad.b;
       }
       if (h < 40) h = 40;
@@ -976,9 +978,17 @@
       maxPrice = Math.max(maxPrice, market.price);
     }
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
-    var padding = Math.max(span * 0.12, asset.tickNoise * 2.5, 0.15);
-    var yMin = minPrice - padding;
-    var yMax = maxPrice + padding;
+    var padY = Math.max(span * 0.12, asset.tickNoise * 2.5, 0.15);
+    var padYTop = padY;
+    var padYBot = padY;
+    if (allTrades.length) {
+      var narrowY = (window.innerWidth || 0) <= 430;
+      padYTop = padY * (narrowY ? 1.25 : 1.12);
+      // Plus d’air en bas pour que la ligne CALL/PUT + timer ne soient pas collés / coupés.
+      padYBot = padY * (narrowY ? 1.7 : 1.35);
+    }
+    var yMin = minPrice - padYBot;
+    var yMax = maxPrice + padYTop;
     // Avec trades OPEN : suivre le marché sans lag (lignes toujours dans le cadre).
     if (allTrades.length) {
       viewMin = yMin;
