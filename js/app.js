@@ -2710,6 +2710,9 @@
         if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
         if (D6.Chart && D6.Chart.flushOpenTradeVisuals) D6.Chart.flushOpenTradeVisuals();
       }, 600);
+      if (document.documentElement.classList.contains('is-android')) {
+        setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 800);
+      }
     });
     refreshRemoteVault();
     checkDepositReturn();
