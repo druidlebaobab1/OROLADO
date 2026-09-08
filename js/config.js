@@ -17,10 +17,11 @@
     REAL_PAYOUT: 1.88,
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
-    // Compte RÉEL (tous) : win-rate verrouillé — ne jamais augmenter.
-    ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.13, '11': 0.07, '51': 0.015 },
-    // Démo ADMIN uniquement (démonstrations).
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.80, '6': 0.35, '11': 0.20, '51': 0.08 },
+    // Profil C — utilisateurs ordinaires RÉEL (caisse).
+    ODDS_WIN_RATE: { '1.88': 0.38, '6': 0.11, '11': 0.05, '51': 0.01 },
+    // Profil A/B — admin (démo|réel) + joueurs ordinaires démo (acquisition).
+    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
+    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 3000,
     MIN_WITHDRAW: 3000,
