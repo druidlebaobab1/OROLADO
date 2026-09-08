@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -7,17 +7,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="OROLADO.COM â€” Trading premium en FCFA. Plateforme mobile-first.">
+  <meta name="description" content="OROLADO.COM — Trading premium en FCFA. Plateforme mobile-first.">
   <meta name="application-name" content="OROLADO.COM">
   <meta property="og:title" content="OROLADO.COM">
-  <meta property="og:description" content="Trading premium Â· FCFA">
+  <meta property="og:description" content="Trading premium · FCFA">
   <meta property="og:type" content="website">
   <title>OROLADO.COM</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=75">
+  <link rel="stylesheet" href="css/app.css?v=76">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -43,20 +43,20 @@
 
   <div class="modal-backdrop" id="iosInstallModal">
     <div class="modal-box glass install-ios-box">
-      <button type="button" class="btn-close" id="closeIosInstall">âœ•</button>
-      <div class="modal-title">ğŸ“² Installer OROLADO</div>
-      <p class="install-ios-lead">Ajoute lâ€™app sur lâ€™Ã©cran dâ€™accueil de ton iPhone :</p>
+      <button type="button" class="btn-close" id="closeIosInstall">?</button>
+      <div class="modal-title">?? Installer OROLADO</div>
+      <p class="install-ios-lead">Ajoute l’app sur l’écran d’accueil de ton iPhone :</p>
       <ol class="install-ios-steps">
-        <li>Touche lâ€™icÃ´ne <strong>Partager</strong> <span class="ios-share-icon" aria-hidden="true">â‹</span> en bas au centre de Safari.</li>
-        <li>Fais dÃ©filer et appuie sur <strong>Â« Sur lâ€™Ã©cran dâ€™accueil Â»</strong>.</li>
-        <li>Confirme en touchant <strong>Â« Ajouter Â»</strong> en haut Ã  droite.</li>
+        <li>Touche l’icône <strong>Partager</strong> <span class="ios-share-icon" aria-hidden="true">?</span> en bas au centre de Safari.</li>
+        <li>Fais défiler et appuie sur <strong>« Sur l’écran d’accueil »</strong>.</li>
+        <li>Confirme en touchant <strong>« Ajouter »</strong> en haut à droite.</li>
       </ol>
       <button type="button" class="btn-gold" id="btnIosInstallOk" data-i18n="continue">COMPRIS</button>
     </div>
   </div>
 
   <section id="screenAuth" class="screen">
-    <button type="button" class="auth-back" id="btnAuthBack">â† Retour</button>
+    <button type="button" class="auth-back" id="btnAuthBack">? Retour</button>
     <div class="lang-dd lang-bar-auth" id="langBarAuth"></div>
     <div class="auth-ambient"></div>
     <div class="auth-wrap">
@@ -65,8 +65,8 @@
         <div class="brand-xl">ORO<span>LADO</span></div>
         <div class="brand-domain">OROLADO.COM</div>
       </div>
-      <p class="brand-sub" data-i18n="tagline">Indices en FCFA. DÃ©mo gratuite. DÃ©pÃ´t Mobile Money.</p>
-      <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">CrÃ©ez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains rÃ©els.</div>
+      <p class="brand-sub" data-i18n="tagline">Indices en FCFA. Démo gratuite. Dépôt Mobile Money.</p>
+      <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">Créez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains réels.</div>
       <div class="auth-card glass">
         <div class="auth-tabs">
           <button type="button" class="auth-tab on" data-tab="login" data-i18n="login">Connexion</button>
@@ -86,7 +86,7 @@
             </div>
             <p class="err-msg" id="err-loginPass"></p>
           </div>
-          <button type="button" class="link-forgot" id="btnForgot" data-i18n="forgot">Mot de passe oubliÃ© ?</button>
+          <button type="button" class="link-forgot" id="btnForgot" data-i18n="forgot">Mot de passe oublié ?</button>
           <button class="btn-gold" type="submit" data-i18n="enter">Entrer</button>
         </form>
         <form id="formRegister" class="hidden">
@@ -101,15 +101,15 @@
             <p class="err-msg" id="err-regEmail"></p>
           </div>
           <div class="field">
-            <label data-i18n="whatsapp">NumÃ©ro de tÃ©lÃ©phone</label>
+            <label data-i18n="whatsapp">Numéro de téléphone</label>
             <div class="phone-row">
               <select id="regDial" aria-label="Indicatif">
-                <option value="+225">ğŸ‡¨ğŸ‡® +225</option>
-                <option value="+221">ğŸ‡¸ğŸ‡³ +221</option>
-                <option value="+226">ğŸ‡§ğŸ‡« +226</option>
-                <option value="+223">ğŸ‡²ğŸ‡± +223</option>
-                <option value="+228">ğŸ‡¹ğŸ‡¬ +228</option>
-                <option value="+237">ğŸ‡¨ğŸ‡² +237</option>
+                <option value="+225">???? +225</option>
+                <option value="+221">???? +221</option>
+                <option value="+226">???? +226</option>
+                <option value="+223">???? +223</option>
+                <option value="+228">???? +228</option>
+                <option value="+237">???? +237</option>
               </select>
               <input id="regPhone" type="tel" inputmode="numeric" autocomplete="tel-national" required minlength="8" maxlength="12" placeholder="07 XX XX XX XX">
             </div>
@@ -133,13 +133,13 @@
           </div>
           <label class="check-row">
             <input id="regAge" type="checkbox" required>
-            <span data-i18n="age">Jâ€™ai plus de 18 ans et jâ€™accepte les conditions dâ€™utilisation</span>
+            <span data-i18n="age">J’ai plus de 18 ans et j’accepte les conditions d’utilisation</span>
           </label>
           <p class="err-msg" id="err-regAge"></p>
-          <button class="btn-gold" type="submit" data-i18n="createAccount">CrÃ©er mon compte</button>
+          <button class="btn-gold" type="submit" data-i18n="createAccount">Créer mon compte</button>
         </form>
       </div>
-      <p class="legal" data-i18n="legal">Â© 2026 OROLADO.COM Â· 18+</p>
+      <p class="legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
     </div>
   </section>
 
@@ -159,7 +159,7 @@
           <div class="topbar-actions">
             <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Aide</button>
             <div class="lang-dd" id="langBarTrade"></div>
-            <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">ğŸ‘¤</button>
+            <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">??</button>
           </div>
         </div>
         <div class="pay-logos-strip" aria-hidden="true">
@@ -168,13 +168,13 @@
           <i class="op-logo op-mtn" title="MTN MoMo">MTN</i>
           <i class="op-logo op-moov" title="Moov Money">M</i>
           <i class="op-logo op-card" title="Carte">CB</i>
-          <i class="op-logo op-crypto" title="Crypto">â‚¿</i>
+          <i class="op-logo op-crypto" title="Crypto">?</i>
           <i class="op-logo op-paypal" title="PayPal">P</i>
         </div>
         <div class="topbar-mode">
           <div class="mode-switch" id="modeSwitcher" role="tablist" aria-label="Mode de compte">
-            <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="demo">MODE VIRTUEL / DÃ‰MO</button>
-            <button type="button" class="mode-btn" id="modeReal" data-mode="real" data-i18n="real">COMPTE RÃ‰EL</button>
+            <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="demo">MODE VIRTUEL / DÉMO</button>
+            <button type="button" class="mode-btn" id="modeReal" data-mode="real" data-i18n="real">COMPTE RÉEL</button>
           </div>
         </div>
         <div class="balance-row">
@@ -183,7 +183,7 @@
               <span class="bal" id="balanceDisplay">1 000 000 FCFA</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
-            <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la dÃ©mo" aria-label="Recharger dÃ©mo">+</button>
+            <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la démo" aria-label="Recharger démo">+</button>
           </div>
         </div>
       </header>
@@ -191,12 +191,12 @@
       <div class="trade-wrap">
         <div class="asset-bar markets-scroll" id="assetBar">
           <button type="button" class="asset-chip on" data-asset="v100">
-            <div class="k" data-i18n="highVol">Haute volatilitÃ©</div>
+            <div class="k" data-i18n="highVol">Haute volatilité</div>
             <div class="n">VOLATILITY 100</div>
             <div class="payout-live" id="payoutV100">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="stable">
-            <div class="k" data-i18n="lowVol">Basse volatilitÃ©</div>
+            <div class="k" data-i18n="lowVol">Basse volatilité</div>
             <div class="n">STABLE CORE</div>
             <div class="payout-live" id="payoutStable">+88%</div>
           </button>
@@ -223,7 +223,7 @@
               <button type="button" class="ind-btn on" data-ind="ma" title="Moyenne mobile">MA</button>
               <button type="button" class="ind-btn" data-ind="bb" title="Bandes de Bollinger">BB</button>
               <button type="button" class="ind-btn" id="chartZoomIn" aria-label="Zoom avant" title="Zoom +">+</button>
-              <button type="button" class="ind-btn" id="chartZoomOut" aria-label="Zoom arriÃ¨re" title="Zoom âˆ’">âˆ’</button>
+              <button type="button" class="ind-btn" id="chartZoomOut" aria-label="Zoom arrière" title="Zoom -">-</button>
             </div>
             <div class="wd-ticker" id="wdTicker" aria-live="off" aria-hidden="true">
               <span class="wd-ticker-dot" aria-hidden="true"></span>
@@ -250,9 +250,9 @@
 
         <div class="pad glass">
           <div id="installBanner" class="install-banner hidden">
-            <span>Installer lâ€™app</span>
+            <span>Installer l’app</span>
             <button type="button" id="btnInstall">Installer</button>
-            <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">âœ•</button>
+            <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">?</button>
           </div>
           <div class="dur-row">
             <button type="button" class="dur-chip" data-dur="3">3s</button>
@@ -269,39 +269,39 @@
               <div class="stake-min" style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;margin:0;width:100%;gap:8px">
                 <span data-i18n="minHint" class="stake-min-label" style="font-size:11px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mise min : 100 FCFA</span>
                 <span class="stake-min-actions" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;flex-shrink:0;align-items:center">
-                  <button type="button" class="qbtn stake-act" data-a="half">Ã·2</button>
-                  <button type="button" class="qbtn stake-act" data-a="x2">Ã—2</button>
-                  <button type="button" class="qbtn qbtn-back stake-act" data-a="back" title="Effacer" aria-label="Effacer un chiffre">âŒ«</button>
+                  <button type="button" class="qbtn stake-act" data-a="half">÷2</button>
+                  <button type="button" class="qbtn stake-act" data-a="x2">×2</button>
+                  <button type="button" class="qbtn qbtn-back stake-act" data-a="back" title="Effacer" aria-label="Effacer un chiffre">?</button>
                 </span>
               </div>
             </div>
             <div class="win-preview">
-              <div class="label" data-i18n="estYield">Rendement estimÃ©</div>
+              <div class="label" data-i18n="estYield">Rendement estimé</div>
               <div class="amount" id="previewGain">188 FCFA</div>
-              <div class="mult" id="previewMult">Ã—1.88</div>
+              <div class="mult" id="previewMult">×1.88</div>
             </div>
           </div>
-          <p class="odds-label">CÃ´te â€” plus haut = plus de gain, plus de risque</p>
-          <div class="odds-row" id="oddsRow" role="group" aria-label="CÃ´tes">
-            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">Ã—1.88</span><span class="odds-pct">+88%</span></button>
-            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">Ã—6</span><span class="odds-pct">+500%</span></button>
-            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">Ã—11</span><span class="odds-pct">+1 000%</span></button>
-            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">Ã—51</span><span class="odds-pct">+5 000%</span></button>
+          <p class="odds-label">Côte — plus haut = plus de gain, plus de risque</p>
+          <div class="odds-row" id="oddsRow" role="group" aria-label="Côtes">
+            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">×1.88</span><span class="odds-pct">+88%</span></button>
+            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">×6</span><span class="odds-pct">+500%</span></button>
+            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">×11</span><span class="odds-pct">+1 000%</span></button>
+            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">×51</span><span class="odds-pct">+5 000%</span></button>
           </div>
           <div class="timer-panel" id="timerPanel" hidden>
             <div class="timer-num" id="timerSeconds">10.0s</div>
             <div class="timer-msg" id="timerResult"></div>
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
-          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">â³ 2 trades ouverts â€” attends quâ€™un trade se termine</div>
+          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">? 2 trades ouverts — attends qu’un trade se termine</div>
           <div class="trade-row">
             <button type="button" class="btn-trade btn-call" id="btnCall">
               <span data-i18n="buy">ACHETER</span>
-              <small>CALL â†—</small>
+              <small>CALL ?</small>
             </button>
             <button type="button" class="btn-trade btn-put" id="btnPut">
               <span data-i18n="sell">VENDRE</span>
-              <small>PUT â†˜</small>
+              <small>PUT ?</small>
             </button>
           </div>
           <button type="button" class="btn-hist-cta" id="btnHistMore" data-i18n="seeAllDemo">HISTORIQUE DES TRADES DU COMPTE D&#201;MO</button>
@@ -312,51 +312,51 @@
 
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
   <aside id="drawerProfile" class="drawer">
-    <button type="button" class="btn-close" id="btnCloseDrawer">âœ•</button>
+    <button type="button" class="btn-close" id="btnCloseDrawer">?</button>
     <div class="prof-head">
       <div class="avatar" id="profAvatar">OR</div>
       <div>
-        <div class="prof-name" id="profName">â€”</div>
-        <div class="badge-ok" data-i18n="verified">Compte vÃ©rifiÃ©</div>
+        <div class="prof-name" id="profName">—</div>
+        <div class="badge-ok" data-i18n="verified">Compte vérifié</div>
       </div>
     </div>
     <div class="card glass">
-      <div class="list-row"><span data-i18n="publicId">ID public</span><strong id="profPublicId">â€”</strong></div>
-      <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">â€”</strong></div>
-      <div class="list-row"><span data-i18n="whatsapp">NumÃ©ro de tÃ©lÃ©phone</span><strong id="profPhone">â€”</strong></div>
+      <div class="list-row"><span data-i18n="publicId">ID public</span><strong id="profPublicId">—</strong></div>
+      <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
+      <div class="list-row"><span data-i18n="whatsapp">Numéro de téléphone</span><strong id="profPhone">—</strong></div>
     </div>
-    <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">âš™ï¸ Dashboard Admin</button>
+    <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">?? Dashboard Admin</button>
     <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
     <button type="button" class="btn-gold ghost-gold" id="btnFinance" data-i18n="financeHist">Historique financier</button>
     <button type="button" class="btn-gold ghost-gold" id="btnWithdraw" data-i18n="withdraw">Retirer</button>
-    <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">DÃ©connexion</button>
-    <p class="legal drawer-legal" data-i18n="legal">Â© 2026 OROLADO.COM Â· 18+</p>
+    <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">Déconnexion</button>
+    <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
   </aside>
 
   <section id="screenAdmin" class="screen admin-screen hidden">
     <div class="admin-head">
-      <button type="button" class="icon-btn" id="btnCloseAdmin">â†</button>
+      <button type="button" class="icon-btn" id="btnCloseAdmin">?</button>
       <h2 data-i18n="adminTitle">Super Admin Dashboard</h2>
     </div>
     <div class="admin-body">
       <div class="metrics" id="adminMetricsRow1">
-        <button type="button" class="metric glass metric-btn" data-admin-view="depositsTotal"><div class="k" data-i18n="metricDeposits">Total dÃ©pÃ´ts</div><div class="v" id="mDeposits">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="depositsTotal"><div class="k" data-i18n="metricDeposits">Total dépôts</div><div class="v" id="mDeposits">0</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsAll"><div class="k" data-i18n="metricWithdrawals">Total retraits</div><div class="v" id="mPending">0</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricExposure">Soldes rÃ©els</div><div class="v" id="mExposure">0</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricExposure">Soldes réels</div><div class="v" id="mExposure">0</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricNet">Net plateforme</div><div class="v" id="mProfit">0</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="inscrits"><div class="k" data-i18n="metricUsers">Inscrits</div><div class="v" id="mUsers">0</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="online"><div class="k">EN LIGNE</div><div class="v" id="mOnline">0</div></button>
       </div>
       <div class="metrics metrics-row2" id="adminMetricsRow2">
-        <button type="button" class="metric glass metric-btn" data-admin-view="depositsPending"><div class="k">DÃ©pÃ´ts en attente</div><div class="v" id="mDepPending">â€”</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsPending"><div class="k">Retraits en cours</div><div class="v" id="mWdPending">â€”</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="depositsPending"><div class="k">Dépôts en attente</div><div class="v" id="mDepPending">—</div></button>
+        <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsPending"><div class="k">Retraits en cours</div><div class="v" id="mWdPending">—</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="top"><div class="k">TOP clients</div><div class="v">depot DESC</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="actifs"><div class="k">Actifs</div><div class="v">payeurs</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="games"><div class="k">Jeux</div><div class="v">stats</div></button>
         <button type="button" class="metric glass metric-btn" data-admin-view="traffic"><div class="k">Trafic</div><div class="v">sources</div></button>
       </div>
       <div class="field admin-search">
-        <input id="adminSearch" type="search" data-i18n-placeholder="adminSearch" placeholder="Rechercher ORO-â€¦ / e-mail / nom / tÃ©l" autocomplete="off">
+        <input id="adminSearch" type="search" data-i18n-placeholder="adminSearch" placeholder="Rechercher ORO-… / e-mail / nom / tél" autocomplete="off">
       </div>
       <h3 id="adminViewTitle">Inscrits</h3>
       <div class="table-wrap admin-table-wrap" id="adminViewPanel"></div>
@@ -369,13 +369,13 @@
 
   <div class="modal-backdrop" id="otpModal">
     <div class="modal-box glass otp-box">
-      <button type="button" class="btn-close" id="closeOtp" aria-label="Fermer">âœ•</button>
+      <button type="button" class="btn-close" id="closeOtp" aria-label="Fermer">?</button>
       <div class="modal-title">Confirmez votre e-mail</div>
-      <p class="otp-lead">Un code Ã  6 chiffres a Ã©tÃ© envoyÃ© Ã  <strong id="otpEmailLabel"></strong>. Saisissez-le pour activer votre compte.</p>
+      <p class="otp-lead">Un code à 6 chiffres a été envoyé à <strong id="otpEmailLabel"></strong>. Saisissez-le pour activer votre compte.</p>
       <form id="formOtp" autocomplete="one-time-code">
         <div class="field">
           <label for="otpCode">Code de confirmation</label>
-          <input id="otpCode" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="one-time-code" aria-describedby="err-otpCode">
+          <input id="otpCode" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="••••••" required autocomplete="one-time-code" aria-describedby="err-otpCode">
           <p class="err-msg" id="err-otpCode"></p>
         </div>
         <button class="btn-gold" type="submit" id="btnOtpVerify">Valider mon compte</button>
@@ -389,8 +389,8 @@
 
   <div class="modal-backdrop" id="forgotModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeForgot">âœ•</button>
-      <div class="modal-title" data-i18n="resetTitle">RÃ©initialiser le mot de passe</div>
+      <button type="button" class="btn-close" id="closeForgot">?</button>
+      <div class="modal-title" data-i18n="resetTitle">Réinitialiser le mot de passe</div>
       <form id="formReset">
         <div class="field">
           <label data-i18n="idLabel">E-mail</label>
@@ -407,14 +407,14 @@
           <input id="resetPass2" type="password" required minlength="6">
           <p class="err-msg" id="err-resetPass2"></p>
         </div>
-        <button class="btn-gold" type="submit" data-i18n="update">Mettre Ã  jour</button>
+        <button class="btn-gold" type="submit" data-i18n="update">Mettre à jour</button>
       </form>
     </div>
   </div>
 
   <div class="modal-backdrop" id="passModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closePass">âœ•</button>
+      <button type="button" class="btn-close" id="closePass">?</button>
       <div class="modal-title" data-i18n="changePass">Changer de mot de passe</div>
       <form id="formPassword">
         <div class="field">
@@ -432,7 +432,7 @@
 
   <div class="modal-backdrop" id="financeModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeFinance">âœ•</button>
+      <button type="button" class="btn-close" id="closeFinance">?</button>
       <div class="modal-title" data-i18n="financeHist">Historique financier</div>
       <div id="txFeed"></div>
     </div>
@@ -440,7 +440,7 @@
 
   <div class="modal-backdrop" id="withdrawModal">
     <div class="modal-box glass withdraw-box">
-      <button type="button" class="btn-close" id="closeWithdraw">âœ•</button>
+      <button type="button" class="btn-close" id="closeWithdraw">?</button>
       <div class="modal-title" data-i18n="withdrawTitle">Retrait Mobile Money</div>
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
       <div class="wd-bal" id="wdBalanceLabel">
@@ -471,17 +471,17 @@
         <p class="err-msg" id="err-withdrawAmt"></p>
       </div>
       <div class="field">
-        <label data-i18n="wdPhone">NumÃ©ro Mobile Money</label>
+        <label data-i18n="wdPhone">Numéro Mobile Money</label>
         <div class="phone-row">
           <select id="wdCountry" aria-label="Indicatif">
-            <option value="+225" selected>ğŸ‡¨ğŸ‡® +225</option>
+            <option value="+225" selected>???? +225</option>
           </select>
           <input id="withdrawPhone" type="tel" inputmode="numeric" placeholder="07 00 00 00 00" maxlength="12">
         </div>
       </div>
       <div class="wd-trust">
-        <span>ğŸ”’ Cryptage bancaire SSL 256-bit</span>
-        <span data-i18n="wdDelay">âš¡ Paiement instantanÃ© (DÃ©lai moyen : 5 Ã  15 minutes)</span>
+        <span>?? Cryptage bancaire SSL 256-bit</span>
+        <span data-i18n="wdDelay">? Paiement instantané (Délai moyen : 5 à 15 minutes)</span>
       </div>
       <button type="button" class="btn-gold" id="btnSendWithdraw" data-i18n="withdrawBtn">RETIRER MES GAINS</button>
     </div>
@@ -489,18 +489,18 @@
 
   <div class="modal-backdrop" id="depositModal">
     <div class="modal-box glass withdraw-box deposit-box">
-      <button type="button" class="btn-close" id="closeDeposit">âœ•</button>
+      <button type="button" class="btn-close" id="closeDeposit">?</button>
       <div class="modal-title" data-i18n="depositTitle">Recharger en FCFA</div>
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
       <p class="deposit-instant" data-i18n="depositInstant">D&#233;p&#244;t Mobile Money. Minimum 3 000 FCFA.</p>
-      <div class="pay-mode-label" data-i18n="payMode">Modes de paiement acceptÃ©s</div>
+      <div class="pay-mode-label" data-i18n="payMode">Modes de paiement acceptés</div>
       <div class="pay-showcase" id="depOpGrid" aria-hidden="true">
         <div class="pay-show-item"><i class="op-logo op-wave">W</i><span>Wave</span></div>
         <div class="pay-show-item"><i class="op-logo op-orange">OM</i><span>Orange Money</span></div>
         <div class="pay-show-item"><i class="op-logo op-mtn">MTN</i><span>MTN MoMo</span></div>
         <div class="pay-show-item"><i class="op-logo op-moov">M</i><span>Moov Money</span></div>
-        <div class="pay-show-item"><i class="op-logo op-card">ğŸ’³</i><span>Visa / Mastercard</span></div>
-        <div class="pay-show-item"><i class="op-logo op-crypto">â‚¿</i><span>Crypto</span></div>
+        <div class="pay-show-item"><i class="op-logo op-card">??</i><span>Visa / Mastercard</span></div>
+        <div class="pay-show-item"><i class="op-logo op-crypto">?</i><span>Crypto</span></div>
         <div class="pay-show-item"><i class="op-logo op-paypal">P</i><span>PayPal</span></div>
       </div>
       <div class="field">
@@ -510,7 +510,7 @@
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
       <div class="wd-trust">
-        <span>ğŸ”’ Vos coordonnÃ©es OROLADO ne sont jamais transmises au checkout</span>
+        <span>?? Vos coordonnées OROLADO ne sont jamais transmises au checkout</span>
       </div>
       <button type="button" class="btn-gold" id="btnConfirmDeposit" data-i18n="depositConfirm">VALIDER LA RECHARGE</button>
     </div>
@@ -518,10 +518,10 @@
 
   <div class="modal-backdrop" id="depositSuccessModal">
     <div class="modal-box glass convert-box">
-      <button type="button" class="btn-close" id="closeDepositSuccess">âœ•</button>
-      <div class="convert-fire">âœ…</div>
-      <div class="convert-title" data-i18n="depositSuccessTitle">Recharge rÃ©ussie !</div>
-      <p class="convert-copy" data-i18n="depositSuccessCopy">Votre solde a Ã©tÃ© crÃ©ditÃ©.</p>
+      <button type="button" class="btn-close" id="closeDepositSuccess">?</button>
+      <div class="convert-fire">?</div>
+      <div class="convert-title" data-i18n="depositSuccessTitle">Recharge réussie !</div>
+      <p class="convert-copy" data-i18n="depositSuccessCopy">Votre solde a été crédité.</p>
       <p class="convert-copy" id="depositSuccessAmt"></p>
       <button type="button" class="btn-gold" id="btnDepositSuccessOk" data-i18n="continue">CONTINUER</button>
     </div>
@@ -531,9 +531,9 @@
     <div class="modal-box glass convert-box">
       <div class="wait-spin" id="depositWaitSpin" aria-hidden="true" hidden></div>
       <div class="convert-title" id="depositWaitTitle">Paiement en cours</div>
-      <p class="convert-copy" data-i18n="depositWaitCopy">Termine ton paiement dans lâ€™onglet ouvert, puis reviens ici et clique sur le bouton ci-dessous.</p>
+      <p class="convert-copy" data-i18n="depositWaitCopy">Termine ton paiement dans l’onglet ouvert, puis reviens ici et clique sur le bouton ci-dessous.</p>
       <p class="wait-ref" id="depositWaitRef"></p>
-      <button type="button" class="btn-gold" id="btnDepositCheck">Jâ€™ai validÃ© mon paiement Wave</button>
+      <button type="button" class="btn-gold" id="btnDepositCheck">J’ai validé mon paiement Wave</button>
       <p class="wait-note" id="depositWaitNote"></p>
       <button type="button" class="btn-gold ghost-gold" id="btnDepositWaitClose" data-i18n="depositWaitClose">Fermer</button>
     </div>
@@ -541,19 +541,19 @@
 
   <div class="modal-backdrop" id="convertModal">
     <div class="modal-box glass convert-box">
-      <button type="button" class="btn-close" id="closeConvert">âœ•</button>
-      <div class="convert-fire">ğŸ”¥</div>
+      <button type="button" class="btn-close" id="closeConvert">?</button>
+      <div class="convert-fire">??</div>
       <div class="convert-title" data-i18n="convertTitle">Tu as un vrai talent de trader !</div>
-      <p class="convert-copy" data-i18n="convertCopy">Passe en mode RÃ©el pour retirer tes gains en vrai argent.</p>
+      <p class="convert-copy" data-i18n="convertCopy">Passe en mode Réel pour retirer tes gains en vrai argent.</p>
       <button type="button" class="btn-gold" id="btnConvertRecharge" data-i18n="convertBtn">Recharger mon compte</button>
     </div>
   </div>
 
   <div class="modal-backdrop" id="helpModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeHelp">âœ•</button>
+      <button type="button" class="btn-close" id="closeHelp">?</button>
       <div class="modal-title" data-i18n="helpTitle">Aide & support</div>
-      <p class="convert-copy" data-i18n="helpCopy">Support client prioritaire â€” Service d'assistance disponible 24h/24 et 7j/7</p>
+      <p class="convert-copy" data-i18n="helpCopy">Support client prioritaire — Service d'assistance disponible 24h/24 et 7j/7</p>
       <form id="formHelp">
         <div class="field">
           <label data-i18n="helpSubject">Sujet</label>
@@ -570,31 +570,31 @@
 
   <div class="modal-backdrop" id="tipModal">
     <div class="modal-box glass convert-box">
-      <button type="button" class="btn-close" id="closeTip">âœ•</button>
-      <div class="convert-fire">ğŸ’¡</div>
+      <button type="button" class="btn-close" id="closeTip">?</button>
+      <div class="convert-fire">??</div>
       <div class="convert-title">Astuce trading</div>
-      <p class="convert-copy" data-i18n="lossStreakTip">Besoin d'aide pour vos prÃ©dictions ? Activez les indicateurs MA, RSI et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
+      <p class="convert-copy" data-i18n="lossStreakTip">Besoin d'aide pour vos prédictions ? Activez les indicateurs MA, RSI et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
       <button type="button" class="btn-gold" id="btnTipOk" data-i18n="continue">CONTINUER</button>
     </div>
   </div>
 
   <div class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
-      <button type="button" class="btn-close" id="closeHistorySheet">âœ•</button>
-      <div class="modal-title" id="histSheetTitle">Historique des trades (Compte RÃ©el)</div>
+      <button type="button" class="btn-close" id="closeHistorySheet">?</button>
+      <div class="modal-title" id="histSheetTitle">Historique des trades (Compte Réel)</div>
       <div class="history-feed sheet-feed" id="historySheetFeed"></div>
     </div>
   </div>
 
-  <script src="js/config.js?v=75"></script>
-  <script src="js/i18n.js?v=75"></script>
-  <script src="js/store.js?v=75"></script>
-  <script src="js/api.js?v=75"></script>
+  <script src="js/config.js?v=76"></script>
+  <script src="js/i18n.js?v=76"></script>
+  <script src="js/store.js?v=76"></script>
+  <script src="js/api.js?v=76"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=75"></script>
-  <script src="js/auth.js?v=75"></script>
-  <script src="js/engine.js?v=75"></script>
-  <script src="js/chart.js?v=75"></script>
-  <script src="js/app.js?v=75"></script>
+  <script src="js/supabase.js?v=76"></script>
+  <script src="js/auth.js?v=76"></script>
+  <script src="js/engine.js?v=76"></script>
+  <script src="js/chart.js?v=76"></script>
+  <script src="js/app.js?v=76"></script>
 </body>
 </html>

@@ -10,18 +10,20 @@
     QUICK_STAKES: [500, 1000, 5000],
     DURATIONS: [3, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 10,
-    DEMO_WIN_RATE: 0.65,
+    DEMO_WIN_RATE: 0.60,
     DEMO_FORCE_WINS: 0,
     REAL_WIN_RATE: 0.45,
     ADMIN_WIN_RATE: 0.85,
     REAL_PAYOUT: 1.88,
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
-    // Profil C — utilisateurs ordinaires RÉEL (caisse).
+    // Profil C — utilisateurs ordinaires RÉEL (caisse) — INTANGIBLE.
     ODDS_WIN_RATE: { '1.88': 0.38, '6': 0.11, '11': 0.05, '51': 0.01 },
-    // Profil A/B — admin (démo|réel) + joueurs ordinaires démo (acquisition).
+    // Profil A — admin (démo|réel) : inchangé.
     ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
     ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
+    // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; autres cotes ×0.75).
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125 },
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 3000,
     MIN_WITHDRAW: 3000,

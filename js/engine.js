@@ -399,11 +399,15 @@
     var fav = C.ODDS_WIN_RATE_FAVORABLE || C.ODDS_WIN_RATE_ADMIN_DEMO || {
       '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15
     };
+    // Démo ordinaire uniquement — jamais utilisé en réel.
+    var demoMap = C.ODDS_WIN_RATE_DEMO || {
+      '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125
+    };
     var realMap = C.ODDS_WIN_RATE || {
       '1.88': 0.38, '6': 0.11, '11': 0.05, '51': 0.01
     };
     var admin = isAdminUser(user);
-    var demo = mode !== 'real';
+    var isDemo = mode !== 'real';
     var harsh = false;
 
     // PROFIL A — admin (démo OU réel) : taux favorables, aucun frein.
@@ -411,12 +415,12 @@
       return { winProbability: winRateForOdds(trade.payout, fav), harsh: false, profile: 'A' };
     }
 
-    // PROFIL B — joueur ordinaire démo : taux favorables (acquisition).
-    if (demo) {
-      return { winProbability: winRateForOdds(trade.payout, fav), harsh: false, profile: 'B' };
+    // PROFIL B — joueur ordinaire DÉMO uniquement (~60 % à ×1.88).
+    if (isDemo) {
+      return { winProbability: winRateForOdds(trade.payout, demoMap), harsh: false, profile: 'B' };
     }
 
-    // PROFIL C — joueur ordinaire réel : caisse verrouillée.
+    // PROFIL C — joueur ordinaire réel : caisse verrouillée (inchangé).
     var winProbability = winRateForOdds(trade.payout, realMap);
     var losses = Number(user.consecutiveLosses) || 0;
     var lastBet = Number(user.lastBetAmount) || 0;
