@@ -15,9 +15,11 @@
     REAL_WIN_RATE: 0.45,
     ADMIN_WIN_RATE: 0.85,
     REAL_PAYOUT: 1.88,
-    // Côtes joueur (settlement = mise × mult). Pas de win-rate différent par côte.
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
+    // Compte RÉEL uniquement : win-rate par côte (risk management trésorerie).
+    ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.13, '11': 0.07, '51': 0.015 },
+    ODDS_MAX_STAKE: { '1.88': 50000, '6': 15000, '11': 5000, '51': 2000 },
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 3000,
     MIN_WITHDRAW: 3500,

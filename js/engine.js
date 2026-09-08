@@ -354,6 +354,29 @@
     return C.DEFAULT_ODDS != null ? C.DEFAULT_ODDS : 1.88;
   }
 
+  function oddsKey(mult) {
+    var o = normalizeOdds(mult);
+    if (Math.abs(o - 1.88) < 0.001) return '1.88';
+    if (Math.abs(o - 6) < 0.001) return '6';
+    if (Math.abs(o - 11) < 0.001) return '11';
+    if (o >= 50) return '51';
+    return '1.88';
+  }
+
+  function winRateForOdds(mult) {
+    var map = C.ODDS_WIN_RATE || {};
+    var k = oddsKey(mult);
+    var r = Number(map[k]);
+    return isFinite(r) ? r : 0.42;
+  }
+
+  function maxStakeForOdds(mult) {
+    var map = C.ODDS_MAX_STAKE || {};
+    var k = oddsKey(mult);
+    var m = Number(map[k]);
+    return isFinite(m) && m > 0 ? m : 50000;
+  }
+
   ensureMarkets();
   Object.keys(C.ASSETS).forEach(function (id) {
     payoutLive[id] = markets[id].payout;
@@ -480,8 +503,11 @@
       ensureMarkets();
       var market = markets[assetId];
       syncMarket(market, C.ASSETS[assetId], Date.now());
-      // Côte choisie (×1.88 / ×6 / ×11 / ×51) — même règle démo + réel.
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
+      var maxOddStake = maxStakeForOdds(payout);
+      if (stake > maxOddStake) {
+        return { ok: false, reason: 'Mise max dépassée pour cette cote' };
+      }
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
         type: 'stake',
@@ -575,24 +601,38 @@
       var mode = trade.mode === 'real' ? 'real' : 'demo';
       var isCall = trade.side === 'call';
       var expMs = expiryOf(trade);
-      // P0 : close = prix dessiné à l’expiry (même synth / même actif), pas de nudge RNG.
       ensureMarkets();
       var mkt = markets[trade.assetId];
       if (mkt && C.ASSETS[trade.assetId]) {
         syncMarket(mkt, C.ASSETS[trade.assetId], expMs);
       }
-      var exitPrice = mkt && mkt.price != null ? mkt.price : closePriceAt(trade.assetId, expMs);
       var entry = Number(trade.entryPrice);
+      trade.payout = normalizeOdds(trade.payout);
       var voided = false;
       var won = false;
-      if (exitPrice > entry) {
-        won = isCall;
-      } else if (exitPrice < entry) {
-        won = !isCall;
+      var exitPrice;
+
+      if (mode === 'real') {
+        // Risk management réel : win-rate strict par côte + bougie forcée.
+        var winProbability = winRateForOdds(trade.payout);
+        won = Math.random() < winProbability;
+        var nudge = Math.max((C.ASSETS[trade.assetId].tickNoise || 0.3) * 0.45, 0.28);
+        exitPrice = entry + (won
+          ? (isCall ? 1 : -1)
+          : (isCall ? -1 : 1)) * nudge;
+        if (mkt) mkt.price = exitPrice;
       } else {
-        voided = true;
+        // Démo : apprentissage = prix chart à l’expiry (inchangé).
+        exitPrice = mkt && mkt.price != null ? mkt.price : closePriceAt(trade.assetId, expMs);
+        if (exitPrice > entry) {
+          won = isCall;
+        } else if (exitPrice < entry) {
+          won = !isCall;
+        } else {
+          voided = true;
+        }
       }
-      trade.payout = normalizeOdds(trade.payout);
+
       var payoutAmount = 0;
       var net = 0;
       var status = 'lost';

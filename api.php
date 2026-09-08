@@ -637,6 +637,15 @@ if ($action === 'placeOrder') {
   foreach ($oddsAllowed as $od) {
     if (abs($od - $payoutReq) < 0.001) { $payout = $od; break; }
   }
+  $maxByOdds = [1.88 => 50000, 6.0 => 15000, 11.0 => 5000, 51.0 => 2000];
+  $maxStakeOdds = 50000;
+  foreach ($maxByOdds as $od => $mx) {
+    if (abs((float) $od - $payout) < 0.001) { $maxStakeOdds = (int) $mx; break; }
+  }
+  if ($stake > $maxStakeOdds) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise max dépassée pour cette cote']);
+    exit;
+  }
   $assetId = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['assetId'] ?? 'v100'));
   $openPrice = (float) ($req['entryPrice'] ?? $req['openPrice'] ?? 0);
   if ($mode === 'real') {

@@ -614,6 +614,15 @@
     }
     u.odds = ok;
     D6.Store.saveUser(u);
+    var maxOdd = (D6.CONFIG.ODDS_MAX_STAKE && D6.CONFIG.ODDS_MAX_STAKE[
+      Math.abs(ok - 1.88) < 0.001 ? '1.88' : (Math.abs(ok - 6) < 0.001 ? '6' : (Math.abs(ok - 11) < 0.001 ? '11' : (ok >= 50 ? '51' : '1.88')))
+    ]) || 50000;
+    var cur = Math.floor(Number($('inputStake') && $('inputStake').value) || 0);
+    if (cur > maxOdd) {
+      if ($('inputStake')) $('inputStake').value = String(maxOdd);
+      stake = maxOdd;
+      toast('Mise max dépassée pour cette cote', 'err');
+    }
     updatePayoutUi();
   }
 
@@ -1330,6 +1339,17 @@
       return;
     }
     stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake));
+    var oddsNow = currentOdds(u);
+    var maxOdd = (D6.CONFIG.ODDS_MAX_STAKE && D6.CONFIG.ODDS_MAX_STAKE[
+      Math.abs(oddsNow - 1.88) < 0.001 ? '1.88' : (Math.abs(oddsNow - 6) < 0.001 ? '6' : (Math.abs(oddsNow - 11) < 0.001 ? '11' : (oddsNow >= 50 ? '51' : '1.88')))
+    ]) || 50000;
+    if (stake > maxOdd) {
+      toast('Mise max dépassée pour cette cote', 'err');
+      stake = maxOdd;
+      $('inputStake').value = stake;
+      updatePayoutUi();
+      return;
+    }
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {
       if (mode === 'real') {
@@ -2227,6 +2247,14 @@
         if (a !== 'back') {
           if (cap > 0 && stake > cap) stake = cap;
           if (stake < min) stake = min;
+          var oddsCap = currentOdds(u);
+          var maxOddBtn = (D6.CONFIG.ODDS_MAX_STAKE && D6.CONFIG.ODDS_MAX_STAKE[
+            Math.abs(oddsCap - 1.88) < 0.001 ? '1.88' : (Math.abs(oddsCap - 6) < 0.001 ? '6' : (Math.abs(oddsCap - 11) < 0.001 ? '11' : (oddsCap >= 50 ? '51' : '1.88')))
+          ]) || 50000;
+          if (stake > maxOddBtn) {
+            stake = maxOddBtn;
+            toast('Mise max dépassée pour cette cote', 'err');
+          }
         }
         $('inputStake').value = stake;
         btn.classList.add('hit');
