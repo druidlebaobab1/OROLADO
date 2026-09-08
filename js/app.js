@@ -2205,8 +2205,10 @@
   }
 
   function startWithdrawTicker() {
-    var el = $('wdTickerText');
-    if (!el) return;
+    var box = $('wdTicker');
+    var idEl = $('wdTickerId');
+    var amtEl = $('wdTickerAmt');
+    if (!box || !idEl || !amtEl) return;
     function pickAmount() {
       var r = Math.random();
       if (r < 0.35) return 6000 + Math.floor(Math.random() * 44000);
@@ -2216,12 +2218,13 @@
     }
     function showNext() {
       var id = 'ORO-' + String(100000 + Math.floor(Math.random() * 900000));
-      var amt = pickAmount().toLocaleString('fr-FR');
-      el.classList.remove('on');
+      var amt = '+' + pickAmount().toLocaleString('fr-FR') + ' FCFA';
+      box.classList.remove('on');
       setTimeout(function () {
-        el.textContent = '🟢 ' + id + ' • Retrait validé : ' + amt + ' FCFA';
-        el.classList.add('on');
-      }, 380);
+        idEl.textContent = id + ' :';
+        amtEl.textContent = amt;
+        box.classList.add('on');
+      }, 320);
     }
     showNext();
     setInterval(showNext, 4500 + Math.floor(Math.random() * 1500));
