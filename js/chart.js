@@ -956,9 +956,9 @@
       });
     }
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
-    // Padding Y ≥ 8 % haut/bas — strike + live toujours dans le cadre.
+    // Padding Y ≥ 8 % haut ; marge basse de sécurité 20 % (mèches + ligne trade).
     var padY = Math.max(span * 0.08, asset.tickNoise * 2.5, 0.15);
-    var yMin = minPrice - padY;
+    var yMin = minPrice - ((maxPrice - minPrice) * 0.20);
     var yMax = maxPrice + padY;
 
     if (allTrades.length) {
@@ -1116,6 +1116,26 @@
   function bindTools() {
     if (toolsBound) return;
     toolsBound = true;
+    var zin = document.getElementById('chartZoomIn');
+    var zout = document.getElementById('chartZoomOut');
+    if (zin) zin.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (zoomIdx > 0) {
+        zoomIdx -= 1;
+        viewMin = 0;
+        viewMax = 0;
+      }
+    });
+    if (zout) zout.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (zoomIdx < ZOOM_STEPS.length - 1) {
+        zoomIdx += 1;
+        viewMin = 0;
+        viewMax = 0;
+      }
+    });
     document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
