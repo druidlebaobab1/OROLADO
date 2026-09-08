@@ -17,7 +17,7 @@
   var onFrame = null;
   var ZOOM_STEPS = [30, 45, 60, 90, 120, 180];
   var zoomIdx = 2;
-  var inds = { ma: true, rsi: false, bb: false, macd: false };
+  var inds = { ma: true, bb: false };
   var tmpCloses = [];
   var lastPad = null;
   var lastPlotH = 0;
@@ -70,7 +70,7 @@
       return;
     }
     var span = Math.max(viewMax - viewMin, 0.3);
-    var pad = Math.max(span * 0.12, 0.15);
+    var pad = Math.max(span * 0.08, 0.15);
     if (price < viewMin + pad) viewMin = price - pad;
     if (price > viewMax - pad) viewMax = price + pad;
   }
@@ -910,35 +910,13 @@
     allTrades.forEach(function (ot) {
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
-    var rsiH = inds.rsi ? 34 : 0;
-    var macdH = inds.macd ? 34 : 0;
-    var indH = rsiH + macdH;
     var narrow = (window.innerWidth || 0) <= 430;
-    // Marge bas plus large si trade OPEN (ligne + timer + labels restent dans le canvas).
-    var tradeFloor = (allTrades.length && narrow) ? 30 : (allTrades.length ? 18 : 0);
-    var pad = { t: narrow ? 10 : 14, r: 62, b: 22 + indH + tradeFloor, l: 12 };
+    // Plus de panneau RSI/MACD : toute la hauteur va au plot.
+    var tradeFloor = (allTrades.length && narrow) ? 28 : (allTrades.length ? 16 : 0);
+    var pad = { t: narrow ? 8 : 12, r: 62, b: 18 + tradeFloor, l: 10 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
-    if (h < 40) {
-      var need = 40 - h;
-      if (indH > 0) {
-        var shrink = Math.min(indH, need);
-        indH -= shrink;
-        if (inds.rsi && inds.macd) {
-          rsiH = Math.max(0, Math.floor(indH / 2));
-          macdH = Math.max(0, indH - rsiH);
-        } else if (inds.rsi) {
-          rsiH = indH;
-          macdH = 0;
-        } else {
-          macdH = indH;
-          rsiH = 0;
-        }
-        pad.b = 22 + indH + tradeFloor;
-        h = cssH - pad.t - pad.b;
-      }
-      if (h < 40) h = 40;
-    }
+    if (h < 48) h = 48;
 
     // Fond du PLOT uniquement (pas la page) — thème par actif.
     ctx.fillStyle = theme.bg1;
@@ -964,6 +942,10 @@
     }
     var minPrice = series.length ? Math.min.apply(null, series) : market.price;
     var maxPrice = series.length ? Math.max.apply(null, series) : market.price;
+    if (isFinite(market.price)) {
+      minPrice = Math.min(minPrice, market.price);
+      maxPrice = Math.max(maxPrice, market.price);
+    }
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
@@ -973,24 +955,42 @@
         }
       });
     }
-    if (isFinite(market.price)) {
-      minPrice = Math.min(minPrice, market.price);
-      maxPrice = Math.max(maxPrice, market.price);
-    }
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
-    var padY = Math.max(span * 0.12, asset.tickNoise * 2.5, 0.15);
-    var padYTop = padY;
-    var padYBot = padY;
+    // Padding Y ≥ 8 % haut/bas — strike + live toujours dans le cadre.
+    var padY = Math.max(span * 0.08, asset.tickNoise * 2.5, 0.15);
+    var yMin = minPrice - padY;
+    var yMax = maxPrice + padY;
+
     if (allTrades.length) {
-      var narrowY = (window.innerWidth || 0) <= 430;
-      padYTop = padY * (narrowY ? 1.25 : 1.12);
-      // Plus d’air en bas pour que la ligne CALL/PUT + timer ne soient pas collés / coupés.
-      padYBot = padY * (narrowY ? 1.7 : 1.35);
-    }
-    var yMin = minPrice - padYBot;
-    var yMax = maxPrice + padYTop;
-    // Avec trades OPEN : suivre le marché sans lag (lignes toujours dans le cadre).
-    if (allTrades.length) {
+      var critMin = isFinite(market.price) ? market.price : minPrice;
+      var critMax = critMin;
+      allTrades.forEach(function (ot) {
+        var ep2 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
+        if (!isFinite(ep2)) return;
+        critMin = Math.min(critMin, ep2);
+        critMax = Math.max(critMax, ep2);
+      });
+      if (isFinite(market.price)) {
+        critMin = Math.min(critMin, market.price);
+        critMax = Math.max(critMax, market.price);
+      }
+      var viewSpan = Math.max(yMax - yMin, span, 0.3);
+      var edge = Math.max(viewSpan * 0.08, padY);
+      if (critMin < yMin + edge) yMin = critMin - edge;
+      if (critMax > yMax - edge) yMax = critMax + edge;
+      // Centre la fenêtre sur (entrée + prix live) sans perdre min/max données.
+      var focusMid = (critMin + critMax) / 2;
+      var curMid = (yMin + yMax) / 2;
+      var shift = focusMid - curMid;
+      yMin += shift;
+      yMax += shift;
+      yMin = Math.min(yMin, minPrice - padY, critMin - edge);
+      yMax = Math.max(yMax, maxPrice + padY, critMax + edge);
+      // Re-garantir ≥ 8 % autour des points critiques après recentrage.
+      viewSpan = Math.max(yMax - yMin, 0.3);
+      edge = Math.max(viewSpan * 0.08, padY);
+      if (critMin < yMin + edge) yMin = critMin - edge;
+      if (critMax > yMax - edge) yMax = critMax + edge;
       viewMin = yMin;
       viewMax = yMax;
     } else if (!viewMin || !viewMax) {
@@ -1064,14 +1064,6 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (map) drawBead(map, market.price, tagCol, now, theme);
-
-    if (inds.rsi && rsiH > 0) {
-      var rsiVals = rsiSeries(closes, 14);
-      drawRsiPanel(pad, w, h, rsiH, rsiVals, startIdx, theme);
-    }
-    if (inds.macd && macdH > 0) {
-      drawMacdPanel(pad, w, h, macdH, macdSeries(closes), startIdx, theme, inds.rsi && rsiH > 0 ? rsiH : 0);
-    }
   }
 
   function loop(ts) {
@@ -1124,32 +1116,12 @@
   function bindTools() {
     if (toolsBound) return;
     toolsBound = true;
-    var zin = document.getElementById('chartZoomIn');
-    var zout = document.getElementById('chartZoomOut');
-    if (zin) zin.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (zoomIdx > 0) {
-        zoomIdx -= 1;
-        viewMin = 0;
-        viewMax = 0;
-      }
-    });
-    if (zout) zout.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (zoomIdx < ZOOM_STEPS.length - 1) {
-        zoomIdx += 1;
-        viewMin = 0;
-        viewMax = 0;
-      }
-    });
     document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var key = btn.dataset.ind;
-        if (!key) return;
+        if (key !== 'ma' && key !== 'bb') return;
         inds[key] = !inds[key];
         syncIndButtons();
       });
