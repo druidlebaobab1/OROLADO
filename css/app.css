@@ -417,6 +417,12 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(318px,44vh)!
 .wd-bal-caption{font-size:.72rem;font-weight:800;color:var(--muted);font-family:"Hanken Grotesk",system-ui,sans-serif;
   letter-spacing:.04em;text-transform:none}
 .wd-bal-amt{font-size:1.15rem;font-weight:900;color:var(--gold)}
+.wd-wager-box{margin:0 0 12px;padding:10px;border-radius:10px;border:1px solid rgba(245,197,24,.35);background:rgba(245,197,24,.08)}
+.wd-wager-box.hidden{display:none!important}
+.wd-wager-track{height:8px;border-radius:99px;background:rgba(10,15,29,.55);overflow:hidden;margin-bottom:8px}
+.wd-wager-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFB300,#00E676);transition:width .25s ease}
+.wd-wager-text{margin:0;font-size:.68rem;font-weight:700;color:var(--muted);line-height:1.35}
+#btnSendWithdraw:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.35)}
 .op-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .op-card{border:2px solid var(--op,#1BA0F2);background:rgba(10,15,29,.75);color:#fff;border-radius:10px;padding:10px 8px;
   font:inherit;font-weight:900;font-size:.72rem;cursor:pointer;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}

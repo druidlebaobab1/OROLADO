@@ -232,21 +232,24 @@
     u = u || user();
     var deposits = Number(u && u.realDepositTotal) || 0;
     var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
-    var required = Math.floor(deposits * mult);
-    var done = Number(u && u.realStakeVolume) || 0;
+    var required = Number(u && u.requiredWagering) || Math.floor(deposits * mult);
+    var done = Number(u && (u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume)) || 0;
+    if (u) {
+      u.requiredWagering = required;
+      u.totalWageredSinceDeposit = done;
+    }
     var left = Math.max(0, required - done);
     var loc = (D6.I18N && D6.I18N.lang === 'fr') ? 'fr-FR' : 'en-US';
     var amt = Math.round(left).toLocaleString(loc);
-    var msg = t('wagerBlocked');
-    if (!msg || msg === 'wagerBlocked') {
-      msg = 'Tu dois d’abord parier 2× tes dépôts (plusieurs mises). Encore {amt} FCFA à miser avant de retirer.';
-    }
+    var pct = required > 0 ? Math.min(100, Math.round((done / required) * 100)) : 100;
+    var msg = 'Vous devez miser encore ' + amt + ' FCFA avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).';
     return {
       ok: left <= 0,
       required: required,
       done: done,
       left: left,
-      msg: String(msg).replace('{amt}', amt)
+      pct: pct,
+      msg: msg
     };
   }
 
@@ -614,15 +617,6 @@
     }
     u.odds = ok;
     D6.Store.saveUser(u);
-    var maxOdd = (D6.CONFIG.ODDS_MAX_STAKE && D6.CONFIG.ODDS_MAX_STAKE[
-      Math.abs(ok - 1.88) < 0.001 ? '1.88' : (Math.abs(ok - 6) < 0.001 ? '6' : (Math.abs(ok - 11) < 0.001 ? '11' : (ok >= 50 ? '51' : '1.88')))
-    ]) || 50000;
-    var cur = Math.floor(Number($('inputStake') && $('inputStake').value) || 0);
-    if (cur > maxOdd) {
-      if ($('inputStake')) $('inputStake').value = String(maxOdd);
-      stake = maxOdd;
-      toast('Mise max dépassée pour cette cote', 'err');
-    }
     updatePayoutUi();
   }
 
@@ -1339,17 +1333,6 @@
       return;
     }
     stake = Math.max(D6.CONFIG.MIN_STAKE, Math.floor(Number($('inputStake').value) || stake));
-    var oddsNow = currentOdds(u);
-    var maxOdd = (D6.CONFIG.ODDS_MAX_STAKE && D6.CONFIG.ODDS_MAX_STAKE[
-      Math.abs(oddsNow - 1.88) < 0.001 ? '1.88' : (Math.abs(oddsNow - 6) < 0.001 ? '6' : (Math.abs(oddsNow - 11) < 0.001 ? '11' : (oddsNow >= 50 ? '51' : '1.88')))
-    ]) || 50000;
-    if (stake > maxOdd) {
-      toast('Mise max dépassée pour cette cote', 'err');
-      stake = maxOdd;
-      $('inputStake').value = stake;
-      updatePayoutUi();
-      return;
-    }
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {
       if (mode === 'real') {
@@ -1659,6 +1642,9 @@
     u = user();
     if (u) {
       u.realDepositTotal = (Number(u.realDepositTotal) || 0) + Number(remote.amount || 0);
+      var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
+      u.requiredWagering = Math.floor((Number(u.realDepositTotal) || 0) * mult);
+      if (u.totalWageredSinceDeposit == null) u.totalWageredSinceDeposit = Number(u.realStakeVolume) || 0;
       D6.Store.saveUser(u);
     }
     D6.holdDepositReal = true;
@@ -1940,6 +1926,22 @@
     var real = realWithdrawBalance(u);
     if ($('wdBalanceAmt')) $('wdBalanceAmt').textContent = D6.fmtFCFA(real);
     else if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable\n' + D6.fmtFCFA(real);
+    var gate = wagerStatus(u);
+    var box = $('wdWagerBox');
+    var fill = $('wdWagerFill');
+    var txt = $('wdWagerText');
+    var btn = $('btnSendWithdraw');
+    if (box) {
+      if (gate.ok || gate.required <= 0) {
+        box.classList.add('hidden');
+        if (btn) btn.disabled = false;
+      } else {
+        box.classList.remove('hidden');
+        if (fill) fill.style.width = String(gate.pct) + '%';
+        if (txt) txt.textContent = gate.msg;
+        if (btn) btn.disabled = true;
+      }
+    }
   }
 
   function openWithdraw() {
@@ -2247,14 +2249,6 @@
         if (a !== 'back') {
           if (cap > 0 && stake > cap) stake = cap;
           if (stake < min) stake = min;
-          var oddsCap = currentOdds(u);
-          var maxOddBtn = (D6.CONFIG.ODDS_MAX_STAKE && D6.CONFIG.ODDS_MAX_STAKE[
-            Math.abs(oddsCap - 1.88) < 0.001 ? '1.88' : (Math.abs(oddsCap - 6) < 0.001 ? '6' : (Math.abs(oddsCap - 11) < 0.001 ? '11' : (oddsCap >= 50 ? '51' : '1.88')))
-          ]) || 50000;
-          if (stake > maxOddBtn) {
-            stake = maxOddBtn;
-            toast('Mise max dépassée pour cette cote', 'err');
-          }
         }
         $('inputStake').value = stake;
         btn.classList.add('hit');
@@ -2459,7 +2453,9 @@
         beneficiary: name,
         countryCode: cc,
         realDepositTotal: Number(u.realDepositTotal) || 0,
-        realStakeVolume: Number(u.realStakeVolume) || 0
+        realStakeVolume: Number(u.realStakeVolume) || 0,
+        totalWageredSinceDeposit: Number(u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume) || 0,
+        requiredWagering: Number(u.requiredWagering) || Math.floor((Number(u.realDepositTotal) || 0) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2))
       };
       if (D6.Api && D6.Api.token()) {
         var remote = await D6.Api.post('withdraw', payload);

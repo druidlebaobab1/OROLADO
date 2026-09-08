@@ -365,16 +365,13 @@
 
   function winRateForOdds(mult) {
     var map = C.ODDS_WIN_RATE || {};
-    var k = oddsKey(mult);
-    var r = Number(map[k]);
-    return isFinite(r) ? r : 0.42;
-  }
-
-  function maxStakeForOdds(mult) {
-    var map = C.ODDS_MAX_STAKE || {};
-    var k = oddsKey(mult);
-    var m = Number(map[k]);
-    return isFinite(m) && m > 0 ? m : 50000;
+    var o = normalizeOdds(mult);
+    var k = oddsKey(o);
+    if (map[k] != null && isFinite(Number(map[k]))) return Number(map[k]);
+    // Autre multiplicateur : 1 / (multiplier × 1.25)
+    var m = Math.max(1.01, Number(o) || 1.88);
+    var r = 1 / (m * 1.25);
+    return Math.max(0.001, Math.min(0.49, r));
   }
 
   ensureMarkets();
@@ -504,10 +501,6 @@
       var market = markets[assetId];
       syncMarket(market, C.ASSETS[assetId], Date.now());
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
-      var maxOddStake = maxStakeForOdds(payout);
-      if (stake > maxOddStake) {
-        return { ok: false, reason: 'Mise max dépassée pour cette cote' };
-      }
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
         type: 'stake',
@@ -548,6 +541,8 @@
 
       if (mode === 'real') {
         user.realStakeVolume = (user.realStakeVolume || 0) + stake;
+        user.totalWageredSinceDeposit = Number(user.realStakeVolume) || 0;
+        user.requiredWagering = Math.floor((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
       }
       user.lastStake = stake;
       persistOpen(user);

@@ -840,6 +840,10 @@ function credit_paid_deposit(array $hit): array {
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   $db['vault'][$uid]['real'] = (int) ($db['vault'][$uid]['real'] ?? 0) + $amount;
   $db['users'][$uid]['realDepositTotal'] = (int) ($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount;
+  $db['users'][$uid]['requiredWagering'] = (int) ($db['users'][$uid]['realDepositTotal'] ?? 0) * 2;
+  if (!isset($db['users'][$uid]['totalWageredSinceDeposit'])) {
+    $db['users'][$uid]['totalWageredSinceDeposit'] = (int) ($db['users'][$uid]['realStakeVolume'] ?? 0);
+  }
   $db['deposits'][$idx]['status'] = 'COMPLETED';
   $db['deposits'][$idx]['amount'] = $amount;
   $db['deposits'][$idx]['paidAt'] = date('c');

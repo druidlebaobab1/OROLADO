@@ -133,6 +133,12 @@
       realTrades: row.real_trades || 0,
       realStakeVolume: row.real_stake_volume || 0,
       realDepositTotal: row.real_deposit_total || 0,
+      totalWageredSinceDeposit: (row.total_wagered_since_deposit != null ? row.total_wagered_since_deposit : null) != null
+        ? row.total_wagered_since_deposit
+        : (row.real_stake_volume || 0),
+      requiredWagering: (row.required_wagering != null ? row.required_wagering : null) != null
+        ? row.required_wagering
+        : Math.floor((row.real_deposit_total || 0) * 2),
       passwordHash: '',
       recentResults: [],
       positions: (meta && meta.positions) || [],

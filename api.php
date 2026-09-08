@@ -534,17 +534,26 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
     exit;
   }
-  // Wager 2× dépôts réels validés (mises réelles cumulées, pas le solde).
-  $depositTotal = (int) ($me['realDepositTotal'] ?? $req['realDepositTotal'] ?? 0);
-  $stakeDone = (int) ($me['realStakeVolume'] ?? $req['realStakeVolume'] ?? 0);
-  $required = $depositTotal * 2;
+  // Wagering ×2 : volume de MISES réelles ≥ 2 × dépôts réels validés (côté serveur uniquement).
+  $depositTotal = (int) ($me['realDepositTotal'] ?? 0);
+  $stakeDone = max(
+    (int) ($me['realStakeVolume'] ?? 0),
+    (int) ($me['totalWageredSinceDeposit'] ?? 0)
+  );
+  $required = (int) ($me['requiredWagering'] ?? 0);
+  if ($required <= 0) $required = $depositTotal * 2;
   if ($stakeDone < $required) {
     $left = max(0, $required - $stakeDone);
     $leftFmt = number_format($left, 0, ',', ' ');
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Tu dois d’abord parier 2× tes dépôts (plusieurs mises). Encore ' . $leftFmt . ' FCFA à miser avant de retirer.'
+      'reason' => 'Vous devez miser encore ' . $leftFmt . ' FCFA avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).',
+      'wager' => [
+        'done' => $stakeDone,
+        'required' => $required,
+        'left' => $left
+      ]
     ]);
     exit;
   }
@@ -637,15 +646,6 @@ if ($action === 'placeOrder') {
   foreach ($oddsAllowed as $od) {
     if (abs($od - $payoutReq) < 0.001) { $payout = $od; break; }
   }
-  $maxByOdds = [1.88 => 50000, 6.0 => 15000, 11.0 => 5000, 51.0 => 2000];
-  $maxStakeOdds = 50000;
-  foreach ($maxByOdds as $od => $mx) {
-    if (abs((float) $od - $payout) < 0.001) { $maxStakeOdds = (int) $mx; break; }
-  }
-  if ($stake > $maxStakeOdds) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise max dépassée pour cette cote']);
-    exit;
-  }
   $assetId = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['assetId'] ?? 'v100'));
   $openPrice = (float) ($req['entryPrice'] ?? $req['openPrice'] ?? 0);
   if ($mode === 'real') {
@@ -693,6 +693,13 @@ if ($action === 'placeOrder') {
     }
     if ($mode !== 'real') $locked['vault'][$uid][$mode] = $bal - $stake;
     else $locked['vault'][$uid]['real'] = max(0, $bal - $stake);
+    if ($mode === 'real' && isset($locked['users'][$uid])) {
+      $locked['users'][$uid]['realStakeVolume'] = (int) ($locked['users'][$uid]['realStakeVolume'] ?? 0) + $stake;
+      $locked['users'][$uid]['totalWageredSinceDeposit'] = (int) ($locked['users'][$uid]['realStakeVolume'] ?? 0);
+      $depTot = (int) ($locked['users'][$uid]['realDepositTotal'] ?? 0);
+      $locked['users'][$uid]['requiredWagering'] = $depTot * 2;
+      $locked['users'][$uid]['realTrades'] = (int) ($locked['users'][$uid]['realTrades'] ?? 0) + 1;
+    }
     $locked['orders'][] = [
       'id' => $oid,
       'userId' => $uid,

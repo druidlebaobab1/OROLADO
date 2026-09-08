@@ -68,6 +68,8 @@
       realTrades: 0,
       realStakeVolume: 0,
       realDepositTotal: 0,
+      totalWageredSinceDeposit: 0,
+      requiredWagering: 0,
       convertPromptShown: false,
       recentResults: [],
       positions: [],
@@ -89,6 +91,10 @@
     if (user.realTrades == null) user.realTrades = 0;
     if (user.realStakeVolume == null) user.realStakeVolume = 0;
     if (user.realDepositTotal == null) user.realDepositTotal = 0;
+    if (user.totalWageredSinceDeposit == null) user.totalWageredSinceDeposit = user.realStakeVolume || 0;
+    if (user.requiredWagering == null) {
+      user.requiredWagering = Math.floor((user.realDepositTotal || 0) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
+    }
     if (!Array.isArray(user.openTrades)) user.openTrades = [];
     if (!Array.isArray(user.positions)) user.positions = [];
     if (!Array.isArray(user.transactions)) user.transactions = [];
@@ -394,16 +400,12 @@
       if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;
-      var required = Math.floor(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
-      var done = Number(user.realStakeVolume) || 0;
+      var required = Number(user.requiredWagering) || Math.floor(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
+      var done = Number(user.totalWageredSinceDeposit != null ? user.totalWageredSinceDeposit : user.realStakeVolume) || 0;
       if (done < required) {
         var left = required - done;
         var amt = Math.round(left).toLocaleString(D6.I18N.lang === 'fr' ? 'fr-FR' : 'en-US');
-        var msg = D6.I18N.t('wagerBlocked');
-        if (!msg || msg === 'wagerBlocked') {
-          msg = 'Tu dois d’abord parier 2× tes dépôts (plusieurs mises). Encore {amt} FCFA à miser avant de retirer.';
-        }
-        return { ok: false, reason: String(msg).replace('{amt}', amt) };
+        return { ok: false, reason: 'Vous devez miser encore ' + amt + ' FCFA avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).' };
       }
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
       vault[user.id].real = real - amount;
