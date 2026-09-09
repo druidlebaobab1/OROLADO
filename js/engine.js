@@ -39,15 +39,72 @@
       case 'v75':
         return { salt: 551903, vol: 0.62, drift: 0, f1: 0.033, f2: 0.071, f3: 0.014, a1: 14, a2: 9, a3: 22, spike: null, stair: null };
       case 'crash300':
-        // Paliers + chutes (pas un clone V100).
-        return { salt: 771001, vol: 0.42, drift: -0.01, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: 'down', stair: 'down' };
+        return { salt: 771001, vol: 0.35, drift: 0, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'crash' };
       case 'boom300':
-        // Marches ascendantes (opposé de CRASH).
-        return { salt: 882119, vol: 0.42, drift: 0.01, f1: 0.011, f2: 0.024, f3: 0.006, a1: 2.2, a2: 1.4, a3: 3, spike: 'up', stair: 'up' };
+        return { salt: 882119, vol: 0.35, drift: 0, f1: 0.011, f2: 0.024, f3: 0.006, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'boom' };
       case 'v100':
       default:
         return { salt: 904177, vol: 1.05, drift: 0, f1: 0.041, f2: 0.093, f3: 0.017, a1: 18, a2: 11, a3: 32, spike: null, stair: null };
     }
+  }
+
+  function clampIndexPrice(p) {
+    var n = Number(p);
+    if (!isFinite(n)) return 1000;
+    return Math.round(Math.max(1000, Math.min(9999.99, n)) * 100) / 100;
+  }
+
+  /** CRASH/BOOM type Deriv : petites bougies de tendance + spike rare. */
+  function crashBoomCandleOHLC(asset, bucket) {
+    var isCrash = asset.id === 'crash300';
+    var salt = isCrash ? 771001 : 882119;
+    var base = Number(asset.basePrice) || (isCrash ? 4210.55 : 5890.33);
+    var slow = Math.sin(bucket * 0.017) * 55 + Math.cos(bucket * 0.009) * 28;
+    var micro = (uhash01(bucket, salt) - 0.5) * 6;
+    var o = base + slow + micro;
+    var period = 8 + Math.floor(uhash01(Math.floor(bucket / 50), salt + 3) * 7);
+    var spike = (bucket % period) === (period - 1) && uhash01(bucket, salt + 11) > 0.12;
+    var c;
+    var h;
+    var l;
+    if (isCrash) {
+      if (spike) {
+        c = o - (22 + uhash01(bucket, salt + 7) * 58);
+        h = o + 0.4 + uhash01(bucket, salt + 8) * 2.2;
+        l = c - uhash01(bucket, salt + 9) * 7;
+      } else {
+        c = o + (0.55 + uhash01(bucket, salt + 7) * 3.4);
+        h = c + uhash01(bucket, salt + 8) * 1.5;
+        l = o - uhash01(bucket, salt + 9) * 1.9;
+      }
+    } else if (spike) {
+      c = o + (22 + uhash01(bucket, salt + 7) * 58);
+      l = o - 0.4 - uhash01(bucket, salt + 8) * 2.2;
+      h = c + uhash01(bucket, salt + 9) * 7;
+    } else {
+      c = o - (0.55 + uhash01(bucket, salt + 7) * 3.4);
+      l = c - uhash01(bucket, salt + 8) * 1.5;
+      h = o + uhash01(bucket, salt + 9) * 1.9;
+    }
+    h = Math.max(h, o, c);
+    l = Math.min(l, o, c);
+    return {
+      o: clampIndexPrice(o),
+      h: clampIndexPrice(h),
+      l: clampIndexPrice(l),
+      c: clampIndexPrice(c),
+      t: bucket * CANDLE_MS
+    };
+  }
+
+  function synthCrashBoomPrice(conf, tSec) {
+    var t = Number(tSec) || 0;
+    var bucket = Math.floor(t);
+    var frac = Math.min(1, Math.max(0, t - bucket));
+    var full = crashBoomCandleOHLC(conf, bucket);
+    var mid = full.o + (full.c - full.o) * frac;
+    mid = Math.max(full.l, Math.min(full.h, mid));
+    return clampIndexPrice(mid);
   }
 
   function spikeAt(t, salt, dir) {
@@ -63,36 +120,13 @@
     return (dir === 'down' ? -1 : 1) * amp * shape;
   }
 
-  function synthStairPrice(conf, p, t) {
-    var stepSec = p.stair === 'down' ? 7.4 : 6.9;
-    var step = Math.floor(t / stepSec);
-    var dir = p.stair === 'down' ? -1 : 1;
-    var stepAmp = 3.2 + uhash01(step, p.salt + 5) * 5.5;
-    var plateau = conf.basePrice + dir * step * stepAmp;
-    var phase = (t / stepSec) - step;
-    var micro = (valueNoise(t * 0.35, p.salt) - 0.5) * 1.1 * p.vol;
-    var jump = 0;
-    if (p.stair === 'down') {
-      // Chute nette en début de palier (sinon plateau calme).
-      if (phase < 0.1 && uhash01(step, p.salt + 19) > 0.48) {
-        jump = - (14 + uhash01(step, p.salt + 23) * 32) * (1 - phase / 0.1);
-      }
-    } else {
-      // Marche ascendante : montée rapide puis palier.
-      if (phase < 0.14 && uhash01(step, p.salt + 19) > 0.42) {
-        jump = (10 + uhash01(step, p.salt + 23) * 24) * Math.min(1, phase / 0.14);
-      }
-    }
-    return plateau + micro + jump + p.drift * (t % 86400) * 0.03;
-  }
-
   function synthPrice(asset, tSec) {
     var id = asset.id || asset;
     var conf = typeof asset === 'object' ? asset : (C.ASSETS[id] || { id: id, basePrice: 10000 });
     var p = feedProfile(conf.id);
     var t = Number(tSec) || 0;
-    if (p.stair === 'down' || p.stair === 'up') {
-      return synthStairPrice(conf, p, t);
+    if (conf.id === 'crash300' || conf.id === 'boom300' || p.crashBoom) {
+      return synthCrashBoomPrice(conf, t);
     }
     var wave = Math.sin(t * p.f1) * p.a1
       + Math.cos(t * p.f2) * p.a2
@@ -105,6 +139,9 @@
   }
 
   function candleForBucket(asset, bucket) {
+    if (asset.id === 'crash300' || asset.id === 'boom300') {
+      return crashBoomCandleOHLC(asset, bucket);
+    }
     var start = bucket * CANDLE_MS;
     var o = synthPrice(asset, start / 1000);
     var h = o;
@@ -121,6 +158,25 @@
   }
 
   function formingCandle(asset, nowMs) {
+    if (asset.id === 'crash300' || asset.id === 'boom300') {
+      var bucketCb = Math.floor(nowMs / CANDLE_MS);
+      var full = crashBoomCandleOHLC(asset, bucketCb);
+      var frac = (nowMs % CANDLE_MS) / CANDLE_MS;
+      var cLive = full.o + (full.c - full.o) * frac;
+      var hLive = Math.max(full.o, cLive);
+      var lLive = Math.min(full.o, cLive);
+      var wickUp = (full.h - Math.max(full.o, full.c)) * frac;
+      var wickDn = (Math.min(full.o, full.c) - full.l) * frac;
+      hLive += wickUp;
+      lLive -= wickDn;
+      return {
+        o: full.o,
+        h: clampIndexPrice(Math.max(hLive, full.o, cLive)),
+        l: clampIndexPrice(Math.min(lLive, full.o, cLive)),
+        c: clampIndexPrice(cLive),
+        t: bucketCb * CANDLE_MS
+      };
+    }
     var bucket = Math.floor(nowMs / CANDLE_MS);
     var start = bucket * CANDLE_MS;
     var o = synthPrice(asset, start / 1000);

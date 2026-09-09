@@ -99,19 +99,15 @@
         name: 'CRASH 300 INDEX',
         short: 'C300',
         tag: 'Chutes rapides',
-        chart: 'line',
-        plotTheme: 'ivoryGold',
-        lineStyle: 'smooth',
-        lineColor: '#FF7A00',
-        lineWidth: 3,
+        chart: 'candle',
         basePrice: 4210.55,
         tickNoise: 0.55,
         tickMs: 28,
         ticksPerCandle: 8,
         payoutMin: 1.88,
         payoutMax: 1.98,
-        accent: '#FF7A00',
-        accentDim: '255,122,0',
+        accent: '#FF1744',
+        accentDim: '255,23,68',
         feed: 'crash300'
       },
       boom300: {
@@ -119,20 +115,15 @@
         name: 'BOOM 300 INDEX',
         short: 'B300',
         tag: 'Hausses rapides',
-        chart: 'line',
-        plotTheme: 'ivoryGold',
-        lineStyle: 'step',
-        lineColor: '#2F6BFF',
-        lineAccent: '#FF7A00',
-        lineWidth: 3,
+        chart: 'candle',
         basePrice: 5890.33,
         tickNoise: 0.55,
         tickMs: 28,
         ticksPerCandle: 8,
         payoutMin: 1.88,
         payoutMax: 1.98,
-        accent: '#2F6BFF',
-        accentDim: '47,107,255',
+        accent: '#00E676',
+        accentDim: '0,230,118',
         feed: 'boom300'
       }
     },
@@ -178,7 +169,9 @@
   };
 
   D6.fmtPrice = function (n, digits) {
-    return (Number(n) || 0).toLocaleString('fr-FR', {
+    var v = Number(n) || 0;
+    if (Math.abs(v) >= 100000) v = ((v % 9000) + 1000);
+    return v.toLocaleString('fr-FR', {
       minimumFractionDigits: digits == null ? 2 : digits,
       maximumFractionDigits: digits == null ? 2 : digits
     });

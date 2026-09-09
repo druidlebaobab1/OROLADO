@@ -345,40 +345,18 @@
 
   function plotTheme(asset) {
     var id = (asset && asset.id) || activeAsset;
-    // V100 + STABLE : thème sombre historique (ne pas changer).
-    if (id === 'crash300' || id === 'boom300' || (asset && asset.plotTheme === 'ivoryGold')) {
-      return {
-        id: 'ivoryGold',
-        bg0: '#FFF8EC',
-        bg1: '#F7EBD2',
-        gridH: 'rgba(201,162,39,0.28)',
-        gridHStrong: 'rgba(201,162,39,0.42)',
-        gridV: 'rgba(232,215,168,0.85)',
-        border: '#C9A227',
-        priceTxt: '#5C4A12',
-        timeTxt: 'rgba(92,74,18,0.72)',
-        watermark: 'rgba(201,162,39,0.035)',
-        rsiBg: 'rgba(255,248,236,0.92)',
-        rsiBorder: 'rgba(201,162,39,0.45)',
-        rsiTxt: '#5C4A12',
-        maFast: 'rgba(92,74,18,0.9)',
-        maSlow: 'rgba(47,107,255,0.75)',
-        bbFill: 'rgba(201,162,39,0.10)',
-        bbStroke: 'rgba(201,162,39,0.45)',
-        beadGlow: 'rgba(201,162,39,0.25)'
-      };
-    }
+    // Fond unique site — jamais beige/ivoire (Crash/Boom inclus).
     if (id === 'v75' || (asset && asset.plotTheme === 'darkPro')) {
       return {
         id: 'darkPro',
-        bg0: '#0B1220',
-        bg1: '#070B14',
-        gridH: 'rgba(255,215,0,0.055)',
-        gridHStrong: 'rgba(255,215,0,0.14)',
-        gridV: 'rgba(255,215,0,0.045)',
-        border: 'rgba(255,215,0,0.18)',
-        priceTxt: 'rgba(168,180,204,0.82)',
-        timeTxt: 'rgba(140,154,176,0.7)',
+        bg0: '#0B0E14',
+        bg1: '#0B0E14',
+        gridH: 'rgba(255,255,255,0.03)',
+        gridHStrong: 'rgba(255,255,255,0.05)',
+        gridV: 'rgba(255,255,255,0.03)',
+        border: null,
+        priceTxt: '#64748B',
+        timeTxt: '#64748B',
         watermark: 'rgba(255,215,0,0.028)',
         rsiBg: 'rgba(8,12,22,0.72)',
         rsiBorder: 'rgba(255,215,0,0.12)',
@@ -390,17 +368,16 @@
         beadGlow: 'rgba(0,230,118,0.2)'
       };
     }
-    // Défaut = thème sombre actuel (V100 / STABLE).
     return {
       id: 'darkLegacy',
-      bg0: '#121722',
+      bg0: '#0B0E14',
       bg1: '#0B0E14',
-      gridH: 'rgba(255,215,0,0.06)',
-      gridHStrong: 'rgba(255,215,0,0.16)',
-      gridV: 'rgba(255,215,0,0.05)',
+      gridH: 'rgba(255,255,255,0.03)',
+      gridHStrong: 'rgba(255,255,255,0.05)',
+      gridV: 'rgba(255,255,255,0.03)',
       border: null,
-      priceTxt: 'rgba(168,180,204,0.78)',
-      timeTxt: 'rgba(140,154,176,0.7)',
+      priceTxt: '#64748B',
+      timeTxt: '#64748B',
       watermark: 'rgba(255,215,0,0.028)',
       rsiBg: 'rgba(8,12,22,0.72)',
       rsiBorder: 'rgba(255,215,0,0.12)',
@@ -411,6 +388,13 @@
       bbStroke: 'rgba(255,215,0,0.28)',
       beadGlow: 'rgba(255,215,0,0.16)'
     };
+  }
+
+  function formatAxisPrice(p) {
+    var n = Number(p);
+    if (!isFinite(n)) return '—';
+    if (Math.abs(n) >= 100000) n = ((n % 9000) + 1000);
+    return n.toFixed(2);
   }
 
   function drawGrid(pad, w, h, minP, maxP, theme) {
@@ -426,10 +410,10 @@
       ctx.lineTo(pad.l + w, y);
       ctx.stroke();
       var pVal = maxP - (i / 5) * (maxP - minP);
-      ctx.fillStyle = theme.priceTxt;
-      ctx.font = '600 10px "Hanken Grotesk", sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(pVal.toFixed(2), pad.l + w + 6, y + 3);
+      ctx.fillText(formatAxisPrice(pVal), pad.l + w + 4, y + 3);
     }
     for (i = 0; i <= 4; i++) {
       var x = pad.l + (w / 4) * i;
@@ -440,15 +424,10 @@
       ctx.stroke();
       var ago = Math.round(((4 - i) / 4) * span);
       var label = ago === 0 ? 'now' : '-' + ago + 's';
-      ctx.fillStyle = theme.timeTxt;
-      ctx.font = '600 9px "Hanken Grotesk", sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, x, pad.t + h + 12);
-    }
-    if (theme.border) {
-      ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(pad.l + 0.5, pad.t + 0.5, w - 1, h - 1);
     }
   }
 
@@ -912,7 +891,7 @@
     ctx.fillStyle = theme.id === 'ivoryGold' ? theme.priceTxt : color;
     ctx.font = '800 10px "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(price.toFixed(2), cssW - 56, map.lastY + 3);
+    ctx.fillText(formatAxisPrice(price), cssW - 48, map.lastY + 3);
   }
 
   function drawFrame(now) {
@@ -930,20 +909,15 @@
     });
     var narrow = (window.innerWidth || 0) <= 430;
     // Plus de panneau RSI/MACD : toute la hauteur va au plot.
-    // Marges pixel pour laisser respirer prix, bougie et lignes d'entrée.
+    // Marges pixel ; axe Y collé à droite ≤ 45px.
     var tradeFloor = (allTrades.length && narrow) ? 32 : (allTrades.length ? 22 : 0);
-    var pad = { t: narrow ? 24 : 28, r: 62, b: 26 + tradeFloor, l: 10 };
+    var pad = { t: narrow ? 20 : 24, r: 45, b: 24 + tradeFloor, l: 8 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
 
-    // Fond du PLOT uniquement (pas la page) — thème par actif.
-    ctx.fillStyle = theme.bg1;
-    ctx.fillRect(0, 0, cssW, cssH);
-    var bg = ctx.createLinearGradient(0, 0, 0, cssH);
-    bg.addColorStop(0, theme.bg0);
-    bg.addColorStop(1, theme.bg1);
-    ctx.fillStyle = bg;
+    // Fond profond unique — zéro beige / blanc.
+    ctx.fillStyle = '#0B0E14';
     ctx.fillRect(0, 0, cssW, cssH);
 
     var candles = visibleCandles(market);
@@ -968,15 +942,15 @@
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
-        if (isFinite(ep)) {
+        if (isFinite(ep) && ep >= 500 && ep <= 20000) {
           minPrice = Math.min(minPrice, ep);
           maxPrice = Math.max(maxPrice, ep);
         }
       });
     }
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
-    // Padding Y symétrique ≥ 18 % : prix live, mèches et entrée de trade restent visibles.
-    var padY = Math.max(span * 0.18, asset.tickNoise * 3, 0.2);
+    // Respiration verticale 15 % haut / bas.
+    var padY = Math.max(span * 0.15, asset.tickNoise * 3, 0.2);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
 
@@ -986,6 +960,8 @@
       allTrades.forEach(function (ot) {
         var ep2 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
         if (!isFinite(ep2)) return;
+        // Ignore anciennes cotations hors échelle (ex. crash stair legacy).
+        if (ep2 < 500 || ep2 > 20000) return;
         critMin = Math.min(critMin, ep2);
         critMax = Math.max(critMax, ep2);
       });
@@ -994,7 +970,7 @@
         critMax = Math.max(critMax, market.price);
       }
       var viewSpan = Math.max(yMax - yMin, span, 0.3);
-      var edge = Math.max(viewSpan * 0.18, padY);
+      var edge = Math.max(viewSpan * 0.15, padY);
       if (critMin < yMin + edge) yMin = critMin - edge;
       if (critMax > yMax - edge) yMax = critMax + edge;
       // Centre la fenêtre sur (entrée + prix live) sans perdre min/max données.
@@ -1005,9 +981,9 @@
       yMax += shift;
       yMin = Math.min(yMin, minPrice - padY, critMin - edge);
       yMax = Math.max(yMax, maxPrice + padY, critMax + edge);
-      // Re-garantir ≥ 18 % autour des points critiques après recentrage.
+      // Re-garantir ≥ 15 % autour des points critiques après recentrage.
       viewSpan = Math.max(yMax - yMin, 0.3);
-      edge = Math.max(viewSpan * 0.18, padY);
+      edge = Math.max(viewSpan * 0.15, padY);
       if (critMin < yMin + edge) yMin = critMin - edge;
       if (critMax > yMax - edge) yMax = critMax + edge;
       viewMin = yMin;
