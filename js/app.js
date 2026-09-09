@@ -1406,13 +1406,13 @@
     return url;
   }
 
-  // Minimum dépôt joueur = $5.00.
+  // Minimum dépôt joueur = $3.00.
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 5;
+    return D6.CONFIG.MIN_DEPOSIT || 3;
   }
 
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 5;
+    return D6.CONFIG.MIN_WITHDRAW || 3;
   }
 
   function setDepositAmt(n) {

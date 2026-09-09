@@ -5,8 +5,8 @@
     CURRENCY: 'USD',
     CURRENCY_CODE: 'USD',
     CURRENCY_SYMBOL: '$',
-    /** Taux fixe paiement local Mobile Money uniquement (1 USD = 600 FCFA). */
-    USD_FCFA_RATE: 600,
+    /** Taux fixe paiement local Mobile Money : 1 USD = 500 FCFA (1000 FCFA = $2.00). */
+    USD_FCFA_RATE: 500,
     DEMO_START: 1000000,
     REAL_START: 0,
     MIN_STAKE: 1,
@@ -28,8 +28,8 @@
     // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; autres cotes ×0.75).
     ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125 },
     MIN_ORDER_MS: 300,
-    MIN_DEPOSIT: 5,
-    MIN_WITHDRAW: 5,
+    MIN_DEPOSIT: 3,
+    MIN_WITHDRAW: 3,
     WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
     MAX_OPEN: 2,
@@ -173,7 +173,7 @@
   };
 
   D6.usdToFcfa = function (usd) {
-    var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600) || 600;
+    var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 500) || 500;
     return Math.round(D6.roundMoney(usd) * rate);
   };
 

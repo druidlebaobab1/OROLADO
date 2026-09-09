@@ -103,11 +103,11 @@ function orolado_money($n): float {
   return round((float) $n, 2);
 }
 
-/** Taux fixe Mobile Money local : 1 USD = 600 FCFA. */
+/** Taux fixe Mobile Money local : 1 USD = 500 FCFA (1000 FCFA = $2.00). */
 function orolado_usd_fcfa_rate(): float {
   orolado_load_env();
-  $r = (float) (getenv('USD_FCFA_RATE') ?: ($_ENV['USD_FCFA_RATE'] ?? 600));
-  return $r > 0 ? $r : 600.0;
+  $r = (float) (getenv('USD_FCFA_RATE') ?: ($_ENV['USD_FCFA_RATE'] ?? 500));
+  return $r > 0 ? $r : 500.0;
 }
 
 function orolado_usd_to_fcfa($usd): int {
@@ -119,7 +119,7 @@ function orolado_fcfa_to_usd($fcfa): float {
 }
 
 function orolado_min_withdraw(): float {
-  return 5.0;
+  return 3.0;
 }
 
 function orolado_max_deposit_usd(): float {
@@ -1259,9 +1259,9 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt joueur = $5.00 USD. */
+/** Minimum dépôt joueur = $3.00 USD. */
 function orolado_min_deposit(?array $me): float {
-  return 5.0;
+  return 3.0;
 }
 
 function orolado_initiate_deposit(array $req): array {
@@ -1274,7 +1274,7 @@ function orolado_initiate_deposit(array $req): array {
   $amount = orolado_money($req['amount'] ?? 0);
   $min = orolado_min_deposit($me);
   if ($amount < $min || $amount > orolado_max_deposit_usd()) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $5.00.'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
   }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));

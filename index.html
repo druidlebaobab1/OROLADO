@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=78">
+  <link rel="stylesheet" href="css/app.css?v=79">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -465,6 +465,7 @@
         <button type="button" class="op-card op-moov" data-op="moov" style="--op:#0B3C8A"><i class="op-logo">M</i><span>Moov Money</span></button>
       </div>
       <div class="wd-pills">
+        <button type="button" class="wd-pill" data-amt="3">$3</button>
         <button type="button" class="wd-pill" data-amt="5">$5</button>
         <button type="button" class="wd-pill" data-amt="10">$10</button>
         <button type="button" class="wd-pill" data-amt="25">$25</button>
@@ -473,8 +474,8 @@
       </div>
       <div class="field">
         <label data-i18n="wdAmount">Montant ($)</label>
-        <input id="withdrawAmt" type="number" inputmode="decimal" min="5" step="0.01" placeholder="5">
-        <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : $5.00</p>
+        <input id="withdrawAmt" type="number" inputmode="decimal" min="3" step="0.01" placeholder="3">
+        <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : $3.00</p>
         <p class="err-msg" id="err-withdrawAmt"></p>
       </div>
       <div class="field">
@@ -499,7 +500,7 @@
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
       <div class="modal-title" data-i18n="depositTitle">Recharger en USD</div>
       <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
-      <p class="deposit-instant" data-i18n="depositInstant">D&#233;p&#244;t Mobile Money. Minimum $5.00.</p>
+      <p class="deposit-instant" data-i18n="depositInstant">D&#233;p&#244;t Mobile Money. Minimum $3.00.</p>
       <div class="pay-mode-label" data-i18n="payMode">Modes de paiement acceptés</div>
       <div class="pay-showcase" id="depOpGrid" aria-hidden="true">
         <div class="pay-show-item"><i class="op-logo op-wave">W</i><span>Wave</span></div>
@@ -513,13 +514,14 @@
       <div class="field">
         <label data-i18n="depositAmtLabel">MONTANT &#192; RECHARGER ($)</label>
         <div class="wd-pills" style="margin-bottom:8px">
+          <button type="button" class="wd-pill dep-pill" data-dep="3">$3</button>
           <button type="button" class="wd-pill dep-pill" data-dep="5">$5</button>
           <button type="button" class="wd-pill dep-pill" data-dep="10">$10</button>
           <button type="button" class="wd-pill dep-pill" data-dep="25">$25</button>
           <button type="button" class="wd-pill dep-pill" data-dep="50">$50</button>
         </div>
-        <input id="depositAmt" type="number" inputmode="decimal" min="5" step="0.01" value="5" placeholder="5">
-        <p class="hint-min" data-i18n="depositMin">Minimum $5.00</p>
+        <input id="depositAmt" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
+        <p class="hint-min" data-i18n="depositMin">Minimum $3.00</p>
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
       <div class="wd-trust">
@@ -599,15 +601,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=78"></script>
-  <script src="js/i18n.js?v=78"></script>
-  <script src="js/store.js?v=78"></script>
-  <script src="js/api.js?v=78"></script>
+  <script src="js/config.js?v=79"></script>
+  <script src="js/i18n.js?v=79"></script>
+  <script src="js/store.js?v=79"></script>
+  <script src="js/api.js?v=79"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=78"></script>
-  <script src="js/auth.js?v=78"></script>
-  <script src="js/engine.js?v=78"></script>
-  <script src="js/chart.js?v=78"></script>
-  <script src="js/app.js?v=78"></script>
+  <script src="js/supabase.js?v=79"></script>
+  <script src="js/auth.js?v=79"></script>
+  <script src="js/engine.js?v=79"></script>
+  <script src="js/chart.js?v=79"></script>
+  <script src="js/app.js?v=79"></script>
 </body>
 </html>
