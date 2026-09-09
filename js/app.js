@@ -1695,27 +1695,50 @@
     tick();
   }
 
-  function localMaketouCheckoutUrl(fcfaAmt, op, ref) {
+  function splitCustomerName(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    var first = parts[0] || 'Trader';
+    var last = parts.slice(1).join(' ') || 'Orolado';
+    if (last.length < 2) last = 'Orolado';
+    return { first: first, last: last };
+  }
+
+  function localMaketouCheckoutUrl(fcfaAmt, op, ref, profile) {
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
-    var first = 'Trader';
-    var last = 'Orolado';
-    var email = 'trader_' + Math.random().toString(16).slice(2, 10) + '@orolado-pay.com';
-    var phone = '07' + String(Math.floor(10000000 + Math.random() * 89999999));
+    var u = user() || {};
+    profile = profile || {};
+    var named = splitCustomerName(profile.displayName || profile.name || u.displayName || 'Trader');
+    var first = String(profile.firstName || named.first).trim() || 'Trader';
+    var last = String(profile.lastName || named.last).trim() || 'Orolado';
+    var email = String(profile.email || u.email || '').trim().toLowerCase();
+    if (!email || email.indexOf('.local') >= 0) {
+      email = 'trader_' + Math.random().toString(16).slice(2, 10) + '@orolado-pay.com';
+    }
+    var cc = String(profile.countryCode || u.countryCode || '+225').replace(/\D/g, '') || '225';
+    var phone = String(profile.phone || u.phone || '').replace(/\D/g, '');
+    if (phone.indexOf(cc) === 0) phone = phone.slice(cc.length);
+    if (phone.length < 8) phone = '07' + String(Math.floor(10000000 + Math.random() * 89999999));
     var origin = (location && location.origin) || 'https://orolado.com';
     var dash = origin + '/?deposit=success' + (ref ? ('&ref=' + encodeURIComponent(ref)) : '');
-    var returnUrl = origin + '/pay-blank.html' + (ref ? ('?ref=' + encodeURIComponent(ref)) : '');
     var fcfa = Math.max(1, Math.round(Number(fcfaAmt) || 0));
+    var fullName = (first + ' ' + last).trim();
     var q = new URLSearchParams();
     q.set('customPrice', String(fcfa));
+    q.set('customerPrice', String(fcfa));
     q.set('price', String(fcfa));
     q.set('amount', String(fcfa));
+    q.set('total', String(fcfa));
+    q.set('totalPrice', String(fcfa));
     q.set('firstName', first);
     q.set('lastName', last);
     q.set('firstname', first);
     q.set('lastname', last);
+    q.set('name', fullName);
+    q.set('fullName', fullName);
     q.set('email', email);
     q.set('phone', phone);
     q.set('phoneNumber', phone);
+    q.set('tel', phone);
     q.set('country', 'CI');
     q.set('countryCode', 'CI');
     q.set('currency', 'XOF');
@@ -1723,33 +1746,27 @@
     q.set('payment_method', op || 'wave');
     q.set('step', 'payment');
     q.set('success_url', dash);
-    q.set('return_url', returnUrl);
+    q.set('return_url', dash);
     q.set('redirect_url', dash);
     q.set('cancel_url', origin + '/?payment=cancel' + (ref ? '&ref=' + encodeURIComponent(ref) : ''));
     if (ref) q.set('ref', ref);
     return base + '?' + q.toString();
   }
 
-  /** Évite le formulaire d’infos Maketou : uniquement checkout prérempli (customPrice + step=payment). */
-  function resolveDepositCheckoutUrl(usdAmt, op, ref, serverUrl, amountFcfa) {
+  /** Toujours l’URL préremplie (infos compte + montant FCFA dynamique). */
+  function resolveDepositCheckoutUrl(usdAmt, op, ref, serverUrl, amountFcfa, customer) {
     var fcfa = Number(amountFcfa);
     if (!isFinite(fcfa) || fcfa <= 0) fcfa = D6.usdToFcfa(usdAmt);
-    var local = localMaketouCheckoutUrl(fcfa, op, ref);
+    var local = localMaketouCheckoutUrl(fcfa, op, ref, customer);
     var url = String(serverUrl || '');
     var low = url.toLowerCase();
-    if (!url || !/^https?:\/\//i.test(url)) return local;
-    // Page produit / formulaire d’enregistrement → forcer l’URL locale préremplie.
-    if (low.indexOf('/products/welcome/checkout') >= 0 && low.indexOf('customprice=') < 0 && low.indexOf('paystral') < 0) {
-      return local;
-    }
-    if (low.indexOf('step=') >= 0 && low.indexOf('step=payment') < 0 && low.indexOf('customprice=') < 0) {
-      return local;
-    }
-    // URL API Paystral / checkout avec prix : OK.
-    if (low.indexOf('paystral') >= 0 || low.indexOf('customprice=') >= 0 || low.indexOf('customerprice') >= 0) {
+    // Si le serveur renvoie déjà une URL welcome avec customPrice + email, on peut l’utiliser.
+    if (url && /^https?:\/\//i.test(url)
+      && low.indexOf('customprice=') >= 0
+      && low.indexOf('email=') >= 0
+      && low.indexOf('step=payment') >= 0) {
       return url;
     }
-    // Par défaut : tunnel local connu qui ouvre directement le paiement.
     return local;
   }
 
@@ -1789,17 +1806,23 @@
         console.error('OROLADO deposit fail', remote);
         var reason = String((remote && remote.reason) || '');
         toast(reason || t('sessionInvalid'), 'err');
-        if (/session/i.test(reason)) return;
         return;
       }
       var ref = (remote && remote.ref) || '';
       var fcfa = (remote && remote.amountFcfa) || D6.usdToFcfa(amt);
+      var customer = (remote && remote.customer) || {
+        displayName: u.displayName,
+        email: u.email,
+        phone: u.phone,
+        countryCode: u.countryCode
+      };
       var url = resolveDepositCheckoutUrl(
         amt,
         depositOp,
         ref,
-        (remote && (remote.checkout_url || remote.url)) || '',
-        fcfa
+        (remote && (remote.local_url || remote.checkout_url || remote.url)) || '',
+        fcfa,
+        customer
       );
       if (!url || !/^https?:\/\//i.test(url)) {
         console.error('OROLADO deposit: aucune URL checkout', remote);
@@ -1812,7 +1835,6 @@
       closeModal('depositModal');
       payWindow = window.open(url, '_blank');
       if (!payWindow) {
-        // Popup bloquée : ouvrir le paiement sans perdre la session Orolado via _blank échoue → même onglet
         window.location.href = url;
         return;
       }

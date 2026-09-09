@@ -103,11 +103,11 @@ function orolado_money($n): float {
   return round((float) $n, 2);
 }
 
-/** Taux fixe Mobile Money local : 1 USD = 500 FCFA (1000 FCFA = $2.00). */
+/** Taux fixe Mobile Money local : 1 USD = 600 FCFA (ex. 3 $ = 1 800 FCFA). */
 function orolado_usd_fcfa_rate(): float {
   orolado_load_env();
-  $r = (float) (getenv('USD_FCFA_RATE') ?: ($_ENV['USD_FCFA_RATE'] ?? 500));
-  return $r > 0 ? $r : 500.0;
+  $r = (float) (getenv('USD_FCFA_RATE') ?: ($_ENV['USD_FCFA_RATE'] ?? 600));
+  return $r > 0 ? $r : 600.0;
 }
 
 function orolado_usd_to_fcfa($usd): int {
@@ -478,23 +478,59 @@ function maketou_split_name(string $name): array {
   return [$first, $last];
 }
 
-function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $ref, int $amount = 0, string $op = 'wave', string $name = 'Client Orolado', string $returnUrl = ''): string {
+/** Coordonnées client depuis le compte Orolado (préremplissage Maketou). */
+function maketou_customer_from_user(array $me): array {
+  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  if ($email === '' || str_contains($email, '@orolado.local') || str_ends_with($email, '.local')) {
+    $email = maketou_alias_email((string) ($me['id'] ?? ''));
+  }
+  $cc = preg_replace('/\D/', '', (string) ($me['countryCode'] ?? '225')) ?: '225';
+  $phone = preg_replace('/\D/', '', (string) ($me['phone'] ?? '')) ?: '';
+  if ($phone !== '' && str_starts_with($phone, $cc)) {
+    $phone = substr($phone, strlen($cc));
+  }
+  if (strlen($phone) < 8) {
+    $phone = substr(preg_replace('/\D/', '', maketou_alias_phone()) ?: '0700000000', -10);
+  }
+  [$first, $last] = maketou_split_name((string) ($me['displayName'] ?? 'Trader'));
+  return [
+    'email' => $email,
+    'phone' => $phone,
+    'phoneE164' => '+' . $cc . $phone,
+    'countryCode' => $cc,
+    'firstName' => $first,
+    'lastName' => $last,
+    'displayName' => trim($first . ' ' . $last),
+  ];
+}
+
+function maketou_checkout_url(string $email, string $phone, string $ref, int $amount = 0, string $op = 'wave', string $name = 'Client Orolado', string $returnUrl = '', array $extra = []): string {
   [$first, $last] = maketou_split_name($name);
-  $phoneLocal = preg_replace('/\D/', '', $aliasPhone) ?? '';
+  if (!empty($extra['firstName'])) $first = (string) $extra['firstName'];
+  if (!empty($extra['lastName'])) $last = (string) $extra['lastName'];
+  $phoneLocal = preg_replace('/\D/', '', $phone) ?? '';
   if (str_starts_with($phoneLocal, '225')) $phoneLocal = substr($phoneLocal, 3);
-  if ($returnUrl === '') $returnUrl = orolado_public_origin() . '/pay-blank.html?ref=' . rawurlencode($ref);
-  $dashUrl = orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref);
+  $origin = orolado_public_origin();
+  $dashUrl = $origin . '/?deposit=success&ref=' . rawurlencode($ref);
+  if ($returnUrl === '') $returnUrl = $dashUrl;
+  $amount = max(1, (int) $amount);
   $qs = [
     'customPrice' => $amount,
+    'customerPrice' => $amount,
     'price' => $amount,
     'amount' => $amount,
+    'total' => $amount,
+    'totalPrice' => $amount,
     'firstName' => $first,
     'lastName' => $last,
     'firstname' => $first,
     'lastname' => $last,
-    'email' => $aliasEmail,
-    'phone' => $phoneLocal !== '' ? $phoneLocal : $aliasPhone,
-    'phoneNumber' => $phoneLocal !== '' ? $phoneLocal : $aliasPhone,
+    'name' => trim($first . ' ' . $last),
+    'fullName' => trim($first . ' ' . $last),
+    'email' => $email,
+    'phone' => $phoneLocal !== '' ? $phoneLocal : $phone,
+    'phoneNumber' => $phoneLocal !== '' ? $phoneLocal : $phone,
+    'tel' => $phoneLocal !== '' ? $phoneLocal : $phone,
     'country' => 'CI',
     'countryCode' => 'CI',
     'currency' => 'XOF',
@@ -504,9 +540,9 @@ function maketou_checkout_url(string $aliasEmail, string $aliasPhone, string $re
     'payment_method' => $op,
     'step' => 'payment',
     'success_url' => $dashUrl,
-    'return_url' => $returnUrl,
+    'return_url' => $dashUrl,
     'redirect_url' => $dashUrl,
-    'cancel_url' => orolado_public_origin() . '/?payment=cancel&ref=' . rawurlencode($ref),
+    'cancel_url' => $origin . '/?payment=cancel&ref=' . rawurlencode($ref),
   ];
   return maketou_checkout_base() . '?' . http_build_query($qs);
 }
@@ -1169,29 +1205,36 @@ function maketou_create_checkout(array $opts): array {
     return ['ok' => false, 'reason' => 'MAKETOU_API_KEY manquante'];
   }
 
-  $aliasEmail = (string) ($opts['aliasEmail'] ?? '');
-  if ($aliasEmail === '') $aliasEmail = maketou_alias_email((string) ($opts['userId'] ?? ''));
-  $aliasPhone = (string) ($opts['phone'] ?? '');
-  if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
-  // Montant Maketou = FCFA entier (facture Mobile Money locale).
+  $email = trim((string) ($opts['email'] ?? $opts['aliasEmail'] ?? ''));
+  if ($email === '') $email = maketou_alias_email((string) ($opts['userId'] ?? ''));
+  $phone = trim((string) ($opts['phone'] ?? ''));
+  if ($phone === '') $phone = maketou_alias_phone();
+  $first = trim((string) ($opts['firstName'] ?? ''));
+  $last = trim((string) ($opts['lastName'] ?? ''));
+  if ($first === '' || $last === '') {
+    [$f2, $l2] = maketou_split_name((string) ($opts['displayName'] ?? 'Trader Orolado'));
+    if ($first === '') $first = $f2;
+    if ($last === '') $last = $l2;
+  }
+  // Montant Maketou = FCFA entier (facture Mobile Money locale dynamique).
   $amount = (int) ($opts['amount'] ?? 0);
   if (isset($opts['amountUsd']) && $amount <= 0) {
     $amount = orolado_usd_to_fcfa($opts['amountUsd']);
   }
+  $amount = max(1, $amount);
   $ref = (string) ($opts['ref'] ?? '');
   $userId = (string) ($opts['userId'] ?? '');
   $returnUrl = (string) ($opts['returnUrl'] ?? '');
   if ($returnUrl === '') {
     $returnUrl = orolado_public_origin() . '/?deposit=success&ref=' . rawurlencode($ref);
   }
-  [$first, $last] = ['Trader', 'Orolado'];
 
   $payload = [
     'productDocumentId' => maketou_product_id(),
-    'email' => $aliasEmail,
+    'email' => $email,
     'firstName' => $first,
     'lastName' => $last,
-    'phone' => $aliasPhone,
+    'phone' => $phone,
     'customerPrice' => $amount,
     'redirectURL' => $returnUrl,
     'meta' => [
@@ -1221,30 +1264,48 @@ function maketou_create_checkout(array $opts): array {
 
   $cartId = (string) ($cart['id'] ?? $data['id'] ?? $nested['id'] ?? $data['cartId'] ?? '');
 
+  // Toujours construire aussi l’URL locale préremplie (prix dynamique + infos client).
+  $localUrl = maketou_checkout_url(
+    $email,
+    $phone,
+    $ref,
+    $amount,
+    (string) ($opts['operator'] ?? 'wave'),
+    trim($first . ' ' . $last),
+    $returnUrl,
+    ['firstName' => $first, 'lastName' => $last]
+  );
+
   maketou_log('maketou_checkout_create', [
     'ref' => $ref,
     'userId' => $userId,
     'amountFcfa' => $amount,
+    'email' => $email,
     'http' => (int) ($res['status'] ?? 0),
     'cartId' => $cartId,
     'url' => $url,
+    'localUrl' => $localUrl,
   ]);
 
   if (empty($res['ok']) || $url === '') {
     return [
-      'ok' => false,
-      'reason' => 'checkout_failed',
+      'ok' => true,
+      'url' => $localUrl,
+      'checkout_url' => $localUrl,
+      'local_url' => $localUrl,
+      'useLocalCheckout' => true,
+      'amountFcfa' => $amount,
+      'reason' => 'checkout_api_fallback_local',
       'status' => (int) ($res['status'] ?? 0),
-      'raw' => substr((string) ($res['raw'] ?? ''), 0, 500),
-      // Fallback front : URL locale préremplie (évite le formulaire d’infos Maketou).
-      'fallbackFcfa' => $amount,
     ];
   }
 
   return [
     'ok' => true,
-    'url' => $url,
-    'checkout_url' => $url,
+    'url' => $localUrl,
+    'checkout_url' => $localUrl,
+    'api_url' => $url,
+    'local_url' => $localUrl,
     'sellId' => $cartId,
     'cartId' => $cartId,
     'amountFcfa' => $amount,
@@ -1278,11 +1339,10 @@ function orolado_initiate_deposit(array $req): array {
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
-  $aliasEmail = maketou_alias_email((string) $me['id']);
-  $aliasPhone = maketou_alias_phone();
+  $customer = maketou_customer_from_user($me);
   $ref = 'oro_' . bin2hex(random_bytes(12));
   $origin = orolado_public_origin();
-  // Retour navigateur : Orolado + référence interne pour retrouver le dépôt.
+  // Retour navigateur : dashboard Orolado + crédit USD après validation.
   $returnUrl = $origin . '/?deposit=success&ref=' . rawurlencode($ref);
   $webhookUrl = $origin . '/api/deposit/webhook';
 
@@ -1291,8 +1351,11 @@ function orolado_initiate_deposit(array $req): array {
     'id' => $ref,
     'ref' => $ref,
     'userId' => $me['id'],
-    'aliasEmail' => $aliasEmail,
-    'aliasPhone' => $aliasPhone,
+    'aliasEmail' => $customer['email'],
+    'customerEmail' => $customer['email'],
+    'aliasPhone' => $customer['phoneE164'],
+    'customerPhone' => $customer['phone'],
+    'customerName' => $customer['displayName'],
     'operator' => $op,
     'status' => 'PENDING',
     'amount' => $amountUsd,
@@ -1307,15 +1370,18 @@ function orolado_initiate_deposit(array $req): array {
     'amount' => $amountUsd,
     'status' => 'PENDING',
     'reference' => $ref,
-    'alias_email' => $aliasEmail,
-    'alias_phone' => $aliasPhone,
+    'alias_email' => $customer['email'],
+    'alias_phone' => $customer['phoneE164'],
     'operator' => $op,
   ]);
 
-  // Maketou reçoit le montant en FCFA (facture locale), comme avant la migration USD.
+  // Maketou : montant FCFA dynamique + infos du compte connecté.
   $pay = maketou_create_checkout([
-    'aliasEmail' => $aliasEmail,
-    'phone' => $aliasPhone,
+    'email' => $customer['email'],
+    'phone' => $customer['phone'],
+    'firstName' => $customer['firstName'],
+    'lastName' => $customer['lastName'],
+    'displayName' => $customer['displayName'],
     'userId' => (string) $me['id'],
     'amount' => $amountFcfa,
     'operator' => $op,
@@ -1323,21 +1389,19 @@ function orolado_initiate_deposit(array $req): array {
     'returnUrl' => $returnUrl,
     'webhookUrl' => $webhookUrl,
   ]);
-  if (empty($pay['ok'])) {
-    // On renvoie quand même la ref + FCFA pour que le front ouvre le checkout prérempli.
-    return [
-      'ok' => true,
-      'server' => true,
-      'ref' => $ref,
-      'amount' => $amountUsd,
-      'amountFcfa' => $amountFcfa,
-      'checkout_url' => '',
-      'url' => '',
-      'useLocalCheckout' => true,
-      'maketouWarning' => (string) ($pay['reason'] ?? 'checkout_failed'),
-    ];
+  $url = (string) ($pay['local_url'] ?? $pay['checkout_url'] ?? $pay['url'] ?? '');
+  if ($url === '') {
+    $url = maketou_checkout_url(
+      $customer['email'],
+      $customer['phone'],
+      $ref,
+      $amountFcfa,
+      $op,
+      $customer['displayName'],
+      $returnUrl,
+      ['firstName' => $customer['firstName'], 'lastName' => $customer['lastName']]
+    );
   }
-  $url = (string) ($pay['url'] ?? $pay['checkout_url'] ?? '');
   $cartId = (string) ($pay['cartId'] ?? $pay['sellId'] ?? '');
   if ($cartId !== '') {
     $db = load_db($file);
@@ -1358,8 +1422,16 @@ function orolado_initiate_deposit(array $req): array {
     'cartId' => $cartId,
     'url' => $url,
     'checkout_url' => $url,
+    'local_url' => $url,
     'amount' => $amountUsd,
     'amountFcfa' => $amountFcfa,
+    'customer' => [
+      'email' => $customer['email'],
+      'phone' => $customer['phone'],
+      'firstName' => $customer['firstName'],
+      'lastName' => $customer['lastName'],
+      'displayName' => $customer['displayName'],
+    ],
   ];
 }
 

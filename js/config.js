@@ -5,8 +5,8 @@
     CURRENCY: 'USD',
     CURRENCY_CODE: 'USD',
     CURRENCY_SYMBOL: '$',
-    /** Taux fixe paiement local Mobile Money : 1 USD = 500 FCFA (1000 FCFA = $2.00). */
-    USD_FCFA_RATE: 500,
+    /** Taux fixe paiement local : 1 USD = 600 FCFA (ex. 3 $ = 1 800 FCFA). */
+    USD_FCFA_RATE: 600,
     DEMO_START: 1000000,
     REAL_START: 0,
     MIN_STAKE: 1,
@@ -173,7 +173,7 @@
   };
 
   D6.usdToFcfa = function (usd) {
-    var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 500) || 500;
+    var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600) || 600;
     return Math.round(D6.roundMoney(usd) * rate);
   };
 
