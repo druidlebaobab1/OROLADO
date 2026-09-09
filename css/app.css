@@ -416,6 +416,7 @@ html.is-android .screen{
 html.is-android #screenTrade{
   overflow-x:hidden!important;overflow-y:auto!important;min-height:100dvh!important}
 html.is-android .pad{z-index:50!important}
+html.is-android .btn-close{
   min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
   z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;position:absolute}
