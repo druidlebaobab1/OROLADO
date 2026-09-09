@@ -3019,8 +3019,15 @@
     if (!(D6.Chart && D6.Chart.resize)) return;
     requestAnimationFrame(function () {
       D6.Chart.resize();
-      setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 120);
-      setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 400);
+      if (D6.Chart.drawNow) D6.Chart.drawNow();
+      setTimeout(function () {
+        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+        if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
+      }, 120);
+      setTimeout(function () {
+        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+        if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
+      }, 400);
     });
   }
 

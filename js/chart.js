@@ -178,71 +178,76 @@
     if (!canvas) return;
     var parent = canvas.parentElement;
     if (!parent) return;
-    var rect = parent.getBoundingClientRect();
-    var w = Math.max(1, Math.floor(parent.clientWidth || rect.width || 0));
-    var h = Math.max(1, Math.floor(parent.clientHeight || rect.height || 0));
-    var mobile = (window.innerWidth || 0) <= 859;
-    var minH = mobile ? Math.max(380, Math.round((window.innerHeight || 700) * 0.45)) : 380;
     var fsMode = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
+    var mobile = (window.innerWidth || 0) <= 859;
+    var minH = fsMode
+      ? Math.max(220, Math.round((window.innerHeight || 700) - 140))
+      : Math.max(380, Math.round((window.innerHeight || 700) * 0.45));
+
+    // Visibilité forcée (canvas principal sombre, overlay transparent).
+    canvas.style.display = 'block';
+    canvas.style.visibility = 'visible';
+    canvas.style.opacity = '1';
+    canvas.style.zIndex = '10';
     canvas.style.backgroundColor = '#0B0E14';
+    canvas.style.background = '#0B0E14';
     parent.style.backgroundColor = '#0B0E14';
-    // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
-    if (w < 8 || h < 8) {
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      if (overlay) {
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-      }
-      if (!fsMode) {
-        parent.style.minHeight = minH + 'px';
+    parent.style.position = 'relative';
+    parent.style.width = '100%';
+    if (overlay) {
+      overlay.style.display = 'block';
+      overlay.style.visibility = 'visible';
+      overlay.style.opacity = '1';
+      overlay.style.zIndex = '20';
+      overlay.style.background = 'transparent';
+      overlay.style.backgroundColor = 'transparent';
+    }
+
+    if (!fsMode) {
+      parent.style.minHeight = minH + 'px';
+      if (!parent.style.height || parseInt(parent.style.height, 10) < minH) {
         parent.style.height = minH + 'px';
       }
-      requestAnimationFrame(function () {
-        if (canvas && canvas.parentElement) {
-          var r2 = canvas.parentElement.getBoundingClientRect();
-          if ((r2.width || 0) >= 8 && (r2.height || 0) >= 8) resize();
-        }
-      });
-      return;
-    }
-    // Vue normale : hauteur garantie (évite canvas 0px / écran noir ou blanc).
-    if (!fsMode) {
-      if (h < minH) {
-        parent.style.minHeight = minH + 'px';
-        parent.style.height = Math.max(minH, Math.round((window.innerHeight || 700) * 0.45)) + 'px';
-        h = Math.max(minH, Math.floor(parent.clientHeight || parent.getBoundingClientRect().height || minH));
+      var card = document.getElementById('chart');
+      if (card) {
+        card.style.minHeight = '380px';
+        card.style.width = '100%';
       }
     } else {
-      parent.style.height = '';
-      parent.style.minHeight = '0';
+      var fsH = Math.max(220, (window.innerHeight || 700) - 140);
+      parent.style.minHeight = fsH + 'px';
+      parent.style.height = fsH + 'px';
     }
+
+    var rect = parent.getBoundingClientRect();
+    var w = Math.max(0, Math.floor(parent.clientWidth || rect.width || canvas.offsetWidth || 0));
+    var h = Math.max(0, Math.floor(parent.clientHeight || rect.height || canvas.offsetHeight || 0));
+    // Fallback immédiat si dimensions à 0 (écran caché / flex collapse).
+    if (w < 8) w = Math.max(320, Math.floor(window.innerWidth || 360));
+    if (h < 8) h = fsMode ? Math.max(220, Math.floor((window.innerHeight || 700) - 140)) : 380;
+
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     cssW = w;
-    cssH = Math.max(h, fsMode ? 80 : minH);
+    cssH = h;
     var bw = Math.round(cssW * dpr);
     var bh = Math.round(cssH * dpr);
     var sizeChanged = canvas.width !== bw || canvas.height !== bh;
-    if (sizeChanged || h < 100) {
-      canvas.width = bw;
-      canvas.height = bh;
-    }
+    canvas.width = bw;
+    canvas.height = bh;
     canvas.style.width = cssW + 'px';
     canvas.style.height = cssH + 'px';
     if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (overlay) {
-      if (overlay.width !== bw || overlay.height !== bh || sizeChanged) {
-        overlay.width = bw;
-        overlay.height = bh;
-      }
+      overlay.width = bw;
+      overlay.height = bh;
       overlay.style.width = cssW + 'px';
       overlay.style.height = cssH + 'px';
       if (octx) octx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    // Même frame que setData/resize : flusher les lignes en attente.
     flushOpenTradeVisualQueue();
-    if (sizeChanged || running) drawNow();
+    drawNow();
+    requestAnimationFrame(function () { drawNow(); });
   }
 
   function visibleCandles(market) {
@@ -1179,16 +1184,30 @@
       octx = overlay ? overlay.getContext('2d', { alpha: true }) : null;
       onFrame = callback;
       if (canvas) {
+        canvas.style.display = 'block';
+        canvas.style.visibility = 'visible';
+        canvas.style.opacity = '1';
+        canvas.style.zIndex = '10';
         canvas.style.backgroundColor = '#0B0E14';
         canvas.style.background = '#0B0E14';
       }
       if (overlay) {
+        overlay.style.background = 'transparent';
         overlay.style.backgroundColor = 'transparent';
+        overlay.style.zIndex = '20';
       }
       if (canvas && canvas.parentElement) {
         canvas.parentElement.style.backgroundColor = '#0B0E14';
+        canvas.parentElement.style.position = 'relative';
       }
       resize();
+      drawNow();
+      requestAnimationFrame(function () {
+        resize();
+        drawNow();
+      });
+      setTimeout(function () { resize(); drawNow(); }, 80);
+      setTimeout(function () { resize(); drawNow(); }, 300);
       bindTools();
       window.addEventListener('resize', function () { requestAnimationFrame(resize); });
       window.addEventListener('orientationchange', function () {

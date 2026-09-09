@@ -188,9 +188,15 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 .wd-ticker-id{font-size:11px;font-weight:500;color:rgba(212,175,55,.78);white-space:nowrap;flex-shrink:0;line-height:20px}
 .wd-ticker-amt{font-size:11px;font-weight:800;color:#10B981;white-space:nowrap;text-overflow:clip;overflow:visible;flex-shrink:0;line-height:20px;text-shadow:0 0 8px rgba(16,185,129,.35)}
-.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:hidden;background:#0B0E14!important}
-#chartCanvas,#chartOverlay{width:100%!important;height:100%!important;display:block;position:absolute;inset:0;z-index:0;background-color:#0B0E14!important}
-.chart-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:15;pointer-events:none;display:block}
+.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:visible;background:#0B0E14!important}
+#chartCanvas{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
+  background-color:#0B0E14!important;pointer-events:none}
+#chartOverlay,.chart-overlay{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  display:block!important;visibility:visible!important;opacity:1!important;z-index:20!important;
+  background:transparent!important;background-color:transparent!important;pointer-events:none}
 .ind-pills{display:flex;flex-wrap:nowrap;gap:3px;pointer-events:auto;z-index:13;align-items:center;min-width:0}
 .ind-btn{border:1px solid rgba(255,215,0,.22);background:rgba(10,15,29,.55);color:rgba(168,180,204,.9);
   font:inherit;font-size:.55rem;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:6px;cursor:pointer;min-height:24px;min-width:28px;line-height:1}
@@ -251,7 +257,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .op-moov{background:#0B3C8A}.op-card{background:#1a1f2e;font-size:.9rem!important}.op-crypto{background:#F7931A;color:#0A0F1D!important}
 .op-paypal{background:#003087}
 .qbtn-back{flex:0 0 15%;max-width:52px;color:#ffb4c0;border-color:rgba(239,68,68,.35)!important}
-#chartCanvas{width:100%!important;height:100%!important;display:block}
+#chartCanvas{width:100%!important;height:100%!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important}
 .admin-adj-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .admin-adj-row input{flex:1;min-width:120px}
 .chart-outcome.win{color:#22C55E;text-shadow:0 0 18px rgba(34,197,94,.55);font-size:1.2rem;font-weight:900;
@@ -414,10 +420,13 @@ html.is-android .btn-hist-cta{
 html.is-android .chart-card,html.is-android #chart{
   flex-shrink:0!important;min-height:max(440px,62vh)!important;min-height:max(440px,62dvh)!important;
   background:#0B0E14!important}
-html.is-android .chart-stage,
-html.is-android #chartCanvas,
-html.is-android #chartOverlay{
+html.is-android .chart-stage{
   flex-shrink:0!important;min-height:max(410px,58vh)!important;background:#0B0E14!important;background-color:#0B0E14!important}
+html.is-android #chartCanvas{
+  display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
+  background:#0B0E14!important;background-color:#0B0E14!important;min-height:0!important}
+html.is-android #chartOverlay{
+  background:transparent!important;background-color:transparent!important;min-height:0!important;z-index:20!important}
 @media (max-width:429px){
   html.is-android .chart-card,html.is-android #chart{
     min-height:max(440px,62vh)!important;min-height:max(440px,62dvh)!important;background:#0B0E14!important}
@@ -830,11 +839,19 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 /* Courbe ~85% */
 .fs-trade-overlay .chart-card,
 .fs-trade-overlay #chart{
-  flex:1 1 85%!important;min-height:0!important;min-width:0!important;height:auto!important;
+  flex:1 1 85%!important;min-height:0!important;min-width:0!important;
+  width:100%!important;height:calc(100vh - 140px)!important;height:calc(100dvh - 140px)!important;
   max-height:none!important;border-radius:0!important;margin:0!important;
-  display:flex!important;flex-direction:column;background:#0B0E14!important;overflow:hidden}
+  display:flex!important;flex-direction:column;position:relative!important;background:#0B0E14!important;overflow:visible}
 .fs-trade-overlay .chart-stage{
-  flex:1 1 auto!important;min-height:0!important;height:100%!important;width:100%!important;background:#0B0E14!important}
+  flex:1 1 auto!important;min-height:240px!important;
+  width:100%!important;height:calc(100vh - 140px)!important;height:calc(100dvh - 140px)!important;
+  position:relative!important;background:#0B0E14!important;overflow:visible}
+.fs-trade-overlay #chartCanvas{
+  display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
+  background:#0B0E14!important;background-color:#0B0E14!important}
+.fs-trade-overlay #chartOverlay{
+  background:transparent!important;background-color:transparent!important;z-index:20!important}
 
 /* Mise + CALL / PUT */
 .fs-trade-overlay .pad{
@@ -894,10 +911,14 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 /* ===== Android / immersif — overrides de dernière priorité ===== */
 html.is-android .chart-card,
 html.is-android #chart,
-html.is-android .chart-stage,
-html.is-android #chartCanvas,
-html.is-android #chartOverlay{
+html.is-android .chart-stage{
   background:#0B0E14!important;background-color:#0B0E14!important}
+html.is-android #chartCanvas{
+  display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
+  background:#0B0E14!important;background-color:#0B0E14!important}
+html.is-android #chartOverlay,
+html.is-android .chart-overlay{
+  background:transparent!important;background-color:transparent!important}
 html.is-android .trade-hint,
 html.is-android [data-i18n="tradeHint"],
 html.is-android [data-i18n="tradeHintAndroid"],
