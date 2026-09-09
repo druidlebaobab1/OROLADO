@@ -1753,21 +1753,19 @@
     return base + '?' + q.toString();
   }
 
-  /** Toujours l’URL préremplie (infos compte + montant FCFA dynamique). */
+  /**
+   * Préférer l’URL API/Paystral (paiement direct).
+   * Ne jamais renvoyer la page produit WELCOME (formulaire blanc + 1700).
+   */
   function resolveDepositCheckoutUrl(usdAmt, op, ref, serverUrl, amountFcfa, customer) {
-    var fcfa = Number(amountFcfa);
-    if (!isFinite(fcfa) || fcfa <= 0) fcfa = D6.usdToFcfa(usdAmt);
-    var local = localMaketouCheckoutUrl(fcfa, op, ref, customer);
     var url = String(serverUrl || '');
     var low = url.toLowerCase();
-    // Si le serveur renvoie déjà une URL welcome avec customPrice + email, on peut l’utiliser.
-    if (url && /^https?:\/\//i.test(url)
-      && low.indexOf('customprice=') >= 0
-      && low.indexOf('email=') >= 0
-      && low.indexOf('step=payment') >= 0) {
-      return url;
-    }
-    return local;
+    if (!url || !/^https?:\/\//i.test(url)) return '';
+    var isWelcome = low.indexOf('/products/welcome') >= 0;
+    var isPaystral = low.indexOf('paystral') >= 0 || low.indexOf('checkout/custom') >= 0
+      || (low.indexOf('/pay') >= 0 && low.indexOf('/products/') < 0);
+    if (isWelcome && !isPaystral) return '';
+    return url;
   }
 
   async function confirmDeposit() {
@@ -1814,19 +1812,22 @@
         displayName: u.displayName,
         email: u.email,
         phone: u.phone,
-        countryCode: u.countryCode
+        countryCode: u.countryCode,
+        firstName: u.firstName,
+        lastName: u.lastName
       };
+      // Ancien flux : URL API/Paystral d’abord — jamais la page WELCOME.
       var url = resolveDepositCheckoutUrl(
         amt,
         depositOp,
         ref,
-        (remote && (remote.local_url || remote.checkout_url || remote.url)) || '',
+        (remote && (remote.checkout_url || remote.url)) || '',
         fcfa,
         customer
       );
-      if (!url || !/^https?:\/\//i.test(url)) {
-        console.error('OROLADO deposit: aucune URL checkout', remote);
-        toast((remote && remote.reason) || t('sessionInvalid'), 'err');
+      if (!url) {
+        console.error('OROLADO deposit: aucune URL paiement direct', remote);
+        toast((remote && remote.reason) || 'Paiement indisponible. Réessayez.', 'err');
         return;
       }
       try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e) { /* ignore */ }

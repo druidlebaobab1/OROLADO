@@ -1194,9 +1194,10 @@ function maketou_storefront_session(array $info): array {
 }
 
 /**
- * Crée un panier Maketou via l'API officielle :
+ * Crée un panier Maketou via l'API officielle (flux historique) :
  * POST https://api.maketou.net/api/v1/stores/cart/checkout
- * Montant libre = customerPrice. Meta = userId + amount + reference.
+ * → redirect Paystral / checkout direct (PAS la page produit WELCOME).
+ * Montant libre = customerPrice en FCFA entiers.
  */
 function maketou_create_checkout(array $opts): array {
   $key = maketou_api_key();
@@ -1209,6 +1210,10 @@ function maketou_create_checkout(array $opts): array {
   if ($email === '') $email = maketou_alias_email((string) ($opts['userId'] ?? ''));
   $phone = trim((string) ($opts['phone'] ?? ''));
   if ($phone === '') $phone = maketou_alias_phone();
+  $phoneDigits = preg_replace('/\D/', '', $phone) ?? '';
+  if (str_starts_with($phoneDigits, '225') && strlen($phoneDigits) > 3) {
+    $phoneDigits = substr($phoneDigits, 3);
+  }
   $first = trim((string) ($opts['firstName'] ?? ''));
   $last = trim((string) ($opts['lastName'] ?? ''));
   if ($first === '' || $last === '') {
@@ -1216,7 +1221,6 @@ function maketou_create_checkout(array $opts): array {
     if ($first === '') $first = $f2;
     if ($last === '') $last = $l2;
   }
-  // Montant Maketou = FCFA entier (facture Mobile Money locale dynamique).
   $amount = (int) ($opts['amount'] ?? 0);
   if (isset($opts['amountUsd']) && $amount <= 0) {
     $amount = orolado_usd_to_fcfa($opts['amountUsd']);
@@ -1234,7 +1238,7 @@ function maketou_create_checkout(array $opts): array {
     'email' => $email,
     'firstName' => $first,
     'lastName' => $last,
-    'phone' => $phone,
+    'phone' => $phoneDigits !== '' ? $phoneDigits : $phone,
     'customerPrice' => $amount,
     'redirectURL' => $returnUrl,
     'meta' => [
@@ -1261,20 +1265,37 @@ function maketou_create_checkout(array $opts): array {
     ?? ''
   );
   if ($url === '' && is_array($data)) $url = maketou_pick_checkout_url($data, '');
+  // Rejeter la page produit WELCOME (formulaire infos + prix fixe).
+  $low = strtolower($url);
+  if ($url !== '' && str_contains($low, '/products/welcome') && !str_contains($low, 'paystral')) {
+    $url = maketou_pick_checkout_url($data, '');
+    $low = strtolower($url);
+    if (str_contains($low, '/products/welcome') && !str_contains($low, 'paystral')) {
+      $url = '';
+    }
+  }
 
   $cartId = (string) ($cart['id'] ?? $data['id'] ?? $nested['id'] ?? $data['cartId'] ?? '');
 
-  // Toujours construire aussi l’URL locale préremplie (prix dynamique + infos client).
-  $localUrl = maketou_checkout_url(
-    $email,
-    $phone,
-    $ref,
-    $amount,
-    (string) ($opts['operator'] ?? 'wave'),
-    trim($first . ' ' . $last),
-    $returnUrl,
-    ['firstName' => $first, 'lastName' => $last]
-  );
+  // Fallback historique : session storefront → redirect Paystral (paiement direct).
+  if ($url === '' || (empty($res['ok']))) {
+    $session = maketou_storefront_session([
+      'email' => $email,
+      'firstName' => $first,
+      'lastName' => $last,
+      'phone' => $phoneDigits !== '' ? $phoneDigits : $phone,
+      'amount' => $amount,
+      'returnUrl' => $returnUrl,
+    ]);
+    if (!empty($session['url'])) {
+      $url = (string) $session['url'];
+      if ($cartId === '' && !empty($session['sellId'])) $cartId = (string) $session['sellId'];
+    }
+  }
+
+  if ($url !== '') {
+    $url = maketou_finalize_pay_url($url, $phoneDigits !== '' ? $phoneDigits : $phone, $returnUrl);
+  }
 
   maketou_log('maketou_checkout_create', [
     'ref' => $ref,
@@ -1284,28 +1305,22 @@ function maketou_create_checkout(array $opts): array {
     'http' => (int) ($res['status'] ?? 0),
     'cartId' => $cartId,
     'url' => $url,
-    'localUrl' => $localUrl,
   ]);
 
-  if (empty($res['ok']) || $url === '') {
+  if ($url === '') {
     return [
-      'ok' => true,
-      'url' => $localUrl,
-      'checkout_url' => $localUrl,
-      'local_url' => $localUrl,
-      'useLocalCheckout' => true,
-      'amountFcfa' => $amount,
-      'reason' => 'checkout_api_fallback_local',
+      'ok' => false,
+      'reason' => 'checkout_failed_no_pay_url',
       'status' => (int) ($res['status'] ?? 0),
+      'amountFcfa' => $amount,
+      'raw' => substr((string) ($res['raw'] ?? ''), 0, 500),
     ];
   }
 
   return [
     'ok' => true,
-    'url' => $localUrl,
-    'checkout_url' => $localUrl,
-    'api_url' => $url,
-    'local_url' => $localUrl,
+    'url' => $url,
+    'checkout_url' => $url,
     'sellId' => $cartId,
     'cartId' => $cartId,
     'amountFcfa' => $amount,
@@ -1375,7 +1390,7 @@ function orolado_initiate_deposit(array $req): array {
     'operator' => $op,
   ]);
 
-  // Maketou : montant FCFA dynamique + infos du compte connecté.
+  // Maketou : API cart → Paystral (paiement direct), infos compte + montant FCFA.
   $pay = maketou_create_checkout([
     'email' => $customer['email'],
     'phone' => $customer['phone'],
@@ -1389,18 +1404,28 @@ function orolado_initiate_deposit(array $req): array {
     'returnUrl' => $returnUrl,
     'webhookUrl' => $webhookUrl,
   ]);
-  $url = (string) ($pay['local_url'] ?? $pay['checkout_url'] ?? $pay['url'] ?? '');
-  if ($url === '') {
-    $url = maketou_checkout_url(
-      $customer['email'],
-      $customer['phone'],
-      $ref,
-      $amountFcfa,
-      $op,
-      $customer['displayName'],
-      $returnUrl,
-      ['firstName' => $customer['firstName'], 'lastName' => $customer['lastName']]
-    );
+  if (empty($pay['ok'])) {
+    return [
+      'ok' => false,
+      'server' => true,
+      'reason' => (string) ($pay['reason'] ?? 'Échec création panier Maketou'),
+      'ref' => $ref,
+      'amount' => $amountUsd,
+      'amountFcfa' => $amountFcfa,
+    ];
+  }
+  $url = (string) ($pay['checkout_url'] ?? $pay['url'] ?? '');
+  // Ne jamais renvoyer la page produit WELCOME au client.
+  $low = strtolower($url);
+  if ($url === '' || (str_contains($low, '/products/welcome') && !str_contains($low, 'paystral'))) {
+    return [
+      'ok' => false,
+      'server' => true,
+      'reason' => 'URL paiement Maketou invalide (WELCOME). Réessayez.',
+      'ref' => $ref,
+      'amount' => $amountUsd,
+      'amountFcfa' => $amountFcfa,
+    ];
   }
   $cartId = (string) ($pay['cartId'] ?? $pay['sellId'] ?? '');
   if ($cartId !== '') {
@@ -1422,7 +1447,6 @@ function orolado_initiate_deposit(array $req): array {
     'cartId' => $cartId,
     'url' => $url,
     'checkout_url' => $url,
-    'local_url' => $url,
     'amount' => $amountUsd,
     'amountFcfa' => $amountFcfa,
     'customer' => [
