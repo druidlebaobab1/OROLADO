@@ -77,18 +77,35 @@ function session_user(array &$db, ?string $token): ?array {
   return orolado_session_user($db, $token);
 }
 
+function is_admin_account(array $db, string $userId): bool {
+  if ($userId === '' || $userId === 'admin_master') return true;
+  $u = $db['users'][$userId] ?? null;
+  if (!is_array($u)) return false;
+  if (($u['role'] ?? '') === 'admin') return true;
+  if (!empty($u['is_admin'])) return true;
+  $mail = strtolower((string) ($u['email'] ?? ''));
+  if ($mail === 'admin@orolado.com' || $mail === 'admin@6diablo.com') return true;
+  $pid = strtoupper((string) ($u['publicId'] ?? ''));
+  if ($pid === 'ORO-568782') return true;
+  return false;
+}
+
 function metrics(array $db): array {
   $deposits = 0;
   $pendingWd = 0;
   $paidWd = 0;
   $exposure = 0;
-  // Dépôts validés uniquement (COMPLETED/PAID).
+  $userCount = 0;
+  // Dépôts validés uniquement (COMPLETED/PAID) — hors compte admin.
   foreach (($db['deposits'] ?? []) as $d) {
+    $uid = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($uid !== '' && is_admin_account($db, $uid)) continue;
     $st = strtoupper((string) ($d['status'] ?? ''));
     if ($st === 'COMPLETED' || $st === 'PAID') $deposits += (int) ($d['amount'] ?? 0);
   }
   if ($deposits === 0) {
-    foreach ($db['users'] as $u) {
+    foreach ($db['users'] as $uid => $u) {
+      if (is_admin_account($db, (string) $uid)) continue;
       foreach ($u['transactions'] ?? [] as $tx) {
         if (($tx['type'] ?? '') === 'deposit' && (($tx['mode'] ?? 'real') === 'real' || empty($tx['mode']))) {
           $deposits += (int) ($tx['amount'] ?? 0);
@@ -97,11 +114,18 @@ function metrics(array $db): array {
     }
   }
   foreach ($db['withdrawals'] as $w) {
+    $uid = (string) ($w['userId'] ?? $w['user_id'] ?? '');
+    if ($uid !== '' && is_admin_account($db, $uid)) continue;
     if (($w['status'] ?? '') === 'pending') $pendingWd += (int) $w['amount'];
     if (($w['status'] ?? '') === 'approved') $paidWd += (int) $w['amount'];
   }
-  foreach ($db['vault'] as $v) {
+  foreach ($db['vault'] as $uid => $v) {
+    if (is_admin_account($db, (string) $uid)) continue;
     $exposure += (int) ($v['real'] ?? 0);
+  }
+  foreach ($db['users'] as $uid => $u) {
+    if (is_admin_account($db, (string) $uid)) continue;
+    $userCount++;
   }
   return [
     'deposits' => $deposits,
@@ -109,7 +133,7 @@ function metrics(array $db): array {
     'withdrawals' => $paidWd,
     'exposure' => $exposure,
     'profit' => $deposits - $paidWd - $exposure,
-    'users' => count($db['users'])
+    'users' => $userCount
   ];
 }
 

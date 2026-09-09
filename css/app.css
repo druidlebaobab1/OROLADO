@@ -10,11 +10,13 @@
   --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
   --btn-h:40px;--btn-h-m:44px;
 }
-html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-family:var(--font);
+html,body{height:100%;width:100%;min-height:100dvh;background:var(--bg);color:var(--text);font-family:var(--font);
   overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html{position:fixed;inset:0;height:100%;height:100dvh}
-body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden;touch-action:manipulation;background:
+html{position:fixed;inset:0;height:100%;height:100dvh;display:flex;flex-direction:column}
+body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;touch-action:manipulation;
+  display:flex;flex-direction:column;background:
   linear-gradient(165deg,#0B0E14 0%,#121722 48%,#0B0E14 100%)}
+body > .screen,body > #fsTradeOverlay{flex:1 1 auto;min-height:0}
 body,button,a,input,select{touch-action:manipulation}
 button:active,.qbtn:active,.dur-chip:active,.asset-chip:active,.btn-gold:active,.btn-deposit:active,.btn-trade:active{transform:scale(.98)}
 .topbar-row .btn-deposit:active{transform:none}
@@ -271,29 +273,28 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
 .chart-fs-btn{
-  position:absolute;z-index:28;top:8px;right:72px;min-height:28px;padding:4px 10px;gap:5px;
-  border:1px solid rgba(245,158,11,.55);border-radius:8px;cursor:pointer;pointer-events:auto;
+  position:absolute;z-index:28;top:8px;right:72px;min-height:26px;padding:3px 8px;gap:5px;
+  border:1px solid #1E2638;border-radius:4px;cursor:pointer;pointer-events:auto;
   display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(11,14,20,.82);
-  color:#FBBF24;box-shadow:0 0 0 1px rgba(245,158,11,.15) inset;
+  background:rgba(18,23,34,.85);
+  color:#94A3B8;box-shadow:none;
   font:inherit;font-size:10px;font-weight:700;letter-spacing:.04em;line-height:1;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;opacity:1;
-  animation:fsBtnPulse 2.4s ease-in-out infinite}
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;opacity:1;animation:none}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{
-  border-color:rgba(245,158,11,.9);background:rgba(245,158,11,.18);
-  color:#FFF3C4;animation:none}
+  border-color:#334155;background:rgba(18,23,34,.95);
+  color:#E2E8F0;animation:none}
 .chart-fs-ico{font-size:11px;line-height:1;flex-shrink:0}
-.chart-fs-label{white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.chart-fs-label{white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:inherit}
 @keyframes fsBtnPulse{
-  0%,100%{box-shadow:0 0 0 1px rgba(245,158,11,.15) inset,0 0 8px rgba(245,158,11,.2)}
-  50%{box-shadow:0 0 0 1px rgba(245,158,11,.3) inset,0 0 12px rgba(245,158,11,.35)}
+  0%,100%{opacity:1}
+  50%{opacity:1}
 }
 @media (max-width:859px){
   .chart-fs-btn{
-    right:68px;min-height:30px;padding:5px 10px;width:auto;border-radius:8px;
-    background:rgba(11,14,20,.88);border-color:rgba(245,158,11,.55);
-    box-shadow:0 0 0 1px rgba(245,158,11,.2) inset}
+    right:68px;min-height:28px;padding:3px 8px;width:auto;border-radius:4px;
+    background:rgba(18,23,34,.85);border:1px solid #1E2638;color:#94A3B8;
+    box-shadow:none}
   .chart-fs-label{display:inline;font-size:10px}
   .chart-fs-ico{font-size:11px}
 }
@@ -960,13 +961,16 @@ html.fs-trade .odds-label{
   display:none!important;visibility:hidden!important;pointer-events:none!important;
   height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
 html.is-android .fs-trade-overlay,
+html.is-fullscreen .fs-trade-overlay.on,
 html.fs-trade .fs-trade-overlay.on{
   height:100vh!important;height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+html.is-fullscreen .fs-trade-overlay .chart-card,
+html.is-fullscreen .fs-trade-overlay #chart,
 html.is-android .fs-trade-overlay .chart-card,
 html.is-android .fs-trade-overlay #chart,
 html.fs-trade .fs-trade-overlay .chart-card,
 html.fs-trade .fs-trade-overlay #chart{
-  flex:1 1 auto!important;min-height:0!important;width:100%!important;height:auto!important}
+  flex:1 1 auto!important;min-height:0!important;width:100%!important;height:auto!important;max-height:none!important}
 html.is-android .fs-trade-overlay .pad,
 html.fs-trade .fs-trade-overlay .pad{
   display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;

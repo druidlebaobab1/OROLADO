@@ -457,17 +457,35 @@
     },
 
     metrics: function () {
-      var users = D6.Store.listUsers();
+      function isExcludedAdmin(u, id) {
+        var uid = String(id || (u && u.id) || '');
+        if (uid === 'admin_master') return true;
+        if (!u) u = db.users[uid];
+        if (!u) return false;
+        if (u.role === 'admin' || u.is_admin === true) return true;
+        var mail = String(u.email || '').toLowerCase();
+        var adminMail = String((D6.CONFIG && D6.CONFIG.ADMIN_EMAIL) || 'admin@orolado.com').toLowerCase();
+        if (mail === adminMail || mail === 'admin@orolado.com' || mail === 'admin@6diablo.com') return true;
+        var pid = String(u.publicId || '').toUpperCase();
+        if (pid === 'ORO-568782') return true;
+        return false;
+      }
       var deposits = 0;
       var paidWd = 0;
       var exposure = 0;
+      var userCount = 0;
       Object.keys(db.users).forEach(function (id) {
-        (db.users[id].transactions || []).forEach(function (tx) {
+        var u = db.users[id];
+        if (isExcludedAdmin(u, id)) return;
+        userCount += 1;
+        (u.transactions || []).forEach(function (tx) {
           if (tx.type === 'deposit' && (tx.mode === 'real' || !tx.mode)) deposits += tx.amount;
         });
         exposure += Number((vault[id] && vault[id].real) || 0);
       });
       (db.withdrawals || []).forEach(function (w) {
+        var wid = String(w.userId || w.user_id || '');
+        if (wid && isExcludedAdmin(db.users[wid], wid)) return;
         if (w.status === 'approved') paidWd += w.amount;
       });
       return {
@@ -476,7 +494,7 @@
         withdrawals: paidWd,
         exposure: exposure,
         profit: deposits - paidWd - exposure,
-        users: users.length
+        users: userCount
       };
     }
   };

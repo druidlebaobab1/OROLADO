@@ -3034,33 +3034,79 @@
   var fsTradeHome = null;
   var fsTradeActive = false;
 
+  function preferCssFullscreenOnly() {
+    try {
+      if (typeof IS_ANDROID !== 'undefined' && IS_ANDROID) return true;
+      var ua = navigator.userAgent || '';
+      return /Android|iPhone|iPad|iPod/i.test(ua);
+    } catch (e0) {
+      return true;
+    }
+  }
+
   function isNativeFullscreen() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    try {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    } catch (e) {
+      return false;
+    }
   }
 
   function requestFsEl(el) {
-    if (!el) return Promise.reject(new Error('no-el'));
+    // Mobile Android/iOS : jamais d'API native (crash / écran noir).
+    if (preferCssFullscreenOnly()) return Promise.resolve();
+    if (!el) return Promise.resolve();
     try {
       if (el.requestFullscreen) {
-        return el.requestFullscreen({ navigationUI: 'hide' }).catch(function () {
-          return el.requestFullscreen();
+        return el.requestFullscreen({ navigationUI: 'hide' }).catch(function (err) {
+          try { console.warn(err); } catch (eW) { /* ignore */ }
+          try {
+            return el.requestFullscreen();
+          } catch (e2) {
+            try { console.warn(e2); } catch (e3) { /* ignore */ }
+            return Promise.resolve();
+          }
+        }).catch(function (err2) {
+          try { console.warn(err2); } catch (e4) { /* ignore */ }
+          return Promise.resolve();
         });
       }
-      if (el.webkitRequestFullscreen) return Promise.resolve(el.webkitRequestFullscreen());
-      if (el.webkitRequestFullScreen) return Promise.resolve(el.webkitRequestFullScreen());
-      if (el.msRequestFullscreen) return Promise.resolve(el.msRequestFullscreen());
+      if (el.webkitRequestFullscreen) {
+        try { el.webkitRequestFullscreen(); } catch (eWfs) { try { console.warn(eWfs); } catch (e5) { /* ignore */ } }
+        return Promise.resolve();
+      }
+      if (el.webkitRequestFullScreen) {
+        try { el.webkitRequestFullScreen(); } catch (eWfs2) { try { console.warn(eWfs2); } catch (e6) { /* ignore */ } }
+        return Promise.resolve();
+      }
+      if (el.msRequestFullscreen) {
+        try { el.msRequestFullscreen(); } catch (eMs) { try { console.warn(eMs); } catch (e7) { /* ignore */ } }
+        return Promise.resolve();
+      }
     } catch (e) {
-      return Promise.reject(e);
+      try { console.warn(e); } catch (e8) { /* ignore */ }
+      return Promise.resolve();
     }
-    return Promise.reject(new Error('no-fs'));
+    return Promise.resolve();
   }
 
   function exitFsNative() {
+    if (preferCssFullscreenOnly()) return Promise.resolve();
     try {
-      if (document.exitFullscreen) return document.exitFullscreen();
-      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-      if (document.msExitFullscreen) return document.msExitFullscreen();
-    } catch (e) { /* ignore */ }
+      if (document.exitFullscreen) return document.exitFullscreen().catch(function (err) {
+        try { console.warn(err); } catch (e) { /* ignore */ }
+      });
+      if (document.webkitExitFullscreen) {
+        try { document.webkitExitFullscreen(); } catch (eW) { try { console.warn(eW); } catch (e2) { /* ignore */ } }
+        return Promise.resolve();
+      }
+      if (document.msExitFullscreen) {
+        try { document.msExitFullscreen(); } catch (eM) { try { console.warn(eM); } catch (e3) { /* ignore */ } }
+        return Promise.resolve();
+      }
+    } catch (e) {
+      try { console.warn(e); } catch (e4) { /* ignore */ }
+    }
     return Promise.resolve();
   }
 
@@ -3069,73 +3115,106 @@
     var slot = $('fsTradeSlot');
     var overlay = $('fsTradeOverlay');
     if (!wrap || !slot || !overlay || fsTradeActive) return false;
-    fsTradeHome = { parent: wrap.parentNode, next: wrap.nextSibling };
-    slot.appendChild(wrap);
-    overlay.classList.add('on');
-    overlay.removeAttribute('hidden');
-    overlay.setAttribute('aria-hidden', 'false');
-    document.documentElement.classList.add('fs-trade');
-    document.body.style.overflow = 'hidden';
-    fsTradeActive = true;
-    var enterBtn = $('btnChartFs');
-    if (enterBtn) {
-      enterBtn.setAttribute('aria-pressed', 'true');
-      enterBtn.title = t('fsExit') || 'Quitter le plein écran';
+    try {
+      fsTradeHome = { parent: wrap.parentNode, next: wrap.nextSibling };
+      slot.appendChild(wrap);
+      overlay.classList.add('on');
+      overlay.removeAttribute('hidden');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.documentElement.classList.add('fs-trade');
+      document.documentElement.classList.add('is-fullscreen');
+      document.body.classList.add('is-fullscreen');
+      document.body.style.overflow = 'hidden';
+      fsTradeActive = true;
+      var enterBtn = $('btnChartFs');
+      if (enterBtn) {
+        enterBtn.setAttribute('aria-pressed', 'true');
+        enterBtn.title = t('fsExit') || 'Quitter le plein écran';
+      }
+      bumpChartLayout();
+      return true;
+    } catch (eMount) {
+      try { console.warn(eMount); } catch (eW) { /* ignore */ }
+      return false;
     }
-    bumpChartLayout();
-    return true;
   }
 
   function unmountTradeFullscreen() {
     var wrap = $('tradeWrap');
     var overlay = $('fsTradeOverlay');
     if (!wrap || !fsTradeActive) return;
-    if (fsTradeHome && fsTradeHome.parent) {
-      if (fsTradeHome.next && fsTradeHome.next.parentNode === fsTradeHome.parent) {
-        fsTradeHome.parent.insertBefore(wrap, fsTradeHome.next);
-      } else {
-        fsTradeHome.parent.appendChild(wrap);
+    try {
+      if (fsTradeHome && fsTradeHome.parent) {
+        if (fsTradeHome.next && fsTradeHome.next.parentNode === fsTradeHome.parent) {
+          fsTradeHome.parent.insertBefore(wrap, fsTradeHome.next);
+        } else {
+          fsTradeHome.parent.appendChild(wrap);
+        }
       }
+      fsTradeHome = null;
+      fsTradeActive = false;
+      if (overlay) {
+        overlay.classList.remove('on');
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+      document.documentElement.classList.remove('fs-trade');
+      document.documentElement.classList.remove('is-fullscreen');
+      document.body.classList.remove('is-fullscreen');
+      document.body.style.overflow = '';
+      var stage = document.querySelector('.chart-stage');
+      if (stage) {
+        stage.style.height = '';
+        stage.style.minHeight = '';
+      }
+      var enterBtn = $('btnChartFs');
+      if (enterBtn) {
+        enterBtn.setAttribute('aria-pressed', 'false');
+        enterBtn.title = t('fsEnter') || 'PLEIN ÉCRAN';
+        enterBtn.setAttribute('aria-label', t('fsEnter') || 'PLEIN ÉCRAN');
+      }
+      bumpChartLayout();
+    } catch (eUn) {
+      try { console.warn(eUn); } catch (eW) { /* ignore */ }
+      fsTradeActive = false;
     }
-    fsTradeHome = null;
-    fsTradeActive = false;
-    if (overlay) {
-      overlay.classList.remove('on');
-      overlay.setAttribute('hidden', '');
-      overlay.setAttribute('aria-hidden', 'true');
-    }
-    document.documentElement.classList.remove('fs-trade');
-    document.body.style.overflow = '';
-    var stage = document.querySelector('.chart-stage');
-    if (stage) {
-      stage.style.height = '';
-      stage.style.minHeight = '';
-    }
-    var enterBtn = $('btnChartFs');
-    if (enterBtn) {
-      enterBtn.setAttribute('aria-pressed', 'false');
-      enterBtn.title = t('fsEnter') || 'AGRANDIR';
-      enterBtn.setAttribute('aria-label', t('fsEnter') || 'AGRANDIR');
-    }
-    bumpChartLayout();
   }
 
   function enterTradeFullscreen() {
     var trade = $('screenTrade');
     if (!trade || trade.classList.contains('hidden')) return;
-    closeDrawer();
-    if (!mountTradeFullscreen()) return;
-    var overlay = $('fsTradeOverlay');
-    requestFsEl(overlay || document.documentElement).catch(function () { /* CSS overlay suffit */ })
-      .then(function () { bumpChartLayout(); });
+    try {
+      closeDrawer();
+      if (!mountTradeFullscreen()) return;
+      // Mobile : CSS only. Desktop : native optionnel, jamais bloquant.
+      if (!preferCssFullscreenOnly()) {
+        var overlay = $('fsTradeOverlay');
+        requestFsEl(overlay || document.documentElement)
+          .then(function () { bumpChartLayout(); })
+          .catch(function (err) {
+            try { console.warn(err); } catch (e) { /* ignore */ }
+            bumpChartLayout();
+          });
+      } else {
+        bumpChartLayout();
+      }
+    } catch (eEnter) {
+      try { console.warn(eEnter); } catch (eW) { /* ignore */ }
+    }
   }
 
   function leaveTradeFullscreen() {
-    unmountTradeFullscreen();
-    if (isNativeFullscreen()) {
-      Promise.resolve(exitFsNative()).catch(function () {});
+    try {
+      unmountTradeFullscreen();
+      if (isNativeFullscreen()) {
+        Promise.resolve(exitFsNative()).catch(function (err) {
+          try { console.warn(err); } catch (e) { /* ignore */ }
+        });
+      }
+      bumpChartLayout();
+    } catch (eLeave) {
+      try { console.warn(eLeave); } catch (eW) { /* ignore */ }
     }
-    bumpChartLayout();
   }
 
   function bindFullscreenTrade() {
@@ -3157,21 +3236,30 @@
       });
     }
     function onFsChange() {
-      if (!isNativeFullscreen() && fsTradeActive) {
-        // Sortie native (Échap) : on referme aussi la vue dédiée.
-        unmountTradeFullscreen();
+      try {
+        if (!isNativeFullscreen() && fsTradeActive && !preferCssFullscreenOnly()) {
+          unmountTradeFullscreen();
+        }
+      } catch (eFs) {
+        try { console.warn(eFs); } catch (eW) { /* ignore */ }
       }
     }
     document.addEventListener('fullscreenchange', onFsChange);
     document.addEventListener('webkitfullscreenchange', onFsChange);
     document.addEventListener('MSFullscreenChange', onFsChange);
     window.addEventListener('orientationchange', function () {
-      if (!fsTradeActive) return;
-      setTimeout(bumpChartLayout, 220);
+      try {
+        if (!fsTradeActive) return;
+        setTimeout(function () {
+          try { bumpChartLayout(); } catch (eB) { try { console.warn(eB); } catch (e) { /* ignore */ } }
+        }, 220);
+      } catch (eO) { try { console.warn(eO); } catch (e) { /* ignore */ } }
     });
     window.addEventListener('resize', function () {
-      if (!fsTradeActive) return;
-      bumpChartLayout();
+      try {
+        if (!fsTradeActive) return;
+        bumpChartLayout();
+      } catch (eR) { try { console.warn(eR); } catch (e) { /* ignore */ } }
     });
   }
 
