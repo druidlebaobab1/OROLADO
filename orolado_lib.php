@@ -795,7 +795,8 @@ function maketou_verify_remote_payment(array $dep, int $attempts = 1, int $waitS
       $status = maketou_extract_status($json);
       if (maketou_payload_looks_paid($json)) {
         $expectedUsd = orolado_money($dep['amount'] ?? 0);
-        $expectedFcfa = orolado_usd_to_fcfa($expectedUsd);
+        $expectedFcfa = (int) ($dep['amountFcfa'] ?? 0);
+        if ($expectedFcfa <= 0) $expectedFcfa = orolado_usd_to_fcfa($expectedUsd);
         $gotFcfa = maketou_extract_amount($json);
         if ($expectedFcfa > 0 && $gotFcfa > 0 && $gotFcfa < $expectedFcfa) {
           maketou_log('maketou_verify', ['ref' => $ref, 'result' => 'amount_mismatch', 'expectedUsd' => $expectedUsd, 'expectedFcfa' => $expectedFcfa, 'gotFcfa' => $gotFcfa]);
@@ -1019,11 +1020,9 @@ function maketou_pick_checkout_url($node, string $fallback): string {
   return $fallback;
 }
 
-/** Devise du produit Maketou WELCOME (live = USD $3.01). Surcharge : MAKETOU_CURRENCY=USD|XOF */
+/** Devise shop (legacy). Checkout Orolado envoie toujours du XOF/FCFA. */
 function maketou_shop_currency(): string {
-  orolado_load_env();
-  $c = strtoupper(trim((string) (getenv('MAKETOU_CURRENCY') ?: ($_ENV['MAKETOU_CURRENCY'] ?? 'USD'))));
-  return $c === 'XOF' || $c === 'FCFA' ? 'XOF' : 'USD';
+  return 'XOF';
 }
 
 /** Message d’erreur lisible depuis la réponse API Maketou. */
@@ -1061,7 +1060,7 @@ function maketou_api_error_text(?array $json, string $raw, int $status): string 
     if ($code !== '') return $code;
   }
   $trim = trim($raw);
-  if ($trim !== '' && strlen($trim) < 280 && !str_starts_with($trim, '<')) return $trim;
+  if ($trim !== '' && strlen($trim) < 400 && !str_starts_with($trim, '<')) return $trim;
   if ($status === 401 || $status === 403) return 'Clé API Maketou refusée (HTTP ' . $status . ')';
   if ($status === 404) return 'Endpoint Maketou introuvable (HTTP 404)';
   if ($status === 422) return 'Validation Maketou échouée (HTTP 422)';
@@ -1250,18 +1249,15 @@ function maketou_storefront_session(array $info): array {
 }
 
 /**
- * Crée un panier Maketou via l'API officielle :
- * POST https://api.maketou.net/api/v1/stores/cart/checkout
- * → redirectUrl (Moneroo/Paystral). JAMAIS /products/welcome.
- *
- * Devise customerPrice = devise du shop Maketou (live WELCOME = USD).
- * Meta conserve aussi le montant FCFA Orolado (taux USD_FCFA_RATE).
+ * Checkout Maketou (flux pré-$ / 8ec3369) :
+ * customerPrice = montant FCFA entier → redirectUrl Moneroo.
+ * Infos compte Orolado dans le payload. Jamais /products/welcome.
  */
 function maketou_create_checkout(array $opts): array {
   $key = maketou_api_key();
   if ($key === '') {
     error_log('OROLADO: MAKETOU_API_KEY absente');
-    return ['ok' => false, 'reason' => 'Clé API Maketou manquante (MAKETOU_API_KEY)'];
+    return ['ok' => false, 'reason' => 'MAKETOU_API_KEY manquante'];
   }
 
   $email = trim((string) ($opts['email'] ?? $opts['aliasEmail'] ?? ''));
@@ -1273,8 +1269,8 @@ function maketou_create_checkout(array $opts): array {
   if (str_starts_with($phoneDigits, $cc) && strlen($phoneDigits) > strlen($cc)) {
     $phoneDigits = substr($phoneDigits, strlen($cc));
   }
-  // Docs Maketou : téléphone E.164 (ex. +22507…).
-  $phoneE164 = '+' . $cc . $phoneDigits;
+  $phone = $phoneDigits !== '' ? ('+' . $cc . $phoneDigits) : $phoneRaw;
+
   $first = trim((string) ($opts['firstName'] ?? ''));
   $last = trim((string) ($opts['lastName'] ?? ''));
   if ($first === '' || $last === '') {
@@ -1283,23 +1279,9 @@ function maketou_create_checkout(array $opts): array {
     if ($last === '') $last = $l2;
   }
 
-  $amountUsd = isset($opts['amountUsd']) ? orolado_money($opts['amountUsd']) : 0.0;
+  // Montant Maketou = FCFA entier (comme avant le passage $).
   $amountFcfa = (int) ($opts['amount'] ?? 0);
-  if ($amountFcfa <= 0 && $amountUsd > 0) $amountFcfa = orolado_usd_to_fcfa($amountUsd);
-  if ($amountUsd <= 0 && $amountFcfa > 0) $amountUsd = orolado_fcfa_to_usd($amountFcfa);
   $amountFcfa = max(1, $amountFcfa);
-  $amountUsd = max(0.01, $amountUsd);
-
-  // Shop live = USD ($3.01). Ne pas envoyer 1800 comme si c’était des dollars.
-  $shopCur = maketou_shop_currency();
-  if ($shopCur === 'XOF') {
-    $customerPrice = (int) $amountFcfa;
-    $payloadCurrency = 'XOF';
-  } else {
-    $customerPrice = orolado_money($amountUsd);
-    $payloadCurrency = 'USD';
-  }
-
   $ref = (string) ($opts['ref'] ?? '');
   $userId = (string) ($opts['userId'] ?? '');
   $returnUrl = (string) ($opts['returnUrl'] ?? '');
@@ -1312,14 +1294,14 @@ function maketou_create_checkout(array $opts): array {
     'email' => $email,
     'firstName' => $first,
     'lastName' => $last,
-    'phone' => $phoneE164,
-    'customerPrice' => $customerPrice,
+    'phone' => $phone,
+    'customerPrice' => $amountFcfa,
     'redirectURL' => $returnUrl,
     'meta' => [
       'userId' => $userId,
-      'amountUsd' => $amountUsd,
+      'amount' => $amountFcfa,
       'amountFcfa' => $amountFcfa,
-      'currency' => $payloadCurrency,
+      'currency' => 'XOF',
       'reference' => $ref,
       'source' => 'orolado',
     ],
@@ -1333,7 +1315,6 @@ function maketou_create_checkout(array $opts): array {
   $nested = is_array($data['data'] ?? null) ? $data['data'] : [];
   $cart = is_array($data['cart'] ?? null) ? $data['cart'] : (is_array($nested['cart'] ?? null) ? $nested['cart'] : []);
 
-  // Log BRUT temporaire (réponse complète, payload sans secrets).
   maketou_log('maketou_checkout_raw', [
     'ref' => $ref,
     'apiUrl' => $apiUrl,
@@ -1344,12 +1325,9 @@ function maketou_create_checkout(array $opts): array {
       'email' => $email,
       'firstName' => $first,
       'lastName' => $last,
-      'phone' => $phoneE164,
-      'customerPrice' => $customerPrice,
-      'currency' => $payloadCurrency,
-      'amountUsd' => $amountUsd,
-      'amountFcfa' => $amountFcfa,
-      'usdFcfaRate' => orolado_usd_fcfa_rate(),
+      'phone' => $phone,
+      'customerPrice' => $amountFcfa,
+      'currency' => 'XOF',
       'redirectURL' => $returnUrl,
     ],
     'response_raw' => substr($raw, 0, 12000),
@@ -1366,74 +1344,41 @@ function maketou_create_checkout(array $opts): array {
     ?? ''
   );
   if ($url === '' && $data !== []) $url = maketou_pick_checkout_url($data, '');
-  // Rejeter uniquement la page produit WELCOME (formulaire infos).
-  $low = strtolower($url);
-  if ($url !== '' && str_contains($low, '/products/welcome')) {
+  if ($url !== '' && str_contains(strtolower($url), '/products/welcome')) {
     $url = '';
   }
 
   $cartId = (string) ($cart['id'] ?? $data['id'] ?? $nested['id'] ?? $data['cartId'] ?? '');
-  $missing = $url === '' ? 'redirectUrl' : '';
-
-  // Fallback storefront uniquement si l’API n’a pas donné d’URL pay.
-  if ($url === '') {
-    $sessionPrice = $shopCur === 'XOF' ? $amountFcfa : (int) max(1, (int) round($customerPrice));
-    $session = maketou_storefront_session([
-      'email' => $email,
-      'firstName' => $first,
-      'lastName' => $last,
-      'phone' => $phoneDigits,
-      'amount' => $sessionPrice,
-      'returnUrl' => $returnUrl,
-    ]);
-    if (!empty($session['url']) && !str_contains(strtolower((string) $session['url']), '/products/welcome')) {
-      $url = (string) $session['url'];
-      if ($cartId === '' && !empty($session['sellId'])) $cartId = (string) $session['sellId'];
-      $missing = '';
-    }
-  }
-
-  if ($url !== '' && !str_contains(strtolower($url), 'moneroo.io')) {
-    $url = maketou_finalize_pay_url($url, $phoneDigits, $returnUrl);
-  }
-
-  $apiReason = maketou_api_error_text(is_array($res['json'] ?? null) ? $res['json'] : null, $raw, $status);
 
   maketou_log('maketou_checkout_create', [
     'ref' => $ref,
     'userId' => $userId,
-    'customerPrice' => $customerPrice,
-    'currency' => $payloadCurrency,
-    'amountUsd' => $amountUsd,
-    'amountFcfa' => $amountFcfa,
-    'email' => $email,
+    'amount' => $amountFcfa,
+    'currency' => 'XOF',
     'http' => $status,
     'cartId' => $cartId,
     'url' => $url,
-    'missing' => $missing,
-    'apiReason' => $apiReason,
   ]);
 
-  if ($url === '') {
-    $reason = $apiReason !== '' && $apiReason !== 'Pas de redirectUrl Maketou'
-      ? $apiReason
-      : ('Maketou sans URL de paiement'
-        . ($missing !== '' ? ' (champ manquant: ' . $missing . ')' : '')
-        . ' — envoyé customerPrice=' . $customerPrice . ' ' . $payloadCurrency);
+  if (empty($res['ok']) || $url === '') {
+    $apiReason = maketou_api_error_text(is_array($res['json'] ?? null) ? $res['json'] : null, $raw, $status);
+    $reason = $apiReason;
+    if ($raw !== '') {
+      $snip = strlen($raw) > 500 ? substr($raw, 0, 500) . '…' : $raw;
+      if ($reason === '' || $reason === 'Pas de redirectUrl Maketou') {
+        $reason = $snip;
+      } else {
+        $reason .= ' | ' . $snip;
+      }
+    }
     return [
       'ok' => false,
-      'reason' => $reason,
+      'reason' => $reason !== '' ? $reason : 'checkout_failed',
       'status' => $status,
-      'amount' => $amountUsd,
       'amountFcfa' => $amountFcfa,
-      'payload' => [
-        'customerPrice' => $customerPrice,
-        'currency' => $payloadCurrency,
-        'amountUsd' => $amountUsd,
-        'amountFcfa' => $amountFcfa,
-      ],
-      'missing' => $missing !== '' ? $missing : 'redirectUrl',
-      'raw' => substr($raw, 0, 800),
+      'payload' => ['customerPrice' => $amountFcfa, 'currency' => 'XOF'],
+      'missing' => 'redirectUrl',
+      'raw' => substr($raw, 0, 1200),
     ];
   }
 
@@ -1443,12 +1388,8 @@ function maketou_create_checkout(array $opts): array {
     'checkout_url' => $url,
     'sellId' => $cartId,
     'cartId' => $cartId,
-    'amount' => $amountUsd,
     'amountFcfa' => $amountFcfa,
-    'payload' => [
-      'customerPrice' => $customerPrice,
-      'currency' => $payloadCurrency,
-    ],
+    'payload' => ['customerPrice' => $amountFcfa, 'currency' => 'XOF'],
   ];
 }
 
@@ -1458,7 +1399,12 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt joueur = $3.00 USD. */
+/** Minimum dépôt joueur = 3 000 FCFA (champ Recharger). */
+function orolado_min_deposit_fcfa(?array $me): int {
+  return 3000;
+}
+
+/** Seuil crédit vault (USD) — soldes inchangés. */
 function orolado_min_deposit(?array $me): float {
   return 3.0;
 }
@@ -1470,19 +1416,20 @@ function orolado_initiate_deposit(array $req): array {
   $me = orolado_session_user($db, $token);
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 
-  $amountUsd = orolado_money($req['amount'] ?? 0);
-  $min = orolado_min_deposit($me);
-  if ($amountUsd < $min || $amountUsd > orolado_max_deposit_usd()) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
+  // Champ Recharger = FCFA entier (flux pré-$).
+  $amountFcfa = (int) ($req['amount'] ?? 0);
+  $minFcfa = orolado_min_deposit_fcfa($me);
+  if ($amountFcfa < $minFcfa || $amountFcfa > 5000000) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 3 000 FCFA.'];
   }
-  $amountFcfa = orolado_usd_to_fcfa($amountUsd);
+  // Crédit vault reste en USD (soldes) — conversion interne uniquement.
+  $amountUsd = orolado_fcfa_to_usd($amountFcfa);
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
   $customer = maketou_customer_from_user($me);
   $ref = 'oro_' . bin2hex(random_bytes(12));
   $origin = orolado_public_origin();
-  // Retour navigateur : dashboard Orolado + crédit USD après validation.
   $returnUrl = $origin . '/?deposit=success&ref=' . rawurlencode($ref);
   $webhookUrl = $origin . '/api/deposit/webhook';
 
@@ -1500,7 +1447,7 @@ function orolado_initiate_deposit(array $req): array {
     'status' => 'PENDING',
     'amount' => $amountUsd,
     'amountFcfa' => $amountFcfa,
-    'currency' => 'USD',
+    'currency' => 'XOF',
     'at' => date('c')
   ];
   save_db($file, $db);
@@ -1515,7 +1462,6 @@ function orolado_initiate_deposit(array $req): array {
     'operator' => $op,
   ]);
 
-  // Maketou : API cart → redirectUrl (Moneroo), infos compte + prix devise shop.
   $pay = maketou_create_checkout([
     'email' => $customer['email'],
     'phone' => $customer['phone'],
@@ -1525,7 +1471,6 @@ function orolado_initiate_deposit(array $req): array {
     'displayName' => $customer['displayName'],
     'userId' => (string) $me['id'],
     'amount' => $amountFcfa,
-    'amountUsd' => $amountUsd,
     'operator' => $op,
     'ref' => $ref,
     'returnUrl' => $returnUrl,
@@ -1539,24 +1484,22 @@ function orolado_initiate_deposit(array $req): array {
       'ref' => $ref,
       'amount' => $amountUsd,
       'amountFcfa' => $amountFcfa,
-      'payload' => $pay['payload'] ?? null,
+      'payload' => $pay['payload'] ?? ['customerPrice' => $amountFcfa, 'currency' => 'XOF'],
       'missing' => $pay['missing'] ?? 'redirectUrl',
       'status' => $pay['status'] ?? 0,
       'raw' => $pay['raw'] ?? '',
     ];
   }
-  $url = (string) ($pay['checkout_url'] ?? $pay['url'] ?? '');
-  // Ne jamais renvoyer la page produit WELCOME au client.
+  $url = (string) ($pay['url'] ?? $pay['checkout_url'] ?? '');
   $low = strtolower($url);
   if ($url === '' || str_contains($low, '/products/welcome')) {
     return [
       'ok' => false,
       'server' => true,
-      'reason' => 'Maketou n’a pas renvoyé d’URL de paiement (redirectUrl manquant).',
+      'reason' => (string) ($pay['raw'] ?? 'Pas de redirectUrl Moneroo'),
       'ref' => $ref,
-      'amount' => $amountUsd,
       'amountFcfa' => $amountFcfa,
-      'payload' => $pay['payload'] ?? null,
+      'payload' => ['customerPrice' => $amountFcfa, 'currency' => 'XOF'],
       'missing' => 'redirectUrl',
     ];
   }
@@ -1582,7 +1525,7 @@ function orolado_initiate_deposit(array $req): array {
     'checkout_url' => $url,
     'amount' => $amountUsd,
     'amountFcfa' => $amountFcfa,
-    'payload' => $pay['payload'] ?? null,
+    'payload' => ['customerPrice' => $amountFcfa, 'currency' => 'XOF'],
     'customer' => [
       'email' => $customer['email'],
       'phone' => $customer['phone'],

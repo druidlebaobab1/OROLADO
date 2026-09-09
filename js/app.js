@@ -1406,9 +1406,9 @@
     return url;
   }
 
-  // Minimum dépôt joueur = $3.00.
+  // Minimum dépôt joueur = 3 000 FCFA.
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 3;
+    return D6.CONFIG.MIN_DEPOSIT || 3000;
   }
 
   function minWithdraw() {
@@ -1417,7 +1417,7 @@
 
   function setDepositAmt(n) {
     var min = minDeposit();
-    var amt = Math.max(min, D6.roundMoney(Number(n) || min));
+    var amt = Math.max(min, Math.floor(Number(n) || min));
     if ($('depositAmt')) $('depositAmt').value = String(amt);
     return amt;
   }
@@ -1754,10 +1754,10 @@
   }
 
   /**
-   * Préférer l’URL API/Paystral (paiement direct).
-   * Ne jamais renvoyer la page produit WELCOME (formulaire blanc + 1700).
+   * Ouvre uniquement l’URL API (Moneroo / redirectUrl).
+   * Jamais /products/welcome. Pas d’URL inventée.
    */
-  function resolveDepositCheckoutUrl(usdAmt, op, ref, serverUrl, amountFcfa, customer) {
+  function resolveDepositCheckoutUrl(serverUrl) {
     var url = String(serverUrl || '');
     var low = url.toLowerCase();
     if (!url || !/^https?:\/\//i.test(url)) return '';
@@ -1773,7 +1773,7 @@
       return;
     }
     var min = minDeposit();
-    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('depositMinErr'));
       toast(t('depositMinErr'), 'err');
@@ -1799,35 +1799,18 @@
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO deposit fail', remote);
-        if (remote.payload || remote.missing) {
-          console.error('OROLADO Maketou payload=', remote.payload, 'missing=', remote.missing);
-        }
-        var reason = String((remote && remote.reason) || '');
-        toast(reason || t('sessionInvalid'), 'err');
+        var failMsg = String((remote && remote.reason) || '');
+        if (!failMsg && remote && remote.raw) failMsg = String(remote.raw);
+        if (remote && remote.payload) console.error('payload', remote.payload);
+        toast(failMsg || t('sessionInvalid'), 'err');
         return;
       }
       var ref = (remote && remote.ref) || '';
-      var fcfa = (remote && remote.amountFcfa) || D6.usdToFcfa(amt);
-      var customer = (remote && remote.customer) || {
-        displayName: u.displayName,
-        email: u.email,
-        phone: u.phone,
-        countryCode: u.countryCode,
-        firstName: u.firstName,
-        lastName: u.lastName
-      };
-      // Ancien flux : URL API/Paystral d’abord — jamais la page WELCOME.
-      var url = resolveDepositCheckoutUrl(
-        amt,
-        depositOp,
-        ref,
-        (remote && (remote.checkout_url || remote.url)) || '',
-        fcfa,
-        customer
-      );
+      var url = resolveDepositCheckoutUrl((remote && (remote.checkout_url || remote.url)) || '');
       if (!url) {
-        console.error('OROLADO deposit: aucune URL paiement direct', remote);
-        toast((remote && remote.reason) || 'Paiement indisponible. Réessayez.', 'err');
+        console.error('OROLADO deposit: pas de redirectUrl', remote);
+        var noUrl = (remote && (remote.reason || remote.raw)) || 'Pas de redirectUrl Moneroo';
+        toast(String(noUrl), 'err');
         return;
       }
       try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e) { /* ignore */ }
