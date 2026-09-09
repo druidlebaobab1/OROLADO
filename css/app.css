@@ -254,17 +254,14 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .btn-hist-cta{display:none!important}
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
-.chart-fs-btn,.chart-fs-exit{
-  position:absolute;z-index:25;border:1px solid rgba(255,215,0,.35);background:rgba(10,15,29,.72);
+.chart-fs-btn{
+  position:absolute;z-index:25;top:8px;right:8px;width:32px;height:32px;
+  border:1px solid rgba(255,215,0,.35);background:rgba(10,15,29,.72);
   color:rgba(255,224,130,.95);border-radius:8px;cursor:pointer;pointer-events:auto;
-  display:grid;place-items:center;font-size:.95rem;line-height:1;padding:0;
+  display:grid;place-items:center;font-size:.95rem;line-height:1;padding:0;opacity:.82;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
   -webkit-tap-highlight-color:transparent}
-.chart-fs-btn{top:8px;right:8px;width:32px;height:32px;opacity:.82}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{opacity:1;border-color:rgba(255,215,0,.7)}
-.chart-fs-exit{top:8px;right:8px;width:34px;height:34px;font-size:1rem;font-weight:800;display:none}
-html.fs-trade .chart-fs-btn{display:none}
-html.fs-trade .chart-fs-exit{display:grid}
 .btn-hist-cta:active{transform:scale(.98)}
 .btn-auth-link{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 8px;
   font:inherit;font-size:.62rem;font-weight:800;cursor:pointer;white-space:nowrap}
@@ -724,94 +721,97 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .otp-resend-row .mini:disabled{opacity:.45;cursor:not-allowed}
 .otp-timer{font-size:.75rem;color:var(--muted);font-weight:600}
 
-/* ===== Full Screen Trading View (paysage immersif) ===== */
-html.fs-trade,html.fs-trade body{overflow:hidden!important;height:100%!important;overscroll-behavior:none}
-html.fs-trade #screenAuth,
-html.fs-trade #screenAdmin,
-html.fs-trade #drawerBackdrop,
-html.fs-trade #drawerProfile,
-html.fs-trade .modal-backdrop{display:none!important}
-html.fs-trade #screenTrade{
-  display:flex!important;position:fixed!important;inset:0!important;z-index:9500!important;
-  width:100%!important;height:100%!important;max-width:none!important;background:#070b14;
-  padding:0!important;margin:0!important}
-html.fs-trade .trade-shell{
-  max-width:none!important;width:100%!important;height:100%!important;min-height:0!important;
-  border-radius:0!important;box-shadow:none!important;overflow:hidden!important}
-html.fs-trade .topbar,
-html.fs-trade .topbar-row,
-html.fs-trade .topbar-mode,
-html.fs-trade .balance-row,
-html.fs-trade .history-card,
-html.fs-trade .install-banner,
-html.fs-trade .trade-hint,
-html.fs-trade .odds-label,
-html.fs-trade .help-fab{display:none!important}
-html.fs-trade .trade-wrap{
-  display:grid!important;grid-template-columns:78px minmax(0,1fr) 148px;grid-template-rows:minmax(0,1fr);
-  gap:0!important;padding:0!important;height:100%!important;min-height:0!important;overflow:hidden!important;
-  max-width:none!important}
-html.fs-trade .asset-bar{
-  grid-column:1;grid-row:1;display:flex!important;flex-direction:column!important;gap:4px!important;
-  overflow-x:hidden!important;overflow-y:auto!important;padding:8px 6px!important;width:auto!important;
-  max-width:none!important;border-right:1px solid rgba(255,215,0,.12);background:rgba(8,12,22,.96);
-  -webkit-overflow-scrolling:touch;scrollbar-width:thin}
-html.fs-trade .asset-chip{
-  flex:0 0 auto!important;min-width:0!important;width:100%!important;min-height:52px!important;
-  padding:6px 4px!important;border-radius:8px}
-html.fs-trade .asset-chip .k{display:none!important}
-html.fs-trade .asset-chip .n{font-size:9px!important;white-space:normal!important;line-height:1.15!important}
-html.fs-trade .payout-live{font-size:9px!important}
-html.fs-trade .chart-card,html.fs-trade #chart{
-  grid-column:2;grid-row:1;min-height:0!important;height:100%!important;max-height:none!important;
-  border-radius:0!important;flex:1 1 auto!important;display:flex!important;background:transparent}
-html.fs-trade .chart-toolbar{min-height:26px;padding:2px 40px 2px 8px}
-html.fs-trade .chart-stage{min-height:0!important;flex:1 1 auto!important;height:100%!important}
-html.fs-trade .pad{
-  grid-column:3;grid-row:1;position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;
-  margin:0!important;border-radius:0!important;border:0!important;border-left:1px solid rgba(255,215,0,.12)!important;
-  max-width:none!important;max-height:none!important;height:100%!important;min-height:0!important;
-  overflow-y:auto!important;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))!important;
-  background:rgba(10,14,24,.96)!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;gap:6px!important;
-  z-index:8}
-html.fs-trade .pad .dur-row{flex-wrap:wrap;gap:3px}
-html.fs-trade .pad .dur-chip{flex:1 1 40%;min-width:0;min-height:28px;font-size:.58rem;padding:2px 0}
-html.fs-trade .pad .stake-line{flex-direction:column;gap:4px;margin:0}
-html.fs-trade .pad .win-preview{min-width:0;width:100%;text-align:center;padding:2px 0}
-html.fs-trade .pad .odds-row{gap:3px;margin:0}
-html.fs-trade .pad .odds-chip{padding:4px 2px}
-html.fs-trade .pad .trade-row{
-  margin-top:auto;flex-direction:column;gap:8px;position:sticky;bottom:0;
-  padding-top:6px;background:linear-gradient(180deg,transparent,rgba(10,14,24,.98) 18%)}
-html.fs-trade .pad .btn-trade{min-height:52px;width:100%;border-radius:12px}
-html.fs-trade .chart-fs-exit{
-  top:6px;right:6px;background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.25);color:#fff;z-index:40}
+/* ===== Full Screen Trading Overlay (IQ Option style, 0° — no rotate) ===== */
+.fs-trade-overlay{
+  display:none;position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;
+  z-index:99999;background:#0c0f17;overflow:hidden;margin:0;padding:0;
+  box-sizing:border-box}
+.fs-trade-overlay.on{display:flex;flex-direction:column}
+.fs-trade-close{
+  position:absolute;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));
+  z-index:5;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.22);
+  background:rgba(0,0,0,.45);color:#fff;font-size:1.05rem;font-weight:800;cursor:pointer;
+  display:grid;place-items:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.fs-trade-slot{flex:1 1 auto;min-height:0;min-width:0;width:100%;height:100%;display:flex}
+.fs-trade-overlay .trade-wrap{
+  display:flex!important;flex-direction:column;width:100%;height:100%;min-height:0;min-width:0;
+  gap:0!important;padding:0!important;margin:0!important;overflow:hidden!important;
+  max-width:none!important;box-sizing:border-box}
+.fs-trade-overlay .history-card,
+.fs-trade-overlay .install-banner,
+.fs-trade-overlay .dur-row,
+.fs-trade-overlay .trade-hint,
+.fs-trade-overlay .odds-label,
+.fs-trade-overlay .odds-row,
+.fs-trade-overlay .win-preview,
+.fs-trade-overlay .stake-min,
+.fs-trade-overlay .chart-toolbar,
+.fs-trade-overlay .chart-fs-btn,
+.fs-trade-overlay .timer-panel,
+.fs-trade-overlay .trade-lock,
+.fs-trade-overlay .help-fab{display:none!important}
 
-/* Fallback paysage (iOS / Safari sans orientation.lock) */
-html.fs-trade.fs-ios-fallback #screenTrade{
-  width:100vh!important;height:100vw!important;max-width:none!important;
-  top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
-  transform:translate(-50%,-50%) rotate(90deg)!important;
-  transform-origin:center center!important}
-html.fs-trade.fs-ios-fallback .trade-shell,
-html.fs-trade.fs-ios-fallback .trade-wrap{width:100%!important;height:100%!important}
+/* Actifs */
+.fs-trade-overlay .asset-bar{
+  flex:0 0 auto;display:flex!important;flex-direction:row;gap:6px;padding:10px 48px 8px 10px;
+  overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  border-bottom:1px solid rgba(255,255,255,.08);background:rgba(8,11,20,.95);
+  width:100%;max-width:none}
+.fs-trade-overlay .asset-chip{
+  flex:0 0 auto;min-width:88px;min-height:44px;padding:6px 8px;border-radius:8px}
+.fs-trade-overlay .asset-chip .k{display:none!important}
+.fs-trade-overlay .asset-chip .n{font-size:10px;line-height:1.15;white-space:nowrap}
+.fs-trade-overlay .payout-live{font-size:10px}
 
-@media (max-width:900px){
-  html.fs-trade .trade-wrap{grid-template-columns:66px minmax(0,1fr) 128px}
-  html.fs-trade .asset-chip{min-height:46px!important}
-  html.fs-trade .pad .btn-trade{min-height:46px}
+/* Courbe ~85% */
+.fs-trade-overlay .chart-card,
+.fs-trade-overlay #chart{
+  flex:1 1 85%!important;min-height:0!important;min-width:0!important;height:auto!important;
+  max-height:none!important;border-radius:0!important;margin:0!important;
+  display:flex!important;flex-direction:column;background:transparent;overflow:hidden}
+.fs-trade-overlay .chart-stage{
+  flex:1 1 auto!important;min-height:0!important;height:100%!important;width:100%!important}
+
+/* Mise + CALL / PUT */
+.fs-trade-overlay .pad{
+  flex:0 0 auto;position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;
+  margin:0!important;border-radius:0!important;border:0!important;border-top:1px solid rgba(255,255,255,.08)!important;
+  max-width:none!important;max-height:none!important;width:100%!important;height:auto!important;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;
+  background:rgba(10,14,24,.98)!important;box-shadow:none!important;z-index:2;
+  display:flex!important;flex-direction:row;align-items:center;gap:10px;overflow:visible!important}
+.fs-trade-overlay .pad .stake-line{flex:0 0 auto;margin:0;width:110px;min-width:96px}
+.fs-trade-overlay .pad .stake-field{width:100%}
+.fs-trade-overlay .pad .stake-line input,
+.fs-trade-overlay .pad .stake-field input{
+  width:100%;min-height:44px;font-size:1rem;text-align:center;border-radius:10px}
+.fs-trade-overlay .pad .trade-row{
+  flex:1 1 auto;display:flex;flex-direction:row;gap:8px;margin:0}
+.fs-trade-overlay .pad .btn-trade{
+  flex:1 1 0;min-height:52px;border-radius:12px;margin:0}
+
+/* Paysage : actifs à gauche, courbe au centre, actions à droite — sans rotation */
+@media (orientation:landscape){
+  .fs-trade-overlay .trade-wrap{flex-direction:row!important}
+  .fs-trade-overlay .asset-bar{
+    flex:0 0 92px;flex-direction:column!important;width:92px;max-width:92px;height:100%;
+    overflow-x:hidden;overflow-y:auto;padding:12px 8px;border-bottom:0;
+    border-right:1px solid rgba(255,255,255,.08)}
+  .fs-trade-overlay .asset-chip{width:100%;min-width:0;min-height:48px}
+  .fs-trade-overlay .asset-chip .n{white-space:normal;font-size:9px}
+  .fs-trade-overlay .chart-card,
+  .fs-trade-overlay #chart{flex:1 1 85%!important;width:auto!important;height:100%!important}
+  .fs-trade-overlay .pad{
+    flex:0 0 148px;width:148px;max-width:148px;height:100%;
+    flex-direction:column;justify-content:center;align-items:stretch;
+    border-top:0!important;border-left:1px solid rgba(255,255,255,.08)!important;
+    padding:12px 10px!important}
+  .fs-trade-overlay .pad .stake-line{width:100%}
+  .fs-trade-overlay .pad .trade-row{flex-direction:column;width:100%}
+  .fs-trade-overlay .pad .btn-trade{width:100%;min-height:56px}
 }
-@media (orientation:portrait) and (max-width:859px){
-  html.fs-trade:not(.fs-ios-fallback) .trade-wrap{
-    grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
-  html.fs-trade:not(.fs-ios-fallback) .asset-bar{
-    grid-column:1;grid-row:1;flex-direction:row!important;overflow-x:auto!important;overflow-y:hidden!important;
-    border-right:0;border-bottom:1px solid rgba(255,215,0,.12);padding:6px}
-  html.fs-trade:not(.fs-ios-fallback) .asset-chip{min-width:72px!important;width:auto!important;flex:0 0 auto!important}
-  html.fs-trade:not(.fs-ios-fallback) .chart-card,html.fs-trade:not(.fs-ios-fallback) #chart{grid-column:1;grid-row:2}
-  html.fs-trade:not(.fs-ios-fallback) .pad{
-    grid-column:1;grid-row:3;border-left:0!important;border-top:1px solid rgba(255,215,0,.12)!important;
-    height:auto!important;max-height:42vh;padding:6px 8px}
-  html.fs-trade:not(.fs-ios-fallback) .pad .trade-row{flex-direction:row;position:static}
-  html.fs-trade:not(.fs-ios-fallback) .pad .btn-trade{width:auto;flex:1}
+@media (orientation:landscape) and (max-height:420px){
+  .fs-trade-overlay .asset-bar{flex-basis:78px;width:78px;max-width:78px;padding:8px 6px}
+  .fs-trade-overlay .pad{flex-basis:128px;width:128px;max-width:128px;padding:8px!important}
+  .fs-trade-overlay .pad .btn-trade{min-height:46px}
 }

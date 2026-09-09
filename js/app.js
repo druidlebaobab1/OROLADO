@@ -2984,52 +2984,11 @@
     });
   }
 
+  var fsTradeHome = null;
+  var fsTradeActive = false;
+
   function isNativeFullscreen() {
     return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-  }
-
-  function applyFsChrome(on) {
-    var root = document.documentElement;
-    root.classList.toggle('fs-trade', !!on);
-    if (!on) root.classList.remove('fs-ios-fallback');
-    var exitBtn = $('btnChartFsExit');
-    var enterBtn = $('btnChartFs');
-    if (exitBtn) {
-      if (on) exitBtn.removeAttribute('hidden');
-      else exitBtn.setAttribute('hidden', '');
-    }
-    if (enterBtn) {
-      enterBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      enterBtn.title = on ? (t('fsExit') || 'Quitter le plein écran') : (t('fsEnter') || 'Plein écran');
-    }
-    bumpChartLayout();
-  }
-
-  function maybeIosLandscapeFallback() {
-    var portrait = (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) ||
-      (window.innerHeight > window.innerWidth);
-    if (portrait) document.documentElement.classList.add('fs-ios-fallback');
-    else document.documentElement.classList.remove('fs-ios-fallback');
-  }
-
-  function tryLockLandscape() {
-    var o = typeof screen !== 'undefined' ? screen.orientation : null;
-    if (o && typeof o.lock === 'function') {
-      return Promise.resolve(o.lock('landscape')).then(function () {
-        document.documentElement.classList.remove('fs-ios-fallback');
-      }).catch(function () {
-        maybeIosLandscapeFallback();
-      });
-    }
-    maybeIosLandscapeFallback();
-    return Promise.resolve();
-  }
-
-  function unlockOrientation() {
-    try {
-      var o = typeof screen !== 'undefined' ? screen.orientation : null;
-      if (o && typeof o.unlock === 'function') o.unlock();
-    } catch (e) { /* ignore */ }
   }
 
   function requestFsEl(el) {
@@ -3058,23 +3017,68 @@
     return Promise.resolve();
   }
 
+  function mountTradeFullscreen() {
+    var wrap = $('tradeWrap');
+    var slot = $('fsTradeSlot');
+    var overlay = $('fsTradeOverlay');
+    if (!wrap || !slot || !overlay || fsTradeActive) return false;
+    fsTradeHome = { parent: wrap.parentNode, next: wrap.nextSibling };
+    slot.appendChild(wrap);
+    overlay.classList.add('on');
+    overlay.removeAttribute('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('fs-trade');
+    document.body.style.overflow = 'hidden';
+    fsTradeActive = true;
+    var enterBtn = $('btnChartFs');
+    if (enterBtn) {
+      enterBtn.setAttribute('aria-pressed', 'true');
+      enterBtn.title = t('fsExit') || 'Quitter le plein écran';
+    }
+    bumpChartLayout();
+    return true;
+  }
+
+  function unmountTradeFullscreen() {
+    var wrap = $('tradeWrap');
+    var overlay = $('fsTradeOverlay');
+    if (!wrap || !fsTradeActive) return;
+    if (fsTradeHome && fsTradeHome.parent) {
+      if (fsTradeHome.next && fsTradeHome.next.parentNode === fsTradeHome.parent) {
+        fsTradeHome.parent.insertBefore(wrap, fsTradeHome.next);
+      } else {
+        fsTradeHome.parent.appendChild(wrap);
+      }
+    }
+    fsTradeHome = null;
+    fsTradeActive = false;
+    if (overlay) {
+      overlay.classList.remove('on');
+      overlay.setAttribute('hidden', '');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+    document.documentElement.classList.remove('fs-trade');
+    document.body.style.overflow = '';
+    var enterBtn = $('btnChartFs');
+    if (enterBtn) {
+      enterBtn.setAttribute('aria-pressed', 'false');
+      enterBtn.title = t('fsEnter') || 'Plein écran';
+    }
+    bumpChartLayout();
+  }
+
   function enterTradeFullscreen() {
     var trade = $('screenTrade');
     if (!trade || trade.classList.contains('hidden')) return;
     closeDrawer();
-    applyFsChrome(true);
-    requestFsEl(document.documentElement).then(function () {
-      return tryLockLandscape();
-    }).catch(function () {
-      return tryLockLandscape();
-    }).then(function () {
-      bumpChartLayout();
-    });
+    if (!mountTradeFullscreen()) return;
+    var overlay = $('fsTradeOverlay');
+    requestFsEl(overlay || document.documentElement).catch(function () { /* CSS overlay suffit */ })
+      .then(function () { bumpChartLayout(); });
   }
 
   function leaveTradeFullscreen() {
-    unlockOrientation();
-    applyFsChrome(false);
+    unmountTradeFullscreen();
     if (isNativeFullscreen()) {
       Promise.resolve(exitFsNative()).catch(function () {});
     }
@@ -3088,7 +3092,7 @@
       enter.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (document.documentElement.classList.contains('fs-trade')) leaveTradeFullscreen();
+        if (fsTradeActive) leaveTradeFullscreen();
         else enterTradeFullscreen();
       });
     }
@@ -3100,20 +3104,21 @@
       });
     }
     function onFsChange() {
-      if (!isNativeFullscreen() && document.documentElement.classList.contains('fs-trade')) {
-        unlockOrientation();
-        applyFsChrome(false);
+      if (!isNativeFullscreen() && fsTradeActive) {
+        // Sortie native (Échap) : on referme aussi la vue dédiée.
+        unmountTradeFullscreen();
       }
     }
     document.addEventListener('fullscreenchange', onFsChange);
     document.addEventListener('webkitfullscreenchange', onFsChange);
     document.addEventListener('MSFullscreenChange', onFsChange);
     window.addEventListener('orientationchange', function () {
-      if (!document.documentElement.classList.contains('fs-trade')) return;
-      setTimeout(function () {
-        if (document.documentElement.classList.contains('fs-ios-fallback')) maybeIosLandscapeFallback();
-        bumpChartLayout();
-      }, 220);
+      if (!fsTradeActive) return;
+      setTimeout(bumpChartLayout, 220);
+    });
+    window.addEventListener('resize', function () {
+      if (!fsTradeActive) return;
+      bumpChartLayout();
     });
   }
 
