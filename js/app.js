@@ -3030,10 +3030,12 @@
     if ($('closeIosInstall')) { /* bound in bindModals */ }
     if ($('btnIosInstallOk')) { /* bound in bindModals */ }
     if ('serviceWorker' in navigator) {
+      // Purge anciens SW (cache Android noir) puis enregistre v99.
       navigator.serviceWorker.getRegistrations().then(function (regs) {
-        regs.forEach(function (r) { r.update(); });
-      });
-      navigator.serviceWorker.register('sw.js?v=59').catch(function () { /* ignore */ });
+        return Promise.all(regs.map(function (r) { return r.unregister(); }));
+      }).then(function () {
+        return navigator.serviceWorker.register('sw.js?v=99');
+      }).catch(function () { /* ignore */ });
     }
   }
 

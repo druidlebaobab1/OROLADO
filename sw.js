@@ -1,21 +1,11 @@
-﻿const CACHE = 'orolado-v55';
+﻿const CACHE = 'orolado-v99';
 const ASSETS = [
   './',
   './index.html',
-  './css/app.css',
-  './js/config.js',
-  './js/i18n.js',
-  './js/store.js',
-  './js/api.js',
-  './js/supabase.js',
-  './js/auth.js',
-  './js/engine.js',
-  './js/chart.js',
-  './js/app.js',
-  './pay-blank.html',
-  './pay-done.html',
   './manifest.json',
-  './icons/icon.svg'
+  './icons/icon.svg',
+  './pay-blank.html',
+  './pay-done.html'
 ];
 
 self.addEventListener('install', function (event) {
@@ -43,16 +33,29 @@ self.addEventListener('activate', function (event) {
 self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
+  var url = req.url || '';
+  // HTML / CSS / JS : toujours réseau d'abord (évite cache Android cassé).
+  var isShell = /\.(?:html|css|js)(?:\?|$)/i.test(url) || /\/$/.test(url.split('?')[0]);
+  if (isShell) {
+    event.respondWith(
+      fetch(req).then(function (res) {
+        return res;
+      }).catch(function () {
+        return caches.match(req).then(function (hit) {
+          return hit || caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
   event.respondWith(
     fetch(req).then(function (res) {
-      if (!res || res.status !== 200 || req.url.indexOf('http') !== 0) return res;
+      if (!res || res.status !== 200 || url.indexOf('http') !== 0) return res;
       var copy = res.clone();
       caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
       return res;
     }).catch(function () {
-      return caches.match(req).then(function (hit) {
-        return hit || caches.match('./index.html');
-      });
+      return caches.match(req);
     })
   );
 });

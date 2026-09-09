@@ -406,8 +406,16 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
 .btn-close{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
 
-/* ===== Android-only (html.is-android) : ne touche pas PC / iPhone ===== */
-html.is-android .btn-close{
+/* Android : éviter html/body position:fixed qui peuvent collapser le layout */
+html.is-android,html.is-android body{
+  position:relative!important;inset:auto!important;width:100%!important;
+  height:auto!important;min-height:100%!important;min-height:100dvh!important;
+  overflow-x:hidden!important;overflow-y:auto!important}
+html.is-android .screen{
+  height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important}
+html.is-android #screenTrade{
+  overflow-x:hidden!important;overflow-y:auto!important;min-height:100dvh!important}
+html.is-android .pad{z-index:50!important}
   min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
   z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;position:absolute}
@@ -425,10 +433,10 @@ html.is-android [data-i18n="tradeHintAndroid"]{
 html.is-android .btn-hist-cta{
   display:none!important}
 html.is-android .chart-card,html.is-android #chart{
-  flex-shrink:0!important;min-height:max(440px,62vh)!important;min-height:max(440px,62dvh)!important;
+  flex-shrink:0!important;min-height:280px!important;height:42vh!important;max-height:52vh!important;
   background:#0B0E14!important}
 html.is-android .chart-stage{
-  flex-shrink:0!important;min-height:max(410px,58vh)!important;background:#0B0E14!important;background-color:#0B0E14!important}
+  flex-shrink:0!important;min-height:240px!important;height:100%!important;background:#0B0E14!important;background-color:#0B0E14!important}
 html.is-android #chartCanvas{
   display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
   background:#0B0E14!important;background-color:#0B0E14!important;min-height:0!important}
@@ -436,8 +444,8 @@ html.is-android #chartOverlay{
   background:transparent!important;background-color:transparent!important;min-height:0!important;z-index:20!important}
 @media (max-width:429px){
   html.is-android .chart-card,html.is-android #chart{
-    min-height:max(440px,62vh)!important;min-height:max(440px,62dvh)!important;background:#0B0E14!important}
-  html.is-android .chart-stage{min-height:max(410px,58vh)!important;background:#0B0E14!important}
+    min-height:260px!important;height:40vh!important;max-height:48vh!important;background:#0B0E14!important}
+  html.is-android .chart-stage{min-height:220px!important;background:#0B0E14!important}
 }
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -962,10 +970,16 @@ html.fs-trade .odds-row,
 html.fs-trade .odds-label{
   display:none!important;visibility:hidden!important;pointer-events:none!important;
   height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
-html.is-android .fs-trade-overlay,
+/* CRITICAL: ne JAMAIS forcer display:flex sur .fs-trade-overlay sans .on
+   (sinon overlay noir z-index 99999 couvre tout Android). */
+html.is-android .fs-trade-overlay:not(.on),
+.fs-trade-overlay:not(.on){
+  display:none!important;visibility:hidden!important;pointer-events:none!important;z-index:-1!important}
+html.is-android .fs-trade-overlay.on,
 html.is-fullscreen .fs-trade-overlay.on,
 html.fs-trade .fs-trade-overlay.on{
-  height:100vh!important;height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+  height:100vh!important;height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;
+  visibility:visible!important;pointer-events:auto!important;z-index:99999!important}
 html.is-fullscreen .fs-trade-overlay .chart-card,
 html.is-fullscreen .fs-trade-overlay #chart,
 html.is-android .fs-trade-overlay .chart-card,
