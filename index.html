@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=86">
+  <link rel="stylesheet" href="css/app.css?v=87">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -101,21 +101,6 @@
             <p class="err-msg" id="err-regEmail"></p>
           </div>
           <div class="field">
-            <label data-i18n="whatsapp">Numéro de téléphone</label>
-            <div class="phone-row">
-              <select id="regDial" aria-label="Indicatif">
-                <option value="+225">🇨🇮 +225</option>
-                <option value="+221">🇸🇳 +221</option>
-                <option value="+226">🇧🇫 +226</option>
-                <option value="+223">🇲🇱 +223</option>
-                <option value="+228">🇹🇬 +228</option>
-                <option value="+237">🇨🇲 +237</option>
-              </select>
-              <input id="regPhone" type="tel" inputmode="numeric" autocomplete="tel-national" required minlength="8" maxlength="12" placeholder="07 XX XX XX XX">
-            </div>
-            <p class="err-msg" id="err-regPhone"></p>
-          </div>
-          <div class="field">
             <label data-i18n="password">Mot de passe</label>
             <div class="pass-wrap">
               <input id="regPass" type="password" autocomplete="new-password" required minlength="6">
@@ -161,15 +146,6 @@
             <div class="lang-dd" id="langBarTrade"></div>
             <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
           </div>
-        </div>
-        <div class="pay-logos-strip" aria-hidden="true">
-          <i class="op-logo op-wave" title="Wave">W</i>
-          <i class="op-logo op-orange" title="Orange Money">OM</i>
-          <i class="op-logo op-mtn" title="MTN MoMo">MTN</i>
-          <i class="op-logo op-moov" title="Moov Money">M</i>
-          <i class="op-logo op-card" title="Carte">CB</i>
-          <i class="op-logo op-crypto" title="Crypto">₿</i>
-          <i class="op-logo op-paypal" title="PayPal">P</i>
         </div>
         <div class="topbar-mode">
           <div class="mode-switch" id="modeSwitcher" role="tablist" aria-label="Mode de compte">
@@ -330,7 +306,6 @@
     <div class="card glass">
       <div class="list-row"><span data-i18n="publicId">ID public</span><strong id="profPublicId">—</strong></div>
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
-      <div class="list-row"><span data-i18n="whatsapp">Numéro de téléphone</span><strong id="profPhone">—</strong></div>
     </div>
     <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">⚙️ Dashboard Admin</button>
     <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
@@ -448,29 +423,26 @@
   <div class="modal-backdrop" id="withdrawModal">
     <div class="modal-box glass withdraw-box">
       <button type="button" class="btn-close" id="closeWithdraw">✕</button>
-      <div class="modal-title" data-i18n="withdrawTitle">Retrait Mobile Money</div>
-      <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
+      <div class="modal-title" data-i18n="withdrawTitle">Retrait</div>
       <div class="wd-bal" id="wdBalanceLabel">
-        <div class="wd-bal-caption">Solde retirable</div>
+        <div class="wd-bal-caption" data-i18n="wdBalCaption">Solde retirable</div>
         <div class="wd-bal-amt" id="wdBalanceAmt">$0.00</div>
       </div>
       <div id="wdWagerBox" class="wd-wager-box hidden">
         <div class="wd-wager-track"><div class="wd-wager-fill" id="wdWagerFill" style="width:0%"></div></div>
         <p class="wd-wager-text" id="wdWagerText"></p>
       </div>
-      <div class="op-grid" id="opGrid">
-        <button type="button" class="op-card op-wave on" data-op="wave" style="--op:#1BA0F2"><i class="op-logo">W</i><span>Wave</span></button>
-        <button type="button" class="op-card op-orange" data-op="orange" style="--op:#FF6600"><i class="op-logo">OM</i><span>Orange Money</span></button>
-        <button type="button" class="op-card op-mtn" data-op="mtn" style="--op:#FFCC00"><i class="op-logo">MTN</i><span>MTN MoMo</span></button>
-        <button type="button" class="op-card op-moov" data-op="moov" style="--op:#0B3C8A"><i class="op-logo">M</i><span>Moov Money</span></button>
-      </div>
-      <div class="wd-pills">
-        <button type="button" class="wd-pill" data-amt="3">$3</button>
-        <button type="button" class="wd-pill" data-amt="5">$5</button>
-        <button type="button" class="wd-pill" data-amt="10">$10</button>
-        <button type="button" class="wd-pill" data-amt="25">$25</button>
-        <button type="button" class="wd-pill" data-amt="50">$50</button>
-        <button type="button" class="wd-pill" data-amt="all" data-i18n="wdAll">TOUT</button>
+      <div class="field">
+        <label data-i18n="wdMethod">Mode de retrait</label>
+        <select id="wdMethod" aria-label="Mode de retrait">
+          <option value="wave">Wave</option>
+          <option value="orange">Orange Money</option>
+          <option value="mtn">MTN MoMo</option>
+          <option value="moov">Moov Money</option>
+          <option value="usdt">Crypto USDT</option>
+          <option value="btc">Crypto BTC</option>
+          <option value="paypal">PayPal</option>
+        </select>
       </div>
       <div class="field">
         <label data-i18n="wdAmount">Montant ($)</label>
@@ -478,14 +450,10 @@
         <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : $3.00</p>
         <p class="err-msg" id="err-withdrawAmt"></p>
       </div>
-      <div class="field">
-        <label data-i18n="wdPhone">Numéro Mobile Money</label>
-        <div class="phone-row">
-          <select id="wdCountry" aria-label="Indicatif">
-            <option value="+225" selected>🇨🇮 +225</option>
-          </select>
-          <input id="withdrawPhone" type="tel" inputmode="numeric" placeholder="07 00 00 00 00" maxlength="12">
-        </div>
+      <div class="field" id="wdDestField">
+        <label id="wdDestLabel" data-i18n="wdAccount">Numéro de compte</label>
+        <input id="wdDestination" type="text" autocomplete="off" maxlength="120" placeholder="">
+        <p class="err-msg" id="err-wdDestination"></p>
       </div>
       <div class="wd-trust">
         <span>🔒 Cryptage bancaire SSL 256-bit</span>
@@ -499,33 +467,11 @@
     <div class="modal-box glass withdraw-box deposit-box">
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
       <div class="modal-title" data-i18n="depositTitle">Recharger en USD</div>
-      <div class="wd-live"><span class="dot-on"></span> <span data-i18n="gatewayOn">Passerelle Mobile Money 100% active</span></div>
-      <p class="deposit-instant" data-i18n="depositInstant">D&#233;p&#244;t Mobile Money. Minimum $3.00.</p>
-      <div class="pay-mode-label" data-i18n="payMode">Modes de paiement acceptés</div>
-      <div class="pay-showcase" id="depOpGrid" aria-hidden="true">
-        <div class="pay-show-item"><i class="op-logo op-wave">W</i><span>Wave</span></div>
-        <div class="pay-show-item"><i class="op-logo op-orange">OM</i><span>Orange Money</span></div>
-        <div class="pay-show-item"><i class="op-logo op-mtn">MTN</i><span>MTN MoMo</span></div>
-        <div class="pay-show-item"><i class="op-logo op-moov">M</i><span>Moov Money</span></div>
-        <div class="pay-show-item"><i class="op-logo op-card">💳</i><span>Visa / Mastercard</span></div>
-        <div class="pay-show-item"><i class="op-logo op-crypto">₿</i><span>Crypto</span></div>
-        <div class="pay-show-item"><i class="op-logo op-paypal">P</i><span>PayPal</span></div>
-      </div>
       <div class="field">
         <label data-i18n="depositAmtLabel">MONTANT &#192; RECHARGER ($)</label>
-        <div class="wd-pills" style="margin-bottom:8px">
-          <button type="button" class="wd-pill dep-pill" data-dep="3">$3</button>
-          <button type="button" class="wd-pill dep-pill" data-dep="5">$5</button>
-          <button type="button" class="wd-pill dep-pill" data-dep="10">$10</button>
-          <button type="button" class="wd-pill dep-pill" data-dep="25">$25</button>
-          <button type="button" class="wd-pill dep-pill" data-dep="50">$50</button>
-        </div>
         <input id="depositAmt" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
         <p class="hint-min" data-i18n="depositMin">Minimum $3.00</p>
         <p class="err-msg" id="err-depositAmt"></p>
-      </div>
-      <div class="wd-trust">
-        <span>🔒 Vos coordonnées OROLADO ne sont jamais transmises au checkout</span>
       </div>
       <button type="button" class="btn-gold" id="btnConfirmDeposit" data-i18n="depositConfirm">VALIDER LA RECHARGE</button>
     </div>
@@ -601,15 +547,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=86"></script>
-  <script src="js/i18n.js?v=86"></script>
-  <script src="js/store.js?v=86"></script>
-  <script src="js/api.js?v=86"></script>
+  <script src="js/config.js?v=87"></script>
+  <script src="js/i18n.js?v=87"></script>
+  <script src="js/store.js?v=87"></script>
+  <script src="js/api.js?v=87"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=86"></script>
-  <script src="js/auth.js?v=86"></script>
-  <script src="js/engine.js?v=86"></script>
-  <script src="js/chart.js?v=86"></script>
-  <script src="js/app.js?v=86"></script>
+  <script src="js/supabase.js?v=87"></script>
+  <script src="js/auth.js?v=87"></script>
+  <script src="js/engine.js?v=87"></script>
+  <script src="js/chart.js?v=87"></script>
+  <script src="js/app.js?v=87"></script>
 </body>
 </html>

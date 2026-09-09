@@ -192,8 +192,9 @@ if ($action === 'registerStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez votre nom ou pseudo (2 caractères min.)', 'field' => 'regName']);
     exit;
   }
-  if (strlen($phone) < 8 || strlen($phone) > 12) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Numéro de téléphone requis (8 à 12 chiffres)', 'field' => 'regPhone']);
+  // Téléphone optionnel (plus collecté à l’inscription).
+  if (strlen($phone) > 0 && (strlen($phone) < 8 || strlen($phone) > 12)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Numéro de téléphone invalide', 'field' => 'regPhone']);
     exit;
   }
   if (strlen($passwordHash) < 16) {
@@ -759,16 +760,17 @@ if ($action === 'withdraw') {
     ]);
     exit;
   }
-  $operator = preg_replace('/[^a-z]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
-  if (!in_array($operator, ['wave', 'orange', 'mtn', 'moov'], true)) $operator = 'wave';
-  $phone = preg_replace('/\D/', '', (string) ($req['phone'] ?? ''));
+  $operator = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
+  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'usdt', 'btc', 'paypal'];
+  if (!in_array($operator, $allowedOps, true)) $operator = 'wave';
+  $destination = trim((string) ($req['destination'] ?? $req['phone'] ?? ''));
   $beneficiary = trim((string) ($req['beneficiary'] ?? $me['displayName'] ?? ''));
   $countryCode = preg_replace('/[^\d+]/', '', (string) ($req['countryCode'] ?? $me['countryCode'] ?? '+225'));
-  if (strlen($phone) < 8) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Numéro Mobile Money invalide']);
+  if (strlen($destination) < 4) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez le compte / adresse de réception']);
     exit;
   }
-  if (strlen($beneficiary) < 3) {
+  if (strlen($beneficiary) < 2) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Nom du bénéficiaire requis']);
     exit;
   }
@@ -786,7 +788,8 @@ if ($action === 'withdraw') {
     'status' => 'pending',
     'suspect' => $suspect,
     'operator' => $operator,
-    'phone' => $phone,
+    'phone' => $destination,
+    'destination' => $destination,
     'beneficiary' => $beneficiary,
     'countryCode' => $countryCode,
     'at' => date('c'),

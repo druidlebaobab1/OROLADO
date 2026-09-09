@@ -166,7 +166,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="v100"].on{border-color:var(--green)}
 .payout-live{font-size:10px;font-weight:900;color:var(--green);line-height:1.2;margin-top:1px}
 
-.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:348px!important;min-height:max(348px,54vh)!important;height:auto;max-height:none;
+.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:372px!important;min-height:max(372px,58vh)!important;height:auto;max-height:none;
   display:flex;flex-direction:column;border-radius:12px;overflow:hidden;position:relative}
 .chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 6px;margin:0;flex-shrink:0;border-bottom:1px solid rgba(255,215,0,.08);min-height:22px}
 .chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:0;pointer-events:none}
@@ -182,7 +182,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 .wd-ticker-id{font-size:11px;font-weight:500;color:rgba(212,175,55,.78);white-space:nowrap;flex-shrink:0;line-height:20px}
 .wd-ticker-amt{font-size:11px;font-weight:800;color:#10B981;white-space:nowrap;text-overflow:clip;overflow:visible;flex-shrink:0;line-height:20px;text-shadow:0 0 8px rgba(16,185,129,.35)}
-.chart-stage{flex:1 1 auto;position:relative;min-height:316px!important;flex-shrink:0;overflow:hidden}
+.chart-stage{flex:1 1 auto;position:relative;min-height:340px!important;flex-shrink:0;overflow:hidden}
 #chartCanvas{width:100%;height:100%;display:block;position:relative;z-index:0}
 .chart-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:15;pointer-events:none;display:block}
 .ind-pills{display:flex;flex-wrap:nowrap;gap:3px;pointer-events:auto;z-index:13;align-items:center;min-width:0}
@@ -237,29 +237,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #screenTrade:not(.is-guest) .auth-quick{display:none!important}
 #screenTrade:not(.is-guest) .topbar-row .btn-deposit{position:absolute;left:50%;transform:translateX(-50%);margin:0;z-index:1}
 #screenTrade:not(.is-guest) .topbar-actions{margin-left:auto}
-.pay-logos-strip{display:flex;align-items:center;justify-content:center;gap:4px;height:16px;margin:4px 0;padding:0;
-  overflow:hidden;pointer-events:none;user-select:none;flex-shrink:0;max-height:16px;line-height:16px}
-.pay-logos-strip .op-logo,
-.pay-logos-strip i.op-logo,
-.pay-logos-strip .op-logo.op-card,
-.pay-logos-strip .op-logo.op-wave,
-.pay-logos-strip .op-logo.op-orange,
-.pay-logos-strip .op-logo.op-mtn,
-.pay-logos-strip .op-logo.op-moov,
-.pay-logos-strip .op-logo.op-crypto,
-.pay-logos-strip .op-logo.op-paypal{width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;
-  min-width:16px!important;min-height:16px!important;padding:0!important;margin:0!important;border:0!important;
-  border-radius:3px!important;box-shadow:none!important;flex:0 0 16px!important;flex-grow:0!important;flex-shrink:0!important;
-  display:inline-flex!important;align-items:center;justify-content:center;font-size:7px!important;line-height:1!important;
-  overflow:hidden!important;object-fit:contain!important;font-style:normal;font-weight:900;color:#fff;letter-spacing:-.04em;
-  vertical-align:middle;box-sizing:border-box!important;transform:none!important}
-.pay-logos-strip .op-logo.op-card{font-size:8px!important;background:#1a1f2e!important}
-.pay-logos-strip .op-logo.op-mtn{color:#0A0F1D!important;font-size:5px!important}
-.pay-logos-strip .op-logo.op-crypto{color:#0A0F1D!important}
-.pay-showcase{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 12px;pointer-events:none;user-select:none}
-.pay-show-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;
-  border-radius:10px;border:1px solid var(--line);background:rgba(10,15,29,.55);font-size:.58rem;font-weight:800;color:var(--muted);text-align:center}
-.pay-show-item .op-logo{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:.62rem;font-weight:900;font-style:normal;color:#fff}
+.pay-logos-strip{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden}
+.pay-showcase{display:none!important}
 .op-wave{background:#1BA0F2}.op-orange{background:#FF6600}.op-mtn{background:#FFCC00;color:#0A0F1D!important}
 .op-moov{background:#0B3C8A}.op-card{background:#1a1f2e;font-size:.9rem!important}.op-crypto{background:#F7931A;color:#0A0F1D!important}
 .op-paypal{background:#003087}
@@ -557,8 +536,8 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
     display:flex;flex-direction:column;justify-content:center;gap:2px}
   .asset-chip .n{font-size:.72rem;line-height:1.15;margin:0}
   .payout-live{font-size:.68rem;line-height:1.1;margin-top:0}
-  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%;min-height:360px!important;max-height:none;display:flex!important}
-  .chart-stage{min-height:300px!important;flex:1 1 auto}
+  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%;min-height:400px!important;max-height:none;display:flex!important}
+  .chart-stage{min-height:340px!important;flex:1 1 auto}
   .asset-live-tag{display:inline;font-size:.62rem;color:var(--muted);font-weight:700}
   .strip-price,.pnl-value{font-size:1rem}
   .history-card{display:none!important}
@@ -578,8 +557,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .install-banner{left:auto;right:12px;bottom:12px;width:auto;max-width:260px;z-index:25}
   /* Banner hors du chart : ancrée au pad / shell, pas sur le canvas */
   #chart .install-banner{display:none!important}
-  .pay-logos-strip{height:16px;max-height:16px;margin:4px 0;padding:0;gap:4px}
-  .pay-logos-strip .op-logo,.pay-logos-strip i.op-logo,.pay-logos-strip .op-logo.op-card{width:16px!important;height:16px!important;max-height:16px!important;padding:0!important;font-size:7px!important}
+  .pay-logos-strip{display:none!important;height:0!important;margin:0!important;padding:0!important}
 }
 /* Compat 860–899 : même 2 colonnes (TV / tablette large) */
 @media (min-width:860px) and (max-width:899px){

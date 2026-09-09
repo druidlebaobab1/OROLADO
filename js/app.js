@@ -878,10 +878,6 @@
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
-    var phone = String(u.phone || '').replace(/\D/g, '');
-    $('profPhone').textContent = phone && phone !== '0000000000'
-      ? ((u.countryCode || '') + ' ' + u.phone)
-      : '—';
     setAdminBtns(u);
   }
 
@@ -1159,7 +1155,7 @@
           var acts = w.status === 'pending'
             ? '<button class="mini ok" data-wd="' + adminEsc(w.id) + '" data-ok="1">' + t('approve') + '</button> <button class="mini bad" data-wd="' + adminEsc(w.id) + '" data-ok="0">' + t('reject') + '</button>'
             : adminEsc(w.status);
-          var dest = (w.operator || '') + ' ' + (w.countryCode || '') + ' ' + (w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
+          var dest = (w.operator || '') + ' · ' + (w.destination || w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
           return '<tr><td>' + adminEsc(w.name) + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + adminEsc(dest) + '<div class="h-time">' + adminEsc(w.clock || '') + badge + '</div></td><td>' + acts + '</td></tr>';
         }).join('');
         html = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th>Statut</th></tr></thead><tbody>' + wrows + '</tbody></table>';
@@ -1424,11 +1420,7 @@
 
   function openDeposit(preMsg) {
     if (!requireAccount()) return;
-    var u = user();
-    depositOp = depositOp || 'wave';
-    document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) {
-      c.classList.toggle('on', c.dataset.op === depositOp);
-    });
+    depositOp = 'wave';
     var min = minDeposit();
     if ($('depositAmt')) {
       $('depositAmt').value = String(min);
@@ -1974,21 +1966,37 @@
     }
   }
 
+  function syncWithdrawDestUi() {
+    var method = ($('wdMethod') && $('wdMethod').value) || 'wave';
+    var label = $('wdDestLabel');
+    var input = $('wdDestination');
+    if (!label || !input) return;
+    if (method === 'usdt' || method === 'btc') {
+      label.textContent = t('wdWallet');
+      input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : 'T… / 0x…';
+      input.type = 'text';
+    } else if (method === 'paypal') {
+      label.textContent = t('wdPaypal');
+      input.placeholder = 'vous@email.com';
+      input.type = 'email';
+    } else {
+      label.textContent = t('wdAccount');
+      input.placeholder = '07XXXXXXXX';
+      input.type = 'text';
+    }
+  }
+
   function openWithdraw() {
     if (!requireAccount()) return;
-    var u = user();
     selectedOp = 'wave';
-    document.querySelectorAll('.op-card').forEach(function (c) {
-      c.classList.toggle('on', c.dataset.op === selectedOp);
-    });
-    document.querySelectorAll('.wd-pill').forEach(function (p) { p.classList.remove('on'); });
+    if ($('wdMethod')) $('wdMethod').value = 'wave';
     if ($('withdrawAmt')) {
       $('withdrawAmt').value = '';
       $('withdrawAmt').min = String(minWithdraw());
       $('withdrawAmt').placeholder = String(minWithdraw());
     }
-    if ($('withdrawPhone')) $('withdrawPhone').value = '';
-    if ($('wdCountry')) $('wdCountry').value = (u && u.countryCode) || '+225';
+    if ($('wdDestination')) $('wdDestination').value = '';
+    syncWithdrawDestUi();
     refreshWithdrawUi();
     closeDrawer();
     openModal('withdrawModal');
@@ -2207,8 +2215,8 @@
       try {
         res = await D6.Auth.register({
           displayName: $('regName').value, email: $('regEmail').value,
-          phone: $('regPhone') ? $('regPhone').value : '',
-          countryCode: $('regDial') ? $('regDial').value : '+225',
+          phone: '',
+          countryCode: '+225',
           password: $('regPass').value, passwordConfirm: $('regPass2').value,
           acceptTerms: $('regAge').checked
         });
@@ -2600,70 +2608,48 @@
       });
     }
 
-    document.querySelectorAll('#depOpGrid .op-card').forEach(function (card) {
-      card.addEventListener('click', function () {
-        depositOp = card.dataset.op;
-        document.querySelectorAll('#depOpGrid .op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
-      });
-    });
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
         this.value = String(this.value || '').replace(/[^\d.]/g, '');
       });
     }
-    document.querySelectorAll('.dep-pill').forEach(function (pill) {
-      pill.addEventListener('click', function () {
-        document.querySelectorAll('.dep-pill').forEach(function (p) { p.classList.remove('on'); });
-        pill.classList.add('on');
-        setDepositAmt(pill.dataset.dep);
-      });
-    });
     $('btnConfirmDeposit').addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
       confirmDeposit();
     });
-    document.querySelectorAll('#opGrid .op-card').forEach(function (card) {
-      card.addEventListener('click', function () {
-        selectedOp = card.dataset.op;
-        document.querySelectorAll('#opGrid .op-card').forEach(function (c) { c.classList.toggle('on', c === card); });
-      });
-    });
-    document.querySelectorAll('#withdrawModal .wd-pill').forEach(function (pill) {
-      pill.addEventListener('click', function () {
-        document.querySelectorAll('.wd-pill').forEach(function (p) { p.classList.remove('on'); });
-        pill.classList.add('on');
-        var u = user();
-        var real = realWithdrawBalance(u);
-        if (pill.dataset.amt === 'all') $('withdrawAmt').value = real;
-        else $('withdrawAmt').value = pill.dataset.amt;
-      });
-    });
-    if ($('withdrawPhone')) {
-      $('withdrawPhone').addEventListener('input', function () {
-        this.value = this.value.replace(/[^\d\s]/g, '').slice(0, 12);
+    if ($('wdMethod')) {
+      $('wdMethod').addEventListener('change', function () {
+        selectedOp = this.value || 'wave';
+        syncWithdrawDestUi();
       });
     }
     $('btnSendWithdraw').addEventListener('click', async function () {
       var u = user();
       if (!u || !requireAccount()) return;
       var amount = D6.roundMoney(Number($('withdrawAmt').value) || 0);
-      var phone = digitsPhone($('withdrawPhone') && $('withdrawPhone').value);
+      var method = ($('wdMethod') && $('wdMethod').value) || selectedOp || 'wave';
+      selectedOp = method;
+      var destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
       var name = (u.displayName || 'Client').trim();
-      var cc = ($('wdCountry') && $('wdCountry').value) || '+225';
       var real = realWithdrawBalance(u);
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
       if (!gate.ok) { toast(gate.msg, 'err', 5000); return; }
       if (amount < minWd) { toast(t('withdrawMinErr'), 'err'); return; }
       if (amount > real) { toast(t('insufficient'), 'err'); return; }
-      if (phone.length < 8 || phone.length > 10) { toast(t('wdPhone'), 'err'); return; }
+      if (destination.length < 4) { toast(t('wdDestErr'), 'err'); return; }
+      if (method === 'paypal' && destination.indexOf('@') < 0) {
+        toast(t('wdPaypalErr'), 'err');
+        return;
+      }
       var payload = {
         amount: amount,
-        operator: selectedOp,
-        phone: phone,
+        operator: method,
+        phone: destination,
+        destination: destination,
         beneficiary: name,
-        countryCode: cc,
+        countryCode: u.countryCode || '+225',
         realDepositTotal: Number(u.realDepositTotal) || 0,
         realStakeVolume: Number(u.realStakeVolume) || 0,
         totalWageredSinceDeposit: Number(u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume) || 0,

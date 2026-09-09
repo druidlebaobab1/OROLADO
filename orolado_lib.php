@@ -478,19 +478,14 @@ function maketou_split_name(string $name): array {
   return [$first, $last];
 }
 
-/** Coordonnées client depuis le compte Orolado (préremplissage Maketou). */
+/** Coordonnées client pour Maketou : e-mail toujours anonymisé (jamais l’e-mail Orolado réel). */
 function maketou_customer_from_user(array $me): array {
-  $email = strtolower(trim((string) ($me['email'] ?? '')));
-  if ($email === '' || str_contains($email, '@orolado.local') || str_ends_with($email, '.local')) {
-    $email = maketou_alias_email((string) ($me['id'] ?? ''));
-  }
-  $cc = preg_replace('/\D/', '', (string) ($me['countryCode'] ?? '225')) ?: '225';
-  $phone = preg_replace('/\D/', '', (string) ($me['phone'] ?? '')) ?: '';
-  if ($phone !== '' && str_starts_with($phone, $cc)) {
+  $email = maketou_alias_email((string) ($me['id'] ?? ''));
+  $cc = '225';
+  $phoneRaw = maketou_alias_phone();
+  $phone = preg_replace('/\D/', '', $phoneRaw) ?? '';
+  if (str_starts_with($phone, $cc) && strlen($phone) > strlen($cc)) {
     $phone = substr($phone, strlen($cc));
-  }
-  if (strlen($phone) < 8) {
-    $phone = substr(preg_replace('/\D/', '', maketou_alias_phone()) ?: '0700000000', -10);
   }
   [$first, $last] = maketou_split_name((string) ($me['displayName'] ?? 'Trader'));
   return [

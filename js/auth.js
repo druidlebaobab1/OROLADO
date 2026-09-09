@@ -51,14 +51,14 @@
     register: async function (form) {
       var displayName = String(form.displayName || '').trim();
       var email = normalizeEmail(form.email);
-      var phone = normalizePhone(form.phone);
+      var phone = normalizePhone(form.phone || '');
       var countryCode = form.countryCode || '+225';
       var password = String(form.password || '');
       var confirm = String(form.passwordConfirm || '');
 
       if (!validName(displayName)) return { ok: false, reason: 'Indiquez votre nom ou pseudo (2 caractères min.)', field: 'regName' };
       if (!validEmail(email)) return { ok: false, reason: 'Adresse e-mail invalide', field: 'regEmail' };
-      if (!validPhone(phone)) return { ok: false, reason: 'Numéro de téléphone requis (8 à 12 chiffres)', field: 'regPhone' };
+      if (phone && !validPhone(phone)) return { ok: false, reason: 'Numéro de téléphone invalide', field: 'regPhone' };
       if (password.length < 6) return { ok: false, reason: 'Mot de passe : 6 caractères minimum', field: 'regPass' };
       if (password !== confirm) return { ok: false, reason: 'Les mots de passe ne correspondent pas', field: 'regPass2' };
       if (!form.acceptTerms) return { ok: false, reason: 'Vous devez confirmer avoir plus de 18 ans', field: 'regAge' };
@@ -70,7 +70,7 @@
           id: D6.uid(),
           displayName: displayName,
           email: email,
-          phone: phone,
+          phone: phone || '',
           countryCode: countryCode,
           passwordHash: await hashPassword(password),
           trafficSource: 'direct'
@@ -92,7 +92,7 @@
       var start = await D6.Api.post('registerStart', {
         displayName: displayName,
         email: email,
-        phone: phone,
+        phone: phone || '',
         countryCode: countryCode,
         passwordHash: passwordHash,
         trafficSource: trafficSource
@@ -110,7 +110,7 @@
         pendingOtp: true,
         email: email,
         displayName: displayName,
-        phone: phone,
+        phone: phone || '',
         countryCode: countryCode,
         password: password,
         resendIn: (start && start.resendIn) || 60
