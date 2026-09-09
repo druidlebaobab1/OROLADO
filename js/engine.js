@@ -471,9 +471,26 @@
       return { winProbability: winRateForOdds(trade.payout, fav), harsh: false, profile: 'A' };
     }
 
-    // PROFIL B — joueur ordinaire DÉMO uniquement (~60 % à ×1.88).
+    // PROFIL B — joueur ordinaire DÉMO uniquement (~60 % à ×1.88, anti-streak).
     if (isDemo) {
-      return { winProbability: winRateForOdds(trade.payout, demoMap), harsh: false, profile: 'B' };
+      var p = winRateForOdds(trade.payout, demoMap);
+      var cw = Number(user.consecutiveWins) || 0;
+      var cl = Number(user.consecutiveLosses) || 0;
+      var maxStreak = Number(C.DEMO_MAX_WIN_STREAK);
+      if (!isFinite(maxStreak) || maxStreak < 1) maxStreak = 2;
+      // Interdiction stricte : pas plus de 2 victoires d'affilée.
+      if (cw >= maxStreak) {
+        return { winProbability: 0, harsh: true, profile: 'B' };
+      }
+      // Après 1 victoire : baisse la proba pour favoriser une alternance naturelle.
+      if (cw === 1) {
+        p = Math.min(p, Math.max(0.22, p * 0.55));
+      }
+      // Après une défaite : léger boost pour tendre vers ~60 % global sans streaks longs.
+      if (cl >= 1 && cw === 0) {
+        p = Math.min(0.72, p + 0.08);
+      }
+      return { winProbability: p, harsh: false, profile: 'B' };
     }
 
     // PROFIL C — joueur ordinaire réel : caisse verrouillée (inchangé).

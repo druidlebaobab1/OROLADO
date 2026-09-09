@@ -304,7 +304,7 @@
     }
     var amount = Math.abs(Number(payout) || 0);
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
-    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : '+$0.00';
+    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : '+$0';
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
       el.className = 'chart-outcome';
@@ -696,7 +696,7 @@
       label = 'Gagné +' + D6.fmtFCFA(Math.abs(net));
       cls = 'win';
     } else {
-      label = '+$0.00';
+      label = '+$0';
       cls = 'lose';
       net = -stake;
     }
@@ -3114,7 +3114,8 @@
     var enterBtn = $('btnChartFs');
     if (enterBtn) {
       enterBtn.setAttribute('aria-pressed', 'false');
-      enterBtn.title = t('fsEnter') || 'Plein écran';
+      enterBtn.title = t('fsEnter') || 'AGRANDIR';
+      enterBtn.setAttribute('aria-label', t('fsEnter') || 'AGRANDIR');
     }
     bumpChartLayout();
   }

@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=95">
+  <link rel="stylesheet" href="css/app.css?v=96">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -162,7 +162,7 @@
         <div class="balance-row">
           <div class="balance-card glass" id="balanceCard">
             <div class="bal-stack">
-              <span class="bal" id="balanceDisplay">$1,000,000.00</span>
+              <span class="bal" id="balanceDisplay">$1,000,000</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
             <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la démo" aria-label="Recharger démo">+</button>
@@ -220,9 +220,9 @@
             <canvas id="chartCanvas" width="800" height="380" style="display:block;visibility:visible;opacity:1;z-index:10;background:#0B0E14"></canvas>
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true" style="background:transparent"></canvas>
-            <button type="button" class="chart-fs-btn" id="btnChartFs" aria-label="Plein écran trading" title="Plein écran">
+            <button type="button" class="chart-fs-btn" id="btnChartFs" aria-label="Agrandir" title="Agrandir">
               <span class="chart-fs-ico" aria-hidden="true">⤢</span>
-              <span class="chart-fs-label" data-i18n="fsEnter">Plein écran</span>
+              <span class="chart-fs-label" data-i18n="fsEnter">AGRANDIR</span>
             </button>
           </div>
         </div>
@@ -252,7 +252,7 @@
             <div class="stake-field">
               <input id="inputStake" type="number" inputmode="decimal" value="1" min="1" step="1" placeholder="$" autocomplete="off">
               <div class="stake-min" style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;margin:0;width:100%;gap:8px">
-                <span data-i18n="minHint" class="stake-min-label" style="font-size:11px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mise min : $1.00</span>
+                <span data-i18n="minHint" class="stake-min-label" style="font-size:11px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mise min : $1</span>
                 <span class="stake-min-actions" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;flex-shrink:0;align-items:center">
                   <button type="button" class="qbtn stake-act" data-a="half">÷2</button>
                   <button type="button" class="qbtn stake-act" data-a="x2">×2</button>
@@ -478,7 +478,7 @@
       <div class="modal-title" data-i18n="withdrawTitle">Retrait</div>
       <div class="wd-bal" id="wdBalanceLabel">
         <div class="wd-bal-caption" data-i18n="wdBalCaption">Solde retirable</div>
-        <div class="wd-bal-amt" id="wdBalanceAmt">$0.00</div>
+        <div class="wd-bal-amt" id="wdBalanceAmt">$0</div>
       </div>
       <div id="wdWagerBox" class="wd-wager-box hidden">
         <div class="wd-wager-track"><div class="wd-wager-fill" id="wdWagerFill" style="width:0%"></div></div>
@@ -499,7 +499,7 @@
       <div class="field">
         <label data-i18n="wdAmount">Montant ($)</label>
         <input id="withdrawAmt" type="number" inputmode="decimal" min="3" step="0.01" placeholder="3">
-        <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : $3.00</p>
+        <p class="hint-min" data-i18n="withdrawMin">Retrait minimum : $3</p>
         <p class="err-msg" id="err-withdrawAmt"></p>
       </div>
       <div class="field" id="wdDestField">
@@ -522,7 +522,7 @@
       <div class="field">
         <label data-i18n="depositAmtLabel">MONTANT &#192; RECHARGER ($)</label>
         <input id="depositAmt" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
-        <p class="hint-min" data-i18n="depositMin">Minimum $3.00</p>
+        <p class="hint-min" data-i18n="depositMin">Minimum $3</p>
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
       <button type="button" class="btn-gold" id="btnConfirmDeposit" data-i18n="depositConfirm">VALIDER LA RECHARGE</button>
@@ -599,15 +599,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=95"></script>
-  <script src="js/i18n.js?v=95"></script>
-  <script src="js/store.js?v=95"></script>
-  <script src="js/api.js?v=95"></script>
+  <script src="js/config.js?v=96"></script>
+  <script src="js/i18n.js?v=96"></script>
+  <script src="js/store.js?v=96"></script>
+  <script src="js/api.js?v=96"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=95"></script>
-  <script src="js/auth.js?v=95"></script>
-  <script src="js/engine.js?v=95"></script>
-  <script src="js/chart.js?v=95"></script>
-  <script src="js/app.js?v=95"></script>
+  <script src="js/supabase.js?v=96"></script>
+  <script src="js/auth.js?v=96"></script>
+  <script src="js/engine.js?v=96"></script>
+  <script src="js/chart.js?v=96"></script>
+  <script src="js/app.js?v=96"></script>
 </body>
 </html>

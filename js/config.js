@@ -25,8 +25,9 @@
     // Profil A — admin (démo|réel) : inchangé.
     ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
     ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
-    // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; autres cotes ×0.75).
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125 },
+    // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; payouts élevés plus durs).
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.28, '11': 0.18, '51': 0.08 },
+    DEMO_MAX_WIN_STREAK: 2,
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 3,
     MIN_WITHDRAW: 3,
@@ -149,12 +150,13 @@
     return Math.round(x * 100) / 100;
   };
 
-  /** Affichage USD : $1,234.56 */
+  /** Affichage USD entier : $1,234 (jamais de centimes). */
   D6.fmtMoney = function (n) {
-    var v = D6.roundMoney(n);
+    var v = Math.round(Number(n) || 0);
+    if (!isFinite(v)) v = 0;
     return '$' + v.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     });
   };
 

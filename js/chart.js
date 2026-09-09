@@ -215,9 +215,14 @@
         card.style.width = '100%';
       }
     } else {
-      var fsH = Math.max(220, (window.innerHeight || 700) - 140);
-      parent.style.minHeight = fsH + 'px';
-      parent.style.height = fsH + 'px';
+      // Immersif : laisser le flex CSS gérer la hauteur (pad toujours visible).
+      parent.style.minHeight = '0';
+      parent.style.height = '';
+      var cardFs = document.getElementById('chart');
+      if (cardFs) {
+        cardFs.style.height = '';
+        cardFs.style.minHeight = '0';
+      }
     }
 
     var rect = parent.getBoundingClientRect();
