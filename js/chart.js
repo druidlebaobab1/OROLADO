@@ -379,8 +379,8 @@
     // Défaut = thème sombre actuel (V100 / STABLE).
     return {
       id: 'darkLegacy',
-      bg0: '#121A2B',
-      bg1: '#0A0F1D',
+      bg0: '#121722',
+      bg1: '#0B0E14',
       gridH: 'rgba(255,215,0,0.06)',
       gridHStrong: 'rgba(255,215,0,0.16)',
       gridV: 'rgba(255,215,0,0.05)',
@@ -1169,6 +1169,16 @@
       }
       octx = overlay ? overlay.getContext('2d', { alpha: true }) : null;
       onFrame = callback;
+      if (canvas) {
+        canvas.style.backgroundColor = '#0B0E14';
+        canvas.style.background = '#0B0E14';
+      }
+      if (overlay) {
+        overlay.style.backgroundColor = 'transparent';
+      }
+      if (canvas && canvas.parentElement) {
+        canvas.parentElement.style.backgroundColor = '#0B0E14';
+      }
       resize();
       bindTools();
       window.addEventListener('resize', function () { requestAnimationFrame(resize); });

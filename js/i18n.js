@@ -308,7 +308,10 @@
   } catch (e1) { /* ignore */ }
 
   function t(key) {
-    return (DICT[lang] && DICT[lang][key]) || (DICT.fr && DICT.fr[key]) || key;
+    var pack = DICT[lang] || DICT.fr || {};
+    if (Object.prototype.hasOwnProperty.call(pack, key)) return pack[key];
+    if (DICT.fr && Object.prototype.hasOwnProperty.call(DICT.fr, key)) return DICT.fr[key];
+    return key;
   }
 
   function apply() {

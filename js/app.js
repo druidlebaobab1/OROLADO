@@ -69,10 +69,13 @@
   }
 
   function applyAndroidTradeHint() {
-    if (!IS_ANDROID) return;
+    /* Hint pédagogique retiré (UI institutionnelle). */
     var el = document.querySelector('.trade-hint');
-    if (!el) return;
-    el.textContent = t('tradeHintAndroid') || t('tradeHint');
+    if (el) {
+      el.textContent = '';
+      el.setAttribute('hidden', '');
+      el.style.display = 'none';
+    }
   }
 
   function metaTrack(eventName, params) {
