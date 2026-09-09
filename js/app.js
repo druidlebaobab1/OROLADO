@@ -150,7 +150,7 @@
   function requireAccount(msg) {
     if (!isGuest()) return true;
     if (!guardLiveTradeView()) return false;
-    toast(msg || t('needAccount') || 'Connecte-toi ou crée un compte pour continuer', 'err');
+    // Pas de toast rouge : le pitch authRealPitch suffit.
     showAuthScreen('login', { fromReal: true });
     return false;
   }
@@ -3099,6 +3099,11 @@
     }
     document.documentElement.classList.remove('fs-trade');
     document.body.style.overflow = '';
+    var stage = document.querySelector('.chart-stage');
+    if (stage) {
+      stage.style.height = '';
+      stage.style.minHeight = '';
+    }
     var enterBtn = $('btnChartFs');
     if (enterBtn) {
       enterBtn.setAttribute('aria-pressed', 'false');

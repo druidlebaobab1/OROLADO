@@ -182,9 +182,11 @@
     var w = Math.max(1, Math.floor(parent.clientWidth || rect.width || 0));
     var h = Math.max(1, Math.floor(parent.clientHeight || rect.height || 0));
     var mobile = (window.innerWidth || 0) <= 859;
-    var minH = mobile ? 220 : 280;
+    var minH = mobile ? Math.max(380, Math.round((window.innerHeight || 700) * 0.45)) : 380;
     var fsMode = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
+    canvas.style.backgroundColor = '#0B0E14';
+    parent.style.backgroundColor = '#0B0E14';
     // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
     if (w < 8 || h < 8) {
       canvas.style.width = '100%';
@@ -192,6 +194,10 @@
       if (overlay) {
         overlay.style.width = '100%';
         overlay.style.height = '100%';
+      }
+      if (!fsMode) {
+        parent.style.minHeight = minH + 'px';
+        parent.style.height = minH + 'px';
       }
       requestAnimationFrame(function () {
         if (canvas && canvas.parentElement) {
@@ -201,17 +207,20 @@
       });
       return;
     }
-    // Respecte la hauteur réelle du conteneur (évite l'étirement / coupure).
-    // minH uniquement si le stage n'a pas encore de hauteur utile.
-    if (!fsMode && h < 100) {
-      parent.style.minHeight = minH + 'px';
-      h = Math.max(minH, Math.floor(parent.clientHeight || parent.getBoundingClientRect().height || minH));
-    } else if (!fsMode && h < minH && (parent.clientHeight || 0) < 80) {
-      h = minH;
+    // Vue normale : hauteur garantie (évite canvas 0px / écran noir ou blanc).
+    if (!fsMode) {
+      if (h < minH) {
+        parent.style.minHeight = minH + 'px';
+        parent.style.height = Math.max(minH, Math.round((window.innerHeight || 700) * 0.45)) + 'px';
+        h = Math.max(minH, Math.floor(parent.clientHeight || parent.getBoundingClientRect().height || minH));
+      }
+    } else {
+      parent.style.height = '';
+      parent.style.minHeight = '0';
     }
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     cssW = w;
-    cssH = h;
+    cssH = Math.max(h, fsMode ? 80 : minH);
     var bw = Math.round(cssW * dpr);
     var bh = Math.round(cssH * dpr);
     var sizeChanged = canvas.width !== bw || canvas.height !== bh;
@@ -233,7 +242,7 @@
     }
     // Même frame que setData/resize : flusher les lignes en attente.
     flushOpenTradeVisualQueue();
-    if (sizeChanged && running) drawNow();
+    if (sizeChanged || running) drawNow();
   }
 
   function visibleCandles(market) {

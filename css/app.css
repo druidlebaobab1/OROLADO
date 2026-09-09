@@ -172,8 +172,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="v100"].on{border-color:rgba(16,185,129,.55)}
 .payout-live{font-size:10px;font-weight:700;color:var(--green);line-height:1.2;margin-top:1px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 
-.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:340px!important;min-height:max(340px,48vh)!important;max-height:min(560px,62vh);height:auto;
-  display:flex;flex-direction:column;border-radius:12px;overflow:hidden;position:relative;background:#0B0E14!important}
+.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:380px!important;height:45vh!important;max-height:none!important;width:100%!important;
+  display:flex!important;flex-direction:column;border-radius:12px;overflow:hidden;position:relative;background:#0B0E14!important}
 .chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 6px;margin:0;flex-shrink:0;border-bottom:1px solid rgba(255,215,0,.08);min-height:22px;background:#0B0E14}
 .chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:0;pointer-events:none}
 .chart-price-wm{opacity:.9;font-size:.72rem;text-shadow:0 0 10px rgba(0,0,0,.55);color:var(--gold)}
@@ -188,8 +188,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 .wd-ticker-id{font-size:11px;font-weight:500;color:rgba(212,175,55,.78);white-space:nowrap;flex-shrink:0;line-height:20px}
 .wd-ticker-amt{font-size:11px;font-weight:800;color:#10B981;white-space:nowrap;text-overflow:clip;overflow:visible;flex-shrink:0;line-height:20px;text-shadow:0 0 8px rgba(16,185,129,.35)}
-.chart-stage{flex:1 1 auto;position:relative;min-height:300px!important;flex-shrink:0;overflow:hidden;background:#0B0E14!important}
-#chartCanvas,#chartOverlay{width:100%;height:100%;display:block;position:relative;z-index:0;background-color:#0B0E14!important}
+.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:hidden;background:#0B0E14!important}
+#chartCanvas,#chartOverlay{width:100%!important;height:100%!important;display:block;position:absolute;inset:0;z-index:0;background-color:#0B0E14!important}
 .chart-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:15;pointer-events:none;display:block}
 .ind-pills{display:flex;flex-wrap:nowrap;gap:3px;pointer-events:auto;z-index:13;align-items:center;min-width:0}
 .ind-btn{border:1px solid rgba(255,215,0,.22);background:rgba(10,15,29,.55);color:rgba(168,180,204,.9);
@@ -597,8 +597,8 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
     display:flex;flex-direction:column;justify-content:center;gap:2px;scroll-snap-align:start}
   .asset-chip .n{font-size:.72rem;line-height:1.15;margin:0}
   .payout-live{font-size:.68rem;line-height:1.1;margin-top:0}
-  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%;min-height:380px!important;max-height:none;display:flex!important}
-  .chart-stage{min-height:320px!important;flex:1 1 auto}
+  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%!important;min-height:380px!important;max-height:none!important;display:flex!important;background:#0B0E14!important}
+  .chart-stage{min-height:320px!important;flex:1 1 auto;height:100%!important;background:#0B0E14!important}
   .asset-live-tag{display:inline;font-size:.62rem;color:var(--muted);font-weight:700}
   .strip-price,.pnl-value{font-size:1rem}
   .history-card{display:none!important}
@@ -631,8 +631,8 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 @media (max-width:859px){
   .balance-card{padding:6px 12px!important}
   .balance-card .bal{font-size:20px!important}
-  .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:300px!important;min-height:max(300px,42vh)!important;max-height:min(480px,52vh);height:auto}
-  .chart-stage{min-height:260px!important;flex-shrink:0}
+  .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:380px!important;height:45vh!important;max-height:none!important;background:#0B0E14!important}
+  .chart-stage{min-height:340px!important;height:100%!important;flex-shrink:0;background:#0B0E14!important}
   .trade-wrap{padding-bottom:200px}
   .trade-lock{display:none!important}
   .trade-hint{display:none!important}
@@ -844,21 +844,21 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   padding:10px 12px max(16px, env(safe-area-inset-bottom, 0px))!important;
   background:#0B0E14!important;box-shadow:none!important;z-index:8;
   display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;overflow:hidden!important}
-.fs-trade-overlay .pad .stake-line{flex:0 0 auto;margin:0;width:112px;min-width:96px;position:relative}
+.fs-trade-overlay .pad .stake-line{flex:0 0 auto;margin:0;width:60px;min-width:55px;max-width:65px;position:relative}
 .fs-trade-overlay .pad .stake-field{width:100%;position:relative}
 .fs-trade-overlay .pad .stake-field::before{
-  content:"$";position:absolute;left:10px;top:50%;transform:translateY(-50%);z-index:2;
-  color:var(--muted);font-weight:700;font-size:.9rem;pointer-events:none}
+  content:"$";position:absolute;left:8px;top:50%;transform:translateY(-50%);z-index:2;
+  color:var(--muted);font-weight:700;font-size:.85rem;pointer-events:none}
 .fs-trade-overlay .pad .stake-line input,
 .fs-trade-overlay .pad .stake-field input{
-  width:100%;min-height:44px;font-size:16px;text-align:center;border-radius:8px;
-  padding-left:22px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  width:100%;min-height:44px;font-size:14px;text-align:center;border-radius:8px;
+  padding-left:18px;padding-right:4px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 .fs-trade-overlay .pad .trade-row{
   flex:1 1 auto;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin:0;min-width:0}
 .fs-trade-overlay .pad .btn-trade{
-  flex:1 1 0;min-width:0;min-height:48px;border-radius:8px;margin:0;
-  white-space:nowrap;font-size:13px;line-height:1.1;padding:0 6px;overflow:hidden;text-overflow:ellipsis}
-.fs-trade-overlay .pad .btn-trade span{white-space:nowrap;font-size:inherit}
+  flex:1 1 0;min-width:0;min-height:48px;border-radius:8px;margin:0;padding:10px 4px;
+  white-space:nowrap;font-size:13px;font-weight:700;line-height:1.15;overflow:hidden;text-overflow:ellipsis}
+.fs-trade-overlay .pad .btn-trade span{white-space:nowrap;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
 /* Paysage : actifs à gauche, courbe au centre, actions à droite — sans rotation */
 @media (orientation:landscape){
@@ -928,13 +928,37 @@ html.fs-trade .odds-label{
 html.is-android .fs-trade-overlay .pad,
 html.fs-trade .fs-trade-overlay .pad{
   display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
-  gap:8px!important;width:100%!important;padding:10px 12px max(16px, env(safe-area-inset-bottom, 0px))!important;
-  background:#0B0E14!important;overflow:hidden!important}
+  gap:8px!important;width:100%!important;padding:10px 10px max(16px, env(safe-area-inset-bottom, 0px))!important;
+  box-sizing:border-box!important;background:#0B0E14!important;overflow:hidden!important}
+html.is-android .fs-trade-overlay .pad .stake-line,
+html.fs-trade .fs-trade-overlay .pad .stake-line{
+  flex:0 0 auto!important;width:60px!important;min-width:55px!important;max-width:65px!important;margin:0!important}
+html.is-android .fs-trade-overlay .pad .stake-field input,
+html.fs-trade .fs-trade-overlay .pad .stake-field input{
+  min-height:44px!important;padding-left:18px!important;padding-right:4px!important;font-size:14px!important}
+html.is-android .fs-trade-overlay .pad .trade-row,
+html.fs-trade .fs-trade-overlay .pad .trade-row{
+  flex:1 1 auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:space-between!important;gap:8px!important;min-width:0!important;width:auto!important;margin:0!important}
 html.is-android .fs-trade-overlay .pad .btn-trade,
 html.fs-trade .fs-trade-overlay .pad .btn-trade{
-  white-space:nowrap!important;font-size:13px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  flex:1 1 0!important;min-width:0!important;width:auto!important;max-width:none!important;
+  padding:10px 4px!important;min-height:48px!important;height:auto!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:13px!important;font-weight:700!important;letter-spacing:0!important;line-height:1.15!important}
+html.is-android .fs-trade-overlay .pad .btn-trade span,
+html.fs-trade .fs-trade-overlay .pad .btn-trade span{
+  display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:13px!important;font-weight:700!important;max-width:100%}
 @media (orientation:landscape){
   html.is-android .fs-trade-overlay .pad,
   html.fs-trade .fs-trade-overlay .pad{
     flex-direction:column!important;justify-content:center!important}
+  html.is-android .fs-trade-overlay .pad .stake-line,
+  html.fs-trade .fs-trade-overlay .pad .stake-line{
+    width:100%!important;max-width:none!important;min-width:0!important}
+  html.is-android .fs-trade-overlay .pad .trade-row,
+  html.fs-trade .fs-trade-overlay .pad .trade-row{flex-direction:column!important;width:100%!important}
+  html.is-android .fs-trade-overlay .pad .btn-trade,
+  html.fs-trade .fs-trade-overlay .pad .btn-trade{width:100%!important;flex:0 0 auto!important}
 }
