@@ -182,7 +182,9 @@
     var w = Math.max(1, Math.floor(parent.clientWidth || rect.width || 0));
     var h = Math.max(1, Math.floor(parent.clientHeight || rect.height || 0));
     var mobile = (window.innerWidth || 0) <= 859;
-    var minH = mobile ? 240 : 300;
+    var minH = mobile ? 220 : 280;
+    var fsMode = !!(document.documentElement.classList.contains('fs-trade') ||
+      (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     // Conteneur encore plié (écran caché) : ne fige pas une mini-taille.
     if (w < 8 || h < 8) {
       canvas.style.width = '100%';
@@ -199,11 +201,13 @@
       });
       return;
     }
-    h = Math.max(h, minH);
-    // Canvas trop bas (= écran noir) : forcer la hauteur du stage puis recalculer.
-    if (h < 100 && parent) {
-      parent.style.minHeight = (mobile ? 240 : 300) + 'px';
+    // Respecte la hauteur réelle du conteneur (évite l'étirement / coupure).
+    // minH uniquement si le stage n'a pas encore de hauteur utile.
+    if (!fsMode && h < 100) {
+      parent.style.minHeight = minH + 'px';
       h = Math.max(minH, Math.floor(parent.clientHeight || parent.getBoundingClientRect().height || minH));
+    } else if (!fsMode && h < minH && (parent.clientHeight || 0) < 80) {
+      h = minH;
     }
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
     cssW = w;
@@ -912,8 +916,9 @@
     });
     var narrow = (window.innerWidth || 0) <= 430;
     // Plus de panneau RSI/MACD : toute la hauteur va au plot.
-    var tradeFloor = (allTrades.length && narrow) ? 28 : (allTrades.length ? 16 : 0);
-    var pad = { t: narrow ? 8 : 12, r: 62, b: 18 + tradeFloor, l: 10 };
+    // Marges pixel pour laisser respirer prix, bougie et lignes d'entrée.
+    var tradeFloor = (allTrades.length && narrow) ? 32 : (allTrades.length ? 22 : 0);
+    var pad = { t: narrow ? 24 : 28, r: 62, b: 26 + tradeFloor, l: 10 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
@@ -956,9 +961,9 @@
       });
     }
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
-    // Padding Y ≥ 8 % haut ; marge basse de sécurité 20 % (mèches + ligne trade).
-    var padY = Math.max(span * 0.08, asset.tickNoise * 2.5, 0.15);
-    var yMin = minPrice - ((maxPrice - minPrice) * 0.20);
+    // Padding Y symétrique ≥ 18 % : prix live, mèches et entrée de trade restent visibles.
+    var padY = Math.max(span * 0.18, asset.tickNoise * 3, 0.2);
+    var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
 
     if (allTrades.length) {
@@ -975,7 +980,7 @@
         critMax = Math.max(critMax, market.price);
       }
       var viewSpan = Math.max(yMax - yMin, span, 0.3);
-      var edge = Math.max(viewSpan * 0.08, padY);
+      var edge = Math.max(viewSpan * 0.18, padY);
       if (critMin < yMin + edge) yMin = critMin - edge;
       if (critMax > yMax - edge) yMax = critMax + edge;
       // Centre la fenêtre sur (entrée + prix live) sans perdre min/max données.
@@ -986,9 +991,9 @@
       yMax += shift;
       yMin = Math.min(yMin, minPrice - padY, critMin - edge);
       yMax = Math.max(yMax, maxPrice + padY, critMax + edge);
-      // Re-garantir ≥ 8 % autour des points critiques après recentrage.
+      // Re-garantir ≥ 18 % autour des points critiques après recentrage.
       viewSpan = Math.max(yMax - yMin, 0.3);
-      edge = Math.max(viewSpan * 0.08, padY);
+      edge = Math.max(viewSpan * 0.18, padY);
       if (critMin < yMin + edge) yMin = critMin - edge;
       if (critMax > yMax - edge) yMax = critMax + edge;
       viewMin = yMin;
@@ -1174,13 +1179,18 @@
       }
       if (window.ResizeObserver && canvas.parentElement) {
         var roWait = 0;
-        new ResizeObserver(function () {
+        var ro = new ResizeObserver(function () {
           if (roWait) return;
           roWait = requestAnimationFrame(function () {
             roWait = 0;
             resize();
           });
-        }).observe(canvas.parentElement);
+        });
+        ro.observe(canvas.parentElement);
+        var chartCard = document.getElementById('chart');
+        if (chartCard) ro.observe(chartCard);
+        var fsSlot = document.getElementById('fsTradeSlot');
+        if (fsSlot) ro.observe(fsSlot);
       }
     },
     setAsset: function (id) {

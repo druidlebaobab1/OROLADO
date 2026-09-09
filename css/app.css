@@ -166,7 +166,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="v100"].on{border-color:var(--green)}
 .payout-live{font-size:10px;font-weight:900;color:var(--green);line-height:1.2;margin-top:1px}
 
-.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:420px!important;min-height:max(420px,64vh)!important;height:auto;max-height:none;
+.chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:340px!important;min-height:max(340px,48vh)!important;max-height:min(560px,62vh);height:auto;
   display:flex;flex-direction:column;border-radius:12px;overflow:hidden;position:relative}
 .chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 6px;margin:0;flex-shrink:0;border-bottom:1px solid rgba(255,215,0,.08);min-height:22px}
 .chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:0;pointer-events:none}
@@ -182,7 +182,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 .wd-ticker-id{font-size:11px;font-weight:500;color:rgba(212,175,55,.78);white-space:nowrap;flex-shrink:0;line-height:20px}
 .wd-ticker-amt{font-size:11px;font-weight:800;color:#10B981;white-space:nowrap;text-overflow:clip;overflow:visible;flex-shrink:0;line-height:20px;text-shadow:0 0 8px rgba(16,185,129,.35)}
-.chart-stage{flex:1 1 auto;position:relative;min-height:388px!important;flex-shrink:0;overflow:hidden}
+.chart-stage{flex:1 1 auto;position:relative;min-height:300px!important;flex-shrink:0;overflow:hidden}
 #chartCanvas{width:100%;height:100%;display:block;position:relative;z-index:0}
 .chart-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:15;pointer-events:none;display:block}
 .ind-pills{display:flex;flex-wrap:nowrap;gap:3px;pointer-events:auto;z-index:13;align-items:center;min-width:0}
@@ -255,13 +255,26 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
 .chart-fs-btn{
-  position:absolute;z-index:25;top:8px;right:8px;width:32px;height:32px;
-  border:1px solid rgba(255,215,0,.35);background:rgba(10,15,29,.72);
-  color:rgba(255,224,130,.95);border-radius:8px;cursor:pointer;pointer-events:auto;
-  display:grid;place-items:center;font-size:.95rem;line-height:1;padding:0;opacity:.82;
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent}
-.chart-fs-btn:hover,.chart-fs-btn:focus-visible{opacity:1;border-color:rgba(255,215,0,.7)}
+  position:absolute;z-index:28;top:8px;right:8px;min-height:36px;padding:0 12px 0 10px;gap:7px;
+  border:1px solid rgba(255,215,0,.55);border-radius:999px;cursor:pointer;pointer-events:auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,rgba(30,35,47,.94),rgba(18,22,32,.96));
+  color:#FFE082;box-shadow:0 4px 16px rgba(0,0,0,.35),0 0 0 1px rgba(255,215,0,.12) inset;
+  font:inherit;font-size:.72rem;font-weight:800;letter-spacing:.02em;line-height:1;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;opacity:1}
+.chart-fs-btn:hover,.chart-fs-btn:focus-visible{
+  border-color:rgba(255,215,0,.85);background:linear-gradient(180deg,rgba(245,197,24,.22),rgba(30,35,47,.96));
+  color:#FFF3C4}
+.chart-fs-ico{font-size:1rem;line-height:1;flex-shrink:0}
+.chart-fs-label{white-space:nowrap}
+@media (max-width:859px){
+  .chart-fs-btn{
+    min-width:42px;min-height:42px;padding:0;width:42px;border-radius:12px;
+    background:#1E232F;border-color:rgba(255,215,0,.45);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  .chart-fs-label{display:none}
+  .chart-fs-ico{font-size:1.25rem}
+}
 .btn-hist-cta:active{transform:scale(.98)}
 .btn-auth-link{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 8px;
   font:inherit;font-size:.62rem;font-weight:800;cursor:pointer;white-space:nowrap}
@@ -544,8 +557,8 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
     display:flex;flex-direction:column;justify-content:center;gap:2px}
   .asset-chip .n{font-size:.72rem;line-height:1.15;margin:0}
   .payout-live{font-size:.68rem;line-height:1.1;margin-top:0}
-  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%;min-height:460px!important;max-height:none;display:flex!important}
-  .chart-stage{min-height:400px!important;flex:1 1 auto}
+  .chart-card,#chart{grid-column:1;grid-row:2;flex:1 1 auto;flex-shrink:0!important;height:100%;min-height:380px!important;max-height:none;display:flex!important}
+  .chart-stage{min-height:320px!important;flex:1 1 auto}
   .asset-live-tag{display:inline;font-size:.62rem;color:var(--muted);font-weight:700}
   .strip-price,.pnl-value{font-size:1rem}
   .history-card{display:none!important}
@@ -578,8 +591,8 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 @media (max-width:859px){
   .balance-card{padding:6px 12px!important}
   .balance-card .bal{font-size:20px!important}
-  .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:360px!important;min-height:max(360px,56vh)!important;height:auto;max-height:none}
-  .chart-stage{min-height:320px!important;flex-shrink:0}
+  .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:300px!important;min-height:max(300px,42vh)!important;max-height:min(480px,52vh);height:auto}
+  .chart-stage{min-height:260px!important;flex-shrink:0}
   .trade-wrap{padding-bottom:200px}
   .trade-lock{display:none!important}
   .trade-hint{display:-webkit-box!important;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:visible;max-height:2.8em;white-space:normal;font-size:.55rem}
@@ -727,11 +740,19 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   z-index:99999;background:#0c0f17;overflow:hidden;margin:0;padding:0;
   box-sizing:border-box}
 .fs-trade-overlay.on{display:flex;flex-direction:column}
+.fs-trade-topbar{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:44px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top,0px));
+  border-bottom:1px solid rgba(255,255,255,.08);background:rgba(8,11,20,.98);z-index:6}
+.fs-trade-top-label{
+  font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  color:rgba(255,224,130,.85)}
 .fs-trade-close{
-  position:absolute;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));
-  z-index:5;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.22);
-  background:rgba(0,0,0,.45);color:#fff;font-size:1.05rem;font-weight:800;cursor:pointer;
-  display:grid;place-items:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  position:relative;top:auto;right:auto;z-index:7;width:40px;height:40px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.6);color:#fff;
+  font-size:1.05rem;font-weight:800;cursor:pointer;display:grid;place-items:center;flex-shrink:0;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:auto}
+.fs-trade-close:hover,.fs-trade-close:focus-visible{background:rgba(0,0,0,.78);border-color:rgba(255,255,255,.35)}
 .fs-trade-slot{flex:1 1 auto;min-height:0;min-width:0;width:100%;height:100%;display:flex}
 .fs-trade-overlay .trade-wrap{
   display:flex!important;flex-direction:column;width:100%;height:100%;min-height:0;min-width:0;
@@ -753,7 +774,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 
 /* Actifs */
 .fs-trade-overlay .asset-bar{
-  flex:0 0 auto;display:flex!important;flex-direction:row;gap:6px;padding:10px 48px 8px 10px;
+  flex:0 0 auto;display:flex!important;flex-direction:row;gap:6px;padding:8px 10px;
   overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
   border-bottom:1px solid rgba(255,255,255,.08);background:rgba(8,11,20,.95);
   width:100%;max-width:none}

@@ -2227,7 +2227,7 @@
       }
       metaTrack('CompleteRegistration');
       toast(t('accountCreated'), 'ok');
-      enterApp();
+      enterApp({ openFullscreen: true });
     });
     $('btnForgot').addEventListener('click', function () {
       clearErrors();
@@ -2346,7 +2346,7 @@
         closeOtpModal();
         metaTrack('CompleteRegistration');
         toast(t('accountCreated'), 'ok');
-        enterApp();
+        enterApp({ openFullscreen: true });
       });
     }
     if ($('btnOtpResend')) {
@@ -2892,7 +2892,8 @@
     }, { passive: false });
   }
 
-  function enterApp() {
+  function enterApp(opts) {
+    opts = opts || {};
     var u = user();
     if (u) migrateLegacyDemo(u);
     stake = D6.CONFIG.MIN_STAKE || 1;
@@ -2925,6 +2926,12 @@
       }, 600);
       if (document.documentElement.classList.contains('is-android')) {
         setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 800);
+      }
+      if (opts.openFullscreen) {
+        setTimeout(function () {
+          enterTradeFullscreen();
+          bumpChartLayout();
+        }, 500);
       }
     });
     refreshRemoteVault();
