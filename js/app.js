@@ -513,7 +513,9 @@
   }
 
   function setAdminBtns(u) {
-    $('btnAdmin2').classList.toggle('hidden', !D6.Auth.isAdmin(u));
+    var isAdm = !!(u && D6.Auth.isAdmin(u));
+    if ($('drawerAdminBlock')) $('drawerAdminBlock').classList.toggle('hidden', !isAdm);
+    if ($('btnAdmin2')) $('btnAdmin2').classList.toggle('hidden', !isAdm);
   }
 
   function setModeUi(u) {
@@ -574,14 +576,15 @@
     var ids = ['v100', 'stable', 'v75', 'crash300', 'boom300'];
     var map = { v100: 'payoutV100', stable: 'payoutStable', v75: 'payoutV75', crash300: 'payoutCrash300', boom300: 'payoutBoom300' };
     var odds = currentOdds(u);
+    var pct = Math.round((odds - 1) * 100);
     ids.forEach(function (id) {
       var el = $(map[id]);
       if (!el) return;
-      el.textContent = '+' + Math.round((odds - 1) * 100) + '%';
+      el.textContent = pct + '%';
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
     if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(D6.roundMoney(stake * odds));
-    if ($('previewMult')) $('previewMult').textContent = '×' + (Math.abs(odds - Math.round(odds)) < 0.001 ? String(Math.round(odds)) : Number(odds).toFixed(2));
+    if ($('previewMult')) $('previewMult').textContent = 'Payout ' + pct + '%';
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
       btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);
     });
@@ -876,6 +879,30 @@
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
     setAdminBtns(u);
+  }
+
+  function bindCopyPublicId() {
+    var btn = $('btnCopyPublicId');
+    if (!btn || btn._oroBound) return;
+    btn._oroBound = true;
+    btn.addEventListener('click', function () {
+      var id = ($('profPublicId') && $('profPublicId').textContent) || '';
+      if (!id || id === '—') return;
+      function ok() {
+        var prev = btn.textContent;
+        btn.textContent = t('copied') || 'Copié';
+        setTimeout(function () { btn.textContent = prev || (t('copyId') || 'Copier'); }, 1200);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(id).then(ok).catch(function () {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = id; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta); ok();
+          } catch (e) { /* ignore */ }
+        });
+      }
+    });
   }
 
   function openDrawer() {
@@ -2170,6 +2197,8 @@
   }
 
   function bindAuth() {
+    var eyeSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var eyeOffSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.1 3.9"/><path d="M6.1 6.1A17.5 17.5 0 0 0 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.2-.9"/></svg>';
     document.querySelectorAll('.pass-toggle').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-pass');
@@ -2177,10 +2206,11 @@
         if (!input) return;
         var show = input.type === 'password';
         input.type = show ? 'text' : 'password';
-        btn.textContent = show ? '\uD83D\uDE48' : '\uD83D\uDC41';
+        btn.innerHTML = show ? eyeOffSvg : eyeSvg;
         btn.setAttribute('aria-label', show ? t('hidePass') : t('showPass'));
       });
     });
+    bindCopyPublicId();
     document.querySelectorAll('.auth-tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
         document.querySelectorAll('.auth-tab').forEach(function (tEl) { tEl.classList.remove('on'); });

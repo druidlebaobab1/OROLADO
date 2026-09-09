@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0A0F1D">
+  <meta name="theme-color" content="#0B0E14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="OROLADO.COM — Trading premium en USD. Plateforme mobile-first.">
+  <meta name="description" content="OROLADO.COM — Plateforme de trading institutionnelle en USD.">
   <meta name="application-name" content="OROLADO.COM">
   <meta property="og:title" content="OROLADO.COM">
-  <meta property="og:description" content="Trading premium · USD">
+  <meta property="og:description" content="Trading & analyse · USD">
   <meta property="og:type" content="website">
   <title>OROLADO.COM</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=90">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css?v=91">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -75,44 +75,50 @@
         <form id="formLogin">
           <div class="field">
             <label data-i18n="idLabel">E-mail</label>
-            <input id="loginId" type="email" autocomplete="username" data-i18n-placeholder="idPh" placeholder="vous@email.com" required>
+            <input id="loginId" type="email" name="email" autocomplete="email" inputmode="email" data-i18n-placeholder="idPh" placeholder="vous@email.com" required>
             <p class="err-msg" id="err-loginId"></p>
           </div>
           <div class="field">
             <label data-i18n="password">Mot de passe</label>
             <div class="pass-wrap">
-              <input id="loginPass" type="password" autocomplete="current-password" required>
-              <button type="button" class="pass-toggle" data-pass="loginPass" aria-label="Afficher le mot de passe">&#128065;</button>
+              <input id="loginPass" type="password" name="password" autocomplete="current-password" required>
+              <button type="button" class="pass-toggle" data-pass="loginPass" aria-label="Afficher le mot de passe">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
             </div>
             <p class="err-msg" id="err-loginPass"></p>
           </div>
           <button type="button" class="link-forgot" id="btnForgot" data-i18n="forgot">Mot de passe oublié ?</button>
-          <button class="btn-gold" type="submit" data-i18n="enter">Entrer</button>
+          <button class="btn-gold" type="submit" data-i18n="enter">Se connecter</button>
         </form>
         <form id="formRegister" class="hidden">
           <div class="field">
             <label data-i18n="name">Nom complet / Pseudo</label>
-            <input id="regName" autocomplete="name" required minlength="2" maxlength="32">
+            <input id="regName" name="name" autocomplete="name" required minlength="2" maxlength="32">
             <p class="err-msg" id="err-regName"></p>
           </div>
           <div class="field">
             <label data-i18n="email">E-mail</label>
-            <input id="regEmail" type="email" autocomplete="email" required>
+            <input id="regEmail" type="email" name="email" autocomplete="email" inputmode="email" required>
             <p class="err-msg" id="err-regEmail"></p>
           </div>
           <div class="field">
             <label data-i18n="password">Mot de passe</label>
             <div class="pass-wrap">
-              <input id="regPass" type="password" autocomplete="new-password" required minlength="6">
-              <button type="button" class="pass-toggle" data-pass="regPass" aria-label="Afficher le mot de passe">&#128065;</button>
+              <input id="regPass" type="password" name="password" autocomplete="new-password" required minlength="6">
+              <button type="button" class="pass-toggle" data-pass="regPass" aria-label="Afficher le mot de passe">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
             </div>
             <p class="err-msg" id="err-regPass"></p>
           </div>
           <div class="field">
             <label data-i18n="confirmPass">Confirmer le mot de passe</label>
             <div class="pass-wrap">
-              <input id="regPass2" type="password" autocomplete="new-password" required minlength="6">
-              <button type="button" class="pass-toggle" data-pass="regPass2" aria-label="Afficher le mot de passe">&#128065;</button>
+              <input id="regPass2" type="password" name="password-confirm" autocomplete="new-password" required minlength="6">
+              <button type="button" class="pass-toggle" data-pass="regPass2" aria-label="Afficher le mot de passe">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
             </div>
             <p class="err-msg" id="err-regPass2"></p>
           </div>
@@ -242,10 +248,10 @@
             <button type="button" class="dur-chip" data-dur="300">5 min</button>
             <button type="button" class="dur-chip" data-dur="600">10 min</button>
           </div>
-          <p class="trade-hint" data-i18n="tradeHint">Choisis le montant et la dur&#233;e. Si ta pr&#233;diction est juste &#224; la fin du chrono, tu r&#233;cup&#232;res mise + gain.</p>
+          <p class="trade-hint" data-i18n="tradeHint" hidden></p>
           <div class="stake-line">
             <div class="stake-field">
-              <input id="inputStake" type="number" inputmode="decimal" value="1" min="1" step="1" placeholder="$">
+              <input id="inputStake" type="number" inputmode="decimal" value="1" min="1" step="1" placeholder="$" autocomplete="off">
               <div class="stake-min" style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;margin:0;width:100%;gap:8px">
                 <span data-i18n="minHint" class="stake-min-label" style="font-size:11px;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mise min : $1.00</span>
                 <span class="stake-min-actions" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;flex-shrink:0;align-items:center">
@@ -258,30 +264,28 @@
             <div class="win-preview">
               <div class="label" data-i18n="estYield">Rendement estimé</div>
               <div class="amount" id="previewGain">$1.88</div>
-              <div class="mult" id="previewMult">×1.88</div>
+              <div class="mult" id="previewMult">Payout 88%</div>
             </div>
           </div>
-          <p class="odds-label">Côte — plus haut = plus de gain, plus de risque</p>
-          <div class="odds-row" id="oddsRow" role="group" aria-label="Côtes">
-            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">×1.88</span><span class="odds-pct">+88%</span></button>
-            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">×6</span><span class="odds-pct">+500%</span></button>
-            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">×11</span><span class="odds-pct">+1 000%</span></button>
-            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">×51</span><span class="odds-pct">+5 000%</span></button>
+          <p class="odds-label" data-i18n="payoutLabel">Payout</p>
+          <div class="odds-row" id="oddsRow" role="group" aria-label="Payout">
+            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">88%</span><span class="odds-pct">Payout</span></button>
+            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">500%</span><span class="odds-pct">Payout</span></button>
+            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">1000%</span><span class="odds-pct">Payout</span></button>
+            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">5000%</span><span class="odds-pct">Payout</span></button>
           </div>
           <div class="timer-panel" id="timerPanel" hidden>
             <div class="timer-num" id="timerSeconds">10.0s</div>
             <div class="timer-msg" id="timerResult"></div>
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
-          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">⏳ 2 trades ouverts — attends qu’un trade se termine</div>
+          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">2 positions ouvertes — attendez la clôture</div>
           <div class="trade-row">
             <button type="button" class="btn-trade btn-call" id="btnCall">
-              <span data-i18n="buy">ACHETER</span>
-              <small>CALL ↗</small>
+              <span data-i18n="buy">ACHETER (CALL ↗)</span>
             </button>
             <button type="button" class="btn-trade btn-put" id="btnPut">
-              <span data-i18n="sell">VENDRE</span>
-              <small>PUT ↘</small>
+              <span data-i18n="sell">VENDRE (PUT ↘)</span>
             </button>
           </div>
         </div>
@@ -291,7 +295,6 @@
 
   <div id="fsTradeOverlay" class="fs-trade-overlay" hidden aria-hidden="true">
     <div class="fs-trade-topbar">
-      <span class="fs-trade-top-label" data-i18n="fsModeLabel">Mode immersif</span>
       <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
     </div>
     <div class="fs-trade-slot" id="fsTradeSlot"></div>
@@ -308,15 +311,59 @@
       </div>
     </div>
     <div class="card glass">
-      <div class="list-row"><span data-i18n="publicId">ID public</span><strong id="profPublicId">—</strong></div>
+      <div class="list-row">
+        <span data-i18n="publicId">ID public</span>
+        <div class="prof-id-row">
+          <strong id="profPublicId">—</strong>
+          <button type="button" class="btn-copy-id" id="btnCopyPublicId" data-i18n="copyId">Copier</button>
+        </div>
+      </div>
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
     </div>
-    <button type="button" class="btn-admin hidden" id="btnAdmin2" data-i18n="adminBtn">⚙️ Dashboard Admin</button>
-    <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
-    <button type="button" class="btn-gold ghost-gold" id="btnFinance" data-i18n="financeHist">Historique financier</button>
-    <button type="button" class="btn-gold ghost-gold" id="btnWithdraw" data-i18n="withdraw">Retirer</button>
-    <button type="button" class="btn-gold ghost-gold btn-hist-drawer" id="btnHistDemo" data-i18n="seeAllDemo">HISTORIQUE DES TRADES (DÉMO)</button>
-    <button type="button" class="btn-gold ghost-gold btn-hist-drawer" id="btnHistReal" data-i18n="seeAllReal">HISTORIQUE DES TRADES (RÉEL)</button>
+    <div class="drawer-admin hidden" id="drawerAdminBlock">
+      <button type="button" class="btn-admin" id="btnAdmin2" data-i18n="adminBtn">Dashboard Admin</button>
+    </div>
+    <nav class="drawer-nav" aria-label="Menu profil">
+      <div class="drawer-section">
+        <div class="drawer-section-title" data-i18n="secTransactions">Transactions</div>
+        <button type="button" class="drawer-item" id="btnFinance">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h10"/></svg>
+          <span class="di-label" data-i18n="financeHist">Historique financier</span>
+          <span class="di-chev">›</span>
+        </button>
+        <button type="button" class="drawer-item" id="btnWithdraw">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>
+          <span class="di-label" data-i18n="withdraw">Retirer des fonds</span>
+          <span class="di-chev">›</span>
+        </button>
+      </div>
+      <div class="drawer-section">
+        <div class="drawer-section-title" data-i18n="secTrading">Trading</div>
+        <button type="button" class="drawer-item" id="btnHistReal">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg>
+          <span class="di-label" data-i18n="seeAllReal">Positions &amp; historique (Réel)</span>
+          <span class="di-chev">›</span>
+        </button>
+        <button type="button" class="drawer-item" id="btnHistDemo">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 19V5m0 14h16M8 16l3-5 3 3 4-7"/></svg>
+          <span class="di-label" data-i18n="seeAllDemo">Historique (Démo)</span>
+          <span class="di-chev">›</span>
+        </button>
+      </div>
+      <div class="drawer-section">
+        <div class="drawer-section-title" data-i18n="secSecurity">Sécurité</div>
+        <button type="button" class="drawer-item" id="btnOpenPass">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+          <span class="di-label" data-i18n="changePass">Changer le mot de passe</span>
+          <span class="di-chev">›</span>
+        </button>
+        <div class="drawer-item" style="cursor:default;opacity:.85">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4Z"/></svg>
+          <span class="di-label" data-i18n="verified">Vérification du compte</span>
+          <span class="di-chev" style="font-size:.7rem;color:var(--green)">●</span>
+        </div>
+      </div>
+    </nav>
     <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">Déconnexion</button>
     <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
   </aside>
@@ -553,15 +600,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=90"></script>
-  <script src="js/i18n.js?v=90"></script>
-  <script src="js/store.js?v=90"></script>
-  <script src="js/api.js?v=90"></script>
+  <script src="js/config.js?v=91"></script>
+  <script src="js/i18n.js?v=91"></script>
+  <script src="js/store.js?v=91"></script>
+  <script src="js/api.js?v=91"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=90"></script>
-  <script src="js/auth.js?v=90"></script>
-  <script src="js/engine.js?v=90"></script>
-  <script src="js/chart.js?v=90"></script>
-  <script src="js/app.js?v=90"></script>
+  <script src="js/supabase.js?v=91"></script>
+  <script src="js/auth.js?v=91"></script>
+  <script src="js/engine.js?v=91"></script>
+  <script src="js/chart.js?v=91"></script>
+  <script src="js/app.js?v=91"></script>
 </body>
 </html>

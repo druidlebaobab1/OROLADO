@@ -343,7 +343,7 @@
         border: '#C9A227',
         priceTxt: '#5C4A12',
         timeTxt: 'rgba(92,74,18,0.72)',
-        watermark: 'rgba(201,162,39,0.10)',
+        watermark: 'rgba(201,162,39,0.035)',
         rsiBg: 'rgba(255,248,236,0.92)',
         rsiBorder: 'rgba(201,162,39,0.45)',
         rsiTxt: '#5C4A12',
@@ -365,7 +365,7 @@
         border: 'rgba(255,215,0,0.18)',
         priceTxt: 'rgba(168,180,204,0.82)',
         timeTxt: 'rgba(140,154,176,0.7)',
-        watermark: 'rgba(255,215,0,0.055)',
+        watermark: 'rgba(255,215,0,0.028)',
         rsiBg: 'rgba(8,12,22,0.72)',
         rsiBorder: 'rgba(255,215,0,0.12)',
         rsiTxt: 'rgba(168,180,204,0.85)',
@@ -387,7 +387,7 @@
       border: null,
       priceTxt: 'rgba(168,180,204,0.78)',
       timeTxt: 'rgba(140,154,176,0.7)',
-      watermark: 'rgba(255,215,0,0.055)',
+      watermark: 'rgba(255,215,0,0.028)',
       rsiBg: 'rgba(8,12,22,0.72)',
       rsiBorder: 'rgba(255,215,0,0.12)',
       rsiTxt: 'rgba(168,180,204,0.85)',
@@ -1017,8 +1017,9 @@
     drawGrid(pad, w, h, minP, maxP, theme);
 
     ctx.save();
+    ctx.globalAlpha = 0.04;
     ctx.fillStyle = theme.watermark;
-    ctx.font = '800 36px Cinzel, Georgia, serif';
+    ctx.font = '700 32px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('OROLADO', cssW / 2, pad.t + h / 2);
     ctx.restore();
