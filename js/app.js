@@ -1406,13 +1406,13 @@
     return url;
   }
 
-  // Minimum dépôt joueur = 3 000 FCFA.
+  // Minimum dépôt joueur = 2 000 FCFA.
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 3000;
+    return D6.CONFIG.MIN_DEPOSIT || 2000;
   }
 
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 3;
+    return D6.CONFIG.MIN_WITHDRAW || 2000;
   }
 
   function setDepositAmt(n) {

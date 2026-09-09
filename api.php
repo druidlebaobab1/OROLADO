@@ -729,7 +729,7 @@ if ($action === 'withdraw') {
   $real = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
   $minWithdraw = orolado_min_withdraw();
   if ($amount < $minWithdraw) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de $3.00.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 2 000 FCFA.']);
     exit;
   }
   if ($amount > $real) {

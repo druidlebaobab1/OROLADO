@@ -119,7 +119,7 @@ function orolado_fcfa_to_usd($fcfa): float {
 }
 
 function orolado_min_withdraw(): float {
-  return 3.0;
+  return 2000.0;
 }
 
 function orolado_max_deposit_usd(): float {
@@ -1399,9 +1399,9 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt joueur = 3 000 FCFA (champ Recharger). */
+/** Minimum dépôt joueur = 2 000 FCFA (champ Recharger). */
 function orolado_min_deposit_fcfa(?array $me): int {
-  return 3000;
+  return 2000;
 }
 
 /** Seuil crédit vault (USD) — soldes inchangés. */
@@ -1420,7 +1420,7 @@ function orolado_initiate_deposit(array $req): array {
   $amountFcfa = (int) ($req['amount'] ?? 0);
   $minFcfa = orolado_min_deposit_fcfa($me);
   if ($amountFcfa < $minFcfa || $amountFcfa > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 3 000 FCFA.'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 2 000 FCFA.'];
   }
   // Crédit vault reste en USD (soldes) — conversion interne uniquement.
   $amountUsd = orolado_fcfa_to_usd($amountFcfa);
