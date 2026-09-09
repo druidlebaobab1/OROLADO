@@ -31,8 +31,13 @@ $outInit = orolado_initiate_deposit($req);
 maketou_log('deposit_initiate_out', [
   'ref' => (string) ($outInit['ref'] ?? ''),
   'cartId' => (string) ($outInit['cartId'] ?? ''),
-  'amount' => (int) ($outInit['amount'] ?? 0),
+  'amount' => $outInit['amount'] ?? 0,
+  'amountFcfa' => $outInit['amountFcfa'] ?? 0,
   'checkout_url' => (string) ($outInit['url'] ?? ''),
   'reason' => (string) ($outInit['reason'] ?? ''),
+  'payload' => $outInit['payload'] ?? null,
+  'missing' => $outInit['missing'] ?? null,
+  'status' => $outInit['status'] ?? null,
+  'raw' => isset($outInit['raw']) ? substr((string) $outInit['raw'], 0, 800) : null,
 ]);
-echo json_encode($outInit);
+echo json_encode($outInit, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

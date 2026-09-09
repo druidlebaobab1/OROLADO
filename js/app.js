@@ -1761,10 +1761,7 @@
     var url = String(serverUrl || '');
     var low = url.toLowerCase();
     if (!url || !/^https?:\/\//i.test(url)) return '';
-    var isWelcome = low.indexOf('/products/welcome') >= 0;
-    var isPaystral = low.indexOf('paystral') >= 0 || low.indexOf('checkout/custom') >= 0
-      || (low.indexOf('/pay') >= 0 && low.indexOf('/products/') < 0);
-    if (isWelcome && !isPaystral) return '';
+    if (low.indexOf('/products/welcome') >= 0) return '';
     return url;
   }
 
@@ -1802,6 +1799,9 @@
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO deposit fail', remote);
+        if (remote.payload || remote.missing) {
+          console.error('OROLADO Maketou payload=', remote.payload, 'missing=', remote.missing);
+        }
         var reason = String((remote && remote.reason) || '');
         toast(reason || t('sessionInvalid'), 'err');
         return;
