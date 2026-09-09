@@ -1127,7 +1127,7 @@ function maketou_storefront_session(array $info): array {
       'lastName' => (string) $info['lastName'],
       'phone' => (string) $info['phone'],
       'countryCode' => 'CI',
-      'customerPrices' => [$productId => orolado_usd_to_fcfa($info['amountUsd'] ?? orolado_fcfa_to_usd($info['amount'] ?? 0))],
+      'customerPrices' => [$productId => (int) ($info['amount'] ?? 0)],
     ],
   ];
   $body = json_encode([$payload], JSON_UNESCAPED_UNICODE);
@@ -1173,13 +1173,10 @@ function maketou_create_checkout(array $opts): array {
   if ($aliasEmail === '') $aliasEmail = maketou_alias_email((string) ($opts['userId'] ?? ''));
   $aliasPhone = (string) ($opts['phone'] ?? '');
   if ($aliasPhone === '') $aliasPhone = maketou_alias_phone();
+  // Montant Maketou = FCFA entier (facture Mobile Money locale).
   $amount = (int) ($opts['amount'] ?? 0);
-  // Si amountUsd fourni (dépôt Orolado), facturer Maketou en FCFA au taux fixe.
-  if (isset($opts['amountUsd'])) {
-    $amountUsd = orolado_money($opts['amountUsd']);
-    $amount = orolado_usd_to_fcfa($amountUsd);
-  } else {
-    $amountUsd = orolado_fcfa_to_usd($amount);
+  if (isset($opts['amountUsd']) && $amount <= 0) {
+    $amount = orolado_usd_to_fcfa($opts['amountUsd']);
   }
   $ref = (string) ($opts['ref'] ?? '');
   $userId = (string) ($opts['userId'] ?? '');
@@ -1199,10 +1196,8 @@ function maketou_create_checkout(array $opts): array {
     'redirectURL' => $returnUrl,
     'meta' => [
       'userId' => $userId,
-      'amount' => $amountUsd,
-      'amountUsd' => $amountUsd,
+      'amount' => $amount,
       'amountFcfa' => $amount,
-      'currency' => 'USD',
       'reference' => $ref,
       'source' => 'orolado',
     ],
@@ -1229,7 +1224,7 @@ function maketou_create_checkout(array $opts): array {
   maketou_log('maketou_checkout_create', [
     'ref' => $ref,
     'userId' => $userId,
-    'amount' => $amount,
+    'amountFcfa' => $amount,
     'http' => (int) ($res['status'] ?? 0),
     'cartId' => $cartId,
     'url' => $url,
@@ -1241,6 +1236,8 @@ function maketou_create_checkout(array $opts): array {
       'reason' => 'checkout_failed',
       'status' => (int) ($res['status'] ?? 0),
       'raw' => substr((string) ($res['raw'] ?? ''), 0, 500),
+      // Fallback front : URL locale préremplie (évite le formulaire d’infos Maketou).
+      'fallbackFcfa' => $amount,
     ];
   }
 
@@ -1250,6 +1247,7 @@ function maketou_create_checkout(array $opts): array {
     'checkout_url' => $url,
     'sellId' => $cartId,
     'cartId' => $cartId,
+    'amountFcfa' => $amount,
   ];
 }
 
@@ -1271,11 +1269,12 @@ function orolado_initiate_deposit(array $req): array {
   $me = orolado_session_user($db, $token);
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 
-  $amount = orolado_money($req['amount'] ?? 0);
+  $amountUsd = orolado_money($req['amount'] ?? 0);
   $min = orolado_min_deposit($me);
-  if ($amount < $min || $amount > orolado_max_deposit_usd()) {
+  if ($amountUsd < $min || $amountUsd > orolado_max_deposit_usd()) {
     return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
   }
+  $amountFcfa = orolado_usd_to_fcfa($amountUsd);
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
@@ -1296,14 +1295,16 @@ function orolado_initiate_deposit(array $req): array {
     'aliasPhone' => $aliasPhone,
     'operator' => $op,
     'status' => 'PENDING',
-    'amount' => $amount,
+    'amount' => $amountUsd,
+    'amountFcfa' => $amountFcfa,
+    'currency' => 'USD',
     'at' => date('c')
   ];
   save_db($file, $db);
   supabase_insert_deposit([
     'id' => $ref,
     'user_id' => $me['id'],
-    'amount' => $amount,
+    'amount' => $amountUsd,
     'status' => 'PENDING',
     'reference' => $ref,
     'alias_email' => $aliasEmail,
@@ -1311,22 +1312,29 @@ function orolado_initiate_deposit(array $req): array {
     'operator' => $op,
   ]);
 
+  // Maketou reçoit le montant en FCFA (facture locale), comme avant la migration USD.
   $pay = maketou_create_checkout([
     'aliasEmail' => $aliasEmail,
     'phone' => $aliasPhone,
     'userId' => (string) $me['id'],
-    'amountUsd' => $amount,
+    'amount' => $amountFcfa,
     'operator' => $op,
     'ref' => $ref,
     'returnUrl' => $returnUrl,
     'webhookUrl' => $webhookUrl,
   ]);
   if (empty($pay['ok'])) {
+    // On renvoie quand même la ref + FCFA pour que le front ouvre le checkout prérempli.
     return [
-      'ok' => false,
+      'ok' => true,
       'server' => true,
-      'reason' => (string) ($pay['reason'] ?? 'Échec création panier Maketou'),
       'ref' => $ref,
+      'amount' => $amountUsd,
+      'amountFcfa' => $amountFcfa,
+      'checkout_url' => '',
+      'url' => '',
+      'useLocalCheckout' => true,
+      'maketouWarning' => (string) ($pay['reason'] ?? 'checkout_failed'),
     ];
   }
   $url = (string) ($pay['url'] ?? $pay['checkout_url'] ?? '');
@@ -1350,7 +1358,8 @@ function orolado_initiate_deposit(array $req): array {
     'cartId' => $cartId,
     'url' => $url,
     'checkout_url' => $url,
-    'amount' => $amount
+    'amount' => $amountUsd,
+    'amountFcfa' => $amountFcfa,
   ];
 }
 

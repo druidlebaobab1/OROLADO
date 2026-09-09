@@ -1695,7 +1695,7 @@
     tick();
   }
 
-  function localMaketouCheckoutUrl(usdAmt, op, ref) {
+  function localMaketouCheckoutUrl(fcfaAmt, op, ref) {
     var base = (D6.CONFIG && D6.CONFIG.MAKETOU_CHECKOUT) || 'https://welcome-6.mymaketou.shop/products/welcome/checkout';
     var first = 'Trader';
     var last = 'Orolado';
@@ -1704,7 +1704,7 @@
     var origin = (location && location.origin) || 'https://orolado.com';
     var dash = origin + '/?deposit=success' + (ref ? ('&ref=' + encodeURIComponent(ref)) : '');
     var returnUrl = origin + '/pay-blank.html' + (ref ? ('?ref=' + encodeURIComponent(ref)) : '');
-    var fcfa = D6.usdToFcfa(usdAmt);
+    var fcfa = Math.max(1, Math.round(Number(fcfaAmt) || 0));
     var q = new URLSearchParams();
     q.set('customPrice', String(fcfa));
     q.set('price', String(fcfa));
@@ -1728,6 +1728,29 @@
     q.set('cancel_url', origin + '/?payment=cancel' + (ref ? '&ref=' + encodeURIComponent(ref) : ''));
     if (ref) q.set('ref', ref);
     return base + '?' + q.toString();
+  }
+
+  /** Évite le formulaire d’infos Maketou : uniquement checkout prérempli (customPrice + step=payment). */
+  function resolveDepositCheckoutUrl(usdAmt, op, ref, serverUrl, amountFcfa) {
+    var fcfa = Number(amountFcfa);
+    if (!isFinite(fcfa) || fcfa <= 0) fcfa = D6.usdToFcfa(usdAmt);
+    var local = localMaketouCheckoutUrl(fcfa, op, ref);
+    var url = String(serverUrl || '');
+    var low = url.toLowerCase();
+    if (!url || !/^https?:\/\//i.test(url)) return local;
+    // Page produit / formulaire d’enregistrement → forcer l’URL locale préremplie.
+    if (low.indexOf('/products/welcome/checkout') >= 0 && low.indexOf('customprice=') < 0 && low.indexOf('paystral') < 0) {
+      return local;
+    }
+    if (low.indexOf('step=') >= 0 && low.indexOf('step=payment') < 0 && low.indexOf('customprice=') < 0) {
+      return local;
+    }
+    // URL API Paystral / checkout avec prix : OK.
+    if (low.indexOf('paystral') >= 0 || low.indexOf('customprice=') >= 0 || low.indexOf('customerprice') >= 0) {
+      return url;
+    }
+    // Par défaut : tunnel local connu qui ouvre directement le paiement.
+    return local;
   }
 
   async function confirmDeposit() {
@@ -1762,34 +1785,34 @@
         amount: amt,
         operator: depositOp
       });
-      if (remote && !remote.ok) {
+      if (remote && remote.ok === false) {
         console.error('OROLADO deposit fail', remote);
         var reason = String((remote && remote.reason) || '');
-        if (/session/i.test(reason)) {
-          toast(t('sessionInvalid'), 'err');
-          return;
-        }
+        toast(reason || t('sessionInvalid'), 'err');
+        if (/session/i.test(reason)) return;
+        return;
       }
-      var url = (remote && (remote.checkout_url || remote.url)) || '';
-      var low = String(url).toLowerCase();
-      if (low.indexOf('/products/welcome/checkout') >= 0 && low.indexOf('customprice=') < 0 && low.indexOf('paystral') < 0) {
-        url = '';
-      }
-      if (!url || !/^https?:\/\//i.test(url)) {
-        url = localMaketouCheckoutUrl(amt, depositOp, (remote && remote.ref) || '');
-      }
+      var ref = (remote && remote.ref) || '';
+      var fcfa = (remote && remote.amountFcfa) || D6.usdToFcfa(amt);
+      var url = resolveDepositCheckoutUrl(
+        amt,
+        depositOp,
+        ref,
+        (remote && (remote.checkout_url || remote.url)) || '',
+        fcfa
+      );
       if (!url || !/^https?:\/\//i.test(url)) {
         console.error('OROLADO deposit: aucune URL checkout', remote);
         toast((remote && remote.reason) || t('sessionInvalid'), 'err');
         return;
       }
-      try { sessionStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e) { /* ignore */ }
-      try { localStorage.setItem('oro_dep_ref', (remote && remote.ref) || ''); } catch (e2) { /* ignore */ }
-      var ref = (remote && remote.ref) || '';
+      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
       depositApplied = false;
       closeModal('depositModal');
       payWindow = window.open(url, '_blank');
       if (!payWindow) {
+        // Popup bloquée : ouvrir le paiement sans perdre la session Orolado via _blank échoue → même onglet
         window.location.href = url;
         return;
       }
