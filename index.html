@@ -17,7 +17,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hanken+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=87">
+  <link rel="stylesheet" href="css/app.css?v=88">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -214,6 +214,8 @@
             <canvas id="chartCanvas"></canvas>
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true"></canvas>
+            <button type="button" class="chart-fs-btn" id="btnChartFs" aria-label="Plein écran trading" title="Plein écran">⛶</button>
+            <button type="button" class="chart-fs-exit" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter" hidden>✕</button>
           </div>
         </div>
 
@@ -250,13 +252,6 @@
                   <button type="button" class="qbtn qbtn-back stake-act" data-a="back" title="Effacer" aria-label="Effacer un chiffre">⌫</button>
                 </span>
               </div>
-              <div class="quick-stakes" id="quickStakes" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;width:100%">
-                <button type="button" class="qbtn stake-preset" data-stake="1">$1</button>
-                <button type="button" class="qbtn stake-preset" data-stake="5">$5</button>
-                <button type="button" class="qbtn stake-preset" data-stake="10">$10</button>
-                <button type="button" class="qbtn stake-preset" data-stake="25">$25</button>
-                <button type="button" class="qbtn stake-preset" data-stake="50">$50</button>
-              </div>
             </div>
             <div class="win-preview">
               <div class="label" data-i18n="estYield">Rendement estimé</div>
@@ -287,7 +282,6 @@
               <small>PUT ↘</small>
             </button>
           </div>
-          <button type="button" class="btn-hist-cta" id="btnHistMore" data-i18n="seeAllDemo">HISTORIQUE DES TRADES DU COMPTE D&#201;MO</button>
         </div>
       </div>
     </div>
@@ -311,6 +305,8 @@
     <button type="button" class="btn-gold" id="btnOpenPass" data-i18n="changePass">Changer de mot de passe</button>
     <button type="button" class="btn-gold ghost-gold" id="btnFinance" data-i18n="financeHist">Historique financier</button>
     <button type="button" class="btn-gold ghost-gold" id="btnWithdraw" data-i18n="withdraw">Retirer</button>
+    <button type="button" class="btn-gold ghost-gold btn-hist-drawer" id="btnHistDemo" data-i18n="seeAllDemo">HISTORIQUE DES TRADES (DÉMO)</button>
+    <button type="button" class="btn-gold ghost-gold btn-hist-drawer" id="btnHistReal" data-i18n="seeAllReal">HISTORIQUE DES TRADES (RÉEL)</button>
     <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">Déconnexion</button>
     <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
   </aside>
@@ -547,15 +543,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=87"></script>
-  <script src="js/i18n.js?v=87"></script>
-  <script src="js/store.js?v=87"></script>
-  <script src="js/api.js?v=87"></script>
+  <script src="js/config.js?v=88"></script>
+  <script src="js/i18n.js?v=88"></script>
+  <script src="js/store.js?v=88"></script>
+  <script src="js/api.js?v=88"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=87"></script>
-  <script src="js/auth.js?v=87"></script>
-  <script src="js/engine.js?v=87"></script>
-  <script src="js/chart.js?v=87"></script>
-  <script src="js/app.js?v=87"></script>
+  <script src="js/supabase.js?v=88"></script>
+  <script src="js/auth.js?v=88"></script>
+  <script src="js/engine.js?v=88"></script>
+  <script src="js/chart.js?v=88"></script>
+  <script src="js/app.js?v=88"></script>
 </body>
 </html>

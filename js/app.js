@@ -221,11 +221,6 @@
       var show = u.mode !== 'real';
       plus.classList.toggle('hidden', !show);
     }
-    var histBtn = $('btnHistMore');
-    if (histBtn) {
-      histBtn.textContent = u.mode === 'real' ? t('seeAllReal') : t('seeAllDemo');
-      histBtn.setAttribute('data-i18n', u.mode === 'real' ? 'seeAllReal' : 'seeAllDemo');
-    }
   }
 
   function wagerStatus(u) {
@@ -743,11 +738,13 @@
     feed.innerHTML = html.length ? html.join('') : '<div class="empty-feed">' + t('noTradesHint') + '</div>';
   }
 
-  function renderHistorySheet() {
+  function renderHistorySheet(forceMode) {
     var el = $('historySheetFeed');
     if (!el) return;
     var u = user();
-    var mode = (u && u.mode === 'real') ? 'real' : 'demo';
+    var mode = (forceMode === 'real' || forceMode === 'demo')
+      ? forceMode
+      : ((u && u.mode === 'real') ? 'real' : 'demo');
     if ($('histSheetTitle')) {
       $('histSheetTitle').textContent = mode === 'real'
         ? (t('histSheetReal') || 'Historique des trades (Compte Reel)')
@@ -2490,39 +2487,33 @@
     });
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
     $('drawerBackdrop').addEventListener('click', closeDrawer);
-    function openHistorySheet() {
-      renderHistorySheet();
+    function openHistorySheet(forceMode) {
+      renderHistorySheet(forceMode);
       openModal('historySheet');
     }
-    var histBtn = $('btnHistMore');
-    if (histBtn) {
-      var histLastOpen = 0;
-      function openHistorySheetSafe() {
+    function bindHistDrawer(btn, mode) {
+      if (!btn) return;
+      var last = 0;
+      function go() {
         var now = Date.now();
-        if (now - histLastOpen < 400) return;
-        histLastOpen = now;
-        openHistorySheet();
+        if (now - last < 400) return;
+        last = now;
+        closeDrawer();
+        openHistorySheet(mode);
       }
-      histBtn.style.pointerEvents = 'auto';
-      histBtn.style.touchAction = 'manipulation';
-      histBtn.style.position = 'relative';
-      histBtn.style.zIndex = '60';
+      btn.addEventListener('click', function (e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        go();
+      });
       if (IS_ANDROID) {
-        histBtn.style.minHeight = '30px';
-        // Android : click + touchend sans bloquer la propagation vers le handler.
-        histBtn.addEventListener('click', function () { openHistorySheetSafe(); });
-        histBtn.addEventListener('touchend', function (e) {
+        btn.addEventListener('touchend', function (e) {
           if (e && e.cancelable) e.preventDefault();
-          openHistorySheetSafe();
+          go();
         }, { passive: false });
-      } else {
-        histBtn.style.minHeight = '44px';
-        histBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          openHistorySheetSafe();
-        });
       }
     }
+    bindHistDrawer($('btnHistDemo'), 'demo');
+    bindHistDrawer($('btnHistReal'), 'real');
   }
 
   function bindModals() {
@@ -2984,6 +2975,148 @@
     loop();
   }
 
+  function bumpChartLayout() {
+    if (!(D6.Chart && D6.Chart.resize)) return;
+    requestAnimationFrame(function () {
+      D6.Chart.resize();
+      setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 120);
+      setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 400);
+    });
+  }
+
+  function isNativeFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+  }
+
+  function applyFsChrome(on) {
+    var root = document.documentElement;
+    root.classList.toggle('fs-trade', !!on);
+    if (!on) root.classList.remove('fs-ios-fallback');
+    var exitBtn = $('btnChartFsExit');
+    var enterBtn = $('btnChartFs');
+    if (exitBtn) {
+      if (on) exitBtn.removeAttribute('hidden');
+      else exitBtn.setAttribute('hidden', '');
+    }
+    if (enterBtn) {
+      enterBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      enterBtn.title = on ? (t('fsExit') || 'Quitter le plein écran') : (t('fsEnter') || 'Plein écran');
+    }
+    bumpChartLayout();
+  }
+
+  function maybeIosLandscapeFallback() {
+    var portrait = (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) ||
+      (window.innerHeight > window.innerWidth);
+    if (portrait) document.documentElement.classList.add('fs-ios-fallback');
+    else document.documentElement.classList.remove('fs-ios-fallback');
+  }
+
+  function tryLockLandscape() {
+    var o = typeof screen !== 'undefined' ? screen.orientation : null;
+    if (o && typeof o.lock === 'function') {
+      return Promise.resolve(o.lock('landscape')).then(function () {
+        document.documentElement.classList.remove('fs-ios-fallback');
+      }).catch(function () {
+        maybeIosLandscapeFallback();
+      });
+    }
+    maybeIosLandscapeFallback();
+    return Promise.resolve();
+  }
+
+  function unlockOrientation() {
+    try {
+      var o = typeof screen !== 'undefined' ? screen.orientation : null;
+      if (o && typeof o.unlock === 'function') o.unlock();
+    } catch (e) { /* ignore */ }
+  }
+
+  function requestFsEl(el) {
+    if (!el) return Promise.reject(new Error('no-el'));
+    try {
+      if (el.requestFullscreen) {
+        return el.requestFullscreen({ navigationUI: 'hide' }).catch(function () {
+          return el.requestFullscreen();
+        });
+      }
+      if (el.webkitRequestFullscreen) return Promise.resolve(el.webkitRequestFullscreen());
+      if (el.webkitRequestFullScreen) return Promise.resolve(el.webkitRequestFullScreen());
+      if (el.msRequestFullscreen) return Promise.resolve(el.msRequestFullscreen());
+    } catch (e) {
+      return Promise.reject(e);
+    }
+    return Promise.reject(new Error('no-fs'));
+  }
+
+  function exitFsNative() {
+    try {
+      if (document.exitFullscreen) return document.exitFullscreen();
+      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+      if (document.msExitFullscreen) return document.msExitFullscreen();
+    } catch (e) { /* ignore */ }
+    return Promise.resolve();
+  }
+
+  function enterTradeFullscreen() {
+    var trade = $('screenTrade');
+    if (!trade || trade.classList.contains('hidden')) return;
+    closeDrawer();
+    applyFsChrome(true);
+    requestFsEl(document.documentElement).then(function () {
+      return tryLockLandscape();
+    }).catch(function () {
+      return tryLockLandscape();
+    }).then(function () {
+      bumpChartLayout();
+    });
+  }
+
+  function leaveTradeFullscreen() {
+    unlockOrientation();
+    applyFsChrome(false);
+    if (isNativeFullscreen()) {
+      Promise.resolve(exitFsNative()).catch(function () {});
+    }
+    bumpChartLayout();
+  }
+
+  function bindFullscreenTrade() {
+    var enter = $('btnChartFs');
+    var exit = $('btnChartFsExit');
+    if (enter) {
+      enter.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (document.documentElement.classList.contains('fs-trade')) leaveTradeFullscreen();
+        else enterTradeFullscreen();
+      });
+    }
+    if (exit) {
+      exit.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        leaveTradeFullscreen();
+      });
+    }
+    function onFsChange() {
+      if (!isNativeFullscreen() && document.documentElement.classList.contains('fs-trade')) {
+        unlockOrientation();
+        applyFsChrome(false);
+      }
+    }
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    document.addEventListener('MSFullscreenChange', onFsChange);
+    window.addEventListener('orientationchange', function () {
+      if (!document.documentElement.classList.contains('fs-trade')) return;
+      setTimeout(function () {
+        if (document.documentElement.classList.contains('fs-ios-fallback')) maybeIosLandscapeFallback();
+        bumpChartLayout();
+      }, 220);
+    });
+  }
+
   D6.App = {
     onRemoteAccount: function () {
       updateBalance(true);
@@ -3002,6 +3135,7 @@
       bindTrade();
       startWithdrawTicker();
       bindModals();
+      bindFullscreenTrade();
       bindAdmin();
       bindInstall();
       loopParticles();
