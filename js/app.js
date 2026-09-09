@@ -1263,13 +1263,132 @@
     renderAdminView();
   }
 
+  function adminTxStatusLabel(st) {
+    var s = String(st || '').toUpperCase();
+    if (s === 'COMPLETED' || s === 'PAID' || s === 'APPROVED' || s === 'OK' || s === 'SUCCESS') return 'Succès';
+    if (s === 'PENDING' || s === 'WAITING') return 'En attente';
+    if (s === 'REJECTED' || s === 'FAILED' || s === 'CANCELLED' || s === 'ERROR') return 'Échoué';
+    return st ? String(st) : '—';
+  }
+
+  function adminTxTypeLabel(type) {
+    var t0 = String(type || '').toLowerCase();
+    if (t0 === 'deposit' || t0 === 'recharge') return 'Dépôt';
+    if (t0 === 'withdraw' || t0 === 'withdrawal') return 'Retrait';
+    if (t0 === 'adjust' || t0 === 'admin' || t0 === 'credit' || t0 === 'debit') return 'Ajustement Admin';
+    if (t0 === 'win') return 'Gain trade';
+    if (t0 === 'void') return 'Remboursement';
+    return type ? String(type) : 'Transaction';
+  }
+
+  function collectPlayerFinanceRows(u) {
+    var uid = String((u && u.id) || '');
+    var rows = [];
+    var seen = {};
+    function pushRow(row) {
+      if (!row) return;
+      var key = [row.at, row.type, row.amount, row.ref].join('|');
+      if (seen[key]) return;
+      seen[key] = 1;
+      rows.push(row);
+    }
+    (adminCache.depositsPaid || []).forEach(function (d) {
+      if (String(d.userId || '') !== uid) return;
+      pushRow({
+        at: d.at || d.paidAt || d.createdAt || '',
+        type: 'deposit',
+        amount: Number(d.amount) || 0,
+        status: d.status || 'COMPLETED',
+        ref: d.ref || d.id || (d.operator ? ('Maketou/' + d.operator) : 'Maketou')
+      });
+    });
+    (adminCache.deposits || []).forEach(function (d) {
+      if (String(d.userId || '') !== uid) return;
+      pushRow({
+        at: d.at || d.createdAt || '',
+        type: 'deposit',
+        amount: Number(d.amount) || 0,
+        status: d.status || 'PENDING',
+        ref: d.ref || d.id || 'Maketou'
+      });
+    });
+    (adminCache.withdrawals || []).forEach(function (w) {
+      if (String(w.userId || '') !== uid) return;
+      pushRow({
+        at: w.at || w.createdAt || w.clock || '',
+        type: 'withdraw',
+        amount: Number(w.amount) || 0,
+        status: w.status || 'pending',
+        ref: w.id || w.ref || (w.method || 'retrait')
+      });
+    });
+    ((u && u.transactions) || []).forEach(function (tx) {
+      var typ = String(tx.type || '').toLowerCase();
+      if (typ !== 'deposit' && typ !== 'withdraw' && typ !== 'withdrawal' && typ !== 'adjust' && typ !== 'admin' && typ !== 'credit' && typ !== 'debit') {
+        if (tx.mode === 'real' && (typ === 'win' || typ === 'void')) {
+          /* garder gains/void réel pour audit */
+        } else if (!(tx.note && /admin|bonus|correction|ajust/i.test(String(tx.note)))) {
+          return;
+        }
+      }
+      pushRow({
+        at: tx.at || tx.createdAt || '',
+        type: typ === 'withdrawal' ? 'withdraw' : (typ || 'adjust'),
+        amount: Number(tx.amount) || 0,
+        status: tx.status || 'OK',
+        ref: tx.ref || tx.id || (tx.note || 'ledger')
+      });
+    });
+    rows.sort(function (a, b) {
+      return String(b.at || '').localeCompare(String(a.at || ''));
+    });
+    return rows.slice(0, 10);
+  }
+
+  function renderPlayerFinanceBlock(u) {
+    var totalDep = Number(u.totalDeposited || 0);
+    var totalWd = Number(u.totalWithdrawn || 0);
+    if (!totalDep) {
+      (adminCache.depositsPaid || []).forEach(function (d) {
+        if (String(d.userId || '') === String(u.id || '')) totalDep += Number(d.amount) || 0;
+      });
+    }
+    if (!totalWd) {
+      (adminCache.withdrawals || []).forEach(function (w) {
+        if (String(w.userId || '') === String(u.id || '') && String(w.status || '').toLowerCase() === 'approved') {
+          totalWd += Number(w.amount) || 0;
+        }
+      });
+    }
+    var net = totalDep - totalWd;
+    var rows = collectPlayerFinanceRows(u);
+    var table = rows.length
+      ? ('<div class="table-wrap admin-finance-table"><table class="hist-table"><thead><tr>' +
+        '<th>Date</th><th>Type</th><th>Montant</th><th>Statut</th><th>Réf.</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          var dt = String(r.at || '').replace('T', ' ').slice(0, 16);
+          return '<tr><td>' + adminEsc(dt || '—') + '</td><td>' + adminEsc(adminTxTypeLabel(r.type)) +
+            '</td><td>' + D6.fmtFCFA(r.amount) + '</td><td>' + adminEsc(adminTxStatusLabel(r.status)) +
+            '</td><td class="admin-finance-ref">' + adminEsc(String(r.ref || '—').slice(0, 28)) + '</td></tr>';
+        }).join('') +
+        '</tbody></table></div>')
+      : '<p class="hint-min">Aucune transaction financière enregistrée pour ce joueur.</p>';
+    return '<div class="admin-finance-block">' +
+      '<div class="convert-title" style="font-size:.92rem;margin-top:14px">Historique Financier du Joueur</div>' +
+      '<div class="list-row"><span>Total Déposé</span><strong>' + D6.fmtFCFA(totalDep) + '</strong></div>' +
+      '<div class="list-row"><span>Total Retiré</span><strong>' + D6.fmtFCFA(totalWd) + '</strong></div>' +
+      '<div class="list-row"><span>Bilan net</span><strong>' + D6.fmtFCFA(net) + '</strong></div>' +
+      table +
+      '</div>';
+  }
+
   function openAdminUser(uid) {
     var u = (adminCache.users || []).find(function (x) { return x.id === uid; });
     var box = $('adminUserDetail');
     if (!u || !box) return;
     box.classList.remove('hidden');
-    box.innerHTML = '<div class="convert-title">' + (u.publicId || '') + ' · ' + (u.displayName || '') + '</div>' +
-      '<div class="h-time">' + u.email + ' · ' + (u.countryCode || '') + ' ' + (u.phone || '') + ' · inscrit ' + (u.createdAt || '').slice(0, 10) + '</div>' +
+    box.innerHTML = '<div class="convert-title">' + adminEsc(u.publicId || '') + ' · ' + adminEsc(u.displayName || '') + '</div>' +
+      '<div class="h-time">' + adminEsc(u.email) + ' · ' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) + ' · inscrit ' + adminEsc((u.createdAt || '').slice(0, 10)) + '</div>' +
       '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
       '<div class="list-row"><span>Démo</span><strong>' + D6.fmtFCFA(u.demoBalance) + '</strong></div>' +
       '<div class="field"><label>' + t('adjustReason') + '</label><input id="adjMotif" maxlength="120" placeholder="bonus, correction…"></div>' +
@@ -1279,7 +1398,8 @@
       '<button class="mini bad" type="button" data-adj-act="debit" data-adj="' + u.id + '" data-mode="real">− Débiter Réel</button>' +
       '<button class="mini" type="button" data-adj="' + u.id + '" data-mode="demo" data-reset="1">Reset démo 1M</button>' +
       '</div>' +
-      '<p class="hint-min">Le montant saisi crédite ou débite instantanément le solde RÉEL en base.</p>';
+      '<p class="hint-min">Le montant saisi crédite ou débite instantanément le solde RÉEL en base.</p>' +
+      renderPlayerFinanceBlock(u);
   }
 
   function setTradingLocked(on) {
@@ -2260,7 +2380,7 @@
       }
       metaTrack('CompleteRegistration');
       toast(t('accountCreated'), 'ok');
-      enterApp({ openFullscreen: true });
+      enterApp({});
     });
     $('btnForgot').addEventListener('click', function () {
       clearErrors();
@@ -2379,7 +2499,7 @@
         closeOtpModal();
         metaTrack('CompleteRegistration');
         toast(t('accountCreated'), 'ok');
-        enterApp({ openFullscreen: true });
+        enterApp({});
       });
     }
     if ($('btnOtpResend')) {
@@ -2918,74 +3038,100 @@
   }
 
   function lockGestures() {
-    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-    document.addEventListener('dblclick', function (e) { e.preventDefault(); });
-    document.addEventListener('touchmove', function (e) {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
+    try {
+      document.addEventListener('gesturestart', function (e) {
+        try { e.preventDefault(); } catch (e0) { /* ignore */ }
+      });
+      document.addEventListener('dblclick', function (e) {
+        try { e.preventDefault(); } catch (e1) { /* ignore */ }
+      });
+      document.addEventListener('touchmove', function (e) {
+        try {
+          if (e.touches && e.touches.length > 1) e.preventDefault();
+        } catch (e2) { /* ignore */ }
+      }, { passive: false });
+    } catch (err) {
+      try { console.warn('Mobile display fallback:', err); } catch (e3) { /* ignore */ }
+    }
   }
 
   function enterApp(opts) {
     opts = opts || {};
-    var u = user();
-    if (u) migrateLegacyDemo(u);
-    stake = D6.CONFIG.MIN_STAKE || 1;
-    $('inputStake').value = stake;
-    setModeUi(u);
-    setAdminBtns(u);
-    syncAuthQuick();
-    setModeChrome(u);
-    updateAssetUi();
-    updateDurationUi();
-    if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
-    if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-    if (D6.Chart && D6.Chart.applyOpenTradeVisual && D6.Engine.getTrades) {
-      D6.Engine.getTrades().forEach(function (t) { D6.Chart.applyOpenTradeVisual(t); });
-    }
-    updateBalance(false);
-    renderHistory();
-    D6.I18N.apply();
-    showScreen('screenTrade');
-    D6.Chart.setAsset(assetId(u));
-    D6.Chart.start();
-    requestAnimationFrame(function () {
-      D6.Chart.resize();
-      requestAnimationFrame(D6.Chart.resize);
-      setTimeout(function () { D6.Chart.resize(); }, 120);
-      setTimeout(function () { D6.Chart.resize(); }, 400);
+    try {
+      var u = user();
+      if (u) migrateLegacyDemo(u);
+      stake = D6.CONFIG.MIN_STAKE || 1;
+      if ($('inputStake')) $('inputStake').value = stake;
+      setModeUi(u);
+      setAdminBtns(u);
+      syncAuthQuick();
+      setModeChrome(u);
+      updateAssetUi();
+      updateDurationUi();
+      if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
+      if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
+      if (D6.Chart && D6.Chart.applyOpenTradeVisual && D6.Engine.getTrades) {
+        D6.Engine.getTrades().forEach(function (t) { D6.Chart.applyOpenTradeVisual(t); });
+      }
+      updateBalance(false);
+      renderHistory();
+      D6.I18N.apply();
+      showScreen('screenTrade');
+      if (D6.Chart && D6.Chart.setAsset) D6.Chart.setAsset(assetId(u));
+      if (D6.Chart && D6.Chart.start) D6.Chart.start();
+      requestAnimationFrame(function () {
+        try {
+          if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+          requestAnimationFrame(function () {
+            try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (eR) { /* ignore */ }
+          });
+          setTimeout(function () { try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (e1) { /* ignore */ } }, 120);
+          setTimeout(function () { try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (e2) { /* ignore */ } }, 400);
+          setTimeout(function () {
+            try {
+              if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
+              if (D6.Chart && D6.Chart.flushOpenTradeVisuals) D6.Chart.flushOpenTradeVisuals();
+            } catch (e3) { /* ignore */ }
+          }, 600);
+          // Jamais de plein écran auto au boot / inscription sur mobile (User Gesture obligatoire).
+          if (opts.openFullscreen && !preferCssFullscreenOnly()) {
+            setTimeout(function () {
+              try {
+                enterTradeFullscreen();
+                bumpChartLayout();
+              } catch (eFs) { try { console.warn('Mobile display fallback:', eFs); } catch (e4) { /* ignore */ } }
+            }, 500);
+          }
+        } catch (eBootFs) {
+          try { console.warn('Mobile display fallback:', eBootFs); } catch (e5) { /* ignore */ }
+        }
+      });
+      refreshRemoteVault();
+      checkDepositReturn();
+      syncTradeButtons();
+      startAdminPresence();
       setTimeout(function () {
-        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
-        if (D6.Chart && D6.Chart.flushOpenTradeVisuals) D6.Chart.flushOpenTradeVisuals();
-      }, 600);
-      if (document.documentElement.classList.contains('is-android')) {
-        setTimeout(function () { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); }, 800);
+        try {
+          var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+          var mobile = window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
+          var forever = false;
+          try { forever = localStorage.getItem('oro_install_dismissed') === '1'; } catch (e0) { forever = false; }
+          if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
+            $('installBanner').classList.remove('hidden');
+            setTimeout(function () {
+              if ($('installBanner')) $('installBanner').classList.add('hidden');
+              try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
+            }, 5000);
+          }
+        } catch (eInst) { /* ignore */ }
+      }, 1800);
+      if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) {
+        try { D6.Supabase.startRealtime(u.id); } catch (eRt) { /* ignore */ }
       }
-      if (opts.openFullscreen) {
-        setTimeout(function () {
-          enterTradeFullscreen();
-          bumpChartLayout();
-        }, 500);
-      }
-    });
-    refreshRemoteVault();
-    checkDepositReturn();
-    syncTradeButtons();
-    startAdminPresence();
-    // Bannière PWA discrète mobile 5s (jamais si déjà installée)
-    setTimeout(function () {
-      var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
-      var mobile = window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
-      var forever = false;
-      try { forever = localStorage.getItem('oro_install_dismissed') === '1'; } catch (e0) { forever = false; }
-      if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
-        $('installBanner').classList.remove('hidden');
-        setTimeout(function () {
-          if ($('installBanner')) $('installBanner').classList.add('hidden');
-          try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
-        }, 5000);
-      }
-    }, 1800);
-    if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) D6.Supabase.startRealtime(u.id);
+    } catch (err) {
+      try { console.warn('Mobile display fallback:', err); } catch (eW) { /* ignore */ }
+      try { showScreen('screenTrade'); } catch (eS) { /* ignore */ }
+    }
   }
 
   function loopParticles() {
@@ -3271,20 +3417,21 @@
     updateBalance: updateBalance,
     getBalanceLocks: getBalanceLocks,
     boot: function () {
-      captureUtmSource();
-      lockGestures();
-      fillLangBars();
-      fillCountrySelects();
-      D6.I18N.apply();
-      applyAndroidTradeHint();
-      bindAuth();
-      bindTrade();
-      startWithdrawTicker();
-      bindModals();
-      bindFullscreenTrade();
-      bindAdmin();
-      bindInstall();
-      loopParticles();
+      try {
+        try { captureUtmSource(); } catch (e0) { try { console.warn(e0); } catch (e) { /* ignore */ } }
+        try { lockGestures(); } catch (e1) { try { console.warn('Mobile display fallback:', e1); } catch (e) { /* ignore */ } }
+        try { fillLangBars(); } catch (e2) { /* ignore */ }
+        try { fillCountrySelects(); } catch (e3) { /* ignore */ }
+        try { D6.I18N.apply(); } catch (e4) { /* ignore */ }
+        try { applyAndroidTradeHint(); } catch (e5) { /* ignore */ }
+        try { bindAuth(); } catch (e6) { try { console.warn(e6); } catch (e) { /* ignore */ } }
+        try { bindTrade(); } catch (e7) { try { console.warn(e7); } catch (e) { /* ignore */ } }
+        try { startWithdrawTicker(); } catch (e8) { /* ignore */ }
+        try { bindModals(); } catch (e9) { /* ignore */ }
+        try { bindFullscreenTrade(); } catch (e10) { try { console.warn('Mobile display fallback:', e10); } catch (e) { /* ignore */ } }
+        try { bindAdmin(); } catch (e11) { /* ignore */ }
+        try { bindInstall(); } catch (e12) { /* ignore */ }
+        try { loopParticles(); } catch (e13) { /* ignore */ }
       window.addEventListener('message', function (ev) {
         var d = ev && ev.data;
         if (!d || d.orolado !== 'deposit-done') return;
@@ -3316,17 +3463,27 @@
       document.addEventListener('touchstart', unlockAudio, { capture: true, passive: true });
       document.addEventListener('click', unlockAudio, { capture: true, passive: true });
       var lastHud = 0;
-      D6.Chart.attach($('chartCanvas'), function (ts) {
-        if ($('screenTrade').classList.contains('hidden') || document.hidden) return;
-        if (ts - lastHud < 80) return;
-        lastHud = ts;
-        updatePriceHud();
-      });
+      try {
+        if ($('chartCanvas') && D6.Chart && D6.Chart.attach) {
+          D6.Chart.attach($('chartCanvas'), function (ts) {
+            try {
+              if (!$('screenTrade') || $('screenTrade').classList.contains('hidden') || document.hidden) return;
+              if (ts - lastHud < 80) return;
+              lastHud = ts;
+              updatePriceHud();
+            } catch (eHud) { /* ignore */ }
+          });
+        }
+      } catch (eChart) {
+        try { console.warn('Mobile display fallback:', eChart); } catch (e) { /* ignore */ }
+      }
       setInterval(function () {
-        var u = user();
-        if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-        patchHistorySoon();
-        syncTradeButtons();
+        try {
+          var u = user();
+          if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
+          patchHistorySoon();
+          syncTradeButtons();
+        } catch (eTick) { /* ignore */ }
       }, 1000);
       document.addEventListener('click', function () {
         document.querySelectorAll('.lang-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
@@ -3350,7 +3507,13 @@
         checkDepositReturn();
       });
       setInterval(updatePayoutUi, 2500);
-      D6.Auth.ensureAdmin();
+      try {
+        if (D6.Auth && D6.Auth.ensureAdmin) {
+          Promise.resolve(D6.Auth.ensureAdmin()).catch(function (err) {
+            try { console.warn('Mobile display fallback:', err); } catch (e) { /* ignore */ }
+          });
+        }
+      } catch (eAdm) { try { console.warn(eAdm); } catch (e) { /* ignore */ } }
       if (location.hash.indexOf('#preview') === 0) {
         (async function () {
           var existing = D6.Store.findByEmail('preview@orolado.local');
@@ -3361,10 +3524,15 @@
         return;
       }
       function finishBoot() {
-        if (D6.Auth.current() && !isGuest(D6.Auth.current())) enterApp();
-        else {
-          ensureGuest();
-          enterApp();
+        try {
+          if (D6.Auth.current() && !isGuest(D6.Auth.current())) enterApp();
+          else {
+            ensureGuest();
+            enterApp();
+          }
+        } catch (eFin) {
+          try { console.warn('Mobile display fallback:', eFin); } catch (e) { /* ignore */ }
+          try { showScreen('screenAuth'); } catch (e2) { /* ignore */ }
         }
       }
       if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
@@ -3388,16 +3556,30 @@
       if ($('closeTip')) { /* bound in bindModals */ }
       if ($('btnTipOk')) { /* bound in bindModals */ }
       (async function bootSession() {
-        var cloud = null;
-        if (D6.Supabase && D6.Supabase.restore) {
-          try { cloud = await D6.Supabase.restore(); } catch (e) { cloud = null; }
+        try {
+          var cloud = null;
+          if (D6.Supabase && D6.Supabase.restore) {
+            try { cloud = await D6.Supabase.restore(); } catch (e) { cloud = null; }
+          }
+          if (cloud && cloud.ok && D6.Auth.current() && !isGuest()) {
+            enterApp();
+            return;
+          }
+          finishBoot();
+        } catch (eBoot) {
+          try { console.warn('Mobile display fallback:', eBoot); } catch (e) { /* ignore */ }
+          try { finishBoot(); } catch (e2) {
+            try { showScreen('screenAuth'); } catch (e3) { /* ignore */ }
+          }
         }
-        if (cloud && cloud.ok && D6.Auth.current() && !isGuest()) {
-          enterApp();
-          return;
-        }
-        finishBoot();
       })();
+      } catch (errBoot) {
+        try { console.warn('Mobile display fallback:', errBoot); } catch (e) { /* ignore */ }
+        try {
+          if ($('screenAuth')) $('screenAuth').classList.remove('hidden');
+          if ($('screenTrade')) $('screenTrade').classList.add('hidden');
+        } catch (e2) { /* ignore */ }
+      }
     }
   };
 

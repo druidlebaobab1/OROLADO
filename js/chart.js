@@ -1152,65 +1152,81 @@
 
   D6.Chart = {
     attach: function (el, callback) {
-      canvas = el;
-      ctx = canvas.getContext('2d', { alpha: false });
-      overlay = document.getElementById('chartOverlay');
-      if (!overlay && canvas.parentElement) {
-        overlay = document.createElement('canvas');
-        overlay.id = 'chartOverlay';
-        overlay.className = 'chart-overlay';
-        overlay.setAttribute('aria-hidden', 'true');
-        canvas.parentElement.appendChild(overlay);
-      }
-      octx = overlay ? overlay.getContext('2d', { alpha: true }) : null;
-      onFrame = callback;
-      if (canvas) {
+      try {
+        if (!el || typeof el.getContext !== 'function') {
+          try { console.warn('Mobile display fallback: chart canvas missing'); } catch (e0) { /* ignore */ }
+          return;
+        }
+        canvas = el;
+        ctx = canvas.getContext('2d', { alpha: false });
+        if (!ctx) {
+          try { console.warn('Mobile display fallback: 2d context unavailable'); } catch (e1) { /* ignore */ }
+          return;
+        }
+        overlay = document.getElementById('chartOverlay');
+        if (!overlay && canvas.parentElement) {
+          overlay = document.createElement('canvas');
+          overlay.id = 'chartOverlay';
+          overlay.className = 'chart-overlay';
+          overlay.setAttribute('aria-hidden', 'true');
+          canvas.parentElement.appendChild(overlay);
+        }
+        octx = overlay ? overlay.getContext('2d', { alpha: true }) : null;
+        onFrame = callback;
         canvas.style.display = 'block';
         canvas.style.visibility = 'visible';
         canvas.style.opacity = '1';
         canvas.style.zIndex = '10';
         canvas.style.backgroundColor = '#0B0E14';
         canvas.style.background = '#0B0E14';
-      }
-      if (overlay) {
-        overlay.style.background = 'transparent';
-        overlay.style.backgroundColor = 'transparent';
-        overlay.style.zIndex = '20';
-      }
-      if (canvas && canvas.parentElement) {
-        canvas.parentElement.style.backgroundColor = '#0B0E14';
-        canvas.parentElement.style.position = 'relative';
-      }
-      resize();
-      drawNow();
-      requestAnimationFrame(function () {
-        resize();
-        drawNow();
-      });
-      setTimeout(function () { resize(); drawNow(); }, 80);
-      setTimeout(function () { resize(); drawNow(); }, 300);
-      bindTools();
-      window.addEventListener('resize', function () { requestAnimationFrame(resize); });
-      window.addEventListener('orientationchange', function () {
-        setTimeout(function () { resize(); }, 120);
-      });
-      if (window.visualViewport) {
-        visualViewport.addEventListener('resize', function () { requestAnimationFrame(resize); });
-      }
-      if (window.ResizeObserver && canvas.parentElement) {
-        var roWait = 0;
-        var ro = new ResizeObserver(function () {
-          if (roWait) return;
-          roWait = requestAnimationFrame(function () {
-            roWait = 0;
-            resize();
-          });
+        if (overlay) {
+          overlay.style.background = 'transparent';
+          overlay.style.backgroundColor = 'transparent';
+          overlay.style.zIndex = '20';
+        }
+        if (canvas.parentElement) {
+          canvas.parentElement.style.backgroundColor = '#0B0E14';
+          canvas.parentElement.style.position = 'relative';
+        }
+        try { resize(); drawNow(); } catch (eR) { try { console.warn('Mobile display fallback:', eR); } catch (e2) { /* ignore */ } }
+        requestAnimationFrame(function () {
+          try { resize(); drawNow(); } catch (e3) { /* ignore */ }
         });
-        ro.observe(canvas.parentElement);
-        var chartCard = document.getElementById('chart');
-        if (chartCard) ro.observe(chartCard);
-        var fsSlot = document.getElementById('fsTradeSlot');
-        if (fsSlot) ro.observe(fsSlot);
+        setTimeout(function () { try { resize(); drawNow(); } catch (e4) { /* ignore */ } }, 80);
+        setTimeout(function () { try { resize(); drawNow(); } catch (e5) { /* ignore */ } }, 300);
+        try { bindTools(); } catch (eT) { try { console.warn(eT); } catch (e6) { /* ignore */ } }
+        window.addEventListener('resize', function () {
+          try { requestAnimationFrame(resize); } catch (e7) { /* ignore */ }
+        });
+        window.addEventListener('orientationchange', function () {
+          setTimeout(function () { try { resize(); } catch (e8) { /* ignore */ } }, 120);
+        });
+        if (window.visualViewport) {
+          try {
+            visualViewport.addEventListener('resize', function () {
+              try { requestAnimationFrame(resize); } catch (e9) { /* ignore */ }
+            });
+          } catch (eVv) { try { console.warn('Mobile display fallback:', eVv); } catch (e10) { /* ignore */ } }
+        }
+        if (window.ResizeObserver && canvas.parentElement) {
+          try {
+            var roWait = 0;
+            var ro = new ResizeObserver(function () {
+              if (roWait) return;
+              roWait = requestAnimationFrame(function () {
+                roWait = 0;
+                try { resize(); } catch (e11) { /* ignore */ }
+              });
+            });
+            ro.observe(canvas.parentElement);
+            var chartCard = document.getElementById('chart');
+            if (chartCard) ro.observe(chartCard);
+            var fsSlot = document.getElementById('fsTradeSlot');
+            if (fsSlot) ro.observe(fsSlot);
+          } catch (eRo) { try { console.warn('Mobile display fallback:', eRo); } catch (e12) { /* ignore */ } }
+        }
+      } catch (err) {
+        try { console.warn('Mobile display fallback:', err); } catch (e13) { /* ignore */ }
       }
     },
     setAsset: function (id) {
