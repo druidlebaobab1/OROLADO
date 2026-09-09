@@ -28,8 +28,8 @@
     // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; autres cotes ×0.75).
     ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125 },
     MIN_ORDER_MS: 300,
-    MIN_DEPOSIT: 2000,
-    MIN_WITHDRAW: 2000,
+    MIN_DEPOSIT: 3,
+    MIN_WITHDRAW: 3,
     WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
     MAX_OPEN: 2,

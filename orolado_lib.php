@@ -119,7 +119,7 @@ function orolado_fcfa_to_usd($fcfa): float {
 }
 
 function orolado_min_withdraw(): float {
-  return 2000.0;
+  return 3.0;
 }
 
 function orolado_max_deposit_usd(): float {
@@ -1399,12 +1399,12 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt joueur = 2 000 FCFA (champ Recharger). */
+/** Minimum dépôt affiché = $3.00 → XOF via taux (ex. 1 800 FCFA). */
 function orolado_min_deposit_fcfa(?array $me): int {
-  return 2000;
+  return orolado_usd_to_fcfa(orolado_min_deposit($me));
 }
 
-/** Seuil crédit vault (USD) — soldes inchangés. */
+/** Seuil dépôt UI / vault (USD). */
 function orolado_min_deposit(?array $me): float {
   return 3.0;
 }
@@ -1416,14 +1416,24 @@ function orolado_initiate_deposit(array $req): array {
   $me = orolado_session_user($db, $token);
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 
-  // Champ Recharger = FCFA entier (flux pré-$).
-  $amountFcfa = (int) ($req['amount'] ?? 0);
-  $minFcfa = orolado_min_deposit_fcfa($me);
-  if ($amountFcfa < $minFcfa || $amountFcfa > 5000000) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de 2 000 FCFA.'];
+  // UI en USD → conversion fixe → XOF entier pour Maketou (même checkout).
+  // Compat explicite : currency=XOF ou amountFcfa → montant déjà en FCFA.
+  $unit = strtoupper(trim((string) ($req['currency'] ?? $req['unit'] ?? 'USD')));
+  if (isset($req['amountFcfa']) || $unit === 'XOF' || $unit === 'FCFA') {
+    $amountFcfa = (int) round((float) ($req['amountFcfa'] ?? $req['amount'] ?? 0));
+    $amountUsd = orolado_fcfa_to_usd($amountFcfa);
+  } else {
+    $amountUsd = orolado_money($req['amount'] ?? 0);
+    $amountFcfa = orolado_usd_to_fcfa($amountUsd);
   }
-  // Crédit vault reste en USD (soldes) — conversion interne uniquement.
-  $amountUsd = orolado_fcfa_to_usd($amountFcfa);
+  $minUsd = orolado_min_deposit($me);
+  $minFcfa = orolado_min_deposit_fcfa($me);
+  if ($amountUsd + 0.0001 < $minUsd && $amountFcfa < $minFcfa) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
+  }
+  if ($amountFcfa < 1 || $amountFcfa > 5000000) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Montant invalide'];
+  }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
@@ -1447,7 +1457,7 @@ function orolado_initiate_deposit(array $req): array {
     'status' => 'PENDING',
     'amount' => $amountUsd,
     'amountFcfa' => $amountFcfa,
-    'currency' => 'XOF',
+    'currency' => 'USD',
     'at' => date('c')
   ];
   save_db($file, $db);
@@ -1462,6 +1472,7 @@ function orolado_initiate_deposit(array $req): array {
     'operator' => $op,
   ]);
 
+  // Même fonction checkout : customerPrice = XOF entier, user prérempli.
   $pay = maketou_create_checkout([
     'email' => $customer['email'],
     'phone' => $customer['phone'],
@@ -1498,6 +1509,7 @@ function orolado_initiate_deposit(array $req): array {
       'server' => true,
       'reason' => (string) ($pay['raw'] ?? 'Pas de redirectUrl Moneroo'),
       'ref' => $ref,
+      'amount' => $amountUsd,
       'amountFcfa' => $amountFcfa,
       'payload' => ['customerPrice' => $amountFcfa, 'currency' => 'XOF'],
       'missing' => 'redirectUrl',

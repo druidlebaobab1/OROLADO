@@ -396,7 +396,7 @@
       extra = extra || {};
       amount = D6.roundMoney(amount);
       var real = (vault[user.id] || { real: 0 }).real;
-      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 2000;
+      var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 3;
       if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;
@@ -409,12 +409,15 @@
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
       vault[user.id].real = real - amount;
       db.withdrawals = db.withdrawals || [];
+      var amountFcfa = (D6.usdToFcfa && D6.usdToFcfa(amount)) || Math.round(amount * ((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600));
       db.withdrawals.unshift({
         id: D6.uid(),
         userId: user.id,
         name: extra.beneficiary || user.displayName,
         email: user.email,
         amount: amount,
+        amountFcfa: amountFcfa,
+        currency: 'USD',
         status: 'pending',
         suspect: suspect,
         operator: extra.operator || '',

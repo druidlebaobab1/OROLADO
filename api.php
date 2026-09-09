@@ -729,7 +729,7 @@ if ($action === 'withdraw') {
   $real = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
   $minWithdraw = orolado_min_withdraw();
   if ($amount < $minWithdraw) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de 2 000 FCFA.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de $3.00.']);
     exit;
   }
   if ($amount > $real) {
@@ -773,6 +773,7 @@ if ($action === 'withdraw') {
     exit;
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
+  $amountFcfa = orolado_usd_to_fcfa($amount);
   $db['vault'][$me['id']]['real'] = orolado_money($real - $amount);
   $db['withdrawals'][] = [
     'id' => uniqid('wd_', true),
@@ -780,6 +781,8 @@ if ($action === 'withdraw') {
     'name' => $beneficiary,
     'email' => $me['email'] ?? '',
     'amount' => $amount,
+    'amountFcfa' => $amountFcfa,
+    'currency' => 'USD',
     'status' => 'pending',
     'suspect' => $suspect,
     'operator' => $operator,

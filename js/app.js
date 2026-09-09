@@ -1406,18 +1406,18 @@
     return url;
   }
 
-  // Minimum dépôt joueur = 2 000 FCFA.
+  // Minimum dépôt joueur = $3.00 (Maketou reçoit XOF via taux fixe).
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 2000;
+    return D6.CONFIG.MIN_DEPOSIT || 3;
   }
 
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 2000;
+    return D6.CONFIG.MIN_WITHDRAW || 3;
   }
 
   function setDepositAmt(n) {
     var min = minDeposit();
-    var amt = Math.max(min, Math.floor(Number(n) || min));
+    var amt = Math.max(min, D6.roundMoney(Number(n) || min));
     if ($('depositAmt')) $('depositAmt').value = String(amt);
     return amt;
   }
@@ -1664,7 +1664,7 @@
     toast(t('depositCredited').replace('{amt}', D6.fmtFCFA(remote.amount)), 'ok');
     metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' });
     playWinChime();
-    if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtFCFA(remote.amount);
+    if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtMoney(remote.amount);
     closeModal('depositModal');
     openModal('depositSuccessModal');
     depositRef = '';
@@ -1773,7 +1773,7 @@
       return;
     }
     var min = minDeposit();
-    var amt = Math.floor(Number($('depositAmt') && $('depositAmt').value) || 0);
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('depositMinErr'));
       toast(t('depositMinErr'), 'err');
@@ -2647,7 +2647,7 @@
     $('btnSendWithdraw').addEventListener('click', async function () {
       var u = user();
       if (!u || !requireAccount()) return;
-      var amount = Math.round(Number($('withdrawAmt').value) || 0);
+      var amount = D6.roundMoney(Number($('withdrawAmt').value) || 0);
       var phone = digitsPhone($('withdrawPhone') && $('withdrawPhone').value);
       var name = (u.displayName || 'Client').trim();
       var cc = ($('wdCountry') && $('wdCountry').value) || '+225';
