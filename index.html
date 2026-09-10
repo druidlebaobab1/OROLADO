@@ -20,19 +20,8 @@
   (function () {
     try {
       var ok = { en:1, fr:1, es:1, pt:1, ar:1, tr:1, vi:1, id:1, ru:1, de:1, hi:1 };
-      var l = localStorage.getItem('orolado_lang') || '';
-      if (!ok[l]) {
-        var nav = '';
-        try {
-          nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-        } catch (e0) {}
-        nav = String(nav).toLowerCase().replace('_', '-');
-        var prefixes = ['fr', 'es', 'pt', 'ar', 'tr', 'vi', 'id', 'ru', 'de', 'hi', 'en'];
-        l = 'en';
-        for (var i = 0; i < prefixes.length; i++) {
-          if (nav === prefixes[i] || nav.indexOf(prefixes[i] + '-') === 0) { l = prefixes[i]; break; }
-        }
-      }
+      var l = localStorage.getItem('orolado_manual_lang') || '';
+      if (!ok[l]) l = 'en';
       document.documentElement.lang = l;
       document.documentElement.dir = 'ltr';
       document.documentElement.setAttribute('data-lang', l);
@@ -625,7 +614,7 @@
 
   <script src="js/config.js?v=105"></script>
   <script src="js/translations.js?v=106"></script>
-  <script src="js/i18n.js?v=106"></script>
+  <script src="js/i18n.js?v=107"></script>
   <script src="js/store.js?v=105"></script>
   <script src="js/api.js?v=105"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

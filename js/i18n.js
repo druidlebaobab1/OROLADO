@@ -1322,72 +1322,26 @@
 
   var LANG_KEY = 'orolado_lang';
   var LANG_USER_KEY = 'orolado_lang_user';
+  var LANG_MANUAL_KEY = 'orolado_manual_lang';
+  var GEO_TIMEOUT_MS = 1500;
 
   var COUNTRY_LANG = {
-    DE: 'de', AT: 'de',
-    ES: 'es', MX: 'es', CO: 'es', AR: 'es', CL: 'es', PE: 'es',
-    BR: 'pt',
-    FR: 'fr', BE: 'fr', CI: 'fr', SN: 'fr',
-    TR: 'tr',
     VN: 'vi',
     ID: 'id',
-    RU: 'ru', KZ: 'ru',
-    SA: 'ar', AE: 'ar', EG: 'ar', QA: 'ar', KW: 'ar', MA: 'ar', DZ: 'ar',
-    NG: 'en', GH: 'en', KE: 'en', ZA: 'en', US: 'en', GB: 'en', IN: 'en', NP: 'en'
+    BR: 'pt', PT: 'pt',
+    ES: 'es', AR: 'es', MX: 'es', CO: 'es', CL: 'es', PE: 'es',
+    FR: 'fr', CI: 'fr', SN: 'fr', CM: 'fr', BJ: 'fr', TG: 'fr',
+    TR: 'tr',
+    RU: 'ru', BY: 'ru', KZ: 'ru', UA: 'ru',
+    DE: 'de', AT: 'de', CH: 'de',
+    SA: 'ar', AE: 'ar', EG: 'ar', DZ: 'ar', MA: 'ar', QA: 'ar', KW: 'ar'
   };
-
-  var NAV_PREFIX = [
-    { p: 'ar', l: 'ar' },
-    { p: 'pt', l: 'pt' },
-    { p: 'es', l: 'es' },
-    { p: 'fr', l: 'fr' },
-    { p: 'tr', l: 'tr' },
-    { p: 'vi', l: 'vi' },
-    { p: 'id', l: 'id' },
-    { p: 'ru', l: 'ru' },
-    { p: 'de', l: 'de' },
-    { p: 'hi', l: 'hi' },
-    { p: 'en', l: 'en' }
-  ];
-
-  function hasUserOverride() {
-    try { return localStorage.getItem(LANG_USER_KEY) === '1'; } catch (e) { return false; }
-  }
 
   function mapCountry(cc) {
     var code = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
     if (!code || code === 'XX' || code === 'T1' || code === 'A1' || code === 'A2') return '';
     if (COUNTRY_LANG[code]) return COUNTRY_LANG[code];
     return 'en';
-  }
-
-  function navCandidates() {
-    var list = [];
-    try {
-      if (typeof navigator !== 'undefined') {
-        if (navigator.languages && navigator.languages.length) {
-          list = list.concat(Array.prototype.slice.call(navigator.languages));
-        }
-        if (navigator.language) list.push(navigator.language);
-        if (navigator.userLanguage) list.push(navigator.userLanguage);
-      }
-    } catch (e) { /* ignore */ }
-    return list;
-  }
-
-  function mapNavLang() {
-    var i, j, raw, low;
-    var cands = navCandidates();
-    for (i = 0; i < cands.length; i++) {
-      raw = String(cands[i] || '');
-      low = raw.toLowerCase().replace('_', '-');
-      for (j = 0; j < NAV_PREFIX.length; j++) {
-        if (low === NAV_PREFIX[j].p || low.indexOf(NAV_PREFIX[j].p + '-') === 0) {
-          return NAV_PREFIX[j].l;
-        }
-      }
-    }
-    return null;
   }
 
   function urlLang() {
@@ -1400,8 +1354,17 @@
     return '';
   }
 
-  function persistUserLang(code) {
+  function readManualLang() {
     try {
+      var manual = localStorage.getItem(LANG_MANUAL_KEY);
+      if (manual && DICT[manual]) return manual;
+    } catch (e) { /* ignore */ }
+    return '';
+  }
+
+  function persistManualLang(code) {
+    try {
+      localStorage.setItem(LANG_MANUAL_KEY, code);
       localStorage.setItem(LANG_KEY, code);
       localStorage.setItem(LANG_USER_KEY, '1');
     } catch (e) { /* ignore */ }
@@ -1409,24 +1372,15 @@
 
   function detectLang() {
     var fromUrl = urlLang();
-    if (fromUrl) {
-      persistUserLang(fromUrl);
-      return fromUrl;
-    }
-    try {
-      var saved = localStorage.getItem(LANG_KEY);
-      if (saved && DICT[saved]) return saved;
-    } catch (e0) { /* ignore */ }
-    var nav = mapNavLang();
-    if (nav && DICT[nav]) return nav;
+    if (fromUrl) return fromUrl;
+    var manual = readManualLang();
+    if (manual) return manual;
     return 'en';
   }
 
   var lang = detectLang();
   if (!DICT[lang]) lang = 'en';
-  try { localStorage.setItem(LANG_KEY, lang); } catch (eSave) { /* ignore */ }
-  var lockedLang = !!(urlLang() || hasUserOverride());
-  var pendingGeo = !lockedLang && !mapNavLang();
+  var lockedLang = !!(urlLang() || readManualLang());
 
   function syncHtmlDir() {
     var html = document.documentElement;
@@ -1469,49 +1423,71 @@
 
   var geoStarted = false;
 
-  function finishGeoFail() {
-    pendingGeo = false;
-  }
-
-  function applyGeoCountry(cc) {
-    if (lockedLang || hasUserOverride()) return;
-    var mapped = mapCountry(cc);
-    pendingGeo = false;
-    if (mapped && DICT[mapped]) {
-      if (mapped !== lang) {
-        lang = mapped;
-        apply();
-      }
-      return;
-    }
-    finishGeoFail();
+  function applyAutoLang(code) {
+    if (lockedLang || readManualLang()) return;
+    if (!DICT[code]) code = 'en';
+    lang = code;
+    try { localStorage.setItem(LANG_KEY, code); } catch (eAuto) { /* ignore */ }
+    apply();
   }
 
   function startGeo() {
-    if (geoStarted || !pendingGeo || lockedLang || hasUserOverride()) return;
+    if (geoStarted || lockedLang || readManualLang()) return;
     geoStarted = true;
+    var done = false;
+    var fails = 0;
+    var ctrl = null;
+    var timer = null;
+
+    function finish(code) {
+      if (done) return;
+      done = true;
+      if (timer) clearTimeout(timer);
+      try { if (ctrl) ctrl.abort(); } catch (eAbort) { /* ignore */ }
+      applyAutoLang(code || 'en');
+    }
+
+    function lose() {
+      fails += 1;
+      if (!done && fails >= 2) finish('en');
+    }
+
     try {
-      var ctrl = new AbortController();
-      setTimeout(function () { try { ctrl.abort(); } catch (e5) { /* ignore */ } }, 2000);
-      fetch('api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'geo' }),
+      ctrl = new AbortController();
+      timer = setTimeout(function () { finish('en'); }, GEO_TIMEOUT_MS);
+
+      fetch('https://api.country.is/', {
         cache: 'no-store',
+        credentials: 'omit',
         signal: ctrl.signal
-      }).then(function (r) { return r.json(); }).then(function (res) {
-        applyGeoCountry(res && res.country);
-      }).catch(function () {
-        finishGeoFail();
-      });
+      }).then(function (r) {
+        if (!r.ok) throw new Error('geo');
+        return r.json();
+      }).then(function (j) {
+        var cc = j && (j.country || j.country_code);
+        if (cc) finish(mapCountry(cc) || 'en');
+        else lose();
+      }).catch(lose);
+
+      fetch('https://ipapi.co/json/', {
+        cache: 'no-store',
+        credentials: 'omit',
+        signal: ctrl.signal
+      }).then(function (r) {
+        if (!r.ok) throw new Error('geo');
+        return r.json();
+      }).then(function (j) {
+        var cc = j && (j.country_code || j.country);
+        if (cc && String(cc).length <= 3) finish(mapCountry(cc) || 'en');
+        else lose();
+      }).catch(lose);
     } catch (e6) {
-      finishGeoFail();
+      finish('en');
     }
   }
 
   function refineFromGeo() {
-    if (lockedLang || hasUserOverride() || !pendingGeo) return;
-    if (geoStarted) return;
+    if (geoStarted || lockedLang || readManualLang()) return;
     startGeo();
   }
 
@@ -1523,9 +1499,8 @@
     set: function (code) {
       if (!DICT[code]) return;
       lang = code;
-      pendingGeo = false;
       lockedLang = true;
-      persistUserLang(code);
+      persistManualLang(code);
       apply();
     }
   };
