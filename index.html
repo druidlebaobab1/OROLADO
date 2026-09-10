@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0B0E14">
+  <meta name="theme-color" content="#0B1018">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
@@ -16,8 +16,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=101">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css?v=102">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -65,8 +65,8 @@
         <div class="brand-xl">ORO<span>LADO</span></div>
         <div class="brand-domain">OROLADO.COM</div>
       </div>
-      <p class="brand-sub" data-i18n="tagline">Plateforme de trading &amp; analyse en USD</p>
-      <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">Créez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains réels.</div>
+      <p class="brand-sub" data-i18n="tagline">Plateforme de trading d’indices · USD</p>
+      <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">Ouvrez un compte pour accéder au solde réel, aux dépôts et aux retraits.</div>
       <div class="auth-card glass">
         <div class="auth-tabs">
           <button type="button" class="auth-tab on" data-tab="login" data-i18n="login">Connexion</button>
@@ -90,6 +90,7 @@
           </div>
           <button type="button" class="link-forgot" id="btnForgot" data-i18n="forgot">Mot de passe oublié ?</button>
           <button class="btn-gold" type="submit" data-i18n="enter">Se connecter</button>
+          <p class="auth-secure" data-i18n="authSecure">Connexion chiffrée · vos identifiants ne transitent jamais en clair.</p>
         </form>
         <form id="formRegister" class="hidden">
           <div class="field">
@@ -124,12 +125,19 @@
           </div>
           <label class="check-row">
             <input id="regAge" type="checkbox" required>
-            <span data-i18n="age">J’ai plus de 18 ans et j’accepte les conditions d’utilisation</span>
+            <span>J’ai plus de 18 ans et j’accepte les <button type="button" class="link-inline" data-open-legal="terms">conditions d’utilisation</button></span>
           </label>
           <p class="err-msg" id="err-regAge"></p>
           <button class="btn-gold" type="submit" data-i18n="createAccount">Créer mon compte</button>
+          <p class="auth-secure" data-i18n="authSecure">Connexion chiffrée · vos identifiants ne transitent jamais en clair.</p>
         </form>
       </div>
+      <footer class="site-footer">
+        <button type="button" class="footer-link" data-open-legal="about" data-i18n="footerAbout">À propos</button>
+        <button type="button" class="footer-link" data-open-legal="security" data-i18n="footerSecurity">Sécurité</button>
+        <button type="button" class="footer-link" id="footerHelp" data-i18n="footerSupport">Support</button>
+        <button type="button" class="footer-link" data-open-legal="terms" data-i18n="footerTerms">Conditions</button>
+      </footer>
       <p class="legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
     </div>
   </section>
@@ -146,11 +154,13 @@
             <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
             <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
           </div>
-          <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
+          <button type="button" class="btn-deposit btn-deposit-outline" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
           <div class="topbar-actions">
             <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Aide</button>
             <div class="lang-dd" id="langBarTrade"></div>
-            <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
+            <button type="button" class="icon-btn" id="btnProfile" title="Compte" aria-label="Compte">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19c1.6-3 4-4.5 7-4.5S17.4 16 19 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
           </div>
         </div>
         <div class="topbar-mode">
@@ -162,7 +172,7 @@
         <div class="balance-row">
           <div class="balance-card glass" id="balanceCard">
             <div class="bal-stack">
-              <span class="bal" id="balanceDisplay">$1,000,000</span>
+              <span class="bal" id="balanceDisplay">$25,000</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
             <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la démo" aria-label="Recharger démo">+</button>
@@ -171,7 +181,7 @@
       </header>
 
       <div class="trade-wrap" id="tradeWrap">
-        <div class="asset-bar markets-scroll" id="assetBar">
+        <div class="asset-bar markets-scroll" id="assetBar" data-scroll-hint="1">
           <button type="button" class="asset-chip on" data-asset="v100">
             <div class="k" data-i18n="highVol">Haute volatilité</div>
             <div class="n">VOLATILITY 100</div>
@@ -241,7 +251,7 @@
             <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">✕</button>
           </div>
           <div class="dur-row">
-            <button type="button" class="dur-chip" data-dur="3">3s</button>
+            <button type="button" class="dur-chip dur-chip-alt" data-dur="3">3s</button>
             <button type="button" class="dur-chip on" data-dur="10">10s</button>
             <button type="button" class="dur-chip" data-dur="30">30s</button>
             <button type="button" class="dur-chip" data-dur="60">1 min</button>
@@ -268,7 +278,10 @@
           </div>
           <p class="odds-label" data-i18n="payoutLabel">Payout</p>
           <div class="odds-row" id="oddsRow" role="group" aria-label="Payout">
-            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">88%</span><span class="odds-pct">Payout</span></button>
+            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">88%</span><span class="odds-pct">Standard</span></button>
+            <button type="button" class="odds-more" id="btnOddsMore" aria-expanded="false" data-i18n="morePayouts">Autres</button>
+          </div>
+          <div class="odds-extra hidden" id="oddsExtra">
             <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">500%</span><span class="odds-pct">Payout</span></button>
             <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">1000%</span><span class="odds-pct">Payout</span></button>
             <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">5000%</span><span class="odds-pct">Payout</span></button>
@@ -319,9 +332,6 @@
       </div>
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
     </div>
-    <div class="drawer-admin hidden" id="drawerAdminBlock">
-      <button type="button" class="btn-admin" id="btnAdmin2" data-i18n="adminBtn">Dashboard Admin</button>
-    </div>
     <nav class="drawer-nav" aria-label="Menu profil">
       <div class="drawer-section">
         <div class="drawer-section-title" data-i18n="secTransactions">Transactions</div>
@@ -364,42 +374,13 @@
       </div>
     </nav>
     <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">Déconnexion</button>
+    <footer class="site-footer drawer-footer">
+      <button type="button" class="footer-link" data-open-legal="about" data-i18n="footerAbout">À propos</button>
+      <button type="button" class="footer-link" data-open-legal="security" data-i18n="footerSecurity">Sécurité</button>
+      <button type="button" class="footer-link" data-open-legal="terms" data-i18n="footerTerms">Conditions</button>
+    </footer>
     <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
   </aside>
-
-  <section id="screenAdmin" class="screen admin-screen hidden">
-    <div class="admin-head">
-      <button type="button" class="icon-btn" id="btnCloseAdmin">←</button>
-      <h2 data-i18n="adminTitle">Super Admin Dashboard</h2>
-    </div>
-    <div class="admin-body">
-      <div class="metrics" id="adminMetricsRow1">
-        <button type="button" class="metric glass metric-btn" data-admin-view="depositsTotal"><div class="k" data-i18n="metricDeposits">Total dépôts</div><div class="v" id="mDeposits">0</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsAll"><div class="k" data-i18n="metricWithdrawals">Total retraits</div><div class="v" id="mPending">0</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricExposure">Soldes réels</div><div class="v" id="mExposure">0</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="net"><div class="k" data-i18n="metricNet">Net plateforme</div><div class="v" id="mProfit">0</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="inscrits"><div class="k" data-i18n="metricUsers">Inscrits</div><div class="v" id="mUsers">0</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="online"><div class="k">EN LIGNE</div><div class="v" id="mOnline">0</div></button>
-      </div>
-      <div class="metrics metrics-row2" id="adminMetricsRow2">
-        <button type="button" class="metric glass metric-btn" data-admin-view="depositsPending"><div class="k">Dépôts en attente</div><div class="v" id="mDepPending">—</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="withdrawalsPending"><div class="k">Retraits en cours</div><div class="v" id="mWdPending">—</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="top"><div class="k">TOP clients</div><div class="v">depot DESC</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="actifs"><div class="k">Actifs</div><div class="v">payeurs</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="games"><div class="k">Jeux</div><div class="v">stats</div></button>
-        <button type="button" class="metric glass metric-btn" data-admin-view="traffic"><div class="k">Trafic</div><div class="v">sources</div></button>
-      </div>
-      <div class="field admin-search">
-        <input id="adminSearch" type="search" data-i18n-placeholder="adminSearch" placeholder="Rechercher ORO-… / e-mail / nom / tél" autocomplete="off">
-      </div>
-      <h3 id="adminViewTitle">Inscrits</h3>
-      <div class="table-wrap admin-table-wrap" id="adminViewPanel"></div>
-      <div id="adminUserDetail" class="admin-detail glass hidden"></div>
-      <button type="button" class="mini" id="btnAdminMessages">Messages</button>
-      <div class="table-wrap admin-table-wrap hidden" id="adminMessages"></div>
-      <button type="button" class="mini" id="btnMaketouLog">Journal Maketou</button>
-    </div>
-  </section>
 
   <div class="modal-backdrop" id="otpModal">
     <div class="modal-box glass otp-box">
@@ -555,10 +536,17 @@
   <div class="modal-backdrop" id="convertModal">
     <div class="modal-box glass convert-box">
       <button type="button" class="btn-close" id="closeConvert">✕</button>
-      <div class="convert-fire">🔥</div>
-      <div class="convert-title" data-i18n="convertTitle">Tu as un vrai talent de trader !</div>
-      <p class="convert-copy" data-i18n="convertCopy">Passe en mode Réel pour retirer tes gains en vrai argent.</p>
-      <button type="button" class="btn-gold" id="btnConvertRecharge" data-i18n="convertBtn">Recharger mon compte</button>
+      <div class="convert-title" data-i18n="convertTitle">Compte réel</div>
+      <p class="convert-copy" data-i18n="convertCopy">Le compte réel permet de déposer des fonds et d’effectuer des retraits. Le mode démo reste disponible pour vous entraîner sans argent réel.</p>
+      <button type="button" class="btn-gold" id="btnConvertRecharge" data-i18n="convertBtn">Ouvrir le compte réel</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="legalModal">
+    <div class="modal-box glass legal-box">
+      <button type="button" class="btn-close" id="closeLegal">✕</button>
+      <div class="modal-title" id="legalTitle">À propos</div>
+      <div class="legal-body" id="legalBody"></div>
     </div>
   </div>
 
@@ -566,7 +554,7 @@
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeHelp">✕</button>
       <div class="modal-title" data-i18n="helpTitle">Aide & support</div>
-      <p class="convert-copy" data-i18n="helpCopy">Support client prioritaire — Service d'assistance disponible 24h/24 et 7j/7</p>
+      <p class="convert-copy" data-i18n="helpCopy">L’équipe support répond aux questions de compte, de trading et de sécurité, 24h/24.</p>
       <form id="formHelp">
         <div class="field">
           <label data-i18n="helpSubject">Sujet</label>
@@ -584,9 +572,8 @@
   <div class="modal-backdrop" id="tipModal">
     <div class="modal-box glass convert-box">
       <button type="button" class="btn-close" id="closeTip">✕</button>
-      <div class="convert-fire">💡</div>
-      <div class="convert-title">Astuce trading</div>
-      <p class="convert-copy" data-i18n="lossStreakTip">Besoin d'aide pour vos prédictions ? Activez les indicateurs MA, RSI et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
+      <div class="convert-title">Indicateurs</div>
+      <p class="convert-copy" data-i18n="lossStreakTip">Les indicateurs MA, RSI et BB au-dessus du graphique servent à lire la tendance avant de placer un ordre.</p>
       <button type="button" class="btn-gold" id="btnTipOk" data-i18n="continue">CONTINUER</button>
     </div>
   </div>
@@ -599,15 +586,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=101"></script>
-  <script src="js/i18n.js?v=101"></script>
-  <script src="js/store.js?v=101"></script>
-  <script src="js/api.js?v=101"></script>
+  <script src="js/config.js?v=102"></script>
+  <script src="js/i18n.js?v=102"></script>
+  <script src="js/store.js?v=102"></script>
+  <script src="js/api.js?v=102"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=101"></script>
-  <script src="js/auth.js?v=101"></script>
-  <script src="js/engine.js?v=101"></script>
-  <script src="js/chart.js?v=101"></script>
-  <script src="js/app.js?v=101"></script>
+  <script src="js/supabase.js?v=102"></script>
+  <script src="js/auth.js?v=102"></script>
+  <script src="js/engine.js?v=102"></script>
+  <script src="js/chart.js?v=102"></script>
+  <script src="js/app.js?v=102"></script>
 </body>
 </html>

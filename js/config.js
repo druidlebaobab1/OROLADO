@@ -7,7 +7,8 @@
     CURRENCY_SYMBOL: '$',
     /** Taux fixe paiement local : 1 USD = 600 FCFA (ex. 3 $ = 1 800 FCFA). */
     USD_FCFA_RATE: 600,
-    DEMO_START: 1000000,
+    DEMO_START: 25000,
+    DEMO_CAP: 25000,
     REAL_START: 0,
     MIN_STAKE: 1,
     QUICK_STAKES: [1, 5, 10, 25, 50],

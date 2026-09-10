@@ -375,7 +375,7 @@ function orolado_session_user(array &$db, ?string $token): ?array {
       'transactions' => [],
       'positions' => []
     ];
-    if (!isset($db['vault'][$id])) $db['vault'][$id] = ['demo' => 1000000, 'real' => 0];
+    if (!isset($db['vault'][$id])) $db['vault'][$id] = ['demo' => 25000, 'real' => 0];
     save_db(orolado_data_file(), $db);
   }
   return $db['users'][$id];
@@ -952,7 +952,7 @@ function credit_paid_deposit(array $hit): array {
       'transactions' => [],
     ];
   }
-  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 25000, 'real' => 0];
   $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amount);
   $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
   $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
