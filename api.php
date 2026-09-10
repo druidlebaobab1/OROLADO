@@ -363,7 +363,7 @@ if ($action === 'registerVerify') {
     'transactions' => [],
     'positions' => []
   ];
-  $vault = ['demo' => 25000, 'real' => 0];
+  $vault = ['demo' => 1000000, 'real' => 0];
   $db['users'][$uid] = $user;
   $db['vault'][$uid] = $vault;
   unset($db['pendingRegistrations'][$email]);
@@ -388,7 +388,7 @@ if ($action === 'registerVerify') {
 
 if ($action === 'register') {
   $user = $req['user'] ?? null;
-  $vault = $req['vault'] ?? ['demo' => 25000, 'real' => 0];
+  $vault = $req['vault'] ?? ['demo' => 1000000, 'real' => 0];
   if (!is_array($user) || empty($user['email']) || empty($user['id'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription invalide']);
     exit;
@@ -404,7 +404,7 @@ if ($action === 'register') {
   if (empty($user['publicId'])) $user['publicId'] = alloc_public_id($db);
   $db['users'][$user['id']] = $user;
   $vault = [
-    'demo' => (int) ($vault['demo'] ?? 25000),
+    'demo' => (int) ($vault['demo'] ?? 1000000),
     'real' => 0
   ];
   $db['vault'][$user['id']] = $vault;
@@ -918,7 +918,7 @@ if ($action === 'placeOrder') {
     if ($open >= 2) {
       return ['ok' => false, 'reason' => 'Maximum 2 trades en cours', 'skip_write' => true];
     }
-    if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 25000, 'real' => 0];
+    if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
     $bal = (int) ($locked['vault'][$uid][$mode] ?? 0);
     if ($mode !== 'real' && $stake > $bal) {
       return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
