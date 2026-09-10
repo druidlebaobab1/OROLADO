@@ -15,12 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   exit;
 }
 
-$ADMIN_EMAIL = 'admin@orolado.com';
-$ADMIN_PASS = 'AdminOrolado2026!';
-$SECRET = 'orolado-host-secret-2026';
-
 require_once __DIR__ . '/orolado_lib.php';
 orolado_load_env();
+
+$ADMIN_EMAIL = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
+if ($ADMIN_EMAIL === '') $ADMIN_EMAIL = 'admin@orolado.com';
+$ADMIN_PASS = (string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? ''));
+if ($ADMIN_PASS === '') $ADMIN_PASS = 'AdminOrolado2026!';
+$SECRET = 'orolado-host-secret-2026';
 
 $dir = orolado_data_dir();
 $file = orolado_data_file();
@@ -194,10 +196,7 @@ if ($action === 'presence') {
 }
 
 if ($action === 'ensureAdmin') {
-  $admin = ensure_admin_user($db, $ADMIN_EMAIL, hash_pw($ADMIN_PASS));
-  $saved = save_db($file, $db);
-  echo json_encode(['ok' => $saved, 'server' => true, 'writable' => $saved, 'id' => $admin['id']]);
-  exit;
+  orolado_deny_admin();
 }
 
 if ($action === 'registerStart') {
@@ -210,6 +209,10 @@ if ($action === 'registerStart') {
   if ($trafficSource === '') $trafficSource = 'direct';
   if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide', 'field' => 'regEmail']);
+    exit;
+  }
+  if (orolado_is_reserved_admin_email($email)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail', 'field' => 'regEmail']);
     exit;
   }
   if (strlen($displayName) < 2 || strlen($displayName) > 32) {
@@ -375,7 +378,7 @@ if ($action === 'registerVerify') {
   echo json_encode([
     'ok' => true,
     'server' => true,
-    'user' => $user,
+    'user' => orolado_public_user($user),
     'vault' => $vault,
     'token' => $tok,
     'welcome' => !empty($welcome['ok'])
@@ -391,12 +394,13 @@ if ($action === 'register') {
     exit;
   }
   $email = strtolower(trim($user['email']));
-  if (find_user($db, $email)) {
+  if (orolado_is_reserved_admin_email($email) || find_user($db, $email)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail']);
     exit;
   }
   $user['email'] = $email;
   $user['role'] = 'user';
+  unset($user['is_admin']);
   if (empty($user['publicId'])) $user['publicId'] = alloc_public_id($db);
   $db['users'][$user['id']] = $user;
   $vault = [
@@ -407,7 +411,7 @@ if ($action === 'register') {
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok]);
+  echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
   exit;
 }
 
@@ -446,20 +450,29 @@ if ($action === 'login') {
   $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
   save_db($file, $db);
   $vault = $db['vault'][$user['id']] ?? ['demo' => 0, 'real' => 0];
-  echo json_encode(['ok' => true, 'server' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok]);
+  echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
   exit;
 }
 
 if ($action === 'upsert') {
   $me = session_user($db, $token);
   $user = $req['user'] ?? null;
-  if (!$me || !is_array($user) || ($me['id'] !== $user['id'] && ($me['role'] ?? '') !== 'admin')) {
+  $isAdm = orolado_is_admin_user($me);
+  if (!$me || !is_array($user) || (($me['id'] !== ($user['id'] ?? '')) && !$isAdm)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
     exit;
   }
   $id = $user['id'];
   $existing = $db['users'][$id] ?? [];
   $user['role'] = $existing['role'] ?? 'user';
+  unset($user['is_admin']);
+  if (!$isAdm) {
+    $user['email'] = $existing['email'] ?? $user['email'] ?? '';
+    if (orolado_is_reserved_admin_email((string) $user['email'])) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+      exit;
+    }
+  }
   if ($id === 'admin_master') $user['role'] = 'admin';
   if (!empty($existing['lastSeen']) && empty($user['lastSeen'])) {
     $user['lastSeen'] = $existing['lastSeen'];
@@ -481,11 +494,7 @@ if ($action === 'upsert') {
 }
 
 if ($action === 'admin') {
-  $me = session_user($db, $token);
-  if (!$me || ($me['role'] ?? '') !== 'admin') {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
-    exit;
-  }
+  $me = orolado_require_admin($db, $token);
   $list = [];
   $depPaidByUser = [];
   $wdPaidByUser = [];
@@ -630,11 +639,7 @@ if ($action === 'admin') {
 
 // Validation manuelle d'un dépôt par l'admin (paiement reçu mais webhook muet).
 if ($action === 'resolveDeposit') {
-  $me = session_user($db, $token);
-  if (!$me || ($me['role'] ?? '') !== 'admin') {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
-    exit;
-  }
+  $me = orolado_require_admin($db, $token);
   $ref = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['ref'] ?? '')) ?? '';
   if ($ref === '') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Référence invalide']);
@@ -668,11 +673,7 @@ if ($action === 'resolveDeposit') {
 }
 
 if ($action === 'adjust') {
-  $me = session_user($db, $token);
-  if (!$me || ($me['role'] ?? '') !== 'admin') {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
-    exit;
-  }
+  $me = orolado_require_admin($db, $token);
   $uid = (string) ($req['userId'] ?? '');
   $delta = (int) ($req['delta'] ?? 0);
   $mode = (($req['mode'] ?? 'real') === 'demo') ? 'demo' : 'real';
@@ -724,11 +725,7 @@ if ($action === 'supportMessage') {
 }
 
 if ($action === 'resolveMessage') {
-  $me = session_user($db, $token);
-  if (!$me || ($me['role'] ?? '') !== 'admin') {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
-    exit;
-  }
+  $me = orolado_require_admin($db, $token);
   $id = (string) ($req['id'] ?? '');
   $reply = trim((string) ($req['reply'] ?? ''));
   foreach ($db['support_messages'] ?? [] as $i => $m) {
@@ -826,11 +823,7 @@ if ($action === 'withdraw') {
 }
 
 if ($action === 'resolveWithdraw') {
-  $me = session_user($db, $token);
-  if (!$me || ($me['role'] ?? '') !== 'admin') {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
-    exit;
-  }
+  $me = orolado_require_admin($db, $token);
   $id = $req['id'] ?? '';
   $approve = !empty($req['approve']);
   foreach ($db['withdrawals'] as &$w) {
@@ -1129,7 +1122,7 @@ if ($action === 'me') {
   echo json_encode([
     'ok' => true,
     'server' => true,
-    'user' => $me,
+    'user' => orolado_public_user($me),
     'vault' => $vault
   ]);
   exit;

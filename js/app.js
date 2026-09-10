@@ -1037,10 +1037,24 @@
 
   async function renderAdmin() {
     var remote = D6.Api ? await D6.Api.post('admin', {}) : null;
-    var m = (remote && remote.ok && remote.metrics) ? remote.metrics : D6.Store.metrics();
-    var users = (remote && remote.ok && remote.users) ? remote.users : D6.Store.listUsers();
-    var wd = (remote && remote.ok && remote.withdrawals) ? remote.withdrawals : D6.Store.listWithdrawals();
-    var msgs = (remote && remote.ok && remote.messages) ? remote.messages : [];
+    if (!remote || !remote.ok) {
+      adminCache.users = [];
+      adminCache.messages = [];
+      adminCache.withdrawals = [];
+      adminCache.deposits = [];
+      adminCache.depositsPaid = [];
+      adminCache.metrics = {};
+      adminCache.gameStats = null;
+      adminCache.traffic = {};
+      if ($('screenAdmin') && !$('screenAdmin').classList.contains('hidden')) {
+        showScreen('screenTrade');
+      }
+      return false;
+    }
+    var m = remote.metrics || {};
+    var users = remote.users || [];
+    var wd = remote.withdrawals || [];
+    var msgs = remote.messages || [];
     adminCache.users = users;
     adminCache.messages = msgs;
     adminCache.withdrawals = wd || [];
@@ -1076,6 +1090,7 @@
     setAdminViewActive(adminView);
     renderAdminView();
     renderAdminMessagesList();
+    return true;
   }
 
   function renderAdminMessagesList() {
@@ -2837,12 +2852,12 @@
   }
 
   function bindAdmin() {
-    function openAdmin() {
+    async function openAdmin() {
       if (!D6.Auth.isAdmin(user())) return;
       closeDrawer();
       adminView = 'inscrits';
-      renderAdmin();
-      showScreen('screenAdmin');
+      var ok = await renderAdmin();
+      if (ok) showScreen('screenAdmin');
     }
     $('btnAdmin2').addEventListener('click', openAdmin);
     $('btnCloseAdmin').addEventListener('click', function () {
@@ -3509,13 +3524,6 @@
         checkDepositReturn();
       });
       setInterval(updatePayoutUi, 2500);
-      try {
-        if (D6.Auth && D6.Auth.ensureAdmin) {
-          Promise.resolve(D6.Auth.ensureAdmin()).catch(function (err) {
-            try { console.warn('Mobile display fallback:', err); } catch (e) { /* ignore */ }
-          });
-        }
-      } catch (eAdm) { try { console.warn(eAdm); } catch (e) { /* ignore */ } }
       if (location.hash.indexOf('#preview') === 0) {
         (async function () {
           var existing = D6.Store.findByEmail('preview@orolado.local');

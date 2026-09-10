@@ -24,7 +24,7 @@ if ($expected !== '' && $key !== '' && hash_equals($expected, $key)) $granted = 
 if (!$granted && $token !== '') {
   $db = load_db(orolado_data_file());
   $me = orolado_session_user($db, $token);
-  if ($me && ($me['role'] ?? '') === 'admin') $granted = true;
+  if ($me && orolado_is_admin_user($me)) $granted = true;
 }
 
 if (!$granted) {

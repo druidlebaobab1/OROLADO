@@ -34,11 +34,12 @@
           signal: ctrl.signal
         });
         clearTimeout(timer);
+        var json = null;
+        try { json = await r.json(); } catch (eParse) { json = null; }
         if (!r.ok) {
           console.warn('OROLADO api', action, r.status);
-          return null;
+          return json;
         }
-        var json = await r.json();
         D6.Api.ready = true;
         return json;
       } catch (e) {

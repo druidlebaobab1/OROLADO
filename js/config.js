@@ -39,7 +39,6 @@
     BRAND: 'OROLADO',
     DOMAIN: 'orolado.com',
     ADMIN_EMAIL: 'admin@orolado.com',
-    ADMIN_PASSWORD: 'AdminOrolado2026!',
     SUPABASE_URL: 'https://tubyuyxuswwzebicrhkg.supabase.co',
     // Clé anon / publishable (eyJ… ou sb_publishable_…). Pas l’URL du projet.
     SUPABASE_ANON_KEY: 'sb_publishable_zaJSnXA3yY17-I4eBXCtsw_F_-tCW1z',

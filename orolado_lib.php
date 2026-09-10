@@ -381,6 +381,48 @@ function orolado_session_user(array &$db, ?string $token): ?array {
   return $db['users'][$id];
 }
 
+function orolado_admin_emails(): array {
+  $primary = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
+  if ($primary === '') $primary = 'admin@orolado.com';
+  return array_values(array_unique([$primary, 'admin@orolado.com']));
+}
+
+function orolado_is_reserved_admin_email(string $email): bool {
+  $email = strtolower(trim($email));
+  return $email !== '' && in_array($email, orolado_admin_emails(), true);
+}
+
+/** Accès admin : session + rôle serveur + e-mail autorisé. Jamais un flag client. */
+function orolado_is_admin_user(?array $me): bool {
+  if (!$me) return false;
+  if ((string) ($me['role'] ?? '') !== 'admin') return false;
+  $id = (string) ($me['id'] ?? '');
+  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  if ($id === 'admin_master') return true;
+  return orolado_is_reserved_admin_email($email);
+}
+
+function orolado_public_user(array $user): array {
+  unset($user['passwordHash'], $user['password'], $user['is_admin']);
+  return $user;
+}
+
+function orolado_deny_admin(): void {
+  $code = http_response_code();
+  if ($code === 200 || $code === false) http_response_code(403);
+  echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Accès admin refusé']);
+  exit;
+}
+
+function orolado_require_admin(array &$db, ?string $token): array {
+  $me = orolado_session_user($db, $token);
+  if (!$me || !orolado_is_admin_user($me)) {
+    http_response_code($me ? 403 : 401);
+    orolado_deny_admin();
+  }
+  return $me;
+}
+
 function orolado_public_origin(): string {
   $env = getenv('OROLADO_ORIGIN');
   if ($env === false || $env === '') $env = $_ENV['OROLADO_ORIGIN'] ?? '';
