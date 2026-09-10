@@ -96,11 +96,16 @@
   }
 
   var LANGS = [
-    { code: 'fr', flag: '🇫🇷' },
-    { code: 'en', flag: '🇬🇧' },
-    { code: 'es', flag: '🇪🇸' },
-    { code: 'pt', flag: '🇵🇹' },
-    { code: 'ar', flag: '🇸🇦' }
+    { code: 'en', flag: '🇬🇧', name: 'English' },
+    { code: 'fr', flag: '🇫🇷', name: 'Français' },
+    { code: 'es', flag: '🇪🇸', name: 'Español' },
+    { code: 'pt', flag: '🇵🇹', name: 'Português' },
+    { code: 'ar', flag: '🇸🇦', name: 'العربية' },
+    { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
+    { code: 'vi', flag: '🇻🇳', name: 'Tiếng Việt' },
+    { code: 'id', flag: '🇮🇩', name: 'Indonesia' },
+    { code: 'ru', flag: '🇷🇺', name: 'Русский' },
+    { code: 'de', flag: '🇩🇪', name: 'Deutsch' }
   ];
 
   function user() { return D6.Auth.current(); }
@@ -465,7 +470,7 @@
       var cur = LANGS.filter(function (l) { return l.code === D6.I18N.lang; })[0] || LANGS[0];
       box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span></button>' +
         '<div class="lang-dd-menu hidden">' + LANGS.map(function (l) {
-          return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '">' + l.flag + '</button>';
+          return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '" title="' + (l.name || l.code) + '">' + l.flag + '</button>';
         }).join('') + '</div>';
     }
     render('langBarAuth');
@@ -497,6 +502,7 @@
   }
 
   document.addEventListener('orolado-i18n', function () {
+    try { fillLangBars(); } catch (eLang) { /* ignore */ }
     var u = user();
     if (u) {
       setModeUi(u);
@@ -587,7 +593,7 @@
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
     if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(D6.roundMoney(stake * odds));
-    if ($('previewMult')) $('previewMult').textContent = 'Payout ' + pct + '%';
+    if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
       btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);
     });
@@ -3049,7 +3055,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         return Promise.all(regs.map(function (r) { return r.unregister(); }));
       }).then(function () {
-        return navigator.serviceWorker.register('sw.js?v=99');
+        return navigator.serviceWorker.register('sw.js?v=103');
       }).catch(function () { /* ignore */ });
     }
   }
@@ -3440,6 +3446,7 @@
         try { fillLangBars(); } catch (e2) { /* ignore */ }
         try { fillCountrySelects(); } catch (e3) { /* ignore */ }
         try { D6.I18N.apply(); } catch (e4) { /* ignore */ }
+        try { if (D6.I18N.refineFromGeo) D6.I18N.refineFromGeo(); } catch (e4b) { /* ignore */ }
         try { applyAndroidTradeHint(); } catch (e5) { /* ignore */ }
         try { bindAuth(); } catch (e6) { try { console.warn(e6); } catch (e) { /* ignore */ } }
         try { bindTrade(); } catch (e7) { try { console.warn(e7); } catch (e) { /* ignore */ } }

@@ -174,6 +174,19 @@ if (!is_array($req)) {
 
 $action = $req['action'] ?? '';
 $token = $req['token'] ?? '';
+
+if ($action === 'geo') {
+  $cc = strtoupper(trim((string) (
+    $_SERVER['HTTP_CF_IPCOUNTRY']
+    ?? $_SERVER['HTTP_X_COUNTRY_CODE']
+    ?? $_SERVER['GEOIP_COUNTRY_CODE']
+    ?? ''
+  )));
+  if ($cc === 'XX' || $cc === 'T1' || $cc === 'A1' || $cc === 'A2') $cc = '';
+  echo json_encode(['ok' => true, 'server' => true, 'country' => $cc]);
+  exit;
+}
+
 $db = load_db($file);
 
 if ($action === 'ping') {

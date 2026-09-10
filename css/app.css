@@ -524,7 +524,8 @@ html.is-android #chartOverlay{
 .lang-flag{font-size:14px;line-height:1}
 .lang-chev{position:absolute;right:1px;bottom:0;font-size:8px;line-height:1;opacity:.75}
 .lang-dd-menu{position:absolute;top:calc(100% + 4px);right:0;background:rgba(16,22,34,.96);border:1px solid var(--line);
-  border-radius:10px;padding:4px;z-index:20;min-width:44px;box-shadow:0 12px 28px rgba(0,0,0,.4)}
+  border-radius:10px;padding:4px;z-index:20;min-width:44px;max-height:min(70vh,360px);overflow-y:auto;
+  box-shadow:0 12px 28px rgba(0,0,0,.4)}
 .lang-dd-menu .lang-btn{display:block;width:100%;text-align:center;font-size:16px;padding:6px;opacity:.7}
 .lang-dd-menu .lang-btn.on{opacity:1;background:var(--gold-soft)}
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:5}
@@ -1077,4 +1078,41 @@ html.is-android .fs-trade-overlay.on .pad .btn-trade span{
     width:58px!important;max-width:64px!important;min-width:52px!important}
   html.is-android .fs-trade-overlay.on .pad .trade-row{flex-direction:row!important;width:auto!important}
   html.is-android .fs-trade-overlay.on .pad .btn-trade{width:auto!important;flex:1 1 0!important}
+}
+
+/* i18n RTL: chrome only — chart / canvas / CALL PUT stay LTR */
+html[lang="ar"]{
+  --font:"Noto Naskh Arabic","Plus Jakarta Sans",system-ui,sans-serif;
+}
+html[lang="ar"] body,
+html[lang="ar"] button,
+html[lang="ar"] input,
+html[lang="ar"] select,
+html[lang="ar"] textarea{
+  font-family:var(--font);
+}
+html[lang="ar"] .btn-trade{text-transform:none}
+html[dir="rtl"] .lang-bar-auth{right:auto;left:10px}
+html[dir="rtl"] .lang-dd-menu{right:auto;left:0}
+html[dir="rtl"] .install-ios-box,
+html[dir="rtl"] .drawer-item,
+html[dir="rtl"] .modal-box,
+html[dir="rtl"] .auth-wrap{text-align:right}
+html[dir="rtl"] .install-ios-steps{padding-left:0;padding-right:1.15rem}
+html[dir="rtl"] .chart-card,
+html[dir="rtl"] #chart,
+html[dir="rtl"] .chart-stage,
+html[dir="rtl"] .chart-toolbar,
+html[dir="rtl"] #chartCanvas,
+html[dir="rtl"] #chartOverlay,
+html[dir="rtl"] .chart-outcome,
+html[dir="rtl"] .asset-bar,
+html[dir="rtl"] .trade-row,
+html[dir="rtl"] .btn-trade,
+html[dir="rtl"] .btn-call,
+html[dir="rtl"] .btn-put,
+html[dir="rtl"] .dur-row,
+html[dir="rtl"] .odds-row{
+  direction:ltr;
+  unicode-bidi:isolate;
 }

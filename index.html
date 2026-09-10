@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -16,8 +16,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=101">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css?v=103">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -44,19 +44,19 @@
   <div class="modal-backdrop" id="iosInstallModal">
     <div class="modal-box glass install-ios-box">
       <button type="button" class="btn-close" id="closeIosInstall">✕</button>
-      <div class="modal-title">📲 Installer OROLADO</div>
-      <p class="install-ios-lead">Ajoute l’app sur l’écran d’accueil de ton iPhone :</p>
+      <div class="modal-title" data-i18n="installIosTitle">Install OROLADO</div>
+      <p class="install-ios-lead" data-i18n="installIosLead">Add the app to your iPhone home screen:</p>
       <ol class="install-ios-steps">
-        <li>Touche l’icône <strong>Partager</strong> <span class="ios-share-icon" aria-hidden="true">⎋</span> en bas au centre de Safari.</li>
-        <li>Fais défiler et appuie sur <strong>« Sur l’écran d’accueil »</strong>.</li>
-        <li>Confirme en touchant <strong>« Ajouter »</strong> en haut à droite.</li>
+        <li data-i18n="installIos1">Tap the Share icon at the bottom center of Safari.</li>
+        <li data-i18n="installIos2">Scroll and tap Add to Home Screen.</li>
+        <li data-i18n="installIos3">Confirm by tapping Add at the top right.</li>
       </ol>
       <button type="button" class="btn-gold" id="btnIosInstallOk" data-i18n="continue">COMPRIS</button>
     </div>
   </div>
 
   <section id="screenAuth" class="screen">
-    <button type="button" class="auth-back" id="btnAuthBack">← Retour</button>
+    <button type="button" class="auth-back" id="btnAuthBack">← <span data-i18n="authBack">Back</span></button>
     <div class="lang-dd lang-bar-auth" id="langBarAuth"></div>
     <div class="auth-ambient"></div>
     <div class="auth-wrap">
@@ -146,9 +146,9 @@
             <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
             <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
           </div>
-          <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Recharger</button>
+          <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Deposit</button>
           <div class="topbar-actions">
-            <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Aide</button>
+            <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Help</button>
             <div class="lang-dd" id="langBarTrade"></div>
             <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
           </div>
@@ -183,17 +183,17 @@
             <div class="payout-live" id="payoutStable">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="v75">
-            <div class="k">Vol. moyenne</div>
+            <div class="k" data-i18n="midVol">Mid volatility</div>
             <div class="n">VOLATILITY 75</div>
             <div class="payout-live" id="payoutV75">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="crash300">
-            <div class="k">Chutes</div>
+            <div class="k" data-i18n="crashTag">Crashes</div>
             <div class="n">CRASH 300</div>
             <div class="payout-live" id="payoutCrash300">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="boom300">
-            <div class="k">Hausses</div>
+            <div class="k" data-i18n="boomTag">Rallies</div>
             <div class="n">BOOM 300</div>
             <div class="payout-live" id="payoutBoom300">+88%</div>
           </button>
@@ -236,8 +236,8 @@
 
         <div class="pad glass">
           <div id="installBanner" class="install-banner hidden">
-            <span>Installer l’app</span>
-            <button type="button" id="btnInstall">Installer</button>
+            <span data-i18n="install">Install the app</span>
+            <button type="button" id="btnInstall" data-i18n="installBtn">Install</button>
             <button type="button" id="btnInstallClose" class="ghost" aria-label="Fermer">✕</button>
           </div>
           <div class="dur-row">
@@ -268,10 +268,10 @@
           </div>
           <p class="odds-label" data-i18n="payoutLabel">Payout</p>
           <div class="odds-row" id="oddsRow" role="group" aria-label="Payout">
-            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">88%</span><span class="odds-pct">Payout</span></button>
-            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">500%</span><span class="odds-pct">Payout</span></button>
-            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">1000%</span><span class="odds-pct">Payout</span></button>
-            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">5000%</span><span class="odds-pct">Payout</span></button>
+            <button type="button" class="odds-chip on" data-odds="1.88"><span class="odds-mult">88%</span><span class="odds-pct" data-i18n="payoutLabel">Payout</span></button>
+            <button type="button" class="odds-chip" data-odds="6"><span class="odds-mult">500%</span><span class="odds-pct" data-i18n="payoutLabel">Payout</span></button>
+            <button type="button" class="odds-chip" data-odds="11"><span class="odds-mult">1000%</span><span class="odds-pct" data-i18n="payoutLabel">Payout</span></button>
+            <button type="button" class="odds-chip" data-odds="51"><span class="odds-mult">5000%</span><span class="odds-pct" data-i18n="payoutLabel">Payout</span></button>
           </div>
           <div class="timer-panel" id="timerPanel" hidden>
             <div class="timer-num" id="timerSeconds">10.0s</div>
@@ -281,10 +281,10 @@
           <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">2 positions ouvertes — attendez la clôture</div>
           <div class="trade-row">
             <button type="button" class="btn-trade btn-call" id="btnCall">
-              <span data-i18n="buy">ACHETER (CALL ↗)</span>
+              <span data-i18n="buy">BUY (CALL ↗)</span>
             </button>
             <button type="button" class="btn-trade btn-put" id="btnPut">
-              <span data-i18n="sell">VENDRE (PUT ↘)</span>
+              <span data-i18n="sell">SELL (PUT ↘)</span>
             </button>
           </div>
         </div>
@@ -403,19 +403,19 @@
 
   <div class="modal-backdrop" id="otpModal">
     <div class="modal-box glass otp-box">
-      <button type="button" class="btn-close" id="closeOtp" aria-label="Fermer">✕</button>
-      <div class="modal-title">Confirmez votre e-mail</div>
-      <p class="otp-lead">Un code à 6 chiffres a été envoyé à <strong id="otpEmailLabel"></strong>. Saisissez-le pour activer votre compte.</p>
+      <button type="button" class="btn-close" id="closeOtp" data-i18n-aria="closeLbl" aria-label="Close">✕</button>
+      <div class="modal-title" data-i18n="otpTitle">Confirm your email</div>
+      <p class="otp-lead"><span data-i18n="otpLeadBefore">A 6-digit code was sent to</span> <strong id="otpEmailLabel"></strong>. <span data-i18n="otpLeadAfter">Enter it to activate your account.</span></p>
       <form id="formOtp" autocomplete="one-time-code">
         <div class="field">
-          <label for="otpCode">Code de confirmation</label>
+          <label for="otpCode" data-i18n="otpCode">Confirmation code</label>
           <input id="otpCode" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="••••••" required autocomplete="one-time-code" aria-describedby="err-otpCode">
           <p class="err-msg" id="err-otpCode"></p>
         </div>
-        <button class="btn-gold" type="submit" id="btnOtpVerify">Valider mon compte</button>
+        <button class="btn-gold" type="submit" id="btnOtpVerify" data-i18n="otpVerify">Verify my account</button>
       </form>
       <div class="otp-resend-row">
-        <button type="button" class="mini" id="btnOtpResend" disabled>Renvoyer le code</button>
+        <button type="button" class="mini" id="btnOtpResend" disabled data-i18n="otpResend">Resend code</button>
         <span class="otp-timer" id="otpTimer" aria-live="polite"></span>
       </div>
     </div>
@@ -585,7 +585,7 @@
     <div class="modal-box glass convert-box">
       <button type="button" class="btn-close" id="closeTip">✕</button>
       <div class="convert-fire">💡</div>
-      <div class="convert-title">Astuce trading</div>
+      <div class="convert-title" data-i18n="tipTitle">Trading tip</div>
       <p class="convert-copy" data-i18n="lossStreakTip">Besoin d'aide pour vos prédictions ? Activez les indicateurs MA, RSI et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
       <button type="button" class="btn-gold" id="btnTipOk" data-i18n="continue">CONTINUER</button>
     </div>
@@ -599,15 +599,15 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=101"></script>
-  <script src="js/i18n.js?v=101"></script>
-  <script src="js/store.js?v=101"></script>
-  <script src="js/api.js?v=101"></script>
+  <script src="js/config.js?v=103"></script>
+  <script src="js/i18n.js?v=103"></script>
+  <script src="js/store.js?v=103"></script>
+  <script src="js/api.js?v=103"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=101"></script>
-  <script src="js/auth.js?v=101"></script>
-  <script src="js/engine.js?v=101"></script>
-  <script src="js/chart.js?v=101"></script>
-  <script src="js/app.js?v=101"></script>
+  <script src="js/supabase.js?v=103"></script>
+  <script src="js/auth.js?v=103"></script>
+  <script src="js/engine.js?v=103"></script>
+  <script src="js/chart.js?v=103"></script>
+  <script src="js/app.js?v=103"></script>
 </body>
 </html>
