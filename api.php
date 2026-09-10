@@ -439,7 +439,14 @@ if ($action === 'login') {
   $email = strtolower(trim($req['email'] ?? ''));
   $password = (string) ($req['password'] ?? '');
   $user = find_user($db, $email);
-  if ($email === $ADMIN_EMAIL && $password === $ADMIN_PASS) {
+  if (orolado_is_reserved_admin_email($email)) {
+    $passOk = $ADMIN_PASS !== ''
+      && strlen($ADMIN_PASS) === strlen($password)
+      && hash_equals($ADMIN_PASS, $password);
+    if (!$passOk) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
+      exit;
+    }
     $user = ensure_admin_user($db, $ADMIN_EMAIL, hash_pw($ADMIN_PASS));
     save_db($file, $db);
   } elseif (!$user || empty($user['passwordHash']) || !hash_equals($user['passwordHash'], hash_pw($password))) {
