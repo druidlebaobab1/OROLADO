@@ -16,8 +16,32 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=103">
+  <script>
+  (function () {
+    try {
+      var ok = { en:1, fr:1, es:1, pt:1, ar:1, tr:1, vi:1, id:1, ru:1, de:1, hi:1 };
+      var l = localStorage.getItem('orolado_lang') || '';
+      if (!ok[l]) {
+        var nav = '';
+        try {
+          nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+        } catch (e0) {}
+        nav = String(nav).toLowerCase().replace('_', '-');
+        var prefixes = ['fr', 'es', 'pt', 'ar', 'tr', 'vi', 'id', 'ru', 'de', 'hi', 'en'];
+        l = 'en';
+        for (var i = 0; i < prefixes.length; i++) {
+          if (nav === prefixes[i] || nav.indexOf(prefixes[i] + '-') === 0) { l = prefixes[i]; break; }
+        }
+      }
+      document.documentElement.lang = l;
+      document.documentElement.dir = 'ltr';
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.classList.toggle('lang-ar', l === 'ar');
+    } catch (e) {}
+  })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css?v=106">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -150,11 +174,11 @@
           <div class="topbar-actions">
             <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Help</button>
             <div class="lang-dd" id="langBarTrade"></div>
-            <button type="button" class="icon-btn" id="btnProfile" title="Profil" aria-label="Profil">👤</button>
+            <button type="button" class="icon-btn" id="btnProfile" data-i18n-title="profileBtn" data-i18n-aria="profileBtn" title="Profile" aria-label="Profile">👤</button>
           </div>
         </div>
         <div class="topbar-mode">
-          <div class="mode-switch" id="modeSwitcher" role="tablist" aria-label="Mode de compte">
+          <div class="mode-switch" id="modeSwitcher" role="tablist" data-i18n-aria="modeAccount" aria-label="Account mode">
             <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="demo">MODE VIRTUEL / DÉMO</button>
             <button type="button" class="mode-btn" id="modeReal" data-mode="real" data-i18n="real">COMPTE RÉEL</button>
           </div>
@@ -165,7 +189,7 @@
               <span class="bal" id="balanceDisplay">$1,000,000</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
-            <button type="button" class="bal-plus hidden" id="btnDemoTopup" title="Recharger la démo" aria-label="Recharger démo">+</button>
+            <button type="button" class="bal-plus hidden" id="btnDemoTopup" data-i18n-title="demoTopup" data-i18n-aria="demoTopup" title="Top up demo" aria-label="Top up demo">+</button>
           </div>
         </div>
       </header>
@@ -204,8 +228,8 @@
             <div class="ind-pills" role="toolbar" aria-label="Indicateurs et zoom">
               <button type="button" class="ind-btn on" data-ind="ma" title="Moyenne mobile">MA</button>
               <button type="button" class="ind-btn" data-ind="bb" title="Bandes de Bollinger">BB</button>
-              <button type="button" class="ind-btn" id="chartZoomIn" aria-label="Zoom avant" title="Zoom +">+</button>
-              <button type="button" class="ind-btn" id="chartZoomOut" aria-label="Zoom arrière" title="Zoom −">−</button>
+              <button type="button" class="ind-btn" id="chartZoomIn" data-i18n-aria="zoomIn" data-i18n-title="zoomIn" aria-label="Zoom in" title="Zoom +">+</button>
+              <button type="button" class="ind-btn" id="chartZoomOut" data-i18n-aria="zoomOut" data-i18n-title="zoomOut" aria-label="Zoom out" title="Zoom −">−</button>
             </div>
             <div class="wd-ticker" id="wdTicker" aria-live="off" aria-hidden="true">
               <span class="wd-ticker-dot" aria-hidden="true"></span>
@@ -220,7 +244,7 @@
             <canvas id="chartCanvas" width="800" height="380" style="display:block;visibility:visible;opacity:1;z-index:10;background:#0B0E14"></canvas>
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true" style="background:transparent"></canvas>
-            <button type="button" class="chart-fs-btn" id="btnChartFs" aria-label="Plein écran" title="Plein écran">
+            <button type="button" class="chart-fs-btn" id="btnChartFs" data-i18n-aria="fsEnter" data-i18n-title="fsEnter" aria-label="Full screen" title="Full screen">
               <span class="chart-fs-ico" aria-hidden="true">⛶</span>
               <span class="chart-fs-label" data-i18n="fsEnter">PLEIN ÉCRAN</span>
             </button>
@@ -256,7 +280,7 @@
                 <span class="stake-min-actions" style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;flex-shrink:0;align-items:center">
                   <button type="button" class="qbtn stake-act" data-a="half">÷2</button>
                   <button type="button" class="qbtn stake-act" data-a="x2">×2</button>
-                  <button type="button" class="qbtn qbtn-back stake-act" data-a="back" title="Effacer" aria-label="Effacer un chiffre">⌫</button>
+                  <button type="button" class="qbtn qbtn-back stake-act" data-a="back" data-i18n-title="clearDigit" data-i18n-aria="clearDigit" title="Delete a digit" aria-label="Delete a digit">⌫</button>
                 </span>
               </div>
             </div>
@@ -322,7 +346,7 @@
     <div class="drawer-admin hidden" id="drawerAdminBlock">
       <button type="button" class="btn-admin" id="btnAdmin2" data-i18n="adminBtn">Dashboard Admin</button>
     </div>
-    <nav class="drawer-nav" aria-label="Menu profil">
+    <nav class="drawer-nav" data-i18n-aria="profileMenu" aria-label="Profile menu">
       <div class="drawer-section">
         <div class="drawer-section-title" data-i18n="secTransactions">Transactions</div>
         <button type="button" class="drawer-item" id="btnFinance">
@@ -599,15 +623,16 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=103"></script>
-  <script src="js/i18n.js?v=104"></script>
-  <script src="js/store.js?v=103"></script>
-  <script src="js/api.js?v=103"></script>
+  <script src="js/config.js?v=105"></script>
+  <script src="js/translations.js?v=106"></script>
+  <script src="js/i18n.js?v=106"></script>
+  <script src="js/store.js?v=105"></script>
+  <script src="js/api.js?v=105"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=103"></script>
-  <script src="js/auth.js?v=103"></script>
-  <script src="js/engine.js?v=103"></script>
-  <script src="js/chart.js?v=103"></script>
-  <script src="js/app.js?v=103"></script>
+  <script src="js/supabase.js?v=105"></script>
+  <script src="js/auth.js?v=105"></script>
+  <script src="js/engine.js?v=105"></script>
+  <script src="js/chart.js?v=105"></script>
+  <script src="js/app.js?v=106"></script>
 </body>
 </html>

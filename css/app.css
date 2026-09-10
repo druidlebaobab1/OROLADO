@@ -517,18 +517,23 @@ html.is-android #chartOverlay{
 @keyframes spark{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
 
 .lang-bar{display:flex;gap:2px;flex-shrink:0}
-.lang-dd{position:relative;flex:0 0 32px;width:32px;min-width:32px;max-width:32px}
+.lang-dd{position:relative;flex:0 0 32px;width:32px;min-width:32px;max-width:32px;overflow:visible;z-index:40}
 .lang-dd-btn{border:1px solid var(--line);background:rgba(21,30,48,.85);color:var(--text);border-radius:10px;padding:0;
   font:inherit;font-size:13px;font-weight:800;cursor:pointer;width:32px;height:32px;min-width:32px;max-width:32px;
   display:grid;place-items:center;line-height:1;overflow:hidden;position:relative;flex:0 0 32px}
 .lang-flag{font-size:14px;line-height:1}
-.lang-chev{position:absolute;right:1px;bottom:0;font-size:8px;line-height:1;opacity:.75}
-.lang-dd-menu{position:absolute;top:calc(100% + 4px);right:0;background:rgba(16,22,34,.96);border:1px solid var(--line);
-  border-radius:10px;padding:4px;z-index:20;min-width:44px;max-height:min(70vh,360px);overflow-y:auto;
-  box-shadow:0 12px 28px rgba(0,0,0,.4)}
-.lang-dd-menu .lang-btn{display:block;width:100%;text-align:center;font-size:16px;padding:6px;opacity:.7}
-.lang-dd-menu .lang-btn.on{opacity:1;background:var(--gold-soft)}
-.lang-bar-auth{position:absolute;top:10px;right:10px;z-index:5}
+.lang-chev{position:absolute;right:1px;bottom:0;font-size:8px;line-height:1;opacity:.55}
+.lang-dd-menu{position:fixed;background:rgba(16,22,34,.98);border:1px solid var(--line);
+  border-radius:12px;padding:6px;z-index:9999;min-width:200px;width:220px;max-width:calc(100vw - 16px);
+  max-height:280px;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(245,158,11,.35) transparent;
+  box-shadow:0 16px 40px rgba(0,0,0,.55);-webkit-overflow-scrolling:touch}
+.lang-dd-menu::-webkit-scrollbar{width:4px}
+.lang-dd-menu::-webkit-scrollbar-thumb{background:rgba(245,158,11,.35);border-radius:99px}
+.lang-dd-menu .lang-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font-size:14px;
+  padding:10px 12px;opacity:1;border-radius:8px;font-weight:600;color:var(--text)}
+.lang-dd-menu .lang-btn .lang-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang-dd-menu .lang-btn.on{opacity:1;background:var(--gold-soft);color:var(--gold)}
+.lang-bar-auth{position:absolute;top:10px;right:10px;z-index:40}
 .lang-btn{border:0;background:transparent;font-size:13px;line-height:1;padding:3px;border-radius:6px;cursor:pointer;opacity:.45}
 .lang-btn.on{opacity:1;background:var(--gold-soft)}
 .install-banner{position:absolute;left:auto;right:6px;top:4px;bottom:auto;z-index:25;display:flex;align-items:center;gap:4px;
@@ -678,6 +683,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .brand-lockup.mini .brand{font-size:.58rem}
   .logo-mark.sm{width:18px;height:18px}
   .icon-btn,.lang-dd,.lang-dd-btn{width:26px;height:26px;min-width:26px;max-width:26px;flex-basis:26px;border-radius:8px}
+  .lang-dd-menu{width:220px;min-width:200px;max-width:calc(100vw - 16px);max-height:280px}
   .lang-flag{font-size:12px}
   .help-badge{padding:4px 7px;font-size:.55rem}
   #screenTrade.is-guest .auth-quick{gap:4px}
@@ -1080,39 +1086,54 @@ html.is-android .fs-trade-overlay.on .pad .btn-trade span{
   html.is-android .fs-trade-overlay.on .pad .btn-trade{width:auto!important;flex:1 1 0!important}
 }
 
-/* i18n RTL: chrome only — chart / canvas / CALL PUT stay LTR */
-html[lang="ar"]{
+/* i18n: Arabic chrome RTL — never flip html/body (chart + CALL/PUT stay LTR) */
+html[lang="ar"],html.lang-ar{
   --font:"Noto Naskh Arabic","Plus Jakarta Sans",system-ui,sans-serif;
+}
+html[lang="hi"]{
+  --font:"Noto Sans Devanagari","Plus Jakarta Sans",system-ui,sans-serif;
 }
 html[lang="ar"] body,
 html[lang="ar"] button,
 html[lang="ar"] input,
 html[lang="ar"] select,
-html[lang="ar"] textarea{
+html[lang="ar"] textarea,
+html[lang="hi"] body,
+html[lang="hi"] button,
+html[lang="hi"] input{
   font-family:var(--font);
 }
 html[lang="ar"] .btn-trade{text-transform:none}
-html[dir="rtl"] .lang-bar-auth{right:auto;left:10px}
-html[dir="rtl"] .lang-dd-menu{right:auto;left:0}
-html[dir="rtl"] .install-ios-box,
-html[dir="rtl"] .drawer-item,
-html[dir="rtl"] .modal-box,
-html[dir="rtl"] .auth-wrap{text-align:right}
-html[dir="rtl"] .install-ios-steps{padding-left:0;padding-right:1.15rem}
-html[dir="rtl"] .chart-card,
-html[dir="rtl"] #chart,
-html[dir="rtl"] .chart-stage,
-html[dir="rtl"] .chart-toolbar,
-html[dir="rtl"] #chartCanvas,
-html[dir="rtl"] #chartOverlay,
-html[dir="rtl"] .chart-outcome,
-html[dir="rtl"] .asset-bar,
-html[dir="rtl"] .trade-row,
-html[dir="rtl"] .btn-trade,
-html[dir="rtl"] .btn-call,
-html[dir="rtl"] .btn-put,
-html[dir="rtl"] .dur-row,
-html[dir="rtl"] .odds-row{
+html.lang-ar .auth-wrap,
+html.lang-ar .drawer,
+html.lang-ar .drawer-item,
+html.lang-ar .modal-box,
+html.lang-ar .brand-sub,
+html.lang-ar .help-badge,
+html.lang-ar .btn-deposit,
+html.lang-ar .mode-btn,
+html.lang-ar .install-ios-box{
+  direction:rtl;
+  text-align:right;
+  unicode-bidi:isolate;
+}
+html.lang-ar .install-ios-steps{padding-left:0;padding-right:1.15rem}
+html.lang-ar .chart-card,
+html.lang-ar #chart,
+html.lang-ar .chart-stage,
+html.lang-ar .chart-toolbar,
+html.lang-ar #chartCanvas,
+html.lang-ar #chartOverlay,
+html.lang-ar .chart-outcome,
+html.lang-ar .asset-bar,
+html.lang-ar .trade-row,
+html.lang-ar .btn-trade,
+html.lang-ar .btn-call,
+html.lang-ar .btn-put,
+html.lang-ar .dur-row,
+html.lang-ar .odds-row,
+html.lang-ar .lang-dd-menu{
   direction:ltr;
   unicode-bidi:isolate;
+  text-align:left;
 }

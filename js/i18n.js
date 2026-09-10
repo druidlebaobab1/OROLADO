@@ -153,7 +153,14 @@
     installIos2: 'Scroll and tap Add to Home Screen.',
     installIos3: 'Confirm by tapping Add at the top right.',
     tipTitle: 'Trading tip',
-    closeLbl: 'Close'
+    closeLbl: 'Close',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    clearDigit: 'Delete a digit',
+    demoTopup: 'Top up demo',
+    profileBtn: 'Profile',
+    profileMenu: 'Profile menu',
+    modeAccount: 'Account mode'
   };
 
   var FR = {
@@ -308,7 +315,14 @@
     installIos2: 'Fais d\u00e9filer et appuie sur \u00ab Sur l\u2019\u00e9cran d\u2019accueil \u00bb.',
     installIos3: 'Confirme en touchant \u00ab Ajouter \u00bb en haut \u00e0 droite.',
     tipTitle: 'Astuce trading',
-    closeLbl: 'Fermer'
+    closeLbl: 'Fermer',
+    zoomIn: 'Zoom avant',
+    zoomOut: 'Zoom arri\u00e8re',
+    clearDigit: 'Effacer un chiffre',
+    demoTopup: 'Recharger la d\u00e9mo',
+    profileBtn: 'Profil',
+    profileMenu: 'Menu profil',
+    modeAccount: 'Mode de compte'
   };
 
   function pack(over) {
@@ -1300,6 +1314,12 @@
     })
   };
 
+  if (D6.I18N_PACKS) {
+    Object.keys(D6.I18N_PACKS).forEach(function (code) {
+      DICT[code] = Object.assign({}, EN, D6.I18N_PACKS[code]);
+    });
+  }
+
   var LANG_KEY = 'orolado_lang';
   var LANG_USER_KEY = 'orolado_lang_user';
 
@@ -1326,6 +1346,7 @@
     { p: 'id', l: 'id' },
     { p: 'ru', l: 'ru' },
     { p: 'de', l: 'de' },
+    { p: 'hi', l: 'hi' },
     { p: 'en', l: 'en' }
   ];
 
@@ -1393,32 +1414,27 @@
       return fromUrl;
     }
     try {
-      if (hasUserOverride()) {
-        var savedUser = localStorage.getItem(LANG_KEY);
-        if (savedUser && DICT[savedUser]) return savedUser;
-      }
+      var saved = localStorage.getItem(LANG_KEY);
+      if (saved && DICT[saved]) return saved;
     } catch (e0) { /* ignore */ }
     var nav = mapNavLang();
-    if (nav && nav !== 'fr') return nav;
+    if (nav && DICT[nav]) return nav;
     return 'en';
   }
 
   var lang = detectLang();
   if (!DICT[lang]) lang = 'en';
+  try { localStorage.setItem(LANG_KEY, lang); } catch (eSave) { /* ignore */ }
   var lockedLang = !!(urlLang() || hasUserOverride());
-  var pendingGeo = !lockedLang;
+  var pendingGeo = !lockedLang && !mapNavLang();
 
   function syncHtmlDir() {
     var html = document.documentElement;
     if (!html) return;
-    if (lang === 'ar') {
-      html.lang = 'ar';
-      html.dir = 'rtl';
-    } else {
-      html.lang = lang;
-      html.dir = 'ltr';
-    }
+    html.lang = lang;
+    html.dir = 'ltr';
     html.setAttribute('data-lang', lang);
+    html.classList.toggle('lang-ar', lang === 'ar');
   }
   syncHtmlDir();
 
@@ -1439,6 +1455,9 @@
     });
     document.querySelectorAll('[data-i18n-aria]').forEach(function (el) {
       el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
     });
     document.querySelectorAll('.lang-btn').forEach(function (btn) {
       btn.classList.toggle('on', btn.dataset.lang === lang);
