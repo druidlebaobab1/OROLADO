@@ -1116,7 +1116,7 @@ if ($action === 'financeHistory') {
     $rows[] = [
       'at' => $d['paidAt'] ?? $d['at'] ?? '',
       'ref' => $d['id'] ?? $d['ref'] ?? '',
-      'amount' => (int) ($d['amount'] ?? 0),
+      'amount' => orolado_money($d['amount'] ?? 0),
       'status' => strtoupper((string) ($d['status'] ?? 'PENDING')),
       'label' => 'Dépôt',
       'operator' => $d['operator'] ?? ($d['op'] ?? '')
@@ -1131,7 +1131,7 @@ if ($action === 'financeHistory') {
     $rows[] = [
       'at' => $w['at'] ?? '',
       'ref' => $w['id'] ?? '',
-      'amount' => -abs((int) ($w['amount'] ?? 0)),
+      'amount' => -abs(orolado_money($w['amount'] ?? 0)),
       'status' => $st,
       'label' => 'Retrait',
       'operator' => $w['operator'] ?? ''
@@ -1190,6 +1190,16 @@ if ($action === 'confirmDeposit') {
 
 if ($action === 'submitUsdtDeposit' || $action === 'verifyCryptoDeposit') {
   echo json_encode(orolado_verify_crypto_deposit(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'oxapayInvoice') {
+  echo json_encode(orolado_oxapay_invoice(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'oxapayStatus') {
+  echo json_encode(orolado_oxapay_status(['token' => $token] + $req));
   exit;
 }
 

@@ -11,6 +11,9 @@ Options -Indexes
   RewriteRule ^api/deposit/confirm/?$ api/deposit-confirm.php [L,QSA]
   RewriteRule ^api/deposit/webhook/?$ api/deposit-webhook.php [L,QSA]
   RewriteRule ^api/deposit/verify-crypto/?$ api/deposit-verify-crypto.php [L,QSA]
+  RewriteRule ^api/oxapay/invoice/?$ api/oxapay-invoice.php [L,QSA]
+  RewriteRule ^api/oxapay/status/?$ api/oxapay-status.php [L,QSA]
+  RewriteRule ^api/oxapay/webhook/?$ api/oxapay-webhook.php [L,QSA]
 </IfModule>
 
 <IfModule mod_mime.c>
