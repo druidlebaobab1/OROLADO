@@ -620,6 +620,7 @@
     }
     var active = u.mode === 'real' ? real : demo;
     paintBalanceNow(active, !!flash);
+    if ($('profWalletBal')) $('profWalletBal').textContent = '$' + (Number(real) || 0).toFixed(2);
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
       $('balanceAlt').hidden = true;
@@ -949,7 +950,51 @@
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
+    var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    if ($('profWalletBal')) $('profWalletBal').textContent = '$' + (Number(real) || 0).toFixed(2);
+    if ($('profWalletAddr')) {
+      var wa = (D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
+      $('profWalletAddr').textContent = wa.length > 14 ? (wa.slice(0, 8) + '…' + wa.slice(-6)) : wa;
+    }
     setAdminBtns(u);
+  }
+
+  function bindWalletCard() {
+    if ($('btnExpressCrypto') && !$('btnExpressCrypto')._oroBound) {
+      $('btnExpressCrypto')._oroBound = true;
+      bindAndroidTap($('btnExpressCrypto'), function () {
+        if (!requireAccount()) return;
+        openDeposit();
+        setDepositPayMethod('usdt');
+      });
+    }
+    if ($('btnCopyWallet') && !$('btnCopyWallet')._oroBound) {
+      $('btnCopyWallet')._oroBound = true;
+      bindAndroidTap($('btnCopyWallet'), function () {
+        var addr = (D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
+        var btn = $('btnCopyWallet');
+        function ok() {
+          var prev = btn.textContent;
+          btn.textContent = t('copied') || 'Copié';
+          setTimeout(function () { btn.textContent = prev || 'Copier'; }, 1200);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(addr).then(ok).catch(function () {
+            try {
+              var ta = document.createElement('textarea');
+              ta.value = addr;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              ok();
+            } catch (e) { toast(addr, ''); }
+          });
+          return;
+        }
+        toast(addr, '');
+      });
+    }
   }
 
   function bindCopyPublicId() {
@@ -2386,7 +2431,9 @@
     oxaCoin = oxaCoinKey();
     stopOxaPoll();
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
-    if ($('usdtAddr')) $('usdtAddr').textContent = '…';
+    if ($('usdtAddr') && !liveDepositAddr && (!$('usdtAddr').textContent || $('usdtAddr').textContent === '…')) {
+      $('usdtAddr').textContent = '';
+    }
     if ($('oxaQrWrap')) $('oxaQrWrap').classList.remove('hidden');
     var note = $('usdtPendingNote');
     if (note) {
@@ -2908,6 +2955,7 @@
       });
     });
     bindCopyPublicId();
+    bindWalletCard();
     document.querySelectorAll('.auth-tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
         document.querySelectorAll('.auth-tab').forEach(function (tEl) { tEl.classList.remove('on'); });
@@ -3626,13 +3674,20 @@
       return n;
     }
     function hideInstallBanner() {
-      if ($('installBanner')) $('installBanner').classList.add('hidden');
+      var el = $('installBanner');
       if (installHideTimer) { clearTimeout(installHideTimer); installHideTimer = 0; }
+      if (!el || el.classList.contains('hidden')) return;
+      el.classList.add('fade-out');
+      setTimeout(function () {
+        el.classList.add('hidden');
+        el.classList.remove('fade-out');
+      }, 450);
     }
     function showInstallBanner() {
       if (!isMobileUi() || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install')) return;
-      if (!$('installBanner')) return;
-      $('installBanner').classList.remove('hidden');
+      var el = $('installBanner');
+      if (!el) return;
+      el.classList.remove('hidden', 'fade-out');
       if (installHideTimer) clearTimeout(installHideTimer);
       installHideTimer = setTimeout(function () {
         hideInstallBanner();
@@ -3764,9 +3819,16 @@
           var forever = false;
           try { forever = localStorage.getItem('oro_install_dismissed') === '1'; } catch (e0) { forever = false; }
           if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
-            $('installBanner').classList.remove('hidden');
+            var ban = $('installBanner');
+            ban.classList.remove('hidden', 'fade-out');
             setTimeout(function () {
-              if ($('installBanner')) $('installBanner').classList.add('hidden');
+              if ($('installBanner')) $('installBanner').classList.add('fade-out');
+              setTimeout(function () {
+                if ($('installBanner')) {
+                  $('installBanner').classList.add('hidden');
+                  $('installBanner').classList.remove('fade-out');
+                }
+              }, 450);
               try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
             }, 5000);
           }

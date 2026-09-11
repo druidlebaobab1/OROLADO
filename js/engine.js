@@ -78,9 +78,11 @@
         l = o - uhash01(bucket, salt + 9) * 1.9;
       }
     } else if (spike) {
-      c = o + (22 + uhash01(bucket, salt + 7) * 58);
+      /* Boom 300 only : −35 % d’amplitude verticale pour rester dans le canvas. */
+      var boomAmp = 0.65;
+      c = o + (22 + uhash01(bucket, salt + 7) * 58) * boomAmp;
       l = o - 0.4 - uhash01(bucket, salt + 8) * 2.2;
-      h = c + uhash01(bucket, salt + 9) * 7;
+      h = c + uhash01(bucket, salt + 9) * 7 * boomAmp;
     } else {
       c = o - (0.55 + uhash01(bucket, salt + 7) * 3.4);
       l = c - uhash01(bucket, salt + 8) * 1.5;

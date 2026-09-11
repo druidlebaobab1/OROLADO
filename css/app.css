@@ -539,11 +539,12 @@ html.is-android #chartOverlay{
 .pay-method-card.on{border-color:var(--gold);background:rgba(245,158,11,.08);
   box-shadow:0 0 0 1px rgba(245,158,11,.45),0 8px 20px rgba(245,158,11,.08)}
 .pay-method-card.on .pay-method-title{color:var(--gold)}
-.deposit-box{width:min(400px,92vw);max-width:400px;max-height:90dvh;padding:18px 16px 20px;overflow-y:auto}
-.deposit-box.is-crypto{width:min(430px,94vw);max-width:430px;max-height:94dvh}
-.crypto-invoice,.crypto-ok{padding-top:4px}
+.deposit-box{width:min(400px,92vw);max-width:400px;max-height:90dvh;padding:16px 14px 18px;overflow-y:auto}
+.deposit-box.is-crypto{width:min(430px,94vw);max-width:430px;max-height:96dvh;padding:14px 12px 12px;overflow-y:hidden}
+.deposit-box.is-crypto #closeDeposit{display:none!important}
+.crypto-invoice,.crypto-ok{padding-top:2px}
 .crypto-back{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--muted);
-  font:inherit;font-size:.82rem;font-weight:700;padding:4px 0 10px;cursor:pointer}
+  font:inherit;font-size:.82rem;font-weight:700;padding:2px 0 6px;cursor:pointer}
 .crypto-back:hover{color:var(--gold)}
 .crypto-pay{font-size:1.7rem;font-weight:900;color:var(--gold);text-align:center;margin:4px 0 10px;letter-spacing:.01em;
   font-variant-numeric:tabular-nums;line-height:1.2;text-shadow:0 0 20px rgba(245,158,11,.28)}
@@ -579,7 +580,7 @@ html.is-android #chartOverlay{
 @keyframes oxaOkPop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 .crypto-ok-title{font-size:1.25rem;font-weight:900;color:#34D399;margin-bottom:8px}
 .crypto-ok-copy{font-size:.88rem;font-weight:600;color:#a7f3d0;line-height:1.45;margin:0 0 20px}
-.oxa-pick-wrap{margin:0 0 14px;display:flex;flex-direction:column;gap:12px}
+.oxa-pick-wrap{margin:0 0 10px;display:flex;flex-direction:column;gap:10px}
 .oxa-field{display:flex;flex-direction:column;gap:6px;position:relative}
 .oxa-field label{font-size:.68rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .oxa-dd-btn{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:8px 12px;
@@ -604,19 +605,19 @@ html.is-android #chartOverlay{
 .oxa-net{min-height:42px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:#121824;color:#E8EEF9;
   font:inherit;font-size:.74rem;font-weight:800;cursor:pointer;touch-action:manipulation}
 .oxa-net.on{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.1)}
-.oxa-wallet{background:#121824;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 14px 14px}
+.oxa-wallet{background:#121824;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 12px 12px}
 .oxa-wallet-title{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   text-align:center;margin-bottom:10px}
 .oxa-wallet-addr{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;font-weight:700;
   word-break:break-all;line-height:1.55;text-align:center;margin-bottom:12px;color:#94A3B8}
 .oxa-wallet-addr .addr-hi{color:#4ADE80;text-shadow:0 0 10px rgba(74,222,128,.35)}
 .oxa-wallet-addr .addr-mid{color:#CBD5E1}
-.oxa-usd-line{margin:0 0 12px;font-size:.78rem;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.oxa-usd-line{margin:0 0 8px;font-size:.78rem;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
 .oxa-usd-line strong{color:var(--gold)}
-.oxa-wallet .crypto-qr-wrap{display:flex;justify-content:center;margin:0 0 14px}
+.oxa-wallet .crypto-qr-wrap{display:flex;justify-content:center;margin:0 0 10px}
 .oxa-wallet-actions{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.oxa-act{flex:1;min-height:44px;border:1px solid rgba(245,158,11,.35);border-radius:12px;background:rgba(245,158,11,.08);
-  color:var(--gold);font:inherit;font-weight:800;font-size:.8rem;cursor:pointer;touch-action:manipulation}
+.oxa-act{display:block;width:100%;flex:none;min-height:44px;margin:0 auto 10px;border:1px solid rgba(245,158,11,.35);border-radius:12px;background:rgba(245,158,11,.08);
+  color:var(--gold);font:inherit;font-weight:800;font-size:.8rem;cursor:pointer;touch-action:manipulation;text-align:center}
 .oxa-act-ico{flex:0 0 48px;display:grid;place-items:center;padding:0}
 .oxa-act-ico svg{width:18px;height:18px}
 .oxa-act.is-copied{border-color:rgba(34,197,94,.45);color:#86EFAC;background:rgba(34,197,94,.12)}
@@ -624,9 +625,20 @@ html.is-android #chartOverlay{
 .oxa-warn{margin:0;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;
   border:1px solid rgba(245,158,11,.28);background:rgba(245,158,11,.06);color:#FDE68A;font-size:.74rem;font-weight:600;line-height:1.4}
 .oxa-warn-ico{flex-shrink:0;opacity:.85}
-.oxa-live{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px auto 0;padding:6px 10px;
+.oxa-live{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px auto 0;padding:6px 10px;
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
+@media (max-width:480px){
+  .deposit-box.is-crypto{padding:12px 11px 10px;max-height:96dvh}
+  .deposit-box.is-crypto .modal-title{margin-bottom:6px;font-size:.92rem}
+  .deposit-box.is-crypto .crypto-qr{width:148px;height:148px;padding:8px;border-radius:12px}
+  .deposit-box.is-crypto .oxa-wallet{padding:12px 10px 10px}
+  .deposit-box.is-crypto .oxa-dd-btn{min-height:44px}
+  .deposit-box.is-crypto .oxa-net{min-height:38px}
+}
+@media (max-height:620px){
+  .deposit-box.is-crypto{overflow-y:auto}
+}
 .drawer-item.drawer-logout{width:100%;min-height:48px;margin:4px 0 0;color:#F87171;justify-content:flex-start;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .drawer-item.drawer-logout .di-label{color:#F87171}
@@ -683,13 +695,14 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:40}
 .lang-btn{border:0;background:transparent;font-size:13px;line-height:1;padding:3px;border-radius:6px;cursor:pointer;opacity:.45}
 .lang-btn.on{opacity:1;background:var(--gold-soft)}
-.install-banner{position:absolute;left:auto;right:6px;top:4px;bottom:auto;z-index:25;display:flex;align-items:center;gap:4px;
-  max-width:150px;background:rgba(11,14,20,.72);border:1px solid rgba(245,166,35,.35);border-radius:12px;padding:5px 7px;font-size:.52rem;font-weight:800;
-  box-shadow:0 8px 22px rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto}
+.install-banner{position:absolute;left:auto;right:10px;top:40px;bottom:auto;z-index:26;display:flex;align-items:center;
+  max-width:none;width:auto;background:rgba(11,14,20,.78);border:1px solid rgba(245,166,35,.4);border-radius:999px;padding:0;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto;
+  opacity:1;transition:opacity .45s ease}
 .install-banner.hidden{display:none!important}
-.install-banner span{flex:1;min-width:0;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.install-banner button{border:0;border-radius:6px;padding:4px 8px;font:inherit;font-weight:900;font-size:.58rem;background:var(--gold);color:#0A0F1D;cursor:pointer;white-space:nowrap}
-.install-banner .ghost{background:transparent;color:var(--muted);border:1px solid var(--line);padding:3px 6px;min-width:24px}
+.install-banner.fade-out{opacity:0;pointer-events:none}
+.install-banner button{border:0;border-radius:999px;padding:6px 12px;font:inherit;font-weight:800;font-size:.68rem;
+  background:transparent;color:#F8E7B8;cursor:pointer;white-space:nowrap;letter-spacing:.01em}
 .install-ios-box{max-width:340px;text-align:left}
 .install-ios-lead{font-size:.82rem;color:var(--muted);margin:0 0 12px;line-height:1.4;font-weight:600}
 .install-ios-steps{margin:0 0 16px;padding-left:1.15rem;display:flex;flex-direction:column;gap:10px}
@@ -719,6 +732,29 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .drawer-head .btn-close{position:static;margin:0;flex-shrink:0}
 .drawer .prof-head{padding:4px 16px 12px;margin:0}
 .drawer .card{margin:0 16px 12px}
+.wallet-card{margin:0 16px 14px;padding:16px 14px 14px;border-radius:16px;
+  background:linear-gradient(165deg,#10151F 0%,#0C111A 55%,#141018 100%);
+  border:1px solid rgba(245,158,11,.22);box-shadow:0 12px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+.wallet-card-k{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#94A3B8}
+.wallet-card-v{font-size:1.55rem;font-weight:900;color:#F8E7B8;margin:4px 0 14px;letter-spacing:.01em;
+  text-shadow:0 0 18px rgba(245,158,11,.25);font-variant-numeric:tabular-nums}
+.wallet-xpress{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;
+  border-radius:12px;cursor:pointer;background:linear-gradient(90deg,#F59E0B,#FBBF24);color:#0B0E14;
+  font:inherit;font-weight:800;font-size:.78rem;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.wx-coins{display:flex;align-items:center;gap:3px}
+.wx-coin{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:.48rem;font-weight:900;color:#fff;line-height:1}
+.wx-usdt{background:#26A17B}
+.wx-btc{background:#F7931A}
+.wx-eth{background:#627EEA}
+.wx-trx{background:#EC0928}
+.wallet-addr-row{display:flex;align-items:center;gap:8px;margin:12px 0 8px;padding:8px 10px;border-radius:10px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.wallet-addr-row code{flex:1;min-width:0;font-size:.72rem;font-weight:700;color:#CBD5E1;
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+.wallet-copy{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.08);color:var(--gold);
+  border-radius:8px;padding:5px 8px;font:inherit;font-size:.62rem;font-weight:800;cursor:pointer;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.wallet-hint{margin:0;font-size:.58rem;font-weight:600;color:#64748B;line-height:1.4}
 .drawer-admin{margin:0 16px 8px;padding:10px;border:1px solid rgba(245,158,11,.28);border-radius:var(--radius);background:rgba(245,158,11,.06)}
 .drawer-nav{padding:0 8px;display:flex;flex-direction:column;gap:14px;margin-top:8px}
 .drawer-legal{margin:6px 16px 4px}
@@ -809,9 +845,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .balance-row{padding:0 10px 8px}
   .dur-chip{flex:1 1 auto;min-width:0;font-size:.68rem;min-height:32px;padding:4px 0}
   .trade-hint{display:none!important}
-  .install-banner{left:auto;right:12px;bottom:12px;width:auto;max-width:260px;z-index:25}
-  /* Banner hors du chart : ancrée au pad / shell, pas sur le canvas */
-  #chart .install-banner{display:none!important}
+  .install-banner{left:auto;right:10px;top:40px;bottom:auto;width:auto;max-width:none;z-index:26}
   .pay-logos-strip{display:none!important;height:0!important;margin:0!important;padding:0!important}
 }
 /* Compat 860–899 : même 2 colonnes (TV / tablette large) */
@@ -820,7 +854,6 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
     gap:8px;padding:10px;overflow:hidden}
   .chart-card,#chart{grid-column:1;grid-row:2;display:flex!important;min-height:380px!important}
   .pad{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;grid-column:2;grid-row:1 / span 2}
-  #chart .install-banner{display:none!important}
 }
 @media (max-width:859px){
   .balance-card{padding:6px 12px!important}
