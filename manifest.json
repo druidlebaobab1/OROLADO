@@ -1,14 +1,14 @@
 {
-  "name": "OROLADO.COM",
-  "short_name": "OROLADO",
-  "description": "Trading premium OROLADO.COM",
+  "name": "Orolado — Trade Indices Online in USD",
+  "short_name": "Orolado",
+  "description": "Trade live indices in USD. Free demo. Open an account in seconds. Fast deposit and withdrawal.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0A0F1D",
   "theme_color": "#0A0F1D",
-  "lang": "fr",
+  "lang": "en",
   "icons": [
     {
       "src": "icons/icon.svg",
