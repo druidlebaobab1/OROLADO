@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=121">
+  <link rel="stylesheet" href="css/app.css?v=122">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -340,11 +340,20 @@
     <div class="wallet-card" id="profWalletCard">
       <div class="wallet-card-k">Solde Disponible</div>
       <div class="wallet-card-v" id="profWalletBal">$0.00</div>
+      <div class="wallet-xpress" aria-hidden="true">
+        <span class="wx-coins">
+          <span class="wx-coin wx-usdt">₮</span>
+          <span class="wx-coin wx-btc">₿</span>
+          <span class="wx-coin wx-eth">Ξ</span>
+          <span class="wx-coin wx-trx">T</span>
+        </span>
+        <span>Dépôt Express Crypto</span>
+      </div>
       <div class="wallet-tabs" role="tablist" aria-label="Réseau de dépôt">
         <button type="button" class="wallet-tab on" data-recv="usdt" role="tab" aria-selected="true">₮ USDT TRC20</button>
-        <button type="button" class="wallet-tab is-soon" data-recv="btc" role="tab" aria-selected="false" aria-disabled="true">BTC</button>
-        <button type="button" class="wallet-tab is-soon" data-recv="eth" role="tab" aria-selected="false" aria-disabled="true">ETH</button>
-        <button type="button" class="wallet-tab is-soon" data-recv="trx" role="tab" aria-selected="false" aria-disabled="true">TRX</button>
+        <button type="button" class="wallet-tab" data-recv="btc" role="tab" aria-selected="false">BTC</button>
+        <button type="button" class="wallet-tab" data-recv="eth" role="tab" aria-selected="false">ETH</button>
+        <button type="button" class="wallet-tab" data-recv="trx" role="tab" aria-selected="false">TRX</button>
       </div>
       <div class="wallet-addr-row">
         <code id="profWalletAddr"></code>
@@ -585,7 +594,7 @@
             <div class="pay-method-top">
               <span class="pay-method-title" data-i18n="payMethodUsdtTitle">CRYPTO DEPOSIT</span>
             </div>
-            <span class="pay-method-desc">USDT TRC20 • min. $15 • crédit auto</span>
+            <span class="pay-method-desc">USDT, USDC, BTC, ETH, TRX… • crédit auto</span>
           </button>
         </div>
         <button type="button" class="btn-gold" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
@@ -593,20 +602,39 @@
       <div id="depositStepCrypto" class="crypto-invoice hidden">
         <button type="button" class="crypto-back" id="btnUsdtBack">← Retour</button>
         <div class="modal-title">Dépôt crypto</div>
-        <p class="oxa-usd-line"><span>Montant</span> <strong id="oxaUsdAmt">$15.00</strong></p>
-        <div class="oxa-chip-row">
-          <span class="oxa-chip on"><span class="oxa-chip-ico" aria-hidden="true">₮</span> USDT</span>
-          <span class="oxa-chip on">TRC20</span>
+        <p class="oxa-usd-line"><span>Montant</span> <strong id="oxaUsdAmt">$3.00</strong></p>
+        <div class="oxa-field">
+          <label for="oxaCoinBtn">Crypto</label>
+          <button type="button" class="oxa-dd-btn" id="oxaCoinBtn" aria-expanded="false" aria-haspopup="listbox">
+            <span class="oxa-ico" id="oxaCoinIco" style="background:#26A17B">₮</span>
+            <span class="oxa-dd-meta">
+              <strong id="oxaCoinName">Tether</strong>
+              <small id="oxaCoinSym">USDT</small>
+            </span>
+            <span class="oxa-dd-chev" aria-hidden="true">▾</span>
+          </button>
+          <div id="oxaCoinMenu" class="oxa-dd hidden" role="listbox">
+            <input id="oxaCoinSearch" type="search" placeholder="Rechercher…" autocomplete="off">
+            <div id="oxaCoinList" class="oxa-dd-list"></div>
+          </div>
+        </div>
+        <div id="oxaNetWrap" class="oxa-field">
+          <label>Réseau</label>
+          <div id="oxaNets" class="oxa-nets">
+            <button type="button" class="oxa-net on" data-net="TRC20">TRC20</button>
+            <button type="button" class="oxa-net" data-net="ERC20">ERC20</button>
+            <button type="button" class="oxa-net" data-net="BEP20">BEP20</button>
+          </div>
         </div>
         <div id="oxaPickWrap" class="oxa-pick-wrap">
           <div id="oxaWalletBox" class="oxa-wallet">
             <div class="crypto-qr-wrap" id="oxaQrWrap">
-              <img id="usdtQr" class="crypto-qr" alt="QR USDT TRC20" width="150" height="150">
+              <img id="usdtQr" class="crypto-qr" alt="QR crypto" width="150" height="150">
             </div>
             <div class="oxa-wallet-title" id="oxaAddrLabel">Adresse USDT TRC20</div>
             <code class="oxa-wallet-addr" id="usdtAddr"></code>
             <button type="button" class="oxa-act" id="btnUsdtCopy">Copier l'adresse</button>
-            <p class="oxa-min" id="oxaMinHint">Minimum : 15 USDT (TRC20)</p>
+            <p class="oxa-min" id="oxaMinHint">Minimum : $3 (USDT TRC20)</p>
             <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente…</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
             <p class="crypto-verify" id="usdtPendingNote" hidden></p>
@@ -702,7 +730,7 @@
   <script src="js/supabase.js?v=107"></script>
   <script src="js/auth.js?v=108"></script>
   <script src="js/engine.js?v=106"></script>
-  <script src="js/chart.js?v=107"></script>
-  <script src="js/app.js?v=123"></script>
+  <script src="js/chart.js?v=108"></script>
+  <script src="js/app.js?v=124"></script>
 </body>
 </html>

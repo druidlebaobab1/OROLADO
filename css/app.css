@@ -540,7 +540,7 @@ html.is-android #chartOverlay{
   box-shadow:0 0 0 1px rgba(245,158,11,.45),0 8px 20px rgba(245,158,11,.08)}
 .pay-method-card.on .pay-method-title{color:var(--gold)}
 .deposit-box{width:min(400px,92vw);max-width:400px;max-height:90dvh;padding:16px 14px 18px;overflow-y:auto}
-.deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow:hidden;
+.deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow-x:hidden;overflow-y:auto;
   background:linear-gradient(180deg,#161C28 0%,#121824 100%);border:1px solid rgba(255,255,255,.1)}
 .deposit-box.is-crypto #closeDeposit{display:none!important}
 .crypto-invoice,.crypto-ok{padding-top:2px}
@@ -594,7 +594,7 @@ html.is-android #chartOverlay{
 .oxa-dd-meta strong{font-size:.86rem}
 .oxa-dd-meta small{font-size:.68rem;color:var(--muted);font-weight:700}
 .oxa-dd-chev{color:var(--muted)}
-.oxa-dd{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:8;background:#0E1420;border:1px solid rgba(255,255,255,.1);
+.oxa-dd{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:#0E1420;border:1px solid rgba(255,255,255,.1);
   border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.45);padding:8px;max-height:260px;display:flex;flex-direction:column}
 .oxa-dd input{width:100%;min-height:40px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#121824;
   color:var(--text);padding:8px 10px;font:inherit;font-size:.82rem;margin-bottom:6px}
@@ -633,7 +633,7 @@ html.is-android #chartOverlay{
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
 @media (max-width:480px){
-  .deposit-box.is-crypto{padding:10px 12px 12px;max-height:100dvh;overflow:hidden}
+  .deposit-box.is-crypto{padding:10px 12px 12px;max-height:100dvh;overflow-x:hidden;overflow-y:auto}
   .deposit-box.is-crypto .modal-title{margin-bottom:4px;font-size:.88rem}
   .deposit-box.is-crypto .crypto-qr{width:150px;height:150px;padding:8px;border-radius:14px}
   .deposit-box.is-crypto .oxa-wallet{padding:10px}
@@ -741,18 +741,30 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
   background:linear-gradient(165deg,#141A26 0%,#10151F 100%);
   border:1px solid rgba(245,158,11,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .wallet-card-k{font-size:.55rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#94A3B8}
-.wallet-card-v{font-size:1.35rem;font-weight:900;color:#F8E7B8;margin:2px 0 8px;letter-spacing:.01em;
+.wallet-card-v{font-size:1.35rem;font-weight:900;color:#F8E7B8;margin:2px 0 6px;letter-spacing:.01em;
   text-shadow:0 0 18px rgba(245,158,11,.25);font-variant-numeric:tabular-nums}
+.wallet-xpress{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:34px;margin:0 0 8px;
+  padding:6px 10px;border-radius:10px;pointer-events:none;user-select:none;
+  background:linear-gradient(90deg,#F59E0B 0%,#EAB308 55%,#FBBF24 100%);
+  color:#1A1204;font-size:.68rem;font-weight:900;letter-spacing:.02em;
+  box-shadow:0 6px 16px rgba(245,158,11,.28)}
+.wx-coins{display:flex;align-items:center}
+.wx-coin{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:.55rem;font-weight:900;
+  color:#fff;margin-left:-5px;box-shadow:0 0 0 1.5px rgba(26,18,4,.35)}
+.wx-coin:first-child{margin-left:0}
+.wx-usdt{background:#26A17B}
+.wx-btc{background:#F7931A}
+.wx-eth{background:#627EEA}
+.wx-trx{background:#FF0013}
 .wallet-tabs{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:4px;margin:0 0 8px}
 .wallet-tab{min-height:28px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#0E1420;color:#94A3B8;
   font:inherit;font-size:.55rem;font-weight:800;padding:4px 2px;cursor:pointer;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;white-space:nowrap}
 .wallet-tab.on{border-color:rgba(245,158,11,.55);color:#F8E7B8;background:rgba(245,158,11,.12)}
-.wallet-tab.is-soon{opacity:.42;cursor:default}
-.wallet-addr-row{display:flex;align-items:center;gap:6px;margin:0;padding:6px 8px;border-radius:8px;min-height:36px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
-.wallet-addr-row code{flex:1;min-width:0;font-size:.68rem;font-weight:700;color:#E2E8F0;
-  font-family:ui-monospace,Menlo,Consolas,monospace}
+.wallet-addr-row{display:flex;align-items:flex-start;gap:6px;margin:0;padding:6px 8px;border-radius:8px;min-height:36px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,158,11,.16)}
+.wallet-addr-row code{flex:1;min-width:0;font-size:.62rem;font-weight:700;color:#E2E8F0;line-height:1.4;
+  font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;white-space:normal}
 .wallet-copy{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.1);color:var(--gold);
   border-radius:7px;padding:4px 8px;font:inherit;font-size:.58rem;font-weight:800;cursor:pointer;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}

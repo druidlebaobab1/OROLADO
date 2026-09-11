@@ -954,40 +954,40 @@
     if ($('profWalletBal')) $('profWalletBal').textContent = '$' + (Number(real) || 0).toFixed(2);
     profRecvCoin = 'usdt';
     paintProfRecv();
-    prefetchUsdtRecv();
+    prefetchRecv('usdt');
     setAdminBtns(u);
   }
 
   var profRecvCoin = 'usdt';
   var recvCache = {};
 
-  function shortRecv(a) {
-    a = String(a || '');
-    if (a.length > 16) return a.slice(0, 8) + '…' + a.slice(-6);
-    return a;
+  function profRecvMeta(id) {
+    if (id === 'btc') return { coin: 'btc', min: 15, cache: 'btc' };
+    if (id === 'eth') return { coin: 'eth', min: 15, cache: 'eth' };
+    if (id === 'trx') return { coin: 'trx', min: 3, cache: 'trx' };
+    return { coin: 'usdt_trc20', min: 3, cache: 'usdt' };
   }
 
   function paintProfRecv() {
     var el = $('profWalletAddr');
     var copyBtn = $('btnCopyWallet');
+    var meta = profRecvMeta(profRecvCoin);
     document.querySelectorAll('.wallet-tab').forEach(function (btn) {
       var on = btn.getAttribute('data-recv') === profRecvCoin;
       btn.classList.toggle('on', on);
       btn.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    if (profRecvCoin !== 'usdt') {
-      if (el) el.textContent = 'Bientôt';
-      if (copyBtn) copyBtn.disabled = true;
-      return;
+    var addr = recvCache[meta.cache] || '';
+    if (el) {
+      el.textContent = addr || 'Génération…';
+      el.title = addr;
     }
-    var addr = recvCache.usdt || liveDepositAddr || '';
-    if (el) el.textContent = addr ? shortRecv(addr) : 'USDT TRC20';
     if (copyBtn) copyBtn.disabled = !addr;
   }
 
-  function prefetchUsdtRecv() {
-    if (recvCache.usdt || liveDepositAddr) {
-      if (liveDepositAddr) recvCache.usdt = liveDepositAddr;
+  function prefetchRecv(id) {
+    var meta = profRecvMeta(id || 'usdt');
+    if (recvCache[meta.cache]) {
       paintProfRecv();
       return;
     }
@@ -999,14 +999,14 @@
     ensureApiToken().then(function (tok) {
       return postOxaInvoice({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
-        amount: 15,
-        coin: 'usdt_trc20'
+        amount: meta.min,
+        coin: meta.coin
       });
     }).then(function (remote) {
       if (remote && remote.ok && remote.address) {
-        recvCache.usdt = String(remote.address);
-        liveDepositAddr = recvCache.usdt;
-        if (remote.orderId) oxaInvoice = remote;
+        recvCache[meta.cache] = String(remote.address);
+        if (meta.cache === 'usdt') liveDepositAddr = recvCache.usdt;
+        if (remote.orderId && meta.cache === 'usdt') oxaInvoice = remote;
         paintProfRecv();
       }
     }).catch(function () { paintProfRecv(); });
@@ -1037,21 +1037,16 @@
       btn._oroBound = true;
       bindAndroidTap(btn, function () {
         var id = btn.getAttribute('data-recv') || 'usdt';
-        if (id !== 'usdt') {
-          profRecvCoin = id;
-          paintProfRecv();
-          return;
-        }
-        profRecvCoin = 'usdt';
+        profRecvCoin = id;
         paintProfRecv();
-        prefetchUsdtRecv();
+        prefetchRecv(id);
       });
     });
     if ($('btnCopyWallet') && !$('btnCopyWallet')._oroBound) {
       $('btnCopyWallet')._oroBound = true;
       bindAndroidTap($('btnCopyWallet'), function () {
-        var addr = recvCache.usdt || liveDepositAddr || '';
-        if (!addr || profRecvCoin !== 'usdt') return;
+        var addr = recvCache[profRecvMeta(profRecvCoin).cache] || '';
+        if (!addr) return;
         var copyBtn = $('btnCopyWallet');
         copyTextSilent(addr, function () {
           var prev = copyBtn.textContent;
@@ -2250,7 +2245,7 @@
   }
 
   function oxaMinUsd() {
-    return 15;
+    return Number(oxaMeta(oxaAsset).minUsd) || 3;
   }
 
   function oxaNetworkName() {
@@ -2323,7 +2318,10 @@
 
   function syncOxaLabels() {
     if ($('oxaMinHint')) {
-      $('oxaMinHint').textContent = 'Minimum : 15 USDT (TRC20)';
+      var m = oxaMeta(oxaAsset);
+      var need = oxaMinUsd();
+      var net = oxaAsset === 'usdt' ? (' ' + (oxaNet || 'TRC20')) : '';
+      $('oxaMinHint').textContent = 'Minimum : $' + need.toFixed(0) + ' (' + m.symbol + net + ')';
     }
     if ($('oxaNetLabel')) {
       $('oxaNetLabel').textContent = 'En attente…';
@@ -2366,6 +2364,8 @@
       oxaCoin = 'usdt_trc20';
       if (card) { card.classList.remove('on'); card.setAttribute('aria-checked', 'false'); }
       if (usdt) { usdt.classList.add('on'); usdt.setAttribute('aria-checked', 'true'); }
+      paintOxaCoinBtn();
+      syncOxaNetUi();
       enforceOxaMin();
       syncOxaLabels();
       showDepositStep('crypto');
@@ -2394,7 +2394,11 @@
   function paintOxaInvoice(inv) {
     oxaInvoice = inv;
     liveDepositAddr = String((inv && inv.address) || '');
-    if (liveDepositAddr) recvCache.usdt = liveDepositAddr;
+    var cacheKey = String((inv && inv.coin) || oxaCoin || 'usdt_trc20');
+    if (liveDepositAddr) {
+      recvCache[cacheKey] = liveDepositAddr;
+      if (cacheKey === 'usdt_trc20' || oxaAsset === 'usdt') recvCache.usdt = liveDepositAddr;
+    }
     var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
     var payAmt = Number((inv && inv.payAmount) || usdtAmt) || usdtAmt;
     if ($('usdtPayAmt')) {
@@ -2407,7 +2411,8 @@
     }
     if ($('oxaAddrLabel')) {
       var memo = String((inv && inv.memo) || '');
-      $('oxaAddrLabel').textContent = 'Adresse USDT TRC20' + (memo ? ' · MEMO ' + memo : '');
+      var netLab = (inv && inv.network) || (oxaAsset === 'usdt' ? oxaNet : oxaNetworkName());
+      $('oxaAddrLabel').textContent = 'Adresse ' + payCur + (netLab ? ' ' + netLab : '') + (memo ? ' · MEMO ' + memo : '');
     }
     syncOxaLabels();
     var qr = $('usdtQr');
@@ -2503,11 +2508,13 @@
       return;
     }
     lastUsdtCredit = 0;
-    oxaAsset = 'usdt';
-    oxaNet = 'TRC20';
-    oxaCoin = 'usdt_trc20';
-    if (recvCache.usdt) paintPreviewAddr(recvCache.usdt);
-    else if (liveDepositAddr) paintPreviewAddr(liveDepositAddr);
+    oxaCoin = oxaCoinKey();
+    var preview = recvCache[oxaCoin] || (oxaCoin === 'usdt_trc20' ? recvCache.usdt : '') || '';
+    if (preview) paintPreviewAddr(preview);
+    else {
+      liveDepositAddr = '';
+      if ($('usdtAddr')) $('usdtAddr').textContent = '';
+    }
     stopOxaPoll();
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
     if ($('oxaQrWrap')) $('oxaQrWrap').classList.remove('hidden');
@@ -2549,7 +2556,7 @@
   }
 
   function copyUsdtAddr() {
-    var addr = liveDepositAddr || recvCache.usdt || '';
+    var addr = liveDepositAddr || recvCache[oxaCoin] || recvCache.usdt || '';
     if (!addr) {
       toast('Adresse en cours de génération…', '');
       return;

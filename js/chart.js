@@ -1010,11 +1010,11 @@
       var liveP = isFinite(market.price) ? market.price : minPrice;
       var loP = Math.min(minPrice, liveP);
       var hiP = Math.max(maxPrice, liveP);
-      var midP = (loP + hiP) / 2;
-      var halfP = Math.max((hiP - loP) * 0.5, 0.18);
-      var boomPad = Math.max(halfP * 0.48, 0.28);
-      viewMin = midP - halfP - boomPad;
-      viewMax = midP + halfP + boomPad;
+      var dataSpan = Math.max(hiP - loP, 0.36);
+      var pxSafe = (dataSpan / Math.max(h, 48)) * 16;
+      var boomPad = Math.max(dataSpan * 0.26, pxSafe, 0.55);
+      viewMin = loP - boomPad;
+      viewMax = hiP + boomPad;
     }
 
     var minP = viewMin;
