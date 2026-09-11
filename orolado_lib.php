@@ -2060,3 +2060,65 @@ function orolado_purge_expired_pending(array &$db): void {
   }
 }
 
+function orolado_submit_usdt_deposit(array $req): array {
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $token = (string) ($req['token'] ?? '');
+  $me = orolado_session_user($db, $token);
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+
+  $amountUsd = orolado_money($req['amount'] ?? 0);
+  if ($amountUsd + 0.0001 < orolado_min_deposit($me)) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
+  }
+
+  $txid = preg_replace('/\s+/', '', (string) ($req['txid'] ?? $req['txId'] ?? $req['hash'] ?? ''));
+  if (strlen($txid) < 8 || strlen($txid) > 128 || !preg_match('/^[a-zA-Z0-9]+$/', $txid)) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Hash de transaction invalide'];
+  }
+
+  if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  foreach ($db['deposits'] as $d) {
+    if (strcasecmp((string) ($d['txid'] ?? ''), $txid) === 0) {
+      return ['ok' => false, 'server' => true, 'reason' => 'Cette transaction a déjà été soumise'];
+    }
+  }
+
+  $ref = 'oro_usdt_' . bin2hex(random_bytes(10));
+  $addr = 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
+  $db['deposits'][] = [
+    'id' => $ref,
+    'ref' => $ref,
+    'userId' => $me['id'],
+    'operator' => 'usdt',
+    'network' => 'TRC-20',
+    'status' => 'PENDING',
+    'amount' => $amountUsd,
+    'currency' => 'USD',
+    'txid' => $txid,
+    'address' => $addr,
+    'at' => date('c')
+  ];
+  save_db($file, $db);
+
+  $sb = [
+    'id' => $ref,
+    'user_id' => $me['id'],
+    'amount' => $amountUsd,
+    'status' => 'PENDING',
+    'reference' => $ref,
+    'operator' => 'usdt',
+  ];
+  supabase_insert_deposit($sb);
+  supabase_patch_deposit($ref, ['txid' => $txid]);
+
+  return [
+    'ok' => true,
+    'server' => true,
+    'pending' => true,
+    'ref' => $ref,
+    'amount' => $amountUsd,
+    'status' => 'pending'
+  ];
+}
+

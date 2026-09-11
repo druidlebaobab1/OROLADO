@@ -590,6 +590,7 @@ if ($action === 'admin') {
       'publicId' => (string) ($db['users'][$uid]['publicId'] ?? ''),
       'amount' => (int) ($d['amount'] ?? 0),
       'operator' => (string) ($d['operator'] ?? ''),
+      'txid' => (string) ($d['txid'] ?? ''),
       'status' => strtoupper((string) ($d['status'] ?? '')),
       'at' => (string) ($d['paidAt'] ?? $d['createdAt'] ?? $d['at'] ?? '')
     ];
@@ -1165,6 +1166,11 @@ if ($action === 'confirmDeposit') {
     'returnParams' => $req['returnParams'] ?? null,
   ]);
   echo json_encode(orolado_confirm_deposit(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'submitUsdtDeposit') {
+  echo json_encode(orolado_submit_usdt_deposit(['token' => $token] + $req));
   exit;
 }
 

@@ -30,7 +30,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=106">
+  <link rel="stylesheet" href="css/app.css?v=109">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -531,14 +531,45 @@
   <div class="modal-backdrop" id="depositModal">
     <div class="modal-box glass withdraw-box deposit-box">
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
-      <div class="modal-title" data-i18n="depositTitle">Recharger en USD</div>
+      <div class="modal-title">Deposit in USD</div>
       <div class="field">
-        <label data-i18n="depositAmtLabel">MONTANT &#192; RECHARGER ($)</label>
+        <label for="depositAmt">Amount (USD)</label>
         <input id="depositAmt" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
-        <p class="hint-min" data-i18n="depositMin">Minimum $3</p>
+        <p class="hint-min">Minimum $3</p>
         <p class="err-msg" id="err-depositAmt"></p>
       </div>
-      <button type="button" class="btn-gold" id="btnConfirmDeposit" data-i18n="depositConfirm">VALIDER LA RECHARGE</button>
+      <div class="pay-method-label">Payment method</div>
+      <div class="pay-method-grid" role="radiogroup" aria-label="Payment method">
+        <button type="button" class="pay-method-card on" id="payMethodCard" data-pay="card" role="radio" aria-checked="true">
+          <div class="pay-method-top">
+            <span class="pay-method-title">Card &amp; Instant Pay</span>
+            <span class="pay-method-rec">Recommended</span>
+          </div>
+          <span class="pay-method-desc">Visa, Mastercard, Mobile Transfer</span>
+        </button>
+        <button type="button" class="pay-method-card" id="payMethodUsdt" data-pay="usdt" role="radio" aria-checked="false">
+          <div class="pay-method-top">
+            <span class="pay-method-title">Crypto Deposit (USDT)</span>
+          </div>
+          <span class="pay-method-desc">Tron Network (TRC-20)</span>
+        </button>
+      </div>
+      <div class="usdt-inline hidden" id="usdtInline">
+        <div class="usdt-addr-box">
+          <div class="usdt-net">Network : <strong>USDT (TRC-20)</strong></div>
+          <code class="usdt-addr" id="usdtAddr">TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1</code>
+          <button type="button" class="btn-gold usdt-copy" id="btnUsdtCopy">Copy Address</button>
+        </div>
+        <div class="field">
+          <label for="usdtTxid">Transaction Hash (TxID)</label>
+          <input id="usdtTxid" type="text" autocomplete="off" maxlength="128" placeholder="Paste your Tron TxID">
+          <p class="err-msg" id="err-usdtTxid"></p>
+        </div>
+        <div class="wait-spin" id="usdtBusy" hidden></div>
+        <p class="wait-note" id="usdtPendingNote" hidden></p>
+        <button type="button" class="btn-gold" id="btnUsdtConfirm">Confirm Deposit</button>
+      </div>
+      <button type="button" class="btn-gold" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
     </div>
   </div>
 
@@ -612,9 +643,9 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=105"></script>
+  <script src="js/config.js?v=108"></script>
   <script src="js/translations.js?v=106"></script>
-  <script src="js/i18n.js?v=107"></script>
+  <script src="js/i18n.js?v=108"></script>
   <script src="js/store.js?v=105"></script>
   <script src="js/api.js?v=105"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -622,6 +653,6 @@
   <script src="js/auth.js?v=105"></script>
   <script src="js/engine.js?v=105"></script>
   <script src="js/chart.js?v=105"></script>
-  <script src="js/app.js?v=106"></script>
+  <script src="js/app.js?v=109"></script>
 </body>
 </html>

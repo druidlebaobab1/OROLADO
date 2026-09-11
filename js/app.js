@@ -1219,7 +1219,7 @@
     }
     if (adminView === 'depositsPending') {
       var deps = (adminCache.deposits || []).filter(function (d) {
-        return adminMatchQ([d.publicId, d.name, d.email, d.ref, d.operator, String(d.amount || '')].join(' '), q);
+        return adminMatchQ([d.publicId, d.name, d.email, d.ref, d.operator, d.txid, String(d.amount || '')].join(' '), q);
       });
       if (!deps.length) html = '<div class="empty-feed">' + t('noDeposit') + '</div>';
       else {
@@ -1227,7 +1227,7 @@
           var acts = '<button class="mini ok" data-dep="' + adminEsc(d.ref) + '" data-amt="' + Number(d.amount || 0) + '" data-ok="1">' + t('approve') + '</button>' +
             ' <button class="mini bad" data-dep="' + adminEsc(d.ref) + '" data-ok="0">' + t('reject') + '</button>';
           return '<tr><td>' + adminEsc(d.publicId || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
-            '</td><td>' + adminEsc(d.operator || '') + '<div class="h-time">' + adminEsc(d.ref) + '</div></td><td>' + acts + '</td></tr>';
+            '</td><td>' + adminEsc(d.operator || '') + '<div class="h-time">' + adminEsc(d.txid || d.ref) + '</div></td><td>' + acts + '</td></tr>';
         }).join('');
         html = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
       }
@@ -1640,7 +1640,8 @@
     }
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) hint.textContent = t('depositMin');
+    if (hint) hint.textContent = 'Minimum $3';
+    setDepositPayMethod('card');
     closeDrawer();
     closeModal('convertModal');
     openModal('depositModal');
@@ -1968,6 +1969,152 @@
     return url;
   }
 
+  var USDT_ADDR = (D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
+  var usdtAmt = 0;
+  var usdtSubmitting = false;
+  var depositPayMethod = 'card';
+
+  function setDepositPayMethod(method) {
+    depositPayMethod = method === 'usdt' ? 'usdt' : 'card';
+    var card = $('payMethodCard');
+    var usdt = $('payMethodUsdt');
+    if (card) {
+      card.classList.toggle('on', depositPayMethod === 'card');
+      card.setAttribute('aria-checked', depositPayMethod === 'card' ? 'true' : 'false');
+    }
+    if (usdt) {
+      usdt.classList.toggle('on', depositPayMethod === 'usdt');
+      usdt.setAttribute('aria-checked', depositPayMethod === 'usdt' ? 'true' : 'false');
+    }
+    var panel = $('usdtInline');
+    if (panel && depositPayMethod !== 'usdt') panel.classList.add('hidden');
+    var main = $('btnConfirmDeposit');
+    if (main) {
+      main.hidden = false;
+      main.textContent = depositPayMethod === 'usdt' ? 'GET DEPOSIT ADDRESS' : 'CONFIRM DEPOSIT';
+    }
+    if ($('usdtAddr')) $('usdtAddr').textContent = USDT_ADDR;
+  }
+
+  function revealUsdtAddress() {
+    var min = minDeposit();
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    if (amt < min) {
+      showFieldError('depositAmt', 'The minimum deposit is $3.');
+      toast('The minimum deposit is $3.', 'err');
+      return;
+    }
+    usdtAmt = amt;
+    if ($('usdtAddr')) $('usdtAddr').textContent = USDT_ADDR;
+    if ($('usdtTxid')) $('usdtTxid').value = '';
+    if ($('err-usdtTxid')) $('err-usdtTxid').textContent = '';
+    var note = $('usdtPendingNote');
+    if (note) {
+      note.hidden = true;
+      note.textContent = '';
+      note.className = 'wait-note';
+    }
+    if ($('usdtBusy')) $('usdtBusy').hidden = true;
+    var payBtn = $('btnUsdtConfirm');
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.hidden = false;
+      payBtn.classList.remove('busy');
+      payBtn.textContent = 'Confirm Deposit';
+    }
+    if ($('usdtInline')) $('usdtInline').classList.remove('hidden');
+    if ($('btnConfirmDeposit')) $('btnConfirmDeposit').hidden = true;
+  }
+
+  function copyUsdtAddr() {
+    var addr = USDT_ADDR;
+    function ok() {
+      toast('Address Copied!', 'ok');
+      var btn = $('btnUsdtCopy');
+      if (!btn) return;
+      var prev = btn.textContent;
+      btn.textContent = 'Address Copied!';
+      setTimeout(function () { btn.textContent = prev || 'Copy Address'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(addr).then(ok).catch(function () {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = addr;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          ok();
+        } catch (e) { toast(addr, ''); }
+      });
+      return;
+    }
+    toast(addr, '');
+  }
+
+  async function submitUsdtDeposit() {
+    if (usdtSubmitting) return;
+    var u = user();
+    if (!u) {
+      toast(t('sessionInvalid'), 'err');
+      return;
+    }
+    var txid = String(($('usdtTxid') && $('usdtTxid').value) || '').replace(/\s+/g, '');
+    if (txid.length < 8 || !/^[a-zA-Z0-9]+$/.test(txid)) {
+      if ($('err-usdtTxid')) $('err-usdtTxid').textContent = 'Enter a valid Tron TxID';
+      toast('Enter a valid Tron TxID', 'err');
+      return;
+    }
+    if ($('err-usdtTxid')) $('err-usdtTxid').textContent = '';
+    var btn = $('btnUsdtConfirm');
+    usdtSubmitting = true;
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('busy');
+      btn.textContent = 'Verifying on the Tron network...';
+    }
+    if ($('usdtBusy')) $('usdtBusy').hidden = false;
+    try {
+      var tok = await ensureApiToken();
+      var remote = await D6.Api.post('submitUsdtDeposit', {
+        token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+        amount: usdtAmt || D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0),
+        txid: txid
+      }, 15000);
+      if (!remote || remote.ok === false) {
+        toast((remote && remote.reason) || t('sessionInvalid'), 'err');
+        return;
+      }
+      var note = $('usdtPendingNote');
+      if (note) {
+        note.hidden = false;
+        note.className = 'wait-note warn';
+        note.textContent = 'Payment is being validated. Your balance will be updated shortly.';
+      }
+      if (btn) btn.hidden = true;
+      toast('Payment is being validated. Your balance will be updated shortly.', 'ok', 4200);
+    } catch (err) {
+      toast((err && err.message) || t('sessionInvalid'), 'err');
+    } finally {
+      usdtSubmitting = false;
+      if ($('usdtBusy')) $('usdtBusy').hidden = true;
+      if (btn && !btn.hidden) {
+        btn.disabled = false;
+        btn.classList.remove('busy');
+        btn.textContent = 'Confirm Deposit';
+      }
+    }
+  }
+
+  function onConfirmDepositClick() {
+    if (depositPayMethod === 'usdt') {
+      revealUsdtAddress();
+      return;
+    }
+    confirmDeposit();
+  }
+
   async function confirmDeposit() {
     if (depositing) return;
     var u = user();
@@ -2035,7 +2182,7 @@
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('busy');
-        btn.textContent = t('depositConfirm');
+        btn.textContent = 'CONFIRM DEPOSIT';
       }
     }
   }
@@ -2768,6 +2915,16 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     bindAndroidTap($('closeWithdraw'), function () { closeModal('withdrawModal'); });
     bindAndroidTap($('closeDeposit'), function () { closeModal('depositModal'); });
+    if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
+    if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
+    if ($('btnUsdtCopy')) $('btnUsdtCopy').addEventListener('click', function (e) {
+      e.preventDefault();
+      copyUsdtAddr();
+    });
+    if ($('btnUsdtConfirm')) $('btnUsdtConfirm').addEventListener('click', function (e) {
+      e.preventDefault();
+      submitUsdtDeposit();
+    });
     if ($('btnDepositCheck')) $('btnDepositCheck').addEventListener('click', function () { checkDepositNow(true); });
     if ($('btnDepositWaitClose')) {
       bindAndroidTap($('btnDepositWaitClose'), function () { closeModal('depositWaitModal'); });
@@ -2824,7 +2981,7 @@
     $('btnConfirmDeposit').addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      confirmDeposit();
+      onConfirmDepositClick();
     });
     if ($('wdMethod')) {
       $('wdMethod').addEventListener('change', function () {

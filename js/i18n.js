@@ -160,7 +160,20 @@
     demoTopup: 'Top up demo',
     profileBtn: 'Profile',
     profileMenu: 'Profile menu',
-    modeAccount: 'Account mode'
+    modeAccount: 'Account mode',
+    usdtTitle: 'USDT Deposit (TRC-20)',
+    usdtBadge: 'Instant Processing',
+    usdtCopyAddr: 'Copy address',
+    usdtCopied: 'Address copied!',
+    usdtNetwork: 'Network',
+    usdtNetworkName: 'Tron (TRC-20)',
+    usdtWarn: 'Send only USDT via the TRC-20 network to this address. Funds will be credited once confirmed on the Tron blockchain.',
+    usdtTxLabel: 'Transaction hash (TxID / Tron Hash)',
+    usdtTxPh: 'Ex: 7a8b...',
+    usdtConfirmPay: 'Confirm my payment',
+    usdtChecking: 'Verifying on the Tron network...',
+    usdtPendingMsg: 'Payment is being validated. Your balance will be updated shortly.',
+    usdtTxErr: 'Enter a valid transaction hash'
   };
 
   var FR = {
@@ -322,7 +335,20 @@
     demoTopup: 'Recharger la d\u00e9mo',
     profileBtn: 'Profil',
     profileMenu: 'Menu profil',
-    modeAccount: 'Mode de compte'
+    modeAccount: 'Mode de compte',
+    usdtTitle: 'Dépôt USDT (TRC-20)',
+    usdtBadge: 'Instant Processing',
+    usdtCopyAddr: 'Copier l\u2019adresse',
+    usdtCopied: 'Adresse copiée !',
+    usdtNetwork: 'Réseau',
+    usdtNetworkName: 'Tron (TRC-20)',
+    usdtWarn: 'Envoyez uniquement des USDT via le réseau TRC-20 à cette adresse. Les fonds seront crédités dès confirmation sur la blockchain Tron.',
+    usdtTxLabel: 'Hash de la transaction (TxID / Hash Tron)',
+    usdtTxPh: 'Ex: 7a8b...',
+    usdtConfirmPay: 'Confirmer mon paiement',
+    usdtChecking: 'Vérification sur le réseau Tron...',
+    usdtPendingMsg: 'Paiement en cours de validation. Votre solde sera mis à jour sous quelques instants.',
+    usdtTxErr: 'Saisissez un hash de transaction valide'
   };
 
   function pack(over) {
