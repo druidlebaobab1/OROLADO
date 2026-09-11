@@ -1642,6 +1642,7 @@
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum $3';
     setDepositPayMethod('card');
+    showDepositStep('select');
     closeDrawer();
     closeModal('convertModal');
     openModal('depositModal');
@@ -1974,6 +1975,17 @@
   var usdtSubmitting = false;
   var depositPayMethod = 'card';
 
+  function showDepositStep(step) {
+    var select = $('depositStepSelect');
+    var crypto = $('depositStepCrypto');
+    var ok = $('depositStepCryptoOk');
+    var box = $('depositBox');
+    if (select) select.classList.toggle('hidden', step !== 'select');
+    if (crypto) crypto.classList.toggle('hidden', step !== 'crypto');
+    if (ok) ok.classList.toggle('hidden', step !== 'ok');
+    if (box) box.classList.toggle('is-crypto', step === 'crypto' || step === 'ok');
+  }
+
   function setDepositPayMethod(method) {
     depositPayMethod = method === 'usdt' ? 'usdt' : 'card';
     var card = $('payMethodCard');
@@ -1986,17 +1998,15 @@
       usdt.classList.toggle('on', depositPayMethod === 'usdt');
       usdt.setAttribute('aria-checked', depositPayMethod === 'usdt' ? 'true' : 'false');
     }
-    var panel = $('usdtInline');
-    if (panel && depositPayMethod !== 'usdt') panel.classList.add('hidden');
     var main = $('btnConfirmDeposit');
     if (main) {
       main.hidden = false;
-      main.textContent = depositPayMethod === 'usdt' ? 'GET DEPOSIT ADDRESS' : 'CONFIRM DEPOSIT';
+      main.textContent = depositPayMethod === 'usdt' ? 'PROCEED TO PAYMENT →' : 'CONFIRM DEPOSIT';
     }
     if ($('usdtAddr')) $('usdtAddr').textContent = USDT_ADDR;
   }
 
-  function revealUsdtAddress() {
+  function showCryptoInvoice() {
     var min = minDeposit();
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
@@ -2005,14 +2015,19 @@
       return;
     }
     usdtAmt = amt;
+    if ($('usdtPayAmt')) $('usdtPayAmt').textContent = 'Pay ' + amt.toFixed(2) + ' USDT';
     if ($('usdtAddr')) $('usdtAddr').textContent = USDT_ADDR;
+    var qr = $('usdtQr');
+    if (qr) {
+      qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(USDT_ADDR);
+      qr.alt = USDT_ADDR;
+    }
     if ($('usdtTxid')) $('usdtTxid').value = '';
     if ($('err-usdtTxid')) $('err-usdtTxid').textContent = '';
     var note = $('usdtPendingNote');
     if (note) {
       note.hidden = true;
-      note.textContent = '';
-      note.className = 'wait-note';
+      note.textContent = 'Verifying block confirmation on Tron...';
     }
     if ($('usdtBusy')) $('usdtBusy').hidden = true;
     var payBtn = $('btnUsdtConfirm');
@@ -2020,21 +2035,28 @@
       payBtn.disabled = false;
       payBtn.hidden = false;
       payBtn.classList.remove('busy');
-      payBtn.textContent = 'Confirm Deposit';
+      payBtn.textContent = 'I HAVE MADE THE PAYMENT';
     }
-    if ($('usdtInline')) $('usdtInline').classList.remove('hidden');
-    if ($('btnConfirmDeposit')) $('btnConfirmDeposit').hidden = true;
+    var copyBtn = $('btnUsdtCopy');
+    if (copyBtn) {
+      copyBtn.textContent = 'Copy Address';
+      copyBtn.classList.remove('is-copied');
+    }
+    showDepositStep('crypto');
   }
 
   function copyUsdtAddr() {
     var addr = USDT_ADDR;
     function ok() {
-      toast('Address Copied!', 'ok');
+      toast('✓ Copied to clipboard!', 'ok');
       var btn = $('btnUsdtCopy');
       if (!btn) return;
-      var prev = btn.textContent;
-      btn.textContent = 'Address Copied!';
-      setTimeout(function () { btn.textContent = prev || 'Copy Address'; }, 1600);
+      btn.textContent = '✓ Copied to clipboard!';
+      btn.classList.add('is-copied');
+      setTimeout(function () {
+        btn.textContent = 'Copy Address';
+        btn.classList.remove('is-copied');
+      }, 1800);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(addr).then(ok).catch(function () {
@@ -2072,9 +2094,14 @@
     if (btn) {
       btn.disabled = true;
       btn.classList.add('busy');
-      btn.textContent = 'Verifying on the Tron network...';
+      btn.textContent = 'Verifying block confirmation on Tron...';
     }
     if ($('usdtBusy')) $('usdtBusy').hidden = false;
+    var note = $('usdtPendingNote');
+    if (note) {
+      note.hidden = false;
+      note.textContent = 'Verifying block confirmation on Tron...';
+    }
     try {
       var tok = await ensureApiToken();
       var remote = await D6.Api.post('submitUsdtDeposit', {
@@ -2086,14 +2113,8 @@
         toast((remote && remote.reason) || t('sessionInvalid'), 'err');
         return;
       }
-      var note = $('usdtPendingNote');
-      if (note) {
-        note.hidden = false;
-        note.className = 'wait-note warn';
-        note.textContent = 'Payment is being validated. Your balance will be updated shortly.';
-      }
-      if (btn) btn.hidden = true;
-      toast('Payment is being validated. Your balance will be updated shortly.', 'ok', 4200);
+      showDepositStep('ok');
+      toast('Deposit submitted. Credit in 2–5 minutes.', 'ok', 4200);
     } catch (err) {
       toast((err && err.message) || t('sessionInvalid'), 'err');
     } finally {
@@ -2102,14 +2123,14 @@
       if (btn && !btn.hidden) {
         btn.disabled = false;
         btn.classList.remove('busy');
-        btn.textContent = 'Confirm Deposit';
+        btn.textContent = 'I HAVE MADE THE PAYMENT';
       }
     }
   }
 
   function onConfirmDepositClick() {
     if (depositPayMethod === 'usdt') {
-      revealUsdtAddress();
+      showCryptoInvoice();
       return;
     }
     confirmDeposit();
@@ -2924,6 +2945,15 @@
     if ($('btnUsdtConfirm')) $('btnUsdtConfirm').addEventListener('click', function (e) {
       e.preventDefault();
       submitUsdtDeposit();
+    });
+    if ($('btnUsdtBack')) $('btnUsdtBack').addEventListener('click', function (e) {
+      e.preventDefault();
+      showDepositStep('select');
+    });
+    if ($('btnUsdtOk')) $('btnUsdtOk').addEventListener('click', function (e) {
+      e.preventDefault();
+      closeModal('depositModal');
+      showDepositStep('select');
     });
     if ($('btnDepositCheck')) $('btnDepositCheck').addEventListener('click', function () { checkDepositNow(true); });
     if ($('btnDepositWaitClose')) {
