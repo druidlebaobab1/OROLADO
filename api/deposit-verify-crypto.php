@@ -6,7 +6,7 @@ header('X-Content-Type-Options: nosniff');
 
 require_once dirname(__DIR__) . '/orolado_lib.php';
 orolado_load_env();
-@set_time_limit(20);
+@set_time_limit(35);
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
   http_response_code(204);

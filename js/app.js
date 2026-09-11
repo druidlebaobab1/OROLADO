@@ -2190,8 +2190,9 @@
       toast(t('sessionInvalid'), 'err');
       return;
     }
-    var txid = String(($('usdtTxid') && $('usdtTxid').value) || '').replace(/\s+/g, '');
-    if (txid.length < 8 || !/^[a-zA-Z0-9]+$/.test(txid)) {
+    var txid = String(($('usdtTxid') && $('usdtTxid').value) || '').trim().toLowerCase().replace(/\s+/g, '');
+    if (txid.indexOf('0x') === 0) txid = txid.slice(2);
+    if (txid.length < 8 || !/^[a-f0-9]+$/.test(txid)) {
       if ($('err-usdtTxid')) $('err-usdtTxid').textContent = t('cryptoErrTx');
       toast(t('cryptoErrTx'), 'err');
       return;
@@ -2217,6 +2218,7 @@
       var remote = await postVerifyCrypto({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
         txid: txid,
+        amount: usdtAmt,
         userId: uNow && uNow.id ? uNow.id : ''
       });
       if (!remote || remote.ok === false) {

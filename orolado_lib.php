@@ -892,12 +892,12 @@ function credit_paid_deposit(array $hit): array {
 
   $extId = (string) ($hit['extId'] ?? '');
   $refHit = (string) ($hit['ref'] ?? '');
-  if ($extId !== '' && in_array($extId, $db['processedTx'], true)) {
+  if ($extId !== '' && orolado_txid_already_used($db, $extId)) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => true, 'duplicate' => true];
   }
-  if ($refHit !== '' && in_array($refHit, $db['processedTx'], true)) {
+  if ($refHit !== '' && orolado_txid_already_used($db, $refHit)) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => true, 'duplicate' => true];
@@ -933,8 +933,10 @@ function credit_paid_deposit(array $hit): array {
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
   }
-  // Sécurité : ne jamais créditer plus que le pending déclaré.
-  if ($pendingAmt > 0) $amount = min($amount, $pendingAmt);
+  // USDT : créditer le montant réellement reçu (peut dépasser le pending, ex. 3.50 vs 3.00).
+  $creditReceived = !empty($hit['creditReceived'])
+    || strtolower((string) ($dep['operator'] ?? '')) === 'usdt';
+  if ($pendingAmt > 0 && !$creditReceived) $amount = min($amount, $pendingAmt);
   $uid = (string) ($dep['userId'] ?? '');
   if ($uid === '') {
     flock($fp, LOCK_UN);
@@ -2084,31 +2086,209 @@ function orolado_crypto_msg(string $code): string {
   return 'Paiement confirmé ! Votre solde a été crédité.';
 }
 
-function tronscan_fetch_tx(string $txid): ?array {
-  if (!function_exists('curl_init')) return null;
-  $url = 'https://apilist.tronscanapi.com/api/transaction-info?hash=' . rawurlencode($txid);
-  $ch = curl_init($url);
-  curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 8,
-    CURLOPT_CONNECTTIMEOUT => 4,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTPHEADER => [
-      'Accept: application/json',
-      'User-Agent: OROLADO-CryptoVerify/1.0',
+function orolado_http_json(string $url, ?string $post = null, int $timeout = 10): ?array {
+  $headers = [
+    'Accept: application/json',
+    'Content-Type: application/json',
+    'User-Agent: OROLADO-CryptoVerify/1.2',
+  ];
+  if (function_exists('curl_init')) {
+    $ch = curl_init($url);
+    $opts = [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT => $timeout,
+      CURLOPT_CONNECTTIMEOUT => 5,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTPHEADER => $headers,
+    ];
+    if ($post !== null) {
+      $opts[CURLOPT_POST] = true;
+      $opts[CURLOPT_POSTFIELDS] = $post;
+    }
+    curl_setopt_array($ch, $opts);
+    $raw = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if (!is_string($raw) || $raw === '' || $code < 200 || $code >= 300) return null;
+    $json = json_decode($raw, true);
+    return is_array($json) ? $json : null;
+  }
+  $ctx = stream_context_create([
+    'http' => [
+      'method' => $post !== null ? 'POST' : 'GET',
+      'header' => implode("\r\n", $headers),
+      'content' => $post ?? '',
+      'timeout' => $timeout,
+      'ignore_errors' => true,
     ],
   ]);
-  $raw = curl_exec($ch);
-  $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-  curl_close($ch);
-  if (!is_string($raw) || $raw === '' || $code < 200 || $code >= 300) return null;
+  $raw = @file_get_contents($url, false, $ctx);
+  if (!is_string($raw) || $raw === '') return null;
   $json = json_decode($raw, true);
   return is_array($json) ? $json : null;
 }
 
+function tron_info_has_transfer(array $info): bool {
+  if (!empty($info['trigger_info']['parameter']['_to'])) return true;
+  foreach (['trc20TransferInfo', 'tokenTransferInfo', 'trc20_info', 'transfersAllList'] as $key) {
+    if (!empty($info[$key])) return true;
+  }
+  return !empty($info['events']) || !empty($info['trc20']);
+}
+
+function tronscan_fetch_tx(string $txid): ?array {
+  $txid = strtolower(trim($txid));
+  $scan = null;
+  foreach ([
+    'https://apilist.tronscanapi.com/api/transaction-info?hash=' . rawurlencode($txid),
+    'https://apilist.tronscan.org/api/transaction-info?hash=' . rawurlencode($txid),
+  ] as $url) {
+    $json = orolado_http_json($url, null, 10);
+    if (!is_array($json) || $json === []) continue;
+    if (empty($json['hash'])) $json['hash'] = $txid;
+    $scan = $json;
+    $ret = strtoupper((string) ($json['contractRet'] ?? ''));
+    if (tron_info_has_transfer($json) && (!empty($json['confirmed']) || $ret === 'SUCCESS')) {
+      return $json;
+    }
+  }
+  $grid = tron_fetch_trongrid($txid);
+  if ($grid && tron_info_has_transfer($grid)) return $grid;
+  return $grid ?: $scan;
+}
+
+function tron_fetch_trongrid(string $txid): ?array {
+  $txid = strtolower(trim($txid));
+  $tx = orolado_http_json('https://api.trongrid.io/wallet/gettransactionbyid', json_encode([
+    'value' => $txid,
+    'visible' => true,
+  ]), 10);
+  $meta = orolado_http_json('https://api.trongrid.io/wallet/gettransactioninfobyid', json_encode([
+    'value' => $txid,
+  ]), 10);
+  $events = orolado_http_json('https://api.trongrid.io/v1/transactions/' . rawurlencode($txid) . '/events', null, 10);
+  $info = [
+    'hash' => $txid,
+    'txID' => is_array($tx) ? (string) ($tx['txID'] ?? $txid) : $txid,
+    'confirmed' => false,
+    'contractRet' => '',
+    'revert' => false,
+    'trc20TransferInfo' => [],
+    'trigger_info' => [],
+  ];
+  if (is_array($tx) && !empty($tx['ret'][0]['contractRet'])) {
+    $info['contractRet'] = strtoupper((string) $tx['ret'][0]['contractRet']);
+  }
+  if (is_array($meta)) {
+    $receipt = strtoupper((string) ($meta['receipt']['result'] ?? ''));
+    if ($receipt !== '') $info['contractRet'] = $receipt;
+    if (!empty($meta['blockNumber']) || !empty($meta['id'])) $info['confirmed'] = true;
+    if (!empty($meta['contract_address'])) {
+      $info['trigger_info']['contract_address'] = (string) $meta['contract_address'];
+    }
+  }
+  if ($info['contractRet'] === 'SUCCESS') $info['confirmed'] = true;
+  if (is_array($tx) && !empty($tx['raw_data']['contract'][0]['parameter']['value'])) {
+    $val = $tx['raw_data']['contract'][0]['parameter']['value'];
+    $info['trigger_info']['contract_address'] = (string) ($val['contract_address'] ?? $info['trigger_info']['contract_address'] ?? '');
+    $data = (string) ($val['data'] ?? '');
+    $decoded = tron_decode_trc20_transfer($data);
+    if ($decoded) {
+      $info['trigger_info']['parameter'] = [
+        '_to' => $decoded['to'],
+        '_value' => $decoded['value'],
+      ];
+      $info['trigger_info']['method'] = 'transfer(address _to,uint256 _value)';
+    }
+  }
+  if (is_array($events) && !empty($events['data']) && is_array($events['data'])) {
+    foreach ($events['data'] as $ev) {
+      if (!is_array($ev)) continue;
+      $res = $ev['result'] ?? [];
+      if (!is_array($res)) continue;
+      $info['trc20TransferInfo'][] = [
+        'to_address' => (string) ($res['to'] ?? $res['_to'] ?? ''),
+        'from_address' => (string) ($res['from'] ?? $res['_from'] ?? ''),
+        'contract_address' => (string) ($ev['contract_address'] ?? ''),
+        'symbol' => 'USDT',
+        'amount_str' => (string) ($res['value'] ?? $res['_value'] ?? '0'),
+      ];
+    }
+  }
+  if (empty($info['trc20TransferInfo']) && empty($info['trigger_info']['parameter']['_to'])) {
+    $hist = orolado_http_json(
+      'https://api.trongrid.io/v1/accounts/' . rawurlencode(orolado_usdt_wallet())
+      . '/transactions/trc20?limit=80&only_to=true&contract_address=' . rawurlencode(orolado_usdt_contract()),
+      null,
+      10
+    );
+    if (is_array($hist) && !empty($hist['data']) && is_array($hist['data'])) {
+      foreach ($hist['data'] as $row) {
+        if (!is_array($row)) continue;
+        if (strcasecmp((string) ($row['transaction_id'] ?? ''), $txid) !== 0) continue;
+        $info['confirmed'] = true;
+        $info['contractRet'] = 'SUCCESS';
+        $info['trc20TransferInfo'][] = [
+          'to_address' => (string) ($row['to'] ?? ''),
+          'from_address' => (string) ($row['from'] ?? ''),
+          'contract_address' => (string) ($row['token_info']['address'] ?? orolado_usdt_contract()),
+          'symbol' => (string) ($row['token_info']['symbol'] ?? 'USDT'),
+          'amount_str' => (string) ($row['value'] ?? '0'),
+        ];
+      }
+    }
+  }
+  if (!$info['confirmed'] && $info['contractRet'] !== 'SUCCESS' && empty($info['trc20TransferInfo']) && empty($info['trigger_info']['parameter']['_to'])) {
+    return null;
+  }
+  return $info;
+}
+
+function tron_decode_trc20_transfer(string $data): ?array {
+  $hex = strtolower(preg_replace('/^0x/', '', $data) ?? '');
+  if (strlen($hex) < 136 || !str_starts_with($hex, 'a9059cbb')) return null;
+  $addrHex = substr($hex, 32, 40);
+  if (strlen($addrHex) !== 40) $addrHex = substr($hex, 8 + 24, 40);
+  $amtHex = substr($hex, 72, 64);
+  if (strlen($amtHex) < 1) return null;
+  $value = 0;
+  if (function_exists('hexdec')) {
+    $value = hexdec(ltrim($amtHex, '0') !== '' ? ltrim($amtHex, '0') : '0');
+  }
+  $to = tron_hex_to_base58('41' . $addrHex);
+  if ($to === '') return null;
+  return ['to' => $to, 'value' => (string) $value];
+}
+
+function tron_hex_to_base58(string $hex): string {
+  if (!function_exists('gmp_init')) return '';
+  $hex = strtolower(preg_replace('/[^0-9a-f]/', '', $hex) ?? '');
+  if ($hex === '' || strlen($hex) % 2 !== 0) return '';
+  $bin = hex2bin($hex);
+  if ($bin === false) return '';
+  $hash0 = hash('sha256', $bin, true);
+  $hash1 = hash('sha256', $hash0, true);
+  $checksum = substr($hash1, 0, 4);
+  $full = $bin . $checksum;
+  $alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  $num = gmp_init(bin2hex($full), 16);
+  $out = '';
+  $zero = gmp_init(0);
+  $fiftyEight = gmp_init(58);
+  while (gmp_cmp($num, $zero) > 0) {
+    $mod = gmp_intval(gmp_mod($num, $fiftyEight));
+    $out = $alphabet[$mod] . $out;
+    $num = gmp_div_q($num, $fiftyEight);
+  }
+  for ($i = 0, $n = strlen($full); $i < $n && $full[$i] === "\x00"; $i++) {
+    $out = '1' . $out;
+  }
+  return $out;
+}
+
 function tronscan_usdt_amount(array $row): float {
-  $raw = $row['amount_str'] ?? $row['quant'] ?? $row['amount'] ?? '0';
-  if (is_array($raw)) $raw = $raw['amount_str'] ?? $raw['amount'] ?? '0';
+  $raw = $row['amount_str'] ?? $row['quant'] ?? $row['amount'] ?? $row['value'] ?? $row['_value'] ?? '0';
+  if (is_array($raw)) $raw = $raw['amount_str'] ?? $raw['amount'] ?? $raw['value'] ?? '0';
   $s = trim((string) $raw);
   if ($s === '' || !is_numeric($s)) return 0.0;
   if (strpos($s, '.') !== false) return (float) $s;
@@ -2117,27 +2297,57 @@ function tronscan_usdt_amount(array $row): float {
 
 function tronscan_trc20_transfers(array $info): array {
   $out = [];
+  $seen = [];
   foreach (['trc20TransferInfo', 'tokenTransferInfo', 'trc20_info', 'transfersAllList'] as $key) {
     $list = $info[$key] ?? null;
-    if (is_array($list) && (isset($list['to_address']) || isset($list['toAddress']) || isset($list['amount_str']))) {
+    if (is_array($list) && (isset($list['to_address']) || isset($list['toAddress']) || isset($list['amount_str']) || isset($list['to']))) {
       $list = [$list];
     }
     if (!is_array($list)) continue;
     foreach ($list as $row) {
-      if (is_array($row)) $out[] = $row;
+      if (!is_array($row)) continue;
+      $sig = strtolower(
+        (string) ($row['to_address'] ?? $row['toAddress'] ?? $row['to'] ?? '')
+        . '|' . (string) ($row['amount_str'] ?? $row['amount'] ?? $row['value'] ?? '')
+        . '|' . (string) ($row['contract_address'] ?? $row['contractAddress'] ?? '')
+      );
+      if (isset($seen[$sig])) continue;
+      $seen[$sig] = true;
+      $out[] = $row;
     }
+  }
+  $ti = $info['trigger_info'] ?? null;
+  if (is_array($ti) && !empty($ti['parameter']['_to'])) {
+    $row = [
+      'to_address' => (string) $ti['parameter']['_to'],
+      'contract_address' => (string) ($ti['contract_address'] ?? orolado_usdt_contract()),
+      'symbol' => 'USDT',
+      'amount_str' => (string) ($ti['parameter']['_value'] ?? '0'),
+    ];
+    $sig = strtolower($row['to_address'] . '|' . $row['amount_str'] . '|' . $row['contract_address']);
+    if (!isset($seen[$sig])) $out[] = $row;
   }
   return $out;
 }
 
+function tron_transfer_is_usdt(array $row): bool {
+  $c = strtolower((string) ($row['contract_address'] ?? $row['contractAddress'] ?? $row['tokenName'] ?? ''));
+  $sym = strtoupper((string) ($row['symbol'] ?? $row['tokenAbbr'] ?? ''));
+  return $c === strtolower(orolado_usdt_contract())
+    || $sym === 'USDT'
+    || strpos($c, 'tr7nhqjekqxgtci8q8zy4pl8otszgjlj6t') !== false;
+}
+
 function tronscan_match_usdt(array $info): array {
   $wallet = orolado_usdt_wallet();
-  $contract = strtolower(orolado_usdt_contract());
   $ret = strtoupper((string) ($info['contractRet'] ?? $info['contract_ret'] ?? ''));
-  if (!empty($info['revert'])) {
+  if (!empty($info['revert']) || $ret === 'REVERT') {
     return ['ok' => false, 'code' => 'invalid'];
   }
-  $confirmed = !empty($info['confirmed']) || $ret === 'SUCCESS';
+  $confirmed = !empty($info['confirmed'])
+    || $ret === 'SUCCESS'
+    || (int) ($info['confirmations'] ?? 0) > 0
+    || (int) ($info['block'] ?? 0) > 0;
   if (!$confirmed) return ['ok' => false, 'code' => 'propagating'];
 
   $hash = (string) ($info['hash'] ?? $info['txID'] ?? $info['txid'] ?? '');
@@ -2147,12 +2357,9 @@ function tronscan_match_usdt(array $info): array {
   $foundWrong = false;
   $foundUsdt = false;
   foreach (tronscan_trc20_transfers($info) as $row) {
-    $to = (string) ($row['to_address'] ?? $row['toAddress'] ?? $row['to'] ?? '');
-    $c = strtolower((string) ($row['contract_address'] ?? $row['contractAddress'] ?? $row['tokenName'] ?? ''));
-    $sym = strtoupper((string) ($row['symbol'] ?? $row['tokenAbbr'] ?? ''));
-    $isUsdt = ($c === $contract) || $sym === 'USDT' || strpos($c, 'tr7nhqjekqxgtci8q8zy4pl8otszgjlj6t') !== false;
-    if (!$isUsdt) continue;
+    if (!tron_transfer_is_usdt($row)) continue;
     $foundUsdt = true;
+    $to = (string) ($row['to_address'] ?? $row['toAddress'] ?? $row['to'] ?? '');
     $amt = tronscan_usdt_amount($row);
     if (strcasecmp($to, $wallet) !== 0) {
       $foundWrong = true;
@@ -2195,8 +2402,9 @@ function orolado_verify_crypto_deposit(array $req): array {
     return ['ok' => false, 'server' => true, 'code' => 'session', 'reason' => 'Session invalide'];
   }
 
-  $txid = preg_replace('/\s+/', '', (string) ($req['txid'] ?? $req['txId'] ?? $req['hash'] ?? ''));
-  if (strlen($txid) < 8 || strlen($txid) > 128 || !preg_match('/^[a-fA-F0-9]+$/', $txid)) {
+  $txid = strtolower(preg_replace('/\s+/', '', (string) ($req['txid'] ?? $req['txId'] ?? $req['hash'] ?? '')) ?? '');
+  if (str_starts_with($txid, '0x')) $txid = substr($txid, 2);
+  if (strlen($txid) < 8 || strlen($txid) > 128 || !preg_match('/^[a-f0-9]+$/', $txid)) {
     return ['ok' => false, 'server' => true, 'code' => 'txid', 'reason' => 'Saisissez un TxID Tron valide'];
   }
 
@@ -2230,13 +2438,19 @@ function orolado_verify_crypto_deposit(array $req): array {
     return ['ok' => false, 'server' => true, 'code' => $code, 'reason' => orolado_crypto_msg($code)];
   }
 
-  $realAmt = orolado_money($match['amount'] ?? 0);
-  if ($realAmt + 0.0001 < orolado_min_deposit($me)) {
+  $receivedAmount = orolado_money($match['amount'] ?? 0);
+  $expectedAmount = orolado_money($req['amount'] ?? $req['expectedAmount'] ?? 0);
+  // Jamais received === expected : 3.50 USDT pour une facture 3.00 doit passer.
+  if ($expectedAmount > 0 && !($receivedAmount + 0.0001 >= $expectedAmount) && $receivedAmount + 0.0001 < orolado_min_deposit($me)) {
     return ['ok' => false, 'server' => true, 'code' => 'min', 'reason' => orolado_crypto_msg('min')];
   }
-  if ($realAmt > orolado_max_deposit_usd()) {
+  if ($receivedAmount + 0.0001 < orolado_min_deposit($me)) {
+    return ['ok' => false, 'server' => true, 'code' => 'min', 'reason' => orolado_crypto_msg('min')];
+  }
+  if ($receivedAmount > orolado_max_deposit_usd()) {
     return ['ok' => false, 'server' => true, 'code' => 'invalid', 'reason' => orolado_crypto_msg('invalid')];
   }
+  $realAmt = $receivedAmount;
 
   $ref = '';
   foreach ($db['deposits'] as $i => $d) {
@@ -2280,12 +2494,13 @@ function orolado_verify_crypto_deposit(array $req): array {
     'amount' => $realAmt,
     'extId' => $txid,
     'paid' => true,
+    'creditReceived' => true,
   ]);
   if (!empty($paid['duplicate'])) {
     return ['ok' => false, 'server' => true, 'code' => 'reused', 'reason' => orolado_crypto_msg('reused')];
   }
   if (empty($paid['ok']) || (!empty($paid['reason']) && empty($paid['amount']))) {
-    return ['ok' => false, 'server' => true, 'code' => 'propagating', 'reason' => orolado_crypto_msg('propagating')];
+    return ['ok' => false, 'server' => true, 'code' => 'invalid', 'reason' => orolado_crypto_msg('invalid')];
   }
 
   $credited = orolado_money($paid['amount'] ?? $realAmt);
