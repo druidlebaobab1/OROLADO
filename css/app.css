@@ -540,7 +540,8 @@ html.is-android #chartOverlay{
   box-shadow:0 0 0 1px rgba(245,158,11,.45),0 8px 20px rgba(245,158,11,.08)}
 .pay-method-card.on .pay-method-title{color:var(--gold)}
 .deposit-box{width:min(400px,92vw);max-width:400px;max-height:90dvh;padding:16px 14px 18px;overflow-y:auto}
-.deposit-box.is-crypto{width:min(430px,94vw);max-width:430px;max-height:96dvh;padding:14px 12px 12px;overflow-y:hidden}
+.deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow:hidden;
+  background:linear-gradient(180deg,#161C28 0%,#121824 100%);border:1px solid rgba(255,255,255,.1)}
 .deposit-box.is-crypto #closeDeposit{display:none!important}
 .crypto-invoice,.crypto-ok{padding-top:2px}
 .crypto-back{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--muted);
@@ -554,8 +555,8 @@ html.is-android #chartOverlay{
 .crypto-dot{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 10px #22C55E;animation:cryptoPulse 1.2s ease-in-out infinite}
 @keyframes cryptoPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
 .crypto-qr-wrap{display:flex;justify-content:center;margin:0 0 16px}
-.crypto-qr{width:180px;height:180px;border-radius:16px;padding:12px;background:#fff;
-  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 16px 36px rgba(0,0,0,.4)}
+.crypto-qr{width:150px;height:150px;border-radius:14px;padding:8px;background:#fff;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 28px rgba(0,0,0,.28)}
 .crypto-addr-box{background:rgba(10,15,29,.92);border:1px solid rgba(245,158,11,.28);border-radius:16px;padding:14px 12px 12px;margin-bottom:16px}
 .crypto-addr-label{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   text-align:center;margin-bottom:8px}
@@ -605,7 +606,7 @@ html.is-android #chartOverlay{
 .oxa-net{min-height:42px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:#121824;color:#E8EEF9;
   font:inherit;font-size:.74rem;font-weight:800;cursor:pointer;touch-action:manipulation}
 .oxa-net.on{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.1)}
-.oxa-wallet{background:#121824;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 12px 12px}
+.oxa-wallet{background:#1C2433;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 12px 10px}
 .oxa-wallet-title{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   text-align:center;margin-bottom:10px}
 .oxa-wallet-addr{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;font-weight:700;
@@ -616,30 +617,26 @@ html.is-android #chartOverlay{
 .oxa-usd-line strong{color:var(--gold)}
 .oxa-wallet .crypto-qr-wrap{display:flex;justify-content:center;margin:0 0 10px}
 .oxa-wallet-actions{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.oxa-act{display:block;width:100%;flex:none;min-height:44px;margin:0 auto 10px;border:1px solid rgba(245,158,11,.35);border-radius:12px;background:rgba(245,158,11,.08);
+.oxa-act{display:block;width:100%;flex:none;min-height:42px;margin:0 auto 8px;border:1px solid rgba(245,158,11,.4);border-radius:12px;background:rgba(245,158,11,.12);
   color:var(--gold);font:inherit;font-weight:800;font-size:.8rem;cursor:pointer;touch-action:manipulation;text-align:center}
 .oxa-act-ico{flex:0 0 48px;display:grid;place-items:center;padding:0}
 .oxa-act-ico svg{width:18px;height:18px}
-.oxa-act.is-copied{border-color:rgba(34,197,94,.45);color:#86EFAC;background:rgba(34,197,94,.12)}
-.oxa-min{margin:0 0 10px;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted)}
-.oxa-warn{margin:0;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;
-  border:1px solid rgba(245,158,11,.28);background:rgba(245,158,11,.06);color:#FDE68A;font-size:.74rem;font-weight:600;line-height:1.4}
+.oxa-act.is-copied{border-color:rgba(34,197,94,.55);color:#ECFDF5;background:rgba(34,197,94,.22)}
+.oxa-min{margin:0 0 8px;text-align:center;font-size:.68rem;font-weight:700;color:#CBD5E1}
+.oxa-warn{margin:0;display:none}
 .oxa-warn-ico{flex-shrink:0;opacity:.85}
 .oxa-live{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px auto 0;padding:6px 10px;
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
 @media (max-width:480px){
-  .deposit-box.is-crypto{padding:12px 11px 10px;max-height:96dvh}
-  .deposit-box.is-crypto .modal-title{margin-bottom:6px;font-size:.92rem}
-  .deposit-box.is-crypto .crypto-qr{width:148px;height:148px;padding:8px;border-radius:12px}
-  .deposit-box.is-crypto .oxa-wallet{padding:12px 10px 10px}
-  .deposit-box.is-crypto .oxa-dd-btn{min-height:44px}
-  .deposit-box.is-crypto .oxa-net{min-height:38px}
+  .deposit-box.is-crypto{padding:10px 12px 12px;max-height:100dvh;overflow:hidden}
+  .deposit-box.is-crypto .modal-title{margin-bottom:4px;font-size:.88rem}
+  .deposit-box.is-crypto .crypto-qr{width:150px;height:150px;padding:8px;border-radius:14px}
+  .deposit-box.is-crypto .oxa-wallet{padding:10px}
+  .deposit-box.is-crypto .oxa-dd-btn{min-height:40px}
+  .deposit-box.is-crypto .oxa-net{min-height:36px}
 }
-@media (max-height:620px){
-  .deposit-box.is-crypto{overflow-y:auto}
-}
-.drawer-item.drawer-logout{width:100%;min-height:48px;margin:4px 0 0;color:#F87171;justify-content:flex-start;
+.drawer-item.drawer-logout{width:100%;min-height:32px;margin:2px 0 0;color:#F87171;justify-content:flex-start;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .drawer-item.drawer-logout .di-label{color:#F87171}
 .drawer-item.drawer-logout .di-ico{opacity:.95;color:#F87171}
@@ -718,66 +715,67 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
   transition:opacity .22s ease;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .drawer-backdrop.on{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;width:min(400px,100vw);height:100dvh;max-height:100svh;background:#0B0E14;
-  border-left:1px solid rgba(245,158,11,.18);z-index:201;padding:0 0 calc(10px + env(safe-area-inset-bottom,0px));
-  transform:translate3d(100%,0,0);transition:transform .28s cubic-bezier(.22,.8,.24,1);overflow-y:auto;overflow-x:hidden;
+  border-left:1px solid rgba(245,158,11,.18);z-index:201;padding:0 0 env(safe-area-inset-bottom,0px);
+  transform:translate3d(100%,0,0);transition:transform .28s cubic-bezier(.22,.8,.24,1);overflow:hidden;
   display:flex;flex-direction:column;gap:0;box-shadow:-24px 0 60px rgba(0,0,0,.55);will-change:transform;
   isolation:isolate;box-sizing:border-box}
 .drawer.on{transform:translate3d(0,0,0)}
 @media (max-width:640px){
-  .drawer{width:100vw;max-width:100vw;left:0;right:0;top:0;height:100dvh;max-height:100svh;border-left:0}
+  .drawer{width:100vw;max-width:100vw;left:0;right:0;top:0;height:100dvh;max-height:100svh;border-left:0;overflow:hidden}
 }
-.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 10px;
-  position:sticky;top:0;z-index:4;background:linear-gradient(180deg,#0C111A 70%,rgba(12,17,26,0));padding-top:calc(14px + env(safe-area-inset-top,0px))}
-.drawer-head h2{margin:0;font-size:.92rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--gold)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px 4px;
+  position:relative;z-index:4;background:#0B0E14;padding-top:calc(8px + env(safe-area-inset-top,0px));flex-shrink:0}
+.drawer-head h2{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--gold)}
 .drawer-head .btn-close{position:static;margin:0;flex-shrink:0}
-.drawer .prof-head{padding:4px 16px 12px;margin:0}
-.drawer .card{margin:0 16px 12px}
-.wallet-card{margin:0 16px 14px;padding:16px 14px 14px;border-radius:16px;
-  background:linear-gradient(165deg,#10151F 0%,#0C111A 55%,#141018 100%);
-  border:1px solid rgba(245,158,11,.22);box-shadow:0 12px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
-.wallet-card-k{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#94A3B8}
-.wallet-card-v{font-size:1.55rem;font-weight:900;color:#F8E7B8;margin:4px 0 14px;letter-spacing:.01em;
+.drawer .prof-head{padding:2px 12px 6px;margin:0;gap:8px;flex-shrink:0}
+.drawer .avatar{width:34px;height:34px;font-size:.72rem;border-radius:8px}
+.drawer .prof-name{font-size:.86rem}
+.drawer .badge-ok{margin-top:2px;font-size:.5rem;padding:1px 6px}
+.drawer .card{margin:0 12px 6px;padding:6px 10px;flex-shrink:0}
+.drawer .list-row{padding:4px 0;font-size:.7rem}
+.wallet-card{margin:0 12px 6px;padding:10px 10px 8px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(165deg,#141A26 0%,#10151F 100%);
+  border:1px solid rgba(245,158,11,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.wallet-card-k{font-size:.55rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#94A3B8}
+.wallet-card-v{font-size:1.35rem;font-weight:900;color:#F8E7B8;margin:2px 0 8px;letter-spacing:.01em;
   text-shadow:0 0 18px rgba(245,158,11,.25);font-variant-numeric:tabular-nums}
-.wallet-xpress{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;
-  border-radius:12px;cursor:pointer;background:linear-gradient(90deg,#F59E0B,#FBBF24);color:#0B0E14;
-  font:inherit;font-weight:800;font-size:.78rem;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.wx-coins{display:flex;align-items:center;gap:3px}
-.wx-coin{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:.48rem;font-weight:900;color:#fff;line-height:1}
-.wx-usdt{background:#26A17B}
-.wx-btc{background:#F7931A}
-.wx-eth{background:#627EEA}
-.wx-trx{background:#EC0928}
-.wallet-addr-row{display:flex;align-items:center;gap:8px;margin:12px 0 8px;padding:8px 10px;border-radius:10px;
-  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
-.wallet-addr-row code{flex:1;min-width:0;font-size:.72rem;font-weight:700;color:#CBD5E1;
+.wallet-tabs{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:4px;margin:0 0 8px}
+.wallet-tab{min-height:28px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:#0E1420;color:#94A3B8;
+  font:inherit;font-size:.55rem;font-weight:800;padding:4px 2px;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;white-space:nowrap}
+.wallet-tab.on{border-color:rgba(245,158,11,.55);color:#F8E7B8;background:rgba(245,158,11,.12)}
+.wallet-addr-row{display:flex;align-items:center;gap:6px;margin:0;padding:6px 8px;border-radius:8px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.wallet-addr-row code{flex:1;min-width:0;font-size:.68rem;font-weight:700;color:#E2E8F0;
   font-family:ui-monospace,Menlo,Consolas,monospace}
-.wallet-copy{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.08);color:var(--gold);
-  border-radius:8px;padding:5px 8px;font:inherit;font-size:.62rem;font-weight:800;cursor:pointer;
+.wallet-copy{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.1);color:var(--gold);
+  border-radius:7px;padding:4px 8px;font:inherit;font-size:.58rem;font-weight:800;cursor:pointer;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.wallet-hint{margin:0;font-size:.58rem;font-weight:600;color:#64748B;line-height:1.4}
-.drawer-admin{margin:0 16px 8px;padding:10px;border:1px solid rgba(245,158,11,.28);border-radius:var(--radius);background:rgba(245,158,11,.06)}
-.drawer-nav{padding:0 8px;display:flex;flex-direction:column;gap:14px;margin-top:8px}
-.drawer-legal{margin:6px 16px 4px}
+.wallet-copy.is-copied{border-color:rgba(34,197,94,.5);color:#86EFAC;background:rgba(34,197,94,.14)}
+.drawer-admin{margin:0 12px 4px;padding:6px;border:1px solid rgba(245,158,11,.28);border-radius:var(--radius);background:rgba(245,158,11,.06);flex-shrink:0}
+.drawer-admin .btn-admin{padding:6px 8px;font-size:.58rem}
+.drawer-nav{padding:0 6px;display:flex;flex-direction:column;gap:4px;margin-top:2px;flex:1 1 auto;min-height:0;overflow:hidden}
+.drawer-legal{margin:2px 12px 4px;font-size:.52rem;flex-shrink:0}
 html.oro-profile-open{overflow:hidden}
 html.oro-profile-open #screenTrade{pointer-events:none}
 html.oro-profile-open .drawer,html.oro-profile-open .drawer-backdrop,html.oro-profile-open .modal-backdrop{pointer-events:auto}
 [dir=rtl] .drawer{right:auto;left:0;border-left:0;border-right:1px solid rgba(245,158,11,.18);transform:translate3d(-100%,0,0)}
 [dir=rtl] .drawer.on{transform:translate3d(0,0,0)}
 .prof-name{font-weight:800;font-size:1.02rem}
-.drawer-section{display:flex;flex-direction:column;gap:2px}
-.drawer-section-title{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 4px 8px}
-.drawer-item{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--text);
-  border-radius:var(--radius);padding:12px 10px;min-height:44px;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer;text-align:left}
+.drawer-section{display:flex;flex-direction:column;gap:0}
+.drawer-section-title{font-size:.52rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 8px 2px}
+.drawer-item{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;color:var(--text);
+  border-radius:8px;padding:6px 8px;min-height:32px;font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;text-align:left}
 .drawer-item:hover,.drawer-item:focus-visible{background:rgba(255,255,255,.04)}
 .drawer-item:active{transform:none;background:rgba(255,255,255,.06)}
-.drawer-item .di-ico{width:18px;height:18px;flex-shrink:0;opacity:.75}
+.drawer-item .di-ico{width:15px;height:15px;flex-shrink:0;opacity:.75}
 .drawer-item .di-label{flex:1 1 auto;min-width:0}
 .drawer-item .di-chev{color:var(--muted);font-size:.85rem;opacity:.7}
 .drawer-admin .btn-admin{width:100%;margin:0;justify-content:center}
 .prof-id-row{display:flex;align-items:center;gap:8px}
 .prof-id-row strong{font-family:var(--font-mono);font-size:.78rem;font-variant-numeric:tabular-nums}
 .btn-copy-id{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:var(--radius-sm);
-  padding:4px 8px;font:inherit;font-size:.62rem;font-weight:700;cursor:pointer;min-height:28px}
+  padding:2px 6px;font:inherit;font-size:.55rem;font-weight:700;cursor:pointer;min-height:22px}
 .btn-copy-id:hover{color:var(--text);border-color:rgba(245,158,11,.4)}
 .skel{background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.09),rgba(255,255,255,.04));
   background-size:200% 100%;animation:skelShine 1.2s ease-in-out infinite;border-radius:6px;min-height:14px}

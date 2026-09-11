@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=119">
+  <link rel="stylesheet" href="css/app.css?v=120">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -340,20 +340,16 @@
     <div class="wallet-card" id="profWalletCard">
       <div class="wallet-card-k">Solde Disponible</div>
       <div class="wallet-card-v" id="profWalletBal">$0.00</div>
-      <button type="button" class="wallet-xpress" id="btnExpressCrypto">
-        <span class="wx-coins" aria-hidden="true">
-          <span class="wx-coin wx-usdt">₮</span>
-          <span class="wx-coin wx-btc">₿</span>
-          <span class="wx-coin wx-eth">Ξ</span>
-          <span class="wx-coin wx-trx">T</span>
-        </span>
-        <span>Dépôt Express Crypto</span>
-      </button>
+      <div class="wallet-tabs" role="tablist" aria-label="Réseau de dépôt">
+        <button type="button" class="wallet-tab on" data-recv="usdt" role="tab" aria-selected="true">USDT (TRC20)</button>
+        <button type="button" class="wallet-tab" data-recv="btc" role="tab" aria-selected="false">BTC</button>
+        <button type="button" class="wallet-tab" data-recv="eth" role="tab" aria-selected="false">ETH</button>
+        <button type="button" class="wallet-tab" data-recv="trx" role="tab" aria-selected="false">TRX</button>
+      </div>
       <div class="wallet-addr-row">
         <code id="profWalletAddr">TD32ZDYD…JquP1</code>
         <button type="button" class="wallet-copy" id="btnCopyWallet">Copier</button>
       </div>
-      <p class="wallet-hint">Crédit automatique dès détection blockchain • Min. 3$ (USDT) / 15$ (BTC/ETH)</p>
     </div>
     <div class="drawer-admin hidden" id="drawerAdminBlock">
       <button type="button" class="btn-admin" id="btnAdmin2" data-i18n="adminBtn">Dashboard Admin</button>
@@ -624,14 +620,14 @@
           </div>
           <div id="oxaWalletBox" class="oxa-wallet hidden">
             <div class="crypto-qr-wrap" id="oxaQrWrap">
-              <img id="usdtQr" class="crypto-qr" alt="Deposit QR" width="180" height="180">
+              <img id="usdtQr" class="crypto-qr" alt="Deposit QR" width="150" height="150">
             </div>
             <div class="oxa-wallet-title" id="oxaAddrLabel" data-i18n="oxaWalletTitle">Wallet address</div>
-            <code class="oxa-wallet-addr" id="usdtAddr">—</code>
-            <button type="button" class="oxa-act" id="btnUsdtCopy" data-i18n="cryptoCopy">Copy address</button>
-            <p class="oxa-min" id="oxaMinHint">Minimum: $3 · Tron (TRC20)</p>
-            <p class="oxa-warn" id="oxaWarn"><span class="oxa-warn-ico" aria-hidden="true">ℹ</span><span id="oxaWarnTxt">Do not deposit any currency other than USDT to this address.</span></p>
-            <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel" data-i18n="cryptoWait">Waiting for confirmation…</span></div>
+            <code class="oxa-wallet-addr" id="usdtAddr"></code>
+            <button type="button" class="oxa-act" id="btnUsdtCopy">Copier l'adresse</button>
+            <p class="oxa-min" id="oxaMinHint">Minimum : 3$ (USDT/TRX) | 15$ (BTC/ETH)</p>
+            <p class="oxa-warn hidden" id="oxaWarn"><span class="oxa-warn-ico" aria-hidden="true">ℹ</span><span id="oxaWarnTxt"></span></p>
+            <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente du paiement blockchain… Détection automatique</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
             <p class="crypto-verify" id="usdtPendingNote" hidden></p>
             <span id="usdtPayAmt" hidden></span>
@@ -728,6 +724,6 @@
   <script src="js/auth.js?v=108"></script>
   <script src="js/engine.js?v=106"></script>
   <script src="js/chart.js?v=107"></script>
-  <script src="js/app.js?v=121"></script>
+  <script src="js/app.js?v=122"></script>
 </body>
 </html>
