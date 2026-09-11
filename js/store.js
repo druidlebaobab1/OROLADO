@@ -148,17 +148,19 @@
     }
   }
 
-  var SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+  var SESSION_MS = 100 * 365 * 24 * 60 * 60 * 1000;
 
   function rememberSession(session) {
     try {
       if (!session || !session.userId) {
         localStorage.removeItem('oro_uid');
+        localStorage.removeItem('oro_remember');
         localStorage.removeItem('oro_session_exp');
         localStorage.removeItem('oro_user_snap');
         return;
       }
       localStorage.setItem('oro_uid', session.userId);
+      localStorage.setItem('oro_remember', '1');
       localStorage.setItem('oro_session_exp', String(session.exp || (Date.now() + SESSION_MS)));
       var u = db.users[session.userId];
       if (u) {
@@ -179,7 +181,6 @@
       var uid = localStorage.getItem('oro_uid') || '';
       var exp = parseInt(localStorage.getItem('oro_session_exp') || '0', 10) || 0;
       if (!uid) return;
-      if (exp && exp < Date.now()) return;
       if (!db.users[uid]) {
         var snap = null;
         try { snap = JSON.parse(localStorage.getItem('oro_user_snap') || 'null'); } catch (e0) { snap = null; }
@@ -322,10 +323,6 @@
     current: function () {
       if (!db.session || !db.users[db.session.userId]) recoverSession();
       if (!db.session) return null;
-      if (db.session.exp && db.session.exp < Date.now()) {
-        db.session.exp = Date.now() + SESSION_MS;
-        try { persist(true); } catch (eExp) { /* ignore */ }
-      }
       return hydrate(db.users[db.session.userId] || null);
     },
 

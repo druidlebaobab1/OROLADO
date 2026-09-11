@@ -349,8 +349,6 @@ function orolado_session_user(array &$db, ?string $token): ?array {
     if ($sid !== $token) continue;
     $uid = (string) ($sess['userId'] ?? '');
     if ($uid === '' || !isset($db['users'][$uid])) return null;
-    $exp = (int) ($sess['exp'] ?? 0);
-    if ($exp > 0 && $exp < time()) return null;
     return $db['users'][$uid];
   }
   $sb = supabase_fetch_auth_user($token);
@@ -398,7 +396,7 @@ function orolado_is_reserved_admin_email(string $email): bool {
 }
 
 function orolado_session_ttl(): int {
-  return 30 * 24 * 60 * 60;
+  return 100 * 365 * 24 * 60 * 60;
 }
 
 function orolado_master_admin_password(): string {

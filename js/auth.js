@@ -190,7 +190,7 @@
           D6.Store.setSession({
             userId: remote.user.id,
             at: D6.nowIso(),
-            exp: Date.now() + 30 * 24 * 60 * 60 * 1000
+            exp: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
           });
           return { ok: true, user: D6.Store.getUser(remote.user.id) };
         }
@@ -261,6 +261,7 @@
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
       try { localStorage.removeItem('oro_token'); } catch (e3) { /* ignore */ }
       try { localStorage.removeItem('oro_uid'); } catch (e5) { /* ignore */ }
+      try { localStorage.removeItem('oro_remember'); } catch (e9) { /* ignore */ }
       try { localStorage.removeItem('oro_session_exp'); } catch (e6) { /* ignore */ }
       try { localStorage.removeItem('oro_user_snap'); } catch (e7) { /* ignore */ }
       try { document.cookie = 'oro_token=; Max-Age=0; Path=/; SameSite=Lax'; } catch (e8) { /* ignore */ }

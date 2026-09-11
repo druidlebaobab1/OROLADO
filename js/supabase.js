@@ -70,45 +70,20 @@
     client = window.supabase.createClient(projectUrl(), anonKey(), {
       auth: {
         persistSession: true,
-        autoRefreshToken: true,
+        autoRefreshToken: false,
         detectSessionInUrl: true,
         storage: makeAuthStorage(),
         flowType: 'pkce'
       }
     });
-    try { client.auth.startAutoRefresh(); } catch (e) { /* ignore */ }
+    try { if (client.auth.stopAutoRefresh) client.auth.stopAutoRefresh(); } catch (e) { /* ignore */ }
     client.auth.onAuthStateChange(function (event, session) {
+      if (event === 'SIGNED_OUT') return;
       if (session && session.access_token && D6.Api && D6.Api.setToken) {
         var cur = D6.Api.token ? D6.Api.token() : '';
         if (!cur || cur.indexOf('eyJ') === 0) D6.Api.setToken(session.access_token);
       }
-      if (event === 'TOKEN_REFRESHED' && session && session.access_token && D6.Api && D6.Api.setToken) {
-        var cur2 = D6.Api.token ? D6.Api.token() : '';
-        if (!cur2 || cur2.indexOf('eyJ') === 0) D6.Api.setToken(session.access_token);
-      }
     });
-    if (!client._oroKeepAlive) {
-      function keepJwt() {
-        client.auth.getSession().then(function (res) {
-          var session = res && res.data && res.data.session;
-          if (!session) return;
-          var tok = session.access_token;
-          if (tok && D6.Api && D6.Api.setToken) D6.Api.setToken(tok);
-          var exp = session.expires_at ? (session.expires_at * 1000) : 0;
-          if (exp && exp - Date.now() < 10 * 60 * 1000 && client.auth.refreshSession) {
-            client.auth.refreshSession().then(function (r2) {
-              var t2 = r2 && r2.data && r2.data.session && r2.data.session.access_token;
-              if (t2 && D6.Api && D6.Api.setToken) D6.Api.setToken(t2);
-            }).catch(function () { /* ignore */ });
-          }
-        }).catch(function () { /* ignore */ });
-      }
-      client._oroKeepAlive = setInterval(keepJwt, 120000);
-      window.addEventListener('online', keepJwt);
-      document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) keepJwt();
-      });
-    }
     return client;
   }
 
@@ -505,20 +480,7 @@
           }
           keys.forEach(function (k) { localStorage.removeItem(k); });
         } catch (e1) { /* ignore */ }
-        try {
-          sessionStorage.removeItem('oro_token');
-        } catch (e2) { /* ignore */ }
-        if (D6.Api && D6.Api.setToken) D6.Api.setToken('');
       }
-      // Session expirée : purge avant tentative.
-      try {
-        var cur = await sb.auth.getSession();
-        var sess = cur && cur.data && cur.data.session;
-        if (sess && sess.expires_at && (sess.expires_at * 1000) < Date.now()) {
-          await clearStaleLocalSession();
-          scrubAuthStorage();
-        }
-      } catch (e3) { /* ignore */ }
       var res = await sb.auth.signInWithPassword({ email: email, password: password });
       if (res.error) {
         // Échec (souvent Chrome normal + vieux token) : clear puis 1 retry.

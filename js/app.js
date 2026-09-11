@@ -3921,14 +3921,6 @@
           if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
           refreshRemoteVault();
           checkDepositReturn();
-          try {
-            var tok = D6.Api && D6.Api.token ? D6.Api.token() : '';
-            if (tok && D6.Api.post) D6.Api.post('me', {});
-            var sb = D6.Supabase && D6.Supabase.client && D6.Supabase.client();
-            if (sb && sb.auth && sb.auth.refreshSession && (!tok || tok.indexOf('eyJ') === 0)) {
-              sb.auth.refreshSession().catch(function () { /* keep local session */ });
-            }
-          } catch (e) { /* ignore */ }
         }
       });
       window.addEventListener('pageshow', function () {
@@ -3936,13 +3928,6 @@
         checkDepositReturn();
       });
       setInterval(updatePayoutUi, 2500);
-      setInterval(function () {
-        try {
-          var u = user();
-          if (!u || isGuest(u)) return;
-          if (D6.Api && D6.Api.token && D6.Api.token()) D6.Api.post('me', {});
-        } catch (eKeep) { /* ignore */ }
-      }, 10 * 60 * 1000);
       if (location.hash.indexOf('#preview') === 0) {
         (async function () {
           var existing = D6.Store.findByEmail('preview@orolado.local');
@@ -3961,7 +3946,7 @@
           }
         } catch (eFin) {
           try { console.warn('Mobile display fallback:', eFin); } catch (e) { /* ignore */ }
-          try { showScreen('screenAuth'); } catch (e2) { /* ignore */ }
+          try { enterApp(); } catch (e2) { /* ignore */ }
         }
       }
       if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
@@ -3998,16 +3983,15 @@
         } catch (eBoot) {
           try { console.warn('Mobile display fallback:', eBoot); } catch (e) { /* ignore */ }
           try { finishBoot(); } catch (e2) {
-            try { showScreen('screenAuth'); } catch (e3) { /* ignore */ }
+            try { enterApp(); } catch (e3) { /* ignore */ }
           }
         }
       })();
       } catch (errBoot) {
         try { console.warn('Mobile display fallback:', errBoot); } catch (e) { /* ignore */ }
-        try {
-          if ($('screenAuth')) $('screenAuth').classList.remove('hidden');
-          if ($('screenTrade')) $('screenTrade').classList.add('hidden');
-        } catch (e2) { /* ignore */ }
+        try { finishBoot(); } catch (e2) {
+          try { enterApp(); } catch (e3) { /* ignore */ }
+        }
       }
     }
   };
