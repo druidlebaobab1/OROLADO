@@ -615,6 +615,10 @@ html.is-android #chartOverlay{
 .oxa-wallet-addr .addr-mid{color:#CBD5E1}
 .oxa-usd-line{margin:0 0 8px;font-size:.78rem;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
 .oxa-usd-line strong{color:var(--gold)}
+.oxa-chip-row{display:flex;gap:6px;margin:0 0 10px}
+.oxa-chip{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:3px 10px;border-radius:999px;
+  border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.1);color:#F8E7B8;font-size:.68rem;font-weight:800}
+.oxa-chip-ico{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:#26A17B;color:#fff;font-size:.55rem}
 .oxa-wallet .crypto-qr-wrap{display:flex;justify-content:center;margin:0 0 10px}
 .oxa-wallet-actions{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .oxa-act{display:block;width:100%;flex:none;min-height:42px;margin:0 auto 8px;border:1px solid rgba(245,158,11,.4);border-radius:12px;background:rgba(245,158,11,.12);
@@ -744,7 +748,8 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
   font:inherit;font-size:.55rem;font-weight:800;padding:4px 2px;cursor:pointer;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;white-space:nowrap}
 .wallet-tab.on{border-color:rgba(245,158,11,.55);color:#F8E7B8;background:rgba(245,158,11,.12)}
-.wallet-addr-row{display:flex;align-items:center;gap:6px;margin:0;padding:6px 8px;border-radius:8px;
+.wallet-tab.is-soon{opacity:.42;cursor:default}
+.wallet-addr-row{display:flex;align-items:center;gap:6px;margin:0;padding:6px 8px;border-radius:8px;min-height:36px;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
 .wallet-addr-row code{flex:1;min-width:0;font-size:.68rem;font-weight:700;color:#E2E8F0;
   font-family:ui-monospace,Menlo,Consolas,monospace}
