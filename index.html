@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=114">
+  <link rel="stylesheet" href="css/app.css?v=115">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -317,8 +317,11 @@
   </div>
 
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
-  <aside id="drawerProfile" class="drawer">
-    <button type="button" class="btn-close" id="btnCloseDrawer">✕</button>
+  <aside id="drawerProfile" class="drawer" role="dialog" aria-modal="true" aria-labelledby="profTitle" aria-hidden="true">
+    <div class="drawer-head">
+      <h2 id="profTitle" data-i18n="profileBtn">Profil</h2>
+      <button type="button" class="btn-close" id="btnCloseDrawer" aria-label="Close">✕</button>
+    </div>
     <div class="prof-head">
       <div class="avatar" id="profAvatar">OR</div>
       <div>
@@ -669,13 +672,13 @@
   <script src="js/config.js?v=108"></script>
   <script src="js/translations.js?v=107"></script>
   <script src="js/i18n.js?v=109"></script>
-  <script src="js/store.js?v=105"></script>
-  <script src="js/api.js?v=105"></script>
+  <script src="js/store.js?v=106"></script>
+  <script src="js/api.js?v=106"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=105"></script>
-  <script src="js/auth.js?v=106"></script>
+  <script src="js/supabase.js?v=106"></script>
+  <script src="js/auth.js?v=107"></script>
   <script src="js/engine.js?v=105"></script>
   <script src="js/chart.js?v=106"></script>
-  <script src="js/app.js?v=115"></script>
+  <script src="js/app.js?v=116"></script>
 </body>
 </html>

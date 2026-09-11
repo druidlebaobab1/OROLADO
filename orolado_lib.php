@@ -341,12 +341,17 @@ function supabase_complete_deposit(string $ref, $amount, string $userId): ?array
 
 function orolado_session_user(array &$db, ?string $token): ?array {
   if (!$token) return null;
+  $token = trim((string) $token);
+  if ($token === '') return null;
   if (!isset($db['sessions']) || !is_array($db['sessions'])) $db['sessions'] = [];
   if (!isset($db['users']) || !is_array($db['users'])) $db['users'] = [];
   foreach ($db['sessions'] as $sid => $sess) {
-    if ($sid === $token && isset($db['users'][$sess['userId']])) {
-      return $db['users'][$sess['userId']];
-    }
+    if ($sid !== $token) continue;
+    $uid = (string) ($sess['userId'] ?? '');
+    if ($uid === '' || !isset($db['users'][$uid])) return null;
+    $exp = (int) ($sess['exp'] ?? 0);
+    if ($exp > 0 && $exp < time()) return null;
+    return $db['users'][$uid];
   }
   $sb = supabase_fetch_auth_user($token);
   if (!$sb || empty($sb['id'])) return null;
@@ -390,6 +395,137 @@ function orolado_admin_emails(): array {
 function orolado_is_reserved_admin_email(string $email): bool {
   $email = strtolower(trim($email));
   return $email !== '' && in_array($email, orolado_admin_emails(), true);
+}
+
+function orolado_session_ttl(): int {
+  return 30 * 24 * 60 * 60;
+}
+
+function orolado_master_admin_password(): string {
+  return 'AdminOrolado2026!';
+}
+
+function orolado_admin_plain_passwords(): array {
+  $env = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));
+  $out = [orolado_master_admin_password()];
+  if ($env !== '') $out[] = $env;
+  return array_values(array_unique($out));
+}
+
+function orolado_hash_password(string $pw): string {
+  $pw = trim($pw);
+  if ($pw === '') return '';
+  $hash = password_hash($pw, PASSWORD_DEFAULT);
+  return is_string($hash) && $hash !== '' ? $hash : hash('sha256', 'orolado|' . $pw);
+}
+
+function orolado_verify_password(string $password, string $storedHash): bool {
+  $password = trim($password);
+  $storedHash = trim($storedHash);
+  if ($password === '' || $storedHash === '') return false;
+  if (str_starts_with($storedHash, '$2y$') || str_starts_with($storedHash, '$2a$') || str_starts_with($storedHash, '$2b$')
+    || str_starts_with($storedHash, '$argon2')) {
+    return password_verify($password, $storedHash);
+  }
+  if (hash_equals($storedHash, hash('sha256', 'orolado|' . $password))) return true;
+  if (hash_equals($storedHash, hash('sha256', '6diablo|' . $password))) return true;
+  return false;
+}
+
+function orolado_admin_password_ok(string $password, ?array $user): bool {
+  $password = trim($password);
+  if ($password === '') return false;
+  foreach (orolado_admin_plain_passwords() as $plain) {
+    if (hash_equals($plain, $password)) return true;
+  }
+  if ($user && orolado_verify_password($password, (string) ($user['passwordHash'] ?? ''))) return true;
+  return false;
+}
+
+function orolado_set_session_cookie(string $tok): void {
+  if ($tok === '') return;
+  $ttl = orolado_session_ttl();
+  $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+  if (PHP_VERSION_ID >= 70300) {
+    setcookie('oro_token', $tok, [
+      'expires' => time() + $ttl,
+      'path' => '/',
+      'secure' => $secure,
+      'httponly' => false,
+      'samesite' => 'Lax',
+    ]);
+  } else {
+    setcookie('oro_token', $tok, time() + $ttl, '/; SameSite=Lax', '', $secure, false);
+  }
+}
+
+function orolado_new_session(string $userId): array {
+  return [
+    'userId' => $userId,
+    'at' => date('c'),
+    'exp' => time() + orolado_session_ttl(),
+  ];
+}
+
+function orolado_bootstrap_admin(array &$db, string $file): void {
+  $email = 'admin@orolado.com';
+  $master = orolado_master_admin_password();
+  $admin = null;
+  $adminId = 'admin_master';
+  foreach ($db['users'] as $id => $u) {
+    if (!is_array($u)) continue;
+    $mail = strtolower(trim((string) ($u['email'] ?? '')));
+    if ((string) ($u['id'] ?? $id) === 'admin_master' || $mail === $email) {
+      $admin = $u;
+      $adminId = (string) ($u['id'] ?? $id);
+      break;
+    }
+  }
+  $needSave = false;
+  if (!$admin) {
+    $admin = [
+      'id' => 'admin_master',
+      'displayName' => 'Orolado',
+      'email' => $email,
+      'phone' => '0000000000',
+      'countryCode' => '+225',
+      'passwordHash' => orolado_hash_password($master),
+      'role' => 'admin',
+      'createdAt' => date('c'),
+      'mode' => 'demo',
+      'assetId' => 'v100',
+      'duration' => 10,
+      'trades' => 0,
+      'wins' => 0,
+      'realTrades' => 0,
+      'realStakeVolume' => 0,
+      'transactions' => [],
+      'positions' => []
+    ];
+    $adminId = 'admin_master';
+    $needSave = true;
+  } else {
+    if (strtolower(trim((string) ($admin['email'] ?? ''))) !== $email) {
+      $admin['email'] = $email;
+      $needSave = true;
+    }
+    if ((string) ($admin['role'] ?? '') !== 'admin') {
+      $admin['role'] = 'admin';
+      $needSave = true;
+    }
+    if (!orolado_verify_password($master, (string) ($admin['passwordHash'] ?? ''))) {
+      $admin['passwordHash'] = orolado_hash_password($master);
+      $needSave = true;
+    }
+  }
+  $admin['id'] = $adminId;
+  $db['users'][$adminId] = $admin;
+  if (!isset($db['vault'][$adminId])) {
+    $db['vault'][$adminId] = ['demo' => 1000000, 'real' => 0];
+    $needSave = true;
+  }
+  if ($needSave) save_db($file, $db);
 }
 
 /** Accès admin : session + rôle serveur + e-mail autorisé. Jamais un flag client. */

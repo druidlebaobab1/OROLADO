@@ -21,7 +21,7 @@ orolado_load_env();
 $ADMIN_EMAIL = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
 if ($ADMIN_EMAIL === '') $ADMIN_EMAIL = 'admin@orolado.com';
 $ADMIN_PASS = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));
-if ($ADMIN_PASS === '') $ADMIN_PASS = 'AdminOrolado2026!';
+if ($ADMIN_PASS === '') $ADMIN_PASS = orolado_master_admin_password();
 $SECRET = 'orolado-host-secret-2026';
 
 $dir = orolado_data_dir();
@@ -32,19 +32,11 @@ function hash_pw(string $pw): string {
 }
 
 function orolado_pass_matches(string $password, string $storedHash): bool {
-  if ($storedHash === '') return false;
-  if (hash_equals($storedHash, hash_pw($password))) return true;
-  if (hash_equals($storedHash, hash('sha256', '6diablo|' . $password))) return true;
-  return false;
+  return orolado_verify_password($password, $storedHash);
 }
 
 function orolado_admin_pass_ok(string $password, ?array $user, string $adminPass): bool {
-  if ($adminPass !== '' && hash_equals($adminPass, $password)) return true;
-  if ($user && orolado_pass_matches($password, (string) ($user['passwordHash'] ?? ''))) return true;
-  if (isset($user['id']) && ($user['id'] ?? '') === 'admin_master' && orolado_pass_matches($password, (string) ($user['passwordHash'] ?? ''))) {
-    return true;
-  }
-  return false;
+  return orolado_admin_password_ok($password, $user);
 }
 
 function ensure_admin_user(array &$db, string $email, string $hash): array {
@@ -189,7 +181,8 @@ if (!is_array($req)) {
 }
 
 $action = $req['action'] ?? '';
-$token = $req['token'] ?? '';
+$token = trim((string) ($req['token'] ?? ''));
+if ($token === '') $token = trim((string) ($_COOKIE['oro_token'] ?? ''));
 
 if ($action === 'geo') {
   $cc = strtoupper(trim((string) (
@@ -204,6 +197,7 @@ if ($action === 'geo') {
 }
 
 $db = load_db($file);
+orolado_bootstrap_admin($db, $file);
 
 if ($action === 'ping') {
   echo json_encode([
@@ -397,7 +391,8 @@ if ($action === 'registerVerify') {
   $db['vault'][$uid] = $vault;
   unset($db['pendingRegistrations'][$email]);
   $tok = make_token($uid, $SECRET);
-  $db['sessions'][$tok] = ['userId' => $uid, 'at' => date('c')];
+  $db['sessions'][$tok] = orolado_new_session($uid);
+  orolado_set_session_cookie($tok);
   $welcome = ['ok' => false];
   if (!brevo_welcome_already_sent($db, $email)) {
     $welcome = brevo_send_welcome($email, (string) $user['displayName']);
@@ -438,8 +433,9 @@ if ($action === 'register') {
   ];
   $db['vault'][$user['id']] = $vault;
   $tok = make_token($user['id'], $SECRET);
-  $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
+  $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
   save_db($file, $db);
+  orolado_set_session_cookie($tok);
   echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
   exit;
 }
@@ -476,15 +472,16 @@ if ($action === 'login') {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
-    $user = ensure_admin_user($db, $ADMIN_EMAIL !== '' ? $ADMIN_EMAIL : $email, hash_pw($password));
+    $user = ensure_admin_user($db, $ADMIN_EMAIL !== '' ? $ADMIN_EMAIL : $email, orolado_hash_password($password));
     save_db($file, $db);
   } elseif (!$user || empty($user['passwordHash']) || !orolado_pass_matches($password, (string) $user['passwordHash'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
     exit;
   }
   $tok = make_token($user['id'], $SECRET);
-  $db['sessions'][$tok] = ['userId' => $user['id'], 'at' => date('c')];
+  $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
   save_db($file, $db);
+  orolado_set_session_cookie($tok);
   $vault = $db['vault'][$user['id']] ?? ['demo' => 0, 'real' => 0];
   echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
   exit;
@@ -1149,6 +1146,12 @@ if ($action === 'me') {
   if (!$me) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
     exit;
+  }
+  if ($token !== '' && isset($db['sessions'][$token])) {
+    $db['sessions'][$token]['exp'] = time() + orolado_session_ttl();
+    $db['sessions'][$token]['at'] = date('c');
+    save_db($file, $db);
+    orolado_set_session_cookie($token);
   }
   $vault = $db['vault'][$me['id']] ?? ['demo' => 0, 'real' => 0];
   $sbVault = supabase_admin_vault((string) $me['id']);

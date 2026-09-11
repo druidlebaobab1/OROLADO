@@ -183,20 +183,27 @@
       }
 
       if (D6.Api) {
-        var remote = await D6.Api.post('login', { email: id.email, password: password });
+        var remote = await D6.Api.post('login', { email: id.email, password: password }, 20000);
         if (remote && remote.ok && remote.user) {
           D6.Store.importRemote(remote.user, remote.vault);
           D6.Api.setToken(remote.token);
-          D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
+          D6.Store.setSession({
+            userId: remote.user.id,
+            at: D6.nowIso(),
+            exp: Date.now() + 30 * 24 * 60 * 60 * 1000
+          });
           return { ok: true, user: D6.Store.getUser(remote.user.id) };
         }
         if (remote && remote.server && !remote.ok) {
-          return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginId' };
+          return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginPass' };
+        }
+        if (reservedAdmin && !remote) {
+          return { ok: false, reason: 'Serveur indisponible. Réessayez.', field: 'loginId' };
         }
       }
 
       if (reservedAdmin) {
-        return { ok: false, reason: 'Identifiants introuvables', field: 'loginId' };
+        return { ok: false, reason: 'Identifiants introuvables', field: 'loginPass' };
       }
 
       var user = D6.Store.findByEmail(id.email);
@@ -253,6 +260,10 @@
       try { sessionStorage.removeItem('oro_token'); } catch (e1) { /* ignore */ }
       try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
       try { localStorage.removeItem('oro_token'); } catch (e3) { /* ignore */ }
+      try { localStorage.removeItem('oro_uid'); } catch (e5) { /* ignore */ }
+      try { localStorage.removeItem('oro_session_exp'); } catch (e6) { /* ignore */ }
+      try { localStorage.removeItem('oro_user_snap'); } catch (e7) { /* ignore */ }
+      try { document.cookie = 'oro_token=; Max-Age=0; Path=/; SameSite=Lax'; } catch (e8) { /* ignore */ }
       D6.holdRemote = false;
       D6.holdPull = false;
     },

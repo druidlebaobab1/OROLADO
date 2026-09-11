@@ -78,9 +78,13 @@
     });
     try { client.auth.startAutoRefresh(); } catch (e) { /* ignore */ }
     client.auth.onAuthStateChange(function (event, session) {
-      if (session && session.access_token && D6.Api && D6.Api.setToken) D6.Api.setToken(session.access_token);
+      if (session && session.access_token && D6.Api && D6.Api.setToken) {
+        var cur = D6.Api.token ? D6.Api.token() : '';
+        if (!cur || cur.indexOf('eyJ') === 0) D6.Api.setToken(session.access_token);
+      }
       if (event === 'TOKEN_REFRESHED' && session && session.access_token && D6.Api && D6.Api.setToken) {
-        D6.Api.setToken(session.access_token);
+        var cur2 = D6.Api.token ? D6.Api.token() : '';
+        if (!cur2 || cur2.indexOf('eyJ') === 0) D6.Api.setToken(session.access_token);
       }
     });
     if (!client._oroKeepAlive) {
@@ -440,16 +444,25 @@
     client: getClient,
 
     restore: async function () {
+      var localTok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
+      var localUser = D6.Store.current && D6.Store.current();
+      var localIsAccount = !!(localUser && !localUser.guest && String(localUser.email || '').indexOf('@orolado.local') < 0);
+      var phpToken = localTok && localTok.indexOf('eyJ') !== 0;
       var sb = getClient();
       if (!sb) {
         if (projectUrl() && !isUsableKey(anonKey())) {
           console.log('OROLADO Supabase : collez la clé anon (eyJ…) dans Project Settings → API, pas l’URL.');
         }
-        return { ok: false };
+        return localIsAccount ? { ok: true, user: localUser, local: true } : { ok: false };
       }
       var sess = await sb.auth.getSession();
       var session = sess && sess.data && sess.data.session;
-      if (!session || !session.user) return { ok: false };
+      if (!session || !session.user) {
+        return localIsAccount ? { ok: true, user: localUser, local: true } : { ok: false };
+      }
+      if (phpToken && localIsAccount && localUser.id !== session.user.id) {
+        return { ok: true, user: localUser, local: true };
+      }
       return loadAccount(session.user);
     },
 

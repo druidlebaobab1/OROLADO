@@ -964,12 +964,31 @@
 
   function openDrawer() {
     fillProfile();
-    $('drawerBackdrop').classList.add('on');
-    $('drawerProfile').classList.add('on');
+    var bd = $('drawerBackdrop');
+    var dr = $('drawerProfile');
+    if (bd) bd.classList.add('on');
+    if (dr) {
+      dr.classList.add('on');
+      dr.setAttribute('aria-hidden', 'false');
+    }
+    document.documentElement.classList.add('oro-profile-open');
   }
   function closeDrawer() {
-    $('drawerBackdrop').classList.remove('on');
-    $('drawerProfile').classList.remove('on');
+    var bd = $('drawerBackdrop');
+    var dr = $('drawerProfile');
+    if (bd) bd.classList.remove('on');
+    if (dr) {
+      dr.classList.remove('on');
+      dr.setAttribute('aria-hidden', 'true');
+    }
+    document.documentElement.classList.remove('oro-profile-open');
+  }
+
+  function profileSubModalOpen() {
+    return ['financeModal', 'withdrawModal', 'passModal', 'historySheet'].some(function (id) {
+      var el = $(id);
+      return el && el.classList.contains('active');
+    });
   }
 
   var adminCache = {
@@ -2522,7 +2541,6 @@
 
   function openFromProfile(id) {
     returnToProfile = true;
-    closeDrawer();
     openModal(id);
   }
 
@@ -2530,8 +2548,9 @@
   function closeModal(id) {
     if ($(id)) $(id).classList.remove('active');
     if (returnToProfile && PROFILE_SUBVIEWS[id]) {
-      returnToProfile = false;
-      setTimeout(function () { openDrawer(); }, 90);
+      if ($('drawerProfile') && !$('drawerProfile').classList.contains('on')) {
+        setTimeout(function () { openDrawer(); }, 80);
+      }
     }
   }
 
@@ -3019,7 +3038,10 @@
       openDrawer();
     });
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
-    $('drawerBackdrop').addEventListener('click', closeDrawer);
+    $('drawerBackdrop').addEventListener('click', function () {
+      if (profileSubModalOpen()) return;
+      closeDrawer();
+    });
     function openHistorySheet(forceMode) {
       renderHistorySheet(forceMode);
       openModal('historySheet');
@@ -3032,7 +3054,6 @@
         if (now - last < 400) return;
         last = now;
         returnToProfile = true;
-        closeDrawer();
         openHistorySheet(mode);
       }
       btn.addEventListener('click', function (e) {
@@ -3901,8 +3922,12 @@
           refreshRemoteVault();
           checkDepositReturn();
           try {
+            var tok = D6.Api && D6.Api.token ? D6.Api.token() : '';
+            if (tok && D6.Api.post) D6.Api.post('me', {});
             var sb = D6.Supabase && D6.Supabase.client && D6.Supabase.client();
-            if (sb && sb.auth && sb.auth.refreshSession) sb.auth.refreshSession();
+            if (sb && sb.auth && sb.auth.refreshSession && (!tok || tok.indexOf('eyJ') === 0)) {
+              sb.auth.refreshSession().catch(function () { /* keep local session */ });
+            }
           } catch (e) { /* ignore */ }
         }
       });
@@ -3911,6 +3936,13 @@
         checkDepositReturn();
       });
       setInterval(updatePayoutUi, 2500);
+      setInterval(function () {
+        try {
+          var u = user();
+          if (!u || isGuest(u)) return;
+          if (D6.Api && D6.Api.token && D6.Api.token()) D6.Api.post('me', {});
+        } catch (eKeep) { /* ignore */ }
+      }, 10 * 60 * 1000);
       if (location.hash.indexOf('#preview') === 0) {
         (async function () {
           var existing = D6.Store.findByEmail('preview@orolado.local');

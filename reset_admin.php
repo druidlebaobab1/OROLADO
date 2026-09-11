@@ -24,11 +24,11 @@ if (!$cli && !is_file($flag)) {
 $email = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
 if ($email === '') $email = 'admin@orolado.com';
 $pass = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));
-if ($pass === '') $pass = 'AdminOrolado2026!';
+if ($pass === '') $pass = orolado_master_admin_password();
 
 $file = orolado_data_file();
 $db = load_db($file);
-$hash = hash('sha256', 'orolado|' . $pass);
+$hash = orolado_hash_password($pass);
 
 $admin = null;
 foreach ($db['users'] as $u) {

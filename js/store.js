@@ -148,8 +148,60 @@
     }
   }
 
+  var SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+
+  function rememberSession(session) {
+    try {
+      if (!session || !session.userId) {
+        localStorage.removeItem('oro_uid');
+        localStorage.removeItem('oro_session_exp');
+        localStorage.removeItem('oro_user_snap');
+        return;
+      }
+      localStorage.setItem('oro_uid', session.userId);
+      localStorage.setItem('oro_session_exp', String(session.exp || (Date.now() + SESSION_MS)));
+      var u = db.users[session.userId];
+      if (u) {
+        localStorage.setItem('oro_user_snap', JSON.stringify({
+          id: u.id,
+          email: u.email || '',
+          displayName: u.displayName || '',
+          role: u.role || 'user',
+          guest: !!u.guest
+        }));
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function recoverSession() {
+    if (db.session && db.users[db.session.userId]) return;
+    try {
+      var uid = localStorage.getItem('oro_uid') || '';
+      var exp = parseInt(localStorage.getItem('oro_session_exp') || '0', 10) || 0;
+      if (!uid) return;
+      if (exp && exp < Date.now()) return;
+      if (!db.users[uid]) {
+        var snap = null;
+        try { snap = JSON.parse(localStorage.getItem('oro_user_snap') || 'null'); } catch (e0) { snap = null; }
+        if (snap && snap.id === uid && !snap.guest) {
+          db.users[uid] = hydrate(blankUser({
+            id: uid,
+            email: snap.email,
+            displayName: snap.displayName,
+            role: snap.role || 'user',
+            passwordHash: ''
+          }));
+        }
+      }
+      if (db.users[uid] && !db.users[uid].guest) {
+        db.session = { userId: uid, at: D6.nowIso(), exp: exp || (Date.now() + SESSION_MS) };
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   var db = loadAll();
   Object.keys(db.users).forEach(function (id) { hydrate(db.users[id]); });
+  recoverSession();
 
   function persist(skipRemote) {
     var publicUsers = {};
@@ -165,7 +217,12 @@
       withdrawals: db.withdrawals || [],
       vault: vault
     });
-    localStorage.setItem(KEY, JSON.stringify({ enc: xorCrypt(payload, false), sum: fnv(payload) }));
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ enc: xorCrypt(payload, false), sum: fnv(payload) }));
+    } catch (ePersist) {
+      rememberSession(db.session);
+    }
+    rememberSession(db.session);
     if (!skipRemote && !D6.holdRemote && !D6.holdPull && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
       var u = db.users[db.session.userId];
       D6.Api.post('upsert', { user: publicUsers[u.id], vault: vault[u.id] });
@@ -199,11 +256,21 @@
         };
       }
       persist(true);
+      rememberSession(db.session);
     },
 
     getSession: function () { return db.session; },
-    setSession: function (session) { db.session = session; persist(); },
-    clearSession: function () { db.session = null; persist(); },
+    setSession: function (session) {
+      if (session && session.userId && !session.exp) session.exp = Date.now() + SESSION_MS;
+      db.session = session;
+      persist();
+      rememberSession(session);
+    },
+    clearSession: function () {
+      db.session = null;
+      persist();
+      rememberSession(null);
+    },
 
     getUser: function (id) { return hydrate(db.users[id] || null); },
 
@@ -253,7 +320,12 @@
     },
 
     current: function () {
+      if (!db.session || !db.users[db.session.userId]) recoverSession();
       if (!db.session) return null;
+      if (db.session.exp && db.session.exp < Date.now()) {
+        db.session.exp = Date.now() + SESSION_MS;
+        try { persist(true); } catch (eExp) { /* ignore */ }
+      }
       return hydrate(db.users[db.session.userId] || null);
     },
 

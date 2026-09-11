@@ -5,17 +5,25 @@
     ready: false,
 
     token: function () {
-      try { return localStorage.getItem('oro_token') || sessionStorage.getItem('oro_token') || ''; } catch (e) { return ''; }
+      try {
+        var tok = localStorage.getItem('oro_token') || sessionStorage.getItem('oro_token') || '';
+        if (tok) return tok;
+        var m = document.cookie.match(/(?:^|;\s*)oro_token=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : '';
+      } catch (e) { return ''; }
     },
 
     setToken: function (tok) {
+      var maxAge = 30 * 24 * 60 * 60;
       try {
         if (tok) {
           localStorage.setItem('oro_token', tok);
-          sessionStorage.removeItem('oro_token');
+          sessionStorage.setItem('oro_token', tok);
+          document.cookie = 'oro_token=' + encodeURIComponent(tok) + '; Max-Age=' + maxAge + '; Path=/; SameSite=Lax';
         } else {
           localStorage.removeItem('oro_token');
           sessionStorage.removeItem('oro_token');
+          document.cookie = 'oro_token=; Max-Age=0; Path=/; SameSite=Lax';
         }
       } catch (e) { /* ignore */ }
     },
@@ -23,7 +31,7 @@
     post: async function (action, data, timeoutMs) {
       try {
         var ctrl = new AbortController();
-        var ms = timeoutMs || 8000;
+        var ms = timeoutMs || (action === 'login' || action === 'registerVerify' ? 20000 : 8000);
         var timer = setTimeout(function () { ctrl.abort(); }, ms);
         var body = Object.assign({ action: action, token: D6.Api.token() }, data || {});
         var r = await fetch('api.php', {
