@@ -1649,24 +1649,28 @@
   Object.keys(CRYPTO_I18N).forEach(function (code) {
     if (!DICT[code]) DICT[code] = Object.assign({}, EN);
     Object.assign(DICT[code], CRYPTO_I18N[code]);
-    Object.assign(DICT[code], {
-      payMethodUsdtTitle: EN.payMethodUsdtTitle,
-      payMethodUsdtDesc: EN.payMethodUsdtDesc,
-      cryptoPayAmt: EN.cryptoPayAmt,
-      cryptoLive: EN.cryptoLive,
-      cryptoAddrLabel: EN.cryptoAddrLabel,
-      cryptoGuide1: EN.cryptoGuide1,
-      cryptoGuide2: EN.cryptoGuide2,
-      cryptoGuide3: EN.cryptoGuide3,
-      cryptoChecking: EN.cryptoChecking,
-      cryptoErrPending: EN.cryptoErrPending,
-      cryptoShowQr: EN.cryptoShowQr,
-      cryptoHideQr: EN.cryptoHideQr,
-      cryptoWait: EN.cryptoWait,
-      histOpen: EN.histOpen,
-      logoutAsk: EN.logoutAsk,
-      cancel: EN.cancel
-    });
+  });
+  var OXA_COPY = {
+    payMethodUsdtTitle: EN.payMethodUsdtTitle,
+    payMethodUsdtDesc: EN.payMethodUsdtDesc,
+    cryptoPayAmt: EN.cryptoPayAmt,
+    cryptoLive: EN.cryptoLive,
+    cryptoAddrLabel: EN.cryptoAddrLabel,
+    cryptoGuide1: EN.cryptoGuide1,
+    cryptoGuide2: EN.cryptoGuide2,
+    cryptoGuide3: EN.cryptoGuide3,
+    cryptoChecking: EN.cryptoChecking,
+    cryptoErrPending: EN.cryptoErrPending,
+    cryptoShowQr: EN.cryptoShowQr,
+    cryptoHideQr: EN.cryptoHideQr,
+    cryptoWait: EN.cryptoWait,
+    histOpen: EN.histOpen,
+    logoutAsk: EN.logoutAsk,
+    cancel: EN.cancel
+  };
+  Object.keys(DICT).forEach(function (code) {
+    if (code === 'fr') return;
+    Object.assign(DICT[code], OXA_COPY);
   });
 
   var LANG_KEY = 'orolado_lang';
