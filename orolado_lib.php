@@ -2671,15 +2671,33 @@ function orolado_oxapay_coins(): array {
     'usdt_erc20' => ['pay' => 'USDT', 'network' => 'ERC20', 'label' => 'USDT', 'netLabel' => 'ERC20'],
     'usdt_bep20' => ['pay' => 'USDT', 'network' => 'BEP20', 'label' => 'USDT', 'netLabel' => 'BEP20'],
     'usdc' => ['pay' => 'USDC', 'network' => 'ERC20', 'label' => 'USDC', 'netLabel' => 'ERC20'],
-    'trx' => ['pay' => 'TRX', 'network' => '', 'label' => 'TRX', 'netLabel' => 'Tron'],
-    'btc' => ['pay' => 'BTC', 'network' => '', 'label' => 'BTC', 'netLabel' => 'Bitcoin'],
-    'eth' => ['pay' => 'ETH', 'network' => '', 'label' => 'ETH', 'netLabel' => 'Ethereum'],
+    'trx' => ['pay' => 'TRX', 'network' => '', 'label' => 'TRX', 'netLabel' => 'Tron Network'],
+    'btc' => ['pay' => 'BTC', 'network' => '', 'label' => 'BTC', 'netLabel' => 'Bitcoin Network'],
+    'eth' => ['pay' => 'ETH', 'network' => '', 'label' => 'ETH', 'netLabel' => 'Ethereum Network'],
     'ltc' => ['pay' => 'LTC', 'network' => '', 'label' => 'LTC', 'netLabel' => 'Litecoin'],
     'bnb' => ['pay' => 'BNB', 'network' => 'BEP20', 'label' => 'BNB', 'netLabel' => 'BEP20'],
     'sol' => ['pay' => 'SOL', 'network' => '', 'label' => 'SOL', 'netLabel' => 'Solana'],
     'doge' => ['pay' => 'DOGE', 'network' => '', 'label' => 'DOGE', 'netLabel' => 'Dogecoin'],
     'xrp' => ['pay' => 'XRP', 'network' => '', 'label' => 'XRP', 'netLabel' => 'XRP'],
   ];
+}
+
+function orolado_oxapay_min_usd(string $coin): float {
+  $pay = strtoupper((string) (orolado_oxapay_coins()[$coin]['pay'] ?? $coin));
+  if (in_array($pay, ['BTC', 'ETH'], true)) return 15.0;
+  if (in_array($pay, ['SOL', 'LTC', 'BNB', 'XRP'], true)) return 10.0;
+  return 3.0;
+}
+
+function orolado_oxapay_err(?array $res): string {
+  if (!is_array($res)) return 'Passerelle crypto indisponible';
+  $msg = (string) (($res['error']['message'] ?? null) ?: ($res['message'] ?? '') ?: '');
+  $key = strtolower((string) ($res['error']['key'] ?? ''));
+  if ($msg === '' && $key !== '') $msg = $key;
+  if (stripos($msg, 'validation') !== false || $key === 'validation_error') {
+    return 'Montant USD trop bas ou réseau non accepté pour cette crypto.';
+  }
+  return $msg !== '' ? $msg : 'Passerelle crypto indisponible';
 }
 
 function orolado_oxapay_http(string $method, string $path, ?array $body = null): ?array {
@@ -2797,33 +2815,42 @@ function orolado_oxapay_invoice(array $req): array {
   $token = (string) ($req['token'] ?? '');
   $me = orolado_session_user($db, $token);
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide', 'code' => 'session'];
-  $amount = orolado_money($req['amount'] ?? 0);
-  if ($amount + 0.0001 < orolado_min_deposit($me)) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.', 'code' => 'min'];
-  }
   $coin = strtolower(trim((string) ($req['coin'] ?? 'usdt_trc20')));
   $coins = orolado_oxapay_coins();
   if (!isset($coins[$coin])) $coin = 'usdt_trc20';
   $meta = $coins[$coin];
+  $minUsd = orolado_oxapay_min_usd($coin);
+  $amount = orolado_money($req['amount'] ?? 0);
+  if ($amount + 0.0001 < $minUsd) {
+    return [
+      'ok' => false,
+      'server' => true,
+      'reason' => 'Le dépôt minimum pour ' . $meta['label'] . ' est de $' . number_format($minUsd, 0) . '.',
+      'code' => 'min',
+      'minUsd' => $minUsd,
+    ];
+  }
   $orderId = 'oro_oxa_' . bin2hex(random_bytes(8));
   $callback = rtrim(orolado_public_origin(), '/') . '/api/oxapay/webhook';
   $payload = [
-    'pay_currency' => $meta['pay'],
     'amount' => $amount,
     'currency' => 'USD',
+    'pay_currency' => $meta['pay'],
     'lifetime' => 60,
     'callback_url' => $callback,
     'order_id' => $orderId,
     'email' => (string) ($me['email'] ?? ''),
     'under_paid_coverage' => 15,
-    'description' => 'OROLADO deposit',
+    'description' => 'OROLADO deposit USD',
   ];
   if ($meta['network'] !== '') $payload['network'] = $meta['network'];
   $res = orolado_oxapay_http('POST', '/v1/payment/white-label', $payload);
   $data = is_array($res['data'] ?? null) ? $res['data'] : $res;
   if (!is_array($data) || empty($data['address'])) {
-    $payload['pay_currency'] = strtolower($meta['pay']);
-    $res = orolado_oxapay_http('POST', '/v1/payment/white-label', $payload);
+    $retry = $payload;
+    $retry['pay_currency'] = strtolower($meta['pay']);
+    $retry['currency'] = 'USD';
+    $res = orolado_oxapay_http('POST', '/v1/payment/white-label', $retry);
     $data = is_array($res['data'] ?? null) ? $res['data'] : $res;
   }
   if (!is_array($data) || empty($data['address'])) {
@@ -2845,8 +2872,7 @@ function orolado_oxapay_invoice(array $req): array {
   }
   $addr = (string) ($data['address'] ?? '');
   if ($addr === '') {
-    $err = (string) (($data['error']['message'] ?? null) ?: ($res['message'] ?? '') ?: 'OxaPay indisponible');
-    return ['ok' => false, 'server' => true, 'reason' => $err, 'code' => 'oxapay'];
+    return ['ok' => false, 'server' => true, 'reason' => orolado_oxapay_err(is_array($res) ? $res : $data), 'code' => 'oxapay', 'minUsd' => $minUsd];
   }
   $trackId = (string) ($data['track_id'] ?? $data['trackId'] ?? '');
   $payAmt = $data['pay_amount'] ?? $data['payAmount'] ?? $amount;

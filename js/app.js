@@ -2112,16 +2112,16 @@
   var oxaTimer = 0;
   var liveDepositAddr = '';
   var OXA_ASSETS = [
-    { id: 'usdt', symbol: 'USDT', name: 'Tether', color: '#26A17B', mark: '₮', nets: ['TRC20', 'ERC20', 'BEP20'] },
-    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$' },
-    { id: 'btc', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A', mark: '₿' },
-    { id: 'eth', symbol: 'ETH', name: 'Ethereum', color: '#627EEA', mark: 'Ξ' },
-    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T' },
-    { id: 'bnb', symbol: 'BNB', name: 'BNB', color: '#F3BA2F', mark: 'B' },
-    { id: 'sol', symbol: 'SOL', name: 'Solana', color: '#14F195', mark: 'S' },
-    { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł' },
-    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð' },
-    { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X' }
+    { id: 'usdt', symbol: 'USDT', name: 'Tether', color: '#26A17B', mark: '₮', minUsd: 3, nets: ['TRC20', 'ERC20', 'BEP20'] },
+    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$', minUsd: 3, networkName: 'Ethereum Network' },
+    { id: 'btc', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A', mark: '₿', minUsd: 15, networkName: 'Bitcoin Network' },
+    { id: 'eth', symbol: 'ETH', name: 'Ethereum', color: '#627EEA', mark: 'Ξ', minUsd: 15, networkName: 'Ethereum Network' },
+    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T', minUsd: 3, networkName: 'Tron Network' },
+    { id: 'bnb', symbol: 'BNB', name: 'BNB', color: '#F3BA2F', mark: 'B', minUsd: 10, networkName: 'BNB Smart Chain' },
+    { id: 'sol', symbol: 'SOL', name: 'Solana', color: '#14F195', mark: 'S', minUsd: 10, networkName: 'Solana Network' },
+    { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł', minUsd: 10, networkName: 'Litecoin Network' },
+    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð', minUsd: 3, networkName: 'Dogecoin Network' },
+    { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X', minUsd: 10, networkName: 'XRP Ledger' }
   ];
 
   function oxaMeta(id) {
@@ -2133,6 +2133,32 @@
   function oxaCoinKey() {
     if (oxaAsset === 'usdt') return 'usdt_' + String(oxaNet || 'TRC20').toLowerCase();
     return oxaAsset;
+  }
+
+  function oxaMinUsd() {
+    return Number(oxaMeta(oxaAsset).minUsd) || 3;
+  }
+
+  function oxaNetworkName() {
+    var m = oxaMeta(oxaAsset);
+    if (oxaAsset === 'usdt') {
+      if (oxaNet === 'ERC20') return 'Ethereum (ERC20)';
+      if (oxaNet === 'BEP20') return 'BNB Smart Chain (BEP20)';
+      return 'Tron (TRC20)';
+    }
+    return m.networkName || m.symbol;
+  }
+
+  function enforceOxaMin() {
+    var need = Math.max(minDeposit(), oxaMinUsd());
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    if (amt + 0.0001 < need) {
+      if ($('depositAmt')) $('depositAmt').value = String(need);
+      amt = need;
+    }
+    usdtAmt = amt;
+    if ($('oxaUsdAmt')) $('oxaUsdAmt').textContent = '$' + amt.toFixed(2);
+    return amt;
   }
 
   function styleOxaAddr(addr) {
@@ -2184,15 +2210,20 @@
   function syncOxaLabels() {
     var m = oxaMeta(oxaAsset);
     var coin = m.symbol;
+    var net = oxaNetworkName();
     if ($('oxaMinHint')) {
-      $('oxaMinHint').textContent = t('oxaMinAmt').replace('{amt}', '3').replace('{coin}', coin);
+      $('oxaMinHint').textContent = t('oxaMinAmt').replace('{amt}', String(oxaMinUsd())).replace('{net}', net).replace('{coin}', coin);
     }
     if ($('oxaWarnTxt')) {
       $('oxaWarnTxt').textContent = t('oxaWarnOnly').replace('{coin}', coin);
     }
-    var tog = $('btnOxaQrToggle');
-    var wrap = $('oxaQrWrap');
-    if (tog && wrap) tog.textContent = wrap.classList.contains('hidden') ? t('cryptoShowQr') : t('cryptoHideQr');
+    if ($('oxaNetLabel')) {
+      $('oxaNetLabel').textContent = net + ' · ' + t('cryptoWait');
+    }
+    if ($('oxaUsdAmt')) {
+      var shown = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || usdtAmt || oxaMinUsd());
+      $('oxaUsdAmt').textContent = '$' + shown.toFixed(2);
+    }
   }
 
   function resetOxaWallet() {
@@ -2201,7 +2232,6 @@
     oxaInvoice = null;
     liveDepositAddr = '';
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.add('hidden');
-    if ($('oxaQrWrap')) $('oxaQrWrap').classList.add('hidden');
     if ($('usdtAddr')) $('usdtAddr').textContent = '—';
     if ($('usdtBusy')) $('usdtBusy').hidden = true;
     closeOxaMenus();
@@ -2209,39 +2239,40 @@
 
   function showDepositStep(step) {
     var select = $('depositStepSelect');
+    var crypto = $('depositStepCrypto');
     var ok = $('depositStepCryptoOk');
     var box = $('depositBox');
-    if (select) select.classList.toggle('hidden', step === 'ok');
+    if (select) select.classList.toggle('hidden', step !== 'select');
+    if (crypto) crypto.classList.toggle('hidden', step !== 'crypto');
     if (ok) ok.classList.toggle('hidden', step !== 'ok');
-    if (box) box.classList.toggle('is-crypto', depositPayMethod === 'usdt' && step !== 'ok');
+    if (box) box.classList.toggle('is-crypto', step === 'crypto' || step === 'ok');
   }
 
   function setDepositPayMethod(method) {
-    depositPayMethod = method === 'usdt' ? 'usdt' : 'card';
     var card = $('payMethodCard');
     var usdt = $('payMethodUsdt');
-    if (card) {
-      card.classList.toggle('on', depositPayMethod === 'card');
-      card.setAttribute('aria-checked', depositPayMethod === 'card' ? 'true' : 'false');
-    }
-    if (usdt) {
-      usdt.classList.toggle('on', depositPayMethod === 'usdt');
-      usdt.setAttribute('aria-checked', depositPayMethod === 'usdt' ? 'true' : 'false');
-    }
-    var main = $('btnConfirmDeposit');
-    if (main) {
-      main.hidden = depositPayMethod === 'usdt';
-      main.textContent = t('depositConfirm');
-    }
-    if ($('oxaPickWrap')) $('oxaPickWrap').classList.toggle('hidden', depositPayMethod !== 'usdt');
-    if (depositPayMethod === 'usdt') {
+    if (method === 'usdt') {
+      depositPayMethod = 'usdt';
+      if (card) { card.classList.remove('on'); card.setAttribute('aria-checked', 'false'); }
+      if (usdt) { usdt.classList.add('on'); usdt.setAttribute('aria-checked', 'true'); }
       paintOxaCoinBtn();
       syncOxaNetUi();
+      enforceOxaMin();
       syncOxaLabels();
+      showDepositStep('crypto');
       scheduleOxaInvoice();
-    } else {
-      resetOxaWallet();
+      return;
     }
+    depositPayMethod = 'card';
+    if (card) { card.classList.add('on'); card.setAttribute('aria-checked', 'true'); }
+    if (usdt) { usdt.classList.remove('on'); usdt.setAttribute('aria-checked', 'false'); }
+    var main = $('btnConfirmDeposit');
+    if (main) {
+      main.hidden = false;
+      main.textContent = t('depositConfirm');
+    }
+    resetOxaWallet();
+    showDepositStep('select');
   }
 
   function stopOxaPoll() {
@@ -2270,6 +2301,8 @@
     }
     syncOxaLabels();
     var qr = $('usdtQr');
+    var wrap = $('oxaQrWrap');
+    if (wrap) wrap.classList.remove('hidden');
     var src = (inv && inv.qr) || (liveDepositAddr
       ? ('https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(liveDepositAddr))
       : '');
@@ -2340,13 +2373,13 @@
 
   async function showCryptoInvoice() {
     if (depositPayMethod !== 'usdt') return;
-    var min = minDeposit();
-    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < min) {
+    var amt = enforceOxaMin();
+    var need = oxaMinUsd();
+    if (amt + 0.0001 < need) {
       showFieldError('depositAmt', t('depositMinErr'));
+      toast(t('oxaMinAmt').replace('{amt}', String(need)).replace('{net}', oxaNetworkName()).replace('{coin}', oxaMeta(oxaAsset).symbol), 'err');
       return;
     }
-    usdtAmt = amt;
     lastUsdtCredit = 0;
     liveDepositAddr = '';
     oxaInvoice = null;
@@ -2354,16 +2387,14 @@
     stopOxaPoll();
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
     if ($('usdtAddr')) $('usdtAddr').textContent = '…';
-    if ($('oxaQrWrap')) $('oxaQrWrap').classList.add('hidden');
-    var tog = $('btnOxaQrToggle');
-    if (tog) tog.textContent = t('cryptoShowQr');
+    if ($('oxaQrWrap')) $('oxaQrWrap').classList.remove('hidden');
     var note = $('usdtPendingNote');
     if (note) {
       note.hidden = true;
       note.classList.remove('is-err');
     }
     if ($('usdtBusy')) $('usdtBusy').hidden = false;
-    showDepositStep('select');
+    showDepositStep('crypto');
     try {
       var tok = await ensureApiToken();
       var remote = await postOxaInvoice({
@@ -3280,6 +3311,7 @@
         oxaCoin = oxaCoinKey();
         paintOxaCoinBtn();
         syncOxaNetUi();
+        enforceOxaMin();
         syncOxaLabels();
         closeOxaMenus();
         scheduleOxaInvoice();
@@ -3299,11 +3331,9 @@
       closeOxaMenus();
     });
     if ($('btnUsdtCopy')) bindAndroidTap($('btnUsdtCopy'), function () { copyUsdtAddr(); });
-    if ($('btnOxaQrToggle')) bindAndroidTap($('btnOxaQrToggle'), function () {
-      var wrap = $('oxaQrWrap');
-      if (!wrap) return;
-      var on = wrap.classList.toggle('hidden');
-      $('btnOxaQrToggle').textContent = on ? t('cryptoShowQr') : t('cryptoHideQr');
+    if ($('btnUsdtBack')) bindAndroidTap($('btnUsdtBack'), function () {
+      resetOxaWallet();
+      setDepositPayMethod('card');
     });
     if ($('btnUsdtOk')) $('btnUsdtOk').addEventListener('click', function (e) {
       e.preventDefault();
