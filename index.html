@@ -30,7 +30,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=111">
+  <link rel="stylesheet" href="css/app.css?v=113">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -532,62 +532,62 @@
     <div class="modal-box glass withdraw-box deposit-box" id="depositBox">
       <button type="button" class="btn-close" id="closeDeposit">✕</button>
       <div id="depositStepSelect">
-        <div class="modal-title">Deposit in USD</div>
+        <div class="modal-title" data-i18n="depositTitle">Deposit in USD</div>
         <div class="field">
-          <label for="depositAmt">Amount (USD)</label>
+          <label for="depositAmt" data-i18n="depositAmtLabel">Amount (USD)</label>
           <input id="depositAmt" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
-          <p class="hint-min">Minimum $3</p>
+          <p class="hint-min" data-i18n="depositMin">Minimum $3</p>
           <p class="err-msg" id="err-depositAmt"></p>
         </div>
-        <div class="pay-method-label">Payment method</div>
-        <div class="pay-method-grid" role="radiogroup" aria-label="Payment method">
+        <div class="pay-method-label" data-i18n="payMethodLabel">Payment method</div>
+        <div class="pay-method-grid" role="radiogroup" data-i18n-aria="payMethodLabel">
           <button type="button" class="pay-method-card on" id="payMethodCard" data-pay="card" role="radio" aria-checked="true">
             <div class="pay-method-top">
-              <span class="pay-method-title">Card &amp; Instant Pay</span>
-              <span class="pay-method-rec">Recommended</span>
+              <span class="pay-method-title" data-i18n="payMethodCardTitle">Card &amp; Instant Pay</span>
+              <span class="pay-method-rec" data-i18n="payMethodCardRec">Recommended</span>
             </div>
-            <span class="pay-method-desc">Visa, Mastercard, Mobile Transfer</span>
+            <span class="pay-method-desc" data-i18n="payMethodCardDesc">Visa, Mastercard, Mobile Transfer</span>
           </button>
           <button type="button" class="pay-method-card" id="payMethodUsdt" data-pay="usdt" role="radio" aria-checked="false">
             <div class="pay-method-top">
-              <span class="pay-method-title">Crypto Deposit (USDT)</span>
+              <span class="pay-method-title" data-i18n="payMethodUsdtTitle">Crypto Deposit (USDT)</span>
             </div>
-            <span class="pay-method-desc">Tron Network (TRC-20)</span>
+            <span class="pay-method-desc" data-i18n="payMethodUsdtDesc">Tron Network (TRC-20)</span>
           </button>
         </div>
         <button type="button" class="btn-gold" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
       </div>
       <div id="depositStepCrypto" class="crypto-invoice hidden">
-        <button type="button" class="crypto-back" id="btnUsdtBack">← Back</button>
+        <button type="button" class="crypto-back" id="btnUsdtBack" data-i18n="cryptoBack">← Back</button>
         <div class="crypto-pay" id="usdtPayAmt">Pay 3.00 USDT</div>
-        <div class="crypto-live" id="usdtLiveBadge"><span class="crypto-dot"></span> Payment Gateway Active (TRC-20)</div>
+        <div class="crypto-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span data-i18n="cryptoLive">Payment Gateway Active (TRC-20)</span></div>
         <div class="crypto-qr-wrap">
           <img id="usdtQr" class="crypto-qr" alt="USDT TRC-20 deposit address" width="180" height="180">
         </div>
         <div class="crypto-addr-box">
-          <div class="crypto-addr-label">Official deposit address (Tron TRC-20)</div>
+          <div class="crypto-addr-label" data-i18n="cryptoAddrLabel">Official deposit address (Tron TRC-20)</div>
           <code class="crypto-addr" id="usdtAddr">TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1</code>
-          <button type="button" class="crypto-copy" id="btnUsdtCopy">Copy Address</button>
+          <button type="button" class="crypto-copy" id="btnUsdtCopy" data-i18n="cryptoCopy">Copy Address</button>
         </div>
         <ol class="crypto-guide">
-          <li>Send exact amount in USDT (TRC-20).</li>
-          <li>Copy the Transaction Hash (TxID) from your wallet.</li>
-          <li>Paste it below to activate your balance.</li>
+          <li data-i18n="cryptoGuide1">Send exact amount in USDT (TRC-20).</li>
+          <li data-i18n="cryptoGuide2">Copy the Transaction Hash (TxID) from your wallet.</li>
+          <li data-i18n="cryptoGuide3">Paste it below to activate your balance.</li>
         </ol>
         <div class="field crypto-hash-field">
-          <label for="usdtTxid">Transaction Hash (TxID)</label>
-          <input id="usdtTxid" type="text" autocomplete="off" maxlength="128" placeholder="Paste your TxID here">
+          <label for="usdtTxid" data-i18n="cryptoTxLabel">Transaction Hash (TxID)</label>
+          <input id="usdtTxid" type="text" autocomplete="off" maxlength="128" data-i18n-placeholder="cryptoTxPh" placeholder="Paste your TxID here">
           <p class="err-msg" id="err-usdtTxid"></p>
         </div>
         <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
         <p class="crypto-verify" id="usdtPendingNote" hidden>Verifying block confirmation on Tron...</p>
-        <button type="button" class="btn-gold crypto-pay-btn" id="btnUsdtConfirm">I HAVE MADE THE PAYMENT</button>
+        <button type="button" class="btn-gold crypto-pay-btn" id="btnUsdtConfirm" data-i18n="cryptoPayBtn">I HAVE MADE THE PAYMENT</button>
       </div>
       <div id="depositStepCryptoOk" class="crypto-ok hidden">
         <div class="crypto-ok-icon">✓</div>
-        <div class="crypto-ok-title">Deposit Submitted!</div>
-        <p class="crypto-ok-copy">Your account will be credited within 2–5 minutes.</p>
-        <button type="button" class="btn-gold" id="btnUsdtOk">Done</button>
+        <div class="crypto-ok-title" id="cryptoOkTitle" data-i18n="cryptoOkTitle">Payment confirmed!</div>
+        <p class="crypto-ok-copy" id="cryptoOkCopy">Your balance has been credited.</p>
+        <button type="button" class="btn-gold" id="btnUsdtOk" data-i18n="cryptoOkDone">Done</button>
       </div>
     </div>
   </div>
@@ -663,8 +663,8 @@
   </div>
 
   <script src="js/config.js?v=108"></script>
-  <script src="js/translations.js?v=106"></script>
-  <script src="js/i18n.js?v=108"></script>
+  <script src="js/translations.js?v=107"></script>
+  <script src="js/i18n.js?v=109"></script>
   <script src="js/store.js?v=105"></script>
   <script src="js/api.js?v=105"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -672,6 +672,6 @@
   <script src="js/auth.js?v=105"></script>
   <script src="js/engine.js?v=105"></script>
   <script src="js/chart.js?v=105"></script>
-  <script src="js/app.js?v=111"></script>
+  <script src="js/app.js?v=113"></script>
 </body>
 </html>

@@ -2060,65 +2060,253 @@ function orolado_purge_expired_pending(array &$db): void {
   }
 }
 
-function orolado_submit_usdt_deposit(array $req): array {
+function orolado_usdt_wallet(): string {
+  return 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
+}
+
+function orolado_usdt_contract(): string {
+  return 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+}
+
+function orolado_crypto_msg(string $code): string {
+  if ($code === 'propagating') {
+    return 'Transaction en cours de confirmation sur le réseau Tron. Si vous venez d\'envoyer les fonds, patientez 30 secondes et réessayez.';
+  }
+  if ($code === 'invalid') {
+    return 'Transaction invalide : les fonds n\'ont pas été envoyés à l\'adresse officielle de la plateforme.';
+  }
+  if ($code === 'reused') {
+    return 'Ce Hash de transaction a déjà été crédité.';
+  }
+  if ($code === 'min') {
+    return 'Le dépôt minimum est de $3.';
+  }
+  return 'Paiement confirmé ! Votre solde a été crédité.';
+}
+
+function tronscan_fetch_tx(string $txid): ?array {
+  if (!function_exists('curl_init')) return null;
+  $url = 'https://apilist.tronscanapi.com/api/transaction-info?hash=' . rawurlencode($txid);
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 8,
+    CURLOPT_CONNECTTIMEOUT => 4,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTPHEADER => [
+      'Accept: application/json',
+      'User-Agent: OROLADO-CryptoVerify/1.0',
+    ],
+  ]);
+  $raw = curl_exec($ch);
+  $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+  if (!is_string($raw) || $raw === '' || $code < 200 || $code >= 300) return null;
+  $json = json_decode($raw, true);
+  return is_array($json) ? $json : null;
+}
+
+function tronscan_usdt_amount(array $row): float {
+  $raw = $row['amount_str'] ?? $row['quant'] ?? $row['amount'] ?? '0';
+  if (is_array($raw)) $raw = $raw['amount_str'] ?? $raw['amount'] ?? '0';
+  $s = trim((string) $raw);
+  if ($s === '' || !is_numeric($s)) return 0.0;
+  if (strpos($s, '.') !== false) return (float) $s;
+  return (float) $s / 1000000;
+}
+
+function tronscan_trc20_transfers(array $info): array {
+  $out = [];
+  foreach (['trc20TransferInfo', 'tokenTransferInfo', 'trc20_info', 'transfersAllList'] as $key) {
+    $list = $info[$key] ?? null;
+    if (is_array($list) && (isset($list['to_address']) || isset($list['toAddress']) || isset($list['amount_str']))) {
+      $list = [$list];
+    }
+    if (!is_array($list)) continue;
+    foreach ($list as $row) {
+      if (is_array($row)) $out[] = $row;
+    }
+  }
+  return $out;
+}
+
+function tronscan_match_usdt(array $info): array {
+  $wallet = orolado_usdt_wallet();
+  $contract = strtolower(orolado_usdt_contract());
+  $ret = strtoupper((string) ($info['contractRet'] ?? $info['contract_ret'] ?? ''));
+  if (!empty($info['revert'])) {
+    return ['ok' => false, 'code' => 'invalid'];
+  }
+  $confirmed = !empty($info['confirmed']) || $ret === 'SUCCESS';
+  if (!$confirmed) return ['ok' => false, 'code' => 'propagating'];
+
+  $hash = (string) ($info['hash'] ?? $info['txID'] ?? $info['txid'] ?? '');
+  if ($hash === '') return ['ok' => false, 'code' => 'propagating'];
+
+  $toUs = 0.0;
+  $foundWrong = false;
+  $foundUsdt = false;
+  foreach (tronscan_trc20_transfers($info) as $row) {
+    $to = (string) ($row['to_address'] ?? $row['toAddress'] ?? $row['to'] ?? '');
+    $c = strtolower((string) ($row['contract_address'] ?? $row['contractAddress'] ?? $row['tokenName'] ?? ''));
+    $sym = strtoupper((string) ($row['symbol'] ?? $row['tokenAbbr'] ?? ''));
+    $isUsdt = ($c === $contract) || $sym === 'USDT' || strpos($c, 'tr7nhqjekqxgtci8q8zy4pl8otszgjlj6t') !== false;
+    if (!$isUsdt) continue;
+    $foundUsdt = true;
+    $amt = tronscan_usdt_amount($row);
+    if (strcasecmp($to, $wallet) !== 0) {
+      $foundWrong = true;
+      continue;
+    }
+    $toUs += $amt;
+  }
+  if ($toUs > 0) return ['ok' => true, 'amount' => $toUs];
+  if ($foundUsdt || $foundWrong) return ['ok' => false, 'code' => 'invalid'];
+  return ['ok' => false, 'code' => 'propagating'];
+}
+
+function orolado_txid_already_used(array $db, string $txid): bool {
+  foreach ($db['processedTx'] ?? [] as $seen) {
+    if (strcasecmp((string) $seen, $txid) === 0) return true;
+  }
+  return false;
+}
+
+function orolado_crypto_vault(array $db, string $uid): array {
+  $jsonVault = $db['vault'][$uid] ?? ['demo' => 0, 'real' => 0];
+  $vault = supabase_admin_vault($uid);
+  if (!$vault) $vault = $jsonVault;
+  else {
+    $vault['real'] = max((float) ($vault['real'] ?? 0), (float) ($jsonVault['real'] ?? 0));
+    $vault['demo'] = max((float) ($vault['demo'] ?? 0), (float) ($jsonVault['demo'] ?? 0));
+  }
+  return [
+    'demo' => orolado_money($vault['demo'] ?? 0),
+    'real' => orolado_money($vault['real'] ?? 0),
+  ];
+}
+
+function orolado_verify_crypto_deposit(array $req): array {
   $file = orolado_data_file();
   $db = load_db($file);
   $token = (string) ($req['token'] ?? '');
   $me = orolado_session_user($db, $token);
-  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
-
-  $amountUsd = orolado_money($req['amount'] ?? 0);
-  if ($amountUsd + 0.0001 < orolado_min_deposit($me)) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
+  if (!$me) {
+    return ['ok' => false, 'server' => true, 'code' => 'session', 'reason' => 'Session invalide'];
   }
 
   $txid = preg_replace('/\s+/', '', (string) ($req['txid'] ?? $req['txId'] ?? $req['hash'] ?? ''));
-  if (strlen($txid) < 8 || strlen($txid) > 128 || !preg_match('/^[a-zA-Z0-9]+$/', $txid)) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Hash de transaction invalide'];
+  if (strlen($txid) < 8 || strlen($txid) > 128 || !preg_match('/^[a-fA-F0-9]+$/', $txid)) {
+    return ['ok' => false, 'server' => true, 'code' => 'txid', 'reason' => 'Saisissez un TxID Tron valide'];
   }
 
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  $uid = (string) $me['id'];
   foreach ($db['deposits'] as $d) {
-    if (strcasecmp((string) ($d['txid'] ?? ''), $txid) === 0) {
-      return ['ok' => false, 'server' => true, 'reason' => 'Cette transaction a déjà été soumise'];
+    if (strcasecmp((string) ($d['txid'] ?? ''), $txid) !== 0
+      && strcasecmp((string) ($d['extId'] ?? ''), $txid) !== 0) {
+      continue;
+    }
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'COMPLETED' || $st === 'PAID') {
+      return ['ok' => false, 'server' => true, 'code' => 'reused', 'reason' => orolado_crypto_msg('reused')];
+    }
+    $owner = (string) ($d['userId'] ?? '');
+    if ($owner !== '' && $owner !== $uid) {
+      return ['ok' => false, 'server' => true, 'code' => 'reused', 'reason' => orolado_crypto_msg('reused')];
     }
   }
+  if (orolado_txid_already_used($db, $txid)) {
+    return ['ok' => false, 'server' => true, 'code' => 'reused', 'reason' => orolado_crypto_msg('reused')];
+  }
 
-  $ref = 'oro_usdt_' . bin2hex(random_bytes(10));
-  $addr = 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
-  $db['deposits'][] = [
-    'id' => $ref,
+  $info = tronscan_fetch_tx($txid);
+  if (!$info) {
+    return ['ok' => false, 'server' => true, 'code' => 'propagating', 'reason' => orolado_crypto_msg('propagating')];
+  }
+  $match = tronscan_match_usdt($info);
+  if (empty($match['ok'])) {
+    $code = (string) ($match['code'] ?? 'propagating');
+    return ['ok' => false, 'server' => true, 'code' => $code, 'reason' => orolado_crypto_msg($code)];
+  }
+
+  $realAmt = orolado_money($match['amount'] ?? 0);
+  if ($realAmt + 0.0001 < orolado_min_deposit($me)) {
+    return ['ok' => false, 'server' => true, 'code' => 'min', 'reason' => orolado_crypto_msg('min')];
+  }
+  if ($realAmt > orolado_max_deposit_usd()) {
+    return ['ok' => false, 'server' => true, 'code' => 'invalid', 'reason' => orolado_crypto_msg('invalid')];
+  }
+
+  $ref = '';
+  foreach ($db['deposits'] as $i => $d) {
+    if (strcasecmp((string) ($d['txid'] ?? ''), $txid) === 0 && (string) ($d['userId'] ?? '') === $uid) {
+      $ref = (string) ($d['id'] ?? $d['ref'] ?? '');
+      $db['deposits'][$i]['amount'] = $realAmt;
+      $db['deposits'][$i]['txid'] = $txid;
+      save_db($file, $db);
+      break;
+    }
+  }
+  if ($ref === '') {
+    $ref = 'oro_usdt_' . bin2hex(random_bytes(10));
+    $db['deposits'][] = [
+      'id' => $ref,
+      'ref' => $ref,
+      'userId' => $uid,
+      'operator' => 'usdt',
+      'network' => 'TRC-20',
+      'status' => 'PENDING',
+      'amount' => $realAmt,
+      'currency' => 'USD',
+      'txid' => $txid,
+      'address' => orolado_usdt_wallet(),
+      'at' => date('c')
+    ];
+    save_db($file, $db);
+    supabase_insert_deposit([
+      'id' => $ref,
+      'user_id' => $uid,
+      'amount' => $realAmt,
+      'status' => 'PENDING',
+      'reference' => $ref,
+      'operator' => 'usdt',
+    ]);
+    supabase_patch_deposit($ref, ['txid' => $txid]);
+  }
+
+  $paid = credit_paid_deposit([
     'ref' => $ref,
-    'userId' => $me['id'],
-    'operator' => 'usdt',
-    'network' => 'TRC-20',
-    'status' => 'PENDING',
-    'amount' => $amountUsd,
-    'currency' => 'USD',
-    'txid' => $txid,
-    'address' => $addr,
-    'at' => date('c')
-  ];
-  save_db($file, $db);
+    'amount' => $realAmt,
+    'extId' => $txid,
+    'paid' => true,
+  ]);
+  if (!empty($paid['duplicate'])) {
+    return ['ok' => false, 'server' => true, 'code' => 'reused', 'reason' => orolado_crypto_msg('reused')];
+  }
+  if (empty($paid['ok']) || (!empty($paid['reason']) && empty($paid['amount']))) {
+    return ['ok' => false, 'server' => true, 'code' => 'propagating', 'reason' => orolado_crypto_msg('propagating')];
+  }
 
-  $sb = [
-    'id' => $ref,
-    'user_id' => $me['id'],
-    'amount' => $amountUsd,
-    'status' => 'PENDING',
-    'reference' => $ref,
-    'operator' => 'usdt',
-  ];
-  supabase_insert_deposit($sb);
-  supabase_patch_deposit($ref, ['txid' => $txid]);
-
+  $credited = orolado_money($paid['amount'] ?? $realAmt);
+  $db = load_db($file);
+  $vault = orolado_crypto_vault($db, $uid);
   return [
     'ok' => true,
     'server' => true,
-    'pending' => true,
+    'paid' => true,
+    'success' => true,
+    'amount' => $credited,
+    'vault' => $vault,
+    'new_balance' => $vault['real'],
     'ref' => $ref,
-    'amount' => $amountUsd,
-    'status' => 'pending'
+    'txid' => $txid,
+    'code' => 'credited',
+    'reason' => orolado_crypto_msg('credited'),
   ];
+}
+
+function orolado_submit_usdt_deposit(array $req): array {
+  return orolado_verify_crypto_deposit($req);
 }
 

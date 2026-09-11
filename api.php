@@ -1169,8 +1169,8 @@ if ($action === 'confirmDeposit') {
   exit;
 }
 
-if ($action === 'submitUsdtDeposit') {
-  echo json_encode(orolado_submit_usdt_deposit(['token' => $token] + $req));
+if ($action === 'submitUsdtDeposit' || $action === 'verifyCryptoDeposit') {
+  echo json_encode(orolado_verify_crypto_deposit(['token' => $token] + $req));
   exit;
 }
 

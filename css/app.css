@@ -539,13 +539,14 @@ html.is-android #chartOverlay{
 .crypto-hash-field input{min-height:48px;font-size:.88rem}
 .crypto-spin{margin:8px auto}
 .crypto-verify{margin:0 0 10px;text-align:center;font-size:.78rem;font-weight:700;color:var(--gold)}
+.crypto-verify.is-err{color:#f87171}
 .crypto-pay-btn{width:100%;min-height:48px;font-size:.88rem;letter-spacing:.04em}
 .crypto-ok{text-align:center;padding:28px 8px 12px}
 .crypto-ok-icon{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;
   font-size:1.8rem;font-weight:900;color:#0B0E14;background:linear-gradient(180deg,#34D399,#059669);
   box-shadow:0 0 28px rgba(16,185,129,.4)}
-.crypto-ok-title{font-size:1.25rem;font-weight:900;color:#E8EEF9;margin-bottom:8px}
-.crypto-ok-copy{font-size:.88rem;font-weight:600;color:var(--muted);line-height:1.45;margin:0 0 20px}
+.crypto-ok-title{font-size:1.25rem;font-weight:900;color:#34D399;margin-bottom:8px}
+.crypto-ok-copy{font-size:.88rem;font-weight:600;color:#a7f3d0;line-height:1.45;margin:0 0 20px}
 html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{direction:ltr;unicode-bidi:isolate;text-align:center}
 .pay-mode-label{font-size:.72rem;font-weight:800;color:var(--muted);margin:10px 0 6px;letter-spacing:.03em}
 .hint-min{font-size:.62rem;font-weight:700;color:var(--muted);margin:4px 0 0}

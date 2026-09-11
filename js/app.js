@@ -552,6 +552,7 @@
       try { updatePayoutUi(); } catch (e0) { /* ignore */ }
     }
     applyAndroidTradeHint();
+    try { refreshCryptoI18n(); } catch (eCrypto) { /* ignore */ }
   });
 
   function fillCountrySelects() {
@@ -1702,6 +1703,106 @@
     return D6.Api.post('initiateDeposit', payload, 28000);
   }
 
+  async function postVerifyCrypto(payload) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
+    try {
+      var r = await fetch('api/deposit/verify-crypto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+        signal: ctrl ? ctrl.signal : undefined
+      });
+      if (r.ok) return await r.json();
+    } catch (e) {
+      console.error('OROLADO crypto verify', e);
+    } finally {
+      clearTimeout(timer);
+    }
+    return D6.Api.post('verifyCryptoDeposit', payload, 20000);
+  }
+
+  function applyUsdtCredit(remote) {
+    if (!remote || !remote.ok) return false;
+    if (!(remote.paid || remote.success) || !(remote.amount > 0)) return false;
+    var u = user();
+    var vault = remote.vault;
+    if (!vault && remote.new_balance > 0) vault = { real: remote.new_balance };
+    if (vault && u) D6.Store.importRemote(u, vault);
+    u = user();
+    if (u && vault) {
+      u.realDepositTotal = (Number(u.realDepositTotal) || 0) + Number(remote.amount || 0);
+      var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
+      u.requiredWagering = Math.floor((Number(u.realDepositTotal) || 0) * mult);
+      if (u.totalWageredSinceDeposit == null) u.totalWageredSinceDeposit = Number(u.realStakeVolume) || 0;
+      D6.Store.saveUser(u);
+    }
+    D6.holdDepositReal = true;
+    setTimeout(function () { D6.holdDepositReal = false; }, 25000);
+    if (u) {
+      lockBalanceOptimistic(
+        D6.Store.demoBalance(u),
+        D6.Store.realBalance ? D6.Store.realBalance(u) : 0,
+        20000
+      );
+    }
+    if (D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
+    if (D6.Supabase && D6.Supabase.pullVault) {
+      setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
+    }
+    updateBalance(true);
+    if (typeof playWinChime === 'function') playWinChime();
+    return true;
+  }
+
+  function cryptoVerifyMsg(remote) {
+    var code = remote && remote.code;
+    if (code === 'invalid') return t('cryptoErrInvalid');
+    if (code === 'reused') return t('cryptoErrReused');
+    if (code === 'min') return t('depositMinErr');
+    if (code === 'txid') return t('cryptoErrTx');
+    if (code === 'session') return t('sessionInvalid');
+    return t('cryptoErrPending');
+  }
+
+  function fmtCryptoAmt(n) {
+    return (Number(n) || 0).toFixed(2) + ' $';
+  }
+
+  function setCryptoOkCopy(amount) {
+    lastUsdtCredit = Number(amount) || 0;
+    if ($('cryptoOkTitle')) $('cryptoOkTitle').textContent = t('cryptoOkTitle');
+    if ($('cryptoOkCopy')) {
+      $('cryptoOkCopy').textContent = lastUsdtCredit > 0
+        ? t('cryptoOkCopy').replace('{amt}', fmtCryptoAmt(lastUsdtCredit))
+        : t('cryptoOkCopy').replace('{amt}', '');
+    }
+  }
+
+  function refreshCryptoI18n() {
+    var main = $('btnConfirmDeposit');
+    if (main) {
+      main.textContent = depositPayMethod === 'usdt' ? t('depositProceed') : t('depositConfirm');
+    }
+    if (usdtAmt > 0 && $('usdtPayAmt')) {
+      $('usdtPayAmt').textContent = t('cryptoPayAmt').replace('{amt}', usdtAmt.toFixed(2));
+    }
+    var payBtn = $('btnUsdtConfirm');
+    if (payBtn) {
+      payBtn.textContent = usdtSubmitting ? t('cryptoChecking') : t('cryptoPayBtn');
+    }
+    var copyBtn = $('btnUsdtCopy');
+    if (copyBtn && !copyBtn.classList.contains('is-copied')) {
+      copyBtn.textContent = t('cryptoCopy');
+    }
+    var note = $('usdtPendingNote');
+    if (note && !note.hidden && !note.classList.contains('is-err') && usdtSubmitting) {
+      note.textContent = t('cryptoChecking');
+    }
+    if (lastUsdtCredit > 0) setCryptoOkCopy(lastUsdtCredit);
+  }
+
   async function postDepositConfirm(payload) {
     // Délai borné : la vérification rend toujours la main à l'interface.
     var ctrl = window.AbortController ? new AbortController() : null;
@@ -1973,6 +2074,7 @@
   var USDT_ADDR = (D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1';
   var usdtAmt = 0;
   var usdtSubmitting = false;
+  var lastUsdtCredit = 0;
   var depositPayMethod = 'card';
 
   function showDepositStep(step) {
@@ -2001,7 +2103,7 @@
     var main = $('btnConfirmDeposit');
     if (main) {
       main.hidden = false;
-      main.textContent = depositPayMethod === 'usdt' ? 'PROCEED TO PAYMENT →' : 'CONFIRM DEPOSIT';
+      main.textContent = depositPayMethod === 'usdt' ? t('depositProceed') : t('depositConfirm');
     }
     if ($('usdtAddr')) $('usdtAddr').textContent = USDT_ADDR;
   }
@@ -2010,12 +2112,13 @@
     var min = minDeposit();
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
-      showFieldError('depositAmt', 'The minimum deposit is $3.');
-      toast('The minimum deposit is $3.', 'err');
+      showFieldError('depositAmt', t('depositMinErr'));
+      toast(t('depositMinErr'), 'err');
       return;
     }
     usdtAmt = amt;
-    if ($('usdtPayAmt')) $('usdtPayAmt').textContent = 'Pay ' + amt.toFixed(2) + ' USDT';
+    lastUsdtCredit = 0;
+    if ($('usdtPayAmt')) $('usdtPayAmt').textContent = t('cryptoPayAmt').replace('{amt}', amt.toFixed(2));
     if ($('usdtAddr')) $('usdtAddr').textContent = USDT_ADDR;
     var qr = $('usdtQr');
     if (qr) {
@@ -2027,7 +2130,8 @@
     var note = $('usdtPendingNote');
     if (note) {
       note.hidden = true;
-      note.textContent = 'Verifying block confirmation on Tron...';
+      note.classList.remove('is-err');
+      note.textContent = t('cryptoChecking');
     }
     if ($('usdtBusy')) $('usdtBusy').hidden = true;
     var payBtn = $('btnUsdtConfirm');
@@ -2035,11 +2139,11 @@
       payBtn.disabled = false;
       payBtn.hidden = false;
       payBtn.classList.remove('busy');
-      payBtn.textContent = 'I HAVE MADE THE PAYMENT';
+      payBtn.textContent = t('cryptoPayBtn');
     }
     var copyBtn = $('btnUsdtCopy');
     if (copyBtn) {
-      copyBtn.textContent = 'Copy Address';
+      copyBtn.textContent = t('cryptoCopy');
       copyBtn.classList.remove('is-copied');
     }
     showDepositStep('crypto');
@@ -2048,13 +2152,13 @@
   function copyUsdtAddr() {
     var addr = USDT_ADDR;
     function ok() {
-      toast('✓ Copied to clipboard!', 'ok');
+      toast(t('cryptoCopied'), 'ok');
       var btn = $('btnUsdtCopy');
       if (!btn) return;
-      btn.textContent = '✓ Copied to clipboard!';
+      btn.textContent = t('cryptoCopied');
       btn.classList.add('is-copied');
       setTimeout(function () {
-        btn.textContent = 'Copy Address';
+        btn.textContent = t('cryptoCopy');
         btn.classList.remove('is-copied');
       }, 1800);
     }
@@ -2084,8 +2188,8 @@
     }
     var txid = String(($('usdtTxid') && $('usdtTxid').value) || '').replace(/\s+/g, '');
     if (txid.length < 8 || !/^[a-zA-Z0-9]+$/.test(txid)) {
-      if ($('err-usdtTxid')) $('err-usdtTxid').textContent = 'Enter a valid Tron TxID';
-      toast('Enter a valid Tron TxID', 'err');
+      if ($('err-usdtTxid')) $('err-usdtTxid').textContent = t('cryptoErrTx');
+      toast(t('cryptoErrTx'), 'err');
       return;
     }
     if ($('err-usdtTxid')) $('err-usdtTxid').textContent = '';
@@ -2094,36 +2198,54 @@
     if (btn) {
       btn.disabled = true;
       btn.classList.add('busy');
-      btn.textContent = 'Verifying block confirmation on Tron...';
+      btn.textContent = t('cryptoChecking');
     }
     if ($('usdtBusy')) $('usdtBusy').hidden = false;
     var note = $('usdtPendingNote');
     if (note) {
       note.hidden = false;
-      note.textContent = 'Verifying block confirmation on Tron...';
+      note.classList.remove('is-err');
+      note.textContent = t('cryptoChecking');
     }
     try {
       var tok = await ensureApiToken();
-      var remote = await D6.Api.post('submitUsdtDeposit', {
+      var uNow = user();
+      var remote = await postVerifyCrypto({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
-        amount: usdtAmt || D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0),
-        txid: txid
-      }, 15000);
+        txid: txid,
+        userId: uNow && uNow.id ? uNow.id : ''
+      });
       if (!remote || remote.ok === false) {
-        toast((remote && remote.reason) || t('sessionInvalid'), 'err');
+        var fail = cryptoVerifyMsg(remote);
+        if ($('err-usdtTxid')) $('err-usdtTxid').textContent = fail;
+        if (note) {
+          note.hidden = false;
+          note.classList.add('is-err');
+          note.textContent = fail;
+        }
+        toast(fail, 'err', 5200);
         return;
       }
+      applyUsdtCredit(remote);
+      setCryptoOkCopy(remote.amount);
       showDepositStep('ok');
-      toast('Deposit submitted. Credit in 2–5 minutes.', 'ok', 4200);
+      toast(t('cryptoOkTitle') + ' ' + t('cryptoOkCopy').replace('{amt}', fmtCryptoAmt(remote.amount)), 'ok', 4200);
     } catch (err) {
-      toast((err && err.message) || t('sessionInvalid'), 'err');
+      var wait = t('cryptoErrPending');
+      if ($('err-usdtTxid')) $('err-usdtTxid').textContent = wait;
+      if (note) {
+        note.hidden = false;
+        note.classList.add('is-err');
+        note.textContent = wait;
+      }
+      toast(wait, 'err', 5200);
     } finally {
       usdtSubmitting = false;
       if ($('usdtBusy')) $('usdtBusy').hidden = true;
       if (btn && !btn.hidden) {
         btn.disabled = false;
         btn.classList.remove('busy');
-        btn.textContent = 'I HAVE MADE THE PAYMENT';
+        btn.textContent = t('cryptoPayBtn');
       }
     }
   }
