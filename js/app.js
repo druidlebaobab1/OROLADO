@@ -278,10 +278,14 @@
 
   function toast(msg, kind, ms) {
     var el = $('toast');
-    el.textContent = msg;
-    el.className = 'toast show ' + (kind || '');
+    if (!el) return;
+    var tone = kind === 'err' || kind === 'ok' ? kind : 'info';
+    el.className = 'toast lux-msg show ' + tone;
+    el.innerHTML = '<span class="lux-msg-ico" aria-hidden="true"></span><span class="lux-msg-txt"></span>';
+    var txt = el.querySelector('.lux-msg-txt');
+    if (txt) txt.textContent = msg;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.className = 'toast'; }, ms || 2400);
+    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 2800);
   }
 
   function guardLiveTradeView() {
@@ -2499,16 +2503,35 @@
     if ($('wdDestination')) $('wdDestination').value = '';
     syncWithdrawDestUi();
     refreshWithdrawUi();
-    closeDrawer();
-    openModal('withdrawModal');
+    openFromProfile('withdrawModal');
   }
 
   function digitsPhone(raw) {
     return String(raw || '').replace(/\D/g, '');
   }
 
-  function openModal(id) { $(id).classList.add('active'); }
-  function closeModal(id) { $(id).classList.remove('active'); }
+  var PROFILE_SUBVIEWS = {
+    financeModal: 1,
+    withdrawModal: 1,
+    passModal: 1,
+    historySheet: 1
+  };
+  var returnToProfile = false;
+
+  function openFromProfile(id) {
+    returnToProfile = true;
+    closeDrawer();
+    openModal(id);
+  }
+
+  function openModal(id) { if ($(id)) $(id).classList.add('active'); }
+  function closeModal(id) {
+    if ($(id)) $(id).classList.remove('active');
+    if (returnToProfile && PROFILE_SUBVIEWS[id]) {
+      returnToProfile = false;
+      setTimeout(function () { openDrawer(); }, 90);
+    }
+  }
 
   function fmtWhen(iso) {
     if (!iso) return '';
@@ -2990,6 +3013,7 @@
     $('btnProfile').addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      returnToProfile = false;
       openDrawer();
     });
     $('btnCloseDrawer').addEventListener('click', closeDrawer);
@@ -3005,6 +3029,7 @@
         var now = Date.now();
         if (now - last < 400) return;
         last = now;
+        returnToProfile = true;
         closeDrawer();
         openHistorySheet(mode);
       }
@@ -3034,7 +3059,7 @@
       }
       openDeposit();
     });
-    $('btnOpenPass').addEventListener('click', function () { closeDrawer(); openModal('passModal'); });
+    $('btnOpenPass').addEventListener('click', function () { openFromProfile('passModal'); });
     bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
     $('formPassword').addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -3050,8 +3075,7 @@
       if (e) { e.preventDefault(); e.stopPropagation(); }
       if (openFinance._lock && Date.now() - openFinance._lock < 400) return;
       openFinance._lock = Date.now();
-      closeDrawer();
-      openModal('financeModal');
+      openFromProfile('financeModal');
       fillFinanceHistory();
     }
     bindAndroidTap($('closeFinance'), function () { closeModal('financeModal'); });

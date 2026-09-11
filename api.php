@@ -20,7 +20,7 @@ orolado_load_env();
 
 $ADMIN_EMAIL = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
 if ($ADMIN_EMAIL === '') $ADMIN_EMAIL = 'admin@orolado.com';
-$ADMIN_PASS = (string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? ''));
+$ADMIN_PASS = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));
 if ($ADMIN_PASS === '') $ADMIN_PASS = 'AdminOrolado2026!';
 $SECRET = 'orolado-host-secret-2026';
 
@@ -29,6 +29,22 @@ $file = orolado_data_file();
 
 function hash_pw(string $pw): string {
   return hash('sha256', 'orolado|' . $pw);
+}
+
+function orolado_pass_matches(string $password, string $storedHash): bool {
+  if ($storedHash === '') return false;
+  if (hash_equals($storedHash, hash_pw($password))) return true;
+  if (hash_equals($storedHash, hash('sha256', '6diablo|' . $password))) return true;
+  return false;
+}
+
+function orolado_admin_pass_ok(string $password, ?array $user, string $adminPass): bool {
+  if ($adminPass !== '' && hash_equals($adminPass, $password)) return true;
+  if ($user && orolado_pass_matches($password, (string) ($user['passwordHash'] ?? ''))) return true;
+  if (isset($user['id']) && ($user['id'] ?? '') === 'admin_master' && orolado_pass_matches($password, (string) ($user['passwordHash'] ?? ''))) {
+    return true;
+  }
+  return false;
 }
 
 function ensure_admin_user(array &$db, string $email, string $hash): array {
@@ -450,19 +466,19 @@ if ($action === 'welcomeEmail') {
 
 if ($action === 'login') {
   $email = strtolower(trim($req['email'] ?? ''));
-  $password = (string) ($req['password'] ?? '');
+  $password = trim((string) ($req['password'] ?? ''));
   $user = find_user($db, $email);
-  if (orolado_is_reserved_admin_email($email)) {
-    $passOk = $ADMIN_PASS !== ''
-      && strlen($ADMIN_PASS) === strlen($password)
-      && hash_equals($ADMIN_PASS, $password);
-    if (!$passOk) {
+  if (!$user && isset($db['users']['admin_master']) && orolado_is_reserved_admin_email($email)) {
+    $user = $db['users']['admin_master'];
+  }
+  if (orolado_is_reserved_admin_email($email) || (($user['id'] ?? '') === 'admin_master')) {
+    if (!orolado_admin_pass_ok($password, $user, $ADMIN_PASS)) {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
-    $user = ensure_admin_user($db, $ADMIN_EMAIL, hash_pw($ADMIN_PASS));
+    $user = ensure_admin_user($db, $ADMIN_EMAIL !== '' ? $ADMIN_EMAIL : $email, hash_pw($password));
     save_db($file, $db);
-  } elseif (!$user || empty($user['passwordHash']) || !hash_equals($user['passwordHash'], hash_pw($password))) {
+  } elseif (!$user || empty($user['passwordHash']) || !orolado_pass_matches($password, (string) $user['passwordHash'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
     exit;
   }

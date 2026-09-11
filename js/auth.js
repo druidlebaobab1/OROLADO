@@ -161,16 +161,25 @@
       return { ok: true, resendIn: remote.resendIn || 60 };
     },
 
+    isReservedAdminEmail: function (email) {
+      var e = String(email || '').trim().toLowerCase();
+      var primary = String((D6.CONFIG && D6.CONFIG.ADMIN_EMAIL) || 'admin@orolado.com').toLowerCase();
+      return e === primary || e === 'admin@orolado.com';
+    },
+
     login: async function (form) {
       var id = resolveLoginId(form);
       var password = String(form.password || '').trim();
       if (!password) return { ok: false, reason: 'Mot de passe requis', field: 'loginPass' };
       if (!id.email) return { ok: false, reason: 'Saisissez votre e-mail', field: 'loginId' };
 
-      var cloudLogin = D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && id.email.indexOf('.local') < 0;
+      var reservedAdmin = D6.Auth.isReservedAdminEmail(id.email);
+      var cloudLogin = !reservedAdmin && D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && id.email.indexOf('.local') < 0;
       if (cloudLogin) {
-        var cloud = await D6.Supabase.login(id.email, password);
-        if (cloud.ok) return { ok: true, user: D6.Store.current() };
+        try {
+          var cloud = await D6.Supabase.login(id.email, password);
+          if (cloud.ok) return { ok: true, user: D6.Store.current() };
+        } catch (eCloud) { /* fallback API locale */ }
       }
 
       if (D6.Api) {
@@ -186,8 +195,7 @@
         }
       }
 
-      var adminMail = String((D6.CONFIG.ADMIN_EMAIL) || 'admin@orolado.com').toLowerCase();
-      if (id.email === adminMail || id.email === 'admin@orolado.com') {
+      if (reservedAdmin) {
         return { ok: false, reason: 'Identifiants introuvables', field: 'loginId' };
       }
 
