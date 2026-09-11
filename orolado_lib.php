@@ -2667,10 +2667,18 @@ function orolado_oxapay_key(): string {
 
 function orolado_oxapay_coins(): array {
   return [
-    'usdt_trc20' => ['pay' => 'USDT', 'network' => 'TRC20', 'label' => 'USDT', 'netLabel' => 'TRC-20'],
+    'usdt_trc20' => ['pay' => 'USDT', 'network' => 'TRC20', 'label' => 'USDT', 'netLabel' => 'TRC20'],
+    'usdt_erc20' => ['pay' => 'USDT', 'network' => 'ERC20', 'label' => 'USDT', 'netLabel' => 'ERC20'],
+    'usdt_bep20' => ['pay' => 'USDT', 'network' => 'BEP20', 'label' => 'USDT', 'netLabel' => 'BEP20'],
+    'usdc' => ['pay' => 'USDC', 'network' => 'ERC20', 'label' => 'USDC', 'netLabel' => 'ERC20'],
     'trx' => ['pay' => 'TRX', 'network' => '', 'label' => 'TRX', 'netLabel' => 'Tron'],
     'btc' => ['pay' => 'BTC', 'network' => '', 'label' => 'BTC', 'netLabel' => 'Bitcoin'],
     'eth' => ['pay' => 'ETH', 'network' => '', 'label' => 'ETH', 'netLabel' => 'Ethereum'],
+    'ltc' => ['pay' => 'LTC', 'network' => '', 'label' => 'LTC', 'netLabel' => 'Litecoin'],
+    'bnb' => ['pay' => 'BNB', 'network' => 'BEP20', 'label' => 'BNB', 'netLabel' => 'BEP20'],
+    'sol' => ['pay' => 'SOL', 'network' => '', 'label' => 'SOL', 'netLabel' => 'Solana'],
+    'doge' => ['pay' => 'DOGE', 'network' => '', 'label' => 'DOGE', 'netLabel' => 'Dogecoin'],
+    'xrp' => ['pay' => 'XRP', 'network' => '', 'label' => 'XRP', 'netLabel' => 'XRP'],
   ];
 }
 

@@ -986,8 +986,7 @@
       dr.setAttribute('aria-hidden', 'false');
     }
     document.documentElement.classList.add('oro-profile-open');
-    if ($('logoutConfirm')) $('logoutConfirm').classList.add('hidden');
-    if ($('btnLogout')) $('btnLogout').classList.remove('hidden');
+    closeModal('logoutModal');
   }
   function closeDrawer() {
     var bd = $('drawerBackdrop');
@@ -1682,6 +1681,7 @@
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum $3';
     setDepositPayMethod('card');
+    resetOxaWallet();
     showDepositStep('select');
     closeDrawer();
     closeModal('convertModal');
@@ -1824,15 +1824,9 @@
     if (main) {
       main.textContent = depositPayMethod === 'usdt' ? t('depositProceed') : t('depositConfirm');
     }
-    if (usdtAmt > 0 && $('usdtPayAmt')) {
-      $('usdtPayAmt').textContent = t('cryptoPayAmt').replace('{amt}', '$' + usdtAmt.toFixed(2));
-    }
-    var copyBtn = $('btnUsdtCopy');
-    if (copyBtn && !copyBtn.classList.contains('is-copied')) {
-      copyBtn.textContent = t('cryptoCopy');
-    }
+    syncOxaLabels();
     var note = $('usdtPendingNote');
-    if (note && !note.classList.contains('is-err')) {
+    if (note && !note.classList.contains('is-err') && !note.hidden) {
       note.textContent = t('cryptoWait');
     }
     if (lastUsdtCredit > 0) setCryptoOkCopy(lastUsdtCredit);
@@ -2110,20 +2104,116 @@
   var usdtAmt = 0;
   var lastUsdtCredit = 0;
   var depositPayMethod = 'card';
+  var oxaAsset = 'usdt';
+  var oxaNet = 'TRC20';
   var oxaCoin = 'usdt_trc20';
   var oxaInvoice = null;
   var oxaPoll = 0;
+  var oxaTimer = 0;
   var liveDepositAddr = '';
+  var OXA_ASSETS = [
+    { id: 'usdt', symbol: 'USDT', name: 'Tether', color: '#26A17B', mark: '₮', nets: ['TRC20', 'ERC20', 'BEP20'] },
+    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$' },
+    { id: 'btc', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A', mark: '₿' },
+    { id: 'eth', symbol: 'ETH', name: 'Ethereum', color: '#627EEA', mark: 'Ξ' },
+    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T' },
+    { id: 'bnb', symbol: 'BNB', name: 'BNB', color: '#F3BA2F', mark: 'B' },
+    { id: 'sol', symbol: 'SOL', name: 'Solana', color: '#14F195', mark: 'S' },
+    { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł' },
+    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð' },
+    { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X' }
+  ];
+
+  function oxaMeta(id) {
+    var i;
+    for (i = 0; i < OXA_ASSETS.length; i++) if (OXA_ASSETS[i].id === id) return OXA_ASSETS[i];
+    return OXA_ASSETS[0];
+  }
+
+  function oxaCoinKey() {
+    if (oxaAsset === 'usdt') return 'usdt_' + String(oxaNet || 'TRC20').toLowerCase();
+    return oxaAsset;
+  }
+
+  function styleOxaAddr(addr) {
+    var a = String(addr || '');
+    if (!a || a === '—' || a === '…') return a;
+    if (a.length < 14) return '<span class="addr-hi">' + a + '</span>';
+    return '<span class="addr-hi">' + a.slice(0, 6) + '</span><span class="addr-mid">' + a.slice(6, -6) +
+      '</span><span class="addr-hi">' + a.slice(-6) + '</span>';
+  }
+
+  function closeOxaMenus() {
+    if ($('oxaCoinMenu')) $('oxaCoinMenu').classList.add('hidden');
+    if ($('oxaCoinBtn')) $('oxaCoinBtn').setAttribute('aria-expanded', 'false');
+  }
+
+  function paintOxaCoinBtn() {
+    var m = oxaMeta(oxaAsset);
+    if ($('oxaCoinIco')) {
+      $('oxaCoinIco').textContent = m.mark;
+      $('oxaCoinIco').style.background = m.color;
+    }
+    if ($('oxaCoinName')) $('oxaCoinName').textContent = m.name;
+    if ($('oxaCoinSym')) $('oxaCoinSym').textContent = m.symbol;
+  }
+
+  function fillOxaCoinList(q) {
+    var list = $('oxaCoinList');
+    if (!list) return;
+    q = String(q || '').toLowerCase().trim();
+    list.innerHTML = OXA_ASSETS.filter(function (c) {
+      if (!q) return true;
+      return (c.symbol + ' ' + c.name + ' ' + c.id).toLowerCase().indexOf(q) >= 0;
+    }).map(function (c) {
+      return '<button type="button" class="oxa-dd-opt' + (c.id === oxaAsset ? ' on' : '') + '" data-asset="' + c.id + '">' +
+        '<span class="oxa-ico" style="background:' + c.color + '">' + c.mark + '</span>' +
+        '<span class="oxa-dd-meta"><strong>' + c.name + '</strong><small>' + c.symbol + '</small></span></button>';
+    }).join('') || '<div class="empty-feed">—</div>';
+  }
+
+  function syncOxaNetUi() {
+    var wrap = $('oxaNetWrap');
+    var m = oxaMeta(oxaAsset);
+    if (wrap) wrap.classList.toggle('hidden', !(m.nets && m.nets.length));
+    document.querySelectorAll('#oxaNets .oxa-net').forEach(function (btn) {
+      btn.classList.toggle('on', btn.getAttribute('data-net') === oxaNet);
+    });
+  }
+
+  function syncOxaLabels() {
+    var m = oxaMeta(oxaAsset);
+    var coin = m.symbol;
+    if ($('oxaMinHint')) {
+      $('oxaMinHint').textContent = t('oxaMinAmt').replace('{amt}', '3').replace('{coin}', coin);
+    }
+    if ($('oxaWarnTxt')) {
+      $('oxaWarnTxt').textContent = t('oxaWarnOnly').replace('{coin}', coin);
+    }
+    var tog = $('btnOxaQrToggle');
+    var wrap = $('oxaQrWrap');
+    if (tog && wrap) tog.textContent = wrap.classList.contains('hidden') ? t('cryptoShowQr') : t('cryptoHideQr');
+  }
+
+  function resetOxaWallet() {
+    stopOxaPoll();
+    if (oxaTimer) { clearTimeout(oxaTimer); oxaTimer = 0; }
+    oxaInvoice = null;
+    liveDepositAddr = '';
+    if ($('oxaWalletBox')) $('oxaWalletBox').classList.add('hidden');
+    if ($('oxaQrWrap')) $('oxaQrWrap').classList.add('hidden');
+    if ($('usdtAddr')) $('usdtAddr').textContent = '—';
+    if ($('usdtBusy')) $('usdtBusy').hidden = true;
+    closeOxaMenus();
+  }
 
   function showDepositStep(step) {
     var select = $('depositStepSelect');
-    var crypto = $('depositStepCrypto');
     var ok = $('depositStepCryptoOk');
     var box = $('depositBox');
-    if (select) select.classList.toggle('hidden', step !== 'select');
-    if (crypto) crypto.classList.toggle('hidden', step !== 'crypto');
+    if (select) select.classList.toggle('hidden', step === 'ok');
     if (ok) ok.classList.toggle('hidden', step !== 'ok');
-    if (box) box.classList.toggle('is-crypto', step === 'crypto' || step === 'ok');
+    if (box) box.classList.toggle('is-crypto', depositPayMethod === 'usdt' && step !== 'ok');
   }
 
   function setDepositPayMethod(method) {
@@ -2140,10 +2230,18 @@
     }
     var main = $('btnConfirmDeposit');
     if (main) {
-      main.hidden = false;
-      main.textContent = depositPayMethod === 'usdt' ? t('depositProceed') : t('depositConfirm');
+      main.hidden = depositPayMethod === 'usdt';
+      main.textContent = t('depositConfirm');
     }
-    if ($('oxaCoins')) $('oxaCoins').classList.toggle('hidden', depositPayMethod !== 'usdt');
+    if ($('oxaPickWrap')) $('oxaPickWrap').classList.toggle('hidden', depositPayMethod !== 'usdt');
+    if (depositPayMethod === 'usdt') {
+      paintOxaCoinBtn();
+      syncOxaNetUi();
+      syncOxaLabels();
+      scheduleOxaInvoice();
+    } else {
+      resetOxaWallet();
+    }
   }
 
   function stopOxaPoll() {
@@ -2156,20 +2254,21 @@
   function paintOxaInvoice(inv) {
     oxaInvoice = inv;
     liveDepositAddr = String((inv && inv.address) || '');
-    var payCur = (inv && inv.payCurrency) || 'USDT';
+    var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
     var payAmt = Number((inv && inv.payAmount) || usdtAmt) || usdtAmt;
     if ($('usdtPayAmt')) {
       $('usdtPayAmt').textContent = t('cryptoPayAmt').replace('{amt}', payAmt + ' ' + payCur);
     }
-    if ($('usdtAddr')) $('usdtAddr').textContent = liveDepositAddr || '—';
+    if ($('usdtAddr')) $('usdtAddr').innerHTML = styleOxaAddr(liveDepositAddr || '—');
+    if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
     if ($('oxaNetLabel')) {
-      $('oxaNetLabel').textContent = ((inv && inv.network) || 'TRC-20') + ' · ' + t('cryptoWait');
+      $('oxaNetLabel').textContent = ((inv && inv.network) || oxaNet || payCur) + ' · ' + t('cryptoWait');
     }
     if ($('oxaAddrLabel')) {
       var memo = String((inv && inv.memo) || '');
-      $('oxaAddrLabel').textContent = ((inv && inv.network) || 'TRC-20') + ' · ' + payCur
-        + (memo ? ' · MEMO ' + memo : '');
+      $('oxaAddrLabel').textContent = t('oxaWalletTitle') + (memo ? ' · MEMO ' + memo : '');
     }
+    syncOxaLabels();
     var qr = $('usdtQr');
     var src = (inv && inv.qr) || (liveDepositAddr
       ? ('https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(liveDepositAddr))
@@ -2180,9 +2279,8 @@
     }
     var note = $('usdtPendingNote');
     if (note) {
-      note.hidden = false;
+      note.hidden = true;
       note.classList.remove('is-err');
-      note.textContent = t('cryptoWait');
     }
   }
 
@@ -2235,31 +2333,37 @@
     }, 6000);
   }
 
+  function scheduleOxaInvoice() {
+    if (oxaTimer) clearTimeout(oxaTimer);
+    oxaTimer = setTimeout(function () { showCryptoInvoice(); }, 280);
+  }
+
   async function showCryptoInvoice() {
+    if (depositPayMethod !== 'usdt') return;
     var min = minDeposit();
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('depositMinErr'));
-      toast(t('depositMinErr'), 'err');
       return;
     }
     usdtAmt = amt;
     lastUsdtCredit = 0;
     liveDepositAddr = '';
     oxaInvoice = null;
-    if ($('usdtPayAmt')) $('usdtPayAmt').textContent = t('cryptoPayAmt').replace('{amt}', '$' + amt.toFixed(2));
+    oxaCoin = oxaCoinKey();
+    stopOxaPoll();
+    if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
     if ($('usdtAddr')) $('usdtAddr').textContent = '…';
     if ($('oxaQrWrap')) $('oxaQrWrap').classList.add('hidden');
     var tog = $('btnOxaQrToggle');
     if (tog) tog.textContent = t('cryptoShowQr');
     var note = $('usdtPendingNote');
     if (note) {
-      note.hidden = false;
+      note.hidden = true;
       note.classList.remove('is-err');
-      note.textContent = t('cryptoChecking') || t('cryptoWait');
     }
     if ($('usdtBusy')) $('usdtBusy').hidden = false;
-    showDepositStep('crypto');
+    showDepositStep('select');
     try {
       var tok = await ensureApiToken();
       var remote = await postOxaInvoice({
@@ -2269,6 +2373,7 @@
       });
       if (!remote || !remote.ok || !remote.address) {
         if (note) {
+          note.hidden = false;
           note.classList.add('is-err');
           note.textContent = (remote && remote.reason) || t('sessionInvalid');
         }
@@ -2279,6 +2384,7 @@
       startOxaPoll();
     } catch (err) {
       if (note) {
+        note.hidden = false;
         note.classList.add('is-err');
         note.textContent = t('cryptoErrPending');
       }
@@ -2294,12 +2400,8 @@
       toast(t('cryptoCopied'), 'ok');
       var btn = $('btnUsdtCopy');
       if (!btn) return;
-      btn.textContent = t('cryptoCopied');
       btn.classList.add('is-copied');
-      setTimeout(function () {
-        btn.textContent = t('cryptoCopy');
-        btn.classList.remove('is-copied');
-      }, 1800);
+      setTimeout(function () { btn.classList.remove('is-copied'); }, 1800);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(addr).then(ok).catch(function () {
@@ -3148,34 +3250,60 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     bindAndroidTap($('closeWithdraw'), function () { closeModal('withdrawModal'); });
     bindAndroidTap($('closeDeposit'), function () {
-      stopOxaPoll();
+      resetOxaWallet();
       closeModal('depositModal');
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
-    document.querySelectorAll('#oxaCoins .oxa-coin').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        oxaCoin = btn.getAttribute('data-coin') || 'usdt_trc20';
-        document.querySelectorAll('#oxaCoins .oxa-coin').forEach(function (b) {
-          b.classList.toggle('on', b === btn);
-        });
+    if ($('oxaCoinBtn')) {
+      bindAndroidTap($('oxaCoinBtn'), function () {
+        var menu = $('oxaCoinMenu');
+        var open = menu && menu.classList.contains('hidden');
+        if (open) {
+          fillOxaCoinList(($('oxaCoinSearch') && $('oxaCoinSearch').value) || '');
+          menu.classList.remove('hidden');
+          $('oxaCoinBtn').setAttribute('aria-expanded', 'true');
+          if ($('oxaCoinSearch')) $('oxaCoinSearch').focus();
+        } else closeOxaMenus();
+      });
+    }
+    if ($('oxaCoinSearch')) {
+      $('oxaCoinSearch').addEventListener('input', function () { fillOxaCoinList(this.value); });
+    }
+    if ($('oxaCoinList')) {
+      $('oxaCoinList').addEventListener('click', function (e) {
+        var opt = e.target && e.target.closest ? e.target.closest('[data-asset]') : null;
+        if (!opt) return;
+        oxaAsset = opt.getAttribute('data-asset') || 'usdt';
+        var meta = oxaMeta(oxaAsset);
+        oxaNet = (meta.nets && meta.nets[0]) || '';
+        oxaCoin = oxaCoinKey();
+        paintOxaCoinBtn();
+        syncOxaNetUi();
+        syncOxaLabels();
+        closeOxaMenus();
+        scheduleOxaInvoice();
+      });
+    }
+    document.querySelectorAll('#oxaNets .oxa-net').forEach(function (btn) {
+      bindAndroidTap(btn, function () {
+        oxaNet = btn.getAttribute('data-net') || 'TRC20';
+        oxaCoin = oxaCoinKey();
+        syncOxaNetUi();
+        scheduleOxaInvoice();
       });
     });
-    if ($('btnUsdtCopy')) $('btnUsdtCopy').addEventListener('click', function (e) {
-      e.preventDefault();
-      copyUsdtAddr();
+    document.addEventListener('click', function (e) {
+      if (!$('oxaPickWrap') || $('oxaPickWrap').classList.contains('hidden')) return;
+      if (e.target && e.target.closest && e.target.closest('#oxaPickWrap')) return;
+      closeOxaMenus();
     });
-    if ($('btnOxaQrToggle')) $('btnOxaQrToggle').addEventListener('click', function (e) {
-      e.preventDefault();
+    if ($('btnUsdtCopy')) bindAndroidTap($('btnUsdtCopy'), function () { copyUsdtAddr(); });
+    if ($('btnOxaQrToggle')) bindAndroidTap($('btnOxaQrToggle'), function () {
       var wrap = $('oxaQrWrap');
       if (!wrap) return;
       var on = wrap.classList.toggle('hidden');
-      this.textContent = on ? t('cryptoShowQr') : t('cryptoHideQr');
-    });
-    if ($('btnUsdtBack')) $('btnUsdtBack').addEventListener('click', function (e) {
-      e.preventDefault();
-      stopOxaPoll();
-      showDepositStep('select');
+      $('btnOxaQrToggle').textContent = on ? t('cryptoShowQr') : t('cryptoHideQr');
     });
     if ($('btnUsdtOk')) $('btnUsdtOk').addEventListener('click', function (e) {
       e.preventDefault();
@@ -3234,6 +3362,7 @@
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
         this.value = String(this.value || '').replace(/[^\d.]/g, '');
+        if (depositPayMethod === 'usdt') scheduleOxaInvoice();
       });
     }
     $('btnConfirmDeposit').addEventListener('click', function (e) {
@@ -3295,24 +3424,12 @@
       toast(t('withdrawBtn'), 'ok');
     });
     function hideLogoutConfirm() {
-      if ($('logoutConfirm')) $('logoutConfirm').classList.add('hidden');
-      if ($('btnLogout')) $('btnLogout').classList.remove('hidden');
+      closeModal('logoutModal');
     }
-    function askLogout(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      }
-      if ($('logoutConfirm')) $('logoutConfirm').classList.remove('hidden');
-      if ($('btnLogout')) $('btnLogout').classList.add('hidden');
+    function askLogout() {
+      openModal('logoutModal');
     }
-    async function doLogout(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      }
+    async function doLogout() {
       hideLogoutConfirm();
       closeDrawer();
       D6.Chart.stop();
@@ -3321,17 +3438,12 @@
       ensureGuest();
       enterApp();
     }
-    var logoutBtn = $('btnLogout');
-    logoutBtn.addEventListener('click', askLogout, true);
-    logoutBtn.addEventListener('pointerup', askLogout);
-    if ($('btnLogoutYes')) {
-      $('btnLogoutYes').addEventListener('click', doLogout, true);
-      $('btnLogoutYes').addEventListener('pointerup', doLogout);
-    }
-    if ($('btnLogoutNo')) {
-      $('btnLogoutNo').addEventListener('click', function (e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        hideLogoutConfirm();
+    bindAndroidTap($('btnLogout'), askLogout);
+    bindAndroidTap($('btnLogoutYes'), doLogout);
+    bindAndroidTap($('btnLogoutNo'), hideLogoutConfirm);
+    if ($('logoutModal')) {
+      $('logoutModal').addEventListener('click', function (e) {
+        if (e.target === $('logoutModal')) hideLogoutConfirm();
       });
     }
     document.querySelectorAll('.modal-backdrop').forEach(function (b) {

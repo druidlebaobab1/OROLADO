@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=116">
+  <link rel="stylesheet" href="css/app.css?v=117">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -383,16 +383,23 @@
         </div>
       </div>
     </nav>
-    <div id="logoutConfirm" class="logout-confirm hidden">
-      <p data-i18n="logoutAsk">Se déconnecter de ce compte ?</p>
-      <div class="logout-confirm-row">
-        <button type="button" class="ghost-gold" id="btnLogoutNo" data-i18n="cancel">Annuler</button>
-        <button type="button" class="btn-danger" id="btnLogoutYes" data-i18n="logout">Déconnexion</button>
-      </div>
-    </div>
-    <button type="button" class="btn-danger" id="btnLogout" data-i18n="logout">Déconnexion</button>
+    <button type="button" class="drawer-logout" id="btnLogout">
+      <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2M4 12h11m-3-4 4 4-4 4"/></svg>
+      <span data-i18n="logout">Déconnexion</span>
+    </button>
     <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
   </aside>
+
+  <div class="modal-backdrop" id="logoutModal">
+    <div class="modal-box glass logout-box">
+      <div class="modal-title" data-i18n="logoutTitle">Confirm sign out?</div>
+      <p class="logout-lead" data-i18n="logoutLead">You will need your credentials to access this account again.</p>
+      <div class="logout-modal-row">
+        <button type="button" class="logout-cancel" id="btnLogoutNo" data-i18n="cancel">Cancel</button>
+        <button type="button" class="logout-go" id="btnLogoutYes" data-i18n="logoutGo">Sign out</button>
+      </div>
+    </div>
+  </div>
 
   <section id="screenAdmin" class="screen admin-screen hidden">
     <div class="admin-head">
@@ -560,44 +567,62 @@
               <span class="pay-method-title" data-i18n="payMethodCardTitle">Card &amp; Instant Pay</span>
               <span class="pay-method-rec" data-i18n="payMethodCardRec">Recommended</span>
             </div>
-            <span class="pay-method-desc" data-i18n="payMethodCardDesc">Visa, Mastercard, Mobile Transfer</span>
+            <span class="pay-method-desc" data-i18n="payMethodCardDesc">Visa, Mastercard</span>
           </button>
           <button type="button" class="pay-method-card" id="payMethodUsdt" data-pay="usdt" role="radio" aria-checked="false">
             <div class="pay-method-top">
               <span class="pay-method-title" data-i18n="payMethodUsdtTitle">Crypto (OxaPay)</span>
             </div>
-            <span class="pay-method-desc" data-i18n="payMethodUsdtDesc">USDT, TRX, BTC, ETH — auto credit</span>
+            <span class="pay-method-desc" data-i18n="payMethodUsdtDesc">USDT, BTC, ETH, TRX and more</span>
           </button>
         </div>
-        <div id="oxaCoins" class="oxa-coins hidden" role="radiogroup">
-          <button type="button" class="oxa-coin on" data-coin="usdt_trc20">USDT <small>TRC-20</small></button>
-          <button type="button" class="oxa-coin" data-coin="trx">TRX</button>
-          <button type="button" class="oxa-coin" data-coin="btc">BTC</button>
-          <button type="button" class="oxa-coin" data-coin="eth">ETH</button>
+        <div id="oxaPickWrap" class="oxa-pick-wrap hidden">
+          <div class="oxa-field">
+            <label for="oxaCoinBtn" data-i18n="oxaSelectCoin">Select currency</label>
+            <button type="button" class="oxa-dd-btn" id="oxaCoinBtn" aria-haspopup="listbox" aria-expanded="false">
+              <span class="oxa-ico" id="oxaCoinIco">₮</span>
+              <span class="oxa-dd-meta">
+                <strong id="oxaCoinName">Tether</strong>
+                <small id="oxaCoinSym">USDT</small>
+              </span>
+              <span class="oxa-dd-chev">▾</span>
+            </button>
+            <div id="oxaCoinMenu" class="oxa-dd hidden" role="listbox">
+              <input id="oxaCoinSearch" type="search" autocomplete="off" inputmode="search" data-i18n-placeholder="oxaSearchCoin" placeholder="Search…">
+              <div id="oxaCoinList" class="oxa-dd-list"></div>
+            </div>
+          </div>
+          <div id="oxaNetWrap" class="oxa-field">
+            <label data-i18n="oxaSelectNet">Select network</label>
+            <div id="oxaNets" class="oxa-nets" role="radiogroup">
+              <button type="button" class="oxa-net on" data-net="TRC20">TRC20</button>
+              <button type="button" class="oxa-net" data-net="ERC20">ERC20</button>
+              <button type="button" class="oxa-net" data-net="BEP20">BEP20</button>
+            </div>
+          </div>
+          <div id="oxaWalletBox" class="oxa-wallet hidden">
+            <div class="oxa-wallet-title" id="oxaAddrLabel" data-i18n="oxaWalletTitle">Wallet address</div>
+            <code class="oxa-wallet-addr" id="usdtAddr">—</code>
+            <div class="oxa-wallet-actions">
+              <button type="button" class="oxa-act" id="btnOxaQrToggle" data-i18n="cryptoShowQr">Show QR</button>
+              <button type="button" class="oxa-act oxa-act-ico" id="btnUsdtCopy" data-i18n-aria="cryptoCopy" aria-label="Copy">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 16H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              </button>
+            </div>
+            <div class="crypto-qr-wrap hidden" id="oxaQrWrap">
+              <img id="usdtQr" class="crypto-qr" alt="Deposit QR" width="180" height="180">
+            </div>
+            <p class="oxa-min" id="oxaMinHint">Minimum amount: 3 USDT</p>
+            <p class="oxa-warn" id="oxaWarn"><span class="oxa-warn-ico" aria-hidden="true">ℹ</span><span id="oxaWarnTxt">Do not deposit any currency other than USDT to this address.</span></p>
+            <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel" data-i18n="cryptoWait">Waiting for confirmation…</span></div>
+            <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
+            <p class="crypto-verify" id="usdtPendingNote" hidden></p>
+            <span id="usdtPayAmt" hidden></span>
+          </div>
         </div>
         <button type="button" class="btn-gold" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
       </div>
-      <div id="depositStepCrypto" class="crypto-invoice hidden">
-        <button type="button" class="crypto-back" id="btnUsdtBack" data-i18n="cryptoBack">← Back</button>
-        <div class="crypto-pay" id="usdtPayAmt">Pay $3.00</div>
-        <div class="crypto-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel" data-i18n="cryptoLive">Waiting for payment</span></div>
-        <button type="button" class="crypto-copy ghost-gold" id="btnOxaQrToggle" data-i18n="cryptoShowQr">Show QR code</button>
-        <div class="crypto-qr-wrap hidden" id="oxaQrWrap">
-          <img id="usdtQr" class="crypto-qr" alt="Deposit QR" width="180" height="180">
-        </div>
-        <div class="crypto-addr-box">
-          <div class="crypto-addr-label" id="oxaAddrLabel" data-i18n="cryptoAddrLabel">Deposit address</div>
-          <code class="crypto-addr" id="usdtAddr">—</code>
-          <button type="button" class="crypto-copy" id="btnUsdtCopy" data-i18n="cryptoCopy">Copy Address</button>
-        </div>
-        <ol class="crypto-guide">
-          <li data-i18n="cryptoGuide1">Send the exact amount on the selected network.</li>
-          <li data-i18n="cryptoGuide2">Your balance updates automatically after confirmation.</li>
-          <li data-i18n="cryptoGuide3">Do not send from an exchange if a memo/tag is required.</li>
-        </ol>
-        <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
-        <p class="crypto-verify" id="usdtPendingNote">Waiting for blockchain confirmation…</p>
-      </div>
+      <div id="depositStepCrypto" class="crypto-invoice hidden" hidden></div>
       <div id="depositStepCryptoOk" class="crypto-ok hidden">
         <div class="crypto-ok-icon">✓</div>
         <div class="crypto-ok-title" id="cryptoOkTitle" data-i18n="cryptoOkTitle">Payment confirmed!</div>
@@ -679,7 +704,7 @@
 
   <script src="js/config.js?v=108"></script>
   <script src="js/translations.js?v=107"></script>
-  <script src="js/i18n.js?v=110"></script>
+  <script src="js/i18n.js?v=111"></script>
   <script src="js/store.js?v=107"></script>
   <script src="js/api.js?v=107"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -687,6 +712,6 @@
   <script src="js/auth.js?v=108"></script>
   <script src="js/engine.js?v=105"></script>
   <script src="js/chart.js?v=106"></script>
-  <script src="js/app.js?v=118"></script>
+  <script src="js/app.js?v=119"></script>
 </body>
 </html>
