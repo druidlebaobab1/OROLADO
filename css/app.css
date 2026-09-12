@@ -617,7 +617,7 @@ html.is-android #chartOverlay{
   word-break:break-all;line-height:1.55;text-align:center;margin-bottom:12px;color:#94A3B8}
 .oxa-wallet-addr .addr-hi{color:#4ADE80;text-shadow:0 0 10px rgba(74,222,128,.35)}
 .oxa-wallet-addr .addr-mid{color:#CBD5E1}
-.oxa-usd-line{margin:0 0 8px;font-size:.78rem;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.oxa-usd-line{display:none!important}
 .oxa-usd-line strong{color:var(--gold)}
 .oxa-chip-row{display:flex;gap:6px;margin:0 0 10px}
 .oxa-chip{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:3px 10px;border-radius:999px;

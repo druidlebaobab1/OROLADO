@@ -2696,8 +2696,9 @@ function orolado_oxapay_coins(): array {
 function orolado_oxapay_min_usd(string $coin = 'usdt_trc20'): float {
   $pay = strtoupper((string) (orolado_oxapay_coins()[$coin]['pay'] ?? $coin));
   if (in_array($pay, ['BTC', 'ETH'], true)) return 15.0;
+  if (in_array($pay, ['USDT', 'TRX'], true)) return 5.0;
   if (in_array($pay, ['SOL', 'LTC', 'BNB', 'XRP'], true)) return 10.0;
-  return 3.0;
+  return 5.0;
 }
 
 function orolado_oxapay_find_dep(string $orderId, string $trackId): ?array {
@@ -2786,14 +2787,14 @@ function orolado_oxapay_paid_status(string $status): bool {
 }
 
 function orolado_oxapay_usd(array $data): float {
-  foreach (['value', 'sent_value', 'amount'] as $k) {
+  foreach (['value', 'sent_value', 'received_amount', 'payAmount', 'pay_amount_usd', 'price'] as $k) {
     if (isset($data[$k]) && is_numeric($data[$k]) && (float) $data[$k] > 0) {
-      $cur = strtoupper((string) ($data['currency'] ?? $data['to_currency'] ?? ''));
-      if ($k === 'amount' && $cur !== '' && $cur !== 'USD' && $cur !== 'USDT') {
-        if (isset($data['value']) && is_numeric($data['value'])) return orolado_money($data['value']);
-      }
       return orolado_money($data[$k]);
     }
+  }
+  $cur = strtoupper((string) ($data['currency'] ?? $data['to_currency'] ?? $data['pay_currency'] ?? ''));
+  if (isset($data['amount']) && is_numeric($data['amount']) && (float) $data['amount'] > 0) {
+    if ($cur === '' || $cur === 'USD' || $cur === 'USDT') return orolado_money($data['amount']);
   }
   if (!empty($data['txs'][0]['value'])) return orolado_money($data['txs'][0]['value']);
   if (!empty($data['txs'][0]['sent_value'])) return orolado_money($data['txs'][0]['sent_value']);
@@ -2874,6 +2875,7 @@ function orolado_oxapay_invoice(array $req): array {
   $meta = $coins[$coin];
   $minUsd = orolado_oxapay_min_usd($coin);
   $amount = orolado_money($req['amount'] ?? 0);
+  if ($amount <= 0) $amount = $minUsd;
   if ($amount + 0.0001 < $minUsd) {
     return [
       'ok' => false,
@@ -3033,7 +3035,7 @@ function orolado_oxapay_status(array $req): array {
   }
   if (!orolado_oxapay_net_ok($data, $dep)) return ['ok' => true, 'pending' => true];
   $usd = orolado_oxapay_usd($data);
-  if ($usd <= 0) $usd = orolado_money($dep['amount'] ?? 0);
+  if ($usd <= 0) return ['ok' => true, 'pending' => true];
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $tid);
   return orolado_oxapay_credit((string) ($dep['id'] ?? $orderId), $tid, $usd, $txid);
 }
@@ -3147,20 +3149,32 @@ function orolado_flw_ip_country(): string {
   return orolado_flw_norm_cc((string) ($json['country'] ?? $json['country_code'] ?? ''));
 }
 
+function orolado_flw_dial_country(string $dial, string $phone = ''): string {
+  $d = preg_replace('/\D/', '', $dial . $phone) ?? '';
+  $map = ['225' => 'CI', '221' => 'SN', '226' => 'BF', '223' => 'ML', '228' => 'TG', '229' => 'BJ'];
+  foreach ($map as $pref => $cc) {
+    if (str_starts_with($d, $pref)) return $cc;
+  }
+  return '';
+}
+
 function orolado_flw_resolve_country(array $req, array $me): string {
-  $ip = orolado_flw_ip_country();
   $fromClient = orolado_flw_iso_country((string) ($req['country'] ?? $req['countryCode'] ?? ''));
   if ($fromClient !== '') return $fromClient;
+  $ip = orolado_flw_ip_country();
   if ($ip !== '') return $ip;
   $prof = orolado_flw_iso_country((string) ($me['country'] ?? $me['countryIso'] ?? ''));
   if ($prof !== '') return $prof;
   $lang = orolado_flw_lang_country((string) ($req['lang'] ?? $req['language'] ?? ''));
   if ($lang !== '') return $lang;
+  $dial = orolado_flw_dial_country((string) ($me['countryCode'] ?? $me['dial'] ?? ''), (string) ($me['phone'] ?? ''));
+  if ($dial !== '') return $dial;
   return 'INTL';
 }
 
 function orolado_flw_payment_options(string $cc): string {
-  return 'card,mobilemoneyfranco,ussd,banktransfer,applepay,googlepay';
+  if (in_array($cc, orolado_flw_xof_countries(), true)) return '';
+  return '';
 }
 
 function orolado_flw_rate(string $key, float $fallback): float {
@@ -3169,8 +3183,11 @@ function orolado_flw_rate(string $key, float $fallback): float {
 }
 
 function orolado_flw_charge(string $cc, float $usd): array {
+  $usd = max(orolado_money($usd), 3.0);
   if (in_array($cc, orolado_flw_xof_countries(), true)) {
-    return ['currency' => 'XOF', 'amount' => orolado_usd_to_fcfa($usd)];
+    $xof = orolado_usd_to_fcfa($usd);
+    if ($xof < 100) $xof = (int) max(100, round($usd * 600));
+    return ['currency' => 'XOF', 'amount' => $xof];
   }
   if ($cc === 'NG') return ['currency' => 'NGN', 'amount' => round($usd * orolado_flw_rate('USD_NGN_RATE', 1500), 2)];
   if ($cc === 'GH') return ['currency' => 'GHS', 'amount' => round($usd * orolado_flw_rate('USD_GHS_RATE', 12), 2)];
@@ -3303,10 +3320,20 @@ function orolado_flutterwave_checkout(array $req): array {
   if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {
     return ['ok' => false, 'server' => true, 'reason' => 'E-mail du compte introuvable. Connectez-vous avec votre compte.', 'code' => 'email'];
   }
-  $cc = orolado_flw_ip_country();
-  if ($cc === '') $cc = orolado_flw_iso_country((string) ($cust['country'] ?? $me['country'] ?? ''));
+  $cc = orolado_flw_resolve_country($req, array_merge($me, [
+    'country' => $cust['country'] !== '' ? $cust['country'] : (string) ($me['country'] ?? ''),
+    'countryCode' => $cust['dial'] !== '' ? $cust['dial'] : (string) ($me['countryCode'] ?? ''),
+    'phone' => $cust['phone'] !== '' ? $cust['phone'] : (string) ($me['phone'] ?? ''),
+  ]));
   if ($cc === '') $cc = 'INTL';
+  $wantCur = strtoupper(trim((string) ($req['currency'] ?? '')));
+  if ($wantCur === 'XOF' || $wantCur === 'CFA' || $wantCur === 'FCFA') {
+    $cc = in_array($cc, orolado_flw_xof_countries(), true) ? $cc : 'CI';
+  }
   $charge = orolado_flw_charge($cc, $amountUsd);
+  if (strtoupper((string) ($charge['currency'] ?? '')) === 'XOF' && (float) ($charge['amount'] ?? 0) < 100) {
+    $charge = ['currency' => 'XOF', 'amount' => max(100, orolado_usd_to_fcfa($amountUsd))];
+  }
   $method = strtolower((string) ($charge['currency'] ?? 'usd'));
   $uid = (string) $me['id'];
   $ref = 'flw_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . bin2hex(random_bytes(6));

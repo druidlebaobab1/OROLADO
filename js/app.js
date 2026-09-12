@@ -1776,6 +1776,7 @@
 
   function openDeposit(preMsg) {
     if (!requireAccount()) return;
+    closeLangMenus();
     depositOp = 'wave';
     var min = minDeposit();
     if ($('depositAmt')) {
@@ -1889,27 +1890,66 @@
     return D6.Api.post('flutterwaveVerify', payload, 20000);
   }
 
+  function flwXofCountries() {
+    return { CI: 1, SN: 1, BF: 1, ML: 1, TG: 1, BJ: 1 };
+  }
+
+  function normalizeFlwSession(session) {
+    var s = session || {};
+    var cur = String(s.currency || 'USD').toUpperCase();
+    var amt = Number(s.amount) || 0;
+    var usd = Number(s.amountUsd) || 0;
+    if (!usd) usd = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || minDeposit());
+    if (cur === 'CFA' || cur === 'FCFA') cur = 'XOF';
+    if (cur === 'XOF') {
+      if (amt < 100) amt = Math.max(100, Math.round(usd * ((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600)));
+      amt = Math.round(amt);
+    }
+    s.currency = cur;
+    s.amount = amt;
+    return s;
+  }
+
+  function flwModalVisible() {
+    return !!(document.querySelector('iframe[src*="flutterwave"], iframe[name*="checkout"], .flwp-container, #flwp-container, [class*="flw-checkout"]'));
+  }
+
   function openFlwInline(session) {
     if (!window.FlutterwaveCheckout) {
       toast('Paiement carte indisponible pour le moment.', 'err');
       return;
     }
+    session = normalizeFlwSession(session);
     var pub = String((session && session.public_key) || '');
     if (!pub || pub.indexOf('FLWPUBK') !== 0) {
       toast('Paiement carte indisponible pour le moment.', 'err');
       return;
     }
+    if (!session.amount || session.amount <= 0) {
+      toast('Montant de paiement invalide.', 'err');
+      return;
+    }
     depositApplied = false;
     closeModal('depositModal');
+    var opened = false;
+    var watchdog = setTimeout(function () {
+      if (opened || flwModalVisible()) return;
+      toast('Le paiement tarde à s\'ouvrir. Réessayez, ou utilisez le dépôt crypto.', 'err', 5200);
+    }, 5000);
+    function markOpen() {
+      opened = true;
+      clearTimeout(watchdog);
+    }
     try {
-      FlutterwaveCheckout({
+      var cfg = {
         public_key: pub,
         tx_ref: session.tx_ref || session.ref,
-        amount: Number(session.amount) || 0,
-        currency: String(session.currency || 'USD'),
+        amount: session.amount,
+        currency: session.currency,
         customer: session.customer || {},
         customizations: session.customizations || { title: 'OROLADO' },
         callback: function (data) {
+          markOpen();
           var txId = (data && (data.transaction_id || data.id)) || '';
           ensureApiToken().then(function (tok) {
             return postFlwVerify({
@@ -1924,9 +1964,12 @@
             toast(t('sessionInvalid'), 'err');
           });
         },
-        onclose: function () {}
-      });
+        onclose: function () { markOpen(); }
+      };
+      FlutterwaveCheckout(cfg);
+      setTimeout(function () { if (flwModalVisible()) markOpen(); }, 700);
     } catch (e) {
+      clearTimeout(watchdog);
       toast('Paiement carte indisponible pour le moment.', 'err');
     }
   }
@@ -2353,15 +2396,15 @@
   var oxaTimer = 0;
   var liveDepositAddr = '';
   var OXA_ASSETS = [
-    { id: 'usdt', symbol: 'USDT', name: 'Tether', color: '#26A17B', mark: '₮', minUsd: 3, nets: ['TRC20', 'ERC20', 'BEP20'] },
-    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$', minUsd: 3, networkName: 'Ethereum Network' },
+    { id: 'usdt', symbol: 'USDT', name: 'Tether', color: '#26A17B', mark: '₮', minUsd: 5, nets: ['TRC20', 'ERC20', 'BEP20'] },
+    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$', minUsd: 5, networkName: 'Ethereum Network' },
     { id: 'btc', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A', mark: '₿', minUsd: 15, networkName: 'Bitcoin Network' },
     { id: 'eth', symbol: 'ETH', name: 'Ethereum', color: '#627EEA', mark: 'Ξ', minUsd: 15, networkName: 'Ethereum Network' },
-    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T', minUsd: 3, networkName: 'Tron Network' },
+    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T', minUsd: 5, networkName: 'Tron Network' },
     { id: 'bnb', symbol: 'BNB', name: 'BNB', color: '#F3BA2F', mark: 'B', minUsd: 10, networkName: 'BNB Smart Chain' },
     { id: 'sol', symbol: 'SOL', name: 'Solana', color: '#14F195', mark: 'S', minUsd: 10, networkName: 'Solana Network' },
     { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł', minUsd: 10, networkName: 'Litecoin Network' },
-    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð', minUsd: 3, networkName: 'Dogecoin Network' },
+    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð', minUsd: 5, networkName: 'Dogecoin Network' },
     { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X', minUsd: 10, networkName: 'XRP Ledger' }
   ];
 
@@ -2391,15 +2434,8 @@
   }
 
   function enforceOxaMin() {
-    var need = Math.max(minDeposit(), oxaMinUsd());
-    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt + 0.0001 < need) {
-      if ($('depositAmt')) $('depositAmt').value = String(need);
-      amt = need;
-    }
-    usdtAmt = amt;
-    if ($('oxaUsdAmt')) $('oxaUsdAmt').textContent = '$' + amt.toFixed(2);
-    return amt;
+    usdtAmt = oxaMinUsd();
+    return usdtAmt;
   }
 
   function styleOxaAddr(addr) {
@@ -2457,10 +2493,6 @@
     }
     if ($('oxaNetLabel')) {
       $('oxaNetLabel').textContent = 'En attente…';
-    }
-    if ($('oxaUsdAmt')) {
-      var shown = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || usdtAmt || oxaMinUsd());
-      $('oxaUsdAmt').textContent = '$' + shown.toFixed(2);
     }
   }
 
@@ -2552,10 +2584,7 @@
       if (cacheKey === 'usdt_trc20' || oxaAsset === 'usdt') recvCache.usdt = liveDepositAddr;
     }
     var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
-    var payAmt = Number((inv && inv.payAmount) || usdtAmt) || usdtAmt;
-    if ($('usdtPayAmt')) {
-      $('usdtPayAmt').textContent = t('cryptoPayAmt').replace('{amt}', payAmt + ' ' + payCur);
-    }
+    if ($('usdtPayAmt')) $('usdtPayAmt').textContent = '';
     if ($('usdtAddr') && liveDepositAddr) $('usdtAddr').innerHTML = styleOxaAddr(liveDepositAddr);
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
     if ($('oxaNetLabel')) {
@@ -2641,13 +2670,8 @@
 
   async function showCryptoInvoice() {
     if (depositPayMethod !== 'usdt') return;
-    var amt = enforceOxaMin();
-    var need = oxaMinUsd();
-    if (amt + 0.0001 < need) {
-      showFieldError('depositAmt', t('depositMinErr'));
-      toast(t('oxaMinAmt').replace('{amt}', String(need)).replace('{net}', oxaNetworkName()).replace('{coin}', oxaMeta(oxaAsset).symbol), 'err');
-      return;
-    }
+    var amt = oxaMinUsd();
+    usdtAmt = amt;
     lastUsdtCredit = 0;
     oxaCoin = oxaCoinKey();
     var preview = recvCache[oxaCoin] || (oxaCoin === 'usdt_trc20' ? recvCache.usdt : '') || '';
@@ -2765,9 +2789,15 @@
         toast(t('sessionInvalid'), 'err');
         return;
       }
+      var cc = '';
+      try { cc = await detectPayCountry(); } catch (eCc) { cc = ''; }
+      var xof = !!(cc && flwXofCountries()[cc]);
       var remote = await postFlutterwaveCheckout({
         token: tok,
-        amount: amt
+        amount: amt,
+        country: cc || '',
+        lang: String(navigator.language || navigator.userLanguage || ''),
+        currency: xof ? 'XOF' : ''
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);
@@ -3621,7 +3651,6 @@
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
         this.value = String(this.value || '').replace(/[^\d.]/g, '');
-        if (depositPayMethod === 'usdt') scheduleOxaInvoice();
       });
     }
     $('btnConfirmDeposit').addEventListener('click', function (e) {

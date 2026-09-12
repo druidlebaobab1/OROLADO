@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=129">
+  <link rel="stylesheet" href="css/app.css?v=130">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -615,7 +615,7 @@
       <div id="depositStepCrypto" class="crypto-invoice hidden">
         <button type="button" class="crypto-back" id="btnUsdtBack">← Retour</button>
         <div class="modal-title">Dépôt crypto</div>
-        <p class="oxa-usd-line"><span>Montant</span> <strong id="oxaUsdAmt">$3.00</strong></p>
+        <p class="oxa-usd-line hidden" id="oxaUsdLine" hidden><span>Montant</span> <strong id="oxaUsdAmt"></strong></p>
         <div class="oxa-field">
           <label for="oxaCoinBtn">Crypto</label>
           <button type="button" class="oxa-dd-btn" id="oxaCoinBtn" aria-expanded="false" aria-haspopup="listbox">
@@ -647,7 +647,7 @@
             <div class="oxa-wallet-title" id="oxaAddrLabel">Adresse USDT TRC20</div>
             <code class="oxa-wallet-addr" id="usdtAddr"></code>
             <button type="button" class="oxa-act" id="btnUsdtCopy" data-i18n="cryptoCopy" translate="no">Copier l'adresse</button>
-            <p class="oxa-min" id="oxaMinHint">Minimum : $3 (USDT TRC20)</p>
+            <p class="oxa-min" id="oxaMinHint">Minimum : $5 (USDT TRC20)</p>
             <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente…</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
             <p class="crypto-verify" id="usdtPendingNote" hidden></p>
@@ -735,6 +735,6 @@
   <script src="js/engine.js?v=107"></script>
   <script src="js/chart.js?v=112"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=133"></script>
+  <script src="js/app.js?v=134"></script>
 </body>
 </html>
