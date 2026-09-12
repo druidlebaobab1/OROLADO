@@ -1826,6 +1826,60 @@
     return '';
   }
 
+  function payLangCountry() {
+    var raw = String(navigator.language || navigator.userLanguage || '').toLowerCase().replace('_', '-');
+    var map = {
+      'pt-br': 'BR', 'en-ng': 'NG', 'en-gh': 'GH', 'en-ke': 'KE', 'en-za': 'ZA',
+      'fr-ci': 'CI', 'fr-sn': 'SN', 'fr-bf': 'BF', 'fr-ml': 'ML', 'fr-tg': 'TG', 'fr-bj': 'BJ'
+    };
+    if (map[raw]) return map[raw];
+    var m = raw.match(/^[a-z]{2}-([a-z]{2})$/);
+    if (!m) return '';
+    var cc = m[1].toUpperCase();
+    if (cc === 'FR' || cc === 'US' || cc === 'GB') return '';
+    return cc;
+  }
+
+  function cachePayCountry(cc) {
+    cc = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
+    if (cc.length !== 2 || cc === 'XX' || cc === 'T1') return '';
+    try { sessionStorage.setItem('oro_pay_cc', cc); } catch (e) { /* ignore */ }
+    return cc;
+  }
+
+  async function fetchPayCountryIp() {
+    try {
+      var hit = cachePayCountry(sessionStorage.getItem('oro_pay_cc') || '');
+      if (hit) return hit;
+    } catch (e0) { /* ignore */ }
+    var sources = ['https://api.country.is/', 'https://ipapi.co/json/'];
+    var i;
+    for (i = 0; i < sources.length; i++) {
+      try {
+        var r = await fetch(sources[i], { cache: 'no-store', credentials: 'omit' });
+        if (!r.ok) continue;
+        var j = await r.json();
+        var cc = String((j && (j.country_code || j.country)) || '');
+        if (cc && String(cc).length <= 3) {
+          var ok = cachePayCountry(cc);
+          if (ok) return ok;
+        }
+      } catch (e1) { /* next */ }
+    }
+    return '';
+  }
+
+  async function detectPayCountry() {
+    var ip = await fetchPayCountryIp();
+    if (ip) return ip;
+    var u = user() || {};
+    var prof = String(u.country || u.countryIso || '').toUpperCase().replace(/[^A-Z]/g, '');
+    if (prof.length === 2) return prof;
+    return payLangCountry();
+  }
+
+  fetchPayCountryIp();
+
   async function postFlutterwaveCheckout(payload) {
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, 28000);
@@ -2649,7 +2703,9 @@
       }
       var remote = await postFlutterwaveCheckout({
         token: tok,
-        amount: amt
+        amount: amt,
+        country: await detectPayCountry(),
+        lang: navigator.language || navigator.userLanguage || ''
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);

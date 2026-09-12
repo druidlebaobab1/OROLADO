@@ -3051,53 +3051,102 @@ function orolado_flw_configured(): bool {
 }
 
 function orolado_flw_xof_countries(): array {
-  return ['CI', 'SN', 'ML', 'BF', 'BJ', 'TG', 'NE', 'GW'];
+  return ['CI', 'SN', 'BF', 'ML', 'TG', 'BJ'];
 }
 
-function orolado_flw_dial_country(string $dial): string {
-  $d = preg_replace('/\D/', '', $dial) ?? '';
-  if ($d === '234') return 'NG';
-  if ($d === '55') return 'BR';
-  $map = [
-    '225' => 'CI', '221' => 'SN', '223' => 'ML', '226' => 'BF',
-    '229' => 'BJ', '228' => 'TG', '227' => 'NE', '245' => 'GW',
-  ];
-  return $map[$d] ?? '';
+function orolado_flw_norm_cc(string $raw): string {
+  $cc = strtoupper(preg_replace('/[^A-Z]/', '', $raw) ?? '');
+  if (strlen($cc) !== 2) return '';
+  if (in_array($cc, ['XX', 'T1', 'A1', 'A2', 'ZZ'], true)) return '';
+  return $cc;
 }
 
-function orolado_flw_ip_country(): string {
-  foreach (['HTTP_CF_IPCOUNTRY', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_APPENGINE_COUNTRY', 'HTTP_CLOUDFRONT_VIEWER_COUNTRY'] as $h) {
-    $v = strtoupper(trim((string) ($_SERVER[$h] ?? '')));
-    if (preg_match('/^[A-Z]{2}$/', $v) && $v !== 'XX' && $v !== 'T1') return $v;
+function orolado_flw_lang_country(string $lang): string {
+  $raw = strtolower(str_replace('_', '-', trim($lang)));
+  if ($raw === '') return '';
+  if (preg_match('/^(pt-br|en-ng|en-gh|en-ke|en-za|fr-ci|fr-sn|fr-bf|fr-ml|fr-tg|fr-bj)$/', $raw)) {
+    return strtoupper(substr($raw, -2));
+  }
+  if (preg_match('/^[a-z]{2}-([a-z]{2})$/', $raw, $m)) {
+    $cc = orolado_flw_norm_cc($m[1]);
+    if ($cc === 'FR' || $cc === 'US' || $cc === 'GB') return '';
+    return $cc;
   }
   return '';
 }
 
-function orolado_flw_country(array $me): string {
+function orolado_flw_iso_country(string $raw): string {
+  $t = trim($raw);
+  if ($t === '' || str_starts_with($t, '+') || preg_match('/^\d+$/', $t)) return '';
+  return orolado_flw_norm_cc($t);
+}
+
+function orolado_flw_client_ip(): string {
+  foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR'] as $h) {
+    $v = trim((string) ($_SERVER[$h] ?? ''));
+    if ($v === '') continue;
+    $ip = trim(explode(',', $v)[0]);
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) return $ip;
+  }
+  $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+  if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) return $ip;
+  return '';
+}
+
+function orolado_flw_ip_country(): string {
+  foreach (['HTTP_CF_IPCOUNTRY', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_APPENGINE_COUNTRY', 'HTTP_CLOUDFRONT_VIEWER_COUNTRY'] as $h) {
+    $cc = orolado_flw_norm_cc((string) ($_SERVER[$h] ?? ''));
+    if ($cc !== '') return $cc;
+  }
+  $ip = orolado_flw_client_ip();
+  if ($ip === '' || !function_exists('curl_init')) return '';
+  $ch = curl_init('https://api.country.is/' . rawurlencode($ip));
+  curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 3,
+    CURLOPT_CONNECTTIMEOUT => 2,
+  ]);
+  $raw = curl_exec($ch);
+  curl_close($ch);
+  if (!is_string($raw) || $raw === '') return '';
+  $json = json_decode($raw, true);
+  if (!is_array($json)) return '';
+  return orolado_flw_norm_cc((string) ($json['country'] ?? $json['country_code'] ?? ''));
+}
+
+function orolado_flw_resolve_country(array $req, array $me): string {
   $ip = orolado_flw_ip_country();
+  $fromClient = orolado_flw_iso_country((string) ($req['country'] ?? $req['countryCode'] ?? ''));
+  if ($fromClient !== '') return $fromClient;
   if ($ip !== '') return $ip;
-  $fromDial = orolado_flw_dial_country((string) ($me['countryCode'] ?? ''));
-  if ($fromDial !== '') return $fromDial;
-  $prof = strtoupper(trim((string) ($me['country'] ?? $me['country_code'] ?? '')));
-  if (preg_match('/^[A-Z]{2}$/', $prof)) return $prof;
+  $prof = orolado_flw_iso_country((string) ($me['country'] ?? $me['countryIso'] ?? ''));
+  if ($prof !== '') return $prof;
+  $lang = orolado_flw_lang_country((string) ($req['lang'] ?? $req['language'] ?? ''));
+  if ($lang !== '') return $lang;
   return 'INTL';
 }
 
 function orolado_flw_payment_options(string $cc): string {
   if ($cc === 'NG') return 'card,account,ussd,banktransfer,mobilemoney';
+  if ($cc === 'GH') return 'card,mobilemoney';
+  if ($cc === 'KE') return 'card,mpesa';
   if (in_array($cc, orolado_flw_xof_countries(), true)) return 'card,mobilemoneyfranco';
   return 'card';
+}
+
+function orolado_flw_rate(string $key, float $fallback): float {
+  $r = (float) (getenv($key) ?: ($_ENV[$key] ?? $fallback));
+  return $r > 0 ? $r : $fallback;
 }
 
 function orolado_flw_charge(string $cc, float $usd): array {
   if (in_array($cc, orolado_flw_xof_countries(), true)) {
     return ['currency' => 'XOF', 'amount' => orolado_usd_to_fcfa($usd)];
   }
-  if ($cc === 'NG') {
-    $rate = (float) (getenv('USD_NGN_RATE') ?: ($_ENV['USD_NGN_RATE'] ?? 1500));
-    if ($rate <= 0) $rate = 1500;
-    return ['currency' => 'NGN', 'amount' => round($usd * $rate, 2)];
-  }
+  if ($cc === 'NG') return ['currency' => 'NGN', 'amount' => round($usd * orolado_flw_rate('USD_NGN_RATE', 1500), 2)];
+  if ($cc === 'GH') return ['currency' => 'GHS', 'amount' => round($usd * orolado_flw_rate('USD_GHS_RATE', 12), 2)];
+  if ($cc === 'KE') return ['currency' => 'KES', 'amount' => round($usd * orolado_flw_rate('USD_KES_RATE', 130), 2)];
+  if ($cc === 'ZA') return ['currency' => 'ZAR', 'amount' => round($usd * orolado_flw_rate('USD_ZAR_RATE', 18), 2)];
   return ['currency' => 'USD', 'amount' => $usd];
 }
 
@@ -3120,48 +3169,57 @@ function orolado_supabase_profile_row(string $uid): array {
   return [];
 }
 
+function orolado_flw_real_phone(string $phone, string $dial = ''): string {
+  $digits = preg_replace('/\D/', '', $phone) ?? '';
+  if ($digits === '' || preg_match('/^0+$/', $digits)) return '';
+  $dialDigits = preg_replace('/\D/', '', $dial) ?? '';
+  if ($dialDigits !== '' && str_starts_with($digits, $dialDigits)) {
+    $local = substr($digits, strlen($dialDigits));
+  } else {
+    $local = $digits;
+  }
+  $local = ltrim($local, '0');
+  if ($local === '' || preg_match('/^0+$/', $local) || strlen($local) < 8) return '';
+  if (strlen($digits) < 8 || strlen($digits) > 15) return '';
+  if ($dialDigits !== '' && !str_starts_with($digits, $dialDigits) && strlen($digits) <= 12) {
+    $digits = $dialDigits . $digits;
+  }
+  if (preg_match('/^(225|221|226|223|228|229)0+$/', $digits)) return '';
+  return '+' . $digits;
+}
+
 function orolado_flw_customer(array $me, string $token): array {
   $uid = (string) ($me['id'] ?? '');
   $email = trim((string) ($me['email'] ?? ''));
   $name = trim((string) ($me['displayName'] ?? ''));
   $phone = trim((string) ($me['phone'] ?? ''));
   $dial = trim((string) ($me['countryCode'] ?? ''));
+  $iso = orolado_flw_iso_country((string) ($me['country'] ?? ''));
   $auth = supabase_fetch_auth_user($token);
   if (is_array($auth)) {
     $authMail = trim((string) ($auth['email'] ?? ''));
     if (orolado_flw_email_ok($authMail)) $email = $authMail;
     $meta = is_array($auth['user_metadata'] ?? null) ? $auth['user_metadata'] : [];
     if ($name === '') $name = trim((string) ($meta['display_name'] ?? ''));
-    if ($phone === '') $phone = trim((string) ($meta['phone'] ?? ''));
-    if ($dial === '') $dial = trim((string) ($meta['country_code'] ?? ''));
+    if (trim((string) ($meta['phone'] ?? '')) !== '') $phone = trim((string) $meta['phone']);
+    $isoMeta = orolado_flw_iso_country((string) ($meta['country'] ?? ''));
+    if ($iso === '' && $isoMeta !== '') $iso = $isoMeta;
   }
   $prof = orolado_supabase_profile_row($uid);
   if ($prof) {
     $pMail = trim((string) ($prof['email'] ?? ''));
     if (!orolado_flw_email_ok($email) && orolado_flw_email_ok($pMail)) $email = $pMail;
     if ($name === '') $name = trim((string) ($prof['display_name'] ?? ''));
-    if ($phone === '') $phone = trim((string) ($prof['phone'] ?? ''));
-    if ($dial === '') $dial = trim((string) ($prof['country_code'] ?? ''));
-  }
-  $phoneDigits = preg_replace('/\D/', '', $phone) ?? '';
-  $dialDigits = preg_replace('/\D/', '', $dial) ?? '';
-  $e164 = '';
-  if ($phoneDigits !== '') {
-    if ($dialDigits !== '' && !str_starts_with($phoneDigits, $dialDigits)) {
-      $e164 = '+' . $dialDigits . $phoneDigits;
-    } else {
-      $e164 = '+' . ltrim($phoneDigits, '+');
-    }
+    if (trim((string) ($prof['phone'] ?? '')) !== '') $phone = trim((string) $prof['phone']);
+    $isoProf = orolado_flw_iso_country((string) ($prof['country'] ?? ''));
+    if ($iso === '' && $isoProf !== '') $iso = $isoProf;
   }
   return [
     'email' => $email,
     'name' => $name,
-    'phone' => $e164,
+    'phone' => orolado_flw_real_phone($phone, $dial),
     'dial' => $dial,
-    'country' => orolado_flw_country([
-      'countryCode' => $dial !== '' ? $dial : ($me['countryCode'] ?? ''),
-      'country' => $me['country'] ?? '',
-    ]),
+    'country' => $iso,
   ];
 }
 
@@ -3216,7 +3274,9 @@ function orolado_flutterwave_checkout(array $req): array {
   if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {
     return ['ok' => false, 'server' => true, 'reason' => 'E-mail du compte introuvable. Connectez-vous avec votre compte.', 'code' => 'email'];
   }
-  $cc = (string) ($cust['country'] ?? 'INTL');
+  $meCountry = $me;
+  $meCountry['country'] = (string) (($cust['country'] ?? '') !== '' ? $cust['country'] : ($me['country'] ?? ''));
+  $cc = orolado_flw_resolve_country($req, $meCountry);
   $opts = orolado_flw_payment_options($cc);
   $charge = orolado_flw_charge($cc, $amountUsd);
   $uid = (string) $me['id'];
