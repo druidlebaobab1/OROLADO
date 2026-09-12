@@ -3275,20 +3275,11 @@ function orolado_flutterwave_checkout(array $req): array {
   if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {
     return ['ok' => false, 'server' => true, 'reason' => 'E-mail du compte introuvable. Connectez-vous avec votre compte.', 'code' => 'email'];
   }
-  $rail = strtolower(trim((string) ($req['currency'] ?? $req['rail'] ?? $req['method'] ?? 'usd')));
-  if (in_array($rail, ['xof', 'momo', 'mobilemoney', 'uemoa', 'ci'], true)) {
-    $charge = ['currency' => 'XOF', 'amount' => orolado_usd_to_fcfa($amountUsd)];
-    $cc = 'CI';
-    $method = 'xof';
-  } else if (in_array($rail, ['ngn', 'ng', 'nigeria'], true)) {
-    $charge = ['currency' => 'NGN', 'amount' => round($amountUsd * orolado_flw_rate('USD_NGN_RATE', 1500), 2)];
-    $cc = 'NG';
-    $method = 'ngn';
-  } else {
-    $charge = ['currency' => 'USD', 'amount' => $amountUsd];
-    $cc = 'INTL';
-    $method = 'usd';
-  }
+  $cc = orolado_flw_ip_country();
+  if ($cc === '') $cc = orolado_flw_iso_country((string) ($cust['country'] ?? $me['country'] ?? ''));
+  if ($cc === '') $cc = 'INTL';
+  $charge = orolado_flw_charge($cc, $amountUsd);
+  $method = strtolower((string) ($charge['currency'] ?? 'usd'));
   $uid = (string) $me['id'];
   $ref = 'flw_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . bin2hex(random_bytes(6));
   $origin = rtrim(orolado_public_origin(), '/');
@@ -3366,6 +3357,15 @@ function orolado_flutterwave_verify(string $txRef, string $transactionId = ''): 
   else if ($cur === 'XOF' || $cur === 'CFA' || $cur === 'FCFA') $usd = orolado_fcfa_to_usd($amt);
   else if ($cur === 'NGN') {
     $rate = orolado_flw_rate('USD_NGN_RATE', 1500);
+    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
+  } else if ($cur === 'GHS') {
+    $rate = orolado_flw_rate('USD_GHS_RATE', 12);
+    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
+  } else if ($cur === 'KES') {
+    $rate = orolado_flw_rate('USD_KES_RATE', 130);
+    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
+  } else if ($cur === 'ZAR') {
+    $rate = orolado_flw_rate('USD_ZAR_RATE', 18);
     $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
   }
   return [

@@ -1790,7 +1790,6 @@
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum $3';
     setDepositPayMethod('card');
-    syncFlwRails();
     resetOxaWallet();
     showDepositStep('select');
     closeDrawer();
@@ -1880,16 +1879,6 @@
   }
 
   fetchPayCountryIp();
-
-  var flwRail = 'usd';
-
-  function syncFlwRails() {
-    document.querySelectorAll('#flwRailWrap .flw-rail').forEach(function (btn) {
-      var on = btn.getAttribute('data-rail') === flwRail;
-      btn.classList.toggle('on', on);
-      btn.setAttribute('aria-checked', on ? 'true' : 'false');
-    });
-  }
 
   async function postFlwVerify(payload) {
     try {
@@ -2769,8 +2758,7 @@
       }
       var remote = await postFlutterwaveCheckout({
         token: tok,
-        amount: amt,
-        currency: flwRail || 'usd'
+        amount: amt
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);
@@ -3552,12 +3540,6 @@
       closeModal('depositModal');
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
-    document.querySelectorAll('#flwRailWrap .flw-rail').forEach(function (btn) {
-      bindAndroidTap(btn, function () {
-        flwRail = btn.getAttribute('data-rail') || 'usd';
-        syncFlwRails();
-      });
-    });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
     if ($('oxaCoinBtn')) {
       bindAndroidTap($('oxaCoinBtn'), function () {
