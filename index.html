@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=127">
+  <link rel="stylesheet" href="css/app.css?v=128">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -290,10 +290,10 @@
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
           <div class="trade-row">
-            <button type="button" class="btn-trade btn-call" id="btnCall">
+            <button type="button" class="btn-trade btn-call" id="btnCall" translate="no">
               <span data-i18n="buy">BUY (CALL ↗)</span>
             </button>
-            <button type="button" class="btn-trade btn-put" id="btnPut">
+            <button type="button" class="btn-trade btn-put" id="btnPut" translate="no">
               <span data-i18n="sell">SELL (PUT ↘)</span>
             </button>
           </div>
@@ -327,13 +327,13 @@
         <span data-i18n="publicId">ID public</span>
         <div class="prof-id-row">
           <strong id="profPublicId">—</strong>
-          <button type="button" class="btn-copy-id" id="btnCopyPublicId" data-i18n="copyId">Copier</button>
+          <button type="button" class="btn-copy-id" id="btnCopyPublicId" data-i18n="copyId" translate="no">Copier</button>
         </div>
       </div>
       <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
     </div>
     <div class="wallet-card" id="profWalletCard">
-      <div class="wallet-card-k">Solde Disponible</div>
+      <div class="wallet-card-k" data-i18n="availBal">Solde disponible</div>
       <div class="wallet-card-v" id="profWalletBal">$0.00</div>
       <div class="wallet-xpress" aria-hidden="true">
         <span class="wx-coins">
@@ -342,7 +342,7 @@
           <span class="wx-coin wx-eth">Ξ</span>
           <span class="wx-coin wx-trx">T</span>
         </span>
-        <span>Dépôt Express Crypto</span>
+        <span data-i18n="expressCrypto">Dépôt Express Crypto</span>
       </div>
       <div class="wallet-tabs" role="tablist" aria-label="Réseau de dépôt">
         <button type="button" class="wallet-tab on" data-recv="usdt" role="tab" aria-selected="true">
@@ -364,7 +364,7 @@
       </div>
       <div class="wallet-addr-row">
         <code id="profWalletAddr"></code>
-        <button type="button" class="wallet-copy" id="btnCopyWallet">Copier</button>
+        <button type="button" class="wallet-copy" id="btnCopyWallet" data-i18n="copyId" translate="no">Copier</button>
       </div>
     </div>
     <div class="drawer-admin hidden" id="drawerAdminBlock">
@@ -646,7 +646,7 @@
             </div>
             <div class="oxa-wallet-title" id="oxaAddrLabel">Adresse USDT TRC20</div>
             <code class="oxa-wallet-addr" id="usdtAddr"></code>
-            <button type="button" class="oxa-act" id="btnUsdtCopy">Copier l'adresse</button>
+            <button type="button" class="oxa-act" id="btnUsdtCopy" data-i18n="cryptoCopy" translate="no">Copier l'adresse</button>
             <p class="oxa-min" id="oxaMinHint">Minimum : $3 (USDT TRC20)</p>
             <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente…</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
@@ -725,16 +725,16 @@
   </div>
 
   <script src="js/config.js?v=109"></script>
-  <script src="js/translations.js?v=107"></script>
-  <script src="js/i18n.js?v=115"></script>
+  <script src="js/translations.js?v=108"></script>
+  <script src="js/i18n.js?v=116"></script>
   <script src="js/store.js?v=107"></script>
   <script src="js/api.js?v=107"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=107"></script>
   <script src="js/auth.js?v=108"></script>
   <script src="js/engine.js?v=107"></script>
-  <script src="js/chart.js?v=110"></script>
+  <script src="js/chart.js?v=111"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=132"></script>
+  <script src="js/app.js?v=133"></script>
 </body>
 </html>

@@ -2937,13 +2937,20 @@ function orolado_oxapay_invoice(array $req): array {
       }
     }
   }
-  $addr = (string) ($data['address'] ?? '');
+  $addr = trim((string) ($data['address'] ?? ''));
+  if (preg_match('/^[a-zA-Z][a-zA-Z0-9+.-]*:/', $addr)) {
+    $addr = (string) preg_replace('/^[a-zA-Z][a-zA-Z0-9+.-]*:/', '', $addr);
+  }
+  $qPos = strpos($addr, '?');
+  if ($qPos !== false) $addr = substr($addr, 0, $qPos);
+  $addr = trim($addr, "/ \t\n\r");
+  if (preg_match('#^https?://#i', $addr)) $addr = '';
   if ($addr === '') {
     return ['ok' => false, 'server' => true, 'reason' => orolado_oxapay_err(is_array($res) ? $res : null), 'code' => 'oxapay', 'minUsd' => $minUsd];
   }
   $trackId = (string) ($data['track_id'] ?? $data['trackId'] ?? '');
   $payAmt = $data['pay_amount'] ?? $data['payAmount'] ?? $amount;
-  $qr = (string) ($data['qr_code'] ?? $data['qrCode'] ?? '');
+  $qr = '';
   $network = (string) ($data['network'] ?? $meta['netLabel']);
   $expired = (int) ($data['expired_at'] ?? $data['expiredAt'] ?? 0);
   $db = load_db($file);

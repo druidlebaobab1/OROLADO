@@ -689,14 +689,13 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
   display:grid;place-items:center;line-height:1;overflow:hidden;position:relative;flex:0 0 32px}
 .lang-flag{font-size:14px;line-height:1}
 .lang-chev{position:absolute;right:1px;bottom:0;font-size:8px;line-height:1;opacity:.55}
-.lang-dd-menu{position:fixed;background:rgba(16,22,34,.98);border:1px solid var(--line);
-  border-radius:12px;padding:6px;z-index:9999;min-width:200px;width:220px;max-width:calc(100vw - 16px);
-  max-height:280px;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(245,158,11,.35) transparent;
-  box-shadow:0 16px 40px rgba(0,0,0,.55);-webkit-overflow-scrolling:touch}
-.lang-dd-menu::-webkit-scrollbar{width:4px}
-.lang-dd-menu::-webkit-scrollbar-thumb{background:rgba(245,158,11,.35);border-radius:99px}
-.lang-dd-menu .lang-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font-size:14px;
-  padding:10px 12px;opacity:1;border-radius:8px;font-weight:600;color:var(--text)}
+.lang-dd-menu{position:fixed;display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(16,22,34,.98);border:1px solid var(--line);
+  border-radius:12px;padding:8px;z-index:9999;min-width:240px;width:280px;max-width:min(280px,calc(100vw - 16px));
+  max-height:none;overflow:hidden;
+  box-shadow:0 16px 40px rgba(0,0,0,.55)}
+.lang-dd-menu.hidden{display:none!important}
+.lang-dd-menu .lang-btn{display:flex;align-items:center;gap:6px;width:auto;text-align:left;font-size:12px;
+  padding:7px 8px;min-height:34px;opacity:1;border-radius:8px;font-weight:600;color:var(--text)}
 .lang-dd-menu .lang-btn .lang-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lang-dd-menu .lang-btn.on{opacity:1;background:var(--gold-soft);color:var(--gold)}
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:40}
@@ -913,7 +912,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .brand-lockup.mini .brand{font-size:.58rem}
   .logo-mark.sm{width:18px;height:18px}
   .icon-btn,.lang-dd,.lang-dd-btn{width:26px;height:26px;min-width:26px;max-width:26px;flex-basis:26px;border-radius:8px}
-  .lang-dd-menu{width:220px;min-width:200px;max-width:calc(100vw - 16px);max-height:280px}
+  .lang-dd-menu{width:min(280px,calc(100vw - 12px));min-width:0;max-height:none;overflow:hidden}
   .lang-flag{font-size:12px}
   .help-badge{padding:4px 7px;font-size:.55rem}
   #screenTrade.is-guest .auth-quick{gap:4px}
@@ -1224,7 +1223,16 @@ html.is-android .fs-trade-overlay .chart-card,
 html.is-android .fs-trade-overlay #chart,
 html.fs-trade .fs-trade-overlay .chart-card,
 html.fs-trade .fs-trade-overlay #chart{
-  flex:1 1 auto!important;min-height:0!important;width:100%!important;height:auto!important;max-height:none!important}
+  flex:1 1 auto!important;min-height:280px!important;width:100%!important;height:100%!important;max-height:none!important;
+  position:relative!important;z-index:10!important;overflow:hidden!important}
+html.fs-trade .fs-trade-overlay.on .chart-stage,
+html.is-fullscreen .fs-trade-overlay.on .chart-stage{
+  position:relative!important;flex:1 1 auto!important;min-height:280px!important;height:100%!important;width:100%!important;
+  overflow:hidden!important;z-index:10!important}
+html.fs-trade .fs-trade-overlay.on #chartCanvas,
+html.is-fullscreen .fs-trade-overlay.on #chartCanvas{
+  position:relative!important;inset:auto!important;z-index:10!important;width:100%!important;height:100%!important;
+  display:block!important;visibility:visible!important;opacity:1!important}
 html.is-android .fs-trade-overlay .pad,
 html.fs-trade .fs-trade-overlay .pad{
   display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;

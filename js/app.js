@@ -479,15 +479,18 @@
       document.body.appendChild(menu);
     }
     var r = btn.getBoundingClientRect();
-    var w = Math.min(220, Math.max(200, window.innerWidth - 16));
+    var w = Math.min(280, Math.max(240, window.innerWidth - 16));
     var left = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8);
     var top = r.bottom + 6;
-    if (top + 280 > window.innerHeight - 8) top = Math.max(8, r.top - 286);
+    var mh = Math.min(320, window.innerHeight - 16);
+    if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6);
     menu.style.position = 'fixed';
     menu.style.top = top + 'px';
     menu.style.left = left + 'px';
     menu.style.right = 'auto';
     menu.style.width = w + 'px';
+    menu.style.maxHeight = 'none';
+    menu.style.overflow = 'hidden';
     menu.style.zIndex = '9999';
   }
 
@@ -515,6 +518,7 @@
     document.querySelectorAll('[data-lang-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
+        closeDrawer();
         var box = btn.parentElement;
         var menu = findLangMenu(box);
         var open = menu && !menu.classList.contains('hidden');
@@ -535,12 +539,14 @@
         closeLangMenus();
         D6.I18N.set(btn.dataset.lang);
         fillLangBars();
+        try { D6.I18N.apply(); } catch (eApply) { /* ignore */ }
         var u = user();
         if (u) {
           setModeUi(u);
           updateBalance(false);
           updatePayoutUi();
           renderHistory();
+          fillProfile();
         }
         if ($('screenAdmin') && !$('screenAdmin').classList.contains('hidden')) renderAdmin();
       });
@@ -553,6 +559,7 @@
     if (u) {
       setModeUi(u);
       try { updatePayoutUi(); } catch (e0) { /* ignore */ }
+      try { fillProfile(); } catch (eProf) { /* ignore */ }
     }
     applyAndroidTradeHint();
     try { refreshCryptoI18n(); } catch (eCrypto) { /* ignore */ }
@@ -1050,11 +1057,10 @@
         if (!addr) return;
         var copyBtn = $('btnCopyWallet');
         copyTextSilent(addr, function () {
-          var prev = copyBtn.textContent;
-          copyBtn.textContent = 'Copié';
+          copyBtn.textContent = t('copied') || 'Copié';
           copyBtn.classList.add('is-copied');
           setTimeout(function () {
-            copyBtn.textContent = prev || 'Copier';
+            copyBtn.textContent = t('copyId') || 'Copier';
             copyBtn.classList.remove('is-copied');
           }, 1200);
         });
@@ -1072,7 +1078,7 @@
       function ok() {
         var prev = btn.textContent;
         btn.textContent = t('copied') || 'Copié';
-        setTimeout(function () { btn.textContent = prev || (t('copyId') || 'Copier'); }, 1200);
+        setTimeout(function () { btn.textContent = t('copyId') || 'Copier'; }, 1200);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(id).then(ok).catch(function () {
@@ -1087,6 +1093,7 @@
   }
 
   function openDrawer() {
+    closeLangMenus();
     fillProfile();
     var bd = $('drawerBackdrop');
     var dr = $('drawerProfile');
@@ -2059,6 +2066,10 @@
     if (note && !note.classList.contains('is-err') && !note.hidden) {
       note.textContent = t('cryptoWait');
     }
+    var copyOxa = $('btnUsdtCopy');
+    if (copyOxa && !copyOxa.classList.contains('is-copied')) {
+      copyOxa.textContent = t('cryptoCopy');
+    }
     if (lastUsdtCredit > 0) setCryptoOkCopy(lastUsdtCredit);
   }
 
@@ -2512,9 +2523,29 @@
     }
   }
 
+  function rawCryptoAddr(s) {
+    var a = String(s || '').trim();
+    if (!a) return '';
+    if (/^https?:\/\//i.test(a)) return '';
+    a = a.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:/, '');
+    var q = a.indexOf('?');
+    if (q >= 0) a = a.slice(0, q);
+    a = a.replace(/^\/+/, '').trim();
+    if (!a || /[:/?#]/.test(a)) return '';
+    return a;
+  }
+
+  function setCryptoQr(addr) {
+    var raw = rawCryptoAddr(addr);
+    var qr = $('usdtQr');
+    if (!qr || !raw) return;
+    qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(raw);
+    qr.alt = raw;
+  }
+
   function paintOxaInvoice(inv) {
     oxaInvoice = inv;
-    liveDepositAddr = String((inv && inv.address) || '');
+    liveDepositAddr = rawCryptoAddr((inv && inv.address) || '');
     var cacheKey = String((inv && inv.coin) || oxaCoin || 'usdt_trc20');
     if (liveDepositAddr) {
       recvCache[cacheKey] = liveDepositAddr;
@@ -2536,16 +2567,9 @@
       $('oxaAddrLabel').textContent = 'Adresse ' + payCur + (netLab ? ' ' + netLab : '') + (memo ? ' · MEMO ' + memo : '');
     }
     syncOxaLabels();
-    var qr = $('usdtQr');
     var wrap = $('oxaQrWrap');
     if (wrap) wrap.classList.remove('hidden');
-    var src = (inv && inv.qr) || (liveDepositAddr
-      ? ('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(liveDepositAddr))
-      : '');
-    if (qr && src) {
-      qr.src = src;
-      qr.alt = liveDepositAddr;
-    }
+    setCryptoQr(liveDepositAddr);
     var note = $('usdtPendingNote');
     if (note) {
       note.hidden = true;
@@ -2603,15 +2627,11 @@
   }
 
   function paintPreviewAddr(addr) {
-    var a = String(addr || '');
-    if (!a || a === '…') return;
+    var a = rawCryptoAddr(addr);
+    if (!a) return;
     if ($('usdtAddr')) $('usdtAddr').innerHTML = styleOxaAddr(a);
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
-    var qr = $('usdtQr');
-    if (qr) {
-      qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(a);
-      qr.alt = a;
-    }
+    setCryptoQr(a);
   }
 
   function scheduleOxaInvoice() {
@@ -2687,10 +2707,10 @@
       var btn = $('btnUsdtCopy');
       if (!btn) return;
       btn.classList.add('is-copied');
-      btn.textContent = 'Adresse copiée !';
+      btn.textContent = t('cryptoCopied') || t('copied') || 'Copié';
       setTimeout(function () {
         btn.classList.remove('is-copied');
-        btn.textContent = 'Copier l\'adresse';
+        btn.textContent = t('cryptoCopy') || t('copyId') || 'Copier';
       }, 1800);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -4055,13 +4075,7 @@
   var fsTradeActive = false;
 
   function preferCssFullscreenOnly() {
-    try {
-      if (typeof IS_ANDROID !== 'undefined' && IS_ANDROID) return true;
-      var ua = navigator.userAgent || '';
-      return /Android|iPhone|iPad|iPod/i.test(ua);
-    } catch (e0) {
-      return true;
-    }
+    return true;
   }
 
   function isNativeFullscreen() {
@@ -4360,7 +4374,10 @@
       document.addEventListener('click', closeLangMenus);
       window.addEventListener('resize', closeLangMenus);
       document.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Escape') closeLangMenus();
+        if (ev.key === 'Escape') {
+          closeLangMenus();
+          closeDrawer();
+        }
       });
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {

@@ -135,6 +135,8 @@
       clearDigit: 'अंक हटाएं',
       demoTopup: 'डेमो जमाओ',
       profileBtn: 'प्रोफ़ाइल',
+      availBal: 'उपलब्ध शेष',
+      expressCrypto: 'एक्सप्रेस क्रिप्टो जमा',
       profileMenu: 'प्रोफ़ाइल मेनू',
       modeAccount: 'खाता मोड',
       payMethodLabel: 'भुगतान विधि',

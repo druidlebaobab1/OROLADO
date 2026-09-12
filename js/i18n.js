@@ -161,6 +161,8 @@
     clearDigit: 'Delete a digit',
     demoTopup: 'Top up demo',
     profileBtn: 'Profile',
+    availBal: 'Available balance',
+    expressCrypto: 'Express Crypto Deposit',
     profileMenu: 'Profile menu',
     modeAccount: 'Account mode',
     usdtTitle: 'USDT Deposit (TRC-20)',
@@ -379,6 +381,8 @@
     clearDigit: 'Effacer un chiffre',
     demoTopup: 'Recharger la d\u00e9mo',
     profileBtn: 'Profil',
+    availBal: 'Solde disponible',
+    expressCrypto: 'Dépôt Express Crypto',
     profileMenu: 'Menu profil',
     modeAccount: 'Mode de compte',
     usdtTitle: 'D\u00e9p\u00f4t USDT (TRC-20)',
@@ -1701,6 +1705,24 @@
   Object.keys(DICT).forEach(function (code) {
     if (code === 'fr') return;
     Object.assign(DICT[code], OXA_COPY);
+  });
+
+  var UI_I18N = {
+    en: { availBal: 'Available balance', expressCrypto: 'Express Crypto Deposit', copyId: 'Copy', copied: 'Copied', buy: 'BUY (CALL \u2197)', sell: 'SELL (PUT \u2198)', profileBtn: 'Profile' },
+    fr: { availBal: 'Solde disponible', expressCrypto: 'D\u00e9p\u00f4t Express Crypto', copyId: 'Copier', copied: 'Copi\u00e9', buy: 'ACHETER (CALL \u2197)', sell: 'VENDRE (PUT \u2198)', profileBtn: 'Profil' },
+    es: { availBal: 'Saldo disponible', expressCrypto: 'Dep\u00f3sito Express Crypto', copyId: 'Copiar', copied: 'Copiado', buy: 'COMPRAR (CALL \u2197)', sell: 'VENDER (PUT \u2198)', profileBtn: 'Perfil' },
+    pt: { availBal: 'Saldo dispon\u00edvel', expressCrypto: 'Dep\u00f3sito Express Crypto', copyId: 'Copiar', copied: 'Copiado', buy: 'COMPRAR (CALL \u2197)', sell: 'VENDER (PUT \u2198)', profileBtn: 'Perfil' },
+    ar: { availBal: '\u0627\u0644\u0631\u0635\u064a\u062f \u0627\u0644\u0645\u062a\u0627\u062d', expressCrypto: '\u0625\u064a\u062f\u0627\u0639 \u0643\u0631\u064a\u0628\u062a\u0648 \u0633\u0631\u064a\u0639', copyId: '\u0646\u0633\u062e', copied: '\u062a\u0645 \u0627\u0644\u0646\u0633\u062e', buy: '\u0634\u0631\u0627\u0621 (CALL \u2197)', sell: '\u0628\u064a\u0639 (PUT \u2198)', profileBtn: '\u0627\u0644\u0645\u0644\u0641' },
+    tr: { availBal: 'Kullan\u0131labilir bakiye', expressCrypto: 'H\u0131zl\u0131 Kripto Yat\u0131rma', copyId: 'Kopyala', copied: 'Kopyaland\u0131', buy: 'AL (CALL \u2197)', sell: 'SAT (PUT \u2198)', profileBtn: 'Profil' },
+    vi: { availBal: 'S\u1ed1 d\u01b0 kh\u1ea3 d\u1ee5ng', expressCrypto: 'N\u1ea1p crypto nhanh', copyId: 'Sao ch\u00e9p', copied: '\u0110\u00e3 sao', buy: 'MUA (CALL \u2197)', sell: 'B\u00c1N (PUT \u2198)', profileBtn: 'H\u1ed3 s\u01a1' },
+    id: { availBal: 'Saldo tersedia', expressCrypto: 'Deposit kripto kilat', copyId: 'Salin', copied: 'Disalin', buy: 'BELI (CALL \u2197)', sell: 'JUAL (PUT \u2198)', profileBtn: 'Profil' },
+    ru: { availBal: '\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0431\u0430\u043b\u0430\u043d\u0441', expressCrypto: '\u042d\u043a\u0441\u043f\u0440\u0435\u0441\u0441-\u0434\u0435\u043f\u043e\u0437\u0438\u0442 \u043a\u0440\u0438\u043f\u0442\u043e', copyId: '\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c', copied: '\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e', buy: '\u041a\u0423\u041f\u0418\u0422\u042c (CALL \u2197)', sell: '\u041f\u0420\u041e\u0414\u0410\u0422\u042c (PUT \u2198)', profileBtn: '\u041f\u0440\u043e\u0444\u0438\u043b\u044c' },
+    de: { availBal: 'Verf\u00fcgbares Guthaben', expressCrypto: 'Express-Krypto-Einzahlung', copyId: 'Kopieren', copied: 'Kopiert', buy: 'KAUFEN (CALL \u2197)', sell: 'VERKAUFEN (PUT \u2198)', profileBtn: 'Profil' },
+    hi: { availBal: '\u0909\u092a\u0932\u092c\u094d\u0927 \u0936\u0947\u0937', expressCrypto: '\u090f\u0915\u094d\u0938\u092a\u094d\u0930\u0947\u0938 \u0915\u094d\u0930\u093f\u092a\u094d\u091f\u094b \u091c\u092e\u093e', copyId: '\u0915\u0949\u092a\u0940', copied: '\u0915\u0949\u092a\u0940 \u0939\u094b \u0917\u092f\u093e', buy: '\u0916\u0930\u0940\u0926\u0947\u0902 (CALL \u2197)', sell: '\u092c\u0947\u091a\u0947\u0902 (PUT \u2198)', profileBtn: '\u092a\u094d\u0930\u094b\u092b\u093c\u093e\u0907\u0932' }
+  };
+  Object.keys(UI_I18N).forEach(function (code) {
+    if (!DICT[code]) DICT[code] = Object.assign({}, EN);
+    Object.assign(DICT[code], UI_I18N[code]);
   });
 
   var LANG_KEY = 'orolado_lang';

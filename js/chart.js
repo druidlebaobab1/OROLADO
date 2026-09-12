@@ -195,6 +195,13 @@
     parent.style.backgroundColor = '#0B0E14';
     parent.style.position = 'relative';
     parent.style.width = '100%';
+    if (fsMode) {
+      canvas.style.position = 'relative';
+      canvas.style.inset = 'auto';
+    } else {
+      canvas.style.position = 'absolute';
+      canvas.style.inset = '0';
+    }
     if (overlay) {
       overlay.style.display = 'block';
       overlay.style.visibility = 'visible';
@@ -215,14 +222,14 @@
         card.style.width = '100%';
       }
     } else {
-      var chrome = mobile ? 132 : 108;
-      var fsH = Math.max(240, Math.round((window.innerHeight || 700) - chrome));
-      parent.style.minHeight = fsH + 'px';
-      parent.style.height = fsH + 'px';
+      var chrome = mobile ? 132 : 96;
+      var fsH = Math.max(280, Math.round((window.innerHeight || 700) - chrome));
+      parent.style.setProperty('min-height', fsH + 'px', 'important');
+      parent.style.setProperty('height', fsH + 'px', 'important');
       var cardFs = document.getElementById('chart');
       if (cardFs) {
-        cardFs.style.height = fsH + 'px';
-        cardFs.style.minHeight = fsH + 'px';
+        cardFs.style.setProperty('height', fsH + 'px', 'important');
+        cardFs.style.setProperty('min-height', fsH + 'px', 'important');
       }
     }
 
