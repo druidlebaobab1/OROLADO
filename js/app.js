@@ -955,11 +955,15 @@
     profRecvCoin = 'usdt';
     paintProfRecv();
     prefetchRecv('usdt');
+    ['btc', 'eth', 'trx'].forEach(function (id, i) {
+      setTimeout(function () { prefetchRecv(id); }, 280 + i * 320);
+    });
     setAdminBtns(u);
   }
 
   var profRecvCoin = 'usdt';
   var recvCache = {};
+  var recvBusy = {};
 
   function profRecvMeta(id) {
     if (id === 'btc') return { coin: 'btc', min: 15, cache: 'btc' };
@@ -996,6 +1000,9 @@
       paintProfRecv();
       return;
     }
+    if (recvBusy[meta.cache]) return;
+    recvBusy[meta.cache] = true;
+    paintProfRecv();
     ensureApiToken().then(function (tok) {
       return postOxaInvoice({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
@@ -1003,13 +1010,17 @@
         coin: meta.coin
       });
     }).then(function (remote) {
+      recvBusy[meta.cache] = false;
       if (remote && remote.ok && remote.address) {
         recvCache[meta.cache] = String(remote.address);
         if (meta.cache === 'usdt') liveDepositAddr = recvCache.usdt;
         if (remote.orderId && meta.cache === 'usdt') oxaInvoice = remote;
-        paintProfRecv();
       }
-    }).catch(function () { paintProfRecv(); });
+      paintProfRecv();
+    }).catch(function () {
+      recvBusy[meta.cache] = false;
+      paintProfRecv();
+    });
   }
 
   function copyTextSilent(addr, onOk) {
@@ -3353,32 +3364,6 @@
     }
   }
 
-  function startWithdrawTicker() {
-    var box = $('wdTicker');
-    var idEl = $('wdTickerId');
-    var amtEl = $('wdTickerAmt');
-    if (!box || !idEl || !amtEl) return;
-    function pickAmount() {
-      var r = Math.random();
-      if (r < 0.35) return D6.roundMoney(10 + Math.random() * 90);
-      if (r < 0.65) return D6.roundMoney(100 + Math.random() * 400);
-      if (r < 0.88) return D6.roundMoney(500 + Math.random() * 2000);
-      return D6.roundMoney(2500 + Math.random() * 10000);
-    }
-    function showNext() {
-      var id = 'ORO-' + String(100000 + Math.floor(Math.random() * 900000));
-      var amt = '+' + D6.fmtMoney(pickAmount());
-      box.classList.remove('on');
-      setTimeout(function () {
-        idEl.textContent = id + ' :';
-        amtEl.textContent = amt;
-        box.classList.add('on');
-      }, 320);
-    }
-    showNext();
-    setInterval(showNext, 4500 + Math.floor(Math.random() * 1500));
-  }
-
   function bindTrade() {
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
@@ -4343,7 +4328,6 @@
         try { applyAndroidTradeHint(); } catch (e5) { /* ignore */ }
         try { bindAuth(); } catch (e6) { try { console.warn(e6); } catch (e) { /* ignore */ } }
         try { bindTrade(); } catch (e7) { try { console.warn(e7); } catch (e) { /* ignore */ } }
-        try { startWithdrawTicker(); } catch (e8) { /* ignore */ }
         try { bindModals(); } catch (e9) { /* ignore */ }
         try { bindFullscreenTrade(); } catch (e10) { try { console.warn('Mobile display fallback:', e10); } catch (e) { /* ignore */ } }
         try { bindAdmin(); } catch (e11) { /* ignore */ }

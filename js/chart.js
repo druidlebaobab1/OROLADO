@@ -1007,14 +1007,38 @@
       viewMax = nextMax;
     }
     if (activeAsset === 'boom300') {
-      var liveP = isFinite(market.price) ? market.price : minPrice;
-      var loP = Math.min(minPrice, liveP);
-      var hiP = Math.max(maxPrice, liveP);
-      var dataSpan = Math.max(hiP - loP, 0.36);
-      var pxSafe = (dataSpan / Math.max(h, 48)) * 16;
-      var boomPad = Math.max(dataSpan * 0.26, pxSafe, 0.55);
-      viewMin = loP - boomPad;
-      viewMax = hiP + boomPad;
+      var bLo = Infinity;
+      var bHi = -Infinity;
+      var bBodies = [];
+      var bi;
+      var bd;
+      for (bi = 0; bi < candles.length; bi++) {
+        bd = candles[bi];
+        bBodies.push(Math.abs((bd.c || 0) - (bd.o || 0)) || 0.2);
+      }
+      bBodies.sort(function (a, b) { return a - b; });
+      var bMed = bBodies.length ? bBodies[Math.floor(bBodies.length * 0.5)] : 1.2;
+      var wickCap = Math.max(bMed * 3, 2.4);
+      for (bi = 0; bi < candles.length; bi++) {
+        bd = candles[bi];
+        var mid = ((bd.o || 0) + (bd.c || 0)) / 2;
+        var hh = Math.min(bd.h, mid + wickCap);
+        var ll = Math.max(bd.l, mid - wickCap * 0.7);
+        if (ll < bLo) bLo = ll;
+        if (hh > bHi) bHi = hh;
+      }
+      if (isFinite(market.price)) {
+        bLo = Math.min(bLo, market.price);
+        bHi = Math.max(bHi, market.price);
+      }
+      if (!isFinite(bLo) || !isFinite(bHi)) {
+        bLo = minPrice;
+        bHi = maxPrice;
+      }
+      var bSpan = Math.max(bHi - bLo, bMed * 10, 2.4);
+      var bPad = bSpan * 0.15;
+      viewMin = bLo - bPad;
+      viewMax = bHi + bPad;
     }
 
     var minP = viewMin;

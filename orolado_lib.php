@@ -2683,7 +2683,7 @@ function orolado_oxapay_coins(): array {
     'usdt_bep20' => ['pay' => 'USDT', 'network' => 'BEP20', 'label' => 'USDT', 'netLabel' => 'BEP20'],
     'usdc' => ['pay' => 'USDC', 'network' => 'ERC20', 'label' => 'USDC', 'netLabel' => 'ERC20'],
     'btc' => ['pay' => 'BTC', 'network' => '', 'label' => 'BTC', 'netLabel' => 'Bitcoin Network'],
-    'eth' => ['pay' => 'ETH', 'network' => '', 'label' => 'ETH', 'netLabel' => 'Ethereum Network'],
+    'eth' => ['pay' => 'ETH', 'network' => 'ETH', 'label' => 'ETH', 'netLabel' => 'Ethereum Network'],
     'trx' => ['pay' => 'TRX', 'network' => '', 'label' => 'TRX', 'netLabel' => 'Tron Network'],
     'bnb' => ['pay' => 'BNB', 'network' => 'BEP20', 'label' => 'BNB', 'netLabel' => 'BEP20'],
     'sol' => ['pay' => 'SOL', 'network' => '', 'label' => 'SOL', 'netLabel' => 'Solana Network'],
@@ -2866,6 +2866,7 @@ function orolado_oxapay_invoice(array $req): array {
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide', 'code' => 'session'];
   $coin = strtolower(trim((string) ($req['coin'] ?? 'usdt_trc20')));
   if ($coin === 'usdt') $coin = 'usdt_trc20';
+  if ($coin === 'ethereum' || $coin === 'eth_erc20') $coin = 'eth';
   $coins = orolado_oxapay_coins();
   if (!isset($coins[$coin])) {
     return ['ok' => false, 'server' => true, 'reason' => 'Crypto non acceptée.', 'code' => 'coin'];
@@ -2899,6 +2900,18 @@ function orolado_oxapay_invoice(array $req): array {
   if ($meta['network'] !== '') $base['network'] = $meta['network'];
   $res = orolado_oxapay_http('POST', '/v1/payment/white-label', $base);
   $data = is_array($res) ? orolado_oxapay_extract($res) : [];
+  if (empty($data['address']) && $coin === 'eth') {
+    foreach (['ETH', 'ERC20'] as $netTry) {
+      $try = $base;
+      $try['network'] = $netTry;
+      $res = orolado_oxapay_http('POST', '/v1/payment/white-label', $try);
+      $data = is_array($res) ? orolado_oxapay_extract($res) : [];
+      if (!empty($data['address'])) {
+        $meta['network'] = $netTry;
+        break;
+      }
+    }
+  }
   if (empty($data['address'])) {
     $legacy = [
       'merchant' => orolado_oxapay_key(),
@@ -2915,6 +2928,14 @@ function orolado_oxapay_invoice(array $req): array {
     if ($meta['network'] !== '') $legacy['network'] = $meta['network'];
     $res = orolado_oxapay_http('POST', '/merchants/request/whitelabel', $legacy);
     $data = is_array($res) ? orolado_oxapay_extract($res) : [];
+    if (empty($data['address']) && $coin === 'eth') {
+      foreach (['ETH', 'ERC20'] as $netTry) {
+        $legacy['network'] = $netTry;
+        $res = orolado_oxapay_http('POST', '/merchants/request/whitelabel', $legacy);
+        $data = is_array($res) ? orolado_oxapay_extract($res) : [];
+        if (!empty($data['address'])) break;
+      }
+    }
   }
   $addr = (string) ($data['address'] ?? '');
   if ($addr === '') {

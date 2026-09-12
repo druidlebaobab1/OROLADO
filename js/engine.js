@@ -78,11 +78,12 @@
         l = o - uhash01(bucket, salt + 9) * 1.9;
       }
     } else if (spike) {
-      /* Boom 300 only : −35 % d’amplitude verticale pour rester dans le canvas. */
-      var boomAmp = 0.65;
-      c = o + (22 + uhash01(bucket, salt + 7) * 58) * boomAmp;
-      l = o - 0.4 - uhash01(bucket, salt + 8) * 2.2;
-      h = c + uhash01(bucket, salt + 9) * 7 * boomAmp;
+      /* Boom 300 : pic 2.6–3.0× la bougie moyenne, lisible sans exploser l’axe Y. */
+      var body = 0.55 + uhash01(bucket, salt + 7) * 3.4;
+      var boomMul = 2.6 + uhash01(bucket, salt + 13) * 0.4;
+      c = o + body * boomMul;
+      l = o - 0.35 - uhash01(bucket, salt + 8) * 1.4;
+      h = c + Math.min(body * 0.35, 1.4);
     } else {
       c = o - (0.55 + uhash01(bucket, salt + 7) * 3.4);
       l = c - uhash01(bucket, salt + 8) * 1.5;
