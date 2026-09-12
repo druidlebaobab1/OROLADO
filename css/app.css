@@ -1324,6 +1324,29 @@ html.is-android .fs-trade-overlay.on .pad .btn-trade span{
   html.is-android .fs-trade-overlay.on .pad .btn-trade{width:auto!important;flex:1 1 0!important}
 }
 
+/* PC landscape fullscreen: the pad must NOT be width:100% (it crushed the chart to 0). */
+@media (orientation:landscape){
+  html.fs-trade:not(.is-android) .fs-trade-overlay.on .pad,
+  html.is-fullscreen:not(.is-android) .fs-trade-overlay.on .pad{
+    flex:0 0 148px!important;width:148px!important;max-width:148px!important;min-width:128px!important;
+    height:100%!important;flex-direction:column!important;justify-content:center!important;
+    position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important}
+  html.fs-trade:not(.is-android) .fs-trade-overlay.on .chart-card,
+  html.fs-trade:not(.is-android) .fs-trade-overlay.on #chart,
+  html.is-fullscreen:not(.is-android) .fs-trade-overlay.on .chart-card,
+  html.is-fullscreen:not(.is-android) .fs-trade-overlay.on #chart{
+    flex:1 1 0%!important;width:auto!important;min-width:240px!important;height:100%!important;
+    position:relative!important;z-index:10!important}
+  html.fs-trade:not(.is-android) .fs-trade-overlay.on .chart-stage,
+  html.is-fullscreen:not(.is-android) .fs-trade-overlay.on .chart-stage{
+    width:100%!important;min-width:240px!important;height:100%!important;
+    position:relative!important;z-index:10!important}
+  html.fs-trade:not(.is-android) .fs-trade-overlay.on #chartCanvas,
+  html.is-fullscreen:not(.is-android) .fs-trade-overlay.on #chartCanvas{
+    position:relative!important;z-index:10!important;width:100%!important;height:100%!important;
+    display:block!important;visibility:visible!important;opacity:1!important}
+}
+
 /* i18n: Arabic chrome RTL — never flip html/body (chart + CALL/PUT stay LTR) */
 html[lang="ar"],html.lang-ar{
   --font:"Noto Naskh Arabic","Plus Jakarta Sans",system-ui,sans-serif;

@@ -224,12 +224,24 @@
     } else {
       var chrome = mobile ? 132 : 96;
       var fsH = Math.max(280, Math.round((window.innerHeight || 700) - chrome));
+      var landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
+      var sideChrome = (!mobile && landscape) ? 240 : 0;
+      var fsW = Math.max(280, Math.round((window.innerWidth || 800) - sideChrome));
       parent.style.setProperty('min-height', fsH + 'px', 'important');
       parent.style.setProperty('height', fsH + 'px', 'important');
+      parent.style.setProperty('width', '100%', 'important');
+      parent.style.setProperty('min-width', '240px', 'important');
       var cardFs = document.getElementById('chart');
       if (cardFs) {
         cardFs.style.setProperty('height', fsH + 'px', 'important');
         cardFs.style.setProperty('min-height', fsH + 'px', 'important');
+        cardFs.style.setProperty('min-width', '240px', 'important');
+        if (!mobile && landscape) {
+          cardFs.style.setProperty('width', fsW + 'px', 'important');
+          cardFs.style.setProperty('flex', '1 1 0%', 'important');
+        } else {
+          cardFs.style.setProperty('width', '100%', 'important');
+        }
       }
     }
 
