@@ -19,6 +19,7 @@ Options -Indexes
   RewriteRule ^api/flutterwave/webhook/?$ api/flutterwave-webhook.php [L,QSA]
   RewriteRule ^api/flutterwave/callback/?$ api/flutterwave-callback.php [L,QSA]
   RewriteRule ^api/flutterwave/status/?$ api/flutterwave-status.php [L,QSA]
+  RewriteRule ^api/flutterwave/verify/?$ api/flutterwave-verify.php [L,QSA]
 </IfModule>
 
 <IfModule mod_mime.c>

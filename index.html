@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=122">
+  <link rel="stylesheet" href="css/app.css?v=124">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -597,6 +597,11 @@
             <span class="pay-method-desc">USDT, USDC, BTC, ETH, TRX… • crédit auto</span>
           </button>
         </div>
+        <div id="flwRailWrap" class="flw-rails" role="radiogroup" aria-label="Devise Flutterwave">
+          <button type="button" class="flw-rail on" data-rail="usd" aria-checked="true">International · USD</button>
+          <button type="button" class="flw-rail" data-rail="xof" aria-checked="false">Afrique de l'Ouest · XOF</button>
+          <button type="button" class="flw-rail" data-rail="ngn" aria-checked="false">Nigeria · NGN</button>
+        </div>
         <button type="button" class="btn-gold" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
       </div>
       <div id="depositStepCrypto" class="crypto-invoice hidden">
@@ -731,6 +736,7 @@
   <script src="js/auth.js?v=108"></script>
   <script src="js/engine.js?v=106"></script>
   <script src="js/chart.js?v=108"></script>
-  <script src="js/app.js?v=127"></script>
+  <script src="https://checkout.flutterwave.com/v3.js"></script>
+  <script src="js/app.js?v=129"></script>
 </body>
 </html>

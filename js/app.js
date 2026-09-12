@@ -1790,6 +1790,7 @@
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum $3';
     setDepositPayMethod('card');
+    syncFlwRails();
     resetOxaWallet();
     showDepositStep('select');
     closeDrawer();
@@ -1879,6 +1880,71 @@
   }
 
   fetchPayCountryIp();
+
+  var flwRail = 'usd';
+
+  function syncFlwRails() {
+    document.querySelectorAll('#flwRailWrap .flw-rail').forEach(function (btn) {
+      var on = btn.getAttribute('data-rail') === flwRail;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+
+  async function postFlwVerify(payload) {
+    try {
+      var r = await fetch('api/flutterwave/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store'
+      });
+      if (r.ok) return await r.json();
+    } catch (e) { /* fallback */ }
+    return D6.Api.post('flutterwaveVerify', payload, 20000);
+  }
+
+  function openFlwInline(session) {
+    if (!window.FlutterwaveCheckout) {
+      toast('Paiement carte indisponible pour le moment.', 'err');
+      return;
+    }
+    var pub = String((session && session.public_key) || '');
+    if (!pub || pub.indexOf('FLWPUBK') !== 0) {
+      toast('Paiement carte indisponible pour le moment.', 'err');
+      return;
+    }
+    depositApplied = false;
+    closeModal('depositModal');
+    try {
+      FlutterwaveCheckout({
+        public_key: pub,
+        tx_ref: session.tx_ref || session.ref,
+        amount: Number(session.amount) || 0,
+        currency: String(session.currency || 'USD'),
+        customer: session.customer || {},
+        customizations: session.customizations || { title: 'OROLADO' },
+        callback: function (data) {
+          var txId = (data && (data.transaction_id || data.id)) || '';
+          ensureApiToken().then(function (tok) {
+            return postFlwVerify({
+              token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+              transaction_id: txId,
+              tx_ref: session.tx_ref || session.ref || ''
+            });
+          }).then(function (remote) {
+            applyDepositPaid(remote);
+            if (!depositApplied) toast(t('depositPending') || 'Paiement en cours…', 'warn');
+          }).catch(function () {
+            toast(t('sessionInvalid'), 'err');
+          });
+        },
+        onclose: function () {}
+      });
+    } catch (e) {
+      toast('Paiement carte indisponible pour le moment.', 'err');
+    }
+  }
 
   async function postFlutterwaveCheckout(payload) {
     var ctrl = new AbortController();
@@ -2693,7 +2759,7 @@
     if (btn) {
       btn.disabled = true;
       btn.classList.add('busy');
-      btn.textContent = 'Génération du lien sécurisé...';
+      btn.textContent = 'Ouverture du paiement...';
     }
     try {
       var tok = await ensureApiToken();
@@ -2704,24 +2770,20 @@
       var remote = await postFlutterwaveCheckout({
         token: tok,
         amount: amt,
-        method: 'card'
+        currency: flwRail || 'usd'
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);
         toast(String((remote && remote.reason) || t('sessionInvalid')), 'err');
         return;
       }
-      var ref = (remote && (remote.ref || remote.tx_ref)) || '';
-      var url = resolveDepositCheckoutUrl((remote && (remote.checkout_url || remote.url)) || '');
-      if (!url || url.toLowerCase().indexOf('flutterwave.com') < 0) {
+      if (!remote || !remote.inline || !remote.public_key || !remote.tx_ref) {
         toast(String((remote && remote.reason) || 'Paiement carte indisponible pour le moment.'), 'err');
         return;
       }
-      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e) { /* ignore */ }
-      try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
-      depositApplied = false;
-      closeModal('depositModal');
-      window.location.href = url;
+      try { sessionStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e2) { /* ignore */ }
+      openFlwInline(remote);
     } catch (err) {
       console.error('OROLADO deposit', err);
       toast((err && err.message) || t('sessionInvalid'), 'err');
@@ -3490,6 +3552,12 @@
       closeModal('depositModal');
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
+    document.querySelectorAll('#flwRailWrap .flw-rail').forEach(function (btn) {
+      bindAndroidTap(btn, function () {
+        flwRail = btn.getAttribute('data-rail') || 'usd';
+        syncFlwRails();
+      });
+    });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
     if ($('oxaCoinBtn')) {
       bindAndroidTap($('oxaCoinBtn'), function () {

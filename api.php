@@ -1213,4 +1213,9 @@ if ($action === 'flutterwaveStatus') {
   exit;
 }
 
+if ($action === 'flutterwaveVerify') {
+  echo json_encode(orolado_flutterwave_client_verify(['token' => $token] + $req));
+  exit;
+}
+
 echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Action inconnue']);

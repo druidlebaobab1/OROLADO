@@ -539,6 +539,11 @@ html.is-android #chartOverlay{
 .pay-method-card.on{border-color:var(--gold);background:rgba(245,158,11,.08);
   box-shadow:0 0 0 1px rgba(245,158,11,.45),0 8px 20px rgba(245,158,11,.08)}
 .pay-method-card.on .pay-method-title{color:var(--gold)}
+.flw-rails{display:grid;grid-template-columns:1fr;gap:6px;margin:-4px 0 14px}
+@media (min-width:360px){.flw-rails{grid-template-columns:1fr 1fr 1fr}}
+.flw-rail{min-height:38px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:#121824;color:#C5D0E0;
+  font:inherit;font-size:.68rem;font-weight:800;cursor:pointer;touch-action:manipulation;padding:6px 4px;line-height:1.25}
+.flw-rail.on{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.1)}
 .deposit-box{width:min(400px,92vw);max-width:400px;max-height:90dvh;padding:16px 14px 18px;overflow-y:auto}
 .deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow-x:hidden;overflow-y:auto;
   background:linear-gradient(180deg,#161C28 0%,#121824 100%);border:1px solid rgba(255,255,255,.1)}
