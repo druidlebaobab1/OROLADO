@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=126">
+  <link rel="stylesheet" href="css/app.css?v=127">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -82,8 +82,8 @@
         <div class="brand-xl">ORO<span>LADO</span></div>
         <div class="brand-domain">OROLADO.COM</div>
       </div>
-      <p class="brand-sub" data-i18n="tagline">Plateforme de trading &amp; analyse en USD</p>
-      <div id="authRealPitch" class="auth-real-pitch lux-msg info hidden" data-i18n="authRealPitch">Créez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains réels.</div>
+      <p class="brand-sub" data-i18n="tagline">Trading en USD</p>
+      <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">Connexion ou inscription</div>
       <div class="auth-card glass">
         <div class="auth-tabs">
           <button type="button" class="auth-tab on" data-tab="login" data-i18n="login">Connexion</button>
@@ -236,6 +236,7 @@
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true" style="background:transparent"></canvas>
             <button type="button" class="chart-fs-btn" id="btnChartFs" data-i18n-aria="fsEnter" data-i18n-title="fsEnter" aria-label="Full screen" title="Full screen">
+              <span class="chart-fs-live" aria-hidden="true"></span>
               <span class="chart-fs-ico" aria-hidden="true">⛶</span>
               <span class="chart-fs-label" data-i18n="fsEnter">PLEIN ÉCRAN</span>
             </button>
@@ -251,8 +252,8 @@
 
         <div class="pad glass">
           <div class="dur-row">
-            <button type="button" class="dur-chip" data-dur="3">3s</button>
-            <button type="button" class="dur-chip on" data-dur="10">10s</button>
+            <button type="button" class="dur-chip on" data-dur="3">3s</button>
+            <button type="button" class="dur-chip" data-dur="10">10s</button>
             <button type="button" class="dur-chip" data-dur="30">30s</button>
             <button type="button" class="dur-chip" data-dur="60">1 min</button>
             <button type="button" class="dur-chip" data-dur="300">5 min</button>
@@ -288,7 +289,6 @@
             <div class="timer-msg" id="timerResult"></div>
             <div class="timer-track"><div class="timer-fill" id="timerProgress"></div></div>
           </div>
-          <div class="trade-lock" id="tradeLockHint" data-i18n="tradeLocked">2 positions ouvertes — attendez la clôture</div>
           <div class="trade-row">
             <button type="button" class="btn-trade btn-call" id="btnCall">
               <span data-i18n="buy">BUY (CALL ↗)</span>
@@ -687,16 +687,6 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="convertModal">
-    <div class="modal-box glass convert-box">
-      <button type="button" class="btn-close" id="closeConvert">✕</button>
-      <div class="convert-fire">🔥</div>
-      <div class="convert-title" data-i18n="convertTitle">Tu as un vrai talent de trader !</div>
-      <p class="convert-copy" data-i18n="convertCopy">Passe en mode Réel pour retirer tes gains en vrai argent.</p>
-      <button type="button" class="btn-gold" id="btnConvertRecharge" data-i18n="convertBtn">Recharger mon compte</button>
-    </div>
-  </div>
-
   <div class="modal-backdrop" id="helpModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeHelp">✕</button>
@@ -734,17 +724,17 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=108"></script>
+  <script src="js/config.js?v=109"></script>
   <script src="js/translations.js?v=107"></script>
-  <script src="js/i18n.js?v=114"></script>
+  <script src="js/i18n.js?v=115"></script>
   <script src="js/store.js?v=107"></script>
   <script src="js/api.js?v=107"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=107"></script>
   <script src="js/auth.js?v=108"></script>
   <script src="js/engine.js?v=107"></script>
-  <script src="js/chart.js?v=109"></script>
+  <script src="js/chart.js?v=110"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=131"></script>
+  <script src="js/app.js?v=132"></script>
 </body>
 </html>

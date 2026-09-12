@@ -8,7 +8,6 @@
   var outcomeToastSeen = {};
   var selectedOp = 'wave';
   var depositOp = 'wave';
-  var pendingConvert = false;
   var lastClickAt = 0;
   var cooling = false;
   var histPatch = 0;
@@ -285,12 +284,12 @@
     var txt = el.querySelector('.lux-msg-txt');
     if (txt) txt.textContent = msg;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 2800);
+    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 2000);
   }
 
   function guardLiveTradeView() {
     if (!(D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount())) return true;
-    toast('Trade en cours... Veuillez patienter jusqu’à la fin du compte à rebours pour changer de vue.', '', 3000);
+    toast(t('viewLocked') || 'Veuillez patienter jusqu’à la fin du compte à rebours pour changer de vue', '', 2000);
     return false;
   }
 
@@ -876,16 +875,7 @@
     openModal('tipModal');
   }
 
-  function maybeConvertPrompt(u, res) {
-    if (!u) return;
-    var mode = (res && res.position && res.position.mode) || (res && res.trade && res.trade.mode) || u.mode;
-    if (mode !== 'demo') return;
-    if ((u.demoTrades || 0) < 5) return;
-    if (u.convertPrompted) return;
-    u.convertPrompted = true;
-    D6.Store.saveUser(u);
-    pendingConvert = true;
-  }
+  function maybeConvertPrompt() {}
 
   function profitFromResult(res) {
     if (!res) return 0;
@@ -924,7 +914,7 @@
     $('btnCall').classList.toggle('locked', busy);
     $('btnPut').classList.toggle('locked', busy);
     var hint = $('tradeLockHint');
-    if (hint) hint.classList.toggle('on', busy);
+    if (hint) hint.classList.remove('on');
   }
 
   function armTradeCooldown() {
@@ -1662,16 +1652,10 @@
         12000
       );
     }
-    maybeConvertPrompt(user(), res);
+    maybeConvertPrompt();
     maybeLossStreakTip(user());
     patchHistorySoon();
     syncTradeButtons();
-    if (pendingConvert && !(D6.Engine.liveCount && D6.Engine.liveCount())) {
-      pendingConvert = false;
-      setTimeout(function () {
-        if (!D6.Engine.getTrade()) openModal('convertModal');
-      }, 900);
-    }
     if (D6.Api && D6.Api.token() && id) {
       D6.Api.post('settleOrder', {
         orderId: id,
@@ -1694,27 +1678,22 @@
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
     var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
     if (open >= maxOpen) {
-      toast(t('maxPositions'), 'err');
       syncTradeButtons();
       return;
     }
     stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {
-      if (mode === 'real') {
-        openDeposit('Solde insuffisant pour miser. Rechargez votre compte');
-      } else {
-        toast(t('insufficient'), 'err');
-      }
+      toast(t('insufficient'), 'err', 2000);
       return;
     }
     playTap();
     var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u), payout: currentOdds(u) });
     if (!res.ok) {
-      if (mode === 'real' && /insuffisant/i.test(String(res.reason || ''))) {
-        openDeposit('Solde insuffisant pour miser. Rechargez votre compte');
+      if (/insuffisant|insufficient/i.test(String(res.reason || ''))) {
+        toast(t('insufficient'), 'err', 2000);
       } else {
-        toast(res.reason, 'err');
+        toast(res.reason, 'err', 2000);
       }
       syncTradeButtons();
       return;
@@ -1804,7 +1783,6 @@
     resetOxaWallet();
     showDepositStep('select');
     closeDrawer();
-    closeModal('convertModal');
     openModal('depositModal');
     metaTrack('InitiateCheckout');
   }
@@ -3489,15 +3467,6 @@
 
   function bindModals() {
     bindAndroidTap($('closeHistorySheet'), function () { closeModal('historySheet'); });
-    bindAndroidTap($('closeConvert'), function () { closeModal('convertModal'); });
-    bindAndroidTap($('btnConvertRecharge'), function () {
-      closeModal('convertModal');
-      var u = user();
-      if (u && !D6.Engine.getTrade()) {
-        u.mode = 'real'; D6.Store.saveUser(u); setModeUi(u); updateBalance(true); updatePayoutUi();
-      }
-      openDeposit();
-    });
     $('btnOpenPass').addEventListener('click', function () { openFromProfile('passModal'); });
     bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
     $('formPassword').addEventListener('submit', async function (e) {
@@ -3941,7 +3910,13 @@
       });
       document.addEventListener('touchmove', function (e) {
         try {
-          if (e.touches && e.touches.length > 1) e.preventDefault();
+          if (e.touches && e.touches.length > 1) {
+            e.preventDefault();
+            return;
+          }
+          var node = e.target;
+          if (node && node.closest && node.closest('.drawer, .modal-backdrop, #screenAuth, #screenAdmin, .oxa-dd, .asset-bar, textarea, input, select')) return;
+          e.preventDefault();
         } catch (e2) { /* ignore */ }
       }, { passive: false });
     } catch (err) {
@@ -4064,17 +4039,15 @@
 
   function bumpChartLayout() {
     if (!(D6.Chart && D6.Chart.resize)) return;
+    function once() {
+      try {
+        D6.Chart.resize();
+        if (D6.Chart.drawNow) D6.Chart.drawNow();
+      } catch (e) { /* ignore */ }
+    }
     requestAnimationFrame(function () {
-      D6.Chart.resize();
-      if (D6.Chart.drawNow) D6.Chart.drawNow();
-      setTimeout(function () {
-        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
-        if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
-      }, 120);
-      setTimeout(function () {
-        if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
-        if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
-      }, 400);
+      once();
+      [50, 120, 280, 500].forEach(function (ms) { setTimeout(once, ms); });
     });
   }
 
@@ -4287,6 +4260,7 @@
         if (!isNativeFullscreen() && fsTradeActive && !preferCssFullscreenOnly()) {
           unmountTradeFullscreen();
         }
+        if (fsTradeActive) bumpChartLayout();
       } catch (eFs) {
         try { console.warn(eFs); } catch (eW) { /* ignore */ }
       }
@@ -4303,10 +4277,7 @@
       } catch (eO) { try { console.warn(eO); } catch (e) { /* ignore */ } }
     });
     window.addEventListener('resize', function () {
-      try {
-        if (!fsTradeActive) return;
-        bumpChartLayout();
-      } catch (eR) { try { console.warn(eR); } catch (e) { /* ignore */ } }
+      try { bumpChartLayout(); } catch (eR) { try { console.warn(eR); } catch (e) { /* ignore */ } }
     });
   }
 

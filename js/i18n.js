@@ -2,8 +2,8 @@
   'use strict';
 
   var EN = {
-    tagline: 'Trading & analytics platform in USD',
-    authRealPitch: 'Create your account or sign in in 30 seconds to top up and withdraw real winnings.',
+    tagline: 'Live trading in USD',
+    authRealPitch: 'Sign in or create an account.',
     login: 'Sign in', register: 'Sign up', enter: 'Sign in',
     createAccount: 'Create my account',
     idLabel: 'Email', idPh: 'you@email.com',
@@ -67,6 +67,7 @@
     withdrawMinErr: 'The minimum withdrawal is $3.',
     wagerBlocked: 'You must still stake {amt} before withdrawing (Required volume: 2\u00d7 your deposit).',
     gatewayOn: 'Mobile Money gateway 100% active',
+    viewLocked: 'Please wait until the countdown ends to change view',
     maxPositions: 'Maximum 2 open trades',
     needAccount: 'Sign in or create an account to continue',
     tradeLocked: '2 open positions \u2014 wait for settlement',
@@ -219,8 +220,8 @@
   };
 
   var FR = {
-    tagline: 'Plateforme de trading & analyse en USD',
-    authRealPitch: 'Cr\u00e9ez votre compte ou connectez-vous en 30 secondes pour recharger votre solde et retirer vos gains r\u00e9els.',
+    tagline: 'Trading en USD',
+    authRealPitch: 'Connexion ou inscription',
     login: 'Connexion', register: 'Inscription', enter: 'Se connecter',
     createAccount: 'Cr\u00e9er mon compte',
     idLabel: 'E-mail', idPh: 'vous@email.com',
@@ -284,6 +285,7 @@
     withdrawMinErr: 'Le retrait minimum est de $3.',
     wagerBlocked: 'Vous devez miser encore {amt} avant de pouvoir effectuer un retrait (Volume requis : x2 de votre d\u00e9p\u00f4t).',
     gatewayOn: 'Passerelle Mobile Money 100% active',
+    viewLocked: 'Veuillez patienter jusqu\u2019\u00e0 la fin du compte \u00e0 rebours pour changer de vue',
     maxPositions: 'Maximum 2 trades en cours',
     needAccount: 'Connecte-toi ou cr\u00e9e un compte pour continuer',
     tradeLocked: '2 positions ouvertes \u2014 attendez la cl\u00f4ture',

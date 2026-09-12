@@ -215,13 +215,14 @@
         card.style.width = '100%';
       }
     } else {
-      // Immersif : laisser le flex CSS gérer la hauteur (pad toujours visible).
-      parent.style.minHeight = '0';
-      parent.style.height = '';
+      var chrome = mobile ? 132 : 108;
+      var fsH = Math.max(240, Math.round((window.innerHeight || 700) - chrome));
+      parent.style.minHeight = fsH + 'px';
+      parent.style.height = fsH + 'px';
       var cardFs = document.getElementById('chart');
       if (cardFs) {
-        cardFs.style.height = '';
-        cardFs.style.minHeight = '0';
+        cardFs.style.height = fsH + 'px';
+        cardFs.style.minHeight = fsH + 'px';
       }
     }
 
@@ -1258,6 +1259,8 @@
             if (chartCard) ro.observe(chartCard);
             var fsSlot = document.getElementById('fsTradeSlot');
             if (fsSlot) ro.observe(fsSlot);
+            var fsOverlay = document.getElementById('fsTradeOverlay');
+            if (fsOverlay) ro.observe(fsOverlay);
           } catch (eRo) { try { console.warn('Mobile display fallback:', eRo); } catch (e12) { /* ignore */ } }
         }
       } catch (err) {

@@ -30,10 +30,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .hidden{display:none!important}
 .glass{background:rgba(18,23,34,.88);border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.35);backdrop-filter:blur(16px)}
 
-.lux-msg{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;
-  background:rgba(11,14,20,.72);border:1px solid rgba(245,166,35,.35);color:#F8FAFC;
-  font-size:.82rem;font-weight:650;line-height:1.45;letter-spacing:.01em;
-  box-shadow:0 12px 36px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.05);
+.lux-msg{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-radius:10px;
+  background:rgba(11,14,20,.78);border:1px solid rgba(245,166,35,.28);color:#F8FAFC;
+  font-size:.72rem;font-weight:650;line-height:1.35;letter-spacing:.01em;
+  box-shadow:0 8px 24px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.04);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .lux-msg-ico{width:18px;height:18px;flex:0 0 18px;margin-top:1px;border-radius:50%;
   background:currentColor;opacity:.92;
@@ -49,9 +49,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='2'/><path d='M12 8v5.2M12 16.4h.01' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/16px no-repeat}
 .lux-msg.info{border-color:rgba(245,166,35,.35);color:#FDE68A}
 .lux-msg-txt{min-width:0;flex:1 1 auto}
-.toast{position:fixed;left:50%;top:12%;bottom:auto;transform:translate(-50%,-14px);
-  z-index:230;opacity:0;pointer-events:none;max-width:min(420px,90vw);text-align:left;
-  transition:opacity .28s ease,transform .32s ease}
+.toast{position:fixed;left:50%;top:10%;bottom:auto;transform:translate(-50%,-10px);
+  z-index:230;opacity:0;pointer-events:none;max-width:min(340px,88vw);text-align:left;
+  transition:opacity .22s ease,transform .22s ease}
 .toast.show{opacity:1;transform:translate(-50%,0);animation:luxIn .34s ease}
 @keyframes luxIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
 .btn-gold.busy{opacity:.72;pointer-events:none}
@@ -87,12 +87,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .brand-xl span,.brand span{color:#FBBF24}
 .brand{font-size:.88rem}
 .brand-domain{font-size:.62rem;font-weight:700;letter-spacing:.22em;color:var(--muted)}
-.brand-sub{text-align:center;color:var(--muted);font-size:.8rem;margin:10px 0 18px;font-weight:500}
-.auth-real-pitch{margin:0 0 14px;text-align:left}
-.auth-real-pitch::before{content:"";width:18px;height:18px;flex:0 0 18px;margin-top:1px;
-  background:currentColor;
-  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='none' stroke='black' stroke-width='2'/><path d='M12 8v5M12 16.2h.01' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/></svg>") center/16px no-repeat;
-  mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='none' stroke='black' stroke-width='2'/><path d='M12 8v5M12 16.2h.01' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/></svg>") center/16px no-repeat}
+.brand-sub{text-align:center;color:var(--muted);font-size:.78rem;margin:8px 0 16px;font-weight:500}
+.auth-real-pitch{margin:0 0 12px;text-align:center;font-size:.72rem;font-weight:600;color:var(--muted);line-height:1.35}
 .auth-real-pitch.hidden{display:none!important}
 .tx-feed-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
 .tx-feed-row .tx-type{font-weight:900;font-size:.78rem}
@@ -184,7 +180,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .balance-card.flash{animation:balPulse .35s ease}
 @keyframes balPulse{50%{transform:scale(1.03);box-shadow:0 0 18px rgba(255,215,0,.5)}}
 
-.trade-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:4px 8px 0;gap:4px;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:250px}
+.trade-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:4px 8px 0;gap:4px;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
 .asset-bar{display:flex;gap:6px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;
   scrollbar-width:none;-ms-overflow-style:none;max-width:100%;width:100%;scroll-snap-type:x mandatory}
 .asset-bar::-webkit-scrollbar{display:none;height:0}
@@ -207,11 +203,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:0;pointer-events:none}
 .chart-price-wm{opacity:.9;font-size:.72rem;text-shadow:0 0 10px rgba(0,0,0,.55);color:var(--gold)}
 .chart-live-price .pnl-value{font-size:.68rem;opacity:.85}
-.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:visible;background:#0B0E14!important}
+.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:hidden;overscroll-behavior:none;touch-action:none;background:#0B0E14!important}
 #chartCanvas{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
-  background-color:#0B0E14!important;pointer-events:none;border:none!important;outline:none!important}
+  background-color:#0B0E14!important;pointer-events:none;touch-action:none;border:none!important;outline:none!important}
 #chartOverlay,.chart-overlay{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   display:block!important;visibility:visible!important;opacity:1!important;z-index:20!important;
@@ -299,15 +295,22 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   color:#94A3B8;box-shadow:none;
   font:inherit;font-size:10px;font-weight:700;letter-spacing:.04em;line-height:1;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;opacity:1;animation:none}
+  -webkit-tap-highlight-color:transparent;opacity:1;animation:fsBtnHint 2.4s ease-in-out infinite}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{
   border-color:#334155;background:rgba(18,23,34,.95);
-  color:#E2E8F0;animation:none}
+  color:#E2E8F0}
+.chart-fs-btn[aria-pressed="true"]{animation:none}
+.chart-fs-live{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#EF4444;
+  box-shadow:0 0 0 0 rgba(239,68,68,.55);animation:fsLiveDot 1.5s ease-in-out infinite}
 .chart-fs-ico{font-size:11px;line-height:1;flex-shrink:0}
 .chart-fs-label{white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:inherit}
-@keyframes fsBtnPulse{
-  0%,100%{opacity:1}
-  50%{opacity:1}
+@keyframes fsLiveDot{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,.5)}
+  50%{opacity:.45;box-shadow:0 0 0 5px rgba(239,68,68,0)}
+}
+@keyframes fsBtnHint{
+  0%,100%{border-color:#1E2638}
+  50%{border-color:rgba(239,68,68,.55)}
 }
 @media (max-width:859px){
   .chart-fs-btn{
@@ -387,9 +390,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .odds-chip .odds-pct{font-size:.58rem;font-weight:600;color:var(--muted);line-height:1.1;text-transform:uppercase;letter-spacing:.03em}
 .odds-chip.on{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.08);box-shadow:none}
 .timer-panel{display:none!important}
-.trade-lock{display:none;text-align:center;font-size:.62rem;font-weight:700;color:var(--gold);
-  background:var(--gold-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:4px 6px;margin-bottom:4px}
-.trade-lock.on{display:block}
+.trade-lock{display:none!important}
 .btn-trade.locked{filter:grayscale(.4);opacity:.45;animation:none;box-shadow:none}
 .trade-row{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;width:100%;box-sizing:border-box;padding:0 10px;margin:0}
 .btn-trade{border:0;border-radius:var(--radius);min-height:var(--btn-h-m);flex:1 1 0;min-width:0;width:auto;font:inherit;font-weight:700;letter-spacing:0;text-transform:uppercase;
@@ -644,7 +645,8 @@ html.is-android #chartOverlay{
   .deposit-box.is-crypto .oxa-dd-btn{min-height:40px}
   .deposit-box.is-crypto .oxa-net{min-height:36px}
 }
-.drawer-item.drawer-logout{width:100%;min-height:32px;margin:2px 0 0;color:#F87171;justify-content:flex-start;
+.drawer-item.drawer-logout{width:100%;min-height:30px;margin:2px 0 0;color:#F87171;justify-content:flex-start;
+  position:sticky;bottom:0;background:#0B0E14;z-index:3;flex-shrink:0;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .drawer-item.drawer-logout .di-label{color:#F87171}
 .drawer-item.drawer-logout .di-ico{opacity:.95;color:#F87171}
@@ -776,8 +778,20 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .wallet-copy.is-copied{border-color:rgba(34,197,94,.5);color:#86EFAC;background:rgba(34,197,94,.14)}
 .drawer-admin{margin:0 12px 4px;padding:6px;border:1px solid rgba(245,158,11,.28);border-radius:var(--radius);background:rgba(245,158,11,.06);flex-shrink:0}
 .drawer-admin .btn-admin{padding:6px 8px;font-size:.58rem}
-.drawer-nav{padding:0 6px;display:flex;flex-direction:column;gap:4px;margin-top:2px;flex:1 1 auto;min-height:0;overflow:hidden}
+.drawer-nav{padding:0 6px;display:flex;flex-direction:column;gap:2px;margin-top:2px;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .drawer-legal{margin:2px 12px 4px;font-size:.52rem;flex-shrink:0}
+@media (min-width:860px){
+  .drawer{width:min(360px,38vw)}
+  .drawer .card{margin:0 10px 4px;padding:4px 8px}
+  .drawer .list-row{padding:3px 0;font-size:.66rem}
+  .wallet-card{margin:0 10px 4px;padding:8px}
+  .wallet-card-v{font-size:1.08rem;margin:0 0 4px}
+  .wallet-xpress{min-height:26px;margin:0 0 6px;padding:4px 8px;font-size:.6rem}
+  .wallet-tab{min-height:26px}
+  .drawer-item{min-height:28px;padding:4px 8px;font-size:.7rem}
+  .drawer-section-title{padding:2px 8px 1px}
+}
+html.fs-trade,html.fs-trade body,html.is-fullscreen,html.is-fullscreen body{overflow:hidden!important;overscroll-behavior:none}
 html.oro-profile-open{overflow:hidden}
 html.oro-profile-open #screenTrade{pointer-events:none}
 html.oro-profile-open .drawer,html.oro-profile-open .drawer-backdrop,html.oro-profile-open .modal-backdrop{pointer-events:auto}
@@ -880,14 +894,14 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .balance-card .bal{font-size:20px!important}
   .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:380px!important;height:45vh!important;max-height:none!important;background:#0B0E14!important}
   .chart-stage{min-height:340px!important;height:100%!important;flex-shrink:0;background:#0B0E14!important}
-  .trade-wrap{padding-bottom:200px}
+  .trade-wrap{padding-bottom:0;overflow:hidden}
   .trade-lock{display:none!important}
   .trade-hint{display:none!important}
 }
 @media (max-width:859px) and (max-height:680px){
   .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:340px!important;min-height:max(340px,52vh)!important}
   .btn-trade{min-height:40px}
-  .trade-wrap{padding-bottom:190px}
+  .trade-wrap{padding-bottom:0;overflow:hidden}
 }
 @media (min-height:760px) and (max-width:859px){
   .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:380px!important;min-height:max(380px,58vh)!important}
@@ -913,7 +927,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .balance-card .bal{font-size:1.02rem}
   .btn-deposit{padding:0 8px;font-size:.62rem;min-height:28px;border-radius:8px}
   .bal-plus{width:24px;height:24px;font-size:.85rem;border-radius:7px}
-  .trade-wrap{padding:2px 6px 0;gap:2px;padding-bottom:210px}
+  .trade-wrap{padding:2px 6px 0;gap:2px;padding-bottom:0;overflow:hidden}
   .asset-bar{gap:3px;padding-bottom:2px}
   .asset-chip{padding:2px 3px;border-radius:7px}
   .asset-chip .n,.payout-live{font-size:9px}
@@ -958,7 +972,7 @@ html.is-android .chart-card,html.is-android #chart{
 html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!important}
 @media (max-width:429px){
   /* Android : vides du ticket → canvas. HAUT / côtes fonctionnelles inchangés. */
-  html.is-android .trade-wrap{padding-bottom:178px!important}
+  html.is-android .trade-wrap{padding-bottom:0!important;overflow:hidden}
   html.is-android .pad{
     padding:2px 6px!important;gap:2px!important;
     padding-bottom:calc(3px + env(safe-area-inset-bottom,0px))!important}
