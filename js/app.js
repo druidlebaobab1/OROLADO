@@ -2693,7 +2693,7 @@
     if (btn) {
       btn.disabled = true;
       btn.classList.add('busy');
-      btn.textContent = t('depositBusy');
+      btn.textContent = 'Génération du lien sécurisé...';
     }
     try {
       var tok = await ensureApiToken();
@@ -2704,8 +2704,7 @@
       var remote = await postFlutterwaveCheckout({
         token: tok,
         amount: amt,
-        country: await detectPayCountry(),
-        lang: navigator.language || navigator.userLanguage || ''
+        method: 'card'
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);

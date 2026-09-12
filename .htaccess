@@ -15,7 +15,9 @@ Options -Indexes
   RewriteRule ^api/oxapay/status/?$ api/oxapay-status.php [L,QSA]
   RewriteRule ^api/oxapay/webhook/?$ api/oxapay-webhook.php [L,QSA]
   RewriteRule ^api/flutterwave/checkout/?$ api/flutterwave-checkout.php [L,QSA]
+  RewriteRule ^api/flutterwave/charge/?$ api/flutterwave-charge.php [L,QSA]
   RewriteRule ^api/flutterwave/webhook/?$ api/flutterwave-webhook.php [L,QSA]
+  RewriteRule ^api/flutterwave/callback/?$ api/flutterwave-callback.php [L,QSA]
   RewriteRule ^api/flutterwave/status/?$ api/flutterwave-status.php [L,QSA]
 </IfModule>
 
