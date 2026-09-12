@@ -1203,4 +1203,14 @@ if ($action === 'oxapayStatus') {
   exit;
 }
 
+if ($action === 'flutterwaveCheckout') {
+  echo json_encode(orolado_flutterwave_checkout(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'flutterwaveStatus') {
+  echo json_encode(orolado_confirm_deposit(['token' => $token] + $req));
+  exit;
+}
+
 echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Action inconnue']);

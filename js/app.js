@@ -1826,6 +1826,29 @@
     return '';
   }
 
+  async function postFlutterwaveCheckout(payload) {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, 28000);
+    try {
+      var r = await fetch('api/flutterwave/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      if (r.ok) {
+        var json = await r.json();
+        if (json) return json;
+      }
+    } catch (e) {
+      console.error('OROLADO flutterwave checkout', e);
+    }
+    clearTimeout(timer);
+    return D6.Api.post('flutterwaveCheckout', payload, 28000);
+  }
+
   async function postDepositInitiate(payload) {
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, 28000);
@@ -2624,38 +2647,26 @@
         toast(t('sessionInvalid'), 'err');
         return;
       }
-      var remote = await postDepositInitiate({
+      var remote = await postFlutterwaveCheckout({
         token: tok,
-        amount: amt,
-        operator: depositOp
+        amount: amt
       });
       if (remote && remote.ok === false) {
-        console.error('OROLADO deposit fail', remote);
-        var failMsg = String((remote && remote.reason) || '');
-        if (!failMsg && remote && remote.raw) failMsg = String(remote.raw);
-        if (remote && remote.payload) console.error('payload', remote.payload);
-        toast(failMsg || t('sessionInvalid'), 'err');
+        console.error('OROLADO flutterwave fail', remote);
+        toast(String((remote && remote.reason) || t('sessionInvalid')), 'err');
         return;
       }
-      var ref = (remote && remote.ref) || '';
+      var ref = (remote && (remote.ref || remote.tx_ref)) || '';
       var url = resolveDepositCheckoutUrl((remote && (remote.checkout_url || remote.url)) || '');
-      if (!url) {
-        console.error('OROLADO deposit: pas de redirectUrl', remote);
-        var noUrl = (remote && (remote.reason || remote.raw)) || 'Pas de redirectUrl Moneroo';
-        toast(String(noUrl), 'err');
+      if (!url || url.toLowerCase().indexOf('flutterwave.com') < 0) {
+        toast(String((remote && remote.reason) || 'Paiement carte indisponible pour le moment.'), 'err');
         return;
       }
       try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
       depositApplied = false;
       closeModal('depositModal');
-      payWindow = window.open(url, '_blank');
-      if (!payWindow) {
-        window.location.href = url;
-        return;
-      }
-      openDepositWait(ref);
-      startDepositWatch(ref);
+      window.location.href = url;
     } catch (err) {
       console.error('OROLADO deposit', err);
       toast((err && err.message) || t('sessionInvalid'), 'err');

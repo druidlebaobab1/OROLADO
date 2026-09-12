@@ -1109,13 +1109,14 @@ function credit_paid_deposit(array $hit): array {
     $db['processedTx'][] = $refId;
     $db['processedTx'] = array_values(array_unique(array_slice($db['processedTx'], -400)));
   }
+  $txOp = strtolower((string) ($dep['operator'] ?? ''));
   $tx = [
     'id' => uniqid('dep_', true),
     'at' => date('c'),
     'clock' => date('H:i:s'),
     'type' => 'deposit',
     'amount' => $amount,
-    'note' => 'Recharge Maketou',
+    'note' => ($txOp === 'flutterwave' || $txOp === 'flw') ? 'Recharge Flutterwave' : 'Recharge Maketou',
     'mode' => 'real'
   ];
   if (!isset($db['users'][$uid]['transactions']) || !is_array($db['users'][$uid]['transactions'])) {
@@ -1854,6 +1855,8 @@ function orolado_confirm_deposit(array $req): array {
         'userId' => $uid,
         'sellId' => (string) ($sb['sell_id'] ?? ''),
         'cartId' => (string) ($sb['sell_id'] ?? ''),
+        'operator' => (string) ($sb['operator'] ?? ''),
+        'ref' => (string) ($sb['reference'] ?? $sb['id'] ?? $ref),
       ];
     }
   }
@@ -1863,6 +1866,12 @@ function orolado_confirm_deposit(array $req): array {
     $out['success'] = !empty($out['paid']);
     $out['new_balance'] = (int) ($out['vault']['real'] ?? 0);
     return $out;
+  }
+
+  $depOp = strtolower((string) ($dep['operator'] ?? ''));
+  $depRefGuess = strtolower((string) ($dep['id'] ?? $dep['ref'] ?? $ref));
+  if ($depOp === 'flutterwave' || $depOp === 'flw' || str_starts_with($depRefGuess, 'flw_')) {
+    return orolado_flutterwave_confirm($req, $dep);
   }
 
   // Harmonise cartId / sellId pour la vérification Maketou.
@@ -3024,6 +3033,380 @@ function orolado_oxapay_webhook(string $raw, string $hmacHeader): array {
   $minUsd = orolado_oxapay_min_usd((string) (($dep['coin'] ?? 'usdt_trc20')));
   if ($usd + 0.0001 < $minUsd) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   orolado_oxapay_credit($orderId, $trackId, $usd, $txid);
+  return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+}
+
+function orolado_flw_secret(): string {
+  orolado_load_env();
+  return trim((string) (getenv('FLW_SECRET_KEY') ?: ($_ENV['FLW_SECRET_KEY'] ?? $_SERVER['FLW_SECRET_KEY'] ?? '')));
+}
+
+function orolado_flw_webhook_hash(): string {
+  orolado_load_env();
+  return trim((string) (getenv('FLW_WEBHOOK_HASH') ?: ($_ENV['FLW_WEBHOOK_HASH'] ?? $_SERVER['FLW_WEBHOOK_HASH'] ?? '')));
+}
+
+function orolado_flw_configured(): bool {
+  return orolado_flw_secret() !== '';
+}
+
+function orolado_flw_xof_countries(): array {
+  return ['CI', 'SN', 'ML', 'BF', 'BJ', 'TG', 'NE', 'GW'];
+}
+
+function orolado_flw_dial_country(string $dial): string {
+  $d = preg_replace('/\D/', '', $dial) ?? '';
+  if ($d === '234') return 'NG';
+  if ($d === '55') return 'BR';
+  $map = [
+    '225' => 'CI', '221' => 'SN', '223' => 'ML', '226' => 'BF',
+    '229' => 'BJ', '228' => 'TG', '227' => 'NE', '245' => 'GW',
+  ];
+  return $map[$d] ?? '';
+}
+
+function orolado_flw_ip_country(): string {
+  foreach (['HTTP_CF_IPCOUNTRY', 'HTTP_X_COUNTRY_CODE', 'HTTP_X_APPENGINE_COUNTRY', 'HTTP_CLOUDFRONT_VIEWER_COUNTRY'] as $h) {
+    $v = strtoupper(trim((string) ($_SERVER[$h] ?? '')));
+    if (preg_match('/^[A-Z]{2}$/', $v) && $v !== 'XX' && $v !== 'T1') return $v;
+  }
+  return '';
+}
+
+function orolado_flw_country(array $me): string {
+  $ip = orolado_flw_ip_country();
+  if ($ip !== '') return $ip;
+  $fromDial = orolado_flw_dial_country((string) ($me['countryCode'] ?? ''));
+  if ($fromDial !== '') return $fromDial;
+  $prof = strtoupper(trim((string) ($me['country'] ?? $me['country_code'] ?? '')));
+  if (preg_match('/^[A-Z]{2}$/', $prof)) return $prof;
+  return 'INTL';
+}
+
+function orolado_flw_payment_options(string $cc): string {
+  if ($cc === 'NG') return 'card,account,ussd,banktransfer,mobilemoney';
+  if (in_array($cc, orolado_flw_xof_countries(), true)) return 'card,mobilemoneyfranco';
+  return 'card';
+}
+
+function orolado_flw_charge(string $cc, float $usd): array {
+  if (in_array($cc, orolado_flw_xof_countries(), true)) {
+    return ['currency' => 'XOF', 'amount' => orolado_usd_to_fcfa($usd)];
+  }
+  if ($cc === 'NG') {
+    $rate = (float) (getenv('USD_NGN_RATE') ?: ($_ENV['USD_NGN_RATE'] ?? 1500));
+    if ($rate <= 0) $rate = 1500;
+    return ['currency' => 'NGN', 'amount' => round($usd * $rate, 2)];
+  }
+  return ['currency' => 'USD', 'amount' => $usd];
+}
+
+function orolado_flw_email_ok(string $email): bool {
+  $email = trim($email);
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+  if (str_contains(strtolower($email), '@orolado.local')) return false;
+  if (str_contains(strtolower($email), '@orolado-pay.com')) return false;
+  return true;
+}
+
+function orolado_supabase_profile_row(string $uid): array {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $uid === '') return [];
+  $rows = supabase_http(
+    supabase_project_url() . '/rest/v1/profiles?id=eq.' . rawurlencode($uid) . '&select=display_name,phone,country_code,email',
+    $hdrs
+  );
+  if (is_array($rows) && isset($rows[0]) && is_array($rows[0])) return $rows[0];
+  return [];
+}
+
+function orolado_flw_customer(array $me, string $token): array {
+  $uid = (string) ($me['id'] ?? '');
+  $email = trim((string) ($me['email'] ?? ''));
+  $name = trim((string) ($me['displayName'] ?? ''));
+  $phone = trim((string) ($me['phone'] ?? ''));
+  $dial = trim((string) ($me['countryCode'] ?? ''));
+  $auth = supabase_fetch_auth_user($token);
+  if (is_array($auth)) {
+    $authMail = trim((string) ($auth['email'] ?? ''));
+    if (orolado_flw_email_ok($authMail)) $email = $authMail;
+    $meta = is_array($auth['user_metadata'] ?? null) ? $auth['user_metadata'] : [];
+    if ($name === '') $name = trim((string) ($meta['display_name'] ?? ''));
+    if ($phone === '') $phone = trim((string) ($meta['phone'] ?? ''));
+    if ($dial === '') $dial = trim((string) ($meta['country_code'] ?? ''));
+  }
+  $prof = orolado_supabase_profile_row($uid);
+  if ($prof) {
+    $pMail = trim((string) ($prof['email'] ?? ''));
+    if (!orolado_flw_email_ok($email) && orolado_flw_email_ok($pMail)) $email = $pMail;
+    if ($name === '') $name = trim((string) ($prof['display_name'] ?? ''));
+    if ($phone === '') $phone = trim((string) ($prof['phone'] ?? ''));
+    if ($dial === '') $dial = trim((string) ($prof['country_code'] ?? ''));
+  }
+  $phoneDigits = preg_replace('/\D/', '', $phone) ?? '';
+  $dialDigits = preg_replace('/\D/', '', $dial) ?? '';
+  $e164 = '';
+  if ($phoneDigits !== '') {
+    if ($dialDigits !== '' && !str_starts_with($phoneDigits, $dialDigits)) {
+      $e164 = '+' . $dialDigits . $phoneDigits;
+    } else {
+      $e164 = '+' . ltrim($phoneDigits, '+');
+    }
+  }
+  return [
+    'email' => $email,
+    'name' => $name,
+    'phone' => $e164,
+    'dial' => $dial,
+    'country' => orolado_flw_country([
+      'countryCode' => $dial !== '' ? $dial : ($me['countryCode'] ?? ''),
+      'country' => $me['country'] ?? '',
+    ]),
+  ];
+}
+
+function orolado_flw_http(string $method, string $path, ?array $body = null): ?array {
+  $secret = orolado_flw_secret();
+  if ($secret === '') return null;
+  $url = 'https://api.flutterwave.com/v3' . $path;
+  $headers = [
+    'Accept: application/json',
+    'Content-Type: application/json',
+    'Authorization: Bearer ' . $secret,
+  ];
+  if (!function_exists('curl_init')) return null;
+  $ch = curl_init($url);
+  $opts = [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 18,
+    CURLOPT_CONNECTTIMEOUT => 6,
+    CURLOPT_HTTPHEADER => $headers,
+  ];
+  $method = strtoupper($method);
+  if ($method === 'POST') {
+    $opts[CURLOPT_POST] = true;
+    $opts[CURLOPT_POSTFIELDS] = json_encode($body ?? new stdClass(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  }
+  curl_setopt_array($ch, $opts);
+  $raw = curl_exec($ch);
+  $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+  if (!is_string($raw) || $raw === '') return ['_http' => $code];
+  $json = json_decode($raw, true);
+  if (!is_array($json)) return ['_http' => $code];
+  $json['_http'] = $code;
+  return $json;
+}
+
+function orolado_flutterwave_checkout(array $req): array {
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $token = (string) ($req['token'] ?? '');
+  $me = orolado_session_user($db, $token);
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide', 'code' => 'session'];
+  if (!orolado_flw_configured()) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Paiement carte indisponible pour le moment.', 'code' => 'keys'];
+  }
+  $amountUsd = orolado_money($req['amount'] ?? 0);
+  $minUsd = orolado_min_deposit($me);
+  if ($amountUsd + 0.0001 < $minUsd) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.', 'code' => 'min'];
+  }
+  $cust = orolado_flw_customer($me, $token);
+  if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {
+    return ['ok' => false, 'server' => true, 'reason' => 'E-mail du compte introuvable. Connectez-vous avec votre compte.', 'code' => 'email'];
+  }
+  $cc = (string) ($cust['country'] ?? 'INTL');
+  $opts = orolado_flw_payment_options($cc);
+  $charge = orolado_flw_charge($cc, $amountUsd);
+  $uid = (string) $me['id'];
+  $ref = 'flw_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . bin2hex(random_bytes(6));
+  $origin = orolado_public_origin();
+  $payload = [
+    'tx_ref' => $ref,
+    'amount' => $charge['amount'],
+    'currency' => $charge['currency'],
+    'redirect_url' => $origin . '/?deposit=success&ref=' . rawurlencode($ref),
+    'payment_options' => $opts,
+    'customer' => [
+      'email' => $cust['email'],
+      'name' => $cust['name'] !== '' ? $cust['name'] : explode('@', $cust['email'])[0],
+    ],
+    'customizations' => [
+      'title' => 'OROLADO',
+      'description' => 'Recharge',
+      'logo' => $origin . '/icons/icon.svg',
+    ],
+    'meta' => [
+      'user_id' => $uid,
+      'amount_usd' => $amountUsd,
+      'country' => $cc,
+    ],
+  ];
+  if ($cust['phone'] !== '') $payload['customer']['phonenumber'] = $cust['phone'];
+  if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  $db['deposits'][] = [
+    'id' => $ref,
+    'ref' => $ref,
+    'userId' => $uid,
+    'operator' => 'flutterwave',
+    'status' => 'PENDING',
+    'amount' => $amountUsd,
+    'payAmount' => $charge['amount'],
+    'payCurrency' => $charge['currency'],
+    'country' => $cc,
+    'customerEmail' => $cust['email'],
+    'customerName' => $cust['name'],
+    'customerPhone' => $cust['phone'],
+    'currency' => 'USD',
+    'at' => date('c'),
+  ];
+  save_db($file, $db);
+  supabase_insert_deposit([
+    'id' => $ref,
+    'user_id' => $uid,
+    'amount' => $amountUsd,
+    'status' => 'PENDING',
+    'reference' => $ref,
+    'operator' => 'flutterwave',
+  ]);
+  $res = orolado_flw_http('POST', '/payments', $payload);
+  $link = '';
+  if (is_array($res)) {
+    $link = (string) ($res['data']['link'] ?? '');
+  }
+  if ($link === '' || !preg_match('#^https://#i', $link)) {
+    $msg = '';
+    if (is_array($res)) {
+      $msg = (string) (($res['message'] ?? '') ?: ($res['data']['message'] ?? ''));
+    }
+    return [
+      'ok' => false,
+      'server' => true,
+      'reason' => $msg !== '' ? $msg : 'Paiement carte indisponible pour le moment.',
+      'code' => 'flutterwave',
+      'ref' => $ref,
+    ];
+  }
+  return [
+    'ok' => true,
+    'server' => true,
+    'ref' => $ref,
+    'tx_ref' => $ref,
+    'url' => $link,
+    'checkout_url' => $link,
+    'amount' => $amountUsd,
+    'currency' => $charge['currency'],
+    'country' => $cc,
+    'payment_options' => $opts,
+  ];
+}
+
+function orolado_flutterwave_verify(string $txRef, string $transactionId = ''): array {
+  if ($transactionId !== '' && ctype_digit($transactionId)) {
+    $res = orolado_flw_http('GET', '/transactions/' . rawurlencode($transactionId) . '/verify');
+  } else {
+    $res = orolado_flw_http('GET', '/transactions/verify_by_reference?tx_ref=' . rawurlencode($txRef));
+  }
+  if (!is_array($res) || strtolower((string) ($res['status'] ?? '')) !== 'success') {
+    return ['ok' => false, 'paid' => false];
+  }
+  $data = is_array($res['data'] ?? null) ? $res['data'] : [];
+  $st = strtolower((string) ($data['status'] ?? ''));
+  if ($st !== 'successful') return ['ok' => true, 'paid' => false, 'status' => $st];
+  $gotRef = (string) ($data['tx_ref'] ?? $txRef);
+  return [
+    'ok' => true,
+    'paid' => true,
+    'tx_ref' => $gotRef,
+    'extId' => (string) ($data['id'] ?? $data['flw_ref'] ?? $gotRef),
+    'flw_ref' => (string) ($data['flw_ref'] ?? ''),
+  ];
+}
+
+function orolado_flutterwave_credit(string $txRef, string $extId = ''): array {
+  $dep = orolado_oxapay_find_dep($txRef, $extId);
+  if (!$dep) {
+    $db = load_db(orolado_data_file());
+    foreach (($db['deposits'] ?? []) as $d) {
+      if (!is_array($d)) continue;
+      if (strcasecmp((string) ($d['id'] ?? ''), $txRef) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $txRef) === 0) {
+        $dep = $d;
+        break;
+      }
+    }
+  }
+  if (!$dep) return ['ok' => false, 'code' => 'unknown'];
+  $usd = orolado_money($dep['amount'] ?? 0);
+  if ($usd + 0.0001 < orolado_min_deposit(null)) return ['ok' => false, 'code' => 'min'];
+  $paid = credit_paid_deposit([
+    'ref' => (string) ($dep['id'] ?? $txRef),
+    'amount' => $usd,
+    'extId' => $extId !== '' ? $extId : $txRef,
+    'paid' => true,
+  ]);
+  if (!empty($paid['ok']) || !empty($paid['duplicate'])) {
+    $uid = (string) ($dep['userId'] ?? $paid['userId'] ?? '');
+    $db = load_db(orolado_data_file());
+    return [
+      'ok' => true,
+      'paid' => empty($paid['duplicate']),
+      'duplicate' => !empty($paid['duplicate']),
+      'amount' => orolado_money($paid['amount'] ?? $usd),
+      'vault' => $uid !== '' ? orolado_crypto_vault($db, $uid) : null,
+      'ref' => (string) ($dep['id'] ?? $txRef),
+    ];
+  }
+  return ['ok' => false, 'code' => 'credit'];
+}
+
+function orolado_flutterwave_confirm(array $req, array $dep): array {
+  $uid = (string) ($dep['userId'] ?? '');
+  $refId = (string) ($dep['id'] ?? $dep['ref'] ?? '');
+  $st = strtoupper((string) ($dep['status'] ?? ''));
+  if ($st !== 'PAID' && $st !== 'COMPLETED') {
+    $txId = '';
+    $params = $req['returnParams'] ?? null;
+    if (is_array($params)) {
+      $txId = (string) ($params['transaction_id'] ?? $params['transactionId'] ?? $params['id'] ?? '');
+    }
+    $proof = orolado_flutterwave_verify($refId, $txId);
+    if (!empty($proof['paid'])) {
+      orolado_flutterwave_credit($refId, (string) ($proof['extId'] ?? ''));
+    }
+  }
+  $out = orolado_deposit_status(['token' => $req['token'] ?? '', 'ref' => $refId]);
+  $out['ref'] = $refId;
+  $out['success'] = !empty($out['paid']);
+  $out['new_balance'] = (int) ($out['vault']['real'] ?? 0);
+  if (empty($out['paid'])) {
+    $out['status'] = 'PENDING';
+    $out['pending'] = true;
+  } else {
+    $out['status'] = 'COMPLETED';
+  }
+  return $out;
+}
+
+function orolado_flutterwave_webhook(string $raw, string $hashHeader): array {
+  $expect = orolado_flw_webhook_hash();
+  if ($expect === '') return ['ok' => false, 'http' => 503, 'body' => 'no hash'];
+  $got = strtolower(trim($hashHeader));
+  if ($got === '' || !hash_equals(strtolower($expect), $got)) {
+    return ['ok' => false, 'http' => 401, 'body' => 'invalid hash'];
+  }
+  $data = json_decode($raw, true);
+  if (!is_array($data)) return ['ok' => false, 'http' => 400, 'body' => 'invalid json'];
+  if (isset($data['data']) && is_array($data['data'])) $data = array_merge($data, $data['data']);
+  $status = strtolower((string) ($data['status'] ?? ''));
+  if ($status !== 'successful') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  $txRef = (string) ($data['tx_ref'] ?? $data['txRef'] ?? '');
+  $txId = (string) ($data['id'] ?? $data['transaction_id'] ?? '');
+  if ($txRef === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  $proof = orolado_flutterwave_verify($txRef, $txId);
+  if (!empty($proof['paid'])) {
+    orolado_flutterwave_credit($txRef, (string) ($proof['extId'] ?? $txId));
+  }
   return ['ok' => true, 'http' => 200, 'body' => 'OK'];
 }
 
