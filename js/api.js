@@ -34,11 +34,13 @@
         var ms = timeoutMs || (action === 'login' || action === 'registerVerify' ? 20000 : 8000);
         var timer = setTimeout(function () { ctrl.abort(); }, ms);
         var body = Object.assign({ action: action, token: D6.Api.token() }, data || {});
+        if (action === 'login') body.token = '';
         var r = await fetch('api.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify(body),
           cache: 'no-store',
+          credentials: 'same-origin',
           signal: ctrl.signal
         });
         clearTimeout(timer);

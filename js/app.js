@@ -236,10 +236,22 @@
     trade.classList.toggle('mode-demo', u.mode !== 'real');
     trade.classList.toggle('mode-real', u.mode === 'real');
     var plus = $('btnDemoTopup');
+    var guest = isGuest(u);
+    var real = u.mode === 'real';
+    var plusTitle = real ? (t('recharge') || 'Recharger') : (t('demoTopup') || 'Recharger la démo');
     if (plus) {
-      var show = u.mode !== 'real';
-      plus.classList.toggle('hidden', !show);
+      plus.classList.toggle('hidden', guest);
+      plus.title = plusTitle;
+      plus.setAttribute('aria-label', plusTitle);
     }
+    var fsPlus = $('btnFsTopup');
+    if (fsPlus) {
+      fsPlus.classList.toggle('hidden', guest);
+      fsPlus.title = plusTitle;
+      fsPlus.setAttribute('aria-label', plusTitle);
+    }
+    var fsMode = $('fsModeLabel');
+    if (fsMode) fsMode.textContent = real ? (t('fsModeReal') || 'COMPTE RÉEL') : (t('fsModeDemo') || 'MODE DÉMO');
   }
 
   function wagerStatus(u) {
@@ -959,6 +971,7 @@
   function fillProfile() {
     var u = user();
     if (!u) return;
+    loadRecvCache(u);
     $('profName').textContent = u.displayName || 'Trader';
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
@@ -977,6 +990,23 @@
   var profRecvCoin = 'usdt';
   var recvCache = {};
   var recvBusy = {};
+  var recvFailed = {};
+  var recvTimers = {};
+
+  function recvCacheKey(u) {
+    return 'oro_recv_cache_' + String((u && u.id) || 'guest');
+  }
+
+  function loadRecvCache(u) {
+    try {
+      var raw = sessionStorage.getItem(recvCacheKey(u));
+      recvCache = raw ? (JSON.parse(raw) || {}) : {};
+    } catch (e0) { recvCache = {}; }
+  }
+
+  function saveRecvCache(u) {
+    try { sessionStorage.setItem(recvCacheKey(u || user()), JSON.stringify(recvCache)); } catch (e1) { /* ignore */ }
+  }
 
   function profRecvMeta(id) {
     if (id === 'btc') return { coin: 'btc', min: 15, cache: 'btc' };
@@ -988,6 +1018,7 @@
   function paintProfRecv() {
     var el = $('profWalletAddr');
     var copyBtn = $('btnCopyWallet');
+    var genBtn = $('btnGenWallet');
     var meta = profRecvMeta(profRecvCoin);
     document.querySelectorAll('.wallet-tab').forEach(function (btn) {
       var on = btn.getAttribute('data-recv') === profRecvCoin;
@@ -995,27 +1026,41 @@
       btn.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     var addr = recvCache[meta.cache] || '';
+    var busy = !!recvBusy[meta.cache];
+    var failed = !!recvFailed[meta.cache];
     if (el) {
-      el.textContent = addr || 'Génération…';
+      el.textContent = addr || (busy ? 'Génération…' : '');
       el.title = addr;
     }
     if (copyBtn) copyBtn.disabled = !addr;
+    if (genBtn) genBtn.classList.toggle('hidden', !(!addr && !busy && failed));
   }
 
-  function prefetchRecv(id) {
+  function prefetchRecv(id, force) {
     var meta = profRecvMeta(id || 'usdt');
-    if (recvCache[meta.cache]) {
+    if (recvCache[meta.cache] && !force) {
+      recvFailed[meta.cache] = false;
       paintProfRecv();
       return;
     }
     var u = user();
     if (!u || isGuest(u) || typeof postOxaInvoice !== 'function') {
+      recvFailed[meta.cache] = true;
       paintProfRecv();
       return;
     }
     if (recvBusy[meta.cache]) return;
     recvBusy[meta.cache] = true;
+    recvFailed[meta.cache] = false;
     paintProfRecv();
+    if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
+    recvTimers[meta.cache] = setTimeout(function () {
+      if (!recvCache[meta.cache]) {
+        recvBusy[meta.cache] = false;
+        recvFailed[meta.cache] = true;
+        paintProfRecv();
+      }
+    }, 8000);
     ensureApiToken().then(function (tok) {
       return postOxaInvoice({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
@@ -1024,14 +1069,21 @@
       });
     }).then(function (remote) {
       recvBusy[meta.cache] = false;
+      if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
       if (remote && remote.ok && remote.address) {
         recvCache[meta.cache] = String(remote.address);
+        recvFailed[meta.cache] = false;
+        saveRecvCache(u);
         if (meta.cache === 'usdt') liveDepositAddr = recvCache.usdt;
         if (remote.orderId && meta.cache === 'usdt') oxaInvoice = remote;
+      } else if (!recvCache[meta.cache]) {
+        recvFailed[meta.cache] = true;
       }
       paintProfRecv();
     }).catch(function () {
       recvBusy[meta.cache] = false;
+      if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
+      if (!recvCache[meta.cache]) recvFailed[meta.cache] = true;
       paintProfRecv();
     });
   }
@@ -1066,6 +1118,12 @@
         prefetchRecv(id);
       });
     });
+    if ($('btnGenWallet') && !$('btnGenWallet')._oroBound) {
+      $('btnGenWallet')._oroBound = true;
+      bindAndroidTap($('btnGenWallet'), function () {
+        prefetchRecv(profRecvCoin, true);
+      });
+    }
     if ($('btnCopyWallet') && !$('btnCopyWallet')._oroBound) {
       $('btnCopyWallet')._oroBound = true;
       bindAndroidTap($('btnCopyWallet'), function () {
@@ -3255,7 +3313,7 @@
     $('formLogin').addEventListener('submit', async function (e) {
       e.preventDefault();
       clearErrors();
-      var res = await D6.Auth.login({ identifier: $('loginId').value, password: $('loginPass').value });
+      var res = await D6.Auth.login({ identifier: String($('loginId').value || '').trim().toLowerCase(), password: $('loginPass').value });
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
       enterApp();
     });
@@ -4507,16 +4565,22 @@
         ensureGuest();
         enterApp();
       });
-      if ($('btnDemoTopup')) $('btnDemoTopup').addEventListener('click', function () {
+      function onBalancePlusClick() {
         var u = user();
-        if (!u || u.mode === 'real') return;
+        if (!u || isGuest(u)) { requireAccount(); return; }
+        if (u.mode === 'real') {
+          openDeposit();
+          return;
+        }
         var target = D6.CONFIG.DEMO_START || 1000000;
         var cur = D6.Store.demoBalance(u);
-        if (cur >= target) { toast('Solde démo déjà à ' + D6.fmtFCFA(target), 'ok'); return; }
+        if (cur >= target) { toast(t('demoAlready') || 'Solde démo déjà rechargé', 'ok', 2500); return; }
         D6.Store.setBalanceMode(u, 'demo', target);
         updateBalance(true);
-        toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok');
-      });
+        toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok', 2500);
+      }
+      if ($('btnDemoTopup')) $('btnDemoTopup').addEventListener('click', onBalancePlusClick);
+      if ($('btnFsTopup')) $('btnFsTopup').addEventListener('click', onBalancePlusClick);
       if ($('closeTip')) { /* bound in bindModals */ }
       if ($('btnTipOk')) { /* bound in bindModals */ }
       (async function bootSession() {

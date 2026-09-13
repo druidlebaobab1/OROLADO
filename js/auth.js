@@ -172,37 +172,54 @@
       var password = String(form.password || '').trim();
       if (!password) return { ok: false, reason: 'Mot de passe requis', field: 'loginPass' };
       if (!id.email) return { ok: false, reason: 'Saisissez votre e-mail', field: 'loginId' };
+      id.email = normalizeEmail(id.email);
 
       var reservedAdmin = D6.Auth.isReservedAdminEmail(id.email);
-      var cloudLogin = !reservedAdmin && D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && id.email.indexOf('.local') < 0;
-      if (cloudLogin) {
+      var isLocalPreview = id.email.indexOf('.local') >= 0;
+      var cloudLogin = !reservedAdmin && !isLocalPreview && D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled();
+
+      async function tryCloudLogin() {
+        if (!cloudLogin) return null;
         try {
           var cloud = await D6.Supabase.login(id.email, password);
-          if (cloud.ok) return { ok: true, user: D6.Store.current() };
-        } catch (eCloud) { /* fallback API locale */ }
+          if (cloud && cloud.ok) return { ok: true, user: D6.Store.current() };
+        } catch (eCloud) { /* ignore */ }
+        return null;
       }
 
-      if (D6.Api) {
-        var remote = await D6.Api.post('login', { email: id.email, password: password }, 20000);
+      // Toujours interroger la base serveur (pas le localStorage du 1er appareil).
+      if (D6.Api && !isLocalPreview) {
+        var remote = await D6.Api.post('login', { email: id.email, password: password, token: '' }, 20000);
         if (remote && remote.ok && remote.user) {
           D6.Store.importRemote(remote.user, remote.vault);
-          D6.Api.setToken(remote.token);
+          if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
           D6.Store.setSession({
             userId: remote.user.id,
             at: D6.nowIso(),
             exp: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
           });
-          return { ok: true, user: D6.Store.getUser(remote.user.id) };
+          return { ok: true, user: D6.Store.getUser(remote.user.id) || remote.user };
         }
         if (remote && remote.server && !remote.ok) {
+          var viaCloud = await tryCloudLogin();
+          if (viaCloud) return viaCloud;
           return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginPass' };
         }
-        if (reservedAdmin && !remote) {
+        if (!remote) {
+          var viaCloudDown = await tryCloudLogin();
+          if (viaCloudDown) return viaCloudDown;
           return { ok: false, reason: 'Serveur indisponible. Réessayez.', field: 'loginId' };
         }
       }
 
+      var cloudOk = await tryCloudLogin();
+      if (cloudOk) return cloudOk;
+
       if (reservedAdmin) {
+        return { ok: false, reason: 'Identifiants introuvables', field: 'loginPass' };
+      }
+
+      if (!isLocalPreview) {
         return { ok: false, reason: 'Identifiants introuvables', field: 'loginPass' };
       }
 

@@ -242,15 +242,15 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .op-grid-deposit .op-card{min-height:64px;justify-content:center}
 .op-grid-deposit .op-card.on{box-shadow:0 0 0 1px var(--gold) inset}
 .help-badge{border:1px solid var(--line);background:rgba(245,197,24,.1);color:var(--gold);border-radius:999px;
-  padding:6px 10px;font:inherit;font-size:.62rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  padding:4px 8px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .auth-back{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:5;border:1px solid var(--line);
   background:rgba(21,30,48,.85);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-weight:800;font-size:.72rem;cursor:pointer}
 .bal-plus{width:28px;height:28px;border-radius:8px;border:1px solid var(--gold);background:rgba(245,197,24,.12);color:var(--gold);
   font:inherit;font-weight:900;font-size:1rem;line-height:1;cursor:pointer;flex-shrink:0}
 .bal-plus.hidden{display:none}
 .balance-card{display:flex;align-items:center;justify-content:flex-start;gap:8px}
-.bal-crypto-frieze{flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}
-.bal-crypto-frieze .coin-svg{width:16px;height:16px;opacity:.68;flex-shrink:0;border-radius:50%}
+.bal-crypto-frieze{flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:10px;pointer-events:none}
+.bal-crypto-frieze .coin-svg{width:20px;height:20px;opacity:.72;flex-shrink:0;border-radius:50%}
 .balance-card .bal{white-space:nowrap;flex-shrink:0}
 #screenTrade.mode-demo .balance-card{border:1px solid rgba(245,158,11,.35);box-shadow:none;
   background:var(--surface)}
@@ -431,14 +431,16 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 /* Android : éviter html/body position:fixed qui peuvent collapser le layout */
 html.is-android,html.is-android body{
-  position:relative!important;inset:auto!important;width:100%!important;
-  height:auto!important;min-height:100%!important;min-height:100dvh!important;
-  overflow-x:hidden!important;overflow-y:auto!important}
-html.is-android .screen{
-  height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important}
+  position:fixed!important;inset:0!important;width:100%!important;
+  height:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+  overflow:hidden!important;overscroll-behavior:none!important;background:#0B0E14!important}
+html.is-android .screen,
 html.is-android #screenTrade{
-  overflow-x:hidden!important;overflow-y:auto!important;min-height:100dvh!important}
-html.is-android .pad{z-index:50!important}
+  height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;overscroll-behavior:none!important}
+html.is-android .pad{
+  position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
+  z-index:50!important;background:#0B0E14!important;max-width:none!important;
+  padding-bottom:env(safe-area-inset-bottom,16px)!important}
 html.is-android .btn-close{
   min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
   z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
@@ -779,9 +781,10 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
   background:rgba(255,255,255,.04);border:1px solid rgba(255,158,11,.16)}
 .wallet-addr-row code{flex:1;min-width:0;font-size:.62rem;font-weight:700;color:#E2E8F0;line-height:1.4;
   font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;white-space:normal}
-.wallet-copy{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.1);color:var(--gold);
+.wallet-copy,.wallet-gen{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.1);color:var(--gold);
   border-radius:7px;padding:4px 8px;font:inherit;font-size:.58rem;font-weight:800;cursor:pointer;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.wallet-gen{white-space:nowrap}
 .wallet-copy.is-copied{border-color:rgba(34,197,94,.5);color:#86EFAC;background:rgba(34,197,94,.14)}
 .drawer-admin{margin:0 12px 4px;padding:6px;border:1px solid rgba(245,158,11,.28);border-radius:var(--radius);background:rgba(245,158,11,.06);flex-shrink:0}
 .drawer-admin .btn-admin{padding:6px 8px;font-size:.58rem}
@@ -922,7 +925,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .icon-btn,.lang-dd,.lang-dd-btn{width:26px;height:26px;min-width:26px;max-width:26px;flex-basis:26px;border-radius:8px}
   .lang-dd-menu{width:min(196px,calc(100vw - 12px));min-width:0;max-height:none;overflow:hidden}
   .lang-flag{font-size:12px}
-  .help-badge{padding:4px 7px;font-size:.55rem}
+  .help-badge{padding:4px 8px;font-size:.68rem}
   #screenTrade.is-guest .auth-quick{gap:4px}
   #screenTrade.is-guest .btn-auth-link{padding:4px 6px;font-size:.58rem;min-height:26px;border-radius:7px}
   .topbar-mode{padding:0 6px 3px}
@@ -979,10 +982,10 @@ html.is-android .chart-card,html.is-android #chart{
 html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!important}
 @media (max-width:429px){
   /* Android : vides du ticket → canvas. HAUT / côtes fonctionnelles inchangés. */
-  html.is-android .trade-wrap{padding-bottom:0!important;overflow:hidden}
+  html.is-android .trade-wrap{overflow:hidden;overscroll-behavior:none}
   html.is-android .pad{
     padding:2px 6px!important;gap:2px!important;
-    padding-bottom:calc(3px + env(safe-area-inset-bottom,0px))!important}
+    padding-bottom:env(safe-area-inset-bottom,16px)!important}
   html.is-android .dur-row{gap:2px!important;margin:0!important}
   html.is-android .dur-chip{min-height:22px!important;font-size:.52rem!important;padding:1px 0!important;margin:0!important}
   html.is-android .trade-hint,
@@ -1060,6 +1063,10 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   width:100%;min-height:40px;padding:6px 12px;padding-top:max(8px,env(safe-area-inset-top,0px));
   border-bottom:1px solid var(--line);background:rgba(11,14,20,.98);z-index:6}
 .fs-top-end{display:flex;align-items:center;flex-shrink:0}
+.fs-top-mid{display:none;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.fs-mode-label{display:none}
+.fs-top-bal-row{display:flex;align-items:center;gap:6px}
+.fs-bal-plus{width:26px;height:26px;min-width:26px;font-size:.85rem}
 .fs-trade-top-label{display:none!important}
 .fs-trade-close{
   position:relative;top:auto;right:auto;z-index:7;width:40px;height:40px;border-radius:999px;
@@ -1415,6 +1422,10 @@ html.lang-ar .usdt-qr-wrap{text-align:center}
 .fs-top-bal,.fs-pad-bal{display:none}
 html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{
   position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;padding-left:12px;padding-right:12px}
+html.fs-trade .fs-top-mid,html.is-fullscreen .fs-top-mid{display:flex}
+html.fs-trade .fs-mode-label,html.is-fullscreen .fs-mode-label{
+  display:block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#94A3B8;line-height:1;margin-bottom:3px;white-space:nowrap}
 html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
   display:block!important;position:static;left:auto;transform:none;
   font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;
@@ -1423,11 +1434,14 @@ html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
   padding:4px 12px;z-index:8;white-space:nowrap;box-shadow:0 0 12px rgba(232,195,106,.18)}
 html.fs-trade .fs-crypto-row,html.is-fullscreen .fs-crypto-row{
   display:flex!important;position:static;top:auto;transform:none;
-  align-items:center;gap:4px;opacity:.7;z-index:7;pointer-events:none}
+  align-items:center;gap:5px;opacity:.78;z-index:7;pointer-events:none}
 html.fs-trade .fs-crypto-left,html.is-fullscreen .fs-crypto-left{left:auto}
-html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:auto;margin-right:12px}
+html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:auto;margin-right:16px}
 html.fs-trade .fs-crypto-row .coin-svg,html.is-fullscreen .fs-crypto-row .coin-svg{
-  width:14px;height:14px;border-radius:50%;overflow:hidden}
+  width:16px;height:16px;border-radius:50%;overflow:hidden}
+html.fs-trade .modal-backdrop,html.is-fullscreen .modal-backdrop{z-index:100000}
+html.fs-trade .modal-box,html.is-fullscreen .modal-box{z-index:100001}
+html.fs-trade .toast,html.is-fullscreen .toast{z-index:100002}
 html.fs-trade .ind-pills .ind-btn,
 html.is-fullscreen .ind-pills .ind-btn{display:none!important}
 html.fs-trade .fs-trade-overlay .chart-toolbar,
@@ -1444,13 +1458,14 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   html.is-fullscreen .fs-trade-overlay.on .fs-trade-topbar{
     min-height:32px;padding:4px 12px;padding-top:max(4px,env(safe-area-inset-top,0px))}
   html.fs-trade .fs-trade-overlay.on .asset-bar,
-  html.is-fullscreen .fs-trade-overlay.on .asset-bar{padding:4px 8px}
+  html.is-fullscreen .fs-trade-overlay.on .asset-bar{
+    padding:8px 8px 6px;margin-top:0}
   html.fs-trade .fs-trade-overlay.on .chart-card,
   html.fs-trade .fs-trade-overlay.on #chart,
   html.is-fullscreen .fs-trade-overlay.on .chart-card,
-  html.is-fullscreen .fs-trade-overlay.on #chart{margin-top:-8px!important}
+  html.is-fullscreen .fs-trade-overlay.on #chart{margin-top:0!important}
   html.fs-trade .fs-trade-overlay.on .chart-stage,
-  html.is-fullscreen .fs-trade-overlay.on .chart-stage{margin-top:-36px!important}
+  html.is-fullscreen .fs-trade-overlay.on .chart-stage{margin-top:0!important}
   html.fs-trade .fs-trade-overlay.on .trade-wrap,
   html.is-fullscreen .fs-trade-overlay.on .trade-wrap{
     padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
@@ -1546,10 +1561,13 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   #screenTrade .chart-card,#screenTrade #chart{
     flex:1 1 auto!important;flex-shrink:1!important;min-height:0!important;height:auto!important;max-height:none!important}
   #screenTrade .chart-stage{min-height:0!important;flex:1 1 auto;height:auto!important}
-  html:not(.fs-trade):not(.is-fullscreen) #screenTrade .trade-wrap > .pad{
+  html:not(.fs-trade):not(.is-fullscreen):not(.is-android) #screenTrade .trade-wrap > .pad{
     position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;
     width:100%!important;max-width:none!important;flex:0 0 auto;z-index:40;
     padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
+  html.is-android #screenTrade .trade-wrap{
+    padding-bottom:calc(132px + env(safe-area-inset-bottom,16px))!important;
+    overflow:hidden!important;overscroll-behavior:none!important}
   .topbar-cta .crypto-mini-row{display:flex}
   .balance-card .bal{font-size:.98rem}
   #screenTrade:not(.is-guest) .topbar-cta{
@@ -1593,8 +1611,9 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 .strip-price,.pnl-value,.h-gain,.wd-bal-amt{
   font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
   font-variant-numeric:tabular-nums}
-html.is-android .drawer-nav{gap:1px;padding:0 6px calc(32px + env(safe-area-inset-bottom,0px))}
+html.is-android .drawer-nav{gap:1px;padding:0 6px 48px;overflow-y:auto;max-height:none}
 html.is-android .drawer-item{min-height:26px;padding:3px 8px}
 html.is-android .drawer-section-title{margin:4px 8px 2px}
-html.is-android .drawer-item.drawer-logout{margin-bottom:8px;padding-bottom:8px}
-html.is-android #drawerProfile{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+html.is-android .drawer-item.drawer-logout{position:relative;bottom:auto;margin-bottom:8px;padding-bottom:8px}
+html.is-android #drawerProfile{
+  overflow-y:auto;max-height:90dvh;height:90dvh;padding-bottom:48px}
