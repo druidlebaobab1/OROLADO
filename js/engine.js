@@ -628,10 +628,10 @@
       var tr = trades[i];
       if (!isLive(tr) || tr.userId !== user.id) continue;
       var left = expiryOf(tr) - now;
-      if (left > 980 || left < 0) continue;
+      if (left > 220 || left < 0) continue;
       var decided = decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
       if (D6.Chart && D6.Chart.steerClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === tr.assetId) {
-        D6.Chart.steerClose(decided.target, Math.max(160, left));
+        D6.Chart.steerClose(decided.target, Math.max(80, left));
       }
     }
   }

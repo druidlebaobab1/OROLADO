@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=138">
+  <link rel="stylesheet" href="css/app.css?v=139">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -62,6 +62,7 @@
     <symbol id="ico-sol" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#9945FF"/><path fill="#fff" d="M9.2 19.6h13.1l-2.4 2.6H6.8zm0-4.9h13.1l-2.4 2.6H6.8zm2.4-4.9h13.1L22.3 13H9.2z"/></symbol>
     <symbol id="ico-bnb" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#F3BA2F"/><path fill="#fff" d="M16 7.2 18.6 9.8 13.4 15l-2.6-2.6zm5.2 2.6L24 12.6l-8 8-2.6-2.6zM8 12.6l2.6-2.6 2.6 2.6-2.6 2.6zm8 3.2 2.6 2.6L16 21.2l-2.6-2.6z"/></symbol>
     <symbol id="ico-doge" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#C2A633"/><path fill="#fff" d="M14 9h3.2c3.4 0 5.8 2.2 5.8 5.5S20.6 20 17.2 20H14zm2.2 3v5h1.1c1.6 0 2.6-1 2.6-2.5S18.9 12 17.3 12z"/></symbol>
+    <symbol id="ico-ltc" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#345D9D"/><path fill="#fff" d="M18.2 8.4h-3.1l-.9 4.2-2.6.8.4 1.6 2.5-.8-.8 3.8H9.6l.5 2.4h10.6l1.3-6.2 2.3-.7-.4-1.6-2.3.7z"/></symbol>
     <symbol id="ico-xrp" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#23292F"/><path fill="#fff" d="M10.2 10.4 13.8 14c.6.6 1.4.9 2.2.9s1.6-.3 2.2-.9l3.6-3.6h2.4l-4.4 4.4c-1 1-2.4 1.6-3.8 1.6s-2.8-.6-3.8-1.6L7.8 10.4zm11.6 11.2L17.8 18c-.6-.6-1.4-.9-2.2-.9s-1.6.3-2.2.9l-3.2 3.6H7.8l4.4-4.4c1-1 2.4-1.6 3.8-1.6s2.8.6 3.8 1.6l4.4 4.4z"/></symbol>
   </svg>
   <canvas id="particlesCanvas"></canvas>
@@ -275,7 +276,7 @@
           </button>
           <button type="button" class="asset-chip" data-asset="titanpulse">
             <div class="k" data-i18n="titanTag">Extrême</div>
-            <div class="n"><span class="asset-ico" aria-hidden="true">🔥</span>TITAN PULSE</div>
+            <div class="n"><span class="asset-ico titan-pulse-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 12h3l2-6 3 12 2-8 2 4h6"/><path fill="none" stroke="currentColor" stroke-width="1.3" opacity=".45" d="M4 17c2.4-1 3.2 1.2 5.6.2S13 18.4 15.4 17.4 19 18.6 21.2 17.6"/></svg></span>TITAN PULSE</div>
             <div class="payout-live" id="payoutTitanPulse">+88%</div>
           </button>
         </div>
@@ -373,6 +374,10 @@
 
   <div id="fsTradeOverlay" class="fs-trade-overlay" hidden aria-hidden="true">
     <div class="fs-trade-topbar">
+      <div class="fs-top-start">
+        <svg class="fs-coin fs-coin-btc" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-btc"></use></svg>
+        <svg class="fs-coin fs-coin-eth" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-eth"></use></svg>
+      </div>
       <div class="fs-top-mid">
         <div class="fs-top-bal" id="fsTopBalance">0 $</div>
         <div class="fs-mode-switch" role="group" aria-label="Mode">
@@ -381,7 +386,8 @@
         </div>
       </div>
       <div class="fs-top-end">
-        <button type="button" class="bal-plus fs-bal-plus hidden" id="btnFsTopup" title="+" aria-label="+">+</button>
+        <svg class="fs-coin fs-coin-usdt" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-usdt"></use></svg>
+        <svg class="fs-coin fs-coin-sol" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-sol"></use></svg>
         <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
       </div>
     </div>
@@ -451,7 +457,6 @@
     </div>
     <nav class="drawer-nav" data-i18n-aria="profileMenu" aria-label="Profile menu">
       <div class="drawer-section">
-        <div class="drawer-section-title" data-i18n="secTransactions">Transactions</div>
         <button type="button" class="drawer-item" id="btnFinance">
           <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 6h16M4 12h16M4 18h10"/></svg>
           <span class="di-label" data-i18n="financeHist">Historique financier</span>
@@ -464,7 +469,6 @@
         </button>
       </div>
       <div class="drawer-section">
-        <div class="drawer-section-title" data-i18n="secTrading">Trading</div>
         <button type="button" class="drawer-item" id="btnHistTrade">
           <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg>
           <span class="di-label" data-i18n="tradeHist">Historique de trading</span>
@@ -472,7 +476,6 @@
         </button>
       </div>
       <div class="drawer-section">
-        <div class="drawer-section-title" data-i18n="secSecurity">Sécurité</div>
         <button type="button" class="drawer-item" id="btnOpenPass">
           <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
           <span class="di-label" data-i18n="changePass">Changer le mot de passe</span>
@@ -525,12 +528,18 @@
       </div>
       <h3 id="adminViewTitle">Inscrits</h3>
       <div class="table-wrap admin-table-wrap" id="adminViewPanel"></div>
-      <div id="adminUserDetail" class="admin-detail glass hidden"></div>
       <button type="button" class="mini" id="btnAdminMessages">Messages</button>
       <div class="table-wrap admin-table-wrap hidden" id="adminMessages"></div>
       <button type="button" class="mini" id="btnMaketouLog">Journal Maketou</button>
     </div>
   </section>
+
+  <div class="modal-backdrop" id="adminUserModal">
+    <div class="modal-box glass admin-user-box" role="dialog" aria-modal="true">
+      <button type="button" class="btn-close" id="closeAdminUser" aria-label="Fermer">✕</button>
+      <div id="adminUserDetail" class="admin-detail"></div>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="otpModal">
     <div class="modal-box glass otp-box">
@@ -624,15 +633,33 @@
       </div>
       <div class="field">
         <label data-i18n="wdMethod">Mode de retrait</label>
-        <select id="wdMethod" aria-label="Mode de retrait">
-          <option value="usdt" selected>USDT (TRC-20)</option>
-          <option value="wave">Wave</option>
-          <option value="orange">Orange Money</option>
-          <option value="mtn">MTN MoMo</option>
-          <option value="moov">Moov Money</option>
-          <option value="btc">Crypto BTC</option>
-          <option value="paypal">PayPal</option>
-        </select>
+        <input type="hidden" id="wdMethod" value="usdt">
+        <div class="wd-group-label">Crypto</div>
+        <div class="wd-card-grid" id="wdCryptoGrid">
+          <button type="button" class="wd-card on" data-wd="usdt"><svg class="wd-card-ico"><use href="#ico-usdt"></use></svg><span>USDT TRC-20</span></button>
+          <button type="button" class="wd-card" data-wd="btc"><svg class="wd-card-ico"><use href="#ico-btc"></use></svg><span>BTC</span></button>
+          <button type="button" class="wd-card" data-wd="eth"><svg class="wd-card-ico"><use href="#ico-eth"></use></svg><span>ETH</span></button>
+          <button type="button" class="wd-card" data-wd="trx"><svg class="wd-card-ico"><use href="#ico-trx"></use></svg><span>TRX</span></button>
+          <button type="button" class="wd-card" data-wd="sol"><svg class="wd-card-ico"><use href="#ico-sol"></use></svg><span>SOL</span></button>
+          <button type="button" class="wd-card" data-wd="bnb"><svg class="wd-card-ico"><use href="#ico-bnb"></use></svg><span>Binance Pay</span></button>
+          <button type="button" class="wd-card" data-wd="ltc"><svg class="wd-card-ico"><use href="#ico-ltc"></use></svg><span>LTC</span></button>
+          <button type="button" class="wd-card" data-wd="doge"><svg class="wd-card-ico"><use href="#ico-doge"></use></svg><span>DOGE</span></button>
+        </div>
+        <div class="wd-group-label">Mobile Money</div>
+        <div class="wd-card-grid" id="wdMobileGrid">
+          <button type="button" class="wd-card wd-mtn" data-wd="mtn"><span class="wd-mm-dot"></span><span>MTN</span></button>
+          <button type="button" class="wd-card wd-orange" data-wd="orange"><span class="wd-mm-dot"></span><span>Orange Money</span></button>
+          <button type="button" class="wd-card wd-mpesa" data-wd="mpesa"><span class="wd-mm-dot"></span><span>M-Pesa</span></button>
+          <button type="button" class="wd-card wd-wave" data-wd="wave"><span class="wd-mm-dot"></span><span>Wave</span></button>
+          <button type="button" class="wd-card wd-moov" data-wd="moov"><span class="wd-mm-dot"></span><span>Moov</span></button>
+          <button type="button" class="wd-card wd-airtel" data-wd="airtel"><span class="wd-mm-dot"></span><span>Airtel</span></button>
+        </div>
+        <div class="wd-group-label">Virement &amp; Cartes</div>
+        <div class="wd-card-grid" id="wdBankGrid">
+          <button type="button" class="wd-card" data-wd="bank"><span>Virement bancaire</span></button>
+          <button type="button" class="wd-card" data-wd="card"><span>Carte bancaire</span></button>
+          <button type="button" class="wd-card" data-wd="paypal"><span>PayPal</span></button>
+        </div>
       </div>
       <div class="field">
         <label data-i18n="wdAmount">Montant ($)</label>
@@ -641,15 +668,34 @@
         <p class="err-msg" id="err-withdrawAmt"></p>
       </div>
       <div class="field" id="wdDestField">
-        <label id="wdDestLabel" data-i18n="wdAccount">Numéro de compte</label>
+        <label id="wdDestLabel" data-i18n="wdWallet">Adresse de portefeuille</label>
         <input id="wdDestination" type="text" autocomplete="off" maxlength="120" placeholder="">
         <p class="err-msg" id="err-wdDestination"></p>
+      </div>
+      <div class="field hidden" id="wdMobileFields">
+        <label data-i18n="wdDial">Indicatif</label>
+        <select id="wdDial" aria-label="Indicatif international"></select>
+        <label data-i18n="wdPhone">Numéro de téléphone</label>
+        <input id="wdPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="07XXXXXXXX">
+        <label data-i18n="wdFullName">Nom complet</label>
+        <input id="wdFullName" type="text" autocomplete="name" maxlength="80" placeholder="Nom et prénom">
       </div>
       <div class="wd-trust">
         <span>🔒 Cryptage bancaire SSL 256-bit</span>
         <span data-i18n="wdDelay">⚡ Paiement instantané (Délai moyen : 5 à 15 minutes)</span>
       </div>
       <button type="button" class="btn-gold" id="btnSendWithdraw" data-i18n="withdrawBtn">RETIRER MES GAINS</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="wdConfirmModal">
+    <div class="modal-box glass wd-confirm-box">
+      <button type="button" class="btn-close" id="closeWdConfirm" aria-label="Fermer">✕</button>
+      <div class="modal-title" data-i18n="wdConfirmTitle">Demande enregistrée</div>
+      <div class="wd-confirm-row"><span>ID</span><strong id="wdConfirmId">—</strong></div>
+      <div class="wd-confirm-row"><span data-i18n="wdAmount">Montant ($)</span><strong id="wdConfirmAmt">—</strong></div>
+      <div class="wd-confirm-status" id="wdConfirmStatus" data-i18n="wdConfirmStatus">En cours de traitement</div>
+      <button type="button" class="btn-gold" id="btnWdConfirmOk" data-i18n="continue">OK</button>
     </div>
   </div>
 
@@ -809,17 +855,17 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=113"></script>
+  <script src="js/config.js?v=114"></script>
   <script src="js/translations.js?v=110"></script>
-  <script src="js/i18n.js?v=122"></script>
-  <script src="js/store.js?v=108"></script>
+  <script src="js/i18n.js?v=123"></script>
+  <script src="js/store.js?v=109"></script>
   <script src="js/api.js?v=108"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=109"></script>
   <script src="js/auth.js?v=110"></script>
-  <script src="js/engine.js?v=111"></script>
-  <script src="js/chart.js?v=116"></script>
+  <script src="js/engine.js?v=112"></script>
+  <script src="js/chart.js?v=117"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=140"></script>
+  <script src="js/app.js?v=141"></script>
 </body>
 </html>

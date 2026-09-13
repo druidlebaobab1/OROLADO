@@ -502,26 +502,38 @@
       D6.Store.addTransaction(user, { type: 'withdraw', amount: -amount, note: 'Retrait demandé', mode: 'real', operator: extra.operator || '' });
       persist();
       if (D6.Supabase && D6.Supabase.saveWithdrawal) D6.Supabase.saveWithdrawal(createdWd);
-      return { ok: true, suspect: suspect };
+      return { ok: true, suspect: suspect, id: createdWd.id };
     },
 
     listWithdrawals: function () {
       return (db.withdrawals || []).slice();
     },
 
-    resolveWithdraw: function (id, approve) {
+    resolveWithdraw: function (id, approve, act) {
       var list = db.withdrawals || [];
+      var action = String(act || (approve ? 'approve' : 'reject'));
       var i;
       for (i = 0; i < list.length; i++) {
-        if (list[i].id === id && list[i].status === 'pending') {
-          list[i].status = approve ? 'approved' : 'rejected';
-          if (!approve) {
-            var v = vault[list[i].userId];
-            if (v) v.real += list[i].amount;
-          }
+        if (list[i].id !== id) continue;
+        if (action === 'silent') {
+          list[i].adminHidden = true;
           persist();
           return list[i];
         }
+        if (list[i].status !== 'pending' && list[i].status !== 'review') continue;
+        if (action === 'suspend') {
+          list[i].status = 'review';
+          list[i].playerNote = 'Vérification de sécurité';
+          persist();
+          return list[i];
+        }
+        list[i].status = (action === 'approve' || approve === true || approve === '1') ? 'approved' : 'rejected';
+        if (list[i].status === 'rejected') {
+          var v = vault[list[i].userId];
+          if (v) v.real += list[i].amount;
+        }
+        persist();
+        return list[i];
       }
       return null;
     },

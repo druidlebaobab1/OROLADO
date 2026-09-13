@@ -7,6 +7,7 @@
   var outcomeToastTimer = null;
   var outcomeToastSeen = {};
   var selectedOp = 'wave';
+  var selectedAsset = 'v100';
   var depositOp = 'wave';
   var lastClickAt = 0;
   var cooling = false;
@@ -416,16 +417,16 @@
       var now = ctx.currentTime;
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.exponentialRampToValueAtTime(980, now + 0.08);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(210, now);
+      osc.frequency.exponentialRampToValueAtTime(165, now + 0.04);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.09, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.028, now + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.13);
+      osc.stop(now + 0.05);
     } catch (e) { /* ignore */ }
   }
 
@@ -435,23 +436,22 @@
     if (!ctx) return;
     try {
       var now = ctx.currentTime;
-      function tone(freq0, freq1, start, dur, vol, type) {
+      function tone(freq, start, dur, vol) {
         var osc = ctx.createOscillator();
         var gain = ctx.createGain();
-        osc.type = type || 'sine';
-        osc.frequency.setValueAtTime(freq0, now + start);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(1, freq1), now + start + dur * 0.55);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + start);
         gain.gain.setValueAtTime(0.0001, now + start);
-        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.012);
+        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.018);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now + start);
         osc.stop(now + start + dur + 0.02);
       }
-      tone(523, 784, 0, 0.28, 0.16, 'sine');
-      tone(659, 988, 0.08, 0.3, 0.12, 'triangle');
-      tone(784, 1175, 0.16, 0.34, 0.1, 'sine');
+      tone(523.25, 0, 0.55, 0.055);
+      tone(659.25, 0.03, 0.62, 0.048);
+      tone(783.99, 0.06, 0.7, 0.04);
     } catch (e) { /* ignore */ }
   }
 
@@ -706,18 +706,46 @@
     updatePayoutUi();
   }
 
-  function updateAssetUi() {
+  function scrollAssetChipIntoView(id) {
+    var chip = document.querySelector('.asset-chip[data-asset="' + id + '"]');
+    var bar = $('assetBar');
+    if (!chip || !bar) return;
+    try {
+      var mid = chip.offsetLeft - (bar.clientWidth / 2) + (chip.offsetWidth / 2);
+      if (typeof bar.scrollTo === 'function') bar.scrollTo({ left: Math.max(0, mid), behavior: 'smooth' });
+      else bar.scrollLeft = Math.max(0, mid);
+    } catch (e) {
+      try { chip.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); } catch (e2) { /* ignore */ }
+    }
+  }
+
+  function selectAsset(rawId) {
+    var id = mapAssetId(rawId);
+    selectedAsset = id;
     var u = user();
-    if (!u) return;
-    var id = assetId(u);
+    if (u) {
+      u.assetId = id;
+      D6.Store.saveUser(u);
+    }
     document.querySelectorAll('.asset-chip').forEach(function (el) {
       el.classList.toggle('on', el.dataset.asset === id);
     });
     var asset = D6.CONFIG.ASSETS[id];
-    if ($('assetLiveName')) $('assetLiveName').textContent = asset.name;
-    if ($('assetLiveTag')) $('assetLiveTag').textContent = asset.tag;
+    if (asset) {
+      if ($('assetLiveName')) $('assetLiveName').textContent = asset.name;
+      if ($('assetLiveTag')) $('assetLiveTag').textContent = asset.tag;
+    }
+    if (D6.Engine && D6.Engine.getMarket) D6.Engine.getMarket(id);
     D6.Chart.setAsset(id);
     updatePayoutUi();
+    scrollAssetChipIntoView(id);
+    return id;
+  }
+
+  function updateAssetUi() {
+    var u = user();
+    if (!u) return;
+    selectAsset(assetId(u) || selectedAsset);
   }
 
   function updateDurationUi() {
@@ -1382,7 +1410,7 @@
     $('mUsers').textContent = String(m.users || 0);
     if ($('mDepPending')) $('mDepPending').textContent = String(adminCache.deposits.length);
     if ($('mWdPending')) {
-      var wp = adminCache.withdrawals.filter(function (w) { return w.status === 'pending'; }).length;
+      var wp = adminCache.withdrawals.filter(function (w) { return !w.adminHidden && (w.status === 'pending' || w.status === 'review'); }).length;
       $('mWdPending').textContent = String(wp);
     }
     if ($('mOnline')) {
@@ -1498,20 +1526,30 @@
     }
     if (adminView === 'withdrawalsPending' || adminView === 'withdrawalsAll') {
       var wdList = (adminCache.withdrawals || []).filter(function (w) {
-        if (adminView === 'withdrawalsPending' && w.status !== 'pending') return false;
-        return adminMatchQ([w.name, w.phone, w.operator, w.id, w.status, String(w.amount || '')].join(' '), q);
+        if (w.adminHidden) return false;
+        if (adminView === 'withdrawalsPending' && w.status !== 'pending' && w.status !== 'review') return false;
+        return adminMatchQ([w.name, w.email, w.phone, w.operator, w.id, w.userId, w.status, String(w.amount || '')].join(' '), q);
       });
       if (!wdList.length) html = '<div class="empty-feed">' + t('noWithdraw') + '</div>';
       else {
         var wrows = wdList.map(function (w) {
           var badge = w.suspect ? ' <span class="badge-suspect">' + t('suspect') + '</span>' : '';
-          var acts = w.status === 'pending'
-            ? '<button class="mini ok" data-wd="' + adminEsc(w.id) + '" data-ok="1">' + t('approve') + '</button> <button class="mini bad" data-wd="' + adminEsc(w.id) + '" data-ok="0">' + t('reject') + '</button>'
-            : adminEsc(w.status);
-          var dest = (w.operator || '') + ' · ' + (w.destination || w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
-          return '<tr><td>' + adminEsc(w.name) + '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + adminEsc(dest) + '<div class="h-time">' + adminEsc(w.clock || '') + badge + '</div></td><td>' + acts + '</td></tr>';
+          var dest = (w.countryCode ? w.countryCode + ' ' : '') + (w.destination || w.phone || '') + (w.beneficiary ? ' · ' + w.beneficiary : '');
+          var acts = (w.status === 'pending' || w.status === 'review')
+            ? ('<div class="admin-wd-acts">' +
+              '<button class="mini wd-ok" data-wd="' + adminEsc(w.id) + '" data-wd-act="approve">VALIDER / PAYÉ</button>' +
+              '<button class="mini wd-refund" data-wd="' + adminEsc(w.id) + '" data-wd-act="reject">REJETER &amp; CRÉDITER</button>' +
+              '<button class="mini wd-hold" data-wd="' + adminEsc(w.id) + '" data-wd-act="suspend">SUSPENDRE</button>' +
+              '<button class="mini wd-silent" data-wd="' + adminEsc(w.id) + '" data-wd-act="silent">SUPPRESSION SILENCIEUSE</button>' +
+              '</div>')
+            : adminEsc(adminTxStatusLabel(w.status));
+          return '<tr><td>' + adminEsc((w.at || w.clock || '').toString().replace('T', ' ').slice(0, 16)) +
+            '</td><td>' + adminEsc(w.userId || '') + '</td><td>' + adminEmailCell(w.email) +
+            '</td><td>' + adminEsc(gatewayLabel(w.operator)) + '</td><td>' + adminEsc(dest) + badge +
+            '</td><td>' + D6.fmtFCFA(w.amount) + '</td><td>' + adminEsc(adminTxStatusLabel(w.status)) +
+            '</td><td>' + acts + '</td></tr>';
         }).join('');
-        html = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Mobile Money</th><th>Statut</th></tr></thead><tbody>' + wrows + '</tbody></table>';
+        html = '<div class="table-wrap"><table class="admin-table"><thead><tr><th>Date</th><th>ID Joueur</th><th>Email</th><th>Méthode</th><th>Coordonnées</th><th>Montant $</th><th>Statut</th><th></th></tr></thead><tbody>' + wrows + '</tbody></table></div>';
       }
       panel.innerHTML = html;
       return;
@@ -1593,6 +1631,7 @@
     var s = String(st || '').toUpperCase();
     if (s === 'COMPLETED' || s === 'PAID' || s === 'APPROVED' || s === 'OK' || s === 'SUCCESS') return 'Succès';
     if (s === 'PENDING' || s === 'WAITING') return 'En attente';
+    if (s === 'REVIEW' || s === 'SUSPENDED') return 'Vérification de sécurité';
     if (s === 'REJECTED' || s === 'FAILED' || s === 'CANCELLED' || s === 'ERROR') return 'Échoué';
     return st ? String(st) : '—';
   }
@@ -1708,11 +1747,16 @@
       '</div>';
   }
 
+  function closeAdminUser() {
+    closeModal('adminUserModal');
+    var box = $('adminUserDetail');
+    if (box) box.innerHTML = '';
+  }
+
   function openAdminUser(uid) {
     var u = (adminCache.users || []).find(function (x) { return x.id === uid; });
     var box = $('adminUserDetail');
     if (!u || !box) return;
-    box.classList.remove('hidden');
     box.innerHTML = '<div class="convert-title">' + adminEsc(u.publicId || '') + ' · ' + adminEsc(u.displayName || '') + '</div>' +
       '<div class="h-time">' + adminEsc(u.email) + ' · ' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) + ' · inscrit ' + adminEsc((u.createdAt || '').slice(0, 10)) + '</div>' +
       '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
@@ -1726,6 +1770,7 @@
       '</div>' +
       '<p class="hint-min">Le montant saisi crédite ou débite instantanément le solde RÉEL en base.</p>' +
       renderPlayerFinanceBlock(u);
+    openModal('adminUserModal');
   }
 
   function setTradingLocked(on) {
@@ -3091,22 +3136,61 @@
     }
   }
 
+  var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, bnb: 1, ltc: 1, doge: 1 };
+  var WD_MOBILE = { mtn: 1, orange: 1, mpesa: 1, wave: 1, moov: 1, airtel: 1 };
+
+  function fillWdDial() {
+    var sel = $('wdDial');
+    if (!sel || sel.getAttribute('data-filled') === '1') return;
+    var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
+    sel.innerHTML = codes.map(function (c) {
+      return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + ' · ' + c.name + '</option>';
+    }).join('');
+    sel.setAttribute('data-filled', '1');
+  }
+
+  function setWithdrawMethod(op) {
+    selectedOp = op || 'usdt';
+    if ($('wdMethod')) $('wdMethod').value = selectedOp;
+    document.querySelectorAll('.wd-card').forEach(function (el) {
+      el.classList.toggle('on', el.getAttribute('data-wd') === selectedOp);
+    });
+    syncWithdrawDestUi();
+  }
+
   function syncWithdrawDestUi() {
-    var method = ($('wdMethod') && $('wdMethod').value) || 'wave';
+    var method = ($('wdMethod') && $('wdMethod').value) || selectedOp || 'usdt';
     var label = $('wdDestLabel');
     var input = $('wdDestination');
+    var destField = $('wdDestField');
+    var mobileFields = $('wdMobileFields');
+    var isCrypto = !!WD_CRYPTO[method];
+    var isMobile = !!WD_MOBILE[method];
+    if (mobileFields) mobileFields.classList.toggle('hidden', !isMobile);
+    if (destField) destField.classList.toggle('hidden', isMobile);
+    if (isMobile) {
+      fillWdDial();
+      var u = user();
+      if ($('wdDial') && u && u.countryCode) $('wdDial').value = u.countryCode;
+      if ($('wdFullName') && u && !$('wdFullName').value) $('wdFullName').value = u.displayName || '';
+      return;
+    }
     if (!label || !input) return;
-    if (method === 'usdt' || method === 'btc') {
+    if (isCrypto) {
       label.textContent = t('wdWallet');
-      input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : 'Adresse USDT TRC-20 (T…)';
+      input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : (method === 'usdt' ? 'Adresse USDT TRC-20 (T…)' : 'Adresse de portefeuille');
       input.type = 'text';
     } else if (method === 'paypal') {
       label.textContent = t('wdPaypal');
       input.placeholder = 'vous@email.com';
       input.type = 'email';
+    } else if (method === 'card') {
+      label.textContent = 'Référence carte / titulaire';
+      input.placeholder = 'Nom du titulaire';
+      input.type = 'text';
     } else {
-      label.textContent = t('wdAccount');
-      input.placeholder = '07XXXXXXXX';
+      label.textContent = 'IBAN / RIB / compte';
+      input.placeholder = 'FR76… / compte bancaire';
       input.type = 'text';
     }
   }
@@ -3114,7 +3198,7 @@
   function openWithdraw() {
     if (!requireAccount()) return;
     selectedOp = 'usdt';
-    if ($('wdMethod')) $('wdMethod').value = 'usdt';
+    setWithdrawMethod('usdt');
     if ($('withdrawAmt')) {
       $('withdrawAmt').value = '';
       $('withdrawAmt').min = String(minWithdraw());
@@ -3168,6 +3252,9 @@
     if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED' || s === 'CANCELED' || s === 'CANCELLED') {
       return { code: 'REJECTED', label: 'Rejeté', cls: 'bad' };
     }
+    if (s === 'REVIEW' || s === 'SUSPENDED') {
+      return { code: 'REVIEW', label: 'Vérification de sécurité', cls: 'pending' };
+    }
     if (label === 'Retrait' && (s === 'WITHDRAW' || s === '')) {
       return { code: 'PENDING', label: 'En cours', cls: 'pending' };
     }
@@ -3181,9 +3268,12 @@
     if (k.indexOf('orange') >= 0 || k === 'om') return 'Orange Money';
     if (k.indexOf('mtn') >= 0 || k.indexOf('momo') >= 0) return 'MTN MoMo';
     if (k.indexOf('moov') >= 0) return 'Moov Money';
+    if (k.indexOf('mpesa') >= 0) return 'M-Pesa';
+    if (k.indexOf('airtel') >= 0) return 'Airtel';
     if (k.indexOf('paypal') >= 0) return 'PayPal';
-    if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0 || k.indexOf('oxapay') >= 0 || k.indexOf('usdt') >= 0) return 'Crypto';
-    if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return 'Carte';
+    if (k === 'bank' || k.indexOf('virement') >= 0) return 'Virement bancaire';
+    if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0 || k.indexOf('eth') >= 0 || k.indexOf('sol') >= 0 || k.indexOf('trx') >= 0 || k.indexOf('bnb') >= 0 || k.indexOf('ltc') >= 0 || k.indexOf('doge') >= 0 || k.indexOf('oxapay') >= 0 || k.indexOf('usdt') >= 0) return 'Crypto';
+    if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return 'Carte bancaire';
     return String(raw);
   }
 
@@ -3528,11 +3618,11 @@
     if ($('fsBtnDemo')) $('fsBtnDemo').addEventListener('click', function () { switchMode('demo'); });
     if ($('fsBtnReal')) $('fsBtnReal').addEventListener('click', function () { switchMode('real'); });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
-      chip.addEventListener('click', function () {
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
         var u = user();
         if (!u) return;
-        if (!guardLiveTradeView()) return;
-        u.assetId = mapAssetId(chip.dataset.asset); D6.Store.saveUser(u); updateAssetUi();
+        selectAsset(chip.dataset.asset);
       });
     });
     document.querySelectorAll('.dur-chip').forEach(function (chip) {
@@ -3841,20 +3931,35 @@
       e.stopPropagation();
       onConfirmDepositClick();
     });
-    if ($('wdMethod')) {
-      $('wdMethod').addEventListener('change', function () {
-        selectedOp = this.value || 'wave';
-        syncWithdrawDestUi();
+    document.querySelectorAll('.wd-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        setWithdrawMethod(card.getAttribute('data-wd') || 'usdt');
       });
+    });
+    if ($('closeWdConfirm')) $('closeWdConfirm').addEventListener('click', function () { closeModal('wdConfirmModal'); });
+    if ($('btnWdConfirmOk')) $('btnWdConfirmOk').addEventListener('click', function () { closeModal('wdConfirmModal'); });
+    function showWithdrawConfirm(id, amount) {
+      if ($('wdConfirmId')) $('wdConfirmId').textContent = id || '—';
+      if ($('wdConfirmAmt')) $('wdConfirmAmt').textContent = D6.fmtFCFA(amount || 0);
+      if ($('wdConfirmStatus')) $('wdConfirmStatus').textContent = t('wdConfirmStatus');
+      openModal('wdConfirmModal');
     }
     $('btnSendWithdraw').addEventListener('click', async function () {
       var u = user();
       if (!u || !requireAccount()) return;
       var amount = D6.roundMoney(Number($('withdrawAmt').value) || 0);
-      var method = ($('wdMethod') && $('wdMethod').value) || selectedOp || 'wave';
+      var method = ($('wdMethod') && $('wdMethod').value) || selectedOp || 'usdt';
       selectedOp = method;
-      var destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
-      var name = (u.displayName || 'Client').trim();
+      var isMobile = !!WD_MOBILE[method];
+      var destination = isMobile
+        ? String(($('wdPhone') && $('wdPhone').value) || '').trim()
+        : String(($('wdDestination') && $('wdDestination').value) || '').trim();
+      var name = isMobile
+        ? String(($('wdFullName') && $('wdFullName').value) || '').trim()
+        : (u.displayName || 'Client').trim();
+      var dial = isMobile
+        ? String(($('wdDial') && $('wdDial').value) || u.countryCode || '+225')
+        : (u.countryCode || '+225');
       var real = realWithdrawBalance(u);
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
@@ -3862,6 +3967,7 @@
       if (amount < minWd) { toast(t('withdrawMinErr'), 'err'); return; }
       if (amount > real) { toast(t('insufficient'), 'err'); return; }
       if (destination.length < 4) { toast(t('wdDestErr'), 'err'); return; }
+      if (isMobile && name.length < 2) { toast(t('wdFullName'), 'err'); return; }
       if (method === 'paypal' && destination.indexOf('@') < 0) {
         toast(t('wdPaypalErr'), 'err');
         return;
@@ -3872,12 +3978,13 @@
         phone: destination,
         destination: destination,
         beneficiary: name,
-        countryCode: u.countryCode || '+225',
+        countryCode: dial,
         realDepositTotal: Number(u.realDepositTotal) || 0,
         realStakeVolume: Number(u.realStakeVolume) || 0,
         totalWageredSinceDeposit: Number(u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume) || 0,
         requiredWagering: Number(u.requiredWagering) || Math.floor((Number(u.realDepositTotal) || 0) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2))
       };
+      var createdId = '';
       if (D6.Api && D6.Api.token()) {
         var remote = await D6.Api.post('withdraw', payload);
         if (remote && remote.server && !remote.ok) { toast(remote.reason, 'err'); return; }
@@ -3885,14 +3992,17 @@
         else {
           var local = D6.Store.requestWithdraw(u, amount, payload);
           if (!local.ok) { toast(local.reason, 'err'); return; }
+          createdId = local.id || '';
         }
+        createdId = createdId || (remote && remote.id) || '';
       } else {
         var res = D6.Store.requestWithdraw(u, amount, payload);
         if (!res.ok) { toast(res.reason, 'err'); return; }
+        createdId = res.id || '';
       }
       closeModal('withdrawModal');
       updateBalance(true);
-      toast(t('withdrawBtn'), 'ok');
+      showWithdrawConfirm(createdId, amount);
     });
     function hideLogoutConfirm() {
       closeModal('logoutModal');
@@ -3970,8 +4080,9 @@
         }
         var wdBtn = e.target.closest('[data-wd]');
         if (wdBtn) {
-          if (D6.Api && D6.Api.token()) await D6.Api.post('resolveWithdraw', { id: wdBtn.dataset.wd, approve: wdBtn.dataset.ok === '1' });
-          D6.Store.resolveWithdraw(wdBtn.dataset.wd, wdBtn.dataset.ok === '1');
+          var wdAct = wdBtn.getAttribute('data-wd-act') || (wdBtn.dataset.ok === '1' ? 'approve' : 'reject');
+          if (D6.Api && D6.Api.token()) await D6.Api.post('resolveWithdraw', { id: wdBtn.dataset.wd, approve: wdAct === 'approve', act: wdAct });
+          D6.Store.resolveWithdraw(wdBtn.dataset.wd, wdAct === 'approve', wdAct);
           renderAdmin();
         }
       });
@@ -4010,6 +4121,12 @@
       await renderAdmin();
       openAdminUser(uid);
       updateBalance(false);
+    }
+    if ($('closeAdminUser')) $('closeAdminUser').addEventListener('click', closeAdminUser);
+    if ($('adminUserModal')) {
+      $('adminUserModal').addEventListener('click', function (e) {
+        if (e.target === $('adminUserModal')) closeAdminUser();
+      });
     }
     if ($('adminUserDetail')) {
       $('adminUserDetail').addEventListener('click', async function (e) {

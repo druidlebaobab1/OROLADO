@@ -943,7 +943,7 @@ if ($action === 'withdraw') {
     exit;
   }
   $operator = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
-  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'usdt', 'btc', 'paypal'];
+  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'paypal', 'bank', 'card'];
   if (!in_array($operator, $allowedOps, true)) $operator = 'wave';
   $destination = trim((string) ($req['destination'] ?? $req['phone'] ?? ''));
   $beneficiary = trim((string) ($req['beneficiary'] ?? $me['displayName'] ?? ''));
@@ -959,8 +959,9 @@ if ($action === 'withdraw') {
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
   $amountFcfa = orolado_usd_to_fcfa($amount);
   $db['vault'][$me['id']]['real'] = orolado_money($real - $amount);
+  $wdId = uniqid('wd_', true);
   $db['withdrawals'][] = [
-    'id' => uniqid('wd_', true),
+    'id' => $wdId,
     'userId' => $me['id'],
     'name' => $beneficiary,
     'email' => $me['email'] ?? '',
@@ -979,24 +980,40 @@ if ($action === 'withdraw') {
   ];
   $db['withdrawals'] = array_values(array_reverse($db['withdrawals']));
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect, 'vault' => $db['vault'][$me['id']]]);
+  echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect, 'vault' => $db['vault'][$me['id']], 'id' => $wdId, 'amount' => $amount]);
   exit;
 }
 
 if ($action === 'resolveWithdraw') {
   $me = orolado_require_admin($db, $token);
   $id = $req['id'] ?? '';
-  $approve = !empty($req['approve']);
+  $act = strtolower((string) ($req['act'] ?? ''));
+  if ($act === '') $act = !empty($req['approve']) ? 'approve' : 'reject';
   foreach ($db['withdrawals'] as &$w) {
-    if (($w['id'] ?? '') === $id && ($w['status'] ?? '') === 'pending') {
-      $w['status'] = $approve ? 'approved' : 'rejected';
-      if (!$approve && isset($db['vault'][$w['userId']])) {
-        $db['vault'][$w['userId']]['real'] += (int) $w['amount'];
-      }
+    if (($w['id'] ?? '') !== $id) continue;
+    if ($act === 'silent') {
+      $w['adminHidden'] = true;
       save_db($file, $db);
-      echo json_encode(['ok' => true, 'server' => true]);
+      echo json_encode(['ok' => true, 'server' => true, 'act' => 'silent']);
       exit;
     }
+    $st = (string) ($w['status'] ?? '');
+    if ($st !== 'pending' && $st !== 'review') continue;
+    if ($act === 'suspend') {
+      $w['status'] = 'review';
+      $w['playerNote'] = 'Vérification de sécurité';
+      save_db($file, $db);
+      echo json_encode(['ok' => true, 'server' => true, 'act' => 'suspend']);
+      exit;
+    }
+    $approve = ($act === 'approve');
+    $w['status'] = $approve ? 'approved' : 'rejected';
+    if (!$approve && isset($db['vault'][$w['userId']])) {
+      $db['vault'][$w['userId']]['real'] += (float) $w['amount'];
+    }
+    save_db($file, $db);
+    echo json_encode(['ok' => true, 'server' => true, 'act' => $act]);
+    exit;
   }
   echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Retrait introuvable']);
   exit;

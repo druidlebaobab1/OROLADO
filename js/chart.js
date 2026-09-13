@@ -31,6 +31,9 @@
   var openTradeVisualQueue = [];
   var lastDraw = 0;
   var lastFlush = 0;
+  var loopRaf = 0;
+  var drawRaf = 0;
+  var strikeLock = null;
 
   function zoomSec() {
     return ZOOM_STEPS[zoomIdx] || 60;
@@ -65,6 +68,7 @@
   }
 
   function forceIncludePrice(price) {
+    if (strikeLock) return;
     if (!isFinite(price)) return;
     if (!viewMin || !viewMax) {
       viewMin = price - 1;
@@ -75,6 +79,21 @@
     var pad = Math.max(span * 0.08, 0.15);
     if (price < viewMin + pad) viewMin = price - pad;
     if (price > viewMax - pad) viewMax = price + pad;
+  }
+
+  function clearStrikeLock() {
+    strikeLock = null;
+  }
+
+  function cancelChartRafs() {
+    if (loopRaf) {
+      try { cancelAnimationFrame(loopRaf); } catch (e0) { /* ignore */ }
+      loopRaf = 0;
+    }
+    if (drawRaf) {
+      try { cancelAnimationFrame(drawRaf); } catch (e1) { /* ignore */ }
+      drawRaf = 0;
+    }
   }
 
   function collectOpenTradeVisuals() {
@@ -315,18 +334,24 @@
   }
 
   function drawConstellation(pad, w, h) {
-    var marks = ['₿', 'Ξ', '◎', '₮', 'T'];
+    var marks = [
+      { s: '₿', c: 'rgba(247,147,26,0.14)' },
+      { s: 'Ξ', c: 'rgba(98,126,234,0.13)' },
+      { s: '◎', c: 'rgba(153,69,255,0.13)' },
+      { s: '₮', c: 'rgba(38,161,123,0.13)' },
+      { s: 'T', c: 'rgba(239,0,39,0.12)' }
+    ];
     var i;
     ctx.save();
-    ctx.globalAlpha = 0.04;
-    ctx.fillStyle = 'rgba(232,195,106,0.95)';
-    ctx.font = '600 22px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.font = '700 26px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
-    var t = Date.now() / 14000;
+    var t = Date.now() / 28000;
     for (i = 0; i < marks.length; i++) {
-      var x = pad.l + w * (0.14 + (i * 0.18) % 0.72);
-      var y = pad.t + h * (0.22 + ((i * 0.31 + Math.sin(t + i) * 0.04) % 0.58));
-      ctx.fillText(marks[i], x, y);
+      var drift = ((t + i * 0.17) % 1);
+      var x = pad.l + w * (0.08 + ((i * 0.19 + drift * 0.22) % 0.84));
+      var y = pad.t + h * (0.18 + ((i * 0.29 + Math.sin(t * 2 + i) * 0.06) % 0.64));
+      ctx.fillStyle = marks[i].c;
+      ctx.fillText(marks[i].s, x, y);
     }
     ctx.restore();
   }
@@ -891,10 +916,7 @@
     var x0 = pad ? pad.l : 8;
     var x1 = pad ? (cssW - pad.r) : (cssW - 62);
     if (x1 <= x0 + 8) x1 = Math.max(x0 + 40, cssW - 8);
-    // Dernier recours : rester dans le plot (l’échelle Y doit déjà inclure entry).
-    if (ey < plotTop || ey > plotBot) {
-      ey = Math.max(plotTop + 4, Math.min(plotBot - 4, ey));
-    }
+    if (!isFinite(ey)) return;
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
     var idx = tagIndex || 0;
@@ -1052,39 +1074,40 @@
     var yMax = maxPrice + padY;
 
     if (allTrades.length) {
-      var critMin = isFinite(market.price) ? market.price : minPrice;
-      var critMax = critMin;
+      var lockEntry = NaN;
       allTrades.forEach(function (ot) {
         var ep2 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
-        if (!isFinite(ep2)) return;
-        // Ignore anciennes cotations hors échelle (ex. crash stair legacy).
-        if (ep2 < 500 || ep2 > 20000) return;
-        critMin = Math.min(critMin, ep2);
-        critMax = Math.max(critMax, ep2);
+        if (!isFinite(ep2) || ep2 < 500 || ep2 > 20000) return;
+        if (!isFinite(lockEntry)) lockEntry = ep2;
       });
-      if (isFinite(market.price)) {
-        critMin = Math.min(critMin, market.price);
-        critMax = Math.max(critMax, market.price);
+      if (isFinite(lockEntry)) {
+        if (!strikeLock || strikeLock.assetId !== activeAsset || strikeLock.entry !== lockEntry) {
+          var lockSpan = Math.max(yMax - yMin, span, floorSpan, 0.3);
+          var lockPad = Math.max(lockSpan * 0.18, padY);
+          strikeLock = {
+            assetId: activeAsset,
+            entry: lockEntry,
+            min: Math.min(yMin, lockEntry - lockPad),
+            max: Math.max(yMax, lockEntry + lockPad)
+          };
+        }
+        viewMin = strikeLock.min;
+        viewMax = strikeLock.max;
+        if (viewMax - viewMin < 0.3) {
+          viewMin = lockEntry - 0.15;
+          viewMax = lockEntry + 0.15;
+        }
+      } else {
+        strikeLock = null;
+        viewMin = yMin;
+        viewMax = yMax;
       }
-      var viewSpan = Math.max(yMax - yMin, span, 0.3);
-      var edge = Math.max(viewSpan * 0.15, padY);
-      if (critMin < yMin + edge) yMin = critMin - edge;
-      if (critMax > yMax - edge) yMax = critMax + edge;
-      // Centre la fenêtre sur (entrée + prix live) sans perdre min/max données.
-      var focusMid = (critMin + critMax) / 2;
-      var curMid = (yMin + yMax) / 2;
-      var shift = focusMid - curMid;
-      yMin += shift;
-      yMax += shift;
-      yMin = Math.min(yMin, minPrice - padY, critMin - edge);
-      yMax = Math.max(yMax, maxPrice + padY, critMax + edge);
-      // Re-garantir ≥ 15 % autour des points critiques après recentrage.
-      viewSpan = Math.max(yMax - yMin, 0.3);
-      edge = Math.max(viewSpan * 0.15, padY);
-      if (critMin < yMin + edge) yMin = critMin - edge;
-      if (critMax > yMax - edge) yMax = critMax + edge;
-      viewMin = yMin;
-      viewMax = yMax;
+    } else {
+      strikeLock = null;
+    }
+    if (strikeLock) {
+      viewMin = strikeLock.min;
+      viewMax = strikeLock.max;
     } else if (!viewMin || !viewMax) {
       viewMin = yMin;
       viewMax = yMax;
@@ -1098,8 +1121,10 @@
       viewMin = nextMin;
       viewMax = nextMax;
     }
-    viewMin = Math.min(viewMin || yMin, minPrice - padY);
-    viewMax = Math.max(viewMax || yMax, maxPrice + padY);
+    if (!strikeLock) {
+      viewMin = Math.min(viewMin || yMin, minPrice - padY);
+      viewMax = Math.max(viewMax || yMax, maxPrice + padY);
+    }
     if (viewMax - viewMin < 0.3) {
       var midFix = (viewMin + viewMax) / 2;
       viewMin = midFix - 0.15;
@@ -1119,8 +1144,8 @@
 
     drawConstellation(pad, w, h);
     ctx.save();
-    ctx.globalAlpha = 0.07;
-    ctx.font = '700 34px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.globalAlpha = 0.10;
+    ctx.font = '800 42px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     var wx = cssW / 2;
     var wy = pad.t + h / 2;
@@ -1182,7 +1207,7 @@
 
   function loop(ts) {
     if (!running) return;
-    requestAnimationFrame(loop);
+    loopRaf = requestAnimationFrame(loop);
     var mobile = (window.innerWidth || 0) <= 859;
     var liveN = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
     // Trade actif : dessin à chaque frame (desktop + mobile) pour la ligne de position.
@@ -1348,39 +1373,51 @@
     lastAsset: function () { return activeAsset; },
     steerClose: steerClose,
     setAsset: function (id) {
-      // Switch plot only : reset échelle + redessin immédiat (pas d'écran noir app).
       if (id === 'boom300' || id === 'pulseai') id = 'titanpulse';
       if (!D6.CONFIG.ASSETS[id]) id = 'v100';
+      cancelChartRafs();
       activeAsset = id;
       viewMin = 0;
       viewMax = 0;
       steer = null;
+      strikeLock = null;
+      lastDrawnClose = 0;
+      if (D6.Engine && D6.Engine.getMarket) D6.Engine.getMarket(id);
       if (D6.Engine && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) {
           var snap = snapshotTradeVisual(t);
           if (!snap) return;
           openTradeVisuals[snap.id] = snap;
-          if (snap.assetId === activeAsset) forceIncludePrice(snap.entryPrice);
         });
       }
       if (isChartReady()) {
         drawNow();
-        requestAnimationFrame(function () { drawNow(); });
+        if (drawRaf) cancelAnimationFrame(drawRaf);
+        drawRaf = requestAnimationFrame(function () {
+          drawRaf = 0;
+          drawNow();
+        });
       } else {
         flushOpenTradeVisualQueue();
+      }
+      if (running) {
+        lastTs = 0;
+        loopRaf = requestAnimationFrame(loop);
       }
     },
     start: function () {
       if (running) return;
       running = true;
       lastTs = 0;
-      requestAnimationFrame(function (ts) {
+      cancelChartRafs();
+      loopRaf = requestAnimationFrame(function (ts) {
         flushOpenTradeVisualQueue();
         loop(ts);
       });
     },
     stop: function () {
       running = false;
+      cancelChartRafs();
     },
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
