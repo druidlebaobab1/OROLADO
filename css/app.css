@@ -287,10 +287,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .auth-back{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:5;border:1px solid var(--line);
   background:rgba(21,30,48,.85);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-weight:800;font-size:.72rem;cursor:pointer}
 .bal-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
-  background:linear-gradient(180deg,#F59E0B,#D97706);color:#1A1204;
-  font:inherit;font-weight:900;font-size:16px;line-height:1;padding:0;cursor:pointer;flex-shrink:0;
+  background:linear-gradient(180deg,#F59E0B,#D97706);color:#000;
+  padding:0;cursor:pointer;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;
   box-shadow:0 0 10px rgba(245,158,11,.35)}
+.bal-plus .plus-ico,.fs-mid-plus .plus-ico{width:15px;height:15px;display:block;flex-shrink:0}
 .bal-plus.hidden{display:none}
 .balance-card{display:flex;align-items:center;justify-content:flex-start;gap:8px}
 .bal-crypto-frieze{flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:10px;pointer-events:none}
@@ -1132,8 +1133,8 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   padding:4px 10px;border-radius:999px;cursor:pointer;min-height:24px;min-width:52px;transform:none;opacity:1}
 .fs-mode-btn[data-mode="real"]{padding:6px 12px;min-height:30px;font-weight:800;font-size:11px}
 .fs-mid-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
-  background:linear-gradient(180deg,#FDE68A,#D97706);color:#1A1204;font:inherit;font-size:16px;font-weight:900;
-  line-height:1;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#FDE68A,#D97706);color:#000;
+  padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
   box-shadow:0 0 10px rgba(245,158,11,.35);flex-shrink:0}
 .fs-mode-btn.on{background:rgba(245,197,24,.16);color:#FDE68A;box-shadow:0 0 10px rgba(245,197,24,.2)}
 html.fs-trade .fs-mode-btn.mode-btn,
@@ -1735,7 +1736,8 @@ html.fs-trade .fs-bal-plus,html.is-fullscreen .fs-bal-plus{display:none!importan
   html.fs-trade .fs-top-end,html.is-fullscreen .fs-top-end{gap:6px}
   html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{gap:6px;padding-left:8px;padding-right:6px}
   html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:16px!important;font-weight:600!important}
-  .fs-mid-plus{width:22px;height:22px;min-width:22px;font-size:14px}
+  .fs-mid-plus{width:22px;height:22px;min-width:22px}
+  .fs-mid-plus .plus-ico,.bal-plus .plus-ico{width:13px;height:13px}
   .fs-trade-close{margin-right:10px;margin-left:10px;width:38px;height:38px;min-width:38px}
 }
 html.fs-guest #btnFsMidPlus,html.fs-guest #fsBtnReal{display:none!important}
