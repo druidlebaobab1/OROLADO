@@ -343,7 +343,11 @@
     }
     var amount = Math.abs(Number(payout) || 0);
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
-    el.textContent = isWin ? ('+' + D6.fmtFCFA(amount)) : '+$0';
+    if (isWin) {
+      el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>+' + D6.fmtFCFA(amount) + '</span>';
+    } else {
+      el.textContent = '-' + D6.fmtFCFA(amount);
+    }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
       el.className = 'chart-outcome';
@@ -409,8 +413,12 @@
     } catch (e) { /* ignore */ }
   }
 
+  var lastTapAt = 0;
   function playTap() {
     if (!soundOn()) return;
+    var tnow = Date.now();
+    if (tnow - lastTapAt < 300) return;
+    lastTapAt = tnow;
     var ctx = getAudio();
     if (!ctx) return;
     try {
@@ -436,36 +444,22 @@
     if (!ctx) return;
     try {
       var now = ctx.currentTime;
-      function tone(type, freq, start, dur, vol, dest) {
+      function tone(freq, start, dur, vol) {
         var osc = ctx.createOscillator();
         var gain = ctx.createGain();
-        osc.type = type;
+        osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, now + start);
-        if (dest) osc.frequency.exponentialRampToValueAtTime(dest, now + start + dur);
         gain.gain.setValueAtTime(0.0001, now + start);
-        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.012);
+        gain.gain.linearRampToValueAtTime(vol, now + start + 0.06);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now + start);
-        osc.stop(now + start + dur + 0.03);
+        osc.stop(now + start + dur + 0.04);
       }
-      var ding = ctx.createOscillator();
-      var dingGain = ctx.createGain();
-      ding.type = 'square';
-      ding.frequency.setValueAtTime(1318.51, now);
-      ding.frequency.exponentialRampToValueAtTime(1760, now + 0.07);
-      dingGain.gain.setValueAtTime(0.0001, now);
-      dingGain.gain.exponentialRampToValueAtTime(0.11, now + 0.008);
-      dingGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-      ding.connect(dingGain);
-      dingGain.connect(ctx.destination);
-      ding.start(now);
-      ding.stop(now + 0.18);
-      tone('triangle', 1046.5, 0.02, 0.22, 0.09);
-      tone('sine', 1318.51, 0.05, 0.28, 0.08);
-      tone('sine', 1567.98, 0.08, 0.34, 0.07);
-      tone('triangle', 2093, 0.12, 0.42, 0.05);
+      tone(392, 0, 0.55, 0.028);
+      tone(493.88, 0.05, 0.62, 0.024);
+      tone(587.33, 0.1, 0.7, 0.02);
     } catch (e) { /* ignore */ }
   }
 
@@ -958,6 +952,7 @@
 
   function profitFromResult(res) {
     if (!res) return 0;
+    var stake = Number((res.trade && res.trade.stake) || (res.position && res.position.stake) || 0);
     if (res.won) {
       // Montant total crédité (mise × multiplicateur), pas le net.
       if (res.position && res.position.stake) {
@@ -970,6 +965,8 @@
         return Math.abs(Number(res.net)) + Number(res.position.stake);
       }
     }
+    if (stake > 0) return -D6.roundMoney(stake);
+    if (res.net != null && Number(res.net) < 0) return D6.roundMoney(Number(res.net));
     return 0;
   }
 
@@ -4747,6 +4744,7 @@
         unlockAudio();
         if ($('screenTrade') && $('screenTrade').classList.contains('hidden')) return;
         if (e.target && e.target.closest && e.target.closest('button, .qbtn, .dur-chip, .mode-btn, .asset-chip')) {
+          if (e.target.closest('#btnCall, #btnPut')) return;
           playTap();
         }
       }, { capture: true, passive: true });
@@ -4843,6 +4841,11 @@
       }
       if ($('btnDemoTopup')) $('btnDemoTopup').addEventListener('click', onBalancePlusClick);
       if ($('btnFsTopup')) $('btnFsTopup').addEventListener('click', onBalancePlusClick);
+      if ($('btnFsMidPlus')) $('btnFsMidPlus').addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openDeposit();
+      });
       if ($('closeTip')) { /* bound in bindModals */ }
       if ($('btnTipOk')) { /* bound in bindModals */ }
       (async function bootSession() {

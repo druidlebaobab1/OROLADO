@@ -335,23 +335,27 @@
 
   function drawConstellation(pad, w, h) {
     var marks = [
-      { s: 'BTC', c: 'rgba(247,147,26,0.12)' },
-      { s: 'ETH', c: 'rgba(98,126,234,0.12)' },
-      { s: 'SOL', c: 'rgba(153,69,255,0.12)' },
-      { s: 'USDT', c: 'rgba(38,161,123,0.12)' },
-      { s: 'TRX', c: 'rgba(239,0,39,0.12)' }
+      { c: 'rgba(247,147,26,0.14)' },
+      { c: 'rgba(98,126,234,0.13)' },
+      { c: 'rgba(153,69,255,0.13)' },
+      { c: 'rgba(38,161,123,0.13)' },
+      { c: 'rgba(239,0,39,0.12)' }
     ];
     var i;
     ctx.save();
-    ctx.font = '700 22px "Plus Jakarta Sans", system-ui, sans-serif';
-    ctx.textAlign = 'center';
     var t = Date.now() / 28000;
     for (i = 0; i < marks.length; i++) {
       var drift = ((t + i * 0.17) % 1);
       var x = pad.l + w * (0.08 + ((i * 0.19 + drift * 0.22) % 0.84));
       var y = pad.t + h * (0.18 + ((i * 0.29 + Math.sin(t * 2 + i) * 0.06) % 0.64));
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
       ctx.fillStyle = marks[i].c;
-      ctx.fillText(marks[i].s, x, y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+      ctx.fillStyle = marks[i].c;
+      ctx.fill();
     }
     ctx.restore();
   }
