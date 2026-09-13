@@ -31,6 +31,11 @@
     return uhash01(i, salt) * (1 - u) + uhash01(i + 1, salt) * u;
   }
 
+  function canonAssetId(id) {
+    if (id === 'boom300' || id === 'pulseai') return C.ASSETS.titanpulse ? 'titanpulse' : 'v100';
+    return C.ASSETS[id] ? id : 'v100';
+  }
+
   // Profils indépendants : seed + vol + dérive + spikes (pas le même tableau + offset).
   function feedProfile(assetId) {
     switch (assetId) {
@@ -40,8 +45,18 @@
         return { salt: 551903, vol: 0.62, drift: 0, f1: 0.033, f2: 0.071, f3: 0.014, a1: 14, a2: 9, a3: 22, spike: null, stair: null };
       case 'crash300':
         return { salt: 771001, vol: 0.35, drift: 0, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'crash' };
-      case 'pulseai':
-        return { salt: 913337, vol: 0.92, drift: 0, f1: 0.027, f2: 0.063, f3: 0.012, a1: 20, a2: 13, a3: 28, spike: null, stair: null, pulse: true };
+      case 'boomspike':
+        return { salt: 882119, vol: 0.35, drift: 0, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'boom' };
+      case 'apex500':
+        return { salt: 440501, vol: 1, drift: 0, kind: 'apex' };
+      case 'horizon50':
+        return { salt: 550050, vol: 1, drift: 0, kind: 'horizon' };
+      case 'goldtrend':
+        return { salt: 660160, vol: 1, drift: 0, kind: 'gold' };
+      case 'nexusprime':
+        return { salt: 770870, vol: 1, drift: 0, kind: 'nexus' };
+      case 'titanpulse':
+        return { salt: 991177, vol: 1, drift: 0, kind: 'titan' };
       case 'v100':
       default:
         return { salt: 904177, vol: 1.05, drift: 0, f1: 0.041, f2: 0.093, f3: 0.017, a1: 18, a2: 11, a3: 32, spike: null, stair: null };
@@ -128,8 +143,50 @@
     var conf = typeof asset === 'object' ? asset : (C.ASSETS[id] || { id: id, basePrice: 10000 });
     var p = feedProfile(conf.id);
     var t = Number(tSec) || 0;
-    if (conf.id === 'crash300' || p.crashBoom === 'crash') {
+    if (conf.id === 'crash300' || conf.id === 'boomspike' || p.crashBoom === 'crash' || p.crashBoom === 'boom') {
       return synthCrashBoomPrice(conf, t);
+    }
+    if (p.kind === 'apex') {
+      var wA = Math.sin(t * 0.31) * 7.5 + Math.sin(t * 0.67 + 0.4) * 4.8 + Math.cos(t * 1.15) * 2.6;
+      var nA = (valueNoise(t * 4.2, p.salt) - 0.5) * 5.5 + (valueNoise(t * 11, p.salt + 2) - 0.5) * 2.8;
+      return conf.basePrice + wA + nA;
+    }
+    if (p.kind === 'horizon') {
+      var wH = Math.sin(t * 0.012) * 4.2 + Math.cos(t * 0.007) * 2.6;
+      var nH = (valueNoise(t * 0.45, p.salt) - 0.5) * 1.4;
+      return conf.basePrice + wH + nH;
+    }
+    if (p.kind === 'gold') {
+      var wG = Math.sin(t * 0.0038) * 88 + Math.sin(t * 0.0016 + 0.9) * 42;
+      var nG = (valueNoise(t * 0.12, p.salt) - 0.5) * 5;
+      return conf.basePrice + wG + nG;
+    }
+    if (p.kind === 'nexus') {
+      var half = 36;
+      var drive = Math.sin(t * 0.027) * 0.92 + Math.sin(t * 0.059 + 1.3) * 0.38;
+      var edge = Math.tanh(drive * 1.65);
+      var nX = (valueNoise(t * 0.9, p.salt) - 0.5) * 3.2;
+      return conf.basePrice + edge * half + nX;
+    }
+    if (p.kind === 'titan') {
+      var epoch = Math.floor(t / 5.5);
+      var dir = uhash01(epoch, p.salt) > 0.5 ? 1 : -1;
+      var amp = 28 + uhash01(epoch, p.salt + 4) * 95;
+      var sawT = (t / 5.5) - epoch;
+      var saw = (sawT < 0.5 ? sawT * 2 : 2 - sawT * 2) - 0.5;
+      var burst = 0;
+      if (uhash01(epoch, p.salt + 21) > 0.42) {
+        burst = dir * amp * Math.sin(Math.min(1, sawT * 3.2) * Math.PI);
+      }
+      var chop = (valueNoise(t * 2.4, p.salt) - 0.5) * 36
+        + (valueNoise(t * 7.1, p.salt + 8) - 0.5) * 22
+        + Math.sin(t * 0.19) * 18;
+      var pT = conf.basePrice + saw * amp * 0.55 + burst + chop;
+      var lo = conf.basePrice - 220;
+      var hi = conf.basePrice + 220;
+      if (pT < lo) pT = lo + (lo - pT) * 0.12;
+      if (pT > hi) pT = hi - (pT - hi) * 0.12;
+      return pT;
     }
     if (conf.id === 'pulseai' || p.pulse) {
       var waveP = Math.sin(t * p.f1) * p.a1
@@ -160,7 +217,7 @@
   }
 
   function candleForBucket(asset, bucket) {
-    if (asset.id === 'crash300') {
+    if (asset.id === 'crash300' || asset.id === 'boomspike') {
       return crashBoomCandleOHLC(asset, bucket);
     }
     var start = bucket * CANDLE_MS;
@@ -179,7 +236,7 @@
   }
 
   function formingCandle(asset, nowMs) {
-    if (asset.id === 'crash300') {
+    if (asset.id === 'crash300' || asset.id === 'boomspike') {
       var bucketCb = Math.floor(nowMs / CANDLE_MS);
       var full = crashBoomCandleOHLC(asset, bucketCb);
       var frac = (nowMs % CANDLE_MS) / CANDLE_MS;
@@ -289,8 +346,27 @@
   function ensureMarkets() {
     var id;
     for (id in C.ASSETS) {
-      if (!markets[id]) markets[id] = seedMarket(id);
+      if (markets[id]) continue;
+      var asset = C.ASSETS[id];
+      markets[id] = {
+        id: id,
+        price: asset.basePrice,
+        history: [],
+        candles: [],
+        candle: { o: asset.basePrice, h: asset.basePrice, l: asset.basePrice, c: asset.basePrice },
+        ticksInCandle: 0,
+        payout: C.REAL_PAYOUT
+      };
     }
+  }
+
+  function wakeMarket(assetId) {
+    var id = canonAssetId(assetId);
+    ensureMarkets();
+    if (!synthCache[id] && C.ASSETS[id]) {
+      syncMarket(markets[id], C.ASSETS[id], Date.now());
+    }
+    return markets[id];
   }
 
   function makeSeal(payload) {
@@ -556,9 +632,7 @@
     onSettled: null,
 
     getMarket: function (id) {
-      if (id === 'boom300') id = 'pulseai';
-      ensureMarkets();
-      return markets[id];
+      return wakeMarket(id);
     },
 
     getTrade: function () {
@@ -595,7 +669,7 @@
         if (raw.settled || raw.status === 'won' || raw.status === 'lost' || raw.status === 'void') continue;
         trades.push({
           id: raw.id,
-          assetId: (raw.assetId === 'boom300' ? 'pulseai' : (C.ASSETS[raw.assetId] ? raw.assetId : 'v100')),
+          assetId: canonAssetId(raw.assetId),
           side: raw.side === 'put' ? 'put' : 'call',
           stake: D6.roundMoney(Number(raw.stake) || 0),
           duration: raw.duration || 10,
@@ -638,11 +712,9 @@
       for (i = 0; i < trades.length; i++) {
         syncTime(trades[i]);
       }
-      var id;
-      for (id in C.ASSETS) {
-        if (C.ASSETS.hasOwnProperty(id)) {
-          syncMarket(markets[id], C.ASSETS[id], now);
-        }
+      var id = canonAssetId(assetId);
+      if (C.ASSETS[id]) {
+        syncMarket(markets[id], C.ASSETS[id], now);
       }
     },
 
@@ -663,8 +735,7 @@
 
       var stake = D6.roundMoney(Number(opts.stake) || 0);
       var duration = C.DURATIONS.indexOf(opts.duration) >= 0 ? opts.duration : C.DEFAULT_DURATION;
-      var assetId = opts.assetId === 'boom300' ? 'pulseai' : opts.assetId;
-      assetId = C.ASSETS[assetId] ? assetId : 'v100';
+      var assetId = canonAssetId(opts.assetId);
       var side = opts.side === 'put' ? 'put' : 'call';
       var gate = stakeCap(user, stake, mode);
       if (!gate.ok) return gate;

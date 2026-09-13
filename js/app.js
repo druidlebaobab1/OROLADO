@@ -288,8 +288,9 @@
   }
   function t(k) { return D6.I18N.t(k); }
   function mapAssetId(id) {
-    if (id === 'boom300') return 'pulseai';
-    return id || 'v100';
+    if (id === 'boom300' || id === 'pulseai') return 'titanpulse';
+    if (D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[id]) return id;
+    return 'v100';
   }
   function assetId(u) { return mapAssetId((u && u.assetId) || 'v100'); }
 
@@ -663,14 +664,10 @@
 
   function updatePayoutUi() {
     var u = user();
-    if (!u || !$('payoutV100')) return;
-    var ids = ['v100', 'stable', 'v75', 'crash300', 'pulseai'];
-    var map = { v100: 'payoutV100', stable: 'payoutStable', v75: 'payoutV75', crash300: 'payoutCrash300', pulseai: 'payoutPulseAi' };
+    if (!u || !document.querySelector('.asset-chip .payout-live')) return;
     var odds = currentOdds(u);
     var pct = Math.round((odds - 1) * 100);
-    ids.forEach(function (id) {
-      var el = $(map[id]);
-      if (!el) return;
+    document.querySelectorAll('.asset-chip .payout-live').forEach(function (el) {
       el.textContent = pct + '%';
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));

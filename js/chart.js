@@ -463,7 +463,7 @@
     var thin = !!opts.thin;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
-    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var cw = Math.max(thin ? 1.4 : 2.2, (w / candles.length) * (thin ? 0.42 : 0.62));
     var i;
     for (i = 0; i < candles.length; i++) {
@@ -496,7 +496,7 @@
     if (!candles || candles.length < 2) return;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
-    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var i;
     for (i = 1; i < candles.length; i++) {
       var a = candles[i - 1].c;
@@ -517,7 +517,7 @@
     if (!data || data.length < 2) return null;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
-    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     var i;
@@ -560,7 +560,7 @@
     if (!data || data.length < 2) return null;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
-    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     var i;
@@ -587,7 +587,7 @@
     if (!data || data.length < 2) return null;
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
-    var toY = function (p) { return pad.t + h * (1 - (p - minP) / span); };
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var i;
     for (i = 1; i < data.length; i++) {
       var x0 = toX(i - 1);
@@ -788,11 +788,20 @@
     ctx.fillText('MACD', pad.l + 4, top + 10);
   }
 
-  function priceToY(price, pad, h, minP, maxP) {
+  function plotToY(p, pad, h, minP, maxP) {
     var span = Math.max((maxP - minP) || 0.01, 0.01);
-    var top = pad ? pad.t : 14;
+    var top = (pad && pad.t != null) ? pad.t : 14;
     var height = h > 0 ? h : Math.max(40, cssH - 36);
-    return top + height * (1 - (Number(price) - minP) / span);
+    var y = top + height * (1 - (Number(p) - minP) / span);
+    var lo = top + 1;
+    var hi = top + height - 1;
+    if (y < lo) return lo;
+    if (y > hi) return hi;
+    return y;
+  }
+
+  function priceToY(price, pad, h, minP, maxP) {
+    return plotToY(price, pad, h, minP, maxP);
   }
 
   function roundRectOn(g, x, y, w, h, r) {
@@ -976,9 +985,10 @@
         }
       });
     }
+    var breath = asset.id === 'titanpulse' ? 0.22 : 0.15;
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
-    // Respiration verticale 15 % haut / bas.
-    var padY = Math.max(span * 0.15, asset.tickNoise * 3, 0.2);
+    // Respiration verticale — TITAN un peu plus large pour les dents de scie.
+    var padY = Math.max(span * breath, asset.tickNoise * 3, 0.2);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
 
@@ -1029,6 +1039,14 @@
       viewMin = nextMin;
       viewMax = nextMax;
     }
+    viewMin = Math.min(viewMin || yMin, minPrice - padY);
+    viewMax = Math.max(viewMax || yMax, maxPrice + padY);
+    if (viewMax - viewMin < 0.3) {
+      var midFix = (viewMin + viewMax) / 2;
+      viewMin = midFix - 0.15;
+      viewMax = midFix + 0.15;
+    }
+
     if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
       lastDrawnClose = Number(candles[candles.length - 1].c);
     } else if (isFinite(market.price)) {
@@ -1264,7 +1282,8 @@
     lastAsset: function () { return activeAsset; },
     setAsset: function (id) {
       // Switch plot only : reset échelle + redessin immédiat (pas d'écran noir app).
-      if (id === 'boom300') id = 'pulseai';
+      if (id === 'boom300' || id === 'pulseai') id = 'titanpulse';
+      if (!D6.CONFIG.ASSETS[id]) id = 'v100';
       activeAsset = id;
       viewMin = 0;
       viewMax = 0;
