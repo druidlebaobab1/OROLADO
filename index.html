@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=131">
+  <link rel="stylesheet" href="css/app.css?v=132">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -54,6 +54,12 @@
   <!-- End Meta Pixel Code -->
 </head>
 <body>
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="svg-sprite">
+    <symbol id="ico-usdt" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#26A17B"/><path fill="#fff" d="M17.72 13.94V11.5h4.4V8.2H9.88v3.3h4.4v2.44c-3.7.22-6.48 1.7-6.48 3.48 0 1.78 2.78 3.26 6.48 3.48v6.3h3.44v-6.3c3.7-.22 6.48-1.7 6.48-3.48 0-1.78-2.78-3.26-6.48-3.48zm-1.72 5.3c-3.82 0-6.92-1.16-6.92-2.58s3.1-2.58 6.92-2.58 6.92 1.16 6.92 2.58-3.1 2.58-6.92 2.58z"/></symbol>
+    <symbol id="ico-btc" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#F7931A"/><path fill="#fff" d="M20.3 14.6c.28-1.86-1.14-2.86-3.08-3.52l.63-2.52-1.54-.38-.61 2.46c-.4-.1-.82-.2-1.24-.29l.62-2.48-1.54-.38-.63 2.52c-.34-.08-.67-.15-1-.24l.01-.03-2.12-.53-.41 1.64s1.14.26 1.12.28c.62.16.73.56.71.89l-.71 2.86c.04.01.1.03.16.06l-.16-.04-.99 3.98c-.08.19-.27.47-.01.65-.01 0-1.12.28-1.12.28l-.61 1.77 2.02.5c.38.1.75.2 1.11.29l-.64 2.58 1.54.38.63-2.53c.42.11.83.22 1.23.32l-.63 2.51 1.54.38.64-2.57c2.64.5 4.63.3 5.47-2.09.67-1.92-.03-3.03-1.43-3.75 1.01-.24 1.78-.9 1.98-2.28zm-3.54 4.96c-.48 1.92-3.72.88-4.77.62l.85-3.41c1.05.26 4.42.78 3.92 2.79zm.48-4.99c-.44 1.75-3.12.86-4 .64l.77-3.1c.87.22 3.68.62 3.23 2.46z"/></symbol>
+    <symbol id="ico-eth" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#454A75"/><path fill="#fff" d="M16.1 6.4 9.8 16.1l6.3 3.7 6.3-3.7z"/><path fill="#C0CBF6" d="m16.1 6.4-.05 13.4 6.35-3.7z"/><path fill="#fff" d="m9.8 17.4 6.3 8.2 6.3-8.2-6.3 3.7z"/><path fill="#C0CBF6" d="m16.1 21.1.04 4.5 6.26-8.2z"/></symbol>
+    <symbol id="ico-trx" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#EF0027"/><path fill="#fff" d="M8.6 8.2 22.7 11.4 16.4 23.8zm2.5 1.7 4.8 10.2 1.7-8.7zm6.2 2.2-1.4 7.2 6.2-8.1z"/></symbol>
+  </svg>
   <canvas id="particlesCanvas"></canvas>
   <div id="toast" class="toast lux-msg" role="status" aria-live="polite"></div>
   <div id="sparkle" class="sparkle" hidden></div>
@@ -107,6 +113,7 @@
           </div>
           <button type="button" class="link-forgot" id="btnForgot" data-i18n="forgot">Mot de passe oublié ?</button>
           <button class="btn-gold" type="submit" data-i18n="enter">Se connecter</button>
+          <p class="auth-trust" data-i18n="authTrust">Chiffrement AES-256 bits • Retraits automatisés 24/7 • Compatible Web3 &amp; Mobile Money</p>
         </form>
         <form id="formRegister" class="hidden">
           <div class="field">
@@ -145,6 +152,7 @@
           </label>
           <p class="err-msg" id="err-regAge"></p>
           <button class="btn-gold" type="submit" data-i18n="createAccount">Créer mon compte</button>
+          <p class="auth-trust" data-i18n="authTrust">Chiffrement AES-256 bits • Retraits automatisés 24/7 • Compatible Web3 &amp; Mobile Money</p>
         </form>
       </div>
       <p class="legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
@@ -158,12 +166,27 @@
           <div class="brand-lockup mini" id="brandLockup">
             <img class="logo-mark sm" src="icons/icon.svg" alt="">
             <div class="brand">ORO<span>LADO</span></div>
+            <span class="web3-badge" title="Web3">
+              <span class="web3-dot" aria-hidden="true"></span>
+              <span class="web3-txt" data-i18n="web3Live">RÉSEAU WEB3 CONNECTÉ</span>
+            </span>
           </div>
           <div class="auth-quick hidden" id="authQuick">
             <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
             <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
           </div>
-          <button type="button" class="btn-deposit" id="btnOpenDeposit" data-i18n="recharge">Deposit</button>
+          <div class="topbar-cta" id="topbarCta">
+            <span class="crypto-mini-row" aria-hidden="true">
+              <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
+              <svg class="coin-svg"><use href="#ico-btc"></use></svg>
+              <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+              <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+            </span>
+            <button type="button" class="btn-deposit" id="btnOpenDeposit">
+              <span class="dep-bolt" aria-hidden="true">⚡</span>
+              <span data-i18n="recharge">Recharger</span>
+            </button>
+          </div>
           <div class="topbar-actions">
             <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Help</button>
             <div class="lang-dd" id="langBarTrade"></div>
@@ -343,29 +366,29 @@
       <div class="wallet-card-v" id="profWalletBal">$0.00</div>
       <div class="wallet-xpress" aria-hidden="true">
         <span class="wx-coins">
-          <span class="wx-coin wx-usdt">₮</span>
-          <span class="wx-coin wx-btc">₿</span>
-          <span class="wx-coin wx-eth">Ξ</span>
-          <span class="wx-coin wx-trx">T</span>
+          <svg class="wx-coin"><use href="#ico-usdt"></use></svg>
+          <svg class="wx-coin"><use href="#ico-btc"></use></svg>
+          <svg class="wx-coin"><use href="#ico-eth"></use></svg>
+          <svg class="wx-coin"><use href="#ico-trx"></use></svg>
         </span>
         <span data-i18n="expressCrypto">Dépôt Express Crypto</span>
       </div>
       <div class="wallet-tabs" role="tablist" aria-label="Réseau de dépôt">
         <button type="button" class="wallet-tab on" data-recv="usdt" role="tab" aria-selected="true">
-          <svg class="wallet-tab-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#26A17B"/><path fill="#fff" d="M17.72 13.94V11.5h4.4V8.2H9.88v3.3h4.4v2.44c-3.7.22-6.48 1.7-6.48 3.48 0 1.78 2.78 3.26 6.48 3.48v6.3h3.44v-6.3c3.7-.22 6.48-1.7 6.48-3.48 0-1.78-2.78-3.26-6.48-3.48zm-1.72 5.3c-3.82 0-6.92-1.16-6.92-2.58s3.1-2.58 6.92-2.58 6.92 1.16 6.92 2.58-3.1 2.58-6.92 2.58z"/></svg>
-          <span>USDT TRC20</span>
+          <svg class="wallet-tab-ico" aria-hidden="true"><use href="#ico-usdt"></use></svg>
+          <span class="wallet-tab-stack"><span>USDT TRC20</span><small data-i18n="netTron">TRON NETWORK</small></span>
         </button>
         <button type="button" class="wallet-tab" data-recv="btc" role="tab" aria-selected="false">
-          <svg class="wallet-tab-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#F7931A"/><path fill="#fff" d="M20.3 14.6c.28-1.86-1.14-2.86-3.08-3.52l.63-2.52-1.54-.38-.61 2.46c-.4-.1-.82-.2-1.24-.29l.62-2.48-1.54-.38-.63 2.52c-.34-.08-.67-.15-1-.24l.01-.03-2.12-.53-.41 1.64s1.14.26 1.12.28c.62.16.73.56.71.89l-.71 2.86c.04.01.1.03.16.06l-.16-.04-.99 3.98c-.08.19-.27.47-.01.65-.01 0-1.12.28-1.12.28l-.61 1.77 2.02.5c.38.1.75.2 1.11.29l-.64 2.58 1.54.38.63-2.53c.42.11.83.22 1.23.32l-.63 2.51 1.54.38.64-2.57c2.64.5 4.63.3 5.47-2.09.67-1.92-.03-3.03-1.43-3.75 1.01-.24 1.78-.9 1.98-2.28zm-3.54 4.96c-.48 1.92-3.72.88-4.77.62l.85-3.41c1.05.26 4.42.78 3.92 2.79zm.48-4.99c-.44 1.75-3.12.86-4 .64l.77-3.1c.87.22 3.68.62 3.23 2.46z"/></svg>
-          <span>BTC</span>
+          <svg class="wallet-tab-ico" aria-hidden="true"><use href="#ico-btc"></use></svg>
+          <span class="wallet-tab-stack"><span>BTC</span><small data-i18n="netBtc">BITCOIN NETWORK</small></span>
         </button>
         <button type="button" class="wallet-tab" data-recv="eth" role="tab" aria-selected="false">
-          <svg class="wallet-tab-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#454A75"/><path fill="#fff" d="M16.1 6.4 9.8 16.1l6.3 3.7 6.3-3.7z"/><path fill="#C0CBF6" d="m16.1 6.4-.05 13.4 6.35-3.7z"/><path fill="#fff" d="m9.8 17.4 6.3 8.2 6.3-8.2-6.3 3.7z"/><path fill="#C0CBF6" d="m16.1 21.1.04 4.5 6.26-8.2z"/></svg>
-          <span>ETH</span>
+          <svg class="wallet-tab-ico" aria-hidden="true"><use href="#ico-eth"></use></svg>
+          <span class="wallet-tab-stack"><span>ETH</span><small data-i18n="netEth">ETHEREUM MAINNET</small></span>
         </button>
         <button type="button" class="wallet-tab" data-recv="trx" role="tab" aria-selected="false">
-          <svg class="wallet-tab-ico" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#FF0013"/><path fill="#fff" d="M8.6 8.2 22.7 11.4 16.4 23.8zm2.5 1.7 4.8 10.2 1.7-8.7zm6.2 2.2-1.4 7.2 6.2-8.1z"/></svg>
-          <span>TRX</span>
+          <svg class="wallet-tab-ico" aria-hidden="true"><use href="#ico-trx"></use></svg>
+          <span class="wallet-tab-stack"><span>TRX</span><small data-i18n="netTron">TRON NETWORK</small></span>
         </button>
       </div>
       <div class="wallet-addr-row">
@@ -607,10 +630,10 @@
             <div class="pay-method-top">
               <span class="pay-method-title" data-i18n="payMethodUsdtTitle">CRYPTO DEPOSIT</span>
               <span class="pay-crypto-badges" aria-hidden="true">
-                <span class="pay-crypto-badge usdt">₮</span>
-                <span class="pay-crypto-badge btc">₿</span>
-                <span class="pay-crypto-badge eth">Ξ</span>
-                <span class="pay-crypto-badge trx">T</span>
+                <svg class="pay-crypto-badge"><use href="#ico-usdt"></use></svg>
+                <svg class="pay-crypto-badge"><use href="#ico-btc"></use></svg>
+                <svg class="pay-crypto-badge"><use href="#ico-eth"></use></svg>
+                <svg class="pay-crypto-badge"><use href="#ico-trx"></use></svg>
               </span>
             </div>
             <span class="pay-method-desc">USDT, USDC, BTC, ETH, TRX… • crédit auto</span>
@@ -640,19 +663,26 @@
         <div id="oxaNetWrap" class="oxa-field">
           <label>Réseau</label>
           <div id="oxaNets" class="oxa-nets">
-            <button type="button" class="oxa-net on" data-net="TRC20">TRC20</button>
-            <button type="button" class="oxa-net" data-net="ERC20">ERC20</button>
-            <button type="button" class="oxa-net" data-net="BEP20">BEP20</button>
+            <button type="button" class="oxa-net on" data-net="TRC20">TRC20<span>TRON NETWORK</span></button>
+            <button type="button" class="oxa-net" data-net="ERC20">ERC20<span>ETHEREUM MAINNET</span></button>
+            <button type="button" class="oxa-net" data-net="BEP20">BEP20<span>BINANCE SMART CHAIN</span></button>
           </div>
         </div>
         <div id="oxaPickWrap" class="oxa-pick-wrap">
-          <div id="oxaWalletBox" class="oxa-wallet">
+          <div id="oxaWalletBox" class="oxa-wallet cold-wallet">
             <div class="crypto-qr-wrap" id="oxaQrWrap">
               <img id="usdtQr" class="crypto-qr" alt="QR crypto" width="150" height="150">
             </div>
             <div class="oxa-wallet-title" id="oxaAddrLabel">Adresse USDT TRC20</div>
             <code class="oxa-wallet-addr" id="usdtAddr"></code>
-            <button type="button" class="oxa-act" id="btnUsdtCopy" data-i18n="cryptoCopy" translate="no">Copier l'adresse</button>
+            <button type="button" class="oxa-act" id="btnUsdtCopy" translate="no">
+              <span class="copy-state idle"><span data-i18n="cryptoCopy">Copier l'adresse</span></span>
+              <span class="copy-state done" data-i18n="cryptoCopied">✓ Copié dans le presse-papier</span>
+            </button>
+            <div class="wallet-assure">
+              <span data-i18n="walletInstant">⚡ Validation instantanée (1 confirmation réseau)</span>
+              <span data-i18n="walletAudit">🔒 Smart Contract Audité &amp; Fonds Isolés</span>
+            </div>
             <p class="oxa-min" id="oxaMinHint">Minimum : $5 (USDT TRC20)</p>
             <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente…</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
@@ -697,6 +727,7 @@
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeHelp">✕</button>
       <div class="modal-title" data-i18n="helpTitle">Aide & support</div>
+      <div class="help-live"><span class="help-live-dot" aria-hidden="true"></span><span data-i18n="helpLive">Support Opérationnel 24/7</span></div>
       <p class="convert-copy" data-i18n="helpCopy">Support client prioritaire — Service d'assistance disponible 24h/24 et 7j/7</p>
       <form id="formHelp">
         <div class="field">
@@ -732,7 +763,7 @@
 
   <script src="js/config.js?v=110"></script>
   <script src="js/translations.js?v=109"></script>
-  <script src="js/i18n.js?v=117"></script>
+  <script src="js/i18n.js?v=118"></script>
   <script src="js/store.js?v=107"></script>
   <script src="js/api.js?v=107"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -741,6 +772,6 @@
   <script src="js/engine.js?v=108"></script>
   <script src="js/chart.js?v=113"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=135"></script>
+  <script src="js/app.js?v=136"></script>
 </body>
 </html>

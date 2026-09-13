@@ -2144,7 +2144,7 @@
       note.textContent = t('cryptoWait');
     }
     var copyOxa = $('btnUsdtCopy');
-    if (copyOxa && !copyOxa.classList.contains('is-copied')) {
+    if (copyOxa && !copyOxa.classList.contains('is-copied') && !copyOxa.querySelector('.copy-state')) {
       copyOxa.textContent = t('cryptoCopy');
     }
     if (lastUsdtCredit > 0) setCryptoOkCopy(lastUsdtCredit);
@@ -2765,10 +2765,14 @@
       var btn = $('btnUsdtCopy');
       if (!btn) return;
       btn.classList.add('is-copied');
-      btn.textContent = t('cryptoCopied') || t('copied') || 'Copié';
+      if (!btn.querySelector('.copy-state')) {
+        btn.textContent = t('cryptoCopied') || t('copied') || 'Copié';
+      }
       setTimeout(function () {
         btn.classList.remove('is-copied');
-        btn.textContent = t('cryptoCopy') || t('copyId') || 'Copier';
+        if (!btn.querySelector('.copy-state')) {
+          btn.textContent = t('cryptoCopy') || t('copyId') || 'Copier';
+        }
       }, 1800);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -3995,6 +3999,14 @@
       document.addEventListener('dblclick', function (e) {
         try { e.preventDefault(); } catch (e1) { /* ignore */ }
       });
+      document.addEventListener('wheel', function (e) {
+        try {
+          var n = e.target;
+          if (n && n.closest && n.closest('#screenTrade') && !n.closest('.drawer, .modal-backdrop, .asset-bar, input, textarea, select')) {
+            e.preventDefault();
+          }
+        } catch (eW) { /* ignore */ }
+      }, { passive: false });
       document.addEventListener('touchmove', function (e) {
         try {
           if (e.touches && e.touches.length > 1) {
@@ -4002,7 +4014,7 @@
             return;
           }
           var node = e.target;
-          if (node && node.closest && node.closest('.drawer, .modal-backdrop, #screenAuth, #screenAdmin, .oxa-dd, .asset-bar, textarea, input, select')) return;
+          if (node && node.closest && node.closest('.drawer, .modal-backdrop, #screenAuth, #screenAdmin, .oxa-dd, .asset-bar, .oxa-dd-list, textarea, input, select, .sheet-feed, .admin-body')) return;
           e.preventDefault();
         } catch (e2) { /* ignore */ }
       }, { passive: false });

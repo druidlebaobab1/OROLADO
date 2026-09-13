@@ -261,10 +261,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #screenTrade.is-guest .logo-mark.sm{width:18px;height:18px}
 #screenTrade.is-guest #btnProfile{display:none}
 #screenTrade.is-guest #btnOpenDeposit{display:none}
+#screenTrade.is-guest .topbar-cta{display:none!important}
 #screenTrade.is-guest .auth-quick{display:flex;flex-wrap:nowrap;gap:6px;max-width:none;justify-content:stretch;z-index:3;flex:1 1 auto;min-width:0}
 #screenTrade.is-guest .btn-auth-link{flex:1 1 0;padding:6px 10px;font-size:.68rem;min-height:32px;text-align:center;justify-content:center}
 #screenTrade:not(.is-guest) .auth-quick{display:none!important}
-#screenTrade:not(.is-guest) .topbar-row .btn-deposit{position:absolute;left:50%;transform:translateX(-50%);margin:0;z-index:1}
+#screenTrade:not(.is-guest) .topbar-cta{position:absolute;left:50%;transform:translateX(-50%);margin:0;z-index:1}
 #screenTrade:not(.is-guest) .topbar-actions{margin-left:auto}
 .pay-logos-strip{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden}
 .pay-showcase{display:none!important}
@@ -1457,4 +1458,100 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
     background:#121722;border:1px solid rgba(232,195,106,.28);border-radius:8px}
   html.fs-trade .pad .trade-row,html.is-fullscreen .pad .trade-row{
     flex-direction:column!important;width:100%!important}
+}
+
+/* ===== Web3 / zero-scroll / cold wallet ===== */
+.svg-sprite{position:absolute;width:0;height:0;overflow:hidden}
+.coin-svg,.pay-crypto-badge,.wx-coin,.wallet-tab-ico{width:16px;height:16px;display:block;flex-shrink:0}
+.pay-crypto-badge{width:18px;height:18px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.wx-coin{width:18px;height:18px;border-radius:50%;overflow:hidden;margin-left:-5px;box-shadow:0 0 0 1.5px rgba(26,18,4,.35)}
+.wx-coin:first-child{margin-left:0}
+
+#screenTrade,#screenTrade .trade-shell{
+  height:100%;max-height:100dvh;overflow:hidden;overscroll-behavior:none}
+#screenTrade .trade-wrap{overflow:hidden;overscroll-behavior:none;min-height:0}
+
+.web3-badge{display:inline-flex;align-items:center;gap:5px;margin-left:4px;
+  padding:2px 7px;border-radius:999px;background:rgba(16,185,129,.08);
+  border:1px solid rgba(16,185,129,.28);white-space:nowrap;max-width:100%}
+.web3-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:web3Pulse 1.8s ease-in-out infinite}
+.web3-txt{font-size:.48rem;font-weight:800;letter-spacing:.06em;color:#86EFAC;text-transform:uppercase;line-height:1}
+@keyframes web3Pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5);opacity:1}50%{box-shadow:0 0 0 5px rgba(34,197,94,0);opacity:.7}}
+
+.topbar-cta{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.crypto-mini-row{display:flex;align-items:center;gap:3px}
+.crypto-mini-row .coin-svg{width:15px;height:15px;border-radius:50%;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.btn-deposit{display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  background:linear-gradient(180deg,#FBBF24 0%,#F59E0B 55%,#D97706 100%);
+  box-shadow:0 0 15px rgba(245,166,35,.3),inset 0 1px 0 rgba(255,255,255,.28)!important;
+  border:1px solid rgba(253,230,138,.45)}
+.btn-deposit .dep-bolt{font-size:.85em;line-height:1}
+#screenTrade.mode-demo .btn-deposit,#screenTrade.mode-real .btn-deposit{
+  box-shadow:0 0 15px rgba(245,166,35,.3),inset 0 1px 0 rgba(255,255,255,.28)!important}
+.balance-card .bal{font-family:var(--font-mono)!important;font-variant-numeric:tabular-nums;
+  font-size:1.05rem;font-weight:700;color:#E8C36A;letter-spacing:.01em}
+
+.auth-card{background:rgba(13,19,31,.9)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(30,41,59,.8)!important;box-shadow:0 25px 50px rgba(0,0,0,.45);border-radius:16px}
+.auth-trust{margin:10px 2px 0;text-align:center;font-size:.58rem;font-weight:600;color:#64748B;line-height:1.4;letter-spacing:.01em}
+
+.help-live{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:4px 10px;border-radius:999px;
+  background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.32);color:#86EFAC;
+  font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.help-live-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:web3Pulse 1.8s ease-in-out infinite}
+#helpModal .field input:focus,#helpModal .field textarea:focus{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+#helpModal textarea{width:100%;background:rgba(11,14,20,.85);border:1px solid var(--line);border-radius:var(--radius);
+  color:var(--text);padding:10px 12px;font:inherit;outline:none}
+.logout-cancel{background:transparent;border:1px solid #1E293B;color:#94A3B8}
+.logout-go{background:#4A1515;border:1px solid #7F1D1D;color:#FECACA}
+
+.cold-wallet{background:
+  radial-gradient(120% 80% at 50% 0%,rgba(245,158,11,.06),transparent 46%),
+  linear-gradient(180deg,#121722 0%,#0C1018 100%)!important;
+  border:1px solid #1E293B!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.wallet-assure{display:flex;flex-direction:column;gap:5px;margin:2px 0 10px;
+  font-size:.58rem;font-weight:700;color:#94A3B8;line-height:1.35;text-align:center}
+.oxa-act{position:relative}
+.oxa-act .copy-state.done{display:none}
+.oxa-act.is-copied .copy-state.idle{display:none}
+.oxa-act.is-copied .copy-state.done{display:inline}
+.oxa-net{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15}
+.oxa-net span{font-size:.48rem;font-weight:700;letter-spacing:.04em;color:#64748B;text-transform:uppercase}
+.oxa-net.on span{color:#FBBF24}
+.wallet-tab{flex-direction:column;align-items:center;gap:2px;min-height:42px;padding:4px 2px;white-space:normal}
+.wallet-tab-stack{display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:0}
+.wallet-tab-stack span{font-size:.5rem;font-weight:800}
+.wallet-tab-stack small{font-size:.4rem;font-weight:700;letter-spacing:.03em;color:#64748B;text-transform:uppercase}
+.wallet-tab.on .wallet-tab-stack small{color:#FDE68A}
+
+@media (max-width:859px){
+  #screenTrade .chart-card,#screenTrade #chart{
+    flex:1 1 auto!important;flex-shrink:1!important;min-height:0!important;height:auto!important;max-height:none!important}
+  #screenTrade .chart-stage{min-height:0!important;flex:1 1 auto;height:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) #screenTrade .trade-wrap > .pad{
+    position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;
+    width:100%!important;max-width:none!important;flex:0 0 auto;z-index:40;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
+  .web3-txt{max-width:11ch;overflow:hidden;text-overflow:ellipsis}
+  .crypto-mini-row{display:none}
+  .balance-card .bal{font-size:.98rem}
+}
+@media (max-width:429px){
+  .web3-txt{display:none}
+  .web3-badge{padding:3px;margin-left:2px}
+  .topbar-cta .btn-deposit{min-height:26px;padding:0 8px;font-size:.58rem}
+}
+@media (min-width:860px){
+  .trade-shell{max-width:min(1440px,96vw)}
+  #screenTrade .chart-card,#screenTrade #chart{
+    min-height:0!important;height:100%!important;flex:1 1 auto!important}
+  #screenTrade .chart-stage{min-height:0!important}
+  .web3-txt{max-width:none}
+  .crypto-mini-row{display:flex}
+  .pad{overflow:hidden}
+}
+@media (min-width:1600px){
+  .trade-shell{max-width:min(1680px,94vw)}
 }
