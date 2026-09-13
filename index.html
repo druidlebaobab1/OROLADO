@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=144">
+  <link rel="stylesheet" href="css/app.css?v=145">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -404,7 +404,11 @@
       <div class="fs-top-end">
         <svg class="fs-coin fs-coin-usdt" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-usdt"></use></svg>
         <svg class="fs-coin fs-coin-sol" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-sol"></use></svg>
-        <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Retour" title="Retour">← RETOUR</button>
+        <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter le plein écran">
+          <svg class="fs-exit-ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5M4 4l5.2 5.2M20 4l-5.2 5.2M4 20l5.2-5.2M20 20l-5.2-5.2"/>
+          </svg>
+        </button>
       </div>
     </div>
     <div class="fs-trade-slot" id="fsTradeSlot"></div>
