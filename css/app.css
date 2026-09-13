@@ -57,16 +57,17 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .btn-gold.busy{opacity:.72;pointer-events:none}
 .chart-outcome{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);z-index:15;
   display:none;align-items:center;justify-content:center;gap:8px;pointer-events:none;max-width:86%;
-  font-weight:700;letter-spacing:.02em;opacity:0;white-space:nowrap}
-.chart-outcome.show{display:inline-flex;opacity:1;transform:translate(-50%,-50%) scale(1);animation:outcomePop .35s ease}
-.chart-outcome.win{padding:8px 16px;border-radius:999px;color:#ECFDF5;font-size:15px;
-  background:rgba(16,185,129,.40);border:1px solid rgba(167,243,208,.9);
-  box-shadow:0 0 14px rgba(16,185,129,.35);text-shadow:none}
+  font-weight:800;letter-spacing:.02em;opacity:0;white-space:nowrap;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.chart-outcome.show{display:inline-flex;opacity:1!important;transform:translate(-50%,-50%) scale(1);animation:outcomePop .35s ease}
+.chart-outcome.win{padding:8px 16px;border-radius:999px;color:#fff;font-size:16px;font-weight:800;
+  background:#064e3b;border:1.5px solid #10b981;
+  box-shadow:0 4px 20px rgba(16,185,129,.45);text-shadow:none;opacity:1!important}
 .chart-outcome.win .outcome-wallet{width:18px;height:18px;flex-shrink:0;color:#F5C518}
 .chart-outcome.lose{top:46%;bottom:auto;transform:translate(-50%,-50%) scale(.92);padding:8px 16px;border-radius:999px;
-  font-size:15px;font-weight:700;color:#FEF2F2;background:rgba(239,68,68,.40);border:1px solid rgba(252,165,165,.85);
-  box-shadow:0 0 12px rgba(239,68,68,.28);text-shadow:none;animation:outcomePop .35s ease;z-index:12}
-.chart-outcome.lose.show{transform:translate(-50%,-50%) scale(1)}
+  font-size:16px;font-weight:800;color:#fff;background:#450a0a;border:1.5px solid #ef4444;
+  box-shadow:0 4px 15px rgba(239,68,68,.35);text-shadow:none;animation:outcomePop .35s ease;z-index:12;opacity:1!important}
+.chart-outcome.lose.show{transform:translate(-50%,-50%) scale(1);opacity:1!important}
 @keyframes outcomePop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}70%{transform:translate(-50%,-50%) scale(1.06)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes outcomeFade{from{opacity:0}to{opacity:1}}
 .timer-panel{margin:6px 0 4px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(10,15,29,.65);text-align:center}
@@ -324,10 +325,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .admin-finance-table{margin-top:8px;max-height:220px;overflow:auto;-webkit-overflow-scrolling:touch}
 .admin-finance-table .hist-table{font-size:.64rem}
 .admin-finance-ref{max-width:12ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chart-outcome.win{color:#ECFDF5;text-shadow:none;font-size:15px;font-weight:700;
+.chart-outcome.win{color:#fff;text-shadow:none;font-size:16px;font-weight:800;
   animation:outcomePop .35s ease}
 @keyframes festGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
-.chart-outcome.lose{color:#FEF2F2;font-size:15px;font-weight:700;opacity:1}
+.chart-outcome.lose{color:#fff;font-size:16px;font-weight:800;opacity:1!important}
 .help-fab{display:none!important}
 .btn-hist-cta{display:none!important}
 .quick-stakes{display:none!important}
@@ -1125,13 +1126,30 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-top-mid{display:none;flex-direction:column;align-items:center;justify-content:center;min-width:0;flex:1}
 .fs-mode-label{display:none}
 .fs-mode-switch{display:flex;align-items:center;gap:4px;margin-top:5px;padding:3px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
-.fs-mode-btn{border:0;background:transparent;color:#94A3B8;font:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;
-  padding:5px 12px;border-radius:999px;cursor:pointer;min-height:28px}
+.fs-mode-btn{border:0;background:transparent;color:#94A3B8;font:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;
+  padding:4px 10px;border-radius:999px;cursor:pointer;min-height:24px;min-width:52px;transform:none;opacity:1}
+.fs-mode-btn[data-mode="real"]{padding:6px 12px;min-height:30px;font-weight:800;font-size:11px}
 .fs-mid-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
   background:linear-gradient(180deg,#FDE68A,#D97706);color:#1A1204;font:inherit;font-size:16px;font-weight:900;
   line-height:1;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
   box-shadow:0 0 10px rgba(245,158,11,.35);flex-shrink:0}
 .fs-mode-btn.on{background:rgba(245,197,24,.16);color:#FDE68A;box-shadow:0 0 10px rgba(245,197,24,.2)}
+html.fs-trade .fs-mode-btn.mode-btn,
+html.is-fullscreen .fs-mode-btn.mode-btn{transform:none!important;font-size:10px;font-weight:700;box-shadow:none}
+html.fs-trade .fs-mode-btn.mode-btn[data-mode="demo"],
+html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="demo"]{padding:4px 10px;min-height:24px}
+html.fs-trade .fs-mode-btn.mode-btn[data-mode="real"],
+html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="real"]{padding:6px 12px;min-height:30px;font-size:11px;font-weight:800}
+html.fs-trade .fs-mode-btn.mode-btn.on[data-mode="demo"],
+html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="demo"]{
+  background:rgba(245,197,24,.18);color:#FDE68A;border-color:transparent;box-shadow:none}
+html.fs-trade .fs-mode-btn.mode-btn:not(.on)[data-mode="demo"],
+html.is-fullscreen .fs-mode-btn.mode-btn:not(.on)[data-mode="demo"]{
+  color:#78716C;background:transparent;opacity:.7}
+html.fs-trade .fs-mode-btn.mode-btn.on[data-mode="real"],
+html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="real"]{
+  background:#059669;color:#fff;border:1px solid #34D399;
+  box-shadow:0 0 16px rgba(16,185,129,.5);font-weight:800}
 .fs-top-bal-row{display:flex;align-items:center;gap:6px}
 .hist-tabs{display:flex;gap:8px;margin:0 0 10px}
 .hist-tab{flex:1;border:1px solid var(--line);background:rgba(10,15,29,.75);color:var(--muted);font:inherit;font-weight:800;
@@ -1498,10 +1516,10 @@ html.fs-trade .fs-top-mid,html.is-fullscreen .fs-top-mid{display:flex;align-item
 html.fs-trade .fs-mode-label,html.is-fullscreen .fs-mode-label{display:none}
 html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
   display:block!important;position:static;left:auto;transform:none;
-  font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;
-  font-weight:600;font-size:18px;letter-spacing:.01em;color:#F59E0B;
+  font-family:Inter,"Segoe UI",Roboto,system-ui,sans-serif;font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;font-weight:600;font-size:18px;letter-spacing:.015em;color:#F59E0B;
   background:transparent;border:0;border-radius:0;padding:0;z-index:8;white-space:nowrap;
-  box-shadow:none;text-shadow:none}
+  box-shadow:none;text-shadow:none;-webkit-font-smoothing:antialiased}
 html.fs-trade .fs-crypto-row,html.is-fullscreen .fs-crypto-row{display:none!important}
 html.fs-trade .fs-crypto-left,html.is-fullscreen .fs-crypto-left{left:auto}
 html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:auto;margin-right:16px}
@@ -1675,7 +1693,7 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 .topbar-cta .crypto-mini-row{display:flex;align-items:center;gap:4px}
 .topbar-cta .coin-svg{width:16px;height:16px;border-radius:50%;overflow:hidden}
 .oxa-max{margin-top:2px}
-.bal,.wallet-card-v,#previewGain,.fs-top-bal,.fs-pad-bal,.win-preview .amount,
+.bal,.wallet-card-v,#previewGain,.fs-pad-bal,.win-preview .amount,
 .strip-price,.pnl-value,.h-gain,.wd-bal-amt{
   font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
   font-variant-numeric:tabular-nums}
@@ -1702,7 +1720,10 @@ html.fs-trade .fs-coin-btc,html.is-fullscreen .fs-coin-btc{filter:drop-shadow(0 
 html.fs-trade .fs-coin-eth,html.is-fullscreen .fs-coin-eth{filter:drop-shadow(0 0 6px rgba(98,126,234,.45))}
 html.fs-trade .fs-coin-usdt,html.is-fullscreen .fs-coin-usdt{filter:drop-shadow(0 0 6px rgba(38,161,123,.45))}
 html.fs-trade .fs-coin-sol,html.is-fullscreen .fs-coin-sol{filter:drop-shadow(0 0 6px rgba(153,69,255,.45))}
-html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:17px!important;font-weight:600!important;color:#F59E0B!important}
+html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
+  font-family:Inter,"Segoe UI",Roboto,system-ui,sans-serif!important;
+  font-variant-numeric:tabular-nums!important;font-feature-settings:"tnum" 1;
+  font-size:17px!important;font-weight:600!important;color:#F59E0B!important;letter-spacing:.015em}
 html.fs-trade .fs-bal-plus,html.is-fullscreen .fs-bal-plus{display:none!important}
 @media (max-width:380px){
   html.fs-trade .fs-coin,html.is-fullscreen .fs-coin{width:20px;height:20px}
