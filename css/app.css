@@ -56,16 +56,16 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 @keyframes luxIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
 .btn-gold.busy{opacity:.72;pointer-events:none}
 .chart-outcome{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);z-index:15;
-  display:none;align-items:center;justify-content:center;gap:5px;pointer-events:none;max-width:70%;
-  font-weight:800;letter-spacing:.02em;opacity:0;white-space:nowrap}
+  display:none;align-items:center;justify-content:center;gap:8px;pointer-events:none;max-width:86%;
+  font-weight:700;letter-spacing:.02em;opacity:0;white-space:nowrap}
 .chart-outcome.show{display:inline-flex;opacity:1;transform:translate(-50%,-50%) scale(1);animation:outcomePop .35s ease}
-.chart-outcome.win{padding:4px 10px 4px 8px;border-radius:999px;color:#BBF7D0;font-size:.72rem;
-  background:rgba(6,40,24,.62);border:1px solid rgba(16,185,129,.45);
-  box-shadow:0 0 10px rgba(16,185,129,.28);text-shadow:none}
-.chart-outcome.win .outcome-wallet{width:12px;height:12px;flex-shrink:0;color:#F5C518}
-.chart-outcome.lose{top:46%;bottom:auto;transform:translate(-50%,-50%) scale(.92);padding:4px 10px;border-radius:999px;
-  font-size:.7rem;font-weight:800;color:#FECACA;background:rgba(48,12,16,.58);border:1px solid rgba(239,68,68,.38);
-  box-shadow:none;text-shadow:none;animation:outcomePop .35s ease;z-index:12}
+.chart-outcome.win{padding:8px 16px;border-radius:999px;color:#ECFDF5;font-size:15px;
+  background:rgba(16,185,129,.40);border:1px solid rgba(167,243,208,.9);
+  box-shadow:0 0 14px rgba(16,185,129,.35);text-shadow:none}
+.chart-outcome.win .outcome-wallet{width:18px;height:18px;flex-shrink:0;color:#F5C518}
+.chart-outcome.lose{top:46%;bottom:auto;transform:translate(-50%,-50%) scale(.92);padding:8px 16px;border-radius:999px;
+  font-size:15px;font-weight:700;color:#FEF2F2;background:rgba(239,68,68,.40);border:1px solid rgba(252,165,165,.85);
+  box-shadow:0 0 12px rgba(239,68,68,.28);text-shadow:none;animation:outcomePop .35s ease;z-index:12}
 .chart-outcome.lose.show{transform:translate(-50%,-50%) scale(1)}
 @keyframes outcomePop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}70%{transform:translate(-50%,-50%) scale(1.06)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes outcomeFade{from{opacity:0}to{opacity:1}}
@@ -324,10 +324,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .admin-finance-table{margin-top:8px;max-height:220px;overflow:auto;-webkit-overflow-scrolling:touch}
 .admin-finance-table .hist-table{font-size:.64rem}
 .admin-finance-ref{max-width:12ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chart-outcome.win{color:#BBF7D0;text-shadow:none;font-size:.72rem;font-weight:800;
+.chart-outcome.win{color:#ECFDF5;text-shadow:none;font-size:15px;font-weight:700;
   animation:outcomePop .35s ease}
 @keyframes festGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
-.chart-outcome.lose{color:#FECACA;font-size:.7rem;font-weight:800;opacity:.95}
+.chart-outcome.lose{color:#FEF2F2;font-size:15px;font-weight:700;opacity:1}
 .help-fab{display:none!important}
 .btn-hist-cta{display:none!important}
 .quick-stakes{display:none!important}
@@ -431,7 +431,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .odds-label,.payout-badge{margin:6px 0 4px;padding:3px 8px;font-size:.62rem;font-weight:700;color:#F8E7B8;line-height:1.2;letter-spacing:.05em;text-transform:uppercase;
   display:inline-block;align-self:flex-start;border-radius:999px;background:rgba(10,15,29,.72);border:1px solid rgba(245,158,11,.3);text-align:left}
 .odds-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:2px 0 0}
-.odds-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;min-height:44px;
+.odds-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 3px;min-height:34px;
   border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
 .odds-chip .odds-mult{font-size:.78rem;font-weight:700;line-height:1.1;font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text)}
 .odds-chip .odds-pct{font-size:.58rem;font-weight:600;color:var(--muted);line-height:1.1;text-transform:uppercase;letter-spacing:.03em}
@@ -455,8 +455,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .timer-panel{display:none!important}
 .trade-lock{display:none!important}
 .btn-trade.locked{filter:grayscale(.4);opacity:.45;animation:none;box-shadow:none}
-.trade-row{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;width:100%;box-sizing:border-box;padding:0 10px;margin:0}
-.btn-trade{border:0;border-radius:var(--radius);min-height:var(--btn-h-m);flex:1 1 0;min-width:0;width:auto;font:inherit;font-weight:700;letter-spacing:0;text-transform:uppercase;
+.trade-row{display:flex;flex-direction:row;align-items:stretch;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:0;margin:0}
+.btn-trade{border:0;border-radius:var(--radius);min-height:52px;flex:1 1 0;min-width:0;width:auto;font:inherit;font-weight:700;letter-spacing:0;text-transform:uppercase;
   cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#fff;padding:10px 2px;font-size:12px;line-height:1.15;
   white-space:nowrap;overflow:visible;text-overflow:clip;text-align:center}
 .btn-trade span{display:block;white-space:nowrap;overflow:visible;font-size:12px;font-weight:700;max-width:100%}
@@ -969,7 +969,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 }
 @media (max-width:859px) and (max-height:680px){
   .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:340px!important;min-height:max(340px,52vh)!important}
-  .btn-trade{min-height:40px}
+  .btn-trade{min-height:52px}
   .trade-wrap{padding-bottom:0;overflow:hidden}
 }
 @media (min-height:760px) and (max-width:859px){
@@ -1017,11 +1017,11 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .stake-min{font-size:11px;margin:2px 0!important;padding:0!important}
   .odds-label,.payout-badge{font-size:10px;margin:6px 0 4px;line-height:1.15;padding:3px 8px}
   .odds-row{gap:4px;margin:2px 0 0}
-  .odds-chip{padding:4px 2px;border-radius:8px}
+  .odds-chip{padding:3px 2px;border-radius:8px;min-height:30px}
   .odds-chip .odds-mult{font-size:.62rem}
   .odds-chip .odds-pct{font-size:.48rem}
   .quick-row{gap:3px;margin:0}
-  .btn-trade{min-height:42px;border-radius:11px;font-size:12px;padding:10px 2px;white-space:nowrap}
+  .btn-trade{min-height:52px;border-radius:11px;font-size:12px;padding:14px 2px;white-space:nowrap}
   .btn-trade span{font-size:12px;font-weight:700}
   .btn-trade small{font-size:.55rem}
   .btn-hist-cta{min-height:34px!important;height:auto!important;padding:6px 8px!important;font-size:.58rem;margin-top:3px;z-index:60}
@@ -1054,7 +1054,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
     margin:0!important;padding:0!important;overflow:hidden!important;font-size:0!important}
   html.is-android .odds-label,html.is-android .payout-badge{font-size:10px!important;margin:6px 0 4px!important;line-height:1.15!important;padding:3px 8px!important}
   html.is-android .odds-row{gap:3px!important;margin:0!important}
-  html.is-android .odds-chip{padding:3px 1px!important}
+  html.is-android .odds-chip{padding:3px 1px!important;min-height:30px!important}
   html.is-android .odds-chip .odds-mult{font-size:.62rem!important}
   html.is-android .odds-chip .odds-pct{font-size:.46rem!important}
   html.is-android .stake-line{gap:4px!important;margin:0!important}
@@ -1068,11 +1068,11 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   html.is-android .win-preview .mult{font-size:.55rem!important}
   html.is-android .quick-row{gap:2px!important;margin:0!important}
   html.is-android .qbtn{min-height:22px!important;font-size:.52rem!important;padding:1px 0!important}
-  html.is-android .btn-trade{min-height:44px!important;padding:10px 2px!important;font-size:12px!important;border-radius:10px!important;
+  html.is-android .btn-trade{min-height:52px!important;padding:14px 2px!important;font-size:12px!important;border-radius:10px!important;
     white-space:nowrap!important;overflow:visible!important;letter-spacing:0!important;flex:1 1 0!important;min-width:0!important}
   html.is-android .btn-trade span{font-size:12px!important;font-weight:700!important;white-space:nowrap!important}
   html.is-android .btn-trade small{font-size:.5rem!important}
-  html.is-android .trade-row{display:flex!important;gap:6px!important;width:100%!important;box-sizing:border-box!important;padding:0 10px!important}
+  html.is-android .trade-row{display:flex!important;gap:8px!important;width:100%!important;box-sizing:border-box!important;padding:0!important}
   html.is-android .btn-hist-cta{
     height:20px!important;min-height:20px!important;padding:0 6px!important;margin-top:1px!important;
     font-size:.45rem!important;line-height:20px!important;border-radius:6px!important}
@@ -1143,7 +1143,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   position:relative;top:auto;right:auto;z-index:7;width:auto;min-width:0;height:auto;border-radius:6px;
   border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#F8E7B8;
   font-size:11px;font-weight:700;letter-spacing:.03em;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
-  padding:3px 8px;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:6px;margin-right:8px;
+  padding:3px 8px;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:12px;margin-right:8px;
   white-space:nowrap}
 .fs-trade-close:hover,.fs-trade-close:focus-visible{background:rgba(255,255,255,.14);border-color:rgba(248,231,184,.45)}
 .fs-trade-slot{flex:1 1 auto;min-height:0;min-width:0;width:100%;height:auto;display:flex;flex-direction:column;overflow:hidden}
@@ -1499,9 +1499,9 @@ html.fs-trade .fs-mode-label,html.is-fullscreen .fs-mode-label{display:none}
 html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
   display:block!important;position:static;left:auto;transform:none;
   font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;
-  font-weight:800;font-size:22px;letter-spacing:.01em;color:#F5E6B8;
+  font-weight:600;font-size:18px;letter-spacing:.01em;color:#F59E0B;
   background:transparent;border:0;border-radius:0;padding:0;z-index:8;white-space:nowrap;
-  box-shadow:none;text-shadow:0 0 18px rgba(232,195,106,.28)}
+  box-shadow:none;text-shadow:none}
 html.fs-trade .fs-crypto-row,html.is-fullscreen .fs-crypto-row{display:none!important}
 html.fs-trade .fs-crypto-left,html.is-fullscreen .fs-crypto-left{left:auto}
 html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:auto;margin-right:16px}
@@ -1702,16 +1702,24 @@ html.fs-trade .fs-coin-btc,html.is-fullscreen .fs-coin-btc{filter:drop-shadow(0 
 html.fs-trade .fs-coin-eth,html.is-fullscreen .fs-coin-eth{filter:drop-shadow(0 0 6px rgba(98,126,234,.45))}
 html.fs-trade .fs-coin-usdt,html.is-fullscreen .fs-coin-usdt{filter:drop-shadow(0 0 6px rgba(38,161,123,.45))}
 html.fs-trade .fs-coin-sol,html.is-fullscreen .fs-coin-sol{filter:drop-shadow(0 0 6px rgba(153,69,255,.45))}
-html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:26px!important;color:#F5C518!important}
+html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:17px!important;font-weight:600!important;color:#F59E0B!important}
 html.fs-trade .fs-bal-plus,html.is-fullscreen .fs-bal-plus{display:none!important}
 @media (max-width:380px){
   html.fs-trade .fs-coin,html.is-fullscreen .fs-coin{width:20px;height:20px}
   html.fs-trade .fs-top-start,html.is-fullscreen .fs-top-start,
   html.fs-trade .fs-top-end,html.is-fullscreen .fs-top-end{gap:6px}
   html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{gap:6px;padding-left:8px;padding-right:6px}
-  html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:20px!important}
+  html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:16px!important;font-weight:600!important}
   .fs-mid-plus{width:22px;height:22px;min-width:22px;font-size:14px}
-  .fs-trade-close{margin-right:6px}
+  .fs-trade-close{margin-right:6px;margin-left:10px}
+}
+html.fs-guest #btnFsMidPlus,html.fs-guest #fsBtnReal{display:none!important}
+html.fs-guest .fs-mode-switch{background:transparent;border:none;padding:0;gap:0}
+html.fs-guest .fs-mode-btn{padding:3px 10px;border-radius:999px}
+@media (max-width:859px){
+  .pad,.pad.glass,.drawer,.wallet-card,.card,.drawer-admin,
+  .fs-trade-overlay .pad,.fs-trade-overlay.on .pad{
+    border:none!important;box-shadow:none!important;outline:none!important}
 }
 html.is-ios .pad,html.is-ios .pad.glass{
   border:none!important;border-top:none!important;outline:none!important;box-shadow:none!important;

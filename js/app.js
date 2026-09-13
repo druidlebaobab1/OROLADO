@@ -233,12 +233,15 @@
 
   function setModeChrome(u) {
     var trade = $('screenTrade');
-    if (!trade || !u) return;
-    trade.classList.toggle('mode-demo', u.mode !== 'real');
-    trade.classList.toggle('mode-real', u.mode === 'real');
+    if (!trade) return;
+    u = u || user();
+    var guest = !u || isGuest(u);
+    if (u) {
+      trade.classList.toggle('mode-demo', u.mode !== 'real');
+      trade.classList.toggle('mode-real', u.mode === 'real');
+    }
     var plus = $('btnDemoTopup');
-    var guest = isGuest(u);
-    var real = u.mode === 'real';
+    var real = !!(u && u.mode === 'real');
     var plusTitle = real ? (t('recharge') || 'Recharger') : (t('demoTopup') || 'Recharger la démo');
     if (plus) {
       plus.classList.toggle('hidden', guest);
@@ -254,6 +257,9 @@
     document.querySelectorAll('.fs-mode-btn').forEach(function (el) {
       el.classList.toggle('on', el.dataset.mode === (real ? 'real' : 'demo'));
     });
+    try { document.documentElement.classList.toggle('fs-guest', !!guest); } catch (eG) { /* ignore */ }
+    if ($('btnFsMidPlus')) $('btnFsMidPlus').classList.toggle('hidden', !!guest);
+    if ($('fsBtnReal')) $('fsBtnReal').classList.toggle('hidden', !!guest);
   }
 
   function wagerStatus(u) {
@@ -342,6 +348,9 @@
       stage.appendChild(el);
     }
     var amount = Math.abs(Number(payout) || 0);
+    if (!isWin && amount <= 0) {
+      amount = Math.abs(Number($('inputStake') && $('inputStake').value) || (D6.CONFIG && D6.CONFIG.MIN_STAKE) || 1);
+    }
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
     if (isWin) {
       el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>+' + D6.fmtFCFA(amount) + '</span>';

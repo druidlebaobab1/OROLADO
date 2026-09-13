@@ -34,6 +34,26 @@
   var loopRaf = 0;
   var drawRaf = 0;
   var strikeLock = null;
+  var coinImgs = {};
+
+  function coinImg(id) {
+    if (coinImgs[id]) return coinImgs[id];
+    var sym = document.getElementById(id);
+    if (!sym) return null;
+    var inner = '';
+    var kids = sym.childNodes;
+    var i;
+    for (i = 0; i < kids.length; i++) {
+      if (kids[i].outerHTML) inner += kids[i].outerHTML;
+    }
+    if (!inner) return null;
+    var img = new Image();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">' + inner + '</svg>'
+    );
+    coinImgs[id] = img;
+    return img;
+  }
 
   function zoomSec() {
     return ZOOM_STEPS[zoomIdx] || 60;
@@ -334,28 +354,20 @@
   }
 
   function drawConstellation(pad, w, h) {
-    var marks = [
-      { c: 'rgba(247,147,26,0.14)' },
-      { c: 'rgba(98,126,234,0.13)' },
-      { c: 'rgba(153,69,255,0.13)' },
-      { c: 'rgba(38,161,123,0.13)' },
-      { c: 'rgba(239,0,39,0.12)' }
-    ];
+    var marks = ['ico-btc', 'ico-eth', 'ico-sol', 'ico-usdt', 'ico-trx'];
     var i;
     ctx.save();
+    ctx.globalAlpha = 0.09;
     var t = Date.now() / 28000;
+    var size = 32;
     for (i = 0; i < marks.length; i++) {
+      var img = coinImg(marks[i]);
       var drift = ((t + i * 0.17) % 1);
       var x = pad.l + w * (0.08 + ((i * 0.19 + drift * 0.22) % 0.84));
       var y = pad.t + h * (0.18 + ((i * 0.29 + Math.sin(t * 2 + i) * 0.06) % 0.64));
-      ctx.beginPath();
-      ctx.arc(x, y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = marks[i].c;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x, y, 3.2, 0, Math.PI * 2);
-      ctx.fillStyle = marks[i].c;
-      ctx.fill();
+      if (img && img.complete && img.naturalWidth) {
+        ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+      }
     }
     ctx.restore();
   }
