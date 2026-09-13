@@ -986,7 +986,10 @@
       });
     }
     var breath = asset.id === 'titanpulse' ? 0.22 : 0.15;
-    var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, 0.3);
+    var floorSpan = 0.3;
+    if (asset.id === 'horizon50') floorSpan = 28;
+    else if (asset.id === 'nexusprime') floorSpan = 52;
+    var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, floorSpan);
     // Respiration verticale — TITAN un peu plus large pour les dents de scie.
     var padY = Math.max(span * breath, asset.tickNoise * 3, 0.2);
     var yMin = minPrice - padY;

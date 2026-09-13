@@ -93,12 +93,10 @@
         l = o - uhash01(bucket, salt + 9) * 1.9;
       }
     } else if (spike) {
-      /* Boom 300 : pic 2.6–3.0× la bougie moyenne, lisible sans exploser l’axe Y. */
-      var body = 0.55 + uhash01(bucket, salt + 7) * 3.4;
-      var boomMul = 2.6 + uhash01(bucket, salt + 13) * 0.4;
-      c = o + body * boomMul;
-      l = o - 0.35 - uhash01(bucket, salt + 8) * 1.4;
-      h = c + Math.min(body * 0.35, 1.4);
+      /* Boom Spike : inverse du Crash 300 — pic vertical vert, même amplitude. */
+      c = o + (22 + uhash01(bucket, salt + 7) * 58);
+      l = o - 0.4 - uhash01(bucket, salt + 8) * 2.2;
+      h = c + uhash01(bucket, salt + 9) * 7;
     } else {
       c = o - (0.55 + uhash01(bucket, salt + 7) * 3.4);
       l = c - uhash01(bucket, salt + 8) * 1.5;
@@ -152,8 +150,8 @@
       return conf.basePrice + wA + nA;
     }
     if (p.kind === 'horizon') {
-      var wH = Math.sin(t * 0.012) * 4.2 + Math.cos(t * 0.007) * 2.6;
-      var nH = (valueNoise(t * 0.45, p.salt) - 0.5) * 1.4;
+      var wH = Math.sin(t * 0.016) * 18 + Math.cos(t * 0.0075) * 8;
+      var nH = (valueNoise(t * 0.14, p.salt) - 0.5) * 0.35;
       return conf.basePrice + wH + nH;
     }
     if (p.kind === 'gold') {
@@ -162,10 +160,13 @@
       return conf.basePrice + wG + nG;
     }
     if (p.kind === 'nexus') {
-      var half = 36;
-      var drive = Math.sin(t * 0.027) * 0.92 + Math.sin(t * 0.059 + 1.3) * 0.38;
-      var edge = Math.tanh(drive * 1.65);
-      var nX = (valueNoise(t * 0.9, p.salt) - 0.5) * 3.2;
+      var half = 32;
+      var period = 18;
+      var phase = (t / period) % 2;
+      var tri = phase < 1 ? phase : 2 - phase;
+      var bounce = tri * 2 - 1;
+      var edge = Math.tanh(bounce * 2.05);
+      var nX = (valueNoise(t * 0.55, p.salt) - 0.5) * 2.2;
       return conf.basePrice + edge * half + nX;
     }
     if (p.kind === 'titan') {

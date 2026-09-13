@@ -186,7 +186,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-bar::-webkit-scrollbar{display:none;height:0}
 .markets-scroll{scroll-snap-type:x mandatory}
 .markets-scroll .asset-chip{scroll-snap-align:start}
-.asset-chip{min-width:92px;flex:0 0 auto}
+.asset-chip{min-width:92px;flex:0 0 auto;touch-action:pan-x}
 .asset-chip{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:6px 8px;text-align:left;
   color:var(--text);font:inherit;cursor:pointer;min-height:44px;overflow:hidden}
 .asset-chip .k{display:none}
