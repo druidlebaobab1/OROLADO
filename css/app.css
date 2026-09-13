@@ -218,7 +218,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="titanpulse"]{border-color:rgba(153,27,27,.5)}
 .asset-chip[data-asset="titanpulse"] .asset-ico,.asset-chip[data-asset="titanpulse"].on{color:#B91C1C}
 .asset-chip[data-asset="titanpulse"].on{border-color:#991B1B;box-shadow:0 0 10px rgba(185,28,28,.3);background:rgba(153,27,27,.12)}
-.asset-chip{border:1.5px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:6px 8px;text-align:left;
+.asset-chip{border:none;background:transparent;border-radius:var(--radius);padding:6px 8px;text-align:left;}
+.asset-chip:not(.on){border:none!important;box-shadow:none!important;background:transparent!important}
   color:var(--text);font:inherit;cursor:pointer;min-height:44px;overflow:hidden}
 .asset-chip .k{display:none}
 .asset-chip .n{font-size:10px;font-weight:700;margin-top:0;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -401,7 +402,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 .pad{position:fixed;bottom:0;left:0;right:0;z-index:40;margin:0 auto;max-width:28rem;border-radius:12px 12px 0 0;padding:4px 8px;gap:3px;
   padding-bottom:calc(18px + env(safe-area-inset-bottom, 12px));display:flex;flex-direction:column;background:#0b0e14;
-  border-top:1px solid var(--line);box-shadow:0 -12px 28px rgba(0,0,0,.45)}
+  border:none;border-top:1px solid rgba(255,255,255,.06);box-shadow:none}
+.pad.glass{border:none!important;border-top:1px solid rgba(255,255,255,.06)!important;box-shadow:none!important;background:#0b0e14!important}
 .dur-row,.quick-row{display:flex;gap:3px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .dur-row::-webkit-scrollbar,.quick-row::-webkit-scrollbar{display:none}
 .dur-chip{flex:0 0 auto;min-width:44px;font-size:.55rem}
@@ -413,8 +415,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .stake-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .stake-line input,.stake-field input{width:100%;background:rgba(10,15,29,.8);border:1px solid var(--line);border-radius:8px;padding:5px 8px;
   color:var(--gold);font:inherit;font-size:1rem;font-weight:900;text-align:right;outline:none;min-width:0;min-height:34px}
-.stake-min{display:flex!important;justify-content:space-between;align-items:center;padding:0!important;margin:2px 0!important;gap:8px;width:100%;line-height:1.15;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
-.stake-min-label{font-size:11px!important;opacity:.7;font-weight:700}
+.stake-min{display:flex!important;justify-content:space-between;align-items:center;padding:0!important;margin:2px 0!important;gap:8px;width:100%;line-height:1.15;border:none!important;background:transparent!important;box-shadow:none!important}
+.stake-min-label{font-size:10px!important;opacity:.58;font-weight:500;letter-spacing:.04em;color:#94A3B8;border:none!important;background:transparent!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .stake-min-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px;align-items:center;flex-shrink:0}
 .stake-min-actions .qbtn,.stake-min-actions .stake-act{
   flex:0 0 auto;min-width:46px;width:auto;max-width:none;min-height:36px;height:36px;max-height:36px;
@@ -426,20 +428,30 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .win-preview .label{display:none}
 .win-preview .amount{font-size:.82rem;font-weight:900;font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--green)}
 .win-preview .mult{font-size:.62rem;color:var(--green);font-weight:800}
-.odds-label{margin:4px 0 2px;padding:0;font-size:.68rem;font-weight:700;color:var(--muted);line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
+.odds-label,.payout-badge{margin:6px auto 4px;padding:3px 8px;font-size:.62rem;font-weight:700;color:#F8E7B8;line-height:1.2;letter-spacing:.05em;text-transform:uppercase;
+  display:inline-block;align-self:center;border-radius:999px;background:rgba(10,15,29,.72);border:1px solid rgba(245,158,11,.3);text-align:center}
 .odds-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:2px 0 0}
 .odds-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;min-height:44px;
   border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
 .odds-chip .odds-mult{font-size:.78rem;font-weight:700;line-height:1.1;font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text)}
 .odds-chip .odds-pct{font-size:.58rem;font-weight:600;color:var(--muted);line-height:1.1;text-transform:uppercase;letter-spacing:.03em}
-.odds-chip.on{border-color:rgba(148,163,184,.5);background:rgba(148,163,184,.08);box-shadow:none}
-.odds-chip[data-odds="1.88"].on{border-color:rgba(203,213,225,.55);box-shadow:0 0 8px rgba(148,163,184,.18)}
-.odds-chip[data-odds="6"].on{border-color:#22D3EE;background:linear-gradient(180deg,rgba(34,211,238,.42),rgba(8,47,73,.55));box-shadow:0 0 16px rgba(34,211,238,.45)}
-.odds-chip[data-odds="6"].on .odds-mult{color:#A5F3FC}
-.odds-chip[data-odds="11"].on{border-color:#C026D3;background:linear-gradient(180deg,rgba(192,38,211,.46),rgba(59,7,100,.55));box-shadow:0 0 18px rgba(192,38,211,.5)}
-.odds-chip[data-odds="11"].on .odds-mult{color:#F0ABFC}
-.odds-chip[data-odds="51"].on{border-color:#FBBF24;background:linear-gradient(180deg,#FDE68A 0%,#B45309 100%);box-shadow:0 0 20px rgba(251,191,36,.55)}
-.odds-chip[data-odds="51"].on .odds-mult{color:#1A1204}
+.odds-chip[data-odds="1.88"]{border:1px solid #10B981;background:rgba(16,185,129,.15)}
+.odds-chip[data-odds="1.88"] .odds-mult{color:#6EE7B7}
+.odds-chip[data-odds="6"]{border:1px solid #06B6D4;background:rgba(6,182,212,.15)}
+.odds-chip[data-odds="6"] .odds-mult{color:#67E8F9}
+.odds-chip[data-odds="11"]{border:1px solid #A855F7;background:rgba(168,85,247,.15)}
+.odds-chip[data-odds="11"] .odds-mult{color:#D8B4FE}
+.odds-chip[data-odds="51"]{border:1px solid #F59E0B;background:rgba(245,158,11,.15)}
+.odds-chip[data-odds="51"] .odds-mult{color:#FCD34D}
+.odds-chip.on{color:#fff}
+.odds-chip[data-odds="1.88"].on{border-color:#10B981;background:rgba(16,185,129,.9);box-shadow:0 0 16px rgba(16,185,129,.55)}
+.odds-chip[data-odds="1.88"].on .odds-mult,.odds-chip[data-odds="1.88"].on .odds-pct{color:#fff}
+.odds-chip[data-odds="6"].on{border-color:#06B6D4;background:rgba(6,182,212,.9);box-shadow:0 0 16px rgba(6,182,212,.55)}
+.odds-chip[data-odds="6"].on .odds-mult,.odds-chip[data-odds="6"].on .odds-pct{color:#fff}
+.odds-chip[data-odds="11"].on{border-color:#A855F7;background:rgba(168,85,247,.9);box-shadow:0 0 18px rgba(168,85,247,.55)}
+.odds-chip[data-odds="11"].on .odds-mult,.odds-chip[data-odds="11"].on .odds-pct{color:#fff}
+.odds-chip[data-odds="51"].on{border-color:#F59E0B;background:rgba(245,158,11,.9);box-shadow:0 0 18px rgba(245,158,11,.55)}
+.odds-chip[data-odds="51"].on .odds-mult,.odds-chip[data-odds="51"].on .odds-pct{color:#fff}
 .timer-panel{display:none!important}
 .trade-lock{display:none!important}
 .btn-trade.locked{filter:grayscale(.4);opacity:.45;animation:none;box-shadow:none}
@@ -1003,7 +1015,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .stake-line{gap:4px;margin:2px 0;padding:0}
   .stake-line input,.stake-field input{min-height:32px;padding:4px 8px;font-size:.95rem}
   .stake-min{font-size:11px;margin:2px 0!important;padding:0!important}
-  .odds-label{font-size:10px;margin:2px 0;line-height:1.15;padding:0}
+  .odds-label,.payout-badge{font-size:10px;margin:6px auto 4px;line-height:1.15;padding:3px 8px}
   .odds-row{gap:4px;margin:2px 0 0}
   .odds-chip{padding:4px 2px;border-radius:8px}
   .odds-chip .odds-mult{font-size:.62rem}
@@ -1040,7 +1052,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   html.is-android [data-i18n="tradeHintAndroid"]{
     display:none!important;visibility:hidden!important;height:0!important;max-height:0!important;
     margin:0!important;padding:0!important;overflow:hidden!important;font-size:0!important}
-  html.is-android .odds-label{font-size:10px!important;margin:2px 0!important;line-height:1.15!important;padding:0!important}
+  html.is-android .odds-label,html.is-android .payout-badge{font-size:10px!important;margin:6px auto 4px!important;line-height:1.15!important;padding:3px 8px!important}
   html.is-android .odds-row{gap:3px!important;margin:0!important}
   html.is-android .odds-chip{padding:3px 1px!important}
   html.is-android .odds-chip .odds-mult{font-size:.62rem!important}
@@ -1124,11 +1136,12 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-bal-plus{width:26px;height:26px;min-width:26px;font-size:.85rem}
 .fs-trade-top-label{display:none!important}
 .fs-trade-close{
-  position:relative;top:auto;right:auto;z-index:7;width:40px;height:40px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.6);color:#fff;
-  font-size:1.05rem;font-weight:800;cursor:pointer;display:grid;place-items:center;flex-shrink:0;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:0}
-.fs-trade-close:hover,.fs-trade-close:focus-visible{background:rgba(0,0,0,.78);border-color:rgba(255,255,255,.35)}
+  position:relative;top:auto;right:auto;z-index:7;width:auto;min-width:0;height:32px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#F8E7B8;
+  font-size:.68rem;font-weight:800;letter-spacing:.04em;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  padding:0 10px;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:8px;margin-right:12px;
+  white-space:nowrap}
+.fs-trade-close:hover,.fs-trade-close:focus-visible{background:rgba(255,255,255,.14);border-color:rgba(248,231,184,.45)}
 .fs-trade-slot{flex:1 1 auto;min-height:0;min-width:0;width:100%;height:auto;display:flex;flex-direction:column;overflow:hidden}
 .fs-trade-overlay .trade-wrap{
   display:flex!important;flex-direction:column!important;width:100%!important;height:100%!important;
@@ -1663,7 +1676,11 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
   font-variant-numeric:tabular-nums}
 html.is-android .drawer-nav{gap:0;padding:0 6px 4px;overflow:visible;max-height:none;flex:0 0 auto}
-html.is-android .drawer-item{min-height:26px;padding:3px 8px}
+html.is-android .drawer-item{min-height:44px;padding:8px;font-size:.78rem}
+html.is-android #btnWithdraw{background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(180,83,9,.1));
+  border:1px solid rgba(245,158,11,.45);border-radius:10px;box-shadow:0 0 12px rgba(245,158,11,.18)}
+html.is-android .auth-crypto-in-form{display:flex;margin-top:12px}
+html.is-android .auth-card:has(#formRegister:not(.hidden)) + .auth-crypto-after-card{display:none}
 html.is-android .drawer-section-title{display:none}
 html.is-android .drawer-item.drawer-logout{position:relative;bottom:auto;margin-bottom:2px;padding-bottom:4px}
 html.is-android #drawerProfile{
@@ -1727,8 +1744,31 @@ html.fs-trade .fs-bal-plus,html.is-fullscreen .fs-bal-plus{display:none!importan
   .wallet-card-v{font-size:1.05rem;margin:0 0 4px}
   .wallet-xpress{min-height:26px;margin:0 0 4px;padding:4px 8px;font-size:.58rem}
   .wallet-tab{min-height:26px;font-size:.48rem}
-  .drawer-item{min-height:28px;padding:4px 8px;font-size:.7rem}
+  .drawer-item{min-height:44px;padding:8px;font-size:.78rem}
   .drawer-nav{flex:0 0 auto;overflow:visible;padding-bottom:2px}
-  .drawer-legal{margin:2px 12px 6px;font-size:.48rem}
+  .drawer-legal{margin:2px 12px 4px;font-size:.44rem}
   .drawer{overflow:hidden}
+  #btnWithdraw{background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(180,83,9,.1));
+    border:1px solid rgba(245,158,11,.45);border-radius:10px;box-shadow:0 0 12px rgba(245,158,11,.18)}
+  .auth-crypto-in-form{display:flex;margin-top:12px}
+  .auth-card:has(#formRegister:not(.hidden)) + .auth-crypto-after-card{display:none}
 }
+
+.goldtrend-ico{display:inline-flex;align-items:center;margin-right:3px;vertical-align:-2px}
+.goldtrend-ico svg{display:block}
+.wd-group-hide{display:none!important}
+.wd-bal{border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:12px 10px;text-align:center;
+  background:rgba(15,23,42,.65);margin-bottom:10px}
+.wd-bal-secure{font-size:.58rem;font-weight:800;letter-spacing:.08em;color:#F8E7B8;margin-bottom:6px}
+.wd-bal-amt{font-size:1.55rem;font-weight:900;color:#F5C518;text-shadow:0 0 16px rgba(245,158,11,.28)}
+.wd-bal-caption{display:none}
+#wdCardFields.hidden,#wdBankFields.hidden{display:none}
+#wdBankCountry,#wdCardNumber,#wdCardName,#wdBankName,#wdIban,#wdBankHolder{width:100%;margin-bottom:8px;min-height:40px;
+  border-radius:8px;border:1px solid var(--line);background:rgba(10,15,29,.8);color:var(--text);padding:8px}
+.wd-card-brands{display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
+.wd-visa{font-size:.48rem;font-weight:900;letter-spacing:.04em;color:#fff;background:#1A1F71;border-radius:3px;padding:2px 4px}
+.wd-mc{width:14px;height:10px;border-radius:999px;background:radial-gradient(circle at 30% 50%,#EB001B 0 46%,transparent 47%),radial-gradient(circle at 70% 50%,#F79E1B 0 46%,transparent 47%)}
+.auth-crypto-marquee{width:min(280px,92%);overflow:hidden;mask-image:linear-gradient(90deg,transparent, #000 12%, #000 88%, transparent)}
+.auth-crypto-track{display:flex;align-items:center;gap:12px;width:max-content;animation:authCoinSlide 14s linear infinite}
+@keyframes authCoinSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.auth-crypto-in-form{display:none;flex-direction:column;align-items:center;gap:8px}

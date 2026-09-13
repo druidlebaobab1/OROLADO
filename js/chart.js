@@ -335,15 +335,15 @@
 
   function drawConstellation(pad, w, h) {
     var marks = [
-      { s: '₿', c: 'rgba(247,147,26,0.14)' },
-      { s: 'Ξ', c: 'rgba(98,126,234,0.13)' },
-      { s: '◎', c: 'rgba(153,69,255,0.13)' },
-      { s: '₮', c: 'rgba(38,161,123,0.13)' },
-      { s: 'T', c: 'rgba(239,0,39,0.12)' }
+      { s: 'BTC', c: 'rgba(247,147,26,0.12)' },
+      { s: 'ETH', c: 'rgba(98,126,234,0.12)' },
+      { s: 'SOL', c: 'rgba(153,69,255,0.12)' },
+      { s: 'USDT', c: 'rgba(38,161,123,0.12)' },
+      { s: 'TRX', c: 'rgba(239,0,39,0.12)' }
     ];
     var i;
     ctx.save();
-    ctx.font = '700 26px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.font = '700 22px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     var t = Date.now() / 28000;
     for (i = 0; i < marks.length; i++) {
@@ -904,18 +904,23 @@
     if (!exp || Date.now() >= exp) return;
     var entry = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
     if (!isFinite(entry)) return;
-    var ey = map && typeof map.toY === 'function'
-      ? map.toY(entry)
-      : priceToY(entry, pad, plotH, minP, maxP);
-    if (!isFinite(ey)) {
-      ey = priceToY(entry, pad, plotH, minP, maxP);
+    var ey;
+    if (strikeLock && strikeLock.assetId === activeAsset && strikeLock.entry === entry && isFinite(strikeLock.ey)) {
+      ey = strikeLock.ey;
+    } else {
+      ey = map && typeof map.toY === 'function'
+        ? map.toY(entry)
+        : priceToY(entry, pad, plotH, minP, maxP);
+      if (!isFinite(ey)) ey = priceToY(entry, pad, plotH, minP, maxP);
+      if (strikeLock && strikeLock.assetId === activeAsset && strikeLock.entry === entry && isFinite(ey)) {
+        strikeLock.ey = ey;
+      }
     }
     if (!isFinite(ey)) return;
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
-    var x0 = pad ? pad.l : 8;
-    var x1 = pad ? (cssW - pad.r) : (cssW - 62);
-    if (x1 <= x0 + 8) x1 = Math.max(x0 + 40, cssW - 8);
+    var x0 = 2;
+    var x1 = Math.max(x0 + 40, cssW - 2);
     if (!isFinite(ey)) return;
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
@@ -1088,7 +1093,8 @@
             assetId: activeAsset,
             entry: lockEntry,
             min: Math.min(yMin, lockEntry - lockPad),
-            max: Math.max(yMax, lockEntry + lockPad)
+            max: Math.max(yMax, lockEntry + lockPad),
+            ey: null
           };
         }
         viewMin = strikeLock.min;
@@ -1145,11 +1151,11 @@
     drawConstellation(pad, w, h);
     ctx.save();
     ctx.globalAlpha = 0.10;
-    ctx.font = '800 42px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.font = '800 62px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     var wx = cssW / 2;
     var wy = pad.t + h / 2;
-    var grad = ctx.createLinearGradient(wx - 90, wy, wx + 90, wy);
+    var grad = ctx.createLinearGradient(wx - 140, wy, wx + 140, wy);
     grad.addColorStop(0, 'rgba(180,120,32,0.55)');
     grad.addColorStop(0.45, 'rgba(245,197,24,0.95)');
     grad.addColorStop(1, 'rgba(180,120,32,0.55)');
@@ -1169,6 +1175,16 @@
     } else {
       // STABLE CORE (et lignes legacy) : inchangé.
       map = drawLine(pad, w, h, lineData, minP, maxP);
+    }
+    if (!map) {
+      map = {
+        toY: function (p) { return plotToY(p, pad, h, minP, maxP); },
+        lastX: pad.l + w,
+        lastY: plotToY(market.price, pad, h, minP, maxP)
+      };
+    }
+    if (strikeLock && strikeLock.entry != null && (strikeLock.ey == null || !isFinite(strikeLock.ey))) {
+      strikeLock.ey = plotToY(strikeLock.entry, pad, h, minP, maxP);
     }
 
     if (map) {
@@ -1382,6 +1398,17 @@
       steer = null;
       strikeLock = null;
       lastDrawnClose = 0;
+      lastMap = null;
+      if (ctx && cssW >= 8 && cssH >= 8) {
+        try {
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.fillStyle = '#0B0E14';
+          ctx.fillRect(0, 0, cssW, cssH);
+        } catch (eClr) { /* ignore */ }
+      }
+      if (octx && cssW >= 8 && cssH >= 8) {
+        try { octx.clearRect(0, 0, cssW, cssH); } catch (eO) { /* ignore */ }
+      }
       if (D6.Engine && D6.Engine.getMarket) D6.Engine.getMarket(id);
       if (D6.Engine && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) {

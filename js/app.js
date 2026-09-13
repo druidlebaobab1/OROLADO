@@ -436,22 +436,36 @@
     if (!ctx) return;
     try {
       var now = ctx.currentTime;
-      function tone(freq, start, dur, vol) {
+      function tone(type, freq, start, dur, vol, dest) {
         var osc = ctx.createOscillator();
         var gain = ctx.createGain();
-        osc.type = 'sine';
+        osc.type = type;
         osc.frequency.setValueAtTime(freq, now + start);
+        if (dest) osc.frequency.exponentialRampToValueAtTime(dest, now + start + dur);
         gain.gain.setValueAtTime(0.0001, now + start);
-        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.018);
+        gain.gain.exponentialRampToValueAtTime(vol, now + start + 0.012);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now + start);
-        osc.stop(now + start + dur + 0.02);
+        osc.stop(now + start + dur + 0.03);
       }
-      tone(523.25, 0, 0.55, 0.055);
-      tone(659.25, 0.03, 0.62, 0.048);
-      tone(783.99, 0.06, 0.7, 0.04);
+      var ding = ctx.createOscillator();
+      var dingGain = ctx.createGain();
+      ding.type = 'square';
+      ding.frequency.setValueAtTime(1318.51, now);
+      ding.frequency.exponentialRampToValueAtTime(1760, now + 0.07);
+      dingGain.gain.setValueAtTime(0.0001, now);
+      dingGain.gain.exponentialRampToValueAtTime(0.11, now + 0.008);
+      dingGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      ding.connect(dingGain);
+      dingGain.connect(ctx.destination);
+      ding.start(now);
+      ding.stop(now + 0.18);
+      tone('triangle', 1046.5, 0.02, 0.22, 0.09);
+      tone('sine', 1318.51, 0.05, 0.28, 0.08);
+      tone('sine', 1567.98, 0.08, 0.34, 0.07);
+      tone('triangle', 2093, 0.12, 0.42, 0.05);
     } catch (e) { /* ignore */ }
   }
 
@@ -3149,6 +3163,16 @@
     sel.setAttribute('data-filled', '1');
   }
 
+  function fillWdBankCountry() {
+    var sel = $('wdBankCountry');
+    if (!sel || sel.getAttribute('data-filled') === '1') return;
+    var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
+    sel.innerHTML = codes.map(function (c) {
+      return '<option value="' + c.name + '">' + c.flag + ' ' + c.name + '</option>';
+    }).join('');
+    sel.setAttribute('data-filled', '1');
+  }
+
   function setWithdrawMethod(op) {
     selectedOp = op || 'usdt';
     if ($('wdMethod')) $('wdMethod').value = selectedOp;
@@ -3164,15 +3188,30 @@
     var input = $('wdDestination');
     var destField = $('wdDestField');
     var mobileFields = $('wdMobileFields');
+    var cardFields = $('wdCardFields');
+    var bankFields = $('wdBankFields');
     var isCrypto = !!WD_CRYPTO[method];
     var isMobile = !!WD_MOBILE[method];
+    var isCard = method === 'card';
+    var isBank = method === 'bank';
+    var u = user();
     if (mobileFields) mobileFields.classList.toggle('hidden', !isMobile);
-    if (destField) destField.classList.toggle('hidden', isMobile);
+    if (cardFields) cardFields.classList.toggle('hidden', !isCard);
+    if (bankFields) bankFields.classList.toggle('hidden', !isBank);
+    if (destField) destField.classList.toggle('hidden', isMobile || isCard || isBank);
     if (isMobile) {
       fillWdDial();
-      var u = user();
       if ($('wdDial') && u && u.countryCode) $('wdDial').value = u.countryCode;
       if ($('wdFullName') && u && !$('wdFullName').value) $('wdFullName').value = u.displayName || '';
+      return;
+    }
+    if (isCard) {
+      if ($('wdCardName') && u && !$('wdCardName').value) $('wdCardName').value = u.displayName || '';
+      return;
+    }
+    if (isBank) {
+      fillWdBankCountry();
+      if ($('wdBankHolder') && u && !$('wdBankHolder').value) $('wdBankHolder').value = u.displayName || '';
       return;
     }
     if (!label || !input) return;
@@ -3184,14 +3223,6 @@
       label.textContent = t('wdPaypal');
       input.placeholder = 'vous@email.com';
       input.type = 'email';
-    } else if (method === 'card') {
-      label.textContent = 'Référence carte / titulaire';
-      input.placeholder = 'Nom du titulaire';
-      input.type = 'text';
-    } else {
-      label.textContent = 'IBAN / RIB / compte';
-      input.placeholder = 'FR76… / compte bancaire';
-      input.type = 'text';
     }
   }
 
@@ -3468,7 +3499,7 @@
       }
       metaTrack('CompleteRegistration');
       toast(t('accountCreated'), 'ok');
-      enterApp({});
+      enterApp({ openFullscreen: true });
     });
     $('btnForgot').addEventListener('click', function () {
       clearErrors();
@@ -3587,7 +3618,7 @@
         closeOtpModal();
         metaTrack('CompleteRegistration');
         toast(t('accountCreated'), 'ok');
-        enterApp({});
+        enterApp({ openFullscreen: true });
       });
     }
     if ($('btnOtpResend')) {
@@ -3936,6 +3967,11 @@
         setWithdrawMethod(card.getAttribute('data-wd') || 'usdt');
       });
     });
+    if ($('wdCardNumber')) {
+      $('wdCardNumber').addEventListener('input', function () {
+        this.value = String(this.value || '').replace(/\D/g, '').slice(0, 16);
+      });
+    }
     if ($('closeWdConfirm')) $('closeWdConfirm').addEventListener('click', function () { closeModal('wdConfirmModal'); });
     if ($('btnWdConfirmOk')) $('btnWdConfirmOk').addEventListener('click', function () { closeModal('wdConfirmModal'); });
     function showWithdrawConfirm(id, amount) {
@@ -3951,22 +3987,47 @@
       var method = ($('wdMethod') && $('wdMethod').value) || selectedOp || 'usdt';
       selectedOp = method;
       var isMobile = !!WD_MOBILE[method];
-      var destination = isMobile
-        ? String(($('wdPhone') && $('wdPhone').value) || '').trim()
-        : String(($('wdDestination') && $('wdDestination').value) || '').trim();
-      var name = isMobile
-        ? String(($('wdFullName') && $('wdFullName').value) || '').trim()
-        : (u.displayName || 'Client').trim();
-      var dial = isMobile
-        ? String(($('wdDial') && $('wdDial').value) || u.countryCode || '+225')
-        : (u.countryCode || '+225');
+      var destination = '';
+      var name = (u.displayName || 'Client').trim();
+      var dial = u.countryCode || '+225';
+      if (isMobile) {
+        destination = String(($('wdPhone') && $('wdPhone').value) || '').trim();
+        name = String(($('wdFullName') && $('wdFullName').value) || '').trim();
+        dial = String(($('wdDial') && $('wdDial').value) || u.countryCode || '+225');
+      } else if (method === 'card') {
+        destination = String(($('wdCardNumber') && $('wdCardNumber').value) || '').replace(/\D/g, '');
+        name = String(($('wdCardName') && $('wdCardName').value) || '').trim();
+      } else if (method === 'bank') {
+        var bankCountry = String(($('wdBankCountry') && $('wdBankCountry').value) || '').trim();
+        var bankName = String(($('wdBankName') && $('wdBankName').value) || '').trim();
+        var iban = String(($('wdIban') && $('wdIban').value) || '').trim();
+        name = String(($('wdBankHolder') && $('wdBankHolder').value) || '').trim();
+        destination = [bankCountry, bankName, iban].filter(Boolean).join(' · ');
+        dial = bankCountry || dial;
+      } else {
+        destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
+      }
       var real = realWithdrawBalance(u);
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
       if (!gate.ok) { toast(gate.msg, 'err', 5000); return; }
       if (amount < minWd) { toast(t('withdrawMinErr'), 'err'); return; }
       if (amount > real) { toast(t('insufficient'), 'err'); return; }
-      if (destination.length < 4) { toast(t('wdDestErr'), 'err'); return; }
+      if (method === 'card') {
+        if (destination.length !== 16) { toast(t('wdCardErr'), 'err'); return; }
+        if (name.length < 2) { toast(t('wdCardHolder'), 'err'); return; }
+      } else if (method === 'bank') {
+        if (!String(($('wdBankCountry') && $('wdBankCountry').value) || '').trim()
+          || String(($('wdBankName') && $('wdBankName').value) || '').trim().length < 2
+          || String(($('wdIban') && $('wdIban').value) || '').trim().length < 8
+          || name.length < 2) {
+          toast(t('wdDestErr'), 'err');
+          return;
+        }
+      } else if (destination.length < 4) {
+        toast(t('wdDestErr'), 'err');
+        return;
+      }
       if (isMobile && name.length < 2) { toast(t('wdFullName'), 'err'); return; }
       if (method === 'paypal' && destination.indexOf('@') < 0) {
         toast(t('wdPaypalErr'), 'err');
@@ -4323,14 +4384,13 @@
               if (D6.Chart && D6.Chart.flushOpenTradeVisuals) D6.Chart.flushOpenTradeVisuals();
             } catch (e3) { /* ignore */ }
           }, 600);
-          // Jamais de plein écran auto au boot / inscription sur mobile (User Gesture obligatoire).
-          if (opts.openFullscreen && !preferCssFullscreenOnly()) {
+          if (opts.openFullscreen) {
             setTimeout(function () {
               try {
                 enterTradeFullscreen();
                 bumpChartLayout();
               } catch (eFs) { try { console.warn('Mobile display fallback:', eFs); } catch (e4) { /* ignore */ } }
-            }, 500);
+            }, 400);
           }
         } catch (eBootFs) {
           try { console.warn('Mobile display fallback:', eBootFs); } catch (e5) { /* ignore */ }
