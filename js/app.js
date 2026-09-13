@@ -82,10 +82,12 @@
     }
   }
 
-  function metaTrack(eventName, params) {
+  function metaTrack(eventName, params, opts) {
     try {
       if (typeof window.fbq !== 'function') return;
-      if (params) window.fbq('track', eventName, params);
+      var extra = (opts && opts.eventID) ? { eventID: String(opts.eventID) } : null;
+      if (params && extra) window.fbq('track', eventName, params, extra);
+      else if (params) window.fbq('track', eventName, params);
       else window.fbq('track', eventName);
     } catch (e) { /* pixel ne doit jamais bloquer le trade */ }
   }
@@ -1963,7 +1965,6 @@
     showDepositStep('select');
     closeDrawer();
     openModal('depositModal');
-    metaTrack('InitiateCheckout');
   }
 
   var depositing = false;
@@ -2260,6 +2261,7 @@
       setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
     }
     updateBalance(true);
+    metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' }, { eventID: String(remote.ref || remote.orderId || remote.trackId || '') });
     if (typeof playWinChime === 'function') playWinChime();
     return true;
   }
@@ -2470,7 +2472,7 @@
     }
     updateBalance(true);
     toast(t('depositCredited').replace('{amt}', D6.fmtFCFA(remote.amount)), 'ok');
-    metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' });
+    metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' }, { eventID: String(remote.ref || remote.tx_ref || '') });
     playWinChime();
     if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtMoney(remote.amount);
     closeModal('depositModal');
@@ -2951,6 +2953,7 @@
 
   function onConfirmDepositClick() {
     if (depositPayMethod === 'usdt') {
+      metaTrack('InitiateCheckout', { value: oxaMinUsd(), currency: 'USD' });
       showCryptoInvoice();
       return;
     }
@@ -2971,6 +2974,7 @@
       toast(t('depositMinErr'), 'err');
       return;
     }
+    metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
     var btn = $('btnConfirmDeposit');
     depositing = true;
     if (btn) {

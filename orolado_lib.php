@@ -126,6 +126,93 @@ function orolado_max_deposit_usd(): float {
   return 100000.0;
 }
 
+function orolado_meta_pixel_id(): string {
+  $id = supabase_env('META_PIXEL_ID');
+  return $id !== '' ? $id : '935068479097391';
+}
+
+function orolado_meta_access_token(): string {
+  $tok = supabase_env('META_ACCESS_TOKEN');
+  if ($tok === '') $tok = supabase_env('META_CAPI_TOKEN');
+  return $tok;
+}
+
+function orolado_request_ip(): string {
+  $xff = (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '');
+  if ($xff !== '') {
+    $first = trim(explode(',', $xff)[0]);
+    if (filter_var($first, FILTER_VALIDATE_IP)) return $first;
+  }
+  $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+  return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
+}
+
+function orolado_request_ua(): string {
+  return substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 512);
+}
+
+/** CAPI Purchase — jamais lever, timeout court, n’altère pas le crédit. */
+function orolado_meta_capi_purchase(array $opts): void {
+  try {
+    $token = orolado_meta_access_token();
+    $pixel = orolado_meta_pixel_id();
+    if ($token === '' || $pixel === '') return;
+    $value = orolado_money($opts['value'] ?? 0);
+    if ($value <= 0) return;
+    $userData = [];
+    $email = strtolower(trim((string) ($opts['email'] ?? '')));
+    if ($email !== '' && str_contains($email, '@')) {
+      $userData['em'] = [hash('sha256', $email)];
+    }
+    $ip = trim((string) ($opts['ip'] ?? ''));
+    if ($ip !== '') $userData['client_ip_address'] = explode(',', $ip)[0];
+    $ua = trim((string) ($opts['ua'] ?? ''));
+    if ($ua !== '') $userData['client_user_agent'] = $ua;
+    $event = [
+      'event_name' => 'Purchase',
+      'event_time' => time(),
+      'action_source' => 'website',
+      'user_data' => $userData,
+      'custom_data' => ['value' => $value, 'currency' => 'USD'],
+    ];
+    $eid = trim((string) ($opts['event_id'] ?? ''));
+    if ($eid !== '') $event['event_id'] = $eid;
+    $url = 'https://graph.facebook.com/v25.0/' . rawurlencode($pixel) . '/events?access_token=' . rawurlencode($token);
+    $ch = curl_init($url);
+    if ($ch === false) return;
+    curl_setopt_array($ch, [
+      CURLOPT_POST => true,
+      CURLOPT_POSTFIELDS => json_encode(['data' => [$event]], JSON_UNESCAPED_UNICODE),
+      CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT => 2,
+      CURLOPT_CONNECTTIMEOUT => 1,
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
+  } catch (Throwable $e) {
+    /* le tracking ne doit jamais casser un dépôt */
+  }
+}
+
+function orolado_meta_capi_purchase_later(array $opts): void {
+  if (!isset($GLOBALS['__oro_meta_capi']) || !is_array($GLOBALS['__oro_meta_capi'])) {
+    $GLOBALS['__oro_meta_capi'] = [];
+  }
+  $GLOBALS['__oro_meta_capi'][] = $opts;
+  static $reg = false;
+  if ($reg) return;
+  $reg = true;
+  register_shutdown_function(static function () {
+    if (function_exists('fastcgi_finish_request')) {
+      try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ }
+    }
+    foreach (($GLOBALS['__oro_meta_capi'] ?? []) as $row) {
+      if (is_array($row)) orolado_meta_capi_purchase($row);
+    }
+  });
+}
+
 function supabase_env(string $key): string {
   orolado_load_env();
   $v = getenv($key);
@@ -1132,6 +1219,16 @@ function credit_paid_deposit(array $hit): array {
   flock($fp, LOCK_UN);
   fclose($fp);
   supabase_complete_deposit((string) ($dep['id'] ?? $refHit), $amount, (string) $uid);
+  $op = strtolower((string) ($dep['operator'] ?? $txOp));
+  if (in_array($op, ['flutterwave', 'flw', 'oxapay', 'usdt'], true) && $amount > 0) {
+    orolado_meta_capi_purchase_later([
+      'value' => $amount,
+      'email' => (string) ($db['users'][$uid]['email'] ?? $dep['customerEmail'] ?? ''),
+      'event_id' => $refId !== '' ? $refId : (string) ($dep['id'] ?? ''),
+      'ip' => (string) ($dep['clientIp'] ?? ''),
+      'ua' => (string) ($dep['userAgent'] ?? ''),
+    ]);
+  }
   return ['ok' => true, 'amount' => $amount, 'userId' => $uid];
 }
 
@@ -2968,6 +3065,8 @@ function orolado_oxapay_invoice(array $req): array {
     'currency' => 'USD',
     'trackId' => $trackId,
     'address' => $addr,
+    'clientIp' => orolado_request_ip(),
+    'userAgent' => orolado_request_ua(),
     'at' => date('c')
   ];
   save_db($file, $db);
@@ -3390,6 +3489,8 @@ function orolado_flutterwave_checkout(array $req): array {
     'customerName' => $cust['name'],
     'customerPhone' => $cust['phone'],
     'currency' => 'USD',
+    'clientIp' => orolado_request_ip(),
+    'userAgent' => orolado_request_ua(),
     'at' => date('c'),
   ];
   save_db($file, $db);
