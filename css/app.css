@@ -286,8 +286,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   padding:4px 8px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .auth-back{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:5;border:1px solid var(--line);
   background:rgba(21,30,48,.85);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-weight:800;font-size:.72rem;cursor:pointer}
-.bal-plus{width:28px;height:28px;border-radius:8px;border:1px solid var(--gold);background:rgba(245,197,24,.12);color:var(--gold);
-  font:inherit;font-weight:900;font-size:1rem;line-height:1;cursor:pointer;flex-shrink:0}
+.bal-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
+  background:linear-gradient(180deg,#F59E0B,#D97706);color:#1A1204;
+  font:inherit;font-weight:900;font-size:16px;line-height:1;padding:0;cursor:pointer;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:0 0 10px rgba(245,158,11,.35)}
 .bal-plus.hidden{display:none}
 .balance-card{display:flex;align-items:center;justify-content:flex-start;gap:8px}
 .bal-crypto-frieze{flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:10px;pointer-events:none}
@@ -995,7 +998,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .balance-card{padding:3px 8px!important;border-radius:10px}
   .balance-card .bal{font-size:1.02rem}
   .btn-deposit{padding:0 8px;font-size:.62rem;min-height:28px;border-radius:8px}
-  .bal-plus{width:24px;height:24px;font-size:.85rem;border-radius:7px}
+  .bal-plus{width:26px;height:26px;min-width:26px;font-size:16px;border-radius:50%}
   .trade-wrap{padding:2px 6px 0;gap:2px;padding-bottom:0;overflow:hidden}
   .asset-bar{gap:6px;padding-bottom:2px}
   .asset-chip{padding:4px 8px;border-radius:8px}
@@ -1157,12 +1160,13 @@ html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="real"]{
 .fs-bal-plus{width:26px;height:26px;min-width:26px;font-size:.85rem}
 .fs-trade-top-label{display:none!important}
 .fs-trade-close{
-  position:relative;top:auto;right:auto;z-index:7;width:32px;min-width:32px;height:32px;border-radius:8px;
-  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:#F8E7B8;
+  position:relative;top:auto;right:auto;z-index:7;width:38px;min-width:38px;height:38px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:#F8E7B8;
   cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:12px;margin-right:10px;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.fs-trade-close .fs-exit-ico{width:16px;height:16px;display:block}
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 1px 8px rgba(0,0,0,.35)}
+.fs-trade-close .fs-exit-ico{width:20px;height:20px;display:block;stroke-width:2}
 .fs-trade-close:hover,.fs-trade-close:focus-visible{background:rgba(255,255,255,.14);border-color:rgba(248,231,184,.45)}
 .fs-trade-slot{flex:1 1 auto;min-height:0;min-width:0;width:100%;height:auto;display:flex;flex-direction:column;overflow:hidden}
 .fs-trade-overlay .trade-wrap{
@@ -1732,7 +1736,7 @@ html.fs-trade .fs-bal-plus,html.is-fullscreen .fs-bal-plus{display:none!importan
   html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{gap:6px;padding-left:8px;padding-right:6px}
   html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{font-size:16px!important;font-weight:600!important}
   .fs-mid-plus{width:22px;height:22px;min-width:22px;font-size:14px}
-  .fs-trade-close{margin-right:10px;margin-left:10px;width:32px;height:32px;min-width:32px}
+  .fs-trade-close{margin-right:10px;margin-left:10px;width:38px;height:38px;min-width:38px}
 }
 html.fs-guest #btnFsMidPlus,html.fs-guest #fsBtnReal{display:none!important}
 html.fs-guest .fs-mode-switch{background:transparent;border:none;padding:0;gap:0}
