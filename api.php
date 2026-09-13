@@ -415,6 +415,128 @@ if ($action === 'registerVerify') {
   exit;
 }
 
+if ($action === 'passwordOtpStart') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide']);
+    exit;
+  }
+  if (!isset($db['pendingPasswordOtps']) || !is_array($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
+  $prev = $db['pendingPasswordOtps'][$email] ?? null;
+  $now = time();
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < 60) {
+    $wait = 60 - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Patientez ' . $wait . ' s', 'retryIn' => $wait]);
+    exit;
+  }
+  $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $db['pendingPasswordOtps'][$email] = [
+    'userId' => (string) ($me['id'] ?? ''),
+    'codeHash' => orolado_otp_hash($email, $code),
+    'expiresAt' => $now + 600,
+    'lastSentAt' => $now,
+    'attempts' => 0,
+    'verified' => false,
+    'otpToken' => ''
+  ];
+  $sent = brevo_send_otp($email, $code);
+  if (empty($sent['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
+    exit;
+  }
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => 600, 'resendIn' => 60]);
+  exit;
+}
+
+if ($action === 'passwordOtpVerify') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  $code = preg_replace('/\D/', '', (string) ($req['code'] ?? ''));
+  $row = $db['pendingPasswordOtps'][$email] ?? null;
+  if (!is_array($row)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Aucun code en attente']);
+    exit;
+  }
+  $now = time();
+  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
+    exit;
+  }
+  $attempts = (int) ($row['attempts'] ?? 0);
+  if ($attempts >= 8) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives']);
+    exit;
+  }
+  if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
+    $row['attempts'] = $attempts + 1;
+    $db['pendingPasswordOtps'][$email] = $row;
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code incorrect']);
+    exit;
+  }
+  $otpToken = bin2hex(random_bytes(16));
+  $row['verified'] = true;
+  $row['otpToken'] = hash('sha256', $otpToken);
+  $row['verifiedUntil'] = $now + 600;
+  $db['pendingPasswordOtps'][$email] = $row;
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'otpToken' => $otpToken]);
+  exit;
+}
+
+if ($action === 'passwordChange') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  $otpToken = trim((string) ($req['otpToken'] ?? ''));
+  $newPassword = (string) ($req['newPassword'] ?? '');
+  if (strlen($newPassword) < 6) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Nouveau mot de passe trop court']);
+    exit;
+  }
+  $row = $db['pendingPasswordOtps'][$email] ?? null;
+  $now = time();
+  if (!is_array($row) || empty($row['verified']) || empty($row['otpToken'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Validez d’abord le code e-mail']);
+    exit;
+  }
+  if (!empty($row['verifiedUntil']) && (int) $row['verifiedUntil'] < $now) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
+    exit;
+  }
+  if (!hash_equals((string) $row['otpToken'], hash('sha256', $otpToken))) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Jeton OTP invalide']);
+    exit;
+  }
+  $uid = (string) ($me['id'] ?? '');
+  if ($uid !== '' && isset($db['users'][$uid])) {
+    $db['users'][$uid]['passwordHash'] = orolado_hash_password($newPassword);
+  }
+  unset($db['pendingPasswordOtps'][$email]);
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true]);
+  exit;
+}
+
 if ($action === 'register') {
   $user = $req['user'] ?? null;
   $vault = $req['vault'] ?? ['demo' => 1000000, 'real' => 0];

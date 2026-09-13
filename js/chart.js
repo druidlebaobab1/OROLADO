@@ -18,7 +18,8 @@
   var onFrame = null;
   var ZOOM_STEPS = [30, 45, 60, 90, 120, 180];
   var zoomIdx = 2;
-  var inds = { ma: true, bb: false };
+  var inds = { ma: false, bb: false };
+  var steer = null;
   var tmpCloses = [];
   var lastPad = null;
   var lastPlotH = 0;
@@ -274,6 +275,60 @@
     flushOpenTradeVisualQueue();
     drawNow();
     requestAnimationFrame(function () { drawNow(); });
+  }
+
+  function steerClose(price, ms) {
+    var p = Number(price);
+    if (!isFinite(p) || p <= 0) return;
+    var from = isFinite(lastDrawnClose) && lastDrawnClose > 0 ? lastDrawnClose : p;
+    steer = {
+      price: p,
+      from: from,
+      start: Date.now(),
+      end: Date.now() + Math.max(80, Number(ms) || 700),
+      assetId: activeAsset
+    };
+  }
+
+  function steeredPrice(raw) {
+    if (!steer || steer.assetId !== activeAsset || !isFinite(steer.price)) return raw;
+    var now = Date.now();
+    if (now >= steer.end) return steer.price;
+    var t = (now - steer.start) / Math.max(1, steer.end - steer.start);
+    t = Math.max(0, Math.min(1, t));
+    t = t * t * (3 - 2 * t);
+    var from = isFinite(steer.from) ? steer.from : raw;
+    return from + (steer.price - from) * t;
+  }
+
+  function applySteerToMarket(market) {
+    if (!market || !steer || steer.assetId !== activeAsset) return;
+    var p = steeredPrice(market.price);
+    if (!isFinite(p)) return;
+    market.price = p;
+    if (market.candle) {
+      market.candle.c = p;
+      if (p > market.candle.h) market.candle.h = p;
+      if (p < market.candle.l) market.candle.l = p;
+    }
+    lastDrawnClose = p;
+  }
+
+  function drawConstellation(pad, w, h) {
+    var marks = ['₿', 'Ξ', '◎', '₮', 'T'];
+    var i;
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle = 'rgba(232,195,106,0.95)';
+    ctx.font = '600 22px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    var t = Date.now() / 14000;
+    for (i = 0; i < marks.length; i++) {
+      var x = pad.l + w * (0.14 + (i * 0.18) % 0.72);
+      var y = pad.t + h * (0.22 + ((i * 0.31 + Math.sin(t + i) * 0.04) % 0.58));
+      ctx.fillText(marks[i], x, y);
+    }
+    ctx.restore();
   }
 
   function visibleCandles(market) {
@@ -937,6 +992,7 @@
     var asset = D6.CONFIG.ASSETS[activeAsset];
     var theme = plotTheme(asset);
     var market = D6.Engine.getMarket(activeAsset);
+    applySteerToMarket(market);
     var allTrades = collectOpenTradeVisuals();
     var primary = allTrades[0] || null;
     allTrades.forEach(function (ot) {
@@ -1061,12 +1117,19 @@
 
     drawGrid(pad, w, h, minP, maxP, theme);
 
+    drawConstellation(pad, w, h);
     ctx.save();
-    ctx.globalAlpha = 0.04;
-    ctx.fillStyle = theme.watermark;
-    ctx.font = '700 32px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.globalAlpha = 0.07;
+    ctx.font = '700 34px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('OROLADO', cssW / 2, pad.t + h / 2);
+    var wx = cssW / 2;
+    var wy = pad.t + h / 2;
+    var grad = ctx.createLinearGradient(wx - 90, wy, wx + 90, wy);
+    grad.addColorStop(0, 'rgba(180,120,32,0.55)');
+    grad.addColorStop(0.45, 'rgba(245,197,24,0.95)');
+    grad.addColorStop(1, 'rgba(180,120,32,0.55)');
+    ctx.fillStyle = grad;
+    ctx.fillText('OROLADO', wx, wy);
     ctx.restore();
 
     var map = null;
@@ -1283,6 +1346,7 @@
     },
     lastClose: function () { return lastDrawnClose; },
     lastAsset: function () { return activeAsset; },
+    steerClose: steerClose,
     setAsset: function (id) {
       // Switch plot only : reset échelle + redessin immédiat (pas d'écran noir app).
       if (id === 'boom300' || id === 'pulseai') id = 'titanpulse';
@@ -1290,6 +1354,7 @@
       activeAsset = id;
       viewMin = 0;
       viewMax = 0;
+      steer = null;
       if (D6.Engine && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) {
           var snap = snapshotTradeVisual(t);

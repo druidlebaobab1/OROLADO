@@ -286,9 +286,51 @@
       D6.holdPull = false;
     },
 
-    changePassword: async function (user, current, next) {
+    requestPasswordOtp: async function (user, current) {
+      if (!user) return { ok: false, reason: 'Session expirée' };
+      if (user.passwordHash && current) {
+        try {
+          if ((await hashPassword(current)) !== user.passwordHash) {
+            return { ok: false, reason: 'Mot de passe actuel incorrect' };
+          }
+        } catch (eH) { /* ignore, le serveur confirmera */ }
+      }
+      if (D6.Api && D6.Api.post) {
+        var remote = await D6.Api.post('passwordOtpStart', { email: user.email || '' }, 20000);
+        if (remote && remote.ok) return remote;
+        if (remote && remote.reason) return remote;
+      }
+      return { ok: false, reason: 'Impossible d’envoyer le code. Réessayez.' };
+    },
+
+    verifyPasswordOtp: async function (user, code) {
+      if (!user) return { ok: false, reason: 'Session expirée' };
+      code = String(code || '').replace(/\D/g, '');
+      if (code.length !== 6) return { ok: false, reason: 'Code invalide' };
+      if (D6.Api && D6.Api.post) {
+        var remote = await D6.Api.post('passwordOtpVerify', { email: user.email || '', code: code }, 20000);
+        if (remote && remote.ok) return remote;
+        if (remote && remote.reason) return remote;
+      }
+      return { ok: false, reason: 'Code incorrect' };
+    },
+
+    changePassword: async function (user, current, next, otpToken) {
       if (!user) return { ok: false, reason: 'Session expirée' };
       if (String(next || '').length < 6) return { ok: false, reason: 'Nouveau mot de passe trop court' };
+      if (!otpToken) return { ok: false, reason: 'Validez d’abord le code e-mail' };
+      if (D6.Api && D6.Api.post) {
+        var remote = await D6.Api.post('passwordChange', {
+          email: user.email || '',
+          otpToken: otpToken,
+          newPassword: next
+        }, 20000);
+        if (remote && remote.ok) {
+          D6.Store.addSession(user, 'mot de passe modifié');
+          return { ok: true };
+        }
+        if (remote && remote.reason) return remote;
+      }
       var uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(user.id || ''));
       if (uuid && D6.Supabase && D6.Supabase.changePassword) {
         var cloud = await D6.Supabase.changePassword(next);
@@ -296,7 +338,7 @@
         D6.Store.addSession(user, 'mot de passe modifié');
         return { ok: true };
       }
-      if ((await hashPassword(current)) !== user.passwordHash) {
+      if (user.passwordHash && (await hashPassword(current)) !== user.passwordHash) {
         return { ok: false, reason: 'Mot de passe actuel incorrect' };
       }
       user.passwordHash = await hashPassword(next);

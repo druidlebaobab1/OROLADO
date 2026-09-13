@@ -250,8 +250,9 @@
       fsPlus.title = plusTitle;
       fsPlus.setAttribute('aria-label', plusTitle);
     }
-    var fsMode = $('fsModeLabel');
-    if (fsMode) fsMode.textContent = real ? (t('fsModeReal') || 'COMPTE RÉEL') : (t('fsModeDemo') || 'MODE DÉMO');
+    document.querySelectorAll('.fs-mode-btn').forEach(function (el) {
+      el.classList.toggle('on', el.dataset.mode === (real ? 'real' : 'demo'));
+    });
   }
 
   function wagerStatus(u) {
@@ -830,17 +831,21 @@
     feed.innerHTML = html.length ? html.join('') : '<div class="empty-feed">' + t('noTradesHint') + '</div>';
   }
 
+  var histSheetMode = 'real';
+
   function renderHistorySheet(forceMode) {
     var el = $('historySheetFeed');
     if (!el) return;
     var u = user();
     var mode = (forceMode === 'real' || forceMode === 'demo')
       ? forceMode
-      : ((u && u.mode === 'real') ? 'real' : 'demo');
+      : histSheetMode;
+    histSheetMode = mode;
+    document.querySelectorAll('.hist-tab').forEach(function (btn) {
+      btn.classList.toggle('on', btn.getAttribute('data-hist-mode') === mode);
+    });
     if ($('histSheetTitle')) {
-      $('histSheetTitle').textContent = mode === 'real'
-        ? (t('histSheetReal') || 'Historique des trades (Compte Reel)')
-        : (t('histSheetDemo') || 'Historique des trades (Compte Demo)');
+      $('histSheetTitle').textContent = t('tradeHist') || 'Historique de trading';
     }
     var live = (D6.Engine.getTrades ? D6.Engine.getTrades(mode) : []).filter(function (tr) {
       return !tr.mode || tr.mode === mode;
@@ -999,6 +1004,11 @@
       var raw = sessionStorage.getItem(recvCacheKey(u));
       recvCache = raw ? (JSON.parse(raw) || {}) : {};
     } catch (e0) { recvCache = {}; }
+    if (u && u.recvAddrs) {
+      ['usdt', 'btc', 'eth', 'trx'].forEach(function (k) {
+        if (u.recvAddrs[k] && !recvCache[k]) recvCache[k] = u.recvAddrs[k];
+      });
+    }
   }
 
   function saveRecvCache(u) {
@@ -1012,30 +1022,62 @@
     return { coin: 'usdt_trc20', min: 3, cache: 'usdt' };
   }
 
+  function persistRecv(id, addr) {
+    if (!addr) return;
+    var key = profRecvMeta(id).cache;
+    recvCache[key] = addr;
+    var u = user();
+    if (!u || isGuest(u)) return;
+    u.recvAddrs = u.recvAddrs || {};
+    if (u.recvAddrs[key] === addr) {
+      saveRecvCache(u);
+      return;
+    }
+    u.recvAddrs[key] = addr;
+    saveRecvCache(u);
+    D6.Store.saveUser(u);
+    if (D6.Api && D6.Api.token()) {
+      D6.Api.post('upsert', { user: u }).catch(function () { /* ignore */ });
+    }
+  }
+
+  function assignedRecv(id) {
+    var key = profRecvMeta(id).cache;
+    var u = user();
+    if (u && u.recvAddrs && u.recvAddrs[key]) return u.recvAddrs[key];
+    if (recvCache[key]) return recvCache[key];
+    if (key === 'usdt' || key === 'trx') {
+      var plat = (D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || '';
+      if (plat) {
+        persistRecv(id, plat);
+        return plat;
+      }
+    }
+    return '';
+  }
+
   function paintProfRecv() {
     var el = $('profWalletAddr');
     var copyBtn = $('btnCopyWallet');
-    var genBtn = $('btnGenWallet');
     var meta = profRecvMeta(profRecvCoin);
     document.querySelectorAll('.wallet-tab').forEach(function (btn) {
       var on = btn.getAttribute('data-recv') === profRecvCoin;
       btn.classList.toggle('on', on);
       btn.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    var addr = recvCache[meta.cache] || '';
+    var addr = assignedRecv(profRecvCoin);
     var busy = !!recvBusy[meta.cache];
-    var failed = !!recvFailed[meta.cache];
     if (el) {
-      el.textContent = addr || (busy ? 'Génération…' : '');
+      el.textContent = addr || (busy ? '…' : '');
       el.title = addr;
     }
     if (copyBtn) copyBtn.disabled = !addr;
-    if (genBtn) genBtn.classList.toggle('hidden', !(!addr && !busy && failed));
   }
 
   function prefetchRecv(id, force) {
     var meta = profRecvMeta(id || 'usdt');
-    if (recvCache[meta.cache] && !force) {
+    var existing = assignedRecv(id || 'usdt');
+    if (existing && !force) {
       recvFailed[meta.cache] = false;
       paintProfRecv();
       return;
@@ -1068,9 +1110,8 @@
       recvBusy[meta.cache] = false;
       if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
       if (remote && remote.ok && remote.address) {
-        recvCache[meta.cache] = String(remote.address);
+        persistRecv(id || 'usdt', String(remote.address));
         recvFailed[meta.cache] = false;
-        saveRecvCache(u);
         if (meta.cache === 'usdt') liveDepositAddr = recvCache.usdt;
         if (remote.orderId && meta.cache === 'usdt') oxaInvoice = remote;
       } else if (!recvCache[meta.cache]) {
@@ -1115,16 +1156,10 @@
         prefetchRecv(id);
       });
     });
-    if ($('btnGenWallet') && !$('btnGenWallet')._oroBound) {
-      $('btnGenWallet')._oroBound = true;
-      bindAndroidTap($('btnGenWallet'), function () {
-        prefetchRecv(profRecvCoin, true);
-      });
-    }
     if ($('btnCopyWallet') && !$('btnCopyWallet')._oroBound) {
       $('btnCopyWallet')._oroBound = true;
       bindAndroidTap($('btnCopyWallet'), function () {
-        var addr = recvCache[profRecvMeta(profRecvCoin).cache] || '';
+        var addr = assignedRecv(profRecvCoin);
         if (!addr) return;
         var copyBtn = $('btnCopyWallet');
         copyTextSilent(addr, function () {
@@ -3490,6 +3525,8 @@
   function bindTrade() {
     $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
     $('modeReal').addEventListener('click', function () { switchMode('real'); });
+    if ($('fsBtnDemo')) $('fsBtnDemo').addEventListener('click', function () { switchMode('demo'); });
+    if ($('fsBtnReal')) $('fsBtnReal').addEventListener('click', function () { switchMode('real'); });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         var u = user();
@@ -3606,19 +3643,70 @@
         }, { passive: false });
       }
     }
-    bindHistDrawer($('btnHistDemo'), 'demo');
-    bindHistDrawer($('btnHistReal'), 'real');
+    bindHistDrawer($('btnHistTrade'), 'real');
+    document.querySelectorAll('.hist-tab').forEach(function (btn) {
+      if (btn._oroBound) return;
+      btn._oroBound = true;
+      bindAndroidTap(btn, function () {
+        renderHistorySheet(btn.getAttribute('data-hist-mode') || 'real');
+      });
+    });
   }
 
   function bindModals() {
     bindAndroidTap($('closeHistorySheet'), function () { closeModal('historySheet'); });
-    $('btnOpenPass').addEventListener('click', function () { openFromProfile('passModal'); });
+    $('btnOpenPass').addEventListener('click', function () {
+      resetPassModal();
+      openFromProfile('passModal');
+    });
     bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
+    function resetPassModal() {
+      passOtpToken = '';
+      if ($('curPass')) $('curPass').value = '';
+      if ($('passOtp')) $('passOtp').value = '';
+      if ($('newPass')) $('newPass').value = '';
+      if ($('passStepOtp')) $('passStepOtp').classList.add('hidden');
+      if ($('passStepNew')) $('passStepNew').classList.add('hidden');
+      if ($('btnPassSendOtp')) $('btnPassSendOtp').classList.remove('hidden');
+      if ($('btnPassSave')) $('btnPassSave').classList.add('hidden');
+    }
+    var passOtpToken = '';
+    if ($('btnPassSendOtp')) {
+      $('btnPassSendOtp').addEventListener('click', async function () {
+        var u = user();
+        if (!u) return;
+        var cur = $('curPass') ? $('curPass').value : '';
+        if (!cur) { toast(t('curPass') || 'Mot de passe actuel', 'err'); return; }
+        var res = await D6.Auth.requestPasswordOtp(u, cur);
+        if (!res || !res.ok) { toast((res && res.reason) || 'Envoi impossible', 'err'); return; }
+        if ($('passStepOtp')) $('passStepOtp').classList.remove('hidden');
+        if ($('passOtp')) $('passOtp').focus();
+        toast(t('passOtpSent') || 'Code envoyé', 'ok');
+      });
+    }
+    if ($('passOtp')) {
+      $('passOtp').addEventListener('input', async function () {
+        var code = String($('passOtp').value || '').replace(/\D/g, '');
+        if (code.length !== 6) return;
+        var res = await D6.Auth.verifyPasswordOtp(user(), code);
+        if (!res || !res.ok) {
+          if ($('err-passOtp')) $('err-passOtp').textContent = (res && res.reason) || 'Code incorrect';
+          return;
+        }
+        if ($('err-passOtp')) $('err-passOtp').textContent = '';
+        passOtpToken = res.otpToken || 'ok';
+        if ($('passStepNew')) $('passStepNew').classList.remove('hidden');
+        if ($('btnPassSendOtp')) $('btnPassSendOtp').classList.add('hidden');
+        if ($('btnPassSave')) $('btnPassSave').classList.remove('hidden');
+        if ($('newPass')) $('newPass').focus();
+      });
+    }
     $('formPassword').addEventListener('submit', async function (e) {
       e.preventDefault();
-      var res = await D6.Auth.changePassword(user(), $('curPass').value, $('newPass').value);
+      if (!passOtpToken) { toast(t('passOtpNeed') || 'Validez le code e-mail', 'err'); return; }
+      var res = await D6.Auth.changePassword(user(), $('curPass').value, $('newPass').value, passOtpToken);
       if (!res.ok) { toast(res.reason, 'err'); return; }
-      $('curPass').value = ''; $('newPass').value = '';
+      resetPassModal();
       closeModal('passModal');
       toast(t('passUpdated'), 'ok');
     });

@@ -13,21 +13,22 @@
     QUICK_STAKES: [1, 5, 10, 25, 50],
     DURATIONS: [3, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 3,
-    DEMO_WIN_RATE: 0.60,
+    DEMO_WIN_RATE: 0.55,
     DEMO_FORCE_WINS: 0,
-    REAL_WIN_RATE: 0.45,
-    ADMIN_WIN_RATE: 0.85,
+    REAL_WIN_RATE: 0.42,
+    ADMIN_WIN_RATE: 0.70,
     REAL_PAYOUT: 1.88,
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
-    // Profil C — utilisateurs ordinaires RÉEL (caisse) — INTANGIBLE.
-    ODDS_WIN_RATE: { '1.88': 0.38, '6': 0.11, '11': 0.05, '51': 0.01 },
-    // Profil A — admin (démo|réel) : inchangé.
-    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.80, '6': 0.45, '11': 0.30, '51': 0.15 },
-    // Profil B — joueurs ordinaires DÉMO uniquement (cible ~60 % à ×1.88 ; payouts élevés plus durs).
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.60, '6': 0.28, '11': 0.18, '51': 0.08 },
-    DEMO_MAX_WIN_STREAK: 2,
+    // Joueurs ordinaires RÉEL — plafond maison.
+    ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.008 },
+    // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
+    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 },
+    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 },
+    // Démo (joueurs + admin) : séduction, martingale autorisée.
+    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.20, '11': 0.10, '51': 0.02 },
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.20, '11': 0.10, '51': 0.02 },
+    DEMO_MAX_WIN_STREAK: 0,
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 3,
     USDT_TRC20_ADDRESS: 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1',

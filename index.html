@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=137">
+  <link rel="stylesheet" href="css/app.css?v=138">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -230,52 +230,52 @@
         <div class="asset-bar markets-scroll" id="assetBar">
           <button type="button" class="asset-chip on" data-asset="v100">
             <div class="k" data-i18n="highVol">Haute volatilité</div>
-            <div class="n">VOLATILITY 100</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">↗</span>VOLATILITY 100</div>
             <div class="payout-live" id="payoutV100">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="stable">
             <div class="k" data-i18n="lowVol">Basse volatilité</div>
-            <div class="n">STABLE CORE</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">—</span>STABLE CORE</div>
             <div class="payout-live" id="payoutStable">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="apex500">
             <div class="k" data-i18n="apexTag">Ultra-rapide</div>
-            <div class="n">ORO APEX 500</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">⚡</span>ORO APEX 500</div>
             <div class="payout-live" id="payoutApex500">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="horizon50">
             <div class="k" data-i18n="horizonTag">Doux et régulier</div>
-            <div class="n">HORIZON 50</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">∿</span>HORIZON 50</div>
             <div class="payout-live" id="payoutHorizon50">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="crash300">
             <div class="k" data-i18n="crashTag">Crashes</div>
-            <div class="n">CRASH 300</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">↘</span>CRASH 300</div>
             <div class="payout-live" id="payoutCrash300">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="goldtrend">
             <div class="k" data-i18n="goldTag">Tendance</div>
-            <div class="n">ORO GOLD TREND</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">↗</span>ORO GOLD TREND</div>
             <div class="payout-live" id="payoutGoldTrend">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="boomspike">
             <div class="k" data-i18n="boomTag">Explosions</div>
-            <div class="n">BOOM SPIKE</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">⚡</span>BOOM SPIKE</div>
             <div class="payout-live" id="payoutBoomSpike">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="nexusprime">
             <div class="k" data-i18n="nexusTag">Canal</div>
-            <div class="n">NEXUS PRIME</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">≡</span>NEXUS PRIME</div>
             <div class="payout-live" id="payoutNexusPrime">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="v75">
             <div class="k" data-i18n="midVol">Mid volatility</div>
-            <div class="n">VOLATILITY 75</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">▮</span>VOLATILITY 75</div>
             <div class="payout-live" id="payoutV75">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="titanpulse">
             <div class="k" data-i18n="titanTag">Extrême</div>
-            <div class="n">TITAN PULSE</div>
+            <div class="n"><span class="asset-ico" aria-hidden="true">🔥</span>TITAN PULSE</div>
             <div class="payout-live" id="payoutTitanPulse">+88%</div>
           </button>
         </div>
@@ -283,7 +283,7 @@
         <div class="chart-card" id="chart">
           <div class="chart-toolbar" id="chartToolbar" style="margin-top:0;padding-top:0">
             <div class="ind-pills" role="toolbar" aria-label="Indicateurs et zoom">
-              <button type="button" class="ind-btn on" data-ind="ma" title="Moyenne mobile">MA</button>
+              <button type="button" class="ind-btn" data-ind="ma" title="Moyenne mobile">MA</button>
               <button type="button" class="ind-btn" data-ind="bb" title="Bandes de Bollinger">BB</button>
               <button type="button" class="ind-btn" id="chartZoomIn" data-i18n-aria="zoomIn" data-i18n-title="zoomIn" aria-label="Zoom in" title="Zoom +">+</button>
               <button type="button" class="ind-btn" id="chartZoomOut" data-i18n-aria="zoomOut" data-i18n-title="zoomOut" aria-label="Zoom out" title="Zoom −">−</button>
@@ -373,26 +373,15 @@
 
   <div id="fsTradeOverlay" class="fs-trade-overlay" hidden aria-hidden="true">
     <div class="fs-trade-topbar">
-      <span class="fs-crypto-row fs-crypto-left" aria-hidden="true">
-        <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
-        <svg class="coin-svg"><use href="#ico-btc"></use></svg>
-        <svg class="coin-svg"><use href="#ico-eth"></use></svg>
-        <svg class="coin-svg"><use href="#ico-trx"></use></svg>
-      </span>
       <div class="fs-top-mid">
-        <div class="fs-mode-label" id="fsModeLabel">MODE DÉMO</div>
-        <div class="fs-top-bal-row">
-          <div class="fs-top-bal" id="fsTopBalance" hidden>0 $</div>
-          <button type="button" class="bal-plus fs-bal-plus hidden" id="btnFsTopup" title="+" aria-label="+">+</button>
+        <div class="fs-top-bal" id="fsTopBalance">0 $</div>
+        <div class="fs-mode-switch" role="group" aria-label="Mode">
+          <button type="button" class="fs-mode-btn mode-btn on" id="fsBtnDemo" data-mode="demo">DÉMO</button>
+          <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real">RÉEL</button>
         </div>
       </div>
       <div class="fs-top-end">
-        <span class="fs-crypto-row fs-crypto-right" aria-hidden="true">
-          <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
-          <svg class="coin-svg"><use href="#ico-btc"></use></svg>
-          <svg class="coin-svg"><use href="#ico-eth"></use></svg>
-          <svg class="coin-svg"><use href="#ico-trx"></use></svg>
-        </span>
+        <button type="button" class="bal-plus fs-bal-plus hidden" id="btnFsTopup" title="+" aria-label="+">+</button>
         <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
       </div>
     </div>
@@ -454,7 +443,6 @@
       </div>
       <div class="wallet-addr-row">
         <code id="profWalletAddr"></code>
-        <button type="button" class="wallet-gen hidden" id="btnGenWallet" data-i18n="genAddr">Générer l'adresse</button>
         <button type="button" class="wallet-copy" id="btnCopyWallet" data-i18n="copyId" translate="no">Copier</button>
       </div>
     </div>
@@ -477,14 +465,9 @@
       </div>
       <div class="drawer-section">
         <div class="drawer-section-title" data-i18n="secTrading">Trading</div>
-        <button type="button" class="drawer-item" id="btnHistReal">
+        <button type="button" class="drawer-item" id="btnHistTrade">
           <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg>
-          <span class="di-label" data-i18n="seeAllReal">Positions &amp; historique (Réel)</span>
-          <span class="di-chev">›</span>
-        </button>
-        <button type="button" class="drawer-item" id="btnHistDemo">
-          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 19V5m0 14h16M8 16l3-5 3 3 4-7"/></svg>
-          <span class="di-label" data-i18n="seeAllDemo">Historique (Démo)</span>
+          <span class="di-label" data-i18n="tradeHist">Historique de trading</span>
           <span class="di-chev">›</span>
         </button>
       </div>
@@ -598,16 +581,23 @@
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closePass">✕</button>
       <div class="modal-title" data-i18n="changePass">Changer de mot de passe</div>
+      <p class="otp-lead" id="passOtpLead" data-i18n="passOtpLead">Un code à 6 chiffres sera envoyé à votre e-mail avant de pouvoir changer le mot de passe.</p>
       <form id="formPassword">
-        <div class="field">
+        <div class="field" id="passStepCurrent">
           <label data-i18n="curPass">Mot de passe actuel</label>
-          <input id="curPass" type="password" required>
+          <input id="curPass" type="password" required autocomplete="current-password">
         </div>
-        <div class="field">
+        <div class="field hidden" id="passStepOtp">
+          <label data-i18n="passOtpCode">Code e-mail</label>
+          <input id="passOtp" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="••••••" autocomplete="one-time-code">
+          <p class="err-msg" id="err-passOtp"></p>
+        </div>
+        <div class="field hidden" id="passStepNew">
           <label data-i18n="newPass">Nouveau mot de passe</label>
-          <input id="newPass" type="password" required minlength="6">
+          <input id="newPass" type="password" minlength="6" autocomplete="new-password">
         </div>
-        <button class="btn-gold" type="submit" data-i18n="save">Enregistrer</button>
+        <button class="btn-gold" type="button" id="btnPassSendOtp" data-i18n="passOtpSend">Envoyer le code</button>
+        <button class="btn-gold hidden" type="submit" id="btnPassSave" data-i18n="save">Enregistrer</button>
       </form>
     </div>
   </div>
@@ -810,22 +800,26 @@
   <div class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
       <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
-      <div class="modal-title" id="histSheetTitle">Historique des trades (Compte Réel)</div>
+      <div class="modal-title" id="histSheetTitle" data-i18n="tradeHist">Historique de trading</div>
+      <div class="hist-tabs" role="tablist">
+        <button type="button" class="hist-tab on" data-hist-mode="real" data-i18n="histTabReal">Réel</button>
+        <button type="button" class="hist-tab" data-hist-mode="demo" data-i18n="histTabDemo">Démo</button>
+      </div>
       <div class="history-feed sheet-feed" id="historySheetFeed"></div>
     </div>
   </div>
 
-  <script src="js/config.js?v=112"></script>
+  <script src="js/config.js?v=113"></script>
   <script src="js/translations.js?v=110"></script>
-  <script src="js/i18n.js?v=121"></script>
-  <script src="js/store.js?v=107"></script>
+  <script src="js/i18n.js?v=122"></script>
+  <script src="js/store.js?v=108"></script>
   <script src="js/api.js?v=108"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=109"></script>
-  <script src="js/auth.js?v=109"></script>
-  <script src="js/engine.js?v=110"></script>
-  <script src="js/chart.js?v=115"></script>
+  <script src="js/auth.js?v=110"></script>
+  <script src="js/engine.js?v=111"></script>
+  <script src="js/chart.js?v=116"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=139"></script>
+  <script src="js/app.js?v=140"></script>
 </body>
 </html>

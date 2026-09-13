@@ -99,6 +99,7 @@
     if (!Array.isArray(user.positions)) user.positions = [];
     if (!Array.isArray(user.transactions)) user.transactions = [];
     if (!Array.isArray(user.recentResults)) user.recentResults = [];
+    if (!user.recvAddrs || typeof user.recvAddrs !== 'object') user.recvAddrs = {};
     if (!user.role) user.role = (user.email === 'admin@orolado.com' || user.email === 'admin@6diablo.com') ? 'admin' : 'user';
     if (!user.publicId) {
       var h = 0;
