@@ -77,7 +77,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .timer-panel.lose .timer-msg{color:#ff8a9b}
 .timer-track{height:4px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden}
 .timer-fill{height:100%;width:0;background:linear-gradient(90deg,#FFD700,#FFA000)}
-.bal-stack{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.bal-stack{display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:0 0 auto;min-width:max-content}
 .bal-sub{font-size:.62rem;font-weight:700;color:var(--muted);letter-spacing:.02em}
 
 .brand-lockup{display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -248,7 +248,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .bal-plus{width:28px;height:28px;border-radius:8px;border:1px solid var(--gold);background:rgba(245,197,24,.12);color:var(--gold);
   font:inherit;font-weight:900;font-size:1rem;line-height:1;cursor:pointer;flex-shrink:0}
 .bal-plus.hidden{display:none}
-.balance-card{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.balance-card{display:flex;align-items:center;justify-content:flex-start;gap:8px}
+.bal-crypto-frieze{flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}
+.bal-crypto-frieze .coin-svg{width:16px;height:16px;opacity:.68;flex-shrink:0;border-radius:50%}
+.balance-card .bal{white-space:nowrap;flex-shrink:0}
 #screenTrade.mode-demo .balance-card{border:1px solid rgba(245,158,11,.35);box-shadow:none;
   background:var(--surface)}
 #screenTrade.mode-demo .balance-card .bal{color:#FBBF24;text-shadow:none}
@@ -913,7 +916,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 /* <430 : haut plus plat (−15…−25%), bas lisible, chart hauteur inchangée (≥ valeurs actuelles). */
 @media (max-width:429px){
   /* —— HAUT compact —— */
-  .topbar-row{padding:3px 6px;gap:4px;min-height:30px}
+  .topbar-row{padding:3px 6px;gap:6px;min-height:30px}
   .brand-lockup.mini .brand{font-size:.58rem}
   .logo-mark.sm{width:18px;height:18px}
   .icon-btn,.lang-dd,.lang-dd-btn{width:26px;height:26px;min-width:26px;max-width:26px;flex-basis:26px;border-radius:8px}
@@ -1053,15 +1056,16 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-trade-overlay.on{display:flex!important;flex-direction:column!important;overflow:hidden!important;
   height:100vh!important;height:100dvh!important;width:100%!important}
 .fs-trade-topbar{
-  flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:12px;
-  min-height:40px;padding:6px 12px;padding-top:max(8px,env(safe-area-inset-top,0px));
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:40px;padding:6px 12px;padding-top:max(8px,env(safe-area-inset-top,0px));
   border-bottom:1px solid var(--line);background:rgba(11,14,20,.98);z-index:6}
+.fs-top-end{display:flex;align-items:center;flex-shrink:0}
 .fs-trade-top-label{display:none!important}
 .fs-trade-close{
   position:relative;top:auto;right:auto;z-index:7;width:40px;height:40px;border-radius:999px;
   border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.6);color:#fff;
   font-size:1.05rem;font-weight:800;cursor:pointer;display:grid;place-items:center;flex-shrink:0;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:auto}
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-left:0}
 .fs-trade-close:hover,.fs-trade-close:focus-visible{background:rgba(0,0,0,.78);border-color:rgba(255,255,255,.35)}
 .fs-trade-slot{flex:1 1 auto;min-height:0;min-width:0;width:100%;height:auto;display:flex;flex-direction:column;overflow:hidden}
 .fs-trade-overlay .trade-wrap{
@@ -1409,18 +1413,19 @@ html.lang-ar .usdt-addr,
 html.lang-ar .usdt-qr-wrap{text-align:center}
 
 .fs-top-bal,.fs-pad-bal{display:none}
-html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{position:relative;justify-content:flex-end}
+html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{
+  position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;padding-left:12px;padding-right:12px}
 html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
-  display:block!important;position:absolute;left:50%;transform:translateX(-50%);
+  display:block!important;position:static;left:auto;transform:none;
   font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;
   font-weight:800;font-size:13px;letter-spacing:.02em;color:#E8C36A;
   background:#121722;border:1px solid rgba(232,195,106,.45);border-radius:8px;
   padding:4px 12px;z-index:8;white-space:nowrap;box-shadow:0 0 12px rgba(232,195,106,.18)}
 html.fs-trade .fs-crypto-row,html.is-fullscreen .fs-crypto-row{
-  display:flex!important;position:absolute;top:50%;transform:translateY(-50%);
+  display:flex!important;position:static;top:auto;transform:none;
   align-items:center;gap:4px;opacity:.7;z-index:7;pointer-events:none}
-html.fs-trade .fs-crypto-left,html.is-fullscreen .fs-crypto-left{left:10px}
-html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:42px}
+html.fs-trade .fs-crypto-left,html.is-fullscreen .fs-crypto-left{left:auto}
+html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:auto;margin-right:12px}
 html.fs-trade .fs-crypto-row .coin-svg,html.is-fullscreen .fs-crypto-row .coin-svg{
   width:14px;height:14px;border-radius:50%;overflow:hidden}
 html.fs-trade .ind-pills .ind-btn,
@@ -1428,14 +1433,16 @@ html.is-fullscreen .ind-pills .ind-btn{display:none!important}
 html.fs-trade .fs-trade-overlay .chart-toolbar,
 html.is-fullscreen .fs-trade-overlay .chart-toolbar{
   display:flex!important;min-height:22px;padding:2px 6px}
+html.fs-trade .chart-fs-btn,
+html.is-fullscreen .chart-fs-btn,
 html.fs-trade .fs-trade-overlay .chart-fs-btn,
 html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
-  display:inline-flex!important;position:relative!important;top:auto!important;right:auto!important}
+  display:none!important}
 
 @media (max-width:859px){
   html.fs-trade .fs-trade-overlay.on .fs-trade-topbar,
   html.is-fullscreen .fs-trade-overlay.on .fs-trade-topbar{
-    min-height:32px;padding:4px 10px;padding-top:max(4px,env(safe-area-inset-top,0px))}
+    min-height:32px;padding:4px 12px;padding-top:max(4px,env(safe-area-inset-top,0px))}
   html.fs-trade .fs-trade-overlay.on .asset-bar,
   html.is-fullscreen .fs-trade-overlay.on .asset-bar{padding:4px 8px}
   html.fs-trade .fs-trade-overlay.on .chart-card,
@@ -1545,11 +1552,18 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
     padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
   .topbar-cta .crypto-mini-row{display:flex}
   .balance-card .bal{font-size:.98rem}
+  #screenTrade:not(.is-guest) .topbar-cta{
+    position:static!important;left:auto;transform:none!important;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    flex:1 1 auto;min-width:0;margin:0}
+  #screenTrade:not(.is-guest) .topbar-actions{margin-left:0}
+  .topbar-cta{gap:6px}
+  .topbar-cta .btn-deposit{padding:4px 10px;min-height:26px}
 }
 @media (max-width:429px){
   .web3-txt{display:none}
   .web3-badge{padding:3px;margin-left:2px}
-  .topbar-cta .btn-deposit{min-height:26px;padding:0 8px;font-size:.58rem}
+  .topbar-cta .btn-deposit{min-height:26px;padding:4px 10px;font-size:.58rem}
 }
 @media (min-width:860px){
   .trade-shell{max-width:min(1440px,96vw)}
@@ -1567,8 +1581,10 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 .web3-badge,.auth-trust,.wallet-assure{display:none!important}
 .fs-crypto-row{display:none}
 .auth-crypto-line{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0 0}
-.auth-crypto-line .crypto-mini-row{display:flex;gap:8px}
-.auth-crypto-line .coin-svg{width:22px;height:22px;border-radius:50%;overflow:hidden;opacity:.88}
+.auth-crypto-line .crypto-mini-row{display:flex;align-items:center;gap:12px}
+.auth-coin-ring{display:inline-flex;align-items:center;justify-content:center;padding:4px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.1);background:rgba(30,41,59,.5)}
+.auth-crypto-line .coin-svg{width:28px;height:28px;border-radius:50%;overflow:hidden;opacity:.88}
 .auth-crypto-line span[data-i18n="authInstant"]{font-size:.68rem;font-weight:600;color:#94A3B8;letter-spacing:.02em}
 .topbar-cta .crypto-mini-row{display:flex;align-items:center;gap:4px}
 .topbar-cta .coin-svg{width:16px;height:16px;border-radius:50%;overflow:hidden}
@@ -1577,8 +1593,8 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 .strip-price,.pnl-value,.h-gain,.wd-bal-amt{
   font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
   font-variant-numeric:tabular-nums}
-html.is-android .drawer-nav{gap:1px;padding:0 6px 24px}
+html.is-android .drawer-nav{gap:1px;padding:0 6px calc(32px + env(safe-area-inset-bottom,0px))}
 html.is-android .drawer-item{min-height:26px;padding:3px 8px}
 html.is-android .drawer-section-title{margin:4px 8px 2px}
 html.is-android .drawer-item.drawer-logout{margin-bottom:8px;padding-bottom:8px}
-html.is-android #drawerProfile{padding-bottom:24px}
+html.is-android #drawerProfile{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}

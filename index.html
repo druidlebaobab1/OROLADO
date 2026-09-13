@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=133">
+  <link rel="stylesheet" href="css/app.css?v=134">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -59,6 +59,10 @@
     <symbol id="ico-btc" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#F7931A"/><path fill="#fff" d="M20.3 14.6c.28-1.86-1.14-2.86-3.08-3.52l.63-2.52-1.54-.38-.61 2.46c-.4-.1-.82-.2-1.24-.29l.62-2.48-1.54-.38-.63 2.52c-.34-.08-.67-.15-1-.24l.01-.03-2.12-.53-.41 1.64s1.14.26 1.12.28c.62.16.73.56.71.89l-.71 2.86c.04.01.1.03.16.06l-.16-.04-.99 3.98c-.08.19-.27.47-.01.65-.01 0-1.12.28-1.12.28l-.61 1.77 2.02.5c.38.1.75.2 1.11.29l-.64 2.58 1.54.38.63-2.53c.42.11.83.22 1.23.32l-.63 2.51 1.54.38.64-2.57c2.64.5 4.63.3 5.47-2.09.67-1.92-.03-3.03-1.43-3.75 1.01-.24 1.78-.9 1.98-2.28zm-3.54 4.96c-.48 1.92-3.72.88-4.77.62l.85-3.41c1.05.26 4.42.78 3.92 2.79zm.48-4.99c-.44 1.75-3.12.86-4 .64l.77-3.1c.87.22 3.68.62 3.23 2.46z"/></symbol>
     <symbol id="ico-eth" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#454A75"/><path fill="#fff" d="M16.1 6.4 9.8 16.1l6.3 3.7 6.3-3.7z"/><path fill="#C0CBF6" d="m16.1 6.4-.05 13.4 6.35-3.7z"/><path fill="#fff" d="m9.8 17.4 6.3 8.2 6.3-8.2-6.3 3.7z"/><path fill="#C0CBF6" d="m16.1 21.1.04 4.5 6.26-8.2z"/></symbol>
     <symbol id="ico-trx" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#EF0027"/><path fill="#fff" d="M8.6 8.2 22.7 11.4 16.4 23.8zm2.5 1.7 4.8 10.2 1.7-8.7zm6.2 2.2-1.4 7.2 6.2-8.1z"/></symbol>
+    <symbol id="ico-sol" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#9945FF"/><path fill="#fff" d="M9.2 19.6h13.1l-2.4 2.6H6.8zm0-4.9h13.1l-2.4 2.6H6.8zm2.4-4.9h13.1L22.3 13H9.2z"/></symbol>
+    <symbol id="ico-bnb" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#F3BA2F"/><path fill="#fff" d="M16 7.2 18.6 9.8 13.4 15l-2.6-2.6zm5.2 2.6L24 12.6l-8 8-2.6-2.6zM8 12.6l2.6-2.6 2.6 2.6-2.6 2.6zm8 3.2 2.6 2.6L16 21.2l-2.6-2.6z"/></symbol>
+    <symbol id="ico-doge" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#C2A633"/><path fill="#fff" d="M14 9h3.2c3.4 0 5.8 2.2 5.8 5.5S20.6 20 17.2 20H14zm2.2 3v5h1.1c1.6 0 2.6-1 2.6-2.5S18.9 12 17.3 12z"/></symbol>
+    <symbol id="ico-xrp" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#23292F"/><path fill="#fff" d="M10.2 10.4 13.8 14c.6.6 1.4.9 2.2.9s1.6-.3 2.2-.9l3.6-3.6h2.4l-4.4 4.4c-1 1-2.4 1.6-3.8 1.6s-2.8-.6-3.8-1.6L7.8 10.4zm11.6 11.2L17.8 18c-.6-.6-1.4-.9-2.2-.9s-1.6.3-2.2.9l-3.2 3.6H7.8l4.4-4.4c1-1 2.4-1.6 3.8-1.6s2.8.6 3.8 1.6l4.4 4.4z"/></symbol>
   </svg>
   <canvas id="particlesCanvas"></canvas>
   <div id="toast" class="toast lux-msg" role="status" aria-live="polite"></div>
@@ -155,10 +159,10 @@
       </div>
       <div class="auth-crypto-line">
         <span class="crypto-mini-row" aria-hidden="true">
-          <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
-          <svg class="coin-svg"><use href="#ico-btc"></use></svg>
-          <svg class="coin-svg"><use href="#ico-eth"></use></svg>
-          <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+          <span class="auth-coin-ring"><svg class="coin-svg"><use href="#ico-usdt"></use></svg></span>
+          <span class="auth-coin-ring"><svg class="coin-svg"><use href="#ico-btc"></use></svg></span>
+          <span class="auth-coin-ring"><svg class="coin-svg"><use href="#ico-eth"></use></svg></span>
+          <span class="auth-coin-ring"><svg class="coin-svg"><use href="#ico-trx"></use></svg></span>
         </span>
         <span data-i18n="authInstant">Dépôts &amp; retraits instantanés</span>
       </div>
@@ -209,6 +213,16 @@
             <div class="bal-stack">
               <span class="bal" id="balanceDisplay">1 000 000 $</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
+            </div>
+            <div class="bal-crypto-frieze" aria-hidden="true">
+              <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
+              <svg class="coin-svg"><use href="#ico-btc"></use></svg>
+              <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+              <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+              <svg class="coin-svg"><use href="#ico-sol"></use></svg>
+              <svg class="coin-svg"><use href="#ico-bnb"></use></svg>
+              <svg class="coin-svg"><use href="#ico-doge"></use></svg>
+              <svg class="coin-svg"><use href="#ico-xrp"></use></svg>
             </div>
             <button type="button" class="bal-plus hidden" id="btnDemoTopup" data-i18n-title="demoTopup" data-i18n-aria="demoTopup" title="Top up demo" aria-label="Top up demo">+</button>
           </div>
@@ -340,17 +354,15 @@
       <span class="fs-crypto-row fs-crypto-left" aria-hidden="true">
         <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
         <svg class="coin-svg"><use href="#ico-btc"></use></svg>
-        <svg class="coin-svg"><use href="#ico-eth"></use></svg>
-        <svg class="coin-svg"><use href="#ico-trx"></use></svg>
       </span>
       <div class="fs-top-bal" id="fsTopBalance" hidden>0 $</div>
-      <span class="fs-crypto-row fs-crypto-right" aria-hidden="true">
-        <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
-        <svg class="coin-svg"><use href="#ico-btc"></use></svg>
-        <svg class="coin-svg"><use href="#ico-eth"></use></svg>
-        <svg class="coin-svg"><use href="#ico-trx"></use></svg>
-      </span>
-      <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
+      <div class="fs-top-end">
+        <span class="fs-crypto-row fs-crypto-right" aria-hidden="true">
+          <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+          <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+        </span>
+        <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
+      </div>
     </div>
     <div class="fs-trade-slot" id="fsTradeSlot"></div>
   </div>
@@ -450,11 +462,6 @@
           <span class="di-label" data-i18n="changePass">Changer le mot de passe</span>
           <span class="di-chev">›</span>
         </button>
-        <div class="drawer-item" style="cursor:default;opacity:.85">
-          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4Z"/></svg>
-          <span class="di-label" data-i18n="verified">Vérification du compte</span>
-          <span class="di-chev" style="font-size:.7rem;color:var(--green)">●</span>
-        </div>
         <button type="button" class="drawer-item drawer-logout" id="btnLogout">
           <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2M4 12h11m-3-4 4 4-4 4"/></svg>
           <span class="di-label" data-i18n="logoutGo">Se déconnecter</span>
