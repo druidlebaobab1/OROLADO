@@ -2,7 +2,7 @@
   'use strict';
 
   var EN = {
-    tagline: 'Live trading in USD',
+    tagline: 'Trading',
     authRealPitch: 'Sign in or create an account.',
     login: 'Sign in', register: 'Sign up', enter: 'Sign in',
     createAccount: 'Create my account',
@@ -18,7 +18,7 @@
     virtualBal: 'Virtual balance', realBalHint: 'Real balance',
     resetDemo: 'Reset', secured: 'Secured',
     highVol: 'High volatility', lowVol: 'Low volatility',
-    midVol: 'Mid volatility', crashTag: 'Crashes', boomTag: 'Pulse AI',
+    midVol: 'Mid volatility', crashTag: 'Crashes', boomTag: 'Pulse',
     priceNow: 'Current price', pnlLive: 'Live P&L',
     indMa: 'MA', indRsi: 'RSI', indBb: 'BB',
     myOrders: 'My orders', community: 'Community trades (Live)',
@@ -80,6 +80,7 @@
     helpTitle: 'Help & support',
     helpCopy: 'Priority support \u2014 available 24/7',
     helpLive: 'Operational support 24/7',
+    authInstant: 'Instant deposits & withdrawals',
     web3Live: 'WEB3 NETWORK CONNECTED',
     authTrust: 'AES-256 encryption \u2022 Automated withdrawals 24/7 \u2022 Web3 & Mobile Money ready',
     walletInstant: 'Instant validation (1 network confirmation)',
@@ -231,7 +232,7 @@
   };
 
   var FR = {
-    tagline: 'Trading en USD',
+    tagline: 'Trading',
     authRealPitch: 'Connexion ou inscription',
     login: 'Connexion', register: 'Inscription', enter: 'Se connecter',
     createAccount: 'Cr\u00e9er mon compte',
@@ -247,7 +248,7 @@
     virtualBal: 'Solde Virtuel', realBalHint: 'Solde R\u00e9el',
     resetDemo: 'R\u00e9initialiser', secured: 'S\u00e9curis\u00e9',
     highVol: 'Haute volatilit\u00e9', lowVol: 'Basse volatilit\u00e9',
-    midVol: 'Vol. moyenne', crashTag: 'Chutes', boomTag: 'IA Pulse',
+    midVol: 'Vol. moyenne', crashTag: 'Chutes', boomTag: 'Pulse',
     priceNow: 'Prix actuel', pnlLive: 'P&L live',
     indMa: 'MA', indRsi: 'RSI', indBb: 'BB',
     myOrders: 'Mes ordres', community: 'Trades Communaut\u00e9 (Live)',
@@ -309,6 +310,7 @@
     helpTitle: 'Aide & support',
     helpCopy: 'Support client prioritaire \u2014 Service d\u2019assistance disponible 24h/24 et 7j/7',
     helpLive: 'Support Op\u00e9rationnel 24/7',
+    authInstant: 'D\u00e9p\u00f4ts & retraits instantan\u00e9s',
     web3Live: 'R\u00c9SEAU WEB3 CONNECT\u00c9',
     authTrust: 'Chiffrement AES-256 bits \u2022 Retraits automatis\u00e9s 24/7 \u2022 Compatible Web3 & Mobile Money',
     walletInstant: 'Validation instantan\u00e9e (1 confirmation r\u00e9seau)',
@@ -467,7 +469,7 @@
     en: EN,
     fr: Object.assign({}, EN, FR),
     es: pack({
-      tagline: 'Plataforma de trading y an\u00e1lisis en USD',
+      tagline: 'Trading',
       authRealPitch: 'Crea tu cuenta o inicia sesi\u00f3n en 30 segundos para recargar y retirar ganancias reales.',
       login: 'Iniciar sesi\u00f3n', register: 'Registrarse', enter: 'Entrar',
       createAccount: 'Crear mi cuenta',
@@ -483,7 +485,7 @@
       virtualBal: 'Saldo virtual', realBalHint: 'Saldo real',
       resetDemo: 'Reiniciar', secured: 'Seguro',
       highVol: 'Alta volatilidad', lowVol: 'Baja volatilidad',
-      midVol: 'Vol. media', crashTag: 'Ca\u00eddas', boomTag: 'Pulse AI',
+      midVol: 'Vol. media', crashTag: 'Ca\u00eddas', boomTag: 'Pulse',
       priceNow: 'Precio actual', pnlLive: 'P&L en vivo',
       myOrders: 'Mis \u00f3rdenes', community: 'Operaciones de la comunidad (Live)',
       seeAll: 'Posiciones e historial (Real)',
@@ -597,7 +599,7 @@
       closeLbl: 'Cerrar'
     }),
     pt: pack({
-      tagline: 'Plataforma de trading e an\u00e1lise em USD',
+      tagline: 'Trading',
       authRealPitch: 'Crie sua conta ou entre em 30 segundos para recarregar e sacar ganhos reais.',
       login: 'Entrar', register: 'Criar conta', enter: 'Entrar',
       createAccount: 'Criar minha conta',
@@ -613,7 +615,7 @@
       virtualBal: 'Saldo virtual', realBalHint: 'Saldo real',
       resetDemo: 'Reiniciar', secured: 'Seguro',
       highVol: 'Alta volatilidade', lowVol: 'Baixa volatilidade',
-      midVol: 'Vol. m\u00e9dia', crashTag: 'Quedas', boomTag: 'Pulse AI',
+      midVol: 'Vol. m\u00e9dia', crashTag: 'Quedas', boomTag: 'Pulse',
       priceNow: 'Pre\u00e7o atual', pnlLive: 'P&L ao vivo',
       myOrders: 'Minhas ordens', community: 'Trades da comunidade (Live)',
       seeAll: 'Posi\u00e7\u00f5es e hist\u00f3rico (Real)',
@@ -727,7 +729,7 @@
       closeLbl: 'Fechar'
     }),
     ar: pack({
-      tagline: '\u0645\u0646\u0635\u0629 \u062a\u062f\u0627\u0648\u0644 \u0648\u062a\u062d\u0644\u064a\u0644 \u0628\u0627\u0644\u062f\u0648\u0644\u0627\u0631 \u0627\u0644\u0623\u0645\u0631\u064a\u0643\u064a',
+      tagline: 'Trading',
       authRealPitch: '\u0623\u0646\u0634\u0626 \u062d\u0633\u0627\u0628\u0643 \u0623\u0648 \u0633\u062c\u0651\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u062e\u0644\u0627\u0644 30 \u062b\u0627\u0646\u064a\u0629 \u0644\u0634\u062d\u0646 \u0631\u0635\u064a\u062f\u0643 \u0648\u0633\u062d\u0628 \u0623\u0631\u0628\u0627\u062d\u0643 \u0627\u0644\u062d\u0642\u064a\u0642\u064a\u0629.',
       login: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644', register: '\u0625\u0646\u0634\u0627\u0621 \u062d\u0633\u0627\u0628', enter: '\u062f\u062e\u0648\u0644',
       createAccount: '\u0625\u0646\u0634\u0627\u0621 \u062d\u0633\u0627\u0628\u064a',
@@ -743,7 +745,7 @@
       virtualBal: '\u0627\u0644\u0631\u0635\u064a\u062f \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a', realBalHint: '\u0627\u0644\u0631\u0635\u064a\u062f \u0627\u0644\u062d\u0642\u064a\u0642\u064a',
       resetDemo: '\u0625\u0639\u0627\u062f\u0629 \u062a\u0639\u064a\u064a\u0646', secured: '\u0622\u0645\u0646',
       highVol: '\u062a\u0642\u0644\u0628 \u0645\u0631\u062a\u0641\u0639', lowVol: '\u062a\u0642\u0644\u0628 \u0645\u0646\u062e\u0641\u0636',
-      midVol: '\u062a\u0642\u0644\u0628 \u0645\u062a\u0648\u0633\u0637', crashTag: '\u0647\u0628\u0648\u0637\u0627\u062a', boomTag: 'Pulse AI',
+      midVol: '\u062a\u0642\u0644\u0628 \u0645\u062a\u0648\u0633\u0637', crashTag: '\u0647\u0628\u0648\u0637\u0627\u062a', boomTag: 'Pulse',
       priceNow: '\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u062d\u0627\u0644\u064a', pnlLive: '\u0627\u0644\u0631\u0628\u062d \u0648\u0627\u0644\u062e\u0633\u0627\u0631\u0629',
       myOrders: '\u0623\u0648\u0627\u0645\u0631\u064a', community: '\u0635\u0641\u0642\u0627\u062a \u0627\u0644\u0645\u062c\u062a\u0645\u0639 (\u0645\u0628\u0627\u0634\u0631)',
       seeAll: '\u0627\u0644\u0645\u0631\u0627\u0643\u0632 \u0648\u0627\u0644\u0633\u062c\u0644 (\u062d\u0642\u064a\u0642\u064a)',
@@ -857,7 +859,7 @@
       closeLbl: '\u0625\u063a\u0644\u0627\u0642'
     }),
     tr: pack({
-      tagline: 'USD cinsinden al\u0131m sat\u0131m ve analiz platformu',
+      tagline: 'Trading',
       authRealPitch: 'Bakiyeyi y\u00fcklemek ve ger\u00e7ek kazanc\u0131 \u00e7ekmek i\u00e7in 30 saniyede hesap a\u00e7\u0131n veya giri\u015f yap\u0131n.',
       login: 'Giri\u015f', register: 'Kay\u0131t', enter: 'Giri\u015f yap',
       createAccount: 'Hesab\u0131m\u0131 olu\u015ftur',
@@ -873,7 +875,7 @@
       virtualBal: 'Sanal bakiye', realBalHint: 'Ger\u00e7ek bakiye',
       resetDemo: 'S\u0131f\u0131rla', secured: 'G\u00fcvenli',
       highVol: 'Y\u00fcksek volatilite', lowVol: 'D\u00fc\u015f\u00fck volatilite',
-      midVol: 'Orta vol.', crashTag: 'D\u00fc\u015f\u00fc\u015fler', boomTag: 'Pulse AI',
+      midVol: 'Orta vol.', crashTag: 'D\u00fc\u015f\u00fc\u015fler', boomTag: 'Pulse',
       priceNow: 'G\u00fcncel fiyat',
       myOrders: 'Emirlerim', community: 'Topluluk i\u015flemleri (Canl\u0131)',
       seeAll: 'Pozisyonlar ve ge\u00e7mi\u015f (Ger\u00e7ek)',
@@ -979,7 +981,7 @@
       closeLbl: 'Kapat'
     }),
     vi: pack({
-      tagline: 'N\u1ec1n t\u1ea3ng giao d\u1ecbch & ph\u00e2n t\u00edch b\u1eb1ng USD',
+      tagline: 'Trading',
       authRealPitch: 'T\u1ea1o t\u00e0i kho\u1ea3n ho\u1eb7c \u0111\u0103ng nh\u1eadp trong 30 gi\u00e2y \u0111\u1ec3 n\u1ea1p v\u00e0 r\u00fat ti\u1ec1n th\u1eadt.',
       login: '\u0110\u0103ng nh\u1eadp', register: '\u0110\u0103ng k\u00fd', enter: '\u0110\u0103ng nh\u1eadp',
       createAccount: 'T\u1ea1o t\u00e0i kho\u1ea3n',
@@ -995,7 +997,7 @@
       virtualBal: 'S\u1ed1 d\u01b0 \u1ea3o', realBalHint: 'S\u1ed1 d\u01b0 th\u1eadt',
       resetDemo: '\u0110\u1eb7t l\u1ea1i', secured: 'B\u1ea3o m\u1eadt',
       highVol: 'Bi\u1ebfn \u0111\u1ed9ng cao', lowVol: 'Bi\u1ebfn \u0111\u1ed9ng th\u1ea5p',
-      midVol: 'Bi\u1ebfn \u0111\u1ed9ng TB', crashTag: 'Gi\u1ea3m', boomTag: 'Pulse AI',
+      midVol: 'Bi\u1ebfn \u0111\u1ed9ng TB', crashTag: 'Gi\u1ea3m', boomTag: 'Pulse',
       seeAll: 'V\u1ecb th\u1ebf & l\u1ecbch s\u1eed (Th\u1eadt)',
       seeAllDemo: 'L\u1ecbch s\u1eed (Demo)',
       seeAllReal: 'V\u1ecb th\u1ebf & l\u1ecbch s\u1eed (Th\u1eadt)',
@@ -1096,7 +1098,7 @@
       closeLbl: '\u0110\u00f3ng'
     }),
     id: pack({
-      tagline: 'Platform trading & analitik dalam USD',
+      tagline: 'Trading',
       authRealPitch: 'Buat akun atau masuk dalam 30 detik untuk isi saldo dan tarik keuntungan nyata.',
       login: 'Masuk', register: 'Daftar', enter: 'Masuk',
       createAccount: 'Buat akun saya',
@@ -1112,7 +1114,7 @@
       virtualBal: 'Saldo virtual', realBalHint: 'Saldo nyata',
       resetDemo: 'Atur ulang', secured: 'Aman',
       highVol: 'Volatilitas tinggi', lowVol: 'Volatilitas rendah',
-      midVol: 'Vol. sedang', crashTag: 'Turun', boomTag: 'Pulse AI',
+      midVol: 'Vol. sedang', crashTag: 'Turun', boomTag: 'Pulse',
       seeAll: 'Posisi & riwayat (Nyata)',
       seeAllDemo: 'Riwayat (Demo)',
       seeAllReal: 'Posisi & riwayat (Nyata)',
@@ -1213,7 +1215,7 @@
       closeLbl: 'Tutup'
     }),
     ru: pack({
-      tagline: '\u0422\u043e\u0440\u0433\u043e\u0432\u0430\u044f \u0438 \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430 \u0432 USD',
+      tagline: 'Trading',
       authRealPitch: '\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0438\u043b\u0438 \u0432\u043e\u0439\u0434\u0438\u0442\u0435 \u0437\u0430 30 \u0441\u0435\u043a\u0443\u043d\u0434, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0431\u0430\u043b\u0430\u043d\u0441 \u0438 \u0432\u044b\u0432\u0435\u0441\u0442\u0438 \u0440\u0435\u0430\u043b\u044c\u043d\u0443\u044e \u043f\u0440\u0438\u0431\u044b\u043b\u044c.',
       login: '\u0412\u0445\u043e\u0434', register: '\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f', enter: '\u0412\u043e\u0439\u0442\u0438',
       createAccount: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
@@ -1229,7 +1231,7 @@
       virtualBal: '\u0412\u0438\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0439 \u0431\u0430\u043b\u0430\u043d\u0441', realBalHint: '\u0420\u0435\u0430\u043b\u044c\u043d\u044b\u0439 \u0431\u0430\u043b\u0430\u043d\u0441',
       resetDemo: '\u0421\u0431\u0440\u043e\u0441', secured: '\u0417\u0430\u0449\u0438\u0449\u0435\u043d\u043e',
       highVol: '\u0412\u044b\u0441\u043e\u043a\u0430\u044f \u0432\u043e\u043b\u0430\u0442\u0438\u043b\u044c\u043d\u043e\u0441\u0442\u044c', lowVol: '\u041d\u0438\u0437\u043a\u0430\u044f \u0432\u043e\u043b\u0430\u0442\u0438\u043b\u044c\u043d\u043e\u0441\u0442\u044c',
-      midVol: '\u0421\u0440\u0435\u0434. \u0432\u043e\u043b.', crashTag: '\u041f\u0430\u0434\u0435\u043d\u0438\u044f', boomTag: 'Pulse AI',
+      midVol: '\u0421\u0440\u0435\u0434. \u0432\u043e\u043b.', crashTag: '\u041f\u0430\u0434\u0435\u043d\u0438\u044f', boomTag: 'Pulse',
       seeAll: '\u041f\u043e\u0437\u0438\u0446\u0438\u0438 \u0438 \u0438\u0441\u0442\u043e\u0440\u0438\u044f (\u0420\u0435\u0430\u043b)',
       seeAllDemo: '\u0418\u0441\u0442\u043e\u0440\u0438\u044f (Demo)',
       seeAllReal: '\u041f\u043e\u0437\u0438\u0446\u0438\u0438 \u0438 \u0438\u0441\u0442\u043e\u0440\u0438\u044f (\u0420\u0435\u0430\u043b)',
@@ -1330,7 +1332,7 @@
       closeLbl: '\u0417\u0430\u043a\u0440\u044b\u0442\u044c'
     }),
     de: pack({
-      tagline: 'Handels- und Analyseplattform in USD',
+      tagline: 'Trading',
       authRealPitch: 'Konto erstellen oder in 30 Sekunden anmelden, um aufzuladen und echte Gewinne auszuzahlen.',
       login: 'Anmelden', register: 'Registrieren', enter: 'Anmelden',
       createAccount: 'Konto erstellen',
@@ -1346,7 +1348,7 @@
       virtualBal: 'Virtuelles Guthaben', realBalHint: 'Echtes Guthaben',
       resetDemo: 'Zur\u00fccksetzen', secured: 'Gesichert',
       highVol: 'Hohe Volatilit\u00e4t', lowVol: 'Niedrige Volatilit\u00e4t',
-      midVol: 'Mittl. Vol.', crashTag: 'Abst\u00fcrze', boomTag: 'Pulse AI',
+      midVol: 'Mittl. Vol.', crashTag: 'Abst\u00fcrze', boomTag: 'Pulse',
       seeAll: 'Positionen & Verlauf (Echt)',
       seeAllDemo: 'Verlauf (Demo)',
       seeAllReal: 'Positionen & Verlauf (Echt)',

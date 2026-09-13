@@ -33,8 +33,8 @@
     } catch (e) {}
   })();
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=132">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css?v=133">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -88,7 +88,7 @@
         <div class="brand-xl">ORO<span>LADO</span></div>
         <div class="brand-domain">OROLADO.COM</div>
       </div>
-      <p class="brand-sub" data-i18n="tagline">Trading en USD</p>
+      <p class="brand-sub" data-i18n="tagline">Trading</p>
       <div id="authRealPitch" class="auth-real-pitch hidden" data-i18n="authRealPitch">Connexion ou inscription</div>
       <div class="auth-card glass">
         <div class="auth-tabs">
@@ -113,7 +113,6 @@
           </div>
           <button type="button" class="link-forgot" id="btnForgot" data-i18n="forgot">Mot de passe oublié ?</button>
           <button class="btn-gold" type="submit" data-i18n="enter">Se connecter</button>
-          <p class="auth-trust" data-i18n="authTrust">Chiffrement AES-256 bits • Retraits automatisés 24/7 • Compatible Web3 &amp; Mobile Money</p>
         </form>
         <form id="formRegister" class="hidden">
           <div class="field">
@@ -152,8 +151,16 @@
           </label>
           <p class="err-msg" id="err-regAge"></p>
           <button class="btn-gold" type="submit" data-i18n="createAccount">Créer mon compte</button>
-          <p class="auth-trust" data-i18n="authTrust">Chiffrement AES-256 bits • Retraits automatisés 24/7 • Compatible Web3 &amp; Mobile Money</p>
         </form>
+      </div>
+      <div class="auth-crypto-line">
+        <span class="crypto-mini-row" aria-hidden="true">
+          <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
+          <svg class="coin-svg"><use href="#ico-btc"></use></svg>
+          <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+          <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+        </span>
+        <span data-i18n="authInstant">Dépôts &amp; retraits instantanés</span>
       </div>
       <p class="legal" data-i18n="legal">© 2026 OROLADO.COM · 18+</p>
     </div>
@@ -166,26 +173,24 @@
           <div class="brand-lockup mini" id="brandLockup">
             <img class="logo-mark sm" src="icons/icon.svg" alt="">
             <div class="brand">ORO<span>LADO</span></div>
-            <span class="web3-badge" title="Web3">
-              <span class="web3-dot" aria-hidden="true"></span>
-              <span class="web3-txt" data-i18n="web3Live">RÉSEAU WEB3 CONNECTÉ</span>
-            </span>
           </div>
           <div class="auth-quick hidden" id="authQuick">
             <button type="button" class="btn-auth-link" id="btnGoLogin" data-i18n="login">Connexion</button>
             <button type="button" class="btn-auth-link on" id="btnGoRegister" data-i18n="register">Inscription</button>
           </div>
           <div class="topbar-cta" id="topbarCta">
-            <span class="crypto-mini-row" aria-hidden="true">
-              <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
+            <span class="crypto-mini-row crypto-mini-left" aria-hidden="true">
               <svg class="coin-svg"><use href="#ico-btc"></use></svg>
-              <svg class="coin-svg"><use href="#ico-eth"></use></svg>
-              <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+              <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
             </span>
             <button type="button" class="btn-deposit" id="btnOpenDeposit">
               <span class="dep-bolt" aria-hidden="true">⚡</span>
               <span data-i18n="recharge">Recharger</span>
             </button>
+            <span class="crypto-mini-row crypto-mini-right" aria-hidden="true">
+              <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+              <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+            </span>
           </div>
           <div class="topbar-actions">
             <button type="button" class="help-badge" id="btnHelp" data-i18n="helpBtn">Help</button>
@@ -202,7 +207,7 @@
         <div class="balance-row">
           <div class="balance-card glass" id="balanceCard">
             <div class="bal-stack">
-              <span class="bal" id="balanceDisplay">$1,000,000</span>
+              <span class="bal" id="balanceDisplay">1 000 000 $</span>
               <span class="bal-sub" id="balanceAlt" hidden></span>
             </div>
             <button type="button" class="bal-plus hidden" id="btnDemoTopup" data-i18n-title="demoTopup" data-i18n-aria="demoTopup" title="Top up demo" aria-label="Top up demo">+</button>
@@ -233,8 +238,8 @@
             <div class="payout-live" id="payoutCrash300">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="pulseai">
-            <div class="k" data-i18n="boomTag">Pulse AI</div>
-            <div class="n">PULSE AI 200</div>
+            <div class="k" data-i18n="boomTag">Pulse</div>
+            <div class="n">PULSE 200</div>
             <div class="payout-live" id="payoutPulseAi">+88%</div>
           </button>
         </div>
@@ -300,7 +305,7 @@
             </div>
             <div class="win-preview">
               <div class="label" data-i18n="estYield">Rendement estimé</div>
-              <div class="amount" id="previewGain">$1.88</div>
+              <div class="amount" id="previewGain">1.88 $</div>
               <div class="mult" id="previewMult">Payout 88%</div>
             </div>
           </div>
@@ -320,7 +325,7 @@
             <button type="button" class="btn-trade btn-call" id="btnCall" translate="no">
               <span data-i18n="buy">BUY (CALL ↗)</span>
             </button>
-            <div class="fs-pad-bal" id="fsPadBalance" hidden>$0.00</div>
+            <div class="fs-pad-bal" id="fsPadBalance" hidden>0 $</div>
             <button type="button" class="btn-trade btn-put" id="btnPut" translate="no">
               <span data-i18n="sell">SELL (PUT ↘)</span>
             </button>
@@ -332,7 +337,19 @@
 
   <div id="fsTradeOverlay" class="fs-trade-overlay" hidden aria-hidden="true">
     <div class="fs-trade-topbar">
-      <div class="fs-top-bal" id="fsTopBalance" hidden>$0.00</div>
+      <span class="fs-crypto-row fs-crypto-left" aria-hidden="true">
+        <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
+        <svg class="coin-svg"><use href="#ico-btc"></use></svg>
+        <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+        <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+      </span>
+      <div class="fs-top-bal" id="fsTopBalance" hidden>0 $</div>
+      <span class="fs-crypto-row fs-crypto-right" aria-hidden="true">
+        <svg class="coin-svg"><use href="#ico-usdt"></use></svg>
+        <svg class="coin-svg"><use href="#ico-btc"></use></svg>
+        <svg class="coin-svg"><use href="#ico-eth"></use></svg>
+        <svg class="coin-svg"><use href="#ico-trx"></use></svg>
+      </span>
       <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
     </div>
     <div class="fs-trade-slot" id="fsTradeSlot"></div>
@@ -363,7 +380,7 @@
     </div>
     <div class="wallet-card" id="profWalletCard">
       <div class="wallet-card-k" data-i18n="availBal">Solde disponible</div>
-      <div class="wallet-card-v" id="profWalletBal">$0.00</div>
+      <div class="wallet-card-v" id="profWalletBal">0 $</div>
       <div class="wallet-xpress" aria-hidden="true">
         <span class="wx-coins">
           <svg class="wx-coin"><use href="#ico-usdt"></use></svg>
@@ -679,11 +696,8 @@
               <span class="copy-state idle"><span data-i18n="cryptoCopy">Copier l'adresse</span></span>
               <span class="copy-state done" data-i18n="cryptoCopied">✓ Copié dans le presse-papier</span>
             </button>
-            <div class="wallet-assure">
-              <span data-i18n="walletInstant">⚡ Validation instantanée (1 confirmation réseau)</span>
-              <span data-i18n="walletAudit">🔒 Smart Contract Audité &amp; Fonds Isolés</span>
-            </div>
             <p class="oxa-min" id="oxaMinHint">Minimum : $5 (USDT TRC20)</p>
+            <p class="oxa-min oxa-max" id="oxaMaxHint">Maximum : $1,000 (USDT TRC20)</p>
             <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente…</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
             <p class="crypto-verify" id="usdtPendingNote" hidden></p>
@@ -761,9 +775,9 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=110"></script>
-  <script src="js/translations.js?v=109"></script>
-  <script src="js/i18n.js?v=118"></script>
+  <script src="js/config.js?v=111"></script>
+  <script src="js/translations.js?v=110"></script>
+  <script src="js/i18n.js?v=119"></script>
   <script src="js/store.js?v=107"></script>
   <script src="js/api.js?v=107"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -772,6 +786,6 @@
   <script src="js/engine.js?v=108"></script>
   <script src="js/chart.js?v=113"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=136"></script>
+  <script src="js/app.js?v=137"></script>
 </body>
 </html>

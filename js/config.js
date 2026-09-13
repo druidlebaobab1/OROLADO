@@ -113,7 +113,7 @@
       },
       pulseai: {
         id: 'pulseai',
-        name: 'PULSE AI 200',
+        name: 'PULSE 200',
         short: 'P200',
         tag: 'IA haute volatilité',
         chart: 'candle',
@@ -153,14 +153,16 @@
     return Math.round(x * 100) / 100;
   };
 
-  /** Affichage USD avec centimes : $1,234.56 */
+  /** Affichage USD : 50 $ si entier, 1.50 $ s’il y a de vrais centimes. */
   D6.fmtMoney = function (n) {
     var v = D6.roundMoney(n);
     if (!isFinite(v)) v = 0;
-    return '$' + v.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    var neg = v < 0;
+    var abs = Math.abs(v);
+    var cents = Math.round((abs - Math.floor(abs)) * 100);
+    var grouped = Math.floor(abs).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    var body = cents ? (grouped + '.' + (cents < 10 ? '0' : '') + cents) : grouped;
+    return (neg ? '-' : '') + body + ' $';
   };
 
   /** Alias historique — toute l’UI passe par USD. */

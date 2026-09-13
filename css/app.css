@@ -7,7 +7,7 @@
   --text:#F8FAFC;--muted:#94A3B8;--safe:env(safe-area-inset-bottom,0px);
   --radius:8px;--radius-sm:6px;
   --font:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
-  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --font-mono:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;
   --btn-h:40px;--btn-h-m:44px;
 }
 html,body{height:100%;width:100%;min-height:100%;min-height:100dvh;background:var(--bg);color:var(--text);font-family:var(--font);
@@ -690,13 +690,13 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
   display:grid;place-items:center;line-height:1;overflow:hidden;position:relative;flex:0 0 32px}
 .lang-flag{font-size:14px;line-height:1}
 .lang-chev{position:absolute;right:1px;bottom:0;font-size:8px;line-height:1;opacity:.55}
-.lang-dd-menu{position:fixed;display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(16,22,34,.98);border:1px solid var(--line);
-  border-radius:12px;padding:8px;z-index:9999;min-width:240px;width:280px;max-width:min(280px,calc(100vw - 16px));
+.lang-dd-menu{position:fixed;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(16,22,34,.98);border:1px solid var(--line);
+  border-radius:8px;padding:4px;z-index:9999;min-width:168px;width:196px;max-width:min(196px,calc(100vw - 16px));
   max-height:none;overflow:hidden;
-  box-shadow:0 16px 40px rgba(0,0,0,.55)}
+  box-shadow:0 10px 24px rgba(0,0,0,.5)}
 .lang-dd-menu.hidden{display:none!important}
-.lang-dd-menu .lang-btn{display:flex;align-items:center;gap:6px;width:auto;text-align:left;font-size:12px;
-  padding:7px 8px;min-height:34px;opacity:1;border-radius:8px;font-weight:600;color:var(--text)}
+.lang-dd-menu .lang-btn{display:flex;align-items:center;gap:4px;width:auto;text-align:left;font-size:10px;
+  padding:4px 6px;min-height:24px;opacity:1;border-radius:6px;font-weight:600;color:var(--text)}
 .lang-dd-menu .lang-btn .lang-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lang-dd-menu .lang-btn.on{opacity:1;background:var(--gold-soft);color:var(--gold)}
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:40}
@@ -917,7 +917,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .brand-lockup.mini .brand{font-size:.58rem}
   .logo-mark.sm{width:18px;height:18px}
   .icon-btn,.lang-dd,.lang-dd-btn{width:26px;height:26px;min-width:26px;max-width:26px;flex-basis:26px;border-radius:8px}
-  .lang-dd-menu{width:min(280px,calc(100vw - 12px));min-width:0;max-height:none;overflow:hidden}
+  .lang-dd-menu{width:min(196px,calc(100vw - 12px));min-width:0;max-height:none;overflow:hidden}
   .lang-flag{font-size:12px}
   .help-badge{padding:4px 7px;font-size:.55rem}
   #screenTrade.is-guest .auth-quick{gap:4px}
@@ -1412,13 +1412,22 @@ html.lang-ar .usdt-qr-wrap{text-align:center}
 html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{position:relative;justify-content:flex-end}
 html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
   display:block!important;position:absolute;left:50%;transform:translateX(-50%);
-  font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;
   font-weight:800;font-size:13px;letter-spacing:.02em;color:#E8C36A;
-  background:#121722;border:1px solid rgba(232,195,106,.28);border-radius:8px;
-  padding:4px 12px;z-index:8;white-space:nowrap}
+  background:#121722;border:1px solid rgba(232,195,106,.45);border-radius:8px;
+  padding:4px 12px;z-index:8;white-space:nowrap;box-shadow:0 0 12px rgba(232,195,106,.18)}
+html.fs-trade .fs-crypto-row,html.is-fullscreen .fs-crypto-row{
+  display:flex!important;position:absolute;top:50%;transform:translateY(-50%);
+  align-items:center;gap:4px;opacity:.7;z-index:7;pointer-events:none}
+html.fs-trade .fs-crypto-left,html.is-fullscreen .fs-crypto-left{left:10px}
+html.fs-trade .fs-crypto-right,html.is-fullscreen .fs-crypto-right{right:42px}
+html.fs-trade .fs-crypto-row .coin-svg,html.is-fullscreen .fs-crypto-row .coin-svg{
+  width:14px;height:14px;border-radius:50%;overflow:hidden}
+html.fs-trade .ind-pills .ind-btn,
+html.is-fullscreen .ind-pills .ind-btn{display:none!important}
 html.fs-trade .fs-trade-overlay .chart-toolbar,
 html.is-fullscreen .fs-trade-overlay .chart-toolbar{
-  display:flex!important;min-height:26px;padding:2px 6px}
+  display:flex!important;min-height:22px;padding:2px 6px}
 html.fs-trade .fs-trade-overlay .chart-fs-btn,
 html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   display:inline-flex!important;position:relative!important;top:auto!important;right:auto!important}
@@ -1534,8 +1543,7 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
     position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;
     width:100%!important;max-width:none!important;flex:0 0 auto;z-index:40;
     padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
-  .web3-txt{max-width:11ch;overflow:hidden;text-overflow:ellipsis}
-  .crypto-mini-row{display:none}
+  .topbar-cta .crypto-mini-row{display:flex}
   .balance-card .bal{font-size:.98rem}
 }
 @media (max-width:429px){
@@ -1555,3 +1563,22 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 @media (min-width:1600px){
   .trade-shell{max-width:min(1680px,94vw)}
 }
+
+.web3-badge,.auth-trust,.wallet-assure{display:none!important}
+.fs-crypto-row{display:none}
+.auth-crypto-line{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0 0}
+.auth-crypto-line .crypto-mini-row{display:flex;gap:8px}
+.auth-crypto-line .coin-svg{width:22px;height:22px;border-radius:50%;overflow:hidden;opacity:.88}
+.auth-crypto-line span[data-i18n="authInstant"]{font-size:.68rem;font-weight:600;color:#94A3B8;letter-spacing:.02em}
+.topbar-cta .crypto-mini-row{display:flex;align-items:center;gap:4px}
+.topbar-cta .coin-svg{width:16px;height:16px;border-radius:50%;overflow:hidden}
+.oxa-max{margin-top:2px}
+.bal,.wallet-card-v,#previewGain,.fs-top-bal,.fs-pad-bal,.win-preview .amount,
+.strip-price,.pnl-value,.h-gain,.wd-bal-amt{
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;
+  font-variant-numeric:tabular-nums}
+html.is-android .drawer-nav{gap:1px;padding:0 6px 24px}
+html.is-android .drawer-item{min-height:26px;padding:3px 8px}
+html.is-android .drawer-section-title{margin:4px 8px 2px}
+html.is-android .drawer-item.drawer-logout{margin-bottom:8px;padding-bottom:8px}
+html.is-android #drawerProfile{padding-bottom:24px}

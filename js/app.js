@@ -641,7 +641,7 @@
     }
     var active = u.mode === 'real' ? real : demo;
     paintBalanceNow(active, !!flash);
-    if ($('profWalletBal')) $('profWalletBal').textContent = '$' + (Number(real) || 0).toFixed(2);
+    if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
       $('balanceAlt').hidden = true;
@@ -964,7 +964,7 @@
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
-    if ($('profWalletBal')) $('profWalletBal').textContent = '$' + (Number(real) || 0).toFixed(2);
+    if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
     profRecvCoin = 'usdt';
     paintProfRecv();
     prefetchRecv('usdt');
@@ -2120,7 +2120,7 @@
   }
 
   function fmtCryptoAmt(n) {
-    return (Number(n) || 0).toFixed(2) + ' $';
+    return D6.fmtMoney(n);
   }
 
   function setCryptoOkCopy(amount) {
@@ -2523,7 +2523,9 @@
       var m = oxaMeta(oxaAsset);
       var need = oxaMinUsd();
       var net = oxaAsset === 'usdt' ? (' ' + (oxaNet || 'TRC20')) : '';
-      $('oxaMinHint').textContent = 'Minimum : $' + need.toFixed(0) + ' (' + m.symbol + net + ')';
+      var label = m.symbol + net;
+      $('oxaMinHint').textContent = 'Minimum : $' + need.toFixed(0) + ' (' + label + ')';
+      if ($('oxaMaxHint')) $('oxaMaxHint').textContent = 'Maximum : $1,000 (' + label + ')';
     }
     if ($('oxaNetLabel')) {
       $('oxaNetLabel').textContent = 'En attente…';

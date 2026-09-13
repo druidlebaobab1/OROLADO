@@ -17,7 +17,7 @@
 
   D6.I18N_PACKS = {
     hi: {
-      tagline: 'डॉलर में ट्रेडिंग और विश्लेषण प्लेटफॉर्म',
+      tagline: 'Trading',
       authRealPitch: 'असली जीत जमा करने और निकालने के लिए 30 सेकंड में खाता बनाएं या साइन इन करें।',
       login: 'साइन इन', register: 'रजिस्टर', enter: 'साइन इन',
       createAccount: 'खाता बनाएं',
@@ -32,7 +32,7 @@
       modeShortDemo: 'DEMO', modeShortReal: 'REAL',
       virtualBal: 'वर्चुअल बैलेंस', realBalHint: 'असली बैलेंस',
       highVol: 'ऊँची अस्थिरता', lowVol: 'कम अस्थिरता',
-      midVol: 'मध्यम अस्थिरता', crashTag: 'गिरावट', boomTag: 'Pulse AI',
+      midVol: 'मध्यम अस्थिरता', crashTag: 'गिरावट', boomTag: 'Pulse',
       seeAllDemo: 'इतिहास (Demo)',
       seeAllReal: 'पोज़ीशन और इतिहास (Real)',
       histSheetDemo: 'ट्रेड इतिहास (Demo)',
