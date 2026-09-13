@@ -111,21 +111,24 @@
         accentDim: '255,23,68',
         feed: 'crash300'
       },
-      boom300: {
-        id: 'boom300',
-        name: 'BOOM 300 INDEX',
-        short: 'B300',
-        tag: 'Hausses rapides',
+      pulseai: {
+        id: 'pulseai',
+        name: 'PULSE AI 200',
+        short: 'P200',
+        tag: 'IA haute volatilité',
         chart: 'candle',
-        basePrice: 5890.33,
-        tickNoise: 0.55,
-        tickMs: 28,
-        ticksPerCandle: 8,
-        payoutMin: 1.88,
-        payoutMax: 1.98,
-        accent: '#00E676',
-        accentDim: '0,230,118',
-        feed: 'boom300'
+        plotTheme: 'darkPro',
+        candleThin: true,
+        trendLine: true,
+        basePrice: 6204.18,
+        tickNoise: 0.72,
+        tickMs: 32,
+        ticksPerCandle: 10,
+        payoutMin: 1.80,
+        payoutMax: 1.88,
+        accent: '#7C5CFF',
+        accentDim: '124,92,255',
+        feed: 'pulseai'
       }
     },
     COUNTRY_CODES: [
@@ -150,13 +153,13 @@
     return Math.round(x * 100) / 100;
   };
 
-  /** Affichage USD entier : $1,234 (jamais de centimes). */
+  /** Affichage USD avec centimes : $1,234.56 */
   D6.fmtMoney = function (n) {
-    var v = Math.round(Number(n) || 0);
+    var v = D6.roundMoney(n);
     if (!isFinite(v)) v = 0;
     return '$' + v.toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
   };
 

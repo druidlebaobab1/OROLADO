@@ -3089,6 +3089,19 @@ function orolado_flw_xof_countries(): array {
   return ['CI', 'SN', 'BF', 'ML', 'TG', 'BJ'];
 }
 
+function orolado_flw_xaf_countries(): array {
+  return ['CM', 'GA', 'CG', 'GQ', 'CF', 'TD'];
+}
+
+/** 3 USD = 2000 XOF/XAF — Flutterwave n’accepte pas les centimes CFA. */
+function orolado_usd_to_cfa_int($usd): int {
+  return (int) max(100, round(orolado_money($usd) * 2000 / 3));
+}
+
+function orolado_cfa_to_usd($cfa): float {
+  return orolado_money(((float) $cfa) * 3 / 2000);
+}
+
 function orolado_flw_norm_cc(string $raw): string {
   $cc = strtoupper(preg_replace('/[^A-Z]/', '', $raw) ?? '');
   if (strlen($cc) !== 2) return '';
@@ -3099,7 +3112,7 @@ function orolado_flw_norm_cc(string $raw): string {
 function orolado_flw_lang_country(string $lang): string {
   $raw = strtolower(str_replace('_', '-', trim($lang)));
   if ($raw === '') return '';
-  if (preg_match('/^(pt-br|en-ng|en-gh|en-ke|en-za|fr-ci|fr-sn|fr-bf|fr-ml|fr-tg|fr-bj)$/', $raw)) {
+  if (preg_match('/^(pt-br|en-ng|en-gh|en-ke|en-za|fr-ci|fr-sn|fr-bf|fr-ml|fr-tg|fr-bj|fr-cm|fr-ga|fr-cg)$/', $raw)) {
     return strtoupper(substr($raw, -2));
   }
   if (preg_match('/^[a-z]{2}-([a-z]{2})$/', $raw, $m)) {
@@ -3151,7 +3164,10 @@ function orolado_flw_ip_country(): string {
 
 function orolado_flw_dial_country(string $dial, string $phone = ''): string {
   $d = preg_replace('/\D/', '', $dial . $phone) ?? '';
-  $map = ['225' => 'CI', '221' => 'SN', '226' => 'BF', '223' => 'ML', '228' => 'TG', '229' => 'BJ'];
+  $map = [
+    '225' => 'CI', '221' => 'SN', '226' => 'BF', '223' => 'ML', '228' => 'TG', '229' => 'BJ',
+    '237' => 'CM', '241' => 'GA', '242' => 'CG', '240' => 'GQ', '236' => 'CF', '235' => 'TD',
+  ];
   foreach ($map as $pref => $cc) {
     if (str_starts_with($d, $pref)) return $cc;
   }
@@ -3173,7 +3189,9 @@ function orolado_flw_resolve_country(array $req, array $me): string {
 }
 
 function orolado_flw_payment_options(string $cc): string {
-  if (in_array($cc, orolado_flw_xof_countries(), true)) return '';
+  if (in_array($cc, orolado_flw_xof_countries(), true) || in_array($cc, orolado_flw_xaf_countries(), true)) {
+    return 'card,mobilemoneyfranco';
+  }
   return '';
 }
 
@@ -3185,9 +3203,10 @@ function orolado_flw_rate(string $key, float $fallback): float {
 function orolado_flw_charge(string $cc, float $usd): array {
   $usd = max(orolado_money($usd), 3.0);
   if (in_array($cc, orolado_flw_xof_countries(), true)) {
-    $xof = orolado_usd_to_fcfa($usd);
-    if ($xof < 100) $xof = (int) max(100, round($usd * 600));
-    return ['currency' => 'XOF', 'amount' => $xof];
+    return ['currency' => 'XOF', 'amount' => orolado_usd_to_cfa_int($usd)];
+  }
+  if (in_array($cc, orolado_flw_xaf_countries(), true)) {
+    return ['currency' => 'XAF', 'amount' => orolado_usd_to_cfa_int($usd)];
   }
   if ($cc === 'NG') return ['currency' => 'NGN', 'amount' => round($usd * orolado_flw_rate('USD_NGN_RATE', 1500), 2)];
   if ($cc === 'GH') return ['currency' => 'GHS', 'amount' => round($usd * orolado_flw_rate('USD_GHS_RATE', 12), 2)];
@@ -3230,7 +3249,7 @@ function orolado_flw_real_phone(string $phone, string $dial = ''): string {
   if ($dialDigits !== '' && !str_starts_with($digits, $dialDigits) && strlen($digits) <= 12) {
     $digits = $dialDigits . $digits;
   }
-  if (preg_match('/^(225|221|226|223|228|229)0+$/', $digits)) return '';
+  if (preg_match('/^(225|221|226|223|228|229|237|241|242|240|236|235)0+$/', $digits)) return '';
   return '+' . $digits;
 }
 
@@ -3330,10 +3349,17 @@ function orolado_flutterwave_checkout(array $req): array {
   if ($wantCur === 'XOF' || $wantCur === 'CFA' || $wantCur === 'FCFA') {
     $cc = in_array($cc, orolado_flw_xof_countries(), true) ? $cc : 'CI';
   }
-  $charge = orolado_flw_charge($cc, $amountUsd);
-  if (strtoupper((string) ($charge['currency'] ?? '')) === 'XOF' && (float) ($charge['amount'] ?? 0) < 100) {
-    $charge = ['currency' => 'XOF', 'amount' => max(100, orolado_usd_to_fcfa($amountUsd))];
+  if ($wantCur === 'XAF') {
+    $cc = in_array($cc, orolado_flw_xaf_countries(), true) ? $cc : 'CM';
   }
+  $charge = orolado_flw_charge($cc, $amountUsd);
+  $payCur = strtoupper((string) ($charge['currency'] ?? ''));
+  if (($payCur === 'XOF' || $payCur === 'XAF') && (float) ($charge['amount'] ?? 0) < 100) {
+    $charge = ['currency' => $payCur, 'amount' => orolado_usd_to_cfa_int($amountUsd)];
+  }
+  $charge['amount'] = ($payCur === 'XOF' || $payCur === 'XAF')
+    ? (int) round((float) ($charge['amount'] ?? 0))
+    : (float) ($charge['amount'] ?? 0);
   $method = strtolower((string) ($charge['currency'] ?? 'usd'));
   $uid = (string) $me['id'];
   $ref = 'flw_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . bin2hex(random_bytes(6));
@@ -3389,6 +3415,7 @@ function orolado_flutterwave_checkout(array $req): array {
     'method' => $method,
     'customer' => $customer,
     'customizations' => $customizations,
+    'payment_options' => orolado_flw_payment_options($cc),
   ];
 }
 
@@ -3409,7 +3436,7 @@ function orolado_flutterwave_verify(string $txRef, string $transactionId = ''): 
   $amt = (float) ($data['amount'] ?? 0);
   $usd = 0.0;
   if ($cur === 'USD') $usd = orolado_money($amt);
-  else if ($cur === 'XOF' || $cur === 'CFA' || $cur === 'FCFA') $usd = orolado_fcfa_to_usd($amt);
+  else if ($cur === 'XOF' || $cur === 'XAF' || $cur === 'CFA' || $cur === 'FCFA') $usd = orolado_cfa_to_usd($amt);
   else if ($cur === 'NGN') {
     $rate = orolado_flw_rate('USD_NGN_RATE', 1500);
     $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;

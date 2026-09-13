@@ -20,8 +20,12 @@
   var metaPvAt = 0;
   var metaPvScreen = '';
   var IS_ANDROID = /Android/i.test(navigator.userAgent || '');
+  var IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (IS_ANDROID) {
     try { document.documentElement.classList.add('is-android'); } catch (eAnd) { /* ignore */ }
+  }
+  if (IS_IOS) {
+    try { document.documentElement.classList.add('is-ios'); } catch (eIos) { /* ignore */ }
   }
   var DEMO_TRADES_KEY = 'orolado_demo_trades_v1';
 
@@ -209,6 +213,13 @@
       el.textContent = text;
       lastPaintedBalance = text;
     }
+    ['fsTopBalance', 'fsPadBalance'].forEach(function (id) {
+      var b = $(id);
+      if (b) {
+        b.textContent = text;
+        b.hidden = false;
+      }
+    });
     if (flash) {
       var card = $('balanceCard');
       if (card) {
@@ -264,7 +275,11 @@
     return sec.toFixed(1) + 's';
   }
   function t(k) { return D6.I18N.t(k); }
-  function assetId(u) { return (u && u.assetId) || 'v100'; }
+  function mapAssetId(id) {
+    if (id === 'boom300') return 'pulseai';
+    return id || 'v100';
+  }
+  function assetId(u) { return mapAssetId((u && u.assetId) || 'v100'); }
 
   function showScreen(name) {
     ['screenAuth', 'screenTrade', 'screenAdmin'].forEach(function (id) {
@@ -637,8 +652,8 @@
   function updatePayoutUi() {
     var u = user();
     if (!u || !$('payoutV100')) return;
-    var ids = ['v100', 'stable', 'v75', 'crash300', 'boom300'];
-    var map = { v100: 'payoutV100', stable: 'payoutStable', v75: 'payoutV75', crash300: 'payoutCrash300', boom300: 'payoutBoom300' };
+    var ids = ['v100', 'stable', 'v75', 'crash300', 'pulseai'];
+    var map = { v100: 'payoutV100', stable: 'payoutStable', v75: 'payoutV75', crash300: 'payoutCrash300', pulseai: 'payoutPulseAi' };
     var odds = currentOdds(u);
     var pct = Math.round((odds - 1) * 100);
     ids.forEach(function (id) {
@@ -647,7 +662,8 @@
       el.textContent = pct + '%';
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
-    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(D6.roundMoney(stake * odds));
+    var netGain = D6.roundMoney(stake * (pct / 100));
+    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(netGain);
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
       btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);
@@ -746,7 +762,7 @@
 
   function orderRow(h) {
     var stake = Number(h.stake || 0);
-    var net = h.net != null ? Number(h.net) : (h.won ? Math.floor(stake * Number(h.payout || 1.88)) - stake : -stake);
+    var net = h.net != null ? Number(h.net) : (h.won ? D6.roundMoney(stake * Number(h.payout || 1.88)) - stake : -stake);
     var label;
     var cls;
     if (h.voided || h.status === 'void') {
@@ -859,7 +875,7 @@
     });
     settled.slice(0, 50).forEach(function (h) {
       var stake = Number(h.stake || 0);
-      var payoutAmt = Math.floor(stake * Number(h.payout || 1.88));
+      var payoutAmt = D6.roundMoney(stake * Number(h.payout || 1.88));
       var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
       var res = (h.voided || h.status === 'void') ? 'Egalite' : (h.won ? 'Gagne' : 'Perdu');
       var pnlCls = net > 0 ? 'w' : (net < 0 ? 'l' : '');
@@ -889,10 +905,10 @@
     if (res.won) {
       // Montant total crédité (mise × multiplicateur), pas le net.
       if (res.position && res.position.stake) {
-        return Math.floor(Number(res.position.stake) * Number(res.position.payout || 1.88));
+        return D6.roundMoney(Number(res.position.stake) * Number(res.position.payout || 1.88));
       }
       if (res.trade && res.trade.stake) {
-        return Math.floor(Number(res.trade.stake) * Number(res.trade.payout || 1.88));
+        return D6.roundMoney(Number(res.trade.stake) * Number(res.trade.payout || 1.88));
       }
       if (res.net != null && res.position && res.position.stake) {
         return Math.abs(Number(res.net)) + Number(res.position.stake);
@@ -1827,7 +1843,8 @@
     var raw = String(navigator.language || navigator.userLanguage || '').toLowerCase().replace('_', '-');
     var map = {
       'pt-br': 'BR', 'en-ng': 'NG', 'en-gh': 'GH', 'en-ke': 'KE', 'en-za': 'ZA',
-      'fr-ci': 'CI', 'fr-sn': 'SN', 'fr-bf': 'BF', 'fr-ml': 'ML', 'fr-tg': 'TG', 'fr-bj': 'BJ'
+      'fr-ci': 'CI', 'fr-sn': 'SN', 'fr-bf': 'BF', 'fr-ml': 'ML', 'fr-tg': 'TG', 'fr-bj': 'BJ',
+      'fr-cm': 'CM', 'fr-ga': 'GA', 'fr-cg': 'CG'
     };
     if (map[raw]) return map[raw];
     var m = raw.match(/^[a-z]{2}-([a-z]{2})$/);
@@ -1893,6 +1910,17 @@
   function flwXofCountries() {
     return { CI: 1, SN: 1, BF: 1, ML: 1, TG: 1, BJ: 1 };
   }
+  function flwXafCountries() {
+    return { CM: 1, GA: 1, CG: 1, GQ: 1, CF: 1, TD: 1 };
+  }
+  function flwCfaCurrency(cc) {
+    if (flwXofCountries()[cc]) return 'XOF';
+    if (flwXafCountries()[cc]) return 'XAF';
+    return '';
+  }
+  function usdToCfaInt(usd) {
+    return Math.max(100, Math.round(Number(usd || 0) * 2000 / 3));
+  }
 
   function normalizeFlwSession(session) {
     var s = session || {};
@@ -1901,8 +1929,8 @@
     var usd = Number(s.amountUsd) || 0;
     if (!usd) usd = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || minDeposit());
     if (cur === 'CFA' || cur === 'FCFA') cur = 'XOF';
-    if (cur === 'XOF') {
-      if (amt < 100) amt = Math.max(100, Math.round(usd * ((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600)));
+    if (cur === 'XOF' || cur === 'XAF') {
+      if (amt < 100) amt = usdToCfaInt(usd);
       amt = Math.round(amt);
     }
     s.currency = cur;
@@ -1934,8 +1962,9 @@
     var opened = false;
     var watchdog = setTimeout(function () {
       if (opened || flwModalVisible()) return;
-      toast('Le paiement tarde à s\'ouvrir. Réessayez, ou utilisez le dépôt crypto.', 'err', 5200);
-    }, 5000);
+      toast('Le paiement n\'a pas pu s\'ouvrir. Réessayez.', 'err', 6000);
+      try { openModal('depositModal'); } catch (eR) { /* ignore */ }
+    }, 6000);
     function markOpen() {
       opened = true;
       clearTimeout(watchdog);
@@ -1966,6 +1995,11 @@
         },
         onclose: function () { markOpen(); }
       };
+      var payOpts = String(session.payment_options || '').trim();
+      if (!payOpts && (session.currency === 'XOF' || session.currency === 'XAF')) {
+        payOpts = 'card,mobilemoneyfranco';
+      }
+      if (payOpts) cfg.payment_options = payOpts;
       FlutterwaveCheckout(cfg);
       setTimeout(function () { if (flwModalVisible()) markOpen(); }, 700);
     } catch (e) {
@@ -2791,13 +2825,13 @@
       }
       var cc = '';
       try { cc = await detectPayCountry(); } catch (eCc) { cc = ''; }
-      var xof = !!(cc && flwXofCountries()[cc]);
+      var cfa = flwCfaCurrency(cc);
       var remote = await postFlutterwaveCheckout({
         token: tok,
         amount: amt,
         country: cc || '',
         lang: String(navigator.language || navigator.userLanguage || ''),
-        currency: xof ? 'XOF' : ''
+        currency: cfa || ''
       });
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);
@@ -3400,7 +3434,7 @@
         var u = user();
         if (!u) return;
         if (!guardLiveTradeView()) return;
-        u.assetId = chip.dataset.asset; D6.Store.saveUser(u); updateAssetUi();
+        u.assetId = mapAssetId(chip.dataset.asset); D6.Store.saveUser(u); updateAssetUi();
       });
     });
     document.querySelectorAll('.dur-chip').forEach(function (chip) {
@@ -3870,14 +3904,18 @@
       return window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
     }
     function installDismissedForever() {
-      try { return localStorage.getItem('oro_install_dismissed') === '1'; } catch (e) { return false; }
+      try {
+        if (localStorage.getItem('oro_install_dismissed') === '1') return true;
+        return (parseInt(localStorage.getItem('orolado_install_dismissed_count') || '0', 10) || 0) >= 2;
+      } catch (e) { return false; }
     }
     function closeCount() {
-      try { return Math.max(0, parseInt(localStorage.getItem('oro_install_close_n') || '0', 10) || 0); } catch (e) { return 0; }
+      try { return Math.max(0, parseInt(localStorage.getItem('orolado_install_dismissed_count') || localStorage.getItem('oro_install_close_n') || '0', 10) || 0); } catch (e) { return 0; }
     }
     function bumpClose() {
       var n = closeCount() + 1;
       try {
+        localStorage.setItem('orolado_install_dismissed_count', String(n));
         localStorage.setItem('oro_install_close_n', String(n));
         if (n >= 2) localStorage.setItem('oro_install_dismissed', '1');
       } catch (e) { /* ignore */ }
@@ -4033,7 +4071,10 @@
           var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
           var mobile = window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
           var forever = false;
-          try { forever = localStorage.getItem('oro_install_dismissed') === '1'; } catch (e0) { forever = false; }
+          try {
+            forever = localStorage.getItem('oro_install_dismissed') === '1'
+              || (parseInt(localStorage.getItem('orolado_install_dismissed_count') || '0', 10) || 0) >= 2;
+          } catch (e0) { forever = false; }
           if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
             var ban = $('installBanner');
             ban.classList.remove('hidden', 'fade-out');

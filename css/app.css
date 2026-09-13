@@ -288,7 +288,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
 .chart-fs-btn{
-  position:absolute;z-index:28;top:8px;right:72px;min-height:26px;padding:3px 8px;gap:5px;
+  position:relative;z-index:13;top:auto;right:auto;min-height:24px;padding:3px 8px;gap:5px;margin-left:4px;
   border:1px solid #1E2638;border-radius:4px;cursor:pointer;pointer-events:auto;
   display:inline-flex;align-items:center;justify-content:center;
   background:rgba(18,23,34,.85);
@@ -314,7 +314,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 @media (max-width:859px){
   .chart-fs-btn{
-    right:68px;min-height:28px;padding:3px 8px;width:auto;border-radius:4px;
+    position:relative;right:auto;top:auto;min-height:24px;padding:3px 8px;width:auto;border-radius:4px;
     background:rgba(18,23,34,.85);border:1px solid #1E2638;color:#94A3B8;
     box-shadow:none}
   .chart-fs-label{display:inline;font-size:10px}
@@ -701,14 +701,18 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .lang-bar-auth{position:absolute;top:10px;right:10px;z-index:40}
 .lang-btn{border:0;background:transparent;font-size:13px;line-height:1;padding:3px;border-radius:6px;cursor:pointer;opacity:.45}
 .lang-btn.on{opacity:1;background:var(--gold-soft)}
-.install-banner{position:absolute;left:auto;right:10px;top:40px;bottom:auto;z-index:26;display:flex;align-items:center;
-  max-width:none;width:auto;background:rgba(11,14,20,.78);border:1px solid rgba(245,166,35,.4);border-radius:999px;padding:0;
-  box-shadow:0 8px 22px rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto;
+.install-banner{position:absolute;left:50%;transform:translateX(-50%);right:auto;top:10px;bottom:auto;z-index:26;display:flex;align-items:center;gap:6px;
+  max-width:calc(100% - 16px);width:auto;background:#121722;border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:4px 6px 4px 10px;
+  box-shadow:0 8px 22px rgba(0,0,0,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto;
   opacity:1;transition:opacity .45s ease}
 .install-banner.hidden{display:none!important}
 .install-banner.fade-out{opacity:0;pointer-events:none}
-.install-banner button{border:0;border-radius:999px;padding:6px 12px;font:inherit;font-weight:800;font-size:.68rem;
-  background:transparent;color:#F8E7B8;cursor:pointer;white-space:nowrap;letter-spacing:.01em}
+.install-banner #btnInstall{border:0;border-radius:999px;padding:6px 8px;font:inherit;font-weight:800;font-size:.72rem;
+  background:transparent;color:#E8EDF5;cursor:pointer;white-space:nowrap;letter-spacing:.01em;display:inline-flex;align-items:center;gap:6px}
+.install-banner #btnInstall em{color:#F5A623;font-style:normal;font-weight:800}
+.install-ico{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:rgba(245,166,35,.16);color:#F5A623;font-size:11px;font-weight:900;line-height:1}
+.install-x{border:0;background:transparent;color:#94A3B8;width:28px;height:28px;border-radius:999px;cursor:pointer;font-size:14px;line-height:1;flex-shrink:0}
+.install-x:hover{color:#fff;background:rgba(255,255,255,.06)}
 .install-ios-box{max-width:340px;text-align:left}
 .install-ios-lead{font-size:.82rem;color:var(--muted);margin:0 0 12px;line-height:1.4;font-weight:600}
 .install-ios-steps{margin:0 0 16px;padding-left:1.15rem;display:flex;flex-direction:column;gap:10px}
@@ -1072,8 +1076,6 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-trade-overlay .stake-min-actions,
 .fs-trade-overlay .stake-act,
 .fs-trade-overlay .qbtn,
-.fs-trade-overlay .chart-toolbar,
-.fs-trade-overlay .chart-fs-btn,
 .fs-trade-overlay .timer-panel,
 .fs-trade-overlay .trade-lock,
 .fs-trade-overlay .help-fab,
@@ -1404,3 +1406,55 @@ html.lang-ar .usdt-qr-wrap{
 html.lang-ar .usdt-amt,
 html.lang-ar .usdt-addr,
 html.lang-ar .usdt-qr-wrap{text-align:center}
+
+.fs-top-bal,.fs-pad-bal{display:none}
+html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{position:relative;justify-content:flex-end}
+html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{
+  display:block!important;position:absolute;left:50%;transform:translateX(-50%);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;
+  font-weight:800;font-size:13px;letter-spacing:.02em;color:#E8C36A;
+  background:#121722;border:1px solid rgba(232,195,106,.28);border-radius:8px;
+  padding:4px 12px;z-index:8;white-space:nowrap}
+html.fs-trade .fs-trade-overlay .chart-toolbar,
+html.is-fullscreen .fs-trade-overlay .chart-toolbar{
+  display:flex!important;min-height:26px;padding:2px 6px}
+html.fs-trade .fs-trade-overlay .chart-fs-btn,
+html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
+  display:inline-flex!important;position:relative!important;top:auto!important;right:auto!important}
+
+@media (max-width:859px){
+  html.fs-trade .fs-trade-overlay.on .fs-trade-topbar,
+  html.is-fullscreen .fs-trade-overlay.on .fs-trade-topbar{
+    min-height:32px;padding:4px 10px;padding-top:max(4px,env(safe-area-inset-top,0px))}
+  html.fs-trade .fs-trade-overlay.on .asset-bar,
+  html.is-fullscreen .fs-trade-overlay.on .asset-bar{padding:4px 8px}
+  html.fs-trade .fs-trade-overlay.on .chart-card,
+  html.fs-trade .fs-trade-overlay.on #chart,
+  html.is-fullscreen .fs-trade-overlay.on .chart-card,
+  html.is-fullscreen .fs-trade-overlay.on #chart{margin-top:-8px!important}
+  html.fs-trade .fs-trade-overlay.on .chart-stage,
+  html.is-fullscreen .fs-trade-overlay.on .chart-stage{margin-top:-36px!important}
+  html.fs-trade .fs-trade-overlay.on .trade-wrap,
+  html.is-fullscreen .fs-trade-overlay.on .trade-wrap{
+    padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+  html.fs-trade .fs-trade-overlay.on .pad,
+  html.is-fullscreen .fs-trade-overlay.on .pad,
+  html.is-ios .fs-trade-overlay.on .pad,
+  html.is-android .fs-trade-overlay.on .pad{
+    position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;max-width:none!important;height:auto!important;flex:none!important;
+    z-index:50!important;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))!important}
+  html.fs-trade .fs-pad-bal,html.is-fullscreen .fs-pad-bal{display:none!important}
+}
+
+@media (orientation:landscape) and (min-width:860px){
+  html.fs-trade .fs-top-bal,html.is-fullscreen .fs-top-bal{display:none!important}
+  html.fs-trade .fs-pad-bal,html.is-fullscreen .fs-pad-bal{
+    display:flex!important;align-items:center;justify-content:center;
+    min-width:0;width:100%;margin:6px 0;padding:8px 6px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;
+    font-weight:800;font-size:12px;color:#E8C36A;
+    background:#121722;border:1px solid rgba(232,195,106,.28);border-radius:8px}
+  html.fs-trade .pad .trade-row,html.is-fullscreen .pad .trade-row{
+    flex-direction:column!important;width:100%!important}
+}

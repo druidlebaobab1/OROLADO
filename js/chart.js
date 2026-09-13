@@ -12,6 +12,7 @@
   var payoutAcc = 0;
   var running = false;
   var activeAsset = 'v100';
+  var lastDrawnClose = 0;
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
@@ -936,7 +937,9 @@
     // Plus de panneau RSI/MACD : toute la hauteur va au plot.
     // Marges pixel ; axe Y collé à droite ≤ 45px.
     var tradeFloor = (allTrades.length && narrow) ? 32 : (allTrades.length ? 22 : 0);
-    var pad = { t: narrow ? 20 : 24, r: 45, b: 24 + tradeFloor, l: 8 };
+    var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
+      (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
+    var pad = { t: fsOn && narrow ? 4 : (narrow ? 12 : 20), r: 45, b: 24 + tradeFloor, l: 8 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
@@ -1026,39 +1029,10 @@
       viewMin = nextMin;
       viewMax = nextMax;
     }
-    if (activeAsset === 'boom300') {
-      var bLo = Infinity;
-      var bHi = -Infinity;
-      var bBodies = [];
-      var bi;
-      var bd;
-      for (bi = 0; bi < candles.length; bi++) {
-        bd = candles[bi];
-        bBodies.push(Math.abs((bd.c || 0) - (bd.o || 0)) || 0.2);
-      }
-      bBodies.sort(function (a, b) { return a - b; });
-      var bMed = bBodies.length ? bBodies[Math.floor(bBodies.length * 0.5)] : 1.2;
-      var wickCap = Math.max(bMed * 3, 2.4);
-      for (bi = 0; bi < candles.length; bi++) {
-        bd = candles[bi];
-        var mid = ((bd.o || 0) + (bd.c || 0)) / 2;
-        var hh = Math.min(bd.h, mid + wickCap);
-        var ll = Math.max(bd.l, mid - wickCap * 0.7);
-        if (ll < bLo) bLo = ll;
-        if (hh > bHi) bHi = hh;
-      }
-      if (isFinite(market.price)) {
-        bLo = Math.min(bLo, market.price);
-        bHi = Math.max(bHi, market.price);
-      }
-      if (!isFinite(bLo) || !isFinite(bHi)) {
-        bLo = minPrice;
-        bHi = maxPrice;
-      }
-      var bSpan = Math.max(bHi - bLo, bMed * 10, 2.4);
-      var bPad = bSpan * 0.15;
-      viewMin = bLo - bPad;
-      viewMax = bHi + bPad;
+    if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
+      lastDrawnClose = Number(candles[candles.length - 1].c);
+    } else if (isFinite(market.price)) {
+      lastDrawnClose = Number(market.price);
     }
 
     var minP = viewMin;
@@ -1286,8 +1260,11 @@
         try { console.warn('Mobile display fallback:', err); } catch (e13) { /* ignore */ }
       }
     },
+    lastClose: function () { return lastDrawnClose; },
+    lastAsset: function () { return activeAsset; },
     setAsset: function (id) {
       // Switch plot only : reset échelle + redessin immédiat (pas d'écran noir app).
+      if (id === 'boom300') id = 'pulseai';
       activeAsset = id;
       viewMin = 0;
       viewMax = 0;

@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=130">
+  <link rel="stylesheet" href="css/app.css?v=131">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -209,10 +209,10 @@
             <div class="n">CRASH 300</div>
             <div class="payout-live" id="payoutCrash300">+88%</div>
           </button>
-          <button type="button" class="asset-chip" data-asset="boom300">
-            <div class="k" data-i18n="boomTag">Rallies</div>
-            <div class="n">BOOM 300</div>
-            <div class="payout-live" id="payoutBoom300">+88%</div>
+          <button type="button" class="asset-chip" data-asset="pulseai">
+            <div class="k" data-i18n="boomTag">Pulse AI</div>
+            <div class="n">PULSE AI 200</div>
+            <div class="payout-live" id="payoutPulseAi">+88%</div>
           </button>
         </div>
 
@@ -223,6 +223,11 @@
               <button type="button" class="ind-btn" data-ind="bb" title="Bandes de Bollinger">BB</button>
               <button type="button" class="ind-btn" id="chartZoomIn" data-i18n-aria="zoomIn" data-i18n-title="zoomIn" aria-label="Zoom in" title="Zoom +">+</button>
               <button type="button" class="ind-btn" id="chartZoomOut" data-i18n-aria="zoomOut" data-i18n-title="zoomOut" aria-label="Zoom out" title="Zoom −">−</button>
+              <button type="button" class="chart-fs-btn" id="btnChartFs" data-i18n-aria="fsEnter" data-i18n-title="fsEnter" aria-label="Full screen" title="Full screen">
+                <span class="chart-fs-live" aria-hidden="true"></span>
+                <span class="chart-fs-ico" aria-hidden="true">⛶</span>
+                <span class="chart-fs-label" data-i18n="fsEnter">PLEIN ÉCRAN</span>
+              </button>
             </div>
             <div class="chart-live-price" aria-live="polite">
               <span class="strip-price chart-price-wm" id="currentPrice">13 666.42</span>
@@ -230,16 +235,15 @@
           </div>
           <div class="chart-stage" id="chartStage">
             <div id="installBanner" class="install-banner hidden">
-              <button type="button" id="btnInstall">Installer Orolado</button>
+              <button type="button" id="btnInstall">
+                <span class="install-ico" aria-hidden="true">↓</span>
+                <span>Installer <em>Orolado</em></span>
+              </button>
+              <button type="button" class="install-x" id="btnInstallClose" aria-label="Fermer">✕</button>
             </div>
             <canvas id="chartCanvas" width="800" height="380" style="display:block;visibility:visible;opacity:1;z-index:10;background:#0B0E14"></canvas>
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true" style="background:transparent"></canvas>
-            <button type="button" class="chart-fs-btn" id="btnChartFs" data-i18n-aria="fsEnter" data-i18n-title="fsEnter" aria-label="Full screen" title="Full screen">
-              <span class="chart-fs-live" aria-hidden="true"></span>
-              <span class="chart-fs-ico" aria-hidden="true">⛶</span>
-              <span class="chart-fs-label" data-i18n="fsEnter">PLEIN ÉCRAN</span>
-            </button>
           </div>
         </div>
 
@@ -293,6 +297,7 @@
             <button type="button" class="btn-trade btn-call" id="btnCall" translate="no">
               <span data-i18n="buy">BUY (CALL ↗)</span>
             </button>
+            <div class="fs-pad-bal" id="fsPadBalance" hidden>$0.00</div>
             <button type="button" class="btn-trade btn-put" id="btnPut" translate="no">
               <span data-i18n="sell">SELL (PUT ↘)</span>
             </button>
@@ -304,6 +309,7 @@
 
   <div id="fsTradeOverlay" class="fs-trade-overlay" hidden aria-hidden="true">
     <div class="fs-trade-topbar">
+      <div class="fs-top-bal" id="fsTopBalance" hidden>$0.00</div>
       <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter">✕</button>
     </div>
     <div class="fs-trade-slot" id="fsTradeSlot"></div>
@@ -711,7 +717,7 @@
       <button type="button" class="btn-close" id="closeTip">✕</button>
       <div class="convert-fire">💡</div>
       <div class="convert-title" data-i18n="tipTitle">Trading tip</div>
-      <p class="convert-copy" data-i18n="lossStreakTip">Besoin d'aide pour vos prédictions ? Activez les indicateurs MA, RSI et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
+      <p class="convert-copy" data-i18n="lossStreakTip">Activez les indicateurs MA et BB au-dessus du graphique pour analyser la tendance avant de miser !</p>
       <button type="button" class="btn-gold" id="btnTipOk" data-i18n="continue">CONTINUER</button>
     </div>
   </div>
@@ -724,17 +730,17 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=109"></script>
-  <script src="js/translations.js?v=108"></script>
-  <script src="js/i18n.js?v=116"></script>
+  <script src="js/config.js?v=110"></script>
+  <script src="js/translations.js?v=109"></script>
+  <script src="js/i18n.js?v=117"></script>
   <script src="js/store.js?v=107"></script>
   <script src="js/api.js?v=107"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=107"></script>
+  <script src="js/supabase.js?v=108"></script>
   <script src="js/auth.js?v=108"></script>
-  <script src="js/engine.js?v=107"></script>
-  <script src="js/chart.js?v=112"></script>
+  <script src="js/engine.js?v=108"></script>
+  <script src="js/chart.js?v=113"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=134"></script>
+  <script src="js/app.js?v=135"></script>
 </body>
 </html>

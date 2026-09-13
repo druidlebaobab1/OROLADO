@@ -128,7 +128,7 @@
   }
 
   function orderToPosition(o) {
-    var assetMap = { v100: 'V100', stable: 'SCI', v75: 'V75', crash300: 'CRASH', boom300: 'BOOM' };
+    var assetMap = { v100: 'V100', stable: 'SCI', v75: 'V75', crash300: 'CRASH', pulseai: 'PULSE', boom300: 'PULSE' };
     return {
       id: o.id,
       at: o.created_at,
