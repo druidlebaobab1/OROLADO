@@ -1793,8 +1793,45 @@ html.is-ios .stake-field input{border-radius:10px}
 #wdStepGrid{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 #wdStepForm{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 #wdStepForm.hidden,#wdStepGrid.hidden{display:none!important}
-.wd-back{align-self:flex-start;border:0;background:transparent;color:#F8E7B8;font:inherit;font-size:.78rem;font-weight:800;
-  padding:2px 0 8px;cursor:pointer;pointer-events:auto;touch-action:manipulation}
+.wd-modal-head{position:relative;display:flex;align-items:center;justify-content:center;min-height:40px;margin:0 0 8px}
+.wd-modal-head .modal-title{margin:0;padding:0 40px;width:100%;justify-content:center;text-align:center}
+.wd-modal-head .btn-close{position:absolute;top:50%;right:0;transform:translateY(-50%);z-index:3}
+.wd-back-ico{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:3;
+  border:0;background:transparent;color:#F8E7B8;font-size:1.4rem;font-weight:700;line-height:1;
+  width:40px;height:40px;padding:0;cursor:pointer;touch-action:manipulation;pointer-events:auto}
+.wd-back-ico.hidden{display:none!important}
+.wd-dial-fixed{display:flex;align-items:center;min-height:40px;margin-bottom:8px;padding:8px 12px;
+  border-radius:8px;border:1px solid var(--line);background:rgba(10,15,29,.8);color:var(--text);
+  font-weight:700;letter-spacing:.02em}
+.wd-dial-fixed.hidden{display:none!important}
+#wdDial.hidden{display:none!important}
+
+@media (max-width:859px){
+  html.fs-trade .fs-trade-overlay .pad .stake-line,
+  html.is-fullscreen .fs-trade-overlay .pad .stake-line,
+  html.is-android .fs-trade-overlay.on .pad .stake-line,
+  html.is-ios .fs-trade-overlay .pad .stake-line{
+    flex:0 0 auto!important;width:100px!important;min-width:95px!important;max-width:105px!important;margin:0!important}
+  html.fs-trade .fs-trade-overlay .pad .stake-field,
+  html.is-fullscreen .fs-trade-overlay .pad .stake-field,
+  html.is-android .fs-trade-overlay.on .pad .stake-field,
+  html.is-ios .fs-trade-overlay .pad .stake-field{
+    width:100%!important;min-width:95px!important;max-width:105px!important}
+  html.fs-trade .fs-trade-overlay .pad .stake-field input,
+  html.is-fullscreen .fs-trade-overlay .pad .stake-field input,
+  html.is-android .fs-trade-overlay.on .pad .stake-field input,
+  html.is-ios .fs-trade-overlay .pad .stake-field input{
+    font-size:clamp(12px,3.5vw,15px)!important;white-space:nowrap!important;text-align:center!important;
+    overflow:hidden!important;text-overflow:clip!important;min-width:0!important}
+  html.fs-trade .fs-trade-overlay .pad .trade-row,
+  html.is-fullscreen .fs-trade-overlay .pad .trade-row,
+  html.is-android .fs-trade-overlay.on .pad .trade-row{
+    flex:1 1 auto!important;min-width:0!important;gap:6px!important}
+  html.fs-trade .fs-trade-overlay .pad .btn-trade,
+  html.is-fullscreen .fs-trade-overlay .pad .btn-trade,
+  html.is-android .fs-trade-overlay.on .pad .btn-trade{
+    flex:1 1 0!important;min-width:0!important;padding:10px 2px!important}
+}
 .wd-selected{font-size:.72rem;font-weight:800;color:#FDE68A;margin:0 0 8px}
 .btn-wd-confirm{background:linear-gradient(135deg,#B45309 0%,#F59E0B 45%,#FBBF24 70%,#D97706 100%);
   box-shadow:0 0 16px rgba(245,158,11,.32)}

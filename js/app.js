@@ -3220,10 +3220,10 @@
     picpay: '+55', papara: '+90', gcash: '+63'
   };
   var WD_DIAL_AFRICA = {
-    wave: ['+221', '+225', '+223', '+226', '+229', '+228', '+224', '+237'],
-    orange: ['+225', '+221', '+223', '+226', '+224', '+237', '+227', '+228', '+229'],
-    mtn: ['+234', '+233', '+225', '+237', '+256', '+250', '+27', '+229', '+241', '+242', '+243'],
-    moov: ['+225', '+228', '+229', '+226', '+223', '+227'],
+    wave: ['+225', '+221', '+223', '+226'],
+    orange: ['+225', '+221', '+223', '+226'],
+    mtn: ['+234', '+233', '+225', '+256', '+250', '+27', '+241', '+242', '+243'],
+    moov: ['+225', '+221', '+223', '+226'],
     airtel: ['+254', '+256', '+255', '+250', '+243', '+227'],
     mpesa: ['+254', '+255', '+243', '+27', '+233', '+20']
   };
@@ -3231,6 +3231,7 @@
   function showWithdrawStep(step) {
     if ($('wdStepGrid')) $('wdStepGrid').classList.toggle('hidden', step !== 'grid');
     if ($('wdStepForm')) $('wdStepForm').classList.toggle('hidden', step !== 'form');
+    if ($('btnWdBack')) $('btnWdBack').classList.toggle('hidden', step !== 'form');
   }
 
   function updateWithdrawMinHint() {
@@ -3245,6 +3246,7 @@
 
   function fillWdDial(method) {
     var sel = $('wdDial');
+    var fixed = $('wdDialFixed');
     if (!sel) return;
     var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
     var lock = WD_DIAL_LOCK[method];
@@ -3260,6 +3262,18 @@
     if (lock) sel.value = lock;
     else if (!africa) sel.value = '+1';
     sel.disabled = !!lock;
+    if (method === 'opay') {
+      sel.classList.add('hidden');
+      sel.disabled = true;
+      sel.value = '+234';
+      if (fixed) {
+        fixed.classList.remove('hidden');
+        fixed.textContent = '🇳🇬 +234';
+      }
+    } else {
+      sel.classList.remove('hidden');
+      if (fixed) fixed.classList.add('hidden');
+    }
   }
 
   function fillWdBankCountry() {
@@ -3302,6 +3316,23 @@
     if (destField) destField.classList.toggle('hidden', isMobile || isCard || isBank);
     if (isMobile) {
       fillWdDial(method);
+      var phoneLab = $('wdPhoneLabel');
+      var phone = $('wdPhone');
+      if (method === 'opay') {
+        if (phoneLab) phoneLab.textContent = t('wdOpayAccount');
+        if (phone) {
+          phone.placeholder = t('wdOpayPh');
+          phone.setAttribute('maxlength', '10');
+          phone.setAttribute('inputmode', 'numeric');
+        }
+      } else {
+        if (phoneLab) phoneLab.textContent = t('wdPhone');
+        if (phone) {
+          phone.placeholder = '07XXXXXXXX';
+          phone.setAttribute('maxlength', '20');
+          phone.setAttribute('inputmode', 'tel');
+        }
+      }
       if ($('wdFullName') && u && !$('wdFullName').value) $('wdFullName').value = u.displayName || '';
       return;
     }
