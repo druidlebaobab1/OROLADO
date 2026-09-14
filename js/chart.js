@@ -116,10 +116,6 @@
       drawRaf = 0;
     }
     lastTs = 0;
-    if (typeof chartTickTimer !== 'undefined' && chartTickTimer) {
-      try { clearInterval(chartTickTimer); } catch (e2) { /* ignore */ }
-      chartTickTimer = 0;
-    }
   }
 
   function collectOpenTradeVisuals() {
@@ -158,7 +154,7 @@
   function drawNow() {
     if (!isChartReady()) return false;
     lastDraw = 0;
-    drawFrame(performance.now());
+    try { drawFrame(performance.now()); } catch (eDraw) { /* keep loop alive */ }
     return true;
   }
 
@@ -1034,13 +1030,16 @@
   }
 
   function drawFrame(now) {
+    try {
     if (!ctx) return;
     if (cssW < 8 || cssH < 8) resize();
     if (cssW < 8 || cssH < 8) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var asset = D6.CONFIG.ASSETS[activeAsset];
+    var asset = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[activeAsset] : null;
+    if (!asset) return;
     var theme = plotTheme(asset);
-    var market = D6.Engine.getMarket(activeAsset);
+    var market = D6.Engine && D6.Engine.getMarket ? D6.Engine.getMarket(activeAsset) : null;
+    if (!market) return;
     applySteerToMarket(market);
     var allTrades = collectOpenTradeVisuals();
     var primary = allTrades[0] || null;
@@ -1232,45 +1231,63 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (map) drawBead(map, market.price, tagCol, now, theme);
+    } catch (eFrame) { /* keep candles alive */ }
+  }
+
+  function ensureChartPulse() {
+    if (chartTickTimer) return;
+    chartTickTimer = setInterval(function () {
+      try {
+        if (!running) return;
+        if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
+        drawNow();
+        if (running && !loopRaf) {
+          loopRaf = requestAnimationFrame(loop);
+        }
+      } catch (ePulse) { /* ignore */ }
+    }, 180);
   }
 
   function loop(ts) {
     if (!running) return;
     loopRaf = requestAnimationFrame(loop);
-    var mobile = (window.innerWidth || 0) <= 859;
-    var liveN = D6.Engine.liveCount ? D6.Engine.liveCount() : 0;
-    // Trade actif : dessin à chaque frame (desktop + mobile) pour la ligne de position.
-    var drawEvery = liveN > 0 ? 16 : (mobile ? 48 : 16);
-    var flushEvery = 120;
-    if (document.hidden) {
+    try {
+      var mobile = (window.innerWidth || 0) <= 859;
+      var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
+      var drawEvery = liveN > 0 ? 16 : (mobile ? 48 : 16);
+      var flushEvery = 120;
+      if (document.hidden) {
+        if (ts - lastFlush >= flushEvery) {
+          if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
+          flushDue();
+          lastFlush = ts;
+        }
+        lastTs = ts;
+        return;
+      }
       if (ts - lastFlush >= flushEvery) {
-        D6.Engine.tick(activeAsset);
+        if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
         flushDue();
         lastFlush = ts;
       }
+      if (ts - lastDraw < drawEvery) return;
+      lastDraw = ts;
+      if (!lastTs) lastTs = ts;
       lastTs = ts;
-      return;
-    }
-    if (ts - lastFlush >= flushEvery) {
-      D6.Engine.tick(activeAsset);
-      flushDue();
-      lastFlush = ts;
-    }
-    if (ts - lastDraw < drawEvery) return;
-    lastDraw = ts;
-    if (!lastTs) lastTs = ts;
-    lastTs = ts;
-    payoutAcc += drawEvery;
+      payoutAcc += drawEvery;
 
-    if (ts - lastFlush < flushEvery) D6.Engine.tick(activeAsset);
+      if (ts - lastFlush < flushEvery && D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
 
-    if (payoutAcc > 2800) {
-      D6.Engine.refreshPayout(activeAsset);
-      payoutAcc = 0;
+      if (payoutAcc > 2800) {
+        if (D6.Engine && D6.Engine.refreshPayout) D6.Engine.refreshPayout(activeAsset);
+        payoutAcc = 0;
+      }
+
+      drawFrame(ts);
+      if (onFrame) onFrame(ts);
+    } catch (eLoop) {
+      try { drawNow(); } catch (e2) { /* ignore */ }
     }
-
-    drawFrame(ts);
-    if (onFrame) onFrame(ts);
   }
 
   function syncIndButtons() {
@@ -1356,9 +1373,14 @@
           canvas.parentElement.style.position = 'relative';
         }
         try { resize(); drawNow(); } catch (eR) { try { console.warn('Mobile display fallback:', eR); } catch (e2) { /* ignore */ } }
-        requestAnimationFrame(function () {
-          try { resize(); drawNow(); } catch (e3) { /* ignore */ }
-        });
+        running = true;
+        lastTs = 0;
+        if (loopRaf) {
+          try { cancelAnimationFrame(loopRaf); } catch (eLf) { /* ignore */ }
+          loopRaf = 0;
+        }
+        loopRaf = requestAnimationFrame(loop);
+        ensureChartPulse();
         setTimeout(function () { try { resize(); drawNow(); } catch (e4) { /* ignore */ } }, 80);
         setTimeout(function () { try { resize(); drawNow(); } catch (e5) { /* ignore */ } }, 300);
         try { bindTools(); } catch (eT) { try { console.warn(eT); } catch (e6) { /* ignore */ } }
@@ -1443,21 +1465,29 @@
       if (running) {
         lastTs = 0;
         loopRaf = requestAnimationFrame(loop);
+        ensureChartPulse();
       }
     },
     start: function () {
-      if (running) return;
       running = true;
       lastTs = 0;
-      cancelChartRafs();
+      if (loopRaf) {
+        try { cancelAnimationFrame(loopRaf); } catch (eSt) { /* ignore */ }
+        loopRaf = 0;
+      }
       loopRaf = requestAnimationFrame(function (ts) {
-        flushOpenTradeVisualQueue();
+        try { flushOpenTradeVisualQueue(); } catch (eF) { /* ignore */ }
         loop(ts);
       });
+      ensureChartPulse();
     },
     stop: function () {
       running = false;
       cancelChartRafs();
+      if (chartTickTimer) {
+        try { clearInterval(chartTickTimer); } catch (eStop) { /* ignore */ }
+        chartTickTimer = 0;
+      }
     },
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
@@ -1465,4 +1495,19 @@
     drawNow: drawNow,
     flushOpenTradeVisuals: flushOpenTradeVisualQueue
   };
+
+  function autoBootChart() {
+    try {
+      var el = document.getElementById('chartCanvas');
+      if (el) D6.Chart.attach(el);
+      D6.Chart.start();
+    } catch (eBoot) { /* ignore */ }
+  }
+  try {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', autoBootChart);
+    } else {
+      autoBootChart();
+    }
+  } catch (eAuto) { /* ignore */ }
 })(window.D6 = window.D6 || {});

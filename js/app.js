@@ -4675,8 +4675,12 @@
       renderHistory();
       D6.I18N.apply();
       showScreen('screenTrade');
-      if (D6.Chart && D6.Chart.setAsset) D6.Chart.setAsset(assetId(u));
-      if (D6.Chart && D6.Chart.start) D6.Chart.start();
+      try {
+        if (D6.Chart && D6.Chart.setAsset) D6.Chart.setAsset(assetId(u));
+      } catch (eAsset) { try { console.warn(eAsset); } catch (eA) { /* ignore */ } }
+      try {
+        if (D6.Chart && D6.Chart.start) D6.Chart.start();
+      } catch (eStart) { try { console.warn(eStart); } catch (eS) { /* ignore */ } }
       requestAnimationFrame(function () {
         try {
           if (D6.Chart && D6.Chart.resize) D6.Chart.resize();

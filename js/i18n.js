@@ -15,7 +15,7 @@
     resetTitle: 'Reset password', update: 'Update',
     demo: 'VIRTUAL / DEMO MODE', real: 'REAL ACCOUNT', recharge: 'Deposit',
     modeShortDemo: 'DEMO', modeShortReal: 'REAL',
-    fsDemo: 'DEMO', fsReal: 'REAL',
+    fsDemo: 'DEMO', fsReal: 'REAL ACCOUNT',
     virtualBal: 'Virtual balance', realBalHint: 'Real balance',
     resetDemo: 'Reset', secured: 'Secured',
     highVol: 'High volatility', lowVol: 'Low volatility',
@@ -301,7 +301,7 @@
     resetTitle: 'R\u00e9initialiser le mot de passe', update: 'Mettre \u00e0 jour',
     demo: 'MODE VIRTUEL / D\u00c9MO', real: 'COMPTE R\u00c9EL', recharge: 'Recharger',
     modeShortDemo: 'D\u00c9MO', modeShortReal: 'R\u00c9EL',
-    fsDemo: 'D\u00c9MO', fsReal: 'R\u00c9EL',
+    fsDemo: 'D\u00c9MO', fsReal: 'COMPTE R\u00c9EL',
     virtualBal: 'Solde Virtuel', realBalHint: 'Solde R\u00e9el',
     resetDemo: 'R\u00e9initialiser', secured: 'S\u00e9curis\u00e9',
     highVol: 'Haute volatilit\u00e9', lowVol: 'Basse volatilit\u00e9',
@@ -592,7 +592,7 @@
       resetTitle: 'Restablecer contrase\u00f1a', update: 'Actualizar',
       demo: 'MODO VIRTUAL / DEMO', real: 'CUENTA REAL', recharge: 'Recargar',
       modeShortDemo: 'DEMO', modeShortReal: 'REAL',
-      fsDemo: 'DEMO', fsReal: 'REAL',
+      fsDemo: 'DEMO', fsReal: 'CUENTA REAL',
       virtualBal: 'Saldo virtual', realBalHint: 'Saldo real',
       resetDemo: 'Reiniciar', secured: 'Seguro',
       highVol: 'Alta volatilidad', lowVol: 'Baja volatilidad',
@@ -733,7 +733,7 @@
       resetTitle: 'Redefinir senha', update: 'Atualizar',
       demo: 'MODO VIRTUAL / DEMO', real: 'CONTA REAL', recharge: 'Depositar',
       modeShortDemo: 'DEMO', modeShortReal: 'REAL',
-      fsDemo: 'DEMO', fsReal: 'REAL',
+      fsDemo: 'DEMO', fsReal: 'CONTA REAL',
       virtualBal: 'Saldo virtual', realBalHint: 'Saldo real',
       resetDemo: 'Reiniciar', secured: 'Seguro',
       highVol: 'Alta volatilidade', lowVol: 'Baixa volatilidade',
@@ -1892,11 +1892,10 @@
   var GEO_TIMEOUT_MS = 1500;
 
   var ME_CC = {
-    SA: 1, AE: 1, QA: 1, KW: 1, BH: 1, OM: 1, YE: 1, IQ: 1, JO: 1, LB: 1, SY: 1, PS: 1, EG: 1
+    SA: 1, AE: 1, QA: 1, KW: 1, BH: 1, OM: 1, EG: 1, IQ: 1
   };
   var ES_CC = {
-    MX: 1, CO: 1, AR: 1, CL: 1, PE: 1, VE: 1, EC: 1, GT: 1, CU: 1, BO: 1, DO: 1,
-    HN: 1, PY: 1, SV: 1, NI: 1, CR: 1, PA: 1, UY: 1, PR: 1
+    MX: 1, CO: 1, AR: 1, CL: 1, PE: 1
   };
 
   function mapCountry(cc) {
@@ -1964,8 +1963,10 @@
     var html = document.documentElement;
     if (!html) return;
     html.lang = lang;
-    html.dir = 'ltr';
+    html.dir = lang === 'ar' ? 'rtl' : 'ltr';
     html.setAttribute('data-lang', lang);
+    html.setAttribute('translate', 'no');
+    html.classList.add('notranslate');
     html.classList.toggle('lang-ar', lang === 'ar');
   }
   syncHtmlDir();
@@ -2019,7 +2020,7 @@
       if (lockedLang || readManualLang() || i >= sources.length) return;
       var url = sources[i];
       i += 1;
-      fetch(url, { cache: 'no-store', credentials: 'omit' }).then(function (r) {
+      fetch(url, { cache: 'no-store', credentials: 'omit', mode: 'cors' }).then(function (r) {
         if (!r.ok) throw new Error('geo');
         return r.json();
       }).then(function (j) {
