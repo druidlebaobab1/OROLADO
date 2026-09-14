@@ -290,8 +290,12 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .op-grid-deposit .op-card.on{box-shadow:0 0 0 1px var(--gold) inset}
 .help-badge{border:1px solid var(--line);background:rgba(245,197,24,.1);color:var(--gold);border-radius:999px;
   padding:4px 8px;font:inherit;font-size:.68rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
-.auth-back{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:5;border:1px solid var(--line);
-  background:rgba(21,30,48,.85);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-weight:800;font-size:.72rem;cursor:pointer}
+.auth-back{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;z-index:6;
+  width:36px;height:36px;min-width:36px;min-height:36px;max-width:36px;padding:0;
+  border:1px solid rgba(255,255,255,.14);background:rgba(21,30,48,.72);color:#E8EEF9;
+  border-radius:10px;font:inherit;font-weight:700;font-size:1.05rem;line-height:1;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center}
+.auth-back span{display:none}
 .bal-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
   background:linear-gradient(180deg,#F59E0B,#D97706);color:#000;
   padding:0;cursor:pointer;flex-shrink:0;
@@ -495,12 +499,15 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   z-index:210;opacity:0;pointer-events:none!important;transition:.2s;backdrop-filter:blur(10px)}
 .modal-backdrop.active{display:block!important;opacity:1;pointer-events:auto!important}
 .modal-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.96);
-  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 12px;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 12px 14px;
   width:min(360px,86vw);max-width:360px;max-height:72dvh;overflow-y:auto;transition:.22s;z-index:211}
 .modal-box.glass{background:rgba(21,30,48,.92);box-shadow:0 0 0 1px rgba(255,215,0,.14),0 20px 50px rgba(0,0,0,.5)}
 .modal-backdrop.active .modal-box{transform:translate(-50%,-50%) scale(1)}
 .trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
-.btn-close{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.dur-chip,.odds-chip,.dur-row,.odds-row{pointer-events:auto!important}
+.btn-close{position:absolute;top:8px;right:8px;z-index:30;width:36px;height:36px;min-width:36px;min-height:36px;
+  display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;color:var(--muted);font-size:1.05rem;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
 
 /* Android : overflow hidden sans calque inset qui mange les taps */
 html.is-android,html.is-android body{
@@ -548,7 +555,7 @@ html.is-android #chartOverlay{
     min-height:260px!important;height:40vh!important;max-height:48vh!important;background:#0B0E14!important}
   html.is-android .chart-stage{min-height:220px!important;background:#0B0E14!important}
 }
-.modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px;padding-right:44px}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .pack-card{border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:rgba(255,255,255,.02)}
 .pack-card.selected,.pack-card:active{border-color:var(--gold);background:var(--gold-soft)}
@@ -598,7 +605,7 @@ html.is-android #chartOverlay{
 #withdrawModal .withdraw-box{width:min(420px,94vw);max-width:420px;height:auto;max-height:92dvh;overflow:hidden!important;padding:10px 10px 8px;
   display:flex;flex-direction:column;background:rgba(11,14,20,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 50px rgba(0,0,0,.55)}
-.deposit-box,.withdraw-box{overflow:hidden!important}
+.deposit-box,.withdraw-box{overflow:auto!important}
 .deposit-box .op-grid{margin-top:0}
 .pay-method-label{font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:12px 0 8px}
 .pay-method-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
@@ -620,7 +627,7 @@ html.is-android #chartOverlay{
 .pay-crypto-badge.btc{background:#F7931A}
 .pay-crypto-badge.eth{background:#627EEA}
 .pay-crypto-badge.trx{background:#7C3AED}
-.deposit-box{width:min(400px,92vw);max-width:400px;height:auto;max-height:92dvh;padding:14px 14px 16px;overflow:hidden;
+.deposit-box{width:min(400px,92vw);max-width:400px;height:auto;max-height:92dvh;padding:18px 14px 16px;overflow:auto;
   background:rgba(8,10,16,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 48px rgba(0,0,0,.55)}
 .dep-amt-chips,.dep-amt-chip{display:none!important}
@@ -650,7 +657,12 @@ html.is-android #chartOverlay{
 .deposit-box:not(.is-crypto) .pay-method-card{padding:10px 12px}
 .deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow-x:hidden;overflow-y:auto;
   background:linear-gradient(180deg,#161C28 0%,#121824 100%);border:1px solid rgba(255,255,255,.1)}
-.deposit-box.is-crypto #closeDeposit{display:none!important}
+.deposit-box.is-crypto #closeDeposit{display:inline-flex!important;pointer-events:auto!important}
+#depositStepCrypto:not(.hidden),#depositStepSelect:not(.hidden),#depositStepCryptoOk:not(.hidden){
+  display:block!important;visibility:visible!important;height:auto!important;overflow:visible}
+#formRegister:not(.hidden),#formLogin:not(.hidden){display:block!important;visibility:visible!important}
+#wdStepForm:not(.hidden){display:flex!important;visibility:visible!important;overflow:auto!important;min-height:0}
+.crypto-step-head{display:flex;align-items:center;gap:8px;min-height:36px;margin:0 36px 10px 0}
 .crypto-invoice,.crypto-ok{padding-top:2px}
 .crypto-back{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--muted);
   font:inherit;font-size:.82rem;font-weight:700;padding:2px 0 6px;cursor:pointer}
@@ -1167,11 +1179,11 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-top-end{display:flex;align-items:center;flex-shrink:0;gap:8px;margin-left:auto}
 .fs-top-mid{display:none;flex-direction:column;align-items:center;justify-content:center;min-width:0;flex:1}
 .fs-mode-label{display:none}
-.fs-mode-switch{display:grid;grid-template-columns:minmax(52px,.72fr) 26px minmax(96px,1.38fr);align-items:center;justify-items:stretch;gap:4px;margin-top:5px;padding:3px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.fs-mode-switch{display:grid;grid-template-columns:minmax(48px,.7fr) 26px minmax(56px,1fr);align-items:center;justify-items:stretch;gap:4px;margin-top:5px;padding:3px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
 .fs-mode-btn{border:0;background:transparent;color:#94A3B8;font:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;
   padding:4px 8px;border-radius:999px;cursor:pointer;min-height:24px;min-width:0;transform:none;opacity:1}
 .fs-mode-btn[data-mode="demo"]{padding:4px 8px;min-height:24px;font-size:9px;font-weight:700;letter-spacing:.08em;justify-self:stretch}
-.fs-mode-btn[data-mode="real"]{padding:6px 16px;min-height:30px;font-weight:800;font-size:11px;letter-spacing:.04em;justify-self:stretch}
+.fs-mode-btn[data-mode="real"]{padding:6px 12px;min-height:28px;font-weight:800;font-size:10px;letter-spacing:.06em;justify-self:stretch}
 .fs-mid-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
   background:linear-gradient(180deg,#FDE68A,#D97706);color:#000;
   padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
@@ -1182,7 +1194,7 @@ html.is-fullscreen .fs-mode-btn.mode-btn{transform:none!important;font-size:10px
 html.fs-trade .fs-mode-btn.mode-btn[data-mode="demo"],
 html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="demo"]{padding:4px 8px;min-height:24px;font-size:9px}
 html.fs-trade .fs-mode-btn.mode-btn[data-mode="real"],
-html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="real"]{padding:6px 16px;min-height:30px;font-size:11px;font-weight:800}
+html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="real"]{padding:6px 12px;min-height:28px;font-size:10px;font-weight:800}
 html.fs-trade .fs-mode-btn.mode-btn.on[data-mode="demo"],
 html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="demo"]{
   background:rgba(245,197,24,.18);color:#FDE68A;border-color:transparent;box-shadow:none}
@@ -1830,12 +1842,12 @@ html.is-ios .dur-chip,html.is-ios .qbtn,html.is-ios .stake-field input,html.is-i
 html.is-ios .stake-field input{border-radius:10px}
 
 #wdStepGrid{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
-#wdStepForm{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#wdStepForm{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column}
 #wdStepForm.hidden,#wdStepGrid.hidden{display:none!important}
 .wd-modal-head{position:relative;display:flex;align-items:center;justify-content:center;min-height:40px;margin:0 0 8px}
 .wd-modal-head .modal-title{margin:0;padding:0 40px;width:100%;justify-content:center;text-align:center}
 .wd-modal-head .btn-close{position:absolute;top:50%;right:0;transform:translateY(-50%);z-index:3}
-.wd-modal-head .btn-close.hidden,#withdrawModal .withdraw-box.is-wd-form .btn-close{display:none!important}
+.wd-modal-head .btn-close.hidden{display:none!important}
 .wd-back-ico{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:3;
   border:0;background:transparent;color:#F8E7B8;font-size:1.4rem;font-weight:700;line-height:1;
   width:40px;height:40px;padding:0;cursor:pointer;touch-action:manipulation;pointer-events:auto}

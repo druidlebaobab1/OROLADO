@@ -65,7 +65,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=158">
+  <link rel="stylesheet" href="css/app.css?v=159">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -120,7 +120,7 @@
   </div>
 
   <section id="screenAuth" class="screen hidden">
-    <button type="button" class="auth-back" id="btnAuthBack">← <span data-i18n="authBack">Back</span></button>
+    <button type="button" class="auth-back" id="btnAuthBack" data-i18n-aria="authBack" aria-label="Back">← <span data-i18n="authBack">Back</span></button>
     <div class="lang-dd lang-bar-auth" id="langBarAuth"></div>
     <div class="auth-ambient"></div>
     <div class="auth-wrap">
@@ -435,7 +435,7 @@
         <div class="fs-mode-switch" role="group" aria-label="Mode">
           <button type="button" class="fs-mode-btn mode-btn on" id="fsBtnDemo" data-mode="demo" data-i18n="fsDemo">DEMO</button>
           <button type="button" class="fs-mid-plus" id="btnFsMidPlus" aria-label="Recharger" title="Recharger"><svg class="plus-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
-          <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real" data-i18n="fsReal">REAL ACCOUNT</button>
+          <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real" data-i18n="fsReal">REAL</button>
         </div>
       </div>
       </div>
@@ -856,7 +856,9 @@
         <button type="button" class="btn-gold btn-deposit-confirm" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
       </div>
       <div id="depositStepCrypto" class="crypto-invoice hidden">
-        <button type="button" class="crypto-back" id="btnUsdtBack" data-i18n="cryptoBack">← Back</button>
+        <div class="crypto-step-head">
+          <button type="button" class="crypto-back" id="btnUsdtBack" data-i18n="cryptoBack">← Back</button>
+        </div>
         <div class="modal-title" data-i18n="cryptoTitle">Crypto Deposit</div>
         <p class="oxa-usd-line hidden" id="oxaUsdLine" hidden><span>Montant</span> <strong id="oxaUsdAmt"></strong></p>
         <div class="oxa-field">
@@ -977,7 +979,7 @@
 
   <script src="js/config.js?v=117"></script>
   <script src="js/translations.js?v=111"></script>
-  <script src="js/i18n.js?v=133"></script>
+  <script src="js/i18n.js?v=134"></script>
   <script src="js/store.js?v=112"></script>
   <script src="js/api.js?v=108"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1035,6 +1037,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=159"></script>
+  <script src="js/app.js?v=160"></script>
 </body>
 </html>

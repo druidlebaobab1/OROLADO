@@ -22,9 +22,6 @@
           el.style.setProperty('display', 'none', 'important');
         }
       });
-      document.querySelectorAll('.hidden').forEach(function (el) {
-        el.style.setProperty('display', 'none', 'important');
-      });
       var toast = $('toast');
       if (toast) toast.style.setProperty('pointer-events', 'none', 'important');
       var spark = $('sparkle');
@@ -76,6 +73,15 @@
       var chart = $('chart');
       if (chart) chart.style.setProperty('z-index', '1', 'important');
     } catch (eForce) { /* ignore */ }
+  }
+
+  function setHidden(el, hide) {
+    if (!el) return;
+    el.classList.toggle('hidden', !!hide);
+    if (hide) return;
+    el.style.removeProperty('display');
+    el.style.removeProperty('visibility');
+    el.style.removeProperty('pointer-events');
   }
 
   function paintDepositLabel() {
@@ -293,8 +299,8 @@
     document.querySelectorAll('.auth-tab').forEach(function (el) {
       el.classList.toggle('on', el.dataset.tab === tab);
     });
-    if ($('formLogin')) $('formLogin').classList.toggle('hidden', tab !== 'login');
-    if ($('formRegister')) $('formRegister').classList.toggle('hidden', tab !== 'register');
+    if ($('formLogin')) setHidden($('formLogin'), tab !== 'login');
+    if ($('formRegister')) setHidden($('formRegister'), tab !== 'register');
     var pitch = $('authRealPitch');
     if (pitch) {
       var showPitch = !!(opts && opts.fromReal);
@@ -1123,9 +1129,8 @@
     var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : (D6.Engine.getTrades ? D6.Engine.getTrades(mode).length : 0);
     var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
     var busy = n >= max;
-    var lock = cooling || busy;
-    $('btnCall').disabled = lock;
-    $('btnPut').disabled = lock;
+    $('btnCall').disabled = busy;
+    $('btnPut').disabled = busy;
     $('btnCall').classList.toggle('locked', busy);
     $('btnPut').classList.toggle('locked', busy);
     var hint = $('tradeLockHint');
@@ -1133,19 +1138,7 @@
   }
 
   function armTradeCooldown() {
-    cooling = true;
-    var row = document.querySelector('.trade-row');
-    if (row) row.classList.add('cooldown');
-    $('btnCall').classList.add('cooldown');
-    $('btnPut').classList.add('cooldown');
-    setTradingLocked(true);
-    setTimeout(function () {
-      cooling = false;
-      if (row) row.classList.remove('cooldown');
-      $('btnCall').classList.remove('cooldown');
-      $('btnPut').classList.remove('cooldown');
-      syncTradeButtons();
-    }, D6.CONFIG.MIN_ORDER_MS);
+    setTimeout(syncTradeButtons, D6.CONFIG.MIN_ORDER_MS);
   }
 
   function fillProfile() {
@@ -2863,7 +2856,7 @@
     if (oxaTimer) { clearTimeout(oxaTimer); oxaTimer = 0; }
     oxaInvoice = null;
     liveDepositAddr = '';
-    if ($('oxaWalletBox')) $('oxaWalletBox').classList.add('hidden');
+    if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
     if ($('usdtAddr')) $('usdtAddr').textContent = '';
     if ($('usdtBusy')) $('usdtBusy').hidden = true;
     closeOxaMenus();
@@ -2874,9 +2867,9 @@
     var crypto = $('depositStepCrypto');
     var ok = $('depositStepCryptoOk');
     var box = $('depositBox');
-    if (select) select.classList.toggle('hidden', step !== 'select');
-    if (crypto) crypto.classList.toggle('hidden', step !== 'crypto');
-    if (ok) ok.classList.toggle('hidden', step !== 'ok');
+    setHidden(select, step !== 'select');
+    setHidden(crypto, step !== 'crypto');
+    setHidden(ok, step !== 'ok');
     if (box) box.classList.toggle('is-crypto', step === 'crypto' || step === 'ok');
   }
 
@@ -2895,8 +2888,7 @@
       enforceOxaMin();
       syncOxaLabels();
       showDepositStep('crypto');
-      var preview = recvCache[oxaCoin] || recvCache.usdt || '';
-      if (preview) paintPreviewAddr(preview);
+      showCryptoInvoice(false);
       return;
     }
     depositPayMethod = 'card';
@@ -2949,7 +2941,7 @@
     var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
     if ($('usdtPayAmt')) $('usdtPayAmt').textContent = '';
     if ($('usdtAddr') && liveDepositAddr) $('usdtAddr').innerHTML = styleOxaAddr(liveDepositAddr);
-    if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
+    if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
     if ($('oxaNetLabel')) {
       $('oxaNetLabel').textContent = t('cryptoPending');
     }
@@ -3022,7 +3014,7 @@
     var a = rawCryptoAddr(addr);
     if (!a) return;
     if ($('usdtAddr')) $('usdtAddr').innerHTML = styleOxaAddr(a);
-    if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
+    if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
     setCryptoQr(a);
   }
 
@@ -3046,8 +3038,8 @@
       if ($('usdtAddr')) $('usdtAddr').textContent = '';
     }
     stopOxaPoll();
-    if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
-    if ($('oxaQrWrap')) $('oxaQrWrap').classList.remove('hidden');
+    if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
+    if ($('oxaQrWrap')) setHidden($('oxaQrWrap'), false);
     var note = $('usdtPendingNote');
     if (note) {
       note.hidden = true;
@@ -3362,12 +3354,12 @@
   };
 
   function showWithdrawStep(step) {
-    if ($('wdStepGrid')) $('wdStepGrid').classList.toggle('hidden', step !== 'grid');
-    if ($('wdStepForm')) $('wdStepForm').classList.toggle('hidden', step !== 'form');
-    if ($('btnWdBack')) $('btnWdBack').classList.toggle('hidden', step !== 'form');
+    setHidden($('wdStepGrid'), step !== 'grid');
+    setHidden($('wdStepForm'), step !== 'form');
+    setHidden($('btnWdBack'), step !== 'form');
     var wdBox = document.querySelector('#withdrawModal .withdraw-box');
     if (wdBox) wdBox.classList.toggle('is-wd-form', step === 'form');
-    if ($('closeWithdraw')) $('closeWithdraw').classList.toggle('hidden', step === 'form');
+    setHidden($('closeWithdraw'), false);
   }
 
   function updateWithdrawMinHint() {
@@ -3754,8 +3746,8 @@
       tab.addEventListener('click', function () {
         document.querySelectorAll('.auth-tab').forEach(function (tEl) { tEl.classList.remove('on'); });
         tab.classList.add('on');
-        $('formLogin').classList.toggle('hidden', tab.dataset.tab !== 'login');
-        $('formRegister').classList.toggle('hidden', tab.dataset.tab !== 'register');
+        setHidden($('formLogin'), tab.dataset.tab !== 'login');
+        setHidden($('formRegister'), tab.dataset.tab !== 'register');
         clearErrors();
         if (tab.dataset.tab === 'register') metaTrack('Lead');
       });
