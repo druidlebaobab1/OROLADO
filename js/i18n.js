@@ -180,6 +180,7 @@
     txDeposit: 'Deposit',
     txWithdraw: 'Withdrawal',
     txPending: 'Pending',
+    txUnfinished: 'Unfinished',
     txValidated: 'Completed',
     txRejected: 'Rejected',
     txEmpty: 'No operations yet',
@@ -464,6 +465,7 @@
     txDeposit: 'D\u00e9p\u00f4t',
     txWithdraw: 'Retrait',
     txPending: 'En cours',
+    txUnfinished: 'Inachev\u00e9',
     txValidated: 'Valid\u00e9',
     txRejected: 'Rejet\u00e9',
     txEmpty: 'Aucune op\u00e9ration pour l\u2019instant',
@@ -1880,6 +1882,9 @@
     if (!DICT[code]) DICT[code] = Object.assign({}, EN);
     Object.assign(DICT[code], UI_I18N[code]);
   });
+  Object.keys(DICT).forEach(function (code) {
+    if (!DICT[code].txUnfinished) DICT[code].txUnfinished = EN.txUnfinished;
+  });
 
   var LANG_KEY = 'orolado_lang';
   var LANG_USER_KEY = 'orolado_lang_user';
@@ -1889,11 +1894,17 @@
   var ME_CC = {
     SA: 1, AE: 1, QA: 1, KW: 1, BH: 1, OM: 1, YE: 1, IQ: 1, JO: 1, LB: 1, SY: 1, PS: 1, EG: 1
   };
+  var ES_CC = {
+    MX: 1, CO: 1, AR: 1, CL: 1, PE: 1, VE: 1, EC: 1, GT: 1, CU: 1, BO: 1, DO: 1,
+    HN: 1, PY: 1, SV: 1, NI: 1, CR: 1, PA: 1, UY: 1, PR: 1
+  };
 
   function mapCountry(cc) {
     var code = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
     if (!code || code === 'XX' || code === 'T1' || code === 'A1' || code === 'A2') return '';
     if (ME_CC[code]) return 'ar';
+    if (code === 'BR') return 'pt';
+    if (ES_CC[code]) return 'es';
     return 'en';
   }
 
@@ -2014,7 +2025,7 @@
       }).then(function (j) {
         var cc = String((j && (j.country_code || j.country)) || '');
         var mapped = mapCountry(cc);
-        if (mapped === 'ar') applyAutoLang('ar');
+        if (mapped) applyAutoLang(mapped);
       }).catch(function () { next(); });
     }
     try { next(); } catch (eGeo) { /* ignore */ }

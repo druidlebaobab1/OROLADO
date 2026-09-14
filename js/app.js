@@ -344,9 +344,7 @@
   }
 
   function guardLiveTradeView() {
-    if (!(D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount())) return true;
-    toast(t('viewLocked') || 'Veuillez patienter jusqu’à la fin du compte à rebours pour changer de vue', '', 2000);
-    return false;
+    return true;
   }
 
   function showOutcomeToast(isWin, payout, tradeId) {
@@ -661,10 +659,6 @@
     var u = user();
     if (!u) return;
     if (next === 'real' && !requireAccount()) {
-      setModeUi(u);
-      return;
-    }
-    if (!guardLiveTradeView()) {
       setModeUi(u);
       return;
     }
@@ -1880,6 +1874,9 @@
       syncTradeButtons();
       return;
     }
+    if ($('inputStake')) {
+      try { $('inputStake').blur(); } catch (eBlur) { /* ignore */ }
+    }
     stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {
@@ -1887,7 +1884,16 @@
       return;
     }
     playTap();
-    var res = D6.Engine.placeOrder(u, { side: side, stake: stake, duration: u.duration, assetId: assetId(u), payout: currentOdds(u) });
+    var sealedDur = Number(u.duration);
+    var sealedPay = currentOdds(u);
+    var sealedAsset = assetId(u);
+    var res = D6.Engine.placeOrder(u, {
+      side: side,
+      stake: stake,
+      duration: sealedDur,
+      assetId: sealedAsset,
+      payout: sealedPay
+    });
     if (!res.ok) {
       if (/insuffisant|insufficient/i.test(String(res.reason || ''))) {
         toast(t('insufficient'), 'err', 2000);
@@ -1903,7 +1909,6 @@
     }
     if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
     requestAnimationFrame(function () {
-      if (D6.Chart && D6.Chart.resize) D6.Chart.resize();
       if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) D6.Chart.applyOpenTradeVisual(res.trade);
       if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
     });
@@ -1922,7 +1927,7 @@
         id: res.trade.id,
         stake: stake,
         side: side,
-        duration: u.duration,
+        duration: sealedDur,
         mode: mode,
         assetId: res.trade.assetId,
         entryPrice: res.trade.entryPrice,
@@ -1988,6 +1993,7 @@
 
   function openDeposit(preMsg) {
     if (!requireAccount()) return;
+    depositSendConfirmed = false;
     closeLangMenus();
     depositOp = 'wave';
     var min = minDeposit();
@@ -2016,6 +2022,7 @@
   var depositChecking = false;
   var depositRef = '';
   var depositReturn = null;
+  var depositSendConfirmed = false;
 
   async function ensureApiToken() {
     if (D6.Api && D6.Api.token && D6.Api.token()) return D6.Api.token();
@@ -2768,7 +2775,8 @@
       enforceOxaMin();
       syncOxaLabels();
       showDepositStep('crypto');
-      scheduleOxaInvoice();
+      var preview = recvCache[oxaCoin] || recvCache.usdt || '';
+      if (preview) paintPreviewAddr(preview);
       return;
     }
     depositPayMethod = 'card';
@@ -2898,12 +2906,14 @@
     setCryptoQr(a);
   }
 
-  function scheduleOxaInvoice() {
-    if (oxaTimer) clearTimeout(oxaTimer);
-    oxaTimer = setTimeout(function () { showCryptoInvoice(); }, 0);
+  function abandonUnconfirmedDeposit() {
+    if (depositSendConfirmed) return;
+    var oid = oxaInvoice && (oxaInvoice.orderId || oxaInvoice.ref);
+    if (!oid || !(D6.Api && D6.Api.post)) return;
+    D6.Api.post('abandonDeposit', { orderId: oid }).catch(function () { /* ignore */ });
   }
 
-  async function showCryptoInvoice() {
+  async function showCryptoInvoice(confirmed) {
     if (depositPayMethod !== 'usdt') return;
     var amt = oxaMinUsd();
     usdtAmt = amt;
@@ -2930,7 +2940,8 @@
       var remote = await postOxaInvoice({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
         amount: amt,
-        coin: oxaCoin
+        coin: oxaCoin,
+        confirmed: !!confirmed
       });
       if (!remote || !remote.ok || !remote.address) {
         if (note) {
@@ -2995,10 +3006,12 @@
 
   function onConfirmDepositClick() {
     if (depositPayMethod === 'usdt') {
+      depositSendConfirmed = true;
       metaTrack('InitiateCheckout', { value: oxaMinUsd(), currency: 'USD' });
-      showCryptoInvoice();
+      showCryptoInvoice(true);
       return;
     }
+    depositSendConfirmed = true;
     confirmDeposit();
   }
 
@@ -3432,7 +3445,9 @@
     if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED' || s === 'CANCELED' || s === 'CANCELLED') {
       return { code: 'REJECTED', label: t('txRejected'), cls: 'bad' };
     }
-    if (s === 'REVIEW' || s === 'SUSPENDED') {
+    if (s === 'UNFINISHED' || s === 'DRAFT' || s === 'ABANDONED' || s === 'INCOMPLETE') {
+      return { code: 'UNFINISHED', label: t('txUnfinished') || 'Unfinished', cls: 'warn' };
+    }
       return { code: 'REVIEW', label: t('txPending'), cls: 'pending' };
     }
     return { code: s || 'PENDING', label: t('txPending'), cls: 'pending' };
@@ -3875,13 +3890,11 @@
       chip.addEventListener('click', function () {
         var u = user();
         if (!u) return;
-        if (!guardLiveTradeView()) return;
         u.duration = Number(chip.dataset.dur); D6.Store.saveUser(u); updateDurationUi();
       });
     });
     document.querySelectorAll('.odds-chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
-        if (!guardLiveTradeView()) return;
         setOdds(chip.dataset.odds);
       });
     });
@@ -3934,8 +3947,13 @@
       updatePayoutUi();
     });
     function tap(el, fn) {
+      if (!el) return;
+      el.addEventListener('pointerdown', function (e) {
+        if (e.cancelable) e.preventDefault();
+      }, { passive: false });
       el.addEventListener('pointerup', function (e) {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.cancelable) e.preventDefault();
         fn();
       });
     }
@@ -4086,7 +4104,9 @@
     $('btnWithdraw').addEventListener('click', function () { openWithdraw(); });
     bindAndroidTap($('closeWithdraw'), function () { closeModal('withdrawModal'); });
     bindAndroidTap($('closeDeposit'), function () {
+      abandonUnconfirmedDeposit();
       resetOxaWallet();
+      depositSendConfirmed = false;
       closeModal('depositModal');
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
@@ -4119,7 +4139,8 @@
         enforceOxaMin();
         syncOxaLabels();
         closeOxaMenus();
-        scheduleOxaInvoice();
+        var preview = recvCache[oxaCoin] || recvCache.usdt || '';
+        if (preview) paintPreviewAddr(preview);
       });
     }
     document.querySelectorAll('#oxaNets .oxa-net').forEach(function (btn) {
@@ -4127,7 +4148,8 @@
         oxaNet = btn.getAttribute('data-net') || 'TRC20';
         oxaCoin = oxaCoinKey();
         syncOxaNetUi();
-        scheduleOxaInvoice();
+        var preview = recvCache[oxaCoin] || recvCache.usdt || '';
+        if (preview) paintPreviewAddr(preview);
       });
     });
     document.addEventListener('click', function (e) {
@@ -4137,7 +4159,9 @@
     });
     if ($('btnUsdtCopy')) bindAndroidTap($('btnUsdtCopy'), function () { copyUsdtAddr(); });
     if ($('btnUsdtBack')) bindAndroidTap($('btnUsdtBack'), function () {
+      abandonUnconfirmedDeposit();
       resetOxaWallet();
+      depositSendConfirmed = false;
       setDepositPayMethod('card');
     });
     if ($('btnUsdtOk')) $('btnUsdtOk').addEventListener('click', function (e) {

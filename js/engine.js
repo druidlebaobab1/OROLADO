@@ -801,6 +801,15 @@
         settled: false,
         status: 'open'
       };
+      t.ticket = Object.freeze({
+        stake: stake,
+        duration: duration,
+        durationMs: durationMs,
+        payout: payout,
+        side: side,
+        entryPrice: entry,
+        assetId: assetId
+      });
       trades.push(t);
 
       if (mode === 'real') {
@@ -859,15 +868,16 @@
       }
 
       var mode = trade.mode === 'real' ? 'real' : 'demo';
-      var isCall = trade.side === 'call';
+      var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
+      var entry = Number((trade.ticket && trade.ticket.entryPrice) || trade.entryPrice);
+      var isCall = ((trade.ticket && trade.ticket.side) || trade.side) === 'call';
       var expMs = expiryOf(trade);
       ensureMarkets();
       var mkt = markets[trade.assetId];
       if (mkt && C.ASSETS[trade.assetId]) {
         syncMarket(mkt, C.ASSETS[trade.assetId], expMs);
       }
-      var entry = Number(trade.entryPrice);
-      trade.payout = normalizeOdds(trade.payout);
+      trade.payout = payout;
       var voided = false;
       var decided = decideTradeOutcome(user, trade, mode);
       var exitPrice = decided.target;
@@ -949,13 +959,13 @@
         clock: D6.clock(),
         assetId: trade.assetId,
         assetName: C.ASSETS[trade.assetId].short,
-        side: trade.side,
-        stake: trade.stake,
-        payout: trade.payout,
-        entryPrice: trade.entryPrice,
+        side: (trade.ticket && trade.ticket.side) || trade.side,
+        stake: (trade.ticket && trade.ticket.stake != null) ? trade.ticket.stake : trade.stake,
+        payout: (trade.ticket && trade.ticket.payout != null) ? trade.ticket.payout : trade.payout,
+        entryPrice: (trade.ticket && trade.ticket.entryPrice != null) ? trade.ticket.entryPrice : trade.entryPrice,
+        duration: (trade.ticket && trade.ticket.duration != null) ? trade.ticket.duration : trade.duration,
         exitPrice: exitPrice,
         closePrice: exitPrice,
-        duration: trade.duration,
         won: won,
         voided: voided,
         status: status,

@@ -98,6 +98,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .tx-feed-row .tx-st{display:inline-block;margin-top:4px;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:999px}
 .tx-st.ok{background:rgba(0,230,118,.15);color:var(--green)}
 .tx-st.pending{background:rgba(255,215,0,.12);color:var(--gold)}
+.tx-st.warn{background:rgba(148,163,184,.16);color:#CBD5E1}
 .tx-st.bad{background:rgba(255,23,68,.15);color:#ff8aa0}
 .legal{text-align:center;color:rgba(139,155,184,.72);font-size:.62rem;font-weight:700;margin-top:14px;letter-spacing:.04em}
 .drawer-legal{margin-top:18px}
@@ -417,9 +418,13 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .dur-chip.on{border-color:#FBBF24;color:#1A1204;background:linear-gradient(180deg,#FDE68A 0%,#F59E0B 100%);box-shadow:0 0 14px rgba(245,158,11,.45)}
 .qbtn.hit,.qbtn:active{transform:scale(.94);border-color:var(--gold);color:var(--gold);background:var(--gold-soft);box-shadow:0 0 12px rgba(255,215,0,.25)}
 .stake-line{display:flex;align-items:center;gap:6px;margin:2px 0;padding:0}
-.stake-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.stake-field{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;position:relative}
 .stake-line input,.stake-field input{width:100%;background:rgba(10,15,29,.8);border:1px solid var(--line);border-radius:8px;padding:5px 8px;
-  color:var(--gold);font:inherit;font-size:1rem;font-weight:900;text-align:right;outline:none;min-width:0;min-height:34px}
+  color:var(--gold);font:inherit;font-size:1rem;font-weight:900;text-align:right;outline:none;min-width:0;min-height:34px;
+  -moz-appearance:textfield;appearance:textfield}
+.stake-line input::-webkit-outer-spin-button,.stake-line input::-webkit-inner-spin-button,
+.stake-field input::-webkit-outer-spin-button,.stake-field input::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0}
 .stake-min{display:flex!important;justify-content:space-between;align-items:center;padding:0!important;margin:2px 0!important;gap:8px;width:100%;line-height:1.15;border:none!important;background:transparent!important;box-shadow:none!important}
 .stake-min-label{font-size:10px!important;opacity:.58;font-weight:500;letter-spacing:.04em;color:#94A3B8;border:none!important;background:transparent!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .stake-min-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:6px;align-items:center;flex-shrink:0}
@@ -460,10 +465,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .timer-panel{display:none!important}
 .trade-lock{display:none!important}
 .btn-trade.locked{filter:grayscale(.4);opacity:.45;animation:none;box-shadow:none}
-.trade-row{display:flex;flex-direction:row;align-items:stretch;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:0;margin:0}
+.trade-row{display:flex;flex-direction:row;align-items:stretch;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:0;margin:8px 0 0}
 .btn-trade{border:0;border-radius:var(--radius);min-height:52px;flex:1 1 0;min-width:0;width:auto;font:inherit;font-weight:700;letter-spacing:0;text-transform:uppercase;
   cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#fff;padding:10px 2px;font-size:12px;line-height:1.15;
-  white-space:nowrap;overflow:visible;text-overflow:clip;text-align:center}
+  white-space:nowrap;overflow:visible;text-overflow:clip;text-align:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .btn-trade span{display:block;white-space:nowrap;overflow:visible;font-size:12px;font-weight:700;max-width:100%}
 .btn-trade:disabled{opacity:.4;cursor:not-allowed;animation:none;filter:grayscale(.35)}
 .btn-call{background:#10B981;box-shadow:0 0 12px rgba(16,185,129,.25),inset 0 1px 0 rgba(255,255,255,.18);animation:none}
@@ -952,10 +957,10 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .trade-shell{max-width:1200px;height:100%;min-height:0;overflow:hidden}
   .trade-wrap{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,360px);grid-template-rows:auto minmax(0,1fr);
     gap:10px;padding:12px;padding-bottom:12px;overflow:hidden;min-height:0;-webkit-overflow-scrolling:touch}
-  .asset-bar{grid-column:1;grid-row:1;min-width:0;max-width:100%;width:100%;display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:0;scrollbar-width:none;scroll-snap-type:x mandatory}
+  .asset-bar{grid-column:1;grid-row:1;min-width:0;max-width:100%;width:100%;display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:0;scrollbar-width:none;scroll-snap-type:x mandatory;justify-content:stretch}
   .asset-bar::-webkit-scrollbar{display:none}
   .asset-chip .k{display:none!important}
-  .asset-chip{padding:8px 10px;min-height:58px;min-width:110px;flex:0 0 auto;width:auto;overflow:visible;
+  .asset-chip{padding:8px 10px;min-height:58px;min-width:0;flex:1 1 0;width:auto;overflow:hidden;
     display:flex;flex-direction:column;justify-content:center;gap:2px;scroll-snap-align:start}
   .asset-chip .n{font-size:.72rem;line-height:1.15;margin:0}
   .payout-live{font-size:.68rem;line-height:1.1;margin-top:0}
@@ -972,7 +977,10 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .win-preview .label{display:none!important}
   .win-preview{text-align:right;min-width:0;flex:1 1 auto}
   .pad .stake-line{width:100%;display:flex;align-items:stretch;gap:10px}
-  .pad .stake-field{flex:1 1 auto;min-width:0}
+  .pad .stake-field{flex:1 1 auto;min-width:0;position:relative}
+  .pad .stake-field::before{content:"$";position:absolute;left:10px;top:9px;z-index:2;color:#F59E0B;font-weight:800;font-size:.95rem;pointer-events:none;line-height:1}
+  .pad .stake-field > input{padding:6px 10px 6px 26px;font-size:clamp(.82rem,1.4vw,1.12rem);font-variant-numeric:tabular-nums;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .pad .trade-row{margin-top:10px}
   .btn-trade{min-height:58px}
   .topbar-row{padding:8px 10px;min-height:36px;flex-wrap:nowrap}
   .topbar-mode{padding:0 10px 6px}

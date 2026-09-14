@@ -3022,6 +3022,30 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
   ];
 }
 
+function orolado_abandon_open_deposit(array $req): array {
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $token = (string) ($req['token'] ?? '');
+  $me = orolado_session_user($db, $token);
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+  $oid = (string) ($req['orderId'] ?? $req['ref'] ?? '');
+  if ($oid === '') return ['ok' => false, 'server' => true, 'reason' => 'Référence manquante'];
+  $uid = (string) $me['id'];
+  $changed = false;
+  foreach (($db['deposits'] ?? []) as $i => $d) {
+    if ((string) ($d['userId'] ?? '') !== $uid) continue;
+    $id = (string) ($d['id'] ?? $d['ref'] ?? '');
+    if ($id !== $oid) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'PAID' || $st === 'COMPLETED' || $st === 'SUCCESS') continue;
+    if (!empty($d['confirmed'])) continue;
+    $db['deposits'][$i]['status'] = 'UNFINISHED';
+    $changed = true;
+  }
+  if ($changed) save_db($file, $db);
+  return ['ok' => true, 'server' => true, 'abandoned' => $changed];
+}
+
 function orolado_oxapay_invoice(array $req): array {
   $file = orolado_data_file();
   $db = load_db($file);
@@ -3118,6 +3142,8 @@ function orolado_oxapay_invoice(array $req): array {
   $qr = '';
   $network = (string) ($data['network'] ?? $meta['netLabel']);
   $expired = (int) ($data['expired_at'] ?? $data['expiredAt'] ?? 0);
+  $confirmed = !empty($req['confirmed']) && $req['confirmed'] !== '0' && $req['confirmed'] !== 'false';
+  $depStatus = $confirmed ? 'PENDING' : 'UNFINISHED';
   $db = load_db($file);
   $db['deposits'][] = [
     'id' => $orderId,
@@ -3126,7 +3152,8 @@ function orolado_oxapay_invoice(array $req): array {
     'operator' => 'oxapay',
     'network' => $network !== '' ? $network : $meta['netLabel'],
     'coin' => $coin,
-    'status' => 'PENDING',
+    'status' => $depStatus,
+    'confirmed' => $confirmed,
     'amount' => $amount,
     'currency' => 'USD',
     'trackId' => $trackId,
@@ -3136,14 +3163,16 @@ function orolado_oxapay_invoice(array $req): array {
     'at' => date('c')
   ];
   save_db($file, $db);
-  supabase_insert_deposit([
-    'id' => $orderId,
-    'user_id' => $uid,
-    'amount' => $amount,
-    'status' => 'PENDING',
-    'reference' => $orderId,
-    'operator' => 'oxapay',
-  ]);
+  if ($confirmed) {
+    supabase_insert_deposit([
+      'id' => $orderId,
+      'user_id' => $uid,
+      'amount' => $amount,
+      'status' => 'PENDING',
+      'reference' => $orderId,
+      'operator' => 'oxapay',
+    ]);
+  }
   return [
     'ok' => true,
     'server' => true,

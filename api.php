@@ -1460,6 +1460,11 @@ if ($action === 'submitUsdtDeposit' || $action === 'verifyCryptoDeposit') {
   exit;
 }
 
+if ($action === 'abandonDeposit') {
+  echo json_encode(orolado_abandon_open_deposit(['token' => $token] + $req));
+  exit;
+}
+
 if ($action === 'oxapayInvoice') {
   echo json_encode(orolado_oxapay_invoice(['token' => $token] + $req));
   exit;
