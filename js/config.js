@@ -30,9 +30,10 @@
     ODDS_WIN_RATE_DEMO: { '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 },
     WITHDRAW_MINS: {
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
+      picpay: 10, papara: 10, stcpay: 10, mercadopago: 10,
       opay: 5, palmpay: 5, wave: 5, orange: 5, mtn: 5, mpesa: 5, moov: 5, airtel: 5,
-      pix: 5, mercadopago: 5, nequi: 5, gcash: 5, upi: 5, stcpay: 5, vodafone: 5,
-      paypal: 20, skrill: 20, neteller: 20, card: 25, bank: 25
+      pix: 5, nequi: 5, gcash: 5, upi: 5,
+      paypal: 25, skrill: 25, neteller: 25, card: 25, bank: 25
     },
     DEMO_MAX_WIN_STREAK: 0,
     MIN_ORDER_MS: 300,
@@ -266,7 +267,9 @@
       { code: '+82', flag: '🇰🇷', name: 'Corée du Sud' },
       { code: '+90', flag: '🇹🇷', name: 'Turquie' },
       { code: '+971', flag: '🇦🇪', name: 'Émirats' },
-      { code: '+966', flag: '🇸🇦', name: 'Arabie saoudite' }
+      { code: '+966', flag: '🇸🇦', name: 'Arabie saoudite' },
+      { code: '+57', flag: '🇨🇴', name: 'Colombie' },
+      { code: '+63', flag: '🇵🇭', name: 'Philippines' }
     ]
   };
 

@@ -94,6 +94,7 @@
     wdIban: 'Account number / IBAN',
     wdHolder: 'Account holder name',
     wdBalCaption: 'Withdrawable balance',
+    wdBalSecure: 'SECURED WITHDRAWABLE BALANCE',
     wdDelay: 'Instant payout (avg. 5\u201315 minutes)',
     withdrawMin: 'Minimum withdrawal: $3',
     withdrawMinErr: 'The minimum withdrawal is $3.',
@@ -174,6 +175,21 @@
     depositsPending: 'Pending deposits',
     add: '+', remove: '\u2212',
     accountCreated: 'Account created',
+    txDeposit: 'Deposit',
+    txWithdraw: 'Withdrawal',
+    txPending: 'Pending',
+    txValidated: 'Completed',
+    txRejected: 'Rejected',
+    txEmpty: 'No operations yet',
+    wdBalSecure: 'SECURED WITHDRAWABLE BALANCE',
+    cryptoTitle: 'Crypto Deposit',
+    cryptoPending: 'Pending...',
+    sendCode: 'Send Code',
+    otpResendIn: 'Resend in {s}s',
+    passMismatch: 'Passwords do not match',
+    showPass: 'Show password',
+    hidePass: 'Hide password',
+    otpShareWarn: 'Do not share this 6-digit code with anyone.',
     passUpdated: 'Password updated',
     credited: 'credited',
     sessionInvalid: 'Invalid session',
@@ -241,6 +257,7 @@
     logoutGo: 'Sign out',
     depositProceed: 'PROCEED TO PAYMENT \u2192',
     cryptoBack: '\u2190 Back',
+    cryptoTitle: 'Crypto Deposit',
     cryptoPayAmt: 'Pay {amt}',
     cryptoLive: 'Waiting for payment',
     cryptoAddrLabel: 'Deposit address',
@@ -440,6 +457,21 @@
     depositsPending: 'D\u00e9p\u00f4ts en attente',
     add: '+', remove: '\u2212',
     accountCreated: 'Compte cr\u00e9\u00e9',
+    txDeposit: 'D\u00e9p\u00f4t',
+    txWithdraw: 'Retrait',
+    txPending: 'En cours',
+    txValidated: 'Valid\u00e9',
+    txRejected: 'Rejet\u00e9',
+    txEmpty: 'Aucune op\u00e9ration pour l\u2019instant',
+    wdBalSecure: 'SOLDE RETIRABLE S\u00c9CURIS\u00c9',
+    cryptoTitle: 'D\u00e9p\u00f4t crypto',
+    cryptoPending: 'En attente...',
+    sendCode: 'Envoyer le code',
+    otpResendIn: 'Renvoyer dans {s} s',
+    passMismatch: 'Les mots de passe ne correspondent pas',
+    showPass: 'Afficher le mot de passe',
+    hidePass: 'Masquer le mot de passe',
+    otpShareWarn: 'Ne partagez ce code \u00e0 6 chiffres avec personne.',
     passUpdated: 'Mot de passe mis \u00e0 jour',
     credited: 'cr\u00e9dit\u00e9s',
     sessionInvalid: 'Session invalide',
@@ -1895,12 +1927,26 @@
     } catch (e) { /* ignore */ }
   }
 
+  function browserLang() {
+    var list = [];
+    try {
+      if (navigator.languages && navigator.languages.length) list = navigator.languages;
+      else if (navigator.language) list = [navigator.language];
+    } catch (eNav) { /* ignore */ }
+    var i;
+    for (i = 0; i < list.length; i++) {
+      var code = String(list[i] || '').toLowerCase().replace('_', '-').split('-')[0];
+      if (code && DICT[code]) return code;
+    }
+    return 'en';
+  }
+
   function detectLang() {
     var fromUrl = urlLang();
     if (fromUrl) return fromUrl;
     var manual = readManualLang();
     if (manual) return manual;
-    return 'en';
+    return browserLang() || 'en';
   }
 
   var lang = detectLang();
@@ -1959,56 +2005,7 @@
   function startGeo() {
     if (geoStarted || lockedLang || readManualLang()) return;
     geoStarted = true;
-    var done = false;
-    var fails = 0;
-    var ctrl = null;
-    var timer = null;
-
-    function finish(code) {
-      if (done) return;
-      done = true;
-      if (timer) clearTimeout(timer);
-      try { if (ctrl) ctrl.abort(); } catch (eAbort) { /* ignore */ }
-      applyAutoLang(code || 'en');
-    }
-
-    function lose() {
-      fails += 1;
-      if (!done && fails >= 2) finish('en');
-    }
-
-    try {
-      ctrl = new AbortController();
-      timer = setTimeout(function () { finish('en'); }, GEO_TIMEOUT_MS);
-
-      fetch('https://api.country.is/', {
-        cache: 'no-store',
-        credentials: 'omit',
-        signal: ctrl.signal
-      }).then(function (r) {
-        if (!r.ok) throw new Error('geo');
-        return r.json();
-      }).then(function (j) {
-        var cc = j && (j.country || j.country_code);
-        if (cc) finish(mapCountry(cc) || 'en');
-        else lose();
-      }).catch(lose);
-
-      fetch('https://ipapi.co/json/', {
-        cache: 'no-store',
-        credentials: 'omit',
-        signal: ctrl.signal
-      }).then(function (r) {
-        if (!r.ok) throw new Error('geo');
-        return r.json();
-      }).then(function (j) {
-        var cc = j && (j.country_code || j.country);
-        if (cc && String(cc).length <= 3) finish(mapCountry(cc) || 'en');
-        else lose();
-      }).catch(lose);
-    } catch (e6) {
-      finish('en');
-    }
+    applyAutoLang(browserLang() || 'en');
   }
 
   function refineFromGeo() {

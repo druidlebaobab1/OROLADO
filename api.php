@@ -280,7 +280,7 @@ if ($action === 'registerStart') {
     'passwordHash' => $passwordHash,
     'trafficSource' => $trafficSource,
     'codeHash' => orolado_otp_hash($email, $code),
-    'expiresAt' => $now + 600,
+    'expiresAt' => $now + 60,
     'lastSentAt' => $now,
     'attempts' => 0,
     'createdAt' => date('c')
@@ -292,7 +292,7 @@ if ($action === 'registerStart') {
     exit;
   }
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'email' => $email, 'expiresIn' => 600, 'resendIn' => 60]);
+  echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'email' => $email, 'expiresIn' => 60, 'resendIn' => 60]);
   exit;
 }
 
@@ -318,7 +318,7 @@ if ($action === 'registerResend') {
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
   $row['codeHash'] = orolado_otp_hash($email, $code);
-  $row['expiresAt'] = $now + 600;
+  $row['expiresAt'] = $now + 60;
   $row['lastSentAt'] = $now;
   $row['attempts'] = 0;
   $db['pendingRegistrations'][$email] = $row;
@@ -328,7 +328,7 @@ if ($action === 'registerResend') {
     exit;
   }
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'resendIn' => 60, 'expiresIn' => 600]);
+  echo json_encode(['ok' => true, 'server' => true, 'resendIn' => 60, 'expiresIn' => 60]);
   exit;
 }
 
@@ -438,7 +438,7 @@ if ($action === 'passwordOtpStart') {
   $db['pendingPasswordOtps'][$email] = [
     'userId' => (string) ($me['id'] ?? ''),
     'codeHash' => orolado_otp_hash($email, $code),
-    'expiresAt' => $now + 600,
+    'expiresAt' => $now + 60,
     'lastSentAt' => $now,
     'attempts' => 0,
     'verified' => false,
@@ -450,7 +450,7 @@ if ($action === 'passwordOtpStart') {
     exit;
   }
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => 600, 'resendIn' => 60]);
+  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => 60, 'resendIn' => 60]);
   exit;
 }
 
@@ -495,6 +495,117 @@ if ($action === 'passwordOtpVerify') {
   $db['pendingPasswordOtps'][$email] = $row;
   save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true, 'otpToken' => $otpToken]);
+  exit;
+}
+
+if ($action === 'forgotOtpStart') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Invalid email']);
+    exit;
+  }
+  if (!isset($db['pendingPasswordOtps']) || !is_array($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
+  $now = time();
+  $prev = $db['pendingPasswordOtps'][$email] ?? null;
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < 60) {
+    $wait = 60 - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Wait ' . $wait . ' s', 'retryIn' => $wait]);
+    exit;
+  }
+  $found = find_user($db, $email);
+  if ($found) {
+    $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    $db['pendingPasswordOtps'][$email] = [
+      'userId' => (string) ($found['id'] ?? ''),
+      'codeHash' => orolado_otp_hash($email, $code),
+      'expiresAt' => $now + 60,
+      'lastSentAt' => $now,
+      'attempts' => 0,
+      'verified' => false,
+      'otpToken' => '',
+      'forgot' => true
+    ];
+    $sent = brevo_send_otp($email, $code);
+    if (empty($sent['ok'])) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Unable to send code']);
+      exit;
+    }
+    save_db($file, $db);
+  }
+  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => 60, 'resendIn' => 60]);
+  exit;
+}
+
+if ($action === 'forgotOtpVerify') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  $code = preg_replace('/\D/', '', (string) ($req['code'] ?? ''));
+  $row = $db['pendingPasswordOtps'][$email] ?? null;
+  if (!is_array($row)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'No pending code']);
+    exit;
+  }
+  $now = time();
+  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expired']);
+    exit;
+  }
+  $attempts = (int) ($row['attempts'] ?? 0);
+  if ($attempts >= 8) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Too many attempts']);
+    exit;
+  }
+  if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
+    $row['attempts'] = $attempts + 1;
+    $db['pendingPasswordOtps'][$email] = $row;
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Incorrect code']);
+    exit;
+  }
+  $otpToken = bin2hex(random_bytes(16));
+  $row['verified'] = true;
+  $row['otpToken'] = hash('sha256', $otpToken);
+  $row['verifiedUntil'] = $now + 300;
+  $db['pendingPasswordOtps'][$email] = $row;
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'otpToken' => $otpToken]);
+  exit;
+}
+
+if ($action === 'forgotPasswordSet') {
+  $email = strtolower(trim((string) ($req['email'] ?? '')));
+  $otpToken = trim((string) ($req['otpToken'] ?? ''));
+  $newPassword = (string) ($req['newPassword'] ?? '');
+  if (strlen($newPassword) < 6) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Password too short']);
+    exit;
+  }
+  $row = $db['pendingPasswordOtps'][$email] ?? null;
+  $now = time();
+  if (!is_array($row) || empty($row['verified']) || empty($row['otpToken'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Validate the email code first']);
+    exit;
+  }
+  if (!empty($row['verifiedUntil']) && (int) $row['verifiedUntil'] < $now) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expired']);
+    exit;
+  }
+  if (!hash_equals((string) $row['otpToken'], hash('sha256', $otpToken))) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Invalid OTP token']);
+    exit;
+  }
+  $uid = (string) ($row['userId'] ?? '');
+  if ($uid !== '' && isset($db['users'][$uid])) {
+    $db['users'][$uid]['passwordHash'] = orolado_hash_password($newPassword);
+  }
+  unset($db['pendingPasswordOtps'][$email]);
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true]);
   exit;
 }
 
@@ -947,11 +1058,12 @@ if ($action === 'withdraw') {
     exit;
   }
   $operator = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
-  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'paypal', 'bank', 'card', 'opay', 'palmpay', 'pix', 'mercadopago', 'nequi', 'gcash', 'upi', 'stcpay', 'vodafone', 'skrill', 'neteller'];
+  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'paypal', 'bank', 'card', 'opay', 'palmpay', 'pix', 'mercadopago', 'nequi', 'gcash', 'upi', 'stcpay', 'picpay', 'papara', 'skrill', 'neteller'];
   if (!in_array($operator, $allowedOps, true)) $operator = 'wave';
   $destination = trim((string) ($req['destination'] ?? $req['phone'] ?? ''));
   $beneficiary = trim((string) ($req['beneficiary'] ?? $me['displayName'] ?? ''));
-  $countryCode = preg_replace('/[^\d+]/', '', (string) ($req['countryCode'] ?? $me['countryCode'] ?? '+225'));
+  $countryCode = preg_replace('/[^\d+]/', '', (string) ($req['countryCode'] ?? ''));
+  if ($countryCode === '') $countryCode = '+1';
   if (strlen($destination) < 4) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez le compte / adresse de réception']);
     exit;
@@ -975,6 +1087,8 @@ if ($action === 'withdraw') {
     'status' => 'pending',
     'suspect' => $suspect,
     'operator' => $operator,
+    'method' => $operator,
+    'methodName' => trim((string) ($req['methodName'] ?? $operator)),
     'phone' => $destination,
     'destination' => $destination,
     'beneficiary' => $beneficiary,

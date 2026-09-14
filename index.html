@@ -34,7 +34,7 @@
   })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=148">
+  <link rel="stylesheet" href="css/app.css?v=150">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -377,7 +377,7 @@
             <button type="button" class="btn-trade btn-call" id="btnCall" translate="no">
               <span data-i18n="buy">BUY (CALL ↗)</span>
             </button>
-            <div class="fs-pad-bal" id="fsPadBalance" hidden>0 $</div>
+            <div class="fs-pad-capsule" id="fsPadCapsule"></div>
             <button type="button" class="btn-trade btn-put" id="btnPut" translate="no">
               <span data-i18n="sell">SELL (PUT ↘)</span>
             </button>
@@ -393,13 +393,15 @@
         <svg class="fs-coin fs-coin-btc" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-btc"></use></svg>
         <svg class="fs-coin fs-coin-eth" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-eth"></use></svg>
       </div>
-      <div class="fs-top-mid">
+      <div class="fs-top-mid-home" id="fsTopMidHome">
+      <div class="fs-top-mid" id="fsTopMid">
         <div class="fs-top-bal" id="fsTopBalance">0 $</div>
         <div class="fs-mode-switch" role="group" aria-label="Mode">
           <button type="button" class="fs-mode-btn mode-btn on" id="fsBtnDemo" data-mode="demo" data-i18n="fsDemo">DÉMO</button>
           <button type="button" class="fs-mid-plus" id="btnFsMidPlus" aria-label="Recharger" title="Recharger"><svg class="plus-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
           <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real" data-i18n="fsReal">RÉEL</button>
         </div>
+      </div>
       </div>
       <div class="fs-top-end">
         <svg class="fs-coin fs-coin-usdt" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-usdt"></use></svg>
@@ -584,24 +586,41 @@
   <div class="modal-backdrop" id="forgotModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeForgot">✕</button>
-      <div class="modal-title" data-i18n="resetTitle">Réinitialiser le mot de passe</div>
+      <div class="modal-title" data-i18n="resetTitle">Reset password</div>
       <form id="formReset">
-        <div class="field">
-          <label data-i18n="idLabel">E-mail</label>
+        <div class="field" id="forgotStepEmail">
+          <label data-i18n="idLabel">Email</label>
           <input id="resetId" type="email" required>
           <p class="err-msg" id="err-resetId"></p>
         </div>
-        <div class="field">
-          <label data-i18n="newPass">Nouveau mot de passe</label>
-          <input id="resetPass" type="password" required minlength="6">
+        <div class="field hidden" id="forgotStepOtp">
+          <label data-i18n="otpCode">Confirmation code</label>
+          <input id="resetOtp" class="otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
+          <p class="hint-min" id="forgotOtpTimer"></p>
+          <p class="err-msg" id="err-resetOtp"></p>
+        </div>
+        <div class="field hidden" id="forgotStepNew">
+          <label data-i18n="newPass">New password</label>
+          <div class="pass-wrap">
+            <input id="resetPass" type="password" minlength="6" autocomplete="new-password">
+            <button type="button" class="pass-toggle" data-pass="resetPass" aria-label="Show password">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
           <p class="err-msg" id="err-resetPass"></p>
         </div>
-        <div class="field">
-          <label data-i18n="confirmPass">Confirmer</label>
-          <input id="resetPass2" type="password" required minlength="6">
+        <div class="field hidden" id="forgotStepConfirm">
+          <label data-i18n="confirmPass">Confirm password</label>
+          <div class="pass-wrap">
+            <input id="resetPass2" type="password" minlength="6" autocomplete="new-password">
+            <button type="button" class="pass-toggle" data-pass="resetPass2" aria-label="Show password">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
           <p class="err-msg" id="err-resetPass2"></p>
         </div>
-        <button class="btn-gold" type="submit" data-i18n="update">Mettre à jour</button>
+        <button class="btn-gold" type="button" id="btnForgotSend" data-i18n="sendCode">Send Code</button>
+        <button class="btn-gold hidden" type="submit" id="btnForgotSave" data-i18n="update">Update</button>
       </form>
     </div>
   </div>
@@ -610,23 +629,38 @@
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closePass">✕</button>
       <div class="modal-title" data-i18n="changePass">Changer de mot de passe</div>
-      <p class="otp-lead" id="passOtpLead" data-i18n="passOtpLead">Un code à 6 chiffres sera envoyé à votre e-mail avant de pouvoir changer le mot de passe.</p>
+      <p class="otp-lead" id="passOtpLead" data-i18n="passOtpLead">A 6-digit code will be emailed before you can change your password.</p>
       <form id="formPassword">
-        <div class="field" id="passStepCurrent">
-          <label data-i18n="curPass">Mot de passe actuel</label>
-          <input id="curPass" type="password" required autocomplete="current-password">
+        <div class="field" id="passStepEmail">
+          <label data-i18n="email">Email</label>
+          <input id="passEmail" type="email" readonly>
         </div>
         <div class="field hidden" id="passStepOtp">
-          <label data-i18n="passOtpCode">Code e-mail</label>
+          <label data-i18n="passOtpCode">Email code</label>
           <input id="passOtp" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="••••••" autocomplete="one-time-code">
+          <p class="hint-min" id="passOtpTimer"></p>
           <p class="err-msg" id="err-passOtp"></p>
         </div>
         <div class="field hidden" id="passStepNew">
-          <label data-i18n="newPass">Nouveau mot de passe</label>
-          <input id="newPass" type="password" minlength="6" autocomplete="new-password">
+          <label data-i18n="newPass">New password</label>
+          <div class="pass-wrap">
+            <input id="newPass" type="password" minlength="6" autocomplete="new-password">
+            <button type="button" class="pass-toggle" data-pass="newPass" aria-label="Show password">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
-        <button class="btn-gold" type="button" id="btnPassSendOtp" data-i18n="passOtpSend">Envoyer le code</button>
-        <button class="btn-gold hidden" type="submit" id="btnPassSave" data-i18n="save">Enregistrer</button>
+        <div class="field hidden" id="passStepConfirm">
+          <label data-i18n="confirmPass">Confirm password</label>
+          <div class="pass-wrap">
+            <input id="newPass2" type="password" minlength="6" autocomplete="new-password">
+            <button type="button" class="pass-toggle" data-pass="newPass2" aria-label="Show password">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="btn-gold" type="button" id="btnPassSendOtp" data-i18n="sendCode">Send Code</button>
+        <button class="btn-gold hidden" type="submit" id="btnPassSave" data-i18n="save">Save</button>
       </form>
     </div>
   </div>
@@ -644,7 +678,7 @@
       <button type="button" class="btn-close" id="closeWithdraw">✕</button>
       <div class="modal-title" data-i18n="withdrawTitle">Retrait</div>
       <div class="wd-bal" id="wdBalanceLabel">
-        <div class="wd-bal-secure">🔒 SOLDE RETIRABLE SÉCURISÉ</div>
+        <div class="wd-bal-secure" data-i18n="wdBalSecure">SECURED WITHDRAWABLE BALANCE</div>
         <div class="wd-bal-amt" id="wdBalanceAmt">$0</div>
       </div>
       <div id="wdWagerBox" class="wd-wager-box hidden">
@@ -678,7 +712,8 @@
           <button type="button" class="wd-card wd-gcash" data-wd="gcash"><span class="wd-mm-dot"></span><span>GCash</span></button>
           <button type="button" class="wd-card wd-upi" data-wd="upi"><span class="wd-mm-dot"></span><span>UPI/Paytm</span></button>
           <button type="button" class="wd-card wd-stc" data-wd="stcpay"><span class="wd-mm-dot"></span><span>STC Pay</span></button>
-          <button type="button" class="wd-card wd-voda" data-wd="vodafone"><span class="wd-mm-dot"></span><span>Vodafone Cash</span></button>
+          <button type="button" class="wd-card wd-picpay" data-wd="picpay"><span class="wd-brand-pp" aria-hidden="true"></span><span>PicPay</span></button>
+          <button type="button" class="wd-card wd-papara" data-wd="papara"><span class="wd-brand-pa" aria-hidden="true">P</span><span>Papara</span></button>
         </div>
         <div class="wd-group-label" data-i18n="wdGroupIntl">Réseaux internationaux</div>
         <div class="wd-card-grid wd-grid-intl" id="wdBankGrid">
@@ -754,14 +789,7 @@
         <div class="modal-title" data-i18n="depositTitle">Deposit in USD</div>
         <div class="field">
           <label for="depositAmt" data-i18n="depositAmtLabel">Amount (USD)</label>
-          <div class="dep-amt-chips" id="depAmtChips" role="group" aria-label="Quick amounts">
-            <button type="button" class="dep-amt-chip" data-amt="5">$5</button>
-            <button type="button" class="dep-amt-chip" data-amt="10">$10</button>
-            <button type="button" class="dep-amt-chip" data-amt="25">$25</button>
-            <button type="button" class="dep-amt-chip" data-amt="50">$50</button>
-            <button type="button" class="dep-amt-chip" data-amt="100">$100</button>
-          </div>
-          <input id="depositAmt" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
+          <input id="depositAmt" class="dep-amt-input" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
           <p class="hint-min" data-i18n="depositMin">Minimum $3</p>
           <p class="err-msg" id="err-depositAmt"></p>
         </div>
@@ -790,8 +818,8 @@
         <button type="button" class="btn-gold btn-deposit-confirm" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
       </div>
       <div id="depositStepCrypto" class="crypto-invoice hidden">
-        <button type="button" class="crypto-back" id="btnUsdtBack">← Retour</button>
-        <div class="modal-title">Dépôt crypto</div>
+        <button type="button" class="crypto-back" id="btnUsdtBack" data-i18n="cryptoBack">← Back</button>
+        <div class="modal-title" data-i18n="cryptoTitle">Crypto Deposit</div>
         <p class="oxa-usd-line hidden" id="oxaUsdLine" hidden><span>Montant</span> <strong id="oxaUsdAmt"></strong></p>
         <div class="oxa-field">
           <label for="oxaCoinBtn">Crypto</label>
@@ -828,8 +856,7 @@
               <span class="copy-state done" data-i18n="cryptoCopied">✓ Copié dans le presse-papier</span>
             </button>
             <p class="oxa-min" id="oxaMinHint">Minimum : $5 (USDT TRC20)</p>
-            <p class="oxa-min oxa-max" id="oxaMaxHint">Maximum : $1,000 (USDT TRC20)</p>
-            <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel">En attente…</span></div>
+            <div class="oxa-live" id="usdtLiveBadge"><span class="crypto-dot"></span> <span id="oxaNetLabel" data-i18n="cryptoPending">Pending...</span></div>
             <div class="wait-spin crypto-spin" id="usdtBusy" hidden></div>
             <p class="crypto-verify" id="usdtPendingNote" hidden></p>
             <span id="usdtPayAmt" hidden></span>
@@ -910,17 +937,17 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=115"></script>
+  <script src="js/config.js?v=117"></script>
   <script src="js/translations.js?v=111"></script>
-  <script src="js/i18n.js?v=126"></script>
-  <script src="js/store.js?v=110"></script>
+  <script src="js/i18n.js?v=128"></script>
+  <script src="js/store.js?v=111"></script>
   <script src="js/api.js?v=108"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=109"></script>
-  <script src="js/auth.js?v=110"></script>
+  <script src="js/auth.js?v=112"></script>
   <script src="js/engine.js?v=113"></script>
   <script src="js/chart.js?v=122"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=147"></script>
+  <script src="js/app.js?v=150"></script>
 </body>
 </html>

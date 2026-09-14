@@ -286,15 +286,8 @@
       D6.holdPull = false;
     },
 
-    requestPasswordOtp: async function (user, current) {
+    requestPasswordOtp: async function (user) {
       if (!user) return { ok: false, reason: 'Session expirée' };
-      if (user.passwordHash && current) {
-        try {
-          if ((await hashPassword(current)) !== user.passwordHash) {
-            return { ok: false, reason: 'Mot de passe actuel incorrect' };
-          }
-        } catch (eH) { /* ignore, le serveur confirmera */ }
-      }
       if (D6.Api && D6.Api.post) {
         var remote = await D6.Api.post('passwordOtpStart', { email: user.email || '' }, 20000);
         if (remote && remote.ok) return remote;
@@ -313,6 +306,41 @@
         if (remote && remote.reason) return remote;
       }
       return { ok: false, reason: 'Code incorrect' };
+    },
+
+    forgotOtpStart: async function (email) {
+      email = String(email || '').trim().toLowerCase();
+      if (!email) return { ok: false, reason: 'Invalid email', field: 'resetId' };
+      if (D6.Api && D6.Api.post) {
+        var remote = await D6.Api.post('forgotOtpStart', { email: email }, 20000);
+        if (remote && remote.ok) return remote;
+        if (remote && remote.reason) return remote;
+      }
+      return { ok: false, reason: 'Unable to send code', field: 'resetId' };
+    },
+    forgotOtpVerify: async function (email, code) {
+      email = String(email || '').trim().toLowerCase();
+      code = String(code || '').replace(/\D/g, '');
+      if (code.length !== 6) return { ok: false, reason: 'Invalid code' };
+      if (D6.Api && D6.Api.post) {
+        var remote = await D6.Api.post('forgotOtpVerify', { email: email, code: code }, 20000);
+        if (remote && remote.ok) return remote;
+        if (remote && remote.reason) return remote;
+      }
+      return { ok: false, reason: 'Incorrect code' };
+    },
+    forgotPasswordSet: async function (email, next, confirm, otpToken) {
+      next = String(next || '');
+      confirm = String(confirm || '');
+      if (next.length < 6) return { ok: false, reason: 'Password too short', field: 'resetPass' };
+      if (next !== confirm) return { ok: false, reason: (D6.I18N && D6.I18N.t('passMismatch')) || 'Passwords do not match', field: 'resetPass2' };
+      if (!otpToken) return { ok: false, reason: 'Validate the email code first' };
+      if (D6.Api && D6.Api.post) {
+        var remote = await D6.Api.post('forgotPasswordSet', { email: email, otpToken: otpToken, newPassword: next }, 20000);
+        if (remote && remote.ok) return remote;
+        if (remote && remote.reason) return remote;
+      }
+      return D6.Auth.resetPassword({ identifier: email, password: next, passwordConfirm: confirm });
     },
 
     changePassword: async function (user, current, next, otpToken) {

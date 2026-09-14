@@ -147,10 +147,7 @@
     if (!u) return;
     var start = D6.CONFIG.DEMO_START || 1000000;
     var cur = Number(D6.Store.demoBalance(u) || 0);
-    // Ancienne valeur résiduelle 50 000 → 1 000 000 pour tous.
-    if (cur === 50000 || cur === 5000 || (u.guest && cur > 0 && cur < start && cur % 50000 === 0 && cur <= 50000)) {
-      D6.Store.setBalanceMode(u, 'demo', start);
-    } else if (u.guest && (cur <= 0 || cur === 50000)) {
+    if (cur === 50000 || cur === 5000 || cur === 50000.0 || (u.guest && (cur <= 0 || cur === 50000))) {
       D6.Store.setBalanceMode(u, 'demo', start);
     }
   }
@@ -237,7 +234,7 @@
       el.textContent = text;
       lastPaintedBalance = text;
     }
-    ['fsTopBalance', 'fsPadBalance'].forEach(function (id) {
+    ['fsTopBalance'].forEach(function (id) {
       var b = $(id);
       if (b) {
         b.textContent = text;
@@ -343,7 +340,7 @@
     var txt = el.querySelector('.lux-msg-txt');
     if (txt) txt.textContent = msg;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 2000);
+    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 3000);
   }
 
   function guardLiveTradeView() {
@@ -2727,10 +2724,10 @@
       var net = oxaAsset === 'usdt' ? (' ' + (oxaNet || 'TRC20')) : '';
       var label = m.symbol + net;
       $('oxaMinHint').textContent = 'Minimum : $' + need.toFixed(0) + ' (' + label + ')';
-      if ($('oxaMaxHint')) $('oxaMaxHint').textContent = 'Maximum : $1,000 (' + label + ')';
+      if ($('oxaMaxHint')) $('oxaMaxHint').textContent = '';
     }
     if ($('oxaNetLabel')) {
-      $('oxaNetLabel').textContent = 'En attente…';
+      $('oxaNetLabel').textContent = t('cryptoPending');
     }
   }
 
@@ -2826,7 +2823,7 @@
     if ($('usdtAddr') && liveDepositAddr) $('usdtAddr').innerHTML = styleOxaAddr(liveDepositAddr);
     if ($('oxaWalletBox')) $('oxaWalletBox').classList.remove('hidden');
     if ($('oxaNetLabel')) {
-      $('oxaNetLabel').textContent = 'En attente…';
+      $('oxaNetLabel').textContent = t('cryptoPending');
     }
     if ($('oxaAddrLabel')) {
       var memo = String((inv && inv.memo) || '');
@@ -3208,15 +3205,27 @@
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, bnb: 1, ltc: 1, doge: 1 };
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
-    nequi: 1, gcash: 1, vodafone: 1, stcpay: 1
+    nequi: 1, gcash: 1, stcpay: 1, picpay: 1, papara: 1
   };
   var WD_EMAIL = { paypal: 1, skrill: 1, neteller: 1 };
   var WD_NAMES = {
     usdt: 'USDT TRC-20', trx: 'TRX', sol: 'SOL', bnb: 'Binance Pay', btc: 'BTC', eth: 'ETH',
     opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange Money', mtn: 'MTN',
     mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
-    nequi: 'Nequi', gcash: 'GCash', upi: 'UPI/Paytm', stcpay: 'STC Pay', vodafone: 'Vodafone Cash',
+    nequi: 'Nequi', gcash: 'GCash', upi: 'UPI/Paytm', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
     paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', card: 'Carte bancaire', bank: 'Virement bancaire'
+  };
+  var WD_DIAL_LOCK = {
+    stcpay: '+966', nequi: '+57', opay: '+234', palmpay: '+234',
+    picpay: '+55', papara: '+90', gcash: '+63'
+  };
+  var WD_DIAL_AFRICA = {
+    wave: ['+221', '+225', '+223', '+226', '+229', '+228', '+224', '+237'],
+    orange: ['+225', '+221', '+223', '+226', '+224', '+237', '+227', '+228', '+229'],
+    mtn: ['+234', '+233', '+225', '+237', '+256', '+250', '+27', '+229', '+241', '+242', '+243'],
+    moov: ['+225', '+228', '+229', '+226', '+223', '+227'],
+    airtel: ['+254', '+256', '+255', '+250', '+243', '+227'],
+    mpesa: ['+254', '+255', '+243', '+27', '+233', '+20']
   };
 
   function showWithdrawStep(step) {
@@ -3234,14 +3243,23 @@
     if ($('wdSelectedLabel')) $('wdSelectedLabel').textContent = WD_NAMES[selectedOp] || selectedOp || '';
   }
 
-  function fillWdDial() {
+  function fillWdDial(method) {
     var sel = $('wdDial');
-    if (!sel || sel.getAttribute('data-filled') === '1') return;
+    if (!sel) return;
     var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
-    sel.innerHTML = codes.map(function (c) {
+    var lock = WD_DIAL_LOCK[method];
+    var africa = WD_DIAL_AFRICA[method];
+    var allowed = null;
+    if (lock) allowed = [lock];
+    else if (africa) allowed = africa;
+    var list = allowed ? codes.filter(function (c) { return allowed.indexOf(c.code) >= 0; }) : codes;
+    if (!list.length) list = codes;
+    sel.innerHTML = list.map(function (c) {
       return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + ' · ' + c.name + '</option>';
     }).join('');
-    sel.setAttribute('data-filled', '1');
+    if (lock) sel.value = lock;
+    else if (!africa) sel.value = '+1';
+    sel.disabled = !!lock;
   }
 
   function fillWdBankCountry() {
@@ -3283,8 +3301,7 @@
     if (bankFields) bankFields.classList.toggle('hidden', !isBank);
     if (destField) destField.classList.toggle('hidden', isMobile || isCard || isBank);
     if (isMobile) {
-      fillWdDial();
-      if ($('wdDial') && u && u.countryCode) $('wdDial').value = u.countryCode;
+      fillWdDial(method);
       if ($('wdFullName') && u && !$('wdFullName').value) $('wdFullName').value = u.displayName || '';
       return;
     }
@@ -3300,19 +3317,23 @@
     if (!label || !input) return;
     if (isCrypto) {
       label.textContent = t('wdWallet');
-      input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : (method === 'usdt' ? 'Adresse USDT TRC-20 (T…)' : 'Adresse de portefeuille');
+      input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : (method === 'usdt' ? 'USDT TRC-20 address (T…)' : 'Wallet address');
       input.type = 'text';
     } else if (WD_EMAIL[method]) {
       label.textContent = method === 'paypal' ? t('wdPaypal') : t('wdEmailId');
-      input.placeholder = 'vous@email.com';
+      input.placeholder = 'you@email.com';
       input.type = 'email';
     } else if (method === 'pix') {
       label.textContent = t('wdPix');
-      input.placeholder = 'CPF / e-mail / téléphone / clé';
+      input.placeholder = 'CPF / e-mail / phone / key';
       input.type = 'text';
-    } else if (method === 'upi' || method === 'mercadopago') {
+    } else if (method === 'upi') {
       label.textContent = t('wdAccount');
-      input.placeholder = method === 'upi' ? 'UPI ID / Paytm' : 'Compte Mercado Pago';
+      input.placeholder = 'UPI ID / Paytm';
+      input.type = 'text';
+    } else if (method === 'mercadopago') {
+      label.textContent = t('wdAccount');
+      input.placeholder = 'Mercado Pago account';
       input.type = 'text';
     }
   }
@@ -3361,24 +3382,26 @@
     if (!iso) return '';
     var d = new Date(iso);
     if (isNaN(d.getTime())) return String(iso);
-    return d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    var loc = (D6.I18N && D6.I18N.lang) || 'en';
+    return d.toLocaleString(loc, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
-  function normFinanceStatus(raw, label) {
+  function financeKindLabel(kind) {
+    return kind === 'deposit' ? t('txDeposit') : t('txWithdraw');
+  }
+
+  function normFinanceStatus(raw, kind) {
     var s = String(raw || '').toUpperCase();
     if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK' || s === 'VALIDÉ' || s === 'VALIDE') {
-      return { code: 'COMPLETED', label: 'Validé', cls: 'ok' };
+      return { code: 'COMPLETED', label: t('txValidated'), cls: 'ok' };
     }
     if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED' || s === 'CANCELED' || s === 'CANCELLED') {
-      return { code: 'REJECTED', label: 'Rejeté', cls: 'bad' };
+      return { code: 'REJECTED', label: t('txRejected'), cls: 'bad' };
     }
     if (s === 'REVIEW' || s === 'SUSPENDED') {
-      return { code: 'REVIEW', label: 'Vérification de sécurité', cls: 'pending' };
+      return { code: 'REVIEW', label: t('txPending'), cls: 'pending' };
     }
-    if (label === 'Retrait' && (s === 'WITHDRAW' || s === '')) {
-      return { code: 'PENDING', label: 'En cours', cls: 'pending' };
-    }
-    return { code: s || 'PENDING', label: 'En cours', cls: 'pending' };
+    return { code: s || 'PENDING', label: t('txPending'), cls: 'pending' };
   }
 
   function gatewayLabel(raw) {
@@ -3410,13 +3433,13 @@
     rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
     rows = rows.slice(0, 20);
     var html = rows.length ? rows.map(function (r) {
-      var st = r.status || { label: 'En cours', cls: 'pending' };
+      var st = r.status || { label: t('txPending'), cls: 'pending' };
       return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
         fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
         '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
         st.label + '</span></div></div>';
-    }).join('') : '<div class="empty-feed">Aucune opération pour l’instant</div>';
+    }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
     tx.innerHTML = html;
     return html;
   }
@@ -3431,8 +3454,8 @@
           at: x.at || '',
           ref: x.id || '—',
           amount: Number(x.amount) || 0,
-          status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type === 'deposit' ? 'Dépôt' : 'Retrait'),
-          label: x.type === 'deposit' ? 'Dépôt' : 'Retrait',
+          status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type),
+          label: financeKindLabel(x.type),
           gateway: gatewayLabel(x.operator || x.note || '')
         });
       });
@@ -3443,8 +3466,8 @@
         at: w.at || '',
         ref: w.id || '—',
         amount: -Math.abs(Number(w.amount) || 0),
-        status: normFinanceStatus(w.status, 'Retrait'),
-        label: 'Retrait',
+        status: normFinanceStatus(w.status, 'withdraw'),
+        label: t('txWithdraw'),
         gateway: gatewayLabel(w.operator || '')
       });
     });
@@ -3473,8 +3496,8 @@
             at: d.created_at || d.completed_at || '',
             ref: d.reference || d.id || '—',
             amount: Number(d.amount) || 0,
-            status: normFinanceStatus(d.status, 'Dépôt'),
-            label: 'Dépôt',
+            status: normFinanceStatus(d.status, 'deposit'),
+            label: t('txDeposit'),
             gateway: gatewayLabel(d.operator || '')
           });
         });
@@ -3483,8 +3506,8 @@
             at: w.created_at || w.at || '',
             ref: w.id || w.reference || '—',
             amount: -Math.abs(Number(w.amount) || 0),
-            status: normFinanceStatus(w.status, 'Retrait'),
-            label: 'Retrait',
+            status: normFinanceStatus(w.status, 'withdraw'),
+            label: t('txWithdraw'),
             gateway: gatewayLabel(w.operator || '')
           });
         });
@@ -3495,8 +3518,8 @@
             at: trow.created_at || '',
             ref: trow.id || '—',
             amount: Number(trow.amount) || 0,
-            status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ === 'deposit' ? 'Dépôt' : 'Retrait'),
-            label: typ === 'deposit' ? 'Dépôt' : 'Retrait',
+            status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ),
+            label: financeKindLabel(typ),
             gateway: gatewayLabel(trow.note || '')
           });
         });
@@ -3514,7 +3537,7 @@
             ref: r.ref || '—',
             amount: Number(r.amount) || 0,
             status: normFinanceStatus(r.status, r.label),
-            label: r.label === 'Recharge' ? 'Dépôt' : (r.label || '—'),
+            label: (r.label === 'Recharge' || r.label === 'Dépôt' || String(r.label).toLowerCase() === 'deposit') ? t('txDeposit') : (r.label === 'Retrait' || String(r.label).toLowerCase() === 'withdraw' ? t('txWithdraw') : (r.label || '—')),
             gateway: gatewayLabel(r.operator || r.gateway || '')
           });
         });
@@ -3530,6 +3553,8 @@
     var eyeSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
     var eyeOffSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.1 3.9"/><path d="M6.1 6.1A17.5 17.5 0 0 0 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.2-.9"/></svg>';
     document.querySelectorAll('.pass-toggle').forEach(function (btn) {
+      if (btn._oroEye) return;
+      btn._oroEye = true;
       btn.addEventListener('click', function () {
         var id = btn.getAttribute('data-pass');
         var input = id && $(id);
@@ -3560,13 +3585,13 @@
       enterApp();
     });
     $('regPass2').addEventListener('input', function () {
-      if ($('regPass').value && this.value && $('regPass').value !== this.value) showFieldError('regPass2', 'Les mots de passe ne correspondent pas');
+      if ($('regPass').value && this.value && $('regPass').value !== this.value) showFieldError('regPass2', t('passMismatch'));
       else { $('err-regPass2').textContent = ''; $('err-regPass2').classList.remove('on'); }
     });
     $('formRegister').addEventListener('submit', async function (e) {
       e.preventDefault();
       clearErrors();
-      if ($('regPass').value !== $('regPass2').value) { showFieldError('regPass2', 'Les mots de passe ne correspondent pas'); return; }
+      if ($('regPass').value !== $('regPass2').value) { showFieldError('regPass2', t('passMismatch')); return; }
       var submitBtn = $('formRegister').querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.disabled = true;
       var res;
@@ -3587,22 +3612,89 @@
         return;
       }
       metaTrack('CompleteRegistration');
-      toast(t('accountCreated'), 'ok');
+      toast(t('accountCreated'), 'ok', 3000);
       enterApp({ openFullscreen: true });
     });
+    var forgotOtpToken = '';
+    var forgotTimer = null;
+    var forgotLeft = 0;
+    function resetForgotModal() {
+      forgotOtpToken = '';
+      if (forgotTimer) { clearInterval(forgotTimer); forgotTimer = null; }
+      forgotLeft = 0;
+      if ($('forgotStepEmail')) $('forgotStepEmail').classList.remove('hidden');
+      ['forgotStepOtp', 'forgotStepNew', 'forgotStepConfirm'].forEach(function (id) {
+        if ($(id)) $(id).classList.add('hidden');
+      });
+      if ($('btnForgotSend')) $('btnForgotSend').classList.remove('hidden');
+      if ($('btnForgotSave')) $('btnForgotSave').classList.add('hidden');
+      if ($('resetOtp')) $('resetOtp').value = '';
+      if ($('resetPass')) $('resetPass').value = '';
+      if ($('resetPass2')) $('resetPass2').value = '';
+      if ($('forgotOtpTimer')) $('forgotOtpTimer').textContent = '';
+    }
+    function tickForgotTimer() {
+      if ($('forgotOtpTimer')) {
+        $('forgotOtpTimer').textContent = forgotLeft > 0
+          ? t('otpResendIn').replace('{s}', String(forgotLeft))
+          : '';
+      }
+    }
     $('btnForgot').addEventListener('click', function () {
       clearErrors();
+      resetForgotModal();
       $('resetId').value = $('loginId').value;
       openModal('forgotModal');
     });
+    if ($('btnForgotSend')) {
+      $('btnForgotSend').addEventListener('click', async function () {
+        clearErrors();
+        var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
+        var res = await D6.Auth.forgotOtpStart(email);
+        if (!res || !res.ok) { showFieldError('resetId', (res && res.reason) || 'Unable to send code'); return; }
+        if ($('forgotStepOtp')) $('forgotStepOtp').classList.remove('hidden');
+        if ($('resetOtp')) $('resetOtp').focus();
+        forgotLeft = 60;
+        tickForgotTimer();
+        if (forgotTimer) clearInterval(forgotTimer);
+        forgotTimer = setInterval(function () {
+          forgotLeft -= 1;
+          if (forgotLeft <= 0) { clearInterval(forgotTimer); forgotTimer = null; forgotLeft = 0; }
+          tickForgotTimer();
+        }, 1000);
+        toast(t('passOtpSent') || 'Code sent', 'ok');
+      });
+    }
+    if ($('resetOtp')) {
+      $('resetOtp').addEventListener('input', async function () {
+        var code = String(this.value || '').replace(/\D/g, '').slice(0, 6);
+        this.value = code;
+        if (code.length !== 6) return;
+        var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
+        var res = await D6.Auth.forgotOtpVerify(email, code);
+        if (!res || !res.ok) { showFieldError('resetOtp', (res && res.reason) || 'Incorrect code'); return; }
+        forgotOtpToken = res.otpToken || 'ok';
+        if ($('forgotStepNew')) $('forgotStepNew').classList.remove('hidden');
+        if ($('forgotStepConfirm')) $('forgotStepConfirm').classList.remove('hidden');
+        if ($('btnForgotSend')) $('btnForgotSend').classList.add('hidden');
+        if ($('btnForgotSave')) $('btnForgotSave').classList.remove('hidden');
+        if ($('resetPass')) $('resetPass').focus();
+      });
+    }
     $('formReset').addEventListener('submit', async function (e) {
       e.preventDefault();
       clearErrors();
-      var res = await D6.Auth.resetPassword({
-        identifier: $('resetId').value,
-        password: $('resetPass').value, passwordConfirm: $('resetPass2').value
-      });
-      if (!res.ok) { showFieldError(res.field || 'resetId', res.reason); return; }
+      if ($('resetPass').value !== $('resetPass2').value) {
+        showFieldError('resetPass2', t('passMismatch'));
+        return;
+      }
+      var res = await D6.Auth.forgotPasswordSet(
+        String(($('resetId') && $('resetId').value) || '').trim().toLowerCase(),
+        $('resetPass').value,
+        $('resetPass2').value,
+        forgotOtpToken
+      );
+      if (!res.ok) { showFieldError(res.field || 'resetPass', res.reason); return; }
       closeModal('forgotModal');
       toast(t('passUpdated'), 'ok');
     });
@@ -3627,7 +3719,7 @@
     if (!btn || !timer) return;
     if (otpResendLeft > 0) {
       btn.disabled = true;
-      timer.textContent = 'Renvoyer dans ' + otpResendLeft + ' s';
+      timer.textContent = t('otpResendIn').replace('{s}', String(otpResendLeft));
     } else {
       btn.disabled = false;
       timer.textContent = '';
@@ -3706,7 +3798,7 @@
         }
         closeOtpModal();
         metaTrack('CompleteRegistration');
-        toast(t('accountCreated'), 'ok');
+        toast(t('accountCreated'), 'ok', 3000);
         enterApp({ openFullscreen: true });
       });
     }
@@ -3870,28 +3962,50 @@
       openFromProfile('passModal');
     });
     bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
+    var passOtpToken = '';
+    var passTimer = null;
+    var passLeft = 0;
+    function tickPassTimer() {
+      if ($('passOtpTimer')) {
+        $('passOtpTimer').textContent = passLeft > 0
+          ? t('otpResendIn').replace('{s}', String(passLeft))
+          : '';
+      }
+    }
     function resetPassModal() {
       passOtpToken = '';
+      if (passTimer) { clearInterval(passTimer); passTimer = null; }
+      passLeft = 0;
+      var u = user();
+      if ($('passEmail')) $('passEmail').value = (u && u.email) || '';
       if ($('curPass')) $('curPass').value = '';
       if ($('passOtp')) $('passOtp').value = '';
       if ($('newPass')) $('newPass').value = '';
+      if ($('newPass2')) $('newPass2').value = '';
       if ($('passStepOtp')) $('passStepOtp').classList.add('hidden');
       if ($('passStepNew')) $('passStepNew').classList.add('hidden');
+      if ($('passStepConfirm')) $('passStepConfirm').classList.add('hidden');
       if ($('btnPassSendOtp')) $('btnPassSendOtp').classList.remove('hidden');
       if ($('btnPassSave')) $('btnPassSave').classList.add('hidden');
+      if ($('passOtpTimer')) $('passOtpTimer').textContent = '';
     }
-    var passOtpToken = '';
     if ($('btnPassSendOtp')) {
       $('btnPassSendOtp').addEventListener('click', async function () {
         var u = user();
         if (!u) return;
-        var cur = $('curPass') ? $('curPass').value : '';
-        if (!cur) { toast(t('curPass') || 'Mot de passe actuel', 'err'); return; }
-        var res = await D6.Auth.requestPasswordOtp(u, cur);
-        if (!res || !res.ok) { toast((res && res.reason) || 'Envoi impossible', 'err'); return; }
+        var res = await D6.Auth.requestPasswordOtp(u);
+        if (!res || !res.ok) { toast((res && res.reason) || 'Unable to send code', 'err'); return; }
         if ($('passStepOtp')) $('passStepOtp').classList.remove('hidden');
         if ($('passOtp')) $('passOtp').focus();
-        toast(t('passOtpSent') || 'Code envoyé', 'ok');
+        passLeft = 60;
+        tickPassTimer();
+        if (passTimer) clearInterval(passTimer);
+        passTimer = setInterval(function () {
+          passLeft -= 1;
+          if (passLeft <= 0) { clearInterval(passTimer); passTimer = null; passLeft = 0; }
+          tickPassTimer();
+        }, 1000);
+        toast(t('passOtpSent') || 'Code sent', 'ok');
       });
     }
     if ($('passOtp')) {
@@ -3900,12 +4014,13 @@
         if (code.length !== 6) return;
         var res = await D6.Auth.verifyPasswordOtp(user(), code);
         if (!res || !res.ok) {
-          if ($('err-passOtp')) $('err-passOtp').textContent = (res && res.reason) || 'Code incorrect';
+          if ($('err-passOtp')) $('err-passOtp').textContent = (res && res.reason) || 'Incorrect code';
           return;
         }
         if ($('err-passOtp')) $('err-passOtp').textContent = '';
         passOtpToken = res.otpToken || 'ok';
         if ($('passStepNew')) $('passStepNew').classList.remove('hidden');
+        if ($('passStepConfirm')) $('passStepConfirm').classList.remove('hidden');
         if ($('btnPassSendOtp')) $('btnPassSendOtp').classList.add('hidden');
         if ($('btnPassSave')) $('btnPassSave').classList.remove('hidden');
         if ($('newPass')) $('newPass').focus();
@@ -3913,8 +4028,12 @@
     }
     $('formPassword').addEventListener('submit', async function (e) {
       e.preventDefault();
-      if (!passOtpToken) { toast(t('passOtpNeed') || 'Validez le code e-mail', 'err'); return; }
-      var res = await D6.Auth.changePassword(user(), $('curPass').value, $('newPass').value, passOtpToken);
+      if (!passOtpToken) { toast(t('passOtpNeed') || 'Validate the email code', 'err'); return; }
+      if ($('newPass2') && $('newPass').value !== $('newPass2').value) {
+        toast(t('passMismatch'), 'err');
+        return;
+      }
+      var res = await D6.Auth.changePassword(user(), '', $('newPass').value, passOtpToken);
       if (!res.ok) { toast(res.reason, 'err'); return; }
       resetPassModal();
       closeModal('passModal');
@@ -4061,12 +4180,25 @@
       });
     });
     if ($('btnWdBack')) {
-      bindImmediateClose($('btnWdBack'), function () {
+      $('btnWdBack').addEventListener('click', function (e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        }
         selectedOp = '';
         if ($('wdMethod')) $('wdMethod').value = '';
         document.querySelectorAll('.wd-card').forEach(function (el) { el.classList.remove('on'); });
         showWithdrawStep('grid');
       });
+      $('btnWdBack').addEventListener('touchstart', function (e) {
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopPropagation();
+        selectedOp = '';
+        if ($('wdMethod')) $('wdMethod').value = '';
+        document.querySelectorAll('.wd-card').forEach(function (el) { el.classList.remove('on'); });
+        showWithdrawStep('grid');
+      }, { passive: false });
     }
     $('btnConfirmDeposit').addEventListener('click', function (e) {
       e.preventDefault();
@@ -4100,11 +4232,14 @@
       var isMobile = !!WD_MOBILE[method];
       var destination = '';
       var name = (u.displayName || 'Client').trim();
-      var dial = u.countryCode || '+225';
+      var dial = WD_DIAL_LOCK[method] || '+1';
       if (isMobile) {
         destination = String(($('wdPhone') && $('wdPhone').value) || '').trim();
         name = String(($('wdFullName') && $('wdFullName').value) || '').trim();
-        dial = String(($('wdDial') && $('wdDial').value) || u.countryCode || '+225');
+        dial = String(($('wdDial') && $('wdDial').value) || WD_DIAL_LOCK[method] || '+1');
+      } else if (method === 'upi') {
+        dial = '+91';
+        destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
       } else if (method === 'card') {
         destination = String(($('wdCardNumber') && $('wdCardNumber').value) || '').replace(/\D/g, '');
         name = String(($('wdCardName') && $('wdCardName').value) || '').trim();
@@ -4148,6 +4283,8 @@
       var payload = {
         amount: amount,
         operator: method,
+        method: method,
+        methodName: WD_NAMES[method] || method,
         phone: destination,
         destination: destination,
         beneficiary: name,
@@ -4660,6 +4797,22 @@
     return Promise.resolve();
   }
 
+  function isFsDesktop() {
+    try { return window.matchMedia('(min-width: 860px)').matches; } catch (e) { return false; }
+  }
+  function syncFsCapsule() {
+    var mid = $('fsTopMid');
+    var home = $('fsTopMidHome');
+    var pad = $('fsPadCapsule');
+    if (!mid || !home || !pad) return;
+    var desktop = !!fsTradeActive && isFsDesktop();
+    if (desktop) {
+      if (mid.parentNode !== pad) pad.appendChild(mid);
+    } else if (mid.parentNode !== home) {
+      home.appendChild(mid);
+    }
+  }
+
   function mountTradeFullscreen() {
     var wrap = $('tradeWrap');
     var slot = $('fsTradeSlot');
@@ -4676,6 +4829,7 @@
       document.body.classList.add('is-fullscreen');
       document.body.style.overflow = 'hidden';
       fsTradeActive = true;
+      syncFsCapsule();
       var enterBtn = $('btnChartFs');
       if (enterBtn) {
         enterBtn.setAttribute('aria-pressed', 'true');
@@ -4724,6 +4878,7 @@
         enterBtn.setAttribute('aria-label', t('fsEnter') || 'PLEIN ÉCRAN');
       }
       bumpChartLayout();
+      syncFsCapsule();
     } catch (eUn) {
       try { console.warn(eUn); } catch (eW) { /* ignore */ }
       fsTradeActive = false;
@@ -4807,6 +4962,7 @@
       } catch (eO) { try { console.warn(eO); } catch (e) { /* ignore */ } }
     });
     window.addEventListener('resize', function () {
+      try { syncFsCapsule(); } catch (eC) { /* ignore */ }
       try { bumpChartLayout(); } catch (eR) { try { console.warn(eR); } catch (e) { /* ignore */ } }
     });
   }

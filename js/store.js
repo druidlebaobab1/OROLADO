@@ -501,7 +501,9 @@
         phone: extra.destination || extra.phone || '',
         destination: extra.destination || extra.phone || '',
         beneficiary: extra.beneficiary || '',
-        countryCode: extra.countryCode || user.countryCode || '+225',
+        countryCode: extra.countryCode || '+1',
+        method: extra.method || extra.operator || '',
+        methodName: extra.methodName || extra.operator || '',
         at: D6.nowIso(),
         clock: D6.clock()
       });
