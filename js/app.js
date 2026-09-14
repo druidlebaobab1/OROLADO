@@ -3956,6 +3956,56 @@
     }
   }
 
+  function bindGlobalTradeClicks() {
+    if (bindGlobalTradeClicks._on) return;
+    bindGlobalTradeClicks._on = true;
+    document.addEventListener('click', function (e) {
+      try {
+        var n = e.target;
+        if (!n || !n.closest) return;
+        if (n.closest('#btnOpenDeposit')) {
+          e.stopPropagation();
+          openDeposit();
+          return;
+        }
+        var chip = n.closest('.asset-chip');
+        if (chip && chip.dataset && chip.dataset.asset) {
+          e.stopPropagation();
+          var u = user();
+          if (u) selectAsset(chip.dataset.asset);
+          return;
+        }
+        var dur = n.closest('.dur-chip');
+        if (dur && dur.dataset && dur.dataset.dur) {
+          e.stopPropagation();
+          var u2 = user();
+          if (!u2) return;
+          u2.duration = Number(dur.dataset.dur);
+          D6.Store.saveUser(u2);
+          updateDurationUi();
+          return;
+        }
+        var odds = n.closest('.odds-chip');
+        if (odds && odds.dataset && odds.dataset.odds) {
+          e.stopPropagation();
+          setOdds(odds.dataset.odds);
+          return;
+        }
+        if (n.closest('#btnCall')) {
+          e.stopPropagation();
+          execute('call');
+          return;
+        }
+        if (n.closest('#btnPut')) {
+          e.stopPropagation();
+          execute('put');
+        }
+      } catch (err) {
+        try { console.warn(err); } catch (e0) { /* ignore */ }
+      }
+    }, true);
+  }
+
   function bindTrade() {
     function onClick(el, fn) {
       if (!el || typeof fn !== 'function') return;
@@ -5121,6 +5171,8 @@
     updateBalance: updateBalance,
     getBalanceLocks: getBalanceLocks,
     boot: function () {
+      if (D6.App._booted) return;
+      D6.App._booted = true;
       try {
         try { unlockPointerLayers(); } catch (eUnlock) { /* ignore */ }
         try { if (window.oroPurgeDeadOverlays) window.oroPurgeDeadOverlays(); } catch (ePurge) { /* ignore */ }
@@ -5134,6 +5186,7 @@
         try { applyAndroidTradeHint(); } catch (e5) { /* ignore */ }
         try { bindAuth(); } catch (e6) { try { console.warn(e6); } catch (e) { /* ignore */ } }
         try { bindTrade(); } catch (e7) { try { console.warn(e7); } catch (e) { /* ignore */ } }
+        try { bindGlobalTradeClicks(); } catch (e7b) { /* ignore */ }
         try { bindModals(); } catch (e9) { /* ignore */ }
         try { bindFullscreenTrade(); } catch (e10) { try { console.warn('Mobile display fallback:', e10); } catch (e) { /* ignore */ } }
         try { bindAdmin(); } catch (e11) { /* ignore */ }
@@ -5295,5 +5348,9 @@
     }
   };
 
-  document.addEventListener('DOMContentLoaded', D6.App.boot);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', D6.App.boot);
+  } else {
+    D6.App.boot();
+  }
 })(window.D6 = window.D6 || {});
