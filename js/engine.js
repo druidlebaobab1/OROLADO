@@ -40,9 +40,9 @@
   function feedProfile(assetId) {
     switch (assetId) {
       case 'stable':
-        return { salt: 221713, vol: 0.14, drift: 0, f1: 0.019, f2: 0.041, f3: 0.007, a1: 6, a2: 3.5, a3: 8, spike: null, stair: null };
+        return { salt: 221713, vol: 0.09, drift: 0, f1: 0.011, f2: 0.023, f3: 0.005, a1: 3.2, a2: 1.8, a3: 4.2, spike: null, stair: null };
       case 'v75':
-        return { salt: 551903, vol: 0.62, drift: 0, f1: 0.033, f2: 0.071, f3: 0.014, a1: 14, a2: 9, a3: 22, spike: null, stair: null };
+        return { salt: 551903, vol: 0.92, drift: 0, f1: 0.088, f2: 0.17, f3: 0.041, a1: 16, a2: 11, a3: 24, spike: null, stair: null };
       case 'crash300':
         return { salt: 771001, vol: 0.35, drift: 0, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'crash' };
       case 'boomspike':
@@ -77,8 +77,8 @@
     var slow = Math.sin(bucket * 0.017) * 55 + Math.cos(bucket * 0.009) * 28;
     var micro = (uhash01(bucket, salt) - 0.5) * 6;
     var o = base + slow + micro;
-    var period = 8 + Math.floor(uhash01(Math.floor(bucket / 50), salt + 3) * 7);
-    var spike = (bucket % period) === (period - 1) && uhash01(bucket, salt + 11) > 0.12;
+    var period = 15 + Math.floor(uhash01(Math.floor(bucket / 90), salt + 3) * 16);
+    var spike = (bucket % period) === (period - 1);
     var c;
     var h;
     var l;
@@ -145,59 +145,46 @@
       return synthCrashBoomPrice(conf, t);
     }
     if (p.kind === 'apex') {
-      var wA = Math.sin(t * 0.31) * 7.5 + Math.sin(t * 0.67 + 0.4) * 4.8 + Math.cos(t * 1.15) * 2.6;
-      var nA = (valueNoise(t * 4.2, p.salt) - 0.5) * 5.5 + (valueNoise(t * 11, p.salt + 2) - 0.5) * 2.8;
+      var wA = Math.sin(t * 0.19) * 22 + Math.sin(t * 0.047 + 0.4) * 38 + Math.cos(t * 0.31) * 8;
+      var nA = (valueNoise(t * 2.1, p.salt) - 0.5) * 6 + (valueNoise(t * 7.4, p.salt + 2) - 0.5) * 3;
       return conf.basePrice + wA + nA;
     }
     if (p.kind === 'horizon') {
-      var wH = Math.sin(t * 0.016) * 18 + Math.cos(t * 0.0075) * 8;
-      var nH = (valueNoise(t * 0.95, p.salt) - 0.5) * 2.1
-        + (valueNoise(t * 3.6, p.salt + 3) - 0.5) * 0.85;
+      var wH = Math.sin(t * 2.85) * 38
+        + Math.sin(t * 6.4 + 0.9) * 22
+        + Math.cos(t * 1.35) * 16
+        + Math.sin(t * 0.41) * 14;
+      var nH = (valueNoise(t * 9.2, p.salt) - 0.5) * 18
+        + (valueNoise(t * 21, p.salt + 3) - 0.5) * 10;
       return conf.basePrice + wH + nH;
     }
     if (p.kind === 'gold') {
-      var wG = Math.sin(t * 0.0038) * 88 + Math.sin(t * 0.0016 + 0.9) * 42;
-      var nG = (valueNoise(t * 0.62, p.salt) - 0.5) * 11
-        + (valueNoise(t * 2.4, p.salt + 5) - 0.5) * 3.4;
-      return conf.basePrice + wG + nG;
+      var cycleLen = 48;
+      var cycle = Math.floor(t / cycleLen);
+      var phG = t / cycleLen - cycle;
+      var climb = phG < 0.68 ? (phG / 0.68) : (1 - (phG - 0.68) / 0.32 * 0.22);
+      var ampG = (cycle % 2 === 0) ? 92 : 48;
+      var nG = (valueNoise(t * 0.55, p.salt) - 0.5) * 5
+        + (valueNoise(t * 2.1, p.salt + 5) - 0.5) * 2.2;
+      return conf.basePrice + climb * ampG + cycle * 4 + nG;
     }
     if (p.kind === 'nexus') {
-      var half = 30;
-      var walk = (valueNoise(t * 0.075, p.salt) - 0.5) * 2.15;
-      var slow = Math.sin(t * 0.038 + valueNoise(t * 0.021, p.salt + 2) * 2.4) * 0.42;
-      var edge = Math.tanh((walk + slow) * 1.35);
-      var nX = (valueNoise(t * 1.15, p.salt) - 0.5) * 7.4
-        + (valueNoise(t * 4.4, p.salt + 9) - 0.5) * 2.6;
-      var epoch = Math.floor(t / 9);
-      var fake = 0;
-      if (uhash01(epoch, p.salt + 31) > 0.70) {
-        var ph = t / 9 - epoch;
-        if (ph < 0.36) {
-          var dirN = uhash01(epoch, p.salt + 44) > 0.5 ? 1 : -1;
-          fake = dirN * (7 + uhash01(epoch, p.salt + 51) * 11) * Math.sin((ph / 0.36) * Math.PI);
-        }
-      }
-      return conf.basePrice + edge * half + nX + fake;
+      var nX = (valueNoise(t * 0.9, p.salt) - 0.5) * 4
+        + (valueNoise(t * 3.2, p.salt + 9) - 0.5) * 1.8;
+      return conf.basePrice + Math.sin(t * 0.11) * 46 + Math.sin(t * 0.037) * 16 + nX;
     }
     if (p.kind === 'titan') {
-      var epoch = Math.floor(t / 5.5);
-      var dir = uhash01(epoch, p.salt) > 0.5 ? 1 : -1;
-      var amp = 28 + uhash01(epoch, p.salt + 4) * 95;
-      var sawT = (t / 5.5) - epoch;
-      var saw = (sawT < 0.5 ? sawT * 2 : 2 - sawT * 2) - 0.5;
+      var epoch = Math.floor(t / 18);
+      var phT = t / 18 - epoch;
+      var quiet = phT < 0.78;
+      var nT = (valueNoise(t * 1.4, p.salt) - 0.5) * (quiet ? 2.4 : 8);
       var burst = 0;
-      if (uhash01(epoch, p.salt + 21) > 0.42) {
-        burst = dir * amp * Math.sin(Math.min(1, sawT * 3.2) * Math.PI);
+      if (!quiet) {
+        var dir = uhash01(epoch, p.salt) > 0.5 ? 1 : -1;
+        var amp = 36 + uhash01(epoch, p.salt + 4) * 55;
+        burst = dir * amp * Math.sin(((phT - 0.78) / 0.22) * Math.PI);
       }
-      var chop = (valueNoise(t * 2.4, p.salt) - 0.5) * 36
-        + (valueNoise(t * 7.1, p.salt + 8) - 0.5) * 22
-        + Math.sin(t * 0.19) * 18;
-      var pT = conf.basePrice + saw * amp * 0.55 + burst + chop;
-      var lo = conf.basePrice - 220;
-      var hi = conf.basePrice + 220;
-      if (pT < lo) pT = lo + (lo - pT) * 0.12;
-      if (pT > hi) pT = hi - (pT - hi) * 0.12;
-      return pT;
+      return conf.basePrice + nT + burst;
     }
     if (conf.id === 'pulseai' || p.pulse) {
       var waveP = Math.sin(t * p.f1) * p.a1
@@ -227,6 +214,69 @@
     return conf.basePrice + (wave + n) * p.vol + spike + p.drift * (t % 86400) * 0.04;
   }
 
+  function shapeCandle(asset, bucket, raw) {
+    var id = asset.id;
+    var o = raw.o;
+    var h = raw.h;
+    var l = raw.l;
+    var c = raw.c;
+    if (id === 'v75') {
+      var w75 = Math.abs(c - o) * 1.85 + 3.2 + uhash01(bucket, 551903) * 9;
+      h = Math.max(h, o, c) + w75 * 0.62;
+      l = Math.min(l, o, c) - w75 * 0.62;
+    } else if (id === 'apex500') {
+      var run = 4 + Math.floor(uhash01(Math.floor(bucket / 9), 440501) * 3);
+      var pos = bucket % (run + 3);
+      var midA = (o + c) / 2;
+      var bodyA = 5.5 + uhash01(bucket, 440511) * 11;
+      if (pos < run) {
+        o = midA - 0.7;
+        c = midA + bodyA;
+        h = c + 1.4;
+        l = o - 1;
+      } else {
+        o = midA + 0.6;
+        c = midA - bodyA * 0.48;
+        l = c - 1.1;
+        h = o + 1;
+      }
+    } else if (id === 'titanpulse') {
+      var phase = bucket % 18;
+      var midT = (o + c) / 2;
+      if (phase < 14) {
+        var tiny = 0.35 + uhash01(bucket, 991177) * 1.5;
+        o = midT - tiny * 0.5;
+        c = midT + tiny * (uhash01(bucket, 991188) > 0.5 ? 0.5 : -0.5);
+        h = Math.max(o, c) + 0.4;
+        l = Math.min(o, c) - 0.4;
+      } else {
+        var ext = 18 + uhash01(bucket, 991199) * 42;
+        var upT = uhash01(Math.floor(bucket / 18), 991201) > 0.5;
+        o = midT;
+        c = upT ? midT + ext : midT - ext;
+        h = Math.max(o, c) + 2.2;
+        l = Math.min(o, c) - 2.2;
+      }
+    } else if (id === 'v100') {
+      var wk = Math.abs(c - o) * 0.55 + 1.4 + uhash01(bucket, 904177) * 4.2;
+      h = Math.max(h, o, c) + wk * 0.52;
+      l = Math.min(l, o, c) - wk * 0.52;
+    } else if (id === 'nexusprime') {
+      var wn = Math.abs(c - o) * 0.35 + 0.8 + uhash01(bucket, 770870) * 2.2;
+      h = Math.max(h, o, c) + wn * 0.4;
+      l = Math.min(l, o, c) - wn * 0.4;
+    }
+    h = Math.max(h, o, c);
+    l = Math.min(l, o, c);
+    return {
+      o: clampIndexPrice(o),
+      h: clampIndexPrice(h),
+      l: clampIndexPrice(l),
+      c: clampIndexPrice(c),
+      t: raw.t
+    };
+  }
+
   function candleForBucket(asset, bucket) {
     if (asset.id === 'crash300' || asset.id === 'boomspike') {
       return crashBoomCandleOHLC(asset, bucket);
@@ -243,7 +293,7 @@
       if (p < l) l = p;
       c = p;
     }
-    return { o: o, h: h, l: l, c: c, t: start };
+    return shapeCandle(asset, bucket, { o: o, h: h, l: l, c: c, t: start });
   }
 
   function formingCandle(asset, nowMs) {
@@ -282,7 +332,16 @@
     }
     h = Math.max(h, c);
     l = Math.min(l, c);
-    return { o: o, h: h, l: l, c: c, t: start };
+    var shaped = shapeCandle(asset, bucket, { o: o, h: h, l: l, c: c, t: start });
+    var fracF = (nowMs % CANDLE_MS) / CANDLE_MS;
+    var cForm = shaped.o + (shaped.c - shaped.o) * fracF;
+    return {
+      o: shaped.o,
+      h: clampIndexPrice(Math.max(shaped.h, shaped.o, cForm)),
+      l: clampIndexPrice(Math.min(shaped.l, shaped.o, cForm)),
+      c: clampIndexPrice(cForm),
+      t: start
+    };
   }
 
   function rebuildHistory(asset, nowMs) {
@@ -331,7 +390,42 @@
     market.candle = forming;
     market.history = history;
     market.ticksInCandle = Math.floor((nowMs % CANDLE_MS) / 80);
+    publishAssetBuffer(asset.id, market);
     return market;
+  }
+
+  function publishAssetBuffer(assetId, market) {
+    window.assetsState = window.assetsState || {};
+    var prev = window.assetsState[assetId] || {};
+    var candles = (market.candles || []).slice();
+    if (market.candle) candles.push(market.candle);
+    var buf = candles.slice(-60);
+    var min = Infinity;
+    var max = -Infinity;
+    var i;
+    for (i = 0; i < buf.length; i++) {
+      var c = buf[i];
+      if (!c) continue;
+      if (c.l < min) min = c.l;
+      if (c.h > max) max = c.h;
+      if (c.c < min) min = c.c;
+      if (c.c > max) max = c.c;
+    }
+    if (!isFinite(min) || !isFinite(max)) {
+      min = Number(market.price) || 0;
+      max = min;
+    }
+    window.assetsState[assetId] = {
+      candles: buf,
+      min: min,
+      max: max,
+      lastPrice: market.price,
+      viewMin: prev.viewMin || 0,
+      viewMax: prev.viewMax || 0,
+      lockMin: prev.lockMin || 0,
+      lockMax: prev.lockMax || 0,
+      at: Date.now()
+    };
   }
 
   function seedMarket(assetId) {
@@ -620,6 +714,17 @@
     return { wantWon: wantWon, harsh: !!verdict.harsh, target: target };
   }
 
+  function applyExitToMarket(trade, target) {
+    var m = markets[trade.assetId];
+    if (!m || !isFinite(target)) return;
+    m.price = target;
+    if (m.candle) {
+      m.candle.c = target;
+      if (target > m.candle.h) m.candle.h = target;
+      if (target < m.candle.l) m.candle.l = target;
+    }
+  }
+
   function prepareLastSecondSteer(now) {
     var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
     if (!user) return;
@@ -630,9 +735,10 @@
       var left = expiryOf(tr) - now;
       if (left > 220 || left < 0) continue;
       var decided = decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
-      if (D6.Chart && D6.Chart.steerClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === tr.assetId) {
-        D6.Chart.steerClose(decided.target, Math.max(80, left));
+      if (D6.Chart && D6.Chart.steerClose) {
+        try { D6.Chart.steerClose(decided.target, Math.max(80, left), tr.assetId); } catch (eSt) { /* ignore */ }
       }
+      if (left <= 40) applyExitToMarket(tr, decided.target);
     }
   }
 
@@ -728,8 +834,9 @@
       for (i = 0; i < trades.length; i++) {
         syncTime(trades[i]);
       }
-      var id = canonAssetId(assetId);
-      if (C.ASSETS[id]) {
+      var id;
+      for (id in C.ASSETS) {
+        if (!C.ASSETS.hasOwnProperty(id)) continue;
         syncMarket(markets[id], C.ASSETS[id], now);
       }
       prepareLastSecondSteer(now);
@@ -869,8 +976,6 @@
 
       var mode = trade.mode === 'real' ? 'real' : 'demo';
       var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
-      var entry = Number((trade.ticket && trade.ticket.entryPrice) || trade.entryPrice);
-      var isCall = ((trade.ticket && trade.ticket.side) || trade.side) === 'call';
       var expMs = expiryOf(trade);
       ensureMarkets();
       var mkt = markets[trade.assetId];
@@ -881,16 +986,10 @@
       var voided = false;
       var decided = decideTradeOutcome(user, trade, mode);
       var exitPrice = decided.target;
-      if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === trade.assetId) {
-        var drawn = Number(D6.Chart.lastClose());
-        if (isFinite(drawn) && drawn > 0) exitPrice = drawn;
-      }
       var won = decided.wantWon;
-      if (isCall ? (exitPrice > entry) !== won : (exitPrice < entry) !== won) {
-        exitPrice = decided.target;
-      }
+      applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.steerClose) {
-        try { D6.Chart.steerClose(exitPrice, 80); } catch (eSt) { /* ignore */ }
+        try { D6.Chart.steerClose(exitPrice, 80, trade.assetId); } catch (eSt) { /* ignore */ }
       }
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }

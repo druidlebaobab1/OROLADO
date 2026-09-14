@@ -1987,9 +1987,6 @@
       syncTradeButtons();
       return;
     }
-    if ($('inputStake')) {
-      try { $('inputStake').blur(); } catch (eBlur) { /* ignore */ }
-    }
     stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {

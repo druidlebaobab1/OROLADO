@@ -36,6 +36,26 @@
   var chartTickTimer = 0;
   var strikeLock = null;
   var coinImgs = {};
+  var BUFFER_N = 60;
+  window.assetsState = window.assetsState || {};
+
+  function ensureAssetState(id) {
+    window.assetsState = window.assetsState || {};
+    if (!window.assetsState[id]) {
+      window.assetsState[id] = {
+        candles: [],
+        min: 0,
+        max: 0,
+        viewMin: 0,
+        viewMax: 0,
+        lockMin: 0,
+        lockMax: 0,
+        lastPrice: 0,
+        at: 0
+      };
+    }
+    return window.assetsState[id];
+  }
 
   function coinImg(id) {
     if (coinImgs[id]) return coinImgs[id];
@@ -89,7 +109,8 @@
   }
 
   function forceIncludePrice(price) {
-    if (strikeLock) return;
+    var st = ensureAssetState(activeAsset);
+    if (st.lockMin && st.lockMax) return;
     if (!isFinite(price)) return;
     if (!viewMin || !viewMax) {
       viewMin = price - 1;
@@ -318,16 +339,23 @@
     requestAnimationFrame(function () { drawNow(); });
   }
 
-  function steerClose(price, ms) {
+  function steerClose(price, ms, assetId) {
     var p = Number(price);
     if (!isFinite(p) || p <= 0) return;
-    var from = isFinite(lastDrawnClose) && lastDrawnClose > 0 ? lastDrawnClose : p;
+    var aid = assetId || activeAsset;
+    var from = lastDrawnClose;
+    if (aid !== activeAsset) {
+      var st = window.assetsState && window.assetsState[aid];
+      from = st && isFinite(st.lastPrice) ? st.lastPrice : p;
+    } else if (!(isFinite(from) && from > 0)) {
+      from = p;
+    }
     steer = {
       price: p,
       from: from,
       start: Date.now(),
       end: Date.now() + Math.max(80, Number(ms) || 700),
-      assetId: activeAsset
+      assetId: aid
     };
   }
 
@@ -375,10 +403,20 @@
   }
 
   function visibleCandles(market) {
-    var n = zoomSec();
-    var done = market.candles || [];
+    var n = Math.min(zoomSec(), BUFFER_N);
+    var st = window.assetsState && window.assetsState[activeAsset];
+    var done = (market && market.candles) || [];
+    if (st && st.candles && st.candles.length >= 8 && (!done.length || done.length < 8)) {
+      done = st.candles;
+    }
     var list = done.slice(Math.max(0, done.length - n));
-    if (market.candle) list = list.concat([market.candle]);
+    if (market && market.candle) {
+      if (!list.length || list[list.length - 1].t !== market.candle.t) {
+        list = list.concat([market.candle]);
+      } else {
+        list[list.length - 1] = market.candle;
+      }
+    }
     return list;
   }
 
@@ -611,9 +649,9 @@
     }
   }
 
-  function drawLine(pad, w, h, data, minP, maxP) {
+  function drawLine(pad, w, h, data, minP, maxP, color) {
     if (!data || data.length < 2) return null;
-    var span = Math.max(maxP - minP, 0.01);
+    var col = color || '#f5a623';
     var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = toX(data.length - 1);
@@ -632,8 +670,8 @@
     ctx.lineTo(toX(0), pad.t + h);
     ctx.closePath();
     var grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + h);
-    grad.addColorStop(0, 'rgba(255,215,0,0.32)');
-    grad.addColorStop(1, 'rgba(255,215,0,0)');
+    grad.addColorStop(0, 'rgba(245,166,35,0.28)');
+    grad.addColorStop(1, 'rgba(245,166,35,0)');
     ctx.fillStyle = grad;
     ctx.fill();
     ctx.restore();
@@ -645,23 +683,23 @@
       ctx.quadraticCurveTo(toX(i - 1), toY(data[i - 1]), cx2, cy2);
     }
     ctx.lineTo(lastX, lastY);
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = 'rgba(255,215,0,0.85)';
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2.2;
+    ctx.shadowColor = 'rgba(245,166,35,0.85)';
     ctx.shadowBlur = 14;
     ctx.stroke();
     ctx.shadowBlur = 0;
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
   }
 
-  function drawSmoothLine(pad, w, h, data, minP, maxP, color, width) {
+  function drawSmoothLine(pad, w, h, data, minP, maxP, color, width, halo) {
     if (!data || data.length < 2) return null;
-    var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     var i;
+    var col = color || '#FF7A00';
     ctx.beginPath();
     ctx.moveTo(toX(0), toY(data[0]));
     for (i = 1; i < data.length; i++) {
@@ -670,12 +708,29 @@
       ctx.quadraticCurveTo(toX(i - 1), toY(data[i - 1]), cx, cy);
     }
     ctx.lineTo(lastX, lastY);
-    ctx.strokeStyle = color || '#FF7A00';
+    if (halo) {
+      ctx.strokeStyle = halo;
+      ctx.lineWidth = (width || 1.55) + 3.2;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = 0.35;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(data[0]));
+      for (i = 1; i < data.length; i++) {
+        var hx = (toX(i - 1) + toX(i)) / 2;
+        var hy = (toY(data[i - 1]) + toY(data[i])) / 2;
+        ctx.quadraticCurveTo(toX(i - 1), toY(data[i - 1]), hx, hy);
+      }
+      ctx.lineTo(lastX, lastY);
+    }
+    ctx.strokeStyle = col;
     ctx.lineWidth = width || 3;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(255,122,0,0.35)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = halo || 'rgba(255,122,0,0.35)';
+    ctx.shadowBlur = halo ? 12 : 8;
     ctx.stroke();
     ctx.shadowBlur = 0;
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
@@ -916,24 +971,14 @@
     roundRectOn(ctx, x, y, w, h, r);
   }
 
-  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH) {
+  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift) {
     if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
     var entry = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
     if (!isFinite(entry)) return;
-    var ey;
-    if (strikeLock && strikeLock.assetId === activeAsset && strikeLock.entry === entry && isFinite(strikeLock.ey)) {
-      ey = strikeLock.ey;
-    } else {
-      ey = map && typeof map.toY === 'function'
-        ? map.toY(entry)
-        : priceToY(entry, pad, plotH, minP, maxP);
-      if (!isFinite(ey)) ey = priceToY(entry, pad, plotH, minP, maxP);
-      if (strikeLock && strikeLock.assetId === activeAsset && strikeLock.entry === entry && isFinite(ey)) {
-        strikeLock.ey = ey;
-      }
-    }
+    var ey = priceToY(entry, pad, plotH, minP, maxP);
+    if (isFinite(yShift)) ey += yShift;
     if (!isFinite(ey)) return;
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
@@ -1029,6 +1074,30 @@
     ctx.fillText(formatAxisPrice(price), cssW - 48, map.lastY + 3);
   }
 
+  function dampedRange(candles, assetId, minP, maxP) {
+    if (assetId !== 'boomspike' && assetId !== 'crash300' && assetId !== 'titanpulse') {
+      return { min: minP, max: maxP };
+    }
+    if (!candles || candles.length < 8) return { min: minP, max: maxP };
+    var highs = [];
+    var lows = [];
+    var i;
+    for (i = 0; i < candles.length; i++) {
+      highs.push(candles[i].h);
+      lows.push(candles[i].l);
+    }
+    highs.sort(function (a, b) { return a - b; });
+    lows.sort(function (a, b) { return a - b; });
+    var hi = highs[Math.max(0, highs.length - 3)];
+    var lo = lows[Math.min(lows.length - 1, 2)];
+    var spikeHi = highs[highs.length - 1];
+    var spikeLo = lows[0];
+    return {
+      max: hi + (spikeHi - hi) * 0.38,
+      min: lo - (lo - spikeLo) * 0.38
+    };
+  }
+
   function drawFrame(now) {
     try {
     if (!ctx) return;
@@ -1080,6 +1149,9 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
+    var damp = dampedRange(candles, asset.id, minPrice, maxPrice);
+    minPrice = damp.min;
+    maxPrice = damp.max;
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
@@ -1092,57 +1164,43 @@
     var floorSpan = 0.3;
     if (asset.id === 'horizon50') floorSpan = 28;
     else if (asset.id === 'nexusprime') floorSpan = 52;
+    else if (asset.id === 'stable') floorSpan = 12;
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, floorSpan);
-    // Auto-scale Y rigide : 15 % de padding intérieur haut et bas.
     var padY = Math.max(span * 0.15, asset.tickNoise * 3, 0.2);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
+    var st = ensureAssetState(activeAsset);
 
     if (allTrades.length) {
-      var lockEntry = NaN;
-      allTrades.forEach(function (ot) {
-        var ep2 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
-        if (!isFinite(ep2) || ep2 < 500 || ep2 > 20000) return;
-        if (!isFinite(lockEntry)) lockEntry = ep2;
-      });
-      if (isFinite(lockEntry)) {
-        if (!strikeLock || strikeLock.assetId !== activeAsset || strikeLock.entry !== lockEntry) {
-          var lockSpan = Math.max(yMax - yMin, span, floorSpan, 0.3);
-          var lockPad = Math.max(lockSpan * 0.18, padY);
-          strikeLock = {
-            assetId: activeAsset,
-            entry: lockEntry,
-            min: Math.min(yMin, lockEntry - lockPad),
-            max: Math.max(yMax, lockEntry + lockPad),
-            ey: null
-          };
-        }
-        viewMin = strikeLock.min;
-        viewMax = strikeLock.max;
-        if (viewMax - viewMin < 0.3) {
-          viewMin = lockEntry - 0.15;
-          viewMax = lockEntry + 0.15;
-        }
+      if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
+        st.lockMin = yMin;
+        st.lockMax = yMax;
       } else {
-        strikeLock = null;
+        if (yMin < st.lockMin) st.lockMin = yMin;
+        if (yMax > st.lockMax) st.lockMax = yMax;
+      }
+      viewMin = st.lockMin;
+      viewMax = st.lockMax;
+      strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
+    } else {
+      st.lockMin = 0;
+      st.lockMax = 0;
+      strikeLock = null;
+      if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > 0.2) {
+        viewMin = st.viewMin * 0.78 + yMin * 0.22;
+        viewMax = st.viewMax * 0.78 + yMax * 0.22;
+      } else {
         viewMin = yMin;
         viewMax = yMax;
       }
-    } else {
-      strikeLock = null;
-    }
-    if (strikeLock) {
-      viewMin = strikeLock.min;
-      viewMax = strikeLock.max;
-    } else {
-      viewMin = minPrice - padY;
-      viewMax = maxPrice + padY;
     }
     if (viewMax - viewMin < 0.3) {
       var midFix = (viewMin + viewMax) / 2;
       viewMin = midFix - 0.15;
       viewMax = midFix + 0.15;
     }
+    st.viewMin = viewMin;
+    st.viewMax = viewMax;
 
     if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
       lastDrawnClose = Number(candles[candles.length - 1].c);
@@ -1182,10 +1240,9 @@
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
-      map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#FF7A00', asset.lineWidth || 3);
+      map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 1.55, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
     } else {
-      // STABLE CORE (et lignes legacy) : inchangé.
-      map = drawLine(pad, w, h, lineData, minP, maxP);
+      map = drawLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }
     if (!map) {
       map = {
@@ -1194,10 +1251,6 @@
         lastY: plotToY(market.price, pad, h, minP, maxP)
       };
     }
-    if (strikeLock && strikeLock.entry != null && (strikeLock.ey == null || !isFinite(strikeLock.ey))) {
-      strikeLock.ey = plotToY(strikeLock.entry, pad, h, minP, maxP);
-    }
-
     if (map) {
       if (inds.bb) drawBollinger(map, closes, startIdx, theme);
       if (inds.ma) {
@@ -1217,8 +1270,17 @@
     lastMap = map;
 
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
+    var tradeYs = [];
     allTrades.slice(0, 5).forEach(function (ot, i) {
-      drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h);
+      var epY = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
+      var y0 = priceToY(epY, pad, h, minP, maxP);
+      var shift = 0;
+      var j;
+      for (j = 0; j < i; j++) {
+        if (Math.abs((y0 + shift) - tradeYs[j]) < 4) shift += 3;
+      }
+      tradeYs.push(y0 + shift);
+      drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h, shift);
     });
     paintOverlay();
 
@@ -1231,6 +1293,11 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (map) drawBead(map, market.price, tagCol, now, theme);
+    st.lastPrice = lastDrawnClose;
+    st.candles = (candles || []).slice(-BUFFER_N);
+    st.min = minP;
+    st.max = maxP;
+    st.at = Date.now();
     } catch (eFrame) { /* keep candles alive */ }
   }
 
@@ -1429,24 +1496,28 @@
     setAsset: function (id) {
       if (id === 'boom300' || id === 'pulseai') id = 'titanpulse';
       if (!D6.CONFIG.ASSETS[id]) id = 'v100';
-      cancelChartRafs();
+      if (id === activeAsset) {
+        if (isChartReady()) drawNow();
+        return;
+      }
       activeAsset = id;
-      viewMin = 0;
-      viewMax = 0;
-      steer = null;
-      strikeLock = null;
-      lastDrawnClose = 0;
-      lastMap = null;
-      if (ctx && cssW >= 8 && cssH >= 8) {
-        try {
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          ctx.fillStyle = '#0B0E14';
-          ctx.fillRect(0, 0, cssW, cssH);
-        } catch (eClr) { /* ignore */ }
+      if (steer && steer.assetId !== id) steer = null;
+      var st = ensureAssetState(id);
+      if (st.viewMin && st.viewMax) {
+        viewMin = st.viewMin;
+        viewMax = st.viewMax;
+      } else if (st.min && st.max) {
+        viewMin = st.min;
+        viewMax = st.max;
       }
-      if (octx && cssW >= 8 && cssH >= 8) {
-        try { octx.clearRect(0, 0, cssW, cssH); } catch (eO) { /* ignore */ }
+      if (st.lockMin && st.lockMax) {
+        strikeLock = { assetId: id, min: st.lockMin, max: st.lockMax, entry: null, ey: null };
+        viewMin = st.lockMin;
+        viewMax = st.lockMax;
+      } else {
+        strikeLock = null;
       }
+      if (isFinite(st.lastPrice) && st.lastPrice > 0) lastDrawnClose = st.lastPrice;
       if (D6.Engine && D6.Engine.getMarket) D6.Engine.getMarket(id);
       if (D6.Engine && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) {
@@ -1455,17 +1526,8 @@
           openTradeVisuals[snap.id] = snap;
         });
       }
-      if (isChartReady()) {
-        drawNow();
-        if (drawRaf) cancelAnimationFrame(drawRaf);
-        drawRaf = requestAnimationFrame(function () {
-          drawRaf = 0;
-          drawNow();
-        });
-      } else {
-        flushOpenTradeVisualQueue();
-      }
-      if (running) {
+      if (isChartReady()) drawNow();
+      if (running && !loopRaf) {
         lastTs = 0;
         loopRaf = requestAnimationFrame(loop);
         ensureChartPulse();
