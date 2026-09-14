@@ -146,7 +146,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .btn-gold:disabled,.btn-gold[disabled]{opacity:.45;cursor:not-allowed;transform:none}
 
 .trade-shell{flex:1;display:flex;flex-direction:column;min-height:0;width:100%;max-width:28rem;margin:0 auto;overflow:visible}
-.topbar{flex-shrink:0;padding:0;padding-top:env(safe-area-inset-top,0px);background:rgba(10,15,29,.86);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);position:relative;z-index:30}
+.topbar{flex-shrink:0;padding:0;padding-top:env(safe-area-inset-top,0px);background:rgba(10,15,29,.86);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);position:relative;z-index:50}
 .topbar-row{display:flex;align-items:center;width:100%;padding:6px 8px;gap:6px;position:relative;min-height:40px}
 .topbar-row .btn-deposit{position:static;left:auto;margin-left:0;margin-right:0;min-width:max-content;z-index:6;flex:0 0 auto;overflow:visible}
 .auth-quick{display:flex;gap:5px;align-items:center;flex-shrink:0;min-width:0;z-index:2}
@@ -242,7 +242,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .payout-live{font-size:10px;font-weight:700;color:var(--green);line-height:1.2;margin-top:1px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 
 .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:380px!important;height:45vh!important;max-height:none!important;width:100%!important;
-  display:flex!important;flex-direction:column;border-radius:0!important;overflow:hidden;position:relative;background:#0B0E14!important;
+  display:flex!important;flex-direction:column;border-radius:0!important;overflow:hidden;position:relative;z-index:1;background:#0B0E14!important;
   border:none!important;outline:none!important;box-shadow:none!important}
 .chart-card.glass,#chart.glass{border:none!important;outline:none!important;box-shadow:none!important;background:#0B0E14!important;backdrop-filter:none}
 .chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 6px;margin:0;flex-shrink:0;border-bottom:none;min-height:22px;background:#0B0E14}
@@ -314,9 +314,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #screenTrade.is-guest .brand-lockup.mini .brand{font-size:.62rem}
 #screenTrade.is-guest .logo-mark.sm{width:18px;height:18px}
 #screenTrade.is-guest #btnProfile{display:none}
-#screenTrade.is-guest #btnOpenDeposit{display:none}
-#screenTrade.is-guest .topbar-cta{display:none!important}
-#screenTrade.is-guest .auth-quick{display:flex;flex-wrap:nowrap;gap:6px;max-width:none;justify-content:stretch;z-index:3;flex:1 1 auto;min-width:0}
+#screenTrade.is-guest #btnOpenDeposit{display:inline-flex!important}
+#screenTrade.is-guest .topbar-cta{display:flex!important;position:relative;z-index:50}
+#screenTrade.is-guest .auth-quick{display:none!important}
 #screenTrade.is-guest .btn-auth-link{flex:1 1 0;padding:6px 10px;font-size:.68rem;min-height:32px;text-align:center;justify-content:center}
 #screenTrade:not(.is-guest) .auth-quick{display:none!important}
 #screenTrade:not(.is-guest) .topbar-cta{position:absolute;left:50%;transform:translateX(-50%);margin:0;z-index:1}
@@ -410,7 +410,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .sheet-feed{max-height:60dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal-box.sheet{max-height:78dvh}
 
-.pad{position:fixed;bottom:0;left:0;right:0;z-index:40;margin:0 auto;max-width:28rem;border-radius:12px 12px 0 0;padding:4px 8px;gap:3px;
+.pad{position:fixed;bottom:0;left:0;right:0;z-index:50;margin:0 auto;max-width:28rem;border-radius:12px 12px 0 0;padding:4px 8px;gap:3px;
   padding-bottom:calc(18px + env(safe-area-inset-bottom, 12px));display:flex;flex-direction:column;background:#0b0e14;
   border:none;border-top:1px solid rgba(255,255,255,.06);box-shadow:none}
 .pad.glass{border:none!important;border-top:1px solid rgba(255,255,255,.06)!important;box-shadow:none!important;background:#0b0e14!important}
@@ -901,9 +901,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 }
 html.fs-trade,html.fs-trade body,html.is-fullscreen,html.is-fullscreen body{overflow:hidden!important;overscroll-behavior:none}
 html.oro-profile-open{overflow:hidden}
-html.oro-profile-open #screenTrade{pointer-events:auto}
-html.oro-profile-open:has(#drawerBackdrop.on) #screenTrade{pointer-events:none}
-html.oro-profile-open .drawer.on,html.oro-profile-open .drawer-backdrop.on,html.oro-profile-open .modal-backdrop.active{pointer-events:auto}
+html.oro-profile-open #screenTrade{pointer-events:auto!important}
 [dir=rtl] .drawer{right:auto;left:0;border-left:0;border-right:1px solid rgba(245,158,11,.18);transform:translate3d(-100%,0,0)}
 [dir=rtl] .drawer.on{transform:translate3d(0,0,0)}
 .prof-name{font-weight:800;font-size:1.02rem}
@@ -976,7 +974,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .strip-price,.pnl-value{font-size:1rem}
   .history-card{display:none!important}
   .pad{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;grid-column:2;grid-row:1 / span 2;margin:0;border-radius:14px;
-    max-width:none;z-index:8;background:rgba(21,30,48,.72);padding-bottom:12px;border-top:0;box-shadow:none;
+    max-width:none;z-index:50;background:rgba(21,30,48,.72);padding-bottom:12px;border-top:0;box-shadow:none;
     overflow-y:auto;min-height:0;max-height:100%;align-self:stretch;isolation:isolate}
   .pad .btn-hist-cta{position:relative;z-index:20;pointer-events:auto!important;touch-action:manipulation}
   .history-feed{max-height:160px;overflow-y:auto}
@@ -1975,23 +1973,22 @@ html.is-ios .stake-field input{border-radius:10px}
 @keyframes authCoinSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .auth-crypto-in-form{display:none;flex-direction:column;align-items:center;gap:8px}
 
-/* Kill-switch : overlays inactifs ne doivent jamais bloquer les clics. */
-html,body,#screenTrade,.trade-shell,.topbar,.topbar-row,.topbar-cta,.pad,.asset-bar{
-  pointer-events:auto!important}
-#chartStage{pointer-events:none!important}
-.chart-toolbar,.ind-pills,.ind-btn,.chart-fs-btn,.install-banner,.pad,.topbar{
-  pointer-events:auto!important}
-button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge{
-  pointer-events:auto!important;touch-action:manipulation!important}
+/* Kill-switch final : chaines cliquables au-dessus du graphique. */
+html,body,#screenTrade,.trade-shell,.trade-wrap{
+  pointer-events:auto!important;user-select:auto!important}
+.topbar,.asset-bar,.pad,.chart-toolbar,.dur-row,.odds-row,.trade-row{
+  position:relative!important;z-index:50!important;pointer-events:auto!important;user-select:auto!important}
+button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge,input{
+  pointer-events:auto!important;user-select:auto!important;touch-action:manipulation!important;
+  position:relative!important;z-index:51!important}
+#chartStage,#chartCanvas,#chartOverlay,.chart-overlay{
+  pointer-events:none!important;z-index:1!important}
 .modal-backdrop:not(.active),
 .drawer-backdrop:not(.on),
 .fs-trade-overlay:not(.on),
-#toast,.toast,#sparkle,#particlesCanvas,
-#chartOverlay,.chart-overlay,#chartCanvas,.auth-ambient{
+#toast,.toast,#sparkle,#particlesCanvas,.auth-ambient{
   pointer-events:none!important}
 .modal-backdrop:not(.active),
 .drawer-backdrop:not(.on),
 .fs-trade-overlay:not(.on){
   display:none!important;visibility:hidden!important;z-index:-1!important}
-html.oro-profile-open .modal-backdrop:not(.active){
-  pointer-events:none!important;display:none!important}

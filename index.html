@@ -47,23 +47,25 @@
   })();
   </script>
   <style id="oro-click-guard">
-    html,body,#screenTrade,.trade-shell,.topbar,.pad,main,#chart,#chartStage{
-      pointer-events:auto!important;touch-action:manipulation}
-    button,.asset-chip,.dur-chip,.odds-chip,.qbtn,.btn-trade,.btn-deposit,.mode-btn,.icon-btn,.help-badge,.ind-btn,.chart-fs-btn,.chart-toolbar{
-      pointer-events:auto!important;touch-action:manipulation!important}
-    #chartCanvas,.chart-overlay,#chartOverlay{pointer-events:none!important}
-    #chartStage{pointer-events:none!important}
-    #chartToolbar,.ind-pills,.install-banner{pointer-events:auto!important}
+    html,body,#screenTrade,.trade-shell,.trade-wrap,.topbar,.asset-bar,.pad,main{
+      pointer-events:auto!important;user-select:auto!important;touch-action:manipulation}
+    .topbar,.asset-bar,.pad,.chart-toolbar,.dur-row,.odds-row,.trade-row{
+      position:relative!important;z-index:50!important;pointer-events:auto!important}
+    button,.asset-chip,.dur-chip,.odds-chip,.qbtn,.btn-trade,.btn-deposit,.mode-btn,
+    .icon-btn,.help-badge,.ind-btn,.chart-fs-btn,input{
+      pointer-events:auto!important;user-select:auto!important;touch-action:manipulation!important;
+      position:relative!important;z-index:51!important}
+    #chartStage,#chartCanvas,#chartOverlay,.chart-overlay{
+      pointer-events:none!important;z-index:1!important}
     .hidden{display:none!important}
     .modal-backdrop:not(.active),
     .drawer-backdrop:not(.on),
-    .fs-trade-overlay:not(.on),
-    #toast:not(.show){
+    .fs-trade-overlay:not(.on){
       display:none!important;pointer-events:none!important;visibility:hidden!important;z-index:-1!important}
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=157">
+  <link rel="stylesheet" href="css/app.css?v=158">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -83,6 +85,11 @@
   <!-- End Meta Pixel Code -->
 </head>
 <body class="notranslate" translate="no">
+  <script>
+  document.addEventListener('click', function (e) {
+    try { console.log('CLICK DETECTED ON:', e.target); } catch (err) { /* ignore */ }
+  });
+  </script>
   <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="svg-sprite">
     <symbol id="ico-usdt" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#26A17B"/><path fill="#fff" d="M17.72 13.94V11.5h4.4V8.2H9.88v3.3h4.4v2.44c-3.7.22-6.48 1.7-6.48 3.48 0 1.78 2.78 3.26 6.48 3.48v6.3h3.44v-6.3c3.7-.22 6.48-1.7 6.48-3.48 0-1.78-2.78-3.26-6.48-3.48zm-1.72 5.3c-3.82 0-6.92-1.16-6.92-2.58s3.1-2.58 6.92-2.58 6.92 1.16 6.92 2.58-3.1 2.58-6.92 2.58z"/></symbol>
     <symbol id="ico-btc" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#F7931A"/><path fill="#fff" d="M20.3 14.6c.28-1.86-1.14-2.86-3.08-3.52l.63-2.52-1.54-.38-.61 2.46c-.4-.1-.82-.2-1.24-.29l.62-2.48-1.54-.38-.63 2.52c-.34-.08-.67-.15-1-.24l.01-.03-2.12-.53-.41 1.64s1.14.26 1.12.28c.62.16.73.56.71.89l-.71 2.86c.04.01.1.03.16.06l-.16-.04-.99 3.98c-.08.19-.27.47-.01.65-.01 0-1.12.28-1.12.28l-.61 1.77 2.02.5c.38.1.75.2 1.11.29l-.64 2.58 1.54.38.63-2.53c.42.11.83.22 1.23.32l-.63 2.51 1.54.38.64-2.57c2.64.5 4.63.3 5.47-2.09.67-1.92-.03-3.03-1.43-3.75 1.01-.24 1.78-.9 1.98-2.28zm-3.54 4.96c-.48 1.92-3.72.88-4.77.62l.85-3.41c1.05.26 4.42.78 3.92 2.79zm.48-4.99c-.44 1.75-3.12.86-4 .64l.77-3.1c.87.22 3.68.62 3.23 2.46z"/></symbol>
@@ -350,7 +357,7 @@
               </button>
               <button type="button" class="install-x" id="btnInstallClose" aria-label="Fermer">✕</button>
             </div>
-            <canvas id="chartCanvas" width="800" height="380" style="display:block;visibility:visible;opacity:1;z-index:10;background:#0B0E14"></canvas>
+            <canvas id="chartCanvas" width="800" height="380" style="display:block;visibility:visible;opacity:1;z-index:1;pointer-events:none;background:#0B0E14"></canvas>
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
             <canvas id="chartOverlay" class="chart-overlay" aria-hidden="true" style="background:transparent"></canvas>
           </div>
@@ -1007,10 +1014,20 @@
           var n = document.getElementById(id);
           if (n) n.style.setProperty('pointer-events', 'none', 'important');
         });
-        document.documentElement.style.pointerEvents = 'auto';
-        if (document.body) document.body.style.pointerEvents = 'auto';
+        document.documentElement.style.setProperty('pointer-events', 'auto', 'important');
+        if (document.body) document.body.style.setProperty('pointer-events', 'auto', 'important');
         var trade = document.getElementById('screenTrade');
-        if (trade) trade.style.pointerEvents = 'auto';
+        if (trade) trade.style.setProperty('pointer-events', 'auto', 'important');
+        document.querySelectorAll('.topbar,.asset-bar,.pad,.btn-deposit,.asset-chip,.btn-trade').forEach(function (n) {
+          n.style.setProperty('pointer-events', 'auto', 'important');
+        });
+        ['chartStage', 'chartCanvas', 'chartOverlay'].forEach(function (id) {
+          var c = document.getElementById(id);
+          if (c) {
+            c.style.setProperty('pointer-events', 'none', 'important');
+            c.style.setProperty('z-index', '1', 'important');
+          }
+        });
       } catch (e) { /* ignore */ }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', purgeDeadOverlays);
@@ -1018,6 +1035,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=158"></script>
+  <script src="js/app.js?v=159"></script>
 </body>
 </html>

@@ -38,9 +38,44 @@
         fs.setAttribute('hidden', '');
       }
       document.body.style.pointerEvents = 'auto';
-      var st = $('screenTrade');
-      if (st) st.style.pointerEvents = 'auto';
+      forceClickableTree();
     } catch (eUnlock) { /* ignore */ }
+  }
+
+  function forceClickableTree() {
+    try {
+      var chain = [
+        document.documentElement,
+        document.body,
+        $('screenTrade'),
+        document.querySelector('.trade-shell'),
+        $('tradeWrap'),
+        document.querySelector('.topbar'),
+        $('assetBar'),
+        document.querySelector('.pad'),
+        $('chartToolbar')
+      ];
+      chain.forEach(function (el) {
+        if (!el || !el.style) return;
+        el.style.setProperty('pointer-events', 'auto', 'important');
+        el.style.setProperty('user-select', 'auto', 'important');
+      });
+      document.querySelectorAll(
+        '.topbar,.asset-bar,.pad,.chart-toolbar,.dur-row,.odds-row,.trade-row,' +
+        '.asset-chip,.dur-chip,.odds-chip,.btn-trade,.btn-deposit,.qbtn,.mode-btn,.icon-btn,.help-badge,.ind-btn,.chart-fs-btn'
+      ).forEach(function (el) {
+        el.style.setProperty('pointer-events', 'auto', 'important');
+        el.style.setProperty('user-select', 'auto', 'important');
+      });
+      ['chartStage', 'chartCanvas', 'chartOverlay'].forEach(function (id) {
+        var n = $(id);
+        if (!n) return;
+        n.style.setProperty('pointer-events', 'none', 'important');
+        n.style.setProperty('z-index', '1', 'important');
+      });
+      var chart = $('chart');
+      if (chart) chart.style.setProperty('z-index', '1', 'important');
+    } catch (eForce) { /* ignore */ }
   }
 
   function paintDepositLabel() {
@@ -3546,6 +3581,7 @@
     if (s === 'UNFINISHED' || s === 'DRAFT' || s === 'ABANDONED' || s === 'INCOMPLETE') {
       return { code: 'UNFINISHED', label: t('txUnfinished') || 'Unfinished', cls: 'warn' };
     }
+    if (s === 'REVIEW' || s === 'PENDING' || s === 'PROCESSING' || s === 'WAIT') {
       return { code: 'REVIEW', label: t('txPending'), cls: 'pending' };
     }
     return { code: s || 'PENDING', label: t('txPending'), cls: 'pending' };
@@ -4255,7 +4291,7 @@
       closeModal('passModal');
       toast(t('passUpdated'), 'ok');
     });
-    $('btnFinance').addEventListener('click', openFinance, true);
+    $('btnFinance').addEventListener('click', openFinance);
     $('btnFinance').addEventListener('pointerup', openFinance);
     function openFinance(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -4780,32 +4816,12 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         return Promise.all(regs.map(function (r) { return r.unregister(); }));
       }).then(function () {
-        return navigator.serviceWorker.register('sw.js?v=105');
+        return navigator.serviceWorker.register('sw.js?v=106');
       }).catch(function () { /* ignore */ });
     }
   }
 
-  function lockGestures() {
-    try {
-      document.addEventListener('gesturestart', function (e) {
-        try { e.preventDefault(); } catch (e0) { /* ignore */ }
-      });
-      document.addEventListener('touchmove', function (e) {
-        try {
-          if (e.touches && e.touches.length > 1) {
-            if (e.cancelable) e.preventDefault();
-            return;
-          }
-          var node = e.target;
-          if (node && node.closest && node.closest('.chart-stage, #chartCanvas, #chartOverlay')) {
-            if (e.cancelable) e.preventDefault();
-          }
-        } catch (e2) { /* ignore */ }
-      }, { passive: false });
-    } catch (err) {
-      try { console.warn('Mobile display fallback:', err); } catch (e3) { /* ignore */ }
-    }
-  }
+  function lockGestures() { /* no global capture / stopPropagation */ }
 
   function enterApp(opts) {
     opts = opts || {};
@@ -5199,6 +5215,7 @@
       try {
         try { unlockPointerLayers(); } catch (eUnlock) { /* ignore */ }
         try { if (window.oroPurgeDeadOverlays) window.oroPurgeDeadOverlays(); } catch (ePurge) { /* ignore */ }
+        try { forceClickableTree(); } catch (eForce0) { /* ignore */ }
         try { captureUtmSource(); } catch (e0) { try { console.warn(e0); } catch (e) { /* ignore */ } }
         try { lockGestures(); } catch (e1) { try { console.warn('Mobile display fallback:', e1); } catch (e) { /* ignore */ } }
         try { fillLangBars(); } catch (e2) { /* ignore */ }
@@ -5243,9 +5260,9 @@
           if (e.target.closest('#btnCall, #btnPut')) return;
           playTap();
         }
-      }, { capture: true, passive: true });
-      document.addEventListener('touchstart', unlockAudio, { capture: true, passive: true });
-      document.addEventListener('click', unlockAudio, { capture: true, passive: true });
+      }, { passive: true });
+      document.addEventListener('touchstart', unlockAudio, { passive: true });
+      document.addEventListener('click', unlockAudio, { passive: true });
       var lastHud = 0;
       try {
         if ($('chartCanvas') && D6.Chart && D6.Chart.attach) {
