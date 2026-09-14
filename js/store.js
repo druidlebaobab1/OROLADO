@@ -467,7 +467,14 @@
       amount = D6.roundMoney(amount);
       var real = (vault[user.id] || { real: 0 }).real;
       var minWd = (D6.CONFIG && D6.CONFIG.MIN_WITHDRAW) || 3;
-      if (amount < minWd) return { ok: false, reason: D6.I18N.t('withdrawMinErr') };
+      if (extra.operator && D6.CONFIG && D6.CONFIG.WITHDRAW_MINS && D6.CONFIG.WITHDRAW_MINS[extra.operator] != null) {
+        minWd = Number(D6.CONFIG.WITHDRAW_MINS[extra.operator]) || minWd;
+      }
+      if (amount < minWd) {
+        var minErr = D6.I18N.t('withdrawMinErrDyn');
+        if (!minErr || minErr === 'withdrawMinErrDyn') minErr = D6.I18N.t('withdrawMinErr');
+        return { ok: false, reason: String(minErr).replace('${min}', '$' + minWd).replace('$3', '$' + minWd) };
+      }
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;
       var required = Number(user.requiredWagering) || D6.roundMoney(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));

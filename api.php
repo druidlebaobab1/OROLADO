@@ -910,9 +910,13 @@ if ($action === 'withdraw') {
   }
   $amount = orolado_money($req['amount'] ?? 0);
   $real = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
-  $minWithdraw = orolado_min_withdraw();
+  $operatorEarly = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? '')));
+  $minWithdraw = function_exists('orolado_withdraw_min_for')
+    ? orolado_withdraw_min_for($operatorEarly)
+    : orolado_min_withdraw();
   if ($amount < $minWithdraw) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de $3.00.']);
+    $minFmt = number_format($minWithdraw, 2, '.', '');
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de $' . $minFmt . '.']);
     exit;
   }
   if ($amount > $real) {
@@ -943,7 +947,7 @@ if ($action === 'withdraw') {
     exit;
   }
   $operator = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
-  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'paypal', 'bank', 'card'];
+  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'paypal', 'bank', 'card', 'opay', 'palmpay', 'pix', 'mercadopago', 'nequi', 'gcash', 'upi', 'stcpay', 'vodafone', 'skrill', 'neteller'];
   if (!in_array($operator, $allowedOps, true)) $operator = 'wave';
   $destination = trim((string) ($req['destination'] ?? $req['phone'] ?? ''));
   $beneficiary = trim((string) ($req['beneficiary'] ?? $me['displayName'] ?? ''));

@@ -33,6 +33,7 @@
   var lastFlush = 0;
   var loopRaf = 0;
   var drawRaf = 0;
+  var chartTickTimer = 0;
   var strikeLock = null;
   var coinImgs = {};
 
@@ -96,7 +97,7 @@
       return;
     }
     var span = Math.max(viewMax - viewMin, 0.3);
-    var pad = Math.max(span * 0.08, 0.15);
+    var pad = Math.max(span * 0.15, 0.15);
     if (price < viewMin + pad) viewMin = price - pad;
     if (price > viewMax - pad) viewMax = price + pad;
   }
@@ -113,6 +114,11 @@
     if (drawRaf) {
       try { cancelAnimationFrame(drawRaf); } catch (e1) { /* ignore */ }
       drawRaf = 0;
+    }
+    lastTs = 0;
+    if (typeof chartTickTimer !== 'undefined' && chartTickTimer) {
+      try { clearInterval(chartTickTimer); } catch (e2) { /* ignore */ }
+      chartTickTimer = 0;
     }
   }
 
@@ -1047,7 +1053,7 @@
     var tradeFloor = (allTrades.length && narrow) ? 32 : (allTrades.length ? 22 : 0);
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
-    var pad = { t: fsOn && narrow ? 4 : (narrow ? 12 : 20), r: 45, b: 24 + tradeFloor, l: 8 };
+    var pad = { t: fsOn ? (narrow ? 18 : 22) : (narrow ? 16 : 20), r: 45, b: 28 + tradeFloor, l: 8 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
@@ -1084,13 +1090,12 @@
         }
       });
     }
-    var breath = asset.id === 'titanpulse' ? 0.22 : 0.15;
     var floorSpan = 0.3;
     if (asset.id === 'horizon50') floorSpan = 28;
     else if (asset.id === 'nexusprime') floorSpan = 52;
     var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, floorSpan);
-    // Respiration verticale — TITAN un peu plus large pour les dents de scie.
-    var padY = Math.max(span * breath, asset.tickNoise * 3, 0.2);
+    // Auto-scale Y rigide : 15 % de padding intérieur haut et bas.
+    var padY = Math.max(span * 0.15, asset.tickNoise * 3, 0.2);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
 
@@ -1130,22 +1135,9 @@
     if (strikeLock) {
       viewMin = strikeLock.min;
       viewMax = strikeLock.max;
-    } else if (!viewMin || !viewMax) {
-      viewMin = yMin;
-      viewMax = yMax;
     } else {
-      var nextMin = viewMin + (yMin - viewMin) * 0.28;
-      var nextMax = viewMax + (yMax - viewMax) * 0.28;
-      if (minPrice < viewMin || maxPrice > viewMax) {
-        nextMin = Math.min(nextMin, yMin);
-        nextMax = Math.max(nextMax, yMax);
-      }
-      viewMin = nextMin;
-      viewMax = nextMax;
-    }
-    if (!strikeLock) {
-      viewMin = Math.min(viewMin || yMin, minPrice - padY);
-      viewMax = Math.max(viewMax || yMax, maxPrice + padY);
+      viewMin = minPrice - padY;
+      viewMax = maxPrice + padY;
     }
     if (viewMax - viewMin < 0.3) {
       var midFix = (viewMin + viewMax) / 2;
@@ -1181,6 +1173,10 @@
 
     var map = null;
     var lineData = closes.slice(startIdx);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad.l - 1, pad.t + 1, w + 2, Math.max(2, h - 2));
+    ctx.clip();
     if (asset.chart === 'candle') {
       map = drawCandles(pad, w, h, candles, minP, maxP, { thin: !!asset.candleThin });
       if (asset.trendLine) drawTrendLine(pad, w, h, candles, minP, maxP);
@@ -1213,6 +1209,7 @@
         ctx.restore();
       }
     }
+    ctx.restore();
 
     lastPad = pad;
     lastPlotH = h;

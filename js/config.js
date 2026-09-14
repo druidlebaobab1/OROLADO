@@ -13,7 +13,7 @@
     QUICK_STAKES: [1, 5, 10, 25, 50],
     DURATIONS: [3, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 3,
-    DEMO_WIN_RATE: 0.55,
+    DEMO_WIN_RATE: 0.58,
     DEMO_FORCE_WINS: 0,
     REAL_WIN_RATE: 0.42,
     ADMIN_WIN_RATE: 0.70,
@@ -26,8 +26,14 @@
     ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 },
     ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 },
     // Démo (joueurs + admin) : séduction, martingale autorisée.
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.20, '11': 0.10, '51': 0.02 },
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.20, '11': 0.10, '51': 0.02 },
+    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 },
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 },
+    WITHDRAW_MINS: {
+      usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
+      opay: 5, palmpay: 5, wave: 5, orange: 5, mtn: 5, mpesa: 5, moov: 5, airtel: 5,
+      pix: 5, mercadopago: 5, nequi: 5, gcash: 5, upi: 5, stcpay: 5, vodafone: 5,
+      paypal: 20, skrill: 20, neteller: 20, card: 25, bank: 25
+    },
     DEMO_MAX_WIN_STREAK: 0,
     MIN_ORDER_MS: 300,
     MIN_DEPOSIT: 3,

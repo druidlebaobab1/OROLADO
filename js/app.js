@@ -51,6 +51,27 @@
     }
   }
 
+  function bindImmediateClose(el, fn) {
+    if (!el || typeof fn !== 'function') return;
+    el.style.pointerEvents = 'auto';
+    el.style.touchAction = 'manipulation';
+    var last = 0;
+    function run(e) {
+      var now = Date.now();
+      if (now - last < 250) return;
+      last = now;
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      }
+      fn(e);
+    }
+    el.addEventListener('pointerdown', run);
+    el.addEventListener('touchstart', run, { passive: false });
+    el.addEventListener('click', run);
+  }
+
   function pushDemoTradeCache(pos) {
     if (!IS_ANDROID || !pos) return;
     if ((pos.mode || 'demo') !== 'demo') return;
@@ -611,6 +632,7 @@
     }
     applyAndroidTradeHint();
     try { refreshCryptoI18n(); } catch (eCrypto) { /* ignore */ }
+    try { updateWithdrawMinHint(); } catch (eWd) { /* ignore */ }
   });
 
   function fillCountrySelects() {
@@ -1936,8 +1958,28 @@
     return D6.CONFIG.MIN_DEPOSIT || 3;
   }
 
+  function withdrawMinFor(method) {
+    var map = (D6.CONFIG && D6.CONFIG.WITHDRAW_MINS) || {};
+    var n = Number(map[method]);
+    if (isFinite(n) && n > 0) return n;
+    return 5;
+  }
+
   function minWithdraw() {
-    return D6.CONFIG.MIN_WITHDRAW || 3;
+    var method = ($('wdMethod') && $('wdMethod').value) || selectedOp || '';
+    return withdrawMinFor(method);
+  }
+
+  function formatWdMin(min) {
+    var s = t('withdrawMinDyn');
+    if (!s || s === 'withdrawMinDyn') s = 'Minimum withdrawal: ${min}';
+    return s.replace('${min}', '$' + min);
+  }
+
+  function formatWdMinErr(min) {
+    var s = t('withdrawMinErrDyn');
+    if (!s || s === 'withdrawMinErrDyn') s = t('withdrawMinErr') || 'The minimum withdrawal is ${min}.';
+    return s.replace('${min}', '$' + min).replace('$3', '$' + min);
   }
 
   function setDepositAmt(n) {
@@ -1957,6 +1999,9 @@
       $('depositAmt').min = String(min);
       $('depositAmt').placeholder = String(min);
     }
+    document.querySelectorAll('.dep-amt-chip').forEach(function (chip) {
+      chip.classList.toggle('on', Number(chip.getAttribute('data-amt')) === Number(min));
+    });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum $3';
@@ -3161,7 +3206,33 @@
   }
 
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, bnb: 1, ltc: 1, doge: 1 };
-  var WD_MOBILE = { mtn: 1, orange: 1, mpesa: 1, wave: 1, moov: 1, airtel: 1 };
+  var WD_MOBILE = {
+    opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
+    nequi: 1, gcash: 1, vodafone: 1, stcpay: 1
+  };
+  var WD_EMAIL = { paypal: 1, skrill: 1, neteller: 1 };
+  var WD_NAMES = {
+    usdt: 'USDT TRC-20', trx: 'TRX', sol: 'SOL', bnb: 'Binance Pay', btc: 'BTC', eth: 'ETH',
+    opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange Money', mtn: 'MTN',
+    mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
+    nequi: 'Nequi', gcash: 'GCash', upi: 'UPI/Paytm', stcpay: 'STC Pay', vodafone: 'Vodafone Cash',
+    paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', card: 'Carte bancaire', bank: 'Virement bancaire'
+  };
+
+  function showWithdrawStep(step) {
+    if ($('wdStepGrid')) $('wdStepGrid').classList.toggle('hidden', step !== 'grid');
+    if ($('wdStepForm')) $('wdStepForm').classList.toggle('hidden', step !== 'form');
+  }
+
+  function updateWithdrawMinHint() {
+    var min = minWithdraw();
+    if ($('wdMinHint')) $('wdMinHint').textContent = formatWdMin(min);
+    if ($('withdrawAmt')) {
+      $('withdrawAmt').min = String(min);
+      $('withdrawAmt').placeholder = String(min);
+    }
+    if ($('wdSelectedLabel')) $('wdSelectedLabel').textContent = WD_NAMES[selectedOp] || selectedOp || '';
+  }
 
   function fillWdDial() {
     var sel = $('wdDial');
@@ -3190,6 +3261,8 @@
       el.classList.toggle('on', el.getAttribute('data-wd') === selectedOp);
     });
     syncWithdrawDestUi();
+    updateWithdrawMinHint();
+    showWithdrawStep('form');
   }
 
   function syncWithdrawDestUi() {
@@ -3229,23 +3302,29 @@
       label.textContent = t('wdWallet');
       input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : (method === 'usdt' ? 'Adresse USDT TRC-20 (T…)' : 'Adresse de portefeuille');
       input.type = 'text';
-    } else if (method === 'paypal') {
-      label.textContent = t('wdPaypal');
+    } else if (WD_EMAIL[method]) {
+      label.textContent = method === 'paypal' ? t('wdPaypal') : t('wdEmailId');
       input.placeholder = 'vous@email.com';
       input.type = 'email';
+    } else if (method === 'pix') {
+      label.textContent = t('wdPix');
+      input.placeholder = 'CPF / e-mail / téléphone / clé';
+      input.type = 'text';
+    } else if (method === 'upi' || method === 'mercadopago') {
+      label.textContent = t('wdAccount');
+      input.placeholder = method === 'upi' ? 'UPI ID / Paytm' : 'Compte Mercado Pago';
+      input.type = 'text';
     }
   }
 
   function openWithdraw() {
     if (!requireAccount()) return;
-    selectedOp = 'usdt';
-    setWithdrawMethod('usdt');
-    if ($('withdrawAmt')) {
-      $('withdrawAmt').value = '';
-      $('withdrawAmt').min = String(minWithdraw());
-      $('withdrawAmt').placeholder = String(minWithdraw());
-    }
+    selectedOp = '';
+    if ($('wdMethod')) $('wdMethod').value = '';
+    document.querySelectorAll('.wd-card').forEach(function (el) { el.classList.remove('on'); });
+    if ($('withdrawAmt')) $('withdrawAmt').value = '';
     if ($('wdDestination')) $('wdDestination').value = '';
+    showWithdrawStep('grid');
     syncWithdrawDestUi();
     refreshWithdrawUi();
     openFromProfile('withdrawModal');
@@ -3938,8 +4017,8 @@
     }
     if ($('closeDepositSuccess')) bindAndroidTap($('closeDepositSuccess'), function () { closeModal('depositSuccessModal'); });
     if ($('btnDepositSuccessOk')) bindAndroidTap($('btnDepositSuccessOk'), function () { closeModal('depositSuccessModal'); });
-    if ($('closeTip')) bindAndroidTap($('closeTip'), function () { closeModal('tipModal'); });
-    if ($('btnTipOk')) bindAndroidTap($('btnTipOk'), function () { closeModal('tipModal'); });
+    bindImmediateClose($('closeTip'), function () { closeModal('tipModal'); });
+    bindImmediateClose($('btnTipOk'), function () { closeModal('tipModal'); });
     if ($('closeForgot')) bindAndroidTap($('closeForgot'), function () { closeModal('forgotModal'); });
     if ($('closeIosInstall')) bindAndroidTap($('closeIosInstall'), function () { closeModal('iosInstallModal'); });
     if ($('btnIosInstallOk')) bindAndroidTap($('btnIosInstallOk'), function () { closeModal('iosInstallModal'); });
@@ -3965,6 +4044,28 @@
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
         this.value = String(this.value || '').replace(/[^\d.]/g, '');
+        var n = Number(this.value);
+        document.querySelectorAll('.dep-amt-chip').forEach(function (chip) {
+          chip.classList.toggle('on', Number(chip.getAttribute('data-amt')) === n);
+        });
+      });
+    }
+    document.querySelectorAll('.dep-amt-chip').forEach(function (chip) {
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setDepositAmt(chip.getAttribute('data-amt'));
+        document.querySelectorAll('.dep-amt-chip').forEach(function (c) {
+          c.classList.toggle('on', c === chip);
+        });
+      });
+    });
+    if ($('btnWdBack')) {
+      bindImmediateClose($('btnWdBack'), function () {
+        selectedOp = '';
+        if ($('wdMethod')) $('wdMethod').value = '';
+        document.querySelectorAll('.wd-card').forEach(function (el) { el.classList.remove('on'); });
+        showWithdrawStep('grid');
       });
     }
     $('btnConfirmDeposit').addEventListener('click', function (e) {
@@ -4021,7 +4122,8 @@
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
       if (!gate.ok) { toast(gate.msg, 'err', 5000); return; }
-      if (amount < minWd) { toast(t('withdrawMinErr'), 'err'); return; }
+      if (!method) { toast(t('wdMethod'), 'err'); return; }
+      if (amount < minWd) { toast(formatWdMinErr(minWd), 'err'); return; }
       if (amount > real) { toast(t('insufficient'), 'err'); return; }
       if (method === 'card') {
         if (destination.length !== 16) { toast(t('wdCardErr'), 'err'); return; }
@@ -4039,7 +4141,7 @@
         return;
       }
       if (isMobile && name.length < 2) { toast(t('wdFullName'), 'err'); return; }
-      if (method === 'paypal' && destination.indexOf('@') < 0) {
+      if (WD_EMAIL[method] && destination.indexOf('@') < 0) {
         toast(t('wdPaypalErr'), 'err');
         return;
       }

@@ -122,6 +122,17 @@ function orolado_min_withdraw(): float {
   return 3.0;
 }
 
+function orolado_withdraw_min_for(string $op): float {
+  $map = [
+    'usdt' => 10.0, 'trx' => 10.0, 'sol' => 10.0, 'bnb' => 10.0, 'btc' => 15.0, 'eth' => 15.0,
+    'opay' => 5.0, 'palmpay' => 5.0, 'wave' => 5.0, 'orange' => 5.0, 'mtn' => 5.0, 'mpesa' => 5.0,
+    'moov' => 5.0, 'airtel' => 5.0, 'pix' => 5.0, 'mercadopago' => 5.0, 'nequi' => 5.0,
+    'gcash' => 5.0, 'upi' => 5.0, 'stcpay' => 5.0, 'vodafone' => 5.0,
+    'paypal' => 20.0, 'skrill' => 20.0, 'neteller' => 20.0, 'card' => 25.0, 'bank' => 25.0,
+  ];
+  return $map[$op] ?? 5.0;
+}
+
 function orolado_max_deposit_usd(): float {
   return 100000.0;
 }

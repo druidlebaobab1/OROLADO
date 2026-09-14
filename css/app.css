@@ -584,7 +584,10 @@ html.is-android #chartOverlay{
   padding:6px 4px;font:inherit;font-weight:800;font-size:.62rem;cursor:pointer;min-height:32px}
 .wd-pill.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
 .wd-trust{display:flex;flex-direction:column;gap:4px;font-size:.62rem;font-weight:700;color:var(--muted);margin:8px 0 12px;line-height:1.35}
-.withdraw-box{max-height:88dvh;overflow-y:auto}
+#withdrawModal .withdraw-box{width:min(420px,94vw);max-width:420px;height:min(640px,92dvh);max-height:92dvh;overflow:hidden!important;padding:12px 10px 10px;
+  display:flex;flex-direction:column;background:rgba(11,14,20,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 50px rgba(0,0,0,.55)}
+.deposit-box,.withdraw-box{overflow:hidden!important}
 .deposit-box .op-grid{margin-top:0}
 .pay-method-label{font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:12px 0 8px}
 .pay-method-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
@@ -606,7 +609,22 @@ html.is-android #chartOverlay{
 .pay-crypto-badge.btc{background:#F7931A}
 .pay-crypto-badge.eth{background:#627EEA}
 .pay-crypto-badge.trx{background:#7C3AED}
-.deposit-box{width:min(400px,92vw);max-width:400px;max-height:100dvh;padding:14px 14px 16px;overflow:hidden}
+.deposit-box{width:min(400px,92vw);max-width:400px;height:auto;max-height:92dvh;padding:14px 14px 16px;overflow:hidden;
+  background:rgba(8,10,16,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 48px rgba(0,0,0,.55)}
+.dep-amt-chips{display:flex;gap:6px;margin:0 0 8px}
+.dep-amt-chip{flex:1;min-width:0;min-height:34px;padding:0 4px;border-radius:9px;border:1px solid rgba(245,158,11,.28);
+  background:rgba(15,23,42,.72);color:#F8E7B8;font:inherit;font-size:.72rem;font-weight:800;cursor:pointer;
+  touch-action:manipulation;pointer-events:auto}
+.dep-amt-chip.on{border-color:rgba(245,158,11,.7);background:linear-gradient(180deg,rgba(245,158,11,.28),rgba(180,83,9,.16));
+  color:#FDE68A;box-shadow:0 0 10px rgba(245,158,11,.22)}
+.btn-deposit-confirm{position:relative;overflow:hidden;color:#0B0E14;
+  background:linear-gradient(135deg,#B45309 0%,#F59E0B 42%,#FBBF24 68%,#D97706 100%);
+  box-shadow:0 0 18px rgba(245,158,11,.38),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn-deposit-confirm::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 28%,rgba(255,255,255,.38) 50%,transparent 72%);
+  transform:translateX(-130%);animation:depShimmer 2.6s ease-in-out infinite}
+@keyframes depShimmer{0%,18%{transform:translateX(-130%)}55%,100%{transform:translateX(130%)}}
 .deposit-box:not(.is-crypto) .modal-title{margin-bottom:8px}
 .deposit-box:not(.is-crypto) .field{margin-bottom:6px;gap:4px}
 .deposit-box:not(.is-crypto) .field input{min-height:40px;padding:10px 12px}
@@ -706,7 +724,7 @@ html.is-android #chartOverlay{
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
 @media (max-width:480px){
-  .deposit-box:not(.is-crypto){width:min(400px,94vw);max-height:100dvh;overflow:hidden;padding:12px 12px 14px}
+  .deposit-box:not(.is-crypto){width:min(400px,94vw);max-height:92dvh;overflow:hidden;padding:12px 12px 14px}
   .deposit-box.is-crypto{padding:10px 12px 12px;max-height:100dvh;overflow-x:hidden;overflow-y:auto}
   .deposit-box.is-crypto .modal-title{margin-bottom:4px;font-size:.88rem}
   .deposit-box.is-crypto .crypto-qr{width:150px;height:150px;padding:8px;border-radius:14px}
@@ -1755,11 +1773,20 @@ html.is-ios .dur-chip,html.is-ios .qbtn,html.is-ios .stake-field input,html.is-i
   -webkit-appearance:none;outline:none}
 html.is-ios .stake-field input{border-radius:10px}
 
-.wd-group-label{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#94A3B8;margin:10px 0 6px}
-.wd-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.wd-card{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 10px;border-radius:10px;
-  border:1.5px solid rgba(255,255,255,.1);background:rgba(15,23,42,.72);color:#E2E8F0;font:inherit;font-size:.72rem;font-weight:700;
-  cursor:pointer;text-align:left}
+#wdStepGrid{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#wdStepForm{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#wdStepForm.hidden,#wdStepGrid.hidden{display:none!important}
+.wd-back{align-self:flex-start;border:0;background:transparent;color:#F8E7B8;font:inherit;font-size:.78rem;font-weight:800;
+  padding:2px 0 8px;cursor:pointer;pointer-events:auto;touch-action:manipulation}
+.wd-selected{font-size:.72rem;font-weight:800;color:#FDE68A;margin:0 0 8px}
+.btn-wd-confirm{background:linear-gradient(135deg,#B45309 0%,#F59E0B 45%,#FBBF24 70%,#D97706 100%);
+  box-shadow:0 0 16px rgba(245,158,11,.32)}
+.wd-group-label{font-size:.52rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#94A3B8;margin:6px 0 4px;flex-shrink:0}
+.wd-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.wd-grid-intl{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wd-card{display:flex;align-items:center;gap:5px;min-height:34px;padding:4px 6px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.1);background:rgba(15,23,42,.72);color:#E2E8F0;font:inherit;font-size:.58rem;font-weight:700;
+  cursor:pointer;text-align:left;touch-action:manipulation;pointer-events:auto}
 .wd-card.on{border-color:#F5C518;box-shadow:0 0 12px rgba(245,197,24,.25);background:rgba(245,197,24,.1)}
 .wd-card-ico{width:22px;height:22px;border-radius:50%;flex-shrink:0}
 .wd-mm-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -1775,6 +1802,23 @@ html.is-ios .stake-field input{border-radius:10px}
 .wd-card.wd-wave.on{border-color:#1BA7E1}
 .wd-card.wd-moov.on{border-color:#0066B3}
 .wd-card.wd-airtel.on{border-color:#ED1C24}
+.wd-opay-mark{width:16px;height:16px;border-radius:50%;flex-shrink:0;background:#16A34A;box-shadow:inset 0 0 0 4px #fff}
+.wd-card.wd-palmpay .wd-mm-dot{background:#6D28D9}
+.wd-card.wd-pix .wd-brand-pix,.wd-brand-pix{font-size:.42rem;font-weight:900;letter-spacing:.04em;color:#00B686;background:#0B1220;border-radius:3px;padding:2px 3px}
+.wd-card.wd-mpago .wd-mm-dot{background:#00BCFF}
+.wd-card.wd-nequi .wd-mm-dot{background:#DA0081}
+.wd-card.wd-gcash .wd-mm-dot{background:#007DF1}
+.wd-card.wd-upi .wd-mm-dot{background:#0973BA}
+.wd-card.wd-stc .wd-mm-dot{background:#4F008C}
+.wd-card.wd-voda .wd-mm-dot{background:#E60000}
+.wd-brand-sk,.wd-brand-nt{width:16px;height:16px;border-radius:4px;display:grid;place-items:center;font-size:.55rem;font-weight:900;color:#fff;flex-shrink:0}
+.wd-brand-sk{background:#862165}
+.wd-brand-nt{background:#8DC63F;color:#14320A}
+.tip-box{position:relative;overflow:visible}
+.tip-close,#tipModal .btn-close{position:absolute;top:6px;right:6px;z-index:30;width:44px;height:44px;min-width:44px;min-height:44px;
+  display:flex;align-items:center;justify-content:center;pointer-events:auto!important;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;color:#E8EEF9}
+#btnTipOk,.tip-ok{position:relative;z-index:30;pointer-events:auto!important;touch-action:manipulation}
 #wdMobileFields.hidden{display:none}
 #wdDial{width:100%;margin-bottom:8px;min-height:40px;border-radius:8px;border:1px solid var(--line);
   background:rgba(10,15,29,.8);color:var(--text);padding:8px}

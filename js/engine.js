@@ -561,7 +561,7 @@
   /** Arbitrage étanche — démo / admin réel / joueur réel. */
   function resolveWinProbability(user, trade, mode) {
     var demoMap = C.ODDS_WIN_RATE_DEMO || {
-      '1.88': 0.55, '6': 0.20, '11': 0.10, '51': 0.02
+      '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02
     };
     var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
       '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025
