@@ -499,15 +499,18 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   z-index:210;opacity:0;pointer-events:none!important;transition:.2s;backdrop-filter:blur(10px)}
 .modal-backdrop.active{display:block!important;opacity:1;pointer-events:auto!important}
 .modal-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.96);
-  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 12px 14px;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 16px 14px;
   width:min(360px,86vw);max-width:360px;max-height:72dvh;overflow-y:auto;transition:.22s;z-index:211}
 .modal-box.glass{background:rgba(21,30,48,.92);box-shadow:0 0 0 1px rgba(255,215,0,.14),0 20px 50px rgba(0,0,0,.5)}
 .modal-backdrop.active .modal-box{transform:translate(-50%,-50%) scale(1)}
 .trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
 .dur-chip,.odds-chip,.dur-row,.odds-row{pointer-events:auto!important}
-.btn-close{position:absolute;top:8px;right:8px;z-index:30;width:36px;height:36px;min-width:36px;min-height:36px;
-  display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-  border-radius:10px;color:var(--muted);font-size:1.05rem;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
+.btn-close{position:absolute!important;top:16px!important;right:16px!important;z-index:40;
+  width:36px;height:36px;min-width:36px;min-height:36px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  border-radius:10px;color:var(--muted);font-size:1.15rem;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
+.btn-close:hover,.btn-close:focus-visible{background:rgba(255,255,255,.08)!important;color:#F8FAFC}
 
 /* Android : overflow hidden sans calque inset qui mange les taps */
 html.is-android,html.is-android body{
@@ -525,13 +528,14 @@ html.is-android .pad{
 html.is-android .btn-close{
   min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
   z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;position:absolute}
+  -webkit-tap-highlight-color:transparent;position:absolute!important;
+  background:transparent!important;border:0!important}
 html.is-android .modal-backdrop.active{pointer-events:auto!important}
 html.is-android .modal-backdrop.active .modal-box{pointer-events:auto;z-index:211}
-html.is-android .modal-backdrop.active .btn-gold,
-html.is-android .modal-backdrop.active .btn-close{
+html.is-android .modal-backdrop.active .btn-gold{
   pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:9999}
-html.is-android .modal-backdrop.active .btn-close{position:absolute}
+html.is-android .modal-backdrop.active .btn-close{
+  pointer-events:auto!important;touch-action:manipulation;position:absolute!important;z-index:9999}
 html.is-android .drawer-head .btn-close{position:static!important;top:auto;right:auto;z-index:5}
 html.is-android .trade-hint,
 html.is-android [data-i18n="tradeHint"],
@@ -627,7 +631,7 @@ html.is-android #chartOverlay{
 .pay-crypto-badge.btc{background:#F7931A}
 .pay-crypto-badge.eth{background:#627EEA}
 .pay-crypto-badge.trx{background:#7C3AED}
-.deposit-box{width:min(400px,92vw);max-width:400px;height:auto;max-height:92dvh;padding:18px 14px 16px;overflow:auto;
+.deposit-box{width:min(400px,92vw);max-width:400px;height:auto;max-height:92dvh;padding:20px 16px 16px;overflow:auto;
   background:rgba(8,10,16,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 48px rgba(0,0,0,.55)}
 .dep-amt-chips,.dep-amt-chip{display:none!important}
@@ -657,15 +661,15 @@ html.is-android #chartOverlay{
 .deposit-box:not(.is-crypto) .pay-method-card{padding:10px 12px}
 .deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow-x:hidden;overflow-y:auto;
   background:linear-gradient(180deg,#161C28 0%,#121824 100%);border:1px solid rgba(255,255,255,.1)}
-.deposit-box.is-crypto #closeDeposit{display:inline-flex!important;pointer-events:auto!important}
+.deposit-box.is-crypto #closeDeposit{display:none!important}
 #depositStepCrypto:not(.hidden),#depositStepSelect:not(.hidden),#depositStepCryptoOk:not(.hidden){
   display:block!important;visibility:visible!important;height:auto!important;overflow:visible}
 #formRegister:not(.hidden),#formLogin:not(.hidden){display:block!important;visibility:visible!important}
 #wdStepForm:not(.hidden){display:flex!important;visibility:visible!important;overflow:auto!important;min-height:0}
-.crypto-step-head{display:flex;align-items:center;gap:8px;min-height:36px;margin:0 36px 10px 0}
+.crypto-step-head{display:flex;align-items:center;gap:8px;min-height:36px;margin:0 0 8px}
 .crypto-invoice,.crypto-ok{padding-top:2px}
-.crypto-back{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--muted);
-  font:inherit;font-size:.82rem;font-weight:700;padding:2px 0 6px;cursor:pointer}
+.crypto-back{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#CBD5E1;
+  font:inherit;font-size:.82rem;font-weight:700;padding:8px 4px;margin:0 0 4px;min-height:36px;cursor:pointer}
 .crypto-back:hover{color:var(--gold)}
 .crypto-pay{font-size:1.7rem;font-weight:900;color:var(--gold);text-align:center;margin:4px 0 10px;letter-spacing:.01em;
   font-variant-numeric:tabular-nums;line-height:1.2;text-shadow:0 0 20px rgba(245,158,11,.28)}
@@ -1179,11 +1183,11 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-top-end{display:flex;align-items:center;flex-shrink:0;gap:8px;margin-left:auto}
 .fs-top-mid{display:none;flex-direction:column;align-items:center;justify-content:center;min-width:0;flex:1}
 .fs-mode-label{display:none}
-.fs-mode-switch{display:grid;grid-template-columns:minmax(48px,.7fr) 26px minmax(56px,1fr);align-items:center;justify-items:stretch;gap:4px;margin-top:5px;padding:3px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.fs-mode-switch{display:grid;grid-template-columns:minmax(44px,.82fr) 26px minmax(58px,1.18fr);align-items:center;justify-items:stretch;gap:4px;margin-top:5px;padding:3px 4px;max-width:min(220px,100%);border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
 .fs-mode-btn{border:0;background:transparent;color:#94A3B8;font:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;
   padding:4px 8px;border-radius:999px;cursor:pointer;min-height:24px;min-width:0;transform:none;opacity:1}
 .fs-mode-btn[data-mode="demo"]{padding:4px 8px;min-height:24px;font-size:9px;font-weight:700;letter-spacing:.08em;justify-self:stretch}
-.fs-mode-btn[data-mode="real"]{padding:6px 12px;min-height:28px;font-weight:800;font-size:10px;letter-spacing:.06em;justify-self:stretch}
+.fs-mode-btn[data-mode="real"]{padding:6px 14px;min-height:28px;font-weight:800;font-size:10px;letter-spacing:.06em;justify-self:stretch}
 .fs-mid-plus{width:26px;height:26px;min-width:26px;border-radius:50%;border:1px solid rgba(245,197,24,.75);
   background:linear-gradient(180deg,#FDE68A,#D97706);color:#000;
   padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
@@ -1194,7 +1198,7 @@ html.is-fullscreen .fs-mode-btn.mode-btn{transform:none!important;font-size:10px
 html.fs-trade .fs-mode-btn.mode-btn[data-mode="demo"],
 html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="demo"]{padding:4px 8px;min-height:24px;font-size:9px}
 html.fs-trade .fs-mode-btn.mode-btn[data-mode="real"],
-html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="real"]{padding:6px 12px;min-height:28px;font-size:10px;font-weight:800}
+html.is-fullscreen .fs-mode-btn.mode-btn[data-mode="real"]{padding:6px 14px;min-height:28px;font-size:10px;font-weight:800}
 html.fs-trade .fs-mode-btn.mode-btn.on[data-mode="demo"],
 html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="demo"]{
   background:rgba(245,197,24,.18);color:#FDE68A;border-color:transparent;box-shadow:none}
@@ -1570,13 +1574,9 @@ html.lang-ar .usdt-qr-wrap{text-align:center}
 .fs-top-mid-home{display:flex;flex:1;min-width:0;justify-content:center}
 .fs-pad-capsule{display:none;flex-shrink:0}
 @media (min-width:860px){
-  html.fs-trade .fs-pad-capsule,html.is-fullscreen .fs-pad-capsule{
-    display:flex!important;align-items:center;justify-content:center;width:100%;margin:8px 0}
-  html.fs-trade .fs-pad-capsule .fs-top-mid,html.is-fullscreen .fs-pad-capsule .fs-top-mid{
-    display:flex;flex-direction:column;align-items:center;width:100%}
-  html.fs-trade .fs-trade-overlay .pad .trade-row,html.is-fullscreen .fs-trade-overlay .pad .trade-row{
-    flex-direction:column!important;width:100%!important;align-items:stretch!important}
-  html.fs-trade .fs-top-mid-home,html.is-fullscreen .fs-top-mid-home{display:none!important;flex:0!important}
+  html.fs-trade .fs-pad-capsule,html.is-fullscreen .fs-pad-capsule{display:none!important}
+  html.fs-trade .fs-top-mid-home,html.is-fullscreen .fs-top-mid-home{
+    display:flex!important;flex:1;justify-content:center;min-width:0;max-width:min(240px,46%)}
 }
 html.fs-trade .fs-trade-topbar,html.is-fullscreen .fs-trade-topbar{
   position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;padding-left:12px;padding-right:12px}
@@ -1846,11 +1846,11 @@ html.is-ios .stake-field input{border-radius:10px}
 #wdStepForm.hidden,#wdStepGrid.hidden{display:none!important}
 .wd-modal-head{position:relative;display:flex;align-items:center;justify-content:center;min-height:40px;margin:0 0 8px}
 .wd-modal-head .modal-title{margin:0;padding:0 40px;width:100%;justify-content:center;text-align:center}
-.wd-modal-head .btn-close{position:absolute;top:50%;right:0;transform:translateY(-50%);z-index:3}
+.wd-modal-head .btn-close{position:absolute!important;top:16px!important;right:16px!important;transform:none;z-index:40}
 .wd-modal-head .btn-close.hidden{display:none!important}
-.wd-back-ico{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:3;
-  border:0;background:transparent;color:#F8E7B8;font-size:1.4rem;font-weight:700;line-height:1;
-  width:40px;height:40px;padding:0;cursor:pointer;touch-action:manipulation;pointer-events:auto}
+.wd-back-ico{position:absolute;left:4px;top:50%;transform:translateY(-50%);z-index:3;
+  border:0;background:transparent!important;color:#E8EEF9;font-size:1.05rem;font-weight:700;line-height:1;
+  width:36px;height:36px;padding:0;cursor:pointer;touch-action:manipulation;pointer-events:auto}
 .wd-back-ico.hidden{display:none!important}
 .wd-dial-fixed{display:flex;align-items:center;min-height:40px;margin-bottom:8px;padding:8px 12px;
   border-radius:8px;border:1px solid var(--line);background:rgba(10,15,29,.8);color:var(--text);
@@ -1990,9 +1990,8 @@ html,body,#screenTrade,.trade-shell,.trade-wrap{
   pointer-events:auto!important;user-select:auto!important}
 .topbar,.asset-bar,.pad,.chart-toolbar,.dur-row,.odds-row,.trade-row{
   position:relative!important;z-index:50!important;pointer-events:auto!important;user-select:auto!important}
-button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge,input{
-  pointer-events:auto!important;user-select:auto!important;touch-action:manipulation!important;
-  position:relative!important;z-index:51!important}
+button:not(.btn-close):not(.crypto-back):not(.wd-back-ico):not(.auth-back):not(.fs-trade-close),.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge,input{
+  pointer-events:auto!important;user-select:auto!important;touch-action:manipulation!important}
 #chartStage,#chartCanvas,#chartOverlay,.chart-overlay{
   pointer-events:none!important;z-index:1!important}
 .modal-backdrop:not(.active),

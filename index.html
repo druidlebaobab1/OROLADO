@@ -51,10 +51,10 @@
       pointer-events:auto!important;user-select:auto!important;touch-action:manipulation}
     .topbar,.asset-bar,.pad,.chart-toolbar,.dur-row,.odds-row,.trade-row{
       position:relative!important;z-index:50!important;pointer-events:auto!important}
-    button,.asset-chip,.dur-chip,.odds-chip,.qbtn,.btn-trade,.btn-deposit,.mode-btn,
+    button:not(.btn-close):not(.crypto-back):not(.wd-back-ico):not(.auth-back):not(.fs-trade-close),
+    .asset-chip,.dur-chip,.odds-chip,.qbtn,.btn-trade,.btn-deposit,.mode-btn,
     .icon-btn,.help-badge,.ind-btn,.chart-fs-btn,input{
-      pointer-events:auto!important;user-select:auto!important;touch-action:manipulation!important;
-      position:relative!important;z-index:51!important}
+      pointer-events:auto!important;user-select:auto!important;touch-action:manipulation!important}
     #chartStage,#chartCanvas,#chartOverlay,.chart-overlay{
       pointer-events:none!important;z-index:1!important}
     .hidden{display:none!important}
@@ -65,7 +65,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=159">
+  <link rel="stylesheet" href="css/app.css?v=160">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -1037,6 +1037,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=160"></script>
+  <script src="js/app.js?v=161"></script>
 </body>
 </html>

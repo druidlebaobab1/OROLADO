@@ -2871,6 +2871,7 @@
     setHidden(crypto, step !== 'crypto');
     setHidden(ok, step !== 'ok');
     if (box) box.classList.toggle('is-crypto', step === 'crypto' || step === 'ok');
+    setHidden($('closeDeposit'), step === 'crypto');
   }
 
   function setDepositPayMethod(method) {
@@ -3359,7 +3360,7 @@
     setHidden($('btnWdBack'), step !== 'form');
     var wdBox = document.querySelector('#withdrawModal .withdraw-box');
     if (wdBox) wdBox.classList.toggle('is-wd-form', step === 'form');
-    setHidden($('closeWithdraw'), false);
+    setHidden($('closeWithdraw'), step === 'form');
   }
 
   function updateWithdrawMinHint() {
@@ -3757,7 +3758,7 @@
       clearErrors();
       var res = await D6.Auth.login({ identifier: String($('loginId').value || '').trim().toLowerCase(), password: $('loginPass').value });
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
-      enterApp();
+      enterApp({ openFullscreen: true });
     });
     $('regPass2').addEventListener('input', function () {
       if ($('regPass').value && this.value && $('regPass').value !== this.value) showFieldError('regPass2', t('passMismatch'));
@@ -4819,6 +4820,9 @@
     opts = opts || {};
     try {
       var u = user();
+      if (u && !isGuest(u)) {
+        try { sessionStorage.removeItem('oro_demo_preview'); } catch (eClr) { /* ignore */ }
+      }
       if (u) migrateLegacyDemo(u);
       stake = D6.CONFIG.MIN_STAKE || 1;
       if ($('inputStake')) $('inputStake').value = stake;
@@ -5312,14 +5316,21 @@
       }
       function finishBoot() {
         try {
-          if (D6.Auth.current() && !isGuest(D6.Auth.current())) enterApp();
-          else {
+          if (D6.Auth.current() && !isGuest(D6.Auth.current())) {
+            enterApp();
+            return;
+          }
+          var preview = false;
+          try { preview = sessionStorage.getItem('oro_demo_preview') === '1'; } catch (ePrev) { preview = false; }
+          if (preview) {
             ensureGuest();
             enterApp();
+            return;
           }
+          showAuthScreen('login');
         } catch (eFin) {
           try { console.warn('Mobile display fallback:', eFin); } catch (e) { /* ignore */ }
-          try { enterApp(); } catch (e2) { /* ignore */ }
+          try { showAuthScreen('login'); } catch (e2) { /* ignore */ }
         }
       }
       if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
@@ -5327,6 +5338,7 @@
       if ($('btnAuthBack')) $('btnAuthBack').addEventListener('click', function () {
         var pitch = $('authRealPitch');
         if (pitch) pitch.classList.add('hidden');
+        try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
         ensureGuest();
         enterApp();
       });
