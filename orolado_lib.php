@@ -493,6 +493,39 @@ function orolado_is_reserved_admin_email(string $email): bool {
   return $email !== '' && in_array($email, orolado_admin_emails(), true);
 }
 
+function orolado_revoke_user_sessions(array &$db, string $uid, string $keepToken = ''): void {
+  if ($uid === '' || !isset($db['sessions']) || !is_array($db['sessions'])) return;
+  foreach ($db['sessions'] as $sid => $sess) {
+    if ((string) ($sess['userId'] ?? '') !== $uid) continue;
+    if ($keepToken !== '' && hash_equals($keepToken, (string) $sid)) continue;
+    unset($db['sessions'][$sid]);
+  }
+}
+
+function orolado_prune_positions($list): array {
+  if (!is_array($list)) return [];
+  $cut = time() - (14 * 86400);
+  $seen = [];
+  $out = [];
+  foreach ($list as $p) {
+    if (!is_array($p)) continue;
+    $id = (string) ($p['id'] ?? '');
+    if ($id !== '' && isset($seen[$id])) continue;
+    $raw = (string) ($p['at'] ?? $p['settledAt'] ?? $p['createdAt'] ?? '');
+    $at = $raw !== '' ? strtotime($raw) : 0;
+    if ($at && $at < $cut) continue;
+    if ($id !== '') $seen[$id] = 1;
+    $out[] = $p;
+  }
+  return array_slice($out, 0, 200);
+}
+
+function orolado_merge_positions($a, $b): array {
+  $a = is_array($a) ? $a : [];
+  $b = is_array($b) ? $b : [];
+  return orolado_prune_positions(array_merge($b, $a));
+}
+
 function orolado_session_ttl(): int {
   return 100 * 365 * 24 * 60 * 60;
 }
@@ -2217,8 +2250,8 @@ function brevo_welcome_html(string $name): string {
     . '<li style="margin-bottom:6px;"><strong style="color:#FFFFFF;">Protected Environment</strong></li>'
     . '<li style="margin-bottom:6px;"><strong style="color:#FFFFFF;">24/7 Connectivity</strong></li>'
     . '</ul>'
-    . '<p style="margin:0 0 8px;text-align:center;">'
-    . '<a href="' . brevo_escape($dash) . '" style="display:inline-block;background:linear-gradient(135deg,#FFD700,#FFA000);color:#0A0F1D;text-decoration:none;font-weight:800;font-size:13px;padding:11px 20px;border-radius:10px;">Access My Terminal</a>'
+    . '<p style="margin:0 0 18px;text-align:center;">'
+    . '<a href="' . brevo_escape($dash) . '" style="display:inline-block;background:#F59E0B;color:#111827;text-decoration:none;font-weight:800;font-size:15px;line-height:1.2;padding:14px 28px;border-radius:10px;border:1px solid #D97706;">Access My Terminal</a>'
     . '</p>'
     . '</td></tr></table></td></tr></table></body></html>';
 }

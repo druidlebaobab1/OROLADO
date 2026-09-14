@@ -602,6 +602,7 @@ if ($action === 'forgotPasswordSet') {
   $uid = (string) ($row['userId'] ?? '');
   if ($uid !== '' && isset($db['users'][$uid])) {
     $db['users'][$uid]['passwordHash'] = orolado_hash_password($newPassword);
+    orolado_revoke_user_sessions($db, $uid, '');
   }
   unset($db['pendingPasswordOtps'][$email]);
   save_db($file, $db);
@@ -641,6 +642,7 @@ if ($action === 'passwordChange') {
   $uid = (string) ($me['id'] ?? '');
   if ($uid !== '' && isset($db['users'][$uid])) {
     $db['users'][$uid]['passwordHash'] = orolado_hash_password($newPassword);
+    orolado_revoke_user_sessions($db, $uid, (string) $token);
   }
   unset($db['pendingPasswordOtps'][$email]);
   save_db($file, $db);
@@ -745,6 +747,9 @@ if ($action === 'upsert') {
     }
   }
   if ($id === 'admin_master') $user['role'] = 'admin';
+  unset($user['passwordHash'], $user['password']);
+  $user['passwordHash'] = (string) ($existing['passwordHash'] ?? '');
+  $user['positions'] = orolado_merge_positions($existing['positions'] ?? [], $user['positions'] ?? []);
   if (!empty($existing['lastSeen']) && empty($user['lastSeen'])) {
     $user['lastSeen'] = $existing['lastSeen'];
   }

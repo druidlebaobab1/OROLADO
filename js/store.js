@@ -81,6 +81,43 @@
     };
   }
 
+  var HIST_KEEP_MS = 14 * 24 * 60 * 60 * 1000;
+  function posTime(p) {
+    return Date.parse((p && (p.at || p.settledAt || p.createdAt)) || '') || 0;
+  }
+  function prunePositions(list) {
+    var cut = Date.now() - HIST_KEEP_MS;
+    var seen = {};
+    var out = [];
+    (list || []).forEach(function (p) {
+      if (!p) return;
+      var id = String(p.id || '');
+      if (id && seen[id]) return;
+      var t = posTime(p);
+      if (t && t < cut) return;
+      if (id) seen[id] = 1;
+      out.push(p);
+    });
+    return out.slice(0, 200);
+  }
+  function mergePositions(a, b) {
+    return prunePositions([].concat(b || [], a || []));
+  }
+  function histKey(user) {
+    if (!user || user.guest || !user.id) return 'orolado_hist_guest';
+    return 'orolado_hist_' + String(user.id);
+  }
+  function readHistMirror(user) {
+    try {
+      var list = JSON.parse(localStorage.getItem(histKey(user)) || '[]');
+      return Array.isArray(list) ? list : [];
+    } catch (eH) { return []; }
+  }
+  function writeHistMirror(user) {
+    if (!user) return;
+    try { localStorage.setItem(histKey(user), JSON.stringify(prunePositions(user.positions || []))); } catch (eW) { /* ignore */ }
+  }
+
   function hydrate(user) {
     if (!user) return null;
     if (!user.displayName) user.displayName = (user.email || 'Trader').split('@')[0];
@@ -97,6 +134,7 @@
     }
     if (!Array.isArray(user.openTrades)) user.openTrades = [];
     if (!Array.isArray(user.positions)) user.positions = [];
+    user.positions = mergePositions(user.positions, readHistMirror(user));
     if (!Array.isArray(user.transactions)) user.transactions = [];
     if (!Array.isArray(user.recentResults)) user.recentResults = [];
     if (!user.recvAddrs || typeof user.recvAddrs !== 'object') user.recvAddrs = {};
@@ -225,9 +263,12 @@
       rememberSession(db.session);
     }
     rememberSession(db.session);
+    if (db.session && db.users[db.session.userId]) writeHistMirror(db.users[db.session.userId]);
     if (!skipRemote && !D6.holdRemote && !D6.holdPull && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
       var u = db.users[db.session.userId];
-      D6.Api.post('upsert', { user: publicUsers[u.id], vault: vault[u.id] });
+      var remoteUser = Object.assign({}, publicUsers[u.id]);
+      delete remoteUser.passwordHash;
+      D6.Api.post('upsert', { user: remoteUser, vault: vault[u.id] });
     }
     if (!skipRemote && !D6.holdPull && D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
   }
@@ -238,9 +279,9 @@
       var prev = db.users[user.id];
       // Ne jamais écraser l’historique local par un objet distant sans positions.
       if (prev && Array.isArray(prev.positions) && prev.positions.length) {
-        if (!Array.isArray(user.positions) || !user.positions.length) {
-          user.positions = prev.positions.slice();
-        }
+        user.positions = mergePositions(user.positions, prev.positions);
+      } else {
+        user.positions = mergePositions(user.positions, readHistMirror(user));
       }
       if (prev && Array.isArray(prev.openTrades) && prev.openTrades.length) {
         if (!Array.isArray(user.openTrades) || !user.openTrades.length) {
@@ -426,8 +467,9 @@
 
     addPosition: function (user, pos) {
       user.positions.unshift(pos);
-      if (user.positions.length > 100) user.positions.length = 100;
+      user.positions = prunePositions(user.positions);
       persist();
+      writeHistMirror(user);
       // Miroir Android-only pour historique demo (guest / cache).
       try {
         if (/Android/i.test(navigator.userAgent || '') && pos && (pos.mode || 'demo') === 'demo') {

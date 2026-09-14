@@ -3232,6 +3232,9 @@
     if ($('wdStepGrid')) $('wdStepGrid').classList.toggle('hidden', step !== 'grid');
     if ($('wdStepForm')) $('wdStepForm').classList.toggle('hidden', step !== 'form');
     if ($('btnWdBack')) $('btnWdBack').classList.toggle('hidden', step !== 'form');
+    var wdBox = document.querySelector('#withdrawModal .withdraw-box');
+    if (wdBox) wdBox.classList.toggle('is-wd-form', step === 'form');
+    if ($('closeWithdraw')) $('closeWithdraw').classList.toggle('hidden', step === 'form');
   }
 
   function updateWithdrawMinHint() {

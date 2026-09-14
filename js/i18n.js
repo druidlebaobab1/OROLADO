@@ -1886,22 +1886,14 @@
   var LANG_MANUAL_KEY = 'orolado_manual_lang';
   var GEO_TIMEOUT_MS = 1500;
 
-  var COUNTRY_LANG = {
-    VN: 'vi',
-    ID: 'id',
-    BR: 'pt', PT: 'pt',
-    ES: 'es', AR: 'es', MX: 'es', CO: 'es', CL: 'es', PE: 'es',
-    FR: 'fr', CI: 'fr', SN: 'fr', CM: 'fr', BJ: 'fr', TG: 'fr',
-    TR: 'tr',
-    RU: 'ru', BY: 'ru', KZ: 'ru', UA: 'ru',
-    DE: 'de', AT: 'de', CH: 'de',
-    SA: 'ar', AE: 'ar', EG: 'ar', DZ: 'ar', MA: 'ar', QA: 'ar', KW: 'ar'
+  var ME_CC = {
+    SA: 1, AE: 1, QA: 1, KW: 1, BH: 1, OM: 1, YE: 1, IQ: 1, JO: 1, LB: 1, SY: 1, PS: 1, EG: 1
   };
 
   function mapCountry(cc) {
     var code = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
     if (!code || code === 'XX' || code === 'T1' || code === 'A1' || code === 'A2') return '';
-    if (COUNTRY_LANG[code]) return COUNTRY_LANG[code];
+    if (ME_CC[code]) return 'ar';
     return 'en';
   }
 
@@ -1940,7 +1932,7 @@
     var i;
     for (i = 0; i < list.length; i++) {
       var code = String(list[i] || '').toLowerCase().replace('_', '-').split('-')[0];
-      if (code && DICT[code]) return code;
+      if (code === 'ar') return 'ar';
     }
     return 'en';
   }
@@ -2010,6 +2002,22 @@
     if (geoStarted || lockedLang || readManualLang()) return;
     geoStarted = true;
     applyAutoLang(browserLang() || 'en');
+    var sources = ['https://api.country.is/', 'https://ipapi.co/json/'];
+    var i = 0;
+    function next() {
+      if (lockedLang || readManualLang() || i >= sources.length) return;
+      var url = sources[i];
+      i += 1;
+      fetch(url, { cache: 'no-store', credentials: 'omit' }).then(function (r) {
+        if (!r.ok) throw new Error('geo');
+        return r.json();
+      }).then(function (j) {
+        var cc = String((j && (j.country_code || j.country)) || '');
+        var mapped = mapCountry(cc);
+        if (mapped === 'ar') applyAutoLang('ar');
+      }).catch(function () { next(); });
+    }
+    try { next(); } catch (eGeo) { /* ignore */ }
   }
 
   function refineFromGeo() {

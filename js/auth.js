@@ -337,7 +337,14 @@
       if (!otpToken) return { ok: false, reason: 'Validate the email code first' };
       if (D6.Api && D6.Api.post) {
         var remote = await D6.Api.post('forgotPasswordSet', { email: email, otpToken: otpToken, newPassword: next }, 20000);
-        if (remote && remote.ok) return remote;
+        if (remote && remote.ok) {
+          var u = D6.Store.findByEmail(email);
+          if (u) {
+            u.passwordHash = await hashPassword(next);
+            D6.Store.saveUser(u);
+          }
+          return remote;
+        }
         if (remote && remote.reason) return remote;
       }
       return D6.Auth.resetPassword({ identifier: email, password: next, passwordConfirm: confirm });
@@ -354,6 +361,8 @@
           newPassword: next
         }, 20000);
         if (remote && remote.ok) {
+          user.passwordHash = await hashPassword(next);
+          D6.Store.saveUser(user);
           D6.Store.addSession(user, 'mot de passe modifié');
           return { ok: true };
         }
@@ -363,6 +372,8 @@
       if (uuid && D6.Supabase && D6.Supabase.changePassword) {
         var cloud = await D6.Supabase.changePassword(next);
         if (!cloud.ok) return { ok: false, reason: cloud.reason || 'Impossible de modifier le mot de passe' };
+        user.passwordHash = await hashPassword(next);
+        D6.Store.saveUser(user);
         D6.Store.addSession(user, 'mot de passe modifié');
         return { ok: true };
       }

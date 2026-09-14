@@ -304,7 +304,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #screenTrade.mode-real .balance-card{border:1px solid rgba(16,185,129,.35);box-shadow:none;
   background:var(--surface)}
 #screenTrade.mode-real .balance-card .bal{color:#6EE7B7;text-shadow:none}
-#screenTrade.mode-real .btn-deposit,#screenTrade.mode-real .btn-trade.btn-call{box-shadow:none}
+#screenTrade.mode-real .btn-deposit{box-shadow:none}
 #screenTrade.mode-demo .btn-deposit{background:var(--gold);box-shadow:none}
 #screenTrade.is-guest .brand-lockup.mini .brand{font-size:.62rem}
 #screenTrade.is-guest .logo-mark.sm{width:18px;height:18px}
@@ -466,8 +466,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   white-space:nowrap;overflow:visible;text-overflow:clip;text-align:center}
 .btn-trade span{display:block;white-space:nowrap;overflow:visible;font-size:12px;font-weight:700;max-width:100%}
 .btn-trade:disabled{opacity:.4;cursor:not-allowed;animation:none;filter:grayscale(.35)}
-.btn-call{background:#10B981;box-shadow:none;animation:none}
-.btn-put{background:#F43F5E;box-shadow:none;animation:none}
+.btn-call{background:#10B981;box-shadow:0 0 12px rgba(16,185,129,.25),inset 0 1px 0 rgba(255,255,255,.18);animation:none}
+.btn-put{background:#F43F5E;box-shadow:0 0 12px rgba(239,68,68,.25),inset 0 1px 0 rgba(255,255,255,.12);animation:none}
 .btn-trade small{font-size:.62rem;font-weight:700;opacity:.9;letter-spacing:.02em}
 @keyframes pulseCall{0%,100%{opacity:1}50%{opacity:1}}
 @keyframes pulsePut{0%,100%{opacity:1}50%{opacity:1}}
@@ -969,8 +969,10 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
     overflow-y:auto;min-height:0;max-height:100%;align-self:stretch;isolation:isolate}
   .pad .btn-hist-cta{position:relative;z-index:20;pointer-events:auto!important;touch-action:manipulation}
   .history-feed{max-height:160px;overflow-y:auto}
-  .win-preview .label{display:block;font-size:.58rem;color:var(--gold);font-weight:800;text-transform:uppercase}
-  .win-preview{text-align:center}
+  .win-preview .label{display:none!important}
+  .win-preview{text-align:right;min-width:0;flex:1 1 auto}
+  .pad .stake-line{width:100%;display:flex;align-items:stretch;gap:10px}
+  .pad .stake-field{flex:1 1 auto;min-width:0}
   .btn-trade{min-height:58px}
   .topbar-row{padding:8px 10px;min-height:36px;flex-wrap:nowrap}
   .topbar-mode{padding:0 10px 6px}
@@ -1608,6 +1610,28 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 }
 
 @media (orientation:landscape) and (min-width:860px){
+  .fs-trade-overlay .trade-wrap,
+  html.fs-trade .fs-trade-overlay .trade-wrap,
+  html.is-fullscreen .fs-trade-overlay .trade-wrap{
+    display:grid!important;grid-template-columns:minmax(0,1fr) 168px;grid-template-rows:auto minmax(0,1fr);
+    flex-direction:unset!important;align-items:stretch!important;gap:0!important}
+  .fs-trade-overlay .asset-bar,
+  html.fs-trade .fs-trade-overlay .asset-bar,
+  html.is-fullscreen .fs-trade-overlay .asset-bar{
+    grid-column:1;grid-row:1;flex:none!important;width:auto!important;max-width:none!important;height:auto!important;
+    flex-direction:row!important;overflow-x:auto!important;overflow-y:hidden!important;
+    border-right:0!important;border-bottom:1px solid rgba(255,255,255,.08)!important;padding:8px 10px!important}
+  .fs-trade-overlay .asset-chip{width:auto;min-width:88px}
+  .fs-trade-overlay .chart-card,
+  .fs-trade-overlay #chart,
+  html.fs-trade .fs-trade-overlay .chart-card,
+  html.is-fullscreen .fs-trade-overlay #chart{
+    grid-column:1;grid-row:2;min-width:0!important;width:auto!important;height:auto!important}
+  .fs-trade-overlay .pad,
+  html.fs-trade .fs-trade-overlay .pad,
+  html.is-fullscreen .fs-trade-overlay .pad{
+    grid-column:2;grid-row:1 / span 2;width:auto!important;max-width:none!important;flex:none!important;
+    height:100%!important}
   html.fs-trade .fs-top-mid-home:empty,html.is-fullscreen .fs-top-mid-home:empty{display:none!important;flex:0}
   html.fs-trade .fs-pad-capsule,html.is-fullscreen .fs-pad-capsule{
     display:flex!important;align-items:center;justify-content:center;
@@ -1796,6 +1820,7 @@ html.is-ios .stake-field input{border-radius:10px}
 .wd-modal-head{position:relative;display:flex;align-items:center;justify-content:center;min-height:40px;margin:0 0 8px}
 .wd-modal-head .modal-title{margin:0;padding:0 40px;width:100%;justify-content:center;text-align:center}
 .wd-modal-head .btn-close{position:absolute;top:50%;right:0;transform:translateY(-50%);z-index:3}
+.wd-modal-head .btn-close.hidden,#withdrawModal .withdraw-box.is-wd-form .btn-close{display:none!important}
 .wd-back-ico{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:3;
   border:0;background:transparent;color:#F8E7B8;font-size:1.4rem;font-weight:700;line-height:1;
   width:40px;height:40px;padding:0;cursor:pointer;touch-action:manipulation;pointer-events:auto}
