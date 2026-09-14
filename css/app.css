@@ -12,7 +12,7 @@
 }
 html,body{height:100%;width:100%;min-height:100%;min-height:100dvh;background:var(--bg);color:var(--text);font-family:var(--font);
   overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
-  pointer-events:auto;user-select:none}
+  pointer-events:auto}
 html{height:100%;height:100dvh}
 body{position:relative;width:100%;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;touch-action:manipulation;background:
   linear-gradient(165deg,#0B0E14 0%,#121722 48%,#0B0E14 100%)}
@@ -249,7 +249,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .chart-live-price{display:flex;align-items:baseline;gap:8px;flex-shrink:0;margin-left:0;pointer-events:none}
 .chart-price-wm{opacity:.9;font-size:.72rem;text-shadow:0 0 10px rgba(0,0,0,.55);color:var(--gold)}
 .chart-live-price .pnl-value{font-size:.68rem;opacity:.85}
-.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:hidden;overscroll-behavior:none;touch-action:none;background:#0B0E14!important}
+.chart-stage{flex:1 1 auto;position:relative;min-height:360px!important;height:100%!important;width:100%!important;flex-shrink:0;overflow:hidden;overscroll-behavior:none;touch-action:auto;pointer-events:none;background:#0B0E14!important}
 #chartCanvas{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   display:block!important;visibility:visible!important;opacity:1!important;z-index:10!important;
@@ -258,7 +258,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   display:block!important;visibility:visible!important;opacity:1!important;z-index:20!important;
   background:transparent!important;background-color:transparent!important;pointer-events:none;border:none!important;outline:none!important}
-.ind-pills{display:flex;flex-wrap:nowrap;gap:3px;pointer-events:auto;z-index:13;align-items:center;min-width:0}
+.chart-toolbar,.ind-pills,.ind-btn,.chart-fs-btn,.install-banner{pointer-events:auto!important;touch-action:manipulation!important}
+.ind-pills{display:flex;flex-wrap:nowrap;gap:3px;z-index:13;align-items:center;min-width:0}
 .ind-btn{border:1px solid rgba(255,215,0,.22);background:rgba(10,15,29,.55);color:rgba(168,180,204,.9);
   font:inherit;font-size:.55rem;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:6px;cursor:pointer;min-height:24px;min-width:28px;line-height:1}
 .ind-btn.on{border-color:rgba(255,215,0,.7);color:#FFE082;background:rgba(255,215,0,.12)}
@@ -1976,6 +1977,9 @@ html.is-ios .stake-field input{border-radius:10px}
 
 /* Kill-switch : overlays inactifs ne doivent jamais bloquer les clics. */
 html,body,#screenTrade,.trade-shell,.topbar,.topbar-row,.topbar-cta,.pad,.asset-bar{
+  pointer-events:auto!important}
+#chartStage{pointer-events:none!important}
+.chart-toolbar,.ind-pills,.ind-btn,.chart-fs-btn,.install-banner,.pad,.topbar{
   pointer-events:auto!important}
 button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge{
   pointer-events:auto!important;touch-action:manipulation!important}

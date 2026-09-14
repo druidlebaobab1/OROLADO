@@ -246,8 +246,15 @@
   }
 
   function showAuthScreen(tab, opts) {
-    if (!(opts && opts.force) && !guardLiveTradeView()) return;
+    opts = opts || {};
     showScreen('screenAuth');
+    var auth = $('screenAuth');
+    if (auth) {
+      auth.classList.remove('hidden');
+      auth.style.setProperty('display', 'flex', 'important');
+      auth.style.setProperty('pointer-events', 'auto', 'important');
+      auth.style.removeProperty('visibility');
+    }
     document.querySelectorAll('.auth-tab').forEach(function (el) {
       el.classList.toggle('on', el.dataset.tab === tab);
     });
@@ -269,7 +276,7 @@
     if (q) q.classList.toggle('hidden', !guest);
     if (trade) trade.classList.toggle('is-guest', guest);
     if ($('btnProfile')) $('btnProfile').classList.toggle('hidden', guest);
-    if ($('btnOpenDeposit')) $('btnOpenDeposit').classList.toggle('hidden', guest);
+    if ($('btnOpenDeposit')) $('btnOpenDeposit').classList.remove('hidden');
   }
 
   function lockBalanceOptimistic(demo, real, ms) {
@@ -388,8 +395,14 @@
       if (!el) return;
       var hide = id !== name;
       el.classList.toggle('hidden', hide);
-      if (hide) el.style.setProperty('display', 'none', 'important');
-      else el.style.removeProperty('display');
+      if (hide) {
+        el.style.setProperty('display', 'none', 'important');
+      } else {
+        el.style.removeProperty('visibility');
+        el.style.removeProperty('pointer-events');
+        el.style.setProperty('display', 'flex', 'important');
+        el.style.setProperty('pointer-events', 'auto', 'important');
+      }
     });
     if (name !== 'screenTrade') closeDrawer();
     metaPageView(name);
@@ -3491,8 +3504,9 @@
     var el = $(id);
     if (!el) return;
     el.classList.add('active');
-    el.style.removeProperty('display');
-    el.style.removeProperty('pointer-events');
+    el.style.removeProperty('visibility');
+    el.style.setProperty('display', 'block', 'important');
+    el.style.setProperty('pointer-events', 'auto', 'important');
   }
   function closeModal(id) {
     var el = $(id);
@@ -3500,6 +3514,7 @@
       el.classList.remove('active');
       el.style.setProperty('display', 'none', 'important');
       el.style.setProperty('pointer-events', 'none', 'important');
+      el.style.setProperty('visibility', 'hidden', 'important');
     }
     if (returnToProfile && PROFILE_SUBVIEWS[id]) {
       if ($('drawerProfile') && !$('drawerProfile').classList.contains('on')) {
@@ -3957,53 +3972,61 @@
   }
 
   function bindGlobalTradeClicks() {
-    if (bindGlobalTradeClicks._on) return;
-    bindGlobalTradeClicks._on = true;
-    document.addEventListener('click', function (e) {
-      try {
-        var n = e.target;
-        if (!n || !n.closest) return;
-        if (n.closest('#btnOpenDeposit')) {
-          e.stopPropagation();
-          openDeposit();
-          return;
-        }
-        var chip = n.closest('.asset-chip');
-        if (chip && chip.dataset && chip.dataset.asset) {
-          e.stopPropagation();
-          var u = user();
-          if (u) selectAsset(chip.dataset.asset);
-          return;
-        }
-        var dur = n.closest('.dur-chip');
-        if (dur && dur.dataset && dur.dataset.dur) {
-          e.stopPropagation();
+    function hook(el, fn) {
+      if (!el || typeof fn !== 'function') return;
+      el.onclick = function () {
+        try { fn(); } catch (err) { try { console.warn(err); } catch (e0) { /* ignore */ } }
+      };
+    }
+    hook($('btnOpenDeposit'), function () { openDeposit(); });
+    hook($('btnCall'), function () { execute('call'); });
+    hook($('btnPut'), function () { execute('put'); });
+    document.querySelectorAll('.asset-chip').forEach(function (chip) {
+      hook(chip, function () {
+        var u = user();
+        if (u) selectAsset(chip.dataset.asset);
+      });
+    });
+    document.querySelectorAll('.dur-chip').forEach(function (chip) {
+      hook(chip, function () {
+        var u2 = user();
+        if (!u2) return;
+        u2.duration = Number(chip.dataset.dur);
+        D6.Store.saveUser(u2);
+        updateDurationUi();
+      });
+    });
+    document.querySelectorAll('.odds-chip').forEach(function (chip) {
+      hook(chip, function () { setOdds(chip.dataset.odds); });
+    });
+    window.oroUi = {
+      deposit: function () { try { openDeposit(); } catch (e) { /* ignore */ } },
+      call: function () { try { execute('call'); } catch (e) { /* ignore */ } },
+      put: function () { try { execute('put'); } catch (e) { /* ignore */ } },
+      asset: function (el) {
+        try {
+          var n = el && el.closest ? el.closest('[data-asset]') : el;
+          var id = n && n.getAttribute && n.getAttribute('data-asset');
+          if (id && user()) selectAsset(id);
+        } catch (e) { /* ignore */ }
+      },
+      dur: function (el) {
+        try {
+          var n = el && el.closest ? el.closest('[data-dur]') : el;
           var u2 = user();
-          if (!u2) return;
-          u2.duration = Number(dur.dataset.dur);
+          if (!u2 || !n) return;
+          u2.duration = Number(n.getAttribute('data-dur'));
           D6.Store.saveUser(u2);
           updateDurationUi();
-          return;
-        }
-        var odds = n.closest('.odds-chip');
-        if (odds && odds.dataset && odds.dataset.odds) {
-          e.stopPropagation();
-          setOdds(odds.dataset.odds);
-          return;
-        }
-        if (n.closest('#btnCall')) {
-          e.stopPropagation();
-          execute('call');
-          return;
-        }
-        if (n.closest('#btnPut')) {
-          e.stopPropagation();
-          execute('put');
-        }
-      } catch (err) {
-        try { console.warn(err); } catch (e0) { /* ignore */ }
+        } catch (e) { /* ignore */ }
+      },
+      odds: function (el) {
+        try {
+          var n = el && el.closest ? el.closest('[data-odds]') : el;
+          if (n) setOdds(n.getAttribute('data-odds'));
+        } catch (e) { /* ignore */ }
       }
-    }, true);
+    };
   }
 
   function bindTrade() {
@@ -5348,6 +5371,7 @@
     }
   };
 
+  try { bindGlobalTradeClicks(); } catch (eWire) { /* ignore */ }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', D6.App.boot);
   } else {
