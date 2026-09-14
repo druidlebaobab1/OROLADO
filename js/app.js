@@ -1333,7 +1333,12 @@
     fillProfile();
     var bd = $('drawerBackdrop');
     var dr = $('drawerProfile');
-    if (bd) bd.classList.add('on');
+    if (bd) {
+      bd.classList.add('on');
+      bd.style.removeProperty('display');
+      bd.style.removeProperty('pointer-events');
+      bd.style.removeProperty('visibility');
+    }
     if (dr) {
       dr.classList.add('on');
       dr.setAttribute('aria-hidden', 'false');
@@ -4702,7 +4707,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         return Promise.all(regs.map(function (r) { return r.unregister(); }));
       }).then(function () {
-        return navigator.serviceWorker.register('sw.js?v=104');
+        return navigator.serviceWorker.register('sw.js?v=105');
       }).catch(function () { /* ignore */ });
     }
   }
@@ -4712,26 +4717,16 @@
       document.addEventListener('gesturestart', function (e) {
         try { e.preventDefault(); } catch (e0) { /* ignore */ }
       });
-      document.addEventListener('dblclick', function (e) {
-        try { e.preventDefault(); } catch (e1) { /* ignore */ }
-      });
-      document.addEventListener('wheel', function (e) {
-        try {
-          var n = e.target;
-          if (n && n.closest && n.closest('#screenTrade') && !n.closest('.drawer, .modal-backdrop, .asset-bar, input, textarea, select')) {
-            e.preventDefault();
-          }
-        } catch (eW) { /* ignore */ }
-      }, { passive: false });
       document.addEventListener('touchmove', function (e) {
         try {
           if (e.touches && e.touches.length > 1) {
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
             return;
           }
           var node = e.target;
-          if (node && node.closest && node.closest('.drawer, .modal-backdrop, #screenAuth, #screenAdmin, .oxa-dd, .asset-bar, .oxa-dd-list, textarea, input, select, .sheet-feed, .admin-body')) return;
-          e.preventDefault();
+          if (node && node.closest && node.closest('.chart-stage, #chartCanvas, #chartOverlay')) {
+            if (e.cancelable) e.preventDefault();
+          }
         } catch (e2) { /* ignore */ }
       }, { passive: false });
     } catch (err) {
@@ -4971,6 +4966,9 @@
       slot.appendChild(wrap);
       overlay.classList.add('on');
       overlay.removeAttribute('hidden');
+      overlay.style.removeProperty('display');
+      overlay.style.removeProperty('pointer-events');
+      overlay.style.removeProperty('visibility');
       overlay.setAttribute('aria-hidden', 'false');
       document.documentElement.classList.add('fs-trade');
       document.documentElement.classList.add('is-fullscreen');
@@ -5125,6 +5123,7 @@
     boot: function () {
       try {
         try { unlockPointerLayers(); } catch (eUnlock) { /* ignore */ }
+        try { if (window.oroPurgeDeadOverlays) window.oroPurgeDeadOverlays(); } catch (ePurge) { /* ignore */ }
         try { captureUtmSource(); } catch (e0) { try { console.warn(e0); } catch (e) { /* ignore */ } }
         try { lockGestures(); } catch (e1) { try { console.warn('Mobile display fallback:', e1); } catch (e) { /* ignore */ } }
         try { fillLangBars(); } catch (e2) { /* ignore */ }

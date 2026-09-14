@@ -1361,12 +1361,15 @@
         canvas.style.visibility = 'visible';
         canvas.style.opacity = '1';
         canvas.style.zIndex = '10';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.touchAction = 'none';
         canvas.style.backgroundColor = '#0B0E14';
         canvas.style.background = '#0B0E14';
         if (overlay) {
           overlay.style.background = 'transparent';
           overlay.style.backgroundColor = 'transparent';
           overlay.style.zIndex = '20';
+          overlay.style.pointerEvents = 'none';
         }
         if (canvas.parentElement) {
           canvas.parentElement.style.backgroundColor = '#0B0E14';

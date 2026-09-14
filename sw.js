@@ -1,4 +1,4 @@
-﻿const CACHE = 'orolado-v104';
+﻿const CACHE = 'orolado-v105';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -32,23 +32,8 @@ self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
   var url = req.url || '';
-  // HTML / CSS / JS : toujours réseau d'abord (évite cache Android cassé).
-  var isShell = /\.(?:html|css|js)(?:\?|$)/i.test(url) || /\/$/.test(url.split('?')[0]);
-  if (isShell) {
-    event.respondWith(
-      fetch(req).then(function (res) {
-        return res;
-      }).catch(function () {
-        if (/\.(?:css|js)(?:\?|$)/i.test(url)) {
-          return new Response('', { status: 504, statusText: 'offline' });
-        }
-        return caches.match(req).then(function (hit) {
-          return hit || caches.match('./index.html');
-        });
-      })
-    );
-    return;
-  }
+  // Ne jamais intercepter HTML / CSS / JS : un fallback HTML-as-CSS gèle tous les clics.
+  if (req.mode === 'navigate' || /\.(?:html|css|js)(?:\?|$)/i.test(url)) return;
   event.respondWith(
     fetch(req).then(function (res) {
       if (!res || res.status !== 200 || url.indexOf('http') !== 0) return res;

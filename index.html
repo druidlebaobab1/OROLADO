@@ -47,15 +47,20 @@
   })();
   </script>
   <style id="oro-click-guard">
-    html,body,#screenTrade,.topbar,.pad,button{pointer-events:auto!important}
+    html,body,#screenTrade,.trade-shell,.topbar,.pad,main{pointer-events:auto!important;touch-action:manipulation}
+    button,.asset-chip,.dur-chip,.odds-chip,.qbtn,.btn-trade,.btn-deposit,.mode-btn,.icon-btn,.help-badge{
+      pointer-events:auto!important;touch-action:manipulation!important}
+    #chartCanvas,.chart-overlay,#chartOverlay{pointer-events:none!important}
     .hidden{display:none!important}
     .modal-backdrop:not(.active),
     .drawer-backdrop:not(.on),
-    .fs-trade-overlay:not(.on){display:none!important;pointer-events:none!important;visibility:hidden!important}
-    #toast,.toast,#sparkle,#particlesCanvas,#chartOverlay,.chart-overlay{pointer-events:none!important}
+    .fs-trade-overlay:not(.on),
+    #toast:not(.show){
+      display:none!important;pointer-events:none!important;visibility:hidden!important;z-index:-1!important}
+    #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=155">
+  <link rel="stylesheet" href="css/app.css?v=156">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -969,8 +974,47 @@
   <script src="js/supabase.js?v=109"></script>
   <script src="js/auth.js?v=113"></script>
   <script src="js/engine.js?v=114"></script>
-  <script src="js/chart.js?v=123"></script>
+  <script src="js/chart.js?v=124"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <script src="js/app.js?v=155"></script>
+  <script>
+  (function () {
+    function inert(el) {
+      if (!el) return;
+      el.style.setProperty('display', 'none', 'important');
+      el.style.setProperty('pointer-events', 'none', 'important');
+      el.style.setProperty('visibility', 'hidden', 'important');
+    }
+    function live(el) {
+      if (!el) return;
+      el.style.removeProperty('display');
+      el.style.removeProperty('pointer-events');
+      el.style.removeProperty('visibility');
+    }
+    function purgeDeadOverlays() {
+      try {
+        document.querySelectorAll('.modal-backdrop').forEach(function (el) {
+          if (el.classList.contains('active')) live(el); else inert(el);
+        });
+        document.querySelectorAll('.drawer-backdrop').forEach(function (el) {
+          if (el.classList.contains('on')) live(el); else inert(el);
+        });
+        var fs = document.getElementById('fsTradeOverlay');
+        if (fs && !fs.classList.contains('on')) inert(fs);
+        ['toast', 'sparkle', 'particlesCanvas', 'chartOverlay'].forEach(function (id) {
+          var n = document.getElementById(id);
+          if (n) n.style.setProperty('pointer-events', 'none', 'important');
+        });
+        document.documentElement.style.pointerEvents = 'auto';
+        if (document.body) document.body.style.pointerEvents = 'auto';
+        var trade = document.getElementById('screenTrade');
+        if (trade) trade.style.pointerEvents = 'auto';
+      } catch (e) { /* ignore */ }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', purgeDeadOverlays);
+    else purgeDeadOverlays();
+    window.oroPurgeDeadOverlays = purgeDeadOverlays;
+  })();
+  </script>
+  <script src="js/app.js?v=156"></script>
 </body>
 </html>

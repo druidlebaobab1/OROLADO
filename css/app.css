@@ -12,11 +12,11 @@
 }
 html,body{height:100%;width:100%;min-height:100%;min-height:100dvh;background:var(--bg);color:var(--text);font-family:var(--font);
   overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
-  pointer-events:auto}
-html{position:fixed;inset:0;height:100%;height:100dvh}
-body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;touch-action:manipulation;background:
+  pointer-events:auto;user-select:none}
+html{height:100%;height:100dvh}
+body{position:relative;width:100%;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;touch-action:manipulation;background:
   linear-gradient(165deg,#0B0E14 0%,#121722 48%,#0B0E14 100%)}
-body,button,a,input,select{touch-action:manipulation}
+body,button,a,input,select,.asset-chip,.dur-chip,.odds-chip,.btn-trade,.btn-deposit,.qbtn,.mode-btn{touch-action:manipulation}
 button:active:not(.drawer-item):not(.btn-close):not(.icon-btn),.qbtn:active,.dur-chip:active,.asset-chip:active,.btn-gold:active,.btn-deposit:active,.btn-trade:active{transform:scale(.98)}
 .topbar-row .btn-deposit:active{transform:none}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:
@@ -191,7 +191,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-bar::-webkit-scrollbar{display:none;height:0}
 .markets-scroll{scroll-snap-type:x mandatory}
 .markets-scroll .asset-chip{scroll-snap-align:start}
-.asset-chip{min-width:92px;flex:0 0 auto;touch-action:pan-x}
+.asset-chip{min-width:92px;flex:0 0 auto;touch-action:manipulation}
 .asset-ico{display:inline-block;margin-right:4px;font-size:.85em;line-height:1;vertical-align:0}
 .asset-chip[data-asset="v100"]{border-color:rgba(16,185,129,.38)}
 .asset-chip[data-asset="v100"] .asset-ico,.asset-chip[data-asset="v100"].on{color:#10B981}
@@ -501,11 +501,12 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .trade-row.cooldown,.btn-trade.cooldown{pointer-events:none}
 .btn-close{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
 
-/* Android : éviter html/body position:fixed qui peuvent collapser le layout */
+/* Android : overflow hidden sans calque inset qui mange les taps */
 html.is-android,html.is-android body{
-  position:fixed!important;inset:0!important;width:100%!important;
+  position:relative!important;inset:auto!important;width:100%!important;
   height:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
-  overflow:hidden!important;overscroll-behavior:none!important;background:#0B0E14!important}
+  overflow:hidden!important;overscroll-behavior:none!important;background:#0B0E14!important;
+  pointer-events:auto!important;touch-action:manipulation!important}
 html.is-android .screen,
 html.is-android #screenTrade{
   height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;overscroll-behavior:none!important}
@@ -1977,7 +1978,7 @@ html.is-ios .stake-field input{border-radius:10px}
 html,body,#screenTrade,.trade-shell,.topbar,.topbar-row,.topbar-cta,.pad,.asset-bar{
   pointer-events:auto!important}
 button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge{
-  pointer-events:auto!important}
+  pointer-events:auto!important;touch-action:manipulation!important}
 .modal-backdrop:not(.active),
 .drawer-backdrop:not(.on),
 .fs-trade-overlay:not(.on),
@@ -1987,6 +1988,6 @@ button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,
 .modal-backdrop:not(.active),
 .drawer-backdrop:not(.on),
 .fs-trade-overlay:not(.on){
-  display:none!important}
+  display:none!important;visibility:hidden!important;z-index:-1!important}
 html.oro-profile-open .modal-backdrop:not(.active){
   pointer-events:none!important;display:none!important}
