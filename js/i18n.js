@@ -1972,29 +1972,56 @@
   syncHtmlDir();
 
   function t(key) {
-    var packLang = DICT[lang] || DICT.en || {};
-    if (Object.prototype.hasOwnProperty.call(packLang, key)) return packLang[key];
-    if (DICT.en && Object.prototype.hasOwnProperty.call(DICT.en, key)) return DICT.en[key];
-    return key;
+    try {
+      var packLang = DICT[lang] || DICT.en || {};
+      if (Object.prototype.hasOwnProperty.call(packLang, key) && packLang[key] != null && packLang[key] !== '') {
+        return packLang[key];
+      }
+      if (DICT.en && Object.prototype.hasOwnProperty.call(DICT.en, key) && DICT.en[key] != null && DICT.en[key] !== '') {
+        return DICT.en[key];
+      }
+      return key;
+    } catch (eT) {
+      return key;
+    }
+  }
+
+  function depositLabel() {
+    try {
+      var v = t('deposit');
+      if (!v || v === 'deposit') v = t('recharge');
+      if (!v || v === 'recharge') v = '';
+      return v || 'Deposit';
+    } catch (eDep) {
+      return 'Deposit';
+    }
   }
 
   function apply() {
-    syncHtmlDir();
+    try { syncHtmlDir(); } catch (eDir) { /* ignore */ }
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
-      el.textContent = t(el.getAttribute('data-i18n'));
+      try {
+        var key = el.getAttribute('data-i18n');
+        var val = (key === 'recharge' || key === 'deposit') ? depositLabel() : t(key);
+        el.textContent = val;
+      } catch (eEl) { /* ignore */ }
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
-      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+      try { el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))); } catch (ePh) { /* ignore */ }
     });
     document.querySelectorAll('[data-i18n-aria]').forEach(function (el) {
-      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+      try { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); } catch (eAr) { /* ignore */ }
     });
     document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
-      el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+      try { el.setAttribute('title', t(el.getAttribute('data-i18n-title'))); } catch (eTi) { /* ignore */ }
     });
     document.querySelectorAll('.lang-btn').forEach(function (btn) {
-      btn.classList.toggle('on', btn.dataset.lang === lang);
+      try { btn.classList.toggle('on', btn.dataset.lang === lang); } catch (eLg) { /* ignore */ }
     });
+    try {
+      var dep = document.getElementById('btnDepositLabel');
+      if (dep) dep.textContent = depositLabel();
+    } catch (eLbl) { /* ignore */ }
     try {
       document.dispatchEvent(new CustomEvent('orolado-i18n'));
     } catch (e3) { /* ignore */ }
@@ -2039,6 +2066,7 @@
 
   D6.I18N = {
     t: t,
+    depositLabel: depositLabel,
     apply: apply,
     refineFromGeo: refineFromGeo,
     get lang() { return lang; },

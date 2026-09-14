@@ -2,6 +2,66 @@
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
+
+  function unlockPointerLayers() {
+    try {
+      var dr = $('drawerProfile');
+      var bd = $('drawerBackdrop');
+      var drawerOn = !!(dr && dr.classList.contains('on')) || !!(bd && bd.classList.contains('on'));
+      if (!drawerOn) {
+        document.documentElement.classList.remove('oro-profile-open');
+        if (bd) {
+          bd.classList.remove('on');
+          bd.style.setProperty('display', 'none', 'important');
+          bd.style.setProperty('pointer-events', 'none', 'important');
+        }
+      }
+      document.querySelectorAll('.modal-backdrop').forEach(function (el) {
+        if (!el.classList.contains('active')) {
+          el.style.setProperty('pointer-events', 'none', 'important');
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+      document.querySelectorAll('.hidden').forEach(function (el) {
+        el.style.setProperty('display', 'none', 'important');
+      });
+      var toast = $('toast');
+      if (toast) toast.style.setProperty('pointer-events', 'none', 'important');
+      var spark = $('sparkle');
+      if (spark) spark.style.setProperty('pointer-events', 'none', 'important');
+      var parts = $('particlesCanvas');
+      if (parts) parts.style.setProperty('pointer-events', 'none', 'important');
+      var fs = $('fsTradeOverlay');
+      if (fs && !fs.classList.contains('on')) {
+        fs.style.setProperty('pointer-events', 'none', 'important');
+        fs.style.setProperty('display', 'none', 'important');
+        fs.setAttribute('hidden', '');
+      }
+      document.body.style.pointerEvents = 'auto';
+      var st = $('screenTrade');
+      if (st) st.style.pointerEvents = 'auto';
+    } catch (eUnlock) { /* ignore */ }
+  }
+
+  function paintDepositLabel() {
+    try {
+      var el = $('btnDepositLabel');
+      if (!el) return;
+      var label = 'Deposit';
+      try {
+        if (D6.I18N && typeof D6.I18N.depositLabel === 'function') {
+          label = D6.I18N.depositLabel() || 'Deposit';
+        } else if (D6.I18N && typeof D6.I18N.t === 'function') {
+          label = D6.I18N.t('deposit') || D6.I18N.t('recharge') || 'Deposit';
+          if (label === 'deposit' || label === 'recharge') label = 'Deposit';
+        }
+      } catch (eLbl) {
+        label = 'Deposit';
+      }
+      el.textContent = label;
+    } catch (ePaint) { /* ignore */ }
+  }
+
   var stake = 100;
   var toastTimer = null;
   var outcomeToastTimer = null;
@@ -325,7 +385,11 @@
   function showScreen(name) {
     ['screenAuth', 'screenTrade', 'screenAdmin'].forEach(function (id) {
       var el = $(id);
-      if (el) el.classList.toggle('hidden', id !== name);
+      if (!el) return;
+      var hide = id !== name;
+      el.classList.toggle('hidden', hide);
+      if (hide) el.style.setProperty('display', 'none', 'important');
+      else el.style.removeProperty('display');
     });
     if (name !== 'screenTrade') closeDrawer();
     metaPageView(name);
@@ -570,7 +634,9 @@
     function render(boxId) {
       var box = $(boxId);
       if (!box) return;
-      var cur = LANGS.filter(function (l) { return l.code === D6.I18N.lang; })[0] || LANGS[0];
+      var curCode = 'en';
+      try { curCode = (D6.I18N && D6.I18N.lang) || 'en'; } catch (eLangCur) { curCode = 'en'; }
+      var cur = LANGS.filter(function (l) { return l.code === curCode; })[0] || LANGS[0];
       box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span></button>' +
         '<div class="lang-dd-menu hidden" role="listbox" data-owner="' + boxId + '">' + LANGS.map(function (l) {
           return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '" role="option">' +
@@ -619,13 +685,14 @@
 
   document.addEventListener('orolado-i18n', function () {
     try { fillLangBars(); } catch (eLang) { /* ignore */ }
+    try { paintDepositLabel(); } catch (eDep) { /* ignore */ }
     var u = user();
     if (u) {
-      setModeUi(u);
+      try { setModeUi(u); } catch (eMode) { /* ignore */ }
       try { updatePayoutUi(); } catch (e0) { /* ignore */ }
       try { fillProfile(); } catch (eProf) { /* ignore */ }
     }
-    applyAndroidTradeHint();
+    try { applyAndroidTradeHint(); } catch (eHint) { /* ignore */ }
     try { refreshCryptoI18n(); } catch (eCrypto) { /* ignore */ }
     try { updateWithdrawMinHint(); } catch (eWd) { /* ignore */ }
   });
@@ -3415,9 +3482,20 @@
     openModal(id);
   }
 
-  function openModal(id) { if ($(id)) $(id).classList.add('active'); }
+  function openModal(id) {
+    var el = $(id);
+    if (!el) return;
+    el.classList.add('active');
+    el.style.removeProperty('display');
+    el.style.removeProperty('pointer-events');
+  }
   function closeModal(id) {
-    if ($(id)) $(id).classList.remove('active');
+    var el = $(id);
+    if (el) {
+      el.classList.remove('active');
+      el.style.setProperty('display', 'none', 'important');
+      el.style.setProperty('pointer-events', 'none', 'important');
+    }
     if (returnToProfile && PROFILE_SUBVIEWS[id]) {
       if ($('drawerProfile') && !$('drawerProfile').classList.contains('on')) {
         setTimeout(function () { openDrawer(); }, 80);
@@ -3874,10 +3952,16 @@
   }
 
   function bindTrade() {
-    $('modeDemo').addEventListener('click', function () { switchMode('demo'); });
-    $('modeReal').addEventListener('click', function () { switchMode('real'); });
-    if ($('fsBtnDemo')) $('fsBtnDemo').addEventListener('click', function () { switchMode('demo'); });
-    if ($('fsBtnReal')) $('fsBtnReal').addEventListener('click', function () { switchMode('real'); });
+    function onClick(el, fn) {
+      if (!el || typeof fn !== 'function') return;
+      el.addEventListener('click', function (e) {
+        try { fn(e); } catch (err) { try { console.warn(err); } catch (e0) { /* ignore */ } }
+      });
+    }
+    onClick($('modeDemo'), function () { switchMode('demo'); });
+    onClick($('modeReal'), function () { switchMode('real'); });
+    onClick($('fsBtnDemo'), function () { switchMode('demo'); });
+    onClick($('fsBtnReal'), function () { switchMode('real'); });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       chip.addEventListener('click', function (e) {
         e.preventDefault();
@@ -3908,7 +3992,7 @@
             stake = Math.min(preset, cap0 > 0 ? cap0 : preset);
             var min0 = D6.CONFIG.MIN_STAKE || 1;
             if (stake < min0) stake = min0;
-            $('inputStake').value = stake;
+            if ($('inputStake')) $('inputStake').value = stake;
             btn.classList.add('hit');
             setTimeout(function () { btn.classList.remove('hit'); }, 160);
             updatePayoutUi();
@@ -3920,7 +4004,8 @@
         var u = user();
         var cap = D6.Store.balanceOf(u);
         var min = D6.CONFIG.MIN_STAKE || 1;
-        stake = Math.max(0, D6.roundMoney(Number($('inputStake').value) || stake || 0));
+        var stakeEl = $('inputStake');
+        stake = Math.max(0, D6.roundMoney(Number(stakeEl ? stakeEl.value : stake) || stake || 0));
         if (a === 'back') {
           var digits = String(Math.floor(stake || 0));
           digits = digits.length <= 1 ? '0' : digits.slice(0, -1);
@@ -3936,39 +4021,40 @@
           if (cap > 0 && stake > cap) stake = cap;
           if (stake < min) stake = min;
         }
-        $('inputStake').value = stake;
+        if (stakeEl) stakeEl.value = stake;
         btn.classList.add('hit');
         setTimeout(function () { btn.classList.remove('hit'); }, 160);
         updatePayoutUi();
       });
     });
-    $('inputStake').addEventListener('input', function () {
-      stake = Math.max(0, D6.roundMoney(Number(this.value) || 0));
-      updatePayoutUi();
-    });
+    if ($('inputStake')) {
+      $('inputStake').addEventListener('input', function () {
+        stake = Math.max(0, D6.roundMoney(Number(this.value) || 0));
+        updatePayoutUi();
+      });
+    }
     function tap(el, fn) {
       if (!el) return;
-      el.addEventListener('pointerdown', function (e) {
-        if (e.cancelable) e.preventDefault();
-      }, { passive: false });
-      el.addEventListener('pointerup', function (e) {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        if (e.cancelable) e.preventDefault();
-        fn();
+      var last = 0;
+      el.addEventListener('click', function () {
+        var now = Date.now();
+        if (now - last < 280) return;
+        last = now;
+        try { fn(); } catch (eTap) { try { console.warn(eTap); } catch (e1) { /* ignore */ } }
       });
     }
     tap($('btnCall'), function () { execute('call'); });
     tap($('btnPut'), function () { execute('put'); });
-    $('btnOpenDeposit').addEventListener('click', function () { openDeposit(); });
-    $('balanceCard').addEventListener('click', function () { /* solde only */ });
-    $('btnProfile').addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
+    try { paintDepositLabel(); } catch (eDepBtn) { /* ignore */ }
+    onClick($('btnOpenDeposit'), function () { openDeposit(); });
+    onClick($('balanceCard'), function () { /* solde only */ });
+    onClick($('btnProfile'), function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       returnToProfile = false;
       openDrawer();
     });
-    $('btnCloseDrawer').addEventListener('click', closeDrawer);
-    $('drawerBackdrop').addEventListener('click', function () {
+    onClick($('btnCloseDrawer'), closeDrawer);
+    onClick($('drawerBackdrop'), function () {
       if (profileSubModalOpen()) return;
       closeDrawer();
     });
@@ -4616,7 +4702,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         return Promise.all(regs.map(function (r) { return r.unregister(); }));
       }).then(function () {
-        return navigator.serviceWorker.register('sw.js?v=103');
+        return navigator.serviceWorker.register('sw.js?v=104');
       }).catch(function () { /* ignore */ });
     }
   }
@@ -5038,9 +5124,11 @@
     getBalanceLocks: getBalanceLocks,
     boot: function () {
       try {
+        try { unlockPointerLayers(); } catch (eUnlock) { /* ignore */ }
         try { captureUtmSource(); } catch (e0) { try { console.warn(e0); } catch (e) { /* ignore */ } }
         try { lockGestures(); } catch (e1) { try { console.warn('Mobile display fallback:', e1); } catch (e) { /* ignore */ } }
         try { fillLangBars(); } catch (e2) { /* ignore */ }
+        try { paintDepositLabel(); } catch (eDep0) { /* ignore */ }
         try { fillCountrySelects(); } catch (e3) { /* ignore */ }
         try { D6.I18N.apply(); } catch (e4) { /* ignore */ }
         try { if (D6.I18N.refineFromGeo) D6.I18N.refineFromGeo(); } catch (e4b) { /* ignore */ }

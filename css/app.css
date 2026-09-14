@@ -11,7 +11,8 @@
   --btn-h:40px;--btn-h-m:44px;
 }
 html,body{height:100%;width:100%;min-height:100%;min-height:100dvh;background:var(--bg);color:var(--text);font-family:var(--font);
-  overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  pointer-events:auto}
 html{position:fixed;inset:0;height:100%;height:100dvh}
 body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;touch-action:manipulation;background:
   linear-gradient(165deg,#0B0E14 0%,#121722 48%,#0B0E14 100%)}
@@ -51,9 +52,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .lux-msg.info{border-color:rgba(245,166,35,.35);color:#FDE68A}
 .lux-msg-txt{min-width:0;flex:1 1 auto}
 .toast{position:fixed;left:50%;top:18px;bottom:auto;transform:translate(-50%,-12px);
-  z-index:230;opacity:0;pointer-events:none;max-width:min(360px,88vw);text-align:left;
+  z-index:230;opacity:0;pointer-events:none!important;max-width:min(360px,88vw);text-align:left;
   transition:opacity .28s ease,transform .28s ease}
-.toast.show{opacity:1;transform:translate(-50%,0);animation:luxIn .34s ease}
+.toast.show{opacity:1;transform:translate(-50%,0);animation:luxIn .34s ease;pointer-events:none!important}
 @keyframes luxIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
 .btn-gold.busy{opacity:.72;pointer-events:none}
 .chart-outcome{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);z-index:15;
@@ -147,7 +148,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .trade-shell{flex:1;display:flex;flex-direction:column;min-height:0;width:100%;max-width:28rem;margin:0 auto;overflow:visible}
 .topbar{flex-shrink:0;padding:0;padding-top:env(safe-area-inset-top,0px);background:rgba(10,15,29,.86);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);position:relative;z-index:30}
 .topbar-row{display:flex;align-items:center;width:100%;padding:6px 8px;gap:6px;position:relative;min-height:40px}
-.topbar-row .btn-deposit{position:static;left:auto;margin-left:0;margin-right:0;min-width:0;z-index:1;flex:0 0 auto}
+.topbar-row .btn-deposit{position:static;left:auto;margin-left:0;margin-right:0;min-width:max-content;z-index:6;flex:0 0 auto;overflow:visible}
 .auth-quick{display:flex;gap:5px;align-items:center;flex-shrink:0;min-width:0;z-index:2}
 .topbar-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto}
 .brand-lockup.mini{flex-direction:row;gap:4px;flex-shrink:0;min-width:0}
@@ -177,9 +178,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .balance-card .bal{font-weight:700;color:#FBBF24;font-size:1.2rem;letter-spacing:.01em;white-space:nowrap;
   font-variant-numeric:tabular-nums;font-family:var(--font-mono);
   text-shadow:none}
-.btn-deposit{position:relative;overflow:hidden;flex:0 0 auto;flex-shrink:0;border:0;border-radius:var(--radius);padding:0 12px;font:inherit;font-weight:700;font-size:.72rem;
-  background:var(--gold);color:#0B0E14;cursor:pointer;box-shadow:none;min-height:36px;
-  white-space:nowrap;letter-spacing:.02em}
+.btn-deposit{position:relative;overflow:visible;flex:0 0 auto;flex-shrink:0;border:0;border-radius:var(--radius);padding:0 12px;font:inherit;font-weight:700;font-size:.72rem;
+  background:var(--gold);color:#0B0E14;cursor:pointer;box-shadow:none;min-height:36px;min-width:7.2rem;
+  white-space:nowrap;letter-spacing:.02em;pointer-events:auto}
 .btn-deposit::after{display:none}
 .balance-card.flash{animation:balPulse .35s ease}
 @keyframes balPulse{50%{transform:scale(1.03);box-shadow:0 0 18px rgba(255,215,0,.5)}}
@@ -489,9 +490,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .btn-danger{width:100%;border:1px solid var(--red);background:rgba(255,23,68,.12);color:var(--red);border-radius:12px;
   padding:12px;font:inherit;font-weight:900;cursor:pointer;margin-top:8px}
 
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;
-  z-index:210;opacity:0;pointer-events:none;transition:.2s;backdrop-filter:blur(10px)}
-.modal-backdrop.active{display:block;opacity:1;pointer-events:auto}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none!important;
+  z-index:210;opacity:0;pointer-events:none!important;transition:.2s;backdrop-filter:blur(10px)}
+.modal-backdrop.active{display:block!important;opacity:1;pointer-events:auto!important}
 .modal-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.96);
   background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 12px;
   width:min(360px,86vw);max-width:360px;max-height:72dvh;overflow-y:auto;transition:.22s;z-index:211}
@@ -898,8 +899,9 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 }
 html.fs-trade,html.fs-trade body,html.is-fullscreen,html.is-fullscreen body{overflow:hidden!important;overscroll-behavior:none}
 html.oro-profile-open{overflow:hidden}
-html.oro-profile-open #screenTrade{pointer-events:none}
-html.oro-profile-open .drawer,html.oro-profile-open .drawer-backdrop,html.oro-profile-open .modal-backdrop{pointer-events:auto}
+html.oro-profile-open #screenTrade{pointer-events:auto}
+html.oro-profile-open:has(#drawerBackdrop.on) #screenTrade{pointer-events:none}
+html.oro-profile-open .drawer.on,html.oro-profile-open .drawer-backdrop.on,html.oro-profile-open .modal-backdrop.active{pointer-events:auto}
 [dir=rtl] .drawer{right:auto;left:0;border-left:0;border-right:1px solid rgba(245,158,11,.18);transform:translate3d(-100%,0,0)}
 [dir=rtl] .drawer.on{transform:translate3d(0,0,0)}
 .prof-name{font-weight:800;font-size:1.02rem}
@@ -1675,10 +1677,12 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 .crypto-mini-row .coin-svg{width:15px;height:15px;border-radius:50%;overflow:hidden;
   box-shadow:0 0 0 1px rgba(255,255,255,.1)}
 .btn-deposit{display:inline-flex;align-items:center;justify-content:center;gap:5px;
-  background:linear-gradient(180deg,#FBBF24 0%,#F59E0B 55%,#D97706 100%);
+  background:linear-gradient(180deg,#FBBF24 0%,#F59E0B 55%,#D97706 100%)!important;
+  color:#0B0E14!important;
   box-shadow:0 0 15px rgba(245,166,35,.3),inset 0 1px 0 rgba(255,255,255,.28)!important;
   border:1px solid rgba(253,230,138,.45)}
-.btn-deposit .dep-bolt{font-size:.85em;line-height:1}
+.btn-deposit .dep-bolt{font-size:.85em;line-height:1;flex-shrink:0}
+.btn-deposit .dep-label{color:#0B0E14!important;font-weight:800;opacity:1;visibility:visible}
 #screenTrade.mode-demo .btn-deposit,#screenTrade.mode-real .btn-deposit{
   box-shadow:0 0 15px rgba(245,166,35,.3),inset 0 1px 0 rgba(255,255,255,.28)!important}
 .balance-card .bal{font-family:var(--font-mono)!important;font-variant-numeric:tabular-nums;
@@ -1968,3 +1972,21 @@ html.is-ios .stake-field input{border-radius:10px}
   animation:authCoinSlide 14s linear infinite;-webkit-animation:authCoinSlide 14s linear infinite}
 @keyframes authCoinSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .auth-crypto-in-form{display:none;flex-direction:column;align-items:center;gap:8px}
+
+/* Kill-switch : overlays inactifs ne doivent jamais bloquer les clics. */
+html,body,#screenTrade,.trade-shell,.topbar,.topbar-row,.topbar-cta,.pad,.asset-bar{
+  pointer-events:auto!important}
+button,.asset-chip,.dur-chip,.odds-chip,.mode-btn,.btn-trade,.btn-deposit,.qbtn,.icon-btn,.help-badge{
+  pointer-events:auto!important}
+.modal-backdrop:not(.active),
+.drawer-backdrop:not(.on),
+.fs-trade-overlay:not(.on),
+#toast,.toast,#sparkle,#particlesCanvas,
+#chartOverlay,.chart-overlay,#chartCanvas,.auth-ambient{
+  pointer-events:none!important}
+.modal-backdrop:not(.active),
+.drawer-backdrop:not(.on),
+.fs-trade-overlay:not(.on){
+  display:none!important}
+html.oro-profile-open .modal-backdrop:not(.active){
+  pointer-events:none!important;display:none!important}

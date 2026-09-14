@@ -1,7 +1,5 @@
-﻿const CACHE = 'orolado-v103';
+﻿const CACHE = 'orolado-v104';
 const ASSETS = [
-  './',
-  './index.html',
   './manifest.json',
   './icons/icon.svg',
   './pay-blank.html',
@@ -41,6 +39,9 @@ self.addEventListener('fetch', function (event) {
       fetch(req).then(function (res) {
         return res;
       }).catch(function () {
+        if (/\.(?:css|js)(?:\?|$)/i.test(url)) {
+          return new Response('', { status: 504, statusText: 'offline' });
+        }
         return caches.match(req).then(function (hit) {
           return hit || caches.match('./index.html');
         });
