@@ -111,7 +111,7 @@
         chart: 'line',
         lineStyle: 'smooth',
         lineColor: '#00d2ff',
-        lineWidth: 1.55,
+        lineWidth: 2.5,
         lineHalo: 'rgba(0,210,255,0.55)',
         basePrice: 10120.40,
         tickNoise: 0.08,

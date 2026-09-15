@@ -173,7 +173,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .icon-btn{border:1px solid var(--line);background:rgba(21,30,48,.8);color:var(--muted);width:32px;height:32px;min-width:32px;border-radius:10px;
   display:grid;place-items:center;cursor:pointer;flex:0 0 32px}
 
-.balance-row{display:flex;align-items:center;padding:2px 8px 4px}
+.balance-row{display:flex;align-items:center;gap:10px;padding:2px 8px 4px}
 .balance-card{flex:1;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:6px 12px!important;cursor:default;min-width:0}
 .balance-card .bal{font-weight:700;color:#FBBF24;font-size:1.2rem;letter-spacing:.01em;white-space:nowrap;
   font-variant-numeric:tabular-nums;font-family:var(--font-mono);
@@ -2003,3 +2003,17 @@ button:not(.btn-close):not(.crypto-back):not(.wd-back-ico):not(.auth-back):not(.
 .drawer-backdrop:not(.on),
 .fs-trade-overlay:not(.on){
   display:none!important;visibility:hidden!important;z-index:-1!important}
+
+#screenTrade .chart-card,
+#screenTrade #chart{
+  height:380px!important;min-height:380px!important;max-height:380px!important;
+  overflow:hidden!important;flex:0 0 380px!important}
+#screenTrade .chart-stage{
+  overflow:hidden!important;min-height:0!important}
+#screenTrade .balance-card .bal,
+.balance-card .bal{
+  font-size:20px!important;font-weight:700!important;line-height:1.15}
+html.fs-trade .fs-trade-overlay.on #chart,
+html.is-fullscreen .fs-trade-overlay.on #chart,
+html.fs-trade .fs-trade-overlay.on .chart-card{
+  height:auto!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important}

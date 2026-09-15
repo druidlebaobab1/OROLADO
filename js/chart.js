@@ -38,6 +38,7 @@
   var coinImgs = {};
   var BUFFER_N = 60;
   window.assetsState = window.assetsState || {};
+  window.assetBuffers = window.assetBuffers || {};
 
   function ensureAssetState(id) {
     window.assetsState = window.assetsState || {};
@@ -404,17 +405,17 @@
 
   function visibleCandles(market) {
     var n = Math.min(zoomSec(), BUFFER_N);
-    var st = window.assetsState && window.assetsState[activeAsset];
-    var done = (market && market.candles) || [];
-    if (st && st.candles && st.candles.length >= 8 && (!done.length || done.length < 8)) {
-      done = st.candles;
-    }
+    var live = window.assetBuffers && window.assetBuffers[activeAsset];
+    var done = (live && live.candles && live.candles.length)
+      ? live.candles
+      : ((market && market.candles) || []);
     var list = done.slice(Math.max(0, done.length - n));
-    if (market && market.candle) {
-      if (!list.length || list[list.length - 1].t !== market.candle.t) {
-        list = list.concat([market.candle]);
+    var forming = (live && live.forming) || (market && market.candle);
+    if (forming) {
+      if (!list.length || list[list.length - 1].t !== forming.t) {
+        list = list.concat([forming]);
       } else {
-        list[list.length - 1] = market.candle;
+        list[list.length - 1] = forming;
       }
     }
     return list;
@@ -978,7 +979,6 @@
     var entry = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
     if (!isFinite(entry)) return;
     var ey = priceToY(entry, pad, plotH, minP, maxP);
-    if (isFinite(yShift)) ey += yShift;
     if (!isFinite(ey)) return;
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
@@ -988,6 +988,7 @@
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
     var idx = tagIndex || 0;
+    var badgeLift = isFinite(yShift) ? yShift : 0;
     g.save();
     g.setLineDash([7, 5]);
     g.strokeStyle = col;
@@ -1008,9 +1009,9 @@
     var bx = x1 - tw - 4;
     if (bx < x0 + 4) bx = x0 + 4;
     var by;
-    if (nearTop) by = ey + 6 + idx * 22;
-    else if (nearBot) by = ey - th - 6 - idx * 22;
-    else by = ey - th - 4 - idx * 22;
+    if (nearTop) by = ey + 6 + idx * 22 + badgeLift;
+    else if (nearBot) by = ey - th - 6 - idx * 22 - badgeLift;
+    else by = ey - th - 4 - idx * 22 - badgeLift;
     by = Math.max(plotTop + 2, Math.min(plotBot - th - 2, by));
     g.fillStyle = col;
     roundRectOn(g, bx, by, tw, th, 5);
@@ -1027,8 +1028,8 @@
       if (label.charAt(0) !== '-') {
         var timerW = 56;
         var timerH = 20;
-        var ty = nearTop ? (ey + 6 + (idx ? 0 : th + 4)) : (ey - timerH - 6 - idx * 22);
-        if (nearBot) ty = ey - timerH - 6 - idx * 22;
+        var ty = nearTop ? (ey + 6 + (idx ? 0 : th + 4) + badgeLift) : (ey - timerH - 6 - idx * 22 - badgeLift);
+        if (nearBot) ty = ey - timerH - 6 - idx * 22 - badgeLift;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
         // Évite chevauchement avec le tag CALL/PUT à droite.
         var tx = x0 + 4;
@@ -1116,12 +1117,9 @@
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
     var narrow = (window.innerWidth || 0) <= 430;
-    // Plus de panneau RSI/MACD : toute la hauteur va au plot.
-    // Marges pixel ; axe Y collé à droite ≤ 45px.
-    var tradeFloor = (allTrades.length && narrow) ? 32 : (allTrades.length ? 22 : 0);
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
-    var pad = { t: fsOn ? (narrow ? 18 : 22) : (narrow ? 16 : 20), r: 45, b: 28 + tradeFloor, l: 8 };
+    var pad = { t: fsOn ? (narrow ? 18 : 22) : (narrow ? 16 : 20), r: 45, b: 28, l: 8 };
     var w = cssW - pad.l - pad.r;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
@@ -1155,18 +1153,20 @@
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
-        if (isFinite(ep) && ep >= 500 && ep <= 20000) {
+        if (isFinite(ep)) {
           minPrice = Math.min(minPrice, ep);
           maxPrice = Math.max(maxPrice, ep);
         }
       });
     }
-    var floorSpan = 0.3;
-    if (asset.id === 'horizon50') floorSpan = 28;
-    else if (asset.id === 'nexusprime') floorSpan = 52;
-    else if (asset.id === 'stable') floorSpan = 12;
-    var span = Math.max(maxPrice - minPrice, asset.tickNoise * 6, floorSpan);
-    var padY = Math.max(span * 0.15, asset.tickNoise * 3, 0.2);
+    var currentPrice = isFinite(market.price) ? market.price : ((minPrice + maxPrice) / 2);
+    var spanRaw = maxPrice - minPrice;
+    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.002) {
+      minPrice = currentPrice * 0.998;
+      maxPrice = currentPrice * 1.002;
+      spanRaw = maxPrice - minPrice;
+    }
+    var padY = spanRaw * 0.15;
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
@@ -1186,18 +1186,17 @@
       st.lockMin = 0;
       st.lockMax = 0;
       strikeLock = null;
-      if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > 0.2) {
-        viewMin = st.viewMin * 0.78 + yMin * 0.22;
-        viewMax = st.viewMax * 0.78 + yMax * 0.22;
+      if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
+        viewMin = st.viewMin * 0.82 + yMin * 0.18;
+        viewMax = st.viewMax * 0.82 + yMax * 0.18;
       } else {
         viewMin = yMin;
         viewMax = yMax;
       }
     }
-    if (viewMax - viewMin < 0.3) {
-      var midFix = (viewMin + viewMax) / 2;
-      viewMin = midFix - 0.15;
-      viewMax = midFix + 0.15;
+    if (viewMax - viewMin < currentPrice * 0.002) {
+      viewMin = currentPrice * 0.998;
+      viewMax = currentPrice * 1.002;
     }
     st.viewMin = viewMin;
     st.viewMax = viewMax;
@@ -1240,7 +1239,7 @@
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
-      map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 1.55, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
+      map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
     } else {
       map = drawLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }
@@ -1277,9 +1276,9 @@
       var shift = 0;
       var j;
       for (j = 0; j < i; j++) {
-        if (Math.abs((y0 + shift) - tradeYs[j]) < 4) shift += 3;
+        if (Math.abs(y0 - tradeYs[j]) < 10) shift = 22;
       }
-      tradeYs.push(y0 + shift);
+      tradeYs.push(y0);
       drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h, shift);
     });
     paintOverlay();
@@ -1502,7 +1501,12 @@
       }
       activeAsset = id;
       if (steer && steer.assetId !== id) steer = null;
+      var liveBuf = window.assetBuffers && window.assetBuffers[id];
       var st = ensureAssetState(id);
+      if (liveBuf && isFinite(liveBuf.price) && liveBuf.price > 0) {
+        lastDrawnClose = liveBuf.price;
+        st.lastPrice = liveBuf.price;
+      }
       if (st.viewMin && st.viewMax) {
         viewMin = st.viewMin;
         viewMax = st.viewMax;
