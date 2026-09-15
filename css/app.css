@@ -200,24 +200,24 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="v100"]{border-color:rgba(16,185,129,.38)}
 .asset-chip[data-asset="v100"] .asset-ico,.asset-chip[data-asset="v100"].on{color:#10B981}
 .asset-chip[data-asset="v100"].on{border-color:#10B981;box-shadow:0 0 10px rgba(16,185,129,.22);background:rgba(16,185,129,.08)}
-.asset-chip[data-asset="stable"]{border-color:rgba(245,197,24,.38)}
-.asset-chip[data-asset="stable"] .asset-ico,.asset-chip[data-asset="stable"].on{color:#F5C518}
-.asset-chip[data-asset="stable"].on{border-color:#F5C518;box-shadow:0 0 10px rgba(245,197,24,.22);background:rgba(245,197,24,.08)}
+.asset-chip[data-asset="stable"]{border-color:rgba(229,57,53,.42)}
+.asset-chip[data-asset="stable"] .asset-ico,.asset-chip[data-asset="stable"].on{color:#E53935}
+.asset-chip[data-asset="stable"].on{border-color:#E53935;box-shadow:0 0 10px rgba(229,57,53,.25);background:rgba(229,57,53,.08)}
 .asset-chip[data-asset="apex500"]{border-color:rgba(168,85,247,.4)}
 .asset-chip[data-asset="apex500"] .asset-ico,.asset-chip[data-asset="apex500"].on{color:#C084FC}
 .asset-chip[data-asset="apex500"].on{border-color:#A855F7;box-shadow:0 0 10px rgba(168,85,247,.28);background:rgba(168,85,247,.08)}
 .asset-chip[data-asset="horizon50"]{border-color:rgba(56,189,248,.4)}
 .asset-chip[data-asset="horizon50"] .asset-ico,.asset-chip[data-asset="horizon50"].on{color:#38BDF8}
 .asset-chip[data-asset="horizon50"].on{border-color:#38BDF8;box-shadow:0 0 10px rgba(56,189,248,.22);background:rgba(56,189,248,.08)}
-.asset-chip[data-asset="crash300"]{border-color:rgba(255,152,0,.42)}
-.asset-chip[data-asset="crash300"] .asset-ico,.asset-chip[data-asset="crash300"].on{color:#FF9800}
-.asset-chip[data-asset="crash300"].on{border-color:#FF9800;box-shadow:0 0 10px rgba(255,152,0,.28);background:rgba(255,152,0,.08)}
+.asset-chip[data-asset="crash300"]{border-color:rgba(184,115,51,.45)}
+.asset-chip[data-asset="crash300"] .asset-ico,.asset-chip[data-asset="crash300"].on{color:#B87333}
+.asset-chip[data-asset="crash300"].on{border-color:#B87333;box-shadow:0 0 10px rgba(184,115,51,.28);background:rgba(184,115,51,.1)}
 .asset-chip[data-asset="goldtrend"]{border-color:rgba(217,160,58,.45)}
 .asset-chip[data-asset="goldtrend"] .asset-ico,.asset-chip[data-asset="goldtrend"].on{color:#E8C36A}
 .asset-chip[data-asset="goldtrend"].on{border-color:#D9A03A;box-shadow:0 0 10px rgba(217,160,58,.25);background:rgba(217,160,58,.08)}
-.asset-chip[data-asset="boomspike"]{border-color:rgba(255,152,0,.42)}
-.asset-chip[data-asset="boomspike"] .asset-ico,.asset-chip[data-asset="boomspike"].on{color:#FF9800}
-.asset-chip[data-asset="boomspike"].on{border-color:#FF9800;box-shadow:0 0 10px rgba(255,152,0,.28);background:rgba(255,152,0,.08)}
+.asset-chip[data-asset="boomspike"]{border-color:rgba(212,163,115,.45)}
+.asset-chip[data-asset="boomspike"] .asset-ico,.asset-chip[data-asset="boomspike"].on{color:#D4A373}
+.asset-chip[data-asset="boomspike"].on{border-color:#D4A373;box-shadow:0 0 10px rgba(212,163,115,.28);background:rgba(212,163,115,.1)}
 .asset-chip[data-asset="nexusprime"]{border-color:rgba(34,211,238,.42)}
 .asset-chip[data-asset="nexusprime"] .asset-ico,.asset-chip[data-asset="nexusprime"].on{color:#22D3EE}
 .asset-chip[data-asset="nexusprime"].on{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.25);background:rgba(34,211,238,.08)}
@@ -234,12 +234,12 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip .n{font-size:10px;font-weight:700;margin-top:0;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .asset-chip.on{border-color:rgba(245,158,11,.55);box-shadow:none;background:rgba(245,158,11,.08)}
 .asset-chip[data-asset="v100"].on{border-width:1.5px;border-color:#10B981;box-shadow:0 0 12px rgba(16,185,129,.35);background:linear-gradient(180deg,rgba(16,185,129,.28),rgba(6,78,59,.18));color:#10B981}
-.asset-chip[data-asset="stable"].on{border-width:1.5px;border-color:#F5C518;box-shadow:0 0 12px rgba(245,197,24,.35);background:linear-gradient(180deg,rgba(245,197,24,.28),rgba(113,63,18,.18));color:#F5C518}
+.asset-chip[data-asset="stable"].on{border-width:1.5px;border-color:#E53935;box-shadow:0 0 12px rgba(229,57,53,.4);background:linear-gradient(180deg,rgba(229,57,53,.28),rgba(127,29,29,.18));color:#E53935}
 .asset-chip[data-asset="apex500"].on{border-width:1.5px;border-color:#A855F7;box-shadow:0 0 12px rgba(168,85,247,.4);background:linear-gradient(180deg,rgba(168,85,247,.3),rgba(76,29,149,.2));color:#C084FC}
 .asset-chip[data-asset="horizon50"].on{border-width:1.5px;border-color:#38BDF8;box-shadow:0 0 12px rgba(56,189,248,.35);background:linear-gradient(180deg,rgba(56,189,248,.28),rgba(7,89,133,.18));color:#38BDF8}
-.asset-chip[data-asset="crash300"].on{border-width:1.5px;border-color:#FF9800;box-shadow:0 0 12px rgba(255,152,0,.4);background:linear-gradient(180deg,rgba(255,152,0,.3),rgba(154,82,0,.2));color:#FF9800}
+.asset-chip[data-asset="crash300"].on{border-width:1.5px;border-color:#B87333;box-shadow:0 0 12px rgba(184,115,51,.4);background:linear-gradient(180deg,rgba(184,115,51,.32),rgba(93,58,26,.2));color:#B87333}
 .asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#D9A03A;box-shadow:0 0 12px rgba(217,160,58,.38);background:linear-gradient(180deg,rgba(217,160,58,.3),rgba(120,53,15,.2));color:#E8C36A}
-.asset-chip[data-asset="boomspike"].on{border-width:1.5px;border-color:#FF9800;box-shadow:0 0 12px rgba(255,152,0,.4);background:linear-gradient(180deg,rgba(255,152,0,.3),rgba(154,82,0,.2));color:#FF9800}
+.asset-chip[data-asset="boomspike"].on{border-width:1.5px;border-color:#D4A373;box-shadow:0 0 12px rgba(212,163,115,.4);background:linear-gradient(180deg,rgba(212,163,115,.32),rgba(120,80,40,.2));color:#D4A373}
 .asset-chip[data-asset="nexusprime"].on{border-width:1.5px;border-color:#22D3EE;box-shadow:0 0 12px rgba(34,211,238,.4);background:linear-gradient(180deg,rgba(34,211,238,.3),rgba(21,94,117,.2));color:#22D3EE}
 .asset-chip[data-asset="v75"].on{border-width:1.5px;border-color:#E91E63;box-shadow:0 0 12px rgba(233,30,99,.4);background:linear-gradient(180deg,rgba(233,30,99,.3),rgba(136,14,79,.2));color:#E91E63}
 .asset-chip[data-asset="titanpulse"].on{border-width:1.5px;border-color:#FFFFFF;box-shadow:0 0 14px rgba(255,255,255,.45);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04));color:#FFFFFF}

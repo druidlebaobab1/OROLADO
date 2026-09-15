@@ -84,8 +84,8 @@
         ticksPerCandle: 12,
         payoutMin: 1.80,
         payoutMax: 1.88,
-        accent: '#F5C518',
-        accentDim: '245,197,24',
+        accent: '#E53935',
+        accentDim: '229,57,53',
         feed: 'stable'
       },
       apex500: {
@@ -138,8 +138,8 @@
         ticksPerCandle: 8,
         payoutMin: 1.88,
         payoutMax: 1.98,
-        accent: '#FF9800',
-        accentDim: '255,152,0',
+        accent: '#B87333',
+        accentDim: '184,115,51',
         feed: 'crash300'
       },
       goldtrend: {
@@ -173,8 +173,8 @@
         ticksPerCandle: 8,
         payoutMin: 1.88,
         payoutMax: 1.98,
-        accent: '#FF9800',
-        accentDim: '255,152,0',
+        accent: '#D4A373',
+        accentDim: '212,163,115',
         feed: 'boomspike'
       },
       nexusprime: {

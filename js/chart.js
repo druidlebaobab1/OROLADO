@@ -679,7 +679,7 @@
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       if (opts.titanIce) col = up ? '#FFFFFF' : '#B0BEC5';
       if (opts.v75Rose) col = '#E91E63';
-      if (opts.crashOrange && !up) col = '#FF9800';
+      if (opts.crashDrop && !up) col = '#FF3B30';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
       if (body < ref * 0.00012) body = ref * 0.00012;
@@ -711,8 +711,8 @@
       } else if (opts.titanIce && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(255,255,255,0.5)' : 'rgba(176,190,197,0.35)';
         ctx.shadowBlur = 7;
-      } else if (opts.crashOrange && !up && (c._spike || i === candles.length - 1)) {
-        ctx.shadowColor = 'rgba(255,152,0,0.65)';
+      } else if (opts.crashDrop && !up && (c._spike || i === candles.length - 1)) {
+        ctx.shadowColor = 'rgba(255,59,48,0.65)';
         ctx.shadowBlur = 10;
       } else if (opts.v75Rose && i === candles.length - 1) {
         ctx.shadowColor = 'rgba(233,30,99,0.55)';
@@ -780,6 +780,40 @@
     ctx.stroke();
     ctx.restore();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
+  }
+
+  function drawTitanLightning(pad, w, h, candles, minP, maxP) {
+    if (!candles || candles.length < 2) return null;
+    var toX = makeToX(candles.length, pad, w);
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
+    var i;
+    ctx.save();
+    ctx.lineCap = 'butt';
+    ctx.lineWidth = 1;
+    for (i = 0; i < candles.length; i++) {
+      var c = candles[i];
+      ctx.strokeStyle = 'rgba(255,255,255,0.42)';
+      ctx.beginPath();
+      ctx.moveTo(toX(i), toY(c.h));
+      ctx.lineTo(toX(i), toY(c.l));
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(candles[0].c));
+    for (i = 1; i < candles.length; i++) {
+      ctx.lineTo(toX(i), toY(candles[i].c));
+    }
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1.55;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(255,255,255,0.38)';
+    ctx.shadowBlur = 5;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    var last = candles[candles.length - 1];
+    return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
   }
 
   function drawLine(pad, w, h, data, minP, maxP, color) {
@@ -1459,15 +1493,17 @@
     ctx.beginPath();
     ctx.rect(pad.l - 1, pad.t + 1, w + 2, Math.max(2, h - 2));
     ctx.clip();
-    if (asset.chart === 'candle') {
+    if (asset.id === 'titanpulse') {
+      map = drawTitanLightning(pad, seriesW, h, candles, minP, maxP);
+    } else if (asset.chart === 'candle') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: !!asset.candleThin,
         capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime',
         boomNeon: asset.id === 'boomspike',
         nexusCyber: asset.id === 'nexusprime',
-        titanIce: asset.id === 'titanpulse',
+        titanIce: false,
         v75Rose: asset.id === 'v75',
-        crashOrange: asset.id === 'crash300'
+        crashDrop: asset.id === 'crash300'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.id === 'stable') {
@@ -1531,7 +1567,7 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (asset.id === 'crash300' && !primary) {
-      tagCol = market.price >= (market.candle && market.candle.o) ? '#00E676' : '#FF9800';
+      tagCol = market.price >= (market.candle && market.candle.o) ? '#00E676' : '#FF3B30';
     }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (asset.id === 'titanpulse') tagCol = '#FFFFFF';
