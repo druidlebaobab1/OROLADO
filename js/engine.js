@@ -83,7 +83,7 @@
     horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
     boomspike: { mode: 'candles', vol: 0.0028, boomBurst: true, tickMs: 160 },
     crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
-    v75: { mode: 'candles', vol: 0.0060, tickMs: 250, thin: true },
+    v75: { mode: 'candles', vol: 0.0014, v75Wave: true, tickMs: 420 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     goldtrend: { mode: 'line', vol: 0.0068, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.06 },
     titanpulse: { mode: 'candles', vol: 0.0016, titanDrop: true, tickMs: 150 },
@@ -216,6 +216,23 @@
       nextN = capPctMove(price, nextN, 0.0055 * Math.min(1, dtN * 3));
       return clampIndexPrice(nextN, asset);
     }
+    if (sim.v75Wave && !opts.spike) {
+      var dtV = Math.max(dtSec, 0.02);
+      var cycleV = 36000;
+      var cycI = Math.floor(nowMs / cycleV);
+      var upMs = 15000 + Math.floor(uhash01(cycI, 551903) * 5000);
+      var dirV = (nowMs % cycleV) < upMs ? 1 : -1;
+      var inCyc = nowMs % cycleV;
+      var phaseLen = dirV > 0 ? upMs : Math.max(1, cycleV - upMs);
+      var phasePos = dirV > 0 ? inCyc : (inCyc - upMs);
+      var swellV = Math.sin((phasePos / phaseLen) * Math.PI) * price * 0.00032 * dirV;
+      var driftV = price * 0.00048 * dtV * dirV;
+      var nV = (roll - 0.5) * price * 0.00028;
+      var pullV = (base - price) * 0.012;
+      var nextV = price + driftV + swellV + nV + pullV;
+      nextV = capPctMove(price, nextV, 0.0024 * Math.min(1, dtV * 1.8));
+      return clampIndexPrice(nextV, asset);
+    }
     var center = bias;
     var delta = (roll - center) * price * vol;
     if (sim.sine) delta += Math.sin(nowMs / 1000 * Math.PI / 20) * price * 0.00085;
@@ -251,6 +268,13 @@
         var posN = bucket % (runN + 2);
         if (posN < runN) c = o + Math.max(minBody * 2.4, Math.abs(c - o) * 1.25);
         else c = o - Math.max(minBody * 2.6, Math.abs(c - o) * 1.4);
+      } else if (sim.v75Wave) {
+        var cycleF = 36000;
+        var cycF = Math.floor(t / cycleF);
+        var upF = 15000 + Math.floor(uhash01(cycF, 551903) * 5000);
+        var upWave = (t % cycleF) < upF;
+        var bodyV = Math.max(minBody * 2.1, Math.abs(c - o));
+        c = upWave ? o + bodyV : o - bodyV;
       } else if (sim.titanDrop) {
         var tinyT = Math.max(Math.abs(o) * 0.00018, 0.014);
         if (c >= o) c = o + Math.max(tinyT, Math.abs(c - o));
@@ -273,6 +297,7 @@
     if (sim.titanDrop) maxW = spike ? body * 0.04 : body * 0.75;
     if (sim.boomBurst) maxW = spike ? body * 0.12 : body * 0.35;
     if (sim.nexusPulse) maxW = body * 0.95;
+    if (sim.v75Wave) maxW = body * 0.55;
     var hiB = Math.max(o, c);
     var loB = Math.min(o, c);
     if (h > hiB + maxW) h = hiB + maxW;
@@ -370,6 +395,7 @@
       goldVer: sim.goldHot ? 1 : 0,
       boomVer: sim.boomBurst ? 1 : 0,
       nexusVer: sim.nexusPulse ? 1 : 0,
+      v75Ver: sim.v75Wave ? 1 : 0,
       boomPhase: boomWalk ? boomWalk.boomPhase : null,
       boomPhaseUntil: boomWalk ? boomWalk.boomPhaseUntil : 0,
       boomMid: boomWalk ? boomWalk.boomMid : 0,
@@ -385,7 +411,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 3) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1)) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 3) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 1)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
