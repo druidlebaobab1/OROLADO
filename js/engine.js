@@ -299,7 +299,7 @@
     if (sim.titanDrop) maxW = body * 0.7;
     if (sim.boomBurst) maxW = spike ? body * 0.12 : body * 0.35;
     if (sim.nexusPulse) maxW = body * 0.95;
-    if (sim.v75Wave) maxW = body * 0.55;
+    if (sim.v75Wave) maxW = body * 2.4;
     var hiB = Math.max(o, c);
     var loB = Math.min(o, c);
     if (h > hiB + maxW) h = hiB + maxW;

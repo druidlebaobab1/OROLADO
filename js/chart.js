@@ -670,6 +670,7 @@
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
     if (opts.titanIce) cw = Math.max(3.2, (w / candles.length) * 0.72);
+    if (opts.v75Rose) cw = Math.max(3.4, (w / candles.length) * 0.7);
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
@@ -677,7 +678,8 @@
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       if (opts.titanIce) col = up ? '#FFFFFF' : '#B0BEC5';
-      if (opts.v75Rose) col = up ? '#F50057' : '#AD1457';
+      if (opts.v75Rose) col = '#E91E63';
+      if (opts.crashOrange && !up) col = '#FF9800';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
       if (body < ref * 0.00012) body = ref * 0.00012;
@@ -686,19 +688,25 @@
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
       var lWick = c.l;
-      if (!(opts.boomNeon && (c._boom || c._spike)) && !(opts.titanIce && c._spike)) {
+      if (!(opts.boomNeon && (c._boom || c._spike)) && !(opts.titanIce && c._spike) && !opts.v75Rose) {
         if (hWick > hiB + maxW) hWick = hiB + maxW;
         if (lWick < loB - maxW) lWick = loB - maxW;
       }
       var x = toX(i);
       ctx.strokeStyle = col;
-      ctx.lineWidth = opts.titanIce ? 1 : (thin ? 1 : 1.15);
+      ctx.lineWidth = (opts.titanIce || opts.v75Rose) ? 1 : (thin ? 1 : 1.15);
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
       ctx.lineTo(x, toY(lWick));
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
+      if (opts.v75Rose) {
+        var midY = (y1 + y2) / 2;
+        var halfY = Math.max(2, (y2 - y1) * 1.5);
+        y1 = midY - halfY;
+        y2 = midY + halfY;
+      }
       var bh = Math.max(opts.titanIce ? 2 : 3, y2 - y1);
       if (opts.titanIce && y2 - y1 < 2) bh = 2;
       ctx.fillStyle = col;
@@ -709,9 +717,11 @@
       } else if (opts.titanIce && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(255,255,255,0.5)' : 'rgba(176,190,197,0.35)';
         ctx.shadowBlur = 7;
-      } else if (opts.v75Rose && i === candles.length - 1) {
-        ctx.shadowColor = up ? 'rgba(245,0,87,0.5)' : 'rgba(173,20,87,0.4)';
-        ctx.shadowBlur = 8;
+      } else if (opts.crashOrange && !up && (c._spike || i === candles.length - 1)) {
+        ctx.shadowColor = 'rgba(255,152,0,0.65)';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(233,30,99,0.55)';
+        ctx.shadowBlur = 9;
       } else if (opts.nexusCyber && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
         ctx.shadowBlur = 8;
@@ -1193,7 +1203,7 @@
     if (v75Head) {
       ctx.beginPath();
       ctx.arc(map.lastX, map.lastY, 8.5 + pulse * 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,128,171,0.32)';
+      ctx.fillStyle = 'rgba(233,30,99,0.32)';
       ctx.fill();
     } else if (titanHead) {
       ctx.beginPath();
@@ -1213,8 +1223,8 @@
     }
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : 4.2))), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2d55' : (v75Head ? '#FF80AB' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color)));
-    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#FF80AB' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color)));
+    ctx.fillStyle = compact ? '#ff2d55' : (v75Head ? '#E91E63' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color)));
+    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#E91E63' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color)));
     ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 11 : (nexusHead ? 10 : 12)));
     ctx.fill();
     ctx.restore();
@@ -1287,7 +1297,13 @@
     var i;
     if (asset.chart === 'candle') {
       for (i = 0; i < candles.length; i++) {
-        series.push(candles[i].h, candles[i].l);
+        if (asset.id === 'v75') {
+          var midV = (candles[i].o + candles[i].c) / 2;
+          var halfV = Math.abs(candles[i].c - candles[i].o) * 1.5;
+          series.push(midV + halfV, midV - halfV, candles[i].h, candles[i].l);
+        } else {
+          series.push(candles[i].h, candles[i].l);
+        }
       }
     } else {
       for (i = startIdx; i < closes.length; i++) series.push(closes[i]);
@@ -1461,7 +1477,8 @@
         boomNeon: asset.id === 'boomspike',
         nexusCyber: asset.id === 'nexusprime',
         titanIce: asset.id === 'titanpulse',
-        v75Rose: asset.id === 'v75'
+        v75Rose: asset.id === 'v75',
+        crashOrange: asset.id === 'crash300'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.id === 'stable') {
@@ -1524,9 +1541,12 @@
       var liveWin = (primary.side === 'call' && above) || (primary.side === 'put' && !above);
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
+    if (asset.id === 'crash300' && !primary) {
+      tagCol = market.price >= (market.candle && market.candle.o) ? '#00E676' : '#FF9800';
+    }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (asset.id === 'titanpulse') tagCol = '#FFFFFF';
-    if (asset.id === 'v75') tagCol = '#FF80AB';
+    if (asset.id === 'v75') tagCol = '#E91E63';
     if (map) drawBead(map, market.price, tagCol, now, theme);
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);
