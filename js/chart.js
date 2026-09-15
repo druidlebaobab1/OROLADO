@@ -467,6 +467,7 @@
 
   function visibleCandles(market) {
     var n = Math.min(zoomSec(), BUFFER_N);
+    if (activeAsset === 'titanpulse') n = BUFFER_N;
     var live = window.assetBuffers && window.assetBuffers[activeAsset];
     var done = (live && live.candles && live.candles.length)
       ? live.candles
@@ -668,12 +669,14 @@
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
+    if (opts.titanIce) cw = Math.max(2.4, (w / candles.length) * 0.38);
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
+      if (opts.titanIce) col = up ? '#FFFFFF' : '#90A4AE';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
       if (body < ref * 0.00012) body = ref * 0.00012;
@@ -682,25 +685,28 @@
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
       var lWick = c.l;
-      if (!(opts.boomNeon && (c._boom || c._spike))) {
+      if (!(opts.boomNeon && (c._boom || c._spike)) && !(opts.titanIce && c._spike)) {
         if (hWick > hiB + maxW) hWick = hiB + maxW;
         if (lWick < loB - maxW) lWick = loB - maxW;
       }
       var x = toX(i);
       ctx.strokeStyle = col;
-      ctx.lineWidth = thin ? 1 : 1.15;
+      ctx.lineWidth = opts.titanIce ? 1 : (thin ? 1 : 1.15);
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
       ctx.lineTo(x, toY(lWick));
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      var bh = Math.max(3, y2 - y1);
+      var bh = Math.max(opts.titanIce ? 1.15 : 3, y2 - y1);
       ctx.fillStyle = col;
       var boomHit = !!(opts.boomNeon && (c._boom || c._spike) && up);
       if (boomHit) {
         ctx.shadowColor = 'rgba(0,230,118,0.7)';
         ctx.shadowBlur = 11;
+      } else if (opts.titanIce && (c._spike || i === candles.length - 1)) {
+        ctx.shadowColor = up ? 'rgba(255,255,255,0.55)' : 'rgba(144,164,174,0.4)';
+        ctx.shadowBlur = c._spike ? 10 : 6;
       } else if (opts.nexusCyber && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
         ctx.shadowBlur = 8;
@@ -1170,9 +1176,15 @@
     theme = theme || plotTheme(null);
     var compact = activeAsset === 'stable';
     var nexusHead = activeAsset === 'nexusprime';
+    var titanHead = activeAsset === 'titanpulse';
     var pulse = 0.55 + 0.45 * Math.sin(now / 150);
     ctx.save();
-    if (nexusHead) {
+    if (titanHead) {
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 8 + pulse * 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fill();
+    } else if (nexusHead) {
       ctx.beginPath();
       ctx.arc(map.lastX, map.lastY, 7.5, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0,229,255,0.28)';
@@ -1184,10 +1196,10 @@
       ctx.fill();
     }
     ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, compact ? 3 : (nexusHead ? 3.6 : 4.2), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2d55' : (nexusHead ? '#00E5FF' : color);
-    ctx.shadowColor = compact ? 'transparent' : (nexusHead ? '#00E5FF' : color);
-    ctx.shadowBlur = compact ? 0 : (nexusHead ? 10 : 12);
+    ctx.arc(map.lastX, map.lastY, compact ? 3 : (titanHead ? 3.4 : (nexusHead ? 3.6 : 4.2)), 0, Math.PI * 2);
+    ctx.fillStyle = compact ? '#ff2d55' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color));
+    ctx.shadowColor = compact ? 'transparent' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color));
+    ctx.shadowBlur = compact ? 0 : (titanHead ? 11 : (nexusHead ? 10 : 12));
     ctx.fill();
     ctx.restore();
     ctx.fillStyle = theme.id === 'ivoryGold' ? theme.priceTxt : color;
@@ -1270,7 +1282,7 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    if (asset.id !== 'stable' && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime') {
+    if (asset.id !== 'stable' && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime' && asset.id !== 'titanpulse') {
       minPrice = minPrice * 0.998;
       maxPrice = maxPrice * 1.002;
     }
@@ -1303,9 +1315,14 @@
       yMin = minPrice - nxSpan * (0.08 / 0.84);
       yMax = maxPrice + nxSpan * (0.08 / 0.84);
     }
+    if (asset.id === 'titanpulse') {
+      var tiSpan = Math.max(spanRaw, currentPrice * 0.003);
+      yMin = minPrice - tiSpan * (0.10 / 0.80);
+      yMax = maxPrice + tiSpan * (0.10 / 0.80);
+    }
     var st = ensureAssetState(activeAsset);
 
-    if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime') {
+    if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime' && asset.id !== 'titanpulse') {
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
         st.lockMin = yMin;
         st.lockMax = yMax;
@@ -1342,6 +1359,17 @@
           viewMax = st.viewMax * (1 - kn) + yMax * kn;
           if (maxPrice > viewMin + 0.92 * (viewMax - viewMin)) viewMax = yMax;
           if (minPrice < viewMin + 0.08 * (viewMax - viewMin)) viewMin = yMin;
+        } else {
+          viewMin = yMin;
+          viewMax = yMax;
+        }
+      } else if (asset.id === 'titanpulse') {
+        if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
+          var kt = 0.2;
+          viewMin = st.viewMin * (1 - kt) + yMin * kt;
+          viewMax = st.viewMax * (1 - kt) + yMax * kt;
+          if (maxPrice > viewMin + 0.90 * (viewMax - viewMin)) viewMax = yMax;
+          if (minPrice < viewMin + 0.10 * (viewMax - viewMin)) viewMin = yMin;
         } else {
           viewMin = yMin;
           viewMax = yMax;
@@ -1399,7 +1427,8 @@
         thin: !!asset.candleThin,
         capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime',
         boomNeon: asset.id === 'boomspike',
-        nexusCyber: asset.id === 'nexusprime'
+        nexusCyber: asset.id === 'nexusprime',
+        titanIce: asset.id === 'titanpulse'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.id === 'stable') {
@@ -1463,6 +1492,7 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
+    if (asset.id === 'titanpulse') tagCol = '#FFFFFF';
     if (map) drawBead(map, market.price, tagCol, now, theme);
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);

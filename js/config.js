@@ -222,13 +222,13 @@
         plotTheme: 'darkPro',
         candleThin: true,
         basePrice: 9560.40,
-        tickNoise: 1.35,
+        tickNoise: 0.85,
         tickMs: 26,
         ticksPerCandle: 8,
         payoutMin: 1.86,
         payoutMax: 1.96,
-        accent: '#F43F5E',
-        accentDim: '244,63,94',
+        accent: '#FFFFFF',
+        accentDim: '255,255,255',
         feed: 'titanpulse'
       }
     },
