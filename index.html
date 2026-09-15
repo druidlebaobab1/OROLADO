@@ -65,7 +65,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css?v=165">
+    <link rel="stylesheet" href="css/app.css?v=167">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -266,7 +266,7 @@
         </div>
         <div class="topbar-mode">
           <div class="mode-switch" id="modeSwitcher" role="tablist" data-i18n-aria="modeAccount" aria-label="Account mode">
-            <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo" data-i18n="fsDemo">DEMO</button>
+            <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo"><span class="mode-label-short" data-i18n="fsDemo">DEMO</span><span class="mode-label-guest" data-i18n="demo">MODE VIRTUEL / DÉMO</span></button>
             <button type="button" class="mode-btn" id="modeReal" data-mode="real" data-i18n="real">REAL ACCOUNT</button>
           </div>
         </div>
@@ -433,7 +433,7 @@
       <div class="fs-top-mid" id="fsTopMid">
         <div class="fs-top-bal" id="fsTopBalance">0 $</div>
         <div class="fs-mode-switch" role="group" aria-label="Mode">
-          <button type="button" class="fs-mode-btn mode-btn on" id="fsBtnDemo" data-mode="demo" data-i18n="fsDemo">DEMO</button>
+          <button type="button" class="fs-mode-btn mode-btn on" id="fsBtnDemo" data-mode="demo"><span class="mode-label-short" data-i18n="fsDemo">DEMO</span><span class="mode-label-guest" data-i18n="demo">MODE VIRTUEL / DÉMO</span></button>
           <button type="button" class="fs-mid-plus" id="btnFsMidPlus" aria-label="Recharger" title="Recharger"><svg class="plus-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
           <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real" data-i18n="fsReal">REAL</button>
         </div>
@@ -1037,6 +1037,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=163"></script>
+  <script src="js/app.js?v=164"></script>
 </body>
 </html>

@@ -317,7 +317,8 @@
     if (q) q.classList.toggle('hidden', !guest);
     if (trade) trade.classList.toggle('is-guest', guest);
     if ($('btnProfile')) $('btnProfile').classList.toggle('hidden', guest);
-    if ($('btnOpenDeposit')) $('btnOpenDeposit').classList.remove('hidden');
+    if ($('topbarCta')) $('topbarCta').classList.toggle('hidden', guest);
+    if ($('btnOpenDeposit')) $('btnOpenDeposit').classList.toggle('hidden', guest);
   }
 
   function lockBalanceOptimistic(demo, real, ms) {
