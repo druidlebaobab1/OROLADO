@@ -86,7 +86,7 @@
     v75: { mode: 'candles', vol: 0.0060, tickMs: 250, thin: true },
     nexusprime: { mode: 'candles', vol: 0.0028, sine: true },
     goldtrend: { mode: 'line', vol: 0.0022, color: '#ffb300', stair: true },
-    titanpulse: { mode: 'candles', vol: 0.0030, pulse: true }
+    titanpulse: { mode: 'candles', vol: 0.0015, titanDrop: true }
   };
   var SIM_VER = 10;
 
@@ -116,6 +116,7 @@
     var bias = 0.49;
     if (sim.spike === 1) bias = 0.58;
     if (sim.spike === -1) bias = 0.40;
+    if (sim.titanDrop) bias = 0.28;
     if (sim.pulse) {
       var phP = ((nowMs / 1000) % 16) / 16;
       vol *= phP < 0.78 ? 0.42 : 1.9;
@@ -129,7 +130,8 @@
       if (st < 5.5) delta += Math.abs(price) * 0.00045 * Math.max(dtSec, 0.05);
       else delta *= 0.12;
     }
-    var pull = (base - price) * 0.04;
+    var pullK = sim.titanDrop ? 0.012 : 0.04;
+    var pull = (base - price) * pullK;
     var next = price + delta + pull;
     if (!opts.spike) {
       next = capPctMove(price, next, 0.0035 * Math.min(1, Math.max(dtSec, 0.02)));
@@ -150,6 +152,12 @@
         var pos = bucket % (run + 3);
         if (pos < run) c = o + Math.max(minBody, Math.abs(c - o));
         else c = o - Math.max(minBody * 0.7, Math.abs(c - o) * 0.55);
+      } else if (sim.titanDrop) {
+        if (uhash01(bucket, 991177) > 0.90) {
+          c = o - minBody;
+        } else {
+          c = o + Math.max(minBody, Math.abs(c - o));
+        }
       } else if (sim.spike === 1) {
         c = o - Math.max(minBody, Math.abs(c - o) * 0.65);
       } else if (sim.spike === -1) {
@@ -194,7 +202,8 @@
     var prices = [];
     var i;
     var k;
-    var nextSpike = now + 25000 + Math.random() * 10000;
+    var nextSpike = now + 15000 + Math.random() * 10000;
+    if (!sim.titanDrop) nextSpike = now + 25000 + Math.random() * 10000;
     for (i = 0; i < 60; i++) {
       var ts = (t0 + i) * cms;
       var o = price;
@@ -206,7 +215,16 @@
         if (price > h) h = price;
         if (price < l) l = price;
       }
-      if (sim.spike && (t0 + i) % (25 + Math.floor(uhash01(Math.floor((t0 + i) / 30), 11) * 11)) === 0 && i > 8) {
+      if (sim.titanDrop && i > 6) {
+        var perT = 15 + Math.floor(uhash01(Math.floor((t0 + i) / 20), 991188) * 11);
+        if ((t0 + i) % perT === 0) {
+          var amtT = 0.015 + uhash01(t0 + i, 991199) * 0.010;
+          price = clampIndexPrice(o * (1 - amtT), asset);
+          spiked = true;
+          h = Math.max(h, o);
+          l = Math.min(l, price, o);
+        }
+      } else if (sim.spike && (t0 + i) % (25 + Math.floor(uhash01(Math.floor((t0 + i) / 30), 11) * 11)) === 0 && i > 8) {
         var from = o;
         price = clampIndexPrice(from * (1 + sim.spike * 0.02), asset);
         spiked = true;
@@ -226,6 +244,7 @@
       bucket: Math.floor(now / cms),
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
+      titanVer: sim.titanDrop ? 1 : 0,
       ver: SIM_VER
     };
     publishHistory(asset.id, buf);
@@ -235,7 +254,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 1)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
@@ -255,7 +274,15 @@
       var tMs = buf.lastMs + ((s + 1) / steps) * elapsed;
       var dt = Math.max(0.02, (elapsed / steps) / 1000);
       var didSpike = false;
-      if (sim.spike && tMs >= (buf.nextSpike || 0)) {
+      if (sim.titanDrop && tMs >= (buf.nextSpike || 0)) {
+        var fromT = price;
+        var amtLive = 0.015 + Math.random() * 0.010;
+        price = clampIndexPrice(fromT * (1 - amtLive), asset);
+        buf.nextSpike = tMs + 15000 + Math.random() * 10000;
+        forming._spike = true;
+        forming.o = fromT;
+        didSpike = true;
+      } else if (sim.spike && tMs >= (buf.nextSpike || 0)) {
         var fromP = price;
         price = clampIndexPrice(fromP * (1 + sim.spike * 0.02), asset);
         buf.nextSpike = tMs + 25000 + Math.random() * 10000;
