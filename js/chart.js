@@ -408,7 +408,8 @@
     var live = window.assetBuffers && window.assetBuffers[activeAsset];
     var done = (live && live.candles && live.candles.length)
       ? live.candles
-      : ((market && market.candles) || []);
+      : ((window.assetsState && window.assetsState[activeAsset] && window.assetsState[activeAsset].candles) ||
+        ((market && market.candles) || []));
     var list = done.slice(Math.max(0, done.length - n));
     var forming = (live && live.forming) || (market && market.candle);
     if (forming) {
@@ -601,32 +602,32 @@
     var span = Math.max(maxP - minP, 0.01);
     var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var cw = Math.max(thin ? 1.4 : 2.2, (w / candles.length) * (thin ? 0.42 : 0.62));
+    var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
       var up = c.c >= c.o;
       var col = up ? '#00e676' : '#ff3b30';
-      if (opts.capWicks) {
-        var body = Math.abs(c.c - c.o);
-        var ref = Math.max(Math.abs(c.c), 1);
-        if (body < ref * 0.00012) body = ref * 0.00012;
-        var maxW = body * 1.5;
-        var hiB = Math.max(c.o, c.c);
-        var loB = Math.min(c.o, c.c);
-        if (c.h > hiB + maxW) c = { o: c.o, h: hiB + maxW, l: c.l, c: c.c, t: c.t };
-        if (c.l < loB - maxW) c = { o: c.o, h: c.h, l: loB - maxW, c: c.c, t: c.t };
-      }
+      var body = Math.abs(c.c - c.o);
+      var ref = Math.max(Math.abs(c.c), 1);
+      if (body < ref * 0.00012) body = ref * 0.00012;
+      var maxW = body * 1.2;
+      var hiB = Math.max(c.o, c.c);
+      var loB = Math.min(c.o, c.c);
+      var hWick = c.h;
+      var lWick = c.l;
+      if (hWick > hiB + maxW) hWick = hiB + maxW;
+      if (lWick < loB - maxW) lWick = loB - maxW;
       var x = toX(i);
       ctx.strokeStyle = col;
-      ctx.lineWidth = thin ? 0.9 : 1.2;
+      ctx.lineWidth = thin ? 1 : 1.15;
       ctx.beginPath();
-      ctx.moveTo(x, toY(c.h));
-      ctx.lineTo(x, toY(c.l));
+      ctx.moveTo(x, toY(hWick));
+      ctx.lineTo(x, toY(lWick));
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      var bh = Math.max(thin ? 1 : 1.5, y2 - y1);
+      var bh = Math.max(3, y2 - y1);
       ctx.fillStyle = col;
       if (!thin && i === candles.length - 1 && cssH >= 200) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
@@ -695,7 +696,7 @@
     }
     ctx.lineTo(lastX, lastY);
     ctx.strokeStyle = col;
-    ctx.lineWidth = 2.2;
+    ctx.lineWidth = col === '#ffb300' ? 3.2 : 2.2;
     ctx.shadowColor = 'rgba(245,166,35,0.85)';
     ctx.shadowBlur = 14;
     ctx.stroke();
@@ -1153,15 +1154,12 @@
     }
     var minPrice = series.length ? Math.min.apply(null, series) : market.price;
     var maxPrice = series.length ? Math.max.apply(null, series) : market.price;
-    if (isFinite(market.price)) {
+    if (isFinite(market.price) && !allTrades.length) {
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    if (asset.id !== 'v100' && asset.id !== 'stable' && asset.id !== 'apex500') {
-      var damp = dampedRange(candles, asset.id, minPrice, maxPrice);
-      minPrice = damp.min;
-      maxPrice = damp.max;
-    }
+    minPrice = minPrice * 0.998;
+    maxPrice = maxPrice * 1.002;
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
@@ -1178,7 +1176,7 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * ((asset.id === 'apex500' || asset.id === 'v100' || asset.id === 'stable') ? 0.15 : 0.12);
+    var padY = spanRaw * 0.15;
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
@@ -1195,9 +1193,8 @@
       st.lockMin = 0;
       st.lockMax = 0;
       strikeLock = null;
-      var trio = asset.id === 'v100' || asset.id === 'stable' || asset.id === 'apex500';
       if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
-        var k = trio ? 0.06 : 0.18;
+        var k = 0.12;
         viewMin = st.viewMin * (1 - k) + yMin * k;
         viewMax = st.viewMax * (1 - k) + yMax * k;
       } else {
@@ -1205,7 +1202,7 @@
         viewMax = yMax;
       }
     }
-    if (viewMax - viewMin < currentPrice * 0.002) {
+    if (!allTrades.length && viewMax - viewMin < currentPrice * 0.002) {
       viewMin = currentPrice * 0.998;
       viewMax = currentPrice * 1.002;
     }
@@ -1254,6 +1251,8 @@
       map = drawStepLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
       map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
+    } else if (asset.id === 'goldtrend') {
+      map = drawLine(pad, w, h, lineData, minP, maxP, '#ffb300');
     } else {
       map = drawLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }

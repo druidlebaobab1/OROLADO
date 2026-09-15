@@ -73,36 +73,29 @@
   }
 
   window.assetBuffers = window.assetBuffers || {};
+  window.assetsHistory = window.assetsHistory || {};
 
-  function walkCfg(id) {
-    switch (id) {
-      case 'horizon50':
-        return { vol: 0.024, inertia: 0.66, bias: 0, jerk: 0.58, minMove: 0.00115, salt: 550050 };
-      case 'stable':
-        return { vol: 0.00035, inertia: 0.985, bias: 0, jerk: 0.02, minMove: 0.00002, salt: 221713, lockedTrio: true };
-      case 'goldtrend':
-        return { vol: 0.0009, inertia: 0.97, bias: 0.00016, jerk: 0.02, minMove: 0.00004, salt: 660160, goldStair: true };
-      case 'boomspike':
-        return { vol: 0.00045, inertia: 0.92, bias: -0.00022, jerk: 0.03, minMove: 0.00003, salt: 882119, spike: 1, spikeLo: 25000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
-      case 'crash300':
-        return { vol: 0.00045, inertia: 0.92, bias: 0.00022, jerk: 0.03, minMove: 0.00003, salt: 771001, spike: -1, spikeLo: 20000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
-      case 'v100':
-        return { vol: 0.0011, inertia: 0.92, bias: 0, jerk: 0.06, minMove: 0.00005, salt: 904177, lockedTrio: true, v100Wave: true };
-      case 'v75':
-        return { vol: 0.0034, inertia: 0.58, bias: 0, jerk: 0.62, minMove: 0.00012, salt: 551903, v75Scalp: true };
-      case 'nexusprime':
-        return { vol: 0.00035, inertia: 0.96, bias: 0, jerk: 0.04, minMove: 0.00003, salt: 770870, nexusSine: true };
-      case 'apex500':
-        return { vol: 0.0012, inertia: 0.94, bias: 0, jerk: 0.05, minMove: 0.00005, salt: 440501, lockedTrio: true };
-      case 'titanpulse':
-        return { vol: 0.0007, inertia: 0.94, bias: 0, jerk: 0.07, minMove: 0.000045, salt: 991177, pulse: 17 };
-      default:
-        return { vol: 0.004, inertia: 0.85, bias: 0, jerk: 0.2, minMove: 0.00015, salt: 904177 };
-    }
+  var SIM = {
+    v100: { mode: 'candles', vol: 0.0035, thin: false },
+    stable: { mode: 'line', vol: 0.0012, color: '#f5a623' },
+    apex500: { mode: 'candles', vol: 0.0045, run: true },
+    horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
+    boomspike: { mode: 'candles', vol: 0.0020, spike: 1 },
+    crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
+    v75: { mode: 'candles', vol: 0.0060, tickMs: 250, thin: true },
+    nexusprime: { mode: 'candles', vol: 0.0028, sine: true },
+    goldtrend: { mode: 'line', vol: 0.0022, color: '#ffb300', stair: true },
+    titanpulse: { mode: 'candles', vol: 0.0030, pulse: true }
+  };
+  var SIM_VER = 10;
+
+  function simOf(id) {
+    return SIM[id] || SIM.v100;
   }
 
-  function isLockedTrio(id) {
-    return id === 'v100' || id === 'stable' || id === 'apex500';
+  function candleMsFor(asset) {
+    var s = simOf(asset && asset.id);
+    return s.tickMs || CANDLE_MS;
   }
 
   function capPctMove(prev, next, maxPct) {
@@ -114,179 +107,85 @@
     return next;
   }
 
-  function trioTick(asset, price, vel, nowMs, detI, detK, dtSec) {
-    var id = asset.id;
+  function unifiedStep(asset, price, nowMs, dtSec, opts) {
+    opts = opts || {};
+    var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || price;
-    var t = (nowMs || 0) / 1000;
-    var dt = dtSec > 0 ? dtSec : 0.25;
-    var rnd = detI != null
-      ? (uhash01(detI * 17 + (detK || 0), walkCfg(id).salt) - 0.5) * 2
-      : (Math.random() - 0.5) * 2;
-    var next = price;
-    if (id === 'stable') {
-      var targetS = base * (1
-        + Math.sin(t * 0.13) * 0.00165
-        + Math.sin(t * 0.057 + 0.8) * 0.0007
-        + rnd * 0.00008);
-      next = price + (targetS - price) * Math.min(1, dt * 1.8);
-      next = capPctMove(price, next, 0.00055 * (dt / 0.25));
-      vel = next - price;
-    } else if (id === 'v100') {
-      var maxPerSec = 0.0025;
-      var targetV = base * (1
-        + Math.sin(t * 0.09) * 0.006
-        + Math.sin(t * 0.21 + 0.4) * 0.0024
-        + rnd * 0.00035);
-      var maxStep = price * maxPerSec * dt;
-      var dV = targetV - price;
-      if (dV > maxStep) dV = maxStep;
-      if (dV < -maxStep) dV = -maxStep;
-      next = price + dV;
-      vel = dV;
-    } else {
-      var bucket = Math.floor(t);
-      var run = 4 + Math.floor(uhash01(Math.floor(bucket / 8), 440501) * 3);
-      var pos = bucket % (run + 3);
-      var dir = pos < run ? 1 : -1;
-      var stepA = price * (dir > 0 ? 0.00135 : 0.00062) * dir * dt;
-      next = price + stepA + rnd * price * 0.00006;
-      next = capPctMove(price, next, 0.0035 * dt);
-      vel = next - price;
+    var vol = sim.vol;
+    var bias = 0.49;
+    if (sim.spike === 1) bias = 0.58;
+    if (sim.spike === -1) bias = 0.40;
+    if (sim.pulse) {
+      var phP = ((nowMs / 1000) % 16) / 16;
+      vol *= phP < 0.78 ? 0.42 : 1.9;
     }
-    return { price: clampIndexPrice(next, asset), vel: vel };
+    var center = bias;
+    var roll = opts.det != null ? uhash01(opts.det, 904177) : Math.random();
+    var delta = (roll - center) * price * vol;
+    if (sim.sine) delta += Math.sin(nowMs / 1000 * Math.PI / 20) * price * 0.00085;
+    if (sim.stair) {
+      var st = (nowMs / 1000) % 9;
+      if (st < 5.5) delta += Math.abs(price) * 0.00045 * Math.max(dtSec, 0.05);
+      else delta *= 0.12;
+    }
+    var pull = (base - price) * 0.04;
+    var next = price + delta + pull;
+    if (!opts.spike) {
+      next = capPctMove(price, next, 0.0035 * Math.min(1, Math.max(dtSec, 0.02)));
+    }
+    return clampIndexPrice(next, asset);
   }
 
-  function walkTick(price, vel, cfg, asset, nowMs, detI, detK) {
-    if (asset && isLockedTrio(asset.id)) {
-      return trioTick(asset, price, vel, nowMs, detI, detK, 0.25);
-    }
-    var rnd = detI != null
-      ? (uhash01(detI * 17 + (detK || 0), cfg.salt) - 0.5) * 2
-      : (Math.random() - 0.5) * 2;
-    var flip = detI != null
-      ? (uhash01(detI * 31 + (detK || 0), cfg.salt + 9) < cfg.jerk)
-      : (Math.random() < cfg.jerk);
-    var vol = cfg.vol;
-    if (cfg.compress) {
-      var phC = ((nowMs / 1000) % cfg.compress) / cfg.compress;
-      vol *= phC < 0.62 ? 0.26 : 2.55;
-    }
-    if (cfg.pulse) {
-      var phP = ((nowMs / 1000) % cfg.pulse) / cfg.pulse;
-      vol *= phP < 0.84 ? 0.2 : 3.8;
-    }
-    var bias = cfg.bias || 0;
-    if (cfg.cycle) {
-      var cyc = Math.floor((nowMs / 1000) / cfg.cycle);
-      bias = (cyc % 2 === 0 ? 1 : -0.28) * Math.abs(cfg.bias || 0.00018);
-    }
-    if (cfg.nexusSine) {
-      var ampN = (Number(asset.basePrice) || price) * 0.011;
-      var microN = rnd * (Number(asset.basePrice) || price) * 0.00012;
-      price = (Number(asset.basePrice) || price) + Math.sin((nowMs / 1000) * Math.PI / 20) * ampN + microN;
-      return { price: clampIndexPrice(price, asset), vel: 0 };
-    }
-    if (cfg.goldStair) {
-      var phG = (nowMs / 1000) % 10;
-      var climb = phG < 7 ? price * 0.00032 : price * 0.00002;
-      vel = Math.max(0, vel * 0.55) + climb;
-      price += vel;
-      return { price: clampIndexPrice(price, asset), vel: vel };
-    }
-    vel = vel * cfg.inertia + rnd * vol * price * 0.38 + (flip ? -vel * 0.55 : 0) + bias * price;
-    price += vel;
-    var floor = (cfg.minMove || 0) * price;
-    if (Math.abs(price) > 1 && Math.abs(vel) < floor) {
-      vel = (vel >= 0 ? 1 : -1) * Math.max(floor, price * 0.00002);
-      price += vel;
-    }
-    return { price: clampIndexPrice(price, asset), vel: vel };
-  }
-
-  function capWicks15(candle) {
-    if (!candle) return candle;
-    var body = Math.abs(candle.c - candle.o);
-    var ref = Math.max(Math.abs(candle.c), Math.abs(candle.o), 1);
-    if (body < ref * 0.00012) body = ref * 0.00012;
-    var maxW = body * 1.5;
-    var hiBody = Math.max(candle.o, candle.c);
-    var loBody = Math.min(candle.o, candle.c);
-    if (candle.h > hiBody + maxW) candle.h = hiBody + maxW;
-    if (candle.l < loBody - maxW) candle.l = loBody - maxW;
-    candle.h = Math.max(candle.h, hiBody);
-    candle.l = Math.min(candle.l, loBody);
-    return candle;
-  }
-
-  function isSixCurve(id) {
-    return id === 'v100' || id === 'goldtrend' || id === 'boomspike' || id === 'crash300' || id === 'v75' || id === 'nexusprime';
-  }
-
-  function candleMsFor(asset) {
-    return asset && asset.id === 'v75' ? 250 : CANDLE_MS;
-  }
-
-  function decorateWicks(asset, candle, bucket) {
-    var id = asset.id;
-    var o = candle.o;
-    var h = candle.h;
-    var l = candle.l;
-    var c = candle.c;
-    var mid = (o + c) / 2;
-    var body = Math.max(Math.abs(c - o), Math.abs(o) * 0.00022);
-    if (id === 'v100') {
-      var maxBody = Math.abs(o) * 0.0025;
-      if (c > o + maxBody) c = o + maxBody;
-      if (c < o - maxBody) c = o - maxBody;
-      var wickV = Math.max(Math.abs(c - o) * 0.32, Math.abs(o) * 0.00012);
-      h = Math.max(o, c) + wickV;
-      l = Math.min(o, c) - wickV;
-    } else if (id === 'apex500') {
-      var runA = 4 + Math.floor(uhash01(Math.floor(bucket / 8), 440501) * 3);
-      var posA = bucket % (runA + 3);
-      var bodyA = Math.abs(o) * (0.00115 + uhash01(bucket, 440511) * 0.0007);
-      if (posA < runA) {
-        c = o + bodyA;
-      } else {
-        c = o - bodyA * 0.48;
+  function finishCandle(asset, o, h, l, c, t, spike) {
+    var sim = simOf(asset.id);
+    o = clampIndexPrice(o, asset);
+    c = clampIndexPrice(c, asset);
+    var minBody = Math.max(Math.abs(o) * 0.0002, 0.02);
+    var cms = candleMsFor(asset);
+    var bucket = Math.floor(t / cms);
+    if (!spike) {
+      if (sim.run) {
+        var run = 4 + Math.floor(uhash01(Math.floor(bucket / 8), 440501) * 3);
+        var pos = bucket % (run + 3);
+        if (pos < run) c = o + Math.max(minBody, Math.abs(c - o));
+        else c = o - Math.max(minBody * 0.7, Math.abs(c - o) * 0.55);
+      } else if (sim.spike === 1) {
+        c = o - Math.max(minBody, Math.abs(c - o) * 0.65);
+      } else if (sim.spike === -1) {
+        c = o + Math.max(minBody, Math.abs(c - o) * 0.65);
+      } else if (Math.abs(c - o) < minBody) {
+        c = o + (c >= o ? minBody : -minBody);
       }
-      var wickA = Math.abs(c - o) * 0.28;
-      h = Math.max(o, c) + wickA;
-      l = Math.min(o, c) - wickA;
-    } else if (id === 'boomspike' && !candle._spike) {
-      o = mid + body * 0.25;
-      c = mid - body * 0.85;
-    } else if (id === 'crash300' && !candle._spike) {
-      o = mid - body * 0.25;
-      c = mid + body * 0.85;
-    } else if (id === 'v75') {
-      var up75 = uhash01(bucket, 551903) > 0.48;
-      o = up75 ? mid - body * 0.4 : mid + body * 0.4;
-      c = up75 ? mid + body * 0.4 : mid - body * 0.4;
     }
     h = Math.max(h, o, c);
     l = Math.min(l, o, c);
-    candle.o = clampIndexPrice(o, asset);
-    candle.c = clampIndexPrice(c, asset);
-    candle.h = clampIndexPrice(h, asset);
-    candle.l = clampIndexPrice(l, asset);
-    if (isSixCurve(id)) capWicks15(candle);
-    if (isLockedTrio(id)) {
-      capWicks15(candle);
-      if (id === 'v100') {
-        var mb = Math.abs(candle.o) * 0.0025;
-        if (candle.c > candle.o + mb) candle.c = candle.o + mb;
-        if (candle.c < candle.o - mb) candle.c = candle.o - mb;
-        capWicks15(candle);
-      }
-    }
-    return candle;
+    var body = Math.abs(c - o);
+    var maxW = body * 1.2;
+    var hiB = Math.max(o, c);
+    var loB = Math.min(o, c);
+    if (h > hiB + maxW) h = hiB + maxW;
+    if (l < loB - maxW) l = loB - maxW;
+    return {
+      o: clampIndexPrice(o, asset),
+      h: clampIndexPrice(h, asset),
+      l: clampIndexPrice(l, asset),
+      c: clampIndexPrice(c, asset),
+      t: t,
+      _spike: !!spike
+    };
+  }
+
+  function publishHistory(assetId, buf) {
+    window.assetsHistory = window.assetsHistory || {};
+    window.assetBuffers = window.assetBuffers || {};
+    var prices = (buf.prices || []).slice(-60);
+    window.assetsHistory[assetId] = prices;
+    window.assetBuffers[assetId] = buf;
   }
 
   function seedAssetBuffer(asset) {
-    var cfg = walkCfg(asset.id);
+    var sim = simOf(asset.id);
     var price = Number(asset.basePrice) || 5000;
-    var vel = 0;
     var now = Date.now();
     var cms = candleMsFor(asset);
     var t0 = Math.floor(now / cms) - 59;
@@ -294,7 +193,7 @@
     var prices = [];
     var i;
     var k;
-    var nextSpike = now + (cfg.spikeLo || 25000);
+    var nextSpike = now + 25000 + Math.random() * 10000;
     for (i = 0; i < 60; i++) {
       var ts = (t0 + i) * cms;
       var o = price;
@@ -302,395 +201,99 @@
       var l = o;
       var spiked = false;
       for (k = 0; k < 4; k++) {
-        var st = walkTick(price, vel, cfg, asset, ts + k * (cms / 4), t0 + i, k);
-        price = st.price;
-        vel = st.vel;
+        price = unifiedStep(asset, price, ts + k * (cms / 4), cms / 4000, { det: t0 + i * 4 + k });
         if (price > h) h = price;
         if (price < l) l = price;
       }
-      if (cfg.spike) {
-        var loS = cfg.spike === 1 ? 25 : 20;
-        var period = loS + Math.floor(uhash01(Math.floor((t0 + i) / 40), cfg.salt + 3) * 11);
-        if ((t0 + i) % period === period - 1) {
-          var amt = cfg.amt0 + uhash01(t0 + i, cfg.salt + 7) * (cfg.amt1 - cfg.amt0);
-          price = clampIndexPrice(o * (1 + cfg.spike * amt), asset);
-          spiked = true;
-          if (cfg.spike > 0) { h = Math.max(h, price); l = Math.min(l, o); }
-          else { l = Math.min(l, price); h = Math.max(h, o); }
-        }
+      if (sim.spike && (t0 + i) % (25 + Math.floor(uhash01(Math.floor((t0 + i) / 30), 11) * 11)) === 0 && i > 8) {
+        var from = o;
+        price = clampIndexPrice(from * (1 + sim.spike * 0.02), asset);
+        spiked = true;
+        h = Math.max(h, price, o);
+        l = Math.min(l, price, o);
       }
-      var candle = decorateWicks(asset, { o: o, h: h, l: l, c: price, t: ts, _spike: spiked }, t0 + i);
+      var candle = finishCandle(asset, o, h, l, price, ts, spiked);
       candles.push(candle);
       prices.push(candle.c);
       price = candle.c;
     }
-    window.assetBuffers[asset.id] = {
+    var buf = {
       prices: prices,
       candles: candles,
       price: price,
-      vel: vel,
       lastMs: now,
       bucket: Math.floor(now / cms),
-      forming: decorateWicks(asset, { o: price, h: price, l: price, c: price, t: Math.floor(now / cms) * cms }, Math.floor(now / cms)),
+      forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
-      ver: isLockedTrio(asset.id) ? 8 : 7
+      ver: SIM_VER
     };
-    return window.assetBuffers[asset.id];
+    publishHistory(asset.id, buf);
+    return buf;
   }
 
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || (isSixCurve(asset.id) && buf.ver !== 7) || (isLockedTrio(asset.id) && buf.ver !== 8)) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
     if (nowMs < buf.lastMs) nowMs = buf.lastMs;
-    var cfg = walkCfg(asset.id);
+    var sim = simOf(asset.id);
     var cms = candleMsFor(asset);
     var elapsed = nowMs - buf.lastMs;
     if (elapsed > 4000) elapsed = 80;
-    var stepMs = asset.id === 'v75' ? 40 : 70;
-    var steps = Math.max(1, Math.min(12, Math.floor(elapsed / stepMs)));
+    var stepMs = sim.tickMs ? 40 : 70;
+    var steps = Math.max(1, Math.min(12, Math.floor(elapsed / stepMs) || 1));
     var s;
     var price = buf.price;
-    var vel = buf.vel;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
     for (s = 0; s < steps; s++) {
       var tMs = buf.lastMs + ((s + 1) / steps) * elapsed;
+      var dt = Math.max(0.02, (elapsed / steps) / 1000);
       var didSpike = false;
-      if (cfg.spike && tMs >= (buf.nextSpike || 0)) {
-        var amtL = cfg.amt0 + Math.random() * (cfg.amt1 - cfg.amt0);
+      if (sim.spike && tMs >= (buf.nextSpike || 0)) {
         var fromP = price;
-        price = clampIndexPrice(fromP * (1 + cfg.spike * amtL), asset);
-        vel = cfg.spike * price * 0.002;
-        buf.nextSpike = tMs + cfg.spikeLo + Math.random() * (cfg.spikeHi - cfg.spikeLo);
+        price = clampIndexPrice(fromP * (1 + sim.spike * 0.02), asset);
+        buf.nextSpike = tMs + 25000 + Math.random() * 10000;
         forming._spike = true;
         forming.o = fromP;
         didSpike = true;
       }
       if (!didSpike) {
-        var tick = walkTick(price, vel, cfg, asset, tMs, null, s);
-        price = tick.price;
-        vel = tick.vel;
+        price = unifiedStep(asset, price, tMs, dt, {});
       }
       var bucket = Math.floor(tMs / cms);
+      if (price > forming.h) forming.h = price;
+      if (price < forming.l) forming.l = price;
+      forming.c = price;
       if (bucket !== buf.bucket) {
-        forming.c = price;
-        forming.h = Math.max(forming.h, price, forming.o);
-        forming.l = Math.min(forming.l, price, forming.o);
-        decorateWicks(asset, forming, buf.bucket);
+        forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike);
         buf.candles.push(forming);
         if (buf.candles.length > 60) buf.candles.shift();
         buf.prices.push(forming.c);
         if (buf.prices.length > 60) buf.prices.shift();
         buf.bucket = bucket;
         forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
-      } else {
-        if (price > forming.h) forming.h = price;
-        if (price < forming.l) forming.l = price;
-        forming.c = price;
       }
     }
     buf.price = price;
-    buf.vel = vel;
-    buf.forming = decorateWicks(asset, forming, buf.bucket);
+    buf.forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike);
     buf.lastMs = nowMs;
+    publishHistory(asset.id, buf);
     return buf;
   }
 
-  /** CRASH/BOOM type Deriv : petites bougies de tendance + spike rare. */
-  function crashBoomCandleOHLC(asset, bucket) {
-    var isCrash = asset.id === 'crash300';
-    var salt = isCrash ? 771001 : 882119;
-    var base = Number(asset.basePrice) || (isCrash ? 4210.55 : 5890.33);
-    var slow = Math.sin(bucket * 0.017) * 55 + Math.cos(bucket * 0.009) * 28;
-    var micro = (uhash01(bucket, salt) - 0.5) * 6;
-    var o = base + slow + micro;
-    var period = 15 + Math.floor(uhash01(Math.floor(bucket / 90), salt + 3) * 16);
-    var spike = (bucket % period) === (period - 1);
-    var c;
-    var h;
-    var l;
-    if (isCrash) {
-      if (spike) {
-        c = o - (22 + uhash01(bucket, salt + 7) * 58);
-        h = o + 0.4 + uhash01(bucket, salt + 8) * 2.2;
-        l = c - uhash01(bucket, salt + 9) * 7;
-      } else {
-        c = o + (0.55 + uhash01(bucket, salt + 7) * 3.4);
-        h = c + uhash01(bucket, salt + 8) * 1.5;
-        l = o - uhash01(bucket, salt + 9) * 1.9;
-      }
-    } else if (spike) {
-      /* Boom Spike : inverse du Crash 300 — pic vertical vert, même amplitude. */
-      c = o + (22 + uhash01(bucket, salt + 7) * 58);
-      l = o - 0.4 - uhash01(bucket, salt + 8) * 2.2;
-      h = c + uhash01(bucket, salt + 9) * 7;
-    } else {
-      c = o - (0.55 + uhash01(bucket, salt + 7) * 3.4);
-      l = c - uhash01(bucket, salt + 8) * 1.5;
-      h = o + uhash01(bucket, salt + 9) * 1.9;
-    }
-    h = Math.max(h, o, c);
-    l = Math.min(l, o, c);
-    return {
-      o: clampIndexPrice(o, asset),
-      h: clampIndexPrice(h, asset),
-      l: clampIndexPrice(l, asset),
-      c: clampIndexPrice(c, asset),
-      t: bucket * CANDLE_MS
-    };
+  function walkCfg(id) {
+    var s = simOf(id);
+    return { vol: s.vol, spike: s.spike || null };
   }
 
-  function synthCrashBoomPrice(conf, tSec) {
-    var t = Number(tSec) || 0;
-    var bucket = Math.floor(t);
-    var frac = Math.min(1, Math.max(0, t - bucket));
-    var full = crashBoomCandleOHLC(conf, bucket);
-    var mid = full.o + (full.c - full.o) * frac;
-    mid = Math.max(full.l, Math.min(full.h, mid));
-    return clampIndexPrice(mid, conf);
-  }
-
-  function spikeAt(t, salt, dir) {
-    var period = dir === 'down' ? 9.5 : 10.5;
-    var epoch = Math.floor(t / period);
-    var roll = uhash01(epoch, salt + (dir === 'down' ? 17 : 31));
-    if (roll < 0.78) return 0;
-    var phase = (t - epoch * period) / period;
-    var amp = 28 + uhash01(epoch, salt + 99) * 55;
-    var shape = phase < 0.22
-      ? Math.sin((phase / 0.22) * Math.PI)
-      : Math.max(0, 1 - (phase - 0.22) / 0.55) * 0.35;
-    return (dir === 'down' ? -1 : 1) * amp * shape;
-  }
-
-  function synthPrice(asset, tSec) {
-    var id = asset.id || asset;
-    var conf = typeof asset === 'object' ? asset : (C.ASSETS[id] || { id: id, basePrice: 10000 });
-    var p = feedProfile(conf.id);
-    var t = Number(tSec) || 0;
-    if (conf.id === 'crash300' || conf.id === 'boomspike' || p.crashBoom === 'crash' || p.crashBoom === 'boom') {
-      return synthCrashBoomPrice(conf, t);
-    }
-    if (p.kind === 'apex') {
-      var wA = Math.sin(t * 0.19) * 22 + Math.sin(t * 0.047 + 0.4) * 38 + Math.cos(t * 0.31) * 8;
-      var nA = (valueNoise(t * 2.1, p.salt) - 0.5) * 6 + (valueNoise(t * 7.4, p.salt + 2) - 0.5) * 3;
-      return conf.basePrice + wA + nA;
-    }
-    if (p.kind === 'horizon') {
-      var wH = Math.sin(t * 2.85) * 38
-        + Math.sin(t * 6.4 + 0.9) * 22
-        + Math.cos(t * 1.35) * 16
-        + Math.sin(t * 0.41) * 14;
-      var nH = (valueNoise(t * 9.2, p.salt) - 0.5) * 18
-        + (valueNoise(t * 21, p.salt + 3) - 0.5) * 10;
-      return conf.basePrice + wH + nH;
-    }
-    if (p.kind === 'gold') {
-      var cycleLen = 48;
-      var cycle = Math.floor(t / cycleLen);
-      var phG = t / cycleLen - cycle;
-      var climb = phG < 0.68 ? (phG / 0.68) : (1 - (phG - 0.68) / 0.32 * 0.22);
-      var ampG = (cycle % 2 === 0) ? 92 : 48;
-      var nG = (valueNoise(t * 0.55, p.salt) - 0.5) * 5
-        + (valueNoise(t * 2.1, p.salt + 5) - 0.5) * 2.2;
-      return conf.basePrice + climb * ampG + cycle * 4 + nG;
-    }
-    if (p.kind === 'nexus') {
-      var nX = (valueNoise(t * 0.9, p.salt) - 0.5) * 4
-        + (valueNoise(t * 3.2, p.salt + 9) - 0.5) * 1.8;
-      return conf.basePrice + Math.sin(t * 0.11) * 46 + Math.sin(t * 0.037) * 16 + nX;
-    }
-    if (p.kind === 'titan') {
-      var epoch = Math.floor(t / 18);
-      var phT = t / 18 - epoch;
-      var quiet = phT < 0.78;
-      var nT = (valueNoise(t * 1.4, p.salt) - 0.5) * (quiet ? 2.4 : 8);
-      var burst = 0;
-      if (!quiet) {
-        var dir = uhash01(epoch, p.salt) > 0.5 ? 1 : -1;
-        var amp = 36 + uhash01(epoch, p.salt + 4) * 55;
-        burst = dir * amp * Math.sin(((phT - 0.78) / 0.22) * Math.PI);
-      }
-      return conf.basePrice + nT + burst;
-    }
-    if (conf.id === 'pulseai' || p.pulse) {
-      var waveP = Math.sin(t * p.f1) * p.a1
-        + Math.sin(t * p.f2 + 0.7) * p.a2
-        + Math.cos(t * p.f3) * p.a3
-        + Math.sin(t * 0.17) * 3.4;
-      var compress = 0.52 + 0.48 * (0.5 + 0.5 * Math.sin(t * 0.0075));
-      var nP = (valueNoise(t, p.salt) - 0.5) * 12
-        + (valueNoise(t * 3.05, p.salt + 7) - 0.5) * 5.5
-        + (valueNoise(t * 11.4, p.salt + 19) - 0.5) * 2.1;
-      var epoch = Math.floor(t / 13);
-      var brk = 0;
-      if (uhash01(epoch, p.salt + 55) > 0.68) {
-        var ph = t / 13 - epoch;
-        var dir = uhash01(epoch, p.salt + 77) > 0.5 ? 1 : -1;
-        brk = dir * (6 + uhash01(epoch, p.salt + 91) * 7) * Math.sin(Math.min(1, ph) * Math.PI);
-      }
-      return clampIndexPrice(conf.basePrice + (waveP + nP) * compress * p.vol + brk, conf);
-    }
-    var wave = Math.sin(t * p.f1) * p.a1
-      + Math.cos(t * p.f2) * p.a2
-      + Math.sin(t * p.f3) * p.a3;
-    var n = (valueNoise(t, p.salt) - 0.5) * 16
-      + (valueNoise(t * 2.17, p.salt + 41) - 0.5) * 7
-      + (valueNoise(t * 8.3, p.salt + 113) - 0.5) * 2.4;
-    var spike = p.spike ? spikeAt(t, p.salt, p.spike) : 0;
-    return conf.basePrice + (wave + n) * p.vol + spike + p.drift * (t % 86400) * 0.04;
-  }
-
-  function shapeCandle(asset, bucket, raw) {
-    var id = asset.id;
-    var o = raw.o;
-    var h = raw.h;
-    var l = raw.l;
-    var c = raw.c;
-    if (id === 'v75') {
-      var w75 = Math.abs(c - o) * 1.85 + 3.2 + uhash01(bucket, 551903) * 9;
-      h = Math.max(h, o, c) + w75 * 0.62;
-      l = Math.min(l, o, c) - w75 * 0.62;
-    } else if (id === 'apex500') {
-      var run = 4 + Math.floor(uhash01(Math.floor(bucket / 9), 440501) * 3);
-      var pos = bucket % (run + 3);
-      var midA = (o + c) / 2;
-      var bodyA = 5.5 + uhash01(bucket, 440511) * 11;
-      if (pos < run) {
-        o = midA - 0.7;
-        c = midA + bodyA;
-        h = c + 1.4;
-        l = o - 1;
-      } else {
-        o = midA + 0.6;
-        c = midA - bodyA * 0.48;
-        l = c - 1.1;
-        h = o + 1;
-      }
-    } else if (id === 'titanpulse') {
-      var phase = bucket % 18;
-      var midT = (o + c) / 2;
-      if (phase < 14) {
-        var tiny = 0.35 + uhash01(bucket, 991177) * 1.5;
-        o = midT - tiny * 0.5;
-        c = midT + tiny * (uhash01(bucket, 991188) > 0.5 ? 0.5 : -0.5);
-        h = Math.max(o, c) + 0.4;
-        l = Math.min(o, c) - 0.4;
-      } else {
-        var ext = 18 + uhash01(bucket, 991199) * 42;
-        var upT = uhash01(Math.floor(bucket / 18), 991201) > 0.5;
-        o = midT;
-        c = upT ? midT + ext : midT - ext;
-        h = Math.max(o, c) + 2.2;
-        l = Math.min(o, c) - 2.2;
-      }
-    } else if (id === 'v100') {
-      var wk = Math.abs(c - o) * 0.55 + 1.4 + uhash01(bucket, 904177) * 4.2;
-      h = Math.max(h, o, c) + wk * 0.52;
-      l = Math.min(l, o, c) - wk * 0.52;
-    } else if (id === 'nexusprime') {
-      var wn = Math.abs(c - o) * 0.35 + 0.8 + uhash01(bucket, 770870) * 2.2;
-      h = Math.max(h, o, c) + wn * 0.4;
-      l = Math.min(l, o, c) - wn * 0.4;
-    }
-    h = Math.max(h, o, c);
-    l = Math.min(l, o, c);
-    return {
-      o: clampIndexPrice(o, asset),
-      h: clampIndexPrice(h, asset),
-      l: clampIndexPrice(l, asset),
-      c: clampIndexPrice(c, asset),
-      t: raw.t
-    };
-  }
-
-  function candleForBucket(asset, bucket) {
-    if (asset.id === 'crash300' || asset.id === 'boomspike') {
-      return crashBoomCandleOHLC(asset, bucket);
-    }
-    var start = bucket * CANDLE_MS;
-    var o = synthPrice(asset, start / 1000);
-    var h = o;
-    var l = o;
-    var c = o;
-    var k;
-    for (k = 1; k <= 4; k++) {
-      var p = synthPrice(asset, (start + k * 200) / 1000);
-      if (p > h) h = p;
-      if (p < l) l = p;
-      c = p;
-    }
-    return shapeCandle(asset, bucket, { o: o, h: h, l: l, c: c, t: start });
-  }
-
-  function formingCandle(asset, nowMs) {
-    if (asset.id === 'crash300' || asset.id === 'boomspike') {
-      var bucketCb = Math.floor(nowMs / CANDLE_MS);
-      var full = crashBoomCandleOHLC(asset, bucketCb);
-      var frac = (nowMs % CANDLE_MS) / CANDLE_MS;
-      var cLive = full.o + (full.c - full.o) * frac;
-      var hLive = Math.max(full.o, cLive);
-      var lLive = Math.min(full.o, cLive);
-      var wickUp = (full.h - Math.max(full.o, full.c)) * frac;
-      var wickDn = (Math.min(full.o, full.c) - full.l) * frac;
-      hLive += wickUp;
-      lLive -= wickDn;
-      return {
-        o: full.o,
-        h: clampIndexPrice(Math.max(hLive, full.o, cLive), asset),
-        l: clampIndexPrice(Math.min(lLive, full.o, cLive), asset),
-        c: clampIndexPrice(cLive, asset),
-        t: bucketCb * CANDLE_MS
-      };
-    }
-    var bucket = Math.floor(nowMs / CANDLE_MS);
-    var start = bucket * CANDLE_MS;
-    var o = synthPrice(asset, start / 1000);
-    var h = o;
-    var l = o;
-    var c = synthPrice(asset, nowMs / 1000);
-    var elapsed = nowMs - start;
-    var k;
-    var steps = Math.max(1, Math.min(5, Math.floor(elapsed / 200) + 1));
-    for (k = 1; k < steps; k++) {
-      var p = synthPrice(asset, (start + k * 200) / 1000);
-      if (p > h) h = p;
-      if (p < l) l = p;
-    }
-    h = Math.max(h, c);
-    l = Math.min(l, c);
-    var shaped = shapeCandle(asset, bucket, { o: o, h: h, l: l, c: c, t: start });
-    var fracF = (nowMs % CANDLE_MS) / CANDLE_MS;
-    var cForm = shaped.o + (shaped.c - shaped.o) * fracF;
-    return {
-      o: shaped.o,
-        h: clampIndexPrice(Math.max(shaped.h, shaped.o, cForm), asset),
-        l: clampIndexPrice(Math.min(shaped.l, shaped.o, cForm), asset),
-        c: clampIndexPrice(cForm, asset),
-      t: start
-    };
-  }
-
-  function rebuildHistory(asset, nowMs) {
-    var bucket = Math.floor(nowMs / CANDLE_MS);
-    var start = bucket - HISTORY_SEC + 1;
-    var candles = [];
-    var history = [];
-    var i;
-    var b;
-    var c;
-    for (i = 0; i < HISTORY_SEC - 1; i++) {
-      b = start + i;
-      c = candleForBucket(asset, b);
-      candles.push(c);
-      history.push(c.c);
-    }
-    var forming = formingCandle(asset, nowMs);
-    history.push(forming.c);
-    return { candles: candles, forming: forming, history: history, to: bucket - 1 };
+  function synthPrice(asset) {
+    var id = (asset && asset.id) || asset;
+    var b = window.assetBuffers && window.assetBuffers[id];
+    if (b && isFinite(b.price)) return b.price;
+    return clampIndexPrice(asset && asset.basePrice, asset);
   }
 
   function syncMarket(market, asset, nowMs) {
@@ -741,6 +344,12 @@
       lockMax: prev.lockMax || 0,
       at: Date.now()
     };
+    var closes = [];
+    for (i = 0; i < buf.length; i++) {
+      if (buf[i] && isFinite(buf[i].c)) closes.push(buf[i].c);
+    }
+    window.assetsHistory = window.assetsHistory || {};
+    window.assetsHistory[assetId] = closes.slice(-60);
   }
 
   function seedMarket(assetId) {
@@ -783,7 +392,7 @@
   function wakeMarket(assetId) {
     var id = canonAssetId(assetId);
     ensureMarkets();
-    if (!synthCache[id] && C.ASSETS[id]) {
+    if (C.ASSETS[id]) {
       syncMarket(markets[id], C.ASSETS[id], Date.now());
     }
     return markets[id];
@@ -911,10 +520,10 @@
     D6.Store.saveUser(user);
   }
 
-  function closePriceAt(assetId, expiryMs) {
+  function closePriceAt(assetId) {
     var asset = C.ASSETS[assetId];
     if (!asset) return 0;
-    return synthPrice(asset, expiryMs / 1000);
+    return synthPrice(asset);
   }
 
   function normalizeOdds(v) {
