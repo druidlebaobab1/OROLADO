@@ -86,7 +86,7 @@
     v75: { mode: 'candles', vol: 0.0014, v75Wave: true, tickMs: 420 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     goldtrend: { mode: 'line', vol: 0.0068, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.06 },
-    titanpulse: { mode: 'candles', vol: 0.0016, titanDrop: true, tickMs: 150 },
+    titanpulse: { mode: 'candles', vol: 0.0046, titanDrop: true, titanHF: true, tickMs: 85 },
   };
   var SIM_VER = 10;
 
@@ -177,11 +177,12 @@
     var roll = opts.det != null ? uhash01(opts.det, 904177) : Math.random();
     if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
-      var driftT = price * 0.00011 * dtT;
-      var nT = (roll - 0.5) * price * 0.00115;
-      var wT = Math.sin(nowMs / 1000 * Math.PI * 6.2) * price * 0.00022;
-      var nextT = price + driftT + nT + wT;
-      nextT = capPctMove(price, nextT, 0.0018 * Math.min(1, dtT * 2.2));
+      var nT = (roll - 0.5) * price * vol;
+      var pT = Math.sin(nowMs / 1000 * Math.PI * 9.2) * price * 0.00028;
+      var qT = Math.sin(nowMs / 1000 * Math.PI * 17.5) * price * 0.00012;
+      var pullT = (base - price) * 0.048;
+      var nextT = price + nT + pT + qT + pullT;
+      nextT = capPctMove(price, nextT, 0.0042 * Math.min(1, dtT * 2.5));
       return clampIndexPrice(nextT, asset);
     }
     if (sim.coreWave && !opts.spike) {
@@ -276,9 +277,10 @@
         var bodyV = Math.max(minBody * 2.1, Math.abs(c - o));
         c = upWave ? o + bodyV : o - bodyV;
       } else if (sim.titanDrop) {
-        var tinyT = Math.max(Math.abs(o) * 0.00018, 0.014);
-        if (c >= o) c = o + Math.max(tinyT, Math.abs(c - o));
-        else c = o - Math.max(tinyT, Math.abs(c - o));
+        var runT = 3 + Math.floor(uhash01(Math.floor(bucket / 5), 991177) * 3);
+        var posT = bucket % (runT + 1);
+        if (posT < runT) c = o + Math.max(minBody * 1.9, Math.abs(c - o) * 1.2);
+        else c = o - Math.max(minBody * 3.1, Math.abs(c - o) * 1.65);
       } else if (sim.boomBurst) {
         var tinyB = Math.max(Math.abs(o) * 0.00014, 0.01);
         c = c >= o ? o + tinyB : o - tinyB;
@@ -294,7 +296,7 @@
     l = Math.min(l, o, c);
     var body = Math.abs(c - o);
     var maxW = body * 1.2;
-    if (sim.titanDrop) maxW = spike ? body * 0.04 : body * 0.75;
+    if (sim.titanDrop) maxW = body * 0.7;
     if (sim.boomBurst) maxW = spike ? body * 0.12 : body * 0.35;
     if (sim.nexusPulse) maxW = body * 0.95;
     if (sim.v75Wave) maxW = body * 0.55;
@@ -358,17 +360,7 @@
           if (price > h) h = price;
           if (price < l) l = price;
         }
-        if (sim.titanDrop && i > 6) {
-          var perT = 12 + Math.floor(uhash01(Math.floor((t0 + i) / 18), 991188) * 9);
-          if ((t0 + i) % perT === 0) {
-            var dirT = uhash01(t0 + i, 991177) > 0.5 ? 1 : -1;
-            var amtT = 0.025 + uhash01(t0 + i, 991199) * 0.010;
-            price = clampIndexPrice(o * (1 + dirT * amtT), asset);
-            spiked = true;
-            h = Math.max(h, price, o);
-            l = Math.min(l, price, o);
-          }
-        } else if (sim.spike && (t0 + i) % (25 + Math.floor(uhash01(Math.floor((t0 + i) / 30), 11) * 11)) === 0 && i > 8) {
+        if (sim.spike && (t0 + i) % (25 + Math.floor(uhash01(Math.floor((t0 + i) / 30), 11) * 11)) === 0 && i > 8) {
           var from = o;
           price = clampIndexPrice(from * (1 + sim.spike * 0.02), asset);
           spiked = true;
@@ -390,7 +382,7 @@
       bucket: Math.floor(now / cms),
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
-      titanVer: sim.titanDrop ? 3 : 0,
+      titanVer: sim.titanDrop ? 4 : 0,
       coreVer: sim.coreWave ? 1 : 0,
       goldVer: sim.goldHot ? 1 : 0,
       boomVer: sim.boomBurst ? 1 : 0,
@@ -411,7 +403,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 3) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 1)) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 4) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 1)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
@@ -434,17 +426,7 @@
       var didSpike = false;
       var boomForce = false;
       var titanForce = false;
-      if (sim.titanDrop && tMs >= (buf.nextSpike || 0)) {
-        var fromT = price;
-        var dirLive = Math.random() > 0.5 ? 1 : -1;
-        var amtLive = 0.025 + Math.random() * 0.010;
-        price = clampIndexPrice(fromT * (1 + dirLive * amtLive), asset);
-        buf.nextSpike = tMs + 12000 + Math.random() * 8000;
-        forming._spike = true;
-        forming.o = fromT;
-        didSpike = true;
-        titanForce = true;
-      } else if (sim.boomBurst) {
+      if (sim.boomBurst) {
         var br = stepBoomBurst(asset, buf, price, tMs);
         price = br.price;
         if (br.boom) {

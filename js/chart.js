@@ -669,14 +669,14 @@
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
-    if (opts.titanIce) cw = Math.max(2.4, (w / candles.length) * 0.38);
+    if (opts.titanIce) cw = Math.max(3.2, (w / candles.length) * 0.72);
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
-      if (opts.titanIce) col = up ? '#FFFFFF' : '#90A4AE';
+      if (opts.titanIce) col = up ? '#FFFFFF' : '#B0BEC5';
       if (opts.v75Rose) col = up ? '#F50057' : '#AD1457';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
@@ -699,15 +699,16 @@
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      var bh = Math.max(opts.titanIce ? 1.15 : 3, y2 - y1);
+      var bh = Math.max(opts.titanIce ? 2 : 3, y2 - y1);
+      if (opts.titanIce && y2 - y1 < 2) bh = 2;
       ctx.fillStyle = col;
       var boomHit = !!(opts.boomNeon && (c._boom || c._spike) && up);
       if (boomHit) {
         ctx.shadowColor = 'rgba(0,230,118,0.7)';
         ctx.shadowBlur = 11;
-      } else if (opts.titanIce && (c._spike || i === candles.length - 1)) {
-        ctx.shadowColor = up ? 'rgba(255,255,255,0.55)' : 'rgba(144,164,174,0.4)';
-        ctx.shadowBlur = c._spike ? 10 : 6;
+      } else if (opts.titanIce && i === candles.length - 1) {
+        ctx.shadowColor = up ? 'rgba(255,255,255,0.5)' : 'rgba(176,190,197,0.35)';
+        ctx.shadowBlur = 7;
       } else if (opts.v75Rose && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(245,0,87,0.5)' : 'rgba(173,20,87,0.4)';
         ctx.shadowBlur = 8;
@@ -719,6 +720,11 @@
         ctx.shadowBlur = 8;
       }
       ctx.fillRect(x - cw / 2, y1, cw, bh);
+      if (opts.titanIce) {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - cw / 2, y1, cw, bh);
+      }
       ctx.shadowBlur = 0;
     }
     var last = candles[candles.length - 1];
