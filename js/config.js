@@ -168,7 +168,7 @@
         chart: 'candle',
         candleThin: true,
         basePrice: 3890.20,
-        tickNoise: 0.55,
+        tickNoise: 0.62,
         tickMs: 28,
         ticksPerCandle: 8,
         payoutMin: 1.88,

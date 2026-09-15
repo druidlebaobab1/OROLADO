@@ -672,7 +672,7 @@
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
       var up = c.c >= c.o;
-      var col = up ? '#00e676' : '#ff3b30';
+      var col = up ? '#00E676' : '#ff3b30';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
       if (body < ref * 0.00012) body = ref * 0.00012;
@@ -681,8 +681,10 @@
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
       var lWick = c.l;
-      if (hWick > hiB + maxW) hWick = hiB + maxW;
-      if (lWick < loB - maxW) lWick = loB - maxW;
+      if (!(opts.boomNeon && (c._boom || c._spike))) {
+        if (hWick > hiB + maxW) hWick = hiB + maxW;
+        if (lWick < loB - maxW) lWick = loB - maxW;
+      }
       var x = toX(i);
       ctx.strokeStyle = col;
       ctx.lineWidth = thin ? 1 : 1.15;
@@ -694,7 +696,11 @@
       var y2 = toY(Math.min(c.o, c.c));
       var bh = Math.max(3, y2 - y1);
       ctx.fillStyle = col;
-      if (!thin && i === candles.length - 1 && cssH >= 200) {
+      var boomHit = !!(opts.boomNeon && (c._boom || c._spike) && up);
+      if (boomHit) {
+        ctx.shadowColor = 'rgba(0,230,118,0.7)';
+        ctx.shadowBlur = 11;
+      } else if (!thin && i === candles.length - 1 && cssH >= 200) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
         ctx.shadowBlur = 8;
       }
@@ -1254,7 +1260,7 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    if (asset.id !== 'stable' && asset.id !== 'goldtrend') {
+    if (asset.id !== 'stable' && asset.id !== 'goldtrend' && asset.id !== 'boomspike') {
       minPrice = minPrice * 0.998;
       maxPrice = maxPrice * 1.002;
     }
@@ -1274,12 +1280,17 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * (asset.id === 'stable' || asset.id === 'goldtrend' ? 0.28 : 0.15);
+    var padY = spanRaw * (asset.id === 'stable' || asset.id === 'goldtrend' ? 0.28 : (asset.id === 'boomspike' ? 0 : 0.15));
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
+    if (asset.id === 'boomspike') {
+      var boomSpan = Math.max(spanRaw, currentPrice * 0.003);
+      yMin = minPrice - boomSpan * 0.14;
+      yMax = yMin + (maxPrice - yMin) / 0.90;
+    }
     var st = ensureAssetState(activeAsset);
 
-    if (allTrades.length && asset.id !== 'goldtrend') {
+    if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike') {
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
         st.lockMin = yMin;
         st.lockMax = yMax;
@@ -1294,6 +1305,21 @@
       if (asset.id === 'stable' || asset.id === 'goldtrend') {
         viewMin = yMin;
         viewMax = yMax;
+      } else if (asset.id === 'boomspike') {
+        if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
+          var kb = 0.18;
+          viewMin = st.viewMin * (1 - kb) + yMin * kb;
+          viewMax = st.viewMax * (1 - kb) + yMax * kb;
+          if (maxPrice > viewMin + 0.90 * (viewMax - viewMin)) {
+            viewMax = yMax;
+          }
+          if (minPrice < viewMin + 0.08 * (viewMax - viewMin)) {
+            viewMin = yMin;
+          }
+        } else {
+          viewMin = yMin;
+          viewMax = yMax;
+        }
       } else if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
         var k = 0.12;
         viewMin = st.viewMin * (1 - k) + yMin * k;
@@ -1345,7 +1371,8 @@
     if (asset.chart === 'candle') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: !!asset.candleThin,
-        capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime'
+        capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime',
+        boomNeon: asset.id === 'boomspike'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.id === 'stable') {
