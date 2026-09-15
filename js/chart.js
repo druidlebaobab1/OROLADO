@@ -85,6 +85,66 @@
     return !!(ctx && canvas && cssW >= 8 && cssH >= 8);
   }
 
+  function rightOffsetPx() {
+    var mobile = (window.innerWidth || 0) <= 859;
+    return Math.max(cssW * 0.25, mobile ? 80 : cssW * 0.25);
+  }
+
+  function plotLayout(pad) {
+    pad = pad || { t: 16, r: 45, b: 28, l: 8 };
+    var plotW = Math.max(40, cssW - pad.l - pad.r);
+    var headX = cssW - rightOffsetPx();
+    var axisX = pad.l + plotW;
+    if (headX > axisX - 6) headX = axisX - 6;
+    if (headX < pad.l + 48) headX = pad.l + 48;
+    return {
+      plotW: plotW,
+      headX: headX,
+      seriesW: Math.max(32, headX - pad.l),
+      axisX: axisX
+    };
+  }
+
+  function makeToX(n, pad, seriesW) {
+    var x0 = pad.l;
+    var span = Math.max(32, seriesW);
+    if (!(n > 1)) return function () { return x0 + span; };
+    return function (i) { return x0 + (i / (n - 1)) * span; };
+  }
+
+  function pruneTradeVisuals(now) {
+    now = now || Date.now();
+    var id;
+    for (id in openTradeVisuals) {
+      if (!openTradeVisuals.hasOwnProperty(id)) continue;
+      var v = openTradeVisuals[id];
+      if (!v || v.settled || (v.expiryTime && now >= v.expiryTime) || (v.expiresAt && now >= v.expiresAt)) {
+        delete openTradeVisuals[id];
+      }
+    }
+  }
+
+  function liveVisualsForAsset(assetId) {
+    pruneTradeVisuals();
+    var n = 0;
+    var id;
+    for (id in openTradeVisuals) {
+      if (!openTradeVisuals.hasOwnProperty(id)) continue;
+      var v = openTradeVisuals[id];
+      if (v && v.assetId === assetId) n += 1;
+    }
+    if (D6.Engine && D6.Engine.getTrades) {
+      var list = D6.Engine.getTrades();
+      var i;
+      var seen = {};
+      for (i = 0; i < list.length; i++) {
+        if (list[i] && list[i].assetId === assetId && !list[i].settled) seen[list[i].id] = 1;
+      }
+      return Object.keys(seen).length || n;
+    }
+    return n;
+  }
+
   function tradeEntryPrice(trade) {
     if (!trade) return NaN;
     var ep = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
@@ -102,6 +162,7 @@
       side: trade.side === 'put' ? 'put' : 'call',
       entryPrice: entry,
       openPrice: entry,
+      startTime: trade.startTime || trade.startedAt || trade.openedAt || 0,
       expiryTime: exp,
       expiresAt: exp,
       settled: !!trade.settled,
@@ -141,6 +202,7 @@
   }
 
   function collectOpenTradeVisuals() {
+    pruneTradeVisuals();
     var byId = {};
     var id;
     var now = Date.now();
@@ -216,20 +278,25 @@
       if (openTradeVisualQueue.indexOf(snap.id) < 0) openTradeVisualQueue.push(snap.id);
       return false;
     }
-    var ok = drawNow();
-    // 2e frame : évite ligne manquante juste après place / switch d’indice.
-    requestAnimationFrame(function () {
-      if (snap.assetId === activeAsset) forceIncludePrice(snap.entryPrice);
-      drawNow();
-    });
-    return ok;
+    return drawNow();
   }
 
   function removeTradeVisual(tradeId) {
     if (!tradeId) return;
+    var gone = openTradeVisuals[tradeId];
     delete openTradeVisuals[tradeId];
     var qi = openTradeVisualQueue.indexOf(tradeId);
     if (qi >= 0) openTradeVisualQueue.splice(qi, 1);
+    pruneTradeVisuals();
+    var aid = (gone && gone.assetId) || activeAsset;
+    if (!liveVisualsForAsset(aid)) {
+      var st = ensureAssetState(aid);
+      st.lockMin = 0;
+      st.lockMax = 0;
+      if (aid === activeAsset) {
+        strikeLock = null;
+      }
+    }
     if (isChartReady()) drawNow();
   }
 
@@ -561,7 +628,7 @@
     return n.toFixed(2);
   }
 
-  function drawGrid(pad, w, h, minP, maxP, theme) {
+  function drawGrid(pad, plotW, seriesW, h, minP, maxP, theme) {
     theme = theme || plotTheme(null);
     var i;
     var span = zoomSec();
@@ -571,27 +638,30 @@
       ctx.strokeStyle = i === 5 ? theme.gridHStrong : theme.gridH;
       ctx.beginPath();
       ctx.moveTo(pad.l, y);
-      ctx.lineTo(pad.l + w, y);
+      ctx.lineTo(pad.l + plotW, y);
       ctx.stroke();
       var pVal = maxP - (i / 5) * (maxP - minP);
       ctx.fillStyle = '#64748B';
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(formatAxisPrice(pVal), pad.l + w + 4, y + 3);
+      ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 4, y + 3);
     }
-    for (i = 0; i <= 4; i++) {
-      var x = pad.l + (w / 4) * i;
+    for (i = 0; i <= 5; i++) {
+      var x = pad.l + (plotW / 5) * i;
       ctx.strokeStyle = theme.gridV;
       ctx.beginPath();
       ctx.moveTo(x, pad.t);
       ctx.lineTo(x, pad.t + h);
       ctx.stroke();
+    }
+    for (i = 0; i <= 4; i++) {
+      var lx = pad.l + (seriesW / 4) * i;
       var ago = Math.round(((4 - i) / 4) * span);
       var label = ago === 0 ? 'now' : '-' + ago + 's';
       ctx.fillStyle = '#64748B';
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(label, x, pad.t + h + 12);
+      ctx.fillText(label, lx, pad.t + h + 12);
     }
   }
 
@@ -600,7 +670,7 @@
     opts = opts || {};
     var thin = !!opts.thin;
     var span = Math.max(maxP - minP, 0.01);
-    var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
+    var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
     var i;
@@ -643,7 +713,7 @@
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
     if (!candles || candles.length < 2) return;
     var span = Math.max(maxP - minP, 0.01);
-    var toX = function (i) { return pad.l + (i / (candles.length - 1)) * w; };
+    var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var i;
     for (i = 1; i < candles.length; i++) {
@@ -664,7 +734,7 @@
   function drawLine(pad, w, h, data, minP, maxP, color) {
     if (!data || data.length < 2) return null;
     var col = color || '#f5a623';
-    var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
+    var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
@@ -706,7 +776,7 @@
 
   function drawSmoothLine(pad, w, h, data, minP, maxP, color, width, halo) {
     if (!data || data.length < 2) return null;
-    var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
+    var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
@@ -751,7 +821,7 @@
   function drawStepLine(pad, w, h, data, minP, maxP, color, accent, width) {
     if (!data || data.length < 2) return null;
     var span = Math.max(maxP - minP, 0.01);
-    var toX = function (i) { return pad.l + (i / (data.length - 1)) * w; };
+    var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var i;
     for (i = 1; i < data.length; i++) {
@@ -879,7 +949,7 @@
     ctx.stroke();
     var n = rsiVals.length - startIdx;
     if (n < 2) return;
-    var toX = function (i) { return pad.l + (i / Math.max(1, n - 1)) * w; };
+    var toX = makeToX(Math.max(2, n), pad, w);
     var toY = function (v) { return top + boxH * (1 - Math.max(0, Math.min(100, v)) / 100); };
     ctx.beginPath();
     var started = false;
@@ -925,7 +995,7 @@
     ctx.stroke();
     var n = macd.length - startIdx;
     if (n < 2) return;
-    var toX = function (idx) { return pad.l + (idx / Math.max(1, n - 1)) * w; };
+    var toX = makeToX(Math.max(2, n), pad, w);
     var toY = function (v) { return mid - (v / maxAbs) * (boxH * 0.42); };
     ctx.beginPath();
     var started = false;
@@ -983,7 +1053,7 @@
     roundRectOn(ctx, x, y, w, h, r);
   }
 
-  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift) {
+  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout) {
     if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
@@ -993,9 +1063,23 @@
     if (!isFinite(ey)) return;
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
-    var x0 = 2;
-    var x1 = Math.max(x0 + 40, cssW - 2);
-    if (!isFinite(ey)) return;
+    layout = layout || plotLayout(pad);
+    var headX = layout.headX;
+    var axisX = layout.axisX;
+    var x0 = pad.l;
+    var started = Number(trade.startTime || trade.startedAt || 0);
+    if (started > 0 && map && typeof map.toX === 'function' && map.count > 1) {
+      var candles = (window.assetBuffers && window.assetBuffers[activeAsset] && window.assetBuffers[activeAsset].candles) || [];
+      var t0 = candles.length ? candles[0].t : started;
+      var t1 = candles.length ? candles[candles.length - 1].t : Date.now();
+      if (t1 > t0) {
+        var u = (started - t0) / (t1 - t0);
+        if (u < 0) u = 0;
+        if (u > 1) u = 1;
+        x0 = pad.l + u * layout.seriesW;
+      }
+    }
+    var x1 = Math.max(x0 + 24, axisX);
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
     var idx = tagIndex || 0;
@@ -1017,8 +1101,9 @@
     var th = 20;
     var nearTop = (ey - plotTop) < 40;
     var nearBot = (plotBot - ey) < 40;
-    var bx = x1 - tw - 4;
-    if (bx < x0 + 4) bx = x0 + 4;
+    var bx = headX + 8;
+    if (bx + tw > axisX - 2) bx = axisX - tw - 2;
+    if (bx < headX + 4) bx = headX + 4;
     var by;
     if (nearTop) by = ey + 6 + idx * 22 + badgeLift;
     else if (nearBot) by = ey - th - 6 - idx * 22 - badgeLift;
@@ -1042,8 +1127,8 @@
         var ty = nearTop ? (ey + 6 + (idx ? 0 : th + 4) + badgeLift) : (ey - timerH - 6 - idx * 22 - badgeLift);
         if (nearBot) ty = ey - timerH - 6 - idx * 22 - badgeLift;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        // Évite chevauchement avec le tag CALL/PUT à droite.
-        var tx = x0 + 4;
+        var tx = Math.max(pad.l + 4, x0 + 4);
+        if (tx + timerW > headX - 6) tx = Math.max(pad.l + 4, headX - timerW - 6);
         g.fillStyle = 'rgba(10,15,29,0.94)';
         g.strokeStyle = col;
         g.lineWidth = 1.4;
@@ -1131,7 +1216,9 @@
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     var pad = { t: fsOn ? (narrow ? 18 : 22) : (narrow ? 16 : 20), r: 45, b: 28, l: 8 };
-    var w = cssW - pad.l - pad.r;
+    var layout = plotLayout(pad);
+    var w = layout.plotW;
+    var seriesW = layout.seriesW;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
 
@@ -1218,7 +1305,7 @@
     var minP = viewMin;
     var maxP = viewMax;
 
-    drawGrid(pad, w, h, minP, maxP, theme);
+    drawGrid(pad, w, seriesW, h, minP, maxP, theme);
 
     drawConstellation(pad, w, h);
     ctx.save();
@@ -1242,24 +1329,24 @@
     ctx.rect(pad.l - 1, pad.t + 1, w + 2, Math.max(2, h - 2));
     ctx.clip();
     if (asset.chart === 'candle') {
-      map = drawCandles(pad, w, h, candles, minP, maxP, {
+      map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: !!asset.candleThin,
         capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime'
       });
-      if (asset.trendLine) drawTrendLine(pad, w, h, candles, minP, maxP);
+      if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.lineStyle === 'step') {
-      map = drawStepLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
+      map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
-      map = drawSmoothLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
+      map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
     } else if (asset.id === 'goldtrend') {
-      map = drawLine(pad, w, h, lineData, minP, maxP, '#ffb300');
+      map = drawLine(pad, seriesW, h, lineData, minP, maxP, '#ffb300');
     } else {
-      map = drawLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
+      map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }
     if (!map) {
       map = {
         toY: function (p) { return plotToY(p, pad, h, minP, maxP); },
-        lastX: pad.l + w,
+        lastX: layout.headX,
         lastY: plotToY(market.price, pad, h, minP, maxP)
       };
     }
@@ -1283,7 +1370,8 @@
 
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     var tradeYs = [];
-    allTrades.slice(0, 5).forEach(function (ot, i) {
+    allTrades.forEach(function (ot, i) {
+      if (i >= 40) return;
       var epY = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
       var y0 = priceToY(epY, pad, h, minP, maxP);
       var shift = 0;
@@ -1292,7 +1380,7 @@
         if (Math.abs(y0 - tradeYs[j]) < 10) shift = 22;
       }
       tradeYs.push(y0);
-      drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h, shift);
+      drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h, shift, layout);
     });
     paintOverlay();
 
@@ -1314,29 +1402,18 @@
   }
 
   function ensureChartPulse() {
-    if (chartTickTimer) return;
-    chartTickTimer = setInterval(function () {
-      try {
-        if (!running) return;
-        if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
-        drawNow();
-        if (running && !loopRaf) {
-          loopRaf = requestAnimationFrame(loop);
-        }
-      } catch (ePulse) { /* ignore */ }
-    }, 180);
+    /* RAF unique — pas de setInterval de dessin. */
   }
 
   function loop(ts) {
     if (!running) return;
     loopRaf = requestAnimationFrame(loop);
     try {
-      var mobile = (window.innerWidth || 0) <= 859;
       var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
-      var drawEvery = liveN > 0 ? 16 : (mobile ? 48 : 16);
-      var flushEvery = 120;
+      var drawEvery = liveN > 0 ? 16 : 33;
+      var tickEvery = 250;
       if (document.hidden) {
-        if (ts - lastFlush >= flushEvery) {
+        if (ts - lastFlush >= tickEvery) {
           if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
           flushDue();
           lastFlush = ts;
@@ -1344,7 +1421,7 @@
         lastTs = ts;
         return;
       }
-      if (ts - lastFlush >= flushEvery) {
+      if (ts - lastFlush >= tickEvery) {
         if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
         flushDue();
         lastFlush = ts;
@@ -1354,8 +1431,6 @@
       if (!lastTs) lastTs = ts;
       lastTs = ts;
       payoutAcc += drawEvery;
-
-      if (ts - lastFlush < flushEvery && D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
 
       if (payoutAcc > 2800) {
         if (D6.Engine && D6.Engine.refreshPayout) D6.Engine.refreshPayout(activeAsset);

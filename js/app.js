@@ -904,6 +904,10 @@
   function updateDurationUi() {
     var u = user();
     if (!u) return;
+    if (Number(u.duration) === 3) {
+      u.duration = 5;
+      D6.Store.saveUser(u);
+    }
     document.querySelectorAll('.dur-chip').forEach(function (el) {
       el.classList.toggle('on', Number(el.dataset.dur) === u.duration);
     });
@@ -1124,15 +1128,10 @@
   }
 
   function syncTradeButtons() {
-    var u = user();
-    var mode = u && u.mode === 'real' ? 'real' : 'demo';
-    var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : (D6.Engine.getTrades ? D6.Engine.getTrades(mode).length : 0);
-    var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
-    var busy = n >= max;
-    $('btnCall').disabled = busy;
-    $('btnPut').disabled = busy;
-    $('btnCall').classList.toggle('locked', busy);
-    $('btnPut').classList.toggle('locked', busy);
+    $('btnCall').disabled = false;
+    $('btnPut').disabled = false;
+    $('btnCall').classList.remove('locked');
+    $('btnPut').classList.remove('locked');
     var hint = $('tradeLockHint');
     if (hint) hint.classList.remove('on');
   }
@@ -1982,7 +1981,7 @@
     if (!u) return;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 2;
+    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 1000000;
     if (open >= maxOpen) {
       syncTradeButtons();
       return;

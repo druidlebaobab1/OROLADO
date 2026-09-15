@@ -8,11 +8,12 @@
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
-  // Max 2 trades ouverts simultanés par compte.
-  var MAX_OPEN = (C.MAX_OPEN || 2);
+      // Max simultané très élevé : pas de blocage à 2 trades.
+  var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 1000000);
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 240;
   var synthCache = {};
+  var tradeTimers = {};
 
   function u32(n) {
     n = Math.imul(n ^ (n >>> 16), 2246822507);
@@ -242,9 +243,11 @@
     var sim = simOf(asset.id);
     var cms = candleMsFor(asset);
     var elapsed = nowMs - buf.lastMs;
-    if (elapsed > 4000) elapsed = 80;
-    var stepMs = sim.tickMs ? 40 : 70;
-    var steps = Math.max(1, Math.min(12, Math.floor(elapsed / stepMs) || 1));
+    if (elapsed < 0) elapsed = 0;
+    if (elapsed > 1500) elapsed = 280;
+    var stepMs = 280;
+    if (elapsed < stepMs) return buf;
+    var steps = Math.max(1, Math.min(3, Math.floor(elapsed / stepMs)));
     var s;
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
@@ -445,6 +448,26 @@
 
   function expiryOf(t) {
     return t.expiryTime || t.expiresAt;
+  }
+
+  function clearTradeTimer(id) {
+    if (!id || !tradeTimers[id]) return;
+    try { clearTimeout(tradeTimers[id]); } catch (eT) { /* ignore */ }
+    try { clearInterval(tradeTimers[id]); } catch (eI) { /* ignore */ }
+    delete tradeTimers[id];
+  }
+
+  function armTradeTimer(trade) {
+    if (!trade || !trade.id) return;
+    clearTradeTimer(trade.id);
+    var wait = Math.max(16, (expiryOf(trade) || 0) - Date.now());
+    tradeTimers[trade.id] = setTimeout(function () {
+      delete tradeTimers[trade.id];
+      var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
+      if (user && D6.Engine && D6.Engine.resolve) {
+        try { D6.Engine.resolve(user, trade.id); } catch (eR) { /* ignore */ }
+      }
+    }, wait);
   }
 
   function isLive(t) {
@@ -744,8 +767,9 @@
           status: 'open'
         });
       }
-      if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
-        for (i = 0; i < trades.length; i++) {
+      for (i = 0; i < trades.length; i++) {
+        armTradeTimer(trades[i]);
+        if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
           try { D6.Chart.applyOpenTradeVisual(publicTrade(trades[i])); } catch (eR) { /* ignore */ }
         }
       }
@@ -793,6 +817,7 @@
 
       var stake = D6.roundMoney(Number(opts.stake) || 0);
       var duration = C.DURATIONS.indexOf(opts.duration) >= 0 ? opts.duration : C.DEFAULT_DURATION;
+      if (duration === 3) duration = 5;
       var assetId = canonAssetId(opts.assetId);
       var side = opts.side === 'put' ? 'put' : 'call';
       var gate = stakeCap(user, stake, mode);
@@ -852,6 +877,7 @@
         assetId: assetId
       });
       trades.push(t);
+      armTradeTimer(t);
 
       if (mode === 'real') {
         user.realStakeVolume = (user.realStakeVolume || 0) + stake;
@@ -886,6 +912,7 @@
       }
       if (idx < 0) return null;
       var trade = trades[idx];
+      clearTradeTimer(trade.id);
       if (trade.settled || trade.status === 'won' || trade.status === 'lost' || trade.status === 'void') {
         trades.splice(idx, 1);
         persistOpen(user);
