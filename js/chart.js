@@ -1254,7 +1254,7 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    if (asset.id !== 'stable') {
+    if (asset.id !== 'stable' && asset.id !== 'goldtrend') {
       minPrice = minPrice * 0.998;
       maxPrice = maxPrice * 1.002;
     }
@@ -1274,12 +1274,12 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * (asset.id === 'stable' ? 0.25 : 0.15);
+    var padY = spanRaw * (asset.id === 'stable' || asset.id === 'goldtrend' ? 0.28 : 0.15);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
 
-    if (allTrades.length) {
+    if (allTrades.length && asset.id !== 'goldtrend') {
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
         st.lockMin = yMin;
         st.lockMax = yMax;
@@ -1291,7 +1291,7 @@
       st.lockMin = 0;
       st.lockMax = 0;
       strikeLock = null;
-      if (asset.id === 'stable') {
+      if (asset.id === 'stable' || asset.id === 'goldtrend') {
         viewMin = yMin;
         viewMax = yMax;
       } else if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
@@ -1355,7 +1355,7 @@
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
       map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
     } else if (asset.id === 'goldtrend') {
-      map = drawLine(pad, seriesW, h, lineData, minP, maxP, '#ffb300');
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', asset.lineWidth || 2.2);
     } else {
       map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }

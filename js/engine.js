@@ -85,7 +85,7 @@
     crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
     v75: { mode: 'candles', vol: 0.0060, tickMs: 250, thin: true },
     nexusprime: { mode: 'candles', vol: 0.0028, sine: true },
-    goldtrend: { mode: 'line', vol: 0.0022, color: '#ffb300', stair: true },
+    goldtrend: { mode: 'line', vol: 0.0068, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.06 },
     titanpulse: { mode: 'candles', vol: 0.0004, titanDrop: true }
   };
   var SIM_VER = 10;
@@ -138,6 +138,18 @@
       var nextC = price + zigC + waveC + zig2C + pullC;
       nextC = capPctMove(price, nextC, 0.0048 * Math.min(1, dtC));
       return clampIndexPrice(nextC, asset);
+    }
+    if (sim.goldHot && !opts.spike) {
+      var dtG = Math.max(dtSec, 0.016);
+      var nG = (roll - 0.5) * price * vol;
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * 11) * price * 0.00062;
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * 23.5) * price * 0.00028;
+      var microG = 0;
+      if (roll > 0.78) microG = ((roll - 0.78) / 0.22 - 0.5) * price * 0.0038;
+      var pullG = (base - price) * (sim.pullK != null ? sim.pullK : 0.06);
+      var nextG = price + nG + p1G + p2G + microG + pullG;
+      nextG = capPctMove(price, nextG, 0.007 * Math.min(1, dtG * 4));
+      return clampIndexPrice(nextG, asset);
     }
     var center = bias;
     var delta = (roll - center) * price * vol;
@@ -262,6 +274,7 @@
       nextSpike: nextSpike,
       titanVer: sim.titanDrop ? 2 : 0,
       coreVer: sim.coreWave ? 1 : 0,
+      goldVer: sim.goldHot ? 1 : 0,
       ver: SIM_VER
     };
     publishHistory(asset.id, buf);
@@ -271,7 +284,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 2) || (simOf(asset.id).coreWave && buf.coreVer !== 1)) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 2) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
@@ -280,10 +293,10 @@
     var cms = candleMsFor(asset);
     var elapsed = nowMs - buf.lastMs;
     if (elapsed < 0) elapsed = 0;
-    if (elapsed > 1500) elapsed = 280;
-    var stepMs = 280;
+    if (elapsed > 1500) elapsed = sim.goldHot ? 160 : 280;
+    var stepMs = sim.goldHot ? 48 : 280;
     if (elapsed < stepMs) return buf;
-    var steps = Math.max(1, Math.min(3, Math.floor(elapsed / stepMs)));
+    var steps = Math.max(1, Math.min(sim.goldHot ? 6 : 3, Math.floor(elapsed / stepMs)));
     var s;
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
