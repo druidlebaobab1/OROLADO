@@ -670,7 +670,7 @@
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
     if (opts.titanIce) cw = Math.max(3.2, (w / candles.length) * 0.72);
-    if (opts.v75Rose) cw = Math.max(3.4, (w / candles.length) * 0.7);
+    if (opts.v75Rose) cw = Math.max(3.6, (w / candles.length) * 0.5);
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
@@ -701,13 +701,7 @@
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      if (opts.v75Rose) {
-        var midY = (y1 + y2) / 2;
-        var halfY = Math.max(2, (y2 - y1) * 1.5);
-        y1 = midY - halfY;
-        y2 = midY + halfY;
-      }
-      var bh = Math.max(opts.titanIce ? 2 : 3, y2 - y1);
+      var bh = Math.max(opts.titanIce ? 2.2 : (opts.v75Rose ? 5 : 3), y2 - y1);
       if (opts.titanIce && y2 - y1 < 2) bh = 2;
       ctx.fillStyle = col;
       var boomHit = !!(opts.boomNeon && (c._boom || c._spike) && up);
@@ -731,7 +725,7 @@
         ctx.shadowBlur = 8;
       }
       ctx.fillRect(x - cw / 2, y1, cw, bh);
-      if (opts.titanIce) {
+      if (opts.titanIce || opts.v75Rose) {
         ctx.strokeStyle = col;
         ctx.lineWidth = 1;
         ctx.strokeRect(x - cw / 2, y1, cw, bh);
@@ -1298,13 +1292,7 @@
     var i;
     if (asset.chart === 'candle') {
       for (i = 0; i < candles.length; i++) {
-        if (asset.id === 'v75') {
-          var midV = (candles[i].o + candles[i].c) / 2;
-          var halfV = Math.abs(candles[i].c - candles[i].o) * 1.5;
-          series.push(midV + halfV, midV - halfV, candles[i].h, candles[i].l);
-        } else {
-          series.push(candles[i].h, candles[i].l);
-        }
+        series.push(candles[i].h, candles[i].l);
       }
     } else {
       for (i = startIdx; i < closes.length; i++) series.push(closes[i]);
@@ -1355,8 +1343,8 @@
     }
     if (asset.id === 'v75') {
       var vSpan = Math.max(spanRaw, currentPrice * 0.003);
-      yMin = minPrice - vSpan * (0.12 / 0.76);
-      yMax = maxPrice + vSpan * (0.12 / 0.76);
+      yMin = minPrice - vSpan * (0.10 / 0.80);
+      yMax = maxPrice + vSpan * (0.10 / 0.80);
     }
     var st = ensureAssetState(activeAsset);
 
@@ -1403,7 +1391,7 @@
         }
       } else if (asset.id === 'titanpulse') {
         if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
-          var kt = 0.2;
+          var kt = 0.14;
           viewMin = st.viewMin * (1 - kt) + yMin * kt;
           viewMax = st.viewMax * (1 - kt) + yMax * kt;
           if (maxPrice > viewMin + 0.90 * (viewMax - viewMin)) viewMax = yMax;
@@ -1414,7 +1402,7 @@
         }
       } else if (asset.id === 'v75') {
         if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
-          var kv = 0.14;
+          var kv = 0.16;
           viewMin = st.viewMin * (1 - kv) + yMin * kv;
           viewMax = st.viewMax * (1 - kv) + yMax * kv;
           if (maxPrice > viewMin + 0.88 * (viewMax - viewMin)) viewMax = yMax;
