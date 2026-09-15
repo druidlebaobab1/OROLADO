@@ -720,6 +720,7 @@
       } else if (opts.crashOrange && !up && (c._spike || i === candles.length - 1)) {
         ctx.shadowColor = 'rgba(255,152,0,0.65)';
         ctx.shadowBlur = 10;
+      } else if (opts.v75Rose && i === candles.length - 1) {
         ctx.shadowColor = 'rgba(233,30,99,0.55)';
         ctx.shadowBlur = 9;
       } else if (opts.nexusCyber && i === candles.length - 1) {
