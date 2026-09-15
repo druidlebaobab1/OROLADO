@@ -1128,10 +1128,15 @@
   }
 
   function syncTradeButtons() {
-    $('btnCall').disabled = false;
-    $('btnPut').disabled = false;
-    $('btnCall').classList.remove('locked');
-    $('btnPut').classList.remove('locked');
+    var u = user();
+    var mode = u && u.mode === 'real' ? 'real' : 'demo';
+    var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
+    var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
+    var busy = n >= max;
+    $('btnCall').disabled = busy;
+    $('btnPut').disabled = busy;
+    $('btnCall').classList.toggle('locked', busy);
+    $('btnPut').classList.toggle('locked', busy);
     var hint = $('tradeLockHint');
     if (hint) hint.classList.remove('on');
   }
@@ -1975,14 +1980,15 @@
 
   function execute(side) {
     var now = performance.now();
-    if (now - lastClickAt < D6.CONFIG.MIN_ORDER_MS) return;
+    if (now - lastClickAt < 350) return;
     lastClickAt = now;
     var u = user();
     if (!u) return;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 1000000;
+    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
     if (open >= maxOpen) {
+      toast('Limite atteinte (10 trades max). Veuillez attendre la fin d\'un trade.', 'err', 2200);
       syncTradeButtons();
       return;
     }

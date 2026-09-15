@@ -9,7 +9,7 @@
   var sessionNonce = D6.uid();
   var orderSeq = 0;
       // Max simultané très élevé : pas de blocage à 2 trades.
-  var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 1000000);
+  var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 240;
   var synthCache = {};
@@ -549,6 +549,42 @@
     return synthPrice(asset);
   }
 
+  function payoutPercent(raw) {
+    var n = parseFloat(raw);
+    if (!isFinite(n) || n <= 0) return 88;
+    if (n === 88 || n === 500 || n === 1000 || n === 5000) return n;
+    if (Math.abs(n - 1.88) < 0.02) return 88;
+    if (Math.abs(n - 6) < 0.02) return 500;
+    if (Math.abs(n - 11) < 0.02) return 1000;
+    if (Math.abs(n - 51) < 0.02) return 5000;
+    if (n >= 80) return n;
+    if (n > 1 && n < 80) return Math.round((n - 1) * 100);
+    return 88;
+  }
+
+  function readFinalPrice(trade) {
+    var entry = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
+    var assetId = trade.assetId;
+    var finalPrice = entry;
+    var m = markets[assetId];
+    if (m && isFinite(m.price) && m.price > 0) finalPrice = m.price;
+    var buf = window.assetBuffers && window.assetBuffers[assetId];
+    if (buf && isFinite(buf.price) && buf.price > 0) finalPrice = buf.price;
+    if (buf && buf.forming && isFinite(buf.forming.c) && buf.forming.c > 0) finalPrice = buf.forming.c;
+    if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === assetId) {
+      var drawn = Number(D6.Chart.lastClose());
+      if (isFinite(drawn) && drawn > 0) finalPrice = drawn;
+    }
+    return finalPrice;
+  }
+
+  function wonFromPrice(trade, finalPrice) {
+    var entry = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
+    var side = (trade.ticket && trade.ticket.side) || trade.side;
+    if (side === 'put') return finalPrice < entry;
+    return finalPrice > entry;
+  }
+
   function normalizeOdds(v) {
     var list = C.ODDS_MULT || [1.88, 6, 11, 51];
     var n = Number(v);
@@ -788,11 +824,11 @@
       }
       var mode = user.mode === 'real' ? 'real' : 'demo';
       if (openForMode(mode).length >= MAX_OPEN) {
-        return { ok: false, reason: D6.I18N.t('maxPositions') };
+        return { ok: false, reason: 'Limite atteinte (10 trades max). Veuillez attendre la fin d\'un trade.' };
       }
 
       var nowPerf = performance.now();
-      if (nowPerf - lastOrderAt < C.MIN_ORDER_MS) {
+      if (nowPerf - lastOrderAt < 350) {
         return { ok: false, reason: D6.I18N.t('antibot') };
       }
 
@@ -918,17 +954,15 @@
 
       var mode = trade.mode === 'real' ? 'real' : 'demo';
       var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
-      var expMs = expiryOf(trade);
       ensureMarkets();
       var mkt = markets[trade.assetId];
       if (mkt && C.ASSETS[trade.assetId]) {
-        syncMarket(mkt, C.ASSETS[trade.assetId], expMs);
+        syncMarket(mkt, C.ASSETS[trade.assetId], Date.now());
       }
       trade.payout = payout;
       var voided = false;
-      var decided = decideTradeOutcome(user, trade, mode);
-      var exitPrice = decided.target;
-      var won = decided.wantWon;
+      var exitPrice = readFinalPrice(trade);
+      var won = wonFromPrice(trade, exitPrice);
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
@@ -951,9 +985,11 @@
         });
       } else if (won) {
         status = 'won';
-        payoutAmount = D6.roundMoney(trade.stake * trade.payout);
+        var payoutPct = payoutPercent(payout);
+        var netProfit = D6.roundMoney(trade.stake * (payoutPct / 100));
+        payoutAmount = D6.roundMoney(trade.stake + netProfit);
         setBal(user, mode, balOf(user, mode) + payoutAmount);
-        net = payoutAmount - trade.stake;
+        net = netProfit;
         user.wins = (user.wins || 0) + 1;
         user.consecutiveWins = (user.consecutiveWins || 0) + 1;
         user.consecutiveLosses = 0;

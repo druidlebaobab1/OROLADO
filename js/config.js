@@ -36,13 +36,13 @@
       paypal: 25, skrill: 25, neteller: 25, card: 25, bank: 25
     },
     DEMO_MAX_WIN_STREAK: 0,
-    MIN_ORDER_MS: 300,
+    MIN_ORDER_MS: 350,
     MIN_DEPOSIT: 3,
     USDT_TRC20_ADDRESS: 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1',
     MIN_WITHDRAW: 3,
     WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
-    MAX_OPEN: 1000000,
+    MAX_OPEN: 10,
     MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',
     MAKETOU_PRODUCT_ID: 'dc38d82a-9074-4f73-9cca-50959ea58e94',
     BRAND: 'OROLADO',
