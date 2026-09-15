@@ -79,7 +79,7 @@
       case 'horizon50':
         return { vol: 0.024, inertia: 0.66, bias: 0, jerk: 0.58, minMove: 0.00115, salt: 550050 };
       case 'stable':
-        return { vol: 0.0008, inertia: 0.975, bias: 0, jerk: 0.05, minMove: 0.000035, salt: 221713 };
+        return { vol: 0.00035, inertia: 0.985, bias: 0, jerk: 0.02, minMove: 0.00002, salt: 221713, lockedTrio: true };
       case 'goldtrend':
         return { vol: 0.0009, inertia: 0.97, bias: 0.00016, jerk: 0.02, minMove: 0.00004, salt: 660160, goldStair: true };
       case 'boomspike':
@@ -87,13 +87,13 @@
       case 'crash300':
         return { vol: 0.00045, inertia: 0.92, bias: 0.00022, jerk: 0.03, minMove: 0.00003, salt: 771001, spike: -1, spikeLo: 20000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
       case 'v100':
-        return { vol: 0.0022, inertia: 0.9, bias: 0, jerk: 0.08, minMove: 0.00008, salt: 904177, v100Wave: true };
+        return { vol: 0.0011, inertia: 0.92, bias: 0, jerk: 0.06, minMove: 0.00005, salt: 904177, lockedTrio: true, v100Wave: true };
       case 'v75':
         return { vol: 0.0034, inertia: 0.58, bias: 0, jerk: 0.62, minMove: 0.00012, salt: 551903, v75Scalp: true };
       case 'nexusprime':
         return { vol: 0.00035, inertia: 0.96, bias: 0, jerk: 0.04, minMove: 0.00003, salt: 770870, nexusSine: true };
       case 'apex500':
-        return { vol: 0.00115, inertia: 0.94, bias: 0, jerk: 0.1, minMove: 0.00006, salt: 440501, compress: 22 };
+        return { vol: 0.0012, inertia: 0.94, bias: 0, jerk: 0.05, minMove: 0.00005, salt: 440501, lockedTrio: true };
       case 'titanpulse':
         return { vol: 0.0007, inertia: 0.94, bias: 0, jerk: 0.07, minMove: 0.000045, salt: 991177, pulse: 17 };
       default:
@@ -101,7 +101,65 @@
     }
   }
 
+  function isLockedTrio(id) {
+    return id === 'v100' || id === 'stable' || id === 'apex500';
+  }
+
+  function capPctMove(prev, next, maxPct) {
+    if (!(prev > 0) || !isFinite(next)) return prev;
+    var lo = prev * (1 - maxPct);
+    var hi = prev * (1 + maxPct);
+    if (next < lo) return lo;
+    if (next > hi) return hi;
+    return next;
+  }
+
+  function trioTick(asset, price, vel, nowMs, detI, detK, dtSec) {
+    var id = asset.id;
+    var base = Number(asset.basePrice) || price;
+    var t = (nowMs || 0) / 1000;
+    var dt = dtSec > 0 ? dtSec : 0.25;
+    var rnd = detI != null
+      ? (uhash01(detI * 17 + (detK || 0), walkCfg(id).salt) - 0.5) * 2
+      : (Math.random() - 0.5) * 2;
+    var next = price;
+    if (id === 'stable') {
+      var targetS = base * (1
+        + Math.sin(t * 0.13) * 0.00165
+        + Math.sin(t * 0.057 + 0.8) * 0.0007
+        + rnd * 0.00008);
+      next = price + (targetS - price) * Math.min(1, dt * 1.8);
+      next = capPctMove(price, next, 0.00055 * (dt / 0.25));
+      vel = next - price;
+    } else if (id === 'v100') {
+      var maxPerSec = 0.0025;
+      var targetV = base * (1
+        + Math.sin(t * 0.09) * 0.006
+        + Math.sin(t * 0.21 + 0.4) * 0.0024
+        + rnd * 0.00035);
+      var maxStep = price * maxPerSec * dt;
+      var dV = targetV - price;
+      if (dV > maxStep) dV = maxStep;
+      if (dV < -maxStep) dV = -maxStep;
+      next = price + dV;
+      vel = dV;
+    } else {
+      var bucket = Math.floor(t);
+      var run = 4 + Math.floor(uhash01(Math.floor(bucket / 8), 440501) * 3);
+      var pos = bucket % (run + 3);
+      var dir = pos < run ? 1 : -1;
+      var stepA = price * (dir > 0 ? 0.00135 : 0.00062) * dir * dt;
+      next = price + stepA + rnd * price * 0.00006;
+      next = capPctMove(price, next, 0.0035 * dt);
+      vel = next - price;
+    }
+    return { price: clampIndexPrice(next, asset), vel: vel };
+  }
+
   function walkTick(price, vel, cfg, asset, nowMs, detI, detK) {
+    if (asset && isLockedTrio(asset.id)) {
+      return trioTick(asset, price, vel, nowMs, detI, detK, 0.25);
+    }
     var rnd = detI != null
       ? (uhash01(detI * 17 + (detK || 0), cfg.salt) - 0.5) * 2
       : (Math.random() - 0.5) * 2;
@@ -177,15 +235,24 @@
     var mid = (o + c) / 2;
     var body = Math.max(Math.abs(c - o), Math.abs(o) * 0.00022);
     if (id === 'v100') {
-      var run = 5 + Math.floor(uhash01(Math.floor(bucket / 9), 904177) * 3);
-      var pos = bucket % (run + 3);
-      if (pos < run) {
-        o = mid - body * 0.18;
-        c = mid + body * 0.82;
+      var maxBody = Math.abs(o) * 0.0025;
+      if (c > o + maxBody) c = o + maxBody;
+      if (c < o - maxBody) c = o - maxBody;
+      var wickV = Math.max(Math.abs(c - o) * 0.32, Math.abs(o) * 0.00012);
+      h = Math.max(o, c) + wickV;
+      l = Math.min(o, c) - wickV;
+    } else if (id === 'apex500') {
+      var runA = 4 + Math.floor(uhash01(Math.floor(bucket / 8), 440501) * 3);
+      var posA = bucket % (runA + 3);
+      var bodyA = Math.abs(o) * (0.00115 + uhash01(bucket, 440511) * 0.0007);
+      if (posA < runA) {
+        c = o + bodyA;
       } else {
-        o = mid + body * 0.2;
-        c = mid - body * 0.55;
+        c = o - bodyA * 0.48;
       }
+      var wickA = Math.abs(c - o) * 0.28;
+      h = Math.max(o, c) + wickA;
+      l = Math.min(o, c) - wickA;
     } else if (id === 'boomspike' && !candle._spike) {
       o = mid + body * 0.25;
       c = mid - body * 0.85;
@@ -203,9 +270,15 @@
     candle.c = clampIndexPrice(c, asset);
     candle.h = clampIndexPrice(h, asset);
     candle.l = clampIndexPrice(l, asset);
-    if (isSixCurve(id) || id === 'apex500' || id === 'titanpulse' || id === 'horizon50' || id === 'stable') {
-      /* mèches géantes interdites sur les 6 courbes refondues */
-      if (isSixCurve(id)) capWicks15(candle);
+    if (isSixCurve(id)) capWicks15(candle);
+    if (isLockedTrio(id)) {
+      capWicks15(candle);
+      if (id === 'v100') {
+        var mb = Math.abs(candle.o) * 0.0025;
+        if (candle.c > candle.o + mb) candle.c = candle.o + mb;
+        if (candle.c < candle.o - mb) candle.c = candle.o - mb;
+        capWicks15(candle);
+      }
     }
     return candle;
   }
@@ -260,7 +333,7 @@
       bucket: Math.floor(now / cms),
       forming: decorateWicks(asset, { o: price, h: price, l: price, c: price, t: Math.floor(now / cms) * cms }, Math.floor(now / cms)),
       nextSpike: nextSpike,
-      ver: 7
+      ver: isLockedTrio(asset.id) ? 8 : 7
     };
     return window.assetBuffers[asset.id];
   }
@@ -268,7 +341,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || (isSixCurve(asset.id) && buf.ver !== 7)) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || (isSixCurve(asset.id) && buf.ver !== 7) || (isLockedTrio(asset.id) && buf.ver !== 8)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();

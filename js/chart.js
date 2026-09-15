@@ -1157,9 +1157,11 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    var damp = dampedRange(candles, asset.id, minPrice, maxPrice);
-    minPrice = damp.min;
-    maxPrice = damp.max;
+    if (asset.id !== 'v100' && asset.id !== 'stable' && asset.id !== 'apex500') {
+      var damp = dampedRange(candles, asset.id, minPrice, maxPrice);
+      minPrice = damp.min;
+      maxPrice = damp.max;
+    }
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
@@ -1176,7 +1178,7 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * 0.12;
+    var padY = spanRaw * ((asset.id === 'apex500' || asset.id === 'v100' || asset.id === 'stable') ? 0.15 : 0.12);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
@@ -1185,9 +1187,6 @@
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
         st.lockMin = yMin;
         st.lockMax = yMax;
-      } else {
-        if (yMin < st.lockMin) st.lockMin = yMin;
-        if (yMax > st.lockMax) st.lockMax = yMax;
       }
       viewMin = st.lockMin;
       viewMax = st.lockMax;
@@ -1196,9 +1195,11 @@
       st.lockMin = 0;
       st.lockMax = 0;
       strikeLock = null;
+      var trio = asset.id === 'v100' || asset.id === 'stable' || asset.id === 'apex500';
       if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
-        viewMin = st.viewMin * 0.82 + yMin * 0.18;
-        viewMax = st.viewMax * 0.82 + yMax * 0.18;
+        var k = trio ? 0.06 : 0.18;
+        viewMin = st.viewMin * (1 - k) + yMin * k;
+        viewMax = st.viewMax * (1 - k) + yMax * k;
       } else {
         viewMin = yMin;
         viewMax = yMax;
