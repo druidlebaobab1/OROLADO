@@ -673,6 +673,7 @@
       var c = candles[i];
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
+      if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
       if (body < ref * 0.00012) body = ref * 0.00012;
@@ -700,6 +701,9 @@
       if (boomHit) {
         ctx.shadowColor = 'rgba(0,230,118,0.7)';
         ctx.shadowBlur = 11;
+      } else if (opts.nexusCyber && i === candles.length - 1) {
+        ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
+        ctx.shadowBlur = 8;
       } else if (!thin && i === candles.length - 1 && cssH >= 200) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
         ctx.shadowBlur = 8;
@@ -1165,19 +1169,25 @@
     if (!map) return;
     theme = theme || plotTheme(null);
     var compact = activeAsset === 'stable';
+    var nexusHead = activeAsset === 'nexusprime';
     var pulse = 0.55 + 0.45 * Math.sin(now / 150);
     ctx.save();
-    if (!compact) {
+    if (nexusHead) {
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 7.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,229,255,0.28)';
+      ctx.fill();
+    } else if (!compact) {
       ctx.beginPath();
       ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
       ctx.fillStyle = theme.beadGlow || 'rgba(255,215,0,0.16)';
       ctx.fill();
     }
     ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, compact ? 3 : 4.2, 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2d55' : color;
-    ctx.shadowColor = compact ? 'transparent' : color;
-    ctx.shadowBlur = compact ? 0 : 12;
+    ctx.arc(map.lastX, map.lastY, compact ? 3 : (nexusHead ? 3.6 : 4.2), 0, Math.PI * 2);
+    ctx.fillStyle = compact ? '#ff2d55' : (nexusHead ? '#00E5FF' : color);
+    ctx.shadowColor = compact ? 'transparent' : (nexusHead ? '#00E5FF' : color);
+    ctx.shadowBlur = compact ? 0 : (nexusHead ? 10 : 12);
     ctx.fill();
     ctx.restore();
     ctx.fillStyle = theme.id === 'ivoryGold' ? theme.priceTxt : color;
@@ -1260,7 +1270,7 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    if (asset.id !== 'stable' && asset.id !== 'goldtrend' && asset.id !== 'boomspike') {
+    if (asset.id !== 'stable' && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime') {
       minPrice = minPrice * 0.998;
       maxPrice = maxPrice * 1.002;
     }
@@ -1288,9 +1298,14 @@
       yMin = minPrice - boomSpan * 0.14;
       yMax = yMin + (maxPrice - yMin) / 0.90;
     }
+    if (asset.id === 'nexusprime') {
+      var nxSpan = Math.max(spanRaw, currentPrice * 0.0025);
+      yMin = minPrice - nxSpan * (0.08 / 0.84);
+      yMax = maxPrice + nxSpan * (0.08 / 0.84);
+    }
     var st = ensureAssetState(activeAsset);
 
-    if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike') {
+    if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime') {
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
         st.lockMin = yMin;
         st.lockMax = yMax;
@@ -1316,6 +1331,17 @@
           if (minPrice < viewMin + 0.08 * (viewMax - viewMin)) {
             viewMin = yMin;
           }
+        } else {
+          viewMin = yMin;
+          viewMax = yMax;
+        }
+      } else if (asset.id === 'nexusprime') {
+        if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
+          var kn = 0.2;
+          viewMin = st.viewMin * (1 - kn) + yMin * kn;
+          viewMax = st.viewMax * (1 - kn) + yMax * kn;
+          if (maxPrice > viewMin + 0.92 * (viewMax - viewMin)) viewMax = yMax;
+          if (minPrice < viewMin + 0.08 * (viewMax - viewMin)) viewMin = yMin;
         } else {
           viewMin = yMin;
           viewMax = yMax;
@@ -1372,7 +1398,8 @@
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: !!asset.candleThin,
         capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime',
-        boomNeon: asset.id === 'boomspike'
+        boomNeon: asset.id === 'boomspike',
+        nexusCyber: asset.id === 'nexusprime'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.id === 'stable') {
@@ -1435,6 +1462,7 @@
       var liveWin = (primary.side === 'call' && above) || (primary.side === 'put' && !above);
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
+    if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (map) drawBead(map, market.price, tagCol, now, theme);
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);
