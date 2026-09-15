@@ -1735,7 +1735,7 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
 
 @media (max-width:859px){
   #screenTrade .chart-card,#screenTrade #chart{
-    flex:1 1 auto!important;flex-shrink:1!important;min-height:0!important;height:auto!important;max-height:none!important}
+    flex:0 0 315px!important;flex-shrink:0!important;min-height:315px!important;height:315px!important;max-height:315px!important}
   #screenTrade .chart-stage{min-height:0!important;flex:1 1 auto;height:auto!important}
   html:not(.fs-trade):not(.is-fullscreen):not(.is-android) #screenTrade .trade-wrap > .pad{
     position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;
@@ -2006,13 +2006,26 @@ button:not(.btn-close):not(.crypto-back):not(.wd-back-ico):not(.auth-back):not(.
 
 #screenTrade .chart-card,
 #screenTrade #chart{
-  height:380px!important;min-height:380px!important;max-height:380px!important;
-  overflow:hidden!important;flex:0 0 380px!important}
+  height:320px!important;min-height:320px!important;max-height:320px!important;
+  overflow:hidden!important;flex:0 0 320px!important}
 #screenTrade .chart-stage{
   overflow:hidden!important;min-height:0!important}
 #screenTrade .balance-card .bal,
 .balance-card .bal{
   font-size:20px!important;font-weight:700!important;line-height:1.15}
+@media (max-width:859px){
+  #screenTrade .chart-card,
+  #screenTrade #chart,
+  html.is-android #screenTrade .chart-card,
+  html.is-android #screenTrade #chart{
+    height:315px!important;min-height:315px!important;max-height:315px!important;
+    flex:0 0 315px!important}
+}
+@media (min-width:860px){
+  #screenTrade .chart-card,
+  #screenTrade #chart{
+    height:auto!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important}
+}
 html.fs-trade .fs-trade-overlay.on #chart,
 html.is-fullscreen .fs-trade-overlay.on #chart,
 html.fs-trade .fs-trade-overlay.on .chart-card{

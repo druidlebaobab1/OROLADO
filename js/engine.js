@@ -81,17 +81,17 @@
       case 'stable':
         return { vol: 0.0008, inertia: 0.975, bias: 0, jerk: 0.05, minMove: 0.000035, salt: 221713 };
       case 'goldtrend':
-        return { vol: 0.0026, inertia: 0.966, bias: 0.0002, jerk: 0.1, minMove: 0.00009, salt: 660160, cycle: 42 };
+        return { vol: 0.0009, inertia: 0.97, bias: 0.00016, jerk: 0.02, minMove: 0.00004, salt: 660160, goldStair: true };
       case 'boomspike':
-        return { vol: 0.00065, inertia: 0.91, bias: -0.0003, jerk: 0.05, minMove: 0.00004, salt: 882119, spike: 1, spikeLo: 20000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
+        return { vol: 0.00045, inertia: 0.92, bias: -0.00022, jerk: 0.03, minMove: 0.00003, salt: 882119, spike: 1, spikeLo: 25000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
       case 'crash300':
-        return { vol: 0.00065, inertia: 0.91, bias: 0.0003, jerk: 0.05, minMove: 0.00004, salt: 771001, spike: -1, spikeLo: 20000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
+        return { vol: 0.00045, inertia: 0.92, bias: 0.00022, jerk: 0.03, minMove: 0.00003, salt: 771001, spike: -1, spikeLo: 20000, spikeHi: 35000, amt0: 0.015, amt1: 0.025 };
       case 'v100':
-        return { vol: 0.005, inertia: 0.84, bias: 0, jerk: 0.24, minMove: 0.00016, salt: 904177, wick: 0.55 };
+        return { vol: 0.0022, inertia: 0.9, bias: 0, jerk: 0.08, minMove: 0.00008, salt: 904177, v100Wave: true };
       case 'v75':
-        return { vol: 0.0092, inertia: 0.52, bias: 0, jerk: 0.55, minMove: 0.00042, salt: 551903, wick: 1.9 };
+        return { vol: 0.0034, inertia: 0.58, bias: 0, jerk: 0.62, minMove: 0.00012, salt: 551903, v75Scalp: true };
       case 'nexusprime':
-        return { vol: 0.0015, inertia: 0.93, bias: 0, jerk: 0.08, minMove: 0.00007, salt: 770870, sine: 0.12, sineAmp: 0.004 };
+        return { vol: 0.00035, inertia: 0.96, bias: 0, jerk: 0.04, minMove: 0.00003, salt: 770870, nexusSine: true };
       case 'apex500':
         return { vol: 0.00115, inertia: 0.94, bias: 0, jerk: 0.1, minMove: 0.00006, salt: 440501, compress: 22 };
       case 'titanpulse':
@@ -122,11 +122,21 @@
       var cyc = Math.floor((nowMs / 1000) / cfg.cycle);
       bias = (cyc % 2 === 0 ? 1 : -0.28) * Math.abs(cfg.bias || 0.00018);
     }
+    if (cfg.nexusSine) {
+      var ampN = (Number(asset.basePrice) || price) * 0.011;
+      var microN = rnd * (Number(asset.basePrice) || price) * 0.00012;
+      price = (Number(asset.basePrice) || price) + Math.sin((nowMs / 1000) * Math.PI / 20) * ampN + microN;
+      return { price: clampIndexPrice(price, asset), vel: 0 };
+    }
+    if (cfg.goldStair) {
+      var phG = (nowMs / 1000) % 10;
+      var climb = phG < 7 ? price * 0.00032 : price * 0.00002;
+      vel = Math.max(0, vel * 0.55) + climb;
+      price += vel;
+      return { price: clampIndexPrice(price, asset), vel: vel };
+    }
     vel = vel * cfg.inertia + rnd * vol * price * 0.38 + (flip ? -vel * 0.55 : 0) + bias * price;
     price += vel;
-    if (cfg.sine) {
-      price += Math.sin(nowMs / 1000 * cfg.sine) * price * cfg.sineAmp * 0.015;
-    }
     var floor = (cfg.minMove || 0) * price;
     if (Math.abs(price) > 1 && Math.abs(vel) < floor) {
       vel = (vel >= 0 ? 1 : -1) * Math.max(floor, price * 0.00002);
@@ -135,27 +145,68 @@
     return { price: clampIndexPrice(price, asset), vel: vel };
   }
 
+  function capWicks15(candle) {
+    if (!candle) return candle;
+    var body = Math.abs(candle.c - candle.o);
+    var ref = Math.max(Math.abs(candle.c), Math.abs(candle.o), 1);
+    if (body < ref * 0.00012) body = ref * 0.00012;
+    var maxW = body * 1.5;
+    var hiBody = Math.max(candle.o, candle.c);
+    var loBody = Math.min(candle.o, candle.c);
+    if (candle.h > hiBody + maxW) candle.h = hiBody + maxW;
+    if (candle.l < loBody - maxW) candle.l = loBody - maxW;
+    candle.h = Math.max(candle.h, hiBody);
+    candle.l = Math.min(candle.l, loBody);
+    return candle;
+  }
+
+  function isSixCurve(id) {
+    return id === 'v100' || id === 'goldtrend' || id === 'boomspike' || id === 'crash300' || id === 'v75' || id === 'nexusprime';
+  }
+
+  function candleMsFor(asset) {
+    return asset && asset.id === 'v75' ? 250 : CANDLE_MS;
+  }
+
   function decorateWicks(asset, candle, bucket) {
-    var cfg = walkCfg(asset.id);
+    var id = asset.id;
     var o = candle.o;
     var h = candle.h;
     var l = candle.l;
     var c = candle.c;
-    var span = Math.abs(c - o);
-    if (cfg.wick) {
-      var extra = span * cfg.wick + Math.abs(c) * 0.00015 * (0.4 + uhash01(bucket, cfg.salt + 4));
-      h = Math.max(h, o, c) + extra;
-      l = Math.min(l, o, c) - extra;
+    var mid = (o + c) / 2;
+    var body = Math.max(Math.abs(c - o), Math.abs(o) * 0.00022);
+    if (id === 'v100') {
+      var run = 5 + Math.floor(uhash01(Math.floor(bucket / 9), 904177) * 3);
+      var pos = bucket % (run + 3);
+      if (pos < run) {
+        o = mid - body * 0.18;
+        c = mid + body * 0.82;
+      } else {
+        o = mid + body * 0.2;
+        c = mid - body * 0.55;
+      }
+    } else if (id === 'boomspike' && !candle._spike) {
+      o = mid + body * 0.25;
+      c = mid - body * 0.85;
+    } else if (id === 'crash300' && !candle._spike) {
+      o = mid - body * 0.25;
+      c = mid + body * 0.85;
+    } else if (id === 'v75') {
+      var up75 = uhash01(bucket, 551903) > 0.48;
+      o = up75 ? mid - body * 0.4 : mid + body * 0.4;
+      c = up75 ? mid + body * 0.4 : mid - body * 0.4;
     }
-    if (asset.id === 'nexusprime') {
-      var wn = span * 0.35 + Math.abs(c) * 0.00008;
-      h = Math.max(h, o, c) + wn;
-      l = Math.min(l, o, c) - wn;
-    }
-    candle.h = clampIndexPrice(Math.max(h, o, c), asset);
-    candle.l = clampIndexPrice(Math.min(l, o, c), asset);
+    h = Math.max(h, o, c);
+    l = Math.min(l, o, c);
     candle.o = clampIndexPrice(o, asset);
     candle.c = clampIndexPrice(c, asset);
+    candle.h = clampIndexPrice(h, asset);
+    candle.l = clampIndexPrice(l, asset);
+    if (isSixCurve(id) || id === 'apex500' || id === 'titanpulse' || id === 'horizon50' || id === 'stable') {
+      /* mèches géantes interdites sur les 6 courbes refondues */
+      if (isSixCurve(id)) capWicks15(candle);
+    }
     return candle;
   }
 
@@ -164,34 +215,38 @@
     var price = Number(asset.basePrice) || 5000;
     var vel = 0;
     var now = Date.now();
-    var t0 = Math.floor(now / 1000) - 59;
+    var cms = candleMsFor(asset);
+    var t0 = Math.floor(now / cms) - 59;
     var candles = [];
     var prices = [];
     var i;
     var k;
     var nextSpike = now + (cfg.spikeLo || 25000);
     for (i = 0; i < 60; i++) {
-      var ts = (t0 + i) * 1000;
+      var ts = (t0 + i) * cms;
       var o = price;
       var h = o;
       var l = o;
+      var spiked = false;
       for (k = 0; k < 4; k++) {
-        var st = walkTick(price, vel, cfg, asset, ts + k * 250, t0 + i, k);
+        var st = walkTick(price, vel, cfg, asset, ts + k * (cms / 4), t0 + i, k);
         price = st.price;
         vel = st.vel;
         if (price > h) h = price;
         if (price < l) l = price;
       }
       if (cfg.spike) {
-        var period = 20 + Math.floor(uhash01(Math.floor((t0 + i) / 40), cfg.salt + 3) * 16);
+        var loS = cfg.spike === 1 ? 25 : 20;
+        var period = loS + Math.floor(uhash01(Math.floor((t0 + i) / 40), cfg.salt + 3) * 11);
         if ((t0 + i) % period === period - 1) {
           var amt = cfg.amt0 + uhash01(t0 + i, cfg.salt + 7) * (cfg.amt1 - cfg.amt0);
           price = clampIndexPrice(o * (1 + cfg.spike * amt), asset);
+          spiked = true;
           if (cfg.spike > 0) { h = Math.max(h, price); l = Math.min(l, o); }
           else { l = Math.min(l, price); h = Math.max(h, o); }
         }
       }
-      var candle = decorateWicks(asset, { o: o, h: h, l: l, c: price, t: ts }, t0 + i);
+      var candle = decorateWicks(asset, { o: o, h: h, l: l, c: price, t: ts, _spike: spiked }, t0 + i);
       candles.push(candle);
       prices.push(candle.c);
       price = candle.c;
@@ -202,9 +257,10 @@
       price: price,
       vel: vel,
       lastMs: now,
-      bucket: Math.floor(now / 1000),
-      forming: decorateWicks(asset, { o: price, h: price, l: price, c: price, t: Math.floor(now / 1000) * 1000 }, Math.floor(now / 1000)),
-      nextSpike: nextSpike
+      bucket: Math.floor(now / cms),
+      forming: decorateWicks(asset, { o: price, h: price, l: price, c: price, t: Math.floor(now / cms) * cms }, Math.floor(now / cms)),
+      nextSpike: nextSpike,
+      ver: 7
     };
     return window.assetBuffers[asset.id];
   }
@@ -212,31 +268,40 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || (isSixCurve(asset.id) && buf.ver !== 7)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
     if (nowMs < buf.lastMs) nowMs = buf.lastMs;
     var cfg = walkCfg(asset.id);
+    var cms = candleMsFor(asset);
     var elapsed = nowMs - buf.lastMs;
     if (elapsed > 4000) elapsed = 80;
-    var steps = Math.max(1, Math.min(8, Math.floor(elapsed / 70)));
+    var stepMs = asset.id === 'v75' ? 40 : 70;
+    var steps = Math.max(1, Math.min(12, Math.floor(elapsed / stepMs)));
     var s;
     var price = buf.price;
     var vel = buf.vel;
-    var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / 1000) * 1000 };
+    var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
     for (s = 0; s < steps; s++) {
       var tMs = buf.lastMs + ((s + 1) / steps) * elapsed;
+      var didSpike = false;
       if (cfg.spike && tMs >= (buf.nextSpike || 0)) {
         var amtL = cfg.amt0 + Math.random() * (cfg.amt1 - cfg.amt0);
-        price = clampIndexPrice(price * (1 + cfg.spike * amtL), asset);
-        vel = cfg.spike * price * 0.003;
+        var fromP = price;
+        price = clampIndexPrice(fromP * (1 + cfg.spike * amtL), asset);
+        vel = cfg.spike * price * 0.002;
         buf.nextSpike = tMs + cfg.spikeLo + Math.random() * (cfg.spikeHi - cfg.spikeLo);
+        forming._spike = true;
+        forming.o = fromP;
+        didSpike = true;
       }
-      var tick = walkTick(price, vel, cfg, asset, tMs, null, s);
-      price = tick.price;
-      vel = tick.vel;
-      var bucket = Math.floor(tMs / 1000);
+      if (!didSpike) {
+        var tick = walkTick(price, vel, cfg, asset, tMs, null, s);
+        price = tick.price;
+        vel = tick.vel;
+      }
+      var bucket = Math.floor(tMs / cms);
       if (bucket !== buf.bucket) {
         forming.c = price;
         forming.h = Math.max(forming.h, price, forming.o);
@@ -247,7 +312,7 @@
         buf.prices.push(forming.c);
         if (buf.prices.length > 60) buf.prices.shift();
         buf.bucket = bucket;
-        forming = { o: price, h: price, l: price, c: price, t: bucket * 1000 };
+        forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
       } else {
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;

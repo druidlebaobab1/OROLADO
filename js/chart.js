@@ -606,7 +606,17 @@
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
       var up = c.c >= c.o;
-      var col = up ? '#00E676' : '#FF1744';
+      var col = up ? '#00e676' : '#ff3b30';
+      if (opts.capWicks) {
+        var body = Math.abs(c.c - c.o);
+        var ref = Math.max(Math.abs(c.c), 1);
+        if (body < ref * 0.00012) body = ref * 0.00012;
+        var maxW = body * 1.5;
+        var hiB = Math.max(c.o, c.c);
+        var loB = Math.min(c.o, c.c);
+        if (c.h > hiB + maxW) c = { o: c.o, h: hiB + maxW, l: c.l, c: c.c, t: c.t };
+        if (c.l < loB - maxW) c = { o: c.o, h: c.h, l: loB - maxW, c: c.c, t: c.t };
+      }
       var x = toX(i);
       ctx.strokeStyle = col;
       ctx.lineWidth = thin ? 0.9 : 1.2;
@@ -1166,7 +1176,7 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * 0.15;
+    var padY = spanRaw * 0.12;
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
@@ -1234,7 +1244,10 @@
     ctx.rect(pad.l - 1, pad.t + 1, w + 2, Math.max(2, h - 2));
     ctx.clip();
     if (asset.chart === 'candle') {
-      map = drawCandles(pad, w, h, candles, minP, maxP, { thin: !!asset.candleThin });
+      map = drawCandles(pad, w, h, candles, minP, maxP, {
+        thin: !!asset.candleThin,
+        capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime'
+      });
       if (asset.trendLine) drawTrendLine(pad, w, h, candles, minP, maxP);
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, w, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
