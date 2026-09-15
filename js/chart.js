@@ -86,16 +86,15 @@
   }
 
   function rightOffsetPx() {
-    var mobile = (window.innerWidth || 0) <= 859;
-    return Math.max(cssW * 0.25, mobile ? 80 : cssW * 0.25);
+    return cssW * 0.30;
   }
 
   function plotLayout(pad) {
     pad = pad || { t: 16, r: 45, b: 28, l: 8 };
     var plotW = Math.max(40, cssW - pad.l - pad.r);
-    var headX = cssW - rightOffsetPx();
+    var headX = cssW * 0.70;
     var axisX = pad.l + plotW;
-    if (headX > axisX - 6) headX = axisX - 6;
+    if (headX > axisX - 8) headX = axisX - 8;
     if (headX < pad.l + 48) headX = pad.l + 48;
     return {
       plotW: plotW,
@@ -295,6 +294,7 @@
       st.lockMax = 0;
       if (aid === activeAsset) {
         strikeLock = null;
+        steer = null;
       }
     }
     if (isChartReady()) drawNow();
@@ -439,16 +439,11 @@
   }
 
   function applySteerToMarket(market) {
+    /* Overlay only — never write into OHLC / history buffers. */
     if (!market || !steer || steer.assetId !== activeAsset) return;
     var p = steeredPrice(market.price);
     if (!isFinite(p)) return;
-    market.price = p;
-    if (market.candle) {
-      market.candle.c = p;
-      if (p > market.candle.h) market.candle.h = p;
-      if (p < market.candle.l) market.candle.l = p;
-    }
-    lastDrawnClose = p;
+    market.displayPrice = p;
   }
 
   function drawConstellation(pad, w, h) {
@@ -1066,32 +1061,18 @@
     layout = layout || plotLayout(pad);
     var headX = layout.headX;
     var axisX = layout.axisX;
-    var x0 = pad.l;
-    var started = Number(trade.startTime || trade.startedAt || 0);
-    if (started > 0 && map && typeof map.toX === 'function' && map.count > 1) {
-      var candles = (window.assetBuffers && window.assetBuffers[activeAsset] && window.assetBuffers[activeAsset].candles) || [];
-      var t0 = candles.length ? candles[0].t : started;
-      var t1 = candles.length ? candles[candles.length - 1].t : Date.now();
-      if (t1 > t0) {
-        var u = (started - t0) / (t1 - t0);
-        if (u < 0) u = 0;
-        if (u > 1) u = 1;
-        x0 = pad.l + u * layout.seriesW;
-      }
-    }
-    var x1 = Math.max(x0 + 24, axisX);
     var isCall = trade.side === 'call';
     var col = isCall ? '#22C55E' : '#EF4444';
     var idx = tagIndex || 0;
     var badgeLift = isFinite(yShift) ? yShift : 0;
     g.save();
-    g.setLineDash([7, 5]);
+    g.setLineDash([6, 4]);
     g.strokeStyle = col;
     g.lineWidth = 2.2;
     g.globalAlpha = 1;
     g.beginPath();
-    g.moveTo(x0, ey);
-    g.lineTo(x1, ey);
+    g.moveTo(0, ey);
+    g.lineTo(cssW, ey);
     g.stroke();
     g.setLineDash([]);
     g.restore();
@@ -1127,8 +1108,8 @@
         var ty = nearTop ? (ey + 6 + (idx ? 0 : th + 4) + badgeLift) : (ey - timerH - 6 - idx * 22 - badgeLift);
         if (nearBot) ty = ey - timerH - 6 - idx * 22 - badgeLift;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        var tx = Math.max(pad.l + 4, x0 + 4);
-        if (tx + timerW > headX - 6) tx = Math.max(pad.l + 4, headX - timerW - 6);
+        var tx = Math.max(headX + 8, cssW * 0.70 + 8);
+        if (tx + timerW > axisX - 4) tx = Math.max(headX + 4, axisX - timerW - 4);
         g.fillStyle = 'rgba(10,15,29,0.94)';
         g.strokeStyle = col;
         g.lineWidth = 1.4;

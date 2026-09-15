@@ -662,24 +662,9 @@
   }
 
   function applyExitToMarket(trade, target) {
-    var m = markets[trade.assetId];
-    if (!m || !isFinite(target)) return;
-    m.price = target;
-    if (m.candle) {
-      m.candle.c = target;
-      if (target > m.candle.h) m.candle.h = target;
-      if (target < m.candle.l) m.candle.l = target;
-    }
-    var b = window.assetBuffers && window.assetBuffers[trade.assetId];
-    if (b) {
-      b.price = target;
-      b.vel = 0;
-      if (b.forming) {
-        b.forming.c = target;
-        if (target > b.forming.h) b.forming.h = target;
-        if (target < b.forming.l) b.forming.l = target;
-      }
-    }
+    /* Issue visuelle uniquement — l'historique de l'actif reste intact. */
+    void target;
+    void trade;
   }
 
   function prepareLastSecondSteer(now) {
@@ -691,11 +676,7 @@
       if (!isLive(tr) || tr.userId !== user.id) continue;
       var left = expiryOf(tr) - now;
       if (left > 220 || left < 0) continue;
-      var decided = decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
-      if (D6.Chart && D6.Chart.steerClose) {
-        try { D6.Chart.steerClose(decided.target, Math.max(80, left), tr.assetId); } catch (eSt) { /* ignore */ }
-      }
-      if (left <= 40) applyExitToMarket(tr, decided.target);
+      decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
     }
   }
 
@@ -949,9 +930,6 @@
       var exitPrice = decided.target;
       var won = decided.wantWon;
       applyExitToMarket(trade, exitPrice);
-      if (D6.Chart && D6.Chart.steerClose) {
-        try { D6.Chart.steerClose(exitPrice, 80, trade.assetId); } catch (eSt) { /* ignore */ }
-      }
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
       }
