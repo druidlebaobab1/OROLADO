@@ -326,10 +326,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #screenTrade.is-guest .topbar-cta,
 #screenTrade.is-guest .crypto-mini-row{display:none!important}
 #screenTrade.is-guest .auth-quick,
-#screenTrade.is-guest .auth-quick.hidden{display:flex!important;position:relative;z-index:50;flex:1 1 auto;min-width:0;gap:6px}
-#screenTrade.is-guest .btn-auth-link{flex:1 1 0;padding:6px 12px;font-size:.68rem;min-height:32px;text-align:center;justify-content:center}
-#screenTrade.is-guest #btnGoLogin{background:#12141c;color:#e8edf7;border:1px solid rgba(255,255,255,.14)}
-#screenTrade.is-guest #btnGoRegister{background:rgba(245,166,35,.12);color:#f5a623;border:1px solid #f5a623}
+#screenTrade.is-guest .auth-quick.hidden{display:flex!important;position:relative;z-index:50;flex:0 0 auto;min-width:0;margin-left:auto;gap:6px}
+#screenTrade.is-guest .topbar-actions{margin-left:0}
+#screenTrade.is-guest .btn-auth-link{flex:0 0 auto;padding:6px 12px;font-size:.68rem;min-height:32px;text-align:center;justify-content:center;display:inline-flex;align-items:center}
+#screenTrade.is-guest #btnGoLogin{background:#12141c;color:#e8edf7;border:1px solid rgba(255,255,255,.14);box-shadow:none}
+#screenTrade.is-guest #btnGoRegister{background:rgba(245,166,35,.1);color:#f5a623;border:1px solid #f5a623;box-shadow:none}
 #screenTrade:not(.is-guest) .auth-quick{display:none!important}
 #screenTrade.is-guest .mode-switch{grid-template-columns:1fr;max-width:100%}
 #screenTrade.is-guest #modeReal{display:none!important}
