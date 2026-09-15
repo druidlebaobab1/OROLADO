@@ -78,7 +78,7 @@
 
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
-    stable: { mode: 'line', vol: 0.0012, color: '#f5a623' },
+    stable: { mode: 'line', vol: 0.0048, color: '#ff2d55', coreWave: true, pullK: 0.05 },
     apex500: { mode: 'candles', vol: 0.0045, run: true },
     horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
     boomspike: { mode: 'candles', vol: 0.0020, spike: 1 },
@@ -128,6 +128,16 @@
       var nextT = price + climbT + nT;
       nextT = capPctMove(price, nextT, 0.00055 * Math.min(1, dtT));
       return clampIndexPrice(nextT, asset);
+    }
+    if (sim.coreWave && !opts.spike) {
+      var dtC = Math.max(dtSec, 0.02);
+      var zigC = (roll - 0.5) * price * vol;
+      var waveC = Math.sin(nowMs / 1000 * Math.PI / 1.55) * price * 0.00048;
+      var zig2C = Math.sin(nowMs / 1000 * Math.PI / 0.62) * price * 0.00018;
+      var pullC = (base - price) * (sim.pullK != null ? sim.pullK : 0.05);
+      var nextC = price + zigC + waveC + zig2C + pullC;
+      nextC = capPctMove(price, nextC, 0.0048 * Math.min(1, dtC));
+      return clampIndexPrice(nextC, asset);
     }
     var center = bias;
     var delta = (roll - center) * price * vol;
@@ -251,6 +261,7 @@
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
       titanVer: sim.titanDrop ? 2 : 0,
+      coreVer: sim.coreWave ? 1 : 0,
       ver: SIM_VER
     };
     publishHistory(asset.id, buf);
@@ -260,7 +271,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 2)) {
+    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 2) || (simOf(asset.id).coreWave && buf.coreVer !== 1)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();

@@ -726,6 +726,31 @@
     }
   }
 
+  function drawCoreLine(pad, w, h, data, minP, maxP, color, width) {
+    if (!data || data.length < 2) return null;
+    var col = color || '#ff2d55';
+    var toX = makeToX(data.length, pad, w);
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
+    var lastX = toX(data.length - 1);
+    var lastY = toY(data[data.length - 1]);
+    var i;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(data[0]));
+    for (i = 1; i < data.length; i++) {
+      ctx.lineTo(toX(i), toY(data[i]));
+    }
+    ctx.strokeStyle = col;
+    ctx.lineWidth = width || 1.8;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    ctx.stroke();
+    ctx.restore();
+    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
+  }
+
   function drawLine(pad, w, h, data, minP, maxP, color) {
     if (!data || data.length < 2) return null;
     var col = color || '#f5a623';
@@ -1133,17 +1158,20 @@
   function drawBead(map, price, color, now, theme) {
     if (!map) return;
     theme = theme || plotTheme(null);
+    var compact = activeAsset === 'stable';
     var pulse = 0.55 + 0.45 * Math.sin(now / 150);
     ctx.save();
+    if (!compact) {
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
+      ctx.fillStyle = theme.beadGlow || 'rgba(255,215,0,0.16)';
+      ctx.fill();
+    }
     ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
-    ctx.fillStyle = theme.beadGlow || 'rgba(255,215,0,0.16)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, 4.2, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 12;
+    ctx.arc(map.lastX, map.lastY, compact ? 3 : 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = compact ? '#ff2d55' : color;
+    ctx.shadowColor = compact ? 'transparent' : color;
+    ctx.shadowBlur = compact ? 0 : 12;
     ctx.fill();
     ctx.restore();
     ctx.fillStyle = theme.id === 'ivoryGold' ? theme.priceTxt : color;
@@ -1226,8 +1254,10 @@
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
-    minPrice = minPrice * 0.998;
-    maxPrice = maxPrice * 1.002;
+    if (asset.id !== 'stable') {
+      minPrice = minPrice * 0.998;
+      maxPrice = maxPrice * 1.002;
+    }
     if (allTrades.length) {
       allTrades.forEach(function (ot) {
         var ep = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
@@ -1244,7 +1274,7 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * 0.15;
+    var padY = spanRaw * (asset.id === 'stable' ? 0.25 : 0.15);
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
@@ -1261,7 +1291,10 @@
       st.lockMin = 0;
       st.lockMax = 0;
       strikeLock = null;
-      if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
+      if (asset.id === 'stable') {
+        viewMin = yMin;
+        viewMax = yMax;
+      } else if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
         var k = 0.12;
         viewMin = st.viewMin * (1 - k) + yMin * k;
         viewMax = st.viewMax * (1 - k) + yMax * k;
@@ -1315,6 +1348,8 @@
         capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
+    } else if (asset.id === 'stable') {
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ff2d55', asset.lineWidth || 1.8);
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
