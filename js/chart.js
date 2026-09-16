@@ -227,7 +227,9 @@
       expiryTime: exp,
       expiresAt: exp,
       settled: !!trade.settled,
-      status: trade.status || 'open'
+      status: trade.status || 'open',
+      stake: Number(trade.stake) || 0,
+      payout: trade.payout
     };
   }
 
@@ -436,16 +438,22 @@
     if (h < 8) h = fsMode ? Math.max(220, Math.floor((window.innerHeight || 700) - 140)) : 380;
 
     dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
+    var boxW = Math.max(0, Math.floor(parent.clientWidth || 0));
+    var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
+    if (boxW >= 8) w = boxW;
+    if (boxH >= 8) h = boxH;
     cssW = w;
     cssH = h;
     var bw = Math.round(cssW * dpr);
     var bh = Math.round(cssH * dpr);
-    var sizeChanged = canvas.width !== bw || canvas.height !== bh;
     canvas.width = bw;
     canvas.height = bh;
     canvas.style.width = cssW + 'px';
     canvas.style.height = cssH + 'px';
-    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (ctx) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    }
     if (overlay) {
       overlay.width = bw;
       overlay.height = bh;
@@ -1361,10 +1369,36 @@
         g.textAlign = 'center';
         g.textBaseline = 'middle';
         g.fillText(label, leftX + timerW / 2, ty + timerH / 2 + 0.5);
-        var aboveNow = isFinite(lastDrawnClose) ? lastDrawnClose >= entry : true;
-        var liveWin = (isCall && aboveNow) || (!isCall && !aboveNow);
-        var money = liveWin ? '+$0' : '-$0';
-        var mw = 42;
+        var aboveNow = isFinite(lastDrawnClose) ? lastDrawnClose > entry : false;
+        if (!isCall) aboveNow = isFinite(lastDrawnClose) ? lastDrawnClose < entry : false;
+        var liveWin = !!aboveNow;
+        var stakeN = Number(trade.stake);
+        var payRaw = trade.payout;
+        if (!(stakeN > 0) && D6.Engine && D6.Engine.getTrades) {
+          var liveTr = D6.Engine.getTrades();
+          var li;
+          for (li = 0; li < liveTr.length; li++) {
+            if (liveTr[li] && liveTr[li].id === trade.id) {
+              stakeN = Number(liveTr[li].stake) || stakeN;
+              if (payRaw == null) payRaw = liveTr[li].payout;
+              break;
+            }
+          }
+        }
+        var pctN = 88;
+        var pr = parseFloat(payRaw);
+        if (pr === 88 || pr === 500 || pr === 1000 || pr === 5000) pctN = pr;
+        else if (isFinite(pr) && pr > 1 && pr < 80) pctN = Math.round((pr - 1) * 100);
+        else if (pr >= 80) pctN = pr;
+        var gainN = stakeN * (pctN / 100);
+        if (D6.roundMoney) {
+          gainN = D6.roundMoney(gainN);
+          stakeN = D6.roundMoney(stakeN);
+        }
+        var money = liveWin
+          ? ('+$' + (Number(gainN) || 0).toFixed(2))
+          : ('-$' + (Number(stakeN) || 0).toFixed(2));
+        var mw = Math.max(52, 8 + money.length * 7.2);
         var mx0 = leftX + timerW + 6;
         g.fillStyle = 'rgba(10,15,29,0.92)';
         g.strokeStyle = liveWin ? '#00e676' : '#ff3b30';
@@ -1523,7 +1557,7 @@
       lo = mid - span / 2;
       hi = mid + span / 2;
     }
-    var pad = span * 0.08;
+    var pad = Math.max(span * 0.15, ((lo + hi) / 2) * 0.004);
     return { min: lo - pad, max: hi + pad };
   }
 
@@ -1574,7 +1608,7 @@
       histMax = mid + minSpan / 2;
       span = histMax - histMin;
     }
-    var pad = span * 0.08;
+    var pad = Math.max(span * 0.15, (head > 0 ? head : span) * 0.004);
     var yMin = histMin - pad;
     var yMax = histMax + pad;
     var k = 0.15;
@@ -1707,8 +1741,7 @@
       viewMin = cam.min;
       viewMax = cam.max;
     }
-    var keepAir = (viewMax - viewMin) * 0.08;
-    if (keepAir <= 0) keepAir = Math.abs(head) * 0.001;
+    var keepAir = Math.max((viewMax - viewMin) * 0.15, Math.abs(head) * 0.004);
     function pinInView(p) {
       if (!isFinite(p) || p <= 0 || p > 1e7) return;
       if (p > viewMax - keepAir) viewMax = p + keepAir;
@@ -1796,7 +1829,7 @@
       };
     }
     if (map && isFinite(map.lastY)) {
-      var air = fsOn ? 0.02 : 0.08;
+      var air = 0.15;
       var yLo = pad.t + h * air;
       var yHi = pad.t + h * (1 - air);
       if (map.lastY < yLo) map.lastY = yLo;
@@ -2111,6 +2144,17 @@
         lastTs = 0;
         window.chartIsPaused = false;
         bindVisibilityFix();
+        try {
+          if (!window.__oroladoFsResizeBound) {
+            window.__oroladoFsResizeBound = true;
+            var fsObs = new MutationObserver(function () {
+              try { resize(); } catch (eFs) { /* ignore */ }
+            });
+            fsObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+            var fsOv = document.getElementById('fsTradeOverlay');
+            if (fsOv) fsObs.observe(fsOv, { attributes: true, attributeFilter: ['class'] });
+          }
+        } catch (eMo) { /* ignore */ }
         if (loopRaf) {
           try { cancelAnimationFrame(loopRaf); } catch (eLf) { /* ignore */ }
           loopRaf = 0;

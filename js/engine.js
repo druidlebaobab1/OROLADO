@@ -647,6 +647,7 @@
     if (nowMs < buf.lastMs) nowMs = buf.lastMs;
     var sim = simOf(asset.id);
     var cms = candleMsFor(asset);
+    var busy = tradeBusyFor(asset.id);
     if (!buf.candles || buf.candles.length < 20) {
       buf.lastMs = nowMs;
       publishHistory(asset.id, buf);
@@ -655,15 +656,18 @@
     var elapsed = nowMs - buf.lastMs;
     if (elapsed < 0) elapsed = 0;
     if (elapsed > 400) {
-      buf.lastMs = nowMs;
-      elapsed = 0;
+      if (busy) elapsed = 220;
+      else {
+        buf.lastMs = nowMs;
+        elapsed = 0;
+      }
     }
     var fastTick = true;
     var missed = Math.floor(elapsed / cms);
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
     var g;
-    var maxCatch = tradeBusyFor(asset.id) ? 0 : 1;
+    var maxCatch = 1;
     var catchN = Math.min(missed, maxCatch);
     for (g = 0; g < catchN; g++) {
       var tsG = (buf.bucket + 1) * cms;
@@ -701,11 +705,13 @@
     }
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
-    var busy = tradeBusyFor(asset.id);
-    var box = busy ? tradeBoxFor(asset.id, price) : null;
     var stepMs = sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120);
     var steps = Math.floor(remain / stepMs);
-    if (remain < 40) steps = 0;
+    if (busy) {
+      if (remain >= 120) steps = Math.max(1, steps);
+      else if (remain < 80) steps = 0;
+      else if (steps < 1) steps = 1;
+    } else if (remain < 40) steps = 0;
     else if (steps < 1) steps = 1;
     if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;
       var s;
@@ -734,11 +740,14 @@
           didSpike = true;
         }
         if (!didSpike) {
-          price = unifiedStep(asset, price, tMs, dt, { hunt: 0, busy: busy });
+          price = unifiedStep(asset, price, tMs, dt, { hunt: 0, busy: false });
+        }
+        if (busy) {
+          var baseP = Number(asset.basePrice) || price;
+          price += (Math.random() - 0.495) * (baseP * 0.0004);
         }
         price = capPctMove(forming.c > 0 ? forming.c : price0, price, tickCapPct(asset, didSpike));
         price = clampIndexPrice(price, asset);
-        if (busy && box) price = clampToTradeBox(price, box);
         var bucket = Math.floor(tMs / cms);
         forming.c = price;
         var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
@@ -747,11 +756,7 @@
         if (price < forming.l) forming.l = price;
         forming.h = Math.max(forming.h, price + wickN);
         forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
-        if (busy && box) {
-          if (forming.h > box.frameHi) forming.h = box.frameHi;
-          if (forming.l < box.frameLo) forming.l = box.frameLo;
-        }
-        sanitizeOhlc(asset, forming, price, busy && box ? box.span : 0);
+        sanitizeOhlc(asset, forming, price, 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
           if (forming._boom || boomForce) forming._boom = true;
@@ -764,15 +769,8 @@
         }
       }
     buf.price = clampIndexPrice(price, asset);
-    if (busy && box) buf.price = clampToTradeBox(buf.price, box);
-    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, busy && box ? box.span : 0);
-    if (busy && box && buf.forming) {
-      buf.forming.c = clampToTradeBox(buf.forming.c, box);
-      if (buf.forming.h > box.frameHi) buf.forming.h = box.frameHi;
-      if (buf.forming.l < box.frameLo) buf.forming.l = box.frameLo;
-      buf.price = buf.forming.c;
-    }
-    buf.lastMs = nowMs;
+    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, 0);
+    if (steps > 0 || catchN > 0) buf.lastMs = nowMs;
     buf.ver = SIM_VER;
     buf.scaleVer = SCALE_VER;
     rebaseBufferTimes(buf, nowMs);
