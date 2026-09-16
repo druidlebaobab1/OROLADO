@@ -22,8 +22,8 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  var HEAD_X_RATIO = 0.70;
-  var FULLSCREEN_Y_PAD_RATIO = 0.22;
+  var HEAD_X_RATIO = 0.72;
+  var Y_PAD_RATIO = 0.12;
   var frameDisplayPrice = NaN;
   var headPriceMotion = {};
   var pendingYAnchor = null;
@@ -1577,40 +1577,29 @@
     return { min: lo, max: hi };
   }
 
-  function fitVisibleY(candles, extras, anchor, padRatio) {
+  function fitVisibleY(candles, extras) {
     var band = visiblePriceBand(candles, extras && extras[0], null);
-    var lo = band.min;
-    var hi = band.max;
+    var minPrice = band.min;
+    var maxPrice = band.max;
     var e;
     if (extras) {
       for (e = 0; e < extras.length; e++) {
         var x = Number(extras[e]);
         if (!isFinite(x) || x <= 0 || x > 1e7) continue;
-        if (x < lo) lo = x;
-        if (x > hi) hi = x;
+        if (x < minPrice) minPrice = x;
+        if (x > maxPrice) maxPrice = x;
       }
     }
-    var span = hi - lo;
-    if (!(span > 0)) {
-      var mid = (lo + hi) / 2 || 10000;
-      span = mid * 0.012;
-      lo = mid - span / 2;
-      hi = mid + span / 2;
+    var currentPrice = Number(extras && extras[0]);
+    if (!(currentPrice > 0)) currentPrice = (minPrice + maxPrice) / 2 || 10000;
+    var span = maxPrice - minPrice;
+    if (!(span > 0) || span < currentPrice * 0.003) {
+      span = currentPrice * 0.003;
+      minPrice = currentPrice - span * 0.5;
+      maxPrice = currentPrice + span * 0.5;
     }
-    var yPadRatio = isFinite(padRatio) ? Math.max(0.08, Math.min(0.45, padRatio)) : 0.15;
-    var pad = Math.max(span * yPadRatio, ((lo + hi) / 2) * 0.004);
-    var total = span + pad * 2;
-    if (anchor && isFinite(anchor.price) && anchor.price > 0) {
-      var ratio = Math.max(0.001, Math.min(0.999, Number(anchor.ratio) || 0.5));
-      var needTop = (hi + pad - anchor.price) / ratio;
-      var needBottom = (anchor.price - (lo - pad)) / (1 - ratio);
-      total = Math.max(total, needTop, needBottom);
-      return {
-        min: anchor.price - (1 - ratio) * total,
-        max: anchor.price + ratio * total
-      };
-    }
-    return { min: lo - pad, max: hi + pad };
+    var padY = span * Y_PAD_RATIO;
+    return { min: minPrice - padY, max: maxPrice + padY };
   }
 
   function captureTradeFrame(assetId, untilMs) {
@@ -1653,24 +1642,14 @@
 
   function idleCamera(histMin, histMax, prevMin, prevMax, head) {
     var span = histMax - histMin;
-    var minSpan = (head > 0 ? head : histMax) * 0.012;
-    if (!(span > 0) || span < minSpan) {
-      var mid = head > 0 ? head : (histMin + histMax) / 2;
-      histMin = mid - minSpan / 2;
-      histMax = mid + minSpan / 2;
-      span = histMax - histMin;
+    var currentPrice = head > 0 ? head : (histMin + histMax) / 2;
+    if (!(span > 0) || span < currentPrice * 0.003) {
+      span = currentPrice * 0.003;
+      histMin = currentPrice - span * 0.5;
+      histMax = currentPrice + span * 0.5;
     }
-    var pad = Math.max(span * 0.15, (head > 0 ? head : span) * 0.004);
-    var yMin = histMin - pad;
-    var yMax = histMax + pad;
-    var k = 0.15;
-    if (prevMin && prevMax && prevMax > prevMin) {
-      return {
-        min: prevMin * (1 - k) + yMin * k,
-        max: prevMax * (1 - k) + yMax * k
-      };
-    }
-    return { min: yMin, max: yMax };
+    var padY = span * Y_PAD_RATIO;
+    return { min: histMin - padY, max: histMax + padY };
   }
 
   function drawFrame(now) {
@@ -1740,10 +1719,10 @@
       ? frameDisplayPrice
       : ((minPrice + maxPrice) / 2);
     var spanRaw = maxPrice - minPrice;
-    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.012) {
-      minPrice = currentPrice * (1 - 0.006);
-      maxPrice = currentPrice * (1 + 0.006);
-      spanRaw = maxPrice - minPrice;
+    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.003) {
+      spanRaw = currentPrice * 0.003;
+      minPrice = currentPrice - spanRaw * 0.5;
+      maxPrice = currentPrice + spanRaw * 0.5;
     }
     var st = ensureAssetState(activeAsset);
     var head = currentPrice;
@@ -1765,7 +1744,7 @@
     var extrasY = [head];
     if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
     if (wantFitY) {
-      var fit = fitVisibleY(candles, extrasY, pendingYAnchor, fsOn ? FULLSCREEN_Y_PAD_RATIO : 0.15);
+      var fit = fitVisibleY(candles, extrasY);
       viewMin = fit.min;
       viewMax = fit.max;
       if (holdLock) {
@@ -1802,18 +1781,10 @@
       viewMax = cam.max;
     }
     var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
-    var ySafetyRatio = fsOn ? FULLSCREEN_Y_PAD_RATIO : 0.15;
-    var keepAir = Math.max(rawVisibleSpan * ySafetyRatio, Math.abs(head) * 0.004);
+    var keepAir = rawVisibleSpan * Y_PAD_RATIO;
     var needsSafeFit = minPrice < viewMin + keepAir || maxPrice > viewMax - keepAir;
     if ((fsOn || holdLock) && needsSafeFit) {
-      var anchorPrice = isFinite(strikeP) && strikeP > 0 ? strikeP : head;
-      var anchorRatio = (viewMax > viewMin)
-        ? (viewMax - anchorPrice) / (viewMax - viewMin)
-        : 0.5;
-      var safeFit = fitVisibleY(candles, extrasY, {
-        price: anchorPrice,
-        ratio: anchorRatio
-      }, fsOn ? FULLSCREEN_Y_PAD_RATIO : 0.15);
+      var safeFit = fitVisibleY(candles, extrasY);
       viewMin = safeFit.min;
       viewMax = safeFit.max;
     } else if (!fsOn && !holdLock) {
