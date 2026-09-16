@@ -2170,7 +2170,7 @@ html.is-fullscreen .ind-pills .chart-reset-btn{
   html body .chart-fs-btn,
   html body .chart-fs-btn .chart-fs-label,
   .btn-fullscreen, #btn-fullscreen, [data-action="fullscreen"]{
-    padding:2px 4px!important;font-size:9px!important;gap:2px!important;margin-right:8px!important}
+    padding:2px 4px!important;font-size:9px!important;gap:2px!important;margin-right:12px!important}
 }
 
 html body button.asset-chip.on[data-asset*="boom"],

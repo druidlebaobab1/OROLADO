@@ -16,8 +16,8 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [20, 30, 45, 60, 90, 120, 180, 300, 480, 600, 720];
-  var DEFAULT_ZOOM_IDX = 3;
+  var ZOOM_STEPS = [40, 45, 50, 55, 60];
+  var DEFAULT_ZOOM_IDX = 2;
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
   var inds = { ma: false, bb: false, ema: false };
@@ -144,28 +144,12 @@
   function makeToX(n, pad, seriesW) {
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
-    var head = x0 + span;
-    var times = xTimes;
-    var tNow = xNow || Date.now();
-    var win = xWin > 0 ? xWin : (zoomSec() * 1000);
-    var tFirst = times && times.length ? times[0] : NaN;
-    var tLast = times && times.length ? times[times.length - 1] : NaN;
-    var spread = (isFinite(tLast) && isFinite(tFirst)) ? (tLast - tFirst) : 0;
-    var timed = times && times.length > 8 && spread > win * 0.45;
-    if (timed) {
-      return function (i) {
-        var last = times.length - 1;
-        var idx = i < 0 ? 0 : (i > last ? last : i);
-        var t = times[idx];
-        if (!isFinite(t)) t = tNow;
-        var x = head - span * ((tNow - t) / win);
-        if (x < x0) x = x0;
-        if (x > head) x = head;
-        return x;
-      };
-    }
-    if (!(n > 1)) return function () { return head; };
-    return function (i) { return x0 + (Math.max(0, Math.min(n - 1, i)) / (n - 1)) * span; };
+    if (!(n > 1)) return function () { return x0 + span; };
+    var slot = span / n;
+    return function (i) {
+      var idx = Math.max(0, Math.min(n - 1, i));
+      return x0 + idx * slot + slot * 0.5;
+    };
   }
 
   function pruneTradeVisuals(now) {
@@ -528,7 +512,10 @@
       else if (D6.Engine.getMarket) D6.Engine.getMarket(activeAsset);
       live = liveBuffer(activeAsset);
     }
-    var n = Math.min(Math.ceil(zoomSmooth || zoomSec()) + 2, BUFFER_N);
+    var plotW = Math.max(140, cssW * 0.70);
+    var fit = Math.floor(plotW / 9.5);
+    var z = Math.ceil(zoomSmooth || zoomSec() || 50);
+    var n = Math.max(40, Math.min(60, fit, z));
     var done = (live && live.candles && live.candles.length)
       ? live.candles
       : ((window.assetsState && window.assetsState[activeAsset] && window.assetsState[activeAsset].candles) ||
@@ -739,11 +726,18 @@
     opts = opts || {};
     var thin = !!opts.thin;
     var span = Math.max(maxP - minP, 0.01);
-    var toX = makeToX(candles.length, pad, w);
+    var n = candles.length;
+    var slot = w / Math.max(1, n);
+    var gap = Math.min(4, Math.max(3, slot * 0.34));
+    var cw = Math.min(8, Math.max(6, slot - gap));
+    if (slot < 9) {
+      gap = Math.max(2.2, slot * 0.30);
+      cw = Math.max(5, slot - gap);
+    }
+    var toX = function (i) {
+      return pad.l + (Math.max(0, Math.min(n - 1, i)) + 0.5) * slot;
+    };
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var cw = Math.max(thin ? 3 : 4, (w / Math.max(8, zoomSmooth || candles.length)) * (thin ? 0.42 : 0.62));
-    if (opts.titanIce) cw = Math.max(3.2, (w / candles.length) * 0.72);
-    if (opts.v75Rose) cw = Math.max(3.6, (w / candles.length) * 0.5);
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
@@ -761,7 +755,7 @@
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
       var lWick = c.l;
-      if (!(opts.boomNeon && (c._boom || c._spike)) && !(opts.titanIce && c._spike) && !opts.v75Rose) {
+      if (opts.capWicks && !(opts.boomNeon && (c._boom || c._spike))) {
         if (hWick > hiB + maxW) hWick = hiB + maxW;
         if (lWick < loB - maxW) lWick = loB - maxW;
       }
@@ -1468,7 +1462,7 @@
     var startIdx = Math.max(0, closes.length - visN);
     seriesScratch.length = 0;
     var i;
-    if (asset.chart === 'candle' && asset.id !== 'titanpulse') {
+    if (asset.id !== 'titanpulse' && asset.id !== 'goldtrend' && (asset.chart === 'candle' || asset.id === 'stable' || asset.id === 'horizon50')) {
       for (i = 0; i < candles.length; i++) {
         seriesScratch.push(candles[i].h, candles[i].l);
       }
@@ -1477,22 +1471,7 @@
     }
     var minPrice = seriesScratch.length ? Math.min.apply(null, seriesScratch) : market.price;
     var maxPrice = seriesScratch.length ? Math.max.apply(null, seriesScratch) : market.price;
-    var refP = isFinite(market.price) && market.price > 0 ? market.price : ((minPrice + maxPrice) / 2);
-    var lastClose = candles.length && isFinite(candles[candles.length - 1].c) ? candles[candles.length - 1].c : refP;
-    if (isFinite(lastClose) && lastClose > 0) refP = lastClose;
-    var band = (asset.id === 'boomspike' || asset.id === 'titanpulse' || asset.id === 'crash300') ? 0.035 : 0.012;
-    var keepMin = refP;
-    var keepMax = refP;
-    for (i = 0; i < seriesScratch.length; i++) {
-      var pv = seriesScratch[i];
-      if (!isFinite(pv) || pv <= 0) continue;
-      if (Math.abs(pv - refP) / refP > band) continue;
-      if (pv < keepMin) keepMin = pv;
-      if (pv > keepMax) keepMax = pv;
-    }
-    minPrice = keepMin;
-    maxPrice = keepMax;
-    if (isFinite(market.price) && market.price > 0 && Math.abs(market.price - refP) / refP <= band && !allTrades.length) {
+    if (isFinite(market.price) && market.price > 0) {
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
@@ -1511,40 +1490,14 @@
     }
     var currentPrice = isFinite(market.price) ? market.price : ((minPrice + maxPrice) / 2);
     var spanRaw = maxPrice - minPrice;
-    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.002) {
-      minPrice = currentPrice * 0.998;
-      maxPrice = currentPrice * 1.002;
+    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.006) {
+      minPrice = currentPrice * (1 - 0.006);
+      maxPrice = currentPrice * (1 + 0.006);
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * (asset.id === 'stable' ? 0.28 : (asset.id === 'goldtrend' ? 0.10 : (asset.id === 'boomspike' ? 0 : 0.15)));
+    var padY = spanRaw * 0.20;
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
-    if (asset.id === 'boomspike') {
-      var boomSpan = Math.max(spanRaw, currentPrice * 0.003);
-      yMin = minPrice - boomSpan * 0.14;
-      yMax = yMin + (maxPrice - yMin) / 0.90;
-    }
-    if (asset.id === 'nexusprime') {
-      var nxSpan = Math.max(spanRaw, currentPrice * 0.0025);
-      yMin = minPrice - nxSpan * (0.08 / 0.84);
-      yMax = maxPrice + nxSpan * (0.08 / 0.84);
-    }
-    if (asset.id === 'titanpulse') {
-      var tiSpan = Math.max(spanRaw, currentPrice * 0.003);
-      yMin = minPrice - tiSpan * (0.10 / 0.80);
-      yMax = maxPrice + tiSpan * (0.10 / 0.80);
-    }
-    if (asset.id === 'v75') {
-      var vSpan = Math.max(spanRaw, currentPrice * 0.003);
-      yMin = minPrice - vSpan * (0.10 / 0.80);
-      yMax = maxPrice + vSpan * (0.10 / 0.80);
-    }
-    var spanY = Math.max(yMax - yMin, spanRaw, currentPrice * 0.002, 0.01);
-    var midY = (minPrice + maxPrice) / 2;
-    var halfY = spanY / 2;
-    var floorPad = spanY * 0.20;
-    yMin = midY - halfY - floorPad;
-    yMax = midY + halfY;
     var st = ensureAssetState(activeAsset);
 
     if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime' && asset.id !== 'titanpulse' && asset.id !== 'v75') {
@@ -1665,10 +1618,10 @@
     ctx.clip();
     if (asset.id === 'titanpulse') {
       map = drawTitanLightning(pad, seriesW, h, candles, minP, maxP);
-    } else if (asset.chart === 'candle') {
+    } else if (asset.chart === 'candle' || asset.id === 'stable' || asset.id === 'horizon50') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
-        thin: !!asset.candleThin,
-        capWicks: asset.id === 'v100' || asset.id === 'boomspike' || asset.id === 'crash300' || asset.id === 'v75' || asset.id === 'nexusprime',
+        thin: false,
+        capWicks: false,
         boomNeon: asset.id === 'boomspike',
         nexusCyber: asset.id === 'nexusprime',
         titanIce: false,
