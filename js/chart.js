@@ -678,7 +678,7 @@
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       if (opts.titanIce) col = up ? '#FFFFFF' : '#B0BEC5';
-      if (opts.v75Rose) col = '#E91E63';
+      if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
       if (opts.crashDrop && !up) col = '#FF3B30';
       var body = Math.abs(c.c - c.o);
       var ref = Math.max(Math.abs(c.c), 1);
@@ -701,34 +701,40 @@
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      var bh = Math.max(opts.titanIce ? 2.2 : (opts.v75Rose ? 5 : 3), y2 - y1);
+      var bh = Math.max(opts.titanIce ? 2.2 : (opts.v75Rose ? 2.4 : 3), y2 - y1);
       if (opts.titanIce && y2 - y1 < 2) bh = 2;
-      ctx.fillStyle = col;
       var boomHit = !!(opts.boomNeon && (c._boom || c._spike) && up);
       if (boomHit) {
         ctx.shadowColor = 'rgba(0,230,118,0.7)';
         ctx.shadowBlur = 11;
-      } else if (opts.titanIce && i === candles.length - 1) {
-        ctx.shadowColor = up ? 'rgba(255,255,255,0.5)' : 'rgba(176,190,197,0.35)';
-        ctx.shadowBlur = 7;
       } else if (opts.crashDrop && !up && (c._spike || i === candles.length - 1)) {
         ctx.shadowColor = 'rgba(255,59,48,0.65)';
         ctx.shadowBlur = 10;
       } else if (opts.v75Rose && i === candles.length - 1) {
-        ctx.shadowColor = 'rgba(233,30,99,0.55)';
-        ctx.shadowBlur = 9;
+        ctx.shadowColor = up ? 'rgba(255,45,117,0.4)' : 'rgba(216,0,86,0.5)';
+        ctx.shadowBlur = 8;
       } else if (opts.nexusCyber && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
         ctx.shadowBlur = 8;
-      } else if (!thin && i === candles.length - 1 && cssH >= 200) {
+      } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
         ctx.shadowBlur = 8;
       }
-      ctx.fillRect(x - cw / 2, y1, cw, bh);
-      if (opts.titanIce || opts.v75Rose) {
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 1;
+      if (opts.v75Rose && up) {
+        ctx.strokeStyle = '#ff2d75';
+        ctx.lineWidth = 1.15;
         ctx.strokeRect(x - cw / 2, y1, cw, bh);
+      } else if (opts.v75Rose) {
+        ctx.fillStyle = '#d80056';
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
+      } else {
+        ctx.fillStyle = col;
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
+        if (opts.titanIce) {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x - cw / 2, y1, cw, bh);
+        }
       }
       ctx.shadowBlur = 0;
     }
@@ -787,33 +793,25 @@
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var i;
+    var last = candles[candles.length - 1];
+    var lastX = toX(candles.length - 1);
+    var lastY = toY(last.c);
     ctx.save();
-    ctx.lineCap = 'butt';
-    ctx.lineWidth = 1;
-    for (i = 0; i < candles.length; i++) {
-      var c = candles[i];
-      ctx.strokeStyle = 'rgba(255,255,255,0.42)';
-      ctx.beginPath();
-      ctx.moveTo(toX(i), toY(c.h));
-      ctx.lineTo(toX(i), toY(c.l));
-      ctx.stroke();
-    }
     ctx.beginPath();
     ctx.moveTo(toX(0), toY(candles[0].c));
     for (i = 1; i < candles.length; i++) {
       ctx.lineTo(toX(i), toY(candles[i].c));
     }
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 1.55;
+    ctx.strokeStyle = '#e0e6ed';
+    ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(255,255,255,0.38)';
-    ctx.shadowBlur = 5;
+    ctx.shadowColor = 'rgba(224,230,237,0.78)';
+    ctx.shadowBlur = 12;
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.restore();
-    var last = candles[candles.length - 1];
-    return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
+    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: candles.length };
   }
 
   function drawLine(pad, w, h, data, minP, maxP, color) {
@@ -1252,15 +1250,37 @@
     }
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : 4.2))), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2d55' : (v75Head ? '#E91E63' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color)));
-    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#E91E63' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : color)));
+    ctx.fillStyle = compact ? '#ff2d55' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
+    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
     ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 11 : (nexusHead ? 10 : 12)));
     ctx.fill();
     ctx.restore();
-    ctx.fillStyle = theme.id === 'ivoryGold' ? theme.priceTxt : color;
-    ctx.font = '800 10px "Hanken Grotesk", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(formatAxisPrice(price), cssW - 48, map.lastY + 3);
+  }
+
+  function drawLivePriceBadge(map, price, layout) {
+    if (!map || !isFinite(map.lastY)) return;
+    var txt = formatAxisPrice(price);
+    ctx.save();
+    ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(txt).width) + 14;
+    var th = 22;
+    var x = (layout && layout.headX != null) ? layout.headX + 10 : map.lastX + 10;
+    var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
+    if (x + tw > axisX - 2) x = axisX - tw - 2;
+    if (x < 8) x = 8;
+    var y = map.lastY - th / 2;
+    y = Math.max(4, Math.min(cssH - th - 4, y));
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.strokeStyle = 'rgba(245,166,35,0.9)';
+    ctx.lineWidth = 1;
+    roundRect(x, y, tw, th, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#F5A623';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(txt, x + tw / 2, y + th / 2 + 0.5);
+    ctx.restore();
   }
 
   function dampedRange(candles, assetId, minP, maxP) {
@@ -1307,7 +1327,7 @@
     var narrow = (window.innerWidth || 0) <= 430;
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
-    var pad = { t: fsOn ? (narrow ? 18 : 22) : (narrow ? 16 : 20), r: 45, b: 28, l: 8 };
+    var pad = { t: fsOn ? (narrow ? 8 : 10) : (narrow ? 6 : 8), r: 56, b: 22, l: 8 };
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;
@@ -1324,7 +1344,7 @@
     var startIdx = Math.max(0, closes.length - visN);
     var series = [];
     var i;
-    if (asset.chart === 'candle') {
+    if (asset.chart === 'candle' && asset.id !== 'titanpulse') {
       for (i = 0; i < candles.length; i++) {
         series.push(candles[i].h, candles[i].l);
       }
@@ -1380,6 +1400,8 @@
       yMin = minPrice - vSpan * (0.10 / 0.80);
       yMax = maxPrice + vSpan * (0.10 / 0.80);
     }
+    var floorPad = Math.max(yMax - yMin, spanRaw, 0.01) * 0.20;
+    yMin -= floorPad;
     var st = ensureAssetState(activeAsset);
 
     if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime' && asset.id !== 'titanpulse' && asset.id !== 'v75') {
@@ -1570,9 +1592,12 @@
       tagCol = market.price >= (market.candle && market.candle.o) ? '#00E676' : '#FF3B30';
     }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
-    if (asset.id === 'titanpulse') tagCol = '#FFFFFF';
-    if (asset.id === 'v75') tagCol = '#E91E63';
-    if (map) drawBead(map, market.price, tagCol, now, theme);
+    if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
+    if (asset.id === 'v75') tagCol = '#ff2d75';
+    if (map) {
+      drawBead(map, market.price, tagCol, now, theme);
+      drawLivePriceBadge(map, market.price, layout);
+    }
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);
     st.min = minP;
