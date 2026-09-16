@@ -48,6 +48,7 @@
   var tradeYsScratch = [];
   window.assetsState = window.assetsState || {};
   window.assetBuffers = window.assetBuffers || {};
+  window.ASSET_BUFFERS = window.assetBuffers;
 
   function ensureAssetState(id) {
     window.assetsState = window.assetsState || {};
@@ -134,6 +135,12 @@
     };
   }
 
+  function liveBuffer(id) {
+    var key = id || activeAsset;
+    return (window.ASSET_BUFFERS && window.ASSET_BUFFERS[key]) ||
+      (window.assetBuffers && window.assetBuffers[key]) || null;
+  }
+
   function makeToX(n, pad, seriesW) {
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
@@ -142,18 +149,23 @@
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
     var tFirst = times && times.length ? times[0] : NaN;
-    var tMid = times && times.length > 2 ? times[Math.floor(times.length / 2)] : NaN;
-    var timed = times && times.length > 8 && isFinite(tFirst) && isFinite(tMid) && (tMid - tFirst > 800);
+    var tLast = times && times.length ? times[times.length - 1] : NaN;
+    var spread = (isFinite(tLast) && isFinite(tFirst)) ? (tLast - tFirst) : 0;
+    var timed = times && times.length > 8 && spread > win * 0.45;
     if (timed) {
       return function (i) {
         var last = times.length - 1;
-        var t = (i >= last) ? tNow : times[i < 0 ? 0 : i];
+        var idx = i < 0 ? 0 : (i > last ? last : i);
+        var t = times[idx];
         if (!isFinite(t)) t = tNow;
-        return head - span * ((tNow - t) / win);
+        var x = head - span * ((tNow - t) / win);
+        if (x < x0) x = x0;
+        if (x > head) x = head;
+        return x;
       };
     }
     if (!(n > 1)) return function () { return head; };
-    return function (i) { return x0 + (i / (n - 1)) * span; };
+    return function (i) { return x0 + (Math.max(0, Math.min(n - 1, i)) / (n - 1)) * span; };
   }
 
   function pruneTradeVisuals(now) {
@@ -510,18 +522,20 @@
   }
 
   function visibleCandles(market) {
-    if ((!window.assetBuffers || !window.assetBuffers[activeAsset] ||
-        !window.assetBuffers[activeAsset].candles ||
-        window.assetBuffers[activeAsset].candles.length < 80) &&
-        D6.Engine && D6.Engine.getMarket) {
-      D6.Engine.getMarket(activeAsset);
+    var live = liveBuffer(activeAsset);
+    if ((!live || !live.candles || live.candles.length < 300) && D6.Engine) {
+      if (D6.Engine.getBuffer) D6.Engine.getBuffer(activeAsset);
+      else if (D6.Engine.getMarket) D6.Engine.getMarket(activeAsset);
+      live = liveBuffer(activeAsset);
     }
     var n = Math.min(Math.ceil(zoomSmooth || zoomSec()) + 2, BUFFER_N);
-    var live = window.assetBuffers && window.assetBuffers[activeAsset];
     var done = (live && live.candles && live.candles.length)
       ? live.candles
       : ((window.assetsState && window.assetsState[activeAsset] && window.assetsState[activeAsset].candles) ||
         ((market && market.candles) || []));
+    if (done.length < 8 && market && market.candles && market.candles.length > done.length) {
+      done = market.candles;
+    }
     candleScratch.length = 0;
     var start = Math.max(0, done.length - n);
     var i;
@@ -539,7 +553,7 @@
 
   function closeSeries(market) {
     tmpCloses.length = 0;
-    var live = window.assetBuffers && window.assetBuffers[activeAsset];
+    var live = liveBuffer(activeAsset);
     var done = (live && live.candles && live.candles.length)
       ? live.candles
       : ((market && market.candles) || []);
@@ -727,7 +741,7 @@
     var span = Math.max(maxP - minP, 0.01);
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var cw = Math.max(3, (w / Math.max(8, zoomSmooth || candles.length)) * (thin ? 0.42 : 0.55));
+    var cw = Math.max(thin ? 3 : 4, (w / Math.max(8, zoomSmooth || candles.length)) * (thin ? 0.42 : 0.62));
     if (opts.titanIce) cw = Math.max(3.2, (w / candles.length) * 0.72);
     if (opts.v75Rose) cw = Math.max(3.6, (w / candles.length) * 0.5);
     var i;
@@ -1975,9 +1989,16 @@
       persistView(activeAsset);
       activeAsset = id;
       applyAssetView(id);
+      viewMin = 0;
+      viewMax = 0;
       if (steer && steer.assetId !== id) steer = null;
-      var liveBuf = window.assetBuffers && window.assetBuffers[id];
+      var liveBuf = liveBuffer(id);
       var st = ensureAssetState(id);
+      if ((!liveBuf || !liveBuf.candles || liveBuf.candles.length < 300) && D6.Engine) {
+        if (D6.Engine.getBuffer) D6.Engine.getBuffer(id);
+        else if (D6.Engine.getMarket) D6.Engine.getMarket(id);
+        liveBuf = liveBuffer(id);
+      }
       if (liveBuf && isFinite(liveBuf.price) && liveBuf.price > 0) {
         lastDrawnClose = liveBuf.price;
         st.lastPrice = liveBuf.price;

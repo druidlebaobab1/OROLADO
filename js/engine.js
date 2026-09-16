@@ -76,6 +76,7 @@
   }
 
   window.assetBuffers = window.assetBuffers || {};
+  window.ASSET_BUFFERS = window.assetBuffers;
   window.assetsHistory = window.assetsHistory || {};
 
   var SIM = {
@@ -90,7 +91,9 @@
     goldtrend: { mode: 'line', vol: 0.0125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
     titanpulse: { mode: 'line', vol: 0.0098, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 55 },
   };
-  var SIM_VER = 12;
+  var SIM_VER = 13;
+  var TITAN_VER = 8;
+  var MIN_SEED = 500;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -178,13 +181,17 @@
     var roll = opts.det != null ? uhash01(opts.det, 904177) : Math.random();
     if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
-      var nT = (roll - 0.5) * price * vol;
-      var pT = Math.sin(nowMs / 1000 * Math.PI * 18.5) * price * 0.00095;
-      var qT = Math.sin(nowMs / 1000 * Math.PI * 41) * price * 0.00042;
-      var rT = Math.sin(nowMs / 1000 * Math.PI * 9.1) * price * 0.00055;
-      var pullT = (base - price) * 0.032;
-      var nextT = price + nT + pT + qT + rT + pullT;
-      nextT = capPctMove(price, nextT, 0.0088 * Math.min(1, dtT * 3));
+      var nT = (roll - 0.5) * price * vol * 1.35;
+      var pT = Math.sin(nowMs / 220 * Math.PI) * price * 0.0034;
+      var qT = Math.sin(nowMs / 95 * Math.PI) * price * 0.0016;
+      var rT = Math.sin(nowMs / 410 * Math.PI) * price * 0.0022;
+      var sT = Math.sin(nowMs / 58 * Math.PI) * price * 0.00085;
+      var pullT = (base - price) * 0.018;
+      var nextT = price + nT + pT + qT + rT + sT + pullT;
+      if (roll > 0.91) nextT = price * (1 - 0.010 - (roll - 0.91) * 0.22);
+      else if (roll < 0.08) nextT = price * (1 + 0.007 + (0.08 - roll) * 0.16);
+      else if (roll > 0.78 && roll < 0.84) nextT = price * (1 + 0.0045);
+      nextT = capPctMove(price, nextT, 0.018 * Math.min(1, dtT * 4));
       return clampIndexPrice(nextT, asset);
     }
     if (sim.coreWave && !opts.spike) {
@@ -270,9 +277,8 @@
         if (c >= o) c = o + Math.max(ampV, Math.abs(c - o) * 1.45);
         else c = o - Math.max(ampV, Math.abs(c - o) * 1.45);
       } else if (sim.titanDrop) {
-        var ampT = Math.max(Math.abs(o) * 0.00011, 0.01);
-        if (c >= o) c = o + ampT;
-        else c = o - ampT;
+        var ampT = Math.max(Math.abs(o) * 0.0016, 0.28);
+        if (Math.abs(c - o) < ampT) c = o + (c >= o ? ampT : -ampT);
       } else if (sim.boomBurst) {
         var tinyB = Math.max(Math.abs(o) * 0.00014, 0.01);
         c = c >= o ? o + tinyB : o - tinyB;
@@ -307,12 +313,31 @@
     };
   }
 
-  function publishHistory(assetId, buf) {
-    window.assetsHistory = window.assetsHistory || {};
+  function bindGlobalBuffers() {
     window.assetBuffers = window.assetBuffers || {};
+    window.ASSET_BUFFERS = window.assetBuffers;
+    window.assetsHistory = window.assetsHistory || {};
+  }
+
+  function rebaseBufferTimes(buf, nowMs) {
+    if (!buf || !buf.candles || !buf.candles.length) return;
+    var cms = CANDLE_MS;
+    var n = buf.candles.length;
+    var tEnd = Math.floor((nowMs || Date.now()) / cms) * cms;
+    var i;
+    for (i = 0; i < n; i++) {
+      buf.candles[i].t = tEnd - (n - 1 - i) * cms;
+    }
+    buf.bucket = Math.floor(tEnd / cms);
+    if (buf.forming) buf.forming.t = tEnd;
+  }
+
+  function publishHistory(assetId, buf) {
+    bindGlobalBuffers();
     var prices = (buf.prices || []).slice(-HISTORY_N);
     window.assetsHistory[assetId] = prices;
     window.assetBuffers[assetId] = buf;
+    window.ASSET_BUFFERS[assetId] = buf;
   }
 
   function seedAssetBuffer(asset) {
@@ -350,10 +375,19 @@
           l = Math.min(o, l, price);
         }
       } else {
-        for (k = 0; k < 4; k++) {
-          price = unifiedStep(asset, price, ts + k * (cms / 4), cms / 4000, { det: t0 + i * 4 + k });
+        var innerN = sim.titanDrop ? 8 : 4;
+        for (k = 0; k < innerN; k++) {
+          price = unifiedStep(asset, price, ts + k * (cms / innerN), cms / (innerN * 1000), { det: t0 + i * innerN + k });
           if (price > h) h = price;
           if (price < l) l = price;
+        }
+        if (sim.titanDrop && i % (14 + Math.floor(uhash01(t0 + i, 991177) * 9)) === 0 && i > 2) {
+          var drop = 1 - (0.012 + uhash01(t0 + i, 44) * 0.018);
+          if (uhash01(t0 + i, 77) > 0.5) drop = 1 + (0.010 + uhash01(t0 + i, 88) * 0.016);
+          price = clampIndexPrice(o * drop, asset);
+          spiked = true;
+          h = Math.max(h, price, o);
+          l = Math.min(l, price, o);
         }
         if (sim.spike && (t0 + i) % (25 + Math.floor(uhash01(Math.floor((t0 + i) / 30), 11) * 11)) === 0 && i > 8) {
           var from = o;
@@ -377,7 +411,7 @@
       bucket: Math.floor(now / cms),
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
-      titanVer: sim.titanDrop ? 7 : 0,
+      titanVer: sim.titanDrop ? TITAN_VER : 0,
       coreVer: sim.coreWave ? 1 : 0,
       goldVer: sim.goldHot ? 2 : 0,
       boomVer: sim.boomBurst ? 2 : 0,
@@ -392,13 +426,20 @@
       ver: SIM_VER
     };
     publishHistory(asset.id, buf);
+    rebaseBufferTimes(buf, now);
     return buf;
   }
 
+  function bufferNeedsSeed(asset, buf) {
+    if (!buf || !buf.candles || buf.candles.length < MIN_SEED) return true;
+    if (simOf(asset.id).titanDrop && buf.titanVer !== TITAN_VER) return true;
+    return false;
+  }
+
   function advanceBuffer(asset, nowMs) {
-    window.assetBuffers = window.assetBuffers || {};
-    var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 500 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 7) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 2) || (simOf(asset.id).boomBurst && buf.boomVer !== 2) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 2)) {
+    bindGlobalBuffers();
+    var buf = window.ASSET_BUFFERS[asset.id] || window.assetBuffers[asset.id];
+    if (bufferNeedsSeed(asset, buf)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
@@ -408,57 +449,102 @@
     var elapsed = nowMs - buf.lastMs;
     if (elapsed < 0) elapsed = 0;
     var fastTick = sim.goldHot || sim.boomBurst || sim.nexusPulse || sim.titanDrop || sim.v75Wave;
-    if (elapsed > 1500) elapsed = fastTick ? 160 : 280;
-    var stepMs = sim.goldHot ? 48 : (sim.boomBurst ? 50 : (sim.nexusPulse ? 52 : (sim.titanDrop ? 42 : (sim.v75Wave ? 95 : 280))));
-    if (elapsed < stepMs) return buf;
-    var steps = Math.max(1, Math.min(fastTick ? 6 : 3, Math.floor(elapsed / stepMs)));
-    var s;
+    var missed = Math.floor(elapsed / cms);
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
-    for (s = 0; s < steps; s++) {
-      var tMs = buf.lastMs + ((s + 1) / steps) * elapsed;
-      var dt = Math.max(0.02, (elapsed / steps) / 1000);
-      var didSpike = false;
-      var boomForce = false;
-      var titanForce = false;
-      if (sim.boomBurst) {
-        var br = stepBoomBurst(asset, buf, price, tMs);
-        price = br.price;
-        if (br.boom) {
-          forming._spike = true;
-          forming._boom = true;
-          forming.o = br.from;
+    var g;
+    var maxCatch = 80;
+    var catchN = Math.min(missed, maxCatch);
+    for (g = 0; g < catchN; g++) {
+      var tsG = (buf.bucket + 1) * cms;
+      var oG = price;
+      var hG = oG;
+      var lG = oG;
+      var spikedG = false;
+      var kk;
+      var inner = sim.titanDrop ? 6 : 3;
+      for (kk = 0; kk < inner; kk++) {
+        if (sim.boomBurst) {
+          var brG = stepBoomBurst(asset, buf, price, tsG + kk * (cms / inner));
+          price = brG.price;
+          if (brG.boom) spikedG = true;
+        } else {
+          price = unifiedStep(asset, price, tsG + kk * (cms / inner), cms / (inner * 1000), {});
         }
-        didSpike = true;
-      } else if (sim.spike && tMs >= (buf.nextSpike || 0)) {
-        var fromP = price;
-        price = clampIndexPrice(fromP * (1 + sim.spike * 0.02), asset);
-        buf.nextSpike = tMs + 25000 + Math.random() * 10000;
-        forming._spike = true;
-        forming.o = fromP;
-        didSpike = true;
+        if (price > hG) hG = price;
+        if (price < lG) lG = price;
       }
-      if (!didSpike) {
-        price = unifiedStep(asset, price, tMs, dt, {});
+      if (sim.spike && tsG >= (buf.nextSpike || 0)) {
+        price = clampIndexPrice(oG * (1 + sim.spike * 0.02), asset);
+        buf.nextSpike = tsG + 25000 + Math.random() * 10000;
+        spikedG = true;
+        hG = Math.max(hG, price, oG);
+        lG = Math.min(lG, price, oG);
       }
-      var bucket = Math.floor(tMs / cms);
-      if (price > forming.h) forming.h = price;
-      if (price < forming.l) forming.l = price;
-      forming.c = price;
-      if (bucket !== buf.bucket) {
-        forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
-        if (forming._boom || boomForce) forming._boom = true;
-        buf.candles.push(forming);
-        if (buf.candles.length > HISTORY_N) buf.candles.shift();
-        buf.prices.push(forming.c);
-        if (buf.prices.length > HISTORY_N) buf.prices.shift();
-        buf.bucket = bucket;
-        forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
+      var closedG = finishCandle(asset, oG, hG, lG, price, tsG, spikedG);
+      if (sim.boomBurst && spikedG) closedG._boom = true;
+      buf.candles.push(closedG);
+      if (buf.candles.length > HISTORY_N) buf.candles.shift();
+      buf.prices.push(closedG.c);
+      if (buf.prices.length > HISTORY_N) buf.prices.shift();
+      buf.bucket += 1;
+      price = closedG.c;
+      forming = { o: price, h: price, l: price, c: price, t: (buf.bucket) * cms };
+    }
+    var remain = elapsed - catchN * cms;
+    if (remain < 0) remain = 0;
+    if (catchN >= maxCatch) remain = Math.min(remain, cms);
+    var stepMs = sim.goldHot ? 48 : (sim.boomBurst ? 50 : (sim.nexusPulse ? 52 : (sim.titanDrop ? 42 : (sim.v75Wave ? 95 : 280))));
+    if (remain >= stepMs || catchN > 0) {
+      var steps = Math.max(catchN > 0 ? 0 : 1, Math.min(fastTick ? 6 : 3, Math.floor(remain / stepMs)));
+      var s;
+      for (s = 0; s < steps; s++) {
+        var tMs = nowMs - remain + ((s + 1) / Math.max(1, steps)) * remain;
+        var dt = Math.max(0.02, (remain / Math.max(1, steps)) / 1000);
+        var didSpike = false;
+        var boomForce = false;
+        var titanForce = false;
+        if (sim.boomBurst) {
+          var br = stepBoomBurst(asset, buf, price, tMs);
+          price = br.price;
+          if (br.boom) {
+            forming._spike = true;
+            forming._boom = true;
+            forming.o = br.from;
+          }
+          didSpike = true;
+        } else if (sim.spike && tMs >= (buf.nextSpike || 0)) {
+          var fromP = price;
+          price = clampIndexPrice(fromP * (1 + sim.spike * 0.02), asset);
+          buf.nextSpike = tMs + 25000 + Math.random() * 10000;
+          forming._spike = true;
+          forming.o = fromP;
+          didSpike = true;
+        }
+        if (!didSpike) {
+          price = unifiedStep(asset, price, tMs, dt, {});
+        }
+        var bucket = Math.floor(tMs / cms);
+        if (price > forming.h) forming.h = price;
+        if (price < forming.l) forming.l = price;
+        forming.c = price;
+        if (bucket !== buf.bucket) {
+          forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
+          if (forming._boom || boomForce) forming._boom = true;
+          buf.candles.push(forming);
+          if (buf.candles.length > HISTORY_N) buf.candles.shift();
+          buf.prices.push(forming.c);
+          if (buf.prices.length > HISTORY_N) buf.prices.shift();
+          buf.bucket = bucket;
+          forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
+        }
       }
     }
     buf.price = price;
     buf.forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike);
     buf.lastMs = nowMs;
+    buf.ver = SIM_VER;
+    rebaseBufferTimes(buf, nowMs);
     publishHistory(asset.id, buf);
     return buf;
   }
@@ -571,12 +657,14 @@
   }
 
   function preloadAllBuffers() {
+    bindGlobalBuffers();
     ensureMarkets();
     var id;
     for (id in C.ASSETS) {
       if (!C.ASSETS[id]) continue;
       syncMarket(markets[id], C.ASSETS[id], Date.now());
     }
+    window.ASSET_BUFFERS = window.assetBuffers;
   }
 
   function wakeMarket(assetId) {
@@ -908,6 +996,13 @@
 
     getMarket: function (id) {
       return wakeMarket(id);
+    },
+
+    getBuffer: function (id) {
+      bindGlobalBuffers();
+      id = canonAssetId(id);
+      if (C.ASSETS[id]) wakeMarket(id);
+      return window.ASSET_BUFFERS[id] || window.assetBuffers[id] || null;
     },
 
     preloadAll: function () {
