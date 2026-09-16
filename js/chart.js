@@ -303,27 +303,10 @@
     openTradeVisuals[snap.id] = snap;
     if (snap.assetId === activeAsset) {
       var stLock = ensureAssetState(activeAsset);
-      var entryPrice = Number(snap.entryPrice);
-      if (!(entryPrice > 0) || entryPrice > 1e7) entryPrice = lastDrawnClose;
-      var lo = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (stLock.viewMin || 0);
-      var hi = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (stLock.viewMax || 0);
-      if (!(hi > lo)) {
-        lo = entryPrice * 0.994;
-        hi = entryPrice * 1.006;
-      }
-      var spanNow = hi - lo;
-      var minSpan = entryPrice * 0.012;
-      if (spanNow < minSpan) {
-        var midH = (lo + hi) / 2;
-        lo = midH - minSpan / 2;
-        hi = midH + minSpan / 2;
-      }
-      stLock.lockMin = lo;
-      stLock.lockMax = hi;
-      viewMin = lo;
-      viewMax = hi;
       var expL = snap.expiryTime || snap.expiresAt || 0;
       stLock.lockUntil = Math.max(stLock.lockUntil || 0, expL + 1000);
+      stLock.lockMin = 0;
+      stLock.lockMax = 0;
     }
     if (!isChartReady()) {
       if (openTradeVisualQueue.indexOf(snap.id) < 0) openTradeVisualQueue.push(snap.id);
@@ -1471,10 +1454,8 @@
       }
     }
     if (isFinite(livePrice) && livePrice > 0 && livePrice < 1e7) {
-      if (!(ref > 0) || (livePrice <= ref * (1 + band) && livePrice >= ref * (1 - band))) {
-        if (livePrice < lo) lo = livePrice;
-        if (livePrice > hi) hi = livePrice;
-      }
+      if (livePrice < lo) lo = livePrice;
+      if (livePrice > hi) hi = livePrice;
     }
     if (!isFinite(lo) || !isFinite(hi) || hi <= lo) {
       var p = (ref > 0 && ref < 1e7) ? ref : 10000;
@@ -1482,6 +1463,51 @@
       hi = p * 1.006;
     }
     return { min: lo, max: hi };
+  }
+
+  function panKeepHead(lo, hi, head) {
+    var span = hi - lo;
+    if (!(span > 0) || !(head > 0)) return { min: lo, max: hi };
+    var inner = span * 0.12;
+    if (head < lo + inner) {
+      var dLo = (lo + inner) - head;
+      lo -= dLo;
+      hi -= dLo;
+    } else if (head > hi - inner) {
+      var dHi = head - (hi - inner);
+      lo += dHi;
+      hi += dHi;
+    }
+    return { min: lo, max: hi };
+  }
+
+  function followHeadCamera(head, histMin, histMax, prevMin, prevMax) {
+    if (!(head > 0) || head > 1e7) head = (histMin + histMax) / 2;
+    var span = histMax - histMin;
+    var minSpan = head * 0.012;
+    if (!(span > 0) || span < minSpan) {
+      span = minSpan;
+      histMin = head - span / 2;
+      histMax = head + span / 2;
+    }
+    var pad = span * 0.12;
+    var yMin = histMin - pad;
+    var yMax = histMax + pad;
+    var panned = panKeepHead(yMin, yMax, head);
+    yMin = panned.min;
+    yMax = panned.max;
+    var k = 0.15;
+    var outMin;
+    var outMax;
+    if (prevMin && prevMax && prevMax > prevMin) {
+      outMin = prevMin * (1 - k) + yMin * k;
+      outMax = prevMax * (1 - k) + yMax * k;
+    } else {
+      outMin = yMin;
+      outMax = yMax;
+    }
+    var kept = panKeepHead(outMin, outMax, head);
+    return { min: kept.min, max: kept.max };
   }
 
   function drawFrame(now) {
@@ -1538,66 +1564,40 @@
       ? market.price
       : ((minPrice + maxPrice) / 2);
     var spanRaw = maxPrice - minPrice;
-    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.006) {
+    if (!(spanRaw > 0) || spanRaw < currentPrice * 0.012) {
       minPrice = currentPrice * (1 - 0.006);
       maxPrice = currentPrice * (1 + 0.006);
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * 0.10;
-    var yMin = minPrice - padY;
-    var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
-
-    var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
-    if (holdLock) {
-      var minL = currentPrice * 0.012;
-      var loL = (viewMin && viewMax && viewMax > viewMin) ? viewMin : yMin;
-      var hiL = (viewMin && viewMax && viewMax > viewMin) ? viewMax : yMax;
-      var spanL = hiL - loL;
-      if (!(spanL > 0) || spanL < minL) {
-        var midL = (loL && hiL && hiL > loL) ? (loL + hiL) / 2 : currentPrice;
-        loL = midL - minL / 2;
-        hiL = midL + minL / 2;
-      }
-      if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
-        st.lockMin = loL;
-        st.lockMax = hiL;
-      } else if ((st.lockMax - st.lockMin) < minL) {
-        st.lockMin = loL;
-        st.lockMax = hiL;
-      }
-      if (allTrades.length) {
-        var expHold = 0;
-        var th;
-        for (th = 0; th < allTrades.length; th++) {
-          var ex = allTrades[th].expiryTime || allTrades[th].expiresAt || 0;
-          if (ex > expHold) expHold = ex;
-        }
-        st.lockUntil = Math.max(st.lockUntil || 0, expHold + 1000);
-      }
-      viewMin = st.lockMin;
-      viewMax = st.lockMax;
-      strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
-    } else {
-      st.lockMin = 0;
-      st.lockMax = 0;
-      st.lockUntil = 0;
-      strikeLock = null;
-      if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
-        var kLerp = 0.10;
-        viewMin = st.viewMin * (1 - kLerp) + yMin * kLerp;
-        viewMax = st.viewMax * (1 - kLerp) + yMax * kLerp;
-      } else {
-        viewMin = yMin;
-        viewMax = yMax;
-      }
+    var head = currentPrice;
+    if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
+      var hc = Number(candles[candles.length - 1].c);
+      if (hc > 0 && hc < 1e7) head = hc;
     }
-    if (!holdLock && viewMax - viewMin < currentPrice * 0.002) {
-      viewMin = currentPrice * 0.998;
-      viewMax = currentPrice * 1.002;
-    }
+    var prevMin = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (st.viewMin || 0);
+    var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
+    var cam = followHeadCamera(head, minPrice, maxPrice, prevMin, prevMax);
+    viewMin = cam.min;
+    viewMax = cam.max;
+    st.lockMin = 0;
+    st.lockMax = 0;
+    strikeLock = null;
     st.viewMin = viewMin;
     st.viewMax = viewMax;
+
+    var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
+    if (allTrades.length) {
+      var expHold = 0;
+      var th;
+      for (th = 0; th < allTrades.length; th++) {
+        var ex = allTrades[th].expiryTime || allTrades[th].expiresAt || 0;
+        if (ex > expHold) expHold = ex;
+      }
+      st.lockUntil = Math.max(st.lockUntil || 0, expHold + 1000);
+    } else if (!holdLock) {
+      st.lockUntil = 0;
+    }
 
     if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
       var lc = Number(candles[candles.length - 1].c);
@@ -1630,7 +1630,7 @@
     var lineData = closes.slice(startIdx);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(pad.l - 1, pad.t + 1, w + 2, Math.max(2, h - 2));
+    ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, h));
     ctx.clip();
     if (asset.id === 'titanpulse') {
       map = drawTitanLightning(pad, seriesW, h, candles, minP, maxP);
@@ -1640,7 +1640,7 @@
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
         capWicks: true,
-        tradeLock: !!holdLock,
+        tradeLock: true,
         lockSpan: maxP - minP,
         boomNeon: asset.id === 'boomspike',
         nexusCyber: asset.id === 'nexusprime',
@@ -1664,6 +1664,12 @@
         lastX: layout.headX,
         lastY: plotToY(market.price, pad, h, minP, maxP)
       };
+    }
+    if (map && isFinite(map.lastY)) {
+      var yLo = pad.t + 10;
+      var yHi = pad.t + h - 10;
+      if (map.lastY < yLo) map.lastY = yLo;
+      if (map.lastY > yHi) map.lastY = yHi;
     }
     if (map) {
       if (inds.bb) drawBollinger(map, closes, startIdx, theme);
@@ -2046,13 +2052,7 @@
         viewMin = st.min;
         viewMax = st.max;
       }
-      if (st.lockMin && st.lockMax) {
-        strikeLock = { assetId: id, min: st.lockMin, max: st.lockMax, entry: null, ey: null };
-        viewMin = st.lockMin;
-        viewMax = st.lockMax;
-      } else {
-        strikeLock = null;
-      }
+      strikeLock = null;
       if (isFinite(st.lastPrice) && st.lastPrice > 0) lastDrawnClose = st.lastPrice;
       if (D6.Engine && D6.Engine.getMarket) D6.Engine.getMarket(id);
       if (D6.Engine && D6.Engine.getTrades) {

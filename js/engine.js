@@ -253,7 +253,7 @@
         buf.boomMid = price;
       }
     }
-    return { price: price, boom: marked, from: from };
+    return { price: capPctMove(from, price, JUMP_PCT), boom: marked, from: from };
   }
 
   function unifiedStep(asset, price, nowMs, dtSec, opts) {
@@ -289,9 +289,9 @@
       var pullT = busyIn ? 0 : (base - price) * 0.018;
       nextOut = price + nT + pT + qT + rT + sT + pullT;
       if (!busyIn) {
-        if (roll > 0.91) nextOut = price * (1 - 0.010 - (roll - 0.91) * 0.22);
-        else if (roll < 0.08) nextOut = price * (1 + 0.007 + (0.08 - roll) * 0.16);
-        else if (roll > 0.78 && roll < 0.84) nextOut = price * (1 + 0.0045);
+        if (roll > 0.91) nextOut = capPctMove(price, price * (1 - 0.010 - (roll - 0.91) * 0.22), JUMP_PCT);
+        else if (roll < 0.08) nextOut = capPctMove(price, price * (1 + 0.007 + (0.08 - roll) * 0.16), JUMP_PCT);
+        else if (roll > 0.78 && roll < 0.84) nextOut = capPctMove(price, price * (1 + 0.0045), JUMP_PCT);
       }
     } else if (sim.coreWave && !opts.spike) {
       var zigC = (roll - 0.5) * price * vol * 1.35;
