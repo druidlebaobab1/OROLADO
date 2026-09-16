@@ -21,6 +21,10 @@
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
   var wantFitY = false;
+  var CANDLE_DURATION_MS = 1000;
+  var frameHeadX = NaN;
+  var headMotion = {};
+  var pendingYAnchor = null;
   var inds = { ma: false, bb: false, ema: false };
   var steer = null;
   var tmpCloses = [];
@@ -145,26 +149,66 @@
 
   function candleStepWidth(seriesW) {
     var tWin = xWin > 0 ? xWin : 60000;
-    return seriesW * (1000 / Math.max(1, tWin));
+    return seriesW * (CANDLE_DURATION_MS / Math.max(1, tWin));
   }
 
-  function scrollOffsetX(seriesW) {
+  function candleProgress() {
     var tNow = xNow || Date.now();
-    var cms = 1000;
-    var tStart = Math.floor(tNow / cms) * cms;
-    return ((tNow - tStart) / cms) * candleStepWidth(seriesW);
+    var times = xTimes;
+    var candleStartMs = times && times.length ? Number(times[times.length - 1]) : NaN;
+    if (!isFinite(candleStartMs)) {
+      candleStartMs = Math.floor(tNow / CANDLE_DURATION_MS) * CANDLE_DURATION_MS;
+    }
+    var elapsed = tNow - candleStartMs;
+    if (elapsed < 0) elapsed = 0;
+    return (elapsed % CANDLE_DURATION_MS) / CANDLE_DURATION_MS;
   }
 
-  function makeToX(n, pad, seriesW) {
-    var count = (xTimes && xTimes.length) ? xTimes.length : n;
-    if (!(count > 1)) count = Math.max(1, n || 1);
+  function baseIndexX(index, count, pad, seriesW) {
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
     var step = candleStepWidth(span);
-    var off = scrollOffsetX(span);
+    var times = xTimes;
+    var timeOffset = times && times.length >= count ? times.length - count : 0;
+    var timeIndex = timeOffset + index;
+    var t = times && timeIndex >= 0 ? Number(times[timeIndex]) : NaN;
+    if (isFinite(t)) {
+      return x0 + span + ((t - (xNow || Date.now())) / CANDLE_DURATION_MS) * step;
+    }
+    var subPixelShift = candleProgress() * step;
+    return x0 + span - (count - 1 - index) * step - subPixelShift;
+  }
+
+  function updateHeadX(assetId, targetX, price, nowMs, stepWidth) {
+    var state = headMotion[assetId] || (headMotion[assetId] = {
+      x: targetX,
+      lastPrice: Number(price) || 0,
+      lastFrame: nowMs || performance.now()
+    });
+    var frameNow = nowMs || performance.now();
+    var dt = Math.max(1, Math.min(80, frameNow - (state.lastFrame || frameNow)));
+    var p = Number(price);
+    if (isFinite(p) && p > 0 && isFinite(state.lastPrice) && state.lastPrice > 0 && p !== state.lastPrice) {
+      var rel = Math.abs(p - state.lastPrice) / Math.max(p * 0.0004, 0.0001);
+      state.x += 2 + Math.min(2, rel * 0.75);
+    }
+    if (isFinite(p) && p > 0) state.lastPrice = p;
+    if (!isFinite(state.x)) state.x = targetX;
+    var lerp = 1 - Math.pow(0.92, dt / (1000 / 60));
+    state.x += (targetX - state.x) * lerp;
+    var maxLag = Math.max(12, Number(stepWidth) * 1.25 || 12);
+    state.x = Math.max(targetX - maxLag, Math.min(targetX + 8, state.x));
+    state.lastFrame = frameNow;
+    return state.x;
+  }
+
+  function makeToX(n, pad, seriesW) {
+    var count = n;
+    if (!(count > 1)) count = Math.max(1, n || 1);
     return function (i) {
       var idx = Math.max(0, Math.min(count - 1, i));
-      return x0 + span - (count - 1 - idx) * step - off;
+      if (idx === count - 1 && isFinite(frameHeadX)) return frameHeadX;
+      return baseIndexX(idx, count, pad, seriesW);
     };
   }
 
@@ -358,10 +402,32 @@
     return D6.Engine.flushSettlements(u);
   }
 
+  function captureYAxisAnchor() {
+    if (!(lastMaxP > lastMinP)) return null;
+    var price = Number(lastDrawnClose);
+    if (D6.Engine && D6.Engine.getTrades) {
+      var list = D6.Engine.getTrades();
+      var i;
+      for (i = 0; i < list.length; i++) {
+        if (!list[i] || list[i].assetId !== activeAsset || list[i].settled) continue;
+        var entry = Number(list[i].entryPrice != null ? list[i].entryPrice : list[i].openPrice);
+        if (isFinite(entry) && entry > 0) {
+          price = entry;
+          break;
+        }
+      }
+    }
+    if (!isFinite(price) || price <= 0) return null;
+    var ratio = (lastMaxP - price) / (lastMaxP - lastMinP);
+    ratio = Math.max(0.15, Math.min(0.85, ratio));
+    return { price: price, ratio: ratio };
+  }
+
   function resize() {
     if (!canvas) return;
     var parent = canvas.parentElement;
     if (!parent) return;
+    var yAnchor = captureYAxisAnchor();
     var fsMode = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     var mobile = (window.innerWidth || 0) <= 859;
@@ -436,7 +502,7 @@
     if (w < 8) w = Math.max(320, Math.floor(window.innerWidth || 360));
     if (h < 8) h = fsMode ? Math.max(220, Math.floor((window.innerHeight || 700) - 140)) : 380;
 
-    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2);
+    dpr = Math.max(1, window.devicePixelRatio || 1);
     var boxW = Math.max(0, Math.floor(parent.clientWidth || 0));
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
@@ -460,6 +526,9 @@
       overlay.style.height = cssH + 'px';
       if (octx) octx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+    pendingYAnchor = yAnchor;
+    wantFitY = true;
+    if (headMotion[activeAsset]) headMotion[activeAsset].x = NaN;
     flushOpenTradeVisualQueue();
     drawNow();
     requestAnimationFrame(function () { drawNow(); });
@@ -843,7 +912,7 @@
       ctx.shadowBlur = 0;
     }
     var last = candles[candles.length - 1];
-    return { toX: toX, toY: toY, lastX: pad.l + w, lastY: toY(last.c), count: candles.length };
+    return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
@@ -872,7 +941,7 @@
     var col = color || '#ff2d55';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.save();
@@ -904,7 +973,7 @@
     var i;
     var last = candles[candles.length - 1];
     var pulseT = performance.now() / 220;
-    var lastX = pad.l + w;
+    var lastX = toX(candles.length - 1);
     var lastY = toY(last.c) + Math.sin((candles.length - 1) * 0.42 - pulseT) * (1.1 + 1.6);
     var nTitan = candles.length;
     ctx.save();
@@ -931,7 +1000,7 @@
     var col = color || '#f5a623';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.beginPath();
@@ -973,7 +1042,7 @@
     if (!data || data.length < 2) return null;
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     var i;
     var col = color || '#FF7A00';
@@ -1041,7 +1110,7 @@
         ctx.strokeStyle = color || '#2F6BFF';
       }
     }
-    var lastX = pad.l + w;
+    var lastX = toX(data.length - 1);
     var lastY = toY(data[data.length - 1]);
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
   }
@@ -1527,7 +1596,7 @@
     return { min: lo, max: hi };
   }
 
-  function fitVisibleY(candles, extras) {
+  function fitVisibleY(candles, extras, anchor) {
     var band = visiblePriceBand(candles, extras && extras[0], null);
     var lo = band.min;
     var hi = band.max;
@@ -1548,6 +1617,17 @@
       hi = mid + span / 2;
     }
     var pad = Math.max(span * 0.15, ((lo + hi) / 2) * 0.004);
+    var total = span + pad * 2;
+    if (anchor && isFinite(anchor.price) && anchor.price > 0) {
+      var ratio = Math.max(0.15, Math.min(0.85, Number(anchor.ratio) || 0.5));
+      var needTop = (hi + pad - anchor.price) / ratio;
+      var needBottom = (anchor.price - (lo - pad)) / (1 - ratio);
+      total = Math.max(total, needTop, needBottom);
+      return {
+        min: anchor.price - (1 - ratio) * total,
+        max: anchor.price + ratio * total
+      };
+    }
     return { min: lo - pad, max: hi + pad };
   }
 
@@ -1688,6 +1768,8 @@
       var hc = Number(candles[candles.length - 1].c);
       if (hc > 0 && hc < 1e7) head = hc;
     }
+    var headTargetX = baseIndexX(Math.max(0, candles.length - 1), Math.max(1, candles.length), pad, seriesW);
+    frameHeadX = updateHeadX(activeAsset, headTargetX, head, now, candleStepWidth(seriesW));
     var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
     if (allTrades.length) {
       var expHold = 0;
@@ -1702,7 +1784,7 @@
     var extrasY = [head];
     if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
     if (wantFitY) {
-      var fit = fitVisibleY(candles, extrasY);
+      var fit = fitVisibleY(candles, extrasY, pendingYAnchor);
       viewMin = fit.min;
       viewMax = fit.max;
       if (holdLock) {
@@ -1711,6 +1793,7 @@
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
       }
       wantFitY = false;
+      pendingYAnchor = null;
     } else if (fsOn && viewMax > viewMin) {
       if (holdLock) {
         st.lockMin = viewMin;
@@ -1737,14 +1820,28 @@
       viewMin = cam.min;
       viewMax = cam.max;
     }
-    var keepAir = Math.max((viewMax - viewMin) * 0.15, Math.abs(head) * 0.004);
-    function pinInView(p) {
-      if (!isFinite(p) || p <= 0 || p > 1e7) return;
-      if (p > viewMax - keepAir) viewMax = p + keepAir;
-      if (p < viewMin + keepAir) viewMin = p - keepAir;
+    var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
+    var keepAir = Math.max(rawVisibleSpan * 0.15, Math.abs(head) * 0.004);
+    var needsSafeFit = minPrice < viewMin + keepAir || maxPrice > viewMax - keepAir;
+    if ((fsOn || holdLock) && needsSafeFit) {
+      var anchorPrice = isFinite(strikeP) && strikeP > 0 ? strikeP : head;
+      var anchorRatio = (viewMax > viewMin)
+        ? (viewMax - anchorPrice) / (viewMax - viewMin)
+        : 0.5;
+      var safeFit = fitVisibleY(candles, extrasY, {
+        price: anchorPrice,
+        ratio: anchorRatio
+      });
+      viewMin = safeFit.min;
+      viewMax = safeFit.max;
+    } else if (!fsOn && !holdLock) {
+      if (head > viewMax - keepAir) viewMax = head + keepAir;
+      if (head < viewMin + keepAir) viewMin = head - keepAir;
+      if (isFinite(strikeP) && strikeP > 0) {
+        if (strikeP > viewMax - keepAir) viewMax = strikeP + keepAir;
+        if (strikeP < viewMin + keepAir) viewMin = strikeP - keepAir;
+      }
     }
-    pinInView(head);
-    pinInView(strikeP);
     if (holdLock) {
       st.lockMin = viewMin;
       st.lockMax = viewMax;
@@ -1820,7 +1917,7 @@
     if (!map) {
       map = {
         toY: function (p) { return plotToY(p, pad, h, minP, maxP); },
-        lastX: layout.headX,
+        lastX: isFinite(frameHeadX) ? frameHeadX : layout.headX,
         lastY: plotToY(market.price, pad, h, minP, maxP)
       };
     }
@@ -2145,12 +2242,18 @@
             window.__oroladoFsResizeBound = true;
             var fsObs = new MutationObserver(function () {
               try { resize(); } catch (eFs) { /* ignore */ }
+              requestAnimationFrame(function () {
+                try { resize(); } catch (eFs2) { /* ignore */ }
+              });
             });
             fsObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
             var fsOv = document.getElementById('fsTradeOverlay');
             if (fsOv) fsObs.observe(fsOv, { attributes: true, attributeFilter: ['class'] });
             document.addEventListener('fullscreenchange', function () {
               try { resize(); drawNow(); } catch (eFc) { /* ignore */ }
+              requestAnimationFrame(function () {
+                try { resize(); drawNow(); } catch (eFc2) { /* ignore */ }
+              });
             });
           }
         } catch (eMo) { /* ignore */ }
@@ -2165,7 +2268,7 @@
         setTimeout(function () { try { resize(); drawNow(); } catch (e5) { /* ignore */ } }, 300);
         try { bindTools(); } catch (eT) { try { console.warn(eT); } catch (e6) { /* ignore */ } }
         window.addEventListener('resize', function () {
-          try { requestAnimationFrame(resize); } catch (e7) { /* ignore */ }
+          try { resize(); requestAnimationFrame(resize); } catch (e7) { /* ignore */ }
         });
         window.addEventListener('orientationchange', function () {
           setTimeout(function () { try { resize(); } catch (e8) { /* ignore */ } }, 120);
@@ -2173,7 +2276,7 @@
         if (window.visualViewport) {
           try {
             visualViewport.addEventListener('resize', function () {
-              try { requestAnimationFrame(resize); } catch (e9) { /* ignore */ }
+              try { resize(); requestAnimationFrame(resize); } catch (e9) { /* ignore */ }
             });
           } catch (eVv) { try { console.warn('Mobile display fallback:', eVv); } catch (e10) { /* ignore */ } }
         }
@@ -2213,6 +2316,7 @@
       persistView(activeAsset);
       activeAsset = id;
       applyAssetView(id);
+      if (headMotion[id]) headMotion[id].x = NaN;
       viewMin = 0;
       viewMax = 0;
       if (steer && steer.assetId !== id) steer = null;

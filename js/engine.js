@@ -96,7 +96,8 @@
 
   function tickCapPct(asset, spiked) {
     var id = asset && asset.id;
-    if (spiked && (id === 'boomspike' || id === 'crash300')) return 0.004;
+    if (spiked && id === 'crash300') return 0.018;
+    if (spiked && id === 'boomspike') return 0.004;
     if (id === 'crash300') return 0.00055;
     if (id === 'stable') return 0.0008;
     if (id === 'titanpulse') return 0.0024;
@@ -217,7 +218,7 @@
   var SIM_VER = 15;
   var TITAN_VER = 8;
   var BOOM_VER = 3;
-  var CRASH_VER = 1;
+  var CRASH_VER = 2;
   var MIN_SEED = 500;
   var SCALE_VER = 3;
 
@@ -308,7 +309,7 @@
       var phP = ((nowMs / 1000) % 16) / 16;
       vol *= phP < 0.78 ? 0.42 : 1.9;
     }
-    var roll = opts.det != null ? uhash01(opts.det, 904177) : Math.random();
+    var roll = sim.crashCalm ? 0.5 : (opts.det != null ? uhash01(opts.det, 904177) : Math.random());
     var nextOut;
     if (opts.hunt > 0 && !busyIn) {
       var gapH = opts.hunt - price;
@@ -317,7 +318,8 @@
       var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
       nextOut = price + gapH * 0.055 + nH + wH + teaseH;
     } else if (sim.crashCalm && !opts.spike) {
-      nextOut = price + price * (0.0002 + roll * 0.0003);
+      var risePhase = Math.floor(nowMs / 250) % 4;
+      nextOut = price + price * (0.0002 + risePhase * 0.0001);
     } else if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
       var nT = (roll - 0.5) * price * vol * 1.35;
@@ -407,7 +409,7 @@
       } else if (sim.spike === 1) {
         c = o - Math.max(minBody, Math.abs(c - o) * 0.65);
       } else if (sim.crashCalm) {
-        c = o + Math.max(minBody * 0.35, Math.abs(c - o) * 0.25);
+        c = Math.max(c, o);
       } else if (sim.spike === -1) {
         c = o + Math.max(minBody, Math.abs(c - o) * 0.65);
       } else if (Math.abs(c - o) < minBody) {
@@ -426,6 +428,7 @@
     var maxW = body * 1.2;
     if (sim.titanDrop) maxW = Math.max(body * 1.8, Math.abs(o) * 0.00022);
     if (sim.boomBurst) maxW = spike ? body * 0.12 : body * 0.35;
+    if (sim.crashCalm) maxW = Math.max(Math.abs(o) * 0.00008, 0.01);
     if (sim.nexusPulse) maxW = body * 0.95;
     if (sim.v75Wave) maxW = Math.max(body * 0.9, Math.abs(o) * 0.00035);
     var hiB = Math.max(o, c);
@@ -473,19 +476,19 @@
     if (!buf || !buf.candles || !buf.candles.length) return;
     var cms = CANDLE_MS;
     var n = buf.candles.length;
-    var tEnd = Math.floor((nowMs || Date.now()) / cms) * cms;
+    var formingStart = Math.floor((nowMs || Date.now()) / cms) * cms;
+    var tEnd = formingStart - cms;
     var last = buf.candles[n - 1];
-    if (last && isFinite(last.t) && Math.abs(last.t - tEnd) <= cms * 2) {
-      buf.bucket = Math.floor(tEnd / cms);
-      if (buf.forming && !isFinite(buf.forming.t)) buf.forming.t = tEnd;
+    if (last && isFinite(last.t) && Math.abs(last.t - tEnd) <= cms) {
+      if (buf.forming && !isFinite(buf.forming.t)) buf.forming.t = formingStart;
       return;
     }
     var i;
     for (i = 0; i < n; i++) {
       buf.candles[i].t = tEnd - (n - 1 - i) * cms;
     }
-    buf.bucket = Math.floor(tEnd / cms);
-    if (buf.forming) buf.forming.t = tEnd;
+    buf.bucket = Math.floor(formingStart / cms);
+    if (buf.forming) buf.forming.t = formingStart;
   }
 
   function publishHistory(assetId, buf) {
@@ -547,6 +550,11 @@
     var wick = vol * (0.4 + uhash01(i, 22) * 0.85);
     var h = Math.max(open, close) + wick * uhash01(i, 7);
     var l = Math.min(open, close) - wick * uhash01(i, 8);
+    if (sim.crashCalm) {
+      wick = prev * 0.00006;
+      h = Math.max(open, close) + wick;
+      l = Math.min(open, close) - wick;
+    }
     if (spiked) l = Math.min(l, close);
     return {
       o: clampIndexPrice(open, asset),
@@ -564,13 +572,15 @@
     var price = Number(asset.basePrice) || 5000;
     var now = Date.now();
     var cms = candleMsFor(asset);
-    var t0 = Math.floor(now / cms) - (SEED_N - 1);
+    var t0 = Math.floor(now / cms) - SEED_N;
     var candles = [];
     var prices = [];
     var i;
     var k;
-    var nextSpike = now + 12000 + Math.random() * 8000;
-    if (!sim.titanDrop) nextSpike = now + 25000 + Math.random() * 10000;
+    var nextSpike;
+    if (sim.crashCalm) nextSpike = now + 18000;
+    else if (sim.titanDrop) nextSpike = now + 12000 + Math.random() * 8000;
+    else nextSpike = now + 25000 + Math.random() * 10000;
     var boomWalk = sim.boomBurst ? {
       boomPhase: 'acc',
       boomPhaseUntil: (t0 * cms) + 2500 + uhash01(t0, 882119) * 3000,
@@ -720,14 +730,10 @@
     }
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
-    var stepMs = sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120);
+    var stepMs = sim.crashCalm ? 200 : (sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120));
+    if (busy) stepMs = Math.max(150, Math.min(250, stepMs));
     var steps = Math.floor(remain / stepMs);
-    if (busy) {
-      if (remain >= 120) steps = Math.max(1, steps);
-      else if (remain < 80) steps = 0;
-      else if (steps < 1) steps = 1;
-    } else if (remain < 40) steps = 0;
-    else if (steps < 1) steps = 1;
+    if (remain < stepMs) steps = 0;
     if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;
       var s;
       var price0 = price;
@@ -769,10 +775,16 @@
         var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
         if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
         if (sim.crashCalm) wickN = price * 0.00006;
+        wickN = Math.min(wickN, price * 0.0008);
+        var wickCap = price * 0.0008;
+        var upperWick = Math.min(wickN, wickCap);
+        var lowerWick = sim.crashCalm
+          ? upperWick
+          : Math.min(wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4), wickCap);
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
-        forming.h = Math.max(forming.h, price + wickN);
-        forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
+        forming.h = Math.max(forming.h, price + upperWick);
+        forming.l = Math.min(forming.l, price - lowerWick);
         sanitizeOhlc(asset, forming, price, 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
