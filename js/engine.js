@@ -124,12 +124,48 @@
 
   function tradeBoxFor(assetId, price) {
     var st = window.assetsState && window.assetsState[assetId];
+    var lo;
+    var hi;
     if (st && st.lockMax > st.lockMin) {
-      return { lo: st.lockMin, hi: st.lockMax, span: st.lockMax - st.lockMin };
+      lo = st.lockMin;
+      hi = st.lockMax;
+    } else {
+      var p = Number(price);
+      if (!(p > 0)) p = 10000;
+      lo = p * 0.994;
+      hi = p * 1.006;
     }
-    var p = Number(price);
-    if (!(p > 0)) p = 10000;
-    return { lo: p * 0.996, hi: p * 1.004, span: p * 0.008 };
+    var span = hi - lo;
+    var pad = span * 0.08;
+    return { lo: lo + pad, hi: hi - pad, span: span, frameLo: lo, frameHi: hi };
+  }
+
+  function clampToTradeBox(price, box) {
+    if (!box) return price;
+    if (price > box.hi) return box.hi;
+    if (price < box.lo) return box.lo;
+    return price;
+  }
+
+  function engineCaptureFrame(assetId, untilMs) {
+    window.assetsState = window.assetsState || {};
+    if (!window.assetsState[assetId]) {
+      window.assetsState[assetId] = { viewMin: 0, viewMax: 0, lockMin: 0, lockMax: 0, lockUntil: 0 };
+    }
+    if (D6.Chart && typeof D6.Chart.captureTradeFrame === 'function') {
+      D6.Chart.captureTradeFrame(assetId, untilMs);
+      return;
+    }
+    var st = window.assetsState[assetId];
+    if (st.lockMax > st.lockMin && st.lockUntil > Date.now()) {
+      st.lockUntil = Math.max(st.lockUntil || 0, untilMs);
+      return;
+    }
+    if (st.viewMax > st.viewMin) {
+      st.lockMin = st.viewMin;
+      st.lockMax = st.viewMax;
+    }
+    st.lockUntil = untilMs;
   }
 
   function sanitizeOhlc(asset, candle, refPrice, wickSpan) {
@@ -655,6 +691,7 @@
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
     var busy = tradeBusyFor(asset.id);
+    var box = busy ? tradeBoxFor(asset.id, price) : null;
     var stepMs = sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120);
     var steps = Math.max(1, Math.min(fastTick ? 4 : 2, Math.floor(remain / stepMs) || 1));
       var s;
@@ -687,6 +724,7 @@
         }
         price = capPctMove(forming.c > 0 ? forming.c : price0, price, tickCapPct(asset, didSpike));
         price = clampIndexPrice(price, asset);
+        if (busy && box) price = clampToTradeBox(price, box);
         var bucket = Math.floor(tMs / cms);
         forming.c = price;
         var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
@@ -694,7 +732,11 @@
         if (price < forming.l) forming.l = price;
         forming.h = Math.max(forming.h, price + wickN);
         forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
-        sanitizeOhlc(asset, forming, price, 0);
+        if (busy && box) {
+          if (forming.h > box.frameHi) forming.h = box.frameHi;
+          if (forming.l < box.frameLo) forming.l = box.frameLo;
+        }
+        sanitizeOhlc(asset, forming, price, busy && box ? box.span : 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
           if (forming._boom || boomForce) forming._boom = true;
@@ -707,7 +749,14 @@
         }
       }
     buf.price = clampIndexPrice(price, asset);
-    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, 0);
+    if (busy && box) buf.price = clampToTradeBox(buf.price, box);
+    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, busy && box ? box.span : 0);
+    if (busy && box && buf.forming) {
+      buf.forming.c = clampToTradeBox(buf.forming.c, box);
+      if (buf.forming.h > box.frameHi) buf.forming.h = box.frameHi;
+      if (buf.forming.l < box.frameLo) buf.forming.l = box.frameLo;
+      buf.price = buf.forming.c;
+    }
     buf.lastMs = nowMs;
     buf.ver = SIM_VER;
     buf.scaleVer = SCALE_VER;
@@ -1317,6 +1366,7 @@
       var market = markets[assetId];
       pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1500;
       clickQuietUntil[assetId] = Date.now() + 300;
+      engineCaptureFrame(assetId, pendingBusyUntil[assetId]);
       var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
       if (liveBuf) liveBuf.lastMs = Date.now();
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
