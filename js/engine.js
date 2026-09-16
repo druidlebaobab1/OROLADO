@@ -66,13 +66,21 @@
     }
   }
 
+  var TICK_PCT = 0.0015;
+  var JUMP_PCT = 0.005;
+
   function clampIndexPrice(p, asset) {
     var n = Number(p);
     var base = Number(asset && asset.basePrice) || 5000;
-    if (!isFinite(n)) n = base;
-    var lo = Math.max(1, base * 0.42);
-    var hi = base * 2.8;
-    return Math.round(Math.max(lo, Math.min(hi, n)) * 100) / 100;
+    if (!isFinite(n) || n <= 0) n = base;
+    var id = asset && asset.id;
+    var loMul = 0.88;
+    var hiMul = 1.12;
+    if (id === 'boomspike' || id === 'crash300' || id === 'titanpulse') {
+      loMul = 0.78;
+      hiMul = 1.22;
+    }
+    return Math.round(Math.max(base * loMul, Math.min(base * hiMul, n)) * 100) / 100;
   }
 
   window.assetBuffers = window.assetBuffers || {};
@@ -91,9 +99,10 @@
     goldtrend: { mode: 'line', vol: 0.0125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
     titanpulse: { mode: 'line', vol: 0.0098, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 55 },
   };
-  var SIM_VER = 13;
+  var SIM_VER = 14;
   var TITAN_VER = 8;
   var MIN_SEED = 500;
+  var SCALE_VER = 1;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -223,7 +232,7 @@
       var qN = Math.sin(nowMs / 1000 * Math.PI * 19) * price * 0.00016;
       var pullN = (base - price) * 0.045;
       var nextN = price + nN + pN + qN + pullN;
-      nextN = capPctMove(price, nextN, 0.0055 * Math.min(1, dtN * 3));
+      nextN = capPctMove(price, nextN, TICK_PCT);
       return clampIndexPrice(nextN, asset);
     }
     if (sim.v75Wave && !opts.spike) {
@@ -234,7 +243,7 @@
       var rV = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00018;
       var pullV = (base - price) * 0.038;
       var nextV = price + nV + pV + qV + rV + pullV;
-      nextV = capPctMove(price, nextV, 0.0046 * Math.min(1, dtV * 2.4));
+      nextV = capPctMove(price, nextV, TICK_PCT);
       return clampIndexPrice(nextV, asset);
     }
     var center = bias;
@@ -249,7 +258,7 @@
     var pull = (base - price) * pullK;
     var next = price + delta + pull;
     if (!opts.spike) {
-      next = capPctMove(price, next, 0.0035 * Math.min(1, Math.max(dtSec, 0.02)));
+      next = capPctMove(price, next, TICK_PCT);
     }
     return clampIndexPrice(next, asset);
   }
@@ -268,14 +277,15 @@
         if (pos < run) c = o + Math.max(minBody, Math.abs(c - o));
         else c = o - Math.max(minBody * 0.7, Math.abs(c - o) * 0.55);
       } else if (sim.nexusPulse) {
-        var runN = 3 + Math.floor(uhash01(Math.floor(bucket / 7), 770870) * 3);
-        var posN = bucket % (runN + 2);
-        if (posN < runN) c = o + Math.max(minBody * 2.4, Math.abs(c - o) * 1.25);
-        else c = o - Math.max(minBody * 2.6, Math.abs(c - o) * 1.4);
+        var ampN = Math.max(Math.abs(o) * 0.00045, 0.05);
+        var maxN = Math.abs(o) * JUMP_PCT;
+        if (c >= o) c = o + Math.min(maxN, Math.max(ampN, Math.abs(c - o)));
+        else c = o - Math.min(maxN, Math.max(ampN, Math.abs(c - o)));
       } else if (sim.v75Wave) {
-        var ampV = Math.max(Math.abs(o) * 0.00055, 0.06);
-        if (c >= o) c = o + Math.max(ampV, Math.abs(c - o) * 1.45);
-        else c = o - Math.max(ampV, Math.abs(c - o) * 1.45);
+        var ampV = Math.max(Math.abs(o) * 0.0004, 0.05);
+        var maxV = Math.abs(o) * JUMP_PCT;
+        if (c >= o) c = o + Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
+        else c = o - Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
       } else if (sim.titanDrop) {
         var ampT = Math.max(Math.abs(o) * 0.0016, 0.28);
         if (Math.abs(c - o) < ampT) c = o + (c >= o ? ampT : -ampT);
@@ -292,6 +302,12 @@
     }
     h = Math.max(h, o, c);
     l = Math.min(l, o, c);
+    if (!sim.boomBurst && !sim.titanDrop && sim.spike !== -1 && sim.spike !== 1) {
+      h = capPctMove(o, h, JUMP_PCT);
+      l = capPctMove(o, l, JUMP_PCT);
+      h = Math.max(h, o, c);
+      l = Math.min(l, o, c);
+    }
     var body = Math.abs(c - o);
     var maxW = body * 1.2;
     if (sim.titanDrop) maxW = Math.max(body * 1.8, Math.abs(o) * 0.00022);
@@ -317,6 +333,64 @@
     window.assetBuffers = window.assetBuffers || {};
     window.ASSET_BUFFERS = window.assetBuffers;
     window.assetsHistory = window.assetsHistory || {};
+  }
+
+  function stitchCandle(asset, prevClose, candle, maxPct) {
+    maxPct = maxPct || JUMP_PCT;
+    if (!(prevClose > 0) || !candle) return prevClose;
+    var o = capPctMove(prevClose, Number(candle.o) || prevClose, maxPct);
+    var c = capPctMove(o, Number(candle.c) || o, maxPct);
+    c = capPctMove(prevClose, c, maxPct);
+    var h = Math.max(o, c, capPctMove(prevClose, Number(candle.h) || c, maxPct));
+    var l = Math.min(o, c, capPctMove(prevClose, Number(candle.l) || c, maxPct));
+    candle.o = clampIndexPrice(o, asset);
+    candle.c = clampIndexPrice(c, asset);
+    candle.h = clampIndexPrice(Math.max(h, candle.o, candle.c), asset);
+    candle.l = clampIndexPrice(Math.min(l, candle.o, candle.c), asset);
+    return candle.c;
+  }
+
+  function sanitizeBuffer(asset, buf, anchor) {
+    if (!buf || !buf.candles || !buf.candles.length) return buf;
+    var target = Number(anchor);
+    if (!isFinite(target) || target <= 0) target = Number(asset.basePrice) || Number(buf.price) || 5000;
+    target = clampIndexPrice(target, asset);
+    var n = buf.candles.length;
+    var i;
+    var prev = capPctMove(target, Number(buf.candles[0].c) || target, 0.04);
+    buf.candles[0].o = prev;
+    buf.candles[0].c = prev;
+    buf.candles[0].h = prev;
+    buf.candles[0].l = prev;
+    var hard = (asset.id === 'v75' || asset.id === 'nexusprime' || asset.id === 'apex500' || asset.id === 'v100' || asset.id === 'horizon50' || asset.id === 'stable' || asset.id === 'goldtrend');
+    var step = hard ? JUMP_PCT : 0.022;
+    for (i = 1; i < n; i++) {
+      var k = i / (n - 1);
+      prev = stitchCandle(asset, prev, buf.candles[i], step);
+      if (k > 0.72) {
+        var blend = (k - 0.72) / 0.28;
+        var eased = prev * (1 - blend) + target * blend;
+        buf.candles[i].c = capPctMove(prev, eased, step);
+        buf.candles[i].o = capPctMove(prev, buf.candles[i].o, step);
+        buf.candles[i].h = Math.max(buf.candles[i].o, buf.candles[i].c);
+        buf.candles[i].l = Math.min(buf.candles[i].o, buf.candles[i].c);
+        prev = buf.candles[i].c;
+      }
+    }
+    var last = buf.candles[n - 1];
+    var prevC = n > 1 ? buf.candles[n - 2].c : target;
+    last.c = capPctMove(prevC, target, step);
+    last.c = target;
+    last.o = capPctMove(prevC, last.o, step);
+    last.o = capPctMove(target, last.o, JUMP_PCT);
+    last.h = Math.max(last.o, last.c);
+    last.l = Math.min(last.o, last.c);
+    buf.price = last.c;
+    buf.forming = finishCandle(asset, last.c, last.c, last.c, last.c, last.t, false);
+    buf.prices = [];
+    for (i = 0; i < n; i++) buf.prices.push(buf.candles[i].c);
+    buf.scaleVer = SCALE_VER;
+    return buf;
   }
 
   function rebaseBufferTimes(buf, nowMs) {
@@ -423,8 +497,10 @@
       boomLeft: boomWalk ? boomWalk.boomLeft : 0,
       boomZig: boomWalk ? boomWalk.boomZig : 1,
       boomPeak: boomWalk ? boomWalk.boomPeak : 0,
-      ver: SIM_VER
+      ver: SIM_VER,
+      scaleVer: SCALE_VER
     };
+    sanitizeBuffer(asset, buf, Number(asset.basePrice) || price);
     publishHistory(asset.id, buf);
     rebaseBufferTimes(buf, now);
     return buf;
@@ -433,6 +509,7 @@
   function bufferNeedsSeed(asset, buf) {
     if (!buf || !buf.candles || buf.candles.length < MIN_SEED) return true;
     if (simOf(asset.id).titanDrop && buf.titanVer !== TITAN_VER) return true;
+    if (buf.scaleVer !== SCALE_VER) return true;
     return false;
   }
 
@@ -542,8 +619,17 @@
     }
     buf.price = price;
     buf.forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike);
+    var lastClosed = buf.candles.length ? buf.candles[buf.candles.length - 1].c : price;
+    var liveStep = (sim.v75Wave || sim.nexusPulse) ? JUMP_PCT : (sim.boomBurst || sim.titanDrop || sim.spike ? 0.022 : JUMP_PCT);
+    buf.price = capPctMove(lastClosed, buf.price, liveStep);
+    buf.forming.c = capPctMove(lastClosed, buf.forming.c, liveStep);
+    buf.forming.o = capPctMove(lastClosed, buf.forming.o, liveStep);
+    buf.forming.h = Math.max(buf.forming.o, buf.forming.c, capPctMove(lastClosed, buf.forming.h, liveStep));
+    buf.forming.l = Math.min(buf.forming.o, buf.forming.c, capPctMove(lastClosed, buf.forming.l, liveStep));
+    buf.price = buf.forming.c;
     buf.lastMs = nowMs;
     buf.ver = SIM_VER;
+    buf.scaleVer = SCALE_VER;
     rebaseBufferTimes(buf, nowMs);
     publishHistory(asset.id, buf);
     return buf;

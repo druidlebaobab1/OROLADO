@@ -2150,6 +2150,28 @@ html body .ind-pills .chart-reset-btn{
 html body .chart-fs-btn,
 html body .chart-fs-btn .chart-fs-label{
   padding:2px 5px!important;font-size:9.5px!important;gap:2px!important;white-space:nowrap!important;flex-shrink:0;margin-right:4px}
+html.fs-trade .ind-pills,
+html.is-fullscreen .ind-pills,
+html.fs-trade .fs-trade-overlay .ind-pills,
+html.is-fullscreen .fs-trade-overlay .ind-pills{
+  gap:8px!important}
+html.fs-trade #chartZoomOut,
+html.is-fullscreen #chartZoomOut{
+  margin-left:6px!important}
+html.fs-trade .chart-reset-btn,
+html.is-fullscreen .chart-reset-btn,
+html.fs-trade #chartReset.chart-reset-btn,
+html.is-fullscreen #chartReset.chart-reset-btn,
+html.fs-trade .ind-pills .chart-reset-btn,
+html.is-fullscreen .ind-pills .chart-reset-btn{
+  margin-left:16px!important;margin-right:16px!important}
+
+@media (max-width:480px){
+  html body .chart-fs-btn,
+  html body .chart-fs-btn .chart-fs-label,
+  .btn-fullscreen, #btn-fullscreen, [data-action="fullscreen"]{
+    padding:2px 4px!important;font-size:9px!important;gap:2px!important;margin-right:8px!important}
+}
 
 html body button.asset-chip.on[data-asset*="boom"],
 html body .asset-chip.on[data-asset="boomspike"],

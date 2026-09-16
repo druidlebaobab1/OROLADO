@@ -1054,6 +1054,20 @@
       if (!started) { ctx.moveTo(map.toX(i), map.toY(up[i])); started = true; }
       else ctx.lineTo(map.toX(i), map.toY(up[i]));
     }
+    for (i = lo.length - 1; i >= 0; i--) {
+      if (lo[i] == null) continue;
+      ctx.lineTo(map.toX(i), map.toY(lo[i]));
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(157, 78, 221, 0.08)';
+    ctx.fill();
+    started = false;
+    ctx.beginPath();
+    for (i = 0; i < up.length; i++) {
+      if (up[i] == null) continue;
+      if (!started) { ctx.moveTo(map.toX(i), map.toY(up[i])); started = true; }
+      else ctx.lineTo(map.toX(i), map.toY(up[i]));
+    }
     ctx.strokeStyle = 'rgba(157,78,221,0.65)';
     ctx.lineWidth = 1.15;
     ctx.stroke();
@@ -1463,7 +1477,22 @@
     }
     var minPrice = seriesScratch.length ? Math.min.apply(null, seriesScratch) : market.price;
     var maxPrice = seriesScratch.length ? Math.max.apply(null, seriesScratch) : market.price;
-    if (isFinite(market.price) && !allTrades.length) {
+    var refP = isFinite(market.price) && market.price > 0 ? market.price : ((minPrice + maxPrice) / 2);
+    var lastClose = candles.length && isFinite(candles[candles.length - 1].c) ? candles[candles.length - 1].c : refP;
+    if (isFinite(lastClose) && lastClose > 0) refP = lastClose;
+    var band = (asset.id === 'boomspike' || asset.id === 'titanpulse' || asset.id === 'crash300') ? 0.035 : 0.012;
+    var keepMin = refP;
+    var keepMax = refP;
+    for (i = 0; i < seriesScratch.length; i++) {
+      var pv = seriesScratch[i];
+      if (!isFinite(pv) || pv <= 0) continue;
+      if (Math.abs(pv - refP) / refP > band) continue;
+      if (pv < keepMin) keepMin = pv;
+      if (pv > keepMax) keepMax = pv;
+    }
+    minPrice = keepMin;
+    maxPrice = keepMax;
+    if (isFinite(market.price) && market.price > 0 && Math.abs(market.price - refP) / refP <= band && !allTrades.length) {
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
     }
