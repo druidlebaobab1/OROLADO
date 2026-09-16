@@ -633,14 +633,6 @@
   function armTradeTimer(trade) {
     if (!trade || !trade.id) return;
     clearTradeTimer(trade.id);
-    var wait = Math.max(16, (expiryOf(trade) || 0) - Date.now());
-    tradeTimers[trade.id] = setTimeout(function () {
-      delete tradeTimers[trade.id];
-      var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
-      if (user && D6.Engine && D6.Engine.resolve) {
-        try { D6.Engine.resolve(user, trade.id); } catch (eR) { /* ignore */ }
-      }
-    }, wait);
   }
 
   function isLive(t) {
@@ -926,6 +918,14 @@
       return trades.filter(isOpen).length;
     },
 
+    forEachOpen: function (fn) {
+      if (typeof fn !== 'function') return;
+      var i;
+      for (i = 0; i < trades.length; i++) {
+        if (isLive(trades[i])) fn(trades[i]);
+      }
+    },
+
     restoreOpen: function (user) {
       if (!user) return 0;
       trades = [];
@@ -988,6 +988,8 @@
         syncMarket(markets[id], C.ASSETS[id], now);
       }
       prepareLastSecondSteer(now);
+      var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
+      if (user) api.flushSettlements(user);
     },
 
     placeOrder: function (user, opts) {

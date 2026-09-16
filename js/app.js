@@ -107,6 +107,7 @@
   var toastTimer = null;
   var outcomeToastTimer = null;
   var outcomeToastSeen = {};
+  var outcomeSlot = 0;
   var selectedOp = 'wave';
   var selectedAsset = 'v100';
   var depositOp = 'wave';
@@ -453,12 +454,19 @@
   function toast(msg, kind, ms) {
     var el = $('toast');
     if (!el) return;
-    var tone = kind === 'err' || kind === 'ok' ? kind : 'info';
+    var micro = kind === 'micro';
+    var tone = micro ? 'micro' : (kind === 'err' || kind === 'ok' ? kind : 'info');
+    clearTimeout(toastTimer);
+    if (micro) {
+      el.className = 'toast lux-msg micro show';
+      el.textContent = msg;
+      toastTimer = setTimeout(function () { el.className = 'toast lux-msg micro'; }, ms || 1800);
+      return;
+    }
     el.className = 'toast lux-msg show ' + tone;
     el.innerHTML = '<span class="lux-msg-ico" aria-hidden="true"></span><span class="lux-msg-txt"></span>';
     var txt = el.querySelector('.lux-msg-txt');
     if (txt) txt.textContent = msg;
-    clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 3000);
   }
 
@@ -489,6 +497,12 @@
       amount = Math.abs(Number($('inputStake') && $('inputStake').value) || (D6.CONFIG && D6.CONFIG.MIN_STAKE) || 1);
     }
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
+    var slot = outcomeSlot % 8;
+    outcomeSlot += 1;
+    var dy = (slot % 4) * 14;
+    var dx = (slot % 2 === 0 ? -10 : 10);
+    el.style.setProperty('--ox', dx + 'px');
+    el.style.setProperty('--oy', dy + 'px');
     if (isWin) {
       el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>+' + D6.fmtFCFA(amount) + '</span>';
     } else {
@@ -498,7 +512,9 @@
     outcomeToastTimer = setTimeout(function () {
       el.className = 'chart-outcome';
       el.textContent = '';
-    }, isWin ? 2800 : 1800);
+      el.style.removeProperty('--ox');
+      el.style.removeProperty('--oy');
+    }, 900);
   }
 
   document.addEventListener('orolado-trade-settled', function (ev) {
@@ -5323,21 +5339,22 @@
             enterApp();
             return;
           }
-          var preview = false;
-          try { preview = sessionStorage.getItem('oro_demo_preview') === '1'; } catch (ePrev) { preview = false; }
-          if (preview) {
-            ensureGuest();
-            enterApp();
-            return;
-          }
-          showAuthScreen('login');
+          try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
+          ensureGuest();
+          enterApp();
         } catch (eFin) {
           try { console.warn('Mobile display fallback:', eFin); } catch (e) { /* ignore */ }
-          try { showAuthScreen('login'); } catch (e2) { /* ignore */ }
+          try { ensureGuest(); enterApp(); } catch (e2) { /* ignore */ }
         }
       }
       if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { showAuthScreen('login'); });
       if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { showAuthScreen('register'); });
+      if ($('brandLockup')) $('brandLockup').addEventListener('click', function () {
+        try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (eB) { /* ignore */ }
+        if (D6.Auth.current() && !isGuest(D6.Auth.current())) { enterApp(); return; }
+        ensureGuest();
+        enterApp();
+      });
       if ($('btnAuthBack')) $('btnAuthBack').addEventListener('click', function () {
         var pitch = $('authRealPitch');
         if (pitch) pitch.classList.add('hidden');
@@ -5354,7 +5371,7 @@
         }
         var target = D6.CONFIG.DEMO_START || 1000000;
         var cur = D6.Store.demoBalance(u);
-        if (cur >= target) { toast(t('demoAlready') || 'Solde démo déjà rechargé', 'ok', 2500); return; }
+        if (cur >= target) { toast(t('demoAlready') || 'Démo déjà rechargé', 'micro', 1800); return; }
         D6.Store.setBalanceMode(u, 'demo', target);
         updateBalance(true);
         toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok', 2500);

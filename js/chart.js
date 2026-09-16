@@ -37,6 +37,10 @@
   var strikeLock = null;
   var coinImgs = {};
   var BUFFER_N = 60;
+  var candleScratch = [];
+  var seriesScratch = [];
+  var tradeListScratch = [];
+  var tradeYsScratch = [];
   window.assetsState = window.assetsState || {};
   window.assetBuffers = window.assetBuffers || {};
 
@@ -202,36 +206,35 @@
 
   function collectOpenTradeVisuals() {
     pruneTradeVisuals();
-    var byId = {};
-    var id;
+    tradeListScratch.length = 0;
     var now = Date.now();
-    for (id in openTradeVisuals) {
-      if (!openTradeVisuals.hasOwnProperty(id)) continue;
-      var v = openTradeVisuals[id];
-      if (!v || v.settled) continue;
-      var exp = v.expiryTime || v.expiresAt;
-      if (exp && now >= exp) continue;
-      if (v.assetId !== activeAsset) continue;
-      byId[id] = v;
+    if (D6.Engine && D6.Engine.forEachOpen) {
+      D6.Engine.forEachOpen(function (ot) {
+        if (!ot || ot.assetId !== activeAsset) return;
+        var e2 = ot.expiryTime || ot.expiresAt;
+        if (e2 && now >= e2) return;
+        var v = openTradeVisuals[ot.id];
+        if (!v) {
+          v = snapshotTradeVisual(ot);
+          if (v) openTradeVisuals[v.id] = v;
+        }
+        if (v) tradeListScratch.push(v);
+      });
+    } else {
+      var id;
+      for (id in openTradeVisuals) {
+        if (!openTradeVisuals.hasOwnProperty(id)) continue;
+        var vis = openTradeVisuals[id];
+        if (!vis || vis.settled || vis.assetId !== activeAsset) continue;
+        var exp = vis.expiryTime || vis.expiresAt;
+        if (exp && now >= exp) continue;
+        tradeListScratch.push(vis);
+      }
     }
-    var engineList = D6.Engine && D6.Engine.getTrades ? D6.Engine.getTrades() : [];
-    var i;
-    for (i = 0; i < engineList.length; i++) {
-      var ot = engineList[i];
-      if (!ot || ot.settled || ot.assetId !== activeAsset) continue;
-      var e2 = ot.expiryTime || ot.expiresAt;
-      if (e2 && now >= e2) continue;
-      var snap = snapshotTradeVisual(ot);
-      if (snap) byId[snap.id] = snap;
-    }
-    var out = [];
-    for (id in byId) {
-      if (byId.hasOwnProperty(id)) out.push(byId[id]);
-    }
-    out.sort(function (a, b) {
+    tradeListScratch.sort(function (a, b) {
       return (a.expiryTime || a.expiresAt || 0) - (b.expiryTime || b.expiresAt || 0);
     });
-    return out;
+    return tradeListScratch;
   }
 
   function drawNow() {
@@ -473,16 +476,19 @@
       ? live.candles
       : ((window.assetsState && window.assetsState[activeAsset] && window.assetsState[activeAsset].candles) ||
         ((market && market.candles) || []));
-    var list = done.slice(Math.max(0, done.length - n));
+    candleScratch.length = 0;
+    var start = Math.max(0, done.length - n);
+    var i;
+    for (i = start; i < done.length; i++) candleScratch.push(done[i]);
     var forming = (live && live.forming) || (market && market.candle);
     if (forming) {
-      if (!list.length || list[list.length - 1].t !== forming.t) {
-        list = list.concat([forming]);
+      if (!candleScratch.length || candleScratch[candleScratch.length - 1].t !== forming.t) {
+        candleScratch.push(forming);
       } else {
-        list[list.length - 1] = forming;
+        candleScratch[candleScratch.length - 1] = forming;
       }
     }
-    return list;
+    return candleScratch;
   }
 
   function closeSeries(market) {
@@ -1170,9 +1176,8 @@
     var th = 20;
     var nearTop = (ey - plotTop) < 40;
     var nearBot = (plotBot - ey) < 40;
-    var bx = headX + 8;
-    if (bx + tw > axisX - 2) bx = axisX - tw - 2;
-    if (bx < headX + 4) bx = headX + 4;
+    var leftX = (pad && pad.l != null ? pad.l : 8) + 6;
+    var bx = leftX;
     var by;
     if (nearTop) by = ey + 6 + idx * 22 + badgeLift;
     else if (nearBot) by = ey - th - 6 - idx * 22 - badgeLift;
@@ -1191,13 +1196,13 @@
     if (secs >= 0.15) {
       var label = secs.toFixed(1) + 's';
       if (label.charAt(0) !== '-') {
-        var timerW = 56;
-        var timerH = 20;
-        var ty = nearTop ? (ey + 6 + (idx ? 0 : th + 4) + badgeLift) : (ey - timerH - 6 - idx * 22 - badgeLift);
+        var timerW = 52;
+        var timerH = 18;
+        var ty = nearTop ? (ey + 6 + th + 4 + badgeLift) : (ey - timerH - 6 - idx * 22 - badgeLift);
         if (nearBot) ty = ey - timerH - 6 - idx * 22 - badgeLift;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        var tx = Math.max(headX + 8, cssW * 0.70 + 8);
-        if (tx + timerW > axisX - 4) tx = Math.max(headX + 4, axisX - timerW - 4);
+        var tx = leftX;
+        if (tx + timerW > headX - 8) tx = Math.max(4, headX - timerW - 8);
         g.fillStyle = 'rgba(10,15,29,0.94)';
         g.strokeStyle = col;
         g.lineWidth = 1.4;
@@ -1261,13 +1266,14 @@
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
     ctx.save();
-    ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(txt).width) + 14;
-    var th = 22;
-    var x = (layout && layout.headX != null) ? layout.headX + 10 : map.lastX + 10;
+    ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(txt).width) + 10;
+    var th = 16;
+    var headX = layout && layout.headX != null ? layout.headX : cssW * 0.70;
+    var x = headX + 10;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 2) x = axisX - tw - 2;
-    if (x < 8) x = 8;
+    if (x < headX + 4) x = headX + 4;
     var y = map.lastY - th / 2;
     y = Math.max(4, Math.min(cssH - th - 4, y));
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -1342,17 +1348,17 @@
     var closes = closeSeries(market);
     var visN = candles.length;
     var startIdx = Math.max(0, closes.length - visN);
-    var series = [];
+    seriesScratch.length = 0;
     var i;
     if (asset.chart === 'candle' && asset.id !== 'titanpulse') {
       for (i = 0; i < candles.length; i++) {
-        series.push(candles[i].h, candles[i].l);
+        seriesScratch.push(candles[i].h, candles[i].l);
       }
     } else {
-      for (i = startIdx; i < closes.length; i++) series.push(closes[i]);
+      for (i = startIdx; i < closes.length; i++) seriesScratch.push(closes[i]);
     }
-    var minPrice = series.length ? Math.min.apply(null, series) : market.price;
-    var maxPrice = series.length ? Math.max.apply(null, series) : market.price;
+    var minPrice = seriesScratch.length ? Math.min.apply(null, seriesScratch) : market.price;
+    var maxPrice = seriesScratch.length ? Math.max.apply(null, seriesScratch) : market.price;
     if (isFinite(market.price) && !allTrades.length) {
       minPrice = Math.min(minPrice, market.price);
       maxPrice = Math.max(maxPrice, market.price);
@@ -1565,19 +1571,21 @@
     lastMap = map;
 
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
-    var tradeYs = [];
-    allTrades.forEach(function (ot, i) {
-      if (i >= 40) return;
+    tradeYsScratch.length = 0;
+    var ti;
+    for (ti = 0; ti < allTrades.length; ti++) {
+      if (ti >= 10) break;
+      var ot = allTrades[ti];
       var epY = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
       var y0 = priceToY(epY, pad, h, minP, maxP);
       var shift = 0;
       var j;
-      for (j = 0; j < i; j++) {
-        if (Math.abs(y0 - tradeYs[j]) < 10) shift = 22;
+      for (j = 0; j < ti; j++) {
+        if (Math.abs(y0 - tradeYsScratch[j]) < 10) shift = 22;
       }
-      tradeYs.push(y0);
-      drawEntryOn(ctx, map, ot, now, pad, i, minP, maxP, h, shift, layout);
-    });
+      tradeYsScratch.push(y0);
+      drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout);
+    }
     paintOverlay();
 
     var tagCol = asset.chart === 'candle'
@@ -1616,7 +1624,7 @@
     try {
       var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
       var drawEvery = liveN > 0 ? 16 : 33;
-      var tickEvery = 250;
+      var tickEvery = liveN > 0 ? 50 : 250;
       if (document.hidden) {
         if (ts - lastFlush >= tickEvery) {
           if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
