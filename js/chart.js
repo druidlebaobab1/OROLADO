@@ -868,8 +868,8 @@
     ctx.lineWidth = width || 1.8;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    if (col === '#ff3366') {
-      ctx.shadowColor = 'rgba(255,51,102,0.55)';
+    if (col === '#ff2244') {
+      ctx.shadowColor = 'rgba(255,34,68,0.55)';
       ctx.shadowBlur = 8;
     } else {
       ctx.shadowBlur = 0;
@@ -1342,6 +1342,18 @@
         g.textAlign = 'center';
         g.textBaseline = 'middle';
         g.fillText(label, leftX + timerW / 2, ty + timerH / 2 + 0.5);
+        var aboveNow = isFinite(lastDrawnClose) ? lastDrawnClose >= entry : true;
+        var liveWin = (isCall && aboveNow) || (!isCall && !aboveNow);
+        var money = liveWin ? '+$0' : '-$0';
+        var mw = 42;
+        var mx0 = leftX + timerW + 6;
+        g.fillStyle = 'rgba(10,15,29,0.92)';
+        g.strokeStyle = liveWin ? '#00e676' : '#ff3b30';
+        roundRectOn(g, mx0, ty, mw, timerH, 7);
+        g.fill();
+        g.stroke();
+        g.fillStyle = liveWin ? '#00e676' : '#ff3b30';
+        g.fillText(money, mx0 + mw / 2, ty + timerH / 2 + 0.5);
         g.textBaseline = 'alphabetic';
       }
     }
@@ -1385,7 +1397,7 @@
     }
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : 4.2))), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2d55' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
+    ctx.fillStyle = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
     ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
     ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 11 : (nexusHead ? 10 : 12)));
     ctx.fill();
@@ -1557,7 +1569,9 @@
     var narrow = (window.innerWidth || 0) <= 430;
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
-    var pad = { t: fsOn ? (narrow ? 8 : 10) : (narrow ? 6 : 8), r: 56, b: 22, l: 8 };
+    var pad = fsOn
+      ? { t: 4, r: 50, b: 16, l: 4 }
+      : { t: narrow ? 6 : 8, r: 56, b: 22, l: 8 };
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;
@@ -1683,14 +1697,14 @@
     if (asset.id === 'titanpulse') {
       map = drawTitanLightning(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.id === 'stable') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff3366', 3);
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2244', 3);
     } else if (asset.chart === 'candle' || asset.id === 'horizon50') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
         capWicks: true,
         tradeLock: true,
         lockSpan: maxP - minP,
-        boomNeon: asset.id === 'boomspike',
+        boomNeon: false,
         nexusCyber: asset.id === 'nexusprime',
         titanIce: false,
         v75Rose: asset.id === 'v75',
@@ -1714,8 +1728,9 @@
       };
     }
     if (map && isFinite(map.lastY)) {
-      var yLo = pad.t + h * 0.08;
-      var yHi = pad.t + h * 0.92;
+      var air = fsOn ? 0.02 : 0.08;
+      var yLo = pad.t + h * air;
+      var yHi = pad.t + h * (1 - air);
       if (map.lastY < yLo) map.lastY = yLo;
       if (map.lastY > yHi) map.lastY = yHi;
     }
@@ -1950,13 +1965,17 @@
       e.stopPropagation();
       if (zoomIdx < ZOOM_STEPS.length - 1) {
         zoomIdx += 1;
-        persistView(activeAsset);
-        var stZout = ensureAssetState(activeAsset);
-        if (!(stZout.lockUntil && Date.now() < stZout.lockUntil)) {
-          viewMin = 0;
-          viewMax = 0;
-        }
       }
+      persistView(activeAsset);
+      var stZout = ensureAssetState(activeAsset);
+      if (stZout.lockMin && stZout.lockMax && stZout.lockUntil && Date.now() < stZout.lockUntil) {
+        viewMin = stZout.lockMin;
+        viewMax = stZout.lockMax;
+      } else {
+        viewMin = 0;
+        viewMax = 0;
+      }
+      if (isChartReady()) drawNow();
     });
     if (zreset) zreset.addEventListener('click', function (e) {
       e.preventDefault();

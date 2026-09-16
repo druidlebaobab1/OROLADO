@@ -263,12 +263,13 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#D9A03A;box-shadow:0 0 12px rgba(217,160,58,.38);background:linear-gradient(180deg,rgba(217,160,58,.3),rgba(120,53,15,.2));color:#E8C36A}
 .asset-chip[data-asset="boomspike"].on{
   border-width:1.5px!important;border-style:solid!important;border-color:transparent!important;
-  background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
-  box-shadow:0 0 10px rgba(0,255,136,.35)!important;color:#00ff88}
+  background:linear-gradient(180deg,rgba(255,120,0,.32),rgba(18,14,10,.92)) padding-box,
+    linear-gradient(90deg,#ff8c00,#ff3d00,#ffe14d) border-box!important;
+  box-shadow:0 0 14px rgba(255,140,0,.45)!important;color:#ffe14d}
 .asset-chip[data-asset="boomspike"].on .n,
 .asset-chip[data-asset="boomspike"].on .asset-ico{
-  color:#00ff88!important;font-weight:700;-webkit-text-fill-color:#00ff88;background:none}
-.asset-chip[data-asset="boomspike"].on .payout-live{color:#ffe600!important}
+  color:#ffe14d!important;font-weight:800;-webkit-text-fill-color:#ffe14d;background:none}
+.asset-chip[data-asset="boomspike"].on .payout-live{color:#fff6c4!important;font-weight:800;-webkit-text-fill-color:#fff6c4}
 .asset-chip[data-asset="nexusprime"].on{border-width:1.5px;border-color:#22D3EE;box-shadow:0 0 12px rgba(34,211,238,.4);background:linear-gradient(180deg,rgba(34,211,238,.3),rgba(21,94,117,.2));color:#22D3EE}
 .asset-chip[data-asset="v75"].on{border-width:1.5px;border-color:#E91E63;box-shadow:0 0 12px rgba(233,30,99,.4);background:linear-gradient(180deg,rgba(233,30,99,.3),rgba(136,14,79,.2));color:#E91E63}
 .asset-chip[data-asset="titanpulse"].on{border-width:1.5px;border-color:#FFFFFF;box-shadow:0 0 14px rgba(255,255,255,.45);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04));color:#FFFFFF}
@@ -2179,18 +2180,19 @@ html body .asset-tab.active[data-asset*="boom"],
 html body button.tab-asset.active[data-id*="boom"],
 .asset-tab.active[data-asset*="boom"],
 button.tab-asset.active[data-id*="boom"]{
-  background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
+  background:linear-gradient(180deg,rgba(255,120,0,.32),rgba(18,14,10,.92)) padding-box,
+    linear-gradient(90deg,#ff8c00,#ff3d00,#ffe14d) border-box!important;
   border:1.5px solid transparent!important;
-  box-shadow:0 0 10px rgba(0,255,136,.35)!important;
-  color:#00ff88!important}
+  box-shadow:0 0 14px rgba(255,140,0,.45)!important;
+  color:#ffe14d!important}
 html body button.asset-chip.on[data-asset*="boom"] .n,
 html body button.asset-chip.on[data-asset*="boom"] .asset-ico,
 html body .asset-chip.on[data-asset="boomspike"] .n,
 html body .asset-chip.on[data-asset="boomspike"] .asset-ico,
 .asset-tab.active[data-asset*="boom"] .asset-name{
-  color:#00ff88!important;font-weight:700!important;-webkit-text-fill-color:#00ff88;background:none}
+  color:#ffe14d!important;font-weight:800!important;-webkit-text-fill-color:#ffe14d;background:none}
 html body button.asset-chip.on[data-asset*="boom"] .payout-live,
 html body .asset-chip.on[data-asset="boomspike"] .payout-live,
 .asset-tab.active[data-asset*="boom"] .asset-payout{
-  color:#ffe600!important}
+  color:#fff6c4!important;font-weight:800!important;-webkit-text-fill-color:#fff6c4}
 

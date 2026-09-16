@@ -206,7 +206,7 @@
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
     apex500: { mode: 'candles', vol: 0.0045, run: true },
     horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
-    boomspike: { mode: 'candles', vol: 0.0028, boomBurst: true, tickMs: 160 },
+    boomspike: { mode: 'candles', vol: 0.0045, run: true },
     crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
@@ -215,6 +215,7 @@
   };
   var SIM_VER = 15;
   var TITAN_VER = 8;
+  var BOOM_VER = 3;
   var MIN_SEED = 500;
   var SCALE_VER = 3;
 
@@ -610,7 +611,7 @@
       titanVer: sim.titanDrop ? TITAN_VER : 0,
       coreVer: sim.coreWave ? 1 : 0,
       goldVer: sim.goldHot ? 2 : 0,
-      boomVer: sim.boomBurst ? 2 : 0,
+      boomVer: asset.id === 'boomspike' ? BOOM_VER : (sim.boomBurst ? 2 : 0),
       nexusVer: sim.nexusPulse ? 1 : 0,
       v75Ver: sim.v75Wave ? 2 : 0,
       boomPhase: boomWalk ? boomWalk.boomPhase : null,
@@ -631,6 +632,7 @@
   function bufferNeedsSeed(asset, buf) {
     if (!buf || !buf.candles || buf.candles.length < MIN_SEED) return true;
     if (simOf(asset.id).titanDrop && buf.titanVer !== TITAN_VER) return true;
+    if (asset.id === 'boomspike' && buf.boomVer !== BOOM_VER) return true;
     if (buf.scaleVer !== SCALE_VER) return true;
     return false;
   }
