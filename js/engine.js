@@ -12,8 +12,8 @@
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 720;
-  var HISTORY_N = 720;
-  var SEED_N = 640;
+  var HISTORY_N = 800;
+  var SEED_N = 720;
   var synthCache = {};
   var tradeTimers = {};
 
@@ -87,10 +87,10 @@
     crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
-    goldtrend: { mode: 'line', vol: 0.0068, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.06 },
-    titanpulse: { mode: 'line', vol: 0.0052, titanDrop: true, titanHF: true, tickMs: 55 },
+    goldtrend: { mode: 'line', vol: 0.0125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
+    titanpulse: { mode: 'line', vol: 0.0098, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 55 },
   };
-  var SIM_VER = 11;
+  var SIM_VER = 12;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -179,12 +179,12 @@
     if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
       var nT = (roll - 0.5) * price * vol;
-      var pT = Math.sin(nowMs / 1000 * Math.PI * 14.5) * price * 0.00042;
-      var qT = Math.sin(nowMs / 1000 * Math.PI * 31) * price * 0.00018;
-      var rT = Math.sin(nowMs / 1000 * Math.PI * 7.2) * price * 0.00022;
-      var pullT = (base - price) * 0.05;
+      var pT = Math.sin(nowMs / 1000 * Math.PI * 18.5) * price * 0.00095;
+      var qT = Math.sin(nowMs / 1000 * Math.PI * 41) * price * 0.00042;
+      var rT = Math.sin(nowMs / 1000 * Math.PI * 9.1) * price * 0.00055;
+      var pullT = (base - price) * 0.032;
       var nextT = price + nT + pT + qT + rT + pullT;
-      nextT = capPctMove(price, nextT, 0.0036 * Math.min(1, dtT * 3));
+      nextT = capPctMove(price, nextT, 0.0088 * Math.min(1, dtT * 3));
       return clampIndexPrice(nextT, asset);
     }
     if (sim.coreWave && !opts.spike) {
@@ -200,13 +200,13 @@
     if (sim.goldHot && !opts.spike) {
       var dtG = Math.max(dtSec, 0.016);
       var nG = (roll - 0.5) * price * vol;
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * 11) * price * 0.00062;
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * 23.5) * price * 0.00028;
-      var microG = 0;
-      if (roll > 0.78) microG = ((roll - 0.78) / 0.22 - 0.5) * price * 0.0038;
-      var pullG = (base - price) * (sim.pullK != null ? sim.pullK : 0.06);
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.00115;
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.00055;
+      var microG = ((roll - 0.5) * 2) * price * 0.0022;
+      if (roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.0065;
+      var pullG = (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
       var nextG = price + nG + p1G + p2G + microG + pullG;
-      nextG = capPctMove(price, nextG, 0.007 * Math.min(1, dtG * 4));
+      nextG = capPctMove(price, nextG, 0.011 * Math.min(1, dtG * 4));
       return clampIndexPrice(nextG, asset);
     }
     if (sim.nexusPulse && !opts.spike) {
@@ -341,11 +341,14 @@
       var l = o;
       var spiked = false;
       if (sim.boomBurst && boomWalk) {
-        var brS = stepBoomBurst(asset, boomWalk, price, ts);
-        price = brS.price;
-        spiked = brS.boom;
-        h = Math.max(o, price);
-        l = Math.min(o, price);
+        var kk;
+        for (kk = 0; kk < 4; kk++) {
+          var brS = stepBoomBurst(asset, boomWalk, price, ts + kk * (cms / 4));
+          price = brS.price;
+          if (brS.boom) spiked = true;
+          h = Math.max(o, h, price);
+          l = Math.min(o, l, price);
+        }
       } else {
         for (k = 0; k < 4; k++) {
           price = unifiedStep(asset, price, ts + k * (cms / 4), cms / 4000, { det: t0 + i * 4 + k });
@@ -374,10 +377,10 @@
       bucket: Math.floor(now / cms),
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
-      titanVer: sim.titanDrop ? 6 : 0,
+      titanVer: sim.titanDrop ? 7 : 0,
       coreVer: sim.coreWave ? 1 : 0,
-      goldVer: sim.goldHot ? 1 : 0,
-      boomVer: sim.boomBurst ? 1 : 0,
+      goldVer: sim.goldHot ? 2 : 0,
+      boomVer: sim.boomBurst ? 2 : 0,
       nexusVer: sim.nexusPulse ? 1 : 0,
       v75Ver: sim.v75Wave ? 2 : 0,
       boomPhase: boomWalk ? boomWalk.boomPhase : null,
@@ -395,7 +398,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 500 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 6) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 2)) {
+    if (!buf || !buf.candles || buf.candles.length < 500 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 7) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 2) || (simOf(asset.id).boomBurst && buf.boomVer !== 2) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 2)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();
@@ -425,7 +428,6 @@
           forming._spike = true;
           forming._boom = true;
           forming.o = br.from;
-          boomForce = true;
         }
         didSpike = true;
       } else if (sim.spike && tMs >= (buf.nextSpike || 0)) {
@@ -443,9 +445,9 @@
       if (price > forming.h) forming.h = price;
       if (price < forming.l) forming.l = price;
       forming.c = price;
-      if (boomForce || titanForce || bucket !== buf.bucket) {
+      if (bucket !== buf.bucket) {
         forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
-        if (boomForce) forming._boom = true;
+        if (forming._boom || boomForce) forming._boom = true;
         buf.candles.push(forming);
         if (buf.candles.length > HISTORY_N) buf.candles.shift();
         buf.prices.push(forming.c);

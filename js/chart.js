@@ -16,11 +16,11 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [30, 45, 60, 90, 120, 180, 300, 480, 600];
-  var DEFAULT_ZOOM_IDX = 2;
+  var ZOOM_STEPS = [20, 30, 45, 60, 90, 120, 180, 300, 480, 600, 720];
+  var DEFAULT_ZOOM_IDX = 3;
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
-  var inds = { ma: false, bb: false, rsi: false, ema: false };
+  var inds = { ma: false, bb: false, ema: false };
   var steer = null;
   var tmpCloses = [];
   var lastPad = null;
@@ -38,7 +38,7 @@
   var chartTickTimer = 0;
   var strikeLock = null;
   var coinImgs = {};
-  var BUFFER_N = 720;
+  var BUFFER_N = 800;
   var xTimes = null;
   var xNow = 0;
   var xWin = 60000;
@@ -62,7 +62,8 @@
         lockMax: 0,
         lastPrice: 0,
         at: 0,
-        zoomIdx: DEFAULT_ZOOM_IDX
+        zoomIdx: DEFAULT_ZOOM_IDX,
+        inds: { ma: false, bb: false, ema: false }
       };
     }
     return window.assetsState[id];
@@ -95,17 +96,23 @@
     return !!(ctx && canvas && cssW >= 8 && cssH >= 8);
   }
 
-  function persistZoom(id) {
+  function persistView(id) {
     var st = ensureAssetState(id || activeAsset);
     st.zoomIdx = zoomIdx;
+    st.inds = { ma: !!inds.ma, bb: !!inds.bb, ema: !!inds.ema };
   }
 
-  function applyAssetZoom(id) {
+  function applyAssetView(id) {
     var st = ensureAssetState(id || activeAsset);
     var z = st.zoomIdx;
     if (!(z >= 0) || z >= ZOOM_STEPS.length) z = DEFAULT_ZOOM_IDX;
     zoomIdx = z;
     zoomSmooth = zoomSec();
+    var saved = st.inds || {};
+    inds.ma = !!saved.ma;
+    inds.bb = !!saved.bb;
+    inds.ema = !!saved.ema;
+    syncIndButtons();
   }
 
   function rightOffsetPx() {
@@ -693,7 +700,6 @@
       ctx.lineTo(x, pad.t + h);
       ctx.stroke();
     }
-    if (!inds.rsi) {
     for (i = 0; i <= 4; i++) {
       var lx = pad.l + (seriesW / 4) * i;
       var ago = Math.round(((4 - i) / 4) * span);
@@ -702,7 +708,6 @@
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, lx, pad.t + h + 12);
-    }
     }
   }
 
@@ -848,7 +853,7 @@
       ctx.lineTo(toX(i), toY(candles[i].c));
     }
     ctx.strokeStyle = '#e0e6ed';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.shadowColor = 'rgba(224,230,237,0.78)';
@@ -1414,7 +1419,6 @@
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     var pad = { t: fsOn ? (narrow ? 8 : 10) : (narrow ? 6 : 8), r: 56, b: 22, l: 8 };
-    if (inds.rsi) pad.b = 56;
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;
@@ -1474,7 +1478,7 @@
       maxPrice = currentPrice * 1.002;
       spanRaw = maxPrice - minPrice;
     }
-    var padY = spanRaw * (asset.id === 'stable' || asset.id === 'goldtrend' ? 0.28 : (asset.id === 'boomspike' ? 0 : 0.15));
+    var padY = spanRaw * (asset.id === 'stable' ? 0.28 : (asset.id === 'goldtrend' ? 0.10 : (asset.id === 'boomspike' ? 0 : 0.15)));
     var yMin = minPrice - padY;
     var yMax = maxPrice + padY;
     if (asset.id === 'boomspike') {
@@ -1632,7 +1636,7 @@
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
       map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
     } else if (asset.id === 'goldtrend') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', asset.lineWidth || 2.2);
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', 2.6);
     } else {
       map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }
@@ -1666,11 +1670,6 @@
     lastMinP = minP;
     lastMaxP = maxP;
     lastMap = map;
-
-    if (inds.rsi) {
-      var rsiVals = rsiSeries(closes, 14);
-      drawRsiPanel(pad, seriesW, h, 40, rsiVals, startIdx, theme);
-    }
 
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     tradeYsScratch.length = 0;
@@ -1783,11 +1782,11 @@
   function resetChartView() {
     zoomIdx = DEFAULT_ZOOM_IDX;
     zoomSmooth = zoomSec();
-    persistZoom(activeAsset);
+    persistView(activeAsset);
     inds.ma = false;
     inds.bb = false;
-    inds.rsi = false;
     inds.ema = false;
+    persistView(activeAsset);
     syncIndButtons();
     viewMin = 0;
     viewMax = 0;
@@ -1834,7 +1833,7 @@
       e.stopPropagation();
       if (zoomIdx > 0) {
         zoomIdx -= 1;
-        persistZoom(activeAsset);
+        persistView(activeAsset);
         viewMin = 0;
         viewMax = 0;
       }
@@ -1844,7 +1843,7 @@
       e.stopPropagation();
       if (zoomIdx < ZOOM_STEPS.length - 1) {
         zoomIdx += 1;
-        persistZoom(activeAsset);
+        persistView(activeAsset);
         viewMin = 0;
         viewMax = 0;
       }
@@ -1859,8 +1858,9 @@
         e.preventDefault();
         e.stopPropagation();
         var key = btn.dataset.ind;
-        if (key !== 'ma' && key !== 'bb' && key !== 'rsi' && key !== 'ema') return;
+        if (key !== 'ma' && key !== 'bb' && key !== 'ema') return;
         inds[key] = !inds[key];
+        persistView(activeAsset);
         syncIndButtons();
       });
     });
@@ -1966,9 +1966,9 @@
         if (isChartReady()) drawNow();
         return;
       }
-      persistZoom(activeAsset);
+      persistView(activeAsset);
       activeAsset = id;
-      applyAssetZoom(id);
+      applyAssetView(id);
       if (steer && steer.assetId !== id) steer = null;
       var liveBuf = window.assetBuffers && window.assetBuffers[id];
       var st = ensureAssetState(id);

@@ -279,7 +279,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   border:none!important;outline:none!important;box-shadow:none!important}
 .chart-card.glass,#chart.glass{border:none!important;outline:none!important;box-shadow:none!important;background:#0B0E14!important;backdrop-filter:none}
 .chart-card,#chart{position:relative}
-.chart-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:4px;padding:2px 6px;margin:0;flex-shrink:0;
+.chart-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:4px;padding:2px 6px;margin:7px 0 4px;flex-shrink:0;
   position:absolute;top:0;left:0;right:0;z-index:14;min-height:22px;border-bottom:none;
   background:linear-gradient(180deg,rgba(11,14,20,.88),rgba(11,14,20,0));pointer-events:none}
 .chart-toolbar .ind-pills,.chart-toolbar .ind-btn,.chart-toolbar .chart-fs-btn{pointer-events:auto}
@@ -300,7 +300,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .chart-tool-sep{width:1px;height:12px;margin:0 2px;background:rgba(255,255,255,.18);flex-shrink:0}
 .ind-pills .zoom-btn:first-of-type,.ind-btn.zoom-btn#chartZoomIn{margin-left:0}
 .ind-btn{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#aaa;
-  font:inherit;font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:4px;cursor:pointer;min-height:22px;min-width:28px;line-height:1;flex-shrink:0}
+  font:inherit;font-size:10px!important;font-weight:800;letter-spacing:.04em;padding:3px 5px!important;border-radius:4px;cursor:pointer;min-height:22px;min-width:24px;line-height:1;flex-shrink:0}
 .ind-btn.on{border-color:rgba(255,224,130,.7);color:#FFE082;background:rgba(255,215,0,.16);box-shadow:0 0 8px rgba(255,215,0,.22)}
 .chart-reset-btn{min-width:26px;font-size:13px;line-height:1}
 .order-hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none}
@@ -394,12 +394,12 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
 .chart-fs-btn{
-  position:relative;z-index:13;top:auto;right:auto;min-height:22px;padding:2px 8px;gap:4px;margin-left:auto;
+  position:relative;z-index:13;top:auto;right:auto;min-height:22px;padding:3px 6px!important;gap:4px;margin-left:auto;
   border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;pointer-events:auto;
   display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
   background:rgba(255,255,255,.06);
-  color:#aaa;box-shadow:none;
-  font:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;line-height:1;
+  color:#aaa;box-shadow:none;white-space:nowrap!important;
+  font:inherit;font-size:10px!important;font-weight:700;letter-spacing:.04em;line-height:1;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;opacity:1;animation:fsBtnHint 2.4s ease-in-out infinite}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{
@@ -1653,7 +1653,7 @@ html.fs-trade .modal-backdrop,html.is-fullscreen .modal-backdrop{z-index:100000}
 html.fs-trade .modal-box,html.is-fullscreen .modal-box{z-index:100001}
 html.fs-trade .toast,html.is-fullscreen .toast{z-index:100002}
 html.fs-trade .ind-pills .ind-btn,
-html.is-fullscreen .ind-pills .ind-btn{display:inline-flex!important;min-width:26px;height:22px;padding:0 6px;font-size:11px}
+html.is-fullscreen .ind-pills .ind-btn{display:inline-flex!important;min-width:24px;height:22px;padding:3px 5px!important;font-size:10px!important}
 html.fs-trade .chart-toolbar,
 html.is-fullscreen .chart-toolbar,
 html.fs-trade .fs-trade-overlay .chart-toolbar,
@@ -2127,3 +2127,37 @@ html body #btnCall.btn-call:active:not(:disabled){
 html body #screenTrade button.btn-put:active:not(:disabled),
 html body #btnPut.btn-put:active:not(:disabled){
   box-shadow:0 3px 16px rgba(255,59,48,.5),inset 0 1px 1px rgba(255,255,255,.35)!important}
+
+html body .chart-toolbar,
+html.fs-trade .chart-toolbar,
+html.is-android .chart-toolbar{
+  margin-top:7px!important;margin-bottom:4px!important}
+html body .ind-btn,
+html body .ind-btn.zoom-btn,
+html body .chart-reset-btn{
+  padding:3px 5px!important;font-size:10px!important}
+html body .chart-fs-btn,
+html body .chart-fs-btn .chart-fs-label{
+  padding:3px 6px!important;font-size:10px!important;white-space:nowrap!important;flex-shrink:0}
+
+html body button.asset-chip.on[data-asset*="boom"],
+html body .asset-chip.on[data-asset="boomspike"],
+html body .asset-tab.active[data-asset*="boom"],
+html body button.tab-asset.active[data-id*="boom"],
+.asset-tab.active[data-asset*="boom"],
+button.tab-asset.active[data-id*="boom"]{
+  background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
+  border:1.5px solid transparent!important;
+  box-shadow:0 0 12px rgba(0,255,136,.4)!important;
+  color:#00ff88!important}
+html body button.asset-chip.on[data-asset*="boom"] .n,
+html body button.asset-chip.on[data-asset*="boom"] .asset-ico,
+html body .asset-chip.on[data-asset="boomspike"] .n,
+html body .asset-chip.on[data-asset="boomspike"] .asset-ico,
+.asset-tab.active[data-asset*="boom"] .asset-name{
+  color:#00ff88!important;font-weight:700!important;-webkit-text-fill-color:#00ff88;background:none}
+html body button.asset-chip.on[data-asset*="boom"] .payout-live,
+html body .asset-chip.on[data-asset="boomspike"] .payout-live,
+.asset-tab.active[data-asset*="boom"] .asset-payout{
+  color:#ffe600!important}
+
