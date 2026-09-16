@@ -1601,18 +1601,9 @@
 
     if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
       var lc = Number(candles[candles.length - 1].c);
-      if (holdLock) {
-        if (lc > viewMax) lc = viewMax;
-        if (lc < viewMin) lc = viewMin;
-      }
       if (lc > 0 && lc < 1e7) lastDrawnClose = lc;
     } else if (isFinite(market.price) && market.price > 0 && market.price < 1e7) {
-      var mp = Number(market.price);
-      if (holdLock) {
-        if (mp > viewMax) mp = viewMax;
-        if (mp < viewMin) mp = viewMin;
-      }
-      lastDrawnClose = mp;
+      lastDrawnClose = Number(market.price);
     }
 
     var minP = viewMin;
