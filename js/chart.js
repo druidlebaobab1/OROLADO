@@ -22,8 +22,8 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  var frameHeadX = NaN;
-  var headMotion = {};
+  var frameDisplayPrice = NaN;
+  var headPriceMotion = {};
   var pendingYAnchor = null;
   var inds = { ma: false, bb: false, ema: false };
   var steer = null;
@@ -179,27 +179,25 @@
     return x0 + span - (count - 1 - index) * step - subPixelShift;
   }
 
-  function updateHeadX(assetId, targetX, price, nowMs, stepWidth) {
-    var state = headMotion[assetId] || (headMotion[assetId] = {
-      x: targetX,
-      lastPrice: Number(price) || 0,
+  function updateHeadPrice(assetId, targetPrice, nowMs) {
+    var target = Number(targetPrice);
+    if (!isFinite(target) || target <= 0) return targetPrice;
+    var state = headPriceMotion[assetId] || (headPriceMotion[assetId] = {
+      value: target,
       lastFrame: nowMs || performance.now()
     });
     var frameNow = nowMs || performance.now();
     var dt = Math.max(1, Math.min(80, frameNow - (state.lastFrame || frameNow)));
-    var p = Number(price);
-    if (isFinite(p) && p > 0 && isFinite(state.lastPrice) && state.lastPrice > 0 && p !== state.lastPrice) {
-      var rel = Math.abs(p - state.lastPrice) / Math.max(p * 0.0004, 0.0001);
-      state.x += 2 + Math.min(2, rel * 0.75);
+    if (!isFinite(state.value) || state.value <= 0) state.value = target;
+    if (assetId === 'crash300' && target < state.value * 0.996) {
+      state.value = target;
+    } else {
+      var lerp = 1 - Math.pow(0.94, dt / (1000 / 60));
+      state.value += (target - state.value) * lerp;
+      if (Math.abs(target - state.value) < target * 0.000002) state.value = target;
     }
-    if (isFinite(p) && p > 0) state.lastPrice = p;
-    if (!isFinite(state.x)) state.x = targetX;
-    var lerp = 1 - Math.pow(0.92, dt / (1000 / 60));
-    state.x += (targetX - state.x) * lerp;
-    var maxLag = Math.max(12, Number(stepWidth) * 1.25 || 12);
-    state.x = Math.max(targetX - maxLag, Math.min(targetX + 8, state.x));
     state.lastFrame = frameNow;
-    return state.x;
+    return state.value;
   }
 
   function makeToX(n, pad, seriesW) {
@@ -207,7 +205,6 @@
     if (!(count > 1)) count = Math.max(1, n || 1);
     return function (i) {
       var idx = Math.max(0, Math.min(count - 1, i));
-      if (idx === count - 1 && isFinite(frameHeadX)) return frameHeadX;
       return baseIndexX(idx, count, pad, seriesW);
     };
   }
@@ -528,7 +525,7 @@
     }
     pendingYAnchor = yAnchor;
     wantFitY = true;
-    if (headMotion[activeAsset]) headMotion[activeAsset].x = NaN;
+    if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
     flushOpenTradeVisualQueue();
     drawNow();
     requestAnimationFrame(function () { drawNow(); });
@@ -592,6 +589,19 @@
     ctx.restore();
   }
 
+  function visualFormingCandle(forming) {
+    if (!forming || !isFinite(frameDisplayPrice) || frameDisplayPrice <= 0) return forming;
+    return {
+      o: forming.o,
+      h: Math.max(Number(forming.h) || frameDisplayPrice, Number(forming.o) || frameDisplayPrice, frameDisplayPrice),
+      l: Math.min(Number(forming.l) || frameDisplayPrice, Number(forming.o) || frameDisplayPrice, frameDisplayPrice),
+      c: frameDisplayPrice,
+      t: forming.t,
+      _spike: !!forming._spike,
+      _boom: !!forming._boom
+    };
+  }
+
   function visibleCandles(market) {
     var live = liveBuffer(activeAsset);
     if ((!live || !live.candles || live.candles.length < 40) && D6.Engine) {
@@ -615,7 +625,7 @@
     var start = Math.max(0, done.length - n);
     var i;
     for (i = start; i < done.length; i++) candleScratch.push(done[i]);
-    var forming = (live && live.forming) || (market && market.candle);
+    var forming = visualFormingCandle((live && live.forming) || (market && market.candle));
     if (forming) {
       if (!candleScratch.length || candleScratch[candleScratch.length - 1].t !== forming.t) {
         candleScratch.push(forming);
@@ -634,7 +644,7 @@
       : ((market && market.candles) || []);
     var i;
     for (i = 0; i < done.length; i++) tmpCloses.push(done[i].c);
-    var forming = (live && live.forming) || (market && market.candle);
+    var forming = visualFormingCandle((live && live.forming) || (market && market.candle));
     if (forming && isFinite(forming.c)) {
       if (!done.length || done[done.length - 1].t !== forming.t) tmpCloses.push(forming.c);
       else tmpCloses[tmpCloses.length - 1] = forming.c;
@@ -912,7 +922,7 @@
       ctx.shadowBlur = 0;
     }
     var last = candles[candles.length - 1];
-    return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
+    return { toX: toX, toY: toY, lastX: pad.l + w, lastY: toY(last.c), count: candles.length };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
@@ -941,7 +951,7 @@
     var col = color || '#ff2d55';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.save();
@@ -950,6 +960,7 @@
     for (i = 1; i < data.length; i++) {
       ctx.lineTo(toX(i), toY(data[i]));
     }
+    ctx.lineTo(lastX, lastY);
     ctx.strokeStyle = col;
     ctx.lineWidth = width || 1.8;
     ctx.lineJoin = 'round';
@@ -973,7 +984,7 @@
     var i;
     var last = candles[candles.length - 1];
     var pulseT = performance.now() / 220;
-    var lastX = toX(candles.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(last.c) + Math.sin((candles.length - 1) * 0.42 - pulseT) * (1.1 + 1.6);
     var nTitan = candles.length;
     ctx.save();
@@ -1000,7 +1011,7 @@
     var col = color || '#f5a623';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.beginPath();
@@ -1042,7 +1053,7 @@
     if (!data || data.length < 2) return null;
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     var col = color || '#FF7A00';
@@ -1110,8 +1121,14 @@
         ctx.strokeStyle = color || '#2F6BFF';
       }
     }
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
+    ctx.beginPath();
+    ctx.moveTo(toX(data.length - 1), lastY);
+    ctx.lineTo(lastX, lastY);
+    ctx.strokeStyle = color || '#2F6BFF';
+    ctx.lineWidth = width || 3;
+    ctx.stroke();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
   }
 
@@ -1428,44 +1445,6 @@
         g.textAlign = 'center';
         g.textBaseline = 'middle';
         g.fillText(label, leftX + timerW / 2, ty + timerH / 2 + 0.5);
-        var aboveNow = isFinite(lastDrawnClose) ? lastDrawnClose > entry : false;
-        if (!isCall) aboveNow = isFinite(lastDrawnClose) ? lastDrawnClose < entry : false;
-        var liveWin = !!aboveNow;
-        var stakeN = Number(trade.stake);
-        var payRaw = trade.payout;
-        if (!(stakeN > 0) && D6.Engine && D6.Engine.getTrades) {
-          var liveTr = D6.Engine.getTrades();
-          var li;
-          for (li = 0; li < liveTr.length; li++) {
-            if (liveTr[li] && liveTr[li].id === trade.id) {
-              stakeN = Number(liveTr[li].stake) || stakeN;
-              if (payRaw == null) payRaw = liveTr[li].payout;
-              break;
-            }
-          }
-        }
-        var pctN = 88;
-        var pr = parseFloat(payRaw);
-        if (pr === 88 || pr === 500 || pr === 1000 || pr === 5000) pctN = pr;
-        else if (isFinite(pr) && pr > 1 && pr < 80) pctN = Math.round((pr - 1) * 100);
-        else if (pr >= 80) pctN = pr;
-        var gainN = stakeN * (pctN / 100);
-        if (D6.roundMoney) {
-          gainN = D6.roundMoney(gainN);
-          stakeN = D6.roundMoney(stakeN);
-        }
-        var money = liveWin
-          ? ('+$' + (Number(gainN) || 0).toFixed(2))
-          : ('-$' + (Number(stakeN) || 0).toFixed(2));
-        var mw = Math.max(52, 8 + money.length * 7.2);
-        var mx0 = leftX + timerW + 6;
-        g.fillStyle = 'rgba(10,15,29,0.92)';
-        g.strokeStyle = liveWin ? '#00e676' : '#ff3b30';
-        roundRectOn(g, mx0, ty, mw, timerH, 7);
-        g.fill();
-        g.stroke();
-        g.fillStyle = liveWin ? '#00e676' : '#ff3b30';
-        g.fillText(money, mx0 + mw / 2, ty + timerH / 2 + 0.5);
         g.textBaseline = 'alphabetic';
       }
     }
@@ -1703,6 +1682,7 @@
     var market = D6.Engine && D6.Engine.getMarket ? D6.Engine.getMarket(activeAsset) : null;
     if (!market) return;
     applySteerToMarket(market);
+    frameDisplayPrice = updateHeadPrice(activeAsset, market.price, now);
     var allTrades = collectOpenTradeVisuals();
     var primary = allTrades[0] || null;
     allTrades.forEach(function (ot) {
@@ -1753,8 +1733,8 @@
     var band = visiblePriceBand(candles, market.price, asset.id);
     var minPrice = band.min;
     var maxPrice = band.max;
-    var currentPrice = (isFinite(market.price) && market.price > 0 && market.price < 1e7)
-      ? market.price
+    var currentPrice = (isFinite(frameDisplayPrice) && frameDisplayPrice > 0 && frameDisplayPrice < 1e7)
+      ? frameDisplayPrice
       : ((minPrice + maxPrice) / 2);
     var spanRaw = maxPrice - minPrice;
     if (!(spanRaw > 0) || spanRaw < currentPrice * 0.012) {
@@ -1768,8 +1748,6 @@
       var hc = Number(candles[candles.length - 1].c);
       if (hc > 0 && hc < 1e7) head = hc;
     }
-    var headTargetX = baseIndexX(Math.max(0, candles.length - 1), Math.max(1, candles.length), pad, seriesW);
-    frameHeadX = updateHeadX(activeAsset, headTargetX, head, now, candleStepWidth(seriesW));
     var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
     if (allTrades.length) {
       var expHold = 0;
@@ -1849,11 +1827,11 @@
     st.viewMin = viewMin;
     st.viewMax = viewMax;
 
-    if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
+    if (isFinite(market.price) && market.price > 0 && market.price < 1e7) {
+      lastDrawnClose = Number(market.price);
+    } else if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
       var lc = Number(candles[candles.length - 1].c);
       if (lc > 0 && lc < 1e7) lastDrawnClose = lc;
-    } else if (isFinite(market.price) && market.price > 0 && market.price < 1e7) {
-      lastDrawnClose = Number(market.price);
     }
 
     var minP = viewMin;
@@ -1917,7 +1895,7 @@
     if (!map) {
       map = {
         toY: function (p) { return plotToY(p, pad, h, minP, maxP); },
-        lastX: isFinite(frameHeadX) ? frameHeadX : layout.headX,
+        lastX: layout.headX,
         lastY: plotToY(market.price, pad, h, minP, maxP)
       };
     }
@@ -2316,7 +2294,7 @@
       persistView(activeAsset);
       activeAsset = id;
       applyAssetView(id);
-      if (headMotion[id]) headMotion[id].x = NaN;
+      if (headPriceMotion[id]) headPriceMotion[id].value = NaN;
       viewMin = 0;
       viewMax = 0;
       if (steer && steer.assetId !== id) steer = null;

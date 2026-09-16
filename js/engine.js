@@ -731,7 +731,6 @@
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
     var stepMs = sim.crashCalm ? 200 : (sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120));
-    if (busy) stepMs = Math.max(150, Math.min(250, stepMs));
     var steps = Math.floor(remain / stepMs);
     if (remain < stepMs) steps = 0;
     if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;
@@ -763,10 +762,6 @@
         }
         if (!didSpike) {
           price = unifiedStep(asset, price, tMs, dt, { hunt: 0, busy: false });
-        }
-        if (busy && !sim.crashCalm) {
-          var baseP = Number(asset.basePrice) || price;
-          price += (Math.random() - 0.495) * (baseP * 0.0004);
         }
         price = capPctMove(forming.c > 0 ? forming.c : price0, price, tickCapPct(asset, didSpike));
         price = clampIndexPrice(price, asset);
