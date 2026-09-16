@@ -22,6 +22,8 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
+  var HEAD_X_RATIO = 0.70;
+  var FULLSCREEN_Y_PAD_RATIO = 0.22;
   var frameDisplayPrice = NaN;
   var headPriceMotion = {};
   var pendingYAnchor = null;
@@ -130,7 +132,7 @@
     pad = pad || { t: 16, r: 45, b: 28, l: 8 };
     var plotW = Math.max(40, cssW - pad.l - pad.r);
     var axisX = pad.l + plotW;
-    var headX = pad.l + plotW * 0.80;
+    var headX = cssW * HEAD_X_RATIO;
     if (headX > axisX - 14) headX = axisX - 14;
     if (headX < pad.l + 48) headX = pad.l + 48;
     return {
@@ -402,8 +404,8 @@
   function captureYAxisAnchor() {
     if (!(lastMaxP > lastMinP)) return null;
     var price = Number(lastDrawnClose);
-    if (D6.Engine && D6.Engine.getTrades) {
-      var list = D6.Engine.getTrades();
+    if (D6.Engine) {
+      var list = collectOpenTradeVisuals();
       var i;
       for (i = 0; i < list.length; i++) {
         if (!list[i] || list[i].assetId !== activeAsset || list[i].settled) continue;
@@ -416,7 +418,7 @@
     }
     if (!isFinite(price) || price <= 0) return null;
     var ratio = (lastMaxP - price) / (lastMaxP - lastMinP);
-    ratio = Math.max(0.15, Math.min(0.85, ratio));
+    ratio = Math.max(0.001, Math.min(0.999, ratio));
     return { price: price, ratio: ratio };
   }
 
@@ -1575,7 +1577,7 @@
     return { min: lo, max: hi };
   }
 
-  function fitVisibleY(candles, extras, anchor) {
+  function fitVisibleY(candles, extras, anchor, padRatio) {
     var band = visiblePriceBand(candles, extras && extras[0], null);
     var lo = band.min;
     var hi = band.max;
@@ -1595,10 +1597,11 @@
       lo = mid - span / 2;
       hi = mid + span / 2;
     }
-    var pad = Math.max(span * 0.15, ((lo + hi) / 2) * 0.004);
+    var yPadRatio = isFinite(padRatio) ? Math.max(0.08, Math.min(0.45, padRatio)) : 0.15;
+    var pad = Math.max(span * yPadRatio, ((lo + hi) / 2) * 0.004);
     var total = span + pad * 2;
     if (anchor && isFinite(anchor.price) && anchor.price > 0) {
-      var ratio = Math.max(0.15, Math.min(0.85, Number(anchor.ratio) || 0.5));
+      var ratio = Math.max(0.001, Math.min(0.999, Number(anchor.ratio) || 0.5));
       var needTop = (hi + pad - anchor.price) / ratio;
       var needBottom = (anchor.price - (lo - pad)) / (1 - ratio);
       total = Math.max(total, needTop, needBottom);
@@ -1762,7 +1765,7 @@
     var extrasY = [head];
     if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
     if (wantFitY) {
-      var fit = fitVisibleY(candles, extrasY, pendingYAnchor);
+      var fit = fitVisibleY(candles, extrasY, pendingYAnchor, fsOn ? FULLSCREEN_Y_PAD_RATIO : 0.15);
       viewMin = fit.min;
       viewMax = fit.max;
       if (holdLock) {
@@ -1799,7 +1802,8 @@
       viewMax = cam.max;
     }
     var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
-    var keepAir = Math.max(rawVisibleSpan * 0.15, Math.abs(head) * 0.004);
+    var ySafetyRatio = fsOn ? FULLSCREEN_Y_PAD_RATIO : 0.15;
+    var keepAir = Math.max(rawVisibleSpan * ySafetyRatio, Math.abs(head) * 0.004);
     var needsSafeFit = minPrice < viewMin + keepAir || maxPrice > viewMax - keepAir;
     if ((fsOn || holdLock) && needsSafeFit) {
       var anchorPrice = isFinite(strikeP) && strikeP > 0 ? strikeP : head;
@@ -1809,7 +1813,7 @@
       var safeFit = fitVisibleY(candles, extrasY, {
         price: anchorPrice,
         ratio: anchorRatio
-      });
+      }, fsOn ? FULLSCREEN_Y_PAD_RATIO : 0.15);
       viewMin = safeFit.min;
       viewMax = safeFit.max;
     } else if (!fsOn && !holdLock) {
@@ -2297,6 +2301,11 @@
       if (headPriceMotion[id]) headPriceMotion[id].value = NaN;
       viewMin = 0;
       viewMax = 0;
+      if (document.documentElement.classList.contains('fs-trade') ||
+        (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on'))) {
+        wantFitY = true;
+        pendingYAnchor = null;
+      }
       if (steer && steer.assetId !== id) steer = null;
       var liveBuf = liveBuffer(id);
       var st = ensureAssetState(id);
