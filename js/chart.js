@@ -126,7 +126,7 @@
     pad = pad || { t: 16, r: 45, b: 28, l: 8 };
     var plotW = Math.max(40, cssW - pad.l - pad.r);
     var axisX = pad.l + plotW;
-    var headX = pad.l + plotW * 0.70;
+    var headX = pad.l + plotW * 0.80;
     if (headX > axisX - 14) headX = axisX - 14;
     if (headX < pad.l + 48) headX = pad.l + 48;
     return {
@@ -143,29 +143,28 @@
       (window.assetBuffers && window.assetBuffers[key]) || null;
   }
 
+  function candleStepWidth(seriesW) {
+    var tWin = xWin > 0 ? xWin : 60000;
+    return seriesW * (1000 / Math.max(1, tWin));
+  }
+
+  function scrollOffsetX(seriesW) {
+    var tNow = xNow || Date.now();
+    var cms = 1000;
+    var tStart = Math.floor(tNow / cms) * cms;
+    return ((tNow - tStart) / cms) * candleStepWidth(seriesW);
+  }
+
   function makeToX(n, pad, seriesW) {
+    var count = (xTimes && xTimes.length) ? xTimes.length : n;
+    if (!(count > 1)) count = Math.max(1, n || 1);
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
-    var tNow = xNow || Date.now();
-    var tWin = xWin > 0 ? xWin : 60000;
-    var times = xTimes;
-    if (times && times.length >= 2 && tWin > 0) {
-      var tLeft = tNow - tWin;
-      return function (i) {
-        var idx = Math.max(0, Math.min(times.length - 1, i));
-        var t = Number(times[idx]);
-        if (!isFinite(t)) t = tNow;
-        var u = (t - tLeft) / tWin;
-        if (u < -0.02) u = -0.02;
-        if (u > 1.08) u = 1.08;
-        return x0 + u * span;
-      };
-    }
-    if (!(n > 1)) return function () { return x0 + span; };
-    var slot = span / n;
+    var step = candleStepWidth(span);
+    var off = scrollOffsetX(span);
     return function (i) {
-      var idx = Math.max(0, Math.min(n - 1, i));
-      return x0 + idx * slot + slot * 0.5;
+      var idx = Math.max(0, Math.min(count - 1, i));
+      return x0 + span - (count - 1 - idx) * step - off;
     };
   }
 
@@ -762,16 +761,7 @@
       gap = Math.min(5, Math.max(3.2, slot * 0.40));
       cw = Math.min(5.4, Math.max(3.2, slot - gap));
     }
-    var toX = function (i) {
-      var tNow = xNow || Date.now();
-      var tWin = xWin > 0 ? xWin : 60000;
-      var t = candles[i] && candles[i].t;
-      if (!isFinite(t)) t = tNow;
-      var u = (t - (tNow - tWin)) / tWin;
-      if (u < -0.02) u = -0.02;
-      if (u > 1.08) u = 1.08;
-      return pad.l + u * w;
-    };
+    var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
     var capVis = visH * 0.07;
@@ -853,7 +843,7 @@
       ctx.shadowBlur = 0;
     }
     var last = candles[candles.length - 1];
-    return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
+    return { toX: toX, toY: toY, lastX: pad.l + w, lastY: toY(last.c), count: candles.length };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
@@ -882,7 +872,7 @@
     var col = color || '#ff2d55';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.save();
@@ -914,7 +904,7 @@
     var i;
     var last = candles[candles.length - 1];
     var pulseT = performance.now() / 220;
-    var lastX = toX(candles.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(last.c) + Math.sin((candles.length - 1) * 0.42 - pulseT) * (1.1 + 1.6);
     var nTitan = candles.length;
     ctx.save();
@@ -941,7 +931,7 @@
     var col = color || '#f5a623';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.beginPath();
@@ -983,7 +973,7 @@
     if (!data || data.length < 2) return null;
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     var col = color || '#FF7A00';
@@ -1051,7 +1041,7 @@
         ctx.strokeStyle = color || '#2F6BFF';
       }
     }
-    var lastX = toX(data.length - 1);
+    var lastX = pad.l + w;
     var lastY = toY(data[data.length - 1]);
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
   }
@@ -1711,7 +1701,7 @@
     var strikeP = primary && Number(primary.entryPrice);
     var extrasY = [head];
     if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
-    if (fsOn || wantFitY) {
+    if (wantFitY) {
       var fit = fitVisibleY(candles, extrasY);
       viewMin = fit.min;
       viewMax = fit.max;
@@ -1721,6 +1711,12 @@
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
       }
       wantFitY = false;
+    } else if (fsOn && viewMax > viewMin) {
+      if (holdLock) {
+        st.lockMin = viewMin;
+        st.lockMax = viewMax;
+        strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
+      }
     } else if (holdLock && st.lockMax > st.lockMin) {
       viewMin = st.lockMin;
       viewMax = st.lockMax;
@@ -1966,7 +1962,7 @@
     window.animationFrameId = loopRaf;
     try {
       var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
-      var drawEvery = liveN > 0 ? 33 : 50;
+      var drawEvery = 16;
       var tickEvery = liveN > 0 ? 150 : 220;
       if (ts - lastFlush >= tickEvery) {
         if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
@@ -2153,6 +2149,9 @@
             fsObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
             var fsOv = document.getElementById('fsTradeOverlay');
             if (fsOv) fsObs.observe(fsOv, { attributes: true, attributeFilter: ['class'] });
+            document.addEventListener('fullscreenchange', function () {
+              try { resize(); drawNow(); } catch (eFc) { /* ignore */ }
+            });
           }
         } catch (eMo) { /* ignore */ }
         if (loopRaf) {

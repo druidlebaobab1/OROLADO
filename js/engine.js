@@ -97,6 +97,7 @@
   function tickCapPct(asset, spiked) {
     var id = asset && asset.id;
     if (spiked && (id === 'boomspike' || id === 'crash300')) return 0.004;
+    if (id === 'crash300') return 0.00055;
     if (id === 'stable') return 0.0008;
     if (id === 'titanpulse') return 0.0024;
     if (id === 'goldtrend' || id === 'nexusprime' || id === 'v75') return 0.0025;
@@ -207,7 +208,7 @@
     apex500: { mode: 'candles', vol: 0.0045 },
     horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
     boomspike: { mode: 'candles', vol: 0.0032 },
-    crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
+    crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     goldtrend: { mode: 'line', vol: 0.0125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
@@ -216,6 +217,7 @@
   var SIM_VER = 15;
   var TITAN_VER = 8;
   var BOOM_VER = 3;
+  var CRASH_VER = 1;
   var MIN_SEED = 500;
   var SCALE_VER = 3;
 
@@ -314,6 +316,8 @@
       var wH = Math.sin(nowMs / 110) * price * 0.0017 + Math.sin(nowMs / 47) * price * 0.0009;
       var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
       nextOut = price + gapH * 0.055 + nH + wH + teaseH;
+    } else if (sim.crashCalm && !opts.spike) {
+      nextOut = price + price * (0.0002 + roll * 0.0003);
     } else if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
       var nT = (roll - 0.5) * price * vol * 1.35;
@@ -402,6 +406,8 @@
         c = c >= o ? o + tinyB : o - tinyB;
       } else if (sim.spike === 1) {
         c = o - Math.max(minBody, Math.abs(c - o) * 0.65);
+      } else if (sim.crashCalm) {
+        c = o + Math.max(minBody * 0.35, Math.abs(c - o) * 0.25);
       } else if (sim.spike === -1) {
         c = o + Math.max(minBody, Math.abs(c - o) * 0.65);
       } else if (Math.abs(c - o) < minBody) {
@@ -514,11 +520,18 @@
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || prev;
     var vol = Math.max(prev * (sim.vol || 0.0035), prev * 0.0014);
+    if (sim.crashCalm) vol = prev * 0.00032;
     var rnd = uhash01(i + 3, sim.vol * 1000 || 11) - 0.49;
     var close = prev + rnd * vol * 2.6;
     close += (base - close) * 0.028;
     var spiked = false;
-    if (sim.spike === -1 && i > 6 && (i % (16 + Math.floor(uhash01(i, 19) * 12))) === 0) {
+    if (sim.crashCalm) {
+      close = prev + prev * (0.00022 + uhash01(i, 11) * 0.00028);
+      if (i > 8 && (i % 18) === 0) {
+        close = prev * 0.982;
+        spiked = true;
+      }
+    } else if (sim.spike === -1 && i > 6 && (i % (16 + Math.floor(uhash01(i, 19) * 12))) === 0) {
       close = prev * (1 - 0.015 - uhash01(i, 4) * 0.012);
       spiked = true;
     } else if (sim.run) {
@@ -612,6 +625,7 @@
       coreVer: sim.coreWave ? 1 : 0,
       goldVer: sim.goldHot ? 2 : 0,
       boomVer: asset.id === 'boomspike' ? BOOM_VER : (sim.boomBurst ? 2 : 0),
+      crashVer: asset.id === 'crash300' ? CRASH_VER : 0,
       nexusVer: sim.nexusPulse ? 1 : 0,
       v75Ver: sim.v75Wave ? 2 : 0,
       boomPhase: boomWalk ? boomWalk.boomPhase : null,
@@ -633,6 +647,7 @@
     if (!buf || !buf.candles || buf.candles.length < 40) return true;
     if (simOf(asset.id).titanDrop && buf.titanVer !== TITAN_VER) return true;
     if (asset.id === 'boomspike' && buf.boomVer !== BOOM_VER) return true;
+    if (asset.id === 'crash300' && buf.crashVer !== CRASH_VER) return true;
     if (buf.scaleVer !== SCALE_VER) return true;
     return false;
   }
@@ -733,8 +748,9 @@
           didSpike = true;
         } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
-          price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
-          buf.nextSpike = tMs + 25000 + Math.random() * 10000;
+          if (sim.crashCalm) price = clampIndexPrice(fromP * (1 - 0.018), asset);
+          else price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
+          buf.nextSpike = tMs + (sim.crashCalm ? 18000 : 25000) + (sim.crashCalm ? 0 : Math.random() * 10000);
           forming._spike = true;
           forming.o = fromP;
           didSpike = true;
@@ -742,7 +758,7 @@
         if (!didSpike) {
           price = unifiedStep(asset, price, tMs, dt, { hunt: 0, busy: false });
         }
-        if (busy) {
+        if (busy && !sim.crashCalm) {
           var baseP = Number(asset.basePrice) || price;
           price += (Math.random() - 0.495) * (baseP * 0.0004);
         }
@@ -752,6 +768,7 @@
         forming.c = price;
         var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
         if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
+        if (sim.crashCalm) wickN = price * 0.00006;
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
         forming.h = Math.max(forming.h, price + wickN);
