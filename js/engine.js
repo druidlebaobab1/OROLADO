@@ -66,8 +66,8 @@
     }
   }
 
-  var TICK_PCT = 0.0038;
-  var JUMP_PCT = 0.012;
+  var TICK_PCT = 0.0022;
+  var JUMP_PCT = 0.004;
 
   function clampIndexPrice(p, asset) {
     var n = Number(p);
@@ -81,6 +81,49 @@
       hiMul = 1.22;
     }
     return Math.round(Math.max(base * loMul, Math.min(base * hiMul, n)) * 100) / 100;
+  }
+
+  function isPlausiblePrice(p, ref) {
+    var n = Number(p);
+    if (!isFinite(n) || n <= 0 || n > 1e7) return false;
+    var r = Number(ref);
+    if (!(r > 0)) return true;
+    if (n > r * 1.12 || n < r * 0.88) return false;
+    return true;
+  }
+
+  function tickCapPct(asset, spiked) {
+    var id = asset && asset.id;
+    if (id === 'stable') return 0.0008;
+    if (spiked && (id === 'boomspike' || id === 'crash300')) return 0.018;
+    if (id === 'titanpulse') return 0.0024;
+    if (id === 'goldtrend' || id === 'nexusprime' || id === 'v75') return 0.0025;
+    return 0.002;
+  }
+
+  function sanitizeOhlc(asset, candle, refPrice) {
+    if (!candle) return candle;
+    var ref = Number(refPrice);
+    if (!(ref > 0)) ref = Number(candle.c) || Number(asset && asset.basePrice) || 5000;
+    var o = clampIndexPrice(candle.o, asset);
+    var c = clampIndexPrice(candle.c, asset);
+    var h = clampIndexPrice(candle.h, asset);
+    var l = clampIndexPrice(candle.l, asset);
+    if (!isPlausiblePrice(o, ref)) o = ref;
+    if (!isPlausiblePrice(c, ref)) c = ref;
+    o = capPctMove(ref, o, 0.03);
+    c = capPctMove(ref, c, 0.03);
+    var maxW = Math.abs(ref) * ((asset && (asset.id === 'boomspike' || asset.id === 'crash300') && candle._spike) ? 0.012 : 0.0032);
+    if (asset && asset.id === 'stable') maxW = Math.abs(ref) * 0.0012;
+    h = Math.max(o, c, isPlausiblePrice(h, ref) ? h : c);
+    l = Math.min(o, c, isPlausiblePrice(l, ref) ? l : c);
+    if (h > Math.max(o, c) + maxW) h = Math.max(o, c) + maxW;
+    if (l < Math.min(o, c) - maxW) l = Math.min(o, c) - maxW;
+    candle.o = o;
+    candle.c = c;
+    candle.h = h;
+    candle.l = l;
+    return candle;
   }
 
   window.assetBuffers = window.assetBuffers || {};
@@ -194,7 +237,7 @@
       var wH = Math.sin(nowMs / 110) * price * 0.0017 + Math.sin(nowMs / 47) * price * 0.0009;
       var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
       var nextH = price + gapH * 0.055 + nH + wH + teaseH;
-      nextH = capPctMove(price, nextH, 0.0062);
+      nextH = capPctMove(price, nextH, 0.0022);
       return clampIndexPrice(nextH, asset);
     }
     if (sim.titanDrop && !opts.spike) {
@@ -393,7 +436,13 @@
       var exp = tr.expiryTime || tr.expiresAt || 0;
       if (exp && now >= exp) continue;
       var ep = Number(tr.entryPrice);
-      if (isFinite(ep) && ep > 0) return ep;
+      var ref = 0;
+      if (window.assetBuffers && window.assetBuffers[assetId] && window.assetBuffers[assetId].price) {
+        ref = window.assetBuffers[assetId].price;
+      } else if (markets[assetId] && markets[assetId].price) {
+        ref = markets[assetId].price;
+      }
+      if (isPlausiblePrice(ep, ref)) return ep;
     }
     return 0;
   }
@@ -613,13 +662,16 @@
           var hp = huntPriceFor(asset.id);
           price = unifiedStep(asset, price, tMs, dt, hp ? { hunt: hp } : {});
         }
+        price = capPctMove(forming.c > 0 ? forming.c : price, price, tickCapPct(asset, didSpike));
+        price = clampIndexPrice(price, asset);
         var bucket = Math.floor(tMs / cms);
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
         forming.c = price;
-        var wickN = price * (0.00035 + Math.abs(Math.sin(tMs / 83)) * 0.00055);
+        var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
         forming.h = Math.max(forming.h, price + wickN);
         forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
+        sanitizeOhlc(asset, forming, price);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
           if (forming._boom || boomForce) forming._boom = true;
@@ -631,8 +683,8 @@
           forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
         }
       }
-    buf.price = price;
-    buf.forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike);
+    buf.price = clampIndexPrice(price, asset);
+    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price);
     buf.lastMs = nowMs;
     buf.ver = SIM_VER;
     buf.scaleVer = SCALE_VER;
@@ -681,10 +733,12 @@
     for (i = 0; i < buf.length; i++) {
       var c = buf[i];
       if (!c) continue;
-      if (c.l < min) min = c.l;
-      if (c.h > max) max = c.h;
-      if (c.c < min) min = c.c;
-      if (c.c > max) max = c.c;
+      var pc = Number(c.c);
+      if (!isPlausiblePrice(pc, market.price)) continue;
+      if (c.l < min && isPlausiblePrice(c.l, market.price)) min = c.l;
+      if (c.h > max && isPlausiblePrice(c.h, market.price)) max = c.h;
+      if (pc < min) min = pc;
+      if (pc > max) max = pc;
     }
     if (!isFinite(min) || !isFinite(max)) {
       min = Number(market.price) || 0;
