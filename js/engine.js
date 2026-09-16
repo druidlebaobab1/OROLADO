@@ -180,18 +180,16 @@
     if (!isPlausiblePrice(c, ref)) c = ref;
     o = capPctMove(ref, o, 0.03);
     c = capPctMove(ref, c, 0.03);
-    var maxW = Math.abs(ref) * ((asset && (asset.id === 'boomspike' || asset.id === 'crash300') && candle._spike) ? 0.012 : 0.0032);
-    if (asset && asset.id === 'stable') maxW = Math.abs(ref) * 0.0012;
-    if (wickSpan > 0) maxW = Math.min(maxW, wickSpan * 0.06);
     h = Math.max(o, c, isPlausiblePrice(h, ref) ? h : c);
     l = Math.min(o, c, isPlausiblePrice(l, ref) ? l : c);
-    if (h - l > maxW * 2) {
-      var mid = (o + c) / 2;
-      h = mid + maxW;
-      l = mid - maxW;
+    if (wickSpan > 0) {
+      var cap7 = wickSpan * 0.07;
+      if ((h - l) > cap7) {
+        var mid7 = (h + l) / 2;
+        h = mid7 + cap7 / 2;
+        l = mid7 - cap7 / 2;
+      }
     }
-    if (h > Math.max(o, c) + maxW) h = Math.max(o, c) + maxW;
-    if (l < Math.min(o, c) - maxW) l = Math.min(o, c) - maxW;
     candle.o = o;
     candle.c = c;
     candle.h = h;
@@ -469,6 +467,12 @@
     var cms = CANDLE_MS;
     var n = buf.candles.length;
     var tEnd = Math.floor((nowMs || Date.now()) / cms) * cms;
+    var last = buf.candles[n - 1];
+    if (last && isFinite(last.t) && Math.abs(last.t - tEnd) <= cms * 2) {
+      buf.bucket = Math.floor(tEnd / cms);
+      if (buf.forming && !isFinite(buf.forming.t)) buf.forming.t = tEnd;
+      return;
+    }
     var i;
     for (i = 0; i < n; i++) {
       buf.candles[i].t = tEnd - (n - 1 - i) * cms;

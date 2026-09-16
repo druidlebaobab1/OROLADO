@@ -16,8 +16,8 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [40, 45, 50, 55, 60];
-  var DEFAULT_ZOOM_IDX = 2;
+  var ZOOM_STEPS = [30, 60, 120, 300, 600];
+  var DEFAULT_ZOOM_IDX = 1;
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
   var inds = { ma: false, bb: false, ema: false };
@@ -145,6 +145,21 @@
   function makeToX(n, pad, seriesW) {
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
+    var tNow = xNow || Date.now();
+    var tWin = xWin > 0 ? xWin : 60000;
+    var times = xTimes;
+    if (times && times.length >= 2 && tWin > 0) {
+      var tLeft = tNow - tWin;
+      return function (i) {
+        var idx = Math.max(0, Math.min(times.length - 1, i));
+        var t = Number(times[idx]);
+        if (!isFinite(t)) t = tNow;
+        var u = (t - tLeft) / tWin;
+        if (u < -0.02) u = -0.02;
+        if (u > 1.08) u = 1.08;
+        return x0 + u * span;
+      };
+    }
     if (!(n > 1)) return function () { return x0 + span; };
     var slot = span / n;
     return function (i) {
@@ -508,9 +523,10 @@
       live = liveBuffer(activeAsset);
     }
     var plotW = Math.max(140, cssW * 0.70);
-    var fit = Math.floor(plotW / 9.5);
-    var z = Math.ceil(zoomSmooth || zoomSec() || 50);
-    var n = Math.max(40, Math.min(60, fit, z));
+    var z = Math.ceil((xWin > 0 ? xWin : ((zoomSmooth || zoomSec() || 60) * 1000)) / 1000);
+    if (z < 24) z = 24;
+    if (z > 600) z = 600;
+    var n = z;
     var done = (live && live.candles && live.candles.length)
       ? live.candles
       : ((window.assetsState && window.assetsState[activeAsset] && window.assetsState[activeAsset].candles) ||
@@ -730,9 +746,18 @@
       cw = Math.max(5, slot - gap);
     }
     var toX = function (i) {
-      return pad.l + (Math.max(0, Math.min(n - 1, i)) + 0.5) * slot;
+      var tNow = xNow || Date.now();
+      var tWin = xWin > 0 ? xWin : 60000;
+      var t = candles[i] && candles[i].t;
+      if (!isFinite(t)) t = tNow;
+      var u = (t - (tNow - tWin)) / tWin;
+      if (u < -0.02) u = -0.02;
+      if (u > 1.08) u = 1.08;
+      return pad.l + u * w;
     };
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
+    var visH = Math.max(maxP - minP, 0.01);
+    var capVis = visH * 0.07;
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
@@ -742,27 +767,17 @@
       if (opts.titanIce) col = up ? '#FFFFFF' : '#B0BEC5';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
       if (opts.crashDrop && !up) col = '#FF3B30';
-      var body = Math.abs(c.c - c.o);
-      var ref = Math.max(Math.abs(c.c), 1);
-      if (body < ref * 0.00012) body = ref * 0.00012;
-      var maxW = body * 1.2;
       var hiB = Math.max(c.o, c.c);
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
       var lWick = c.l;
-      if (!(opts.boomNeon && (c._boom || c._spike) && !opts.tradeLock)) {
-        if (hWick > hiB + maxW) hWick = hiB + maxW;
-        if (lWick < loB - maxW) lWick = loB - maxW;
-      }
-      if (opts.tradeLock && opts.lockSpan > 0) {
-        var capW = opts.lockSpan * 0.06;
-        var midW = (hiB + loB) / 2;
-        if (hWick - lWick > capW) {
-          hWick = midW + capW / 2;
-          lWick = midW - capW / 2;
-        }
-        if (hWick > maxP) hWick = maxP;
-        if (lWick < minP) lWick = minP;
+      if (!(isFinite(hWick))) hWick = hiB;
+      if (!(isFinite(lWick))) lWick = loB;
+      var wickRange = hWick - lWick;
+      if (wickRange > capVis) {
+        var midW = (hWick + lWick) / 2;
+        hWick = midW + capVis / 2;
+        lWick = midW - capVis / 2;
       }
       var x = toX(i);
       ctx.strokeStyle = col;
@@ -1555,6 +1570,16 @@
     if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
     xNow = Date.now();
     xWin = Math.max(8000, zoomSmooth * 1000);
+    if (allTrades.length) {
+      var tOldest = xNow;
+      var ta;
+      for (ta = 0; ta < allTrades.length; ta++) {
+        var ts0 = Number(allTrades[ta].startTime || allTrades[ta].startedAt || 0);
+        if (ts0 > 0 && ts0 < tOldest) tOldest = ts0;
+      }
+      var needWin = (xNow - tOldest) + 8000;
+      if (needWin > xWin) xWin = Math.min(600000, needWin);
+    }
 
     // Fond profond unique — zéro beige / blanc.
     ctx.fillStyle = '#0B0E14';
@@ -1689,8 +1714,8 @@
       };
     }
     if (map && isFinite(map.lastY)) {
-      var yLo = pad.t + 10;
-      var yHi = pad.t + h - 10;
+      var yLo = pad.t + h * 0.08;
+      var yHi = pad.t + h * 0.92;
       if (map.lastY < yLo) map.lastY = yLo;
       if (map.lastY > yHi) map.lastY = yHi;
     }
@@ -1913,8 +1938,11 @@
       if (zoomIdx > 0) {
         zoomIdx -= 1;
         persistView(activeAsset);
-        viewMin = 0;
-        viewMax = 0;
+        var stZin = ensureAssetState(activeAsset);
+        if (!(stZin.lockUntil && Date.now() < stZin.lockUntil)) {
+          viewMin = 0;
+          viewMax = 0;
+        }
       }
     });
     if (zout) zout.addEventListener('click', function (e) {
@@ -1923,8 +1951,11 @@
       if (zoomIdx < ZOOM_STEPS.length - 1) {
         zoomIdx += 1;
         persistView(activeAsset);
-        viewMin = 0;
-        viewMax = 0;
+        var stZout = ensureAssetState(activeAsset);
+        if (!(stZout.lockUntil && Date.now() < stZout.lockUntil)) {
+          viewMin = 0;
+          viewMax = 0;
+        }
       }
     });
     if (zreset) zreset.addEventListener('click', function (e) {
