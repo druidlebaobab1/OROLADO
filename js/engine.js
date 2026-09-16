@@ -89,7 +89,7 @@
 
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
-    stable: { mode: 'line', vol: 0.0048, color: '#ff2d55', coreWave: true, pullK: 0.05 },
+    stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
     apex500: { mode: 'candles', vol: 0.0045, run: true },
     horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
     boomspike: { mode: 'candles', vol: 0.0028, boomBurst: true, tickMs: 160 },
@@ -190,11 +190,11 @@
     var roll = opts.det != null ? uhash01(opts.det, 904177) : Math.random();
     if (opts.hunt > 0) {
       var gapH = opts.hunt - price;
-      var nH = (roll - 0.5) * price * 0.0026;
-      var wH = Math.sin(nowMs / 140) * price * 0.00105 + Math.sin(nowMs / 57) * price * 0.00055;
-      var teaseH = Math.sin(nowMs / 480) * (Math.abs(gapH) + price * 0.0012) * 0.42;
-      var nextH = price + gapH * 0.09 + nH + wH + teaseH;
-      nextH = capPctMove(price, nextH, 0.0048);
+      var nH = (roll - 0.5) * price * 0.0036;
+      var wH = Math.sin(nowMs / 110) * price * 0.0017 + Math.sin(nowMs / 47) * price * 0.0009;
+      var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
+      var nextH = price + gapH * 0.055 + nH + wH + teaseH;
+      nextH = capPctMove(price, nextH, 0.0062);
       return clampIndexPrice(nextH, asset);
     }
     if (sim.titanDrop && !opts.spike) {
@@ -213,13 +213,12 @@
       return clampIndexPrice(nextT, asset);
     }
     if (sim.coreWave && !opts.spike) {
-      var dtC = Math.max(dtSec, 0.02);
-      var zigC = (roll - 0.5) * price * vol;
-      var waveC = Math.sin(nowMs / 1000 * Math.PI / 1.55) * price * 0.00048;
-      var zig2C = Math.sin(nowMs / 1000 * Math.PI / 0.62) * price * 0.00018;
+      var zigC = (roll - 0.5) * price * vol * 1.35;
+      var waveC = Math.sin(nowMs / 190) * price * 0.00072;
+      var zig2C = Math.sin(nowMs / 73) * price * 0.00038;
       var pullC = (base - price) * (sim.pullK != null ? sim.pullK : 0.05);
       var nextC = price + zigC + waveC + zig2C + pullC;
-      nextC = capPctMove(price, nextC, 0.0048 * Math.min(1, dtC));
+      nextC = capPctMove(price, nextC, 0.0034);
       return clampIndexPrice(nextC, asset);
     }
     if (sim.goldHot && !opts.spike) {
@@ -537,12 +536,16 @@
     var cms = candleMsFor(asset);
     var elapsed = nowMs - buf.lastMs;
     if (elapsed < 0) elapsed = 0;
-    var fastTick = sim.goldHot || sim.boomBurst || sim.nexusPulse || sim.titanDrop || sim.v75Wave;
+    if (elapsed > 900) {
+      buf.lastMs = nowMs;
+      elapsed = 160;
+    }
+    var fastTick = true;
     var missed = Math.floor(elapsed / cms);
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
     var g;
-    var maxCatch = 80;
+    var maxCatch = 1;
     var catchN = Math.min(missed, maxCatch);
     for (g = 0; g < catchN; g++) {
       var tsG = (buf.bucket + 1) * cms;
@@ -580,10 +583,8 @@
     }
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
-    if (catchN >= maxCatch) remain = Math.min(remain, cms);
-    var stepMs = sim.goldHot ? 48 : (sim.boomBurst ? 50 : (sim.nexusPulse ? 52 : (sim.titanDrop ? 42 : (sim.v75Wave ? 95 : 280))));
-    if (remain >= stepMs || catchN > 0) {
-      var steps = Math.max(catchN > 0 ? 0 : 1, Math.min(fastTick ? 6 : 3, Math.floor(remain / stepMs)));
+    var stepMs = huntPriceFor(asset.id) ? 70 : (sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120));
+    var steps = Math.max(1, Math.min(fastTick ? 4 : 2, Math.floor(remain / stepMs) || 1));
       var s;
       for (s = 0; s < steps; s++) {
         var tMs = nowMs - remain + ((s + 1) / Math.max(1, steps)) * remain;
@@ -616,6 +617,9 @@
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
         forming.c = price;
+        var wickN = price * (0.00035 + Math.abs(Math.sin(tMs / 83)) * 0.00055);
+        forming.h = Math.max(forming.h, price + wickN);
+        forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
           if (forming._boom || boomForce) forming._boom = true;
@@ -627,7 +631,6 @@
           forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
         }
       }
-    }
     buf.price = price;
     buf.forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike);
     buf.lastMs = nowMs;
@@ -1177,6 +1180,20 @@
       return payoutLive[assetId];
     },
 
+    resyncClocks: function () {
+      bindGlobalBuffers();
+      var now = Date.now();
+      var id;
+      for (id in window.assetBuffers) {
+        if (!window.assetBuffers.hasOwnProperty(id)) continue;
+        var buf = window.assetBuffers[id];
+        if (buf) buf.lastMs = now;
+      }
+      for (id in markets) {
+        if (markets[id]) markets[id].lastMs = now;
+      }
+    },
+
     tick: function (assetId) {
       ensureMarkets();
       var now = Date.now();
@@ -1184,14 +1201,15 @@
       for (i = 0; i < trades.length; i++) {
         syncTime(trades[i]);
       }
+      var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
+      if (user) api.flushSettlements(user);
+      if (window.chartIsPaused || document.hidden) return;
       var id;
       for (id in C.ASSETS) {
         if (!C.ASSETS.hasOwnProperty(id)) continue;
         syncMarket(markets[id], C.ASSETS[id], now);
       }
       prepareLastSecondSteer(now);
-      var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
-      if (user) api.flushSettlements(user);
     },
 
     placeOrder: function (user, opts) {

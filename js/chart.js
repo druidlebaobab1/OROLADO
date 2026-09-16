@@ -848,8 +848,13 @@
     ctx.lineWidth = width || 1.8;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
+    if (col === '#ff3366') {
+      ctx.shadowColor = 'rgba(255,51,102,0.55)';
+      ctx.shadowBlur = 8;
+    } else {
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+    }
     ctx.stroke();
     ctx.restore();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
@@ -861,13 +866,16 @@
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var i;
     var last = candles[candles.length - 1];
+    var pulseT = performance.now() / 220;
     var lastX = toX(candles.length - 1);
-    var lastY = toY(last.c);
+    var lastY = toY(last.c) + Math.sin((candles.length - 1) * 0.42 - pulseT) * (1.1 + 1.6);
+    var nTitan = candles.length;
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(toX(0), toY(candles[0].c));
-    for (i = 1; i < candles.length; i++) {
-      ctx.lineTo(toX(i), toY(candles[i].c));
+    for (i = 1; i < nTitan; i++) {
+      var waveY = Math.sin(i * 0.42 - pulseT) * (1.1 + 1.6 * (i / nTitan));
+      ctx.lineTo(toX(i), toY(candles[i].c) + waveY);
     }
     ctx.strokeStyle = '#e0e6ed';
     ctx.lineWidth = 3.5;
@@ -1462,7 +1470,7 @@
     var startIdx = Math.max(0, closes.length - visN);
     seriesScratch.length = 0;
     var i;
-    if (asset.id !== 'titanpulse' && asset.id !== 'goldtrend' && (asset.chart === 'candle' || asset.id === 'stable' || asset.id === 'horizon50')) {
+    if (asset.id !== 'titanpulse' && asset.id !== 'goldtrend' && asset.id !== 'stable' && (asset.chart === 'candle' || asset.id === 'horizon50')) {
       for (i = 0; i < candles.length; i++) {
         seriesScratch.push(candles[i].h, candles[i].l);
       }
@@ -1618,7 +1626,9 @@
     ctx.clip();
     if (asset.id === 'titanpulse') {
       map = drawTitanLightning(pad, seriesW, h, candles, minP, maxP);
-    } else if (asset.chart === 'candle' || asset.id === 'stable' || asset.id === 'horizon50') {
+    } else if (asset.id === 'stable') {
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff3366', 3);
+    } else if (asset.chart === 'candle' || asset.id === 'horizon50') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
         capWicks: false,
@@ -1629,8 +1639,6 @@
         crashDrop: asset.id === 'crash300'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
-    } else if (asset.id === 'stable') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ff2d55', asset.lineWidth || 1.8);
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
@@ -1732,26 +1740,62 @@
     /* RAF unique — pas de setInterval de dessin. */
   }
 
+  function pauseChartEngine() {
+    window.chartIsPaused = true;
+  }
+
+  function wakeChartEngine() {
+    window.chartIsPaused = false;
+    window.lastTickTime = performance.now();
+    lastTs = performance.now();
+    lastFlush = 0;
+    lastDraw = 0;
+    if (D6.Engine && D6.Engine.resyncClocks) {
+      try { D6.Engine.resyncClocks(); } catch (eRs) { /* ignore */ }
+    }
+    running = true;
+    if (!loopRaf) {
+      loopRaf = requestAnimationFrame(loop);
+    }
+    window.animationFrameId = loopRaf;
+    try { drawNow(); } catch (eW) { /* ignore */ }
+  }
+
+  function bindVisibilityFix() {
+    if (window.__oroladoVisBound) return;
+    window.__oroladoVisBound = true;
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseChartEngine();
+      else wakeChartEngine();
+    });
+    window.addEventListener('pageshow', function () {
+      if (!document.hidden) wakeChartEngine();
+    });
+    window.addEventListener('focus', function () {
+      if (!document.hidden) wakeChartEngine();
+    });
+  }
+
   function loop(ts) {
     if (!running) return;
+    if (window.chartIsPaused || document.hidden) {
+      loopRaf = 0;
+      window.animationFrameId = 0;
+      lastTs = ts;
+      window.lastTickTime = ts;
+      return;
+    }
     loopRaf = requestAnimationFrame(loop);
+    window.animationFrameId = loopRaf;
     try {
       var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
-      var drawEvery = liveN > 0 ? 16 : 33;
-      var tickEvery = liveN > 0 ? 50 : 250;
-      if (document.hidden) {
-        if (ts - lastFlush >= tickEvery) {
-          if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
-          flushDue();
-          lastFlush = ts;
-        }
-        lastTs = ts;
-        return;
-      }
+      var drawEvery = liveN > 0 ? 33 : 50;
+      var tickEvery = liveN > 0 ? 150 : 220;
       if (ts - lastFlush >= tickEvery) {
         if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
         flushDue();
         lastFlush = ts;
+        window.lastTickTime = ts;
       }
       if (ts - lastDraw < drawEvery) return;
       lastDraw = ts;
@@ -1913,11 +1957,14 @@
         try { resize(); drawNow(); } catch (eR) { try { console.warn('Mobile display fallback:', eR); } catch (e2) { /* ignore */ } }
         running = true;
         lastTs = 0;
+        window.chartIsPaused = false;
+        bindVisibilityFix();
         if (loopRaf) {
           try { cancelAnimationFrame(loopRaf); } catch (eLf) { /* ignore */ }
           loopRaf = 0;
         }
         loopRaf = requestAnimationFrame(loop);
+        window.animationFrameId = loopRaf;
         ensureChartPulse();
         setTimeout(function () { try { resize(); drawNow(); } catch (e4) { /* ignore */ } }, 80);
         setTimeout(function () { try { resize(); drawNow(); } catch (e5) { /* ignore */ } }, 300);
