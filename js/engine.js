@@ -11,9 +11,9 @@
       // Max simultané très élevé : pas de blocage à 2 trades.
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
   var CANDLE_MS = 1000;
-  var HISTORY_SEC = 600;
-  var HISTORY_N = 600;
-  var SEED_N = 180;
+  var HISTORY_SEC = 720;
+  var HISTORY_N = 720;
+  var SEED_N = 640;
   var synthCache = {};
   var tradeTimers = {};
 
@@ -90,15 +90,14 @@
     goldtrend: { mode: 'line', vol: 0.0068, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.06 },
     titanpulse: { mode: 'line', vol: 0.0052, titanDrop: true, titanHF: true, tickMs: 55 },
   };
-  var SIM_VER = 10;
+  var SIM_VER = 11;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
   }
 
   function candleMsFor(asset) {
-    var s = simOf(asset && asset.id);
-    return s.tickMs || CANDLE_MS;
+    return CANDLE_MS;
   }
 
   function capPctMove(prev, next, maxPct) {
@@ -396,7 +395,7 @@
   function advanceBuffer(asset, nowMs) {
     window.assetBuffers = window.assetBuffers || {};
     var buf = window.assetBuffers[asset.id];
-    if (!buf || !buf.candles || buf.candles.length < 50 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 6) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 2)) {
+    if (!buf || !buf.candles || buf.candles.length < 500 || buf.ver !== SIM_VER || (simOf(asset.id).titanDrop && buf.titanVer !== 6) || (simOf(asset.id).coreWave && buf.coreVer !== 1) || (simOf(asset.id).goldHot && buf.goldVer !== 1) || (simOf(asset.id).boomBurst && buf.boomVer !== 1) || (simOf(asset.id).nexusPulse && buf.nexusVer !== 1) || (simOf(asset.id).v75Wave && buf.v75Ver !== 2)) {
       buf = seedAssetBuffer(asset);
     }
     nowMs = nowMs || Date.now();

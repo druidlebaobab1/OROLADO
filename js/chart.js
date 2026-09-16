@@ -17,7 +17,8 @@
   var viewMax = 0;
   var onFrame = null;
   var ZOOM_STEPS = [30, 45, 60, 90, 120, 180, 300, 480, 600];
-  var zoomIdx = 2;
+  var DEFAULT_ZOOM_IDX = 2;
+  var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
   var inds = { ma: false, bb: false, rsi: false, ema: false };
   var steer = null;
@@ -37,7 +38,7 @@
   var chartTickTimer = 0;
   var strikeLock = null;
   var coinImgs = {};
-  var BUFFER_N = 600;
+  var BUFFER_N = 720;
   var xTimes = null;
   var xNow = 0;
   var xWin = 60000;
@@ -60,7 +61,8 @@
         lockMin: 0,
         lockMax: 0,
         lastPrice: 0,
-        at: 0
+        at: 0,
+        zoomIdx: DEFAULT_ZOOM_IDX
       };
     }
     return window.assetsState[id];
@@ -93,6 +95,19 @@
     return !!(ctx && canvas && cssW >= 8 && cssH >= 8);
   }
 
+  function persistZoom(id) {
+    var st = ensureAssetState(id || activeAsset);
+    st.zoomIdx = zoomIdx;
+  }
+
+  function applyAssetZoom(id) {
+    var st = ensureAssetState(id || activeAsset);
+    var z = st.zoomIdx;
+    if (!(z >= 0) || z >= ZOOM_STEPS.length) z = DEFAULT_ZOOM_IDX;
+    zoomIdx = z;
+    zoomSmooth = zoomSec();
+  }
+
   function rightOffsetPx() {
     return cssW * 0.25;
   }
@@ -101,7 +116,7 @@
     pad = pad || { t: 16, r: 45, b: 28, l: 8 };
     var plotW = Math.max(40, cssW - pad.l - pad.r);
     var axisX = pad.l + plotW;
-    var headX = cssW * 0.75;
+    var headX = pad.l + plotW * 0.70;
     if (headX > axisX - 14) headX = axisX - 14;
     if (headX < pad.l + 48) headX = pad.l + 48;
     return {
@@ -1197,12 +1212,13 @@
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
     layout = layout || plotLayout(pad);
     var isCall = trade.side === 'call';
-    var col = isCall ? '#00e676' : '#ff3b30';
+    var lineCol = isCall ? '#00e676' : '#ff3b30';
+    var fillCol = isCall ? '#007e33' : '#b71c1c';
     var idx = tagIndex || 0;
     var badgeLift = isFinite(yShift) ? yShift : 0;
     g.save();
     g.setLineDash([5, 5]);
-    g.strokeStyle = col;
+    g.strokeStyle = lineCol;
     g.lineWidth = 1.35;
     g.globalAlpha = 0.92;
     g.beginPath();
@@ -1226,10 +1242,11 @@
     g.save();
     g.beginPath();
     g.arc(mx, ey, r, 0, Math.PI * 2);
-    g.fillStyle = isCall ? 'rgba(0,230,118,0.28)' : 'rgba(255,59,48,0.28)';
+    g.fillStyle = fillCol;
+    g.globalAlpha = 1;
     g.fill();
-    g.lineWidth = 1.6;
-    g.strokeStyle = col;
+    g.lineWidth = 1.35;
+    g.strokeStyle = '#ffffff';
     g.stroke();
     g.fillStyle = '#ffffff';
     g.beginPath();
@@ -1265,12 +1282,12 @@
         var ty = ey - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
         g.fillStyle = 'rgba(10,15,29,0.92)';
-        g.strokeStyle = col;
+        g.strokeStyle = lineCol;
         g.lineWidth = 1.2;
         roundRectOn(g, leftX, ty, timerW, timerH, 7);
         g.fill();
         g.stroke();
-        g.fillStyle = col;
+        g.fillStyle = lineCol;
         g.font = '800 11px "Hanken Grotesk", sans-serif';
         g.textAlign = 'center';
         g.textBaseline = 'middle';
@@ -1332,7 +1349,7 @@
     ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
     var tw = Math.ceil(ctx.measureText(txt).width) + 10;
     var th = 16;
-    var headX = layout && layout.headX != null ? layout.headX : cssW * 0.75;
+    var headX = layout && layout.headX != null ? layout.headX : cssW * 0.70;
     var x = headX + 10;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 2) x = axisX - tw - 2;
@@ -1763,17 +1780,61 @@
     });
   }
 
+  function resetChartView() {
+    zoomIdx = DEFAULT_ZOOM_IDX;
+    zoomSmooth = zoomSec();
+    persistZoom(activeAsset);
+    inds.ma = false;
+    inds.bb = false;
+    inds.rsi = false;
+    inds.ema = false;
+    syncIndButtons();
+    viewMin = 0;
+    viewMax = 0;
+    var st = ensureAssetState(activeAsset);
+    st.lockMin = 0;
+    st.lockMax = 0;
+    st.viewMin = 0;
+    st.viewMax = 0;
+    strikeLock = null;
+    if (isChartReady()) drawNow();
+  }
+
+  function ensureToolbarExtras() {
+    var zin = document.getElementById('chartZoomIn');
+    var zout = document.getElementById('chartZoomOut');
+    if (zin && zin.parentNode && !zin.parentNode.querySelector('.chart-tool-sep')) {
+      var sep = document.createElement('span');
+      sep.className = 'chart-tool-sep';
+      sep.setAttribute('aria-hidden', 'true');
+      zin.parentNode.insertBefore(sep, zin);
+    }
+    if (zout && zout.parentNode && !document.getElementById('chartReset')) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'chartReset';
+      btn.className = 'ind-btn zoom-btn chart-reset-btn';
+      btn.setAttribute('aria-label', 'Reset');
+      btn.title = 'Reset';
+      btn.textContent = '↺';
+      zout.parentNode.insertBefore(btn, zout.nextSibling);
+    }
+  }
+
   var toolsBound = false;
   function bindTools() {
     if (toolsBound) return;
     toolsBound = true;
+    ensureToolbarExtras();
     var zin = document.getElementById('chartZoomIn');
     var zout = document.getElementById('chartZoomOut');
+    var zreset = document.getElementById('chartReset');
     if (zin) zin.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
       if (zoomIdx > 0) {
         zoomIdx -= 1;
+        persistZoom(activeAsset);
         viewMin = 0;
         viewMax = 0;
       }
@@ -1783,9 +1844,15 @@
       e.stopPropagation();
       if (zoomIdx < ZOOM_STEPS.length - 1) {
         zoomIdx += 1;
+        persistZoom(activeAsset);
         viewMin = 0;
         viewMax = 0;
       }
+    });
+    if (zreset) zreset.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      resetChartView();
     });
     document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
@@ -1899,7 +1966,9 @@
         if (isChartReady()) drawNow();
         return;
       }
+      persistZoom(activeAsset);
       activeAsset = id;
+      applyAssetZoom(id);
       if (steer && steer.assetId !== id) steer = null;
       var liveBuf = window.assetBuffers && window.assetBuffers[id];
       var st = ensureAssetState(id);
