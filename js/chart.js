@@ -16,9 +16,10 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [30, 45, 60, 90, 120, 180];
+  var ZOOM_STEPS = [30, 45, 60, 90, 120, 180, 300, 480, 600];
   var zoomIdx = 2;
-  var inds = { ma: false, bb: false };
+  var zoomSmooth = 60;
+  var inds = { ma: false, bb: false, rsi: false, ema: false };
   var steer = null;
   var tmpCloses = [];
   var lastPad = null;
@@ -36,7 +37,10 @@
   var chartTickTimer = 0;
   var strikeLock = null;
   var coinImgs = {};
-  var BUFFER_N = 60;
+  var BUFFER_N = 600;
+  var xTimes = null;
+  var xNow = 0;
+  var xWin = 60000;
   var candleScratch = [];
   var seriesScratch = [];
   var tradeListScratch = [];
@@ -90,15 +94,15 @@
   }
 
   function rightOffsetPx() {
-    return cssW * 0.30;
+    return cssW * 0.25;
   }
 
   function plotLayout(pad) {
     pad = pad || { t: 16, r: 45, b: 28, l: 8 };
     var plotW = Math.max(40, cssW - pad.l - pad.r);
-    var headX = cssW * 0.70;
     var axisX = pad.l + plotW;
-    if (headX > axisX - 8) headX = axisX - 8;
+    var headX = cssW * 0.75;
+    if (headX > axisX - 14) headX = axisX - 14;
     if (headX < pad.l + 48) headX = pad.l + 48;
     return {
       plotW: plotW,
@@ -111,7 +115,19 @@
   function makeToX(n, pad, seriesW) {
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
-    if (!(n > 1)) return function () { return x0 + span; };
+    var head = x0 + span;
+    var times = xTimes;
+    var tNow = xNow || Date.now();
+    var win = xWin > 0 ? xWin : (zoomSec() * 1000);
+    if (times && times.length) {
+      return function (i) {
+        var last = times.length - 1;
+        var t = (i >= last) ? tNow : times[i < 0 ? 0 : i];
+        if (!isFinite(t)) t = tNow;
+        return head - span * ((tNow - t) / win);
+      };
+    }
+    if (!(n > 1)) return function () { return head; };
     return function (i) { return x0 + (i / (n - 1)) * span; };
   }
 
@@ -469,8 +485,7 @@
   }
 
   function visibleCandles(market) {
-    var n = Math.min(zoomSec(), BUFFER_N);
-    if (activeAsset === 'titanpulse') n = BUFFER_N;
+    var n = Math.min(Math.ceil(zoomSmooth || zoomSec()) + 2, BUFFER_N);
     var live = window.assetBuffers && window.assetBuffers[activeAsset];
     var done = (live && live.candles && live.candles.length)
       ? live.candles
@@ -493,10 +508,17 @@
 
   function closeSeries(market) {
     tmpCloses.length = 0;
-    var done = market.candles || [];
+    var live = window.assetBuffers && window.assetBuffers[activeAsset];
+    var done = (live && live.candles && live.candles.length)
+      ? live.candles
+      : ((market && market.candles) || []);
     var i;
     for (i = 0; i < done.length; i++) tmpCloses.push(done[i].c);
-    if (market.candle) tmpCloses.push(market.candle.c);
+    var forming = (live && live.forming) || (market && market.candle);
+    if (forming && isFinite(forming.c)) {
+      if (!done.length || done[done.length - 1].t !== forming.t) tmpCloses.push(forming.c);
+      else tmpCloses[tmpCloses.length - 1] = forming.c;
+    }
     return tmpCloses;
   }
 
@@ -633,7 +655,7 @@
   function drawGrid(pad, plotW, seriesW, h, minP, maxP, theme) {
     theme = theme || plotTheme(null);
     var i;
-    var span = zoomSec();
+    var span = zoomSmooth || zoomSec();
     ctx.lineWidth = 1;
     for (i = 0; i <= 5; i++) {
       var y = pad.t + (h / 5) * i;
@@ -656,6 +678,7 @@
       ctx.lineTo(x, pad.t + h);
       ctx.stroke();
     }
+    if (!inds.rsi) {
     for (i = 0; i <= 4; i++) {
       var lx = pad.l + (seriesW / 4) * i;
       var ago = Math.round(((4 - i) / 4) * span);
@@ -664,6 +687,7 @@
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, lx, pad.t + h + 12);
+    }
     }
   }
 
@@ -674,7 +698,7 @@
     var span = Math.max(maxP - minP, 0.01);
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var cw = Math.max(4, (w / candles.length) * (thin ? 0.46 : 0.62));
+    var cw = Math.max(3, (w / Math.max(8, zoomSmooth || candles.length)) * (thin ? 0.42 : 0.55));
     if (opts.titanIce) cw = Math.max(3.2, (w / candles.length) * 0.72);
     if (opts.v75Rose) cw = Math.max(3.6, (w / candles.length) * 0.5);
     var i;
@@ -1051,8 +1075,8 @@
       if (!started) { ctx.moveTo(toX(i - startIdx), toY(v)); started = true; }
       else ctx.lineTo(toX(i - startIdx), toY(v));
     }
-    ctx.strokeStyle = last >= 70 ? '#FF1744' : last <= 30 ? '#00E676' : '#C9A227';
-    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = last >= 70 ? '#FF1744' : last <= 30 ? '#00E676' : '#9d4edd';
+    ctx.lineWidth = 1.25;
     ctx.stroke();
     ctx.fillStyle = theme.rsiTxt;
     ctx.font = '700 9px "Hanken Grotesk", sans-serif';
@@ -1142,7 +1166,26 @@
     roundRectOn(ctx, x, y, w, h, r);
   }
 
-  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout) {
+  function drawEmaLine(map, closes, period, startIdx) {
+    if (!map || !closes) return;
+    var ema = emaSeries(closes, period);
+    var started = false;
+    var i;
+    ctx.beginPath();
+    for (i = startIdx; i < closes.length; i++) {
+      if (ema[i] == null) continue;
+      var x = map.toX(i - startIdx);
+      var y = map.toY(ema[i]);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    }
+    if (!started) return;
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 1.35;
+    ctx.stroke();
+  }
+
+  function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout, clusterN) {
     if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
@@ -1153,66 +1196,86 @@
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
     layout = layout || plotLayout(pad);
-    var headX = layout.headX;
-    var axisX = layout.axisX;
     var isCall = trade.side === 'call';
-    var col = isCall ? '#22C55E' : '#EF4444';
+    var col = isCall ? '#00e676' : '#ff3b30';
     var idx = tagIndex || 0;
     var badgeLift = isFinite(yShift) ? yShift : 0;
     g.save();
-    g.setLineDash([6, 4]);
+    g.setLineDash([5, 5]);
     g.strokeStyle = col;
-    g.lineWidth = 2.2;
-    g.globalAlpha = 1;
+    g.lineWidth = 1.35;
+    g.globalAlpha = 0.92;
     g.beginPath();
     g.moveTo(0, ey);
     g.lineTo(cssW, ey);
     g.stroke();
     g.setLineDash([]);
     g.restore();
-    var tag = (isCall ? 'CALL ' : 'PUT ') + entry.toFixed(2);
-    g.font = '800 11px "Hanken Grotesk", sans-serif';
-    var tw = Math.ceil(g.measureText(tag).width) + 14;
-    var th = 20;
-    var nearTop = (ey - plotTop) < 40;
-    var nearBot = (plotBot - ey) < 40;
-    var leftX = (pad && pad.l != null ? pad.l : 8) + 6;
-    var bx = leftX;
-    var by;
-    if (nearTop) by = ey + 6 + idx * 22 + badgeLift;
-    else if (nearBot) by = ey - th - 6 - idx * 22 - badgeLift;
-    else by = ey - th - 4 - idx * 22 - badgeLift;
-    by = Math.max(plotTop + 2, Math.min(plotBot - th - 2, by));
-    g.fillStyle = col;
-    roundRectOn(g, bx, by, tw, th, 5);
+
+    var tNow = xNow || Date.now();
+    var win = xWin > 0 ? xWin : (zoomSec() * 1000);
+    var t0 = Number(trade.startTime || trade.startedAt || trade.openedAt || 0);
+    var mx = layout.headX;
+    if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
+    mx += (idx % 3) * 5 - 5;
+    ey += badgeLift;
+    var r = 9;
+    if (mx < pad.l - r) mx = pad.l + r + 2;
+    if (mx > layout.headX) mx = layout.headX;
+    ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
+    g.save();
+    g.beginPath();
+    g.arc(mx, ey, r, 0, Math.PI * 2);
+    g.fillStyle = isCall ? 'rgba(0,230,118,0.28)' : 'rgba(255,59,48,0.28)';
     g.fill();
-    g.fillStyle = '#0A0F1D';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.fillText(tag, bx + tw / 2, by + th / 2);
-    g.textBaseline = 'alphabetic';
+    g.lineWidth = 1.6;
+    g.strokeStyle = col;
+    g.stroke();
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    if (isCall) {
+      g.moveTo(mx, ey - 5.2);
+      g.lineTo(mx + 4.2, ey + 3.4);
+      g.lineTo(mx - 4.2, ey + 3.4);
+    } else {
+      g.moveTo(mx, ey + 5.2);
+      g.lineTo(mx + 4.2, ey - 3.4);
+      g.lineTo(mx - 4.2, ey - 3.4);
+    }
+    g.closePath();
+    g.fill();
+    if (clusterN > 1) {
+      g.font = '800 8px "Hanken Grotesk", sans-serif';
+      g.fillStyle = '#ffffff';
+      g.textAlign = 'left';
+      g.textBaseline = 'middle';
+      g.fillText('x' + clusterN, mx + r + 3, ey);
+      g.textBaseline = 'alphabetic';
+    }
+    g.restore();
+
     var remaining = exp - Date.now();
     var secs = remaining / 1000;
     if (secs >= 0.15) {
       var label = secs.toFixed(1) + 's';
       if (label.charAt(0) !== '-') {
-        var timerW = 52;
-        var timerH = 18;
-        var ty = nearTop ? (ey + 6 + th + 4 + badgeLift) : (ey - timerH - 6 - idx * 22 - badgeLift);
-        if (nearBot) ty = ey - timerH - 6 - idx * 22 - badgeLift;
+        var timerW = 50;
+        var timerH = 16;
+        var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
+        var ty = ey - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        var tx = leftX;
-        if (tx + timerW > headX - 8) tx = Math.max(4, headX - timerW - 8);
-        g.fillStyle = 'rgba(10,15,29,0.94)';
+        g.fillStyle = 'rgba(10,15,29,0.92)';
         g.strokeStyle = col;
-        g.lineWidth = 1.4;
-        roundRectOn(g, tx, ty, timerW, timerH, 8);
+        g.lineWidth = 1.2;
+        roundRectOn(g, leftX, ty, timerW, timerH, 7);
         g.fill();
         g.stroke();
         g.fillStyle = col;
-        g.font = '800 12px "Hanken Grotesk", sans-serif';
+        g.font = '800 11px "Hanken Grotesk", sans-serif';
         g.textAlign = 'center';
-        g.fillText(label, tx + timerW / 2, ty + 14);
+        g.textBaseline = 'middle';
+        g.fillText(label, leftX + timerW / 2, ty + timerH / 2 + 0.5);
+        g.textBaseline = 'alphabetic';
       }
     }
   }
@@ -1269,7 +1332,7 @@
     ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
     var tw = Math.ceil(ctx.measureText(txt).width) + 10;
     var th = 16;
-    var headX = layout && layout.headX != null ? layout.headX : cssW * 0.70;
+    var headX = layout && layout.headX != null ? layout.headX : cssW * 0.75;
     var x = headX + 10;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 2) x = axisX - tw - 2;
@@ -1334,17 +1397,28 @@
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     var pad = { t: fsOn ? (narrow ? 8 : 10) : (narrow ? 6 : 8), r: 56, b: 22, l: 8 };
+    if (inds.rsi) pad.b = 56;
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;
     var h = cssH - pad.t - pad.b;
     if (h < 48) h = 48;
 
+    var wantZoom = zoomSec();
+    if (!(zoomSmooth > 0)) zoomSmooth = wantZoom;
+    zoomSmooth += (wantZoom - zoomSmooth) * 0.22;
+    if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
+    xNow = Date.now();
+    xWin = Math.max(8000, zoomSmooth * 1000);
+
     // Fond profond unique — zéro beige / blanc.
     ctx.fillStyle = '#0B0E14';
     ctx.fillRect(0, 0, cssW, cssH);
 
     var candles = visibleCandles(market);
+    xTimes = [];
+    var xi;
+    for (xi = 0; xi < candles.length; xi++) xTimes.push(candles[xi].t);
     var closes = closeSeries(market);
     var visN = candles.length;
     var startIdx = Math.max(0, closes.length - visN);
@@ -1561,6 +1635,12 @@
         drawPoly(map, closes, 7, theme.maFast, 1.7, startIdx);
         ctx.restore();
       }
+      if (inds.ema) {
+        ctx.save();
+        ctx.shadowBlur = 0;
+        drawEmaLine(map, closes, 9, startIdx);
+        ctx.restore();
+      }
     }
     ctx.restore();
 
@@ -1570,21 +1650,40 @@
     lastMaxP = maxP;
     lastMap = map;
 
+    if (inds.rsi) {
+      var rsiVals = rsiSeries(closes, 14);
+      drawRsiPanel(pad, seriesW, h, 40, rsiVals, startIdx, theme);
+    }
+
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     tradeYsScratch.length = 0;
     var ti;
+    var drawnKeys = {};
     for (ti = 0; ti < allTrades.length; ti++) {
       if (ti >= 10) break;
       var ot = allTrades[ti];
       var epY = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
       var y0 = priceToY(epY, pad, h, minP, maxP);
+      var t0 = Number(ot.startTime || ot.startedAt || 0);
+      var key = String(Math.round(y0 / 8)) + ':' + String(Math.round(t0 / 400));
+      var count = 1;
+      var uj;
+      for (uj = 0; uj < allTrades.length; uj++) {
+        if (uj === ti) continue;
+        var ot2 = allTrades[uj];
+        var y2 = priceToY(Number(ot2.entryPrice != null ? ot2.entryPrice : ot2.openPrice), pad, h, minP, maxP);
+        var t2 = Number(ot2.startTime || ot2.startedAt || 0);
+        if (Math.abs(y0 - y2) < 10 && Math.abs(t0 - t2) < 400) count++;
+      }
+      if (drawnKeys[key]) continue;
+      drawnKeys[key] = true;
       var shift = 0;
       var j;
-      for (j = 0; j < ti; j++) {
-        if (Math.abs(y0 - tradeYsScratch[j]) < 10) shift = 22;
+      for (j = 0; j < tradeYsScratch.length; j++) {
+        if (Math.abs(y0 - tradeYsScratch[j]) < 10) shift += 8;
       }
       tradeYsScratch.push(y0);
-      drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout);
+      drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout, count);
     }
     paintOverlay();
 
@@ -1693,7 +1792,7 @@
         e.preventDefault();
         e.stopPropagation();
         var key = btn.dataset.ind;
-        if (key !== 'ma' && key !== 'bb') return;
+        if (key !== 'ma' && key !== 'bb' && key !== 'rsi' && key !== 'ema') return;
         inds[key] = !inds[key];
         syncIndButtons();
       });

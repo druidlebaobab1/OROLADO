@@ -56,10 +56,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   transition:opacity .28s ease,transform .28s ease}
 .toast.show{opacity:1;transform:translate(-50%,0);animation:luxIn .34s ease;pointer-events:none!important}
 .toast.micro,.toast.lux-msg.micro{
-  top:calc(56px + env(safe-area-inset-top,0px));max-width:none;white-space:nowrap;
+  top:calc(58px + env(safe-area-inset-top,0px));max-width:none;white-space:nowrap;
   font-size:11px!important;padding:4px 12px!important;border-radius:16px!important;
-  background:rgba(18,18,24,.92)!important;border:1px solid rgba(245,166,35,.5)!important;
-  color:#ffb703!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;
+  background:rgba(28,22,10,.94)!important;border:1px solid rgba(245,197,24,.55)!important;
+  color:#ffd166!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;
   box-shadow:none!important;line-height:1.2;font-weight:700;letter-spacing:.02em;text-align:center}
 .toast.micro .lux-msg-ico{display:none!important}
 .toast.micro.show{animation:microToastIn .2s ease}
@@ -261,7 +261,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="boomspike"].on{
   border-width:1.5px!important;border-style:solid!important;border-color:transparent!important;
   background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
-  box-shadow:0 0 12px rgba(0,255,136,.35)!important;color:#00ff88}
+  box-shadow:0 0 12px rgba(0,255,136,.28)!important;color:#00ff88}
 .asset-chip[data-asset="boomspike"].on .n,
 .asset-chip[data-asset="boomspike"].on .asset-ico{
   color:#00ff88!important;font-weight:700;-webkit-text-fill-color:#00ff88;background:none}
@@ -294,6 +294,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   background:transparent!important;background-color:transparent!important;pointer-events:none;border:none!important;outline:none!important}
 .chart-toolbar,.ind-pills,.ind-btn,.chart-fs-btn,.install-banner{pointer-events:auto!important;touch-action:manipulation!important}
 .ind-pills{display:flex;flex-wrap:nowrap;gap:3px;z-index:13;align-items:center;min-width:0}
+.ind-pills .zoom-btn:first-of-type,.ind-btn.zoom-btn#chartZoomIn{margin-left:8px}
 .ind-btn{border:1px solid rgba(255,215,0,.22);background:rgba(10,15,29,.55);color:rgba(168,180,204,.9);
   font:inherit;font-size:.55rem;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:6px;cursor:pointer;min-height:24px;min-width:28px;line-height:1}
 .ind-btn.on{border-color:rgba(255,215,0,.7);color:#FFE082;background:rgba(255,215,0,.12)}
@@ -878,10 +879,14 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .install-ico{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:rgba(245,166,35,.16);color:#F5A623;font-size:11px;font-weight:900;line-height:1}
 .install-x{border:0;background:transparent;color:#94A3B8;width:28px;height:28px;border-radius:999px;cursor:pointer;font-size:14px;line-height:1;flex-shrink:0}
 .install-x:hover{color:#fff;background:rgba(255,255,255,.06)}
-.install-ios-box{max-width:340px;text-align:left}
-.install-ios-lead{font-size:.82rem;color:var(--muted);margin:0 0 12px;line-height:1.4;font-weight:600}
-.install-ios-steps{margin:0 0 16px;padding-left:1.15rem;display:flex;flex-direction:column;gap:10px}
-.install-ios-steps li{font-size:.8rem;line-height:1.4;color:var(--text);font-weight:600}
+.install-ios-box{max-width:360px;text-align:left}
+.install-ios-lead{font-size:.82rem;color:var(--muted);margin:0 0 14px;line-height:1.4;font-weight:600}
+.install-ios-steps{margin:0 0 16px;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.install-ios-step{display:flex;align-items:flex-start;gap:12px;font-size:.8rem;line-height:1.4;color:var(--text);font-weight:600}
+.install-ios-ico{flex:0 0 38px;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.14);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.install-ios-ico svg{width:20px;height:20px;display:block}
 .install-ios-steps strong{color:var(--gold)}
 .ios-share-icon{display:inline-block;color:var(--gold);font-weight:900}
 .btn-admin{flex-shrink:0;border:1px solid var(--gold);background:var(--gold-soft);color:var(--gold);border-radius:10px;
@@ -1589,7 +1594,8 @@ html.lang-ar .install-ios-box{
   text-align:right;
   unicode-bidi:isolate;
 }
-html.lang-ar .install-ios-steps{padding-left:0;padding-right:1.15rem}
+html.lang-ar .install-ios-steps{padding-left:0;padding-right:0}
+html.lang-ar .install-ios-step{flex-direction:row-reverse}
 html.lang-ar .chart-card,
 html.lang-ar #chart,
 html.lang-ar .chart-stage,
@@ -1642,10 +1648,12 @@ html.fs-trade .modal-backdrop,html.is-fullscreen .modal-backdrop{z-index:100000}
 html.fs-trade .modal-box,html.is-fullscreen .modal-box{z-index:100001}
 html.fs-trade .toast,html.is-fullscreen .toast{z-index:100002}
 html.fs-trade .ind-pills .ind-btn,
-html.is-fullscreen .ind-pills .ind-btn{display:none!important}
+html.is-fullscreen .ind-pills .ind-btn{display:inline-flex!important;min-width:28px;height:22px;padding:0 7px;font-size:10px}
+html.fs-trade .chart-toolbar,
+html.is-fullscreen .chart-toolbar,
 html.fs-trade .fs-trade-overlay .chart-toolbar,
 html.is-fullscreen .fs-trade-overlay .chart-toolbar{
-  display:flex!important;min-height:22px;padding:2px 6px}
+  display:flex!important;min-height:28px;padding:4px 8px;align-items:center;flex-shrink:0!important}
 html.fs-trade .chart-fs-btn,
 html.is-fullscreen .chart-fs-btn,
 html.fs-trade .fs-trade-overlay .chart-fs-btn,
