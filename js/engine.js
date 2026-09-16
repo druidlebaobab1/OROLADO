@@ -17,6 +17,7 @@
   var synthCache = {};
   var tradeTimers = {};
   var pendingBusyUntil = {};
+  var clickQuietUntil = {};
 
   function u32(n) {
     n = Math.imul(n ^ (n >>> 16), 2246822507);
@@ -95,8 +96,9 @@
 
   function tickCapPct(asset, spiked) {
     var id = asset && asset.id;
+    if (tradeBusyFor(id) || (pendingBusyUntil[id] && pendingBusyUntil[id] > Date.now())) return 0.00035;
+    if (spiked && (id === 'boomspike' || id === 'crash300')) return 0.004;
     if (id === 'stable') return 0.0008;
-    if (spiked && (id === 'boomspike' || id === 'crash300')) return 0.018;
     if (id === 'titanpulse') return 0.0024;
     if (id === 'goldtrend' || id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
@@ -145,7 +147,7 @@
     c = capPctMove(ref, c, 0.03);
     var maxW = Math.abs(ref) * ((asset && (asset.id === 'boomspike' || asset.id === 'crash300') && candle._spike) ? 0.012 : 0.0032);
     if (asset && asset.id === 'stable') maxW = Math.abs(ref) * 0.0012;
-    if (wickSpan > 0) maxW = Math.min(maxW, wickSpan * 0.12);
+    if (wickSpan > 0) maxW = Math.min(maxW, wickSpan * 0.06);
     h = Math.max(o, c, isPlausiblePrice(h, ref) ? h : c);
     l = Math.min(o, c, isPlausiblePrice(l, ref) ? l : c);
     if (h - l > maxW * 2) {
@@ -181,7 +183,7 @@
   var SIM_VER = 15;
   var TITAN_VER = 8;
   var MIN_SEED = 500;
-  var SCALE_VER = 2;
+  var SCALE_VER = 3;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -192,7 +194,8 @@
   }
 
   function capPctMove(prev, next, maxPct) {
-    if (!(prev > 0) || !isFinite(next)) return prev;
+    if (!isFinite(next)) return prev;
+    if (!(prev > 0)) return isFinite(next) && next > 0 ? next : prev;
     var lo = prev * (1 - maxPct);
     var hi = prev * (1 + maxPct);
     if (next < lo) return lo;
@@ -258,7 +261,11 @@
     opts = opts || {};
     var prevPrice = price;
     var busyIn = !!(opts.busy || (asset && tradeBusyFor(asset.id)));
-    if (busyIn) opts.spike = false;
+    if (busyIn) {
+      var nextBusy = price + (Math.random() - 0.5) * price * 0.00035;
+      return capPctMove(prevPrice, nextBusy, 0.00035);
+    }
+    opts.spike = false;
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || price;
     var vol = sim.vol;
@@ -329,7 +336,7 @@
       }
       nextOut = price + delta + (base - price) * 0.04;
     }
-    var stepCap = busyIn ? 0.0008 : tickCapPct(asset, !!opts.spike);
+    var stepCap = tickCapPct(asset, !!opts.spike);
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
     return clampIndexPrice(nextOut, asset);
   }
@@ -664,7 +671,7 @@
         var didSpike = false;
         var boomForce = false;
         var titanForce = false;
-        if (!busy && sim.boomBurst) {
+        if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.boomBurst) {
           var br = stepBoomBurst(asset, buf, price, tMs);
           price = br.price;
           if (br.boom) {
@@ -673,9 +680,9 @@
             forming.o = br.from;
           }
           didSpike = true;
-        } else if (!busy && sim.spike && tMs >= (buf.nextSpike || 0)) {
+        } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
-          price = clampIndexPrice(fromP * (1 + sim.spike * 0.02), asset);
+          price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
           buf.nextSpike = tMs + 25000 + Math.random() * 10000;
           forming._spike = true;
           forming.o = fromP;
@@ -685,7 +692,7 @@
           var hp = huntPriceFor(asset.id);
           price = unifiedStep(asset, price, tMs, dt, { hunt: hp || 0, busy: busy });
         }
-        price = capPctMove(forming.c > 0 ? forming.c : price0, price, busy ? 0.0008 : tickCapPct(asset, didSpike));
+        price = capPctMove(forming.c > 0 ? forming.c : price0, price, tickCapPct(asset, didSpike));
         price = clampIndexPrice(price, asset);
         if (busy && box) {
           if (price > box.hi) price = box.hi;
@@ -694,10 +701,10 @@
         var bucket = Math.floor(tMs / cms);
         forming.c = price;
         var wickN = busy
-          ? price * 0.0003
+          ? price * 0.00015
           : price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
         if (busy) {
-          var addW = Math.min(price * 0.0003, wickN);
+          var addW = wickN;
           forming.h = Math.max(price, forming.o || price) + addW;
           forming.l = Math.min(price, forming.o || price) - addW;
         } else {
@@ -719,7 +726,7 @@
         }
       }
     if (busy) {
-      price = capPctMove(price0, price, 0.0008);
+      price = capPctMove(price0, price, 0.00035);
       if (box) {
         if (price > box.hi) price = box.hi;
         if (price < box.lo) price = box.lo;
@@ -1339,10 +1346,10 @@
 
       ensureMarkets();
       var market = markets[assetId];
-      pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1000;
+      pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1500;
+      clickQuietUntil[assetId] = Date.now() + 300;
       var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
       if (liveBuf) liveBuf.lastMs = Date.now();
-      syncMarket(market, C.ASSETS[assetId], Date.now());
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
@@ -1365,7 +1372,7 @@
         liveBuf.price = entry;
         if (liveBuf.forming) {
           liveBuf.forming.c = entry;
-          var wEntry = entry * 0.0003;
+          var wEntry = entry * 0.00015;
           liveBuf.forming.h = Math.max(entry, liveBuf.forming.o || entry) + wEntry;
           liveBuf.forming.l = Math.min(entry, liveBuf.forming.o || entry) - wEntry;
         }

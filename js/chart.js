@@ -305,13 +305,23 @@
       var stLock = ensureAssetState(activeAsset);
       var entryPrice = Number(snap.entryPrice);
       if (!(entryPrice > 0) || entryPrice > 1e7) entryPrice = lastDrawnClose;
-      var spanRaw = (viewMax > viewMin) ? (viewMax - viewMin) : (entryPrice * 0.005);
-      if (!(spanRaw > 0) || spanRaw > entryPrice * 0.02) spanRaw = entryPrice * 0.008;
-      var targetSpan = Math.max(entryPrice * 0.005, spanRaw);
-      stLock.lockMin = entryPrice - targetSpan * 0.55;
-      stLock.lockMax = entryPrice + targetSpan * 0.55;
-      viewMin = stLock.lockMin;
-      viewMax = stLock.lockMax;
+      var lo = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (stLock.viewMin || 0);
+      var hi = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (stLock.viewMax || 0);
+      if (!(hi > lo)) {
+        lo = entryPrice * 0.994;
+        hi = entryPrice * 1.006;
+      }
+      var spanNow = hi - lo;
+      var minSpan = entryPrice * 0.012;
+      if (spanNow < minSpan) {
+        var midH = (lo + hi) / 2;
+        lo = midH - minSpan / 2;
+        hi = midH + minSpan / 2;
+      }
+      stLock.lockMin = lo;
+      stLock.lockMax = hi;
+      viewMin = lo;
+      viewMax = hi;
       var expL = snap.expiryTime || snap.expiresAt || 0;
       stLock.lockUntil = Math.max(stLock.lockUntil || 0, expL + 1000);
     }
@@ -765,7 +775,7 @@
         if (lWick < loB - maxW) lWick = loB - maxW;
       }
       if (opts.tradeLock && opts.lockSpan > 0) {
-        var capW = opts.lockSpan * 0.12;
+        var capW = opts.lockSpan * 0.06;
         var midW = (hiB + loB) / 2;
         if (hWick - lWick > capW) {
           hWick = midW + capW / 2;
@@ -1540,17 +1550,21 @@
 
     var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
     if (holdLock) {
-      var entryFit = currentPrice;
-      if (allTrades.length) {
-        var ep0 = Number(allTrades[0].entryPrice != null ? allTrades[0].entryPrice : allTrades[0].openPrice);
-        if (isFinite(ep0) && ep0 > 0 && ep0 < 1e7) entryFit = ep0;
+      var minL = currentPrice * 0.012;
+      var loL = (viewMin && viewMax && viewMax > viewMin) ? viewMin : yMin;
+      var hiL = (viewMin && viewMax && viewMax > viewMin) ? viewMax : yMax;
+      var spanL = hiL - loL;
+      if (!(spanL > 0) || spanL < minL) {
+        var midL = (loL && hiL && hiL > loL) ? (loL + hiL) / 2 : currentPrice;
+        loL = midL - minL / 2;
+        hiL = midL + minL / 2;
       }
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
-        var spanFit = spanRaw;
-        if (!(spanFit > 0) || spanFit > entryFit * 0.02) spanFit = entryFit * 0.008;
-        var targetSpan = Math.max(entryFit * 0.005, spanFit);
-        st.lockMin = entryFit - targetSpan * 0.55;
-        st.lockMax = entryFit + targetSpan * 0.55;
+        st.lockMin = loL;
+        st.lockMax = hiL;
+      } else if ((st.lockMax - st.lockMin) < minL) {
+        st.lockMin = loL;
+        st.lockMax = hiL;
       }
       if (allTrades.length) {
         var expHold = 0;
