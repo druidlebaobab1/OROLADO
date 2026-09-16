@@ -101,7 +101,35 @@
     return 0.002;
   }
 
-  function sanitizeOhlc(asset, candle, refPrice) {
+  function tradeBusyFor(assetId) {
+    var now = Date.now();
+    var st = window.assetsState && window.assetsState[assetId];
+    if (st && st.lockUntil > now) return true;
+    var i;
+    for (i = 0; i < trades.length; i++) {
+      var tr = trades[i];
+      if (!tr || tr.assetId !== assetId) continue;
+      var exp = tr.expiryTime || tr.expiresAt || 0;
+      if (tr.settled) {
+        if (exp && now < exp + 1000) return true;
+        continue;
+      }
+      if (!exp || now < exp + 1000) return true;
+    }
+    return false;
+  }
+
+  function tradeBoxFor(assetId, price) {
+    var st = window.assetsState && window.assetsState[assetId];
+    if (st && st.lockMax > st.lockMin) {
+      return { lo: st.lockMin, hi: st.lockMax, span: st.lockMax - st.lockMin };
+    }
+    var p = Number(price);
+    if (!(p > 0)) p = 10000;
+    return { lo: p * 0.996, hi: p * 1.004, span: p * 0.008 };
+  }
+
+  function sanitizeOhlc(asset, candle, refPrice, wickSpan) {
     if (!candle) return candle;
     var ref = Number(refPrice);
     if (!(ref > 0)) ref = Number(candle.c) || Number(asset && asset.basePrice) || 5000;
@@ -115,8 +143,14 @@
     c = capPctMove(ref, c, 0.03);
     var maxW = Math.abs(ref) * ((asset && (asset.id === 'boomspike' || asset.id === 'crash300') && candle._spike) ? 0.012 : 0.0032);
     if (asset && asset.id === 'stable') maxW = Math.abs(ref) * 0.0012;
+    if (wickSpan > 0) maxW = Math.min(maxW, wickSpan * 0.12);
     h = Math.max(o, c, isPlausiblePrice(h, ref) ? h : c);
     l = Math.min(o, c, isPlausiblePrice(l, ref) ? l : c);
+    if (h - l > maxW * 2) {
+      var mid = (o + c) / 2;
+      h = mid + maxW;
+      l = mid - maxW;
+    }
     if (h > Math.max(o, c) + maxW) h = Math.max(o, c) + maxW;
     if (l < Math.min(o, c) - maxW) l = Math.min(o, c) - maxW;
     candle.o = o;
@@ -594,7 +628,7 @@
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
     var g;
-    var maxCatch = 1;
+    var maxCatch = tradeBusyFor(asset.id) ? 0 : 1;
     var catchN = Math.min(missed, maxCatch);
     for (g = 0; g < catchN; g++) {
       var tsG = (buf.bucket + 1) * cms;
@@ -632,16 +666,19 @@
     }
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
-    var stepMs = huntPriceFor(asset.id) ? 70 : (sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120));
-    var steps = Math.max(1, Math.min(fastTick ? 4 : 2, Math.floor(remain / stepMs) || 1));
+    var busy = tradeBusyFor(asset.id);
+    var box = busy ? tradeBoxFor(asset.id, price) : null;
+    var stepMs = busy ? 160 : (huntPriceFor(asset.id) ? 70 : (sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120)));
+    var steps = busy ? 1 : Math.max(1, Math.min(fastTick ? 4 : 2, Math.floor(remain / stepMs) || 1));
       var s;
+      var price0 = price;
       for (s = 0; s < steps; s++) {
         var tMs = nowMs - remain + ((s + 1) / Math.max(1, steps)) * remain;
         var dt = Math.max(0.02, (remain / Math.max(1, steps)) / 1000);
         var didSpike = false;
         var boomForce = false;
         var titanForce = false;
-        if (sim.boomBurst) {
+        if (!busy && sim.boomBurst) {
           var br = stepBoomBurst(asset, buf, price, tMs);
           price = br.price;
           if (br.boom) {
@@ -650,7 +687,7 @@
             forming.o = br.from;
           }
           didSpike = true;
-        } else if (sim.spike && tMs >= (buf.nextSpike || 0)) {
+        } else if (!busy && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
           price = clampIndexPrice(fromP * (1 + sim.spike * 0.02), asset);
           buf.nextSpike = tMs + 25000 + Math.random() * 10000;
@@ -662,16 +699,22 @@
           var hp = huntPriceFor(asset.id);
           price = unifiedStep(asset, price, tMs, dt, hp ? { hunt: hp } : {});
         }
-        price = capPctMove(forming.c > 0 ? forming.c : price, price, tickCapPct(asset, didSpike));
+        price = capPctMove(forming.c > 0 ? forming.c : price, price, busy ? 0.0008 : tickCapPct(asset, didSpike));
         price = clampIndexPrice(price, asset);
+        if (busy && box) {
+          if (price > box.hi) price = box.hi;
+          if (price < box.lo) price = box.lo;
+        }
         var bucket = Math.floor(tMs / cms);
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
         forming.c = price;
-        var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
+        var wickN = busy
+          ? Math.min((box ? box.span : price * 0.008) * 0.05, price * 0.00025)
+          : price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
         forming.h = Math.max(forming.h, price + wickN);
         forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
-        sanitizeOhlc(asset, forming, price);
+        sanitizeOhlc(asset, forming, price, busy && box ? box.span : 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
           if (forming._boom || boomForce) forming._boom = true;
@@ -683,8 +726,20 @@
           forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
         }
       }
+    if (busy) {
+      price = capPctMove(price0, price, 0.0008);
+      if (box) {
+        if (price > box.hi) price = box.hi;
+        if (price < box.lo) price = box.lo;
+      }
+    }
     buf.price = clampIndexPrice(price, asset);
-    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price);
+    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, busy && box ? box.span : 0);
+    if (busy && box && buf.forming) {
+      if (buf.forming.c > box.hi) buf.forming.c = box.hi;
+      if (buf.forming.c < box.lo) buf.forming.c = box.lo;
+      buf.price = buf.forming.c;
+    }
     buf.lastMs = nowMs;
     buf.ver = SIM_VER;
     buf.scaleVer = SCALE_VER;
@@ -753,6 +808,7 @@
       viewMax: prev.viewMax || 0,
       lockMin: prev.lockMin || 0,
       lockMax: prev.lockMax || 0,
+      lockUntil: prev.lockUntil || 0,
       zoomIdx: prev.zoomIdx,
       inds: prev.inds,
       at: Date.now()

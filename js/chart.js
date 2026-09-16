@@ -61,6 +61,7 @@
         viewMax: 0,
         lockMin: 0,
         lockMax: 0,
+        lockUntil: 0,
         lastPrice: 0,
         at: 0,
         zoomIdx: DEFAULT_ZOOM_IDX,
@@ -308,6 +309,8 @@
           stLock.lockMax = viewMax;
         }
       }
+      var expL = snap.expiryTime || snap.expiresAt || 0;
+      stLock.lockUntil = Math.max(stLock.lockUntil || 0, expL + 1000);
     }
     if (!isChartReady()) {
       if (openTradeVisualQueue.indexOf(snap.id) < 0) openTradeVisualQueue.push(snap.id);
@@ -326,11 +329,14 @@
     var aid = (gone && gone.assetId) || activeAsset;
     if (!liveVisualsForAsset(aid)) {
       var st = ensureAssetState(aid);
-      st.lockMin = 0;
-      st.lockMax = 0;
-      if (aid === activeAsset) {
-        strikeLock = null;
-        steer = null;
+      if (!st.lockUntil || Date.now() >= st.lockUntil) {
+        st.lockMin = 0;
+        st.lockMax = 0;
+        st.lockUntil = 0;
+        if (aid === activeAsset) {
+          strikeLock = null;
+          steer = null;
+        }
       }
     }
     if (isChartReady()) drawNow();
@@ -751,9 +757,19 @@
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
       var lWick = c.l;
-      if (!(opts.boomNeon && (c._boom || c._spike))) {
+      if (!(opts.boomNeon && (c._boom || c._spike) && !opts.tradeLock)) {
         if (hWick > hiB + maxW) hWick = hiB + maxW;
         if (lWick < loB - maxW) lWick = loB - maxW;
+      }
+      if (opts.tradeLock && opts.lockSpan > 0) {
+        var capW = opts.lockSpan * 0.12;
+        var midW = (hiB + loB) / 2;
+        if (hWick - lWick > capW) {
+          hWick = midW + capW / 2;
+          lWick = midW - capW / 2;
+        }
+        if (hWick > maxP) hWick = maxP;
+        if (lWick < minP) lWick = minP;
       }
       var x = toX(i);
       ctx.strokeStyle = col;
@@ -1519,7 +1535,8 @@
     var yMax = maxPrice + padY;
     var st = ensureAssetState(activeAsset);
 
-    if (allTrades.length) {
+    var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
+    if (holdLock) {
       if (!st.lockMin || !st.lockMax || st.lockMax <= st.lockMin) {
         if (viewMin && viewMax && viewMax > viewMin && (viewMax - viewMin) < currentPrice * 0.12) {
           st.lockMin = viewMin;
@@ -1529,12 +1546,22 @@
           st.lockMax = yMax;
         }
       }
+      if (allTrades.length) {
+        var expHold = 0;
+        var th;
+        for (th = 0; th < allTrades.length; th++) {
+          var ex = allTrades[th].expiryTime || allTrades[th].expiresAt || 0;
+          if (ex > expHold) expHold = ex;
+        }
+        st.lockUntil = Math.max(st.lockUntil || 0, expHold + 1000);
+      }
       viewMin = st.lockMin;
       viewMax = st.lockMax;
       strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
     } else {
       st.lockMin = 0;
       st.lockMax = 0;
+      st.lockUntil = 0;
       strikeLock = null;
       if (st.viewMin && st.viewMax && (st.viewMax - st.viewMin) > currentPrice * 0.001) {
         var kLerp = 0.10;
@@ -1545,7 +1572,7 @@
         viewMax = yMax;
       }
     }
-    if (!allTrades.length && viewMax - viewMin < currentPrice * 0.002) {
+    if (!holdLock && viewMax - viewMin < currentPrice * 0.002) {
       viewMin = currentPrice * 0.998;
       viewMax = currentPrice * 1.002;
     }
@@ -1554,9 +1581,18 @@
 
     if (candles && candles.length && isFinite(candles[candles.length - 1].c)) {
       var lc = Number(candles[candles.length - 1].c);
+      if (holdLock) {
+        if (lc > viewMax) lc = viewMax;
+        if (lc < viewMin) lc = viewMin;
+      }
       if (lc > 0 && lc < 1e7) lastDrawnClose = lc;
     } else if (isFinite(market.price) && market.price > 0 && market.price < 1e7) {
-      lastDrawnClose = Number(market.price);
+      var mp = Number(market.price);
+      if (holdLock) {
+        if (mp > viewMax) mp = viewMax;
+        if (mp < viewMin) mp = viewMin;
+      }
+      lastDrawnClose = mp;
     }
 
     var minP = viewMin;
@@ -1593,6 +1629,8 @@
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
         capWicks: true,
+        tradeLock: !!holdLock,
+        lockSpan: maxP - minP,
         boomNeon: asset.id === 'boomspike',
         nexusCyber: asset.id === 'nexusprime',
         titanIce: false,
