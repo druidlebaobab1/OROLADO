@@ -99,7 +99,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .brand-xl span,.brand span{color:#FBBF24}
 .brand{font-size:.88rem}
 .brand-domain{font-size:.62rem;font-weight:700;letter-spacing:.22em;color:var(--muted)}
-.brand-sub{text-align:center;color:var(--muted);font-size:.78rem;margin:8px 0 16px;font-weight:500}
+.brand-sub{text-align:center;color:#f5a623;font-size:.78rem;margin:8px 0 16px;font-weight:600;letter-spacing:1px}
 .auth-real-pitch{margin:0 0 12px;text-align:center;font-size:.72rem;font-weight:600;color:var(--muted);line-height:1.35}
 .auth-real-pitch.hidden{display:none!important}
 .tx-feed-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
@@ -395,12 +395,12 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
 .chart-fs-btn{
-  position:relative;z-index:13;top:auto;right:auto;min-height:22px;padding:3px 6px!important;gap:4px;margin-left:auto;
+  position:relative;z-index:13;top:auto;right:auto;min-height:22px;padding:2px 5px!important;gap:2px!important;margin-left:8px;margin-right:4px;
   border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;pointer-events:auto;
   display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
   background:rgba(255,255,255,.06);
   color:#aaa;box-shadow:none;white-space:nowrap!important;
-  font:inherit;font-size:10px!important;font-weight:700;letter-spacing:.04em;line-height:1;
+  font:inherit;font-size:9.5px!important;font-weight:700;letter-spacing:.04em;line-height:1;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;opacity:1;animation:fsBtnHint 2.4s ease-in-out infinite}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{
@@ -410,7 +410,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .chart-fs-live{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#EF4444;
   box-shadow:0 0 0 0 rgba(239,68,68,.55);animation:fsLiveDot 1.5s ease-in-out infinite}
 .chart-fs-ico{font-size:11px;line-height:1;flex-shrink:0}
-.chart-fs-label{white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:inherit}
+.chart-fs-label{white-space:nowrap;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:inherit}
 @keyframes fsLiveDot{
   0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,.5)}
   50%{opacity:.45;box-shadow:0 0 0 5px rgba(239,68,68,0)}
@@ -421,10 +421,10 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 }
 @media (max-width:859px){
   .chart-fs-btn{
-    position:relative;right:auto;top:auto;min-height:24px;padding:3px 8px;width:auto;border-radius:4px;
+    position:relative;right:auto;top:auto;min-height:22px;padding:2px 5px!important;gap:2px!important;width:auto;border-radius:4px;
     background:rgba(18,23,34,.85);border:1px solid #1E2638;color:#94A3B8;
     box-shadow:none}
-  .chart-fs-label{display:inline;font-size:10px}
+  .chart-fs-label{display:inline;font-size:9.5px}
   .chart-fs-ico{font-size:11px}
 }
 .btn-hist-cta:active{transform:scale(.98)}
@@ -1851,8 +1851,7 @@ html.is-android .drawer-item{min-height:44px;padding:8px;font-size:.78rem}
 html.is-android #btnWithdraw{background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(180,83,9,.1));
   border:1px solid rgba(245,158,11,.45);border-radius:10px;box-shadow:0 0 12px rgba(245,158,11,.18)}
 html.is-android .auth-crypto-in-form,html.is-ios .auth-crypto-in-form{display:flex;margin-top:12px}
-html.is-android .auth-card:has(#formRegister:not(.hidden)) + .auth-crypto-after-card,
-html.is-ios .auth-card:has(#formRegister:not(.hidden)) + .auth-crypto-after-card{display:none}
+html.is-android .auth-crypto-after-card,html.is-ios .auth-crypto-after-card{display:none!important}
 html.is-android .drawer-section-title{display:none}
 html.is-android .drawer-item.drawer-logout{position:relative;bottom:auto;margin-bottom:2px;padding-bottom:4px}
 html.is-android #drawerProfile{
@@ -2028,7 +2027,7 @@ html.is-ios .stake-field input{border-radius:10px}
   #btnWithdraw{background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(180,83,9,.1));
     border:1px solid rgba(245,158,11,.45);border-radius:10px;box-shadow:0 0 12px rgba(245,158,11,.18)}
   .auth-crypto-in-form{display:flex;margin-top:12px}
-  .auth-card:has(#formRegister:not(.hidden)) + .auth-crypto-after-card{display:none}
+  .auth-crypto-after-card{display:none!important}
 }
 
 .goldtrend-ico{display:inline-flex;align-items:center;margin-right:3px;vertical-align:-2px}
@@ -2150,7 +2149,7 @@ html body .ind-pills .chart-reset-btn{
   flex-shrink:0!important}
 html body .chart-fs-btn,
 html body .chart-fs-btn .chart-fs-label{
-  padding:3px 6px!important;font-size:10px!important;white-space:nowrap!important;flex-shrink:0}
+  padding:2px 5px!important;font-size:9.5px!important;gap:2px!important;white-space:nowrap!important;flex-shrink:0;margin-right:4px}
 
 html body button.asset-chip.on[data-asset*="boom"],
 html body .asset-chip.on[data-asset="boomspike"],

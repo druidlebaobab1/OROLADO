@@ -3,10 +3,10 @@
 
   var EN = {
     tagline: 'Trading',
-    authRealPitch: 'Sign in or create an account.',
+    authRealPitch: '',
     login: 'Sign in', register: 'Sign up', enter: 'Sign in',
     createAccount: 'Create my account',
-    idLabel: 'Email', idPh: 'you@email.com',
+    idLabel: 'Email', idPh: 'exemple@gmail.com',
     dial: 'Country code (if phone)', password: 'Password',
     forgot: 'Forgot password?',
     name: 'Full name / Nickname', email: 'Email', whatsapp: 'Phone number',
@@ -289,10 +289,10 @@
 
   var FR = {
     tagline: 'Trading',
-    authRealPitch: 'Connexion ou inscription',
+    authRealPitch: '',
     login: 'Connexion', register: 'Inscription', enter: 'Se connecter',
     createAccount: 'Cr\u00e9er mon compte',
-    idLabel: 'E-mail', idPh: 'vous@email.com',
+    idLabel: 'E-mail', idPh: 'exemple@gmail.com',
     dial: 'Indicatif (si t\u00e9l\u00e9phone)', password: 'Mot de passe',
     forgot: 'Mot de passe oubli\u00e9 ?',
     name: 'Nom complet / Pseudo', email: 'E-mail', whatsapp: 'Num\u00e9ro de t\u00e9l\u00e9phone',
@@ -583,7 +583,7 @@
       authRealPitch: 'Crea tu cuenta o inicia sesi\u00f3n en 30 segundos para recargar y retirar ganancias reales.',
       login: 'Iniciar sesi\u00f3n', register: 'Registrarse', enter: 'Entrar',
       createAccount: 'Crear mi cuenta',
-      idLabel: 'Correo', idPh: 'tu@email.com',
+      idLabel: 'Correo', idPh: 'exemple@gmail.com',
       dial: 'Indicativo (si es tel\u00e9fono)', password: 'Contrase\u00f1a',
       forgot: '\u00bfOlvidaste tu contrase\u00f1a?',
       name: 'Nombre / Apodo', email: 'Correo', whatsapp: 'N\u00famero de tel\u00e9fono',
@@ -724,7 +724,7 @@
       authRealPitch: 'Crie sua conta ou entre em 30 segundos para recarregar e sacar ganhos reais.',
       login: 'Entrar', register: 'Criar conta', enter: 'Entrar',
       createAccount: 'Criar minha conta',
-      idLabel: 'E-mail', idPh: 'voce@email.com',
+      idLabel: 'E-mail', idPh: 'exemple@gmail.com',
       dial: 'DDI (se for telefone)', password: 'Senha',
       forgot: 'Esqueceu a senha?',
       name: 'Nome completo / Apelido', email: 'E-mail', whatsapp: 'N\u00famero de telefone',
@@ -865,7 +865,7 @@
       authRealPitch: '\u0623\u0646\u0634\u0626 \u062d\u0633\u0627\u0628\u0643 \u0623\u0648 \u0633\u062c\u0651\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u062e\u0644\u0627\u0644 30 \u062b\u0627\u0646\u064a\u0629 \u0644\u0634\u062d\u0646 \u0631\u0635\u064a\u062f\u0643 \u0648\u0633\u062d\u0628 \u0623\u0631\u0628\u0627\u062d\u0643 \u0627\u0644\u062d\u0642\u064a\u0642\u064a\u0629.',
       login: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644', register: '\u0625\u0646\u0634\u0627\u0621 \u062d\u0633\u0627\u0628', enter: '\u062f\u062e\u0648\u0644',
       createAccount: '\u0625\u0646\u0634\u0627\u0621 \u062d\u0633\u0627\u0628\u064a',
-      idLabel: '\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a', idPh: 'you@email.com',
+      idLabel: '\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a', idPh: 'exemple@gmail.com',
       dial: '\u0645\u0641\u062a\u0627\u062d \u0627\u0644\u062f\u0648\u0644\u0629 (\u0625\u0646 \u0643\u0627\u0646 \u0647\u0627\u062a\u0641\u064b\u0627)', password: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631',
       forgot: '\u0646\u0633\u064a\u062a \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631\u061f',
       name: '\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u0643\u0627\u0645\u0644 / \u0627\u0644\u0644\u0642\u0628', email: '\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a', whatsapp: '\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641',
@@ -996,7 +996,7 @@
       authRealPitch: 'Bakiyeyi y\u00fcklemek ve ger\u00e7ek kazanc\u0131 \u00e7ekmek i\u00e7in 30 saniyede hesap a\u00e7\u0131n veya giri\u015f yap\u0131n.',
       login: 'Giri\u015f', register: 'Kay\u0131t', enter: 'Giri\u015f yap',
       createAccount: 'Hesab\u0131m\u0131 olu\u015ftur',
-      idLabel: 'E-posta', idPh: 'siz@email.com',
+      idLabel: 'E-posta', idPh: 'exemple@gmail.com',
       dial: 'Alan kodu (telefon ise)', password: '\u015eifre',
       forgot: '\u015eifremi unuttum?',
       name: 'Ad / Takma ad', email: 'E-posta', whatsapp: 'Telefon numaras\u0131',
@@ -1119,7 +1119,7 @@
       authRealPitch: 'T\u1ea1o t\u00e0i kho\u1ea3n ho\u1eb7c \u0111\u0103ng nh\u1eadp trong 30 gi\u00e2y \u0111\u1ec3 n\u1ea1p v\u00e0 r\u00fat ti\u1ec1n th\u1eadt.',
       login: '\u0110\u0103ng nh\u1eadp', register: '\u0110\u0103ng k\u00fd', enter: '\u0110\u0103ng nh\u1eadp',
       createAccount: 'T\u1ea1o t\u00e0i kho\u1ea3n',
-      idLabel: 'Email', idPh: 'ban@email.com',
+      idLabel: 'Email', idPh: 'exemple@gmail.com',
       dial: 'M\u00e3 qu\u1ed1c gia (n\u1ebfu l\u00e0 \u0111i\u1ec7n tho\u1ea1i)', password: 'M\u1eadt kh\u1ea9u',
       forgot: 'Qu\u00ean m\u1eadt kh\u1ea9u?',
       name: 'H\u1ecd t\u00ean / Bi\u1ec7t danh', email: 'Email', whatsapp: 'S\u1ed1 \u0111i\u1ec7n tho\u1ea1i',
@@ -1237,7 +1237,7 @@
       authRealPitch: 'Buat akun atau masuk dalam 30 detik untuk isi saldo dan tarik keuntungan nyata.',
       login: 'Masuk', register: 'Daftar', enter: 'Masuk',
       createAccount: 'Buat akun saya',
-      idLabel: 'Email', idPh: 'anda@email.com',
+      idLabel: 'Email', idPh: 'exemple@gmail.com',
       dial: 'Kode negara (jika telepon)', password: 'Kata sandi',
       forgot: 'Lupa kata sandi?',
       name: 'Nama lengkap / Nama panggilan', email: 'Email', whatsapp: 'Nomor telepon',
@@ -1355,7 +1355,7 @@
       authRealPitch: '\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0438\u043b\u0438 \u0432\u043e\u0439\u0434\u0438\u0442\u0435 \u0437\u0430 30 \u0441\u0435\u043a\u0443\u043d\u0434, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0431\u0430\u043b\u0430\u043d\u0441 \u0438 \u0432\u044b\u0432\u0435\u0441\u0442\u0438 \u0440\u0435\u0430\u043b\u044c\u043d\u0443\u044e \u043f\u0440\u0438\u0431\u044b\u043b\u044c.',
       login: '\u0412\u0445\u043e\u0434', register: '\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f', enter: '\u0412\u043e\u0439\u0442\u0438',
       createAccount: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
-      idLabel: '\u042d\u043b. \u043f\u043e\u0447\u0442\u0430', idPh: 'you@email.com',
+      idLabel: '\u042d\u043b. \u043f\u043e\u0447\u0442\u0430', idPh: 'exemple@gmail.com',
       dial: '\u041a\u043e\u0434 \u0441\u0442\u0440\u0430\u043d\u044b (\u0435\u0441\u043b\u0438 \u0442\u0435\u043b\u0435\u0444\u043e\u043d)', password: '\u041f\u0430\u0440\u043e\u043b\u044c',
       forgot: '\u0417\u0430\u0431\u044b\u043b\u0438 \u043f\u0430\u0440\u043e\u043b\u044c?',
       name: '\u0418\u043c\u044f / \u041d\u0438\u043a', email: '\u042d\u043b. \u043f\u043e\u0447\u0442\u0430', whatsapp: '\u041d\u043e\u043c\u0435\u0440 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430',
@@ -1473,7 +1473,7 @@
       authRealPitch: 'Konto erstellen oder in 30 Sekunden anmelden, um aufzuladen und echte Gewinne auszuzahlen.',
       login: 'Anmelden', register: 'Registrieren', enter: 'Anmelden',
       createAccount: 'Konto erstellen',
-      idLabel: 'E-Mail', idPh: 'du@email.com',
+      idLabel: 'E-Mail', idPh: 'exemple@gmail.com',
       dial: 'L\u00e4ndervorwahl (bei Telefon)', password: 'Passwort',
       forgot: 'Passwort vergessen?',
       name: 'Name / Spitzname', email: 'E-Mail', whatsapp: 'Telefonnummer',
@@ -2002,6 +2002,7 @@
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       try {
         var key = el.getAttribute('data-i18n');
+        if (key === 'authRealPitch') { el.textContent = ''; return; }
         var val = (key === 'recharge' || key === 'deposit') ? depositLabel() : t(key);
         el.textContent = val;
       } catch (eEl) { /* ignore */ }

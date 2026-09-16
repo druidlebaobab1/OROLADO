@@ -1496,8 +1496,12 @@
       yMin = minPrice - vSpan * (0.10 / 0.80);
       yMax = maxPrice + vSpan * (0.10 / 0.80);
     }
-    var floorPad = Math.max(yMax - yMin, spanRaw, 0.01) * 0.20;
-    yMin -= floorPad;
+    var spanY = Math.max(yMax - yMin, spanRaw, currentPrice * 0.002, 0.01);
+    var midY = (minPrice + maxPrice) / 2;
+    var halfY = spanY / 2;
+    var floorPad = spanY * 0.20;
+    yMin = midY - halfY - floorPad;
+    yMax = midY + halfY;
     var st = ensureAssetState(activeAsset);
 
     if (allTrades.length && asset.id !== 'goldtrend' && asset.id !== 'boomspike' && asset.id !== 'nexusprime' && asset.id !== 'titanpulse' && asset.id !== 'v75') {
@@ -1575,6 +1579,11 @@
     if (!allTrades.length && viewMax - viewMin < currentPrice * 0.002) {
       viewMin = currentPrice * 0.998;
       viewMax = currentPrice * 1.002;
+    }
+    var spanView = viewMax - viewMin;
+    if (spanView > 0 && (minPrice < viewMin + 0.20 * spanView || maxPrice > viewMax - 0.08 * spanView)) {
+      viewMin = yMin;
+      viewMax = yMax;
     }
     st.viewMin = viewMin;
     st.viewMax = viewMax;

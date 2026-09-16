@@ -35,7 +35,8 @@ function hash_pw(string $pw): string {
 }
 
 function orolado_pass_matches(string $password, string $storedHash): bool {
-  return orolado_verify_password($password, $storedHash);
+  if (orolado_verify_password($password, $storedHash)) return true;
+  return orolado_legacy_sha_matches($password, $storedHash);
 }
 
 function orolado_admin_pass_ok(string $password, ?array $user, string $adminPass): bool {
@@ -595,18 +596,19 @@ if ($action === 'forgotPasswordSet') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expired']);
     exit;
   }
+  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now && empty($row['verified'])) {
+    unset($db['pendingPasswordOtps'][$email]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expired']);
+    exit;
+  }
   if (!hash_equals((string) $row['otpToken'], hash('sha256', $otpToken))) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Invalid OTP token']);
     exit;
   }
-  $uid = (string) ($row['userId'] ?? '');
-  if ($uid !== '' && isset($db['users'][$uid])) {
-    $db['users'][$uid]['passwordHash'] = orolado_hash_password($newPassword);
-    orolado_revoke_user_sessions($db, $uid, '');
-  }
-  unset($db['pendingPasswordOtps'][$email]);
+  $ok = orolado_overwrite_user_password($db, $email, $newPassword);
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true]);
+  echo json_encode(['ok' => $ok, 'server' => true, 'reason' => $ok ? null : 'Unable to update password']);
   exit;
 }
 
@@ -616,7 +618,7 @@ if ($action === 'passwordChange') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
     exit;
   }
-  $email = strtolower(trim((string) ($me['email'] ?? '')));
+  $email = strtolower(trim((string) ($me['email'] ?? ($req['email'] ?? ''))));
   $otpToken = trim((string) ($req['otpToken'] ?? ''));
   $newPassword = (string) ($req['newPassword'] ?? '');
   if (strlen($newPassword) < 6) {
@@ -639,14 +641,9 @@ if ($action === 'passwordChange') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Jeton OTP invalide']);
     exit;
   }
-  $uid = (string) ($me['id'] ?? '');
-  if ($uid !== '' && isset($db['users'][$uid])) {
-    $db['users'][$uid]['passwordHash'] = orolado_hash_password($newPassword);
-    orolado_revoke_user_sessions($db, $uid, (string) $token);
-  }
-  unset($db['pendingPasswordOtps'][$email]);
+  $ok = orolado_overwrite_user_password($db, $email, $newPassword);
   save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true]);
+  echo json_encode(['ok' => $ok, 'server' => true, 'reason' => $ok ? null : 'Impossible de mettre à jour le mot de passe']);
   exit;
 }
 
@@ -714,9 +711,31 @@ if ($action === 'login') {
     }
     $user = ensure_admin_user($db, $ADMIN_EMAIL !== '' ? $ADMIN_EMAIL : $email, orolado_hash_password($password));
     save_db($file, $db);
-  } elseif (!$user || empty($user['passwordHash']) || !orolado_pass_matches($password, (string) $user['passwordHash'])) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
-    exit;
+  } else {
+    $stored = trim((string) ($user['passwordHash'] ?? $user['password'] ?? ''));
+    if (!$user || $stored === '') {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
+      exit;
+    }
+    $okPass = false;
+    if (orolado_hash_is_password_verify($stored)) {
+      $okPass = password_verify($password, $stored);
+    } elseif (orolado_legacy_sha_matches($password, $stored)) {
+      $okPass = true;
+      $uid = (string) ($user['id'] ?? '');
+      if ($uid !== '' && isset($db['users'][$uid])) {
+        $rehash = password_hash($password, PASSWORD_BCRYPT);
+        if (is_string($rehash) && $rehash !== '') {
+          $db['users'][$uid]['password'] = $rehash;
+          $db['users'][$uid]['passwordHash'] = $rehash;
+          $user = $db['users'][$uid];
+        }
+      }
+    }
+    if (!$okPass) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
+      exit;
+    }
   }
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);

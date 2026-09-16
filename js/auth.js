@@ -201,8 +201,6 @@
           return { ok: true, user: D6.Store.getUser(remote.user.id) || remote.user };
         }
         if (remote && remote.server && !remote.ok) {
-          var viaCloud = await tryCloudLogin();
-          if (viaCloud) return viaCloud;
           return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginPass' };
         }
         if (!remote) {
@@ -340,14 +338,15 @@
         if (remote && remote.ok) {
           var u = D6.Store.findByEmail(email);
           if (u) {
-            u.passwordHash = await hashPassword(next);
+            u.passwordHash = '';
+            u.password = '';
             D6.Store.saveUser(u);
           }
           return remote;
         }
         if (remote && remote.reason) return remote;
       }
-      return D6.Auth.resetPassword({ identifier: email, password: next, passwordConfirm: confirm });
+      return { ok: false, reason: 'Unable to update password', field: 'resetPass' };
     },
 
     changePassword: async function (user, current, next, otpToken) {
@@ -361,29 +360,12 @@
           newPassword: next
         }, 20000);
         if (remote && remote.ok) {
-          user.passwordHash = await hashPassword(next);
-          D6.Store.saveUser(user);
-          D6.Store.addSession(user, 'mot de passe modifié');
-          return { ok: true };
+          try { await D6.Auth.logout(); } catch (eOut) { /* ignore */ }
+          return { ok: true, relogin: true };
         }
         if (remote && remote.reason) return remote;
       }
-      var uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(user.id || ''));
-      if (uuid && D6.Supabase && D6.Supabase.changePassword) {
-        var cloud = await D6.Supabase.changePassword(next);
-        if (!cloud.ok) return { ok: false, reason: cloud.reason || 'Impossible de modifier le mot de passe' };
-        user.passwordHash = await hashPassword(next);
-        D6.Store.saveUser(user);
-        D6.Store.addSession(user, 'mot de passe modifié');
-        return { ok: true };
-      }
-      if (user.passwordHash && (await hashPassword(current)) !== user.passwordHash) {
-        return { ok: false, reason: 'Mot de passe actuel incorrect' };
-      }
-      user.passwordHash = await hashPassword(next);
-      D6.Store.saveUser(user);
-      D6.Store.addSession(user, 'mot de passe modifié');
-      return { ok: true };
+      return { ok: false, reason: 'Impossible de modifier le mot de passe' };
     },
 
     updatePhone: function (user, countryCode, phone) {

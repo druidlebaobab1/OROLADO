@@ -541,24 +541,91 @@ function orolado_admin_plain_passwords(): array {
   return array_values(array_unique($out));
 }
 
+function orolado_hash_is_password_verify(string $storedHash): bool {
+  $storedHash = trim($storedHash);
+  return str_starts_with($storedHash, '$2y$')
+    || str_starts_with($storedHash, '$2a$')
+    || str_starts_with($storedHash, '$2b$')
+    || str_starts_with($storedHash, '$argon2');
+}
+
 function orolado_hash_password(string $pw): string {
   $pw = trim($pw);
   if ($pw === '') return '';
-  $hash = password_hash($pw, PASSWORD_DEFAULT);
-  return is_string($hash) && $hash !== '' ? $hash : hash('sha256', 'orolado|' . $pw);
+  $hash = password_hash($pw, PASSWORD_BCRYPT);
+  return is_string($hash) && $hash !== '' ? $hash : '';
 }
 
 function orolado_verify_password(string $password, string $storedHash): bool {
   $password = trim($password);
   $storedHash = trim($storedHash);
   if ($password === '' || $storedHash === '') return false;
-  if (str_starts_with($storedHash, '$2y$') || str_starts_with($storedHash, '$2a$') || str_starts_with($storedHash, '$2b$')
-    || str_starts_with($storedHash, '$argon2')) {
+  if (orolado_hash_is_password_verify($storedHash)) {
     return password_verify($password, $storedHash);
   }
+  return false;
+}
+
+function orolado_legacy_sha_matches(string $password, string $storedHash): bool {
+  $password = trim($password);
+  $storedHash = trim($storedHash);
+  if ($password === '' || $storedHash === '' || orolado_hash_is_password_verify($storedHash)) return false;
   if (hash_equals($storedHash, hash('sha256', 'orolado|' . $password))) return true;
   if (hash_equals($storedHash, hash('sha256', '6diablo|' . $password))) return true;
   return false;
+}
+
+function supabase_admin_set_password(string $userId, string $email, string $newPassword): void {
+  if (!supabase_admin_ready() || trim($newPassword) === '') return;
+  $url = supabase_project_url();
+  $hdrs = supabase_admin_headers();
+  if ($url === '' || !$hdrs) return;
+  $body = json_encode(['password' => $newPassword], JSON_UNESCAPED_UNICODE);
+  $uuid = preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId);
+  if ($uuid) {
+    supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId), $hdrs, $body, 'PUT');
+    supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId) . '/logout', $hdrs, '{}', 'POST');
+    return;
+  }
+  $email = strtolower(trim($email));
+  if ($email === '') return;
+  $list = supabase_http($url . '/auth/v1/admin/users?page=1&per_page=200', $hdrs);
+  $users = [];
+  if (is_array($list) && isset($list['users']) && is_array($list['users'])) $users = $list['users'];
+  foreach ($users as $row) {
+    if (!is_array($row)) continue;
+    $mail = strtolower(trim((string) ($row['email'] ?? '')));
+    $id = (string) ($row['id'] ?? '');
+    if ($mail !== $email || $id === '') continue;
+    supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($id), $hdrs, $body, 'PUT');
+    supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($id) . '/logout', $hdrs, '{}', 'POST');
+    break;
+  }
+}
+
+function orolado_overwrite_user_password(array &$db, string $email, string $newPassword): bool {
+  $email = strtolower(trim($email));
+  $newPassword = (string) $newPassword;
+  if ($email === '' || strlen($newPassword) < 6) return false;
+  $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
+  if (!is_string($newHash) || $newHash === '') return false;
+  $hit = false;
+  foreach ($db['users'] as $id => $u) {
+    if (!is_array($u)) continue;
+    $mail = strtolower(trim((string) ($u['email'] ?? '')));
+    if ($mail !== $email) continue;
+    $uid = (string) ($u['id'] ?? $id);
+    $db['users'][$id]['password'] = $newHash;
+    $db['users'][$id]['passwordHash'] = $newHash;
+    $db['users'][$id]['reset_code'] = null;
+    $db['users'][$id]['reset_code_expires'] = null;
+    $db['users'][$id]['updated_at'] = date('c');
+    orolado_revoke_user_sessions($db, $uid, '');
+    supabase_admin_set_password($uid, $email, $newPassword);
+    $hit = true;
+  }
+  if (isset($db['pendingPasswordOtps'][$email])) unset($db['pendingPasswordOtps'][$email]);
+  return $hit;
 }
 
 function orolado_admin_password_ok(string $password, ?array $user): bool {

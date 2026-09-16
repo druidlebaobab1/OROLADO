@@ -304,9 +304,9 @@
     if ($('formRegister')) setHidden($('formRegister'), tab !== 'register');
     var pitch = $('authRealPitch');
     if (pitch) {
-      var showPitch = !!(opts && opts.fromReal);
-      pitch.classList.toggle('hidden', !showPitch);
-      if (showPitch) pitch.textContent = t('authRealPitch') || pitch.textContent;
+      pitch.classList.add('hidden');
+      pitch.setAttribute('hidden', '');
+      pitch.textContent = '';
     }
     if (tab === 'register') metaTrack('Lead');
   }
@@ -4302,6 +4302,7 @@
       resetPassModal();
       closeModal('passModal');
       toast(t('passUpdated'), 'ok');
+      showAuthScreen('login');
     });
     $('btnFinance').addEventListener('click', openFinance);
     $('btnFinance').addEventListener('pointerup', openFinance);

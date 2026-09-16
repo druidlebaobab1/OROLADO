@@ -18,10 +18,10 @@
   D6.I18N_PACKS = {
     hi: {
       tagline: 'Trading',
-      authRealPitch: 'असली जीत जमा करने और निकालने के लिए 30 सेकंड में खाता बनाएं या साइन इन करें।',
+      authRealPitch: '',
       login: 'साइन इन', register: 'रजिस्टर', enter: 'साइन इन',
       createAccount: 'खाता बनाएं',
-      idLabel: 'ईमेल', idPh: 'you@email.com',
+      idLabel: 'ईमेल', idPh: 'exemple@gmail.com',
       dial: 'देश कोड (फोन)', password: 'पासवर्ड',
       forgot: 'पासवर्ड भूल गए?',
       name: 'पूरा नाम / उपनाम', email: 'ईमेल', whatsapp: 'फोन नंबर',
