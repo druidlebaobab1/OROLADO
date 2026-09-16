@@ -230,7 +230,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="boomspike"].on{
   border-width:1.5px!important;border-style:solid!important;border-color:transparent!important;
   background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
-  box-shadow:0 0 10px rgba(0,255,136,.28)!important;color:#00ff88}
+  box-shadow:0 0 10px rgba(0,255,136,.35)!important;color:#00ff88}
 .asset-chip[data-asset="nexusprime"]{border-color:rgba(34,211,238,.42)}
 .asset-chip[data-asset="nexusprime"] .asset-ico,.asset-chip[data-asset="nexusprime"].on{color:#22D3EE}
 .asset-chip[data-asset="nexusprime"].on{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.25);background:rgba(34,211,238,.08)}
@@ -264,7 +264,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="boomspike"].on{
   border-width:1.5px!important;border-style:solid!important;border-color:transparent!important;
   background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
-  box-shadow:0 0 12px rgba(0,255,136,.28)!important;color:#00ff88}
+  box-shadow:0 0 10px rgba(0,255,136,.35)!important;color:#00ff88}
 .asset-chip[data-asset="boomspike"].on .n,
 .asset-chip[data-asset="boomspike"].on .asset-ico{
   color:#00ff88!important;font-weight:700;-webkit-text-fill-color:#00ff88;background:none}
@@ -302,7 +302,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .ind-btn{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#aaa;
   font:inherit;font-size:10px!important;font-weight:800;letter-spacing:.04em;padding:3px 5px!important;border-radius:4px;cursor:pointer;min-height:22px;min-width:24px;line-height:1;flex-shrink:0}
 .ind-btn.on{border-color:rgba(255,224,130,.7);color:#FFE082;background:rgba(255,215,0,.16);box-shadow:0 0 8px rgba(255,215,0,.22)}
-.chart-reset-btn{min-width:26px;font-size:13px;line-height:1}
+.chart-reset-btn{min-width:28px;font-size:11px;line-height:1;margin-left:9px;margin-right:12px;
+  background:rgba(245,166,35,.16);border:1px solid rgba(245,166,35,.55);color:#ffb703;padding:3px 8px;border-radius:4px}
 .order-hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none}
 .laser-timer{min-width:64px;text-align:center;padding:4px 10px;border-radius:999px;font-weight:900;font-size:.82rem;
   color:#0A0F1D;background:linear-gradient(135deg,#FFD700,#FFA000);border:1px solid rgba(255,255,255,.35);
@@ -2133,9 +2134,20 @@ html.fs-trade .chart-toolbar,
 html.is-android .chart-toolbar{
   margin-top:7px!important;margin-bottom:4px!important}
 html body .ind-btn,
-html body .ind-btn.zoom-btn,
-html body .chart-reset-btn{
+html body .ind-btn.zoom-btn{
   padding:3px 5px!important;font-size:10px!important}
+html body .chart-reset-btn,
+html body #chartReset.chart-reset-btn,
+html body .ind-pills .chart-reset-btn{
+  margin-left:9px!important;margin-right:12px!important;
+  background:rgba(245,166,35,.16)!important;
+  border:1px solid rgba(245,166,35,.55)!important;
+  color:#ffb703!important;
+  padding:3px 8px!important;
+  border-radius:4px!important;
+  font-size:11px!important;
+  min-width:28px!important;
+  flex-shrink:0!important}
 html body .chart-fs-btn,
 html body .chart-fs-btn .chart-fs-label{
   padding:3px 6px!important;font-size:10px!important;white-space:nowrap!important;flex-shrink:0}
@@ -2148,7 +2160,7 @@ html body button.tab-asset.active[data-id*="boom"],
 button.tab-asset.active[data-id*="boom"]{
   background:#14161f padding-box,linear-gradient(90deg,#ffe600,#00ff88) border-box!important;
   border:1.5px solid transparent!important;
-  box-shadow:0 0 12px rgba(0,255,136,.4)!important;
+  box-shadow:0 0 10px rgba(0,255,136,.35)!important;
   color:#00ff88!important}
 html body button.asset-chip.on[data-asset*="boom"] .n,
 html body button.asset-chip.on[data-asset*="boom"] .asset-ico,

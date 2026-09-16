@@ -141,7 +141,10 @@
     var times = xTimes;
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
-    if (times && times.length) {
+    var tFirst = times && times.length ? times[0] : NaN;
+    var tMid = times && times.length > 2 ? times[Math.floor(times.length / 2)] : NaN;
+    var timed = times && times.length > 8 && isFinite(tFirst) && isFinite(tMid) && (tMid - tFirst > 800);
+    if (timed) {
       return function (i) {
         var last = times.length - 1;
         var t = (i >= last) ? tNow : times[i < 0 ? 0 : i];
@@ -507,6 +510,12 @@
   }
 
   function visibleCandles(market) {
+    if ((!window.assetBuffers || !window.assetBuffers[activeAsset] ||
+        !window.assetBuffers[activeAsset].candles ||
+        window.assetBuffers[activeAsset].candles.length < 80) &&
+        D6.Engine && D6.Engine.getMarket) {
+      D6.Engine.getMarket(activeAsset);
+    }
     var n = Math.min(Math.ceil(zoomSmooth || zoomSec()) + 2, BUFFER_N);
     var live = window.assetBuffers && window.assetBuffers[activeAsset];
     var done = (live && live.candles && live.candles.length)
@@ -1028,27 +1037,11 @@
     var started = false;
     for (i = 0; i < up.length; i++) {
       if (up[i] == null) continue;
-      var x = map.toX(i);
-      var y = map.toY(up[i]);
-      if (!started) { ctx.moveTo(x, y); started = true; }
-      else ctx.lineTo(x, y);
-    }
-    for (i = lo.length - 1; i >= 0; i--) {
-      if (lo[i] == null) continue;
-      ctx.lineTo(map.toX(i), map.toY(lo[i]));
-    }
-    ctx.closePath();
-    ctx.fillStyle = theme.bbFill;
-    ctx.fill();
-    ctx.strokeStyle = theme.bbStroke;
-    ctx.lineWidth = 1;
-    started = false;
-    ctx.beginPath();
-    for (i = 0; i < up.length; i++) {
-      if (up[i] == null) continue;
       if (!started) { ctx.moveTo(map.toX(i), map.toY(up[i])); started = true; }
       else ctx.lineTo(map.toX(i), map.toY(up[i]));
     }
+    ctx.strokeStyle = 'rgba(157,78,221,0.65)';
+    ctx.lineWidth = 1.15;
     ctx.stroke();
     started = false;
     ctx.beginPath();
@@ -1201,7 +1194,9 @@
     }
     if (!started) return;
     ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 1.35;
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     ctx.stroke();
   }
 
@@ -1351,9 +1346,9 @@
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
     ctx.save();
-    ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
+    ctx.font = '700 9.5px ui-monospace, Menlo, Consolas, monospace';
     var tw = Math.ceil(ctx.measureText(txt).width) + 10;
-    var th = 16;
+    var th = 14;
     var headX = layout && layout.headX != null ? layout.headX : cssW * 0.70;
     var x = headX + 10;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
@@ -1361,10 +1356,10 @@
     if (x < headX + 4) x = headX + 4;
     var y = map.lastY - th / 2;
     y = Math.max(4, Math.min(cssH - th - 4, y));
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.strokeStyle = 'rgba(245,166,35,0.9)';
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.strokeStyle = 'rgba(245,166,35,0.45)';
     ctx.lineWidth = 1;
-    roundRect(x, y, tw, th, 5);
+    roundRect(x, y, tw, th, 4);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#F5A623';
@@ -1652,8 +1647,7 @@
       if (inds.ma) {
         ctx.save();
         ctx.shadowBlur = 0;
-        if (!((window.innerWidth || 0) <= 859)) drawPoly(map, closes, 21, theme.maSlow, 1.5, startIdx);
-        drawPoly(map, closes, 7, theme.maFast, 1.7, startIdx);
+        drawPoly(map, closes, 9, '#ffb703', 1.65, startIdx);
         ctx.restore();
       }
       if (inds.ema) {
@@ -1907,6 +1901,9 @@
         if (canvas.parentElement) {
           canvas.parentElement.style.backgroundColor = '#0B0E14';
           canvas.parentElement.style.position = 'relative';
+        }
+        if (D6.Engine && D6.Engine.preloadAll) {
+          try { D6.Engine.preloadAll(); } catch (ePre) { /* ignore */ }
         }
         try { resize(); drawNow(); } catch (eR) { try { console.warn('Mobile display fallback:', eR); } catch (e2) { /* ignore */ } }
         running = true;

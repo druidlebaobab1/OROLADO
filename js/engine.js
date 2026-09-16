@@ -521,6 +521,8 @@
       viewMax: prev.viewMax || 0,
       lockMin: prev.lockMin || 0,
       lockMax: prev.lockMax || 0,
+      zoomIdx: prev.zoomIdx,
+      inds: prev.inds,
       at: Date.now()
     };
     var closes = [];
@@ -565,6 +567,15 @@
         ticksInCandle: 0,
         payout: C.REAL_PAYOUT
       };
+    }
+  }
+
+  function preloadAllBuffers() {
+    ensureMarkets();
+    var id;
+    for (id in C.ASSETS) {
+      if (!C.ASSETS[id]) continue;
+      syncMarket(markets[id], C.ASSETS[id], Date.now());
     }
   }
 
@@ -884,7 +895,7 @@
     }
   }
 
-  ensureMarkets();
+  preloadAllBuffers();
   Object.keys(C.ASSETS).forEach(function (id) {
     payoutLive[id] = markets[id].payout;
   });
@@ -897,6 +908,10 @@
 
     getMarket: function (id) {
       return wakeMarket(id);
+    },
+
+    preloadAll: function () {
+      preloadAllBuffers();
     },
 
     getTrade: function () {
