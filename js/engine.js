@@ -204,9 +204,9 @@
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    apex500: { mode: 'candles', vol: 0.0045, run: true },
+    apex500: { mode: 'candles', vol: 0.0045 },
     horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
-    boomspike: { mode: 'candles', vol: 0.0045, run: true },
+    boomspike: { mode: 'candles', vol: 0.0032 },
     crash300: { mode: 'candles', vol: 0.0020, spike: -1 },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
@@ -630,7 +630,7 @@
   }
 
   function bufferNeedsSeed(asset, buf) {
-    if (!buf || !buf.candles || buf.candles.length < MIN_SEED) return true;
+    if (!buf || !buf.candles || buf.candles.length < 40) return true;
     if (simOf(asset.id).titanDrop && buf.titanVer !== TITAN_VER) return true;
     if (asset.id === 'boomspike' && buf.boomVer !== BOOM_VER) return true;
     if (buf.scaleVer !== SCALE_VER) return true;
@@ -647,11 +647,16 @@
     if (nowMs < buf.lastMs) nowMs = buf.lastMs;
     var sim = simOf(asset.id);
     var cms = candleMsFor(asset);
+    if (!buf.candles || buf.candles.length < 20) {
+      buf.lastMs = nowMs;
+      publishHistory(asset.id, buf);
+      return buf;
+    }
     var elapsed = nowMs - buf.lastMs;
     if (elapsed < 0) elapsed = 0;
-    if (elapsed > 900) {
+    if (elapsed > 400) {
       buf.lastMs = nowMs;
-      elapsed = 160;
+      elapsed = 0;
     }
     var fastTick = true;
     var missed = Math.floor(elapsed / cms);
@@ -699,7 +704,10 @@
     var busy = tradeBusyFor(asset.id);
     var box = busy ? tradeBoxFor(asset.id, price) : null;
     var stepMs = sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120);
-    var steps = Math.max(1, Math.min(fastTick ? 4 : 2, Math.floor(remain / stepMs) || 1));
+    var steps = Math.floor(remain / stepMs);
+    if (remain < 40) steps = 0;
+    else if (steps < 1) steps = 1;
+    if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;
       var s;
       var price0 = price;
       for (s = 0; s < steps; s++) {
@@ -734,6 +742,7 @@
         var bucket = Math.floor(tMs / cms);
         forming.c = price;
         var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
+        if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
         forming.h = Math.max(forming.h, price + wickN);

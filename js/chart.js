@@ -20,6 +20,7 @@
   var DEFAULT_ZOOM_IDX = 1;
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
+  var wantFitY = false;
   var inds = { ma: false, bb: false, ema: false };
   var steer = null;
   var tmpCloses = [];
@@ -517,7 +518,7 @@
 
   function visibleCandles(market) {
     var live = liveBuffer(activeAsset);
-    if ((!live || !live.candles || live.candles.length < 300) && D6.Engine) {
+    if ((!live || !live.candles || live.candles.length < 40) && D6.Engine) {
       if (D6.Engine.getBuffer) D6.Engine.getBuffer(activeAsset);
       else if (D6.Engine.getMarket) D6.Engine.getMarket(activeAsset);
       live = liveBuffer(activeAsset);
@@ -745,6 +746,14 @@
       gap = Math.max(2.2, slot * 0.30);
       cw = Math.max(5, slot - gap);
     }
+    if (opts.apexAiry) {
+      gap = Math.min(5.5, Math.max(3.4, slot * 0.44));
+      cw = Math.min(6.2, Math.max(3.6, slot - gap));
+    }
+    if (opts.boomSmall) {
+      gap = Math.min(5, Math.max(3.2, slot * 0.40));
+      cw = Math.min(5.4, Math.max(3.2, slot - gap));
+    }
     var toX = function (i) {
       var tNow = xNow || Date.now();
       var tWin = xWin > 0 ? xWin : 60000;
@@ -758,13 +767,15 @@
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
     var capVis = visH * 0.07;
+    if (opts.titanIce) capVis = visH * 0.07;
+    if (opts.boomSmall || opts.apexAiry) capVis = visH * 0.05;
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
-      if (opts.titanIce) col = up ? '#FFFFFF' : '#B0BEC5';
+      if (opts.titanIce) col = up ? '#f5f5f5' : '#8b9199';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
       if (opts.crashDrop && !up) col = '#FF3B30';
       var hiB = Math.max(c.o, c.c);
@@ -778,6 +789,14 @@
         var midW = (hWick + lWick) / 2;
         hWick = midW + capVis / 2;
         lWick = midW - capVis / 2;
+      }
+      if (opts.boomSmall || opts.apexAiry) {
+        var topLim = maxP - visH * 0.03;
+        var botLim = minP + visH * 0.03;
+        if (hWick > topLim) hWick = topLim;
+        if (lWick < botLim) lWick = botLim;
+        if (hWick < hiB) hWick = hiB;
+        if (lWick > loB) lWick = loB;
       }
       var x = toX(i);
       ctx.strokeStyle = col;
@@ -1456,23 +1475,18 @@
   }
 
   function visiblePriceBand(candles, livePrice, assetId) {
-    var ref = Number(livePrice);
-    if (!(ref > 0) || ref > 1e7) ref = Number(lastDrawnClose);
-    var band = (assetId === 'boomspike' || assetId === 'crash300' || assetId === 'titanpulse') ? 0.06 : 0.03;
     var lo = Infinity;
     var hi = -Infinity;
     var n = candles ? candles.length : 0;
-    var start = Math.max(0, n - 100);
     var i;
     var j;
-    for (i = start; i < n; i++) {
+    for (i = 0; i < n; i++) {
       var c = candles[i];
       if (!c) continue;
       var vals = [c.o, c.h, c.l, c.c];
       for (j = 0; j < vals.length; j++) {
         var v = Number(vals[j]);
         if (!isFinite(v) || v <= 0 || v > 1e7) continue;
-        if (ref > 0 && (v > ref * (1 + band) || v < ref * (1 - band))) continue;
         if (v < lo) lo = v;
         if (v > hi) hi = v;
       }
@@ -1482,11 +1496,35 @@
       if (livePrice > hi) hi = livePrice;
     }
     if (!isFinite(lo) || !isFinite(hi) || hi <= lo) {
-      var p = (ref > 0 && ref < 1e7) ? ref : 10000;
+      var p = (Number(livePrice) > 0 && Number(livePrice) < 1e7) ? Number(livePrice) : ((Number(lastDrawnClose) > 0) ? lastDrawnClose : 10000);
       lo = p * 0.994;
       hi = p * 1.006;
     }
     return { min: lo, max: hi };
+  }
+
+  function fitVisibleY(candles, extras) {
+    var band = visiblePriceBand(candles, extras && extras[0], null);
+    var lo = band.min;
+    var hi = band.max;
+    var e;
+    if (extras) {
+      for (e = 0; e < extras.length; e++) {
+        var x = Number(extras[e]);
+        if (!isFinite(x) || x <= 0 || x > 1e7) continue;
+        if (x < lo) lo = x;
+        if (x > hi) hi = x;
+      }
+    }
+    var span = hi - lo;
+    if (!(span > 0)) {
+      var mid = (lo + hi) / 2 || 10000;
+      span = mid * 0.012;
+      lo = mid - span / 2;
+      hi = mid + span / 2;
+    }
+    var pad = span * 0.08;
+    return { min: lo - pad, max: hi + pad };
   }
 
   function captureTradeFrame(assetId, untilMs) {
@@ -1636,7 +1674,20 @@
       }
       st.lockUntil = Math.max(st.lockUntil || 0, expHold + 1000);
     }
-    if (holdLock && st.lockMax > st.lockMin) {
+    var strikeP = primary && Number(primary.entryPrice);
+    var extrasY = [head];
+    if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
+    if (fsOn || wantFitY) {
+      var fit = fitVisibleY(candles, extrasY);
+      viewMin = fit.min;
+      viewMax = fit.max;
+      if (holdLock) {
+        st.lockMin = viewMin;
+        st.lockMax = viewMax;
+        strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
+      }
+      wantFitY = false;
+    } else if (holdLock && st.lockMax > st.lockMin) {
       viewMin = st.lockMin;
       viewMax = st.lockMax;
       strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
@@ -1646,17 +1697,28 @@
       viewMax = st.lockMax;
       strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
     } else {
-      if (!holdLock) {
-        st.lockMin = 0;
-        st.lockMax = 0;
-        st.lockUntil = 0;
-      }
+      st.lockMin = 0;
+      st.lockMax = 0;
+      st.lockUntil = 0;
       strikeLock = null;
       var prevMin = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (st.viewMin || 0);
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
       viewMin = cam.min;
       viewMax = cam.max;
+    }
+    var keepAir = (viewMax - viewMin) * 0.08;
+    if (keepAir <= 0) keepAir = Math.abs(head) * 0.001;
+    function pinInView(p) {
+      if (!isFinite(p) || p <= 0 || p > 1e7) return;
+      if (p > viewMax - keepAir) viewMax = p + keepAir;
+      if (p < viewMin + keepAir) viewMin = p - keepAir;
+    }
+    pinInView(head);
+    pinInView(strikeP);
+    if (holdLock) {
+      st.lockMin = viewMin;
+      st.lockMax = viewMax;
     }
     st.viewMin = viewMin;
     st.viewMax = viewMax;
@@ -1695,7 +1757,11 @@
     ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, h));
     ctx.clip();
     if (asset.id === 'titanpulse') {
-      map = drawTitanLightning(pad, seriesW, h, candles, minP, maxP);
+      map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
+        thin: false,
+        capWicks: true,
+        titanIce: true
+      });
     } else if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2244', 3);
     } else if (asset.chart === 'candle' || asset.id === 'horizon50') {
@@ -1705,6 +1771,8 @@
         tradeLock: true,
         lockSpan: maxP - minP,
         boomNeon: false,
+        boomSmall: asset.id === 'boomspike',
+        apexAiry: asset.id === 'apex500',
         nexusCyber: asset.id === 'nexusprime',
         titanIce: false,
         v75Rose: asset.id === 'v75',
@@ -1966,14 +2034,12 @@
       if (zoomIdx < ZOOM_STEPS.length - 1) {
         zoomIdx += 1;
       }
+      wantFitY = true;
       persistView(activeAsset);
       var stZout = ensureAssetState(activeAsset);
       if (stZout.lockMin && stZout.lockMax && stZout.lockUntil && Date.now() < stZout.lockUntil) {
         viewMin = stZout.lockMin;
         viewMax = stZout.lockMax;
-      } else {
-        viewMin = 0;
-        viewMax = 0;
       }
       if (isChartReady()) drawNow();
     });
@@ -2109,7 +2175,7 @@
       if (steer && steer.assetId !== id) steer = null;
       var liveBuf = liveBuffer(id);
       var st = ensureAssetState(id);
-      if ((!liveBuf || !liveBuf.candles || liveBuf.candles.length < 300) && D6.Engine) {
+      if ((!liveBuf || !liveBuf.candles || liveBuf.candles.length < 40) && D6.Engine) {
         if (D6.Engine.getBuffer) D6.Engine.getBuffer(id);
         else if (D6.Engine.getMarket) D6.Engine.getMarket(id);
         liveBuf = liveBuffer(id);
@@ -2150,6 +2216,7 @@
     start: function () {
       running = true;
       lastTs = 0;
+      try { drawNow(); } catch (eFirst) { /* ignore */ }
       if (loopRaf) {
         try { cancelAnimationFrame(loopRaf); } catch (eSt) { /* ignore */ }
         loopRaf = 0;
