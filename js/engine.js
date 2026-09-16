@@ -16,6 +16,7 @@
   var SEED_N = 720;
   var synthCache = {};
   var tradeTimers = {};
+  var pendingBusyUntil = {};
 
   function u32(n) {
     n = Math.imul(n ^ (n >>> 16), 2246822507);
@@ -103,6 +104,7 @@
 
   function tradeBusyFor(assetId) {
     var now = Date.now();
+    if (pendingBusyUntil[assetId] && pendingBusyUntil[assetId] > now) return true;
     var st = window.assetsState && window.assetsState[assetId];
     if (st && st.lockUntil > now) return true;
     var i;
@@ -254,6 +256,9 @@
 
   function unifiedStep(asset, price, nowMs, dtSec, opts) {
     opts = opts || {};
+    var prevPrice = price;
+    var busyIn = !!(opts.busy || (asset && tradeBusyFor(asset.id)));
+    if (busyIn) opts.spike = false;
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || price;
     var vol = sim.vol;
@@ -265,16 +270,14 @@
       vol *= phP < 0.78 ? 0.42 : 1.9;
     }
     var roll = opts.det != null ? uhash01(opts.det, 904177) : Math.random();
+    var nextOut;
     if (opts.hunt > 0) {
       var gapH = opts.hunt - price;
       var nH = (roll - 0.5) * price * 0.0036;
       var wH = Math.sin(nowMs / 110) * price * 0.0017 + Math.sin(nowMs / 47) * price * 0.0009;
       var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
-      var nextH = price + gapH * 0.055 + nH + wH + teaseH;
-      nextH = capPctMove(price, nextH, 0.0022);
-      return clampIndexPrice(nextH, asset);
-    }
-    if (sim.titanDrop && !opts.spike) {
+      nextOut = price + gapH * 0.055 + nH + wH + teaseH;
+    } else if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
       var nT = (roll - 0.5) * price * vol * 1.35;
       var pT = Math.sin(nowMs / 220 * Math.PI) * price * 0.0034;
@@ -282,70 +285,53 @@
       var rT = Math.sin(nowMs / 410 * Math.PI) * price * 0.0022;
       var sT = Math.sin(nowMs / 58 * Math.PI) * price * 0.00085;
       var pullT = (base - price) * 0.018;
-      var nextT = price + nT + pT + qT + rT + sT + pullT;
-      if (roll > 0.91) nextT = price * (1 - 0.010 - (roll - 0.91) * 0.22);
-      else if (roll < 0.08) nextT = price * (1 + 0.007 + (0.08 - roll) * 0.16);
-      else if (roll > 0.78 && roll < 0.84) nextT = price * (1 + 0.0045);
-      nextT = capPctMove(price, nextT, 0.018 * Math.min(1, dtT * 4));
-      return clampIndexPrice(nextT, asset);
-    }
-    if (sim.coreWave && !opts.spike) {
+      nextOut = price + nT + pT + qT + rT + sT + pullT;
+      if (!busyIn) {
+        if (roll > 0.91) nextOut = price * (1 - 0.010 - (roll - 0.91) * 0.22);
+        else if (roll < 0.08) nextOut = price * (1 + 0.007 + (0.08 - roll) * 0.16);
+        else if (roll > 0.78 && roll < 0.84) nextOut = price * (1 + 0.0045);
+      }
+    } else if (sim.coreWave && !opts.spike) {
       var zigC = (roll - 0.5) * price * vol * 1.35;
       var waveC = Math.sin(nowMs / 190) * price * 0.00072;
       var zig2C = Math.sin(nowMs / 73) * price * 0.00038;
       var pullC = (base - price) * (sim.pullK != null ? sim.pullK : 0.05);
-      var nextC = price + zigC + waveC + zig2C + pullC;
-      nextC = capPctMove(price, nextC, 0.0034);
-      return clampIndexPrice(nextC, asset);
-    }
-    if (sim.goldHot && !opts.spike) {
-      var dtG = Math.max(dtSec, 0.016);
+      nextOut = price + zigC + waveC + zig2C + pullC;
+    } else if (sim.goldHot && !opts.spike) {
       var nG = (roll - 0.5) * price * vol;
       var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.00115;
       var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.00055;
       var microG = ((roll - 0.5) * 2) * price * 0.0022;
-      if (roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.0065;
+      if (!busyIn && roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.0065;
       var pullG = (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
-      var nextG = price + nG + p1G + p2G + microG + pullG;
-      nextG = capPctMove(price, nextG, 0.011 * Math.min(1, dtG * 4));
-      return clampIndexPrice(nextG, asset);
-    }
-    if (sim.nexusPulse && !opts.spike) {
-      var dtN = Math.max(dtSec, 0.016);
+      nextOut = price + nG + p1G + p2G + microG + pullG;
+    } else if (sim.nexusPulse && !opts.spike) {
       var nN = (roll - 0.5) * price * vol;
       var pN = Math.sin(nowMs / 1000 * Math.PI * 8.5) * price * 0.00038;
       var qN = Math.sin(nowMs / 1000 * Math.PI * 19) * price * 0.00016;
       var pullN = (base - price) * 0.045;
-      var nextN = price + nN + pN + qN + pullN;
-      nextN = capPctMove(price, nextN, TICK_PCT * 1.4);
-      return clampIndexPrice(nextN, asset);
-    }
-    if (sim.v75Wave && !opts.spike) {
-      var dtV = Math.max(dtSec, 0.016);
+      nextOut = price + nN + pN + qN + pullN;
+    } else if (sim.v75Wave && !opts.spike) {
       var nV = (roll - 0.5) * price * vol;
       var pV = Math.sin(nowMs / 1000 * Math.PI * 5.6) * price * 0.00062;
       var qV = Math.sin(nowMs / 1000 * Math.PI * 13.2) * price * 0.00028;
       var rV = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00018;
       var pullV = (base - price) * 0.038;
-      var nextV = price + nV + pV + qV + rV + pullV;
-      nextV = capPctMove(price, nextV, TICK_PCT * 1.4);
-      return clampIndexPrice(nextV, asset);
+      nextOut = price + nV + pV + qV + rV + pullV;
+    } else {
+      var center = bias;
+      var delta = (roll - center) * price * vol;
+      if (sim.sine) delta += Math.sin(nowMs / 1000 * Math.PI / 20) * price * 0.00085;
+      if (sim.stair) {
+        var stS = (nowMs / 1000) % 9;
+        if (stS < 5.5) delta += Math.abs(price) * 0.00045 * Math.max(dtSec, 0.05);
+        else delta *= 0.12;
+      }
+      nextOut = price + delta + (base - price) * 0.04;
     }
-    var center = bias;
-    var delta = (roll - center) * price * vol;
-    if (sim.sine) delta += Math.sin(nowMs / 1000 * Math.PI / 20) * price * 0.00085;
-    if (sim.stair) {
-      var st = (nowMs / 1000) % 9;
-      if (st < 5.5) delta += Math.abs(price) * 0.00045 * Math.max(dtSec, 0.05);
-      else delta *= 0.12;
-    }
-    var pullK = 0.04;
-    var pull = (base - price) * pullK;
-    var next = price + delta + pull;
-    if (!opts.spike) {
-      next = capPctMove(price, next, TICK_PCT);
-    }
-    return clampIndexPrice(next, asset);
+    var stepCap = busyIn ? 0.0008 : tickCapPct(asset, !!opts.spike);
+    nextOut = capPctMove(prevPrice, nextOut, stepCap);
+    return clampIndexPrice(nextOut, asset);
   }
 
   function finishCandle(asset, o, h, l, c, t, spike) {
@@ -697,23 +683,29 @@
         }
         if (!didSpike) {
           var hp = huntPriceFor(asset.id);
-          price = unifiedStep(asset, price, tMs, dt, hp ? { hunt: hp } : {});
+          price = unifiedStep(asset, price, tMs, dt, { hunt: hp || 0, busy: busy });
         }
-        price = capPctMove(forming.c > 0 ? forming.c : price, price, busy ? 0.0008 : tickCapPct(asset, didSpike));
+        price = capPctMove(forming.c > 0 ? forming.c : price0, price, busy ? 0.0008 : tickCapPct(asset, didSpike));
         price = clampIndexPrice(price, asset);
         if (busy && box) {
           if (price > box.hi) price = box.hi;
           if (price < box.lo) price = box.lo;
         }
         var bucket = Math.floor(tMs / cms);
-        if (price > forming.h) forming.h = price;
-        if (price < forming.l) forming.l = price;
         forming.c = price;
         var wickN = busy
-          ? Math.min((box ? box.span : price * 0.008) * 0.05, price * 0.00025)
+          ? price * 0.0003
           : price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
-        forming.h = Math.max(forming.h, price + wickN);
-        forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
+        if (busy) {
+          var addW = Math.min(price * 0.0003, wickN);
+          forming.h = Math.max(price, forming.o || price) + addW;
+          forming.l = Math.min(price, forming.o || price) - addW;
+        } else {
+          if (price > forming.h) forming.h = price;
+          if (price < forming.l) forming.l = price;
+          forming.h = Math.max(forming.h, price + wickN);
+          forming.l = Math.min(forming.l, price - wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4));
+        }
         sanitizeOhlc(asset, forming, price, busy && box ? box.span : 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
@@ -1347,6 +1339,9 @@
 
       ensureMarkets();
       var market = markets[assetId];
+      pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1000;
+      var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
+      if (liveBuf) liveBuf.lastMs = Date.now();
       syncMarket(market, C.ASSETS[assetId], Date.now());
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
       setBal(user, mode, balOf(user, mode) - stake);
@@ -1364,6 +1359,16 @@
       if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === assetId) {
         var drawnIn = Number(D6.Chart.lastClose());
         if (isFinite(drawnIn) && drawnIn > 0) entry = drawnIn;
+      }
+      market.price = entry;
+      if (liveBuf) {
+        liveBuf.price = entry;
+        if (liveBuf.forming) {
+          liveBuf.forming.c = entry;
+          var wEntry = entry * 0.0003;
+          liveBuf.forming.h = Math.max(entry, liveBuf.forming.o || entry) + wEntry;
+          liveBuf.forming.l = Math.min(entry, liveBuf.forming.o || entry) - wEntry;
+        }
       }
       var wall = Date.now();
       var durationMs = duration * 1000;
