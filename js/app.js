@@ -282,7 +282,7 @@
     if (!isGuest()) return true;
     if (!guardLiveTradeView()) return false;
     // Pas de toast rouge : le pitch authRealPitch suffit.
-    showAuthScreen('login', { fromReal: true });
+    showAuthScreen('register', { fromReal: true });
     return false;
   }
 
