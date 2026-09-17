@@ -545,6 +545,22 @@
     }
 
     if (!fsMode) {
+      // Quand le ticket de trade est en position fixe (Android), il sort du flux
+      // et la carte du graphique ne sait plus jusqu'où elle peut descendre :
+      // elle restait figée à une fraction de `vh` et laissait une bande morte
+      // au-dessus du ticket. On lui donne la place réellement disponible.
+      var stdH = 0;
+      var stdPad = document.querySelector('#screenTrade .pad');
+      var stdCard = document.getElementById('chart');
+      if (stdPad) {
+        try {
+          if (window.getComputedStyle(stdPad).position === 'fixed') {
+            var padTop = Math.round(stdPad.getBoundingClientRect().top);
+            var cardTop = Math.round((stdCard || parent).getBoundingClientRect().top);
+            if (padTop > 0 && cardTop >= 0) stdH = padTop - cardTop - 4;
+          }
+        } catch (eStd) { stdH = 0; }
+      }
       parent.style.minHeight = minH + 'px';
       if (!parent.style.height || parseInt(parent.style.height, 10) < minH) {
         parent.style.height = minH + 'px';
@@ -553,6 +569,12 @@
       if (card) {
         card.style.minHeight = '380px';
         card.style.width = '100%';
+      }
+      // La mesure est publiée dans une variable CSS plutôt qu'écrite en style
+      // inline : la feuille Android impose déjà des hauteurs en `!important`, et
+      // une bataille de priorités laissait la carte et la scène désaccordées.
+      if (stdH >= 240) {
+        document.documentElement.style.setProperty('--oro-chart-h', stdH + 'px');
       }
     } else {
       // La réserve verticale était figée à 132 px sur mobile, alors que la
@@ -937,10 +959,10 @@
       ctx.fillText(formatAxisPrice(pVal), cssW - PRICE_AXIS_GAP, y + 3);
     }
     // Maillage vertical à pas rigoureusement constant, décalé d'un demi-pas :
-    // la tête tombe au centre d'un carreau, sans trait par-dessus. Les libellés
-    // sont posés au centre des carreaux, donc pile sur -15s, -30s, -45s, -60s.
+    // la tête tombe au centre d'un carreau, sans trait par-dessus. Plus aucun
+    // libellé de secondes n'est tracé : la hauteur ainsi libérée revient à la
+    // courbe.
     var stepX = refStepX;
-    var stepSec = gridStepSec(span);
     var headXg = pad.l + seriesW;
     var axisR = pad.l + plotW;
     var kMin = -Math.ceil((headXg - pad.l) / stepX) - 1;
@@ -954,20 +976,6 @@
       ctx.lineTo(gx, pad.t + h);
     }
     ctx.stroke();
-    // Repères temporels, toujours en secondes relatives. Le pied de la tête de
-    // lecture porte son propre repère `0s` : sans lui, l'axe s'arrêtait net à
-    // -15s et laissait un vide juste sous le cours courant.
-    ctx.fillStyle = '#64748B';
-    ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('0s', headXg, pad.t + h + 12);
-    for (i = 1; i <= kMax - kMin; i++) {
-      var lx = headXg - stepX * i;
-      if (lx < pad.l - 1) break;
-      // Le repère le plus ancien tombe pile sur le bord : on le rentre juste
-      // assez pour qu'il reste lisible en entier.
-      ctx.fillText('-' + (i * stepSec) + 's', Math.max(lx, pad.l + 14), pad.t + h + 12);
-    }
   }
 
   function drawCandles(pad, w, h, candles, minP, maxP, opts) {
@@ -1897,9 +1905,11 @@
     }
     // Colonne des prix compacte mais jamais tronquée : la largeur réservée doit
     // loger le libellé le plus long plus la marge de sécurité à droite.
+    // `b` ne réservait de la place que pour les libellés de secondes, désormais
+    // supprimés : la hauteur revient au tracé.
     var pad = fsOn
-      ? { t: 4, r: 56, b: 16, l: 4 }
-      : { t: narrow ? 6 : 8, r: narrow ? 54 : 56, b: 22, l: 8 };
+      ? { t: 4, r: 56, b: 6, l: 4 }
+      : { t: narrow ? 6 : 8, r: narrow ? 54 : 56, b: 8, l: 8 };
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;

@@ -2215,19 +2215,25 @@ html body .chart-fs-live{display:none!important}
   html body .chart-reset-btn,
   html body .ind-pills .chart-reset-btn{margin-left:4px!important;margin-right:4px!important;
     padding:3px 6px!important;min-width:26px!important}
-  html body .chart-fs-btn,
-  html body .chart-fs-btn .chart-fs-label{margin-left:auto!important;margin-right:0!important;
-    padding:2px 6px!important;font-size:9px!important;gap:3px!important;flex-shrink:0!important}
+  /* `margin-left:auto` collait le bouton au bord droit et creusait un grand
+     rectangle vide après la flèche d'actualisation. On le rapproche du bloc
+     d'outils avec un écart fixe, et on l'agrandit pour le pouce. */
+  html body .chart-fs-btn{margin-left:10px!important;margin-right:0!important;
+    padding:5px 10px!important;font-size:10px!important;gap:4px!important;
+    min-height:28px!important;flex-shrink:0!important;align-items:center!important}
+  html body .chart-fs-btn .chart-fs-label{font-size:10px!important;padding:0!important;margin:0!important}
+  html body .chart-fs-ico{font-size:12px!important}
 }
 
 @media (max-width:480px){
   /* Surcharge de l'ancienne marge droite de 12px qui poussait le bouton
      plein écran hors du cadre sur iPhone et sur les Android étroits. */
   html body .chart-fs-btn,
-  html body .chart-fs-btn .chart-fs-label,
   .btn-fullscreen, #btn-fullscreen, [data-action="fullscreen"]{
-    margin-right:0!important;padding:2px 5px!important;font-size:9px!important}
-  html body .chart-fs-ico{font-size:10px!important}
+    margin-left:8px!important;margin-right:0!important;
+    padding:5px 9px!important;font-size:9.5px!important;min-height:28px!important}
+  html body .chart-fs-btn .chart-fs-label{font-size:9.5px!important}
+  html body .chart-fs-ico{font-size:12px!important}
 }
 
 @media (min-width:900px){
@@ -2247,4 +2253,32 @@ html body .chart-fs-live{display:none!important}
    navigation Android : on leur réserve de quoi défiler en entier. */
 html body #formRegister,
 html body #formLogin{padding-bottom:25px}
+
+/* Android : le ticket de trade est en position fixe, donc hors du flux. La
+   carte du graphique se calait sur une fraction de `vh` et laissait une bande
+   morte au-dessus du ticket. `--oro-chart-h` porte la hauteur réellement
+   disponible, mesurée par le moteur de rendu. */
+html.is-android #screenTrade .chart-card,
+html.is-android #screenTrade #chart{
+  display:flex!important;flex-direction:column!important;
+  height:var(--oro-chart-h,40vh)!important;
+  min-height:var(--oro-chart-h,260px)!important;
+  max-height:var(--oro-chart-h,48vh)!important;
+  flex:0 0 auto!important;overflow:hidden!important}
+/* La barre d'outils repasse en `position:relative` et consomme donc une
+   quarantaine de pixels de flux. La scène ne peut pas valoir 100 % de la carte
+   sans pousser autant de courbe sous le bord inférieur : elle prend le reste. */
+html.is-android #screenTrade .chart-stage{
+  flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important}
+
+/* Boom Spike : le blanc à droite du libellé restait nu. Un reflet ambré very
+   léger l'habille sans toucher aux neuf autres onglets. */
+html body .asset-chip[data-asset="boomspike"]{position:relative}
+html body .asset-chip[data-asset="boomspike"]::after{
+  content:'';position:absolute;top:0;right:0;bottom:0;width:48%;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(90deg,rgba(255,152,0,0) 0%,rgba(255,152,0,.09) 55%,rgba(255,183,77,.2) 100%);
+  opacity:.5;transition:opacity .2s ease}
+html body .asset-chip[data-asset="boomspike"].on::after{opacity:1}
+html body .asset-chip[data-asset="boomspike"] .n,
+html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-index:1}
 

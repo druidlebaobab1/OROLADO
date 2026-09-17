@@ -223,20 +223,23 @@
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    apex500: { mode: 'candles', vol: 0.0430 },
+    // Cadence relevée, amplitude tenue : `stepMs` rapproche les pas et `pullK`
+    // est remonté dans la même proportion, sinon multiplier les pas gonflerait
+    // mécaniquement la hauteur des bougies.
+    apex500: { mode: 'candles', vol: 0.0430, stepMs: 34, pullK: 0.100 },
     horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
     // Machine à impulsions réactivée : sans `boomBurst`, l'actif n'avait
     // simplement aucune explosion, c'était une marche aléatoire ordinaire.
     boomspike: { mode: 'candles', vol: 0.0088, boomBurst: true },
     crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
-    v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
+    v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190, stepMs: 50, pullK: 0.075 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     // Rappel vers la moyenne allégé : les vagues partent franchement dans une
     // direction au lieu d'être ramenées au centre à chaque pas.
-    goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, pullK: 0.016 },
+    goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 24, pullK: 0.024 },
     // Titan Pulse : générateur universel de chandeliers, sans formule dédiée.
-    // Seuls des paramètres standards le rendent plus rapide et plus ample.
-    titanpulse: { mode: 'candles', vol: 0.0760, stepMs: 45, pullK: 0.020, wickK: 0.38 },
+    // La cadence la plus rapide de la plateforme.
+    titanpulse: { mode: 'candles', vol: 0.0760, stepMs: 16, pullK: 0.075, wickK: 0.38 },
   };
   var SIM_VER = 20;
   var BOOM_VER = 7;
@@ -381,7 +384,7 @@
       var pV = Math.sin(nowMs / 1000 * Math.PI * 5.6) * price * 0.00062;
       var qV = Math.sin(nowMs / 1000 * Math.PI * 13.2) * price * 0.00028;
       var rV = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00018;
-      var pullV = busyIn ? 0 : (base - price) * 0.038;
+      var pullV = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.038);
       nextOut = price + nV + pV + qV + rV + pullV;
     } else {
       var center = bias;
@@ -1442,8 +1445,11 @@
       pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1500;
       clickQuietUntil[assetId] = Date.now() + 300;
       engineCaptureFrame(assetId, pendingBusyUntil[assetId]);
-      var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
-      if (liveBuf) liveBuf.lastMs = Date.now();
+      // `lastMs` n'est plus remis à l'heure du clic : il porte le temps non
+      // encore consommé par la simulation, et l'écraser jetait jusqu'à un pas
+      // entier, ce qui se voyait comme un à-coup du défilement au moment de la
+      // prise de position. La cadence reste ainsi strictement la même avant,
+      // pendant et après le trade.
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
