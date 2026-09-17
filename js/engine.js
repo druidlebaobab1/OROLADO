@@ -70,8 +70,6 @@
 
   var TICK_PCT = 0.0022;
   var JUMP_PCT = 0.004;
-  // Titan Pulse encaisse des sauts bien plus francs que les autres actifs.
-  var TITAN_JUMP_PCT = 0.024;
 
   function clampIndexPrice(p, asset) {
     var n = Number(p);
@@ -116,7 +114,7 @@
     if (id === 'horizon50') return 0.0009;
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return 0.0385;
+    if (id === 'titanpulse') return 0.0410;
     if (id === 'goldtrend') return 0.0212;
     if (id === 'apex500') return 0.0146;
     if (id === 'boomspike') return 0.004;
@@ -236,16 +234,16 @@
     // Rappel vers la moyenne allégé : les vagues partent franchement dans une
     // direction au lieu d'être ramenées au centre à chaque pas.
     goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, pullK: 0.016 },
-    // Titan Pulse domine la volatilité des 10 actifs, Gold Trend arrive juste derrière.
-    titanpulse: { mode: 'line', vol: 0.1350, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 20 },
+    // Titan Pulse : générateur universel de chandeliers, sans formule dédiée.
+    // Seuls des paramètres standards le rendent plus rapide et plus ample.
+    titanpulse: { mode: 'candles', vol: 0.0760, stepMs: 45, pullK: 0.020, wickK: 0.38 },
   };
-  var SIM_VER = 19;
-  var TITAN_VER = 12;
+  var SIM_VER = 20;
   var BOOM_VER = 7;
   var CRASH_VER = 2;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 9;
+  var SCALE_VER = 13;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -349,20 +347,6 @@
       // vibrer la pente à haute fréquence.
       var riseC = 0.0011 + uhash01(Math.floor(nowMs / CANDLE_MS), 771001) * 0.0007;
       nextOut = price + price * riseC * Math.min(0.6, Math.max(0.03, dtSec));
-    } else if (sim.titanDrop && !opts.spike) {
-      var dtT = Math.max(dtSec, 0.016);
-      var nT = (roll - 0.5) * price * vol * 1.35;
-      var pT = Math.sin(nowMs / 220 * Math.PI) * price * 0.0034;
-      var qT = Math.sin(nowMs / 95 * Math.PI) * price * 0.0016;
-      var rT = Math.sin(nowMs / 410 * Math.PI) * price * 0.0022;
-      var sT = Math.sin(nowMs / 58 * Math.PI) * price * 0.00085;
-      var pullT = busyIn ? 0 : (base - price) * 0.022;
-      nextOut = price + nT + pT + qT + rT + sT + pullT;
-      if (!busyIn) {
-        if (roll > 0.91) nextOut = capPctMove(price, price * (1 - 0.010 - (roll - 0.91) * 0.22), TITAN_JUMP_PCT);
-        else if (roll < 0.08) nextOut = capPctMove(price, price * (1 + 0.007 + (0.08 - roll) * 0.16), TITAN_JUMP_PCT);
-        else if (roll > 0.78 && roll < 0.84) nextOut = capPctMove(price, price * (1 + 0.0045), TITAN_JUMP_PCT);
-      }
     } else if (sim.coreWave && !opts.spike) {
       var zigC = (roll - 0.5) * price * vol * 1.35;
       var waveC = Math.sin(nowMs / 190) * price * 0.00072;
@@ -408,7 +392,7 @@
         if (stS < 5.5) delta += Math.abs(price) * 0.00045 * Math.max(dtSec, 0.05);
         else delta *= 0.12;
       }
-      nextOut = price + delta + (busyIn ? 0 : (base - price) * 0.04);
+      nextOut = price + delta + (busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.04));
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
@@ -438,9 +422,6 @@
         var maxV = Math.abs(o) * 0.012;
         if (c >= o) c = o + Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
         else c = o - Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
-      } else if (sim.titanDrop) {
-        var ampT = Math.max(Math.abs(o) * 0.0091, 1.4);
-        if (Math.abs(c - o) < ampT) c = o + (c >= o ? ampT : -ampT);
       } else if (sim.horizonCalm) {
         var ampHz = Math.max(Math.abs(o) * 0.00035, 0.05);
         var maxHz = Math.abs(o) * 0.0022;
@@ -463,15 +444,14 @@
     }
     h = Math.max(h, o, c);
     l = Math.min(l, o, c);
-    if (!sim.boomBurst && !sim.titanDrop && sim.spike !== -1 && sim.spike !== 1) {
+    if (!sim.boomBurst && sim.spike !== -1 && sim.spike !== 1) {
       h = capPctMove(o, h, JUMP_PCT);
       l = capPctMove(o, l, JUMP_PCT);
       h = Math.max(h, o, c);
       l = Math.min(l, o, c);
     }
     var body = Math.abs(c - o);
-    var maxW = body * 1.2;
-    if (sim.titanDrop) maxW = Math.max(body * 1.8, Math.abs(o) * 0.00022);
+    var maxW = body * (sim.wickK != null ? sim.wickK : 1.2);
     if (sim.boomBurst) maxW = spike ? body * 0.12 : body * 0.35;
     if (sim.crashCalm) maxW = Math.max(Math.abs(o) * 0.00008, 0.01);
     if (sim.nexusPulse) maxW = body * 0.95;
@@ -591,9 +571,6 @@
       var run = 4 + Math.floor(uhash01(Math.floor(i / 8), 440501) * 3);
       var pos = i % (run + 3);
       close = pos < run ? prev + vol * 1.05 : prev - vol * 0.62;
-    } else if (sim.titanDrop) {
-      close = prev + Math.sin(i / 3.2) * vol * 1.8 + rnd * vol * 1.2;
-      if (uhash01(i, 91) > 0.9) close = prev * (1 - 0.012 - uhash01(i, 5) * 0.01);
     }
     close = clampIndexPrice(close, asset);
     var open = prev;
@@ -604,6 +581,16 @@
       wick = prev * 0.00006;
       h = Math.max(open, close) + wick;
       l = Math.min(open, close) - wick;
+    }
+    // Mèches bornées au corps, comme dans finishCandle : sans ça l'historique
+    // amorcé garderait des mèches calculées sur la volatilité seule.
+    if (sim.wickK != null) {
+      var bodyW = Math.abs(close - open);
+      var capW = bodyW * sim.wickK;
+      var hiW = Math.max(open, close);
+      var loW = Math.min(open, close);
+      if (h > hiW + capW) h = hiW + capW;
+      if (l < loW - capW) l = loW - capW;
     }
     if (spiked) l = Math.min(l, close);
     return {
@@ -629,7 +616,6 @@
     var k;
     var nextSpike;
     if (sim.crashCalm) nextSpike = now + 18000;
-    else if (sim.titanDrop) nextSpike = now + 12000 + Math.random() * 8000;
     else nextSpike = now + 25000 + Math.random() * 10000;
     var boomWalk = sim.boomBurst ? {
       boomPhase: 'acc',
@@ -681,7 +667,6 @@
       bucket: Math.floor(now / cms),
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
-      titanVer: sim.titanDrop ? TITAN_VER : 0,
       coreVer: sim.coreWave ? 1 : 0,
       goldVer: sim.goldHot ? 2 : 0,
       boomVer: asset.id === 'boomspike' ? BOOM_VER : (sim.boomBurst ? 2 : 0),
@@ -706,7 +691,6 @@
 
   function bufferNeedsSeed(asset, buf) {
     if (!buf || !buf.candles || buf.candles.length < 40) return true;
-    if (simOf(asset.id).titanDrop && buf.titanVer !== TITAN_VER) return true;
     if (asset.id === 'boomspike' && buf.boomVer !== BOOM_VER) return true;
     if (asset.id === 'crash300' && buf.crashVer !== CRASH_VER) return true;
     if (buf.scaleVer !== SCALE_VER) return true;
@@ -783,7 +767,7 @@
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
     // C'est cette cadence, et non `sim.tickMs`, qui pilote réellement le rythme.
-    var stepMs = sim.crashCalm ? 200 : (sim.titanDrop ? 20 : (sim.goldHot ? 40 : (sim.v75Wave || sim.nexusPulse ? 90 : 120)));
+    var stepMs = sim.crashCalm ? 200 : (sim.stepMs || (sim.goldHot ? 40 : (sim.v75Wave || sim.nexusPulse ? 90 : 120)));
     var steps = Math.floor(remain / stepMs);
     if (remain < stepMs) steps = 0;
     if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;
@@ -794,7 +778,6 @@
         var dt = Math.max(0.02, (remain / Math.max(1, steps)) / 1000);
         var didSpike = false;
         var boomForce = false;
-        var titanForce = false;
         if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.boomBurst) {
           var br = stepBoomBurst(asset, buf, price, tMs);
           price = br.price;
@@ -835,7 +818,7 @@
         forming.l = Math.min(forming.l, price - lowerWick);
         sanitizeOhlc(asset, forming, price, 0);
         if (bucket !== buf.bucket) {
-          forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce || titanForce);
+          forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce);
           if (forming._boom || boomForce) forming._boom = true;
           buf.candles.push(forming);
           if (buf.candles.length > HISTORY_N) buf.candles.shift();

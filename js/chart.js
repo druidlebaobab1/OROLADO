@@ -62,6 +62,16 @@
   var seriesScratch = [];
   var tradeListScratch = [];
   var tradeYsScratch = [];
+  // Motifs de pointillés et comparateur alloués une seule fois : recréer ces
+  // tableaux et cette closure à chaque trade et à chaque frame saturait le GC
+  // dès que plusieurs positions étaient ouvertes.
+  var TRADE_DASH = [5, 5];
+  var GUIDE_DASH = [2, 3];
+  var NO_DASH = [];
+
+  function byExpiry(a, b) {
+    return (a.expiryTime || a.expiresAt || 0) - (b.expiryTime || b.expiresAt || 0);
+  }
   window.assetsState = window.assetsState || {};
   window.assetBuffers = window.assetBuffers || {};
   window.ASSET_BUFFERS = window.assetBuffers;
@@ -326,22 +336,27 @@
     lastTs = 0;
   }
 
+  var collectNow = 0;
+
+  function collectOne(ot) {
+    if (!ot || ot.assetId !== activeAsset) return;
+    var e2 = ot.expiryTime || ot.expiresAt;
+    if (e2 && collectNow >= e2) return;
+    var v = openTradeVisuals[ot.id];
+    if (!v) {
+      v = snapshotTradeVisual(ot);
+      if (v) openTradeVisuals[v.id] = v;
+    }
+    if (v) tradeListScratch.push(v);
+  }
+
   function collectOpenTradeVisuals() {
     pruneTradeVisuals();
     tradeListScratch.length = 0;
     var now = Date.now();
+    collectNow = now;
     if (D6.Engine && D6.Engine.forEachOpen) {
-      D6.Engine.forEachOpen(function (ot) {
-        if (!ot || ot.assetId !== activeAsset) return;
-        var e2 = ot.expiryTime || ot.expiresAt;
-        if (e2 && now >= e2) return;
-        var v = openTradeVisuals[ot.id];
-        if (!v) {
-          v = snapshotTradeVisual(ot);
-          if (v) openTradeVisuals[v.id] = v;
-        }
-        if (v) tradeListScratch.push(v);
-      });
+      D6.Engine.forEachOpen(collectOne);
     } else {
       var id;
       for (id in openTradeVisuals) {
@@ -353,9 +368,7 @@
         tradeListScratch.push(vis);
       }
     }
-    tradeListScratch.sort(function (a, b) {
-      return (a.expiryTime || a.expiresAt || 0) - (b.expiryTime || b.expiresAt || 0);
-    });
+    if (tradeListScratch.length > 1) tradeListScratch.sort(byExpiry);
     return tradeListScratch;
   }
 
@@ -457,6 +470,32 @@
     return { price: price, ratio: ratio };
   }
 
+  // Un seul redimensionnement en attente à la fois : sans ça, un glissement de
+  // fenêtre ou un passage en plein écran empilait des dizaines de rAF et de
+  // timers orphelins qui continuaient à redessiner après coup.
+  var resizeRaf = 0;
+  var resizeTimer = 0;
+  var lastGeomKey = '';
+
+  function scheduleResize(delayMs) {
+    if (delayMs > 0) {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        resizeTimer = 0;
+        scheduleResize(0);
+      }, delayMs);
+      return;
+    }
+    // Un seul passage par frame au maximum, et surtout pas de `cancel` suivi
+    // d'une reprogrammation : sous rafale continue, le travail serait sans
+    // cesse repoussé et le canvas ne se remettrait jamais à jour.
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(function () {
+      resizeRaf = 0;
+      try { resize(); } catch (eSr) { /* ignore */ }
+    });
+  }
+
   function resize() {
     if (!canvas) return;
     var parent = canvas.parentElement;
@@ -468,6 +507,16 @@
     var minH = fsMode
       ? Math.max(220, Math.round((window.innerHeight || 700) - 140))
       : Math.max(380, Math.round((window.innerHeight || 700) * 0.45));
+
+    // Une rafale de `resize` (glissement de fenêtre, plein écran, clavier
+    // mobile) réémet des dizaines d'événements pour une géométrie identique.
+    // Réécrire les styles à chaque fois déclenchait un recalcul complet et
+    // faisait tomber le rendu sous les 20 FPS : on sort tant que rien n'a bougé.
+    var geomKey = fsMode + '|' + parent.clientWidth + 'x' + parent.clientHeight +
+      '|' + (window.innerWidth || 0) + 'x' + (window.innerHeight || 0) +
+      '|' + (window.devicePixelRatio || 1);
+    if (geomKey === lastGeomKey) return;
+    lastGeomKey = geomKey;
 
     // Visibilité forcée (canvas principal sombre, overlay transparent).
     canvas.style.display = 'block';
@@ -772,9 +821,9 @@
         id: 'darkPro',
         bg0: '#0B0E14',
         bg1: '#0B0E14',
-        gridH: 'rgba(255,255,255,0.03)',
+        gridH: 'rgba(255,255,255,0.05)',
         gridHStrong: 'rgba(255,255,255,0.05)',
-        gridV: 'rgba(255,255,255,0.03)',
+        gridV: 'rgba(255,255,255,0.05)',
         border: null,
         priceTxt: '#64748B',
         timeTxt: '#64748B',
@@ -793,9 +842,9 @@
       id: 'darkLegacy',
       bg0: '#0B0E14',
       bg1: '#0B0E14',
-      gridH: 'rgba(255,255,255,0.03)',
+      gridH: 'rgba(255,255,255,0.05)',
       gridHStrong: 'rgba(255,255,255,0.05)',
-      gridV: 'rgba(255,255,255,0.03)',
+      gridV: 'rgba(255,255,255,0.05)',
       border: null,
       priceTxt: '#64748B',
       timeTxt: '#64748B',
@@ -818,56 +867,72 @@
     return n.toFixed(2);
   }
 
+  // Paliers temporels standards : une fenêtre de 60 s tombe sur 15 s, comme sur
+  // les plateformes classiques. Jamais de valeur bâtarde type 7 s ou 105 s.
+  var TIME_STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600];
+
+  function gridStepSec(span) {
+    var k;
+    for (k = 0; k < TIME_STEPS.length; k++) {
+      if (TIME_STEPS[k] >= span / 4) return TIME_STEPS[k];
+    }
+    return TIME_STEPS[TIME_STEPS.length - 1];
+  }
+
+  function gridStepX(seriesW, span) {
+    return gridStepSec(span) * (seriesW / Math.max(1, span));
+  }
+
   function drawGrid(pad, plotW, seriesW, h, minP, maxP, theme) {
     theme = theme || plotTheme(null);
     var i;
     var span = zoomSmooth || zoomSec();
     ctx.lineWidth = 1;
-    for (i = 0; i <= 5; i++) {
-      var y = pad.t + (h / 5) * i;
-      ctx.strokeStyle = i === 5 ? theme.gridHStrong : theme.gridH;
+    // Pas horizontal de référence : c'est lui qui donne au maillage sa maille
+    // carrée, les lignes de prix s'alignent ensuite sur le même écart.
+    var refStepX = gridStepX(seriesW, span);
+    var rowsY = Math.max(3, Math.min(8, Math.round(h / refStepX)));
+    for (i = 0; i <= rowsY; i++) {
+      var y = pad.t + (h / rowsY) * i;
+      ctx.strokeStyle = i === rowsY ? theme.gridHStrong : theme.gridH;
       ctx.beginPath();
       ctx.moveTo(pad.l, y);
       ctx.lineTo(pad.l + plotW, y);
       ctx.stroke();
-      var pVal = maxP - (i / 5) * (maxP - minP);
+      var pVal = maxP - (i / rowsY) * (maxP - minP);
       ctx.fillStyle = '#64748B';
-      ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
+      ctx.font = '500 9px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 4, y + 3);
+      ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 3, y + 3);
     }
-    // Maillage temporel à pas constant sur toute la largeur : aucune colonne
-    // n'est étirée. Seule la phase est décalée d'un demi-pas, ce qui place la
-    // tête pile au milieu d'une case sans qu'aucun trait ne la traverse.
-    // Les paliers sont tous pairs pour que les demi-pas restent des entiers.
-    var TIME_STEPS = [2, 4, 10, 20, 30, 60, 120, 240, 600];
-    var pxPerSec = seriesW / Math.max(1, span);
-    var stepSec = TIME_STEPS[TIME_STEPS.length - 1];
-    for (i = 0; i < TIME_STEPS.length; i++) {
-      if (TIME_STEPS[i] >= span / 5) {
-        stepSec = TIME_STEPS[i];
-        break;
-      }
-    }
-    var stepX = stepSec * pxPerSec;
+    // Maillage vertical à pas rigoureusement constant, décalé d'un demi-pas :
+    // la tête tombe au centre d'un carreau, sans trait par-dessus. Les libellés
+    // sont posés au centre des carreaux, donc pile sur -15s, -30s, -45s, -60s.
+    var stepX = refStepX;
+    var stepSec = gridStepSec(span);
     var headXg = pad.l + seriesW;
     var axisR = pad.l + plotW;
     var kMin = -Math.ceil((headXg - pad.l) / stepX) - 1;
     var kMax = Math.ceil((axisR - headXg) / stepX);
+    ctx.strokeStyle = theme.gridV;
+    ctx.beginPath();
     for (i = kMin; i <= kMax; i++) {
       var gx = headXg + stepX * (i + 0.5);
       if (gx < pad.l - 0.5 || gx > axisR + 0.5) continue;
-      ctx.strokeStyle = theme.gridV;
-      ctx.beginPath();
       ctx.moveTo(gx, pad.t);
       ctx.lineTo(gx, pad.t + h);
-      ctx.stroke();
-      // Rien n'est étiqueté à droite de la tête : pas de temps futur.
-      if (i >= 0) continue;
-      ctx.fillStyle = '#64748B';
-      ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('-' + Math.round(Math.abs(i + 0.5) * stepSec) + 's', gx, pad.t + h + 12);
+    }
+    ctx.stroke();
+    // Repères temporels : uniquement le passé, jamais de projection future.
+    ctx.fillStyle = '#64748B';
+    ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    for (i = 1; i <= kMax - kMin; i++) {
+      var lx = headXg - stepX * i;
+      if (lx < pad.l - 1) break;
+      // Le repère le plus ancien tombe pile sur le bord : on le rentre juste
+      // assez pour qu'il reste lisible en entier.
+      ctx.fillText('-' + (i * stepSec) + 's', Math.max(lx, pad.l + 14), pad.t + h + 12);
     }
   }
 
@@ -892,7 +957,6 @@
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
     var capVis = visH * 0.07;
-    if (opts.titanIce) capVis = visH * 0.07;
     if (opts.boomSmall || opts.apexAiry) capVis = visH * 0.05;
     var i;
     for (i = 0; i < candles.length; i++) {
@@ -900,7 +964,6 @@
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
-      if (opts.titanIce) col = up ? '#f5f5f5' : '#8b9199';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
       if (opts.crashDrop && !up) col = '#FF3B30';
       // Titan Pulse : blanc pur, sans aucune teinte froide.
@@ -939,8 +1002,8 @@
       ctx.strokeStyle = edgeCol || col;
       ctx.lineWidth = 1;
       if (opts.titanWhite) {
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+        ctx.shadowBlur = 6;
       }
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
@@ -972,9 +1035,9 @@
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
-        // Lumière divine : corps pleins, blanc pur, halo blanc net.
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
-        ctx.shadowBlur = 10;
+        // Corps pleins, blanc pur, halo blanc discret.
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+        ctx.shadowBlur = 6;
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(x - cw / 2, y1, cw, bh);
       } else if (opts.horizonOrange) {
@@ -998,11 +1061,6 @@
       } else {
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
-        if (opts.titanIce) {
-          ctx.strokeStyle = col;
-          ctx.lineWidth = 1;
-          ctx.strokeRect(x - cw / 2, y1, cw, bh);
-        }
       }
       ctx.shadowBlur = 0;
     }
@@ -1111,35 +1169,6 @@
     ctx.stroke();
     ctx.restore();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
-  }
-
-  function drawTitanLightning(pad, w, h, candles, minP, maxP) {
-    if (!candles || candles.length < 2) return null;
-    var toX = makeToX(candles.length, pad, w);
-    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var i;
-    var last = candles[candles.length - 1];
-    var pulseT = performance.now() / 220;
-    var lastX = pad.l + w;
-    var lastY = toY(last.c) + Math.sin((candles.length - 1) * 0.42 - pulseT) * (1.1 + 1.6);
-    var nTitan = candles.length;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(toX(0), toY(candles[0].c));
-    for (i = 1; i < nTitan; i++) {
-      var waveY = Math.sin(i * 0.42 - pulseT) * (1.1 + 1.6 * (i / nTitan));
-      ctx.lineTo(toX(i), toY(candles[i].c) + waveY);
-    }
-    ctx.strokeStyle = '#e0e6ed';
-    ctx.lineWidth = 3.5;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(224,230,237,0.78)';
-    ctx.shadowBlur = 12;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.restore();
-    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: candles.length };
   }
 
   function drawLine(pad, w, h, data, minP, maxP, color) {
@@ -1507,8 +1536,7 @@
     var fillCol = isCall ? '#007e33' : '#b71c1c';
     var idx = tagIndex || 0;
     var badgeLift = isFinite(yShift) ? yShift : 0;
-    g.save();
-    g.setLineDash([5, 5]);
+    g.setLineDash(TRADE_DASH);
     g.strokeStyle = lineCol;
     g.lineWidth = 1.35;
     g.globalAlpha = 0.92;
@@ -1516,8 +1544,8 @@
     g.moveTo(0, ey);
     g.lineTo(cssW, ey);
     g.stroke();
-    g.setLineDash([]);
-    g.restore();
+    g.setLineDash(NO_DASH);
+    g.globalAlpha = 1;
 
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
@@ -1641,29 +1669,39 @@
     ctx.restore();
   }
 
-  function drawLivePriceBadge(map, price, layout) {
+  function drawLivePriceBadge(map, price, layout, assetColor) {
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
     ctx.save();
-    // Badge aéré : police plus grande et respiration horizontale, posé dans
-    // l'espace libre à droite de la tête sans venir s'écraser sur l'axe.
-    ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(txt).width) + 18;
-    var th = 21;
+    // Cotation compacte : 10 px monospace, 5 px de marge latérale, 2 px en
+    // haut et en bas, bordée de la couleur de l'actif. Un filet pointillé
+    // relie la pastille de cours à l'axe des prix, comme sur les plateformes pro.
+    var accent = assetColor || '#F5A623';
+    ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(txt).width) + 10;
+    var th = 14;
     var headX = layout && layout.headX != null ? layout.headX : cssW * headRatio();
-    var x = headX + 14;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
-    if (x + tw > axisX - 6) x = axisX - tw - 6;
-    if (x < headX + 10) x = headX + 10;
     var y = map.lastY - th / 2;
-    y = Math.max(4, Math.min(cssH - th - 4, y));
-    ctx.fillStyle = 'rgba(0,0,0,0.82)';
-    ctx.strokeStyle = 'rgba(245,166,35,0.6)';
+    y = Math.max(2, Math.min(cssH - th - 2, y));
+    var x = headX + 10;
+    if (x + tw > axisX - 2) x = axisX - tw - 2;
+    if (x < headX + 8) x = headX + 8;
+    ctx.setLineDash(GUIDE_DASH);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
     ctx.lineWidth = 1;
-    roundRect(x, y, tw, th, 6);
+    ctx.beginPath();
+    ctx.moveTo(map.lastX, map.lastY);
+    ctx.lineTo(axisX, map.lastY);
+    ctx.stroke();
+    ctx.setLineDash(NO_DASH);
+    ctx.fillStyle = 'rgba(8,12,20,0.78)';
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1;
+    roundRect(x, y, tw, th, 3);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = '#F5A623';
+    ctx.fillStyle = accent;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(txt, x + tw / 2, y + th / 2 + 0.5);
@@ -1823,9 +1861,11 @@
       fsWasOn = fsOn;
       wantFitY = true;
     }
+    // Colonne des prix compacte : sur mobile chaque pixel gagné à droite
+    // profite directement à la largeur utile du tracé.
     var pad = fsOn
-      ? { t: 4, r: 50, b: 16, l: 4 }
-      : { t: narrow ? 6 : 8, r: 56, b: 22, l: 8 };
+      ? { t: 4, r: 36, b: 16, l: 4 }
+      : { t: narrow ? 6 : 8, r: narrow ? 34 : 40, b: 22, l: 8 };
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;
@@ -2114,7 +2154,7 @@
     if (asset.id === 'v75') tagCol = '#ff2d75';
     if (map) {
       drawBead(map, market.price, tagCol, now, theme);
-      drawLivePriceBadge(map, market.price, layout);
+      drawLivePriceBadge(map, market.price, layout, tagCol);
     }
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);
@@ -2386,27 +2426,22 @@
         setTimeout(function () { try { resize(); drawNow(); } catch (e5) { /* ignore */ } }, 300);
         try { bindTools(); } catch (eT) { try { console.warn(eT); } catch (e6) { /* ignore */ } }
         window.addEventListener('resize', function () {
-          try { resize(); requestAnimationFrame(resize); } catch (e7) { /* ignore */ }
+          scheduleResize(0);
         });
         window.addEventListener('orientationchange', function () {
-          setTimeout(function () { try { resize(); } catch (e8) { /* ignore */ } }, 120);
+          scheduleResize(120);
         });
         if (window.visualViewport) {
           try {
             visualViewport.addEventListener('resize', function () {
-              try { resize(); requestAnimationFrame(resize); } catch (e9) { /* ignore */ }
+              scheduleResize(0);
             });
           } catch (eVv) { try { console.warn('Mobile display fallback:', eVv); } catch (e10) { /* ignore */ } }
         }
         if (window.ResizeObserver && canvas.parentElement) {
           try {
-            var roWait = 0;
             var ro = new ResizeObserver(function () {
-              if (roWait) return;
-              roWait = requestAnimationFrame(function () {
-                roWait = 0;
-                try { resize(); } catch (e11) { /* ignore */ }
-              });
+              scheduleResize(0);
             });
             ro.observe(canvas.parentElement);
             var chartCard = document.getElementById('chart');
