@@ -1445,11 +1445,12 @@
       pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1500;
       clickQuietUntil[assetId] = Date.now() + 300;
       engineCaptureFrame(assetId, pendingBusyUntil[assetId]);
-      // `lastMs` n'est plus remis à l'heure du clic : il porte le temps non
-      // encore consommé par la simulation, et l'écraser jetait jusqu'à un pas
-      // entier, ce qui se voyait comme un à-coup du défilement au moment de la
-      // prise de position. La cadence reste ainsi strictement la même avant,
-      // pendant et après le trade.
+      // Le tampon vif sert plus bas à caler le prix d'entrée sur la bougie en
+      // cours. Son `lastMs` n'est en revanche plus remis à l'heure du clic : il
+      // porte le temps non encore consommé par la simulation, et l'écraser
+      // jetait jusqu'à un pas entier, ce qui se voyait comme un à-coup du
+      // défilement au moment de la prise de position.
+      var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
       var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
