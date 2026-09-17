@@ -22,9 +22,12 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  // Tête de lecture à 70 % de la largeur : 30 % de respiration libre à droite.
-  var HEAD_X_RATIO = 0.70;
+  // Tête de lecture à 72 % de la largeur : 28 % de respiration libre à droite.
+  var HEAD_X_RATIO = 0.72;
   var Y_PAD_RATIO = 0.12;
+  // Plein écran : marge basse plus généreuse pour que les creux ne rasent pas la barre.
+  var Y_PAD_BOTTOM_FS = 0.15;
+  var fsActive = false;
   var wallSkew = 0;
   var frameDisplayPrice = NaN;
   var headPriceMotion = {};
@@ -101,6 +104,10 @@
 
   function zoomSec() {
     return ZOOM_STEPS[zoomIdx] || 60;
+  }
+
+  function padBottomRatio() {
+    return fsActive ? Y_PAD_BOTTOM_FS : Y_PAD_RATIO;
   }
 
   function isChartReady() {
@@ -1613,8 +1620,7 @@
       minPrice = currentPrice - span * 0.5;
       maxPrice = currentPrice + span * 0.5;
     }
-    var padY = span * Y_PAD_RATIO;
-    return { min: minPrice - padY, max: maxPrice + padY };
+    return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * Y_PAD_RATIO };
   }
 
   function captureTradeFrame(assetId, untilMs) {
@@ -1663,8 +1669,7 @@
       histMin = currentPrice - span * 0.5;
       histMax = currentPrice + span * 0.5;
     }
-    var padY = span * Y_PAD_RATIO;
-    return { min: histMin - padY, max: histMax + padY };
+    return { min: histMin - span * padBottomRatio(), max: histMax + span * Y_PAD_RATIO };
   }
 
   function drawFrame(now) {
@@ -1688,6 +1693,7 @@
     var narrow = (window.innerWidth || 0) <= 430;
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
+    fsActive = fsOn;
     var pad = fsOn
       ? { t: 4, r: 50, b: 16, l: 4 }
       : { t: narrow ? 6 : 8, r: 56, b: 22, l: 8 };
@@ -1797,17 +1803,18 @@
     }
     var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
     var keepAir = rawVisibleSpan * Y_PAD_RATIO;
-    var needsSafeFit = minPrice < viewMin + keepAir || maxPrice > viewMax - keepAir;
+    var keepAirLow = rawVisibleSpan * padBottomRatio();
+    var needsSafeFit = minPrice < viewMin + keepAirLow || maxPrice > viewMax - keepAir;
     if ((fsOn || holdLock) && needsSafeFit) {
       var safeFit = fitVisibleY(candles, extrasY);
       viewMin = safeFit.min;
       viewMax = safeFit.max;
     } else if (!fsOn && !holdLock) {
       if (head > viewMax - keepAir) viewMax = head + keepAir;
-      if (head < viewMin + keepAir) viewMin = head - keepAir;
+      if (head < viewMin + keepAirLow) viewMin = head - keepAirLow;
       if (isFinite(strikeP) && strikeP > 0) {
         if (strikeP > viewMax - keepAir) viewMax = strikeP + keepAir;
-        if (strikeP < viewMin + keepAir) viewMin = strikeP - keepAir;
+        if (strikeP < viewMin + keepAirLow) viewMin = strikeP - keepAirLow;
       }
     }
     if (holdLock) {
