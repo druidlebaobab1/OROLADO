@@ -2198,3 +2198,53 @@ html body .asset-chip.on[data-asset="boomspike"] .payout-live,
   color:#ffffff!important;font-weight:700!important;-webkit-text-fill-color:#ffffff;
   text-shadow:0 1px 2px rgba(0,0,0,.6)}
 
+/* ===== Finitions responsive : barre d'outils, rangée d'actifs, inscription ===== */
+
+/* La pastille rouge clignotante n'apportait aucune information et volait la
+   largeur qui manquait au libellé « plein écran » sur les petits écrans. */
+html body .chart-fs-live{display:none!important}
+
+@media (max-width:859px){
+  /* La rangée MA / BB / EMA / + / − / ↻ / plein écran débordait à droite :
+     les marges héritées du bureau valaient à elles seules une trentaine de
+     pixels. On resserre tout en gardant des cibles tactiles confortables. */
+  html body .chart-toolbar{padding:2px 6px 1px!important;gap:3px!important}
+  html body .ind-pills{gap:3px!important;flex-wrap:nowrap!important;min-width:0!important}
+  html body .ind-btn,
+  html body .ind-btn.zoom-btn{padding:3px 6px!important;font-size:10px!important;min-width:24px!important}
+  html body .chart-reset-btn,
+  html body .ind-pills .chart-reset-btn{margin-left:4px!important;margin-right:4px!important;
+    padding:3px 6px!important;min-width:26px!important}
+  html body .chart-fs-btn,
+  html body .chart-fs-btn .chart-fs-label{margin-left:auto!important;margin-right:0!important;
+    padding:2px 6px!important;font-size:9px!important;gap:3px!important;flex-shrink:0!important}
+}
+
+@media (max-width:480px){
+  /* Surcharge de l'ancienne marge droite de 12px qui poussait le bouton
+     plein écran hors du cadre sur iPhone et sur les Android étroits. */
+  html body .chart-fs-btn,
+  html body .chart-fs-btn .chart-fs-label,
+  .btn-fullscreen, #btn-fullscreen, [data-action="fullscreen"]{
+    margin-right:0!important;padding:2px 5px!important;font-size:9px!important}
+  html body .chart-fs-ico{font-size:10px!important}
+}
+
+@media (min-width:900px){
+  /* Les puces étaient plafonnées à 118px : dès que la rangée était plus large
+     que 10 puces, le reliquat laissait un trou à droite. */
+  html body .asset-bar{justify-content:stretch}
+  html body .asset-chip{flex:1 1 0!important;width:auto!important;max-width:none!important;min-width:96px!important}
+}
+
+@media (min-width:860px){
+  html body .fs-trade-overlay .asset-bar{justify-content:stretch}
+  html body .fs-trade-overlay .asset-chip{flex:1 1 0!important;width:auto!important;max-width:none!important;
+    min-width:88px!important}
+}
+
+/* Les logos de devises sous « créer mon compte » butaient sur la barre de
+   navigation Android : on leur réserve de quoi défiler en entier. */
+html body #formRegister,
+html body #formLogin{padding-bottom:25px}
+

@@ -555,8 +555,31 @@
         card.style.width = '100%';
       }
     } else {
+      // La réserve verticale était figée à 132 px sur mobile, alors que la
+      // barre supérieure, la rangée d'actifs et le panneau de trade fixe en
+      // occupent bien davantage. Le graphique débordait donc sous l'écran et se
+      // retrouvait tronqué sur Android. On mesure la place réellement libre.
+      var vpH = Math.round(window.innerHeight || 700);
+      var topOff = 0;
+      try {
+        topOff = Math.max(0, Math.round(parent.getBoundingClientRect().top));
+      } catch (eTop) { topOff = 0; }
+      var bottomRes = 0;
+      var fsPad = document.querySelector('.fs-trade-overlay.on .pad');
+      if (fsPad) {
+        try {
+          if (window.getComputedStyle(fsPad).position === 'fixed') {
+            bottomRes = Math.round(fsPad.getBoundingClientRect().height);
+          }
+        } catch (ePad) { bottomRes = 0; }
+      }
+      var freeH = vpH - topOff - bottomRes - 4;
       var chrome = mobile ? 132 : 96;
-      var fsH = Math.max(280, Math.round((window.innerHeight || 700) - chrome));
+      var fsH = Math.max(240, Math.min(Math.round(vpH - chrome), freeH));
+      // Tolérance : sans elle, un écart d'un pixel relancerait sans fin le
+      // cycle mesure → redimensionnement → mesure.
+      var curH = Math.round(parent.clientHeight || 0);
+      if (curH > 0 && Math.abs(fsH - curH) <= 2) fsH = curH;
       var landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
       var sideChrome = (!mobile && landscape) ? 240 : 0;
       var fsW = Math.max(280, Math.round((window.innerWidth || 800) - sideChrome));
@@ -870,6 +893,8 @@
   // Paliers temporels standards : une fenêtre de 60 s tombe sur 15 s, comme sur
   // les plateformes classiques. Jamais de valeur bâtarde type 7 s ou 105 s.
   var TIME_STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600];
+  // Marge incompressible entre le dernier chiffre du cours et le bord droit.
+  var PRICE_AXIS_GAP = 14;
 
   function gridStepSec(span) {
     var k;
@@ -901,9 +926,15 @@
       ctx.stroke();
       var pVal = maxP - (i / rowsY) * (maxP - minP);
       ctx.fillStyle = '#64748B';
-      ctx.font = '500 9px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 3, y + 3);
+      // Police resserrée sur écran étroit : la colonne reste discrète sans
+      // jamais rogner les décimales.
+      ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') +
+        '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
+      // Calage à droite sur une marge de sécurité fixe : les décimales ne
+      // peuvent plus être rognées par le bord de l'écran, quelle que soit la
+      // longueur du cours.
+      ctx.textAlign = 'right';
+      ctx.fillText(formatAxisPrice(pVal), cssW - PRICE_AXIS_GAP, y + 3);
     }
     // Maillage vertical à pas rigoureusement constant, décalé d'un demi-pas :
     // la tête tombe au centre d'un carreau, sans trait par-dessus. Les libellés
@@ -923,10 +954,13 @@
       ctx.lineTo(gx, pad.t + h);
     }
     ctx.stroke();
-    // Repères temporels : uniquement le passé, jamais de projection future.
+    // Repères temporels, toujours en secondes relatives. Le pied de la tête de
+    // lecture porte son propre repère `0s` : sans lui, l'axe s'arrêtait net à
+    // -15s et laissait un vide juste sous le cours courant.
     ctx.fillStyle = '#64748B';
     ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
     ctx.textAlign = 'center';
+    ctx.fillText('0s', headXg, pad.t + h + 12);
     for (i = 1; i <= kMax - kMin; i++) {
       var lx = headXg - stepX * i;
       if (lx < pad.l - 1) break;
@@ -1861,11 +1895,11 @@
       fsWasOn = fsOn;
       wantFitY = true;
     }
-    // Colonne des prix compacte : sur mobile chaque pixel gagné à droite
-    // profite directement à la largeur utile du tracé.
+    // Colonne des prix compacte mais jamais tronquée : la largeur réservée doit
+    // loger le libellé le plus long plus la marge de sécurité à droite.
     var pad = fsOn
-      ? { t: 4, r: 36, b: 16, l: 4 }
-      : { t: narrow ? 6 : 8, r: narrow ? 34 : 40, b: 22, l: 8 };
+      ? { t: 4, r: 56, b: 16, l: 4 }
+      : { t: narrow ? 6 : 8, r: narrow ? 54 : 56, b: 22, l: 8 };
     var layout = plotLayout(pad);
     var w = layout.plotW;
     var seriesW = layout.seriesW;
