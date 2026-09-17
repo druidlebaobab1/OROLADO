@@ -151,14 +151,32 @@
       return { ok: true, user: D6.Store.current() || remote.user };
     },
 
-    resendRegisterOtp: async function (email) {
+    resendRegisterOtp: async function (email, extra) {
       email = normalizeEmail(email);
       if (!D6.Api || !D6.Api.post) return { ok: false, reason: 'Service indisponible' };
-      var remote = await D6.Api.post('registerResend', { email: email });
-      if (!remote || !remote.ok) {
-        return { ok: false, reason: (remote && remote.reason) || 'Renvoi impossible', retryIn: remote && remote.retryIn };
+      var remote = await D6.Api.post('registerResend', { email: email }, 25000);
+      if (remote && remote.ok) return { ok: true, resendIn: remote.resendIn || 60 };
+      if (remote && remote.retryIn) {
+        return { ok: false, retryIn: remote.retryIn, reason: remote.reason || '' };
       }
-      return { ok: true, resendIn: remote.resendIn || 60 };
+      extra = extra || {};
+      if (extra.displayName && extra.password) {
+        var restart = await D6.Auth.register({
+          displayName: extra.displayName,
+          email: email,
+          phone: extra.phone || '',
+          countryCode: extra.countryCode || '+225',
+          password: extra.password,
+          passwordConfirm: extra.password,
+          acceptTerms: true
+        });
+        if (restart && restart.ok) return { ok: true, resendIn: restart.resendIn || 60 };
+        if (restart && restart.retryIn) return { ok: false, retryIn: restart.retryIn, reason: restart.reason || '' };
+        if (restart && !restart.ok) {
+          return { ok: false, reason: restart.reason || '', retryIn: restart.retryIn };
+        }
+      }
+      return { ok: false, reason: (remote && remote.reason) || 'Renvoi impossible', retryIn: remote && remote.retryIn };
     },
 
     isReservedAdminEmail: function (email) {

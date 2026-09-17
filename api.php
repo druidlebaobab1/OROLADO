@@ -267,9 +267,9 @@ if ($action === 'registerStart') {
   if (!is_array($pending)) $pending = [];
   $prev = $pending[$email] ?? null;
   $now = time();
-  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < 60) {
-    $wait = 60 - ($now - (int) $prev['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Patientez ' . $wait . ' s avant de renvoyer un code', 'retryIn' => $wait]);
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
+    $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -281,19 +281,20 @@ if ($action === 'registerStart') {
     'passwordHash' => $passwordHash,
     'trafficSource' => $trafficSource,
     'codeHash' => orolado_otp_hash($email, $code),
-    'expiresAt' => $now + 60,
+    'expiresAt' => $now + OROLADO_OTP_TTL,
     'lastSentAt' => $now,
     'attempts' => 0,
     'createdAt' => date('c')
   ];
   $db['pendingRegistrations'] = $pending;
+  save_db($file, $db);
+  ignore_user_abort(true);
   $sent = brevo_send_otp($email, $code);
   if (empty($sent['ok'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
     exit;
   }
-  save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'email' => $email, 'expiresIn' => 60, 'resendIn' => 60]);
+  echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
 }
 
@@ -302,34 +303,35 @@ if ($action === 'registerResend') {
   orolado_purge_expired_pending($db);
   $row = $db['pendingRegistrations'][$email] ?? null;
   if (!is_array($row)) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Aucune d’inscription introuvable. Recommencez.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
     exit;
   }
   $now = time();
   if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
     unset($db['pendingRegistrations'][$email]);
     save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Recommencez l’inscription.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
     exit;
   }
-  if (!empty($row['lastSentAt']) && ($now - (int) $row['lastSentAt']) < 60) {
-    $wait = 60 - ($now - (int) $row['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Patientez ' . $wait . ' s', 'retryIn' => $wait]);
+  if (!empty($row['lastSentAt']) && ($now - (int) $row['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
+    $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $row['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
   $row['codeHash'] = orolado_otp_hash($email, $code);
-  $row['expiresAt'] = $now + 60;
+  $row['expiresAt'] = $now + OROLADO_OTP_TTL;
   $row['lastSentAt'] = $now;
   $row['attempts'] = 0;
   $db['pendingRegistrations'][$email] = $row;
+  save_db($file, $db);
+  ignore_user_abort(true);
   $sent = brevo_send_otp($email, $code);
   if (empty($sent['ok'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Envoi impossible']);
     exit;
   }
-  save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'resendIn' => 60, 'expiresIn' => 60]);
+  echo json_encode(['ok' => true, 'server' => true, 'resendIn' => OROLADO_OTP_RESEND_UI, 'expiresIn' => OROLADO_OTP_TTL]);
   exit;
 }
 
@@ -339,28 +341,28 @@ if ($action === 'registerVerify') {
   orolado_purge_expired_pending($db);
   $row = $db['pendingRegistrations'][$email] ?? null;
   if (!is_array($row)) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session d’inscription introuvable. Recommencez.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
     exit;
   }
   $now = time();
   if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
     unset($db['pendingRegistrations'][$email]);
     save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code ou recommencez.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
     exit;
   }
   $attempts = (int) ($row['attempts'] ?? 0);
   if ($attempts >= 8) {
     unset($db['pendingRegistrations'][$email]);
     save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives. Recommencez l’inscription.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
     exit;
   }
   if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
     $row['attempts'] = $attempts + 1;
     $db['pendingRegistrations'][$email] = $row;
     save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code incorrect. Vérifiez votre e-mail.']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
     exit;
   }
   if (find_user($db, $email)) {
@@ -430,28 +432,29 @@ if ($action === 'passwordOtpStart') {
   if (!isset($db['pendingPasswordOtps']) || !is_array($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
   $prev = $db['pendingPasswordOtps'][$email] ?? null;
   $now = time();
-  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < 60) {
-    $wait = 60 - ($now - (int) $prev['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Patientez ' . $wait . ' s', 'retryIn' => $wait]);
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
+    $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
   $db['pendingPasswordOtps'][$email] = [
     'userId' => (string) ($me['id'] ?? ''),
     'codeHash' => orolado_otp_hash($email, $code),
-    'expiresAt' => $now + 60,
+    'expiresAt' => $now + OROLADO_OTP_TTL,
     'lastSentAt' => $now,
     'attempts' => 0,
     'verified' => false,
     'otpToken' => ''
   ];
+  save_db($file, $db);
+  ignore_user_abort(true);
   $sent = brevo_send_otp($email, $code);
   if (empty($sent['ok'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
     exit;
   }
-  save_db($file, $db);
-  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => 60, 'resendIn' => 60]);
+  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
 }
 
@@ -508,9 +511,9 @@ if ($action === 'forgotOtpStart') {
   if (!isset($db['pendingPasswordOtps']) || !is_array($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
   $now = time();
   $prev = $db['pendingPasswordOtps'][$email] ?? null;
-  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < 60) {
-    $wait = 60 - ($now - (int) $prev['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Wait ' . $wait . ' s', 'retryIn' => $wait]);
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
+    $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
     exit;
   }
   $found = find_user($db, $email);
@@ -519,21 +522,22 @@ if ($action === 'forgotOtpStart') {
     $db['pendingPasswordOtps'][$email] = [
       'userId' => (string) ($found['id'] ?? ''),
       'codeHash' => orolado_otp_hash($email, $code),
-      'expiresAt' => $now + 60,
+      'expiresAt' => $now + OROLADO_OTP_TTL,
       'lastSentAt' => $now,
       'attempts' => 0,
       'verified' => false,
       'otpToken' => '',
       'forgot' => true
     ];
+    save_db($file, $db);
+    ignore_user_abort(true);
     $sent = brevo_send_otp($email, $code);
     if (empty($sent['ok'])) {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Unable to send code']);
       exit;
     }
-    save_db($file, $db);
   }
-  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => 60, 'resendIn' => 60]);
+  echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
 }
 

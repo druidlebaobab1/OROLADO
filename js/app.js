@@ -451,11 +451,30 @@
     metaPageView(name);
   }
 
+  // Sous la barre de solde (~75px), jamais collé en haut du header.
+  function placeToast(el) {
+    var top = 75;
+    var trade = document.getElementById('screenTrade');
+    if (trade && !trade.classList.contains('hidden')) {
+      var mark = document.getElementById('balanceCard') || document.querySelector('.topbar');
+      if (mark) {
+        var r = mark.getBoundingClientRect();
+        if (r.bottom > 40) top = Math.round(r.bottom) + 10;
+      }
+    }
+    el.style.setProperty('top', Math.max(70, Math.min(top, 220)) + 'px', 'important');
+  }
+
   function toast(msg, kind, ms) {
     var el = $('toast');
     if (!el) return;
     var micro = kind === 'micro';
     var tone = micro ? 'micro' : (kind === 'err' || kind === 'ok' ? kind : 'info');
+    if (micro) el.style.removeProperty('top');
+    else {
+      placeToast(el);
+      requestAnimationFrame(function () { placeToast(el); });
+    }
     clearTimeout(toastTimer);
     if (micro) {
       el.className = 'toast lux-msg micro show';
@@ -544,6 +563,29 @@
     var el = $('err-' + field);
     if (el) { el.textContent = msg; el.classList.add('on'); }
     else toast(msg, 'err');
+  }
+
+  function otpFailText() {
+    return t('codeExpired');
+  }
+
+  function cooldownSeconds(res) {
+    if (!res) return 0;
+    var n = parseInt(res.retryIn, 10);
+    if (n > 0) return n;
+    var m = String(res.reason || '').match(/(\d+)\s*s/i);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  function isWaitReason(msg) {
+    return /^\s*(Wait|Patientez)\b/i.test(String(msg || '')) || /avant de renvoyer/i.test(String(msg || ''));
+  }
+
+  function setResendWait(btn, waiting) {
+    if (!btn) return;
+    btn.classList.toggle('is-waiting', !!waiting);
+    btn.setAttribute('aria-disabled', waiting ? 'true' : 'false');
+    btn.removeAttribute('disabled');
   }
 
   var audioCtx = null;
@@ -3809,31 +3851,118 @@
       metaTrack('CompleteRegistration');
       toast(t('accountCreated'), 'ok', 3000);
       enterApp({ openFullscreen: true });
+      setTimeout(function () { if ($('toast')) placeToast($('toast')); }, 80);
     });
     var forgotOtpToken = '';
     var forgotTimer = null;
     var forgotLeft = 0;
+    var forgotBusy = false;
+    var forgotStep = 'email';
+
+    function setForgotStep(step) {
+      forgotStep = step;
+      var form = $('formReset');
+      if (form) form.setAttribute('data-step', step);
+      if ($('forgotStepEmail')) $('forgotStepEmail').classList.remove('hidden');
+      if ($('forgotStepOtp')) $('forgotStepOtp').classList.toggle('hidden', step === 'email');
+      if ($('forgotStepNew')) $('forgotStepNew').classList.toggle('hidden', step !== 'password');
+      if ($('forgotStepConfirm')) $('forgotStepConfirm').classList.toggle('hidden', step !== 'password');
+      var btn = $('btnForgotPrimary');
+      if (btn) {
+        var key = step === 'otp' ? 'verifyCode' : (step === 'password' ? 'save' : 'sendCode');
+        btn.setAttribute('data-i18n', key);
+        btn.textContent = t(key);
+        btn.type = 'button';
+      }
+    }
     function resetForgotModal() {
       forgotOtpToken = '';
+      forgotBusy = false;
       if (forgotTimer) { clearInterval(forgotTimer); forgotTimer = null; }
       forgotLeft = 0;
-      if ($('forgotStepEmail')) $('forgotStepEmail').classList.remove('hidden');
-      ['forgotStepOtp', 'forgotStepNew', 'forgotStepConfirm'].forEach(function (id) {
-        if ($(id)) $(id).classList.add('hidden');
-      });
-      if ($('btnForgotSend')) $('btnForgotSend').classList.remove('hidden');
-      if ($('btnForgotSave')) $('btnForgotSave').classList.add('hidden');
+      setForgotStep('email');
+      if ($('resetId')) $('resetId').readOnly = false;
       if ($('resetOtp')) $('resetOtp').value = '';
       if ($('resetPass')) $('resetPass').value = '';
       if ($('resetPass2')) $('resetPass2').value = '';
-      if ($('forgotOtpTimer')) $('forgotOtpTimer').textContent = '';
+      tickForgotTimer();
     }
     function tickForgotTimer() {
-      if ($('forgotOtpTimer')) {
-        $('forgotOtpTimer').textContent = forgotLeft > 0
+      var wait = $('forgotOtpTimer');
+      var btn = $('btnForgotResend');
+      if (wait) {
+        wait.textContent = forgotLeft > 0
           ? t('otpResendIn').replace('{s}', String(forgotLeft))
           : '';
       }
+      setResendWait(btn, forgotLeft > 0);
+    }
+    function startForgotCountdown(seconds) {
+      forgotLeft = Math.max(0, parseInt(seconds, 10) || 60);
+      if (forgotTimer) clearInterval(forgotTimer);
+      tickForgotTimer();
+      if (forgotLeft <= 0) return;
+      forgotTimer = setInterval(function () {
+        forgotLeft -= 1;
+        if (forgotLeft <= 0) { clearInterval(forgotTimer); forgotTimer = null; forgotLeft = 0; }
+        tickForgotTimer();
+      }, 1000);
+    }
+    async function sendForgotCode() {
+      if (forgotBusy) return;
+      if (forgotLeft > 0 && forgotStep === 'otp') return;
+      clearErrors();
+      var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
+      if (!email) { showFieldError('resetId', t('sessionInvalid')); return; }
+      forgotBusy = true;
+      var res;
+      try {
+        res = await D6.Auth.forgotOtpStart(email);
+      } finally {
+        forgotBusy = false;
+      }
+      var wait = cooldownSeconds(res);
+      if (res && !res.ok && wait > 0) {
+        setForgotStep('otp');
+        startForgotCountdown(wait);
+        if ($('resetOtp')) $('resetOtp').focus();
+        return;
+      }
+      if (!res || !res.ok) {
+        if (isWaitReason(res && res.reason)) {
+          setForgotStep('otp');
+          startForgotCountdown(wait || 60);
+          return;
+        }
+        showFieldError('resetId', otpFailText());
+        return;
+      }
+      setForgotStep('otp');
+      startForgotCountdown(res.resendIn || 60);
+      if ($('resetOtp')) { $('resetOtp').value = ''; $('resetOtp').focus(); }
+      toast(t('codeSent'), 'ok');
+    }
+    async function verifyForgotCode() {
+      if (forgotBusy) return;
+      var code = String(($('resetOtp') && $('resetOtp').value) || '').replace(/\D/g, '').slice(0, 6);
+      if (code.length !== 6) return;
+      var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
+      forgotBusy = true;
+      var res;
+      try {
+        res = await D6.Auth.forgotOtpVerify(email, code);
+      } finally {
+        forgotBusy = false;
+      }
+      if (!res || !res.ok) { showFieldError('resetOtp', otpFailText()); return; }
+      clearErrors();
+      forgotOtpToken = res.otpToken || 'ok';
+      if (forgotTimer) { clearInterval(forgotTimer); forgotTimer = null; }
+      forgotLeft = 0;
+      tickForgotTimer();
+      if ($('resetId')) $('resetId').readOnly = true;
+      setForgotStep('password');
+      if ($('resetPass')) $('resetPass').focus();
     }
     $('btnForgot').addEventListener('click', function () {
       clearErrors();
@@ -3841,43 +3970,30 @@
       $('resetId').value = $('loginId').value;
       openModal('forgotModal');
     });
-    if ($('btnForgotSend')) {
-      $('btnForgotSend').addEventListener('click', async function () {
-        clearErrors();
-        var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
-        var res = await D6.Auth.forgotOtpStart(email);
-        if (!res || !res.ok) { showFieldError('resetId', (res && res.reason) || 'Unable to send code'); return; }
-        if ($('forgotStepOtp')) $('forgotStepOtp').classList.remove('hidden');
-        if ($('resetOtp')) $('resetOtp').focus();
-        forgotLeft = 60;
-        tickForgotTimer();
-        if (forgotTimer) clearInterval(forgotTimer);
-        forgotTimer = setInterval(function () {
-          forgotLeft -= 1;
-          if (forgotLeft <= 0) { clearInterval(forgotTimer); forgotTimer = null; forgotLeft = 0; }
-          tickForgotTimer();
-        }, 1000);
-        toast(t('passOtpSent') || 'Code sent', 'ok');
-      });
-    }
+    bindAndroidTap($('btnForgotPrimary'), function () {
+      if (forgotStep === 'email') sendForgotCode();
+      else if (forgotStep === 'otp') verifyForgotCode();
+      else if (forgotStep === 'password' && $('formReset')) {
+        $('formReset').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    });
+    bindAndroidTap($('btnForgotResend'), function () { sendForgotCode(); });
     if ($('resetOtp')) {
-      $('resetOtp').addEventListener('input', async function () {
+      $('resetOtp').addEventListener('input', function () {
         var code = String(this.value || '').replace(/\D/g, '').slice(0, 6);
         this.value = code;
-        if (code.length !== 6) return;
-        var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
-        var res = await D6.Auth.forgotOtpVerify(email, code);
-        if (!res || !res.ok) { showFieldError('resetOtp', (res && res.reason) || 'Incorrect code'); return; }
-        forgotOtpToken = res.otpToken || 'ok';
-        if ($('forgotStepNew')) $('forgotStepNew').classList.remove('hidden');
-        if ($('forgotStepConfirm')) $('forgotStepConfirm').classList.remove('hidden');
-        if ($('btnForgotSend')) $('btnForgotSend').classList.add('hidden');
-        if ($('btnForgotSave')) $('btnForgotSave').classList.remove('hidden');
-        if ($('resetPass')) $('resetPass').focus();
+        var err = $('err-resetOtp');
+        if (err) { err.textContent = ''; err.classList.remove('on'); }
+        if (code.length === 6) verifyForgotCode();
       });
     }
     $('formReset').addEventListener('submit', async function (e) {
       e.preventDefault();
+      if (forgotStep !== 'password') {
+        if (forgotStep === 'email') sendForgotCode();
+        else if (forgotStep === 'otp') verifyForgotCode();
+        return;
+      }
       clearErrors();
       if ($('resetPass').value !== $('resetPass2').value) {
         showFieldError('resetPass2', t('passMismatch'));
@@ -3890,10 +4006,14 @@
         forgotOtpToken
       );
       if (!res.ok) { showFieldError(res.field || 'resetPass', res.reason); return; }
+      resetForgotModal();
       closeModal('forgotModal');
       toast(t('passUpdated'), 'ok');
     });
-    $('closeForgot').addEventListener('click', function () { closeModal('forgotModal'); });
+    $('closeForgot').addEventListener('click', function () {
+      resetForgotModal();
+      closeModal('forgotModal');
+    });
     bindOtpModal();
   }
 
@@ -3911,14 +4031,12 @@
   function updateOtpResendUi() {
     var btn = $('btnOtpResend');
     var timer = $('otpTimer');
-    if (!btn || !timer) return;
-    if (otpResendLeft > 0) {
-      btn.disabled = true;
-      timer.textContent = t('otpResendIn').replace('{s}', String(otpResendLeft));
-    } else {
-      btn.disabled = false;
-      timer.textContent = '';
+    if (timer) {
+      timer.textContent = otpResendLeft > 0
+        ? t('otpResendIn').replace('{s}', String(otpResendLeft))
+        : '';
     }
+    setResendWait(btn, otpResendLeft > 0);
   }
 
   function startOtpResendCountdown(seconds) {
@@ -3975,7 +4093,7 @@
       $('formOtp').addEventListener('submit', async function (e) {
         e.preventDefault();
         if (!otpPending || !otpPending.email) {
-          setOtpError('Session expirée. Recommencez l’inscription.');
+          setOtpError(otpFailText());
           return;
         }
         var code = $('otpCode') ? $('otpCode').value : '';
@@ -3988,33 +4106,44 @@
           if (btn) btn.disabled = false;
         }
         if (!res.ok) {
-          setOtpError(res.reason || 'Code incorrect ou expiré');
+          setOtpError(otpFailText());
           return;
         }
         closeOtpModal();
         metaTrack('CompleteRegistration');
         toast(t('accountCreated'), 'ok', 3000);
         enterApp({ openFullscreen: true });
+        setTimeout(function () { if ($('toast')) placeToast($('toast')); }, 80);
       });
     }
     if ($('btnOtpResend')) {
-      $('btnOtpResend').addEventListener('click', async function () {
+      bindAndroidTap($('btnOtpResend'), async function () {
         if (!otpPending || !otpPending.email || otpResendLeft > 0) return;
         var btn = $('btnOtpResend');
-        btn.disabled = true;
-        var res = await D6.Auth.resendRegisterOtp(otpPending.email);
-        if (!res.ok) {
-          setOtpError(res.reason || 'Renvoi impossible');
-          startOtpResendCountdown(res.retryIn || 60);
+        setResendWait(btn, true);
+        var res;
+        try {
+          res = await D6.Auth.resendRegisterOtp(otpPending.email, otpPending);
+        } catch (eResend) {
+          res = null;
+        }
+        var wait = cooldownSeconds(res);
+        if (res && res.ok) {
+          setOtpError('');
+          toast(t('codeSent'), 'ok');
+          startOtpResendCountdown(res.resendIn || 60);
+          if ($('otpCode')) {
+            $('otpCode').value = '';
+            $('otpCode').focus();
+          }
           return;
         }
-        setOtpError('');
-        toast('Nouveau code envoyé', 'ok');
-        startOtpResendCountdown(res.resendIn || 60);
-        if ($('otpCode')) {
-          $('otpCode').value = '';
-          $('otpCode').focus();
+        if (wait > 0) {
+          startOtpResendCountdown(wait);
+          return;
         }
+        setOtpError(otpFailText());
+        setResendWait(btn, false);
       });
     }
   }
@@ -4229,15 +4358,54 @@
     var passOtpToken = '';
     var passTimer = null;
     var passLeft = 0;
+    var passBusy = false;
+    var passStep = 'email';
+
+    function setPassStep(step) {
+      passStep = step;
+      var form = $('formPassword');
+      if (form) form.setAttribute('data-step', step);
+      if ($('passStepOtp')) $('passStepOtp').classList.toggle('hidden', step === 'email');
+      if ($('passStepNew')) $('passStepNew').classList.toggle('hidden', step !== 'password');
+      if ($('passStepConfirm')) $('passStepConfirm').classList.toggle('hidden', step !== 'password');
+      var btn = $('btnPassPrimary');
+      if (btn) {
+        var key = step === 'otp' ? 'verifyCode' : (step === 'password' ? 'save' : 'sendCode');
+        btn.setAttribute('data-i18n', key);
+        btn.textContent = t(key);
+        btn.type = 'button';
+      }
+    }
+    function setPassOtpError(msg) {
+      var el = $('err-passOtp');
+      if (!el) return;
+      el.textContent = msg || '';
+      el.classList.toggle('on', !!msg);
+    }
     function tickPassTimer() {
-      if ($('passOtpTimer')) {
-        $('passOtpTimer').textContent = passLeft > 0
+      var wait = $('passOtpTimer');
+      var btn = $('btnPassResend');
+      if (wait) {
+        wait.textContent = passLeft > 0
           ? t('otpResendIn').replace('{s}', String(passLeft))
           : '';
       }
+      setResendWait(btn, passLeft > 0);
+    }
+    function startPassCountdown(seconds) {
+      passLeft = Math.max(0, parseInt(seconds, 10) || 60);
+      if (passTimer) clearInterval(passTimer);
+      tickPassTimer();
+      if (passLeft <= 0) return;
+      passTimer = setInterval(function () {
+        passLeft -= 1;
+        if (passLeft <= 0) { clearInterval(passTimer); passTimer = null; passLeft = 0; }
+        tickPassTimer();
+      }, 1000);
     }
     function resetPassModal() {
       passOtpToken = '';
+      passBusy = false;
       if (passTimer) { clearInterval(passTimer); passTimer = null; }
       passLeft = 0;
       var u = user();
@@ -4246,52 +4414,87 @@
       if ($('passOtp')) $('passOtp').value = '';
       if ($('newPass')) $('newPass').value = '';
       if ($('newPass2')) $('newPass2').value = '';
-      if ($('passStepOtp')) $('passStepOtp').classList.add('hidden');
-      if ($('passStepNew')) $('passStepNew').classList.add('hidden');
-      if ($('passStepConfirm')) $('passStepConfirm').classList.add('hidden');
-      if ($('btnPassSendOtp')) $('btnPassSendOtp').classList.remove('hidden');
-      if ($('btnPassSave')) $('btnPassSave').classList.add('hidden');
-      if ($('passOtpTimer')) $('passOtpTimer').textContent = '';
+      setPassStep('email');
+      setPassOtpError('');
+      tickPassTimer();
     }
-    if ($('btnPassSendOtp')) {
-      $('btnPassSendOtp').addEventListener('click', async function () {
-        var u = user();
-        if (!u) return;
-        var res = await D6.Auth.requestPasswordOtp(u);
-        if (!res || !res.ok) { toast((res && res.reason) || 'Unable to send code', 'err'); return; }
-        if ($('passStepOtp')) $('passStepOtp').classList.remove('hidden');
+    async function sendPassCode() {
+      if (passBusy) return;
+      if (passLeft > 0 && passStep === 'otp') return;
+      var u = user();
+      if (!u) return;
+      passBusy = true;
+      var res;
+      try {
+        res = await D6.Auth.requestPasswordOtp(u);
+      } finally {
+        passBusy = false;
+      }
+      var wait = cooldownSeconds(res);
+      if (res && !res.ok && wait > 0) {
+        setPassStep('otp');
+        startPassCountdown(wait);
         if ($('passOtp')) $('passOtp').focus();
-        passLeft = 60;
-        tickPassTimer();
-        if (passTimer) clearInterval(passTimer);
-        passTimer = setInterval(function () {
-          passLeft -= 1;
-          if (passLeft <= 0) { clearInterval(passTimer); passTimer = null; passLeft = 0; }
-          tickPassTimer();
-        }, 1000);
-        toast(t('passOtpSent') || 'Code sent', 'ok');
-      });
-    }
-    if ($('passOtp')) {
-      $('passOtp').addEventListener('input', async function () {
-        var code = String($('passOtp').value || '').replace(/\D/g, '');
-        if (code.length !== 6) return;
-        var res = await D6.Auth.verifyPasswordOtp(user(), code);
-        if (!res || !res.ok) {
-          if ($('err-passOtp')) $('err-passOtp').textContent = (res && res.reason) || 'Incorrect code';
+        return;
+      }
+      if (!res || !res.ok) {
+        if (isWaitReason(res && res.reason)) {
+          setPassStep('otp');
+          startPassCountdown(wait || 60);
           return;
         }
-        if ($('err-passOtp')) $('err-passOtp').textContent = '';
-        passOtpToken = res.otpToken || 'ok';
-        if ($('passStepNew')) $('passStepNew').classList.remove('hidden');
-        if ($('passStepConfirm')) $('passStepConfirm').classList.remove('hidden');
-        if ($('btnPassSendOtp')) $('btnPassSendOtp').classList.add('hidden');
-        if ($('btnPassSave')) $('btnPassSave').classList.remove('hidden');
-        if ($('newPass')) $('newPass').focus();
+        setPassOtpError(otpFailText());
+        return;
+      }
+      setPassStep('otp');
+      startPassCountdown(res.resendIn || 60);
+      setPassOtpError('');
+      if ($('passOtp')) { $('passOtp').value = ''; $('passOtp').focus(); }
+      toast(t('codeSent'), 'ok');
+    }
+    async function verifyPassCode() {
+      if (passBusy) return;
+      var code = String(($('passOtp') && $('passOtp').value) || '').replace(/\D/g, '').slice(0, 6);
+      if (code.length !== 6) return;
+      passBusy = true;
+      var res;
+      try {
+        res = await D6.Auth.verifyPasswordOtp(user(), code);
+      } finally {
+        passBusy = false;
+      }
+      if (!res || !res.ok) { setPassOtpError(otpFailText()); return; }
+      setPassOtpError('');
+      passOtpToken = res.otpToken || 'ok';
+      if (passTimer) { clearInterval(passTimer); passTimer = null; }
+      passLeft = 0;
+      tickPassTimer();
+      setPassStep('password');
+      if ($('newPass')) $('newPass').focus();
+    }
+    bindAndroidTap($('btnPassPrimary'), function () {
+      if (passStep === 'email') sendPassCode();
+      else if (passStep === 'otp') verifyPassCode();
+      else if (passStep === 'password' && $('formPassword')) {
+        $('formPassword').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    });
+    bindAndroidTap($('btnPassResend'), function () { sendPassCode(); });
+    if ($('passOtp')) {
+      $('passOtp').addEventListener('input', function () {
+        var code = String(this.value || '').replace(/\D/g, '').slice(0, 6);
+        this.value = code;
+        setPassOtpError('');
+        if (code.length === 6) verifyPassCode();
       });
     }
     $('formPassword').addEventListener('submit', async function (e) {
       e.preventDefault();
+      if (passStep !== 'password') {
+        if (passStep === 'email') sendPassCode();
+        else if (passStep === 'otp') verifyPassCode();
+        return;
+      }
       if (!passOtpToken) { toast(t('passOtpNeed') || 'Validate the email code', 'err'); return; }
       if ($('newPass2') && $('newPass').value !== $('newPass2').value) {
         toast(t('passMismatch'), 'err');

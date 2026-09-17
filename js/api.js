@@ -31,7 +31,9 @@
     post: async function (action, data, timeoutMs) {
       try {
         var ctrl = new AbortController();
-        var ms = timeoutMs || (action === 'login' || action === 'registerVerify' ? 20000 : 8000);
+        var mail = action === 'login' || action === 'registerStart' || action === 'registerResend' ||
+          action === 'registerVerify' || action === 'passwordOtpStart' || action === 'forgotOtpStart';
+        var ms = timeoutMs || (mail ? 25000 : 8000);
         var timer = setTimeout(function () { ctrl.abort(); }, ms);
         var body = Object.assign({ action: action, token: D6.Api.token() }, data || {});
         if (action === 'login') body.token = '';
