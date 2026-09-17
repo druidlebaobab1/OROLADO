@@ -861,22 +861,15 @@
     var span = Math.max(maxP - minP, 0.01);
     var n = candles.length;
     var slot = w / Math.max(1, n);
-    var gap = Math.min(4, Math.max(3, slot * 0.34));
-    var cw = Math.min(8, Math.max(6, slot - gap));
-    if (slot < 9) {
-      gap = Math.max(2.2, slot * 0.30);
-      cw = Math.max(5, slot - gap);
-    }
-    if (opts.apexAiry) {
-      gap = Math.min(5.5, Math.max(3.4, slot * 0.44));
-      cw = Math.min(6.2, Math.max(3.6, slot - gap));
-    }
-    if (opts.boomSmall) {
-      gap = Math.min(5, Math.max(3.2, slot * 0.40));
-      cw = Math.min(5.4, Math.max(3.2, slot - gap));
-    }
-    // Titan Pulse : corps 35 % plus larges que les autres actifs.
-    if (opts.titanWide) cw = Math.min(11.5, cw * 1.35);
+    // Géométrie nette : corps de 5 px, espacement de 3 px, et surtout un corps
+    // qui ne dépasse JAMAIS la place réellement disponible. L'ancien plancher
+    // de 5 px indépendant du pas faisait se chevaucher les bougies au dézoom,
+    // d'où la bouillie floue.
+    var gap = Math.min(3, Math.max(0.6, slot * 0.28));
+    var maxBody = 5;
+    if (opts.apexAiry || opts.boomSmall) maxBody = 4;
+    if (opts.titanWide) maxBody = 6.8;
+    var cw = Math.max(1, Math.min(maxBody, slot - gap));
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
@@ -923,9 +916,10 @@
         if (hWick < hiB) hWick = hiB;
         if (lWick > loB) lWick = loB;
       }
+      // Mèche fine et centrée sur le corps.
       var x = toX(i);
       ctx.strokeStyle = edgeCol || col;
-      ctx.lineWidth = opts.titanWhite ? 1.5 : ((opts.titanIce || opts.v75Rose) ? 1 : (thin ? 1 : 1.15));
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
       ctx.lineTo(x, toY(lWick));
@@ -956,8 +950,15 @@
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
-        ctx.shadowColor = '#FFFFFF';
-        ctx.shadowBlur = 8;
+        // Halo réservé à la bougie de tête : l'appliquer à toutes les bougies
+        // noyait le graphe dans une masse blanche baveuse.
+        if (i === candles.length - 1) {
+          ctx.shadowColor = '#FFFFFF';
+          ctx.shadowBlur = 10;
+        } else {
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+        }
         if (up) {
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(x - cw / 2, y1, cw, bh);
@@ -1049,6 +1050,57 @@
       ctx.shadowBlur = 0;
       ctx.shadowColor = 'transparent';
     }
+    ctx.stroke();
+    ctx.restore();
+    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
+  }
+
+  // Courbe lissée en béziers cubiques (tangentes Catmull-Rom) avec remplissage
+  // dégradé sous le tracé : plus d'angles cassés ni d'effet d'escalier.
+  function drawGradientLine(pad, w, h, data, minP, maxP, color, width, fillRgb) {
+    if (!data || data.length < 2) return null;
+    var toX = makeToX(data.length, pad, w);
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
+    var lastX = pad.l + w;
+    var lastY = toY(data[data.length - 1]);
+    var last = data.length - 1;
+    function tracePath() {
+      var k;
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(data[0]));
+      for (k = 0; k < last; k++) {
+        var p0 = Math.max(0, k - 1);
+        var p3 = Math.min(last, k + 2);
+        var x1 = toX(k);
+        var y1 = toY(data[k]);
+        var x2 = toX(k + 1);
+        var y2 = toY(data[k + 1]);
+        ctx.bezierCurveTo(
+          x1 + (x2 - toX(p0)) / 6, y1 + (y2 - toY(data[p0])) / 6,
+          x2 - (toX(p3) - x1) / 6, y2 - (toY(data[p3]) - y1) / 6,
+          x2, y2
+        );
+      }
+      ctx.lineTo(lastX, lastY);
+    }
+    ctx.save();
+    tracePath();
+    ctx.lineTo(lastX, pad.t + h);
+    ctx.lineTo(toX(0), pad.t + h);
+    ctx.closePath();
+    var grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + h);
+    grad.addColorStop(0, 'rgba(' + fillRgb + ',0.26)');
+    grad.addColorStop(0.55, 'rgba(' + fillRgb + ',0.08)');
+    grad.addColorStop(1, 'rgba(' + fillRgb + ',0)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    tracePath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width || 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
     ctx.stroke();
     ctx.restore();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
@@ -1546,48 +1598,39 @@
     var horizonHead = activeAsset === 'horizon50';
     var pulse = 0.55 + 0.45 * Math.sin(now / 150);
     ctx.save();
-    if (v75Head) {
+    // Auréole externe pulsante, dimensionnée pour envelopper un noyau de 6 px.
+    if (!compact) {
+      var haloDim = v75Head ? '233,30,99' : (titanHead ? '255,255,255' : (nexusHead ? '0,229,255' :
+        (goldHead ? '255,179,0' : (horizonHead ? '255,152,0' : null))));
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 8.5 + pulse * 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(233,30,99,0.32)';
-      ctx.fill();
-    } else if (titanHead) {
-      ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 10 + pulse * 3, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.26)';
-      ctx.fill();
-    } else if (nexusHead) {
-      ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 7.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,229,255,0.28)';
-      ctx.fill();
-    } else if (goldHead) {
-      // Or ambré : double halo pour une tête franchement plus lumineuse.
-      ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 12 + pulse * 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,179,0,0.18)';
+      ctx.arc(map.lastX, map.lastY, 13 + pulse * 5, 0, Math.PI * 2);
+      ctx.fillStyle = haloDim ? 'rgba(' + haloDim + ',0.16)' : (theme.beadGlow || 'rgba(255,215,0,0.16)');
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 7 + pulse * 2.6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,210,90,0.34)';
-      ctx.fill();
-    } else if (horizonHead) {
-      ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 8.5 + pulse * 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,152,0,0.24)';
-      ctx.fill();
-    } else if (!compact) {
-      ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
-      ctx.fillStyle = theme.beadGlow || 'rgba(255,215,0,0.16)';
+      ctx.arc(map.lastX, map.lastY, 9 + pulse * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = haloDim ? 'rgba(' + haloDim + ',0.3)' : (theme.beadGlow || 'rgba(255,215,0,0.24)');
       ctx.fill();
     }
+    // Point actuel : noyau de 6 px et halo pulsant de 12 px, quel que soit l'actif.
+    var headCol = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
+    var glowCol = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
     ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : (goldHead ? 4.8 : 4.2)))), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
-    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
-    ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 16 : (nexusHead ? 10 : (goldHead ? 20 : 12))));
+    ctx.arc(map.lastX, map.lastY, compact ? 3.6 : 6, 0, Math.PI * 2);
+    ctx.fillStyle = headCol;
+    ctx.shadowColor = glowCol;
+    ctx.shadowBlur = compact ? 6 : 12 + pulse * 4;
     ctx.fill();
+    // Second passage : le halo se cumule et reste net au centre.
+    if (!compact) {
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.globalAlpha = 0.9;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
     ctx.restore();
   }
 
@@ -1595,20 +1638,22 @@
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
     ctx.save();
-    ctx.font = '700 9.5px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(txt).width) + 10;
-    var th = 14;
+    // Badge aéré : police plus grande et respiration horizontale, posé dans
+    // l'espace libre à droite de la tête sans venir s'écraser sur l'axe.
+    ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(txt).width) + 18;
+    var th = 21;
     var headX = layout && layout.headX != null ? layout.headX : cssW * HEAD_X_RATIO;
-    var x = headX + 10;
+    var x = headX + 14;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
-    if (x + tw > axisX - 2) x = axisX - tw - 2;
-    if (x < headX + 4) x = headX + 4;
+    if (x + tw > axisX - 6) x = axisX - tw - 6;
+    if (x < headX + 10) x = headX + 10;
     var y = map.lastY - th / 2;
     y = Math.max(4, Math.min(cssH - th - 4, y));
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.strokeStyle = 'rgba(245,166,35,0.45)';
+    ctx.fillStyle = 'rgba(0,0,0,0.82)';
+    ctx.strokeStyle = 'rgba(245,166,35,0.6)';
     ctx.lineWidth = 1;
-    roundRect(x, y, tw, th, 4);
+    roundRect(x, y, tw, th, 6);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#F5A623';
@@ -1974,7 +2019,7 @@
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
       map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ff9800', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(255,152,0,0.55)' : null));
     } else if (asset.id === 'goldtrend') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', 2.6);
+      map = drawGradientLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', 2.5, '255,179,0');
     } else {
       map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }
