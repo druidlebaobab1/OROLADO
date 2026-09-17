@@ -22,8 +22,8 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  // Tête de lecture à 70 % de la largeur : 30 % de respiration libre à droite.
-  var HEAD_X_RATIO = 0.70;
+  // Tête de lecture à 65 % de la largeur : 35 % de respiration libre à droite.
+  var HEAD_X_RATIO = 0.65;
   var Y_PAD_RATIO = 0.12;
   // Plein écran : 15 % de marge en haut comme en bas, recentrés en continu.
   var Y_PAD_FS = 0.15;
@@ -828,24 +828,29 @@
       ctx.textAlign = 'left';
       ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 4, y + 3);
     }
-    for (i = 0; i <= 5; i++) {
-      var x = pad.l + (plotW / 5) * i;
+    // Une seule trame temporelle pour les lignes verticales et les libellés,
+    // calée sur la tête de lecture. Les repères continuent dans la zone libre
+    // à droite pour qu'elle ne reste pas un trou sans graduation.
+    var stepX = seriesW / 4;
+    var headXg = pad.l + seriesW;
+    var stepSec = Math.max(1, Math.round(span / 4));
+    var axisR = pad.l + plotW;
+    var kMin = -Math.ceil((headXg - pad.l) / stepX);
+    var kMax = Math.floor((axisR - headXg) / stepX);
+    for (i = kMin; i <= kMax; i++) {
+      var gx = headXg + stepX * i;
+      if (gx < pad.l - 0.5 || gx > axisR + 0.5) continue;
       ctx.strokeStyle = theme.gridV;
       ctx.beginPath();
-      ctx.moveTo(x, pad.t);
-      ctx.lineTo(x, pad.t + h);
+      ctx.moveTo(gx, pad.t);
+      ctx.lineTo(gx, pad.t + h);
       ctx.stroke();
-    }
-    // Le dernier repère tombe pile sous la tête de lecture : on l'omet pour
-    // garder la pastille de cours dégagée.
-    for (i = 0; i < 4; i++) {
-      var lx = pad.l + (seriesW / 4) * i;
-      var ago = Math.round(((4 - i) / 4) * span);
-      var label = '-' + ago + 's';
+      // Rien sous la tête de lecture : la pastille de cours reste dégagée.
+      if (i === 0) continue;
       ctx.fillStyle = '#64748B';
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(label, lx, pad.t + h + 12);
+      ctx.fillText((i < 0 ? '-' : '+') + (Math.abs(i) * stepSec) + 's', gx, pad.t + h + 12);
     }
   }
 
@@ -870,6 +875,8 @@
       gap = Math.min(5, Math.max(3.2, slot * 0.40));
       cw = Math.min(5.4, Math.max(3.2, slot - gap));
     }
+    // Titan Pulse : corps 35 % plus larges que les autres actifs.
+    if (opts.titanWide) cw = Math.min(11.5, cw * 1.35);
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
@@ -885,11 +892,11 @@
       if (opts.titanIce) col = up ? '#f5f5f5' : '#8b9199';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
       if (opts.crashDrop && !up) col = '#FF3B30';
-      // Titan Pulse : cœur blanc brillant cerné d'un liseré néon cyan/violet.
+      // Titan Pulse : blanc pur, sans aucune teinte froide.
       var edgeCol = null;
-      if (opts.titanNeon) {
-        col = up ? '#ffffff' : '#e3e9f2';
-        edgeCol = up ? '#22d3ee' : '#a855f7';
+      if (opts.titanWhite) {
+        col = '#FFFFFF';
+        edgeCol = '#FFFFFF';
       }
       // Oro Horizon 50 : orange pur, corps rayé.
       if (opts.horizonOrange) {
@@ -918,7 +925,7 @@
       }
       var x = toX(i);
       ctx.strokeStyle = edgeCol || col;
-      ctx.lineWidth = (opts.titanIce || opts.v75Rose) ? 1 : (thin ? 1 : 1.15);
+      ctx.lineWidth = opts.titanWhite ? 1.5 : ((opts.titanIce || opts.v75Rose) ? 1 : (thin ? 1 : 1.15));
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
       ctx.lineTo(x, toY(lWick));
@@ -944,18 +951,24 @@
         ctx.shadowColor = 'rgba(255,152,0,0.5)';
         ctx.shadowBlur = 9;
       } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose &&
-        !opts.titanNeon && !opts.horizonOrange) {
+        !opts.titanWhite && !opts.horizonOrange) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
         ctx.shadowBlur = 8;
       }
-      if (opts.titanNeon) {
-        ctx.fillStyle = col;
-        ctx.fillRect(x - cw / 2, y1, cw, bh);
-        ctx.strokeStyle = edgeCol;
-        ctx.lineWidth = 1.2;
-        ctx.shadowColor = edgeCol;
-        ctx.shadowBlur = i === candles.length - 1 ? 12 : 7;
-        ctx.strokeRect(x - cw / 2 + 0.5, y1 + 0.5, Math.max(1, cw - 1), Math.max(1, bh - 1));
+      if (opts.titanWhite) {
+        ctx.shadowColor = '#FFFFFF';
+        ctx.shadowBlur = 8;
+        if (up) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(x - cw / 2, y1, cw, bh);
+        } else {
+          // Corps creux cerclé de blanc : même blanc pur, direction lisible.
+          ctx.fillStyle = 'rgba(8,10,16,0.92)';
+          ctx.fillRect(x - cw / 2, y1, cw, bh);
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 1.8;
+          ctx.strokeRect(x - cw / 2 + 0.9, y1 + 0.9, Math.max(1, cw - 1.8), Math.max(1, bh - 1.8));
+        }
       } else if (opts.horizonOrange) {
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
@@ -1540,8 +1553,8 @@
       ctx.fill();
     } else if (titanHead) {
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 8 + pulse * 1.6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.arc(map.lastX, map.lastY, 10 + pulse * 3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.26)';
       ctx.fill();
     } else if (nexusHead) {
       ctx.beginPath();
@@ -1571,9 +1584,9 @@
     }
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : (goldHead ? 4.8 : 4.2)))), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
-    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
-    ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 11 : (nexusHead ? 10 : (goldHead ? 20 : 12))));
+    ctx.fillStyle = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
+    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
+    ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 16 : (nexusHead ? 10 : (goldHead ? 20 : 12))));
     ctx.fill();
     ctx.restore();
   }
@@ -1935,7 +1948,8 @@
         thin: false,
         capWicks: true,
         titanIce: true,
-        titanNeon: true
+        titanWhite: true,
+        titanWide: true
       });
     } else if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2244', 3);

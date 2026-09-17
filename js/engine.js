@@ -70,6 +70,8 @@
 
   var TICK_PCT = 0.0022;
   var JUMP_PCT = 0.004;
+  // Titan Pulse encaisse des sauts bien plus francs que les autres actifs.
+  var TITAN_JUMP_PCT = 0.014;
 
   function clampIndexPrice(p, asset) {
     var n = Number(p);
@@ -78,9 +80,17 @@
     var id = asset && asset.id;
     var loMul = 0.88;
     var hiMul = 1.12;
-    if (id === 'boomspike' || id === 'crash300' || id === 'titanpulse') {
+    if (id === 'boomspike' || id === 'crash300') {
       loMul = 0.78;
       hiMul = 1.22;
+    }
+    // Bandes élargies : sans ça les actifs très volatils collent à leurs bornes.
+    if (id === 'titanpulse') {
+      loMul = 0.50;
+      hiMul = 1.50;
+    } else if (id === 'goldtrend') {
+      loMul = 0.74;
+      hiMul = 1.26;
     }
     return Math.round(Math.max(base * loMul, Math.min(base * hiMul, n)) * 100) / 100;
   }
@@ -101,8 +111,12 @@
     if (id === 'crash300') return 0.00055;
     if (id === 'stable') return 0.0008;
     if (id === 'horizon50') return 0.0009;
-    if (id === 'titanpulse') return 0.0042;
-    if (id === 'goldtrend' || id === 'nexusprime' || id === 'v75') return 0.0025;
+    // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
+    // sinon relever `vol` seul ne change rien au rendu.
+    if (id === 'titanpulse') return 0.0178;
+    if (id === 'goldtrend') return 0.00625;
+    if (id === 'apex500' || id === 'boomspike') return 0.004;
+    if (id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
   }
 
@@ -207,22 +221,22 @@
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    apex500: { mode: 'candles', vol: 0.0062 },
+    apex500: { mode: 'candles', vol: 0.0124 },
     horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
-    boomspike: { mode: 'candles', vol: 0.0044 },
+    boomspike: { mode: 'candles', vol: 0.0088 },
     crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
-    goldtrend: { mode: 'line', vol: 0.0125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
+    goldtrend: { mode: 'line', vol: 0.03125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
     // Titan Pulse domine la volatilité des 10 actifs, Gold Trend arrive juste derrière.
-    titanpulse: { mode: 'line', vol: 0.0168, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 45 },
+    titanpulse: { mode: 'line', vol: 0.0588, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 45 },
   };
-  var SIM_VER = 16;
-  var TITAN_VER = 9;
-  var BOOM_VER = 4;
+  var SIM_VER = 17;
+  var TITAN_VER = 10;
+  var BOOM_VER = 5;
   var CRASH_VER = 2;
   var MIN_SEED = 500;
-  var SCALE_VER = 4;
+  var SCALE_VER = 5;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -332,12 +346,12 @@
       var qT = Math.sin(nowMs / 95 * Math.PI) * price * 0.0016;
       var rT = Math.sin(nowMs / 410 * Math.PI) * price * 0.0022;
       var sT = Math.sin(nowMs / 58 * Math.PI) * price * 0.00085;
-      var pullT = busyIn ? 0 : (base - price) * 0.018;
+      var pullT = busyIn ? 0 : (base - price) * 0.022;
       nextOut = price + nT + pT + qT + rT + sT + pullT;
       if (!busyIn) {
-        if (roll > 0.91) nextOut = capPctMove(price, price * (1 - 0.010 - (roll - 0.91) * 0.22), JUMP_PCT);
-        else if (roll < 0.08) nextOut = capPctMove(price, price * (1 + 0.007 + (0.08 - roll) * 0.16), JUMP_PCT);
-        else if (roll > 0.78 && roll < 0.84) nextOut = capPctMove(price, price * (1 + 0.0045), JUMP_PCT);
+        if (roll > 0.91) nextOut = capPctMove(price, price * (1 - 0.010 - (roll - 0.91) * 0.22), TITAN_JUMP_PCT);
+        else if (roll < 0.08) nextOut = capPctMove(price, price * (1 + 0.007 + (0.08 - roll) * 0.16), TITAN_JUMP_PCT);
+        else if (roll > 0.78 && roll < 0.84) nextOut = capPctMove(price, price * (1 + 0.0045), TITAN_JUMP_PCT);
       }
     } else if (sim.coreWave && !opts.spike) {
       var zigC = (roll - 0.5) * price * vol * 1.35;
@@ -414,7 +428,7 @@
         if (c >= o) c = o + Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
         else c = o - Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
       } else if (sim.titanDrop) {
-        var ampT = Math.max(Math.abs(o) * 0.0026, 0.42);
+        var ampT = Math.max(Math.abs(o) * 0.0091, 1.4);
         if (Math.abs(c - o) < ampT) c = o + (c >= o ? ampT : -ampT);
       } else if (sim.horizonCalm) {
         var ampHz = Math.max(Math.abs(o) * 0.00035, 0.05);

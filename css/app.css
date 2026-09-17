@@ -228,10 +228,9 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .asset-chip[data-asset="boomspike"]{border-color:rgba(0,255,136,.28)}
 .asset-chip[data-asset="boomspike"] .asset-ico{color:#00ff88}
 .asset-chip[data-asset="boomspike"].on{
-  border:1.5px solid transparent!important;
-  background:linear-gradient(180deg,rgba(16,14,20,.95),rgba(9,9,14,.97)) padding-box,
-    linear-gradient(90deg,#ff007a,#7928ca,#0070f3,#00dfd8) border-box!important;
-  box-shadow:0 0 12px rgba(121,40,202,.3)!important;color:#ffffff!important}
+  border:1.5px solid #ff9800!important;
+  background:#1e1b18!important;
+  box-shadow:0 0 8px rgba(255,152,0,.4)!important;color:#ffffff!important}
 .asset-chip[data-asset="nexusprime"]{border-color:rgba(34,211,238,.42)}
 .asset-chip[data-asset="nexusprime"] .asset-ico,.asset-chip[data-asset="nexusprime"].on{color:#22D3EE}
 .asset-chip[data-asset="nexusprime"].on{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.25);background:rgba(34,211,238,.08)}
@@ -263,15 +262,14 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
   color:transparent;font-weight:700}
 .asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#D9A03A;box-shadow:0 0 12px rgba(217,160,58,.38);background:linear-gradient(180deg,rgba(217,160,58,.3),rgba(120,53,15,.2));color:#E8C36A}
 .asset-chip[data-asset="boomspike"].on{
-  border:1.5px solid transparent!important;
-  background:linear-gradient(180deg,rgba(16,14,20,.95),rgba(9,9,14,.97)) padding-box,
-    linear-gradient(90deg,#ff007a,#7928ca,#0070f3,#00dfd8) border-box!important;
-  box-shadow:0 0 12px rgba(121,40,202,.3)!important;color:#ffffff!important}
+  border:1.5px solid #ff9800!important;
+  background:#1e1b18!important;
+  box-shadow:0 0 8px rgba(255,152,0,.4)!important;color:#ffffff!important}
 .asset-chip[data-asset="boomspike"].on .n,
 .asset-chip[data-asset="boomspike"].on .asset-ico{
-  color:#ffffff!important;font-weight:600;-webkit-text-fill-color:#ffffff;background:none;
+  color:#ffffff!important;font-weight:700;-webkit-text-fill-color:#ffffff;background:none;
   text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.asset-chip[data-asset="boomspike"].on .payout-live{color:#ffffff!important;font-weight:600;
+.asset-chip[data-asset="boomspike"].on .payout-live{color:#ffffff!important;font-weight:700;
   -webkit-text-fill-color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .asset-chip[data-asset="nexusprime"].on{border-width:1.5px;border-color:#22D3EE;box-shadow:0 0 12px rgba(34,211,238,.4);background:linear-gradient(180deg,rgba(34,211,238,.3),rgba(21,94,117,.2));color:#22D3EE}
 .asset-chip[data-asset="v75"].on{border-width:1.5px;border-color:#E91E63;box-shadow:0 0 12px rgba(233,30,99,.4);background:linear-gradient(180deg,rgba(233,30,99,.3),rgba(136,14,79,.2));color:#E91E63}
@@ -2183,21 +2181,20 @@ html body .asset-tab.active[data-asset*="boom"],
 html body button.tab-asset.active[data-id*="boom"],
 .asset-tab.active[data-asset*="boom"],
 button.tab-asset.active[data-id*="boom"]{
-  background:linear-gradient(180deg,rgba(16,14,20,.95),rgba(9,9,14,.97)) padding-box,
-    linear-gradient(90deg,#ff007a,#7928ca,#0070f3,#00dfd8) border-box!important;
-  border:1.5px solid transparent!important;
-  box-shadow:0 0 12px rgba(121,40,202,.3)!important;
+  background:#1e1b18!important;
+  border:1.5px solid #ff9800!important;
+  box-shadow:0 0 8px rgba(255,152,0,.4)!important;
   color:#ffffff!important}
 html body button.asset-chip.on[data-asset*="boom"] .n,
 html body button.asset-chip.on[data-asset*="boom"] .asset-ico,
 html body .asset-chip.on[data-asset="boomspike"] .n,
 html body .asset-chip.on[data-asset="boomspike"] .asset-ico,
 .asset-tab.active[data-asset*="boom"] .asset-name{
-  color:#ffffff!important;font-weight:600!important;-webkit-text-fill-color:#ffffff;background:none;
+  color:#ffffff!important;font-weight:700!important;-webkit-text-fill-color:#ffffff;background:none;
   text-shadow:0 1px 2px rgba(0,0,0,.6)}
 html body button.asset-chip.on[data-asset*="boom"] .payout-live,
 html body .asset-chip.on[data-asset="boomspike"] .payout-live,
 .asset-tab.active[data-asset*="boom"] .asset-payout{
-  color:#ffffff!important;font-weight:600!important;-webkit-text-fill-color:#ffffff;
+  color:#ffffff!important;font-weight:700!important;-webkit-text-fill-color:#ffffff;
   text-shadow:0 1px 2px rgba(0,0,0,.6)}
 
