@@ -22,8 +22,10 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  var HEAD_X_RATIO = 0.72;
+  // Tête de lecture à 70 % de la largeur : 30 % de respiration libre à droite.
+  var HEAD_X_RATIO = 0.70;
   var Y_PAD_RATIO = 0.12;
+  var wallSkew = 0;
   var frameDisplayPrice = NaN;
   var headPriceMotion = {};
   var pendingYAnchor = null;
@@ -154,8 +156,18 @@
     return seriesW * (CANDLE_DURATION_MS / Math.max(1, tWin));
   }
 
+  // Horloge murale haute résolution calée sur la timeline requestAnimationFrame :
+  // Date.now() est quantifié à la milliseconde et peut reculer, ce qui hache le
+  // défilement. On garde le temps mur exact à 250 ms près, en sous-milliseconde.
+  function frameWallClock(perfNow) {
+    var p = isFinite(perfNow) ? perfNow : performance.now();
+    var wall = Date.now();
+    if (!wallSkew || Math.abs((wallSkew + p) - wall) > 250) wallSkew = wall - p;
+    return wallSkew + p;
+  }
+
   function candleProgress() {
-    var tNow = xNow || Date.now();
+    var tNow = xNow || frameWallClock();
     var times = xTimes;
     var candleStartMs = times && times.length ? Number(times[times.length - 1]) : NaN;
     if (!isFinite(candleStartMs)) {
@@ -166,16 +178,20 @@
     return (elapsed % CANDLE_DURATION_MS) / CANDLE_DURATION_MS;
   }
 
+  // Axe X purement temporel : x = tête + ((t - maintenant) / durée_bougie) * largeur_bougie.
+  // Aucun palier discret — le décalage au sous-pixel vaut (temps_écoulé / durée_bougie)
+  // * largeur_bougie et progresse à chaque vsync, donc le glissement est linéaire.
   function baseIndexX(index, count, pad, seriesW) {
     var x0 = pad.l;
     var span = Math.max(32, seriesW);
     var step = candleStepWidth(span);
+    var tNow = xNow || frameWallClock();
     var times = xTimes;
     var timeOffset = times && times.length >= count ? times.length - count : 0;
     var timeIndex = timeOffset + index;
     var t = times && timeIndex >= 0 ? Number(times[timeIndex]) : NaN;
     if (isFinite(t)) {
-      return x0 + span + ((t - (xNow || Date.now())) / CANDLE_DURATION_MS) * step;
+      return x0 + span + ((t - tNow) / CANDLE_DURATION_MS) * step;
     }
     var subPixelShift = candleProgress() * step;
     return x0 + span - (count - 1 - index) * step - subPixelShift;
@@ -269,9 +285,7 @@
       expiryTime: exp,
       expiresAt: exp,
       settled: !!trade.settled,
-      status: trade.status || 'open',
-      stake: Number(trade.stake) || 0,
-      payout: trade.payout
+      status: trade.status || 'open'
     };
   }
 
@@ -611,7 +625,6 @@
       else if (D6.Engine.getMarket) D6.Engine.getMarket(activeAsset);
       live = liveBuffer(activeAsset);
     }
-    var plotW = Math.max(140, cssW * 0.70);
     var z = Math.ceil((xWin > 0 ? xWin : ((zoomSmooth || zoomSec() || 60) * 1000)) / 1000);
     if (z < 24) z = 24;
     if (z > 600) z = 600;
@@ -1355,6 +1368,8 @@
     ctx.stroke();
   }
 
+  // Trade ouvert : trait horizontal pointillé + pastille d'entrée CALL/PUT + décompte
+  // à gauche. Aucun montant en dollars n'est tracé le long du trait.
   function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout, clusterN) {
     if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
@@ -1504,7 +1519,7 @@
     ctx.font = '700 9.5px ui-monospace, Menlo, Consolas, monospace';
     var tw = Math.ceil(ctx.measureText(txt).width) + 10;
     var th = 14;
-    var headX = layout && layout.headX != null ? layout.headX : cssW * 0.70;
+    var headX = layout && layout.headX != null ? layout.headX : cssW * HEAD_X_RATIO;
     var x = headX + 10;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 2) x = axisX - tw - 2;
@@ -1686,7 +1701,7 @@
     if (!(zoomSmooth > 0)) zoomSmooth = wantZoom;
     zoomSmooth += (wantZoom - zoomSmooth) * 0.22;
     if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
-    xNow = Date.now();
+    xNow = frameWallClock(now);
     xWin = Math.max(8000, zoomSmooth * 1000);
     if (allTrades.length) {
       var tOldest = xNow;
@@ -2012,7 +2027,6 @@
     window.animationFrameId = loopRaf;
     try {
       var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
-      var drawEvery = 16;
       var tickEvery = liveN > 0 ? 150 : 220;
       if (ts - lastFlush >= tickEvery) {
         if (D6.Engine && D6.Engine.tick) D6.Engine.tick(activeAsset);
@@ -2020,11 +2034,15 @@
         lastFlush = ts;
         window.lastTickTime = ts;
       }
-      if (ts - lastDraw < drawEvery) return;
+      // Rendu à chaque vsync : un seuil en millisecondes ferait sauter une frame
+      // sur deux ou sur trois hors 60 Hz, d'où les saccades au défilement.
+      var dt = lastDraw ? (ts - lastDraw) : 16;
+      if (!(dt > 0)) dt = 0;
+      if (dt > 100) dt = 100;
       lastDraw = ts;
       if (!lastTs) lastTs = ts;
       lastTs = ts;
-      payoutAcc += drawEvery;
+      payoutAcc += dt;
 
       if (payoutAcc > 2800) {
         if (D6.Engine && D6.Engine.refreshPayout) D6.Engine.refreshPayout(activeAsset);

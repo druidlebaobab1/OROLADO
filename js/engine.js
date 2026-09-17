@@ -318,8 +318,11 @@
       var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
       nextOut = price + gapH * 0.055 + nH + wH + teaseH;
     } else if (sim.crashCalm && !opts.spike) {
-      var risePhase = Math.floor(nowMs / 250) % 4;
-      nextOut = price + price * (0.0002 + risePhase * 0.0001);
+      // Montée calme : une pente unique par bougie, proportionnelle au temps écoulé.
+      // L'ancienne cadence de 250 ms ne tombait pas sur le pas de 200 ms et faisait
+      // vibrer la pente à haute fréquence.
+      var riseC = 0.0011 + uhash01(Math.floor(nowMs / CANDLE_MS), 771001) * 0.0007;
+      nextOut = price + price * riseC * Math.min(0.6, Math.max(0.03, dtSec));
     } else if (sim.titanDrop && !opts.spike) {
       var dtT = Math.max(dtSec, 0.016);
       var nT = (roll - 0.5) * price * vol * 1.35;
@@ -473,15 +476,18 @@
   }
 
   function rebaseBufferTimes(buf, nowMs) {
-    if (!buf || !buf.candles || !buf.candles.length) return;
+    if (!buf || !buf.candles || !buf.candles.length) return false;
     var cms = CANDLE_MS;
     var n = buf.candles.length;
     var formingStart = Math.floor((nowMs || Date.now()) / cms) * cms;
     var tEnd = formingStart - cms;
     var last = buf.candles[n - 1];
     if (last && isFinite(last.t) && Math.abs(last.t - tEnd) <= cms) {
-      if (buf.forming && !isFinite(buf.forming.t)) buf.forming.t = formingStart;
-      return;
+      if (buf.forming && !isFinite(buf.forming.t)) {
+        buf.forming.t = formingStart;
+        return true;
+      }
+      return false;
     }
     var i;
     for (i = 0; i < n; i++) {
@@ -489,12 +495,13 @@
     }
     buf.bucket = Math.floor(formingStart / cms);
     if (buf.forming) buf.forming.t = formingStart;
+    return true;
   }
 
   function publishHistory(assetId, buf) {
     bindGlobalBuffers();
-    var prices = (buf.prices || []).slice(-HISTORY_N);
-    window.assetsHistory[assetId] = prices;
+    if (buf.prices && buf.prices.length > HISTORY_N) buf.prices = buf.prices.slice(-HISTORY_N);
+    window.assetsHistory[assetId] = buf.prices || [];
     window.assetBuffers[assetId] = buf;
     window.ASSET_BUFFERS[assetId] = buf;
   }
@@ -645,7 +652,8 @@
       boomZig: boomWalk ? boomWalk.boomZig : 1,
       boomPeak: boomWalk ? boomWalk.boomPeak : 0,
       ver: SIM_VER,
-      scaleVer: SCALE_VER
+      scaleVer: SCALE_VER,
+      rev: 1
     };
     sanitizeBuffer(asset, buf, Number(asset.basePrice) || price);
     publishHistory(asset.id, buf);
@@ -675,6 +683,7 @@
     var busy = tradeBusyFor(asset.id);
     if (!buf.candles || buf.candles.length < 20) {
       buf.lastMs = nowMs;
+      buf.rev = (buf.rev || 0) + 1;
       publishHistory(asset.id, buf);
       return buf;
     }
@@ -792,12 +801,19 @@
           forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
         }
       }
+    // `rev` ne change que si la simulation a réellement avancé : tout l'étage de
+    // publication (copies de tableaux, min/max) reste alors au repos entre deux pas.
+    var moved = (steps > 0 || catchN > 0);
     buf.price = clampIndexPrice(price, asset);
-    buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, 0);
-    if (steps > 0 || catchN > 0) buf.lastMs = nowMs;
+    if (moved || !buf.forming) {
+      buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, 0);
+      buf.lastMs = nowMs;
+      moved = true;
+    }
     buf.ver = SIM_VER;
     buf.scaleVer = SCALE_VER;
-    rebaseBufferTimes(buf, nowMs);
+    if (rebaseBufferTimes(buf, nowMs)) moved = true;
+    if (moved) buf.rev = (buf.rev || 0) + 1;
     publishHistory(asset.id, buf);
     return buf;
   }
@@ -817,62 +833,57 @@
   function syncMarket(market, asset, nowMs) {
     nowMs = nowMs || Date.now();
     var buf = advanceBuffer(asset, nowMs);
-    var closed = buf.candles.slice();
-    if (closed.length > HISTORY_N) closed = closed.slice(-HISTORY_N);
-    var forming = buf.forming;
-    var history = buf.prices.slice();
     market.price = buf.price;
-    market.candles = closed;
-    market.candle = forming;
-    market.history = history;
+    market.candle = buf.forming;
     market.ticksInCandle = Math.floor((nowMs % CANDLE_MS) / 80);
-    publishAssetBuffer(asset.id, market);
+    if (!market.candles || !market.candles.length || market.rev !== buf.rev) {
+      market.rev = buf.rev;
+      market.candles = buf.candles;
+      market.history = buf.prices;
+      publishAssetBuffer(asset.id, market);
+    }
     return market;
   }
 
   function publishAssetBuffer(assetId, market) {
     window.assetsState = window.assetsState || {};
-    var prev = window.assetsState[assetId] || {};
-    var candles = (market.candles || []).slice();
-    if (market.candle) candles.push(market.candle);
-    var buf = candles.slice(-HISTORY_N);
+    var st = window.assetsState[assetId];
+    if (!st) {
+      st = { viewMin: 0, viewMax: 0, lockMin: 0, lockMax: 0, lockUntil: 0 };
+      window.assetsState[assetId] = st;
+    }
+    var src = market.candles || [];
+    var forming = market.candle;
+    var from = Math.max(0, src.length - (HISTORY_N - (forming ? 1 : 0)));
+    var view = [];
+    var closes = [];
     var min = Infinity;
     var max = -Infinity;
+    var price = market.price;
     var i;
-    for (i = 0; i < buf.length; i++) {
-      var c = buf[i];
+    for (i = from; i <= src.length; i++) {
+      var c = (i < src.length) ? src[i] : forming;
       if (!c) continue;
+      view.push(c);
       var pc = Number(c.c);
-      if (!isPlausiblePrice(pc, market.price)) continue;
-      if (c.l < min && isPlausiblePrice(c.l, market.price)) min = c.l;
-      if (c.h > max && isPlausiblePrice(c.h, market.price)) max = c.h;
+      if (isFinite(pc)) closes.push(pc);
+      if (!isPlausiblePrice(pc, price)) continue;
+      if (c.l < min && isPlausiblePrice(c.l, price)) min = c.l;
+      if (c.h > max && isPlausiblePrice(c.h, price)) max = c.h;
       if (pc < min) min = pc;
       if (pc > max) max = pc;
     }
     if (!isFinite(min) || !isFinite(max)) {
-      min = Number(market.price) || 0;
+      min = Number(price) || 0;
       max = min;
     }
-    window.assetsState[assetId] = {
-      candles: buf,
-      min: min,
-      max: max,
-      lastPrice: market.price,
-      viewMin: prev.viewMin || 0,
-      viewMax: prev.viewMax || 0,
-      lockMin: prev.lockMin || 0,
-      lockMax: prev.lockMax || 0,
-      lockUntil: prev.lockUntil || 0,
-      zoomIdx: prev.zoomIdx,
-      inds: prev.inds,
-      at: Date.now()
-    };
-    var closes = [];
-    for (i = 0; i < buf.length; i++) {
-      if (buf[i] && isFinite(buf[i].c)) closes.push(buf[i].c);
-    }
+    st.candles = view;
+    st.min = min;
+    st.max = max;
+    st.lastPrice = price;
+    st.at = Date.now();
     window.assetsHistory = window.assetsHistory || {};
-    window.assetsHistory[assetId] = closes.slice(-HISTORY_N);
+    window.assetsHistory[assetId] = closes;
   }
 
   function seedMarket(assetId) {
