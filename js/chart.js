@@ -830,10 +830,12 @@
       ctx.lineTo(x, pad.t + h);
       ctx.stroke();
     }
-    for (i = 0; i <= 4; i++) {
+    // Le dernier repère tombe pile sous la tête de lecture : on l'omet pour
+    // garder la pastille de cours dégagée.
+    for (i = 0; i < 4; i++) {
       var lx = pad.l + (seriesW / 4) * i;
       var ago = Math.round(((4 - i) / 4) * span);
-      var label = ago === 0 ? 'now' : '-' + ago + 's';
+      var label = '-' + ago + 's';
       ctx.fillStyle = '#64748B';
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
