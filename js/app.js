@@ -4936,7 +4936,16 @@
     var pCanvas = $('particlesCanvas');
     var pCtx = pCanvas.getContext('2d');
     var particles = [];
-    function resizeP() { pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight; }
+    // Réaffecter width/height réalloue et efface le canvas plein écran. Sous
+    // une rafale de redimensionnement, le faire à chaque événement coûtait
+    // plus cher que l'animation elle-même.
+    function resizeP() {
+      var wP = window.innerWidth;
+      var hP = window.innerHeight;
+      if (pCanvas.width === wP && pCanvas.height === hP) return;
+      pCanvas.width = wP;
+      pCanvas.height = hP;
+    }
     window.addEventListener('resize', resizeP);
     resizeP();
     var i;
@@ -4958,17 +4967,28 @@
     loop();
   }
 
+  var chartBumpTimers = [];
+  var chartBumpRaf = 0;
+  var CHART_BUMP_DELAYS = [50, 120, 280, 500];
+
   function bumpChartLayout() {
     if (!(D6.Chart && D6.Chart.resize)) return;
+    // Chaque événement de redimensionnement programmait cinq recalculs du
+    // graphique. Sous rafale, des centaines de timers orphelins s'empilaient et
+    // redessinaient le canvas bien après coup : on purge la salve précédente et
+    // on ne garde qu'une passe par frame.
+    while (chartBumpTimers.length) clearTimeout(chartBumpTimers.pop());
+    if (chartBumpRaf) return;
     function once() {
       try {
         D6.Chart.resize();
         if (D6.Chart.drawNow) D6.Chart.drawNow();
       } catch (e) { /* ignore */ }
     }
-    requestAnimationFrame(function () {
+    chartBumpRaf = requestAnimationFrame(function () {
+      chartBumpRaf = 0;
       once();
-      [50, 120, 280, 500].forEach(function (ms) { setTimeout(once, ms); });
+      CHART_BUMP_DELAYS.forEach(function (ms) { chartBumpTimers.push(setTimeout(once, ms)); });
     });
   }
 
