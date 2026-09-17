@@ -22,12 +22,14 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  // Tête de lecture à 72 % de la largeur : 28 % de respiration libre à droite.
-  var HEAD_X_RATIO = 0.72;
+  // Tête de lecture à 70 % de la largeur : 30 % de respiration libre à droite.
+  var HEAD_X_RATIO = 0.70;
   var Y_PAD_RATIO = 0.12;
-  // Plein écran : marge basse plus généreuse pour que les creux ne rasent pas la barre.
-  var Y_PAD_BOTTOM_FS = 0.15;
+  // Plein écran : 15 % de marge en haut comme en bas, recentrés en continu.
+  var Y_PAD_FS = 0.15;
+  var FS_Y_LERP = 0.08;
   var fsActive = false;
+  var fsWasOn = false;
   var wallSkew = 0;
   var frameDisplayPrice = NaN;
   var headPriceMotion = {};
@@ -107,7 +109,11 @@
   }
 
   function padBottomRatio() {
-    return fsActive ? Y_PAD_BOTTOM_FS : Y_PAD_RATIO;
+    return fsActive ? Y_PAD_FS : Y_PAD_RATIO;
+  }
+
+  function padTopRatio() {
+    return fsActive ? Y_PAD_FS : Y_PAD_RATIO;
   }
 
   function isChartReady() {
@@ -879,6 +885,17 @@
       if (opts.titanIce) col = up ? '#f5f5f5' : '#8b9199';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
       if (opts.crashDrop && !up) col = '#FF3B30';
+      // Titan Pulse : cœur blanc brillant cerné d'un liseré néon cyan/violet.
+      var edgeCol = null;
+      if (opts.titanNeon) {
+        col = up ? '#ffffff' : '#e3e9f2';
+        edgeCol = up ? '#22d3ee' : '#a855f7';
+      }
+      // Oro Horizon 50 : orange pur, corps rayé.
+      if (opts.horizonOrange) {
+        col = up ? '#ff9800' : '#b35f00';
+        edgeCol = '#ff9800';
+      }
       var hiB = Math.max(c.o, c.c);
       var loB = Math.min(c.o, c.c);
       var hWick = c.h;
@@ -900,7 +917,7 @@
         if (lWick > loB) lWick = loB;
       }
       var x = toX(i);
-      ctx.strokeStyle = col;
+      ctx.strokeStyle = edgeCol || col;
       ctx.lineWidth = (opts.titanIce || opts.v75Rose) ? 1 : (thin ? 1 : 1.15);
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
@@ -923,11 +940,34 @@
       } else if (opts.nexusCyber && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
         ctx.shadowBlur = 8;
-      } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose) {
+      } else if (opts.horizonOrange && i === candles.length - 1) {
+        ctx.shadowColor = 'rgba(255,152,0,0.5)';
+        ctx.shadowBlur = 9;
+      } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose &&
+        !opts.titanNeon && !opts.horizonOrange) {
         ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
         ctx.shadowBlur = 8;
       }
-      if (opts.v75Rose && up) {
+      if (opts.titanNeon) {
+        ctx.fillStyle = col;
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
+        ctx.strokeStyle = edgeCol;
+        ctx.lineWidth = 1.2;
+        ctx.shadowColor = edgeCol;
+        ctx.shadowBlur = i === candles.length - 1 ? 12 : 7;
+        ctx.strokeRect(x - cw / 2 + 0.5, y1 + 0.5, Math.max(1, cw - 1), Math.max(1, bh - 1));
+      } else if (opts.horizonOrange) {
+        ctx.fillStyle = col;
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
+        ctx.fillStyle = up ? 'rgba(92,40,4,0.5)' : 'rgba(0,0,0,0.35)';
+        var sy;
+        for (sy = y1 + 1.5; sy < y1 + bh - 0.5; sy += 3) {
+          ctx.fillRect(x - cw / 2, sy, cw, 1);
+        }
+        ctx.strokeStyle = '#ff9800';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - cw / 2 + 0.5, y1 + 0.5, Math.max(1, cw - 1), Math.max(1, bh - 1));
+      } else if (opts.v75Rose && up) {
         ctx.strokeStyle = '#ff2d75';
         ctx.lineWidth = 1.15;
         ctx.strokeRect(x - cw / 2, y1, cw, bh);
@@ -1489,6 +1529,8 @@
     var nexusHead = activeAsset === 'nexusprime';
     var titanHead = activeAsset === 'titanpulse';
     var v75Head = activeAsset === 'v75';
+    var goldHead = activeAsset === 'goldtrend';
+    var horizonHead = activeAsset === 'horizon50';
     var pulse = 0.55 + 0.45 * Math.sin(now / 150);
     ctx.save();
     if (v75Head) {
@@ -1506,6 +1548,21 @@
       ctx.arc(map.lastX, map.lastY, 7.5, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0,229,255,0.28)';
       ctx.fill();
+    } else if (goldHead) {
+      // Or ambré : double halo pour une tête franchement plus lumineuse.
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 12 + pulse * 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,179,0,0.18)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 7 + pulse * 2.6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,210,90,0.34)';
+      ctx.fill();
+    } else if (horizonHead) {
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 8.5 + pulse * 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,152,0,0.24)';
+      ctx.fill();
     } else if (!compact) {
       ctx.beginPath();
       ctx.arc(map.lastX, map.lastY, 9 + pulse * 4, 0, Math.PI * 2);
@@ -1513,10 +1570,10 @@
       ctx.fill();
     }
     ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : 4.2))), 0, Math.PI * 2);
-    ctx.fillStyle = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
-    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : color)));
-    ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 11 : (nexusHead ? 10 : 12)));
+    ctx.arc(map.lastX, map.lastY, compact ? 3 : (v75Head ? 3.8 : (titanHead ? 3.4 : (nexusHead ? 3.6 : (goldHead ? 4.8 : 4.2)))), 0, Math.PI * 2);
+    ctx.fillStyle = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
+    ctx.shadowColor = compact ? 'transparent' : (v75Head ? '#ff2d75' : (titanHead ? '#e0e6ed' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
+    ctx.shadowBlur = compact ? 0 : (v75Head ? 14 : (titanHead ? 11 : (nexusHead ? 10 : (goldHead ? 20 : 12))));
     ctx.fill();
     ctx.restore();
   }
@@ -1622,7 +1679,7 @@
       minPrice = currentPrice - span * 0.5;
       maxPrice = currentPrice + span * 0.5;
     }
-    return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * Y_PAD_RATIO };
+    return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * padTopRatio() };
   }
 
   function captureTradeFrame(assetId, untilMs) {
@@ -1671,7 +1728,7 @@
       histMin = currentPrice - span * 0.5;
       histMax = currentPrice + span * 0.5;
     }
-    return { min: histMin - span * padBottomRatio(), max: histMax + span * Y_PAD_RATIO };
+    return { min: histMin - span * padBottomRatio(), max: histMax + span * padTopRatio() };
   }
 
   function drawFrame(now) {
@@ -1696,6 +1753,11 @@
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     fsActive = fsOn;
+    // Bascule plein écran : on repart d'un cadrage net avant de lisser.
+    if (fsOn !== fsWasOn) {
+      fsWasOn = fsOn;
+      wantFitY = true;
+    }
     var pad = fsOn
       ? { t: 4, r: 50, b: 16, l: 4 }
       : { t: narrow ? 6 : 8, r: 56, b: 22, l: 8 };
@@ -1778,6 +1840,15 @@
       wantFitY = false;
       pendingYAnchor = null;
     } else if (fsOn && viewMax > viewMin) {
+      // Plein écran : la fenêtre glisse en continu vers le cadrage cible au lieu
+      // de rester figée, sinon la courbe dérive vers le haut ou le bas.
+      var fsFit = fitVisibleY(candles, extrasY);
+      viewMin += (fsFit.min - viewMin) * FS_Y_LERP;
+      viewMax += (fsFit.max - viewMax) * FS_Y_LERP;
+      if (minPrice < viewMin || maxPrice > viewMax) {
+        viewMin = fsFit.min;
+        viewMax = fsFit.max;
+      }
       if (holdLock) {
         st.lockMin = viewMin;
         st.lockMax = viewMax;
@@ -1807,7 +1878,7 @@
     var keepAir = rawVisibleSpan * Y_PAD_RATIO;
     var keepAirLow = rawVisibleSpan * padBottomRatio();
     var needsSafeFit = minPrice < viewMin + keepAirLow || maxPrice > viewMax - keepAir;
-    if ((fsOn || holdLock) && needsSafeFit) {
+    if (!fsOn && holdLock && needsSafeFit) {
       var safeFit = fitVisibleY(candles, extrasY);
       viewMin = safeFit.min;
       viewMax = safeFit.max;
@@ -1863,7 +1934,8 @@
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
         capWicks: true,
-        titanIce: true
+        titanIce: true,
+        titanNeon: true
       });
     } else if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2244', 3);
@@ -1879,13 +1951,14 @@
         nexusCyber: asset.id === 'nexusprime',
         titanIce: false,
         v75Rose: asset.id === 'v75',
+        horizonOrange: asset.id === 'horizon50',
         crashDrop: asset.id === 'crash300'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
-      map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#00d2ff', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(0,210,255,0.55)' : null));
+      map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ff9800', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(255,152,0,0.55)' : null));
     } else if (asset.id === 'goldtrend') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', 2.6);
     } else {

@@ -100,7 +100,8 @@
     if (spiked && id === 'boomspike') return 0.004;
     if (id === 'crash300') return 0.00055;
     if (id === 'stable') return 0.0008;
-    if (id === 'titanpulse') return 0.0024;
+    if (id === 'horizon50') return 0.0009;
+    if (id === 'titanpulse') return 0.0042;
     if (id === 'goldtrend' || id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
   }
@@ -206,21 +207,22 @@
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    apex500: { mode: 'candles', vol: 0.0045 },
-    horizon50: { mode: 'line', vol: 0.0055, color: '#00d2ff' },
-    boomspike: { mode: 'candles', vol: 0.0032 },
+    apex500: { mode: 'candles', vol: 0.0062 },
+    horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
+    boomspike: { mode: 'candles', vol: 0.0044 },
     crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     goldtrend: { mode: 'line', vol: 0.0125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
-    titanpulse: { mode: 'line', vol: 0.0098, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 55 },
+    // Titan Pulse domine la volatilité des 10 actifs, Gold Trend arrive juste derrière.
+    titanpulse: { mode: 'line', vol: 0.0168, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 45 },
   };
-  var SIM_VER = 15;
-  var TITAN_VER = 8;
-  var BOOM_VER = 3;
+  var SIM_VER = 16;
+  var TITAN_VER = 9;
+  var BOOM_VER = 4;
   var CRASH_VER = 2;
   var MIN_SEED = 500;
-  var SCALE_VER = 3;
+  var SCALE_VER = 4;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -357,6 +359,14 @@
       var qN = Math.sin(nowMs / 1000 * Math.PI * 19) * price * 0.00016;
       var pullN = busyIn ? 0 : (base - price) * 0.045;
       nextOut = price + nN + pN + qN + pullN;
+    } else if (sim.horizonCalm && !opts.spike) {
+      // Horizon 50 : l'actif le plus posé du lot. Bruit réduit et deux houles
+      // lentes, sans à-coup, pour un tracé régulier.
+      var nHz = (roll - 0.5) * price * vol * 0.5;
+      var w1Hz = Math.sin(nowMs / 1000 * Math.PI * 0.85) * price * 0.00038;
+      var w2Hz = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00014;
+      var pullHz = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.03);
+      nextOut = price + nHz + w1Hz + w2Hz + pullHz;
     } else if (sim.v75Wave && !opts.spike) {
       var nV = (roll - 0.5) * price * vol;
       var pV = Math.sin(nowMs / 1000 * Math.PI * 5.6) * price * 0.00062;
@@ -404,8 +414,13 @@
         if (c >= o) c = o + Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
         else c = o - Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
       } else if (sim.titanDrop) {
-        var ampT = Math.max(Math.abs(o) * 0.0016, 0.28);
+        var ampT = Math.max(Math.abs(o) * 0.0026, 0.42);
         if (Math.abs(c - o) < ampT) c = o + (c >= o ? ampT : -ampT);
+      } else if (sim.horizonCalm) {
+        var ampHz = Math.max(Math.abs(o) * 0.00035, 0.05);
+        var maxHz = Math.abs(o) * 0.0022;
+        if (c >= o) c = o + Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
+        else c = o - Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
       } else if (sim.boomBurst) {
         var tinyB = Math.max(Math.abs(o) * 0.00014, 0.01);
         c = c >= o ? o + tinyB : o - tinyB;
@@ -434,6 +449,7 @@
     if (sim.crashCalm) maxW = Math.max(Math.abs(o) * 0.00008, 0.01);
     if (sim.nexusPulse) maxW = body * 0.95;
     if (sim.v75Wave) maxW = Math.max(body * 0.9, Math.abs(o) * 0.00035);
+    if (sim.horizonCalm) maxW = Math.max(body * 0.5, Math.abs(o) * 0.00012);
     var hiB = Math.max(o, c);
     var loB = Math.min(o, c);
     if (h > hiB + maxW) h = hiB + maxW;
