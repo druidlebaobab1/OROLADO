@@ -67,6 +67,27 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   html body #screenAuth .auth-tab{min-height:30px;padding:5px}
 }
 
+@media (min-width:1024px){
+  html:not(.is-android) body #screenAuth .auth-wrap{
+    width:520px!important;max-width:520px!important;
+    padding:18px 22px calc(16px + env(safe-area-inset-bottom,0px))!important}
+  html:not(.is-android) body #screenAuth .auth-card{padding:16px 18px 12px!important}
+  html:not(.is-android) body #screenAuth .logo-mark{width:48px;height:48px}
+  html:not(.is-android) body #screenAuth .brand-xl{font-size:1.85rem;line-height:1.1}
+  html:not(.is-android) body #screenAuth .brand-domain{font-size:.62rem}
+  html:not(.is-android) body #screenAuth .brand-sub{margin:6px 0 12px;font-size:.78rem}
+  html:not(.is-android) body #screenAuth .auth-tab{min-height:40px;padding:10px;font-size:.9rem}
+  html:not(.is-android) body #screenAuth .field{margin-bottom:8px}
+  html:not(.is-android) body #screenAuth .field input{min-height:46px;padding:12px 14px}
+  html:not(.is-android) body #screenAuth .btn-gold{min-height:48px}
+}
+@media (max-width:480px){
+  html.is-ios body #screenAuth .auth-wrap{
+    width:95%!important;max-width:none!important;margin:0 auto;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))!important}
+  html.is-ios body #screenAuth .auth-card{padding:8px 10px 6px!important}
+}
+
 .link-terms,button.link-terms{
   background:none;border:0;padding:0;margin:0;font:inherit;font-weight:700;
   color:#F59E0B;text-decoration:underline;text-underline-offset:2px;cursor:pointer}

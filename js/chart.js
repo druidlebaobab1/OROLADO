@@ -1863,22 +1863,15 @@
     return { min: histMin - span * padBottomRatio(), max: histMax + span * padTopRatio() };
   }
 
-  function goldCamera(histMin, histMax, prevMin, prevMax, head) {
-    var p = head > 0 ? head : (histMin + histMax) / 2;
-    if (!(p > 0)) p = 7340;
-    var raw = histMax - histMin;
-    var floor = p * 0.004;
-    var cap = p * 0.016;
-    var span = Math.min(Math.max(raw > 0 ? raw : floor, floor), cap);
-    var tMin = p - span * 0.52;
-    var tMax = p + span * 0.48;
+  function goldIdleCamera(histMin, histMax, prevMin, prevMax, head) {
+    var target = idleCamera(histMin, histMax, prevMin, prevMax, head);
     if (prevMin && prevMax && prevMax > prevMin) {
       return {
-        min: prevMin + (tMin - prevMin) * 0.075,
-        max: prevMax + (tMax - prevMax) * 0.075
+        min: prevMin + (target.min - prevMin) * 0.16,
+        max: prevMax + (target.max - prevMax) * 0.16
       };
     }
-    return { min: tMin, max: tMax };
+    return target;
   }
 
   function drawFrame(now) {
@@ -1995,12 +1988,10 @@
       pendingYAnchor = null;
     } else if (fsOn && viewMax > viewMin) {
       if (activeAsset === 'goldtrend') {
-        var gFs = goldCamera(minPrice, maxPrice, viewMin, viewMax, head);
+        var gFs = goldIdleCamera(minPrice, maxPrice, viewMin, viewMax, head);
         viewMin = gFs.min;
         viewMax = gFs.max;
       } else {
-      // Plein écran : la fenêtre glisse en continu vers le cadrage cible au lieu
-      // de rester figée, sinon la courbe dérive vers le haut ou le bas.
       var fsFit = fitVisibleY(candles, extrasY);
       viewMin += (fsFit.min - viewMin) * FS_Y_LERP;
       viewMax += (fsFit.max - viewMax) * FS_Y_LERP;
@@ -2031,7 +2022,7 @@
       var prevMin = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (st.viewMin || 0);
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = activeAsset === 'goldtrend'
-        ? goldCamera(minPrice, maxPrice, prevMin, prevMax, head)
+        ? goldIdleCamera(minPrice, maxPrice, prevMin, prevMax, head)
         : idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
       viewMin = cam.min;
       viewMax = cam.max;
@@ -2044,7 +2035,7 @@
       var safeFit = fitVisibleY(candles, extrasY);
       viewMin = safeFit.min;
       viewMax = safeFit.max;
-    } else if (!fsOn && !holdLock && activeAsset !== 'goldtrend') {
+    } else if (!fsOn && !holdLock) {
       if (head > viewMax - keepAir) viewMax = head + keepAir;
       if (head < viewMin + keepAirLow) viewMin = head - keepAirLow;
       if (isFinite(strikeP) && strikeP > 0) {
