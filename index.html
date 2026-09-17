@@ -65,8 +65,8 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=290">
-    <link rel="stylesheet" href="css/auth.css?v=290">
+    <link rel="stylesheet" href="css/app.css?v=300">
+    <link rel="stylesheet" href="css/auth.css?v=300">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -355,7 +355,7 @@
             <div class="payout-live" id="payoutCrash300">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="goldtrend" onclick="window.oroUi&&window.oroUi.asset(this)">
-            <div class="n"><span class="asset-ico goldtrend-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="#F59E0B" d="M5.2 16.6 8 7.8h8l2.8 8.8z"/><path fill="#FBBF24" d="M8 7.8h8l-1.1 3.4H9.1z"/><rect x="5.4" y="16.2" width="13.2" height="2.1" rx=".45" fill="#D97706"/></svg></span>ORO GOLD TREND</div>
+            <div class="n"><span class="asset-ico goldtrend-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="#F59E0B" d="M5.2 16.6 8 7.8h8l2.8 8.8z"/><path fill="#FBBF24" d="M8 7.8h8l-1.1 3.4H9.1z"/><rect x="5.4" y="16.2" width="13.2" height="2.1" rx=".45" fill="#D97706"/></svg></span>ORO GOLD</div>
             <div class="payout-live" id="payoutGoldTrend">+88%</div>
           </button>
           <button type="button" class="asset-chip" data-asset="boomspike" onclick="window.oroUi&&window.oroUi.asset(this)">
@@ -1018,16 +1018,20 @@
   <div class="modal-backdrop" id="termsModal">
     <div class="modal-box glass terms-box" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
       <button type="button" class="btn-close" id="closeTerms" aria-label="Close">✕</button>
-      <div class="modal-title" id="termsTitle" data-i18n="termsTitle">Terms of Use &amp; Risk Notice</div>
+      <div class="modal-title" id="termsTitle" data-i18n="termsTitle">CONDITIONS GÉNÉRALES D'UTILISATION &amp; RISQUES</div>
       <div class="terms-body">
-        <h3 data-i18n="termsA1t">Article 1 — Nature of the service</h3>
-        <p data-i18n="termsA1">OROLADO is a software platform that provides proprietary synthetic indices and real-time mathematical simulation algorithms for entertainment and predictive-strategy purposes. Access to the interface does not constitute an offer of regulated financial instruments, nor the operation of a regulated market, multilateral trading facility, or investment service within the meaning of applicable financial-market legislation.</p>
-        <h3 data-i18n="termsA2t">Article 2 — Capacity and jurisdiction</h3>
-        <p data-i18n="termsA2">Use of the platform is strictly reserved to persons who have reached the age of majority under the law of their place of residence. Each user is solely responsible for ensuring that their use of the service complies with the laws, regulations, and restrictions applicable in their jurisdiction. The operator does not provide legal advice and does not warrant that the service is available or lawful in every territory.</p>
-        <h3 data-i18n="termsA3t">Article 3 — Capital commitment and speculative character</h3>
-        <p data-i18n="termsA3">Any engagement on the platform is speculative in nature and may result in the total loss of the amount committed. Executed transactions are final, irrevocable, and non-refundable. Past simulation outcomes are not indicative of future results. Users should only commit capital they can afford to allocate in full.</p>
-        <h3 data-i18n="termsA4t">Article 4 — Technical limitation of liability</h3>
-        <p data-i18n="termsA4">The operator shall not be liable for network incidents, loss of internet connectivity on the user’s side, latency or malfunction of third-party equipment, hosting interruptions beyond reasonable control, or events of force majeure. The service is provided on an as-available basis; momentary unavailability does not give rise to compensation.</p>
+        <h3 data-i18n="termsA1t">Article 1 — Nature synthétique</h3>
+        <p data-i18n="termsA1">OROLADO is an exclusive software infrastructure generating synthetic indices through cryptographic algorithms and closed mathematical models. No underlying asset represents a share, commodity, or physical currency tradable on an OTC or regulated market.</p>
+        <h3 data-i18n="termsA2t">Article 2 — Jurisdiction &amp; compliance</h3>
+        <p data-i18n="termsA2">Access is strictly reserved to natural persons of legal age under the law of their legal domicile. The user bears the entire burden of verifying the lawfulness of using financial-prediction tools in their jurisdiction. The operator declines any competence over local territorial disputes.</p>
+        <h3 data-i18n="termsA3t">Article 3 — Speculation &amp; non-refundable commitment</h3>
+        <p data-i18n="termsA3">Any commitment carries an immediate risk of total loss of allocated capital. Transaction orders are executed as instantaneous Fill-or-Kill, firm, final and irrevocable. No right of withdrawal or retroactive refund request is admissible after order validation.</p>
+        <h3 data-i18n="termsA4t">Article 4 — Technical hazards &amp; latency</h3>
+        <p data-i18n="termsA4">The operator excludes all contractual liability arising from third-party network interruptions, 4G/5G/Wi-Fi micro-outages, hardware latency on mobile terminals, or temporary server unavailability.</p>
+        <h3 data-i18n="termsA5t">Article 5 — No investment advice</h3>
+        <p data-i18n="termsA5">Metrics, visual signals and interfaces have no value as wealth-management recommendations or financial advice. The user acts under their entire and exclusive strategic responsibility.</p>
+        <h3 data-i18n="termsA6t">Article 6 — Arbitration clause</h3>
+        <p data-i18n="termsA6">By accepting these terms, the user expressly waives any collective judicial action and accepts that any dispute shall be settled by prior technical arbitration.</p>
       </div>
     </div>
   </div>
@@ -1044,16 +1048,16 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=290"></script>
-  <script src="js/translations.js?v=290"></script>
-  <script src="js/i18n.js?v=290"></script>
-  <script src="js/store.js?v=290"></script>
-  <script src="js/api.js?v=290"></script>
+  <script src="js/config.js?v=300"></script>
+  <script src="js/translations.js?v=300"></script>
+  <script src="js/i18n.js?v=300"></script>
+  <script src="js/store.js?v=300"></script>
+  <script src="js/api.js?v=300"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=290"></script>
-  <script src="js/auth.js?v=290"></script>
-  <script src="js/engine.js?v=290"></script>
-  <script src="js/chart.js?v=290"></script>
+  <script src="js/supabase.js?v=300"></script>
+  <script src="js/auth.js?v=300"></script>
+  <script src="js/engine.js?v=300"></script>
+  <script src="js/chart.js?v=300"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <script>
   (function () {
@@ -1104,6 +1108,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=290"></script>
+  <script src="js/app.js?v=300"></script>
 </body>
 </html>

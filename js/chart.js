@@ -16,8 +16,8 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [30, 60, 120, 300, 600];
-  var DEFAULT_ZOOM_IDX = 1;
+  var ZOOM_STEPS = [20, 28, 38, 48, 60, 90, 120, 180, 300, 600];
+  var DEFAULT_ZOOM_IDX = 4;
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 60;
   var wantFitY = false;
@@ -1918,7 +1918,7 @@
 
     var wantZoom = zoomSec();
     if (!(zoomSmooth > 0)) zoomSmooth = wantZoom;
-    zoomSmooth += (wantZoom - zoomSmooth) * 0.22;
+    zoomSmooth += (wantZoom - zoomSmooth) * 0.38;
     if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
     xNow = frameWallClock(now);
     xWin = Math.max(8000, zoomSmooth * 1000);

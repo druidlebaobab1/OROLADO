@@ -17,10 +17,16 @@ html body #screenAuth select{
   touch-action:manipulation}
 html body #screenAuth .auth-wrap{
   flex:1 1 auto;min-height:0;max-height:100%;
+  width:92%!important;max-width:450px!important;
   justify-content:center!important;
   overflow:hidden!important;
-  padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px))!important;
+  padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px))!important;
   margin:0 auto}
+html body #screenAuth .auth-card,
+html body #screenAuth .field,
+html body #screenAuth .field input,
+html body #screenAuth .btn-gold{
+  width:100%;max-width:none}
 html body #screenAuth .auth-card{
   padding:8px 12px 6px!important;
   margin-bottom:0;flex-shrink:0}
@@ -68,19 +74,28 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 .help-terms.link-terms{color:#F59E0B}
 
 #termsModal .terms-box{
-  max-width:min(520px,calc(100vw - 28px));
-  max-height:min(82vh,680px);
+  width:94vw!important;max-width:850px!important;
+  height:88vh!important;max-height:88vh!important;
+  border-radius:16px!important;
   display:flex;flex-direction:column;
-  padding:18px 16px 16px;background:rgba(12,16,26,.96);
-  border:1px solid #1E2638}
-#termsModal .modal-title{margin-bottom:8px;font-size:.92rem;letter-spacing:.04em}
+  overflow:hidden!important;
+  padding:22px 22px 16px;background:rgba(10,14,22,.97);
+  border:1px solid #1E2638;box-sizing:border-box}
+#termsModal .btn-close{
+  top:14px!important;right:14px!important;color:#E8EEF9}
+#termsModal .modal-title{
+  margin:0 40px 14px 0;padding-right:8px;
+  font-size:.78rem;letter-spacing:.08em;line-height:1.35;
+  text-transform:uppercase;font-weight:800;color:#F8FAFC}
 #termsModal .terms-body{
+  flex:1 1 auto;min-height:0;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  color:#CBD5E1;font-size:.78rem;line-height:1.55;padding-right:4px}
+  color:#CBD5E1;font-size:.76rem;font-weight:400;line-height:1.62;
+  padding:0 8px 8px 0;letter-spacing:.01em}
 #termsModal .terms-body h3{
-  margin:14px 0 6px;color:#E8EEF9;font-size:.68rem;font-weight:800;
-  letter-spacing:.08em;text-transform:uppercase}
-#termsModal .terms-body p{margin:0 0 8px;color:#94A3B8}
+  margin:16px 0 6px;color:#E8EEF9;font-size:.66rem;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase}
+#termsModal .terms-body p{margin:0 0 10px;color:#94A3B8;text-align:justify}
 #termsModal .terms-body h3:first-child{margin-top:0}
 
 #formReset .btn-gold.is-waiting,

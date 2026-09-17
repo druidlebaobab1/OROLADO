@@ -129,7 +129,7 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 18px calc(28px + var(--safe));
-  max-width:420px;margin:0 auto;width:100%}
+  max-width:450px;margin:0 auto;width:92%}
 .auth-card{border-radius:14px;padding:18px 16px 18px}
 .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(11,14,20,.65);padding:4px;border-radius:var(--radius);margin-bottom:14px;border:1px solid var(--line)}
 .auth-tab{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;padding:10px;border-radius:var(--radius-sm);cursor:pointer;min-height:var(--btn-h)}
@@ -234,15 +234,15 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
 .asset-chip[data-asset="crash300"]{border-color:rgba(255,255,255,.1)}
 .asset-chip[data-asset="crash300"]:not(.on) .asset-ico{color:inherit}
 .asset-chip[data-asset="crash300"].on{border-color:transparent;box-shadow:0 0 14px rgba(229,46,113,.4)}
-.asset-chip[data-asset="goldtrend"]{border-color:rgba(217,160,58,.45)}
-.asset-chip[data-asset="goldtrend"] .asset-ico,.asset-chip[data-asset="goldtrend"].on{color:#E8C36A}
-.asset-chip[data-asset="goldtrend"].on{border-color:#D9A03A;box-shadow:0 0 10px rgba(217,160,58,.25);background:rgba(217,160,58,.08)}
-.asset-chip[data-asset="boomspike"]{border-color:rgba(0,255,136,.28)}
-.asset-chip[data-asset="boomspike"] .asset-ico{color:#00ff88}
+.asset-chip[data-asset="goldtrend"]{border-color:#f59e0b}
+.asset-chip[data-asset="goldtrend"] .asset-ico,.asset-chip[data-asset="goldtrend"].on{color:#FDE68A}
+.asset-chip[data-asset="goldtrend"].on{border-color:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,.35);background:rgba(245,158,11,.1)}
+.asset-chip[data-asset="boomspike"]{border-color:transparent}
+.asset-chip[data-asset="boomspike"] .asset-ico{color:#ffffff}
 .asset-chip[data-asset="boomspike"].on{
-  border:1.5px solid #ff9800!important;
-  background:#1e1b18!important;
-  box-shadow:0 0 8px rgba(255,152,0,.4)!important;color:#ffffff!important}
+  border-color:transparent;
+  background:transparent;
+  box-shadow:none;color:#ffffff}
 .asset-chip[data-asset="nexusprime"]{border-color:rgba(34,211,238,.42)}
 .asset-chip[data-asset="nexusprime"] .asset-ico,.asset-chip[data-asset="nexusprime"].on{color:#22D3EE}
 .asset-chip[data-asset="nexusprime"].on{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.25);background:rgba(34,211,238,.08)}
@@ -272,15 +272,15 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
   background:linear-gradient(90deg,#ff8a00,#e52e71);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   color:transparent;font-weight:700}
-.asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#D9A03A;box-shadow:0 0 12px rgba(217,160,58,.38);background:linear-gradient(180deg,rgba(217,160,58,.3),rgba(120,53,15,.2));color:#E8C36A}
+.asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,.4);background:linear-gradient(180deg,rgba(245,158,11,.2),rgba(120,53,15,.12));color:#FDE68A}
 .asset-chip[data-asset="boomspike"].on{
-  border:1.5px solid #ff9800!important;
-  background:#1e1b18!important;
-  box-shadow:0 0 8px rgba(255,152,0,.4)!important;color:#ffffff!important}
+  border-color:transparent;
+  background:transparent;
+  box-shadow:none;color:#ffffff}
 .asset-chip[data-asset="boomspike"].on .n,
 .asset-chip[data-asset="boomspike"].on .asset-ico{
   color:#ffffff!important;font-weight:700;-webkit-text-fill-color:#ffffff;background:none;
-  text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  text-shadow:none}
 .asset-chip[data-asset="boomspike"].on .payout-live{color:#ffffff!important;font-weight:700;
   -webkit-text-fill-color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .asset-chip[data-asset="nexusprime"].on{border-width:1.5px;border-color:#22D3EE;box-shadow:0 0 12px rgba(34,211,238,.4);background:linear-gradient(180deg,rgba(34,211,238,.3),rgba(21,94,117,.2));color:#22D3EE}
@@ -2194,28 +2194,49 @@ html.is-fullscreen .ind-pills .chart-reset-btn{
     padding:2px 4px!important;font-size:9px!important;gap:2px!important;margin-right:12px!important}
 }
 
+html body button.asset-chip[data-asset="goldtrend"],
+html body .asset-chip[data-asset="goldtrend"],
+html body .asset-chip[data-asset="goldtrend"]:not(.on){
+  border:1px solid #f59e0b!important;
+  box-shadow:0 0 8px rgba(245,158,11,.28)!important;
+  background:rgba(12,16,24,.55)!important}
+html body button.asset-chip.on[data-asset="goldtrend"],
+html body .asset-chip[data-asset="goldtrend"].on{
+  border:1.5px solid #f59e0b!important;
+  box-shadow:0 0 14px rgba(245,158,11,.42)!important;
+  background:linear-gradient(180deg,rgba(245,158,11,.16),rgba(15,18,26,.9))!important;
+  color:#FDE68A!important}
+
+html body button.asset-chip[data-asset="boomspike"],
 html body button.asset-chip.on[data-asset*="boom"],
+html body .asset-chip[data-asset="boomspike"],
+html body .asset-chip[data-asset="boomspike"]:not(.on),
 html body .asset-chip.on[data-asset="boomspike"],
 html body .asset-tab.active[data-asset*="boom"],
 html body button.tab-asset.active[data-id*="boom"],
 .asset-tab.active[data-asset*="boom"],
 button.tab-asset.active[data-id*="boom"]{
-  background:#1e1b18!important;
-  border:1.5px solid #ff9800!important;
-  box-shadow:0 0 8px rgba(255,152,0,.4)!important;
+  border:1.5px solid transparent!important;
+  background:
+    linear-gradient(180deg,rgba(18,23,34,.96),rgba(12,16,24,.96)) padding-box,
+    linear-gradient(90deg,#10B981 0%,#10B981 42%,#F43F5E 58%,#F43F5E 100%) border-box!important;
+  box-shadow:none!important;
   color:#ffffff!important}
 html body button.asset-chip.on[data-asset*="boom"] .n,
 html body button.asset-chip.on[data-asset*="boom"] .asset-ico,
+html body .asset-chip[data-asset="boomspike"] .n,
+html body .asset-chip[data-asset="boomspike"] .asset-ico,
 html body .asset-chip.on[data-asset="boomspike"] .n,
 html body .asset-chip.on[data-asset="boomspike"] .asset-ico,
 .asset-tab.active[data-asset*="boom"] .asset-name{
   color:#ffffff!important;font-weight:700!important;-webkit-text-fill-color:#ffffff;background:none;
-  text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  text-shadow:none}
 html body button.asset-chip.on[data-asset*="boom"] .payout-live,
 html body .asset-chip.on[data-asset="boomspike"] .payout-live,
+html body .asset-chip[data-asset="boomspike"] .payout-live,
 .asset-tab.active[data-asset*="boom"] .asset-payout{
   color:#ffffff!important;font-weight:700!important;-webkit-text-fill-color:#ffffff;
-  text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  text-shadow:none}
 
 /* ===== Finitions responsive : barre d'outils, rangée d'actifs, inscription ===== */
 
@@ -2316,11 +2337,7 @@ html.is-android #screenTrade .chart-stage{
 /* Boom Spike : le blanc à droite du libellé restait nu. Un reflet ambré very
    léger l'habille sans toucher aux neuf autres onglets. */
 html body .asset-chip[data-asset="boomspike"]{position:relative}
-html body .asset-chip[data-asset="boomspike"]::after{
-  content:'';position:absolute;top:0;right:0;bottom:0;width:48%;pointer-events:none;border-radius:inherit;
-  background:linear-gradient(90deg,rgba(255,152,0,0) 0%,rgba(255,152,0,.09) 55%,rgba(255,183,77,.2) 100%);
-  opacity:.5;transition:opacity .2s ease}
-html body .asset-chip[data-asset="boomspike"].on::after{opacity:1}
+html body .asset-chip[data-asset="boomspike"]::after{display:none!important}
 html body .asset-chip[data-asset="boomspike"] .n,
 html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-index:1}
 

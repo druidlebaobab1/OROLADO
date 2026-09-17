@@ -146,7 +146,7 @@
       },
       goldtrend: {
         id: 'goldtrend',
-        name: 'ORO GOLD TREND',
+        name: 'ORO GOLD',
         short: 'GOLD',
         tag: 'Grandes vagues',
         chart: 'line',
