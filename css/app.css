@@ -234,15 +234,12 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
 .asset-chip[data-asset="crash300"]{border-color:rgba(255,255,255,.1)}
 .asset-chip[data-asset="crash300"]:not(.on) .asset-ico{color:inherit}
 .asset-chip[data-asset="crash300"].on{border-color:transparent;box-shadow:0 0 14px rgba(229,46,113,.4)}
-.asset-chip[data-asset="goldtrend"]{border-color:#f59e0b}
-.asset-chip[data-asset="goldtrend"] .asset-ico,.asset-chip[data-asset="goldtrend"].on{color:#FDE68A}
-.asset-chip[data-asset="goldtrend"].on{border-color:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,.35);background:rgba(245,158,11,.1)}
-.asset-chip[data-asset="boomspike"]{border-color:transparent}
-.asset-chip[data-asset="boomspike"] .asset-ico{color:#ffffff}
-.asset-chip[data-asset="boomspike"].on{
-  border-color:transparent;
-  background:transparent;
-  box-shadow:none;color:#ffffff}
+.asset-chip[data-asset="goldtrend"]{border-color:rgba(255,255,255,.08)}
+.asset-chip[data-asset="goldtrend"] .asset-ico{color:inherit}
+.asset-chip[data-asset="goldtrend"].on{border-color:#fbbf24;color:#FFFBEB}
+.asset-chip[data-asset="boomspike"]{border-color:rgba(255,255,255,.08)}
+.asset-chip[data-asset="boomspike"] .asset-ico{color:inherit}
+.asset-chip[data-asset="boomspike"].on{border-color:transparent;color:#ffffff}
 .asset-chip[data-asset="nexusprime"]{border-color:rgba(34,211,238,.42)}
 .asset-chip[data-asset="nexusprime"] .asset-ico,.asset-chip[data-asset="nexusprime"].on{color:#22D3EE}
 .asset-chip[data-asset="nexusprime"].on{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.25);background:rgba(34,211,238,.08)}
@@ -272,11 +269,10 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
   background:linear-gradient(90deg,#ff8a00,#e52e71);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   color:transparent;font-weight:700}
-.asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,.4);background:linear-gradient(180deg,rgba(245,158,11,.2),rgba(120,53,15,.12));color:#FDE68A}
+.asset-chip[data-asset="goldtrend"].on{border-width:1.5px;border-color:#fbbf24;color:#FFFBEB}
 .asset-chip[data-asset="boomspike"].on{
   border-color:transparent;
-  background:transparent;
-  box-shadow:none;color:#ffffff}
+  color:#ffffff}
 .asset-chip[data-asset="boomspike"].on .n,
 .asset-chip[data-asset="boomspike"].on .asset-ico{
   color:#ffffff!important;font-weight:700;-webkit-text-fill-color:#ffffff;background:none;
@@ -2194,23 +2190,41 @@ html.is-fullscreen .ind-pills .chart-reset-btn{
     padding:2px 4px!important;font-size:9px!important;gap:2px!important;margin-right:12px!important}
 }
 
-html body button.asset-chip[data-asset="goldtrend"],
-html body .asset-chip[data-asset="goldtrend"],
+html body button.asset-chip[data-asset="goldtrend"]:not(.on),
 html body .asset-chip[data-asset="goldtrend"]:not(.on){
-  border:1px solid #f59e0b!important;
-  box-shadow:0 0 8px rgba(245,158,11,.28)!important;
-  background:rgba(12,16,24,.55)!important}
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:none!important;
+  background:rgba(255,255,255,.04)!important;
+  color:inherit!important}
 html body button.asset-chip.on[data-asset="goldtrend"],
 html body .asset-chip[data-asset="goldtrend"].on{
-  border:1.5px solid #f59e0b!important;
-  box-shadow:0 0 14px rgba(245,158,11,.42)!important;
-  background:linear-gradient(180deg,rgba(245,158,11,.16),rgba(15,18,26,.9))!important;
-  color:#FDE68A!important}
+  position:relative;isolation:isolate;overflow:hidden;
+  border:1.5px solid #fbbf24!important;
+  box-shadow:
+    0 0 0 1px rgba(56,189,248,.42),
+    0 0 16px rgba(251,191,36,.55),
+    inset 0 0 14px rgba(217,119,6,.28)!important;
+  background-color:#1a1208!important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='48' viewBox='0 0 120 48' preserveAspectRatio='none'%3E%3Cpath d='M0 30C20 18 40 42 60 30S100 18 120 30' fill='none' stroke='%23fbbf24' stroke-opacity='.45' stroke-width='1.2'/%3E%3Cpath d='M0 22C18 12 40 32 60 22S102 12 120 22' fill='none' stroke='%2338bdf8' stroke-opacity='.32' stroke-width='1'/%3E%3Cpath d='M0 36C22 26 44 46 66 36S110 26 132 36' fill='none' stroke='%23d97706' stroke-opacity='.4' stroke-width='1'/%3E%3C/svg%3E"),
+    linear-gradient(135deg,rgba(217,119,6,.88) 0%,rgba(251,191,36,.42) 46%,rgba(14,22,40,.94) 100%)!important;
+  background-size:100% 100%,100% 100%;
+  background-position:center;
+  color:#FFFBEB!important}
+html body .asset-chip[data-asset="goldtrend"].on .n,
+html body .asset-chip[data-asset="goldtrend"].on .asset-ico,
+html body .asset-chip[data-asset="goldtrend"].on .payout-live{
+  position:relative;z-index:2;
+  color:#FFFBEB!important;-webkit-text-fill-color:#FFFBEB;
+  text-shadow:0 0 8px rgba(251,191,36,.5);font-weight:800}
 
-html body button.asset-chip[data-asset="boomspike"],
+html body button.asset-chip[data-asset="boomspike"]:not(.on),
+html body .asset-chip[data-asset="boomspike"]:not(.on){
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:none!important;
+  background:rgba(255,255,255,.04)!important;
+  color:inherit!important}
 html body button.asset-chip.on[data-asset*="boom"],
-html body .asset-chip[data-asset="boomspike"],
-html body .asset-chip[data-asset="boomspike"]:not(.on),
 html body .asset-chip.on[data-asset="boomspike"],
 html body .asset-tab.active[data-asset*="boom"],
 html body button.tab-asset.active[data-id*="boom"],
@@ -2220,12 +2234,10 @@ button.tab-asset.active[data-id*="boom"]{
   background:
     linear-gradient(180deg,rgba(18,23,34,.96),rgba(12,16,24,.96)) padding-box,
     linear-gradient(90deg,#10B981 0%,#10B981 42%,#F43F5E 58%,#F43F5E 100%) border-box!important;
-  box-shadow:none!important;
+  box-shadow:0 0 10px rgba(16,185,129,.18),0 0 10px rgba(244,63,94,.16)!important;
   color:#ffffff!important}
 html body button.asset-chip.on[data-asset*="boom"] .n,
 html body button.asset-chip.on[data-asset*="boom"] .asset-ico,
-html body .asset-chip[data-asset="boomspike"] .n,
-html body .asset-chip[data-asset="boomspike"] .asset-ico,
 html body .asset-chip.on[data-asset="boomspike"] .n,
 html body .asset-chip.on[data-asset="boomspike"] .asset-ico,
 .asset-tab.active[data-asset*="boom"] .asset-name{
@@ -2233,7 +2245,6 @@ html body .asset-chip.on[data-asset="boomspike"] .asset-ico,
   text-shadow:none}
 html body button.asset-chip.on[data-asset*="boom"] .payout-live,
 html body .asset-chip.on[data-asset="boomspike"] .payout-live,
-html body .asset-chip[data-asset="boomspike"] .payout-live,
 .asset-tab.active[data-asset*="boom"] .asset-payout{
   color:#ffffff!important;font-weight:700!important;-webkit-text-fill-color:#ffffff;
   text-shadow:none}

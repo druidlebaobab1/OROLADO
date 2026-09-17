@@ -87,8 +87,8 @@
       loMul = 0.42;
       hiMul = 1.58;
     } else if (id === 'goldtrend') {
-      loMul = 0.50;
-      hiMul = 1.50;
+      loMul = 0.94;
+      hiMul = 1.06;
     } else if (id === 'apex500') {
       loMul = 0.60;
       hiMul = 1.40;
@@ -115,7 +115,7 @@
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
     if (id === 'titanpulse') return 0.0410;
-    if (id === 'goldtrend') return 0.0212;
+    if (id === 'goldtrend') return 0.0064;
     if (id === 'apex500') return 0.0146;
     if (id === 'boomspike') return 0.004;
     if (id === 'nexusprime' || id === 'v75') return 0.0025;
@@ -236,7 +236,7 @@
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     // Rappel vers la moyenne allégé : les vagues partent franchement dans une
     // direction au lieu d'être ramenées au centre à chaque pas.
-    goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 24, pullK: 0.024 },
+    goldtrend: { mode: 'line', vol: 0.0280, color: '#ffb300', goldHot: true, tickMs: 28, stepMs: 18, pullK: 0.072 },
     // Titan Pulse : générateur universel de chandeliers, sans formule dédiée.
     // La cadence la plus rapide de la plateforme.
     titanpulse: { mode: 'candles', vol: 0.0760, stepMs: 16, pullK: 0.075, wickK: 0.38 },
@@ -244,6 +244,7 @@
   var SIM_VER = 20;
   var BOOM_VER = 7;
   var CRASH_VER = 2;
+  var GOLD_VER = 3;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
   var SCALE_VER = 13;
@@ -357,13 +358,11 @@
       var pullC = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.05);
       nextOut = price + zigC + waveC + zig2C + pullC;
     } else if (sim.goldHot && !opts.spike) {
-      var nG = (roll - 0.5) * price * vol;
-      // Force directionnelle ×2,5 : montées et descentes franches, sans stagnation.
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.002875;
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.001375;
-      var microG = ((roll - 0.5) * 2) * price * 0.0055;
-      if (!busyIn && roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.01625;
-      var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
+      var nG = (roll - 0.5) * price * vol * 0.38;
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * 18) * price * 0.00068;
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * 31.5) * price * 0.00032;
+      var microG = ((roll - 0.5) * 2) * price * 0.00095;
+      var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.072);
       nextOut = price + nG + p1G + p2G + microG + pullG;
     } else if (sim.nexusPulse && !opts.spike) {
       var nN = (roll - 0.5) * price * vol;
@@ -671,7 +670,7 @@
       forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
       nextSpike: nextSpike,
       coreVer: sim.coreWave ? 1 : 0,
-      goldVer: sim.goldHot ? 2 : 0,
+      goldVer: sim.goldHot ? GOLD_VER : 0,
       boomVer: asset.id === 'boomspike' ? BOOM_VER : (sim.boomBurst ? 2 : 0),
       crashVer: asset.id === 'crash300' ? CRASH_VER : 0,
       nexusVer: sim.nexusPulse ? 1 : 0,
@@ -696,6 +695,7 @@
     if (!buf || !buf.candles || buf.candles.length < 40) return true;
     if (asset.id === 'boomspike' && buf.boomVer !== BOOM_VER) return true;
     if (asset.id === 'crash300' && buf.crashVer !== CRASH_VER) return true;
+    if (asset.id === 'goldtrend' && buf.goldVer !== GOLD_VER) return true;
     if (buf.scaleVer !== SCALE_VER) return true;
     return false;
   }

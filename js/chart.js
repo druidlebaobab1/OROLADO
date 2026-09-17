@@ -1715,38 +1715,25 @@
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
     ctx.save();
-    // Cotation compacte : 10 px monospace, 5 px de marge latérale, 2 px en
-    // haut et en bas, bordée de la couleur de l'actif. Un filet pointillé
-    // relie la pastille de cours à l'axe des prix, comme sur les plateformes pro.
     var accent = assetColor || '#F5A623';
     ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(txt).width) + 10;
-    var th = 14;
-    var headX = layout && layout.headX != null ? layout.headX : cssW * headRatio();
-    var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
+    var tw = Math.ceil(ctx.measureText(txt).width) + 8;
+    var th = 12;
     var y = map.lastY - th / 2;
     y = Math.max(2, Math.min(cssH - th - 2, y));
-    var x = headX + 10;
+    var x = map.lastX + 9;
+    var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 2) x = axisX - tw - 2;
-    if (x < headX + 8) x = headX + 8;
-    ctx.setLineDash(GUIDE_DASH);
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(map.lastX, map.lastY);
-    ctx.lineTo(axisX, map.lastY);
-    ctx.stroke();
-    ctx.setLineDash(NO_DASH);
-    ctx.fillStyle = 'rgba(8,12,20,0.78)';
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 1;
-    roundRect(x, y, tw, th, 3);
+    ctx.fillStyle = 'rgba(11,14,20,0.28)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.lineWidth = 0.6;
+    roundRect(x, y, tw, th, 7);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = accent;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(txt, x + tw / 2, y + th / 2 + 0.5);
+    ctx.fillText(txt, x + tw / 2, y + th / 2 + 0.4);
     ctx.restore();
   }
 
@@ -1876,6 +1863,24 @@
     return { min: histMin - span * padBottomRatio(), max: histMax + span * padTopRatio() };
   }
 
+  function goldCamera(histMin, histMax, prevMin, prevMax, head) {
+    var p = head > 0 ? head : (histMin + histMax) / 2;
+    if (!(p > 0)) p = 7340;
+    var raw = histMax - histMin;
+    var floor = p * 0.004;
+    var cap = p * 0.016;
+    var span = Math.min(Math.max(raw > 0 ? raw : floor, floor), cap);
+    var tMin = p - span * 0.52;
+    var tMax = p + span * 0.48;
+    if (prevMin && prevMax && prevMax > prevMin) {
+      return {
+        min: prevMin + (tMin - prevMin) * 0.075,
+        max: prevMax + (tMax - prevMax) * 0.075
+      };
+    }
+    return { min: tMin, max: tMax };
+  }
+
   function drawFrame(now) {
     try {
     if (!ctx) return;
@@ -1989,6 +1994,11 @@
       wantFitY = false;
       pendingYAnchor = null;
     } else if (fsOn && viewMax > viewMin) {
+      if (activeAsset === 'goldtrend') {
+        var gFs = goldCamera(minPrice, maxPrice, viewMin, viewMax, head);
+        viewMin = gFs.min;
+        viewMax = gFs.max;
+      } else {
       // Plein écran : la fenêtre glisse en continu vers le cadrage cible au lieu
       // de rester figée, sinon la courbe dérive vers le haut ou le bas.
       var fsFit = fitVisibleY(candles, extrasY);
@@ -1997,6 +2007,7 @@
       if (minPrice < viewMin || maxPrice > viewMax) {
         viewMin = fsFit.min;
         viewMax = fsFit.max;
+      }
       }
       if (holdLock) {
         st.lockMin = viewMin;
@@ -2019,7 +2030,9 @@
       strikeLock = null;
       var prevMin = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (st.viewMin || 0);
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
-      var cam = idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
+      var cam = activeAsset === 'goldtrend'
+        ? goldCamera(minPrice, maxPrice, prevMin, prevMax, head)
+        : idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
       viewMin = cam.min;
       viewMax = cam.max;
     }
@@ -2031,7 +2044,7 @@
       var safeFit = fitVisibleY(candles, extrasY);
       viewMin = safeFit.min;
       viewMax = safeFit.max;
-    } else if (!fsOn && !holdLock) {
+    } else if (!fsOn && !holdLock && activeAsset !== 'goldtrend') {
       if (head > viewMax - keepAir) viewMax = head + keepAir;
       if (head < viewMin + keepAirLow) viewMin = head - keepAirLow;
       if (isFinite(strikeP) && strikeP > 0) {
