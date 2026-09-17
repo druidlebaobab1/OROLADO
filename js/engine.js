@@ -1,5 +1,174 @@
-(function (D6) {
+/* ==========================================================================
+   CORE ENGINE - CALCUL STOCHASTIQUE SCELLÉ DÉFINITIF - NE PAS MODIFIER
+   ========================================================================== */
+(function (root) {
   'use strict';
+
+  var D6 = root.D6 = root.D6 || {};
+
+  var StochasticCore = (function () {
+    var SEALED = Object.freeze({
+      SIGMA: 0.00125,
+      DEFAULT_ODDS: 1.88,
+      WIN_P_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.008 }),
+      WIN_P_DEMO: Object.freeze({ '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 }),
+      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 }),
+      PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
+    });
+
+    function boxMuller() {
+      var u = 0;
+      var v = 0;
+      while (!(u > 0 && u < 1)) u = Math.random();
+      while (!(v > 0 && v < 1)) v = Math.random();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    function invNorm(p) {
+      var a1 = -3.969683028665376e+01;
+      var a2 = 2.209460984245205e+02;
+      var a3 = -2.759285104469687e+02;
+      var a4 = 1.383577509590705e+02;
+      var a5 = -3.066479806614716e+01;
+      var a6 = 2.506628277459239e+00;
+      var b1 = -5.447609879822406e+01;
+      var b2 = 1.615858368580409e+02;
+      var b3 = -1.556989798598866e+02;
+      var b4 = 6.680131188771972e+01;
+      var b5 = -1.328068155288572e+01;
+      var c1 = -7.784894002430293e-03;
+      var c2 = -3.223964580411365e-01;
+      var c3 = -2.400758277161838e+00;
+      var c4 = -2.549732539343734e+00;
+      var c5 = 4.374664141464968e+00;
+      var c6 = 2.938163982698783e+00;
+      var d1 = 7.784695709041462e-03;
+      var d2 = 3.224671290700398e-01;
+      var d3 = 2.445134137142996e+00;
+      var d4 = 3.754408661907416e+00;
+      var plow = 0.02425;
+      var phigh = 1 - plow;
+      var q;
+      var r;
+      if (!(p > 0) || p >= 1) {
+        if (p <= 0) return -8;
+        return 8;
+      }
+      if (p < plow) {
+        q = Math.sqrt(-2 * Math.log(p));
+        return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+          ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+      }
+      if (phigh < p) {
+        q = Math.sqrt(-2 * Math.log(1 - p));
+        return -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
+          ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+      }
+      q = p - 0.5;
+      r = q * q;
+      return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
+        (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+    }
+
+    function oddsKey(mult) {
+      var n = Number(mult);
+      if (Math.abs(n - 1.88) < 0.001) return '1.88';
+      if (Math.abs(n - 6) < 0.001) return '6';
+      if (Math.abs(n - 11) < 0.001) return '11';
+      if (n >= 50) return '51';
+      return '1.88';
+    }
+
+    function winProb(payout, profile) {
+      var map = SEALED.WIN_P_REAL;
+      if (profile === 'demo') map = SEALED.WIN_P_DEMO;
+      else if (profile === 'admin') map = SEALED.WIN_P_ADMIN_REAL;
+      var p = Number(map[oddsKey(payout)]);
+      if (!isFinite(p) || p <= 0 || p >= 1) return 0.42;
+      return p;
+    }
+
+    function profitPct(payout) {
+      var pct = Number(SEALED.PROFIT_PCT[oddsKey(payout)]);
+      if (!isFinite(pct) || pct <= 0) return 88;
+      return pct;
+    }
+
+    function gbmPrice(S0, dt, mu, sigma, z) {
+      var s = Number(S0);
+      if (!(s > 0) || !isFinite(s)) s = 1;
+      var t = Number(dt);
+      if (!(t > 0) || !isFinite(t)) t = 1;
+      var sig = Number(sigma);
+      if (!(sig > 0) || !isFinite(sig)) sig = SEALED.SIGMA;
+      var m = Number(mu);
+      if (!isFinite(m)) m = 0;
+      var zz = Number(z);
+      if (!isFinite(zz)) zz = 0;
+      var st = s * Math.exp((m - 0.5 * sig * sig) * t + sig * Math.sqrt(t) * zz);
+      if (!isFinite(st) || st <= 0) return s;
+      return st;
+    }
+
+    function driftForSide(side, pWin, sigma, dt) {
+      var sig = Number(sigma);
+      if (!(sig > 0) || !isFinite(sig)) sig = SEALED.SIGMA;
+      var t = Number(dt);
+      if (!(t > 0) || !isFinite(t)) t = 1;
+      var zP = side === 'put' ? invNorm(1 - pWin) : invNorm(pWin);
+      if (!isFinite(zP)) zP = 0;
+      return 0.5 * sig * sig + zP * sig / Math.sqrt(t);
+    }
+
+    function round2(n) {
+      return Math.round(Number(n) * 100) / 100;
+    }
+
+    function settle(args) {
+      var entry = Number(args && args.entryPrice);
+      if (!(entry > 0) || !isFinite(entry)) entry = 1000;
+      var dt = Number(args && args.durationSec);
+      if (!(dt > 0) || !isFinite(dt)) dt = 5;
+      var side = (args && args.side) === 'put' ? 'put' : 'call';
+      var payout = (args && args.payout) != null ? args.payout : SEALED.DEFAULT_ODDS;
+      var profile = (args && args.profile) || 'real';
+      var p = winProb(payout, profile);
+      var sigma = SEALED.SIGMA;
+      var mu = driftForSide(side, p, sigma, dt);
+      var z = boxMuller();
+      var st = round2(gbmPrice(entry, dt, mu, sigma, z));
+      entry = round2(entry);
+      var voided = st === entry;
+      var won = voided ? false : (side === 'put' ? st < entry : st > entry);
+      if (!(st > 0) || !isFinite(st)) {
+        st = entry;
+        voided = true;
+        won = false;
+      }
+      return Object.freeze({
+        exitPrice: st,
+        won: won,
+        voided: voided
+      });
+    }
+
+    return Object.freeze({
+      SEALED: SEALED,
+      boxMuller: boxMuller,
+      invNorm: invNorm,
+      gbmPrice: gbmPrice,
+      winProb: winProb,
+      profitPct: profitPct,
+      settle: settle,
+      oddsKey: oddsKey,
+      round2: round2
+    });
+  })();
+
+  if (typeof module !== 'undefined' && module.exports && typeof window === 'undefined') {
+    module.exports = StochasticCore;
+    return;
+  }
 
   var C = D6.CONFIG;
   var markets = {};
@@ -248,6 +417,10 @@
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
   var SCALE_VER = 13;
+  Object.keys(SIM).forEach(function (sid) {
+    if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
+  });
+  Object.freeze(SIM);
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -1213,7 +1386,6 @@
     };
     var admin = isAdminUser(user);
     var isDemo = mode !== 'real';
-    var harsh = false;
 
     if (isDemo) {
       return { winProbability: winRateForOdds(trade.payout, demoMap), harsh: false, profile: 'B' };
@@ -1223,28 +1395,7 @@
     }
 
     var winProbability = winRateForOdds(trade.payout, realMap);
-    var losses = Number(user.consecutiveLosses) || 0;
-    var lastBet = Number(user.lastBetAmount) || Number(user.lastStake) || 0;
-    var currentBet = Number(trade.stake) || 0;
-    var doubling = lastBet > 0 && currentBet >= lastBet * 1.8;
-
-    if (losses >= 2 && doubling) {
-      winProbability = 0;
-      harsh = true;
-    }
-
-    var deposited = Number(user.realDepositTotal) || 0;
-    if (deposited > 0) {
-      var wallet = balOf(user, 'real');
-      var netProfit = wallet - deposited;
-      if (netProfit > deposited * 0.80) {
-        var k = oddsKey(trade.payout);
-        var ceilRate = (k === '1.88') ? 0.15 : 0.01;
-        winProbability = Math.min(winProbability, ceilRate);
-      }
-    }
-
-    return { winProbability: winProbability, harsh: harsh, profile: 'C' };
+    return { winProbability: winProbability, harsh: false, profile: 'C' };
   }
 
   function decideTradeOutcome(user, trade, mode) {
@@ -1521,7 +1672,6 @@
         user.requiredWagering = D6.roundMoney((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
       }
       user.lastStake = stake;
-      // Ne pas écraser lastBetAmount ici : réservé à la clôture (anti-martingale).
       persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
       var pub = publicTrade(t);
@@ -1579,9 +1729,24 @@
         syncMarket(mkt, C.ASSETS[trade.assetId], Date.now());
       }
       trade.payout = payout;
-      var voided = false;
-      var exitPrice = readFinalPrice(trade);
-      var won = wonFromPrice(trade, exitPrice);
+      var profile = 'real';
+      if (mode !== 'real') profile = 'demo';
+      else if (isAdminUser(user)) profile = 'admin';
+      var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
+      var dtSec = Number(trade.duration);
+      if (!(dtSec > 0)) dtSec = Number(trade.durationMs) / 1000;
+      if (!(dtSec > 0)) dtSec = 5;
+      var sideNow = (trade.ticket && trade.ticket.side) || trade.side;
+      var verdict = StochasticCore.settle({
+        entryPrice: entryPx,
+        durationSec: dtSec,
+        side: sideNow,
+        payout: payout,
+        profile: profile
+      });
+      var voided = !!verdict.voided;
+      var exitPrice = Number(verdict.exitPrice);
+      var won = !!verdict.won && !voided;
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
@@ -1636,8 +1801,6 @@
       trade.status = status;
       trade.closePrice = exitPrice;
       trade.exitPrice = exitPrice;
-      // Historique mise pour anti-martingale (trade suivant).
-      user.lastBetAmount = trade.stake;
       user.lastStake = trade.stake;
 
       user.trades = (user.trades || 0) + 1;
@@ -1741,4 +1904,4 @@
   try {
     Object.defineProperty(D6, 'Engine', { configurable: false, writable: false, value: api });
   } catch (e) { /* ignore */ }
-})(window.D6 = window.D6 || {});
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));
