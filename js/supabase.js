@@ -196,10 +196,6 @@
     var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', pid).maybeSingle();
     var vault = (vaultRes && vaultRes.data) ? { demo: vaultRes.data.demo, real: vaultRes.data.real } : { demo: D6.CONFIG.DEMO_START, real: 0 };
     var localUser = D6.Store.current && D6.Store.current();
-    if (localUser && localUser.id === pid && D6.Store.realBalance) {
-      var localReal = Number(D6.Store.realBalance(localUser) || 0);
-      if (!(Number(vault.real) > 0) && localReal > 0) vault.real = localReal;
-    }
     var ordRes = await sb.from('orders').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(100);
     var txRes = await sb.from('transactions').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(80);
     var cloudPositions = ((ordRes && ordRes.data) || []).filter(isSettledOrder).map(orderToPosition);
@@ -269,37 +265,31 @@
 
   function applyIncomingVault(vault, profile) {
     var u = D6.Store.current();
-    if (!u || !uuidish(u.id) || !vault) return;
-    var live = D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount();
-    var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
-    var localDemo = D6.Store.demoBalance(u);
-    var remoteReal = Number(vault.real);
-    var remoteDemo = Number(vault.demo);
-    if (!isFinite(remoteReal) || remoteReal <= 0) remoteReal = localReal;
-    if (!isFinite(remoteDemo) || remoteDemo <= 0) remoteDemo = localDemo;
-    var next = { demo: localDemo, real: localReal };
-    var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
-    var locked = locks && Date.now() < locks.until;
-    if (locked) {
-      next.demo = locks.demo != null && locks.demo > 0 ? locks.demo : localDemo;
-      next.real = locks.real != null && locks.real > 0 ? locks.real : localReal;
-      if (remoteReal > next.real) next.real = remoteReal;
-    } else if (live) {
-      next.demo = localDemo;
-      next.real = localReal;
-      if (remoteReal > next.real) next.real = remoteReal;
-    } else {
-      next.demo = remoteDemo > 0 ? remoteDemo : localDemo;
-      next.real = remoteReal > 0 ? remoteReal : localReal;
-    }
-    if (D6.holdDepositReal) next.real = Math.max(localReal, remoteReal, next.real);
+    if (!u || !uuidish(u.id)) return;
     if (profile) {
       if (profile.display_name) u.displayName = profile.display_name;
       if (profile.phone) u.phone = profile.phone;
       if (profile.country_code) u.countryCode = profile.country_code;
     }
+    var next = {};
+    if (vault) {
+      var remoteReal = Number(vault.real);
+      var remoteDemo = Number(vault.demo);
+      if (isFinite(remoteReal) && remoteReal > 0) next.real = remoteReal;
+      if (isFinite(remoteDemo) && remoteDemo > 0) next.demo = remoteDemo;
+      var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
+      var locked = locks && Date.now() < locks.until;
+      if (locked) {
+        if (!(next.real > 0) && locks.real != null && locks.real > 0) next.real = locks.real;
+        if (!(next.demo > 0) && locks.demo != null && locks.demo > 0) next.demo = locks.demo;
+      }
+      if (D6.holdDepositReal) {
+        var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+        if (localReal > 0) next.real = Math.max(localReal, next.real || 0);
+      }
+    }
     D6.holdPull = true;
-    D6.Store.importRemote(u, next);
+    D6.Store.importRemote(u, (next.real || next.demo) ? next : null);
     D6.holdPull = false;
     if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount(next);
   }
@@ -343,10 +333,7 @@
         var row = payload.new;
         if (!row) return;
         var u = D6.Store.current();
-        applyIncomingVault({
-          demo: D6.Store.demoBalance(u),
-          real: D6.Store.realBalance ? D6.Store.realBalance(u) : 0
-        }, row);
+        applyIncomingVault(null, row);
       })
       .subscribe();
     pollTimer = setInterval(function () { pullVault(); }, 12000);

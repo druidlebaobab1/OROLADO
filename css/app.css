@@ -533,8 +533,7 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
 .btn-trade.locked{filter:grayscale(.4);opacity:.45;animation:none;box-shadow:none}
 .btn-trade.soft-pause,
 .btn-trade.soft-pause:disabled{
-  opacity:.5!important;cursor:not-allowed!important;filter:none;animation:none;box-shadow:none;
-  pointer-events:none}
+  opacity:1!important;cursor:pointer!important;filter:none;pointer-events:auto}
 .trade-row{display:flex;flex-direction:row;align-items:stretch;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:0;margin:8px 0 0}
 .btn-trade{border:0;border-radius:var(--radius);min-height:52px;flex:1 1 0;min-width:0;width:auto;font:inherit;font-weight:700;letter-spacing:0;text-transform:uppercase;
   cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#fff;padding:12px 8px;font-size:12px;line-height:1.15;

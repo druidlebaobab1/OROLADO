@@ -111,11 +111,12 @@
   var selectedOp = 'wave';
   var selectedAsset = 'v100';
   var depositOp = 'wave';
-  var lastClickAt = 0;
-  var clickSoftUntil = 0;
-  var rapidBurst = 0;
   var lastOfficialReal = null;
   var lastOfficialDemo = null;
+  var tradeQ = [];
+  var tradeQBusy = false;
+  var lastPlaceOkAt = 0;
+  var TRADE_Q_MAX = 12;
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
@@ -124,6 +125,7 @@
   var balanceLockDemo = null;
   var balanceLockReal = null;
   var lastPaintedBalance = null;
+  var lastPaintedMode = null;
   var metaPvAt = 0;
   var metaPvScreen = '';
   var IS_ANDROID = /Android/i.test(navigator.userAgent || '');
@@ -503,6 +505,15 @@
     return true;
   }
 
+  function fmtOutcomeUsd(n) {
+    var v = D6.roundMoney(Math.abs(Number(n) || 0));
+    if (!isFinite(v)) v = 0;
+    var cents = Math.round((v - Math.floor(v)) * 100);
+    var grouped = Math.floor(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    var body = cents ? (grouped + '.' + (cents < 10 ? '0' : '') + cents) : grouped;
+    return '+$' + body;
+  }
+
   function showOutcomeToast(isWin, payout, tradeId) {
     if (tradeId) {
       if (outcomeToastSeen[tradeId]) return;
@@ -522,9 +533,6 @@
       stage.appendChild(el);
     }
     var amount = Math.abs(Number(payout) || 0);
-    if (!isWin && amount <= 0) {
-      amount = Math.abs(Number($('inputStake') && $('inputStake').value) || (D6.CONFIG && D6.CONFIG.MIN_STAKE) || 1);
-    }
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
     var slot = outcomeSlot % 8;
     outcomeSlot += 1;
@@ -533,9 +541,9 @@
     el.style.setProperty('--ox', dx + 'px');
     el.style.setProperty('--oy', dy + 'px');
     if (isWin) {
-      el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>+' + D6.fmtFCFA(amount) + '</span>';
+      el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
-      el.textContent = '-' + D6.fmtFCFA(amount);
+      el.textContent = '+$0';
     }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
@@ -856,35 +864,47 @@
     D6.Store.saveUser(u);
     stake = D6.CONFIG.MIN_STAKE || 1;
     if ($('inputStake')) $('inputStake').value = stake;
+    lastPaintedBalance = null;
+    lastPaintedMode = null;
     setModeUi(u);
     updateBalance(true);
     updatePayoutUi();
     renderHistory();
     syncTradeButtons();
+    if (next === 'real') refreshRemoteVault();
   }
 
   function updateBalance(flash) {
     var u = user();
     if (!u) return;
-    var demo = D6.Store.demoBalance(u);
-    var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    var isReal = u.mode === 'real';
+    var demo = Number(D6.Store.demoBalance(u)) || 0;
+    var real = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0) || 0;
     if (Date.now() < balanceLockUntil) {
-      if (balanceLockDemo != null) demo = Math.max(demo, balanceLockDemo);
-      if (balanceLockReal != null) real = Math.max(real, balanceLockReal);
-      if (u.mode !== 'real' && balanceLockDemo != null) demo = balanceLockDemo;
-      if (u.mode === 'real' && balanceLockReal != null) real = balanceLockReal;
+      if (!isReal && balanceLockDemo != null && Number(balanceLockDemo) > 0) demo = Number(balanceLockDemo);
+      if (isReal && balanceLockReal != null && Number(balanceLockReal) > 0) real = Number(balanceLockReal);
     }
-    if (!(Number(real) > 0) && lastOfficialReal > 0) real = lastOfficialReal;
-    if (!(Number(demo) > 0) && lastOfficialDemo > 0) demo = lastOfficialDemo;
-    if (Number(real) > 0) lastOfficialReal = Number(real);
-    if (Number(demo) > 0) lastOfficialDemo = Number(demo);
-    var active = u.mode === 'real' ? real : demo;
-    if (!(Number(active) > 0) && lastPaintedBalance) {
+    if (isReal) {
+      if (!(real > 0) && lastOfficialReal > 0) real = lastOfficialReal;
+    } else {
+      if (!(demo > 0) && lastOfficialDemo > 0) demo = lastOfficialDemo;
+    }
+    var active = isReal ? real : demo;
+    var modeKey = isReal ? 'real' : 'demo';
+    if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
+    lastPaintedMode = modeKey;
+    if (isReal) {
+      if (!(Number(active) > 0) && lastOfficialReal > 0) active = lastOfficialReal;
+      if (!(Number(active) > 0)) active = 0;
+    } else if (!(Number(active) > 0) && lastPaintedBalance) {
       setModeChrome(u);
       return;
     }
     paintBalanceNow(active, !!flash);
-    if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
+    if ($('profWalletBal')) {
+      var walletReal = lastOfficialReal > 0 ? lastOfficialReal : real;
+      $('profWalletBal').textContent = D6.fmtMoney(walletReal > 0 ? walletReal : 0);
+    }
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
       $('balanceAlt').hidden = true;
@@ -1041,7 +1061,7 @@
       cls = 'void';
       net = 0;
     } else if (h.won) {
-      label = 'Gagné +' + D6.fmtFCFA(Math.abs(net));
+      label = 'Gagné ' + fmtOutcomeUsd(Math.abs(net));
       cls = 'win';
     } else {
       label = '+$0';
@@ -1053,7 +1073,7 @@
       '<div><div class="h-main">' + (h.clock || '') + ' · ' + h.assetName + ' · ' + (h.duration || '') + 's</div>' +
       '<div class="h-time">' + D6.fmtFCFA(stake) + ' · ' + label + '</div></div>' +
       '<span class="h-gain ' + (h.won ? 'w' : (h.voided ? '' : 'l')) + '">' +
-      (h.won ? ('+' + D6.fmtFCFA(Math.abs(net))) : (h.voided ? '0' : '+0')) + '</span></div>';
+      (h.won ? fmtOutcomeUsd(Math.abs(net)) : '+$0') + '</span></div>';
   }
 
   function liveOrderRow(t) {
@@ -1203,71 +1223,39 @@
     }, 80);
   }
 
-  function applySoftClickPause(ms) {
-    clickSoftUntil = Date.now() + (ms || 350);
-    var call = $('btnCall');
-    var put = $('btnPut');
-    if (call) {
-      call.disabled = true;
-      call.classList.add('soft-pause');
-    }
-    if (put) {
-      put.disabled = true;
-      put.classList.add('soft-pause');
-    }
-    setTimeout(function () {
-      if (Date.now() >= clickSoftUntil) syncTradeButtons();
-    }, (ms || 350) + 20);
-  }
-
   function syncTradeButtons() {
-    var u = user();
-    var mode = u && u.mode === 'real' ? 'real' : 'demo';
-    var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-    var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
-    var paused = Date.now() < clickSoftUntil;
-    var busy = n >= max || paused;
     var call = $('btnCall');
     var put = $('btnPut');
     if (call) {
-      call.disabled = busy;
-      call.classList.toggle('locked', n >= max && !paused);
-      call.classList.toggle('soft-pause', paused);
+      call.disabled = false;
+      call.removeAttribute('disabled');
+      call.classList.remove('locked', 'soft-pause');
     }
     if (put) {
-      put.disabled = busy;
-      put.classList.toggle('locked', n >= max && !paused);
-      put.classList.toggle('soft-pause', paused);
+      put.disabled = false;
+      put.removeAttribute('disabled');
+      put.classList.remove('locked', 'soft-pause');
     }
     var hint = $('tradeLockHint');
     if (hint) hint.classList.remove('on');
   }
 
-  function armTradeCooldown() {
-    setTimeout(syncTradeButtons, D6.CONFIG.MIN_ORDER_MS);
-  }
-
   function adoptOfficialVault(vault) {
     if (!vault || !user()) return false;
+    var payload = {};
     var real = Number(vault.real);
     var demo = Number(vault.demo);
-    if (isFinite(real) && real > 0) lastOfficialReal = real;
-    if (isFinite(demo) && demo > 0) lastOfficialDemo = demo;
-    if ((!(real > 0) && lastOfficialReal > 0) || (!(demo > 0) && lastOfficialDemo > 0)) {
-      D6.holdPull = true;
-      D6.Store.importRemote(user(), {
-        real: real > 0 ? real : lastOfficialReal,
-        demo: demo > 0 ? demo : lastOfficialDemo
-      });
-      D6.holdPull = false;
-      return true;
+    if (isFinite(real) && real > 0) {
+      lastOfficialReal = real;
+      payload.real = real;
     }
-    if (!(real > 0) && !(demo > 0)) return false;
+    if (isFinite(demo) && demo > 0) {
+      lastOfficialDemo = demo;
+      payload.demo = demo;
+    }
+    if (payload.real == null && payload.demo == null) return false;
     D6.holdPull = true;
-    D6.Store.importRemote(user(), {
-      real: real > 0 ? real : undefined,
-      demo: demo > 0 ? demo : undefined
-    });
+    D6.Store.importRemote(user(), payload);
     D6.holdPull = false;
     return true;
   }
@@ -1281,6 +1269,7 @@
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    if (!(Number(real) > 0) && lastOfficialReal > 0) real = lastOfficialReal;
     if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
     profRecvCoin = 'usdt';
     paintProfRecv();
@@ -2052,12 +2041,7 @@
     openModal('adminUserModal');
   }
 
-  function setTradingLocked(on) {
-    if (on) {
-      $('btnCall').disabled = true;
-      $('btnPut').disabled = true;
-      return;
-    }
+  function setTradingLocked() {
     syncTradeButtons();
   }
 
@@ -2111,29 +2095,65 @@
   }
 
   function execute(side) {
-    var now = performance.now();
-    if (Date.now() < clickSoftUntil) return;
-    if (lastClickAt && now - lastClickAt < 280) rapidBurst += 1;
-    else rapidBurst = 1;
-    lastClickAt = now;
-    var needPause = rapidBurst >= 7;
-    if (needPause) rapidBurst = 0;
+    if (tradeQ.length >= TRADE_Q_MAX) return;
+    tradeQ.push(side);
+    if (!IS_ANDROID || tradeQ.length === 1) playTap();
+    pumpTradeQ();
+  }
+
+  function pumpTradeQ() {
+    if (tradeQBusy) return;
+    tradeQBusy = true;
+    function tick() {
+      if (!tradeQ.length) {
+        tradeQBusy = false;
+        return;
+      }
+      var u = user();
+      if (!u) {
+        tradeQ.length = 0;
+        tradeQBusy = false;
+        return;
+      }
+      var mode = u.mode === 'real' ? 'real' : 'demo';
+      var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
+      var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
+      if (open >= maxOpen) {
+        tradeQ.length = 0;
+        tradeQBusy = false;
+        syncTradeButtons();
+        return;
+      }
+      var gap = Number((D6.CONFIG && D6.CONFIG.MIN_ORDER_MS) || 350);
+      var wait = lastPlaceOkAt ? (gap - (Date.now() - lastPlaceOkAt)) : 0;
+      if (wait > 16) {
+        setTimeout(tick, Math.min(wait, 40));
+        return;
+      }
+      var nextSide = tradeQ.shift();
+      if (placeTradeNow(nextSide)) lastPlaceOkAt = Date.now();
+      setTimeout(tick, 0);
+    }
+    tick();
+  }
+
+  function placeTradeNow(side) {
     var u = user();
-    if (!u) return;
+    if (!u) return false;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
     var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
     if (open >= maxOpen) {
       syncTradeButtons();
-      return;
+      return false;
     }
     stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     if (D6.Store.balanceOf(u) < stake) {
       toast(t('insufficient'), 'err', 2000);
-      return;
+      tradeQ.length = 0;
+      return false;
     }
-    playTap();
     var sealedDur = Number(u.duration);
     var sealedPay = currentOdds(u);
     var sealedAsset = assetId(u);
@@ -2145,33 +2165,22 @@
       payout: sealedPay
     });
     if (!res.ok) {
-      if (isSilentTradeMsg(res.reason)) {
-        syncTradeButtons();
-        return;
-      }
+      if (isSilentTradeMsg(res.reason)) return false;
       if (/insuffisant|insufficient/i.test(String(res.reason || ''))) {
         toast(t('insufficient'), 'err', 2000);
-      } else {
-        toast(res.reason, 'err', 2000);
+        tradeQ.length = 0;
       }
       syncTradeButtons();
-      return;
+      return false;
     }
-    // P0 : ligne immédiate (file d’attente si chart pas prêt).
     if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) {
       D6.Chart.applyOpenTradeVisual(res.trade);
     }
-    if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
-    requestAnimationFrame(function () {
-      if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) D6.Chart.applyOpenTradeVisual(res.trade);
-      if (D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
-    });
+    if (!IS_ANDROID && D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
     updateBalance(true);
     updatePriceHud();
     patchHistorySoon();
-    armTradeCooldown();
     syncTradeButtons();
-    if (needPause) applySoftClickPause(350);
     lockBalanceOptimistic(
       mode === 'demo' ? D6.Store.demoBalance(u) : null,
       mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : null) : null,
@@ -2190,13 +2199,12 @@
       }).then(function (remote) {
         var cur = user();
         if (remote && remote.ok && remote.vault && cur && mode !== 'real') {
-          if (!(D6.Engine.liveCount && D6.Engine.liveCount(mode) > 0)) {
-            adoptOfficialVault(remote.vault);
-            updateBalance(true);
-          }
+          adoptOfficialVault({ demo: remote.vault.demo });
+          updateBalance(true);
         }
       });
     }
+    return true;
   }
 
   function checkoutUrlSafe(url, u) {
@@ -5547,7 +5555,8 @@
   }
 
   D6.App = {
-    onRemoteAccount: function () {
+    onRemoteAccount: function (vault) {
+      if (vault) adoptOfficialVault(vault);
       updateBalance(true);
       fillProfile();
     },

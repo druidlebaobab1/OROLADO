@@ -291,12 +291,16 @@
       db.users[user.id] = hydrate(Object.assign({}, user));
       if (vaultEntry) {
         var prevV = vault[user.id] || { demo: 0, real: 0 };
-        var nextReal = Number(vaultEntry.real);
-        var nextDemo = Number(vaultEntry.demo);
-        vault[user.id] = {
-          demo: isFinite(nextDemo) && nextDemo > 0 ? nextDemo : prevV.demo,
-          real: isFinite(nextReal) && nextReal > 0 ? nextReal : prevV.real
-        };
+        var next = { demo: prevV.demo, real: prevV.real };
+        if (Object.prototype.hasOwnProperty.call(vaultEntry, 'demo')) {
+          var nextDemo = Number(vaultEntry.demo);
+          if (isFinite(nextDemo) && nextDemo > 0) next.demo = nextDemo;
+        }
+        if (Object.prototype.hasOwnProperty.call(vaultEntry, 'real')) {
+          var nextReal = Number(vaultEntry.real);
+          if (isFinite(nextReal) && nextReal > 0) next.real = nextReal;
+        }
+        vault[user.id] = next;
       }
       persist(true);
       rememberSession(db.session);
