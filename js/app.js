@@ -113,6 +113,9 @@
   var depositOp = 'wave';
   var lastClickAt = 0;
   var clickSoftUntil = 0;
+  var rapidBurst = 0;
+  var lastOfficialReal = null;
+  var lastOfficialDemo = null;
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
@@ -325,8 +328,8 @@
 
   function lockBalanceOptimistic(demo, real, ms) {
     balanceLockUntil = Date.now() + (ms || 8000);
-    if (demo != null && isFinite(Number(demo))) balanceLockDemo = Number(demo);
-    if (real != null && isFinite(Number(real))) balanceLockReal = Number(real);
+    if (demo != null && isFinite(Number(demo)) && Number(demo) > 0) balanceLockDemo = Number(demo);
+    if (real != null && isFinite(Number(real)) && Number(real) > 0) balanceLockReal = Number(real);
   }
 
   function getBalanceLocks() {
@@ -868,11 +871,18 @@
     if (Date.now() < balanceLockUntil) {
       if (balanceLockDemo != null) demo = Math.max(demo, balanceLockDemo);
       if (balanceLockReal != null) real = Math.max(real, balanceLockReal);
-      // Pendant le lock, privilégie la valeur locale (optimistic) pour éviter le flash ancien→nouveau.
       if (u.mode !== 'real' && balanceLockDemo != null) demo = balanceLockDemo;
       if (u.mode === 'real' && balanceLockReal != null) real = balanceLockReal;
     }
+    if (!(Number(real) > 0) && lastOfficialReal > 0) real = lastOfficialReal;
+    if (!(Number(demo) > 0) && lastOfficialDemo > 0) demo = lastOfficialDemo;
+    if (Number(real) > 0) lastOfficialReal = Number(real);
+    if (Number(demo) > 0) lastOfficialDemo = Number(demo);
     var active = u.mode === 'real' ? real : demo;
+    if (!(Number(active) > 0) && lastPaintedBalance) {
+      setModeChrome(u);
+      return;
+    }
     paintBalanceNow(active, !!flash);
     if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
     if ($('balanceAlt')) {
@@ -1194,7 +1204,7 @@
   }
 
   function applySoftClickPause(ms) {
-    clickSoftUntil = Date.now() + (ms || 1600);
+    clickSoftUntil = Date.now() + (ms || 350);
     var call = $('btnCall');
     var put = $('btnPut');
     if (call) {
@@ -1207,7 +1217,7 @@
     }
     setTimeout(function () {
       if (Date.now() >= clickSoftUntil) syncTradeButtons();
-    }, (ms || 1600) + 30);
+    }, (ms || 350) + 20);
   }
 
   function syncTradeButtons() {
@@ -1237,15 +1247,29 @@
     setTimeout(syncTradeButtons, D6.CONFIG.MIN_ORDER_MS);
   }
 
-  function pushOfficialVault() {
-    var u = user();
-    if (!u || isGuest(u)) return;
-    try {
-      if (D6.Store && D6.Store.saveUser) D6.Store.saveUser(u);
-    } catch (eSv) { /* ignore */ }
-    try {
-      if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
-    } catch (eSb) { /* ignore */ }
+  function adoptOfficialVault(vault) {
+    if (!vault || !user()) return false;
+    var real = Number(vault.real);
+    var demo = Number(vault.demo);
+    if (isFinite(real) && real > 0) lastOfficialReal = real;
+    if (isFinite(demo) && demo > 0) lastOfficialDemo = demo;
+    if ((!(real > 0) && lastOfficialReal > 0) || (!(demo > 0) && lastOfficialDemo > 0)) {
+      D6.holdPull = true;
+      D6.Store.importRemote(user(), {
+        real: real > 0 ? real : lastOfficialReal,
+        demo: demo > 0 ? demo : lastOfficialDemo
+      });
+      D6.holdPull = false;
+      return true;
+    }
+    if (!(real > 0) && !(demo > 0)) return false;
+    D6.holdPull = true;
+    D6.Store.importRemote(user(), {
+      real: real > 0 ? real : undefined,
+      demo: demo > 0 ? demo : undefined
+    });
+    D6.holdPull = false;
+    return true;
   }
 
   function fillProfile() {
@@ -2069,7 +2093,6 @@
     maybeLossStreakTip(user());
     patchHistorySoon();
     syncTradeButtons();
-    pushOfficialVault();
     if (D6.Api && D6.Api.token() && id) {
       D6.Api.post('settleOrder', {
         orderId: id,
@@ -2078,34 +2101,29 @@
         net: res.net,
         exitPrice: res.exitPrice || res.closePrice
       }).then(function (remote) {
-        if (remote && remote.ok && remote.vault && user()) {
-          D6.holdPull = true;
-          D6.Store.importRemote(user(), remote.vault);
-          D6.holdPull = false;
+        if (remote && remote.ok && remote.vault) {
+          adoptOfficialVault(remote.vault);
           updateBalance(true);
         }
         refreshRemoteVault();
       }, refreshRemoteVault);
-    } else {
-      refreshRemoteVault();
     }
   }
 
   function execute(side) {
     var now = performance.now();
     if (Date.now() < clickSoftUntil) return;
-    if (lastClickAt && now - lastClickAt < 480) {
-      applySoftClickPause(1600);
-      return;
-    }
+    if (lastClickAt && now - lastClickAt < 280) rapidBurst += 1;
+    else rapidBurst = 1;
     lastClickAt = now;
+    var needPause = rapidBurst >= 7;
+    if (needPause) rapidBurst = 0;
     var u = user();
     if (!u) return;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
     var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
     if (open >= maxOpen) {
-      applySoftClickPause(1600);
       syncTradeButtons();
       return;
     }
@@ -2128,7 +2146,6 @@
     });
     if (!res.ok) {
       if (isSilentTradeMsg(res.reason)) {
-        applySoftClickPause(1600);
         syncTradeButtons();
         return;
       }
@@ -2154,12 +2171,12 @@
     patchHistorySoon();
     armTradeCooldown();
     syncTradeButtons();
+    if (needPause) applySoftClickPause(350);
     lockBalanceOptimistic(
       mode === 'demo' ? D6.Store.demoBalance(u) : null,
-      mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : 0) : null,
+      mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : null) : null,
       10000
     );
-    pushOfficialVault();
     if (D6.Api && D6.Api.token()) {
       D6.Api.post('placeOrder', {
         id: res.trade.id,
@@ -2173,9 +2190,8 @@
       }).then(function (remote) {
         var cur = user();
         if (remote && remote.ok && remote.vault && cur && mode !== 'real') {
-          // Ne pas écraser le vault local tant que des trades sont ouverts (multi-place).
           if (!(D6.Engine.liveCount && D6.Engine.liveCount(mode) > 0)) {
-            D6.Store.importRemote(cur, remote.vault);
+            adoptOfficialVault(remote.vault);
             updateBalance(true);
           }
         }
@@ -3404,12 +3420,7 @@
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
       if (remote && remote.ok && remote.vault && user()) {
-        D6.holdPull = true;
-        D6.Store.importRemote(user(), {
-          demo: remote.vault.demo,
-          real: remote.vault.real
-        });
-        D6.holdPull = false;
+        adoptOfficialVault(remote.vault);
         updateBalance(false);
       }
     }

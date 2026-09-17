@@ -275,22 +275,22 @@
     var localDemo = D6.Store.demoBalance(u);
     var remoteReal = Number(vault.real);
     var remoteDemo = Number(vault.demo);
-    if (!isFinite(remoteReal)) remoteReal = localReal;
-    if (!isFinite(remoteDemo)) remoteDemo = localDemo;
+    if (!isFinite(remoteReal) || remoteReal <= 0) remoteReal = localReal;
+    if (!isFinite(remoteDemo) || remoteDemo <= 0) remoteDemo = localDemo;
     var next = { demo: localDemo, real: localReal };
     var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
     var locked = locks && Date.now() < locks.until;
     if (locked) {
-      next.demo = locks.demo != null ? locks.demo : localDemo;
-      next.real = locks.real != null ? locks.real : localReal;
+      next.demo = locks.demo != null && locks.demo > 0 ? locks.demo : localDemo;
+      next.real = locks.real != null && locks.real > 0 ? locks.real : localReal;
       if (remoteReal > next.real) next.real = remoteReal;
     } else if (live) {
       next.demo = localDemo;
       next.real = localReal;
       if (remoteReal > next.real) next.real = remoteReal;
     } else {
-      next.demo = isFinite(remoteDemo) ? remoteDemo : localDemo;
-      next.real = isFinite(remoteReal) ? remoteReal : localReal;
+      next.demo = remoteDemo > 0 ? remoteDemo : localDemo;
+      next.real = remoteReal > 0 ? remoteReal : localReal;
     }
     if (D6.holdDepositReal) next.real = Math.max(localReal, remoteReal, next.real);
     if (profile) {
@@ -381,9 +381,9 @@
     var user = D6.Store.current();
     if (!sb || !user || !uuidish(user.id)) return;
     var vault = {
-      demo: D6.Store.demoBalance(user),
-      real: D6.Store.realBalance ? D6.Store.realBalance(user) : 0
+      demo: D6.Store.demoBalance(user)
     };
+    if (!(isFinite(vault.demo) && vault.demo > 0)) return;
     sb.from('profiles').upsert({
       id: user.id,
       display_name: user.displayName || '',
@@ -407,7 +407,6 @@
     sb.from('vaults').upsert({
       user_id: user.id,
       demo: vault.demo,
-      real: vault.real,
       updated_at: new Date().toISOString()
     }).then(function () { /* ignore */ });
   }
