@@ -878,32 +878,31 @@
     var u = user();
     if (!u) return;
     var isReal = u.mode === 'real';
-    var demo = Number(D6.Store.demoBalance(u)) || 0;
-    var real = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0) || 0;
+    var demo = Number(D6.Store.demoBalance(u));
+    var real = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0);
+    if (!isFinite(demo)) demo = 0;
+    if (!isFinite(real)) real = 0;
+    // Le moteur (place/settle) est la source de vérité. Le verrou et le
+    // cache officiel ne servent que si le seau actif est vide — jamais pour
+    // écraser un gain ou une perte déjà écrits en local.
     if (Date.now() < balanceLockUntil) {
-      if (!isReal && balanceLockDemo != null && Number(balanceLockDemo) > 0) demo = Number(balanceLockDemo);
-      if (isReal && balanceLockReal != null && Number(balanceLockReal) > 0) real = Number(balanceLockReal);
+      if (!(demo > 0) && balanceLockDemo != null && Number(balanceLockDemo) > 0) demo = Number(balanceLockDemo);
+      if (!(real > 0) && balanceLockReal != null && Number(balanceLockReal) > 0) real = Number(balanceLockReal);
     }
     if (isReal) {
       if (!(real > 0) && lastOfficialReal > 0) real = lastOfficialReal;
+      if (real > 0) lastOfficialReal = real;
     } else {
       if (!(demo > 0) && lastOfficialDemo > 0) demo = lastOfficialDemo;
+      if (demo > 0) lastOfficialDemo = demo;
     }
     var active = isReal ? real : demo;
     var modeKey = isReal ? 'real' : 'demo';
     if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
     lastPaintedMode = modeKey;
-    if (isReal) {
-      if (!(Number(active) > 0) && lastOfficialReal > 0) active = lastOfficialReal;
-      if (!(Number(active) > 0)) active = 0;
-    } else if (!(Number(active) > 0) && lastPaintedBalance) {
-      setModeChrome(u);
-      return;
-    }
     paintBalanceNow(active, !!flash);
     if ($('profWalletBal')) {
-      var walletReal = lastOfficialReal > 0 ? lastOfficialReal : real;
-      $('profWalletBal').textContent = D6.fmtMoney(walletReal > 0 ? walletReal : 0);
+      $('profWalletBal').textContent = D6.fmtMoney(real > 0 ? real : (lastOfficialReal > 0 ? lastOfficialReal : 0));
     }
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
@@ -1258,6 +1257,23 @@
     D6.Store.importRemote(user(), payload);
     D6.holdPull = false;
     return true;
+  }
+
+  function adoptSettledVault(vault, settledMode) {
+    if (!vault || !user()) return false;
+    var mode = settledMode === 'real' ? 'real' : 'demo';
+    var local = mode === 'real'
+      ? (D6.Store.realBalance ? D6.Store.realBalance(user()) : 0)
+      : D6.Store.demoBalance(user());
+    var remoteMode = Number(vault[mode]);
+    var payload = {};
+    if (mode !== 'real' && Number(vault.real) > 0) payload.real = Number(vault.real);
+    if (mode !== 'demo' && Number(vault.demo) > 0) payload.demo = Number(vault.demo);
+    if (isFinite(remoteMode) && remoteMode > 0 && isFinite(Number(local)) && Math.abs(remoteMode - Number(local)) < 0.05) {
+      payload[mode] = remoteMode;
+    }
+    if (payload.real == null && payload.demo == null) return false;
+    return adoptOfficialVault(payload);
   }
 
   function fillProfile() {
@@ -2086,11 +2102,10 @@
         exitPrice: res.exitPrice || res.closePrice
       }).then(function (remote) {
         if (remote && remote.ok && remote.vault) {
-          adoptOfficialVault(remote.vault);
+          adoptSettledVault(remote.vault, (res.trade && res.trade.mode) || (uSettled && uSettled.mode));
           updateBalance(true);
         }
-        refreshRemoteVault();
-      }, refreshRemoteVault);
+      }, function () { /* le solde local du moteur reste la référence */ });
     }
   }
 
@@ -2196,13 +2211,7 @@
         assetId: res.trade.assetId,
         entryPrice: res.trade.entryPrice,
         payout: res.trade.payout || currentOdds(u)
-      }).then(function (remote) {
-        var cur = user();
-        if (remote && remote.ok && remote.vault && cur && mode !== 'real') {
-          adoptOfficialVault({ demo: remote.vault.demo });
-          updateBalance(true);
-        }
-      });
+      }).then(function () { /* solde déjà débité en local par le moteur */ });
     }
     return true;
   }
@@ -5556,7 +5565,7 @@
 
   D6.App = {
     onRemoteAccount: function (vault) {
-      if (vault) adoptOfficialVault(vault);
+      if (vault && !D6.holdRemote) adoptOfficialVault(vault);
       updateBalance(true);
       fillProfile();
     },

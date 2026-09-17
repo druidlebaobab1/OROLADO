@@ -272,7 +272,7 @@
       if (profile.country_code) u.countryCode = profile.country_code;
     }
     var next = {};
-    if (vault) {
+    if (vault && !D6.holdRemote) {
       var remoteReal = Number(vault.real);
       var remoteDemo = Number(vault.demo);
       if (isFinite(remoteReal) && remoteReal > 0) next.real = remoteReal;
