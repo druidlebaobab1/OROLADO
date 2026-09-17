@@ -65,7 +65,8 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=280">
+    <link rel="stylesheet" href="css/app.css?v=290">
+    <link rel="stylesheet" href="css/auth.css?v=290">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -231,7 +232,7 @@
           </div>
           <label class="check-row">
             <input id="regAge" type="checkbox" required>
-            <span data-i18n="age">J’ai plus de 18 ans et j’accepte les conditions d’utilisation</span>
+            <span><span data-i18n="ageBefore">J’ai plus de 18 ans et j’accepte les </span><button type="button" class="link-terms" id="btnOpenTerms" data-i18n="termsOfUse">conditions d’utilisation</button></span>
           </label>
           <p class="err-msg" id="err-regAge"></p>
           <button class="btn-gold" type="submit" data-i18n="createAccount">Créer mon compte</button>
@@ -999,6 +1000,7 @@
           <textarea id="helpMessage" required maxlength="500" rows="4"></textarea>
         </div>
         <button type="submit" class="btn-gold" data-i18n="helpSend">Envoyer</button>
+        <button type="button" class="link-terms help-terms" id="btnHelpTerms" data-i18n="termsRisks">Conditions d'Utilisation &amp; Risques</button>
       </form>
     </div>
   </div>
@@ -1010,6 +1012,23 @@
       <div class="convert-title" data-i18n="tipTitle">Trading tip</div>
       <p class="convert-copy" data-i18n="lossStreakTip">Activez les indicateurs MA, BB et EMA au-dessus du graphique pour analyser la tendance avant de trader !</p>
       <button type="button" class="btn-gold tip-ok" id="btnTipOk" data-i18n="continue">CONTINUER</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="termsModal">
+    <div class="modal-box glass terms-box" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+      <button type="button" class="btn-close" id="closeTerms" aria-label="Close">✕</button>
+      <div class="modal-title" id="termsTitle" data-i18n="termsTitle">Terms of Use &amp; Risk Notice</div>
+      <div class="terms-body">
+        <h3 data-i18n="termsA1t">Article 1 — Nature of the service</h3>
+        <p data-i18n="termsA1">OROLADO is a software platform that provides proprietary synthetic indices and real-time mathematical simulation algorithms for entertainment and predictive-strategy purposes. Access to the interface does not constitute an offer of regulated financial instruments, nor the operation of a regulated market, multilateral trading facility, or investment service within the meaning of applicable financial-market legislation.</p>
+        <h3 data-i18n="termsA2t">Article 2 — Capacity and jurisdiction</h3>
+        <p data-i18n="termsA2">Use of the platform is strictly reserved to persons who have reached the age of majority under the law of their place of residence. Each user is solely responsible for ensuring that their use of the service complies with the laws, regulations, and restrictions applicable in their jurisdiction. The operator does not provide legal advice and does not warrant that the service is available or lawful in every territory.</p>
+        <h3 data-i18n="termsA3t">Article 3 — Capital commitment and speculative character</h3>
+        <p data-i18n="termsA3">Any engagement on the platform is speculative in nature and may result in the total loss of the amount committed. Executed transactions are final, irrevocable, and non-refundable. Past simulation outcomes are not indicative of future results. Users should only commit capital they can afford to allocate in full.</p>
+        <h3 data-i18n="termsA4t">Article 4 — Technical limitation of liability</h3>
+        <p data-i18n="termsA4">The operator shall not be liable for network incidents, loss of internet connectivity on the user’s side, latency or malfunction of third-party equipment, hosting interruptions beyond reasonable control, or events of force majeure. The service is provided on an as-available basis; momentary unavailability does not give rise to compensation.</p>
+      </div>
     </div>
   </div>
 
@@ -1025,16 +1044,16 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=280"></script>
-  <script src="js/translations.js?v=280"></script>
-  <script src="js/i18n.js?v=280"></script>
-  <script src="js/store.js?v=280"></script>
-  <script src="js/api.js?v=280"></script>
+  <script src="js/config.js?v=290"></script>
+  <script src="js/translations.js?v=290"></script>
+  <script src="js/i18n.js?v=290"></script>
+  <script src="js/store.js?v=290"></script>
+  <script src="js/api.js?v=290"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=280"></script>
-  <script src="js/auth.js?v=280"></script>
-  <script src="js/engine.js?v=280"></script>
-  <script src="js/chart.js?v=280"></script>
+  <script src="js/supabase.js?v=290"></script>
+  <script src="js/auth.js?v=290"></script>
+  <script src="js/engine.js?v=290"></script>
+  <script src="js/chart.js?v=290"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <script>
   (function () {
@@ -1085,6 +1104,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=280"></script>
+  <script src="js/app.js?v=290"></script>
 </body>
 </html>

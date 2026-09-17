@@ -26,7 +26,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #particlesCanvas{position:fixed;inset:0;pointer-events:none;z-index:1;display:none}
 @media (min-width:860px){#particlesCanvas{display:block}}
 .screen{position:relative;z-index:2;height:100%;height:100dvh;max-height:100dvh;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-#screenAuth{overflow-y:auto;-webkit-overflow-scrolling:touch}
+#screenAuth{overflow:hidden!important;-webkit-overflow-scrolling:none}
 #screenTrade{overflow:hidden}
 .hidden{display:none!important}
 .glass{background:rgba(18,23,34,.88);border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.35);backdrop-filter:blur(16px)}
@@ -2268,23 +2268,7 @@ html body .chart-fs-live{display:none!important}
     min-width:88px!important}
 }
 
-/* Les logos de devises sous « créer mon compte » butaient sur la barre de
-   navigation Android : on leur réserve de quoi défiler en entier. */
-html body #formRegister,
-html body #formLogin{padding-bottom:28px;margin-bottom:25px}
-html body .auth-card,
-html body .auth-wrap{padding-bottom:calc(28px + var(--safe,0px))}
-@media (max-width:859px){
-  #screenAuth.screen{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
-  html body .auth-wrap{
-    justify-content:flex-start!important;
-    padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))!important}
-  html.is-android #screenAuth .auth-wrap,
-  html.is-android #screenAuth .auth-card,
-  html.is-android #formRegister{
-    padding-bottom:28px!important;margin-bottom:25px}
-  html.is-android .auth-crypto-in-form{margin-bottom:12px;padding-bottom:8px}
-}
+/* Cadre d'authentification : tout tient sans défiler (voir css/auth.css). */
 
 /* Code OTP : message net sous le champ, sans boîte d'alerte. */
 #err-otpCode.on,#err-resetOtp.on,#err-passOtp.on{
@@ -2298,12 +2282,14 @@ html body .auth-wrap{padding-bottom:calc(28px + var(--safe,0px))}
 #formReset[data-step="email"] #forgotStepConfirm,
 #formReset[data-step="otp"] #forgotStepNew,
 #formReset[data-step="otp"] #forgotStepConfirm,
+#formReset[data-step="otp"] .otp-resend-line,
 #formReset[data-step="password"] #forgotStepOtp,
 #formPassword[data-step="email"] #passStepOtp,
 #formPassword[data-step="email"] #passStepNew,
 #formPassword[data-step="email"] #passStepConfirm,
 #formPassword[data-step="otp"] #passStepNew,
 #formPassword[data-step="otp"] #passStepConfirm,
+#formPassword[data-step="otp"] .otp-resend-line,
 #formPassword[data-step="password"] #passStepOtp{display:none!important}
 .otp-resend-link,.otp-resend-row .mini,#btnOtpResend,#btnForgotResend,#btnPassResend{
   pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:5}

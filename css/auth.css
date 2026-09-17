@@ -1,0 +1,88 @@
+/* Écran d'authentification : un seul bloc visible, aucun défilement. */
+html body #screenAuth.screen,
+html.is-android #screenAuth.screen,
+html.is-ios #screenAuth.screen{
+  position:fixed!important;inset:0!important;width:100%!important;
+  overflow:hidden!important;
+  height:100vh!important;height:100dvh!important;
+  max-height:100vh!important;max-height:100dvh!important;
+  overscroll-behavior:none!important;
+  -webkit-overflow-scrolling:auto;
+  touch-action:none}
+html body #screenAuth input,
+html body #screenAuth button,
+html body #screenAuth label,
+html body #screenAuth textarea,
+html body #screenAuth select{
+  touch-action:manipulation}
+html body #screenAuth .auth-wrap{
+  flex:1 1 auto;min-height:0;max-height:100%;
+  justify-content:center!important;
+  overflow:hidden!important;
+  padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px))!important;
+  margin:0 auto}
+html body #screenAuth .auth-card{
+  padding:8px 12px 6px!important;
+  margin-bottom:0;flex-shrink:0}
+html body #screenAuth .brand-lockup{gap:2px;flex-shrink:0}
+html body #screenAuth .logo-mark{width:32px;height:32px}
+html body #screenAuth .brand-xl{font-size:1.32rem;line-height:1.05}
+html body #screenAuth .brand-domain{font-size:.52rem;letter-spacing:.18em}
+html body #screenAuth .brand-sub{margin:2px 0 6px;font-size:.64rem}
+html body #screenAuth .auth-tabs{margin-bottom:6px;padding:3px;gap:4px}
+html body #screenAuth .auth-tab{padding:6px;min-height:32px;font-size:.8rem}
+html body #screenAuth .field{gap:2px;margin-bottom:5px}
+html body #screenAuth .field label{font-size:.58rem;letter-spacing:.05em;line-height:1.15}
+html body #screenAuth .field input{
+  padding:7px 10px;min-height:36px;font-size:16px;line-height:1.15}
+html body #screenAuth .pass-toggle{min-width:32px;min-height:32px;padding:5px}
+html body #screenAuth .check-row{margin:2px 0 5px;font-size:.64rem;line-height:1.25;gap:8px}
+html body #screenAuth .link-forgot{margin:0 0 5px;font-size:.64rem}
+html body #screenAuth .btn-gold{min-height:38px}
+html body #screenAuth .legal{margin-top:4px;font-size:.52rem;flex-shrink:0}
+html body #screenAuth .auth-crypto-line{margin:6px 0 0;gap:3px}
+html body #screenAuth .auth-crypto-line .coin-svg,
+html body #screenAuth .auth-coin-ring .coin-svg{width:18px;height:18px}
+html body #screenAuth .auth-coin-ring{padding:3px}
+html body #screenAuth .auth-crypto-line span[data-i18n="authInstant"]{font-size:.56rem;line-height:1.2}
+html body #formRegister,
+html body #formLogin{padding-bottom:0;margin-bottom:0}
+html body #screenAuth .auth-crypto-in-form{
+  display:flex!important;flex-direction:column!important;align-items:center;
+  margin-top:6px!important;margin-bottom:0;padding-bottom:0;gap:3px}
+html body #screenAuth .auth-crypto-after-card{display:none!important}
+html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
+@media (max-height:740px){
+  html body #screenAuth .logo-mark{width:28px;height:28px}
+  html body #screenAuth .brand-xl{font-size:1.18rem}
+  html body #screenAuth .brand-sub{margin:1px 0 4px}
+  html body #screenAuth .field input{min-height:34px;padding:6px 10px}
+  html body #screenAuth .btn-gold{min-height:36px}
+  html body #screenAuth .auth-tab{min-height:30px;padding:5px}
+}
+
+.link-terms,button.link-terms{
+  background:none;border:0;padding:0;margin:0;font:inherit;font-weight:700;
+  color:#F59E0B;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.help-terms{display:block;width:100%;text-align:center;margin:10px 0 0;font-size:.68rem;color:#94A3B8}
+.help-terms.link-terms{color:#F59E0B}
+
+#termsModal .terms-box{
+  max-width:min(520px,calc(100vw - 28px));
+  max-height:min(82vh,680px);
+  display:flex;flex-direction:column;
+  padding:18px 16px 16px;background:rgba(12,16,26,.96);
+  border:1px solid #1E2638}
+#termsModal .modal-title{margin-bottom:8px;font-size:.92rem;letter-spacing:.04em}
+#termsModal .terms-body{
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  color:#CBD5E1;font-size:.78rem;line-height:1.55;padding-right:4px}
+#termsModal .terms-body h3{
+  margin:14px 0 6px;color:#E8EEF9;font-size:.68rem;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase}
+#termsModal .terms-body p{margin:0 0 8px;color:#94A3B8}
+#termsModal .terms-body h3:first-child{margin-top:0}
+
+#formReset .btn-gold.is-waiting,
+#formPassword .btn-gold.is-waiting{
+  opacity:.55;cursor:default;pointer-events:none}

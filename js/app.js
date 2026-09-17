@@ -3787,6 +3787,17 @@
   }
 
   function bindAuth() {
+    var authScreen = $('screenAuth');
+    if (authScreen && !authScreen._oroNoScroll) {
+      authScreen._oroNoScroll = true;
+      authScreen.addEventListener('touchmove', function (e) {
+        if (e.target && e.target.closest && e.target.closest('input,textarea,select,.terms-body')) return;
+        if (e.cancelable) e.preventDefault();
+      }, { passive: false });
+      authScreen.addEventListener('wheel', function (e) {
+        if (e.cancelable) e.preventDefault();
+      }, { passive: false });
+    }
     var eyeSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
     var eyeOffSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.1 3.9"/><path d="M6.1 6.1A17.5 17.5 0 0 0 2 12s3.5 7 10 7a10.3 10.3 0 0 0 4.2-.9"/></svg>';
     document.querySelectorAll('.pass-toggle').forEach(function (btn) {
@@ -3869,11 +3880,13 @@
       if ($('forgotStepConfirm')) $('forgotStepConfirm').classList.toggle('hidden', step !== 'password');
       var btn = $('btnForgotPrimary');
       if (btn) {
-        var key = step === 'otp' ? 'verifyCode' : (step === 'password' ? 'save' : 'sendCode');
+        var key = step === 'otp' ? 'otpResend' : (step === 'password' ? 'save' : 'sendCode');
         btn.setAttribute('data-i18n', key);
         btn.textContent = t(key);
         btn.type = 'button';
+        btn.classList.toggle('is-waiting', step === 'otp' && forgotLeft > 0);
       }
+      tickForgotTimer();
     }
     function resetForgotModal() {
       forgotOtpToken = '';
@@ -3889,13 +3902,21 @@
     }
     function tickForgotTimer() {
       var wait = $('forgotOtpTimer');
-      var btn = $('btnForgotResend');
+      var link = $('btnForgotResend');
+      var btn = $('btnForgotPrimary');
       if (wait) {
         wait.textContent = forgotLeft > 0
           ? t('otpResendIn').replace('{s}', String(forgotLeft))
           : '';
       }
-      setResendWait(btn, forgotLeft > 0);
+      setResendWait(link, forgotLeft > 0);
+      if (btn && forgotStep === 'otp') {
+        btn.textContent = forgotLeft > 0
+          ? t('otpResendIn').replace('{s}', String(forgotLeft))
+          : t('otpResend');
+        btn.classList.toggle('is-waiting', forgotLeft > 0);
+        btn.setAttribute('data-i18n', forgotLeft > 0 ? 'otpResendIn' : 'otpResend');
+      }
     }
     function startForgotCountdown(seconds) {
       forgotLeft = Math.max(0, parseInt(seconds, 10) || 60);
@@ -3972,7 +3993,7 @@
     });
     bindAndroidTap($('btnForgotPrimary'), function () {
       if (forgotStep === 'email') sendForgotCode();
-      else if (forgotStep === 'otp') verifyForgotCode();
+      else if (forgotStep === 'otp') sendForgotCode();
       else if (forgotStep === 'password' && $('formReset')) {
         $('formReset').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       }
@@ -3991,7 +4012,7 @@
       e.preventDefault();
       if (forgotStep !== 'password') {
         if (forgotStep === 'email') sendForgotCode();
-        else if (forgotStep === 'otp') verifyForgotCode();
+        else if (forgotStep === 'otp') sendForgotCode();
         return;
       }
       clearErrors();
@@ -4349,6 +4370,16 @@
   }
 
   function bindModals() {
+    function openTerms(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      openModal('termsModal');
+    }
+    if ($('btnOpenTerms')) {
+      $('btnOpenTerms').addEventListener('click', openTerms);
+      $('btnOpenTerms').addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+    }
+    if ($('btnHelpTerms')) bindAndroidTap($('btnHelpTerms'), openTerms);
+    if ($('closeTerms')) bindAndroidTap($('closeTerms'), function () { closeModal('termsModal'); });
     bindAndroidTap($('closeHistorySheet'), function () { closeModal('historySheet'); });
     $('btnOpenPass').addEventListener('click', function () {
       resetPassModal();
@@ -4370,11 +4401,12 @@
       if ($('passStepConfirm')) $('passStepConfirm').classList.toggle('hidden', step !== 'password');
       var btn = $('btnPassPrimary');
       if (btn) {
-        var key = step === 'otp' ? 'verifyCode' : (step === 'password' ? 'save' : 'sendCode');
+        var key = step === 'otp' ? 'otpResend' : (step === 'password' ? 'save' : 'sendCode');
         btn.setAttribute('data-i18n', key);
         btn.textContent = t(key);
         btn.type = 'button';
       }
+      tickPassTimer();
     }
     function setPassOtpError(msg) {
       var el = $('err-passOtp');
@@ -4384,13 +4416,21 @@
     }
     function tickPassTimer() {
       var wait = $('passOtpTimer');
-      var btn = $('btnPassResend');
+      var link = $('btnPassResend');
+      var btn = $('btnPassPrimary');
       if (wait) {
         wait.textContent = passLeft > 0
           ? t('otpResendIn').replace('{s}', String(passLeft))
           : '';
       }
-      setResendWait(btn, passLeft > 0);
+      setResendWait(link, passLeft > 0);
+      if (btn && passStep === 'otp') {
+        btn.textContent = passLeft > 0
+          ? t('otpResendIn').replace('{s}', String(passLeft))
+          : t('otpResend');
+        btn.classList.toggle('is-waiting', passLeft > 0);
+        btn.setAttribute('data-i18n', passLeft > 0 ? 'otpResendIn' : 'otpResend');
+      }
     }
     function startPassCountdown(seconds) {
       passLeft = Math.max(0, parseInt(seconds, 10) || 60);
@@ -4474,7 +4514,7 @@
     }
     bindAndroidTap($('btnPassPrimary'), function () {
       if (passStep === 'email') sendPassCode();
-      else if (passStep === 'otp') verifyPassCode();
+      else if (passStep === 'otp') sendPassCode();
       else if (passStep === 'password' && $('formPassword')) {
         $('formPassword').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       }
@@ -4492,7 +4532,7 @@
       e.preventDefault();
       if (passStep !== 'password') {
         if (passStep === 'email') sendPassCode();
-        else if (passStep === 'otp') verifyPassCode();
+        else if (passStep === 'otp') sendPassCode();
         return;
       }
       if (!passOtpToken) { toast(t('passOtpNeed') || 'Validate the email code', 'err'); return; }

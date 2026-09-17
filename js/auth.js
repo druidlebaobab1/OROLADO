@@ -360,6 +360,8 @@
             u.password = '';
             D6.Store.saveUser(u);
           }
+          if (D6.Api && D6.Api.setToken) D6.Api.setToken('');
+          try { D6.Store.clearSession(); } catch (eSess) { /* ignore */ }
           return remote;
         }
         if (remote && remote.reason) return remote;

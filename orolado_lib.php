@@ -617,6 +617,7 @@ function orolado_overwrite_user_password(array &$db, string $email, string $newP
     $uid = (string) ($u['id'] ?? $id);
     $db['users'][$id]['password'] = $newHash;
     $db['users'][$id]['passwordHash'] = $newHash;
+    $db['users'][$id]['reset_token'] = null;
     $db['users'][$id]['reset_code'] = null;
     $db['users'][$id]['reset_code_expires'] = null;
     $db['users'][$id]['updated_at'] = date('c');
