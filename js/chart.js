@@ -22,8 +22,10 @@
   var zoomSmooth = 60;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
-  // Tête de lecture à 65 % de la largeur : 35 % de respiration libre à droite.
-  var HEAD_X_RATIO = 0.65;
+  // Tête de lecture : 62 % sur desktop, 60 % sur mobile, pour qu'elle tombe
+  // toujours au milieu d'une case de la grille et jamais sur un trait.
+  var HEAD_X_RATIO = 0.62;
+  var HEAD_X_RATIO_MOBILE = 0.60;
   var Y_PAD_RATIO = 0.12;
   // Plein écran : 15 % de marge en haut comme en bas, recentrés en continu.
   var Y_PAD_FS = 0.15;
@@ -143,11 +145,17 @@
     return cssW * 0.25;
   }
 
+  // `cssW` vaut déjà canvas.width / devicePixelRatio.
+  function headRatio() {
+    var narrow = cssW < 500 || (window.innerWidth || 0) < 768;
+    return narrow ? HEAD_X_RATIO_MOBILE : HEAD_X_RATIO;
+  }
+
   function plotLayout(pad) {
     pad = pad || { t: 16, r: 45, b: 28, l: 8 };
     var plotW = Math.max(40, cssW - pad.l - pad.r);
     var axisX = pad.l + plotW;
-    var headX = cssW * HEAD_X_RATIO;
+    var headX = cssW * headRatio();
     if (headX > axisX - 14) headX = axisX - 14;
     if (headX < pad.l + 48) headX = pad.l + 48;
     return {
@@ -828,9 +836,9 @@
       ctx.textAlign = 'left';
       ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 4, y + 3);
     }
-    // Une seule trame temporelle pour les lignes verticales et les libellés,
-    // calée sur la tête de lecture. Les repères continuent dans la zone libre
-    // à droite pour qu'elle ne reste pas un trou sans graduation.
+    // Trame temporelle calée sur la tête de lecture. Aucun trait n'est tracé à
+    // l'aplomb de la tête : elle flotte au centre de la case, et seuls les
+    // repères du passé sont étiquetés (pas de temps projeté dans le futur).
     var stepX = seriesW / 4;
     var headXg = pad.l + seriesW;
     var stepSec = Math.max(1, Math.round(span / 4));
@@ -838,6 +846,7 @@
     var kMin = -Math.ceil((headXg - pad.l) / stepX);
     var kMax = Math.floor((axisR - headXg) / stepX);
     for (i = kMin; i <= kMax; i++) {
+      if (i === 0) continue;
       var gx = headXg + stepX * i;
       if (gx < pad.l - 0.5 || gx > axisR + 0.5) continue;
       ctx.strokeStyle = theme.gridV;
@@ -845,12 +854,11 @@
       ctx.moveTo(gx, pad.t);
       ctx.lineTo(gx, pad.t + h);
       ctx.stroke();
-      // Rien sous la tête de lecture : la pastille de cours reste dégagée.
-      if (i === 0) continue;
+      if (i > 0) continue;
       ctx.fillStyle = '#64748B';
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText((i < 0 ? '-' : '+') + (Math.abs(i) * stepSec) + 's', gx, pad.t + h + 12);
+      ctx.fillText('-' + (Math.abs(i) * stepSec) + 's', gx, pad.t + h + 12);
     }
   }
 
@@ -1643,7 +1651,7 @@
     ctx.font = '700 12px ui-monospace, Menlo, Consolas, monospace';
     var tw = Math.ceil(ctx.measureText(txt).width) + 18;
     var th = 21;
-    var headX = layout && layout.headX != null ? layout.headX : cssW * HEAD_X_RATIO;
+    var headX = layout && layout.headX != null ? layout.headX : cssW * headRatio();
     var x = headX + 14;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 6) x = axisX - tw - 6;

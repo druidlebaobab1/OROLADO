@@ -113,9 +113,10 @@
     if (id === 'horizon50') return 0.0009;
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return 0.0178;
-    if (id === 'goldtrend') return 0.00625;
-    if (id === 'apex500' || id === 'boomspike') return 0.004;
+    if (id === 'titanpulse') return 0.0232;
+    if (id === 'goldtrend') return 0.0082;
+    if (id === 'apex500') return 0.0052;
+    if (id === 'boomspike') return 0.004;
     if (id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
   }
@@ -221,22 +222,25 @@
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    apex500: { mode: 'candles', vol: 0.0124 },
+    apex500: { mode: 'candles', vol: 0.0161 },
     horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
     boomspike: { mode: 'candles', vol: 0.0088 },
     crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
-    goldtrend: { mode: 'line', vol: 0.03125, color: '#ffb300', goldHot: true, tickMs: 70, pullK: 0.028 },
+    // Rappel vers la moyenne allégé : les vagues partent franchement dans une
+    // direction au lieu d'être ramenées au centre à chaque pas.
+    goldtrend: { mode: 'line', vol: 0.0425, color: '#ffb300', goldHot: true, tickMs: 55, pullK: 0.020 },
     // Titan Pulse domine la volatilité des 10 actifs, Gold Trend arrive juste derrière.
-    titanpulse: { mode: 'line', vol: 0.0588, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 45 },
+    titanpulse: { mode: 'line', vol: 0.0795, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 32 },
   };
-  var SIM_VER = 17;
-  var TITAN_VER = 10;
+  var SIM_VER = 18;
+  var TITAN_VER = 11;
   var BOOM_VER = 5;
   var CRASH_VER = 2;
   var MIN_SEED = 500;
-  var SCALE_VER = 5;
+  // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
+  var SCALE_VER = 6;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
