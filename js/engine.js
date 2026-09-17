@@ -71,7 +71,7 @@
   var TICK_PCT = 0.0022;
   var JUMP_PCT = 0.004;
   // Titan Pulse encaisse des sauts bien plus francs que les autres actifs.
-  var TITAN_JUMP_PCT = 0.014;
+  var TITAN_JUMP_PCT = 0.024;
 
   function clampIndexPrice(p, asset) {
     var n = Number(p);
@@ -86,11 +86,14 @@
     }
     // Bandes élargies : sans ça les actifs très volatils collent à leurs bornes.
     if (id === 'titanpulse') {
+      loMul = 0.42;
+      hiMul = 1.58;
+    } else if (id === 'goldtrend') {
       loMul = 0.50;
       hiMul = 1.50;
-    } else if (id === 'goldtrend') {
-      loMul = 0.74;
-      hiMul = 1.26;
+    } else if (id === 'apex500') {
+      loMul = 0.60;
+      hiMul = 1.40;
     }
     return Math.round(Math.max(base * loMul, Math.min(base * hiMul, n)) * 100) / 100;
   }
@@ -113,9 +116,9 @@
     if (id === 'horizon50') return 0.0009;
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return 0.0232;
-    if (id === 'goldtrend') return 0.0082;
-    if (id === 'apex500') return 0.0052;
+    if (id === 'titanpulse') return 0.0385;
+    if (id === 'goldtrend') return 0.0212;
+    if (id === 'apex500') return 0.0146;
     if (id === 'boomspike') return 0.004;
     if (id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
@@ -222,25 +225,27 @@
   var SIM = {
     v100: { mode: 'candles', vol: 0.0035, thin: false },
     stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    apex500: { mode: 'candles', vol: 0.0161 },
+    apex500: { mode: 'candles', vol: 0.0430 },
     horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
-    boomspike: { mode: 'candles', vol: 0.0088 },
+    // Machine à impulsions réactivée : sans `boomBurst`, l'actif n'avait
+    // simplement aucune explosion, c'était une marche aléatoire ordinaire.
+    boomspike: { mode: 'candles', vol: 0.0088, boomBurst: true },
     crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
     v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190 },
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     // Rappel vers la moyenne allégé : les vagues partent franchement dans une
     // direction au lieu d'être ramenées au centre à chaque pas.
-    goldtrend: { mode: 'line', vol: 0.0425, color: '#ffb300', goldHot: true, tickMs: 55, pullK: 0.020 },
+    goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, pullK: 0.016 },
     // Titan Pulse domine la volatilité des 10 actifs, Gold Trend arrive juste derrière.
-    titanpulse: { mode: 'line', vol: 0.0795, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 32 },
+    titanpulse: { mode: 'line', vol: 0.1350, color: '#e0e6ed', titanDrop: true, titanHF: true, tickMs: 20 },
   };
-  var SIM_VER = 18;
-  var TITAN_VER = 11;
-  var BOOM_VER = 5;
+  var SIM_VER = 19;
+  var TITAN_VER = 12;
+  var BOOM_VER = 7;
   var CRASH_VER = 2;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 6;
+  var SCALE_VER = 9;
 
   function simOf(id) {
     return SIM[id] || SIM.v100;
@@ -265,7 +270,8 @@
     var marked = false;
     if (!buf.boomPhase) {
       buf.boomPhase = 'acc';
-      buf.boomPhaseUntil = tMs + 3000 + Math.random() * 3000;
+      // Intervalles resserrés de 40 % : les explosions s'enchaînent plus vite.
+      buf.boomPhaseUntil = tMs + 1800 + Math.random() * 1800;
       buf.boomMid = price;
       buf.boomLeft = 0;
       buf.boomZig = 1;
@@ -294,7 +300,7 @@
         marked = true;
       } else {
         buf.boomPhase = 'relax';
-        buf.boomPhaseUntil = tMs + 2800 + Math.random() * 2200;
+        buf.boomPhaseUntil = tMs + 1680 + Math.random() * 1320;
       }
     }
     if (buf.boomPhase === 'relax') {
@@ -307,7 +313,7 @@
       price = clampIndexPrice(price + pull + bounce + jit, asset);
       if (tMs >= (buf.boomPhaseUntil || 0)) {
         buf.boomPhase = 'acc';
-        buf.boomPhaseUntil = tMs + 3000 + Math.random() * 3000;
+        buf.boomPhaseUntil = tMs + 1800 + Math.random() * 1800;
         buf.boomMid = price;
       }
     }
@@ -365,10 +371,11 @@
       nextOut = price + zigC + waveC + zig2C + pullC;
     } else if (sim.goldHot && !opts.spike) {
       var nG = (roll - 0.5) * price * vol;
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.00115;
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.00055;
-      var microG = ((roll - 0.5) * 2) * price * 0.0022;
-      if (!busyIn && roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.0065;
+      // Force directionnelle ×2,5 : montées et descentes franches, sans stagnation.
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.002875;
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.001375;
+      var microG = ((roll - 0.5) * 2) * price * 0.0055;
+      if (!busyIn && roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.01625;
       var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
       nextOut = price + nG + p1G + p2G + microG + pullG;
     } else if (sim.nexusPulse && !opts.spike) {
@@ -440,7 +447,9 @@
         if (c >= o) c = o + Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
         else c = o - Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
       } else if (sim.boomBurst) {
-        var tinyB = Math.max(Math.abs(o) * 0.00014, 0.01);
+        // Corps de phase calme lisibles : à 0.00014 les bougies hors explosion
+        // se réduisaient à des points invisibles.
+        var tinyB = Math.max(Math.abs(o) * 0.0007, 0.05);
         c = c >= o ? o + tinyB : o - tinyB;
       } else if (sim.spike === 1) {
         c = o - Math.max(minBody, Math.abs(c - o) * 0.65);
@@ -624,7 +633,7 @@
     else nextSpike = now + 25000 + Math.random() * 10000;
     var boomWalk = sim.boomBurst ? {
       boomPhase: 'acc',
-      boomPhaseUntil: (t0 * cms) + 2500 + uhash01(t0, 882119) * 3000,
+      boomPhaseUntil: (t0 * cms) + 1500 + uhash01(t0, 882119) * 1800,
       boomMid: price,
       boomLeft: 0,
       boomZig: 1
@@ -773,7 +782,8 @@
     }
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
-    var stepMs = sim.crashCalm ? 200 : (sim.titanDrop ? 55 : (sim.v75Wave || sim.nexusPulse ? 90 : 120));
+    // C'est cette cadence, et non `sim.tickMs`, qui pilote réellement le rythme.
+    var stepMs = sim.crashCalm ? 200 : (sim.titanDrop ? 20 : (sim.goldHot ? 40 : (sim.v75Wave || sim.nexusPulse ? 90 : 120)));
     var steps = Math.floor(remain / stepMs);
     if (remain < stepMs) steps = 0;
     if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;

@@ -836,29 +836,38 @@
       ctx.textAlign = 'left';
       ctx.fillText(formatAxisPrice(pVal), pad.l + plotW + 4, y + 3);
     }
-    // Trame temporelle calée sur la tête de lecture. Aucun trait n'est tracé à
-    // l'aplomb de la tête : elle flotte au centre de la case, et seuls les
-    // repères du passé sont étiquetés (pas de temps projeté dans le futur).
-    var stepX = seriesW / 4;
+    // Maillage temporel à pas constant sur toute la largeur : aucune colonne
+    // n'est étirée. Seule la phase est décalée d'un demi-pas, ce qui place la
+    // tête pile au milieu d'une case sans qu'aucun trait ne la traverse.
+    // Les paliers sont tous pairs pour que les demi-pas restent des entiers.
+    var TIME_STEPS = [2, 4, 10, 20, 30, 60, 120, 240, 600];
+    var pxPerSec = seriesW / Math.max(1, span);
+    var stepSec = TIME_STEPS[TIME_STEPS.length - 1];
+    for (i = 0; i < TIME_STEPS.length; i++) {
+      if (TIME_STEPS[i] >= span / 5) {
+        stepSec = TIME_STEPS[i];
+        break;
+      }
+    }
+    var stepX = stepSec * pxPerSec;
     var headXg = pad.l + seriesW;
-    var stepSec = Math.max(1, Math.round(span / 4));
     var axisR = pad.l + plotW;
-    var kMin = -Math.ceil((headXg - pad.l) / stepX);
-    var kMax = Math.floor((axisR - headXg) / stepX);
+    var kMin = -Math.ceil((headXg - pad.l) / stepX) - 1;
+    var kMax = Math.ceil((axisR - headXg) / stepX);
     for (i = kMin; i <= kMax; i++) {
-      if (i === 0) continue;
-      var gx = headXg + stepX * i;
+      var gx = headXg + stepX * (i + 0.5);
       if (gx < pad.l - 0.5 || gx > axisR + 0.5) continue;
       ctx.strokeStyle = theme.gridV;
       ctx.beginPath();
       ctx.moveTo(gx, pad.t);
       ctx.lineTo(gx, pad.t + h);
       ctx.stroke();
-      if (i > 0) continue;
+      // Rien n'est étiqueté à droite de la tête : pas de temps futur.
+      if (i >= 0) continue;
       ctx.fillStyle = '#64748B';
       ctx.font = '500 10px "Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('-' + (Math.abs(i) * stepSec) + 's', gx, pad.t + h + 12);
+      ctx.fillText('-' + Math.round(Math.abs(i + 0.5) * stepSec) + 's', gx, pad.t + h + 12);
     }
   }
 
@@ -876,7 +885,8 @@
     var gap = Math.min(3, Math.max(0.6, slot * 0.28));
     var maxBody = 5;
     if (opts.apexAiry || opts.boomSmall) maxBody = 4;
-    if (opts.titanWide) maxBody = 6.8;
+    // Titan Pulse : +40 % de largeur par rapport aux bougies ordinaires.
+    if (opts.titanWide) maxBody = 7;
     var cw = Math.max(1, Math.min(maxBody, slot - gap));
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
@@ -928,14 +938,18 @@
       var x = toX(i);
       ctx.strokeStyle = edgeCol || col;
       ctx.lineWidth = 1;
+      if (opts.titanWhite) {
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+        ctx.shadowBlur = 10;
+      }
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
       ctx.lineTo(x, toY(lWick));
       ctx.stroke();
       var y1 = toY(Math.max(c.o, c.c));
       var y2 = toY(Math.min(c.o, c.c));
-      var bh = Math.max(opts.titanIce ? 2.2 : (opts.v75Rose ? 2.4 : 3), y2 - y1);
-      if (opts.titanIce && y2 - y1 < 2) bh = 2;
+      // Titan Pulse : corps massifs, jamais réduits à un filet.
+      var bh = Math.max(opts.titanWhite ? 4 : (opts.v75Rose ? 2.4 : 3), y2 - y1);
       var boomHit = !!(opts.boomNeon && (c._boom || c._spike) && up);
       if (boomHit) {
         ctx.shadowColor = 'rgba(0,230,118,0.7)';
@@ -958,26 +972,11 @@
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
-        // Halo réservé à la bougie de tête : l'appliquer à toutes les bougies
-        // noyait le graphe dans une masse blanche baveuse.
-        if (i === candles.length - 1) {
-          ctx.shadowColor = '#FFFFFF';
-          ctx.shadowBlur = 10;
-        } else {
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-        }
-        if (up) {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(x - cw / 2, y1, cw, bh);
-        } else {
-          // Corps creux cerclé de blanc : même blanc pur, direction lisible.
-          ctx.fillStyle = 'rgba(8,10,16,0.92)';
-          ctx.fillRect(x - cw / 2, y1, cw, bh);
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = 1.8;
-          ctx.strokeRect(x - cw / 2 + 0.9, y1 + 0.9, Math.max(1, cw - 1.8), Math.max(1, bh - 1.8));
-        }
+        // Lumière divine : corps pleins, blanc pur, halo blanc net.
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
       } else if (opts.horizonOrange) {
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
@@ -2000,7 +1999,6 @@
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
         capWicks: true,
-        titanIce: true,
         titanWhite: true,
         titanWide: true
       });
