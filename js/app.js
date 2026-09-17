@@ -112,6 +112,7 @@
   var selectedAsset = 'v100';
   var depositOp = 'wave';
   var lastClickAt = 0;
+  var clickSoftUntil = 0;
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
@@ -465,7 +466,13 @@
     el.style.setProperty('top', Math.max(70, Math.min(top, 220)) + 'px', 'important');
   }
 
+  function isSilentTradeMsg(msg) {
+    var s = String(msg || '');
+    return /anti-bot|slow down|ralentissez|limite atteinte|10 trades max/i.test(s);
+  }
+
   function toast(msg, kind, ms) {
+    if (isSilentTradeMsg(msg)) return;
     var el = $('toast');
     if (!el) return;
     var micro = kind === 'micro';
@@ -518,8 +525,8 @@
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
     var slot = outcomeSlot % 8;
     outcomeSlot += 1;
-    var dy = (slot % 4) * 14;
-    var dx = (slot % 2 === 0 ? -10 : 10);
+    var dy = IS_ANDROID ? 0 : (slot % 4) * 14;
+    var dx = IS_ANDROID ? 0 : (slot % 2 === 0 ? -10 : 10);
     el.style.setProperty('--ox', dx + 'px');
     el.style.setProperty('--oy', dy + 'px');
     if (isWin) {
@@ -533,7 +540,7 @@
       el.textContent = '';
       el.style.removeProperty('--ox');
       el.style.removeProperty('--oy');
-    }, 900);
+    }, IS_ANDROID ? 700 : 900);
   }
 
   document.addEventListener('orolado-trade-settled', function (ev) {
@@ -1186,22 +1193,59 @@
     }, 80);
   }
 
+  function applySoftClickPause(ms) {
+    clickSoftUntil = Date.now() + (ms || 1600);
+    var call = $('btnCall');
+    var put = $('btnPut');
+    if (call) {
+      call.disabled = true;
+      call.classList.add('soft-pause');
+    }
+    if (put) {
+      put.disabled = true;
+      put.classList.add('soft-pause');
+    }
+    setTimeout(function () {
+      if (Date.now() >= clickSoftUntil) syncTradeButtons();
+    }, (ms || 1600) + 30);
+  }
+
   function syncTradeButtons() {
     var u = user();
     var mode = u && u.mode === 'real' ? 'real' : 'demo';
     var n = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
     var max = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
-    var busy = n >= max;
-    $('btnCall').disabled = busy;
-    $('btnPut').disabled = busy;
-    $('btnCall').classList.toggle('locked', busy);
-    $('btnPut').classList.toggle('locked', busy);
+    var paused = Date.now() < clickSoftUntil;
+    var busy = n >= max || paused;
+    var call = $('btnCall');
+    var put = $('btnPut');
+    if (call) {
+      call.disabled = busy;
+      call.classList.toggle('locked', n >= max && !paused);
+      call.classList.toggle('soft-pause', paused);
+    }
+    if (put) {
+      put.disabled = busy;
+      put.classList.toggle('locked', n >= max && !paused);
+      put.classList.toggle('soft-pause', paused);
+    }
     var hint = $('tradeLockHint');
     if (hint) hint.classList.remove('on');
   }
 
   function armTradeCooldown() {
     setTimeout(syncTradeButtons, D6.CONFIG.MIN_ORDER_MS);
+  }
+
+  function pushOfficialVault() {
+    var u = user();
+    if (!u || isGuest(u)) return;
+    try {
+      if (D6.Store && D6.Store.saveUser) D6.Store.saveUser(u);
+    } catch (eSv) { /* ignore */ }
+    try {
+      if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
+    } catch (eSb) { /* ignore */ }
   }
 
   function fillProfile() {
@@ -2025,6 +2069,7 @@
     maybeLossStreakTip(user());
     patchHistorySoon();
     syncTradeButtons();
+    pushOfficialVault();
     if (D6.Api && D6.Api.token() && id) {
       D6.Api.post('settleOrder', {
         orderId: id,
@@ -2032,14 +2077,27 @@
         voided: !!res.voided,
         net: res.net,
         exitPrice: res.exitPrice || res.closePrice
-      }).then(refreshRemoteVault, refreshRemoteVault);
+      }).then(function (remote) {
+        if (remote && remote.ok && remote.vault && user()) {
+          D6.holdPull = true;
+          D6.Store.importRemote(user(), remote.vault);
+          D6.holdPull = false;
+          updateBalance(true);
+        }
+        refreshRemoteVault();
+      }, refreshRemoteVault);
+    } else {
+      refreshRemoteVault();
     }
-    if (D6.Supabase && D6.Supabase.syncNow) D6.Supabase.syncNow();
   }
 
   function execute(side) {
     var now = performance.now();
-    if (now - lastClickAt < 350) return;
+    if (Date.now() < clickSoftUntil) return;
+    if (lastClickAt && now - lastClickAt < 480) {
+      applySoftClickPause(1600);
+      return;
+    }
     lastClickAt = now;
     var u = user();
     if (!u) return;
@@ -2047,7 +2105,7 @@
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
     var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
     if (open >= maxOpen) {
-      toast('Limite atteinte (10 trades max). Veuillez attendre la fin d\'un trade.', 'err', 2200);
+      applySoftClickPause(1600);
       syncTradeButtons();
       return;
     }
@@ -2069,6 +2127,11 @@
       payout: sealedPay
     });
     if (!res.ok) {
+      if (isSilentTradeMsg(res.reason)) {
+        applySoftClickPause(1600);
+        syncTradeButtons();
+        return;
+      }
       if (/insuffisant|insufficient/i.test(String(res.reason || ''))) {
         toast(t('insufficient'), 'err', 2000);
       } else {
@@ -2096,6 +2159,7 @@
       mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : 0) : null,
       10000
     );
+    pushOfficialVault();
     if (D6.Api && D6.Api.token()) {
       D6.Api.post('placeOrder', {
         id: res.trade.id,
@@ -3336,25 +3400,15 @@
       await D6.Supabase.pullVault();
     }
     if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
+    if (Date.now() < balanceLockUntil) return;
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
-      if (remote && remote.ok && remote.vault && u) {
-        var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
-        var localDemo = D6.Store.demoBalance(u);
-        var phpReal = Number(remote.vault.real || 0);
-        var phpDemo = Number(remote.vault.demo || 0);
-        if (Date.now() < balanceLockUntil) {
-          if (balanceLockReal != null) localReal = Math.max(localReal, balanceLockReal);
-          if (balanceLockDemo != null) localDemo = Math.max(localDemo, balanceLockDemo);
-        }
-        var merged = {
-          demo: Date.now() < balanceLockUntil && balanceLockDemo != null
-            ? balanceLockDemo
-            : Math.max(localDemo, phpDemo),
-          real: Math.max(localReal, phpReal)
-        };
+      if (remote && remote.ok && remote.vault && user()) {
         D6.holdPull = true;
-        D6.Store.importRemote(u, merged);
+        D6.Store.importRemote(user(), {
+          demo: remote.vault.demo,
+          real: remote.vault.real
+        });
         D6.holdPull = false;
         updateBalance(false);
       }

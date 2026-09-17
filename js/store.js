@@ -291,11 +291,11 @@
       db.users[user.id] = hydrate(Object.assign({}, user));
       if (vaultEntry) {
         var prevV = vault[user.id] || { demo: 0, real: 0 };
-        var nextReal = Number(vaultEntry.real);
-        if (!isFinite(nextReal) || (nextReal <= 0 && Number(prevV.real) > 0)) nextReal = Number(prevV.real) || 0;
+        var nextReal = vaultEntry.real;
+        var nextDemo = vaultEntry.demo;
         vault[user.id] = {
-          demo: vaultEntry.demo != null && isFinite(Number(vaultEntry.demo)) ? Number(vaultEntry.demo) : prevV.demo,
-          real: nextReal
+          demo: nextDemo != null && isFinite(Number(nextDemo)) ? Number(nextDemo) : prevV.demo,
+          real: nextReal != null && isFinite(Number(nextReal)) ? Number(nextReal) : prevV.real
         };
       }
       persist(true);

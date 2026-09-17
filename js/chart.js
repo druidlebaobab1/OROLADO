@@ -68,6 +68,7 @@
   var TRADE_DASH = [5, 5];
   var GUIDE_DASH = [2, 3];
   var NO_DASH = [];
+  var IS_ANDROID_CHART = /Android/i.test(navigator.userAgent || '');
 
   function byExpiry(a, b) {
     return (a.expiryTime || a.expiresAt || 0) - (b.expiryTime || b.expiresAt || 0);
@@ -264,7 +265,8 @@
     for (id in openTradeVisuals) {
       if (!openTradeVisuals.hasOwnProperty(id)) continue;
       var v = openTradeVisuals[id];
-      if (!v || v.settled || (v.expiryTime && now >= v.expiryTime) || (v.expiresAt && now >= v.expiresAt)) {
+      var exp = v && (v.expiryTime || v.expiresAt);
+      if (!v || v.settled || v.status === 'won' || v.status === 'lost' || v.status === 'void' || (exp && now >= exp)) {
         delete openTradeVisuals[id];
       }
     }
@@ -1577,11 +1579,12 @@
     var lineCol = isCall ? '#00e676' : '#ff3b30';
     var fillCol = isCall ? '#007e33' : '#b71c1c';
     var idx = tagIndex || 0;
+    var lite = IS_ANDROID_CHART;
     var badgeLift = isFinite(yShift) ? yShift : 0;
     g.setLineDash(TRADE_DASH);
     g.strokeStyle = lineCol;
-    g.lineWidth = 1.35;
-    g.globalAlpha = 0.92;
+    g.lineWidth = lite ? 1 : 1.35;
+    g.globalAlpha = lite ? 0.72 : 0.92;
     g.beginPath();
     g.moveTo(0, ey);
     g.lineTo(cssW, ey);
@@ -1596,7 +1599,7 @@
     if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
     mx += (idx % 3) * 5 - 5;
     ey += badgeLift;
-    var r = 9;
+    var r = lite ? 7 : 9;
     if (mx < pad.l - r) mx = pad.l + r + 2;
     if (mx > layout.headX) mx = layout.headX;
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
@@ -1622,7 +1625,7 @@
     }
     g.closePath();
     g.fill();
-    if (clusterN > 1) {
+    if (clusterN > 1 && !lite) {
       g.font = '800 8px "Hanken Grotesk", sans-serif';
       g.fillStyle = '#ffffff';
       g.textAlign = 'left';
@@ -1634,8 +1637,9 @@
 
     var remaining = exp - Date.now();
     var secs = remaining / 1000;
+    if (lite && idx > 0) return;
     if (secs >= 0.15) {
-      var label = secs.toFixed(1) + 's';
+      var label = lite ? (Math.max(1, Math.ceil(secs)) + 's') : (secs.toFixed(1) + 's');
       if (label.charAt(0) !== '-') {
         var timerW = 50;
         var timerH = 16;
@@ -2158,21 +2162,25 @@
     tradeYsScratch.length = 0;
     var ti;
     var drawnKeys = {};
+    var markCap = IS_ANDROID_CHART ? 3 : 10;
     for (ti = 0; ti < allTrades.length; ti++) {
-      if (ti >= 10) break;
+      if (ti >= markCap) break;
       var ot = allTrades[ti];
+      if (!ot || ot.settled) continue;
       var epY = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
       var y0 = priceToY(epY, pad, h, minP, maxP);
       var t0 = Number(ot.startTime || ot.startedAt || 0);
       var key = String(Math.round(y0 / 8)) + ':' + String(Math.round(t0 / 400));
       var count = 1;
       var uj;
-      for (uj = 0; uj < allTrades.length; uj++) {
-        if (uj === ti) continue;
-        var ot2 = allTrades[uj];
-        var y2 = priceToY(Number(ot2.entryPrice != null ? ot2.entryPrice : ot2.openPrice), pad, h, minP, maxP);
-        var t2 = Number(ot2.startTime || ot2.startedAt || 0);
-        if (Math.abs(y0 - y2) < 10 && Math.abs(t0 - t2) < 400) count++;
+      if (!IS_ANDROID_CHART) {
+        for (uj = 0; uj < allTrades.length; uj++) {
+          if (uj === ti) continue;
+          var ot2 = allTrades[uj];
+          var y2 = priceToY(Number(ot2.entryPrice != null ? ot2.entryPrice : ot2.openPrice), pad, h, minP, maxP);
+          var t2 = Number(ot2.startTime || ot2.startedAt || 0);
+          if (Math.abs(y0 - y2) < 10 && Math.abs(t0 - t2) < 400) count++;
+        }
       }
       if (drawnKeys[key]) continue;
       drawnKeys[key] = true;

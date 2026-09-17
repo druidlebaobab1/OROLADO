@@ -277,23 +277,20 @@
     var remoteDemo = Number(vault.demo);
     if (!isFinite(remoteReal)) remoteReal = localReal;
     if (!isFinite(remoteDemo)) remoteDemo = localDemo;
-    if (remoteReal <= 0 && localReal > 0) remoteReal = localReal;
     var next = { demo: localDemo, real: localReal };
     var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
     var locked = locks && Date.now() < locks.until;
     if (locked) {
-      // Pendant le lock optimistic : ne pas laisser une sync stale écraser le solde local.
       next.demo = locks.demo != null ? locks.demo : localDemo;
       next.real = locks.real != null ? locks.real : localReal;
-      // Les dépôts serveur peuvent encore augmenter le réel.
       if (remoteReal > next.real) next.real = remoteReal;
     } else if (live) {
       next.demo = localDemo;
-      next.real = Math.max(localReal, remoteReal);
+      next.real = localReal;
+      if (remoteReal > next.real) next.real = remoteReal;
     } else {
-      // Hors lock : accepter le serveur, mais ne jamais reculer un solde déjà crédité localement.
-      next.demo = remoteDemo;
-      next.real = Math.max(localReal, remoteReal);
+      next.demo = isFinite(remoteDemo) ? remoteDemo : localDemo;
+      next.real = isFinite(remoteReal) ? remoteReal : localReal;
     }
     if (D6.holdDepositReal) next.real = Math.max(localReal, remoteReal, next.real);
     if (profile) {
@@ -410,6 +407,7 @@
     sb.from('vaults').upsert({
       user_id: user.id,
       demo: vault.demo,
+      real: vault.real,
       updated_at: new Date().toISOString()
     }).then(function () { /* ignore */ });
   }
