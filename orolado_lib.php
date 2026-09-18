@@ -399,6 +399,66 @@ function orolado_blocked_roles(): array {
   return ['suspended', 'banned', 'deleted'];
 }
 
+function orolado_norm_email(string $email): string {
+  return strtolower(trim($email));
+}
+
+function orolado_norm_phone(string $phone): string {
+  return preg_replace('/\D+/', '', $phone) ?? '';
+}
+
+function orolado_remember_blocked_identity(array &$db, array $user, string $kind): void {
+  if (!isset($db['blocked_identities']) || !is_array($db['blocked_identities'])) {
+    $db['blocked_identities'] = [];
+  }
+  $kind = $kind === 'deleted' ? 'deleted' : 'suspended';
+  $email = orolado_norm_email((string) ($user['originalEmail'] ?? $user['email'] ?? ''));
+  if (str_ends_with($email, '@orolado.invalid')) {
+    $email = orolado_norm_email((string) ($user['originalEmail'] ?? ''));
+  }
+  $phone = orolado_norm_phone((string) ($user['phone'] ?? ''));
+  $uid = (string) ($user['id'] ?? '');
+  $row = ['uid' => $uid, 'kind' => $kind, 'email' => $email, 'phone' => $phone, 'at' => date('c')];
+  if ($email !== '') $db['blocked_identities']['email:' . $email] = $row;
+  if ($phone !== '' && strlen($phone) >= 8) $db['blocked_identities']['phone:' . $phone] = $row;
+}
+
+function orolado_identity_block(array $db, string $email = '', string $phone = ''): ?array {
+  $email = orolado_norm_email($email);
+  $phone = orolado_norm_phone($phone);
+  $ids = is_array($db['blocked_identities'] ?? null) ? $db['blocked_identities'] : [];
+  if ($email !== '' && isset($ids['email:' . $email]) && is_array($ids['email:' . $email])) {
+    return $ids['email:' . $email];
+  }
+  if ($phone !== '' && isset($ids['phone:' . $phone]) && is_array($ids['phone:' . $phone])) {
+    return $ids['phone:' . $phone];
+  }
+  foreach (($db['users'] ?? []) as $u) {
+    if (!is_array($u)) continue;
+    $uid = (string) ($u['id'] ?? '');
+    $kind = orolado_user_block_kind($db, $uid);
+    if ($kind === '') {
+      $role = strtolower((string) ($u['role'] ?? ''));
+      if (in_array($role, orolado_blocked_roles(), true)) {
+        $kind = $role === 'deleted' ? 'deleted' : 'suspended';
+      }
+    }
+    if ($kind === '') continue;
+    $mails = [
+      orolado_norm_email((string) ($u['email'] ?? '')),
+      orolado_norm_email((string) ($u['originalEmail'] ?? '')),
+    ];
+    if ($email !== '' && in_array($email, $mails, true)) {
+      return ['uid' => $uid, 'kind' => $kind, 'email' => $email];
+    }
+    $ph = orolado_norm_phone((string) ($u['phone'] ?? ''));
+    if ($phone !== '' && $ph !== '' && $ph === $phone) {
+      return ['uid' => $uid, 'kind' => $kind, 'phone' => $phone];
+    }
+  }
+  return null;
+}
+
 function orolado_block_message(string $kind): string {
   if ($kind === 'deleted') {
     return 'Ce compte a été fermé définitivement. Contactez le support Orolado si vous pensez qu’il s’agit d’une erreur.';
@@ -465,7 +525,13 @@ function orolado_force_suspend(array &$db, string $uid, string $kind = 'suspende
   if (!isset($db['bans']) || !is_array($db['bans'])) $db['bans'] = [];
   $db['bans'][$uid] = ['at' => date('c'), 'kind' => $kind];
   if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+    $u = $db['users'][$uid];
+    $orig = orolado_norm_email((string) ($u['originalEmail'] ?? $u['email'] ?? ''));
+    if ($orig !== '' && !str_ends_with($orig, '@orolado.invalid')) {
+      $db['users'][$uid]['originalEmail'] = $orig;
+    }
     $db['users'][$uid]['role'] = $kind;
+    orolado_remember_blocked_identity($db, $db['users'][$uid], $kind);
   }
   if (function_exists('admin_kill_user_sessions')) {
     admin_kill_user_sessions($db, $uid);
@@ -487,14 +553,17 @@ function orolado_force_delete_account(array &$db, string $uid): void {
   if ($uid === '' || $uid === 'admin_master') return;
   orolado_force_suspend($db, $uid, 'deleted');
   if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
-    $suffix = substr(preg_replace('/[^a-f0-9]/i', '', $uid) ?: md5($uid), 0, 12);
-    $db['users'][$uid]['email'] = 'deleted+' . $suffix . '@orolado.invalid';
-    $db['users'][$uid]['displayName'] = 'Compte fermé';
+    $orig = orolado_norm_email((string) ($db['users'][$uid]['originalEmail'] ?? $db['users'][$uid]['email'] ?? ''));
+    if ($orig !== '' && !str_ends_with($orig, '@orolado.invalid')) {
+      $db['users'][$uid]['originalEmail'] = $orig;
+      $db['users'][$uid]['email'] = $orig;
+    }
+    $db['users'][$uid]['displayName'] = (string) ($db['users'][$uid]['displayName'] ?? 'Compte fermé');
     $db['users'][$uid]['passwordHash'] = '';
     $db['users'][$uid]['password'] = '';
-    $db['users'][$uid]['phone'] = '';
+    $db['users'][$uid]['deletedAt'] = date('c');
+    orolado_remember_blocked_identity($db, $db['users'][$uid], 'deleted');
   }
-  supabase_admin_delete_auth($uid);
 }
 
 function orolado_token_user_id(array $db, ?string $token): string {

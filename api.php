@@ -83,8 +83,12 @@ function make_token(string $userId, string $secret): string {
 function find_user(array $db, string $email): ?array {
   $email = strtolower(trim($email));
   foreach ($db['users'] as $u) {
-    if (!is_array($u) || !isset($u['email'])) continue;
-    if (strtolower(trim((string) $u['email'])) === $email) return $u;
+    if (!is_array($u)) continue;
+    $mails = [
+      strtolower(trim((string) ($u['email'] ?? ''))),
+      strtolower(trim((string) ($u['originalEmail'] ?? ''))),
+    ];
+    if ($email !== '' && in_array($email, $mails, true)) return $u;
   }
   return null;
 }
@@ -244,6 +248,11 @@ if ($action === 'registerStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail', 'field' => 'regEmail']);
     exit;
   }
+  $blocked = orolado_identity_block($db, $email, $phone);
+  if ($blocked) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.', 'field' => 'regEmail']);
+    exit;
+  }
   if (strlen($displayName) < 2 || strlen($displayName) > 32) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez votre nom ou pseudo (2 caractères min.)', 'field' => 'regName']);
     exit;
@@ -365,10 +374,10 @@ if ($action === 'registerVerify') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
     exit;
   }
-  if (find_user($db, $email)) {
+  if (find_user($db, $email) || orolado_identity_block($db, $email, (string) ($row['phone'] ?? ''))) {
     unset($db['pendingRegistrations'][$email]);
     save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.']);
     exit;
   }
   $uid = 'u_' . bin2hex(random_bytes(8));
@@ -659,8 +668,8 @@ if ($action === 'register') {
     exit;
   }
   $email = strtolower(trim($user['email']));
-  if (orolado_is_reserved_admin_email($email) || find_user($db, $email)) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail']);
+  if (orolado_is_reserved_admin_email($email) || find_user($db, $email) || orolado_identity_block($db, $email, (string) ($user['phone'] ?? ''))) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.']);
     exit;
   }
   $user['email'] = $email;
@@ -718,6 +727,11 @@ if ($action === 'login') {
   } else {
     $stored = trim((string) ($user['passwordHash'] ?? $user['password'] ?? ''));
     if (!$user || $stored === '') {
+      $blockedEarly = orolado_identity_block($db, $email);
+      if ($blockedEarly) {
+        echo json_encode(orolado_block_payload((string) ($blockedEarly['kind'] ?? 'suspended')));
+        exit;
+      }
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
@@ -749,15 +763,29 @@ if ($action === 'login') {
       $banKind = $banRole === 'deleted' ? 'deleted' : 'suspended';
     }
   }
+  if ($banKind === '') {
+    $idBlock = orolado_identity_block($db, $email, (string) ($user['phone'] ?? ''));
+    if ($idBlock) $banKind = (string) ($idBlock['kind'] ?? 'suspended');
+  }
   if ($banKind !== '') {
     echo json_encode(orolado_block_payload($banKind));
     exit;
   }
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
+  $uid = (string) $user['id'];
+  $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
+  $official = orolado_sync_official_real($uid, $jsonReal);
+  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  }
+  $db['vault'][$uid]['real'] = $official;
   save_db($file, $db);
   orolado_set_session_cookie($tok);
-  $vault = $db['vault'][$user['id']] ?? ['demo' => 0, 'real' => 0];
+  $vault = [
+    'demo' => orolado_money($db['vault'][$uid]['demo'] ?? 0),
+    'real' => $official,
+  ];
   echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
   exit;
 }
@@ -793,9 +821,9 @@ if ($action === 'upsert') {
   }
   $db['users'][$id] = $user;
   if (isset($req['vault']) && is_array($req['vault'])) {
-    $serverReal = (int) ($db['vault'][$id]['real'] ?? 0);
+    $serverReal = orolado_money($db['vault'][$id]['real'] ?? 0);
     $db['vault'][$id] = [
-      'demo' => (int) ($req['vault']['demo'] ?? ($db['vault'][$id]['demo'] ?? 0)),
+      'demo' => orolado_money($req['vault']['demo'] ?? ($db['vault'][$id]['demo'] ?? 0)),
       'real' => $serverReal
     ];
   }

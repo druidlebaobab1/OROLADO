@@ -484,6 +484,13 @@ function admin_collect_local_wds(array $local): array {
     }
   }
 
+  $i = 0;
+  foreach (($local['transactions'] ?? []) as $tx) {
+    if (!is_array($tx) || !admin_looks_like_wd($tx)) continue;
+    $i++;
+    $push($tx, 'gtx_' . $i);
+  }
+
   foreach (($local['users'] ?? []) as $uid => $u) {
     if (!is_array($u)) continue;
     $i = 0;
@@ -539,8 +546,7 @@ function admin_walk_local_wds($node, string $path, callable $push, int $depth): 
 
 function admin_wd_is_silenced(array $w): bool {
   $st = strtolower(trim((string) ($w['status'] ?? '')));
-  return !empty($w['adminHidden']) || !empty($w['playerHidden'])
-    || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
+  return !empty($w['adminHidden']) || in_array($st, ['silenced', 'silent'], true);
 }
 
 function admin_wd_is_open(array $w): bool {
@@ -797,8 +803,8 @@ function admin_wd_norm(array $w, string $fallbackId = ''): array {
     'reference' => admin_fill((string) ($w['reference'] ?? ''), $id),
     'createdAt' => (string) ($w['at'] ?? $w['createdAt'] ?? $w['created_at'] ?? $w['date'] ?? ''),
     'reason' => (string) ($w['playerNote'] ?? $w['reason'] ?? $w['motif'] ?? $w['note'] ?? ''),
-    'adminHidden' => !empty($w['adminHidden']) || !empty($w['playerHidden']),
-    'playerHidden' => !empty($w['playerHidden']) || !empty($w['adminHidden']),
+    'adminHidden' => !empty($w['adminHidden']) || in_array($st, ['silenced', 'silent'], true),
+    'playerHidden' => !empty($w['playerHidden']),
     'refundedAt' => (string) ($w['refundedAt'] ?? ''),
     'refunded' => !empty($w['refunded']) || !empty($w['refundedAt']),
     'name' => admin_fill((string) ($w['name'] ?? ''), (string) ($w['beneficiary'] ?? '')),
@@ -807,7 +813,7 @@ function admin_wd_norm(array $w, string $fallbackId = ''): array {
 }
 
 function admin_wd_status_rank(array $w): int {
-  if (admin_wd_is_silenced($w) || !empty($w['playerHidden'])) return 40;
+  if (admin_wd_is_silenced($w)) return 40;
   if (admin_wd_is_paid($w)) return 30;
   if (admin_wd_is_rejected($w)) return 20;
   return 10;
@@ -963,8 +969,14 @@ function admin_withdrawals(): array {
     }
     if ($fp !== '' && isset($byFp[$fp])) {
       $existId = $byFp[$fp];
+      $sameId = $existId === $id;
+      $synth = static fn(string $x): bool => (bool) preg_match('/^(walk_|utx_|stx_|withdrawals_|payouts_|retraits_)/', $x);
+      if (!$sameId && !$synth($id) && !$synth($existId)) {
+        $byId[$id] = $row;
+        return;
+      }
       admin_wd_merge_into($byId[$existId], $row);
-      $preferNew = admin_fill((string) ($byId[$existId]['phone'] ?? '')) === '' && admin_fill((string) ($row['phone'] ?? '')) !== '';
+      $preferNew = $synth($existId) && !$synth($id);
       if ($preferNew) {
         admin_wd_merge_into($row, $byId[$existId]);
         unset($byId[$existId]);
@@ -1231,7 +1243,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2'] as $k) {
+  foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'badges'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

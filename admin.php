@@ -106,6 +106,8 @@ function admin_user_lookup(string $id, array $pmap): array {
 }
 
 function admin_badges(): array {
+  $cached = admin_cache_get('badges', 12);
+  if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_profiles();
   $vaults = admin_vaults();
   $wds = admin_withdrawals();
@@ -132,7 +134,14 @@ function admin_badges(): array {
   $wdOpenSum = 0.0;
   $wdToday = 0;
   $wdRej = 0;
+  $wdVisible = 0;
+  $closedN = 0;
+  foreach ($people as $p) {
+    $role = strtolower((string) ($p['role'] ?? ''));
+    if (in_array($role, ['suspended', 'banned', 'deleted'], true)) $closedN++;
+  }
   foreach ($wds as $w) {
+    if (!admin_wd_is_silenced($w)) $wdVisible++;
     if (admin_wd_is_open($w)) {
       $wdOpen++;
       $wdOpenSum += (float) $w['amount'];
@@ -210,7 +219,7 @@ function admin_badges(): array {
   foreach (admin_health_rows() as $h) {
     if (($h['level'] ?? '') === 'error') $healthErr++;
   }
-  return [
+  $out = [
     'signup_today' => $signupToday,
     'signup_yesterday' => $signupYest,
     'signup_date' => $nInscrits,
@@ -218,6 +227,7 @@ function admin_badges(): array {
     'signup_geo' => $nInscrits,
     'signup_idrange' => $nInscrits,
     'no_deposit' => $noDep,
+    'signup_closed' => $closedN,
     'dep_today' => $depToday,
     'dep_pending' => $depPend,
     'dep_failed' => $depFail,
@@ -226,7 +236,7 @@ function admin_badges(): array {
     'dep_method' => $depPaidN,
     'wd_pending' => $wdOpen,
     'wd_today' => $wdToday,
-    'wd_all' => count($wds),
+    'wd_all' => $wdVisible,
     'wd_rejected' => $wdRej,
     'wd_volume' => round($wdOpenSum, 2),
     'wd_suspect' => $wdSuspect,
@@ -247,6 +257,8 @@ function admin_badges(): array {
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
+  admin_cache_set('badges', $out);
+  return $out;
 }
 
 function admin_list_payload(string $view, array $req): array {
@@ -281,7 +293,7 @@ function admin_list_payload(string $view, array $req): array {
     ];
   };
 
-  if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'no_deposit', 'online', 'inactive', 'top_balances'], true)) {
+  if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'no_deposit', 'online', 'inactive', 'top_balances', 'signup_closed'], true)) {
     $cols = $userCols;
     $list = $people;
     if ($view === 'signup_today') {
@@ -308,6 +320,11 @@ function admin_list_payload(string $view, array $req): array {
       foreach ($people as $p) $tmp[] = admin_enrich_user_row($p, $vaults);
       usort($tmp, static fn($a, $b) => ($b['real'] <=> $a['real']));
       $list = $tmp;
+    } else if ($view === 'signup_closed') {
+      $list = array_values(array_filter($people, static function ($p) {
+        $role = strtolower((string) ($p['role'] ?? ''));
+        return in_array($role, ['suspended', 'banned', 'deleted'], true);
+      }));
     }
     $list = admin_apply_filters($list, $req, 'createdAt');
     if ($view !== 'top_balances') {
@@ -1011,12 +1028,12 @@ if ($isAjax) {
       $row['adminHidden'] = false;
     } else if ($act === 'reject') {
       $row['status'] = 'rejected';
+      $row['adminHidden'] = false;
       orolado_refund_wd_once($db, $row);
     } else if ($act === 'silent') {
       $row['status'] = 'silenced';
       $row['adminHidden'] = true;
       $row['playerHidden'] = true;
-      orolado_refund_wd_once($db, $row);
     } else {
       $row['status'] = 'review';
       $row['suspect'] = true;
@@ -1097,6 +1114,7 @@ $ADMIN_TABS = [
     ['signup_geo', 'Inscriptions par Pays / IP'],
     ['signup_idrange', 'Recherche par Tranche d’ID'],
     ['no_deposit', 'Joueurs Sans Dépôt'],
+    ['signup_closed', 'Comptes fermés / désinscrits'],
   ],
   'gB' => [
     ['dep_today', 'Dépôts du Jour'],
@@ -1263,6 +1281,7 @@ const TABS = [
   {g:'gA', id:'signup_geo', k:'Inscriptions par Pays / IP'},
   {g:'gA', id:'signup_idrange', k:'Recherche par Tranche d’ID'},
   {g:'gA', id:'no_deposit', k:'Joueurs Sans Dépôt'},
+  {g:'gA', id:'signup_closed', k:'Comptes fermés / désinscrits'},
   {g:'gB', id:'dep_today', k:'Dépôts du Jour'},
   {g:'gB', id:'dep_pending', k:'Dépôts en Attente'},
   {g:'gB', id:'dep_failed', k:'Dépôts Échoués'},
@@ -1417,7 +1436,7 @@ async function loadList() {
     }
     let motif = '';
     if (act === 'reject') motif = prompt('Motif du rejet (le montant sera recrédité sur le solde du joueur) :','') || '';
-    if (act === 'silent' && !confirm('Masquer définitivement cette demande. Si le solde a déjà été débité, il sera recrédité une seule fois.')) return;
+    if (act === 'silent' && !confirm('Masquer cette ligne du tableau de bord, sans modifier le solde du joueur ?')) return;
     if (act === 'suspend' && !confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     const a = kind === 'wd' ? 'resolve_wd' : 'resolve_dep';
     const r = await ajax({action:a, id, act, motif});

@@ -295,8 +295,11 @@
     }
     D6.holdPull = true;
     if (Object.prototype.hasOwnProperty.call(next, 'real')) {
+      var keepReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
       if (next.real > 0) D6.Store.importRemote(u, { real: next.real });
-      else if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(u, 'real', 0);
+      else if (!(isFinite(keepReal) && keepReal > 0)) {
+        if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(u, 'real', 0);
+      }
     }
     D6.holdPull = false;
     if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount(next);
