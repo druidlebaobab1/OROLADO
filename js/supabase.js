@@ -275,7 +275,9 @@
     if (vault && !D6.holdRemote) {
       var remoteReal = Number(vault.real);
       var remoteDemo = Number(vault.demo);
-      if (isFinite(remoteReal) && remoteReal > 0) next.real = remoteReal;
+      var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
+      if (!isFinite(localReal)) localReal = 0;
+      if (isFinite(remoteReal) && remoteReal > localReal + 0.04) next.real = remoteReal;
       if (isFinite(remoteDemo) && remoteDemo > 0) next.demo = remoteDemo;
       var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
       var locked = locks && Date.now() < locks.until;

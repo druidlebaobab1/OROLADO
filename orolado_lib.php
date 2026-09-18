@@ -381,6 +381,20 @@ function supabase_sync_real_min(string $userId, $minReal): void {
   if ($minReal > $cur) supabase_credit_real($userId, $minReal - $cur, false);
 }
 
+/** Écrit le solde réel JSON vers Supabase (valeur absolue, pas un max). */
+function supabase_set_real(string $userId, $amount): void {
+  $amount = orolado_money($amount);
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $amount < 0) return;
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
+  supabase_http(
+    supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId),
+    $hdrs,
+    json_encode(['real' => $amount, 'updated_at' => date('c')]),
+    'PATCH'
+  );
+}
+
 function supabase_insert_deposit(array $row): void {
   $hdrs = supabase_admin_headers();
   if (!$hdrs) return;

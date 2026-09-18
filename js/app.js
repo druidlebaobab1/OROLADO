@@ -1250,7 +1250,10 @@
     var recent = lastSettleAt && (Date.now() - lastSettleAt) < 90000;
     var localReal = Number(D6.Store.realBalance ? D6.Store.realBalance(user()) : 0);
     var localDemo = Number(D6.Store.demoBalance(user()));
-    if (isFinite(real) && real > 0) {
+    if (isFinite(real) && real >= 0) {
+      if (isFinite(localReal) && localReal > real + 0.05) {
+        real = localReal;
+      }
       if (recent && lastSettleMode === 'real' && isFinite(localReal) && Math.abs(real - localReal) > 0.05) {
         real = localReal;
       }
@@ -2101,6 +2104,15 @@
     if (uSettled) {
       lastSettleAt = Date.now();
       lastSettleMode = (res.trade && res.trade.mode) || (uSettled.mode === 'real' ? 'real' : 'demo');
+      try {
+        sessionStorage.setItem('oro_ledger', JSON.stringify({
+          uid: uSettled.id,
+          real: D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0,
+          demo: D6.Store.demoBalance(uSettled),
+          mode: lastSettleMode,
+          at: lastSettleAt
+        }));
+      } catch (eLed) { /* ignore */ }
       lockBalanceOptimistic(
         D6.Store.demoBalance(uSettled),
         D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0,
@@ -2112,15 +2124,23 @@
     patchHistorySoon();
     syncTradeButtons();
     if (D6.Api && D6.Api.token() && id) {
+      var trade = res.trade || {};
+      var settleMode = trade.mode || lastSettleMode;
       D6.Api.post('settleOrder', {
         orderId: id,
         won: !!res.won,
         voided: !!res.voided,
         net: res.net,
-        exitPrice: res.exitPrice || res.closePrice
+        exitPrice: res.exitPrice || res.closePrice,
+        stake: trade.stake,
+        mode: settleMode,
+        payout: trade.payout,
+        balanceAfter: settleMode === 'real'
+          ? (D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0)
+          : D6.Store.demoBalance(uSettled)
       }).then(function (remote) {
         if (remote && remote.ok && remote.vault) {
-          adoptSettledVault(remote.vault, (res.trade && res.trade.mode) || (uSettled && uSettled.mode));
+          adoptSettledVault(remote.vault, trade.mode || (uSettled && uSettled.mode));
           updateBalance(true);
         }
       }, function () { /* le solde local du moteur reste la référence */ });
@@ -2223,7 +2243,7 @@
       10000
     );
     if (D6.Api && D6.Api.token()) {
-      D6.Api.post('placeOrder', {
+      var placeBody = {
         id: res.trade.id,
         stake: stake,
         side: side,
@@ -2232,7 +2252,13 @@
         assetId: res.trade.assetId,
         entryPrice: res.trade.entryPrice,
         payout: res.trade.payout || currentOdds(u)
-      }).then(function () { /* solde déjà débité en local par le moteur */ });
+      };
+      D6.Api.post('placeOrder', placeBody).then(function (remote) {
+        if (remote && remote.ok) return;
+        return D6.Api.post('placeOrder', placeBody);
+      }).catch(function () {
+        D6.Api.post('placeOrder', placeBody);
+      });
     }
     return true;
   }
@@ -3447,9 +3473,33 @@
     applyDepositPaid(remote);
   }
 
+  function restoreSettleLedger() {
+    var u = user();
+    if (!u) return;
+    try {
+      var raw = sessionStorage.getItem('oro_ledger');
+      if (!raw) return;
+      var row = JSON.parse(raw);
+      if (!row || row.uid !== u.id) return;
+      var at = Number(row.at) || 0;
+      if (!at || Date.now() - at > 86400000) return;
+      lastSettleAt = at;
+      lastSettleMode = row.mode || lastSettleMode;
+      var payload = {};
+      if (Number(row.real) > 0) payload.real = Number(row.real);
+      if (Number(row.demo) > 0) payload.demo = Number(row.demo);
+      if (payload.real != null || payload.demo != null) {
+        D6.holdPull = true;
+        D6.Store.importRemote(u, payload);
+        D6.holdPull = false;
+      }
+    } catch (eRest) { /* ignore */ }
+  }
+
   async function refreshRemoteVault() {
     var u = user();
     if (!u) return;
+    restoreSettleLedger();
     if (D6.Supabase && D6.Supabase.pullVault) {
       await D6.Supabase.pullVault();
     }
@@ -5190,6 +5240,7 @@
         try { sessionStorage.removeItem('oro_demo_preview'); } catch (eClr) { /* ignore */ }
       }
       if (u) migrateLegacyDemo(u);
+      restoreSettleLedger();
       stake = D6.CONFIG.MIN_STAKE || 1;
       if ($('inputStake')) $('inputStake').value = stake;
       setModeUi(u);
