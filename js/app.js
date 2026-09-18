@@ -885,27 +885,17 @@
     var real = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0);
     if (!isFinite(demo)) demo = 0;
     if (!isFinite(real)) real = 0;
-    // Le moteur (place/settle) est la source de vérité. Le verrou et le
-    // cache officiel ne servent que si le seau actif est vide — jamais pour
-    // écraser un gain ou une perte déjà écrits en local.
-    if (Date.now() < balanceLockUntil) {
-      if (!(demo > 0) && balanceLockDemo != null && Number(balanceLockDemo) > 0) demo = Number(balanceLockDemo);
-      if (!(real > 0) && balanceLockReal != null && Number(balanceLockReal) > 0) real = Number(balanceLockReal);
-    }
-    if (isReal) {
-      if (!(real > 0) && lastOfficialReal > 0) real = lastOfficialReal;
-      if (real > 0) lastOfficialReal = real;
-    } else {
-      if (!(demo > 0) && lastOfficialDemo > 0) demo = lastOfficialDemo;
-      if (demo > 0) lastOfficialDemo = demo;
-    }
+    // Chaque seau est autonome : le réel affiché suit le store (alimenté par
+    // le moteur puis par Supabase), la démo reste locale. Jamais de fusion.
+    if (isReal) lastOfficialReal = real;
+    else lastOfficialDemo = demo;
     var active = isReal ? real : demo;
     var modeKey = isReal ? 'real' : 'demo';
     if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
     lastPaintedMode = modeKey;
     paintBalanceNow(active, !!flash);
     if ($('profWalletBal')) {
-      $('profWalletBal').textContent = D6.fmtMoney(real > 0 ? real : (lastOfficialReal > 0 ? lastOfficialReal : 0));
+      $('profWalletBal').textContent = D6.fmtMoney(real);
     }
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
@@ -1242,57 +1232,28 @@
     if (hint) hint.classList.remove('on');
   }
 
-  function adoptOfficialVault(vault) {
-    if (!vault || !user()) return false;
-    var payload = {};
-    var real = Number(vault.real);
-    var demo = Number(vault.demo);
-    var recent = lastSettleAt && (Date.now() - lastSettleAt) < 90000;
-    var localReal = Number(D6.Store.realBalance ? D6.Store.realBalance(user()) : 0);
-    var localDemo = Number(D6.Store.demoBalance(user()));
-    if (isFinite(real) && real >= 0) {
-      if (isFinite(localReal) && localReal > real + 0.05) {
-        real = localReal;
-      }
-      if (recent && lastSettleMode === 'real' && isFinite(localReal) && Math.abs(real - localReal) > 0.05) {
-        real = localReal;
-      }
-      if (real > 0) {
-        lastOfficialReal = real;
-        payload.real = real;
-      }
-    }
-    if (isFinite(demo) && demo > 0) {
-      if (recent && lastSettleMode === 'demo' && isFinite(localDemo) && Math.abs(demo - localDemo) > 0.05) {
-        demo = localDemo;
-      }
-      if (demo > 0) {
-        lastOfficialDemo = demo;
-        payload.demo = demo;
-      }
-    }
-    if (payload.real == null && payload.demo == null) return false;
+  function applyOfficialReal(value) {
+    var u = user();
+    if (!u || !D6.Store.setBalanceMode) return false;
+    var real = Number(value);
+    if (!isFinite(real) || real < 0) return false;
+    lastOfficialReal = real;
     D6.holdPull = true;
-    D6.Store.importRemote(user(), payload);
+    D6.Store.setBalanceMode(u, 'real', real);
     D6.holdPull = false;
     return true;
   }
 
+  function adoptOfficialVault(vault) {
+    if (!vault || !user()) return false;
+    if (!Object.prototype.hasOwnProperty.call(vault, 'real')) return false;
+    return applyOfficialReal(vault.real);
+  }
+
   function adoptSettledVault(vault, settledMode) {
     if (!vault || !user()) return false;
-    var mode = settledMode === 'real' ? 'real' : 'demo';
-    var local = mode === 'real'
-      ? (D6.Store.realBalance ? D6.Store.realBalance(user()) : 0)
-      : D6.Store.demoBalance(user());
-    var remoteMode = Number(vault[mode]);
-    var payload = {};
-    if (mode !== 'real' && Number(vault.real) > 0) payload.real = Number(vault.real);
-    if (mode !== 'demo' && Number(vault.demo) > 0) payload.demo = Number(vault.demo);
-    if (isFinite(remoteMode) && remoteMode > 0 && isFinite(Number(local)) && Math.abs(remoteMode - Number(local)) < 0.05) {
-      payload[mode] = remoteMode;
-    }
-    if (payload.real == null && payload.demo == null) return false;
-    return adoptOfficialVault(payload);
+    if (settledMode !== 'real') return false;
+    return adoptOfficialVault(vault);
   }
 
   function fillProfile() {
@@ -1304,7 +1265,6 @@
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
-    if (!(Number(real) > 0) && lastOfficialReal > 0) real = lastOfficialReal;
     if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
     profRecvCoin = 'usdt';
     paintProfRecv();
@@ -2126,7 +2086,8 @@
     if (D6.Api && D6.Api.token() && id) {
       var trade = res.trade || {};
       var settleMode = trade.mode || lastSettleMode;
-      D6.Api.post('settleOrder', {
+      if (settleMode === 'real') D6.holdRemote = true;
+      var settleBody = {
         orderId: id,
         won: !!res.won,
         voided: !!res.voided,
@@ -2134,16 +2095,18 @@
         exitPrice: res.exitPrice || res.closePrice,
         stake: trade.stake,
         mode: settleMode,
-        payout: trade.payout,
-        balanceAfter: settleMode === 'real'
-          ? (D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0)
-          : D6.Store.demoBalance(uSettled)
-      }).then(function (remote) {
-        if (remote && remote.ok && remote.vault) {
-          adoptSettledVault(remote.vault, trade.mode || (uSettled && uSettled.mode));
+        payout: trade.payout
+      };
+      if (settleMode === 'demo') settleBody.balanceAfter = D6.Store.demoBalance(uSettled);
+      D6.Api.post('settleOrder', settleBody).then(function (remote) {
+        if (remote && remote.ok && remote.vault && settleMode === 'real') {
+          adoptSettledVault(remote.vault, 'real');
           updateBalance(true);
         }
-      }, function () { /* le solde local du moteur reste la référence */ });
+        D6.holdRemote = false;
+      }, function () {
+        D6.holdRemote = false;
+      });
     }
   }
 
@@ -2254,7 +2217,13 @@
         payout: res.trade.payout || currentOdds(u)
       };
       D6.Api.post('placeOrder', placeBody).then(function (remote) {
-        if (remote && remote.ok) return;
+        if (remote && remote.ok) {
+          if (mode === 'real' && remote.vault && remote.vault.real != null) {
+            applyOfficialReal(remote.vault.real);
+            updateBalance(true);
+          }
+          return;
+        }
         return D6.Api.post('placeOrder', placeBody);
       }).catch(function () {
         D6.Api.post('placeOrder', placeBody);
@@ -3485,33 +3454,24 @@
       if (!at || Date.now() - at > 86400000) return;
       lastSettleAt = at;
       lastSettleMode = row.mode || lastSettleMode;
-      var payload = {};
-      if (Number(row.real) > 0) payload.real = Number(row.real);
-      if (Number(row.demo) > 0) payload.demo = Number(row.demo);
-      if (payload.real != null || payload.demo != null) {
-        D6.holdPull = true;
-        D6.Store.importRemote(u, payload);
-        D6.holdPull = false;
-      }
     } catch (eRest) { /* ignore */ }
   }
 
   async function refreshRemoteVault() {
     var u = user();
     if (!u) return;
-    restoreSettleLedger();
-    if (D6.Supabase && D6.Supabase.pullVault) {
-      await D6.Supabase.pullVault();
-    }
     if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
-    if (Date.now() < balanceLockUntil) return;
-    if (lastSettleAt && (Date.now() - lastSettleAt) < 90000) return;
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
       if (remote && remote.ok && remote.vault && user()) {
         adoptOfficialVault(remote.vault);
         updateBalance(false);
       }
+      return;
+    }
+    if (D6.Supabase && D6.Supabase.pullVault) {
+      await D6.Supabase.pullVault();
+      updateBalance(false);
     }
   }
 
@@ -5636,8 +5596,7 @@
   }
 
   D6.App = {
-    onRemoteAccount: function (vault) {
-      if (vault && !D6.holdRemote) adoptOfficialVault(vault);
+    onRemoteAccount: function () {
       updateBalance(true);
       fillProfile();
     },

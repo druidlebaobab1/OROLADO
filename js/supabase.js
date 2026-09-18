@@ -274,24 +274,21 @@
     var next = {};
     if (vault && !D6.holdRemote) {
       var remoteReal = Number(vault.real);
-      var remoteDemo = Number(vault.demo);
-      var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
-      if (!isFinite(localReal)) localReal = 0;
-      if (isFinite(remoteReal) && remoteReal > localReal + 0.04) next.real = remoteReal;
-      if (isFinite(remoteDemo) && remoteDemo > 0) next.demo = remoteDemo;
       var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
       var locked = locks && Date.now() < locks.until;
-      if (locked) {
-        if (!(next.real > 0) && locks.real != null && locks.real > 0) next.real = locks.real;
-        if (!(next.demo > 0) && locks.demo != null && locks.demo > 0) next.demo = locks.demo;
-      }
-      if (D6.holdDepositReal) {
-        var localReal = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
-        if (localReal > 0) next.real = Math.max(localReal, next.real || 0);
+      if (isFinite(remoteReal) && remoteReal >= 0 && (D6.holdDepositReal || !locked)) {
+        next.real = remoteReal;
+        if (D6.holdDepositReal) {
+          var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
+          if (isFinite(localReal) && localReal > next.real) next.real = localReal;
+        }
       }
     }
     D6.holdPull = true;
-    D6.Store.importRemote(u, (next.real || next.demo) ? next : null);
+    if (Object.prototype.hasOwnProperty.call(next, 'real')) {
+      if (next.real > 0) D6.Store.importRemote(u, { real: next.real });
+      else if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(u, 'real', 0);
+    }
     D6.holdPull = false;
     if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount(next);
   }
