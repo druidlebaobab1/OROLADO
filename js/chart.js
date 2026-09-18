@@ -1625,14 +1625,6 @@
     }
     g.closePath();
     g.fill();
-    if (clusterN > 1 && !lite) {
-      g.font = '800 8px "Hanken Grotesk", sans-serif';
-      g.fillStyle = '#ffffff';
-      g.textAlign = 'left';
-      g.textBaseline = 'middle';
-      g.fillText('x' + clusterN, mx + r + 3, ey);
-      g.textBaseline = 'alphabetic';
-    }
     g.restore();
 
     var remaining = exp - Date.now();
