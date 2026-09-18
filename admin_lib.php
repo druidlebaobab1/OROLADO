@@ -174,15 +174,32 @@ function admin_sb_count(string $table, string $query = ''): int {
   return 0;
 }
 
-/** Nombre réel d’inscrits : public.profiles + auth.users. Jamais le JSON local. */
+/** Nombre réel d’inscrits : COUNT profiles + COUNT auth.users (sans LIMIT). */
+function admin_auth_users_count(): int {
+  $cached = admin_cache_get('auth_n', 60);
+  if (is_array($cached) && isset($cached['n'])) return (int) $cached['n'];
+  $n = 0;
+  for ($page = 1; $page <= 50; $page++) {
+    $res = admin_sb_req('/auth/v1/admin/users?page=' . $page . '&per_page=200', []);
+    $body = json_decode((string) ($res['raw'] ?? ''), true);
+    $users = [];
+    if (is_array($body)) {
+      if (isset($body['users']) && is_array($body['users'])) $users = $body['users'];
+      else if (isset($body[0])) $users = $body;
+    }
+    $n += count($users);
+    if (count($users) < 200) break;
+  }
+  admin_cache_set('auth_n', ['n' => $n]);
+  return $n;
+}
+
 function admin_inscrits_count(): int {
   $cached = admin_cache_get('inscrits_n', 20);
-  if (is_array($cached) && isset($cached['n'])) return (int) $cached['n'];
+  if (is_array($cached) && isset($cached['n']) && (int) $cached['n'] > 0) return (int) $cached['n'];
   $nProfiles = admin_sb_count('profiles', 'select=id');
-  $n = $nProfiles;
-  if ($n < 100) {
-    $n = max($n, count(admin_fetch_auth_users()));
-  }
+  $nAuth = admin_auth_users_count();
+  $n = max($nProfiles, $nAuth);
   admin_cache_set('inscrits_n', ['n' => $n]);
   return $n;
 }
@@ -231,11 +248,8 @@ function admin_local_db(): array {
 }
 
 function admin_wd_is_open(array $w): bool {
-  $st = strtolower(trim((string) ($w['status'] ?? '')));
-  return in_array($st, [
-    'pending', 'review', 'processing', 'requested', 'waiting', 'open',
-    'unpaid', 'hold', 'en_attente', 'en cours', 'queued', 'new',
-  ], true);
+  if (admin_wd_is_paid($w) || admin_wd_is_rejected($w)) return false;
+  return true;
 }
 
 function admin_wd_is_paid(array $w): bool {
@@ -442,65 +456,73 @@ function admin_vaults(): array {
   return $map;
 }
 
-function admin_withdrawals(): array {
-  $cached = admin_cache_get('withdrawals', 20);
-  if (is_array($cached)) return $cached;
-  $sb = admin_sb_all(
-    'withdrawals',
-    'id,user_id,amount,status,operator,phone,reference,created_at',
-    'created_at.desc',
-    1000
-  );
-  $byId = [];
-  foreach ($sb as $w) {
-    $id = (string) ($w['id'] ?? '');
-    if ($id === '') $id = 'sb_' . md5(json_encode($w));
-    $byId[$id] = [
-      'id' => $id,
-      'userId' => (string) ($w['user_id'] ?? ''),
-      'amount' => (float) ($w['amount'] ?? 0),
-      'status' => (string) ($w['status'] ?? 'pending'),
-      'operator' => (string) ($w['operator'] ?? ''),
-      'phone' => (string) ($w['phone'] ?? ''),
-      'reference' => (string) ($w['reference'] ?? $id),
-      'createdAt' => (string) ($w['created_at'] ?? ''),
-      'reason' => '',
-      'adminHidden' => false,
-    ];
+function admin_wd_norm(array $w, string $fallbackId = ''): array {
+  $id = (string) ($w['id'] ?? $w['reference'] ?? $fallbackId);
+  $phone = (string) ($w['phone'] ?? $w['destination'] ?? $w['dest'] ?? '');
+  $st = strtolower(trim((string) ($w['status'] ?? 'pending')));
+  if ($st === '') $st = 'pending';
+  $type = strtolower((string) ($w['type'] ?? ''));
+  if ($id === '' && in_array($type, ['withdraw', 'withdrawal', 'payout', 'retrait'], true)) {
+    $id = 'tx_' . md5(json_encode([$w['userId'] ?? $w['user_id'] ?? '', $w['amount'] ?? 0, $w['at'] ?? $w['created_at'] ?? $w['createdAt'] ?? '']));
   }
-  $local = admin_local_db();
-  foreach (($local['withdrawals'] ?? []) as $w) {
-    if (!is_array($w)) continue;
-    $id = (string) ($w['id'] ?? '');
-    if ($id === '') continue;
-    $row = [
-      'id' => $id,
-      'userId' => (string) ($w['userId'] ?? $w['user_id'] ?? ''),
-      'amount' => (float) ($w['amount'] ?? 0),
-      'status' => (string) ($w['status'] ?? 'pending'),
-      'operator' => (string) ($w['operator'] ?? $w['method'] ?? ''),
-      'phone' => (string) ($w['phone'] ?? $w['destination'] ?? ''),
-      'reference' => (string) ($w['reference'] ?? $id),
-      'createdAt' => (string) ($w['at'] ?? $w['createdAt'] ?? $w['created_at'] ?? ''),
-      'reason' => (string) ($w['playerNote'] ?? $w['reason'] ?? $w['motif'] ?? ''),
-      'adminHidden' => !empty($w['adminHidden']),
-      'name' => (string) ($w['name'] ?? $w['beneficiary'] ?? ''),
-      'email' => (string) ($w['email'] ?? ''),
-    ];
+  return [
+    'id' => $id,
+    'userId' => (string) ($w['userId'] ?? $w['user_id'] ?? ''),
+    'amount' => abs((float) ($w['amount'] ?? 0)),
+    'status' => $st,
+    'operator' => (string) ($w['operator'] ?? $w['method'] ?? $w['methodName'] ?? ''),
+    'phone' => $phone,
+    'reference' => (string) ($w['reference'] ?? $id),
+    'createdAt' => (string) ($w['at'] ?? $w['createdAt'] ?? $w['created_at'] ?? $w['date'] ?? ''),
+    'reason' => (string) ($w['playerNote'] ?? $w['reason'] ?? $w['motif'] ?? $w['note'] ?? ''),
+    'adminHidden' => !empty($w['adminHidden']),
+    'name' => (string) ($w['name'] ?? $w['beneficiary'] ?? ''),
+    'email' => (string) ($w['email'] ?? ''),
+  ];
+}
+
+function admin_withdrawals(): array {
+  $byId = [];
+  $put = static function (array $row) use (&$byId): void {
+    $id = (string) ($row['id'] ?? '');
+    if ($id === '') return;
     if (!isset($byId[$id])) {
       $byId[$id] = $row;
-    } else {
-      if ($byId[$id]['phone'] === '' && $row['phone'] !== '') $byId[$id]['phone'] = $row['phone'];
-      if ($byId[$id]['reason'] === '' && $row['reason'] !== '') $byId[$id]['reason'] = $row['reason'];
-      if (!empty($row['name'])) $byId[$id]['name'] = $row['name'];
-      if (!empty($row['email'])) $byId[$id]['email'] = $row['email'];
+      return;
     }
+    foreach (['phone', 'reason', 'name', 'email', 'operator', 'createdAt', 'userId'] as $k) {
+      if (($byId[$id][$k] ?? '') === '' && ($row[$k] ?? '') !== '') $byId[$id][$k] = $row[$k];
+    }
+  };
+
+  $local = admin_local_db();
+  $i = 0;
+  foreach (($local['withdrawals'] ?? []) as $w) {
+    if (!is_array($w)) continue;
+    $i++;
+    $put(admin_wd_norm($w, 'local_' . $i));
   }
+
+  $sbCached = admin_cache_get('wd_sb', 30);
+  if (!is_array($sbCached)) {
+    $sbCached = admin_sb_all(
+      'withdrawals',
+      'id,user_id,amount,status,operator,phone,reference,created_at',
+      'created_at.desc',
+      1000
+    );
+    if (!is_array($sbCached)) $sbCached = [];
+    admin_cache_set('wd_sb', $sbCached);
+  }
+  foreach ($sbCached as $w) {
+    if (!is_array($w)) continue;
+    $put(admin_wd_norm($w));
+  }
+
   $list = array_values($byId);
   usort($list, static function ($a, $b) {
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
   });
-  admin_cache_set('withdrawals', $list);
   return $list;
 }
 
@@ -715,7 +737,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n'] as $k) {
+  foreach (['profiles', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

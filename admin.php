@@ -422,16 +422,22 @@ function admin_list_payload(string $view, array $req): array {
     }
     $enriched = [];
     $sum = 0.0;
+    $q = strtolower(trim((string) ($req['q'] ?? '')));
+    $preset = (string) ($req['preset'] ?? 'all');
     foreach ($list as $w) {
       $u = admin_user_lookup((string) $w['userId'], $pmap);
       $w['email'] = (string) ($w['email'] ?? $u['email'] ?? '');
       $w['publicId'] = (string) ($u['publicId'] ?? '');
       $w['name'] = (string) ($w['name'] ?? $u['name'] ?? '');
       $w['phone'] = (string) ($w['phone'] ?? $u['phone'] ?? '');
+      if ($q !== '' && !admin_match_q($w, $q)) continue;
+      if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '') {
+        $tmp = admin_apply_filters([$w], $req, 'createdAt');
+        if ($tmp === []) continue;
+      }
       $sum += (float) $w['amount'];
       $enriched[] = $w;
     }
-    $enriched = admin_apply_filters($enriched, $req, 'createdAt');
     [$slice, $total, $page, $pages] = admin_page($enriched, $req);
     foreach ($slice as $w) {
       $open = admin_wd_is_open($w);
@@ -897,7 +903,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <h1>Super Admin Dashboard</h1>
     <div>
       <span class="muted" id="inscritsHead">Inscrits Supabase : <?php echo (int) $inscritsHead; ?></span>
-      <button class="mini" id="btnLogout" type="button">Déconnexion</button>
+      <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
   </header>
   <div class="wrap">
@@ -1118,7 +1124,7 @@ async function openUser(uid) {
   };
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
-document.getElementById('btnLogout').onclick = async () => { await ajax({action:'logout'}); location.reload(); };
+document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
 ['q','preset','cal','dateFrom','dateTo','idFrom','idTo'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; loadList(); });
 });
