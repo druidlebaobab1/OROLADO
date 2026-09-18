@@ -1729,24 +1729,16 @@
         syncMarket(mkt, C.ASSETS[trade.assetId], Date.now());
       }
       trade.payout = payout;
-      var profile = 'real';
-      if (mode !== 'real') profile = 'demo';
-      else if (isAdminUser(user)) profile = 'admin';
       var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-      var dtSec = Number(trade.duration);
-      if (!(dtSec > 0)) dtSec = Number(trade.durationMs) / 1000;
-      if (!(dtSec > 0)) dtSec = 5;
       var sideNow = (trade.ticket && trade.ticket.side) || trade.side;
-      var verdict = StochasticCore.settle({
-        entryPrice: entryPx,
-        durationSec: dtSec,
-        side: sideNow,
-        payout: payout,
-        profile: profile
-      });
-      var voided = !!verdict.voided;
-      var exitPrice = Number(verdict.exitPrice);
-      var won = !!verdict.won && !voided;
+      var exitPrice = Number(readFinalPrice(trade));
+      if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = entryPx;
+      if (StochasticCore && StochasticCore.round2) {
+        entryPx = StochasticCore.round2(entryPx);
+        exitPrice = StochasticCore.round2(exitPrice);
+      }
+      var voided = isFinite(entryPx) && isFinite(exitPrice) && Math.abs(exitPrice - entryPx) < 0.005;
+      var won = !voided && wonFromPrice(trade, exitPrice);
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }

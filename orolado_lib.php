@@ -437,6 +437,103 @@ function supabase_admin_vault(string $userId): ?array {
   return ['demo' => orolado_money($rows[0]['demo'] ?? 0), 'real' => orolado_money($rows[0]['real'] ?? 0)];
 }
 
+function orolado_outcome_from_prices($side, $entry, $exit): ?array {
+  $side = (($side ?? '') === 'put') ? 'put' : ((($side ?? '') === 'call') ? 'call' : '');
+  if ($side === '') return null;
+  $entry = orolado_money($entry);
+  $exit = orolado_money($exit);
+  if ($entry <= 0 || $exit <= 0) return null;
+  if (abs($exit - $entry) < 0.005) return ['voided' => true, 'won' => false];
+  $won = $side === 'put' ? ($exit < $entry) : ($exit > $entry);
+  return ['voided' => false, 'won' => $won];
+}
+
+function orolado_repair_overwritten_reals_once(): void {
+  if (!supabase_admin_ready()) return;
+  $dir = orolado_data_dir();
+  $marker = rtrim($dir, '/\\') . '/vault_repair_v529.done';
+  $lockPath = rtrim($dir, '/\\') . '/vault_repair_v529.lock';
+  if (is_file($marker)) return;
+  $fp = @fopen($lockPath, 'c');
+  if (!$fp) return;
+  if (!flock($fp, LOCK_EX | LOCK_NB)) {
+    fclose($fp);
+    return;
+  }
+  if (is_file($marker)) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return;
+  }
+  $report = orolado_repair_overwritten_reals();
+  try {
+    file_put_contents($marker, json_encode(['at' => date('c'), 'report' => $report], JSON_UNESCAPED_UNICODE));
+  } catch (Throwable $e1) { /* ignore */ }
+  flock($fp, LOCK_UN);
+  fclose($fp);
+}
+
+function orolado_repair_overwritten_reals(): array {
+  $hdrs = supabase_admin_headers();
+  $url = supabase_project_url();
+  if (!$hdrs || $url === '') return ['ok' => false, 'reason' => 'supabase'];
+  $vaults = supabase_http($url . '/rest/v1/vaults?select=user_id,real&real=gt.0&limit=500', $hdrs);
+  if (!is_array($vaults)) return ['ok' => false, 'reason' => 'list'];
+  $fixed = [];
+  $skipped = 0;
+  foreach ($vaults as $row) {
+    $uid = (string) ($row['user_id'] ?? '');
+    $cur = orolado_money($row['real'] ?? 0);
+    if ($uid === '' || $cur <= 0) { $skipped++; continue; }
+    $deps = supabase_http($url . '/rest/v1/deposits?user_id=eq.' . rawurlencode($uid) . '&select=amount,status,completed_at,created_at&order=created_at.asc&limit=80', $hdrs);
+    $wds = supabase_http($url . '/rest/v1/withdrawals?user_id=eq.' . rawurlencode($uid) . '&select=amount,status&limit=80', $hdrs);
+    $ords = supabase_http($url . '/rest/v1/orders?user_id=eq.' . rawurlencode($uid) . '&select=stake,payout,won,status,mode,net&limit=500', $hdrs);
+    $depAmt = 0.0;
+    $depMatch = false;
+    if (is_array($deps)) {
+      foreach ($deps as $d) {
+        $st = strtoupper((string) ($d['status'] ?? ''));
+        if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+        $amt = orolado_money($d['amount'] ?? 0);
+        if ($amt <= 0) continue;
+        $depAmt += $amt;
+        if (abs($amt - $cur) < 0.06) $depMatch = true;
+      }
+    }
+    if (!$depMatch) { $skipped++; continue; }
+    $wdAmt = 0.0;
+    if (is_array($wds)) {
+      foreach ($wds as $w) {
+        $st = strtoupper((string) ($w['status'] ?? ''));
+        if ($st !== 'APPROVED' && $st !== 'PAID' && $st !== 'COMPLETED' && $st !== 'SUCCESS') continue;
+        $wdAmt += orolado_money($w['amount'] ?? 0);
+      }
+    }
+    $net = 0.0;
+    if (is_array($ords)) {
+      foreach ($ords as $o) {
+        if (($o['mode'] ?? 'demo') !== 'real') continue;
+        $stake = orolado_money($o['stake'] ?? 0);
+        if ($stake <= 0) continue;
+        $st = strtolower((string) ($o['status'] ?? ''));
+        $payout = (float) ($o['payout'] ?? 1.88);
+        if ($payout < 1.01) $payout = 1.88;
+        if ($st === 'void') continue;
+        if ($st === 'open') { $net -= $stake; continue; }
+        if (!empty($o['won']) || $st === 'won') $net += orolado_money($stake * ($payout - 1));
+        else $net -= $stake;
+      }
+    }
+    $expected = orolado_money(max(0, $depAmt - $wdAmt + $net));
+    if ($expected <= $cur + 0.04) { $skipped++; continue; }
+    $delta = orolado_money($expected - $cur);
+    if ($delta <= 0) { $skipped++; continue; }
+    supabase_credit_real($uid, $delta, false);
+    $fixed[] = ['user_id' => $uid, 'from' => $cur, 'to' => $expected, 'delta' => $delta];
+  }
+  return ['ok' => true, 'fixed' => $fixed, 'skipped' => $skipped];
+}
+
 function supabase_complete_deposit(string $ref, $amount, string $userId): ?array {
   $amount = orolado_money($amount);
   $hdrs = supabase_admin_headers();

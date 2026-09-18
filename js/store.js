@@ -4,7 +4,28 @@
   var KEY = 'orolado_v1';
   var SALT = 'ORO!lado-vault-v1#xof';
   var LEGACY_SALT = '6D!abl0-vault-v4#xof';
+  var DEMO_LS = 'orolado_demo_bal_';
   var vault = {};
+
+  function demoLsKey(id) {
+    return DEMO_LS + String(id || '');
+  }
+
+  function readDemoLs(id) {
+    if (!id) return null;
+    try {
+      var n = Number(localStorage.getItem(demoLsKey(id)));
+      if (isFinite(n) && n >= 0) return n;
+    } catch (eR) { /* ignore */ }
+    return null;
+  }
+
+  function writeDemoLs(id, value) {
+    if (!id) return;
+    try {
+      localStorage.setItem(demoLsKey(id), String(Math.max(0, Number(value) || 0)));
+    } catch (eW) { /* ignore */ }
+  }
 
   function fnv(str) {
     var h = 2166136261;
@@ -147,10 +168,14 @@
       user.publicId = 'ORO-' + String(100000 + (Math.abs(h) % 900000));
     }
     if (!vault[user.id]) {
+      var lsDemo = readDemoLs(user.id);
       vault[user.id] = {
-        demo: user.demoBalance != null ? user.demoBalance : D6.CONFIG.DEMO_START,
+        demo: lsDemo != null ? lsDemo : (user.demoBalance != null ? user.demoBalance : D6.CONFIG.DEMO_START),
         real: user.realBalance != null ? user.realBalance : D6.CONFIG.REAL_START
       };
+    } else {
+      var kept = readDemoLs(user.id);
+      if (kept != null) vault[user.id].demo = kept;
     }
     return user;
   }
@@ -264,6 +289,9 @@
     }
     rememberSession(db.session);
     if (db.session && db.users[db.session.userId]) writeHistMirror(db.users[db.session.userId]);
+    if (db.session && db.session.userId && vault[db.session.userId]) {
+      writeDemoLs(db.session.userId, vault[db.session.userId].demo);
+    }
     if (!skipRemote && !D6.holdRemote && !D6.holdPull && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
       var u = db.users[db.session.userId];
       var remoteUser = Object.assign({}, publicUsers[u.id]);
@@ -292,14 +320,12 @@
       if (vaultEntry) {
         var prevV = vault[user.id] || { demo: 0, real: 0 };
         var next = { demo: prevV.demo, real: prevV.real };
-        if (Object.prototype.hasOwnProperty.call(vaultEntry, 'demo')) {
-          var nextDemo = Number(vaultEntry.demo);
-          if (isFinite(nextDemo) && nextDemo > 0) next.demo = nextDemo;
-        }
         if (Object.prototype.hasOwnProperty.call(vaultEntry, 'real')) {
           var nextReal = Number(vaultEntry.real);
-          if (isFinite(nextReal) && nextReal > 0) next.real = nextReal;
+          if (isFinite(nextReal) && nextReal >= 0) next.real = nextReal;
         }
+        var keptDemo = readDemoLs(user.id);
+        if (keptDemo != null) next.demo = keptDemo;
         vault[user.id] = next;
       }
       persist(true);
@@ -356,7 +382,12 @@
       }
       var user = blankUser(partial);
       db.users[user.id] = user;
-      vault[user.id] = { demo: D6.CONFIG.DEMO_START, real: D6.CONFIG.REAL_START };
+      var lsDemo = readDemoLs(user.id);
+      vault[user.id] = {
+        demo: lsDemo != null ? lsDemo : D6.CONFIG.DEMO_START,
+        real: D6.CONFIG.REAL_START
+      };
+      writeDemoLs(user.id, vault[user.id].demo);
       persist();
       return user;
     },
@@ -399,6 +430,7 @@
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       v.demo = D6.CONFIG.DEMO_START;
       vault[user.id] = v;
+      writeDemoLs(user.id, v.demo);
       persist();
     },
 
@@ -407,7 +439,10 @@
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       var n = Math.max(0, D6.roundMoney(value));
       if (user.mode === 'real') v.real = n;
-      else v.demo = n;
+      else {
+        v.demo = n;
+        writeDemoLs(user.id, n);
+      }
       vault[user.id] = v;
       persist();
     },
@@ -417,7 +452,10 @@
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       var n = Math.max(0, D6.roundMoney(value));
       if (mode === 'real') v.real = n;
-      else v.demo = n;
+      else {
+        v.demo = n;
+        writeDemoLs(user.id, n);
+      }
       vault[user.id] = v;
       persist();
     },
@@ -437,6 +475,7 @@
       var key = mode === 'real' ? 'real' : 'demo';
       v[key] = Math.max(0, D6.roundMoney((v[key] || 0) + Number(delta)));
       vault[userId] = v;
+      if (key === 'demo') writeDemoLs(userId, v.demo);
       persist();
       return v[key];
     },

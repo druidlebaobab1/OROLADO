@@ -1301,6 +1301,8 @@ if ($action === 'settleOrder') {
   $closePrice = isset($req['exitPrice']) ? (float) $req['exitPrice'] : (isset($req['closePrice']) ? (float) $req['closePrice'] : null);
   $reqStake = orolado_money($req['stake'] ?? 0);
   $reqMode = (($req['mode'] ?? '') === 'real') ? 'real' : 'demo';
+  $reqSide = (($req['side'] ?? '') === 'put') ? 'put' : ((($req['side'] ?? '') === 'call') ? 'call' : '');
+  $reqEntry = isset($req['entryPrice']) ? (float) $req['entryPrice'] : (isset($req['openPrice']) ? (float) $req['openPrice'] : 0);
   $reqBal = array_key_exists('balanceAfter', $req) ? orolado_money($req['balanceAfter']) : null;
   if ($reqBal !== null && ($reqBal < 0 || $reqBal > 50000000)) $reqBal = null;
   $oddsAllowed = [1.88, 6.0, 11.0, 51.0];
@@ -1310,7 +1312,7 @@ if ($action === 'settleOrder') {
     if (abs($od - $payoutReq) < 0.001) { $reqPayout = $od; break; }
   }
   $uid = (string) $me['id'];
-  $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon, $voided, $closePrice, $reqStake, $reqMode, $reqPayout, $reqBal) {
+  $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon, $voided, $closePrice, $reqStake, $reqMode, $reqPayout, $reqBal, $reqSide, $reqEntry) {
     $locked =& $box->db;
     if (!isset($locked['orders']) || !is_array($locked['orders'])) $locked['orders'] = [];
     foreach ($locked['orders'] as &$o) {
@@ -1344,7 +1346,15 @@ if ($action === 'settleOrder') {
       if ($elapsed < max(0, ((int) $o['duration']) - 2.5)) {
         return ['ok' => false, 'reason' => 'Position encore ouverte', 'skip_write' => true];
       }
-      $won = $voided ? false : ($wantWon !== null ? $wantWon : !empty($o['won']));
+      $side = (($o['side'] ?? $reqSide) === 'put') ? 'put' : 'call';
+      $entry = (float) ($o['openPrice'] ?? $o['entryPrice'] ?? $reqEntry);
+      $priced = orolado_outcome_from_prices($side, $entry, $closePrice);
+      if ($priced) {
+        $voided = !empty($priced['voided']);
+        $won = $voided ? false : !empty($priced['won']);
+      } else {
+        $won = $voided ? false : ($wantWon !== null ? $wantWon : !empty($o['won']));
+      }
       $credit = $voided ? $stake : ($won ? orolado_money($stake * $payout) : 0);
       $net = $voided ? 0 : ($won ? orolado_money($credit - $stake) : orolado_money(-$stake));
       $final = $voided ? 'void' : ($won ? 'won' : 'lost');
@@ -1373,7 +1383,13 @@ if ($action === 'settleOrder') {
     if ($oid === '' || $reqStake < 1) {
       return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
     }
-    $won = $voided ? false : (bool) $wantWon;
+    $priced = orolado_outcome_from_prices($reqSide !== '' ? $reqSide : 'call', $reqEntry, $closePrice);
+    if ($priced) {
+      $voided = !empty($priced['voided']);
+      $won = $voided ? false : !empty($priced['won']);
+    } else {
+      $won = $voided ? false : (bool) $wantWon;
+    }
     $credit = $voided ? $reqStake : ($won ? orolado_money($reqStake * $reqPayout) : 0);
     $net = $voided ? 0 : ($won ? orolado_money($credit - $reqStake) : orolado_money(-$reqStake));
     $final = $voided ? 'void' : ($won ? 'won' : 'lost');
@@ -1386,7 +1402,7 @@ if ($action === 'settleOrder') {
       'id' => $oid,
       'userId' => $uid,
       'stake' => $reqStake,
-      'side' => 'call',
+      'side' => ($reqSide !== '' ? $reqSide : 'call'),
       'duration' => 0,
       'mode' => $reqMode,
       'accountType' => $reqMode,
@@ -1509,6 +1525,7 @@ if ($action === 'me') {
     orolado_set_session_cookie($token);
   }
   $uid = (string) $me['id'];
+  orolado_repair_overwritten_reals_once();
   $jsonVault = $db['vault'][$uid] ?? ['demo' => 0, 'real' => 0];
   $sbVault = supabase_admin_vault($uid);
   $vault = [

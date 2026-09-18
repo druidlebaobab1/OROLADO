@@ -353,6 +353,9 @@
       el.textContent = text;
       lastPaintedBalance = text;
     }
+    try {
+      localStorage.setItem('oro_last_bal_txt', text);
+    } catch (eBal) { /* ignore */ }
     ['fsTopBalance'].forEach(function (id) {
       var b = $(id);
       if (b) {
@@ -865,6 +868,7 @@
     }
     u.mode = next === 'real' ? 'real' : 'demo';
     D6.Store.saveUser(u);
+    try { localStorage.setItem('oro_last_mode', u.mode); } catch (eMode) { /* ignore */ }
     stake = D6.CONFIG.MIN_STAKE || 1;
     if ($('inputStake')) $('inputStake').value = stake;
     lastPaintedBalance = null;
@@ -885,8 +889,7 @@
     var real = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0);
     if (!isFinite(demo)) demo = 0;
     if (!isFinite(real)) real = 0;
-    // Chaque seau est autonome : le réel affiché suit le store (alimenté par
-    // le moteur puis par Supabase), la démo reste locale. Jamais de fusion.
+    try { localStorage.setItem('oro_last_mode', isReal ? 'real' : 'demo'); } catch (eMode) { /* ignore */ }
     if (isReal) lastOfficialReal = real;
     else lastOfficialDemo = demo;
     var active = isReal ? real : demo;
@@ -2093,6 +2096,8 @@
         voided: !!res.voided,
         net: res.net,
         exitPrice: res.exitPrice || res.closePrice,
+        entryPrice: trade.entryPrice,
+        side: trade.side,
         stake: trade.stake,
         mode: settleMode,
         payout: trade.payout
@@ -5214,7 +5219,12 @@
       if (D6.Chart && D6.Chart.applyOpenTradeVisual && D6.Engine.getTrades) {
         D6.Engine.getTrades().forEach(function (t) { D6.Chart.applyOpenTradeVisual(t); });
       }
-      updateBalance(false);
+      if (u && u.mode === 'real') {
+        var bootReal = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0);
+        if (bootReal > 0) updateBalance(false);
+      } else {
+        updateBalance(false);
+      }
       renderHistory();
       D6.I18N.apply();
       showScreen('screenTrade');
