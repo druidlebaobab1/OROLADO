@@ -128,8 +128,8 @@ html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
-.auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:28px 18px calc(28px + var(--safe));
-  max-width:450px;margin:0 auto;width:92%}
+.auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:10px 16px calc(8px + var(--safe));
+  max-width:420px;margin:0 auto;width:88%}
 .auth-card{border-radius:14px;padding:18px 16px 18px}
 .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(11,14,20,.65);padding:4px;border-radius:var(--radius);margin-bottom:14px;border:1px solid var(--line)}
 .auth-tab{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;padding:10px;border-radius:var(--radius-sm);cursor:pointer;min-height:var(--btn-h)}
