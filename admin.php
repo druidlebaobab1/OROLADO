@@ -158,7 +158,10 @@ function admin_badges(): array {
       $depPaidN++;
       if (admin_in_range($d['createdAt'] ?? null, $t0, $t1)) $depToday++;
     }
-    if (admin_dep_is_pending($d)) $depPend++;
+    if (admin_dep_is_pending($d)) {
+      $age = strtotime((string) ($d['createdAt'] ?? '')) ?: 0;
+      if ($age === 0 || $age >= time() - 7 * 86400) $depPend++;
+    }
     if (admin_dep_is_failed($d)) $depFail++;
   }
   $winToday = 0;

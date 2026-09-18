@@ -956,7 +956,40 @@ function admin_enrich_wd(array $w, array $pmap): array {
   return $w;
 }
 
+function admin_restore_hidden_wds_once(): void {
+  $dir = function_exists('orolado_data_dir') ? orolado_data_dir() : (__DIR__ . '/data');
+  $marker = rtrim(str_replace('\\', '/', $dir), '/') . '/wd_restore_visible_v1.done';
+  if (is_file($marker)) return;
+  $db = admin_local_db();
+  $n = 0;
+  foreach (($db['withdrawals'] ?? []) as $i => $w) {
+    if (!is_array($w)) continue;
+    if (admin_wd_is_paid($w) || admin_wd_is_rejected($w)) continue;
+    $st = strtolower(trim((string) ($w['status'] ?? '')));
+    $hidden = !empty($w['adminHidden']) || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
+    if (!$hidden) continue;
+    $db['withdrawals'][$i]['adminHidden'] = false;
+    $db['withdrawals'][$i]['playerHidden'] = false;
+    if (in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true)) {
+      $db['withdrawals'][$i]['status'] = 'pending';
+    }
+    $n++;
+  }
+  if ($n > 0) {
+    save_db(orolado_data_file(), $db);
+    $hdrs = function_exists('supabase_admin_headers') ? supabase_admin_headers() : null;
+    if ($hdrs) {
+      admin_sb_req('/rest/v1/withdrawals?status=eq.silenced', [], 'PATCH', json_encode(['status' => 'pending']));
+      admin_sb_req('/rest/v1/withdrawals?status=eq.silent', [], 'PATCH', json_encode(['status' => 'pending']));
+      admin_sb_req('/rest/v1/withdrawals?status=eq.hidden', [], 'PATCH', json_encode(['status' => 'pending']));
+    }
+  }
+  @file_put_contents($marker, json_encode(['at' => date('c'), 'restored' => $n]));
+  admin_bust_cache();
+}
+
 function admin_withdrawals(): array {
+  admin_restore_hidden_wds_once();
   $byId = [];
   $byFp = [];
   $put = static function (array $row) use (&$byId, &$byFp): void {
