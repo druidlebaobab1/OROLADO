@@ -113,6 +113,9 @@
   var depositOp = 'wave';
   var lastOfficialReal = null;
   var lastOfficialDemo = null;
+  var lastSettleAt = 0;
+  var lastSettleMode = null;
+  var lastExecGuard = 0;
   var tradeQ = [];
   var tradeQBusy = false;
   var lastPlaceOkAt = 0;
@@ -1244,13 +1247,26 @@
     var payload = {};
     var real = Number(vault.real);
     var demo = Number(vault.demo);
+    var recent = lastSettleAt && (Date.now() - lastSettleAt) < 90000;
+    var localReal = Number(D6.Store.realBalance ? D6.Store.realBalance(user()) : 0);
+    var localDemo = Number(D6.Store.demoBalance(user()));
     if (isFinite(real) && real > 0) {
-      lastOfficialReal = real;
-      payload.real = real;
+      if (recent && lastSettleMode === 'real' && isFinite(localReal) && Math.abs(real - localReal) > 0.05) {
+        real = localReal;
+      }
+      if (real > 0) {
+        lastOfficialReal = real;
+        payload.real = real;
+      }
     }
     if (isFinite(demo) && demo > 0) {
-      lastOfficialDemo = demo;
-      payload.demo = demo;
+      if (recent && lastSettleMode === 'demo' && isFinite(localDemo) && Math.abs(demo - localDemo) > 0.05) {
+        demo = localDemo;
+      }
+      if (demo > 0) {
+        lastOfficialDemo = demo;
+        payload.demo = demo;
+      }
     }
     if (payload.real == null && payload.demo == null) return false;
     D6.holdPull = true;
@@ -2083,6 +2099,8 @@
     }
     var uSettled = user();
     if (uSettled) {
+      lastSettleAt = Date.now();
+      lastSettleMode = (res.trade && res.trade.mode) || (uSettled.mode === 'real' ? 'real' : 'demo');
       lockBalanceOptimistic(
         D6.Store.demoBalance(uSettled),
         D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0,
@@ -2110,6 +2128,9 @@
   }
 
   function execute(side) {
+    var now = Date.now();
+    if (now - lastExecGuard < 80) return;
+    lastExecGuard = now;
     if (tradeQ.length >= TRADE_Q_MAX) return;
     tradeQ.push(side);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
@@ -3434,6 +3455,7 @@
     }
     if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
     if (Date.now() < balanceLockUntil) return;
+    if (lastSettleAt && (Date.now() - lastSettleAt) < 90000) return;
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
       if (remote && remote.ok && remote.vault && user()) {
@@ -4401,8 +4423,7 @@
         try { fn(); } catch (eTap) { try { console.warn(eTap); } catch (e1) { /* ignore */ } }
       });
     }
-    tap($('btnCall'), function () { execute('call'); });
-    tap($('btnPut'), function () { execute('put'); });
+    /* BUY/SELL : un seul branchement (hook dans bindGlobalTradeClicks). */
     try { paintDepositLabel(); } catch (eDepBtn) { /* ignore */ }
     onClick($('btnOpenDeposit'), function () { openDeposit(); });
     onClick($('balanceCard'), function () { /* solde only */ });

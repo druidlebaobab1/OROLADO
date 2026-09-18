@@ -17,10 +17,10 @@ html body #screenAuth select{
   touch-action:manipulation}
 html body #screenAuth .auth-wrap{
   flex:1 1 auto;min-height:0;max-height:100%;
-  width:94%!important;max-width:480px!important;
+  width:88%!important;max-width:420px!important;
   justify-content:center!important;
   overflow:hidden!important;
-  padding:max(28px,6vh) 18px calc(max(22px,5vh) + env(safe-area-inset-bottom,0px))!important;
+  padding:max(22px,4vh) 16px calc(max(18px,4vh) + env(safe-area-inset-bottom,0px))!important;
   margin:0 auto}
 html body #screenAuth .auth-card,
 html body #screenAuth .field,
@@ -28,7 +28,7 @@ html body #screenAuth .field input,
 html body #screenAuth .btn-gold{
   width:100%;max-width:none}
 html body #screenAuth .auth-card{
-  padding:28px 20px 22px!important;
+  padding:22px 16px 18px!important;
   margin-bottom:0;flex-shrink:0}
 html body #screenAuth .brand-lockup{gap:6px;flex-shrink:0}
 html body #screenAuth .logo-mark{width:40px;height:40px}
@@ -70,8 +70,8 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 
 @media (min-width:1024px){
   html:not(.is-android) body #screenAuth .auth-wrap{
-    width:560px!important;max-width:560px!important;
-    padding:max(40px,8vh) 32px calc(max(32px,6vh) + env(safe-area-inset-bottom,0px))!important}
+    width:520px!important;max-width:520px!important;
+    padding:max(32px,6vh) 24px calc(max(24px,5vh) + env(safe-area-inset-bottom,0px))!important}
   html:not(.is-android) body #screenAuth .auth-card{padding:36px 32px 28px!important}
   html:not(.is-android) body #screenAuth .logo-mark{width:56px;height:56px}
   html:not(.is-android) body #screenAuth .brand-xl{font-size:1.95rem;line-height:1.1}
@@ -85,8 +85,8 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 }
 @media (max-width:480px){
   html.is-ios body #screenAuth .auth-wrap{
-    width:96%!important;max-width:none!important;margin:0 auto;
-    padding:max(36px,8vh) 16px calc(max(28px,6vh) + env(safe-area-inset-bottom,0px))!important}
+    width:92%!important;max-width:none!important;margin:0 auto;
+    padding:max(28px,6vh) 14px calc(max(22px,5vh) + env(safe-area-inset-bottom,0px))!important}
   html.is-ios body #screenAuth .auth-card{padding:30px 18px 24px!important}
   html.is-ios body #screenAuth .field{margin-bottom:18px;gap:8px}
   html.is-ios body #screenAuth .field input{min-height:52px;padding:14px 16px}

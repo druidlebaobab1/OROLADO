@@ -355,9 +355,10 @@ function supabase_debit_real(string $userId, $amount): bool {
  * Crédit de gain confié à la base : `resolve_trade` additionne et refuse le
  * double règlement d'un même orderId, donc 5 trades simultanés ne s'écrasent pas.
  */
-function supabase_resolve_trade(string $userId, string $orderId, int $amount): ?array {
+function supabase_resolve_trade(string $userId, string $orderId, $amount): ?array {
   $hdrs = supabase_admin_headers();
   if (!$hdrs || $orderId === '') return null;
+  $amount = orolado_money($amount);
   $rpc = supabase_http(
     supabase_project_url() . '/rest/v1/rpc/resolve_trade',
     $hdrs,
@@ -367,7 +368,7 @@ function supabase_resolve_trade(string $userId, string $orderId, int $amount): ?
   if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
   if (!is_array($rpc) || empty($rpc['ok'])) return null;
   return [
-    'real' => (int) ($rpc['real'] ?? 0),
+    'real' => orolado_money($rpc['real'] ?? 0),
     'duplicate' => !empty($rpc['duplicate']),
   ];
 }
@@ -419,7 +420,7 @@ function supabase_admin_vault(string $userId): ?array {
   if (!$hdrs || !preg_match('/^[0-9a-f-]{36}$/i', $userId)) return null;
   $rows = supabase_http(supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId) . '&select=demo,real', $hdrs);
   if (!is_array($rows) || !isset($rows[0])) return null;
-  return ['demo' => (int) ($rows[0]['demo'] ?? 0), 'real' => (int) ($rows[0]['real'] ?? 0)];
+  return ['demo' => orolado_money($rows[0]['demo'] ?? 0), 'real' => orolado_money($rows[0]['real'] ?? 0)];
 }
 
 function supabase_complete_deposit(string $ref, $amount, string $userId): ?array {
