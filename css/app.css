@@ -1094,6 +1094,10 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .trade-wrap{padding-bottom:0;overflow:hidden}
   .trade-lock{display:none!important}
   .trade-hint{display:none!important}
+  .install-banner{gap:4px;padding:3px 4px 3px 6px;top:8px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .install-banner #btnInstall{padding:4px 10px!important;font-size:11px!important;gap:4px}
+  .install-ico{width:12px;height:12px;font-size:8px}
+  .install-x{width:20px;height:20px;font-size:11px}
 }
 @media (max-width:859px) and (max-height:680px){
   .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:340px!important;min-height:max(340px,52vh)!important}

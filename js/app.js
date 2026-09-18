@@ -1180,9 +1180,26 @@
       : '<div class="empty-feed">' + (t('noTradesHint') || 'Aucun trade pour l\'instant') + '</div>';
   }
 
+  var TIP_LS = 'trading_tip_last_closed';
+  var TIP_COOLDOWN_MS = 7 * 24 * 3600 * 1000;
+
+  function tipCooldownActive() {
+    try {
+      var at = Number(localStorage.getItem(TIP_LS) || 0);
+      if (at > 0 && (Date.now() - at) < TIP_COOLDOWN_MS) return true;
+    } catch (eTip) { /* ignore */ }
+    return false;
+  }
+
+  function markTipClosed() {
+    try { localStorage.setItem(TIP_LS, String(Date.now())); } catch (eTip) { /* ignore */ }
+  }
+
   function maybeLossStreakTip(u) {
     if (!u || (u.consecutiveLosses || 0) < 5) return;
-    if (u.lossTipShownAt && (Date.now() - Number(u.lossTipShownAt)) < 600000) return;
+    if (tipCooldownActive()) return;
+    if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
+    if (u.lossTipShownAt && (Date.now() - Number(u.lossTipShownAt)) < TIP_COOLDOWN_MS) return;
     u.lossTipShownAt = Date.now();
     D6.Store.saveUser(u);
     openModal('tipModal');
@@ -4768,8 +4785,8 @@
     }
     if ($('closeDepositSuccess')) bindAndroidTap($('closeDepositSuccess'), function () { closeModal('depositSuccessModal'); });
     if ($('btnDepositSuccessOk')) bindAndroidTap($('btnDepositSuccessOk'), function () { closeModal('depositSuccessModal'); });
-    bindImmediateClose($('closeTip'), function () { closeModal('tipModal'); });
-    bindImmediateClose($('btnTipOk'), function () { closeModal('tipModal'); });
+    bindImmediateClose($('closeTip'), function () { markTipClosed(); closeModal('tipModal'); });
+    bindImmediateClose($('btnTipOk'), function () { markTipClosed(); closeModal('tipModal'); });
     if ($('closeForgot')) bindAndroidTap($('closeForgot'), function () { closeModal('forgotModal'); });
     if ($('closeIosInstall')) bindAndroidTap($('closeIosInstall'), function () { closeModal('iosInstallModal'); });
     if ($('btnIosInstallOk')) bindAndroidTap($('btnIosInstallOk'), function () { closeModal('iosInstallModal'); });
