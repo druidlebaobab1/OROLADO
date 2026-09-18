@@ -488,7 +488,13 @@
     if (!el) return;
     var micro = kind === 'micro';
     var tone = micro ? 'micro' : (kind === 'err' || kind === 'ok' ? kind : 'info');
-    if (micro) el.style.removeProperty('top');
+    var isBal = false;
+    try {
+      isBal = String(msg || '') === String(t('insufficient') || '') || /solde insuffisant|insufficient balance/i.test(String(msg || ''));
+    } catch (eBal) { isBal = /solde insuffisant|insufficient balance/i.test(String(msg || '')); }
+    if (isBal) {
+      el.style.setProperty('top', 'calc(14px + env(safe-area-inset-top, 0px))', 'important');
+    } else if (micro) el.style.removeProperty('top');
     else {
       placeToast(el);
       requestAnimationFrame(function () { placeToast(el); });
@@ -500,11 +506,11 @@
       toastTimer = setTimeout(function () { el.className = 'toast lux-msg micro'; }, ms || 1800);
       return;
     }
-    el.className = 'toast lux-msg show ' + tone;
+    el.className = 'toast lux-msg show ' + tone + (isBal ? ' toast-bal' : '');
     el.innerHTML = '<span class="lux-msg-ico" aria-hidden="true"></span><span class="lux-msg-txt"></span>';
     var txt = el.querySelector('.lux-msg-txt');
     if (txt) txt.textContent = msg;
-    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone; }, ms || 3000);
+    toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone + (isBal ? ' toast-bal' : ''); }, isBal ? Math.max(ms || 0, 4200) : (ms || 3000));
   }
 
   function guardLiveTradeView() {
@@ -3538,7 +3544,7 @@
     usdt: 'USDT TRC-20', trx: 'TRX', sol: 'SOL', bnb: 'Binance Pay', btc: 'BTC', eth: 'ETH',
     opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange', mtn: 'MTN',
     mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
-    nequi: 'Nequi', gcash: 'GCash', upi: 'UPI/Paytm', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
+    nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
     paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', payeer: 'Payeer', perfectmoney: 'Perfect Money',
     card: 'Carte bancaire', bank: 'Virement bancaire', revolut: 'Revolut'
   };
@@ -3548,11 +3554,17 @@
   };
   var WD_DIAL_AFRICA = {
     wave: ['+225', '+221', '+223', '+226', '+227'],
-    orange: ['+225', '+221', '+223', '+226', '+227'],
-    mtn: ['+234', '+233', '+225', '+256', '+250', '+27', '+241', '+242', '+243', '+227'],
-    moov: ['+225', '+221', '+223', '+226', '+227'],
+    orange: ['+225', '+221', '+223', '+226', '+227', '+237'],
+    mtn: ['+234', '+233', '+225', '+256', '+250', '+27', '+241', '+242', '+243', '+227', '+229', '+237'],
+    moov: ['+225', '+221', '+223', '+226', '+227', '+228'],
     airtel: ['+254', '+256', '+255', '+250', '+243', '+227'],
     mpesa: ['+254', '+255', '+243', '+27', '+233', '+20', '+227']
+  };
+  var WD_DIAL_DEFAULT = {
+    wave: '+221',
+    orange: '+237',
+    mtn: '+229',
+    moov: '+228'
   };
 
   function showWithdrawStep(step) {
@@ -3590,6 +3602,7 @@
       return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + ' · ' + c.name + '</option>';
     }).join('');
     if (lock) sel.value = lock;
+    else if (WD_DIAL_DEFAULT[method]) sel.value = WD_DIAL_DEFAULT[method];
     else if (!africa) sel.value = '+1';
     sel.disabled = !!lock;
     if (method === 'opay') {
@@ -3651,6 +3664,10 @@
     if (cardFields) cardFields.classList.toggle('hidden', !isCard);
     if (bankFields) bankFields.classList.toggle('hidden', !isBank);
     if (destField) destField.classList.toggle('hidden', isMobile || isCard || isBank);
+    if (method === 'revolut' || method === 'upi') {
+      if (mobileFields) mobileFields.classList.add('hidden');
+      if (destField) destField.classList.remove('hidden');
+    }
     if (isMobile) {
       fillWdDial(method);
       var phoneLab = $('wdPhoneLabel');
@@ -3719,8 +3736,9 @@
       input.placeholder = 'Ex: 000.000.000-00';
       input.type = 'text';
     } else if (method === 'upi') {
-      label.textContent = t('wdAccount');
-      input.placeholder = 'UPI ID / Paytm';
+      label.setAttribute('data-i18n', 'wdUpiId');
+      label.textContent = t('wdUpiId');
+      input.placeholder = 'Ex: utilisateur@upi';
       input.type = 'text';
     }
   }

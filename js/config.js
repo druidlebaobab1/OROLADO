@@ -33,7 +33,7 @@
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,
       gcash: 10, nequi: 10, pix: 10, picpay: 10, papara: 10, upi: 10,
       stcpay: 15, mercadopago: 10,
-      payeer: 10, perfectmoney: 10,
+      payeer: 20, perfectmoney: 15,
       paypal: 30, skrill: 30, neteller: 30, card: 30, bank: 50, revolut: 10
     },
     WD_BANK_COUNTRIES: [

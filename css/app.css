@@ -74,6 +74,23 @@ html body .toast.lux-msg{
   box-shadow:0 6px 18px rgba(0,0,0,.34)}
 html body #toast.toast.ok,html body .toast.ok{border-color:#f59e0b;color:#FDE68A}
 html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7AA}
+html body #toast.toast.toast-bal,
+html body #toast.toast.toast-bal.err,
+html body .toast.lux-msg.toast-bal{
+  top:calc(14px + env(safe-area-inset-top,0px))!important;
+  left:50%;transform:translate(-50%,0);
+  width:max-content;max-width:min(420px,92vw);min-width:min(260px,88vw);
+  padding:14px 22px!important;border-radius:14px;
+  font-size:1.15rem!important;font-weight:800;letter-spacing:.03em;line-height:1.25;
+  color:#FFD700!important;text-shadow:0 0 14px rgba(255,215,0,.55);
+  background:rgba(8,10,16,.97)!important;
+  border:1.5px solid rgba(255,215,0,.8)!important;
+  box-shadow:0 0 0 1px rgba(220,38,38,.4),0 14px 36px rgba(0,0,0,.55);
+  z-index:100050;white-space:normal;text-align:center}
+html.fs-trade #toast.toast.toast-bal,
+html.is-fullscreen #toast.toast.toast-bal{z-index:100050!important}
+html body #toast.toast.toast-bal .lux-msg-txt{color:#FFD700!important;font-size:1.15rem!important;font-weight:800}
+html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .toast .lux-msg-ico{width:14px;height:14px;flex:0 0 14px;margin-top:0}
 @keyframes microToastIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes luxIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
