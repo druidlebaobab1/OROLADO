@@ -1927,21 +1927,59 @@
   var LANG_KEY = 'orolado_lang';
   var LANG_USER_KEY = 'orolado_lang_user';
   var LANG_MANUAL_KEY = 'orolado_manual_lang';
-  var GEO_TIMEOUT_MS = 1500;
+  var LANG_SELECTED_KEY = 'orolado_selected_lang';
 
-  var ME_CC = {
-    SA: 1, AE: 1, QA: 1, KW: 1, BH: 1, OM: 1, EG: 1, IQ: 1
+  var GULF_TZ = {
+    'Asia/Dubai': 1, 'Asia/Qatar': 1, 'Asia/Riyadh': 1, 'Asia/Kuwait': 1,
+    'Asia/Bahrain': 1, 'Asia/Muscat': 1, 'Asia/Aden': 1, 'Asia/Baghdad': 1,
+    'Africa/Cairo': 1
   };
-  var ES_CC = {
-    MX: 1, CO: 1, AR: 1, CL: 1, PE: 1
+  var LATAM_TZ = {
+    'America/Bogota': 1, 'America/Mexico_City': 1, 'America/Monterrey': 1,
+    'America/Cancun': 1, 'America/Tijuana': 1, 'America/Merida': 1,
+    'America/Chihuahua': 1, 'America/Hermosillo': 1, 'America/Mazatlan': 1,
+    'America/Santiago': 1, 'America/Lima': 1, 'America/Caracas': 1,
+    'America/Guayaquil': 1, 'America/Asuncion': 1, 'America/Montevideo': 1,
+    'America/La_Paz': 1, 'America/Panama': 1, 'America/Costa_Rica': 1,
+    'America/Guatemala': 1, 'America/Tegucigalpa': 1, 'America/Managua': 1,
+    'America/El_Salvador': 1, 'America/Havana': 1, 'America/Santo_Domingo': 1,
+    'America/Puerto_Rico': 1, 'America/Argentina/Buenos_Aires': 1,
+    'America/Argentina/Cordoba': 1, 'America/Argentina/Mendoza': 1
+  };
+  var BR_TZ = {
+    'America/Sao_Paulo': 1, 'America/Fortaleza': 1, 'America/Recife': 1,
+    'America/Bahia': 1, 'America/Manaus': 1, 'America/Belem': 1,
+    'America/Cuiaba': 1, 'America/Campo_Grande': 1, 'America/Porto_Velho': 1,
+    'America/Rio_Branco': 1, 'America/Araguaina': 1, 'America/Maceio': 1,
+    'America/Noronha': 1, 'America/Santarem': 1
   };
 
-  function mapCountry(cc) {
-    var code = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
-    if (!code || code === 'XX' || code === 'T1' || code === 'A1' || code === 'A2') return '';
-    if (ME_CC[code]) return 'ar';
-    if (code === 'BR') return 'pt';
-    if (ES_CC[code]) return 'es';
+  function readTimeZone() {
+    try {
+      return String((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '');
+    } catch (eTz) {
+      return '';
+    }
+  }
+
+  function detectAutoLang() {
+    var userLang = '';
+    try {
+      userLang = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    } catch (eNav) { userLang = ''; }
+    var prefix = String(userLang || '').toLowerCase().replace('_', '-').split('-')[0];
+    var timeZone = readTimeZone();
+    if (prefix === 'ar' || GULF_TZ[timeZone]) return 'ar';
+    if (prefix === 'es' || LATAM_TZ[timeZone] || timeZone.indexOf('America/Argentina/') === 0) return 'es';
+    if (prefix === 'pt' || BR_TZ[timeZone] || timeZone === 'America/Sao_Paulo') return 'pt';
+    if (prefix === 'fr') return 'fr';
+    if (prefix === 'de') return 'de';
+    if (prefix === 'ru') return 'ru';
+    if (prefix === 'tr') return 'tr';
+    if (prefix === 'vi') return 'vi';
+    if (prefix === 'id') return 'id';
+    if (prefix === 'hi') return 'hi';
+    if (prefix === 'en') return 'en';
     return 'en';
   }
 
@@ -1957,6 +1995,8 @@
 
   function readManualLang() {
     try {
+      var selected = localStorage.getItem(LANG_SELECTED_KEY);
+      if (selected && DICT[selected]) return selected;
       var manual = localStorage.getItem(LANG_MANUAL_KEY);
       if (manual && DICT[manual]) return manual;
     } catch (e) { /* ignore */ }
@@ -1965,24 +2005,11 @@
 
   function persistManualLang(code) {
     try {
+      localStorage.setItem(LANG_SELECTED_KEY, code);
       localStorage.setItem(LANG_MANUAL_KEY, code);
       localStorage.setItem(LANG_KEY, code);
       localStorage.setItem(LANG_USER_KEY, '1');
     } catch (e) { /* ignore */ }
-  }
-
-  function browserLang() {
-    var list = [];
-    try {
-      if (navigator.languages && navigator.languages.length) list = navigator.languages;
-      else if (navigator.language) list = [navigator.language];
-    } catch (eNav) { /* ignore */ }
-    var i;
-    for (i = 0; i < list.length; i++) {
-      var code = String(list[i] || '').toLowerCase().replace('_', '-').split('-')[0];
-      if (code === 'ar') return 'ar';
-    }
-    return 'en';
   }
 
   function detectLang() {
@@ -1990,7 +2017,7 @@
     if (fromUrl) return fromUrl;
     var manual = readManualLang();
     if (manual) return manual;
-    return browserLang() || 'en';
+    return detectAutoLang() || 'en';
   }
 
   var lang = detectLang();
@@ -2079,23 +2106,7 @@
   function startGeo() {
     if (geoStarted || lockedLang || readManualLang()) return;
     geoStarted = true;
-    applyAutoLang(browserLang() || 'en');
-    var sources = ['https://api.country.is/', 'https://ipapi.co/json/'];
-    var i = 0;
-    function next() {
-      if (lockedLang || readManualLang() || i >= sources.length) return;
-      var url = sources[i];
-      i += 1;
-      fetch(url, { cache: 'no-store', credentials: 'omit', mode: 'cors' }).then(function (r) {
-        if (!r.ok) throw new Error('geo');
-        return r.json();
-      }).then(function (j) {
-        var cc = String((j && (j.country_code || j.country)) || '');
-        var mapped = mapCountry(cc);
-        if (mapped) applyAutoLang(mapped);
-      }).catch(function () { next(); });
-    }
-    try { next(); } catch (eGeo) { /* ignore */ }
+    applyAutoLang(detectAutoLang() || 'en');
   }
 
   function refineFromGeo() {

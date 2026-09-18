@@ -26,17 +26,27 @@
   (function () {
     try {
       var ok = { en:1, fr:1, es:1, pt:1, ar:1, tr:1, vi:1, id:1, ru:1, de:1, hi:1 };
+      var gulf = { 'Asia/Dubai':1,'Asia/Qatar':1,'Asia/Riyadh':1,'Asia/Kuwait':1,'Asia/Bahrain':1,'Asia/Muscat':1,'Asia/Aden':1,'Asia/Baghdad':1,'Africa/Cairo':1 };
+      var latam = { 'America/Bogota':1,'America/Mexico_City':1,'America/Monterrey':1,'America/Cancun':1,'America/Tijuana':1,'America/Santiago':1,'America/Lima':1,'America/Caracas':1,'America/Guayaquil':1,'America/Asuncion':1,'America/Montevideo':1,'America/La_Paz':1,'America/Panama':1,'America/Costa_Rica':1,'America/Guatemala':1,'America/Tegucigalpa':1,'America/Managua':1,'America/El_Salvador':1,'America/Havana':1,'America/Santo_Domingo':1,'America/Puerto_Rico':1,'America/Argentina/Buenos_Aires':1,'America/Argentina/Cordoba':1,'America/Argentina/Mendoza':1 };
+      var brazil = { 'America/Sao_Paulo':1,'America/Fortaleza':1,'America/Recife':1,'America/Bahia':1,'America/Manaus':1,'America/Belem':1 };
       var l = '';
       try {
         var q = new URLSearchParams(location.search).get('lang') || '';
         l = String(q).toLowerCase().split('-')[0];
       } catch (e0) { l = ''; }
       if (!ok[l]) {
-        try { l = localStorage.getItem('orolado_manual_lang') || ''; } catch (e1) { l = ''; }
+        try { l = localStorage.getItem('orolado_selected_lang') || localStorage.getItem('orolado_manual_lang') || ''; } catch (e1) { l = ''; }
       }
       if (!ok[l]) {
-        var nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-        if (String(nav).toLowerCase().indexOf('ar') === 0) l = 'ar';
+        var userLang = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+        var prefix = String(userLang || '').toLowerCase().replace('_', '-').split('-')[0];
+        var timeZone = '';
+        try { timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (eTz) { timeZone = ''; }
+        if (prefix === 'ar' || gulf[timeZone]) l = 'ar';
+        else if (prefix === 'es' || latam[timeZone] || timeZone.indexOf('America/Argentina/') === 0) l = 'es';
+        else if (prefix === 'pt' || brazil[timeZone] || timeZone === 'America/Sao_Paulo') l = 'pt';
+        else if (ok[prefix]) l = prefix;
+        else l = 'en';
       }
       if (!ok[l]) l = 'en';
       document.documentElement.lang = l;
@@ -66,8 +76,8 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=532">
-    <link rel="stylesheet" href="css/auth.css?v=532">
+    <link rel="stylesheet" href="css/app.css?v=533">
+    <link rel="stylesheet" href="css/auth.css?v=533">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -1063,16 +1073,16 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=532"></script>
-  <script src="js/translations.js?v=532"></script>
-  <script src="js/i18n.js?v=532"></script>
-  <script src="js/store.js?v=532"></script>
-  <script src="js/api.js?v=532"></script>
+  <script src="js/config.js?v=533"></script>
+  <script src="js/translations.js?v=533"></script>
+  <script src="js/i18n.js?v=533"></script>
+  <script src="js/store.js?v=533"></script>
+  <script src="js/api.js?v=533"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=532"></script>
-  <script src="js/auth.js?v=532"></script>
-  <script src="js/engine.js?v=532"></script>
-  <script src="js/chart.js?v=532"></script>
+  <script src="js/supabase.js?v=533"></script>
+  <script src="js/auth.js?v=533"></script>
+  <script src="js/engine.js?v=533"></script>
+  <script src="js/chart.js?v=533"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <script>
   (function () {
@@ -1123,6 +1133,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=532"></script>
+  <script src="js/app.js?v=533"></script>
 </body>
 </html>
