@@ -17,11 +17,11 @@ html body #screenAuth select{
   touch-action:manipulation}
 html body #screenAuth .auth-wrap{
   flex:1 1 auto;min-height:0;max-height:100%;
-  width:88%!important;max-width:420px!important;
+  width:92%!important;max-width:420px!important;
   justify-content:flex-start!important;
   overflow:hidden!important;
-  padding:10px 16px calc(8px + env(safe-area-inset-bottom,0px))!important;
-  margin:0 auto}
+  padding:30px 0 calc(8px + env(safe-area-inset-bottom,0px))!important;
+  margin-left:auto!important;margin-right:auto!important}
 html body #screenAuth .auth-card,
 html body #screenAuth .field,
 html body #screenAuth .field input,
@@ -30,11 +30,11 @@ html body #screenAuth .btn-gold{
 html body #screenAuth .auth-card{
   padding:12px 14px 10px!important;
   margin-bottom:0;flex-shrink:0}
-html body #screenAuth .brand-lockup{gap:2px;flex-shrink:0;margin-top:4px}
+html body #screenAuth .brand-lockup{gap:2px;flex-shrink:0;margin-top:0}
 html body #screenAuth .logo-mark{width:28px;height:28px}
 html body #screenAuth .brand-xl{font-size:1.22rem;line-height:1.05}
 html body #screenAuth .brand-domain{font-size:.5rem;letter-spacing:.18em}
-html body #screenAuth .brand-sub{margin:2px 0 8px;font-size:.62rem}
+html body #screenAuth .brand-sub{margin:2px 0 18px;font-size:.62rem}
 html body #screenAuth .auth-tabs{margin-bottom:8px;padding:3px;gap:4px}
 html body #screenAuth .auth-tab{padding:6px;min-height:36px;font-size:.8rem}
 html body #screenAuth .field{gap:3px;margin-bottom:8px}
@@ -61,7 +61,7 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 @media (max-height:740px){
   html body #screenAuth .logo-mark{width:26px;height:26px}
   html body #screenAuth .brand-xl{font-size:1.12rem}
-  html body #screenAuth .brand-sub{margin:1px 0 6px}
+  html body #screenAuth .brand-sub{margin:1px 0 16px}
   html body #screenAuth .field{margin-bottom:6px}
   html body #screenAuth .field input{min-height:38px;padding:7px 10px}
   html body #screenAuth .btn-gold{min-height:40px}
@@ -70,13 +70,14 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 
 @media (min-width:1024px){
   html:not(.is-android) body #screenAuth .auth-wrap{
-    width:480px!important;max-width:480px!important;
-    padding:18px 22px calc(14px + env(safe-area-inset-bottom,0px))!important}
+    width:92%!important;max-width:420px!important;
+    justify-content:center!important;
+    padding:18px 0 calc(14px + env(safe-area-inset-bottom,0px))!important}
   html:not(.is-android) body #screenAuth .auth-card{padding:16px 18px 14px!important}
   html:not(.is-android) body #screenAuth .logo-mark{width:36px;height:36px}
   html:not(.is-android) body #screenAuth .brand-xl{font-size:1.55rem;line-height:1.1}
   html:not(.is-android) body #screenAuth .brand-domain{font-size:.58rem}
-  html:not(.is-android) body #screenAuth .brand-sub{margin:4px 0 10px;font-size:.72rem}
+  html:not(.is-android) body #screenAuth .brand-sub{margin:4px 0 18px;font-size:.72rem}
   html:not(.is-android) body #screenAuth .auth-tabs{margin-bottom:10px}
   html:not(.is-android) body #screenAuth .auth-tab{min-height:40px;padding:8px;font-size:.88rem}
   html:not(.is-android) body #screenAuth .field{margin-bottom:10px;gap:4px}
@@ -86,8 +87,9 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 @media (max-width:480px){
   html.is-ios body #screenAuth .auth-wrap,
   html.is-android body #screenAuth .auth-wrap{
-    width:90%!important;max-width:400px!important;margin:0 auto;
-    padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))!important}
+    width:92%!important;max-width:420px!important;
+    margin-left:auto!important;margin-right:auto!important;
+    padding:30px 0 calc(8px + env(safe-area-inset-bottom,0px))!important}
   html.is-ios body #screenAuth .auth-card,
   html.is-android body #screenAuth .auth-card{padding:10px 12px 8px!important}
   html.is-ios body #screenAuth .field,
