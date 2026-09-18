@@ -1153,25 +1153,28 @@
       if (d >= 60) return (d / 60) + ' min';
       return d + 's';
     }
+    function fmtHistMoney(n) {
+      return String(D6.fmtFCFA(n) || '').replace(/ \$/, '\u00a0$');
+    }
     live.forEach(function (tr) {
       var stake = Number(tr.stake || 0);
       var left = Math.max(0, Number(tr.timeLeft) || 0);
       var asset = D6.CONFIG.ASSETS[tr.assetId];
       var name = (asset && (asset.short || asset.name)) || tr.assetId || '-';
       rows.push('<tr class="hist-open"><td>' + fmtTimerLeft(left) + '</td><td>' + name +
-        '</td><td>' + (tr.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(stake) +
+        '</td><td>' + (tr.side === 'call' ? 'CALL' : 'PUT') + '</td><td class="hist-amt">' + fmtHistMoney(stake) +
         '</td><td>' + (t('histOpen') || 'En cours') + ' · ' + durLabel(tr.duration) +
-        '</td><td>—</td></tr>');
+        '</td><td class="hist-pnl">—</td></tr>');
     });
     settled.slice(0, 50).forEach(function (h) {
       var stake = Number(h.stake || 0);
       var payoutAmt = D6.roundMoney(stake * Number(h.payout || 1.88));
       var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
       var res = (h.voided || h.status === 'void') ? 'Egalite' : (h.won ? 'Gagne' : 'Perdu');
-      var pnlCls = net > 0 ? 'w' : (net < 0 ? 'l' : '');
-      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + D6.fmtFCFA(Math.abs(net));
+      var pnlCls = net > 0 ? 'w hist-pnl' : (net < 0 ? 'l hist-pnl' : 'hist-pnl');
+      var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + fmtHistMoney(Math.abs(net));
       rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
-        '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td>' + D6.fmtFCFA(stake) +
+        '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td class="hist-amt">' + fmtHistMoney(stake) +
         '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td></tr>');
     });
     el.innerHTML = rows.length
@@ -4037,22 +4040,17 @@
       tickForgotTimer();
     }
     function tickForgotTimer() {
-      var wait = $('forgotOtpTimer');
       var link = $('btnForgotResend');
-      var btn = $('btnForgotPrimary');
-      if (wait) {
-        wait.textContent = forgotLeft > 0
-          ? t('otpResendIn').replace('{s}', String(forgotLeft))
-          : '';
-      }
-      setResendWait(link, forgotLeft > 0);
-      if (btn && forgotStep === 'otp') {
-        btn.textContent = forgotLeft > 0
+      var waiting = forgotLeft > 0;
+      if (link) {
+        link.textContent = waiting
           ? t('otpResendIn').replace('{s}', String(forgotLeft))
           : t('otpResend');
-        btn.classList.toggle('is-waiting', forgotLeft > 0);
-        btn.setAttribute('data-i18n', forgotLeft > 0 ? 'otpResendIn' : 'otpResend');
+        link.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
+        setResendWait(link, waiting);
       }
+      var wait = $('forgotOtpTimer');
+      if (wait) wait.textContent = '';
     }
     function startForgotCountdown(seconds) {
       forgotLeft = Math.max(0, parseInt(seconds, 10) || 60);
@@ -4187,13 +4185,13 @@
 
   function updateOtpResendUi() {
     var btn = $('btnOtpResend');
-    var timer = $('otpTimer');
-    if (timer) {
-      timer.textContent = otpResendLeft > 0
-        ? t('otpResendIn').replace('{s}', String(otpResendLeft))
-        : '';
-    }
-    setResendWait(btn, otpResendLeft > 0);
+    if (!btn) return;
+    var waiting = otpResendLeft > 0;
+    btn.textContent = waiting
+      ? t('otpResendIn').replace('{s}', String(otpResendLeft))
+      : t('otpResend');
+    btn.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
+    setResendWait(btn, waiting);
   }
 
   function startOtpResendCountdown(seconds) {
@@ -4550,22 +4548,17 @@
       el.classList.toggle('on', !!msg);
     }
     function tickPassTimer() {
-      var wait = $('passOtpTimer');
       var link = $('btnPassResend');
-      var btn = $('btnPassPrimary');
-      if (wait) {
-        wait.textContent = passLeft > 0
-          ? t('otpResendIn').replace('{s}', String(passLeft))
-          : '';
-      }
-      setResendWait(link, passLeft > 0);
-      if (btn && passStep === 'otp') {
-        btn.textContent = passLeft > 0
+      var waiting = passLeft > 0;
+      if (link) {
+        link.textContent = waiting
           ? t('otpResendIn').replace('{s}', String(passLeft))
           : t('otpResend');
-        btn.classList.toggle('is-waiting', passLeft > 0);
-        btn.setAttribute('data-i18n', passLeft > 0 ? 'otpResendIn' : 'otpResend');
+        link.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
+        setResendWait(link, waiting);
       }
+      var wait = $('passOtpTimer');
+      if (wait) wait.textContent = '';
     }
     function startPassCountdown(seconds) {
       passLeft = Math.max(0, parseInt(seconds, 10) || 60);
@@ -4679,8 +4672,7 @@
       if (!res.ok) { toast(res.reason, 'err'); return; }
       resetPassModal();
       closeModal('passModal');
-      toast(t('passUpdated'), 'ok');
-      showAuthScreen('login');
+      toast(t('passUpdated') || 'Password updated successfully', 'ok');
     });
     $('btnFinance').addEventListener('click', openFinance);
     $('btnFinance').addEventListener('pointerup', openFinance);

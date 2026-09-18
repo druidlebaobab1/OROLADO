@@ -645,7 +645,7 @@ if ($action === 'passwordChange') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Jeton OTP invalide']);
     exit;
   }
-  $ok = orolado_overwrite_user_password($db, $email, $newPassword);
+  $ok = orolado_overwrite_user_password($db, $email, $newPassword, $token);
   save_db($file, $db);
   echo json_encode(['ok' => $ok, 'server' => true, 'reason' => $ok ? null : 'Impossible de mettre à jour le mot de passe']);
   exit;

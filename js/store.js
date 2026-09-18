@@ -170,7 +170,7 @@
     if (!vault[user.id]) {
       var lsDemo = readDemoLs(user.id);
       vault[user.id] = {
-        demo: lsDemo != null ? lsDemo : (user.demoBalance != null ? user.demoBalance : D6.CONFIG.DEMO_START),
+        demo: lsDemo != null ? lsDemo : (Number(user.demoBalance) > 0 ? Number(user.demoBalance) : D6.CONFIG.DEMO_START),
         real: user.realBalance != null ? user.realBalance : D6.CONFIG.REAL_START
       };
     } else {

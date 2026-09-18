@@ -132,6 +132,13 @@
       if (remote.user) {
         D6.Store.importRemote(remote.user, remote.vault);
         D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
+        var seeded = D6.Store.current() || D6.Store.getUser(remote.user.id);
+        var startDemo = (D6.CONFIG && D6.CONFIG.DEMO_START) || 1000000;
+        if (seeded) {
+          seeded.mode = seeded.mode || 'demo';
+          var demoNow = Number(D6.Store.demoBalance(seeded) || 0);
+          D6.Store.setBalanceMode(seeded, 'demo', demoNow > 0 ? demoNow : startDemo);
+        }
       }
       // Miroir Supabase optionnel (compte déjà actif côté Orolado).
       if (password && D6.Supabase && D6.Supabase.enabled && D6.Supabase.enabled() && email.indexOf('.local') < 0) {
@@ -380,8 +387,7 @@
           newPassword: next
         }, 20000);
         if (remote && remote.ok) {
-          try { await D6.Auth.logout(); } catch (eOut) { /* ignore */ }
-          return { ok: true, relogin: true };
+          return { ok: true };
         }
         if (remote && remote.reason) return remote;
       }

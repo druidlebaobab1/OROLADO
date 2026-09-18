@@ -715,7 +715,7 @@ function supabase_admin_set_password(string $userId, string $email, string $newP
   }
 }
 
-function orolado_overwrite_user_password(array &$db, string $email, string $newPassword): bool {
+function orolado_overwrite_user_password(array &$db, string $email, string $newPassword, string $keepToken = ''): bool {
   $email = strtolower(trim($email));
   $newPassword = (string) $newPassword;
   if ($email === '' || strlen($newPassword) < 6) return false;
@@ -733,7 +733,7 @@ function orolado_overwrite_user_password(array &$db, string $email, string $newP
     $db['users'][$id]['reset_code'] = null;
     $db['users'][$id]['reset_code_expires'] = null;
     $db['users'][$id]['updated_at'] = date('c');
-    orolado_revoke_user_sessions($db, $uid, '');
+    orolado_revoke_user_sessions($db, $uid, $keepToken);
     supabase_admin_set_password($uid, $email, $newPassword);
     $hit = true;
   }
@@ -2509,7 +2509,7 @@ function brevo_otp_html(string $code): string {
     . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
     . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your request:</p>'
     . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 10 minutes.</p>'
+    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
     . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
     . '</td></tr></table></td></tr></table></body></html>';
 }
@@ -2525,8 +2525,8 @@ function brevo_send_otp(string $email, string $code): array {
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
   $html = brevo_otp_html($code);
-  $text = "Your Orolado security code: $code\n\nThis code is valid for 10 minutes.\nDo not share this 6-digit code with anyone.\n";
-  return orolado_mail_send($email, '', 'Orolado security code — valid 10 minutes', $html, $text);
+  $text = "Your Orolado security code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
+  return orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
 }
 
 // Durée de vie du code et délai avant renvoi : ces deux valeurs doivent rester
