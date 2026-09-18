@@ -2002,6 +2002,7 @@ html.is-ios .stake-field input{border-radius:10px}
 .wd-card.wd-wave .wd-mm-dot{background:#1BA7E1}
 .wd-card.wd-moov .wd-mm-dot{background:linear-gradient(90deg,#0066B3,#FF6600)}
 .wd-card.wd-airtel .wd-mm-dot{background:#ED1C24}
+.wd-card.wd-pix .wd-mm-dot{background:#00B686}
 .wd-card.wd-mtn.on{border-color:#FFCC00}
 .wd-card.wd-orange.on{border-color:#FF6600}
 .wd-card.wd-mpesa.on{border-color:#E31C23}
@@ -2035,11 +2036,15 @@ html.is-ios .stake-field input{border-radius:10px}
 #withdrawModal .wd-bal-secure{
   font-size:.62rem;letter-spacing:.12em;color:#E8D5A3;font-weight:800;text-transform:uppercase}
 #withdrawModal .wd-bal-amt{
-  font-size:1.85rem;font-weight:900;color:#FFD700;
+  font-size:2.15rem;font-weight:900;color:#FFD700;
   text-shadow:0 0 18px rgba(255,215,0,.28);
-  font-family:ui-monospace,Menlo,Consolas,monospace}
-#withdrawModal .wd-card{background:rgba(11,16,28,.92)}
-#withdrawModal .wd-card-ico{width:20px;height:20px;display:block}
+  font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.1}
+#withdrawModal .wd-card{background:rgba(11,16,28,.92);min-width:0;min-height:40px;overflow:hidden;align-items:center}
+#withdrawModal .wd-card > span:last-child{
+  min-width:0;flex:1;line-height:1.15;white-space:normal;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#withdrawModal .wd-card-ico{width:20px;height:20px;display:block;flex-shrink:0}
+#withdrawModal .wd-card[data-wd="revolut"] .wd-card-ico{border-radius:6px}
 #withdrawModal .wd-dest-help{margin:4px 0 0;font-size:.68rem;color:#94A3B8;font-weight:600;line-height:1.35}
 #withdrawModal .wd-dest-help.hidden{display:none!important}
 #withdrawModal .wd-brand-pm{

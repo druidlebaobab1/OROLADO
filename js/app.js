@@ -3531,7 +3531,7 @@
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1 };
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
-    nequi: 1, gcash: 1, stcpay: 1, picpay: 1, papara: 1
+    nequi: 1, gcash: 1, stcpay: 1, papara: 1, mercadopago: 1
   };
   var WD_EMAIL = { paypal: 1, skrill: 1, neteller: 1 };
   var WD_NAMES = {
@@ -3540,19 +3540,19 @@
     mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
     nequi: 'Nequi', gcash: 'GCash', upi: 'UPI/Paytm', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
     paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', payeer: 'Payeer', perfectmoney: 'Perfect Money',
-    card: 'Carte bancaire', bank: 'Virement bancaire'
+    card: 'Carte bancaire', bank: 'Virement bancaire', revolut: 'Revolut'
   };
   var WD_DIAL_LOCK = {
     stcpay: '+966', nequi: '+57', opay: '+234', palmpay: '+234',
     picpay: '+55', papara: '+90', gcash: '+63'
   };
   var WD_DIAL_AFRICA = {
-    wave: ['+225', '+221', '+223', '+226'],
-    orange: ['+225', '+221', '+223', '+226'],
-    mtn: ['+234', '+233', '+225', '+256', '+250', '+27', '+241', '+242', '+243'],
-    moov: ['+225', '+221', '+223', '+226'],
+    wave: ['+225', '+221', '+223', '+226', '+227'],
+    orange: ['+225', '+221', '+223', '+226', '+227'],
+    mtn: ['+234', '+233', '+225', '+256', '+250', '+27', '+241', '+242', '+243', '+227'],
+    moov: ['+225', '+221', '+223', '+226', '+227'],
     airtel: ['+254', '+256', '+255', '+250', '+243', '+227'],
-    mpesa: ['+254', '+255', '+243', '+27', '+233', '+20']
+    mpesa: ['+254', '+255', '+243', '+27', '+233', '+20', '+227']
   };
 
   function showWithdrawStep(step) {
@@ -3656,34 +3656,11 @@
       var phoneLab = $('wdPhoneLabel');
       var phone = $('wdPhone');
       if (help) { help.textContent = ''; help.classList.add('hidden'); }
-      if (method === 'opay') {
-        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdOpayAccount'); phoneLab.textContent = t('wdOpayAccount'); }
-        if (phone) {
-          phone.placeholder = t('wdOpayPh');
-          phone.setAttribute('maxlength', '10');
-          phone.setAttribute('inputmode', 'numeric');
-        }
-      } else if (method === 'papara') {
-        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPaparaId'); phoneLab.textContent = t('wdPaparaId'); }
-        if (phone) {
-          phone.placeholder = 'Ex: 1234567890';
-          phone.setAttribute('maxlength', '20');
-          phone.setAttribute('inputmode', 'numeric');
-        }
-      } else if (method === 'picpay') {
-        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPicpayId'); phoneLab.textContent = t('wdPicpayId'); }
-        if (phone) {
-          phone.placeholder = 'Ex: 000.000.000-00 ou email@exemple.com';
-          phone.setAttribute('maxlength', '80');
-          phone.setAttribute('inputmode', 'email');
-        }
-      } else {
-        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPhone'); phoneLab.textContent = t('wdPhone'); }
-        if (phone) {
-          phone.placeholder = '07XXXXXXXX';
-          phone.setAttribute('maxlength', '20');
-          phone.setAttribute('inputmode', 'tel');
-        }
+      if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPhone'); phoneLab.textContent = t('wdPhone'); }
+      if (phone) {
+        phone.placeholder = 'Ex: +225 0700000000';
+        phone.setAttribute('maxlength', '20');
+        phone.setAttribute('inputmode', 'tel');
       }
       if ($('wdFullName') && u && !$('wdFullName').value) $('wdFullName').value = u.displayName || '';
       return;
@@ -3701,46 +3678,49 @@
     }
     if (!label || !input) return;
     if (help) { help.textContent = ''; help.classList.add('hidden'); }
-    if (isCrypto) {
+    if (method === 'btc') {
+      label.setAttribute('data-i18n', 'wdBtcAddr');
+      label.textContent = t('wdBtcAddr');
+      input.placeholder = 'Ex: bc1q...';
+      input.type = 'text';
+    } else if (isCrypto) {
       label.setAttribute('data-i18n', 'wdWallet');
       label.textContent = t('wdWallet');
-      input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : (method === 'usdt' ? 'USDT TRC-20 address (T…)' : 'Wallet address');
+      input.placeholder = 'Ex: Adresse de r\u00e9ception';
       input.type = 'text';
     } else if (method === 'bnb') {
       label.setAttribute('data-i18n', 'wdBinanceId');
       label.textContent = t('wdBinanceId');
-      input.placeholder = t('wdBinancePh');
+      input.placeholder = 'Ex: 284719302';
       input.type = 'text';
-      if (help) {
-        help.textContent = t('wdBinanceHelp');
-        help.classList.remove('hidden');
-      }
     } else if (method === 'perfectmoney') {
       label.setAttribute('data-i18n', 'wdPmAccount');
       label.textContent = t('wdPmAccount');
-      input.placeholder = t('wdPmPh');
+      input.placeholder = 'Ex: U12345678';
       input.type = 'text';
     } else if (method === 'payeer') {
-      label.setAttribute('data-i18n', 'wdEmailId');
-      label.textContent = t('wdEmailId');
-      input.placeholder = 'P12345678 / email@exemple.com';
+      label.setAttribute('data-i18n', 'wdPayeerAccount');
+      label.textContent = t('wdPayeerAccount');
+      input.placeholder = 'Ex: P10000000';
+      input.type = 'text';
+    } else if (method === 'revolut') {
+      label.setAttribute('data-i18n', 'wdRevolutId');
+      label.textContent = t('wdRevolutId');
+      input.placeholder = 'Ex: @user123 ou +33612345678';
       input.type = 'text';
     } else if (WD_EMAIL[method]) {
-      label.textContent = method === 'paypal' ? t('wdPaypal') : t('wdEmailId');
-      input.placeholder = 'you@email.com';
+      label.setAttribute('data-i18n', 'wdEmailAccount');
+      label.textContent = t('wdEmailAccount');
+      input.placeholder = 'Ex: nom@exemple.com';
       input.type = 'email';
-    } else if (method === 'pix') {
+    } else if (method === 'pix' || method === 'picpay') {
+      label.setAttribute('data-i18n', 'wdPix');
       label.textContent = t('wdPix');
-      input.placeholder = 'CPF / e-mail / phone / key';
+      input.placeholder = 'Ex: 000.000.000-00';
       input.type = 'text';
     } else if (method === 'upi') {
       label.textContent = t('wdAccount');
       input.placeholder = 'UPI ID / Paytm';
-      input.type = 'text';
-    } else if (method === 'mercadopago') {
-      label.setAttribute('data-i18n', 'wdMpagoId');
-      label.textContent = t('wdMpagoId');
-      input.placeholder = 'Ex: exemple@email.com';
       input.type = 'text';
     }
   }
