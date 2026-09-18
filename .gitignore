@@ -1,5 +1,7 @@
 data/orolado.json
 data/.env
+data/admin_cache_*.json
+data/admin_alerts.json
 .env
 cloudflared.exe
 *.exe
