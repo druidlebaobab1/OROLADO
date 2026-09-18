@@ -559,7 +559,9 @@ function orolado_session_user(array &$db, ?string $token): ?array {
     if ($sid !== $token) continue;
     $uid = (string) ($sess['userId'] ?? '');
     if ($uid === '' || !isset($db['users'][$uid])) return null;
-    return $db['users'][$uid];
+    $me = $db['users'][$uid];
+    if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned'], true)) return null;
+    return $me;
   }
   $sb = supabase_fetch_auth_user($token);
   if (!$sb || empty($sb['id'])) return null;
@@ -591,7 +593,10 @@ function orolado_session_user(array &$db, ?string $token): ?array {
     if (!isset($db['vault'][$id])) $db['vault'][$id] = ['demo' => 1000000, 'real' => 0];
     save_db(orolado_data_file(), $db);
   }
-  return $db['users'][$id];
+  if ($id === '' || !isset($db['users'][$id])) return null;
+  $me = $db['users'][$id];
+  if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned'], true)) return null;
+  return $me;
 }
 
 function orolado_admin_emails(): array {

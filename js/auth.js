@@ -208,6 +208,7 @@
         try {
           var cloud = await D6.Supabase.login(id.email, password);
           if (cloud && cloud.ok) return { ok: true, user: D6.Store.current() };
+          if (cloud && cloud.banned) return { ok: false, reason: cloud.reason || 'Compte suspendu', field: 'loginPass' };
         } catch (eCloud) { /* ignore */ }
         return null;
       }

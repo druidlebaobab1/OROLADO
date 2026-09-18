@@ -207,6 +207,15 @@
       return { id: t.id, at: t.created_at, type: t.type, amount: t.amount, note: t.note || '', mode: t.mode };
     });
     var user = rowToUser(row, { positions: positions, transactions: transactions });
+    var role = String((row && row.role) || (user && user.role) || '').toLowerCase();
+    if (role === 'suspended' || role === 'banned') {
+      try { await sb.auth.signOut({ scope: 'local' }); } catch (eBan) { /* ignore */ }
+      return {
+        ok: false,
+        banned: true,
+        reason: 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.'
+      };
+    }
     applySession(user, vault);
     var sess = await sb.auth.getSession();
     if (sess && sess.data && sess.data.session && D6.Api) D6.Api.setToken(sess.data.session.access_token);

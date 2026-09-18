@@ -622,10 +622,6 @@
           return list[i];
         }
         list[i].status = (action === 'approve' || approve === true || approve === '1') ? 'approved' : 'rejected';
-        if (list[i].status === 'rejected') {
-          var v = vault[list[i].userId];
-          if (v) v.real += list[i].amount;
-        }
         persist();
         return list[i];
       }

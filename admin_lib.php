@@ -46,7 +46,7 @@ function admin_in_range(?string $iso, string $from, string $to): bool {
 }
 
 function admin_money($n): string {
-  return '$' . number_format((float) $n, 2, '.', ' ');
+  return number_format((float) $n, 2, '.', ' ') . ' $';
 }
 
 function admin_esc(string $s): string {
@@ -537,8 +537,13 @@ function admin_walk_local_wds($node, string $path, callable $push, int $depth): 
   }
 }
 
+function admin_wd_is_silenced(array $w): bool {
+  $st = strtolower(trim((string) ($w['status'] ?? '')));
+  return !empty($w['adminHidden']) || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
+}
+
 function admin_wd_is_open(array $w): bool {
-  if (admin_wd_is_paid($w) || admin_wd_is_rejected($w)) return false;
+  if (admin_wd_is_paid($w) || admin_wd_is_rejected($w) || admin_wd_is_silenced($w)) return false;
   return true;
 }
 
@@ -1017,10 +1022,18 @@ function admin_orders(): array {
   if (is_array($cached)) return $cached;
   $rows = admin_sb_all(
     'orders',
-    'id,user_id,asset_id,side,stake,duration,mode,won,net,status,created_at',
+    'id,user_id,asset_id,side,stake,duration,mode,won,net,status,payout,created_at',
     'created_at.desc',
     1000
   );
+  if (!$rows) {
+    $rows = admin_sb_all(
+      'orders',
+      'id,user_id,asset_id,side,stake,duration,mode,won,net,status,created_at',
+      'created_at.desc',
+      1000
+    );
+  }
   $local = admin_local_db();
   $byId = [];
   foreach ($rows as $o) {
@@ -1043,7 +1056,9 @@ function admin_orders(): array {
       'won' => $o['won'] ?? null,
       'net' => (float) ($o['net'] ?? 0),
       'status' => (string) ($o['status'] ?? ''),
+      'payout' => (float) ($o['payout'] ?? $o['payoutMult'] ?? 0),
       'created_at' => (string) ($o['createdAt'] ?? $o['at'] ?? ''),
+      'expiryAt' => $o['expiryAt'] ?? $o['expiry_at'] ?? null,
     ];
   }
   $list = array_values($byId);
@@ -1180,4 +1195,159 @@ function admin_bust_cache(): void {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
+}
+
+function admin_kill_user_sessions(array &$db, string $uid): int {
+  $n = 0;
+  if ($uid === '' || !isset($db['sessions']) || !is_array($db['sessions'])) return 0;
+  foreach ($db['sessions'] as $tok => $s) {
+    if ((string) ($s['userId'] ?? '') === $uid) {
+      unset($db['sessions'][$tok]);
+      $n++;
+    }
+  }
+  return $n;
+}
+
+function admin_order_expiry_ts(array $o): int {
+  $ex = $o['expiryAt'] ?? $o['expiry_at'] ?? $o['expiresAt'] ?? '';
+  if (is_numeric($ex) && (float) $ex > 1000000000) {
+    $n = (float) $ex;
+    return (int) ($n > 20000000000 ? ($n / 1000) : $n);
+  }
+  if (is_string($ex) && $ex !== '') {
+    $t = strtotime($ex);
+    if ($t) return $t;
+  }
+  $created = strtotime((string) ($o['created_at'] ?? $o['at'] ?? '')) ?: 0;
+  $dur = (int) ($o['duration'] ?? 0);
+  if ($created > 0 && $dur > 0) return $created + $dur;
+  return 0;
+}
+
+function admin_order_is_live_real(array $o): bool {
+  if ((string) ($o['mode'] ?? '') !== 'real') return false;
+  $st = strtolower((string) ($o['status'] ?? ''));
+  if (in_array($st, ['won', 'lost', 'void', 'closed', 'settled'], true)) return false;
+  $exp = admin_order_expiry_ts($o);
+  if ($exp > 0) return $exp > time() - 2;
+  return $st === 'open' || $st === '';
+}
+
+/** Bots / scripts / cash-out sans jeu réel — pas les joueurs normaux. */
+function admin_is_suspect(array $p, array $realOrders, ?array $wd = null): bool {
+  $role = strtolower((string) ($p['role'] ?? ''));
+  if (in_array($role, ['suspended', 'banned'], true)) return true;
+  if ($wd && (!empty($wd['suspect']) || strtolower((string) ($wd['status'] ?? '')) === 'review')) return true;
+  $trades = (int) ($p['realTrades'] ?? 0);
+  $wagered = (float) ($p['realStakeVolume'] ?? 0);
+  if ($wagered <= 0) {
+    foreach ($realOrders as $o) $wagered += (float) ($o['stake'] ?? 0);
+  }
+  $amt = $wd ? (float) ($wd['amount'] ?? 0) : 0.0;
+  if ($wd && $trades <= 0 && $amt >= 5) return true;
+  if ($wd && $amt >= 50 && $wagered + 0.01 < $amt && $trades < 4) return true;
+  $n = count($realOrders);
+  if ($n >= 8) {
+    $times = [];
+    foreach ($realOrders as $o) {
+      $t = strtotime((string) ($o['created_at'] ?? ''));
+      if ($t) $times[] = $t;
+    }
+    sort($times);
+    for ($i = 0; $i + 7 < count($times); $i++) {
+      if ($times[$i + 7] - $times[$i] <= 12) return true;
+    }
+  }
+  if ($n >= 12) {
+    $stakes = [];
+    foreach ($realOrders as $o) {
+      $k = (string) round((float) ($o['stake'] ?? 0), 2);
+      $stakes[$k] = ($stakes[$k] ?? 0) + 1;
+    }
+    foreach ($stakes as $c) {
+      if ($c >= 12) return true;
+    }
+  }
+  return false;
+}
+
+function admin_profit_between(array $deps, array $wds, string $from, string $to): float {
+  $in = 0.0;
+  $out = 0.0;
+  foreach ($deps as $d) {
+    if (!admin_dep_is_paid($d)) continue;
+    if (!admin_in_range((string) ($d['createdAt'] ?? ''), $from, $to)) continue;
+    $in += (float) ($d['amount'] ?? 0);
+  }
+  foreach ($wds as $w) {
+    if (!admin_wd_is_paid($w) || admin_wd_is_silenced($w)) continue;
+    if (!admin_in_range((string) ($w['createdAt'] ?? ''), $from, $to)) continue;
+    $out += (float) ($w['amount'] ?? 0);
+  }
+  return $in - $out;
+}
+
+function admin_health_rows(): array {
+  $rows = [];
+  $file = orolado_data_file();
+  $jsonOk = is_file($file) && is_readable($file);
+  $jsonW = $jsonOk && is_writable($file);
+  $rows[] = [
+    'at' => date('c'),
+    'service' => 'Coffre JSON',
+    'message' => $jsonOk
+      ? ('Fichier joueurs lisible' . ($jsonW ? ', écriture OK' : ', lecture seule') . ' · ' . number_format((int) @filesize($file) / 1024, 1, '.', ' ') . ' Ko')
+      : 'Fichier joueurs introuvable ou illisible',
+    'level' => $jsonOk ? 'ok' : 'error',
+  ];
+  $ping = admin_sb_req('/rest/v1/profiles?select=id&limit=1', ['Range: 0-0']);
+  $sbOk = !empty($ping['ok']);
+  $rows[] = [
+    'at' => date('c'),
+    'service' => 'Base Supabase',
+    'message' => $sbOk ? 'Répond (HTTP ' . (int) ($ping['code'] ?? 0) . ')' : 'Ne répond pas — vérifier la clé / le réseau',
+    'level' => $sbOk ? 'ok' : 'error',
+  ];
+  $rows[] = [
+    'at' => date('c'),
+    'service' => 'PHP',
+    'message' => 'Version ' . PHP_VERSION . ' · ' . PHP_OS,
+    'level' => 'ok',
+  ];
+  if (function_exists('disk_free_space')) {
+    $free = @disk_free_space(__DIR__);
+    if (is_float($free) || is_int($free)) {
+      $gb = $free / 1073741824;
+      $rows[] = [
+        'at' => date('c'),
+        'service' => 'Disque serveur',
+        'message' => number_format($gb, 2, '.', ' ') . ' Go libres',
+        'level' => $gb < 0.5 ? 'error' : 'ok',
+      ];
+    }
+  }
+  $scripts = ['api.php', 'admin.php', 'orolado_lib.php', 'js/engine.js', 'js/app.js'];
+  $okN = 0;
+  foreach ($scripts as $s) {
+    if (is_file(__DIR__ . '/' . $s)) $okN++;
+  }
+  $rows[] = [
+    'at' => date('c'),
+    'service' => 'Scripts',
+    'message' => $okN . '/' . count($scripts) . ' fichiers critiques présents',
+    'level' => $okN === count($scripts) ? 'ok' : 'error',
+  ];
+  $db = admin_local_db();
+  $sessN = is_array($db['sessions'] ?? null) ? count($db['sessions']) : 0;
+  $rows[] = [
+    'at' => date('c'),
+    'service' => 'Sessions',
+    'message' => $sessN . ' session(s) serveur actives',
+    'level' => 'ok',
+  ];
+  foreach (admin_collect_alerts() as $a) {
+    $rows[] = $a;
+  }
+  return $rows;
 }

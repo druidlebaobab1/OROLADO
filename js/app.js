@@ -1830,7 +1830,7 @@
           var acts = (w.status === 'pending' || w.status === 'review')
             ? ('<div class="admin-wd-acts">' +
               '<button class="mini wd-ok" data-wd="' + adminEsc(w.id) + '" data-wd-act="approve">VALIDER / PAYÉ</button>' +
-              '<button class="mini wd-refund" data-wd="' + adminEsc(w.id) + '" data-wd-act="reject">REJETER &amp; CRÉDITER</button>' +
+              '<button class="mini wd-refund" data-wd="' + adminEsc(w.id) + '" data-wd-act="reject">REJETER</button>' +
               '<button class="mini wd-hold" data-wd="' + adminEsc(w.id) + '" data-wd-act="suspend">SUSPENDRE</button>' +
               '<button class="mini wd-silent" data-wd="' + adminEsc(w.id) + '" data-wd-act="silent">SUPPRESSION SILENCIEUSE</button>' +
               '</div>')

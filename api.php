@@ -741,6 +741,16 @@ if ($action === 'login') {
       exit;
     }
   }
+  $banRole = strtolower((string) ($user['role'] ?? ''));
+  if (in_array($banRole, ['suspended', 'banned'], true)) {
+    echo json_encode([
+      'ok' => false,
+      'server' => true,
+      'banned' => true,
+      'reason' => 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.'
+    ]);
+    exit;
+  }
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
   save_db($file, $db);
@@ -1154,9 +1164,6 @@ if ($action === 'resolveWithdraw') {
     }
     $approve = ($act === 'approve');
     $w['status'] = $approve ? 'approved' : 'rejected';
-    if (!$approve && isset($db['vault'][$w['userId']])) {
-      $db['vault'][$w['userId']]['real'] += (float) $w['amount'];
-    }
     save_db($file, $db);
     echo json_encode(['ok' => true, 'server' => true, 'act' => $act]);
     exit;

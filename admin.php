@@ -168,6 +168,48 @@ function admin_badges(): array {
   }
   $online = admin_online_count();
   $nInscrits = admin_inscrits_count();
+  $pmapBadge = [];
+  foreach ($people as $p) {
+    if (!empty($p['id'])) $pmapBadge[(string) $p['id']] = $p;
+  }
+  $ordersByUser = [];
+  $openPos = 0;
+  $stakeBuckets = [88 => 0.0, 112 => 0.0, 500 => 0.0, 1000 => 0.0, 5000 => 0.0];
+  foreach ($orders as $o) {
+    if ((string) ($o['mode'] ?? '') !== 'real') continue;
+    $uid = (string) ($o['user_id'] ?? '');
+    if ($uid !== '') $ordersByUser[$uid][] = $o;
+    if (admin_order_is_live_real($o)) $openPos++;
+    $st = round((float) ($o['stake'] ?? 0), 2);
+    foreach (array_keys($stakeBuckets) as $b) {
+      if (abs($st - $b) < 0.05) { $stakeBuckets[$b] += $st; break; }
+    }
+  }
+  $wdSuspect = 0;
+  foreach ($wds as $w) {
+    if (!admin_wd_is_open($w)) continue;
+    $uid = (string) ($w['userId'] ?? '');
+    $p = $pmapBadge[$uid] ?? ['id' => $uid, 'realTrades' => 0];
+    if (admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w)) $wdSuspect++;
+  }
+  $payers = 0;
+  foreach ($people as $p) {
+    if ((float) ($p['depositTotal'] ?? 0) > 0) $payers++;
+  }
+  [$w0, $w1] = admin_day_bounds('range', admin_now()->modify('-6 days')->format('Y-m-d'), admin_now()->format('Y-m-d'));
+  $profitToday = admin_profit_between($deps, $wds, $t0, $t1);
+  $profit7 = admin_profit_between($deps, $wds, $w0, $w1);
+  $profitAll = admin_profit_between($deps, $wds, '', '');
+  $unreadMsg = 0;
+  foreach ((admin_local_db()['support_messages'] ?? []) as $m) {
+    if (!is_array($m)) continue;
+    $st = strtolower((string) ($m['status'] ?? 'ouvert'));
+    if ($st === 'ouvert' || $st === 'unread') $unreadMsg++;
+  }
+  $healthErr = 0;
+  foreach (admin_health_rows() as $h) {
+    if (($h['level'] ?? '') === 'error') $healthErr++;
+  }
   return [
     'signup_today' => $signupToday,
     'signup_yesterday' => $signupYest,
@@ -187,14 +229,22 @@ function admin_badges(): array {
     'wd_all' => count($wds),
     'wd_rejected' => $wdRej,
     'wd_volume' => round($wdOpenSum, 2),
+    'wd_suspect' => $wdSuspect,
     'online' => $online,
-    'top_balances' => count($vaults),
+    'top_balances' => $payers,
     'top_winners' => $winToday,
     'games' => count($orders),
     'inactive' => $inactive,
+    'payers' => $payers,
+    'open_positions' => $openPos,
+    'profit_today' => round($profitToday, 2),
+    'profit_7d' => round($profit7, 2),
+    'profit_total' => round($profitAll, 2),
+    'payout_stats' => round(array_sum($stakeBuckets), 2),
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
-    'alerts' => $alertN,
+    'alerts' => $healthErr,
+    'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
 }
@@ -413,9 +463,15 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => 'Ventilation des dépôts validés', 'actions' => false];
   }
 
-  if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
-    $cols = ['ID retrait', 'Joueur', 'E-mail', 'Montant', 'Méthode', 'Destination', 'Statut', 'Date', 'Motif'];
+  if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume', 'wd_suspect'], true)) {
+    $cols = ['ID retrait', 'Joueur', 'Nom', 'E-mail', 'Montant', 'Méthode', 'Destination', 'État', 'Statut', 'Date'];
     $list = $wds;
+    $ordersByUser = [];
+    foreach ($orders as $o) {
+      if ((string) ($o['mode'] ?? '') !== 'real') continue;
+      $uid = (string) ($o['user_id'] ?? '');
+      if ($uid !== '') $ordersByUser[$uid][] = $o;
+    }
     if ($view === 'wd_pending' || $view === 'wd_volume') {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_open($w)));
       $actions = true;
@@ -423,6 +479,17 @@ function admin_list_payload(string $view, array $req): array {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w) && admin_in_range($w['createdAt'] ?? null, $t0, $t1)));
     } else if ($view === 'wd_rejected') {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_rejected($w)));
+    } else if ($view === 'wd_suspect') {
+      $list = array_values(array_filter($wds, static function ($w) use ($pmap, $ordersByUser) {
+        if (!admin_wd_is_open($w)) return false;
+        $uid = (string) ($w['userId'] ?? '');
+        $p = $pmap[$uid] ?? ['id' => $uid];
+        return admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w);
+      }));
+      $actions = true;
+    } else {
+      $list = array_values(array_filter($wds, static fn($w) => !admin_wd_is_silenced($w)));
+      $actions = true;
     }
     $enriched = [];
     $sum = 0.0;
@@ -430,7 +497,10 @@ function admin_list_payload(string $view, array $req): array {
     $preset = (string) ($req['preset'] ?? 'all');
     foreach ($list as $w) {
       $w = admin_enrich_wd($w, $pmap);
-      if ($q !== '' && !admin_match_q($w, $q)) continue;
+      $uid = (string) ($w['userId'] ?? '');
+      $p = $pmap[$uid] ?? ['id' => $uid];
+      $w['_suspect'] = admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w);
+      if ($q !== '' && !admin_match_q($w, $q) && !str_contains(strtolower((string) ($w['name'] ?? '')), $q)) continue;
       if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '') {
         $tmp = admin_apply_filters([$w], $req, 'createdAt');
         if ($tmp === []) continue;
@@ -443,22 +513,26 @@ function admin_list_payload(string $view, array $req): array {
       $open = admin_wd_is_open($w);
       $method = admin_method_label(admin_fill((string) ($w['operator'] ?? '')));
       $dest = admin_fill((string) ($w['phone'] ?? ''));
+      $suspect = !empty($w['_suspect']);
       $rows[] = [
         'cells' => [
           (string) $w['id'],
           (string) ($w['publicId'] ?? ''),
+          (string) ($w['name'] ?? '—'),
           (string) ($w['email'] ?? ''),
           admin_money($w['amount']),
           $method !== '' ? $method : '—',
           $dest !== '' ? $dest : '—',
+          $suspect ? 'Suspect' : 'Vérifié',
           (string) ($w['status'] ?? ''),
           substr((string) ($w['createdAt'] ?? ''), 0, 16),
-          (string) ($w['reason'] ?? '—'),
         ],
         'userId' => (string) ($w['userId'] ?? ''),
         'ref' => (string) $w['id'],
         'kind' => 'withdraw',
         'pending' => $open,
+        'suspect' => $suspect,
+        'flag' => $suspect ? 'suspect' : 'ok',
       ];
     }
     $summary = $total . ' retrait(s) · ' . admin_money($sum);
@@ -552,23 +626,193 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'alerts') {
-    $cols = ['Heure exacte', 'Service', 'Description'];
-    $list = admin_collect_alerts();
+    $cols = ['Heure exacte', 'Service', 'État', 'Description'];
+    $list = admin_health_rows();
     $list = admin_apply_filters($list, $req, 'at');
     [$slice, $total, $page, $pages] = admin_page($list, $req);
+    $errN = 0;
+    foreach ($list as $r) {
+      if (($r['level'] ?? '') === 'error') $errN++;
+    }
     foreach ($slice as $r) {
+      $lvl = (string) ($r['level'] ?? 'ok');
       $rows[] = [
         'cells' => [
           substr((string) ($r['at'] ?? ''), 0, 19),
           (string) ($r['service'] ?? ''),
+          $lvl === 'error' ? 'Panne' : 'OK',
           (string) ($r['message'] ?? ''),
         ],
         'userId' => '',
-        'alert' => true,
+        'alert' => $lvl === 'error',
+        'flag' => $lvl === 'error' ? 'suspect' : 'ok',
       ];
     }
-    $summary = $total === 0 ? 'Aucune panne détectée. Le site fonctionne normalement.' : ($total . ' alerte(s)');
+    $summary = $errN === 0
+      ? 'Santé du site : aucun incident. Serveur, scripts et base joignables.'
+      : ($errN . ' incident(s) à traiter');
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false];
+  }
+
+  if (in_array($view, ['profit_today', 'profit_7d', 'profit_total'], true)) {
+    $from = '';
+    $to = '';
+    $label = 'Total';
+    if ($view === 'profit_today') {
+      $from = $t0; $to = $t1; $label = 'Aujourd’hui';
+    } else if ($view === 'profit_7d') {
+      $from = admin_now()->modify('-6 days')->setTime(0, 0, 0)->format('c');
+      $to = admin_now()->modify('+1 day')->setTime(0, 0, 0)->format('c');
+      $label = '7 derniers jours';
+    }
+    $in = 0.0; $out = 0.0;
+    $cols = ['Type', 'Réf.', 'Joueur', 'Montant', 'Date'];
+    foreach ($deps as $d) {
+      if (!admin_dep_is_paid($d)) continue;
+      if (!admin_in_range((string) ($d['createdAt'] ?? ''), $from, $to)) continue;
+      $in += (float) $d['amount'];
+      $u = admin_user_lookup((string) $d['userId'], $pmap);
+      $rows[] = ['cells' => ['Dépôt', (string) $d['id'], (string) ($u['name'] ?? $u['publicId'] ?? ''), admin_money($d['amount']), substr((string) ($d['createdAt'] ?? ''), 0, 16)], 'userId' => (string) $d['userId']];
+    }
+    foreach ($wds as $w) {
+      if (!admin_wd_is_paid($w) || admin_wd_is_silenced($w)) continue;
+      if (!admin_in_range((string) ($w['createdAt'] ?? ''), $from, $to)) continue;
+      $out += (float) $w['amount'];
+      $w = admin_enrich_wd($w, $pmap);
+      $rows[] = ['cells' => ['Retrait', (string) $w['id'], (string) ($w['name'] ?? $w['publicId'] ?? ''), admin_money($w['amount']), substr((string) ($w['createdAt'] ?? ''), 0, 16)], 'userId' => (string) ($w['userId'] ?? '')];
+    }
+    $net = $in - $out;
+    $summary = $label . ' · Dépôts ' . admin_money($in) . ' − Retraits ' . admin_money($out) . ' = Bénéfice ' . admin_money($net);
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1, 'summary' => $summary, 'actions' => false];
+  }
+
+  if ($view === 'payers') {
+    $cols = $userCols;
+    $list = array_values(array_filter($people, static fn($p) => (float) ($p['depositTotal'] ?? 0) > 0));
+    $list = admin_apply_filters($list, $req, 'createdAt');
+    usort($list, static fn($a, $b) => ((float) ($b['depositTotal'] ?? 0) <=> (float) ($a['depositTotal'] ?? 0)));
+    [$slice, $total, $page, $pages] = admin_page($list, $req);
+    foreach ($slice as $p) $rows[] = $asUser(admin_enrich_user_row($p, $vaults));
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' joueur(s) ayant déposé', 'actions' => false];
+  }
+
+  if ($view === 'open_positions') {
+    $cols = ['Joueur', 'Nom', 'Jeu', 'Sens', 'Mise', 'Temps restant'];
+    $live = [];
+    foreach ($orders as $o) {
+      if (!admin_order_is_live_real($o)) continue;
+      $live[] = $o;
+    }
+    usort($live, static function ($a, $b) {
+      return admin_order_expiry_ts($a) <=> admin_order_expiry_ts($b);
+    });
+    foreach ($live as $o) {
+      $u = admin_user_lookup((string) ($o['user_id'] ?? ''), $pmap);
+      $exp = admin_order_expiry_ts($o);
+      $left = $exp > 0 ? max(0, $exp - time()) : (int) ($o['duration'] ?? 0);
+      $side = strtolower((string) ($o['side'] ?? ''));
+      $sens = $side === 'put' ? 'Vente (PUT)' : 'Achat (CALL)';
+      $mm = floor($left / 60);
+      $ss = $left % 60;
+      $rows[] = [
+        'cells' => [
+          (string) ($u['publicId'] ?? ''),
+          (string) ($u['name'] ?? '—'),
+          admin_asset_name((string) ($o['asset_id'] ?? '')),
+          $sens,
+          admin_money($o['stake'] ?? 0),
+          sprintf('%d:%02d', $mm, $ss),
+        ],
+        'userId' => (string) ($o['user_id'] ?? ''),
+      ];
+    }
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1, 'summary' => count($rows) . ' position(s) réelle(s) ouverte(s)', 'actions' => false];
+  }
+
+  if ($view === 'payout_stats') {
+    $cols = ['Montant', 'Volume misé', 'Nombre de trades réels'];
+    $want = [88.0, 112.0, 500.0, 1000.0, 5000.0];
+    $vol = [];
+    $cnt = [];
+    foreach ($want as $b) { $vol[$b] = 0.0; $cnt[$b] = 0; }
+    $src = $orders;
+    $preset = (string) ($req['preset'] ?? 'all');
+    if ($preset !== 'all') {
+      [$a, $b] = admin_day_bounds($preset, (string) ($req['dateFrom'] ?? ''), (string) ($req['dateTo'] ?? ''));
+      $src = array_values(array_filter($orders, static fn($o) => admin_in_range((string) ($o['created_at'] ?? ''), $a, $b)));
+    }
+    foreach ($src as $o) {
+      if ((string) ($o['mode'] ?? '') !== 'real') continue;
+      $st = (float) ($o['stake'] ?? 0);
+      foreach ($want as $b) {
+        if (abs($st - $b) < 0.05) {
+          $vol[$b] += $st;
+          $cnt[$b]++;
+          break;
+        }
+      }
+    }
+    foreach ($want as $b) {
+      $rows[] = ['cells' => [admin_money($b), admin_money($vol[$b]), (string) $cnt[$b]], 'userId' => ''];
+    }
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => 5, 'page' => 1, 'pages' => 1, 'summary' => 'Volumes des mises 88 / 112 / 500 / 1000 / 5000 $ (compte réel uniquement)', 'actions' => false];
+  }
+
+  if ($view === 'messages') {
+    $cols = ['État', 'Date', 'Joueur', 'E-mail', 'Sujet', 'Message'];
+    $list = [];
+    foreach ((admin_local_db()['support_messages'] ?? []) as $m) {
+      if (!is_array($m)) continue;
+      $st = strtolower((string) ($m['status'] ?? 'ouvert'));
+      $unread = ($st === 'ouvert' || $st === 'unread');
+      $u = admin_user_lookup((string) ($m['userId'] ?? ''), $pmap);
+      $row = [
+        'id' => (string) ($m['id'] ?? ''),
+        'userId' => (string) ($m['userId'] ?? ''),
+        'email' => (string) ($m['email'] ?? $u['email'] ?? ''),
+        'name' => (string) ($u['name'] ?? $m['publicId'] ?? ''),
+        'publicId' => (string) ($m['publicId'] ?? $u['publicId'] ?? ''),
+        'subject' => (string) ($m['subject'] ?? ''),
+        'message' => (string) ($m['message'] ?? ''),
+        'status' => $st,
+        'createdAt' => (string) ($m['createdAt'] ?? $m['at'] ?? ''),
+        'unread' => $unread,
+      ];
+      $list[] = $row;
+    }
+    $q = strtolower(trim((string) ($req['q'] ?? '')));
+    if ($q !== '') {
+      $list = array_values(array_filter($list, static function ($r) use ($q) {
+        return admin_match_q($r, $q) || str_contains(strtolower((string) ($r['subject'] ?? '')), $q)
+          || str_contains(strtolower((string) ($r['message'] ?? '')), $q);
+      }));
+    }
+    usort($list, static function ($a, $b) {
+      if (!empty($a['unread']) !== !empty($b['unread'])) return !empty($a['unread']) ? -1 : 1;
+      return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
+    });
+    [$slice, $total, $page, $pages] = admin_page($list, $req);
+    foreach ($slice as $m) {
+      $rows[] = [
+        'cells' => [
+          !empty($m['unread']) ? 'Non lu' : 'Lu',
+          substr((string) $m['createdAt'], 0, 16),
+          (string) ($m['publicId'] ?: $m['name'] ?: '—'),
+          (string) ($m['email'] ?? ''),
+          (string) ($m['subject'] ?? ''),
+          (string) ($m['message'] ?? ''),
+        ],
+        'userId' => (string) ($m['userId'] ?? ''),
+        'ref' => (string) ($m['id'] ?? ''),
+        'kind' => 'message',
+        'unread' => !empty($m['unread']),
+        'flag' => !empty($m['unread']) ? 'unread' : 'ok',
+      ];
+    }
+    $actions = true;
+    $unreadN = 0;
+    foreach ($list as $m) { if (!empty($m['unread'])) $unreadN++; }
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $unreadN . ' non lu(s) · ' . $total . ' message(s)', 'actions' => $actions];
   }
 
   return ['ok' => false, 'reason' => 'Vue inconnue'];
@@ -616,6 +860,7 @@ function admin_profile_payload(string $uid): array {
   $games = [];
   foreach (admin_orders() as $o) {
     if ((string) ($o['user_id'] ?? '') !== $uid) continue;
+    if ((string) ($o['mode'] ?? '') !== 'real') continue;
     $games[] = [
       'id' => $o['id'] ?? '',
       'game' => admin_asset_name((string) ($o['asset_id'] ?? '')),
@@ -640,7 +885,6 @@ function admin_profile_payload(string $uid): array {
       'lastSeen' => (string) ($p['lastSeen'] ?? ''),
       'role' => (string) ($p['role'] ?? 'user'),
       'real' => (float) ($p['real'] ?? 0),
-      'demo' => (float) ($p['demo'] ?? 0),
       'traffic' => (string) ($p['traffic'] ?? 'direct'),
     ],
     'deposits' => $deps,
@@ -716,13 +960,15 @@ if ($isAjax) {
     if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur manquant']);
     $hdrs = supabase_admin_headers();
     if ($hdrs) {
-      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($uid), $hdrs, 'PATCH', json_encode(['role' => 'suspended']));
+      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($uid), [], 'PATCH', json_encode(['role' => 'suspended']));
     }
     $db = admin_local_db();
     if (isset($db['users'][$uid])) {
       $db['users'][$uid]['role'] = 'suspended';
-      save_db(orolado_data_file(), $db);
     }
+    admin_kill_user_sessions($db, $uid);
+    orolado_revoke_user_sessions($db, $uid);
+    save_db(orolado_data_file(), $db);
     admin_bust_cache();
     admin_json(['ok' => true]);
   }
@@ -730,32 +976,58 @@ if ($isAjax) {
     $id = (string) ($req['id'] ?? '');
     $act = strtolower((string) ($req['act'] ?? ''));
     $motif = trim((string) ($req['motif'] ?? ''));
-    if ($id === '' || !in_array($act, ['approve', 'reject'], true)) {
+    if ($id === '' || !in_array($act, ['approve', 'reject', 'silent', 'suspend'], true)) {
       admin_json(['ok' => false, 'reason' => 'Action invalide']);
     }
-    $st = $act === 'approve' ? 'approved' : 'rejected';
-    $hdrs = supabase_admin_headers();
-    if ($hdrs) {
-      admin_sb_req('/rest/v1/withdrawals?id=eq.' . rawurlencode($id), $hdrs, 'PATCH', json_encode(['status' => $st]));
-    }
     $db = admin_local_db();
+    $uid = '';
     foreach (($db['withdrawals'] ?? []) as $i => $w) {
       if ((string) ($w['id'] ?? '') !== $id) continue;
-      $db['withdrawals'][$i]['status'] = $st;
-      if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
-      if ($act === 'reject') {
-        $uid = (string) ($w['userId'] ?? '');
-        $amt = (float) ($w['amount'] ?? 0);
-        if ($uid !== '' && $amt > 0) {
-          if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-          $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amt);
-          supabase_credit_real($uid, $amt, false);
+      $uid = (string) ($w['userId'] ?? '');
+      if ($act === 'silent') {
+        $db['withdrawals'][$i]['status'] = 'silenced';
+        $db['withdrawals'][$i]['adminHidden'] = true;
+        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
+      } else if ($act === 'suspend') {
+        $db['withdrawals'][$i]['status'] = 'review';
+        $db['withdrawals'][$i]['suspect'] = true;
+        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
+        if ($uid !== '' && isset($db['users'][$uid])) $db['users'][$uid]['role'] = 'suspended';
+        if ($uid !== '') {
+          admin_kill_user_sessions($db, $uid);
+          orolado_revoke_user_sessions($db, $uid);
         }
+      } else if ($act === 'approve') {
+        $db['withdrawals'][$i]['status'] = 'approved';
+        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
+      } else {
+        $db['withdrawals'][$i]['status'] = 'rejected';
+        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
       }
       break;
     }
+    $hdrs = supabase_admin_headers();
+    if ($hdrs && $act !== 'suspend') {
+      $st = $act === 'approve' ? 'approved' : ($act === 'silent' ? 'silenced' : 'rejected');
+      admin_sb_req('/rest/v1/withdrawals?id=eq.' . rawurlencode($id), [], 'PATCH', json_encode(['status' => $st]));
+    }
+    if ($act === 'suspend' && $uid !== '' && $hdrs) {
+      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($uid), [], 'PATCH', json_encode(['role' => 'suspended']));
+    }
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
+    admin_json(['ok' => true]);
+  }
+  if ($action === 'mark_msg') {
+    $id = (string) ($req['id'] ?? '');
+    $db = admin_local_db();
+    foreach (($db['support_messages'] ?? []) as $i => $m) {
+      if ((string) ($m['id'] ?? '') !== $id) continue;
+      $db['support_messages'][$i]['status'] = 'resolu';
+      $db['support_messages'][$i]['readAt'] = date('c');
+      break;
+    }
+    save_db(orolado_data_file(), $db);
     admin_json(['ok' => true]);
   }
   if ($action === 'resolve_dep') {
@@ -821,18 +1093,26 @@ $ADMIN_TABS = [
     ['wd_all', 'Historique Global Retraits'],
     ['wd_rejected', 'Retraits Rejetés'],
     ['wd_volume', 'Volume Total à Payer'],
+    ['wd_suspect', 'Suspect'],
   ],
   'gD' => [
     ['online', 'Joueurs en Ligne'],
+    ['payers', 'Joueurs Actifs (Payeurs)'],
     ['top_balances', 'Top Balances / Soldes'],
     ['top_winners', 'Top Gagnants du Jour'],
+    ['profit_today', 'Bénéfice du Jour'],
+    ['profit_7d', 'Bénéfice 7 Jours'],
+    ['profit_total', 'Bénéfice Total'],
+    ['open_positions', 'Positions Ouvertes'],
+    ['payout_stats', 'Maxi Payout & Stats des Jeux'],
     ['games', 'Statistiques des Jeux'],
     ['inactive', 'Joueurs Inactifs'],
   ],
   'gE' => [
     ['traffic', 'Sources de Trafic'],
     ['otp_mails', 'Mails & Codes OTP Envoyés'],
-    ['alerts', 'Alertes & Santé du Site'],
+    ['messages', 'Messages'],
+    ['alerts', 'Santé du Site'],
   ],
 ];
 $inscritsHead = $logged ? admin_inscrits_count() : 0;
@@ -869,7 +1149,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
     th{color:var(--muted);font-size:.62rem;text-transform:uppercase;position:sticky;top:0;background:#121A2B}
     tr.clickable{cursor:pointer} tr.clickable:hover{background:rgba(245,158,11,.08)}
-    .mini{border:1px solid var(--line);background:#1A2230;color:var(--text);border-radius:6px;padding:4px 8px;font:inherit;font-weight:800;cursor:pointer;margin-right:4px}
+    tr.flag-suspect td:nth-last-child(4), .pill-suspect{color:#FCA5A5;font-weight:800}
+    .pill{display:inline-block;border-radius:999px;padding:2px 8px;font-weight:800;font-size:.68rem}
+    .pill-ok{background:rgba(52,211,153,.18);color:#34D399}
+    .pill-suspect{background:rgba(244,63,94,.18);color:#F43F5E}
+    .pill-unread{background:rgba(245,158,11,.2);color:#FBBF24}
+    .mini{border:1px solid var(--line);background:#1A2230;color:var(--text);border-radius:6px;padding:4px 8px;font:inherit;font-weight:800;cursor:pointer;margin-right:4px;margin-bottom:3px}
     .mini.ok{border-color:var(--green);color:var(--green)} .mini.bad{border-color:var(--red);color:var(--red)}
     .login{max-width:360px;margin:12vh auto;background:rgba(10,15,29,.92);border:1px solid rgba(245,158,11,.35);border-radius:16px;padding:24px}
     .login h2{color:var(--gold);margin:0 0 16px;font-size:1.05rem}
@@ -970,14 +1255,22 @@ const TABS = [
   {g:'gC', id:'wd_all', k:'Historique Global Retraits'},
   {g:'gC', id:'wd_rejected', k:'Retraits Rejetés'},
   {g:'gC', id:'wd_volume', k:'Volume Total à Payer'},
+  {g:'gC', id:'wd_suspect', k:'Suspect'},
   {g:'gD', id:'online', k:'Joueurs en Ligne'},
+  {g:'gD', id:'payers', k:'Joueurs Actifs (Payeurs)'},
   {g:'gD', id:'top_balances', k:'Top Balances / Soldes'},
   {g:'gD', id:'top_winners', k:'Top Gagnants du Jour'},
+  {g:'gD', id:'profit_today', k:'Bénéfice du Jour'},
+  {g:'gD', id:'profit_7d', k:'Bénéfice 7 Jours'},
+  {g:'gD', id:'profit_total', k:'Bénéfice Total'},
+  {g:'gD', id:'open_positions', k:'Positions Ouvertes'},
+  {g:'gD', id:'payout_stats', k:'Maxi Payout & Stats des Jeux'},
   {g:'gD', id:'games', k:'Statistiques des Jeux'},
   {g:'gD', id:'inactive', k:'Joueurs Inactifs'},
   {g:'gE', id:'traffic', k:'Sources de Trafic'},
   {g:'gE', id:'otp_mails', k:'Mails & Codes OTP Envoyés'},
-  {g:'gE', id:'alerts', k:'Alertes & Santé du Site'},
+  {g:'gE', id:'messages', k:'Messages'},
+  {g:'gE', id:'alerts', k:'Santé du Site'},
 ];
 let view = 'wd_pending';
 let page = 1;
@@ -991,11 +1284,15 @@ function ajax(body) {
   }).then(r => r.json());
 }
 function badgeClass(id, n) {
-  if (id === 'alerts') return n > 0 ? 'badge red' : 'badge zero';
+  if (id === 'alerts' || id === 'wd_suspect' || id === 'messages') return n > 0 ? 'badge red' : 'badge zero';
   return n ? 'badge' : 'badge zero';
 }
+const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_7d:1, profit_total:1, payout_stats:1};
 function fmtBadge(id, n) {
-  if (id === 'wd_volume') return (Number(n)||0).toLocaleString('fr-FR', {maximumFractionDigits:0});
+  if (MONEY_BADGE[id]) {
+    const v = Number(n)||0;
+    return v.toLocaleString('fr-FR', {maximumFractionDigits:2}) + ' $';
+  }
   return String(n ?? 0);
 }
 function renderButtons(badges) {
@@ -1048,17 +1345,29 @@ async function loadList() {
   if (j.actions) html += '<th></th>';
   html += '</tr></thead><tbody>';
   (j.rows||[]).forEach(r => {
-    html += '<tr class="'+(r.userId?'clickable':'')+'" data-uid="'+(r.userId||'')+'">';
-    (r.cells||[]).forEach(c => { html += '<td>'+String(c).replace(/</g,'&lt;')+'</td>'; });
+    const flag = r.flag || (r.suspect ? 'suspect' : '');
+    html += '<tr class="'+(r.userId?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+(r.userId||'')+'">';
+    (r.cells||[]).forEach(c => {
+      const s = String(c);
+      if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span></td>';
+      else if (s === 'Vérifié' || s === 'OK') html += '<td><span class="pill pill-ok">'+s+'</span></td>';
+      else if (s === 'Non lu') html += '<td><span class="pill pill-unread">Non lu</span></td>';
+      else html += '<td>'+s.replace(/</g,'&lt;')+'</td>';
+    });
     if (j.actions) {
       html += '<td>';
       if (r.pending && r.kind === 'withdraw') {
         html += '<button class="mini ok" data-act="approve" data-kind="wd" data-id="'+r.ref+'">Valider</button>';
         html += '<button class="mini bad" data-act="reject" data-kind="wd" data-id="'+r.ref+'">Rejeter</button>';
+        html += '<button class="mini" data-act="suspend" data-kind="wd" data-id="'+r.ref+'" data-uid="'+(r.userId||'')+'">Suspendre</button>';
+        html += '<button class="mini" data-act="silent" data-kind="wd" data-id="'+r.ref+'">Suppression silencieuse</button>';
       }
       if (r.pending && r.kind === 'deposit') {
         html += '<button class="mini ok" data-act="approve" data-kind="dep" data-id="'+r.ref+'">Valider</button>';
         html += '<button class="mini bad" data-act="reject" data-kind="dep" data-id="'+r.ref+'">Annuler</button>';
+      }
+      if (r.kind === 'message' && r.unread) {
+        html += '<button class="mini ok" data-act="read" data-kind="msg" data-id="'+r.ref+'">Marquer lu</button>';
       }
       html += '</td>';
     }
@@ -1081,8 +1390,16 @@ async function loadList() {
     const act = btn.getAttribute('data-act');
     const kind = btn.getAttribute('data-kind');
     const id = btn.getAttribute('data-id');
+    if (kind === 'msg') {
+      const r = await ajax({action:'mark_msg', id});
+      if (!r.ok) alert(r.reason || 'Échec');
+      loadBadges(); loadList();
+      return;
+    }
     let motif = '';
-    if (act === 'reject') motif = prompt('Motif (obligatoire si rejet) :','') || '';
+    if (act === 'reject') motif = prompt('Motif du rejet (le solde n’est PAS recrédité) :','') || '';
+    if (act === 'silent' && !confirm('Masquer ce retrait sans prévenir le joueur et sans recréditer ?')) return;
+    if (act === 'suspend' && !confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     const a = kind === 'wd' ? 'resolve_wd' : 'resolve_dep';
     const r = await ajax({action:a, id, act, motif});
     if (!r.ok) alert(r.reason || 'Échec');
@@ -1122,7 +1439,7 @@ async function openUser(uid) {
   document.getElementById('btnCredit').onclick = () => go(1);
   document.getElementById('btnDebit').onclick = () => go(-1);
   document.getElementById('btnSuspend').onclick = async () => {
-    if (!confirm('Suspendre ce compte ?')) return;
+    if (!confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     await ajax({action:'suspend', userId:u.id});
     openUser(u.id);
   };
