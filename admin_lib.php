@@ -103,7 +103,17 @@ function admin_sb_req(string $path, array $extraHdr = [], string $method = 'GET'
   if ($base === '' || !$hdrs) {
     return ['ok' => false, 'code' => 0, 'rows' => [], 'count' => 0, 'raw' => ''];
   }
-  $headers = array_merge($hdrs, $extraHdr);
+  $prefer = [];
+  $headers = [];
+  foreach (array_merge($hdrs, $extraHdr) as $h) {
+    $h = (string) $h;
+    if (stripos($h, 'Prefer:') === 0) {
+      $prefer[] = trim(substr($h, 7));
+      continue;
+    }
+    $headers[] = $h;
+  }
+  if ($prefer) $headers[] = 'Prefer: ' . implode(', ', array_unique($prefer));
   $url = $base . $path;
   if (!function_exists('curl_init')) {
     return ['ok' => false, 'code' => 0, 'rows' => [], 'count' => 0, 'raw' => ''];
@@ -155,13 +165,26 @@ function admin_sb_req(string $path, array $extraHdr = [], string $method = 'GET'
 function admin_sb_count(string $table, string $query = ''): int {
   $q = $query !== '' ? $query : 'select=id';
   $res = admin_sb_req(
-    '/rest/v1/' . $table . '?' . $q,
+    '/rest/v1/' . rawurlencode($table) . '?' . $q,
     ['Prefer: count=exact', 'Range: 0-0'],
     'GET'
   );
   if (!empty($res['count'])) return (int) $res['count'];
   if (!empty($res['ok'])) return count($res['rows']);
   return 0;
+}
+
+/** Nombre réel d’inscrits : public.profiles + auth.users. Jamais le JSON local. */
+function admin_inscrits_count(): int {
+  $cached = admin_cache_get('inscrits_n', 20);
+  if (is_array($cached) && isset($cached['n'])) return (int) $cached['n'];
+  $nProfiles = admin_sb_count('profiles', 'select=id');
+  $n = $nProfiles;
+  if ($n < 100) {
+    $n = max($n, count(admin_fetch_auth_users()));
+  }
+  admin_cache_set('inscrits_n', ['n' => $n]);
+  return $n;
 }
 
 function admin_sb_all(string $table, string $select, string $order, int $pageSize = 1000, string $filter = ''): array {
@@ -692,7 +715,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users'] as $k) {
+  foreach (['profiles', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

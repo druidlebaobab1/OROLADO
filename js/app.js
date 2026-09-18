@@ -5031,10 +5031,7 @@
   function bindAdmin() {
     async function openAdmin() {
       if (!D6.Auth.isAdmin(user())) return;
-      closeDrawer();
-      adminView = 'inscrits';
-      var ok = await renderAdmin();
-      if (ok) showScreen('screenAdmin');
+      window.location.href = '/admin.php';
     }
     $('btnAdmin2').addEventListener('click', openAdmin);
     $('btnCloseAdmin').addEventListener('click', function () {

@@ -163,13 +163,14 @@ function admin_badges(): array {
     if (($a['level'] ?? 'error') === 'error') $alertN++;
   }
   $online = admin_online_count();
+  $nInscrits = admin_inscrits_count();
   return [
     'signup_today' => $signupToday,
     'signup_yesterday' => $signupYest,
-    'signup_date' => count($people),
+    'signup_date' => $nInscrits,
     'signup_hour' => $signupToday,
-    'signup_geo' => count($people),
-    'signup_idrange' => count($people),
+    'signup_geo' => $nInscrits,
+    'signup_idrange' => $nInscrits,
     'no_deposit' => $noDep,
     'dep_today' => $depToday,
     'dep_pending' => $depPend,
@@ -187,10 +188,10 @@ function admin_badges(): array {
     'top_winners' => $winToday,
     'games' => count($orders),
     'inactive' => $inactive,
-    'traffic' => count($people),
+    'traffic' => $nInscrits,
     'otp_mails' => $otp,
     'alerts' => $alertN,
-    'inscrits' => count($people),
+    'inscrits' => $nInscrits,
   ];
 }
 
@@ -774,7 +775,57 @@ if ($isAjax) {
   admin_json(['ok' => false, 'reason' => 'Action inconnue'], 400);
 }
 
+if (!admin_me()) {
+  $tok = trim((string) ($_COOKIE['oro_token'] ?? ''));
+  if ($tok !== '') {
+    $dbTok = admin_local_db();
+    $uTok = orolado_session_user($dbTok, $tok);
+    if (is_array($uTok) && orolado_is_admin_user($uTok)) {
+      $_SESSION['admin_uid'] = (string) ($uTok['id'] ?? '');
+      $_SESSION['admin_email'] = (string) ($uTok['email'] ?? '');
+    }
+  }
+}
 $logged = admin_me() !== null;
+$ADMIN_TABS = [
+  'gA' => [
+    ['signup_today', 'Inscriptions du Jour'],
+    ['signup_yesterday', 'Inscriptions d’Hier'],
+    ['signup_date', 'Inscriptions par Date'],
+    ['signup_hour', 'Inscriptions par Heure'],
+    ['signup_geo', 'Inscriptions par Pays / IP'],
+    ['signup_idrange', 'Recherche par Tranche d’ID'],
+    ['no_deposit', 'Joueurs Sans Dépôt'],
+  ],
+  'gB' => [
+    ['dep_today', 'Dépôts du Jour'],
+    ['dep_pending', 'Dépôts en Attente'],
+    ['dep_failed', 'Dépôts Échoués'],
+    ['dep_top', 'Meilleurs Déposants'],
+    ['dep_all', 'Historique Global Dépôts'],
+    ['dep_method', 'Dépôts par Méthode'],
+  ],
+  'gC' => [
+    ['wd_pending', 'Retraits en Cours'],
+    ['wd_today', 'Retraits Validés du Jour'],
+    ['wd_all', 'Historique Global Retraits'],
+    ['wd_rejected', 'Retraits Rejetés'],
+    ['wd_volume', 'Volume Total à Payer'],
+  ],
+  'gD' => [
+    ['online', 'Joueurs en Ligne'],
+    ['top_balances', 'Top Balances / Soldes'],
+    ['top_winners', 'Top Gagnants du Jour'],
+    ['games', 'Statistiques des Jeux'],
+    ['inactive', 'Joueurs Inactifs'],
+  ],
+  'gE' => [
+    ['traffic', 'Sources de Trafic'],
+    ['otp_mails', 'Mails & Codes OTP Envoyés'],
+    ['alerts', 'Alertes & Santé du Site'],
+  ],
+];
+$inscritsHead = $logged ? admin_inscrits_count() : 0;
 ?><!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -845,21 +896,21 @@ $logged = admin_me() !== null;
   <header class="head">
     <h1>Super Admin Dashboard</h1>
     <div>
-      <span class="muted" id="inscritsHead"></span>
+      <span class="muted" id="inscritsHead">Inscrits Supabase : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini" id="btnLogout" type="button">Déconnexion</button>
     </div>
   </header>
   <div class="wrap">
     <div class="sec">A · Inscriptions &amp; suivi pubs</div>
-    <div class="metrics" id="gA"></div>
+    <div class="metrics" id="gA"><?php foreach ($ADMIN_TABS['gA'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">B · Dépôts &amp; entrées d’argent</div>
-    <div class="metrics" id="gB"></div>
+    <div class="metrics" id="gB"><?php foreach ($ADMIN_TABS['gB'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">C · Retraits &amp; sorties d’argent</div>
-    <div class="metrics" id="gC"></div>
+    <div class="metrics" id="gC"><?php foreach ($ADMIN_TABS['gC'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">D · Jouants, balances &amp; jeux</div>
-    <div class="metrics" id="gD"></div>
+    <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
-    <div class="metrics" id="gE"></div>
+    <div class="metrics" id="gE"><?php foreach ($ADMIN_TABS['gE'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
 
     <div class="filters">
       <input id="q" type="search" placeholder="Rechercher ID, e-mail, téléphone">
@@ -938,23 +989,20 @@ function fmtBadge(id, n) {
   return String(n ?? 0);
 }
 function renderButtons(badges) {
-  TABS.forEach(t => {
-    const host = document.getElementById(t.g);
-    let btn = host.querySelector('[data-view="'+t.id+'"]');
-    const n = badges[t.id] ?? 0;
-    const html = '<div class="k">'+t.k+' <span class="'+badgeClass(t.id,n)+'">'+fmtBadge(t.id,n)+'</span></div>';
-    if (!btn) {
-      btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'metric-btn';
-      btn.dataset.view = t.id;
-      btn.addEventListener('click', () => { view = t.id; page = 1; loadList(); });
-      host.appendChild(btn);
+  document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
+    const id = btn.getAttribute('data-view');
+    const n = badges[id];
+    const el = btn.querySelector('[data-badge]');
+    if (el && n != null) {
+      el.className = badgeClass(id, n);
+      el.textContent = fmtBadge(id, n);
     }
-    btn.innerHTML = html;
-    btn.classList.toggle('on', view === t.id);
+    btn.classList.toggle('on', view === id);
   });
 }
+document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => { view = btn.getAttribute('data-view'); page = 1; loadList(); });
+});
 function filters() {
   const preset = document.getElementById('preset').value;
   document.getElementById('cal').style.display = (preset === 'date' || view === 'signup_date') ? '' : 'none';
