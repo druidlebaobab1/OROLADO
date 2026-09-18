@@ -1378,10 +1378,10 @@ function credit_paid_deposit(array $hit): array {
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
   }
-  // USDT : créditer le montant réellement reçu (peut dépasser le pending, ex. 3.50 vs 3.00).
+  // OxaPay / Flutterwave / USDT : créditer le montant réellement reçu (peut dépasser le pending).
+  $op = strtolower((string) ($dep['operator'] ?? $hit['operator'] ?? ''));
   $creditReceived = !empty($hit['creditReceived'])
-    || strtolower((string) ($dep['operator'] ?? '')) === 'usdt'
-    || strtolower((string) ($dep['operator'] ?? '')) === 'oxapay';
+    || in_array($op, ['usdt', 'oxapay', 'flutterwave', 'flw'], true);
   if ($pendingAmt > 0 && !$creditReceived) $amount = min($amount, $pendingAmt);
   $uid = (string) ($dep['userId'] ?? '');
   if ($uid === '') {
@@ -3110,12 +3110,12 @@ function orolado_oxapay_http(string $method, string $path, ?array $body = null):
     'User-Agent: OROLADO-OxaPay/1.0',
   ];
   $post = ($method === 'POST') ? json_encode($body ?? new stdClass()) : null;
-  if (!function_exists('curl_init')) return orolado_http_json($url, $post, 15);
+  if (!function_exists('curl_init')) return orolado_http_json($url, $post, 20);
   $ch = curl_init($url);
   $opts = [
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 15,
-    CURLOPT_CONNECTTIMEOUT => 6,
+    CURLOPT_TIMEOUT => 20,
+    CURLOPT_CONNECTTIMEOUT => 8,
     CURLOPT_FOLLOWLOCATION => true,
     CURLOPT_HTTPHEADER => $headers,
   ];
@@ -3139,19 +3139,53 @@ function orolado_oxapay_paid_status(string $status): bool {
   return in_array($s, ['paid', 'completed', 'confirmed', 'success'], true);
 }
 
-function orolado_oxapay_usd(array $data): float {
-  foreach (['value', 'sent_value', 'received_amount', 'payAmount', 'pay_amount_usd', 'price'] as $k) {
-    if (isset($data[$k]) && is_numeric($data[$k]) && (float) $data[$k] > 0) {
-      return orolado_money($data[$k]);
+function orolado_oxapay_is_usd_coin(string $cur): bool {
+  return in_array(strtoupper(trim($cur)), ['USD', 'USDT', 'USDC', 'BUSD', 'DAI', 'TUSD'], true);
+}
+
+function orolado_oxapay_num(array $row, array $keys): float {
+  foreach ($keys as $k) {
+    if (isset($row[$k]) && is_numeric($row[$k]) && (float) $row[$k] > 0) {
+      return (float) $row[$k];
     }
   }
-  $cur = strtoupper((string) ($data['currency'] ?? $data['to_currency'] ?? $data['pay_currency'] ?? ''));
-  if (isset($data['amount']) && is_numeric($data['amount']) && (float) $data['amount'] > 0) {
-    if ($cur === '' || $cur === 'USD' || $cur === 'USDT') return orolado_money($data['amount']);
-  }
-  if (!empty($data['txs'][0]['value'])) return orolado_money($data['txs'][0]['value']);
-  if (!empty($data['txs'][0]['sent_value'])) return orolado_money($data['txs'][0]['sent_value']);
   return 0.0;
+}
+
+/** USD réellement reçu (txs / sent_value), jamais le montant saisi ni le price facture s’il y a un overpay. */
+function orolado_oxapay_usd(array $data): float {
+  $fromTx = 0.0;
+  if (!empty($data['txs']) && is_array($data['txs'])) {
+    foreach ($data['txs'] as $tx) {
+      if (!is_array($tx)) continue;
+      $piece = orolado_oxapay_num($tx, ['sent_value', 'value']);
+      $txCur = (string) ($tx['currency'] ?? $data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? '');
+      if (orolado_oxapay_is_usd_coin($txCur)) {
+        $recv = orolado_oxapay_num($tx, ['received_amount', 'sent_amount', 'amount']);
+        if ($recv > $piece) $piece = $recv;
+      }
+      if ($piece <= 0) $piece = orolado_oxapay_num($tx, ['auto_convert_amount']);
+      $fromTx += $piece;
+    }
+  }
+  if ($fromTx > 0.0001) return orolado_money($fromTx);
+
+  $topUsd = orolado_oxapay_num($data, ['sent_value', 'value', 'pay_amount_usd', 'paid_amount']);
+  if ($topUsd > 0.0001) return orolado_money($topUsd);
+
+  $payCur = (string) ($data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? '');
+  if (orolado_oxapay_is_usd_coin($payCur)) {
+    $recv = orolado_oxapay_num($data, ['received_amount', 'payAmount', 'pay_amount']);
+    if ($recv > 0.0001) return orolado_money($recv);
+  }
+
+  $invoice = orolado_oxapay_num($data, ['price']);
+  $invCur = strtoupper((string) ($data['currency'] ?? $data['to_currency'] ?? 'USD'));
+  if ($invoice <= 0 && isset($data['amount']) && is_numeric($data['amount']) && (float) $data['amount'] > 0
+      && ($invCur === '' || orolado_oxapay_is_usd_coin($invCur))) {
+    $invoice = (float) $data['amount'];
+  }
+  return $invoice > 0 ? orolado_money($invoice) : 0.0;
 }
 
 function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, string $txid = ''): array {
@@ -3805,6 +3839,30 @@ function orolado_flutterwave_checkout(array $req): array {
   ];
 }
 
+function orolado_flutterwave_to_usd(string $cur, float $amt): float {
+  $cur = strtoupper(trim($cur));
+  $amt = (float) $amt;
+  if ($amt <= 0) return 0.0;
+  if ($cur === 'USD' || $cur === 'USDT') return orolado_money($amt);
+  if ($cur === 'XOF' || $cur === 'XAF' || $cur === 'CFA' || $cur === 'FCFA') return orolado_cfa_to_usd($amt);
+  $map = [
+    'NGN' => ['USD_NGN_RATE', 1500.0],
+    'GHS' => ['USD_GHS_RATE', 12.0],
+    'KES' => ['USD_KES_RATE', 130.0],
+    'ZAR' => ['USD_ZAR_RATE', 18.0],
+  ];
+  if (!isset($map[$cur])) return 0.0;
+  $rate = orolado_flw_rate($map[$cur][0], $map[$cur][1]);
+  return $rate > 0 ? orolado_money($amt / $rate) : 0.0;
+}
+
+function orolado_flutterwave_payload_usd(array $data): float {
+  $cur = (string) ($data['currency'] ?? '');
+  $amt = (float) ($data['amount'] ?? 0);
+  if ($amt <= 0) $amt = (float) ($data['charged_amount'] ?? $data['chargedAmount'] ?? 0);
+  return orolado_flutterwave_to_usd($cur, $amt);
+}
+
 function orolado_flutterwave_verify(string $txRef, string $transactionId = ''): array {
   if ($transactionId !== '' && ctype_digit($transactionId)) {
     $res = orolado_flw_http('GET', '/transactions/' . rawurlencode($transactionId) . '/verify');
@@ -3820,22 +3878,8 @@ function orolado_flutterwave_verify(string $txRef, string $transactionId = ''): 
   $gotRef = (string) ($data['tx_ref'] ?? $txRef);
   $cur = strtoupper((string) ($data['currency'] ?? ''));
   $amt = (float) ($data['amount'] ?? 0);
-  $usd = 0.0;
-  if ($cur === 'USD') $usd = orolado_money($amt);
-  else if ($cur === 'XOF' || $cur === 'XAF' || $cur === 'CFA' || $cur === 'FCFA') $usd = orolado_cfa_to_usd($amt);
-  else if ($cur === 'NGN') {
-    $rate = orolado_flw_rate('USD_NGN_RATE', 1500);
-    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
-  } else if ($cur === 'GHS') {
-    $rate = orolado_flw_rate('USD_GHS_RATE', 12);
-    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
-  } else if ($cur === 'KES') {
-    $rate = orolado_flw_rate('USD_KES_RATE', 130);
-    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
-  } else if ($cur === 'ZAR') {
-    $rate = orolado_flw_rate('USD_ZAR_RATE', 18);
-    $usd = $rate > 0 ? orolado_money($amt / $rate) : 0.0;
-  }
+  if ($amt <= 0) $amt = (float) ($data['charged_amount'] ?? 0);
+  $usd = orolado_flutterwave_to_usd($cur, $amt);
   return [
     'ok' => true,
     'paid' => true,
@@ -3862,9 +3906,8 @@ function orolado_flutterwave_credit(string $txRef, string $extId = '', float $ve
   }
   if (!$dep) return ['ok' => false, 'code' => 'unknown'];
   $pending = orolado_money($dep['amount'] ?? 0);
-  $usd = $pending;
   $verifiedUsd = orolado_money($verifiedUsd);
-  if ($verifiedUsd + 0.0001 >= orolado_min_deposit(null)) $usd = $verifiedUsd;
+  $usd = $verifiedUsd > 0 ? $verifiedUsd : $pending;
   if ($usd + 0.0001 < orolado_min_deposit(null)) return ['ok' => false, 'code' => 'min'];
   $paid = credit_paid_deposit([
     'ref' => (string) ($dep['id'] ?? $txRef),
@@ -3956,9 +3999,17 @@ function orolado_flutterwave_webhook(string $raw, string $hashHeader): array {
   $txRef = (string) ($data['tx_ref'] ?? $data['txRef'] ?? '');
   $txId = (string) ($data['id'] ?? $data['transaction_id'] ?? '');
   if ($txRef === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
-  $proof = orolado_flutterwave_verify($txRef, $txId);
-  if (!empty($proof['paid'])) {
-    orolado_flutterwave_credit($txRef, (string) ($proof['extId'] ?? $txId), (float) ($proof['amount_usd'] ?? 0));
+  $usd = orolado_flutterwave_payload_usd($data);
+  $ext = $txId !== '' ? $txId : $txRef;
+  if ($usd <= 0) {
+    $proof = orolado_flutterwave_verify($txRef, $txId);
+    if (!empty($proof['paid'])) {
+      $usd = (float) ($proof['amount_usd'] ?? 0);
+      $ext = (string) ($proof['extId'] ?? $ext);
+    }
+  }
+  if ($usd > 0) {
+    orolado_flutterwave_credit($txRef, $ext, $usd);
   }
   return ['ok' => true, 'http' => 200, 'body' => 'OK'];
 }
