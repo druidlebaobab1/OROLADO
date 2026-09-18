@@ -242,9 +242,209 @@ function admin_log(array &$db, string $adminEmail, string $targetPublicId, strin
   $db['admin_logs'] = array_slice($db['admin_logs'], 0, 500);
 }
 
+function admin_data_candidate_files(): array {
+  $out = [];
+  $add = static function (string $p) use (&$out): void {
+    $p = str_replace('\\', '/', $p);
+    if ($p === '' || in_array($p, $out, true)) return;
+    $base = basename($p);
+    if ($base === '.env' || str_starts_with($base, 'admin_cache_')) return;
+    $out[] = $p;
+  };
+  $add(orolado_data_file());
+  $add(__DIR__ . '/data/orolado.json');
+  $dir = rtrim(str_replace('\\', '/', orolado_data_dir()), '/');
+  $env = getenv('OROLADO_DATA_FILE');
+  if (is_string($env) && $env !== '') $add($env);
+  $add($dir . '/orolado.json.bak');
+  $add($dir . '/orolado.json.save');
+  $add(dirname($dir) . '/orolado.json');
+  $parent = dirname(__DIR__);
+  $add($parent . '/orolado.json');
+  $add($parent . '/private/orolado.json');
+  if (is_dir($dir)) {
+    foreach (glob($dir . '/*orolado*.json*') ?: [] as $g) {
+      $add((string) $g);
+    }
+  }
+  return $out;
+}
+
+function admin_ensure_php_readable(string $file): bool {
+  $dir = dirname($file);
+  if (is_dir($dir)) @chmod($dir, 0755);
+  if (!is_file($file)) return false;
+  if (is_readable($file)) return true;
+  @chmod($file, 0644);
+  clearstatcache(true, $file);
+  return is_readable($file);
+}
+
+function admin_decode_db_file(string $file): ?array {
+  if (!admin_ensure_php_readable($file)) return null;
+  $raw = @file_get_contents($file);
+  if (!is_string($raw) || trim($raw) === '') {
+    $fp = @fopen($file, 'r');
+    if (!$fp) return null;
+    @flock($fp, LOCK_SH);
+    $raw = stream_get_contents($fp);
+    @flock($fp, LOCK_UN);
+    fclose($fp);
+  }
+  if (!is_string($raw) || trim($raw) === '') return null;
+  $data = json_decode($raw, true);
+  return is_array($data) ? array_merge(blank_db(), $data) : null;
+}
+
+/** Diagnostic lecture JSON Hostinger (aucun écriture de lignes, chmod 0644 seulement si illisible). */
+function admin_json_state(): array {
+  static $state = null;
+  if (is_array($state)) return $state;
+
+  $primary = str_replace('\\', '/', orolado_data_file());
+  $dir = dirname($primary);
+  if (is_dir($dir)) @chmod($dir, 0755);
+
+  $picked = '';
+  $db = null;
+  $chmodTried = false;
+  $chmodOk = false;
+  foreach (admin_data_candidate_files() as $f) {
+    if (!is_file($f)) continue;
+    $wasReadable = is_readable($f);
+    if (!$wasReadable) {
+      $chmodTried = true;
+      $chmodOk = admin_ensure_php_readable($f);
+    } else {
+      admin_ensure_php_readable($f);
+    }
+    $decoded = admin_decode_db_file($f);
+    if (!is_array($decoded)) continue;
+    $picked = $f;
+    $db = $decoded;
+    if ($f === $primary || basename($f) === 'orolado.json') break;
+  }
+
+  $exists = is_file($primary);
+  $readable = $exists && is_readable($primary);
+  $size = $exists ? (int) @filesize($primary) : 0;
+  $perms = $exists ? substr(sprintf('%o', (int) @fileperms($primary)), -4) : '';
+  $jsonOk = is_array($db);
+  $wdList = [];
+  $byStatus = [];
+  if (is_array($db)) {
+    $wdList = admin_collect_local_wds($db);
+    foreach ($wdList as $w) {
+      $st = (string) ($w['status'] ?? 'pending');
+      if ($st === '') $st = 'pending';
+      if (!isset($byStatus[$st])) $byStatus[$st] = 0;
+      $byStatus[$st]++;
+    }
+  }
+  $wdOpen = 0;
+  foreach ($wdList as $w) {
+    if (admin_wd_is_open($w)) $wdOpen++;
+  }
+
+  $line = 'JSON ' . basename($primary) . ' : ';
+  if (!$exists) {
+    $line .= 'INTROUVABLE sur le serveur (fichier gitignoré — vérifiez le gestionnaire de fichiers Hostinger).';
+    if ($picked !== '' && $picked !== $primary) {
+      $line .= ' Copie lue : ' . basename($picked) . ' (' . count($wdList) . ' retraits).';
+    }
+  } else if (!$readable) {
+    $line .= 'présent mais ILLISIBLE par PHP (droits ' . ($perms !== '' ? $perms : '?') . ')';
+    $line .= $chmodTried ? ($chmodOk ? ' — chmod 0644 OK.' : ' — chmod 0644 refusé.') : '.';
+  } else if (!$jsonOk) {
+    $line .= 'lisible (' . $perms . ', ' . $size . ' o) mais JSON invalide.';
+  } else {
+    $stBits = [];
+    foreach ($byStatus as $k => $n) $stBits[] = $k . ':' . $n;
+    $line .= 'lecture PHP OK (' . $perms . ', ' . $size . ' o) · ' . count($wdList) . ' retraits dont ' . $wdOpen . ' en attente';
+    if ($stBits) $line .= ' (' . implode(', ', $stBits) . ')';
+    $line .= '.';
+  }
+  $ob = trim((string) ini_get('open_basedir'));
+  if ($ob !== '' && $exists && !$readable) {
+    $line .= ' open_basedir=' . $ob;
+  }
+
+  $state = [
+    'file' => basename($primary),
+    'path' => $primary,
+    'picked' => $picked !== '' ? basename($picked) : '',
+    'exists' => $exists,
+    'readable' => $readable,
+    'chmodTried' => $chmodTried,
+    'chmodOk' => $chmodOk,
+    'size' => $size,
+    'perms' => $perms,
+    'jsonOk' => $jsonOk,
+    'wd' => count($wdList),
+    'wdOpen' => $wdOpen,
+    'byStatus' => $byStatus,
+    'line' => $line,
+    'db' => is_array($db) ? $db : blank_db(),
+  ];
+  return $state;
+}
+
+function admin_json_probe_public(): array {
+  $p = admin_json_state();
+  unset($p['db'], $p['path']);
+  return $p;
+}
+
 function admin_local_db(): array {
-  $db = load_db(orolado_data_file());
-  return is_array($db) ? $db : blank_db();
+  $p = admin_json_state();
+  return is_array($p['db'] ?? null) ? $p['db'] : blank_db();
+}
+
+function admin_looks_like_wd($row): bool {
+  if (!is_array($row)) return false;
+  $typ = strtolower((string) ($row['type'] ?? ''));
+  if (in_array($typ, ['withdraw', 'withdrawal', 'payout', 'retrait'], true)) return true;
+  if (isset($row['destination']) || isset($row['phone']) || isset($row['beneficiary'])) {
+    if (isset($row['amount']) && (isset($row['status']) || isset($row['operator']) || isset($row['method']))) return true;
+  }
+  return false;
+}
+
+function admin_collect_local_wds(array $local): array {
+  $rows = [];
+  $seen = [];
+  $push = static function ($w, string $fb) use (&$rows, &$seen): void {
+    if (!is_array($w)) return;
+    $n = admin_wd_norm($w, $fb);
+    if ($n['id'] === '') return;
+    if (isset($seen[$n['id']])) return;
+    $seen[$n['id']] = true;
+    $rows[] = $n;
+  };
+
+  foreach (['withdrawals', 'withdrawal_requests', 'payouts', 'retraits'] as $k) {
+    $i = 0;
+    foreach (($local[$k] ?? []) as $w) {
+      if (!is_array($w)) continue;
+      $i++;
+      $push($w, $k . '_' . $i);
+    }
+  }
+
+  foreach (($local['users'] ?? []) as $uid => $u) {
+    if (!is_array($u)) continue;
+    $i = 0;
+    foreach (($u['transactions'] ?? []) as $tx) {
+      if (!admin_looks_like_wd($tx)) continue;
+      $i++;
+      if (!isset($tx['userId'])) $tx['userId'] = (string) ($u['id'] ?? $uid);
+      if (!isset($tx['email']) && !empty($u['email'])) $tx['email'] = (string) $u['email'];
+      if (!isset($tx['phone']) && !empty($u['phone'])) $tx['phone'] = (string) $u['phone'];
+      if (!isset($tx['status']) || $tx['status'] === '') $tx['status'] = 'pending';
+      $push($tx, 'utx_' . $uid . '_' . $i);
+    }
+  }
+  return $rows;
 }
 
 function admin_wd_is_open(array $w): bool {
@@ -495,19 +695,15 @@ function admin_withdrawals(): array {
     }
   };
 
-  $local = admin_local_db();
-  $i = 0;
-  foreach (($local['withdrawals'] ?? []) as $w) {
-    if (!is_array($w)) continue;
-    $i++;
-    $put(admin_wd_norm($w, 'local_' . $i));
+  foreach (admin_collect_local_wds(admin_local_db()) as $w) {
+    $put($w);
   }
 
   $sbCached = admin_cache_get('wd_sb', 30);
   if (!is_array($sbCached)) {
     $sbCached = admin_sb_all(
       'withdrawals',
-      'id,user_id,amount,status,operator,phone,reference,created_at',
+      'id,user_id,amount,status,operator,phone,reference,destination,created_at',
       'created_at.desc',
       1000
     );
@@ -517,6 +713,26 @@ function admin_withdrawals(): array {
   foreach ($sbCached as $w) {
     if (!is_array($w)) continue;
     $put(admin_wd_norm($w));
+  }
+
+  $txCached = admin_cache_get('wd_tx', 30);
+  if (!is_array($txCached)) {
+    $txCached = admin_sb_all(
+      'transactions',
+      'id,user_id,type,amount,note,mode,created_at',
+      'created_at.desc',
+      1000,
+      'type=in.(withdraw,withdrawal,payout,retrait)'
+    );
+    if (!is_array($txCached)) $txCached = [];
+    admin_cache_set('wd_tx', $txCached);
+  }
+  foreach ($txCached as $tx) {
+    if (!is_array($tx)) continue;
+    $typ = strtolower((string) ($tx['type'] ?? ''));
+    if (!in_array($typ, ['withdraw', 'withdrawal', 'payout', 'retrait'], true)) continue;
+    if (!isset($tx['status']) || $tx['status'] === '') $tx['status'] = 'pending';
+    $put(admin_wd_norm($tx, (string) ($tx['id'] ?? '')));
   }
 
   $list = array_values($byId);

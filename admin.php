@@ -41,7 +41,10 @@ function admin_login_check(string $email, string $password): ?array {
   $email = strtolower(trim($email));
   if (!orolado_is_reserved_admin_email($email)) return null;
   $db = admin_local_db();
-  orolado_bootstrap_admin($db, orolado_data_file());
+  $st = admin_json_state();
+  if (empty($st['exists']) || !empty($st['readable'])) {
+    orolado_bootstrap_admin($db, orolado_data_file());
+  }
   $user = null;
   foreach (($db['users'] ?? []) as $u) {
     if (!is_array($u)) continue;
@@ -459,8 +462,9 @@ function admin_list_payload(string $view, array $req): array {
         'pending' => $open,
       ];
     }
-    $summary = $total . ' retrait(s) · ' . admin_money($sum);
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions];
+    $probe = admin_json_probe_public();
+    $summary = $total . ' retrait(s) · ' . admin_money($sum) . ' · ' . (string) ($probe['line'] ?? '');
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'jsonProbe' => $probe];
   }
 
   if ($view === 'top_winners') {
@@ -676,7 +680,7 @@ if ($isAjax) {
   $me = admin_require();
 
   if ($action === 'badges') {
-    admin_json(['ok' => true, 'badges' => admin_badges()]);
+    admin_json(['ok' => true, 'badges' => admin_badges(), 'jsonProbe' => admin_json_probe_public()]);
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
@@ -903,6 +907,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <h1>Super Admin Dashboard</h1>
     <div>
       <span class="muted" id="inscritsHead">Inscrits Supabase : <?php echo (int) $inscritsHead; ?></span>
+      <span class="muted" id="jsonHead" style="display:block;margin-top:6px;max-width:520px;font-size:.78rem;line-height:1.35"><?php echo admin_esc((string) (admin_json_probe_public()['line'] ?? '')); ?></span>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
   </header>
@@ -1033,6 +1038,9 @@ async function loadBadges() {
   if (!j.ok) return;
   renderButtons(j.badges || {});
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits';
+  if (j.jsonProbe && j.jsonProbe.line) {
+    document.getElementById('jsonHead').textContent = j.jsonProbe.line;
+  }
 }
 async function loadList() {
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
