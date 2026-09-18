@@ -1928,58 +1928,47 @@
   var LANG_USER_KEY = 'orolado_lang_user';
   var LANG_MANUAL_KEY = 'orolado_manual_lang';
   var LANG_SELECTED_KEY = 'orolado_selected_lang';
+  var LANG_EXPLICIT_KEY = 'user_explicitly_selected_lang';
 
-  var GULF_TZ = {
-    'Asia/Dubai': 1, 'Asia/Qatar': 1, 'Asia/Riyadh': 1, 'Asia/Kuwait': 1,
-    'Asia/Bahrain': 1, 'Asia/Muscat': 1, 'Asia/Aden': 1, 'Asia/Baghdad': 1,
-    'Africa/Cairo': 1
-  };
-  var LATAM_TZ = {
-    'America/Bogota': 1, 'America/Mexico_City': 1, 'America/Monterrey': 1,
-    'America/Cancun': 1, 'America/Tijuana': 1, 'America/Merida': 1,
-    'America/Chihuahua': 1, 'America/Hermosillo': 1, 'America/Mazatlan': 1,
-    'America/Santiago': 1, 'America/Lima': 1, 'America/Caracas': 1,
-    'America/Guayaquil': 1, 'America/Asuncion': 1, 'America/Montevideo': 1,
-    'America/La_Paz': 1, 'America/Panama': 1, 'America/Costa_Rica': 1,
-    'America/Guatemala': 1, 'America/Tegucigalpa': 1, 'America/Managua': 1,
-    'America/El_Salvador': 1, 'America/Havana': 1, 'America/Santo_Domingo': 1,
-    'America/Puerto_Rico': 1, 'America/Argentina/Buenos_Aires': 1,
-    'America/Argentina/Cordoba': 1, 'America/Argentina/Mendoza': 1
-  };
-  var BR_TZ = {
-    'America/Sao_Paulo': 1, 'America/Fortaleza': 1, 'America/Recife': 1,
-    'America/Bahia': 1, 'America/Manaus': 1, 'America/Belem': 1,
-    'America/Cuiaba': 1, 'America/Campo_Grande': 1, 'America/Porto_Velho': 1,
-    'America/Rio_Branco': 1, 'America/Araguaina': 1, 'America/Maceio': 1,
-    'America/Noronha': 1, 'America/Santarem': 1
-  };
+  var SUPPORTED = { en:1, fr:1, es:1, pt:1, ar:1, tr:1, vi:1, id:1, ru:1, de:1, hi:1 };
 
-  function readTimeZone() {
+  function currentSystemLang() {
+    var raw = '';
     try {
-      return String((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '');
-    } catch (eTz) {
-      return '';
+      raw = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    } catch (eNav) { raw = ''; }
+    if (!raw) {
+      try { raw = navigator.userLanguage || navigator.browserLanguage || ''; } catch (eOld) { raw = ''; }
     }
+    return String(raw || '').toLowerCase();
+  }
+
+  function prefixOf(raw) {
+    return String(raw || '').toLowerCase().replace('_', '-').split('-')[0];
   }
 
   function detectAutoLang() {
-    var userLang = '';
-    try {
-      userLang = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-    } catch (eNav) { userLang = ''; }
-    var prefix = String(userLang || '').toLowerCase().replace('_', '-').split('-')[0];
-    var timeZone = readTimeZone();
-    if (prefix === 'ar' || GULF_TZ[timeZone]) return 'ar';
-    if (prefix === 'es' || LATAM_TZ[timeZone] || timeZone.indexOf('America/Argentina/') === 0) return 'es';
-    if (prefix === 'pt' || BR_TZ[timeZone] || timeZone === 'America/Sao_Paulo') return 'pt';
+    var current = currentSystemLang();
+    var prefix = prefixOf(current);
+    if (prefix === 'ar') return 'ar';
     if (prefix === 'fr') return 'fr';
-    if (prefix === 'de') return 'de';
+    if (prefix === 'es') return 'es';
+    if (prefix === 'pt') return 'pt';
     if (prefix === 'ru') return 'ru';
     if (prefix === 'tr') return 'tr';
     if (prefix === 'vi') return 'vi';
     if (prefix === 'id') return 'id';
+    if (prefix === 'de') return 'de';
     if (prefix === 'hi') return 'hi';
     if (prefix === 'en') return 'en';
+    try {
+      var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [];
+      var i;
+      for (i = 0; i < list.length; i++) {
+        var p = prefixOf(list[i]);
+        if (SUPPORTED[p]) return p;
+      }
+    } catch (eList) { /* ignore */ }
     return 'en';
   }
 
@@ -1993,18 +1982,31 @@
     return '';
   }
 
+  function hasExplicitLang() {
+    try {
+      var explicit = localStorage.getItem(LANG_EXPLICIT_KEY);
+      if (explicit && explicit !== '0' && explicit !== 'false') return true;
+      if (localStorage.getItem(LANG_USER_KEY) === '1') return true;
+    } catch (eEx) { /* ignore */ }
+    return false;
+  }
+
   function readManualLang() {
+    if (!hasExplicitLang()) return '';
     try {
       var selected = localStorage.getItem(LANG_SELECTED_KEY);
       if (selected && DICT[selected]) return selected;
       var manual = localStorage.getItem(LANG_MANUAL_KEY);
       if (manual && DICT[manual]) return manual;
+      var stored = localStorage.getItem(LANG_KEY);
+      if (stored && DICT[stored]) return stored;
     } catch (e) { /* ignore */ }
     return '';
   }
 
   function persistManualLang(code) {
     try {
+      localStorage.setItem(LANG_EXPLICIT_KEY, '1');
       localStorage.setItem(LANG_SELECTED_KEY, code);
       localStorage.setItem(LANG_MANUAL_KEY, code);
       localStorage.setItem(LANG_KEY, code);
@@ -2015,14 +2017,16 @@
   function detectLang() {
     var fromUrl = urlLang();
     if (fromUrl) return fromUrl;
-    var manual = readManualLang();
-    if (manual) return manual;
+    if (hasExplicitLang()) {
+      var manual = readManualLang();
+      if (manual) return manual;
+    }
     return detectAutoLang() || 'en';
   }
 
   var lang = detectLang();
   if (!DICT[lang]) lang = 'en';
-  var lockedLang = !!(urlLang() || readManualLang());
+  var lockedLang = !!(urlLang() || hasExplicitLang());
 
   function syncHtmlDir() {
     var html = document.documentElement;
@@ -2096,7 +2100,7 @@
   var geoStarted = false;
 
   function applyAutoLang(code) {
-    if (lockedLang || readManualLang()) return;
+    if (lockedLang || hasExplicitLang()) return;
     if (!DICT[code]) code = 'en';
     lang = code;
     try { localStorage.setItem(LANG_KEY, code); } catch (eAuto) { /* ignore */ }
@@ -2104,13 +2108,13 @@
   }
 
   function startGeo() {
-    if (geoStarted || lockedLang || readManualLang()) return;
+    if (geoStarted || lockedLang || hasExplicitLang()) return;
     geoStarted = true;
     applyAutoLang(detectAutoLang() || 'en');
   }
 
   function refineFromGeo() {
-    if (geoStarted || lockedLang || readManualLang()) return;
+    if (geoStarted || lockedLang || hasExplicitLang()) return;
     startGeo();
   }
 
