@@ -1930,46 +1930,62 @@
   var LANG_SELECTED_KEY = 'orolado_selected_lang';
   var LANG_EXPLICIT_KEY = 'user_explicitly_selected_lang';
 
-  var SUPPORTED = { en:1, fr:1, es:1, pt:1, ar:1, tr:1, vi:1, id:1, ru:1, de:1, hi:1 };
-
-  function currentSystemLang() {
-    var raw = '';
-    try {
-      raw = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-    } catch (eNav) { raw = ''; }
-    if (!raw) {
-      try { raw = navigator.userLanguage || navigator.browserLanguage || ''; } catch (eOld) { raw = ''; }
-    }
-    return String(raw || '').toLowerCase();
+  function matchSupportedLang(raw) {
+    var code = String(raw || '').toLowerCase().replace('_', '-').replace(/\s+/g, '').trim();
+    if (!code) return '';
+    if (code.indexOf('ar') === 0) return 'ar';
+    if (code.indexOf('es') === 0) return 'es';
+    if (code.indexOf('fr') === 0) return 'fr';
+    if (code.indexOf('pt') === 0) return 'pt';
+    if (code.indexOf('ru') === 0) return 'ru';
+    if (code.indexOf('tr') === 0) return 'tr';
+    if (code.indexOf('vi') === 0) return 'vi';
+    if (code.indexOf('id') === 0) return 'id';
+    if (code.indexOf('de') === 0) return 'de';
+    if (code.indexOf('hi') === 0) return 'hi';
+    if (code.indexOf('en') === 0) return 'en';
+    return '';
   }
 
-  function prefixOf(raw) {
-    return String(raw || '').toLowerCase().replace('_', '-').split('-')[0];
+  function detectUserLanguage() {
+    var candidates = [];
+    var i;
+    try {
+      if (navigator.languages && navigator.languages.length) {
+        for (i = 0; i < navigator.languages.length; i++) candidates.push(navigator.languages[i]);
+      }
+    } catch (eLangs) { /* ignore */ }
+    try { if (navigator.language) candidates.push(navigator.language); } catch (eLang) { /* ignore */ }
+    try { if (navigator.userLanguage) candidates.push(navigator.userLanguage); } catch (eUL) { /* ignore */ }
+    try { if (navigator.browserLanguage) candidates.push(navigator.browserLanguage); } catch (eBL) { /* ignore */ }
+    try {
+      var loc = (Intl.DateTimeFormat().resolvedOptions() || {}).locale;
+      if (loc) candidates.push(loc);
+    } catch (eLoc) { /* ignore */ }
+
+    var seenEn = '';
+    for (i = 0; i < candidates.length; i++) {
+      var hit = matchSupportedLang(candidates[i]);
+      if (!hit) continue;
+      // Safari/WebKit met souvent `en` en tête même si le téléphone est en arabe.
+      if (hit === 'en') {
+        if (!seenEn) seenEn = 'en';
+        continue;
+      }
+      return hit;
+    }
+
+    try {
+      var tz = (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '';
+      if (tz.indexOf('Dubai') >= 0 || tz.indexOf('Riyadh') >= 0 || tz.indexOf('Qatar') >= 0) return 'ar';
+      if (tz.indexOf('Sao_Paulo') >= 0) return 'pt';
+    } catch (eTz) { /* ignore */ }
+
+    return seenEn || 'en';
   }
 
   function detectAutoLang() {
-    var current = currentSystemLang();
-    var prefix = prefixOf(current);
-    if (prefix === 'ar') return 'ar';
-    if (prefix === 'fr') return 'fr';
-    if (prefix === 'es') return 'es';
-    if (prefix === 'pt') return 'pt';
-    if (prefix === 'ru') return 'ru';
-    if (prefix === 'tr') return 'tr';
-    if (prefix === 'vi') return 'vi';
-    if (prefix === 'id') return 'id';
-    if (prefix === 'de') return 'de';
-    if (prefix === 'hi') return 'hi';
-    if (prefix === 'en') return 'en';
-    try {
-      var list = (navigator.languages && navigator.languages.length) ? navigator.languages : [];
-      var i;
-      for (i = 0; i < list.length; i++) {
-        var p = prefixOf(list[i]);
-        if (SUPPORTED[p]) return p;
-      }
-    } catch (eList) { /* ignore */ }
-    return 'en';
+    return detectUserLanguage();
   }
 
   function urlLang() {
