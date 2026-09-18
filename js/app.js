@@ -3528,7 +3528,7 @@
     }
   }
 
-  var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, bnb: 1, ltc: 1, doge: 1 };
+  var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1 };
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
     nequi: 1, gcash: 1, stcpay: 1, picpay: 1, papara: 1
@@ -3536,10 +3536,11 @@
   var WD_EMAIL = { paypal: 1, skrill: 1, neteller: 1 };
   var WD_NAMES = {
     usdt: 'USDT TRC-20', trx: 'TRX', sol: 'SOL', bnb: 'Binance Pay', btc: 'BTC', eth: 'ETH',
-    opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange Money', mtn: 'MTN',
+    opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange', mtn: 'MTN',
     mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
     nequi: 'Nequi', gcash: 'GCash', upi: 'UPI/Paytm', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
-    paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', card: 'Carte bancaire', bank: 'Virement bancaire'
+    paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', payeer: 'Payeer', perfectmoney: 'Perfect Money',
+    card: 'Carte bancaire', bank: 'Virement bancaire'
   };
   var WD_DIAL_LOCK = {
     stcpay: '+966', nequi: '+57', opay: '+234', palmpay: '+234',
@@ -3607,12 +3608,18 @@
 
   function fillWdBankCountry() {
     var sel = $('wdBankCountry');
-    if (!sel || sel.getAttribute('data-filled') === '1') return;
-    var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
-    sel.innerHTML = codes.map(function (c) {
+    if (!sel) return;
+    var list = (D6.CONFIG && D6.CONFIG.WD_BANK_COUNTRIES) || [];
+    if (!list.length) {
+      list = [{ flag: '\uD83C\uDDFA\uD83C\uDDF8', name: '\u00c9tats-Unis (USA)' }];
+    }
+    var current = sel.value;
+    sel.innerHTML = list.map(function (c) {
       return '<option value="' + c.name + '">' + c.flag + ' ' + c.name + '</option>';
     }).join('');
-    sel.setAttribute('data-filled', '1');
+    var usa = list[0] && list[0].name;
+    if (current && list.some(function (c) { return c.name === current; })) sel.value = current;
+    else sel.value = usa;
   }
 
   function setWithdrawMethod(op) {
@@ -3634,6 +3641,7 @@
     var mobileFields = $('wdMobileFields');
     var cardFields = $('wdCardFields');
     var bankFields = $('wdBankFields');
+    var help = $('wdDestHelp');
     var isCrypto = !!WD_CRYPTO[method];
     var isMobile = !!WD_MOBILE[method];
     var isCard = method === 'card';
@@ -3647,15 +3655,30 @@
       fillWdDial(method);
       var phoneLab = $('wdPhoneLabel');
       var phone = $('wdPhone');
+      if (help) { help.textContent = ''; help.classList.add('hidden'); }
       if (method === 'opay') {
-        if (phoneLab) phoneLab.textContent = t('wdOpayAccount');
+        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdOpayAccount'); phoneLab.textContent = t('wdOpayAccount'); }
         if (phone) {
           phone.placeholder = t('wdOpayPh');
           phone.setAttribute('maxlength', '10');
           phone.setAttribute('inputmode', 'numeric');
         }
+      } else if (method === 'papara') {
+        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPaparaId'); phoneLab.textContent = t('wdPaparaId'); }
+        if (phone) {
+          phone.placeholder = 'Ex: 1234567890';
+          phone.setAttribute('maxlength', '20');
+          phone.setAttribute('inputmode', 'numeric');
+        }
+      } else if (method === 'picpay') {
+        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPicpayId'); phoneLab.textContent = t('wdPicpayId'); }
+        if (phone) {
+          phone.placeholder = 'Ex: 000.000.000-00 ou email@exemple.com';
+          phone.setAttribute('maxlength', '80');
+          phone.setAttribute('inputmode', 'email');
+        }
       } else {
-        if (phoneLab) phoneLab.textContent = t('wdPhone');
+        if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPhone'); phoneLab.textContent = t('wdPhone'); }
         if (phone) {
           phone.placeholder = '07XXXXXXXX';
           phone.setAttribute('maxlength', '20');
@@ -3666,18 +3689,41 @@
       return;
     }
     if (isCard) {
+      if (help) { help.textContent = ''; help.classList.add('hidden'); }
       if ($('wdCardName') && u && !$('wdCardName').value) $('wdCardName').value = u.displayName || '';
       return;
     }
     if (isBank) {
+      if (help) { help.textContent = ''; help.classList.add('hidden'); }
       fillWdBankCountry();
       if ($('wdBankHolder') && u && !$('wdBankHolder').value) $('wdBankHolder').value = u.displayName || '';
       return;
     }
     if (!label || !input) return;
+    if (help) { help.textContent = ''; help.classList.add('hidden'); }
     if (isCrypto) {
+      label.setAttribute('data-i18n', 'wdWallet');
       label.textContent = t('wdWallet');
       input.placeholder = method === 'btc' ? 'bc1… / 1… / 3…' : (method === 'usdt' ? 'USDT TRC-20 address (T…)' : 'Wallet address');
+      input.type = 'text';
+    } else if (method === 'bnb') {
+      label.setAttribute('data-i18n', 'wdBinanceId');
+      label.textContent = t('wdBinanceId');
+      input.placeholder = t('wdBinancePh');
+      input.type = 'text';
+      if (help) {
+        help.textContent = t('wdBinanceHelp');
+        help.classList.remove('hidden');
+      }
+    } else if (method === 'perfectmoney') {
+      label.setAttribute('data-i18n', 'wdPmAccount');
+      label.textContent = t('wdPmAccount');
+      input.placeholder = t('wdPmPh');
+      input.type = 'text';
+    } else if (method === 'payeer') {
+      label.setAttribute('data-i18n', 'wdEmailId');
+      label.textContent = t('wdEmailId');
+      input.placeholder = 'P12345678 / email@exemple.com';
       input.type = 'text';
     } else if (WD_EMAIL[method]) {
       label.textContent = method === 'paypal' ? t('wdPaypal') : t('wdEmailId');
@@ -3692,8 +3738,9 @@
       input.placeholder = 'UPI ID / Paytm';
       input.type = 'text';
     } else if (method === 'mercadopago') {
-      label.textContent = t('wdAccount');
-      input.placeholder = 'Mercado Pago account';
+      label.setAttribute('data-i18n', 'wdMpagoId');
+      label.textContent = t('wdMpagoId');
+      input.placeholder = 'Ex: exemple@email.com';
       input.type = 'text';
     }
   }

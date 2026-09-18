@@ -2024,6 +2024,31 @@ html.is-ios .stake-field input{border-radius:10px}
 .wd-brand-sk,.wd-brand-nt{width:16px;height:16px;border-radius:4px;display:grid;place-items:center;font-size:.55rem;font-weight:900;color:#fff;flex-shrink:0}
 .wd-brand-sk{background:#862165}
 .wd-brand-nt{background:#8DC63F;color:#14320A}
+
+#withdrawModal .wd-modal-head{min-height:48px}
+#withdrawModal .wd-modal-head .modal-title{
+  font-size:24px;font-weight:800;letter-spacing:.02em;color:#F5C518;line-height:1.15}
+#withdrawModal .wd-bal{
+  border:1px solid rgba(255,215,0,.3);border-radius:14px;padding:16px 14px 14px;margin:4px 0 12px;
+  background:linear-gradient(180deg,#121826 0%,#0B0E14 100%);
+  box-shadow:inset 0 1px 0 rgba(255,215,0,.08)}
+#withdrawModal .wd-bal-secure{
+  font-size:.62rem;letter-spacing:.12em;color:#E8D5A3;font-weight:800;text-transform:uppercase}
+#withdrawModal .wd-bal-amt{
+  font-size:1.85rem;font-weight:900;color:#FFD700;
+  text-shadow:0 0 18px rgba(255,215,0,.28);
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+#withdrawModal .wd-card{background:rgba(11,16,28,.92)}
+#withdrawModal .wd-card-ico{width:20px;height:20px;display:block}
+#withdrawModal .wd-dest-help{margin:4px 0 0;font-size:.68rem;color:#94A3B8;font-weight:600;line-height:1.35}
+#withdrawModal .wd-dest-help.hidden{display:none!important}
+#withdrawModal .wd-brand-pm{
+  width:18px;height:18px;border-radius:4px;display:grid;place-items:center;
+  font-size:.5rem;font-weight:900;letter-spacing:.02em;color:#fff;background:#DC2626;flex-shrink:0;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+#withdrawModal .wd-brand-pr{
+  width:16px;height:16px;border-radius:4px;display:grid;place-items:center;
+  font-size:.55rem;font-weight:900;color:#fff;background:#1D4ED8;flex-shrink:0}
 .tip-box{position:relative;overflow:visible}
 .tip-close,#tipModal .btn-close{position:absolute;top:6px;right:6px;z-index:30;width:44px;height:44px;min-width:44px;min-height:44px;
   display:flex;align-items:center;justify-content:center;pointer-events:auto!important;touch-action:manipulation;
