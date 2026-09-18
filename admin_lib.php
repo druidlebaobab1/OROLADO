@@ -400,12 +400,57 @@ function admin_local_db(): array {
   return is_array($p['db'] ?? null) ? $p['db'] : blank_db();
 }
 
+function admin_fill(string ...$vals): string {
+  foreach ($vals as $v) {
+    $v = trim($v);
+    if ($v === '' || $v === '—' || strcasecmp($v, 'null') === 0 || strcasecmp($v, 'undefined') === 0) continue;
+    return $v;
+  }
+  return '';
+}
+
+function admin_method_label(string $op): string {
+  $k = strtolower(trim($op));
+  if ($k === '') return '';
+  $map = [
+    'wave' => 'Wave', 'orange' => 'Orange', 'mtn' => 'MTN', 'moov' => 'Moov',
+    'mpesa' => 'M-Pesa', 'airtel' => 'Airtel', 'opay' => 'OPay', 'palmpay' => 'PalmPay',
+    'paypal' => 'PayPal', 'bank' => 'Banque', 'card' => 'Carte',
+    'usdt' => 'USDT', 'btc' => 'BTC', 'eth' => 'ETH', 'trx' => 'TRX',
+    'sol' => 'SOL', 'bnb' => 'BNB', 'ltc' => 'LTC', 'doge' => 'DOGE',
+    'pix' => 'PIX', 'gcash' => 'GCash', 'upi' => 'UPI', 'stcpay' => 'STCpay',
+  ];
+  return $map[$k] ?? $op;
+}
+
+function admin_tx_is_withdraw(array $tx): bool {
+  $typ = strtolower(trim((string) ($tx['type'] ?? '')));
+  if (in_array($typ, ['deposit', 'stake', 'win', 'void', 'lost', 'loss', 'trade', 'bet', 'order', 'bonus', 'credit'], true)) {
+    return false;
+  }
+  if (in_array($typ, ['withdraw', 'withdrawal', 'payout', 'retrait', 'wd', 'cashout', 'cash_out'], true)) {
+    return true;
+  }
+  $note = strtolower((string) ($tx['note'] ?? $tx['playerNote'] ?? $tx['reason'] ?? ''));
+  if (str_contains($note, 'retrait') || str_contains($note, 'withdraw') || str_contains($note, 'payout')) {
+    return true;
+  }
+  return false;
+}
+
 function admin_looks_like_wd($row): bool {
   if (!is_array($row)) return false;
   $typ = strtolower((string) ($row['type'] ?? ''));
-  if (in_array($typ, ['withdraw', 'withdrawal', 'payout', 'retrait'], true)) return true;
-  if (isset($row['destination']) || isset($row['phone']) || isset($row['beneficiary'])) {
-    if (isset($row['amount']) && (isset($row['status']) || isset($row['operator']) || isset($row['method']))) return true;
+  if (in_array($typ, ['deposit', 'stake', 'win', 'void', 'lost', 'loss', 'trade', 'bet'], true)) return false;
+  if (admin_tx_is_withdraw($row)) return true;
+  $dest = admin_fill(
+    (string) ($row['destination'] ?? ''),
+    (string) ($row['phone'] ?? ''),
+    (string) ($row['beneficiary'] ?? ''),
+    (string) ($row['msisdn'] ?? '')
+  );
+  if ($dest !== '' && isset($row['amount']) && (isset($row['status']) || isset($row['operator']) || isset($row['method']))) {
+    return true;
   }
   return false;
 }
@@ -417,8 +462,16 @@ function admin_collect_local_wds(array $local): array {
     if (!is_array($w)) return;
     $n = admin_wd_norm($w, $fb);
     if ($n['id'] === '') return;
-    if (isset($seen[$n['id']])) return;
-    $seen[$n['id']] = true;
+    if (abs((float) $n['amount']) < 0.0001) return;
+    if (isset($seen[$n['id']])) {
+      foreach (['phone', 'reason', 'name', 'email', 'operator', 'createdAt', 'userId'] as $k) {
+        if (admin_fill((string) ($rows[$seen[$n['id']]][$k] ?? '')) === '' && admin_fill((string) ($n[$k] ?? '')) !== '') {
+          $rows[$seen[$n['id']]][$k] = $n[$k];
+        }
+      }
+      return;
+    }
+    $seen[$n['id']] = count($rows);
     $rows[] = $n;
   };
 
@@ -437,14 +490,51 @@ function admin_collect_local_wds(array $local): array {
     foreach (($u['transactions'] ?? []) as $tx) {
       if (!admin_looks_like_wd($tx)) continue;
       $i++;
-      if (!isset($tx['userId'])) $tx['userId'] = (string) ($u['id'] ?? $uid);
-      if (!isset($tx['email']) && !empty($u['email'])) $tx['email'] = (string) $u['email'];
-      if (!isset($tx['phone']) && !empty($u['phone'])) $tx['phone'] = (string) $u['phone'];
+      if (admin_fill((string) ($tx['userId'] ?? '')) === '') $tx['userId'] = (string) ($u['id'] ?? $uid);
+      if (admin_fill((string) ($tx['email'] ?? '')) === '' && !empty($u['email'])) $tx['email'] = (string) $u['email'];
+      if (admin_fill((string) ($tx['phone'] ?? '')) === '' && !empty($u['phone'])) $tx['phone'] = (string) $u['phone'];
+      if (admin_fill((string) ($tx['operator'] ?? '')) === '' && !empty($u['lastOperator'])) $tx['operator'] = (string) $u['lastOperator'];
       if (!isset($tx['status']) || $tx['status'] === '') $tx['status'] = 'pending';
       $push($tx, 'utx_' . $uid . '_' . $i);
     }
   }
+
+  admin_walk_local_wds($local, '', $push, 0);
   return $rows;
+}
+
+function admin_walk_local_wds($node, string $path, callable $push, int $depth): void {
+  if ($depth > 5 || !is_array($node)) return;
+  $base = strtolower($path);
+  if (in_array($base, [
+    'vault', 'sessions', 'positions', 'orders', 'processedtx', 'admin_logs',
+    'pendingregistrations', 'users', 'withdrawals', 'withdrawal_requests',
+    'payouts', 'retraits',
+  ], true)) {
+    return;
+  }
+  $keys = array_keys($node);
+  $isList = $node !== [] && $keys === range(0, count($node) - 1);
+  if ($isList && isset($node[0]) && is_array($node[0])) {
+    $hits = 0;
+    foreach ($node as $row) {
+      if (is_array($row) && admin_looks_like_wd($row)) $hits++;
+    }
+    if ($hits > 0 && ($hits * 2 >= count($node) || str_contains($base, 'withdraw') || str_contains($base, 'retrait') || str_contains($base, 'payout'))) {
+      $i = 0;
+      foreach ($node as $row) {
+        if (!is_array($row)) continue;
+        $i++;
+        $push($row, ($path !== '' ? $path : 'walk') . '_' . $i);
+      }
+      return;
+    }
+  }
+  foreach ($node as $k => $v) {
+    if (!is_array($v)) continue;
+    $kk = is_string($k) ? $k : (string) $k;
+    admin_walk_local_wds($v, $kk, $push, $depth + 1);
+  }
 }
 
 function admin_wd_is_open(array $w): bool {
@@ -515,12 +605,12 @@ function admin_fetch_auth_users(): array {
 }
 
 function admin_profiles(): array {
-  $cached = admin_cache_get('profiles', 40);
+  $cached = admin_cache_get('profiles2', 40);
   if (is_array($cached) && isset($cached['list'])) return $cached['list'];
 
   $rows = admin_sb_all(
     'profiles',
-    'id,email,display_name,phone,country_code,role,created_at,last_seen,real_deposit_total,real_trades,updated_at',
+    'id,email,display_name,phone,country_code,role,created_at,last_seen,real_deposit_total,real_trades,updated_at,whatsapp,mobile',
     'created_at.asc',
     1000
   );
@@ -533,7 +623,7 @@ function admin_profiles(): array {
       'id' => $id,
       'email' => (string) ($p['email'] ?? ''),
       'name' => (string) ($p['display_name'] ?? ''),
-      'phone' => (string) ($p['phone'] ?? ''),
+      'phone' => trim((string) ($p['phone'] ?? ($p['whatsapp'] ?? ($p['mobile'] ?? '')))),
       'country' => (string) ($p['country_code'] ?? ''),
       'role' => (string) ($p['role'] ?? 'user'),
       'createdAt' => (string) ($p['created_at'] ?? ''),
@@ -570,7 +660,13 @@ function admin_profiles(): array {
         'publicId' => '',
       ];
     } else {
+      $aphone = trim((string) ($u['phone'] ?? ($meta['phone'] ?? ($meta['destination'] ?? ''))));
       if ($byId[$id]['email'] === '' && $email !== '') $byId[$id]['email'] = $email;
+      if ($byId[$id]['phone'] === '' && $aphone !== '') $byId[$id]['phone'] = $aphone;
+      if ($byId[$id]['name'] === '') {
+        $an = trim((string) ($meta['display_name'] ?? $meta['full_name'] ?? ''));
+        if ($an !== '') $byId[$id]['name'] = $an;
+      }
       if ($byId[$id]['ip'] === '' && $ip !== '') $byId[$id]['ip'] = $ip;
       if ($byId[$id]['traffic'] === '' && $src !== '') $byId[$id]['traffic'] = $src;
       if ($byId[$id]['createdAt'] === '' && $created !== '') $byId[$id]['createdAt'] = $created;
@@ -622,7 +718,7 @@ function admin_profiles(): array {
     if (($list[$i]['publicId'] ?? '') === '') $list[$i]['publicId'] = 'ORO-' . $n;
     if (($list[$i]['traffic'] ?? '') === '') $list[$i]['traffic'] = 'direct';
   }
-  admin_cache_set('profiles', ['list' => $list]);
+  admin_cache_set('profiles2', ['list' => $list]);
   return $list;
 }
 
@@ -657,49 +753,190 @@ function admin_vaults(): array {
 }
 
 function admin_wd_norm(array $w, string $fallbackId = ''): array {
-  $id = (string) ($w['id'] ?? $w['reference'] ?? $fallbackId);
-  $phone = (string) ($w['phone'] ?? $w['destination'] ?? $w['dest'] ?? '');
+  $id = admin_fill((string) ($w['id'] ?? ''), (string) ($w['reference'] ?? ''), $fallbackId);
+  $phone = admin_fill(
+    (string) ($w['phone'] ?? ''),
+    (string) ($w['destination'] ?? ''),
+    (string) ($w['dest'] ?? ''),
+    (string) ($w['msisdn'] ?? ''),
+    (string) ($w['account'] ?? ''),
+    (string) ($w['number'] ?? '')
+  );
   $st = strtolower(trim((string) ($w['status'] ?? 'pending')));
   if ($st === '') $st = 'pending';
-  $type = strtolower((string) ($w['type'] ?? ''));
-  if ($id === '' && in_array($type, ['withdraw', 'withdrawal', 'payout', 'retrait'], true)) {
-    $id = 'tx_' . md5(json_encode([$w['userId'] ?? $w['user_id'] ?? '', $w['amount'] ?? 0, $w['at'] ?? $w['created_at'] ?? $w['createdAt'] ?? '']));
+  $op = admin_fill(
+    (string) ($w['operator'] ?? ''),
+    (string) ($w['method'] ?? ''),
+    (string) ($w['methodName'] ?? ''),
+    (string) ($w['network'] ?? ''),
+    (string) ($w['channel'] ?? ''),
+    (string) ($w['wallet'] ?? '')
+  );
+  if ($id === '') {
+    $id = 'wd_' . substr(md5(json_encode([
+      $w['userId'] ?? $w['user_id'] ?? '',
+      $w['amount'] ?? 0,
+      $w['at'] ?? $w['created_at'] ?? $w['createdAt'] ?? '',
+      $phone,
+      $op,
+    ])), 0, 16);
   }
   return [
     'id' => $id,
     'userId' => (string) ($w['userId'] ?? $w['user_id'] ?? ''),
     'amount' => abs((float) ($w['amount'] ?? 0)),
     'status' => $st,
-    'operator' => (string) ($w['operator'] ?? $w['method'] ?? $w['methodName'] ?? ''),
+    'operator' => $op,
     'phone' => $phone,
-    'reference' => (string) ($w['reference'] ?? $id),
+    'reference' => admin_fill((string) ($w['reference'] ?? ''), $id),
     'createdAt' => (string) ($w['at'] ?? $w['createdAt'] ?? $w['created_at'] ?? $w['date'] ?? ''),
     'reason' => (string) ($w['playerNote'] ?? $w['reason'] ?? $w['motif'] ?? $w['note'] ?? ''),
     'adminHidden' => !empty($w['adminHidden']),
-    'name' => (string) ($w['name'] ?? $w['beneficiary'] ?? ''),
+    'name' => admin_fill((string) ($w['name'] ?? ''), (string) ($w['beneficiary'] ?? '')),
     'email' => (string) ($w['email'] ?? ''),
   ];
 }
 
+function admin_wd_merge_into(array &$dst, array $src): void {
+  foreach (['phone', 'reason', 'name', 'email', 'operator', 'createdAt', 'userId'] as $k) {
+    if (admin_fill((string) ($dst[$k] ?? '')) === '' && admin_fill((string) ($src[$k] ?? '')) !== '') {
+      $dst[$k] = $src[$k];
+    }
+  }
+  if (admin_wd_is_open($src) && !admin_wd_is_open($dst)) {
+    $dst['status'] = $src['status'];
+  }
+}
+
+function admin_wd_fingerprint(array $w): string {
+  $uid = admin_fill((string) ($w['userId'] ?? ''));
+  $amt = number_format(abs((float) ($w['amount'] ?? 0)), 2, '.', '');
+  $t = strtotime((string) ($w['createdAt'] ?? '')) ?: 0;
+  $bucket = $t > 0 ? (string) intdiv($t, 90) : '0';
+  if ($uid === '' && $amt === '0.00') return '';
+  return $uid . '|' . $amt . '|' . $bucket;
+}
+
+function admin_sb_withdraw_txs(): array {
+  $cached = admin_cache_get('wd_tx2', 20);
+  if (is_array($cached) && isset($cached['rows']) && is_array($cached['rows'])) return $cached['rows'];
+  $byId = [];
+  $add = static function (array $rows) use (&$byId): void {
+    foreach ($rows as $r) {
+      if (!is_array($r) || !admin_tx_is_withdraw($r)) continue;
+      $id = admin_fill((string) ($r['id'] ?? ''));
+      if ($id === '') $id = 'stx_' . md5(json_encode($r));
+      $byId[$id] = $r;
+    }
+  };
+  $add(admin_sb_all('transactions', 'id,user_id,type,amount,note,mode,created_at', 'created_at.desc', 1000, 'type=eq.withdraw'));
+  $add(admin_sb_all('transactions', 'id,user_id,type,amount,note,mode,created_at', 'created_at.desc', 1000, 'type=in.(withdraw,withdrawal,payout,retrait)'));
+  $add(admin_sb_all('transactions', 'id,user_id,type,amount,note,mode,created_at', 'created_at.desc', 1000, 'note=ilike.*retrait*'));
+  if (count($byId) < 12) {
+    $add(admin_sb_all('transactions', 'id,user_id,type,amount,note,mode,created_at', 'created_at.desc', 1000, ''));
+  }
+  $rows = array_values($byId);
+  admin_cache_set('wd_tx2', ['rows' => $rows]);
+  return $rows;
+}
+
+function admin_wd_contacts(): array {
+  static $c = null;
+  if (is_array($c)) return $c;
+  $c = [];
+  $set = static function (string $uid, array $bits) use (&$c): void {
+    if ($uid === '') return;
+    if (!isset($c[$uid])) $c[$uid] = ['phone' => '', 'operator' => '', 'email' => '', 'name' => ''];
+    foreach (['phone', 'operator', 'email', 'name'] as $k) {
+      if (admin_fill((string) ($c[$uid][$k] ?? '')) === '') {
+        $v = admin_fill((string) ($bits[$k] ?? ''));
+        if ($v !== '') $c[$uid][$k] = $v;
+      }
+    }
+  };
+  foreach (admin_profiles() as $p) {
+    $set((string) ($p['id'] ?? ''), [
+      'phone' => (string) ($p['phone'] ?? ''),
+      'email' => (string) ($p['email'] ?? ''),
+      'name' => (string) ($p['name'] ?? ''),
+    ]);
+  }
+  $local = admin_local_db();
+  foreach (($local['users'] ?? []) as $id => $u) {
+    if (!is_array($u)) continue;
+    $set((string) ($u['id'] ?? $id), [
+      'phone' => admin_fill((string) ($u['phone'] ?? ''), (string) ($u['destination'] ?? '')),
+      'operator' => admin_fill((string) ($u['lastOperator'] ?? ''), (string) ($u['operator'] ?? '')),
+      'email' => (string) ($u['email'] ?? ''),
+      'name' => (string) ($u['displayName'] ?? ''),
+    ]);
+  }
+  foreach (admin_collect_local_wds($local) as $w) {
+    $set((string) ($w['userId'] ?? ''), [
+      'phone' => (string) ($w['phone'] ?? ''),
+      'operator' => (string) ($w['operator'] ?? ''),
+      'email' => (string) ($w['email'] ?? ''),
+      'name' => (string) ($w['name'] ?? ''),
+    ]);
+  }
+  return $c;
+}
+
+function admin_enrich_wd(array $w, array $pmap): array {
+  $uid = admin_fill((string) ($w['userId'] ?? ''));
+  $u = $uid !== '' ? admin_user_lookup($uid, $pmap) : ['id' => '', 'publicId' => '', 'email' => '', 'name' => '', 'phone' => ''];
+  if ($uid === '' && admin_fill((string) ($w['email'] ?? '')) !== '') {
+    $em = strtolower((string) $w['email']);
+    foreach ($pmap as $p) {
+      if (strtolower((string) ($p['email'] ?? '')) === $em) {
+        $u = $p;
+        $uid = (string) ($p['id'] ?? '');
+        $w['userId'] = $uid;
+        break;
+      }
+    }
+  }
+  $ct = admin_wd_contacts()[$uid] ?? ['phone' => '', 'operator' => '', 'email' => '', 'name' => ''];
+  $w['phone'] = admin_fill((string) ($w['phone'] ?? ''), (string) ($u['phone'] ?? ''), (string) ($ct['phone'] ?? ''));
+  $w['operator'] = admin_method_label(admin_fill((string) ($w['operator'] ?? ''), (string) ($ct['operator'] ?? '')));
+  $w['email'] = admin_fill((string) ($w['email'] ?? ''), (string) ($u['email'] ?? ''), (string) ($ct['email'] ?? ''));
+  $w['name'] = admin_fill((string) ($w['name'] ?? ''), (string) ($u['name'] ?? ''), (string) ($ct['name'] ?? ''));
+  $w['publicId'] = admin_fill((string) ($u['publicId'] ?? ''), (string) ($w['publicId'] ?? ''));
+  return $w;
+}
+
 function admin_withdrawals(): array {
   $byId = [];
-  $put = static function (array $row) use (&$byId): void {
-    $id = (string) ($row['id'] ?? '');
+  $byFp = [];
+  $put = static function (array $row) use (&$byId, &$byFp): void {
+    $id = admin_fill((string) ($row['id'] ?? ''));
     if ($id === '') return;
-    if (!isset($byId[$id])) {
-      $byId[$id] = $row;
+    $fp = admin_wd_fingerprint($row);
+    if (isset($byId[$id])) {
+      admin_wd_merge_into($byId[$id], $row);
       return;
     }
-    foreach (['phone', 'reason', 'name', 'email', 'operator', 'createdAt', 'userId'] as $k) {
-      if (($byId[$id][$k] ?? '') === '' && ($row[$k] ?? '') !== '') $byId[$id][$k] = $row[$k];
+    if ($fp !== '' && isset($byFp[$fp])) {
+      $existId = $byFp[$fp];
+      admin_wd_merge_into($byId[$existId], $row);
+      $preferNew = admin_fill((string) ($byId[$existId]['phone'] ?? '')) === '' && admin_fill((string) ($row['phone'] ?? '')) !== '';
+      if ($preferNew) {
+        admin_wd_merge_into($row, $byId[$existId]);
+        unset($byId[$existId]);
+        $byId[$id] = $row;
+        $byFp[$fp] = $id;
+      }
+      return;
     }
+    $byId[$id] = $row;
+    if ($fp !== '') $byFp[$fp] = $id;
   };
 
   foreach (admin_collect_local_wds(admin_local_db()) as $w) {
     $put($w);
   }
 
-  $sbCached = admin_cache_get('wd_sb', 30);
+  $sbCached = admin_cache_get('wd_sb2', 20);
   if (!is_array($sbCached)) {
     $sbCached = admin_sb_all(
       'withdrawals',
@@ -708,29 +945,15 @@ function admin_withdrawals(): array {
       1000
     );
     if (!is_array($sbCached)) $sbCached = [];
-    admin_cache_set('wd_sb', $sbCached);
+    admin_cache_set('wd_sb2', $sbCached);
   }
   foreach ($sbCached as $w) {
     if (!is_array($w)) continue;
     $put(admin_wd_norm($w));
   }
 
-  $txCached = admin_cache_get('wd_tx', 30);
-  if (!is_array($txCached)) {
-    $txCached = admin_sb_all(
-      'transactions',
-      'id,user_id,type,amount,note,mode,created_at',
-      'created_at.desc',
-      1000,
-      'type=in.(withdraw,withdrawal,payout,retrait)'
-    );
-    if (!is_array($txCached)) $txCached = [];
-    admin_cache_set('wd_tx', $txCached);
-  }
-  foreach ($txCached as $tx) {
+  foreach (admin_sb_withdraw_txs() as $tx) {
     if (!is_array($tx)) continue;
-    $typ = strtolower((string) ($tx['type'] ?? ''));
-    if (!in_array($typ, ['withdraw', 'withdrawal', 'payout', 'retrait'], true)) continue;
     if (!isset($tx['status']) || $tx['status'] === '') $tx['status'] = 'pending';
     $put(admin_wd_norm($tx, (string) ($tx['id'] ?? '')));
   }
@@ -953,7 +1176,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx'] as $k) {
+  foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

@@ -97,9 +97,10 @@ function admin_page(array $rows, array $req): array {
 }
 
 function admin_user_lookup(string $id, array $pmap): array {
-  if (isset($pmap[$id])) return $pmap[$id];
+  if ($id !== '' && isset($pmap[$id])) return $pmap[$id];
   foreach ($pmap as $p) {
-    if ((string) ($p['publicId'] ?? '') === $id) return $p;
+    if ($id !== '' && (string) ($p['publicId'] ?? '') === $id) return $p;
+    if ($id !== '' && (string) ($p['id'] ?? '') === $id) return $p;
   }
   return ['id' => $id, 'publicId' => $id, 'email' => '', 'name' => '', 'phone' => ''];
 }
@@ -428,11 +429,7 @@ function admin_list_payload(string $view, array $req): array {
     $q = strtolower(trim((string) ($req['q'] ?? '')));
     $preset = (string) ($req['preset'] ?? 'all');
     foreach ($list as $w) {
-      $u = admin_user_lookup((string) $w['userId'], $pmap);
-      $w['email'] = (string) ($w['email'] ?? $u['email'] ?? '');
-      $w['publicId'] = (string) ($u['publicId'] ?? '');
-      $w['name'] = (string) ($w['name'] ?? $u['name'] ?? '');
-      $w['phone'] = (string) ($w['phone'] ?? $u['phone'] ?? '');
+      $w = admin_enrich_wd($w, $pmap);
       if ($q !== '' && !admin_match_q($w, $q)) continue;
       if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '') {
         $tmp = admin_apply_filters([$w], $req, 'createdAt');
@@ -444,14 +441,16 @@ function admin_list_payload(string $view, array $req): array {
     [$slice, $total, $page, $pages] = admin_page($enriched, $req);
     foreach ($slice as $w) {
       $open = admin_wd_is_open($w);
+      $method = admin_method_label(admin_fill((string) ($w['operator'] ?? '')));
+      $dest = admin_fill((string) ($w['phone'] ?? ''));
       $rows[] = [
         'cells' => [
           (string) $w['id'],
           (string) ($w['publicId'] ?? ''),
           (string) ($w['email'] ?? ''),
           admin_money($w['amount']),
-          (string) ($w['operator'] ?? '—'),
-          (string) ($w['phone'] ?? '—'),
+          $method !== '' ? $method : '—',
+          $dest !== '' ? $dest : '—',
           (string) ($w['status'] ?? ''),
           substr((string) ($w['createdAt'] ?? ''), 0, 16),
           (string) ($w['reason'] ?? '—'),
@@ -462,9 +461,8 @@ function admin_list_payload(string $view, array $req): array {
         'pending' => $open,
       ];
     }
-    $probe = admin_json_probe_public();
-    $summary = $total . ' retrait(s) · ' . admin_money($sum) . ' · ' . (string) ($probe['line'] ?? '');
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'jsonProbe' => $probe];
+    $summary = $total . ' retrait(s) · ' . admin_money($sum);
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions];
   }
 
   if ($view === 'top_winners') {
@@ -604,11 +602,13 @@ function admin_profile_payload(string $uid): array {
   $wds = [];
   foreach (admin_withdrawals() as $w) {
     if ((string) $w['userId'] !== $uid) continue;
+    $w = admin_enrich_wd($w, $pmap);
     $wds[] = [
       'id' => $w['id'],
       'amount' => $w['amount'],
       'status' => $w['status'],
-      'method' => $w['operator'],
+      'method' => admin_method_label(admin_fill((string) ($w['operator'] ?? ''))),
+      'phone' => admin_fill((string) ($w['phone'] ?? '')),
       'at' => $w['createdAt'],
       'reason' => $w['reason'] ?? '',
     ];
@@ -680,7 +680,7 @@ if ($isAjax) {
   $me = admin_require();
 
   if ($action === 'badges') {
-    admin_json(['ok' => true, 'badges' => admin_badges(), 'jsonProbe' => admin_json_probe_public()]);
+    admin_json(['ok' => true, 'badges' => admin_badges()]);
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
@@ -907,7 +907,6 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <h1>Super Admin Dashboard</h1>
     <div>
       <span class="muted" id="inscritsHead">Inscrits Supabase : <?php echo (int) $inscritsHead; ?></span>
-      <span class="muted" id="jsonHead" style="display:block;margin-top:6px;max-width:520px;font-size:.78rem;line-height:1.35"><?php echo admin_esc((string) (admin_json_probe_public()['line'] ?? '')); ?></span>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
   </header>
@@ -1038,9 +1037,6 @@ async function loadBadges() {
   if (!j.ok) return;
   renderButtons(j.badges || {});
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits';
-  if (j.jsonProbe && j.jsonProbe.line) {
-    document.getElementById('jsonHead').textContent = j.jsonProbe.line;
-  }
 }
 async function loadList() {
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
@@ -1113,7 +1109,7 @@ async function openUser(uid) {
     '<button class="mini ok" id="btnCredit">Créditer</button> <button class="mini bad" id="btnDebit">Débiter</button> '+
     '<button class="mini bad" id="btnSuspend">Suspendre le compte</button></p>'+
     tbl('Dépôts', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+d.method+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td></tr>')+
-    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Statut','Date','Motif'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+d.method+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td><td>'+(d.reason||'')+'</td></tr>')+
+    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+(d.method||'—')+'</td><td>'+(d.phone||'—')+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td><td>'+(d.reason||'')+'</td></tr>')+
     tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+d.game+'</td><td>'+d.stake+'</td><td>'+d.net+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':d.mode)+'</td><td>'+(d.at||'')+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
   const go = async (delta) => {
