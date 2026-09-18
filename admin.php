@@ -846,6 +846,7 @@ function admin_profile_payload(string $uid): array {
   $wds = [];
   foreach (admin_withdrawals() as $w) {
     if ((string) $w['userId'] !== $uid) continue;
+    if (admin_wd_is_silenced($w)) continue;
     $w = admin_enrich_wd($w, $pmap);
     $wds[] = [
       'id' => $w['id'],
@@ -958,16 +959,17 @@ if ($isAjax) {
   if ($action === 'suspend') {
     $uid = (string) ($req['userId'] ?? '');
     if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur manquant']);
-    $hdrs = supabase_admin_headers();
-    if ($hdrs) {
-      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($uid), [], 'PATCH', json_encode(['role' => 'suspended']));
-    }
     $db = admin_local_db();
-    if (isset($db['users'][$uid])) {
-      $db['users'][$uid]['role'] = 'suspended';
-    }
-    admin_kill_user_sessions($db, $uid);
-    orolado_revoke_user_sessions($db, $uid);
+    orolado_force_suspend($db, $uid, 'suspended');
+    save_db(orolado_data_file(), $db);
+    admin_bust_cache();
+    admin_json(['ok' => true]);
+  }
+  if ($action === 'delete_user') {
+    $uid = (string) ($req['userId'] ?? '');
+    if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur manquant']);
+    $db = admin_local_db();
+    orolado_force_delete_account($db, $uid);
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
     admin_json(['ok' => true]);
@@ -980,43 +982,60 @@ if ($isAjax) {
       admin_json(['ok' => false, 'reason' => 'Action invalide']);
     }
     $db = admin_local_db();
-    $uid = '';
-    foreach (($db['withdrawals'] ?? []) as $i => $w) {
-      if ((string) ($w['id'] ?? '') !== $id) continue;
-      $uid = (string) ($w['userId'] ?? '');
-      if ($act === 'silent') {
-        $db['withdrawals'][$i]['status'] = 'silenced';
-        $db['withdrawals'][$i]['adminHidden'] = true;
-        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
-      } else if ($act === 'suspend') {
-        $db['withdrawals'][$i]['status'] = 'review';
-        $db['withdrawals'][$i]['suspect'] = true;
-        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
-        if ($uid !== '' && isset($db['users'][$uid])) $db['users'][$uid]['role'] = 'suspended';
-        if ($uid !== '') {
-          admin_kill_user_sessions($db, $uid);
-          orolado_revoke_user_sessions($db, $uid);
-        }
-      } else if ($act === 'approve') {
-        $db['withdrawals'][$i]['status'] = 'approved';
-        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
-      } else {
-        $db['withdrawals'][$i]['status'] = 'rejected';
-        if ($motif !== '') $db['withdrawals'][$i]['reason'] = $motif;
+    $found = admin_find_wd_row($id);
+    $uid = $found ? (string) ($found['userId'] ?? '') : '';
+    $amt = $found ? abs((float) ($found['amount'] ?? 0)) : 0;
+    $row = $found ?: [
+      'id' => $id,
+      'userId' => $uid,
+      'amount' => $amt,
+      'status' => 'pending',
+      'at' => date('c'),
+    ];
+    foreach (($db['withdrawals'] ?? []) as $local) {
+      if (!is_array($local)) continue;
+      if ((string) ($local['id'] ?? '') === $id || (string) ($local['reference'] ?? '') === $id) {
+        $row = array_merge($row, $local);
+        if ($uid === '') $uid = (string) ($local['userId'] ?? '');
+        break;
       }
-      break;
     }
+    $row['id'] = $id;
+    if ($uid !== '') $row['userId'] = $uid;
+    if ($amt > 0) $row['amount'] = $amt;
+    if ($motif !== '') $row['reason'] = $motif;
+
+    if ($act === 'approve') {
+      $row['status'] = 'approved';
+      $row['playerHidden'] = false;
+      $row['adminHidden'] = false;
+    } else if ($act === 'reject') {
+      $row['status'] = 'rejected';
+      orolado_refund_wd_once($db, $row);
+    } else if ($act === 'silent') {
+      $row['status'] = 'silenced';
+      $row['adminHidden'] = true;
+      $row['playerHidden'] = true;
+      orolado_refund_wd_once($db, $row);
+    } else {
+      $row['status'] = 'review';
+      $row['suspect'] = true;
+      if ($uid !== '') orolado_force_suspend($db, $uid, 'suspended');
+    }
+
+    admin_upsert_local_wd($db, $row);
     $hdrs = supabase_admin_headers();
     if ($hdrs && $act !== 'suspend') {
       $st = $act === 'approve' ? 'approved' : ($act === 'silent' ? 'silenced' : 'rejected');
-      admin_sb_req('/rest/v1/withdrawals?id=eq.' . rawurlencode($id), [], 'PATCH', json_encode(['status' => $st]));
-    }
-    if ($act === 'suspend' && $uid !== '' && $hdrs) {
-      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($uid), [], 'PATCH', json_encode(['role' => 'suspended']));
+      $patch = ['status' => $st];
+      admin_sb_req('/rest/v1/withdrawals?id=eq.' . rawurlencode($id), [], 'PATCH', json_encode($patch));
+      admin_sb_req('/rest/v1/withdrawals?reference=eq.' . rawurlencode($id), [], 'PATCH', json_encode($patch));
+      $txNote = $act === 'silent' ? 'silenced' : $st;
+      admin_sb_req('/rest/v1/transactions?id=eq.' . rawurlencode($id), [], 'PATCH', json_encode(['note' => $txNote]));
     }
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
-    admin_json(['ok' => true]);
+    admin_json(['ok' => true, 'refunded' => !empty($row['refunded']), 'status' => $row['status'] ?? '']);
   }
   if ($action === 'mark_msg') {
     $id = (string) ($req['id'] ?? '');
@@ -1397,8 +1416,8 @@ async function loadList() {
       return;
     }
     let motif = '';
-    if (act === 'reject') motif = prompt('Motif du rejet (le solde n’est PAS recrédité) :','') || '';
-    if (act === 'silent' && !confirm('Masquer ce retrait sans prévenir le joueur et sans recréditer ?')) return;
+    if (act === 'reject') motif = prompt('Motif du rejet (le montant sera recrédité sur le solde du joueur) :','') || '';
+    if (act === 'silent' && !confirm('Masquer définitivement cette demande. Si le solde a déjà été débité, il sera recrédité une seule fois.')) return;
     if (act === 'suspend' && !confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     const a = kind === 'wd' ? 'resolve_wd' : 'resolve_dep';
     const r = await ajax({action:a, id, act, motif});
@@ -1424,7 +1443,8 @@ async function openUser(uid) {
     '<p>Solde réel : <strong>'+u.real+' $</strong> · Source : '+(u.traffic||'direct')+' · Rôle : '+(u.role||'user')+'</p>'+
     '<p><input id="adjAmt" type="number" step="0.01" placeholder="Montant $" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer</button> <button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre le compte</button></p>'+
+    '<button class="mini bad" id="btnSuspend">Suspendre le compte</button> '+
+    '<button class="mini bad" id="btnDeleteUser">Supprimer le compte</button></p>'+
     tbl('Dépôts', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+d.method+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+(d.method||'—')+'</td><td>'+(d.phone||'—')+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td><td>'+(d.reason||'')+'</td></tr>')+
     tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+d.game+'</td><td>'+d.stake+'</td><td>'+d.net+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':d.mode)+'</td><td>'+(d.at||'')+'</td></tr>');
@@ -1440,8 +1460,16 @@ async function openUser(uid) {
   document.getElementById('btnDebit').onclick = () => go(-1);
   document.getElementById('btnSuspend').onclick = async () => {
     if (!confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
-    await ajax({action:'suspend', userId:u.id});
-    openUser(u.id);
+    const r = await ajax({action:'suspend', userId:u.id});
+    if (!r.ok) alert(r.reason || 'Échec');
+    else openUser(u.id);
+  };
+  document.getElementById('btnDeleteUser').onclick = async () => {
+    if (!confirm('Supprimer définitivement ce compte, détruire ses sessions et lui interdire toute reconnexion ?')) return;
+    const r = await ajax({action:'delete_user', userId:u.id});
+    if (!r.ok) alert(r.reason || 'Échec');
+    else document.getElementById('userModal').classList.remove('on');
+    loadBadges(); loadList();
   };
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');

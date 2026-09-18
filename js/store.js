@@ -600,17 +600,37 @@
     },
 
     listWithdrawals: function () {
-      return (db.withdrawals || []).slice();
+      return (db.withdrawals || []).filter(function (w) {
+        var st = String((w && w.status) || '').toLowerCase();
+        if (!w) return false;
+        if (w.adminHidden || w.playerHidden) return false;
+        if (st === 'silenced' || st === 'silent' || st === 'hidden' || st === 'deleted') return false;
+        return true;
+      });
     },
 
     resolveWithdraw: function (id, approve, act) {
       var list = db.withdrawals || [];
       var action = String(act || (approve ? 'approve' : 'reject'));
       var i;
+      function refundOnce(row) {
+        if (!row || row.refunded || row.refundedAt) return;
+        var uid = row.userId;
+        var amt = Math.abs(Number(row.amount) || 0);
+        var u = uid && db.users ? db.users[uid] : null;
+        if (u && amt > 0 && vault[uid]) {
+          vault[uid].real = D6.roundMoney((Number(vault[uid].real) || 0) + amt);
+        }
+        row.refunded = true;
+        row.refundedAt = D6.nowIso ? D6.nowIso() : new Date().toISOString();
+      }
       for (i = 0; i < list.length; i++) {
         if (list[i].id !== id) continue;
         if (action === 'silent') {
+          list[i].status = 'silenced';
           list[i].adminHidden = true;
+          list[i].playerHidden = true;
+          refundOnce(list[i]);
           persist();
           return list[i];
         }
@@ -622,6 +642,7 @@
           return list[i];
         }
         list[i].status = (action === 'approve' || approve === true || approve === '1') ? 'approved' : 'rejected';
+        if (list[i].status === 'rejected') refundOnce(list[i]);
         persist();
         return list[i];
       }

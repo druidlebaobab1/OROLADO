@@ -482,6 +482,42 @@
     return /anti-bot|slow down|ralentissez|limite atteinte|10 trades max/i.test(s);
   }
 
+  var bannedKickLock = false;
+  function isBannedPayload(r) {
+    return !!(r && (r.banned || r.kind === 'suspended' || r.kind === 'deleted'));
+  }
+  function hardLogout(msg) {
+    if (bannedKickLock) return;
+    bannedKickLock = true;
+    if (msg) toast(msg, 'err', 10000);
+    try { if (D6.Chart && D6.Chart.stop) D6.Chart.stop(); } catch (eStop) { /* ignore */ }
+    Promise.resolve()
+      .then(function () {
+        if (D6.Auth && D6.Auth.logout) return D6.Auth.logout();
+        if (D6.Supabase && D6.Supabase.signOut) return D6.Supabase.signOut();
+      })
+      .catch(function () { /* ignore */ })
+      .then(function () {
+        try { ensureGuest(); enterApp(); } catch (eEnt) { /* ignore */ }
+        bannedKickLock = false;
+      });
+  }
+  function watchBan(r) {
+    if (!isBannedPayload(r)) return false;
+    hardLogout(r.reason || 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.');
+    return true;
+  }
+  var banWatchTimer = 0;
+  function startBanWatch() {
+    if (banWatchTimer) return;
+    banWatchTimer = setInterval(function () {
+      var u = user();
+      if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
+      if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
+      D6.Api.post('me', {}).then(function (r) { watchBan(r); }).catch(function () { /* ignore */ });
+    }, 4000);
+  }
+
   function toast(msg, kind, ms) {
     if (isSilentTradeMsg(msg)) return;
     var el = $('toast');
@@ -2130,6 +2166,10 @@
       };
       if (settleMode === 'demo') settleBody.balanceAfter = D6.Store.demoBalance(uSettled);
       D6.Api.post('settleOrder', settleBody).then(function (remote) {
+        if (watchBan(remote)) {
+          D6.holdRemote = false;
+          return;
+        }
         if (remote && remote.ok && remote.vault && settleMode === 'real') {
           adoptSettledVault(remote.vault, 'real');
           updateBalance(true);
@@ -2248,6 +2288,7 @@
         payout: res.trade.payout || currentOdds(u)
       };
       D6.Api.post('placeOrder', placeBody).then(function (remote) {
+        if (watchBan(remote)) return;
         if (remote && remote.ok) {
           if (mode === 'real' && remote.vault && remote.vault.real != null) {
             applyOfficialReal(remote.vault.real);
@@ -3494,6 +3535,7 @@
     if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
+      if (watchBan(remote)) return;
       if (remote && remote.ok && remote.vault && user()) {
         adoptOfficialVault(remote.vault);
         updateBalance(false);
@@ -3808,8 +3850,18 @@
     return kind === 'deposit' ? t('txDeposit') : t('txWithdraw');
   }
 
+  function isHiddenFinanceWithdraw(w) {
+    if (!w) return true;
+    var st = String(w.status || w.note || '').toLowerCase();
+    if (w.adminHidden || w.playerHidden) return true;
+    return st === 'silenced' || st === 'silent' || st === 'hidden' || st === 'deleted';
+  }
+
   function normFinanceStatus(raw, kind) {
     var s = String(raw || '').toUpperCase();
+    if (s === 'SILENCED' || s === 'SILENT' || s === 'HIDDEN' || s === 'DELETED') {
+      return { code: 'HIDDEN', label: '', cls: 'pending' };
+    }
     if (s === 'PAID' || s === 'APPROVED' || s === 'SUCCESS' || s === 'COMPLETED' || s === 'OK' || s === 'VALIDÉ' || s === 'VALIDE') {
       return { code: 'COMPLETED', label: t('txValidated'), cls: 'ok' };
     }
@@ -3846,6 +3898,7 @@
   function renderFinanceRows(tx, rows) {
     var seen = {};
     rows = rows.filter(function (r) {
+      if (isHiddenFinanceWithdraw(r) || (r.status && r.status.code === 'HIDDEN')) return false;
       var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '') + '|' + r.label;
       if (seen[k]) return false;
       seen[k] = 1;
@@ -3883,6 +3936,7 @@
     }
     (D6.Store.listWithdrawals ? D6.Store.listWithdrawals() : []).forEach(function (w) {
       if (!u || w.userId !== u.id) return;
+      if (isHiddenFinanceWithdraw(w)) return;
       rows.push({
         at: w.at || '',
         ref: w.id || '—',
@@ -3923,6 +3977,7 @@
           });
         });
         (cloud.withdrawals || []).forEach(function (w) {
+          if (isHiddenFinanceWithdraw(w)) return;
           rows.push({
             at: w.created_at || w.at || '',
             ref: w.id || w.reference || '—',
@@ -3935,6 +3990,7 @@
         (cloud.txs || []).forEach(function (trow) {
           var typ = String(trow.type || '');
           if (typ !== 'deposit' && typ !== 'withdraw') return;
+          if (isHiddenFinanceWithdraw(trow)) return;
           rows.push({
             at: trow.created_at || '',
             ref: trow.id || '—',
@@ -4983,6 +5039,7 @@
       var createdId = '';
       if (D6.Api && D6.Api.token()) {
         var remote = await D6.Api.post('withdraw', payload);
+        if (watchBan(remote)) return;
         if (remote && remote.server && !remote.ok) { toast(remote.reason, 'err'); return; }
         if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault);
         else {
@@ -5312,6 +5369,7 @@
         }
       });
       refreshRemoteVault();
+      startBanWatch();
       checkDepositReturn();
       syncTradeButtons();
       startAdminPresence();

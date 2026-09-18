@@ -95,7 +95,7 @@ function maketou_log_request(string $event): void {
 }
 
 function blank_db(): array {
-  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => [], 'support_messages' => [], 'admin_logs' => [], 'currency' => 'USD'];
+  return ['users' => [], 'vault' => [], 'withdrawals' => [], 'sessions' => [], 'orders' => [], 'deposits' => [], 'processedTx' => [], 'support_messages' => [], 'admin_logs' => [], 'bans' => [], 'currency' => 'USD'];
 }
 
 /** Montants plateforme en USD (2 décimales). */
@@ -395,6 +395,178 @@ function supabase_set_real(string $userId, $amount): void {
   );
 }
 
+function orolado_blocked_roles(): array {
+  return ['suspended', 'banned', 'deleted'];
+}
+
+function orolado_block_message(string $kind): string {
+  if ($kind === 'deleted') {
+    return 'Ce compte a été fermé définitivement. Contactez le support Orolado si vous pensez qu’il s’agit d’une erreur.';
+  }
+  return 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.';
+}
+
+function orolado_block_payload(string $kind = 'suspended'): array {
+  $kind = $kind === 'deleted' ? 'deleted' : 'suspended';
+  return [
+    'ok' => false,
+    'server' => true,
+    'banned' => true,
+    'kind' => $kind,
+    'reason' => orolado_block_message($kind),
+  ];
+}
+
+function orolado_user_block_kind(array $db, string $uid): string {
+  if ($uid === '') return '';
+  $ban = $db['bans'][$uid] ?? null;
+  if (is_array($ban)) {
+    return strtolower((string) ($ban['kind'] ?? 'suspended')) === 'deleted' ? 'deleted' : 'suspended';
+  }
+  if (is_string($ban) && $ban !== '') {
+    return strtolower($ban) === 'deleted' ? 'deleted' : 'suspended';
+  }
+  $role = strtolower((string) (($db['users'][$uid]['role'] ?? '')));
+  if ($role === 'deleted') return 'deleted';
+  if (in_array($role, ['suspended', 'banned'], true)) return 'suspended';
+  return '';
+}
+
+function supabase_admin_profile_role(string $userId): string {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $userId === '') return '';
+  $rows = supabase_http(
+    supabase_project_url() . '/rest/v1/profiles?id=eq.' . rawurlencode($userId) . '&select=role',
+    $hdrs,
+    null,
+    'GET'
+  );
+  if (!is_array($rows) || !isset($rows[0]) || !is_array($rows[0])) return '';
+  return strtolower(trim((string) ($rows[0]['role'] ?? '')));
+}
+
+function supabase_force_logout(string $userId): void {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $userId === '') return;
+  $url = rtrim(supabase_project_url(), '/');
+  supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId) . '/logout', $hdrs, '{}', 'POST');
+  supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId), $hdrs, json_encode(['ban_duration' => '876000h']), 'PUT');
+}
+
+function supabase_admin_delete_auth(string $userId): void {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs || $userId === '') return;
+  supabase_http(rtrim(supabase_project_url(), '/') . '/auth/v1/admin/users/' . rawurlencode($userId), $hdrs, null, 'DELETE');
+}
+
+function orolado_force_suspend(array &$db, string $uid, string $kind = 'suspended'): void {
+  if ($uid === '' || $uid === 'admin_master') return;
+  $kind = $kind === 'deleted' ? 'deleted' : 'suspended';
+  if (!isset($db['bans']) || !is_array($db['bans'])) $db['bans'] = [];
+  $db['bans'][$uid] = ['at' => date('c'), 'kind' => $kind];
+  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+    $db['users'][$uid]['role'] = $kind;
+  }
+  if (function_exists('admin_kill_user_sessions')) {
+    admin_kill_user_sessions($db, $uid);
+  }
+  orolado_revoke_user_sessions($db, $uid);
+  $hdrs = supabase_admin_headers();
+  if ($hdrs) {
+    supabase_http(
+      rtrim(supabase_project_url(), '/') . '/rest/v1/profiles?id=eq.' . rawurlencode($uid),
+      $hdrs,
+      json_encode(['role' => $kind]),
+      'PATCH'
+    );
+  }
+  supabase_force_logout($uid);
+}
+
+function orolado_force_delete_account(array &$db, string $uid): void {
+  if ($uid === '' || $uid === 'admin_master') return;
+  orolado_force_suspend($db, $uid, 'deleted');
+  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+    $suffix = substr(preg_replace('/[^a-f0-9]/i', '', $uid) ?: md5($uid), 0, 12);
+    $db['users'][$uid]['email'] = 'deleted+' . $suffix . '@orolado.invalid';
+    $db['users'][$uid]['displayName'] = 'Compte fermé';
+    $db['users'][$uid]['passwordHash'] = '';
+    $db['users'][$uid]['password'] = '';
+    $db['users'][$uid]['phone'] = '';
+  }
+  supabase_admin_delete_auth($uid);
+}
+
+function orolado_token_user_id(array $db, ?string $token): string {
+  $token = trim((string) $token);
+  if ($token === '') return '';
+  if (isset($db['sessions'][$token]) && is_array($db['sessions'][$token])) {
+    return (string) ($db['sessions'][$token]['userId'] ?? '');
+  }
+  $sb = supabase_fetch_auth_user($token);
+  return ($sb && !empty($sb['id'])) ? (string) $sb['id'] : '';
+}
+
+function orolado_session_inspect(array &$db, ?string $token): array {
+  $me = orolado_session_user($db, $token);
+  if ($me) return ['ok' => true, 'user' => $me];
+  $uid = orolado_token_user_id($db, $token);
+  if ($uid === '') return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+  $kind = orolado_user_block_kind($db, $uid);
+  if ($kind === '') {
+    $sbRole = supabase_admin_profile_role($uid);
+    if (in_array($sbRole, orolado_blocked_roles(), true)) {
+      $kind = $sbRole === 'deleted' ? 'deleted' : 'suspended';
+    }
+  }
+  if ($kind !== '') return orolado_block_payload($kind);
+  return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
+}
+
+/** Aligne Supabase sur le grand livre JSON sans jamais écraser un solde plus élevé côté dépôt. */
+function orolado_sync_official_real(string $uid, float $jsonReal): float {
+  $jsonReal = orolado_money($jsonReal);
+  $sb = supabase_admin_vault($uid);
+  $sbReal = $sb ? orolado_money($sb['real'] ?? 0) : null;
+  if ($sbReal === null) return $jsonReal;
+  if ($jsonReal > $sbReal + 0.009) {
+    supabase_set_real($uid, $jsonReal);
+    return $jsonReal;
+  }
+  return $sbReal;
+}
+
+function orolado_trade_credit(bool $won, bool $voided, float $stake, float $payout): float {
+  if ($voided) return orolado_money($stake);
+  if ($won) return orolado_money($stake * $payout);
+  return 0.0;
+}
+
+function orolado_wd_is_hidden_from_player(array $w): bool {
+  $st = strtolower(trim((string) ($w['status'] ?? '')));
+  return !empty($w['adminHidden']) || !empty($w['playerHidden'])
+    || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
+}
+
+function orolado_refund_wd_once(array &$db, array &$w): bool {
+  if (!empty($w['refundedAt']) || !empty($w['refunded'])) return false;
+  $uid = (string) ($w['userId'] ?? $w['user_id'] ?? '');
+  $amt = orolado_money(abs((float) ($w['amount'] ?? 0)));
+  if ($uid === '' || $amt <= 0) {
+    $w['refundedAt'] = date('c');
+    $w['refunded'] = true;
+    return false;
+  }
+  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  }
+  $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amt);
+  supabase_credit_real($uid, $amt, false);
+  $w['refundedAt'] = date('c');
+  $w['refunded'] = true;
+  return true;
+}
+
 function supabase_insert_deposit(array $row): void {
   $hdrs = supabase_admin_headers();
   if (!$hdrs) return;
@@ -555,17 +727,33 @@ function orolado_session_user(array &$db, ?string $token): ?array {
   if ($token === '') return null;
   if (!isset($db['sessions']) || !is_array($db['sessions'])) $db['sessions'] = [];
   if (!isset($db['users']) || !is_array($db['users'])) $db['users'] = [];
+  if (!isset($db['bans']) || !is_array($db['bans'])) $db['bans'] = [];
   foreach ($db['sessions'] as $sid => $sess) {
     if ($sid !== $token) continue;
     $uid = (string) ($sess['userId'] ?? '');
     if ($uid === '' || !isset($db['users'][$uid])) return null;
+    if (orolado_user_block_kind($db, $uid) !== '') return null;
     $me = $db['users'][$uid];
-    if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned'], true)) return null;
+    if (in_array(strtolower((string) ($me['role'] ?? '')), orolado_blocked_roles(), true)) return null;
     return $me;
   }
   $sb = supabase_fetch_auth_user($token);
   if (!$sb || empty($sb['id'])) return null;
   $id = (string) $sb['id'];
+  $kind = orolado_user_block_kind($db, $id);
+  if ($kind === '' && !isset($db['users'][$id])) {
+    $sbRole = supabase_admin_profile_role($id);
+    if (in_array($sbRole, orolado_blocked_roles(), true)) {
+      $kind = $sbRole === 'deleted' ? 'deleted' : 'suspended';
+    }
+  }
+  if ($kind !== '') {
+    $db['bans'][$id] = ['at' => date('c'), 'kind' => $kind];
+    if (isset($db['users'][$id]) && is_array($db['users'][$id])) {
+      $db['users'][$id]['role'] = $kind;
+    }
+    return null;
+  }
   if (!isset($db['users'][$id])) {
     $email = strtolower((string) ($sb['email'] ?? ''));
     $meta = is_array($sb['user_metadata'] ?? null) ? $sb['user_metadata'] : [];
@@ -595,7 +783,8 @@ function orolado_session_user(array &$db, ?string $token): ?array {
   }
   if ($id === '' || !isset($db['users'][$id])) return null;
   $me = $db['users'][$id];
-  if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned'], true)) return null;
+  if (orolado_user_block_kind($db, $id) !== '') return null;
+  if (in_array(strtolower((string) ($me['role'] ?? '')), orolado_blocked_roles(), true)) return null;
   return $me;
 }
 

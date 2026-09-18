@@ -539,7 +539,8 @@ function admin_walk_local_wds($node, string $path, callable $push, int $depth): 
 
 function admin_wd_is_silenced(array $w): bool {
   $st = strtolower(trim((string) ($w['status'] ?? '')));
-  return !empty($w['adminHidden']) || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
+  return !empty($w['adminHidden']) || !empty($w['playerHidden'])
+    || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
 }
 
 function admin_wd_is_open(array $w): bool {
@@ -796,10 +797,20 @@ function admin_wd_norm(array $w, string $fallbackId = ''): array {
     'reference' => admin_fill((string) ($w['reference'] ?? ''), $id),
     'createdAt' => (string) ($w['at'] ?? $w['createdAt'] ?? $w['created_at'] ?? $w['date'] ?? ''),
     'reason' => (string) ($w['playerNote'] ?? $w['reason'] ?? $w['motif'] ?? $w['note'] ?? ''),
-    'adminHidden' => !empty($w['adminHidden']),
+    'adminHidden' => !empty($w['adminHidden']) || !empty($w['playerHidden']),
+    'playerHidden' => !empty($w['playerHidden']) || !empty($w['adminHidden']),
+    'refundedAt' => (string) ($w['refundedAt'] ?? ''),
+    'refunded' => !empty($w['refunded']) || !empty($w['refundedAt']),
     'name' => admin_fill((string) ($w['name'] ?? ''), (string) ($w['beneficiary'] ?? '')),
     'email' => (string) ($w['email'] ?? ''),
   ];
+}
+
+function admin_wd_status_rank(array $w): int {
+  if (admin_wd_is_silenced($w) || !empty($w['playerHidden'])) return 40;
+  if (admin_wd_is_paid($w)) return 30;
+  if (admin_wd_is_rejected($w)) return 20;
+  return 10;
 }
 
 function admin_wd_merge_into(array &$dst, array $src): void {
@@ -808,9 +819,38 @@ function admin_wd_merge_into(array &$dst, array $src): void {
       $dst[$k] = $src[$k];
     }
   }
-  if (admin_wd_is_open($src) && !admin_wd_is_open($dst)) {
+  if (!empty($src['adminHidden'])) $dst['adminHidden'] = true;
+  if (!empty($src['playerHidden'])) $dst['playerHidden'] = true;
+  if (!empty($src['refundedAt'])) $dst['refundedAt'] = $src['refundedAt'];
+  if (!empty($src['refunded'])) $dst['refunded'] = true;
+  if (admin_wd_status_rank($src) > admin_wd_status_rank($dst)) {
     $dst['status'] = $src['status'];
   }
+}
+
+function admin_find_wd_row(string $id): ?array {
+  $id = trim($id);
+  if ($id === '') return null;
+  foreach (admin_withdrawals() as $w) {
+    if (!is_array($w)) continue;
+    if ((string) ($w['id'] ?? '') === $id) return $w;
+    if ((string) ($w['reference'] ?? '') === $id) return $w;
+  }
+  return null;
+}
+
+function admin_upsert_local_wd(array &$db, array $row): int {
+  if (!isset($db['withdrawals']) || !is_array($db['withdrawals'])) $db['withdrawals'] = [];
+  $id = (string) ($row['id'] ?? '');
+  foreach ($db['withdrawals'] as $i => $w) {
+    if (!is_array($w)) continue;
+    if ((string) ($w['id'] ?? '') === $id || ($id !== '' && (string) ($w['reference'] ?? '') === $id)) {
+      $db['withdrawals'][$i] = array_merge($w, $row);
+      return (int) $i;
+    }
+  }
+  $db['withdrawals'][] = $row;
+  return count($db['withdrawals']) - 1;
 }
 
 function admin_wd_fingerprint(array $w): string {

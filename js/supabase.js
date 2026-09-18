@@ -289,10 +289,8 @@
       var locked = locks && Date.now() < locks.until;
       if (isFinite(remoteReal) && remoteReal >= 0 && (D6.holdDepositReal || !locked)) {
         next.real = remoteReal;
-        if (D6.holdDepositReal) {
-          var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
-          if (isFinite(localReal) && localReal > next.real) next.real = localReal;
-        }
+        var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
+        if (isFinite(localReal) && localReal > next.real + 0.009) next.real = localReal;
       }
     }
     D6.holdPull = true;
@@ -485,7 +483,18 @@
         if (!sb) return { ok: false, reason: res.error.message === 'Invalid login credentials' ? 'Mot de passe incorrect' : res.error.message, field: 'loginPass' };
         res = await sb.auth.signInWithPassword({ email: email, password: password });
       }
-      if (res.error) return { ok: false, reason: res.error.message === 'Invalid login credentials' ? 'Mot de passe incorrect' : res.error.message, field: 'loginPass' };
+      if (res.error) {
+        var errMsg = String(res.error.message || '');
+        if (/banned|user_banned|forbidden/i.test(errMsg)) {
+          return {
+            ok: false,
+            banned: true,
+            reason: 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.',
+            field: 'loginPass'
+          };
+        }
+        return { ok: false, reason: errMsg === 'Invalid login credentials' ? 'Mot de passe incorrect' : errMsg, field: 'loginPass' };
+      }
       return loadAccount(res.data.user);
     },
 
@@ -528,10 +537,15 @@
         txP.then(function (r) { return r; }).catch(function () { return { data: [] }; }),
         wdP.then(function (r) { return r; }).catch(function () { return { data: [] }; })
       ]);
+      function hideSilent(row) {
+        if (!row) return false;
+        var st = String(row.status || row.note || '').toLowerCase();
+        return st === 'silenced' || st === 'silent' || st === 'hidden' || st === 'deleted';
+      }
       return {
-        deposits: (settled[0] && settled[0].data) || [],
-        txs: (settled[1] && settled[1].data) || [],
-        withdrawals: (settled[2] && settled[2].data) || []
+        deposits: ((settled[0] && settled[0].data) || []).filter(function (d) { return !hideSilent(d); }),
+        txs: ((settled[1] && settled[1].data) || []).filter(function (t) { return !hideSilent(t); }),
+        withdrawals: ((settled[2] && settled[2].data) || []).filter(function (w) { return !hideSilent(w); })
       };
     },
 

@@ -741,14 +741,16 @@ if ($action === 'login') {
       exit;
     }
   }
-  $banRole = strtolower((string) ($user['role'] ?? ''));
-  if (in_array($banRole, ['suspended', 'banned'], true)) {
-    echo json_encode([
-      'ok' => false,
-      'server' => true,
-      'banned' => true,
-      'reason' => 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.'
-    ]);
+  $banUid = (string) ($user['id'] ?? '');
+  $banKind = orolado_user_block_kind($db, $banUid);
+  if ($banKind === '') {
+    $banRole = strtolower((string) ($user['role'] ?? ''));
+    if (in_array($banRole, orolado_blocked_roles(), true)) {
+      $banKind = $banRole === 'deleted' ? 'deleted' : 'suspended';
+    }
+  }
+  if ($banKind !== '') {
+    echo json_encode(orolado_block_payload($banKind));
     exit;
   }
   $tok = make_token($user['id'], $SECRET);
@@ -1052,13 +1054,17 @@ if ($action === 'resolveMessage') {
 }
 
 if ($action === 'withdraw') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+  $st = orolado_session_inspect($db, $token);
+  if (empty($st['ok'])) {
+    echo json_encode($st);
     exit;
   }
+  $me = $st['user'];
   $amount = orolado_money($req['amount'] ?? 0);
-  $real = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
+  $sbVault = supabase_admin_vault((string) $me['id']);
+  $real = $sbVault
+    ? orolado_money($sbVault['real'] ?? 0)
+    : orolado_money($db['vault'][$me['id']]['real'] ?? 0);
   $operatorEarly = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? '')));
   $minWithdraw = function_exists('orolado_withdraw_min_for')
     ? orolado_withdraw_min_for($operatorEarly)
@@ -1112,7 +1118,14 @@ if ($action === 'withdraw') {
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
   $amountFcfa = orolado_usd_to_fcfa($amount);
-  $db['vault'][$me['id']]['real'] = orolado_money($real - $amount);
+  if ($sbVault && !supabase_debit_real((string) $me['id'], $amount)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+    exit;
+  }
+  $after = $sbVault ? supabase_admin_vault((string) $me['id']) : null;
+  $db['vault'][$me['id']]['real'] = $after
+    ? orolado_money($after['real'] ?? 0)
+    : orolado_money($real - $amount);
   $wdId = uniqid('wd_', true);
   $db['withdrawals'][] = [
     'id' => $wdId,
@@ -1148,7 +1161,10 @@ if ($action === 'resolveWithdraw') {
   foreach ($db['withdrawals'] as &$w) {
     if (($w['id'] ?? '') !== $id) continue;
     if ($act === 'silent') {
+      $w['status'] = 'silenced';
       $w['adminHidden'] = true;
+      $w['playerHidden'] = true;
+      orolado_refund_wd_once($db, $w);
       save_db($file, $db);
       echo json_encode(['ok' => true, 'server' => true, 'act' => 'silent']);
       exit;
@@ -1164,6 +1180,7 @@ if ($action === 'resolveWithdraw') {
     }
     $approve = ($act === 'approve');
     $w['status'] = $approve ? 'approved' : 'rejected';
+    if (!$approve) orolado_refund_wd_once($db, $w);
     save_db($file, $db);
     echo json_encode(['ok' => true, 'server' => true, 'act' => $act]);
     exit;
@@ -1173,11 +1190,12 @@ if ($action === 'resolveWithdraw') {
 }
 
 if ($action === 'placeOrder') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+  $stSess = orolado_session_inspect($db, $token);
+  if (empty($stSess['ok'])) {
+    echo json_encode($stSess);
     exit;
   }
+  $me = $stSess['user'];
   $stake = orolado_money($req['stake'] ?? 0);
   $side = (($req['side'] ?? '') === 'put') ? 'put' : 'call';
   $duration = (int) ($req['duration'] ?? 10);
@@ -1206,15 +1224,17 @@ if ($action === 'placeOrder') {
   $assetId = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($req['assetId'] ?? 'v100'));
   $openPrice = (float) ($req['entryPrice'] ?? $req['openPrice'] ?? 0);
   $officialReal = null;
+  $debitedOfficial = false;
   if ($mode === 'real') {
     $sbVault = supabase_admin_vault($uid);
     if ($already) {
       $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
-    } else {
+    } else if ($sbVault) {
       if (!supabase_debit_real($uid, $stake)) {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
         exit;
       }
+      $debitedOfficial = true;
       $sbVault = supabase_admin_vault($uid);
       $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
     }
@@ -1225,7 +1245,6 @@ if ($action === 'placeOrder') {
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
     foreach ($locked['orders'] as $o) {
       if (($o['id'] ?? '') === $oid) {
-        if ($mode === 'real' && $officialReal !== null) $locked['vault'][$uid]['real'] = $officialReal;
         return [
           'ok' => true,
           'orderId' => $oid,
@@ -1253,8 +1272,16 @@ if ($action === 'placeOrder') {
         return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
       }
       $locked['vault'][$uid]['demo'] = orolado_money($bal - $stake);
-    } else if ($officialReal !== null) {
-      $locked['vault'][$uid]['real'] = $officialReal;
+    } else {
+      $bal = $officialReal !== null
+        ? orolado_money($officialReal)
+        : orolado_money($locked['vault'][$uid]['real'] ?? 0);
+      if ($officialReal === null && $stake > $bal + 0.009) {
+        return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
+      }
+      $locked['vault'][$uid]['real'] = $officialReal !== null
+        ? $bal
+        : orolado_money($bal - $stake);
     }
     if ($mode === 'real' && isset($locked['users'][$uid])) {
       $locked['users'][$uid]['realStakeVolume'] = orolado_money(($locked['users'][$uid]['realStakeVolume'] ?? 0) + $stake);
@@ -1284,24 +1311,30 @@ if ($action === 'placeOrder') {
     return ['ok' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $locked['vault'][$uid]];
   });
   if (empty($placed['ok'])) {
-    if ($mode === 'real' && !$already) {
+    if ($mode === 'real' && !$already && $debitedOfficial) {
       supabase_credit_real($uid, $stake, false);
     }
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $placed['reason'] ?? 'Ordre refusé']);
     exit;
   }
   $outVault = $placed['vault'] ?? ($db['vault'][$uid] ?? ['demo' => 0, 'real' => 0]);
-  if ($mode === 'real' && $officialReal !== null) $outVault['real'] = $officialReal;
+  if ($mode === 'real' && empty($placed['duplicate'])) {
+    $jsonReal = orolado_money($outVault['real'] ?? 0);
+    $outVault['real'] = orolado_sync_official_real($uid, $jsonReal);
+  } else if ($mode === 'real' && $officialReal !== null) {
+    $outVault['real'] = $officialReal;
+  }
   echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $placed['payout'] ?? $payout, 'vault' => $outVault, 'duplicate' => !empty($placed['duplicate'])]);
   exit;
 }
 
 if ($action === 'settleOrder') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+  $stSess = orolado_session_inspect($db, $token);
+  if (empty($stSess['ok'])) {
+    echo json_encode($stSess);
     exit;
   }
+  $me = $stSess['user'];
   $oid = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($req['orderId'] ?? ''));
   $wantWon = array_key_exists('won', $req) ? !empty($req['won']) : null;
   $voided = !empty($req['voided']);
@@ -1362,13 +1395,16 @@ if ($action === 'settleOrder') {
       } else {
         $won = $voided ? false : ($wantWon !== null ? $wantWon : !empty($o['won']));
       }
-      $credit = $voided ? $stake : ($won ? orolado_money($stake * $payout) : 0);
+      $credit = orolado_trade_credit($won, $voided, $stake, $payout);
       $net = $voided ? 0 : ($won ? orolado_money($credit - $stake) : orolado_money(-$stake));
       $final = $voided ? 'void' : ($won ? 'won' : 'lost');
       if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
-      if ($mode === 'demo') {
-        if ($credit > 0) $locked['vault'][$uid]['demo'] = orolado_money(($locked['vault'][$uid]['demo'] ?? 0) + $credit);
-        if ($reqBal !== null) $locked['vault'][$uid]['demo'] = $reqBal;
+      $balKey = $mode === 'real' ? 'real' : 'demo';
+      if ($credit > 0) {
+        $locked['vault'][$uid][$balKey] = orolado_money(($locked['vault'][$uid][$balKey] ?? 0) + $credit);
+      }
+      if ($mode === 'demo' && $reqBal !== null && $reqBal + 0.009 >= orolado_money($locked['vault'][$uid]['demo'] ?? 0)) {
+        $locked['vault'][$uid]['demo'] = $reqBal;
       }
       $o['won'] = $won;
       $o['voided'] = $voided;
@@ -1397,13 +1433,15 @@ if ($action === 'settleOrder') {
     } else {
       $won = $voided ? false : (bool) $wantWon;
     }
-    $credit = $voided ? $reqStake : ($won ? orolado_money($reqStake * $reqPayout) : 0);
+    $credit = orolado_trade_credit($won, $voided, $reqStake, $reqPayout);
     $net = $voided ? 0 : ($won ? orolado_money($credit - $reqStake) : orolado_money(-$reqStake));
     $final = $voided ? 'void' : ($won ? 'won' : 'lost');
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
-    if ($reqMode === 'demo') {
-      $bal = orolado_money($locked['vault'][$uid]['demo'] ?? 0);
-      $locked['vault'][$uid]['demo'] = $reqBal !== null ? $reqBal : orolado_money(max(0, $bal + $net));
+    $lateKey = $reqMode === 'real' ? 'real' : 'demo';
+    $bal = orolado_money($locked['vault'][$uid][$lateKey] ?? 0);
+    $locked['vault'][$uid][$lateKey] = orolado_money(max(0, $bal + $net));
+    if ($reqMode === 'demo' && $reqBal !== null && $reqBal + 0.009 >= orolado_money($locked['vault'][$uid]['demo'] ?? 0)) {
+      $locked['vault'][$uid]['demo'] = $reqBal;
     }
     $locked['orders'][] = [
       'id' => $oid,
@@ -1441,14 +1479,19 @@ if ($action === 'settleOrder') {
   }
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
   if (($settled['mode'] ?? '') === 'real') {
+    $jsonReal = orolado_money($vaultOut['real'] ?? 0);
     $creditAmt = orolado_money($settled['credit'] ?? 0);
     $sbReal = null;
-    if (!empty($settled['fresh'])) {
+    if (!empty($settled['late'])) {
+      supabase_set_real($uid, $jsonReal);
+      $sbVault = supabase_admin_vault($uid);
+      if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
+    } else if (!empty($settled['fresh']) && $creditAmt > 0) {
       $resolved = supabase_resolve_trade($uid, $oid, $creditAmt);
       if ($resolved) {
         $sbReal = orolado_money($resolved['real'] ?? 0);
       } else {
-        if ($creditAmt > 0) supabase_credit_real($uid, $creditAmt, false);
+        supabase_credit_real($uid, $creditAmt, false);
         $sbVault = supabase_admin_vault($uid);
         if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
       }
@@ -1456,16 +1499,21 @@ if ($action === 'settleOrder') {
       $sbVault = supabase_admin_vault($uid);
       if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
     }
-    if ($sbReal !== null) {
-      $vaultOut['real'] = $sbReal;
-      with_db_lock(function ($box) use ($uid, $sbReal) {
-        if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-        $box->db['vault'][$uid]['real'] = $sbReal;
-        return ['ok' => true];
-      });
-    } else {
-      unset($vaultOut['real']);
+    $official = $jsonReal;
+    if ($sbReal !== null && $sbReal > $jsonReal + 0.009) $official = $sbReal;
+    else if ($sbReal !== null && $jsonReal > $sbReal + 0.009) {
+      supabase_set_real($uid, $jsonReal);
+      $official = $jsonReal;
+    } else if ($sbReal !== null) {
+      $official = $sbReal;
     }
+    $vaultOut['real'] = $official;
+    with_db_lock(function ($box) use ($uid, $official) {
+      if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+      $cur = orolado_money($box->db['vault'][$uid]['real'] ?? 0);
+      if ($official + 0.009 >= $cur) $box->db['vault'][$uid]['real'] = $official;
+      return ['ok' => true];
+    });
   }
   $won = !empty($settled['won']);
   $net = orolado_money($settled['net'] ?? 0);
@@ -1483,11 +1531,12 @@ if ($action === 'settleOrder') {
 }
 
 if ($action === 'financeHistory') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+  $stSess = orolado_session_inspect($db, $token);
+  if (empty($stSess['ok'])) {
+    echo json_encode($stSess);
     exit;
   }
+  $me = $stSess['user'];
   $rows = [];
   foreach (($db['deposits'] ?? []) as $d) {
     if (($d['userId'] ?? '') !== $me['id']) continue;
@@ -1502,6 +1551,7 @@ if ($action === 'financeHistory') {
   }
   foreach (($db['withdrawals'] ?? []) as $w) {
     if (($w['userId'] ?? '') !== $me['id']) continue;
+    if (orolado_wd_is_hidden_from_player($w)) continue;
     $st = strtoupper((string) ($w['status'] ?? 'pending'));
     if ($st === 'PAID' || $st === 'APPROVED' || $st === 'SUCCESS' || $st === 'COMPLETED') $st = 'COMPLETED';
     elseif ($st === 'REJECT' || $st === 'REJECTED' || $st === 'DENIED') $st = 'REJECTED';
@@ -1520,11 +1570,12 @@ if ($action === 'financeHistory') {
 }
 
 if ($action === 'me') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+  $stSess = orolado_session_inspect($db, $token);
+  if (empty($stSess['ok'])) {
+    echo json_encode($stSess);
     exit;
   }
+  $me = $stSess['user'];
   if ($token !== '' && isset($db['sessions'][$token])) {
     $db['sessions'][$token]['exp'] = time() + orolado_session_ttl();
     $db['sessions'][$token]['at'] = date('c');
@@ -1534,12 +1585,10 @@ if ($action === 'me') {
   $uid = (string) $me['id'];
   orolado_repair_overwritten_reals_once();
   $jsonVault = $db['vault'][$uid] ?? ['demo' => 0, 'real' => 0];
-  $sbVault = supabase_admin_vault($uid);
+  $jsonReal = orolado_money($jsonVault['real'] ?? 0);
   $vault = [
     'demo' => orolado_money($jsonVault['demo'] ?? 0),
-    'real' => $sbVault
-      ? orolado_money($sbVault['real'] ?? 0)
-      : orolado_money($jsonVault['real'] ?? 0)
+    'real' => orolado_sync_official_real($uid, $jsonReal)
   ];
   echo json_encode([
     'ok' => true,
