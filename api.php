@@ -1266,7 +1266,7 @@ if ($action === 'withdraw') {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Vous devez parier 2x votre dépôt avant de pouvoir effectuer un retrait.',
+      'reason' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
       'wager' => [
         'done' => $stakeDone,
         'required' => $required,

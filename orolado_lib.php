@@ -2950,7 +2950,7 @@ function brevo_otp_html(string $code): string {
     . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
     . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your request:</p>'
     . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 15 minutes.</p>'
+    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
     . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
     . '</td></tr></table></td></tr></table></body></html>';
 }
@@ -2966,10 +2966,10 @@ function brevo_send_otp(string $email, string $code): array {
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
   $html = brevo_otp_html($code);
-  $text = "Your Orolado security code: $code\n\nThis code is valid for 15 minutes.\nDo not share this 6-digit code with anyone.\n";
-  $sent = orolado_mail_send($email, '', 'Orolado security code — valid 15 minutes', $html, $text);
+  $text = "Your Orolado security code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
+  $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
   if (empty($sent['ok'])) {
-    $sent = orolado_mail_send($email, '', 'Orolado security code — valid 15 minutes', $html, $text);
+    $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
   }
   $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
   @file_put_contents($log, json_encode([
@@ -2985,12 +2985,12 @@ function brevo_send_otp(string $email, string $code): array {
 // OTP : 15 min de validité (les e-mails arrivent souvent après 1 min).
 // Le renvoi est possible plus tôt ; l’ancien code reste accepté jusqu’à son TTL.
 const OROLADO_OTP_TTL = 900;
-const OROLADO_OTP_RESEND_COOLDOWN = 45;
-const OROLADO_OTP_RESEND_UI = 45;
+const OROLADO_OTP_RESEND_COOLDOWN = 60;
+const OROLADO_OTP_RESEND_UI = 60;
 const OROLADO_OTP_PENDING_KEEP = 1800;
 const OROLADO_OTP_GRACE = 45;
 const OROLADO_WD_OTP_TTL = 900;
-const OROLADO_WD_OTP_RESEND = 45;
+const OROLADO_WD_OTP_RESEND = 60;
 
 function orolado_otp_hash(string $email, string $code): string {
   return hash('sha256', 'orolado-otp|' . strtolower(trim($email)) . '|' . $code);
@@ -3012,7 +3012,7 @@ function brevo_wd_otp_html(string $code): string {
     . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
     . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your withdrawal:</p>'
     . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 15 minutes.</p>'
+    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
     . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
     . '</td></tr></table></td></tr></table></body></html>';
 }
@@ -3028,10 +3028,10 @@ function brevo_send_wd_otp(string $email, string $code): array {
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
   $html = brevo_wd_otp_html($code);
-  $text = "Your Orolado withdrawal code: $code\n\nThis code is valid for 15 minutes.\nDo not share this 6-digit code with anyone.\n";
-  $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 15 minutes', $html, $text);
+  $text = "Your Orolado withdrawal code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
+  $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
   if (empty($sent['ok'])) {
-    $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 15 minutes', $html, $text);
+    $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
   }
   $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
   @file_put_contents($log, json_encode([
@@ -4441,9 +4441,9 @@ function orolado_flutterwave_checkout(array $req): array {
     return ['ok' => false, 'server' => true, 'reason' => 'Paiement carte indisponible pour le moment.', 'code' => 'keys'];
   }
   $amountUsd = orolado_money($req['amount'] ?? 0);
-  $minUsd = orolado_min_deposit($me);
+  $minUsd = 3.0;
   if ($amountUsd + 0.0001 < $minUsd) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $5.00.', 'code' => 'min'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.', 'code' => 'min'];
   }
   $cust = orolado_flw_customer($me, $token);
   if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {

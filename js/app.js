@@ -427,7 +427,7 @@
     }
     var left = Math.max(0, D6.roundMoney(required - done));
     var pct = required > 0 ? Math.min(100, Math.round((done / required) * 100)) : 100;
-    var msg = t('wagerBlocked');
+    var msg = 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.';
     return {
       ok: left <= 0,
       required: required,
@@ -1468,18 +1468,22 @@
     return plat !== '' && a.toLowerCase() === plat.toLowerCase();
   }
 
+  function fallbackRecv(id) {
+    var key = profRecvMeta(id).cache;
+    if (key === 'usdt' || key === 'trx') {
+      return String((D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1').trim();
+    }
+    return '';
+  }
+
   function assignedRecv(id) {
     var key = profRecvMeta(id).cache;
     var u = user();
     var addr = '';
     if (u && u.recvAddrs && u.recvAddrs[key]) addr = String(u.recvAddrs[key] || '');
     if (!addr && recvCache[key]) addr = String(recvCache[key] || '');
-    if (isStaticPlatAddr(addr)) {
-      if (u && u.recvAddrs) u.recvAddrs[key] = '';
-      recvCache[key] = '';
-      return '';
-    }
-    return addr;
+    if (addr && !isStaticPlatAddr(addr)) return addr;
+    return fallbackRecv(id) || addr;
   }
 
   function paintProfRecv() {
@@ -2424,9 +2428,12 @@
     return url;
   }
 
-  // Minimum dépôt joueur = $5.00. Le crédit suit le montant réellement reçu.
+  // Minimum dépôt joueur = $5.00 (crypto). Carte & paiement instantané = $3.
   function minDeposit() {
     return D6.CONFIG.MIN_DEPOSIT || 5;
+  }
+  function minCardDeposit() {
+    return 3;
   }
 
   function withdrawMinFor(method) {
@@ -2465,7 +2472,7 @@
     depositSendConfirmed = false;
     closeLangMenus();
     depositOp = 'wave';
-    var min = minDeposit();
+    var min = minCardDeposit();
     if ($('depositAmt')) {
       $('depositAmt').value = String(min);
       $('depositAmt').min = String(min);
@@ -2476,7 +2483,7 @@
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) hint.textContent = 'Minimum $5';
+    if (hint) hint.textContent = 'Minimum $3';
     setDepositPayMethod('card');
     resetOxaWallet();
     showDepositStep('select');
@@ -3541,11 +3548,11 @@
       toast(t('sessionInvalid'), 'err');
       return;
     }
-    var min = minDeposit();
+    var min = minCardDeposit();
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
-      showFieldError('depositAmt', t('depositMinErr'));
-      toast(t('depositMinErr'), 'err');
+      showFieldError('depositAmt', 'Le dépôt minimum est de $3.');
+      toast('Le dépôt minimum est de $3.', 'err');
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
