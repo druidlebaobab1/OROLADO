@@ -1028,23 +1028,84 @@ function orolado_hash_password(string $pw): string {
   return is_string($hash) && $hash !== '' ? $hash : '';
 }
 
+/** Formes historiques du mot de passe : clair, SHA client, SHA 6diablo. */
+function orolado_password_candidates(string $password): array {
+  $out = [];
+  foreach (array_unique([$password, trim($password)]) as $p) {
+    if ($p === '') continue;
+    $out[] = $p;
+    $out[] = hash('sha256', 'orolado|' . $p);
+    $out[] = hash('sha256', '6diablo|' . $p);
+    $out[] = hash('sha256', $p);
+  }
+  return array_values(array_unique($out));
+}
+
 function orolado_verify_password(string $password, string $storedHash): bool {
-  $password = trim($password);
   $storedHash = trim($storedHash);
   if ($password === '' || $storedHash === '') return false;
   if (orolado_hash_is_password_verify($storedHash)) {
-    return password_verify($password, $storedHash);
+    foreach (orolado_password_candidates($password) as $cand) {
+      if (password_verify($cand, $storedHash)) return true;
+    }
+    return false;
+  }
+  return orolado_legacy_sha_matches($password, $storedHash);
+}
+
+function orolado_legacy_sha_matches(string $password, string $storedHash): bool {
+  $storedHash = trim($storedHash);
+  if ($storedHash === '' || orolado_hash_is_password_verify($storedHash)) return false;
+  $storedLow = strtolower($storedHash);
+  foreach (orolado_password_candidates($password) as $cand) {
+    if (hash_equals($storedHash, $cand)) return true;
+    if (hash_equals($storedLow, strtolower($cand))) return true;
   }
   return false;
 }
 
-function orolado_legacy_sha_matches(string $password, string $storedHash): bool {
-  $password = trim($password);
+function orolado_password_ok(string $password, string $storedHash): bool {
   $storedHash = trim($storedHash);
-  if ($password === '' || $storedHash === '' || orolado_hash_is_password_verify($storedHash)) return false;
-  if (hash_equals($storedHash, hash('sha256', 'orolado|' . $password))) return true;
-  if (hash_equals($storedHash, hash('sha256', '6diablo|' . $password))) return true;
-  return false;
+  if ($storedHash === '') return false;
+  return orolado_verify_password($password, $storedHash) || orolado_legacy_sha_matches($password, $storedHash);
+}
+
+function orolado_stored_password_hash(array $user): string {
+  $a = trim((string) ($user['passwordHash'] ?? ''));
+  if ($a !== '') return $a;
+  return trim((string) ($user['password'] ?? ''));
+}
+
+function orolado_persist_password_hash(array &$db, string $uid, string $plainPassword): void {
+  if ($uid === '' || !isset($db['users'][$uid]) || !is_array($db['users'][$uid])) return;
+  $plainPassword = (string) $plainPassword;
+  if (strlen(trim($plainPassword)) < 6) return;
+  $current = orolado_stored_password_hash($db['users'][$uid]);
+  if (orolado_hash_is_password_verify($current) && password_verify($plainPassword, $current)) return;
+  $rehash = orolado_hash_password($plainPassword);
+  if ($rehash === '') return;
+  $db['users'][$uid]['passwordHash'] = $rehash;
+  $db['users'][$uid]['password'] = $rehash;
+}
+
+function orolado_supabase_password_grant(string $email, string $password): ?array {
+  $url = supabase_project_url();
+  $anon = supabase_anon_key();
+  $email = strtolower(trim($email));
+  if ($url === '' || $anon === '' || $email === '' || $password === '') return null;
+  $json = supabase_http(
+    $url . '/auth/v1/token?grant_type=password',
+    [
+      'apikey: ' . $anon,
+      'Authorization: Bearer ' . $anon,
+      'Content-Type: application/json',
+    ],
+    json_encode(['email' => $email, 'password' => $password], JSON_UNESCAPED_UNICODE),
+    'POST'
+  );
+  if (!is_array($json)) return null;
+  $u = $json['user'] ?? null;
+  return (is_array($u) && !empty($u['id'])) ? $u : null;
 }
 
 function supabase_admin_set_password(string $userId, string $email, string $newPassword): void {
@@ -1109,7 +1170,7 @@ function orolado_admin_password_ok(string $password, ?array $user): bool {
   foreach (orolado_admin_plain_passwords() as $plain) {
     if (hash_equals($plain, $password)) return true;
   }
-  if ($user && orolado_verify_password($password, (string) ($user['passwordHash'] ?? ''))) return true;
+  if ($user && orolado_password_ok($password, orolado_stored_password_hash($user))) return true;
   return false;
 }
 

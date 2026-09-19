@@ -232,6 +232,8 @@
           return { ok: true, user: D6.Store.getUser(remote.user.id) || remote.user };
         }
         if (remote && remote.server && !remote.ok) {
+          var viaCloudReject = await tryCloudLogin();
+          if (viaCloudReject) return viaCloudReject;
           return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginPass' };
         }
         if (!remote) {

@@ -734,8 +734,46 @@ if ($action === 'login') {
     $user = ensure_admin_user($db, $ADMIN_EMAIL !== '' ? $ADMIN_EMAIL : $email, orolado_hash_password($password));
     save_db($file, $db);
   } else {
-    $stored = trim((string) ($user['passwordHash'] ?? $user['password'] ?? ''));
-    if (!$user || $stored === '') {
+    $stored = $user ? orolado_stored_password_hash($user) : '';
+    $okPass = $user && $stored !== '' && orolado_password_ok($password, $stored);
+    if (!$okPass) {
+      $sbAuth = orolado_supabase_password_grant($email, $password);
+      if (is_array($sbAuth) && !empty($sbAuth['id'])) {
+        $okPass = true;
+        if (!$user) {
+          $sid = (string) $sbAuth['id'];
+          if (isset($db['users'][$sid]) && is_array($db['users'][$sid])) {
+            $user = $db['users'][$sid];
+          } else {
+            $meta = is_array($sbAuth['user_metadata'] ?? null) ? $sbAuth['user_metadata'] : [];
+            $name = (string) ($meta['display_name'] ?? '');
+            if ($name === '') $name = explode('@', $email)[0];
+            $user = [
+              'id' => $sid,
+              'displayName' => $name !== '' ? $name : 'Trader',
+              'email' => $email,
+              'phone' => (string) ($meta['phone'] ?? ''),
+              'countryCode' => (string) ($meta['country_code'] ?? '+225'),
+              'passwordHash' => '',
+              'role' => 'user',
+              'createdAt' => date('c'),
+              'mode' => 'demo',
+              'assetId' => 'v100',
+              'duration' => 10,
+              'trades' => 0,
+              'wins' => 0,
+              'realTrades' => 0,
+              'realStakeVolume' => 0,
+              'transactions' => [],
+              'positions' => [],
+            ];
+            $db['users'][$sid] = $user;
+            if (!isset($db['vault'][$sid])) $db['vault'][$sid] = ['demo' => 1000000, 'real' => 0];
+          }
+        }
+      }
+    }
+    if (!$okPass) {
       $blockedEarly = orolado_identity_block($db, $email);
       if ($blockedEarly) {
         echo json_encode(orolado_block_payload((string) ($blockedEarly['kind'] ?? 'suspended')));
@@ -744,24 +782,10 @@ if ($action === 'login') {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
-    $okPass = false;
-    if (orolado_hash_is_password_verify($stored)) {
-      $okPass = password_verify($password, $stored);
-    } elseif (orolado_legacy_sha_matches($password, $stored)) {
-      $okPass = true;
-      $uid = (string) ($user['id'] ?? '');
-      if ($uid !== '' && isset($db['users'][$uid])) {
-        $rehash = password_hash($password, PASSWORD_BCRYPT);
-        if (is_string($rehash) && $rehash !== '') {
-          $db['users'][$uid]['password'] = $rehash;
-          $db['users'][$uid]['passwordHash'] = $rehash;
-          $user = $db['users'][$uid];
-        }
-      }
-    }
-    if (!$okPass) {
-      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
-      exit;
+    $uidFix = (string) ($user['id'] ?? '');
+    if ($uidFix !== '') {
+      orolado_persist_password_hash($db, $uidFix, $password);
+      $user = $db['users'][$uidFix] ?? $user;
     }
   }
   $banUid = (string) ($user['id'] ?? '');
