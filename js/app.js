@@ -1458,8 +1458,8 @@
   function profRecvMeta(id) {
     if (id === 'btc') return { coin: 'btc', min: 15, cache: 'btc' };
     if (id === 'eth') return { coin: 'eth', min: 15, cache: 'eth' };
-    if (id === 'trx') return { coin: 'trx', min: 3, cache: 'trx' };
-    return { coin: 'usdt_trc20', min: 3, cache: 'usdt' };
+    if (id === 'trx') return { coin: 'trx', min: 5, cache: 'trx' };
+    return { coin: 'usdt_trc20', min: 5, cache: 'usdt' };
   }
 
   function persistRecv(id, addr) {
@@ -1488,22 +1488,14 @@
     return plat !== '' && a.toLowerCase() === plat.toLowerCase();
   }
 
-  function fallbackRecv(id) {
-    var key = profRecvMeta(id).cache;
-    if (key === 'usdt' || key === 'trx') {
-      return String((D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1').trim();
-    }
-    return '';
-  }
-
   function assignedRecv(id) {
     var key = profRecvMeta(id).cache;
     var u = user();
     var addr = '';
     if (u && u.recvAddrs && u.recvAddrs[key]) addr = String(u.recvAddrs[key] || '');
     if (!addr && recvCache[key]) addr = String(recvCache[key] || '');
-    if (addr && !isStaticPlatAddr(addr)) return addr;
-    return fallbackRecv(id) || addr;
+    if (addr && !isStaticPlatAddr(addr)) return rawCryptoAddr(addr) || addr;
+    return '';
   }
 
   function paintProfRecv() {
@@ -1518,7 +1510,7 @@
     var addr = assignedRecv(profRecvCoin);
     var busy = !!recvBusy[meta.cache];
     if (el) {
-      el.textContent = addr || (busy ? '…' : '');
+      el.textContent = addr || (busy ? 'Génération de l’adresse…' : 'Adresse en cours…');
       el.title = addr;
     }
     if (copyBtn) copyBtn.disabled = !addr;
@@ -1554,7 +1546,8 @@
       return postOxaInvoice({
         token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
         amount: meta.min,
-        coin: meta.coin
+        coin: meta.coin,
+        confirmed: true
       });
     }).then(function (remote) {
       recvBusy[meta.cache] = false;
