@@ -498,7 +498,7 @@
     });
   }
 
-  function resize() {
+  function resize(force) {
     if (!canvas) return;
     var parent = canvas.parentElement;
     if (!parent) return;
@@ -517,8 +517,12 @@
     var geomKey = fsMode + '|' + parent.clientWidth + 'x' + parent.clientHeight +
       '|' + (window.innerWidth || 0) + 'x' + (window.innerHeight || 0) +
       '|' + (window.devicePixelRatio || 1);
-    if (geomKey === lastGeomKey) return;
-    lastGeomKey = geomKey;
+    if (IS_ANDROID_CHART && document.hidden && !force) {
+      lastGeomKey = '';
+      return;
+    }
+    if (!force && geomKey === lastGeomKey) return;
+    if (!IS_ANDROID_CHART) lastGeomKey = geomKey;
 
     // Visibilité forcée (canvas principal sombre, overlay transparent).
     canvas.style.display = 'block';
@@ -628,6 +632,11 @@
     var rect = parent.getBoundingClientRect();
     var w = Math.max(0, Math.floor(parent.clientWidth || rect.width || canvas.offsetWidth || 0));
     var h = Math.max(0, Math.floor(parent.clientHeight || rect.height || canvas.offsetHeight || 0));
+    if (IS_ANDROID_CHART && !document.hidden && cssH >= 240 && h > 0 && h < 180) {
+      lastGeomKey = '';
+      scheduleResize(160);
+      return;
+    }
     // Fallback immédiat si dimensions à 0 (écran caché / flex collapse).
     if (w < 8) w = Math.max(320, Math.floor(window.innerWidth || 360));
     if (h < 8) h = fsMode ? Math.max(220, Math.floor((window.innerHeight || 700) - 140)) : 380;
@@ -637,6 +646,11 @@
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
     if (boxH >= 8) h = boxH;
+    if (IS_ANDROID_CHART && !document.hidden && cssH >= 240 && h > 0 && h < 180) {
+      lastGeomKey = '';
+      scheduleResize(160);
+      return;
+    }
     cssW = w;
     cssH = h;
     var bw = Math.round(cssW * dpr);
@@ -660,6 +674,7 @@
     wantFitY = true;
     if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
     flushOpenTradeVisualQueue();
+    if (IS_ANDROID_CHART) lastGeomKey = geomKey;
     drawNow();
     requestAnimationFrame(function () { drawNow(); });
   }
@@ -2230,11 +2245,29 @@
       try { D6.Engine.resyncClocks(); } catch (eRs) { /* ignore */ }
     }
     running = true;
+    if (IS_ANDROID_CHART) {
+      lastGeomKey = '';
+      try { resize(true); } catch (eAr) { /* ignore */ }
+    }
     if (!loopRaf) {
       loopRaf = requestAnimationFrame(loop);
     }
     window.animationFrameId = loopRaf;
     try { drawNow(); } catch (eW) { /* ignore */ }
+    if (IS_ANDROID_CHART) {
+      [90, 280, 700, 1400].forEach(function (ms) {
+        setTimeout(function () {
+          if (document.hidden || !IS_ANDROID_CHART) return;
+          lastGeomKey = '';
+          try { resize(true); } catch (e2) { /* ignore */ }
+          try { drawNow(); } catch (e3) { /* ignore */ }
+          if (!loopRaf && running && !window.chartIsPaused) {
+            loopRaf = requestAnimationFrame(loop);
+            window.animationFrameId = loopRaf;
+          }
+        }, ms);
+      });
+    }
   }
 
   function bindVisibilityFix() {
@@ -2247,6 +2280,34 @@
     window.addEventListener('pageshow', function () {
       if (!document.hidden) wakeChartEngine();
     });
+    if (!IS_ANDROID_CHART) return;
+    document.addEventListener('freeze', function () { pauseChartEngine(); });
+    document.addEventListener('resume', function () {
+      if (!document.hidden) wakeChartEngine();
+    });
+    var lastFocusWake = 0;
+    window.addEventListener('focus', function () {
+      if (document.hidden) return;
+      var now = Date.now();
+      if (now - lastFocusWake < 500) return;
+      lastFocusWake = now;
+      wakeChartEngine();
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function () {
+        if (document.hidden) return;
+        lastGeomKey = '';
+        scheduleResize(40);
+      });
+    }
+    if (canvas) {
+      canvas.addEventListener('contextlost', function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+      });
+      canvas.addEventListener('contextrestored', function () {
+        if (!document.hidden) wakeChartEngine();
+      });
+    }
   }
 
   function loop(ts) {
