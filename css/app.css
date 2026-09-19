@@ -96,15 +96,15 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 @keyframes luxIn{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
 .btn-gold.busy{opacity:.72;pointer-events:none}
 .chart-outcome{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);z-index:15;
-  display:none;align-items:center;justify-content:center;gap:6px;pointer-events:none;max-width:86%;
+  display:none;align-items:center;justify-content:center;gap:4px;pointer-events:none;max-width:70%;
   font-weight:700;letter-spacing:.02em;opacity:0;white-space:nowrap}
 .chart-outcome.show{display:inline-flex;opacity:1!important;transform:translate(calc(-50% + var(--ox,0px)),calc(-50% - var(--oy,0px))) scale(1);animation:outcomeFloat .9s ease forwards}
-.chart-outcome.win{padding:4px 10px;border-radius:20px;color:#fff;font-size:13px;font-weight:700;
+.chart-outcome.win{padding:2px 7px;border-radius:14px;color:#fff;font-size:11px;font-weight:700;
   background:linear-gradient(180deg,#16a34a,#22c55e);border:0;
   box-shadow:0 2px 10px rgba(34,197,94,.4);text-shadow:none;opacity:1!important}
-.chart-outcome.win .outcome-wallet{width:13px;height:13px;flex-shrink:0;color:#F5C518}
-.chart-outcome.lose{top:46%;bottom:auto;transform:translate(-50%,-50%) scale(.92);padding:4px 10px;border-radius:20px;
-  font-size:13px;font-weight:700;color:#fff;background:#ef4444;border:0;
+.chart-outcome.win .outcome-wallet{width:10px;height:10px;flex-shrink:0;color:#F5C518}
+.chart-outcome.lose{top:46%;bottom:auto;transform:translate(-50%,-50%) scale(.92);padding:2px 7px;border-radius:14px;
+  font-size:11px;font-weight:700;color:#fff;background:#ef4444;border:0;
   box-shadow:0 2px 10px rgba(239,68,68,.4);text-shadow:none;animation:outcomePop .35s ease;z-index:12;opacity:1!important}
 .chart-outcome.lose.show{transform:translate(calc(-50% + var(--ox,0px)),calc(-50% - var(--oy,0px))) scale(1);opacity:1!important}
 @keyframes outcomePop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}70%{transform:translate(-50%,-50%) scale(1.06)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
@@ -415,10 +415,10 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .admin-finance-table{margin-top:8px;max-height:220px;overflow:auto;-webkit-overflow-scrolling:touch}
 .admin-finance-table .hist-table{font-size:.64rem}
 .admin-finance-ref{max-width:12ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chart-outcome.win{color:#fff;text-shadow:none;font-size:13px;font-weight:700;
+.chart-outcome.win{color:#fff;text-shadow:none;font-size:11px;font-weight:700;
   animation:outcomePop .35s ease}
 @keyframes festGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
-.chart-outcome.lose{color:#fff;font-size:13px;font-weight:700;opacity:1!important}
+.chart-outcome.lose{color:#fff;font-size:11px;font-weight:700;opacity:1!important}
 .help-fab{display:none!important}
 .btn-hist-cta{display:none!important}
 .quick-stakes{display:none!important}
@@ -495,6 +495,13 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .pad{position:fixed;bottom:0;left:0;right:0;z-index:50;margin:0 auto;max-width:28rem;border-radius:12px 12px 0 0;padding:4px 8px;gap:3px;
   padding-bottom:calc(18px + env(safe-area-inset-bottom, 12px));display:flex;flex-direction:column;background:#0b0e14;
   border:none;border-top:1px solid rgba(255,255,255,.06);box-shadow:none}
+@media (max-width:900px){
+  #screenTrade:not(.hidden)::after{
+    content:"";position:fixed;left:0;right:0;bottom:0;z-index:40;pointer-events:none;
+    height:calc(26px + env(safe-area-inset-bottom, 12px));
+    background:linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(11,14,20,.72) 46%,#0B0E14 100%);
+  }
+}
 .pad.glass{border:none!important;border-top:1px solid rgba(255,255,255,.06)!important;box-shadow:none!important;background:#0b0e14!important}
 .dur-row,.quick-row{display:flex;gap:3px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .dur-row::-webkit-scrollbar,.quick-row::-webkit-scrollbar{display:none}
@@ -713,7 +720,7 @@ html.is-android .modal-backdrop.active .modal-head-row .btn-close{
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}
 .pay-method-card .pay-method-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .pay-method-title{font-size:.82rem;font-weight:800;color:#E8EEF9}
-.pay-method-desc{display:block;font-size:.68rem;font-weight:600;color:var(--muted);line-height:1.35}
+.pay-method-desc{display:block;font-size:.82rem;font-weight:700;color:#CBD5E1;line-height:1.4}
 .pay-method-rec{flex-shrink:0;font-size:.55rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
   color:#0B0E14;background:linear-gradient(90deg,#F59E0B,#FBBF24);border-radius:999px;padding:3px 7px}
 .pay-method-card.on{border-color:var(--gold);background:rgba(245,158,11,.08);
@@ -752,7 +759,9 @@ html.is-android .modal-backdrop.active .modal-head-row .btn-close{
 .deposit-box:not(.is-crypto) .field{margin-bottom:6px;gap:4px}
 .deposit-box:not(.is-crypto) .field input{min-height:40px;padding:10px 12px}
 .deposit-box:not(.is-crypto) .pay-method-label{margin:8px 0 6px}
-.deposit-box:not(.is-crypto) .pay-method-grid{gap:10px;margin-bottom:12px}
+.deposit-box:not(.is-crypto) .pay-method-grid{gap:10px;margin-bottom:0}
+#depositModal #payMethodCard .pay-method-desc{font-size:.84rem;font-weight:700;line-height:1.4;color:#CBD5E1;margin-top:6px}
+#depositModal .pay-method-grid #btnConfirmDeposit.btn-deposit-confirm{margin:2px 0 14px}
 .deposit-box:not(.is-crypto) .pay-method-card{padding:16px 14px 15px;min-height:76px}
 #depositModal #payMethodUsdt,.deposit-box:not(.is-crypto) .pay-method-card[data-pay="usdt"]{
   display:flex;flex-direction:column;align-items:stretch;width:100%;box-sizing:border-box;

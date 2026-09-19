@@ -114,7 +114,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=550">
+    <link rel="stylesheet" href="css/app.css?v=555">
     <link rel="stylesheet" href="css/auth.css?v=544">
   <!-- Meta Pixel Code -->
   <script>
@@ -218,10 +218,10 @@
           <button type="button" class="auth-tab on" data-tab="login" data-i18n="login">Connexion</button>
           <button type="button" class="auth-tab" data-tab="register" data-i18n="register">Inscription</button>
         </div>
-        <form id="formLogin">
+        <form id="formLogin" method="post" action="/" autocomplete="on">
           <div class="field">
             <label data-i18n="idLabel">E-mail</label>
-            <input id="loginId" type="email" name="email" autocomplete="email" inputmode="email" data-i18n-placeholder="idPh" placeholder="exemple@gmail.com" required>
+            <input id="loginId" type="email" name="username" autocomplete="username" inputmode="email" data-i18n-placeholder="idPh" placeholder="exemple@gmail.com" required>
             <p class="err-msg" id="err-loginId"></p>
           </div>
           <div class="field">
@@ -956,7 +956,7 @@
       <div id="depositStepSelect">
         <div class="modal-title" data-i18n="depositTitle">Deposit in USD</div>
         <div class="field">
-          <label for="depositAmt" data-i18n="depositAmtLabel">Amount (USD)</label>
+          <label for="depositAmt" data-i18n="depositAmtLabel">Montant à recharger en dollar (Carte &amp; Instant Pay)</label>
           <input id="depositAmt" class="dep-amt-input" type="number" inputmode="decimal" min="3" step="0.01" value="3" placeholder="3">
           <p class="hint-min" data-i18n="depositMin">Minimum $3</p>
           <p class="err-msg" id="err-depositAmt"></p>
@@ -970,6 +970,7 @@
             </div>
             <span class="pay-method-desc" data-i18n="payMethodCardDesc">Visa, Mastercard, Apple Pay, virements locaux…</span>
           </button>
+          <button type="button" class="btn-gold btn-deposit-confirm" id="btnConfirmDeposit">VALIDER LA RECHARGE</button>
           <button type="button" class="pay-method-card" id="payMethodUsdt" data-pay="usdt" role="radio" aria-checked="false">
             <div class="pay-method-top">
               <span class="pay-method-title" data-i18n="payMethodUsdtTitle">CRYPTO DEPOSIT</span>
@@ -994,7 +995,6 @@
             <span class="pay-method-desc">USDT, USDC, BTC, ETH, TRX… • crédit auto</span>
           </button>
         </div>
-        <button type="button" class="btn-gold btn-deposit-confirm" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
       </div>
       <div id="depositStepCrypto" class="crypto-invoice hidden">
         <div class="crypto-step-head">
@@ -1146,11 +1146,11 @@
 
   <script src="js/config.js?v=540"></script>
   <script src="js/translations.js?v=540"></script>
-  <script src="js/i18n.js?v=554"></script>
+  <script src="js/i18n.js?v=555"></script>
   <script src="js/store.js?v=549"></script>
   <script src="js/api.js?v=540"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=547"></script>
+  <script src="js/supabase.js?v=555"></script>
   <script src="js/auth.js?v=548"></script>
   <script src="js/engine.js?v=540"></script>
   <script src="js/chart.js?v=551"></script>
@@ -1204,6 +1204,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=553"></script>
+  <script src="js/app.js?v=555"></script>
 </body>
 </html>

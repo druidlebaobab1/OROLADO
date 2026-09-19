@@ -519,7 +519,12 @@
         if (!r || !r.ok || !r.vault) return;
         var incoming = Number(r.vault.real);
         var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
-        if (isFinite(incoming) && incoming > local + 0.009) adoptOfficialVault(r.vault);
+        var locks = getBalanceLocks();
+        if (locks && Date.now() < locks.until) return;
+        if (isFinite(incoming) && incoming >= 0 && Math.abs(incoming - local) > 0.009) {
+          adoptOfficialVault(r.vault);
+          updateBalance(false);
+        }
       }).catch(function () { /* ignore */ });
     }
     banWatchTimer = setInterval(pollMe, 1000);
@@ -3150,13 +3155,27 @@
     }
   }
 
+  function cachedOxaAddr() {
+    if (oxaAsset === 'usdt') return recvCache[oxaCoin] || recvCache.usdt || '';
+    return recvCache[oxaCoin] || '';
+  }
+
+  function clearCryptoPreview() {
+    liveDepositAddr = '';
+    if ($('usdtAddr')) $('usdtAddr').textContent = '';
+    var qr = $('usdtQr');
+    if (qr) {
+      qr.removeAttribute('src');
+      qr.alt = '';
+    }
+  }
+
   function resetOxaWallet() {
     stopOxaPoll();
     if (oxaTimer) { clearTimeout(oxaTimer); oxaTimer = 0; }
     oxaInvoice = null;
-    liveDepositAddr = '';
+    clearCryptoPreview();
     if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
-    if ($('usdtAddr')) $('usdtAddr').textContent = '';
     if ($('usdtBusy')) $('usdtBusy').hidden = true;
     closeOxaMenus();
   }
@@ -3236,7 +3255,7 @@
     var cacheKey = String((inv && inv.coin) || oxaCoin || 'usdt_trc20');
     if (liveDepositAddr) {
       recvCache[cacheKey] = liveDepositAddr;
-      if (cacheKey === 'usdt_trc20' || oxaAsset === 'usdt') recvCache.usdt = liveDepositAddr;
+      if (oxaAsset === 'usdt' && (cacheKey === 'usdt_trc20' || cacheKey.indexOf('usdt_') === 0)) recvCache.usdt = liveDepositAddr;
     }
     var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
     if ($('usdtPayAmt')) $('usdtPayAmt').textContent = '';
@@ -3331,11 +3350,10 @@
     usdtAmt = amt;
     lastUsdtCredit = 0;
     oxaCoin = oxaCoinKey();
-    var preview = recvCache[oxaCoin] || (oxaCoin === 'usdt_trc20' ? recvCache.usdt : '') || '';
+    var preview = cachedOxaAddr();
     if (preview) paintPreviewAddr(preview);
     else {
-      liveDepositAddr = '';
-      if ($('usdtAddr')) $('usdtAddr').textContent = '';
+      clearCryptoPreview();
     }
     stopOxaPoll();
     if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
@@ -3379,7 +3397,7 @@
   }
 
   function copyUsdtAddr() {
-    var addr = liveDepositAddr || recvCache[oxaCoin] || recvCache.usdt || '';
+    var addr = liveDepositAddr || cachedOxaAddr();
     if (!addr) {
       toast('Adresse en cours de génération…', '');
       return;
@@ -4168,7 +4186,7 @@
       clearErrors();
       var res = await D6.Auth.login({ identifier: String($('loginId').value || '').trim().toLowerCase(), password: $('loginPass').value });
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
-      enterApp({ openFullscreen: true });
+      setTimeout(function () { enterApp({ openFullscreen: true }); }, 80);
     });
     $('regPass2').addEventListener('input', function () {
       if ($('regPass').value && this.value && $('regPass').value !== this.value) showFieldError('regPass2', t('passMismatch'));
@@ -4921,7 +4939,8 @@
         enforceOxaMin();
         syncOxaLabels();
         closeOxaMenus();
-        var preview = recvCache[oxaCoin] || (oxaAsset === 'usdt' ? recvCache.usdt : '') || '';
+        clearCryptoPreview();
+        var preview = cachedOxaAddr();
         if (preview) paintPreviewAddr(preview);
         else showCryptoInvoice(false);
       });
@@ -4931,8 +4950,10 @@
         oxaNet = btn.getAttribute('data-net') || 'TRC20';
         oxaCoin = oxaCoinKey();
         syncOxaNetUi();
-        var preview = recvCache[oxaCoin] || recvCache.usdt || '';
+        clearCryptoPreview();
+        var preview = cachedOxaAddr();
         if (preview) paintPreviewAddr(preview);
+        else showCryptoInvoice(false);
       });
     });
     document.addEventListener('click', function (e) {
