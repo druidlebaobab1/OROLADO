@@ -230,7 +230,7 @@ function admin_badges(): array {
     'profit_today' => round($profitToday, 2),
     'profit_7d' => round($profit7, 2),
     'profit_total' => round($profitAll, 2),
-    'payout_stats' => 5,
+    'payout_stats' => 4,
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
     'alerts' => $healthErr,
@@ -860,8 +860,8 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'payout_stats') {
-    $cols = ['Mise réelle', 'Trades', 'Part des trades', 'Joueurs', 'Part des joueurs'];
-    $want = [88.0, 112.0, 500.0, 1000.0, 5000.0];
+    $cols = ['Payout', 'Trades', 'Part des trades', 'Joueurs', 'Part des joueurs'];
+    $want = [88, 500, 1000, 5000];
     $cnt = [];
     $who = [];
     foreach ($want as $b) { $cnt[$b] = 0; $who[$b] = []; }
@@ -875,18 +875,19 @@ function admin_list_payload(string $view, array $req): array {
     $totalTrades = 0;
     foreach ($src as $o) {
       if ((string) ($o['mode'] ?? '') !== 'real') continue;
-      $st = (float) ($o['stake'] ?? 0);
+      $pay = (float) ($o['payout'] ?? $o['payoutMult'] ?? 0);
+      $pct = 0;
+      if (abs($pay - 1.88) < 0.02 || abs($pay - 88) < 0.05) $pct = 88;
+      else if (abs($pay - 6.0) < 0.02 || abs($pay - 500) < 0.05) $pct = 500;
+      else if (abs($pay - 11.0) < 0.02 || abs($pay - 1000) < 0.05) $pct = 1000;
+      else if (abs($pay - 51.0) < 0.02 || abs($pay - 5000) < 0.05) $pct = 5000;
+      if ($pct === 0 || !isset($cnt[$pct])) continue;
       $uid = (string) ($o['user_id'] ?? '');
-      foreach ($want as $b) {
-        if (abs($st - $b) < 0.05) {
-          $cnt[$b]++;
-          $totalTrades++;
-          if ($uid !== '') {
-            $who[$b][$uid] = true;
-            $allPlayers[$uid] = true;
-          }
-          break;
-        }
+      $cnt[$pct]++;
+      $totalTrades++;
+      if ($uid !== '') {
+        $who[$pct][$uid] = true;
+        $allPlayers[$uid] = true;
       }
     }
     $nPlayers = count($allPlayers);
@@ -894,7 +895,7 @@ function admin_list_payload(string $view, array $req): array {
       $nWho = count($who[$b]);
       $rows[] = [
         'cells' => [
-          rtrim(rtrim(number_format($b, 2, '.', ' '), '0'), '.'),
+          $b . '%',
           (string) $cnt[$b],
           admin_pct($cnt[$b], $totalTrades),
           (string) $nWho,

@@ -2910,9 +2910,59 @@ const OROLADO_OTP_RESEND_COOLDOWN = 55;
 // Compte à rebours affiché : volontairement plus long que le verrou serveur
 // pour qu'un décalage d'horloge ne fasse jamais cliquer l'utilisateur trop tôt.
 const OROLADO_OTP_RESEND_UI = 60;
+const OROLADO_WD_OTP_TTL = 60;
+const OROLADO_WD_OTP_RESEND = 55;
 
 function orolado_otp_hash(string $email, string $code): string {
   return hash('sha256', 'orolado-otp|' . strtolower(trim($email)) . '|' . $code);
+}
+
+function orolado_wd_otp_hash(string $uid, string $code): string {
+  return hash('sha256', 'orolado-wd-otp|' . $uid . '|' . $code);
+}
+
+function brevo_wd_otp_html(string $code): string {
+  $safe = brevo_escape($code);
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    . '<title>Orolado withdrawal code</title></head>'
+    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:20px 12px;">'
+    . '<tr><td align="center">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:460px;background:#121A2B;border-radius:14px;border:1px solid #334155;">'
+    . '<tr><td style="padding:24px;color:#E8EEF9;font-size:14px;line-height:1.55;">'
+    . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
+    . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your withdrawal:</p>'
+    . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
+    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
+    . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
+    . '</td></tr></table></td></tr></table></body></html>';
+}
+
+function brevo_send_wd_otp(string $email, string $code): array {
+  $email = strtolower(trim($email));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return ['ok' => false, 'reason' => 'E-mail invalide'];
+  }
+  if (str_contains($email, '@orolado.local') || str_ends_with($email, '.local')) {
+    return ['ok' => true, 'skipped' => true];
+  }
+  $code = preg_replace('/\D/', '', $code);
+  if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
+  $html = brevo_wd_otp_html($code);
+  $text = "Your Orolado withdrawal code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
+  $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
+  if (empty($sent['ok'])) {
+    $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
+  }
+  $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
+  @file_put_contents($log, json_encode([
+    'ts' => date('c'),
+    'email' => $email,
+    'type' => 'OTP retrait',
+    'status' => !empty($sent['ok']) ? 'envoyé' : 'échec',
+    'detail' => (string) ($sent['via'] ?? $sent['reason'] ?? ''),
+  ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+  return $sent;
 }
 
 function orolado_pending_regs(array &$db): array {

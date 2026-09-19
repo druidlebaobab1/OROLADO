@@ -1095,6 +1095,45 @@ if ($action === 'resolveMessage') {
   exit;
 }
 
+if ($action === 'withdrawOtp') {
+  $st = orolado_session_inspect($db, $token);
+  if (empty($st['ok'])) {
+    echo json_encode($st);
+    exit;
+  }
+  $me = $st['user'];
+  $uid = (string) ($me['id'] ?? '');
+  $email = strtolower(trim((string) ($me['email'] ?? $me['originalEmail'] ?? '')));
+  if ($uid === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide']);
+    exit;
+  }
+  if (!isset($db['withdrawOtps']) || !is_array($db['withdrawOtps'])) $db['withdrawOtps'] = [];
+  $prev = $db['withdrawOtps'][$uid] ?? null;
+  $now = time();
+  if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_WD_OTP_RESEND) {
+    $wait = OROLADO_WD_OTP_RESEND - ($now - (int) $prev['lastSentAt']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true, 'expiresIn' => max(0, (int) ($prev['expiresAt'] ?? 0) - $now)]);
+    exit;
+  }
+  $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $db['withdrawOtps'][$uid] = [
+    'codeHash' => orolado_wd_otp_hash($uid, $code),
+    'expiresAt' => $now + OROLADO_WD_OTP_TTL,
+    'lastSentAt' => $now,
+    'attempts' => 0,
+  ];
+  save_db($file, $db);
+  ignore_user_abort(true);
+  $sent = brevo_send_wd_otp($email, $code);
+  if (empty($sent['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
+    exit;
+  }
+  echo json_encode(['ok' => true, 'server' => true, 'expiresIn' => OROLADO_WD_OTP_TTL, 'resendIn' => OROLADO_WD_OTP_RESEND]);
+  exit;
+}
+
 if ($action === 'withdraw') {
   $st = orolado_session_inspect($db, $token);
   if (empty($st['ok'])) {
@@ -1102,6 +1141,34 @@ if ($action === 'withdraw') {
     exit;
   }
   $me = $st['user'];
+  $uidOtp = (string) ($me['id'] ?? '');
+  $otpCode = preg_replace('/\D/', '', (string) ($req['otp'] ?? $req['otpCode'] ?? ''));
+  if (strlen($otpCode) !== 6) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code de confirmation requis', 'needOtp' => true]);
+    exit;
+  }
+  if (!isset($db['withdrawOtps']) || !is_array($db['withdrawOtps'])) $db['withdrawOtps'] = [];
+  $otpRow = $db['withdrawOtps'][$uidOtp] ?? null;
+  $nowOtp = time();
+  if (!is_array($otpRow) || (int) ($otpRow['expiresAt'] ?? 0) < $nowOtp) {
+    unset($db['withdrawOtps'][$uidOtp]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code.', 'needOtp' => true, 'expired' => true]);
+    exit;
+  }
+  $tries = (int) ($otpRow['attempts'] ?? 0);
+  if ($tries >= 5) {
+    unset($db['withdrawOtps'][$uidOtp]);
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives. Demandez un nouveau code.', 'needOtp' => true]);
+    exit;
+  }
+  if (!hash_equals((string) ($otpRow['codeHash'] ?? ''), orolado_wd_otp_hash($uidOtp, $otpCode))) {
+    $db['withdrawOtps'][$uidOtp]['attempts'] = $tries + 1;
+    save_db($file, $db);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code invalide ou expiré. Demandez-en un nouveau.', 'needOtp' => true]);
+    exit;
+  }
   $amount = orolado_money($req['amount'] ?? 0);
   $sbVault = supabase_admin_vault((string) $me['id']);
   $real = $sbVault
@@ -1130,11 +1197,10 @@ if ($action === 'withdraw') {
   if ($required <= 0) $required = orolado_money($depositTotal * 2);
   if ($stakeDone < $required) {
     $left = max(0.0, orolado_money($required - $stakeDone));
-    $leftFmt = number_format($left, 2, '.', ',');
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Vous devez miser encore $' . $leftFmt . ' avant de pouvoir effectuer un retrait (Volume requis : x2 de votre dépôt).',
+      'reason' => 'Vous devez parier 2x votre dépôt avant de pouvoir effectuer un retrait.',
       'wager' => [
         'done' => $stakeDone,
         'required' => $required,
@@ -1164,6 +1230,7 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
     exit;
   }
+  unset($db['withdrawOtps'][$uidOtp]);
   $after = $sbVault ? supabase_admin_vault((string) $me['id']) : null;
   $db['vault'][$me['id']]['real'] = $after
     ? orolado_money($after['real'] ?? 0)

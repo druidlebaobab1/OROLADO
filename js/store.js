@@ -571,7 +571,7 @@
       var done = Number(user.totalWageredSinceDeposit != null ? user.totalWageredSinceDeposit : user.realStakeVolume) || 0;
       if (done < required) {
         var left = D6.roundMoney(required - done);
-        return { ok: false, reason: D6.I18N.t('wagerBlocked').replace('{amt}', D6.fmtMoney(left)) };
+        return { ok: false, reason: D6.I18N.t('wagerBlocked') };
       }
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
       vault[user.id].real = real - amount;

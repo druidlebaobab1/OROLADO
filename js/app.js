@@ -416,7 +416,7 @@
     }
     var left = Math.max(0, D6.roundMoney(required - done));
     var pct = required > 0 ? Math.min(100, Math.round((done / required) * 100)) : 100;
-    var msg = t('wagerBlocked').replace('{amt}', D6.fmtMoney(left));
+    var msg = t('wagerBlocked');
     return {
       ok: left <= 0,
       required: required,
@@ -3623,6 +3623,9 @@
     }
   }
 
+  var wdOtpPending = false;
+  var wdOtpTimer = null;
+  var wdOtpLeft = 0;
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1 };
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
@@ -3839,6 +3842,11 @@
     document.querySelectorAll('.wd-card').forEach(function (el) { el.classList.remove('on'); });
     if ($('withdrawAmt')) $('withdrawAmt').value = '';
     if ($('wdDestination')) $('wdDestination').value = '';
+    if ($('wdOtpCode')) $('wdOtpCode').value = '';
+    if ($('wdOtpField')) $('wdOtpField').classList.add('hidden');
+    wdOtpPending = false;
+    wdOtpLeft = 0;
+    if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
     showWithdrawStep('grid');
     syncWithdrawDestUi();
     refreshWithdrawUi();
@@ -5004,8 +5012,33 @@
         this.value = String(this.value || '').replace(/\D/g, '').slice(0, 16);
       });
     }
+    if ($('wdOtpCode')) {
+      $('wdOtpCode').addEventListener('input', function () {
+        this.value = String(this.value || '').replace(/\D/g, '').slice(0, 6);
+      });
+    }
     if ($('closeWdConfirm')) $('closeWdConfirm').addEventListener('click', function () { closeModal('wdConfirmModal'); });
     if ($('btnWdConfirmOk')) $('btnWdConfirmOk').addEventListener('click', function () { closeModal('wdConfirmModal'); });
+    function refreshWdOtpHint() {
+      var hint = $('wdOtpHint');
+      if (!hint) return;
+      var base = t('wdOtpHint');
+      hint.textContent = wdOtpLeft > 0 ? (base + ' · ' + wdOtpLeft + 's') : base;
+    }
+    function showWdOtpField() {
+      if ($('wdOtpField')) $('wdOtpField').classList.remove('hidden');
+      refreshWdOtpHint();
+    }
+    function tickWdOtp() {
+      if (wdOtpLeft <= 0) {
+        wdOtpPending = false;
+        if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
+        refreshWdOtpHint();
+        return;
+      }
+      wdOtpLeft -= 1;
+      refreshWdOtpHint();
+    }
     function showWithdrawConfirm(id, amount) {
       if ($('wdConfirmId')) $('wdConfirmId').textContent = id || '—';
       if ($('wdConfirmAmt')) $('wdConfirmAmt').textContent = D6.fmtFCFA(amount || 0);
@@ -5083,11 +5116,60 @@
         totalWageredSinceDeposit: Number(u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume) || 0,
         requiredWagering: Number(u.requiredWagering) || Math.floor((Number(u.realDepositTotal) || 0) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2))
       };
+      var otp = String(($('wdOtpCode') && $('wdOtpCode').value) || '').replace(/\D/g, '').slice(0, 6);
       var createdId = '';
       if (D6.Api && D6.Api.token()) {
+        if (otp.length !== 6) {
+          if (wdOtpPending && wdOtpLeft > 0) {
+            showWdOtpField();
+            toast(t('wdOtpNeed'), 'err');
+            if ($('wdOtpCode')) $('wdOtpCode').focus();
+            return;
+          }
+          var sent = await D6.Api.post('withdrawOtp', {});
+          if (watchBan(sent)) return;
+          if (!sent || !sent.ok) {
+            if (sent && sent.cooldown) {
+              wdOtpPending = true;
+              wdOtpLeft = Number(sent.expiresIn) || Number(sent.retryIn) || 60;
+              showWdOtpField();
+              if (wdOtpTimer) clearInterval(wdOtpTimer);
+              wdOtpTimer = setInterval(tickWdOtp, 1000);
+              toast(t('wdOtpNeed'), 'err');
+              return;
+            }
+            toast((sent && sent.reason) || t('wdOtpErr'), 'err');
+            return;
+          }
+          wdOtpPending = true;
+          wdOtpLeft = Number(sent.expiresIn) || 60;
+          showWdOtpField();
+          if (wdOtpTimer) clearInterval(wdOtpTimer);
+          wdOtpTimer = setInterval(tickWdOtp, 1000);
+          toast(t('wdOtpSent'), 'ok');
+          if ($('wdOtpCode')) $('wdOtpCode').focus();
+          return;
+        }
+        payload.otp = otp;
         var remote = await D6.Api.post('withdraw', payload);
         if (watchBan(remote)) return;
-        if (remote && remote.server && !remote.ok) { toast(remote.reason, 'err'); return; }
+        if (remote && remote.server && !remote.ok) {
+          if (remote.needOtp) {
+            showWdOtpField();
+            if (remote.expired) {
+              wdOtpPending = false;
+              wdOtpLeft = 0;
+              if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
+              if ($('wdOtpCode')) $('wdOtpCode').value = '';
+              refreshWdOtpHint();
+            }
+          }
+          toast(remote.reason || t('wdOtpErr'), 'err');
+          return;
+        }
+        wdOtpPending = false;
+        wdOtpLeft = 0;
+        if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
         if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault);
         else {
           var local = D6.Store.requestWithdraw(u, amount, payload);

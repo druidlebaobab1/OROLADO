@@ -669,7 +669,9 @@ html.is-android #chartOverlay{
 .wd-wager-box.hidden{display:none!important}
 .wd-wager-track{height:8px;border-radius:99px;background:rgba(10,15,29,.55);overflow:hidden;margin-bottom:8px}
 .wd-wager-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFB300,#00E676);transition:width .25s ease}
-.wd-wager-text{margin:0;font-size:.68rem;font-weight:700;color:var(--muted);line-height:1.35}
+.wd-wager-text{margin:0;font-size:.72rem;font-weight:600;color:#E8EEF9;line-height:1.4;text-align:center}
+#wdOtpField{margin-top:8px}
+#wdOtpField .otp-input{margin-top:4px}
 #btnSendWithdraw:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.35)}
 .op-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .op-card{border:2px solid var(--op,#1BA0F2);background:rgba(10,15,29,.75);color:#fff;border-radius:10px;padding:10px 8px;
