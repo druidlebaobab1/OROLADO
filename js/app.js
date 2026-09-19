@@ -4921,8 +4921,9 @@
         enforceOxaMin();
         syncOxaLabels();
         closeOxaMenus();
-        var preview = recvCache[oxaCoin] || recvCache.usdt || '';
+        var preview = recvCache[oxaCoin] || (oxaAsset === 'usdt' ? recvCache.usdt : '') || '';
         if (preview) paintPreviewAddr(preview);
+        else showCryptoInvoice(false);
       });
     }
     document.querySelectorAll('#oxaNets .oxa-net').forEach(function (btn) {
