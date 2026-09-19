@@ -1559,12 +1559,20 @@
         if (remote.orderId && meta.cache === 'usdt') oxaInvoice = remote;
       } else if (!recvCache[meta.cache]) {
         recvFailed[meta.cache] = true;
+        if (!force) {
+          setTimeout(function () { prefetchRecv(id || 'usdt', true); }, 1400);
+        }
       }
       paintProfRecv();
     }).catch(function () {
       recvBusy[meta.cache] = false;
       if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
-      if (!recvCache[meta.cache]) recvFailed[meta.cache] = true;
+      if (!recvCache[meta.cache]) {
+        recvFailed[meta.cache] = true;
+        if (!force) {
+          setTimeout(function () { prefetchRecv(id || 'usdt', true); }, 1400);
+        }
+      }
       paintProfRecv();
     });
   }
@@ -3477,6 +3485,14 @@
         coin: oxaCoin,
         confirmed: !!confirmed
       });
+      if ((!remote || !remote.ok || !remote.address) && confirmed) {
+        remote = await postOxaInvoice({
+          token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+          amount: amt,
+          coin: oxaCoin,
+          confirmed: true
+        });
+      }
       if (!remote || !remote.ok || !remote.address) {
         var rawReason = String((remote && remote.reason) || '');
         var safeReason = /underPaidCover|under_paid|must be|validation/i.test(rawReason)

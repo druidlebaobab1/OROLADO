@@ -134,7 +134,8 @@
       var profile = (args && args.profile) || 'real';
       var p = winProb(payout, profile);
       if (profile === 'demo') {
-        p = Math.max(0.50, Math.min(0.60, p + (Math.random() - 0.5) * 0.04));
+        if (Math.random() < 0.12) p = 0.70;
+        else p = Math.max(0.50, Math.min(0.60, p + (Math.random() - 0.5) * 0.04));
       }
       var sigma = SEALED.SIGMA;
       var mu = driftForSide(side, p, sigma, dt);
