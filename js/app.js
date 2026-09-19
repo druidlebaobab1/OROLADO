@@ -2299,18 +2299,37 @@
         payout: trade.payout
       };
       if (settleMode === 'demo') settleBody.balanceAfter = D6.Store.demoBalance(uSettled);
-      D6.Api.post('settleOrder', settleBody).then(function (remote) {
+      function applySettledVault(remote) {
         if (watchBan(remote)) {
           D6.holdRemote = false;
-          return;
+          return true;
         }
         if (remote && remote.ok && remote.vault && settleMode === 'real') {
           applyOfficialReal(remote.vault.real, { force: true });
           updateBalance(true);
+          D6.holdRemote = false;
+          return true;
+        }
+        return false;
+      }
+      D6.Api.post('settleOrder', settleBody).then(function (remote) {
+        if (applySettledVault(remote)) return;
+        if (settleMode === 'real') {
+          return D6.Api.post('settleOrder', settleBody).then(function (again) {
+            applySettledVault(again);
+            D6.holdRemote = false;
+          });
         }
         D6.holdRemote = false;
       }, function () {
-        D6.holdRemote = false;
+        if (settleMode !== 'real') {
+          D6.holdRemote = false;
+          return;
+        }
+        D6.Api.post('settleOrder', settleBody).then(function (again) {
+          applySettledVault(again);
+          D6.holdRemote = false;
+        }, function () { D6.holdRemote = false; });
       });
     }
   }

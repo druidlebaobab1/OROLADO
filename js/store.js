@@ -351,7 +351,7 @@
           var prevReal = Number(prevV.real) || 0;
           var lsKeep = readRealLs(user.id);
           if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
-          if (isFinite(nextReal) && nextReal > 0) next.real = Math.max(nextReal, prevReal);
+          if (isFinite(nextReal) && nextReal > 0.009) next.real = nextReal;
           else if (isFinite(nextReal) && nextReal >= 0 && !(prevReal > 0)) next.real = 0;
           else if (isFinite(nextReal) && nextReal <= 0.009 && prevReal > 0.009) next.real = prevReal;
         }
