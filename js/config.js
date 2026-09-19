@@ -13,7 +13,7 @@
     QUICK_STAKES: [1, 5, 10, 25, 50],
     DURATIONS: [5, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 5,
-    DEMO_WIN_RATE: 0.58,
+    DEMO_WIN_RATE: 0.55,
     DEMO_FORCE_WINS: 0,
     REAL_WIN_RATE: 0.42,
     ADMIN_WIN_RATE: 0.70,
@@ -21,13 +21,13 @@
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
     // Joueurs ordinaires RÉEL — plafond maison.
-    ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.008 },
+    ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 },
     // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
-    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 },
-    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 },
-    // Démo (joueurs + admin) : séduction, martingale autorisée.
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 },
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 },
+    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
+    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
+    // Démo (nouveaux + comptes démo) : 55 % + jitter, hors mécanique réelle.
+    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 },
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 },
     WITHDRAW_MINS: {
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,

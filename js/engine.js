@@ -10,9 +10,9 @@
     var SEALED = Object.freeze({
       SIGMA: 0.00125,
       DEFAULT_ODDS: 1.88,
-      WIN_P_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.008 }),
-      WIN_P_DEMO: Object.freeze({ '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02 }),
-      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025 }),
+      WIN_P_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 }),
+      WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 }),
+      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 }),
       PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
     });
 
@@ -133,6 +133,9 @@
       var payout = (args && args.payout) != null ? args.payout : SEALED.DEFAULT_ODDS;
       var profile = (args && args.profile) || 'real';
       var p = winProb(payout, profile);
+      if (profile === 'demo') {
+        p = Math.max(0.50, Math.min(0.60, p + (Math.random() - 0.5) * 0.04));
+      }
       var sigma = SEALED.SIGMA;
       var mu = driftForSide(side, p, sigma, dt);
       var z = boxMuller();
@@ -1392,13 +1395,13 @@
   /** Arbitrage étanche — démo / admin réel / joueur réel. */
   function resolveWinProbability(user, trade, mode) {
     var demoMap = C.ODDS_WIN_RATE_DEMO || {
-      '1.88': 0.58, '6': 0.20, '11': 0.10, '51': 0.02
+      '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018
     };
     var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
-      '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.025
+      '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02
     };
     var realMap = C.ODDS_WIN_RATE || {
-      '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.008
+      '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015
     };
     var admin = isAdminUser(user);
     var isDemo = mode !== 'real';
@@ -1758,14 +1761,24 @@
       trade.payout = payout;
       var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
       var sideNow = (trade.ticket && trade.ticket.side) || trade.side;
-      var exitPrice = Number(readFinalPrice(trade));
+      var profile = 'real';
+      if (mode !== 'real') profile = 'demo';
+      else if (isAdminUser(user)) profile = 'admin';
+      var verdict = StochasticCore.settle({
+        entryPrice: entryPx,
+        durationSec: Number(trade.duration) || 5,
+        side: sideNow,
+        payout: payout,
+        profile: profile
+      });
+      var exitPrice = Number(verdict.exitPrice);
       if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = entryPx;
       if (StochasticCore && StochasticCore.round2) {
         entryPx = StochasticCore.round2(entryPx);
         exitPrice = StochasticCore.round2(exitPrice);
       }
-      var voided = isFinite(entryPx) && isFinite(exitPrice) && Math.abs(exitPrice - entryPx) < 0.005;
-      var won = !voided && wonFromPrice(trade, exitPrice);
+      var voided = !!verdict.voided;
+      var won = !voided && !!verdict.won;
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }

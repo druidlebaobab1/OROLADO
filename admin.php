@@ -1399,7 +1399,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <header class="head">
     <h1>Super Admin Dashboard</h1>
     <div>
-      <span class="muted" id="inscritsHead">Inscrits Supabase : <?php echo (int) $inscritsHead; ?></span>
+      <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
   </header>
@@ -1528,7 +1528,7 @@ function filters() {
   document.getElementById('idFrom').style.display = idr ? '' : 'none';
   return {
     q: document.getElementById('q').value,
-    preset: (view === 'signup_date' && preset === 'all') ? 'date' : preset,
+    preset: preset,
     cal: document.getElementById('cal').value,
     dateFrom: document.getElementById('dateFrom').value,
     dateTo: document.getElementById('dateTo').value,
@@ -1544,7 +1544,7 @@ async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
   renderButtons(j.badges || {});
-  document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits';
+  document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
 }
 function renderList(j) {
   const panel = document.getElementById('panel');

@@ -387,51 +387,64 @@ if ($action === 'registerVerify') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code incorrect']);
     exit;
   }
-  if (find_user($db, $email) || orolado_identity_block($db, $email, (string) ($row['phone'] ?? ''))) {
-    unset($db['pendingRegistrations'][$email]);
-    save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.']);
+  $phoneRow = (string) ($row['phone'] ?? '');
+  $created = with_db_lock(function ($box) use ($email, $row, $SECRET, $phoneRow) {
+    $locked =& $box->db;
+    if (find_user($locked, $email) || orolado_identity_block($locked, $email, $phoneRow)) {
+      unset($locked['pendingRegistrations'][$email]);
+      return ['ok' => false, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.'];
+    }
+    $uid = 'u_' . bin2hex(random_bytes(8));
+    $user = [
+      'id' => $uid,
+      'displayName' => (string) ($row['displayName'] ?? 'Membre'),
+      'email' => $email,
+      'phone' => $phoneRow,
+      'countryCode' => (string) ($row['countryCode'] ?? '+225'),
+      'passwordHash' => (string) ($row['passwordHash'] ?? ''),
+      'role' => 'user',
+      'createdAt' => date('c'),
+      'mode' => 'demo',
+      'assetId' => 'v100',
+      'duration' => 10,
+      'trades' => 0,
+      'wins' => 0,
+      'realTrades' => 0,
+      'realStakeVolume' => 0,
+      'realDepositTotal' => 0,
+      'trafficSource' => (string) ($row['trafficSource'] ?? 'direct'),
+      'trafficMedium' => (string) ($row['trafficMedium'] ?? ''),
+      'trafficCampaign' => (string) ($row['trafficCampaign'] ?? ''),
+      'trafficReferrer' => (string) ($row['trafficReferrer'] ?? ''),
+      'publicId' => alloc_public_id($locked),
+      'transactions' => [],
+      'positions' => []
+    ];
+    $vault = ['demo' => 1000000, 'real' => 0];
+    $locked['users'][$uid] = $user;
+    $locked['vault'][$uid] = $vault;
+    unset($locked['pendingRegistrations'][$email]);
+    $tok = make_token($uid, $SECRET);
+    $locked['sessions'][$tok] = orolado_new_session($uid);
+    return ['ok' => true, 'user' => $user, 'vault' => $vault, 'token' => $tok];
+  });
+  if (empty($created['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => $created['reason'] ?? 'Inscription impossible']);
     exit;
   }
-  $uid = 'u_' . bin2hex(random_bytes(8));
-  $user = [
-    'id' => $uid,
-    'displayName' => (string) ($row['displayName'] ?? 'Membre'),
-    'email' => $email,
-    'phone' => (string) ($row['phone'] ?? ''),
-    'countryCode' => (string) ($row['countryCode'] ?? '+225'),
-    'passwordHash' => (string) ($row['passwordHash'] ?? ''),
-    'role' => 'user',
-    'createdAt' => date('c'),
-    'mode' => 'demo',
-    'assetId' => 'v100',
-    'duration' => 10,
-    'trades' => 0,
-    'wins' => 0,
-    'realTrades' => 0,
-    'realStakeVolume' => 0,
-    'realDepositTotal' => 0,
-    'trafficSource' => (string) ($row['trafficSource'] ?? 'direct'),
-    'trafficMedium' => (string) ($row['trafficMedium'] ?? ''),
-    'trafficCampaign' => (string) ($row['trafficCampaign'] ?? ''),
-    'trafficReferrer' => (string) ($row['trafficReferrer'] ?? ''),
-    'publicId' => alloc_public_id($db),
-    'transactions' => [],
-    'positions' => []
-  ];
-  $vault = ['demo' => 1000000, 'real' => 0];
-  $db['users'][$uid] = $user;
-  $db['vault'][$uid] = $vault;
-  unset($db['pendingRegistrations'][$email]);
-  $tok = make_token($uid, $SECRET);
-  $db['sessions'][$tok] = orolado_new_session($uid);
+  $user = $created['user'];
+  $vault = $created['vault'];
+  $tok = $created['token'];
   orolado_set_session_cookie($tok);
+  $db = load_db($file);
   $welcome = ['ok' => false];
   if (!brevo_welcome_already_sent($db, $email)) {
     $welcome = brevo_send_welcome($email, (string) $user['displayName']);
-    if (!empty($welcome['ok'])) brevo_mark_welcome_sent($db, $email);
+    if (!empty($welcome['ok'])) {
+      brevo_mark_welcome_sent($db, $email);
+      save_db($file, $db);
+    }
   }
-  save_db($file, $db);
   echo json_encode([
     'ok' => true,
     'server' => true,
@@ -1531,7 +1544,8 @@ if ($action === 'settleOrder') {
     if (abs($od - $payoutReq) < 0.001) { $reqPayout = $od; break; }
   }
   $uid = (string) $me['id'];
-  $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon, $voided, $closePrice, $reqStake, $reqMode, $reqPayout, $reqBal, $reqSide, $reqEntry) {
+  $isAdmin = orolado_is_admin_user($me);
+  $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon, $voided, $closePrice, $reqStake, $reqMode, $reqPayout, $reqBal, $reqSide, $reqEntry, $isAdmin) {
     $locked =& $box->db;
     if (!isset($locked['orders']) || !is_array($locked['orders'])) $locked['orders'] = [];
     foreach ($locked['orders'] as &$o) {
@@ -1567,13 +1581,9 @@ if ($action === 'settleOrder') {
       }
       $side = (($o['side'] ?? $reqSide) === 'put') ? 'put' : 'call';
       $entry = (float) ($o['openPrice'] ?? $o['entryPrice'] ?? $reqEntry);
-      $priced = orolado_outcome_from_prices($side, $entry, $closePrice);
-      if ($priced) {
-        $voided = !empty($priced['voided']);
-        $won = $voided ? false : !empty($priced['won']);
-      } else {
-        $won = $voided ? false : ($wantWon !== null ? $wantWon : !empty($o['won']));
-      }
+      $profile = ($mode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
+      $voided = false;
+      $won = orolado_sealed_roll($payout, $profile);
       $credit = orolado_trade_credit($won, $voided, $stake, $payout);
       $net = $voided ? 0 : ($won ? orolado_money($credit - $stake) : orolado_money(-$stake));
       $final = $voided ? 'void' : ($won ? 'won' : 'lost');
@@ -1605,13 +1615,9 @@ if ($action === 'settleOrder') {
     if ($oid === '' || $reqStake < 1) {
       return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
     }
-    $priced = orolado_outcome_from_prices($reqSide !== '' ? $reqSide : 'call', $reqEntry, $closePrice);
-    if ($priced) {
-      $voided = !empty($priced['voided']);
-      $won = $voided ? false : !empty($priced['won']);
-    } else {
-      $won = $voided ? false : (bool) $wantWon;
-    }
+    $lateProfile = ($reqMode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
+    $voided = false;
+    $won = orolado_sealed_roll($reqPayout, $lateProfile);
     $credit = orolado_trade_credit($won, $voided, $reqStake, $reqPayout);
     $net = $voided ? 0 : ($won ? orolado_money($credit - $reqStake) : orolado_money(-$reqStake));
     $final = $voided ? 'void' : ($won ? 'won' : 'lost');

@@ -315,12 +315,10 @@ function admin_auth_users_count(): int {
 }
 
 function admin_inscrits_count(): int {
-  $cached = admin_cache_get('inscrits_n', 20);
+  $cached = admin_cache_get('inscrits_n3', 20);
   if (is_array($cached) && isset($cached['n']) && (int) $cached['n'] > 0) return (int) $cached['n'];
-  $nProfiles = admin_sb_count('profiles', 'select=id');
-  $nAuth = admin_auth_users_count();
-  $n = max($nProfiles, $nAuth);
-  admin_cache_set('inscrits_n', ['n' => $n]);
+  $n = count(admin_profiles());
+  admin_cache_set('inscrits_n3', ['n' => $n]);
   return $n;
 }
 
@@ -739,7 +737,7 @@ function admin_fetch_auth_users(): array {
 }
 
 function admin_profiles(): array {
-  $cached = admin_cache_get('profiles2', 40);
+  $cached = admin_cache_get('profiles3', 40);
   if (is_array($cached) && isset($cached['list'])) return $cached['list'];
 
   $rows = admin_sb_all(
@@ -856,6 +854,35 @@ function admin_profiles(): array {
   }
 
   $list = array_values($byId);
+  $uniq = [];
+  foreach ($list as $row) {
+    $em = strtolower(trim((string) ($row['email'] ?? '')));
+    $key = $em !== '' ? ('e:' . $em) : ('i:' . (string) ($row['id'] ?? ''));
+    if ($key === 'e:' || $key === 'i:') continue;
+    if (!isset($uniq[$key])) {
+      $uniq[$key] = $row;
+      continue;
+    }
+    $prev = $uniq[$key];
+    $aId = (string) ($prev['id'] ?? '');
+    $bId = (string) ($row['id'] ?? '');
+    $aUuid = (bool) preg_match('/^[0-9a-f-]{36}$/i', $aId);
+    $bUuid = (bool) preg_match('/^[0-9a-f-]{36}$/i', $bId);
+    $preferNew = $bUuid && !$aUuid;
+    $keep = $preferNew ? $row : $prev;
+    $src = $preferNew ? $prev : $row;
+    foreach (['email', 'name', 'phone', 'country', 'createdAt', 'lastSeen', 'publicId', 'ip', 'traffic', 'lang'] as $f) {
+      if (($keep[$f] ?? '') === '' && ($src[$f] ?? '') !== '') $keep[$f] = $src[$f];
+    }
+    if ((float) ($src['depositTotal'] ?? 0) > (float) ($keep['depositTotal'] ?? 0)) {
+      $keep['depositTotal'] = (float) $src['depositTotal'];
+    }
+    $ca = (string) ($keep['createdAt'] ?? '');
+    $cb = (string) ($src['createdAt'] ?? '');
+    if ($cb !== '' && ($ca === '' || strcmp($cb, $ca) < 0)) $keep['createdAt'] = $cb;
+    $uniq[$key] = $keep;
+  }
+  $list = array_values($uniq);
   usort($list, static function ($a, $b) {
     return strcmp((string) ($a['createdAt'] ?? ''), (string) ($b['createdAt'] ?? ''));
   });
@@ -866,7 +893,7 @@ function admin_profiles(): array {
     if (($list[$i]['publicId'] ?? '') === '') $list[$i]['publicId'] = 'ORO-' . $n;
     if (($list[$i]['traffic'] ?? '') === '') $list[$i]['traffic'] = 'direct';
   }
-  admin_cache_set('profiles2', ['list' => $list]);
+  admin_cache_set('profiles3', ['list' => $list]);
   return $list;
 }
 
@@ -1415,7 +1442,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'badges', 'health'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'inscrits_n3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'badges', 'health'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
