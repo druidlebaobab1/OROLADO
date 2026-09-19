@@ -359,7 +359,7 @@
         mergeCloudOrder(row);
       })
       .subscribe();
-    pollTimer = setInterval(function () { pullVault(); }, 2500);
+    pollTimer = setInterval(function () { pullVault(); }, 12000);
     startPresencePing();
   }
 

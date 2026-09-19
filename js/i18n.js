@@ -366,7 +366,7 @@
     myOrders: 'Mes ordres', community: 'Trades Communaut\u00e9 (Live)',
     seeAll: 'Positions & historique (R\u00e9el)',
     seeAllDemo: 'Historique (D\u00e9mo)',
-    tradeHist: 'Historique de trading',
+    tradeHist: 'Historique des trades',
     histTabReal: 'R\u00e9el',
     histTabDemo: 'D\u00e9mo',
     passOtpLead: 'Un code \u00e0 6 chiffres sera envoy\u00e9 par e-mail avant de pouvoir changer le mot de passe.',

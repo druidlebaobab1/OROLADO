@@ -519,33 +519,53 @@
     return true;
   }
   var banWatchTimer = 0;
+  var screenWakeLock = null;
+  function applyQuietVault(remote) {
+    if (!remote || !remote.ok || !remote.vault || !user()) return;
+    var incoming = Number(remote.vault.real);
+    var local = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) : 0;
+    var locks = getBalanceLocks();
+    if (locks && Date.now() < locks.until) return;
+    if (!isFinite(incoming) || incoming < 0) return;
+    if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
+    if (openRealStake() > 0 && incoming > local + 0.009) return;
+    if (Math.abs(incoming - local) <= 0.009) return;
+    if (adoptOfficialVault(remote.vault, { fromMe: true })) updateBalance(false);
+  }
+  function holdScreenAwake() {
+    if (!navigator.wakeLock || !navigator.wakeLock.request) return;
+    if (document.hidden) return;
+    navigator.wakeLock.request('screen').then(function (lock) {
+      screenWakeLock = lock;
+      lock.addEventListener('release', function () { screenWakeLock = null; });
+    }).catch(function () { /* ignore */ });
+  }
+  function resumeAfterSleep() {
+    try { if (window.oroPurgeDeadOverlays) window.oroPurgeDeadOverlays(); } catch (e0) { /* ignore */ }
+    try { unlockPointerLayers(); } catch (e1) { /* ignore */ }
+    holdScreenAwake();
+    var u = user();
+    if (u && D6.Engine.flushSettlements) {
+      try { D6.Engine.flushSettlements(u); } catch (eF) { /* ignore */ }
+    }
+    refreshRemoteVault();
+    checkDepositReturn();
+    try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (e2) { /* ignore */ }
+  }
   function startBanWatch() {
     if (banWatchTimer) return;
     function pollMe() {
+      if (document.hidden) return;
       var u = user();
       if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
       if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
       D6.Api.post('me', {}).then(function (r) {
         if (watchBan(r)) return;
-        if (!r || !r.ok || !r.vault) return;
-        adoptServerBook(r);
-        var incoming = Number(r.vault.real);
-        var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
-        var locks = getBalanceLocks();
-        if (locks && Date.now() < locks.until) return;
-        if (!isFinite(incoming) || incoming < 0) return;
-        if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
-        if (openRealStake() > 0 && incoming > local + 0.009) return;
-        if (Math.abs(incoming - local) > 0.009) {
-          adoptOfficialVault(r.vault, { fromMe: true });
-          updateBalance(false);
-        }
+        applyQuietVault(r);
       }).catch(function () { /* ignore */ });
     }
-    banWatchTimer = setInterval(pollMe, 1000);
-    document.addEventListener('visibilitychange', function () {
-      if (!document.hidden) pollMe();
-    });
+    banWatchTimer = setInterval(pollMe, 8000);
+    holdScreenAwake();
   }
 
   function toast(msg, kind, ms) {
@@ -1193,7 +1213,7 @@
       btn.classList.toggle('on', btn.getAttribute('data-hist-mode') === mode);
     });
     if ($('histSheetTitle')) {
-      $('histSheetTitle').textContent = t('tradeHist') || 'Historique de trading';
+      $('histSheetTitle').textContent = t('tradeHist') || 'Historique des trades';
     }
     var live = (D6.Engine.getTrades ? D6.Engine.getTrades(mode) : []).filter(function (tr) {
       return !tr.mode || tr.mode === mode;
@@ -3703,11 +3723,7 @@
       var remote = await D6.Api.post('me', {});
       if (watchBan(remote)) return;
       if (remote && remote.ok && user()) {
-        adoptServerBook(remote);
-        if (remote.vault && !(openRealStake() > 0)) {
-          adoptOfficialVault(remote.vault, { fromMe: true });
-          updateBalance(false);
-        }
+        applyQuietVault(remote);
       }
       return;
     }
@@ -5257,7 +5273,31 @@
       } else {
         destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
       }
-      var real = realWithdrawBalance(u);
+      var liveReal = null;
+      if (!(D6.Api && D6.Api.token && D6.Api.token())) {
+        toast(t('sessionInvalid') || 'Session invalide', 'err');
+        return;
+      }
+      try {
+        var liveMe = await D6.Api.post('me', {});
+        if (watchBan(liveMe)) return;
+        if (!liveMe || !liveMe.ok || !liveMe.vault || liveMe.vault.real == null) {
+          toast(t('sessionInvalid') || 'Impossible de vérifier le solde. Réessayez.', 'err');
+          return;
+        }
+        liveReal = Number(liveMe.vault.real);
+        if (!isFinite(liveReal) || liveReal < 0) {
+          toast(t('insufficient'), 'err');
+          return;
+        }
+        applyOfficialReal(liveReal, { fromMe: true, force: true });
+        u = user() || u;
+        refreshWithdrawUi();
+      } catch (eLive) {
+        toast('Impossible de vérifier le solde. Réessayez.', 'err');
+        return;
+      }
+      var real = liveReal;
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
       if (!gate.ok) { toast(gate.msg, 'err', 5000); return; }
@@ -6033,7 +6073,7 @@
 
   D6.App = {
     onRemoteAccount: function () {
-      updateBalance(true);
+      updateBalance(false);
       fillProfile();
       patchHistorySoon();
     },
@@ -6136,20 +6176,16 @@
           return;
         }
         unlockAudio();
-        var u = user();
-        if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
-        if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-        refreshRemoteVault();
-        checkDepositReturn();
+        resumeAfterSleep();
       });
       window.addEventListener('pagehide', persistLiveTrades);
       window.addEventListener('freeze', persistLiveTrades);
       window.addEventListener('pageshow', function () {
-        var uShow = user();
-        if (uShow && D6.Engine.restoreOpen) D6.Engine.restoreOpen(uShow);
-        if (uShow && D6.Engine.flushSettlements) D6.Engine.flushSettlements(uShow);
-        refreshRemoteVault();
-        checkDepositReturn();
+        if (document.hidden) return;
+        resumeAfterSleep();
+      });
+      document.addEventListener('resume', function () {
+        if (!document.hidden) resumeAfterSleep();
       });
       setInterval(updatePayoutUi, 2500);
       if (location.hash.indexOf('#preview') === 0) {

@@ -631,9 +631,9 @@ html.is-android .modal-backdrop.active .btn-gold{
   pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:9999}
 html.is-android .modal-backdrop.active .btn-close{
   pointer-events:auto!important;touch-action:manipulation;position:absolute!important;z-index:9999}
-html.is-android #depositModal .deposit-box:not(.is-crypto){padding-top:8px}
+html.is-android #depositModal .deposit-box:not(.is-crypto){padding-top:38px}
 html.is-android #depositModal #closeDeposit{
-  top:6px!important;right:8px!important;width:34px;height:34px;min-width:34px;min-height:34px}
+  top:10px!important;right:10px!important;width:32px;height:32px;min-width:32px;min-height:32px}
 html.is-android .drawer-head .btn-close{position:static!important;top:auto;right:auto;z-index:5}
 html.is-android .trade-hint,
 html.is-android [data-i18n="tradeHint"],
@@ -763,6 +763,10 @@ html.is-android .modal-backdrop.active .modal-head-row .btn-close{
 @keyframes depShimmer{0%,18%{transform:translateX(-130%)}55%,100%{transform:translateX(130%)}}
 .deposit-box:not(.is-crypto) .modal-title{margin-bottom:8px}
 .deposit-box:not(.is-crypto) .field{margin-bottom:6px;gap:4px}
+.deposit-box:not(.is-crypto) .field label,
+#depositModal [data-i18n="depositAmtLabel"]{
+  font-size:.58rem;line-height:1.25;letter-spacing:.03em;white-space:normal;max-width:100%;
+  overflow:visible;word-break:break-word}
 .deposit-box:not(.is-crypto) .field input{min-height:40px;padding:10px 12px}
 .deposit-box:not(.is-crypto) .pay-method-label{margin:8px 0 6px}
 .deposit-box:not(.is-crypto) .pay-method-grid{gap:10px;margin-bottom:0}
@@ -934,8 +938,10 @@ html.is-android #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
 @media (max-width:480px){
-  .deposit-box:not(.is-crypto){width:min(440px,94vw);max-height:92dvh;overflow:auto;padding:10px 12px 14px}
-  #depositModal #closeDeposit{top:8px!important;right:8px!important}
+  .deposit-box:not(.is-crypto){width:min(440px,94vw);max-height:92dvh;overflow:auto;padding:38px 12px 14px}
+  #depositModal #closeDeposit{top:10px!important;right:10px!important;width:32px;height:32px;min-width:32px;min-height:32px}
+  #depositModal .deposit-box:not(.is-crypto) .field label,
+  #depositModal [data-i18n="depositAmtLabel"]{font-size:.5rem;line-height:1.2;letter-spacing:.02em}
   #depositModal #payMethodCard .pay-method-desc{font-size:.56rem;line-height:1.2;margin-top:3px}
   #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(5,minmax(0,1fr))}
   #depositModal #payMethodUsdt .pay-crypto-cell b{font-size:.56rem}
@@ -2552,8 +2558,9 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
     width:100%!important;min-width:168px!important;max-width:none!important;flex:0 0 auto!important}
   html.is-fullscreen:not(.is-android):not(.is-ios) .fs-trade-overlay.on .pad .stake-field input{
     width:100%!important;min-width:0!important;max-width:none!important;
-    font-size:18px!important;letter-spacing:0;text-align:left!important;
-    padding:10px 10px 10px 28px!important;overflow:visible!important;text-overflow:clip!important}
+    font-size:16px!important;letter-spacing:0;text-align:left!important;
+    min-height:36px!important;height:38px!important;line-height:1.2!important;
+    padding:6px 10px 6px 26px!important;overflow:visible!important;text-overflow:clip!important}
   html.is-fullscreen:not(.is-android):not(.is-ios) .fs-trade-overlay.on .pad .trade-row{
     flex-direction:column!important;width:100%!important;margin-top:8px!important;gap:8px!important}
   html.is-fullscreen:not(.is-android):not(.is-ios) .fs-trade-overlay.on .pad .btn-trade{
@@ -2561,15 +2568,25 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
 }
 
 @media (max-width:859px){
+  #depositModal .deposit-box:not(.is-crypto){padding-top:38px;position:relative}
+  #depositModal #closeDeposit{top:10px!important;right:10px!important;width:32px;height:32px;min-width:32px;min-height:32px}
+  #depositModal .deposit-box:not(.is-crypto) .field label,
+  #depositModal [data-i18n="depositAmtLabel"]{font-size:.52rem;line-height:1.2;letter-spacing:.02em;white-space:normal}
+  #financeModal,#historySheet{overflow-x:hidden}
   #financeModal .modal-box,#historySheet .modal-box{
-    width:min(380px,94vw);max-height:76dvh;padding:12px 10px 8px;overflow:hidden}
-  #financeModal .modal-title,#historySheet .modal-title{font-size:.82rem;margin-bottom:0}
-  #financeModal .modal-head-row,#historySheet .modal-head-row{margin-bottom:8px}
-  #txFeed .tx-feed-row{padding:6px 2px;gap:8px;grid-template-columns:minmax(0,1fr) max-content}
-  #txFeed .tx-type{font-size:.66rem}
-  #txFeed .tx-amt{font-size:.7rem;white-space:nowrap}
-  #txFeed .tx-meta{font-size:.52rem;word-break:break-word}
-  #txFeed .tx-st{font-size:.5rem;padding:1px 5px}
+    width:min(360px,92vw);max-width:92vw;max-height:76dvh;padding:10px 8px 8px;overflow:hidden;overflow-x:hidden;box-sizing:border-box}
+  #financeModal .modal-title,#historySheet .modal-title{font-size:.76rem;margin-bottom:0}
+  #financeModal .modal-head-row,#historySheet .modal-head-row{margin-bottom:6px}
+  #txFeed,#historySheet .sheet-feed{overflow-x:hidden;max-width:100%}
+  #txFeed .tx-feed-row{padding:5px 2px;gap:6px;grid-template-columns:minmax(0,1fr) max-content;max-width:100%}
+  #txFeed .tx-type{font-size:.62rem}
+  #txFeed .tx-amt{font-size:.66rem;white-space:nowrap}
+  #txFeed .tx-meta{font-size:.48rem;word-break:break-word}
+  #txFeed .tx-st{font-size:.48rem;padding:1px 4px}
+  #historySheet .table-wrap,#historySheet .sheet-feed,#financeModal .modal-box{overflow-x:hidden;max-width:100%}
+  #historySheet .hist-table{table-layout:fixed;width:100%;max-width:100%}
+  #historySheet .hist-table th,
+  #historySheet .hist-table td{font-size:.58rem!important;padding:5px 3px!important;word-break:break-word}
   #withdrawModal .withdraw-box{max-height:86dvh!important;overflow:hidden!important;padding:8px 8px 6px}
   #withdrawModal .wd-card{min-height:30px;font-size:.52rem;padding:3px 5px}
   #withdrawModal .wd-card-grid{gap:3px}

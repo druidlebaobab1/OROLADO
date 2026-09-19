@@ -2938,21 +2938,30 @@ function brevo_mark_welcome_sent(array &$db, string $email): void {
   $db['welcomeSent'][$email] = date('c');
 }
 
+function brevo_otp_code_cells(string $code): string {
+  $cells = '';
+  foreach (str_split($code) as $d) {
+    $cells .= '<td align="center" valign="middle" width="38" style="width:38px;height:46px;background-color:#0B1220;border:1px solid #334155;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:#FFFFFF;line-height:46px;">' . $d . '</td>'
+      . '<td width="6" style="width:6px;font-size:0;line-height:0;">&nbsp;</td>';
+  }
+  return $cells;
+}
+
 function brevo_otp_html(string $code): string {
   $safe = brevo_escape($code);
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-    . '<title>Orolado security code</title></head>'
-    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:20px 12px;">'
-    . '<tr><td align="center">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:460px;background:#121A2B;border-radius:14px;border:1px solid #334155;">'
-    . '<tr><td style="padding:24px;color:#E8EEF9;font-size:14px;line-height:1.55;">'
-    . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
-    . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your request:</p>'
-    . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
-    . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
-    . '</td></tr></table></td></tr></table></body></html>';
+  return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+    . '<html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'
+    . '<meta name="viewport" content="width=device-width,initial-scale=1" /><title>SÉCURITÉ OROLADO</title></head>'
+    . '<body style="margin:0;padding:0;background-color:#0B1220;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#0B1220;width:100%;">'
+    . '<tr><td align="center" style="padding:24px 12px;">'
+    . '<table role="presentation" width="460" cellspacing="0" cellpadding="0" border="0" style="max-width:460px;width:100%;background-color:#121A2B;border:1px solid #334155;">'
+    . '<tr><td align="center" style="padding:22px 20px 12px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:800;color:#F5C518;letter-spacing:1px;">SÉCURITÉ OROLADO</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#E8EEF9;">Use this 6-digit code to confirm your request:</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 16px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>' . brevo_otp_code_cells($safe) . '</tr></table></td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#FDE68A;">This code is valid for 1 minute.</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#C9D2E5;">Do not share this 6-digit code with anyone.</td></tr>'
+    . '</table></td></tr></table></body></html>';
 }
 
 function brevo_send_otp(string $email, string $code): array {
@@ -3002,19 +3011,19 @@ function orolado_wd_otp_hash(string $uid, string $code): string {
 
 function brevo_wd_otp_html(string $code): string {
   $safe = brevo_escape($code);
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-    . '<title>Orolado withdrawal code</title></head>'
-    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:20px 12px;">'
-    . '<tr><td align="center">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:460px;background:#121A2B;border-radius:14px;border:1px solid #334155;">'
-    . '<tr><td style="padding:24px;color:#E8EEF9;font-size:14px;line-height:1.55;">'
-    . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
-    . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your withdrawal:</p>'
-    . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
-    . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
-    . '</td></tr></table></td></tr></table></body></html>';
+  return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+    . '<html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'
+    . '<meta name="viewport" content="width=device-width,initial-scale=1" /><title>SÉCURITÉ OROLADO</title></head>'
+    . '<body style="margin:0;padding:0;background-color:#0B1220;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#0B1220;width:100%;">'
+    . '<tr><td align="center" style="padding:24px 12px;">'
+    . '<table role="presentation" width="460" cellspacing="0" cellpadding="0" border="0" style="max-width:460px;width:100%;background-color:#121A2B;border:1px solid #334155;">'
+    . '<tr><td align="center" style="padding:22px 20px 12px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:800;color:#F5C518;letter-spacing:1px;">SÉCURITÉ OROLADO</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#E8EEF9;">Use this 6-digit code to confirm your withdrawal:</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 16px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>' . brevo_otp_code_cells($safe) . '</tr></table></td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#FDE68A;">This code is valid for 1 minute.</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#C9D2E5;">Do not share this 6-digit code with anyone.</td></tr>'
+    . '</table></td></tr></table></body></html>';
 }
 
 function brevo_send_wd_otp(string $email, string $code): array {
