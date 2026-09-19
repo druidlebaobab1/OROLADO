@@ -1053,11 +1053,12 @@ function supabase_admin_set_password(string $userId, string $email, string $newP
   $hdrs = supabase_admin_headers();
   if ($url === '' || !$hdrs) return;
   $body = json_encode(['password' => $newPassword], JSON_UNESCAPED_UNICODE);
+  $done = [];
   $uuid = preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId);
   if ($uuid) {
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId), $hdrs, $body, 'PUT');
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId) . '/logout', $hdrs, '{}', 'POST');
-    return;
+    $done[$userId] = true;
   }
   $email = strtolower(trim($email));
   if ($email === '') return;
@@ -1068,10 +1069,10 @@ function supabase_admin_set_password(string $userId, string $email, string $newP
     if (!is_array($row)) continue;
     $mail = strtolower(trim((string) ($row['email'] ?? '')));
     $id = (string) ($row['id'] ?? '');
-    if ($mail !== $email || $id === '') continue;
+    if ($mail !== $email || $id === '' || isset($done[$id])) continue;
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($id), $hdrs, $body, 'PUT');
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($id) . '/logout', $hdrs, '{}', 'POST');
-    break;
+    $done[$id] = true;
   }
 }
 
@@ -1087,6 +1088,7 @@ function orolado_overwrite_user_password(array &$db, string $email, string $newP
     $mail = strtolower(trim((string) ($u['email'] ?? '')));
     if ($mail !== $email) continue;
     $uid = (string) ($u['id'] ?? $id);
+    unset($db['users'][$id]['password_plain'], $db['users'][$id]['plainPassword'], $db['users'][$id]['tempPassword']);
     $db['users'][$id]['password'] = $newHash;
     $db['users'][$id]['passwordHash'] = $newHash;
     $db['users'][$id]['reset_token'] = null;
@@ -2904,8 +2906,8 @@ function brevo_send_otp(string $email, string $code): array {
 // OTP site-wide : expiration stricte 1 minute. Le renvoi se débloque un peu
 // avant pour qu’un nouveau code parte sans coller à l’instant d’expiration.
 const OROLADO_OTP_TTL = 60;
-const OROLADO_OTP_RESEND_COOLDOWN = 50;
-const OROLADO_OTP_RESEND_UI = 55;
+const OROLADO_OTP_RESEND_COOLDOWN = 60;
+const OROLADO_OTP_RESEND_UI = 60;
 const OROLADO_WD_OTP_TTL = 60;
 const OROLADO_WD_OTP_RESEND = 55;
 

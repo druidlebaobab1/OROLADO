@@ -369,7 +369,7 @@
         if (remote && remote.ok) {
           var u = D6.Store.findByEmail(email);
           if (u) {
-            u.passwordHash = '';
+            u.passwordHash = await hashPassword(next);
             u.password = '';
             D6.Store.saveUser(u);
           }
@@ -393,6 +393,14 @@
           newPassword: next
         }, 20000);
         if (remote && remote.ok) {
+          try {
+            user.passwordHash = await hashPassword(next);
+            user.password = '';
+            D6.Store.saveUser(user);
+          } catch (eHash) { /* ignore */ }
+          if (D6.Supabase && D6.Supabase.changePassword) {
+            try { await D6.Supabase.changePassword(next); } catch (eSb) { /* ignore */ }
+          }
           return { ok: true };
         }
         if (remote && remote.reason) return remote;

@@ -145,6 +145,7 @@
     if (!el || typeof fn !== 'function') return;
     var last = 0;
     function run(e) {
+      if (el.disabled || el.getAttribute('aria-disabled') === 'true' || el.classList.contains('is-waiting')) return;
       var now = Date.now();
       if (now - last < 380) return;
       last = now;
@@ -665,8 +666,8 @@
   function setResendWait(btn, waiting) {
     if (!btn) return;
     btn.classList.toggle('is-waiting', !!waiting);
+    btn.disabled = !!waiting;
     btn.setAttribute('aria-disabled', waiting ? 'true' : 'false');
-    btn.removeAttribute('disabled');
   }
 
   var audioCtx = null;
@@ -4240,7 +4241,6 @@
         btn.setAttribute('data-i18n', key);
         btn.textContent = t(key);
         btn.type = 'button';
-        btn.classList.toggle('is-waiting', step === 'otp' && forgotLeft > 0);
       }
       tickForgotTimer();
     }
@@ -4257,14 +4257,24 @@
       tickForgotTimer();
     }
     function tickForgotTimer() {
-      var link = $('btnForgotResend');
       var waiting = forgotLeft > 0;
+      var link = $('btnForgotResend');
       if (link) {
         link.textContent = waiting
           ? t('otpResendIn').replace('{s}', String(forgotLeft))
           : t('otpResend');
         link.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
         setResendWait(link, waiting);
+      }
+      var primary = $('btnForgotPrimary');
+      if (primary && forgotStep === 'otp') {
+        primary.textContent = waiting
+          ? t('otpResendIn').replace('{s}', String(forgotLeft))
+          : t('otpResend');
+        primary.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
+        setResendWait(primary, waiting);
+      } else if (primary) {
+        setResendWait(primary, false);
       }
       var wait = $('forgotOtpTimer');
       if (wait) wait.textContent = '';
@@ -4765,14 +4775,24 @@
       el.classList.toggle('on', !!msg);
     }
     function tickPassTimer() {
-      var link = $('btnPassResend');
       var waiting = passLeft > 0;
+      var link = $('btnPassResend');
       if (link) {
         link.textContent = waiting
           ? t('otpResendIn').replace('{s}', String(passLeft))
           : t('otpResend');
         link.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
         setResendWait(link, waiting);
+      }
+      var primary = $('btnPassPrimary');
+      if (primary && passStep === 'otp') {
+        primary.textContent = waiting
+          ? t('otpResendIn').replace('{s}', String(passLeft))
+          : t('otpResend');
+        primary.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
+        setResendWait(primary, waiting);
+      } else if (primary) {
+        setResendWait(primary, false);
       }
       var wait = $('passOtpTimer');
       if (wait) wait.textContent = '';
