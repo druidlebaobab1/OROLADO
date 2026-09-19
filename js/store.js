@@ -5,10 +5,14 @@
   var SALT = 'ORO!lado-vault-v1#xof';
   var LEGACY_SALT = '6D!abl0-vault-v4#xof';
   var DEMO_LS = 'orolado_demo_bal_';
+  var REAL_LS = 'orolado_real_bal_';
   var vault = {};
 
   function demoLsKey(id) {
     return DEMO_LS + String(id || '');
+  }
+  function realLsKey(id) {
+    return REAL_LS + String(id || '');
   }
 
   function readDemoLs(id) {
@@ -25,6 +29,22 @@
     try {
       localStorage.setItem(demoLsKey(id), String(Math.max(0, Number(value) || 0)));
     } catch (eW) { /* ignore */ }
+  }
+
+  function readRealLs(id) {
+    if (!id) return null;
+    try {
+      var n = Number(localStorage.getItem(realLsKey(id)));
+      if (isFinite(n) && n >= 0) return n;
+    } catch (eRr) { /* ignore */ }
+    return null;
+  }
+
+  function writeRealLs(id, value) {
+    if (!id) return;
+    try {
+      localStorage.setItem(realLsKey(id), String(Math.max(0, Number(value) || 0)));
+    } catch (eWr) { /* ignore */ }
   }
 
   function fnv(str) {
@@ -169,13 +189,18 @@
     }
     if (!vault[user.id]) {
       var lsDemo = readDemoLs(user.id);
+      var lsReal = readRealLs(user.id);
       vault[user.id] = {
         demo: lsDemo != null ? lsDemo : (Number(user.demoBalance) > 0 ? Number(user.demoBalance) : D6.CONFIG.DEMO_START),
-        real: user.realBalance != null ? user.realBalance : D6.CONFIG.REAL_START
+        real: lsReal != null ? lsReal : (user.realBalance != null ? user.realBalance : D6.CONFIG.REAL_START)
       };
     } else {
       var kept = readDemoLs(user.id);
       if (kept != null) vault[user.id].demo = kept;
+      var keptReal = readRealLs(user.id);
+      if (keptReal != null && keptReal > 0 && !(Number(vault[user.id].real) > 0)) {
+        vault[user.id].real = keptReal;
+      }
     }
     return user;
   }
@@ -291,6 +316,7 @@
     if (db.session && db.users[db.session.userId]) writeHistMirror(db.users[db.session.userId]);
     if (db.session && db.session.userId && vault[db.session.userId]) {
       writeDemoLs(db.session.userId, vault[db.session.userId].demo);
+      writeRealLs(db.session.userId, vault[db.session.userId].real);
     }
     if (!skipRemote && !D6.holdRemote && !D6.holdPull && D6.Api && D6.Api.token && db.session && db.users[db.session.userId]) {
       var u = db.users[db.session.userId];
@@ -323,8 +349,11 @@
         if (Object.prototype.hasOwnProperty.call(vaultEntry, 'real')) {
           var nextReal = Number(vaultEntry.real);
           var prevReal = Number(prevV.real) || 0;
+          var lsKeep = readRealLs(user.id);
+          if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
           if (isFinite(nextReal) && nextReal > 0) next.real = Math.max(nextReal, prevReal);
           else if (isFinite(nextReal) && nextReal >= 0 && !(prevReal > 0)) next.real = 0;
+          else if (isFinite(nextReal) && nextReal <= 0.009 && prevReal > 0.009) next.real = prevReal;
         }
         var keptDemo = readDemoLs(user.id);
         if (keptDemo != null && keptDemo > 0) next.demo = keptDemo;
@@ -443,8 +472,10 @@
       if (!user) return;
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       var n = Math.max(0, D6.roundMoney(value));
-      if (user.mode === 'real') v.real = n;
-      else {
+      if (user.mode === 'real') {
+        v.real = n;
+        writeRealLs(user.id, n);
+      } else {
         v.demo = n;
         writeDemoLs(user.id, n);
       }
@@ -456,8 +487,10 @@
       if (!user) return;
       var v = vault[user.id] || { demo: D6.CONFIG.DEMO_START, real: 0 };
       var n = Math.max(0, D6.roundMoney(value));
-      if (mode === 'real') v.real = n;
-      else {
+      if (mode === 'real') {
+        v.real = n;
+        writeRealLs(user.id, n);
+      } else {
         v.demo = n;
         writeDemoLs(user.id, n);
       }

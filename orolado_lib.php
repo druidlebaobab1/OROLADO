@@ -2950,7 +2950,7 @@ function brevo_otp_html(string $code): string {
     . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
     . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your request:</p>'
     . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
+    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 15 minutes.</p>'
     . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
     . '</td></tr></table></td></tr></table></body></html>';
 }
@@ -2966,10 +2966,10 @@ function brevo_send_otp(string $email, string $code): array {
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
   $html = brevo_otp_html($code);
-  $text = "Your Orolado security code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
-  $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
+  $text = "Your Orolado security code: $code\n\nThis code is valid for 15 minutes.\nDo not share this 6-digit code with anyone.\n";
+  $sent = orolado_mail_send($email, '', 'Orolado security code — valid 15 minutes', $html, $text);
   if (empty($sent['ok'])) {
-    $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
+    $sent = orolado_mail_send($email, '', 'Orolado security code — valid 15 minutes', $html, $text);
   }
   $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
   @file_put_contents($log, json_encode([
@@ -2982,13 +2982,15 @@ function brevo_send_otp(string $email, string $code): array {
   return $sent;
 }
 
-// OTP site-wide : expiration stricte 1 minute. Le renvoi se débloque un peu
-// avant pour qu’un nouveau code parte sans coller à l’instant d’expiration.
-const OROLADO_OTP_TTL = 60;
-const OROLADO_OTP_RESEND_COOLDOWN = 60;
-const OROLADO_OTP_RESEND_UI = 60;
-const OROLADO_WD_OTP_TTL = 60;
-const OROLADO_WD_OTP_RESEND = 55;
+// OTP : 15 min de validité (les e-mails arrivent souvent après 1 min).
+// Le renvoi est possible plus tôt ; l’ancien code reste accepté jusqu’à son TTL.
+const OROLADO_OTP_TTL = 900;
+const OROLADO_OTP_RESEND_COOLDOWN = 45;
+const OROLADO_OTP_RESEND_UI = 45;
+const OROLADO_OTP_PENDING_KEEP = 1800;
+const OROLADO_OTP_GRACE = 45;
+const OROLADO_WD_OTP_TTL = 900;
+const OROLADO_WD_OTP_RESEND = 45;
 
 function orolado_otp_hash(string $email, string $code): string {
   return hash('sha256', 'orolado-otp|' . strtolower(trim($email)) . '|' . $code);
@@ -3010,7 +3012,7 @@ function brevo_wd_otp_html(string $code): string {
     . '<div style="text-align:center;font-size:18px;font-weight:800;color:#F5C518;margin-bottom:14px;">OROLADO SECURITY</div>'
     . '<p style="margin:0 0 12px;">Use this 6-digit code to confirm your withdrawal:</p>'
     . '<p style="margin:0 0 14px;text-align:center;font-size:30px;font-weight:900;letter-spacing:.28em;color:#FFFFFF;background:#0B1220;border:1px solid #243047;border-radius:12px;padding:14px 10px;">' . $safe . '</p>'
-    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 1 minute.</p>'
+    . '<p style="margin:0 0 8px;color:#FDE68A;font-weight:700;">This code is valid for 15 minutes.</p>'
     . '<p style="margin:0;color:#C9D2E5;">Do not share this 6-digit code with anyone.</p>'
     . '</td></tr></table></td></tr></table></body></html>';
 }
@@ -3026,10 +3028,10 @@ function brevo_send_wd_otp(string $email, string $code): array {
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
   $html = brevo_wd_otp_html($code);
-  $text = "Your Orolado withdrawal code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
-  $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
+  $text = "Your Orolado withdrawal code: $code\n\nThis code is valid for 15 minutes.\nDo not share this 6-digit code with anyone.\n";
+  $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 15 minutes', $html, $text);
   if (empty($sent['ok'])) {
-    $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
+    $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 15 minutes', $html, $text);
   }
   $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
   @file_put_contents($log, json_encode([
@@ -3049,12 +3051,80 @@ function orolado_pending_regs(array &$db): array {
   return $db['pendingRegistrations'];
 }
 
+function orolado_otp_remember_prev(array &$row): void {
+  $now = time();
+  $kept = [];
+  foreach ($row['prevHashes'] ?? [] as $prev) {
+    if (!is_array($prev)) continue;
+    if ((int) ($prev['expiresAt'] ?? 0) + OROLADO_OTP_GRACE >= $now) $kept[] = $prev;
+  }
+  if (!empty($row['codeHash'])) {
+    $kept[] = [
+      'hash' => (string) $row['codeHash'],
+      'expiresAt' => (int) ($row['expiresAt'] ?? ($now + OROLADO_OTP_TTL)),
+    ];
+  }
+  $row['prevHashes'] = $kept;
+}
+
+function orolado_otp_row_alive(array $row): bool {
+  $now = time();
+  $latest = (int) ($row['expiresAt'] ?? 0);
+  foreach ($row['prevHashes'] ?? [] as $prev) {
+    if (!is_array($prev)) continue;
+    $latest = max($latest, (int) ($prev['expiresAt'] ?? 0));
+  }
+  return $latest + OROLADO_OTP_GRACE >= $now;
+}
+
+function orolado_otp_row_match(array $row, string $email, string $code): bool {
+  $code = preg_replace('/\D/', '', $code);
+  if (strlen($code) !== 6) return false;
+  $now = time();
+  $want = orolado_otp_hash($email, $code);
+  if (hash_equals((string) ($row['codeHash'] ?? ''), $want)) {
+    if (empty($row['expiresAt']) || (int) $row['expiresAt'] + OROLADO_OTP_GRACE >= $now) return true;
+  }
+  foreach ($row['prevHashes'] ?? [] as $prev) {
+    if (!is_array($prev)) continue;
+    if ((int) ($prev['expiresAt'] ?? 0) + OROLADO_OTP_GRACE < $now) continue;
+    if (hash_equals((string) ($prev['hash'] ?? ''), $want)) return true;
+  }
+  return false;
+}
+
+function orolado_wd_otp_row_match(array $row, string $uid, string $code): bool {
+  $code = preg_replace('/\D/', '', $code);
+  if (strlen($code) !== 6) return false;
+  $now = time();
+  $want = orolado_wd_otp_hash($uid, $code);
+  if (hash_equals((string) ($row['codeHash'] ?? ''), $want)) {
+    if (empty($row['expiresAt']) || (int) $row['expiresAt'] + OROLADO_OTP_GRACE >= $now) return true;
+  }
+  foreach ($row['prevHashes'] ?? [] as $prev) {
+    if (!is_array($prev)) continue;
+    if ((int) ($prev['expiresAt'] ?? 0) + OROLADO_OTP_GRACE < $now) continue;
+    if (hash_equals((string) ($prev['hash'] ?? ''), $want)) return true;
+  }
+  return false;
+}
+
+function orolado_otp_touch_expiry(array &$row): void {
+  $row['expiresAt'] = time() + OROLADO_OTP_TTL;
+  $row['lastSentAt'] = time();
+}
+
 function orolado_purge_expired_pending(array &$db): void {
   $now = time();
   if (!isset($db['pendingRegistrations']) || !is_array($db['pendingRegistrations'])) return;
   foreach ($db['pendingRegistrations'] as $email => $row) {
-    $exp = (int) ($row['expiresAt'] ?? 0);
-    if ($exp > 0 && $exp < $now) unset($db['pendingRegistrations'][$email]);
+    $sessionExp = (int) ($row['sessionExpiresAt'] ?? 0);
+    if ($sessionExp <= 0) {
+      $created = (int) ($row['createdAtTs'] ?? 0);
+      if ($created <= 0) $created = strtotime((string) ($row['createdAt'] ?? '')) ?: 0;
+      $sessionExp = $created > 0 ? $created + OROLADO_OTP_PENDING_KEEP : (int) ($row['expiresAt'] ?? 0);
+    }
+    if ($sessionExp > 0 && $sessionExp < $now) unset($db['pendingRegistrations'][$email]);
   }
 }
 

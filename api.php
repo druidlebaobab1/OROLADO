@@ -299,7 +299,10 @@ if ($action === 'registerStart') {
     'expiresAt' => $now + OROLADO_OTP_TTL,
     'lastSentAt' => $now,
     'attempts' => 0,
-    'createdAt' => date('c')
+    'createdAt' => date('c'),
+    'createdAtTs' => $now,
+    'sessionExpiresAt' => $now + OROLADO_OTP_PENDING_KEEP,
+    'prevHashes' => []
   ];
   $db['pendingRegistrations'] = $pending;
   save_db($file, $db);
@@ -309,6 +312,10 @@ if ($action === 'registerStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
     exit;
   }
+  $pending[$email]['expiresAt'] = time() + OROLADO_OTP_TTL;
+  $pending[$email]['lastSentAt'] = time();
+  $db['pendingRegistrations'] = $pending;
+  save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
 }
@@ -322,22 +329,18 @@ if ($action === 'registerResend') {
     exit;
   }
   $now = time();
-  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
-    unset($db['pendingRegistrations'][$email]);
-    save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
-    exit;
-  }
   if (!empty($row['lastSentAt']) && ($now - (int) $row['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
     $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $row['lastSentAt']);
     echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  orolado_otp_remember_prev($row);
   $row['codeHash'] = orolado_otp_hash($email, $code);
   $row['expiresAt'] = $now + OROLADO_OTP_TTL;
   $row['lastSentAt'] = $now;
   $row['attempts'] = 0;
+  $row['sessionExpiresAt'] = $now + OROLADO_OTP_PENDING_KEEP;
   $db['pendingRegistrations'][$email] = $row;
   save_db($file, $db);
   ignore_user_abort(true);
@@ -346,6 +349,10 @@ if ($action === 'registerResend') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Envoi impossible']);
     exit;
   }
+  $row['expiresAt'] = time() + OROLADO_OTP_TTL;
+  $row['lastSentAt'] = time();
+  $db['pendingRegistrations'][$email] = $row;
+  save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true, 'resendIn' => OROLADO_OTP_RESEND_UI, 'expiresIn' => OROLADO_OTP_TTL]);
   exit;
 }
@@ -360,12 +367,6 @@ if ($action === 'registerVerify') {
     exit;
   }
   $now = time();
-  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
-    unset($db['pendingRegistrations'][$email]);
-    save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
-    exit;
-  }
   $attempts = (int) ($row['attempts'] ?? 0);
   if ($attempts >= 8) {
     unset($db['pendingRegistrations'][$email]);
@@ -373,11 +374,17 @@ if ($action === 'registerVerify') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
     exit;
   }
-  if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
+  if (!orolado_otp_row_match($row, $email, $code)) {
+    if (!orolado_otp_row_alive($row)) {
+      unset($db['pendingRegistrations'][$email]);
+      save_db($file, $db);
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré', 'expired' => true]);
+      exit;
+    }
     $row['attempts'] = $attempts + 1;
     $db['pendingRegistrations'][$email] = $row;
     save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code incorrect']);
     exit;
   }
   if (find_user($db, $email) || orolado_identity_block($db, $email, (string) ($row['phone'] ?? ''))) {
@@ -456,6 +463,8 @@ if ($action === 'passwordOtpStart') {
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $prevRow = is_array($prev) ? $prev : [];
+  orolado_otp_remember_prev($prevRow);
   $db['pendingPasswordOtps'][$email] = [
     'userId' => (string) ($me['id'] ?? ''),
     'codeHash' => orolado_otp_hash($email, $code),
@@ -463,7 +472,8 @@ if ($action === 'passwordOtpStart') {
     'lastSentAt' => $now,
     'attempts' => 0,
     'verified' => false,
-    'otpToken' => ''
+    'otpToken' => '',
+    'prevHashes' => $prevRow['prevHashes'] ?? []
   ];
   save_db($file, $db);
   ignore_user_abort(true);
@@ -472,6 +482,9 @@ if ($action === 'passwordOtpStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
     exit;
   }
+  $db['pendingPasswordOtps'][$email]['expiresAt'] = time() + OROLADO_OTP_TTL;
+  $db['pendingPasswordOtps'][$email]['lastSentAt'] = time();
+  save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
 }
@@ -490,12 +503,6 @@ if ($action === 'passwordOtpVerify') {
     exit;
   }
   $now = time();
-  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
-    unset($db['pendingPasswordOtps'][$email]);
-    save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
-    exit;
-  }
   $attempts = (int) ($row['attempts'] ?? 0);
   if ($attempts >= 8) {
     unset($db['pendingPasswordOtps'][$email]);
@@ -503,7 +510,13 @@ if ($action === 'passwordOtpVerify') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives']);
     exit;
   }
-  if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
+  if (!orolado_otp_row_match($row, $email, $code)) {
+    if (!orolado_otp_row_alive($row)) {
+      unset($db['pendingPasswordOtps'][$email]);
+      save_db($file, $db);
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré']);
+      exit;
+    }
     $row['attempts'] = $attempts + 1;
     $db['pendingPasswordOtps'][$email] = $row;
     save_db($file, $db);
@@ -537,6 +550,8 @@ if ($action === 'forgotOtpStart') {
   $found = find_user($db, $email);
   if ($found) {
     $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    $prevRow = is_array($prev) ? $prev : [];
+    orolado_otp_remember_prev($prevRow);
     $db['pendingPasswordOtps'][$email] = [
       'userId' => (string) ($found['id'] ?? ''),
       'codeHash' => orolado_otp_hash($email, $code),
@@ -545,7 +560,8 @@ if ($action === 'forgotOtpStart') {
       'attempts' => 0,
       'verified' => false,
       'otpToken' => '',
-      'forgot' => true
+      'forgot' => true,
+      'prevHashes' => $prevRow['prevHashes'] ?? []
     ];
     save_db($file, $db);
     ignore_user_abort(true);
@@ -554,6 +570,9 @@ if ($action === 'forgotOtpStart') {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Unable to send code']);
       exit;
     }
+    $db['pendingPasswordOtps'][$email]['expiresAt'] = time() + OROLADO_OTP_TTL;
+    $db['pendingPasswordOtps'][$email]['lastSentAt'] = time();
+    save_db($file, $db);
   }
   echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
@@ -568,12 +587,6 @@ if ($action === 'forgotOtpVerify') {
     exit;
   }
   $now = time();
-  if (!empty($row['expiresAt']) && (int) $row['expiresAt'] < $now) {
-    unset($db['pendingPasswordOtps'][$email]);
-    save_db($file, $db);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expired']);
-    exit;
-  }
   $attempts = (int) ($row['attempts'] ?? 0);
   if ($attempts >= 8) {
     unset($db['pendingPasswordOtps'][$email]);
@@ -581,7 +594,13 @@ if ($action === 'forgotOtpVerify') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Too many attempts']);
     exit;
   }
-  if (strlen($code) !== 6 || !hash_equals((string) ($row['codeHash'] ?? ''), orolado_otp_hash($email, $code))) {
+  if (!orolado_otp_row_match($row, $email, $code)) {
+    if (!orolado_otp_row_alive($row)) {
+      unset($db['pendingPasswordOtps'][$email]);
+      save_db($file, $db);
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expired']);
+      exit;
+    }
     $row['attempts'] = $attempts + 1;
     $db['pendingPasswordOtps'][$email] = $row;
     save_db($file, $db);
@@ -1154,11 +1173,14 @@ if ($action === 'withdrawOtp') {
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+  $prevRow = is_array($prev) ? $prev : [];
+  orolado_otp_remember_prev($prevRow);
   $db['withdrawOtps'][$uid] = [
     'codeHash' => orolado_wd_otp_hash($uid, $code),
     'expiresAt' => $now + OROLADO_WD_OTP_TTL,
     'lastSentAt' => $now,
     'attempts' => 0,
+    'prevHashes' => $prevRow['prevHashes'] ?? [],
   ];
   save_db($file, $db);
   ignore_user_abort(true);
@@ -1167,6 +1189,9 @@ if ($action === 'withdrawOtp') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
     exit;
   }
+  $db['withdrawOtps'][$uid]['expiresAt'] = time() + OROLADO_WD_OTP_TTL;
+  $db['withdrawOtps'][$uid]['lastSentAt'] = time();
+  save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true, 'expiresIn' => OROLADO_WD_OTP_TTL, 'resendIn' => OROLADO_WD_OTP_RESEND]);
   exit;
 }
@@ -1187,9 +1212,7 @@ if ($action === 'withdraw') {
   if (!isset($db['withdrawOtps']) || !is_array($db['withdrawOtps'])) $db['withdrawOtps'] = [];
   $otpRow = $db['withdrawOtps'][$uidOtp] ?? null;
   $nowOtp = time();
-  if (!is_array($otpRow) || (int) ($otpRow['expiresAt'] ?? 0) < $nowOtp) {
-    unset($db['withdrawOtps'][$uidOtp]);
-    save_db($file, $db);
+  if (!is_array($otpRow)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code.', 'needOtp' => true, 'expired' => true]);
     exit;
   }
@@ -1200,7 +1223,13 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives. Demandez un nouveau code.', 'needOtp' => true]);
     exit;
   }
-  if (!hash_equals((string) ($otpRow['codeHash'] ?? ''), orolado_wd_otp_hash($uidOtp, $otpCode))) {
+  if (!orolado_wd_otp_row_match($otpRow, $uidOtp, $otpCode)) {
+    if (!orolado_otp_row_alive($otpRow)) {
+      unset($db['withdrawOtps'][$uidOtp]);
+      save_db($file, $db);
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code.', 'needOtp' => true, 'expired' => true]);
+      exit;
+    }
     $db['withdrawOtps'][$uidOtp]['attempts'] = $tries + 1;
     save_db($file, $db);
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code invalide ou expiré. Demandez-en un nouveau.', 'needOtp' => true]);
@@ -1589,7 +1618,10 @@ if ($action === 'settleOrder') {
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
     $lateKey = $reqMode === 'real' ? 'real' : 'demo';
     $bal = orolado_money($locked['vault'][$uid][$lateKey] ?? 0);
-    $locked['vault'][$uid][$lateKey] = orolado_money(max(0, $bal + $net));
+    // La mise a déjà été débitée à l’ouverture. Ne jamais re-débiter une perte.
+    if ($credit > 0) {
+      $locked['vault'][$uid][$lateKey] = orolado_money($bal + $credit);
+    }
     if ($reqMode === 'demo' && $reqBal !== null && $reqBal + 0.009 >= orolado_money($locked['vault'][$uid]['demo'] ?? 0)) {
       $locked['vault'][$uid]['demo'] = $reqBal;
     }
@@ -1744,15 +1776,63 @@ if ($action === 'me') {
     $db['vault'][$uid]['demo'] = 1000000;
     save_db($file, $db);
   }
+  $officialReal = orolado_sync_official_real($uid, $jsonReal);
   $vault = [
     'demo' => $demoNow,
-    'real' => orolado_sync_official_real($uid, $jsonReal)
+    'real' => $officialReal
   ];
+  $openOrders = [];
+  $recentPositions = [];
+  foreach (($db['orders'] ?? []) as $o) {
+    if (($o['userId'] ?? '') !== $uid) continue;
+    $st = (string) ($o['status'] ?? '');
+    $opened = (float) ($o['openedAt'] ?? $o['at'] ?? 0);
+    $openedMs = $opened > 0 && $opened < 1.0e11 ? (int) round($opened * 1000) : (int) $opened;
+    $dur = (int) ($o['duration'] ?? 10);
+    if ($st === 'open') {
+      $exp = (float) ($o['expiryAt'] ?? 0);
+      $expMs = $exp > 0 && $exp < 1.0e11 ? (int) round($exp * 1000) : ($openedMs + $dur * 1000);
+      $openOrders[] = [
+        'id' => (string) ($o['id'] ?? ''),
+        'assetId' => (string) ($o['assetId'] ?? 'v100'),
+        'side' => (($o['side'] ?? '') === 'put') ? 'put' : 'call',
+        'stake' => orolado_money($o['stake'] ?? 0),
+        'payout' => (float) ($o['payout'] ?? 1.88),
+        'entryPrice' => (float) ($o['openPrice'] ?? $o['entryPrice'] ?? 0),
+        'duration' => $dur,
+        'startTime' => $openedMs,
+        'startedAt' => $openedMs,
+        'expiryTime' => $expMs,
+        'expiresAt' => $expMs,
+        'mode' => (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo',
+        'status' => 'open',
+        'settled' => false
+      ];
+    } else if (in_array($st, ['won', 'lost', 'void', 'closed'], true)) {
+      $recentPositions[] = [
+        'id' => (string) ($o['id'] ?? ''),
+        'at' => date('c', $openedMs > 0 ? (int) floor($openedMs / 1000) : time()),
+        'assetId' => (string) ($o['assetId'] ?? ''),
+        'assetName' => (string) ($o['assetId'] ?? ''),
+        'side' => (($o['side'] ?? '') === 'put') ? 'put' : 'call',
+        'stake' => orolado_money($o['stake'] ?? 0),
+        'payout' => (float) ($o['payout'] ?? 1.88),
+        'duration' => $dur,
+        'won' => !empty($o['won']),
+        'voided' => ($st === 'void') || !empty($o['voided']),
+        'status' => $st === 'closed' ? (!empty($o['won']) ? 'won' : 'lost') : $st,
+        'net' => orolado_money($o['net'] ?? 0),
+        'mode' => (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo'
+      ];
+    }
+  }
   echo json_encode([
     'ok' => true,
     'server' => true,
     'user' => orolado_public_user($me),
-    'vault' => $vault
+    'vault' => $vault,
+    'openOrders' => $openOrders,
+    'positions' => array_slice(array_reverse($recentPositions), 0, 80)
   ]);
   exit;
 }

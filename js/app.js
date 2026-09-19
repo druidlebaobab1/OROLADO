@@ -334,8 +334,18 @@
 
   function lockBalanceOptimistic(demo, real, ms) {
     balanceLockUntil = Date.now() + (ms || 8000);
-    if (demo != null && isFinite(Number(demo)) && Number(demo) > 0) balanceLockDemo = Number(demo);
-    if (real != null && isFinite(Number(real)) && Number(real) > 0) balanceLockReal = Number(real);
+    if (demo != null && isFinite(Number(demo)) && Number(demo) >= 0) balanceLockDemo = Number(demo);
+    if (real != null && isFinite(Number(real)) && Number(real) >= 0) balanceLockReal = Number(real);
+  }
+
+  function openRealStake() {
+    var sum = 0;
+    try {
+      var list = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades('real') : [];
+      var i;
+      for (i = 0; i < list.length; i++) sum += Number(list[i] && list[i].stake) || 0;
+    } catch (eS) { /* ignore */ }
+    return D6.roundMoney ? D6.roundMoney(sum) : sum;
   }
 
   function getBalanceLocks() {
@@ -518,12 +528,16 @@
       D6.Api.post('me', {}).then(function (r) {
         if (watchBan(r)) return;
         if (!r || !r.ok || !r.vault) return;
+        adoptServerBook(r);
         var incoming = Number(r.vault.real);
         var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
         var locks = getBalanceLocks();
         if (locks && Date.now() < locks.until) return;
-        if (isFinite(incoming) && incoming >= 0 && Math.abs(incoming - local) > 0.009) {
-          adoptOfficialVault(r.vault);
+        if (!isFinite(incoming) || incoming < 0) return;
+        if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
+        if (openRealStake() > 0 && incoming > local + 0.009) return;
+        if (Math.abs(incoming - local) > 0.009) {
+          adoptOfficialVault(r.vault, { fromMe: true });
           updateBalance(false);
         }
       }).catch(function () { /* ignore */ });
@@ -1110,14 +1124,14 @@
     var label;
     var cls;
     if (h.voided || h.status === 'void') {
-      label = 'Égalité 0';
+      label = '0';
       cls = 'void';
       net = 0;
     } else if (h.won) {
-      label = 'Gagné ' + fmtOutcomeUsd(Math.abs(net));
+      label = t('won') + ' ' + fmtOutcomeUsd(Math.abs(net));
       cls = 'win';
     } else {
-      label = '+$0';
+      label = t('expired');
       cls = 'lose';
       net = -stake;
     }
@@ -1135,7 +1149,7 @@
     var left = Math.max(0, Number(t.timeLeft) || 0);
     return '<div class="h-item live">' +
       '<span class="h-badge ' + t.side + '">' + (t.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
-      '<div><div class="h-main">' + name + ' · EN COURS · ' + fmtTimerLeft(left) + '</div>' +
+      '<div><div class="h-main">' + name + ' · ' + (t('histOpen') || 'EN COURS') + ' · ' + fmtTimerLeft(left) + '</div>' +
       '<div class="h-time">' + D6.fmtFCFA(t.stake) + ' · ' + (t.duration || '') + 's</div></div>' +
       '<span class="h-gain">' + fmtTimerLeft(left) + '</span></div>';
   }
@@ -1228,7 +1242,7 @@
       var stake = Number(h.stake || 0);
       var payoutAmt = D6.roundMoney(stake * Number(h.payout || 1.88));
       var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
-      var res = (h.voided || h.status === 'void') ? 'Egalite' : (h.won ? 'Gagne' : 'Perdu');
+      var res = (h.voided || h.status === 'void') ? '0' : (h.won ? t('won') : t('expired'));
       var pnlCls = net > 0 ? 'w hist-pnl' : (net < 0 ? 'l hist-pnl' : 'hist-pnl');
       var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + fmtHistMoney(Math.abs(net));
       rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
@@ -1313,11 +1327,20 @@
     if (hint) hint.classList.remove('on');
   }
 
-  function applyOfficialReal(value) {
+  function applyOfficialReal(value, opts) {
     var u = user();
     if (!u || !D6.Store.setBalanceMode) return false;
     var real = Number(value);
     if (!isFinite(real) || real < 0) return false;
+    var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
+    var force = !!(opts && opts.force);
+    var fromMe = !!(opts && opts.fromMe);
+    var locks = getBalanceLocks();
+    var locked = locks && Date.now() < locks.until;
+    if (!force && openRealStake() > 0 && real > local + 0.009) return false;
+    if (!force && real <= 0.009 && local > 0.009) {
+      if (!fromMe || locked || openRealStake() > 0) return false;
+    }
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);
@@ -1325,10 +1348,40 @@
     return true;
   }
 
-  function adoptOfficialVault(vault) {
+  function adoptServerBook(remote) {
+    var u = user();
+    if (!u || !remote) return;
+    var changed = false;
+    if (Array.isArray(remote.positions) && remote.positions.length && D6.Store.addPosition) {
+      var seen = {};
+      (u.positions || []).forEach(function (p) { if (p && p.id) seen[p.id] = 1; });
+      remote.positions.forEach(function (p) {
+        if (!p || !p.id || seen[p.id]) return;
+        u.positions = u.positions || [];
+        u.positions.push(p);
+        seen[p.id] = 1;
+        changed = true;
+      });
+    }
+    if (Array.isArray(remote.openOrders) && remote.openOrders.length) {
+      u.openTrades = u.openTrades || [];
+      var have = {};
+      u.openTrades.forEach(function (t) { if (t && t.id) have[t.id] = 1; });
+      remote.openOrders.forEach(function (t) {
+        if (!t || !t.id || have[t.id]) return;
+        u.openTrades.push(t);
+        have[t.id] = 1;
+        changed = true;
+      });
+      if (D6.Engine && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
+    }
+    if (changed) D6.Store.saveUser(u);
+  }
+
+  function adoptOfficialVault(vault, opts) {
     if (!vault || !user()) return false;
     if (!Object.prototype.hasOwnProperty.call(vault, 'real')) return false;
-    return applyOfficialReal(vault.real);
+    return applyOfficialReal(vault.real, opts);
   }
 
   function adoptSettledVault(vault, settledMode) {
@@ -2227,7 +2280,7 @@
           return;
         }
         if (remote && remote.ok && remote.vault && settleMode === 'real') {
-          adoptSettledVault(remote.vault, 'real');
+          applyOfficialReal(remote.vault.real, { force: true });
           updateBalance(true);
         }
         D6.holdRemote = false;
@@ -2296,10 +2349,6 @@
     stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
     var have = D6.Store.balanceOf(u);
-    if (mode === 'real' && isFinite(lastOfficialReal) && lastOfficialReal > have + 0.009) {
-      applyOfficialReal(lastOfficialReal);
-      have = lastOfficialReal;
-    }
     if (have < stake) {
       toast(t('insufficient'), 'err', 2000);
       tradeQ.length = 0;
@@ -2335,7 +2384,7 @@
     lockBalanceOptimistic(
       mode === 'demo' ? D6.Store.demoBalance(u) : null,
       mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : null) : null,
-      10000
+      Math.max(12000, (Number(sealedDur) || 10) * 1000 + 4000)
     );
     if (D6.Api && D6.Api.token()) {
       var placeBody = {
@@ -3643,13 +3692,15 @@
   async function refreshRemoteVault() {
     var u = user();
     if (!u) return;
-    if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
       if (watchBan(remote)) return;
-      if (remote && remote.ok && remote.vault && user()) {
-        adoptOfficialVault(remote.vault);
-        updateBalance(false);
+      if (remote && remote.ok && user()) {
+        adoptServerBook(remote);
+        if (remote.vault && !(openRealStake() > 0)) {
+          adoptOfficialVault(remote.vault, { fromMe: true });
+          updateBalance(false);
+        }
       }
       return;
     }
@@ -3662,7 +3713,7 @@
   function realWithdrawBalance(u) {
     if (!u) return 0;
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
-    if (isFinite(lastOfficialReal) && lastOfficialReal > local + 0.009) return lastOfficialReal;
+    if (!isFinite(local) || local < 0) local = 0;
     return local;
   }
 
@@ -5977,6 +6028,7 @@
     onRemoteAccount: function () {
       updateBalance(true);
       fillProfile();
+      patchHistorySoon();
     },
     updateBalance: updateBalance,
     getBalanceLocks: getBalanceLocks,
@@ -6065,17 +6117,30 @@
           closeDrawer();
         }
       });
-      document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) {
-          unlockAudio();
-          var u = user();
-          if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
-          if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-          refreshRemoteVault();
-          checkDepositReturn();
+      function persistLiveTrades() {
+        var uLive = user();
+        if (uLive && D6.Engine.flushSettlements) {
+          try { D6.Engine.flushSettlements(uLive); } catch (eF) { /* ignore */ }
         }
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          persistLiveTrades();
+          return;
+        }
+        unlockAudio();
+        var u = user();
+        if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
+        if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
+        refreshRemoteVault();
+        checkDepositReturn();
       });
+      window.addEventListener('pagehide', persistLiveTrades);
+      window.addEventListener('freeze', persistLiveTrades);
       window.addEventListener('pageshow', function () {
+        var uShow = user();
+        if (uShow && D6.Engine.restoreOpen) D6.Engine.restoreOpen(uShow);
+        if (uShow && D6.Engine.flushSettlements) D6.Engine.flushSettlements(uShow);
         refreshRemoteVault();
         checkDepositReturn();
       });

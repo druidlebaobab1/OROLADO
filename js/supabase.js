@@ -295,7 +295,14 @@
         var staleZero = remoteReal <= 0.009 && localReal > 0.009;
         var holdLow = !!D6.holdDepositReal && remoteReal + 0.009 < localReal;
         var lockLow = locked && remoteReal + 0.009 < localReal;
-        if (!staleZero && !holdLow && !lockLow) next.real = remoteReal;
+        var raiseWhileOpen = false;
+        try {
+          if (D6.Engine && D6.Engine.getTrades) {
+            var liveReal = D6.Engine.getTrades('real') || [];
+            raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009;
+          }
+        } catch (eOpen) { raiseWhileOpen = false; }
+        if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen) next.real = remoteReal;
       }
     }
     D6.holdPull = true;
@@ -344,12 +351,52 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'id=eq.' + userId }, function (payload) {
         var row = payload.new;
         if (!row) return;
-        var u = D6.Store.current();
         applyIncomingVault(null, row);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: 'user_id=eq.' + userId }, function (payload) {
+        var row = payload.new;
+        if (!row) return;
+        mergeCloudOrder(row);
+      })
       .subscribe();
-    pollTimer = setInterval(function () { pullVault(); }, 12000);
+    pollTimer = setInterval(function () { pullVault(); }, 2500);
     startPresencePing();
+  }
+
+  function mergeCloudOrder(row) {
+    var u = D6.Store.current();
+    if (!u || !row) return;
+    if (isSettledOrder(row) && D6.Store.addPosition) {
+      D6.Store.addPosition(u, orderToPosition(row));
+      if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount();
+      return;
+    }
+    if (String(row.status || '') !== 'open') return;
+    u.openTrades = u.openTrades || [];
+    var i;
+    for (i = 0; i < u.openTrades.length; i++) {
+      if (u.openTrades[i] && u.openTrades[i].id === row.id) return;
+    }
+    var opened = Date.parse(row.created_at) || Date.now();
+    var dur = Number(row.duration) || 10;
+    u.openTrades.push({
+      id: row.id,
+      assetId: row.asset_id,
+      side: row.side === 'put' ? 'put' : 'call',
+      stake: Number(row.stake) || 0,
+      payout: Number(row.payout) || 1.88,
+      entryPrice: Number(row.entry_price) || 0,
+      duration: dur,
+      startTime: opened,
+      startedAt: opened,
+      expiryTime: opened + dur * 1000,
+      expiresAt: opened + dur * 1000,
+      mode: row.mode === 'real' ? 'real' : 'demo',
+      status: 'open',
+      settled: false
+    });
+    D6.Store.saveUser(u);
+    if (D6.Engine && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
   }
 
   async function pullVault() {
@@ -358,6 +405,17 @@
     if (!sb || !user || !uuidish(user.id) || D6.holdPull) return null;
     var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', user.id).maybeSingle();
     var profRes = await sb.from('profiles').select('display_name,phone,country_code,mode').eq('id', user.id).maybeSingle();
+    var ordRes = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
+    if (ordRes && Array.isArray(ordRes.data)) {
+      var cloudPositions = ordRes.data.filter(isSettledOrder).map(orderToPosition);
+      if (cloudPositions.length) {
+        user.positions = mergePositions(cloudPositions, user.positions || []);
+        D6.Store.saveUser(user);
+      }
+      ordRes.data.forEach(function (row) {
+        if (row && String(row.status || '') === 'open') mergeCloudOrder(row);
+      });
+    }
     if (vaultRes && vaultRes.data) {
       applyIncomingVault(vaultRes.data, profRes && profRes.data);
       return vaultRes.data;

@@ -1193,7 +1193,12 @@
   }
 
   function expiryOf(t) {
-    return t.expiryTime || t.expiresAt;
+    var exp = t.expiryTime || t.expiresAt;
+    if (exp) return exp;
+    var start = t.startTime || t.startedAt || 0;
+    var dur = (t.durationMs != null) ? t.durationMs : ((t.duration || 0) * 1000);
+    if (start && dur) return start + dur;
+    return 0;
   }
 
   function clearTradeTimer(id) {
@@ -1206,6 +1211,17 @@
   function armTradeTimer(trade) {
     if (!trade || !trade.id) return;
     clearTradeTimer(trade.id);
+    var wait = expiryOf(trade) - Date.now();
+    if (!isFinite(wait)) return;
+    tradeTimers[trade.id] = setTimeout(function () {
+      delete tradeTimers[trade.id];
+      var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
+      if (!u) return;
+      var res = api.resolve(u, trade.id);
+      if (res && typeof api.onSettled === 'function') {
+        try { api.onSettled(res); } catch (eS) { /* ignore */ }
+      }
+    }, Math.max(20, wait + 25));
   }
 
   function isLive(t) {
@@ -1490,12 +1506,22 @@
 
     restoreOpen: function (user) {
       if (!user) return 0;
-      trades = [];
-      var list = user.openTrades || [];
+      var have = {};
+      var kept = [];
       var i;
+      for (i = 0; i < trades.length; i++) {
+        var live = trades[i];
+        if (!live || !live.id) continue;
+        if (live.userId && live.userId !== user.id) continue;
+        if (live.settled || live.status === 'won' || live.status === 'lost' || live.status === 'void') continue;
+        kept.push(live);
+        have[live.id] = true;
+      }
+      trades = kept;
+      var list = user.openTrades || [];
       for (i = 0; i < list.length; i++) {
         var raw = list[i];
-        if (!raw || !raw.id) continue;
+        if (!raw || !raw.id || have[raw.id]) continue;
         if (raw.userId && raw.userId !== user.id) continue;
         if (raw.settled || raw.status === 'won' || raw.status === 'lost' || raw.status === 'void') continue;
         trades.push({
@@ -1518,6 +1544,7 @@
           settled: false,
           status: 'open'
         });
+        have[raw.id] = true;
       }
       for (i = 0; i < trades.length; i++) {
         armTradeTimer(trades[i]);
