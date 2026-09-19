@@ -109,7 +109,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=544">
+    <link rel="stylesheet" href="css/app.css?v=545">
     <link rel="stylesheet" href="css/auth.css?v=540">
   <!-- Meta Pixel Code -->
   <script>
@@ -810,8 +810,10 @@
 
   <div class="modal-backdrop" id="financeModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeFinance">✕</button>
-      <div class="modal-title" data-i18n="financeHist">Historique financier</div>
+      <div class="modal-head-row">
+        <div class="modal-title" data-i18n="financeHist">Historique financier</div>
+        <button type="button" class="btn-close" id="closeFinance">✕</button>
+      </div>
       <div id="txFeed"></div>
     </div>
   </div>
@@ -1106,8 +1108,10 @@
 
   <div class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
-      <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
-      <div class="modal-title" id="histSheetTitle" data-i18n="tradeHist">Historique de trading</div>
+      <div class="modal-head-row">
+        <div class="modal-title" id="histSheetTitle" data-i18n="tradeHist">Historique de trading</div>
+        <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
+      </div>
       <div class="hist-tabs" role="tablist">
         <button type="button" class="hist-tab on" data-hist-mode="real" data-i18n="histTabReal">Réel</button>
         <button type="button" class="hist-tab" data-hist-mode="demo" data-i18n="histTabDemo">Démo</button>
@@ -1122,7 +1126,7 @@
   <script src="js/store.js?v=549"></script>
   <script src="js/api.js?v=540"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=546"></script>
+  <script src="js/supabase.js?v=547"></script>
   <script src="js/auth.js?v=548"></script>
   <script src="js/engine.js?v=540"></script>
   <script src="js/chart.js?v=541"></script>
@@ -1176,6 +1180,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=549"></script>
+  <script src="js/app.js?v=550"></script>
 </body>
 </html>

@@ -3932,9 +3932,22 @@
     return { code: s || 'PENDING', label: t('txPending'), cls: 'pending' };
   }
 
+  function isPaidDepositStatus(raw) {
+    var s = String(raw || '').toUpperCase();
+    return s === 'PAID' || s === 'COMPLETED' || s === 'SUCCESS' || s === 'APPROVED' || s === 'OK' || s === 'VALIDÉ' || s === 'VALIDE';
+  }
+
+  function isRealWithdrawRow(w) {
+    if (isHiddenFinanceWithdraw(w)) return false;
+    var raw = (w && w.status && w.status.code) ? w.status.code : (w && (w.status || w.note));
+    var s = String(raw || '').toUpperCase();
+    if (!s || s === '[OBJECT OBJECT]') return true;
+    return s !== 'DRAFT' && s !== 'UNFINISHED' && s !== 'ABANDONED' && s !== 'INCOMPLETE';
+  }
+
   function gatewayLabel(raw) {
-    var k = String(raw || '').toLowerCase();
-    if (!k) return '—';
+    var k = String(raw || '').toLowerCase().trim();
+    if (!k || k === '—' || k === '-') return '—';
     if (k.indexOf('wave') >= 0) return 'Wave';
     if (k.indexOf('orange') >= 0 || k === 'om') return 'Orange Money';
     if (k.indexOf('mtn') >= 0 || k.indexOf('momo') >= 0) return 'MTN MoMo';
@@ -3953,7 +3966,14 @@
   function renderFinanceRows(tx, rows) {
     var seen = {};
     rows = rows.filter(function (r) {
+      if (!r) return false;
       if (isHiddenFinanceWithdraw(r) || (r.status && r.status.code === 'HIDDEN')) return false;
+      var kind = String(r.label || r.kind || '').toLowerCase();
+      var isDep = kind.indexOf('d\u00e9p') >= 0 || kind.indexOf('dep') >= 0 || r.kind === 'deposit';
+      var code = String((r.status && r.status.code) || r.status || '').toUpperCase();
+      if (isDep && !isPaidDepositStatus(code)) return false;
+      if (!isDep && !isRealWithdrawRow(r)) return false;
+      if (!(Math.abs(Number(r.amount) || 0) > 0)) return false;
       var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '') + '|' + r.label;
       if (seen[k]) return false;
       seen[k] = 1;
@@ -3979,13 +3999,17 @@
     if (u && u.transactions) {
       (u.transactions || []).forEach(function (x) {
         if (x.type !== 'deposit' && x.type !== 'withdraw') return;
+        var rawSt = x.status || x.note || '';
+        if (x.type === 'deposit' && !isPaidDepositStatus(rawSt)) return;
+        if (x.type === 'withdraw' && !isRealWithdrawRow(x)) return;
         rows.push({
           at: x.at || '',
           ref: x.id || '—',
           amount: Number(x.amount) || 0,
-          status: normFinanceStatus(x.type === 'deposit' ? 'COMPLETED' : (x.note || 'PENDING'), x.type),
+          status: normFinanceStatus(rawSt, x.type),
           label: financeKindLabel(x.type),
-          gateway: gatewayLabel(x.operator || x.note || '')
+          kind: x.type,
+          gateway: gatewayLabel(x.operator || '')
         });
       });
     }
@@ -3998,6 +4022,7 @@
         amount: -Math.abs(Number(w.amount) || 0),
         status: normFinanceStatus(w.status, 'withdraw'),
         label: t('txWithdraw'),
+        kind: 'withdraw',
         gateway: gatewayLabel(w.operator || '')
       });
     });
@@ -4022,37 +4047,42 @@
       try {
         var cloud = await D6.Supabase.listFinance();
         (cloud.deposits || []).forEach(function (d) {
+          if (!isPaidDepositStatus(d.status)) return;
           rows.push({
             at: d.created_at || d.completed_at || '',
             ref: d.reference || d.id || '—',
             amount: Number(d.amount) || 0,
             status: normFinanceStatus(d.status, 'deposit'),
             label: t('txDeposit'),
+            kind: 'deposit',
             gateway: gatewayLabel(d.operator || '')
           });
         });
         (cloud.withdrawals || []).forEach(function (w) {
-          if (isHiddenFinanceWithdraw(w)) return;
+          if (!isRealWithdrawRow(w)) return;
           rows.push({
             at: w.created_at || w.at || '',
             ref: w.id || w.reference || '—',
             amount: -Math.abs(Number(w.amount) || 0),
             status: normFinanceStatus(w.status, 'withdraw'),
             label: t('txWithdraw'),
+            kind: 'withdraw',
             gateway: gatewayLabel(w.operator || '')
           });
         });
         (cloud.txs || []).forEach(function (trow) {
           var typ = String(trow.type || '');
           if (typ !== 'deposit' && typ !== 'withdraw') return;
-          if (isHiddenFinanceWithdraw(trow)) return;
+          if (typ === 'deposit' && !isPaidDepositStatus(trow.status || trow.note)) return;
+          if (typ === 'withdraw' && !isRealWithdrawRow(trow)) return;
           rows.push({
             at: trow.created_at || '',
             ref: trow.id || '—',
             amount: Number(trow.amount) || 0,
-            status: normFinanceStatus(typ === 'deposit' ? 'COMPLETED' : (trow.note || 'PENDING'), typ),
+            status: normFinanceStatus(trow.status || trow.note, typ),
             label: financeKindLabel(typ),
-            gateway: gatewayLabel(trow.note || '')
+            kind: typ,
+            gateway: gatewayLabel(trow.operator || trow.note || '')
           });
         });
         financeCache.html = renderFinanceRows(tx, rows);
@@ -4064,12 +4094,17 @@
       D6.Api.post('financeHistory', {}).then(function (remote) {
         if (!(remote && remote.ok && remote.rows && remote.rows.length)) return;
         (remote.rows || []).forEach(function (r) {
+          var lab = String(r.label || '').toLowerCase();
+          var isDep = lab.indexOf('d\u00e9p') >= 0 || lab.indexOf('dep') >= 0 || lab === 'recharge';
+          if (isDep && !isPaidDepositStatus(r.status)) return;
+          if (!isDep && !isRealWithdrawRow(r)) return;
           rows.push({
             at: r.at || '',
             ref: r.ref || '—',
             amount: Number(r.amount) || 0,
             status: normFinanceStatus(r.status, r.label),
-            label: (r.label === 'Recharge' || r.label === 'Dépôt' || String(r.label).toLowerCase() === 'deposit') ? t('txDeposit') : (r.label === 'Retrait' || String(r.label).toLowerCase() === 'withdraw' ? t('txWithdraw') : (r.label || '—')),
+            label: isDep ? t('txDeposit') : t('txWithdraw'),
+            kind: isDep ? 'deposit' : 'withdraw',
             gateway: gatewayLabel(r.operator || r.gateway || '')
           });
         });

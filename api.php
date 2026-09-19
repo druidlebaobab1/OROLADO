@@ -1653,6 +1653,8 @@ if ($action === 'financeHistory') {
   $rows = [];
   foreach (($db['deposits'] ?? []) as $d) {
     if (($d['userId'] ?? '') !== $me['id']) continue;
+    $depSt = strtoupper((string) ($d['status'] ?? ''));
+    if (!in_array($depSt, ['COMPLETED', 'PAID', 'SUCCESS', 'APPROVED'], true)) continue;
     $rows[] = [
       'at' => $d['paidAt'] ?? $d['at'] ?? '',
       'ref' => $d['id'] ?? $d['ref'] ?? '',

@@ -546,7 +546,11 @@
         return st === 'silenced' || st === 'silent' || st === 'hidden' || st === 'deleted';
       }
       return {
-        deposits: ((settled[0] && settled[0].data) || []).filter(function (d) { return !hideSilent(d); }),
+        deposits: ((settled[0] && settled[0].data) || []).filter(function (d) {
+          if (hideSilent(d)) return false;
+          var st = String((d && d.status) || '').toUpperCase();
+          return st === 'COMPLETED' || st === 'PAID' || st === 'SUCCESS' || st === 'APPROVED';
+        }),
         txs: ((settled[1] && settled[1].data) || []).filter(function (t) { return !hideSilent(t); }),
         withdrawals: ((settled[2] && settled[2].data) || []).filter(function (w) { return !hideSilent(w); })
       };
