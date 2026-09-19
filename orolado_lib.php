@@ -3523,6 +3523,9 @@ function orolado_oxapay_err(?array $res): string {
   $msg = (string) (($res['error']['message'] ?? null) ?: ($res['message'] ?? '') ?: '');
   $key = strtolower((string) ($res['error']['key'] ?? ''));
   if ($msg === '' && $key !== '') $msg = $key;
+  if (stripos($msg, 'underPaidCover') !== false || stripos($msg, 'under_paid_coverage') !== false) {
+    return 'Adresse de dépôt en cours de génération. Réessayez dans un instant.';
+  }
   if (stripos($msg, 'validation') !== false || $key === 'validation_error') {
     return 'Montant trop bas ou réseau non accepté pour cette crypto.';
   }
@@ -3767,7 +3770,7 @@ function orolado_oxapay_invoice(array $req): array {
     'callback_url' => $callback,
     'order_id' => $orderId,
     'email' => (string) ($me['email'] ?? ''),
-    'under_paid_coverage' => 99,
+    'under_paid_coverage' => 60,
     'description' => 'OROLADO ' . $meta['label'] . ' ' . $meta['netLabel'],
   ];
   if ($meta['network'] !== '') $base['network'] = $meta['network'];
@@ -3802,7 +3805,7 @@ function orolado_oxapay_invoice(array $req): array {
       'callbackUrl' => $callback,
       'orderId' => $orderId,
       'email' => (string) ($me['email'] ?? ''),
-      'underPaidCover' => 99,
+      'underPaidCover' => 60,
       'description' => 'OROLADO ' . $meta['label'],
     ];
     if ($meta['network'] !== '') $legacy['network'] = $meta['network'];
