@@ -151,6 +151,23 @@ function admin_phone_cell(array $p): string {
   return trim($flag . ' ' . $shown);
 }
 
+function admin_traffic_network(string $raw): array {
+  $s = strtolower(trim($raw));
+  $map = [
+    'facebook' => ['Facebook', 'Social'], 'fb' => ['Facebook', 'Social'],
+    'instagram' => ['Instagram', 'Social'], 'ig' => ['Instagram', 'Social'],
+    'tiktok' => ['TikTok', 'Social'], 'whatsapp' => ['WhatsApp', 'Social'],
+    'telegram' => ['Telegram', 'Social'], 'youtube' => ['YouTube', 'Social'],
+    'twitter' => ['X / Twitter', 'Social'], 'x' => ['X / Twitter', 'Social'],
+    'snapchat' => ['Snapchat', 'Social'], 'linkedin' => ['LinkedIn', 'Social'],
+    'google' => ['Google', 'Search / Ads'], 'googleads' => ['Google Ads', 'Ads'],
+    'bing' => ['Bing', 'Search'], 'direct' => ['Direct', 'Aucun'],
+  ];
+  if (isset($map[$s])) return $map[$s];
+  if ($s === '' || $s === 'none') return ['Direct', 'Aucun'];
+  return [ucfirst($s), 'Autre'];
+}
+
 function admin_pct(int $part, int $total): string {
   if ($total <= 0) return '0 %';
   return number_format(($part * 100) / $total, 1, ',', ' ') . ' %';
@@ -808,6 +825,9 @@ function admin_profiles(): array {
     if (isset($byId[$id])) {
       if ($pid !== '') $byId[$id]['publicId'] = $pid;
       if ($byId[$id]['traffic'] === '') $byId[$id]['traffic'] = (string) ($u['trafficSource'] ?? '');
+      $byId[$id]['trafficMedium'] = (string) ($u['trafficMedium'] ?? $byId[$id]['trafficMedium'] ?? '');
+      $byId[$id]['trafficCampaign'] = (string) ($u['trafficCampaign'] ?? $byId[$id]['trafficCampaign'] ?? '');
+      $byId[$id]['trafficReferrer'] = (string) ($u['trafficReferrer'] ?? $byId[$id]['trafficReferrer'] ?? '');
       if ($byId[$id]['phone'] === '') $byId[$id]['phone'] = (string) ($u['phone'] ?? '');
       if ($byId[$id]['name'] === '') $byId[$id]['name'] = (string) ($u['displayName'] ?? '');
       if ($byId[$id]['lastSeen'] === '') $byId[$id]['lastSeen'] = (string) ($u['lastSeen'] ?? '');
@@ -827,6 +847,9 @@ function admin_profiles(): array {
       'depositTotal' => (float) ($u['realDepositTotal'] ?? 0),
       'realTrades' => (int) ($u['realTrades'] ?? 0),
       'traffic' => (string) ($u['trafficSource'] ?? 'direct'),
+      'trafficMedium' => (string) ($u['trafficMedium'] ?? ''),
+      'trafficCampaign' => (string) ($u['trafficCampaign'] ?? ''),
+      'trafficReferrer' => (string) ($u['trafficReferrer'] ?? ''),
       'ip' => '',
       'publicId' => $pid,
     ];
@@ -1400,6 +1423,74 @@ function admin_bust_cache(): void {
   foreach (glob($dir . DIRECTORY_SEPARATOR . 'admin_cache_list*.json') ?: [] as $f) {
     @unlink($f);
   }
+}
+
+function admin_is_protected_account(array $u, string $id = ''): bool {
+  if ($id === 'admin_master' || (string) ($u['id'] ?? '') === 'admin_master') return true;
+  if (function_exists('orolado_is_admin_user') && orolado_is_admin_user($u)) return true;
+  $email = strtolower(trim((string) ($u['email'] ?? $u['originalEmail'] ?? '')));
+  return $email !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($email);
+}
+
+function admin_wipe_except_admin(): array {
+  $db = admin_local_db();
+  $keep = [];
+  foreach (($db['users'] ?? []) as $id => $u) {
+    if (!is_array($u)) continue;
+    $id = (string) ($u['id'] ?? $id);
+    if (admin_is_protected_account($u, $id)) $keep[$id] = true;
+  }
+  $wiped = 0;
+  foreach (array_keys($db['users'] ?? []) as $id) {
+    $id = (string) $id;
+    if (isset($keep[$id])) continue;
+    unset($db['users'][$id], $db['vault'][$id], $db['bans'][$id]);
+    $wiped++;
+  }
+  $db['deposits'] = [];
+  $db['withdrawals'] = [];
+  $db['orders'] = [];
+  $db['support_messages'] = [];
+  $db['pendingRegistrations'] = [];
+  $db['blocked_identities'] = [];
+  if (isset($db['sessions']) && is_array($db['sessions'])) {
+    foreach ($db['sessions'] as $tok => $s) {
+      if (!isset($keep[(string) ($s['userId'] ?? '')])) unset($db['sessions'][$tok]);
+    }
+  }
+  save_db(orolado_data_file(), $db);
+
+  $hdrs = supabase_admin_headers();
+  $sb = ['deposits' => false, 'withdrawals' => false, 'orders' => false, 'profiles' => 0, 'auth' => 0];
+  if ($hdrs) {
+    admin_sb_req('/rest/v1/deposits?created_at=gte.1970-01-01', [], 'DELETE');
+    admin_sb_req('/rest/v1/withdrawals?created_at=gte.1970-01-01', [], 'DELETE');
+    admin_sb_req('/rest/v1/orders?created_at=gte.1970-01-01', [], 'DELETE');
+    $sb['deposits'] = true;
+    $sb['withdrawals'] = true;
+    $sb['orders'] = true;
+    $profiles = admin_sb_all('profiles', 'id,email', 'created_at.asc', 1000);
+    foreach ($profiles as $p) {
+      $pid = (string) ($p['id'] ?? '');
+      $em = strtolower(trim((string) ($p['email'] ?? '')));
+      if ($pid === '' || isset($keep[$pid])) continue;
+      if ($em !== '' && orolado_is_reserved_admin_email($em)) continue;
+      admin_sb_req('/rest/v1/vaults?user_id=eq.' . rawurlencode($pid), [], 'DELETE');
+      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($pid), [], 'DELETE');
+      $sb['profiles']++;
+    }
+    $auth = admin_fetch_auth_users();
+    foreach ($auth as $a) {
+      $aid = (string) ($a['id'] ?? '');
+      $em = strtolower(trim((string) ($a['email'] ?? '')));
+      if ($aid === '' || isset($keep[$aid])) continue;
+      if ($em !== '' && orolado_is_reserved_admin_email($em)) continue;
+      supabase_admin_delete_auth($aid);
+      $sb['auth']++;
+    }
+  }
+  admin_bust_cache();
+  return ['ok' => true, 'kept' => count($keep), 'wiped' => $wiped, 'supabase' => $sb];
 }
 
 function admin_kill_user_sessions(array &$db, string $uid): int {

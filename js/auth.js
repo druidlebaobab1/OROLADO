@@ -84,8 +84,10 @@
       }
 
       var trafficSource = 'direct';
+      var trafficMeta = {};
       try {
         trafficSource = String(localStorage.getItem('orolado_utm_source') || 'direct').toLowerCase().trim() || 'direct';
+        trafficMeta = JSON.parse(localStorage.getItem('orolado_utm_meta') || '{}') || {};
       } catch (eUtm) { /* ignore */ }
 
       var passwordHash = await hashPassword(password);
@@ -95,7 +97,10 @@
         phone: phone || '',
         countryCode: countryCode,
         passwordHash: passwordHash,
-        trafficSource: trafficSource
+        trafficSource: trafficSource,
+        trafficMedium: trafficMeta.medium || '',
+        trafficCampaign: trafficMeta.campaign || '',
+        trafficReferrer: trafficMeta.referrer || ''
       });
       if (!start || !start.ok) {
         return {

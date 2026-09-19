@@ -240,6 +240,9 @@ if ($action === 'registerStart') {
   $passwordHash = trim((string) ($req['passwordHash'] ?? ''));
   $trafficSource = strtolower(trim((string) ($req['trafficSource'] ?? 'direct')));
   if ($trafficSource === '') $trafficSource = 'direct';
+  $trafficMedium = strtolower(trim((string) ($req['trafficMedium'] ?? '')));
+  $trafficCampaign = strtolower(trim((string) ($req['trafficCampaign'] ?? '')));
+  $trafficReferrer = strtolower(trim((string) ($req['trafficReferrer'] ?? '')));
   if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide', 'field' => 'regEmail']);
     exit;
@@ -289,6 +292,9 @@ if ($action === 'registerStart') {
     'countryCode' => $countryCode !== '' ? $countryCode : '+225',
     'passwordHash' => $passwordHash,
     'trafficSource' => $trafficSource,
+    'trafficMedium' => $trafficMedium,
+    'trafficCampaign' => $trafficCampaign,
+    'trafficReferrer' => $trafficReferrer,
     'codeHash' => orolado_otp_hash($email, $code),
     'expiresAt' => $now + OROLADO_OTP_TTL,
     'lastSentAt' => $now,
@@ -399,6 +405,9 @@ if ($action === 'registerVerify') {
     'realStakeVolume' => 0,
     'realDepositTotal' => 0,
     'trafficSource' => (string) ($row['trafficSource'] ?? 'direct'),
+    'trafficMedium' => (string) ($row['trafficMedium'] ?? ''),
+    'trafficCampaign' => (string) ($row['trafficCampaign'] ?? ''),
+    'trafficReferrer' => (string) ($row['trafficReferrer'] ?? ''),
     'publicId' => alloc_public_id($db),
     'transactions' => [],
     'positions' => []
@@ -777,13 +786,18 @@ if ($action === 'login') {
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $official = orolado_sync_official_real($uid, $jsonReal);
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
-    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+    $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
   }
   $db['vault'][$uid]['real'] = $official;
+  $demoNow = orolado_money($db['vault'][$uid]['demo'] ?? 0);
+  if ($demoNow <= 0 && (int) ($user['trades'] ?? 0) === 0) {
+    $db['vault'][$uid]['demo'] = 1000000;
+    $demoNow = 1000000;
+  }
   save_db($file, $db);
   orolado_set_session_cookie($tok);
   $vault = [
-    'demo' => orolado_money($db['vault'][$uid]['demo'] ?? 0),
+    'demo' => $demoNow,
     'real' => $official,
   ];
   echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
@@ -1296,6 +1310,10 @@ if ($action === 'placeOrder') {
     }
     if ($mode === 'demo') {
       $bal = orolado_money($locked['vault'][$uid]['demo'] ?? 0);
+      if ($bal <= 0 && (int) ($locked['users'][$uid]['trades'] ?? 0) === 0) {
+        $locked['vault'][$uid]['demo'] = 1000000;
+        $bal = 1000000;
+      }
       if ($stake > $bal) {
         return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
       }
@@ -1612,10 +1630,16 @@ if ($action === 'me') {
   }
   $uid = (string) $me['id'];
   orolado_repair_overwritten_reals_once();
-  $jsonVault = $db['vault'][$uid] ?? ['demo' => 0, 'real' => 0];
+  $jsonVault = $db['vault'][$uid] ?? ['demo' => 1000000, 'real' => 0];
   $jsonReal = orolado_money($jsonVault['real'] ?? 0);
+  $demoNow = orolado_money($jsonVault['demo'] ?? 0);
+  if ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0) {
+    $demoNow = 1000000;
+    $db['vault'][$uid]['demo'] = 1000000;
+    save_db($file, $db);
+  }
   $vault = [
-    'demo' => orolado_money($jsonVault['demo'] ?? 0),
+    'demo' => $demoNow,
     'real' => orolado_sync_official_real($uid, $jsonReal)
   ];
   echo json_encode([

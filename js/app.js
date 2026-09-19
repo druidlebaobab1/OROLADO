@@ -1610,15 +1610,45 @@
   var adminSortDeposit = 'desc';
   var adminPresenceTimer = 0;
 
+  function classifyTrafficHost(host) {
+    host = String(host || '').toLowerCase();
+    if (!host) return '';
+    if (/facebook|fb\.com|fbclid/.test(host)) return 'facebook';
+    if (/instagram|ig\.me/.test(host)) return 'instagram';
+    if (/tiktok|vm\.tiktok/.test(host)) return 'tiktok';
+    if (/whatsapp|wa\.me/.test(host)) return 'whatsapp';
+    if (/t\.me|telegram/.test(host)) return 'telegram';
+    if (/youtube|youtu\.be/.test(host)) return 'youtube';
+    if (/(^|\.)x\.com|twitter|t\.co/.test(host)) return 'twitter';
+    if (/snapchat/.test(host)) return 'snapchat';
+    if (/linkedin/.test(host)) return 'linkedin';
+    if (/google|gclid/.test(host)) return 'google';
+    if (/bing/.test(host)) return 'bing';
+    return '';
+  }
   function captureUtmSource() {
     try {
       var p = new URLSearchParams(window.location.search || '');
-      var s = String(p.get('utm_source') || '').toLowerCase().trim();
-      if (s) {
-        localStorage.setItem('orolado_utm_source', s.replace(/[^a-z0-9_\-.]/g, '').slice(0, 40) || 'direct');
-      } else if (!localStorage.getItem('orolado_utm_source')) {
-        localStorage.setItem('orolado_utm_source', 'direct');
-      }
+      var ref = '';
+      try { ref = String(document.referrer || ''); } catch (eR) { ref = ''; }
+      var host = '';
+      try { host = ref ? new URL(ref).hostname : ''; } catch (eH) { host = ''; }
+      var src = String(p.get('utm_source') || p.get('source') || '').toLowerCase().trim();
+      var medium = String(p.get('utm_medium') || '').toLowerCase().trim();
+      var campaign = String(p.get('utm_campaign') || '').toLowerCase().trim();
+      if (p.get('fbclid')) { src = src || 'facebook'; medium = medium || 'social'; }
+      if (p.get('gclid') || p.get('wbraid') || p.get('gbraid')) { src = src || 'google'; medium = medium || 'cpc'; }
+      if (p.get('ttclid')) { src = src || 'tiktok'; medium = medium || 'social'; }
+      if (!src) src = classifyTrafficHost(host);
+      if (!src) src = 'direct';
+      src = src.replace(/[^a-z0-9_\-.]/g, '').slice(0, 40) || 'direct';
+      localStorage.setItem('orolado_utm_source', src);
+      localStorage.setItem('orolado_utm_meta', JSON.stringify({
+        source: src,
+        medium: (medium || (src === 'direct' ? 'none' : 'referral')).slice(0, 40),
+        campaign: campaign.slice(0, 60),
+        referrer: host.slice(0, 80)
+      }));
     } catch (e) { /* ignore */ }
   }
 
@@ -2249,7 +2279,12 @@
     }
     stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
     $('inputStake').value = stake;
-    if (D6.Store.balanceOf(u) < stake) {
+    var have = D6.Store.balanceOf(u);
+    if (mode === 'real' && isFinite(lastOfficialReal) && lastOfficialReal > have + 0.009) {
+      applyOfficialReal(lastOfficialReal);
+      have = lastOfficialReal;
+    }
+    if (have < stake) {
       toast(t('insufficient'), 'err', 2000);
       tradeQ.length = 0;
       return false;
@@ -3560,7 +3595,9 @@
 
   function realWithdrawBalance(u) {
     if (!u) return 0;
-    return D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
+    var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
+    if (isFinite(lastOfficialReal) && lastOfficialReal > local + 0.009) return lastOfficialReal;
+    return local;
   }
 
   function refreshWithdrawUi() {
@@ -5323,6 +5360,12 @@
         try { sessionStorage.removeItem('oro_demo_preview'); } catch (eClr) { /* ignore */ }
       }
       if (u) migrateLegacyDemo(u);
+      if (u && !isGuest(u)) {
+        var demoNow = Number(D6.Store.demoBalance(u) || 0);
+        if (demoNow <= 0 && !(Number(u.trades) > 0)) {
+          D6.Store.setBalanceMode(u, 'demo', D6.CONFIG.DEMO_START || 1000000);
+        }
+      }
       restoreSettleLedger();
       stake = D6.CONFIG.MIN_STAKE || 1;
       if ($('inputStake')) $('inputStake').value = stake;

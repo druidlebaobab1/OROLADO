@@ -697,19 +697,44 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'traffic') {
-    $cols = ['Source', 'Joueurs'];
+    $cols = ['Réseau', 'Canal', 'Campagne / ref.', 'Joueurs', 'Avec dépôt', 'Conversion', 'Pays principal'];
     $src = admin_apply_filters($people, $req, 'createdAt');
     $g = [];
     foreach ($src as $p) {
-      $k = strtolower(trim((string) ($p['traffic'] ?? 'direct'))) ?: 'direct';
-      if (!isset($g[$k])) $g[$k] = 0;
-      $g[$k]++;
+      $raw = strtolower(trim((string) ($p['traffic'] ?? 'direct'))) ?: 'direct';
+      [$net, $fallbackMed] = admin_traffic_network($raw);
+      $med = trim((string) ($p['trafficMedium'] ?? ''));
+      if ($med === '') $med = $fallbackMed;
+      $camp = trim((string) ($p['trafficCampaign'] ?? $p['trafficReferrer'] ?? ''));
+      if ($camp === '') $camp = $raw === 'direct' ? '—' : $raw;
+      $key = $net . '|' . $med . '|' . $camp;
+      if (!isset($g[$key])) {
+        $g[$key] = ['net' => $net, 'med' => $med, 'camp' => $camp, 'n' => 0, 'paid' => 0, 'geo' => []];
+      }
+      $g[$key]['n']++;
+      if ((float) ($p['depositTotal'] ?? 0) > 0) $g[$key]['paid']++;
+      $c = admin_country_cell($p);
+      if ($c === '—') $c = 'Inconnu';
+      $g[$key]['geo'][$c] = ($g[$key]['geo'][$c] ?? 0) + 1;
     }
-    arsort($g);
-    foreach ($g as $k => $n) {
-      $rows[] = ['cells' => [$k, (string) $n], 'userId' => ''];
+    uasort($g, static fn($a, $b) => ($b['n'] <=> $a['n']));
+    foreach ($g as $row) {
+      arsort($row['geo']);
+      $top = $row['geo'] === [] ? '—' : (string) array_key_first($row['geo']);
+      $rows[] = [
+        'cells' => [
+          $row['net'],
+          $row['med'],
+          $row['camp'],
+          (string) $row['n'],
+          (string) $row['paid'],
+          admin_pct($row['paid'], $row['n']),
+          $top,
+        ],
+        'userId' => '',
+      ];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => 'Provenance des inscriptions', 'actions' => false];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => count($src) . ' inscription(s) ventilées par réseau et conversion', 'actions' => false];
   }
 
   if ($view === 'otp_mails') {
@@ -835,7 +860,7 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'payout_stats') {
-    $cols = ['Mise', 'Trades', 'Part des trades', 'Joueurs', 'Part des joueurs'];
+    $cols = ['Mise réelle', 'Trades', 'Part des trades', 'Joueurs', 'Part des joueurs'];
     $want = [88.0, 112.0, 500.0, 1000.0, 5000.0];
     $cnt = [];
     $who = [];
@@ -1225,6 +1250,11 @@ if ($isAjax) {
     }
     admin_bust_cache();
     admin_json(['ok' => true]);
+  }
+  if ($action === 'wipe_players') {
+    $confirm = (string) ($req['confirm'] ?? '');
+    if ($confirm !== 'RESET_OROLADO') admin_json(['ok' => false, 'reason' => 'Confirmation manquante']);
+    admin_json(admin_wipe_except_admin());
   }
   admin_json(['ok' => false, 'reason' => 'Action inconnue'], 400);
 }

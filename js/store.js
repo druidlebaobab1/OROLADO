@@ -322,10 +322,15 @@
         var next = { demo: prevV.demo, real: prevV.real };
         if (Object.prototype.hasOwnProperty.call(vaultEntry, 'real')) {
           var nextReal = Number(vaultEntry.real);
-          if (isFinite(nextReal) && nextReal >= 0) next.real = nextReal;
+          var prevReal = Number(prevV.real) || 0;
+          if (isFinite(nextReal) && nextReal > 0) next.real = Math.max(nextReal, prevReal);
+          else if (isFinite(nextReal) && nextReal >= 0 && !(prevReal > 0)) next.real = 0;
         }
         var keptDemo = readDemoLs(user.id);
-        if (keptDemo != null) next.demo = keptDemo;
+        if (keptDemo != null && keptDemo > 0) next.demo = keptDemo;
+        else if (!(Number(next.demo) > 0) && !(Number(user.trades) > 0)) {
+          next.demo = D6.CONFIG.DEMO_START || 1000000;
+        }
         vault[user.id] = next;
       }
       persist(true);
