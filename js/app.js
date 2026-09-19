@@ -3256,8 +3256,23 @@
     var raw = rawCryptoAddr(addr);
     var qr = $('usdtQr');
     if (!qr || !raw) return;
-    qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(raw);
+    var enc = encodeURIComponent(raw);
+    var sources = [
+      'api/qr.php?d=' + enc,
+      'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' + enc,
+      'https://quickchart.io/qr?size=160&text=' + enc
+    ];
+    var i = 0;
+    qr.style.background = '#fff';
+    qr.style.objectFit = 'contain';
     qr.alt = raw;
+    function load() {
+      if (i >= sources.length) return;
+      qr.onerror = function () { i += 1; load(); };
+      qr.onload = function () { qr.onerror = null; };
+      qr.src = sources[i];
+    }
+    load();
   }
 
   function paintOxaInvoice(inv) {
@@ -3385,12 +3400,16 @@
         confirmed: !!confirmed
       });
       if (!remote || !remote.ok || !remote.address) {
+        var rawReason = String((remote && remote.reason) || '');
+        var safeReason = /underPaidCover|under_paid|must be|validation/i.test(rawReason)
+          ? t('cryptoErrPending')
+          : (rawReason || t('sessionInvalid'));
         if (note) {
           note.hidden = false;
           note.classList.add('is-err');
-          note.textContent = (remote && remote.reason) || t('sessionInvalid');
+          note.textContent = safeReason;
         }
-        toast((remote && remote.reason) || t('sessionInvalid'), 'err', 5200);
+        toast(safeReason, 'err', 5200);
         return;
       }
       paintOxaInvoice(remote);

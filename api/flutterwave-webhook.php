@@ -17,12 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 $raw = file_get_contents('php://input') ?: '';
-$hash = (string) ($_SERVER['HTTP_VERIF_HASH'] ?? $_SERVER['REDIRECT_HTTP_VERIF_HASH'] ?? '');
+$hash = (string) ($_SERVER['HTTP_VERIF_HASH'] ?? $_SERVER['REDIRECT_HTTP_VERIF_HASH'] ?? $_SERVER['HTTP_VERIFHASH'] ?? '');
 if ($hash === '' && function_exists('getallheaders')) {
   $hdrs = getallheaders();
   if (is_array($hdrs)) {
     foreach ($hdrs as $k => $v) {
-      if (strcasecmp((string) $k, 'verif-hash') === 0) {
+      if (in_array(strtolower((string) $k), ['verif-hash', 'verifhash', 'flutterwave-hash'], true)) {
         $hash = (string) $v;
         break;
       }
