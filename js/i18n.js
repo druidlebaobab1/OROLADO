@@ -1965,6 +1965,7 @@
   var LANG_MANUAL_KEY = 'orolado_manual_lang';
   var LANG_SELECTED_KEY = 'orolado_selected_lang';
   var LANG_EXPLICIT_KEY = 'user_explicitly_selected_lang';
+  var LANG_SESSION_KEY = 'orolado_lang_session';
 
   function matchSupportedLang(raw) {
     var code = String(raw || '').toLowerCase().replace('_', '-').replace(/\s+/g, '').trim();
@@ -1983,7 +1984,39 @@
     return '';
   }
 
-  function detectUserLanguage() {
+  function langFromTimezone(tz) {
+    tz = String(tz || '');
+    if (!tz) return '';
+    if (/Dubai|Riyadh|Qatar|Kuwait|Bahrain|Muscat|Baghdad|Damascus|Amman|Beirut|Gaza|Hebron|Cairo|Tripoli|Khartoum|Nouakchott|Casablanca|Algiers|Tunis/.test(tz)) return 'ar';
+    if (/Sao_Paulo|Fortaleza|Recife|Bahia|Manaus|Belem|Noronha|Rio_Branco|Cuiaba|Campo_Grande|Porto_Velho|Lisbon|Madeira|Azores|Luanda|Maputo|Bissau/.test(tz)) return 'pt';
+    if (/Madrid|Ceuta|Canary|Bogota|Lima|Mexico_City|Monterrey|Tijuana|Caracas|Santiago|Buenos_Aires|Montevideo|Guayaquil|Panama|Havana|Santo_Domingo|Guatemala|Tegucigalpa|Managua|El_Salvador|Costa_Rica|Asuncion|La_Paz|Puerto_Rico/.test(tz)) return 'es';
+    if (/Paris|Brussels|Luxembourg|Monaco|Abidjan|Dakar|Bamako|Ouagadougou|Lome|Porto-Novo|Douala|Libreville|Brazzaville|Kinshasa|Niamey|Conakry|Reunion|Mauritius|Martinique|Guadeloupe|Cayenne|Antananarivo/.test(tz)) return 'fr';
+    if (tz.indexOf('Istanbul') >= 0) return 'tr';
+    if (tz.indexOf('Ho_Chi_Minh') >= 0 || tz.indexOf('Hanoi') >= 0) return 'vi';
+    if (tz.indexOf('Jakarta') >= 0) return 'id';
+    if (tz.indexOf('Moscow') >= 0) return 'ru';
+    if (tz.indexOf('Berlin') >= 0 || tz.indexOf('Vienna') >= 0) return 'de';
+    if (tz.indexOf('Kolkata') >= 0 || tz.indexOf('Calcutta') >= 0) return 'hi';
+    return '';
+  }
+
+  function langFromCountry(cc) {
+    cc = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
+    if (cc.length !== 2) return '';
+    if ({ SA:1, AE:1, EG:1, IQ:1, JO:1, KW:1, QA:1, BH:1, OM:1, YE:1, LY:1, SD:1, SY:1, PS:1, LB:1, MR:1, MA:1, DZ:1, TN:1 }[cc]) return 'ar';
+    if ({ FR:1, BE:1, LU:1, MC:1, SN:1, CI:1, CM:1, ML:1, BF:1, NE:1, TG:1, BJ:1, GA:1, CG:1, CD:1, MG:1, HT:1, GN:1, TD:1, GF:1, GP:1, MQ:1, RE:1, YT:1, NC:1, PF:1 }[cc]) return 'fr';
+    if ({ ES:1, CO:1, MX:1, AR:1, PE:1, CL:1, VE:1, EC:1, GT:1, CU:1, BO:1, DO:1, HN:1, PY:1, SV:1, NI:1, CR:1, PA:1, UY:1, PR:1 }[cc]) return 'es';
+    if ({ BR:1, PT:1, AO:1, MZ:1, GW:1, ST:1, CV:1, TL:1 }[cc]) return 'pt';
+    if (cc === 'TR') return 'tr';
+    if (cc === 'VN') return 'vi';
+    if (cc === 'ID') return 'id';
+    if (cc === 'RU') return 'ru';
+    if (cc === 'DE' || cc === 'AT') return 'de';
+    if (cc === 'IN') return 'hi';
+    return '';
+  }
+
+  function collectLangCandidates() {
     var candidates = [];
     var i;
     try {
@@ -1998,26 +2031,33 @@
       var loc = (Intl.DateTimeFormat().resolvedOptions() || {}).locale;
       if (loc) candidates.push(loc);
     } catch (eLoc) { /* ignore */ }
+    return candidates;
+  }
 
+  function detectFromNavigator() {
+    var candidates = collectLangCandidates();
     var seenEn = '';
+    var i;
     for (i = 0; i < candidates.length; i++) {
       var hit = matchSupportedLang(candidates[i]);
       if (!hit) continue;
-      // Safari/WebKit met souvent `en` en tête même si le téléphone est en arabe.
       if (hit === 'en') {
         if (!seenEn) seenEn = 'en';
         continue;
       }
       return hit;
     }
+    return seenEn;
+  }
 
+  function detectUserLanguage() {
+    var fromPhone = detectFromNavigator();
+    if (fromPhone && fromPhone !== 'en') return fromPhone;
     try {
-      var tz = (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '';
-      if (tz.indexOf('Dubai') >= 0 || tz.indexOf('Riyadh') >= 0 || tz.indexOf('Qatar') >= 0) return 'ar';
-      if (tz.indexOf('Sao_Paulo') >= 0) return 'pt';
+      var fromTz = langFromTimezone((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '');
+      if (fromTz) return fromTz;
     } catch (eTz) { /* ignore */ }
-
-    return seenEn || 'en';
+    return fromPhone || 'en';
   }
 
   function detectAutoLang() {
@@ -2036,27 +2076,22 @@
 
   function hasExplicitLang() {
     try {
-      var explicit = localStorage.getItem(LANG_EXPLICIT_KEY);
-      if (explicit && explicit !== '0' && explicit !== 'false') return true;
-      if (localStorage.getItem(LANG_USER_KEY) === '1') return true;
+      var sess = sessionStorage.getItem(LANG_SESSION_KEY);
+      if (sess && DICT[sess]) return true;
     } catch (eEx) { /* ignore */ }
     return false;
   }
 
   function readManualLang() {
-    if (!hasExplicitLang()) return '';
     try {
-      var selected = localStorage.getItem(LANG_SELECTED_KEY);
-      if (selected && DICT[selected]) return selected;
-      var manual = localStorage.getItem(LANG_MANUAL_KEY);
-      if (manual && DICT[manual]) return manual;
-      var stored = localStorage.getItem(LANG_KEY);
-      if (stored && DICT[stored]) return stored;
+      var sess = sessionStorage.getItem(LANG_SESSION_KEY);
+      if (sess && DICT[sess]) return sess;
     } catch (e) { /* ignore */ }
     return '';
   }
 
   function persistManualLang(code) {
+    try { sessionStorage.setItem(LANG_SESSION_KEY, code); } catch (eSess) { /* ignore */ }
     try {
       localStorage.setItem(LANG_EXPLICIT_KEY, '1');
       localStorage.setItem(LANG_SELECTED_KEY, code);
@@ -2152,22 +2187,54 @@
   var geoStarted = false;
 
   function applyAutoLang(code) {
-    if (lockedLang || hasExplicitLang()) return;
+    if (lockedLang || hasExplicitLang() || urlLang()) return;
     if (!DICT[code]) code = 'en';
+    if (lang === code) return;
     lang = code;
     try { localStorage.setItem(LANG_KEY, code); } catch (eAuto) { /* ignore */ }
     apply();
+  }
+
+  function refineFromIpCountry() {
+    if (lockedLang || hasExplicitLang() || urlLang()) return;
+    var phoneLang = detectFromNavigator();
+    if (phoneLang && phoneLang !== 'en') return;
+    var sources = ['https://api.country.is/', 'https://ipapi.co/json/'];
+    var i = 0;
+    function next() {
+      if (i >= sources.length || lockedLang || hasExplicitLang() || urlLang()) return;
+      var url = sources[i++];
+      var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+      var timer = setTimeout(function () {
+        try { if (ctrl) ctrl.abort(); } catch (eAb) { /* ignore */ }
+      }, 2500);
+      fetch(url, { cache: 'no-store', credentials: 'omit', signal: ctrl ? ctrl.signal : undefined }).then(function (r) {
+        return r && r.ok ? r.json() : null;
+      }).then(function (j) {
+        clearTimeout(timer);
+        var cc = String((j && (j.country || j.country_code)) || '').toUpperCase();
+        var hit = langFromCountry(cc);
+        if (hit) applyAutoLang(hit);
+        else next();
+      }).catch(function () {
+        clearTimeout(timer);
+        next();
+      });
+    }
+    try { next(); } catch (eIp) { /* ignore */ }
   }
 
   function startGeo() {
     if (geoStarted || lockedLang || hasExplicitLang()) return;
     geoStarted = true;
     applyAutoLang(detectAutoLang() || 'en');
+    refineFromIpCountry();
   }
 
   function refineFromGeo() {
-    if (geoStarted || lockedLang || hasExplicitLang()) return;
-    startGeo();
+    if (lockedLang || hasExplicitLang()) return;
+    if (!geoStarted) startGeo();
+    else refineFromIpCountry();
   }
 
   D6.I18N = {
