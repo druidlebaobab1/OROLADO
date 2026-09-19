@@ -1005,7 +1005,7 @@
     var odds = currentOdds(u);
     var pct = Math.round((odds - 1) * 100);
     document.querySelectorAll('.asset-chip .payout-live').forEach(function (el) {
-      el.textContent = '+88%';
+      el.textContent = pct + '%';
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
     var netGain = D6.roundMoney(stake * (pct / 100));
