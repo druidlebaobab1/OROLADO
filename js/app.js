@@ -1390,7 +1390,7 @@
   }
 
   function persistRecv(id, addr) {
-    if (!addr) return;
+    if (!addr || isStaticPlatAddr(addr)) return;
     var key = profRecvMeta(id).cache;
     recvCache[key] = addr;
     var u = user();
@@ -1408,19 +1408,25 @@
     }
   }
 
+  function isStaticPlatAddr(addr) {
+    var a = String(addr || '').trim();
+    if (!a) return false;
+    var plat = String((D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1').trim();
+    return plat !== '' && a.toLowerCase() === plat.toLowerCase();
+  }
+
   function assignedRecv(id) {
     var key = profRecvMeta(id).cache;
     var u = user();
-    if (u && u.recvAddrs && u.recvAddrs[key]) return u.recvAddrs[key];
-    if (recvCache[key]) return recvCache[key];
-    if (key === 'usdt' || key === 'trx') {
-      var plat = (D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || '';
-      if (plat) {
-        persistRecv(id, plat);
-        return plat;
-      }
+    var addr = '';
+    if (u && u.recvAddrs && u.recvAddrs[key]) addr = String(u.recvAddrs[key] || '');
+    if (!addr && recvCache[key]) addr = String(recvCache[key] || '');
+    if (isStaticPlatAddr(addr)) {
+      if (u && u.recvAddrs) u.recvAddrs[key] = '';
+      recvCache[key] = '';
+      return '';
     }
-    return '';
+    return addr;
   }
 
   function paintProfRecv() {
@@ -1527,7 +1533,11 @@
       $('btnCopyWallet')._oroBound = true;
       bindAndroidTap($('btnCopyWallet'), function () {
         var addr = assignedRecv(profRecvCoin);
-        if (!addr) return;
+        if (!addr) {
+          prefetchRecv(profRecvCoin, true);
+          toast('Adresse en cours de génération…', '');
+          return;
+        }
         var copyBtn = $('btnCopyWallet');
         copyTextSilent(addr, function () {
           copyBtn.textContent = t('copied') || 'Copié';
@@ -3157,8 +3167,8 @@
   }
 
   function cachedOxaAddr() {
-    if (oxaAsset === 'usdt') return recvCache[oxaCoin] || recvCache.usdt || '';
-    return recvCache[oxaCoin] || '';
+    var a = oxaAsset === 'usdt' ? (recvCache[oxaCoin] || recvCache.usdt || '') : (recvCache[oxaCoin] || '');
+    return isStaticPlatAddr(a) ? '' : a;
   }
 
   function clearCryptoPreview() {
@@ -3398,9 +3408,10 @@
   }
 
   function copyUsdtAddr() {
-    var addr = liveDepositAddr || cachedOxaAddr();
-    if (!addr) {
+    var addr = rawCryptoAddr(liveDepositAddr);
+    if (!addr || isStaticPlatAddr(addr)) {
       toast('Adresse en cours de génération…', '');
+      showCryptoInvoice(true);
       return;
     }
     function ok() {

@@ -11,12 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $raw = file_get_contents('php://input') ?: '';
-$hmac = (string) ($_SERVER['HTTP_HMAC'] ?? $_SERVER['REDIRECT_HTTP_HMAC'] ?? '');
+$hmac = (string) ($_SERVER['HTTP_HMAC'] ?? $_SERVER['REDIRECT_HTTP_HMAC'] ?? $_SERVER['HTTP_X_HMAC'] ?? $_SERVER['HTTP_OXAPAY_HMAC'] ?? '');
 if ($hmac === '' && function_exists('getallheaders')) {
   $hdrs = getallheaders();
   if (is_array($hdrs)) {
     foreach ($hdrs as $k => $v) {
-      if (strcasecmp((string) $k, 'HMAC') === 0) {
+      if (in_array(strtolower((string) $k), ['hmac', 'x-hmac', 'oxapay-hmac', 'signature'], true)) {
         $hmac = (string) $v;
         break;
       }

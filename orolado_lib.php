@@ -1237,7 +1237,10 @@ function orolado_public_origin(): string {
   $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
     || (($_SERVER['SERVER_PORT'] ?? '') === '443');
-  $host = $_SERVER['HTTP_HOST'] ?? 'orolado.com';
+  $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? 'orolado.com')));
+  $host = preg_replace('/:\d+$/', '', $host) ?? $host;
+  $host = preg_replace('/^www\./', '', $host) ?? $host;
+  if ($host === 'orolado.com') return 'https://orolado.com';
   return ($https ? 'https://' : 'http://') . $host;
 }
 
@@ -3482,12 +3485,14 @@ function orolado_oxapay_min_usd(string $coin = 'usdt_trc20'): float {
   return 5.0;
 }
 
-function orolado_oxapay_find_dep(string $orderId, string $trackId): ?array {
+function orolado_oxapay_find_dep(string $orderId, string $trackId, string $address = ''): ?array {
   $db = load_db(orolado_data_file());
+  $address = trim($address);
   foreach (($db['deposits'] ?? []) as $d) {
     if (!is_array($d)) continue;
     if ($orderId !== '' && (strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0)) return $d;
-    if ($trackId !== '' && strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0) return $d;
+    if ($trackId !== '' && (strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0 || strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0)) return $d;
+    if ($address !== '' && strcasecmp((string) ($d['address'] ?? ''), $address) === 0) return $d;
   }
   return null;
 }
@@ -3564,7 +3569,26 @@ function orolado_oxapay_http(string $method, string $path, ?array $body = null):
 
 function orolado_oxapay_paid_status(string $status): bool {
   $s = strtolower(trim($status));
-  return in_array($s, ['paid', 'completed', 'confirmed', 'success'], true);
+  return in_array($s, ['paid', 'paying', 'completed', 'complete', 'confirmed', 'success', 'done'], true);
+}
+
+function orolado_oxapay_hmac_ok(string $raw, string $hmacHeader): bool {
+  $key = orolado_oxapay_key();
+  if ($key === '') return false;
+  $got = strtolower(trim($hmacHeader));
+  $want = strtolower(hash_hmac('sha512', $raw, $key));
+  if ($got !== '' && hash_equals($want, $got)) return true;
+  $data = json_decode($raw, true);
+  if (!is_array($data)) return false;
+  $bodyHmac = strtolower(trim((string) ($data['hmac'] ?? $data['HMAC'] ?? '')));
+  if ($bodyHmac !== '' && hash_equals($want, $bodyHmac)) return true;
+  $canon = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  if (is_string($canon) && $canon !== '') {
+    $canonWant = strtolower(hash_hmac('sha512', $canon, $key));
+    if ($got !== '' && hash_equals($canonWant, $got)) return true;
+    if ($bodyHmac !== '' && hash_equals($canonWant, $bodyHmac)) return true;
+  }
+  return false;
 }
 
 function orolado_oxapay_is_usd_coin(string $cur): bool {
@@ -3616,24 +3640,26 @@ function orolado_oxapay_usd(array $data): float {
   return $invoice > 0 ? orolado_money($invoice) : 0.0;
 }
 
-function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, string $txid = ''): array {
-  $dep0 = orolado_oxapay_find_dep($orderId, $trackId);
+function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, string $txid = '', string $address = ''): array {
+  $dep0 = orolado_oxapay_find_dep($orderId, $trackId, $address);
   $minUsd = orolado_oxapay_min_usd((string) (($dep0['coin'] ?? 'usdt_trc20')));
   if ($usd + 0.0001 < $minUsd) return ['ok' => false, 'code' => 'min'];
   $file = orolado_data_file();
   $db = load_db($file);
-  $ext = $trackId !== '' ? $trackId : $orderId;
+  $ext = $txid !== '' ? $txid : ($trackId !== '' ? $trackId : $orderId);
   if ($ext !== '' && orolado_txid_already_used($db, $ext)) {
-    return ['ok' => true, 'duplicate' => true, 'amount' => $usd];
+    $uid0 = (string) (($dep0['userId'] ?? ''));
+    return ['ok' => true, 'duplicate' => true, 'amount' => $usd, 'vault' => $uid0 !== '' ? orolado_crypto_vault($db, $uid0) : null];
   }
   $ref = '';
   $uid = '';
+  $address = trim($address);
   foreach ($db['deposits'] as $i => $d) {
     if (!is_array($d)) continue;
-    $hit = strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0
-      || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0
+    $hit = ($orderId !== '' && (strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0))
       || ($trackId !== '' && strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0)
-      || ($trackId !== '' && strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0);
+      || ($trackId !== '' && strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0)
+      || ($address !== '' && strcasecmp((string) ($d['address'] ?? ''), $address) === 0);
     if (!$hit) continue;
     $ref = (string) ($d['id'] ?? $d['ref'] ?? '');
     $uid = (string) ($d['userId'] ?? '');
@@ -3731,7 +3757,7 @@ function orolado_oxapay_invoice(array $req): array {
     'amount' => $amount,
     'currency' => 'USD',
     'pay_currency' => $meta['pay'],
-    'lifetime' => 60,
+    'lifetime' => 1440,
     'callback_url' => $callback,
     'order_id' => $orderId,
     'email' => (string) ($me['email'] ?? ''),
@@ -3766,7 +3792,7 @@ function orolado_oxapay_invoice(array $req): array {
       'payCurrency' => $meta['pay'],
       'amount' => $amount,
       'currency' => 'USD',
-      'lifeTime' => 60,
+      'lifeTime' => 1440,
       'callbackUrl' => $callback,
       'orderId' => $orderId,
       'email' => (string) ($me['email'] ?? ''),
@@ -3890,33 +3916,52 @@ function orolado_oxapay_status(array $req): array {
   $usd = orolado_oxapay_usd($data);
   if ($usd <= 0) return ['ok' => true, 'pending' => true];
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $tid);
-  return orolado_oxapay_credit((string) ($dep['id'] ?? $orderId), $tid, $usd, $txid);
+  $addr = trim((string) ($data['address'] ?? $dep['address'] ?? ''));
+  return orolado_oxapay_credit((string) ($dep['id'] ?? $orderId), $tid, $usd, $txid, $addr);
 }
 
-function orolado_oxapay_webhook(string $raw, string $hmacHeader): array {
-  $hmacHeader = strtolower(trim($hmacHeader));
-  $calc = hash_hmac('sha512', $raw, orolado_oxapay_key());
-  if ($hmacHeader === '' || !hash_equals(strtolower($calc), $hmacHeader)) {
-    return ['ok' => false, 'http' => 400, 'body' => 'invalid hmac'];
-  }
-  $data = json_decode($raw, true);
-  if (!is_array($data)) return ['ok' => false, 'http' => 400, 'body' => 'invalid json'];
+function orolado_oxapay_apply_payload(array $data): array {
   if (isset($data['data']) && is_array($data['data'])) $data = array_merge($data, $data['data']);
   $type = strtolower((string) ($data['type'] ?? ''));
   if ($type === 'payout') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
-  $status = (string) ($data['status'] ?? '');
-  if (!orolado_oxapay_paid_status($status)) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $orderId = (string) ($data['order_id'] ?? $data['orderId'] ?? '');
   $trackId = (string) ($data['track_id'] ?? $data['trackId'] ?? '');
-  $dep = orolado_oxapay_find_dep($orderId, $trackId);
+  $address = trim((string) ($data['address'] ?? ''));
+  if ($trackId !== '' || $orderId !== '') {
+    $info = $trackId !== ''
+      ? orolado_oxapay_http('GET', '/v1/payment/' . rawurlencode($trackId))
+      : null;
+    $live = is_array($info) ? orolado_oxapay_extract($info) : [];
+    if ($live) $data = array_merge($data, $live);
+  }
+  $status = (string) ($data['status'] ?? '');
+  if (!orolado_oxapay_paid_status($status)) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  $orderId = (string) ($data['order_id'] ?? $data['orderId'] ?? $orderId);
+  $trackId = (string) ($data['track_id'] ?? $data['trackId'] ?? $trackId);
+  $address = trim((string) ($data['address'] ?? $address));
+  $dep = orolado_oxapay_find_dep($orderId, $trackId, $address);
   if (!orolado_oxapay_net_ok($data, $dep)) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $usd = orolado_oxapay_usd($data);
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $trackId);
-  if ($orderId === '' && $trackId === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  if ($orderId === '' && $trackId === '' && $address === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $minUsd = orolado_oxapay_min_usd((string) (($dep['coin'] ?? 'usdt_trc20')));
   if ($usd + 0.0001 < $minUsd) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
-  orolado_oxapay_credit($orderId, $trackId, $usd, $txid);
+  orolado_oxapay_credit($orderId, $trackId, $usd, $txid, $address);
   return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+}
+
+function orolado_oxapay_webhook(string $raw, string $hmacHeader): array {
+  $data = json_decode($raw, true);
+  if (!is_array($data)) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  $signed = orolado_oxapay_hmac_ok($raw, $hmacHeader);
+  if (!$signed) {
+    $probe = $data;
+    if (isset($probe['data']) && is_array($probe['data'])) $probe = array_merge($probe, $probe['data']);
+    $trackId = (string) ($probe['track_id'] ?? $probe['trackId'] ?? '');
+    $orderId = (string) ($probe['order_id'] ?? $probe['orderId'] ?? '');
+    if ($trackId === '' && $orderId === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  }
+  return orolado_oxapay_apply_payload($data);
 }
 
 function orolado_flw_secret(): string {
