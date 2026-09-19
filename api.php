@@ -765,55 +765,105 @@ if ($action === 'welcomeEmail') {
 
 if ($action === 'login') {
   $email = strtolower(trim($req['email'] ?? ''));
-  $password = trim((string) ($req['password'] ?? ''));
-  $user = find_user($db, $email);
+  $passwordRaw = (string) ($req['password'] ?? '');
+  $password = trim($passwordRaw);
+  $passTries = [];
+  foreach ([$password, $passwordRaw] as $pwTry) {
+    if ($pwTry !== '' && !in_array($pwTry, $passTries, true)) $passTries[] = $pwTry;
+  }
+  $matches = [];
+  foreach ($db['users'] as $id => $u) {
+    if (!is_array($u)) continue;
+    $mails = [
+      strtolower(trim((string) ($u['email'] ?? ''))),
+      strtolower(trim((string) ($u['originalEmail'] ?? ''))),
+    ];
+    if ($email === '' || !in_array($email, $mails, true)) continue;
+    if (!isset($u['id']) || (string) $u['id'] === '') $u['id'] = (string) $id;
+    $matches[] = $u;
+  }
+  $user = $matches[0] ?? find_user($db, $email);
   if (!$user && isset($db['users']['admin_master']) && orolado_is_reserved_admin_email($email)) {
     $user = $db['users']['admin_master'];
   }
   if (orolado_is_reserved_admin_email($email) || (($user['id'] ?? '') === 'admin_master')) {
-    if (!orolado_admin_pass_ok($password, $user, $ADMIN_PASS)) {
+    $adminOk = false;
+    foreach ($passTries as $pwTry) {
+      if (orolado_admin_pass_ok($pwTry, $user, $ADMIN_PASS)) {
+        $adminOk = true;
+        $password = $pwTry;
+        break;
+      }
+    }
+    if (!$adminOk) {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
     $user = ensure_admin_user($db, $ADMIN_EMAIL !== '' ? $ADMIN_EMAIL : $email, orolado_hash_password($password));
     save_db($file, $db);
   } else {
-    $stored = $user ? orolado_stored_password_hash($user) : '';
-    $okPass = $user && $stored !== '' && orolado_password_ok($password, $stored);
+    $okPass = false;
+    foreach ($matches as $candUser) {
+      $stored = orolado_stored_password_hash($candUser);
+      if ($stored === '') continue;
+      foreach ($passTries as $pwTry) {
+        if (!orolado_password_ok($pwTry, $stored)) continue;
+        $okPass = true;
+        $user = $candUser;
+        $password = $pwTry;
+        break 2;
+      }
+    }
     if (!$okPass) {
-      $sbAuth = orolado_supabase_password_grant($email, $password);
+      $sbAuth = null;
+      foreach ($passTries as $pwTry) {
+        $probe = orolado_supabase_password_grant($email, $pwTry);
+        if (is_array($probe) && !empty($probe['id'])) {
+          $sbAuth = $probe;
+          $password = $pwTry;
+          break;
+        }
+      }
       if (is_array($sbAuth) && !empty($sbAuth['id'])) {
         $okPass = true;
+        $sid = (string) $sbAuth['id'];
+        $user = null;
+        foreach ($matches as $candUser) {
+          if ((string) ($candUser['id'] ?? '') === $sid) { $user = $candUser; break; }
+        }
         if (!$user) {
-          $sid = (string) $sbAuth['id'];
-          if (isset($db['users'][$sid]) && is_array($db['users'][$sid])) {
-            $user = $db['users'][$sid];
-          } else {
-            $meta = is_array($sbAuth['user_metadata'] ?? null) ? $sbAuth['user_metadata'] : [];
-            $name = (string) ($meta['display_name'] ?? '');
-            if ($name === '') $name = explode('@', $email)[0];
-            $user = [
-              'id' => $sid,
-              'displayName' => $name !== '' ? $name : 'Trader',
-              'email' => $email,
-              'phone' => (string) ($meta['phone'] ?? ''),
-              'countryCode' => (string) ($meta['country_code'] ?? '+225'),
-              'passwordHash' => '',
-              'role' => 'user',
-              'createdAt' => date('c'),
-              'mode' => 'demo',
-              'assetId' => 'v100',
-              'duration' => 10,
-              'trades' => 0,
-              'wins' => 0,
-              'realTrades' => 0,
-              'realStakeVolume' => 0,
-              'transactions' => [],
-              'positions' => [],
-            ];
-            $db['users'][$sid] = $user;
-            if (!isset($db['vault'][$sid])) $db['vault'][$sid] = ['demo' => 1000000, 'real' => 0];
+          foreach ($matches as $candUser) {
+            if (orolado_stored_password_hash($candUser) !== '') { $user = $candUser; break; }
           }
+        }
+        if (!$user && isset($db['users'][$sid]) && is_array($db['users'][$sid])) {
+          $user = $db['users'][$sid];
+        }
+        if (!$user) {
+          $meta = is_array($sbAuth['user_metadata'] ?? null) ? $sbAuth['user_metadata'] : [];
+          $name = (string) ($meta['display_name'] ?? '');
+          if ($name === '') $name = explode('@', $email)[0];
+          $user = [
+            'id' => $sid,
+            'displayName' => $name !== '' ? $name : 'Trader',
+            'email' => $email,
+            'phone' => (string) ($meta['phone'] ?? ''),
+            'countryCode' => (string) ($meta['country_code'] ?? '+225'),
+            'passwordHash' => '',
+            'role' => 'user',
+            'createdAt' => date('c'),
+            'mode' => 'demo',
+            'assetId' => 'v100',
+            'duration' => 10,
+            'trades' => 0,
+            'wins' => 0,
+            'realTrades' => 0,
+            'realStakeVolume' => 0,
+            'transactions' => [],
+            'positions' => [],
+          ];
+          $db['users'][$sid] = $user;
+          if (!isset($db['vault'][$sid])) $db['vault'][$sid] = ['demo' => 1000000, 'real' => 0];
         }
       }
     }
