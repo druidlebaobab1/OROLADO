@@ -285,10 +285,17 @@
     var next = {};
     if (vault && !D6.holdRemote) {
       var remoteReal = Number(vault.real);
+      var localReal = 0;
+      try {
+        localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
+      } catch (eR) { localReal = 0; }
       var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
       var locked = locks && Date.now() < locks.until;
-      if (isFinite(remoteReal) && remoteReal >= 0 && (D6.holdDepositReal || !locked)) {
-        next.real = remoteReal;
+      if (isFinite(remoteReal) && remoteReal >= 0) {
+        var staleZero = remoteReal <= 0.009 && localReal > 0.009;
+        var holdLow = !!D6.holdDepositReal && remoteReal + 0.009 < localReal;
+        var lockLow = locked && remoteReal + 0.009 < localReal;
+        if (!staleZero && !holdLow && !lockLow) next.real = remoteReal;
       }
     }
     D6.holdPull = true;

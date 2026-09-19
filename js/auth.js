@@ -400,9 +400,7 @@
             user.password = '';
             D6.Store.saveUser(user);
           } catch (eHash) { /* ignore */ }
-          if (D6.Supabase && D6.Supabase.changePassword) {
-            try { await D6.Supabase.changePassword(next); } catch (eSb) { /* ignore */ }
-          }
+          if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
           return { ok: true };
         }
         if (remote && remote.reason) return remote;

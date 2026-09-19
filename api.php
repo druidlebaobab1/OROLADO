@@ -663,9 +663,21 @@ if ($action === 'passwordChange') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Jeton OTP invalide']);
     exit;
   }
-  $ok = orolado_overwrite_user_password($db, $email, $newPassword, $token);
+  $ok = orolado_overwrite_user_password($db, $email, $newPassword, '');
+  $fresh = '';
+  if ($ok) {
+    $uidNew = (string) ($me['id'] ?? '');
+    $fresh = make_token($uidNew, $SECRET);
+    $db['sessions'][$fresh] = orolado_new_session($uidNew);
+    orolado_set_session_cookie($fresh);
+  }
   save_db($file, $db);
-  echo json_encode(['ok' => $ok, 'server' => true, 'reason' => $ok ? null : 'Impossible de mettre à jour le mot de passe']);
+  echo json_encode([
+    'ok' => $ok,
+    'server' => true,
+    'token' => $fresh,
+    'reason' => $ok ? null : 'Impossible de mettre à jour le mot de passe',
+  ]);
   exit;
 }
 
@@ -804,6 +816,7 @@ if ($action === 'login') {
     echo json_encode(orolado_block_payload($banKind));
     exit;
   }
+  orolado_revoke_user_sessions($db, (string) $user['id'], '');
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
   $uid = (string) $user['id'];
