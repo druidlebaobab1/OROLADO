@@ -3461,6 +3461,14 @@ function orolado_oxapay_coins(): array {
     'ltc' => ['pay' => 'LTC', 'network' => '', 'label' => 'LTC', 'netLabel' => 'Litecoin Network'],
     'doge' => ['pay' => 'DOGE', 'network' => '', 'label' => 'DOGE', 'netLabel' => 'Dogecoin Network'],
     'xrp' => ['pay' => 'XRP', 'network' => '', 'label' => 'XRP', 'netLabel' => 'XRP Ledger'],
+    'pol' => ['pay' => 'POL', 'network' => '', 'label' => 'POL', 'netLabel' => 'Polygon Network'],
+    'shib' => ['pay' => 'SHIB', 'network' => 'BEP20', 'label' => 'SHIB', 'netLabel' => 'BNB Smart Chain'],
+    'gram' => ['pay' => 'GRAM', 'network' => '', 'label' => 'GRAM', 'netLabel' => 'TON Network'],
+    'xmr' => ['pay' => 'XMR', 'network' => '', 'label' => 'XMR', 'netLabel' => 'Monero Network'],
+    'dai' => ['pay' => 'DAI', 'network' => 'ERC20', 'label' => 'DAI', 'netLabel' => 'Ethereum Network'],
+    'bch' => ['pay' => 'BCH', 'network' => '', 'label' => 'BCH', 'netLabel' => 'Bitcoin Cash Network'],
+    'not' => ['pay' => 'NOT', 'network' => '', 'label' => 'NOT', 'netLabel' => 'TON Network'],
+    'dogs' => ['pay' => 'DOGS', 'network' => '', 'label' => 'DOGS', 'netLabel' => 'TON Network'],
   ];
 }
 
@@ -3468,7 +3476,7 @@ function orolado_oxapay_min_usd(string $coin = 'usdt_trc20'): float {
   $pay = strtoupper((string) (orolado_oxapay_coins()[$coin]['pay'] ?? $coin));
   if (in_array($pay, ['BTC', 'ETH'], true)) return 15.0;
   if (in_array($pay, ['USDT', 'TRX'], true)) return 5.0;
-  if (in_array($pay, ['SOL', 'LTC', 'BNB', 'XRP'], true)) return 10.0;
+  if (in_array($pay, ['SOL', 'LTC', 'BNB', 'XRP', 'XMR', 'BCH'], true)) return 10.0;
   return 5.0;
 }
 
@@ -3742,6 +3750,13 @@ function orolado_oxapay_invoice(array $req): array {
         break;
       }
     }
+  }
+  if (empty($data['address']) && $meta['network'] !== '') {
+    $try = $base;
+    unset($try['network']);
+    $res = orolado_oxapay_http('POST', '/v1/payment/white-label', $try);
+    $data = is_array($res) ? orolado_oxapay_extract($res) : [];
+    if (!empty($data['address'])) $meta['network'] = '';
   }
   if (empty($data['address'])) {
     $legacy = [

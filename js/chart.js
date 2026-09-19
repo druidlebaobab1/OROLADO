@@ -69,6 +69,11 @@
   var GUIDE_DASH = [2, 3];
   var NO_DASH = [];
   var IS_ANDROID_CHART = /Android/i.test(navigator.userAgent || '');
+  var IS_IOS_CHART = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') ||
+    ((navigator.platform === 'MacIntel') && (navigator.maxTouchPoints > 1));
+  var IS_MOBILE_CHART = IS_ANDROID_CHART || IS_IOS_CHART;
+  var chartHiddenAt = 0;
+  var lastClickWake = 0;
 
   function byExpiry(a, b) {
     return (a.expiryTime || a.expiresAt || 0) - (b.expiryTime || b.expiresAt || 0);
@@ -2233,9 +2238,12 @@
 
   function pauseChartEngine() {
     window.chartIsPaused = true;
+    if (!chartHiddenAt) chartHiddenAt = Date.now();
   }
 
   function wakeChartEngine() {
+    var sleptMs = chartHiddenAt ? (Date.now() - chartHiddenAt) : 0;
+    chartHiddenAt = 0;
     window.chartIsPaused = false;
     window.lastTickTime = performance.now();
     lastTs = performance.now();
@@ -2254,20 +2262,23 @@
     }
     window.animationFrameId = loopRaf;
     try { drawNow(); } catch (eW) { /* ignore */ }
-    if (IS_ANDROID_CHART) {
-      [90, 280, 700, 1400].forEach(function (ms) {
-        setTimeout(function () {
-          if (document.hidden || !IS_ANDROID_CHART) return;
+    var recoverMs = IS_ANDROID_CHART
+      ? (sleptMs >= 8000 ? [90, 280, 700, 1400, 2500, 4500] : [90, 280, 700, 1400])
+      : (IS_IOS_CHART && sleptMs >= 8000 ? [200, 800] : []);
+    recoverMs.forEach(function (ms) {
+      setTimeout(function () {
+        if (document.hidden) return;
+        if (IS_ANDROID_CHART) {
           lastGeomKey = '';
           try { resize(true); } catch (e2) { /* ignore */ }
-          try { drawNow(); } catch (e3) { /* ignore */ }
-          if (!loopRaf && running && !window.chartIsPaused) {
-            loopRaf = requestAnimationFrame(loop);
-            window.animationFrameId = loopRaf;
-          }
-        }, ms);
-      });
-    }
+        }
+        try { drawNow(); } catch (e3) { /* ignore */ }
+        if (!loopRaf && running && !window.chartIsPaused) {
+          loopRaf = requestAnimationFrame(loop);
+          window.animationFrameId = loopRaf;
+        }
+      }, ms);
+    });
   }
 
   function bindVisibilityFix() {
@@ -2277,9 +2288,24 @@
       if (document.hidden) pauseChartEngine();
       else wakeChartEngine();
     });
-    window.addEventListener('pageshow', function () {
-      if (!document.hidden) wakeChartEngine();
+    window.addEventListener('pageshow', function (ev) {
+      if (document.hidden) return;
+      if (ev && ev.persisted && !chartHiddenAt) chartHiddenAt = Date.now() - 20000;
+      wakeChartEngine();
     });
+    if (IS_MOBILE_CHART) {
+      window.addEventListener('pagehide', function () { pauseChartEngine(); });
+    }
+    if (IS_MOBILE_CHART && canvas) {
+      canvas.addEventListener('pointerdown', function () {
+        if (document.hidden) return;
+        if (loopRaf && !window.chartIsPaused) return;
+        var now = Date.now();
+        if (now - lastClickWake < 350) return;
+        lastClickWake = now;
+        wakeChartEngine();
+      }, { passive: true });
+    }
     if (!IS_ANDROID_CHART) return;
     document.addEventListener('freeze', function () { pauseChartEngine(); });
     document.addEventListener('resume', function () {

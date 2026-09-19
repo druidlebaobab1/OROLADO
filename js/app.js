@@ -3049,7 +3049,15 @@
     { id: 'sol', symbol: 'SOL', name: 'Solana', color: '#14F195', mark: 'S', minUsd: 10, networkName: 'Solana Network' },
     { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł', minUsd: 10, networkName: 'Litecoin Network' },
     { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð', minUsd: 5, networkName: 'Dogecoin Network' },
-    { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X', minUsd: 10, networkName: 'XRP Ledger' }
+    { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X', minUsd: 10, networkName: 'XRP Ledger' },
+    { id: 'pol', symbol: 'POL', name: 'Polygon', color: '#8247E5', mark: 'P', minUsd: 5, networkName: 'Polygon Network' },
+    { id: 'shib', symbol: 'SHIB', name: 'Shiba Inu', color: '#FFA409', mark: 'S', minUsd: 5, networkName: 'BNB Smart Chain' },
+    { id: 'gram', symbol: 'GRAM', name: 'Gram (TON)', color: '#0098EA', mark: 'G', minUsd: 5, networkName: 'TON Network' },
+    { id: 'xmr', symbol: 'XMR', name: 'Monero', color: '#FF6600', mark: 'M', minUsd: 10, networkName: 'Monero Network' },
+    { id: 'dai', symbol: 'DAI', name: 'DAI', color: '#F5AC37', mark: 'D', minUsd: 5, networkName: 'Ethereum Network' },
+    { id: 'bch', symbol: 'BCH', name: 'Bitcoin Cash', color: '#8DC351', mark: 'C', minUsd: 10, networkName: 'Bitcoin Cash Network' },
+    { id: 'not', symbol: 'NOT', name: 'Notcoin', color: '#1C1C1C', mark: 'N', minUsd: 5, networkName: 'TON Network' },
+    { id: 'dogs', symbol: 'DOGS', name: 'Dogs', color: '#E8A317', mark: 'd', minUsd: 5, networkName: 'TON Network' }
   ];
 
   function oxaMeta(id) {
