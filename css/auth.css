@@ -105,7 +105,7 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   color:#F59E0B;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .help-terms,#helpModal button.link-terms.help-terms{
   display:block;width:100%;text-align:center;margin:8px 0 0;
-  font:inherit;font-size:.56rem!important;font-weight:700;line-height:1.35;color:#94A3B8}
+  font:inherit;font-size:.62rem!important;font-weight:700;line-height:1.35;color:#94A3B8}
 .help-terms.link-terms,#helpModal button.link-terms.help-terms{color:#F59E0B}
 
 #termsModal .terms-box{
