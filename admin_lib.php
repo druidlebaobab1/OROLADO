@@ -53,6 +53,83 @@ function admin_esc(string $s): string {
   return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function admin_dial_iso(string $raw): string {
+  $s = strtoupper(trim($raw));
+  if (preg_match('/^[A-Z]{2}$/', $s)) return $s;
+  $s = preg_replace('/[^\d+]/', '', $raw) ?? '';
+  $map = [
+    '+225' => 'CI', '+221' => 'SN', '+223' => 'ML', '+226' => 'BF', '+227' => 'NE',
+    '+228' => 'TG', '+229' => 'BJ', '+237' => 'CM', '+241' => 'GA', '+242' => 'CG',
+    '+243' => 'CD', '+234' => 'NG', '+233' => 'GH', '+254' => 'KE', '+256' => 'UG',
+    '+250' => 'RW', '+255' => 'TZ', '+260' => 'ZM', '+263' => 'ZW', '+27' => 'ZA',
+    '+212' => 'MA', '+213' => 'DZ', '+216' => 'TN', '+218' => 'LY', '+20' => 'EG',
+    '+33' => 'FR', '+32' => 'BE', '+41' => 'CH', '+49' => 'DE', '+39' => 'IT',
+    '+34' => 'ES', '+351' => 'PT', '+44' => 'GB', '+1' => 'US', '+55' => 'BR',
+    '+91' => 'IN', '+86' => 'CN', '+81' => 'JP', '+82' => 'KR', '+90' => 'TR',
+    '+971' => 'AE', '+966' => 'SA', '+7' => 'RU', '+48' => 'PL', '+31' => 'NL',
+    '+237' => 'CM', '+224' => 'GN', '+225' => 'CI', '+238' => 'CV', '+239' => 'ST',
+    '+240' => 'GQ', '+244' => 'AO', '+245' => 'GW', '+248' => 'SC', '+249' => 'SD',
+    '+251' => 'ET', '+252' => 'SO', '+253' => 'DJ', '+257' => 'BI', '+258' => 'MZ',
+    '+261' => 'MG', '+262' => 'RE', '+264' => 'NA', '+265' => 'MW', '+266' => 'LS',
+    '+267' => 'BW', '+268' => 'SZ', '+269' => 'KM', '+290' => 'SH', '+291' => 'ER',
+    '+297' => 'AW', '+298' => 'FO', '+299' => 'GL',
+  ];
+  if (isset($map[$s])) return $map[$s];
+  foreach ($map as $dial => $iso) {
+    if ($s !== '' && str_starts_with($s, $dial)) return $iso;
+  }
+  return '';
+}
+
+function admin_flag_emoji(string $iso2): string {
+  $iso2 = strtoupper($iso2);
+  if (!preg_match('/^[A-Z]{2}$/', $iso2)) return '';
+  $a = 0x1F1E6 + (ord($iso2[0]) - 65);
+  $b = 0x1F1E6 + (ord($iso2[1]) - 65);
+  return (function_exists('mb_chr') ? mb_chr($a, 'UTF-8') : html_entity_decode('&#' . $a . ';', ENT_NOQUOTES, 'UTF-8'))
+    . (function_exists('mb_chr') ? mb_chr($b, 'UTF-8') : html_entity_decode('&#' . $b . ';', ENT_NOQUOTES, 'UTF-8'));
+}
+
+function admin_country_name(string $iso2): string {
+  $names = [
+    'CI' => 'Côte d’Ivoire', 'SN' => 'Sénégal', 'ML' => 'Mali', 'BF' => 'Burkina Faso',
+    'NE' => 'Niger', 'TG' => 'Togo', 'BJ' => 'Bénin', 'CM' => 'Cameroun', 'GA' => 'Gabon',
+    'CG' => 'Congo', 'CD' => 'RDC', 'NG' => 'Nigeria', 'GH' => 'Ghana', 'KE' => 'Kenya',
+    'UG' => 'Ouganda', 'RW' => 'Rwanda', 'TZ' => 'Tanzanie', 'ZA' => 'Afrique du Sud',
+    'MA' => 'Maroc', 'DZ' => 'Algérie', 'TN' => 'Tunisie', 'EG' => 'Égypte',
+    'FR' => 'France', 'BE' => 'Belgique', 'CH' => 'Suisse', 'DE' => 'Allemagne',
+    'IT' => 'Italie', 'ES' => 'Espagne', 'PT' => 'Portugal', 'GB' => 'Royaume-Uni',
+    'US' => 'États-Unis', 'BR' => 'Brésil', 'IN' => 'Inde', 'CN' => 'Chine',
+    'AE' => 'Émirats', 'SA' => 'Arabie saoudite', 'GN' => 'Guinée',
+  ];
+  return $names[$iso2] ?? $iso2;
+}
+
+function admin_country_cell(array $p): string {
+  $raw = trim((string) ($p['country'] ?? $p['countryCode'] ?? $p['country_code'] ?? ''));
+  $iso = admin_dial_iso($raw);
+  if ($iso === '') $iso = admin_dial_iso((string) ($p['phone'] ?? $p['whatsapp'] ?? $p['mobile'] ?? ''));
+  if ($iso === '') {
+    $lang = strtolower((string) ($p['lang'] ?? $p['locale'] ?? ''));
+    $langMap = [
+      'fr-ci' => 'CI', 'fr-sn' => 'SN', 'fr-ml' => 'ML', 'fr-bf' => 'BF',
+      'fr-tg' => 'TG', 'fr-bj' => 'BJ', 'fr-cm' => 'CM', 'fr-ga' => 'GA',
+      'fr-cd' => 'CD', 'fr-gn' => 'GN', 'en-ng' => 'NG', 'en-gh' => 'GH',
+      'en-ke' => 'KE', 'pt-ao' => 'AO', 'ar-ma' => 'MA', 'ar-dz' => 'DZ',
+    ];
+    if (isset($langMap[$lang])) $iso = $langMap[$lang];
+    else if (preg_match('/^[a-z]{2}-([a-z]{2})$/', $lang, $m)) $iso = strtoupper($m[1]);
+  }
+  if ($iso === '') return $raw !== '' && !preg_match('/^\+\d+$/', $raw) ? $raw : '—';
+  $flag = admin_flag_emoji($iso);
+  return trim($flag . ' ' . admin_country_name($iso));
+}
+
+function admin_pct(int $part, int $total): string {
+  if ($total <= 0) return '0 %';
+  return number_format(($part * 100) / $total, 1, ',', ' ') . ' %';
+}
+
 function admin_cache_file(string $name): string {
   return rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . $name;
 }
@@ -583,6 +660,8 @@ function admin_dep_channel(string $op): string {
   $op = strtolower(trim($op));
   if (in_array($op, ['oxapay', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'crypto'], true)) return 'Crypto';
   if (in_array($op, ['flutterwave', 'flw', 'card', 'card_flw'], true)) return 'Carte';
+  if ($op === 'admin') return 'Crédit admin';
+  if ($op === 'refund') return 'Remboursement';
   if ($op === '' || $op === 'maketou') return 'Mobile Money';
   if (in_array($op, ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'opay', 'palmpay'], true)) return 'Mobile Money';
   return 'Autre';
@@ -680,6 +759,12 @@ function admin_profiles(): array {
         if ($an !== '') $byId[$id]['name'] = $an;
       }
       if ($byId[$id]['ip'] === '' && $ip !== '') $byId[$id]['ip'] = $ip;
+      if (($byId[$id]['country'] ?? '') === '') {
+        $cc = trim((string) ($meta['country_code'] ?? $meta['country'] ?? ''));
+        if ($cc !== '') $byId[$id]['country'] = $cc;
+      }
+      $lang = trim((string) ($meta['lang'] ?? $meta['locale'] ?? $meta['language'] ?? ''));
+      if ($lang !== '') $byId[$id]['lang'] = $lang;
       if ($byId[$id]['traffic'] === '' && $src !== '') $byId[$id]['traffic'] = $src;
       if ($byId[$id]['createdAt'] === '' && $created !== '') $byId[$id]['createdAt'] = $created;
       if ($byId[$id]['lastSeen'] === '' && !empty($u['last_sign_in_at'])) {
@@ -700,6 +785,8 @@ function admin_profiles(): array {
       if ($byId[$id]['phone'] === '') $byId[$id]['phone'] = (string) ($u['phone'] ?? '');
       if ($byId[$id]['name'] === '') $byId[$id]['name'] = (string) ($u['displayName'] ?? '');
       if ($byId[$id]['lastSeen'] === '') $byId[$id]['lastSeen'] = (string) ($u['lastSeen'] ?? '');
+      if (($byId[$id]['country'] ?? '') === '') $byId[$id]['country'] = (string) ($u['countryCode'] ?? $u['country'] ?? '');
+      if (empty($byId[$id]['lang'])) $byId[$id]['lang'] = (string) ($u['lang'] ?? $u['locale'] ?? '');
       continue;
     }
     $byId[$id] = [
@@ -990,6 +1077,8 @@ function admin_restore_hidden_wds_once(): void {
 
 function admin_withdrawals(): array {
   admin_restore_hidden_wds_once();
+  $cached = admin_cache_get('wd_merged', 15);
+  if (is_array($cached)) return $cached;
   $byId = [];
   $byFp = [];
   $put = static function (array $row) use (&$byId, &$byFp): void {
@@ -1052,6 +1141,7 @@ function admin_withdrawals(): array {
   usort($list, static function ($a, $b) {
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
   });
+  admin_cache_set('wd_merged', $list);
   return $list;
 }
 
@@ -1276,7 +1366,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'badges'] as $k) {
+  foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'badges', 'health'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
@@ -1320,19 +1410,28 @@ function admin_order_is_live_real(array $o): bool {
 }
 
 /** Bots / scripts / cash-out sans jeu réel — pas les joueurs normaux. */
-function admin_is_suspect(array $p, array $realOrders, ?array $wd = null): bool {
+function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null): string {
   $role = strtolower((string) ($p['role'] ?? ''));
-  if (in_array($role, ['suspended', 'banned'], true)) return true;
-  if ($wd && (!empty($wd['suspect']) || strtolower((string) ($wd['status'] ?? '')) === 'review')) return true;
+  if (in_array($role, ['suspended', 'banned'], true)) return 'Compte déjà suspendu';
+  if ($wd && (!empty($wd['suspect']) || strtolower((string) ($wd['status'] ?? '')) === 'review')) {
+    return 'Retrait signalé';
+  }
   $trades = (int) ($p['realTrades'] ?? 0);
   $wagered = (float) ($p['realStakeVolume'] ?? 0);
   if ($wagered <= 0) {
     foreach ($realOrders as $o) $wagered += (float) ($o['stake'] ?? 0);
   }
-  $amt = $wd ? (float) ($wd['amount'] ?? 0) : 0.0;
-  if ($wd && $trades <= 0 && $amt >= 5) return true;
-  if ($wd && $amt >= 50 && $wagered + 0.01 < $amt && $trades < 4) return true;
   $n = count($realOrders);
+  if ($trades <= 0) $trades = $n;
+  $amt = $wd ? (float) ($wd['amount'] ?? 0) : 0.0;
+  if ($wd && $trades <= 0 && $amt >= 5) return 'Retrait sans aucun trade réel';
+  if ($wd && $amt >= 50 && $wagered + 0.01 < $amt && $trades < 4) return 'Retrait supérieur aux mises';
+  $created = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  if ($wd && $created > 0 && (time() - $created) < 180 && $amt >= 5) return 'Retrait dans les 3 min après inscription';
+  $dep = (float) ($p['depositTotal'] ?? 0);
+  if ($dep >= 50 && $trades <= 1 && $wd && $amt >= 20) return 'Gros dépôt puis cash-out immédiat';
+  if ($dep >= 80 && $trades <= 0) return 'Gros dépôt sans aucun jeu';
+  if ($dep >= 20 && $trades <= 0 && $created > 0 && (time() - $created) > 86400) return 'Dépôt ancien jamais joué';
   if ($n >= 8) {
     $times = [];
     foreach ($realOrders as $o) {
@@ -1341,7 +1440,7 @@ function admin_is_suspect(array $p, array $realOrders, ?array $wd = null): bool 
     }
     sort($times);
     for ($i = 0; $i + 7 < count($times); $i++) {
-      if ($times[$i + 7] - $times[$i] <= 12) return true;
+      if ($times[$i + 7] - $times[$i] <= 12) return '8 paris en moins de 12 s';
     }
   }
   if ($n >= 12) {
@@ -1351,10 +1450,20 @@ function admin_is_suspect(array $p, array $realOrders, ?array $wd = null): bool 
       $stakes[$k] = ($stakes[$k] ?? 0) + 1;
     }
     foreach ($stakes as $c) {
-      if ($c >= 12) return true;
+      if ($c >= 12) return '12+ mises identiques (script)';
     }
   }
-  return false;
+  $sides = ['call' => 0, 'put' => 0];
+  foreach ($realOrders as $o) {
+    $side = strtolower((string) ($o['side'] ?? ''));
+    if (isset($sides[$side])) $sides[$side]++;
+  }
+  if ($n >= 15 && max($sides) / max(1, $n) >= 0.95) return 'Toujours le même sens (CALL/PUT)';
+  return '';
+}
+
+function admin_is_suspect(array $p, array $realOrders, ?array $wd = null): bool {
+  return admin_suspect_reason($p, $realOrders, $wd) !== '';
 }
 
 function admin_profit_between(array $deps, array $wds, string $from, string $to): float {
@@ -1373,66 +1482,128 @@ function admin_profit_between(array $deps, array $wds, string $from, string $to)
   return $in - $out;
 }
 
+function admin_health_probe(string $label, string $path, string $method = 'GET', ?string $body = null): array {
+  $t0 = microtime(true);
+  $res = admin_sb_req($path, ['Range: 0-0'], $method, $body);
+  $ms = (int) round((microtime(true) - $t0) * 1000);
+  $ok = !empty($res['ok']);
+  return [
+    'at' => date('c'),
+    'service' => $label,
+    'message' => $ok
+      ? ('OK · HTTP ' . (int) ($res['code'] ?? 0) . ' · ' . $ms . ' ms')
+      : ('Panne · HTTP ' . (int) ($res['code'] ?? 0) . ' · ' . $ms . ' ms'),
+    'level' => $ok ? ($ms > 2500 ? 'warn' : 'ok') : 'error',
+  ];
+}
+
 function admin_health_rows(): array {
+  $cached = admin_cache_get('health', 20);
+  if (is_array($cached) && isset($cached['rows'])) return $cached['rows'];
   $rows = [];
+  $now = date('c');
   $file = orolado_data_file();
   $jsonOk = is_file($file) && is_readable($file);
   $jsonW = $jsonOk && is_writable($file);
+  $sz = $jsonOk ? (int) @filesize($file) : 0;
   $rows[] = [
-    'at' => date('c'),
+    'at' => $now,
     'service' => 'Coffre JSON',
     'message' => $jsonOk
-      ? ('Fichier joueurs lisible' . ($jsonW ? ', écriture OK' : ', lecture seule') . ' · ' . number_format((int) @filesize($file) / 1024, 1, '.', ' ') . ' Ko')
+      ? ('Lecture ' . ($jsonW ? '+ écriture' : 'seule') . ' · ' . number_format($sz / 1024, 1, '.', ' ') . ' Ko · ' . $file)
       : 'Fichier joueurs introuvable ou illisible',
-    'level' => $jsonOk ? 'ok' : 'error',
+    'level' => $jsonOk ? ($jsonW ? 'ok' : 'warn') : 'error',
   ];
-  $ping = admin_sb_req('/rest/v1/profiles?select=id&limit=1', ['Range: 0-0']);
-  $sbOk = !empty($ping['ok']);
+  $rows[] = admin_health_probe('Base · profiles', '/rest/v1/profiles?select=id&limit=1');
+  $rows[] = admin_health_probe('Base · vaults', '/rest/v1/vaults?select=user_id&limit=1');
+  $rows[] = admin_health_probe('Base · deposits', '/rest/v1/deposits?select=id&limit=1');
+  $rows[] = admin_health_probe('Base · withdrawals', '/rest/v1/withdrawals?select=id&limit=1');
+  $rows[] = admin_health_probe('Base · orders', '/rest/v1/orders?select=id&limit=1');
+  $auth = admin_sb_req('/auth/v1/admin/users?page=1&per_page=1', []);
   $rows[] = [
-    'at' => date('c'),
-    'service' => 'Base Supabase',
-    'message' => $sbOk ? 'Répond (HTTP ' . (int) ($ping['code'] ?? 0) . ')' : 'Ne répond pas — vérifier la clé / le réseau',
-    'level' => $sbOk ? 'ok' : 'error',
+    'at' => $now,
+    'service' => 'Auth joueurs',
+    'message' => !empty($auth['ok']) ? ('OK · HTTP ' . (int) ($auth['code'] ?? 0)) : 'API Auth injoignable',
+    'level' => !empty($auth['ok']) ? 'ok' : 'error',
   ];
   $rows[] = [
-    'at' => date('c'),
+    'at' => $now,
     'service' => 'PHP',
-    'message' => 'Version ' . PHP_VERSION . ' · ' . PHP_OS,
-    'level' => 'ok',
+    'message' => 'v' . PHP_VERSION . ' · ' . PHP_OS . ' · mémoire ' . ini_get('memory_limit') . ' · max ' . ini_get('max_execution_time') . 's',
+    'level' => version_compare(PHP_VERSION, '8.0.0', '>=') ? 'ok' : 'warn',
   ];
   if (function_exists('disk_free_space')) {
     $free = @disk_free_space(__DIR__);
     if (is_float($free) || is_int($free)) {
       $gb = $free / 1073741824;
       $rows[] = [
-        'at' => date('c'),
+        'at' => $now,
         'service' => 'Disque serveur',
         'message' => number_format($gb, 2, '.', ' ') . ' Go libres',
-        'level' => $gb < 0.5 ? 'error' : 'ok',
+        'level' => $gb < 0.5 ? 'error' : ($gb < 2 ? 'warn' : 'ok'),
       ];
     }
   }
-  $scripts = ['api.php', 'admin.php', 'orolado_lib.php', 'js/engine.js', 'js/app.js'];
-  $okN = 0;
+  $scripts = [
+    'api.php', 'admin.php', 'admin_lib.php', 'orolado_lib.php',
+    'js/app.js', 'js/store.js', 'js/auth.js', 'js/engine.js', 'js/supabase.js', 'index.html',
+  ];
+  $miss = [];
   foreach ($scripts as $s) {
-    if (is_file(__DIR__ . '/' . $s)) $okN++;
+    if (!is_file(__DIR__ . '/' . $s)) $miss[] = $s;
   }
   $rows[] = [
-    'at' => date('c'),
-    'service' => 'Scripts',
-    'message' => $okN . '/' . count($scripts) . ' fichiers critiques présents',
-    'level' => $okN === count($scripts) ? 'ok' : 'error',
+    'at' => $now,
+    'service' => 'Scripts critiques',
+    'message' => $miss === []
+      ? (count($scripts) . '/' . count($scripts) . ' fichiers présents')
+      : ('Manque : ' . implode(', ', $miss)),
+    'level' => $miss === [] ? 'ok' : 'error',
   ];
   $db = admin_local_db();
   $sessN = is_array($db['sessions'] ?? null) ? count($db['sessions']) : 0;
+  $userN = is_array($db['users'] ?? null) ? count($db['users']) : 0;
   $rows[] = [
-    'at' => date('c'),
-    'service' => 'Sessions',
-    'message' => $sessN . ' session(s) serveur actives',
+    'at' => $now,
+    'service' => 'Sessions locales',
+    'message' => $sessN . ' session(s) · ' . $userN . ' compte(s) JSON',
     'level' => 'ok',
+  ];
+  $svc = function_exists('supabase_service_key') ? supabase_service_key() : '';
+  $rows[] = [
+    'at' => $now,
+    'service' => 'Clé service',
+    'message' => $svc !== '' ? 'Service role présente' : 'SUPABASE_SERVICE_ROLE_KEY absente',
+    'level' => $svc !== '' ? 'ok' : 'error',
+  ];
+  $dataDir = orolado_data_dir();
+  $kickDir = rtrim(str_replace('\\', '/', $dataDir), '/') . '/kicks';
+  $rows[] = [
+    'at' => $now,
+    'service' => 'Dossier data',
+    'message' => (is_dir($dataDir) && is_writable($dataDir))
+      ? ('OK · ' . $dataDir)
+      : 'Dossier data absent ou non inscriptible',
+    'level' => (is_dir($dataDir) && is_writable($dataDir)) ? 'ok' : 'error',
+  ];
+  $rows[] = [
+    'at' => $now,
+    'service' => 'Expulsions live',
+    'message' => is_dir($kickDir) || @mkdir($kickDir, 0775, true)
+      ? 'Dossier kicks opérationnel'
+      : 'Impossible d’écrire les expulsions',
+    'level' => (is_dir($kickDir) && is_writable($kickDir)) ? 'ok' : 'warn',
+  ];
+  $apiOk = is_file(__DIR__ . '/api.php') && is_readable(__DIR__ . '/api.php');
+  $rows[] = [
+    'at' => $now,
+    'service' => 'API joueurs',
+    'message' => $apiOk ? 'api.php présent et lisible' : 'api.php introuvable',
+    'level' => $apiOk ? 'ok' : 'error',
   ];
   foreach (admin_collect_alerts() as $a) {
     $rows[] = $a;
   }
+  admin_cache_set('health', ['rows' => $rows]);
   return $rows;
 }

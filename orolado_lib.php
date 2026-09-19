@@ -387,12 +387,22 @@ function supabase_set_real(string $userId, $amount): void {
   $hdrs = supabase_admin_headers();
   if (!$hdrs || $amount < 0) return;
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
-  supabase_http(
-    supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId),
-    $hdrs,
-    json_encode(['real' => $amount, 'updated_at' => date('c')]),
-    'PATCH'
-  );
+  $url = supabase_project_url();
+  $payload = json_encode(['real' => $amount, 'updated_at' => date('c')]);
+  supabase_http($url . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId), $hdrs, $payload, 'PATCH');
+  $again = supabase_admin_vault($userId);
+  if ($again === null) {
+    supabase_http($url . '/rest/v1/vaults', $hdrs, json_encode([
+      'user_id' => $userId,
+      'real' => $amount,
+      'demo' => 0,
+      'updated_at' => date('c'),
+    ], JSON_UNESCAPED_UNICODE), 'POST');
+    return;
+  }
+  if (orolado_money($again['real'] ?? 0) + 0.009 < $amount) {
+    supabase_http($url . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId), $hdrs, $payload, 'PATCH');
+  }
 }
 
 function orolado_blocked_roles(): array {
@@ -513,6 +523,27 @@ function supabase_force_logout(string $userId): void {
   supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($userId), $hdrs, json_encode(['ban_duration' => '876000h']), 'PUT');
 }
 
+function orolado_kick_file(string $uid): string {
+  $dir = rtrim(str_replace('\\', '/', orolado_data_dir()), '/') . '/kicks';
+  if (!is_dir($dir)) @mkdir($dir, 0775, true);
+  $safe = preg_replace('/[^a-zA-Z0-9_-]/', '', $uid) ?: 'x';
+  return $dir . '/' . $safe . '.kick';
+}
+
+function orolado_kick_now(string $uid): void {
+  if ($uid === '') return;
+  @file_put_contents(orolado_kick_file($uid), date('c'));
+}
+
+function orolado_is_kicked(string $uid): bool {
+  return $uid !== '' && is_file(orolado_kick_file($uid));
+}
+
+function orolado_clear_kick(string $uid): void {
+  $f = orolado_kick_file($uid);
+  if (is_file($f)) @unlink($f);
+}
+
 function supabase_admin_delete_auth(string $userId): void {
   $hdrs = supabase_admin_headers();
   if (!$hdrs || $userId === '') return;
@@ -546,6 +577,7 @@ function orolado_force_suspend(array &$db, string $uid, string $kind = 'suspende
       'PATCH'
     );
   }
+  orolado_kick_now($uid);
   supabase_force_logout($uid);
 }
 
@@ -577,9 +609,20 @@ function orolado_token_user_id(array $db, ?string $token): string {
 }
 
 function orolado_session_inspect(array &$db, ?string $token): array {
+  $uidHint = orolado_token_user_id($db, $token);
+  if ($uidHint !== '' && orolado_is_kicked($uidHint)) {
+    $kind = orolado_user_block_kind($db, $uidHint) ?: 'suspended';
+    return orolado_block_payload($kind);
+  }
   $me = orolado_session_user($db, $token);
-  if ($me) return ['ok' => true, 'user' => $me];
-  $uid = orolado_token_user_id($db, $token);
+  if ($me) {
+    $uid = (string) ($me['id'] ?? '');
+    if ($uid !== '' && orolado_is_kicked($uid)) {
+      return orolado_block_payload(orolado_user_block_kind($db, $uid) ?: 'suspended');
+    }
+    return ['ok' => true, 'user' => $me];
+  }
+  $uid = $uidHint;
   if ($uid === '') return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
   $kind = orolado_user_block_kind($db, $uid);
   if ($kind === '') {
@@ -617,6 +660,63 @@ function orolado_wd_is_hidden_from_player(array $w): bool {
     || in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true);
 }
 
+function orolado_official_real(array $db, string $uid): float {
+  $json = orolado_money($db['vault'][$uid]['real'] ?? 0);
+  $sb = supabase_admin_vault($uid);
+  $sbReal = $sb ? orolado_money($sb['real'] ?? 0) : null;
+  if ($sbReal === null) return $json;
+  return orolado_money(max($json, $sbReal));
+}
+
+/** Crédit/débit réel définitif (valeur absolue). Option dépôt = même registre que les vrais paiements. */
+function orolado_ledger_apply(array &$db, string $uid, float $delta, string $note, bool $asDeposit = false): array {
+  $delta = orolado_money($delta);
+  if ($uid === '' || abs($delta) < 0.0001) {
+    return ['ok' => false, 'reason' => 'Montant invalide', 'real' => 0.0];
+  }
+  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  }
+  $cur = orolado_official_real($db, $uid);
+  $next = orolado_money(max(0, $cur + $delta));
+  if ($delta < 0 && $cur + $delta < -0.009) {
+    return ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
+  }
+  $db['vault'][$uid]['real'] = $next;
+  supabase_set_real($uid, $next);
+  $again = supabase_admin_vault($uid);
+  if ($again && orolado_money($again['real'] ?? 0) + 0.009 < $next) {
+    supabase_set_real($uid, $next);
+  }
+  if ($asDeposit && $delta > 0) {
+    $ref = 'adm_' . bin2hex(random_bytes(6));
+    if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+    $db['deposits'][] = [
+      'id' => $ref,
+      'ref' => $ref,
+      'userId' => $uid,
+      'amount' => $delta,
+      'status' => 'COMPLETED',
+      'operator' => 'admin',
+      'createdAt' => date('c'),
+      'paidAt' => date('c'),
+      'note' => $note,
+    ];
+    if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+      $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $delta);
+    }
+    supabase_insert_deposit([
+      'id' => $ref,
+      'user_id' => $uid,
+      'amount' => $delta,
+      'status' => 'COMPLETED',
+      'operator' => 'admin',
+      'reference' => $ref,
+    ]);
+  }
+  return ['ok' => true, 'real' => $next, 'delta' => $delta];
+}
+
 function orolado_refund_wd_once(array &$db, array &$w): bool {
   if (!empty($w['refundedAt']) || !empty($w['refunded'])) return false;
   $uid = (string) ($w['userId'] ?? $w['user_id'] ?? '');
@@ -626,14 +726,11 @@ function orolado_refund_wd_once(array &$db, array &$w): bool {
     $w['refunded'] = true;
     return false;
   }
-  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
-    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-  }
-  $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amt);
-  supabase_credit_real($uid, $amt, false);
+  $res = orolado_ledger_apply($db, $uid, $amt, 'Remboursement retrait refusé', false);
   $w['refundedAt'] = date('c');
-  $w['refunded'] = true;
-  return true;
+  $w['refunded'] = !empty($res['ok']);
+  $w['refundReal'] = $res['real'] ?? null;
+  return !empty($res['ok']);
 }
 
 function supabase_insert_deposit(array $row): void {

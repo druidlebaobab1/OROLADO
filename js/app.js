@@ -510,12 +510,22 @@
   var banWatchTimer = 0;
   function startBanWatch() {
     if (banWatchTimer) return;
-    banWatchTimer = setInterval(function () {
+    function pollMe() {
       var u = user();
       if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
       if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
-      D6.Api.post('me', {}).then(function (r) { watchBan(r); }).catch(function () { /* ignore */ });
-    }, 4000);
+      D6.Api.post('me', {}).then(function (r) {
+        if (watchBan(r)) return;
+        if (!r || !r.ok || !r.vault) return;
+        var incoming = Number(r.vault.real);
+        var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) : 0;
+        if (isFinite(incoming) && incoming > local + 0.009) adoptOfficialVault(r.vault);
+      }).catch(function () { /* ignore */ });
+    }
+    banWatchTimer = setInterval(pollMe, 1000);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) pollMe();
+    });
   }
 
   function toast(msg, kind, ms) {

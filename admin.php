@@ -109,10 +109,8 @@ function admin_badges(): array {
   $cached = admin_cache_get('badges', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_profiles();
-  $vaults = admin_vaults();
   $wds = admin_withdrawals();
   $deps = admin_deposits();
-  $orders = admin_orders();
   [$t0, $t1] = admin_day_bounds('today');
   [$y0, $y1] = admin_day_bounds('yesterday');
   $signupToday = 0;
@@ -164,49 +162,31 @@ function admin_badges(): array {
     }
     if (admin_dep_is_failed($d)) $depFail++;
   }
-  $winToday = 0;
-  foreach ($orders as $o) {
-    if (!empty($o['won']) && (string) ($o['mode'] ?? '') === 'real'
-      && admin_in_range((string) ($o['created_at'] ?? ''), $t0, $t1)) $winToday++;
-  }
   $otp = 0;
   foreach (admin_otp_rows() as $r) {
     if (admin_in_range($r['at'] ?? null, $t0, $t1)) $otp++;
   }
-  $alerts = admin_collect_alerts();
-  $alertN = 0;
-  foreach ($alerts as $a) {
-    if (($a['level'] ?? 'error') === 'error') $alertN++;
+  $healthErr = 0;
+  $healthCached = admin_cache_get('health', 180);
+  if (is_array($healthCached) && isset($healthCached['rows'])) {
+    foreach ($healthCached['rows'] as $h) {
+      if (($h['level'] ?? '') === 'error') $healthErr++;
+    }
   }
   $online = admin_online_count();
   $nInscrits = admin_inscrits_count();
-  $pmapBadge = [];
-  foreach ($people as $p) {
-    if (!empty($p['id'])) $pmapBadge[(string) $p['id']] = $p;
-  }
-  $ordersByUser = [];
-  $openPos = 0;
-  $stakeBuckets = [88 => 0.0, 112 => 0.0, 500 => 0.0, 1000 => 0.0, 5000 => 0.0];
-  foreach ($orders as $o) {
-    if ((string) ($o['mode'] ?? '') !== 'real') continue;
-    $uid = (string) ($o['user_id'] ?? '');
-    if ($uid !== '') $ordersByUser[$uid][] = $o;
-    if (admin_order_is_live_real($o)) $openPos++;
-    $st = round((float) ($o['stake'] ?? 0), 2);
-    foreach (array_keys($stakeBuckets) as $b) {
-      if (abs($st - $b) < 0.05) { $stakeBuckets[$b] += $st; break; }
-    }
-  }
-  $wdSuspect = 0;
+  $openByUser = [];
   foreach ($wds as $w) {
     if (!admin_wd_is_open($w)) continue;
     $uid = (string) ($w['userId'] ?? '');
-    $p = $pmapBadge[$uid] ?? ['id' => $uid, 'realTrades' => 0];
-    if (admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w)) $wdSuspect++;
+    if ($uid !== '') $openByUser[$uid][] = $w;
   }
+  $wdSuspect = 0;
   $payers = 0;
   foreach ($people as $p) {
     if ((float) ($p['depositTotal'] ?? 0) > 0) $payers++;
+    $uid = (string) ($p['id'] ?? '');
+    if (admin_is_suspect($p, [], $openByUser[$uid][0] ?? null)) $wdSuspect++;
   }
   [$w0, $w1] = admin_day_bounds('range', admin_now()->modify('-6 days')->format('Y-m-d'), admin_now()->format('Y-m-d'));
   $profitToday = admin_profit_between($deps, $wds, $t0, $t1);
@@ -217,10 +197,6 @@ function admin_badges(): array {
     if (!is_array($m)) continue;
     $st = strtolower((string) ($m['status'] ?? 'ouvert'));
     if ($st === 'ouvert' || $st === 'unread') $unreadMsg++;
-  }
-  $healthErr = 0;
-  foreach (admin_health_rows() as $h) {
-    if (($h['level'] ?? '') === 'error') $healthErr++;
   }
   $out = [
     'signup_today' => $signupToday,
@@ -235,7 +211,7 @@ function admin_badges(): array {
     'dep_pending' => $depPend,
     'dep_failed' => $depFail,
     'dep_top' => $depPaidN,
-    'dep_all' => count($deps),
+    'dep_all' => $depPaidN,
     'dep_method' => $depPaidN,
     'wd_pending' => $wdOpen,
     'wd_today' => $wdToday,
@@ -245,15 +221,16 @@ function admin_badges(): array {
     'wd_suspect' => $wdSuspect,
     'online' => $online,
     'top_balances' => $payers,
-    'top_winners' => $winToday,
-    'games' => count($orders),
+    'top_winners' => 0,
+    'games' => 0,
+    'trade_minutes' => 6,
     'inactive' => $inactive,
     'payers' => $payers,
-    'open_positions' => $openPos,
+    'open_positions' => 0,
     'profit_today' => round($profitToday, 2),
     'profit_7d' => round($profit7, 2),
     'profit_total' => round($profitAll, 2),
-    'payout_stats' => round(array_sum($stakeBuckets), 2),
+    'payout_stats' => 5,
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
     'alerts' => $healthErr,
@@ -265,13 +242,19 @@ function admin_badges(): array {
 }
 
 function admin_list_payload(string $view, array $req): array {
-  $people = admin_profiles();
-  $vaults = admin_vaults();
+  $needPeople = !in_array($view, ['alerts', 'otp_mails', 'payout_stats', 'games', 'trade_minutes', 'messages'], true);
+  $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
+  $needWds = str_starts_with($view, 'wd_') || str_starts_with($view, 'profit_');
+  $needDeps = str_starts_with($view, 'dep_') || str_starts_with($view, 'profit_');
+  $needOrders = in_array($view, ['open_positions', 'payout_stats', 'games', 'top_winners', 'trade_minutes', 'wd_suspect'], true);
+
+  $people = $needPeople || $needVaults ? admin_profiles() : [];
+  $vaults = $needVaults ? admin_vaults() : [];
   $pmap = [];
   foreach ($people as $p) $pmap[(string) $p['id']] = admin_enrich_user_row($p, $vaults);
-  $wds = admin_withdrawals();
-  $deps = admin_deposits();
-  $orders = admin_orders();
+  $wds = $needWds ? admin_withdrawals() : [];
+  $deps = $needDeps ? admin_deposits() : [];
+  $orders = $needOrders ? admin_orders() : [];
   [$t0, $t1] = admin_day_bounds('today');
   [$y0, $y1] = admin_day_bounds('yesterday');
 
@@ -288,7 +271,7 @@ function admin_list_payload(string $view, array $req): array {
         (string) ($p['name'] ?? '—'),
         (string) ($p['email'] ?? ''),
         (string) ($p['phone'] ?? ''),
-        (string) ($p['country'] ?? '—'),
+        admin_country_cell($p),
         substr((string) ($p['createdAt'] ?? ''), 0, 16),
         admin_money($p['real'] ?? 0),
       ],
@@ -343,19 +326,68 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'signup_idrange') {
-    $cols = $userCols;
-    $a = (int) preg_replace('/\D/', '', (string) ($req['idFrom'] ?? '1'));
-    $b = (int) preg_replace('/\D/', '', (string) ($req['idTo'] ?? '1000'));
-    if ($a <= 0) $a = 1;
-    if ($b < $a) $b = $a;
-    $list = array_values(array_filter($people, static function ($p) use ($a, $b) {
-      $n = (int) ($p['seq'] ?? 0);
-      return $n >= $a && $n <= $b;
-    }));
-    $list = admin_apply_filters($list, $req, 'createdAt');
-    [$slice, $total, $page, $pages] = admin_page($list, $req);
-    foreach ($slice as $p) $rows[] = $asUser(admin_enrich_user_row($p, $vaults));
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => 'ORO-' . $a . ' → ORO-' . $b . ' · ' . $total . ' joueur(s)', 'actions' => false];
+    $raw = trim((string) ($req['idFrom'] ?? ''));
+    $a = 0;
+    $b = 0;
+    if (preg_match('/(\d+)\s*[-–àto]+\s*(\d+)/u', $raw, $m)) {
+      $a = (int) $m[1];
+      $b = (int) $m[2];
+    } else {
+      $n = (int) preg_replace('/\D/', '', $raw);
+      $a = $n;
+      $b = $n;
+    }
+    if ($a <= 0 && $b <= 0) {
+      return ['ok' => true, 'cols' => ['Indicateur', 'Valeur'], 'rows' => [], 'total' => 0, 'page' => 1, 'pages' => 1, 'summary' => 'Saisissez un n° ou une plage, ex. 12 ou 12-40', 'actions' => false];
+    }
+    if ($a <= 0) $a = $b;
+    if ($b <= 0) $b = $a;
+    if ($b < $a) { $tmp = $a; $a = $b; $b = $tmp; }
+    $seen = [];
+    $list = [];
+    foreach ($people as $p) {
+      $seq = (int) ($p['seq'] ?? 0);
+      $pidN = (int) preg_replace('/\D/', '', (string) ($p['publicId'] ?? ''));
+      $hit = ($seq >= $a && $seq <= $b) || ($pidN >= $a && $pidN <= $b);
+      if (!$hit) continue;
+      $id = (string) ($p['id'] ?? '');
+      if ($id === '' || isset($seen[$id])) continue;
+      $seen[$id] = true;
+      $list[] = admin_enrich_user_row($p, $vaults);
+    }
+    $withDep = 0;
+    $noDepN = 0;
+    $sumDep = 0.0;
+    $sumReal = 0.0;
+    $closed = 0;
+    $geo = [];
+    foreach ($list as $p) {
+      $dep = (float) ($p['depositTotal'] ?? 0);
+      if ($dep > 0) { $withDep++; $sumDep += $dep; } else $noDepN++;
+      $sumReal += (float) ($p['real'] ?? 0);
+      $role = strtolower((string) ($p['role'] ?? ''));
+      if (in_array($role, ['suspended', 'banned', 'deleted'], true)) $closed++;
+      $c = admin_country_cell($p);
+      if ($c === '—') $c = 'Inconnu';
+      $geo[$c] = ($geo[$c] ?? 0) + 1;
+    }
+    arsort($geo);
+    $topCountry = $geo === [] ? '—' : (string) array_key_first($geo);
+    $cols = ['Indicateur', 'Valeur'];
+    $stat = static function (string $k, string $v): array {
+      return ['cells' => [$k, $v], 'userId' => ''];
+    };
+    $rows = [
+      $stat('Tranche', (string) $a . ' → ' . (string) $b),
+      $stat('Joueurs uniques', (string) count($list)),
+      $stat('Avec dépôt réel', (string) $withDep . ' · ' . admin_pct($withDep, count($list))),
+      $stat('Sans dépôt', (string) $noDepN . ' · ' . admin_pct($noDepN, count($list))),
+      $stat('Volume déposé', admin_money($sumDep)),
+      $stat('Soldes réels cumulés', admin_money($sumReal)),
+      $stat('Comptes fermés / suspendus', (string) $closed),
+      $stat('Pays principal', $topCountry),
+    ];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($list), 'page' => 1, 'pages' => 1, 'summary' => count($list) . ' joueur(s) unique(s) · n° ' . $a . ' → ' . $b, 'actions' => false];
   }
 
   if ($view === 'signup_hour') {
@@ -378,11 +410,12 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'signup_geo') {
-    $cols = ['Pays / indicatif', 'Joueurs', 'Dernière IP connue'];
+    $cols = ['Pays', 'Joueurs', 'Dernière IP connue'];
     $src = admin_apply_filters($people, $req, 'createdAt');
     $geo = [];
     foreach ($src as $p) {
-      $k = trim((string) ($p['country'] ?? '')) ?: 'Inconnu';
+      $k = admin_country_cell($p);
+      if ($k === '—') $k = 'Inconnu';
       if (!isset($geo[$k])) $geo[$k] = ['n' => 0, 'ip' => ''];
       $geo[$k]['n']++;
       if ($geo[$k]['ip'] === '' && !empty($p['ip'])) $geo[$k]['ip'] = (string) $p['ip'];
@@ -394,10 +427,12 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => count($src) . ' joueurs', 'actions' => false];
   }
 
-  if (in_array($view, ['dep_today', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
+    if (in_array($view, ['dep_today', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
     $cols = ['Réf.', 'ID', 'E-mail', 'Montant', 'Méthode', 'Statut', 'Date'];
     $list = $deps;
-    if ($view === 'dep_today') {
+    if ($view === 'dep_all') {
+      $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && (float) ($d['amount'] ?? 0) > 0.009));
+    } else if ($view === 'dep_today') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && admin_in_range($d['createdAt'] ?? null, $t0, $t1)));
     } else if ($view === 'dep_pending') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_pending($d)));
@@ -483,7 +518,63 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => 'Ventilation des dépôts validés', 'actions' => false];
   }
 
-  if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume', 'wd_suspect'], true)) {
+  if ($view === 'wd_suspect') {
+    $cols = ['Joueur', 'Nom', 'E-mail', 'Motif', 'Retrait ouvert', 'Trades', 'Solde'];
+    $ordersByUser = [];
+    foreach ($orders as $o) {
+      if ((string) ($o['mode'] ?? '') !== 'real') continue;
+      $uid = (string) ($o['user_id'] ?? '');
+      if ($uid !== '') $ordersByUser[$uid][] = $o;
+    }
+    $openByUser = [];
+    foreach ($wds as $w) {
+      if (!admin_wd_is_open($w)) continue;
+      $uid = (string) ($w['userId'] ?? '');
+      if ($uid !== '') $openByUser[$uid][] = $w;
+    }
+    $list = [];
+    foreach ($pmap as $uid => $p) {
+      $reason = admin_suspect_reason($p, $ordersByUser[$uid] ?? [], $openByUser[$uid][0] ?? null);
+      if ($reason === '') {
+        foreach (($openByUser[$uid] ?? []) as $w) {
+          $reason = admin_suspect_reason($p, $ordersByUser[$uid] ?? [], $w);
+          if ($reason !== '') break;
+        }
+      }
+      if ($reason === '') continue;
+      $openAmt = 0.0;
+      foreach (($openByUser[$uid] ?? []) as $w) $openAmt += (float) ($w['amount'] ?? 0);
+      $p['_reason'] = $reason;
+      $p['_openAmt'] = $openAmt;
+      $p['_trades'] = count($ordersByUser[$uid] ?? []);
+      $list[] = $p;
+    }
+    usort($list, static fn($a, $b) => ((float) ($b['_openAmt'] ?? 0) <=> (float) ($a['_openAmt'] ?? 0)));
+    $q = strtolower(trim((string) ($req['q'] ?? '')));
+    if ($q !== '') {
+      $list = array_values(array_filter($list, static fn($p) => admin_match_q($p, $q) || str_contains(strtolower((string) ($p['_reason'] ?? '')), $q)));
+    }
+    [$slice, $total, $page, $pages] = admin_page($list, $req);
+    foreach ($slice as $p) {
+      $rows[] = [
+        'cells' => [
+          (string) ($p['publicId'] ?? ''),
+          (string) ($p['name'] ?? '—'),
+          (string) ($p['email'] ?? ''),
+          (string) ($p['_reason'] ?? ''),
+          ((float) ($p['_openAmt'] ?? 0) > 0) ? admin_money($p['_openAmt']) : '—',
+          (string) ($p['_trades'] ?? 0),
+          admin_money($p['real'] ?? 0),
+        ],
+        'userId' => (string) ($p['id'] ?? ''),
+        'flag' => 'suspect',
+        'kind' => 'suspect',
+      ];
+    }
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' compte(s) au comportement anormal', 'actions' => false];
+  }
+
+  if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
     $cols = ['ID retrait', 'Joueur', 'Nom', 'E-mail', 'Montant', 'Méthode', 'Destination', 'État', 'Statut', 'Date'];
     $list = $wds;
     $ordersByUser = [];
@@ -499,14 +590,6 @@ function admin_list_payload(string $view, array $req): array {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w) && admin_in_range($w['createdAt'] ?? null, $t0, $t1)));
     } else if ($view === 'wd_rejected') {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_rejected($w)));
-    } else if ($view === 'wd_suspect') {
-      $list = array_values(array_filter($wds, static function ($w) use ($pmap, $ordersByUser) {
-        if (!admin_wd_is_open($w)) return false;
-        $uid = (string) ($w['userId'] ?? '');
-        $p = $pmap[$uid] ?? ['id' => $uid];
-        return admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w);
-      }));
-      $actions = true;
     } else {
       $list = array_values(array_filter($wds, static fn($w) => !admin_wd_is_silenced($w)));
       $actions = true;
@@ -656,16 +739,18 @@ function admin_list_payload(string $view, array $req): array {
     }
     foreach ($slice as $r) {
       $lvl = (string) ($r['level'] ?? 'ok');
+      $label = $lvl === 'error' ? 'Panne' : ($lvl === 'warn' ? 'Attention' : 'OK');
       $rows[] = [
         'cells' => [
           substr((string) ($r['at'] ?? ''), 0, 19),
           (string) ($r['service'] ?? ''),
-          $lvl === 'error' ? 'Panne' : 'OK',
+          $label,
           (string) ($r['message'] ?? ''),
         ],
         'userId' => '',
         'alert' => $lvl === 'error',
-        'flag' => $lvl === 'error' ? 'suspect' : 'ok',
+        'flag' => $lvl === 'error' ? 'suspect' : ($lvl === 'warn' ? 'unread' : 'ok'),
+        'wrap' => 3,
       ];
     }
     $summary = $errN === 0
@@ -750,32 +835,78 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'payout_stats') {
-    $cols = ['Montant', 'Volume misé', 'Nombre de trades réels'];
+    $cols = ['Mise', 'Trades', 'Part des trades', 'Joueurs', 'Part des joueurs'];
     $want = [88.0, 112.0, 500.0, 1000.0, 5000.0];
-    $vol = [];
     $cnt = [];
-    foreach ($want as $b) { $vol[$b] = 0.0; $cnt[$b] = 0; }
+    $who = [];
+    foreach ($want as $b) { $cnt[$b] = 0; $who[$b] = []; }
     $src = $orders;
     $preset = (string) ($req['preset'] ?? 'all');
     if ($preset !== 'all') {
       [$a, $b] = admin_day_bounds($preset, (string) ($req['dateFrom'] ?? ''), (string) ($req['dateTo'] ?? ''));
       $src = array_values(array_filter($orders, static fn($o) => admin_in_range((string) ($o['created_at'] ?? ''), $a, $b)));
     }
+    $allPlayers = [];
+    $totalTrades = 0;
     foreach ($src as $o) {
       if ((string) ($o['mode'] ?? '') !== 'real') continue;
       $st = (float) ($o['stake'] ?? 0);
+      $uid = (string) ($o['user_id'] ?? '');
       foreach ($want as $b) {
         if (abs($st - $b) < 0.05) {
-          $vol[$b] += $st;
           $cnt[$b]++;
+          $totalTrades++;
+          if ($uid !== '') {
+            $who[$b][$uid] = true;
+            $allPlayers[$uid] = true;
+          }
           break;
         }
       }
     }
+    $nPlayers = count($allPlayers);
     foreach ($want as $b) {
-      $rows[] = ['cells' => [admin_money($b), admin_money($vol[$b]), (string) $cnt[$b]], 'userId' => ''];
+      $nWho = count($who[$b]);
+      $rows[] = [
+        'cells' => [
+          rtrim(rtrim(number_format($b, 2, '.', ' '), '0'), '.'),
+          (string) $cnt[$b],
+          admin_pct($cnt[$b], $totalTrades),
+          (string) $nWho,
+          admin_pct($nWho, $nPlayers),
+        ],
+        'userId' => '',
+      ];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => 5, 'page' => 1, 'pages' => 1, 'summary' => 'Volumes des mises 88 / 112 / 500 / 1000 / 5000 $ (compte réel uniquement)', 'actions' => false];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $totalTrades, 'page' => 1, 'pages' => 1, 'summary' => $totalTrades . ' trade(s) réel(s) · ' . $nPlayers . ' joueur(s)', 'actions' => false];
+  }
+
+  if ($view === 'trade_minutes') {
+    $cols = ['Durée', 'Trades réels', 'Part des trades'];
+    $want = [5, 10, 30, 60, 300, 600];
+    $labels = [5 => '5 s', 10 => '10 s', 30 => '30 s', 60 => '1 min', 300 => '5 min', 600 => '10 min'];
+    $cnt = array_fill_keys($want, 0);
+    $src = $orders;
+    $preset = (string) ($req['preset'] ?? 'all');
+    if ($preset !== 'all') {
+      [$a, $b] = admin_day_bounds($preset, (string) ($req['dateFrom'] ?? ''), (string) ($req['dateTo'] ?? ''));
+      $src = array_values(array_filter($orders, static fn($o) => admin_in_range((string) ($o['created_at'] ?? ''), $a, $b)));
+    }
+    $total = 0;
+    foreach ($src as $o) {
+      if ((string) ($o['mode'] ?? '') !== 'real') continue;
+      $d = (int) ($o['duration'] ?? 0);
+      if (!isset($cnt[$d])) continue;
+      $cnt[$d]++;
+      $total++;
+    }
+    foreach ($want as $d) {
+      $rows[] = [
+        'cells' => [$labels[$d], (string) $cnt[$d], admin_pct($cnt[$d], $total)],
+        'userId' => '',
+      ];
+    }
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => 1, 'pages' => 1, 'summary' => $total . ' trade(s) réel(s) ventilé(s) par durée', 'actions' => false];
   }
 
   if ($view === 'messages') {
@@ -813,6 +944,7 @@ function admin_list_payload(string $view, array $req): array {
     });
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     foreach ($slice as $m) {
+      $body = (string) ($m['message'] ?? '');
       $rows[] = [
         'cells' => [
           !empty($m['unread']) ? 'Non lu' : 'Lu',
@@ -820,13 +952,19 @@ function admin_list_payload(string $view, array $req): array {
           (string) ($m['publicId'] ?: $m['name'] ?: '—'),
           (string) ($m['email'] ?? ''),
           (string) ($m['subject'] ?? ''),
-          (string) ($m['message'] ?? ''),
+          $body,
         ],
         'userId' => (string) ($m['userId'] ?? ''),
         'ref' => (string) ($m['id'] ?? ''),
         'kind' => 'message',
         'unread' => !empty($m['unread']),
         'flag' => !empty($m['unread']) ? 'unread' : 'ok',
+        'wrap' => 5,
+        'subject' => (string) ($m['subject'] ?? ''),
+        'email' => (string) ($m['email'] ?? ''),
+        'name' => (string) ($m['name'] ?? $m['publicId'] ?? ''),
+        'body' => $body,
+        'at' => (string) ($m['createdAt'] ?? ''),
       ];
     }
     $actions = true;
@@ -900,7 +1038,7 @@ function admin_profile_payload(string $uid): array {
       'name' => (string) ($p['name'] ?? ''),
       'email' => (string) ($p['email'] ?? ''),
       'phone' => (string) ($p['phone'] ?? ''),
-      'country' => (string) ($p['country'] ?? ''),
+      'country' => admin_country_cell($p),
       'ip' => (string) ($p['ip'] ?? '—'),
       'createdAt' => (string) ($p['createdAt'] ?? ''),
       'lastSeen' => (string) ($p['lastSeen'] ?? ''),
@@ -962,19 +1100,12 @@ if ($isAjax) {
       admin_json(['ok' => false, 'reason' => 'Montant et motif obligatoires']);
     }
     $db = admin_local_db();
-    if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-    if ($delta >= 0) {
-      $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $delta);
-      supabase_credit_real($uid, $delta, false);
-    } else {
-      $ok = supabase_debit_real($uid, abs($delta));
-      if (!$ok) admin_json(['ok' => false, 'reason' => 'Solde insuffisant']);
-      $db['vault'][$uid]['real'] = max(0, orolado_money(($db['vault'][$uid]['real'] ?? 0) + $delta));
-    }
-    admin_log($db, (string) ($me['email'] ?? ''), (string) ($db['users'][$uid]['publicId'] ?? $uid), $delta >= 0 ? 'credit' : 'debit', (int) round($delta), $motif);
+    $res = orolado_ledger_apply($db, $uid, $delta, $motif, $delta > 0);
+    if (empty($res['ok'])) admin_json(['ok' => false, 'reason' => (string) ($res['reason'] ?? 'Échec')]);
+    admin_log($db, (string) ($me['email'] ?? ''), (string) ($db['users'][$uid]['publicId'] ?? $uid), $delta >= 0 ? 'credit' : 'debit', $delta, $motif);
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
-    admin_json(['ok' => true, 'real' => $db['vault'][$uid]['real']]);
+    admin_json(['ok' => true, 'real' => $res['real']]);
   }
   if ($action === 'suspend') {
     $uid = (string) ($req['userId'] ?? '');
@@ -986,13 +1117,7 @@ if ($isAjax) {
     admin_json(['ok' => true]);
   }
   if ($action === 'delete_user') {
-    $uid = (string) ($req['userId'] ?? '');
-    if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur manquant']);
-    $db = admin_local_db();
-    orolado_force_delete_account($db, $uid);
-    save_db(orolado_data_file(), $db);
-    admin_bust_cache();
-    admin_json(['ok' => true]);
+    admin_json(['ok' => false, 'reason' => 'La suppression de compte est désactivée. Utilisez Suspendre.']);
   }
   if ($action === 'resolve_wd') {
     $id = (string) ($req['id'] ?? '');
@@ -1144,8 +1269,9 @@ $ADMIN_TABS = [
     ['profit_7d', 'Bénéfice 7 Jours'],
     ['profit_total', 'Bénéfice Total'],
     ['open_positions', 'Positions Ouvertes'],
-    ['payout_stats', 'Maxi Payout & Stats des Jeux'],
+    ['payout_stats', 'Payout Classement'],
     ['games', 'Statistiques des Jeux'],
+    ['trade_minutes', 'Temps de jeu'],
     ['inactive', 'Joueurs Inactifs'],
   ],
   'gE' => [
@@ -1187,6 +1313,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .table-wrap{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:10px}
     table{width:100%;border-collapse:collapse;font-size:.72rem}
     th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+    td.wrap{white-space:normal;max-width:440px;line-height:1.4;word-break:break-word}
     th{color:var(--muted);font-size:.62rem;text-transform:uppercase;position:sticky;top:0;background:#121A2B}
     tr.clickable{cursor:pointer} tr.clickable:hover{background:rgba(245,158,11,.08)}
     tr.flag-suspect td:nth-last-child(4), .pill-suspect{color:#FCA5A5;font-weight:800}
@@ -1194,6 +1321,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .pill-ok{background:rgba(52,211,153,.18);color:#34D399}
     .pill-suspect{background:rgba(244,63,94,.18);color:#F43F5E}
     .pill-unread{background:rgba(245,158,11,.2);color:#FBBF24}
+    .pill-warn{background:rgba(245,158,11,.2);color:#FBBF24}
+    .msg-full{white-space:pre-wrap;line-height:1.5;background:#0E1420;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;max-height:50vh;overflow:auto}
     .mini{border:1px solid var(--line);background:#1A2230;color:var(--text);border-radius:6px;padding:4px 8px;font:inherit;font-weight:800;cursor:pointer;margin-right:4px;margin-bottom:3px}
     .mini.ok{border-color:var(--green);color:var(--green)} .mini.bad{border-color:var(--red);color:var(--red)}
     .login{max-width:360px;margin:12vh auto;background:rgba(10,15,29,.92);border:1px solid rgba(245,158,11,.35);border-radius:16px;padding:24px}
@@ -1259,8 +1388,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <input id="cal" type="date" title="Date unique" style="display:none">
       <input id="dateFrom" type="date" title="Du" style="display:none">
       <input id="dateTo" type="date" title="Au" style="display:none">
-      <input id="idFrom" placeholder="ORO-1" style="display:none;width:110px">
-      <input id="idTo" placeholder="ORO-1000" style="display:none;width:110px">
+      <input id="idFrom" placeholder="12 ou 12-40" style="display:none;width:160px">
     </div>
     <div class="panel-title" id="viewTitle">Inscrits</div>
     <p class="muted" id="viewSum"></p>
@@ -1305,8 +1433,9 @@ const TABS = [
   {g:'gD', id:'profit_7d', k:'Bénéfice 7 Jours'},
   {g:'gD', id:'profit_total', k:'Bénéfice Total'},
   {g:'gD', id:'open_positions', k:'Positions Ouvertes'},
-  {g:'gD', id:'payout_stats', k:'Maxi Payout & Stats des Jeux'},
+  {g:'gD', id:'payout_stats', k:'Payout Classement'},
   {g:'gD', id:'games', k:'Statistiques des Jeux'},
+  {g:'gD', id:'trade_minutes', k:'Temps de jeu'},
   {g:'gD', id:'inactive', k:'Joueurs Inactifs'},
   {g:'gE', id:'traffic', k:'Sources de Trafic'},
   {g:'gE', id:'otp_mails', k:'Mails & Codes OTP Envoyés'},
@@ -1328,7 +1457,7 @@ function badgeClass(id, n) {
   if (id === 'alerts' || id === 'wd_suspect' || id === 'messages') return n > 0 ? 'badge red' : 'badge zero';
   return n ? 'badge' : 'badge zero';
 }
-const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_7d:1, profit_total:1, payout_stats:1};
+const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_7d:1, profit_total:1};
 function fmtBadge(id, n) {
   if (MONEY_BADGE[id]) {
     const v = Number(n)||0;
@@ -1358,7 +1487,6 @@ function filters() {
   document.getElementById('dateTo').style.display = preset === 'range' ? '' : 'none';
   const idr = view === 'signup_idrange';
   document.getElementById('idFrom').style.display = idr ? '' : 'none';
-  document.getElementById('idTo').style.display = idr ? '' : 'none';
   return {
     q: document.getElementById('q').value,
     preset: (view === 'signup_date' && preset === 'all') ? 'date' : preset,
@@ -1366,49 +1494,54 @@ function filters() {
     dateFrom: document.getElementById('dateFrom').value,
     dateTo: document.getElementById('dateTo').value,
     idFrom: document.getElementById('idFrom').value,
-    idTo: document.getElementById('idTo').value,
     page
   };
 }
+let listCache = {};
+function bustList() { listCache = {}; }
+function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
   renderButtons(j.badges || {});
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits';
 }
-async function loadList() {
-  document.getElementById('viewTitle').textContent = TITLES[view] || view;
-  const j = await ajax(Object.assign({action:'list', view}, filters()));
+function renderList(j) {
   const panel = document.getElementById('panel');
   if (!j.ok) { panel.innerHTML = '<p class="muted" style="padding:12px">'+(j.reason||'Erreur')+'</p>'; return; }
   document.getElementById('viewSum').textContent = j.summary || '';
-  let html = '<table><thead><tr>'+(j.cols||[]).map(c=>'<th>'+c+'</th>').join('');
+  let html = '<table><thead><tr>'+(j.cols||[]).map(c=>'<th>'+esc(c)+'</th>').join('');
   if (j.actions) html += '<th></th>';
   html += '</tr></thead><tbody>';
-  (j.rows||[]).forEach(r => {
+  (j.rows||[]).forEach((r, i) => {
     const flag = r.flag || (r.suspect ? 'suspect' : '');
-    html += '<tr class="'+(r.userId?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+(r.userId||'')+'">';
-    (r.cells||[]).forEach(c => {
-      const s = String(c);
+    const clickable = r.userId || r.kind === 'message';
+    html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+(r.userId||'')+'" data-row="'+i+'">';
+    (r.cells||[]).forEach((c, ci) => {
+      const s = String(c ?? '');
+      const wrap = r.wrap === ci || r.kind === 'message' && ci === 5;
       if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span></td>';
       else if (s === 'Vérifié' || s === 'OK') html += '<td><span class="pill pill-ok">'+s+'</span></td>';
+      else if (s === 'Attention') html += '<td><span class="pill pill-warn">Attention</span></td>';
+      else if (s === 'Panne') html += '<td><span class="pill pill-suspect">Panne</span></td>';
       else if (s === 'Non lu') html += '<td><span class="pill pill-unread">Non lu</span></td>';
-      else html += '<td>'+s.replace(/</g,'&lt;')+'</td>';
+      else html += '<td'+(wrap?' class="wrap"':'')+'>'+esc(s)+'</td>';
     });
     if (j.actions) {
       html += '<td>';
       if (r.pending && r.kind === 'withdraw') {
-        html += '<button class="mini ok" data-act="approve" data-kind="wd" data-id="'+r.ref+'">Valider</button>';
-        html += '<button class="mini bad" data-act="reject" data-kind="wd" data-id="'+r.ref+'">Rejeter</button>';
-        html += '<button class="mini" data-act="suspend" data-kind="wd" data-id="'+r.ref+'" data-uid="'+(r.userId||'')+'">Suspendre</button>';
-        html += '<button class="mini" data-act="silent" data-kind="wd" data-id="'+r.ref+'">Suppression silencieuse</button>';
+        html += '<button class="mini ok" data-act="approve" data-kind="wd" data-id="'+esc(r.ref)+'">Valider</button>';
+        html += '<button class="mini bad" data-act="reject" data-kind="wd" data-id="'+esc(r.ref)+'">Rejeter</button>';
+        html += '<button class="mini" data-act="suspend" data-kind="wd" data-id="'+esc(r.ref)+'" data-uid="'+(r.userId||'')+'">Suspendre</button>';
+        html += '<button class="mini" data-act="silent" data-kind="wd" data-id="'+esc(r.ref)+'">Masquer</button>';
       }
       if (r.pending && r.kind === 'deposit') {
-        html += '<button class="mini ok" data-act="approve" data-kind="dep" data-id="'+r.ref+'">Valider</button>';
-        html += '<button class="mini bad" data-act="reject" data-kind="dep" data-id="'+r.ref+'">Annuler</button>';
+        html += '<button class="mini ok" data-act="approve" data-kind="dep" data-id="'+esc(r.ref)+'">Valider</button>';
+        html += '<button class="mini bad" data-act="reject" data-kind="dep" data-id="'+esc(r.ref)+'">Rejeter</button>';
       }
-      if (r.kind === 'message' && r.unread) {
-        html += '<button class="mini ok" data-act="read" data-kind="msg" data-id="'+r.ref+'">Marquer lu</button>';
+      if (r.kind === 'message') {
+        html += '<button class="mini" data-act="openmsg" data-kind="msg" data-id="'+i+'">Lire</button>';
+        if (r.unread) html += '<button class="mini ok" data-act="read" data-kind="msg" data-id="'+esc(r.ref)+'">Marquer lu</button>';
       }
       html += '</td>';
     }
@@ -1424,6 +1557,9 @@ async function loadList() {
   if (next) next.onclick = () => { if (page < (j.pages||1)){ page++; loadList(); } };
   panel.querySelectorAll('tr.clickable').forEach(tr => tr.addEventListener('click', ev => {
     if (ev.target.closest('button')) return;
+    const idx = Number(tr.getAttribute('data-row'));
+    const row = (j.rows||[])[idx];
+    if (row && row.kind === 'message') { openMessage(row); return; }
     openUser(tr.getAttribute('data-uid'));
   }));
   panel.querySelectorAll('button[data-act]').forEach(btn => btn.addEventListener('click', async ev => {
@@ -1431,22 +1567,60 @@ async function loadList() {
     const act = btn.getAttribute('data-act');
     const kind = btn.getAttribute('data-kind');
     const id = btn.getAttribute('data-id');
+    if (act === 'openmsg') {
+      const row = (j.rows||[])[Number(id)];
+      if (row) openMessage(row);
+      return;
+    }
     if (kind === 'msg') {
       const r = await ajax({action:'mark_msg', id});
       if (!r.ok) alert(r.reason || 'Échec');
-      loadBadges(); loadList();
+      bustList(); loadBadges(); loadList(true);
       return;
     }
     let motif = '';
-    if (act === 'reject') motif = prompt('Motif du rejet (le montant sera recrédité sur le solde du joueur) :','') || '';
+    if (act === 'reject') motif = prompt('Motif du rejet (le montant sera recrédité définitivement sur le solde du joueur) :','') || '';
     if (act === 'silent' && !confirm('Masquer cette ligne du tableau de bord, sans modifier le solde du joueur ?')) return;
     if (act === 'suspend' && !confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     const a = kind === 'wd' ? 'resolve_wd' : 'resolve_dep';
     const r = await ajax({action:a, id, act, motif});
     if (!r.ok) alert(r.reason || 'Échec');
-    loadBadges(); loadList();
+    bustList(); loadBadges(); loadList(true);
   }));
-  loadBadges();
+}
+async function loadList(force) {
+  document.getElementById('viewTitle').textContent = TITLES[view] || view;
+  document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
+    btn.classList.toggle('on', btn.getAttribute('data-view') === view);
+  });
+  const f = filters();
+  const key = view + '|' + JSON.stringify(f);
+  if (!force && listCache[key] && Date.now() - listCache[key].t < 20000) {
+    renderList(listCache[key].j);
+    return;
+  }
+  const j = await ajax(Object.assign({action:'list', view}, f));
+  listCache[key] = { t: Date.now(), j };
+  renderList(j);
+}
+function openMessage(m) {
+  document.getElementById('userDetail').innerHTML =
+    '<h2 style="color:var(--gold);margin:8px 0 4px">Message</h2>'+
+    '<p class="muted">'+(m.at||'')+' · '+(m.unread?'Non lu':'Lu')+'</p>'+
+    '<p><strong>'+esc(m.name||'—')+'</strong> · '+esc(m.email||'')+'</p>'+
+    '<p>Sujet : <strong>'+esc(m.subject||'(sans sujet)')+'</strong></p>'+
+    '<div class="msg-full">'+esc(m.body||m.cells&&m.cells[5]||'')+'</div>'+
+    (m.unread && m.ref ? '<p style="margin-top:12px"><button class="mini ok" id="btnMsgRead">Marquer lu</button></p>' : '')+
+    (m.userId ? '<p><button class="mini" id="btnMsgUser">Voir le joueur</button></p>' : '');
+  document.getElementById('userModal').classList.add('on');
+  const br = document.getElementById('btnMsgRead');
+  if (br) br.onclick = async () => {
+    const r = await ajax({action:'mark_msg', id: m.ref});
+    if (!r.ok) alert(r.reason||'Échec');
+    else { bustList(); loadBadges(); loadList(true); document.getElementById('userModal').classList.remove('on'); }
+  };
+  const bu = document.getElementById('btnMsgUser');
+  if (bu) bu.onclick = () => openUser(m.userId);
 }
 async function openUser(uid) {
   if (!uid) return;
@@ -1459,24 +1633,23 @@ async function openUser(uid) {
       arr.map(map).join('')+'</tbody></table></div>';
   };
   document.getElementById('userDetail').innerHTML =
-    '<h2 style="color:var(--gold);margin:8px 0 4px">'+(u.publicId||u.id)+'</h2>'+
-    '<p class="muted">'+u.name+' · '+u.email+' · '+u.phone+'</p>'+
-    '<p>IP : <strong>'+(u.ip||'—')+'</strong> · Pays : <strong>'+(u.country||'—')+'</strong> · Inscription : <strong>'+(u.createdAt||'—')+'</strong></p>'+
-    '<p>Solde réel : <strong>'+u.real+' $</strong> · Source : '+(u.traffic||'direct')+' · Rôle : '+(u.role||'user')+'</p>'+
-    '<p><input id="adjAmt" type="number" step="0.01" placeholder="Montant $" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
-    '<button class="mini ok" id="btnCredit">Créditer</button> <button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre le compte</button> '+
-    '<button class="mini bad" id="btnDeleteUser">Supprimer le compte</button></p>'+
-    tbl('Dépôts', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+d.method+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td></tr>')+
-    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+d.id+'</td><td>'+d.amount+'</td><td>'+(d.method||'—')+'</td><td>'+(d.phone||'—')+'</td><td>'+d.status+'</td><td>'+(d.at||'')+'</td><td>'+(d.reason||'')+'</td></tr>')+
-    tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+d.game+'</td><td>'+d.stake+'</td><td>'+d.net+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':d.mode)+'</td><td>'+(d.at||'')+'</td></tr>');
+    '<h2 style="color:var(--gold);margin:8px 0 4px">'+esc(u.publicId||u.id)+'</h2>'+
+    '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
+    '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(u.createdAt||'—')+'</strong></p>'+
+    '<p>Solde réel : <strong>'+esc(u.real)+' $</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+'</p>'+
+    '<p><input id="adjAmt" type="number" step="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
+    '<button class="mini ok" id="btnCredit">Créditer +</button> <button class="mini bad" id="btnDebit">Débiter</button> '+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
+    tbl('Dépôts', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(d.at||'')+'</td></tr>')+
+    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(d.at||'')+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
+    tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(d.at||'')+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
   const go = async (delta) => {
     const motif = document.getElementById('adjMotif').value.trim();
     const amt = Number(document.getElementById('adjAmt').value);
     if (!motif || !amt) { alert('Montant et motif obligatoires'); return; }
     const r = await ajax({action:'adjust', userId:u.id, delta: delta * Math.abs(amt), motif});
-    if (!r.ok) alert(r.reason||'Échec'); else { openUser(u.id); loadBadges(); }
+    if (!r.ok) alert(r.reason||'Échec'); else { bustList(); openUser(u.id); loadBadges(); }
   };
   document.getElementById('btnCredit').onclick = () => go(1);
   document.getElementById('btnDebit').onclick = () => go(-1);
@@ -1484,24 +1657,17 @@ async function openUser(uid) {
     if (!confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     const r = await ajax({action:'suspend', userId:u.id});
     if (!r.ok) alert(r.reason || 'Échec');
-    else openUser(u.id);
-  };
-  document.getElementById('btnDeleteUser').onclick = async () => {
-    if (!confirm('Supprimer définitivement ce compte, détruire ses sessions et lui interdire toute reconnexion ?')) return;
-    const r = await ajax({action:'delete_user', userId:u.id});
-    if (!r.ok) alert(r.reason || 'Échec');
-    else document.getElementById('userModal').classList.remove('on');
-    loadBadges(); loadList();
+    else { bustList(); openUser(u.id); loadBadges(); }
   };
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
-['q','preset','cal','dateFrom','dateTo','idFrom','idTo'].forEach(id => {
-  document.getElementById(id).addEventListener('change', () => { page=1; loadList(); });
+['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });
-document.getElementById('q').addEventListener('keydown', e => { if (e.key==='Enter'){ page=1; loadList(); } });
+document.getElementById('q').addEventListener('keydown', e => { if (e.key==='Enter'){ page=1; bustList(); loadList(true); } });
 document.getElementById('preset').addEventListener('change', filters);
-loadBadges().then(loadList);
+loadBadges().then(() => loadList(true));
 </script>
 <?php endif; ?>
 </body>
