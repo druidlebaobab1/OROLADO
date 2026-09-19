@@ -3056,7 +3056,7 @@
     { id: 'xmr', symbol: 'XMR', name: 'Monero', color: '#FF6600', mark: 'M', minUsd: 10, networkName: 'Monero Network' },
     { id: 'dai', symbol: 'DAI', name: 'DAI', color: '#F5AC37', mark: 'D', minUsd: 5, networkName: 'Ethereum Network' },
     { id: 'bch', symbol: 'BCH', name: 'Bitcoin Cash', color: '#8DC351', mark: 'C', minUsd: 10, networkName: 'Bitcoin Cash Network' },
-    { id: 'not', symbol: 'NOT', name: 'Notcoin', color: '#1C1C1C', mark: 'N', minUsd: 5, networkName: 'TON Network' },
+    { id: 'not', symbol: 'NOT', name: 'Notcoin', color: '#FFD21E', mark: 'N', minUsd: 5, networkName: 'TON Network' },
     { id: 'dogs', symbol: 'DOGS', name: 'Dogs', color: '#E8A317', mark: 'd', minUsd: 5, networkName: 'TON Network' }
   ];
 
