@@ -1186,6 +1186,10 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 }
 @media (max-width:859px){
   .pad .trade-row{margin-top:2px}
+  .pad .stake-min{margin:1px 0!important}
+  .pad .stake-min-actions{gap:4px}
+  .pad .odds-label,.pad .payout-badge{margin:1px 0 0}
+  .pad .odds-row{gap:3px;margin:0}
   html.is-android .pad{padding-bottom:calc(28px + env(safe-area-inset-bottom, 18px))!important}
   html.is-android .pad .trade-row{margin-top:2px!important}
   .balance-card{padding:6px 12px!important}
@@ -1254,10 +1258,11 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .trade-hint{display:none!important}
   .stake-line{gap:4px;margin:2px 0;padding:0}
   .stake-line input,.stake-field input{min-height:32px;padding:4px 8px;font-size:.95rem}
-  .stake-min{font-size:11px;margin:2px 0!important;padding:0!important}
+  .stake-min{font-size:11px;margin:1px 0!important;padding:0!important}
+  .stake-min-actions{gap:4px}
   .odds-label,.payout-badge{font-size:10px;margin:6px 0 4px;line-height:1.15;padding:3px 8px}
-  .odds-row{gap:4px;margin:2px 0 0}
-  .odds-chip{padding:3px 2px;border-radius:8px;min-height:30px}
+  .odds-row{gap:3px;margin:2px 0 0}
+  .odds-chip{padding:2px 2px;border-radius:8px;min-height:28px}
   .odds-chip .odds-mult{font-size:.62rem}
   .odds-chip .odds-pct{font-size:.48rem}
   .quick-row{gap:3px;margin:0}
@@ -1265,8 +1270,8 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .btn-trade span{font-size:12px;font-weight:700}
   .btn-trade small{font-size:.55rem}
   .trade-row{margin-top:2px;gap:8px;padding:0}
-  .odds-label,.payout-badge{margin:2px 0 1px}
-  .odds-row{margin:0}
+  .odds-label,.payout-badge{margin:1px 0 0}
+  .odds-row{margin:0;gap:3px}
   .stake-line{margin:0 0 1px}
   .btn-hist-cta{min-height:34px!important;height:auto!important;padding:6px 8px!important;font-size:.58rem;margin-top:3px;z-index:60}
   .win-preview{padding:0;margin:0;min-width:88px}
@@ -1296,16 +1301,16 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   html.is-android [data-i18n="tradeHintAndroid"]{
     display:none!important;visibility:hidden!important;height:0!important;max-height:0!important;
     margin:0!important;padding:0!important;overflow:hidden!important;font-size:0!important}
-  html.is-android .odds-label,html.is-android .payout-badge{font-size:10px!important;margin:2px 0 1px!important;line-height:1.15!important;padding:3px 8px!important}
-  html.is-android .odds-row{gap:3px!important;margin:0!important}
-  html.is-android .odds-chip{padding:3px 1px!important;min-height:30px!important}
+  html.is-android .odds-label,html.is-android .payout-badge{font-size:10px!important;margin:1px 0 0!important;line-height:1.15!important;padding:2px 6px!important}
+  html.is-android .odds-row{gap:2px!important;margin:0!important}
+  html.is-android .odds-chip{padding:2px 1px!important;min-height:28px!important}
   html.is-android .odds-chip .odds-mult{font-size:.62rem!important}
   html.is-android .odds-chip .odds-pct{font-size:.46rem!important}
   html.is-android .stake-line{gap:4px!important;margin:0!important}
   html.is-android .stake-line input,html.is-android .stake-field input{
     min-height:28px!important;font-size:.88rem!important;padding:2px 6px!important}
-  html.is-android .stake-min{display:flex!important;flex-direction:row!important;align-items:center!important;font-size:11px!important;margin:2px 0!important;padding:0!important;line-height:1.15!important}
-  html.is-android .stake-min-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important}
+  html.is-android .stake-min{display:flex!important;flex-direction:row!important;align-items:center!important;font-size:11px!important;margin:1px 0!important;padding:0!important;line-height:1.15!important}
+  html.is-android .stake-min-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:4px!important}
   html.is-android .stake-min-actions .qbtn{min-height:34px!important;height:34px!important;max-height:34px!important;min-width:44px!important;font-size:.72rem!important;padding:0 10px!important}
   html.is-android .win-preview{min-width:78px!important;margin:0!important;padding:0!important}
   html.is-android .win-preview .amount{font-size:.78rem!important}
