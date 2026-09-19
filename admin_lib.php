@@ -53,11 +53,8 @@ function admin_esc(string $s): string {
   return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-function admin_dial_iso(string $raw): string {
-  $s = strtoupper(trim($raw));
-  if (preg_match('/^[A-Z]{2}$/', $s)) return $s;
-  $s = preg_replace('/[^\d+]/', '', $raw) ?? '';
-  $map = [
+function admin_dial_map(): array {
+  return [
     '+225' => 'CI', '+221' => 'SN', '+223' => 'ML', '+226' => 'BF', '+227' => 'NE',
     '+228' => 'TG', '+229' => 'BJ', '+237' => 'CM', '+241' => 'GA', '+242' => 'CG',
     '+243' => 'CD', '+234' => 'NG', '+233' => 'GH', '+254' => 'KE', '+256' => 'UG',
@@ -67,18 +64,31 @@ function admin_dial_iso(string $raw): string {
     '+34' => 'ES', '+351' => 'PT', '+44' => 'GB', '+1' => 'US', '+55' => 'BR',
     '+91' => 'IN', '+86' => 'CN', '+81' => 'JP', '+82' => 'KR', '+90' => 'TR',
     '+971' => 'AE', '+966' => 'SA', '+7' => 'RU', '+48' => 'PL', '+31' => 'NL',
-    '+237' => 'CM', '+224' => 'GN', '+225' => 'CI', '+238' => 'CV', '+239' => 'ST',
+    '+224' => 'GN', '+238' => 'CV', '+239' => 'ST',
     '+240' => 'GQ', '+244' => 'AO', '+245' => 'GW', '+248' => 'SC', '+249' => 'SD',
     '+251' => 'ET', '+252' => 'SO', '+253' => 'DJ', '+257' => 'BI', '+258' => 'MZ',
     '+261' => 'MG', '+262' => 'RE', '+264' => 'NA', '+265' => 'MW', '+266' => 'LS',
     '+267' => 'BW', '+268' => 'SZ', '+269' => 'KM', '+290' => 'SH', '+291' => 'ER',
     '+297' => 'AW', '+298' => 'FO', '+299' => 'GL',
   ];
-  if (isset($map[$s])) return $map[$s];
+}
+
+function admin_match_dial(string $raw): array {
+  $s = strtoupper(trim($raw));
+  if (preg_match('/^[A-Z]{2}$/', $s)) return [$s, ''];
+  $s = preg_replace('/[^\d+]/', '', $raw) ?? '';
+  $map = admin_dial_map();
+  uksort($map, static fn($a, $b) => strlen($b) <=> strlen($a));
+  if (isset($map[$s])) return [$map[$s], $s];
   foreach ($map as $dial => $iso) {
-    if ($s !== '' && str_starts_with($s, $dial)) return $iso;
+    if ($s === '') continue;
+    if (str_starts_with($s, $dial) || str_starts_with($s, ltrim($dial, '+'))) return [$iso, $dial];
   }
-  return '';
+  return ['', ''];
+}
+
+function admin_dial_iso(string $raw): string {
+  return admin_match_dial($raw)[0];
 }
 
 function admin_flag_emoji(string $iso2): string {
@@ -123,6 +133,22 @@ function admin_country_cell(array $p): string {
   if ($iso === '') return $raw !== '' && !preg_match('/^\+\d+$/', $raw) ? $raw : '—';
   $flag = admin_flag_emoji($iso);
   return trim($flag . ' ' . admin_country_name($iso));
+}
+
+function admin_phone_cell(array $p): string {
+  $phone = trim((string) ($p['phone'] ?? ''));
+  if ($phone === '') return '—';
+  [$iso, $dial] = admin_match_dial($phone);
+  if ($iso === '') [$iso, $dial] = admin_match_dial((string) ($p['country'] ?? $p['countryCode'] ?? ''));
+  $flag = $iso !== '' ? admin_flag_emoji($iso) : '';
+  $shown = $phone;
+  if ($dial !== '') {
+    $compact = preg_replace('/[^\d+]/', '', $phone) ?? $phone;
+    if (str_starts_with($compact, $dial)) $shown = ltrim(substr($compact, strlen($dial)));
+    else if (str_starts_with($compact, ltrim($dial, '+'))) $shown = ltrim(substr($compact, strlen(ltrim($dial, '+'))));
+    if ($shown === '') $shown = $phone;
+  }
+  return trim($flag . ' ' . $shown);
 }
 
 function admin_pct(int $part, int $total): string {
@@ -1369,6 +1395,10 @@ function admin_bust_cache(): void {
   foreach (['profiles', 'profiles2', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'badges', 'health'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
+  }
+  $dir = rtrim(orolado_data_dir(), '/\\');
+  foreach (glob($dir . DIRECTORY_SEPARATOR . 'admin_cache_list*.json') ?: [] as $f) {
+    @unlink($f);
   }
 }
 

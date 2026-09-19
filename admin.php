@@ -270,7 +270,7 @@ function admin_list_payload(string $view, array $req): array {
         (string) ($p['publicId'] ?? ''),
         (string) ($p['name'] ?? '—'),
         (string) ($p['email'] ?? ''),
-        (string) ($p['phone'] ?? ''),
+        admin_phone_cell($p),
         admin_country_cell($p),
         substr((string) ($p['createdAt'] ?? ''), 0, 16),
         admin_money($p['real'] ?? 0),
@@ -615,7 +615,7 @@ function admin_list_payload(string $view, array $req): array {
     foreach ($slice as $w) {
       $open = admin_wd_is_open($w);
       $method = admin_method_label(admin_fill((string) ($w['operator'] ?? '')));
-      $dest = admin_fill((string) ($w['phone'] ?? ''));
+      $dest = admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? ''))]);
       $suspect = !empty($w['_suspect']);
       $rows[] = [
         'cells' => [
@@ -625,7 +625,7 @@ function admin_list_payload(string $view, array $req): array {
           (string) ($w['email'] ?? ''),
           admin_money($w['amount']),
           $method !== '' ? $method : '—',
-          $dest !== '' ? $dest : '—',
+          $dest,
           $suspect ? 'Suspect' : 'Vérifié',
           (string) ($w['status'] ?? ''),
           substr((string) ($w['createdAt'] ?? ''), 0, 16),
@@ -1011,7 +1011,7 @@ function admin_profile_payload(string $uid): array {
       'amount' => $w['amount'],
       'status' => $w['status'],
       'method' => admin_method_label(admin_fill((string) ($w['operator'] ?? ''))),
-      'phone' => admin_fill((string) ($w['phone'] ?? '')),
+      'phone' => admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? ''))]),
       'at' => $w['createdAt'],
       'reason' => $w['reason'] ?? '',
     ];
@@ -1037,7 +1037,7 @@ function admin_profile_payload(string $uid): array {
       'publicId' => (string) ($p['publicId'] ?? ''),
       'name' => (string) ($p['name'] ?? ''),
       'email' => (string) ($p['email'] ?? ''),
-      'phone' => (string) ($p['phone'] ?? ''),
+      'phone' => admin_phone_cell($p),
       'country' => admin_country_cell($p),
       'ip' => (string) ($p['ip'] ?? '—'),
       'createdAt' => (string) ($p['createdAt'] ?? ''),
@@ -1087,7 +1087,15 @@ if ($isAjax) {
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
-    admin_json(admin_list_payload($view, $req));
+    $ck = 'list_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
+      $req['q'] ?? '', $req['preset'] ?? '', $req['cal'] ?? '',
+      $req['dateFrom'] ?? '', $req['dateTo'] ?? '', $req['idFrom'] ?? '', $req['page'] ?? 1,
+    ]));
+    $cached = admin_cache_get($ck, 10);
+    if (is_array($cached) && !empty($cached['ok'])) admin_json($cached);
+    $out = admin_list_payload($view, $req);
+    if (!empty($out['ok'])) admin_cache_set($ck, $out);
+    admin_json($out);
   }
   if ($action === 'profile') {
     admin_json(admin_profile_payload((string) ($req['userId'] ?? '')));
@@ -1498,6 +1506,7 @@ function filters() {
   };
 }
 let listCache = {};
+let listReq = 0;
 function bustList() { listCache = {}; }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 async function loadBadges() {
@@ -1589,6 +1598,7 @@ function renderList(j) {
   }));
 }
 async function loadList(force) {
+  const my = ++listReq;
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
   document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
     btn.classList.toggle('on', btn.getAttribute('data-view') === view);
@@ -1600,6 +1610,7 @@ async function loadList(force) {
     return;
   }
   const j = await ajax(Object.assign({action:'list', view}, f));
+  if (my !== listReq) return;
   listCache[key] = { t: Date.now(), j };
   renderList(j);
 }
