@@ -1433,13 +1433,33 @@ function admin_is_protected_account(array $u, string $id = ''): bool {
 }
 
 function admin_wipe_except_admin(): array {
+  @set_time_limit(25);
+  @ini_set('max_execution_time', '25');
+  if (function_exists('ignore_user_abort')) @ignore_user_abort(true);
+  $t0 = microtime(true);
+
   $db = admin_local_db();
-  $keep = [];
+  $keep = ['admin_master' => true];
+  $keepEmails = [];
+  if (function_exists('orolado_admin_emails')) {
+    foreach (orolado_admin_emails() as $em) {
+      $em = strtolower(trim((string) $em));
+      if ($em !== '') $keepEmails[$em] = true;
+    }
+  }
   foreach (($db['users'] ?? []) as $id => $u) {
     if (!is_array($u)) continue;
     $id = (string) ($u['id'] ?? $id);
-    if (admin_is_protected_account($u, $id)) $keep[$id] = true;
+    if (admin_is_protected_account($u, $id)) {
+      $keep[$id] = true;
+      $em = strtolower(trim((string) ($u['email'] ?? $u['originalEmail'] ?? '')));
+      if ($em !== '') $keepEmails[$em] = true;
+    }
   }
+  if ($keepEmails === []) {
+    return ['ok' => false, 'reason' => 'Compte admin introuvable — reset annulé'];
+  }
+
   $wiped = 0;
   foreach (array_keys($db['users'] ?? []) as $id) {
     $id = (string) $id;
@@ -1460,37 +1480,82 @@ function admin_wipe_except_admin(): array {
   }
   save_db(orolado_data_file(), $db);
 
+  $kickDir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'kicks';
+  foreach (glob($kickDir . DIRECTORY_SEPARATOR . '*.kick') ?: [] as $f) {
+    $kid = basename((string) $f, '.kick');
+    if (!isset($keep[$kid])) @unlink($f);
+  }
+  $otpLog = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
+  if (is_file($otpLog)) @file_put_contents($otpLog, '');
+
   $hdrs = supabase_admin_headers();
   $sb = ['deposits' => false, 'withdrawals' => false, 'orders' => false, 'profiles' => 0, 'auth' => 0];
+  $remaining = 0;
   if ($hdrs) {
-    admin_sb_req('/rest/v1/deposits?created_at=gte.1970-01-01', [], 'DELETE');
-    admin_sb_req('/rest/v1/withdrawals?created_at=gte.1970-01-01', [], 'DELETE');
-    admin_sb_req('/rest/v1/orders?created_at=gte.1970-01-01', [], 'DELETE');
+    admin_sb_req('/rest/v1/deposits?created_at=gte.1970-01-01', ['Prefer: return=minimal'], 'DELETE');
+    admin_sb_req('/rest/v1/withdrawals?created_at=gte.1970-01-01', ['Prefer: return=minimal'], 'DELETE');
+    admin_sb_req('/rest/v1/orders?created_at=gte.1970-01-01', ['Prefer: return=minimal'], 'DELETE');
     $sb['deposits'] = true;
     $sb['withdrawals'] = true;
     $sb['orders'] = true;
+
     $profiles = admin_sb_all('profiles', 'id,email', 'created_at.asc', 1000);
     foreach ($profiles as $p) {
       $pid = (string) ($p['id'] ?? '');
       $em = strtolower(trim((string) ($p['email'] ?? '')));
-      if ($pid === '' || isset($keep[$pid])) continue;
-      if ($em !== '' && orolado_is_reserved_admin_email($em)) continue;
-      admin_sb_req('/rest/v1/vaults?user_id=eq.' . rawurlencode($pid), [], 'DELETE');
-      admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($pid), [], 'DELETE');
-      $sb['profiles']++;
+      if ($pid !== '' && $em !== '' && isset($keepEmails[$em])) $keep[$pid] = true;
     }
+
+    $keepUuid = [];
+    foreach (array_keys($keep) as $id) {
+      if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) $id)) {
+        $keepUuid[] = (string) $id;
+      }
+    }
+    if ($keepUuid) {
+      $in = implode(',', $keepUuid);
+      admin_sb_req('/rest/v1/vaults?user_id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+      $pr = admin_sb_req('/rest/v1/profiles?id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+      $sb['profiles'] = (int) ($pr['count'] ?? 0);
+    } else {
+      foreach ($profiles as $p) {
+        $pid = (string) ($p['id'] ?? '');
+        $em = strtolower(trim((string) ($p['email'] ?? '')));
+        if ($pid === '' || isset($keep[$pid])) continue;
+        if ($em !== '' && isset($keepEmails[$em])) continue;
+        admin_sb_req('/rest/v1/vaults?user_id=eq.' . rawurlencode($pid), ['Prefer: return=minimal'], 'DELETE');
+        admin_sb_req('/rest/v1/profiles?id=eq.' . rawurlencode($pid), ['Prefer: return=minimal'], 'DELETE');
+        $sb['profiles']++;
+        if ((microtime(true) - $t0) > 12) break;
+      }
+    }
+
     $auth = admin_fetch_auth_users();
+    $toDelete = [];
     foreach ($auth as $a) {
       $aid = (string) ($a['id'] ?? '');
       $em = strtolower(trim((string) ($a['email'] ?? '')));
       if ($aid === '' || isset($keep[$aid])) continue;
-      if ($em !== '' && orolado_is_reserved_admin_email($em)) continue;
+      if ($em !== '' && isset($keepEmails[$em])) continue;
+      $toDelete[] = $aid;
+    }
+    $remaining = count($toDelete);
+    foreach ($toDelete as $aid) {
+      if ((microtime(true) - $t0) > 16 || $sb['auth'] >= 12) break;
       supabase_admin_delete_auth($aid);
       $sb['auth']++;
+      $remaining--;
     }
   }
   admin_bust_cache();
-  return ['ok' => true, 'kept' => count($keep), 'wiped' => $wiped, 'supabase' => $sb];
+  return [
+    'ok' => true,
+    'kept' => count($keep),
+    'wiped' => $wiped,
+    'supabase' => $sb,
+    'remaining' => $remaining,
+    'more' => $remaining > 0,
+  ];
 }
 
 function admin_kill_user_sessions(array &$db, string $uid): int {
