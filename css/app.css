@@ -846,7 +846,7 @@ html.is-android #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
 .crypto-dot{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 10px #22C55E;animation:cryptoPulse 1.2s ease-in-out infinite}
 @keyframes cryptoPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
 .crypto-qr-wrap{display:flex;justify-content:center;margin:0 0 10px}
-.crypto-qr{width:118px;height:118px;border-radius:12px;padding:6px;background:#fff;
+.crypto-qr{width:118px;height:118px;border-radius:12px;padding:6px;background:#fff;object-fit:contain;display:block;
   box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 28px rgba(0,0,0,.28)}
 .crypto-addr-box{background:rgba(10,15,29,.92);border:1px solid rgba(245,158,11,.28);border-radius:16px;padding:14px 12px 12px;margin-bottom:16px}
 .crypto-addr-label{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);

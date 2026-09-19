@@ -2602,6 +2602,7 @@
         currency: session.currency,
         customer: session.customer || {},
         customizations: session.customizations || { title: 'OROLADO' },
+        redirect_url: session.redirect_url || ((location && location.origin) || 'https://orolado.com') + '/api/flutterwave/callback',
         callback: function (data) {
           markOpen();
           var txId = (data && (data.transaction_id || data.id)) || '';
@@ -3260,16 +3261,22 @@
     var sources = [
       'api/qr.php?d=' + enc,
       'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' + enc,
-      'https://quickchart.io/qr?size=160&text=' + enc
+      'https://quickchart.io/qr?size=160&margin=1&text=' + enc,
+      'https://image-charts.com/chart?chs=160x160&cht=qr&chld=M|1&chl=' + enc
     ];
     var i = 0;
     qr.style.background = '#fff';
     qr.style.objectFit = 'contain';
+    qr.style.display = 'block';
+    qr.referrerPolicy = 'no-referrer';
     qr.alt = raw;
     function load() {
       if (i >= sources.length) return;
       qr.onerror = function () { i += 1; load(); };
-      qr.onload = function () { qr.onerror = null; };
+      qr.onload = function () {
+        if (!qr.naturalWidth) { i += 1; load(); return; }
+        qr.onerror = null;
+      };
       qr.src = sources[i];
     }
     load();
