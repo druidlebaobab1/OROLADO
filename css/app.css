@@ -726,7 +726,7 @@ html.is-android .modal-backdrop.active .modal-head-row .btn-close{
 .pay-crypto-badge.btc{background:#F7931A}
 .pay-crypto-badge.eth{background:#627EEA}
 .pay-crypto-badge.trx{background:#7C3AED}
-.deposit-box{width:min(400px,92vw);max-width:400px;height:auto;max-height:92dvh;padding:20px 16px 16px;overflow:auto;
+.deposit-box{width:min(440px,94vw);max-width:440px;height:auto;max-height:92dvh;padding:20px 16px 16px;overflow:auto;
   background:rgba(8,10,16,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 48px rgba(0,0,0,.55)}
 .dep-amt-chips,.dep-amt-chip{display:none!important}
@@ -755,8 +755,46 @@ html.is-android .modal-backdrop.active .modal-head-row .btn-close{
 .deposit-box:not(.is-crypto) .pay-method-grid{gap:10px;margin-bottom:12px}
 .deposit-box:not(.is-crypto) .pay-method-card{padding:16px 14px 15px;min-height:76px}
 #depositModal #payMethodUsdt,.deposit-box:not(.is-crypto) .pay-method-card[data-pay="usdt"]{
-  padding:20px 14px 18px;min-height:94px}
-#depositModal #payMethodUsdt .pay-method-title{font-size:.9rem}
+  display:flex;flex-direction:column;align-items:stretch;width:100%;box-sizing:border-box;
+  padding:16px 12px 14px;min-height:0;
+  background:linear-gradient(165deg,rgba(18,28,46,.98) 0%,rgba(10,16,30,.98) 58%,rgba(8,12,22,.98) 100%);
+  border:1px solid rgba(56,189,248,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 12px 28px rgba(0,0,0,.28)}
+#depositModal #payMethodUsdt.on,.deposit-box:not(.is-crypto) .pay-method-card[data-pay="usdt"].on{
+  border-color:rgba(245,158,11,.55);
+  box-shadow:0 0 0 1px rgba(245,158,11,.35),0 10px 24px rgba(245,158,11,.1)}
+#depositModal #payMethodUsdt .pay-method-top{justify-content:flex-start;margin-bottom:12px}
+#depositModal #payMethodUsdt .pay-method-title{font-size:1.08rem;letter-spacing:.04em;line-height:1.25;font-weight:900}
+#depositModal #payMethodUsdt .pay-method-desc{font-size:.8rem;font-weight:700;line-height:1.45;margin-top:12px;color:#CBD5E1}
+#depositModal #payMethodUsdt .pay-crypto-wall{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 6px;width:100%}
+#depositModal #payMethodUsdt .pay-crypto-cell{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-width:0}
+#depositModal #payMethodUsdt .pay-crypto-badge,
+#depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
+  width:28px!important;height:28px!important;border-radius:50%;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.16),0 4px 10px rgba(0,0,0,.28)}
+#depositModal #payMethodUsdt .pay-crypto-cell b{
+  font-size:.62rem;font-weight:800;color:#E8EEF9;letter-spacing:.03em;line-height:1.15;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#depositModal #btnConfirmDeposit.btn-deposit-confirm{
+  display:flex;align-items:center;justify-content:center;width:100%;
+  min-height:56px;padding:16px 18px;margin-top:4px;
+  font-size:1.02rem;font-weight:900;letter-spacing:.06em;line-height:1.15;
+  border-radius:12px;box-sizing:border-box}
+@media (max-width:859px){
+  #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px 4px}
+  #depositModal #payMethodUsdt .pay-method-title{font-size:1.02rem}
+  #depositModal #payMethodUsdt .pay-crypto-cell b{font-size:.58rem}
+  #depositModal #btnConfirmDeposit.btn-deposit-confirm{
+    min-height:58px;padding:17px 16px;font-size:1rem}
+}
+html.is-android #depositModal #btnConfirmDeposit.btn-deposit-confirm{
+  min-height:60px;padding:18px 16px;font-size:1.02rem;
+  pointer-events:auto!important;touch-action:manipulation;z-index:9999}
+html.is-android #depositModal #payMethodUsdt .pay-crypto-badge,
+html.is-android #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
+  width:26px!important;height:26px!important}
 .deposit-box.is-crypto{width:min(400px,94vw);max-width:400px;max-height:100dvh;padding:12px 14px 14px;overflow-x:hidden;overflow-y:auto;
   background:linear-gradient(180deg,#161C28 0%,#121824 100%);border:1px solid rgba(255,255,255,.1)}
 .deposit-box.is-crypto #closeDeposit{display:none!important}
@@ -861,7 +899,9 @@ html.is-android .modal-backdrop.active .modal-head-row .btn-close{
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
 @media (max-width:480px){
-  .deposit-box:not(.is-crypto){width:min(400px,94vw);max-height:92dvh;overflow:auto;padding:12px 12px 14px}
+  .deposit-box:not(.is-crypto){width:min(440px,94vw);max-height:92dvh;overflow:auto;padding:12px 12px 14px}
+  #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(5,minmax(0,1fr))}
+  #depositModal #payMethodUsdt .pay-crypto-cell b{font-size:.56rem}
   .deposit-box.is-crypto{padding:10px 12px 12px;max-height:100dvh;overflow-x:hidden;overflow-y:auto}
   .deposit-box.is-crypto .modal-title{margin-bottom:4px;font-size:.88rem}
   .deposit-box.is-crypto .crypto-qr{width:150px;height:150px;padding:8px;border-radius:14px}

@@ -103,7 +103,7 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 .link-terms,button.link-terms{
   background:none;border:0;padding:0;margin:0;font:inherit;font-weight:700;
   color:#F59E0B;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
-.help-terms{display:block;width:100%;text-align:center;margin:10px 0 0;font-size:.68rem;color:#94A3B8}
+.help-terms{display:block;width:100%;text-align:center;margin:8px 0 0;font-size:.56rem;line-height:1.35;color:#94A3B8}
 .help-terms.link-terms{color:#F59E0B}
 
 #termsModal .terms-box{
@@ -112,14 +112,28 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   border-radius:16px!important;
   display:flex;flex-direction:column;
   overflow:hidden!important;
-  padding:22px 22px 16px;background:rgba(10,14,22,.97);
+  padding:16px 16px 14px;background:rgba(10,14,22,.97);
   border:1px solid #1E2638;box-sizing:border-box}
-#termsModal .btn-close{
-  top:14px!important;right:14px!important;color:#E8EEF9}
-#termsModal .modal-title{
-  margin:0 40px 14px 0;padding-right:8px;
-  font-size:.78rem;letter-spacing:.08em;line-height:1.35;
-  text-transform:uppercase;font-weight:800;color:#F8FAFC}
+#termsModal .terms-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:0 0 14px;flex-shrink:0}
+#termsModal .btn-close,
+#termsModal .terms-head .btn-close,
+html.is-android #termsModal .btn-close,
+html.is-android #termsModal .terms-head .btn-close,
+html.is-android .modal-backdrop.active #termsModal .btn-close{
+  position:static!important;top:auto!important;right:auto!important;
+  flex:0 0 36px;color:#E8EEF9}
+#termsModal .modal-title,
+#termsModal .terms-head .modal-title{
+  display:block;flex:1 1 auto;min-width:0;
+  margin:0;padding:10px 12px;
+  font-size:.72rem;letter-spacing:.02em;line-height:1.4;
+  text-transform:none;font-weight:800;color:#F8FAFC;text-align:center;
+  white-space:normal;overflow:visible;word-break:normal;hyphens:none;
+  border:1px solid rgba(245,158,11,.38);border-radius:10px;
+  background:rgba(245,158,11,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 #termsModal .terms-body{
   flex:1 1 auto;min-height:0;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
