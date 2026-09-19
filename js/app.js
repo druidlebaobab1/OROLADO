@@ -1005,7 +1005,7 @@
     var odds = currentOdds(u);
     var pct = Math.round((odds - 1) * 100);
     document.querySelectorAll('.asset-chip .payout-live').forEach(function (el) {
-      el.textContent = pct + '%';
+      el.textContent = '+88%';
     });
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
     var netGain = D6.roundMoney(stake * (pct / 100));
@@ -5239,6 +5239,12 @@
     }
     if ($('closeWdConfirm')) $('closeWdConfirm').addEventListener('click', function () { closeModal('wdConfirmModal'); });
     if ($('btnWdConfirmOk')) $('btnWdConfirmOk').addEventListener('click', function () { closeModal('wdConfirmModal'); });
+    function wdOtpUiSeconds(sent) {
+      var n = Number(sent && (sent.resendIn != null ? sent.resendIn : sent.retryIn));
+      if (!isFinite(n) || n <= 0) n = 60;
+      if (n > 60) n = 60;
+      return n;
+    }
     function refreshWdOtpHint() {
       var hint = $('wdOtpHint');
       if (!hint) return;
@@ -5295,31 +5301,22 @@
       } else {
         destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
       }
-      var liveReal = null;
-      if (!(D6.Api && D6.Api.token && D6.Api.token())) {
-        toast(t('sessionInvalid') || 'Session invalide', 'err');
-        return;
+      var real = realWithdrawBalance(u);
+      if (D6.Api && D6.Api.token && D6.Api.token()) {
+        try {
+          var liveMe = await D6.Api.post('me', {});
+          if (watchBan(liveMe)) return;
+          if (liveMe && liveMe.ok && liveMe.vault && liveMe.vault.real != null) {
+            var liveReal = Number(liveMe.vault.real);
+            if (isFinite(liveReal) && liveReal >= 0) {
+              applyOfficialReal(liveReal, { fromMe: true, force: true });
+              u = user() || u;
+              refreshWithdrawUi();
+              real = liveReal;
+            }
+          }
+        } catch (eLive) { /* garde le solde local, le serveur revérifie */ }
       }
-      try {
-        var liveMe = await D6.Api.post('me', {});
-        if (watchBan(liveMe)) return;
-        if (!liveMe || !liveMe.ok || !liveMe.vault || liveMe.vault.real == null) {
-          toast(t('sessionInvalid') || 'Impossible de vérifier le solde. Réessayez.', 'err');
-          return;
-        }
-        liveReal = Number(liveMe.vault.real);
-        if (!isFinite(liveReal) || liveReal < 0) {
-          toast(t('insufficient'), 'err');
-          return;
-        }
-        applyOfficialReal(liveReal, { fromMe: true, force: true });
-        u = user() || u;
-        refreshWithdrawUi();
-      } catch (eLive) {
-        toast('Impossible de vérifier le solde. Réessayez.', 'err');
-        return;
-      }
-      var real = liveReal;
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
       if (!gate.ok) { toast(gate.msg, 'err', 5000); return; }
@@ -5375,7 +5372,7 @@
           if (!sent || !sent.ok) {
             if (sent && sent.cooldown) {
               wdOtpPending = true;
-              wdOtpLeft = Number(sent.expiresIn) || Number(sent.retryIn) || 60;
+              wdOtpLeft = wdOtpUiSeconds(sent);
               showWdOtpField();
               if (wdOtpTimer) clearInterval(wdOtpTimer);
               wdOtpTimer = setInterval(tickWdOtp, 1000);
@@ -5386,7 +5383,7 @@
             return;
           }
           wdOtpPending = true;
-          wdOtpLeft = Number(sent.expiresIn) || 60;
+          wdOtpLeft = wdOtpUiSeconds(sent);
           showWdOtpField();
           if (wdOtpTimer) clearInterval(wdOtpTimer);
           wdOtpTimer = setInterval(tickWdOtp, 1000);
