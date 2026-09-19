@@ -1631,7 +1631,7 @@ if ($action === 'settleOrder') {
       }
       $side = (($o['side'] ?? $reqSide) === 'put') ? 'put' : 'call';
       $entry = (float) ($o['openPrice'] ?? $o['entryPrice'] ?? $reqEntry);
-      $profile = ($mode === 'demo') ? 'demo' : 'real';
+      $profile = ($mode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
       $voided = false;
       $won = orolado_sealed_roll($payout, $profile);
       $credit = orolado_trade_credit($won, $voided, $stake, $payout);
@@ -1665,7 +1665,7 @@ if ($action === 'settleOrder') {
     if ($oid === '' || $reqStake < 1) {
       return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
     }
-    $lateProfile = ($reqMode === 'demo') ? 'demo' : 'real';
+    $lateProfile = ($reqMode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
     $voided = false;
     $won = orolado_sealed_roll($reqPayout, $lateProfile);
     $credit = orolado_trade_credit($won, $voided, $reqStake, $reqPayout);

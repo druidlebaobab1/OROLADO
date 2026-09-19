@@ -12,7 +12,7 @@
       DEFAULT_ODDS: 1.88,
       WIN_P_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 }),
       WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 }),
-      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 }),
+      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 }),
       PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
     });
 
@@ -1398,7 +1398,7 @@
       '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018
     };
     var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
-      '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015
+      '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02
     };
     var realMap = C.ODDS_WIN_RATE || {
       '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015
@@ -1763,6 +1763,7 @@
       var sideNow = (trade.ticket && trade.ticket.side) || trade.side;
       var profile = 'real';
       if (mode !== 'real') profile = 'demo';
+      else if (isAdminUser(user)) profile = 'admin';
       var verdict = StochasticCore.settle({
         entryPrice: entryPx,
         durationSec: Number(trade.duration) || 5,

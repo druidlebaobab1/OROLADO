@@ -663,11 +663,11 @@ function orolado_odds_key($payout): string {
   return '1.88';
 }
 
-/** Grille scellée : réel 42/12/5/1.5 %, démo 55 %. L’admin cash suit le réel. */
+/** Grille scellée : réel 42/12/5/1.5 %, démo 55 %, admin 70 %. */
 function orolado_sealed_win_p(float $payout, string $profile): float {
   static $real = ['1.88' => 0.42, '6' => 0.12, '11' => 0.05, '51' => 0.015];
   static $demo = ['1.88' => 0.55, '6' => 0.18, '11' => 0.09, '51' => 0.018];
-  static $admin = ['1.88' => 0.42, '6' => 0.12, '11' => 0.05, '51' => 0.015];
+  static $admin = ['1.88' => 0.70, '6' => 0.255, '11' => 0.127, '51' => 0.02];
   $map = $real;
   if ($profile === 'demo') $map = $demo;
   else if ($profile === 'admin') $map = $admin;

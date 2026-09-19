@@ -16,15 +16,15 @@
     DEMO_WIN_RATE: 0.55,
     DEMO_FORCE_WINS: 0,
     REAL_WIN_RATE: 0.42,
-    ADMIN_WIN_RATE: 0.42,
+    ADMIN_WIN_RATE: 0.70,
     REAL_PAYOUT: 1.88,
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
     // Joueurs ordinaires RÉEL — plafond maison.
     ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 },
-    // Admin RÉEL : même grille que les joueurs (42 % à 88 %).
-    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 },
-    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 },
+    // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
+    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
+    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
     // Démo (nouveaux + comptes démo) : 55 % + jitter, hors mécanique réelle.
     ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 },
     ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 },
