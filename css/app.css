@@ -609,7 +609,7 @@ html.is-android #screenTrade{
 html.is-android .pad{
   position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
   z-index:50!important;background:#0B0E14!important;max-width:none!important;
-  padding-bottom:calc(22px + env(safe-area-inset-bottom, 16px))!important}
+  padding-bottom:calc(28px + env(safe-area-inset-bottom, 18px))!important}
 html.is-android .btn-close{
   min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
   z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
@@ -1185,9 +1185,9 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .pad{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;grid-column:2;grid-row:1 / span 2}
 }
 @media (max-width:859px){
-  .pad .trade-row{margin-top:4px}
-  html.is-android .pad{padding-bottom:calc(22px + env(safe-area-inset-bottom, 16px))!important}
-  html.is-android .pad .trade-row{margin-top:4px!important}
+  .pad .trade-row{margin-top:2px}
+  html.is-android .pad{padding-bottom:calc(28px + env(safe-area-inset-bottom, 18px))!important}
+  html.is-android .pad .trade-row{margin-top:2px!important}
   .balance-card{padding:6px 12px!important}
   .balance-card .bal{font-size:20px!important}
   .chart-card,#chart{flex:1 0 auto;flex-shrink:0!important;min-height:380px!important;height:45vh!important;max-height:none!important;background:#0B0E14!important}
@@ -1247,7 +1247,7 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
 
   /* —— BAS lisible (plus de texte minuscule) —— */
   .trade-lock{display:none!important}
-  .pad{padding:5px 8px;gap:4px;padding-bottom:calc(18px + env(safe-area-inset-bottom, 12px))}
+  .pad{padding:4px 8px;gap:3px;padding-bottom:calc(26px + env(safe-area-inset-bottom, 16px))}
   .dur-row{gap:3px;margin:0}
   .dur-chip{min-width:42px;min-height:26px;padding:2px 0;font-size:.58rem;border-radius:7px}
   .qbtn{min-height:26px;padding:2px 0;font-size:.58rem;border-radius:7px}
@@ -1264,10 +1264,10 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .btn-trade{min-height:52px;border-radius:11px;font-size:12px;padding:14px 2px;white-space:nowrap}
   .btn-trade span{font-size:12px;font-weight:700}
   .btn-trade small{font-size:.55rem}
-  .trade-row{margin-top:4px;gap:8px;padding:0}
-  .odds-label,.payout-badge{margin:4px 0 2px}
+  .trade-row{margin-top:2px;gap:8px;padding:0}
+  .odds-label,.payout-badge{margin:2px 0 1px}
   .odds-row{margin:0}
-  .stake-line{margin:0 0 2px}
+  .stake-line{margin:0 0 1px}
   .btn-hist-cta{min-height:34px!important;height:auto!important;padding:6px 8px!important;font-size:.58rem;margin-top:3px;z-index:60}
   .win-preview{padding:0;margin:0;min-width:88px}
   .win-preview .amount{font-size:.82rem}
@@ -1288,7 +1288,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   html.is-android .trade-wrap{overflow:hidden;overscroll-behavior:none}
   html.is-android .pad{
     padding:2px 6px!important;gap:2px!important;
-    padding-bottom:calc(22px + env(safe-area-inset-bottom, 16px))!important}
+    padding-bottom:calc(28px + env(safe-area-inset-bottom, 18px))!important}
   html.is-android .dur-row{gap:2px!important;margin:0!important}
   html.is-android .dur-chip{min-height:22px!important;font-size:.52rem!important;padding:1px 0!important;margin:0!important}
   html.is-android .trade-hint,
@@ -1296,7 +1296,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
   html.is-android [data-i18n="tradeHintAndroid"]{
     display:none!important;visibility:hidden!important;height:0!important;max-height:0!important;
     margin:0!important;padding:0!important;overflow:hidden!important;font-size:0!important}
-  html.is-android .odds-label,html.is-android .payout-badge{font-size:10px!important;margin:3px 0 2px!important;line-height:1.15!important;padding:3px 8px!important}
+  html.is-android .odds-label,html.is-android .payout-badge{font-size:10px!important;margin:2px 0 1px!important;line-height:1.15!important;padding:3px 8px!important}
   html.is-android .odds-row{gap:3px!important;margin:0!important}
   html.is-android .odds-chip{padding:3px 1px!important;min-height:30px!important}
   html.is-android .odds-chip .odds-mult{font-size:.62rem!important}
@@ -1316,7 +1316,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
     white-space:nowrap!important;overflow:visible!important;letter-spacing:0!important;flex:1 1 0!important;min-width:0!important}
   html.is-android .btn-trade span{font-size:12px!important;font-weight:700!important;white-space:nowrap!important}
   html.is-android .btn-trade small{font-size:.5rem!important}
-  html.is-android .trade-row{display:flex!important;gap:8px!important;width:100%!important;box-sizing:border-box!important;padding:0!important;margin-top:4px!important}
+  html.is-android .trade-row{display:flex!important;gap:8px!important;width:100%!important;box-sizing:border-box!important;padding:0!important;margin-top:2px!important}
   html.is-android .btn-hist-cta{
     height:20px!important;min-height:20px!important;padding:0 6px!important;margin-top:1px!important;
     font-size:.45rem!important;line-height:20px!important;border-radius:6px!important}
@@ -2040,7 +2040,8 @@ html.fs-guest .fs-mode-btn.mode-btn.on[data-mode="demo"]{
 }
 html.is-ios .pad,html.is-ios .pad.glass{
   border:none!important;border-top:none!important;outline:none!important;box-shadow:none!important;
-  border-radius:14px 14px 0 0}
+  border-radius:14px 14px 0 0;
+  padding-bottom:calc(26px + env(safe-area-inset-bottom, 16px))!important}
 html.is-ios .dur-chip,html.is-ios .qbtn,html.is-ios .stake-field input,html.is-ios .odds-row{
   -webkit-appearance:none;outline:none}
 html.is-ios .stake-field input{border-radius:10px}
