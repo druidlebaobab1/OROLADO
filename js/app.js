@@ -2375,9 +2375,9 @@
     return url;
   }
 
-  // Minimum dépôt joueur = $3.00 (Maketou reçoit XOF via taux fixe).
+  // Minimum dépôt joueur = $5.00. Le crédit suit le montant réellement reçu.
   function minDeposit() {
-    return D6.CONFIG.MIN_DEPOSIT || 3;
+    return D6.CONFIG.MIN_DEPOSIT || 5;
   }
 
   function withdrawMinFor(method) {
@@ -2427,7 +2427,7 @@
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) hint.textContent = 'Minimum $3';
+    if (hint) hint.textContent = 'Minimum $5';
     setDepositPayMethod('card');
     resetOxaWallet();
     showDepositStep('select');
@@ -3089,7 +3089,7 @@
   }
 
   function oxaMinUsd() {
-    return Number(oxaMeta(oxaAsset).minUsd) || 3;
+    return Number(oxaMeta(oxaAsset).minUsd) || 5;
   }
 
   function oxaNetworkName() {
@@ -3379,7 +3379,9 @@
 
   async function showCryptoInvoice(confirmed) {
     if (depositPayMethod !== 'usdt') return;
-    var amt = oxaMinUsd();
+    var min = oxaMinUsd();
+    var typed = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    var amt = typed >= min ? typed : min;
     usdtAmt = amt;
     lastUsdtCredit = 0;
     oxaCoin = oxaCoinKey();

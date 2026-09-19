@@ -2332,14 +2332,14 @@ function orolado_payload_has_real_email(string $haystack, array $user): bool {
   return str_contains(strtolower($haystack), $email) || str_contains(strtolower($haystack), rawurlencode($email));
 }
 
-/** Minimum dépôt affiché = $3.00 → XOF via taux (ex. 1 800 FCFA). */
+/** Minimum dépôt affiché = $5.00 → XOF via taux. */
 function orolado_min_deposit_fcfa(?array $me): int {
   return orolado_usd_to_fcfa(orolado_min_deposit($me));
 }
 
-/** Seuil dépôt UI / vault (USD). */
+/** Seuil dépôt UI / vault (USD). Le crédit utilise le montant réellement reçu. */
 function orolado_min_deposit(?array $me): float {
-  return 3.0;
+  return 5.0;
 }
 
 function orolado_initiate_deposit(array $req): array {
@@ -2362,7 +2362,7 @@ function orolado_initiate_deposit(array $req): array {
   $minUsd = orolado_min_deposit($me);
   $minFcfa = orolado_min_deposit_fcfa($me);
   if ($amountUsd + 0.0001 < $minUsd && $amountFcfa < $minFcfa) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $5.00.'];
   }
   if ($amountFcfa < 1 || $amountFcfa > 5000000) {
     return ['ok' => false, 'server' => true, 'reason' => 'Montant invalide'];
@@ -3077,7 +3077,7 @@ function orolado_crypto_msg(string $code): string {
     return 'Ce Hash de transaction a déjà été crédité.';
   }
   if ($code === 'min') {
-    return 'Le dépôt minimum est de $3.';
+    return 'Le dépôt minimum est de $5.';
   }
   return 'Paiement confirmé ! Votre solde a été crédité.';
 }
@@ -3696,57 +3696,42 @@ function orolado_oxapay_is_usd_coin(string $cur): bool {
 }
 
 function orolado_oxapay_num(array $row, array $keys): float {
+  $best = 0.0;
   foreach ($keys as $k) {
-    if (isset($row[$k]) && is_numeric($row[$k]) && (float) $row[$k] > 0) {
-      return (float) $row[$k];
+    if (isset($row[$k]) && is_numeric($row[$k]) && (float) $row[$k] > $best) {
+      $best = (float) $row[$k];
     }
   }
-  return 0.0;
+  return $best;
 }
 
-/** USD réellement reçu on-chain / passerelle — jamais le price de la facture. */
+/** USD réellement reçu — jamais le price / pay_amount de la facture (évite le plafonnement à 5 $). */
 function orolado_oxapay_received_usd(array $data): float {
+  $recvKeys = [
+    'sent_value', 'sentValue', 'paid_amount', 'paidAmount',
+    'received_amount', 'receivedAmount', 'sent_amount', 'sentAmount',
+    'pay_amount_usd', 'payAmountUsd', 'usd_amount', 'usdAmount',
+    'auto_convert_amount', 'autoConvertAmount', 'auto_conversion_amount',
+    'converted_amount', 'to_amount',
+  ];
   $fromTx = 0.0;
   if (!empty($data['txs']) && is_array($data['txs'])) {
     foreach ($data['txs'] as $tx) {
       if (!is_array($tx)) continue;
       $st = strtolower((string) ($tx['status'] ?? $tx['state'] ?? ''));
       if (in_array($st, ['failed', 'invalid', 'expired', 'replaced', 'rejected'], true)) continue;
-      $piece = orolado_oxapay_num($tx, [
-        'sent_value', 'sentValue', 'auto_convert_amount', 'autoConvertAmount',
-        'usd_amount', 'usdAmount', 'value',
-      ]);
-      $txCur = (string) ($tx['currency'] ?? $tx['pay_currency'] ?? $data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? '');
-      if (orolado_oxapay_is_usd_coin($txCur)) {
-        $recv = orolado_oxapay_num($tx, [
-          'received_amount', 'receivedAmount', 'sent_amount', 'sentAmount',
-          'amount', 'pay_amount', 'payAmount',
-        ]);
-        if ($recv > $piece) $piece = $recv;
-      }
+      $piece = orolado_oxapay_num($tx, $recvKeys);
+      $val = orolado_oxapay_num($tx, ['value']);
+      if ($val > $piece && $val + 0.0001 >= orolado_oxapay_credit_floor()) $piece = $val;
       $fromTx += $piece;
     }
   }
   if ($fromTx > 0.0001) return orolado_money($fromTx);
-
-  $topUsd = orolado_oxapay_num($data, [
-    'sent_value', 'sentValue', 'paid_amount', 'paidAmount',
-    'pay_amount_usd', 'payAmountUsd', 'auto_conversion_amount',
-    'converted_amount', 'to_amount', 'usd_amount', 'usdAmount',
-  ]);
-  if ($topUsd > 0.0001) return orolado_money($topUsd);
-
-  $payCur = (string) ($data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? '');
-  if (orolado_oxapay_is_usd_coin($payCur)) {
-    $recv = orolado_oxapay_num($data, [
-      'received_amount', 'receivedAmount', 'payAmount', 'pay_amount', 'sent_amount', 'sentAmount',
-    ]);
-    if ($recv > 0.0001) return orolado_money($recv);
-  }
-  return 0.0;
+  $top = orolado_oxapay_num($data, $recvKeys);
+  return $top > 0.0001 ? orolado_money($top) : 0.0;
 }
 
-/** USD à créditer : d’abord le reçu réel, sinon le price facture (paiement soldé). */
+/** USD à créditer : montant réellement reçu. La facture n’est qu’un repli. */
 function orolado_oxapay_usd(array $data): float {
   $received = orolado_oxapay_received_usd($data);
   if ($received > 0.0001) return $received;
@@ -4388,7 +4373,7 @@ function orolado_flutterwave_checkout(array $req): array {
   $amountUsd = orolado_money($req['amount'] ?? 0);
   $minUsd = orolado_min_deposit($me);
   if ($amountUsd + 0.0001 < $minUsd) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.00.', 'code' => 'min'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $5.00.', 'code' => 'min'];
   }
   $cust = orolado_flw_customer($me, $token);
   if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {
