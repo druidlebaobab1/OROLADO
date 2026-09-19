@@ -3722,8 +3722,26 @@
     if (D6.Api && D6.Api.token && D6.Api.token()) {
       var remote = await D6.Api.post('me', {});
       if (watchBan(remote)) return;
-      if (remote && remote.ok && user()) {
+      if (!remote || !remote.ok || !user() || !remote.vault) return;
+      if (!(openRealStake() > 0) && remote.vault.real != null) {
+        if (applyOfficialReal(remote.vault.real, { fromMe: true })) updateBalance(false);
+      } else {
         applyQuietVault(remote);
+      }
+      if (user() && user().mode === 'demo' && remote.vault.demo != null && D6.Store.setBalanceMode) {
+        var demo = Number(remote.vault.demo);
+        var demoOpen = 0;
+        try {
+          var dlist = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades('demo') : [];
+          var di;
+          for (di = 0; di < dlist.length; di++) demoOpen += Number(dlist[di] && dlist[di].stake) || 0;
+        } catch (eD) { demoOpen = 0; }
+        if (demoOpen <= 0 && isFinite(demo) && demo >= 0) {
+          D6.holdPull = true;
+          D6.Store.setBalanceMode(user(), 'demo', demo);
+          D6.holdPull = false;
+          updateBalance(false);
+        }
       }
       return;
     }
@@ -4796,7 +4814,11 @@
     /* BUY/SELL : un seul branchement (hook dans bindGlobalTradeClicks). */
     try { paintDepositLabel(); } catch (eDepBtn) { /* ignore */ }
     onClick($('btnOpenDeposit'), function () { openDeposit(); });
-    onClick($('balanceCard'), function () { /* solde only */ });
+    onClick($('balanceCard'), function (e) {
+      if (e && e.target && e.target.closest && e.target.closest('#btnDemoTopup, .bal-plus')) return;
+      refreshRemoteVault();
+    });
+    onClick($('fsTopBalance'), function () { refreshRemoteVault(); });
     onClick($('btnProfile'), function (e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       returnToProfile = false;
