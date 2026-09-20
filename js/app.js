@@ -2305,7 +2305,14 @@
           return true;
         }
         if (remote && remote.ok && remote.vault && settleMode === 'real') {
-          applyOfficialReal(remote.vault.real, { force: true });
+          var uNow = user();
+          var localReal = uNow && D6.Store.realBalance ? Number(D6.Store.realBalance(uNow)) || 0 : 0;
+          var srvReal = Number(remote.vault.real);
+          if (isFinite(srvReal) && srvReal > localReal + 0.009) {
+            D6.holdRemote = false;
+            return true;
+          }
+          applyOfficialReal(srvReal, { force: true });
           updateBalance(true);
           D6.holdRemote = false;
           return true;

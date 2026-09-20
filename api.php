@@ -1663,18 +1663,7 @@ if ($action === 'settleOrder') {
     }
     unset($o);
     if ($reqMode === 'real' && !$isAdmin) {
-      return [
-        'ok' => true,
-        'won' => false,
-        'voided' => false,
-        'net' => 0,
-        'payout' => $reqPayout,
-        'credit' => 0,
-        'mode' => 'real',
-        'fresh' => false,
-        'vault' => $locked['vault'][$uid] ?? ['demo' => 0, 'real' => 0],
-        'skip_write' => true
-      ];
+      return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
     }
     if ($oid === '' || $reqStake < 1) {
       return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
@@ -1751,7 +1740,15 @@ if ($action === 'settleOrder') {
       $sbVault = supabase_admin_vault($uid);
       if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
     }
-    $official = $sbReal !== null ? $sbReal : $jsonReal;
+    $official = $jsonReal;
+    if ($sbReal !== null) {
+      if ($creditAmt <= 0.0001) {
+        $official = orolado_money(min($jsonReal, $sbReal));
+      } else if ($sbReal <= $jsonReal + 0.009) {
+        $official = $sbReal >= 0 ? $sbReal : $jsonReal;
+        if ($sbReal + 0.009 < $jsonReal) $official = $jsonReal;
+      }
+    }
     $vaultOut['real'] = $official;
     with_db_lock(function ($box) use ($uid, $official) {
       if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
