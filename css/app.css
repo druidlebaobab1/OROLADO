@@ -2638,78 +2638,78 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
     background:#0B0E14!important;background-color:#0B0E14!important}
   html:not(.is-tv) #screenTrade:not(.hidden)::before{
     content:"";position:fixed;left:0;right:0;bottom:0;z-index:29;pointer-events:none;
-    height:calc(110px + env(safe-area-inset-bottom, 40px));
+    height:calc(118px + env(safe-area-inset-bottom, 42px));
     transform-origin:50% 100%;
     background:
-      radial-gradient(ellipse 10% 160% at 5% 100%,rgba(255,237,160,.7) 0%,rgba(245,158,11,.25) 38%,transparent 72%),
-      radial-gradient(ellipse 14% 190% at 16% 100%,rgba(251,191,36,.75) 0%,rgba(194,65,12,.35) 42%,transparent 74%),
-      radial-gradient(ellipse 9% 150% at 27% 100%,rgba(220,38,38,.55) 0%,transparent 70%),
-      radial-gradient(ellipse 15% 210% at 39% 100%,rgba(253,224,71,.7) 0%,rgba(234,88,12,.32) 40%,transparent 73%),
-      radial-gradient(ellipse 11% 170% at 50% 100%,rgba(249,115,22,.6) 0%,transparent 71%),
-      radial-gradient(ellipse 16% 200% at 62% 100%,rgba(245,158,11,.72) 0%,rgba(153,27,27,.4) 46%,transparent 75%),
-      radial-gradient(ellipse 10% 155% at 73% 100%,rgba(255,237,160,.55) 0%,transparent 70%),
-      radial-gradient(ellipse 14% 185% at 85% 100%,rgba(252,211,77,.68) 0%,rgba(180,83,9,.3) 44%,transparent 73%),
-      radial-gradient(ellipse 11% 165% at 96% 100%,rgba(245,158,11,.6) 0%,transparent 72%);
+      radial-gradient(ellipse 11% 170% at 5% 100%,rgba(255,251,235,.95) 0%,rgba(251,191,36,.45) 36%,transparent 72%),
+      radial-gradient(ellipse 15% 200% at 16% 100%,rgba(252,211,77,.95) 0%,rgba(234,88,12,.5) 40%,transparent 74%),
+      radial-gradient(ellipse 10% 160% at 27% 100%,rgba(239,68,68,.72) 0%,transparent 70%),
+      radial-gradient(ellipse 16% 220% at 39% 100%,rgba(254,240,138,.92) 0%,rgba(249,115,22,.48) 38%,transparent 73%),
+      radial-gradient(ellipse 12% 180% at 50% 100%,rgba(251,146,60,.85) 0%,transparent 71%),
+      radial-gradient(ellipse 17% 210% at 62% 100%,rgba(245,158,11,.95) 0%,rgba(185,28,28,.5) 44%,transparent 75%),
+      radial-gradient(ellipse 11% 165% at 73% 100%,rgba(255,237,160,.8) 0%,transparent 70%),
+      radial-gradient(ellipse 15% 195% at 85% 100%,rgba(252,211,77,.9) 0%,rgba(194,65,12,.42) 42%,transparent 73%),
+      radial-gradient(ellipse 12% 175% at 96% 100%,rgba(245,158,11,.82) 0%,transparent 72%);
     animation:oroHellRise 2.4s ease-in-out infinite}
   html:not(.is-tv) #screenTrade:not(.hidden)::after{
     content:"";position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none;
-    height:calc(120px + env(safe-area-inset-bottom, 44px));
+    height:calc(128px + env(safe-area-inset-bottom, 48px));
     background:
-      radial-gradient(ellipse 18% 90% at 12% 100%,rgba(251,191,36,.55) 0%,transparent 72%),
-      radial-gradient(ellipse 22% 100% at 34% 100%,rgba(234,88,12,.5) 0%,transparent 74%),
-      radial-gradient(ellipse 20% 95% at 58% 100%,rgba(245,158,11,.58) 0%,transparent 73%),
-      radial-gradient(ellipse 24% 105% at 82% 100%,rgba(185,28,28,.48) 0%,transparent 75%),
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(120,40,8,.28) 28%,rgba(180,83,9,.45) 52%,rgba(67,20,7,.92) 78%,#1a0804 100%)}
+      radial-gradient(ellipse 20% 100% at 12% 100%,rgba(252,211,77,.75) 0%,transparent 72%),
+      radial-gradient(ellipse 24% 110% at 34% 100%,rgba(249,115,22,.7) 0%,transparent 74%),
+      radial-gradient(ellipse 22% 105% at 58% 100%,rgba(245,158,11,.78) 0%,transparent 73%),
+      radial-gradient(ellipse 26% 115% at 82% 100%,rgba(220,38,38,.62) 0%,transparent 75%),
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(180,83,9,.4) 26%,rgba(234,88,12,.55) 50%,rgba(127,29,29,.88) 76%,#2a0c06 100%)}
   html:not(.is-tv) #screenTrade .pad,
   html:not(.is-tv) #screenTrade .pad.glass,
   html:not(.is-tv).is-android #screenTrade .pad,
   html:not(.is-tv).is-ios #screenTrade .pad{
-    background:linear-gradient(180deg,#0B0E14 0%,#0B0E14 calc(100% - 58px - env(safe-area-inset-bottom, 24px)),rgba(11,14,20,.45) calc(100% - 28px),rgba(11,14,20,0) 100%)!important;
+    background:linear-gradient(180deg,#0B0E14 0%,#0B0E14 calc(100% - 78px - env(safe-area-inset-bottom, 28px)),rgba(11,14,20,.28) calc(100% - 36px),rgba(11,14,20,0) 100%)!important;
     backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
     overflow:hidden}
   html:not(.is-tv) #screenTrade .pad > *{position:relative;z-index:2}
   html:not(.is-tv) #screenTrade .pad::after{
     content:"";position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
-    height:calc(72px + env(safe-area-inset-bottom, 36px));
+    height:calc(92px + env(safe-area-inset-bottom, 40px));
     transform-origin:50% 100%;
     background:
-      radial-gradient(ellipse 9% 180% at 7% 100%,rgba(255,251,235,.8) 0%,rgba(251,191,36,.3) 36%,transparent 70%),
-      radial-gradient(ellipse 13% 210% at 18% 100%,rgba(245,158,11,.82) 0%,rgba(194,65,12,.35) 40%,transparent 73%),
-      radial-gradient(ellipse 8% 160% at 28% 100%,rgba(220,38,38,.55) 0%,transparent 68%),
-      radial-gradient(ellipse 14% 230% at 40% 100%,rgba(253,224,71,.78) 0%,rgba(234,88,12,.32) 38%,transparent 72%),
-      radial-gradient(ellipse 9% 175% at 51% 100%,rgba(249,115,22,.6) 0%,transparent 70%),
-      radial-gradient(ellipse 13% 200% at 62% 100%,rgba(251,191,36,.8) 0%,rgba(153,27,27,.38) 42%,transparent 74%),
-      radial-gradient(ellipse 8% 165% at 72% 100%,rgba(255,237,160,.55) 0%,transparent 68%),
-      radial-gradient(ellipse 14% 215% at 83% 100%,rgba(245,158,11,.75) 0%,rgba(180,83,9,.3) 40%,transparent 73%),
-      radial-gradient(ellipse 10% 185% at 94% 100%,rgba(252,211,77,.7) 0%,transparent 71%),
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(120,40,8,.15) 30%,rgba(67,20,7,.55) 100%);
+      radial-gradient(ellipse 10% 200% at 7% 100%,rgba(255,251,235,1) 0%,rgba(252,211,77,.5) 34%,transparent 70%),
+      radial-gradient(ellipse 14% 230% at 18% 100%,rgba(245,158,11,1) 0%,rgba(234,88,12,.5) 38%,transparent 73%),
+      radial-gradient(ellipse 9% 180% at 28% 100%,rgba(239,68,68,.75) 0%,transparent 68%),
+      radial-gradient(ellipse 15% 250% at 40% 100%,rgba(254,240,138,.95) 0%,rgba(249,115,22,.48) 36%,transparent 72%),
+      radial-gradient(ellipse 10% 195% at 51% 100%,rgba(251,146,60,.85) 0%,transparent 70%),
+      radial-gradient(ellipse 14% 220% at 62% 100%,rgba(251,191,36,1) 0%,rgba(185,28,28,.5) 40%,transparent 74%),
+      radial-gradient(ellipse 9% 185% at 72% 100%,rgba(255,237,160,.8) 0%,transparent 68%),
+      radial-gradient(ellipse 15% 235% at 83% 100%,rgba(245,158,11,.95) 0%,rgba(194,65,12,.42) 38%,transparent 73%),
+      radial-gradient(ellipse 11% 205% at 94% 100%,rgba(252,211,77,.9) 0%,transparent 71%),
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(180,83,9,.22) 28%,rgba(127,29,29,.5) 100%);
     animation:oroHellFlicker 2.1s ease-in-out infinite}
   html:not(.is-tv) #screenTrade .pad::before{
     content:"";position:absolute;left:0;right:0;bottom:0;z-index:1;pointer-events:none;
-    height:calc(38px + env(safe-area-inset-bottom, 22px));
+    height:calc(50px + env(safe-area-inset-bottom, 26px));
     transform-origin:50% 100%;
     background:
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(245,158,11,.22) 35%,rgba(194,65,12,.5) 70%,rgba(80,16,6,.85) 100%),
-      radial-gradient(ellipse 28% 120% at 20% 100%,rgba(255,237,160,.65) 0%,transparent 72%),
-      radial-gradient(ellipse 32% 130% at 48% 100%,rgba(245,158,11,.55) 0%,transparent 74%),
-      radial-gradient(ellipse 30% 125% at 78% 100%,rgba(234,88,12,.5) 0%,transparent 73%);
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(252,211,77,.35) 30%,rgba(234,88,12,.62) 62%,rgba(127,29,29,.9) 100%),
+      radial-gradient(ellipse 30% 140% at 20% 100%,rgba(255,251,235,.85) 0%,transparent 72%),
+      radial-gradient(ellipse 34% 150% at 48% 100%,rgba(245,158,11,.75) 0%,transparent 74%),
+      radial-gradient(ellipse 32% 145% at 78% 100%,rgba(249,115,22,.68) 0%,transparent 73%);
     animation:oroHellCoals 1.7s ease-in-out infinite}
 }
 @keyframes oroHellFlicker{
-  0%,100%{opacity:.7;transform:scaleY(1) scaleX(1)}
-  18%{opacity:.95;transform:scaleY(1.14) scaleX(1.02)}
-  36%{opacity:.78;transform:scaleY(.92) scaleX(.99)}
-  58%{opacity:1;transform:scaleY(1.1) scaleX(1.01)}
-  76%{opacity:.74;transform:scaleY(.97) scaleX(1)}
+  0%,100%{opacity:.82;transform:scaleY(1) scaleX(1)}
+  18%{opacity:1;transform:scaleY(1.16) scaleX(1.02)}
+  36%{opacity:.88;transform:scaleY(.94) scaleX(.99)}
+  58%{opacity:1;transform:scaleY(1.12) scaleX(1.01)}
+  76%{opacity:.86;transform:scaleY(.98) scaleX(1)}
 }
 @keyframes oroHellRise{
-  0%,100%{opacity:.45;transform:scaleY(.9) translateY(2px)}
-  50%{opacity:.8;transform:scaleY(1.18) translateY(-1px)}
+  0%,100%{opacity:.72;transform:scaleY(.94) translateY(1px)}
+  50%{opacity:1;transform:scaleY(1.2) translateY(-2px)}
 }
 @keyframes oroHellCoals{
-  0%,100%{opacity:.55}
-  40%{opacity:.95}
-  70%{opacity:.62}
+  0%,100%{opacity:.75}
+  40%{opacity:1}
+  70%{opacity:.82}
 }
 @media (max-width:859px) and (prefers-reduced-motion:reduce){
   html:not(.is-tv) #screenTrade:not(.hidden)::before,
