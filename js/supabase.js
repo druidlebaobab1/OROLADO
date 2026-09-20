@@ -302,7 +302,8 @@
             raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009;
           }
         } catch (eOpen) { raiseWhileOpen = false; }
-        if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen) next.real = remoteReal;
+        var phantomRaise = remoteReal > localReal + 0.009 && !D6.holdDepositReal;
+        if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen && !phantomRaise) next.real = remoteReal;
       }
     }
     D6.holdPull = true;

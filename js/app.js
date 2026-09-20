@@ -604,12 +604,13 @@
   }
 
   function fmtOutcomeUsd(n) {
-    var v = D6.roundMoney(Math.abs(Number(n) || 0));
-    if (!isFinite(v)) v = 0;
+    var signed = D6.roundMoney(Number(n) || 0);
+    if (!isFinite(signed)) signed = 0;
+    var v = Math.abs(signed);
     var cents = Math.round((v - Math.floor(v)) * 100);
     var grouped = Math.floor(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     var body = cents ? (grouped + '.' + (cents < 10 ? '0' : '') + cents) : grouped;
-    return '+$' + body;
+    return (signed < 0 ? '-' : '+') + '$' + body;
   }
 
   function showOutcomeToast(isWin, payout, tradeId) {
@@ -630,7 +631,9 @@
     } else if (stage && el.parentElement !== stage) {
       stage.appendChild(el);
     }
-    var amount = Math.abs(Number(payout) || 0);
+    var amount = Number(payout);
+    if (!isFinite(amount)) amount = 0;
+    if (!isWin && amount > 0) amount = -amount;
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
     var slot = outcomeSlot % 8;
     outcomeSlot += 1;
@@ -641,7 +644,7 @@
     if (isWin) {
       el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
-      el.textContent = '+$0';
+      el.textContent = fmtOutcomeUsd(amount < 0 ? amount : 0);
     }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
@@ -661,7 +664,9 @@
       return;
     }
     // Affiche le montant brut crédité (mise + gain), pas le profit net.
-    var amount = d.isWin ? Math.abs(Number(d.payout != null ? d.payout : d.net) || 0) : 0;
+    var amount = d.isWin
+      ? Math.abs(Number(d.payout != null ? d.payout : d.net) || 0)
+      : -Math.abs(Number(d.net != null ? d.net : 0) || 0);
     showOutcomeToast(!!d.isWin, amount, d.tradeId);
     updateBalance(true);
     patchHistorySoon();
@@ -1355,8 +1360,10 @@
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
     var force = !!(opts && opts.force);
     var fromMe = !!(opts && opts.fromMe);
+    var allowRaise = !!(opts && opts.allowRaise) || !!D6.holdDepositReal;
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
+    if (real > local + 0.009 && !allowRaise) return false;
     if (!force && openRealStake() > 0 && real > local + 0.009) return false;
     if (!force && real <= 0.009 && local > 0.009) {
       if (!fromMe || locked || openRealStake() > 0) return false;
@@ -2811,7 +2818,9 @@
     var u = user();
     var vault = remote.vault;
     if (!vault && remote.new_balance > 0) vault = { real: remote.new_balance };
+    D6.holdDepositReal = true;
     if (vault && u) D6.Store.importRemote(u, vault);
+    if (vault && vault.real != null) applyOfficialReal(vault.real, { allowRaise: true, force: true });
     u = user();
     if (u && vault) {
       u.realDepositTotal = (Number(u.realDepositTotal) || 0) + Number(remote.amount || 0);
@@ -3021,7 +3030,9 @@
     var u = user();
     var vault = remote.vault;
     if (!vault && remote.new_balance > 0) vault = { real: remote.new_balance };
+    D6.holdDepositReal = true;
     if (vault && u) D6.Store.importRemote(u, vault);
+    if (vault && vault.real != null) applyOfficialReal(vault.real, { allowRaise: true, force: true });
     u = user();
     if (u) {
       u.realDepositTotal = (Number(u.realDepositTotal) || 0) + Number(remote.amount || 0);

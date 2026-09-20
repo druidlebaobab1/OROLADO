@@ -1521,9 +1521,8 @@ if ($action === 'placeOrder') {
       if ($officialReal === null && $stake > $bal + 0.009) {
         return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
       }
-      $locked['vault'][$uid]['real'] = $officialReal !== null
-        ? $bal
-        : orolado_money($bal - $stake);
+      $afterOpen = $officialReal !== null ? $bal : orolado_money($bal - $stake);
+      $locked['vault'][$uid]['real'] = $afterOpen;
     }
     if ($mode === 'real' && isset($locked['users'][$uid])) {
       $locked['users'][$uid]['realStakeVolume'] = orolado_money(($locked['users'][$uid]['realStakeVolume'] ?? 0) + $stake);
@@ -1548,7 +1547,9 @@ if ($action === 'placeOrder') {
       'status' => 'open',
       'at' => microtime(true),
       'openedAt' => microtime(true),
-      'expiryAt' => microtime(true) + $duration
+      'expiryAt' => microtime(true) + $duration,
+      'balAfterOpen' => $mode === 'real' ? orolado_money($locked['vault'][$uid]['real'] ?? 0) : null,
+      'stakeTaken' => $mode === 'real'
     ];
     return ['ok' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $locked['vault'][$uid]];
   });
@@ -1639,8 +1640,30 @@ if ($action === 'settleOrder') {
       $final = $voided ? 'void' : ($won ? 'won' : 'lost');
       if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
       $balKey = $mode === 'real' ? 'real' : 'demo';
-      if ($credit > 0) {
+      if ($mode === 'real') {
+        $afterOpen = orolado_money($o['balAfterOpen'] ?? -1);
+        $curReal = orolado_money($locked['vault'][$uid]['real'] ?? 0);
+        if ($afterOpen >= 0 && $curReal > $afterOpen + 0.05) {
+          $locked['vault'][$uid]['real'] = $afterOpen;
+        }
+      }
+      if ($credit > 0 && empty($o['paidOut'])) {
         $locked['vault'][$uid][$balKey] = orolado_money(($locked['vault'][$uid][$balKey] ?? 0) + $credit);
+        $o['paidOut'] = true;
+      }
+      if ($mode === 'real' && isset($locked['users'][$uid])) {
+        if (!isset($locked['users'][$uid]['transactions']) || !is_array($locked['users'][$uid]['transactions'])) {
+          $locked['users'][$uid]['transactions'] = [];
+        }
+        array_unshift($locked['users'][$uid]['transactions'], [
+          'id' => uniqid('tr_', true),
+          'at' => date('c'),
+          'type' => $voided ? 'void' : ($won ? 'win' : 'loss'),
+          'amount' => $voided ? 0 : ($won ? $credit : orolado_money(-$stake)),
+          'note' => $voided ? 'Égalité' : ($won ? 'Gain' : 'Perte'),
+          'mode' => 'real'
+        ]);
+        $locked['users'][$uid]['transactions'] = array_slice($locked['users'][$uid]['transactions'], 0, 80);
       }
       if ($mode === 'demo' && $reqBal !== null && $reqBal + 0.009 >= orolado_money($locked['vault'][$uid]['demo'] ?? 0)) {
         $locked['vault'][$uid]['demo'] = $reqBal;

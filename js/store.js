@@ -351,7 +351,10 @@
           var prevReal = Number(prevV.real) || 0;
           var lsKeep = readRealLs(user.id);
           if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
-          if (isFinite(nextReal) && nextReal > 0.009) next.real = nextReal;
+          if (isFinite(nextReal) && nextReal > 0.009) {
+            if (prevReal <= 0.009 || !!D6.holdDepositReal) next.real = nextReal;
+            else next.real = Math.min(nextReal, prevReal);
+          }
           else if (isFinite(nextReal) && nextReal >= 0 && !(prevReal > 0)) next.real = 0;
           else if (isFinite(nextReal) && nextReal <= 0.009 && prevReal > 0.009) next.real = prevReal;
         }
