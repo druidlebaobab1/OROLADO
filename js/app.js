@@ -613,6 +613,20 @@
     return (signed < 0 ? '-' : '+') + '$' + body;
   }
 
+  function resultKind(h) {
+    if (!h) return 'lose';
+    if (h.voided === true || h.status === 'void') return 'void';
+    var st = String(h.status || '').toLowerCase();
+    if (st === 'won' || st === 'win') return 'win';
+    if (st === 'lost' || st === 'lose' || st === 'loss') return 'lose';
+    var flag = h.won;
+    if (flag == null && h.isWin != null) flag = h.isWin;
+    if (flag === true || flag === 1 || flag === '1' || flag === 'true' || flag === 'won' || flag === 'win') return 'win';
+    if (flag === false || flag === 0 || flag === '0' || flag === 'false' || flag === 'lost' || flag === 'lose' || flag === 'loss') return 'lose';
+    if (h.net != null && Number(h.net) > 0.009) return 'win';
+    return 'lose';
+  }
+
   function showOutcomeToast(isWin, payout, tradeId) {
     if (tradeId) {
       if (outcomeToastSeen[tradeId]) return;
@@ -631,9 +645,8 @@
     } else if (stage && el.parentElement !== stage) {
       stage.appendChild(el);
     }
-    var amount = Number(payout);
+    var amount = Math.abs(Number(payout) || 0);
     if (!isFinite(amount)) amount = 0;
-    if (!isWin && amount > 0) amount = -amount;
     el.className = 'chart-outcome show ' + (isWin ? 'win' : 'lose');
     var slot = outcomeSlot % 8;
     outcomeSlot += 1;
@@ -644,7 +657,7 @@
     if (isWin) {
       el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
-      el.textContent = fmtOutcomeUsd(amount < 0 ? amount : 0);
+      el.textContent = '+$0';
     }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
@@ -657,17 +670,17 @@
 
   document.addEventListener('orolado-trade-settled', function (ev) {
     var d = (ev && ev.detail) || {};
-    if (d.voided) {
+    var kind = resultKind(d);
+    if (kind === 'void') {
       updateBalance(true);
       patchHistorySoon();
       syncTradeButtons();
       return;
     }
-    // Affiche le montant brut crédité (mise + gain), pas le profit net.
-    var amount = d.isWin
+    var amount = kind === 'win'
       ? Math.abs(Number(d.payout != null ? d.payout : d.net) || 0)
-      : -Math.abs(Number(d.net != null ? d.net : 0) || 0);
-    showOutcomeToast(!!d.isWin, amount, d.tradeId);
+      : 0;
+    showOutcomeToast(kind === 'win', amount, d.tradeId);
     updateBalance(true);
     patchHistorySoon();
     syncTradeButtons();
@@ -1145,14 +1158,15 @@
 
   function orderRow(h) {
     var stake = Number(h.stake || 0);
-    var net = h.net != null ? Number(h.net) : (h.won ? D6.roundMoney(stake * Number(h.payout || 1.88)) - stake : -stake);
+    var kind = resultKind(h);
+    var net = h.net != null ? Number(h.net) : (kind === 'win' ? D6.roundMoney(stake * Number(h.payout || 1.88)) - stake : -stake);
     var label;
     var cls;
-    if (h.voided || h.status === 'void') {
+    if (kind === 'void') {
       label = '0';
       cls = 'void';
       net = 0;
-    } else if (h.won) {
+    } else if (kind === 'win') {
       label = t('won') + ' ' + fmtOutcomeUsd(Math.abs(net));
       cls = 'win';
     } else {
@@ -1164,8 +1178,8 @@
       '<span class="h-badge ' + h.side + '">' + (h.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
       '<div><div class="h-main">' + (h.clock || '') + ' · ' + h.assetName + ' · ' + (h.duration || '') + 's</div>' +
       '<div class="h-time">' + D6.fmtFCFA(stake) + ' · ' + label + '</div></div>' +
-      '<span class="h-gain ' + (h.won ? 'w' : (h.voided ? '' : 'l')) + '">' +
-      (h.voided ? '0' : fmtOutcomeUsd(net)) + '</span></div>';
+      '<span class="h-gain ' + (kind === 'win' ? 'w' : (kind === 'void' ? '' : 'l')) + '">' +
+      (kind === 'void' ? '0' : fmtOutcomeUsd(net)) + '</span></div>';
   }
 
   function liveOrderRow(t) {
@@ -1266,8 +1280,9 @@
     settled.slice(0, 50).forEach(function (h) {
       var stake = Number(h.stake || 0);
       var payoutAmt = D6.roundMoney(stake * Number(h.payout || 1.88));
-      var net = h.voided || h.status === 'void' ? 0 : (h.won ? (payoutAmt - stake) : -stake);
-      var res = (h.voided || h.status === 'void') ? '0' : (h.won ? t('won') : t('expired'));
+      var kind = resultKind(h);
+      var net = kind === 'void' ? 0 : (kind === 'win' ? (payoutAmt - stake) : -stake);
+      var res = kind === 'void' ? '0' : (kind === 'win' ? t('won') : t('expired'));
       var pnlCls = net > 0 ? 'w hist-pnl' : (net < 0 ? 'l hist-pnl' : 'hist-pnl');
       var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + fmtHistMoney(Math.abs(net));
       rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
@@ -2258,7 +2273,7 @@
       toast('Égalité — mise rendue', '');
       playNeutralTick();
     } else {
-      showOutcomeToast(!!res.won, profitFromResult(res), id);
+      showOutcomeToast(resultKind(res) === 'win', profitFromResult(res), id);
       if (res.won) {
         playWinChime();
         burstSparkle();
