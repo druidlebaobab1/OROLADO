@@ -2768,12 +2768,13 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
 @media (max-width:859px){
   html:not(.is-tv) #screenTrade:not(.hidden)::before{
     background:
-      radial-gradient(ellipse 12% 173% at 5% 100%,rgba(255,247,220,.86) 0%,rgba(251,191,36,.42) 36%,transparent 72%),
-      radial-gradient(ellipse 12% 173% at 95% 100%,rgba(255,247,220,.86) 0%,rgba(251,191,36,.42) 36%,transparent 72%),
-      radial-gradient(ellipse 15% 198% at 16% 100%,rgba(252,211,77,.9) 0%,rgba(234,88,12,.46) 40%,transparent 74%),
-      radial-gradient(ellipse 15% 198% at 84% 100%,rgba(252,211,77,.9) 0%,rgba(234,88,12,.46) 40%,transparent 74%),
-      radial-gradient(ellipse 10.5% 163% at 27% 100%,rgba(255,237,160,.76) 0%,rgba(239,68,68,.4) 50%,transparent 70%),
-      radial-gradient(ellipse 10.5% 163% at 73% 100%,rgba(255,237,160,.76) 0%,rgba(239,68,68,.4) 50%,transparent 70%),
+      linear-gradient(90deg,rgba(194,65,12,.7) 0%,rgba(234,88,12,.58) 11%,transparent 20%,transparent 80%,rgba(234,88,12,.58) 89%,rgba(194,65,12,.7) 100%),
+      radial-gradient(ellipse 32% 240% at 0% 100%,rgba(255,247,220,.92) 0%,rgba(251,191,36,.58) 28%,rgba(234,88,12,.48) 52%,transparent 76%),
+      radial-gradient(ellipse 32% 240% at 100% 100%,rgba(255,247,220,.92) 0%,rgba(251,191,36,.58) 28%,rgba(234,88,12,.48) 52%,transparent 76%),
+      radial-gradient(ellipse 22% 210% at 10% 100%,rgba(252,211,77,.9) 0%,rgba(234,88,12,.5) 40%,transparent 72%),
+      radial-gradient(ellipse 22% 210% at 90% 100%,rgba(252,211,77,.9) 0%,rgba(234,88,12,.5) 40%,transparent 72%),
+      radial-gradient(ellipse 16% 190% at 20% 100%,rgba(255,237,160,.78) 0%,rgba(239,68,68,.38) 50%,transparent 70%),
+      radial-gradient(ellipse 16% 190% at 80% 100%,rgba(255,237,160,.78) 0%,rgba(239,68,68,.38) 50%,transparent 70%),
       radial-gradient(ellipse 16% 220% at 39% 100%,rgba(254,240,138,.92) 0%,rgba(249,115,22,.48) 38%,transparent 73%),
       radial-gradient(ellipse 12% 180% at 50% 100%,rgba(251,146,60,.85) 0%,transparent 71%),
       radial-gradient(ellipse 17% 210% at 62% 100%,rgba(245,158,11,.95) 0%,rgba(185,28,28,.5) 44%,transparent 75%);
