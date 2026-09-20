@@ -3026,15 +3026,15 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right .coin-svg:not(:first-child){
     display:none}
   #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{
-    width:20px;height:20px;flex-shrink:0;
+    width:23px;height:23px;flex-shrink:0;
     box-shadow:0 0 0 1px rgba(255,255,255,.14)}
   #screenTrade:not(.is-guest) .topbar-cta{
-    gap:8px;align-items:center}
+    gap:7px;align-items:center}
   #screenTrade:not(.is-guest) .balance-card .bal{flex-shrink:0}
   #screenTrade:not(.is-guest) .bal-crypto-frieze{
-    margin-left:12px;gap:5px;align-items:center}
+    margin-left:8px;gap:4px;align-items:center}
   #screenTrade:not(.is-guest) .bal-crypto-frieze .coin-svg{
-    width:17px;height:17px}
+    width:19px;height:19px}
 
   html.is-ios #screenTrade:not(.is-guest) .topbar-cta .btn-deposit,
   html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
@@ -3048,21 +3048,21 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     padding-left:max(4px, env(safe-area-inset-left, 0px));
     padding-right:max(4px, env(safe-area-inset-right, 0px))}
   html.is-android #screenTrade:not(.is-guest) .brand-lockup.mini{
-    margin-right:auto;gap:3px;min-width:0}
+    margin-right:auto;margin-left:-2px;gap:3px;min-width:0;padding:1px 0}
   html.is-android #screenTrade:not(.is-guest) .topbar .brand{
-    display:inline!important;font-size:.62rem;white-space:nowrap}
-  html.is-android #screenTrade:not(.is-guest) .logo-mark.sm{width:18px;height:18px}
+    display:inline!important;font-size:.72rem;line-height:1.15;white-space:nowrap}
+  html.is-android #screenTrade:not(.is-guest) .logo-mark.sm{width:20px;height:20px}
   html.is-android #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
     min-height:30px;padding-top:5px;padding-bottom:5px;margin-bottom:-1px}
   html.is-android #screenTrade:not(.is-guest) .balance-card .bal{
-    font-size:.86rem!important;line-height:1.15}
+    font-size:1.05rem!important;line-height:1.15}
   html.is-android #screenTrade:not(.is-guest) .bal-crypto-frieze{
-    gap:3px;margin-left:10px;flex-wrap:nowrap}
+    gap:4px;margin-left:8px;flex-wrap:nowrap}
   html.is-android #screenTrade:not(.is-guest) .bal-crypto-frieze .coin-svg{
-    width:14px;height:14px}
+    width:17px;height:17px}
 }
 @media (max-width:380px){
   html.is-android #screenTrade:not(.is-guest) .topbar .brand{
-    display:inline!important;font-size:.56rem}
+    display:inline!important;font-size:.64rem}
 }
 
