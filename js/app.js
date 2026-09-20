@@ -454,19 +454,24 @@
     var need = u && u.wagerNeed != null ? Number(u.wagerNeed) : null;
     var last = Number(u && u.lastDepositAmount) || 0;
     var locked;
-    if (lock != null && need != null && isFinite(lock) && isFinite(need)) {
-      locked = need > 0.009 ? Math.min(bal, Math.max(0, lock)) : 0;
+    var useSnap = lock != null && need != null && isFinite(lock) && isFinite(need) && need > 0.009;
+    if (useSnap) {
+      locked = Math.min(bal, Math.max(0, lock));
     } else {
       if (!(last > 0.009) && deposits > 0.009) {
         var leftover = Math.max(0, deposits - done);
         if (leftover > 0.009 && leftover + 0.009 < deposits) last = leftover;
       }
       var old = Math.max(0, deposits - last);
-      if (last > 0.009 && old > 0.009 && done + 0.001 < required) {
+      if (!(required > 0.009)) {
+        locked = bal > 0.009 ? bal : 0;
+      } else if (done + 0.001 >= required) {
+        locked = 0;
+      } else if (last > 0.009 && old > 0.009) {
         var extra = Math.max(0, done - old);
         locked = extra + 0.001 >= last * 2 ? 0 : Math.min(bal, last);
       } else {
-        locked = Math.min(bal, Math.max(0, deposits - (done / 2)));
+        locked = bal;
       }
     }
     locked = D6.roundMoney(Math.max(0, locked));
@@ -3973,7 +3978,7 @@
     var txt = $('wdWagerText');
     var btn = $('btnSendWithdraw');
     if (box) {
-      if (gate.ok || gate.required <= 0 || !(gate.locked > 0.009)) {
+      if (!(gate.locked > 0.009)) {
         box.classList.add('hidden');
         if (btn) btn.disabled = false;
       } else {

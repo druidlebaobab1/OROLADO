@@ -342,6 +342,22 @@
           user.openTrades = prev.openTrades.slice();
         }
       }
+      if (prev) {
+        var prevDep = Number(prev.realDepositTotal) || 0;
+        var nextDep = Number(user.realDepositTotal) || 0;
+        if (prevDep > nextDep + 0.009) user.realDepositTotal = prevDep;
+        if ((user.lastDepositAmount == null || !(Number(user.lastDepositAmount) > 0)) && Number(prev.lastDepositAmount) > 0) {
+          user.lastDepositAmount = prev.lastDepositAmount;
+        }
+        if (user.wagerLock == null && prev.wagerLock != null) user.wagerLock = prev.wagerLock;
+        if (user.wagerNeed == null && prev.wagerNeed != null) user.wagerNeed = prev.wagerNeed;
+        if ((Number(prev.realStakeVolume) || 0) > (Number(user.realStakeVolume) || 0)) {
+          user.realStakeVolume = prev.realStakeVolume;
+        }
+        if ((Number(prev.totalWageredSinceDeposit) || 0) > (Number(user.totalWageredSinceDeposit) || 0)) {
+          user.totalWageredSinceDeposit = prev.totalWageredSinceDeposit;
+        }
+      }
       db.users[user.id] = hydrate(Object.assign({}, user));
       if (vaultEntry) {
         var prevV = vault[user.id] || { demo: 0, real: 0 };
@@ -609,19 +625,24 @@
       var need = user.wagerNeed != null ? Number(user.wagerNeed) : null;
       var last = Number(user.lastDepositAmount) || 0;
       var locked;
-      if (lock != null && need != null && isFinite(lock) && isFinite(need)) {
-        locked = need > 0.009 ? Math.min(real, Math.max(0, lock)) : 0;
+      var useSnap = lock != null && need != null && isFinite(lock) && isFinite(need) && need > 0.009;
+      if (useSnap) {
+        locked = Math.min(real, Math.max(0, lock));
       } else {
         if (!(last > 0.009) && deposits > 0.009) {
           var leftover = Math.max(0, deposits - done);
           if (leftover > 0.009 && leftover + 0.009 < deposits) last = leftover;
         }
         var old = Math.max(0, deposits - last);
-        if (last > 0.009 && old > 0.009 && done + 0.001 < required) {
+        if (!(required > 0.009)) {
+          locked = real > 0.009 ? real : 0;
+        } else if (done + 0.001 >= required) {
+          locked = 0;
+        } else if (last > 0.009 && old > 0.009) {
           var extra = Math.max(0, done - old);
           locked = extra + 0.001 >= last * 2 ? 0 : Math.min(real, last);
         } else {
-          locked = Math.min(real, Math.max(0, deposits - (done / 2)));
+          locked = real;
         }
       }
       var free = D6.roundMoney(Math.max(0, real - D6.roundMoney(Math.max(0, locked))));

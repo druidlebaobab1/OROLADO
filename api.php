@@ -946,6 +946,17 @@ if ($action === 'upsert') {
   unset($user['passwordHash'], $user['password']);
   $user['passwordHash'] = (string) ($existing['passwordHash'] ?? '');
   $user['positions'] = orolado_merge_positions($existing['positions'] ?? [], $user['positions'] ?? []);
+  foreach (['lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering'] as $keepK) {
+    if (!array_key_exists($keepK, $user) && array_key_exists($keepK, $existing)) {
+      $user[$keepK] = $existing[$keepK];
+    }
+  }
+  foreach (['realDepositTotal', 'realStakeVolume', 'totalWageredSinceDeposit'] as $maxK) {
+    $user[$maxK] = orolado_money(max(
+      orolado_money($user[$maxK] ?? 0),
+      orolado_money($existing[$maxK] ?? 0)
+    ));
+  }
   if (!empty($existing['lastSeen']) && empty($user['lastSeen'])) {
     $user['lastSeen'] = $existing['lastSeen'];
   }

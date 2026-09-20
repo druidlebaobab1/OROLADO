@@ -686,18 +686,40 @@ function orolado_user_real_wagered(array $db, array $user): float {
 }
 
 function orolado_apply_wager_progress(array &$user, float $stake): void {
+  if (!array_key_exists('wagerNeed', $user)) return;
   $need = orolado_money($user['wagerNeed'] ?? 0);
-  if ($need <= 0.0001) {
-    $user['wagerNeed'] = 0.0;
-    $user['wagerLock'] = 0.0;
-    return;
-  }
+  if ($need <= 0.0001) return;
   $need = orolado_money(max(0.0, $need - orolado_money($stake)));
   $user['wagerNeed'] = $need;
   if ($need <= 0.0001) {
     $user['wagerNeed'] = 0.0;
     $user['wagerLock'] = 0.0;
   }
+}
+
+/** Premier dépôt : tout bloqué jusqu’à x2. Dépôt suivant : seul le nouveau montant est bloqué. */
+function orolado_wager_infer_lock(array $db, array $user, float $deposits, float $done, float $required, float $balance): array {
+  $uid = (string) ($user['id'] ?? '');
+  $last = orolado_last_completed_deposit($db, $uid);
+  if ($last <= 0 && isset($user['lastDepositAmount'])) $last = orolado_money($user['lastDepositAmount']);
+  if ($last <= 0.009 && $deposits > 0.009) {
+    $leftover = orolado_money(max(0.0, $deposits - $done));
+    if ($leftover > 0.009 && $leftover + 0.009 < $deposits) $last = $leftover;
+  }
+  $old = orolado_money(max(0.0, $deposits - $last));
+  if ($required <= 0.0001) {
+    if ($balance > 0.009) return [$balance, 1.0];
+    return [0.0, 0.0];
+  }
+  if ($done + 0.0001 >= $required) {
+    return [0.0, 0.0];
+  }
+  if ($last > 0.009 && $old > 0.009) {
+    $extra = orolado_money(max(0.0, $done - $old));
+    if ($extra + 0.001 >= $last * 2) return [0.0, 0.0];
+    return [$last, orolado_money(max(0.01, $last * 2 - $extra))];
+  }
+  return [$balance, orolado_money(max(0.01, $required - $done))];
 }
 
 /** Bloque seulement le dernier dépôt ; l'ancien solde déjà joué reste retirable. */
@@ -707,7 +729,7 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
   $required = orolado_money($deposits * 2);
   $done = orolado_user_real_wagered($db, $user);
   $left = orolado_money(max(0.0, $required - $done));
-  $ok = ($required <= 0.0001) || ($done + 0.0001 >= $required);
+  $ok = ($required > 0.0001) && ($done + 0.0001 >= $required);
   if ($balance === null) {
     $balance = function_exists('orolado_official_real')
       ? orolado_official_real($db, $uid)
@@ -716,27 +738,10 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
   $balance = orolado_money($balance);
   $lock = array_key_exists('wagerLock', $user) ? orolado_money($user['wagerLock']) : null;
   $need = array_key_exists('wagerNeed', $user) ? orolado_money($user['wagerNeed']) : null;
-  if ($lock === null || $need === null) {
-    $last = orolado_last_completed_deposit($db, $uid);
-    if ($last <= 0 && isset($user['lastDepositAmount'])) $last = orolado_money($user['lastDepositAmount']);
-    if ($last <= 0.009 && $deposits > 0.009) {
-      $leftover = orolado_money(max(0.0, $deposits - $done));
-      if ($leftover > 0.009 && $leftover + 0.009 < $deposits) $last = $leftover;
-    }
-    $old = orolado_money(max(0.0, $deposits - $last));
-    if ($last > 0.009 && $old > 0.009 && $done + 0.001 < $required) {
-      $extra = orolado_money(max(0.0, $done - $old));
-      if ($extra + 0.001 >= $last * 2) {
-        $lock = 0.0;
-        $need = 0.0;
-      } else {
-        $lock = $last;
-        $need = orolado_money(max(0.0, $last * 2 - $extra));
-      }
-    } else {
-      $lock = orolado_money(max(0.0, $deposits - ($done / 2.0)));
-      $need = $left;
-    }
+  if ($need === null || $need <= 0.0001 || $lock === null) {
+    $split = orolado_wager_infer_lock($db, $user, $deposits, $done, $required, $balance);
+    $lock = $split[0];
+    $need = $split[1];
   }
   $locked = ($need > 0.0001) ? orolado_money(min($balance, max(0.0, $lock))) : 0.0;
   $free = orolado_money(max(0.0, $balance - $locked));
