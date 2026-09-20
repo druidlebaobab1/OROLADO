@@ -2630,24 +2630,43 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
     padding:0 4px;box-sizing:border-box}
 }
 
-/* Mobile only: dark fill + discreet gold ember under CALL/PUT. Buttons untouched. */
+/* Mobile only: hell-furnace under the ticket. Buttons untouched. */
 @media (max-width:859px){
   html:not(.is-tv) #screenTrade,
   html:not(.is-tv) #screenTrade .trade-shell,
   html:not(.is-tv) #screenTrade .trade-wrap{
     background:#0B0E14!important;background-color:#0B0E14!important}
+  html:not(.is-tv) #screenTrade:not(.hidden)::before{
+    content:"";position:fixed;left:0;right:0;bottom:0;z-index:29;pointer-events:none;
+    height:calc(72px + env(safe-area-inset-bottom, 32px));
+    transform-origin:50% 100%;
+    background:
+      radial-gradient(ellipse 7% 90% at 4% 100%,rgba(255,237,160,.45) 0%,transparent 70%),
+      radial-gradient(ellipse 9% 110% at 11% 100%,rgba(245,158,11,.4) 0%,rgba(194,65,12,.2) 50%,transparent 74%),
+      radial-gradient(ellipse 6% 80% at 19% 100%,rgba(127,29,29,.55) 0%,transparent 68%),
+      radial-gradient(ellipse 10% 120% at 28% 100%,rgba(251,191,36,.5) 0%,rgba(234,88,12,.22) 48%,transparent 72%),
+      radial-gradient(ellipse 7% 95% at 37% 100%,rgba(249,115,22,.38) 0%,transparent 70%),
+      radial-gradient(ellipse 8% 105% at 46% 100%,rgba(253,224,71,.42) 0%,transparent 72%),
+      radial-gradient(ellipse 11% 125% at 56% 100%,rgba(245,158,11,.48) 0%,rgba(153,27,27,.28) 52%,transparent 75%),
+      radial-gradient(ellipse 7% 88% at 66% 100%,rgba(251,146,60,.36) 0%,transparent 70%),
+      radial-gradient(ellipse 9% 115% at 76% 100%,rgba(252,211,77,.44) 0%,transparent 73%),
+      radial-gradient(ellipse 6% 78% at 85% 100%,rgba(185,28,28,.4) 0%,transparent 68%),
+      radial-gradient(ellipse 10% 108% at 94% 100%,rgba(245,158,11,.4) 0%,transparent 72%);
+    animation:oroHellRise 2.6s ease-in-out infinite}
   html:not(.is-tv) #screenTrade:not(.hidden)::after{
     content:"";position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none;
-    height:calc(88px + env(safe-area-inset-bottom, 36px));
-    background:#0B0E14;
+    height:calc(96px + env(safe-area-inset-bottom, 40px));
+    background:#07090e;
     background-image:
-      radial-gradient(ellipse 14% 55% at 8% 100%,rgba(251,191,36,.28) 0%,transparent 72%),
-      radial-gradient(ellipse 18% 70% at 22% 100%,rgba(245,158,11,.34) 0%,transparent 74%),
-      radial-gradient(ellipse 12% 48% at 38% 100%,rgba(234,88,12,.22) 0%,transparent 70%),
-      radial-gradient(ellipse 16% 62% at 55% 100%,rgba(251,191,36,.3) 0%,transparent 73%),
-      radial-gradient(ellipse 15% 58% at 74% 100%,rgba(245,158,11,.32) 0%,transparent 72%),
-      radial-gradient(ellipse 12% 50% at 92% 100%,rgba(180,83,9,.2) 0%,transparent 70%),
-      linear-gradient(180deg,rgba(11,14,20,.15) 0%,#0B0E14 48%,#07090e 100%)}
+      radial-gradient(circle at 8% 92%,rgba(251,191,36,.35) 0 3px,transparent 8px),
+      radial-gradient(circle at 18% 96%,rgba(234,88,12,.4) 0 2px,transparent 7px),
+      radial-gradient(circle at 31% 94%,rgba(252,211,77,.3) 0 3px,transparent 8px),
+      radial-gradient(circle at 44% 97%,rgba(185,28,28,.45) 0 2px,transparent 6px),
+      radial-gradient(circle at 57% 93%,rgba(245,158,11,.38) 0 3px,transparent 8px),
+      radial-gradient(circle at 71% 96%,rgba(249,115,22,.32) 0 2px,transparent 7px),
+      radial-gradient(circle at 84% 94%,rgba(253,224,71,.28) 0 3px,transparent 8px),
+      radial-gradient(circle at 94% 97%,rgba(127,29,29,.4) 0 2px,transparent 6px),
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(67,20,7,.35) 42%,rgba(20,8,4,.92) 72%,#07090e 100%)}
   html:not(.is-tv) #screenTrade .pad,
   html:not(.is-tv) #screenTrade .pad.glass,
   html:not(.is-tv).is-android #screenTrade .pad,
@@ -2658,40 +2677,53 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
   html:not(.is-tv) #screenTrade .pad > *{position:relative;z-index:1}
   html:not(.is-tv) #screenTrade .pad::after{
     content:"";position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
-    height:calc(42px + env(safe-area-inset-bottom, 22px));
+    height:calc(46px + env(safe-area-inset-bottom, 24px));
     transform-origin:50% 100%;
     background:
-      radial-gradient(ellipse 11% 78% at 10% 100%,rgba(253,230,138,.4) 0%,transparent 68%),
-      radial-gradient(ellipse 15% 95% at 24% 100%,rgba(251,191,36,.48) 0%,rgba(245,158,11,.18) 42%,transparent 72%),
-      radial-gradient(ellipse 10% 70% at 37% 100%,rgba(234,88,12,.28) 0%,transparent 66%),
-      radial-gradient(ellipse 14% 88% at 52% 100%,rgba(252,211,77,.42) 0%,rgba(245,158,11,.16) 40%,transparent 70%),
-      radial-gradient(ellipse 13% 82% at 68% 100%,rgba(245,158,11,.4) 0%,transparent 70%),
-      radial-gradient(ellipse 11% 74% at 84% 100%,rgba(251,191,36,.36) 0%,transparent 68%),
-      radial-gradient(ellipse 9% 60% at 96% 100%,rgba(180,83,9,.24) 0%,transparent 64%),
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(11,14,20,.5) 55%,#07090e 100%);
-    animation:oroEmber 3.2s ease-in-out infinite}
+      radial-gradient(ellipse 8% 140% at 6% 100%,rgba(255,251,235,.55) 0%,rgba(251,191,36,.2) 40%,transparent 70%),
+      radial-gradient(ellipse 12% 160% at 14% 100%,rgba(245,158,11,.58) 0%,rgba(194,65,12,.22) 46%,transparent 74%),
+      radial-gradient(ellipse 7% 120% at 22% 100%,rgba(127,29,29,.5) 0%,transparent 68%),
+      radial-gradient(ellipse 13% 175% at 32% 100%,rgba(253,224,71,.5) 0%,rgba(234,88,12,.25) 44%,transparent 73%),
+      radial-gradient(ellipse 8% 130% at 41% 100%,rgba(249,115,22,.42) 0%,transparent 70%),
+      radial-gradient(ellipse 11% 155% at 50% 100%,rgba(251,191,36,.55) 0%,rgba(153,27,27,.3) 50%,transparent 74%),
+      radial-gradient(ellipse 7% 125% at 59% 100%,rgba(255,237,160,.4) 0%,transparent 68%),
+      radial-gradient(ellipse 12% 165% at 69% 100%,rgba(245,158,11,.5) 0%,rgba(180,83,9,.22) 48%,transparent 73%),
+      radial-gradient(ellipse 8% 135% at 78% 100%,rgba(220,38,38,.38) 0%,transparent 70%),
+      radial-gradient(ellipse 11% 150% at 88% 100%,rgba(252,211,77,.48) 0%,transparent 72%),
+      radial-gradient(ellipse 9% 140% at 97% 100%,rgba(245,158,11,.4) 0%,transparent 70%),
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(67,20,7,.2) 38%,rgba(20,8,4,.75) 100%);
+    animation:oroHellFlicker 2.1s ease-in-out infinite}
   html:not(.is-tv) #screenTrade .pad::before{
     content:"";position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
-    height:calc(28px + env(safe-area-inset-bottom, 18px));
+    height:calc(22px + env(safe-area-inset-bottom, 16px));
     transform-origin:50% 100%;
     background:
-      radial-gradient(ellipse 9% 90% at 18% 100%,rgba(255,237,160,.35) 0%,transparent 70%),
-      radial-gradient(ellipse 12% 100% at 41% 100%,rgba(245,158,11,.32) 0%,transparent 72%),
-      radial-gradient(ellipse 10% 85% at 63% 100%,rgba(252,211,77,.3) 0%,transparent 70%),
-      radial-gradient(ellipse 11% 92% at 86% 100%,rgba(234,88,12,.22) 0%,transparent 68%);
-    animation:oroEmberSoft 2.4s ease-in-out infinite}
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(245,158,11,.12) 40%,rgba(127,29,29,.55) 100%),
+      radial-gradient(ellipse 18% 80% at 16% 100%,rgba(255,237,160,.5) 0%,transparent 70%),
+      radial-gradient(ellipse 22% 90% at 38% 100%,rgba(234,88,12,.4) 0%,transparent 72%),
+      radial-gradient(ellipse 20% 85% at 61% 100%,rgba(251,191,36,.45) 0%,transparent 70%),
+      radial-gradient(ellipse 24% 95% at 84% 100%,rgba(185,28,28,.42) 0%,transparent 74%);
+    animation:oroHellCoals 1.7s ease-in-out infinite}
 }
-@keyframes oroEmber{
-  0%,100%{opacity:.62;transform:scaleY(1)}
-  35%{opacity:.92;transform:scaleY(1.08)}
-  62%{opacity:.74;transform:scaleY(.96)}
+@keyframes oroHellFlicker{
+  0%,100%{opacity:.7;transform:scaleY(1) scaleX(1)}
+  18%{opacity:.95;transform:scaleY(1.14) scaleX(1.02)}
+  36%{opacity:.78;transform:scaleY(.92) scaleX(.99)}
+  58%{opacity:1;transform:scaleY(1.1) scaleX(1.01)}
+  76%{opacity:.74;transform:scaleY(.97) scaleX(1)}
 }
-@keyframes oroEmberSoft{
-  0%,100%{opacity:.5;transform:scaleY(.94)}
-  50%{opacity:.82;transform:scaleY(1.12)}
+@keyframes oroHellRise{
+  0%,100%{opacity:.45;transform:scaleY(.9) translateY(2px)}
+  50%{opacity:.8;transform:scaleY(1.18) translateY(-1px)}
+}
+@keyframes oroHellCoals{
+  0%,100%{opacity:.55}
+  40%{opacity:.95}
+  70%{opacity:.62}
 }
 @media (max-width:859px) and (prefers-reduced-motion:reduce){
+  html:not(.is-tv) #screenTrade:not(.hidden)::before,
   html:not(.is-tv) #screenTrade .pad::before,
-  html:not(.is-tv) #screenTrade .pad::after{animation:none;opacity:.7;transform:none}
+  html:not(.is-tv) #screenTrade .pad::after{animation:none;opacity:.75;transform:none}
 }
 
