@@ -735,6 +735,8 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
     'locked' => $locked,
     'free' => $free,
     'balance' => $balance,
+    'last' => $last,
+    'old' => $old,
     'msg' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
   ];
 }

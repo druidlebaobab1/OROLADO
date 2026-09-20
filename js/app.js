@@ -131,6 +131,7 @@
   var balanceLockReal = null;
   var lastPaintedBalance = null;
   var lastPaintedMode = null;
+  var lastServerWager = null;
   var metaPvAt = 0;
   var metaPvScreen = '';
   var IS_ANDROID = /Android/i.test(navigator.userAgent || '');
@@ -451,6 +452,9 @@
     try { bal = realWithdrawBalance(u); } catch (eBal) { bal = Number(u && D6.Store && D6.Store.realBalance ? D6.Store.realBalance(u) : 0) || 0; }
     if (!isFinite(bal) || bal < 0) bal = 0;
     var last = Number(u && u.lastDepositAmount) || 0;
+    if (!(last > 0.009) && lastServerWager && Number(lastServerWager.last) > 0.009) {
+      last = Number(lastServerWager.last);
+    }
     var old = Math.max(0, deposits - last);
     var uncovered = Math.max(0, deposits - (done / 2));
     var locked;
@@ -607,6 +611,40 @@
   }
   var banWatchTimer = 0;
   var screenWakeLock = null;
+  function adoptWagerBook(remote) {
+    var u = user();
+    if (!u || !remote) return;
+    var ru = remote.user || {};
+    var w = remote.wager;
+    if (w && typeof w === 'object') {
+      lastServerWager = {
+        free: Number(w.free),
+        locked: Number(w.locked),
+        done: Number(w.done),
+        required: Number(w.required),
+        last: Number(w.last),
+        at: Date.now()
+      };
+    }
+    var changed = false;
+    var remLast = Number(ru.lastDepositAmount || (w && w.last) || 0);
+    if (remLast > 0.009 && remLast >= (Number(u.lastDepositAmount) || 0)) {
+      u.lastDepositAmount = remLast;
+      changed = true;
+    }
+    var remDep = Number(ru.realDepositTotal) || 0;
+    if (remDep > (Number(u.realDepositTotal) || 0) + 0.009) {
+      u.realDepositTotal = remDep;
+      changed = true;
+    }
+    var remStake = Number(ru.realStakeVolume) || 0;
+    if (remStake > (Number(u.realStakeVolume) || 0) + 0.009) {
+      u.realStakeVolume = remStake;
+      u.totalWageredSinceDeposit = Number(ru.totalWageredSinceDeposit != null ? ru.totalWageredSinceDeposit : remStake);
+      changed = true;
+    }
+    if (changed) D6.Store.saveUser(u);
+  }
   function applyQuietVault(remote) {
     if (!remote || !remote.ok || !remote.vault || !user()) return;
     var incoming = Number(remote.vault.real);
@@ -648,6 +686,7 @@
       if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
       D6.Api.post('me', {}).then(function (r) {
         if (watchBan(r)) return;
+        adoptWagerBook(r);
         applyQuietVault(r);
       }).catch(function () { /* ignore */ });
     }
@@ -3927,6 +3966,8 @@
       var remote = await D6.Api.post('me', {});
       if (watchBan(remote)) return;
       if (!remote || !remote.ok || !user() || !remote.vault) return;
+      adoptWagerBook(remote);
+      try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
       var locks = getBalanceLocks();
       if (locks && Date.now() < locks.until) return;
       if (!(openRealStake() > 0) && remote.vault.real != null) {
@@ -3972,6 +4013,21 @@
   function refreshWithdrawUi() {
     var u = user();
     var gate = wagerStatus(u);
+    if (lastServerWager && Date.now() - lastServerWager.at < 180000 && isFinite(lastServerWager.free)) {
+      var srvLocked = Number(lastServerWager.locked);
+      var srvFree = Number(lastServerWager.free);
+      if (isFinite(srvLocked) && isFinite(srvFree)) {
+        gate.locked = srvLocked;
+        gate.free = srvFree;
+        gate.canWithdraw = srvFree > 0.009;
+        if (Number(lastServerWager.done) >= 0) gate.done = Number(lastServerWager.done);
+        if (Number(lastServerWager.required) >= 0) {
+          gate.required = Number(lastServerWager.required);
+          gate.left = Math.max(0, D6.roundMoney(gate.required - gate.done));
+          gate.pct = gate.required > 0 ? Math.min(100, Math.round((gate.done / gate.required) * 100)) : 100;
+        }
+      }
+    }
     var shown = gate.free != null ? gate.free : realWithdrawBalance(u);
     if ($('wdBalanceAmt')) $('wdBalanceAmt').textContent = D6.fmtFCFA(shown);
     else if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable\n' + D6.fmtFCFA(shown);

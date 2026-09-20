@@ -1943,11 +1943,15 @@ if ($action === 'me') {
       ];
     }
   }
+  $wagerMe = function_exists('orolado_wager_check')
+    ? orolado_wager_check($db, is_array($me) ? $me : [], $officialReal)
+    : null;
   echo json_encode([
     'ok' => true,
     'server' => true,
     'user' => orolado_public_user($me),
     'vault' => $vault,
+    'wager' => $wagerMe,
     'openOrders' => $openOrders,
     'positions' => array_slice(array_reverse($recentPositions), 0, 80)
   ]);
