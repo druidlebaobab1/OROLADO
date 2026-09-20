@@ -2638,22 +2638,33 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
     background:#0B0E14!important;background-color:#0B0E14!important}
   html:not(.is-tv) #screenTrade:not(.hidden)::after{
     content:"";position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none;
-    height:calc(56px + env(safe-area-inset-bottom, 24px));
+    height:calc(64px + env(safe-area-inset-bottom, 24px));
     background:#0B0E14;
-    background-image:linear-gradient(180deg,rgba(245,158,11,.07) 0%,#0B0E14 34%,#07090e 100%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+    background-image:
+      radial-gradient(ellipse 46% 120% at 24% 0%,rgba(16,185,129,.32) 0%,rgba(16,185,129,.08) 46%,transparent 72%),
+      radial-gradient(ellipse 46% 120% at 76% 0%,rgba(244,63,94,.32) 0%,rgba(244,63,94,.08) 46%,transparent 72%),
+      linear-gradient(180deg,rgba(11,14,20,.2) 0%,#0B0E14 58%,#07090e 100%)}
   html:not(.is-tv) #screenTrade .pad,
   html:not(.is-tv) #screenTrade .pad.glass,
   html:not(.is-tv).is-android #screenTrade .pad,
   html:not(.is-tv).is-ios #screenTrade .pad{
     background:#0B0E14!important;background-color:#0B0E14!important;
     backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
-    isolation:isolate}
+    isolation:isolate;overflow:hidden}
   html:not(.is-tv) #screenTrade .pad > *{position:relative;z-index:1}
   html:not(.is-tv) #screenTrade .pad::after{
     content:"";position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
-    height:calc(28px + env(safe-area-inset-bottom, 18px));
-    background:linear-gradient(180deg,rgba(245,158,11,.08) 0%,#0B0E14 38%,#07090e 100%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}
+    height:calc(58px + env(safe-area-inset-bottom, 18px));
+    background:
+      radial-gradient(ellipse 48% 100% at 25% 8%,rgba(16,185,129,.42) 0%,rgba(0,230,118,.16) 38%,transparent 70%),
+      radial-gradient(ellipse 48% 100% at 75% 8%,rgba(244,63,94,.42) 0%,rgba(255,59,48,.16) 38%,transparent 70%),
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(11,14,20,.55) 42%,#0B0E14 78%,#07090e 100%);
+    box-shadow:0 -10px 28px rgba(16,185,129,.12),0 -10px 28px rgba(244,63,94,.1)}
+  html:not(.is-tv) #screenTrade .pad::before{
+    content:"";position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
+    height:calc(36px + env(safe-area-inset-bottom, 18px));
+    background:
+      radial-gradient(ellipse 38% 80% at 25% 0%,rgba(16,185,129,.28) 0%,transparent 68%),
+      radial-gradient(ellipse 38% 80% at 75% 0%,rgba(244,63,94,.28) 0%,transparent 68%)}
 }
 
