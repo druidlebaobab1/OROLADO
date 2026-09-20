@@ -1165,7 +1165,7 @@
       '<div><div class="h-main">' + (h.clock || '') + ' · ' + h.assetName + ' · ' + (h.duration || '') + 's</div>' +
       '<div class="h-time">' + D6.fmtFCFA(stake) + ' · ' + label + '</div></div>' +
       '<span class="h-gain ' + (h.won ? 'w' : (h.voided ? '' : 'l')) + '">' +
-      (h.won ? fmtOutcomeUsd(Math.abs(net)) : '+$0') + '</span></div>';
+      (h.voided ? '0' : fmtOutcomeUsd(net)) + '</span></div>';
   }
 
   function liveOrderRow(t) {
@@ -2350,9 +2350,10 @@
 
   function execute(side) {
     var now = Date.now();
-    if (now - lastExecGuard < 80) return;
+    if (now - lastExecGuard < 450) return;
+    if (now - lastPlaceOkAt < 450) return;
+    if (tradeQ.length >= 1) return;
     lastExecGuard = now;
-    if (tradeQ.length >= TRADE_Q_MAX) return;
     tradeQ.push(side);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
     pumpTradeQ();
@@ -2404,8 +2405,10 @@
       syncTradeButtons();
       return false;
     }
-    stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || stake));
-    $('inputStake').value = stake;
+    var typed = D6.roundMoney(Number($('inputStake') && $('inputStake').value));
+    if (!(typed >= (D6.CONFIG.MIN_STAKE || 1))) typed = D6.CONFIG.MIN_STAKE || 1;
+    stake = typed;
+    if ($('inputStake')) $('inputStake').value = String(stake);
     var have = D6.Store.balanceOf(u);
     if (have < stake) {
       toast(t('insufficient'), 'err', 2000);
