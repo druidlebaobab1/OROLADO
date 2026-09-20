@@ -450,23 +450,17 @@
     var bal = 0;
     try { bal = realWithdrawBalance(u); } catch (eBal) { bal = Number(u && D6.Store && D6.Store.realBalance ? D6.Store.realBalance(u) : 0) || 0; }
     if (!isFinite(bal) || bal < 0) bal = 0;
-    var lock = u && u.wagerLock != null ? Number(u.wagerLock) : null;
-    var need = u && u.wagerNeed != null ? Number(u.wagerNeed) : null;
     var last = Number(u && u.lastDepositAmount) || 0;
+    var old = Math.max(0, deposits - last);
+    var uncovered = Math.max(0, deposits - (done / 2));
     var locked;
-    var useSnap = lock != null && need != null && isFinite(lock) && isFinite(need) && need > 0.009;
-    if (useSnap) {
-      locked = Math.min(bal, Math.max(0, lock));
+    if (required <= 0.009 || done + 0.001 >= required) {
+      locked = 0;
+    } else if (last > 0.009 && old > 0.009 && done + 0.001 >= old) {
+      var extra = Math.max(0, done - old);
+      locked = extra + 0.001 >= last * 2 ? 0 : Math.min(bal, last);
     } else {
-      var old = Math.max(0, deposits - last);
-      if (last > 0.009 && old > 0.009 && done + 0.001 < required) {
-        var extra = Math.max(0, done - old);
-        locked = extra + 0.001 >= last * 2 ? 0 : Math.min(bal, last);
-      } else if (required > 0.009 && done + 0.001 >= required) {
-        locked = 0;
-      } else {
-        locked = bal;
-      }
+      locked = Math.min(bal, uncovered);
     }
     locked = D6.roundMoney(Math.max(0, locked));
     var free = D6.roundMoney(Math.max(0, bal - locked));
@@ -1332,7 +1326,7 @@
     });
     live.sort(function (a, b) { return (b.startTime || 0) - (a.startTime || 0); });
     var settled = ((u && u.positions) || []).filter(function (p) {
-      return !p.mode || p.mode === mode;
+      return (p.mode || 'demo') === mode;
     });
     return { live: live, settled: settled };
   }
@@ -1834,6 +1828,12 @@
       dr.setAttribute('aria-hidden', 'true');
     }
     document.documentElement.classList.remove('oro-profile-open');
+    if (D6.Chart) {
+      try {
+        if (D6.Chart.syncAccountMode) D6.Chart.syncAccountMode();
+        else if (D6.Chart.resize) D6.Chart.resize();
+      } catch (eDr) { /* ignore */ }
+    }
   }
 
   function profileSubModalOpen() {
@@ -3942,9 +3942,14 @@
           var di;
           for (di = 0; di < dlist.length; di++) demoOpen += Number(dlist[di] && dlist[di].stake) || 0;
         } catch (eD) { demoOpen = 0; }
-        if (demoOpen <= 0 && isFinite(demo) && demo >= 0) {
+        var uDemo = user();
+        var localDemo = Number(D6.Store.demoBalance(uDemo)) || 0;
+        var demoFresh = !(Number(uDemo && uDemo.demoTrades) > 0) && localDemo <= 0.009;
+        var demoBusy = demoOpen > 0 || !!D6.holdRemote || !!D6.holdPull
+          || (lastSettleMode === 'demo' && lastSettleAt && Date.now() - lastSettleAt < 30000);
+        if (!demoBusy && demoFresh && isFinite(demo) && demo > 0.009) {
           D6.holdPull = true;
-          D6.Store.setBalanceMode(user(), 'demo', demo);
+          D6.Store.setBalanceMode(uDemo, 'demo', demo);
           D6.holdPull = false;
           updateBalance(false);
         }

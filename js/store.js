@@ -375,8 +375,11 @@
           else if (isFinite(nextReal) && nextReal <= 0.009 && prevReal > 0.009) next.real = prevReal;
         }
         var keptDemo = readDemoLs(user.id);
-        if (keptDemo != null && keptDemo > 0) next.demo = keptDemo;
-        else if (!(Number(next.demo) > 0) && !(Number(user.trades) > 0)) {
+        if (keptDemo != null && (keptDemo > 0 || Number(user.demoTrades) > 0 || Number(user.trades) > 0)) {
+          next.demo = keptDemo;
+        } else if (vaultEntry.demo != null && isFinite(Number(vaultEntry.demo)) && Number(vaultEntry.demo) >= 0) {
+          next.demo = Number(vaultEntry.demo);
+        } else if (!(Number(next.demo) > 0) && !(Number(user.trades) > 0)) {
           next.demo = D6.CONFIG.DEMO_START || 1000000;
         }
         vault[user.id] = next;
@@ -621,23 +624,17 @@
       var deposits = Number(user.realDepositTotal) || 0;
       var required = D6.roundMoney(Math.max(0, deposits) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
       var done = Number(user.totalWageredSinceDeposit != null ? user.totalWageredSinceDeposit : user.realStakeVolume) || 0;
-      var lock = user.wagerLock != null ? Number(user.wagerLock) : null;
-      var need = user.wagerNeed != null ? Number(user.wagerNeed) : null;
       var last = Number(user.lastDepositAmount) || 0;
+      var old = Math.max(0, deposits - last);
+      var uncovered = Math.max(0, deposits - (done / 2));
       var locked;
-      var useSnap = lock != null && need != null && isFinite(lock) && isFinite(need) && need > 0.009;
-      if (useSnap) {
-        locked = Math.min(real, Math.max(0, lock));
+      if (required <= 0.009 || done + 0.001 >= required) {
+        locked = 0;
+      } else if (last > 0.009 && old > 0.009 && done + 0.001 >= old) {
+        var extraPlayed = Math.max(0, done - old);
+        locked = extraPlayed + 0.001 >= last * 2 ? 0 : Math.min(real, last);
       } else {
-        var old = Math.max(0, deposits - last);
-        if (last > 0.009 && old > 0.009 && done + 0.001 < required) {
-          var extra = Math.max(0, done - old);
-          locked = extra + 0.001 >= last * 2 ? 0 : Math.min(real, last);
-        } else if (required > 0.009 && done + 0.001 >= required) {
-          locked = 0;
-        } else {
-          locked = real;
-        }
+        locked = Math.min(real, uncovered);
       }
       var free = D6.roundMoney(Math.max(0, real - D6.roundMoney(Math.max(0, locked))));
       if (amount > free + 0.009) {

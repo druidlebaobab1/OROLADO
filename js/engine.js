@@ -712,6 +712,7 @@
     for (i = 0; i < trades.length; i++) {
       var tr = trades[i];
       if (!tr || tr.settled || tr.assetId !== assetId) continue;
+      if ((tr.mode === 'real' ? 'real' : 'demo') !== currentAccountMode()) continue;
       var exp = tr.expiryTime || tr.expiresAt || 0;
       if (exp && now >= exp) continue;
       var ep = Number(tr.entryPrice);
@@ -1890,6 +1891,12 @@
       }
       if (mode !== 'real' && won && hasOppositeHedge(trade)) {
         won = applyHedgeLock(trade, true);
+        if (!won) {
+          var hedgeSide = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
+          exitPrice = forceExitPrice(entryPx, hedgeSide === 'call', false, trade.assetId, false);
+          trade._wantWon = false;
+          trade._exitTarget = exitPrice;
+        }
       } else if (mode !== 'real' && won) {
         applyHedgeLock(trade, true);
       }
@@ -1977,6 +1984,7 @@
       };
       D6.Store.addPosition(user, position);
       trades.splice(idx, 1);
+      if (!trades.filter(isLive).length) D6.holdRemote = false;
       persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) {
         D6.Supabase.saveOrder({
@@ -2003,7 +2011,6 @@
       } catch (e) { /* ignore */ }
 
       var closed = publicTrade(trade);
-      if (!trades.filter(isLive).length) D6.holdRemote = false;
       return {
         trade: closed,
         position: position,

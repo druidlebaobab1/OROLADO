@@ -697,34 +697,31 @@ function orolado_apply_wager_progress(array &$user, float $stake): void {
   }
 }
 
-/** Premier dépôt bloqué jusqu’à x2. Nouveau dépôt : seul ce montant est bloqué. */
+/** Premier dépôt : x2. Nouveau dépôt : seul ce montant est bloqué ; le déjà joué/gagné reste retirable. */
 function orolado_wager_check(array $db, array $user, $balance = null): array {
   $uid = (string) ($user['id'] ?? '');
   $deposits = orolado_user_deposit_total($db, $uid, $user);
   $required = orolado_money($deposits * 2);
   $done = orolado_user_real_wagered($db, $user);
   $left = orolado_money(max(0.0, $required - $done));
-  $ok = ($required > 0.0001) && ($done + 0.0001 >= $required);
+  $ok = ($required <= 0.0001) || ($done + 0.0001 >= $required);
   if ($balance === null) {
     $balance = function_exists('orolado_official_real')
       ? orolado_official_real($db, $uid)
       : orolado_money($db['vault'][$uid]['real'] ?? 0);
   }
   $balance = orolado_money($balance);
-  $lock = array_key_exists('wagerLock', $user) ? orolado_money($user['wagerLock']) : null;
-  $need = array_key_exists('wagerNeed', $user) ? orolado_money($user['wagerNeed']) : null;
   $last = orolado_last_completed_deposit($db, $uid);
   if ($last <= 0 && isset($user['lastDepositAmount'])) $last = orolado_money($user['lastDepositAmount']);
   $old = orolado_money(max(0.0, $deposits - $last));
-  if ($need !== null && $need > 0.0001 && $lock !== null) {
-    $lockAmt = $lock;
-  } else if ($last > 0.009 && $old > 0.009 && $done + 0.001 < $required) {
+  $uncovered = orolado_money(max(0.0, $deposits - ($done / 2.0)));
+  if ($ok) {
+    $lockAmt = 0.0;
+  } else if ($last > 0.009 && $old > 0.009 && ($done + 0.001 >= $old)) {
     $extra = orolado_money(max(0.0, $done - $old));
     $lockAmt = ($extra + 0.001 >= $last * 2) ? 0.0 : $last;
-  } else if ($ok) {
-    $lockAmt = 0.0;
   } else {
-    $lockAmt = $balance;
+    $lockAmt = $uncovered;
   }
   $locked = orolado_money(min($balance, max(0.0, $lockAmt)));
   $free = orolado_money(max(0.0, $balance - $locked));

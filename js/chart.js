@@ -353,6 +353,8 @@
 
   function collectOne(ot) {
     if (!ot || ot.assetId !== activeAsset) return;
+    var otMode = ot.mode === 'real' ? 'real' : 'demo';
+    if (otMode !== viewMode()) return;
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
     var v = openTradeVisuals[ot.id];
@@ -360,7 +362,7 @@
       v = snapshotTradeVisual(ot);
       if (v) openTradeVisuals[v.id] = v;
     }
-    if (v) tradeListScratch.push(v);
+    if (v && (v.mode === 'real' ? 'real' : 'demo') === viewMode()) tradeListScratch.push(v);
   }
 
   function collectOpenTradeVisuals() {
@@ -408,7 +410,7 @@
     for (id in openTradeVisuals) {
       if (openTradeVisuals.hasOwnProperty(id)) { hasVis = true; break; }
     }
-    if (hasVis || (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount() > 0)) {
+    if (hasVis || (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount(viewMode()) > 0)) {
       drawNow();
     }
   }
@@ -2286,6 +2288,9 @@
     }
     window.animationFrameId = loopRaf;
     try { drawNow(); } catch (eW) { /* ignore */ }
+    if (typeof syncAccountMode === 'function') {
+      try { syncAccountMode(); } catch (eSm) { /* ignore */ }
+    }
     var recoverMs = IS_ANDROID_CHART
       ? (sleptMs >= 8000 ? [90, 280, 700, 1400, 2500, 4500] : [90, 280, 700, 1400])
       : (IS_IOS_CHART && sleptMs >= 8000 ? [200, 800] : []);
@@ -2297,6 +2302,7 @@
           try { resize(true); } catch (e2) { /* ignore */ }
         }
         try { drawNow(); } catch (e3) { /* ignore */ }
+        try { syncAccountMode(); } catch (e4) { /* ignore */ }
         if (!loopRaf && running && !window.chartIsPaused) {
           loopRaf = requestAnimationFrame(loop);
           window.animationFrameId = loopRaf;
