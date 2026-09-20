@@ -1017,15 +1017,39 @@
     setModeChrome(u);
   }
 
+  function payoutPctOf(odds) {
+    var n = Number(odds);
+    var map = (D6.CONFIG && D6.CONFIG.PAYOUT_PCT) || { '1.88': 88, '6': 500, '11': 1000, '51': 5000 };
+    if (Math.abs(n - 1.88) < 0.02) return Number(map['1.88']) || 88;
+    if (Math.abs(n - 6) < 0.02) return Number(map['6']) || 500;
+    if (Math.abs(n - 11) < 0.02) return Number(map['11']) || 1000;
+    if (n >= 50) return Number(map['51']) || 5000;
+    if (map[String(n)] != null) return Number(map[String(n)]);
+    return 88;
+  }
+
+  function assetPayoutPct(assetId, basePct) {
+    if (basePct !== 88) return basePct;
+    var asset = D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[assetId];
+    if (!asset) return basePct;
+    var lo = Number(asset.payoutMin);
+    var hi = Number(asset.payoutMax);
+    if (!(lo > 1) || !(hi >= lo)) return basePct;
+    var live = lo + Math.random() * (hi - lo);
+    return Math.round((live - 1) * 100);
+  }
+
   function updatePayoutUi() {
-    var u = user();
-    if (!u || !document.querySelector('.asset-chip .payout-live')) return;
-    var odds = currentOdds(u);
-    var pct = Math.round((odds - 1) * 100);
-    document.querySelectorAll('.asset-chip .payout-live').forEach(function (el) {
-      el.textContent = pct + '%';
+    if (!document.querySelector('.asset-chip .payout-live')) return;
+    var odds = currentOdds(user());
+    var pct = payoutPctOf(odds);
+    document.querySelectorAll('.asset-chip').forEach(function (chip) {
+      var el = chip.querySelector('.payout-live');
+      if (!el) return;
+      el.textContent = '+' + assetPayoutPct(chip.getAttribute('data-asset'), pct) + '%';
     });
-    var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number($('inputStake').value) || 1));
+    var stakeEl = $('inputStake');
+    var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number(stakeEl && stakeEl.value) || 1));
     var netGain = D6.roundMoney(stake * (pct / 100));
     if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(netGain);
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));

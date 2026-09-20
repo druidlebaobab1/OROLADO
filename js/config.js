@@ -20,6 +20,7 @@
     REAL_PAYOUT: 1.88,
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
+    PAYOUT_PCT: { '1.88': 88, '6': 500, '11': 1000, '51': 5000 },
     // Joueurs ordinaires RÉEL — plafond maison.
     ODDS_WIN_RATE: { '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 },
     // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
