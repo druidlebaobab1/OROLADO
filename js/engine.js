@@ -11,7 +11,7 @@
       SIGMA: 0.00125,
       DEFAULT_ODDS: 1.88,
       WIN_P_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 }),
-      WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 }),
+      WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 }),
       WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 }),
       PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
     });
@@ -133,10 +133,6 @@
       var payout = (args && args.payout) != null ? args.payout : SEALED.DEFAULT_ODDS;
       var profile = (args && args.profile) || 'real';
       var p = winProb(payout, profile);
-      if (profile === 'demo') {
-        if (Math.random() < 0.12) p = 0.70;
-        else p = Math.max(0.50, Math.min(0.60, p + (Math.random() - 0.5) * 0.04));
-      }
       if (!(p > 0) || !isFinite(p)) p = profile === 'demo' ? 0.55 : 0.42;
       if (p >= 1) p = 0.99;
       var won = Math.random() < p;
@@ -1420,7 +1416,7 @@
   /** Arbitrage étanche — démo / admin réel / joueur réel. */
   function resolveWinProbability(user, trade, mode) {
     var demoMap = C.ODDS_WIN_RATE_DEMO || {
-      '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018
+      '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020
     };
     var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
       '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02
@@ -1870,6 +1866,11 @@
       if (mode === 'real' && !isAdminUser(user) && won && hasOppositeHedge(trade)) {
         won = applyHedgeLock(trade, true);
       } else if (mode === 'real' && !isAdminUser(user) && won) {
+        applyHedgeLock(trade, true);
+      }
+      if (mode !== 'real' && won && hasOppositeHedge(trade)) {
+        won = applyHedgeLock(trade, true);
+      } else if (mode !== 'real' && won) {
         applyHedgeLock(trade, true);
       }
       applyExitToMarket(trade, exitPrice);

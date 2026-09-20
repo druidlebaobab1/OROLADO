@@ -26,9 +26,9 @@
     // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
     ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
     ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
-    // Démo (nouveaux + comptes démo) : 55 % + jitter, hors mécanique réelle.
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 },
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.18, '11': 0.09, '51': 0.018 },
+    // Démo : 55 % au 88 %, autres payouts au même ratio que le réel.
+    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 },
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 },
     WITHDRAW_MINS: {
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,

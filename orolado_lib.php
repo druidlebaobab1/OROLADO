@@ -666,17 +666,12 @@ function orolado_odds_key($payout): string {
 /** Grille scellée : réel 42/12/5/1.5 %, démo 55 %, admin 70 %. */
 function orolado_sealed_win_p(float $payout, string $profile): float {
   static $real = ['1.88' => 0.42, '6' => 0.12, '11' => 0.05, '51' => 0.015];
-  static $demo = ['1.88' => 0.55, '6' => 0.18, '11' => 0.09, '51' => 0.018];
+  static $demo = ['1.88' => 0.55, '6' => 0.157, '11' => 0.065, '51' => 0.020];
   static $admin = ['1.88' => 0.70, '6' => 0.255, '11' => 0.127, '51' => 0.02];
   $map = $real;
   if ($profile === 'demo') $map = $demo;
   else if ($profile === 'admin') $map = $admin;
   $p = (float) ($map[orolado_odds_key($payout)] ?? 0.42);
-  if ($profile === 'demo') {
-    $p += (random_int(0, 400) - 200) / 10000.0;
-    if (random_int(1, 100) <= 12) $p = 0.70;
-    $p = max(0.50, min(0.70, $p));
-  }
   if (!is_numeric($p) || $p <= 0.0 || $p >= 1.0) return 0.42;
   return max(0.001, min(0.99, $p));
 }
