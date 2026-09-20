@@ -1642,7 +1642,11 @@
       var duration = C.DURATIONS.indexOf(opts.duration) >= 0 ? opts.duration : C.DEFAULT_DURATION;
       if (duration === 3) duration = 5;
       var assetId = canonAssetId(opts.assetId);
-      var side = opts.side === 'put' ? 'put' : 'call';
+      var side = opts.side === 'put' || opts.side === 'sell' ? 'put' : 'call';
+      var wantPay = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
+      if (mode === 'real' && wantPay >= 5.5 && openForMode(mode).length >= 1) {
+        return { ok: false, reason: D6.I18N.t('antibot') };
+      }
       var gate = stakeCap(user, stake, mode);
       if (!gate.ok) return gate;
 
@@ -1657,7 +1661,7 @@
       // jetait jusqu'à un pas entier, ce qui se voyait comme un à-coup du
       // défilement au moment de la prise de position.
       var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
-      var payout = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
+      var payout = wantPay;
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
         type: 'stake',
@@ -1795,8 +1799,7 @@
         payout: payout,
         profile: profile
       });
-      var exitPrice = readFinalPrice(trade);
-      if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = Number(verdict.exitPrice);
+      var exitPrice = Number(verdict.exitPrice);
       if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = entryPx;
       if (StochasticCore && StochasticCore.round2) {
         entryPx = StochasticCore.round2(entryPx);

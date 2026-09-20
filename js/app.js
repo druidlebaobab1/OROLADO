@@ -1402,11 +1402,11 @@
     var allowRaise = !!(opts && opts.allowRaise) || !!D6.holdDepositReal;
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
+    if (locked && Math.abs(real - local) > 0.02) return false;
+    if (lastSettleAt && Date.now() - lastSettleAt < 30000 && Math.abs(real - local) > 0.02 && !allowRaise) return false;
     if (real > local + 0.009 && !allowRaise) return false;
     if (!force && openRealStake() > 0 && real > local + 0.009) return false;
-    if (!force && real <= 0.009 && local > 0.009) {
-      if (!fromMe || locked || openRealStake() > 0) return false;
-    }
+    if (real <= 0.009 && local > 0.009) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);
@@ -2387,9 +2387,16 @@
 
   function execute(side) {
     var now = Date.now();
-    if (now - lastExecGuard < 450) return;
-    if (now - lastPlaceOkAt < 450) return;
+    var u0 = user();
+    var highPay = u0 && currentOdds(u0) >= 5.5;
+    var guardMs = highPay ? 900 : 450;
+    if (now - lastExecGuard < guardMs) return;
+    if (now - lastPlaceOkAt < guardMs) return;
     if (tradeQ.length >= 1) return;
+    if (highPay && u0 && u0.mode === 'real') {
+      var liveN = D6.Engine.liveCount ? D6.Engine.liveCount('real') : 0;
+      if (liveN >= 1) return;
+    }
     lastExecGuard = now;
     tradeQ.push(side);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
@@ -3807,6 +3814,8 @@
       var remote = await D6.Api.post('me', {});
       if (watchBan(remote)) return;
       if (!remote || !remote.ok || !user() || !remote.vault) return;
+      var locks = getBalanceLocks();
+      if (locks && Date.now() < locks.until) return;
       if (!(openRealStake() > 0) && remote.vault.real != null) {
         if (applyOfficialReal(remote.vault.real, { fromMe: true })) updateBalance(false);
       } else {
