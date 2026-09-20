@@ -93,6 +93,20 @@
       document.documentElement.classList.toggle('lang-ar', l === 'ar');
       document.documentElement.setAttribute('translate', 'no');
     } catch (e) {}
+    try {
+      var ua = navigator.userAgent || '';
+      var tvHint = /Android\s*TV|\bSMART-TV\b|SmartTV|BRAVIA|AFT[A-Za-z0-9]|GoogleTV|Nexus Player|SHIELD Android TV|MiBOX|MIBOX|Web0S|Tizen|VIDAA|HbbTV|CrKey|NetCast|POV_TV|AOSP TV|sdk_google_tv|Android TV/i.test(ua);
+      var android = /Android/i.test(ua);
+      var noMobile = android && !/Mobile/i.test(ua);
+      var w = Math.max(screen.width || 0, window.innerWidth || 0);
+      var h = Math.max(screen.height || 0, window.innerHeight || 0);
+      var longSide = Math.max(w, h);
+      var shortSide = Math.min(w, h);
+      var tvShape = longSide >= 1100 && shortSide >= 600 && (longSide / shortSide) >= 1.5;
+      if (tvHint || (android && tvShape) || (noMobile && tvShape)) {
+        document.documentElement.classList.add('is-tv');
+      }
+    } catch (eTv) {}
   })();
   </script>
   <style id="oro-click-guard">
@@ -116,6 +130,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/app.css?v=567">
     <link rel="stylesheet" href="css/auth.css?v=544">
+    <link rel="stylesheet" href="css/tv.css?v=2">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -1204,6 +1219,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=578"></script>
+  <script src="js/app.js?v=579"></script>
 </body>
 </html>

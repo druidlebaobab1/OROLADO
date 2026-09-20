@@ -133,6 +133,24 @@
   var metaPvScreen = '';
   var IS_ANDROID = /Android/i.test(navigator.userAgent || '');
   var IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var IS_TV = (function () {
+    try {
+      if (document.documentElement.classList.contains('is-tv')) return true;
+      var ua = navigator.userAgent || '';
+      var tvHint = /Android\s*TV|\bSMART-TV\b|SmartTV|BRAVIA|AFT[A-Za-z0-9]|GoogleTV|Nexus Player|SHIELD Android TV|MiBOX|MIBOX|Web0S|Tizen|VIDAA|HbbTV|CrKey|NetCast|POV_TV|AOSP TV|sdk_google_tv|Android TV/i.test(ua);
+      var android = /Android/i.test(ua);
+      var noMobile = android && !/Mobile/i.test(ua);
+      var w = Math.max(screen.width || 0, window.innerWidth || 0);
+      var h = Math.max(screen.height || 0, window.innerHeight || 0);
+      var longSide = Math.max(w, h);
+      var shortSide = Math.min(w, h);
+      var tvShape = longSide >= 1100 && shortSide >= 600 && (longSide / shortSide) >= 1.5;
+      return !!(tvHint || (android && tvShape) || (noMobile && tvShape));
+    } catch (eTv) { return false; }
+  })();
+  if (IS_TV) {
+    try { document.documentElement.classList.add('is-tv'); } catch (eTv2) { /* ignore */ }
+  }
   if (IS_ANDROID) {
     try { document.documentElement.classList.add('is-android'); } catch (eAnd) { /* ignore */ }
   }
