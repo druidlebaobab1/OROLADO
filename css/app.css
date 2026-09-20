@@ -3020,3 +3020,49 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     bottom:auto!important}
 }
 
+/* mobile-header-v601 — rollback: retirer ce bloc + rétablir index.html header/frieze */
+@media (max-width:859px){
+  #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left .coin-svg:not(:first-child),
+  #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right .coin-svg:not(:first-child){
+    display:none}
+  #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{
+    width:20px;height:20px;flex-shrink:0;
+    box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+  #screenTrade:not(.is-guest) .topbar-cta{
+    gap:8px;align-items:center}
+  #screenTrade:not(.is-guest) .balance-card .bal{flex-shrink:0}
+  #screenTrade:not(.is-guest) .bal-crypto-frieze{
+    margin-left:12px;gap:5px;align-items:center}
+  #screenTrade:not(.is-guest) .bal-crypto-frieze .coin-svg{
+    width:17px;height:17px}
+
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .btn-deposit,
+  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
+    min-height:32px;padding:6px 14px;font-size:.64rem;border-radius:9px;
+    margin-bottom:-2px;align-self:center}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta,
+  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta{
+    gap:8px}
+
+  html.is-android .topbar-row{
+    padding-left:max(4px, env(safe-area-inset-left, 0px));
+    padding-right:max(4px, env(safe-area-inset-right, 0px))}
+  html.is-android #screenTrade:not(.is-guest) .brand-lockup.mini{
+    margin-right:auto;gap:3px;min-width:0}
+  html.is-android #screenTrade:not(.is-guest) .topbar .brand{
+    display:inline!important;font-size:.56rem;white-space:nowrap}
+  html.is-android #screenTrade:not(.is-guest) .logo-mark.sm{width:18px;height:18px}
+  html.is-android #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
+    min-height:30px;padding-top:5px;padding-bottom:5px;margin-bottom:-1px}
+  html.is-android #screenTrade:not(.is-guest) .balance-card .bal{
+    font-size:.86rem!important;line-height:1.15}
+  html.is-android #screenTrade:not(.is-guest) .bal-crypto-frieze{
+    gap:3px;margin-left:10px;flex-wrap:nowrap}
+  html.is-android #screenTrade:not(.is-guest) .bal-crypto-frieze .coin-svg{
+    width:14px;height:14px}
+}
+@media (max-width:380px){
+  html.is-android #screenTrade:not(.is-guest) .topbar .brand{
+    display:inline!important;font-size:.5rem}
+}
+
