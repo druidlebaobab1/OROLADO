@@ -1644,9 +1644,6 @@
       var assetId = canonAssetId(opts.assetId);
       var side = opts.side === 'put' || opts.side === 'sell' ? 'put' : 'call';
       var wantPay = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
-      if (mode === 'real' && wantPay >= 5.5 && openForMode(mode).length >= 1) {
-        return { ok: false, reason: D6.I18N.t('antibot') };
-      }
       var gate = stakeCap(user, stake, mode);
       if (!gate.ok) return gate;
 
@@ -1805,9 +1802,8 @@
         entryPx = StochasticCore.round2(entryPx);
         exitPrice = StochasticCore.round2(exitPrice);
       }
-      var detected = detectTradeTruth(sideNow, entryPx, exitPrice);
-      var voided = !!detected.voided;
-      var won = !voided && !!detected.won;
+      var voided = !!verdict.voided;
+      var won = !voided && !!verdict.won;
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }

@@ -2387,17 +2387,9 @@
 
   function execute(side) {
     var now = Date.now();
-    var u0 = user();
-    var highPay = u0 && currentOdds(u0) >= 5.5;
-    var guardMs = highPay ? 900 : 450;
-    if (now - lastExecGuard < guardMs) return;
-    if (now - lastPlaceOkAt < guardMs) return;
-    if (tradeQ.length >= 1) return;
-    if (highPay && u0 && u0.mode === 'real') {
-      var liveN = D6.Engine.liveCount ? D6.Engine.liveCount('real') : 0;
-      if (liveN >= 1) return;
-    }
+    if (now - lastExecGuard < 160) return;
     lastExecGuard = now;
+    if (tradeQ.length >= (TRADE_Q_MAX || 12)) return;
     tradeQ.push(side);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
     pumpTradeQ();
