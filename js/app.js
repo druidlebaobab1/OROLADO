@@ -665,10 +665,14 @@
     if (Math.abs(incoming - local) <= 0.009) return;
     if (adoptOfficialVault(remote.vault, { fromMe: true, force: !(openRealStake() > 0), allowRaise: true })) updateBalance(false);
   }
+  var lastPokeLiveAt = 0;
   function pokeLiveReal() {
     var u = user();
     if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
     if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
+    var now = Date.now();
+    if (now - lastPokeLiveAt < 2500) return;
+    lastPokeLiveAt = now;
     D6.Api.post('me', {}).then(function (r) {
       if (watchBan(r)) return;
       adoptWagerBook(r);
@@ -706,6 +710,10 @@
     }
     banWatchTimer = setInterval(pollMe, 8000);
     holdScreenAwake();
+    if (!startBanWatch.boundClicks) {
+      startBanWatch.boundClicks = 1;
+      document.addEventListener('click', function () { pokeLiveReal(); }, true);
+    }
   }
 
   function toast(msg, kind, ms) {
