@@ -3061,25 +3061,30 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   html.is-android #screenTrade:not(.is-guest) .bal-crypto-frieze .coin-svg{
     width:17px;height:17px}
 
+  #screenTrade:not(.is-guest) .topbar-row{flex-wrap:nowrap;gap:4px}
+  #screenTrade:not(.is-guest) .topbar-cta{
+    flex:0 1 auto;min-width:0;gap:4px}
+  #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left,
+  #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
+    margin:0;flex-shrink:0}
+  #screenTrade:not(.is-guest) .topbar-actions{gap:4px;flex-shrink:0;margin-left:6px}
+  #screenTrade:not(.is-guest) .help-badge{
+    padding:3px 6px;font-size:.58rem;letter-spacing:0;flex-shrink:0}
+  #screenTrade:not(.is-guest) #btnProfile.icon-btn{
+    width:30px;height:30px;min-width:30px;max-width:30px;flex:0 0 30px;font-size:.95rem}
+
   html.is-ios #screenTrade:not(.is-guest) .topbar-cta,
   html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta{gap:5px}
-  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left,
-  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left{
-    margin-left:-3px;margin-right:1px}
-  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right,
-  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
-    margin-left:1px;margin-right:-3px}
   html.is-ios #screenTrade:not(.is-guest) .topbar-cta .btn-deposit,
   html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
-    padding-left:18px;padding-right:18px;min-width:8.6rem}
+    padding-left:10px;padding-right:10px;min-width:6.5rem}
 
-  html.is-android #screenTrade:not(.is-guest) .topbar-cta{gap:5px}
-  html.is-android #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left{
-    margin-left:-2px;margin-right:1px}
-  html.is-android #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
-    margin-left:1px;margin-right:-2px}
+  html.is-android #screenTrade:not(.is-guest) .topbar-cta{gap:4px}
   html.is-android #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
-    padding-left:16px;padding-right:16px;min-width:8.2rem}
+    padding-left:9px;padding-right:9px;min-width:6.3rem}
+  html.is-android #screenTrade:not(.is-guest) .help-badge{padding:3px 5px;font-size:.55rem}
+  html.is-android #screenTrade:not(.is-guest) #btnProfile.icon-btn{
+    width:30px;height:30px;min-width:30px;max-width:30px;flex:0 0 30px}
 }
 @media (max-width:380px){
   html.is-android #screenTrade:not(.is-guest) .topbar .brand{
