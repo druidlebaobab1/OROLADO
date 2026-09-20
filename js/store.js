@@ -612,9 +612,14 @@
       if (lock != null && need != null && isFinite(lock) && isFinite(need)) {
         locked = need > 0.009 ? Math.min(real, Math.max(0, lock)) : 0;
       } else {
+        if (!(last > 0.009) && deposits > 0.009) {
+          var leftover = Math.max(0, deposits - done);
+          if (leftover > 0.009 && leftover + 0.009 < deposits) last = leftover;
+        }
         var old = Math.max(0, deposits - last);
-        if (last > 0.009 && old > 0.009 && done + 0.001 >= old && done + 0.001 < required) {
-          locked = Math.min(real, last);
+        if (last > 0.009 && old > 0.009 && done + 0.001 < required) {
+          var extra = Math.max(0, done - old);
+          locked = extra + 0.001 >= last * 2 ? 0 : Math.min(real, last);
         } else {
           locked = Math.min(real, Math.max(0, deposits - (done / 2)));
         }

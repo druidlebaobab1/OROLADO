@@ -1230,8 +1230,9 @@ if ($action === 'withdrawOtp') {
   $freshOtp = (isset($db['users'][$uid]) && is_array($db['users'][$uid]))
     ? array_merge(is_array($me) ? $me : [], $db['users'][$uid])
     : $me;
+  $otpBal = function_exists('orolado_official_real') ? orolado_official_real($db, $uid) : null;
   $wagerOtp = function_exists('orolado_wager_check')
-    ? orolado_wager_check($db, is_array($freshOtp) ? $freshOtp : [])
+    ? orolado_wager_check($db, is_array($freshOtp) ? $freshOtp : [], $otpBal)
     : ['ok' => true, 'canWithdraw' => true];
   if (empty($wagerOtp['ok']) && empty($wagerOtp['canWithdraw'])) {
     echo json_encode([
@@ -1340,7 +1341,7 @@ if ($action === 'withdraw') {
     ? array_merge($me, $db['users'][$uidOtp])
     : $me;
   $wager = function_exists('orolado_wager_check')
-    ? orolado_wager_check($db, is_array($freshUser) ? $freshUser : [])
+    ? orolado_wager_check($db, is_array($freshUser) ? $freshUser : [], $real)
     : ['ok' => false, 'required' => 0, 'done' => 0, 'left' => 0, 'msg' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.'];
   $freeWd = orolado_money($wager['free'] ?? 0);
   if ($amount > $freeWd + 0.009) {
