@@ -828,7 +828,13 @@ function admin_profiles(): array {
       $byId[$id]['trafficReferrer'] = (string) ($u['trafficReferrer'] ?? $byId[$id]['trafficReferrer'] ?? '');
       if ($byId[$id]['phone'] === '') $byId[$id]['phone'] = (string) ($u['phone'] ?? '');
       if ($byId[$id]['name'] === '') $byId[$id]['name'] = (string) ($u['displayName'] ?? '');
-      if ($byId[$id]['lastSeen'] === '') $byId[$id]['lastSeen'] = (string) ($u['lastSeen'] ?? '');
+      $locSeen = (string) ($u['lastSeen'] ?? '');
+      $curSeen = (string) ($byId[$id]['lastSeen'] ?? '');
+      $locT = $locSeen !== '' ? (strtotime($locSeen) ?: 0) : 0;
+      $curT = $curSeen !== '' ? (strtotime($curSeen) ?: 0) : 0;
+      if ($locT > $curT) $byId[$id]['lastSeen'] = $locSeen;
+      $locDep = (float) ($u['realDepositTotal'] ?? 0);
+      if ($locDep > (float) ($byId[$id]['depositTotal'] ?? 0)) $byId[$id]['depositTotal'] = $locDep;
       if (($byId[$id]['country'] ?? '') === '') $byId[$id]['country'] = (string) ($u['countryCode'] ?? $u['country'] ?? '');
       if (empty($byId[$id]['lang'])) $byId[$id]['lang'] = (string) ($u['lang'] ?? $u['locale'] ?? '');
       continue;
@@ -1263,7 +1269,22 @@ function admin_deposits(): array {
       'createdAt' => (string) ($d['paidAt'] ?? $d['createdAt'] ?? $d['at'] ?? ''),
       'createdRaw' => (string) ($d['createdAt'] ?? $d['at'] ?? ''),
     ];
-    if (!isset($byId[$id])) $byId[$id] = $row;
+    if (!isset($byId[$id])) {
+      $byId[$id] = $row;
+    } else {
+      $cur = $byId[$id];
+      $rowPaid = admin_dep_is_paid($row);
+      $curPaid = admin_dep_is_paid($cur);
+      if ($rowPaid && !$curPaid) {
+        $byId[$id] = $row;
+      } else if ($rowPaid || !$curPaid) {
+        if ((float) ($row['amount'] ?? 0) > (float) ($cur['amount'] ?? 0)) $byId[$id]['amount'] = (float) $row['amount'];
+        if ((string) ($row['userId'] ?? '') !== '' && (string) ($cur['userId'] ?? '') === '') $byId[$id]['userId'] = $row['userId'];
+        $rowAt = (string) ($row['createdAt'] ?? '');
+        $curAt = (string) ($cur['createdAt'] ?? '');
+        if ($rowAt !== '' && strcmp($rowAt, $curAt) > 0) $byId[$id]['createdAt'] = $rowAt;
+      }
+    }
   }
   $list = array_values($byId);
   usort($list, static function ($a, $b) {
@@ -1347,16 +1368,17 @@ function admin_enrich_user_row(array $p, array $vaults): array {
 }
 
 function admin_online_count(): int {
+  $nSb = 0;
   $res = admin_sb_req('/rest/v1/rpc/count_online', [], 'POST', json_encode(['p_seconds' => 90]));
-  $raw = $res['raw'] ?? '';
-  if (is_numeric(trim((string) $raw))) return (int) trim((string) $raw);
-  $n = 0;
+  $raw = trim((string) ($res['raw'] ?? ''));
+  if (is_numeric($raw)) $nSb = (int) $raw;
+  $nLocal = 0;
   $cut = time() - 90;
   foreach (admin_profiles() as $p) {
     $t = strtotime((string) ($p['lastSeen'] ?? ''));
-    if ($t && $t >= $cut) $n++;
+    if ($t && $t >= $cut) $nLocal++;
   }
-  return $n;
+  return max($nSb, $nLocal);
 }
 
 function admin_otp_rows(): array {
