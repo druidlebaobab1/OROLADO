@@ -3050,7 +3050,7 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   html.is-android #screenTrade:not(.is-guest) .brand-lockup.mini{
     margin-right:auto;gap:3px;min-width:0}
   html.is-android #screenTrade:not(.is-guest) .topbar .brand{
-    display:inline!important;font-size:.56rem;white-space:nowrap}
+    display:inline!important;font-size:.62rem;white-space:nowrap}
   html.is-android #screenTrade:not(.is-guest) .logo-mark.sm{width:18px;height:18px}
   html.is-android #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
     min-height:30px;padding-top:5px;padding-bottom:5px;margin-bottom:-1px}
@@ -3063,6 +3063,6 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
 }
 @media (max-width:380px){
   html.is-android #screenTrade:not(.is-guest) .topbar .brand{
-    display:inline!important;font-size:.5rem}
+    display:inline!important;font-size:.56rem}
 }
 
