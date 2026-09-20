@@ -2630,3 +2630,30 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
     padding:0 4px;box-sizing:border-box}
 }
 
+/* Mobile only: opaque dark finish under CALL/PUT. Buttons untouched. */
+@media (max-width:859px){
+  html:not(.is-tv) #screenTrade,
+  html:not(.is-tv) #screenTrade .trade-shell,
+  html:not(.is-tv) #screenTrade .trade-wrap{
+    background:#0B0E14!important;background-color:#0B0E14!important}
+  html:not(.is-tv) #screenTrade:not(.hidden)::after{
+    content:"";position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none;
+    height:calc(56px + env(safe-area-inset-bottom, 24px));
+    background:#0B0E14;
+    background-image:linear-gradient(180deg,rgba(245,158,11,.07) 0%,#0B0E14 34%,#07090e 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+  html:not(.is-tv) #screenTrade .pad,
+  html:not(.is-tv) #screenTrade .pad.glass,
+  html:not(.is-tv).is-android #screenTrade .pad,
+  html:not(.is-tv).is-ios #screenTrade .pad{
+    background:#0B0E14!important;background-color:#0B0E14!important;
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+    isolation:isolate}
+  html:not(.is-tv) #screenTrade .pad > *{position:relative;z-index:1}
+  html:not(.is-tv) #screenTrade .pad::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
+    height:calc(28px + env(safe-area-inset-bottom, 18px));
+    background:linear-gradient(180deg,rgba(245,158,11,.08) 0%,#0B0E14 38%,#07090e 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}
+}
+
