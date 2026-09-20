@@ -307,7 +307,9 @@
             raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009 && !newDep && !D6.holdDepositReal;
           }
         } catch (eOpen) { raiseWhileOpen = false; }
-        if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen) next.real = remoteReal;
+        var played = (Number(u.realTrades) || 0) > 0 || (Number(u.realStakeVolume) || 0) > 0.009;
+        var staleHigh = played && !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009;
+        if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
       }
     }
     D6.holdPull = true;

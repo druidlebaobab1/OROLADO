@@ -1905,13 +1905,16 @@ if ($action === 'me') {
     $db['vault'][$uid]['demo'] = 1000000;
     save_db($file, $db);
   }
-  $officialReal = orolado_sync_official_real($uid, $jsonReal);
-  if (abs($officialReal - $jsonReal) > 0.009) {
-    if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
-      $db['vault'][$uid] = ['demo' => $demoNow, 'real' => 0];
+  $playedReal = function_exists('orolado_user_real_wagered')
+    ? orolado_user_real_wagered($db, is_array($me) ? ($me + ['id' => $uid]) : ['id' => $uid]) > 0.009
+    : false;
+  $officialReal = $jsonReal;
+  if (!$playedReal && function_exists('supabase_admin_vault')) {
+    $sbPeek = supabase_admin_vault($uid);
+    $sbPeekReal = $sbPeek ? orolado_money($sbPeek['real'] ?? 0) : null;
+    if ($sbPeekReal !== null && $sbPeekReal > $jsonReal + 0.009) {
+      $officialReal = $sbPeekReal;
     }
-    $db['vault'][$uid]['real'] = $officialReal;
-    save_db($file, $db);
   }
   $vault = [
     'demo' => $demoNow,

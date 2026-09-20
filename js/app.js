@@ -3980,14 +3980,12 @@
         D6.holdDepositReal = true;
         setTimeout(function () { D6.holdDepositReal = false; }, 25000);
       }
-      var locks = getBalanceLocks();
-      var localNow = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
-      var remoteHigher = remote.vault.real != null && Number(remote.vault.real) > localNow + 0.009;
-      if (locks && Date.now() < locks.until && !newDeposit && !D6.holdDepositReal && !remoteHigher) return;
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
       if (!(openRealStake() > 0) && remote.vault.real != null) {
+        D6.holdRemote = true;
         if (applyOfficialReal(remote.vault.real, { fromMe: true, force: true, allowRaise: true })) updateBalance(false);
+        setTimeout(function () { D6.holdRemote = false; }, 25000);
       } else {
         applyQuietVault(remote);
       }
