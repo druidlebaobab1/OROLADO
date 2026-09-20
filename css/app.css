@@ -2893,25 +2893,25 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   #adminUserModal .btn-close,
   #btnCloseDrawer{
     position:absolute!important;
-    top:8px!important;
-    right:8px!important;
+    top:6px!important;
+    right:6px!important;
     left:auto!important;
     bottom:auto!important;
-    width:32px!important;
-    height:32px!important;
-    min-width:32px!important;
-    min-height:32px!important;
+    width:24px!important;
+    height:24px!important;
+    min-width:24px!important;
+    min-height:24px!important;
     margin:0!important;
     padding:0!important;
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
     border-radius:50%!important;
-    border:1px solid rgba(245,158,11,.6)!important;
+    border:1px solid rgba(245,158,11,.65)!important;
     background:rgba(12,16,26,.96)!important;
     color:#F8FAFC!important;
-    box-shadow:0 0 0 1px rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.45)!important;
-    font-size:1.05rem!important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.1),0 3px 8px rgba(0,0,0,.4)!important;
+    font-size:.82rem!important;
     font-weight:500!important;
     line-height:1!important;
     z-index:90!important;
@@ -2921,9 +2921,16 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   html.is-android .drawer-head .btn-close,
   #btnCloseDrawer{
     top:calc(6px + env(safe-area-inset-top, 0px))!important;
-    right:10px!important}
-  .drawer-head{padding-right:48px}
-  .modal-head-row .modal-title,.wd-modal-head .modal-title{padding-right:40px}
+    right:8px!important}
+  .drawer-head{padding-right:40px}
+  .drawer-head h2{padding-right:32px;box-sizing:border-box}
+  .modal-title,
+  .modal-head-row .modal-title,
+  .wd-modal-head .modal-title,
+  #withdrawModal .wd-modal-head .modal-title,
+  #depositModal .modal-title{
+    padding-right:34px!important;
+    box-sizing:border-box}
 
   .deposit-box,.withdraw-box,
   #depositModal .deposit-box:not(.is-crypto),
@@ -2942,27 +2949,55 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   #depositModal #payMethodUsdt .pay-crypto-badge,
   #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:20px!important;height:20px!important}
 
-  #withdrawModal .withdraw-box,
-  html.is-android #withdrawModal .withdraw-box,
-  html.is-ios #withdrawModal .withdraw-box{
+  html.is-android #withdrawModal .withdraw-box{
     overflow:hidden!important;
     max-height:82dvh!important;
     padding:8px 8px 6px!important}
-  #withdrawModal #wdStepGrid,
-  #withdrawModal #wdStepForm:not(.hidden){
+  html.is-android #withdrawModal #wdStepGrid,
+  html.is-android #withdrawModal .withdraw-box.is-wd-form #wdStepForm:not(.hidden){
     overflow:hidden!important;
     overscroll-behavior:none}
-  #withdrawModal .wd-modal-head{min-height:36px;margin:0 0 4px}
-  #withdrawModal .wd-bal{padding:8px 8px!important;margin:0 0 6px!important}
-  #withdrawModal .wd-bal-amt{font-size:1.15rem!important}
-  #withdrawModal .wd-group-label{margin:4px 0 3px!important;font-size:.5rem!important}
-  #withdrawModal .wd-card-grid{gap:3px!important}
-  #withdrawModal .wd-card,
-  #withdrawModal .withdraw-box.is-wd-form .wd-card{
+  html.is-android #withdrawModal .wd-modal-head{min-height:36px;margin:0 0 4px}
+  html.is-android #withdrawModal .wd-bal{padding:8px 8px!important;margin:0 0 6px!important}
+  html.is-android #withdrawModal .wd-bal-amt{font-size:1.15rem!important}
+  html.is-android #withdrawModal .wd-group-label{margin:4px 0 3px!important;font-size:.5rem!important}
+  html.is-android #withdrawModal .wd-card-grid{gap:3px!important}
+  html.is-android #withdrawModal .wd-card{
     min-height:28px!important;padding:3px 5px!important;font-size:.52rem!important}
-  #withdrawModal .wd-card-ico,
-  #withdrawModal .withdraw-box.is-wd-form .wd-card-ico{width:16px!important;height:16px!important}
-  #wdStepForm .field{margin-bottom:4px}
-  #wdStepForm .field input,#wdStepForm .field select{min-height:34px;padding:7px 9px}
+  html.is-android #withdrawModal .wd-card-ico{width:16px!important;height:16px!important}
+
+  html.is-android #withdrawModal .withdraw-box.is-wd-form{
+    overflow:hidden!important;
+    max-height:80dvh!important;
+    padding:6px 8px 6px!important}
+  html.is-android #wdStepForm .field{margin-bottom:3px;gap:2px}
+  html.is-android #wdStepForm .field input,
+  html.is-android #wdStepForm .field select,
+  html.is-android #withdrawAmt,
+  html.is-android #wdDestination,
+  html.is-android #wdDial,
+  html.is-android #wdPhone,
+  html.is-android #wdFullName,
+  html.is-android #wdCardNumber,
+  html.is-android #wdCardName,
+  html.is-android #wdBankName,
+  html.is-android #wdIban,
+  html.is-android #wdBankHolder,
+  html.is-android #wdOtpCode{
+    min-height:30px!important;
+    height:auto!important;
+    padding:5px 8px!important;
+    font-size:.78rem!important}
+
+  html.is-ios #withdrawModal .withdraw-box:not(.is-wd-form){
+    padding:10px 10px 8px!important;
+    max-height:88dvh!important}
+  html.is-ios #withdrawModal .withdraw-box:not(.is-wd-form) .wd-group-label{
+    margin:6px 0 4px!important;font-size:.56rem!important}
+  html.is-ios #withdrawModal .withdraw-box:not(.is-wd-form) .wd-card-grid{gap:5px!important}
+  html.is-ios #withdrawModal .withdraw-box:not(.is-wd-form) .wd-card{
+    min-height:36px!important;padding:5px 6px!important;font-size:.6rem!important}
+  html.is-ios #withdrawModal .withdraw-box:not(.is-wd-form) .wd-card-ico{
+    width:20px!important;height:20px!important}
 }
 
