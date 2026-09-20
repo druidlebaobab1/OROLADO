@@ -167,9 +167,9 @@
   }
 
   function applySession(user, vault) {
-    var realOnly = { real: 0 };
-    if (vault && vault.real != null) realOnly.real = Number(vault.real) || 0;
-    D6.Store.importRemote(user, realOnly);
+    var incoming = Number(vault && vault.real);
+    var payload = (isFinite(incoming) && incoming > 0.009) ? { real: incoming } : null;
+    D6.Store.importRemote(user, payload);
     D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
   }
 

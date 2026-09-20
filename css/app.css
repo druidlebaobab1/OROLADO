@@ -632,9 +632,7 @@ html.is-android .modal-backdrop.active .btn-gold{
   pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:9999}
 html.is-android .modal-backdrop.active .btn-close{
   pointer-events:auto!important;touch-action:manipulation;position:absolute!important;z-index:9999}
-html.is-android #depositModal .deposit-box:not(.is-crypto){padding-top:8px}
-html.is-android #depositModal #closeDeposit{
-  top:6px!important;right:8px!important;width:34px;height:34px;min-width:34px;min-height:34px}
+html.is-android #depositModal .deposit-box:not(.is-crypto){padding-top:48px}
 html.is-android .drawer-head .btn-close{position:static!important;top:auto;right:auto;z-index:5}
 html.is-android .trade-hint,
 html.is-android [data-i18n="tradeHint"],
@@ -935,8 +933,7 @@ html.is-android #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
   width:fit-content;max-width:100%;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
   color:#6EE7B7;font-size:.66rem;font-weight:800}
 @media (max-width:480px){
-  .deposit-box:not(.is-crypto){width:min(440px,94vw);max-height:92dvh;overflow:auto;padding:10px 12px 14px}
-  #depositModal #closeDeposit{top:8px!important;right:8px!important}
+  .deposit-box:not(.is-crypto){width:min(440px,94vw);max-height:92dvh;overflow:auto;padding:48px 12px 14px 12px}
   #depositModal #payMethodCard .pay-method-desc{font-size:.56rem;line-height:1.2;margin-top:3px}
   #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(5,minmax(0,1fr))}
   #depositModal #payMethodUsdt .pay-crypto-cell b{font-size:.56rem}
@@ -2513,12 +2510,34 @@ html body .chart-fs-live{display:none!important}
   opacity:.7;cursor:default;text-decoration:none;pointer-events:none;color:var(--muted)!important;font-weight:600}
 #wdOtpField .btn-wd-resend,#btnWdOtpResend{
   display:flex;align-items:center;justify-content:center;width:100%;box-sizing:border-box;
-  margin:12px 0 4px;min-height:46px;padding:12px 16px;border-radius:12px;border:1px solid #F5A623;
-  background:rgba(245,166,35,.16);color:#F5A623;font:inherit;font-size:.95rem;font-weight:800;
+  margin:8px 0 2px;min-height:36px;padding:8px 12px;border-radius:10px;border:1px solid #F5A623;
+  background:rgba(245,166,35,.16);color:#F5A623;font:inherit;font-size:.8rem;font-weight:700;
   letter-spacing:.02em;cursor:pointer;text-decoration:none;pointer-events:auto;touch-action:manipulation}
 #wdOtpField .btn-wd-resend.is-waiting,#btnWdOtpResend.is-waiting,#btnWdOtpResend:disabled{
   background:#3a4150!important;border-color:#4b5563!important;color:#9aa3b2!important;
   opacity:.85;cursor:default;pointer-events:none;font-weight:700}
+@media (max-width:480px){
+  #wdOtpField .btn-wd-resend,#btnWdOtpResend{min-height:32px;margin:6px 0 2px;padding:6px 10px;font-size:.74rem;border-radius:8px}
+}
+
+#depositModal .deposit-wager-note,
+#depositSuccessModal .deposit-wager-note,
+#depositWagerNote,#depositWagerNoteOk,#depositWagerNoteSuccess{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+
+#depositModal .deposit-box:not(.is-crypto){padding-top:52px;position:relative}
+#depositModal #closeDeposit,
+#depositModal .deposit-close,
+html.is-android #depositModal #closeDeposit,
+html.is-ios #depositModal #closeDeposit,
+html.is-android .modal-backdrop.active #depositModal #closeDeposit{
+  position:absolute!important;top:10px!important;right:10px!important;left:auto!important;
+  width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;
+  display:inline-flex!important;align-items:center;justify-content:center;
+  border-radius:50%!important;border:1px solid rgba(255,255,255,.18)!important;
+  background:rgba(15,23,42,.92)!important;color:#F1F5F9!important;
+  box-shadow:0 4px 14px rgba(0,0,0,.4)!important;
+  font-size:1.35rem!important;font-weight:500;line-height:1!important;
+  z-index:80!important;padding:0!important;transform:none!important}
 #btnForgotPrimary.is-waiting,#btnPassPrimary.is-waiting,.btn-gold.is-waiting{
   opacity:.55;filter:grayscale(.45);pointer-events:none;cursor:not-allowed;
   background:#4b5563!important;color:#e5e7eb!important;box-shadow:none!important}

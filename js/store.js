@@ -43,7 +43,10 @@
   function writeRealLs(id, value) {
     if (!id) return;
     try {
-      localStorage.setItem(realLsKey(id), String(Math.max(0, Number(value) || 0)));
+      var n = Math.max(0, Number(value) || 0);
+      var prev = readRealLs(id);
+      if (n <= 0.009 && prev != null && prev > 0.009) return;
+      localStorage.setItem(realLsKey(id), String(n));
     } catch (eWr) { /* ignore */ }
   }
 
@@ -198,9 +201,8 @@
       var kept = readDemoLs(user.id);
       if (kept != null) vault[user.id].demo = kept;
       var keptReal = readRealLs(user.id);
-      if (keptReal != null && keptReal > 0 && !(Number(vault[user.id].real) > 0)) {
-        vault[user.id].real = keptReal;
-      }
+      var curReal = Number(vault[user.id].real) || 0;
+      if (keptReal != null && keptReal > curReal + 0.009) vault[user.id].real = keptReal;
     }
     return user;
   }
@@ -371,12 +373,16 @@
           var incomingDep = Number(user._incomingDepositTotal != null ? user._incomingDepositTotal : user.realDepositTotal) || 0;
           var hadDep = Number(prev && prev.realDepositTotal) || 0;
           var newDeposit = incomingDep > hadDep + 0.009;
-          if (isFinite(nextReal) && nextReal > 0.009) {
-            if (prevReal <= 0.009 || !!D6.holdDepositReal || newDeposit) next.real = nextReal;
-            else next.real = Math.min(nextReal, prevReal);
+          var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0);
+          if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
+            next.real = Math.max(nextReal, keep);
+          } else if (isFinite(nextReal) && nextReal > 0.009 && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal) {
+            next.real = nextReal;
+          } else if (keep > 0.009) {
+            next.real = keep;
+          } else if (isFinite(nextReal) && nextReal >= 0) {
+            next.real = nextReal;
           }
-          else if (isFinite(nextReal) && nextReal >= 0 && !(prevReal > 0)) next.real = 0;
-          else if (isFinite(nextReal) && nextReal <= 0.009 && prevReal > 0.009) next.real = prevReal;
         }
         var keptDemo = readDemoLs(user.id);
         if (keptDemo != null && (keptDemo > 0 || Number(user.demoTrades) > 0 || Number(user.trades) > 0)) {

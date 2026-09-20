@@ -1912,6 +1912,14 @@ if ($action === 'me') {
   orolado_repair_overwritten_reals_once();
   $jsonVault = $db['vault'][$uid] ?? ['demo' => 1000000, 'real' => 0];
   $jsonReal = orolado_money($jsonVault['real'] ?? 0);
+  if (function_exists('orolado_recover_wiped_real')) {
+    $recovered = orolado_recover_wiped_real($db, $uid, is_array($me) ? $me : []);
+    if ($recovered > $jsonReal + 0.009) {
+      $jsonReal = $recovered;
+      $db['vault'][$uid]['real'] = $jsonReal;
+      save_db($file, $db);
+    }
+  }
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);
   if ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0) {
     $demoNow = 1000000;

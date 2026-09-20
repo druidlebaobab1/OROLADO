@@ -855,6 +855,33 @@ function orolado_official_real(array $db, string $uid): float {
   return orolado_money(max($json, $sbReal));
 }
 
+/** Si le coffre réel a été remis à 0 alors qu’un dépôt jamais joué existe, on le rétablit. */
+function orolado_recover_wiped_real(array &$db, string $uid, array $user = []): float {
+  $cur = orolado_official_real($db, $uid);
+  if ($uid === '' || $cur > 0.009) return $cur;
+  if (!$user && isset($db['users'][$uid]) && is_array($db['users'][$uid])) $user = $db['users'][$uid];
+  $deps = orolado_user_deposit_total($db, $uid, $user);
+  if ($deps <= 0.009) return $cur;
+  $wd = 0.0;
+  foreach (($db['withdrawals'] ?? []) as $w) {
+    if (!is_array($w)) continue;
+    if ((string) ($w['userId'] ?? $w['user_id'] ?? '') !== $uid) continue;
+    $st = strtolower((string) ($w['status'] ?? ''));
+    if (!in_array($st, ['approved', 'paid', 'completed', 'success'], true)) continue;
+    $wd += orolado_money($w['amount'] ?? 0);
+  }
+  $played = function_exists('orolado_user_real_wagered')
+    ? orolado_user_real_wagered($db, $user)
+    : orolado_money($user['realStakeVolume'] ?? 0);
+  if ($played > 0.009 || $wd > 0.009) return $cur;
+  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  }
+  $db['vault'][$uid]['real'] = $deps;
+  if (function_exists('supabase_set_real')) supabase_set_real($uid, $deps);
+  return $deps;
+}
+
 /** Crédit/débit réel définitif (valeur absolue). Option dépôt = même registre que les vrais paiements. */
 function orolado_ledger_apply(array &$db, string $uid, float $delta, string $note, bool $asDeposit = false): array {
   $delta = orolado_money($delta);

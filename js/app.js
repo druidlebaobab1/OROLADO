@@ -522,26 +522,13 @@
   }
 
   function paintDepositWagerNotes() {
-    var msg = depositWagerText();
-    var select = $('depositStepSelect');
-    var hintHost = select || ($('depositModal') && $('depositModal').querySelector('.field'));
-    var formNote = ensureDepositWagerNote(hintHost, 'depositWagerNote');
-    if (formNote) {
-      formNote.textContent = msg;
-      formNote.hidden = false;
-    }
-    var okHost = $('depositStepCryptoOk') || ($('cryptoOkCopy') && $('cryptoOkCopy').parentElement);
-    var okNote = ensureDepositWagerNote(okHost, 'depositWagerNoteOk');
-    if (okNote) {
-      okNote.textContent = msg;
-      okNote.hidden = false;
-    }
-    var successBox = $('depositSuccessModal') && $('depositSuccessModal').querySelector('.convert-box');
-    var successNote = ensureDepositWagerNote(successBox || $('depositSuccessModal'), 'depositWagerNoteSuccess');
-    if (successNote) {
-      successNote.textContent = msg;
-      successNote.hidden = false;
-    }
+    ['depositWagerNote', 'depositWagerNoteOk', 'depositWagerNoteSuccess'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.textContent = '';
+      el.hidden = true;
+      el.style.display = 'none';
+    });
   }
 
   function announceDepositWager(forceToast) {
