@@ -861,7 +861,28 @@ function orolado_real_from_books(array $db, string $uid, array $user = []): ?flo
   return orolado_money(max(0, $deps + $adj - $wd - $stakes + $credits));
 }
 
-/** Aligne les deux coffres sur le solde de jeu réel (pertes comprises, pas un max). */
+/** Choisit le solde à garder : un gain (le plus haut si le grand livre le confirme), une perte (le plus bas). */
+function orolado_pick_persisted_real(float $jsonReal, $sbReal, $books, bool $played): float {
+  $jsonReal = orolado_money($jsonReal);
+  if ($sbReal === null) {
+    if (is_numeric($books) && orolado_money($books) > $jsonReal + 0.009) return orolado_money($books);
+    return $jsonReal;
+  }
+  $sbReal = orolado_money($sbReal);
+  $hi = orolado_money(max($jsonReal, $sbReal));
+  $lo = orolado_money(min($jsonReal, $sbReal));
+  if (is_numeric($books)) {
+    $books = orolado_money($books);
+    if (abs($books - $hi) <= abs($books - $lo) + 0.05) return $hi;
+    return $lo;
+  }
+  if (!$played) return $hi;
+  if ($jsonReal > $sbReal + 0.009) return $jsonReal;
+  if ($sbReal > $jsonReal + 0.009) return $sbReal;
+  return $jsonReal;
+}
+
+/** Aligne les deux coffres sur le solde de jeu réel (gains et pertes). */
 function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $jsonReal = orolado_money($jsonReal);
   $sb = supabase_admin_vault($uid);
@@ -870,18 +891,7 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $user = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
   $played = orolado_user_real_wagered($db, $user + ['id' => $uid]) > 0.009;
   $books = orolado_real_from_books($db, $uid, $user);
-  $target = $jsonReal;
-  if ($sbReal !== null && $sbReal > $jsonReal + 0.009 && $books !== null && $books + 0.05 >= $sbReal) {
-    $target = $sbReal;
-  } else if ($played && $jsonReal > 0.009) {
-    $target = $jsonReal;
-  } else if ($played && $books !== null) {
-    $target = $books;
-  } else if (!$played) {
-    $target = $sbReal === null ? $jsonReal : orolado_money(max($jsonReal, $sbReal));
-  } else if ($sbReal !== null && $sbReal > $jsonReal + 0.009) {
-    $target = $sbReal;
-  }
+  $target = orolado_pick_persisted_real($jsonReal, $sbReal, $books, $played);
   $target = orolado_money(max(0, $target));
   if ($sbReal === null || abs($target - $sbReal) > 0.009) {
     supabase_set_real($uid, $target);
@@ -936,9 +946,7 @@ function orolado_official_real(array $db, string $uid): float {
   $user = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
   $played = orolado_user_real_wagered($db, $user + ['id' => $uid]) > 0.009;
   $books = function_exists('orolado_real_from_books') ? orolado_real_from_books($db, $uid, $user) : null;
-  if ($sbReal > $json + 0.009 && $books !== null && $books + 0.05 >= $sbReal) return $sbReal;
-  if ($played && $json > 0.009) return $json;
-  return orolado_money(max($json, $sbReal));
+  return orolado_pick_persisted_real($json, $sbReal, $books, $played);
 }
 
 /** Si le coffre réel a été remis à 0 alors qu’un dépôt jamais joué existe, on le rétablit. */
