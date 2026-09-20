@@ -3001,3 +3001,22 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     width:20px!important;height:20px!important}
 }
 
+/* === ORO-HIST-CLOSES : uniquement les 2 croix d'historique, coin haut droit. === */
+@media (max-width:859px){
+  #financeModal .modal-head-row,
+  #historySheet .modal-head-row{
+    position:static!important;
+    padding-right:32px}
+  #financeModal #closeFinance,
+  #historySheet #closeHistorySheet,
+  html.is-android #financeModal #closeFinance,
+  html.is-ios #financeModal #closeFinance,
+  html.is-android #historySheet #closeHistorySheet,
+  html.is-ios #historySheet #closeHistorySheet{
+    position:absolute!important;
+    top:6px!important;
+    right:6px!important;
+    left:auto!important;
+    bottom:auto!important}
+}
+
