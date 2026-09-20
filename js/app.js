@@ -439,7 +439,7 @@
     u = u || user();
     var deposits = Number(u && u.realDepositTotal) || 0;
     var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
-    var required = Number(u && u.requiredWagering) || D6.roundMoney(deposits * mult);
+    var required = D6.roundMoney(Math.max(0, deposits) * mult);
     var done = Number(u && (u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume)) || 0;
     if (u) {
       u.requiredWagering = required;

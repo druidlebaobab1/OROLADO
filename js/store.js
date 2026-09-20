@@ -603,7 +603,7 @@
       }
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;
-      var required = Number(user.requiredWagering) || D6.roundMoney(deposits * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
+      var required = D6.roundMoney(Math.max(0, deposits) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
       var done = Number(user.totalWageredSinceDeposit != null ? user.totalWageredSinceDeposit : user.realStakeVolume) || 0;
       if (done < required) {
         var left = D6.roundMoney(required - done);

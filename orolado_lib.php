@@ -635,6 +635,42 @@ function orolado_session_inspect(array &$db, ?string $token): array {
   return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 }
 
+/** Somme à vie des dépôts validés (liste + compteur), jamais le premier seul. */
+function orolado_user_deposit_total(array $db, string $uid, array $user = []): float {
+  $sum = 0.0;
+  foreach (($db['deposits'] ?? []) as $d) {
+    if (!is_array($d)) continue;
+    $owner = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($uid === '' || $owner !== $uid) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $sum += orolado_money($d['amount'] ?? 0);
+  }
+  $field = orolado_money($user['realDepositTotal'] ?? 0);
+  return orolado_money(max($sum, $field));
+}
+
+/** Palier x2 à vie : mises réelles ≥ 2 × tous les dépôts. */
+function orolado_wager_check(array $db, array $user): array {
+  $uid = (string) ($user['id'] ?? '');
+  $deposits = orolado_user_deposit_total($db, $uid, $user);
+  $required = orolado_money($deposits * 2);
+  $done = max(
+    orolado_money($user['realStakeVolume'] ?? 0),
+    orolado_money($user['totalWageredSinceDeposit'] ?? 0)
+  );
+  $left = orolado_money(max(0.0, $required - $done));
+  $ok = ($required <= 0.0001) || ($done + 0.0001 >= $required);
+  return [
+    'ok' => $ok,
+    'required' => $required,
+    'done' => $done,
+    'left' => $left,
+    'deposits' => $deposits,
+    'msg' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
+  ];
+}
+
 /** Aligne Supabase sur le grand livre JSON sans jamais écraser un solde plus élevé côté dépôt. */
 function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $jsonReal = orolado_money($jsonReal);
@@ -731,6 +767,7 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
     ];
     if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
       $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $delta);
+      $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
     }
     supabase_insert_deposit([
       'id' => $ref,

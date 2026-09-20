@@ -1227,6 +1227,22 @@ if ($action === 'withdrawOtp') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide']);
     exit;
   }
+  $wagerOtp = function_exists('orolado_wager_check')
+    ? orolado_wager_check($db, is_array($me) ? $me : [])
+    : ['ok' => true];
+  if (empty($wagerOtp['ok'])) {
+    echo json_encode([
+      'ok' => false,
+      'server' => true,
+      'reason' => $wagerOtp['msg'] ?? 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
+      'wager' => [
+        'done' => $wagerOtp['done'] ?? 0,
+        'required' => $wagerOtp['required'] ?? 0,
+        'left' => $wagerOtp['left'] ?? 0,
+      ],
+    ]);
+    exit;
+  }
   if (!isset($db['withdrawOtps']) || !is_array($db['withdrawOtps'])) $db['withdrawOtps'] = [];
   $prev = $db['withdrawOtps'][$uid] ?? null;
   $now = time();
@@ -1316,24 +1332,22 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
     exit;
   }
-  // Wagering ×2 : volume de MISES réelles ≥ 2 × dépôts réels validés (côté serveur uniquement).
-  $depositTotal = orolado_money($me['realDepositTotal'] ?? 0);
-  $stakeDone = max(
-    orolado_money($me['realStakeVolume'] ?? 0),
-    orolado_money($me['totalWageredSinceDeposit'] ?? 0)
-  );
-  $required = orolado_money($me['requiredWagering'] ?? 0);
-  if ($required <= 0) $required = orolado_money($depositTotal * 2);
-  if ($stakeDone < $required) {
-    $left = max(0.0, orolado_money($required - $stakeDone));
+  // Wagering ×2 à vie : mises ≥ 2 × TOUS les dépôts validés (pas le premier seul).
+  $freshUser = (isset($db['users'][$uidOtp]) && is_array($db['users'][$uidOtp]))
+    ? array_merge($me, $db['users'][$uidOtp])
+    : $me;
+  $wager = function_exists('orolado_wager_check')
+    ? orolado_wager_check($db, is_array($freshUser) ? $freshUser : [])
+    : ['ok' => false, 'required' => 0, 'done' => 0, 'left' => 0, 'msg' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.'];
+  if (empty($wager['ok'])) {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
+      'reason' => $wager['msg'] ?? 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
       'wager' => [
-        'done' => $stakeDone,
-        'required' => $required,
-        'left' => $left
+        'done' => $wager['done'] ?? 0,
+        'required' => $wager['required'] ?? 0,
+        'left' => $wager['left'] ?? 0
       ]
     ]);
     exit;
