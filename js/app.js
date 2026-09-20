@@ -662,9 +662,18 @@
     if (locks && Date.now() < locks.until && !remoteHigher && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
     if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
-    if (openRealStake() > 0 && incoming > local + 0.009) return;
     if (Math.abs(incoming - local) <= 0.009) return;
     if (adoptOfficialVault(remote.vault, { fromMe: true, force: !(openRealStake() > 0), allowRaise: true })) updateBalance(false);
+  }
+  function pokeLiveReal() {
+    var u = user();
+    if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
+    if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
+    D6.Api.post('me', {}).then(function (r) {
+      if (watchBan(r)) return;
+      adoptWagerBook(r);
+      applyQuietVault(r);
+    }).catch(function () { /* ignore */ });
   }
   function holdScreenAwake() {
     if (!navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -693,11 +702,7 @@
       var u = user();
       if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
       if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
-      D6.Api.post('me', {}).then(function (r) {
-        if (watchBan(r)) return;
-        adoptWagerBook(r);
-        applyQuietVault(r);
-      }).catch(function () { /* ignore */ });
+      pokeLiveReal();
     }
     banWatchTimer = setInterval(pollMe, 8000);
     holdScreenAwake();
@@ -2546,6 +2551,7 @@
     if (now - lastExecGuard < 160 && lastExecSide === next) return;
     lastExecGuard = now;
     lastExecSide = next;
+    pokeLiveReal();
     if (tradeQ.length >= (TRADE_Q_MAX || 12)) return;
     tradeQ.push(next);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
@@ -3982,7 +3988,7 @@
       }
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
-      if (!(openRealStake() > 0) && remote.vault.real != null) {
+      if (remote.vault.real != null && !(openRealStake() > 0)) {
         D6.holdRemote = true;
         if (applyOfficialReal(remote.vault.real, { fromMe: true, force: true, allowRaise: true })) updateBalance(false);
         setTimeout(function () { D6.holdRemote = false; }, 25000);
