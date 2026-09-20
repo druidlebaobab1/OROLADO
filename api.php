@@ -1623,7 +1623,8 @@ if ($action === 'placeOrder') {
   $outVault = $placed['vault'] ?? ($db['vault'][$uid] ?? ['demo' => 0, 'real' => 0]);
   if ($mode === 'real' && empty($placed['duplicate'])) {
     $jsonReal = orolado_money($outVault['real'] ?? 0);
-    $outVault['real'] = orolado_sync_official_real($uid, $jsonReal);
+    supabase_set_real($uid, $jsonReal);
+    $outVault['real'] = $jsonReal;
   } else if ($mode === 'real' && $officialReal !== null) {
     $outVault['real'] = $officialReal;
   }
@@ -1805,37 +1806,15 @@ if ($action === 'settleOrder') {
   if (($settled['mode'] ?? '') === 'real') {
     $jsonReal = orolado_money($vaultOut['real'] ?? 0);
     $creditAmt = orolado_money($settled['credit'] ?? 0);
-    $sbReal = null;
-    if (!empty($settled['late'])) {
-      supabase_set_real($uid, $jsonReal);
-      $sbVault = supabase_admin_vault($uid);
-      if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
-    } else if (!empty($settled['fresh']) && $creditAmt > 0) {
+    if (!empty($settled['fresh']) && $creditAmt > 0) {
       $resolved = supabase_resolve_trade($uid, $oid, $creditAmt);
-      if ($resolved) {
-        $sbReal = orolado_money($resolved['real'] ?? 0);
-      } else {
-        supabase_credit_real($uid, $creditAmt, false);
-        $sbVault = supabase_admin_vault($uid);
-        if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
-      }
-    } else {
-      $sbVault = supabase_admin_vault($uid);
-      if ($sbVault) $sbReal = orolado_money($sbVault['real'] ?? 0);
+      if (!$resolved) supabase_credit_real($uid, $creditAmt, false);
     }
-    $official = $jsonReal;
-    if ($sbReal !== null) {
-      if ($creditAmt <= 0.0001) {
-        $official = orolado_money(min($jsonReal, $sbReal));
-      } else if ($sbReal <= $jsonReal + 0.009) {
-        $official = $sbReal >= 0 ? $sbReal : $jsonReal;
-        if ($sbReal + 0.009 < $jsonReal) $official = $jsonReal;
-      }
-    }
-    $vaultOut['real'] = $official;
-    with_db_lock(function ($box) use ($uid, $official) {
+    supabase_set_real($uid, $jsonReal);
+    $vaultOut['real'] = $jsonReal;
+    with_db_lock(function ($box) use ($uid, $jsonReal) {
       if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-      $box->db['vault'][$uid]['real'] = $official;
+      $box->db['vault'][$uid]['real'] = $jsonReal;
       return ['ok' => true];
     });
   }
@@ -1927,6 +1906,13 @@ if ($action === 'me') {
     save_db($file, $db);
   }
   $officialReal = orolado_sync_official_real($uid, $jsonReal);
+  if (abs($officialReal - $jsonReal) > 0.009) {
+    if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+      $db['vault'][$uid] = ['demo' => $demoNow, 'real' => 0];
+    }
+    $db['vault'][$uid]['real'] = $officialReal;
+    save_db($file, $db);
+  }
   $vault = [
     'demo' => $demoNow,
     'real' => $officialReal

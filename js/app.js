@@ -1551,11 +1551,11 @@
     var allowRaise = !!(opts && opts.allowRaise) || !!D6.holdDepositReal;
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
-    if (locked && Math.abs(real - local) > 0.02 && !allowRaise) return false;
-    if (lastSettleAt && Date.now() - lastSettleAt < 30000 && Math.abs(real - local) > 0.02 && !allowRaise) return false;
-    if (real > local + 0.009 && !allowRaise) return false;
-    if (!force && openRealStake() > 0 && real > local + 0.009 && !allowRaise) return false;
-    if (real <= 0.009 && local > 0.009) return false;
+    if (locked && Math.abs(real - local) > 0.02 && !allowRaise && !force && !fromMe) return false;
+    if (lastSettleAt && Date.now() - lastSettleAt < 30000 && Math.abs(real - local) > 0.02 && !allowRaise && !force && !fromMe) return false;
+    if (real > local + 0.009 && !allowRaise && !force && !fromMe) return false;
+    if (!force && !fromMe && openRealStake() > 0 && real > local + 0.009 && !allowRaise) return false;
+    if (real <= 0.009 && local > 0.009 && !force && !fromMe) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);
@@ -2507,11 +2507,9 @@
           return true;
         }
         if (remote && remote.ok && remote.vault && settleMode === 'real') {
-          var uNow = user();
-          var localReal = uNow && D6.Store.realBalance ? Number(D6.Store.realBalance(uNow)) || 0 : 0;
           var srvReal = Number(remote.vault.real);
-          if (isFinite(srvReal) && Math.abs(srvReal - localReal) <= 0.02) {
-            applyOfficialReal(srvReal, { fromMe: true });
+          if (isFinite(srvReal) && srvReal >= 0) {
+            applyOfficialReal(srvReal, { fromMe: true, force: true });
             updateBalance(true);
           }
           D6.holdRemote = false;
@@ -2655,10 +2653,9 @@
       D6.Api.post('placeOrder', placeBody).then(function (remote) {
         if (watchBan(remote)) return;
         if (remote && remote.ok && mode === 'real' && remote.vault && remote.vault.real != null) {
-          var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
           var srvReal = Number(remote.vault.real);
-          if (isFinite(srvReal) && Math.abs(srvReal - localReal) <= 0.02) {
-            applyOfficialReal(srvReal);
+          if (isFinite(srvReal) && srvReal >= 0) {
+            applyOfficialReal(srvReal, { fromMe: true, force: true });
             updateBalance(true);
           }
         }
@@ -3987,7 +3984,7 @@
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
       if (!(openRealStake() > 0) && remote.vault.real != null) {
-        if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: newDeposit || !!D6.holdDepositReal })) updateBalance(false);
+        if (applyOfficialReal(remote.vault.real, { fromMe: true, force: true, allowRaise: true })) updateBalance(false);
       } else {
         applyQuietVault(remote);
       }

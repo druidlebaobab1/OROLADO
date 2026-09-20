@@ -44,8 +44,6 @@
     if (!id) return;
     try {
       var n = Math.max(0, Number(value) || 0);
-      var prev = readRealLs(id);
-      if (n <= 0.009 && prev != null && prev > 0.009) return;
       localStorage.setItem(realLsKey(id), String(n));
     } catch (eWr) { /* ignore */ }
   }
@@ -374,9 +372,10 @@
           var hadDep = Number(prev && prev.realDepositTotal) || 0;
           var newDeposit = incomingDep > hadDep + 0.009;
           var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0);
+          var played = (Number(user.realTrades) || 0) > 0 || (Number(user.realStakeVolume) || 0) > 0.009;
           if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
             next.real = Math.max(nextReal, keep);
-          } else if (isFinite(nextReal) && nextReal > 0.009 && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal) {
+          } else if (isFinite(nextReal) && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal && (nextReal > 0.009 || played)) {
             next.real = nextReal;
           } else if (keep > 0.009) {
             next.real = keep;
