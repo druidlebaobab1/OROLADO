@@ -2315,12 +2315,10 @@
           var uNow = user();
           var localReal = uNow && D6.Store.realBalance ? Number(D6.Store.realBalance(uNow)) || 0 : 0;
           var srvReal = Number(remote.vault.real);
-          if (isFinite(srvReal) && srvReal > localReal + 0.009) {
-            D6.holdRemote = false;
-            return true;
+          if (isFinite(srvReal) && Math.abs(srvReal - localReal) <= 0.02) {
+            applyOfficialReal(srvReal, { fromMe: true });
+            updateBalance(true);
           }
-          applyOfficialReal(srvReal, { force: true });
-          updateBalance(true);
           D6.holdRemote = false;
           return true;
         }
@@ -2460,16 +2458,14 @@
       };
       D6.Api.post('placeOrder', placeBody).then(function (remote) {
         if (watchBan(remote)) return;
-        if (remote && remote.ok) {
-          if (mode === 'real' && remote.vault && remote.vault.real != null) {
-            applyOfficialReal(remote.vault.real);
+        if (remote && remote.ok && mode === 'real' && remote.vault && remote.vault.real != null) {
+          var localReal = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
+          var srvReal = Number(remote.vault.real);
+          if (isFinite(srvReal) && Math.abs(srvReal - localReal) <= 0.02) {
+            applyOfficialReal(srvReal);
             updateBalance(true);
           }
-          return;
         }
-        return D6.Api.post('placeOrder', placeBody);
-      }).catch(function () {
-        D6.Api.post('placeOrder', placeBody);
       });
     }
     return true;
