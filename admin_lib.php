@@ -315,10 +315,10 @@ function admin_auth_users_count(): int {
 }
 
 function admin_inscrits_count(): int {
-  $cached = admin_cache_get('inscrits_n3', 20);
+  $cached = admin_cache_get('inscrits_n_mask1', 20);
   if (is_array($cached) && isset($cached['n']) && (int) $cached['n'] > 0) return (int) $cached['n'];
   $n = count(admin_profiles());
-  admin_cache_set('inscrits_n3', ['n' => $n]);
+  admin_cache_set('inscrits_n_mask1', ['n' => $n]);
   return $n;
 }
 
@@ -697,6 +697,33 @@ function admin_dep_is_failed(array $d): bool {
   return in_array($st, ['FAILED', 'CANCELED', 'CANCELLED', 'EXPIRED', 'REJECTED', 'ERROR', 'VOID'], true);
 }
 
+/** Masque admin : comptes déjà là avant le reset, sauf le dépôt 52,16 $. Rien n’est effacé. */
+function admin_stat_cutoff_ts(): int {
+  return strtotime('2026-09-20T21:44:00+00:00') ?: 0;
+}
+
+function admin_stat_user_visible(array $p): bool {
+  $em = strtolower(trim((string) ($p['email'] ?? '')));
+  $pid = strtoupper(trim((string) ($p['publicId'] ?? '')));
+  if ($em === 'xsw93108@laoia.com') return true;
+  if ($pid === 'ORO-705711') return true;
+  $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  return $t > admin_stat_cutoff_ts();
+}
+
+function admin_stat_visible_user_ids(): array {
+  $ids = [];
+  foreach (admin_profiles() as $p) {
+    $id = (string) ($p['id'] ?? '');
+    if ($id !== '') $ids[$id] = true;
+  }
+  return $ids;
+}
+
+function admin_stat_keep_deposit_id(string $id): bool {
+  return $id === 'oro_8297217e1d0843fe8898ac452c3841b2_d6c00b5fd577';
+}
+
 function admin_dep_channel(string $op): string {
   $op = strtolower(trim($op));
   if (in_array($op, ['oxapay', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'crypto'], true)) return 'Crypto';
@@ -737,7 +764,7 @@ function admin_fetch_auth_users(): array {
 }
 
 function admin_profiles(): array {
-  $cached = admin_cache_get('profiles3', 40);
+  $cached = admin_cache_get('profiles_mask1', 40);
   if (is_array($cached) && isset($cached['list'])) return $cached['list'];
 
   $rows = admin_sb_all(
@@ -899,7 +926,13 @@ function admin_profiles(): array {
     if (($list[$i]['publicId'] ?? '') === '') $list[$i]['publicId'] = 'ORO-' . $n;
     if (($list[$i]['traffic'] ?? '') === '') $list[$i]['traffic'] = 'direct';
   }
-  admin_cache_set('profiles3', ['list' => $list]);
+  $list = array_values(array_filter($list, static fn($p) => admin_stat_user_visible($p)));
+  $n = 0;
+  foreach ($list as $i => $row) {
+    $n++;
+    $list[$i]['seq'] = $n;
+  }
+  admin_cache_set('profiles_mask1', ['list' => $list]);
   return $list;
 }
 
@@ -1164,7 +1197,7 @@ function admin_restore_hidden_wds_once(): void {
 
 function admin_withdrawals(): array {
   admin_restore_hidden_wds_once();
-  $cached = admin_cache_get('wd_merged', 15);
+  $cached = admin_cache_get('wd_mask1', 15);
   if (is_array($cached)) return $cached;
   $byId = [];
   $byFp = [];
@@ -1228,12 +1261,17 @@ function admin_withdrawals(): array {
   usort($list, static function ($a, $b) {
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
   });
-  admin_cache_set('wd_merged', $list);
+  $keepIds = admin_stat_visible_user_ids();
+  $list = array_values(array_filter($list, static function ($w) use ($keepIds) {
+    $uid = (string) ($w['userId'] ?? '');
+    return $uid !== '' && isset($keepIds[$uid]);
+  }));
+  admin_cache_set('wd_mask1', $list);
   return $list;
 }
 
 function admin_deposits(): array {
-  $cached = admin_cache_get('deposits', 20);
+  $cached = admin_cache_get('deposits_mask1', 20);
   if (is_array($cached)) return $cached;
   $sb = admin_sb_all(
     'deposits',
@@ -1290,12 +1328,19 @@ function admin_deposits(): array {
   usort($list, static function ($a, $b) {
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
   });
-  admin_cache_set('deposits', $list);
+  $keepIds = admin_stat_visible_user_ids();
+  $list = array_values(array_filter($list, static function ($d) use ($keepIds) {
+    $id = (string) ($d['id'] ?? '');
+    if (admin_stat_keep_deposit_id($id)) return true;
+    $uid = (string) ($d['userId'] ?? '');
+    return $uid !== '' && isset($keepIds[$uid]);
+  }));
+  admin_cache_set('deposits_mask1', $list);
   return $list;
 }
 
 function admin_orders(): array {
-  $cached = admin_cache_get('orders', 25);
+  $cached = admin_cache_get('orders_mask1', 25);
   if (is_array($cached)) return $cached;
   $rows = admin_sb_all(
     'orders',
@@ -1339,7 +1384,12 @@ function admin_orders(): array {
     ];
   }
   $list = array_values($byId);
-  admin_cache_set('orders', $list);
+  $keepIds = admin_stat_visible_user_ids();
+  $list = array_values(array_filter($list, static function ($o) use ($keepIds) {
+    $uid = (string) ($o['user_id'] ?? $o['userId'] ?? '');
+    return $uid !== '' && isset($keepIds[$uid]);
+  }));
+  admin_cache_set('orders_mask1', $list);
   return $list;
 }
 
@@ -1368,17 +1418,13 @@ function admin_enrich_user_row(array $p, array $vaults): array {
 }
 
 function admin_online_count(): int {
-  $nSb = 0;
-  $res = admin_sb_req('/rest/v1/rpc/count_online', [], 'POST', json_encode(['p_seconds' => 90]));
-  $raw = trim((string) ($res['raw'] ?? ''));
-  if (is_numeric($raw)) $nSb = (int) $raw;
-  $nLocal = 0;
+  $n = 0;
   $cut = time() - 90;
   foreach (admin_profiles() as $p) {
     $t = strtotime((string) ($p['lastSeen'] ?? ''));
-    if ($t && $t >= $cut) $nLocal++;
+    if ($t && $t >= $cut) $n++;
   }
-  return max($nSb, $nLocal);
+  return $n;
 }
 
 function admin_otp_rows(): array {
@@ -1469,7 +1515,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'vaults', 'withdrawals', 'deposits', 'orders', 'auth_users', 'inscrits_n', 'inscrits_n3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'badges', 'health'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'orders', 'orders_mask1', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'badges', 'badges_mask1', 'health'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

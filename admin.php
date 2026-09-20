@@ -106,7 +106,7 @@ function admin_user_lookup(string $id, array $pmap): array {
 }
 
 function admin_badges(): array {
-  $cached = admin_cache_get('badges', 12);
+  $cached = admin_cache_get('badges_mask1', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_profiles();
   $wds = admin_withdrawals();
@@ -237,7 +237,7 @@ function admin_badges(): array {
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
-  admin_cache_set('badges', $out);
+  admin_cache_set('badges_mask1', $out);
   return $out;
 }
 
