@@ -1336,11 +1336,34 @@
     return finalPrice;
   }
 
+  function normalizeTradeSide(side) {
+    var s = String(side == null ? '' : side).toLowerCase().trim();
+    if (s === 'put' || s === 'sell' || s === 'down' || s === 'short' || s === 'red') return 'put';
+    return 'call';
+  }
+
+  function detectTradeTruth(side, entry, exit) {
+    var dir = normalizeTradeSide(side);
+    var open = Number(entry);
+    var close = Number(exit);
+    if (!(open > 0) || !isFinite(open) || !(close > 0) || !isFinite(close)) {
+      return { side: dir, won: false, voided: true };
+    }
+    if (StochasticCore && StochasticCore.round2) {
+      open = StochasticCore.round2(open);
+      close = StochasticCore.round2(close);
+    } else {
+      open = Math.round(open * 100) / 100;
+      close = Math.round(close * 100) / 100;
+    }
+    if (close === open) return { side: dir, won: false, voided: true };
+    return { side: dir, won: dir === 'put' ? close < open : close > open, voided: false };
+  }
+
   function wonFromPrice(trade, finalPrice) {
     var entry = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
     var side = (trade.ticket && trade.ticket.side) || trade.side;
-    if (side === 'put') return finalPrice < entry;
-    return finalPrice > entry;
+    return detectTradeTruth(side, entry, finalPrice).won;
   }
 
   function normalizeOdds(v) {
@@ -1761,7 +1784,7 @@
       }
       trade.payout = payout;
       var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-      var sideNow = (trade.ticket && trade.ticket.side) || trade.side;
+      var sideNow = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
       var profile = 'real';
       if (mode !== 'real') profile = 'demo';
       else if (isAdminUser(user)) profile = 'admin';
@@ -1772,14 +1795,16 @@
         payout: payout,
         profile: profile
       });
-      var exitPrice = Number(verdict.exitPrice);
+      var exitPrice = readFinalPrice(trade);
+      if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = Number(verdict.exitPrice);
       if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = entryPx;
       if (StochasticCore && StochasticCore.round2) {
         entryPx = StochasticCore.round2(entryPx);
         exitPrice = StochasticCore.round2(exitPrice);
       }
-      var voided = !!verdict.voided;
-      var won = !voided && !!verdict.won;
+      var detected = detectTradeTruth(sideNow, entryPx, exitPrice);
+      var voided = !!detected.voided;
+      var won = !voided && !!detected.won;
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
