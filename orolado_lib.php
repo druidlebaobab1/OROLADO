@@ -650,8 +650,8 @@ function orolado_user_deposit_total(array $db, string $uid, array $user = []): f
   return orolado_money(max($sum, $field));
 }
 
-/** Palier x2 à vie : mises réelles ≥ 2 × tous les dépôts. */
-function orolado_wager_check(array $db, array $user): array {
+/** Palier x2 : seul le dépôt pas encore couvert est bloqué ; le déjà joué reste retirable. */
+function orolado_wager_check(array $db, array $user, $balance = null): array {
   $uid = (string) ($user['id'] ?? '');
   $deposits = orolado_user_deposit_total($db, $uid, $user);
   $required = orolado_money($deposits * 2);
@@ -661,12 +661,23 @@ function orolado_wager_check(array $db, array $user): array {
   );
   $left = orolado_money(max(0.0, $required - $done));
   $ok = ($required <= 0.0001) || ($done + 0.0001 >= $required);
+  if ($balance === null) {
+    $balance = orolado_money($db['vault'][$uid]['real'] ?? 0);
+  }
+  $balance = orolado_money($balance);
+  $uncovered = orolado_money(max(0.0, $deposits - ($done / 2.0)));
+  $locked = orolado_money(min($balance, $uncovered));
+  $free = orolado_money(max(0.0, $balance - $locked));
   return [
     'ok' => $ok,
+    'canWithdraw' => $free > 0.009,
     'required' => $required,
     'done' => $done,
     'left' => $left,
     'deposits' => $deposits,
+    'locked' => $locked,
+    'free' => $free,
+    'balance' => $balance,
     'msg' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
   ];
 }

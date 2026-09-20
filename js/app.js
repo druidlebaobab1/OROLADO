@@ -447,13 +447,22 @@
     }
     var left = Math.max(0, D6.roundMoney(required - done));
     var pct = required > 0 ? Math.min(100, Math.round((done / required) * 100)) : 100;
+    var bal = 0;
+    try { bal = realWithdrawBalance(u); } catch (eBal) { bal = Number(u && D6.Store && D6.Store.realBalance ? D6.Store.realBalance(u) : 0) || 0; }
+    if (!isFinite(bal) || bal < 0) bal = 0;
+    var uncovered = Math.max(0, deposits - (done / 2));
+    var locked = D6.roundMoney(Math.min(bal, uncovered));
+    var free = D6.roundMoney(Math.max(0, bal - locked));
     var msg = 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.';
     return {
       ok: left <= 0,
+      canWithdraw: free > 0.009,
       required: required,
       done: done,
       left: left,
       pct: pct,
+      locked: locked,
+      free: free,
       msg: msg
     };
   }
@@ -2964,7 +2973,7 @@
     updateBalance(true);
     metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' }, { eventID: String(remote.ref || remote.orderId || remote.trackId || '') });
     if (typeof playWinChime === 'function') playWinChime();
-    announceDepositWager(true);
+    announceDepositWager(false);
     return true;
   }
 
@@ -3176,12 +3185,11 @@
       setTimeout(function () { D6.Supabase.pullVault(); }, 1800);
     }
     updateBalance(true);
-    toast(t('depositCredited').replace('{amt}', D6.fmtFCFA(remote.amount)), 'ok');
     metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' }, { eventID: String(remote.ref || remote.tx_ref || '') });
     playWinChime();
     if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtMoney(remote.amount);
     closeModal('depositModal');
-    announceDepositWager(true);
+    announceDepositWager(false);
     openModal('depositSuccessModal');
     depositRef = '';
     try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
@@ -3593,7 +3601,6 @@
           applyUsdtCredit(remote);
           setCryptoOkCopy(remote.amount);
           showDepositStep('ok');
-          toast(t('cryptoOkTitle') + ' ' + t('cryptoOkCopy').replace('{amt}', fmtCryptoAmt(remote.amount)), 'ok', 4200);
         }
       } catch (e) { /* keep waiting */ }
     }, 6000);
@@ -3931,23 +3938,23 @@
 
   function refreshWithdrawUi() {
     var u = user();
-    var real = realWithdrawBalance(u);
-    if ($('wdBalanceAmt')) $('wdBalanceAmt').textContent = D6.fmtFCFA(real);
-    else if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable\n' + D6.fmtFCFA(real);
     var gate = wagerStatus(u);
+    var shown = gate.free != null ? gate.free : realWithdrawBalance(u);
+    if ($('wdBalanceAmt')) $('wdBalanceAmt').textContent = D6.fmtFCFA(shown);
+    else if ($('wdBalanceLabel')) $('wdBalanceLabel').textContent = 'Solde retirable\n' + D6.fmtFCFA(shown);
     var box = $('wdWagerBox');
     var fill = $('wdWagerFill');
     var txt = $('wdWagerText');
     var btn = $('btnSendWithdraw');
     if (box) {
-      if (gate.ok || gate.required <= 0) {
+      if (gate.ok || gate.required <= 0 || !(gate.locked > 0.009)) {
         box.classList.add('hidden');
         if (btn) btn.disabled = false;
       } else {
         box.classList.remove('hidden');
         if (fill) fill.style.width = String(gate.pct) + '%';
         if (txt) txt.textContent = gate.msg;
-        if (btn) btn.disabled = true;
+        if (btn) btn.disabled = !(gate.canWithdraw);
       }
     }
   }
@@ -5490,7 +5497,8 @@
       }
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
-      if (!gate.ok) { toast(gate.msg, 'err', 5000); return; }
+      var free = Number(gate.free != null ? gate.free : real) || 0;
+      if (amount > free + 0.009) { toast(gate.msg, 'err', 5000); return; }
       if (!method) { toast(t('wdMethod'), 'err'); return; }
       if (amount < minWd) { toast(formatWdMinErr(minWd), 'err'); return; }
       if (amount > real) { toast(t('insufficient'), 'err'); return; }

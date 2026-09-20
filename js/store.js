@@ -605,8 +605,10 @@
       var deposits = Number(user.realDepositTotal) || 0;
       var required = D6.roundMoney(Math.max(0, deposits) * ((D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2));
       var done = Number(user.totalWageredSinceDeposit != null ? user.totalWageredSinceDeposit : user.realStakeVolume) || 0;
-      if (done < required) {
-        var left = D6.roundMoney(required - done);
+      var uncovered = Math.max(0, deposits - (done / 2));
+      var locked = D6.roundMoney(Math.min(real, uncovered));
+      var free = D6.roundMoney(Math.max(0, real - locked));
+      if (amount > free + 0.009) {
         return { ok: false, reason: 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.' };
       }
       var suspect = (user.realStakeVolume || 0) < amount || (user.realTrades || 0) === 0;
