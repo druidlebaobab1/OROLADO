@@ -1908,16 +1908,6 @@ if ($action === 'me') {
   $officialReal = function_exists('orolado_official_real')
     ? orolado_official_real($db, $uid)
     : $jsonReal;
-  $playedReal = function_exists('orolado_user_real_wagered')
-    ? orolado_user_real_wagered($db, is_array($me) ? ($me + ['id' => $uid]) : ['id' => $uid]) > 0.009
-    : false;
-  if ($playedReal && function_exists('supabase_admin_vault')) {
-    $sbPeek = supabase_admin_vault($uid);
-    $sbPeekReal = $sbPeek ? orolado_money($sbPeek['real'] ?? 0) : null;
-    if ($sbPeekReal !== null && $sbPeekReal > 0.009 && $sbPeekReal + 0.009 < $officialReal) {
-      $officialReal = $sbPeekReal;
-    }
-  }
   $vault = [
     'demo' => $demoNow,
     'real' => $officialReal

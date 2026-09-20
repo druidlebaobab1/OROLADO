@@ -683,7 +683,6 @@
       try { D6.Engine.flushSettlements(u); } catch (eF) { /* ignore */ }
     }
     refreshRemoteVault();
-    adoptOfficialFromMe();
     checkDepositReturn();
     try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (e2) { /* ignore */ }
   }
@@ -3967,22 +3966,6 @@
     } catch (eRest) { /* ignore */ }
   }
 
-  function adoptOfficialFromMe() {
-    if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
-    D6.Api.post('me', {}, 20000).then(function (remote) {
-      if (watchBan(remote)) return;
-      if (!remote || !remote.ok || !remote.vault || remote.vault.real == null) return;
-      var u = user();
-      if (!u || !D6.Store.setBalanceMode) return;
-      var n = Number(remote.vault.real);
-      if (!isFinite(n) || n < 0) return;
-      D6.holdPull = true;
-      D6.Store.setBalanceMode(u, 'real', n);
-      D6.holdPull = false;
-      updateBalance(false);
-    });
-  }
-
   async function refreshRemoteVault() {
     var u = user();
     if (!u) return;
@@ -6112,7 +6095,6 @@
         }
       });
       refreshRemoteVault();
-      adoptOfficialFromMe();
       startBanWatch();
       checkDepositReturn();
       syncTradeButtons();
