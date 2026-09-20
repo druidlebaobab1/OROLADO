@@ -116,6 +116,8 @@
   var lastSettleAt = 0;
   var lastSettleMode = null;
   var lastExecGuard = 0;
+  var lastExecSide = '';
+  var selectedOddsLive = 1.88;
   var tradeQ = [];
   var tradeQBusy = false;
   var lastPlaceOkAt = 0;
@@ -454,6 +456,53 @@
       pct: pct,
       msg: msg
     };
+  }
+
+  function depositWagerText() {
+    var s = t('wagerBlocked');
+    if (!s || s === 'wagerBlocked') {
+      s = 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.';
+    }
+    return s;
+  }
+
+  function ensureDepositWagerNote(parent, id) {
+    var el = $(id);
+    if (el) return el;
+    if (!parent) return null;
+    el = document.createElement('p');
+    el.id = id;
+    el.className = 'hint-min deposit-wager-note';
+    parent.appendChild(el);
+    return el;
+  }
+
+  function paintDepositWagerNotes() {
+    var msg = depositWagerText();
+    var select = $('depositStepSelect');
+    var hintHost = select || ($('depositModal') && $('depositModal').querySelector('.field'));
+    var formNote = ensureDepositWagerNote(hintHost, 'depositWagerNote');
+    if (formNote) {
+      formNote.textContent = msg;
+      formNote.hidden = false;
+    }
+    var okHost = $('depositStepCryptoOk') || ($('cryptoOkCopy') && $('cryptoOkCopy').parentElement);
+    var okNote = ensureDepositWagerNote(okHost, 'depositWagerNoteOk');
+    if (okNote) {
+      okNote.textContent = msg;
+      okNote.hidden = false;
+    }
+    var successBox = $('depositSuccessModal') && $('depositSuccessModal').querySelector('.convert-box');
+    var successNote = ensureDepositWagerNote(successBox || $('depositSuccessModal'), 'depositWagerNoteSuccess');
+    if (successNote) {
+      successNote.textContent = msg;
+      successNote.hidden = false;
+    }
+  }
+
+  function announceDepositWager(forceToast) {
+    paintDepositWagerNotes();
+    if (forceToast) toast(depositWagerText(), '', 5200);
   }
 
   function fmtTimerLeft(sec) {
@@ -1038,6 +1087,10 @@
   function payoutPctOf(odds) {
     var n = Number(odds);
     var map = (D6.CONFIG && D6.CONFIG.PAYOUT_PCT) || { '1.88': 88, '6': 500, '11': 1000, '51': 5000 };
+    if (n === 88) return 88;
+    if (n === 500) return 500;
+    if (n === 1000) return 1000;
+    if (n === 5000) return 5000;
     if (Math.abs(n - 1.88) < 0.02) return Number(map['1.88']) || 88;
     if (Math.abs(n - 6) < 0.02) return Number(map['6']) || 500;
     if (Math.abs(n - 11) < 0.02) return Number(map['11']) || 1000;
@@ -1076,10 +1129,13 @@
     });
   }
 
-  function currentOdds(u) {
-    u = u || user();
+  function normalizePayoutMult(raw) {
     var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 6, 11, 51];
-    var n = Number(u && u.odds != null ? u.odds : (D6.CONFIG.DEFAULT_ODDS || 1.88));
+    var n = Number(raw);
+    if (n === 88) n = 1.88;
+    else if (n === 500) n = 6;
+    else if (n === 1000) n = 11;
+    else if (n === 5000) n = 51;
     var i;
     for (i = 0; i < list.length; i++) {
       if (Math.abs(list[i] - n) < 0.001) return list[i];
@@ -1087,18 +1143,23 @@
     return list[0];
   }
 
+  function currentOdds(u) {
+    u = u || user();
+    if (selectedOddsLive) return normalizePayoutMult(selectedOddsLive);
+    if (u && u.odds != null) return normalizePayoutMult(u.odds);
+    var on = document.querySelector('.odds-chip.on');
+    if (on && on.dataset.odds != null) return normalizePayoutMult(on.dataset.odds);
+    return normalizePayoutMult((D6.CONFIG && D6.CONFIG.DEFAULT_ODDS) || 1.88);
+  }
+
   function setOdds(mult) {
     var u = user();
-    if (!u) return;
-    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 6, 11, 51];
-    var n = Number(mult);
-    var i;
-    var ok = list[0];
-    for (i = 0; i < list.length; i++) {
-      if (Math.abs(list[i] - n) < 0.001) { ok = list[i]; break; }
+    var ok = normalizePayoutMult(mult);
+    selectedOddsLive = ok;
+    if (u) {
+      u.odds = ok;
+      D6.Store.saveUser(u);
     }
-    u.odds = ok;
-    D6.Store.saveUser(u);
     updatePayoutUi();
   }
 
@@ -2405,10 +2466,12 @@
 
   function execute(side) {
     var now = Date.now();
-    if (now - lastExecGuard < 160) return;
+    var next = side === 'put' || side === 'sell' ? 'put' : 'call';
+    if (now - lastExecGuard < 160 && lastExecSide === next) return;
     lastExecGuard = now;
+    lastExecSide = next;
     if (tradeQ.length >= (TRADE_Q_MAX || 12)) return;
-    tradeQ.push(side);
+    tradeQ.push(next);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
     pumpTradeQ();
   }
@@ -2596,6 +2659,7 @@
     setDepositPayMethod('card');
     resetOxaWallet();
     showDepositStep('select');
+    paintDepositWagerNotes();
     closeDrawer();
     openModal('depositModal');
   }
@@ -2900,6 +2964,7 @@
     updateBalance(true);
     metaTrack('Purchase', { value: Number(remote.amount) || 0, currency: 'USD' }, { eventID: String(remote.ref || remote.orderId || remote.trackId || '') });
     if (typeof playWinChime === 'function') playWinChime();
+    announceDepositWager(true);
     return true;
   }
 
@@ -2942,6 +3007,7 @@
       copyOxa.textContent = t('cryptoCopy');
     }
     if (lastUsdtCredit > 0) setCryptoOkCopy(lastUsdtCredit);
+    paintDepositWagerNotes();
   }
 
   async function postDepositConfirm(payload) {
@@ -3115,6 +3181,7 @@
     playWinChime();
     if ($('depositSuccessAmt')) $('depositSuccessAmt').textContent = D6.fmtMoney(remote.amount);
     closeModal('depositModal');
+    announceDepositWager(true);
     openModal('depositSuccessModal');
     depositRef = '';
     try { sessionStorage.removeItem('oro_dep_ref'); } catch (e2) { /* ignore */ }
@@ -3371,6 +3438,7 @@
     setHidden(ok, step !== 'ok');
     if (box) box.classList.toggle('is-crypto', step === 'crypto' || step === 'ok');
     setHidden($('closeDeposit'), step === 'crypto');
+    paintDepositWagerNotes();
   }
 
   function setDepositPayMethod(method) {

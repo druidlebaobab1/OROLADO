@@ -1476,23 +1476,62 @@
 
   function decideTradeOutcome(user, trade, mode) {
     if (trade && trade._outcomeReady) {
-      return { wantWon: !!trade._wantWon, harsh: !!trade._harsh, target: Number(trade._exitTarget) };
+      return {
+        wantWon: !!trade._wantWon,
+        harsh: !!trade._harsh,
+        target: Number(trade._exitTarget),
+        voided: !!trade._voided
+      };
     }
-    var verdict = resolveWinProbability(user, trade, mode);
-    var wantWon = verdict.harsh ? false : (Math.random() < verdict.winProbability);
-    var isCall = trade.side === 'call';
-    var target = forceExitPrice(trade.entryPrice, isCall, wantWon, trade.assetId, verdict.harsh);
+    var profile = 'real';
+    if (mode !== 'real') profile = 'demo';
+    else if (isAdminUser(user)) profile = 'admin';
+    var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
+    var sideNow = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
+    var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
+    var verdict = StochasticCore.settle({
+      entryPrice: entryPx,
+      durationSec: Number(trade.duration) || 5,
+      side: sideNow,
+      payout: payout,
+      profile: profile
+    });
+    var wantWon = !!verdict.won;
+    var target = Number(verdict.exitPrice);
+    if (!(target > 0) || !isFinite(target)) {
+      target = forceExitPrice(entryPx, sideNow === 'call', wantWon, trade.assetId, false);
+    }
     trade._wantWon = wantWon;
-    trade._harsh = !!verdict.harsh;
+    trade._harsh = false;
+    trade._voided = !!verdict.voided;
     trade._exitTarget = target;
     trade._outcomeReady = true;
-    return { wantWon: wantWon, harsh: !!verdict.harsh, target: target };
+    return { wantWon: wantWon, harsh: false, target: target, voided: !!verdict.voided };
   }
 
   function applyExitToMarket(trade, target) {
-    /* Issue visuelle uniquement — l'historique de l'actif reste intact. */
-    void target;
-    void trade;
+    var px = Number(target);
+    if (!(px > 0) || !isFinite(px) || !trade) return;
+    var id = trade.assetId;
+    if (!id) return;
+    ensureMarkets();
+    var m = markets[id];
+    if (m) {
+      m.price = px;
+      m.displayPrice = px;
+    }
+    var buf = window.assetBuffers && window.assetBuffers[id];
+    if (buf) {
+      buf.price = px;
+      if (buf.forming) {
+        buf.forming.c = px;
+        if (!(buf.forming.h >= px)) buf.forming.h = px;
+        if (!(buf.forming.l > 0) || buf.forming.l > px) buf.forming.l = px;
+      }
+    }
+    if (D6.Chart && typeof D6.Chart.steerClose === 'function') {
+      try { D6.Chart.steerClose(px, 260, id); } catch (eSteer) { /* ignore */ }
+    }
   }
 
   function prepareLastSecondSteer(now) {
@@ -1504,7 +1543,8 @@
       if (!isLive(tr) || tr.userId !== user.id) continue;
       var left = expiryOf(tr) - now;
       if (left > 220 || left < 0) continue;
-      decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
+      var decided = decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
+      applyExitToMarket(tr, decided.target);
     }
   }
 
@@ -1818,25 +1858,15 @@
       }
       trade.payout = payout;
       var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-      var sideNow = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
-      var profile = 'real';
-      if (mode !== 'real') profile = 'demo';
-      else if (isAdminUser(user)) profile = 'admin';
-      var verdict = StochasticCore.settle({
-        entryPrice: entryPx,
-        durationSec: Number(trade.duration) || 5,
-        side: sideNow,
-        payout: payout,
-        profile: profile
-      });
-      var exitPrice = Number(verdict.exitPrice);
+      var decided = decideTradeOutcome(user, trade, mode);
+      var exitPrice = Number(decided.target);
       if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = entryPx;
       if (StochasticCore && StochasticCore.round2) {
         entryPx = StochasticCore.round2(entryPx);
         exitPrice = StochasticCore.round2(exitPrice);
       }
-      var voided = !!verdict.voided;
-      var won = !voided && !!verdict.won;
+      var voided = !!decided.voided;
+      var won = !voided && !!decided.wantWon;
       if (mode === 'real' && !isAdminUser(user) && won && hasOppositeHedge(trade)) {
         won = applyHedgeLock(trade, true);
       } else if (mode === 'real' && !isAdminUser(user) && won) {
