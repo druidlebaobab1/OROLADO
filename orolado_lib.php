@@ -871,7 +871,9 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $played = orolado_user_real_wagered($db, $user + ['id' => $uid]) > 0.009;
   $books = orolado_real_from_books($db, $uid, $user);
   $target = $jsonReal;
-  if ($played && $jsonReal > 0.009) {
+  if ($sbReal !== null && $sbReal > $jsonReal + 0.009 && $books !== null && $books + 0.05 >= $sbReal) {
+    $target = $sbReal;
+  } else if ($played && $jsonReal > 0.009) {
     $target = $jsonReal;
   } else if ($played && $books !== null) {
     $target = $books;
@@ -933,6 +935,8 @@ function orolado_official_real(array $db, string $uid): float {
   if ($sbReal === null) return $json;
   $user = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
   $played = orolado_user_real_wagered($db, $user + ['id' => $uid]) > 0.009;
+  $books = function_exists('orolado_real_from_books') ? orolado_real_from_books($db, $uid, $user) : null;
+  if ($sbReal > $json + 0.009 && $books !== null && $books + 0.05 >= $sbReal) return $sbReal;
   if ($played && $json > 0.009) return $json;
   return orolado_money(max($json, $sbReal));
 }

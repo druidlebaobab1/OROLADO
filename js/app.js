@@ -658,12 +658,13 @@
     var incoming = Number(remote.vault.real);
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) : 0;
     var locks = getBalanceLocks();
-    if (locks && Date.now() < locks.until) return;
+    var remoteHigher = isFinite(incoming) && incoming > local + 0.009;
+    if (locks && Date.now() < locks.until && !remoteHigher && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
     if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
     if (openRealStake() > 0 && incoming > local + 0.009) return;
     if (Math.abs(incoming - local) <= 0.009) return;
-    if (adoptOfficialVault(remote.vault, { fromMe: true })) updateBalance(false);
+    if (adoptOfficialVault(remote.vault, { fromMe: true, force: !(openRealStake() > 0), allowRaise: true })) updateBalance(false);
   }
   function holdScreenAwake() {
     if (!navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -3980,7 +3981,9 @@
         setTimeout(function () { D6.holdDepositReal = false; }, 25000);
       }
       var locks = getBalanceLocks();
-      if (locks && Date.now() < locks.until && !newDeposit && !D6.holdDepositReal) return;
+      var localNow = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
+      var remoteHigher = remote.vault.real != null && Number(remote.vault.real) > localNow + 0.009;
+      if (locks && Date.now() < locks.until && !newDeposit && !D6.holdDepositReal && !remoteHigher) return;
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
       if (!(openRealStake() > 0) && remote.vault.real != null) {

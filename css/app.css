@@ -2744,3 +2744,28 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
   html:not(.is-tv) #screenTrade .pad::after{animation:none;opacity:.75;transform:none}
 }
 
+@media (max-width:859px){
+  #withdrawModal .withdraw-box.is-wd-form{
+    max-height:100dvh!important;overflow:hidden!important;padding:6px 8px 8px;gap:2px}
+  #withdrawModal .is-wd-form .wd-modal-head{min-height:30px}
+  #withdrawModal .is-wd-form .wd-modal-head .modal-title{font-size:1rem}
+  #withdrawModal .is-wd-form .wd-bal{padding:4px 8px;margin:0 0 4px}
+  #withdrawModal .is-wd-form .wd-bal-secure{display:none}
+  #withdrawModal .is-wd-form .wd-bal-amt{font-size:.98rem;text-shadow:none}
+  #withdrawModal .is-wd-form #wdWagerBox,
+  #withdrawModal .is-wd-form .wd-trust,
+  #withdrawModal .is-wd-form .hint-min,
+  #withdrawModal .is-wd-form .wd-dest-help{display:none!important}
+  #withdrawModal .is-wd-form .wd-selected{font-size:.62rem;margin:0 0 4px;font-weight:700}
+  #withdrawModal .is-wd-form #wdStepForm{overflow:hidden}
+  #withdrawModal .is-wd-form .field{margin-bottom:3px;gap:1px}
+  #withdrawModal .is-wd-form .field label{font-size:.55rem;line-height:1.2}
+  #withdrawModal .is-wd-form .field input,
+  #withdrawModal .is-wd-form .field select,
+  #withdrawModal .is-wd-form #wdDial{
+    min-height:28px;padding:4px 8px;font-size:.78rem;margin-bottom:0}
+  #withdrawModal .is-wd-form .btn-wd-confirm{min-height:36px;margin-top:6px;font-size:.72rem}
+  #withdrawModal .is-wd-form #wdOtpField .btn-wd-resend,
+  #withdrawModal .is-wd-form #btnWdOtpResend{min-height:28px;margin:3px 0 0;padding:4px 8px;font-size:.7rem}
+}
+
