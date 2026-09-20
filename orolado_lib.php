@@ -650,7 +650,40 @@ function orolado_user_deposit_total(array $db, string $uid, array $user = []): f
   return orolado_money(max($sum, $field));
 }
 
-/** Palier x2 : seul le dépôt pas encore couvert est bloqué ; le déjà joué reste retirable. */
+function orolado_last_completed_deposit(array $db, string $uid): float {
+  $last = 0.0;
+  $lastAt = '';
+  foreach (($db['deposits'] ?? []) as $d) {
+    if (!is_array($d)) continue;
+    $owner = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($uid === '' || $owner !== $uid) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $at = (string) ($d['paidAt'] ?? $d['createdAt'] ?? $d['at'] ?? '');
+    if ($lastAt === '' || $at >= $lastAt) {
+      $lastAt = $at;
+      $last = orolado_money($d['amount'] ?? 0);
+    }
+  }
+  return $last;
+}
+
+function orolado_apply_wager_progress(array &$user, float $stake): void {
+  $need = orolado_money($user['wagerNeed'] ?? 0);
+  if ($need <= 0.0001) {
+    $user['wagerNeed'] = 0.0;
+    $user['wagerLock'] = 0.0;
+    return;
+  }
+  $need = orolado_money(max(0.0, $need - orolado_money($stake)));
+  $user['wagerNeed'] = $need;
+  if ($need <= 0.0001) {
+    $user['wagerNeed'] = 0.0;
+    $user['wagerLock'] = 0.0;
+  }
+}
+
+/** Bloque seulement le dernier dépôt non couvert ; l'ancien solde déjà joué reste retirable. */
 function orolado_wager_check(array $db, array $user, $balance = null): array {
   $uid = (string) ($user['id'] ?? '');
   $deposits = orolado_user_deposit_total($db, $uid, $user);
@@ -665,8 +698,21 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
     $balance = orolado_money($db['vault'][$uid]['real'] ?? 0);
   }
   $balance = orolado_money($balance);
-  $uncovered = orolado_money(max(0.0, $deposits - ($done / 2.0)));
-  $locked = orolado_money(min($balance, $uncovered));
+  $lock = array_key_exists('wagerLock', $user) ? orolado_money($user['wagerLock']) : null;
+  $need = array_key_exists('wagerNeed', $user) ? orolado_money($user['wagerNeed']) : null;
+  if ($lock === null || $need === null) {
+    $last = orolado_last_completed_deposit($db, $uid);
+    if ($last <= 0 && isset($user['lastDepositAmount'])) $last = orolado_money($user['lastDepositAmount']);
+    $old = orolado_money(max(0.0, $deposits - $last));
+    if ($last > 0.009 && $old > 0.009 && $done + 0.001 >= $old && $done + 0.001 < $required) {
+      $lock = $last;
+      $need = orolado_money($last * 2);
+    } else {
+      $lock = orolado_money(max(0.0, $deposits - ($done / 2.0)));
+      $need = $left;
+    }
+  }
+  $locked = ($need > 0.0001) ? orolado_money(min($balance, max(0.0, $lock))) : 0.0;
   $free = orolado_money(max(0.0, $balance - $locked));
   return [
     'ok' => $ok,
@@ -779,6 +825,9 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
     if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
       $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $delta);
       $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
+      $db['users'][$uid]['lastDepositAmount'] = orolado_money($delta);
+      $db['users'][$uid]['wagerLock'] = orolado_money(($db['users'][$uid]['wagerLock'] ?? 0) + $delta);
+      $db['users'][$uid]['wagerNeed'] = orolado_money(($db['users'][$uid]['wagerNeed'] ?? 0) + ($delta * 2));
     }
     supabase_insert_deposit([
       'id' => $ref,
@@ -1913,6 +1962,9 @@ function credit_paid_deposit(array $hit): array {
   $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amount);
   $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
   $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
+  $db['users'][$uid]['lastDepositAmount'] = $amount;
+  $db['users'][$uid]['wagerLock'] = orolado_money(($db['users'][$uid]['wagerLock'] ?? 0) + $amount);
+  $db['users'][$uid]['wagerNeed'] = orolado_money(($db['users'][$uid]['wagerNeed'] ?? 0) + ($amount * 2));
   if (!isset($db['users'][$uid]['totalWageredSinceDeposit'])) {
     $db['users'][$uid]['totalWageredSinceDeposit'] = orolado_money($db['users'][$uid]['realStakeVolume'] ?? 0);
   }

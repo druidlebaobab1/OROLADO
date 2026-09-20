@@ -1227,8 +1227,11 @@ if ($action === 'withdrawOtp') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide']);
     exit;
   }
+  $freshOtp = (isset($db['users'][$uid]) && is_array($db['users'][$uid]))
+    ? array_merge(is_array($me) ? $me : [], $db['users'][$uid])
+    : $me;
   $wagerOtp = function_exists('orolado_wager_check')
-    ? orolado_wager_check($db, is_array($me) ? $me : [])
+    ? orolado_wager_check($db, is_array($freshOtp) ? $freshOtp : [])
     : ['ok' => true, 'canWithdraw' => true];
   if (empty($wagerOtp['ok']) && empty($wagerOtp['canWithdraw'])) {
     echo json_encode([
@@ -1547,6 +1550,9 @@ if ($action === 'placeOrder') {
       $depTot = orolado_money($locked['users'][$uid]['realDepositTotal'] ?? 0);
       $locked['users'][$uid]['requiredWagering'] = $depTot * 2;
       $locked['users'][$uid]['realTrades'] = (int) ($locked['users'][$uid]['realTrades'] ?? 0) + 1;
+      if (function_exists('orolado_apply_wager_progress')) {
+        orolado_apply_wager_progress($locked['users'][$uid], $stake);
+      }
     }
     $locked['orders'][] = [
       'id' => $oid,

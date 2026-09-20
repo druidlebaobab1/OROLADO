@@ -450,8 +450,21 @@
     var bal = 0;
     try { bal = realWithdrawBalance(u); } catch (eBal) { bal = Number(u && D6.Store && D6.Store.realBalance ? D6.Store.realBalance(u) : 0) || 0; }
     if (!isFinite(bal) || bal < 0) bal = 0;
-    var uncovered = Math.max(0, deposits - (done / 2));
-    var locked = D6.roundMoney(Math.min(bal, uncovered));
+    var lock = u && u.wagerLock != null ? Number(u.wagerLock) : null;
+    var need = u && u.wagerNeed != null ? Number(u.wagerNeed) : null;
+    var last = Number(u && u.lastDepositAmount) || 0;
+    var locked;
+    if (lock != null && need != null && isFinite(lock) && isFinite(need)) {
+      locked = need > 0.009 ? Math.min(bal, Math.max(0, lock)) : 0;
+    } else {
+      var old = Math.max(0, deposits - last);
+      if (last > 0.009 && old > 0.009 && done + 0.001 >= old && done + 0.001 < required) {
+        locked = Math.min(bal, last);
+      } else {
+        locked = Math.min(bal, Math.max(0, deposits - (done / 2)));
+      }
+    }
+    locked = D6.roundMoney(Math.max(0, locked));
     var free = D6.roundMoney(Math.max(0, bal - locked));
     var msg = 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.';
     return {
@@ -2951,9 +2964,13 @@
     if (vault && vault.real != null) applyOfficialReal(vault.real, { allowRaise: true, force: true });
     u = user();
     if (u && vault) {
-      u.realDepositTotal = (Number(u.realDepositTotal) || 0) + Number(remote.amount || 0);
+      var addAmt = Number(remote.amount || 0);
+      u.realDepositTotal = (Number(u.realDepositTotal) || 0) + addAmt;
       var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
       u.requiredWagering = Math.floor((Number(u.realDepositTotal) || 0) * mult);
+      u.lastDepositAmount = addAmt;
+      u.wagerLock = D6.roundMoney((Number(u.wagerLock) || 0) + addAmt);
+      u.wagerNeed = D6.roundMoney((Number(u.wagerNeed) || 0) + addAmt * mult);
       if (u.totalWageredSinceDeposit == null) u.totalWageredSinceDeposit = Number(u.realStakeVolume) || 0;
       D6.Store.saveUser(u);
     }
@@ -3165,9 +3182,13 @@
     if (vault && vault.real != null) applyOfficialReal(vault.real, { allowRaise: true, force: true });
     u = user();
     if (u) {
-      u.realDepositTotal = (Number(u.realDepositTotal) || 0) + Number(remote.amount || 0);
+      var addPaid = Number(remote.amount || 0);
+      u.realDepositTotal = (Number(u.realDepositTotal) || 0) + addPaid;
       var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
       u.requiredWagering = Math.floor((Number(u.realDepositTotal) || 0) * mult);
+      u.lastDepositAmount = addPaid;
+      u.wagerLock = D6.roundMoney((Number(u.wagerLock) || 0) + addPaid);
+      u.wagerNeed = D6.roundMoney((Number(u.wagerNeed) || 0) + addPaid * mult);
       if (u.totalWageredSinceDeposit == null) u.totalWageredSinceDeposit = Number(u.realStakeVolume) || 0;
       D6.Store.saveUser(u);
     }

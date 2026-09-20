@@ -1794,6 +1794,15 @@
         user.realStakeVolume = (user.realStakeVolume || 0) + stake;
         user.totalWageredSinceDeposit = Number(user.realStakeVolume) || 0;
         user.requiredWagering = D6.roundMoney((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
+        var need = Number(user.wagerNeed) || 0;
+        if (need > 0.009) {
+          need = D6.roundMoney(Math.max(0, need - stake));
+          user.wagerNeed = need;
+          if (need <= 0.009) {
+            user.wagerNeed = 0;
+            user.wagerLock = 0;
+          }
+        }
       }
       user.lastStake = stake;
       persistOpen(user);
