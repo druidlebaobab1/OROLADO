@@ -2756,11 +2756,10 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
   html:not(.is-tv) #screenTrade:not(.hidden)::after{
     -webkit-mask-image:none;
     mask-image:none;
-    background:
-      linear-gradient(180deg,rgba(18,23,34,0) 0%,rgba(18,23,34,.1) 42%,rgba(18,23,34,.38) 74%,rgba(18,23,34,.58) 100%),
-      linear-gradient(180deg,transparent 0%,rgba(255,255,255,0) 60%,rgba(245,158,11,.008) 100%)!important;
-    -webkit-backdrop-filter:blur(10px);
-    backdrop-filter:blur(10px);
+    height:calc(34px + env(safe-area-inset-bottom, 10px));
+    background:linear-gradient(180deg,rgba(18,23,34,0) 0%,rgba(18,23,34,.22) 45%,rgba(11,14,20,.5) 78%,rgba(0,0,0,.38) 100%)!important;
+    -webkit-backdrop-filter:blur(8px);
+    backdrop-filter:blur(8px);
     box-shadow:none;
   }
 }
