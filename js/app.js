@@ -436,12 +436,27 @@
     if ($('fsBtnReal')) $('fsBtnReal').classList.toggle('hidden', !!guest);
   }
 
+  function wagerLockFifo(deposits, done) {
+    var pool = D6.roundMoney(Number(done) || 0);
+    var lock = 0;
+    var i;
+    for (i = 0; i < deposits.length; i++) {
+      var amt = D6.roundMoney(Number(deposits[i]) || 0);
+      if (amt <= 0.009) continue;
+      var need = D6.roundMoney(amt * 2);
+      if (pool + 0.001 >= need) pool = D6.roundMoney(pool - need);
+      else { lock = D6.roundMoney(lock + amt); pool = 0; }
+    }
+    return lock;
+  }
+
   function wagerStatus(u) {
     u = u || user();
     var deposits = Number(u && u.realDepositTotal) || 0;
     var mult = (D6.CONFIG && D6.CONFIG.WAGER_MULTIPLIER) || 2;
     var required = D6.roundMoney(Math.max(0, deposits) * mult);
     var done = Number(u && (u.totalWageredSinceDeposit != null ? u.totalWageredSinceDeposit : u.realStakeVolume)) || 0;
+    if (lastServerWager && Number(lastServerWager.done) > done) done = Number(lastServerWager.done);
     if (u) {
       u.requiredWagering = required;
       u.totalWageredSinceDeposit = done;
@@ -457,9 +472,14 @@
     }
     var old = Math.max(0, deposits - last);
     var uncovered = Math.max(0, deposits - (done / 2));
+    var slices = (lastServerWager && Array.isArray(lastServerWager.slices) && lastServerWager.slices.length)
+      ? lastServerWager.slices
+      : null;
     var locked;
     if (required <= 0.009 || done + 0.001 >= required) {
       locked = 0;
+    } else if (slices) {
+      locked = Math.min(bal, wagerLockFifo(slices, done));
     } else if (last > 0.009 && old > 0.009 && done + 0.001 >= old) {
       var extra = Math.max(0, done - old);
       locked = extra + 0.001 >= last * 2 ? 0 : Math.min(bal, last);
@@ -623,6 +643,7 @@
         done: Number(w.done),
         required: Number(w.required),
         last: Number(w.last),
+        slices: Array.isArray(w.slices) ? w.slices.map(function (n) { return Number(n) || 0; }).filter(function (n) { return n > 0.009; }) : [],
         at: Date.now()
       };
     }
@@ -3966,12 +3987,15 @@
       var remote = await D6.Api.post('me', {});
       if (watchBan(remote)) return;
       if (!remote || !remote.ok || !user() || !remote.vault) return;
+      var localDepBefore = Number(u.realDepositTotal) || 0;
+      var incomingDep = Number(remote.user && remote.user.realDepositTotal) || 0;
+      var newDeposit = incomingDep > localDepBefore + 0.009;
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
       var locks = getBalanceLocks();
       if (locks && Date.now() < locks.until) return;
       if (!(openRealStake() > 0) && remote.vault.real != null) {
-        if (applyOfficialReal(remote.vault.real, { fromMe: true })) updateBalance(false);
+        if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: newDeposit || !!D6.holdDepositReal })) updateBalance(false);
       } else {
         applyQuietVault(remote);
       }
@@ -4013,19 +4037,18 @@
   function refreshWithdrawUi() {
     var u = user();
     var gate = wagerStatus(u);
-    if (lastServerWager && Date.now() - lastServerWager.at < 180000 && isFinite(lastServerWager.free)) {
-      var srvLocked = Number(lastServerWager.locked);
-      var srvFree = Number(lastServerWager.free);
-      if (isFinite(srvLocked) && isFinite(srvFree)) {
-        gate.locked = srvLocked;
-        gate.free = srvFree;
-        gate.canWithdraw = srvFree > 0.009;
-        if (Number(lastServerWager.done) >= 0) gate.done = Number(lastServerWager.done);
-        if (Number(lastServerWager.required) >= 0) {
-          gate.required = Number(lastServerWager.required);
-          gate.left = Math.max(0, D6.roundMoney(gate.required - gate.done));
-          gate.pct = gate.required > 0 ? Math.min(100, Math.round((gate.done / gate.required) * 100)) : 100;
-        }
+    if (lastServerWager && isFinite(Number(lastServerWager.required))) {
+      if (Number(lastServerWager.done) > gate.done) gate.done = Number(lastServerWager.done);
+      if (Number(lastServerWager.required) > 0) {
+        gate.required = Number(lastServerWager.required);
+        gate.left = Math.max(0, D6.roundMoney(gate.required - gate.done));
+        gate.pct = gate.required > 0 ? Math.min(100, Math.round((gate.done / gate.required) * 100)) : 100;
+      }
+      var hasSlices = Array.isArray(lastServerWager.slices) && lastServerWager.slices.length;
+      if (!hasSlices && isFinite(lastServerWager.free) && isFinite(lastServerWager.locked)) {
+        gate.locked = Number(lastServerWager.locked);
+        gate.free = Number(lastServerWager.free);
+        gate.canWithdraw = gate.free > 0.009;
       }
     }
     var shown = gate.free != null ? gate.free : realWithdrawBalance(u);
@@ -5504,6 +5527,9 @@
         this.value = String(this.value || '').replace(/\D/g, '').slice(0, 6);
       });
     }
+    if ($('btnWdOtpResend')) {
+      bindAndroidTap($('btnWdOtpResend'), function () { resendWithdrawOtp(); });
+    }
     if ($('closeWdConfirm')) $('closeWdConfirm').addEventListener('click', function () { closeModal('wdConfirmModal'); });
     if ($('btnWdConfirmOk')) $('btnWdConfirmOk').addEventListener('click', function () { closeModal('wdConfirmModal'); });
     function wdOtpUiSeconds(sent) {
@@ -5512,11 +5538,23 @@
       if (n > 60) n = 60;
       return n;
     }
+    function updateWdOtpResendUi() {
+      var btn = $('btnWdOtpResend');
+      if (!btn) return;
+      var waiting = wdOtpPending && wdOtpLeft > 0;
+      btn.textContent = waiting
+        ? t('otpResendIn').replace('{s}', String(wdOtpLeft))
+        : t('otpResend');
+      btn.setAttribute('data-i18n', waiting ? 'otpResendIn' : 'otpResend');
+      btn.disabled = !!waiting;
+      if (typeof setResendWait === 'function') setResendWait(btn, waiting);
+    }
     function refreshWdOtpHint() {
       var hint = $('wdOtpHint');
       if (!hint) return;
       var base = t('wdOtpHint');
       hint.textContent = wdOtpLeft > 0 ? (base + ' · ' + wdOtpLeft + 's') : base;
+      updateWdOtpResendUi();
     }
     function showWdOtpField() {
       if ($('wdOtpField')) $('wdOtpField').classList.remove('hidden');
@@ -5524,13 +5562,39 @@
     }
     function tickWdOtp() {
       if (wdOtpLeft <= 0) {
-        wdOtpPending = false;
         if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
         refreshWdOtpHint();
         return;
       }
       wdOtpLeft -= 1;
       refreshWdOtpHint();
+    }
+    async function resendWithdrawOtp() {
+      if (wdOtpLeft > 0) return;
+      var btn = $('btnWdOtpResend');
+      if (btn && typeof setResendWait === 'function') setResendWait(btn, true);
+      var sent = await D6.Api.post('withdrawOtp', {});
+      if (watchBan(sent)) return;
+      if (!sent || !sent.ok) {
+        if (sent && sent.cooldown) {
+          wdOtpPending = true;
+          wdOtpLeft = wdOtpUiSeconds(sent);
+          showWdOtpField();
+          if (wdOtpTimer) clearInterval(wdOtpTimer);
+          wdOtpTimer = setInterval(tickWdOtp, 1000);
+          return;
+        }
+        toast((sent && sent.reason) || t('wdOtpErr'), 'err');
+        updateWdOtpResendUi();
+        return;
+      }
+      wdOtpPending = true;
+      wdOtpLeft = wdOtpUiSeconds(sent);
+      showWdOtpField();
+      if (wdOtpTimer) clearInterval(wdOtpTimer);
+      wdOtpTimer = setInterval(tickWdOtp, 1000);
+      toast(t('wdOtpSent'), 'ok');
+      if ($('wdOtpCode')) $('wdOtpCode').focus();
     }
     function showWithdrawConfirm(id, amount) {
       if ($('wdConfirmId')) $('wdConfirmId').textContent = id || '—';
@@ -5629,7 +5693,7 @@
       var createdId = '';
       if (D6.Api && D6.Api.token()) {
         if (otp.length !== 6) {
-          if (wdOtpPending && wdOtpLeft > 0) {
+          if (wdOtpPending) {
             showWdOtpField();
             toast(t('wdOtpNeed'), 'err');
             if ($('wdOtpCode')) $('wdOtpCode').focus();
@@ -5794,20 +5858,44 @@
         mode = 'demo';
       } else {
         var rawAmt = String(($('adjAmount') && $('adjAmount').value) || '').replace(/\s/g, '').replace(',', '.');
-        var amt = Math.abs(Math.round(Number(rawAmt) || 0));
-        if (!amt) { toast('Montant invalide', 'err'); return; }
+        var amt = Math.abs(D6.roundMoney(Number(rawAmt) || 0));
+        if (!(amt >= 0.01)) { toast('Montant invalide', 'err'); return; }
         mode = 'real';
         delta = btn.dataset.adjAct === 'debit' ? -amt : amt;
       }
       if (D6.Api && D6.Api.token()) {
         var remote = await D6.Api.post('adjust', { userId: uid, delta: delta, mode: mode, motif: motif });
         if (remote && remote.server && !remote.ok) { toast(remote.reason || 'Erreur', 'err'); return; }
+        if (mode === 'real' && delta > 0 && remote && remote.ok) {
+          D6.holdDepositReal = true;
+          setTimeout(function () { D6.holdDepositReal = false; }, 25000);
+        }
+        if (mode === 'real' && remote && remote.ok && remote.vault && remote.vault.real != null) {
+          var tgt = D6.Store.getUser(uid);
+          if (tgt && D6.Store.setBalanceMode) D6.Store.setBalanceMode(tgt, 'real', remote.vault.real);
+          if (tgt && delta > 0) {
+            tgt.realDepositTotal = D6.roundMoney((Number(tgt.realDepositTotal) || 0) + delta);
+            tgt.lastDepositAmount = D6.roundMoney(delta);
+            tgt.requiredWagering = D6.roundMoney((Number(tgt.realDepositTotal) || 0) * 2);
+            if (D6.Store.saveUser) D6.Store.saveUser(tgt);
+          }
+        } else if (D6.Store.adjustMode) {
+          D6.Store.adjustMode(uid, mode, delta);
+        } else if (mode === 'real') {
+          D6.Store.adjustReal(uid, delta);
+        }
+      } else if (D6.Store.adjustMode) {
+        D6.Store.adjustMode(uid, mode, delta);
+      } else if (mode === 'real') {
+        D6.Store.adjustReal(uid, delta);
       }
-      if (D6.Store.adjustMode) D6.Store.adjustMode(uid, mode, delta);
-      else if (mode === 'real') D6.Store.adjustReal(uid, delta);
       toast((delta >= 0 ? '+' : '−') + D6.fmtFCFA(Math.abs(delta)), 'ok');
       await renderAdmin();
       openAdminUser(uid);
+      var meNow = user();
+      if (meNow && meNow.id === uid) {
+        try { await refreshRemoteVault(); } catch (eMe) { /* ignore */ }
+      }
       updateBalance(false);
     }
     if ($('closeAdminUser')) $('closeAdminUser').addEventListener('click', closeAdminUser);

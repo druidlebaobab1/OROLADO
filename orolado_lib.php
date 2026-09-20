@@ -650,6 +650,51 @@ function orolado_user_deposit_total(array $db, string $uid, array $user = []): f
   return orolado_money(max($sum, $field));
 }
 
+function orolado_completed_deposit_list(array $db, string $uid, array $user = []): array {
+  $list = [];
+  foreach (($db['deposits'] ?? []) as $d) {
+    if (!is_array($d)) continue;
+    $owner = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($uid === '' || $owner !== $uid) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $amt = orolado_money($d['amount'] ?? 0);
+    if ($amt <= 0.009) continue;
+    $list[] = [
+      'amount' => $amt,
+      'at' => (string) ($d['paidAt'] ?? $d['createdAt'] ?? $d['at'] ?? ''),
+    ];
+  }
+  usort($list, function ($a, $b) {
+    return strcmp((string) ($a['at'] ?? ''), (string) ($b['at'] ?? ''));
+  });
+  $sum = 0.0;
+  foreach ($list as $row) $sum += (float) ($row['amount'] ?? 0);
+  $field = orolado_money($user['realDepositTotal'] ?? 0);
+  $gap = orolado_money($field - $sum);
+  if ($gap > 0.009) {
+    array_unshift($list, ['amount' => $gap, 'at' => '']);
+  }
+  return $list;
+}
+
+function orolado_wager_lock_fifo(array $deposits, float $done): float {
+  $pool = orolado_money($done);
+  $lock = 0.0;
+  foreach ($deposits as $d) {
+    $amt = orolado_money(is_array($d) ? ($d['amount'] ?? 0) : $d);
+    if ($amt <= 0.009) continue;
+    $need = orolado_money($amt * 2);
+    if ($pool + 0.001 >= $need) {
+      $pool = orolado_money($pool - $need);
+    } else {
+      $lock = orolado_money($lock + $amt);
+      $pool = 0.0;
+    }
+  }
+  return $lock;
+}
+
 function orolado_last_completed_deposit(array $db, string $uid): float {
   $last = 0.0;
   $lastAt = '';
@@ -711,12 +756,15 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
       : orolado_money($db['vault'][$uid]['real'] ?? 0);
   }
   $balance = orolado_money($balance);
+  $list = orolado_completed_deposit_list($db, $uid, $user);
   $last = orolado_last_completed_deposit($db, $uid);
   if ($last <= 0 && isset($user['lastDepositAmount'])) $last = orolado_money($user['lastDepositAmount']);
   $old = orolado_money(max(0.0, $deposits - $last));
   $uncovered = orolado_money(max(0.0, $deposits - ($done / 2.0)));
   if ($ok) {
     $lockAmt = 0.0;
+  } else if ($list) {
+    $lockAmt = orolado_wager_lock_fifo($list, $done);
   } else if ($last > 0.009 && $old > 0.009 && ($done + 0.001 >= $old)) {
     $extra = orolado_money(max(0.0, $done - $old));
     $lockAmt = ($extra + 0.001 >= $last * 2) ? 0.0 : $last;
@@ -725,6 +773,11 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
   }
   $locked = orolado_money(min($balance, max(0.0, $lockAmt)));
   $free = orolado_money(max(0.0, $balance - $locked));
+  $slices = [];
+  foreach ($list as $row) {
+    $amt = orolado_money(is_array($row) ? ($row['amount'] ?? 0) : $row);
+    if ($amt > 0.009) $slices[] = $amt;
+  }
   return [
     'ok' => $ok,
     'canWithdraw' => $free > 0.009,
@@ -737,6 +790,7 @@ function orolado_wager_check(array $db, array $user, $balance = null): array {
     'balance' => $balance,
     'last' => $last,
     'old' => $old,
+    'slices' => $slices,
     'msg' => 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.',
   ];
 }

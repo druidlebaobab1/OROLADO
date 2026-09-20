@@ -2507,9 +2507,9 @@ html body .chart-fs-live{display:none!important}
 #formPassword[data-step="otp"] #passStepConfirm,
 #formPassword[data-step="otp"] .otp-resend-line,
 #formPassword[data-step="password"] #passStepOtp{display:none!important}
-.otp-resend-link,.otp-resend-row .mini,#btnOtpResend,#btnForgotResend,#btnPassResend{
+.otp-resend-link,.otp-resend-row .mini,#btnOtpResend,#btnForgotResend,#btnPassResend,#btnWdOtpResend{
   pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:5}
-.otp-resend-link.is-waiting,.otp-resend-row .mini.is-waiting,#btnOtpResend.is-waiting{
+.otp-resend-link.is-waiting,.otp-resend-row .mini.is-waiting,#btnOtpResend.is-waiting,#btnWdOtpResend.is-waiting{
   opacity:.7;cursor:default;text-decoration:none;pointer-events:none;color:var(--muted)!important;font-weight:600}
 #btnForgotPrimary.is-waiting,#btnPassPrimary.is-waiting,.btn-gold.is-waiting{
   opacity:.55;filter:grayscale(.45);pointer-events:none;cursor:not-allowed;

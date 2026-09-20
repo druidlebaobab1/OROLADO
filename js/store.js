@@ -345,6 +345,7 @@
       if (prev) {
         var prevDep = Number(prev.realDepositTotal) || 0;
         var nextDep = Number(user.realDepositTotal) || 0;
+        user._incomingDepositTotal = nextDep;
         if (prevDep > nextDep + 0.009) user.realDepositTotal = prevDep;
         if ((user.lastDepositAmount == null || !(Number(user.lastDepositAmount) > 0)) && Number(prev.lastDepositAmount) > 0) {
           user.lastDepositAmount = prev.lastDepositAmount;
@@ -367,8 +368,11 @@
           var prevReal = Number(prevV.real) || 0;
           var lsKeep = readRealLs(user.id);
           if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
+          var incomingDep = Number(user._incomingDepositTotal != null ? user._incomingDepositTotal : user.realDepositTotal) || 0;
+          var hadDep = Number(prev && prev.realDepositTotal) || 0;
+          var newDeposit = incomingDep > hadDep + 0.009;
           if (isFinite(nextReal) && nextReal > 0.009) {
-            if (prevReal <= 0.009 || !!D6.holdDepositReal) next.real = nextReal;
+            if (prevReal <= 0.009 || !!D6.holdDepositReal || newDeposit) next.real = nextReal;
             else next.real = Math.min(nextReal, prevReal);
           }
           else if (isFinite(nextReal) && nextReal >= 0 && !(prevReal > 0)) next.real = 0;
@@ -384,6 +388,7 @@
         }
         vault[user.id] = next;
       }
+      if (user && user._incomingDepositTotal != null) delete user._incomingDepositTotal;
       persist(true);
       rememberSession(db.session);
     },

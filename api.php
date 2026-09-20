@@ -1159,23 +1159,35 @@ if ($action === 'resolveDeposit') {
 if ($action === 'adjust') {
   $me = orolado_require_admin($db, $token);
   $uid = (string) ($req['userId'] ?? '');
-  $delta = (int) ($req['delta'] ?? 0);
+  $delta = function_exists('orolado_money') ? orolado_money($req['delta'] ?? 0) : (float) ($req['delta'] ?? 0);
   $mode = (($req['mode'] ?? 'real') === 'demo') ? 'demo' : 'real';
   $motif = trim((string) ($req['motif'] ?? ''));
   if ($motif === '') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Motif obligatoire']);
     exit;
   }
-  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-  $db['vault'][$uid][$mode] = max(0, (int) ($db['vault'][$uid][$mode] ?? 0) + $delta);
-  $targetPid = (string) ($db['users'][$uid]['publicId'] ?? $uid);
-  admin_log($db, (string) ($me['email'] ?? ''), $targetPid, 'adjust_' . $mode, $delta, $motif);
-  save_db($file, $db);
-  if ($mode === 'real') {
-    if ($delta >= 0) supabase_credit_real((string) $uid, $delta, false);
-    else supabase_debit_real((string) $uid, abs($delta));
+  if ($uid === '' || abs($delta) < 0.0001) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Montant invalide']);
+    exit;
   }
-  echo json_encode(['ok' => true, 'server' => true, 'vault' => $db['vault'][$uid]]);
+  if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  if ($mode === 'demo') {
+    $db['vault'][$uid]['demo'] = orolado_money(max(0, (float) ($db['vault'][$uid]['demo'] ?? 0) + $delta));
+    $targetPid = (string) ($db['users'][$uid]['publicId'] ?? $uid);
+    admin_log($db, (string) ($me['email'] ?? ''), $targetPid, 'adjust_demo', (int) round($delta), $motif);
+    save_db($file, $db);
+    echo json_encode(['ok' => true, 'server' => true, 'vault' => $db['vault'][$uid]]);
+    exit;
+  }
+  $res = orolado_ledger_apply($db, $uid, $delta, $motif, $delta > 0);
+  if (empty($res['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($res['reason'] ?? 'Échec')]);
+    exit;
+  }
+  $targetPid = (string) ($db['users'][$uid]['publicId'] ?? $uid);
+  admin_log($db, (string) ($me['email'] ?? ''), $targetPid, $delta >= 0 ? 'credit' : 'debit', (int) round($delta), $motif);
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true, 'vault' => $db['vault'][$uid], 'real' => $res['real']]);
   exit;
 }
 
