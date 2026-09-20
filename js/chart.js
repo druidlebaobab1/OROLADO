@@ -264,6 +264,11 @@
     };
   }
 
+  function viewMode() {
+    var u = D6.Store && D6.Store.current && D6.Store.current();
+    return u && u.mode === 'real' ? 'real' : 'demo';
+  }
+
   function pruneTradeVisuals(now) {
     now = now || Date.now();
     var id;
@@ -284,10 +289,10 @@
     for (id in openTradeVisuals) {
       if (!openTradeVisuals.hasOwnProperty(id)) continue;
       var v = openTradeVisuals[id];
-      if (v && v.assetId === assetId) n += 1;
+      if (v && v.assetId === assetId && (!v.mode || v.mode === viewMode())) n += 1;
     }
     if (D6.Engine && D6.Engine.getTrades) {
-      var list = D6.Engine.getTrades();
+      var list = D6.Engine.getTrades(viewMode());
       var i;
       var seen = {};
       for (i = 0; i < list.length; i++) {
@@ -323,7 +328,8 @@
       expiryTime: exp,
       expiresAt: exp,
       settled: !!trade.settled,
-      status: trade.status || 'open'
+      status: trade.status || 'open',
+      mode: trade.mode === 'real' ? 'real' : 'demo'
     };
   }
 
@@ -411,6 +417,7 @@
   function applyOpenTradeVisual(trade) {
     var snap = snapshotTradeVisual(trade);
     if (!snap) return false;
+    if (snap.mode && snap.mode !== viewMode()) return false;
     if (snap.settled || snap.status === 'won' || snap.status === 'lost' || snap.status === 'void') {
       delete openTradeVisuals[snap.id];
       return false;
@@ -425,6 +432,23 @@
       return false;
     }
     return drawNow();
+  }
+
+  function syncAccountMode() {
+    var mode = viewMode();
+    var id;
+    for (id in openTradeVisuals) {
+      if (!openTradeVisuals.hasOwnProperty(id)) continue;
+      var vis = openTradeVisuals[id];
+      if (vis && vis.mode && vis.mode !== mode) delete openTradeVisuals[id];
+    }
+    steer = null;
+    if (D6.Engine && D6.Engine.getTrades) {
+      D6.Engine.getTrades(mode).forEach(function (t) {
+        applyOpenTradeVisual(t);
+      });
+    }
+    if (isChartReady()) drawNow();
   }
 
   function removeTradeVisual(tradeId) {
@@ -2640,9 +2664,10 @@
       if (isFinite(st.lastPrice) && st.lastPrice > 0) lastDrawnClose = st.lastPrice;
       if (D6.Engine && D6.Engine.getMarket) D6.Engine.getMarket(id);
       if (D6.Engine && D6.Engine.getTrades) {
-        D6.Engine.getTrades().forEach(function (t) {
+        D6.Engine.getTrades(viewMode()).forEach(function (t) {
           var snap = snapshotTradeVisual(t);
           if (!snap) return;
+          if (snap.mode && snap.mode !== viewMode()) return;
           openTradeVisuals[snap.id] = snap;
         });
       }
@@ -2679,6 +2704,7 @@
     applyOpenTradeVisual: applyOpenTradeVisual,
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
+    syncAccountMode: syncAccountMode,
     drawNow: drawNow,
     flushOpenTradeVisuals: flushOpenTradeVisualQueue
   };

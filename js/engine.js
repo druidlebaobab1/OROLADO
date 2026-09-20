@@ -1505,7 +1505,14 @@
     return { wantWon: wantWon, harsh: false, target: target, voided: !!verdict.voided };
   }
 
+  function currentAccountMode() {
+    var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
+    return u && u.mode === 'real' ? 'real' : 'demo';
+  }
+
   function applyExitToMarket(trade, target) {
+    var tradeMode = trade && trade.mode === 'real' ? 'real' : 'demo';
+    if (tradeMode !== currentAccountMode()) return;
     var px = Number(target);
     if (!(px > 0) || !isFinite(px) || !trade) return;
     var id = trade.assetId;
@@ -1645,7 +1652,11 @@
       for (i = 0; i < trades.length; i++) {
         armTradeTimer(trades[i]);
         if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
-          try { D6.Chart.applyOpenTradeVisual(publicTrade(trades[i])); } catch (eR) { /* ignore */ }
+          try {
+            if ((trades[i].mode === 'real' ? 'real' : 'demo') === currentAccountMode()) {
+              D6.Chart.applyOpenTradeVisual(publicTrade(trades[i]));
+            }
+          } catch (eR) { /* ignore */ }
         }
       }
       return trades.length;

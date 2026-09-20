@@ -458,18 +458,12 @@
     if (useSnap) {
       locked = Math.min(bal, Math.max(0, lock));
     } else {
-      if (!(last > 0.009) && deposits > 0.009) {
-        var leftover = Math.max(0, deposits - done);
-        if (leftover > 0.009 && leftover + 0.009 < deposits) last = leftover;
-      }
       var old = Math.max(0, deposits - last);
-      if (!(required > 0.009)) {
-        locked = bal > 0.009 ? bal : 0;
-      } else if (done + 0.001 >= required) {
-        locked = 0;
-      } else if (last > 0.009 && old > 0.009) {
+      if (last > 0.009 && old > 0.009 && done + 0.001 < required) {
         var extra = Math.max(0, done - old);
         locked = extra + 0.001 >= last * 2 ? 0 : Math.min(bal, last);
+      } else if (required > 0.009 && done + 0.001 >= required) {
+        locked = 0;
       } else {
         locked = bal;
       }
@@ -1087,6 +1081,9 @@
     updatePayoutUi();
     renderHistory();
     syncTradeButtons();
+    if (D6.Chart && D6.Chart.syncAccountMode) {
+      try { D6.Chart.syncAccountMode(); } catch (eChartMode) { /* ignore */ }
+    }
     if (next === 'real') refreshRemoteVault();
   }
 
@@ -5911,7 +5908,8 @@
       if (u && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
       if (u && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
       if (D6.Chart && D6.Chart.applyOpenTradeVisual && D6.Engine.getTrades) {
-        D6.Engine.getTrades().forEach(function (t) { D6.Chart.applyOpenTradeVisual(t); });
+        var bootMode = u && u.mode === 'real' ? 'real' : 'demo';
+        D6.Engine.getTrades(bootMode).forEach(function (t) { D6.Chart.applyOpenTradeVisual(t); });
       }
       if (u && u.mode === 'real') {
         var bootReal = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0);

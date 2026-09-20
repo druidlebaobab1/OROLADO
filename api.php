@@ -1245,7 +1245,7 @@ if ($action === 'withdrawOtp') {
   $wagerOtp = function_exists('orolado_wager_check')
     ? orolado_wager_check($db, is_array($freshOtp) ? $freshOtp : [], $otpBal)
     : ['ok' => true, 'canWithdraw' => true];
-  if (empty($wagerOtp['ok']) && empty($wagerOtp['canWithdraw'])) {
+  if (empty($wagerOtp['canWithdraw'])) {
     echo json_encode([
       'ok' => false,
       'server' => true,
