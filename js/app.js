@@ -657,13 +657,21 @@
     if (!remote || !remote.ok || !remote.vault || !user()) return;
     var incoming = Number(remote.vault.real);
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) : 0;
-    var locks = getBalanceLocks();
-    var remoteHigher = isFinite(incoming) && incoming > local + 0.009;
-    if (locks && Date.now() < locks.until && !remoteHigher && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
-    if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
     if (Math.abs(incoming - local) <= 0.009) return;
-    if (adoptOfficialVault(remote.vault, { fromMe: true, force: !(openRealStake() > 0), allowRaise: true })) updateBalance(false);
+    var remoteHigher = incoming > local + 0.009;
+    var remUser = remote.user || {};
+    var remStake = Number(remUser.realStakeVolume != null ? remUser.realStakeVolume : remUser.totalWageredSinceDeposit) || 0;
+    var locStake = Number(user().realStakeVolume || user().totalWageredSinceDeposit) || 0;
+    var otherPlayed = remStake > locStake + 0.009;
+    var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
+    if (!remoteHigher) {
+      if (openRealStake() > 0 || recentSettle || !otherPlayed) return;
+    }
+    var locks = getBalanceLocks();
+    if (locks && Date.now() < locks.until && !remoteHigher && !D6.holdDepositReal) return;
+    if (incoming <= 0.009 && local > 0.009 && openRealStake() > 0) return;
+    if (adoptOfficialVault(remote.vault, { fromMe: true, force: false, allowRaise: remoteHigher })) updateBalance(false);
   }
   var lastPokeLiveAt = 0;
   function pokeLiveReal() {
@@ -710,10 +718,6 @@
     }
     banWatchTimer = setInterval(pollMe, 8000);
     holdScreenAwake();
-    if (!startBanWatch.boundClicks) {
-      startBanWatch.boundClicks = 1;
-      document.addEventListener('click', function () { pokeLiveReal(); }, true);
-    }
   }
 
   function toast(msg, kind, ms) {
@@ -2559,7 +2563,6 @@
     if (now - lastExecGuard < 160 && lastExecSide === next) return;
     lastExecGuard = now;
     lastExecSide = next;
-    pokeLiveReal();
     if (tradeQ.length >= (TRADE_Q_MAX || 12)) return;
     tradeQ.push(next);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
@@ -3996,13 +3999,7 @@
       }
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
-      if (remote.vault.real != null && !(openRealStake() > 0)) {
-        D6.holdRemote = true;
-        if (applyOfficialReal(remote.vault.real, { fromMe: true, force: true, allowRaise: true })) updateBalance(false);
-        setTimeout(function () { D6.holdRemote = false; }, 25000);
-      } else {
-        applyQuietVault(remote);
-      }
+      applyQuietVault(remote);
       if (user() && user().mode === 'demo' && remote.vault.demo != null && D6.Store.setBalanceMode) {
         var demo = Number(remote.vault.demo);
         var demoOpen = 0;
