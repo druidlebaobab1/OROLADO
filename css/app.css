@@ -2780,7 +2780,7 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
       radial-gradient(ellipse 17% 210% at 62% 100%,rgba(245,158,11,.95) 0%,rgba(185,28,28,.5) 44%,transparent 75%);
   }
   html.is-android:not(.is-tv) #screenTrade:not(.hidden)::before{
-    height:calc(178px + env(safe-area-inset-bottom, 42px));
+    height:calc(236px + env(safe-area-inset-bottom, 42px));
   }
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::before{
     height:calc(108px + env(safe-area-inset-bottom, 24px));
