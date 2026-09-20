@@ -120,12 +120,8 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   margin:0 0 14px;flex-shrink:0;min-width:0}
 #termsModal .btn-close,
-#termsModal .terms-head .btn-close,
-html.is-android #termsModal .btn-close,
-html.is-android #termsModal .terms-head .btn-close,
-html.is-android .modal-backdrop.active #termsModal .btn-close{
-  position:static!important;top:auto!important;right:auto!important;
-  flex:0 0 32px;color:#E8EEF9}
+#termsModal .terms-head .btn-close{
+  position:static;flex:0 0 32px;color:#E8EEF9}
 #termsModal .modal-title,
 #termsModal .terms-head .modal-title{
   display:block;flex:1 1 auto;min-width:0;max-width:100%;box-sizing:border-box;
@@ -206,3 +202,22 @@ html.is-ios body #screenAuth .auth-card{
 #formReset .btn-gold.is-waiting,
 #formPassword .btn-gold.is-waiting{
   opacity:.55;cursor:default;pointer-events:none}
+
+@media (max-width:859px){
+  #termsModal .terms-head{position:relative;padding-right:40px}
+  #termsModal .btn-close,
+  #termsModal .terms-head .btn-close,
+  html.is-android #termsModal .btn-close,
+  html.is-android #termsModal .terms-head .btn-close,
+  html.is-ios #termsModal .btn-close,
+  html.is-ios #termsModal .terms-head .btn-close,
+  html.is-android .modal-backdrop.active #termsModal .btn-close{
+    position:absolute!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;
+    width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;
+    margin:0!important;padding:0!important;flex:none!important;
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    border-radius:50%!important;border:1px solid rgba(245,158,11,.55)!important;
+    background:rgba(12,16,26,.96)!important;color:#F8FAFC!important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.1),0 4px 12px rgba(0,0,0,.4)!important;
+    font-size:1.05rem!important;line-height:1!important;z-index:90!important;transform:none!important}
+}

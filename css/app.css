@@ -622,18 +622,20 @@ html.is-android .pad{
   z-index:50!important;background:#0B0E14!important;max-width:none!important;
   padding-bottom:calc(28px + env(safe-area-inset-bottom, 18px))!important}
 html.is-android .btn-close{
-  min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;
+  min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;
   z-index:9999;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;position:absolute!important;
-  background:transparent!important;border:0!important}
+  top:8px!important;right:8px!important;left:auto!important;bottom:auto!important}
 html.is-android .modal-backdrop.active{pointer-events:auto!important}
 html.is-android .modal-backdrop.active .modal-box{pointer-events:auto;z-index:211}
 html.is-android .modal-backdrop.active .btn-gold{
   pointer-events:auto!important;touch-action:manipulation;position:relative;z-index:9999}
 html.is-android .modal-backdrop.active .btn-close{
-  pointer-events:auto!important;touch-action:manipulation;position:absolute!important;z-index:9999}
-html.is-android #depositModal .deposit-box:not(.is-crypto){padding-top:12px}
-html.is-android .drawer-head .btn-close{position:static!important;top:auto;right:auto;z-index:5}
+  pointer-events:auto!important;touch-action:manipulation;position:absolute!important;
+  top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;z-index:9999}
+html.is-android #depositModal .deposit-box:not(.is-crypto){padding-top:14px}
+html.is-android .drawer-head .btn-close{
+  position:absolute!important;top:8px!important;right:10px!important;left:auto!important;bottom:auto!important;z-index:20}
 html.is-android .trade-hint,
 html.is-android [data-i18n="tradeHint"],
 html.is-android [data-i18n="tradeHintAndroid"]{
@@ -659,10 +661,7 @@ html.is-android #chartOverlay{
 .modal-title{font-size:1rem;font-weight:900;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px;padding-right:44px}
 .modal-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;flex-shrink:0}
 .modal-head-row .modal-title{margin:0;padding:0;flex:1 1 auto;min-width:0;line-height:1.25}
-.modal-head-row .btn-close,
-html.is-android .modal-head-row .btn-close,
-html.is-ios .modal-head-row .btn-close,
-html.is-android .modal-backdrop.active .modal-head-row .btn-close{
+.modal-head-row .btn-close{
   position:static!important;top:auto!important;right:auto!important;flex:0 0 32px;
   width:32px;height:32px;min-width:32px;min-height:32px;font-size:1rem;transform:none}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -2524,7 +2523,7 @@ html body .chart-fs-live{display:none!important}
 #depositSuccessModal .deposit-wager-note,
 #depositWagerNote,#depositWagerNoteOk,#depositWagerNoteSuccess{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
 
-#depositModal .deposit-box:not(.is-crypto){padding-top:52px;position:relative}
+#depositModal .deposit-box:not(.is-crypto){padding-top:52px}
 #depositModal #closeDeposit,
 #depositModal .deposit-close,
 html.is-android #depositModal #closeDeposit,
@@ -2801,9 +2800,9 @@ html.is-android #depositModal .deposit-box:not(.is-crypto){
   width:min(440px,94vw)!important;
   max-width:440px!important;
   height:auto!important;
-  max-height:86dvh!important;
-  padding:12px 12px 10px!important;
-  overflow:auto!important}
+  max-height:84dvh!important;
+  padding:14px 10px 8px!important;
+  overflow:hidden!important}
 html.is-android #depositModal label[for="depositAmt"],
 html.is-android #depositModal [data-i18n="depositAmtLabel"]{
   font-size:.46rem!important;
@@ -2823,8 +2822,8 @@ html.is-android #withdrawModal .withdraw-box{
   width:min(420px,94vw)!important;
   max-width:420px!important;
   height:auto!important;
-  max-height:86dvh!important;
-  padding:10px 10px 8px!important;
+  max-height:84dvh!important;
+  padding:8px 8px 6px!important;
   overflow:hidden!important}
 html.is-android #withdrawModal .wd-modal-head{min-height:40px!important}
 html.is-android #withdrawModal .wd-modal-head .modal-title{
@@ -2834,6 +2833,136 @@ html.is-android #withdrawModal .wd-bal-amt{font-size:1.15rem!important}
 html.is-android #withdrawModal .wd-group-label{margin:6px 0 4px!important;font-size:.52rem!important}
 html.is-android #withdrawModal .wd-card-grid{gap:4px!important}
 html.is-android #withdrawModal .wd-card{
-  min-height:34px!important;padding:4px 6px!important;font-size:.58rem!important;overflow:hidden!important}
-html.is-android #withdrawModal .wd-card-ico{width:20px;height:20px}
+  min-height:32px!important;padding:3px 5px!important;font-size:.55rem!important;overflow:hidden!important}
+html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
+
+/* === ORO-MOBILE-CLOSES : croix rondes en haut à droite. Les boîtes restent fixed. === */
+@media (max-width:859px){
+  .modal-box,
+  #depositModal .modal-box,
+  #depositModal .deposit-box,
+  #withdrawModal .modal-box,
+  #withdrawModal .withdraw-box,
+  #financeModal .modal-box,
+  #historySheet .modal-box,
+  #helpModal .modal-box,
+  #otpModal .modal-box,
+  #forgotModal .modal-box,
+  #passModal .modal-box,
+  #depositSuccessModal .modal-box,
+  #wdConfirmModal .modal-box,
+  #tipModal .modal-box,
+  #iosInstallModal .modal-box,
+  #adminUserModal .modal-box,
+  #termsModal .modal-box,
+  .drawer,#drawerProfile.drawer{
+    position:fixed!important}
+  .drawer-head,.wd-modal-head,.modal-head-row,.terms-head{
+    position:relative!important}
+  .btn-close,
+  html.is-android .btn-close,
+  html.is-ios .btn-close,
+  html.is-android .modal-backdrop.active .btn-close,
+  html.is-ios .modal-backdrop.active .btn-close,
+  html.is-android .drawer-head .btn-close,
+  html.is-ios .drawer-head .btn-close,
+  .drawer-head .btn-close,
+  .modal-head-row .btn-close,
+  html.is-android .modal-head-row .btn-close,
+  html.is-ios .modal-head-row .btn-close,
+  html.is-android .modal-backdrop.active .modal-head-row .btn-close,
+  #depositModal #closeDeposit,
+  #depositModal .deposit-close,
+  html.is-android #depositModal #closeDeposit,
+  html.is-ios #depositModal #closeDeposit,
+  html.is-android .modal-backdrop.active #depositModal #closeDeposit,
+  #withdrawModal .wd-modal-head .btn-close,
+  html.is-android #withdrawModal .btn-close,
+  html.is-ios #withdrawModal .btn-close,
+  #financeModal .btn-close,
+  #historySheet .btn-close,
+  #helpModal .btn-close,
+  #otpModal .btn-close,
+  #forgotModal .btn-close,
+  #passModal .btn-close,
+  #depositSuccessModal .btn-close,
+  #wdConfirmModal .btn-close,
+  #tipModal .btn-close,
+  .tip-close,
+  #iosInstallModal .btn-close,
+  #adminUserModal .btn-close,
+  #btnCloseDrawer{
+    position:absolute!important;
+    top:8px!important;
+    right:8px!important;
+    left:auto!important;
+    bottom:auto!important;
+    width:32px!important;
+    height:32px!important;
+    min-width:32px!important;
+    min-height:32px!important;
+    margin:0!important;
+    padding:0!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border-radius:50%!important;
+    border:1px solid rgba(245,158,11,.6)!important;
+    background:rgba(12,16,26,.96)!important;
+    color:#F8FAFC!important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.45)!important;
+    font-size:1.05rem!important;
+    font-weight:500!important;
+    line-height:1!important;
+    z-index:90!important;
+    transform:none!important;
+    flex:none!important}
+  .drawer-head .btn-close,
+  html.is-android .drawer-head .btn-close,
+  #btnCloseDrawer{
+    top:calc(6px + env(safe-area-inset-top, 0px))!important;
+    right:10px!important}
+  .drawer-head{padding-right:48px}
+  .modal-head-row .modal-title,.wd-modal-head .modal-title{padding-right:40px}
+
+  .deposit-box,.withdraw-box,
+  #depositModal .deposit-box:not(.is-crypto),
+  html.is-android #depositModal .deposit-box:not(.is-crypto),
+  html.is-ios #depositModal .deposit-box:not(.is-crypto){
+    overflow:hidden!important;
+    max-height:82dvh!important;
+    padding:12px 10px 8px!important}
+  #depositModal .deposit-box:not(.is-crypto) .modal-title{margin-bottom:4px;font-size:.9rem}
+  #depositModal .deposit-box:not(.is-crypto) .field{margin-bottom:4px}
+  #depositModal .deposit-box:not(.is-crypto) .pay-method-label{margin:6px 0 4px}
+  #depositModal .deposit-box:not(.is-crypto) .pay-method-card{padding:8px 10px 8px;min-height:0}
+  #depositModal #btnConfirmDeposit.btn-deposit-confirm{min-height:44px;padding:10px 12px;font-size:.86rem;margin:2px 0 8px}
+  #depositModal #payMethodUsdt .pay-crypto-wall{gap:5px 3px}
+  #depositModal #payMethodUsdt .pay-crypto-cell{padding:3px 1px 2px}
+  #depositModal #payMethodUsdt .pay-crypto-badge,
+  #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:20px!important;height:20px!important}
+
+  #withdrawModal .withdraw-box,
+  html.is-android #withdrawModal .withdraw-box,
+  html.is-ios #withdrawModal .withdraw-box{
+    overflow:hidden!important;
+    max-height:82dvh!important;
+    padding:8px 8px 6px!important}
+  #withdrawModal #wdStepGrid,
+  #withdrawModal #wdStepForm:not(.hidden){
+    overflow:hidden!important;
+    overscroll-behavior:none}
+  #withdrawModal .wd-modal-head{min-height:36px;margin:0 0 4px}
+  #withdrawModal .wd-bal{padding:8px 8px!important;margin:0 0 6px!important}
+  #withdrawModal .wd-bal-amt{font-size:1.15rem!important}
+  #withdrawModal .wd-group-label{margin:4px 0 3px!important;font-size:.5rem!important}
+  #withdrawModal .wd-card-grid{gap:3px!important}
+  #withdrawModal .wd-card,
+  #withdrawModal .withdraw-box.is-wd-form .wd-card{
+    min-height:28px!important;padding:3px 5px!important;font-size:.52rem!important}
+  #withdrawModal .wd-card-ico,
+  #withdrawModal .withdraw-box.is-wd-form .wd-card-ico{width:16px!important;height:16px!important}
+  #wdStepForm .field{margin-bottom:4px}
+  #wdStepForm .field input,#wdStepForm .field select{min-height:34px;padding:7px 9px}
+}
 
