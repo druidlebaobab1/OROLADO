@@ -137,21 +137,21 @@
         if (Math.random() < 0.12) p = 0.70;
         else p = Math.max(0.50, Math.min(0.60, p + (Math.random() - 0.5) * 0.04));
       }
-      var sigma = SEALED.SIGMA;
-      var mu = driftForSide(side, p, sigma, dt);
-      var z = boxMuller();
-      var st = round2(gbmPrice(entry, dt, mu, sigma, z));
+      if (!(p > 0) || !isFinite(p)) p = profile === 'demo' ? 0.55 : 0.42;
+      if (p >= 1) p = 0.99;
+      var won = Math.random() < p;
+      var voided = false;
+      var nudge = Math.max(entry * 0.00025, 0.02);
+      var up = side === 'put' ? !won : won;
+      var st = round2(entry + (up ? nudge : -nudge));
       entry = round2(entry);
-      var voided = st === entry;
-      var won = voided ? false : (side === 'put' ? st < entry : st > entry);
+      if (st === entry) st = round2(entry + (up ? 0.05 : -0.05));
       if (!(st > 0) || !isFinite(st)) {
-        st = entry;
-        voided = true;
-        won = false;
+        st = round2(entry + (up ? 0.05 : -0.05));
       }
       return Object.freeze({
         exitPrice: st,
-        won: won,
+        won: !!won,
         voided: voided
       });
     }
@@ -191,6 +191,7 @@
   var tradeTimers = {};
   var pendingBusyUntil = {};
   var clickQuietUntil = {};
+  var hedgeWinBucket = {};
 
   function u32(n) {
     n = Math.imul(n ^ (n >>> 16), 2246822507);
@@ -1441,6 +1442,38 @@
     return { winProbability: winProbability, harsh: false, profile: 'C' };
   }
 
+  function hedgeBucketKey(trade) {
+    var start = Number(trade && (trade.startTime || trade.startedAt)) || Date.now();
+    return String(trade.userId || '') + '|' + String(trade.assetId || '') + '|' + String(Math.floor(start / 12000));
+  }
+
+  function hasOppositeHedge(trade) {
+    if (!trade) return false;
+    var side = normalizeTradeSide(trade.side);
+    var start = Number(trade.startTime || trade.startedAt) || 0;
+    var i;
+    for (i = 0; i < trades.length; i++) {
+      var o = trades[i];
+      if (!o || o.id === trade.id || o.userId !== trade.userId) continue;
+      if (o.assetId !== trade.assetId) continue;
+      if (normalizeTradeSide(o.side) === side) continue;
+      var os = Number(o.startTime || o.startedAt) || 0;
+      if (Math.abs(os - start) <= 12000) return true;
+    }
+    return !!hedgeWinBucket[hedgeBucketKey(trade)];
+  }
+
+  function applyHedgeLock(trade, won) {
+    if (!won) return false;
+    var key = hedgeBucketKey(trade);
+    var side = normalizeTradeSide(trade.side);
+    var opp = side === 'put' ? 'call' : 'put';
+    var rec = hedgeWinBucket[key];
+    if (rec && rec.side === opp) return false;
+    hedgeWinBucket[key] = { side: side, at: Date.now() };
+    return true;
+  }
+
   function decideTradeOutcome(user, trade, mode) {
     if (trade && trade._outcomeReady) {
       return { wantWon: !!trade._wantWon, harsh: !!trade._harsh, target: Number(trade._exitTarget) };
@@ -1804,6 +1837,11 @@
       }
       var voided = !!verdict.voided;
       var won = !voided && !!verdict.won;
+      if (mode === 'real' && !isAdminUser(user) && won && hasOppositeHedge(trade)) {
+        won = applyHedgeLock(trade, true);
+      } else if (mode === 'real' && !isAdminUser(user) && won) {
+        applyHedgeLock(trade, true);
+      }
       applyExitToMarket(trade, exitPrice);
       if (D6.Chart && D6.Chart.removeTradeVisual) {
         try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
