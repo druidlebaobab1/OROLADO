@@ -3060,6 +3060,26 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     gap:4px;margin-left:8px;flex-wrap:nowrap}
   html.is-android #screenTrade:not(.is-guest) .bal-crypto-frieze .coin-svg{
     width:17px;height:17px}
+
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta,
+  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta{gap:5px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left,
+  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left{
+    margin-left:-3px;margin-right:1px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right,
+  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
+    margin-left:1px;margin-right:-3px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .btn-deposit,
+  html:not(.is-android):not(.is-tv) #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
+    padding-left:18px;padding-right:18px;min-width:8.6rem}
+
+  html.is-android #screenTrade:not(.is-guest) .topbar-cta{gap:5px}
+  html.is-android #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left{
+    margin-left:-2px;margin-right:1px}
+  html.is-android #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
+    margin-left:1px;margin-right:-2px}
+  html.is-android #screenTrade:not(.is-guest) .topbar-cta .btn-deposit{
+    padding-left:16px;padding-right:16px;min-width:8.2rem}
 }
 @media (max-width:380px){
   html.is-android #screenTrade:not(.is-guest) .topbar .brand{
