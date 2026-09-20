@@ -291,6 +291,10 @@
       } catch (eR) { localReal = 0; }
       var locks = D6.App && D6.App.getBalanceLocks ? D6.App.getBalanceLocks() : null;
       var locked = locks && Date.now() < locks.until;
+      var remDep = Number(profile && (profile.real_deposit_total != null ? profile.real_deposit_total : profile.realDepositTotal)) || 0;
+      var locDep = Number(u.realDepositTotal) || 0;
+      var newDep = remDep > locDep + 0.009;
+      if (newDep) u.realDepositTotal = remDep;
       if (isFinite(remoteReal) && remoteReal >= 0) {
         var staleZero = remoteReal <= 0.009 && localReal > 0.009;
         var holdLow = !!D6.holdDepositReal && remoteReal + 0.009 < localReal;
@@ -299,10 +303,10 @@
         try {
           if (D6.Engine && D6.Engine.getTrades) {
             var liveReal = D6.Engine.getTrades('real') || [];
-            raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009;
+            raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009 && !newDep && !D6.holdDepositReal;
           }
         } catch (eOpen) { raiseWhileOpen = false; }
-        var phantomRaise = remoteReal > localReal + 0.009 && !D6.holdDepositReal;
+        var phantomRaise = remoteReal > localReal + 0.009 && !D6.holdDepositReal && !newDep;
         if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen && !phantomRaise) next.real = remoteReal;
       }
     }
@@ -405,7 +409,7 @@
     var user = D6.Store.current();
     if (!sb || !user || !uuidish(user.id) || D6.holdPull) return null;
     var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', user.id).maybeSingle();
-    var profRes = await sb.from('profiles').select('display_name,phone,country_code,mode').eq('id', user.id).maybeSingle();
+    var profRes = await sb.from('profiles').select('display_name,phone,country_code,mode,real_deposit_total').eq('id', user.id).maybeSingle();
     var ordRes = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
     if (ordRes && Array.isArray(ordRes.data)) {
       var cloudPositions = ordRes.data.filter(isSettledOrder).map(orderToPosition);

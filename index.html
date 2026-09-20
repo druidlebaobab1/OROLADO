@@ -128,7 +128,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=574">
+    <link rel="stylesheet" href="css/app.css?v=575">
     <link rel="stylesheet" href="css/auth.css?v=544">
     <link rel="stylesheet" href="css/tv.css?v=3">
   <!-- Meta Pixel Code -->
@@ -947,9 +947,7 @@
           <label for="wdOtpCode" data-i18n="wdOtpCode">Code e-mail (6 chiffres)</label>
           <input id="wdOtpCode" class="otp-input" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••">
           <p class="hint-min" id="wdOtpHint" data-i18n="wdOtpHint">Ce code est valable 1 minute.</p>
-          <p class="otp-resend-line" id="wdOtpResendRow">
-            <button type="button" class="otp-resend-link" id="btnWdOtpResend" data-i18n="otpResend" aria-live="polite">Renvoyer le code</button>
-          </p>
+          <button type="button" class="btn-wd-resend" id="btnWdOtpResend" data-i18n="otpResend" aria-live="polite">Renvoyer le code</button>
           <p class="err-msg" id="err-wdOtp"></p>
         </div>
         <button type="button" class="btn-gold btn-wd-confirm" id="btnSendWithdraw" data-i18n="wdConfirmBtn">CONFIRMER LE RETRAIT</button>
@@ -1168,7 +1166,7 @@
   <script src="js/store.js?v=573"></script>
   <script src="js/api.js?v=540"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=564"></script>
+  <script src="js/supabase.js?v=565"></script>
   <script src="js/auth.js?v=562"></script>
   <script src="js/engine.js?v=552"></script>
   <script src="js/chart.js?v=553"></script>
@@ -1222,6 +1220,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=589"></script>
+  <script src="js/app.js?v=590"></script>
 </body>
 </html>

@@ -1191,6 +1191,19 @@ if ($action === 'adjust') {
   exit;
 }
 
+if ($action === 'suspendUser') {
+  $me = orolado_require_admin($db, $token);
+  $uid = (string) ($req['userId'] ?? '');
+  if ($uid === '' || $uid === (string) ($me['id'] ?? '')) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Joueur invalide']);
+    exit;
+  }
+  orolado_force_suspend($db, $uid, 'suspended');
+  save_db($file, $db);
+  echo json_encode(['ok' => true, 'server' => true]);
+  exit;
+}
+
 if ($action === 'supportMessage') {
   $me = session_user($db, $token);
   if (!$me) {

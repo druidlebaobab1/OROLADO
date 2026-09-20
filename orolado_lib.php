@@ -904,7 +904,36 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
       'operator' => 'admin',
       'reference' => $ref,
     ]);
+    $hdrsProf = supabase_admin_headers();
+    if ($hdrsProf) {
+      supabase_http(
+        rtrim(supabase_project_url(), '/') . '/rest/v1/profiles?id=eq.' . rawurlencode($uid),
+        $hdrsProf,
+        json_encode([
+          'real_deposit_total' => $db['users'][$uid]['realDepositTotal'] ?? $delta,
+          'updated_at' => date('c'),
+        ], JSON_UNESCAPED_UNICODE),
+        'PATCH'
+      );
+    }
   }
+    if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+      if (!isset($db['users'][$uid]['transactions']) || !is_array($db['users'][$uid]['transactions'])) {
+        $db['users'][$uid]['transactions'] = [];
+      }
+      array_unshift($db['users'][$uid]['transactions'], [
+        'id' => 'adj_' . bin2hex(random_bytes(4)),
+        'at' => date('c'),
+        'type' => ($asDeposit && $delta > 0) ? 'deposit' : ($delta >= 0 ? 'credit' : 'debit'),
+        'amount' => abs($delta),
+        'note' => $note,
+        'mode' => 'real',
+        'status' => 'COMPLETED',
+      ]);
+      if (count($db['users'][$uid]['transactions']) > 80) {
+        $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 80);
+      }
+    }
   return ['ok' => true, 'real' => $next, 'delta' => $delta];
 }
 

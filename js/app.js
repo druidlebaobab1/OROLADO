@@ -1564,10 +1564,10 @@
     var allowRaise = !!(opts && opts.allowRaise) || !!D6.holdDepositReal;
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
-    if (locked && Math.abs(real - local) > 0.02) return false;
+    if (locked && Math.abs(real - local) > 0.02 && !allowRaise) return false;
     if (lastSettleAt && Date.now() - lastSettleAt < 30000 && Math.abs(real - local) > 0.02 && !allowRaise) return false;
     if (real > local + 0.009 && !allowRaise) return false;
-    if (!force && openRealStake() > 0 && real > local + 0.009) return false;
+    if (!force && openRealStake() > 0 && real > local + 0.009 && !allowRaise) return false;
     if (real <= 0.009 && local > 0.009) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
@@ -2442,6 +2442,7 @@
       '<div class="admin-adj-row">' +
       '<button class="mini ok" type="button" data-adj-act="credit" data-adj="' + u.id + '" data-mode="real">+ Créditer Réel</button>' +
       '<button class="mini bad" type="button" data-adj-act="debit" data-adj="' + u.id + '" data-mode="real">− Débiter Réel</button>' +
+      '<button class="mini bad" type="button" data-suspend="' + u.id + '">Suspendre</button>' +
       '<button class="mini" type="button" data-adj="' + u.id + '" data-mode="demo" data-reset="1">Reset démo 1M</button>' +
       '</div>' +
       '<p class="hint-min">Le montant saisi crédite ou débite instantanément le solde RÉEL en base.</p>' +
@@ -3990,10 +3991,14 @@
       var localDepBefore = Number(u.realDepositTotal) || 0;
       var incomingDep = Number(remote.user && remote.user.realDepositTotal) || 0;
       var newDeposit = incomingDep > localDepBefore + 0.009;
+      if (newDeposit) {
+        D6.holdDepositReal = true;
+        setTimeout(function () { D6.holdDepositReal = false; }, 25000);
+      }
+      var locks = getBalanceLocks();
+      if (locks && Date.now() < locks.until && !newDeposit && !D6.holdDepositReal) return;
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
-      var locks = getBalanceLocks();
-      if (locks && Date.now() < locks.until) return;
       if (!(openRealStake() > 0) && remote.vault.real != null) {
         if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: newDeposit || !!D6.holdDepositReal })) updateBalance(false);
       } else {
@@ -5551,9 +5556,7 @@
     }
     function refreshWdOtpHint() {
       var hint = $('wdOtpHint');
-      if (!hint) return;
-      var base = t('wdOtpHint');
-      hint.textContent = wdOtpLeft > 0 ? (base + ' · ' + wdOtpLeft + 's') : base;
+      if (hint) hint.textContent = t('wdOtpHint');
       updateWdOtpResendUi();
     }
     function showWdOtpField() {
@@ -5865,12 +5868,12 @@
       }
       if (D6.Api && D6.Api.token()) {
         var remote = await D6.Api.post('adjust', { userId: uid, delta: delta, mode: mode, motif: motif });
-        if (remote && remote.server && !remote.ok) { toast(remote.reason || 'Erreur', 'err'); return; }
-        if (mode === 'real' && delta > 0 && remote && remote.ok) {
+        if (!remote || !remote.ok) { toast((remote && remote.reason) || 'Erreur', 'err'); return; }
+        if (mode === 'real' && delta > 0) {
           D6.holdDepositReal = true;
           setTimeout(function () { D6.holdDepositReal = false; }, 25000);
         }
-        if (mode === 'real' && remote && remote.ok && remote.vault && remote.vault.real != null) {
+        if (mode === 'real' && remote.vault && remote.vault.real != null) {
           var tgt = D6.Store.getUser(uid);
           if (tgt && D6.Store.setBalanceMode) D6.Store.setBalanceMode(tgt, 'real', remote.vault.real);
           if (tgt && delta > 0) {
@@ -5879,15 +5882,10 @@
             tgt.requiredWagering = D6.roundMoney((Number(tgt.realDepositTotal) || 0) * 2);
             if (D6.Store.saveUser) D6.Store.saveUser(tgt);
           }
-        } else if (D6.Store.adjustMode) {
-          D6.Store.adjustMode(uid, mode, delta);
-        } else if (mode === 'real') {
-          D6.Store.adjustReal(uid, delta);
         }
-      } else if (D6.Store.adjustMode) {
-        D6.Store.adjustMode(uid, mode, delta);
-      } else if (mode === 'real') {
-        D6.Store.adjustReal(uid, delta);
+      } else {
+        toast(t('sessionInvalid') || 'Session invalide', 'err');
+        return;
       }
       toast((delta >= 0 ? '+' : '−') + D6.fmtFCFA(Math.abs(delta)), 'ok');
       await renderAdmin();
@@ -5906,6 +5904,16 @@
     }
     if ($('adminUserDetail')) {
       $('adminUserDetail').addEventListener('click', async function (e) {
+        var sus = e.target.closest('[data-suspend]');
+        if (sus && sus.dataset.suspend) {
+          if (!window.confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
+          var susRemote = await D6.Api.post('suspendUser', { userId: sus.dataset.suspend });
+          if (!susRemote || !susRemote.ok) { toast((susRemote && susRemote.reason) || 'Erreur', 'err'); return; }
+          toast('Compte suspendu', 'ok');
+          closeAdminUser();
+          await renderAdmin();
+          return;
+        }
         var btn = e.target.closest('[data-adj-act], [data-reset="1"]');
         if (!btn || !btn.dataset.adj) return;
         await runAdminAdjust(btn);
