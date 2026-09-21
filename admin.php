@@ -1876,7 +1876,12 @@ document.getElementById('btnHealthAck').onclick = async () => {
   if (!r.ok) { alert(r.reason || 'Échec'); return; }
   paintHealth({ok:true, n:0, issues:[]});
   const pan = document.getElementById('healthPanel');
-  if (pan) { pan.className = 'health-panel on'; pan.innerHTML = '<p>C’est réglé. Compteur à zéro.</p>'; }
+  if (pan) {
+    pan.className = 'health-panel on';
+    pan.innerHTML = r.repaired
+      ? '<p>C’est réglé. Les boutons suivent à nouveau.</p>'
+      : '<p>C’est réglé. Compteur à zéro.</p>';
+  }
 };
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });

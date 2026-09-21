@@ -1558,7 +1558,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'health', 'live_seen'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'health', 'live_seen', 'board_watch'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
@@ -1842,6 +1842,9 @@ function admin_board_watch(): array {
 }
 
 function admin_board_ack(): array {
+  if (function_exists('admin_bust_cache')) admin_bust_cache();
+  $cf = function_exists('admin_cache_file') ? admin_cache_file('admin_cache_board_watch.json') : '';
+  if ($cf !== '' && is_file($cf)) @unlink($cf);
   $raw = admin_board_issues_raw();
   $fps = [];
   foreach ($raw as $issue) {
@@ -1849,9 +1852,12 @@ function admin_board_ack(): array {
   }
   $payload = ['at' => date('c'), 'fps' => $fps];
   @file_put_contents(admin_board_ack_file(), json_encode($payload, JSON_UNESCAPED_UNICODE));
-  $f = function_exists('admin_cache_file') ? admin_cache_file('admin_cache_board_watch.json') : '';
-  if ($f !== '' && is_file($f)) @unlink($f);
-  return ['ok' => true, 'n' => 0, 'issues' => []];
+  return [
+    'ok' => true,
+    'n' => 0,
+    'issues' => [],
+    'repaired' => $raw === [],
+  ];
 }
 
 function admin_health_summary(): array {
