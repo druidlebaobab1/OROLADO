@@ -75,7 +75,7 @@
     MIN_WITHDRAW: 5,
     WAGER_MULTIPLIER: 2,
     // Max 2 trades ouverts simultanés par compte (demo|real).
-    MAX_OPEN: 10,
+    MAX_OPEN: 20,
     MAKETOU_CHECKOUT: 'https://welcome-6.mymaketou.shop/products/welcome/checkout',
     MAKETOU_PRODUCT_ID: 'dc38d82a-9074-4f73-9cca-50959ea58e94',
     BRAND: 'OROLADO',

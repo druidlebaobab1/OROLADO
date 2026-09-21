@@ -1,0 +1,16 @@
+# Paris réels : persistance verrouillée
+
+Après le correctif « solde coincé à un montant fixe » :
+
+- Un pari réel est débité dans Supabase **puis** écrit dans `orders` (`supabase_put_order`).
+- Si le JSON Hostinger rate, **on ne rembourse pas** tant que l’ordre existe dans Supabase.
+- Le règlement (`settleOrder`) peut finir l’ordre depuis Supabase si le JSON n’a pas la ligne.
+- Les plus et les moins du compte réel viennent du coffre Supabase, pas d’un cache local figé.
+
+Interdit, sauf demande EXPLICITE portant sur les paris / soldes réels :
+
+- remettre un remboursement automatique dès que `with_db_lock` échoue
+- enlever `try_sb` / `supabase_put_order` / `supabase_get_order`
+- faire dépendre le gain réel uniquement du fichier `orolado.json`
+
+Ne pas lier ça au crédit admin, aux webhooks crypto, ni au hachage login.

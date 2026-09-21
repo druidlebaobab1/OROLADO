@@ -1711,7 +1711,7 @@
       }
       var mode = user.mode === 'real' ? 'real' : 'demo';
       if (openForMode(mode).length >= MAX_OPEN) {
-        return { ok: false, reason: 'Limite atteinte (10 trades max). Veuillez attendre la fin d\'un trade.' };
+        return { ok: false, reason: 'Limite atteinte (20 trades max). Veuillez attendre la fin d\'un trade.' };
       }
 
       var nowPerf = performance.now();

@@ -588,7 +588,7 @@
 
   function isSilentTradeMsg(msg) {
     var s = String(msg || '');
-    return /anti-bot|slow down|ralentissez|limite atteinte|10 trades max/i.test(s);
+    return /anti-bot|slow down|ralentissez|limite atteinte|trades max/i.test(s);
   }
 
   var bannedKickLock = false;
@@ -2598,7 +2598,7 @@
       }
       var mode = u.mode === 'real' ? 'real' : 'demo';
       var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-      var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
+      var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 20;
       if (open >= maxOpen) {
         tradeQ.length = 0;
         tradeQBusy = false;
@@ -2623,7 +2623,7 @@
     if (!u) return false;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 10;
+    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 20;
     if (open >= maxOpen) {
       syncTradeButtons();
       return false;

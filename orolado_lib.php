@@ -316,7 +316,7 @@ function supabase_http(string $url, array $headers, ?string $body = null, string
   $ch = curl_init($url);
   $opts = [
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 8,
+    CURLOPT_TIMEOUT => 12,
     CURLOPT_HTTPHEADER => $headers,
   ];
   $method = strtoupper($method);
@@ -1204,6 +1204,70 @@ function supabase_admin_vault(string $userId): ?array {
   $rows = supabase_http(supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId) . '&select=demo,real', $hdrs);
   if (!is_array($rows) || !isset($rows[0])) return null;
   return ['demo' => orolado_money($rows[0]['demo'] ?? 0), 'real' => orolado_money($rows[0]['real'] ?? 0)];
+}
+
+function supabase_order_id_ok(string $orderId): bool {
+  return $orderId !== '' && (bool) preg_match('/^[a-zA-Z0-9_\-.]+$/', $orderId);
+}
+
+/** Enregistre un ordre réel dans Supabase (indépendant du JSON Hostinger). */
+function supabase_put_order(string $userId, array $order): bool {
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return false;
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return false;
+  $id = preg_replace('/[^a-zA-Z0-9_\-.]/', '', (string) ($order['id'] ?? ''));
+  if (!supabase_order_id_ok($id)) return false;
+  $won = array_key_exists('won', $order) ? $order['won'] : null;
+  $row = [
+    'id' => $id,
+    'user_id' => $userId,
+    'asset_id' => preg_replace('/[^a-zA-Z0-9_\-]/', '', (string) ($order['asset_id'] ?? 'v100')) ?: 'v100',
+    'side' => (($order['side'] ?? '') === 'put') ? 'put' : 'call',
+    'stake' => orolado_money($order['stake'] ?? 0),
+    'duration' => (int) ($order['duration'] ?? 10),
+    'mode' => (($order['mode'] ?? '') === 'real') ? 'real' : 'demo',
+    'payout' => (float) ($order['payout'] ?? 1.88),
+    'status' => (string) ($order['status'] ?? 'open'),
+  ];
+  if (isset($order['entry_price'])) $row['entry_price'] = (float) $order['entry_price'];
+  if (array_key_exists('exit_price', $order) && $order['exit_price'] !== null) $row['exit_price'] = (float) $order['exit_price'];
+  if ($won !== null) $row['won'] = (bool) $won;
+  if (array_key_exists('net', $order) && $order['net'] !== null) $row['net'] = orolado_money($order['net']);
+  $url = rtrim(supabase_project_url(), '/');
+  $insHdrs = [
+    'Content-Type: application/json',
+    'apikey: ' . supabase_service_key(),
+    'Authorization: Bearer ' . supabase_service_key(),
+    'Prefer: resolution=merge-duplicates,return=minimal',
+  ];
+  $res = supabase_http($url . '/rest/v1/orders?on_conflict=id', $insHdrs, json_encode($row, JSON_UNESCAPED_UNICODE), 'POST');
+  if ($res !== null) return true;
+  $patchHdrs = [
+    'Content-Type: application/json',
+    'apikey: ' . supabase_service_key(),
+    'Authorization: Bearer ' . supabase_service_key(),
+    'Prefer: return=minimal',
+  ];
+  $patch = supabase_http(
+    $url . '/rest/v1/orders?id=eq.' . rawurlencode($id) . '&user_id=eq.' . rawurlencode($userId),
+    $patchHdrs,
+    json_encode($row, JSON_UNESCAPED_UNICODE),
+    'PATCH'
+  );
+  return $patch !== null;
+}
+
+function supabase_get_order(string $userId, string $orderId): ?array {
+  $hdrs = supabase_admin_headers();
+  $id = preg_replace('/[^a-zA-Z0-9_\-.]/', '', $orderId);
+  if (!$hdrs || !supabase_order_id_ok($id)) return null;
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+  $rows = supabase_http(
+    rtrim(supabase_project_url(), '/') . '/rest/v1/orders?id=eq.' . rawurlencode($id) . '&user_id=eq.' . rawurlencode($userId) . '&select=id,status,stake,payout,mode,won,net,side,duration,asset_id,entry_price&limit=1',
+    $hdrs
+  );
+  if (!is_array($rows) || !isset($rows[0]) || !is_array($rows[0])) return null;
+  return $rows[0];
 }
 
 function orolado_outcome_from_prices($side, $entry, $exit): ?array {
