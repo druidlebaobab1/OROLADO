@@ -6076,9 +6076,12 @@
       }
       if (u) migrateLegacyDemo(u);
       if (u && !isGuest(u)) {
-        var demoNow = Number(D6.Store.demoBalance(u) || 0);
-        if (demoNow <= 0 && !(Number(u.trades) > 0)) {
-          D6.Store.setBalanceMode(u, 'demo', D6.CONFIG.DEMO_START || 1000000);
+        if (D6.Auth && D6.Auth.seedFreshDemo) D6.Auth.seedFreshDemo(u);
+        else {
+          var demoNow = Number(D6.Store.demoBalance(u) || 0);
+          if (demoNow <= 0 && !(Number(u.demoTrades) > 0)) {
+            D6.Store.setBalanceMode(u, 'demo', D6.CONFIG.DEMO_START || 1000000);
+          }
         }
       }
       restoreSettleLedger();

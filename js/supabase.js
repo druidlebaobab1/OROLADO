@@ -196,9 +196,20 @@
       row = prof.data;
     }
     var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', pid).maybeSingle();
+    var startDemo = (D6.CONFIG && D6.CONFIG.DEMO_START) || 1000000;
+    var playedDemo = Number(row && row.demo_trades) > 0;
+    if (!vaultRes || !vaultRes.data) {
+      try { await sb.from('vaults').insert({ user_id: pid, demo: startDemo }); } catch (eIns) { /* ignore */ }
+      vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', pid).maybeSingle();
+    } else if (!playedDemo && !(Number(vaultRes.data.demo) > 0.009)) {
+      try {
+        await sb.from('vaults').update({ demo: startDemo, updated_at: new Date().toISOString() }).eq('user_id', pid);
+        vaultRes.data.demo = startDemo;
+      } catch (eUp) { /* ignore */ }
+    }
     var vault = (vaultRes && vaultRes.data)
       ? { demo: vaultRes.data.demo, real: vaultRes.data.real }
-      : null;
+      : { demo: startDemo, real: 0 };
     var localUser = D6.Store.current && D6.Store.current();
     var ordRes = await sb.from('orders').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(100);
     var txRes = await sb.from('transactions').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(80);
@@ -219,6 +230,14 @@
       };
     }
     applySession(user, vault);
+    try {
+      var live = D6.Store.getUser(pid) || D6.Store.current();
+      if (live && D6.Auth && D6.Auth.seedFreshDemo) D6.Auth.seedFreshDemo(live);
+      else if (live && D6.Store.setBalanceMode && !playedDemo) {
+        var dNow = Number(D6.Store.demoBalance(live) || 0);
+        if (!(dNow > 0.009)) D6.Store.setBalanceMode(live, 'demo', startDemo);
+      }
+    } catch (eDemo) { /* ignore */ }
     var sess = await sb.auth.getSession();
     if (sess && sess.data && sess.data.session && D6.Api) D6.Api.setToken(sess.data.session.access_token);
     startRealtime(pid);

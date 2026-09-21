@@ -48,6 +48,21 @@
       return D6.Store.current();
     },
 
+    seedFreshDemo: function (user) {
+      if (!user || user.guest) return;
+      if (String(user.email || '').indexOf('@orolado.local') >= 0) return;
+      var start = (D6.CONFIG && D6.CONFIG.DEMO_START) || 1000000;
+      var played = Number(user.demoTrades) > 0;
+      var demoNow = 0;
+      try { demoNow = Number(D6.Store.demoBalance(user) || 0); } catch (eD) { demoNow = 0; }
+      if (demoNow > 0.009 || played) return;
+      if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(user, 'demo', start);
+      if (user.mode !== 'demo' && !(Number(D6.Store.realBalance && D6.Store.realBalance(user)) > 0.009)) {
+        user.mode = 'demo';
+        D6.Store.saveUser(user);
+      }
+    },
+
     register: async function (form) {
       var displayName = String(form.displayName || '').trim();
       var email = normalizeEmail(form.email);
@@ -138,11 +153,9 @@
         D6.Store.importRemote(remote.user, remote.vault, { official: true });
         D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
         var seeded = D6.Store.current() || D6.Store.getUser(remote.user.id);
-        var startDemo = (D6.CONFIG && D6.CONFIG.DEMO_START) || 1000000;
         if (seeded) {
           seeded.mode = seeded.mode || 'demo';
-          var demoNow = Number(D6.Store.demoBalance(seeded) || 0);
-          D6.Store.setBalanceMode(seeded, 'demo', demoNow > 0 ? demoNow : startDemo);
+          D6.Auth.seedFreshDemo(seeded);
         }
       }
       // Miroir Supabase optionnel (compte déjà actif côté Orolado).
@@ -212,7 +225,10 @@
         if (!cloudLogin) return null;
         try {
           var cloud = await D6.Supabase.login(id.email, password);
-          if (cloud && cloud.ok) return { ok: true, user: D6.Store.current() };
+          if (cloud && cloud.ok) {
+            D6.Auth.seedFreshDemo(D6.Store.current());
+            return { ok: true, user: D6.Store.current() };
+          }
           if (cloud && cloud.banned) return { ok: false, reason: cloud.reason || 'Compte suspendu', field: 'loginPass' };
         } catch (eCloud) { /* ignore */ }
         return null;
@@ -229,7 +245,9 @@
             at: D6.nowIso(),
             exp: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
           });
-          return { ok: true, user: D6.Store.getUser(remote.user.id) || remote.user };
+          var logged = D6.Store.getUser(remote.user.id) || remote.user;
+          D6.Auth.seedFreshDemo(logged);
+          return { ok: true, user: logged };
         }
         if (remote && remote.server && !remote.ok) {
           var viaCloudReject = await tryCloudLogin();

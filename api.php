@@ -734,7 +734,7 @@ if ($action === 'register') {
   if (empty($user['publicId'])) $user['publicId'] = alloc_public_id($db);
   $db['users'][$user['id']] = $user;
   $vault = [
-    'demo' => (int) ($vault['demo'] ?? 1000000),
+    'demo' => 1000000,
     'real' => 0
   ];
   $db['vault'][$user['id']] = $vault;
