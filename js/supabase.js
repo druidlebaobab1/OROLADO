@@ -479,11 +479,10 @@
       real_deposit_total: user.realDepositTotal || 0,
       updated_at: new Date().toISOString()
     }).then(function () { /* ignore */ });
-    sb.from('vaults').upsert({
-      user_id: user.id,
+    sb.from('vaults').update({
       demo: vault.demo,
       updated_at: new Date().toISOString()
-    }).then(function () { /* ignore */ });
+    }).eq('user_id', user.id).then(function () { /* ignore */ });
   }
 
   D6.Supabase = {

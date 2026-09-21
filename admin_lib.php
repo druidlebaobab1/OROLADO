@@ -315,10 +315,10 @@ function admin_auth_users_count(): int {
 }
 
 function admin_inscrits_count(): int {
-  $cached = admin_cache_get('inscrits_n_live1', 20);
+  $cached = admin_cache_get('inscrits_n_epoch2', 20);
   if (is_array($cached) && isset($cached['n']) && (int) $cached['n'] > 0) return (int) $cached['n'];
   $n = count(admin_profiles());
-  admin_cache_set('inscrits_n_live1', ['n' => $n]);
+  admin_cache_set('inscrits_n_epoch2', ['n' => $n]);
   return $n;
 }
 
@@ -697,13 +697,22 @@ function admin_dep_is_failed(array $d): bool {
   return in_array($st, ['FAILED', 'CANCELED', 'CANCELLED', 'EXPIRED', 'REJECTED', 'ERROR', 'VOID'], true);
 }
 
-/** Tous les joueurs restent visibles dans le tableau admin. */
+/**
+ * Époque du tableau admin (affichage seulement).
+ * Les comptes plus anciens restent en base, ils ne s’affichent plus.
+ * INTERDIT de remettre cutoff à 0 ou user_visible à true sans demande explicite.
+ */
 function admin_stat_cutoff_ts(): int {
-  return 0;
+  return strtotime('2026-09-20T21:44:00+00:00') ?: 0;
 }
 
 function admin_stat_user_visible(array $p): bool {
-  return true;
+  $em = strtolower(trim((string) ($p['email'] ?? '')));
+  $pid = strtoupper(trim((string) ($p['publicId'] ?? '')));
+  if ($em === 'xsw93108@laoia.com') return true;
+  if ($pid === 'ORO-705711') return true;
+  $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  return $t > admin_stat_cutoff_ts();
 }
 
 function admin_stat_visible_user_ids(): array {
@@ -798,7 +807,7 @@ function admin_apply_live_seen(array $list): array {
 }
 
 function admin_profiles(): array {
-  $cached = admin_cache_get('profiles_live1', 40);
+  $cached = admin_cache_get('profiles_epoch2', 40);
   if (is_array($cached) && isset($cached['list'])) return admin_apply_live_seen($cached['list']);
 
   $rows = admin_sb_all(
@@ -966,7 +975,7 @@ function admin_profiles(): array {
     $n++;
     $list[$i]['seq'] = $n;
   }
-  admin_cache_set('profiles_live1', ['list' => $list]);
+  admin_cache_set('profiles_epoch2', ['list' => $list]);
   return admin_apply_live_seen($list);
 }
 
@@ -1231,7 +1240,7 @@ function admin_restore_hidden_wds_once(): void {
 
 function admin_withdrawals(): array {
   admin_restore_hidden_wds_once();
-  $cached = admin_cache_get('wd_live1', 15);
+  $cached = admin_cache_get('wd_epoch2', 15);
   if (is_array($cached)) return $cached;
   $byId = [];
   $byFp = [];
@@ -1300,12 +1309,12 @@ function admin_withdrawals(): array {
     $uid = (string) ($w['userId'] ?? '');
     return $uid !== '' && isset($keepIds[$uid]);
   }));
-  admin_cache_set('wd_live1', $list);
+  admin_cache_set('wd_epoch2', $list);
   return $list;
 }
 
 function admin_deposits(): array {
-  $cached = admin_cache_get('deposits_live1', 20);
+  $cached = admin_cache_get('deposits_epoch2', 20);
   if (is_array($cached)) return $cached;
   $sb = admin_sb_all(
     'deposits',
@@ -1369,12 +1378,12 @@ function admin_deposits(): array {
     $uid = (string) ($d['userId'] ?? '');
     return $uid !== '' && isset($keepIds[$uid]);
   }));
-  admin_cache_set('deposits_live1', $list);
+  admin_cache_set('deposits_epoch2', $list);
   return $list;
 }
 
 function admin_orders(): array {
-  $cached = admin_cache_get('orders_live1', 25);
+  $cached = admin_cache_get('orders_epoch2', 25);
   if (is_array($cached)) return $cached;
   $rows = admin_sb_all(
     'orders',
@@ -1423,7 +1432,7 @@ function admin_orders(): array {
     $uid = (string) ($o['user_id'] ?? $o['userId'] ?? '');
     return $uid !== '' && isset($keepIds[$uid]);
   }));
-  admin_cache_set('orders_live1', $list);
+  admin_cache_set('orders_epoch2', $list);
   return $list;
 }
 
@@ -1452,30 +1461,13 @@ function admin_enrich_user_row(array $p, array $vaults): array {
 }
 
 function admin_online_count(): int {
-  $nRpc = 0;
-  $res = admin_sb_req('/rest/v1/rpc/count_online', [], 'POST', json_encode(['p_seconds' => 90]));
-  if (!empty($res['ok'])) {
-    $raw = trim((string) ($res['raw'] ?? ''));
-    if (is_numeric($raw)) {
-      $nRpc = (int) $raw;
-    } else {
-      $j = json_decode($raw, true);
-      if (is_numeric($j)) $nRpc = (int) $j;
-      else if (is_array($j) && isset($j[0]) && is_numeric($j[0])) $nRpc = (int) $j[0];
-    }
-  }
-  $nSeen = 0;
   $cut = time() - 90;
-  foreach (admin_live_seen_map() as $ls) {
-    $t = strtotime((string) $ls) ?: 0;
-    if ($t >= $cut) $nSeen++;
-  }
   $nProf = 0;
   foreach (admin_profiles() as $p) {
     $t = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
     if ($t >= $cut) $nProf++;
   }
-  return max($nRpc, $nSeen, $nProf);
+  return $nProf;
 }
 
 function admin_otp_rows(): array {
@@ -1566,7 +1558,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'orders', 'orders_mask1', 'orders_live1', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'badges', 'badges_mask1', 'badges_live1', 'health', 'live_seen'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'health', 'live_seen'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

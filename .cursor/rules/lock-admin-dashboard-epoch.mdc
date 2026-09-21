@@ -1,0 +1,19 @@
+---
+description: Ne jamais réafficher les anciens comptes du tableau admin
+alwaysApply: true
+---
+
+# Tableau admin : époque verrouillée (dépôt 50 $)
+
+Le tableau admin affiche UNIQUEMENT :
+- le joueur du dépôt 50 $ (`xsw93108@laoia.com` / `ORO-705711` / dépôt `oro_8297217e1d0843fe8898ac452c3841b2_d6c00b5fd577`)
+- les comptes créés APRÈS `2026-09-20T21:44:00+00:00`
+
+Les plus anciens restent en base (Supabase). On ne les affiche plus. On ne les supprime pas.
+
+INTERDIT, sauf demande EXPLICITE de l’utilisateur portant sur ce masque :
+- remettre `admin_stat_cutoff_ts()` à `0`
+- mettre `admin_stat_user_visible()` à `return true`
+- « réafficher tout le live », « unmask », « montrer tous les inscrits »
+
+Si le dashboard semble vide ou incomplet, NE PAS enlever le masque. Demander confirmation. Pour annuler : rollback git, pas `return true`.

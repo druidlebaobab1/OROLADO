@@ -106,7 +106,7 @@ function admin_user_lookup(string $id, array $pmap): array {
 }
 
 function admin_badges(): array {
-  $cached = admin_cache_get('badges_live1', 12);
+  $cached = admin_cache_get('badges_epoch2', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_profiles();
   $wds = admin_withdrawals();
@@ -237,7 +237,7 @@ function admin_badges(): array {
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
-  admin_cache_set('badges_live1', $out);
+  admin_cache_set('badges_epoch2', $out);
   return $out;
 }
 
@@ -1084,6 +1084,10 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   if ($uid === '' || $delta <= 0) {
     return ['ok' => false, 'reason' => 'Montant invalide', 'real' => 0.0];
   }
+  $isUuid = (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid);
+  if (!$isUuid) {
+    return ['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.', 'real' => 0.0];
+  }
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
     $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   }
@@ -1107,15 +1111,8 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     $again = supabase_admin_vault($uid);
     $got = $again ? orolado_money($again['real'] ?? 0) : null;
   }
-  $isUuid = (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid);
-  if ($got === null) {
-    if ($isUuid) {
-      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $cur];
-    }
-    $got = $target;
-  }
-  if ($got + 0.009 < $target) {
-    return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $got];
+  if ($got === null || $got + 0.009 < $target) {
+    return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => ($got !== null ? $got : $cur)];
   }
   $db['vault'][$uid]['real'] = $got;
 
@@ -1230,7 +1227,7 @@ if ($isAjax) {
     if ($view === 'online') {
       admin_json(admin_list_payload($view, $req));
     }
-    $ck = 'list_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
+    $ck = 'list_e2_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
       $req['q'] ?? '', $req['preset'] ?? '', $req['cal'] ?? '',
       $req['dateFrom'] ?? '', $req['dateTo'] ?? '', $req['idFrom'] ?? '', $req['page'] ?? 1,
     ]));
