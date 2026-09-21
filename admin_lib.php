@@ -709,8 +709,12 @@ function admin_stat_cutoff_ts(): int {
 function admin_stat_user_visible(array $p): bool {
   $em = strtolower(trim((string) ($p['email'] ?? '')));
   $pid = strtoupper(trim((string) ($p['publicId'] ?? '')));
+  $id = (string) ($p['id'] ?? '');
   if ($em === 'xsw93108@laoia.com') return true;
   if ($pid === 'ORO-705711') return true;
+  if ($id === 'admin_master') return true;
+  if (function_exists('orolado_admin_emails') && in_array($em, orolado_admin_emails(), true)) return true;
+  if ($em === 'admin@orolado.com' || $em === 'admin@6diablo.com') return true;
   $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
   return $t > admin_stat_cutoff_ts();
 }
@@ -888,7 +892,7 @@ function admin_profiles(): array {
   foreach (($local['users'] ?? []) as $id => $u) {
     if (!is_array($u)) continue;
     $id = (string) ($u['id'] ?? $id);
-    if ($id === '' || $id === 'admin_master') continue;
+    if ($id === '') continue;
     $pid = (string) ($u['publicId'] ?? '');
     if (isset($byId[$id])) {
       if ($pid !== '') $byId[$id]['publicId'] = $pid;
@@ -974,6 +978,13 @@ function admin_profiles(): array {
   foreach ($list as $i => $row) {
     $n++;
     $list[$i]['seq'] = $n;
+    $em = strtolower(trim((string) ($row['email'] ?? '')));
+    if ($em === 'admin@orolado.com' || (function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em))) {
+      if (($list[$i]['publicId'] ?? '') === '') $list[$i]['publicId'] = 'ORO-ADMIN';
+    } else if (($list[$i]['publicId'] ?? '') === '') {
+      $list[$i]['publicId'] = 'ORO-' . $n;
+    }
+    if (($list[$i]['traffic'] ?? '') === '') $list[$i]['traffic'] = 'direct';
   }
   admin_cache_set('profiles_epoch2', ['list' => $list]);
   return admin_apply_live_seen($list);
