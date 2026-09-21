@@ -756,7 +756,7 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'alerts') {
-    $cols = ['Heure exacte', 'Service', 'État', 'Description'];
+    $cols = ['', 'Heure exacte', 'Service', 'État', 'Description'];
     $list = admin_health_rows();
     $list = admin_apply_filters($list, $req, 'at');
     $acked = function_exists('admin_health_ack_map') ? admin_health_ack_map() : [];
@@ -773,8 +773,10 @@ function admin_list_payload(string $view, array $req): array {
       $ackedRow = ($lvl === 'error' || $lvl === 'warn') && $fp !== '' && isset($acked[$fp]);
       if ($ackedRow) $lvl = 'ok';
       $label = $ackedRow ? 'Réglé' : ($lvl === 'error' ? 'Panne' : ($lvl === 'warn' ? 'Attention' : 'OK'));
+      $canAck = !$ackedRow && ($lvl === 'error' || $lvl === 'warn') && $fp !== '';
       $rows[] = [
         'cells' => [
+          '',
           substr((string) ($r['at'] ?? ''), 0, 19),
           (string) ($r['service'] ?? ''),
           $label,
@@ -783,7 +785,9 @@ function admin_list_payload(string $view, array $req): array {
         'userId' => '',
         'alert' => $lvl === 'error',
         'flag' => $lvl === 'error' ? 'suspect' : ($lvl === 'warn' ? 'unread' : 'ok'),
-        'wrap' => 3,
+        'wrap' => 4,
+        'fp' => $fp,
+        'canAck' => $canAck,
       ];
     }
     $summary = $errN === 0
@@ -1239,10 +1243,10 @@ if ($isAjax) {
     admin_json(['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()]);
   }
   if ($action === 'board_ack') {
-    admin_json(admin_board_ack());
+    admin_json(admin_board_ack((string) ($req['fp'] ?? '')));
   }
   if ($action === 'health_ack') {
-    admin_json(admin_health_ack());
+    admin_json(admin_health_ack((string) ($req['fp'] ?? '')));
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
@@ -1526,7 +1530,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .health-panel{display:none;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#0E1420;padding:12px;font-size:.8rem;line-height:1.45}
     .health-panel.on{display:block}
     .health-panel p{margin:0 0 8px;color:var(--muted)}
-    .health-panel li{margin:0 0 6px}
+    .health-panel li{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .health-panel .mini{margin:0;flex-shrink:0}
   </style>
 </head>
 <body>
@@ -1568,7 +1573,6 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="sec">E · Trafic, mails &amp; alertes</div>
     <div class="metrics" id="gE"><?php foreach ($ADMIN_TABS['gE'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <button type="button" class="health-bar ok" id="btnHealthBar">Tous les boutons suivent</button>
-    <button type="button" class="health-ack" id="btnHealthAck">C’est réglé</button>
     <div class="health-panel" id="healthPanel"></div>
 
     <div class="filters">
@@ -1698,14 +1702,12 @@ function bustList() { listCache = {}; }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function paintHealth(h) {
   const bar = document.getElementById('btnHealthBar');
-  const ack = document.getElementById('btnHealthAck');
   const pan = document.getElementById('healthPanel');
   if (!bar || !h) return;
   const issues = h.issues || [];
-  const bad = !h.ok && issues.length > 0;
+  const bad = issues.length > 0;
   bar.className = 'health-bar ' + (bad ? 'bad' : 'ok');
   bar.textContent = bad ? (issues.length + ' bouton(s) ne suivent plus — cliquer pour voir') : 'Tous les boutons suivent';
-  if (ack) ack.classList.toggle('on', bad);
   window._boardIssues = issues;
   if (pan && !bad) { pan.classList.remove('on'); pan.innerHTML = ''; }
 }
@@ -1721,9 +1723,19 @@ function showBoardPanel() {
   const names = {};
   TABS.forEach(t => { names[t.id] = t.k; });
   pan.className = 'health-panel on';
-  pan.innerHTML = '<p>Boutons qui ne reçoivent plus leurs données :</p><ul>' +
-    issues.map(i => '<li><strong>'+esc(names[i.id] || i.label || i.id)+'</strong> — '+esc(i.message||'')+'</li>').join('') +
+  pan.innerHTML = '<p>Chaque bouton a son C’est réglé :</p><ul>' +
+    issues.map(i => '<li><span><strong>'+esc(names[i.id] || i.label || i.id)+'</strong> — '+esc(i.message||'')+'</span>'+
+      (i.fp ? ' <button class="mini ok" type="button" data-board-fp="'+esc(i.fp)+'">C’est réglé</button>' : '')+
+      '</li>').join('') +
     '</ul>';
+  pan.querySelectorAll('[data-board-fp]').forEach(btn => btn.addEventListener('click', async ev => {
+    ev.stopPropagation();
+    const r = await ajax({action:'board_ack', fp: btn.getAttribute('data-board-fp')});
+    if (!r.ok) { alert(r.reason || 'Échec'); return; }
+    paintHealth(r);
+    showBoardPanel();
+    loadBadges();
+  }));
 }
 async function loadBadges() {
   const j = await ajax({action:'badges'});
@@ -1744,6 +1756,12 @@ function renderList(j) {
     const clickable = r.userId || r.kind === 'message';
     html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+(r.userId||'')+'" data-row="'+i+'">';
     (r.cells||[]).forEach((c, ci) => {
+      if (view === 'alerts' && ci === 0) {
+        html += '<td>';
+        if (r.canAck && r.fp) html += '<button class="mini ok" data-act="healthack" data-fp="'+esc(r.fp)+'">C’est réglé</button>';
+        html += '</td>';
+        return;
+      }
       const s = String(c ?? '');
       const wrap = r.wrap === ci || r.kind === 'message' && ci === 5;
       if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span></td>';
@@ -1775,19 +1793,7 @@ function renderList(j) {
   });
   html += '</tbody></table>';
   if (!(j.rows||[]).length) html = '<p class="muted" style="padding:12px">Aucune ligne pour ces filtres.</p>';
-  if (view === 'alerts') {
-    html += '<p style="padding:10px 12px">';
-    if ((j.alertOpen||0) > 0) html += '<button class="mini ok" type="button" id="btnSanteAck">C’est réglé</button>';
-    else html += '<span class="muted">Santé : OK ou déjà réglé.</span>';
-    html += '</p>';
-  }
   panel.innerHTML = html;
-  const santeAck = document.getElementById('btnSanteAck');
-  if (santeAck) santeAck.onclick = async () => {
-    const r = await ajax({action:'health_ack'});
-    if (!r.ok) { alert(r.reason || 'Échec'); return; }
-    bustList(); loadBadges(); loadList(true);
-  };
   const pg = document.getElementById('pager');
   pg.innerHTML = j.pages > 1 ? ('Page '+j.page+' / '+j.pages+' <button class="mini" id="prevP">←</button> <button class="mini" id="nextP">→</button>') : '';
   const prev = document.getElementById('prevP'); const next = document.getElementById('nextP');
@@ -1808,6 +1814,13 @@ function renderList(j) {
     if (act === 'openmsg') {
       const row = (j.rows||[])[Number(id)];
       if (row) openMessage(row);
+      return;
+    }
+    if (act === 'healthack') {
+      const fp = btn.getAttribute('data-fp');
+      const r = await ajax({action:'health_ack', fp});
+      if (!r.ok) alert(r.reason || 'Échec');
+      bustList(); loadBadges(); loadList(true);
       return;
     }
     if (kind === 'msg') {
@@ -1903,18 +1916,6 @@ async function openUser(uid) {
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
-document.getElementById('btnHealthAck').onclick = async () => {
-  const r = await ajax({action:'board_ack'});
-  if (!r.ok) { alert(r.reason || 'Échec'); return; }
-  paintHealth({ok:true, n:0, issues:[]});
-  const pan = document.getElementById('healthPanel');
-  if (pan) {
-    pan.className = 'health-panel on';
-    pan.innerHTML = r.repaired
-      ? '<p>C’est réglé. Les boutons suivent à nouveau.</p>'
-      : '<p>C’est réglé. Compteur à zéro.</p>';
-  }
-};
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });

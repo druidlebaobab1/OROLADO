@@ -1832,6 +1832,7 @@ function admin_board_watch(): array {
   foreach ($raw as $issue) {
     $fp = admin_board_fp($issue);
     if (isset($ack[$fp])) continue;
+    $issue['fp'] = $fp;
     $open[] = $issue;
   }
   return [
@@ -1841,22 +1842,31 @@ function admin_board_watch(): array {
   ];
 }
 
-function admin_board_ack(): array {
+function admin_ack_fp_ok(string $fp): string {
+  $fp = strtolower(preg_replace('/[^a-f0-9]/', '', $fp));
+  return strlen($fp) === 32 ? $fp : '';
+}
+
+function admin_board_ack(string $fp = ''): array {
+  $fp = admin_ack_fp_ok($fp);
+  if ($fp === '') return ['ok' => false, 'reason' => 'Ligne manquante'];
   if (function_exists('admin_bust_cache')) admin_bust_cache();
   $cf = function_exists('admin_cache_file') ? admin_cache_file('admin_cache_board_watch.json') : '';
   if ($cf !== '' && is_file($cf)) @unlink($cf);
-  $raw = admin_board_issues_raw();
-  $fps = [];
-  foreach ($raw as $issue) {
-    $fps[admin_board_fp($issue)] = true;
+  $map = [];
+  $f = admin_board_ack_file();
+  if (is_file($f)) {
+    $j = json_decode((string) @file_get_contents($f), true);
+    if (is_array($j) && isset($j['fps']) && is_array($j['fps'])) $map = $j['fps'];
   }
-  $payload = ['at' => date('c'), 'fps' => $fps];
-  @file_put_contents(admin_board_ack_file(), json_encode($payload, JSON_UNESCAPED_UNICODE));
+  $map[$fp] = true;
+  @file_put_contents($f, json_encode(['at' => date('c'), 'fps' => $map], JSON_UNESCAPED_UNICODE));
+  $w = admin_board_watch();
   return [
     'ok' => true,
-    'n' => 0,
-    'issues' => [],
-    'repaired' => $raw === [],
+    'n' => (int) ($w['n'] ?? 0),
+    'issues' => $w['issues'] ?? [],
+    'repaired' => ($w['issues'] ?? []) === [],
   ];
 }
 
@@ -1876,17 +1886,15 @@ function admin_health_ack_map(): array {
   return (is_array($j) && isset($j['fps']) && is_array($j['fps'])) ? $j['fps'] : [];
 }
 
-function admin_health_ack(): array {
+function admin_health_ack(string $fp = ''): array {
+  $fp = admin_ack_fp_ok($fp);
+  if ($fp === '') return ['ok' => false, 'reason' => 'Ligne manquante'];
   if (function_exists('admin_bust_cache')) admin_bust_cache();
   $cf = function_exists('admin_cache_file') ? admin_cache_file('admin_cache_health.json') : '';
   if ($cf !== '' && is_file($cf)) @unlink($cf);
-  $fps = [];
-  foreach (admin_health_rows() as $r) {
-    $lvl = (string) ($r['level'] ?? 'ok');
-    if ($lvl !== 'error' && $lvl !== 'warn') continue;
-    $fps[admin_health_fp($r)] = true;
-  }
-  @file_put_contents(admin_health_ack_file(), json_encode(['at' => date('c'), 'fps' => $fps], JSON_UNESCAPED_UNICODE));
+  $map = admin_health_ack_map();
+  $map[$fp] = true;
+  @file_put_contents(admin_health_ack_file(), json_encode(['at' => date('c'), 'fps' => $map], JSON_UNESCAPED_UNICODE));
   return ['ok' => true];
 }
 

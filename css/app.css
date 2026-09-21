@@ -3154,3 +3154,30 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     width:33.33vw!important;max-width:640px;min-width:min(440px,33.33vw)}
 }
 
+/* iphone-header-v611 — rollback: retirer ce bloc */
+@media (max-width:859px){
+  html.is-ios #screenTrade:not(.is-guest) .topbar-row{
+    padding-right:0;gap:6px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta{
+    gap:7px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left,
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
+    margin:0 1px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{
+    width:26px;height:26px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-actions{
+    margin-left:4px;gap:5px}
+  html.is-ios #screenTrade:not(.is-guest) #btnProfile.icon-btn{
+    width:42px;height:32px;min-width:42px;max-width:42px;flex:0 0 42px;
+    font-size:1.08rem;transform:translateX(8px);margin-right:-4px}
+}
+@media (max-width:390px){
+  html.is-ios #screenTrade:not(.is-guest) .topbar-row{gap:5px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta{gap:6px}
+  html.is-ios #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{
+    width:24px;height:24px}
+  html.is-ios #screenTrade:not(.is-guest) #btnProfile.icon-btn{
+    width:38px;height:32px;min-width:38px;max-width:38px;flex:0 0 38px;
+    transform:translateX(5px);margin-right:-2px}
+}
+
