@@ -286,9 +286,9 @@
     if (id === 'horizon50') return 0.0009;
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return CALM_CHART ? 0.0160 : 0.0410;
-    if (id === 'goldtrend') return CALM_CHART ? 0.0100 : 0.0212;
-    if (id === 'apex500') return CALM_CHART ? 0.0080 : 0.0146;
+    if (id === 'titanpulse') return CALM_CHART ? 0.0055 : 0.0410;
+    if (id === 'goldtrend') return CALM_CHART ? 0.0032 : 0.0212;
+    if (id === 'apex500') return CALM_CHART ? 0.0045 : 0.0146;
     if (id === 'boomspike') return 0.004;
     if (id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
@@ -398,7 +398,7 @@
     // Cadence relevée, amplitude tenue : `stepMs` rapproche les pas et `pullK`
     // est remonté dans la même proportion, sinon multiplier les pas gonflerait
     // mécaniquement la hauteur des bougies.
-    apex500: { mode: 'candles', vol: CALM_CHART ? 0.0260 : 0.0430, stepMs: CALM_CHART ? 48 : 34, pullK: 0.100 },
+    apex500: { mode: 'candles', vol: CALM_CHART ? 0.0160 : 0.0430, stepMs: CALM_CHART ? 46 : 34, pullK: 0.100 },
     horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
     // Machine à impulsions réactivée : sans `boomBurst`, l'actif n'avait
     // simplement aucune explosion, c'était une marche aléatoire ordinaire.
@@ -408,10 +408,10 @@
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     // Rappel vers la moyenne allégé : les vagues partent franchement dans une
     // direction au lieu d'être ramenées au centre à chaque pas.
-    goldtrend: { mode: 'line', vol: CALM_CHART ? 0.0480 : 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: CALM_CHART ? 42 : 24, pullK: 0.024 },
+    goldtrend: { mode: 'line', vol: CALM_CHART ? 0.0160 : 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: CALM_CHART ? 40 : 24, pullK: 0.024 },
     // Titan Pulse : générateur universel de chandeliers, sans formule dédiée.
     // La cadence la plus rapide de la plateforme.
-    titanpulse: { mode: 'candles', vol: CALM_CHART ? 0.0380 : 0.0760, stepMs: CALM_CHART ? 36 : 16, pullK: 0.075, wickK: 0.38 },
+    titanpulse: { mode: 'candles', vol: CALM_CHART ? 0.0160 : 0.0760, stepMs: CALM_CHART ? 32 : 16, pullK: 0.075, wickK: 0.38 },
   };
   var SIM_VER = 20;
   var BOOM_VER = 7;
@@ -419,7 +419,7 @@
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 13;
+  var SCALE_VER = 14;
   Object.keys(SIM).forEach(function (sid) {
     if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
   });
@@ -535,11 +535,11 @@
       nextOut = price + zigC + waveC + zig2C + pullC;
     } else if (sim.goldHot && !opts.spike) {
       var nG = (roll - 0.5) * price * vol;
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * (CALM_CHART ? 2.4 : 14)) * price * (CALM_CHART ? 0.0014 : 0.002875);
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * (CALM_CHART ? 5.2 : 29.5)) * price * (CALM_CHART ? 0.00055 : 0.001375);
-      var microG = ((roll - 0.5) * 2) * price * (CALM_CHART ? 0.0018 : 0.0055);
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * (CALM_CHART ? 1.1 : 14)) * price * (CALM_CHART ? 0.00055 : 0.002875);
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * (CALM_CHART ? 2.4 : 29.5)) * price * (CALM_CHART ? 0.00022 : 0.001375);
+      var microG = ((roll - 0.5) * 2) * price * (CALM_CHART ? 0.0008 : 0.0055);
       if (!busyIn && roll > (CALM_CHART ? 0.86 : 0.72)) {
-        microG += ((roll - (CALM_CHART ? 0.86 : 0.72)) / (CALM_CHART ? 0.14 : 0.28) - 0.5) * price * (CALM_CHART ? 0.0045 : 0.01625);
+        microG += ((roll - (CALM_CHART ? 0.86 : 0.72)) / (CALM_CHART ? 0.14 : 0.28) - 0.5) * price * (CALM_CHART ? 0.0020 : 0.01625);
       }
       var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
       nextOut = price + nG + p1G + p2G + microG + pullG;
