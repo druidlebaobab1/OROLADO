@@ -410,6 +410,20 @@ function supabase_set_real(string $userId, $amount): void {
   if (abs($delta) > 0.009) supabase_credit_real($userId, $delta, false);
 }
 
+function supabase_touch_last_seen(string $userId): void {
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return;
+  $url = rtrim(supabase_project_url(), '/');
+  if ($url === '') return;
+  supabase_http(
+    $url . '/rest/v1/profiles?id=eq.' . rawurlencode($userId),
+    $hdrs,
+    json_encode(['last_seen' => date('c')], JSON_UNESCAPED_UNICODE),
+    'PATCH'
+  );
+}
+
 function orolado_blocked_roles(): array {
   return ['suspended', 'banned', 'deleted'];
 }
@@ -873,6 +887,7 @@ function orolado_pick_persisted_real(float $jsonReal, $sbReal, $books, bool $pla
   $lo = orolado_money(min($jsonReal, $sbReal));
   if (is_numeric($books)) {
     $books = orolado_money($books);
+    if ($hi <= 0.009 && $books > 0.009) return $books;
     if (abs($books - $hi) <= abs($books - $lo) + 0.05) return $hi;
     return $lo;
   }

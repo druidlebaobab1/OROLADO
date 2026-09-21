@@ -168,8 +168,7 @@
 
   function applySession(user, vault) {
     var incoming = Number(vault && vault.real);
-    var played = (Number(user && user.realTrades) || 0) > 0 || (Number(user && user.realStakeVolume) || 0) > 0.009;
-    var payload = (isFinite(incoming) && (incoming > 0.009 || played)) ? { real: incoming } : null;
+    var payload = (isFinite(incoming) && incoming > 0.009) ? { real: incoming } : null;
     D6.Store.importRemote(user, payload);
     D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
   }
@@ -297,9 +296,8 @@
       var newDep = remDep > locDep + 0.009;
       if (newDep) u.realDepositTotal = remDep;
       if (isFinite(remoteReal) && remoteReal >= 0) {
-        var staleZero = remoteReal <= 0.009 && localReal > 0.009 && !!D6.holdDepositReal;
-        var holdLow = !!D6.holdDepositReal && remoteReal + 0.009 < localReal;
-        var lockLow = locked && remoteReal + 0.009 < localReal;
+        var staleZero = remoteReal <= 0.009 && localReal > 0.009;
+        var holdLow = remoteReal + 0.009 < localReal && (!!D6.holdDepositReal || locked);
         var raiseWhileOpen = false;
         try {
           if (D6.Engine && D6.Engine.getTrades) {
@@ -307,9 +305,8 @@
             raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009 && !newDep && !D6.holdDepositReal;
           }
         } catch (eOpen) { raiseWhileOpen = false; }
-        var played = (Number(u.realTrades) || 0) > 0 || (Number(u.realStakeVolume) || 0) > 0.009;
-        var staleHigh = played && !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009;
-        if (!staleZero && !holdLow && !lockLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
+        var staleHigh = !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009 && locked;
+        if (!staleZero && !holdLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
       }
     }
     D6.holdPull = true;

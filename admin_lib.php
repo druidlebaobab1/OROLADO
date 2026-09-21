@@ -763,9 +763,46 @@ function admin_fetch_auth_users(): array {
   return $out;
 }
 
+function admin_live_seen_map(): array {
+  $cached = admin_cache_get('live_seen', 5);
+  if (is_array($cached)) return $cached;
+  $map = [];
+  $since = gmdate('Y-m-d\TH:i:s\Z', time() - 180);
+  $rows = admin_sb_all('profiles', 'id,last_seen', 'last_seen.desc', 500, 'last_seen=gte.' . $since);
+  foreach ($rows as $r) {
+    $id = (string) ($r['id'] ?? '');
+    $ls = (string) ($r['last_seen'] ?? '');
+    if ($id !== '' && $ls !== '') $map[$id] = $ls;
+  }
+  $local = admin_local_db();
+  foreach (($local['users'] ?? []) as $id => $u) {
+    if (!is_array($u)) continue;
+    $id = (string) ($u['id'] ?? $id);
+    $ls = (string) ($u['lastSeen'] ?? '');
+    if ($id === '' || $ls === '') continue;
+    $t = strtotime($ls) ?: 0;
+    $prev = isset($map[$id]) ? (strtotime((string) $map[$id]) ?: 0) : 0;
+    if ($t > $prev) $map[$id] = $ls;
+  }
+  admin_cache_set('live_seen', $map);
+  return $map;
+}
+
+function admin_apply_live_seen(array $list): array {
+  $live = admin_live_seen_map();
+  foreach ($list as $i => $p) {
+    $id = (string) ($p['id'] ?? '');
+    if ($id === '' || !isset($live[$id])) continue;
+    $cur = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
+    $nxt = strtotime((string) $live[$id]) ?: 0;
+    if ($nxt > $cur) $list[$i]['lastSeen'] = $live[$id];
+  }
+  return $list;
+}
+
 function admin_profiles(): array {
   $cached = admin_cache_get('profiles_mask1', 40);
-  if (is_array($cached) && isset($cached['list'])) return $cached['list'];
+  if (is_array($cached) && isset($cached['list'])) return admin_apply_live_seen($cached['list']);
 
   $rows = admin_sb_all(
     'profiles',
@@ -933,7 +970,7 @@ function admin_profiles(): array {
     $list[$i]['seq'] = $n;
   }
   admin_cache_set('profiles_mask1', ['list' => $list]);
-  return $list;
+  return admin_apply_live_seen($list);
 }
 
 function admin_profile_map(): array {
@@ -1515,7 +1552,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'orders', 'orders_mask1', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'badges', 'badges_mask1', 'health'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'orders', 'orders_mask1', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'badges', 'badges_mask1', 'health', 'live_seen'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

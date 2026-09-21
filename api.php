@@ -223,6 +223,9 @@ if ($action === 'presence') {
   if ($me && !empty($me['id'])) {
     $db['users'][$me['id']]['lastSeen'] = date('c');
     save_db($file, $db);
+    if (function_exists('supabase_touch_last_seen')) {
+      supabase_touch_last_seen((string) $me['id']);
+    }
   }
   echo json_encode(['ok' => true, 'server' => true]);
   exit;
@@ -904,6 +907,9 @@ if ($action === 'login') {
   $uid = (string) $user['id'];
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $official = orolado_sync_official_real($uid, $jsonReal);
+  if ($official <= 0.009 && function_exists('orolado_recover_wiped_real')) {
+    $official = orolado_recover_wiped_real($db, $uid, is_array($user) ? $user : []);
+  }
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
     $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
   }
@@ -1889,6 +1895,9 @@ if ($action === 'me') {
   }
   $uid = (string) $me['id'];
   orolado_repair_overwritten_reals_once();
+  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+    $db['users'][$uid]['lastSeen'] = date('c');
+  }
   $jsonVault = $db['vault'][$uid] ?? ['demo' => 1000000, 'real' => 0];
   $jsonReal = orolado_money($jsonVault['real'] ?? 0);
   if (function_exists('orolado_recover_wiped_real')) {
@@ -1896,25 +1905,23 @@ if ($action === 'me') {
     if ($recovered > $jsonReal + 0.009) {
       $jsonReal = $recovered;
       $db['vault'][$uid]['real'] = $jsonReal;
-      save_db($file, $db);
     }
   }
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);
   if ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0) {
     $demoNow = 1000000;
     $db['vault'][$uid]['demo'] = 1000000;
-    save_db($file, $db);
   }
-  $playedReal = function_exists('orolado_user_real_wagered')
-    ? orolado_user_real_wagered($db, is_array($me) ? ($me + ['id' => $uid]) : ['id' => $uid]) > 0.009
-    : false;
-  $officialReal = $jsonReal;
-  if (!$playedReal && function_exists('supabase_admin_vault')) {
-    $sbPeek = supabase_admin_vault($uid);
-    $sbPeekReal = $sbPeek ? orolado_money($sbPeek['real'] ?? 0) : null;
-    if ($sbPeekReal !== null && $sbPeekReal > $jsonReal + 0.009) {
-      $officialReal = $sbPeekReal;
-    }
+  $officialReal = function_exists('orolado_official_real')
+    ? orolado_official_real($db, $uid)
+    : $jsonReal;
+  if ($officialReal <= 0.009 && function_exists('orolado_recover_wiped_real')) {
+    $again = orolado_recover_wiped_real($db, $uid, is_array($me) ? $me : []);
+    if ($again > $officialReal + 0.009) $officialReal = $again;
+  }
+  save_db($file, $db);
+  if (function_exists('supabase_touch_last_seen')) {
+    supabase_touch_last_seen($uid);
   }
   $vault = [
     'demo' => $demoNow,

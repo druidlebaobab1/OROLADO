@@ -135,7 +135,7 @@
       }
       if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
       if (remote.user) {
-        D6.Store.importRemote(remote.user, remote.vault);
+        D6.Store.importRemote(remote.user, remote.vault, { official: true });
         D6.Store.setSession({ userId: remote.user.id, at: D6.nowIso() });
         var seeded = D6.Store.current() || D6.Store.getUser(remote.user.id);
         var startDemo = (D6.CONFIG && D6.CONFIG.DEMO_START) || 1000000;
@@ -222,7 +222,7 @@
       if (D6.Api && !isLocalPreview) {
         var remote = await D6.Api.post('login', { email: id.email, password: password, token: '' }, 20000);
         if (remote && remote.ok && remote.user) {
-          D6.Store.importRemote(remote.user, remote.vault);
+          D6.Store.importRemote(remote.user, remote.vault, { official: true });
           if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
           D6.Store.setSession({
             userId: remote.user.id,

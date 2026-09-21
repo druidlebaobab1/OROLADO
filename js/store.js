@@ -328,8 +328,9 @@
   }
 
   D6.Store = {
-    importRemote: function (user, vaultEntry) {
+    importRemote: function (user, vaultEntry, opts) {
       if (!user || !user.id) return;
+      var official = !!(opts && opts.official);
       var prev = db.users[user.id];
       // Ne jamais écraser l’historique local par un objet distant sans positions.
       if (prev && Array.isArray(prev.positions) && prev.positions.length) {
@@ -372,10 +373,11 @@
           var hadDep = Number(prev && prev.realDepositTotal) || 0;
           var newDeposit = incomingDep > hadDep + 0.009;
           var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0);
-          var played = (Number(user.realTrades) || 0) > 0 || (Number(user.realStakeVolume) || 0) > 0.009;
-          if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
+          if (official && isFinite(nextReal) && nextReal >= 0) {
+            next.real = nextReal;
+          } else if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
             next.real = Math.max(nextReal, keep);
-          } else if (isFinite(nextReal) && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal && (nextReal > 0.009 || played)) {
+          } else if (isFinite(nextReal) && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal && nextReal > 0.009) {
             next.real = nextReal;
           } else if (keep > 0.009) {
             next.real = keep;
