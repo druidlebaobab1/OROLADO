@@ -1046,8 +1046,7 @@
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
-    var capVis = visH * 0.07;
-    if (opts.boomSmall || opts.apexAiry) capVis = visH * 0.05;
+    var capVis = visH * 0.55;
     var i;
     for (i = 0; i < candles.length; i++) {
       var c = candles[i];
@@ -1078,14 +1077,6 @@
         var midW = (hWick + lWick) / 2;
         hWick = midW + capVis / 2;
         lWick = midW - capVis / 2;
-      }
-      if (opts.boomSmall || opts.apexAiry) {
-        var topLim = maxP - visH * 0.03;
-        var botLim = minP + visH * 0.03;
-        if (hWick > topLim) hWick = topLim;
-        if (lWick < botLim) lWick = botLim;
-        if (hWick < hiB) hWick = hiB;
-        if (lWick > loB) lWick = loB;
       }
       // Mèche fine et centrée sur le corps.
       var x = toX(i);
@@ -2037,10 +2028,6 @@
       var fsFit = fitVisibleY(candles, extrasY);
       viewMin += (fsFit.min - viewMin) * FS_Y_LERP;
       viewMax += (fsFit.max - viewMax) * FS_Y_LERP;
-      if (minPrice < viewMin || maxPrice > viewMax) {
-        viewMin = fsFit.min;
-        viewMax = fsFit.max;
-      }
       }
       if (holdLock) {
         st.lockMin = viewMin;
@@ -2063,11 +2050,14 @@
       strikeLock = null;
       var prevMin = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (st.viewMin || 0);
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
-      var cam = activeAsset === 'goldtrend'
-        ? goldIdleCamera(minPrice, maxPrice, prevMin, prevMax, head)
-        : idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
-      viewMin = cam.min;
-      viewMax = cam.max;
+      var cam = idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
+      if (prevMax > prevMin) {
+        viewMin = prevMin + (cam.min - prevMin) * 0.14;
+        viewMax = prevMax + (cam.max - prevMax) * 0.14;
+      } else {
+        viewMin = cam.min;
+        viewMax = cam.max;
+      }
     }
     var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
     var keepAir = rawVisibleSpan * Y_PAD_RATIO;
@@ -2078,8 +2068,8 @@
       viewMin = safeFit.min;
       viewMax = safeFit.max;
     } else if (!fsOn && !holdLock) {
-      if (head > viewMax - keepAir) viewMax = head + keepAir;
-      if (head < viewMin + keepAirLow) viewMin = head - keepAirLow;
+      if (head > viewMax - keepAir) viewMax += ((head + keepAir) - viewMax) * 0.18;
+      if (head < viewMin + keepAirLow) viewMin += ((head - keepAirLow) - viewMin) * 0.18;
       if (isFinite(strikeP) && strikeP > 0) {
         if (strikeP > viewMax - keepAir) viewMax = strikeP + keepAir;
         if (strikeP < viewMin + keepAirLow) viewMin = strikeP - keepAirLow;

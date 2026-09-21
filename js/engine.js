@@ -179,8 +179,8 @@
   var orderSeq = 0;
       // Max simultané très élevé : pas de blocage à 2 trades.
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
-  // FLUID_CURVE 2026-09-21 : false = ancien rendu nerveux. true = fluide.
-  var FLUID_CURVE = true;
+  // Courbe 2026-09-21 : marche aléatoire par session. Aucune vague horloge,
+  // sinon le même geste revient à chaque actualisation.
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 720;
   var HISTORY_N = 800;
@@ -282,16 +282,16 @@
     if (spiked && id === 'crash300') return 0.018;
     if (spiked && id === 'boomspike') return 0.004;
     if (id === 'crash300') return 0.00055;
-    if (id === 'stable') return 0.0008;
-    if (id === 'horizon50') return 0.0009;
-    // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
-    // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return FLUID_CURVE ? 0.0110 : 0.0410;
-    if (id === 'goldtrend') return FLUID_CURVE ? 0.0075 : 0.0212;
-    if (id === 'apex500') return FLUID_CURVE ? 0.0065 : 0.0146;
-    if (id === 'boomspike') return 0.004;
-    if (id === 'nexusprime' || id === 'v75') return 0.0025;
-    return 0.002;
+    if (id === 'horizon50') return 0.00038;
+    if (id === 'stable') return 0.00075;
+    if (id === 'nexusprime') return 0.0014;
+    if (id === 'boomspike') return 0.0012;
+    if (id === 'v75') return 0.0017;
+    if (id === 'v100') return 0.0018;
+    if (id === 'goldtrend') return 0.0023;
+    if (id === 'apex500') return 0.0026;
+    if (id === 'titanpulse') return 0.0032;
+    return 0.0016;
   }
 
   function tradeBusyFor(assetId) {
@@ -393,25 +393,20 @@
   window.assetsHistory = window.assetsHistory || {};
 
   var SIM = {
-    v100: { mode: 'candles', vol: 0.0035, thin: false },
-    stable: { mode: 'line', vol: 0.0048, color: '#ff3366', coreWave: true, pullK: 0.05 },
-    // Cadence relevée, amplitude tenue : `stepMs` rapproche les pas et `pullK`
-    // est remonté dans la même proportion, sinon multiplier les pas gonflerait
-    // mécaniquement la hauteur des bougies.
-    apex500: { mode: 'candles', vol: 0.0430, stepMs: 34, pullK: 0.100 },
-    horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
-    // Machine à impulsions réactivée : sans `boomBurst`, l'actif n'avait
-    // simplement aucune explosion, c'était une marche aléatoire ordinaire.
-    boomspike: { mode: 'candles', vol: 0.0088, boomBurst: true },
-    crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true },
-    v75: { mode: 'candles', vol: 0.0048, v75Wave: true, tickMs: 190, stepMs: 50, pullK: 0.075 },
-    nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
-    // Rappel vers la moyenne allégé : les vagues partent franchement dans une
-    // direction au lieu d'être ramenées au centre à chaque pas.
-    goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 24, pullK: 0.024 },
-    // Titan Pulse : générateur universel de chandeliers, sans formule dédiée.
-    // La cadence la plus rapide de la plateforme.
-    titanpulse: { mode: 'candles', vol: 0.0760, stepMs: 16, pullK: 0.075, wickK: 0.38 },
+    // center > 0.5 : le bruit penche un peu vers le bas (actifs calmes).
+    // lean < 1 : le rappel se pose légèrement sous le prix de base.
+    // Les volatils restent centrés (center 0.5, lean 1) et tournent
+    // au milieu de leur plage, avant le plafond de bande.
+    v100: { mode: 'candles', vol: 0.0026, stepMs: 70, pullK: 0.050, center: 0.50, lean: 1 },
+    stable: { mode: 'line', vol: 0.00105, color: '#ff3366', coreWave: true, stepMs: 140, pullK: 0.072, center: 0.53, lean: 0.998 },
+    apex500: { mode: 'candles', vol: 0.0038, stepMs: 50, pullK: 0.058, center: 0.50, lean: 1 },
+    horizon50: { mode: 'line', vol: 0.00048, color: '#ff9800', horizonCalm: true, tickMs: 200, stepMs: 180, pullK: 0.080, center: 0.54, lean: 0.9975 },
+    boomspike: { mode: 'candles', vol: 0.0016, boomBurst: true, stepMs: 80, pullK: 0.045, center: 0.50, lean: 1 },
+    crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true, stepMs: 200, pullK: 0.060, center: 0.56, lean: 0.997 },
+    v75: { mode: 'candles', vol: 0.0024, v75Wave: true, tickMs: 190, stepMs: 120, pullK: 0.050, center: 0.50, lean: 1 },
+    nexusprime: { mode: 'candles', vol: 0.0020, nexusPulse: true, tickMs: 90, stepMs: 80, pullK: 0.052, center: 0.50, lean: 1 },
+    goldtrend: { mode: 'line', vol: 0.0034, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 90, pullK: 0.055, center: 0.50, lean: 1 },
+    titanpulse: { mode: 'candles', vol: 0.0048, stepMs: 36, pullK: 0.060, center: 0.50, lean: 1, wickK: 1.15 }
   };
   var SIM_VER = 20;
   var BOOM_VER = 7;
@@ -419,7 +414,7 @@
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 15;
+  var SCALE_VER = 16;
   Object.keys(SIM).forEach(function (sid) {
     if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
   });
@@ -457,7 +452,7 @@
     if (buf.boomPhase === 'acc') {
       var mid = buf.boomMid || price;
       var n = (Math.random() - 0.5) * mid * 0.0017;
-      var w = Math.sin(tMs / 55) * mid * 0.00055;
+      var w = (Math.random() - 0.5) * mid * 0.0007;
       price = clampIndexPrice(mid + n + w, asset);
       buf.boomMid = mid * 1.00005;
       if (tMs >= (buf.boomPhaseUntil || 0)) {
@@ -513,73 +508,31 @@
       var phP = ((nowMs / 1000) % 16) / 16;
       vol *= phP < 0.78 ? 0.42 : 1.9;
     }
-    var roll = sim.crashCalm ? 0.5 : (opts.det != null ? uhash01(opts.det, 904177) : Math.random());
+    var roll = Math.random();
     var nextOut;
     if (opts.hunt > 0 && !busyIn) {
       var gapH = opts.hunt - price;
       var nH = (roll - 0.5) * price * 0.0036;
-      var wH = Math.sin(nowMs / 110) * price * 0.0017 + Math.sin(nowMs / 47) * price * 0.0009;
-      var teaseH = Math.sin(nowMs / 310) * (Math.abs(gapH) + price * 0.0016) * 0.58;
-      nextOut = price + gapH * 0.055 + nH + wH + teaseH;
+      var wH = (Math.random() - 0.5) * price * 0.0014;
+      nextOut = price + gapH * 0.055 + nH + wH;
     } else if (sim.crashCalm && !opts.spike) {
-      // Montée calme : une pente unique par bougie, proportionnelle au temps écoulé.
-      // L'ancienne cadence de 250 ms ne tombait pas sur le pas de 200 ms et faisait
-      // vibrer la pente à haute fréquence.
-      var riseC = 0.0011 + uhash01(Math.floor(nowMs / CANDLE_MS), 771001) * 0.0007;
-      nextOut = price + price * riseC * Math.min(0.6, Math.max(0.03, dtSec));
-    } else if (sim.coreWave && !opts.spike) {
-      var zigC = (roll - 0.5) * price * vol * 1.35;
-      var waveC = Math.sin(nowMs / (FLUID_CURVE ? 420 : 190)) * price * 0.00072;
-      var zig2C = Math.sin(nowMs / (FLUID_CURVE ? 260 : 73)) * price * (FLUID_CURVE ? 0.00016 : 0.00038);
-      var pullC = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.05);
-      nextOut = price + zigC + waveC + zig2C + pullC;
-    } else if (sim.goldHot && !opts.spike) {
-      var nG = (roll - 0.5) * price * vol;
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 1.6 : 14)) * price * (FLUID_CURVE ? 0.0022 : 0.002875);
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 3.4 : 29.5)) * price * (FLUID_CURVE ? 0.0007 : 0.001375);
-      var microG = ((roll - 0.5) * 2) * price * (FLUID_CURVE ? 0.0016 : 0.0055);
-      if (!busyIn && roll > (FLUID_CURVE ? 0.84 : 0.72)) {
-        microG += ((roll - (FLUID_CURVE ? 0.84 : 0.72)) / (FLUID_CURVE ? 0.16 : 0.28) - 0.5) * price * (FLUID_CURVE ? 0.0048 : 0.01625);
-      }
-      var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
-      nextOut = price + nG + p1G + p2G + microG + pullG;
-    } else if (sim.nexusPulse && !opts.spike) {
-      var nN = (roll - 0.5) * price * vol;
-      var pN = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 2.8 : 8.5)) * price * 0.00038;
-      var qN = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 6.2 : 19)) * price * 0.00016;
-      var pullN = busyIn ? 0 : (base - price) * 0.045;
-      nextOut = price + nN + pN + qN + pullN;
-    } else if (sim.horizonCalm && !opts.spike) {
-      // Horizon 50 : l'actif le plus posé du lot. Bruit réduit et deux houles
-      // lentes, sans à-coup, pour un tracé régulier.
-      var nHz = (roll - 0.5) * price * vol * 0.5;
-      var w1Hz = Math.sin(nowMs / 1000 * Math.PI * 0.85) * price * 0.00038;
-      var w2Hz = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00014;
-      var pullHz = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.03);
-      nextOut = price + nHz + w1Hz + w2Hz + pullHz;
-    } else if (sim.v75Wave && !opts.spike) {
-      var nV = (roll - 0.5) * price * vol;
-      var pV = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 2.2 : 5.6)) * price * 0.00062;
-      var qV = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 5.0 : 13.2)) * price * 0.00028;
-      var rV = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00018;
-      var pullV = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.038);
-      nextOut = price + nV + pV + qV + rV + pullV;
+      var riseC = 0.00045 + Math.random() * 0.00035;
+      var jitC = (Math.random() - 0.62) * price * vol;
+      var midC = base * (sim.lean != null ? sim.lean : 0.997);
+      var pullC = busyIn ? 0 : (midC - price) * (sim.pullK != null ? sim.pullK : 0.05);
+      nextOut = price + price * riseC * Math.min(0.45, Math.max(0.04, dtSec)) + jitC + pullC;
     } else {
-      var center = bias;
+      var center = busyIn ? 0.5 : (sim.center != null ? sim.center : (bias || 0.5));
       var delta = (roll - center) * price * vol;
-      if (sim.sine) delta += Math.sin(nowMs / 1000 * Math.PI / 20) * price * 0.00085;
-      if (sim.stair && !busyIn) {
-        var stS = (nowMs / 1000) % 9;
-        if (stS < 5.5) delta += Math.abs(price) * 0.00045 * Math.max(dtSec, 0.05);
-        else delta *= 0.12;
-      }
-      nextOut = price + delta + (busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.04));
+      var mid = base * (sim.lean != null ? sim.lean : 1);
+      var gap = mid - price;
+      var dist = base > 0 ? Math.abs(gap) / base : 0;
+      var pullK = sim.pullK != null ? sim.pullK : 0.045;
+      var pull = busyIn ? 0 : gap * pullK * (1 + dist * 6);
+      nextOut = price + delta + pull;
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
-    if (FLUID_CURVE && !opts.spike) {
-      nextOut = prevPrice + (nextOut - prevPrice) * 0.42;
-    }
     return clampIndexPrice(nextOut, asset);
   }
 
@@ -737,31 +690,35 @@
   function makeWalkCandle(asset, prev, ts, i) {
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || prev;
-    var vol = Math.max(prev * (sim.vol || 0.0035), prev * 0.0014);
-    if (sim.crashCalm) vol = prev * 0.00032;
-    var rnd = uhash01(i + 3, sim.vol * 1000 || 11) - 0.49;
-    var close = prev + rnd * vol * 2.6;
-    close += (base - close) * 0.028;
+    var vol = prev * (sim.vol || 0.002);
+    if (!(vol > 0)) vol = prev * 0.0002;
+    var close = prev;
     var spiked = false;
     if (sim.crashCalm) {
-      close = prev + prev * (0.00022 + uhash01(i, 11) * 0.00028);
-      if (i > 8 && (i % 18) === 0) {
-        close = prev * 0.982;
+      var midCr = base * (sim.lean != null ? sim.lean : 0.997);
+      close = prev + (midCr - prev) * 0.08 + prev * (0.00008 + Math.random() * 0.00016);
+      if (i > 8 && Math.random() < 0.035) {
+        close = prev * (0.9965 - Math.random() * 0.0035);
         spiked = true;
       }
-    } else if (sim.spike === -1 && i > 6 && (i % (16 + Math.floor(uhash01(i, 19) * 12))) === 0) {
-      close = prev * (1 - 0.015 - uhash01(i, 4) * 0.012);
-      spiked = true;
-    } else if (sim.run) {
-      var run = 4 + Math.floor(uhash01(Math.floor(i / 8), 440501) * 3);
-      var pos = i % (run + 3);
-      close = pos < run ? prev + vol * 1.05 : prev - vol * 0.62;
+    } else {
+      var centerW = sim.center != null ? sim.center : 0.5;
+      var pullKW = sim.pullK != null ? sim.pullK : 0.045;
+      var leanW = sim.lean != null ? sim.lean : 1;
+      var sW;
+      for (sW = 0; sW < 4; sW++) {
+        var midW = base * leanW;
+        var gapW = midW - close;
+        var distW = base > 0 ? Math.abs(gapW) / base : 0;
+        close = close + (Math.random() - centerW) * vol + gapW * pullKW * (1 + distW * 6);
+        close = capPctMove(prev, close, tickCapPct(asset, false) * 3);
+      }
     }
     close = clampIndexPrice(close, asset);
     var open = prev;
-    var wick = vol * (0.4 + uhash01(i, 22) * 0.85);
-    var h = Math.max(open, close) + wick * uhash01(i, 7);
-    var l = Math.min(open, close) - wick * uhash01(i, 8);
+    var wick = vol * (0.35 + Math.random() * 0.45);
+    var h = Math.max(open, close) + wick * Math.random();
+    var l = Math.min(open, close) - wick * Math.random();
     if (sim.crashCalm) {
       wick = prev * 0.00006;
       h = Math.max(open, close) + wick;
@@ -909,7 +866,6 @@
         elapsed = 0;
       }
     }
-    var fastTick = !FLUID_CURVE;
     var missed = Math.floor(elapsed / cms);
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
@@ -953,10 +909,10 @@
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
     // C'est cette cadence, et non `sim.tickMs`, qui pilote réellement le rythme.
-    var stepMs = sim.crashCalm ? 200 : (sim.stepMs || (sim.goldHot ? 40 : (sim.v75Wave || sim.nexusPulse ? 90 : 120)));
+    var stepMs = sim.stepMs || 120;
     var steps = Math.floor(remain / stepMs);
     if (remain < stepMs) steps = 0;
-    if (steps > (fastTick ? 4 : 2)) steps = fastTick ? 4 : 2;
+    if (steps > 2) steps = 2;
       var s;
       var price0 = price;
       for (s = 0; s < steps; s++) {
@@ -975,7 +931,7 @@
           didSpike = true;
         } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
-          if (sim.crashCalm) price = clampIndexPrice(fromP * (1 - 0.018), asset);
+          if (sim.crashCalm) price = clampIndexPrice(fromP * (1 - 0.0045 - Math.random() * 0.0035), asset);
           else price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
           buf.nextSpike = tMs + (sim.crashCalm ? 18000 : 25000) + (sim.crashCalm ? 0 : Math.random() * 10000);
           forming._spike = true;
@@ -991,19 +947,6 @@
         forming.c = price;
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
-        if (!FLUID_CURVE) {
-          var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
-          if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
-          if (sim.crashCalm) wickN = price * 0.00006;
-          wickN = Math.min(wickN, price * 0.0008);
-          var wickCap = price * 0.0008;
-          var upperWick = Math.min(wickN, wickCap);
-          var lowerWick = sim.crashCalm
-            ? upperWick
-            : Math.min(wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4), wickCap);
-          forming.h = Math.max(forming.h, price + upperWick);
-          forming.l = Math.min(forming.l, price - lowerWick);
-        }
         sanitizeOhlc(asset, forming, price, 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce);
@@ -1021,7 +964,15 @@
     var moved = (steps > 0 || catchN > 0);
     buf.price = clampIndexPrice(price, asset);
     if (moved || !buf.forming) {
-      buf.forming = sanitizeOhlc(asset, finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike), buf.price, 0);
+      buf.forming = sanitizeOhlc(asset, {
+        o: forming.o,
+        h: forming.h,
+        l: forming.l,
+        c: forming.c,
+        t: forming.t,
+        _spike: forming._spike,
+        _boom: forming._boom
+      }, buf.price, 0);
       buf.lastMs = nowMs;
       moved = true;
     }
