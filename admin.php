@@ -106,7 +106,7 @@ function admin_user_lookup(string $id, array $pmap): array {
 }
 
 function admin_badges(): array {
-  $cached = admin_cache_get('badges_mask1', 12);
+  $cached = admin_cache_get('badges_live1', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_profiles();
   $wds = admin_withdrawals();
@@ -237,7 +237,7 @@ function admin_badges(): array {
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
-  admin_cache_set('badges_mask1', $out);
+  admin_cache_set('badges_live1', $out);
   return $out;
 }
 
@@ -1113,6 +1113,9 @@ if ($isAjax) {
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
+    if ($view === 'online') {
+      admin_json(admin_list_payload($view, $req));
+    }
     $ck = 'list_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
       $req['q'] ?? '', $req['preset'] ?? '', $req['cal'] ?? '',
       $req['dateFrom'] ?? '', $req['dateTo'] ?? '', $req['idFrom'] ?? '', $req['page'] ?? 1,
@@ -1710,6 +1713,10 @@ document.getElementById('btnBack').onclick = () => { window.location.href = '/';
 document.getElementById('q').addEventListener('keydown', e => { if (e.key==='Enter'){ page=1; bustList(); loadList(true); } });
 document.getElementById('preset').addEventListener('change', filters);
 loadBadges().then(() => loadList(true));
+setInterval(() => {
+  loadBadges();
+  if (view === 'online') loadList(true);
+}, 8000);
 </script>
 <?php endif; ?>
 </body>

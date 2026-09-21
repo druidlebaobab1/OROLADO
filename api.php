@@ -1627,12 +1627,18 @@ if ($action === 'placeOrder') {
     exit;
   }
   $outVault = $placed['vault'] ?? ($db['vault'][$uid] ?? ['demo' => 0, 'real' => 0]);
-  if ($mode === 'real' && empty($placed['duplicate'])) {
-    $jsonReal = orolado_money($outVault['real'] ?? 0);
-    supabase_set_real($uid, $jsonReal);
-    $outVault['real'] = $jsonReal;
-  } else if ($mode === 'real' && $officialReal !== null) {
-    $outVault['real'] = $officialReal;
+  if ($mode === 'real') {
+    $sbNow = supabase_admin_vault($uid);
+    if ($sbNow) {
+      $outVault['real'] = orolado_money($sbNow['real'] ?? 0);
+      with_db_lock(function ($box) use ($uid, $outVault) {
+        if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+        $box->db['vault'][$uid]['real'] = orolado_money($outVault['real'] ?? 0);
+        return ['ok' => true];
+      });
+    } else if ($officialReal !== null) {
+      $outVault['real'] = $officialReal;
+    }
   }
   echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $placed['payout'] ?? $payout, 'vault' => $outVault, 'duplicate' => !empty($placed['duplicate'])]);
   exit;
@@ -1683,7 +1689,7 @@ if ($action === 'settleOrder') {
           'voided' => $isVoid,
           'net' => $net,
           'payout' => $payout,
-          'credit' => 0,
+          'credit' => $credit,
           'mode' => $mode,
           'fresh' => false,
           'vault' => $locked['vault'][$uid] ?? ['demo' => 0, 'real' => 0],
@@ -1707,15 +1713,11 @@ if ($action === 'settleOrder') {
       $final = $voided ? 'void' : ($won ? 'won' : 'lost');
       if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
       $balKey = $mode === 'real' ? 'real' : 'demo';
-      if ($mode === 'real') {
-        $afterOpen = orolado_money($o['balAfterOpen'] ?? -1);
-        $curReal = orolado_money($locked['vault'][$uid]['real'] ?? 0);
-        if ($afterOpen >= 0 && $curReal > $afterOpen + 0.05) {
-          $locked['vault'][$uid]['real'] = $afterOpen;
-        }
-      }
-      if ($credit > 0 && empty($o['paidOut'])) {
+      if ($mode !== 'real' && $credit > 0 && empty($o['paidOut'])) {
         $locked['vault'][$uid][$balKey] = orolado_money(($locked['vault'][$uid][$balKey] ?? 0) + $credit);
+        $o['paidOut'] = true;
+      }
+      if ($mode === 'real') {
         $o['paidOut'] = true;
       }
       if ($mode === 'real' && isset($locked['users'][$uid])) {
@@ -1766,9 +1768,8 @@ if ($action === 'settleOrder') {
     $final = $voided ? 'void' : ($won ? 'won' : 'lost');
     if (!isset($locked['vault'][$uid])) $locked['vault'][$uid] = ['demo' => 0, 'real' => 0];
     $lateKey = $reqMode === 'real' ? 'real' : 'demo';
-    $bal = orolado_money($locked['vault'][$uid][$lateKey] ?? 0);
-    // La mise a déjà été débitée à l’ouverture. Ne jamais re-débiter une perte.
-    if ($credit > 0) {
+    if ($reqMode !== 'real' && $credit > 0) {
+      $bal = orolado_money($locked['vault'][$uid][$lateKey] ?? 0);
       $locked['vault'][$uid][$lateKey] = orolado_money($bal + $credit);
     }
     if ($reqMode === 'demo' && $reqBal !== null && $reqBal + 0.009 >= orolado_money($locked['vault'][$uid]['demo'] ?? 0)) {
@@ -1810,19 +1811,20 @@ if ($action === 'settleOrder') {
   }
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
   if (($settled['mode'] ?? '') === 'real') {
-    $jsonReal = orolado_money($vaultOut['real'] ?? 0);
     $creditAmt = orolado_money($settled['credit'] ?? 0);
-    if (!empty($settled['fresh']) && $creditAmt > 0) {
-      $resolved = supabase_resolve_trade($uid, $oid, $creditAmt);
-      if (!$resolved) supabase_credit_real($uid, $creditAmt, false);
+    $resolved = supabase_resolve_trade($uid, $oid, $creditAmt);
+    if (!$resolved && !empty($settled['fresh']) && $creditAmt > 0) {
+      supabase_credit_real($uid, $creditAmt, false);
     }
-    supabase_set_real($uid, $jsonReal);
-    $vaultOut['real'] = $jsonReal;
-    with_db_lock(function ($box) use ($uid, $jsonReal) {
-      if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
-      $box->db['vault'][$uid]['real'] = $jsonReal;
-      return ['ok' => true];
-    });
+    $sbNow = supabase_admin_vault($uid);
+    if ($sbNow) {
+      $vaultOut['real'] = orolado_money($sbNow['real'] ?? 0);
+      with_db_lock(function ($box) use ($uid, $vaultOut) {
+        if (!isset($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+        $box->db['vault'][$uid]['real'] = orolado_money($vaultOut['real'] ?? 0);
+        return ['ok' => true];
+      });
+    }
   }
   $won = !empty($settled['won']);
   $net = orolado_money($settled['net'] ?? 0);
@@ -1900,6 +1902,11 @@ if ($action === 'me') {
   }
   $jsonVault = $db['vault'][$uid] ?? ['demo' => 1000000, 'real' => 0];
   $jsonReal = orolado_money($jsonVault['real'] ?? 0);
+  $sbLive = supabase_admin_vault($uid);
+  if ($sbLive) {
+    $jsonReal = orolado_money($sbLive['real'] ?? 0);
+    $db['vault'][$uid]['real'] = $jsonReal;
+  }
   if (function_exists('orolado_recover_wiped_real')) {
     $recovered = orolado_recover_wiped_real($db, $uid, is_array($me) ? $me : []);
     if ($recovered > $jsonReal + 0.009) {
@@ -1912,13 +1919,15 @@ if ($action === 'me') {
     $demoNow = 1000000;
     $db['vault'][$uid]['demo'] = 1000000;
   }
-  $officialReal = function_exists('orolado_official_real')
-    ? orolado_official_real($db, $uid)
-    : $jsonReal;
+  $officialReal = $jsonReal;
+  if (!$sbLive && function_exists('orolado_official_real')) {
+    $officialReal = orolado_official_real($db, $uid);
+  }
   if ($officialReal <= 0.009 && function_exists('orolado_recover_wiped_real')) {
     $again = orolado_recover_wiped_real($db, $uid, is_array($me) ? $me : []);
     if ($again > $officialReal + 0.009) $officialReal = $again;
   }
+  $db['vault'][$uid]['real'] = $officialReal;
   save_db($file, $db);
   if (function_exists('supabase_touch_last_seen')) {
     supabase_touch_last_seen($uid);

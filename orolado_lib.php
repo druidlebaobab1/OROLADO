@@ -875,7 +875,7 @@ function orolado_real_from_books(array $db, string $uid, array $user = []): ?flo
   return orolado_money(max(0, $deps + $adj - $wd - $stakes + $credits));
 }
 
-/** Choisit le solde à garder : un gain (le plus haut si le grand livre le confirme), une perte (le plus bas). */
+/** Coffres : Supabase `vaults.real` est la source de vérité. JSON / books ne servent qu’à recouvrer un coffre vidé. */
 function orolado_pick_persisted_real(float $jsonReal, $sbReal, $books, bool $played): float {
   $jsonReal = orolado_money($jsonReal);
   if ($sbReal === null) {
@@ -883,21 +883,13 @@ function orolado_pick_persisted_real(float $jsonReal, $sbReal, $books, bool $pla
     return $jsonReal;
   }
   $sbReal = orolado_money($sbReal);
-  $hi = orolado_money(max($jsonReal, $sbReal));
-  $lo = orolado_money(min($jsonReal, $sbReal));
-  if (is_numeric($books)) {
-    $books = orolado_money($books);
-    if ($hi <= 0.009 && $books > 0.009) return $books;
-    if (abs($books - $hi) <= abs($books - $lo) + 0.05) return $hi;
-    return $lo;
-  }
-  if (!$played) return $hi;
-  if ($jsonReal > $sbReal + 0.009) return $jsonReal;
-  if ($sbReal > $jsonReal + 0.009) return $sbReal;
-  return $jsonReal;
+  if ($sbReal > 0.009) return $sbReal;
+  if (is_numeric($books) && orolado_money($books) > 0.009) return orolado_money($books);
+  if ($jsonReal > 0.009) return $jsonReal;
+  return $sbReal;
 }
 
-/** Aligne les deux coffres sur le solde de jeu réel (gains et pertes). */
+/** Aligne le JSON local sur Supabase. N’écrit vers Supabase que pour recouvrer un coffre à 0. */
 function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $jsonReal = orolado_money($jsonReal);
   $sb = supabase_admin_vault($uid);
@@ -908,10 +900,15 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $books = orolado_real_from_books($db, $uid, $user);
   $target = orolado_pick_persisted_real($jsonReal, $sbReal, $books, $played);
   $target = orolado_money(max(0, $target));
-  if ($sbReal === null || abs($target - $sbReal) > 0.009) {
-    supabase_set_real($uid, $target);
+  if ($sbReal === null) {
+    if ($target > 0.009) supabase_set_real($uid, $target);
+    return $target;
   }
-  return $target;
+  if ($sbReal <= 0.009 && $target > 0.009) {
+    supabase_set_real($uid, $target);
+    return $target;
+  }
+  return $sbReal;
 }
 
 function orolado_trade_credit(bool $won, bool $voided, float $stake, float $payout): float {
@@ -1012,17 +1009,25 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
     $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   }
-  $cur = orolado_official_real($db, $uid);
-  $next = orolado_money(max(0, $cur + $delta));
+  $sbCur = supabase_admin_vault($uid);
+  $cur = $sbCur ? orolado_money($sbCur['real'] ?? 0) : orolado_official_real($db, $uid);
   if ($delta < 0 && $cur + $delta < -0.009) {
     return ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
   }
-  $db['vault'][$uid]['real'] = $next;
-  supabase_set_real($uid, $next);
-  $again = supabase_admin_vault($uid);
-  if ($again && orolado_money($again['real'] ?? 0) + 0.009 < $next) {
-    supabase_set_real($uid, $next);
+  if ($delta > 0) {
+    supabase_credit_real($uid, $delta, false);
+  } else if (!supabase_debit_real($uid, abs($delta))) {
+    return ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
   }
+  $again = supabase_admin_vault($uid);
+  $next = $again ? orolado_money($again['real'] ?? 0) : orolado_money(max(0, $cur + $delta));
+  $expect = orolado_money(max(0, $cur + $delta));
+  if ($again && abs($next - $expect) > 0.05) {
+    supabase_set_real($uid, $expect);
+    $again = supabase_admin_vault($uid);
+    if ($again) $next = orolado_money($again['real'] ?? 0);
+  }
+  $db['vault'][$uid]['real'] = $next;
   if ($asDeposit && $delta > 0) {
     $ref = 'adm_' . bin2hex(random_bytes(6));
     if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];

@@ -659,18 +659,23 @@
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) : 0;
     var incomingDep = Number(remote.user && remote.user.realDepositTotal) || 0;
     var localDep = Number(user().realDepositTotal) || 0;
+    var remoteHigher = isFinite(incoming) && incoming > local + 0.009;
     if (incomingDep > localDep + 0.009) {
       D6.holdDepositReal = true;
       setTimeout(function () { D6.holdDepositReal = false; }, 25000);
     }
+    var open = openRealStake();
+    if (remoteHigher && open > 0 && incoming > local + open + 0.009) {
+      D6.holdDepositReal = true;
+      setTimeout(function () { D6.holdDepositReal = false; }, 25000);
+    }
     var locks = getBalanceLocks();
-    var remoteHigher = isFinite(incoming) && incoming > local + 0.009;
     if (locks && Date.now() < locks.until && !remoteHigher && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
-    if (incoming <= 0.009 && local > 0.009) return;
-    if (openRealStake() > 0 && incoming > local + 0.009 && !D6.holdDepositReal) return;
+    if (incoming <= 0.009 && local > 0.009 && !D6.holdDepositReal) return;
+    if (open > 0 && incoming > local + 0.009 && incoming <= local + open + 0.009 && !D6.holdDepositReal) return;
     if (Math.abs(incoming - local) <= 0.009) return;
-    if (adoptOfficialVault(remote.vault, { fromMe: true, allowRaise: true })) updateBalance(false);
+    if (adoptOfficialVault(remote.vault, { fromMe: true, allowRaise: true, force: !!D6.holdDepositReal })) updateBalance(false);
   }
   function holdScreenAwake() {
     if (!navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -703,6 +708,14 @@
         if (watchBan(r)) return;
         adoptWagerBook(r);
         applyQuietVault(r);
+        if (r && r.ok && r.vault && r.vault.real != null) {
+          var incomingDep = Number(r.user && r.user.realDepositTotal) || 0;
+          var localDep = Number(u.realDepositTotal) || 0;
+          if (incomingDep > localDep + 0.009) {
+            applyOfficialReal(Number(r.vault.real), { fromMe: true, allowRaise: true, force: true });
+            updateBalance(false);
+          }
+        }
       }).catch(function () { /* ignore */ });
     }
     banWatchTimer = setInterval(pollMe, 8000);
@@ -1564,7 +1577,8 @@
       if (recentSettle && Math.abs(real - local) > 0.02) return false;
     }
     if (real > local + 0.009 && !allowRaise && !force && !fromMe) return false;
-    if (openRealStake() > 0 && real > local + 0.009 && !D6.holdDepositReal && !force) return false;
+    var open = openRealStake();
+    if (open > 0 && real > local + 0.009 && real <= local + open + 0.009 && !D6.holdDepositReal && !force) return false;
     if (real <= 0.009 && local > 0.009 && !force) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
@@ -1914,6 +1928,7 @@
   var adminView = 'inscrits';
   var adminSortDeposit = 'desc';
   var adminPresenceTimer = 0;
+  var presenceVisBound = false;
 
   function classifyTrafficHost(host) {
     host = String(host || '').toLowerCase();
@@ -1966,7 +1981,13 @@
   function startAdminPresence() {
     pingAdminPresence();
     if (adminPresenceTimer) clearInterval(adminPresenceTimer);
-    adminPresenceTimer = setInterval(pingAdminPresence, 30000);
+    adminPresenceTimer = setInterval(pingAdminPresence, 20000);
+    if (!presenceVisBound) {
+      presenceVisBound = true;
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) pingAdminPresence();
+      });
+    }
   }
 
   function adminEsc(s) {
@@ -3991,9 +4012,13 @@
       }
       adoptWagerBook(remote);
       try { refreshWithdrawUi(); } catch (eWd) { /* ignore */ }
-      if (!(openRealStake() > 0) && remote.vault.real != null) {
+      var open = openRealStake();
+      var localNow = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) || 0 : 0;
+      var remNow = Number(remote.vault.real);
+      var depositRaise = newDeposit || (isFinite(remNow) && remNow > localNow + open + 0.009);
+      if ((!open || depositRaise) && remote.vault.real != null) {
         D6.holdRemote = true;
-        if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: true })) updateBalance(false);
+        if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: true, force: depositRaise })) updateBalance(false);
         setTimeout(function () { D6.holdRemote = false; }, 25000);
       } else {
         applyQuietVault(remote);

@@ -322,7 +322,8 @@
       var u = db.users[db.session.userId];
       var remoteUser = Object.assign({}, publicUsers[u.id]);
       delete remoteUser.passwordHash;
-      D6.Api.post('upsert', { user: remoteUser, vault: vault[u.id] });
+      var remoteVault = { demo: (vault[u.id] && vault[u.id].demo) || 0 };
+      D6.Api.post('upsert', { user: remoteUser, vault: remoteVault });
     }
     if (!skipRemote && !D6.holdPull && D6.Supabase && D6.Supabase.queueSync) D6.Supabase.queueSync();
   }

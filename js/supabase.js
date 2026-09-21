@@ -168,8 +168,8 @@
 
   function applySession(user, vault) {
     var incoming = Number(vault && vault.real);
-    var payload = (isFinite(incoming) && incoming > 0.009) ? { real: incoming } : null;
-    D6.Store.importRemote(user, payload);
+    var payload = (isFinite(incoming) && incoming >= 0) ? { real: incoming } : null;
+    D6.Store.importRemote(user, payload, { official: true });
     D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
   }
 
@@ -296,17 +296,24 @@
       var newDep = remDep > locDep + 0.009;
       if (newDep) u.realDepositTotal = remDep;
       if (isFinite(remoteReal) && remoteReal >= 0) {
-        var staleZero = remoteReal <= 0.009 && localReal > 0.009;
-        var holdLow = remoteReal + 0.009 < localReal && (!!D6.holdDepositReal || locked);
+        var staleZero = remoteReal <= 0.009 && localReal > 0.009 && !newDep;
+        var holdLow = remoteReal + 0.009 < localReal && (!!D6.holdDepositReal || locked) && !newDep;
         var raiseWhileOpen = false;
         try {
-          if (D6.Engine && D6.Engine.getTrades) {
+          if (!newDep && D6.Engine && D6.Engine.getTrades) {
             var liveReal = D6.Engine.getTrades('real') || [];
-            raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009 && !newDep && !D6.holdDepositReal;
+            raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009 && !D6.holdDepositReal;
+            if (raiseWhileOpen) {
+              var openSum = 0;
+              var oi;
+              for (oi = 0; oi < liveReal.length; oi++) openSum += Number(liveReal[oi] && liveReal[oi].stake) || 0;
+              if (remoteReal > localReal + openSum + 0.009) raiseWhileOpen = false;
+            }
           }
         } catch (eOpen) { raiseWhileOpen = false; }
-        var staleHigh = !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009 && locked;
-        if (!staleZero && !holdLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
+        var staleHigh = !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009 && locked && raiseWhileOpen;
+        if (newDep) next.real = remoteReal;
+        else if (!staleZero && !holdLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
       }
     }
     D6.holdPull = true;
@@ -355,7 +362,14 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: 'id=eq.' + userId }, function (payload) {
         var row = payload.new;
         if (!row) return;
+        var remDep = Number(row.real_deposit_total) || 0;
+        var locDep = 0;
+        try {
+          var cu = D6.Store.current();
+          locDep = Number(cu && cu.realDepositTotal) || 0;
+        } catch (eD) { locDep = 0; }
         applyIncomingVault(null, row);
+        if (remDep > locDep + 0.009) pullVault();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: 'user_id=eq.' + userId }, function (payload) {
         var row = payload.new;
