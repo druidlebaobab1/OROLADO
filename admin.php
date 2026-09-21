@@ -169,12 +169,12 @@ function admin_credit_target_ids(string $uid, array $found = []): array {
   return array_values(array_unique(array_filter($ids)));
 }
 
-/** Journal JSON seulement. N’écrit PAS vault.real des joueurs (ça écrasait les paris). */
-function admin_persist_json_real(string $uid, float $real, ?array $tx = null): void {
+/** Journal JSON : dépôt + mise x2. N’écrit PAS vault.real des joueurs. */
+function admin_persist_json_real(string $uid, float $real, ?array $tx = null, ?array $dep = null): void {
   if ($uid === '' || !function_exists('with_db_lock')) return;
   $real = orolado_money($real);
   $writeVault = ($uid === 'admin_master');
-  with_db_lock(static function ($box) use ($uid, $real, $tx, $writeVault) {
+  with_db_lock(static function ($box) use ($uid, $real, $tx, $dep, $writeVault) {
     if ($writeVault) {
       if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
       if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
@@ -182,13 +182,28 @@ function admin_persist_json_real(string $uid, float $real, ?array $tx = null): v
       }
       $box->db['vault'][$uid]['real'] = $real;
     }
-    if ($tx && isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) {
-      if (!isset($box->db['users'][$uid]['transactions']) || !is_array($box->db['users'][$uid]['transactions'])) {
-        $box->db['users'][$uid]['transactions'] = [];
+    if ($dep) {
+      if (!isset($box->db['deposits']) || !is_array($box->db['deposits'])) $box->db['deposits'] = [];
+      $box->db['deposits'][] = $dep;
+    }
+    if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) {
+      if ($dep) {
+        $add = orolado_money($dep['amount'] ?? 0);
+        $tot = orolado_money(($box->db['users'][$uid]['realDepositTotal'] ?? 0) + $add);
+        $box->db['users'][$uid]['realDepositTotal'] = $tot;
+        $box->db['users'][$uid]['requiredWagering'] = orolado_money($tot * 2);
+        $box->db['users'][$uid]['lastDepositAmount'] = $add;
+        $box->db['users'][$uid]['wagerLock'] = orolado_money(($box->db['users'][$uid]['wagerLock'] ?? 0) + $add);
+        $box->db['users'][$uid]['wagerNeed'] = orolado_money(($box->db['users'][$uid]['wagerNeed'] ?? 0) + ($add * 2));
       }
-      array_unshift($box->db['users'][$uid]['transactions'], $tx);
-      if (count($box->db['users'][$uid]['transactions']) > 80) {
-        $box->db['users'][$uid]['transactions'] = array_slice($box->db['users'][$uid]['transactions'], 0, 80);
+      if ($tx) {
+        if (!isset($box->db['users'][$uid]['transactions']) || !is_array($box->db['users'][$uid]['transactions'])) {
+          $box->db['users'][$uid]['transactions'] = [];
+        }
+        array_unshift($box->db['users'][$uid]['transactions'], $tx);
+        if (count($box->db['users'][$uid]['transactions']) > 80) {
+          $box->db['users'][$uid]['transactions'] = array_slice($box->db['users'][$uid]['transactions'], 0, 80);
+        }
       }
     }
     return ['ok' => true];
@@ -1197,7 +1212,7 @@ function admin_profile_payload(string $uid): array {
   ];
 }
 
-/** Crédit admin manuel : coffre réel Supabase, hors OxaPay, retirable (pas de mise x2). */
+/** Crédit admin : même caisse que le crypto (incrément), enregistré comme dépôt. Pas d’OxaPay. */
 function admin_manual_credit(array &$db, string $uid, float $delta, string $motif): array {
   $delta = orolado_money($delta);
   if ($uid === '' || $delta <= 0) {
@@ -1237,22 +1252,35 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   $db['vault'][$uid]['real'] = $got;
 
   $ref = 'adm_' . bin2hex(random_bytes(6));
-  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
-    if (!isset($db['users'][$uid]['transactions']) || !is_array($db['users'][$uid]['transactions'])) {
-      $db['users'][$uid]['transactions'] = [];
-    }
-    array_unshift($db['users'][$uid]['transactions'], [
+  $depRow = [
+    'id' => $ref,
+    'ref' => $ref,
+    'userId' => $uid,
+    'amount' => $delta,
+    'status' => 'COMPLETED',
+    'operator' => 'admin',
+    'createdAt' => date('c'),
+    'paidAt' => date('c'),
+    'note' => $motif,
+  ];
+  $txRow = [
+    'id' => $ref,
+    'at' => date('c'),
+    'type' => 'deposit',
+    'amount' => abs($delta),
+    'note' => $motif,
+    'mode' => 'real',
+    'status' => 'COMPLETED',
+  ];
+  if (function_exists('supabase_insert_deposit') && admin_is_uuid($uid)) {
+    supabase_insert_deposit([
       'id' => $ref,
-      'at' => date('c'),
-      'type' => 'credit',
-      'amount' => abs($delta),
-      'note' => $motif,
-      'mode' => 'real',
+      'user_id' => $uid,
+      'amount' => $delta,
       'status' => 'COMPLETED',
+      'operator' => 'admin',
+      'reference' => $ref,
     ]);
-    if (count($db['users'][$uid]['transactions']) > 80) {
-      $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 80);
-    }
   }
   $hdrs = function_exists('supabase_admin_headers') ? supabase_admin_headers() : [];
   $url = function_exists('supabase_project_url') ? rtrim(supabase_project_url(), '/') : '';
@@ -1260,13 +1288,28 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
       'id' => $ref,
       'user_id' => $uid,
-      'type' => 'credit',
+      'type' => 'deposit',
       'amount' => $delta,
       'note' => $motif,
       'mode' => 'real',
     ], JSON_UNESCAPED_UNICODE), 'POST');
+    $prof = supabase_http(
+      $url . '/rest/v1/profiles?id=eq.' . rawurlencode($uid) . '&select=real_deposit_total',
+      $hdrs
+    );
+    $depTot = $delta;
+    if (is_array($prof) && isset($prof[0])) {
+      $depTot = orolado_money(($prof[0]['real_deposit_total'] ?? 0) + $delta);
+    }
+    supabase_http(
+      $url . '/rest/v1/profiles?id=eq.' . rawurlencode($uid),
+      $hdrs,
+      json_encode(['real_deposit_total' => $depTot, 'updated_at' => date('c')], JSON_UNESCAPED_UNICODE),
+      'PATCH'
+    );
   }
-  return ['ok' => true, 'real' => $got, 'delta' => $delta];
+  admin_persist_json_real($uid, $got, $txRow, $depRow);
+  return ['ok' => true, 'real' => $got, 'delta' => $delta, 'ref' => $ref];
 }
 
 $isAjax = ($_SERVER['REQUEST_METHOD'] === 'POST') && (
@@ -1365,15 +1408,17 @@ if ($isAjax) {
       if (!empty($res['ok'])) {
         $ok = true;
         $lastReal = orolado_money($res['real'] ?? 0);
-        admin_persist_json_real($tid, $lastReal, [
-          'id' => 'adm_' . bin2hex(random_bytes(4)),
-          'at' => date('c'),
-          'type' => $delta >= 0 ? 'credit' : 'debit',
-          'amount' => abs($delta),
-          'note' => $motif,
-          'mode' => 'real',
-          'status' => 'COMPLETED',
-        ]);
+        if ($delta < 0) {
+          admin_persist_json_real($tid, $lastReal, [
+            'id' => 'adm_' . bin2hex(random_bytes(4)),
+            'at' => date('c'),
+            'type' => 'debit',
+            'amount' => abs($delta),
+            'note' => $motif,
+            'mode' => 'real',
+            'status' => 'COMPLETED',
+          ]);
+        }
       } else {
         $reason = (string) ($res['reason'] ?? $reason);
       }
