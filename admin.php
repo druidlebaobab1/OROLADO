@@ -1240,10 +1240,20 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
       $again = supabase_admin_vault($uid);
       $got = $again ? orolado_money($again['real'] ?? 0) : $got;
     }
+    if ($got !== null && abs($got - $cur) <= 0.009 && function_exists('supabase_set_real')) {
+      $fresh = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
+      $live = $fresh ? orolado_money($fresh['real'] ?? 0) : $cur;
+      supabase_set_real($uid, orolado_money($live + $delta));
+      $again = supabase_admin_vault($uid);
+      $got = $again ? orolado_money($again['real'] ?? 0) : $got;
+    }
     if ($got === null) {
       return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $cur];
     }
     if ($got + 0.02 < $cur) {
+      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $got];
+    }
+    if ($got + 0.02 < $cur + $delta && abs($got - $cur) <= 0.009) {
       return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $got];
     }
   } else {
