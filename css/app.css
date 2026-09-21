@@ -981,12 +981,13 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 @keyframes spark{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
 
 .lang-bar{display:flex;gap:2px;flex-shrink:0}
-.lang-dd{position:relative;flex:0 0 32px;width:32px;min-width:32px;max-width:32px;overflow:visible;z-index:40}
-.lang-dd-btn{border:1px solid var(--line);background:rgba(21,30,48,.85);color:var(--text);border-radius:10px;padding:0;
+.lang-dd{position:relative;flex:0 0 32px;width:32px;min-width:32px;max-width:32px;overflow:hidden;z-index:40;background:#0B0E14}
+.lang-dd-btn{border:1px solid var(--line);background:#121722;color:var(--text);border-radius:10px;padding:0;
   font:inherit;font-size:13px;font-weight:800;cursor:pointer;width:32px;height:32px;min-width:32px;max-width:32px;
-  display:grid;place-items:center;line-height:1;overflow:hidden;position:relative;flex:0 0 32px}
-.lang-flag{font-size:14px;line-height:1}
-.lang-chev{position:absolute;right:1px;bottom:0;font-size:8px;line-height:1;opacity:.55}
+  display:grid;place-items:center;line-height:1;overflow:hidden;position:relative;flex:0 0 32px;
+  appearance:none;-webkit-appearance:none;box-shadow:none}
+.lang-flag{font-size:14px;line-height:1;background:transparent;box-shadow:none}
+.lang-dd-btn .lang-chev{display:none}
 .lang-dd-menu{position:fixed;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(16,22,34,.98);border:1px solid var(--line);
   border-radius:8px;padding:4px;z-index:9999;min-width:168px;width:196px;max-width:min(196px,calc(100vw - 16px));
   max-height:none;overflow:hidden;
