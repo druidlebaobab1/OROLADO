@@ -169,16 +169,19 @@ function admin_credit_target_ids(string $uid, array $found = []): array {
   return array_values(array_unique(array_filter($ids)));
 }
 
-/** Met à jour seulement le coffre JSON, sans réécrire les sessions (évite de déconnecter les joueurs). */
+/** Journal JSON seulement. N’écrit PAS vault.real des joueurs (ça écrasait les paris). */
 function admin_persist_json_real(string $uid, float $real, ?array $tx = null): void {
   if ($uid === '' || !function_exists('with_db_lock')) return;
   $real = orolado_money($real);
-  with_db_lock(static function ($box) use ($uid, $real, $tx) {
-    if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
-    if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
-      $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+  $writeVault = ($uid === 'admin_master');
+  with_db_lock(static function ($box) use ($uid, $real, $tx, $writeVault) {
+    if ($writeVault) {
+      if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
+      if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
+        $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+      }
+      $box->db['vault'][$uid]['real'] = $real;
     }
-    $box->db['vault'][$uid]['real'] = $real;
     if ($tx && isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) {
       if (!isset($box->db['users'][$uid]['transactions']) || !is_array($box->db['users'][$uid]['transactions'])) {
         $box->db['users'][$uid]['transactions'] = [];
@@ -1208,29 +1211,28 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   }
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $got = null;
-  $target = orolado_money($jsonReal + $delta);
   if (admin_is_uuid($uid)) {
-    admin_ensure_sb_vault($uid, $jsonReal);
+    admin_ensure_sb_vault($uid, 0);
     $sb = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
-    $sbReal = $sb ? orolado_money($sb['real'] ?? 0) : null;
-    $cur = $sbReal !== null ? max($sbReal, $jsonReal) : $jsonReal;
-    $target = orolado_money($cur + $delta);
+    $cur = $sb ? orolado_money($sb['real'] ?? 0) : $jsonReal;
     if (function_exists('supabase_credit_real')) {
       supabase_credit_real($uid, $delta, false);
     }
-    $tries = 0;
-    while ($tries < 3) {
-      $again = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
+    $again = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
+    $got = $again ? orolado_money($again['real'] ?? 0) : null;
+    if ($got !== null && abs($got - $cur) <= 0.009 && function_exists('supabase_credit_real')) {
+      supabase_credit_real($uid, $delta, false);
+      $again = supabase_admin_vault($uid);
       $got = $again ? orolado_money($again['real'] ?? 0) : $got;
-      if ($got !== null && $got + 0.009 >= $target) break;
-      if (function_exists('supabase_set_real')) supabase_set_real($uid, $target);
-      $tries++;
     }
-    if ($got === null || $got + 0.009 < $target) {
-      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => ($got !== null ? $got : $cur)];
+    if ($got === null) {
+      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $cur];
+    }
+    if ($got + 0.02 < $cur) {
+      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $got];
     }
   } else {
-    $got = $target;
+    $got = orolado_money($jsonReal + $delta);
   }
   $db['vault'][$uid]['real'] = $got;
 
