@@ -1218,9 +1218,10 @@ if ($isAjax) {
   }
 
   $me = admin_require();
-
   if ($action === 'badges') {
-    admin_json(['ok' => true, 'badges' => admin_badges()]);
+    $purge = admin_keep_purge_tick();
+    $health = admin_health_summary();
+    admin_json(['ok' => true, 'badges' => admin_badges(), 'health' => $health, 'purge' => $purge]);
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
@@ -1495,6 +1496,10 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .modal-box{max-width:720px;margin:4vh auto;background:#121A2B;border:1px solid rgba(245,158,11,.35);border-radius:16px;padding:18px}
     .muted{color:var(--muted);font-size:.78rem}
     .pager{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:.75rem}
+    .health-bar{display:block;width:100%;margin:10px 0 0;min-height:52px;border:0;border-radius:14px;font:inherit;font-size:.92rem;font-weight:900;letter-spacing:.02em;cursor:pointer;padding:14px 16px;text-align:center}
+    .health-bar.ok{background:linear-gradient(135deg,#059669,#34D399);color:#06281d;box-shadow:0 0 0 1px rgba(52,211,153,.35)}
+    .health-bar.bad{background:linear-gradient(135deg,#BE123C,#F43F5E);color:#fff;box-shadow:0 0 0 1px rgba(244,63,94,.4)}
+    .health-bar:hover{filter:brightness(1.06)}
   </style>
 </head>
 <body>
@@ -1535,6 +1540,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
     <div class="metrics" id="gE"><?php foreach ($ADMIN_TABS['gE'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
+    <button type="button" class="health-bar ok" id="btnHealthBar">Tableau en bonne santé</button>
 
     <div class="filters">
       <input id="q" type="search" placeholder="Rechercher ID, e-mail, téléphone">
@@ -1661,10 +1667,18 @@ let listCache = {};
 let listReq = 0;
 function bustList() { listCache = {}; }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function paintHealth(h) {
+  const bar = document.getElementById('btnHealthBar');
+  if (!bar || !h) return;
+  const bad = h.level === 'error' || h.level === 'warn';
+  bar.className = 'health-bar ' + (bad ? 'bad' : 'ok');
+  bar.textContent = bad ? 'Tableau : souci détecté — cliquer pour voir' : 'Tableau en bonne santé';
+}
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
   renderButtons(j.badges || {});
+  paintHealth(j.health);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
 }
 function renderList(j) {
@@ -1825,6 +1839,7 @@ async function openUser(uid) {
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
+document.getElementById('btnHealthBar').onclick = () => { view = 'alerts'; page = 1; loadList(true); };
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });

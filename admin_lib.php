@@ -1575,6 +1575,223 @@ function admin_is_protected_account(array $u, string $id = ''): bool {
   return $email !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($email);
 }
 
+/** Comptes à conserver lors du nettoyage : admin, client 50 $, Alain Nda. */
+function admin_keep_player_emails(): array {
+  $keep = [];
+  if (function_exists('orolado_admin_emails')) {
+    foreach (orolado_admin_emails() as $em) {
+      $em = strtolower(trim((string) $em));
+      if ($em !== '') $keep[$em] = true;
+    }
+  }
+  foreach ([
+    'xsw93108@laoia.com',
+    'alainnda98@gmail.com',
+    'alainda98@gmail.com',
+    'alain.nda98@gmail.com',
+    'alainnda98@googlemail.com',
+  ] as $em) {
+    $keep[$em] = true;
+  }
+  return $keep;
+}
+
+function admin_keep_is_row(array $p): bool {
+  if (function_exists('admin_is_protected_account') && admin_is_protected_account($p, (string) ($p['id'] ?? ''))) {
+    return true;
+  }
+  $em = strtolower(trim((string) ($p['email'] ?? $p['originalEmail'] ?? '')));
+  $fixed = admin_keep_player_emails();
+  if ($em !== '' && isset($fixed[$em])) return true;
+  $local = preg_replace('/[^a-z0-9]+/', '', explode('@', $em)[0] ?? '');
+  if (in_array($local, ['alainnda98', 'alainda98', 'alaininda98'], true)) return true;
+  $pid = strtoupper(trim((string) ($p['publicId'] ?? '')));
+  if ($pid === 'ORO-705711') return true;
+  $name = strtolower((string) ($p['name'] ?? $p['display_name'] ?? ''));
+  if ($name !== '' && preg_match('/alain/u', $name) && preg_match('/nda|inda|india/u', $name)) return true;
+  return false;
+}
+
+function admin_keep_purge_marker(): string {
+  $dir = function_exists('orolado_data_dir') ? orolado_data_dir() : (__DIR__ . '/data');
+  return rtrim(str_replace('\\', '/', $dir), '/') . '/keep_purge_v1.done';
+}
+
+/** Nettoyage incrémental : garde admin + 50 $ + Alain Nda. Ne touche pas aux paiements. */
+function admin_keep_purge_tick(): array {
+  $marker = admin_keep_purge_marker();
+  if (is_file($marker)) {
+    $prev = json_decode((string) @file_get_contents($marker), true);
+    if (is_array($prev) && empty($prev['more']) && !empty($prev['ok'])) return $prev;
+  }
+  @set_time_limit(20);
+  @ini_set('max_execution_time', '20');
+  $t0 = microtime(true);
+  $keepEmails = admin_keep_player_emails();
+  $keep = ['admin_master' => true];
+  $db = admin_local_db();
+  foreach (($db['users'] ?? []) as $id => $u) {
+    if (!is_array($u)) continue;
+    $id = (string) ($u['id'] ?? $id);
+    $u['id'] = $id;
+    if (admin_keep_is_row($u)) {
+      $keep[$id] = true;
+      $em = strtolower(trim((string) ($u['email'] ?? $u['originalEmail'] ?? '')));
+      if ($em !== '') $keepEmails[$em] = true;
+    }
+  }
+
+  $profiles = [];
+  $hdrs = function_exists('supabase_admin_headers') ? supabase_admin_headers() : null;
+  if ($hdrs) {
+    $profiles = admin_sb_all('profiles', 'id,email,display_name', 'created_at.asc', 1000);
+  }
+  $foundFifty = false;
+  $foundAlain = false;
+  $newestOther = null;
+  $newestT = 0;
+  foreach ($profiles as $p) {
+    $pid = (string) ($p['id'] ?? '');
+    $row = [
+      'id' => $pid,
+      'email' => (string) ($p['email'] ?? ''),
+      'name' => (string) ($p['display_name'] ?? ''),
+    ];
+    $em = strtolower(trim($row['email']));
+    $t = strtotime((string) ($p['created_at'] ?? '')) ?: 0;
+    $isAdmin = $em !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em);
+    $isFifty = $em === 'xsw93108@laoia.com' || str_contains($em, 'laoia.com');
+    if (!$isAdmin && !$isFifty && $t > $newestT) {
+      $newestT = $t;
+      $newestOther = $row + ['created_at' => (string) ($p['created_at'] ?? '')];
+    }
+    if (!admin_keep_is_row($row)) continue;
+    if ($pid !== '') $keep[$pid] = true;
+    if ($em !== '') $keepEmails[$em] = true;
+    if ($isFifty) $foundFifty = true;
+    if (preg_match('/alainnda98|alainda98|alaininda98/', preg_replace('/[^a-z0-9]+/', '', explode('@', $em)[0] ?? ''))
+      || (preg_match('/alain/u', $row['name']) && preg_match('/nda|inda/u', $row['name']))) {
+      $foundAlain = true;
+    }
+  }
+  if (!$foundAlain && is_array($newestOther) && $newestT > time() - 14 * 86400) {
+    $nid = (string) ($newestOther['id'] ?? '');
+    if ($nid !== '') $keep[$nid] = true;
+    $nem = strtolower(trim((string) ($newestOther['email'] ?? '')));
+    if ($nem !== '') $keepEmails[$nem] = true;
+    $foundAlain = true;
+  }
+  if (!$foundFifty) {
+    return ['ok' => false, 'reason' => 'Client 50 $ introuvable — nettoyage annulé', 'more' => false];
+  }
+
+  $keepUuid = [];
+  foreach (array_keys($keep) as $id) {
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) $id)) {
+      $keepUuid[] = (string) $id;
+    }
+  }
+  if ($keepUuid === []) {
+    return ['ok' => false, 'reason' => 'Aucun UUID à conserver — nettoyage annulé', 'more' => false];
+  }
+
+  $wiped = 0;
+  foreach (array_keys($db['users'] ?? []) as $id) {
+    $id = (string) $id;
+    if (isset($keep[$id])) continue;
+    unset($db['users'][$id], $db['vault'][$id], $db['bans'][$id]);
+    $wiped++;
+  }
+  foreach (['deposits', 'withdrawals', 'orders'] as $k) {
+    if (!isset($db[$k]) || !is_array($db[$k])) continue;
+    $db[$k] = array_values(array_filter($db[$k], static function ($row) use ($keep, $k) {
+      if (!is_array($row)) return false;
+      $id = (string) ($row['id'] ?? '');
+      if ($k === 'deposits' && function_exists('admin_stat_keep_deposit_id') && admin_stat_keep_deposit_id($id)) return true;
+      $uid = (string) ($row['userId'] ?? $row['user_id'] ?? '');
+      return $uid !== '' && isset($keep[$uid]);
+    }));
+  }
+  if (isset($db['sessions']) && is_array($db['sessions'])) {
+    foreach ($db['sessions'] as $tok => $s) {
+      if (!isset($keep[(string) ($s['userId'] ?? '')])) unset($db['sessions'][$tok]);
+    }
+  }
+  save_db(orolado_data_file(), $db);
+
+  $sb = ['vaults' => false, 'profiles' => false, 'orders' => false, 'deposits' => false, 'withdrawals' => false, 'auth' => 0];
+  $in = implode(',', $keepUuid);
+  if ($hdrs) {
+    admin_sb_req('/rest/v1/orders?user_id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+    $sb['orders'] = true;
+    admin_sb_req('/rest/v1/withdrawals?user_id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+    $sb['withdrawals'] = true;
+    admin_sb_req('/rest/v1/deposits?user_id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+    $sb['deposits'] = true;
+    admin_sb_req('/rest/v1/transactions?user_id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+    admin_sb_req('/rest/v1/vaults?user_id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+    $sb['vaults'] = true;
+    admin_sb_req('/rest/v1/profiles?id=not.in.(' . $in . ')', ['Prefer: return=minimal'], 'DELETE');
+    $sb['profiles'] = true;
+  }
+
+  $remaining = 0;
+  if ($hdrs && function_exists('supabase_admin_delete_auth')) {
+    $auth = admin_fetch_auth_users();
+    $toDelete = [];
+    foreach ($auth as $a) {
+      if (!is_array($a)) continue;
+      $aid = (string) ($a['id'] ?? '');
+      $em = strtolower(trim((string) ($a['email'] ?? '')));
+      $meta = is_array($a['user_metadata'] ?? null) ? $a['user_metadata'] : [];
+      $row = ['id' => $aid, 'email' => $em, 'name' => (string) ($meta['display_name'] ?? '')];
+      if ($aid === '' || isset($keep[$aid])) continue;
+      if (admin_keep_is_row($row)) continue;
+      if ($em !== '' && isset($keepEmails[$em])) continue;
+      $toDelete[] = $aid;
+    }
+    $remaining = count($toDelete);
+    foreach ($toDelete as $aid) {
+      if ((microtime(true) - $t0) > 14 || $sb['auth'] >= 10) break;
+      supabase_admin_delete_auth($aid);
+      $sb['auth']++;
+      $remaining--;
+    }
+  }
+
+  admin_bust_cache();
+  $out = [
+    'ok' => true,
+    'kept' => count($keepUuid),
+    'kept_alain' => $foundAlain,
+    'wiped_json' => $wiped,
+    'supabase' => $sb,
+    'remaining' => $remaining,
+    'more' => $remaining > 0,
+    'at' => date('c'),
+  ];
+  @file_put_contents($marker, json_encode($out, JSON_UNESCAPED_UNICODE));
+  return $out;
+}
+
+function admin_health_summary(): array {
+  $rows = admin_health_rows();
+  $issues = [];
+  $level = 'ok';
+  foreach ($rows as $r) {
+    $lvl = (string) ($r['level'] ?? 'ok');
+    if ($lvl === 'ok') continue;
+    $issues[] = trim((string) ($r['service'] ?? 'Service') . ' — ' . (string) ($r['message'] ?? ''));
+    if ($lvl === 'error') $level = 'error';
+    else if ($level !== 'error') $level = 'warn';
+  }
+  return [
+    'ok' => $level === 'ok',
+    'level' => $level,
+    'issues' => $issues,
+  ];
+}
+
 function admin_wipe_except_admin(): array {
   @set_time_limit(25);
   @ini_set('max_execution_time', '25');
@@ -1848,6 +2065,22 @@ function admin_health_rows(): array {
   $rows[] = admin_health_probe('Base · deposits', '/rest/v1/deposits?select=id&limit=1');
   $rows[] = admin_health_probe('Base · withdrawals', '/rest/v1/withdrawals?select=id&limit=1');
   $rows[] = admin_health_probe('Base · orders', '/rest/v1/orders?select=id&limit=1');
+  $onlineRpc = admin_sb_req('/rest/v1/rpc/count_online', [], 'POST', json_encode(['p_seconds' => 90]));
+  $onlineOk = !empty($onlineRpc['ok']);
+  $onlineMsg = 'OK · suivi last_seen actif';
+  if (!$onlineOk) {
+    $seen = admin_sb_req('/rest/v1/profiles?select=id&last_seen=not.is.null&limit=1');
+    $onlineOk = !empty($seen['ok']);
+    $onlineMsg = $onlineOk
+      ? 'OK · last_seen lisible'
+      : 'Je n’arrive plus à suivre les personnes en ligne';
+  }
+  $rows[] = [
+    'at' => $now,
+    'service' => 'Joueurs en ligne',
+    'message' => $onlineMsg,
+    'level' => $onlineOk ? 'ok' : 'error',
+  ];
   $auth = admin_sb_req('/auth/v1/admin/users?page=1&per_page=1', []);
   $rows[] = [
     'at' => $now,
