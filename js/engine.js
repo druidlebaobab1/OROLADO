@@ -183,8 +183,8 @@
   // sinon le même geste revient à chaque actualisation.
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 720;
-  var HISTORY_N = 800;
-  var SEED_N = 720;
+  var HISTORY_N = 1320;
+  var SEED_N = 1260;
   var synthCache = {};
   var tradeTimers = {};
   var pendingBusyUntil = {};
@@ -414,7 +414,7 @@
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 16;
+  var SCALE_VER = 17;
   Object.keys(SIM).forEach(function (sid) {
     if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
   });

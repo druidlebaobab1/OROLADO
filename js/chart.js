@@ -54,7 +54,7 @@
   var chartTickTimer = 0;
   var strikeLock = null;
   var coinImgs = {};
-  var BUFFER_N = 800;
+  var BUFFER_N = 1320;
   var xTimes = null;
   var xNow = 0;
   var xWin = 60000;
@@ -790,7 +790,7 @@
     }
     var z = Math.ceil((xWin > 0 ? xWin : ((zoomSmooth || zoomSec() || 60) * 1000)) / 1000);
     if (z < 24) z = 24;
-    if (z > 600) z = 600;
+    if (z > 1320) z = 1320;
     var n = z;
     var done = (live && live.candles && live.candles.length)
       ? live.candles
