@@ -1219,9 +1219,10 @@ if ($isAjax) {
 
   $me = admin_require();
   if ($action === 'badges') {
-    $purge = admin_keep_purge_tick();
-    $health = admin_health_summary();
-    admin_json(['ok' => true, 'badges' => admin_badges(), 'health' => $health, 'purge' => $purge]);
+    admin_json(['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()]);
+  }
+  if ($action === 'board_ack') {
+    admin_json(admin_board_ack());
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
@@ -1500,6 +1501,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .health-bar.ok{background:linear-gradient(135deg,#059669,#34D399);color:#06281d;box-shadow:0 0 0 1px rgba(52,211,153,.35)}
     .health-bar.bad{background:linear-gradient(135deg,#BE123C,#F43F5E);color:#fff;box-shadow:0 0 0 1px rgba(244,63,94,.4)}
     .health-bar:hover{filter:brightness(1.06)}
+    .health-ack{display:none;width:100%;margin:8px 0 0;min-height:44px;border:1px solid rgba(52,211,153,.45);border-radius:12px;background:rgba(52,211,153,.12);color:#34D399;font:inherit;font-weight:800;cursor:pointer}
+    .health-ack.on{display:block}
+    .health-panel{display:none;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#0E1420;padding:12px;font-size:.8rem;line-height:1.45}
+    .health-panel.on{display:block}
+    .health-panel p{margin:0 0 8px;color:var(--muted)}
+    .health-panel li{margin:0 0 6px}
   </style>
 </head>
 <body>
@@ -1540,7 +1547,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
     <div class="metrics" id="gE"><?php foreach ($ADMIN_TABS['gE'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
-    <button type="button" class="health-bar ok" id="btnHealthBar">Tableau en bonne santé</button>
+    <button type="button" class="health-bar ok" id="btnHealthBar">Tous les boutons suivent</button>
+    <button type="button" class="health-ack" id="btnHealthAck">C’est réglé</button>
+    <div class="health-panel" id="healthPanel"></div>
 
     <div class="filters">
       <input id="q" type="search" placeholder="Rechercher ID, e-mail, téléphone">
@@ -1669,16 +1678,38 @@ function bustList() { listCache = {}; }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function paintHealth(h) {
   const bar = document.getElementById('btnHealthBar');
+  const ack = document.getElementById('btnHealthAck');
+  const pan = document.getElementById('healthPanel');
   if (!bar || !h) return;
-  const bad = h.level === 'error' || h.level === 'warn';
+  const issues = h.issues || [];
+  const bad = !h.ok && issues.length > 0;
   bar.className = 'health-bar ' + (bad ? 'bad' : 'ok');
-  bar.textContent = bad ? 'Tableau : souci détecté — cliquer pour voir' : 'Tableau en bonne santé';
+  bar.textContent = bad ? (issues.length + ' bouton(s) ne suivent plus — cliquer pour voir') : 'Tous les boutons suivent';
+  if (ack) ack.classList.toggle('on', bad);
+  window._boardIssues = issues;
+  if (pan && !bad) { pan.classList.remove('on'); pan.innerHTML = ''; }
+}
+function showBoardPanel() {
+  const pan = document.getElementById('healthPanel');
+  if (!pan) return;
+  const issues = window._boardIssues || [];
+  if (!issues.length) {
+    pan.className = 'health-panel on';
+    pan.innerHTML = '<p>Tous les boutons du tableau suivent normalement.</p>';
+    return;
+  }
+  const names = {};
+  TABS.forEach(t => { names[t.id] = t.k; });
+  pan.className = 'health-panel on';
+  pan.innerHTML = '<p>Boutons qui ne reçoivent plus leurs données :</p><ul>' +
+    issues.map(i => '<li><strong>'+esc(names[i.id] || i.label || i.id)+'</strong> — '+esc(i.message||'')+'</li>').join('') +
+    '</ul>';
 }
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
   renderButtons(j.badges || {});
-  paintHealth(j.health);
+  paintHealth(j.board);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
 }
 function renderList(j) {
@@ -1839,7 +1870,14 @@ async function openUser(uid) {
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
-document.getElementById('btnHealthBar').onclick = () => { view = 'alerts'; page = 1; loadList(true); };
+document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
+document.getElementById('btnHealthAck').onclick = async () => {
+  const r = await ajax({action:'board_ack'});
+  if (!r.ok) { alert(r.reason || 'Échec'); return; }
+  paintHealth({ok:true, n:0, issues:[]});
+  const pan = document.getElementById('healthPanel');
+  if (pan) { pan.className = 'health-panel on'; pan.innerHTML = '<p>C’est réglé. Compteur à zéro.</p>'; }
+};
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });

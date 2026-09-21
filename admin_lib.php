@@ -1774,6 +1774,86 @@ function admin_keep_purge_tick(): array {
   return $out;
 }
 
+function admin_board_ack_file(): string {
+  $dir = function_exists('orolado_data_dir') ? orolado_data_dir() : (__DIR__ . '/data');
+  return rtrim(str_replace('\\', '/', $dir), '/') . '/admin_board_ack.json';
+}
+
+function admin_board_fp(array $issue): string {
+  return md5((string) ($issue['id'] ?? '') . '|' . (string) ($issue['message'] ?? ''));
+}
+
+function admin_board_issues_raw(): array {
+  $cached = admin_cache_get('board_watch', 15);
+  if (is_array($cached) && isset($cached['issues'])) return $cached['issues'];
+  $issues = [];
+  $push = static function (array &$issues, array $ids, string $label, string $msg): void {
+    foreach ($ids as $id) {
+      $issues[] = ['id' => $id, 'label' => $label, 'message' => $msg];
+    }
+  };
+  $prof = admin_sb_req('/rest/v1/profiles?select=id&limit=1');
+  if (empty($prof['ok'])) {
+    $push($issues, ['signup_today', 'signup_yesterday', 'signup_date', 'signup_hour', 'signup_geo', 'signup_idrange', 'no_deposit', 'signup_closed', 'traffic'], 'Inscriptions', 'N’arrive plus à suivre les inscrits');
+  }
+  $dep = admin_sb_req('/rest/v1/deposits?select=id&limit=1');
+  if (empty($dep['ok'])) {
+    $push($issues, ['dep_today', 'dep_pending', 'dep_failed', 'dep_top', 'dep_all', 'dep_method'], 'Dépôts', 'N’arrive plus à suivre les dépôts');
+  }
+  $wd = admin_sb_req('/rest/v1/withdrawals?select=id&limit=1');
+  if (empty($wd['ok'])) {
+    $push($issues, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume', 'wd_suspect'], 'Retraits', 'N’arrive plus à suivre les retraits');
+  }
+  $seen = admin_sb_req('/rest/v1/profiles?select=id&last_seen=not.is.null&limit=1');
+  if (empty($seen['ok'])) {
+    $push($issues, ['online'], 'Joueurs en ligne', 'N’arrive plus à suivre les personnes en ligne');
+  }
+  $vaults = admin_sb_req('/rest/v1/vaults?select=user_id&limit=1');
+  if (empty($vaults['ok'])) {
+    $push($issues, ['top_balances'], 'Top Balances / Soldes', 'N’arrive plus à suivre les soldes');
+  }
+  $orders = admin_sb_req('/rest/v1/orders?select=id&limit=1');
+  if (empty($orders['ok'])) {
+    $push($issues, ['open_positions', 'top_winners', 'games', 'trade_minutes', 'payout_stats'], 'Jeux', 'N’arrive plus à suivre les parties');
+  }
+  admin_cache_set('board_watch', ['issues' => $issues]);
+  return $issues;
+}
+
+function admin_board_watch(): array {
+  $raw = admin_board_issues_raw();
+  $ack = [];
+  $f = admin_board_ack_file();
+  if (is_file($f)) {
+    $j = json_decode((string) @file_get_contents($f), true);
+    if (is_array($j) && isset($j['fps']) && is_array($j['fps'])) $ack = $j['fps'];
+  }
+  $open = [];
+  foreach ($raw as $issue) {
+    $fp = admin_board_fp($issue);
+    if (isset($ack[$fp])) continue;
+    $open[] = $issue;
+  }
+  return [
+    'ok' => $open === [],
+    'n' => count($open),
+    'issues' => $open,
+  ];
+}
+
+function admin_board_ack(): array {
+  $raw = admin_board_issues_raw();
+  $fps = [];
+  foreach ($raw as $issue) {
+    $fps[admin_board_fp($issue)] = true;
+  }
+  $payload = ['at' => date('c'), 'fps' => $fps];
+  @file_put_contents(admin_board_ack_file(), json_encode($payload, JSON_UNESCAPED_UNICODE));
+  $f = function_exists('admin_cache_file') ? admin_cache_file('admin_cache_board_watch.json') : '';
+  if ($f !== '' && is_file($f)) @unlink($f);
+  return ['ok' => true, 'n' => 0, 'issues' => []];
+}
+
 function admin_health_summary(): array {
   $rows = admin_health_rows();
   $issues = [];
@@ -2065,22 +2145,6 @@ function admin_health_rows(): array {
   $rows[] = admin_health_probe('Base · deposits', '/rest/v1/deposits?select=id&limit=1');
   $rows[] = admin_health_probe('Base · withdrawals', '/rest/v1/withdrawals?select=id&limit=1');
   $rows[] = admin_health_probe('Base · orders', '/rest/v1/orders?select=id&limit=1');
-  $onlineRpc = admin_sb_req('/rest/v1/rpc/count_online', [], 'POST', json_encode(['p_seconds' => 90]));
-  $onlineOk = !empty($onlineRpc['ok']);
-  $onlineMsg = 'OK · suivi last_seen actif';
-  if (!$onlineOk) {
-    $seen = admin_sb_req('/rest/v1/profiles?select=id&last_seen=not.is.null&limit=1');
-    $onlineOk = !empty($seen['ok']);
-    $onlineMsg = $onlineOk
-      ? 'OK · last_seen lisible'
-      : 'Je n’arrive plus à suivre les personnes en ligne';
-  }
-  $rows[] = [
-    'at' => $now,
-    'service' => 'Joueurs en ligne',
-    'message' => $onlineMsg,
-    'level' => $onlineOk ? 'ok' : 'error',
-  ];
   $auth = admin_sb_req('/auth/v1/admin/users?page=1&per_page=1', []);
   $rows[] = [
     'at' => $now,
