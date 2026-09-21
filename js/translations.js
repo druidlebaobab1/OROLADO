@@ -21,7 +21,7 @@
       authRealPitch: '',
       login: 'साइन इन', register: 'रजिस्टर', enter: 'साइन इन',
       createAccount: 'खाता बनाएं',
-      idLabel: 'ईमेल', idPh: 'exemple@gmail.com',
+      idLabel: 'ईमेल', idPh: 'example@gmail.com',
       dial: 'देश कोड (फोन)', password: 'पासवर्ड',
       forgot: 'पासवर्ड भूल गए?',
       name: 'पूरा नाम / उपनाम', email: 'ईमेल', whatsapp: 'फोन नंबर',

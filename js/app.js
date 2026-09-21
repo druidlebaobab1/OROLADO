@@ -4301,7 +4301,7 @@
     } else if (WD_EMAIL[method]) {
       label.setAttribute('data-i18n', 'wdEmailAccount');
       label.textContent = t('wdEmailAccount');
-      input.placeholder = 'Ex: nom@exemple.com';
+      input.placeholder = t('idPh');
       input.type = 'email';
     } else if (method === 'pix' || method === 'picpay') {
       label.setAttribute('data-i18n', 'wdPix');
