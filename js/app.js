@@ -5461,14 +5461,16 @@
     if ($('formHelp')) {
       $('formHelp').addEventListener('submit', async function (e) {
         e.preventDefault();
+        var email = ($('helpEmail') && $('helpEmail').value) || '';
         var subject = ($('helpSubject') && $('helpSubject').value) || '';
         var message = ($('helpMessage') && $('helpMessage').value) || '';
-        if (!subject || !message) return;
+        if (!email || !subject || !message) return;
         var res = D6.Api && D6.Api.token()
-          ? await D6.Api.post('supportMessage', { subject: subject, message: message })
+          ? await D6.Api.post('supportMessage', { email: email, subject: subject, message: message })
           : { ok: false };
         if (!res || !res.ok) { toast((res && res.reason) || t('sessionInvalid'), 'err'); return; }
         closeModal('helpModal');
+        if ($('helpEmail')) $('helpEmail').value = '';
         $('helpSubject').value = '';
         $('helpMessage').value = '';
         toast(t('helpSent'), 'ok');

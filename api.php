@@ -1227,7 +1227,8 @@ if ($action === 'supportMessage') {
   }
   $subject = trim((string) ($req['subject'] ?? ''));
   $message = trim((string) ($req['message'] ?? ''));
-  if ($subject === '' || $message === '' || strlen($message) > 500) {
+  $email = strtolower(trim((string) ($req['email'] ?? $me['email'] ?? '')));
+  if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $subject === '' || $message === '' || strlen($message) > 500) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Message invalide']);
     exit;
   }
@@ -1236,7 +1237,7 @@ if ($action === 'supportMessage') {
     'id' => uniqid('msg_', true),
     'userId' => $me['id'],
     'publicId' => (string) ($me['publicId'] ?? ''),
-    'email' => (string) ($me['email'] ?? ''),
+    'email' => substr($email, 0, 120),
     'subject' => substr($subject, 0, 80),
     'message' => substr($message, 0, 500),
     'status' => 'ouvert',

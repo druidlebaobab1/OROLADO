@@ -173,14 +173,18 @@ function admin_credit_target_ids(string $uid, array $found = []): array {
 function admin_persist_json_real(string $uid, float $real, ?array $tx = null, ?array $dep = null): void {
   if ($uid === '' || !function_exists('with_db_lock')) return;
   $real = orolado_money($real);
-  $writeVault = ($uid === 'admin_master');
-  with_db_lock(static function ($box) use ($uid, $real, $tx, $dep, $writeVault) {
-    if ($writeVault) {
+  $add = $dep ? orolado_money($dep['amount'] ?? 0) : 0;
+  with_db_lock(static function ($box) use ($uid, $real, $tx, $dep, $add) {
+    if ($add > 0.009 || $uid === 'admin_master') {
       if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
       if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
         $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
       }
-      $box->db['vault'][$uid]['real'] = $real;
+      if ($add > 0.009) {
+        $box->db['vault'][$uid]['real'] = orolado_money(($box->db['vault'][$uid]['real'] ?? 0) + $add);
+      } else {
+        $box->db['vault'][$uid]['real'] = $real;
+      }
     }
     if ($dep) {
       if (!isset($box->db['deposits']) || !is_array($box->db['deposits'])) $box->db['deposits'] = [];
@@ -1319,6 +1323,9 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     );
   }
   admin_persist_json_real($uid, $got, $txRow, $depRow);
+  if (admin_is_uuid($uid) && function_exists('supabase_sync_real_min')) {
+    supabase_sync_real_min($uid, $got);
+  }
   return ['ok' => true, 'real' => $got, 'delta' => $delta, 'ref' => $ref];
 }
 
