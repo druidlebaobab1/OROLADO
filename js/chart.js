@@ -16,10 +16,10 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [20, 28, 38, 48, 60, 90, 120, 180, 300, 600];
-  var DEFAULT_ZOOM_IDX = 4;
+  var ZOOM_STEPS = [20, 28, 38, 48, 60, 90, 120, 180, 300, 600, 900, 1200];
+  var DEFAULT_ZOOM_IDX = 1;
   var zoomIdx = DEFAULT_ZOOM_IDX;
-  var zoomSmooth = 60;
+  var zoomSmooth = 28;
   var wantFitY = false;
   var CANDLE_DURATION_MS = 1000;
   // Tête de lecture : 62 % sur desktop, 60 % sur mobile, pour qu'elle tombe
