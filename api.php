@@ -767,6 +767,11 @@ if ($action === 'welcomeEmail') {
 }
 
 if ($action === 'login') {
+  $gate = orolado_login_gate('player');
+  if (empty($gate['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($gate['reason'] ?? 'Trop d’essais')]);
+    exit;
+  }
   $email = strtolower(trim($req['email'] ?? ''));
   $passwordRaw = (string) ($req['password'] ?? '');
   $password = trim($passwordRaw);
@@ -799,6 +804,7 @@ if ($action === 'login') {
       }
     }
     if (!$adminOk) {
+      orolado_login_fail('player');
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
@@ -873,9 +879,11 @@ if ($action === 'login') {
     if (!$okPass) {
       $blockedEarly = orolado_identity_block($db, $email);
       if ($blockedEarly) {
+        orolado_login_fail('player');
         echo json_encode(orolado_block_payload((string) ($blockedEarly['kind'] ?? 'suspended')));
         exit;
       }
+      orolado_login_fail('player');
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
@@ -901,6 +909,7 @@ if ($action === 'login') {
     echo json_encode(orolado_block_payload($banKind));
     exit;
   }
+  orolado_login_ok('player');
   orolado_revoke_user_sessions($db, (string) $user['id'], '');
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);

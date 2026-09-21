@@ -1,4 +1,5 @@
 data/orolado.json
+data/login_throttle.json
 data/.env
 data/admin_cache_*.json
 data/admin_alerts.json

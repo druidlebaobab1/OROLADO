@@ -11,6 +11,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
   session_start([
     'cookie_httponly' => true,
     'cookie_samesite' => 'Lax',
+    'cookie_secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
   ]);
 }
 
@@ -1223,11 +1224,17 @@ if ($isAjax) {
   $action = (string) ($req['action'] ?? '');
 
   if ($action === 'login') {
+    $gate = function_exists('orolado_login_gate') ? orolado_login_gate('admin') : ['ok' => true];
+    if (empty($gate['ok'])) {
+      admin_json(['ok' => false, 'reason' => (string) ($gate['reason'] ?? 'Trop d’essais')], 429);
+    }
     $u = admin_login_check((string) ($req['email'] ?? ''), (string) ($req['password'] ?? ''));
     if (!$u) {
+      if (function_exists('orolado_login_fail')) orolado_login_fail('admin');
       admin_alert_push('Connexion', 'Tentative de connexion admin refusée.', 'error');
       admin_json(['ok' => false, 'reason' => 'Identifiants incorrects'], 403);
     }
+    if (function_exists('orolado_login_ok')) orolado_login_ok('admin');
     $_SESSION['admin_uid'] = (string) $u['id'];
     $_SESSION['admin_email'] = (string) $u['email'];
     admin_json(['ok' => true]);

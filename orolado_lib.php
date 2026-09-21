@@ -41,6 +41,64 @@ function orolado_data_file(): string {
   return orolado_data_dir() . '/orolado.json';
 }
 
+function orolado_client_ip(): string {
+  $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0');
+  $ip = preg_replace('/[^0-9a-fA-F:.]/', '', $ip);
+  return $ip !== '' ? $ip : '0';
+}
+
+function orolado_login_throttle_map(): array {
+  $f = orolado_data_dir() . '/login_throttle.json';
+  if (!is_file($f)) return [];
+  $j = json_decode((string) @file_get_contents($f), true);
+  return is_array($j) ? $j : [];
+}
+
+function orolado_login_throttle_save(array $map): void {
+  @file_put_contents(orolado_data_dir() . '/login_throttle.json', json_encode($map, JSON_UNESCAPED_UNICODE), LOCK_EX);
+}
+
+function orolado_login_gate(string $scope = 'player'): array {
+  $max = 8;
+  $window = 900;
+  $key = $scope . ':' . orolado_client_ip();
+  $all = orolado_login_throttle_map();
+  $row = is_array($all[$key] ?? null) ? $all[$key] : ['n' => 0, 't' => 0];
+  $t = (int) ($row['t'] ?? 0);
+  $n = (int) ($row['n'] ?? 0);
+  if ($t > 0 && (time() - $t) > $window) {
+    $n = 0;
+    $t = 0;
+  }
+  if ($n >= $max && $t > 0) {
+    $wait = max(60, $window - (time() - $t));
+    return ['ok' => false, 'reason' => 'Trop d’essais. Réessayez dans ' . (string) (int) ceil($wait / 60) . ' min.'];
+  }
+  return ['ok' => true];
+}
+
+function orolado_login_fail(string $scope = 'player'): void {
+  $key = $scope . ':' . orolado_client_ip();
+  $all = orolado_login_throttle_map();
+  $row = is_array($all[$key] ?? null) ? $all[$key] : ['n' => 0, 't' => 0];
+  $t = (int) ($row['t'] ?? 0);
+  $n = (int) ($row['n'] ?? 0);
+  if ($t > 0 && (time() - $t) > 900) {
+    $n = 0;
+  }
+  $all[$key] = ['n' => $n + 1, 't' => time()];
+  if (count($all) > 4000) $all = array_slice($all, -2000, null, true);
+  orolado_login_throttle_save($all);
+}
+
+function orolado_login_ok(string $scope = 'player'): void {
+  $key = $scope . ':' . orolado_client_ip();
+  $all = orolado_login_throttle_map();
+  if (!isset($all[$key])) return;
+  unset($all[$key]);
+  orolado_login_throttle_save($all);
+}
+
 /** Journal de diagnostic Maketou : dossier /data protégé par .htaccess. */
 function maketou_log_file(): string {
   return orolado_data_dir() . '/debug_maketou.log';

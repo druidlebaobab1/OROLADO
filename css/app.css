@@ -2925,6 +2925,21 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     right:6px!important}
   .drawer-head{padding-right:36px}
   .drawer-head h2{padding-right:28px;box-sizing:border-box}
+
+  #drawerProfile .btn-close,
+  #drawerProfile #btnCloseDrawer,
+  html.is-android #drawerProfile .btn-close,
+  html.is-ios #drawerProfile .btn-close,
+  html.is-android #drawerProfile #btnCloseDrawer,
+  html.is-ios #drawerProfile #btnCloseDrawer{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    min-height:36px!important;
+    top:calc(10px + env(safe-area-inset-top, 0px))!important;
+    right:10px!important;
+    font-size:1.15rem!important}
+  #drawerProfile .drawer-head{padding-right:52px}
   .modal-title,
   .modal-head-row .modal-title,
   .wd-modal-head .modal-title,
