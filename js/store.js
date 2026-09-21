@@ -374,8 +374,13 @@
           var hadDep = Number(prev && prev.realDepositTotal) || 0;
           var newDeposit = incomingDep > hadDep + 0.009;
           var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0);
+          var allowZero = !!(opts && opts.allowZero);
           if (official && isFinite(nextReal) && nextReal >= 0) {
-            next.real = nextReal;
+            if (!allowZero && nextReal <= 0.009 && keep > 0.009 && !newDeposit) {
+              next.real = keep;
+            } else {
+              next.real = nextReal;
+            }
           } else if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
             next.real = Math.max(nextReal, keep);
           } else if (isFinite(nextReal) && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal && nextReal > 0.009) {

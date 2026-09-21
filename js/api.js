@@ -33,7 +33,9 @@
         var ctrl = new AbortController();
         var mail = action === 'login' || action === 'registerStart' || action === 'registerResend' ||
           action === 'registerVerify' || action === 'passwordOtpStart' || action === 'forgotOtpStart';
-        var ms = timeoutMs || (mail ? 25000 : 8000);
+        var money = action === 'placeOrder' || action === 'settleOrder' || action === 'withdraw' ||
+          action === 'withdrawOtp' || action === 'me' || action === 'upsert';
+        var ms = timeoutMs || (mail || money ? 25000 : 8000);
         var timer = setTimeout(function () { ctrl.abort(); }, ms);
         var body = Object.assign({ action: action, token: D6.Api.token() }, data || {});
         if (action === 'login') body.token = '';

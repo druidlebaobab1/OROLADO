@@ -1579,7 +1579,7 @@
     if (real > local + 0.009 && !allowRaise && !force && !fromMe) return false;
     var open = openRealStake();
     if (open > 0 && real > local + 0.009 && real <= local + open + 0.009 && !D6.holdDepositReal && !force) return false;
-    if (real <= 0.009 && local > 0.009 && !force) return false;
+    if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);
@@ -2548,10 +2548,10 @@
         }
         return false;
       }
-      D6.Api.post('settleOrder', settleBody).then(function (remote) {
+      D6.Api.post('settleOrder', settleBody, 25000).then(function (remote) {
         if (applySettledVault(remote)) return;
         if (settleMode === 'real') {
-          return D6.Api.post('settleOrder', settleBody).then(function (again) {
+          return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
             applySettledVault(again);
             D6.holdRemote = false;
           });
@@ -2562,7 +2562,7 @@
           D6.holdRemote = false;
           return;
         }
-        D6.Api.post('settleOrder', settleBody).then(function (again) {
+        D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
           applySettledVault(again);
           D6.holdRemote = false;
         }, function () { D6.holdRemote = false; });
@@ -2681,16 +2681,25 @@
         entryPrice: res.trade.entryPrice,
         payout: res.trade.payout || currentOdds(u)
       };
-      D6.Api.post('placeOrder', placeBody).then(function (remote) {
-        if (watchBan(remote)) return;
+      function applyPlacedVault(remote) {
+        if (watchBan(remote)) return true;
         if (remote && remote.ok && mode === 'real' && remote.vault && remote.vault.real != null) {
           var srvReal = Number(remote.vault.real);
-          if (isFinite(srvReal) && srvReal >= 0) {
+          if (isFinite(srvReal) && srvReal > 0.009) {
             applyOfficialReal(srvReal, { fromMe: true, force: true });
             updateBalance(true);
           }
+          return true;
         }
-      });
+        return !!(remote && remote.ok);
+      }
+      function postPlace(triesLeft) {
+        return D6.Api.post('placeOrder', placeBody, 25000).then(function (remote) {
+          if (applyPlacedVault(remote)) return;
+          if (triesLeft > 1) return postPlace(triesLeft - 1);
+        });
+      }
+      postPlace(3);
     }
     return true;
   }
@@ -5765,7 +5774,7 @@
         wdOtpPending = false;
         wdOtpLeft = 0;
         if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
-        if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault, { official: true });
+        if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault, { official: true, allowZero: true });
         else {
           var local = D6.Store.requestWithdraw(u, amount, payload);
           if (!local.ok) { toast(local.reason, 'err'); return; }

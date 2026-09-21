@@ -168,8 +168,8 @@
 
   function applySession(user, vault) {
     var incoming = Number(vault && vault.real);
-    var payload = (isFinite(incoming) && incoming >= 0) ? { real: incoming } : null;
-    D6.Store.importRemote(user, payload, { official: true });
+    var payload = (isFinite(incoming) && incoming > 0.009) ? { real: incoming } : null;
+    D6.Store.importRemote(user, payload, { official: !!payload });
     D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
   }
 
@@ -196,7 +196,9 @@
       row = prof.data;
     }
     var vaultRes = await sb.from('vaults').select('demo,real').eq('user_id', pid).maybeSingle();
-    var vault = (vaultRes && vaultRes.data) ? { demo: vaultRes.data.demo, real: vaultRes.data.real } : { demo: D6.CONFIG.DEMO_START, real: 0 };
+    var vault = (vaultRes && vaultRes.data)
+      ? { demo: vaultRes.data.demo, real: vaultRes.data.real }
+      : null;
     var localUser = D6.Store.current && D6.Store.current();
     var ordRes = await sb.from('orders').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(100);
     var txRes = await sb.from('transactions').select('*').eq('user_id', pid).order('created_at', { ascending: false }).limit(80);
