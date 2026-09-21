@@ -1078,6 +1078,120 @@ function admin_profile_payload(string $uid): array {
   ];
 }
 
+/** Crédit admin manuel : incrémente le coffre existant, vérifie l’écriture, enregistre le dépôt. */
+function admin_manual_credit(array &$db, string $uid, float $delta, string $motif): array {
+  $delta = orolado_money($delta);
+  if ($uid === '' || $delta <= 0) {
+    return ['ok' => false, 'reason' => 'Montant invalide', 'real' => 0.0];
+  }
+  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  }
+  $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
+  $sb = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
+  $sbReal = $sb ? orolado_money($sb['real'] ?? 0) : null;
+  $cur = $sbReal !== null ? max($sbReal, $jsonReal) : $jsonReal;
+  $target = orolado_money($cur + $delta);
+
+  if (function_exists('supabase_credit_real')) {
+    supabase_credit_real($uid, $delta, false);
+  }
+  $again = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
+  $got = $again ? orolado_money($again['real'] ?? 0) : null;
+  if ($got !== null && $got + 0.009 < $target && function_exists('supabase_set_real')) {
+    supabase_set_real($uid, $target);
+    $again = supabase_admin_vault($uid);
+    $got = $again ? orolado_money($again['real'] ?? 0) : $got;
+  } else if ($got === null && function_exists('supabase_set_real')) {
+    supabase_set_real($uid, $target);
+    $again = supabase_admin_vault($uid);
+    $got = $again ? orolado_money($again['real'] ?? 0) : null;
+  }
+  $isUuid = (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid);
+  if ($got === null) {
+    if ($isUuid) {
+      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $cur];
+    }
+    $got = $target;
+  }
+  if ($got + 0.009 < $target) {
+    return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $got];
+  }
+  $db['vault'][$uid]['real'] = $got;
+
+  $ref = 'adm_' . bin2hex(random_bytes(6));
+  if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
+  $db['deposits'][] = [
+    'id' => $ref,
+    'ref' => $ref,
+    'userId' => $uid,
+    'amount' => $delta,
+    'status' => 'COMPLETED',
+    'operator' => 'admin',
+    'createdAt' => date('c'),
+    'paidAt' => date('c'),
+    'note' => $motif,
+  ];
+  $depTot = $delta;
+  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+    $depTot = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $delta);
+    $db['users'][$uid]['realDepositTotal'] = $depTot;
+    $db['users'][$uid]['requiredWagering'] = orolado_money($depTot * 2);
+    $db['users'][$uid]['lastDepositAmount'] = orolado_money($delta);
+    $db['users'][$uid]['wagerLock'] = orolado_money(($db['users'][$uid]['wagerLock'] ?? 0) + $delta);
+    $db['users'][$uid]['wagerNeed'] = orolado_money(($db['users'][$uid]['wagerNeed'] ?? 0) + ($delta * 2));
+    if (!isset($db['users'][$uid]['transactions']) || !is_array($db['users'][$uid]['transactions'])) {
+      $db['users'][$uid]['transactions'] = [];
+    }
+    array_unshift($db['users'][$uid]['transactions'], [
+      'id' => 'adj_' . bin2hex(random_bytes(4)),
+      'at' => date('c'),
+      'type' => 'deposit',
+      'amount' => abs($delta),
+      'note' => $motif,
+      'mode' => 'real',
+      'status' => 'COMPLETED',
+    ]);
+    if (count($db['users'][$uid]['transactions']) > 80) {
+      $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 80);
+    }
+  } else {
+    $hdrsProfRead = function_exists('supabase_admin_headers') ? supabase_admin_headers() : null;
+    if ($hdrsProfRead) {
+      $rows = supabase_http(
+        rtrim(supabase_project_url(), '/') . '/rest/v1/profiles?id=eq.' . rawurlencode($uid) . '&select=real_deposit_total',
+        $hdrsProfRead
+      );
+      if (is_array($rows) && isset($rows[0])) {
+        $depTot = orolado_money(($rows[0]['real_deposit_total'] ?? 0) + $delta);
+      }
+    }
+  }
+  if (function_exists('supabase_insert_deposit')) {
+    supabase_insert_deposit([
+      'id' => $ref,
+      'user_id' => $uid,
+      'amount' => $delta,
+      'status' => 'COMPLETED',
+      'operator' => 'admin',
+      'reference' => $ref,
+    ]);
+  }
+  $hdrsProf = function_exists('supabase_admin_headers') ? supabase_admin_headers() : null;
+  if ($hdrsProf) {
+    supabase_http(
+      rtrim(supabase_project_url(), '/') . '/rest/v1/profiles?id=eq.' . rawurlencode($uid),
+      $hdrsProf,
+      json_encode([
+        'real_deposit_total' => $depTot,
+        'updated_at' => date('c'),
+      ], JSON_UNESCAPED_UNICODE),
+      'PATCH'
+    );
+  }
+  return ['ok' => true, 'real' => $got, 'delta' => $delta];
+}
+
 $isAjax = ($_SERVER['REQUEST_METHOD'] === 'POST') && (
   (($_GET['ajax'] ?? '') === '1')
   || str_contains((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json')
@@ -1133,13 +1247,20 @@ if ($isAjax) {
     $uid = (string) ($req['userId'] ?? '');
     $delta = (float) ($req['delta'] ?? 0);
     $motif = trim((string) ($req['motif'] ?? ''));
-    if ($uid === '' || $motif === '' || abs($delta) < 0.0001) {
-      admin_json(['ok' => false, 'reason' => 'Montant et motif obligatoires']);
+    if ($motif === '') $motif = 'Crédit admin';
+    if ($uid === '' || abs($delta) < 0.0001) {
+      admin_json(['ok' => false, 'reason' => 'Montant obligatoire']);
     }
     $db = admin_local_db();
-    $res = orolado_ledger_apply($db, $uid, $delta, $motif, $delta > 0);
+    $found = admin_user_lookup($uid, admin_profile_map());
+    if ((string) ($found['id'] ?? '') !== '') $uid = (string) $found['id'];
+    if ($delta > 0) {
+      $res = admin_manual_credit($db, $uid, $delta, $motif);
+    } else {
+      $res = orolado_ledger_apply($db, $uid, $delta, $motif, false);
+    }
     if (empty($res['ok'])) admin_json(['ok' => false, 'reason' => (string) ($res['reason'] ?? 'Échec')]);
-    admin_log($db, (string) ($me['email'] ?? ''), (string) ($db['users'][$uid]['publicId'] ?? $uid), $delta >= 0 ? 'credit' : 'debit', $delta, $motif);
+    admin_log($db, (string) ($me['email'] ?? ''), (string) ($db['users'][$uid]['publicId'] ?? $found['publicId'] ?? $uid), $delta >= 0 ? 'credit' : 'debit', $delta, $motif);
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
     admin_json(['ok' => true, 'real' => $res['real']]);
@@ -1690,9 +1811,9 @@ async function openUser(uid) {
     tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(d.at||'')+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
   const go = async (delta) => {
-    const motif = document.getElementById('adjMotif').value.trim();
+    const motif = document.getElementById('adjMotif').value.trim() || 'Crédit admin';
     const amt = Number(document.getElementById('adjAmt').value);
-    if (!motif || !amt) { alert('Montant et motif obligatoires'); return; }
+    if (!(amt > 0)) { alert('Montant obligatoire'); return; }
     const r = await ajax({action:'adjust', userId:u.id, delta: delta * Math.abs(amt), motif});
     if (!r.ok) alert(r.reason||'Échec'); else { bustList(); openUser(u.id); loadBadges(); }
   };

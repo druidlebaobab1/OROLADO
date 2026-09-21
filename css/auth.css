@@ -109,6 +109,7 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 .help-terms.link-terms,#helpModal button.link-terms.help-terms{color:#F59E0B}
 
 #termsModal .terms-box{
+  position:relative;
   width:94vw!important;max-width:850px!important;
   height:88vh!important;max-height:88vh!important;
   border-radius:16px!important;
@@ -117,11 +118,16 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   padding:16px 16px 14px;background:rgba(10,14,22,.97);
   border:1px solid #1E2638;box-sizing:border-box}
 #termsModal .terms-head{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  margin:0 0 14px;flex-shrink:0;min-width:0}
+  display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+  margin:0 0 14px;flex-shrink:0;min-width:0;padding-right:40px;position:static}
 #termsModal .btn-close,
-#termsModal .terms-head .btn-close{
-  position:static;flex:0 0 32px;color:#E8EEF9}
+#termsModal .terms-head .btn-close,
+#termsModal #closeTerms{
+  position:absolute!important;top:10px!important;right:10px!important;
+  left:auto!important;bottom:auto!important;
+  width:32px;height:32px;min-width:32px;min-height:32px;
+  margin:0!important;padding:0;flex:none;z-index:95;
+  color:#E8EEF9}
 #termsModal .modal-title,
 #termsModal .terms-head .modal-title{
   display:block;flex:1 1 auto;min-width:0;max-width:100%;box-sizing:border-box;
@@ -204,16 +210,17 @@ html.is-ios body #screenAuth .auth-card{
   opacity:.55;cursor:default;pointer-events:none}
 
 @media (max-width:859px){
-  #termsModal .terms-head{position:relative;padding-right:34px}
-  #termsModal .terms-head .modal-title{padding-right:28px}
+  #termsModal .terms-head{position:static!important;padding-right:40px}
+  #termsModal .terms-head .modal-title{padding-right:8px}
   #termsModal .btn-close,
   #termsModal .terms-head .btn-close,
+  #termsModal #closeTerms,
   html.is-android #termsModal .btn-close,
   html.is-android #termsModal .terms-head .btn-close,
   html.is-ios #termsModal .btn-close,
   html.is-ios #termsModal .terms-head .btn-close,
   html.is-android .modal-backdrop.active #termsModal .btn-close{
-    position:absolute!important;top:6px!important;right:6px!important;left:auto!important;bottom:auto!important;
+    position:absolute!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;
     width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;
     margin:0!important;padding:0!important;flex:none!important;
     display:inline-flex!important;align-items:center!important;justify-content:center!important;
