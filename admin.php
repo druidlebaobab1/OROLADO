@@ -167,11 +167,12 @@ function admin_badges(): array {
     if (admin_in_range($r['at'] ?? null, $t0, $t1)) $otp++;
   }
   $healthErr = 0;
-  $healthCached = admin_cache_get('health', 180);
-  if (is_array($healthCached) && isset($healthCached['rows'])) {
-    foreach ($healthCached['rows'] as $h) {
-      if (($h['level'] ?? '') === 'error') $healthErr++;
-    }
+  $ackedHealth = function_exists('admin_health_ack_map') ? admin_health_ack_map() : [];
+  foreach (admin_health_rows() as $h) {
+    if (($h['level'] ?? '') !== 'error') continue;
+    $fp = function_exists('admin_health_fp') ? admin_health_fp($h) : '';
+    if ($fp !== '' && isset($ackedHealth[$fp])) continue;
+    $healthErr++;
   }
   $online = admin_online_count();
   $nInscrits = admin_inscrits_count();
@@ -679,7 +680,11 @@ function admin_list_payload(string $view, array $req): array {
     $src = $orders;
     $preset = (string) ($req['preset'] ?? 'all');
     if ($preset !== 'all') {
-      [$a, $b] = admin_day_bounds($preset, (string) ($req['dateFrom'] ?? ''), (string) ($req['dateTo'] ?? ''));
+      $from = (string) ($req['dateFrom'] ?? '');
+      $to = (string) ($req['dateTo'] ?? '');
+      $cal = (string) ($req['cal'] ?? '');
+      if ($preset === 'date' && $cal !== '') { $from = $cal; $to = $cal; }
+      [$a, $b] = admin_day_bounds($preset, $from, $to);
       $src = array_values(array_filter($orders, static fn($o) => admin_in_range((string) ($o['created_at'] ?? ''), $a, $b)));
     }
     foreach ($src as $o) {
@@ -740,9 +745,6 @@ function admin_list_payload(string $view, array $req): array {
   if ($view === 'otp_mails') {
     $cols = ['Heure', 'E-mail', 'Type', 'Statut'];
     $list = admin_apply_filters(admin_otp_rows(), $req, 'at');
-    if (($req['preset'] ?? 'all') === 'all') {
-      $list = array_values(array_filter(admin_otp_rows(), static fn($r) => admin_in_range($r['at'] ?? null, $t0, $t1)));
-    }
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     foreach ($slice as $r) {
       $rows[] = [
@@ -757,14 +759,20 @@ function admin_list_payload(string $view, array $req): array {
     $cols = ['Heure exacte', 'Service', 'État', 'Description'];
     $list = admin_health_rows();
     $list = admin_apply_filters($list, $req, 'at');
+    $acked = function_exists('admin_health_ack_map') ? admin_health_ack_map() : [];
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     $errN = 0;
     foreach ($list as $r) {
-      if (($r['level'] ?? '') === 'error') $errN++;
+      $lvl = (string) ($r['level'] ?? 'ok');
+      $fp = function_exists('admin_health_fp') ? admin_health_fp($r) : '';
+      if ($lvl === 'error' && ($fp === '' || !isset($acked[$fp]))) $errN++;
     }
     foreach ($slice as $r) {
       $lvl = (string) ($r['level'] ?? 'ok');
-      $label = $lvl === 'error' ? 'Panne' : ($lvl === 'warn' ? 'Attention' : 'OK');
+      $fp = function_exists('admin_health_fp') ? admin_health_fp($r) : '';
+      $ackedRow = ($lvl === 'error' || $lvl === 'warn') && $fp !== '' && isset($acked[$fp]);
+      if ($ackedRow) $lvl = 'ok';
+      $label = $ackedRow ? 'Réglé' : ($lvl === 'error' ? 'Panne' : ($lvl === 'warn' ? 'Attention' : 'OK'));
       $rows[] = [
         'cells' => [
           substr((string) ($r['at'] ?? ''), 0, 19),
@@ -781,7 +789,7 @@ function admin_list_payload(string $view, array $req): array {
     $summary = $errN === 0
       ? 'Santé du site : aucun incident. Serveur, scripts et base joignables.'
       : ($errN . ' incident(s) à traiter');
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false, 'alertOpen' => $errN];
   }
 
   if (in_array($view, ['profit_today', 'profit_7d', 'profit_total'], true)) {
@@ -868,7 +876,11 @@ function admin_list_payload(string $view, array $req): array {
     $src = $orders;
     $preset = (string) ($req['preset'] ?? 'all');
     if ($preset !== 'all') {
-      [$a, $b] = admin_day_bounds($preset, (string) ($req['dateFrom'] ?? ''), (string) ($req['dateTo'] ?? ''));
+      $from = (string) ($req['dateFrom'] ?? '');
+      $to = (string) ($req['dateTo'] ?? '');
+      $cal = (string) ($req['cal'] ?? '');
+      if ($preset === 'date' && $cal !== '') { $from = $cal; $to = $cal; }
+      [$a, $b] = admin_day_bounds($preset, $from, $to);
       $src = array_values(array_filter($orders, static fn($o) => admin_in_range((string) ($o['created_at'] ?? ''), $a, $b)));
     }
     $allPlayers = [];
@@ -915,7 +927,11 @@ function admin_list_payload(string $view, array $req): array {
     $src = $orders;
     $preset = (string) ($req['preset'] ?? 'all');
     if ($preset !== 'all') {
-      [$a, $b] = admin_day_bounds($preset, (string) ($req['dateFrom'] ?? ''), (string) ($req['dateTo'] ?? ''));
+      $from = (string) ($req['dateFrom'] ?? '');
+      $to = (string) ($req['dateTo'] ?? '');
+      $cal = (string) ($req['cal'] ?? '');
+      if ($preset === 'date' && $cal !== '') { $from = $cal; $to = $cal; }
+      [$a, $b] = admin_day_bounds($preset, $from, $to);
       $src = array_values(array_filter($orders, static fn($o) => admin_in_range((string) ($o['created_at'] ?? ''), $a, $b)));
     }
     $total = 0;
@@ -964,6 +980,7 @@ function admin_list_payload(string $view, array $req): array {
           || str_contains(strtolower((string) ($r['message'] ?? '')), $q);
       }));
     }
+    $list = admin_apply_filters($list, $req, 'createdAt');
     usort($list, static function ($a, $b) {
       if (!empty($a['unread']) !== !empty($b['unread'])) return !empty($a['unread']) ? -1 : 1;
       return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
@@ -1224,9 +1241,12 @@ if ($isAjax) {
   if ($action === 'board_ack') {
     admin_json(admin_board_ack());
   }
+  if ($action === 'health_ack') {
+    admin_json(admin_health_ack());
+  }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
-    if ($view === 'online') {
+    if ($view === 'online' || $view === 'messages' || $view === 'alerts') {
       admin_json(admin_list_payload($view, $req));
     }
     $ck = 'list_e2_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
@@ -1727,7 +1747,7 @@ function renderList(j) {
       const s = String(c ?? '');
       const wrap = r.wrap === ci || r.kind === 'message' && ci === 5;
       if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span></td>';
-      else if (s === 'Vérifié' || s === 'OK') html += '<td><span class="pill pill-ok">'+s+'</span></td>';
+      else if (s === 'Vérifié' || s === 'OK' || s === 'Réglé') html += '<td><span class="pill pill-ok">'+s+'</span></td>';
       else if (s === 'Attention') html += '<td><span class="pill pill-warn">Attention</span></td>';
       else if (s === 'Panne') html += '<td><span class="pill pill-suspect">Panne</span></td>';
       else if (s === 'Non lu') html += '<td><span class="pill pill-unread">Non lu</span></td>';
@@ -1755,7 +1775,19 @@ function renderList(j) {
   });
   html += '</tbody></table>';
   if (!(j.rows||[]).length) html = '<p class="muted" style="padding:12px">Aucune ligne pour ces filtres.</p>';
+  if (view === 'alerts') {
+    html += '<p style="padding:10px 12px">';
+    if ((j.alertOpen||0) > 0) html += '<button class="mini ok" type="button" id="btnSanteAck">C’est réglé</button>';
+    else html += '<span class="muted">Santé : OK ou déjà réglé.</span>';
+    html += '</p>';
+  }
   panel.innerHTML = html;
+  const santeAck = document.getElementById('btnSanteAck');
+  if (santeAck) santeAck.onclick = async () => {
+    const r = await ajax({action:'health_ack'});
+    if (!r.ok) { alert(r.reason || 'Échec'); return; }
+    bustList(); loadBadges(); loadList(true);
+  };
   const pg = document.getElementById('pager');
   pg.innerHTML = j.pages > 1 ? ('Page '+j.page+' / '+j.pages+' <button class="mini" id="prevP">←</button> <button class="mini" id="nextP">→</button>') : '';
   const prev = document.getElementById('prevP'); const next = document.getElementById('nextP');

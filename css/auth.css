@@ -123,9 +123,9 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 #termsModal .btn-close,
 #termsModal .terms-head .btn-close,
 #termsModal #closeTerms{
-  position:absolute!important;top:10px!important;right:10px!important;
+  position:absolute!important;top:8px!important;right:8px!important;
   left:auto!important;bottom:auto!important;
-  width:32px;height:32px;min-width:32px;min-height:32px;
+  width:28px;height:28px;min-width:28px;min-height:28px;
   margin:0!important;padding:0;flex:none;z-index:95;
   color:#E8EEF9}
 #termsModal .modal-title,
@@ -210,7 +210,7 @@ html.is-ios body #screenAuth .auth-card{
   opacity:.55;cursor:default;pointer-events:none}
 
 @media (max-width:859px){
-  #termsModal .terms-head{position:static!important;padding-right:40px}
+  #termsModal .terms-head{position:static!important;padding-right:32px}
   #termsModal .terms-head .modal-title{padding-right:8px}
   #termsModal .btn-close,
   #termsModal .terms-head .btn-close,
@@ -220,12 +220,12 @@ html.is-ios body #screenAuth .auth-card{
   html.is-ios #termsModal .btn-close,
   html.is-ios #termsModal .terms-head .btn-close,
   html.is-android .modal-backdrop.active #termsModal .btn-close{
-    position:absolute!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;
-    width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;
+    position:absolute!important;top:4px!important;right:4px!important;left:auto!important;bottom:auto!important;
+    width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;
     margin:0!important;padding:0!important;flex:none!important;
     display:inline-flex!important;align-items:center!important;justify-content:center!important;
     border-radius:50%!important;border:1px solid rgba(245,158,11,.65)!important;
     background:rgba(12,16,26,.96)!important;color:#F8FAFC!important;
     box-shadow:0 0 0 1px rgba(255,255,255,.1),0 3px 8px rgba(0,0,0,.4)!important;
-    font-size:.82rem!important;line-height:1!important;z-index:90!important;transform:none!important}
+    font-size:.7rem!important;line-height:1!important;z-index:90!important;transform:none!important}
 }

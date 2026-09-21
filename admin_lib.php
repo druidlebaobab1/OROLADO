@@ -1860,6 +1860,36 @@ function admin_board_ack(): array {
   ];
 }
 
+function admin_health_ack_file(): string {
+  $dir = function_exists('orolado_data_dir') ? orolado_data_dir() : (__DIR__ . '/data');
+  return rtrim(str_replace('\\', '/', $dir), '/') . '/admin_health_ack.json';
+}
+
+function admin_health_fp(array $r): string {
+  return md5((string) ($r['service'] ?? '') . '|' . (string) ($r['message'] ?? '') . '|' . (string) ($r['level'] ?? ''));
+}
+
+function admin_health_ack_map(): array {
+  $f = admin_health_ack_file();
+  if (!is_file($f)) return [];
+  $j = json_decode((string) @file_get_contents($f), true);
+  return (is_array($j) && isset($j['fps']) && is_array($j['fps'])) ? $j['fps'] : [];
+}
+
+function admin_health_ack(): array {
+  if (function_exists('admin_bust_cache')) admin_bust_cache();
+  $cf = function_exists('admin_cache_file') ? admin_cache_file('admin_cache_health.json') : '';
+  if ($cf !== '' && is_file($cf)) @unlink($cf);
+  $fps = [];
+  foreach (admin_health_rows() as $r) {
+    $lvl = (string) ($r['level'] ?? 'ok');
+    if ($lvl !== 'error' && $lvl !== 'warn') continue;
+    $fps[admin_health_fp($r)] = true;
+  }
+  @file_put_contents(admin_health_ack_file(), json_encode(['at' => date('c'), 'fps' => $fps], JSON_UNESCAPED_UNICODE));
+  return ['ok' => true];
+}
+
 function admin_health_summary(): array {
   $rows = admin_health_rows();
   $issues = [];

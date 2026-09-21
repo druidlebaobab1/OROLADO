@@ -2894,14 +2894,14 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   #adminUserModal .btn-close,
   #btnCloseDrawer{
     position:absolute!important;
-    top:6px!important;
-    right:6px!important;
+    top:4px!important;
+    right:4px!important;
     left:auto!important;
     bottom:auto!important;
-    width:24px!important;
-    height:24px!important;
-    min-width:24px!important;
-    min-height:24px!important;
+    width:20px!important;
+    height:20px!important;
+    min-width:20px!important;
+    min-height:20px!important;
     margin:0!important;
     padding:0!important;
     display:inline-flex!important;
@@ -2912,7 +2912,7 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     background:rgba(12,16,26,.96)!important;
     color:#F8FAFC!important;
     box-shadow:0 0 0 1px rgba(255,255,255,.1),0 3px 8px rgba(0,0,0,.4)!important;
-    font-size:.82rem!important;
+    font-size:.7rem!important;
     font-weight:500!important;
     line-height:1!important;
     z-index:90!important;
@@ -2921,16 +2921,16 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   .drawer-head .btn-close,
   html.is-android .drawer-head .btn-close,
   #btnCloseDrawer{
-    top:calc(6px + env(safe-area-inset-top, 0px))!important;
-    right:8px!important}
-  .drawer-head{padding-right:40px}
-  .drawer-head h2{padding-right:32px;box-sizing:border-box}
+    top:calc(4px + env(safe-area-inset-top, 0px))!important;
+    right:6px!important}
+  .drawer-head{padding-right:36px}
+  .drawer-head h2{padding-right:28px;box-sizing:border-box}
   .modal-title,
   .modal-head-row .modal-title,
   .wd-modal-head .modal-title,
   #withdrawModal .wd-modal-head .modal-title,
   #depositModal .modal-title{
-    padding-right:34px!important;
+    padding-right:30px!important;
     box-sizing:border-box}
 
   .deposit-box,.withdraw-box,
@@ -3007,7 +3007,7 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   #financeModal .modal-head-row,
   #historySheet .modal-head-row{
     position:static!important;
-    padding-right:32px}
+    padding-right:28px}
   #financeModal #closeFinance,
   #historySheet #closeHistorySheet,
   html.is-android #financeModal #closeFinance,
@@ -3015,8 +3015,8 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   html.is-android #historySheet #closeHistorySheet,
   html.is-ios #historySheet #closeHistorySheet{
     position:absolute!important;
-    top:6px!important;
-    right:6px!important;
+    top:4px!important;
+    right:4px!important;
     left:auto!important;
     bottom:auto!important}
 }
