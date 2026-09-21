@@ -179,6 +179,8 @@
   var orderSeq = 0;
       // Max simultané très élevé : pas de blocage à 2 trades.
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
+  // FLUID_CURVE 2026-09-21 : false = ancien rendu nerveux. true = fluide.
+  var FLUID_CURVE = true;
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 720;
   var HISTORY_N = 800;
@@ -284,9 +286,9 @@
     if (id === 'horizon50') return 0.0009;
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return 0.0410;
-    if (id === 'goldtrend') return 0.0212;
-    if (id === 'apex500') return 0.0146;
+    if (id === 'titanpulse') return FLUID_CURVE ? 0.0110 : 0.0410;
+    if (id === 'goldtrend') return FLUID_CURVE ? 0.0075 : 0.0212;
+    if (id === 'apex500') return FLUID_CURVE ? 0.0065 : 0.0146;
     if (id === 'boomspike') return 0.004;
     if (id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
@@ -417,7 +419,7 @@
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 13;
+  var SCALE_VER = 15;
   Object.keys(SIM).forEach(function (sid) {
     if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
   });
@@ -527,22 +529,24 @@
       nextOut = price + price * riseC * Math.min(0.6, Math.max(0.03, dtSec));
     } else if (sim.coreWave && !opts.spike) {
       var zigC = (roll - 0.5) * price * vol * 1.35;
-      var waveC = Math.sin(nowMs / 190) * price * 0.00072;
-      var zig2C = Math.sin(nowMs / 73) * price * 0.00038;
+      var waveC = Math.sin(nowMs / (FLUID_CURVE ? 420 : 190)) * price * 0.00072;
+      var zig2C = Math.sin(nowMs / (FLUID_CURVE ? 260 : 73)) * price * (FLUID_CURVE ? 0.00016 : 0.00038);
       var pullC = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.05);
       nextOut = price + zigC + waveC + zig2C + pullC;
     } else if (sim.goldHot && !opts.spike) {
       var nG = (roll - 0.5) * price * vol;
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.002875;
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.001375;
-      var microG = ((roll - 0.5) * 2) * price * 0.0055;
-      if (!busyIn && roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.01625;
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 1.6 : 14)) * price * (FLUID_CURVE ? 0.0022 : 0.002875);
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 3.4 : 29.5)) * price * (FLUID_CURVE ? 0.0007 : 0.001375);
+      var microG = ((roll - 0.5) * 2) * price * (FLUID_CURVE ? 0.0016 : 0.0055);
+      if (!busyIn && roll > (FLUID_CURVE ? 0.84 : 0.72)) {
+        microG += ((roll - (FLUID_CURVE ? 0.84 : 0.72)) / (FLUID_CURVE ? 0.16 : 0.28) - 0.5) * price * (FLUID_CURVE ? 0.0048 : 0.01625);
+      }
       var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
       nextOut = price + nG + p1G + p2G + microG + pullG;
     } else if (sim.nexusPulse && !opts.spike) {
       var nN = (roll - 0.5) * price * vol;
-      var pN = Math.sin(nowMs / 1000 * Math.PI * 8.5) * price * 0.00038;
-      var qN = Math.sin(nowMs / 1000 * Math.PI * 19) * price * 0.00016;
+      var pN = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 2.8 : 8.5)) * price * 0.00038;
+      var qN = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 6.2 : 19)) * price * 0.00016;
       var pullN = busyIn ? 0 : (base - price) * 0.045;
       nextOut = price + nN + pN + qN + pullN;
     } else if (sim.horizonCalm && !opts.spike) {
@@ -555,8 +559,8 @@
       nextOut = price + nHz + w1Hz + w2Hz + pullHz;
     } else if (sim.v75Wave && !opts.spike) {
       var nV = (roll - 0.5) * price * vol;
-      var pV = Math.sin(nowMs / 1000 * Math.PI * 5.6) * price * 0.00062;
-      var qV = Math.sin(nowMs / 1000 * Math.PI * 13.2) * price * 0.00028;
+      var pV = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 2.2 : 5.6)) * price * 0.00062;
+      var qV = Math.sin(nowMs / 1000 * Math.PI * (FLUID_CURVE ? 5.0 : 13.2)) * price * 0.00028;
       var rV = Math.sin(nowMs / 1000 * Math.PI * 2.1) * price * 0.00018;
       var pullV = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.038);
       nextOut = price + nV + pV + qV + rV + pullV;
@@ -573,6 +577,9 @@
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
+    if (FLUID_CURVE && !opts.spike) {
+      nextOut = prevPrice + (nextOut - prevPrice) * 0.42;
+    }
     return clampIndexPrice(nextOut, asset);
   }
 
@@ -902,7 +909,7 @@
         elapsed = 0;
       }
     }
-    var fastTick = true;
+    var fastTick = !FLUID_CURVE;
     var missed = Math.floor(elapsed / cms);
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
@@ -982,19 +989,21 @@
         price = clampIndexPrice(price, asset);
         var bucket = Math.floor(tMs / cms);
         forming.c = price;
-        var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
-        if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
-        if (sim.crashCalm) wickN = price * 0.00006;
-        wickN = Math.min(wickN, price * 0.0008);
-        var wickCap = price * 0.0008;
-        var upperWick = Math.min(wickN, wickCap);
-        var lowerWick = sim.crashCalm
-          ? upperWick
-          : Math.min(wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4), wickCap);
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
-        forming.h = Math.max(forming.h, price + upperWick);
-        forming.l = Math.min(forming.l, price - lowerWick);
+        if (!FLUID_CURVE) {
+          var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
+          if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
+          if (sim.crashCalm) wickN = price * 0.00006;
+          wickN = Math.min(wickN, price * 0.0008);
+          var wickCap = price * 0.0008;
+          var upperWick = Math.min(wickN, wickCap);
+          var lowerWick = sim.crashCalm
+            ? upperWick
+            : Math.min(wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4), wickCap);
+          forming.h = Math.max(forming.h, price + upperWick);
+          forming.l = Math.min(forming.l, price - lowerWick);
+        }
         sanitizeOhlc(asset, forming, price, 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce);
