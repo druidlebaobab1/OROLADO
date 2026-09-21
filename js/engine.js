@@ -1710,8 +1710,8 @@
         return { ok: false, reason: 'Session invalide' };
       }
       var mode = user.mode === 'real' ? 'real' : 'demo';
-      if (openForMode(mode).length >= MAX_OPEN) {
-        return { ok: false, reason: 'Limite atteinte (20 trades max). Veuillez attendre la fin d\'un trade.' };
+      if (MAX_OPEN < 9000 && openForMode(mode).length >= MAX_OPEN) {
+        return { ok: false, reason: 'Limite atteinte. Veuillez attendre la fin d\'un trade.' };
       }
 
       var nowPerf = performance.now();

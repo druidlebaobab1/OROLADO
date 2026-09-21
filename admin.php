@@ -2053,7 +2053,10 @@ async function openUser(uid) {
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(u.createdAt||'—')+'</strong></p>'+
     '<p>Solde réel : <strong>'+esc(u.real)+' $</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+'</p>'+
-    '<p><button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
+    '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
+    '<button class="mini ok" id="btnCredit">Créditer +</button> '+
+    '<button class="mini bad" id="btnDebit">Débiter</button> '+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
     tbl('Dépôts', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(d.at||'')+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(d.at||'')+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
     tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(d.at||'')+'</td></tr>');

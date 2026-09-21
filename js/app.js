@@ -2598,8 +2598,8 @@
       }
       var mode = u.mode === 'real' ? 'real' : 'demo';
       var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-      var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 20;
-      if (open >= maxOpen) {
+      var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 9999;
+      if (maxOpen < 9000 && open >= maxOpen) {
         tradeQ.length = 0;
         tradeQBusy = false;
         syncTradeButtons();
@@ -2623,8 +2623,8 @@
     if (!u) return false;
     var mode = u.mode === 'real' ? 'real' : 'demo';
     var open = D6.Engine.liveCount ? D6.Engine.liveCount(mode) : 0;
-    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 20;
-    if (open >= maxOpen) {
+    var maxOpen = (D6.CONFIG && D6.CONFIG.MAX_OPEN) || 9999;
+    if (maxOpen < 9000 && open >= maxOpen) {
       syncTradeButtons();
       return false;
     }
