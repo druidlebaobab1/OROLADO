@@ -121,7 +121,7 @@
   var tradeQ = [];
   var tradeQBusy = false;
   var lastPlaceOkAt = 0;
-  var TRADE_Q_MAX = 12;
+  var TRADE_Q_MAX = 9999;
   var cooling = false;
   var histPatch = 0;
   var hudSeen = {};
@@ -2573,10 +2573,9 @@
   function execute(side) {
     var now = Date.now();
     var next = side === 'put' || side === 'sell' ? 'put' : 'call';
-    if (now - lastExecGuard < 160 && lastExecSide === next) return;
     lastExecGuard = now;
     lastExecSide = next;
-    if (tradeQ.length >= (TRADE_Q_MAX || 12)) return;
+    if (tradeQ.length >= (TRADE_Q_MAX || 9999)) return;
     tradeQ.push(next);
     if (!IS_ANDROID || tradeQ.length === 1) playTap();
     pumpTradeQ();

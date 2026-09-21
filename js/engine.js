@@ -179,8 +179,6 @@
   var orderSeq = 0;
       // Max simultané très élevé : pas de blocage à 2 trades.
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
-  // CALM_CHART 2026-09-21 : false = cadence/zigzag d'avant. true = fluide.
-  var CALM_CHART = true;
   var CANDLE_MS = 1000;
   var HISTORY_SEC = 720;
   var HISTORY_N = 800;
@@ -286,9 +284,9 @@
     if (id === 'horizon50') return 0.0009;
     // Le plafond par pas est la vraie contrainte : il monte avec la volatilité,
     // sinon relever `vol` seul ne change rien au rendu.
-    if (id === 'titanpulse') return CALM_CHART ? 0.0055 : 0.0410;
-    if (id === 'goldtrend') return CALM_CHART ? 0.0032 : 0.0212;
-    if (id === 'apex500') return CALM_CHART ? 0.0045 : 0.0146;
+    if (id === 'titanpulse') return 0.0410;
+    if (id === 'goldtrend') return 0.0212;
+    if (id === 'apex500') return 0.0146;
     if (id === 'boomspike') return 0.004;
     if (id === 'nexusprime' || id === 'v75') return 0.0025;
     return 0.002;
@@ -398,7 +396,7 @@
     // Cadence relevée, amplitude tenue : `stepMs` rapproche les pas et `pullK`
     // est remonté dans la même proportion, sinon multiplier les pas gonflerait
     // mécaniquement la hauteur des bougies.
-    apex500: { mode: 'candles', vol: CALM_CHART ? 0.0160 : 0.0430, stepMs: CALM_CHART ? 46 : 34, pullK: 0.100 },
+    apex500: { mode: 'candles', vol: 0.0430, stepMs: 34, pullK: 0.100 },
     horizon50: { mode: 'line', vol: 0.0016, color: '#ff9800', horizonCalm: true, tickMs: 200, pullK: 0.03 },
     // Machine à impulsions réactivée : sans `boomBurst`, l'actif n'avait
     // simplement aucune explosion, c'était une marche aléatoire ordinaire.
@@ -408,10 +406,10 @@
     nexusprime: { mode: 'candles', vol: 0.0058, nexusPulse: true, tickMs: 90 },
     // Rappel vers la moyenne allégé : les vagues partent franchement dans une
     // direction au lieu d'être ramenées au centre à chaque pas.
-    goldtrend: { mode: 'line', vol: CALM_CHART ? 0.0160 : 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: CALM_CHART ? 40 : 24, pullK: 0.024 },
+    goldtrend: { mode: 'line', vol: 0.1120, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 24, pullK: 0.024 },
     // Titan Pulse : générateur universel de chandeliers, sans formule dédiée.
     // La cadence la plus rapide de la plateforme.
-    titanpulse: { mode: 'candles', vol: CALM_CHART ? 0.0160 : 0.0760, stepMs: CALM_CHART ? 32 : 16, pullK: 0.075, wickK: 0.38 },
+    titanpulse: { mode: 'candles', vol: 0.0760, stepMs: 16, pullK: 0.075, wickK: 0.38 },
   };
   var SIM_VER = 20;
   var BOOM_VER = 7;
@@ -419,7 +417,7 @@
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 14;
+  var SCALE_VER = 13;
   Object.keys(SIM).forEach(function (sid) {
     if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
   });
@@ -535,12 +533,10 @@
       nextOut = price + zigC + waveC + zig2C + pullC;
     } else if (sim.goldHot && !opts.spike) {
       var nG = (roll - 0.5) * price * vol;
-      var p1G = Math.sin(nowMs / 1000 * Math.PI * (CALM_CHART ? 1.1 : 14)) * price * (CALM_CHART ? 0.00055 : 0.002875);
-      var p2G = Math.sin(nowMs / 1000 * Math.PI * (CALM_CHART ? 2.4 : 29.5)) * price * (CALM_CHART ? 0.00022 : 0.001375);
-      var microG = ((roll - 0.5) * 2) * price * (CALM_CHART ? 0.0008 : 0.0055);
-      if (!busyIn && roll > (CALM_CHART ? 0.86 : 0.72)) {
-        microG += ((roll - (CALM_CHART ? 0.86 : 0.72)) / (CALM_CHART ? 0.14 : 0.28) - 0.5) * price * (CALM_CHART ? 0.0020 : 0.01625);
-      }
+      var p1G = Math.sin(nowMs / 1000 * Math.PI * 14) * price * 0.002875;
+      var p2G = Math.sin(nowMs / 1000 * Math.PI * 29.5) * price * 0.001375;
+      var microG = ((roll - 0.5) * 2) * price * 0.0055;
+      if (!busyIn && roll > 0.72) microG += ((roll - 0.72) / 0.28 - 0.5) * price * 0.01625;
       var pullG = busyIn ? 0 : (base - price) * (sim.pullK != null ? sim.pullK : 0.028);
       nextOut = price + nG + p1G + p2G + microG + pullG;
     } else if (sim.nexusPulse && !opts.spike) {
@@ -906,7 +902,7 @@
         elapsed = 0;
       }
     }
-    var fastTick = !CALM_CHART;
+    var fastTick = true;
     var missed = Math.floor(elapsed / cms);
     var price = buf.price;
     var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
@@ -986,26 +982,19 @@
         price = clampIndexPrice(price, asset);
         var bucket = Math.floor(tMs / cms);
         forming.c = price;
+        var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
+        if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
+        if (sim.crashCalm) wickN = price * 0.00006;
+        wickN = Math.min(wickN, price * 0.0008);
+        var wickCap = price * 0.0008;
+        var upperWick = Math.min(wickN, wickCap);
+        var lowerWick = sim.crashCalm
+          ? upperWick
+          : Math.min(wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4), wickCap);
         if (price > forming.h) forming.h = price;
         if (price < forming.l) forming.l = price;
-        if (!CALM_CHART) {
-          var wickN = price * (sim.coreWave ? 0.00018 : (0.00022 + Math.abs(Math.sin(tMs / 83)) * 0.00028));
-          if (asset.id === 'boomspike' || asset.id === 'apex500') wickN = price * 0.00014;
-          if (sim.crashCalm) wickN = price * 0.00006;
-          wickN = Math.min(wickN, price * 0.0008);
-          var wickCap = price * 0.0008;
-          var upperWick = Math.min(wickN, wickCap);
-          var lowerWick = sim.crashCalm
-            ? upperWick
-            : Math.min(wickN * (0.85 + Math.abs(Math.cos(tMs / 61)) * 0.4), wickCap);
-          forming.h = Math.max(forming.h, price + upperWick);
-          forming.l = Math.min(forming.l, price - lowerWick);
-        } else if (!forming._wickSet) {
-          var wickCalm = price * (sim.crashCalm || sim.coreWave ? 0.00008 : 0.00012);
-          forming.h = Math.max(forming.h, price + wickCalm);
-          forming.l = Math.min(forming.l, price - wickCalm);
-          forming._wickSet = true;
-        }
+        forming.h = Math.max(forming.h, price + upperWick);
+        forming.l = Math.min(forming.l, price - lowerWick);
         sanitizeOhlc(asset, forming, price, 0);
         if (bucket !== buf.bucket) {
           forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce);

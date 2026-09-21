@@ -2200,9 +2200,7 @@
     tradeYsScratch.length = 0;
     var ti;
     var drawnKeys = {};
-    var markCap = IS_ANDROID_CHART ? 3 : 10;
     for (ti = 0; ti < allTrades.length; ti++) {
-      if (ti >= markCap) break;
       var ot = allTrades[ti];
       if (!ot || ot.settled) continue;
       var epY = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
@@ -2220,7 +2218,6 @@
           if (Math.abs(y0 - y2) < 10 && Math.abs(t0 - t2) < 400) count++;
         }
       }
-      if (drawnKeys[key]) continue;
       drawnKeys[key] = true;
       var shift = 0;
       var j;
