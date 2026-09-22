@@ -168,8 +168,15 @@
 
   function applySession(user, vault) {
     var incoming = Number(vault && vault.real);
-    var payload = (isFinite(incoming) && incoming > 0.009) ? { real: incoming } : null;
-    D6.Store.importRemote(user, payload, { official: !!payload });
+    var payload = null;
+    if (isFinite(incoming) && incoming > 0.009) {
+      payload = { real: incoming };
+    } else if (vault && Object.prototype.hasOwnProperty.call(vault, 'real')) {
+      // Coffre distant à 0 : on importe quand même pour laisser importRemote
+      // conserver le solde local / LS (pas d’effacement silencieux).
+      payload = { real: isFinite(incoming) ? incoming : 0 };
+    }
+    D6.Store.importRemote(user, payload, { official: true });
     D6.Store.setSession({ userId: user.id, at: D6.nowIso() });
   }
 
@@ -318,26 +325,16 @@
       if (newDep) u.realDepositTotal = remDep;
       if (D6.correctStakeReserve) remoteReal = D6.correctStakeReserve(remoteReal);
       if (isFinite(remoteReal) && remoteReal >= 0) {
-        var staleZero = remoteReal <= 0.009 && localReal > 0.009 && !newDep;
-        var holdLow = remoteReal + 0.009 < localReal && (!!D6.holdDepositReal || locked) && !newDep;
-        var raiseWhileOpen = false;
-        try {
-          if (!newDep && D6.Engine && D6.Engine.getTrades) {
-            var liveReal = D6.Engine.getTrades('real') || [];
-            raiseWhileOpen = liveReal.length > 0 && remoteReal > localReal + 0.009 && !D6.holdDepositReal;
-            if (raiseWhileOpen) {
-              var openSum = 0;
-              var oi;
-              for (oi = 0; oi < liveReal.length; oi++) openSum += Number(liveReal[oi] && liveReal[oi].stake) || 0;
-              if (remoteReal > localReal + openSum + 0.009) raiseWhileOpen = false;
-            }
-          }
-        } catch (eOpen) { raiseWhileOpen = false; }
-        var staleHigh = !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009 && locked && raiseWhileOpen;
-        var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(remoteReal - D6.stakeReserve.once) <= 0.05;
-        if (newDep) next.real = remoteReal;
+        var reserve = D6.stakeReserve;
+        var stalePreStake = reserve && Date.now() < reserve.until && remoteReal > localReal + 0.009
+          && Math.abs(remoteReal - (localReal + Number(reserve.stake) || 0)) <= 0.09;
+        var staleZero = remoteReal <= 0.009 && localReal > 0.009;
+        var fixingDouble = reserve && Date.now() < reserve.until && Math.abs(remoteReal - reserve.once) <= 0.05;
+        if (staleZero) {
+          /* Un coffre à 0 ne remplace pas un solde déjà affiché. */
+        } else if (newDep && remoteReal > localReal + 0.009) next.real = remoteReal;
         else if (fixingDouble) next.real = remoteReal;
-        else if (!staleZero && !holdLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
+        else if (!stalePreStake && !(locked && remoteReal + 0.02 < localReal)) next.real = remoteReal;
       }
     }
     D6.holdPull = true;

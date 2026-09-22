@@ -696,7 +696,6 @@
     if (locks && Date.now() < locks.until && !remoteHigher && !fixingDouble && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
     if (incoming <= 0.009 && local > 0.009 && !D6.holdDepositReal) return;
-    if (!fixingDouble && open > 0 && incoming > local + 0.009 && incoming <= local + open + 0.009 && !D6.holdDepositReal) return;
     if (Math.abs(incoming - local) <= 0.009) return;
     if (adoptOfficialVault(remote.vault, { fromMe: true, allowRaise: true, force: !!D6.holdDepositReal })) updateBalance(false);
   }
@@ -1598,14 +1597,17 @@
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
     var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
-    if (!force && !undoingDouble && !D6.holdDepositReal) {
-      if (locked && Math.abs(real - local) > 0.02) return false;
-      if (recentSettle && Math.abs(real - local) > 0.02) return false;
-    }
-    if (real > local + 0.009 && !allowRaise && !force && !fromMe && !undoingDouble) return false;
-    var open = openRealStake();
-    if (open > 0 && real > local + 0.009 && real <= local + open + 0.009 && !D6.holdDepositReal && !force && !undoingDouble) return false;
     if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
+    var stalePreStake = reserve && Date.now() < reserve.until && real > local + 0.009
+      && Math.abs(real - (local + Number(reserve.stake) || 0)) <= 0.09;
+    if (stalePreStake && !D6.holdDepositReal && !force) return false;
+    if (!force && !undoingDouble && !D6.holdDepositReal) {
+      // fromMe (réponse place/settle/me) doit toujours pouvoir coller le coffre officiel,
+      // y compris juste après un règlement — sinon dépôt/gain restent invisibles jusqu’au F5.
+      if (locked && real + 0.02 < local && !fromMe) return false;
+      if (recentSettle && Math.abs(real - local) > 0.02 && !fromMe) return false;
+    }
+    if (real > local + 0.009 && !allowRaise && !force && !fromMe && !undoingDouble && !D6.holdDepositReal) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);
@@ -2528,6 +2530,7 @@
       try {
         sessionStorage.setItem('oro_ledger', JSON.stringify({
           uid: uSettled.id,
+          email: uSettled.email || '',
           real: D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0,
           demo: D6.Store.demoBalance(uSettled),
           mode: lastSettleMode,
@@ -2719,11 +2722,15 @@
         if (remote && remote.ok && mode === 'real' && remote.vault && remote.vault.real != null) {
           var srvReal = Number(remote.vault.real);
           var reserveNow = D6.stakeReserve;
-          if (reserveNow && Date.now() < reserveNow.until && isFinite(srvReal) && srvReal > reserveNow.once + 0.05) {
-            srvReal = reserveNow.once;
+          if (reserveNow && Date.now() < reserveNow.until && isFinite(srvReal)) {
+            var once = Number(reserveNow.once);
+            var stakeNow = Number(reserveNow.stake) || 0;
+            if (srvReal > once + 0.05 && srvReal <= once + stakeNow + 0.09) srvReal = once;
+            if (srvReal + 0.05 < once && once - srvReal <= stakeNow + 0.09) srvReal = once;
           }
-          if (isFinite(srvReal) && srvReal > 0.009) {
-            applyOfficialReal(srvReal, { fromMe: true, force: true });
+          if (isFinite(srvReal) && srvReal >= 0) {
+            // Ne jamais forcer un zéro serveur qui efface un solde local encore positif.
+            applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false });
             updateBalance(true);
           }
           return true;

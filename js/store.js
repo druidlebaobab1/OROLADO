@@ -40,6 +40,41 @@
     return null;
   }
 
+  /** Garde le meilleur solde réel connu pour ce joueur (même e-mail, ancien id u_/UUID). */
+  function bestKnownReal(userId, email) {
+    var best = 0;
+    var r = readRealLs(userId);
+    if (r != null && r > best) best = r;
+    if (vault[userId] && Number(vault[userId].real) > best) best = Number(vault[userId].real) || 0;
+    try {
+      var ledger = sessionStorage.getItem('oro_ledger');
+      if (ledger) {
+        var led = JSON.parse(ledger);
+        if (led && (led.uid === userId || (email && led.email === email)) && Number(led.real) > best) {
+          best = Number(led.real) || 0;
+        }
+      }
+    } catch (eLed) { /* ignore */ }
+    try {
+      var mail = String(email || '').trim().toLowerCase();
+      if (mail) {
+        Object.keys(db.users || {}).forEach(function (id) {
+          var u = db.users[id];
+          if (!u || String(u.email || '').trim().toLowerCase() !== mail) return;
+          var lr = readRealLs(id);
+          if (lr != null && lr > best) best = lr;
+          if (vault[id] && Number(vault[id].real) > best) best = Number(vault[id].real) || 0;
+        });
+      }
+      var prevUid = localStorage.getItem('oro_uid');
+      if (prevUid && prevUid !== userId) {
+        var pr = readRealLs(prevUid);
+        if (pr != null && pr > best) best = pr;
+      }
+    } catch (eScan) { /* ignore */ }
+    return best > 0.009 ? best : 0;
+  }
+
   function writeRealLs(id, value) {
     if (!id) return;
     try {
@@ -370,13 +405,15 @@
           var prevReal = Number(prevV.real) || 0;
           var lsKeep = readRealLs(user.id);
           if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
+          var linkedKeep = bestKnownReal(user.id, user.email);
+          if (linkedKeep > prevReal) prevReal = linkedKeep;
           var incomingDep = Number(user._incomingDepositTotal != null ? user._incomingDepositTotal : user.realDepositTotal) || 0;
           var hadDep = Number(prev && prev.realDepositTotal) || 0;
           var newDeposit = incomingDep > hadDep + 0.009;
-          var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0);
+          var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0, linkedKeep);
           var allowZero = !!(opts && opts.allowZero);
           if (official && isFinite(nextReal) && nextReal >= 0) {
-            if (!allowZero && nextReal <= 0.009 && keep > 0.009 && !newDeposit) {
+            if (!allowZero && nextReal <= 0.009 && keep > 0.009) {
               next.real = keep;
             } else {
               next.real = nextReal;

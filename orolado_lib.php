@@ -400,7 +400,27 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
   }
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return;
   $before = supabase_admin_vault($userId);
-  $beforeReal = $before ? orolado_money($before['real'] ?? 0) : 0.0;
+  if (!$before) {
+    // Coffre illisible : incrément RPC seulement. Une écriture absolue
+    // recalculée depuis 0 écraserait le solde avec le seul montant du dépôt.
+    $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+    if ($rpc === null) {
+      $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+      if ($alt === null) error_log('OROLADO credit_real coffre illisible user=' . $userId);
+    }
+    if ($depositTx && $amount > 0) {
+      supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
+        'id' => 'dep_' . bin2hex(random_bytes(8)),
+        'user_id' => $userId,
+        'type' => 'deposit',
+        'amount' => $amount,
+        'note' => 'Recharge Maketou',
+        'mode' => 'real',
+      ]), 'POST');
+    }
+    return;
+  }
+  $beforeReal = orolado_money($before['real'] ?? 0);
   $expect = orolado_money(max(0, $beforeReal + $amount));
   $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
   if ($rpc === null) {
@@ -455,6 +475,7 @@ function supabase_debit_real(string $userId, $amount): bool {
   $expect = orolado_money($beforeReal - $amount);
   $rpc = supabase_http($url . '/rest/v1/rpc/debit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
   if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
+  if (is_array($rpc) && !empty($rpc['ok'])) return true;
   if (is_array($rpc) && isset($rpc['reason']) && $rpc['reason'] === 'insufficient') return false;
   $after = supabase_admin_vault($userId);
   $afterReal = $after ? orolado_money($after['real'] ?? 0) : $beforeReal;
@@ -508,37 +529,72 @@ function orolado_force_real_total(string $userId, float $expect): ?float {
 }
 
 /**
- * Crédit de fin de trade, une seule fois, centimes compris.
- * Perte = 0 : on ne remet pas la mise. Un second appel ne paie pas deux fois.
- * Un gain 1,88 doit rester 1,88 : un ajout tronqué à 1 est complété, pas accepté.
+ * Prend la mise une seule fois (lock + marqueur). Un retry ne redébite pas.
+ * Retourne le solde après débit, ou null si solde insuffisant / écriture impossible.
+ */
+function orolado_take_real_stake(string $userId, string $orderId, float $stake): ?float {
+  $stake = orolado_money($stake);
+  if ($stake <= 0 || $orderId === '') return null;
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+  $dir = orolado_data_dir();
+  if (!is_dir($dir)) @mkdir($dir, 0775, true);
+  $key = hash('sha256', $userId . '|' . $orderId);
+  $marker = $dir . '/stake_' . $key . '.ok';
+  $fp = @fopen($dir . '/stake_' . $key . '.lock', 'c');
+  if (!$fp || !flock($fp, LOCK_EX)) {
+    if ($fp) fclose($fp);
+    return null;
+  }
+  $release = function () use ($fp) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+  };
+  if (is_file($marker) || (function_exists('supabase_get_order') && is_array(supabase_get_order($userId, $orderId)))) {
+    $sb = supabase_admin_vault($userId);
+    $kept = $sb ? orolado_money($sb['real'] ?? 0) : null;
+    $release();
+    return $kept;
+  }
+  $before = supabase_admin_vault($userId);
+  if (!$before) {
+    $release();
+    return null;
+  }
+  $beforeReal = orolado_money($before['real'] ?? 0);
+  if ($beforeReal + 0.009 < $stake) {
+    $release();
+    return null;
+  }
+  $expect = orolado_money($beforeReal - $stake);
+  $ok = supabase_debit_real($userId, $stake);
+  $after = supabase_admin_vault($userId);
+  $got = $after ? orolado_money($after['real'] ?? 0) : null;
+  if (!($ok && $got !== null) && !($got !== null && abs($got - $expect) <= 0.05)) {
+    $got = orolado_put_real_exact($userId, $expect);
+  }
+  if ($got === null) {
+    $release();
+    return null;
+  }
+  @file_put_contents($marker, json_encode(['at' => date('c'), 'stake' => $stake, 'real' => $got]));
+  $release();
+  return $got;
+}
+
+/**
+ * Crédit de fin de trade, une seule fois. Perte = 0 (mise déjà prise à l’ouverture).
+ * Ne réécrit JAMAIS un total absolu après resolve_trade : sinon 2 trades simultanés
+ * s’écrasent (ex. force 110 par-dessus 130). La base additionne via resolve_trade.
  */
 function orolado_settle_real_credit(string $userId, string $orderId, float $credit): ?float {
   $credit = orolado_money(max(0, $credit));
   if ($orderId === '' || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
-  $before = supabase_admin_vault($userId);
-  if (!$before) return null;
-  $beforeReal = orolado_money($before['real'] ?? 0);
-  $expect = orolado_money($beforeReal + $credit);
   $resolved = supabase_resolve_trade($userId, $orderId, $credit);
   if (is_array($resolved) && array_key_exists('real', $resolved)) {
-    if (!empty($resolved['duplicate']) || $credit <= 0.009) {
-      $row = supabase_admin_vault($userId);
-      $sb = $row ? orolado_money($row['real'] ?? 0) : orolado_money($resolved['real'] ?? 0);
-      if ($credit > 0.009 && function_exists('load_db')) {
-        $db = load_db();
-        $json = 0.0;
-        if (is_array($db)) {
-          $json = orolado_money($db['vault'][$userId]['real'] ?? 0);
-        }
-        if ($json > $sb + 0.05) return $json;
-      }
-      return $sb;
-    }
-    $full = orolado_force_real_total($userId, $expect);
-    if ($full !== null) return $full;
-    return $expect;
+    return orolado_money($resolved['real']);
   }
   $dir = orolado_data_dir();
+  if (!is_dir($dir)) @mkdir($dir, 0775, true);
   $key = hash('sha256', $userId . '|' . $orderId);
   $marker = $dir . '/settle_' . $key . '.ok';
   $fp = @fopen($dir . '/settle_' . $key . '.lock', 'c');
@@ -549,24 +605,36 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
   if (is_file($marker)) {
     $again = supabase_admin_vault($userId);
     $kept = $again ? orolado_money($again['real'] ?? 0) : null;
-    if ($credit > 0.009 && function_exists('load_db')) {
-      $db = load_db();
-      $json = is_array($db) ? orolado_money($db['vault'][$userId]['real'] ?? 0) : 0.0;
-      if ($json > ($kept ?? 0) + 0.05) $kept = $json;
-    }
     flock($fp, LOCK_UN);
     fclose($fp);
     return $kept;
   }
+  $before = supabase_admin_vault($userId);
+  if (!$before) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return null;
+  }
+  $beforeReal = orolado_money($before['real'] ?? 0);
   if ($credit <= 0.009) {
-    @file_put_contents($marker, '0');
+    @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => 0]));
     flock($fp, LOCK_UN);
     fclose($fp);
     return $beforeReal;
   }
-  $got = orolado_force_real_total($userId, $expect);
-  if ($got === null) $got = $expect;
-  @file_put_contents($marker, (string) $credit);
+  $expect = orolado_money($beforeReal + $credit);
+  supabase_credit_real($userId, $credit, false);
+  $after = supabase_admin_vault($userId);
+  $got = $after ? orolado_money($after['real'] ?? 0) : null;
+  if ($got === null || abs($got - $expect) > 0.05) {
+    $got = orolado_put_real_exact($userId, $expect);
+    if ($got === null) {
+      flock($fp, LOCK_UN);
+      fclose($fp);
+      return null;
+    }
+  }
+  @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => $credit, 'real' => $got]));
   flock($fp, LOCK_UN);
   fclose($fp);
   return $got;
@@ -840,18 +908,70 @@ function orolado_session_inspect(array &$db, ?string $token): array {
   return ['ok' => false, 'server' => true, 'reason' => 'Session invalide'];
 }
 
+/**
+ * Ids liés au même joueur : `u_…` local + UUID Supabase + autres fiches même e-mail.
+ * Évite solde à 0 quand les dépôts sont sur u_ et le coffre cloud sur UUID.
+ */
+function orolado_linked_balance_ids(array $db, string $uid): array {
+  static $cache = [];
+  $uid = (string) $uid;
+  if ($uid === '') return [];
+  if (isset($cache[$uid])) return $cache[$uid];
+  $ids = [$uid];
+  $uuid = function_exists('orolado_balance_uuid') ? orolado_balance_uuid($db, $uid) : '';
+  if ($uuid !== '' && !in_array($uuid, $ids, true)) $ids[] = $uuid;
+  $email = '';
+  foreach ($ids as $id) {
+    if (!isset($db['users'][$id]) || !is_array($db['users'][$id])) continue;
+    $email = strtolower(trim((string) ($db['users'][$id]['email'] ?? '')));
+    if ($email !== '') break;
+  }
+  if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    foreach (($db['users'] ?? []) as $id => $u) {
+      if (!is_array($u)) continue;
+      if (strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
+      $id = (string) $id;
+      if ($id !== '' && !in_array($id, $ids, true)) $ids[] = $id;
+    }
+  }
+  $cache[$uid] = $ids;
+  return $ids;
+}
+
+/** Écrit le même solde réel sur toutes les clés vault liées (u_ + UUID). */
+function orolado_mirror_vault_real(array &$db, string $uid, float $real): void {
+  $real = orolado_money(max(0, $real));
+  foreach (orolado_linked_balance_ids($db, $uid) as $id) {
+    if ($id === '') continue;
+    if (!isset($db['vault'][$id]) || !is_array($db['vault'][$id])) {
+      $db['vault'][$id] = ['demo' => 1000000, 'real' => 0];
+    }
+    $db['vault'][$id]['real'] = $real;
+  }
+}
+
 /** Somme à vie des dépôts validés (liste + compteur), jamais le premier seul. */
 function orolado_user_deposit_total(array $db, string $uid, array $user = []): float {
+  $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
+  if (!$ids) $ids = [$uid];
   $sum = 0.0;
+  $seen = [];
   foreach (($db['deposits'] ?? []) as $d) {
     if (!is_array($d)) continue;
     $owner = (string) ($d['userId'] ?? $d['user_id'] ?? '');
-    if ($uid === '' || $owner !== $uid) continue;
+    if ($owner === '' || !in_array($owner, $ids, true)) continue;
     $st = strtoupper((string) ($d['status'] ?? ''));
     if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $did = (string) ($d['id'] ?? $d['ref'] ?? '');
+    if ($did !== '' && isset($seen[$did])) continue;
+    if ($did !== '') $seen[$did] = true;
     $sum += orolado_money($d['amount'] ?? 0);
   }
   $field = orolado_money($user['realDepositTotal'] ?? 0);
+  foreach ($ids as $id) {
+    if (!isset($db['users'][$id]) || !is_array($db['users'][$id])) continue;
+    $field = orolado_money(max($field, orolado_money($db['users'][$id]['realDepositTotal'] ?? 0)));
+  }
   return orolado_money(max($sum, $field));
 }
 
@@ -924,10 +1044,26 @@ function orolado_user_real_wagered(array $db, array $user): float {
     orolado_money($user['realStakeVolume'] ?? 0),
     orolado_money($user['totalWageredSinceDeposit'] ?? 0)
   );
+  $ids = ($uid !== '' && function_exists('orolado_linked_balance_ids'))
+    ? orolado_linked_balance_ids($db, $uid)
+    : ($uid !== '' ? [$uid] : []);
+  foreach ($ids as $id) {
+    if (!isset($db['users'][$id]) || !is_array($db['users'][$id])) continue;
+    $fromUser = max(
+      $fromUser,
+      orolado_money($db['users'][$id]['realStakeVolume'] ?? 0),
+      orolado_money($db['users'][$id]['totalWageredSinceDeposit'] ?? 0)
+    );
+  }
   $fromOrders = 0.0;
+  $seen = [];
   foreach (($db['orders'] ?? []) as $o) {
     if (!is_array($o)) continue;
-    if ((string) ($o['userId'] ?? $o['user_id'] ?? '') !== $uid) continue;
+    $owner = (string) ($o['userId'] ?? $o['user_id'] ?? '');
+    if ($owner === '' || ($ids && !in_array($owner, $ids, true)) || (!$ids && $owner !== $uid)) continue;
+    $oid = (string) ($o['id'] ?? '');
+    if ($oid !== '' && isset($seen[$oid])) continue;
+    if ($oid !== '') $seen[$oid] = true;
     $mode = strtolower((string) ($o['mode'] ?? $o['accountType'] ?? $o['account_type'] ?? 'real'));
     if ($mode !== '' && $mode !== 'real') continue;
     $fromOrders += orolado_money($o['stake'] ?? $o['amount'] ?? 0);
@@ -1022,14 +1158,21 @@ function orolado_real_admin_adjustments(array $user): float {
  */
 function orolado_real_from_books(array $db, string $uid, array $user = []): ?float {
   if ($uid === '') return null;
+  $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
+  if (!$ids) $ids = [$uid];
   if (!$user && isset($db['users'][$uid]) && is_array($db['users'][$uid])) $user = $db['users'][$uid];
   $deps = orolado_user_deposit_total($db, $uid, $user);
   $wd = 0.0;
+  $wdSeen = [];
   foreach (($db['withdrawals'] ?? []) as $w) {
     if (!is_array($w)) continue;
-    if ((string) ($w['userId'] ?? $w['user_id'] ?? '') !== $uid) continue;
+    $owner = (string) ($w['userId'] ?? $w['user_id'] ?? '');
+    if ($owner === '' || !in_array($owner, $ids, true)) continue;
     $st = strtolower((string) ($w['status'] ?? ''));
     if (!in_array($st, ['approved', 'paid', 'completed', 'success'], true)) continue;
+    $wid = (string) ($w['id'] ?? '');
+    if ($wid !== '' && isset($wdSeen[$wid])) continue;
+    if ($wid !== '') $wdSeen[$wid] = true;
     $wd += orolado_money($w['amount'] ?? 0);
   }
   $stakes = 0.0;
@@ -1038,7 +1181,8 @@ function orolado_real_from_books(array $db, string $uid, array $user = []): ?flo
   $seen = [];
   foreach (($db['orders'] ?? []) as $o) {
     if (!is_array($o)) continue;
-    if ((string) ($o['userId'] ?? $o['user_id'] ?? '') !== $uid) continue;
+    $owner = (string) ($o['userId'] ?? $o['user_id'] ?? '');
+    if ($owner === '' || !in_array($owner, $ids, true)) continue;
     $mode = strtolower((string) ($o['mode'] ?? $o['accountType'] ?? 'demo'));
     if ($mode !== 'real') continue;
     $oid = (string) ($o['id'] ?? '');
@@ -1057,6 +1201,10 @@ function orolado_real_from_books(array $db, string $uid, array $user = []): ?flo
     else if ($won) $credits += orolado_money($stake * $payout);
   }
   $adj = orolado_real_admin_adjustments($user);
+  foreach ($ids as $id) {
+    if ($id === $uid || !isset($db['users'][$id]) || !is_array($db['users'][$id])) continue;
+    $adj = orolado_money($adj + orolado_real_admin_adjustments($db['users'][$id]));
+  }
   if ($n === 0 && $deps <= 0.009 && abs($adj) <= 0.009 && $wd <= 0.009) return null;
   return orolado_money(max(0, $deps + $adj - $wd - $stakes + $credits));
 }
@@ -1099,19 +1247,27 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $db = function_exists('load_db') ? load_db() : [];
   if (!is_array($db)) $db = [];
   $uuid = orolado_balance_uuid($db, $uid);
-  $ids = [];
-  foreach ([$uid, $uuid] as $id) {
-    if ($id !== '' && !in_array($id, $ids, true)) $ids[] = $id;
+  $ids = function_exists('orolado_linked_balance_ids')
+    ? orolado_linked_balance_ids($db, $uid)
+    : [];
+  if (!$ids) {
+    $ids = [];
+    foreach ([$uid, $uuid] as $id) {
+      if ($id !== '' && !in_array($id, $ids, true)) $ids[] = $id;
+    }
   }
   $bestJson = $jsonReal;
   foreach ($ids as $id) {
     $bestJson = orolado_money(max($bestJson, $db['vault'][$id]['real'] ?? 0));
   }
-  $sbReal = null;
-  if ($uuid !== '') {
-    $sb = supabase_admin_vault($uuid);
-    $sbReal = $sb ? orolado_money($sb['real'] ?? 0) : null;
+  // Erreur réseau ≠ coffre à 0 : ne jamais écraser Supabase dans ce cas.
+  $look = $uuid !== '' ? supabase_vault_lookup($uuid) : ['state' => 'skip', 'real' => 0.0];
+  $state = (string) ($look['state'] ?? 'skip');
+  if ($state === 'error') return $jsonReal;
+  if ($state === 'ok' && orolado_money($look['real'] ?? 0) > 0.009) {
+    return orolado_money($look['real'] ?? 0);
   }
+  $sbReal = ($state === 'ok') ? orolado_money($look['real'] ?? 0) : null;
   $booksBest = null;
   $played = false;
   foreach ($ids as $id) {
@@ -1123,16 +1279,8 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
   }
   $target = orolado_pick_persisted_real($bestJson, $sbReal, $booksBest, $played);
   $target = orolado_money(max(0, $target));
-  if ($uuid !== '' && ($sbReal === null || $sbReal <= 0.009) && $target > 0.009) {
-    supabase_set_real($uuid, $target);
-    return $target;
-  }
-  if ($sbReal !== null && $sbReal > 0.009) {
-    if ($uuid !== '' && $bestJson > $sbReal + 0.05) {
-      supabase_set_real($uuid, $bestJson);
-      return $bestJson;
-    }
-    return $sbReal;
+  if ($uuid !== '' && $target > 0.009 && ($state === 'missing' || ($state === 'ok' && $sbReal !== null && $sbReal <= 0.009))) {
+    if (orolado_put_real_exact($uuid, $target) !== null) return $target;
   }
   return $target;
 }
@@ -1203,12 +1351,18 @@ function orolado_recover_wiped_real(array &$db, string $uid, array $user = []): 
   if (!$user && isset($db['users'][$uid]) && is_array($db['users'][$uid])) $user = $db['users'][$uid];
   $deps = orolado_user_deposit_total($db, $uid, $user);
   if ($deps <= 0.009) return $cur;
+  $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
   $wd = 0.0;
+  $wdSeen = [];
   foreach (($db['withdrawals'] ?? []) as $w) {
     if (!is_array($w)) continue;
-    if ((string) ($w['userId'] ?? $w['user_id'] ?? '') !== $uid) continue;
+    $owner = (string) ($w['userId'] ?? $w['user_id'] ?? '');
+    if ($owner === '' || !in_array($owner, $ids, true)) continue;
     $st = strtolower((string) ($w['status'] ?? ''));
     if (!in_array($st, ['approved', 'paid', 'completed', 'success'], true)) continue;
+    $wid = (string) ($w['id'] ?? '');
+    if ($wid !== '' && isset($wdSeen[$wid])) continue;
+    if ($wid !== '') $wdSeen[$wid] = true;
     $wd += orolado_money($w['amount'] ?? 0);
   }
   $played = function_exists('orolado_user_real_wagered')
@@ -1217,21 +1371,29 @@ function orolado_recover_wiped_real(array &$db, string $uid, array $user = []): 
   if ($played > 0.009) {
     $books = function_exists('orolado_real_from_books') ? orolado_real_from_books($db, $uid, $user) : null;
     if ($books !== null && $books > 0.009) {
-      if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
-        $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+      if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $books);
+      else {
+        if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+          $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+        }
+        $db['vault'][$uid]['real'] = $books;
       }
-      $db['vault'][$uid]['real'] = $books;
-      if (function_exists('supabase_set_real')) supabase_set_real($uid, $books);
+      $payUuid = function_exists('orolado_balance_uuid') ? orolado_balance_uuid($db, $uid) : $uid;
+      if ($payUuid !== '' && function_exists('supabase_set_real')) supabase_set_real($payUuid, $books);
       return $books;
     }
     return $cur;
   }
   if ($wd > 0.009) return $cur;
-  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
-    $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+  if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $deps);
+  else {
+    if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+      $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+    }
+    $db['vault'][$uid]['real'] = $deps;
   }
-  $db['vault'][$uid]['real'] = $deps;
-  if (function_exists('supabase_set_real')) supabase_set_real($uid, $deps);
+  $payUuid = function_exists('orolado_balance_uuid') ? orolado_balance_uuid($db, $uid) : $uid;
+  if ($payUuid !== '' && function_exists('supabase_set_real')) supabase_set_real($payUuid, $deps);
   return $deps;
 }
 
@@ -1244,25 +1406,31 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
     $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   }
-  $sbCur = supabase_admin_vault($uid);
+  $payId = $uid;
+  if (function_exists('orolado_balance_uuid')) {
+    $resolved = orolado_balance_uuid($db, $uid);
+    if ($resolved !== '') $payId = $resolved;
+  }
+  $sbCur = supabase_admin_vault($payId);
   $cur = $sbCur ? orolado_money($sbCur['real'] ?? 0) : orolado_official_real($db, $uid);
   if ($delta < 0 && $cur + $delta < -0.009) {
     return ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
   }
   if ($delta > 0) {
-    supabase_credit_real($uid, $delta, false);
-  } else if (!supabase_debit_real($uid, abs($delta))) {
+    supabase_credit_real($payId, $delta, false);
+  } else if (!supabase_debit_real($payId, abs($delta))) {
     return ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
   }
-  $again = supabase_admin_vault($uid);
+  $again = supabase_admin_vault($payId);
   $next = $again ? orolado_money($again['real'] ?? 0) : orolado_money(max(0, $cur + $delta));
   $expect = orolado_money(max(0, $cur + $delta));
   if ($again && abs($next - $expect) > 0.05) {
-    supabase_set_real($uid, $expect);
-    $again = supabase_admin_vault($uid);
+    supabase_set_real($payId, $expect);
+    $again = supabase_admin_vault($payId);
     if ($again) $next = orolado_money($again['real'] ?? 0);
   }
-  $db['vault'][$uid]['real'] = $next;
+  if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $next);
+  else $db['vault'][$uid]['real'] = $next;
   if ($asDeposit && $delta > 0) {
     $ref = 'adm_' . bin2hex(random_bytes(6));
     if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
@@ -1375,12 +1543,27 @@ function supabase_get_deposit(string $ref): ?array {
   return $rows[0];
 }
 
-function supabase_admin_vault(string $userId): ?array {
+/** ok = coffre lu, missing = pas de ligne, error = lecture impossible, skip = id non UUID. */
+function supabase_vault_lookup(string $userId): array {
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) {
+    return ['state' => 'skip', 'real' => 0.0, 'demo' => 0.0];
+  }
   $hdrs = supabase_admin_headers();
-  if (!$hdrs || !preg_match('/^[0-9a-f-]{36}$/i', $userId)) return null;
+  if (!$hdrs) return ['state' => 'error', 'real' => 0.0, 'demo' => 0.0];
   $rows = supabase_http(supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId) . '&select=demo,real', $hdrs);
-  if (!is_array($rows) || !isset($rows[0])) return null;
-  return ['demo' => orolado_money($rows[0]['demo'] ?? 0), 'real' => orolado_money($rows[0]['real'] ?? 0)];
+  if ($rows === null) return ['state' => 'error', 'real' => 0.0, 'demo' => 0.0];
+  if (!isset($rows[0]) || !is_array($rows[0])) return ['state' => 'missing', 'real' => 0.0, 'demo' => 0.0];
+  return [
+    'state' => 'ok',
+    'demo' => orolado_money($rows[0]['demo'] ?? 0),
+    'real' => orolado_money($rows[0]['real'] ?? 0),
+  ];
+}
+
+function supabase_admin_vault(string $userId): ?array {
+  $look = supabase_vault_lookup($userId);
+  if (($look['state'] ?? '') !== 'ok') return null;
+  return ['demo' => orolado_money($look['demo'] ?? 0), 'real' => orolado_money($look['real'] ?? 0)];
 }
 
 function supabase_order_id_ok(string $orderId): bool {
@@ -1551,12 +1734,23 @@ function supabase_complete_deposit(string $ref, $amount, string $userId): ?array
   $url = supabase_project_url();
   $rpc = supabase_http($url . '/rest/v1/rpc/complete_deposit', $hdrs, json_encode(['p_ref' => $ref, 'p_amount' => $amount]), 'POST');
   if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
-  if (is_array($rpc) && !empty($rpc['ok'])) return $rpc;
   if (is_array($rpc) && !empty($rpc['duplicate'])) return $rpc;
+  if (is_array($rpc) && !empty($rpc['ok'])) {
+    $credited = orolado_money($rpc['amount'] ?? 0);
+    if ($amount > 0.0001 && $userId !== '' && $credited + 0.05 < $amount) {
+      supabase_credit_real($userId, orolado_money($amount - $credited), false);
+    }
+    return $rpc;
+  }
+  // L'ancienne fonction SQL refuse tout montant < 100 (plancher FCFA).
+  // Un dépôt USD de 5 à 99 doit quand même créditer le coffre, une seule fois.
+  if ($amount > 0.0001 && $userId !== '') {
+    supabase_credit_real($userId, $amount, false);
+    supabase_patch_deposit($ref, ['status' => 'COMPLETED', 'completed_at' => date('c'), 'amount' => $amount]);
+    return ['ok' => true, 'amount' => $amount, 'user_id' => $userId, 'fallback' => true];
+  }
   if (is_array($rpc) && isset($rpc['reason']) && $rpc['reason'] !== 'unknown') return $rpc;
-  supabase_credit_real($userId, $amount);
-  supabase_patch_deposit($ref, ['status' => 'COMPLETED', 'completed_at' => date('c'), 'amount' => $amount]);
-  return ['ok' => true, 'amount' => $amount, 'user_id' => $userId, 'fallback' => true];
+  return is_array($rpc) ? $rpc : ['ok' => false, 'reason' => 'credit'];
 }
 
 function orolado_session_user(array &$db, ?string $token): ?array {
@@ -2507,7 +2701,29 @@ function credit_paid_deposit(array $hit): array {
     ];
   }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
-  $db['vault'][$uid]['real'] = orolado_money(($db['vault'][$uid]['real'] ?? 0) + $amount);
+  // Crédit cloud toujours sur UUID Supabase (u_… ne peut pas écrire vaults.real).
+  $payId = $uid;
+  if (function_exists('orolado_balance_uuid')) {
+    $resolvedPay = orolado_balance_uuid($db, $uid);
+    if ($resolvedPay !== '') $payId = $resolvedPay;
+  }
+  // Base = coffre Supabase (vérité). En erreur réseau : pas de top-up depuis un JSON périmé.
+  $lookBefore = function_exists('supabase_vault_lookup') ? supabase_vault_lookup($payId) : ['state' => 'skip'];
+  $sbState = (string) ($lookBefore['state'] ?? 'skip');
+  $curOfficial = null;
+  if ($sbState === 'ok') {
+    $curOfficial = orolado_money($lookBefore['real'] ?? 0);
+  } else if ($sbState !== 'error') {
+    $curOfficial = orolado_money($db['vault'][$uid]['real'] ?? 0);
+    if ($payId !== $uid) {
+      $curOfficial = orolado_money(max($curOfficial, orolado_money($db['vault'][$payId]['real'] ?? 0)));
+    }
+  }
+  $expectAfter = ($curOfficial !== null) ? orolado_money($curOfficial + $amount) : null;
+  if ($expectAfter !== null) {
+    if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $expectAfter);
+    else $db['vault'][$uid]['real'] = $expectAfter;
+  }
   $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
   $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
   $db['users'][$uid]['lastDepositAmount'] = $amount;
@@ -2553,8 +2769,33 @@ function credit_paid_deposit(array $hit): array {
   fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
-  supabase_complete_deposit((string) ($dep['id'] ?? $refHit), $amount, (string) $uid);
-  supabase_sync_real_min($uid, $db['vault'][$uid]['real'] ?? 0);
+  supabase_complete_deposit((string) ($dep['id'] ?? $refHit), $amount, (string) $payId);
+  // Compléter seulement le delta manquant si on connaît le solde avant. Jamais sync_real_min(JSON).
+  $sbAfter = supabase_admin_vault($payId);
+  $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : null;
+  if ($expectAfter !== null && $got !== null) {
+    $missing = orolado_money($expectAfter - $got);
+    if ($missing > 0.05) {
+      supabase_credit_real($payId, $missing, false);
+      $sbAfter = supabase_admin_vault($payId);
+      $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : $expectAfter;
+    }
+  }
+  // Pas de second crédit aveugle si le coffre est illisible : complete_deposit a déjà pu créditer.
+  if ($got === null) $got = $expectAfter ?? orolado_money(($db['vault'][$uid]['real'] ?? 0));
+  if (function_exists('with_db_lock')) {
+    with_db_lock(function ($box) use ($uid, $got) {
+      if (function_exists('orolado_mirror_vault_real')) {
+        orolado_mirror_vault_real($box->db, $uid, orolado_money($got));
+      } else {
+        if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
+          $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+        }
+        $box->db['vault'][$uid]['real'] = orolado_money($got);
+      }
+      return ['ok' => true];
+    });
+  }
   $op = strtolower((string) ($dep['operator'] ?? $txOp));
   if (in_array($op, ['flutterwave', 'flw', 'oxapay', 'usdt'], true) && $amount > 0) {
     orolado_meta_capi_purchase_later([
@@ -2565,7 +2806,7 @@ function credit_paid_deposit(array $hit): array {
       'ua' => (string) ($dep['userAgent'] ?? ''),
     ]);
   }
-  return ['ok' => true, 'amount' => $amount, 'userId' => $uid];
+  return ['ok' => true, 'amount' => $amount, 'userId' => $uid, 'real' => $got];
 }
 
 function maketou_api_url(): string {

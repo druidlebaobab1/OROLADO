@@ -924,6 +924,9 @@ if ($action === 'login') {
     $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
   }
   $db['vault'][$uid]['real'] = $official;
+  if (function_exists('orolado_mirror_vault_real')) {
+    orolado_mirror_vault_real($db, $uid, $official);
+  }
   $demoNow = orolado_money($db['vault'][$uid]['demo'] ?? 0);
   if ($demoNow <= 0 && (int) ($user['trades'] ?? 0) === 0) {
     $db['vault'][$uid]['demo'] = 1000000;
@@ -1548,39 +1551,28 @@ if ($action === 'placeOrder') {
   $officialReal = null;
   $debitedOfficial = false;
   $sbOrderKept = false;
-  $placeMark = '';
   if ($mode === 'real') {
     $sbVault = supabase_admin_vault($payId);
     if ($already) {
       $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
-    } else if ($sbVault) {
-      $curReal = orolado_money($sbVault['real'] ?? 0);
+    } else if ($sbVault || preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) {
+      $curReal = $sbVault
+        ? orolado_money($sbVault['real'] ?? 0)
+        : orolado_money($db['vault'][$uid]['real'] ?? 0);
       if ($curReal + 0.009 < $stake) {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
         exit;
       }
-      $markDir = __DIR__ . '/data';
-      if (!is_dir($markDir)) @mkdir($markDir, 0775, true);
-      $markKey = hash('sha256', $payId . '|' . $oid);
-      $placeMark = $markDir . '/place_' . $markKey . '.ok';
-      $fpPlace = @fopen($markDir . '/place_' . $markKey . '.lock', 'c');
-      if ($fpPlace) @flock($fpPlace, LOCK_EX);
-      $alreadyDebited = is_file($placeMark);
-      if ($alreadyDebited) {
-        $sbVault = supabase_admin_vault($payId);
-        $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : $curReal;
-      } else if (!supabase_debit_real($payId, $stake)) {
-        if ($fpPlace) { @flock($fpPlace, LOCK_UN); @fclose($fpPlace); }
+      $keptReal = function_exists('orolado_take_real_stake')
+        ? orolado_take_real_stake($payId, $oid, $stake)
+        : null;
+      if ($keptReal === null) {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise non enregistrée']);
         exit;
-      } else {
-        @file_put_contents($placeMark, '1');
-        $debitedOfficial = true;
-        $sbVault = supabase_admin_vault($payId);
-        $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
       }
-      if ($fpPlace) { @flock($fpPlace, LOCK_UN); @fclose($fpPlace); }
-      if ($debitedOfficial && function_exists('supabase_put_order')) {
+      $debitedOfficial = true;
+      $officialReal = $keptReal;
+      if (function_exists('supabase_put_order')) {
         $sbOrderKept = supabase_put_order($payId, [
           'id' => $oid,
           'asset_id' => $assetId,
@@ -1695,8 +1687,8 @@ if ($action === 'placeOrder') {
         echo json_encode(['ok' => true, 'server' => true, 'orderId' => $oid, 'payout' => $payout, 'vault' => $outVault]);
         exit;
       }
+      // Échec sans ordre : rembourser la mise. Un duplicate OK ne rembourse pas (sinon double crédit).
       supabase_credit_real($payId, $stake, false);
-      if ($placeMark !== '' && is_file($placeMark)) @unlink($placeMark);
     }
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $placed['reason'] ?? 'Ordre refusé']);
     exit;
@@ -1970,7 +1962,6 @@ if ($action === 'settleOrder') {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Gain non enregistré']);
       exit;
     }
-    if ($keptSettle !== null) $vaultOut['real'] = $keptSettle;
     if (!empty($settled['fresh']) && function_exists('supabase_put_order')) {
       supabase_put_order($payId, [
         'id' => $oid,
@@ -1986,37 +1977,20 @@ if ($action === 'settleOrder') {
     }
     $sbNow = supabase_admin_vault($payId);
     if ($sbNow) {
-      $sbRealNow = orolado_money($sbNow['real'] ?? 0);
-      if ($keptSettle !== null && $keptSettle > $sbRealNow + 0.05) {
-        if (function_exists('orolado_put_real_exact')) orolado_put_real_exact($payId, $keptSettle);
-        $vaultOut['real'] = $keptSettle;
-      } else {
-        $vaultOut['real'] = ($keptSettle !== null) ? $keptSettle : $sbRealNow;
-        if ($sbRealNow > $vaultOut['real'] + 0.05) $vaultOut['real'] = $sbRealNow;
-      }
-      with_db_lock(function ($box) use ($uid, $payId, $vaultOut) {
-        foreach (array_unique([$uid, $payId]) as $id) {
-          if ($id === '') continue;
-          if (!isset($box->db['vault'][$id]) || !is_array($box->db['vault'][$id])) {
-            $box->db['vault'][$id] = ['demo' => 0, 'real' => 0];
-          }
-          $box->db['vault'][$id]['real'] = orolado_money($vaultOut['real'] ?? 0);
-        }
-        return ['ok' => true];
-      });
+      $vaultOut['real'] = orolado_money($sbNow['real'] ?? 0);
     } else if ($keptSettle !== null) {
       $vaultOut['real'] = $keptSettle;
-      with_db_lock(function ($box) use ($uid, $payId, $vaultOut) {
-        foreach (array_unique([$uid, $payId]) as $id) {
-          if ($id === '') continue;
-          if (!isset($box->db['vault'][$id]) || !is_array($box->db['vault'][$id])) {
-            $box->db['vault'][$id] = ['demo' => 0, 'real' => 0];
-          }
-          $box->db['vault'][$id]['real'] = orolado_money($vaultOut['real'] ?? 0);
-        }
-        return ['ok' => true];
-      });
     }
+    with_db_lock(function ($box) use ($uid, $payId, $vaultOut) {
+      foreach (array_unique([$uid, $payId]) as $id) {
+        if ($id === '') continue;
+        if (!isset($box->db['vault'][$id]) || !is_array($box->db['vault'][$id])) {
+          $box->db['vault'][$id] = ['demo' => 0, 'real' => 0];
+        }
+        $box->db['vault'][$id]['real'] = orolado_money($vaultOut['real'] ?? 0);
+      }
+      return ['ok' => true];
+    });
   }
   $won = !empty($settled['won']);
   $net = orolado_money($settled['net'] ?? 0);
@@ -2107,6 +2081,9 @@ if ($action === 'me') {
     $db['vault'][$uid]['demo'] = 1000000;
   }
   $db['vault'][$uid]['real'] = $officialReal;
+  if (function_exists('orolado_mirror_vault_real')) {
+    orolado_mirror_vault_real($db, $uid, $officialReal);
+  }
   save_db($file, $db);
   if (function_exists('supabase_touch_last_seen')) {
     supabase_touch_last_seen($uid);

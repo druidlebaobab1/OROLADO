@@ -224,8 +224,7 @@ begin
     return jsonb_build_object('ok', true, 'duplicate', true, 'amount', d.amount, 'user_id', d.user_id);
   end if;
   amt := coalesce(nullif(p_amount, 0), d.amount);
-  -- Plancher à 100 FCFA : l'admin peut tester un vrai dépôt sans frais inutiles.
-  if amt is null or amt < 100 then
+  if amt is null or amt <= 0 then
     return jsonb_build_object('ok', false, 'reason', 'amount');
   end if;
   update public.deposits
