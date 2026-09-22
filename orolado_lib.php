@@ -426,6 +426,21 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
   }
 }
 
+/** Écrit le solde réel exact et vérifie la relecture. Sert aux moins (mise, perte) comme aux plus. */
+function orolado_put_real_exact(string $userId, float $amount): ?float {
+  $amount = orolado_money(max(0, $amount));
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+  $hdrs = supabase_admin_headers();
+  if (!$hdrs) return null;
+  $payload = json_encode(['real' => $amount, 'updated_at' => date('c')]);
+  supabase_http(supabase_project_url() . '/rest/v1/vaults?user_id=eq.' . rawurlencode($userId), $hdrs, $payload, 'PATCH');
+  $again = supabase_admin_vault($userId);
+  if (!$again) return null;
+  $got = orolado_money($again['real'] ?? 0);
+  if (abs($got - $amount) > 0.05) return null;
+  return $got;
+}
+
 function supabase_debit_real(string $userId, $amount): bool {
   $amount = orolado_money($amount);
   if ($amount <= 0) return true;
@@ -444,7 +459,8 @@ function supabase_debit_real(string $userId, $amount): bool {
   $after = supabase_admin_vault($userId);
   $afterReal = $after ? orolado_money($after['real'] ?? 0) : $beforeReal;
   if (abs($afterReal - $expect) <= 0.05) return true;
-  return supabase_write_real_abs($userId, $expect);
+  if (supabase_write_real_abs($userId, $expect)) return true;
+  return orolado_put_real_exact($userId, $expect) !== null;
 }
 
 /**
@@ -467,6 +483,63 @@ function supabase_resolve_trade(string $userId, string $orderId, $amount): ?arra
     'real' => orolado_money($rpc['real'] ?? 0),
     'duplicate' => !empty($rpc['duplicate']),
   ];
+}
+
+/**
+ * Crédit de fin de trade, une seule fois.
+ * Perte = 0 : on ne remet pas la mise. Un second appel ne paie pas deux fois.
+ */
+function orolado_settle_real_credit(string $userId, string $orderId, float $credit): ?float {
+  $credit = orolado_money(max(0, $credit));
+  if ($orderId === '' || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+  $resolved = supabase_resolve_trade($userId, $orderId, $credit);
+  if (is_array($resolved) && array_key_exists('real', $resolved)) {
+    return orolado_money($resolved['real']);
+  }
+  $dir = orolado_data_dir();
+  $key = hash('sha256', $userId . '|' . $orderId);
+  $marker = $dir . '/settle_' . $key . '.ok';
+  $fp = @fopen($dir . '/settle_' . $key . '.lock', 'c');
+  if (!$fp || !flock($fp, LOCK_EX)) {
+    if ($fp) fclose($fp);
+    return null;
+  }
+  if (is_file($marker)) {
+    $again = supabase_admin_vault($userId);
+    $kept = $again ? orolado_money($again['real'] ?? 0) : null;
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return $kept;
+  }
+  $before = supabase_admin_vault($userId);
+  if (!$before) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return null;
+  }
+  $beforeReal = orolado_money($before['real'] ?? 0);
+  if ($credit <= 0.009) {
+    @file_put_contents($marker, '0');
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return $beforeReal;
+  }
+  $expect = orolado_money($beforeReal + $credit);
+  supabase_credit_real($userId, $credit, false);
+  $after = supabase_admin_vault($userId);
+  $got = $after ? orolado_money($after['real'] ?? 0) : null;
+  if ($got === null || abs($got - $expect) > 0.05) {
+    $got = orolado_put_real_exact($userId, $expect);
+  }
+  if ($got === null) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return null;
+  }
+  @file_put_contents($marker, (string) $credit);
+  flock($fp, LOCK_UN);
+  fclose($fp);
+  return $got;
 }
 
 function supabase_sync_real_min(string $userId, $minReal): void {

@@ -1547,8 +1547,13 @@ if ($action === 'placeOrder') {
     if ($already) {
       $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
     } else if ($sbVault) {
-      if (!supabase_debit_real($payId, $stake)) {
+      $curReal = orolado_money($sbVault['real'] ?? 0);
+      if ($curReal + 0.009 < $stake) {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+        exit;
+      }
+      if (!supabase_debit_real($payId, $stake)) {
+        echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise non enregistrée']);
         exit;
       }
       $debitedOfficial = true;
@@ -1928,12 +1933,14 @@ if ($action === 'settleOrder') {
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
   if (($settled['mode'] ?? '') === 'real') {
     $creditAmt = orolado_money($settled['credit'] ?? 0);
-    $beforeSb = supabase_admin_vault($payId);
-    $beforeReal = $beforeSb ? orolado_money($beforeSb['real'] ?? 0) : null;
-    $resolved = supabase_resolve_trade($payId, $oid, $creditAmt);
-    if (!$resolved && !empty($settled['fresh']) && $creditAmt > 0) {
-      supabase_credit_real($payId, $creditAmt, false);
+    $keptSettle = function_exists('orolado_settle_real_credit')
+      ? orolado_settle_real_credit($payId, $oid, $creditAmt)
+      : null;
+    if ($keptSettle === null && $creditAmt > 0.009) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Gain non enregistré']);
+      exit;
     }
+    if ($keptSettle !== null) $vaultOut['real'] = $keptSettle;
     if (!empty($settled['fresh']) && function_exists('supabase_put_order')) {
       supabase_put_order($payId, [
         'id' => $oid,
@@ -1948,14 +1955,6 @@ if ($action === 'settleOrder') {
       ]);
     }
     $sbNow = supabase_admin_vault($payId);
-    if ($beforeReal !== null && $creditAmt > 0.009 && $sbNow) {
-      $nowReal = orolado_money($sbNow['real'] ?? 0);
-      $expect = orolado_money($beforeReal + $creditAmt);
-      if ($nowReal + 0.05 < $expect && function_exists('supabase_set_real')) {
-        supabase_set_real($payId, $expect);
-        $sbNow = supabase_admin_vault($payId);
-      }
-    }
     if ($sbNow) {
       $vaultOut['real'] = orolado_money($sbNow['real'] ?? 0);
       with_db_lock(function ($box) use ($uid, $payId, $vaultOut) {

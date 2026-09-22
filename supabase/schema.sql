@@ -36,7 +36,7 @@ alter table public.profiles add column if not exists required_wagering bigint no
 create table if not exists public.vaults (
   user_id uuid primary key references public.profiles (id) on delete cascade,
   demo bigint not null default 1000000,
-  real bigint not null default 0,
+  real numeric(14,2) not null default 0,
   updated_at timestamptz not null default now()
 );
 
@@ -45,14 +45,14 @@ create table if not exists public.orders (
   user_id uuid not null references public.profiles (id) on delete cascade,
   asset_id text not null default 'v100',
   side text not null,
-  stake bigint not null,
+  stake numeric(14,2) not null,
   duration int not null,
   mode text not null default 'demo',
   payout numeric not null default 1.88,
   entry_price numeric,
   exit_price numeric,
   won boolean,
-  net bigint,
+  net numeric(14,2),
   status text not null default 'open',
   created_at timestamptz not null default now()
 );
@@ -120,7 +120,9 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- Crédit dépôt (webhook PHP + service_role uniquement)
-create or replace function public.credit_real(p_user uuid, p_amount bigint)
+drop function if exists public.increment_balance(uuid, bigint);
+drop function if exists public.credit_real(uuid, bigint);
+create or replace function public.credit_real(p_user uuid, p_amount numeric)
 returns void
 language plpgsql
 security definer
@@ -138,11 +140,11 @@ begin
 end;
 $$;
 
-revoke all on function public.credit_real(uuid, bigint) from public;
-revoke all on function public.credit_real(uuid, bigint) from anon, authenticated;
-grant execute on function public.credit_real(uuid, bigint) to service_role;
+revoke all on function public.credit_real(uuid, numeric) from public;
+revoke all on function public.credit_real(uuid, numeric) from anon, authenticated;
+grant execute on function public.credit_real(uuid, numeric) to service_role;
 
-create or replace function public.increment_balance(p_user uuid, p_amount bigint)
+create or replace function public.increment_balance(p_user uuid, p_amount numeric)
 returns void
 language plpgsql
 security definer
@@ -152,17 +154,18 @@ begin
   perform public.credit_real(p_user, p_amount);
 end;
 $$;
-revoke all on function public.increment_balance(uuid, bigint) from public, anon, authenticated;
-grant execute on function public.increment_balance(uuid, bigint) to service_role;
+revoke all on function public.increment_balance(uuid, numeric) from public, anon, authenticated;
+grant execute on function public.increment_balance(uuid, numeric) to service_role;
 
-create or replace function public.debit_real(p_user uuid, p_amount bigint)
+drop function if exists public.debit_real(uuid, bigint);
+create or replace function public.debit_real(p_user uuid, p_amount numeric)
 returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v bigint;
+  v numeric;
 begin
   if p_amount is null or p_amount <= 0 then
     return jsonb_build_object('ok', false, 'reason', 'amount');
@@ -178,8 +181,8 @@ begin
   return jsonb_build_object('ok', true, 'real', v);
 end;
 $$;
-revoke all on function public.debit_real(uuid, bigint) from public, anon, authenticated;
-grant execute on function public.debit_real(uuid, bigint) to service_role;
+revoke all on function public.debit_real(uuid, numeric) from public, anon, authenticated;
+grant execute on function public.debit_real(uuid, numeric) to service_role;
 
 create table if not exists public.deposits (
   id text primary key,
@@ -245,7 +248,7 @@ grant execute on function public.complete_deposit(text, bigint) to service_role;
 create table if not exists public.trade_settlements (
   order_id text primary key,
   user_id uuid not null references public.profiles (id) on delete cascade,
-  amount bigint not null default 0,
+  amount numeric(14,2) not null default 0,
   created_at timestamptz not null default now()
 );
 alter table public.trade_settlements enable row level security;
@@ -253,14 +256,15 @@ drop policy if exists trade_settlements_own_read on public.trade_settlements;
 create policy trade_settlements_own_read on public.trade_settlements
   for select using (auth.uid() = user_id);
 
-create or replace function public.resolve_trade(p_user uuid, p_order text, p_amount bigint)
+drop function if exists public.resolve_trade(uuid, text, bigint);
+create or replace function public.resolve_trade(p_user uuid, p_order text, p_amount numeric)
 returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v bigint;
+  v numeric;
 begin
   if p_user is null or p_order is null or p_order = '' then
     return jsonb_build_object('ok', false, 'reason', 'args');
@@ -291,8 +295,8 @@ begin
   return jsonb_build_object('ok', true, 'real', coalesce(v, 0));
 end;
 $$;
-revoke all on function public.resolve_trade(uuid, text, bigint) from public, anon, authenticated;
-grant execute on function public.resolve_trade(uuid, text, bigint) to service_role;
+revoke all on function public.resolve_trade(uuid, text, numeric) from public, anon, authenticated;
+grant execute on function public.resolve_trade(uuid, text, numeric) to service_role;
 
 create or replace function public.protect_vault_real()
 returns trigger
@@ -300,8 +304,18 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  jwt_role text;
 begin
-  if auth.role() = 'service_role' then
+  begin
+    jwt_role := coalesce(auth.jwt() ->> 'role', auth.role(), '');
+  exception when others then
+    jwt_role := coalesce(auth.role(), '');
+  end;
+  -- Le serveur (dépôt, mise, gain, perte, retrait) peut monter ET baisser.
+  -- Le téléphone du joueur ne peut pas réécrire le solde réel.
+  if jwt_role = 'service_role'
+     or current_user in ('postgres', 'supabase_admin', 'service_role') then
     return NEW;
   end if;
   if TG_OP = 'UPDATE' then
