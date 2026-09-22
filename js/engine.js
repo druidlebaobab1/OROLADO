@@ -1700,6 +1700,7 @@
       // défilement au moment de la prise de position.
       var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
       var payout = wantPay;
+      D6.holdRemote = true;
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
         type: 'stake',
@@ -1710,7 +1711,6 @@
 
       orderSeq += 1;
       lastOrderAt = nowPerf;
-      D6.holdRemote = true;
       var entry = market.price;
       if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === assetId) {
         var drawnIn = Number(D6.Chart.lastClose());

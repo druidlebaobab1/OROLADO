@@ -4,7 +4,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
-header('X-Orolado-Ledger: 2');
+header('X-Orolado-Ledger: 3');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Accept, Authorization, X-Requested-With');
 
@@ -1548,6 +1548,7 @@ if ($action === 'placeOrder') {
   $officialReal = null;
   $debitedOfficial = false;
   $sbOrderKept = false;
+  $placeMark = '';
   if ($mode === 'real') {
     $sbVault = supabase_admin_vault($payId);
     if ($already) {
@@ -1558,14 +1559,28 @@ if ($action === 'placeOrder') {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
         exit;
       }
-      if (!supabase_debit_real($payId, $stake)) {
+      $markDir = __DIR__ . '/data';
+      if (!is_dir($markDir)) @mkdir($markDir, 0775, true);
+      $markKey = hash('sha256', $payId . '|' . $oid);
+      $placeMark = $markDir . '/place_' . $markKey . '.ok';
+      $fpPlace = @fopen($markDir . '/place_' . $markKey . '.lock', 'c');
+      if ($fpPlace) @flock($fpPlace, LOCK_EX);
+      $alreadyDebited = is_file($placeMark);
+      if ($alreadyDebited) {
+        $sbVault = supabase_admin_vault($payId);
+        $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : $curReal;
+      } else if (!supabase_debit_real($payId, $stake)) {
+        if ($fpPlace) { @flock($fpPlace, LOCK_UN); @fclose($fpPlace); }
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise non enregistrée']);
         exit;
+      } else {
+        @file_put_contents($placeMark, '1');
+        $debitedOfficial = true;
+        $sbVault = supabase_admin_vault($payId);
+        $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
       }
-      $debitedOfficial = true;
-      $sbVault = supabase_admin_vault($payId);
-      $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
-      if (function_exists('supabase_put_order')) {
+      if ($fpPlace) { @flock($fpPlace, LOCK_UN); @fclose($fpPlace); }
+      if ($debitedOfficial && function_exists('supabase_put_order')) {
         $sbOrderKept = supabase_put_order($payId, [
           'id' => $oid,
           'asset_id' => $assetId,
@@ -1681,6 +1696,7 @@ if ($action === 'placeOrder') {
         exit;
       }
       supabase_credit_real($payId, $stake, false);
+      if ($placeMark !== '' && is_file($placeMark)) @unlink($placeMark);
     }
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $placed['reason'] ?? 'Ordre refusé']);
     exit;

@@ -359,6 +359,27 @@
     if (real != null && isFinite(Number(real)) && Number(real) >= 0) balanceLockReal = Number(real);
   }
 
+  function armStakeReserve(once, stake, ms) {
+    D6.stakeReserve = {
+      once: D6.roundMoney(once),
+      stake: D6.roundMoney(stake),
+      until: Date.now() + (ms || 20000)
+    };
+  }
+
+  function clearStakeReserve() {
+    D6.stakeReserve = null;
+  }
+
+  D6.correctStakeReserve = function (real) {
+    var r = D6.stakeReserve;
+    if (!r || Date.now() > r.until) return real;
+    var n = Number(real);
+    if (!isFinite(n)) return real;
+    if (n + 0.05 < r.once && r.once - n <= r.stake + 0.09) return r.once;
+    return n;
+  };
+
   function openRealStake() {
     var sum = 0;
     try {
@@ -656,6 +677,7 @@
   function applyQuietVault(remote) {
     if (!remote || !remote.ok || !remote.vault || !user()) return;
     var incoming = Number(remote.vault.real);
+    if (D6.correctStakeReserve) incoming = D6.correctStakeReserve(incoming);
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) : 0;
     var incomingDep = Number(remote.user && remote.user.realDepositTotal) || 0;
     var localDep = Number(user().realDepositTotal) || 0;
@@ -670,10 +692,11 @@
       setTimeout(function () { D6.holdDepositReal = false; }, 25000);
     }
     var locks = getBalanceLocks();
-    if (locks && Date.now() < locks.until && !remoteHigher && !D6.holdDepositReal) return;
+    var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(incoming - D6.stakeReserve.once) <= 0.05;
+    if (locks && Date.now() < locks.until && !remoteHigher && !fixingDouble && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
     if (incoming <= 0.009 && local > 0.009 && !D6.holdDepositReal) return;
-    if (open > 0 && incoming > local + 0.009 && incoming <= local + open + 0.009 && !D6.holdDepositReal) return;
+    if (!fixingDouble && open > 0 && incoming > local + 0.009 && incoming <= local + open + 0.009 && !D6.holdDepositReal) return;
     if (Math.abs(incoming - local) <= 0.009) return;
     if (adoptOfficialVault(remote.vault, { fromMe: true, allowRaise: true, force: !!D6.holdDepositReal })) updateBalance(false);
   }
@@ -1565,20 +1588,23 @@
     if (!u || !D6.Store.setBalanceMode) return false;
     var real = Number(value);
     if (!isFinite(real) || real < 0) return false;
+    if (D6.correctStakeReserve) real = D6.correctStakeReserve(real);
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
     var force = !!(opts && opts.force);
     var fromMe = !!(opts && opts.fromMe);
     var allowRaise = !!(opts && opts.allowRaise) || !!D6.holdDepositReal;
+    var reserve = D6.stakeReserve;
+    var undoingDouble = !!(reserve && Date.now() < reserve.until && Math.abs(real - reserve.once) <= 0.05 && real > local + 0.009);
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
     var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
-    if (!force && !D6.holdDepositReal) {
+    if (!force && !undoingDouble && !D6.holdDepositReal) {
       if (locked && Math.abs(real - local) > 0.02) return false;
       if (recentSettle && Math.abs(real - local) > 0.02) return false;
     }
-    if (real > local + 0.009 && !allowRaise && !force && !fromMe) return false;
+    if (real > local + 0.009 && !allowRaise && !force && !fromMe && !undoingDouble) return false;
     var open = openRealStake();
-    if (open > 0 && real > local + 0.009 && real <= local + open + 0.009 && !D6.holdDepositReal && !force) return false;
+    if (open > 0 && real > local + 0.009 && real <= local + open + 0.009 && !D6.holdDepositReal && !force && !undoingDouble) return false;
     if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
@@ -2541,6 +2567,7 @@
           return true;
         }
         if (remote && remote.ok && remote.vault && settleMode === 'real') {
+          clearStakeReserve();
           var srvReal = Number(remote.vault.real);
           if (isFinite(srvReal) && srvReal >= 0) {
             applyOfficialReal(srvReal, { fromMe: true, force: true });
@@ -2643,6 +2670,7 @@
     var sealedDur = Number(u.duration);
     var sealedPay = currentOdds(u);
     var sealedAsset = assetId(u);
+    var realBefore = (mode === 'real' && D6.Store.realBalance) ? Number(D6.Store.realBalance(u)) : null;
     var res = D6.Engine.placeOrder(u, {
       side: side,
       stake: stake,
@@ -2667,6 +2695,9 @@
     updatePriceHud();
     patchHistorySoon();
     syncTradeButtons();
+    if (mode === 'real' && realBefore != null && isFinite(realBefore) && D6.Api && D6.Api.token && D6.Api.token()) {
+      armStakeReserve(D6.roundMoney(realBefore - stake), stake, Math.max(15000, (Number(sealedDur) || 10) * 1000 + 8000));
+    }
     lockBalanceOptimistic(
       mode === 'demo' ? D6.Store.demoBalance(u) : null,
       mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : null) : null,
@@ -2687,6 +2718,10 @@
         if (watchBan(remote)) return true;
         if (remote && remote.ok && mode === 'real' && remote.vault && remote.vault.real != null) {
           var srvReal = Number(remote.vault.real);
+          var reserveNow = D6.stakeReserve;
+          if (reserveNow && Date.now() < reserveNow.until && isFinite(srvReal) && srvReal > reserveNow.once + 0.05) {
+            srvReal = reserveNow.once;
+          }
           if (isFinite(srvReal) && srvReal > 0.009) {
             applyOfficialReal(srvReal, { fromMe: true, force: true });
             updateBalance(true);

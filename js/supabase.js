@@ -316,6 +316,7 @@
       var locDep = Number(u.realDepositTotal) || 0;
       var newDep = remDep > locDep + 0.009;
       if (newDep) u.realDepositTotal = remDep;
+      if (D6.correctStakeReserve) remoteReal = D6.correctStakeReserve(remoteReal);
       if (isFinite(remoteReal) && remoteReal >= 0) {
         var staleZero = remoteReal <= 0.009 && localReal > 0.009 && !newDep;
         var holdLow = remoteReal + 0.009 < localReal && (!!D6.holdDepositReal || locked) && !newDep;
@@ -333,7 +334,9 @@
           }
         } catch (eOpen) { raiseWhileOpen = false; }
         var staleHigh = !newDep && !D6.holdDepositReal && remoteReal > localReal + 0.009 && locked && raiseWhileOpen;
+        var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(remoteReal - D6.stakeReserve.once) <= 0.05;
         if (newDep) next.real = remoteReal;
+        else if (fixingDouble) next.real = remoteReal;
         else if (!staleZero && !holdLow && !raiseWhileOpen && !staleHigh) next.real = remoteReal;
       }
     }
