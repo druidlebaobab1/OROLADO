@@ -326,6 +326,18 @@
       if (D6.correctStakeReserve) remoteReal = D6.correctStakeReserve(remoteReal);
       if (isFinite(remoteReal) && remoteReal >= 0) {
         var reserve = D6.stakeReserve;
+        var openStake = 0;
+        try {
+          if (D6.App && D6.App.getBalanceLocks) {
+            /* open stake via engine if available */
+          }
+          var list = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades('real') : [];
+          var i;
+          for (i = 0; i < list.length; i++) openStake += Number(list[i] && list[i].stake) || 0;
+        } catch (eOpen) { openStake = 0; }
+        var tradeBusy = openStake > 0.009
+          || (reserve && Date.now() < reserve.until)
+          || (locked && !newDep);
         var stalePreStake = reserve && Date.now() < reserve.until && remoteReal > localReal + 0.009
           && Math.abs(remoteReal - (localReal + Number(reserve.stake) || 0)) <= 0.09;
         var staleZero = remoteReal <= 0.009 && localReal > 0.009;
@@ -334,7 +346,9 @@
           /* Un coffre à 0 ne remplace pas un solde déjà affiché. */
         } else if (newDep && remoteReal > localReal + 0.009) next.real = remoteReal;
         else if (fixingDouble) next.real = remoteReal;
-        else if (!stalePreStake && !(locked && remoteReal + 0.02 < localReal)) next.real = remoteReal;
+        else if (tradeBusy && !newDep) {
+          /* Pendant un trade : ne pas faire clignoter le solde via realtime. */
+        } else if (!stalePreStake && !(locked && remoteReal + 0.02 < localReal)) next.real = remoteReal;
       }
     }
     D6.holdPull = true;

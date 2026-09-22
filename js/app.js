@@ -390,6 +390,17 @@
     return D6.roundMoney ? D6.roundMoney(sum) : sum;
   }
 
+  /** Pendant un trade réel : seul placeOrder/settleOrder peut bouger le solde affiché. */
+  function tradeBalanceFrozen() {
+    if (D6.holdDepositReal) return false;
+    if (openRealStake() > 0.009) return true;
+    if (D6.stakeReserve && Date.now() < D6.stakeReserve.until) return true;
+    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 12000) return true;
+    var locks = getBalanceLocks();
+    if (locks && Date.now() < locks.until && locks.real != null) return true;
+    return false;
+  }
+
   function getBalanceLocks() {
     return {
       until: balanceLockUntil,
@@ -691,6 +702,7 @@
       D6.holdDepositReal = true;
       setTimeout(function () { D6.holdDepositReal = false; }, 25000);
     }
+    if (tradeBalanceFrozen() && !D6.holdDepositReal) return;
     var locks = getBalanceLocks();
     var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(incoming - D6.stakeReserve.once) <= 0.05;
     if (locks && Date.now() < locks.until && !remoteHigher && !fixingDouble && !D6.holdDepositReal) return;
@@ -1591,6 +1603,7 @@
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
     var force = !!(opts && opts.force);
     var fromMe = !!(opts && opts.fromMe);
+    var fromTrade = !!(opts && opts.fromTrade);
     var allowRaise = !!(opts && opts.allowRaise) || !!D6.holdDepositReal;
     var reserve = D6.stakeReserve;
     var undoingDouble = !!(reserve && Date.now() < reserve.until && Math.abs(real - reserve.once) <= 0.05 && real > local + 0.009);
@@ -1598,16 +1611,16 @@
     var locked = locks && Date.now() < locks.until;
     var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
     if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
+    // Gel trade : ignorer me/poll/realtime ; seuls place/settle (fromTrade) ou dépôt.
+    if (tradeBalanceFrozen() && !fromTrade && !D6.holdDepositReal) return false;
     var stalePreStake = reserve && Date.now() < reserve.until && real > local + 0.009
       && Math.abs(real - (local + Number(reserve.stake) || 0)) <= 0.09;
     if (stalePreStake && !D6.holdDepositReal && !force) return false;
     if (!force && !undoingDouble && !D6.holdDepositReal) {
-      // fromMe (réponse place/settle/me) doit toujours pouvoir coller le coffre officiel,
-      // y compris juste après un règlement — sinon dépôt/gain restent invisibles jusqu’au F5.
-      if (locked && real + 0.02 < local && !fromMe) return false;
-      if (recentSettle && Math.abs(real - local) > 0.02 && !fromMe) return false;
+      if (locked && real + 0.02 < local && !fromMe && !fromTrade) return false;
+      if (recentSettle && Math.abs(real - local) > 0.02 && !fromMe && !fromTrade) return false;
     }
-    if (real > local + 0.009 && !allowRaise && !force && !fromMe && !undoingDouble && !D6.holdDepositReal) return false;
+    if (real > local + 0.009 && !allowRaise && !force && !fromMe && !fromTrade && !undoingDouble && !D6.holdDepositReal) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);
@@ -2573,7 +2586,7 @@
           clearStakeReserve();
           var srvReal = Number(remote.vault.real);
           if (isFinite(srvReal) && srvReal >= 0) {
-            applyOfficialReal(srvReal, { fromMe: true, force: true });
+            applyOfficialReal(srvReal, { fromMe: true, force: true, fromTrade: true });
             updateBalance(true);
           }
           D6.holdRemote = false;
@@ -2730,7 +2743,7 @@
           }
           if (isFinite(srvReal) && srvReal >= 0) {
             // Ne jamais forcer un zéro serveur qui efface un solde local encore positif.
-            applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false });
+            applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false, fromTrade: true });
             updateBalance(true);
           }
           return true;
@@ -4069,6 +4082,7 @@
       var localNow = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) || 0 : 0;
       var remNow = Number(remote.vault.real);
       var depositRaise = newDeposit || (isFinite(remNow) && remNow > localNow + open + 0.009);
+      if (tradeBalanceFrozen() && !depositRaise && !D6.holdDepositReal) return;
       if ((!open || depositRaise) && remote.vault.real != null) {
         D6.holdRemote = true;
         if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: true, force: !open || depositRaise })) updateBalance(false);

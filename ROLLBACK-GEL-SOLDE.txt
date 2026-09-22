@@ -1,0 +1,5 @@
+﻿# Rollback gel solde pendant trade
+Copy-Item -Force "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\rollback-avant-gel-solde-trade-20260922\app.js" "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\js\app.js"
+Copy-Item -Force "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\rollback-avant-gel-solde-trade-20260922\supabase.js" "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\js\supabase.js"
+Copy-Item -Force "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\rollback-avant-gel-solde-trade-20260922\index.html" "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\index.html"
+# puis git push si besoin
