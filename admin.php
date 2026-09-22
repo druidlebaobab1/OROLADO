@@ -169,22 +169,29 @@ function admin_credit_target_ids(string $uid, array $found = []): array {
   return array_values(array_unique(array_filter($ids)));
 }
 
-/** Journal JSON : dépôt + mise x2. N’écrit PAS vault.real des joueurs. */
+/** Journal JSON : le solde réel écrit est la valeur absolue déjà enregistrée en base. */
 function admin_persist_json_real(string $uid, float $real, ?array $tx = null, ?array $dep = null): void {
   if ($uid === '' || !function_exists('with_db_lock')) return;
   $real = orolado_money($real);
-  $add = $dep ? orolado_money($dep['amount'] ?? 0) : 0;
-  with_db_lock(static function ($box) use ($uid, $real, $tx, $dep, $add) {
-    if ($add > 0.009 || $uid === 'admin_master') {
-      if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
-      if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
-        $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+  with_db_lock(static function ($box) use ($uid, $real, $tx, $dep) {
+    if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
+    $targets = [$uid];
+    $email = '';
+    if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) {
+      $email = strtolower(trim((string) ($box->db['users'][$uid]['email'] ?? '')));
+    }
+    if ($email !== '') {
+      foreach ($box->db['users'] as $oid => $ou) {
+        if (!is_array($ou)) continue;
+        if (strtolower(trim((string) ($ou['email'] ?? ''))) === $email) $targets[] = (string) $oid;
       }
-      if ($add > 0.009) {
-        $box->db['vault'][$uid]['real'] = orolado_money(($box->db['vault'][$uid]['real'] ?? 0) + $add);
-      } else {
-        $box->db['vault'][$uid]['real'] = $real;
+    }
+    $targets = array_values(array_unique(array_filter($targets)));
+    foreach ($targets as $tid) {
+      if (!isset($box->db['vault'][$tid]) || !is_array($box->db['vault'][$tid])) {
+        $box->db['vault'][$tid] = ['demo' => 1000000, 'real' => 0];
       }
+      $box->db['vault'][$tid]['real'] = $real;
     }
     if ($dep) {
       if (!isset($box->db['deposits']) || !is_array($box->db['deposits'])) $box->db['deposits'] = [];

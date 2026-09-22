@@ -4026,7 +4026,7 @@
       var depositRaise = newDeposit || (isFinite(remNow) && remNow > localNow + open + 0.009);
       if ((!open || depositRaise) && remote.vault.real != null) {
         D6.holdRemote = true;
-        if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: true, force: depositRaise })) updateBalance(false);
+        if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: true, force: !open || depositRaise })) updateBalance(false);
         setTimeout(function () { D6.holdRemote = false; }, 25000);
       } else {
         applyQuietVault(remote);

@@ -1014,11 +1014,9 @@ function admin_vaults(): array {
     $id = (string) $id;
     if (!isset($map[$id])) {
       $map[$id] = ['real' => (float) ($v['real'] ?? 0), 'demo' => (float) ($v['demo'] ?? 0)];
-    } else {
+    } else if ((float) ($map[$id]['real'] ?? 0) <= 0.009) {
       $localReal = (float) ($v['real'] ?? 0);
-      if ($localReal > (float) ($map[$id]['real'] ?? 0) + 0.009) {
-        $map[$id]['real'] = $localReal;
-      }
+      if ($localReal > 0.009) $map[$id]['real'] = $localReal;
     }
   }
   admin_cache_set('vaults', $map);
