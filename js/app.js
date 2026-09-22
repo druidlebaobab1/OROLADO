@@ -6067,7 +6067,7 @@
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         return Promise.all(regs.map(function (r) { return r.unregister(); }));
       }).then(function () {
-        return navigator.serviceWorker.register('sw.js?v=106');
+        return navigator.serviceWorker.register('sw.js?v=107');
       }).catch(function () { /* ignore */ });
     }
   }

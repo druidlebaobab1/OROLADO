@@ -33,7 +33,7 @@ Options -Indexes
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType application/javascript "access plus 0 seconds"
   ExpiresByType image/svg+xml "access plus 30 days"
 </IfModule>
 
@@ -44,6 +44,9 @@ Options -Indexes
   <FilesMatch "\.(html|htm)$">
     Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
     Header set Pragma "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(js)$">
+    Header set Cache-Control "no-cache, must-revalidate, max-age=0"
   </FilesMatch>
 </IfModule>
 
@@ -63,7 +66,7 @@ Options -Indexes
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType application/javascript "access plus 0 seconds"
   ExpiresByType image/svg+xml "access plus 30 days"
 </IfModule>
 
@@ -74,5 +77,8 @@ Options -Indexes
   <FilesMatch "\.(html|htm)$">
     Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
     Header set Pragma "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(js)$">
+    Header set Cache-Control "no-cache, must-revalidate, max-age=0"
   </FilesMatch>
 </IfModule>
