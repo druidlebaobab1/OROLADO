@@ -578,16 +578,6 @@ function orolado_take_real_stake(string $userId, string $orderId, float $stake):
   }
   @file_put_contents($marker, json_encode(['at' => date('c'), 'stake' => $stake, 'real' => $got]));
   $release();
-  if (function_exists('load_db') && function_exists('orolado_ledger_record') && function_exists('save_db') && function_exists('orolado_data_file')) {
-    try {
-      $file = orolado_data_file();
-      $ldb = load_db($file);
-      if (is_array($ldb)) {
-        orolado_ledger_record($ldb, $userId, 'stake', -abs($stake), 'stake_' . $orderId, $got, 'Mise ' . $orderId);
-        save_db($file, $ldb);
-      }
-    } catch (Throwable $eLed) { /* ignore */ }
-  }
   return $got;
 }
 
@@ -647,17 +637,6 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
   @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => $credit, 'real' => $got]));
   flock($fp, LOCK_UN);
   fclose($fp);
-  if ($got !== null && function_exists('load_db') && function_exists('orolado_ledger_record') && function_exists('save_db') && function_exists('orolado_data_file')) {
-    try {
-      $file = orolado_data_file();
-      $ldb = load_db($file);
-      if (is_array($ldb)) {
-        $typ = $credit > 0.009 ? 'win' : 'loss';
-        orolado_ledger_record($ldb, $userId, $typ, $credit, 'settle_' . $orderId, $got, 'Règlement ' . $orderId);
-        save_db($file, $ldb);
-      }
-    } catch (Throwable $eS) { /* ignore */ }
-  }
   return $got;
 }
 
@@ -1232,51 +1211,18 @@ function orolado_real_from_books(array $db, string $uid, array $user = []): ?flo
   return orolado_money(max(0, $deps + $adj - $wd - $stakes + $credits));
 }
 
-/** Coffres : si Supabase est lisible, c’est LA vérité (y compris 0). Plus de books/JSON au-dessus. */
+/** Coffres : Supabase `vaults.real` est la source de vérité. JSON / books ne servent qu’à recouvrer un coffre vidé. */
 function orolado_pick_persisted_real(float $jsonReal, $sbReal, $books, bool $played): float {
   $jsonReal = orolado_money($jsonReal);
   if ($sbReal === null) {
-    // Coffre illisible / skip : on ne gonfle pas avec du fantôme.
+    if (is_numeric($books) && orolado_money($books) > $jsonReal + 0.009) return orolado_money($books);
     return $jsonReal;
   }
-  return orolado_money($sbReal);
-}
-
-/** UUID de paiement réel (coffre). */
-function orolado_bank_pay_id(array $db, string $uid): string {
-  $uid = (string) $uid;
-  if ($uid === '') return '';
-  if (function_exists('orolado_balance_uuid')) {
-    $uuid = orolado_balance_uuid($db, $uid);
-    if ($uuid !== '') return $uuid;
-  }
-  if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid)) return $uid;
-  return $uid;
-}
-
-/** Journal append-only (idempotent par ref). */
-function orolado_ledger_record(array &$db, string $uid, string $type, float $delta, string $ref, float $balanceAfter, string $note = ''): bool {
-  $ref = trim($ref);
-  if ($ref === '') $ref = $type . '_' . bin2hex(random_bytes(8));
-  if (!isset($db['ledger']) || !is_array($db['ledger'])) $db['ledger'] = [];
-  foreach ($db['ledger'] as $row) {
-    if (!is_array($row)) continue;
-    if ((string) ($row['ref'] ?? '') === $ref) return false;
-  }
-  $db['ledger'][] = [
-    'id' => 'led_' . bin2hex(random_bytes(6)),
-    'ref' => $ref,
-    'userId' => $uid,
-    'type' => $type,
-    'delta' => orolado_money($delta),
-    'balanceAfter' => orolado_money($balanceAfter),
-    'note' => $note,
-    'at' => date('c'),
-  ];
-  if (count($db['ledger']) > 5000) {
-    $db['ledger'] = array_slice($db['ledger'], -4000);
-  }
-  return true;
+  $sbReal = orolado_money($sbReal);
+  if ($sbReal > 0.009) return $sbReal;
+  if (is_numeric($books) && orolado_money($books) > 0.009) return orolado_money($books);
+  if ($jsonReal > 0.009) return $jsonReal;
+  return $sbReal;
 }
 
 /** UUID Supabase du coffre réel. Un id local `u_…` est rattaché au profil du même e-mail. */
@@ -1297,39 +1243,48 @@ function orolado_balance_uuid(array $db, string $uid): string {
   return $id;
 }
 
-/**
- * Banque réelle : lit Supabase uniquement.
- * N’écrit vers Supabase que si le coffre est manquant et qu’il existe de VRAIS dépôts (lignes).
- */
+/** Aligne le JSON local sur Supabase. N’écrit vers Supabase que pour recouvrer un coffre à 0. */
 function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $jsonReal = orolado_money($jsonReal);
   $db = function_exists('load_db') ? load_db() : [];
   if (!is_array($db)) $db = [];
   $uuid = orolado_balance_uuid($db, $uid);
-  $payId = $uuid !== '' ? $uuid : $uid;
-  if ($uuid === '') {
-    // Pas de coffre cloud : on n’invente pas. Miroir JSON seulement.
-    return $jsonReal;
-  }
-  $look = supabase_vault_lookup($uuid);
-  $state = (string) ($look['state'] ?? 'skip');
-  if ($state === 'error') return $jsonReal;
-  if ($state === 'ok') {
-    return orolado_money($look['real'] ?? 0);
-  }
-  // missing : recréer uniquement depuis dépôts réellement enregistrés (pas un compteur fantôme).
-  $user = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
-  $deps = orolado_user_deposit_total($db, $uid, $user);
-  if ($deps > 0.009) {
-    if (orolado_put_real_exact($uuid, $deps) !== null) {
-      orolado_ledger_record($db, $payId, 'recover', $deps, 'recover_missing_' . $uuid, $deps, 'Coffre manquant restauré');
-      if (function_exists('save_db') && function_exists('orolado_data_file')) {
-        // best-effort ; caller save_db often follows
-      }
-      return $deps;
+  $ids = function_exists('orolado_linked_balance_ids')
+    ? orolado_linked_balance_ids($db, $uid)
+    : [];
+  if (!$ids) {
+    $ids = [];
+    foreach ([$uid, $uuid] as $id) {
+      if ($id !== '' && !in_array($id, $ids, true)) $ids[] = $id;
     }
   }
-  return 0.0;
+  $bestJson = $jsonReal;
+  foreach ($ids as $id) {
+    $bestJson = orolado_money(max($bestJson, $db['vault'][$id]['real'] ?? 0));
+  }
+  // Erreur réseau ≠ coffre à 0 : ne jamais écraser Supabase dans ce cas.
+  $look = $uuid !== '' ? supabase_vault_lookup($uuid) : ['state' => 'skip', 'real' => 0.0];
+  $state = (string) ($look['state'] ?? 'skip');
+  if ($state === 'error') return $jsonReal;
+  if ($state === 'ok' && orolado_money($look['real'] ?? 0) > 0.009) {
+    return orolado_money($look['real'] ?? 0);
+  }
+  $sbReal = ($state === 'ok') ? orolado_money($look['real'] ?? 0) : null;
+  $booksBest = null;
+  $played = false;
+  foreach ($ids as $id) {
+    $user = (isset($db['users'][$id]) && is_array($db['users'][$id])) ? $db['users'][$id] : [];
+    if (orolado_user_real_wagered($db, $user + ['id' => $id]) > 0.009) $played = true;
+    $books = orolado_real_from_books($db, $id, $user);
+    if ($books === null) continue;
+    $booksBest = $booksBest === null ? orolado_money($books) : orolado_money(max($booksBest, $books));
+  }
+  $target = orolado_pick_persisted_real($bestJson, $sbReal, $booksBest, $played);
+  $target = orolado_money(max(0, $target));
+  if ($uuid !== '' && $target > 0.009 && ($state === 'missing' || ($state === 'ok' && $sbReal !== null && $sbReal <= 0.009))) {
+    if (orolado_put_real_exact($uuid, $target) !== null) return $target;
+  }
+  return $target;
 }
 
 function orolado_trade_credit(bool $won, bool $voided, float $stake, float $payout): float {
@@ -1478,16 +1433,6 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
   }
   if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $next);
   else $db['vault'][$uid]['real'] = $next;
-  $ledType = ($asDeposit && $delta > 0) ? 'deposit' : ($delta >= 0 ? 'credit' : 'debit');
-  orolado_ledger_record(
-    $db,
-    $payId,
-    $ledType,
-    $delta,
-    ($asDeposit ? 'dep_' : 'adj_') . md5($uid . '|' . $note . '|' . $delta . '|' . date('Y-m-d-H-i')),
-    $next,
-    $note
-  );
   if ($asDeposit && $delta > 0) {
     $ref = 'adm_' . bin2hex(random_bytes(6));
     if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];

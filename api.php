@@ -1383,13 +1383,12 @@ if ($action === 'withdraw') {
     exit;
   }
   $amount = orolado_money($req['amount'] ?? 0);
-  $payWd = function_exists('orolado_bank_pay_id')
-    ? orolado_bank_pay_id($db, (string) $me['id'])
-    : (string) $me['id'];
-  if ($payWd === '') $payWd = (string) $me['id'];
-  // BANQUE : lire Supabase uniquement. Ne JAMAIS pousser un JSON gonflé vers le cloud.
-  $sbVault = supabase_admin_vault($payWd);
   $jsonRealWd = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
+  $sbVault = supabase_admin_vault((string) $me['id']);
+  if ($sbVault && $jsonRealWd > orolado_money($sbVault['real'] ?? 0) + 0.05 && function_exists('orolado_put_real_exact')) {
+    orolado_put_real_exact((string) $me['id'], $jsonRealWd);
+    $sbVault = supabase_admin_vault((string) $me['id']);
+  }
   $real = $sbVault
     ? orolado_money($sbVault['real'] ?? 0)
     : $jsonRealWd;
@@ -1446,31 +1445,15 @@ if ($action === 'withdraw') {
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
   $amountFcfa = orolado_usd_to_fcfa($amount);
-  if ($sbVault) {
-    if (!supabase_debit_real($payWd, $amount)) {
-      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
-      exit;
-    }
-  } else {
-    // Pas de coffre cloud lisible : débit JSON seulement (secours), jamais d’écriture cloud inventée.
-    if ($amount > $jsonRealWd + 0.009) {
-      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
-      exit;
-    }
+  if ($sbVault && !supabase_debit_real((string) $me['id'], $amount)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+    exit;
   }
   unset($db['withdrawOtps'][$uidOtp]);
-  $after = $sbVault ? supabase_admin_vault($payWd) : null;
-  $newReal = $after
+  $after = $sbVault ? supabase_admin_vault((string) $me['id']) : null;
+  $db['vault'][$me['id']]['real'] = $after
     ? orolado_money($after['real'] ?? 0)
     : orolado_money($real - $amount);
-  if (function_exists('orolado_mirror_vault_real')) {
-    orolado_mirror_vault_real($db, (string) $me['id'], $newReal);
-  } else {
-    $db['vault'][$me['id']]['real'] = $newReal;
-  }
-  if (function_exists('orolado_ledger_record')) {
-    orolado_ledger_record($db, $payWd, 'withdraw', -abs($amount), 'wd_' . uniqid('', true), $newReal, 'Demande retrait');
-  }
   $wdId = uniqid('wd_', true);
   $db['withdrawals'][] = [
     'id' => $wdId,

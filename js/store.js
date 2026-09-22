@@ -408,29 +408,36 @@
         var next = { demo: prevV.demo, real: prevV.real };
         if (Object.prototype.hasOwnProperty.call(vaultEntry, 'real')) {
           var nextReal = Number(vaultEntry.real);
+          var prevReal = Number(prevV.real) || 0;
+          var lsKeep = readRealLs(user.id);
+          if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
+          var linkedKeep = bestKnownReal(user.id, user.email);
+          if (linkedKeep > prevReal) prevReal = linkedKeep;
+          var incomingDep = Number(user._incomingDepositTotal != null ? user._incomingDepositTotal : user.realDepositTotal) || 0;
+          var hadDep = Number(prev && prev.realDepositTotal) || 0;
+          var newDeposit = incomingDep > hadDep + 0.009;
+          var virgin = isVirginRealUser(user) && !newDeposit && !(hadDep > 0.009);
+          var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0, linkedKeep);
+          // Compte sans dépôt / sans mise réelle : ne jamais coller un solde fantôme (ex. 5.88 d’un autre compte).
+          if (virgin) keep = 0;
           var allowZero = !!(opts && opts.allowZero);
-          // BANQUE : réponse officielle serveur = vérité. Le téléphone n’invente plus de solde.
           if (official && isFinite(nextReal) && nextReal >= 0) {
-            next.real = nextReal;
-            try { writeRealLs(user.id, nextReal); } catch (eOff) { /* ignore */ }
-          } else {
-            var prevReal = Number(prevV.real) || 0;
-            var lsKeep = readRealLs(user.id);
-            if (lsKeep != null && lsKeep > prevReal) prevReal = lsKeep;
-            var incomingDep = Number(user._incomingDepositTotal != null ? user._incomingDepositTotal : user.realDepositTotal) || 0;
-            var hadDep = Number(prev && prev.realDepositTotal) || 0;
-            var newDeposit = incomingDep > hadDep + 0.009;
-            var virgin = isVirginRealUser(user) && !newDeposit && !(hadDep > 0.009);
-            var keep = virgin ? 0 : Math.max(prevReal, lsKeep != null ? lsKeep : 0);
-            if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
-              next.real = Math.max(nextReal, keep);
-            } else if (isFinite(nextReal) && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal && nextReal > 0.009) {
-              next.real = nextReal;
-            } else if (keep > 0.009 && !allowZero) {
+            if (virgin && nextReal <= 0.009) {
+              next.real = 0;
+              try { writeRealLs(user.id, 0); } catch (eClr) { /* ignore */ }
+            } else if (!allowZero && nextReal <= 0.009 && keep > 0.009) {
               next.real = keep;
-            } else if (isFinite(nextReal) && nextReal >= 0) {
+            } else {
               next.real = nextReal;
             }
+          } else if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
+            next.real = Math.max(nextReal, keep);
+          } else if (isFinite(nextReal) && nextReal + 0.009 < keep && !newDeposit && !D6.holdDepositReal && nextReal > 0.009) {
+            next.real = nextReal;
+          } else if (keep > 0.009) {
+            next.real = keep;
+          } else if (isFinite(nextReal) && nextReal >= 0) {
+            next.real = nextReal;
           }
         }
         var keptDemo = readDemoLs(user.id);
