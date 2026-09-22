@@ -1306,14 +1306,6 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   $hdrs = function_exists('supabase_admin_headers') ? supabase_admin_headers() : [];
   $url = function_exists('supabase_project_url') ? rtrim(supabase_project_url(), '/') : '';
   if ($hdrs && $url !== '' && admin_is_uuid($uid)) {
-    supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
-      'id' => $ref,
-      'user_id' => $uid,
-      'type' => 'deposit',
-      'amount' => $delta,
-      'note' => $motif,
-      'mode' => 'real',
-    ], JSON_UNESCAPED_UNICODE), 'POST');
     $prof = supabase_http(
       $url . '/rest/v1/profiles?id=eq.' . rawurlencode($uid) . '&select=real_deposit_total',
       $hdrs

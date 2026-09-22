@@ -486,15 +486,48 @@ function supabase_resolve_trade(string $userId, string $orderId, $amount): ?arra
 }
 
 /**
- * Crédit de fin de trade, une seule fois.
+ * Le coffre a-t-il vraiment le montant attendu (centimes compris) ?
+ */
+function orolado_real_is(string $userId, float $expect): ?float {
+  $row = supabase_admin_vault($userId);
+  if (!$row) return null;
+  $got = orolado_money($row['real'] ?? 0);
+  if (abs($got - orolado_money($expect)) > 0.05) return null;
+  return $got;
+}
+
+/**
+ * Pose le solde exact. Si l’ajout RPC a coupé les centimes, on réécrit le total.
+ * Ne réussit que si la relecture confirme le montant, centimes compris.
+ */
+function orolado_force_real_total(string $userId, float $expect): ?float {
+  $expect = orolado_money(max(0, $expect));
+  $got = orolado_real_is($userId, $expect);
+  if ($got !== null) return $got;
+  return orolado_put_real_exact($userId, $expect);
+}
+
+/**
+ * Crédit de fin de trade, une seule fois, centimes compris.
  * Perte = 0 : on ne remet pas la mise. Un second appel ne paie pas deux fois.
+ * Un gain 1,88 doit rester 1,88 : un ajout tronqué à 1 est complété, pas accepté.
  */
 function orolado_settle_real_credit(string $userId, string $orderId, float $credit): ?float {
   $credit = orolado_money(max(0, $credit));
   if ($orderId === '' || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+  $before = supabase_admin_vault($userId);
+  if (!$before) return null;
+  $beforeReal = orolado_money($before['real'] ?? 0);
+  $expect = orolado_money($beforeReal + $credit);
   $resolved = supabase_resolve_trade($userId, $orderId, $credit);
   if (is_array($resolved) && array_key_exists('real', $resolved)) {
-    return orolado_money($resolved['real']);
+    if (!empty($resolved['duplicate']) || $credit <= 0.009) {
+      $row = supabase_admin_vault($userId);
+      return $row ? orolado_money($row['real'] ?? 0) : orolado_money($resolved['real'] ?? 0);
+    }
+    $full = orolado_force_real_total($userId, $expect);
+    if ($full !== null) return $full;
+    return null;
   }
   $dir = orolado_data_dir();
   $key = hash('sha256', $userId . '|' . $orderId);
@@ -511,26 +544,13 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
     fclose($fp);
     return $kept;
   }
-  $before = supabase_admin_vault($userId);
-  if (!$before) {
-    flock($fp, LOCK_UN);
-    fclose($fp);
-    return null;
-  }
-  $beforeReal = orolado_money($before['real'] ?? 0);
   if ($credit <= 0.009) {
     @file_put_contents($marker, '0');
     flock($fp, LOCK_UN);
     fclose($fp);
     return $beforeReal;
   }
-  $expect = orolado_money($beforeReal + $credit);
-  supabase_credit_real($userId, $credit, false);
-  $after = supabase_admin_vault($userId);
-  $got = $after ? orolado_money($after['real'] ?? 0) : null;
-  if ($got === null || abs($got - $expect) > 0.05) {
-    $got = orolado_put_real_exact($userId, $expect);
-  }
+  $got = orolado_force_real_total($userId, $expect);
   if ($got === null) {
     flock($fp, LOCK_UN);
     fclose($fp);

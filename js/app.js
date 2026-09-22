@@ -2346,7 +2346,10 @@
     var seen = {};
     function pushRow(row) {
       if (!row) return;
-      var key = [row.at, row.type, row.amount, row.ref].join('|');
+      var ref = String(row.ref || '');
+      var key = (ref && ref !== '—' && ref !== 'ledger')
+        ? [row.type, ref, row.amount].join('|')
+        : [row.at, row.type, row.amount, ref].join('|');
       if (seen[key]) return;
       seen[key] = 1;
       rows.push(row);
@@ -4454,7 +4457,10 @@
       if (isDep && !isPaidDepositStatus(code)) return false;
       if (!isDep && !isRealWithdrawRow(r)) return false;
       if (!(Math.abs(Number(r.amount) || 0) > 0)) return false;
-      var k = (r.ref || '') + '|' + r.amount + '|' + (r.at || '') + '|' + r.label;
+      var ref = String(r.ref || '');
+      var k = (ref && ref !== '—' && ref !== 'ledger')
+        ? (String(r.kind || r.label || '') + '|' + ref + '|' + r.amount)
+        : (ref + '|' + r.amount + '|' + (r.at || '') + '|' + r.label);
       if (seen[k]) return false;
       seen[k] = 1;
       return true;
