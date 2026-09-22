@@ -1,0 +1,15 @@
+﻿# ROLLBACK fantome 5.88
+powershell -ExecutionPolicy Bypass -Command "
+$root='C:\Users\PC\.gemini\antigravity\scratch\wheel-game'
+$src=Join-Path $root 'rollback-avant-fix-5-88-20260922'
+Copy-Item -Force (Join-Path $src 'store.js') (Join-Path $root 'js\store.js')
+Copy-Item -Force (Join-Path $src 'app.js') (Join-Path $root 'js\app.js')
+Copy-Item -Force (Join-Path $src 'supabase.js') (Join-Path $root 'js\supabase.js')
+Copy-Item -Force (Join-Path $src 'index.html') (Join-Path $root 'index.html')
+Copy-Item -Force (Join-Path $src 'orolado_lib.php') (Join-Path $root 'orolado_lib.php')
+Copy-Item -Force (Join-Path $src 'api.php') (Join-Path $root 'api.php')
+Write-Host 'Rollback 5.88 OK - demander git push'
+"
+
+# STRATEGIE 2 (si besoin apres rollback): forcer real=0 des que realDepositTotal serveur=0
+# dans applyOfficialReal quand opts.fromMe et pas fromTrade.

@@ -40,7 +40,7 @@
     return null;
   }
 
-  /** Garde le meilleur solde réel connu pour ce joueur (même e-mail, ancien id u_/UUID). */
+  /** Solde réel connu pour CE joueur seulement (même e-mail). Jamais l’id précédent d’un autre compte. */
   function bestKnownReal(userId, email) {
     var best = 0;
     var r = readRealLs(userId);
@@ -50,29 +50,35 @@
       var ledger = sessionStorage.getItem('oro_ledger');
       if (ledger) {
         var led = JSON.parse(ledger);
-        if (led && (led.uid === userId || (email && led.email === email)) && Number(led.real) > best) {
-          best = Number(led.real) || 0;
-        }
+        var mail = String(email || '').trim().toLowerCase();
+        var samePerson = led && (
+          led.uid === userId
+          || (mail && led.email && String(led.email).trim().toLowerCase() === mail)
+        );
+        if (samePerson && Number(led.real) > best) best = Number(led.real) || 0;
       }
     } catch (eLed) { /* ignore */ }
     try {
-      var mail = String(email || '').trim().toLowerCase();
-      if (mail) {
+      var mail2 = String(email || '').trim().toLowerCase();
+      if (mail2) {
         Object.keys(db.users || {}).forEach(function (id) {
           var u = db.users[id];
-          if (!u || String(u.email || '').trim().toLowerCase() !== mail) return;
+          if (!u || String(u.email || '').trim().toLowerCase() !== mail2) return;
           var lr = readRealLs(id);
           if (lr != null && lr > best) best = lr;
           if (vault[id] && Number(vault[id].real) > best) best = Number(vault[id].real) || 0;
         });
       }
-      var prevUid = localStorage.getItem('oro_uid');
-      if (prevUid && prevUid !== userId) {
-        var pr = readRealLs(prevUid);
-        if (pr != null && pr > best) best = pr;
-      }
     } catch (eScan) { /* ignore */ }
     return best > 0.009 ? best : 0;
+  }
+
+  function isVirginRealUser(user) {
+    if (!user) return true;
+    var dep = Number(user.realDepositTotal) || 0;
+    var stake = Number(user.realStakeVolume) || 0;
+    var trades = Number(user.realTrades) || 0;
+    return !(dep > 0.009 || stake > 0.009 || trades > 0);
   }
 
   function writeRealLs(id, value) {
@@ -410,10 +416,16 @@
           var incomingDep = Number(user._incomingDepositTotal != null ? user._incomingDepositTotal : user.realDepositTotal) || 0;
           var hadDep = Number(prev && prev.realDepositTotal) || 0;
           var newDeposit = incomingDep > hadDep + 0.009;
+          var virgin = isVirginRealUser(user) && !newDeposit && !(hadDep > 0.009);
           var keep = Math.max(prevReal, lsKeep != null ? lsKeep : 0, linkedKeep);
+          // Compte sans dépôt / sans mise réelle : ne jamais coller un solde fantôme (ex. 5.88 d’un autre compte).
+          if (virgin) keep = 0;
           var allowZero = !!(opts && opts.allowZero);
           if (official && isFinite(nextReal) && nextReal >= 0) {
-            if (!allowZero && nextReal <= 0.009 && keep > 0.009) {
+            if (virgin && nextReal <= 0.009) {
+              next.real = 0;
+              try { writeRealLs(user.id, 0); } catch (eClr) { /* ignore */ }
+            } else if (!allowZero && nextReal <= 0.009 && keep > 0.009) {
               next.real = keep;
             } else {
               next.real = nextReal;

@@ -920,6 +920,14 @@ if ($action === 'login') {
   if ($official <= 0.009 && function_exists('orolado_recover_wiped_real')) {
     $official = orolado_recover_wiped_real($db, $uid, is_array($user) ? $user : []);
   }
+  // Nouveau compte sans dépôt réel : jamais de solde fantôme (ex. 5.88 collé hors dépôt).
+  $depRows = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, is_array($user) ? $user : []) : 0.0;
+  $playedReal = function_exists('orolado_user_real_wagered')
+    ? orolado_user_real_wagered($db, (is_array($user) ? $user : []) + ['id' => $uid])
+    : orolado_money($user['realStakeVolume'] ?? 0);
+  if ($depRows <= 0.009 && $playedReal <= 0.009) {
+    $official = 0.0;
+  }
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
     $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
   }
@@ -2074,6 +2082,13 @@ if ($action === 'me') {
   if ($officialReal <= 0.009 && function_exists('orolado_recover_wiped_real')) {
     $again = orolado_recover_wiped_real($db, $uid, is_array($me) ? $me : []);
     if ($again > $officialReal + 0.009) $officialReal = $again;
+  }
+  $depRowsMe = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, is_array($me) ? $me : []) : 0.0;
+  $playedMe = function_exists('orolado_user_real_wagered')
+    ? orolado_user_real_wagered($db, (is_array($me) ? $me : []) + ['id' => $uid])
+    : orolado_money($me['realStakeVolume'] ?? 0);
+  if ($depRowsMe <= 0.009 && $playedMe <= 0.009) {
+    $officialReal = 0.0;
   }
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);
   if ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0) {

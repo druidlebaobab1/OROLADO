@@ -972,6 +972,8 @@ function orolado_user_deposit_total(array $db, string $uid, array $user = []): f
     if (!isset($db['users'][$id]) || !is_array($db['users'][$id])) continue;
     $field = orolado_money(max($field, orolado_money($db['users'][$id]['realDepositTotal'] ?? 0)));
   }
+  // Compteur seul sans aucune ligne de dépôt = fantôme (ex. 5.88 collé) : on ignore.
+  if ($sum <= 0.009 && $field > 0.009) return 0.0;
   return orolado_money(max($sum, $field));
 }
 
