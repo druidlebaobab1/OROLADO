@@ -1371,10 +1371,15 @@ if ($action === 'withdraw') {
     exit;
   }
   $amount = orolado_money($req['amount'] ?? 0);
+  $jsonRealWd = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
   $sbVault = supabase_admin_vault((string) $me['id']);
+  if ($sbVault && $jsonRealWd > orolado_money($sbVault['real'] ?? 0) + 0.05 && function_exists('orolado_put_real_exact')) {
+    orolado_put_real_exact((string) $me['id'], $jsonRealWd);
+    $sbVault = supabase_admin_vault((string) $me['id']);
+  }
   $real = $sbVault
     ? orolado_money($sbVault['real'] ?? 0)
-    : orolado_money($db['vault'][$me['id']]['real'] ?? 0);
+    : $jsonRealWd;
   $operatorEarly = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? '')));
   $minWithdraw = function_exists('orolado_withdraw_min_for')
     ? orolado_withdraw_min_for($operatorEarly)
@@ -1769,8 +1774,12 @@ if ($action === 'settleOrder') {
       $side = (($o['side'] ?? $reqSide) === 'put') ? 'put' : 'call';
       $entry = (float) ($o['openPrice'] ?? $o['entryPrice'] ?? $reqEntry);
       $profile = ($mode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
-      $voided = false;
-      $won = orolado_sealed_roll($payout, $profile);
+      if ($wantWon === null) {
+        $voided = false;
+        $won = orolado_sealed_roll($payout, $profile);
+      } else {
+        $won = (bool) $wantWon;
+      }
       $credit = orolado_trade_credit($won, $voided, $stake, $payout);
       $net = $voided ? 0 : ($won ? orolado_money($credit - $stake) : orolado_money(-$stake));
       $final = $voided ? 'void' : ($won ? 'won' : 'lost');
@@ -1824,8 +1833,12 @@ if ($action === 'settleOrder') {
       return ['ok' => false, 'reason' => 'Ordre introuvable', 'skip_write' => true];
     }
     $lateProfile = ($reqMode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
-    $voided = false;
-    $won = orolado_sealed_roll($reqPayout, $lateProfile);
+    if ($wantWon === null) {
+      $voided = false;
+      $won = orolado_sealed_roll($reqPayout, $lateProfile);
+    } else {
+      $won = (bool) $wantWon;
+    }
     $credit = orolado_trade_credit($won, $voided, $reqStake, $reqPayout);
     $net = $voided ? 0 : ($won ? orolado_money($credit - $reqStake) : orolado_money(-$reqStake));
     $final = $voided ? 'void' : ($won ? 'won' : 'lost');
@@ -1892,8 +1905,8 @@ if ($action === 'settleOrder') {
         ];
       } else if ($stakeSb >= 1) {
         $profileSb = $isAdmin ? 'admin' : 'real';
-        $wonSb = orolado_sealed_roll($payoutSb, $profileSb);
-        $voidSb = false;
+        $wonSb = ($wantWon === null) ? orolado_sealed_roll($payoutSb, $profileSb) : (bool) $wantWon;
+        $voidSb = ($wantWon === null) ? false : (bool) $voided;
         $creditSb = orolado_trade_credit($wonSb, $voidSb, $stakeSb, $payoutSb);
         $finalSb = $wonSb ? 'won' : 'lost';
         $settled = [
@@ -1956,7 +1969,26 @@ if ($action === 'settleOrder') {
     }
     $sbNow = supabase_admin_vault($payId);
     if ($sbNow) {
-      $vaultOut['real'] = orolado_money($sbNow['real'] ?? 0);
+      $sbRealNow = orolado_money($sbNow['real'] ?? 0);
+      if ($keptSettle !== null && $keptSettle > $sbRealNow + 0.05) {
+        if (function_exists('orolado_put_real_exact')) orolado_put_real_exact($payId, $keptSettle);
+        $vaultOut['real'] = $keptSettle;
+      } else {
+        $vaultOut['real'] = ($keptSettle !== null) ? $keptSettle : $sbRealNow;
+        if ($sbRealNow > $vaultOut['real'] + 0.05) $vaultOut['real'] = $sbRealNow;
+      }
+      with_db_lock(function ($box) use ($uid, $payId, $vaultOut) {
+        foreach (array_unique([$uid, $payId]) as $id) {
+          if ($id === '') continue;
+          if (!isset($box->db['vault'][$id]) || !is_array($box->db['vault'][$id])) {
+            $box->db['vault'][$id] = ['demo' => 0, 'real' => 0];
+          }
+          $box->db['vault'][$id]['real'] = orolado_money($vaultOut['real'] ?? 0);
+        }
+        return ['ok' => true];
+      });
+    } else if ($keptSettle !== null) {
+      $vaultOut['real'] = $keptSettle;
       with_db_lock(function ($box) use ($uid, $payId, $vaultOut) {
         foreach (array_unique([$uid, $payId]) as $id) {
           if ($id === '') continue;

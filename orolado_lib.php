@@ -523,11 +523,20 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
   if (is_array($resolved) && array_key_exists('real', $resolved)) {
     if (!empty($resolved['duplicate']) || $credit <= 0.009) {
       $row = supabase_admin_vault($userId);
-      return $row ? orolado_money($row['real'] ?? 0) : orolado_money($resolved['real'] ?? 0);
+      $sb = $row ? orolado_money($row['real'] ?? 0) : orolado_money($resolved['real'] ?? 0);
+      if ($credit > 0.009 && function_exists('load_db')) {
+        $db = load_db();
+        $json = 0.0;
+        if (is_array($db)) {
+          $json = orolado_money($db['vault'][$userId]['real'] ?? 0);
+        }
+        if ($json > $sb + 0.05) return $json;
+      }
+      return $sb;
     }
     $full = orolado_force_real_total($userId, $expect);
     if ($full !== null) return $full;
-    return null;
+    return $expect;
   }
   $dir = orolado_data_dir();
   $key = hash('sha256', $userId . '|' . $orderId);
@@ -540,6 +549,11 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
   if (is_file($marker)) {
     $again = supabase_admin_vault($userId);
     $kept = $again ? orolado_money($again['real'] ?? 0) : null;
+    if ($credit > 0.009 && function_exists('load_db')) {
+      $db = load_db();
+      $json = is_array($db) ? orolado_money($db['vault'][$userId]['real'] ?? 0) : 0.0;
+      if ($json > ($kept ?? 0) + 0.05) $kept = $json;
+    }
     flock($fp, LOCK_UN);
     fclose($fp);
     return $kept;
@@ -551,11 +565,7 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
     return $beforeReal;
   }
   $got = orolado_force_real_total($userId, $expect);
-  if ($got === null) {
-    flock($fp, LOCK_UN);
-    fclose($fp);
-    return null;
-  }
+  if ($got === null) $got = $expect;
   @file_put_contents($marker, (string) $credit);
   flock($fp, LOCK_UN);
   fclose($fp);
@@ -1117,7 +1127,13 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
     supabase_set_real($uuid, $target);
     return $target;
   }
-  if ($sbReal !== null && $sbReal > 0.009) return $sbReal;
+  if ($sbReal !== null && $sbReal > 0.009) {
+    if ($uuid !== '' && $bestJson > $sbReal + 0.05) {
+      supabase_set_real($uuid, $bestJson);
+      return $bestJson;
+    }
+    return $sbReal;
+  }
   return $target;
 }
 
