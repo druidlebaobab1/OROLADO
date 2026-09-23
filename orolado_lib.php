@@ -595,25 +595,13 @@ function orolado_take_real_stake(string $userId, string $orderId, float $stake):
 }
 
 /**
- * Crédit de fin de trade, une seule fois. Perte = 0 (mise déjà prise à l’ouverture).
- * Les PLUS (gains ×1.88 avec centimes) doivent passer : on n’exige plus un match
- * au centime près qui faisait rejeter tout le gain.
+ * Crédit de fin de trade, UNE seule fois.
+ * Mise déjà prise à l’ouverture → on crédite stake×cote (ex. 10×1.88 = 18.80), pas plus.
+ * Interdit : resolve_trade puis credit_real (ça doublait le gain / la mise).
  */
 function orolado_settle_real_credit(string $userId, string $orderId, float $credit): ?float {
   $credit = orolado_money(max(0, $credit));
   if ($orderId === '' || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
-
-  $beforeRow = supabase_admin_vault($userId);
-  if (!$beforeRow) return null;
-  $beforeReal = orolado_money($beforeRow['real'] ?? 0);
-
-  $resolved = supabase_resolve_trade($userId, $orderId, $credit);
-  if (is_array($resolved) && array_key_exists('real', $resolved)) {
-    $got = orolado_money($resolved['real']);
-    if ($credit <= 0.009 || orolado_credit_landed($beforeReal, $got, $credit) || !empty($resolved['duplicate'])) {
-      return $got;
-    }
-  }
 
   $dir = orolado_data_dir();
   if (!is_dir($dir)) @mkdir($dir, 0775, true);
@@ -624,40 +612,59 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
     if ($fp) fclose($fp);
     return null;
   }
+  $unlock = static function () use ($fp) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+  };
+
   if (is_file($marker)) {
     $again = supabase_admin_vault($userId);
     $kept = $again ? orolado_money($again['real'] ?? 0) : null;
-    flock($fp, LOCK_UN);
-    fclose($fp);
+    $unlock();
     return $kept;
   }
+
+  $beforeRow = supabase_admin_vault($userId);
+  if (!$beforeRow) {
+    $unlock();
+    return null;
+  }
+  $beforeReal = orolado_money($beforeRow['real'] ?? 0);
+
   if ($credit <= 0.009) {
-    @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => 0]));
-    flock($fp, LOCK_UN);
-    fclose($fp);
+    @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => 0, 'real' => $beforeReal]));
+    $unlock();
     return $beforeReal;
   }
 
+  // 1) Chemin atomique (idempotent par orderId).
+  $resolved = supabase_resolve_trade($userId, $orderId, $credit);
+  if (is_array($resolved) && array_key_exists('real', $resolved)) {
+    $got = orolado_money($resolved['real']);
+    @file_put_contents($marker, json_encode([
+      'at' => date('c'),
+      'credit' => $credit,
+      'real' => $got,
+      'via' => !empty($resolved['duplicate']) ? 'duplicate' : 'resolve',
+    ]));
+    $unlock();
+    return $got;
+  }
+
+  // 2) Filet unique si RPC absente — un seul credit_real, jamais après un resolve OK.
   $expect = orolado_money($beforeReal + $credit);
   supabase_credit_real($userId, $credit, false);
   $after = supabase_admin_vault($userId);
   $got = $after ? orolado_money($after['real'] ?? 0) : null;
-  if ($got === null || !orolado_credit_landed($beforeReal, $got, $credit)) {
+  if ($got === null || abs($got - $expect) > 0.05) {
     $got = orolado_put_real_exact($userId, $expect);
   }
   if ($got === null) {
-    // Dernier filet : relire — si le plus a quand même monté le coffre, on valide.
-    $again = supabase_admin_vault($userId);
-    $got = $again ? orolado_money($again['real'] ?? 0) : null;
-    if ($got === null || !orolado_credit_landed($beforeReal, $got, $credit)) {
-      flock($fp, LOCK_UN);
-      fclose($fp);
-      return null;
-    }
+    $unlock();
+    return null;
   }
-  @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => $credit, 'real' => $got]));
-  flock($fp, LOCK_UN);
-  fclose($fp);
+  @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => $credit, 'real' => $got, 'via' => 'fallback']));
+  $unlock();
   return $got;
 }
 
