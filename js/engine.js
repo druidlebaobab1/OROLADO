@@ -501,12 +501,9 @@
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || price;
     var vol = sim.vol;
-    // Pendant un trade : moins de bruit, courbe calme autour du trait d'entrée.
-    if (busyIn) {
-      if (sim.coreWave || sim.horizonCalm || sim.crashCalm) vol *= 0.38;
-      else vol *= 0.55;
-    }
-    var bias = busyIn ? 0.5 : 0.49;
+    // Pendant un trade : même volatilité / même rappel qu'à l'idle.
+    // (Le frein v1400 aplatissait la courbe et créait un « serpent » local.)
+    var bias = 0.49;
     if (!busyIn && sim.spike === 1) bias = 0.58;
     if (!busyIn && sim.spike === -1) bias = 0.40;
     if (sim.pulse) {
@@ -524,21 +521,19 @@
       var riseC = 0.00045 + Math.random() * 0.00035;
       var jitC = (Math.random() - 0.62) * price * vol;
       var midC = base * (sim.lean != null ? sim.lean : 0.997);
-      var pullC = busyIn ? 0 : (midC - price) * (sim.pullK != null ? sim.pullK : 0.05);
+      var pullC = (midC - price) * (sim.pullK != null ? sim.pullK : 0.05);
       nextOut = price + price * riseC * Math.min(0.45, Math.max(0.04, dtSec)) + jitC + pullC;
     } else {
-      var center = busyIn ? 0.5 : (sim.center != null ? sim.center : (bias || 0.5));
+      var center = sim.center != null ? sim.center : (bias || 0.5);
       var delta = (roll - center) * price * vol;
       var mid = base * (sim.lean != null ? sim.lean : 1);
       var gap = mid - price;
       var dist = base > 0 ? Math.abs(gap) / base : 0;
       var pullK = sim.pullK != null ? sim.pullK : 0.045;
-      var pull = busyIn ? 0 : gap * pullK * (1 + dist * 6);
+      var pull = gap * pullK * (1 + dist * 6);
       nextOut = price + delta + pull;
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
-    if (busyIn && asset && asset.id === 'stable') stepCap *= 0.55;
-    else if (busyIn) stepCap *= 0.72;
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
     return clampIndexPrice(nextOut, asset);
   }

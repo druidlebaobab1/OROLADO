@@ -1878,12 +1878,12 @@
       lo = p * 0.994;
       hi = p * 1.006;
     }
-    // Air supplémentaire au verrouillage : la courbe peut respirer sans bouger l'échelle Y
-    // (sinon après ~6–8 s le cadre s'élargit et le trait d'entrée semble sauter).
+    // Air au verrouillage : échelle Y figée (trait d'entrée stable), assez d'espace
+    // pour la volatilité pleine pendant le trade sans coller aux bords.
     var mid = (lo + hi) / 2;
     var span = hi - lo;
-    var minSpan = Math.abs(mid) * (assetId === 'stable' ? 0.0055 : 0.004);
-    var airSpan = Math.max(span * 1.22, minSpan);
+    var minSpan = Math.abs(mid) * (assetId === 'stable' ? 0.0088 : 0.0058);
+    var airSpan = Math.max(span * 1.40, minSpan);
     lo = mid - airSpan / 2;
     hi = mid + airSpan / 2;
     st.lockMin = lo;
