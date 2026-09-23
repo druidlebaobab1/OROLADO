@@ -406,7 +406,10 @@
   }
 
   function openRealStake() {
-    return openStakeSum('real');
+    // Compter TOUTES les mises ouvertes (confirmées incluses).
+    // Sinon après placeOrder OK, open=0 et un me() périmé (souvent au réveil mobile)
+    // est pris pour un « dépôt » → la mise remonte à l’écran.
+    return openLiveStakeSum('real');
   }
 
   function openLiveRealStake() {
@@ -430,11 +433,13 @@
    *  Important : un dépôt récent (holdDepositReal) ne doit PAS désactiver ce gel,
    *  sinon me()/poll remettent le solde au dépôt pendant/après le trade.
    *  Gel tant qu’un trade réel est ENCORE OUVERT (pas seulement « non confirmé »),
-   *  sinon me()/poll font hésiter le solde une fois placeOrder OK. */
+   *  sinon me()/poll font hésiter le solde une fois placeOrder OK.
+   *  Fenêtre post-settle élargie : les téléphones rappellent me() au réveil avec un
+   *  solde périmé plus haut → sans ça la mise « revient ». */
   function tradeBalanceFrozen() {
     if (openLiveRealStake() > 0.009) return true;
     if (D6.stakeReserve && Date.now() < D6.stakeReserve.until) return true;
-    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 12000) return true;
+    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 45000) return true;
     var locks = getBalanceLocks();
     if (locks && Date.now() < locks.until && locks.real != null) return true;
     return false;
@@ -744,13 +749,15 @@
     // Trade ouvert (confirmé ou non) : jamais écraser avec me/poll.
     if (open > 0.009 || openLiveRealStake() > 0.009) return;
     if (tradeBalanceFrozen() && !D6.holdDepositReal) return;
+    // Hausse sans dépôt réel (holdDepositReal) = me() périmé, surtout mobile — ignorer.
+    if (remoteHigher && !D6.holdDepositReal) return;
     var locks = getBalanceLocks();
     var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(incoming - D6.stakeReserve.once) <= 0.05;
     if (locks && Date.now() < locks.until && !remoteHigher && !fixingDouble && !D6.holdDepositReal) return;
     if (!isFinite(incoming) || incoming < 0) return;
     if (incoming <= 0.009 && local > 0.009 && !D6.holdDepositReal) return;
     if (Math.abs(incoming - local) <= 0.009) return;
-    if (adoptOfficialVault(remote.vault, { fromMe: true, allowRaise: true, force: !!D6.holdDepositReal })) updateBalance(false);
+    if (adoptOfficialVault(remote.vault, { fromMe: true, allowRaise: !!D6.holdDepositReal, force: !!D6.holdDepositReal })) updateBalance(false);
   }
   function holdScreenAwake() {
     if (!navigator.wakeLock || !navigator.wakeLock.request) return;
@@ -768,7 +775,9 @@
     if (u && D6.Engine.flushSettlements) {
       try { D6.Engine.flushSettlements(u); } catch (eF) { /* ignore */ }
     }
-    refreshRemoteVault();
+    // Mobile : visibilitychange tire me() au réveil — ne pas le faire pendant un trade
+    // (sinon solde périmé plus haut = faux « retour » de mise).
+    if (!tradeBalanceFrozen()) refreshRemoteVault();
     checkDepositReturn();
     try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (e2) { /* ignore */ }
   }
@@ -6261,11 +6270,11 @@
     if ($('closeIosInstall')) { /* bound in bindModals */ }
     if ($('btnIosInstallOk')) { /* bound in bindModals */ }
     if ('serviceWorker' in navigator) {
-      // Purge anciens SW (cache Android noir) puis enregistre v99.
+      // Force une nouvelle URL SW pour que les téléphones quittent v107 / vieux caches.
       navigator.serviceWorker.getRegistrations().then(function (regs) {
         return Promise.all(regs.map(function (r) { return r.unregister(); }));
       }).then(function () {
-        return navigator.serviceWorker.register('sw.js?v=107');
+        return navigator.serviceWorker.register('sw.js?v=1300');
       }).catch(function () { /* ignore */ });
     }
   }
