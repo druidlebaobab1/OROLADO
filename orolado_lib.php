@@ -1510,6 +1510,23 @@ function supabase_get_deposit(string $ref): ?array {
   return $rows[0];
 }
 
+/** Crée le coffre Supabase s’il manque (comme l’admin). Sans UUID → null. */
+function orolado_ensure_sb_vault(string $userId, float $minReal = 0.0): ?array {
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+  $v = supabase_admin_vault($userId);
+  if ($v) return $v;
+  $hdrs = supabase_admin_headers();
+  $url = rtrim(supabase_project_url(), '/');
+  if (!$hdrs || $url === '') return null;
+  supabase_http($url . '/rest/v1/vaults', $hdrs, json_encode([
+    'user_id' => $userId,
+    'real' => orolado_money(max(0, $minReal)),
+    'demo' => 1000000,
+    'updated_at' => date('c'),
+  ], JSON_UNESCAPED_UNICODE), 'POST');
+  return supabase_admin_vault($userId);
+}
+
 /** ok = coffre lu, missing = pas de ligne, error = lecture impossible, skip = id non UUID. */
 function supabase_vault_lookup(string $userId): array {
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) {
@@ -2668,28 +2685,80 @@ function credit_paid_deposit(array $hit): array {
     ];
   }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
-  // Crédit cloud toujours sur UUID Supabase (u_… ne peut pas écrire vaults.real).
+  // === CAISSE UNIQUE (= admin) : UUID + crédit Supabase AVANT COMPLETED / toast ===
   $payId = $uid;
   if (function_exists('orolado_balance_uuid')) {
     $resolvedPay = orolado_balance_uuid($db, $uid);
     if ($resolvedPay !== '') $payId = $resolvedPay;
   }
-  // Base = coffre Supabase (vérité). En erreur réseau : pas de top-up depuis un JSON périmé.
-  $lookBefore = function_exists('supabase_vault_lookup') ? supabase_vault_lookup($payId) : ['state' => 'skip'];
-  $sbState = (string) ($lookBefore['state'] ?? 'skip');
-  $curOfficial = null;
-  if ($sbState === 'ok') {
-    $curOfficial = orolado_money($lookBefore['real'] ?? 0);
-  } else if ($sbState !== 'error') {
-    $curOfficial = orolado_money($db['vault'][$uid]['real'] ?? 0);
-    if ($payId !== $uid) {
-      $curOfficial = orolado_money(max($curOfficial, orolado_money($db['vault'][$payId]['real'] ?? 0)));
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return ['ok' => false, 'reason' => 'no_uuid'];
+  }
+  $vaultRow = function_exists('orolado_ensure_sb_vault') ? orolado_ensure_sb_vault($payId, 0) : supabase_admin_vault($payId);
+  if (!$vaultRow) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return ['ok' => false, 'reason' => 'vault_error'];
+  }
+  $curOfficial = orolado_money($vaultRow['real'] ?? 0);
+  $expectAfter = orolado_money($curOfficial + $amount);
+  $refId = (string) ($dep['id'] ?? $hit['ref'] ?? '');
+
+  // Crédit coffre d’abord (même geste que admin_manual_credit). Pas de COMPLETED tant que ça n’a pas monté.
+  supabase_credit_real($payId, $amount, false);
+  $sbAfter = supabase_admin_vault($payId);
+  $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : null;
+  if ($got === null || !orolado_credit_landed($curOfficial, $got, $amount)) {
+    $forced = function_exists('orolado_put_real_exact') ? orolado_put_real_exact($payId, $expectAfter) : null;
+    if ($forced !== null) $got = $forced;
+    else if (function_exists('supabase_set_real')) {
+      supabase_set_real($payId, $expectAfter);
+      $sbAfter = supabase_admin_vault($payId);
+      $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : null;
     }
   }
-  $expectAfter = ($curOfficial !== null) ? orolado_money($curOfficial + $amount) : null;
-  if ($expectAfter !== null) {
-    if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $expectAfter);
-    else $db['vault'][$uid]['real'] = $expectAfter;
+  if ($got === null || !orolado_credit_landed($curOfficial, $got, $amount)) {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    // PENDING reste → webhook peut réessayer. Pas de toast mensonger.
+    return ['ok' => false, 'reason' => 'credit'];
+  }
+
+  // Journal dépôt cloud (sans 2e crédit via complete_deposit RPC).
+  if ($refId !== '') {
+    $sbDep = function_exists('supabase_get_deposit') ? supabase_get_deposit($refId) : null;
+    if (!$sbDep && function_exists('supabase_insert_deposit')) {
+      supabase_insert_deposit([
+        'id' => $refId,
+        'user_id' => $payId,
+        'amount' => $amount,
+        'status' => 'COMPLETED',
+        'operator' => $opEarly !== '' ? $opEarly : 'oxapay',
+        'reference' => $refId,
+        'completed_at' => date('c'),
+      ]);
+    } else if ($sbDep && function_exists('supabase_patch_deposit')) {
+      $stSb = strtoupper((string) ($sbDep['status'] ?? ''));
+      if ($stSb === 'PENDING' || $stSb === '') {
+        supabase_patch_deposit($refId, [
+          'status' => 'COMPLETED',
+          'amount' => $amount,
+          'completed_at' => date('c'),
+        ]);
+      }
+    }
+  }
+
+  // Miroir JSON = solde réellement lu en base (pas un inventé).
+  if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $got);
+  else $db['vault'][$uid]['real'] = $got;
+  if ($payId !== $uid) {
+    if (!isset($db['vault'][$payId]) || !is_array($db['vault'][$payId])) {
+      $db['vault'][$payId] = ['demo' => 0, 'real' => 0];
+    }
+    $db['vault'][$payId]['real'] = $got;
   }
   $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
   $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
@@ -2707,7 +2776,6 @@ function credit_paid_deposit(array $hit): array {
     $db['processedTx'][] = $extId;
     $db['processedTx'] = array_values(array_unique(array_slice($db['processedTx'], -400)));
   }
-  $refId = (string) ($dep['id'] ?? $hit['ref'] ?? '');
   if ($refId !== '') {
     $db['processedTx'][] = $refId;
     $db['processedTx'] = array_values(array_unique(array_slice($db['processedTx'], -400)));
@@ -2736,33 +2804,6 @@ function credit_paid_deposit(array $hit): array {
   fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
-  supabase_complete_deposit((string) ($dep['id'] ?? $refHit), $amount, (string) $payId);
-  // Compléter seulement le delta manquant si on connaît le solde avant. Jamais sync_real_min(JSON).
-  $sbAfter = supabase_admin_vault($payId);
-  $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : null;
-  if ($expectAfter !== null && $got !== null) {
-    $missing = orolado_money($expectAfter - $got);
-    if ($missing > 0.05) {
-      supabase_credit_real($payId, $missing, false);
-      $sbAfter = supabase_admin_vault($payId);
-      $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : $expectAfter;
-    }
-  }
-  // Pas de second crédit aveugle si le coffre est illisible : complete_deposit a déjà pu créditer.
-  if ($got === null) $got = $expectAfter ?? orolado_money(($db['vault'][$uid]['real'] ?? 0));
-  if (function_exists('with_db_lock')) {
-    with_db_lock(function ($box) use ($uid, $got) {
-      if (function_exists('orolado_mirror_vault_real')) {
-        orolado_mirror_vault_real($box->db, $uid, orolado_money($got));
-      } else {
-        if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) {
-          $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
-        }
-        $box->db['vault'][$uid]['real'] = orolado_money($got);
-      }
-      return ['ok' => true];
-    });
-  }
   $op = strtolower((string) ($dep['operator'] ?? $txOp));
   if (in_array($op, ['flutterwave', 'flw', 'oxapay', 'usdt'], true) && $amount > 0) {
     orolado_meta_capi_purchase_later([
