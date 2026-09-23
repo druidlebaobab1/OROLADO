@@ -1232,6 +1232,19 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   if (!admin_is_uuid($uid) && $uid !== 'admin_master' && !admin_is_admin_account($uid)) {
     return ['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.', 'real' => 0.0];
   }
+  $opKey = 'adm:' . $uid . ':' . sprintf('%.2f', $delta) . ':' . substr(md5(strtolower(trim($motif))), 0, 10) . ':' . date('YmdHi');
+  if (function_exists('orolado_cash_op_get')) {
+    $prev = orolado_cash_op_get($opKey);
+    if (is_array($prev) && !empty($prev['ok'])) {
+      return [
+        'ok' => true,
+        'real' => orolado_money($prev['real'] ?? 0),
+        'delta' => $delta,
+        'ref' => (string) ($prev['ref'] ?? ''),
+        'duplicate' => true,
+      ];
+    }
+  }
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
     $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
   }
@@ -1310,8 +1323,8 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     );
   }
   admin_persist_json_real($uid, $got, $txRow, $depRow);
-  if (admin_is_uuid($uid) && function_exists('supabase_sync_real_min')) {
-    supabase_sync_real_min($uid, $got);
+  if (function_exists('orolado_cash_op_put')) {
+    orolado_cash_op_put($opKey, ['ok' => true, 'real' => $got, 'ref' => $ref, 'delta' => $delta]);
   }
   return ['ok' => true, 'real' => $got, 'delta' => $delta, 'ref' => $ref];
 }
@@ -1393,6 +1406,8 @@ if ($isAjax) {
     if (!$targets) {
       admin_json(['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.']);
     }
+    // UNE CAISSE : un seul id (UUID), jamais une boucle multi-cibles.
+    $targets = [$targets[0]];
     $ok = false;
     $lastReal = 0.0;
     $reason = 'Échec';
@@ -1423,6 +1438,7 @@ if ($isAjax) {
             'status' => 'COMPLETED',
           ]);
         }
+        break;
       } else {
         $reason = (string) ($res['reason'] ?? $reason);
       }

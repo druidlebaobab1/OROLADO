@@ -2079,10 +2079,7 @@ if ($action === 'me') {
   $officialReal = function_exists('orolado_sync_official_real')
     ? orolado_sync_official_real($uid, $jsonReal)
     : $jsonReal;
-  if ($officialReal <= 0.009 && function_exists('orolado_recover_wiped_real')) {
-    $again = orolado_recover_wiped_real($db, $uid, is_array($me) ? $me : []);
-    if ($again > $officialReal + 0.009) $officialReal = $again;
-  }
+  // UNE CAISSE : plus de recover qui réécrit Supabase depuis les livres.
   $depRowsMe = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, is_array($me) ? $me : []) : 0.0;
   $playedMe = function_exists('orolado_user_real_wagered')
     ? orolado_user_real_wagered($db, (is_array($me) ? $me : []) + ['id' => $uid])

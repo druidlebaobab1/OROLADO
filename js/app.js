@@ -1610,17 +1610,25 @@
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
     var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
-    if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
     // Gel trade : ignorer me/poll/realtime ; seuls place/settle (fromTrade) ou dépôt.
     if (tradeBalanceFrozen() && !fromTrade && !D6.holdDepositReal) return false;
+    // UNE CAISSE : réponse serveur (me / dépôt) = vérité, sans combat local.
+    if (fromMe || fromTrade) {
+      lastOfficialReal = real;
+      D6.holdPull = true;
+      D6.Store.setBalanceMode(u, 'real', real);
+      D6.holdPull = false;
+      return true;
+    }
+    if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
     var stalePreStake = reserve && Date.now() < reserve.until && real > local + 0.009
       && Math.abs(real - (local + Number(reserve.stake) || 0)) <= 0.09;
     if (stalePreStake && !D6.holdDepositReal && !force) return false;
     if (!force && !undoingDouble && !D6.holdDepositReal) {
-      if (locked && real + 0.02 < local && !fromMe && !fromTrade) return false;
-      if (recentSettle && Math.abs(real - local) > 0.02 && !fromMe && !fromTrade) return false;
+      if (locked && real + 0.02 < local) return false;
+      if (recentSettle && Math.abs(real - local) > 0.02) return false;
     }
-    if (real > local + 0.009 && !allowRaise && !force && !fromMe && !fromTrade && !undoingDouble && !D6.holdDepositReal) return false;
+    if (real > local + 0.009 && !allowRaise && !force && !undoingDouble && !D6.holdDepositReal) return false;
     lastOfficialReal = real;
     D6.holdPull = true;
     D6.Store.setBalanceMode(u, 'real', real);

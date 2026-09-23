@@ -422,13 +422,13 @@
           if (virgin) keep = 0;
           var allowZero = !!(opts && opts.allowZero);
           if (official && isFinite(nextReal) && nextReal >= 0) {
+            // UNE CAISSE : le serveur gagne. Plus de « keep » localStorage qui double / bloque.
             if (virgin && nextReal <= 0.009) {
               next.real = 0;
               try { writeRealLs(user.id, 0); } catch (eClr) { /* ignore */ }
-            } else if (!allowZero && nextReal <= 0.009 && keep > 0.009) {
-              next.real = keep;
             } else {
               next.real = nextReal;
+              try { writeRealLs(user.id, nextReal); } catch (eOff) { /* ignore */ }
             }
           } else if (isFinite(nextReal) && (nextReal > keep + 0.009 || !!D6.holdDepositReal || newDeposit)) {
             next.real = Math.max(nextReal, keep);
