@@ -2060,7 +2060,8 @@
       } else {
       var fit;
       if (activeAsset === 'stable' || activeAsset === 'horizon50') {
-        fit = routeCamera(viewMin, viewMax, head, activeAsset);
+        // Au switch / premier fit : centrer pile sur la tête (pas l'ancien cadre d'un autre actif).
+        fit = routeCamera(0, 0, head, activeAsset);
       } else {
         fit = fitVisibleY(candles, extrasY);
         // Plafonner le span au format route pour éviter un zoom bizarre au 1er fit.
@@ -2691,11 +2692,8 @@
       if (headPriceMotion[id]) headPriceMotion[id].value = NaN;
       viewMin = 0;
       viewMax = 0;
-      if (document.documentElement.classList.contains('fs-trade') ||
-        (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on'))) {
-        wantFitY = true;
-        pendingYAnchor = null;
-      }
+      wantFitY = true;
+      pendingYAnchor = null;
       if (steer && steer.assetId !== id) steer = null;
       var liveBuf = liveBuffer(id);
       var st = ensureAssetState(id);
