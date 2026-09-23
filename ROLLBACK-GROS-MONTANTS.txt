@@ -1,0 +1,7 @@
+﻿RESTORE parachute gros montants (20260923-060322)
+
+PowerShell (depuis la racine du projet):
+  Copy-Item -Force -Recurse "photo-avant-fix-gros-montants-20260923-060322\*" .
+  # puis: git add index.html js css api.php orolado_lib.php ; commit/push si besoin
+
+Contenu: index.html, js/, css/, + php si presents.
