@@ -1216,15 +1216,15 @@
     try { localStorage.setItem('oro_last_mode', isReal ? 'real' : 'demo'); } catch (eMode) { /* ignore */ }
     if (isReal) lastOfficialReal = real;
     else lastOfficialDemo = demo;
-    // Afficher uniquement le solde store (vérité serveur / débit local démo).
-    // Ne jamais soustraire les mises ouvertes ici → ça faisait le yo-yo (10↔11↔12).
-    var active = isReal ? real : demo;
+    // Réel : store = vérité serveur ; soustraire SEULEMENT les mises pas encore confirmées.
+    // applyOfficialReal puis markTradeFunded puis 1 seul paint → pas de yo-yo.
+    var active = isReal ? Math.max(0, real - openStakeSum('real')) : demo;
     var modeKey = isReal ? 'real' : 'demo';
     if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
     lastPaintedMode = modeKey;
     paintBalanceNow(active, !!flash);
     if ($('profWalletBal')) {
-      $('profWalletBal').textContent = D6.fmtMoney(real);
+      $('profWalletBal').textContent = D6.fmtMoney(isReal ? active : real);
     }
     if ($('balanceAlt')) {
       $('balanceAlt').textContent = '';
@@ -2558,7 +2558,9 @@
       if (hudSeen[id]) return;
       hudSeen[id] = true;
     }
-    updateBalance(true);
+    var outcomeMode = (res.trade && res.trade.mode) === 'real' ? 'real' : 'demo';
+    // Réel : le solde bouge seulement après settleOrder (vault). Pas de paint intermédiaire.
+    if (outcomeMode !== 'real') updateBalance(true);
     if (res.voided) {
       toast('Égalité — mise rendue', '');
       playNeutralTick();
