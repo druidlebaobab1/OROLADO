@@ -1615,8 +1615,10 @@
     var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
     // Gel trade : me/poll bloqués ; place/settle (fromTrade) OK ; dépôt (holdDepositReal) OK.
     if (tradeBalanceFrozen() && !fromTrade && !D6.holdDepositReal) return false;
-    // UNE CAISSE : réponse serveur (me / dépôt) = vérité, sans combat local.
+    // UNE CAISSE : réponse serveur (me / dépôt / trade) = vérité.
+    // Seul un zéro explicite (allowZero) peut écraser un solde local positif.
     if (fromMe || fromTrade) {
+      if (real <= 0.009 && local > 0.009 && !(opts && opts.allowZero)) return false;
       lastOfficialReal = real;
       D6.holdPull = true;
       D6.Store.setBalanceMode(u, 'real', real);
@@ -2597,7 +2599,12 @@
           clearStakeReserve();
           var srvReal = Number(remote.vault.real);
           if (isFinite(srvReal) && srvReal >= 0) {
-            applyOfficialReal(srvReal, { fromMe: true, force: true, fromTrade: true, allowZero: true });
+            applyOfficialReal(srvReal, {
+              fromMe: true,
+              force: true,
+              fromTrade: true,
+              allowZero: srvReal <= 0.009
+            });
             updateBalance(true);
           }
           D6.holdRemote = false;
@@ -2608,7 +2615,13 @@
       function forceMeReal() {
         return D6.Api.post('me', {}, 20000).then(function (meRemote) {
           if (meRemote && meRemote.ok && meRemote.vault && meRemote.vault.real != null) {
-            applyOfficialReal(Number(meRemote.vault.real), { fromMe: true, force: true, fromTrade: true, allowZero: true });
+            var meReal = Number(meRemote.vault.real);
+            applyOfficialReal(meReal, {
+              fromMe: true,
+              force: true,
+              fromTrade: true,
+              allowZero: isFinite(meReal) && meReal <= 0.009
+            });
             updateBalance(true);
           }
           D6.holdRemote = false;
@@ -2760,7 +2773,8 @@
       };
       function applyPlacedVault(remote) {
         if (watchBan(remote)) return true;
-        if (remote && remote.ok && mode === 'real' && remote.vault && remote.vault.real != null) {
+        if (mode === 'real') {
+          if (!(remote && remote.ok && remote.vault && remote.vault.real != null)) return false;
           var srvReal = Number(remote.vault.real);
           var reserveNow = D6.stakeReserve;
           if (reserveNow && Date.now() < reserveNow.until && isFinite(srvReal)) {
@@ -2770,7 +2784,6 @@
             if (srvReal + 0.05 < once && once - srvReal <= stakeNow + 0.09) srvReal = once;
           }
           if (isFinite(srvReal) && srvReal >= 0) {
-            // Ne jamais forcer un zéro serveur qui efface un solde local encore positif.
             applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false, fromTrade: true });
             updateBalance(true);
           }
@@ -2778,10 +2791,38 @@
         }
         return !!(remote && remote.ok);
       }
+      function restoreRealFromServer() {
+        clearStakeReserve();
+        return D6.Api.post('me', {}, 20000).then(function (meRemote) {
+          if (meRemote && meRemote.ok && meRemote.vault && meRemote.vault.real != null) {
+            var meReal = Number(meRemote.vault.real);
+            applyOfficialReal(meReal, {
+              fromMe: true,
+              force: true,
+              allowZero: isFinite(meReal) && meReal <= 0.009
+            });
+            updateBalance(true);
+          } else if (realBefore != null && isFinite(realBefore)) {
+            applyOfficialReal(realBefore, { fromTrade: true, force: true });
+            updateBalance(true);
+          }
+        }, function () {
+          if (realBefore != null && isFinite(realBefore)) {
+            applyOfficialReal(realBefore, { fromTrade: true, force: true });
+            updateBalance(true);
+          }
+        });
+      }
       function postPlace(triesLeft) {
         return D6.Api.post('placeOrder', placeBody, 25000).then(function (remote) {
           if (applyPlacedVault(remote)) return;
           if (triesLeft > 1) return postPlace(triesLeft - 1);
+          toast(t('insufficient') || 'Mise non enregistrée', 'err', 2500);
+          return restoreRealFromServer();
+        }, function () {
+          if (triesLeft > 1) return postPlace(triesLeft - 1);
+          toast(t('insufficient') || 'Mise non enregistrée', 'err', 2500);
+          return restoreRealFromServer();
         });
       }
       postPlace(3);

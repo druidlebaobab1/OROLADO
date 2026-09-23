@@ -920,12 +920,13 @@ if ($action === 'login') {
   if ($official <= 0.009 && function_exists('orolado_recover_wiped_real')) {
     $official = orolado_recover_wiped_real($db, $uid, is_array($user) ? $user : []);
   }
-  // Nouveau compte sans dépôt réel : jamais de solde fantôme (ex. 5.88 collé hors dépôt).
+  // Nouveau compte sans dépôt : pas de fantôme. Mais ne JAMAIS écraser un coffre
+  // Supabase déjà positif (dépôt cloud / admin) juste parce que le JSON local n’a pas la ligne.
   $depRows = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, is_array($user) ? $user : []) : 0.0;
   $playedReal = function_exists('orolado_user_real_wagered')
     ? orolado_user_real_wagered($db, (is_array($user) ? $user : []) + ['id' => $uid])
     : orolado_money($user['realStakeVolume'] ?? 0);
-  if ($depRows <= 0.009 && $playedReal <= 0.009) {
+  if ($official <= 0.009 && $depRows <= 0.009 && $playedReal <= 0.009) {
     $official = 0.0;
   }
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
@@ -1560,13 +1561,20 @@ if ($action === 'placeOrder') {
   $debitedOfficial = false;
   $sbOrderKept = false;
   if ($mode === 'real') {
+    // UNE CAISSE : sans UUID Supabase, pas de paris réel (sinon JSON seul → solde collé au dépôt).
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Coffre réel introuvable']);
+      exit;
+    }
     $sbVault = supabase_admin_vault($payId);
     if ($already) {
-      $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : null;
-    } else if ($sbVault || preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) {
-      $curReal = $sbVault
-        ? orolado_money($sbVault['real'] ?? 0)
-        : orolado_money($db['vault'][$uid]['real'] ?? 0);
+      $officialReal = $sbVault ? orolado_money($sbVault['real'] ?? 0) : orolado_money($db['vault'][$uid]['real'] ?? 0);
+    } else {
+      if (!$sbVault) {
+        echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Coffre réel introuvable']);
+        exit;
+      }
+      $curReal = orolado_money($sbVault['real'] ?? 0);
       if ($curReal + 0.009 < $stake) {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
         exit;
@@ -1752,6 +1760,10 @@ if ($action === 'settleOrder') {
   if ($reqMode === 'real' && function_exists('orolado_balance_uuid')) {
     $resolvedPay = orolado_balance_uuid($db, $uid);
     if ($resolvedPay !== '') $payId = $resolvedPay;
+  }
+  if ($reqMode === 'real' && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Coffre réel introuvable']);
+    exit;
   }
   $isAdmin = orolado_is_admin_user($me);
   $settled = with_db_lock(function ($box) use ($oid, $uid, $wantWon, $voided, $closePrice, $reqStake, $reqMode, $reqPayout, $reqBal, $reqSide, $reqEntry, $isAdmin) {
@@ -1956,6 +1968,31 @@ if ($action === 'settleOrder') {
       }
     }
   }
+  // Filet : ordre absent du JSON et de Supabase (placeOrder réseau raté) —
+  // on règle quand même avec la mise client, puis take/settle écrivent le coffre.
+  if (empty($settled['ok']) && $reqMode === 'real' && $oid !== '' && $reqStake >= 1) {
+    $profileLate = $isAdmin ? 'admin' : 'real';
+    if ($wantWon === null) {
+      $voided = false;
+      $wonLate = orolado_sealed_roll($reqPayout, $profileLate);
+    } else {
+      $wonLate = (bool) $wantWon;
+    }
+    $voidLate = ($wantWon === null) ? false : (bool) $voided;
+    $creditLate = orolado_trade_credit($wonLate, $voidLate, $reqStake, $reqPayout);
+    $settled = [
+      'ok' => true,
+      'won' => $wonLate,
+      'voided' => $voidLate,
+      'net' => $voidLate ? 0 : ($wonLate ? orolado_money($creditLate - $reqStake) : orolado_money(-$reqStake)),
+      'payout' => $reqPayout,
+      'credit' => $creditLate,
+      'mode' => 'real',
+      'fresh' => true,
+      'late' => true,
+      'vault' => $db['vault'][$uid] ?? ['demo' => 0, 'real' => 0]
+    ];
+  }
   if (empty($settled['ok'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => $settled['reason'] ?? 'Ordre introuvable']);
     exit;
@@ -1963,10 +2000,10 @@ if ($action === 'settleOrder') {
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
   if (($settled['mode'] ?? '') === 'real') {
     $stakeForTake = $reqStake > 0.009 ? $reqStake : 0.0;
-    // Si placeOrder n’a pas débité (réseau / race), on prend la mise ICI une seule fois.
+    // Mise obligatoire une seule fois (place ou ici). Perte sans débit = bug « revient au dépôt ».
     if ($stakeForTake > 0.009 && function_exists('orolado_take_real_stake')) {
       $afterTake = orolado_take_real_stake($payId, $oid, $stakeForTake);
-      if ($afterTake === null && orolado_money($settled['credit'] ?? 0) > 0.009) {
+      if ($afterTake === null) {
         echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise non enregistrée']);
         exit;
       }
@@ -2088,12 +2125,13 @@ if ($action === 'me') {
   $officialReal = function_exists('orolado_sync_official_real')
     ? orolado_sync_official_real($uid, $jsonReal)
     : $jsonReal;
-  // UNE CAISSE : plus de recover qui réécrit Supabase depuis les livres.
+  // UNE CAISSE : lecture coffre. Ne jamais forcer 0 si Supabase a encore de l’argent
+  // (sinon déco/reco → solde à zéro alors que le dépôt est bien en base).
   $depRowsMe = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, is_array($me) ? $me : []) : 0.0;
   $playedMe = function_exists('orolado_user_real_wagered')
     ? orolado_user_real_wagered($db, (is_array($me) ? $me : []) + ['id' => $uid])
     : orolado_money($me['realStakeVolume'] ?? 0);
-  if ($depRowsMe <= 0.009 && $playedMe <= 0.009) {
+  if ($officialReal <= 0.009 && $depRowsMe <= 0.009 && $playedMe <= 0.009) {
     $officialReal = 0.0;
   }
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);

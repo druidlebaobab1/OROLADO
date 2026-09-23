@@ -422,10 +422,13 @@
           if (virgin) keep = 0;
           var allowZero = !!(opts && opts.allowZero);
           if (official && isFinite(nextReal) && nextReal >= 0) {
-            // UNE CAISSE : le serveur gagne. Plus de « keep » localStorage qui double / bloque.
+            // UNE CAISSE : le serveur gagne. Ne pas coller un 0 fantôme sur un solde déjà crédité
+            // sauf allowZero (vraie ruine après pertes confirmées).
             if (virgin && nextReal <= 0.009) {
               next.real = 0;
               try { writeRealLs(user.id, 0); } catch (eClr) { /* ignore */ }
+            } else if (nextReal <= 0.009 && keep > 0.009 && !(opts && opts.allowZero)) {
+              next.real = keep;
             } else {
               next.real = nextReal;
               try { writeRealLs(user.id, nextReal); } catch (eOff) { /* ignore */ }
