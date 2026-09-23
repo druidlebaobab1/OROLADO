@@ -283,7 +283,7 @@
     if (spiked && id === 'boomspike') return 0.004;
     if (id === 'crash300') return 0.00055;
     if (id === 'horizon50') return 0.00038;
-    if (id === 'stable') return 0.00075;
+    if (id === 'stable') return 0.00042;
     if (id === 'nexusprime') return 0.0014;
     if (id === 'boomspike') return 0.0012;
     if (id === 'v75') return 0.0017;
@@ -398,7 +398,7 @@
     // Les volatils restent centrés (center 0.5, lean 1) et tournent
     // au milieu de leur plage, avant le plafond de bande.
     v100: { mode: 'candles', vol: 0.0026, stepMs: 70, pullK: 0.050, center: 0.50, lean: 1 },
-    stable: { mode: 'line', vol: 0.00105, color: '#ff3366', coreWave: true, stepMs: 140, pullK: 0.072, center: 0.53, lean: 0.998 },
+    stable: { mode: 'line', vol: 0.00052, color: '#ff3366', coreWave: true, stepMs: 170, pullK: 0.048, center: 0.515, lean: 0.9985 },
     apex500: { mode: 'candles', vol: 0.0038, stepMs: 50, pullK: 0.058, center: 0.50, lean: 1 },
     horizon50: { mode: 'line', vol: 0.00048, color: '#ff9800', horizonCalm: true, tickMs: 200, stepMs: 180, pullK: 0.080, center: 0.54, lean: 0.9975 },
     boomspike: { mode: 'candles', vol: 0.0016, boomBurst: true, stepMs: 80, pullK: 0.045, center: 0.50, lean: 1 },
@@ -501,6 +501,11 @@
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || price;
     var vol = sim.vol;
+    // Pendant un trade : moins de bruit, courbe calme autour du trait d'entrée.
+    if (busyIn) {
+      if (sim.coreWave || sim.horizonCalm || sim.crashCalm) vol *= 0.38;
+      else vol *= 0.55;
+    }
     var bias = busyIn ? 0.5 : 0.49;
     if (!busyIn && sim.spike === 1) bias = 0.58;
     if (!busyIn && sim.spike === -1) bias = 0.40;
@@ -532,6 +537,8 @@
       nextOut = price + delta + pull;
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
+    if (busyIn && asset && asset.id === 'stable') stepCap *= 0.55;
+    else if (busyIn) stepCap *= 0.72;
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
     return clampIndexPrice(nextOut, asset);
   }

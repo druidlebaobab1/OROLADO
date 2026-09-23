@@ -1878,6 +1878,14 @@
       lo = p * 0.994;
       hi = p * 1.006;
     }
+    // Air supplémentaire au verrouillage : la courbe peut respirer sans bouger l'échelle Y
+    // (sinon après ~6–8 s le cadre s'élargit et le trait d'entrée semble sauter).
+    var mid = (lo + hi) / 2;
+    var span = hi - lo;
+    var minSpan = Math.abs(mid) * (assetId === 'stable' ? 0.0055 : 0.004);
+    var airSpan = Math.max(span * 1.22, minSpan);
+    lo = mid - airSpan / 2;
+    hi = mid + airSpan / 2;
     st.lockMin = lo;
     st.lockMax = hi;
     st.lockUntil = Math.max(st.lockUntil || 0, untilMs);
@@ -2011,6 +2019,14 @@
     var extrasY = [head];
     if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
     if (wantFitY) {
+      if (holdLock && st.lockMax > st.lockMin) {
+        // Ne jamais recadrer un trade déjà verrouillé (évite le saut du trait).
+        viewMin = st.lockMin;
+        viewMax = st.lockMax;
+        strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
+        wantFitY = false;
+        pendingYAnchor = null;
+      } else {
       var fit = fitVisibleY(candles, extrasY);
       viewMin = fit.min;
       viewMax = fit.max;
@@ -2021,6 +2037,7 @@
       }
       wantFitY = false;
       pendingYAnchor = null;
+      }
     } else if (fsOn && viewMax > viewMin) {
       if (holdLock && st.lockMax > st.lockMin) {
         // Plein écran + trade : garder le cadre figé (pas de lerp qui fait monter le trait).
@@ -2071,18 +2088,10 @@
     var keepAir = rawVisibleSpan * Y_PAD_RATIO;
     var keepAirLow = rawVisibleSpan * padBottomRatio();
     if (holdLock && st.lockMax > st.lockMin) {
-      // Expansion douce uniquement si la tête sort du cadre — jamais de refit brutal.
-      var lockSpan = Math.max(viewMax - viewMin, Math.abs(head) * 0.001);
-      var airHi = lockSpan * 0.08;
-      var airLo = lockSpan * 0.08;
-      if (head > viewMax - airHi) viewMax += ((head + airHi) - viewMax) * 0.05;
-      if (head < viewMin + airLo) viewMin += ((head - airLo) - viewMin) * 0.05;
-      if (isFinite(strikeP) && strikeP > 0) {
-        if (strikeP > viewMax - airHi) viewMax = strikeP + airHi;
-        if (strikeP < viewMin + airLo) viewMin = strikeP - airLo;
-      }
-      st.lockMin = viewMin;
-      st.lockMax = viewMax;
+      // Cadre 100 % figé pendant le trade : le trait d'entrée ne bouge plus à l'écran.
+      // La courbe reste dans le cadre ; pas d'expansion qui ferait « sauter » le repère.
+      viewMin = st.lockMin;
+      viewMax = st.lockMax;
     } else if (!fsOn && !holdLock) {
       if (head > viewMax - keepAir) viewMax += ((head + keepAir) - viewMax) * 0.18;
       if (head < viewMin + keepAirLow) viewMin += ((head - keepAirLow) - viewMin) * 0.18;
