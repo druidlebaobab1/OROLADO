@@ -1850,18 +1850,27 @@
   }
 
   // Route Y fixe par actif : la tête serpente dedans, le corps ne rebondit pas.
+  // Stable / Horizon : calibrage validé — ne pas retoucher leurs coefficients.
   function routeSpanPct(assetId) {
+    var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
+    var pct;
     if (assetId === 'stable') return 0.0070;
     if (assetId === 'horizon50') return 0.0062;
-    if (assetId === 'crash300') return 0.0075;
-    if (assetId === 'goldtrend') return 0.016;
-    if (assetId === 'titanpulse') return 0.020;
-    if (assetId === 'apex500') return 0.014;
-    if (assetId === 'boomspike') return 0.013;
-    if (assetId === 'v75') return 0.011;
-    if (assetId === 'nexusprime') return 0.010;
-    if (assetId === 'v100') return 0.011;
-    return 0.011;
+    if (assetId === 'crash300') pct = 0.0155;
+    else if (assetId === 'boomspike') pct = 0.026;
+    else if (assetId === 'goldtrend') pct = 0.015;
+    else if (assetId === 'titanpulse') pct = 0.018;
+    else if (assetId === 'apex500') pct = 0.013;
+    else if (assetId === 'v75') pct = 0.0115;
+    else if (assetId === 'nexusprime') pct = 0.0105;
+    else if (assetId === 'v100') pct = 0.0115;
+    else pct = 0.011;
+    // Mobile (1er cran) : un peu plus d'air pour que les pics ne collent pas aux bords.
+    if (narrow && assetId !== 'stable' && assetId !== 'horizon50') {
+      if (assetId === 'boomspike' || assetId === 'crash300') pct *= 1.08;
+      else pct *= 1.20;
+    }
+    return pct;
   }
 
   function routeCamera(prevMin, prevMax, head, assetId) {
@@ -1870,11 +1879,14 @@
     var wantSpan = Math.abs(h) * routeSpanPct(assetId);
     var span;
     var mid;
+    var lockedPair = (assetId === 'stable' || assetId === 'horizon50');
+    var critical = (assetId === 'crash300' || assetId === 'boomspike');
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
       span = span * 0.997 + wantSpan * 0.003;
-      var loS = wantSpan * 0.90;
-      var hiS = wantSpan * 1.18;
+      // Crash / Boom : span très verrouillé (évite l'étirement progressif).
+      var loS = wantSpan * (critical ? 0.96 : 0.90);
+      var hiS = wantSpan * (critical ? 1.06 : (lockedPair ? 1.18 : 1.12));
       if (span < loS) span = loS;
       if (span > hiS) span = hiS;
       mid = (prevMin + prevMax) / 2;
@@ -1883,11 +1895,10 @@
       mid = h;
     }
     var half = span / 2;
-    var edge = span * 0.20;
+    var edge = span * (critical ? 0.26 : 0.20);
     var lo = mid - half;
     var hi = mid + half;
-    // Recentre doucement seulement si la tête approche le bord — jamais de refit hist.
-    var panK = (assetId === 'stable' || assetId === 'horizon50') ? 0.045 : 0.07;
+    var panK = lockedPair ? 0.045 : (critical ? 0.038 : 0.055);
     if (h > hi - edge) mid += (h - (hi - edge)) * panK;
     if (h < lo + edge) mid += (h - (lo + edge)) * panK;
     return { min: mid - half, max: mid + half };
@@ -2059,19 +2070,8 @@
         pendingYAnchor = null;
       } else {
       var fit;
-      if (activeAsset === 'stable' || activeAsset === 'horizon50') {
-        // Au switch / premier fit : centrer pile sur la tête (pas l'ancien cadre d'un autre actif).
-        fit = routeCamera(0, 0, head, activeAsset);
-      } else {
-        fit = fitVisibleY(candles, extrasY);
-        // Plafonner le span au format route pour éviter un zoom bizarre au 1er fit.
-        var fitMid = (fit.min + fit.max) / 2;
-        var fitSpan = fit.max - fit.min;
-        var fitWant = Math.abs(head > 0 ? head : fitMid) * routeSpanPct(activeAsset);
-        if (fitSpan > fitWant * 1.35 || fitSpan < fitWant * 0.7) {
-          fit = { min: fitMid - fitWant / 2, max: fitMid + fitWant / 2 };
-        }
-      }
+      // Tous les actifs : route centrée sur la tête (évite l'étirement Crash/Boom via hist).
+      fit = routeCamera(0, 0, head, activeAsset);
       viewMin = fit.min;
       viewMax = fit.max;
       if (holdLock) {
@@ -2088,25 +2088,10 @@
         viewMin = st.lockMin;
         viewMax = st.lockMax;
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
-      } else if (activeAsset === 'goldtrend' || activeAsset === 'stable' || activeAsset === 'horizon50') {
+      } else {
         var gFs = routeCamera(viewMin, viewMax, head, activeAsset);
         viewMin = gFs.min;
         viewMax = gFs.max;
-      } else {
-      var fsFit = fitVisibleY(candles, extrasY);
-      // Lerp léger mais span plafonné pour ne pas grossir/rétrécir le format.
-      var fsPrevSpan = viewMax - viewMin;
-      viewMin += (fsFit.min - viewMin) * FS_Y_LERP;
-      viewMax += (fsFit.max - viewMax) * FS_Y_LERP;
-      if (fsPrevSpan > 0) {
-        var fsMid = (viewMin + viewMax) / 2;
-        var fsSpan = viewMax - viewMin;
-        var fsCap = Math.abs(head) * routeSpanPct(activeAsset) * 1.25;
-        if (fsSpan > fsCap) {
-          viewMin = fsMid - fsCap / 2;
-          viewMax = fsMid + fsCap / 2;
-        }
-      }
       }
       if (holdLock && !(st.lockMax > st.lockMin)) {
         st.lockMin = viewMin;
@@ -2132,7 +2117,8 @@
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50') ? 0.055 : 0.09;
+        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50') ? 0.055
+          : ((activeAsset === 'crash300' || activeAsset === 'boomspike') ? 0.05 : 0.07);
         viewMin = prevMin + (cam.min - prevMin) * camK;
         viewMax = prevMax + (cam.max - prevMax) * camK;
       } else {

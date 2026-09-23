@@ -443,53 +443,59 @@
     var marked = false;
     if (!buf.boomPhase) {
       buf.boomPhase = 'acc';
-      // Intervalles resserrés de 40 % : les explosions s'enchaînent plus vite.
-      buf.boomPhaseUntil = tMs + 1800 + Math.random() * 1800;
+      // Intervalles un peu plus longs : moins d'explosions empilées qui débordent.
+      buf.boomPhaseUntil = tMs + 2200 + Math.random() * 2200;
       buf.boomMid = price;
       buf.boomLeft = 0;
       buf.boomZig = 1;
     }
     if (buf.boomPhase === 'acc') {
       var mid = buf.boomMid || price;
-      var n = (Math.random() - 0.5) * mid * 0.0017;
-      var w = (Math.random() - 0.5) * mid * 0.0007;
+      var n = (Math.random() - 0.5) * mid * 0.0012;
+      var w = (Math.random() - 0.5) * mid * 0.0005;
       price = clampIndexPrice(mid + n + w, asset);
-      buf.boomMid = mid * 1.00005;
+      buf.boomMid = mid * 1.00003;
       if (tMs >= (buf.boomPhaseUntil || 0)) {
         buf.boomPhase = 'burst';
-        buf.boomLeft = 2 + (Math.random() > 0.5 ? 1 : 0);
+        buf.boomLeft = 2 + (Math.random() > 0.55 ? 1 : 0);
         buf.boomZig = 1;
       }
     } else if (buf.boomPhase === 'burst') {
       if (buf.boomZig === 1 && buf.boomLeft > 0) {
-        price = clampIndexPrice(from * (1 + 0.018 + Math.random() * 0.016), asset);
+        // Burst contenu : ~0.9–1.4 % (avant ~1.8–3.4 %) pour rester dans la route visuelle.
+        price = clampIndexPrice(from * (1 + 0.009 + Math.random() * 0.005), asset);
         buf.boomPeak = price;
         buf.boomZig = -1;
         buf.boomLeft -= 1;
         marked = true;
       } else if (buf.boomZig === -1 && buf.boomLeft > 0) {
-        price = clampIndexPrice(from * (1 - 0.005 - Math.random() * 0.007), asset);
+        price = clampIndexPrice(from * (1 - 0.0035 - Math.random() * 0.004), asset);
         buf.boomZig = 1;
         marked = true;
       } else {
         buf.boomPhase = 'relax';
-        buf.boomPhaseUntil = tMs + 1680 + Math.random() * 1320;
+        buf.boomPhaseUntil = tMs + 2000 + Math.random() * 1600;
       }
     }
     if (buf.boomPhase === 'relax') {
       var peak = buf.boomPeak || price;
-      var floor = peak * 0.91;
-      var pull = (floor - price) * 0.07;
-      var spanB = Math.max(peak - floor, price * 0.008);
-      var bounce = (Math.random() - 0.48) * spanB * (0.20 + Math.random() * 0.10);
-      var jit = (Math.random() - 0.5) * price * 0.0045;
+      var floor = peak * 0.955;
+      var pull = (floor - price) * 0.08;
+      var spanB = Math.max(peak - floor, price * 0.005);
+      var bounce = (Math.random() - 0.48) * spanB * (0.14 + Math.random() * 0.08);
+      var jit = (Math.random() - 0.5) * price * 0.0028;
       price = clampIndexPrice(price + pull + bounce + jit, asset);
       if (tMs >= (buf.boomPhaseUntil || 0)) {
         buf.boomPhase = 'acc';
-        buf.boomPhaseUntil = tMs + 1800 + Math.random() * 1800;
+        buf.boomPhaseUntil = tMs + 2200 + Math.random() * 2200;
         buf.boomMid = price;
       }
     }
+    // Route autour du boomMid : la tête ne sort pas du cadre même en burst.
+    var routeAnchor = buf.boomMid || from;
+    var routeHalf = routeAnchor * 0.011;
+    if (price > routeAnchor + routeHalf) price = routeAnchor + routeHalf;
+    if (price < routeAnchor - routeHalf) price = routeAnchor - routeHalf;
     return { price: capPctMove(from, price, JUMP_PCT), boom: marked, from: from };
   }
 
@@ -544,6 +550,24 @@
       var hiR = routeMid + routeHalf;
       if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
       if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
+    } else if (sim.crashCalm) {
+      // Crash 300 : bande plus large mais bornée (pas d'étirement / plafond).
+      var routeMidC = base * (sim.lean != null ? sim.lean : 0.997);
+      var routeHalfC = base * 0.0062;
+      var loC = routeMidC - routeHalfC;
+      var hiC = routeMidC + routeHalfC;
+      if (nextOut > hiC) nextOut = nextOut + (hiC - nextOut) * 0.70;
+      if (nextOut < loC) nextOut = nextOut + (loC - nextOut) * 0.70;
+    } else if (!sim.boomBurst) {
+      // Autres volatils (sauf Boom qui a sa propre route dans stepBoomBurst).
+      var routeMidV = base * (sim.lean != null ? sim.lean : 1);
+      var routeHalfV = base * 0.0085;
+      if (asset && (asset.id === 'titanpulse' || asset.id === 'goldtrend')) routeHalfV = base * 0.012;
+      if (asset && asset.id === 'apex500') routeHalfV = base * 0.010;
+      var loV = routeMidV - routeHalfV;
+      var hiV = routeMidV + routeHalfV;
+      if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.45;
+      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * 0.45;
     }
     return clampIndexPrice(nextOut, asset);
   }
@@ -943,7 +967,7 @@
           didSpike = true;
         } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
-          if (sim.crashCalm) price = clampIndexPrice(fromP * (1 - 0.0045 - Math.random() * 0.0035), asset);
+          if (sim.crashCalm) price = clampIndexPrice(fromP * (1 - 0.0028 - Math.random() * 0.0022), asset);
           else price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
           buf.nextSpike = tMs + (sim.crashCalm ? 18000 : 25000) + (sim.crashCalm ? 0 : Math.random() * 10000);
           forming._spike = true;
