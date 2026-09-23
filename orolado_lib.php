@@ -404,11 +404,11 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
   if (!$before) {
     // Coffre illisible : incrément RPC seulement. Une écriture absolue
     // recalculée depuis 0 écraserait le solde avec le seul montant du dépôt.
-  $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
-  if ($rpc === null) {
-    $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
-    if ($alt === null) error_log('OROLADO credit_real coffre illisible user=' . $userId);
-  }
+    $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
+    if ($rpc === null) {
+      $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
+      if ($alt === null) error_log('OROLADO credit_real coffre illisible user=' . $userId);
+    }
     if ($depositTx && $amount > 0) {
       supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
         'id' => 'dep_' . bin2hex(random_bytes(8)),
