@@ -393,16 +393,8 @@
     return D6.roundMoney ? D6.roundMoney(sum) : sum;
   }
 
-  function openLiveRealStake() {
-    if (D6.Engine && D6.Engine.openLiveStakeSum) {
-      return D6.Engine.openLiveStakeSum('real');
-    }
-    return openStakeSum('real');
-  }
-
   function openRealStake() {
-    // Gel me/poll : compter TOUTES les mises ouvertes (même confirmées).
-    return openLiveRealStake();
+    return openStakeSum('real');
   }
 
   function availableStakeBalance(u, mode) {

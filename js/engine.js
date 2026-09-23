@@ -398,7 +398,7 @@
     // Les volatils restent centrés (center 0.5, lean 1) et tournent
     // au milieu de leur plage, avant le plafond de bande.
     v100: { mode: 'candles', vol: 0.0026, stepMs: 70, pullK: 0.050, center: 0.50, lean: 1 },
-    stable: { mode: 'line', vol: 0.00072, color: '#ff3366', coreWave: true, stepMs: 170, pullK: 0.078, center: 0.53, lean: 0.998 },
+    stable: { mode: 'line', vol: 0.00105, color: '#ff3366', coreWave: true, stepMs: 140, pullK: 0.072, center: 0.53, lean: 0.998 },
     apex500: { mode: 'candles', vol: 0.0038, stepMs: 50, pullK: 0.058, center: 0.50, lean: 1 },
     horizon50: { mode: 'line', vol: 0.00048, color: '#ff9800', horizonCalm: true, tickMs: 200, stepMs: 180, pullK: 0.080, center: 0.54, lean: 0.9975 },
     boomspike: { mode: 'candles', vol: 0.0016, boomBurst: true, stepMs: 80, pullK: 0.045, center: 0.50, lean: 1 },
@@ -406,7 +406,7 @@
     v75: { mode: 'candles', vol: 0.0024, v75Wave: true, tickMs: 190, stepMs: 120, pullK: 0.050, center: 0.50, lean: 1 },
     nexusprime: { mode: 'candles', vol: 0.0020, nexusPulse: true, tickMs: 90, stepMs: 80, pullK: 0.052, center: 0.50, lean: 1 },
     goldtrend: { mode: 'line', vol: 0.0034, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 90, pullK: 0.055, center: 0.50, lean: 1 },
-    titanpulse: { mode: 'candles', vol: 0.0034, stepMs: 52, pullK: 0.068, center: 0.50, lean: 1, wickK: 1.05 }
+    titanpulse: { mode: 'candles', vol: 0.0048, stepMs: 36, pullK: 0.060, center: 0.50, lean: 1, wickK: 1.15 }
   };
   var SIM_VER = 20;
   var BOOM_VER = 7;
@@ -1577,16 +1577,6 @@
       var sum = 0;
       openForMode(mode).forEach(function (t) {
         if (mode === 'real' && t && t.serverConfirmed) return;
-        sum += Number(t && t.stake) || 0;
-      });
-      return D6.roundMoney ? D6.roundMoney(sum) : sum;
-    },
-
-    /** Toutes les mises encore ouvertes (confirmées ou non) — pour geler me()/poll. */
-    openLiveStakeSum: function (mode) {
-      mode = mode === 'real' ? 'real' : 'demo';
-      var sum = 0;
-      openForMode(mode).forEach(function (t) {
         sum += Number(t && t.stake) || 0;
       });
       return D6.roundMoney ? D6.roundMoney(sum) : sum;
