@@ -387,7 +387,8 @@ function supabase_write_real_abs(string $userId, $amount): bool {
     $again = supabase_admin_vault($userId);
   }
   if (!$again) return false;
-  return abs(orolado_money($again['real'] ?? 0) - $amount) <= 0.009;
+  $got = orolado_money($again['real'] ?? 0);
+  return abs($got - $amount) <= 0.05 || abs($got - round($amount)) <= 0.009;
 }
 
 function supabase_credit_real(string $userId, $amount, bool $depositTx = true): void {
@@ -403,11 +404,11 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
   if (!$before) {
     // Coffre illisible : incrément RPC seulement. Une écriture absolue
     // recalculée depuis 0 écraserait le solde avec le seul montant du dépôt.
-    $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
-    if ($rpc === null) {
-      $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
-      if ($alt === null) error_log('OROLADO credit_real coffre illisible user=' . $userId);
-    }
+  $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
+  if ($rpc === null) {
+    $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
+    if ($alt === null) error_log('OROLADO credit_real coffre illisible user=' . $userId);
+  }
     if ($depositTx && $amount > 0) {
       supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
         'id' => 'dep_' . bin2hex(random_bytes(8)),
@@ -422,14 +423,14 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
   }
   $beforeReal = orolado_money($before['real'] ?? 0);
   $expect = orolado_money(max(0, $beforeReal + $amount));
-  $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+  $rpc = supabase_http($url . '/rest/v1/rpc/credit_real', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
   if ($rpc === null) {
-    $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount]), 'POST');
+    $alt = supabase_http($url . '/rest/v1/rpc/increment_balance', $hdrs, json_encode(['p_user' => $userId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION), 'POST');
     if ($alt === null) error_log('OROLADO credit_real/increment_balance échec user=' . $userId);
   }
   $after = supabase_admin_vault($userId);
   $afterReal = $after ? orolado_money($after['real'] ?? 0) : $beforeReal;
-  if (abs($afterReal - $expect) > 0.05) {
+  if (!orolado_credit_landed($beforeReal, $afterReal, $amount)) {
     if (!supabase_write_real_abs($userId, $expect)) {
       error_log('OROLADO credit_real non persisté user=' . $userId . ' attendu=' . $expect);
     }
@@ -457,8 +458,20 @@ function orolado_put_real_exact(string $userId, float $amount): ?float {
   $again = supabase_admin_vault($userId);
   if (!$again) return null;
   $got = orolado_money($again['real'] ?? 0);
-  if (abs($got - $amount) > 0.05) return null;
-  return $got;
+  // Centimes (×1.88) OK ; si la colonne tronque encore, on accepte l’entier le plus proche.
+  if (abs($got - $amount) <= 0.05) return $got;
+  if (abs($got - round($amount)) <= 0.009) return $got;
+  return null;
+}
+
+/** Le coffre a-t-il bien reçu un crédit (plus), même avec centimes / arrondi colonne ? */
+function orolado_credit_landed(float $beforeReal, float $got, float $credit): bool {
+  if ($credit <= 0.009) return true;
+  $expect = orolado_money($beforeReal + $credit);
+  if (abs($got - $expect) <= 0.05) return true;
+  if (abs($got - round($expect)) <= 0.009) return true;
+  // Hausse nette = le plus est passé (ne pas refuser pour 1–2 centimes).
+  return $got > $beforeReal + 0.009;
 }
 
 function supabase_debit_real(string $userId, $amount): bool {
@@ -495,7 +508,7 @@ function supabase_resolve_trade(string $userId, string $orderId, $amount): ?arra
   $rpc = supabase_http(
     supabase_project_url() . '/rest/v1/rpc/resolve_trade',
     $hdrs,
-    json_encode(['p_user' => $userId, 'p_order' => $orderId, 'p_amount' => $amount]),
+    json_encode(['p_user' => $userId, 'p_order' => $orderId, 'p_amount' => $amount], JSON_PRESERVE_ZERO_FRACTION),
     'POST'
   );
   if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
@@ -583,16 +596,25 @@ function orolado_take_real_stake(string $userId, string $orderId, float $stake):
 
 /**
  * Crédit de fin de trade, une seule fois. Perte = 0 (mise déjà prise à l’ouverture).
- * Ne réécrit JAMAIS un total absolu après resolve_trade : sinon 2 trades simultanés
- * s’écrasent (ex. force 110 par-dessus 130). La base additionne via resolve_trade.
+ * Les PLUS (gains ×1.88 avec centimes) doivent passer : on n’exige plus un match
+ * au centime près qui faisait rejeter tout le gain.
  */
 function orolado_settle_real_credit(string $userId, string $orderId, float $credit): ?float {
   $credit = orolado_money(max(0, $credit));
   if ($orderId === '' || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) return null;
+
+  $beforeRow = supabase_admin_vault($userId);
+  if (!$beforeRow) return null;
+  $beforeReal = orolado_money($beforeRow['real'] ?? 0);
+
   $resolved = supabase_resolve_trade($userId, $orderId, $credit);
   if (is_array($resolved) && array_key_exists('real', $resolved)) {
-    return orolado_money($resolved['real']);
+    $got = orolado_money($resolved['real']);
+    if ($credit <= 0.009 || orolado_credit_landed($beforeReal, $got, $credit) || !empty($resolved['duplicate'])) {
+      return $got;
+    }
   }
+
   $dir = orolado_data_dir();
   if (!is_dir($dir)) @mkdir($dir, 0775, true);
   $key = hash('sha256', $userId . '|' . $orderId);
@@ -609,26 +631,25 @@ function orolado_settle_real_credit(string $userId, string $orderId, float $cred
     fclose($fp);
     return $kept;
   }
-  $before = supabase_admin_vault($userId);
-  if (!$before) {
-    flock($fp, LOCK_UN);
-    fclose($fp);
-    return null;
-  }
-  $beforeReal = orolado_money($before['real'] ?? 0);
   if ($credit <= 0.009) {
     @file_put_contents($marker, json_encode(['at' => date('c'), 'credit' => 0]));
     flock($fp, LOCK_UN);
     fclose($fp);
     return $beforeReal;
   }
+
   $expect = orolado_money($beforeReal + $credit);
   supabase_credit_real($userId, $credit, false);
   $after = supabase_admin_vault($userId);
   $got = $after ? orolado_money($after['real'] ?? 0) : null;
-  if ($got === null || abs($got - $expect) > 0.05) {
+  if ($got === null || !orolado_credit_landed($beforeReal, $got, $credit)) {
     $got = orolado_put_real_exact($userId, $expect);
-    if ($got === null) {
+  }
+  if ($got === null) {
+    // Dernier filet : relire — si le plus a quand même monté le coffre, on valide.
+    $again = supabase_admin_vault($userId);
+    $got = $again ? orolado_money($again['real'] ?? 0) : null;
+    if ($got === null || !orolado_credit_landed($beforeReal, $got, $credit)) {
       flock($fp, LOCK_UN);
       fclose($fp);
       return null;

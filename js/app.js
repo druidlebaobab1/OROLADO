@@ -2603,6 +2603,7 @@
               fromMe: true,
               force: true,
               fromTrade: true,
+              allowRaise: true,
               allowZero: srvReal <= 0.009
             });
             updateBalance(true);
@@ -2620,6 +2621,7 @@
               fromMe: true,
               force: true,
               fromTrade: true,
+              allowRaise: true,
               allowZero: isFinite(meReal) && meReal <= 0.009
             });
             updateBalance(true);
