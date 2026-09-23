@@ -380,14 +380,34 @@
     return n;
   };
 
-  function openRealStake() {
+  function openStakeSum(mode) {
+    if (D6.Engine && D6.Engine.openStakeSum) {
+      return D6.Engine.openStakeSum(mode === 'real' ? 'real' : 'demo');
+    }
     var sum = 0;
     try {
-      var list = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades('real') : [];
+      var list = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades(mode) : [];
       var i;
       for (i = 0; i < list.length; i++) sum += Number(list[i] && list[i].stake) || 0;
-    } catch (eS) { /* ignore */ }
+    } catch (eS) { sum = 0; }
     return D6.roundMoney ? D6.roundMoney(sum) : sum;
+  }
+
+  function openRealStake() {
+    return openStakeSum('real');
+  }
+
+  function availableStakeBalance(u, mode) {
+    u = u || user();
+    if (!u) return 0;
+    mode = mode === 'real' ? 'real' : 'demo';
+    var have = mode === 'real'
+      ? (D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : Number(D6.Store.balanceOf(u)) || 0)
+      : Number(D6.Store.demoBalance ? D6.Store.demoBalance(u) : D6.Store.balanceOf(u)) || 0;
+    // Réel : setBal ne débite pas le store → réserver les mises ouvertes (1 seule fois).
+    // Démo : setBal a déjà débité → ne pas re-soustraire.
+    if (mode === 'real') have = Math.max(0, have - openStakeSum('real'));
+    return D6.roundMoney ? D6.roundMoney(have) : have;
   }
 
   /** Pendant un trade réel : seul placeOrder/settleOrder peut bouger le solde affiché.
@@ -1196,7 +1216,8 @@
     try { localStorage.setItem('oro_last_mode', isReal ? 'real' : 'demo'); } catch (eMode) { /* ignore */ }
     if (isReal) lastOfficialReal = real;
     else lastOfficialDemo = demo;
-    var active = isReal ? real : demo;
+    // Réel : store non débité localement → afficher solde moins mises ouvertes.
+    var active = isReal ? Math.max(0, real - openStakeSum('real')) : demo;
     var modeKey = isReal ? 'real' : 'demo';
     if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
     lastPaintedMode = modeKey;
@@ -2715,10 +2736,7 @@
     if (!(typed >= (D6.CONFIG.MIN_STAKE || 1))) typed = D6.CONFIG.MIN_STAKE || 1;
     stake = typed;
     if ($('inputStake')) $('inputStake').value = String(stake);
-    var have = D6.Store.balanceOf(u);
-    if (mode === 'real') {
-      have = Math.max(0, (Number(have) || 0) - openRealStake());
-    }
+    var have = availableStakeBalance(u, mode);
     if (have < stake) {
       toast(t('insufficient'), 'err', 2000);
       tradeQ.length = 0;
@@ -2728,6 +2746,7 @@
     var sealedPay = currentOdds(u);
     var sealedAsset = assetId(u);
     var realBefore = (mode === 'real' && D6.Store.realBalance) ? Number(D6.Store.realBalance(u)) : null;
+    var demoBefore = (mode === 'demo' && D6.Store.demoBalance) ? Number(D6.Store.demoBalance(u)) : null;
     var res = D6.Engine.placeOrder(u, {
       side: side,
       stake: stake,
@@ -2753,9 +2772,9 @@
     patchHistorySoon();
     syncTradeButtons();
     if (mode === 'real' && realBefore != null && isFinite(realBefore) && D6.Api && D6.Api.token && D6.Api.token()) {
-      // Affichage optimiste : mise réservée jusqu’à confirmation serveur.
-      applyOfficialReal(D6.roundMoney(realBefore - stake), { fromTrade: true, force: true });
-      armStakeReserve(D6.roundMoney(realBefore - stake), stake, Math.max(15000, (Number(sealedDur) || 10) * 1000 + 8000));
+      // Réserve UI seulement — ne pas écrire le store (sinon double soustraction avec openSum).
+      var reservedShow = D6.roundMoney(Math.max(0, realBefore - openStakeSum('real')));
+      armStakeReserve(reservedShow, stake, Math.max(15000, (Number(sealedDur) || 10) * 1000 + 8000));
     }
     lockBalanceOptimistic(
       mode === 'demo' ? D6.Store.demoBalance(u) : null,
@@ -2773,8 +2792,38 @@
         entryPrice: res.trade.entryPrice,
         payout: res.trade.payout || currentOdds(u)
       };
+      var placedTradeId = res.trade.id;
+      function killUnfundedTrade(reason) {
+        tradeQ.length = 0;
+        if (D6.Engine && D6.Engine.abortOpenTrade) {
+          D6.Engine.abortOpenTrade(user(), placedTradeId);
+        }
+        clearStakeReserve();
+        if (mode === 'real' && realBefore != null && isFinite(realBefore)) {
+          applyOfficialReal(realBefore, { fromTrade: true, force: true, allowZero: true });
+        } else if (mode === 'demo' && demoBefore != null && isFinite(demoBefore) && D6.Store.setBalanceMode) {
+          D6.holdPull = true;
+          D6.Store.setBalanceMode(user(), 'demo', demoBefore);
+          D6.holdPull = false;
+        }
+        updateBalance(true);
+        syncTradeButtons();
+        patchHistorySoon();
+        var msg = String(reason || '');
+        if (/insuffisant|insufficient/i.test(msg)) {
+          toast(t('insufficient'), 'err', 2500);
+        } else if (msg) {
+          toast(msg, 'err', 2500);
+        } else {
+          toast(t('tradeFailed') || 'Mise non enregistrée', 'err', 2500);
+        }
+      }
       function applyPlacedVault(remote) {
         if (watchBan(remote)) return true;
+        if (remote && remote.ok === false) {
+          killUnfundedTrade(remote.reason || remote.error || '');
+          return true;
+        }
         if (mode === 'real') {
           if (!(remote && remote.ok && remote.vault && remote.vault.real != null)) return false;
           var srvReal = Number(remote.vault.real);
@@ -2817,14 +2866,19 @@
       }
       function postPlace(triesLeft) {
         return D6.Api.post('placeOrder', placeBody, 25000).then(function (remote) {
+          if (remote && remote.ok === false) {
+            killUnfundedTrade(remote.reason || 'Mise non enregistrée');
+            return;
+          }
           if (applyPlacedVault(remote)) return;
           if (triesLeft > 1) return postPlace(triesLeft - 1);
-          toast(t('insufficient') || 'Mise non enregistrée', 'err', 2500);
-          return restoreRealFromServer();
+          // Succès ambigu (pas de vault) : ne pas crier « insuffisant » ni laisser un fantôme.
+          killUnfundedTrade(remote && remote.reason ? remote.reason : 'Mise non enregistrée');
+          if (mode === 'real') return restoreRealFromServer();
         }, function () {
           if (triesLeft > 1) return postPlace(triesLeft - 1);
-          toast(t('insufficient') || 'Mise non enregistrée', 'err', 2500);
-          return restoreRealFromServer();
+          killUnfundedTrade('Mise non enregistrée');
+          if (mode === 'real') return restoreRealFromServer();
         });
       }
       postPlace(3);

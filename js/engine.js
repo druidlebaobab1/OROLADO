@@ -1148,6 +1148,8 @@
   function stakeCap(user, stake, mode) {
     mode = mode || user.mode;
     var balance = balOf(user, mode);
+    // Réel : setBal ne débite pas localement → soustraire les mises encore ouvertes.
+    // Démo : setBal a déjà débité à l’ouverture → ne pas re-soustraire.
     if (mode === 'real') {
       var openSum = 0;
       try {
@@ -1565,6 +1567,15 @@
       }).map(function (t) { return publicTrade(t); });
     },
 
+    /** Somme des mises encore ouvertes (non réglées), y compris expirées en attente. */
+    openStakeSum: function (mode) {
+      var sum = 0;
+      openForMode(mode === 'real' ? 'real' : 'demo').forEach(function (t) {
+        sum += Number(t && t.stake) || 0;
+      });
+      return D6.roundMoney ? D6.roundMoney(sum) : sum;
+    },
+
     liveCount: function (mode) {
       if (mode) return openForMode(mode).length;
       return trades.filter(isOpen).length;
@@ -1795,6 +1806,34 @@
         try { D6.Chart.applyOpenTradeVisual(pub); } catch (eVis) { /* ignore */ }
       }
       return { ok: true, trade: pub };
+    },
+
+    /** Annule un trade ouvert non réglé (ex. serveur a refusé la mise). */
+    abortOpenTrade: function (user, tradeId) {
+      if (!tradeId || !trades.length) return false;
+      var idx = -1;
+      var i;
+      for (i = 0; i < trades.length; i++) {
+        if (trades[i] && trades[i].id === tradeId) { idx = i; break; }
+      }
+      if (idx < 0) return false;
+      var trade = trades[idx];
+      if (!trade || trade.settled || trade.status === 'won' || trade.status === 'lost' || trade.status === 'void') {
+        return false;
+      }
+      clearTradeTimer(trade.id);
+      if (D6.Chart && D6.Chart.removeTradeVisual) {
+        try { D6.Chart.removeTradeVisual(trade.id); } catch (eAbort) { /* ignore */ }
+      }
+      var mode = trade.mode === 'real' ? 'real' : 'demo';
+      var stake = D6.roundMoney(Number(trade.stake) || 0);
+      trades.splice(idx, 1);
+      // Démo : la mise avait été retirée localement → on la rend.
+      if (mode !== 'real' && user && stake > 0.009) {
+        setBal(user, 'demo', balOf(user, 'demo') + stake);
+      }
+      if (user) persistOpen(user);
+      return true;
     },
 
     resolve: function (user, tradeId) {
