@@ -1133,6 +1133,9 @@
   }
 
   function setBal(user, mode, value) {
+    // RÉEL : le serveur (placeOrder / settleOrder) est la seule écriture du solde.
+    // Sinon l’écran bouge puis me() ramène le montant du dépôt.
+    if (mode === 'real') return;
     if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(user, mode, value);
     else {
       var prev = user.mode;
@@ -1145,6 +1148,13 @@
   function stakeCap(user, stake, mode) {
     mode = mode || user.mode;
     var balance = balOf(user, mode);
+    if (mode === 'real') {
+      var openSum = 0;
+      try {
+        openForMode('real').forEach(function (t) { openSum += Number(t && t.stake) || 0; });
+      } catch (eOpen) { openSum = 0; }
+      balance = Math.max(0, (Number(balance) || 0) - openSum);
+    }
     if (stake < C.MIN_STAKE) {
       return { ok: false, cap: C.MIN_STAKE, reason: D6.I18N.t('minStake') + ' ' + D6.fmtFCFA(C.MIN_STAKE) };
     }

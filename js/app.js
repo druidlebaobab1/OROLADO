@@ -2597,7 +2597,7 @@
           clearStakeReserve();
           var srvReal = Number(remote.vault.real);
           if (isFinite(srvReal) && srvReal >= 0) {
-            applyOfficialReal(srvReal, { fromMe: true, force: true, fromTrade: true });
+            applyOfficialReal(srvReal, { fromMe: true, force: true, fromTrade: true, allowZero: true });
             updateBalance(true);
           }
           D6.holdRemote = false;
@@ -2605,13 +2605,25 @@
         }
         return false;
       }
+      function forceMeReal() {
+        return D6.Api.post('me', {}, 20000).then(function (meRemote) {
+          if (meRemote && meRemote.ok && meRemote.vault && meRemote.vault.real != null) {
+            applyOfficialReal(Number(meRemote.vault.real), { fromMe: true, force: true, fromTrade: true, allowZero: true });
+            updateBalance(true);
+          }
+          D6.holdRemote = false;
+        }, function () { D6.holdRemote = false; });
+      }
       D6.Api.post('settleOrder', settleBody, 25000).then(function (remote) {
-        if (applySettledVault(remote)) return;
+        if (applySettledVault(remote)) {
+          if (settleMode === 'real') setTimeout(function () { forceMeReal(); }, 400);
+          return;
+        }
         if (settleMode === 'real') {
           return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
-            applySettledVault(again);
-            D6.holdRemote = false;
-          });
+            if (!applySettledVault(again)) return forceMeReal();
+            setTimeout(function () { forceMeReal(); }, 400);
+          }, function () { return forceMeReal(); });
         }
         D6.holdRemote = false;
       }, function () {
@@ -2619,10 +2631,10 @@
           D6.holdRemote = false;
           return;
         }
-        D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
-          applySettledVault(again);
-          D6.holdRemote = false;
-        }, function () { D6.holdRemote = false; });
+        return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
+          if (!applySettledVault(again)) return forceMeReal();
+          setTimeout(function () { forceMeReal(); }, 400);
+        }, function () { return forceMeReal(); });
       });
     }
   }
@@ -2689,6 +2701,9 @@
     stake = typed;
     if ($('inputStake')) $('inputStake').value = String(stake);
     var have = D6.Store.balanceOf(u);
+    if (mode === 'real') {
+      have = Math.max(0, (Number(have) || 0) - openRealStake());
+    }
     if (have < stake) {
       toast(t('insufficient'), 'err', 2000);
       tradeQ.length = 0;
@@ -2723,6 +2738,8 @@
     patchHistorySoon();
     syncTradeButtons();
     if (mode === 'real' && realBefore != null && isFinite(realBefore) && D6.Api && D6.Api.token && D6.Api.token()) {
+      // Affichage optimiste : mise réservée jusqu’à confirmation serveur.
+      applyOfficialReal(D6.roundMoney(realBefore - stake), { fromTrade: true, force: true });
       armStakeReserve(D6.roundMoney(realBefore - stake), stake, Math.max(15000, (Number(sealedDur) || 10) * 1000 + 8000));
     }
     lockBalanceOptimistic(
