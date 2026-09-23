@@ -393,8 +393,24 @@
     return D6.roundMoney ? D6.roundMoney(sum) : sum;
   }
 
+  /** Mises encore en cours (même déjà confirmées serveur) — évite le yo-yo d’affichage. */
+  function openLiveStakeSum(mode) {
+    if (D6.Engine && D6.Engine.openLiveStakeSum) {
+      return D6.Engine.openLiveStakeSum(mode === 'real' ? 'real' : 'demo');
+    }
+    if (D6.Engine && D6.Engine.liveCount) {
+      var n = D6.Engine.liveCount(mode === 'real' ? 'real' : 'demo');
+      if (n > 0) return n;
+    }
+    return openStakeSum(mode);
+  }
+
   function openRealStake() {
     return openStakeSum('real');
+  }
+
+  function openLiveRealStake() {
+    return openLiveStakeSum('real');
   }
 
   function availableStakeBalance(u, mode) {
@@ -412,9 +428,11 @@
 
   /** Pendant un trade réel : seul placeOrder/settleOrder peut bouger le solde affiché.
    *  Important : un dépôt récent (holdDepositReal) ne doit PAS désactiver ce gel,
-   *  sinon me()/poll remettent le solde au dépôt pendant/après le trade. */
+   *  sinon me()/poll remettent le solde au dépôt pendant/après le trade.
+   *  Gel tant qu’un trade réel est ENCORE OUVERT (pas seulement « non confirmé »),
+   *  sinon me()/poll font hésiter le solde une fois placeOrder OK. */
   function tradeBalanceFrozen() {
-    if (openRealStake() > 0.009) return true;
+    if (openLiveRealStake() > 0.009) return true;
     if (D6.stakeReserve && Date.now() < D6.stakeReserve.until) return true;
     if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 12000) return true;
     var locks = getBalanceLocks();
@@ -723,8 +741,8 @@
       D6.holdDepositReal = true;
       setTimeout(function () { D6.holdDepositReal = false; }, 25000);
     }
-    // Trade ouvert : jamais écraser avec me/poll (même juste après un dépôt).
-    if (open > 0.009) return;
+    // Trade ouvert (confirmé ou non) : jamais écraser avec me/poll.
+    if (open > 0.009 || openLiveRealStake() > 0.009) return;
     if (tradeBalanceFrozen() && !D6.holdDepositReal) return;
     var locks = getBalanceLocks();
     var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(incoming - D6.stakeReserve.once) <= 0.05;

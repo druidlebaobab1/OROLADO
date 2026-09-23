@@ -1582,6 +1582,16 @@
       return D6.roundMoney ? D6.roundMoney(sum) : sum;
     },
 
+    /** Toutes les mises encore ouvertes (confirmées ou non) — pour geler l’affichage pendant le jeu. */
+    openLiveStakeSum: function (mode) {
+      mode = mode === 'real' ? 'real' : 'demo';
+      var sum = 0;
+      openForMode(mode).forEach(function (t) {
+        sum += Number(t && t.stake) || 0;
+      });
+      return D6.roundMoney ? D6.roundMoney(sum) : sum;
+    },
+
     /** placeOrder serveur OK : le solde store est déjà débité, ne plus réserver cette mise. */
     markTradeFunded: function (tradeId) {
       if (!tradeId) return false;

@@ -1609,6 +1609,8 @@
     if (!isFinite(entry)) return;
     var ey = priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
+    // Arrondi sous-pixel : évite le tremblement du trait pendant le rafraîchissement.
+    ey = Math.round(ey * 2) / 2;
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
     layout = layout || plotLayout(pad);
@@ -2020,7 +2022,12 @@
       wantFitY = false;
       pendingYAnchor = null;
     } else if (fsOn && viewMax > viewMin) {
-      if (activeAsset === 'goldtrend') {
+      if (holdLock && st.lockMax > st.lockMin) {
+        // Plein écran + trade : garder le cadre figé (pas de lerp qui fait monter le trait).
+        viewMin = st.lockMin;
+        viewMax = st.lockMax;
+        strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
+      } else if (activeAsset === 'goldtrend') {
         var gFs = goldIdleCamera(minPrice, maxPrice, viewMin, viewMax, head);
         viewMin = gFs.min;
         viewMax = gFs.max;
@@ -2029,12 +2036,13 @@
       viewMin += (fsFit.min - viewMin) * FS_Y_LERP;
       viewMax += (fsFit.max - viewMax) * FS_Y_LERP;
       }
-      if (holdLock) {
+      if (holdLock && !(st.lockMax > st.lockMin)) {
         st.lockMin = viewMin;
         st.lockMax = viewMax;
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
       }
     } else if (holdLock && st.lockMax > st.lockMin) {
+      // Cadre figé pendant le trade : le trait d’entrée reste calme.
       viewMin = st.lockMin;
       viewMax = st.lockMax;
       strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
@@ -2062,11 +2070,19 @@
     var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
     var keepAir = rawVisibleSpan * Y_PAD_RATIO;
     var keepAirLow = rawVisibleSpan * padBottomRatio();
-    var needsSafeFit = minPrice < viewMin + keepAirLow || maxPrice > viewMax - keepAir;
-    if (!fsOn && holdLock && needsSafeFit) {
-      var safeFit = fitVisibleY(candles, extrasY);
-      viewMin = safeFit.min;
-      viewMax = safeFit.max;
+    if (holdLock && st.lockMax > st.lockMin) {
+      // Expansion douce uniquement si la tête sort du cadre — jamais de refit brutal.
+      var lockSpan = Math.max(viewMax - viewMin, Math.abs(head) * 0.001);
+      var airHi = lockSpan * 0.08;
+      var airLo = lockSpan * 0.08;
+      if (head > viewMax - airHi) viewMax += ((head + airHi) - viewMax) * 0.05;
+      if (head < viewMin + airLo) viewMin += ((head - airLo) - viewMin) * 0.05;
+      if (isFinite(strikeP) && strikeP > 0) {
+        if (strikeP > viewMax - airHi) viewMax = strikeP + airHi;
+        if (strikeP < viewMin + airLo) viewMin = strikeP - airLo;
+      }
+      st.lockMin = viewMin;
+      st.lockMax = viewMax;
     } else if (!fsOn && !holdLock) {
       if (head > viewMax - keepAir) viewMax += ((head + keepAir) - viewMax) * 0.18;
       if (head < viewMin + keepAirLow) viewMin += ((head - keepAirLow) - viewMin) * 0.18;
@@ -2074,10 +2090,6 @@
         if (strikeP > viewMax - keepAir) viewMax = strikeP + keepAir;
         if (strikeP < viewMin + keepAirLow) viewMin = strikeP - keepAirLow;
       }
-    }
-    if (holdLock) {
-      st.lockMin = viewMin;
-      st.lockMax = viewMax;
     }
     st.viewMin = viewMin;
     st.viewMax = viewMax;
