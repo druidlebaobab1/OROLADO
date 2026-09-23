@@ -535,6 +535,16 @@
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
+    // Route douce : la tête reste dans une bande autour du lean mid et n'atteint
+    // jamais les bords du graphique (évite les pics qui rentrent dans les barres).
+    if (sim.coreWave || sim.horizonCalm) {
+      var routeMid = base * (sim.lean != null ? sim.lean : 1);
+      var routeHalf = base * (sim.coreWave ? 0.0026 : 0.0022);
+      var loR = routeMid - routeHalf;
+      var hiR = routeMid + routeHalf;
+      if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
+      if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
+    }
     return clampIndexPrice(nextOut, asset);
   }
 

@@ -1849,6 +1849,50 @@
     return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * padTopRatio() };
   }
 
+  // Route Y fixe par actif : la tête serpente dedans, le corps ne rebondit pas.
+  function routeSpanPct(assetId) {
+    if (assetId === 'stable') return 0.0070;
+    if (assetId === 'horizon50') return 0.0062;
+    if (assetId === 'crash300') return 0.0075;
+    if (assetId === 'goldtrend') return 0.016;
+    if (assetId === 'titanpulse') return 0.020;
+    if (assetId === 'apex500') return 0.014;
+    if (assetId === 'boomspike') return 0.013;
+    if (assetId === 'v75') return 0.011;
+    if (assetId === 'nexusprime') return 0.010;
+    if (assetId === 'v100') return 0.011;
+    return 0.011;
+  }
+
+  function routeCamera(prevMin, prevMax, head, assetId) {
+    var h = Number(head);
+    if (!(h > 0) || !isFinite(h)) h = 10000;
+    var wantSpan = Math.abs(h) * routeSpanPct(assetId);
+    var span;
+    var mid;
+    if (prevMax > prevMin) {
+      span = prevMax - prevMin;
+      span = span * 0.997 + wantSpan * 0.003;
+      var loS = wantSpan * 0.90;
+      var hiS = wantSpan * 1.18;
+      if (span < loS) span = loS;
+      if (span > hiS) span = hiS;
+      mid = (prevMin + prevMax) / 2;
+    } else {
+      span = wantSpan;
+      mid = h;
+    }
+    var half = span / 2;
+    var edge = span * 0.20;
+    var lo = mid - half;
+    var hi = mid + half;
+    // Recentre doucement seulement si la tête approche le bord — jamais de refit hist.
+    var panK = (assetId === 'stable' || assetId === 'horizon50') ? 0.045 : 0.07;
+    if (h > hi - edge) mid += (h - (hi - edge)) * panK;
+    if (h < lo + edge) mid += (h - (lo + edge)) * panK;
+    return { min: mid - half, max: mid + half };
+  }
+
   function captureTradeFrame(assetId, untilMs) {
     var st = ensureAssetState(assetId);
     untilMs = Number(untilMs) || 0;
@@ -1875,15 +1919,16 @@
     if (!(hi > lo)) {
       var p = Number(st.lastPrice || lastDrawnClose);
       if (!(p > 0)) p = 10000;
-      lo = p * 0.994;
-      hi = p * 1.006;
+      var s0 = Math.abs(p) * routeSpanPct(assetId);
+      lo = p - s0 / 2;
+      hi = p + s0 / 2;
     }
-    // Air au verrouillage : échelle Y figée (trait d'entrée stable), assez d'espace
-    // pour la volatilité pleine pendant le trade sans coller aux bords.
+    // Verrouille le cadre ACTUEL sans l'élargir (sinon la courbe s'aplatit d'un coup).
     var mid = (lo + hi) / 2;
     var span = hi - lo;
-    var minSpan = Math.abs(mid) * (assetId === 'stable' ? 0.0088 : 0.0058);
-    var airSpan = Math.max(span * 1.40, minSpan);
+    var want = Math.abs(mid) * routeSpanPct(assetId);
+    if (!(span >= want * 0.85)) span = want;
+    var airSpan = span * 1.01;
     lo = mid - airSpan / 2;
     hi = mid + airSpan / 2;
     st.lockMin = lo;
@@ -1896,25 +1941,11 @@
   }
 
   function idleCamera(histMin, histMax, prevMin, prevMax, head) {
-    var span = histMax - histMin;
-    var currentPrice = head > 0 ? head : (histMin + histMax) / 2;
-    if (!(span > 0) || span < currentPrice * 0.003) {
-      span = currentPrice * 0.003;
-      histMin = currentPrice - span * 0.5;
-      histMax = currentPrice + span * 0.5;
-    }
-    return { min: histMin - span * padBottomRatio(), max: histMax + span * padTopRatio() };
+    return routeCamera(prevMin, prevMax, head, activeAsset);
   }
 
   function goldIdleCamera(histMin, histMax, prevMin, prevMax, head) {
-    var target = idleCamera(histMin, histMax, prevMin, prevMax, head);
-    if (prevMin && prevMax && prevMax > prevMin) {
-      return {
-        min: prevMin + (target.min - prevMin) * 0.16,
-        max: prevMax + (target.max - prevMax) * 0.16
-      };
-    }
-    return target;
+    return routeCamera(prevMin, prevMax, head, 'goldtrend');
   }
 
   function drawFrame(now) {
@@ -2027,7 +2058,19 @@
         wantFitY = false;
         pendingYAnchor = null;
       } else {
-      var fit = fitVisibleY(candles, extrasY);
+      var fit;
+      if (activeAsset === 'stable' || activeAsset === 'horizon50') {
+        fit = routeCamera(viewMin, viewMax, head, activeAsset);
+      } else {
+        fit = fitVisibleY(candles, extrasY);
+        // Plafonner le span au format route pour éviter un zoom bizarre au 1er fit.
+        var fitMid = (fit.min + fit.max) / 2;
+        var fitSpan = fit.max - fit.min;
+        var fitWant = Math.abs(head > 0 ? head : fitMid) * routeSpanPct(activeAsset);
+        if (fitSpan > fitWant * 1.35 || fitSpan < fitWant * 0.7) {
+          fit = { min: fitMid - fitWant / 2, max: fitMid + fitWant / 2 };
+        }
+      }
       viewMin = fit.min;
       viewMax = fit.max;
       if (holdLock) {
@@ -2044,14 +2087,25 @@
         viewMin = st.lockMin;
         viewMax = st.lockMax;
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
-      } else if (activeAsset === 'goldtrend') {
-        var gFs = goldIdleCamera(minPrice, maxPrice, viewMin, viewMax, head);
+      } else if (activeAsset === 'goldtrend' || activeAsset === 'stable' || activeAsset === 'horizon50') {
+        var gFs = routeCamera(viewMin, viewMax, head, activeAsset);
         viewMin = gFs.min;
         viewMax = gFs.max;
       } else {
       var fsFit = fitVisibleY(candles, extrasY);
+      // Lerp léger mais span plafonné pour ne pas grossir/rétrécir le format.
+      var fsPrevSpan = viewMax - viewMin;
       viewMin += (fsFit.min - viewMin) * FS_Y_LERP;
       viewMax += (fsFit.max - viewMax) * FS_Y_LERP;
+      if (fsPrevSpan > 0) {
+        var fsMid = (viewMin + viewMax) / 2;
+        var fsSpan = viewMax - viewMin;
+        var fsCap = Math.abs(head) * routeSpanPct(activeAsset) * 1.25;
+        if (fsSpan > fsCap) {
+          viewMin = fsMid - fsCap / 2;
+          viewMax = fsMid + fsCap / 2;
+        }
+      }
       }
       if (holdLock && !(st.lockMax > st.lockMin)) {
         st.lockMin = viewMin;
@@ -2075,31 +2129,23 @@
       strikeLock = null;
       var prevMin = (viewMin && viewMax && viewMax > viewMin) ? viewMin : (st.viewMin || 0);
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
-      var cam = idleCamera(minPrice, maxPrice, prevMin, prevMax, head);
+      var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        viewMin = prevMin + (cam.min - prevMin) * 0.14;
-        viewMax = prevMax + (cam.max - prevMax) * 0.14;
+        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50') ? 0.055 : 0.09;
+        viewMin = prevMin + (cam.min - prevMin) * camK;
+        viewMax = prevMax + (cam.max - prevMax) * camK;
       } else {
         viewMin = cam.min;
         viewMax = cam.max;
       }
     }
-    var rawVisibleSpan = Math.max(maxPrice - minPrice, Math.abs(head) * 0.001);
-    var keepAir = rawVisibleSpan * Y_PAD_RATIO;
-    var keepAirLow = rawVisibleSpan * padBottomRatio();
     if (holdLock && st.lockMax > st.lockMin) {
-      // Cadre 100 % figé pendant le trade : le trait d'entrée ne bouge plus à l'écran.
-      // La courbe reste dans le cadre ; pas d'expansion qui ferait « sauter » le repère.
+      // Cadre 100 % figé pendant le trade : trait d'entrée calme, taille inchangée.
       viewMin = st.lockMin;
       viewMax = st.lockMax;
-    } else if (!fsOn && !holdLock) {
-      if (head > viewMax - keepAir) viewMax += ((head + keepAir) - viewMax) * 0.18;
-      if (head < viewMin + keepAirLow) viewMin += ((head - keepAirLow) - viewMin) * 0.18;
-      if (isFinite(strikeP) && strikeP > 0) {
-        if (strikeP > viewMax - keepAir) viewMax = strikeP + keepAir;
-        if (strikeP < viewMin + keepAirLow) viewMin = strikeP - keepAirLow;
-      }
     }
+    // Pas d'expansion keepAir : elle changeait la taille du graphique et faisait
+    // rebondir tout le corps (surtout Stable Core / Horizon 50).
     st.viewMin = viewMin;
     st.viewMax = viewMax;
 
