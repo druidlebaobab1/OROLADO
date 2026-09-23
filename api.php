@@ -1962,6 +1962,15 @@ if ($action === 'settleOrder') {
   }
   $vaultOut = $settled['vault'] ?? ['demo' => 0, 'real' => 0];
   if (($settled['mode'] ?? '') === 'real') {
+    $stakeForTake = $reqStake > 0.009 ? $reqStake : 0.0;
+    // Si placeOrder n’a pas débité (réseau / race), on prend la mise ICI une seule fois.
+    if ($stakeForTake > 0.009 && function_exists('orolado_take_real_stake')) {
+      $afterTake = orolado_take_real_stake($payId, $oid, $stakeForTake);
+      if ($afterTake === null && orolado_money($settled['credit'] ?? 0) > 0.009) {
+        echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Mise non enregistrée']);
+        exit;
+      }
+    }
     $creditAmt = orolado_money($settled['credit'] ?? 0);
     $keptSettle = function_exists('orolado_settle_real_credit')
       ? orolado_settle_real_credit($payId, $oid, $creditAmt)

@@ -390,9 +390,10 @@
     return D6.roundMoney ? D6.roundMoney(sum) : sum;
   }
 
-  /** Pendant un trade réel : seul placeOrder/settleOrder peut bouger le solde affiché. */
+  /** Pendant un trade réel : seul placeOrder/settleOrder peut bouger le solde affiché.
+   *  Important : un dépôt récent (holdDepositReal) ne doit PAS désactiver ce gel,
+   *  sinon me()/poll remettent le solde au dépôt pendant/après le trade. */
   function tradeBalanceFrozen() {
-    if (D6.holdDepositReal) return false;
     if (openRealStake() > 0.009) return true;
     if (D6.stakeReserve && Date.now() < D6.stakeReserve.until) return true;
     if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 12000) return true;
@@ -702,6 +703,8 @@
       D6.holdDepositReal = true;
       setTimeout(function () { D6.holdDepositReal = false; }, 25000);
     }
+    // Trade ouvert : jamais écraser avec me/poll (même juste après un dépôt).
+    if (open > 0.009) return;
     if (tradeBalanceFrozen() && !D6.holdDepositReal) return;
     var locks = getBalanceLocks();
     var fixingDouble = D6.stakeReserve && Date.now() < D6.stakeReserve.until && Math.abs(incoming - D6.stakeReserve.once) <= 0.05;
@@ -1610,7 +1613,7 @@
     var locks = getBalanceLocks();
     var locked = locks && Date.now() < locks.until;
     var recentSettle = lastSettleAt && Date.now() - lastSettleAt < 30000;
-    // Gel trade : ignorer me/poll/realtime ; seuls place/settle (fromTrade) ou dépôt.
+    // Gel trade : me/poll bloqués ; place/settle (fromTrade) OK ; dépôt (holdDepositReal) OK.
     if (tradeBalanceFrozen() && !fromTrade && !D6.holdDepositReal) return false;
     // UNE CAISSE : réponse serveur (me / dépôt) = vérité, sans combat local.
     if (fromMe || fromTrade) {
@@ -4090,7 +4093,9 @@
       var localNow = D6.Store.realBalance ? Number(D6.Store.realBalance(user())) || 0 : 0;
       var remNow = Number(remote.vault.real);
       var depositRaise = newDeposit || (isFinite(remNow) && remNow > localNow + open + 0.009);
-      if (tradeBalanceFrozen() && !depositRaise && !D6.holdDepositReal) return;
+      // Pendant un trade : seul un vrai dépôt (hausse nette) peut passer.
+      if (open > 0.009 && !depositRaise) return;
+      if (tradeBalanceFrozen() && !depositRaise) return;
       if ((!open || depositRaise) && remote.vault.real != null) {
         D6.holdRemote = true;
         if (applyOfficialReal(remote.vault.real, { fromMe: true, allowRaise: true, force: !open || depositRaise })) updateBalance(false);

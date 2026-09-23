@@ -1,0 +1,10 @@
+﻿# ROLLBACK snap-depot — avant correctif solde qui revient au depot (20260923-004300)
+$root = 'C:\Users\PC\.gemini\antigravity\scratch\wheel-game'
+$src = 'C:\Users\PC\.gemini\antigravity\scratch\wheel-game\rollback-avant-fix-snap-depot-20260923-004300'
+Copy-Item -Force "$src\api.php" "$root\api.php"
+Copy-Item -Force "$src\orolado_lib.php" "$root\orolado_lib.php"
+Copy-Item -Force "$src\admin.php" "$root\admin.php"
+Copy-Item -Force "$src\admin_lib.php" "$root\admin_lib.php"
+Copy-Item -Force "$src\index.html" "$root\index.html"
+Copy-Item -Force "$src\js\*" "$root\js\" -Recurse
+Write-Host 'Rollback snap-depot OK — puis git push'
