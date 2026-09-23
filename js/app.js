@@ -1216,8 +1216,9 @@
     try { localStorage.setItem('oro_last_mode', isReal ? 'real' : 'demo'); } catch (eMode) { /* ignore */ }
     if (isReal) lastOfficialReal = real;
     else lastOfficialDemo = demo;
-    // Réel : store non débité localement → afficher solde moins mises ouvertes.
-    var active = isReal ? Math.max(0, real - openStakeSum('real')) : demo;
+    // Afficher uniquement le solde store (vérité serveur / débit local démo).
+    // Ne jamais soustraire les mises ouvertes ici → ça faisait le yo-yo (10↔11↔12).
+    var active = isReal ? real : demo;
     var modeKey = isReal ? 'real' : 'demo';
     if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
     lastPaintedMode = modeKey;
@@ -2651,14 +2652,10 @@
         }, function () { D6.holdRemote = false; });
       }
       D6.Api.post('settleOrder', settleBody, 25000).then(function (remote) {
-        if (applySettledVault(remote)) {
-          if (settleMode === 'real') setTimeout(function () { forceMeReal(); }, 400);
-          return;
-        }
+        if (applySettledVault(remote)) return;
         if (settleMode === 'real') {
           return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
             if (!applySettledVault(again)) return forceMeReal();
-            setTimeout(function () { forceMeReal(); }, 400);
           }, function () { return forceMeReal(); });
         }
         D6.holdRemote = false;
@@ -2669,7 +2666,6 @@
         }
         return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
           if (!applySettledVault(again)) return forceMeReal();
-          setTimeout(function () { forceMeReal(); }, 400);
         }, function () { return forceMeReal(); });
       });
     }
@@ -2827,16 +2823,10 @@
         if (mode === 'real') {
           if (!(remote && remote.ok && remote.vault && remote.vault.real != null)) return false;
           var srvReal = Number(remote.vault.real);
-          var reserveNow = D6.stakeReserve;
-          if (reserveNow && Date.now() < reserveNow.until && isFinite(srvReal)) {
-            var once = Number(reserveNow.once);
-            var stakeNow = Number(reserveNow.stake) || 0;
-            if (srvReal > once + 0.05 && srvReal <= once + stakeNow + 0.09) srvReal = once;
-            if (srvReal + 0.05 < once && once - srvReal <= stakeNow + 0.09) srvReal = once;
-          }
           if (isFinite(srvReal) && srvReal >= 0) {
             applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false, fromTrade: true });
             if (D6.Engine && D6.Engine.markTradeFunded) D6.Engine.markTradeFunded(placedTradeId);
+            clearStakeReserve();
             updateBalance(true);
           }
           return true;
