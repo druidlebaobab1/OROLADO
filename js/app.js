@@ -2836,11 +2836,16 @@
           }
           if (isFinite(srvReal) && srvReal >= 0) {
             applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false, fromTrade: true });
+            if (D6.Engine && D6.Engine.markTradeFunded) D6.Engine.markTradeFunded(placedTradeId);
             updateBalance(true);
           }
           return true;
         }
-        return !!(remote && remote.ok);
+        if (remote && remote.ok) {
+          if (D6.Engine && D6.Engine.markTradeFunded) D6.Engine.markTradeFunded(placedTradeId);
+          return true;
+        }
+        return false;
       }
       function restoreRealFromServer() {
         clearStakeReserve();

@@ -1148,12 +1148,15 @@
   function stakeCap(user, stake, mode) {
     mode = mode || user.mode;
     var balance = balOf(user, mode);
-    // Réel : setBal ne débite pas localement → soustraire les mises encore ouvertes.
-    // Démo : setBal a déjà débité à l’ouverture → ne pas re-soustraire.
+    // Réel : setBal ne débite pas → réserver seulement les mises pas encore confirmées serveur.
+    // (Après placeOrder OK, le store est déjà débité → ne pas re-soustraire.)
     if (mode === 'real') {
       var openSum = 0;
       try {
-        openForMode('real').forEach(function (t) { openSum += Number(t && t.stake) || 0; });
+        openForMode('real').forEach(function (t) {
+          if (t && t.serverConfirmed) return;
+          openSum += Number(t && t.stake) || 0;
+        });
       } catch (eOpen) { openSum = 0; }
       balance = Math.max(0, (Number(balance) || 0) - openSum);
     }
@@ -1265,7 +1268,8 @@
         mode: t.mode,
         status: 'open',
         settled: false,
-        seq: t.seq
+        seq: t.seq,
+        serverConfirmed: !!t.serverConfirmed
       };
     });
     D6.Store.saveUser(user);
@@ -1567,13 +1571,28 @@
       }).map(function (t) { return publicTrade(t); });
     },
 
-    /** Somme des mises encore ouvertes (non réglées), y compris expirées en attente. */
+    /** Somme des mises ouvertes qui réservent encore le solde affiché (réel non confirmé). */
     openStakeSum: function (mode) {
+      mode = mode === 'real' ? 'real' : 'demo';
       var sum = 0;
-      openForMode(mode === 'real' ? 'real' : 'demo').forEach(function (t) {
+      openForMode(mode).forEach(function (t) {
+        if (mode === 'real' && t && t.serverConfirmed) return;
         sum += Number(t && t.stake) || 0;
       });
       return D6.roundMoney ? D6.roundMoney(sum) : sum;
+    },
+
+    /** placeOrder serveur OK : le solde store est déjà débité, ne plus réserver cette mise. */
+    markTradeFunded: function (tradeId) {
+      if (!tradeId) return false;
+      var i;
+      for (i = 0; i < trades.length; i++) {
+        if (trades[i] && trades[i].id === tradeId) {
+          trades[i].serverConfirmed = true;
+          return true;
+        }
+      }
+      return false;
     },
 
     liveCount: function (mode) {
@@ -1627,7 +1646,8 @@
           userId: user.id,
           seq: raw.seq || 0,
           settled: false,
-          status: 'open'
+          status: 'open',
+          serverConfirmed: raw.mode === 'real' ? !!raw.serverConfirmed : true
         });
         have[raw.id] = true;
       }
@@ -1769,7 +1789,9 @@
         userId: user.id,
         seq: orderSeq,
         settled: false,
-        status: 'open'
+        status: 'open',
+        // Réel : false jusqu’à placeOrder serveur ; démo : débit local déjà fait.
+        serverConfirmed: mode !== 'real'
       };
       t.ticket = Object.freeze({
         stake: stake,
