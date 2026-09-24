@@ -4342,11 +4342,21 @@
     airtel: ['+254', '+256', '+255', '+250', '+243', '+227'],
     mpesa: ['+254', '+255', '+243', '+27', '+233', '+20', '+227']
   };
+  /* Mercado Pago : uniquement les pays où le service existe vraiment. */
+  var WD_MPAGO_COUNTRIES = [
+    { code: '+54', flag: '\uD83C\uDDE6\uD83C\uDDF7', name: 'Argentine' },
+    { code: '+55', flag: '\uD83C\uDDE7\uD83C\uDDF7', name: 'Br\u00e9sil' },
+    { code: '+52', flag: '\uD83C\uDDF2\uD83C\uDDFD', name: 'Mexique' },
+    { code: '+56', flag: '\uD83C\uDDE8\uD83C\uDDF1', name: 'Chili' },
+    { code: '+57', flag: '\uD83C\uDDE8\uD83C\uDDF4', name: 'Colombie' },
+    { code: '+598', flag: '\uD83C\uDDFA\uD83C\uDDFE', name: 'Uruguay' }
+  ];
   var WD_DIAL_DEFAULT = {
     wave: '+221',
     orange: '+237',
     mtn: '+229',
-    moov: '+228'
+    moov: '+228',
+    mercadopago: '+54'
   };
 
   function showWithdrawStep(step) {
@@ -4372,20 +4382,25 @@
     var sel = $('wdDial');
     var fixed = $('wdDialFixed');
     if (!sel) return;
-    var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
     var lock = WD_DIAL_LOCK[method];
     var africa = WD_DIAL_AFRICA[method];
     var allowed = null;
-    if (lock) allowed = [lock];
-    else if (africa) allowed = africa;
-    var list = allowed ? codes.filter(function (c) { return allowed.indexOf(c.code) >= 0; }) : codes;
-    if (!list.length) list = codes;
+    var list;
+    if (method === 'mercadopago') {
+      list = WD_MPAGO_COUNTRIES;
+    } else {
+      if (lock) allowed = [lock];
+      else if (africa) allowed = africa;
+      var codes = (D6.CONFIG && D6.CONFIG.COUNTRY_CODES) || [];
+      list = allowed ? codes.filter(function (c) { return allowed.indexOf(c.code) >= 0; }) : codes;
+      if (!list.length) list = codes;
+    }
     sel.innerHTML = list.map(function (c) {
       return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + ' · ' + c.name + '</option>';
     }).join('');
     if (lock) sel.value = lock;
     else if (WD_DIAL_DEFAULT[method]) sel.value = WD_DIAL_DEFAULT[method];
-    else if (!africa) sel.value = '+1';
+    else if (!africa && method !== 'mercadopago') sel.value = '+1';
     sel.disabled = !!lock;
     if (method === 'opay') {
       sel.classList.add('hidden');
@@ -4457,7 +4472,7 @@
       if (help) { help.textContent = ''; help.classList.add('hidden'); }
       if (phoneLab) { phoneLab.setAttribute('data-i18n', 'wdPhone'); phoneLab.textContent = t('wdPhone'); }
       if (phone) {
-        phone.placeholder = 'Ex: +225 0700000000';
+        phone.placeholder = 'Ex: 0700000000';
         phone.setAttribute('maxlength', '20');
         phone.setAttribute('inputmode', 'tel');
       }
@@ -4505,7 +4520,7 @@
     } else if (method === 'revolut') {
       label.setAttribute('data-i18n', 'wdRevolutId');
       label.textContent = t('wdRevolutId');
-      input.placeholder = 'Ex: @user123 ou +33612345678';
+      input.placeholder = 'Ex: @user';
       input.type = 'text';
     } else if (WD_EMAIL[method]) {
       label.setAttribute('data-i18n', 'wdEmailAccount');

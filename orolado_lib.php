@@ -187,6 +187,7 @@ function orolado_withdraw_min_for(string $op): float {
     'moov' => 5.0, 'airtel' => 5.0, 'pix' => 5.0, 'mercadopago' => 5.0, 'nequi' => 5.0,
     'gcash' => 5.0, 'upi' => 5.0, 'stcpay' => 10.0, 'picpay' => 10.0, 'papara' => 10.0,
     'paypal' => 25.0, 'skrill' => 25.0, 'neteller' => 25.0, 'card' => 25.0, 'bank' => 25.0,
+    'revolut' => 30.0,
   ];
   return $map[$op] ?? 5.0;
 }
