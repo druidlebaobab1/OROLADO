@@ -10,7 +10,7 @@
     var SEALED = Object.freeze({
       SIGMA: 0.00125,
       DEFAULT_ODDS: 1.88,
-      WIN_P_REAL: Object.freeze({ '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015 }),
+      WIN_P_REAL: Object.freeze({ '1.88': 0.48, '6': 0.12, '11': 0.05, '51': 0.015 }),
       WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 }),
       WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 }),
       PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
@@ -84,7 +84,7 @@
       if (profile === 'demo') map = SEALED.WIN_P_DEMO;
       else if (profile === 'admin') map = SEALED.WIN_P_ADMIN_REAL;
       var p = Number(map[oddsKey(payout)]);
-      if (!isFinite(p) || p <= 0 || p >= 1) return 0.42;
+      if (!isFinite(p) || p <= 0 || p >= 1) return 0.48;
       return p;
     }
 
@@ -132,8 +132,8 @@
       var side = (args && args.side) === 'put' ? 'put' : 'call';
       var payout = (args && args.payout) != null ? args.payout : SEALED.DEFAULT_ODDS;
       var profile = (args && args.profile) || 'real';
-      var p = winProb(payout, profile);
-      if (!(p > 0) || !isFinite(p)) p = profile === 'demo' ? 0.55 : 0.42;
+      var p = (args && args.winP != null) ? Number(args.winP) : winProb(payout, profile);
+      if (!(p > 0) || !isFinite(p)) p = profile === 'demo' ? 0.55 : 0.48;
       if (p >= 1) p = 0.99;
       var won = Math.random() < p;
       var voided = false;
@@ -1662,6 +1662,34 @@
     return false;
   }
 
+  /** Blindage anti-martingale (joueur réel uniquement).
+   *  Détecte une montée de mise après perte(s) et réduit la proba de gain.
+   *  Flat / mise stable : taux de base inchangé (48 % sur 1.88). */
+  function antiMartWinP(user, trade, baseP) {
+    var p = Number(baseP);
+    if (!(p > 0) || !isFinite(p)) return baseP;
+    if (!user || isAdminUser(user)) return p;
+    var stake = Number(trade && trade.stake) || 0;
+    if (!(stake > 0)) return p;
+    var recent = Array.isArray(user.recentResults) ? user.recentResults : [];
+    var lastStake = Number(user.lastStake) || 0;
+    var lossStreak = 0;
+    var i;
+    for (i = 0; i < recent.length && i < 12; i++) {
+      var row = recent[i];
+      if (!row || row.mode !== 'real' || row.voided) break;
+      if (row.won) break;
+      lossStreak += 1;
+    }
+    var rising = lastStake > 0.009 && stake >= lastStake * 1.75;
+    var steps = 0;
+    if (lossStreak >= 1 && rising) steps = Math.min(lossStreak, 6);
+    else if (lossStreak >= 3 && stake >= lastStake * 1.35) steps = Math.min(lossStreak - 1, 4);
+    if (steps <= 0) return p;
+    p = p * Math.pow(0.62, steps);
+    return Math.max(0.10, Math.min(baseP * 0.55, p));
+  }
+
   function forceExitPrice(entry, isCall, won, assetId, harsh) {
     var base = Math.max((C.ASSETS[assetId].tickNoise || 0.3) * 0.45, 0.28);
     var nudge = harsh ? Math.max(base * 3.2, 1.1) : base;
@@ -1679,7 +1707,7 @@
       '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02
     };
     var realMap = C.ODDS_WIN_RATE || {
-      '1.88': 0.42, '6': 0.12, '11': 0.05, '51': 0.015
+      '1.88': 0.48, '6': 0.12, '11': 0.05, '51': 0.015
     };
     var admin = isAdminUser(user);
     var isDemo = mode !== 'real';
@@ -1691,7 +1719,7 @@
       return { winProbability: winRateForOdds(trade.payout, adminRealMap), harsh: false, profile: 'A' };
     }
 
-    var winProbability = winRateForOdds(trade.payout, realMap);
+    var winProbability = antiMartWinP(user, trade, winRateForOdds(trade.payout, realMap));
     return { winProbability: winProbability, harsh: false, profile: 'C' };
   }
 
@@ -1742,13 +1770,18 @@
     var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
     var sideNow = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
     var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
-    var verdict = StochasticCore.settle({
+    var settleArgs = {
       entryPrice: entryPx,
       durationSec: Number(trade.duration) || 5,
       side: sideNow,
       payout: payout,
       profile: profile
-    });
+    };
+    if (profile === 'real') {
+      var baseP = StochasticCore.winProb(payout, 'real');
+      settleArgs.winP = antiMartWinP(user, trade, baseP);
+    }
+    var verdict = StochasticCore.settle(settleArgs);
     var wantWon = !!verdict.won;
     var target = Number(verdict.exitPrice);
     if (!(target > 0) || !isFinite(target)) {

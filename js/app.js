@@ -386,7 +386,9 @@
     if (!r || Date.now() > r.until) return real;
     var n = Number(real);
     if (!isFinite(n)) return real;
-    if (n + 0.05 < r.once && r.once - n <= r.stake + 0.09) return r.once;
+    // Uniquement annuler une double soustraction (n trop bas). Ne JAMAIS remonter
+    // un débit serveur légitime (sinon 9$ → 10$ à l’écran).
+    if (n < r.once - 0.05 && (r.once - n) <= (Number(r.stake) || 0) + 0.09) return r.once;
     return n;
   };
 
@@ -2807,15 +2809,17 @@
     patchHistorySoon();
     syncTradeButtons();
     if (mode === 'real' && realBefore != null && isFinite(realBefore) && D6.Api && D6.Api.token && D6.Api.token()) {
-      // Réserve UI seulement — ne pas écrire le store (sinon double soustraction avec openSum).
-      var reservedShow = D6.roundMoney(Math.max(0, realBefore - openStakeSum('real')));
-      armStakeReserve(reservedShow, stake, Math.max(15000, (Number(sealedDur) || 10) * 1000 + 8000));
+      // Affichage attendu après UNE mise (pas openSum ambigu) — évite le yo-yo 10→9→10.
+      var reservedShow = D6.roundMoney(Math.max(0, realBefore - stake));
+      armStakeReserve(reservedShow, stake, Math.max(20000, (Number(sealedDur) || 10) * 1000 + 12000));
+      lockBalanceOptimistic(null, reservedShow, Math.max(15000, (Number(sealedDur) || 10) * 1000 + 8000));
+    } else {
+      lockBalanceOptimistic(
+        mode === 'demo' ? D6.Store.demoBalance(u) : null,
+        mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : null) : null,
+        Math.max(12000, (Number(sealedDur) || 10) * 1000 + 4000)
+      );
     }
-    lockBalanceOptimistic(
-      mode === 'demo' ? D6.Store.demoBalance(u) : null,
-      mode === 'real' ? (D6.Store.realBalance ? D6.Store.realBalance(u) : null) : null,
-      Math.max(12000, (Number(sealedDur) || 10) * 1000 + 4000)
-    );
     if (D6.Api && D6.Api.token()) {
       var placeBody = {
         id: res.trade.id,
@@ -2863,7 +2867,11 @@
           if (!(remote && remote.ok && remote.vault && remote.vault.real != null)) return false;
           var srvReal = Number(remote.vault.real);
           if (isFinite(srvReal) && srvReal >= 0) {
-            applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: false, fromTrade: true });
+            // Filet : si le serveur renvoie encore l’ancien solde, forcer le débit local affiché.
+            if (realBefore != null && isFinite(realBefore) && srvReal > realBefore - stake + 0.05) {
+              srvReal = D6.roundMoney(Math.max(0, realBefore - stake));
+            }
+            applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: srvReal <= 0.009, fromTrade: true });
             if (D6.Engine && D6.Engine.markTradeFunded) D6.Engine.markTradeFunded(placedTradeId);
             clearStakeReserve();
             updateBalance(true);
@@ -4909,7 +4917,9 @@
             displayName: String(($('regName') && $('regName').value) || '').trim(),
             resendIn: res.resendIn || res.retryIn || 60
           });
-          setOtpError(res.reason || 'Un code a déjà été envoyé. Patientez une minute avant d’en demander un nouveau.');
+          setOtpError(res.reason || 'Un code a déjà été envoyé. Patientez une minute avant d’en demander un nouveau.', {
+            wait: res.retryIn || res.resendIn || 60
+          });
           return;
         }
         showFieldError(res.field || 'regName', res.reason);
@@ -5105,10 +5115,45 @@
   var otpPending = null;
   var otpResendTimer = null;
   var otpResendLeft = 0;
+  var otpWaitTimer = null;
+  var otpWaitLeft = 0;
 
-  function setOtpError(msg) {
+  function setOtpError(msg, opts) {
+    opts = opts || {};
     var el = $('err-otpCode');
     if (!el) return;
+    if (otpWaitTimer) {
+      clearInterval(otpWaitTimer);
+      otpWaitTimer = null;
+    }
+    otpWaitLeft = 0;
+    var wait = parseInt(opts.wait, 10);
+    if (!(wait > 0) && msg) {
+      var m = String(msg).match(/(\d+)\s*seconde/i);
+      if (m) wait = parseInt(m[1], 10);
+    }
+    if (wait > 0) {
+      otpWaitLeft = wait;
+      el.classList.add('on', 'otp-wait-live');
+      function paintWait() {
+        var s = Math.max(0, otpWaitLeft);
+        el.textContent = s > 0
+          ? ('Un code a déjà été envoyé. Patientez ' + s + ' seconde' + (s > 1 ? 's' : '') + ' avant d’en demander un nouveau.')
+          : '';
+        el.classList.toggle('on', s > 0);
+        if (s <= 0) {
+          el.classList.remove('otp-wait-live');
+          if (otpWaitTimer) { clearInterval(otpWaitTimer); otpWaitTimer = null; }
+        }
+      }
+      paintWait();
+      otpWaitTimer = setInterval(function () {
+        otpWaitLeft -= 1;
+        paintWait();
+      }, 1000);
+      return;
+    }
+    el.classList.remove('otp-wait-live');
     el.textContent = msg || '';
     el.classList.toggle('on', !!msg);
   }
@@ -6748,6 +6793,7 @@
     },
     updateBalance: updateBalance,
     getBalanceLocks: getBalanceLocks,
+    tradeBalanceFrozen: tradeBalanceFrozen,
     boot: function () {
       if (D6.App._booted) return;
       D6.App._booted = true;

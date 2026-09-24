@@ -1320,21 +1320,60 @@ function orolado_odds_key($payout): string {
   return '1.88';
 }
 
-/** Grille scellée : réel 42/12/5/1.5 %, démo 55 %, admin 70 %. */
+/** Grille scellée : réel 48 % sur 1.88 uniquement ; 6/11/51 inchangés ; démo 55 % ; admin 70 %. */
 function orolado_sealed_win_p(float $payout, string $profile): float {
-  static $real = ['1.88' => 0.42, '6' => 0.12, '11' => 0.05, '51' => 0.015];
+  static $real = ['1.88' => 0.48, '6' => 0.12, '11' => 0.05, '51' => 0.015];
   static $demo = ['1.88' => 0.55, '6' => 0.157, '11' => 0.065, '51' => 0.020];
   static $admin = ['1.88' => 0.70, '6' => 0.255, '11' => 0.127, '51' => 0.02];
   $map = $real;
   if ($profile === 'demo') $map = $demo;
   else if ($profile === 'admin') $map = $admin;
-  $p = (float) ($map[orolado_odds_key($payout)] ?? 0.42);
-  if (!is_numeric($p) || $p <= 0.0 || $p >= 1.0) return 0.42;
+  $p = (float) ($map[orolado_odds_key($payout)] ?? 0.48);
+  if (!is_numeric($p) || $p <= 0.0 || $p >= 1.0) return 0.48;
   return max(0.001, min(0.99, $p));
 }
 
-function orolado_sealed_roll(float $payout, string $profile): bool {
-  $p = orolado_sealed_win_p($payout, $profile);
+/**
+ * Anti-martingale serveur : baisse la proba si mises en hausse après pertes réelles.
+ * Flat betting → p inchangé.
+ */
+function orolado_anti_mart_p(array $db, string $uid, float $stake, float $baseP): float {
+  $p = (float) $baseP;
+  if ($p <= 0.0 || $p >= 1.0) return $baseP;
+  if ($stake <= 0.0 || $uid === '') return $p;
+  $lossStreak = 0;
+  $lastStake = 0.0;
+  $orders = isset($db['orders']) && is_array($db['orders']) ? $db['orders'] : [];
+  $seen = 0;
+  for ($i = count($orders) - 1; $i >= 0 && $seen < 24; $i--) {
+    $o = $orders[$i];
+    if (!is_array($o)) continue;
+    if ((string) ($o['userId'] ?? '') !== $uid) continue;
+    if (($o['mode'] ?? '') !== 'real') continue;
+    $st = (string) ($o['status'] ?? '');
+    if (!in_array($st, ['won', 'lost', 'void', 'closed'], true)) continue;
+    $seen++;
+    if ($st === 'void' || !empty($o['voided'])) continue;
+    $os = orolado_money($o['stake'] ?? 0);
+    if ($lossStreak === 0) $lastStake = $os;
+    $won = !empty($o['won']) || $st === 'won';
+    if ($won) break;
+    $lossStreak++;
+    if ($lossStreak === 1) $lastStake = $os;
+  }
+  $rising = $lastStake > 0.009 && $stake >= $lastStake * 1.75;
+  $steps = 0;
+  if ($lossStreak >= 1 && $rising) $steps = min($lossStreak, 6);
+  else if ($lossStreak >= 3 && $stake >= $lastStake * 1.35) $steps = min($lossStreak - 1, 4);
+  if ($steps <= 0) return $p;
+  $p = $p * pow(0.62, $steps);
+  return max(0.10, min($baseP * 0.55, $p));
+}
+
+function orolado_sealed_roll(float $payout, string $profile, ?float $overrideP = null): bool {
+  $p = $overrideP !== null ? (float) $overrideP : orolado_sealed_win_p($payout, $profile);
+  if ($p <= 0.0) return false;
+  if ($p >= 1.0) return true;
   return random_int(1, 100000) <= (int) round($p * 100000);
 }
 

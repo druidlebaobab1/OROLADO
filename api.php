@@ -1821,9 +1821,21 @@ if ($action === 'settleOrder') {
       $side = (($o['side'] ?? $reqSide) === 'put') ? 'put' : 'call';
       $entry = (float) ($o['openPrice'] ?? $o['entryPrice'] ?? $reqEntry);
       $profile = ($mode === 'demo') ? 'demo' : ($isAdmin ? 'admin' : 'real');
+      $rollP = orolado_sealed_win_p($payout, $profile);
+      if ($profile === 'real') {
+        $rollP = orolado_anti_mart_p($locked, $uid, $stake, $rollP);
+      }
       if ($wantWon === null) {
         $voided = false;
-        $won = orolado_sealed_roll($payout, $profile);
+        $won = orolado_sealed_roll($payout, $profile, $rollP);
+      } else if ($profile === 'real') {
+        $baseP = orolado_sealed_win_p($payout, 'real');
+        // Martingale détectée → re-tirage serveur (blindage), sinon on suit le client.
+        if ($rollP + 0.0001 < $baseP) {
+          $won = orolado_sealed_roll($payout, $profile, $rollP);
+        } else {
+          $won = (bool) $wantWon;
+        }
       } else {
         $won = (bool) $wantWon;
       }

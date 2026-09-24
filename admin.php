@@ -116,6 +116,8 @@ function admin_resolve_player_uuid(string $uid, array $found = []): string {
   $cand = (string) ($found['id'] ?? '');
   if (admin_is_uuid($cand)) return $cand;
   $email = strtolower(trim((string) ($found['email'] ?? '')));
+  $publicId = strtoupper(trim((string) ($found['publicId'] ?? '')));
+  if ($publicId === '' && preg_match('/^ORO-/i', $uid)) $publicId = strtoupper(trim($uid));
   $hdrs = function_exists('supabase_admin_headers') ? supabase_admin_headers() : [];
   $url = function_exists('supabase_project_url') ? rtrim(supabase_project_url(), '/') : '';
   if ($hdrs && $url !== '' && $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -128,6 +130,20 @@ function admin_resolve_player_uuid(string $uid, array $found = []): string {
     $rows = supabase_http($url . '/rest/v1/profiles?public_id=eq.' . rawurlencode($uid) . '&select=id', $hdrs);
     if (is_array($rows) && isset($rows[0]['id']) && admin_is_uuid((string) $rows[0]['id'])) {
       return (string) $rows[0]['id'];
+    }
+  }
+  // Miroir JSON local : e-mail / publicId → id UUID
+  if (function_exists('admin_local_db')) {
+    $local = admin_local_db();
+    foreach (($local['users'] ?? []) as $oid => $ou) {
+      if (!is_array($ou)) continue;
+      $oid = (string) ($ou['id'] ?? $oid);
+      $oem = strtolower(trim((string) ($ou['email'] ?? '')));
+      $opid = strtoupper(trim((string) ($ou['publicId'] ?? '')));
+      $match = ($email !== '' && $oem === $email)
+        || ($publicId !== '' && $opid === $publicId)
+        || (strcasecmp($oid, $uid) === 0);
+      if ($match && admin_is_uuid($oid)) return $oid;
     }
   }
   return $uid;
@@ -1230,7 +1246,13 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     return ['ok' => false, 'reason' => 'Montant invalide', 'real' => 0.0];
   }
   if (!admin_is_uuid($uid) && $uid !== 'admin_master' && !admin_is_admin_account($uid)) {
-    return ['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.', 'real' => 0.0];
+    // Dernière chance : résoudre via e-mail / publicId locaux avant d’abandonner.
+    $retry = admin_resolve_player_uuid($uid, ['id' => $uid]);
+    if (admin_is_uuid($retry)) {
+      $uid = $retry;
+    } else {
+      return ['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.', 'real' => 0.0];
+    }
   }
   $opKey = 'adm:' . $uid . ':' . sprintf('%.2f', $delta) . ':' . substr(md5(strtolower(trim($motif))), 0, 10) . ':' . date('YmdHi');
   if (function_exists('orolado_cash_op_get')) {
@@ -1400,14 +1422,28 @@ if ($isAjax) {
       admin_json(['ok' => false, 'reason' => 'Montant obligatoire']);
     }
     $db = admin_local_db();
+    $hint = [
+      'id' => $uid,
+      'email' => strtolower(trim((string) ($req['email'] ?? ''))),
+      'publicId' => strtoupper(trim((string) ($req['publicId'] ?? ''))),
+    ];
     $found = admin_user_lookup($uid, admin_profile_map());
+    if ((string) ($found['email'] ?? '') === '' && $hint['email'] !== '') $found['email'] = $hint['email'];
+    if ((string) ($found['publicId'] ?? '') === '' && $hint['publicId'] !== '') $found['publicId'] = $hint['publicId'];
     if ((string) ($found['id'] ?? '') !== '') $uid = (string) $found['id'];
+    $resolved = admin_resolve_player_uuid($uid, $found);
+    if (admin_is_uuid($resolved)) $uid = $resolved;
     $targets = admin_credit_target_ids($uid, $found);
     if (!$targets) {
       admin_json(['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.']);
     }
     // UNE CAISSE : un seul id (UUID), jamais une boucle multi-cibles.
     $targets = [$targets[0]];
+    // Si la cible n’est pas un UUID, dernière passe e-mail / publicId.
+    if (!admin_is_uuid((string) $targets[0]) && (string) $targets[0] !== 'admin_master') {
+      $retry = admin_resolve_player_uuid((string) $targets[0], $found + $hint);
+      if (admin_is_uuid($retry)) $targets = [$retry];
+    }
     $ok = false;
     $lastReal = 0.0;
     $reason = 'Échec';
@@ -2069,7 +2105,7 @@ async function openUser(uid) {
     const amt = Number(document.getElementById('adjAmt').value);
     if (!(amt > 0)) { alert('Montant obligatoire'); return; }
     if (sign < 0 && !confirm('Débiter '+amt+' $ de ce compte réel ?')) return;
-    const r = await ajax({action:'adjust', userId:u.id, delta: sign * Math.abs(amt), motif});
+    const r = await ajax({action:'adjust', userId:u.id, email:u.email||'', publicId:u.publicId||'', delta: sign * Math.abs(amt), motif});
     if (!r.ok) alert(r.reason||'Échec');
     else { bustList(); openUser(u.id); loadBadges(); }
   };

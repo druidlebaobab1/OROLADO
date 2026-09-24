@@ -328,14 +328,17 @@
         var reserve = D6.stakeReserve;
         var openStake = 0;
         try {
-          if (D6.App && D6.App.getBalanceLocks) {
-            /* open stake via engine if available */
+          if (D6.Engine && D6.Engine.openLiveStakeSum) openStake = Number(D6.Engine.openLiveStakeSum('real')) || 0;
+          else {
+            var list = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades('real') : [];
+            var i;
+            for (i = 0; i < list.length; i++) openStake += Number(list[i] && list[i].stake) || 0;
           }
-          var list = (D6.Engine && D6.Engine.getTrades) ? D6.Engine.getTrades('real') : [];
-          var i;
-          for (i = 0; i < list.length; i++) openStake += Number(list[i] && list[i].stake) || 0;
         } catch (eOpen) { openStake = 0; }
+        var frozen = false;
+        try { frozen = !!(D6.App && D6.App.tradeBalanceFrozen && D6.App.tradeBalanceFrozen()); } catch (eFz) { frozen = false; }
         var tradeBusy = openStake > 0.009
+          || frozen
           || (reserve && Date.now() < reserve.until)
           || (locked && !newDep);
         var stalePreStake = reserve && Date.now() < reserve.until && remoteReal > localReal + 0.009
