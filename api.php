@@ -1618,7 +1618,6 @@ if ($action === 'placeOrder') {
         ];
       }
     }
-    $now = microtime(true);
     // Pas de plafond de trades simultanés (démo / réel).
     if ($mode === 'demo') {
       $bal = orolado_money($locked['vault'][$uid]['demo'] ?? 0);
