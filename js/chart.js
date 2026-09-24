@@ -1857,7 +1857,7 @@
     if (assetId === 'stable') return 0.0070;
     if (assetId === 'horizon50') return 0.0062;
     if (assetId === 'crash300') pct = 0.0155;
-    else if (assetId === 'boomspike') pct = 0.026;
+    else if (assetId === 'boomspike') pct = 0.032;
     else if (assetId === 'goldtrend') pct = 0.015;
     else if (assetId === 'titanpulse') pct = 0.018;
     else if (assetId === 'apex500') pct = 0.013;
@@ -1898,9 +1898,14 @@
     var edge = span * (critical ? 0.26 : 0.20);
     var lo = mid - half;
     var hi = mid + half;
-    var panK = lockedPair ? 0.045 : (critical ? 0.038 : 0.055);
+    var panK = lockedPair ? 0.045 : (critical ? 0.085 : 0.055);
     if (h > hi - edge) mid += (h - (hi - edge)) * panK;
     if (h < lo + edge) mid += (h - (lo + edge)) * panK;
+    // Boom : si la tête est trop basse/haute, recentrer plus fort (évite collage bas).
+    if (assetId === 'boomspike') {
+      var pos = (h - (mid - half)) / Math.max(1e-9, span);
+      if (pos < 0.22 || pos > 0.78) mid += (h - mid) * 0.12;
+    }
     return { min: mid - half, max: mid + half };
   }
 

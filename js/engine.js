@@ -491,12 +491,15 @@
         buf.boomMid = price;
       }
     }
-    // Route autour du boomMid : la tête ne sort pas du cadre même en burst.
-    var routeAnchor = buf.boomMid || from;
-    var routeHalf = routeAnchor * 0.011;
+    // Route autour du boomMid : bande assez large + ancrage sur le prix courant
+    // pour ne pas coller au bas/haut du cadre après un burst.
+    var routeAnchor = (buf.boomMid && isFinite(buf.boomMid)) ? buf.boomMid : from;
+    routeAnchor = routeAnchor * 0.65 + price * 0.35;
+    var routeHalf = routeAnchor * 0.014;
     if (price > routeAnchor + routeHalf) price = routeAnchor + routeHalf;
     if (price < routeAnchor - routeHalf) price = routeAnchor - routeHalf;
-    return { price: capPctMove(from, price, JUMP_PCT), boom: marked, from: from };
+    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.92 + price * 0.08) : price;
+    return { price: capPctMove(from, price, JUMP_PCT * 0.85), boom: marked, from: from };
   }
 
   function unifiedStep(asset, price, nowMs, dtSec, opts) {
