@@ -562,16 +562,20 @@
       if (nextOut > hiC) nextOut = nextOut + (hiC - nextOut) * 0.70;
       if (nextOut < loC) nextOut = nextOut + (loC - nextOut) * 0.70;
     } else if (!sim.boomBurst) {
-      // Sept restants : même discipline de route que Crash (pull 0.70).
+      // Huit actifs : même calage centre que Crash — le prix reste dans la bande,
+      // la caméra n'a plus besoin de « suivre la photo ».
       var routeMidV = base * (sim.lean != null ? sim.lean : 1);
-      var routeHalfV = base * 0.0068;
-      if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0080;
-      if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0085;
-      if (asset && asset.id === 'apex500') routeHalfV = base * 0.0075;
+      var routeHalfV = base * 0.0062;
+      if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0075;
+      if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0070;
+      if (asset && asset.id === 'apex500') routeHalfV = base * 0.0068;
+      if (asset && (asset.id === 'v100' || asset.id === 'v75' || asset.id === 'nexusprime')) {
+        routeHalfV = base * 0.0065;
+      }
       var loV = routeMidV - routeHalfV;
       var hiV = routeMidV + routeHalfV;
-      if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.70;
-      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * 0.70;
+      if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.78;
+      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * 0.78;
     }
     return clampIndexPrice(nextOut, asset);
   }

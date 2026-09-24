@@ -1883,14 +1883,13 @@
     var wantSpan = Math.abs(h) * routeSpanPct(assetId);
     var span;
     var mid;
-    var softPair = (assetId === 'stable' || assetId === 'horizon50');
-    // Plein écran : même caméra douce que Stable/Horizon pour les 8 autres.
-    var softCam = softPair || !!fsActive;
+    // Recette Stable / Horizon pour TOUS les actifs (petit + grand écran) :
+    // cadre calé au milieu, seul le tracé avance — plus d'effet « photo » haut/bas.
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
       span = span * 0.997 + wantSpan * 0.003;
-      var loS = softCam ? wantSpan * 0.90 : wantSpan * 0.96;
-      var hiS = softCam ? wantSpan * 1.18 : wantSpan * 1.06;
+      var loS = wantSpan * 0.90;
+      var hiS = wantSpan * 1.18;
       if (span < loS) span = loS;
       if (span > hiS) span = hiS;
       mid = (prevMin + prevMax) / 2;
@@ -1899,21 +1898,10 @@
       mid = h;
     }
     var half = span / 2;
-    var edge = span * (softCam ? 0.20 : 0.26);
-    var lo = mid - half;
-    var hi = mid + half;
-    var panK = softCam ? 0.045 : 0.085;
-    if (h > hi - edge) mid += (h - (hi - edge)) * panK;
-    if (h < lo + edge) mid += (h - (lo + edge)) * panK;
-    if (!softCam) {
-      // 1er cran seulement : recentrage validé mobile.
-      var pos = (h - (mid - half)) / Math.max(1e-9, span);
-      if (pos < 0.22 || pos > 0.78) mid += (h - mid) * 0.12;
-    } else if (fsActive && !softPair) {
-      // FS : micro-suivi si la tête colle vraiment au bord (sans vague photo).
-      var posFs = (h - (mid - half)) / Math.max(1e-9, span);
-      if (posFs < 0.12 || posFs > 0.88) mid += (h - mid) * 0.05;
-    }
+    var edge = span * 0.20;
+    var panK = 0.045;
+    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
+    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
     return { min: mid - half, max: mid + half };
   }
 
@@ -2136,7 +2124,7 @@
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50' || fsActive) ? 0.055 : 0.05;
+        var camK = 0.055;
         viewMin = prevMin + (cam.min - prevMin) * camK;
         viewMax = prevMax + (cam.max - prevMax) * camK;
       } else {

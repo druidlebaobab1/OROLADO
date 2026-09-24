@@ -1,0 +1,4 @@
+﻿RESTORE parachute photo-bounce (20260924-014805)
+  Copy-Item -Force .\photo-avant-fix-photo-bounce-20260924-014805\index.html .\index.html
+  Copy-Item -Force .\photo-avant-fix-photo-bounce-20260924-014805\sw.js .\sw.js
+  Copy-Item -Force .\photo-avant-fix-photo-bounce-20260924-014805\js\* .\js\
