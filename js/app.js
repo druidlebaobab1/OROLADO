@@ -1258,6 +1258,11 @@
     // Réel : store = vérité serveur ; soustraire SEULEMENT les mises pas encore confirmées.
     // applyOfficialReal puis markTradeFunded puis 1 seul paint → pas de yo-yo.
     var active = isReal ? Math.max(0, real - openStakeSum('real')) : demo;
+    // Réserve de mise : ne JAMAIS réafficher plus haut (évite 9 → 10 fantôme sur compte réel).
+    if (isReal && D6.stakeReserve && Date.now() < D6.stakeReserve.until) {
+      var onceShow = Number(D6.stakeReserve.once);
+      if (isFinite(onceShow) && onceShow >= 0) active = Math.min(active, onceShow);
+    }
     var modeKey = isReal ? 'real' : 'demo';
     if (lastPaintedMode && lastPaintedMode !== modeKey) lastPaintedBalance = null;
     lastPaintedMode = modeKey;
@@ -4917,7 +4922,7 @@
             displayName: String(($('regName') && $('regName').value) || '').trim(),
             resendIn: res.resendIn || res.retryIn || 60
           });
-          setOtpError(res.reason || 'Un code a déjà été envoyé. Patientez une minute avant d’en demander un nouveau.', {
+          setOtpError('Patientez une minute avant de relancer.', {
             wait: res.retryIn || res.resendIn || 60
           });
           return;
@@ -5137,9 +5142,7 @@
       el.classList.add('on', 'otp-wait-live');
       function paintWait() {
         var s = Math.max(0, otpWaitLeft);
-        el.textContent = s > 0
-          ? ('Un code a déjà été envoyé. Patientez ' + s + ' seconde' + (s > 1 ? 's' : '') + ' avant d’en demander un nouveau.')
-          : '';
+        el.textContent = s > 0 ? ('Patientez ' + s + ' s avant de relancer.') : '';
         el.classList.toggle('on', s > 0);
         if (s <= 0) {
           el.classList.remove('otp-wait-live');
@@ -5151,6 +5154,8 @@
         otpWaitLeft -= 1;
         paintWait();
       }, 1000);
+      // Aligner le bouton renvoi en bas sur le même compteur.
+      try { startOtpResendCountdown(wait); } catch (eCd) { /* ignore */ }
       return;
     }
     el.classList.remove('otp-wait-live');

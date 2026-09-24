@@ -1320,9 +1320,9 @@ function orolado_odds_key($payout): string {
   return '1.88';
 }
 
-/** Grille scellée : réel 48 % sur 1.88 uniquement ; 6/11/51 inchangés ; démo 55 % ; admin 70 %. */
+/** Grille scellée : réel 48 % sur 1.88 ; 6/11/51 au ratio 48/42 ; démo 55 % ; admin 70 %. */
 function orolado_sealed_win_p(float $payout, string $profile): float {
-  static $real = ['1.88' => 0.48, '6' => 0.12, '11' => 0.05, '51' => 0.015];
+  static $real = ['1.88' => 0.48, '6' => 0.137, '11' => 0.057, '51' => 0.017];
   static $demo = ['1.88' => 0.55, '6' => 0.157, '11' => 0.065, '51' => 0.020];
   static $admin = ['1.88' => 0.70, '6' => 0.255, '11' => 0.127, '51' => 0.02];
   $map = $real;
@@ -1334,8 +1334,8 @@ function orolado_sealed_win_p(float $payout, string $profile): float {
 }
 
 /**
- * Anti-martingale serveur : baisse la proba si mises en hausse après pertes réelles.
- * Flat betting → p inchangé.
+ * Anti-martingale serveur : frein à partir du 3e double après pertes.
+ * 1er–2e double = taux normal. Flat = inchangé.
  */
 function orolado_anti_mart_p(array $db, string $uid, float $stake, float $baseP): float {
   $p = (float) $baseP;
@@ -1362,10 +1362,8 @@ function orolado_anti_mart_p(array $db, string $uid, float $stake, float $baseP)
     if ($lossStreak === 1) $lastStake = $os;
   }
   $rising = $lastStake > 0.009 && $stake >= $lastStake * 1.75;
-  $steps = 0;
-  if ($lossStreak >= 1 && $rising) $steps = min($lossStreak, 6);
-  else if ($lossStreak >= 3 && $stake >= $lastStake * 1.35) $steps = min($lossStreak - 1, 4);
-  if ($steps <= 0) return $p;
+  if (!($lossStreak >= 3 && $rising)) return $p;
+  $steps = min($lossStreak - 2, 6);
   $p = $p * pow(0.62, $steps);
   return max(0.10, min($baseP * 0.55, $p));
 }

@@ -7,11 +7,10 @@ public static class Sim48 {
   const double PROFIT = 0.88;
 
   static double Anti(double baseP, double stake, double last, int ls) {
+    // Frein seulement à partir du 3e double (lossStreak >= 3 + mise qui monte).
     bool rising = last > 0.009 && stake >= last * 1.75;
-    int steps = 0;
-    if (ls >= 1 && rising) steps = Math.Min(ls, 6);
-    else if (ls >= 3 && stake >= last * 1.35) steps = Math.Min(ls - 1, 4);
-    if (steps <= 0) return baseP;
+    if (!(ls >= 3 && rising)) return baseP;
+    int steps = Math.Min(ls - 2, 6);
     double p = baseP * Math.Pow(0.62, steps);
     return Math.Max(0.10, Math.Min(baseP * 0.55, p));
   }

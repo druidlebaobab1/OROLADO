@@ -10,7 +10,7 @@
     var SEALED = Object.freeze({
       SIGMA: 0.00125,
       DEFAULT_ODDS: 1.88,
-      WIN_P_REAL: Object.freeze({ '1.88': 0.48, '6': 0.12, '11': 0.05, '51': 0.015 }),
+      WIN_P_REAL: Object.freeze({ '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017 }),
       WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 }),
       WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 }),
       PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
@@ -1662,9 +1662,10 @@
     return false;
   }
 
-  /** Blindage anti-martingale (joueur réel uniquement).
-   *  Détecte une montée de mise après perte(s) et réduit la proba de gain.
-   *  Flat / mise stable : taux de base inchangé (48 % sur 1.88). */
+  /** Frein matengale (joueur réel uniquement).
+   *  1er et 2e double après perte = OK (joueur normal).
+   *  À partir du 3e double = matengale confirmée → proba en baisse.
+   *  Flat / mise stable = taux de base inchangé. */
   function antiMartWinP(user, trade, baseP) {
     var p = Number(baseP);
     if (!(p > 0) || !isFinite(p)) return baseP;
@@ -1682,10 +1683,9 @@
       lossStreak += 1;
     }
     var rising = lastStake > 0.009 && stake >= lastStake * 1.75;
-    var steps = 0;
-    if (lossStreak >= 1 && rising) steps = Math.min(lossStreak, 6);
-    else if (lossStreak >= 3 && stake >= lastStake * 1.35) steps = Math.min(lossStreak - 1, 4);
-    if (steps <= 0) return p;
+    // 3 pertes + mise qui double = 3e double → frein. Avant ça : taux normal.
+    if (!(lossStreak >= 3 && rising)) return p;
+    var steps = Math.min(lossStreak - 2, 6);
     p = p * Math.pow(0.62, steps);
     return Math.max(0.10, Math.min(baseP * 0.55, p));
   }
@@ -1707,7 +1707,7 @@
       '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02
     };
     var realMap = C.ODDS_WIN_RATE || {
-      '1.88': 0.48, '6': 0.12, '11': 0.05, '51': 0.015
+      '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017
     };
     var admin = isAdminUser(user);
     var isDemo = mode !== 'real';

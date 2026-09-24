@@ -21,9 +21,8 @@
     ODDS_MULT: [1.88, 6, 11, 51],
     DEFAULT_ODDS: 1.88,
     PAYOUT_PCT: { '1.88': 88, '6': 500, '11': 1000, '51': 5000 },
-    // Joueurs ordinaires RÉEL — 48 % uniquement sur la cote 1.88 (payout 88 %).
-    // Les cotes 6 / 11 / 51 restent aux taux d’origine (inchangés).
-    ODDS_WIN_RATE: { '1.88': 0.48, '6': 0.12, '11': 0.05, '51': 0.015 },
+    // Joueurs ordinaires RÉEL — 48 % sur 1.88 ; autres cotes au même ratio (48/42).
+    ODDS_WIN_RATE: { '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017 },
     // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
     ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
     ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },

@@ -288,7 +288,7 @@ if ($action === 'registerStart') {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Un code a déjà été envoyé. Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant d’en demander un nouveau.',
+      'reason' => 'Patientez ' . $wait . ' s avant de relancer.',
       'retryIn' => $wait,
       'cooldown' => true,
       'field' => 'regEmail',
@@ -348,7 +348,7 @@ if ($action === 'registerResend') {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant de renvoyer un code.',
+      'reason' => 'Patientez ' . $wait . ' s avant de relancer.',
       'retryIn' => $wait,
       'cooldown' => true
     ]);
@@ -495,7 +495,7 @@ if ($action === 'passwordOtpStart') {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant de renvoyer un code.',
+      'reason' => 'Patientez ' . $wait . ' s avant de relancer.',
       'retryIn' => $wait,
       'cooldown' => true
     ]);
@@ -586,7 +586,7 @@ if ($action === 'forgotOtpStart') {
     echo json_encode([
       'ok' => false,
       'server' => true,
-      'reason' => 'Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant de renvoyer un code.',
+      'reason' => 'Patientez ' . $wait . ' s avant de relancer.',
       'retryIn' => $wait,
       'cooldown' => true
     ]);
@@ -1226,6 +1226,23 @@ if ($action === 'adjust') {
   if ($uid === '' || abs($delta) < 0.0001) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Montant invalide']);
     exit;
+  }
+  // Résoudre publicId / e-mail → UUID coffre (même logique que admin.php).
+  if ($mode === 'real' && function_exists('orolado_balance_uuid')) {
+    $resolved = orolado_balance_uuid($db, $uid);
+    if ($resolved !== '') $uid = $resolved;
+  }
+  if (!isset($db['users'][$uid]) && !isset($db['vault'][$uid])) {
+    $em = strtolower(trim((string) ($req['email'] ?? '')));
+    if ($em !== '' && isset($db['users']) && is_array($db['users'])) {
+      foreach ($db['users'] as $oid => $ou) {
+        if (!is_array($ou)) continue;
+        if (strtolower(trim((string) ($ou['email'] ?? ''))) === $em) {
+          $uid = (string) ($ou['id'] ?? $oid);
+          break;
+        }
+      }
+    }
   }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
   if ($mode === 'demo') {

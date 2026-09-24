@@ -107,7 +107,8 @@ function admin_user_lookup(string $id, array $pmap): array {
 }
 
 function admin_is_uuid(string $id): bool {
-  return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id);
+  $id = strtolower(trim($id));
+  return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $id);
 }
 
 /** UUID Supabase du joueur (fiche, e-mail, publicId) — hors OxaPay. */
@@ -1240,17 +1241,31 @@ function admin_profile_payload(string $uid): array {
 }
 
 /** Crédit admin : même caisse que le crypto (incrément), enregistré comme dépôt. Pas d’OxaPay. */
-function admin_manual_credit(array &$db, string $uid, float $delta, string $motif): array {
+function admin_manual_credit(array &$db, string $uid, float $delta, string $motif, array $hint = []): array {
   $delta = orolado_money($delta);
   if ($uid === '' || $delta <= 0) {
     return ['ok' => false, 'reason' => 'Montant invalide', 'real' => 0.0];
   }
-  if (!admin_is_uuid($uid) && $uid !== 'admin_master' && !admin_is_admin_account($uid)) {
-    // Dernière chance : résoudre via e-mail / publicId locaux avant d’abandonner.
-    $retry = admin_resolve_player_uuid($uid, ['id' => $uid]);
+  $uid = trim($uid);
+  if (!admin_is_uuid($uid) && $uid !== 'admin_master' && !admin_is_admin_account($uid, $hint)) {
+    $retry = admin_resolve_player_uuid($uid, array_merge(['id' => $uid], $hint));
     if (admin_is_uuid($retry)) {
       $uid = $retry;
     } else {
+      // Dernier recours : e-mail explicite → profiles Supabase
+      $em = strtolower(trim((string) ($hint['email'] ?? '')));
+      if ($em !== '' && filter_var($em, FILTER_VALIDATE_EMAIL) && function_exists('supabase_http')) {
+        $hdrs = function_exists('supabase_admin_headers') ? supabase_admin_headers() : [];
+        $url = function_exists('supabase_project_url') ? rtrim(supabase_project_url(), '/') : '';
+        if ($hdrs && $url !== '') {
+          $rows = supabase_http($url . '/rest/v1/profiles?email=eq.' . rawurlencode($em) . '&select=id', $hdrs);
+          if (is_array($rows) && isset($rows[0]['id']) && admin_is_uuid((string) $rows[0]['id'])) {
+            $uid = (string) $rows[0]['id'];
+          }
+        }
+      }
+    }
+    if (!admin_is_uuid($uid) && $uid !== 'admin_master' && !admin_is_admin_account($uid, $hint)) {
       return ['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.', 'real' => 0.0];
     }
   }
@@ -1449,7 +1464,7 @@ if ($isAjax) {
     $reason = 'Échec';
     foreach ($targets as $tid) {
       if ($delta > 0) {
-        $res = admin_manual_credit($db, $tid, $delta, $motif);
+        $res = admin_manual_credit($db, $tid, $delta, $motif, $found + $hint);
       } else if (admin_is_uuid($tid) && function_exists('orolado_ledger_apply')) {
         $res = orolado_ledger_apply($db, $tid, $delta, $motif, false);
       } else {

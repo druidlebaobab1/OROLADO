@@ -119,9 +119,9 @@
       });
       if (!start || !start.ok) {
         var waitStart = parseInt(start && start.retryIn, 10);
-        var coolMsg = 'Un code a déjà été envoyé. Patientez une minute avant d’en demander un nouveau.';
+        var coolMsg = 'Patientez une minute avant de relancer.';
         if (start && start.cooldown && waitStart > 0) {
-          coolMsg = 'Un code a déjà été envoyé. Patientez ' + waitStart + ' seconde' + (waitStart > 1 ? 's' : '') + ' avant d’en demander un nouveau.';
+          coolMsg = 'Patientez ' + waitStart + ' s avant de relancer.';
         }
         return {
           ok: false,
