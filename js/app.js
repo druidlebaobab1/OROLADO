@@ -5326,7 +5326,7 @@
         }
         if (stakeEl) stakeEl.value = stake;
         btn.classList.add('hit');
-        setTimeout(function () { btn.classList.remove('hit'); }, 160);
+        setTimeout(function () { btn.classList.remove('hit'); }, 180);
         updatePayoutUi();
       });
     });
