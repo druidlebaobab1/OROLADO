@@ -462,14 +462,14 @@
       }
     } else if (buf.boomPhase === 'burst') {
       if (buf.boomZig === 1 && buf.boomLeft > 0) {
-        // Burst contenu : ~0.9–1.4 % (avant ~1.8–3.4 %) pour rester dans la route visuelle.
-        price = clampIndexPrice(from * (1 + 0.009 + Math.random() * 0.005), asset);
+        // Burst type Crash : contenu (~0.55–0.85 %), ne tape plus le plafond.
+        price = clampIndexPrice(from * (1 + 0.0055 + Math.random() * 0.003), asset);
         buf.boomPeak = price;
         buf.boomZig = -1;
         buf.boomLeft -= 1;
         marked = true;
       } else if (buf.boomZig === -1 && buf.boomLeft > 0) {
-        price = clampIndexPrice(from * (1 - 0.0035 - Math.random() * 0.004), asset);
+        price = clampIndexPrice(from * (1 - 0.0025 - Math.random() * 0.0025), asset);
         buf.boomZig = 1;
         marked = true;
       } else {
@@ -491,15 +491,15 @@
         buf.boomMid = price;
       }
     }
-    // Route autour du boomMid : bande assez large + ancrage sur le prix courant
-    // pour ne pas coller au bas/haut du cadre après un burst.
+    // Route Boom = même discipline que Crash (bande autour du mid, soft clamp).
+    var baseBoom = Number(asset && asset.basePrice) || from;
     var routeAnchor = (buf.boomMid && isFinite(buf.boomMid)) ? buf.boomMid : from;
-    routeAnchor = routeAnchor * 0.65 + price * 0.35;
-    var routeHalf = routeAnchor * 0.014;
-    if (price > routeAnchor + routeHalf) price = routeAnchor + routeHalf;
-    if (price < routeAnchor - routeHalf) price = routeAnchor - routeHalf;
-    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.92 + price * 0.08) : price;
-    return { price: capPctMove(from, price, JUMP_PCT * 0.85), boom: marked, from: from };
+    routeAnchor = routeAnchor * 0.55 + price * 0.25 + baseBoom * 0.20;
+    var routeHalf = baseBoom * 0.010;
+    if (price > routeAnchor + routeHalf) price = price + ((routeAnchor + routeHalf) - price) * 0.70;
+    if (price < routeAnchor - routeHalf) price = price + ((routeAnchor - routeHalf) - price) * 0.70;
+    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.90 + price * 0.10) : price;
+    return { price: capPctMove(from, price, JUMP_PCT * 0.75), boom: marked, from: from };
   }
 
   function unifiedStep(asset, price, nowMs, dtSec, opts) {
@@ -554,7 +554,7 @@
       if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
       if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
     } else if (sim.crashCalm) {
-      // Crash 300 : bande plus large mais bornée (pas d'étirement / plafond).
+      // Crash 300 VALIDÉ — ne pas modifier.
       var routeMidC = base * (sim.lean != null ? sim.lean : 0.997);
       var routeHalfC = base * 0.0062;
       var loC = routeMidC - routeHalfC;
@@ -562,15 +562,16 @@
       if (nextOut > hiC) nextOut = nextOut + (hiC - nextOut) * 0.70;
       if (nextOut < loC) nextOut = nextOut + (loC - nextOut) * 0.70;
     } else if (!sim.boomBurst) {
-      // Autres volatils (sauf Boom qui a sa propre route dans stepBoomBurst).
+      // Sept restants : même discipline de route que Crash (pull 0.70).
       var routeMidV = base * (sim.lean != null ? sim.lean : 1);
-      var routeHalfV = base * 0.0085;
-      if (asset && (asset.id === 'titanpulse' || asset.id === 'goldtrend')) routeHalfV = base * 0.012;
-      if (asset && asset.id === 'apex500') routeHalfV = base * 0.010;
+      var routeHalfV = base * 0.0068;
+      if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0095;
+      if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0085;
+      if (asset && asset.id === 'apex500') routeHalfV = base * 0.0075;
       var loV = routeMidV - routeHalfV;
       var hiV = routeMidV + routeHalfV;
-      if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.45;
-      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * 0.45;
+      if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.70;
+      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * 0.70;
     }
     return clampIndexPrice(nextOut, asset);
   }
@@ -590,12 +591,12 @@
         else c = o - Math.max(minBody * 0.7, Math.abs(c - o) * 0.55);
       } else if (sim.nexusPulse) {
         var ampN = Math.max(Math.abs(o) * 0.0009, 0.12);
-        var maxN = Math.abs(o) * 0.012;
+        var maxN = Math.abs(o) * 0.0065;
         if (c >= o) c = o + Math.min(maxN, Math.max(ampN, Math.abs(c - o)));
         else c = o - Math.min(maxN, Math.max(ampN, Math.abs(c - o)));
       } else if (sim.v75Wave) {
         var ampV = Math.max(Math.abs(o) * 0.00085, 0.12);
-        var maxV = Math.abs(o) * 0.012;
+        var maxV = Math.abs(o) * 0.0065;
         if (c >= o) c = o + Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
         else c = o - Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
       } else if (sim.horizonCalm) {

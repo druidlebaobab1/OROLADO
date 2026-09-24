@@ -1849,27 +1849,26 @@
     return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * padTopRatio() };
   }
 
-  // Route Y fixe par actif : la tête serpente dedans, le corps ne rebondit pas.
-  // Stable / Horizon : calibrage validé — ne pas retoucher leurs coefficients.
+  // Route Y fixe. Stable / Horizon / Crash 300 : VALIDÉS — coefficients figés.
   function routeSpanPct(assetId) {
-    var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
-    var pct;
+    // --- Trio validé : ne jamais modifier ---
     if (assetId === 'stable') return 0.0070;
     if (assetId === 'horizon50') return 0.0062;
-    if (assetId === 'crash300') pct = 0.0155;
-    else if (assetId === 'boomspike') pct = 0.032;
-    else if (assetId === 'goldtrend') pct = 0.015;
-    else if (assetId === 'titanpulse') pct = 0.018;
-    else if (assetId === 'apex500') pct = 0.013;
-    else if (assetId === 'v75') pct = 0.0115;
-    else if (assetId === 'nexusprime') pct = 0.0105;
-    else if (assetId === 'v100') pct = 0.0115;
-    else pct = 0.011;
-    // Mobile (1er cran) : un peu plus d'air pour que les pics ne collent pas aux bords.
-    if (narrow && assetId !== 'stable' && assetId !== 'horizon50') {
-      if (assetId === 'boomspike' || assetId === 'crash300') pct *= 1.08;
-      else pct *= 1.20;
-    }
+    if (assetId === 'crash300') return 0.0155;
+
+    // --- Sept restants (dont Boom) ---
+    var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
+    var pct;
+    if (assetId === 'boomspike') pct = 0.028;
+    else if (assetId === 'goldtrend') pct = 0.016;
+    else if (assetId === 'titanpulse') pct = 0.019;
+    else if (assetId === 'apex500') pct = 0.0145;
+    else if (assetId === 'v75') pct = 0.0135;
+    else if (assetId === 'nexusprime') pct = 0.0125;
+    else if (assetId === 'v100') pct = 0.0135;
+    else pct = 0.0135;
+    // Petit écran : format dédié (plus d'air) — pas un grand écran compressé.
+    if (narrow) pct *= 1.38;
     return pct;
   }
 
@@ -1879,14 +1878,12 @@
     var wantSpan = Math.abs(h) * routeSpanPct(assetId);
     var span;
     var mid;
-    var lockedPair = (assetId === 'stable' || assetId === 'horizon50');
-    var critical = (assetId === 'crash300' || assetId === 'boomspike');
+    var softPair = (assetId === 'stable' || assetId === 'horizon50');
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
       span = span * 0.997 + wantSpan * 0.003;
-      // Crash / Boom : span très verrouillé (évite l'étirement progressif).
-      var loS = wantSpan * (critical ? 0.96 : 0.90);
-      var hiS = wantSpan * (critical ? 1.06 : (lockedPair ? 1.18 : 1.12));
+      var loS = softPair ? wantSpan * 0.90 : wantSpan * 0.96;
+      var hiS = softPair ? wantSpan * 1.18 : wantSpan * 1.06;
       if (span < loS) span = loS;
       if (span > hiS) span = hiS;
       mid = (prevMin + prevMax) / 2;
@@ -1895,14 +1892,14 @@
       mid = h;
     }
     var half = span / 2;
-    var edge = span * (critical ? 0.26 : 0.20);
+    var edge = span * (softPair ? 0.20 : 0.26);
     var lo = mid - half;
     var hi = mid + half;
-    var panK = lockedPair ? 0.045 : (critical ? 0.085 : 0.055);
+    var panK = softPair ? 0.045 : 0.085;
     if (h > hi - edge) mid += (h - (hi - edge)) * panK;
     if (h < lo + edge) mid += (h - (lo + edge)) * panK;
-    // Boom : si la tête est trop basse/haute, recentrer plus fort (évite collage bas).
-    if (assetId === 'boomspike') {
+    // Crash + les 7 : recentrage si la tête sort de la zone centrale (recette validée).
+    if (!softPair) {
       var pos = (h - (mid - half)) / Math.max(1e-9, span);
       if (pos < 0.22 || pos > 0.78) mid += (h - mid) * 0.12;
     }
@@ -2122,8 +2119,7 @@
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50') ? 0.055
-          : ((activeAsset === 'crash300' || activeAsset === 'boomspike') ? 0.05 : 0.07);
+        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50') ? 0.055 : 0.05;
         viewMin = prevMin + (cam.min - prevMin) * camK;
         viewMax = prevMax + (cam.max - prevMax) * camK;
       } else {

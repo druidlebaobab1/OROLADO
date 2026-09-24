@@ -1,0 +1,4 @@
+﻿RESTORE parachute harmonisation 7 actifs (20260924-002659)
+  Copy-Item -Force .\photo-avant-harmonisation-7actifs-20260924-002659\index.html .\index.html
+  Copy-Item -Force .\photo-avant-harmonisation-7actifs-20260924-002659\sw.js .\sw.js
+  Copy-Item -Force .\photo-avant-harmonisation-7actifs-20260924-002659\js\* .\js\
