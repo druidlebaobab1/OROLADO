@@ -2536,6 +2536,8 @@
     if (zin) zin.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      zin.classList.add('hit');
+      setTimeout(function () { zin.classList.remove('hit'); }, 180);
       if (zoomIdx > 0) {
         zoomIdx -= 1;
         persistView(activeAsset);
@@ -2549,6 +2551,8 @@
     if (zout) zout.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      zout.classList.add('hit');
+      setTimeout(function () { zout.classList.remove('hit'); }, 180);
       if (zoomIdx < ZOOM_STEPS.length - 1) {
         zoomIdx += 1;
       }
@@ -2564,6 +2568,8 @@
     if (zreset) zreset.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      zreset.classList.add('hit');
+      setTimeout(function () { zreset.classList.remove('hit'); }, 180);
       resetChartView();
     });
     document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
