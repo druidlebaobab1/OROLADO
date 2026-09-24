@@ -566,6 +566,17 @@ function orolado_take_real_stake(string $userId, string $orderId, float $stake):
   if (is_file($marker) || (function_exists('supabase_get_order') && is_array(supabase_get_order($userId, $orderId)))) {
     $sb = supabase_admin_vault($userId);
     $kept = $sb ? orolado_money($sb['real'] ?? 0) : null;
+    // La mise a déjà été prise, puis le coffre est revenu au montant d'avant
+    // (affichage : perte qui « revient », gain = mise + mise + profit).
+    // On ré-épingle le solde d'après débit si l'écart est exactement la mise.
+    if ($kept !== null && is_file($marker)) {
+      $meta = json_decode((string) @file_get_contents($marker), true);
+      $recorded = is_array($meta) ? orolado_money($meta['real'] ?? -1) : -1.0;
+      if ($recorded >= 0 && $kept > $recorded + 0.05 && abs(($kept - $recorded) - $stake) <= 0.15) {
+        $fixed = orolado_put_real_exact($userId, $recorded);
+        if ($fixed !== null) $kept = $fixed;
+      }
+    }
     $release();
     return $kept;
   }
