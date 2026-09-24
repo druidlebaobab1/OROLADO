@@ -1912,13 +1912,9 @@
       if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
       if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
     } else {
-      // 8 autres (mobile + plein écran) : même effet « cadre bloqué ».
-      // Plus de pan progressif (c’était l’effet photo haut/bas).
-      // Micro-secours uniquement si la tête va vraiment sortir du cadre.
-      var air = span * 0.05;
-      var panK8 = 0.010;
-      if (h > mid + half - air) mid += (h - (mid + half - air)) * panK8;
-      if (h < mid - half + air) mid += (h - (mid - half + air)) * panK8;
+      // 8 autres (mobile + plein écran) : cadre 100 % figé au milieu.
+      // Zéro pan — c’est le pan qui créait l’effet « photo » haut/bas.
+      // La route moteur garde la tête dans le cadre.
     }
     return { min: mid - half, max: mid + half };
   }

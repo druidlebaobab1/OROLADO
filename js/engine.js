@@ -409,7 +409,7 @@
     titanpulse: { mode: 'candles', vol: 0.0048, stepMs: 36, pullK: 0.060, center: 0.50, lean: 1, wickK: 1.15 }
   };
   var SIM_VER = 20;
-  var BOOM_VER = 7;
+  var BOOM_VER = 8;
   var CRASH_VER = 2;
   var GOLD_VER = 4;
   var MIN_SEED = 500;
@@ -491,14 +491,17 @@
         buf.boomMid = price;
       }
     }
-    // Route Boom = même discipline que Crash (bande autour du mid, soft clamp).
+    // Route Boom ancrée sur la base (comme Stable/Horizon) : le cadre chart
+    // reste figé ; les bursts restent dans la bande sans tirer toute la photo.
     var baseBoom = Number(asset && asset.basePrice) || from;
-    var routeAnchor = (buf.boomMid && isFinite(buf.boomMid)) ? buf.boomMid : from;
-    routeAnchor = routeAnchor * 0.55 + price * 0.25 + baseBoom * 0.20;
-    var routeHalf = baseBoom * 0.010;
-    if (price > routeAnchor + routeHalf) price = price + ((routeAnchor + routeHalf) - price) * 0.70;
-    if (price < routeAnchor - routeHalf) price = price + ((routeAnchor - routeHalf) - price) * 0.70;
-    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.90 + price * 0.10) : price;
+    var routeAnchor = baseBoom;
+    if (buf.boomMid && isFinite(buf.boomMid)) {
+      routeAnchor = baseBoom * 0.72 + buf.boomMid * 0.18 + price * 0.10;
+    }
+    var routeHalf = baseBoom * 0.0095;
+    if (price > routeAnchor + routeHalf) price = price + ((routeAnchor + routeHalf) - price) * 0.82;
+    if (price < routeAnchor - routeHalf) price = price + ((routeAnchor - routeHalf) - price) * 0.82;
+    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.88 + price * 0.12) : price;
     return { price: capPctMove(from, price, JUMP_PCT * 0.75), boom: marked, from: from };
   }
 
