@@ -1872,8 +1872,8 @@
     else pct = 0.0135;
     // Petit écran (1er cran) VALIDÉ : plus d'air — ne pas toucher.
     if (narrow) pct *= 1.38;
-    // Plein écran : courbe plus présente (pas le format mobile recyclé).
-    else if (fsActive) pct *= 0.88;
+    // Plein écran : base native (déjà plus remplie que le mobile *1.38).
+    // Pas de *0.88 : trop serré → pics collés aux bords (ex. Titan).
     return pct;
   }
 
@@ -1884,8 +1884,7 @@
     var span;
     var mid;
     var softPair = (assetId === 'stable' || assetId === 'horizon50');
-    // Plein écran : même caméra douce que Stable/Horizon pour les 8 autres
-    // (supprime les vagues « photo qui monte/descend »).
+    // Plein écran : même caméra douce que Stable/Horizon pour les 8 autres.
     var softCam = softPair || !!fsActive;
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
@@ -1906,10 +1905,14 @@
     var panK = softCam ? 0.045 : 0.085;
     if (h > hi - edge) mid += (h - (hi - edge)) * panK;
     if (h < lo + edge) mid += (h - (lo + edge)) * panK;
-    // Recentage agressif : uniquement 1er cran (hors Stable/Horizon). Jamais en FS.
     if (!softCam) {
+      // 1er cran seulement : recentrage validé mobile.
       var pos = (h - (mid - half)) / Math.max(1e-9, span);
       if (pos < 0.22 || pos > 0.78) mid += (h - mid) * 0.12;
+    } else if (fsActive && !softPair) {
+      // FS : micro-suivi si la tête colle vraiment au bord (sans vague photo).
+      var posFs = (h - (mid - half)) / Math.max(1e-9, span);
+      if (posFs < 0.12 || posFs > 0.88) mid += (h - mid) * 0.05;
     }
     return { min: mid - half, max: mid + half };
   }
