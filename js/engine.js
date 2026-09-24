@@ -565,7 +565,7 @@
       // Sept restants : même discipline de route que Crash (pull 0.70).
       var routeMidV = base * (sim.lean != null ? sim.lean : 1);
       var routeHalfV = base * 0.0068;
-      if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0095;
+      if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0080;
       if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0085;
       if (asset && asset.id === 'apex500') routeHalfV = base * 0.0075;
       var loV = routeMidV - routeHalfV;

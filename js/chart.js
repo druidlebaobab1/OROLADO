@@ -1861,7 +1861,7 @@
     var pct;
     if (assetId === 'boomspike') pct = 0.028;
     else if (assetId === 'goldtrend') pct = 0.016;
-    else if (assetId === 'titanpulse') pct = 0.019;
+    else if (assetId === 'titanpulse') pct = 0.022;
     else if (assetId === 'apex500') pct = 0.0145;
     else if (assetId === 'v75') pct = 0.0135;
     else if (assetId === 'nexusprime') pct = 0.0125;
