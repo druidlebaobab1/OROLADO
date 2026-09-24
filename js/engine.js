@@ -410,7 +410,7 @@
   };
   var SIM_VER = 21;
   var BOOM_VER = 9;
-  var CRASH_VER = 3;
+  var CRASH_VER = 4;
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
@@ -575,13 +575,13 @@
       if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
       if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
     } else if (sim.crashCalm) {
-      // Crash 300 : route un peu plus centrée (mobile + FS nickel).
+      // Crash 300 : hard-clamp dans la route (ventes longues sans débordement).
       var routeMidC = base * (sim.lean != null ? sim.lean : 0.997);
       var routeHalfC = base * 0.0058;
       var loC = routeMidC - routeHalfC;
       var hiC = routeMidC + routeHalfC;
-      if (nextOut > hiC) nextOut = nextOut + (hiC - nextOut) * 0.72;
-      if (nextOut < loC) nextOut = nextOut + (loC - nextOut) * 0.78;
+      if (nextOut > hiC) nextOut = hiC;
+      if (nextOut < loC) nextOut = loC;
     } else if (!sim.boomBurst) {
       // Huit actifs : même calage centre que Crash — le prix reste dans la bande,
       // la caméra n'a plus besoin de « suivre la photo ».
@@ -1015,7 +1015,13 @@
           var sellTgt = Number(buf.crashSellTarget) || (price * 0.995);
           var sellK = 0.145 + Math.random() * 0.04;
           var sellJit = (Math.random() - 0.55) * price * 0.00012;
-          price = clampIndexPrice(price + (sellTgt - price) * sellK + sellJit, asset);
+          price = price + (sellTgt - price) * sellK + sellJit;
+          var baseCr = Number(asset.basePrice) || price;
+          var midCrR = baseCr * (sim.lean != null ? sim.lean : 0.997);
+          var halfCrR = baseCr * 0.0058;
+          if (price > midCrR + halfCrR) price = midCrR + halfCrR;
+          if (price < midCrR - halfCrR) price = midCrR - halfCrR;
+          price = clampIndexPrice(price, asset);
           forming._spike = true;
           didSpike = true;
           if (tMs >= buf.crashSellUntil - 40) {

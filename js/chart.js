@@ -2706,6 +2706,13 @@
       if (steer && steer.assetId !== id) steer = null;
       var liveBuf = liveBuffer(id);
       var st = ensureAssetState(id);
+      // Nouveau cadre à chaque switch (évite un vieux mid figé hors route).
+      if (!(st.lockUntil && Date.now() < st.lockUntil && st.lockMax > st.lockMin)) {
+        st.viewMin = 0;
+        st.viewMax = 0;
+        st.lockMin = 0;
+        st.lockMax = 0;
+      }
       if ((!liveBuf || !liveBuf.candles || liveBuf.candles.length < 40) && D6.Engine) {
         if (D6.Engine.getBuffer) D6.Engine.getBuffer(id);
         else if (D6.Engine.getMarket) D6.Engine.getMarket(id);
@@ -2719,13 +2726,7 @@
         viewMin = st.lockMin;
         viewMax = st.lockMax;
         strikeLock = { assetId: id, min: st.lockMin, max: st.lockMax, entry: null, ey: null };
-      } else if (st.viewMin && st.viewMax) {
-        viewMin = st.viewMin;
-        viewMax = st.viewMax;
-        strikeLock = null;
-      } else if (st.min && st.max) {
-        viewMin = st.min;
-        viewMax = st.max;
+      } else {
         strikeLock = null;
       }
       if (isFinite(st.lastPrice) && st.lastPrice > 0) lastDrawnClose = st.lastPrice;
