@@ -174,25 +174,26 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .err-msg.on::before{content:"";width:14px;height:14px;flex:0 0 14px;margin-top:1px;background:currentColor;
   -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='2'/><path d='M12 8v5.2M12 16.4h.01' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/14px no-repeat;
   mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='2'/><path d='M12 8v5.2M12 16.4h.01' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/14px no-repeat}
-/* OTP cooldown : pastille courte, collée au texte (pas de barre vide) */
+/* OTP cooldown : carré collé au texte, une seule ligne */
 #err-otpCode.otp-wait-live.on{
-  display:inline-flex!important;
-  width:fit-content;
+  display:inline-block!important;
+  width:auto!important;
   max-width:100%;
-  margin:8px auto 0;
-  padding:6px 12px;
+  height:auto!important;
+  min-height:0!important;
+  margin:6px auto 0;
+  padding:4px 8px;
   color:#FDE68A;
-  border:1px solid rgba(245,158,11,.45);
-  background:rgba(245,158,11,.10);
-  border-radius:999px;
-  font-variant-numeric:tabular-nums;
-  letter-spacing:.01em;
-  line-height:1.2;
-  font-size:.78rem;
+  border:1px solid rgba(245,158,11,.55);
+  background:rgba(245,158,11,.12);
+  border-radius:8px;
+  white-space:nowrap;
+  line-height:1.15;
+  font-size:.74rem;
   font-weight:700}
-#otpModal .field:has(#err-otpCode.otp-wait-live.on){text-align:center}
+#otpModal .field:has(#err-otpCode.otp-wait-live.on){display:flex;flex-direction:column;align-items:center}
 #err-otpCode.otp-wait-live.on::before{
-  display:none!important}
+  content:none!important;display:none!important;width:0!important;height:0!important}
 @keyframes luxInLocal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .check-row{display:flex;gap:10px;align-items:flex-start;font-size:.75rem;color:var(--muted);line-height:1.35;margin:4px 0 8px;cursor:pointer}
 .check-row input{margin-top:2px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
@@ -2696,10 +2697,17 @@ html body .chart-fs-live{display:none!important}
 #err-otpCode.on,#err-resetOtp.on,#err-passOtp.on{
   display:block;padding:4px 2px 0;margin-top:4px;background:none;border:0;
   color:#f59e0b;font-size:.78rem;font-weight:700;line-height:1.3;animation:none}
-#err-otpCode.otp-wait-live.on{
-  display:inline-flex!important;width:fit-content;max-width:100%;margin:8px auto 0;
-  padding:6px 12px;border-radius:999px;border:1px solid rgba(245,158,11,.45);
-  background:rgba(245,158,11,.12);color:#FDE68A}
+html body #otpModal #err-otpCode.otp-wait-live.on{
+  display:inline-block!important;width:auto!important;max-width:100%!important;
+  height:auto!important;min-height:0!important;margin:6px auto 0!important;
+  padding:4px 8px!important;border-radius:8px;border:1px solid rgba(245,158,11,.55)!important;
+  background:rgba(245,158,11,.12)!important;color:#FDE68A!important;
+  white-space:nowrap;line-height:1.15!important;font-size:.74rem!important;
+  box-sizing:border-box;text-align:center}
+html body #otpModal .field:has(#err-otpCode.otp-wait-live.on){
+  display:flex;flex-direction:column;align-items:center}
+html body #otpModal #err-otpCode.otp-wait-live.on::before{
+  content:none!important;display:none!important;width:0!important;height:0!important;flex:none!important}
 #err-otpCode.on::before,#err-resetOtp.on::before,#err-passOtp.on::before{display:none}
 
 /* Un seul bouton principal par étape — plus de superposition. */

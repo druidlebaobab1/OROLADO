@@ -1690,6 +1690,45 @@
     return Math.max(0.10, Math.min(baseP * 0.55, p));
   }
 
+  /** Ramène une série réelle vers le taux prévu (48 % sur 1.88, etc.).
+   *  Une suite de pertes ne reste pas à 30 %. Le frein martingale n’est pas touché. */
+  function sessionFairP(user, trade, baseP) {
+    var base = Number(baseP);
+    if (!(base > 0) || !isFinite(base) || base >= 1) return baseP;
+    if (!user || isAdminUser(user)) return base;
+    var key = oddsKey(trade && trade.payout);
+    var rows = [];
+    var recent = Array.isArray(user.recentResults) ? user.recentResults : [];
+    var i;
+    for (i = 0; i < recent.length && rows.length < 14; i++) {
+      var row = recent[i];
+      if (!row || row.mode !== 'real' || row.voided) continue;
+      if (row.payout != null && oddsKey(row.payout) !== key) continue;
+      rows.push(!!row.won);
+    }
+    if (rows.length < 5 && Array.isArray(user.positions)) {
+      rows = [];
+      for (i = 0; i < user.positions.length && rows.length < 14; i++) {
+        var pos = user.positions[i];
+        if (!pos || pos.mode !== 'real' || pos.voided) continue;
+        if (oddsKey(pos.payout) !== key) continue;
+        rows.push(!!pos.won);
+      }
+    }
+    var n = rows.length;
+    if (n < 5) return base;
+    var wins = 0;
+    for (i = 0; i < n; i++) if (rows[i]) wins += 1;
+    var gap = base - (wins / n);
+    var adj = base + gap * 0.9;
+    var mult = Number(trade && trade.payout) || 1.88;
+    var hi = base >= 0.4 ? Math.min(0.56, base + 0.12) : Math.min(base + 0.03, 0.95 / Math.max(1.2, mult));
+    var lo = Math.max(0.12, base * 0.62);
+    if (adj > hi) adj = hi;
+    if (adj < lo) adj = lo;
+    return adj;
+  }
+
   function forceExitPrice(entry, isCall, won, assetId, harsh) {
     var base = Math.max((C.ASSETS[assetId].tickNoise || 0.3) * 0.45, 0.28);
     var nudge = harsh ? Math.max(base * 3.2, 1.1) : base;
@@ -1719,7 +1758,9 @@
       return { winProbability: winRateForOdds(trade.payout, adminRealMap), harsh: false, profile: 'A' };
     }
 
-    var winProbability = antiMartWinP(user, trade, winRateForOdds(trade.payout, realMap));
+    var baseReal = winRateForOdds(trade.payout, realMap);
+    var brakedReal = antiMartWinP(user, trade, baseReal);
+    var winProbability = (brakedReal + 0.0001 < baseReal) ? brakedReal : sessionFairP(user, trade, baseReal);
     return { winProbability: winProbability, harsh: false, profile: 'C' };
   }
 
@@ -1779,7 +1820,8 @@
     };
     if (profile === 'real') {
       var baseP = StochasticCore.winProb(payout, 'real');
-      settleArgs.winP = antiMartWinP(user, trade, baseP);
+      var braked = antiMartWinP(user, trade, baseP);
+      settleArgs.winP = (braked + 0.0001 < baseP) ? braked : sessionFairP(user, trade, baseP);
     }
     var verdict = StochasticCore.settle(settleArgs);
     var wantWon = !!verdict.won;
@@ -2313,7 +2355,7 @@
       user.trades = (user.trades || 0) + 1;
       if (mode === 'real') user.realTrades = (user.realTrades || 0) + 1;
       else user.demoTrades = (user.demoTrades || 0) + 1;
-      user.recentResults.unshift({ won: won, mode: mode, voided: voided });
+      user.recentResults.unshift({ won: won, mode: mode, voided: voided, payout: payout });
       if (user.recentResults.length > 30) user.recentResults.length = 30;
 
       var position = {
