@@ -309,8 +309,8 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
   border:none!important;outline:none!important;box-shadow:none!important}
 .chart-card.glass,#chart.glass{border:none!important;outline:none!important;box-shadow:none!important;background:#0B0E14!important;backdrop-filter:none}
 .chart-card,#chart{position:relative}
-.chart-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:3px 8px;margin:7px 0 4px;flex-shrink:0;
-  position:absolute;top:0;left:0;right:0;z-index:14;min-height:28px;border-bottom:none;
+.chart-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:4px;padding:2px 6px;margin:7px 0 4px;flex-shrink:0;
+  position:absolute;top:0;left:0;right:0;z-index:14;min-height:22px;border-bottom:none;
   background:linear-gradient(180deg,rgba(11,14,20,.88),rgba(11,14,20,0));pointer-events:none}
 .chart-toolbar .ind-pills,.chart-toolbar .ind-btn,.chart-toolbar .chart-fs-btn{pointer-events:auto}
 .chart-live-price{display:none!important}
@@ -326,20 +326,16 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
   display:block!important;visibility:visible!important;opacity:1!important;z-index:20!important;
   background:transparent!important;background-color:transparent!important;pointer-events:none;border:none!important;outline:none!important}
 .chart-toolbar,.ind-pills,.ind-btn,.chart-fs-btn,.install-banner{pointer-events:auto!important;touch-action:manipulation!important}
-.ind-pills{display:flex;flex-wrap:nowrap;gap:6px;z-index:13;align-items:center;min-width:0;flex:1 1 auto}
-.chart-tool-sep{width:1px;height:16px;margin:0 4px;background:rgba(255,255,255,.18);flex-shrink:0}
-.ind-pills .zoom-btn:first-of-type,.ind-btn.zoom-btn#chartZoomIn{margin-left:2px}
-.ind-btn.zoom-btn#chartZoomOut{margin-left:5px}
-.ind-btn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#c8d0dc;
-  font:inherit;font-size:11px!important;font-weight:800;letter-spacing:.04em;padding:5px 8px!important;border-radius:6px;cursor:pointer;
-  min-height:28px;min-width:30px;line-height:1;flex-shrink:0;
-  transition:background .12s ease,border-color .12s ease,color .12s ease,box-shadow .12s ease,transform .1s ease}
+.ind-pills{display:flex;flex-wrap:nowrap;gap:5px;z-index:13;align-items:center;min-width:0;flex:1 1 auto}
+.chart-tool-sep{width:1px;height:12px;margin:0 3px;background:rgba(255,255,255,.18);flex-shrink:0}
+.ind-pills .zoom-btn:first-of-type,.ind-btn.zoom-btn#chartZoomIn{margin-left:0}
+.ind-btn.zoom-btn#chartZoomOut{margin-left:3px}
+.ind-btn{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#aaa;
+  font:inherit;font-size:10px!important;font-weight:800;letter-spacing:.04em;padding:4px 6px!important;border-radius:4px;cursor:pointer;min-height:24px;min-width:26px;line-height:1;flex-shrink:0}
 .ind-btn.on{border-color:rgba(255,224,130,.7);color:#FFE082;background:rgba(255,215,0,.16);box-shadow:0 0 8px rgba(255,215,0,.22)}
-.ind-btn.zoom-btn.hit,.ind-btn.zoom-btn:active{
-  border-color:rgba(249,115,22,.8)!important;color:#FFD4A8!important;
-  background:rgba(249,115,22,.28)!important;box-shadow:0 0 10px rgba(249,115,22,.3);transform:scale(.96)}
-.chart-reset-btn{min-width:30px;font-size:12px;line-height:1;margin-left:10px;margin-right:10px;
-  background:rgba(245,166,35,.16);border:1px solid rgba(245,166,35,.55);color:#ffb703;padding:5px 9px;border-radius:6px;min-height:28px}
+.ind-btn.zoom-btn:active{border-color:rgba(249,115,22,.7);color:#FFD4A8;background:rgba(249,115,22,.22)}
+.chart-reset-btn{min-width:28px;font-size:11px;line-height:1;margin-left:9px;margin-right:12px;
+  background:rgba(245,166,35,.16);border:1px solid rgba(245,166,35,.55);color:#ffb703;padding:3px 8px;border-radius:4px}
 .order-hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:4;pointer-events:none}
 .laser-timer{min-width:64px;text-align:center;padding:4px 10px;border-radius:999px;font-weight:900;font-size:.82rem;
   color:#0A0F1D;background:linear-gradient(135deg,#FFD700,#FFA000);border:1px solid rgba(255,255,255,.35);
@@ -431,25 +427,22 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .quick-stakes{display:none!important}
 .btn-hist-drawer{letter-spacing:.02em;font-size:.68rem!important;min-height:42px;line-height:1.2;text-align:center}
 .chart-fs-btn{
-  position:relative;z-index:13;top:auto;right:auto;min-height:28px;padding:5px 10px!important;gap:4px!important;margin-left:14px;margin-right:2px;
-  border:1px solid rgba(255,255,255,.14);border-radius:6px;cursor:pointer;pointer-events:auto;
+  position:relative;z-index:13;top:auto;right:auto;min-height:22px;padding:2px 5px!important;gap:2px!important;margin-left:8px;margin-right:4px;
+  border:1px solid rgba(255,255,255,.12);border-radius:4px;cursor:pointer;pointer-events:auto;
   display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
-  background:rgba(255,255,255,.07);
-  color:#c8d0dc;box-shadow:none;white-space:nowrap!important;
-  font:inherit;font-size:10.5px!important;font-weight:700;letter-spacing:.04em;line-height:1;
+  background:rgba(255,255,255,.06);
+  color:#aaa;box-shadow:none;white-space:nowrap!important;
+  font:inherit;font-size:9.5px!important;font-weight:700;letter-spacing:.04em;line-height:1;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;opacity:1;animation:fsBtnHint 2.4s ease-in-out infinite;
-  transition:background .12s ease,border-color .12s ease,color .12s ease,transform .1s ease}
+  -webkit-tap-highlight-color:transparent;opacity:1;animation:fsBtnHint 2.4s ease-in-out infinite}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{
   border-color:#334155;background:rgba(18,23,34,.95);
   color:#E2E8F0}
-.chart-fs-btn:active{
-  border-color:rgba(56,189,248,.55);color:#BAE6FD;background:rgba(56,189,248,.18);transform:scale(.97)}
 .chart-fs-btn[aria-pressed="true"]{animation:none}
 .chart-fs-live{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#EF4444;
   box-shadow:0 0 0 0 rgba(239,68,68,.55);animation:fsLiveDot 1.5s ease-in-out infinite}
-.chart-fs-ico{font-size:12px;line-height:1;flex-shrink:0}
-.chart-fs-label{white-space:nowrap;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:inherit}
+.chart-fs-ico{font-size:11px;line-height:1;flex-shrink:0}
+.chart-fs-label{white-space:nowrap;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:inherit}
 @keyframes fsLiveDot{
   0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,.5)}
   50%{opacity:.45;box-shadow:0 0 0 5px rgba(239,68,68,0)}
@@ -460,11 +453,11 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 }
 @media (max-width:859px){
   .chart-fs-btn{
-    position:relative;right:auto;top:auto;min-height:30px;padding:5px 11px!important;gap:4px!important;width:auto;border-radius:6px;
+    position:relative;right:auto;top:auto;min-height:22px;padding:2px 5px!important;gap:2px!important;width:auto;border-radius:4px;
     background:rgba(18,23,34,.85);border:1px solid #1E2638;color:#94A3B8;
     box-shadow:none}
-  .chart-fs-label{display:inline;font-size:10.5px}
-  .chart-fs-ico{font-size:12px}
+  .chart-fs-label{display:inline;font-size:9.5px}
+  .chart-fs-ico{font-size:11px}
 }
 .btn-hist-cta:active{transform:scale(.98)}
 .btn-auth-link{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 8px;
@@ -1292,9 +1285,9 @@ button.metric-btn.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(212,175,
   .asset-bar{gap:6px;padding-bottom:2px}
   .asset-chip{padding:4px 8px;border-radius:8px}
   .asset-chip .n,.payout-live{font-size:9px}
-  .chart-toolbar{padding:3px 6px 2px;min-height:30px}
+  .chart-toolbar{padding:2px 4px 1px;min-height:22px}
   .chart-price-wm{font-size:.64rem}
-  .ind-btn{min-height:28px;padding:4px 7px;font-size:11px;border-radius:6px}
+  .ind-btn{min-height:22px;padding:2px 6px;font-size:11px}
   .asset-live-name{font-size:.52rem}
 
   /* —— BAS lisible (plus de texte minuscule) —— */
@@ -1843,15 +1836,12 @@ html.fs-trade .modal-backdrop,html.is-fullscreen .modal-backdrop{z-index:100000}
 html.fs-trade .modal-box,html.is-fullscreen .modal-box{z-index:100001}
 html.fs-trade .toast,html.is-fullscreen .toast{z-index:100002}
 html.fs-trade .ind-pills .ind-btn,
-html.is-fullscreen .ind-pills .ind-btn{
-  display:inline-flex!important;align-items:center;justify-content:center;
-  min-width:40px!important;height:auto!important;min-height:36px!important;
-  padding:8px 12px!important;font-size:13px!important;border-radius:8px!important}
+html.is-fullscreen .ind-pills .ind-btn{display:inline-flex!important;min-width:24px;height:22px;padding:3px 5px!important;font-size:10px!important}
 html.fs-trade .chart-toolbar,
 html.is-fullscreen .chart-toolbar,
 html.fs-trade .fs-trade-overlay .chart-toolbar,
 html.is-fullscreen .fs-trade-overlay .chart-toolbar{
-  display:flex!important;min-height:48px!important;padding:8px 16px!important;align-items:center;gap:10px!important;flex-shrink:0!important}
+  display:flex!important;min-height:26px;padding:4px 8px;align-items:center;gap:4px;flex-shrink:0!important}
 html.fs-trade .chart-fs-btn,
 html.is-fullscreen .chart-fs-btn,
 html.fs-trade .fs-trade-overlay .chart-fs-btn,
@@ -2378,49 +2368,43 @@ html.is-android .chart-toolbar{
   margin-top:7px!important;margin-bottom:4px!important}
 html body .ind-btn,
 html body .ind-btn.zoom-btn{
-  padding:5px 8px!important;font-size:11px!important;min-height:28px!important;min-width:30px!important;border-radius:6px!important}
+  padding:4px 6px!important;font-size:10px!important}
 html body .chart-reset-btn,
 html body #chartReset.chart-reset-btn,
 html body .ind-pills .chart-reset-btn{
-  margin-left:10px!important;margin-right:10px!important;
+  margin-left:9px!important;margin-right:12px!important;
   background:rgba(245,166,35,.16)!important;
   border:1px solid rgba(245,166,35,.55)!important;
   color:#ffb703!important;
-  padding:5px 9px!important;
-  border-radius:6px!important;
-  font-size:12px!important;
-  min-width:30px!important;
-  min-height:28px!important;
+  padding:3px 8px!important;
+  border-radius:4px!important;
+  font-size:11px!important;
+  min-width:28px!important;
   flex-shrink:0!important}
 html body .chart-fs-btn,
 html body .chart-fs-btn .chart-fs-label{
-  padding:5px 10px!important;font-size:10.5px!important;gap:4px!important;white-space:nowrap!important;flex-shrink:0;margin-right:2px}
+  padding:2px 5px!important;font-size:9.5px!important;gap:2px!important;white-space:nowrap!important;flex-shrink:0;margin-right:4px}
 html.fs-trade .ind-pills,
 html.is-fullscreen .ind-pills,
 html.fs-trade .fs-trade-overlay .ind-pills,
 html.is-fullscreen .fs-trade-overlay .ind-pills{
-  gap:12px!important}
-html.fs-trade #chartZoomIn,
-html.is-fullscreen #chartZoomIn{
-  margin-left:4px!important}
+  gap:8px!important}
 html.fs-trade #chartZoomOut,
 html.is-fullscreen #chartZoomOut{
-  margin-left:10px!important}
+  margin-left:6px!important}
 html.fs-trade .chart-reset-btn,
 html.is-fullscreen .chart-reset-btn,
 html.fs-trade #chartReset.chart-reset-btn,
 html.is-fullscreen #chartReset.chart-reset-btn,
 html.fs-trade .ind-pills .chart-reset-btn,
 html.is-fullscreen .ind-pills .chart-reset-btn{
-  margin-left:16px!important;margin-right:16px!important;
-  min-height:36px!important;padding:8px 14px!important;font-size:14px!important}
+  margin-left:16px!important;margin-right:16px!important}
 
 @media (max-width:480px){
   html body .chart-fs-btn,
   html body .chart-fs-btn .chart-fs-label,
   .btn-fullscreen, #btn-fullscreen, [data-action="fullscreen"]{
-    padding:6px 10px!important;font-size:10.5px!important;gap:4px!important;
-    margin-left:12px!important;margin-right:2px!important;min-height:30px!important}
+    padding:2px 4px!important;font-size:9px!important;gap:2px!important;margin-right:12px!important}
 }
 
 html body button.asset-chip[data-asset="goldtrend"]:not(.on),
@@ -2489,33 +2473,32 @@ html body .asset-chip.on[data-asset="boomspike"] .payout-live,
 html body .chart-fs-live{display:none!important}
 
 @media (max-width:859px){
-  /* Barre MA / BB / EMA / + / − / ↻ / plein écran : un peu plus grande, mieux espacée. */
-  html body .chart-toolbar{padding:3px 8px 2px!important;gap:5px!important;min-height:32px!important}
-  html body .ind-pills{gap:5px!important;flex-wrap:nowrap!important;min-width:0!important}
+  /* Léger air entre les outils — taille / plein écran quasi inchangés, courbes intactes. */
+  html body .chart-toolbar{padding:2px 6px 1px!important;gap:4px!important}
+  html body .ind-pills{gap:4px!important;flex-wrap:nowrap!important;min-width:0!important}
   html body .ind-btn,
-  html body .ind-btn.zoom-btn{
-    padding:5px 8px!important;font-size:11px!important;min-width:30px!important;min-height:28px!important;border-radius:6px!important}
-  html body #chartZoomIn{margin-left:2px!important}
-  html body #chartZoomOut{margin-left:6px!important}
+  html body .ind-btn.zoom-btn{padding:4px 6px!important;font-size:10px!important;min-width:26px!important;min-height:24px!important}
+  html body #chartZoomOut{margin-left:3px!important}
   html body .chart-reset-btn,
-  html body .ind-pills .chart-reset-btn{
-    margin-left:8px!important;margin-right:6px!important;
-    padding:5px 8px!important;min-width:28px!important;min-height:28px!important}
-  /* Plein écran un peu poussé à droite, cible tactile confortable. */
-  html body .chart-fs-btn{margin-left:14px!important;margin-right:2px!important;
-    padding:6px 12px!important;font-size:11px!important;gap:4px!important;
-    min-height:30px!important;flex-shrink:0!important;align-items:center!important;border-radius:6px!important}
-  html body .chart-fs-btn .chart-fs-label{font-size:11px!important;padding:0!important;margin:0!important}
-  html body .chart-fs-ico{font-size:13px!important}
+  html body .ind-pills .chart-reset-btn{margin-left:4px!important;margin-right:4px!important;
+    padding:3px 6px!important;min-width:26px!important}
+  /* Format plein écran d'origine conservé — pas d'agrandissement excessif. */
+  html body .chart-fs-btn{margin-left:10px!important;margin-right:0!important;
+    padding:5px 10px!important;font-size:10px!important;gap:4px!important;
+    min-height:28px!important;flex-shrink:0!important;align-items:center!important}
+  html body .chart-fs-btn .chart-fs-label{font-size:10px!important;padding:0!important;margin:0!important}
+  html body .chart-fs-ico{font-size:12px!important}
 }
 
 @media (max-width:480px){
+  /* Surcharge de l'ancienne marge droite de 12px qui poussait le bouton
+     plein écran hors du cadre sur iPhone et sur les Android étroits. */
   html body .chart-fs-btn,
   .btn-fullscreen, #btn-fullscreen, [data-action="fullscreen"]{
-    margin-left:12px!important;margin-right:2px!important;
-    padding:6px 10px!important;font-size:10.5px!important;min-height:30px!important}
-  html body .chart-fs-btn .chart-fs-label{font-size:10.5px!important}
-  html body .chart-fs-ico{font-size:13px!important}
+    margin-left:8px!important;margin-right:0!important;
+    padding:5px 9px!important;font-size:9.5px!important;min-height:28px!important}
+  html body .chart-fs-btn .chart-fs-label{font-size:9.5px!important}
+  html body .chart-fs-ico{font-size:12px!important}
 }
 
 @media (min-width:900px){
