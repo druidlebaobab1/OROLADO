@@ -1926,7 +1926,7 @@ html.fs-trade #chartReset.chart-reset-btn,
 html.is-fullscreen #chartReset.chart-reset-btn,
 html.fs-trade .ind-pills .chart-reset-btn,
 html.is-fullscreen .ind-pills .chart-reset-btn{
-  margin-left:3px!important;
+  margin-left:8px!important;
   margin-right:0!important;
   min-width:36px!important;
   padding:6px 14px!important;
@@ -1976,7 +1976,7 @@ html.is-fullscreen .ind-pills .chart-reset-btn{
     min-height:34px!important;
     padding:8px 18px!important;
     font-size:15px!important;
-    margin-left:4px!important}
+    margin-left:10px!important}
 }
 
 @media (max-width:859px){
@@ -2543,14 +2543,17 @@ html.is-fullscreen .chart-tool-sep{
   margin:0 8px!important;
   background:rgba(255,255,255,.22)!important}
 html.fs-trade #chartZoomOut,
-html.is-fullscreen #chartZoomOut,
+html.is-fullscreen #chartZoomOut{
+  margin-left:3px!important;
+  margin-right:0!important;
+  flex:0 0 auto!important}
 html.fs-trade .chart-reset-btn,
 html.is-fullscreen .chart-reset-btn,
 html.fs-trade #chartReset.chart-reset-btn,
 html.is-fullscreen #chartReset.chart-reset-btn,
 html.fs-trade .ind-pills .chart-reset-btn,
 html.is-fullscreen .ind-pills .chart-reset-btn{
-  margin-left:3px!important;
+  margin-left:8px!important;
   margin-right:0!important;
   flex:0 0 auto!important}
 
