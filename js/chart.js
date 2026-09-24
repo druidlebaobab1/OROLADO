@@ -244,8 +244,11 @@
     var frameNow = nowMs || performance.now();
     var dt = Math.max(1, Math.min(80, frameNow - (state.lastFrame || frameNow)));
     if (!isFinite(state.value) || state.value <= 0) state.value = target;
-    if (assetId === 'crash300' && target < state.value * 0.996) {
-      state.value = target;
+    if (assetId === 'crash300' && target < state.value) {
+      // Vente Crash : suivi plus rapide mais fluide (plus de snap brutal).
+      var lerpDown = 1 - Math.pow(0.86, dt / (1000 / 60));
+      state.value += (target - state.value) * lerpDown;
+      if (Math.abs(target - state.value) < target * 0.000002) state.value = target;
     } else {
       var lerp = 1 - Math.pow(0.94, dt / (1000 / 60));
       state.value += (target - state.value) * lerp;
@@ -1856,13 +1859,13 @@
     if (assetId === 'stable') return 0.0070;
     if (assetId === 'horizon50') return 0.0062;
     if (assetId === 'crash300') {
-      // Mobile validé ; plein écran un peu plus rempli (courbe plus grande/large).
-      return fsActive ? 0.0132 : 0.0155;
+      // Mobile validé ; FS : un peu plus d'air pour la vente allongée.
+      return fsActive ? 0.0140 : 0.0155;
     }
 
     var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
     var pct;
-    if (assetId === 'boomspike') pct = 0.028;
+    if (assetId === 'boomspike') pct = 0.026;
     else if (assetId === 'goldtrend') pct = 0.016;
     else if (assetId === 'titanpulse') pct = 0.022;
     else if (assetId === 'apex500') pct = 0.0145;
@@ -1872,8 +1875,8 @@
     else pct = 0.0135;
     // Petit écran (1er cran) VALIDÉ : plus d'air — ne pas toucher.
     if (narrow) pct *= 1.38;
-    // Plein écran : base native (déjà plus remplie que le mobile *1.38).
-    // Pas de *0.88 : trop serré → pics collés aux bords (ex. Titan).
+    // V100 / Apex plein écran : léger air en plus pour que les pics ne frôlent plus le bas.
+    if (fsActive && (assetId === 'v100' || assetId === 'apex500')) pct *= 1.14;
     return pct;
   }
 

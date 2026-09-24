@@ -408,9 +408,9 @@
     goldtrend: { mode: 'line', vol: 0.0034, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 90, pullK: 0.055, center: 0.50, lean: 1 },
     titanpulse: { mode: 'candles', vol: 0.0048, stepMs: 36, pullK: 0.060, center: 0.50, lean: 1, wickK: 1.15 }
   };
-  var SIM_VER = 20;
-  var BOOM_VER = 8;
-  var CRASH_VER = 2;
+  var SIM_VER = 21;
+  var BOOM_VER = 9;
+  var CRASH_VER = 3;
   var GOLD_VER = 4;
   var MIN_SEED = 500;
   // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
@@ -439,70 +439,87 @@
   }
 
   function stepBoomBurst(asset, buf, price, tMs) {
+    // BoomSpike v9 — simulation neuve, simple, bornée à une route fixe.
+    // idle → charge → spike → settle. Jamais hors bande (mobile + plein écran).
     var from = price;
+    var base = Number(asset && asset.basePrice) || from;
+    if (!(base > 0)) base = from > 0 ? from : 3890;
     var marked = false;
-    if (!buf.boomPhase) {
-      buf.boomPhase = 'acc';
-      // Intervalles un peu plus longs : moins d'explosions empilées qui débordent.
-      buf.boomPhaseUntil = tMs + 2200 + Math.random() * 2200;
-      buf.boomMid = price;
+    var routeHalf = base * 0.0088;
+    var lo = base - routeHalf;
+    var hi = base + routeHalf;
+
+    function hold(p) {
+      if (p > hi) p = hi;
+      if (p < lo) p = lo;
+      return p;
+    }
+
+    if (!buf.boomPhase || buf.boomPhase === 'acc' || buf.boomPhase === 'burst' || buf.boomPhase === 'relax') {
+      // Reset des anciennes phases patchées.
+      buf.boomPhase = 'idle';
+      buf.boomPhaseUntil = tMs + 1600 + Math.random() * 2200;
+      buf.boomMid = base;
+      buf.boomPeak = base;
       buf.boomLeft = 0;
       buf.boomZig = 1;
     }
-    if (buf.boomPhase === 'acc') {
-      var mid = buf.boomMid || price;
-      var n = (Math.random() - 0.5) * mid * 0.0012;
-      var w = (Math.random() - 0.5) * mid * 0.0005;
-      price = clampIndexPrice(mid + n + w, asset);
-      buf.boomMid = mid * 1.00003;
+
+    if (buf.boomPhase === 'idle') {
+      var drift = (base - price) * 0.06;
+      var n = (Math.random() - 0.48) * base * 0.0009;
+      price = hold(price + drift + n);
       if (tMs >= (buf.boomPhaseUntil || 0)) {
-        buf.boomPhase = 'burst';
-        buf.boomLeft = 2 + (Math.random() > 0.55 ? 1 : 0);
-        buf.boomZig = 1;
-      }
-    } else if (buf.boomPhase === 'burst') {
-      if (buf.boomZig === 1 && buf.boomLeft > 0) {
-        // Burst type Crash : contenu (~0.55–0.85 %), ne tape plus le plafond.
-        price = clampIndexPrice(from * (1 + 0.0055 + Math.random() * 0.003), asset);
-        buf.boomPeak = price;
-        buf.boomZig = -1;
-        buf.boomLeft -= 1;
-        marked = true;
-      } else if (buf.boomZig === -1 && buf.boomLeft > 0) {
-        price = clampIndexPrice(from * (1 - 0.0025 - Math.random() * 0.0025), asset);
-        buf.boomZig = 1;
-        marked = true;
-      } else {
-        buf.boomPhase = 'relax';
-        buf.boomPhaseUntil = tMs + 2000 + Math.random() * 1600;
-      }
-    }
-    if (buf.boomPhase === 'relax') {
-      var peak = buf.boomPeak || price;
-      var floor = peak * 0.955;
-      var pull = (floor - price) * 0.08;
-      var spanB = Math.max(peak - floor, price * 0.005);
-      var bounce = (Math.random() - 0.48) * spanB * (0.14 + Math.random() * 0.08);
-      var jit = (Math.random() - 0.5) * price * 0.0028;
-      price = clampIndexPrice(price + pull + bounce + jit, asset);
-      if (tMs >= (buf.boomPhaseUntil || 0)) {
-        buf.boomPhase = 'acc';
-        buf.boomPhaseUntil = tMs + 2200 + Math.random() * 2200;
+        buf.boomPhase = 'charge';
+        buf.boomPhaseUntil = tMs + 700 + Math.random() * 500;
         buf.boomMid = price;
       }
+    } else if (buf.boomPhase === 'charge') {
+      var lift = base * (0.00035 + Math.random() * 0.00025);
+      var j = (Math.random() - 0.4) * base * 0.0004;
+      price = hold(price + lift + j);
+      if (tMs >= (buf.boomPhaseUntil || 0)) {
+        buf.boomPhase = 'spike';
+        buf.boomLeft = 1;
+        buf.boomZig = 1;
+      }
+    } else if (buf.boomPhase === 'spike') {
+      // Un seul boom net, contenu dans la route.
+      var up = 0.0048 + Math.random() * 0.0022;
+      price = hold(from * (1 + up));
+      buf.boomPeak = price;
+      marked = true;
+      buf.boomPhase = 'settle';
+      buf.boomPhaseUntil = tMs + 1400 + Math.random() * 900;
+      buf.boomLeft = 0;
+    } else if (buf.boomPhase === 'settle') {
+      var target = base * (0.998 + Math.random() * 0.0015);
+      var pull = (target - price) * 0.14;
+      var soft = (Math.random() - 0.5) * base * 0.00055;
+      price = hold(price + pull + soft);
+      if (tMs >= (buf.boomPhaseUntil || 0)) {
+        buf.boomPhase = 'idle';
+        buf.boomPhaseUntil = tMs + 1800 + Math.random() * 2400;
+        buf.boomMid = price;
+      }
+    } else {
+      buf.boomPhase = 'idle';
+      buf.boomPhaseUntil = tMs + 1800;
+      price = hold(price);
     }
-    // Route Boom ancrée sur la base (comme Stable/Horizon) : le cadre chart
-    // reste figé ; les bursts restent dans la bande sans tirer toute la photo.
-    var baseBoom = Number(asset && asset.basePrice) || from;
-    var routeAnchor = baseBoom;
-    if (buf.boomMid && isFinite(buf.boomMid)) {
-      routeAnchor = baseBoom * 0.72 + buf.boomMid * 0.18 + price * 0.10;
+
+    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.85 + price * 0.15) : price;
+    return { price: capPctMove(from, price, JUMP_PCT * 0.70), boom: marked, from: from };
+  }
+
+  function isFsTradeUi() {
+    try {
+      if (document.documentElement && document.documentElement.classList.contains('fs-trade')) return true;
+      var ov = document.getElementById('fsTradeOverlay');
+      return !!(ov && ov.classList.contains('on'));
+    } catch (eFs) {
+      return false;
     }
-    var routeHalf = baseBoom * 0.0095;
-    if (price > routeAnchor + routeHalf) price = price + ((routeAnchor + routeHalf) - price) * 0.82;
-    if (price < routeAnchor - routeHalf) price = price + ((routeAnchor - routeHalf) - price) * 0.82;
-    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.88 + price * 0.12) : price;
-    return { price: capPctMove(from, price, JUMP_PCT * 0.75), boom: marked, from: from };
   }
 
   function unifiedStep(asset, price, nowMs, dtSec, opts) {
@@ -530,11 +547,12 @@
       var wH = (Math.random() - 0.5) * price * 0.0014;
       nextOut = price + gapH * 0.055 + nH + wH;
     } else if (sim.crashCalm && !opts.spike) {
-      var riseC = 0.00045 + Math.random() * 0.00035;
-      var jitC = (Math.random() - 0.62) * price * vol;
+      // Remontée Crash un peu plus longue / fluide entre les ventes.
+      var riseC = 0.00032 + Math.random() * 0.00028;
+      var jitC = (Math.random() - 0.58) * price * vol;
       var midC = base * (sim.lean != null ? sim.lean : 0.997);
-      var pullC = (midC - price) * (sim.pullK != null ? sim.pullK : 0.05);
-      nextOut = price + price * riseC * Math.min(0.45, Math.max(0.04, dtSec)) + jitC + pullC;
+      var pullC = (midC - price) * (sim.pullK != null ? sim.pullK * 0.92 : 0.055);
+      nextOut = price + price * riseC * Math.min(0.50, Math.max(0.05, dtSec)) + jitC + pullC;
     } else {
       var center = sim.center != null ? sim.center : (bias || 0.5);
       var delta = (roll - center) * price * vol;
@@ -557,13 +575,13 @@
       if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
       if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
     } else if (sim.crashCalm) {
-      // Crash 300 VALIDÉ — ne pas modifier.
+      // Crash 300 : route un peu plus centrée (mobile + FS nickel).
       var routeMidC = base * (sim.lean != null ? sim.lean : 0.997);
-      var routeHalfC = base * 0.0062;
+      var routeHalfC = base * 0.0058;
       var loC = routeMidC - routeHalfC;
       var hiC = routeMidC + routeHalfC;
-      if (nextOut > hiC) nextOut = nextOut + (hiC - nextOut) * 0.70;
-      if (nextOut < loC) nextOut = nextOut + (loC - nextOut) * 0.70;
+      if (nextOut > hiC) nextOut = nextOut + (hiC - nextOut) * 0.72;
+      if (nextOut < loC) nextOut = nextOut + (loC - nextOut) * 0.78;
     } else if (!sim.boomBurst) {
       // Huit actifs : même calage centre que Crash — le prix reste dans la bande,
       // la caméra n'a plus besoin de « suivre la photo ».
@@ -571,14 +589,22 @@
       var routeHalfV = base * 0.0062;
       if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0075;
       if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0070;
-      if (asset && asset.id === 'apex500') routeHalfV = base * 0.0068;
-      if (asset && (asset.id === 'v100' || asset.id === 'v75' || asset.id === 'nexusprime')) {
+      if (asset && asset.id === 'apex500') {
+        // Apex : bande un peu plus serrée (surtout FS où les pics frôlaient le bas).
+        routeHalfV = base * (isFsTradeUi() ? 0.0052 : 0.0060);
+      }
+      if (asset && asset.id === 'v100') {
+        routeHalfV = base * (isFsTradeUi() ? 0.0050 : 0.0058);
+      }
+      if (asset && (asset.id === 'v75' || asset.id === 'nexusprime')) {
         routeHalfV = base * 0.0065;
       }
       var loV = routeMidV - routeHalfV;
       var hiV = routeMidV + routeHalfV;
       if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.78;
-      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * 0.78;
+      // Bas : rappel un peu plus ferme pour V100 / Apex (pics trop bas en FS).
+      var pullLo = (asset && (asset.id === 'v100' || asset.id === 'apex500')) ? 0.86 : 0.78;
+      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * pullLo;
     }
     return clampIndexPrice(nextOut, asset);
   }
@@ -743,9 +769,13 @@
     var spiked = false;
     if (sim.crashCalm) {
       var midCr = base * (sim.lean != null ? sim.lean : 0.997);
-      close = prev + (midCr - prev) * 0.08 + prev * (0.00008 + Math.random() * 0.00016);
-      if (i > 8 && Math.random() < 0.035) {
-        close = prev * (0.9965 - Math.random() * 0.0035);
+      // Remontée un peu plus douce ; ventes seed en 2 temps (plus fluides).
+      close = prev + (midCr - prev) * 0.065 + prev * (0.00007 + Math.random() * 0.00014);
+      if (i > 8 && Math.random() < 0.028) {
+        close = prev * (0.9978 - Math.random() * 0.0018);
+        spiked = true;
+      } else if (i > 9 && Math.random() < 0.022) {
+        close = prev * (0.9982 - Math.random() * 0.0012);
         spiked = true;
       }
     } else {
@@ -807,11 +837,12 @@
     if (sim.crashCalm) nextSpike = now + 18000;
     else nextSpike = now + 25000 + Math.random() * 10000;
     var boomWalk = sim.boomBurst ? {
-      boomPhase: 'acc',
-      boomPhaseUntil: (t0 * cms) + 1500 + uhash01(t0, 882119) * 1800,
+      boomPhase: 'idle',
+      boomPhaseUntil: (t0 * cms) + 1600 + uhash01(t0, 882119) * 2200,
       boomMid: price,
       boomLeft: 0,
-      boomZig: 1
+      boomZig: 1,
+      boomPeak: price
     } : null;
     for (i = 0; i < SEED_N; i++) {
       var ts = (t0 + i) * cms;
@@ -839,14 +870,14 @@
         candles.push(candle);
         prices.push(candle.c);
         price = candle.c;
-        if (boomWalk) boomWalk.boomMid = boomWalk.boomPhase === 'acc' ? price : boomWalk.boomMid;
+        if (boomWalk) boomWalk.boomMid = price;
         continue;
       }
       var candle = finishCandle(asset, o, h, l, price, ts, spiked);
       candles.push(candle);
       prices.push(candle.c);
       price = candle.c;
-      if (boomWalk) boomWalk.boomMid = boomWalk.boomPhase === 'acc' ? price : boomWalk.boomMid;
+      if (boomWalk) boomWalk.boomMid = price;
     }
     var buf = {
       prices: prices,
@@ -868,6 +899,9 @@
       boomLeft: boomWalk ? boomWalk.boomLeft : 0,
       boomZig: boomWalk ? boomWalk.boomZig : 1,
       boomPeak: boomWalk ? boomWalk.boomPeak : 0,
+      crashSellUntil: 0,
+      crashSellTarget: 0,
+      crashSellFrom: 0,
       ver: SIM_VER,
       scaleVer: SCALE_VER,
       rev: 1
@@ -976,14 +1010,36 @@
             forming.o = br.from;
           }
           didSpike = true;
+        } else if (sim.crashCalm && buf.crashSellUntil && tMs < buf.crashSellUntil) {
+          // Vente Crash allongée : descente fluide vers la cible, pas un seul tick.
+          var sellTgt = Number(buf.crashSellTarget) || (price * 0.995);
+          var sellK = 0.145 + Math.random() * 0.04;
+          var sellJit = (Math.random() - 0.55) * price * 0.00012;
+          price = clampIndexPrice(price + (sellTgt - price) * sellK + sellJit, asset);
+          forming._spike = true;
+          didSpike = true;
+          if (tMs >= buf.crashSellUntil - 40) {
+            buf.crashSellUntil = 0;
+            buf.nextSpike = tMs + 16000 + Math.random() * 5000;
+          }
         } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
-          if (sim.crashCalm) price = clampIndexPrice(fromP * (1 - 0.0028 - Math.random() * 0.0022), asset);
-          else price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
-          buf.nextSpike = tMs + (sim.crashCalm ? 18000 : 25000) + (sim.crashCalm ? 0 : Math.random() * 10000);
-          forming._spike = true;
-          forming.o = fromP;
-          didSpike = true;
+          if (sim.crashCalm) {
+            // Démarre une vente plus longue (~1.6–2.5 s), harmonieuse.
+            buf.crashSellTarget = fromP * (1 - 0.0042 - Math.random() * 0.0020);
+            buf.crashSellUntil = tMs + 1600 + Math.random() * 900;
+            buf.crashSellFrom = fromP;
+            price = clampIndexPrice(fromP * (1 - 0.00055 - Math.random() * 0.00035), asset);
+            forming._spike = true;
+            forming.o = fromP;
+            didSpike = true;
+          } else {
+            price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
+            buf.nextSpike = tMs + 25000 + Math.random() * 10000;
+            forming._spike = true;
+            forming.o = fromP;
+            didSpike = true;
+          }
         }
         if (!didSpike) {
           price = unifiedStep(asset, price, tMs, dt, { hunt: 0, busy: false });
