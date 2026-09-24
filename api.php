@@ -1619,17 +1619,7 @@ if ($action === 'placeOrder') {
       }
     }
     $now = microtime(true);
-    $open = 0;
-    foreach ($locked['orders'] as $o) {
-      if (($o['userId'] ?? '') !== $uid || ($o['status'] ?? '') !== 'open') continue;
-      $oMode = (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo';
-      if ($oMode !== $mode) continue;
-      $deadline = (float) ($o['at'] ?? 0) + (int) ($o['duration'] ?? 10) + 30;
-      if ($deadline > $now) $open++;
-    }
-    if ($open >= 20) {
-      return ['ok' => false, 'reason' => 'Maximum 20 trades en cours', 'skip_write' => true];
-    }
+    // Pas de plafond de trades simultanés (démo / réel).
     if ($mode === 'demo') {
       $bal = orolado_money($locked['vault'][$uid]['demo'] ?? 0);
       if ($bal <= 0 && (int) ($locked['users'][$uid]['trades'] ?? 0) === 0) {

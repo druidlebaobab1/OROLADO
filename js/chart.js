@@ -16,8 +16,13 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  var ZOOM_STEPS = [20, 28, 38, 48, 60, 90, 120, 180, 300, 600, 900, 1200];
-  var DEFAULT_ZOOM_IDX = 1;
+  // Paliers densifiés : 3 clics zoom+ ≈ 1 ancien cran (fluidité sans changer l'amplitude max).
+  var ZOOM_STEPS = [
+    20, 23, 25, 28, 31, 35, 38, 41, 45, 48, 52, 56, 60,
+    70, 80, 90, 100, 110, 120, 140, 160, 180, 220, 260, 300,
+    400, 500, 600, 700, 800, 900, 1000, 1100, 1200
+  ];
+  var DEFAULT_ZOOM_IDX = 3; // 28 (défaut d'origine)
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 28;
   var wantFitY = false;
