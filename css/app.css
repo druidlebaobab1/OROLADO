@@ -1848,9 +1848,8 @@ html.fs-trade .fs-trade-overlay .chart-fs-btn,
 html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   display:none!important}
 
-/* Desktop (≥860px) : étaler + agrandir MA/BB/EMA/+/−/↻ sur toute la largeur libre
-   de la toolbar (écran trade ET plein écran). Marge droite = safe zone prix.
-   Mobile portrait inchangé. Courbes / stage non touchés. */
+/* Desktop (≥860px) : les boutons GROSSISSENT pour remplir la largeur (pas de trous).
+   Marge droite 88px = safe zone prix. Mobile portrait inchangé. Courbes intactes. */
 @media (min-width:860px){
   html body .chart-toolbar,
   html.fs-trade .chart-toolbar,
@@ -1858,8 +1857,8 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   html.fs-trade .fs-trade-overlay .chart-toolbar,
   html.is-fullscreen .fs-trade-overlay .chart-toolbar{
     display:flex!important;
-    min-height:52px!important;
-    padding:8px 12px!important;
+    min-height:56px!important;
+    padding:8px 10px!important;
     padding-right:88px!important;
     gap:0!important;
     box-sizing:border-box;
@@ -1877,26 +1876,30 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
     width:100%!important;
     max-width:100%!important;
     min-width:0!important;
-    gap:8px!important;
-    justify-content:space-between!important;
+    gap:10px!important;
+    justify-content:flex-start!important;
     align-items:stretch!important;
     overflow:visible!important;
     box-sizing:border-box}
   html body .ind-pills .ind-btn,
+  html body .ind-pills .ind-btn.zoom-btn,
+  html body .ind-pills .chart-reset-btn,
+  html body .ind-pills .chart-fs-btn,
   html.fs-trade .ind-pills .ind-btn,
   html.is-fullscreen .ind-pills .ind-btn,
   html.fs-trade .fs-trade-overlay .ind-pills .ind-btn,
   html.is-fullscreen .fs-trade-overlay .ind-pills .ind-btn{
     display:inline-flex!important;
     flex:1 1 0!important;
-    min-width:48px!important;
-    max-width:140px!important;
+    min-width:0!important;
+    max-width:none!important;
+    width:auto!important;
     height:auto!important;
-    min-height:46px!important;
-    padding:12px 12px!important;
-    font-size:14px!important;
-    border-radius:9px!important;
-    letter-spacing:.05em;
+    min-height:48px!important;
+    padding:14px 8px!important;
+    font-size:15px!important;
+    border-radius:10px!important;
+    letter-spacing:.04em;
     justify-content:center!important;
     align-items:center!important;
     box-sizing:border-box;
@@ -1909,12 +1912,12 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   html.fs-trade #chartZoomOut,
   html.is-fullscreen #chartZoomOut{
     margin-left:0!important;
-    flex:0 1 78px!important;
-    min-width:58px!important;
-    max-width:96px!important;
-    font-size:20px!important;
-    min-height:46px!important;
-    padding:12px 10px!important}
+    flex:1 1 0!important;
+    min-width:0!important;
+    max-width:none!important;
+    font-size:22px!important;
+    min-height:48px!important;
+    padding:14px 8px!important}
   html body .chart-tool-sep,
   html.fs-trade .chart-tool-sep,
   html.is-fullscreen .chart-tool-sep{
@@ -1930,18 +1933,19 @@ html.is-fullscreen .fs-trade-overlay .chart-fs-btn{
   html.is-fullscreen .ind-pills .chart-reset-btn{
     margin-left:0!important;
     margin-right:0!important;
-    flex:0 1 86px!important;
-    min-width:58px!important;
-    max-width:110px!important;
-    min-height:46px!important;
-    padding:12px 14px!important;
-    font-size:17px!important;
-    border-radius:9px!important}
+    flex:1 1 0!important;
+    min-width:0!important;
+    max-width:none!important;
+    min-height:48px!important;
+    padding:14px 8px!important;
+    font-size:18px!important;
+    border-radius:10px!important}
   html body .chart-fs-btn{
-    flex:0 1 auto!important;
-    min-height:46px!important;
-    padding:10px 14px!important;
-    align-self:center}
+    flex:1.15 1 0!important;
+    min-height:48px!important;
+    padding:12px 10px!important;
+    align-self:stretch;
+    white-space:nowrap}
 }
 
 @media (max-width:859px){
@@ -2499,29 +2503,31 @@ html body .chart-fs-btn .chart-fs-label{
     margin-left:8px!important;margin-right:6px!important}
 }
 
-/* Renfort FINAL desktop : gagne sur tous les overrides plus haut (padding 4px, etc.). */
+/* Renfort FINAL desktop : boutons remplissent toute la largeur (gagne sur overrides). */
 @media (min-width:860px){
   html body .chart-toolbar,
   html.fs-trade .chart-toolbar,
   html.is-fullscreen .chart-toolbar,
   html.fs-trade .fs-trade-overlay .chart-toolbar,
   html.is-fullscreen .fs-trade-overlay .chart-toolbar{
-    padding-right:88px!important;width:100%!important;min-height:52px!important}
+    padding-right:88px!important;width:100%!important;min-height:56px!important}
   html body .ind-pills,
   html.fs-trade .ind-pills,
   html.is-fullscreen .ind-pills,
   html.fs-trade .fs-trade-overlay .ind-pills,
   html.is-fullscreen .fs-trade-overlay .ind-pills{
     flex:1 1 auto!important;width:100%!important;max-width:100%!important;
-    justify-content:space-between!important;gap:8px!important;align-items:stretch!important}
+    justify-content:flex-start!important;gap:10px!important;align-items:stretch!important}
   html body .ind-pills .ind-btn,
   html body .ind-pills .ind-btn.zoom-btn,
+  html body .ind-pills .chart-reset-btn,
+  html body .ind-pills .chart-fs-btn,
   html.fs-trade .ind-pills .ind-btn,
   html.is-fullscreen .ind-pills .ind-btn,
   html.fs-trade .fs-trade-overlay .ind-pills .ind-btn,
   html.is-fullscreen .fs-trade-overlay .ind-pills .ind-btn{
-    flex:1 1 0!important;min-width:48px!important;max-width:140px!important;
-    min-height:46px!important;padding:12px 12px!important;font-size:14px!important;
+    flex:1 1 0!important;min-width:0!important;max-width:none!important;
+    min-height:48px!important;padding:14px 8px!important;font-size:15px!important;
     margin-left:0!important;margin-right:0!important}
   html body #chartZoomIn,
   html body #chartZoomOut,
@@ -2529,8 +2535,8 @@ html body .chart-fs-btn .chart-fs-label{
   html.is-fullscreen #chartZoomIn,
   html.fs-trade #chartZoomOut,
   html.is-fullscreen #chartZoomOut{
-    margin-left:0!important;flex:0 1 78px!important;min-width:58px!important;
-    min-height:46px!important;font-size:20px!important;padding:12px 10px!important}
+    margin-left:0!important;flex:1 1 0!important;min-width:0!important;max-width:none!important;
+    min-height:48px!important;font-size:22px!important;padding:14px 8px!important}
   html body .chart-reset-btn,
   html body #chartReset.chart-reset-btn,
   html body .ind-pills .chart-reset-btn,
@@ -2541,8 +2547,10 @@ html body .chart-fs-btn .chart-fs-label{
   html.fs-trade .ind-pills .chart-reset-btn,
   html.is-fullscreen .ind-pills .chart-reset-btn{
     margin-left:0!important;margin-right:0!important;
-    flex:0 1 86px!important;min-width:58px!important;min-height:46px!important;
-    padding:12px 14px!important;font-size:17px!important}
+    flex:1 1 0!important;min-width:0!important;max-width:none!important;
+    min-height:48px!important;padding:14px 8px!important;font-size:18px!important}
+  html body .chart-fs-btn{
+    flex:1.15 1 0!important;min-height:48px!important}
 }
 
 @media (max-width:480px){
