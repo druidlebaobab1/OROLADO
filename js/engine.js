@@ -179,9 +179,8 @@
   var orderSeq = 0;
       // Max simultané très élevé : pas de blocage à 2 trades.
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
-  // Courbe 2026-09-21 : marche aléatoire par session. Aucune vague horloge,
-  // sinon le même geste revient à chaque actualisation.
-  var CANDLE_MS = 1000;
+  // Courbe : 1 bougie = 1100 ms (recul un peu plus doux, synchro chart/engine).
+  var CANDLE_MS = 1100;
   var HISTORY_SEC = 720;
   var HISTORY_N = 1320;
   var SEED_N = 1260;
@@ -741,12 +740,169 @@
     return true;
   }
 
+  /* —— Persistance session : même trajectoire après F5 / retour d’onglet —— */
+  var CURVE_SS_PREFIX = 'oro_curve_v2:';
+  var CURVE_SS_MAX_AGE_MS = 45 * 60 * 1000;
+  var CURVE_SS_KEEP_N = 720;
+  var _curvePersistTimer = 0;
+  var _curvePersistHooks = false;
+
+  function curveSsKey(assetId) {
+    return CURVE_SS_PREFIX + String(assetId || '');
+  }
+
+  function packCurveBuffer(buf) {
+    if (!buf || !buf.candles || !buf.candles.length) return null;
+    var candles = buf.candles;
+    var start = Math.max(0, candles.length - CURVE_SS_KEEP_N);
+    var slim = [];
+    var i;
+    for (i = start; i < candles.length; i++) {
+      var c = candles[i];
+      if (!c) continue;
+      slim.push({
+        o: +c.o, h: +c.h, l: +c.l, c: +c.c, t: +c.t,
+        _spike: !!c._spike, _boom: !!c._boom
+      });
+    }
+    if (slim.length < 40) return null;
+    var prices = [];
+    for (i = 0; i < slim.length; i++) prices.push(slim[i].c);
+    var forming = buf.forming ? {
+      o: +buf.forming.o, h: +buf.forming.h, l: +buf.forming.l, c: +buf.forming.c,
+      t: +buf.forming.t, _spike: !!buf.forming._spike, _boom: !!buf.forming._boom
+    } : null;
+    return {
+      ver: SIM_VER,
+      scaleVer: SCALE_VER,
+      boomVer: buf.boomVer || 0,
+      crashVer: buf.crashVer || 0,
+      goldVer: buf.goldVer || 0,
+      savedAt: Date.now(),
+      price: +buf.price,
+      lastMs: +buf.lastMs || Date.now(),
+      bucket: buf.bucket | 0,
+      candles: slim,
+      prices: prices,
+      forming: forming,
+      nextSpike: buf.nextSpike || 0,
+      boomPhase: buf.boomPhase || null,
+      boomPhaseUntil: buf.boomPhaseUntil || 0,
+      boomMid: buf.boomMid || 0,
+      boomLeft: buf.boomLeft || 0,
+      boomZig: buf.boomZig || 1,
+      boomPeak: buf.boomPeak || 0,
+      crashSellUntil: buf.crashSellUntil || 0,
+      crashSellTarget: buf.crashSellTarget || 0,
+      crashSellFrom: buf.crashSellFrom || 0,
+      coreVer: buf.coreVer || 0,
+      nexusVer: buf.nexusVer || 0,
+      v75Ver: buf.v75Ver || 0,
+      rev: (buf.rev || 0) + 1
+    };
+  }
+
+  function unpackCurveBuffer(raw, asset) {
+    if (!raw || !raw.candles || raw.candles.length < 40) return null;
+    if (raw.ver !== SIM_VER || raw.scaleVer !== SCALE_VER) return null;
+    if (asset.id === 'boomspike' && raw.boomVer !== BOOM_VER) return null;
+    if (asset.id === 'crash300' && raw.crashVer !== CRASH_VER) return null;
+    if (asset.id === 'goldtrend' && raw.goldVer !== GOLD_VER) return null;
+    if (!(raw.savedAt > 0) || (Date.now() - raw.savedAt) > CURVE_SS_MAX_AGE_MS) return null;
+    var price = Number(raw.price);
+    if (!(price > 0)) return null;
+    var buf = {
+      prices: raw.prices && raw.prices.length ? raw.prices.slice() : raw.candles.map(function (c) { return c.c; }),
+      candles: raw.candles.slice(),
+      price: price,
+      lastMs: Number(raw.lastMs) || Date.now(),
+      bucket: raw.bucket | 0,
+      forming: raw.forming || finishCandle(asset, price, price, price, price, Math.floor(Date.now() / CANDLE_MS) * CANDLE_MS, false),
+      nextSpike: raw.nextSpike || (Date.now() + 20000),
+      coreVer: raw.coreVer || 0,
+      goldVer: raw.goldVer || 0,
+      boomVer: raw.boomVer || 0,
+      crashVer: raw.crashVer || 0,
+      nexusVer: raw.nexusVer || 0,
+      v75Ver: raw.v75Ver || 0,
+      boomPhase: raw.boomPhase || null,
+      boomPhaseUntil: raw.boomPhaseUntil || 0,
+      boomMid: raw.boomMid || price,
+      boomLeft: raw.boomLeft || 0,
+      boomZig: raw.boomZig || 1,
+      boomPeak: raw.boomPeak || price,
+      crashSellUntil: raw.crashSellUntil || 0,
+      crashSellTarget: raw.crashSellTarget || 0,
+      crashSellFrom: raw.crashSellFrom || 0,
+      ver: SIM_VER,
+      scaleVer: SCALE_VER,
+      rev: raw.rev || 1,
+      fromSession: true
+    };
+    sanitizeBuffer(asset, buf, Number(asset.basePrice) || price);
+    rebaseBufferTimes(buf, Date.now());
+    return buf;
+  }
+
+  function loadCurveFromSession(asset) {
+    try {
+      if (!window.sessionStorage) return null;
+      var txt = sessionStorage.getItem(curveSsKey(asset.id));
+      if (!txt) return null;
+      return unpackCurveBuffer(JSON.parse(txt), asset);
+    } catch (eLoad) {
+      return null;
+    }
+  }
+
+  function saveCurveToSession(assetId, buf) {
+    try {
+      if (!window.sessionStorage || !buf) return;
+      var pack = packCurveBuffer(buf);
+      if (!pack) return;
+      sessionStorage.setItem(curveSsKey(assetId), JSON.stringify(pack));
+    } catch (eSave) {
+      try { sessionStorage.removeItem(curveSsKey(assetId)); } catch (e2) { /* ignore */ }
+    }
+  }
+
+  function persistAllCurvesNow() {
+    bindGlobalBuffers();
+    var id;
+    for (id in window.assetBuffers) {
+      if (!window.assetBuffers.hasOwnProperty(id)) continue;
+      saveCurveToSession(id, window.assetBuffers[id]);
+    }
+  }
+
+  function scheduleCurvePersist(assetId, buf) {
+    if (buf) saveCurveToSession(assetId, buf);
+    if (_curvePersistTimer) return;
+    _curvePersistTimer = setTimeout(function () {
+      _curvePersistTimer = 0;
+      persistAllCurvesNow();
+    }, 1800);
+  }
+
+  function ensureCurvePersistHooks() {
+    if (_curvePersistHooks || typeof window === 'undefined') return;
+    _curvePersistHooks = true;
+    function flush() { try { persistAllCurvesNow(); } catch (eF) { /* ignore */ } }
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') flush();
+    });
+  }
+
   function publishHistory(assetId, buf) {
     bindGlobalBuffers();
     if (buf.prices && buf.prices.length > HISTORY_N) buf.prices = buf.prices.slice(-HISTORY_N);
     window.assetsHistory[assetId] = buf.prices || [];
     window.assetBuffers[assetId] = buf;
     window.ASSET_BUFFERS[assetId] = buf;
+    ensureCurvePersistHooks();
+    scheduleCurvePersist(assetId, buf);
   }
 
   function huntPriceFor(assetId) {
@@ -834,6 +990,11 @@
   }
 
   function seedAssetBuffer(asset) {
+    var restored = loadCurveFromSession(asset);
+    if (restored) {
+      publishHistory(asset.id, restored);
+      return restored;
+    }
     var sim = simOf(asset.id);
     var price = Number(asset.basePrice) || 5000;
     var now = Date.now();

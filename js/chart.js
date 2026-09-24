@@ -26,7 +26,7 @@
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 28;
   var wantFitY = false;
-  var CANDLE_DURATION_MS = 1000;
+  var CANDLE_DURATION_MS = 1100;
   // Tête de lecture : 62 % sur desktop, 60 % sur mobile, pour qu'elle tombe
   // toujours au milieu d'une case de la grille et jamais sur un trait.
   var HEAD_X_RATIO = 0.62;
@@ -2039,16 +2039,8 @@
     if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
     xNow = frameWallClock(now);
     xWin = Math.max(8000, zoomSmooth * 1000);
-    if (allTrades.length) {
-      var tOldest = xNow;
-      var ta;
-      for (ta = 0; ta < allTrades.length; ta++) {
-        var ts0 = Number(allTrades[ta].startTime || allTrades[ta].startedAt || 0);
-        if (ts0 > 0 && ts0 < tOldest) tOldest = ts0;
-      }
-      var needWin = (xNow - tOldest) + 8000;
-      if (needWin > xWin) xWin = Math.min(600000, needWin);
-    }
+    // Ne plus forcer xWin sur la durée du plus vieux trade : ça bloquait le zoom+
+    // dès qu'un trade était ouvert. Le zoom utilisateur prime.
 
     // Fond profond unique — zéro beige / blanc.
     ctx.fillStyle = '#0B0E14';
@@ -2549,6 +2541,9 @@
           viewMin = 0;
           viewMax = 0;
         }
+        // Snap zoomSmooth pour réponse immédiate (surtout pendant un trade).
+        zoomSmooth = zoomSec();
+        if (isChartReady()) drawNow();
       }
     });
     if (zout) zout.addEventListener('click', function (e) {
@@ -2564,6 +2559,7 @@
         viewMin = stZout.lockMin;
         viewMax = stZout.lockMax;
       }
+      zoomSmooth = zoomSec();
       if (isChartReady()) drawNow();
     });
     if (zreset) zreset.addEventListener('click', function (e) {
