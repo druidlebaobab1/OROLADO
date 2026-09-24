@@ -1859,8 +1859,8 @@
     if (assetId === 'stable') return 0.0070;
     if (assetId === 'horizon50') return 0.0062;
     if (assetId === 'crash300') {
-      // Mobile validé ; FS : un peu plus d'air pour la vente allongée.
-      return fsActive ? 0.0140 : 0.0155;
+      // Mobile validé ; FS : même air que le mobile pour la vente allongée.
+      return fsActive ? 0.0152 : 0.0155;
     }
 
     var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
@@ -1904,6 +1904,8 @@
         // 8 autres : ancrage initial sur la base (route moteur), pas sur un pic.
         var cfg0 = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[assetId] : null;
         var home0 = cfg0 && Number(cfg0.basePrice) > 0 ? Number(cfg0.basePrice) : h;
+        // Crash : lean 0.997 — caler le cadre sur le même milieu que la route.
+        if (assetId === 'crash300') home0 = home0 * 0.997;
         mid = home0;
       }
     }
