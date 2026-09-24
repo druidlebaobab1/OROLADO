@@ -285,7 +285,17 @@ if ($action === 'registerStart') {
   $now = time();
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
     $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $prev['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
+    echo json_encode([
+      'ok' => false,
+      'server' => true,
+      'reason' => 'Un code a déjà été envoyé. Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant d’en demander un nouveau.',
+      'retryIn' => $wait,
+      'cooldown' => true,
+      'field' => 'regEmail',
+      'pendingOtp' => true,
+      'email' => $email,
+      'resendIn' => $wait
+    ]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -335,7 +345,13 @@ if ($action === 'registerResend') {
   $now = time();
   if (!empty($row['lastSentAt']) && ($now - (int) $row['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
     $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $row['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
+    echo json_encode([
+      'ok' => false,
+      'server' => true,
+      'reason' => 'Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant de renvoyer un code.',
+      'retryIn' => $wait,
+      'cooldown' => true
+    ]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -476,7 +492,13 @@ if ($action === 'passwordOtpStart') {
   $now = time();
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
     $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $prev['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
+    echo json_encode([
+      'ok' => false,
+      'server' => true,
+      'reason' => 'Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant de renvoyer un code.',
+      'retryIn' => $wait,
+      'cooldown' => true
+    ]);
     exit;
   }
   $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -561,7 +583,13 @@ if ($action === 'forgotOtpStart') {
   $prev = $db['pendingPasswordOtps'][$email] ?? null;
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
     $wait = OROLADO_OTP_RESEND_COOLDOWN - ($now - (int) $prev['lastSentAt']);
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => '', 'retryIn' => $wait, 'cooldown' => true]);
+    echo json_encode([
+      'ok' => false,
+      'server' => true,
+      'reason' => 'Patientez ' . $wait . ' seconde' . ($wait > 1 ? 's' : '') . ' avant de renvoyer un code.',
+      'retryIn' => $wait,
+      'cooldown' => true
+    ]);
     exit;
   }
   $found = find_user($db, $email);
@@ -911,7 +939,8 @@ if ($action === 'login') {
     exit;
   }
   orolado_login_ok('player');
-  orolado_revoke_user_sessions($db, (string) $user['id'], '');
+  // Multi-appareils : on garde les sessions actives (PC + téléphone).
+  // Révocation uniquement au changement de mot de passe / ban (orolado_revoke_user_sessions ailleurs).
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
   $uid = (string) $user['id'];

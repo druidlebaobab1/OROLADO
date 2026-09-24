@@ -121,6 +121,10 @@
     #chartStage,#chartCanvas,#chartOverlay,.chart-overlay{
       pointer-events:none!important;z-index:1!important}
     .hidden{display:none!important}
+    /* Anti-flash F5 : écrans invisibles jusqu’au boot JS */
+    html:not(.oro-booted) #screenTrade,
+    html:not(.oro-booted) #screenAuth{
+      visibility:hidden!important}
     .modal-backdrop:not(.active),
     .drawer-backdrop:not(.on),
     .fs-trade-overlay:not(.on){
@@ -128,9 +132,9 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=2021">
-    <link rel="stylesheet" href="css/auth.css?v=2021">
-    <link rel="stylesheet" href="css/tv.css?v=2021">
+    <link rel="stylesheet" href="css/app.css?v=2022">
+    <link rel="stylesheet" href="css/auth.css?v=2022">
+    <link rel="stylesheet" href="css/tv.css?v=2022">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -1165,16 +1169,16 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=2021"></script>
-  <script src="js/translations.js?v=2021"></script>
-  <script src="js/i18n.js?v=2021"></script>
-  <script src="js/store.js?v=2021"></script>
-  <script src="js/api.js?v=2021"></script>
+  <script src="js/config.js?v=2022"></script>
+  <script src="js/translations.js?v=2022"></script>
+  <script src="js/i18n.js?v=2022"></script>
+  <script src="js/store.js?v=2022"></script>
+  <script src="js/api.js?v=2022"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=2021"></script>
-  <script src="js/auth.js?v=2021"></script>
-  <script src="js/engine.js?v=2021"></script>
-  <script src="js/chart.js?v=2021"></script>
+  <script src="js/supabase.js?v=2022"></script>
+  <script src="js/auth.js?v=2022"></script>
+  <script src="js/engine.js?v=2022"></script>
+  <script src="js/chart.js?v=2022"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <script>
   (function () {
@@ -1225,6 +1229,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=2021"></script>
+  <script src="js/app.js?v=2022"></script>
 </body>
 </html>

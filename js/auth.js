@@ -118,11 +118,20 @@
         trafficReferrer: trafficMeta.referrer || ''
       });
       if (!start || !start.ok) {
+        var waitStart = parseInt(start && start.retryIn, 10);
+        var coolMsg = 'Un code a déjà été envoyé. Patientez une minute avant d’en demander un nouveau.';
+        if (start && start.cooldown && waitStart > 0) {
+          coolMsg = 'Un code a déjà été envoyé. Patientez ' + waitStart + ' seconde' + (waitStart > 1 ? 's' : '') + ' avant d’en demander un nouveau.';
+        }
         return {
           ok: false,
-          reason: (start && start.reason) || 'Impossible d’envoyer le code de confirmation',
+          reason: (start && start.reason) || (start && start.cooldown ? coolMsg : 'Impossible d’envoyer le code de confirmation'),
           field: (start && start.field) || 'regEmail',
-          retryIn: start && start.retryIn
+          retryIn: start && start.retryIn,
+          cooldown: !!(start && start.cooldown),
+          pendingOtp: !!(start && (start.pendingOtp || start.cooldown)),
+          email: (start && start.email) || email,
+          resendIn: (start && (start.resendIn || start.retryIn)) || waitStart || 60
         };
       }
       return {

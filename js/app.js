@@ -320,7 +320,9 @@
 
   function showAuthScreen(tab, opts) {
     opts = opts || {};
+    try { sessionStorage.setItem('oro_auth_tab', tab === 'login' ? 'login' : 'register'); } catch (eTab) { /* ignore */ }
     showScreen('screenAuth');
+    markBootReady();
     var auth = $('screenAuth');
     if (auth) {
       auth.classList.remove('hidden');
@@ -340,6 +342,14 @@
       pitch.textContent = '';
     }
     if (tab === 'register') metaTrack('Lead');
+  }
+
+  function markBootReady() {
+    try { document.documentElement.classList.add('oro-booted'); } catch (eBoot) { /* ignore */ }
+  }
+
+  function clearAuthTabIntent() {
+    try { sessionStorage.removeItem('oro_auth_tab'); } catch (eClr) { /* ignore */ }
   }
 
   function syncAuthQuick() {
@@ -4892,7 +4902,19 @@
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }
-      if (!res.ok) { showFieldError(res.field || 'regName', res.reason); return; }
+      if (!res.ok) {
+        if (res.cooldown && (res.pendingOtp || res.email)) {
+          openOtpModal({
+            email: res.email || String(($('regEmail') && $('regEmail').value) || '').trim().toLowerCase(),
+            displayName: String(($('regName') && $('regName').value) || '').trim(),
+            resendIn: res.resendIn || res.retryIn || 60
+          });
+          setOtpError(res.reason || 'Un code a déjà été envoyé. Patientez une minute avant d’en demander un nouveau.');
+          return;
+        }
+        showFieldError(res.field || 'regName', res.reason);
+        return;
+      }
       if (res.pendingOtp) {
         openOtpModal(res);
         return;
@@ -6299,6 +6321,8 @@
 
   function enterApp(opts) {
     opts = opts || {};
+    clearAuthTabIntent();
+    markBootReady();
     try {
       var u = user();
       if (u && !isGuest(u)) {
@@ -6846,6 +6870,12 @@
         try {
           if (D6.Auth.current() && !isGuest(D6.Auth.current())) {
             enterApp();
+            return;
+          }
+          var wantAuth = '';
+          try { wantAuth = sessionStorage.getItem('oro_auth_tab') || ''; } catch (eWant) { wantAuth = ''; }
+          if (wantAuth === 'register' || wantAuth === 'login') {
+            showAuthScreen(wantAuth);
             return;
           }
           try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
