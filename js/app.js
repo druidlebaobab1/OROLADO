@@ -451,7 +451,8 @@
   function tradeBalanceFrozen() {
     if (openLiveRealStake() > 0.009) return true;
     if (D6.stakeReserve && Date.now() < D6.stakeReserve.until) return true;
-    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 45000) return true;
+    // Fix solde réel : 8s suffisent pour que settleOrder réponde (au lieu de 45s).
+    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 8000) return true;
     var locks = getBalanceLocks();
     if (locks && Date.now() < locks.until && locks.real != null) return true;
     return false;
@@ -1668,7 +1669,10 @@
     if (!u || !D6.Store.setBalanceMode) return false;
     var real = Number(value);
     if (!isFinite(real) || real < 0) return false;
-    if (D6.correctStakeReserve) real = D6.correctStakeReserve(real);
+    // Fix solde réel : ne PAS corriger quand le serveur fait autorité (force / fromTrade).
+    if (D6.correctStakeReserve && !(opts && (opts.force || opts.fromTrade))) {
+      real = D6.correctStakeReserve(real);
+    }
     var local = D6.Store.realBalance ? Number(D6.Store.realBalance(u)) || 0 : 0;
     var force = !!(opts && opts.force);
     var fromMe = !!(opts && opts.fromMe);
@@ -2631,9 +2635,10 @@
           at: lastSettleAt
         }));
       } catch (eLed) { /* ignore */ }
+      // Fix solde réel : ne PAS verrouiller le réel ici — le serveur (settleOrder) décide.
       lockBalanceOptimistic(
         D6.Store.demoBalance(uSettled),
-        D6.Store.realBalance ? D6.Store.realBalance(uSettled) : 0,
+        null,
         12000
       );
     }
@@ -2698,7 +2703,11 @@
         }, function () { D6.holdRemote = false; });
       }
       D6.Api.post('settleOrder', settleBody, 25000).then(function (remote) {
-        if (applySettledVault(remote)) return;
+        if (applySettledVault(remote)) {
+          // Fix solde réel : réconciliation 3s après settle pour garantir Supabase = affichage.
+          if (settleMode === 'real') setTimeout(function () { forceMeReal(); }, 3000);
+          return;
+        }
         if (settleMode === 'real') {
           return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
             if (!applySettledVault(again)) return forceMeReal();
