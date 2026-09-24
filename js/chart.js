@@ -1849,14 +1849,17 @@
     return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * padTopRatio() };
   }
 
-  // Route Y fixe. Stable / Horizon / Crash 300 : VALIDÉS — coefficients figés.
+  // Route Y fixe.
+  // Stable / Horizon : VALIDÉS partout (mobile + FS) — coefficients figés.
+  // Crash mobile : VALIDÉ (0.0155). Les 8 autres : mobile inchangé ; FS = recette Horizon.
   function routeSpanPct(assetId) {
-    // --- Trio validé : ne jamais modifier ---
     if (assetId === 'stable') return 0.0070;
     if (assetId === 'horizon50') return 0.0062;
-    if (assetId === 'crash300') return 0.0155;
+    if (assetId === 'crash300') {
+      // Mobile validé ; plein écran un peu plus rempli (courbe plus grande/large).
+      return fsActive ? 0.0132 : 0.0155;
+    }
 
-    // --- Sept restants (dont Boom) ---
     var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
     var pct;
     if (assetId === 'boomspike') pct = 0.028;
@@ -1867,8 +1870,10 @@
     else if (assetId === 'nexusprime') pct = 0.0125;
     else if (assetId === 'v100') pct = 0.0135;
     else pct = 0.0135;
-    // Petit écran : format dédié (plus d'air) — pas un grand écran compressé.
+    // Petit écran (1er cran) VALIDÉ : plus d'air — ne pas toucher.
     if (narrow) pct *= 1.38;
+    // Plein écran : courbe plus présente (pas le format mobile recyclé).
+    else if (fsActive) pct *= 0.88;
     return pct;
   }
 
@@ -1879,11 +1884,14 @@
     var span;
     var mid;
     var softPair = (assetId === 'stable' || assetId === 'horizon50');
+    // Plein écran : même caméra douce que Stable/Horizon pour les 8 autres
+    // (supprime les vagues « photo qui monte/descend »).
+    var softCam = softPair || !!fsActive;
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
       span = span * 0.997 + wantSpan * 0.003;
-      var loS = softPair ? wantSpan * 0.90 : wantSpan * 0.96;
-      var hiS = softPair ? wantSpan * 1.18 : wantSpan * 1.06;
+      var loS = softCam ? wantSpan * 0.90 : wantSpan * 0.96;
+      var hiS = softCam ? wantSpan * 1.18 : wantSpan * 1.06;
       if (span < loS) span = loS;
       if (span > hiS) span = hiS;
       mid = (prevMin + prevMax) / 2;
@@ -1892,14 +1900,14 @@
       mid = h;
     }
     var half = span / 2;
-    var edge = span * (softPair ? 0.20 : 0.26);
+    var edge = span * (softCam ? 0.20 : 0.26);
     var lo = mid - half;
     var hi = mid + half;
-    var panK = softPair ? 0.045 : 0.085;
+    var panK = softCam ? 0.045 : 0.085;
     if (h > hi - edge) mid += (h - (hi - edge)) * panK;
     if (h < lo + edge) mid += (h - (lo + edge)) * panK;
-    // Crash + les 7 : recentrage si la tête sort de la zone centrale (recette validée).
-    if (!softPair) {
+    // Recentage agressif : uniquement 1er cran (hors Stable/Horizon). Jamais en FS.
+    if (!softCam) {
       var pos = (h - (mid - half)) / Math.max(1e-9, span);
       if (pos < 0.22 || pos > 0.78) mid += (h - mid) * 0.12;
     }
@@ -1983,10 +1991,16 @@
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     fsActive = fsOn;
-    // Bascule plein écran : on repart d'un cadrage net avant de lisser.
+    // Bascule plein écran : recadrage net FS (ne pas recycler le cadre mobile serré).
     if (fsOn !== fsWasOn) {
       fsWasOn = fsOn;
       wantFitY = true;
+      viewMin = 0;
+      viewMax = 0;
+      var stToggle = ensureAssetState(activeAsset);
+      stToggle.lockMin = 0;
+      stToggle.lockMax = 0;
+      // lockUntil conservé si trade ouvert → captureTradeFrame reconstruira au format FS.
     }
     // Colonne des prix compacte mais jamais tronquée : la largeur réservée doit
     // loger le libellé le plus long plus la marge de sécurité à droite.
@@ -2119,7 +2133,7 @@
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50') ? 0.055 : 0.05;
+        var camK = (activeAsset === 'stable' || activeAsset === 'horizon50' || fsActive) ? 0.055 : 0.05;
         viewMin = prevMin + (cam.min - prevMin) * camK;
         viewMax = prevMax + (cam.max - prevMax) * camK;
       } else {
