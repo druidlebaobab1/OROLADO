@@ -1883,8 +1883,8 @@
     var wantSpan = Math.abs(h) * routeSpanPct(assetId);
     var span;
     var mid;
-    // Recette Stable / Horizon pour TOUS les actifs (petit + grand écran) :
-    // cadre calé au milieu, seul le tracé avance — plus d'effet « photo » haut/bas.
+    var softPair = (assetId === 'stable' || assetId === 'horizon50');
+    // Span sticky (taille inchangée). Mid figé au centre : seul le tracé avance.
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
       span = span * 0.997 + wantSpan * 0.003;
@@ -1895,13 +1895,31 @@
       mid = (prevMin + prevMax) / 2;
     } else {
       span = wantSpan;
-      mid = h;
+      if (softPair) {
+        mid = h;
+      } else {
+        // 8 autres : ancrage initial sur la base (route moteur), pas sur un pic.
+        var cfg0 = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[assetId] : null;
+        var home0 = cfg0 && Number(cfg0.basePrice) > 0 ? Number(cfg0.basePrice) : h;
+        mid = home0;
+      }
     }
     var half = span / 2;
-    var edge = span * 0.20;
-    var panK = 0.045;
-    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
-    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
+    if (softPair) {
+      // Stable Core / Oro Horizon 50 : VALIDÉS — ne pas retoucher.
+      var edge = span * 0.20;
+      var panK = 0.045;
+      if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
+      if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
+    } else {
+      // 8 autres (mobile + plein écran) : même effet « cadre bloqué ».
+      // Plus de pan progressif (c’était l’effet photo haut/bas).
+      // Micro-secours uniquement si la tête va vraiment sortir du cadre.
+      var air = span * 0.05;
+      var panK8 = 0.010;
+      if (h > mid + half - air) mid += (h - (mid + half - air)) * panK8;
+      if (h < mid - half + air) mid += (h - (mid - half + air)) * panK8;
+    }
     return { min: mid - half, max: mid + half };
   }
 

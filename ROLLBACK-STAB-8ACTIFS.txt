@@ -1,0 +1,4 @@
+﻿RESTORE parachute stabilisation 8 actifs (20260924-020837)
+  Copy-Item -Force .\photo-avant-stabilisation-8actifs-20260924-020837\index.html .\index.html
+  Copy-Item -Force .\photo-avant-stabilisation-8actifs-20260924-020837\sw.js .\sw.js
+  Copy-Item -Force .\photo-avant-stabilisation-8actifs-20260924-020837\js\* .\js\
