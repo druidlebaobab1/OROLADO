@@ -1,0 +1,2 @@
+﻿git reset --hard 81fc66c
+git push origin main -f
