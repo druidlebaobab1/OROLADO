@@ -1875,8 +1875,11 @@
     else pct = 0.0135;
     // Petit écran (1er cran) VALIDÉ : plus d'air — ne pas toucher.
     if (narrow) pct *= 1.38;
-    // V100 / Apex plein écran : léger air en plus pour que les pics ne frôlent plus le bas.
-    if (fsActive && (assetId === 'v100' || assetId === 'apex500')) pct *= 1.14;
+    // Plein écran : léger air en plus (même recette V100/Apex) pour Titan / Nexus.
+    if (fsActive && (assetId === 'v100' || assetId === 'apex500' ||
+        assetId === 'titanpulse' || assetId === 'nexusprime')) {
+      pct *= 1.14;
+    }
     return pct;
   }
 

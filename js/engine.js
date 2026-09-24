@@ -587,7 +587,6 @@
       // la caméra n'a plus besoin de « suivre la photo ».
       var routeMidV = base * (sim.lean != null ? sim.lean : 1);
       var routeHalfV = base * 0.0062;
-      if (asset && asset.id === 'titanpulse') routeHalfV = base * 0.0075;
       if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0070;
       if (asset && asset.id === 'apex500') {
         // Apex : bande un peu plus serrée (surtout FS où les pics frôlaient le bas).
@@ -596,14 +595,25 @@
       if (asset && asset.id === 'v100') {
         routeHalfV = base * (isFsTradeUi() ? 0.0050 : 0.0058);
       }
-      if (asset && (asset.id === 'v75' || asset.id === 'nexusprime')) {
+      if (asset && asset.id === 'titanpulse') {
+        // Même recette V100/Apex : retenue FS, mobile inchangé.
+        routeHalfV = base * (isFsTradeUi() ? 0.0058 : 0.0075);
+      }
+      if (asset && asset.id === 'nexusprime') {
+        routeHalfV = base * (isFsTradeUi() ? 0.0050 : 0.0065);
+      }
+      if (asset && asset.id === 'v75') {
         routeHalfV = base * 0.0065;
       }
       var loV = routeMidV - routeHalfV;
       var hiV = routeMidV + routeHalfV;
       if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.78;
-      // Bas : rappel un peu plus ferme pour V100 / Apex (pics trop bas en FS).
-      var pullLo = (asset && (asset.id === 'v100' || asset.id === 'apex500')) ? 0.86 : 0.78;
+      // Bas : rappel plus ferme en FS pour V100 / Apex / Titan / Nexus.
+      var pullLoAssets = asset && (
+        asset.id === 'v100' || asset.id === 'apex500' ||
+        asset.id === 'titanpulse' || asset.id === 'nexusprime'
+      );
+      var pullLo = pullLoAssets ? 0.86 : 0.78;
       if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * pullLo;
     }
     return clampIndexPrice(nextOut, asset);

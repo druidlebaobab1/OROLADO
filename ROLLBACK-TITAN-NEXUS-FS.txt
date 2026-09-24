@@ -1,0 +1,5 @@
+﻿RESTORE parachute Titan/Nexus FS (20260924-034324)
+  Copy-Item -Force .\photo-avant-titan-nexus-fs-20260924-034324\index.html .\index.html
+  Copy-Item -Force .\photo-avant-titan-nexus-fs-20260924-034324\sw.js .\sw.js
+  Copy-Item -Force .\photo-avant-titan-nexus-fs-20260924-034324\js\chart.js .\js\chart.js
+  Copy-Item -Force .\photo-avant-titan-nexus-fs-20260924-034324\js\engine.js .\js\engine.js
