@@ -1,0 +1,4 @@
+﻿RESTORE parachute toolbar FS gros (20260924-051700)
+  Copy-Item -Force .\photo-avant-toolbar-fs-gros-20260924-051700\index.html .\index.html
+  Copy-Item -Force .\photo-avant-toolbar-fs-gros-20260924-051700\sw.js .\sw.js
+  Copy-Item -Force .\photo-avant-toolbar-fs-gros-20260924-051700\css\app.css .\css\app.css
