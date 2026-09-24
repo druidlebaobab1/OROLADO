@@ -5314,7 +5314,8 @@
           digits = digits.length <= 1 ? '0' : digits.slice(0, -1);
           stake = D6.roundMoney(Number(digits) || 0);
         } else if (add) {
-          stake = Math.max(min, stake || min) + add;
+          // Strict +N depuis la valeur affichée (0 ou vide → 1, pas 2).
+          stake = D6.roundMoney((stake || 0) + add);
         } else if (a === 'x2') {
           stake = D6.roundMoney(Math.max(min, stake || min) * 2);
         } else if (a === 'half') {
