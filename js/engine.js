@@ -18,6 +18,8 @@
   var CANDLE_MS = TICK_MS * TICKS_PER_CANDLE;
   var HISTORY_N = 1320;
   var HIST_TICKS = 5400;
+  // Historique de départ, pour les 10 actifs d'un coup : 6 minutes.
+  var BOOT_TICKS = 1440;
   // Retard d'affichage : le dernier tick reçu s'affiche « maintenant ». Couvre la latence réseau.
   var DISPLAY_DELAY = 700;
   var POLL_MS = 400;
@@ -128,9 +130,47 @@
     });
   }
 
+  /** Ajoute une tranche [first..] de ticks au flux d'un actif (historique ou nouveautés). */
+  function mergeTicks(id, first, list) {
+    var f = feedOf(id);
+    first = Number(first);
+    if (!Array.isArray(list) || !list.length || !isFinite(first)) return;
+    var vals = list.map(Number);
+    var end = first + vals.length - 1;
+    if (!f.loaded || first > f.last + 1 || end < f.first) {
+      // Premier chargement, ou trou (onglet endormi) : on repart de cette tranche.
+      f.first = first;
+      f.ticks = vals;
+      f.last = end;
+      f.loaded = true;
+      rebuildBuffer(id);
+      return;
+    }
+    if (first < f.first) {
+      // Historique plus long reçu (zoom arrière) : on le colle devant.
+      var before = vals.slice(0, f.first - first);
+      f.ticks = before.concat(f.ticks);
+      f.first = first;
+      rebuildBuffer(id);
+    }
+    var i;
+    for (i = 0; i < vals.length; i++) {
+      var tick = first + i;
+      if (tick <= f.last) continue;
+      f.ticks.push(vals[i]);
+      f.last = tick;
+    }
+    var extra = f.ticks.length - (HIST_TICKS + 400);
+    if (extra > 0) {
+      f.ticks.splice(0, extra);
+      f.first += extra;
+    }
+  }
+
+  /** Historique long d'un actif (quand on le regarde), en tâche de fond. */
   function loadHistory(id) {
     var f = feedOf(id);
-    if (f.loading) return;
+    if (f.loading || f.full) return;
     if (f.failAt && Date.now() - f.failAt < 2500) return;
     f.loading = true;
     getJson('feed.php?a=' + encodeURIComponent(id) + '&hist=' + HIST_TICKS).then(function (j) {
@@ -139,49 +179,45 @@
         f.failAt = Date.now();
         return;
       }
-      f.first = Number(j.first);
-      f.ticks = j.c.map(Number);
-      f.last = f.first + f.ticks.length - 1;
-      f.loaded = true;
-      rebuildBuffer(id);
+      f.full = true;
+      mergeTicks(id, j.first, j.c);
     }, function () {
       f.loading = false;
       f.failAt = Date.now();
     });
   }
 
-  function pollFeed(id) {
-    var f = feedOf(id);
-    if (!f.loaded) {
-      loadHistory(id);
-      return;
+  /**
+   * Une seule requête pour les 10 actifs : au démarrage (6 min d'historique chacun),
+   * puis les nouveaux ticks de tous. Changer d'actif est donc instantané.
+   */
+  var allBusy = false;
+  var allFailAt = 0;
+  function pollAll() {
+    if (allBusy) return;
+    if (allFailAt && Date.now() - allFailAt < 2000) return;
+    var ids = Object.keys(C.ASSETS);
+    var parts = [];
+    var i;
+    for (i = 0; i < ids.length; i++) {
+      var f = feedOf(ids[i]);
+      if (f.loaded) parts.push(ids[i] + '.' + f.last);
     }
-    if (f.busy) return;
-    f.busy = true;
-    getJson('feed.php?a=' + encodeURIComponent(id) + '&since=' + f.last).then(function (j) {
-      f.busy = false;
-      if (!j || !j.ok || !Array.isArray(j.c)) return;
-      var first = Number(j.first);
-      if (first > f.last + 1) {
-        // Trou (onglet endormi longtemps) : on recharge l'historique complet.
-        f.loaded = false;
-        loadHistory(id);
+    allBusy = true;
+    getJson('feed.php?all=1&hist=' + BOOT_TICKS + (parts.length ? '&s=' + parts.join(',') : '')).then(function (j) {
+      allBusy = false;
+      if (!j || !j.ok || !j.assets) {
+        allFailAt = Date.now();
         return;
       }
-      var i;
-      for (i = 0; i < j.c.length; i++) {
-        var tick = first + i;
-        if (tick <= f.last) continue;
-        f.ticks.push(Number(j.c[i]));
-        f.last = tick;
-      }
-      var extra = f.ticks.length - (HIST_TICKS + 400);
-      if (extra > 0) {
-        f.ticks.splice(0, extra);
-        f.first += extra;
-      }
+      Object.keys(j.assets).forEach(function (id) {
+        if (!C.ASSETS[id]) return;
+        var a = j.assets[id];
+        mergeTicks(id, a.first, a.c);
+      });
     }, function () {
-      f.busy = false;
+      allBusy = false;
+      allFailAt = Date.now();
     });
   }
 
@@ -193,15 +229,11 @@
 
   function startPolling() {
     if (pollTimer) return;
+    pollAll();
     pollTimer = setInterval(function () {
       if (document.hidden) return;
-      var ids = {};
-      if (wantedAsset) ids[wantedAsset] = 1;
-      var i;
-      for (i = 0; i < trades.length; i++) {
-        if (trades[i] && !trades[i].settled) ids[trades[i].assetId] = 1;
-      }
-      Object.keys(ids).forEach(pollFeed);
+      pollAll();
+      if (wantedAsset && feeds[wantedAsset] && feeds[wantedAsset].loaded) loadHistory(wantedAsset);
     }, POLL_MS);
   }
 
@@ -307,7 +339,7 @@
     var f = feedOf(id);
     var buf = window.assetBuffers[id];
     if (!f.loaded) {
-      loadHistory(id);
+      startPolling();
       if (!buf) {
         buf = emptyBuffer(asset);
         publishBuffer(id, buf);
@@ -1050,6 +1082,8 @@
 
   ensureMarkets();
   Object.keys(C.ASSETS).forEach(function (id) { payoutLive[id] = 1.88; });
+  // Les 10 courbes tournent dès l'ouverture du site : elles sont prêtes avant qu'on les regarde.
+  startPolling();
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden) api.resyncClocks();
   });

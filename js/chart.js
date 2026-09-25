@@ -1873,64 +1873,40 @@
     return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * padTopRatio() };
   }
 
-  // Route Y fixe.
-  // Stable / Horizon : VALIDÉS partout (mobile + FS) — coefficients figés.
-  // Crash mobile : VALIDÉ (0.0155). Les 8 autres : mobile inchangé ; FS = recette Horizon.
+  // Hauteur MINIMUM du cadre (en % du prix), par actif. Calée sur la volatilité du flux
+  // serveur : assez serrée pour des bougies bien remplies, jamais au point de zoomer du bruit.
   function routeSpanPct(assetId) {
-    if (assetId === 'stable') return 0.0070;
-    if (assetId === 'horizon50') return 0.0062;
-    if (assetId === 'crash300') {
-      // Mobile validé ; FS : même air que le mobile pour la vente allongée.
-      return fsActive ? 0.0152 : 0.0155;
-    }
-
-    var narrow = !fsActive && ((window.innerWidth || 0) <= 430);
-    var pct;
-    if (assetId === 'boomspike') pct = 0.026;
-    else if (assetId === 'goldtrend') pct = 0.016;
-    else if (assetId === 'titanpulse') pct = 0.022;
-    else if (assetId === 'apex500') pct = 0.0145;
-    else if (assetId === 'v75') pct = 0.0135;
-    else if (assetId === 'nexusprime') pct = 0.0125;
-    else if (assetId === 'v100') pct = 0.0135;
-    else pct = 0.0135;
-    // Petit écran (1er cran) VALIDÉ : plus d'air — ne pas toucher.
-    if (narrow) pct *= 1.38;
-    // Plein écran : léger air en plus (même recette V100/Apex) pour Titan / Nexus.
-    if (fsActive && (assetId === 'v100' || assetId === 'apex500' ||
-        assetId === 'titanpulse' || assetId === 'nexusprime')) {
-      pct *= 1.14;
-    }
+    var pct = {
+      v100: 0.0016, stable: 0.00038, apex500: 0.0019, horizon50: 0.0003,
+      goldtrend: 0.0012, v75: 0.0013, nexusprime: 0.0014, titanpulse: 0.0022,
+      boomspike: 0.0032, crash300: 0.0032
+    }[assetId] || 0.0016;
+    // Petit écran : un peu plus d'air.
+    if (!fsActive && ((window.innerWidth || 0) <= 430)) pct *= 1.12;
     return pct;
   }
 
+  var camCandles = null;
+
+  // Caméra « plateforme pro » : le cadre épouse les bougies visibles (+ marge haut/bas),
+  // donc elles restent grandes et la courbe ne touche jamais le plafond ni le sol.
   function routeCamera(prevMin, prevMax, head, assetId) {
     var h = Number(head);
     if (!(h > 0) || !isFinite(h)) h = 10000;
-    var wantSpan = Math.abs(h) * routeSpanPct(assetId);
-    var span;
-    var mid;
-    // Span sticky (taille inchangée).
-    if (prevMax > prevMin) {
-      span = prevMax - prevMin;
-      span = span * 0.997 + wantSpan * 0.003;
-      var loS = wantSpan * 0.90;
-      var hiS = wantSpan * 1.18;
-      if (span < loS) span = loS;
-      if (span > hiS) span = hiS;
-      mid = (prevMin + prevMax) / 2;
-    } else {
-      span = wantSpan;
-      mid = h;
+    var lo = h;
+    var hi = h;
+    var list = camCandles || [];
+    var i;
+    for (i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (!c) continue;
+      if (c.l > 0 && c.l < lo) lo = c.l;
+      if (c.h > hi) hi = c.h;
     }
-    var half = span / 2;
-    // Jeu équitable : plus de « route » qui ramène le prix au centre, la courbe est libre.
-    // La caméra suit donc la tête pour les 10 actifs (recette Stable/Horizon validée).
-    var edge = span * 0.20;
-    var panK = 0.045;
-    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
-    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
-    return { min: mid - half, max: mid + half };
+    var span = Math.max(hi - lo, h * routeSpanPct(assetId));
+    var mid = (hi + lo) / 2;
+    span *= 1.34;
+    return { min: mid - span / 2, max: mid + span / 2 };
   }
 
   function captureTradeFrame(assetId, untilMs) {
@@ -2062,6 +2038,7 @@
     ctx.fillRect(0, 0, cssW, cssH);
 
     var candles = visibleCandles(market);
+    camCandles = candles;
     xTimes = [];
     var xi;
     for (xi = 0; xi < candles.length; xi++) xTimes.push(candles[xi].t);
@@ -2130,9 +2107,13 @@
         viewMax = st.lockMax;
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
       } else {
+        // Plein écran : même caméra que le mobile, en douceur (pas de saut).
         var gFs = routeCamera(viewMin, viewMax, head, activeAsset);
-        viewMin = gFs.min;
-        viewMax = gFs.max;
+        viewMin += (gFs.min - viewMin) * 0.08;
+        viewMax += (gFs.max - viewMax) * 0.08;
+        var fsEdge = (viewMax - viewMin) * 0.06;
+        if (head > viewMax - fsEdge) { var fsUp = head - (viewMax - fsEdge); viewMin += fsUp; viewMax += fsUp; }
+        if (head < viewMin + fsEdge) { var fsDn = (viewMin + fsEdge) - head; viewMin -= fsDn; viewMax -= fsDn; }
       }
       if (holdLock && !(st.lockMax > st.lockMin)) {
         st.lockMin = viewMin;
@@ -2158,9 +2139,13 @@
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        var camK = 0.055;
+        var camK = 0.08;
         viewMin = prevMin + (cam.min - prevMin) * camK;
         viewMax = prevMax + (cam.max - prevMax) * camK;
+        // Filet : la tête ne sort jamais du cadre, même sur un pic Boom/Crash.
+        var camEdge = (viewMax - viewMin) * 0.06;
+        if (head > viewMax - camEdge) { var upS = head - (viewMax - camEdge); viewMin += upS; viewMax += upS; }
+        if (head < viewMin + camEdge) { var dnS = (viewMin + camEdge) - head; viewMin -= dnS; viewMax -= dnS; }
       } else {
         viewMin = cam.min;
         viewMax = cam.max;
