@@ -1090,8 +1090,8 @@ if ($action === 'admin') {
       'lastAction' => $lastAction,
       'lastSeen' => (string) ($u['lastSeen'] ?? ''),
       'trafficSource' => (string) ($u['trafficSource'] ?? 'direct'),
-      'transactions' => array_slice($u['transactions'] ?? [], 0, 40),
-      'positions' => array_slice($u['positions'] ?? [], 0, 20)
+      'transactions' => array_slice($u['transactions'] ?? [], 0, 1500),
+      'positions' => array_slice($u['positions'] ?? [], 0, 1500)
     ];
   }
   usort($list, function ($a, $b) {
@@ -2125,7 +2125,7 @@ if ($action === 'financeHistory') {
       'ref' => $d['id'] ?? $d['ref'] ?? '',
       'amount' => orolado_money($d['amount'] ?? 0),
       'status' => strtoupper((string) ($d['status'] ?? 'PENDING')),
-      'label' => 'Dépôt',
+      'label' => (($d['note'] ?? '') === 'Bonus') ? 'Bonus' : 'Dépôt',
       'operator' => $d['operator'] ?? ($d['op'] ?? '')
     ];
   }
@@ -2253,7 +2253,7 @@ if ($action === 'me') {
     'vault' => $vault,
     'wager' => $wagerMe,
     'openOrders' => $openOrders,
-    'positions' => array_slice(array_reverse($recentPositions), 0, 80)
+    'positions' => array_slice(array_reverse($recentPositions), 0, (($officialReal > 0 || $depRowsMe > 0) ? 1500 : 80))
   ]);
   exit;
 }

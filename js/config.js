@@ -18,9 +18,9 @@
     REAL_WIN_RATE: 0.48,
     ADMIN_WIN_RATE: 0.70,
     REAL_PAYOUT: 1.88,
-    ODDS_MULT: [1.88, 6, 11, 51],
+    ODDS_MULT: [1.88, 5, 10, 50],
     DEFAULT_ODDS: 1.88,
-    PAYOUT_PCT: { '1.88': 88, '6': 500, '11': 1000, '51': 5000 },
+    PAYOUT_PCT: { '1.88': 88, '5': 500, '10': 1000, '50': 5000 },
     // Joueurs ordinaires RÉEL — 48 % sur 1.88 ; autres cotes au même ratio (48/42).
     ODDS_WIN_RATE: { '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017 },
     // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.

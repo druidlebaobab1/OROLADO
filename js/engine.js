@@ -1621,7 +1621,7 @@
   }
 
   function normalizeOdds(v) {
-    var list = C.ODDS_MULT || [1.88, 6, 11, 51];
+    var list = C.ODDS_MULT || [1.88, 5, 10, 50];
     var n = Number(v);
     var i;
     for (i = 0; i < list.length; i++) {

@@ -1325,17 +1325,17 @@ function orolado_trade_credit(bool $won, bool $voided, float $stake, float $payo
 function orolado_odds_key($payout): string {
   $n = (float) $payout;
   if (abs($n - 1.88) < 0.001) return '1.88';
-  if (abs($n - 6.0) < 0.001) return '6';
-  if (abs($n - 11.0) < 0.001) return '11';
-  if ($n >= 50) return '51';
+  if (abs($n - 5.0) < 0.001) return '5';
+  if (abs($n - 10.0) < 0.001) return '10';
+  if ($n >= 40) return '50';
   return '1.88';
 }
 
 /** Grille scellée : réel 48 % sur 1.88 ; 6/11/51 au ratio 48/42 ; démo 55 % ; admin 70 %. */
 function orolado_sealed_win_p(float $payout, string $profile): float {
-  static $real = ['1.88' => 0.48, '6' => 0.137, '11' => 0.057, '51' => 0.017];
-  static $demo = ['1.88' => 0.55, '6' => 0.157, '11' => 0.065, '51' => 0.020];
-  static $admin = ['1.88' => 0.70, '6' => 0.255, '11' => 0.127, '51' => 0.02];
+  static $real = ['1.88' => 0.48, '5' => 0.16, '10' => 0.09, '50' => 0.018];
+  static $demo = ['1.88' => 0.55, '5' => 0.18, '10' => 0.10, '50' => 0.020];
+  static $admin = ['1.88' => 0.70, '5' => 0.30, '10' => 0.15, '50' => 0.03];
   $map = $real;
   if ($profile === 'demo') $map = $demo;
   else if ($profile === 'admin') $map = $admin;
@@ -1373,7 +1373,7 @@ function orolado_anti_mart_p(array $db, string $uid, float $stake, float $baseP)
     if ($lossStreak === 1) $lastStake = $os;
   }
   $rising = $lastStake > 0.009 && $stake >= $lastStake * 1.75;
-  if (!($lossStreak >= 3 && $rising)) return $p;
+  if (!($lossStreak >= 5 && $rising)) return $p;
   $steps = min($lossStreak - 2, 6);
   $p = $p * pow(0.62, $steps);
   return max(0.10, min($baseP * 0.55, $p));
@@ -1509,8 +1509,8 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
         'mode' => 'real',
         'status' => 'COMPLETED',
       ]);
-      if (count($db['users'][$uid]['transactions']) > 80) {
-        $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 80);
+      if (count($db['users'][$uid]['transactions']) > 1500) {
+        $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 1500);
       }
     }
   return ['ok' => true, 'real' => $next, 'delta' => $delta];
@@ -2852,7 +2852,7 @@ function credit_paid_deposit(array $hit): array {
     $db['users'][$uid]['transactions'] = [];
   }
   array_unshift($db['users'][$uid]['transactions'], $tx);
-  $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 80);
+  $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 1500);
 
   rewind($fp);
   ftruncate($fp, 0);

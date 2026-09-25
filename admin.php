@@ -1311,6 +1311,7 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   $db['vault'][$uid]['real'] = $got;
 
   $ref = 'adm_' . bin2hex(random_bytes(6));
+  $isSelf = ($uid === ($_SESSION['admin_uid'] ?? ''));
   $depRow = [
     'id' => $ref,
     'ref' => $ref,
@@ -1320,14 +1321,14 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     'operator' => 'admin',
     'createdAt' => date('c'),
     'paidAt' => date('c'),
-    'note' => $motif,
+    'note' => $isSelf ? $motif : 'Bonus',
   ];
   $txRow = [
     'id' => $ref,
     'at' => date('c'),
-    'type' => 'deposit',
+    'type' => $isSelf ? 'deposit' : 'bonus',
     'amount' => abs($delta),
-    'note' => $motif,
+    'note' => $isSelf ? $motif : 'Bonus',
     'mode' => 'real',
     'status' => 'COMPLETED',
   ];

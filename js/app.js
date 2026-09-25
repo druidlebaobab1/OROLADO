@@ -1280,15 +1280,15 @@
 
   function payoutPctOf(odds) {
     var n = Number(odds);
-    var map = (D6.CONFIG && D6.CONFIG.PAYOUT_PCT) || { '1.88': 88, '6': 500, '11': 1000, '51': 5000 };
+    var map = (D6.CONFIG && D6.CONFIG.PAYOUT_PCT) || { '1.88': 88, '5': 500, '10': 1000, '50': 5000 };
     if (n === 88) return 88;
     if (n === 500) return 500;
     if (n === 1000) return 1000;
     if (n === 5000) return 5000;
     if (Math.abs(n - 1.88) < 0.02) return Number(map['1.88']) || 88;
-    if (Math.abs(n - 6) < 0.02) return Number(map['6']) || 500;
-    if (Math.abs(n - 11) < 0.02) return Number(map['11']) || 1000;
-    if (n >= 50) return Number(map['51']) || 5000;
+    if (Math.abs(n - 5) < 0.02) return Number(map['5']) || 500;
+    if (Math.abs(n - 10) < 0.02) return Number(map['10']) || 1000;
+    if (n >= 40) return Number(map['50']) || 5000;
     if (map[String(n)] != null) return Number(map[String(n)]);
     return 88;
   }
@@ -1324,12 +1324,12 @@
   }
 
   function normalizePayoutMult(raw) {
-    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 6, 11, 51];
+    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 5, 10, 50];
     var n = Number(raw);
     if (n === 88) n = 1.88;
-    else if (n === 500) n = 6;
-    else if (n === 1000) n = 11;
-    else if (n === 5000) n = 51;
+    else if (n === 500) n = 5;
+    else if (n === 1000) n = 10;
+    else if (n === 5000) n = 50;
     var i;
     for (i = 0; i < list.length; i++) {
       if (Math.abs(list[i] - n) < 0.001) return list[i];
