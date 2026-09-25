@@ -1,210 +1,66 @@
 /* ==========================================================================
-   CORE ENGINE - CALCUL STOCHASTIQUE SCELLÉ DÉFINITIF - NE PAS MODIFIER
+   OROLADO — MOTEUR JEU ÉQUITABLE
+   - Les prix viennent du serveur (feed.php) : une seule courbe, la même pour tous,
+     fabriquée tick par tick (250 ms) avec un générateur cryptographique.
+   - Le navigateur ne décide jamais d'un résultat. Connecté : le serveur règle le trade
+     (settleOrder). Invité démo : on lit le prix d'expiration dans le même flux public.
+   - Règle unique pour tous (démo, réel, admin) : CALL gagne si le prix final est au-dessus
+     de la ligne, PUT s'il est en dessous, pile sur la ligne = mise rendue.
    ========================================================================== */
 (function (root) {
   'use strict';
 
   var D6 = root.D6 = root.D6 || {};
-
-  var StochasticCore = (function () {
-    var SEALED = Object.freeze({
-      SIGMA: 0.00125,
-      DEFAULT_ODDS: 1.88,
-      WIN_P_REAL: Object.freeze({ '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018 }),
-      WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 }),
-      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 }),
-      PROFIT_PCT: Object.freeze({ '1.88': 88, '5': 500, '10': 1000, '50': 5000 })
-    });
-
-    function boxMuller() {
-      var u = 0;
-      var v = 0;
-      while (!(u > 0 && u < 1)) u = Math.random();
-      while (!(v > 0 && v < 1)) v = Math.random();
-      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-    }
-
-    function invNorm(p) {
-      var a1 = -3.969683028665376e+01;
-      var a2 = 2.209460984245205e+02;
-      var a3 = -2.759285104469687e+02;
-      var a4 = 1.383577509590705e+02;
-      var a5 = -3.066479806614716e+01;
-      var a6 = 2.506628277459239e+00;
-      var b1 = -5.447609879822406e+01;
-      var b2 = 1.615858368580409e+02;
-      var b3 = -1.556989798598866e+02;
-      var b4 = 6.680131188771972e+01;
-      var b5 = -1.328068155288572e+01;
-      var c1 = -7.784894002430293e-03;
-      var c2 = -3.223964580411365e-01;
-      var c3 = -2.400758277161838e+00;
-      var c4 = -2.549732539343734e+00;
-      var c5 = 4.374664141464968e+00;
-      var c6 = 2.938163982698783e+00;
-      var d1 = 7.784695709041462e-03;
-      var d2 = 3.224671290700398e-01;
-      var d3 = 2.445134137142996e+00;
-      var d4 = 3.754408661907416e+00;
-      var plow = 0.02425;
-      var phigh = 1 - plow;
-      var q;
-      var r;
-      if (!(p > 0) || p >= 1) {
-        if (p <= 0) return -8;
-        return 8;
-      }
-      if (p < plow) {
-        q = Math.sqrt(-2 * Math.log(p));
-        return (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
-          ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-      }
-      if (phigh < p) {
-        q = Math.sqrt(-2 * Math.log(1 - p));
-        return -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) /
-          ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
-      }
-      q = p - 0.5;
-      r = q * q;
-      return (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q /
-        (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
-    }
-
-    function oddsKey(mult) {
-      var n = Number(mult);
-      if (Math.abs(n - 1.88) < 0.001) return '1.88';
-      if (Math.abs(n - 5) < 0.001) return '5';
-      if (Math.abs(n - 10) < 0.001) return '10';
-      if (n >= 40) return '50';
-      return '1.88';
-    }
-
-    function winProb(payout, profile) {
-      var map = SEALED.WIN_P_REAL;
-      if (profile === 'demo') map = SEALED.WIN_P_DEMO;
-      else if (profile === 'admin') map = SEALED.WIN_P_ADMIN_REAL;
-      var p = Number(map[oddsKey(payout)]);
-      if (!isFinite(p) || p <= 0 || p >= 1) return 0.48;
-      return p;
-    }
-
-    function profitPct(payout) {
-      var pct = Number(SEALED.PROFIT_PCT[oddsKey(payout)]);
-      if (!isFinite(pct) || pct <= 0) return 88;
-      return pct;
-    }
-
-    function gbmPrice(S0, dt, mu, sigma, z) {
-      var s = Number(S0);
-      if (!(s > 0) || !isFinite(s)) s = 1;
-      var t = Number(dt);
-      if (!(t > 0) || !isFinite(t)) t = 1;
-      var sig = Number(sigma);
-      if (!(sig > 0) || !isFinite(sig)) sig = SEALED.SIGMA;
-      var m = Number(mu);
-      if (!isFinite(m)) m = 0;
-      var zz = Number(z);
-      if (!isFinite(zz)) zz = 0;
-      var st = s * Math.exp((m - 0.5 * sig * sig) * t + sig * Math.sqrt(t) * zz);
-      if (!isFinite(st) || st <= 0) return s;
-      return st;
-    }
-
-    function driftForSide(side, pWin, sigma, dt) {
-      var sig = Number(sigma);
-      if (!(sig > 0) || !isFinite(sig)) sig = SEALED.SIGMA;
-      var t = Number(dt);
-      if (!(t > 0) || !isFinite(t)) t = 1;
-      var zP = side === 'put' ? invNorm(1 - pWin) : invNorm(pWin);
-      if (!isFinite(zP)) zP = 0;
-      return 0.5 * sig * sig + zP * sig / Math.sqrt(t);
-    }
-
-    function round2(n) {
-      return Math.round(Number(n) * 100) / 100;
-    }
-
-    function settle(args) {
-      var entry = Number(args && args.entryPrice);
-      if (!(entry > 0) || !isFinite(entry)) entry = 1000;
-      var dt = Number(args && args.durationSec);
-      if (!(dt > 0) || !isFinite(dt)) dt = 5;
-      var side = (args && args.side) === 'put' ? 'put' : 'call';
-      var payout = (args && args.payout) != null ? args.payout : SEALED.DEFAULT_ODDS;
-      var profile = (args && args.profile) || 'real';
-      var p = (args && args.winP != null) ? Number(args.winP) : winProb(payout, profile);
-      if (!(p > 0) || !isFinite(p)) p = profile === 'demo' ? 0.55 : 0.48;
-      if (p >= 1) p = 0.99;
-      var won = Math.random() < p;
-      var voided = false;
-      var nudge = Math.max(entry * 0.00025, 0.02);
-      var up = side === 'put' ? !won : won;
-      var st = round2(entry + (up ? nudge : -nudge));
-      entry = round2(entry);
-      if (st === entry) st = round2(entry + (up ? 0.05 : -0.05));
-      if (!(st > 0) || !isFinite(st)) {
-        st = round2(entry + (up ? 0.05 : -0.05));
-      }
-      return Object.freeze({
-        exitPrice: st,
-        won: !!won,
-        voided: voided
-      });
-    }
-
-    return Object.freeze({
-      SEALED: SEALED,
-      boxMuller: boxMuller,
-      invNorm: invNorm,
-      gbmPrice: gbmPrice,
-      winProb: winProb,
-      profitPct: profitPct,
-      settle: settle,
-      oddsKey: oddsKey,
-      round2: round2
-    });
-  })();
-
-  if (typeof module !== 'undefined' && module.exports && typeof window === 'undefined') {
-    module.exports = StochasticCore;
-    return;
-  }
-
   var C = D6.CONFIG;
+
+  var TICK_MS = 250;
+  var TICKS_PER_CANDLE = 4;
+  var CANDLE_MS = TICK_MS * TICKS_PER_CANDLE;
+  var HISTORY_N = 1320;
+  var HIST_TICKS = 5400;
+  // Retard d'affichage : le dernier tick reçu s'affiche « maintenant ». Couvre la latence réseau.
+  var DISPLAY_DELAY = 700;
+  var POLL_MS = 400;
+  var MULTS = [1.88, 5, 10, 50];
+
   var markets = {};
+  var feeds = {};
   var trades = [];
   var payoutLive = {};
-  var lastOrderAt = 0;
-  var sessionNonce = D6.uid();
-  var orderSeq = 0;
-      // Max simultané très élevé : pas de blocage à 2 trades.
-  var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
-  // Courbe : 1 bougie = 1100 ms (recul un peu plus doux, synchro chart/engine).
-  var CANDLE_MS = 1100;
-  var HISTORY_SEC = 720;
-  var HISTORY_N = 1320;
-  var SEED_N = 1260;
-  var synthCache = {};
   var tradeTimers = {};
-  var pendingBusyUntil = {};
-  var clickQuietUntil = {};
-  var hedgeWinBucket = {};
+  var settling = {};
+  var lastOrderAt = 0;
+  var wantedAsset = null;
+  var pollTimer = 0;
 
-  function u32(n) {
-    n = Math.imul(n ^ (n >>> 16), 2246822507);
-    n = Math.imul(n ^ (n >>> 13), 3266489909);
-    return (n ^ (n >>> 16)) >>> 0;
+  /* —— Horloge : décalage serveur ↔ téléphone (type NTP, meilleur aller-retour gardé) —— */
+  var clock = { offset: 0, rtt: Infinity, ready: false };
+
+  function noteServerTime(serverMs, t0, t1) {
+    var s = Number(serverMs);
+    if (!isFinite(s) || !(t1 >= t0)) return;
+    var rtt = t1 - t0;
+    var est = s - (t0 + t1) / 2;
+    if (!clock.ready) {
+      clock.offset = est;
+      clock.rtt = rtt;
+      clock.ready = true;
+      return;
+    }
+    if (rtt <= clock.rtt * 1.6 + 30) {
+      clock.offset = clock.offset * 0.8 + est * 0.2;
+      clock.rtt = Math.min(clock.rtt * 1.02, rtt);
+    }
   }
 
-  function uhash01(i, salt) {
-    return u32(Math.imul(i | 0, 374761393) ^ Math.imul(salt | 0, 668265263)) / 4294967296;
+  /** Heure d'affichage (téléphone) d'un tick serveur. */
+  function tickToLocal(tick) {
+    return tick * TICK_MS - clock.offset + DISPLAY_DELAY;
   }
 
-  function valueNoise(t, salt) {
-    var i = Math.floor(t);
-    var f = t - i;
-    var u = f * f * (3 - 2 * f);
-    return uhash01(i, salt) * (1 - u) + uhash01(i + 1, salt) * u;
+  /** Heure serveur (ms) → heure d'affichage téléphone. */
+  function serverMsToLocal(ms) {
+    return Number(ms) - clock.offset + DISPLAY_DELAY;
   }
 
   function canonAssetId(id) {
@@ -212,482 +68,155 @@
     return C.ASSETS[id] ? id : 'v100';
   }
 
-  // Profils indépendants : seed + vol + dérive + spikes (pas le même tableau + offset).
-  function feedProfile(assetId) {
-    switch (assetId) {
-      case 'stable':
-        return { salt: 221713, vol: 0.09, drift: 0, f1: 0.011, f2: 0.023, f3: 0.005, a1: 3.2, a2: 1.8, a3: 4.2, spike: null, stair: null };
-      case 'v75':
-        return { salt: 551903, vol: 0.92, drift: 0, f1: 0.088, f2: 0.17, f3: 0.041, a1: 16, a2: 11, a3: 24, spike: null, stair: null };
-      case 'crash300':
-        return { salt: 771001, vol: 0.35, drift: 0, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'crash' };
-      case 'boomspike':
-        return { salt: 882119, vol: 0.35, drift: 0, f1: 0.01, f2: 0.022, f3: 0.005, a1: 2.2, a2: 1.4, a3: 3, spike: null, stair: null, crashBoom: 'boom' };
-      case 'apex500':
-        return { salt: 440501, vol: 1, drift: 0, kind: 'apex' };
-      case 'horizon50':
-        return { salt: 550050, vol: 1, drift: 0, kind: 'horizon' };
-      case 'goldtrend':
-        return { salt: 660160, vol: 1, drift: 0, kind: 'gold' };
-      case 'nexusprime':
-        return { salt: 770870, vol: 1, drift: 0, kind: 'nexus' };
-      case 'titanpulse':
-        return { salt: 991177, vol: 1, drift: 0, kind: 'titan' };
-      case 'v100':
-      default:
-        return { salt: 904177, vol: 1.05, drift: 0, f1: 0.041, f2: 0.093, f3: 0.017, a1: 18, a2: 11, a3: 32, spike: null, stair: null };
-    }
+  function round2(n) {
+    return Math.round(Number(n) * 100) / 100;
   }
 
-  var TICK_PCT = 0.0022;
-  var JUMP_PCT = 0.004;
-
-  function clampIndexPrice(p, asset) {
-    var n = Number(p);
-    var base = Number(asset && asset.basePrice) || 5000;
-    if (!isFinite(n) || n <= 0) n = base;
-    var id = asset && asset.id;
-    var loMul = 0.88;
-    var hiMul = 1.12;
-    if (id === 'boomspike' || id === 'crash300') {
-      loMul = 0.78;
-      hiMul = 1.22;
-    }
-    // Bandes élargies : sans ça les actifs très volatils collent à leurs bornes.
-    if (id === 'titanpulse') {
-      loMul = 0.42;
-      hiMul = 1.58;
-    } else if (id === 'goldtrend') {
-      loMul = 0.50;
-      hiMul = 1.50;
-    } else if (id === 'apex500') {
-      loMul = 0.60;
-      hiMul = 1.40;
-    }
-    return Math.round(Math.max(base * loMul, Math.min(base * hiMul, n)) * 100) / 100;
-  }
-
-  function isPlausiblePrice(p, ref) {
-    var n = Number(p);
-    if (!isFinite(n) || n <= 0 || n > 1e7) return false;
-    var r = Number(ref);
-    if (!(r > 0)) return true;
-    if (n > r * 1.12 || n < r * 0.88) return false;
-    return true;
-  }
-
-  function tickCapPct(asset, spiked) {
-    var id = asset && asset.id;
-    if (spiked && id === 'crash300') return 0.018;
-    if (spiked && id === 'boomspike') return 0.004;
-    if (id === 'crash300') return 0.00055;
-    if (id === 'horizon50') return 0.00038;
-    if (id === 'stable') return 0.00042;
-    if (id === 'nexusprime') return 0.0014;
-    if (id === 'boomspike') return 0.0012;
-    if (id === 'v75') return 0.0017;
-    if (id === 'v100') return 0.0018;
-    if (id === 'goldtrend') return 0.0023;
-    if (id === 'apex500') return 0.0026;
-    if (id === 'titanpulse') return 0.0032;
-    return 0.0016;
-  }
-
-  function tradeBusyFor(assetId) {
-    var now = Date.now();
-    if (pendingBusyUntil[assetId] && pendingBusyUntil[assetId] > now) return true;
-    var st = window.assetsState && window.assetsState[assetId];
-    if (st && st.lockUntil > now) return true;
+  function normalizeOdds(v) {
+    var n = Number(v);
     var i;
-    for (i = 0; i < trades.length; i++) {
-      var tr = trades[i];
-      if (!tr || tr.assetId !== assetId) continue;
-      var exp = tr.expiryTime || tr.expiresAt || 0;
-      if (tr.settled) {
-        if (exp && now < exp + 1000) return true;
-        continue;
+    for (i = 0; i < MULTS.length; i++) {
+      if (Math.abs(MULTS[i] - n) < 0.001) return MULTS[i];
+    }
+    return 1.88;
+  }
+
+  function normalizeTradeSide(side) {
+    var s = String(side == null ? '' : side).toLowerCase().trim();
+    if (s === 'put' || s === 'sell' || s === 'down' || s === 'short' || s === 'red') return 'put';
+    return 'call';
+  }
+
+  /* —— Règles publiques : ligne objectif et verdict (copie de feed_lib.php) —— */
+  function barrierCents(assetId, duration, side, mult, entryCents) {
+    var table = D6.FAIR_TABLE || {};
+    var row = table[assetId] && table[assetId][String(duration)];
+    if (!row) return entryCents;
+    var m = normalizeOdds(mult);
+    var idx = 0;
+    if (m === 5) idx = 1;
+    else if (m === 10) idx = 2;
+    else if (m === 50) idx = 3;
+    if (idx > 0 && side === 'put') idx += 3;
+    var x = entryCents * (1 + Number(row[idx]));
+    // Arrondi « au plus loin de zéro », comme PHP round().
+    return x >= 0 ? Math.floor(x + 0.5) : -Math.floor(-x + 0.5);
+  }
+
+  function verdictOf(side, exitCents, barrier) {
+    if (exitCents === barrier) return 'void';
+    var won = side === 'put' ? exitCents < barrier : exitCents > barrier;
+    return won ? 'won' : 'lost';
+  }
+
+  /* —— Flux de prix —— */
+  function feedOf(id) {
+    if (!feeds[id]) {
+      feeds[id] = { first: 0, ticks: [], last: -1, shown: -1, loading: false, loaded: false, busy: false, failAt: 0 };
+    }
+    return feeds[id];
+  }
+
+  function getJson(url) {
+    var t0 = Date.now();
+    return fetch(url, { cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+      return r.json().then(function (j) {
+        var t1 = Date.now();
+        if (j && j.serverMs) noteServerTime(j.serverMs, t0, t1);
+        return j;
+      });
+    });
+  }
+
+  function loadHistory(id) {
+    var f = feedOf(id);
+    if (f.loading) return;
+    if (f.failAt && Date.now() - f.failAt < 2500) return;
+    f.loading = true;
+    getJson('feed.php?a=' + encodeURIComponent(id) + '&hist=' + HIST_TICKS).then(function (j) {
+      f.loading = false;
+      if (!j || !j.ok || !Array.isArray(j.c) || !j.c.length) {
+        f.failAt = Date.now();
+        return;
       }
-      if (!exp || now < exp + 1000) return true;
-    }
-    return false;
+      f.first = Number(j.first);
+      f.ticks = j.c.map(Number);
+      f.last = f.first + f.ticks.length - 1;
+      f.loaded = true;
+      rebuildBuffer(id);
+    }, function () {
+      f.loading = false;
+      f.failAt = Date.now();
+    });
   }
 
-  function tradeBoxFor(assetId, price) {
-    var st = window.assetsState && window.assetsState[assetId];
-    var lo;
-    var hi;
-    if (st && st.lockMax > st.lockMin) {
-      lo = st.lockMin;
-      hi = st.lockMax;
-    } else {
-      var p = Number(price);
-      if (!(p > 0)) p = 10000;
-      lo = p * 0.994;
-      hi = p * 1.006;
-    }
-    var span = hi - lo;
-    var pad = span * 0.08;
-    return { lo: lo + pad, hi: hi - pad, span: span, frameLo: lo, frameHi: hi };
-  }
-
-  function clampToTradeBox(price, box) {
-    if (!box) return price;
-    if (price > box.hi) return box.hi;
-    if (price < box.lo) return box.lo;
-    return price;
-  }
-
-  function engineCaptureFrame(assetId, untilMs) {
-    window.assetsState = window.assetsState || {};
-    if (!window.assetsState[assetId]) {
-      window.assetsState[assetId] = { viewMin: 0, viewMax: 0, lockMin: 0, lockMax: 0, lockUntil: 0 };
-    }
-    if (D6.Chart && typeof D6.Chart.captureTradeFrame === 'function') {
-      D6.Chart.captureTradeFrame(assetId, untilMs);
+  function pollFeed(id) {
+    var f = feedOf(id);
+    if (!f.loaded) {
+      loadHistory(id);
       return;
     }
-    var st = window.assetsState[assetId];
-    if (st.lockMax > st.lockMin && st.lockUntil > Date.now()) {
-      st.lockUntil = Math.max(st.lockUntil || 0, untilMs);
-      return;
-    }
-    if (st.viewMax > st.viewMin) {
-      st.lockMin = st.viewMin;
-      st.lockMax = st.viewMax;
-    }
-    st.lockUntil = untilMs;
+    if (f.busy) return;
+    f.busy = true;
+    getJson('feed.php?a=' + encodeURIComponent(id) + '&since=' + f.last).then(function (j) {
+      f.busy = false;
+      if (!j || !j.ok || !Array.isArray(j.c)) return;
+      var first = Number(j.first);
+      if (first > f.last + 1) {
+        // Trou (onglet endormi longtemps) : on recharge l'historique complet.
+        f.loaded = false;
+        loadHistory(id);
+        return;
+      }
+      var i;
+      for (i = 0; i < j.c.length; i++) {
+        var tick = first + i;
+        if (tick <= f.last) continue;
+        f.ticks.push(Number(j.c[i]));
+        f.last = tick;
+      }
+      var extra = f.ticks.length - (HIST_TICKS + 400);
+      if (extra > 0) {
+        f.ticks.splice(0, extra);
+        f.first += extra;
+      }
+    }, function () {
+      f.busy = false;
+    });
   }
 
-  function sanitizeOhlc(asset, candle, refPrice, wickSpan) {
-    if (!candle) return candle;
-    var ref = Number(refPrice);
-    if (!(ref > 0)) ref = Number(candle.c) || Number(asset && asset.basePrice) || 5000;
-    var o = clampIndexPrice(candle.o, asset);
-    var c = clampIndexPrice(candle.c, asset);
-    var h = clampIndexPrice(candle.h, asset);
-    var l = clampIndexPrice(candle.l, asset);
-    if (!isPlausiblePrice(o, ref)) o = ref;
-    if (!isPlausiblePrice(c, ref)) c = ref;
-    o = capPctMove(ref, o, 0.03);
-    c = capPctMove(ref, c, 0.03);
-    h = Math.max(o, c, isPlausiblePrice(h, ref) ? h : c);
-    l = Math.min(o, c, isPlausiblePrice(l, ref) ? l : c);
-    if (wickSpan > 0) {
-      var cap7 = wickSpan * 0.07;
-      if ((h - l) > cap7) {
-        var mid7 = (h + l) / 2;
-        h = mid7 + cap7 / 2;
-        l = mid7 - cap7 / 2;
-      }
-    }
-    candle.o = o;
-    candle.c = c;
-    candle.h = h;
-    candle.l = l;
-    return candle;
+  function priceAtTick(id, tick) {
+    var f = feeds[id];
+    if (!f || !f.loaded || tick < f.first || tick > f.last) return NaN;
+    return f.ticks[tick - f.first];
   }
 
-  window.assetBuffers = window.assetBuffers || {};
-  window.ASSET_BUFFERS = window.assetBuffers;
-  window.assetsHistory = window.assetsHistory || {};
-
-  var SIM = {
-    // center > 0.5 : le bruit penche un peu vers le bas (actifs calmes).
-    // lean < 1 : le rappel se pose légèrement sous le prix de base.
-    // Les volatils restent centrés (center 0.5, lean 1) et tournent
-    // au milieu de leur plage, avant le plafond de bande.
-    v100: { mode: 'candles', vol: 0.0026, stepMs: 70, pullK: 0.050, center: 0.50, lean: 1 },
-    stable: { mode: 'line', vol: 0.00052, color: '#ff3366', coreWave: true, stepMs: 170, pullK: 0.048, center: 0.515, lean: 0.9985 },
-    apex500: { mode: 'candles', vol: 0.0038, stepMs: 50, pullK: 0.058, center: 0.50, lean: 1 },
-    horizon50: { mode: 'line', vol: 0.00048, color: '#ff9800', horizonCalm: true, tickMs: 200, stepMs: 180, pullK: 0.080, center: 0.54, lean: 0.9975 },
-    boomspike: { mode: 'candles', vol: 0.0016, boomBurst: true, stepMs: 80, pullK: 0.045, center: 0.50, lean: 1 },
-    crash300: { mode: 'candles', vol: 0.00035, spike: -1, crashCalm: true, stepMs: 200, pullK: 0.060, center: 0.56, lean: 0.997 },
-    v75: { mode: 'candles', vol: 0.0024, v75Wave: true, tickMs: 190, stepMs: 120, pullK: 0.050, center: 0.50, lean: 1 },
-    nexusprime: { mode: 'candles', vol: 0.0020, nexusPulse: true, tickMs: 90, stepMs: 80, pullK: 0.052, center: 0.50, lean: 1 },
-    goldtrend: { mode: 'line', vol: 0.0034, color: '#ffb300', goldHot: true, tickMs: 40, stepMs: 90, pullK: 0.055, center: 0.50, lean: 1 },
-    titanpulse: { mode: 'candles', vol: 0.0048, stepMs: 36, pullK: 0.060, center: 0.50, lean: 1, wickK: 1.15 }
-  };
-  var SIM_VER = 21;
-  var BOOM_VER = 9;
-  var CRASH_VER = 4;
-  var GOLD_VER = 4;
-  var MIN_SEED = 500;
-  // Bump obligatoire : c'est lui qui force le re-seed de tous les actifs.
-  var SCALE_VER = 17;
-  Object.keys(SIM).forEach(function (sid) {
-    if (SIM[sid] && typeof SIM[sid] === 'object') Object.freeze(SIM[sid]);
-  });
-  Object.freeze(SIM);
-
-  function simOf(id) {
-    return SIM[id] || SIM.v100;
+  function startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(function () {
+      if (document.hidden) return;
+      var ids = {};
+      if (wantedAsset) ids[wantedAsset] = 1;
+      var i;
+      for (i = 0; i < trades.length; i++) {
+        if (trades[i] && !trades[i].settled) ids[trades[i].assetId] = 1;
+      }
+      Object.keys(ids).forEach(pollFeed);
+    }, POLL_MS);
   }
 
-  function candleMsFor(asset) {
-    return CANDLE_MS;
-  }
-
-  function capPctMove(prev, next, maxPct) {
-    if (!isFinite(next)) return prev;
-    if (!(prev > 0)) return isFinite(next) && next > 0 ? next : prev;
-    var lo = prev * (1 - maxPct);
-    var hi = prev * (1 + maxPct);
-    if (next < lo) return lo;
-    if (next > hi) return hi;
-    return next;
-  }
-
-  function stepBoomBurst(asset, buf, price, tMs) {
-    // BoomSpike v9 — simulation neuve, simple, bornée à une route fixe.
-    // idle → charge → spike → settle. Jamais hors bande (mobile + plein écran).
-    var from = price;
-    var base = Number(asset && asset.basePrice) || from;
-    if (!(base > 0)) base = from > 0 ? from : 3890;
-    var marked = false;
-    var routeHalf = base * 0.0088;
-    var lo = base - routeHalf;
-    var hi = base + routeHalf;
-
-    function hold(p) {
-      if (p > hi) p = hi;
-      if (p < lo) p = lo;
-      return p;
-    }
-
-    if (!buf.boomPhase || buf.boomPhase === 'acc' || buf.boomPhase === 'burst' || buf.boomPhase === 'relax') {
-      // Reset des anciennes phases patchées.
-      buf.boomPhase = 'idle';
-      buf.boomPhaseUntil = tMs + 1600 + Math.random() * 2200;
-      buf.boomMid = base;
-      buf.boomPeak = base;
-      buf.boomLeft = 0;
-      buf.boomZig = 1;
-    }
-
-    if (buf.boomPhase === 'idle') {
-      var drift = (base - price) * 0.06;
-      var n = (Math.random() - 0.48) * base * 0.0009;
-      price = hold(price + drift + n);
-      if (tMs >= (buf.boomPhaseUntil || 0)) {
-        buf.boomPhase = 'charge';
-        buf.boomPhaseUntil = tMs + 700 + Math.random() * 500;
-        buf.boomMid = price;
-      }
-    } else if (buf.boomPhase === 'charge') {
-      var lift = base * (0.00035 + Math.random() * 0.00025);
-      var j = (Math.random() - 0.4) * base * 0.0004;
-      price = hold(price + lift + j);
-      if (tMs >= (buf.boomPhaseUntil || 0)) {
-        buf.boomPhase = 'spike';
-        buf.boomLeft = 1;
-        buf.boomZig = 1;
-      }
-    } else if (buf.boomPhase === 'spike') {
-      // Un seul boom net, contenu dans la route.
-      var up = 0.0048 + Math.random() * 0.0022;
-      price = hold(from * (1 + up));
-      buf.boomPeak = price;
-      marked = true;
-      buf.boomPhase = 'settle';
-      buf.boomPhaseUntil = tMs + 1400 + Math.random() * 900;
-      buf.boomLeft = 0;
-    } else if (buf.boomPhase === 'settle') {
-      var target = base * (0.998 + Math.random() * 0.0015);
-      var pull = (target - price) * 0.14;
-      var soft = (Math.random() - 0.5) * base * 0.00055;
-      price = hold(price + pull + soft);
-      if (tMs >= (buf.boomPhaseUntil || 0)) {
-        buf.boomPhase = 'idle';
-        buf.boomPhaseUntil = tMs + 1800 + Math.random() * 2400;
-        buf.boomMid = price;
-      }
-    } else {
-      buf.boomPhase = 'idle';
-      buf.boomPhaseUntil = tMs + 1800;
-      price = hold(price);
-    }
-
-    buf.boomMid = buf.boomMid ? (buf.boomMid * 0.85 + price * 0.15) : price;
-    return { price: capPctMove(from, price, JUMP_PCT * 0.70), boom: marked, from: from };
-  }
-
-  function isFsTradeUi() {
-    try {
-      if (document.documentElement && document.documentElement.classList.contains('fs-trade')) return true;
-      var ov = document.getElementById('fsTradeOverlay');
-      return !!(ov && ov.classList.contains('on'));
-    } catch (eFs) {
-      return false;
-    }
-  }
-
-  function unifiedStep(asset, price, nowMs, dtSec, opts) {
-    opts = opts || {};
-    var prevPrice = price;
-    var busyIn = !!(opts.busy || (asset && tradeBusyFor(asset.id)));
-    opts.spike = false;
-    var sim = simOf(asset.id);
-    var base = Number(asset.basePrice) || price;
-    var vol = sim.vol;
-    // Pendant un trade : même volatilité / même rappel qu'à l'idle.
-    // (Le frein v1400 aplatissait la courbe et créait un « serpent » local.)
-    var bias = 0.49;
-    if (!busyIn && sim.spike === 1) bias = 0.58;
-    if (!busyIn && sim.spike === -1) bias = 0.40;
-    if (sim.pulse) {
-      var phP = ((nowMs / 1000) % 16) / 16;
-      vol *= phP < 0.78 ? 0.42 : 1.9;
-    }
-    var roll = Math.random();
-    var nextOut;
-    if (opts.hunt > 0 && !busyIn) {
-      var gapH = opts.hunt - price;
-      var nH = (roll - 0.5) * price * 0.0036;
-      var wH = (Math.random() - 0.5) * price * 0.0014;
-      nextOut = price + gapH * 0.055 + nH + wH;
-    } else if (sim.crashCalm && !opts.spike) {
-      // Remontée Crash un peu plus longue / fluide entre les ventes.
-      var riseC = 0.00032 + Math.random() * 0.00028;
-      var jitC = (Math.random() - 0.58) * price * vol;
-      var midC = base * (sim.lean != null ? sim.lean : 0.997);
-      var pullC = (midC - price) * (sim.pullK != null ? sim.pullK * 0.92 : 0.055);
-      nextOut = price + price * riseC * Math.min(0.50, Math.max(0.05, dtSec)) + jitC + pullC;
-    } else {
-      var center = sim.center != null ? sim.center : (bias || 0.5);
-      var delta = (roll - center) * price * vol;
-      var mid = base * (sim.lean != null ? sim.lean : 1);
-      var gap = mid - price;
-      var dist = base > 0 ? Math.abs(gap) / base : 0;
-      var pullK = sim.pullK != null ? sim.pullK : 0.045;
-      var pull = gap * pullK * (1 + dist * 6);
-      nextOut = price + delta + pull;
-    }
-    var stepCap = tickCapPct(asset, !!opts.spike);
-    nextOut = capPctMove(prevPrice, nextOut, stepCap);
-    // Route douce : la tête reste dans une bande autour du lean mid et n'atteint
-    // jamais les bords du graphique (évite les pics qui rentrent dans les barres).
-    if (sim.coreWave || sim.horizonCalm) {
-      var routeMid = base * (sim.lean != null ? sim.lean : 1);
-      var routeHalf = base * (sim.coreWave ? 0.0026 : 0.0022);
-      var loR = routeMid - routeHalf;
-      var hiR = routeMid + routeHalf;
-      if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
-      if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
-    } else if (sim.crashCalm) {
-      // Crash 300 : hard-clamp dans la route (ventes longues sans débordement).
-      var routeMidC = base * (sim.lean != null ? sim.lean : 0.997);
-      var routeHalfC = base * 0.0058;
-      var loC = routeMidC - routeHalfC;
-      var hiC = routeMidC + routeHalfC;
-      if (nextOut > hiC) nextOut = hiC;
-      if (nextOut < loC) nextOut = loC;
-    } else if (!sim.boomBurst) {
-      // Huit actifs : même calage centre que Crash — le prix reste dans la bande,
-      // la caméra n'a plus besoin de « suivre la photo ».
-      var routeMidV = base * (sim.lean != null ? sim.lean : 1);
-      var routeHalfV = base * 0.0062;
-      if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0070;
-      if (asset && asset.id === 'apex500') {
-        // Apex : bande un peu plus serrée (surtout FS où les pics frôlaient le bas).
-        routeHalfV = base * (isFsTradeUi() ? 0.0052 : 0.0060);
-      }
-      if (asset && asset.id === 'v100') {
-        routeHalfV = base * (isFsTradeUi() ? 0.0050 : 0.0058);
-      }
-      if (asset && asset.id === 'titanpulse') {
-        // Même recette V100/Apex : retenue FS, mobile inchangé.
-        routeHalfV = base * (isFsTradeUi() ? 0.0058 : 0.0075);
-      }
-      if (asset && asset.id === 'nexusprime') {
-        routeHalfV = base * (isFsTradeUi() ? 0.0050 : 0.0065);
-      }
-      if (asset && asset.id === 'v75') {
-        routeHalfV = base * 0.0065;
-      }
-      var loV = routeMidV - routeHalfV;
-      var hiV = routeMidV + routeHalfV;
-      if (nextOut > hiV) nextOut = nextOut + (hiV - nextOut) * 0.78;
-      // Bas : rappel plus ferme en FS pour V100 / Apex / Titan / Nexus.
-      var pullLoAssets = asset && (
-        asset.id === 'v100' || asset.id === 'apex500' ||
-        asset.id === 'titanpulse' || asset.id === 'nexusprime'
-      );
-      var pullLo = pullLoAssets ? 0.86 : 0.78;
-      if (nextOut < loV) nextOut = nextOut + (loV - nextOut) * pullLo;
-    }
-    return clampIndexPrice(nextOut, asset);
-  }
-
-  function finishCandle(asset, o, h, l, c, t, spike) {
-    var sim = simOf(asset.id);
-    o = clampIndexPrice(o, asset);
-    c = clampIndexPrice(c, asset);
-    var minBody = Math.max(Math.abs(o) * 0.0002, 0.02);
-    var cms = candleMsFor(asset);
-    var bucket = Math.floor(t / cms);
-    if (!spike) {
-      if (sim.run) {
-        var run = 4 + Math.floor(uhash01(Math.floor(bucket / 8), 440501) * 3);
-        var pos = bucket % (run + 3);
-        if (pos < run) c = o + Math.max(minBody, Math.abs(c - o));
-        else c = o - Math.max(minBody * 0.7, Math.abs(c - o) * 0.55);
-      } else if (sim.nexusPulse) {
-        var ampN = Math.max(Math.abs(o) * 0.0009, 0.12);
-        var maxN = Math.abs(o) * 0.0065;
-        if (c >= o) c = o + Math.min(maxN, Math.max(ampN, Math.abs(c - o)));
-        else c = o - Math.min(maxN, Math.max(ampN, Math.abs(c - o)));
-      } else if (sim.v75Wave) {
-        var ampV = Math.max(Math.abs(o) * 0.00085, 0.12);
-        var maxV = Math.abs(o) * 0.0065;
-        if (c >= o) c = o + Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
-        else c = o - Math.min(maxV, Math.max(ampV, Math.abs(c - o)));
-      } else if (sim.horizonCalm) {
-        var ampHz = Math.max(Math.abs(o) * 0.00035, 0.05);
-        var maxHz = Math.abs(o) * 0.0022;
-        if (c >= o) c = o + Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
-        else c = o - Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
-      } else if (sim.boomBurst) {
-        // Corps de phase calme lisibles : à 0.00014 les bougies hors explosion
-        // se réduisaient à des points invisibles.
-        var tinyB = Math.max(Math.abs(o) * 0.0007, 0.05);
-        c = c >= o ? o + tinyB : o - tinyB;
-      } else if (sim.spike === 1) {
-        c = o - Math.max(minBody, Math.abs(c - o) * 0.65);
-      } else if (sim.crashCalm) {
-        c = Math.max(c, o);
-      } else if (sim.spike === -1) {
-        c = o + Math.max(minBody, Math.abs(c - o) * 0.65);
-      } else if (Math.abs(c - o) < minBody) {
-        c = o + (c >= o ? minBody : -minBody);
-      }
-    }
-    h = Math.max(h, o, c);
-    l = Math.min(l, o, c);
-    if (!sim.boomBurst && sim.spike !== -1 && sim.spike !== 1) {
-      h = capPctMove(o, h, JUMP_PCT);
-      l = capPctMove(o, l, JUMP_PCT);
-      h = Math.max(h, o, c);
-      l = Math.min(l, o, c);
-    }
-    var body = Math.abs(c - o);
-    var maxW = body * (sim.wickK != null ? sim.wickK : 1.2);
-    if (sim.boomBurst) maxW = spike ? body * 0.12 : body * 0.35;
-    if (sim.crashCalm) maxW = Math.max(Math.abs(o) * 0.00008, 0.01);
-    if (sim.nexusPulse) maxW = body * 0.95;
-    if (sim.v75Wave) maxW = Math.max(body * 0.9, Math.abs(o) * 0.00035);
-    if (sim.horizonCalm) maxW = Math.max(body * 0.5, Math.abs(o) * 0.00012);
-    var hiB = Math.max(o, c);
-    var loB = Math.min(o, c);
-    if (h > hiB + maxW) h = hiB + maxW;
-    if (l < loB - maxW) l = loB - maxW;
+  /* —— Tampon graphique (même format qu'avant : bougies 1 s) —— */
+  function emptyBuffer(asset) {
+    var p = Number(asset.basePrice) || 1000;
     return {
-      o: clampIndexPrice(o, asset),
-      h: clampIndexPrice(h, asset),
-      l: clampIndexPrice(l, asset),
-      c: clampIndexPrice(c, asset),
-      t: t,
-      _spike: !!spike,
-      _boom: !!(sim.boomBurst && spike)
+      prices: [],
+      candles: [],
+      price: p,
+      forming: { o: p, h: p, l: p, c: p, t: Math.floor(Date.now() / CANDLE_MS) * CANDLE_MS },
+      bucket: 0,
+      lastMs: Date.now(),
+      rev: 1,
+      waiting: true
     };
   }
 
@@ -697,601 +226,130 @@
     window.assetsHistory = window.assetsHistory || {};
   }
 
-  function stitchCandle(asset, prevClose, candle, maxPct) {
-    maxPct = maxPct || JUMP_PCT;
-    if (!(prevClose > 0) || !candle) return prevClose;
-    var o = capPctMove(prevClose, Number(candle.o) || prevClose, maxPct);
-    var c = capPctMove(o, Number(candle.c) || o, maxPct);
-    c = capPctMove(prevClose, c, maxPct);
-    var h = Math.max(o, c, capPctMove(prevClose, Number(candle.h) || c, maxPct));
-    var l = Math.min(o, c, capPctMove(prevClose, Number(candle.l) || c, maxPct));
-    candle.o = clampIndexPrice(o, asset);
-    candle.c = clampIndexPrice(c, asset);
-    candle.h = clampIndexPrice(Math.max(h, candle.o, candle.c), asset);
-    candle.l = clampIndexPrice(Math.min(l, candle.o, candle.c), asset);
-    return candle.c;
-  }
-
-  function sanitizeBuffer(asset, buf) {
-    if (buf) buf.scaleVer = SCALE_VER;
-    return buf;
-  }
-
-  function rebaseBufferTimes(buf, nowMs) {
-    if (!buf || !buf.candles || !buf.candles.length) return false;
-    var cms = CANDLE_MS;
-    var n = buf.candles.length;
-    var formingStart = Math.floor((nowMs || Date.now()) / cms) * cms;
-    var tEnd = formingStart - cms;
-    var last = buf.candles[n - 1];
-    if (last && isFinite(last.t) && Math.abs(last.t - tEnd) <= cms) {
-      if (buf.forming && !isFinite(buf.forming.t)) {
-        buf.forming.t = formingStart;
-        return true;
-      }
-      return false;
-    }
-    var i;
-    for (i = 0; i < n; i++) {
-      buf.candles[i].t = tEnd - (n - 1 - i) * cms;
-    }
-    buf.bucket = Math.floor(formingStart / cms);
-    if (buf.forming) buf.forming.t = formingStart;
-    return true;
-  }
-
-  /* —— Persistance session : même trajectoire après F5 / retour d’onglet —— */
-  var CURVE_SS_PREFIX = 'oro_curve_v2:';
-  var CURVE_SS_MAX_AGE_MS = 45 * 60 * 1000;
-  var CURVE_SS_KEEP_N = 720;
-  var _curvePersistTimer = 0;
-  var _curvePersistHooks = false;
-
-  function curveSsKey(assetId) {
-    return CURVE_SS_PREFIX + String(assetId || '');
-  }
-
-  function packCurveBuffer(buf) {
-    if (!buf || !buf.candles || !buf.candles.length) return null;
-    var candles = buf.candles;
-    var start = Math.max(0, candles.length - CURVE_SS_KEEP_N);
-    var slim = [];
-    var i;
-    for (i = start; i < candles.length; i++) {
-      var c = candles[i];
-      if (!c) continue;
-      slim.push({
-        o: +c.o, h: +c.h, l: +c.l, c: +c.c, t: +c.t,
-        _spike: !!c._spike, _boom: !!c._boom
-      });
-    }
-    if (slim.length < 40) return null;
-    var prices = [];
-    for (i = 0; i < slim.length; i++) prices.push(slim[i].c);
-    var forming = buf.forming ? {
-      o: +buf.forming.o, h: +buf.forming.h, l: +buf.forming.l, c: +buf.forming.c,
-      t: +buf.forming.t, _spike: !!buf.forming._spike, _boom: !!buf.forming._boom
-    } : null;
-    return {
-      ver: SIM_VER,
-      scaleVer: SCALE_VER,
-      boomVer: buf.boomVer || 0,
-      crashVer: buf.crashVer || 0,
-      goldVer: buf.goldVer || 0,
-      savedAt: Date.now(),
-      price: +buf.price,
-      lastMs: +buf.lastMs || Date.now(),
-      bucket: buf.bucket | 0,
-      candles: slim,
-      prices: prices,
-      forming: forming,
-      nextSpike: buf.nextSpike || 0,
-      boomPhase: buf.boomPhase || null,
-      boomPhaseUntil: buf.boomPhaseUntil || 0,
-      boomMid: buf.boomMid || 0,
-      boomLeft: buf.boomLeft || 0,
-      boomZig: buf.boomZig || 1,
-      boomPeak: buf.boomPeak || 0,
-      crashSellUntil: buf.crashSellUntil || 0,
-      crashSellTarget: buf.crashSellTarget || 0,
-      crashSellFrom: buf.crashSellFrom || 0,
-      coreVer: buf.coreVer || 0,
-      nexusVer: buf.nexusVer || 0,
-      v75Ver: buf.v75Ver || 0,
-      rev: (buf.rev || 0) + 1
-    };
-  }
-
-  function unpackCurveBuffer(raw, asset) {
-    if (!raw || !raw.candles || raw.candles.length < 40) return null;
-    if (raw.ver !== SIM_VER || raw.scaleVer !== SCALE_VER) return null;
-    if (asset.id === 'boomspike' && raw.boomVer !== BOOM_VER) return null;
-    if (asset.id === 'crash300' && raw.crashVer !== CRASH_VER) return null;
-    if (asset.id === 'goldtrend' && raw.goldVer !== GOLD_VER) return null;
-    if (!(raw.savedAt > 0) || (Date.now() - raw.savedAt) > CURVE_SS_MAX_AGE_MS) return null;
-    var price = Number(raw.price);
-    if (!(price > 0)) return null;
-    var buf = {
-      prices: raw.prices && raw.prices.length ? raw.prices.slice() : raw.candles.map(function (c) { return c.c; }),
-      candles: raw.candles.slice(),
-      price: price,
-      lastMs: Number(raw.lastMs) || Date.now(),
-      bucket: raw.bucket | 0,
-      forming: raw.forming || finishCandle(asset, price, price, price, price, Math.floor(Date.now() / CANDLE_MS) * CANDLE_MS, false),
-      nextSpike: raw.nextSpike || (Date.now() + 20000),
-      coreVer: raw.coreVer || 0,
-      goldVer: raw.goldVer || 0,
-      boomVer: raw.boomVer || 0,
-      crashVer: raw.crashVer || 0,
-      nexusVer: raw.nexusVer || 0,
-      v75Ver: raw.v75Ver || 0,
-      boomPhase: raw.boomPhase || null,
-      boomPhaseUntil: raw.boomPhaseUntil || 0,
-      boomMid: raw.boomMid || price,
-      boomLeft: raw.boomLeft || 0,
-      boomZig: raw.boomZig || 1,
-      boomPeak: raw.boomPeak || price,
-      crashSellUntil: raw.crashSellUntil || 0,
-      crashSellTarget: raw.crashSellTarget || 0,
-      crashSellFrom: raw.crashSellFrom || 0,
-      ver: SIM_VER,
-      scaleVer: SCALE_VER,
-      rev: raw.rev || 1,
-      fromSession: true
-    };
-    sanitizeBuffer(asset, buf, Number(asset.basePrice) || price);
-    rebaseBufferTimes(buf, Date.now());
-    return buf;
-  }
-
-  function loadCurveFromSession(asset) {
-    try {
-      if (!window.sessionStorage) return null;
-      var txt = sessionStorage.getItem(curveSsKey(asset.id));
-      if (!txt) return null;
-      return unpackCurveBuffer(JSON.parse(txt), asset);
-    } catch (eLoad) {
-      return null;
-    }
-  }
-
-  function saveCurveToSession(assetId, buf) {
-    try {
-      if (!window.sessionStorage || !buf) return;
-      var pack = packCurveBuffer(buf);
-      if (!pack) return;
-      sessionStorage.setItem(curveSsKey(assetId), JSON.stringify(pack));
-    } catch (eSave) {
-      try { sessionStorage.removeItem(curveSsKey(assetId)); } catch (e2) { /* ignore */ }
-    }
-  }
-
-  function persistAllCurvesNow() {
+  function publishBuffer(id, buf) {
     bindGlobalBuffers();
-    var id;
-    for (id in window.assetBuffers) {
-      if (!window.assetBuffers.hasOwnProperty(id)) continue;
-      saveCurveToSession(id, window.assetBuffers[id]);
-    }
+    window.assetBuffers[id] = buf;
+    window.ASSET_BUFFERS[id] = buf;
+    window.assetsHistory[id] = buf.prices;
   }
 
-  function scheduleCurvePersist(assetId, buf) {
-    if (buf) saveCurveToSession(assetId, buf);
-    if (_curvePersistTimer) return;
-    _curvePersistTimer = setTimeout(function () {
-      _curvePersistTimer = 0;
-      persistAllCurvesNow();
-    }, 1800);
+  function spikeFlag(id, o, c) {
+    if (id !== 'boomspike' && id !== 'crash300') return false;
+    return Math.abs(c - o) > o * 0.003;
   }
 
-  function ensureCurvePersistHooks() {
-    if (_curvePersistHooks || typeof window === 'undefined') return;
-    _curvePersistHooks = true;
-    function flush() { try { persistAllCurvesNow(); } catch (eF) { /* ignore */ } }
-    window.addEventListener('pagehide', flush);
-    window.addEventListener('beforeunload', flush);
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') flush();
-    });
-  }
-
-  function publishHistory(assetId, buf) {
-    bindGlobalBuffers();
-    if (buf.prices && buf.prices.length > HISTORY_N) buf.prices = buf.prices.slice(-HISTORY_N);
-    window.assetsHistory[assetId] = buf.prices || [];
-    window.assetBuffers[assetId] = buf;
-    window.ASSET_BUFFERS[assetId] = buf;
-    ensureCurvePersistHooks();
-    scheduleCurvePersist(assetId, buf);
-  }
-
-  function huntPriceFor(assetId) {
-    var i;
-    var now = Date.now();
-    for (i = 0; i < trades.length; i++) {
-      var tr = trades[i];
-      if (!tr || tr.settled || tr.assetId !== assetId) continue;
-      if ((tr.mode === 'real' ? 'real' : 'demo') !== currentAccountMode()) continue;
-      var exp = tr.expiryTime || tr.expiresAt || 0;
-      if (exp && now >= exp) continue;
-      var ep = Number(tr.entryPrice);
-      var ref = 0;
-      if (window.assetBuffers && window.assetBuffers[assetId] && window.assetBuffers[assetId].price) {
-        ref = window.assetBuffers[assetId].price;
-      } else if (markets[assetId] && markets[assetId].price) {
-        ref = markets[assetId].price;
+  function candleFromTicks(id, f, k, upTo) {
+    var t0 = k * TICKS_PER_CANDLE;
+    var o = NaN;
+    var h = -Infinity;
+    var l = Infinity;
+    var c = NaN;
+    var t;
+    for (t = t0; t < t0 + TICKS_PER_CANDLE && t <= upTo; t++) {
+      var v = priceAtTick(id, t);
+      if (!(v > 0)) continue;
+      var p = v / 100;
+      if (!isFinite(o)) {
+        // Ouverture = clôture précédente : bougies jointives, comme avant.
+        var prev = priceAtTick(id, t0 - 1);
+        o = prev > 0 ? prev / 100 : p;
+        h = Math.max(h, o);
+        l = Math.min(l, o);
       }
-      if (isPlausiblePrice(ep, ref)) return ep;
+      if (p > h) h = p;
+      if (p < l) l = p;
+      c = p;
     }
-    return 0;
+    if (!isFinite(o)) return null;
+    var spike = spikeFlag(id, o, c);
+    return { o: o, h: h, l: l, c: c, t: tickToLocal(t0), _spike: spike, _boom: spike && id === 'boomspike' };
   }
 
-  function makeWalkCandle(asset, prev, ts, i) {
-    var sim = simOf(asset.id);
-    var base = Number(asset.basePrice) || prev;
-    var vol = prev * (sim.vol || 0.002);
-    if (!(vol > 0)) vol = prev * 0.0002;
-    var close = prev;
-    var spiked = false;
-    if (sim.crashCalm) {
-      var midCr = base * (sim.lean != null ? sim.lean : 0.997);
-      // Remontée un peu plus douce ; ventes seed en 2 temps (plus fluides).
-      close = prev + (midCr - prev) * 0.065 + prev * (0.00007 + Math.random() * 0.00014);
-      if (i > 8 && Math.random() < 0.028) {
-        close = prev * (0.9978 - Math.random() * 0.0018);
-        spiked = true;
-      } else if (i > 9 && Math.random() < 0.022) {
-        close = prev * (0.9982 - Math.random() * 0.0012);
-        spiked = true;
-      }
-    } else {
-      var centerW = sim.center != null ? sim.center : 0.5;
-      var pullKW = sim.pullK != null ? sim.pullK : 0.045;
-      var leanW = sim.lean != null ? sim.lean : 1;
-      var sW;
-      for (sW = 0; sW < 4; sW++) {
-        var midW = base * leanW;
-        var gapW = midW - close;
-        var distW = base > 0 ? Math.abs(gapW) / base : 0;
-        close = close + (Math.random() - centerW) * vol + gapW * pullKW * (1 + distW * 6);
-        close = capPctMove(prev, close, tickCapPct(asset, false) * 3);
-      }
-    }
-    close = clampIndexPrice(close, asset);
-    var open = prev;
-    var wick = vol * (0.35 + Math.random() * 0.45);
-    var h = Math.max(open, close) + wick * Math.random();
-    var l = Math.min(open, close) - wick * Math.random();
-    if (sim.crashCalm) {
-      wick = prev * 0.00006;
-      h = Math.max(open, close) + wick;
-      l = Math.min(open, close) - wick;
-    }
-    // Mèches bornées au corps, comme dans finishCandle : sans ça l'historique
-    // amorcé garderait des mèches calculées sur la volatilité seule.
-    if (sim.wickK != null) {
-      var bodyW = Math.abs(close - open);
-      var capW = bodyW * sim.wickK;
-      var hiW = Math.max(open, close);
-      var loW = Math.min(open, close);
-      if (h > hiW + capW) h = hiW + capW;
-      if (l < loW - capW) l = loW - capW;
-    }
-    if (spiked) l = Math.min(l, close);
-    return {
-      o: clampIndexPrice(open, asset),
-      h: clampIndexPrice(h, asset),
-      l: clampIndexPrice(l, asset),
-      c: close,
-      t: ts,
-      _spike: spiked,
-      _boom: false
-    };
+  /** Tick le plus récent qu'on a le droit d'afficher à l'instant `nowMs`. */
+  function visibleTick(f, nowMs) {
+    var t = Math.floor((nowMs + clock.offset - DISPLAY_DELAY) / TICK_MS);
+    if (t > f.last) t = f.last;
+    if (t < f.first) t = f.first;
+    return t;
   }
 
-  function seedAssetBuffer(asset) {
-    var restored = loadCurveFromSession(asset);
-    if (restored) {
-      publishHistory(asset.id, restored);
-      return restored;
-    }
-    var sim = simOf(asset.id);
-    var price = Number(asset.basePrice) || 5000;
-    var now = Date.now();
-    var cms = candleMsFor(asset);
-    var t0 = Math.floor(now / cms) - SEED_N;
-    var candles = [];
-    var prices = [];
-    var i;
+  function rebuildBuffer(id) {
+    var asset = C.ASSETS[id];
+    var f = feeds[id];
+    if (!asset || !f || !f.loaded) return;
+    var buf = emptyBuffer(asset);
+    buf.waiting = false;
+    var upTo = visibleTick(f, Date.now());
+    var lastK = Math.floor(upTo / TICKS_PER_CANDLE);
+    var firstK = Math.max(Math.ceil(f.first / TICKS_PER_CANDLE), lastK - HISTORY_N);
     var k;
-    var nextSpike;
-    if (sim.crashCalm) nextSpike = now + 18000;
-    else nextSpike = now + 25000 + Math.random() * 10000;
-    var boomWalk = sim.boomBurst ? {
-      boomPhase: 'idle',
-      boomPhaseUntil: (t0 * cms) + 1600 + uhash01(t0, 882119) * 2200,
-      boomMid: price,
-      boomLeft: 0,
-      boomZig: 1,
-      boomPeak: price
-    } : null;
-    for (i = 0; i < SEED_N; i++) {
-      var ts = (t0 + i) * cms;
-      var o = price;
-      var h = o;
-      var l = o;
-      var spiked = false;
-      if (sim.boomBurst && boomWalk) {
-        var kk;
-        for (kk = 0; kk < 4; kk++) {
-          var brS = stepBoomBurst(asset, boomWalk, price, ts + kk * (cms / 4));
-          price = brS.price;
-          if (brS.boom) spiked = true;
-          h = Math.max(o, h, price);
-          l = Math.min(o, l, price);
-        }
-      } else {
-        var walked = makeWalkCandle(asset, price, ts, i);
-        price = walked.c;
-        h = walked.h;
-        l = walked.l;
-        spiked = !!walked._spike;
-        o = walked.o;
-        var candle = walked;
-        candles.push(candle);
-        prices.push(candle.c);
-        price = candle.c;
-        if (boomWalk) boomWalk.boomMid = price;
-        continue;
-      }
-      var candle = finishCandle(asset, o, h, l, price, ts, spiked);
-      candles.push(candle);
-      prices.push(candle.c);
-      price = candle.c;
-      if (boomWalk) boomWalk.boomMid = price;
+    for (k = firstK; k < lastK; k++) {
+      var cd = candleFromTicks(id, f, k, upTo);
+      if (!cd) continue;
+      buf.candles.push(cd);
+      buf.prices.push(cd.c);
     }
-    var buf = {
-      prices: prices,
-      candles: candles,
-      price: price,
-      lastMs: now,
-      bucket: Math.floor(now / cms),
-      forming: finishCandle(asset, price, price, price, price, Math.floor(now / cms) * cms, false),
-      nextSpike: nextSpike,
-      coreVer: sim.coreWave ? 1 : 0,
-      goldVer: sim.goldHot ? GOLD_VER : 0,
-      boomVer: asset.id === 'boomspike' ? BOOM_VER : (sim.boomBurst ? 2 : 0),
-      crashVer: asset.id === 'crash300' ? CRASH_VER : 0,
-      nexusVer: sim.nexusPulse ? 1 : 0,
-      v75Ver: sim.v75Wave ? 2 : 0,
-      boomPhase: boomWalk ? boomWalk.boomPhase : null,
-      boomPhaseUntil: boomWalk ? boomWalk.boomPhaseUntil : 0,
-      boomMid: boomWalk ? boomWalk.boomMid : 0,
-      boomLeft: boomWalk ? boomWalk.boomLeft : 0,
-      boomZig: boomWalk ? boomWalk.boomZig : 1,
-      boomPeak: boomWalk ? boomWalk.boomPeak : 0,
-      crashSellUntil: 0,
-      crashSellTarget: 0,
-      crashSellFrom: 0,
-      ver: SIM_VER,
-      scaleVer: SCALE_VER,
-      rev: 1
-    };
-    sanitizeBuffer(asset, buf, Number(asset.basePrice) || price);
-    publishHistory(asset.id, buf);
-    rebaseBufferTimes(buf, now);
-    return buf;
+    var forming = candleFromTicks(id, f, lastK, upTo);
+    if (forming) buf.forming = forming;
+    buf.price = (priceAtTick(id, upTo) || 0) / 100 || buf.forming.c;
+    buf.bucket = lastK;
+    buf.lastTick = upTo;
+    buf.lastMs = Date.now();
+    var old = window.assetBuffers && window.assetBuffers[id];
+    buf.rev = ((old && old.rev) || 0) + 1;
+    publishBuffer(id, buf);
   }
 
-  function bufferNeedsSeed(asset, buf) {
-    if (!buf || !buf.candles || buf.candles.length < 40) return true;
-    if (asset.id === 'boomspike' && buf.boomVer !== BOOM_VER) return true;
-    if (asset.id === 'crash300' && buf.crashVer !== CRASH_VER) return true;
-    if (asset.id === 'goldtrend' && buf.goldVer !== GOLD_VER) return true;
-    if (buf.scaleVer !== SCALE_VER) return true;
-    return false;
-  }
-
-  function advanceBuffer(asset, nowMs) {
+  /** Avance le tampon jusqu'au tick visible (appelé à chaque image du graphique). */
+  function advanceBuffer(id, nowMs) {
     bindGlobalBuffers();
-    var buf = window.ASSET_BUFFERS[asset.id] || window.assetBuffers[asset.id];
-    if (bufferNeedsSeed(asset, buf)) {
-      buf = seedAssetBuffer(asset);
-    }
-    nowMs = nowMs || Date.now();
-    if (nowMs < buf.lastMs) nowMs = buf.lastMs;
-    var sim = simOf(asset.id);
-    var cms = candleMsFor(asset);
-    var busy = tradeBusyFor(asset.id);
-    if (!buf.candles || buf.candles.length < 20) {
-      buf.lastMs = nowMs;
-      buf.rev = (buf.rev || 0) + 1;
-      publishHistory(asset.id, buf);
+    var asset = C.ASSETS[id];
+    var f = feedOf(id);
+    var buf = window.assetBuffers[id];
+    if (!f.loaded) {
+      loadHistory(id);
+      if (!buf) {
+        buf = emptyBuffer(asset);
+        publishBuffer(id, buf);
+      }
       return buf;
     }
-    var elapsed = nowMs - buf.lastMs;
-    if (elapsed < 0) elapsed = 0;
-    if (elapsed > 400) {
-      if (busy) elapsed = 220;
-      else {
-        buf.lastMs = nowMs;
-        elapsed = 0;
-      }
+    if (!buf || buf.waiting || buf.lastTick == null) {
+      rebuildBuffer(id);
+      return window.assetBuffers[id];
     }
-    var missed = Math.floor(elapsed / cms);
-    var price = buf.price;
-    var forming = buf.forming || { o: price, h: price, l: price, c: price, t: Math.floor(nowMs / cms) * cms };
-    var g;
-    var maxCatch = 1;
-    var catchN = Math.min(missed, maxCatch);
-    for (g = 0; g < catchN; g++) {
-      var tsG = (buf.bucket + 1) * cms;
-      var oG = price;
-      var hG = oG;
-      var lG = oG;
-      var spikedG = false;
-      var closedG;
-      if (sim.boomBurst) {
-        var kk;
-        var inner = 3;
-        var oG = price;
-        var hG = oG;
-        var lG = oG;
-        for (kk = 0; kk < inner; kk++) {
-          var brG = stepBoomBurst(asset, buf, price, tsG + kk * (cms / inner));
-          price = brG.price;
-          if (brG.boom) spikedG = true;
-          if (price > hG) hG = price;
-          if (price < lG) lG = price;
-        }
-        closedG = finishCandle(asset, oG, hG, lG, price, tsG, spikedG);
-        if (spikedG) closedG._boom = true;
-      } else {
-        closedG = makeWalkCandle(asset, price, tsG, buf.candles.length);
-        price = closedG.c;
-      }
-      buf.candles.push(closedG);
-      if (buf.candles.length > HISTORY_N) buf.candles.shift();
-      buf.prices.push(closedG.c);
-      if (buf.prices.length > HISTORY_N) buf.prices.shift();
-      buf.bucket += 1;
-      price = closedG.c;
-      forming = { o: price, h: price, l: price, c: price, t: (buf.bucket) * cms };
+    var upTo = visibleTick(f, nowMs || Date.now());
+    if (upTo === buf.lastTick) return buf;
+    if (upTo < buf.lastTick || upTo - buf.lastTick > 40) {
+      rebuildBuffer(id);
+      return window.assetBuffers[id];
     }
-    var remain = elapsed - catchN * cms;
-    if (remain < 0) remain = 0;
-    // C'est cette cadence, et non `sim.tickMs`, qui pilote réellement le rythme.
-    var stepMs = sim.stepMs || 120;
-    var steps = Math.floor(remain / stepMs);
-    if (remain < stepMs) steps = 0;
-    if (steps > 2) steps = 2;
-      var s;
-      var price0 = price;
-      for (s = 0; s < steps; s++) {
-        var tMs = nowMs - remain + ((s + 1) / Math.max(1, steps)) * remain;
-        var dt = Math.max(0.02, (remain / Math.max(1, steps)) / 1000);
-        var didSpike = false;
-        var boomForce = false;
-        if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.boomBurst) {
-          var br = stepBoomBurst(asset, buf, price, tMs);
-          price = br.price;
-          if (br.boom) {
-            forming._spike = true;
-            forming._boom = true;
-            forming.o = br.from;
-          }
-          didSpike = true;
-        } else if (sim.crashCalm && buf.crashSellUntil && tMs < buf.crashSellUntil) {
-          // Vente Crash allongée : descente fluide vers la cible, pas un seul tick.
-          var sellTgt = Number(buf.crashSellTarget) || (price * 0.995);
-          var sellK = 0.145 + Math.random() * 0.04;
-          var sellJit = (Math.random() - 0.55) * price * 0.00012;
-          price = price + (sellTgt - price) * sellK + sellJit;
-          var baseCr = Number(asset.basePrice) || price;
-          var midCrR = baseCr * (sim.lean != null ? sim.lean : 0.997);
-          var halfCrR = baseCr * 0.0058;
-          if (price > midCrR + halfCrR) price = midCrR + halfCrR;
-          if (price < midCrR - halfCrR) price = midCrR - halfCrR;
-          price = clampIndexPrice(price, asset);
-          forming._spike = true;
-          didSpike = true;
-          if (tMs >= buf.crashSellUntil - 40) {
-            buf.crashSellUntil = 0;
-            buf.nextSpike = tMs + 16000 + Math.random() * 5000;
-          }
-        } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
-          var fromP = price;
-          if (sim.crashCalm) {
-            // Démarre une vente plus longue (~1.6–2.5 s), harmonieuse.
-            buf.crashSellTarget = fromP * (1 - 0.0042 - Math.random() * 0.0020);
-            buf.crashSellUntil = tMs + 1600 + Math.random() * 900;
-            buf.crashSellFrom = fromP;
-            price = clampIndexPrice(fromP * (1 - 0.00055 - Math.random() * 0.00035), asset);
-            forming._spike = true;
-            forming.o = fromP;
-            didSpike = true;
-          } else {
-            price = clampIndexPrice(fromP * (1 + sim.spike * 0.006), asset);
-            buf.nextSpike = tMs + 25000 + Math.random() * 10000;
-            forming._spike = true;
-            forming.o = fromP;
-            didSpike = true;
-          }
-        }
-        if (!didSpike) {
-          price = unifiedStep(asset, price, tMs, dt, { hunt: 0, busy: false });
-        }
-        price = capPctMove(forming.c > 0 ? forming.c : price0, price, tickCapPct(asset, didSpike));
-        price = clampIndexPrice(price, asset);
-        var bucket = Math.floor(tMs / cms);
-        forming.c = price;
-        if (price > forming.h) forming.h = price;
-        if (price < forming.l) forming.l = price;
-        sanitizeOhlc(asset, forming, price, 0);
-        if (bucket !== buf.bucket) {
-          forming = finishCandle(asset, forming.o, forming.h, forming.l, forming.c, forming.t, forming._spike || boomForce);
-          if (forming._boom || boomForce) forming._boom = true;
-          buf.candles.push(forming);
+    var t;
+    for (t = buf.lastTick + 1; t <= upTo; t++) {
+      var k = Math.floor(t / TICKS_PER_CANDLE);
+      if (k !== buf.bucket) {
+        var done = candleFromTicks(id, f, buf.bucket, t - 1);
+        if (done) {
+          buf.candles.push(done);
+          buf.prices.push(done.c);
           if (buf.candles.length > HISTORY_N) buf.candles.shift();
-          buf.prices.push(forming.c);
           if (buf.prices.length > HISTORY_N) buf.prices.shift();
-          buf.bucket = bucket;
-          forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
         }
+        buf.bucket = k;
       }
-    // `rev` ne change que si la simulation a réellement avancé : tout l'étage de
-    // publication (copies de tableaux, min/max) reste alors au repos entre deux pas.
-    var moved = (steps > 0 || catchN > 0);
-    buf.price = clampIndexPrice(price, asset);
-    if (moved || !buf.forming) {
-      buf.forming = sanitizeOhlc(asset, {
-        o: forming.o,
-        h: forming.h,
-        l: forming.l,
-        c: forming.c,
-        t: forming.t,
-        _spike: forming._spike,
-        _boom: forming._boom
-      }, buf.price, 0);
-      buf.lastMs = nowMs;
-      moved = true;
     }
-    buf.ver = SIM_VER;
-    buf.scaleVer = SCALE_VER;
-    if (rebaseBufferTimes(buf, nowMs)) moved = true;
-    if (moved) buf.rev = (buf.rev || 0) + 1;
-    publishHistory(asset.id, buf);
+    var forming = candleFromTicks(id, f, buf.bucket, upTo);
+    if (forming) buf.forming = forming;
+    var v = priceAtTick(id, upTo);
+    if (v > 0) buf.price = v / 100;
+    buf.lastTick = upTo;
+    buf.lastMs = nowMs || Date.now();
+    buf.rev = (buf.rev || 0) + 1;
+    publishBuffer(id, buf);
     return buf;
   }
 
-  function walkCfg(id) {
-    var s = simOf(id);
-    return { vol: s.vol, spike: s.spike || null };
-  }
-
-  function synthPrice(asset) {
-    var id = (asset && asset.id) || asset;
-    var b = window.assetBuffers && window.assetBuffers[id];
-    if (b && isFinite(b.price)) return b.price;
-    return clampIndexPrice(asset && asset.basePrice, asset);
-  }
-
-  function syncMarket(market, asset, nowMs) {
-    nowMs = nowMs || Date.now();
-    var buf = advanceBuffer(asset, nowMs);
-    market.price = buf.price;
-    market.candle = buf.forming;
-    market.ticksInCandle = Math.floor((nowMs % CANDLE_MS) / 80);
-    if (!market.candles || !market.candles.length || market.rev !== buf.rev) {
-      market.rev = buf.rev;
-      market.candles = buf.candles;
-      market.history = buf.prices;
-      publishAssetBuffer(asset.id, market);
-    }
-    return market;
-  }
-
-  function publishAssetBuffer(assetId, market) {
+  function publishAssetState(assetId, market) {
     window.assetsState = window.assetsState || {};
     var st = window.assetsState[assetId];
     if (!st) {
@@ -1299,63 +357,43 @@
       window.assetsState[assetId] = st;
     }
     var src = market.candles || [];
-    var forming = market.candle;
-    var from = Math.max(0, src.length - (HISTORY_N - (forming ? 1 : 0)));
-    var view = [];
-    var closes = [];
     var min = Infinity;
     var max = -Infinity;
-    var price = market.price;
     var i;
-    for (i = from; i <= src.length; i++) {
-      var c = (i < src.length) ? src[i] : forming;
-      if (!c) continue;
-      view.push(c);
-      var pc = Number(c.c);
-      if (isFinite(pc)) closes.push(pc);
-      if (!isPlausiblePrice(pc, price)) continue;
-      if (c.l < min && isPlausiblePrice(c.l, price)) min = c.l;
-      if (c.h > max && isPlausiblePrice(c.h, price)) max = c.h;
-      if (pc < min) min = pc;
-      if (pc > max) max = pc;
+    for (i = Math.max(0, src.length - 120); i < src.length; i++) {
+      if (src[i].l < min) min = src[i].l;
+      if (src[i].h > max) max = src[i].h;
     }
-    if (!isFinite(min) || !isFinite(max)) {
-      min = Number(price) || 0;
-      max = min;
+    if (!isFinite(min)) {
+      min = market.price;
+      max = market.price;
     }
-    st.candles = view;
+    st.candles = src;
     st.min = min;
     st.max = max;
-    st.lastPrice = price;
+    st.lastPrice = market.price;
     st.at = Date.now();
-    window.assetsHistory = window.assetsHistory || {};
-    window.assetsHistory[assetId] = closes;
   }
 
-  function seedMarket(assetId) {
-    var asset = C.ASSETS[assetId];
-    var market = {
-      id: assetId,
-      price: asset.basePrice,
-      history: [],
-      candles: [],
-      candle: { o: asset.basePrice, h: asset.basePrice, l: asset.basePrice, c: asset.basePrice },
-      ticksInCandle: 0,
-      payout: C.REAL_PAYOUT
-    };
-    return syncMarket(market, asset, Date.now());
-  }
-
-  function rollPayout(asset, mode) {
-    if (mode === 'real') return C.REAL_PAYOUT;
-    var span = asset.payoutMax - asset.payoutMin;
-    return +(asset.payoutMin + Math.random() * span).toFixed(3);
+  function syncMarket(market, id, nowMs) {
+    var buf = advanceBuffer(id, nowMs);
+    market.price = buf.price;
+    market.candle = buf.forming;
+    market.ticksInCandle = 0;
+    market.waiting = !!buf.waiting;
+    if (market.rev !== buf.rev) {
+      market.rev = buf.rev;
+      market.candles = buf.candles;
+      market.history = buf.prices;
+      publishAssetState(id, market);
+    }
+    return market;
   }
 
   function ensureMarkets() {
     var id;
     for (id in C.ASSETS) {
-      if (markets[id]) continue;
+      if (!C.ASSETS.hasOwnProperty(id) || markets[id]) continue;
       var asset = C.ASSETS[id];
       markets[id] = {
         id: id,
@@ -1364,121 +402,23 @@
         candles: [],
         candle: { o: asset.basePrice, h: asset.basePrice, l: asset.basePrice, c: asset.basePrice },
         ticksInCandle: 0,
-        payout: C.REAL_PAYOUT
+        payout: 1.88,
+        waiting: true
       };
     }
-  }
-
-  function preloadAllBuffers() {
-    bindGlobalBuffers();
-    ensureMarkets();
-    var id;
-    for (id in C.ASSETS) {
-      if (!C.ASSETS[id]) continue;
-      syncMarket(markets[id], C.ASSETS[id], Date.now());
-    }
-    window.ASSET_BUFFERS = window.assetBuffers;
   }
 
   function wakeMarket(assetId) {
     var id = canonAssetId(assetId);
     ensureMarkets();
-    if (C.ASSETS[id]) {
-      syncMarket(markets[id], C.ASSETS[id], Date.now());
-    }
-    return markets[id];
+    wantedAsset = id;
+    startPolling();
+    return syncMarket(markets[id], id, Date.now());
   }
 
-  function makeSeal(payload) {
-    var s = sessionNonce + '|' + payload + '|' + orderSeq;
-    var h = 2166136261;
-    var i;
-    for (i = 0; i < s.length; i++) {
-      h ^= s.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return (h >>> 0).toString(16);
-  }
-
-  function automationDetected() {
-    if (navigator.webdriver) return true;
-    if (window.callPhantom || window._phantom) return true;
-    if (window.domAutomation || window.domAutomationController) return true;
-    return false;
-  }
-
-  function balOf(user, mode) {
-    if (D6.Store.balanceMode) return D6.Store.balanceMode(user, mode);
-    return D6.Store.balanceOf(user);
-  }
-
-  function setBal(user, mode, value) {
-    // RÉEL : le serveur (placeOrder / settleOrder) est la seule écriture du solde.
-    // Sinon l’écran bouge puis me() ramène le montant du dépôt.
-    if (mode === 'real') return;
-    if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(user, mode, value);
-    else {
-      var prev = user.mode;
-      user.mode = mode;
-      D6.Store.setBalance(user, value);
-      user.mode = prev;
-    }
-  }
-
-  function stakeCap(user, stake, mode) {
-    mode = mode || user.mode;
-    var balance = balOf(user, mode);
-    // Réel : setBal ne débite pas → réserver seulement les mises pas encore confirmées serveur.
-    // (Après placeOrder OK, le store est déjà débité → ne pas re-soustraire.)
-    if (mode === 'real') {
-      var openSum = 0;
-      try {
-        openForMode('real').forEach(function (t) {
-          if (t && t.serverConfirmed) return;
-          openSum += Number(t && t.stake) || 0;
-        });
-      } catch (eOpen) { openSum = 0; }
-      balance = Math.max(0, (Number(balance) || 0) - openSum);
-    }
-    if (stake < C.MIN_STAKE) {
-      return { ok: false, cap: C.MIN_STAKE, reason: D6.I18N.t('minStake') + ' ' + D6.fmtFCFA(C.MIN_STAKE) };
-    }
-    if (stake > balance) {
-      return { ok: false, cap: balance, reason: D6.I18N.t('insufficient') };
-    }
-    return { ok: true, cap: balance };
-  }
-
+  /* —— Trades —— */
   function expiryOf(t) {
-    var exp = t.expiryTime || t.expiresAt;
-    if (exp) return exp;
-    var start = t.startTime || t.startedAt || 0;
-    var dur = (t.durationMs != null) ? t.durationMs : ((t.duration || 0) * 1000);
-    if (start && dur) return start + dur;
-    return 0;
-  }
-
-  function clearTradeTimer(id) {
-    if (!id || !tradeTimers[id]) return;
-    try { clearTimeout(tradeTimers[id]); } catch (eT) { /* ignore */ }
-    try { clearInterval(tradeTimers[id]); } catch (eI) { /* ignore */ }
-    delete tradeTimers[id];
-  }
-
-  function armTradeTimer(trade) {
-    if (!trade || !trade.id) return;
-    clearTradeTimer(trade.id);
-    var wait = expiryOf(trade) - Date.now();
-    if (!isFinite(wait)) return;
-    tradeTimers[trade.id] = setTimeout(function () {
-      delete tradeTimers[trade.id];
-      var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
-      if (!u) return;
-      var res = api.resolve(u, trade.id);
-      if (res && typeof api.onSettled === 'function') {
-        try { api.onSettled(res); } catch (eS) { /* ignore */ }
-      }
-    }, Math.max(20, wait + 25));
+    return t.expiryTime || t.expiresAt || 0;
   }
 
   function isLive(t) {
@@ -1490,15 +430,18 @@
   }
 
   function openForMode(mode) {
-    return trades.filter(function (t) {
-      return isOpen(t) && t.mode === mode;
-    });
+    return trades.filter(function (t) { return isOpen(t) && t.mode === mode; });
   }
 
   function syncTime(t) {
     var left = (expiryOf(t) - Date.now()) / 1000;
     t.timeLeft = left > 0 ? left : 0;
     return t.timeLeft;
+  }
+
+  function currentAccountMode() {
+    var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
+    return u && u.mode === 'real' ? 'real' : 'demo';
   }
 
   function publicTrade(t) {
@@ -1513,6 +456,7 @@
       timeLeft: t.timeLeft,
       entryPrice: t.entryPrice,
       openPrice: t.entryPrice,
+      barrier: t.barrier,
       payout: t.payout,
       payoutMult: t.payout,
       startedAt: t.startedAt,
@@ -1524,7 +468,8 @@
       settled: !!t.settled,
       status: t.status || (t.settled ? 'closed' : 'open'),
       mode: t.mode,
-      accountType: t.mode
+      accountType: t.mode,
+      confirmed: !!t.serverConfirmed
     });
   }
 
@@ -1539,354 +484,231 @@
         stake: t.stake,
         payout: t.payout,
         entryPrice: t.entryPrice,
+        barrier: t.barrier,
+        entryTick: t.entryTick,
+        expiryTick: t.expiryTick,
         duration: t.duration,
-        durationMs: t.durationMs,
         startTime: t.startTime,
         startedAt: t.startedAt,
         expiryTime: expiryOf(t),
         expiresAt: expiryOf(t),
         mode: t.mode,
+        guest: !!t.guest,
         status: 'open',
         settled: false,
-        seq: t.seq,
         serverConfirmed: !!t.serverConfirmed
       };
     });
     D6.Store.saveUser(user);
   }
 
-  function closePriceAt(assetId) {
-    var asset = C.ASSETS[assetId];
-    if (!asset) return 0;
-    return synthPrice(asset);
+  function balOf(user, mode) {
+    if (D6.Store.balanceMode) return D6.Store.balanceMode(user, mode);
+    return D6.Store.balanceOf(user);
   }
 
-  function payoutPercent(raw) {
-    var n = parseFloat(raw);
-    if (!isFinite(n) || n <= 0) return 88;
-    if (n === 88 || n === 500 || n === 1000 || n === 5000) return n;
-    if (Math.abs(n - 1.88) < 0.02) return 88;
-    if (Math.abs(n - 5) < 0.02) return 500;
-    if (Math.abs(n - 10) < 0.02) return 1000;
-    if (Math.abs(n - 50) < 0.02) return 5000;
-    if (n >= 80) return n;
-    if (n > 1 && n < 80) return Math.round((n - 1) * 100);
-    return 88;
-  }
-
-  function readFinalPrice(trade) {
-    var entry = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-    var assetId = trade.assetId;
-    var finalPrice = entry;
-    var m = markets[assetId];
-    if (m && isFinite(m.price) && m.price > 0) finalPrice = m.price;
-    var buf = window.assetBuffers && window.assetBuffers[assetId];
-    if (buf && isFinite(buf.price) && buf.price > 0) finalPrice = buf.price;
-    if (buf && buf.forming && isFinite(buf.forming.c) && buf.forming.c > 0) finalPrice = buf.forming.c;
-    if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === assetId) {
-      var drawn = Number(D6.Chart.lastClose());
-      if (isFinite(drawn) && drawn > 0) finalPrice = drawn;
+  function setBal(user, mode, value) {
+    // RÉEL : seul le serveur écrit le solde (placeOrder / settleOrder).
+    if (mode === 'real') return;
+    if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(user, mode, value);
+    else {
+      var prev = user.mode;
+      user.mode = mode;
+      D6.Store.setBalance(user, value);
+      user.mode = prev;
     }
-    return finalPrice;
   }
 
-  function normalizeTradeSide(side) {
-    var s = String(side == null ? '' : side).toLowerCase().trim();
-    if (s === 'put' || s === 'sell' || s === 'down' || s === 'short' || s === 'red') return 'put';
-    return 'call';
-  }
-
-  function detectTradeTruth(side, entry, exit) {
-    var dir = normalizeTradeSide(side);
-    var open = Number(entry);
-    var close = Number(exit);
-    if (!(open > 0) || !isFinite(open) || !(close > 0) || !isFinite(close)) {
-      return { side: dir, won: false, voided: true };
+  function stakeCap(user, stake, mode) {
+    mode = mode || user.mode;
+    var balance = balOf(user, mode);
+    if (mode === 'real') {
+      var openSum = 0;
+      openForMode('real').forEach(function (t) {
+        if (t && !t.serverConfirmed) openSum += Number(t.stake) || 0;
+      });
+      balance = Math.max(0, (Number(balance) || 0) - openSum);
     }
-    if (StochasticCore && StochasticCore.round2) {
-      open = StochasticCore.round2(open);
-      close = StochasticCore.round2(close);
+    if (stake < C.MIN_STAKE) {
+      return { ok: false, cap: C.MIN_STAKE, reason: D6.I18N.t('minStake') + ' ' + D6.fmtFCFA(C.MIN_STAKE) };
+    }
+    if (stake > balance + 0.0001) {
+      return { ok: false, cap: balance, reason: D6.I18N.t('insufficient') };
+    }
+    return { ok: true, cap: balance };
+  }
+
+  function clearTradeTimer(id) {
+    if (!id || !tradeTimers[id]) return;
+    try { clearTimeout(tradeTimers[id]); } catch (eT) { /* ignore */ }
+    delete tradeTimers[id];
+  }
+
+  function armTradeTimer(trade) {
+    if (!trade || !trade.id) return;
+    clearTradeTimer(trade.id);
+    var wait = expiryOf(trade) - Date.now();
+    if (!isFinite(wait)) return;
+    tradeTimers[trade.id] = setTimeout(function () {
+      delete tradeTimers[trade.id];
+      var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
+      if (u) api.resolve(u, trade.id);
+    }, Math.max(20, wait + 40));
+  }
+
+  function removeTrade(user, trade) {
+    var idx = trades.indexOf(trade);
+    if (idx >= 0) trades.splice(idx, 1);
+    clearTradeTimer(trade.id);
+    if (D6.Chart && D6.Chart.removeTradeVisual) {
+      try { D6.Chart.removeTradeVisual(trade.id); } catch (e0) { /* ignore */ }
+    }
+    if (!trades.filter(isLive).length) D6.holdRemote = false;
+    if (user) persistOpen(user);
+  }
+
+  function hasToken() {
+    return !!(D6.Api && D6.Api.token && D6.Api.token());
+  }
+
+  /** Applique un résultat déjà décidé (serveur, ou flux public pour l'invité démo). */
+  function finishTrade(user, trade, verdict, exitPrice, remote) {
+    if (trade.settled) return null;
+    trade.settled = true;
+    var mode = trade.mode === 'real' ? 'real' : 'demo';
+    var payout = normalizeOdds(trade.payout);
+    var stake = Number(trade.stake) || 0;
+    var won = verdict === 'won';
+    var voided = verdict === 'void';
+    var payoutAmount = voided ? stake : (won ? round2(stake * payout) : 0);
+    var net = voided ? 0 : (won ? round2(payoutAmount - stake) : -stake);
+    var short = (C.ASSETS[trade.assetId] && C.ASSETS[trade.assetId].short) || trade.assetId;
+
+    if (payoutAmount > 0) setBal(user, mode, balOf(user, mode) + payoutAmount);
+    if (voided) {
+      D6.Store.addTransaction(user, { type: 'void', amount: stake, mode: mode, note: 'Égalité — mise rendue ' + short });
+    } else if (won) {
+      user.wins = (user.wins || 0) + 1;
+      user.consecutiveWins = (user.consecutiveWins || 0) + 1;
+      user.consecutiveLosses = 0;
+      user.lastLost = false;
+      D6.Store.addTransaction(user, { type: 'win', amount: payoutAmount, mode: mode, note: 'Position gagnante ' + short });
     } else {
-      open = Math.round(open * 100) / 100;
-      close = Math.round(close * 100) / 100;
+      user.consecutiveLosses = (user.consecutiveLosses || 0) + 1;
+      user.consecutiveWins = 0;
+      user.lastLost = true;
+      D6.Store.addTransaction(user, { type: 'loss', amount: -stake, mode: mode, note: 'Position expirée ' + short });
     }
-    if (close === open) return { side: dir, won: false, voided: true };
-    return { side: dir, won: dir === 'put' ? close < open : close > open, voided: false };
-  }
+    var status = voided ? 'void' : (won ? 'won' : 'lost');
+    trade.status = status;
+    trade.exitPrice = exitPrice;
+    user.lastStake = stake;
+    user.trades = (user.trades || 0) + 1;
+    if (mode === 'real') user.realTrades = (user.realTrades || 0) + 1;
+    else user.demoTrades = (user.demoTrades || 0) + 1;
+    user.recentResults = Array.isArray(user.recentResults) ? user.recentResults : [];
+    user.recentResults.unshift({ won: won, mode: mode, voided: voided, payout: payout });
+    if (user.recentResults.length > 30) user.recentResults.length = 30;
 
-  function wonFromPrice(trade, finalPrice) {
-    var entry = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-    var side = (trade.ticket && trade.ticket.side) || trade.side;
-    return detectTradeTruth(side, entry, finalPrice).won;
-  }
-
-  function normalizeOdds(v) {
-    var list = C.ODDS_MULT || [1.88, 5, 10, 50];
-    var n = Number(v);
-    var i;
-    for (i = 0; i < list.length; i++) {
-      if (Math.abs(list[i] - n) < 0.001) return list[i];
-    }
-    return C.DEFAULT_ODDS != null ? C.DEFAULT_ODDS : 1.88;
-  }
-
-  function oddsKey(mult) {
-    var o = normalizeOdds(mult);
-    if (Math.abs(o - 1.88) < 0.001) return '1.88';
-    if (Math.abs(o - 5) < 0.001) return '5';
-    if (Math.abs(o - 10) < 0.001) return '10';
-    if (o >= 40) return '50';
-    return '1.88';
-  }
-
-  function winRateForOdds(mult, map) {
-    map = map || C.ODDS_WIN_RATE || {};
-    var o = normalizeOdds(mult);
-    var k = oddsKey(o);
-    if (map[k] != null && isFinite(Number(map[k]))) return Number(map[k]);
-    var m = Math.max(1.01, Number(o) || 1.88);
-    var r = 1 / (m * 1.25);
-    return Math.max(0.001, Math.min(0.49, r));
-  }
-
-  function isAdminUser(user) {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
-    if (user.id === 'admin_master') return true;
-    var mail = String(user.email || '').toLowerCase();
-    var adminMail = String((C.ADMIN_EMAIL) || 'admin@orolado.com').toLowerCase();
-    if (mail !== '' && mail === adminMail) return true;
-    try {
-      if (D6.Auth && typeof D6.Auth.isAdmin === 'function' && D6.Auth.isAdmin(user)) return true;
-    } catch (eA) { /* ignore */ }
-    return false;
-  }
-
-  /** Frein matengale (joueur réel uniquement).
-   *  1er et 2e double après perte = OK (joueur normal).
-   *  À partir du 3e double = matengale confirmée → proba en baisse.
-   *  Flat / mise stable = taux de base inchangé. */
-  function antiMartWinP(user, trade, baseP) {
-    var p = Number(baseP);
-    if (!(p > 0) || !isFinite(p)) return baseP;
-    if (!user || isAdminUser(user)) return p;
-    var stake = Number(trade && trade.stake) || 0;
-    if (!(stake > 0)) return p;
-    var recent = Array.isArray(user.recentResults) ? user.recentResults : [];
-    var lastStake = Number(user.lastStake) || 0;
-    var lossStreak = 0;
-    var i;
-    for (i = 0; i < recent.length && i < 12; i++) {
-      var row = recent[i];
-      if (!row || row.mode !== 'real' || row.voided) break;
-      if (row.won) break;
-      lossStreak += 1;
-    }
-    var rising = lastStake > 0.009 && stake >= lastStake * 1.75;
-    // 3 pertes + mise qui double = 3e double → frein. Avant ça : taux normal.
-    if (!(lossStreak >= 5 && rising)) return p;
-    var steps = Math.min(lossStreak - 2, 6);
-    p = p * Math.pow(0.62, steps);
-    return Math.max(0.001, Math.min(baseP * 0.55, p));
-  }
-
-  /** Ramène une série réelle vers le taux prévu (48 % sur 1.88, etc.).
-   *  Une suite de pertes ne reste pas à 30 %. Le frein martingale n’est pas touché. */
-  function sessionFairP(user, trade, baseP) {
-    var base = Number(baseP);
-    if (!(base > 0) || !isFinite(base) || base >= 1) return baseP;
-    if (!user || isAdminUser(user)) return base;
-    var key = oddsKey(trade && trade.payout);
-    var rows = [];
-    var recent = Array.isArray(user.recentResults) ? user.recentResults : [];
-    var i;
-    for (i = 0; i < recent.length && rows.length < 14; i++) {
-      var row = recent[i];
-      if (!row || row.mode !== 'real' || row.voided) continue;
-      if (row.payout != null && oddsKey(row.payout) !== key) continue;
-      rows.push(!!row.won);
-    }
-    if (rows.length < 5 && Array.isArray(user.positions)) {
-      rows = [];
-      for (i = 0; i < user.positions.length && rows.length < 14; i++) {
-        var pos = user.positions[i];
-        if (!pos || pos.mode !== 'real' || pos.voided) continue;
-        if (oddsKey(pos.payout) !== key) continue;
-        rows.push(!!pos.won);
-      }
-    }
-    var n = rows.length;
-    if (n < 5) return base;
-    var wins = 0;
-    for (i = 0; i < n; i++) if (rows[i]) wins += 1;
-    var gap = base - (wins / n);
-    var adj = base + gap * 0.9;
-    var mult = Number(trade && trade.payout) || 1.88;
-    var hi = base >= 0.4 ? Math.min(0.56, base + 0.12) : Math.min(base + 0.03, 0.95 / Math.max(1.2, mult));
-    var lo = Math.max(0.001, base * 0.62);
-    if (adj > hi) adj = hi;
-    if (adj < lo) adj = lo;
-    return adj;
-  }
-
-  function forceExitPrice(entry, isCall, won, assetId, harsh) {
-    var base = Math.max((C.ASSETS[assetId].tickNoise || 0.3) * 0.45, 0.28);
-    var nudge = harsh ? Math.max(base * 3.2, 1.1) : base;
-    return entry + (won
-      ? (isCall ? 1 : -1)
-      : (isCall ? -1 : 1)) * nudge;
-  }
-
-  /** Arbitrage étanche — démo / admin réel / joueur réel. */
-  function resolveWinProbability(user, trade, mode) {
-    var demoMap = C.ODDS_WIN_RATE_DEMO || {
-      '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02
-    };
-    var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
-      '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03
-    };
-    var realMap = C.ODDS_WIN_RATE || {
-      '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018
-    };
-    var admin = isAdminUser(user);
-    var isDemo = mode !== 'real';
-
-    if (isDemo) {
-      return { winProbability: winRateForOdds(trade.payout, demoMap), harsh: false, profile: 'B' };
-    }
-    if (admin) {
-      return { winProbability: winRateForOdds(trade.payout, adminRealMap), harsh: false, profile: 'A' };
-    }
-
-    var baseReal = winRateForOdds(trade.payout, realMap);
-    var brakedReal = antiMartWinP(user, trade, baseReal);
-    var winProbability = (brakedReal + 0.0001 < baseReal) ? brakedReal : sessionFairP(user, trade, baseReal);
-    return { winProbability: winProbability, harsh: false, profile: 'C' };
-  }
-
-  function hedgeBucketKey(trade) {
-    var start = Number(trade && (trade.startTime || trade.startedAt)) || Date.now();
-    return String(trade.userId || '') + '|' + String(trade.assetId || '') + '|' + String(Math.floor(start / 12000));
-  }
-
-  function hasOppositeHedge(trade) {
-    if (!trade) return false;
-    var side = normalizeTradeSide(trade.side);
-    var start = Number(trade.startTime || trade.startedAt) || 0;
-    var i;
-    for (i = 0; i < trades.length; i++) {
-      var o = trades[i];
-      if (!o || o.id === trade.id || o.userId !== trade.userId) continue;
-      if (o.assetId !== trade.assetId) continue;
-      if (normalizeTradeSide(o.side) === side) continue;
-      var os = Number(o.startTime || o.startedAt) || 0;
-      if (Math.abs(os - start) <= 12000) return true;
-    }
-    return !!hedgeWinBucket[hedgeBucketKey(trade)];
-  }
-
-  function applyHedgeLock(trade, won) {
-    if (!won) return false;
-    var key = hedgeBucketKey(trade);
-    var side = normalizeTradeSide(trade.side);
-    var opp = side === 'put' ? 'call' : 'put';
-    var rec = hedgeWinBucket[key];
-    if (rec && rec.side === opp) return false;
-    hedgeWinBucket[key] = { side: side, at: Date.now() };
-    return true;
-  }
-
-  function decideTradeOutcome(user, trade, mode) {
-    if (trade && trade._outcomeReady) {
-      return {
-        wantWon: !!trade._wantWon,
-        harsh: !!trade._harsh,
-        target: Number(trade._exitTarget),
-        voided: !!trade._voided
-      };
-    }
-    var profile = 'real';
-    if (mode !== 'real') profile = 'demo';
-    else if (isAdminUser(user)) profile = 'admin';
-    var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-    var sideNow = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
-    var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
-    var settleArgs = {
-      entryPrice: entryPx,
-      durationSec: Number(trade.duration) || 5,
-      side: sideNow,
+    var position = {
+      id: trade.id,
+      at: D6.nowIso(),
+      clock: D6.clock(),
+      assetId: trade.assetId,
+      assetName: short,
+      side: trade.side,
+      stake: stake,
       payout: payout,
-      profile: profile
+      entryPrice: trade.entryPrice,
+      barrier: trade.barrier,
+      duration: trade.duration,
+      exitPrice: exitPrice,
+      closePrice: exitPrice,
+      won: won,
+      voided: voided,
+      status: status,
+      net: net,
+      mode: mode,
+      accountType: mode
     };
-    if (profile === 'real') {
-      var baseP = StochasticCore.winProb(payout, 'real');
-      var braked = antiMartWinP(user, trade, baseP);
-      settleArgs.winP = (braked + 0.0001 < baseP) ? braked : sessionFairP(user, trade, baseP);
+    D6.Store.addPosition(user, position);
+    removeTrade(user, trade);
+    try {
+      document.dispatchEvent(new CustomEvent('orolado-trade-settled', {
+        detail: { isWin: won, voided: voided, payout: payoutAmount, net: net, tradeId: trade.id }
+      }));
+    } catch (e) { /* ignore */ }
+    var res = {
+      trade: publicTrade(trade),
+      position: position,
+      won: won,
+      voided: voided,
+      net: net,
+      exitPrice: exitPrice,
+      closePrice: exitPrice,
+      status: status,
+      remote: remote || null
+    };
+    if (typeof api.onSettled === 'function') {
+      try { api.onSettled(res); } catch (eS) { /* ignore */ }
     }
-    var verdict = StochasticCore.settle(settleArgs);
-    var wantWon = !!verdict.won;
-    var target = Number(verdict.exitPrice);
-    if (!(target > 0) || !isFinite(target)) {
-      target = forceExitPrice(entryPx, sideNow === 'call', wantWon, trade.assetId, false);
-    }
-    trade._wantWon = wantWon;
-    trade._harsh = false;
-    trade._voided = !!verdict.voided;
-    trade._exitTarget = target;
-    trade._outcomeReady = true;
-    return { wantWon: wantWon, harsh: false, target: target, voided: !!verdict.voided };
+    return res;
   }
 
-  function currentAccountMode() {
-    var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
-    return u && u.mode === 'real' ? 'real' : 'demo';
-  }
-
-  function applyExitToMarket(trade, target) {
-    var tradeMode = trade && trade.mode === 'real' ? 'real' : 'demo';
-    if (tradeMode !== currentAccountMode()) return;
-    var px = Number(target);
-    if (!(px > 0) || !isFinite(px) || !trade) return;
-    var id = trade.assetId;
-    if (!id) return;
-    ensureMarkets();
-    var m = markets[id];
-    if (m) {
-      m.price = px;
-      m.displayPrice = px;
-    }
-    var buf = window.assetBuffers && window.assetBuffers[id];
-    if (buf) {
-      buf.price = px;
-      if (buf.forming) {
-        buf.forming.c = px;
-        if (!(buf.forming.h >= px)) buf.forming.h = px;
-        if (!(buf.forming.l > 0) || buf.forming.l > px) buf.forming.l = px;
+  /** Invité démo : le résultat se lit dans le flux public, au tick d'expiration. */
+  function settleGuest(user, trade, tries) {
+    var local = priceAtTick(trade.assetId, trade.expiryTick);
+    function apply(cents) {
+      if (!(cents > 0)) {
+        finishTrade(user, trade, 'void', trade.entryPrice, null);
+        return;
       }
+      finishTrade(user, trade, verdictOf(trade.side, cents, trade.barrierCents), cents / 100, null);
     }
-    if (D6.Chart && typeof D6.Chart.steerClose === 'function') {
-      try { D6.Chart.steerClose(px, 260, id); } catch (eSteer) { /* ignore */ }
+    if (local > 0) {
+      apply(local);
+      return;
     }
+    getJson('feed.php?a=' + encodeURIComponent(trade.assetId) + '&at=' + trade.expiryTick).then(function (j) {
+      if (j && j.ok && j.pending) {
+        if (tries > 20) { apply(0); return; }
+        setTimeout(function () { settleGuest(user, trade, tries + 1); }, 300);
+        return;
+      }
+      apply(j && j.ok ? Number(j.c) : 0);
+    }, function () {
+      if (tries > 20) { apply(0); return; }
+      setTimeout(function () { settleGuest(user, trade, tries + 1); }, 800);
+    }).then(function () { delete settling[trade.id]; }, function () { delete settling[trade.id]; });
   }
 
-  function prepareLastSecondSteer(now) {
-    var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
-    if (!user) return;
-    var i;
-    for (i = 0; i < trades.length; i++) {
-      var tr = trades[i];
-      if (!isLive(tr) || tr.userId !== user.id) continue;
-      var left = expiryOf(tr) - now;
-      if (left > 220 || left < 0) continue;
-      var decided = decideTradeOutcome(user, tr, tr.mode === 'real' ? 'real' : 'demo');
-      applyExitToMarket(tr, decided.target);
-    }
+  /** Compte connecté (démo ou réel) : seul le serveur règle. */
+  function settleRemote(user, trade, tries) {
+    D6.Api.post('settleOrder', { orderId: trade.id, mode: trade.mode }, 20000).then(function (remote) {
+      delete settling[trade.id];
+      if (remote && remote.ok && remote.order) {
+        var o = remote.order;
+        var verdict = o.status === 'won' || o.status === 'lost' || o.status === 'void' ? o.status : (o.won ? 'won' : 'lost');
+        if (o.barrier != null) trade.barrier = Number(o.barrier);
+        finishTrade(user, trade, verdict, o.exitPrice != null ? Number(o.exitPrice) : null, remote);
+        return;
+      }
+      if (remote && remote.ok === false && !remote.pending && /introuvable/i.test(String(remote.reason || ''))) {
+        // Ordre refusé/jamais enregistré : aucune mise n'a été prise côté serveur.
+        if (!trade.serverConfirmed && trade.mode !== 'real') setBal(user, trade.mode, balOf(user, trade.mode) + (Number(trade.stake) || 0));
+        trade.settled = true;
+        removeTrade(user, trade);
+        return;
+      }
+      var wait = remote && remote.retryMs ? Math.min(5000, Math.max(250, Number(remote.retryMs))) : 1200;
+      if (tries < 40) {
+        setTimeout(function () { api.resolve(user, trade.id, tries + 1); }, wait);
+      }
+    }, function () {
+      delete settling[trade.id];
+      if (tries < 40) setTimeout(function () { api.resolve(user, trade.id, tries + 1); }, 1500);
+    });
   }
-
-  preloadAllBuffers();
-  Object.keys(C.ASSETS).forEach(function (id) {
-    payoutLive[id] = markets[id].payout;
-  });
 
   var api = {
     markets: markets,
@@ -1901,12 +723,26 @@
     getBuffer: function (id) {
       bindGlobalBuffers();
       id = canonAssetId(id);
-      if (C.ASSETS[id]) wakeMarket(id);
-      return window.ASSET_BUFFERS[id] || window.assetBuffers[id] || null;
+      wakeMarket(id);
+      return window.ASSET_BUFFERS[id] || null;
     },
 
     preloadAll: function () {
-      preloadAllBuffers();
+      ensureMarkets();
+    },
+
+    /** Prix affiché (dernier tick visible). */
+    lastPrice: function (id) {
+      var m = markets[canonAssetId(id)];
+      return m ? m.price : NaN;
+    },
+
+    /** Ligne objectif prévue pour un futur trade (aperçu avant de cliquer). */
+    previewBarrier: function (assetId, duration, side, mult, price) {
+      var id = canonAssetId(assetId);
+      var cents = Math.round(Number(price) * 100);
+      if (!(cents > 0)) return NaN;
+      return barrierCents(id, Number(duration), normalizeTradeSide(side), mult, cents) / 100;
     },
 
     getTrade: function () {
@@ -1926,7 +762,6 @@
       }).map(function (t) { return publicTrade(t); });
     },
 
-    /** Somme des mises ouvertes qui réservent encore le solde affiché (réel non confirmé). */
     openStakeSum: function (mode) {
       mode = mode === 'real' ? 'real' : 'demo';
       var sum = 0;
@@ -1934,30 +769,56 @@
         if (mode === 'real' && t && t.serverConfirmed) return;
         sum += Number(t && t.stake) || 0;
       });
-      return D6.roundMoney ? D6.roundMoney(sum) : sum;
+      return round2(sum);
     },
 
-    /** Toutes les mises encore ouvertes (confirmées ou non) — pour geler l’affichage pendant le jeu. */
     openLiveStakeSum: function (mode) {
       mode = mode === 'real' ? 'real' : 'demo';
       var sum = 0;
-      openForMode(mode).forEach(function (t) {
-        sum += Number(t && t.stake) || 0;
-      });
-      return D6.roundMoney ? D6.roundMoney(sum) : sum;
+      openForMode(mode).forEach(function (t) { sum += Number(t && t.stake) || 0; });
+      return round2(sum);
     },
 
-    /** placeOrder serveur OK : le solde store est déjà débité, ne plus réserver cette mise. */
-    markTradeFunded: function (tradeId) {
-      if (!tradeId) return false;
+    /**
+     * Réponse placeOrder du serveur : il fixe le vrai prix d'entrée, la ligne et l'heure
+     * d'expiration. Le trade local s'aligne dessus.
+     */
+    confirmTrade: function (tradeId, order) {
       var i;
       for (i = 0; i < trades.length; i++) {
-        if (trades[i] && trades[i].id === tradeId) {
-          trades[i].serverConfirmed = true;
-          return true;
+        var t = trades[i];
+        if (!t || t.id !== tradeId) continue;
+        t.serverConfirmed = true;
+        if (order) {
+          if (order.entryPrice != null) t.entryPrice = Number(order.entryPrice);
+          if (order.barrier != null) t.barrier = Number(order.barrier);
+          if (order.entryTick != null) t.entryTick = Number(order.entryTick);
+          if (order.expiryTick != null) {
+            t.expiryTick = Number(order.expiryTick);
+            t.expiryTime = tickToLocal(t.expiryTick);
+            t.expiresAt = t.expiryTime;
+          }
+          if (order.entryTick != null) {
+            t.startTime = tickToLocal(t.entryTick);
+            t.startedAt = t.startTime;
+          }
+          armTradeTimer(t);
+          if (D6.Chart && D6.Chart.applyOpenTradeVisual && (t.mode === currentAccountMode())) {
+            try {
+              if (D6.Chart.removeTradeVisual) D6.Chart.removeTradeVisual(t.id);
+              D6.Chart.applyOpenTradeVisual(publicTrade(t));
+            } catch (eV) { /* ignore */ }
+          }
+          var u = D6.Store && D6.Store.current ? D6.Store.current() : null;
+          if (u) persistOpen(u);
         }
+        return true;
       }
       return false;
+    },
+
+    markTradeFunded: function (tradeId) {
+      return api.confirmTrade(tradeId, null);
     },
 
     liveCount: function (mode) {
@@ -1980,9 +841,8 @@
       var i;
       for (i = 0; i < trades.length; i++) {
         var live = trades[i];
-        if (!live || !live.id) continue;
+        if (!live || !live.id || live.settled) continue;
         if (live.userId && live.userId !== user.id) continue;
-        if (live.settled || live.status === 'won' || live.status === 'lost' || live.status === 'void') continue;
         kept.push(live);
         have[live.id] = true;
       }
@@ -1991,121 +851,95 @@
       for (i = 0; i < list.length; i++) {
         var raw = list[i];
         if (!raw || !raw.id || have[raw.id]) continue;
-        if (raw.userId && raw.userId !== user.id) continue;
         if (raw.settled || raw.status === 'won' || raw.status === 'lost' || raw.status === 'void') continue;
-        trades.push({
+        var expTick = raw.expiryTick != null ? Number(raw.expiryTick) : null;
+        var entryTick = raw.entryTick != null ? Number(raw.entryTick) : null;
+        var t = {
           id: raw.id,
           assetId: canonAssetId(raw.assetId),
           side: raw.side === 'put' ? 'put' : 'call',
-          stake: D6.roundMoney(Number(raw.stake) || 0),
+          stake: round2(Number(raw.stake) || 0),
           duration: raw.duration || 10,
-          durationMs: raw.durationMs || (raw.duration || 10) * 1000,
           timeLeft: 0,
           entryPrice: Number(raw.entryPrice) || 0,
-          payout: Number(raw.payout) || C.REAL_PAYOUT,
-          startTime: raw.startTime || raw.startedAt || Date.now(),
-          startedAt: raw.startedAt || raw.startTime || Date.now(),
-          expiryTime: raw.expiryTime || raw.expiresAt || raw.expiryAt,
-          expiresAt: raw.expiresAt || raw.expiryTime || raw.expiryAt,
+          barrier: raw.barrier != null ? Number(raw.barrier) : Number(raw.entryPrice) || 0,
+          barrierCents: Math.round((raw.barrier != null ? Number(raw.barrier) : Number(raw.entryPrice) || 0) * 100),
+          payout: normalizeOdds(raw.payout),
+          entryTick: entryTick,
+          expiryTick: expTick,
+          startTime: entryTick != null ? tickToLocal(entryTick) : (raw.startTime || raw.startedAt || Date.now()),
+          startedAt: entryTick != null ? tickToLocal(entryTick) : (raw.startedAt || raw.startTime || Date.now()),
+          expiryTime: expTick != null ? tickToLocal(expTick) : (raw.expiryTime || raw.expiresAt || raw.expiryAt),
+          expiresAt: expTick != null ? tickToLocal(expTick) : (raw.expiresAt || raw.expiryTime || raw.expiryAt),
           mode: raw.mode === 'real' ? 'real' : 'demo',
           userId: user.id,
-          seq: raw.seq || 0,
+          guest: !!raw.guest,
           settled: false,
           status: 'open',
-          serverConfirmed: raw.mode === 'real' ? !!raw.serverConfirmed : true
-        });
+          serverConfirmed: raw.serverConfirmed !== false
+        };
+        trades.push(t);
         have[raw.id] = true;
       }
       for (i = 0; i < trades.length; i++) {
         armTradeTimer(trades[i]);
-        if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
-          try {
-            if ((trades[i].mode === 'real' ? 'real' : 'demo') === currentAccountMode()) {
-              D6.Chart.applyOpenTradeVisual(publicTrade(trades[i]));
-            }
-          } catch (eR) { /* ignore */ }
+        if (D6.Chart && D6.Chart.applyOpenTradeVisual && trades[i].mode === currentAccountMode()) {
+          try { D6.Chart.applyOpenTradeVisual(publicTrade(trades[i])); } catch (eR) { /* ignore */ }
         }
       }
       return trades.length;
     },
 
-    refreshPayout: function (assetId, mode) {
-      var asset = C.ASSETS[assetId];
-      var u = D6.Store.current();
-      var m = mode || (u && u.mode) || 'demo';
-      payoutLive[assetId] = rollPayout(asset, m);
-      markets[assetId].payout = payoutLive[assetId];
-      return payoutLive[assetId];
+    // Plus de cote « aléatoire » affichée : 88 % partout, pour tout le monde.
+    refreshPayout: function (assetId) {
+      payoutLive[assetId] = 1.88;
+      if (markets[assetId]) markets[assetId].payout = 1.88;
+      return 1.88;
     },
 
     resyncClocks: function () {
-      bindGlobalBuffers();
-      var now = Date.now();
       var id;
-      for (id in window.assetBuffers) {
-        if (!window.assetBuffers.hasOwnProperty(id)) continue;
-        var buf = window.assetBuffers[id];
-        if (buf) buf.lastMs = now;
-      }
-      for (id in markets) {
-        if (markets[id]) markets[id].lastMs = now;
+      for (id in feeds) {
+        if (feeds.hasOwnProperty(id) && feeds[id].loaded) rebuildBuffer(id);
       }
     },
 
-    tick: function (assetId) {
-      ensureMarkets();
-      var now = Date.now();
+    tick: function () {
       var i;
-      for (i = 0; i < trades.length; i++) {
-        syncTime(trades[i]);
-      }
+      for (i = 0; i < trades.length; i++) syncTime(trades[i]);
       var user = D6.Store && D6.Store.current ? D6.Store.current() : null;
       if (user) api.flushSettlements(user);
-      if (window.chartIsPaused || document.hidden) return;
-      var id;
-      for (id in C.ASSETS) {
-        if (!C.ASSETS.hasOwnProperty(id)) continue;
-        syncMarket(markets[id], C.ASSETS[id], now);
-      }
-      prepareLastSecondSteer(now);
     },
 
     placeOrder: function (user, opts) {
-      if (automationDetected()) return { ok: false, reason: 'Session non sécurisée' };
       if (!user || !D6.Store.current() || D6.Store.current().id !== user.id) {
         return { ok: false, reason: 'Session invalide' };
       }
       var mode = user.mode === 'real' ? 'real' : 'demo';
-      if (MAX_OPEN < 9000 && openForMode(mode).length >= MAX_OPEN) {
-        return { ok: false, reason: 'Limite atteinte. Veuillez attendre la fin d\'un trade.' };
-      }
-
       var nowPerf = performance.now();
-      if (nowPerf - lastOrderAt < 350) {
-        return { ok: false, reason: D6.I18N.t('antibot') };
-      }
+      if (nowPerf - lastOrderAt < 350) return { ok: false, reason: D6.I18N.t('antibot') };
 
-      var stake = D6.roundMoney(Number(opts.stake) || 0);
-      var duration = C.DURATIONS.indexOf(opts.duration) >= 0 ? opts.duration : C.DEFAULT_DURATION;
-      if (duration === 3) duration = 5;
+      var stake = round2(Number(opts.stake) || 0);
+      var duration = C.DURATIONS.indexOf(Number(opts.duration)) >= 0 ? Number(opts.duration) : C.DEFAULT_DURATION;
       var assetId = canonAssetId(opts.assetId);
-      var side = opts.side === 'put' || opts.side === 'sell' ? 'put' : 'call';
-      var wantPay = normalizeOdds(opts.payout != null ? opts.payout : (opts.odds != null ? opts.odds : C.DEFAULT_ODDS));
+      var side = normalizeTradeSide(opts.side);
+      var payout = normalizeOdds(opts.payout != null ? opts.payout : opts.odds);
       var gate = stakeCap(user, stake, mode);
       if (!gate.ok) return gate;
 
-      ensureMarkets();
-      var market = markets[assetId];
-      pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1500;
-      clickQuietUntil[assetId] = Date.now() + 300;
-      engineCaptureFrame(assetId, pendingBusyUntil[assetId]);
-      // Le tampon vif sert plus bas à caler le prix d'entrée sur la bougie en
-      // cours. Son `lastMs` n'est en revanche plus remis à l'heure du clic : il
-      // porte le temps non encore consommé par la simulation, et l'écraser
-      // jetait jusqu'à un pas entier, ce qui se voyait comme un à-coup du
-      // défilement au moment de la prise de position.
-      var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
-      var payout = wantPay;
+      var market = wakeMarket(assetId);
+      var f = feedOf(assetId);
+      if (!f.loaded || market.waiting) return { ok: false, reason: 'Connexion au marché…' };
+
+      // Entrée affichée tout de suite = tick visible ; le serveur confirme le vrai prix.
+      var entryTick = visibleTick(f, Date.now());
+      var entryCents = priceAtTick(assetId, entryTick);
+      if (!(entryCents > 0)) return { ok: false, reason: 'Connexion au marché…' };
+      var expiryTick = entryTick + Math.round(duration * 1000 / TICK_MS);
+      var bar = barrierCents(assetId, duration, side, payout, entryCents);
+      var guest = !hasToken();
+
+      lastOrderAt = nowPerf;
       D6.holdRemote = true;
       setBal(user, mode, balOf(user, mode) - stake);
       D6.Store.addTransaction(user, {
@@ -2115,308 +949,86 @@
         note: (side === 'call' ? 'CALL' : 'PUT') + ' ' + C.ASSETS[assetId].short
       });
 
-      orderSeq += 1;
-      lastOrderAt = nowPerf;
-      var entry = market.price;
-      if (D6.Chart && D6.Chart.lastClose && D6.Chart.lastAsset && D6.Chart.lastAsset() === assetId) {
-        var drawnIn = Number(D6.Chart.lastClose());
-        if (isFinite(drawnIn) && drawnIn > 0) entry = drawnIn;
-      }
-      market.price = entry;
-      if (liveBuf) {
-        liveBuf.price = entry;
-        if (liveBuf.forming) {
-          liveBuf.forming.c = entry;
-          var wEntry = entry * 0.00015;
-          liveBuf.forming.h = Math.max(entry, liveBuf.forming.o || entry) + wEntry;
-          liveBuf.forming.l = Math.min(entry, liveBuf.forming.o || entry) - wEntry;
-        }
-      }
-      var wall = Date.now();
-      var durationMs = duration * 1000;
-      var id = D6.uid();
-
       var t = {
-        id: id,
+        id: D6.uid(),
         assetId: assetId,
         side: side,
         stake: stake,
         duration: duration,
-        durationMs: durationMs,
         timeLeft: duration,
-        entryPrice: entry,
+        entryPrice: entryCents / 100,
+        barrier: bar / 100,
+        barrierCents: bar,
         payout: payout,
-        startTime: wall,
-        startedAt: wall,
-        expiryTime: wall + durationMs,
-        expiresAt: wall + durationMs,
+        entryTick: entryTick,
+        expiryTick: expiryTick,
+        startTime: tickToLocal(entryTick),
+        startedAt: tickToLocal(entryTick),
+        expiryTime: tickToLocal(expiryTick),
+        expiresAt: tickToLocal(expiryTick),
         mode: mode,
         userId: user.id,
-        seq: orderSeq,
+        guest: guest,
         settled: false,
         status: 'open',
-        // Réel : false jusqu’à placeOrder serveur ; démo : débit local déjà fait.
-        serverConfirmed: mode !== 'real'
+        // Démo invité : rien à confirmer. Sinon : attend la réponse placeOrder.
+        serverConfirmed: guest
       };
-      t.ticket = Object.freeze({
-        stake: stake,
-        duration: duration,
-        durationMs: durationMs,
-        payout: payout,
-        side: side,
-        entryPrice: entry,
-        assetId: assetId
-      });
       trades.push(t);
       armTradeTimer(t);
-
-      if (mode === 'real') {
-        user.realStakeVolume = (user.realStakeVolume || 0) + stake;
-        user.totalWageredSinceDeposit = Number(user.realStakeVolume) || 0;
-        user.requiredWagering = D6.roundMoney((Number(user.realDepositTotal) || 0) * ((C.WAGER_MULTIPLIER) || 2));
-        var need = Number(user.wagerNeed) || 0;
-        if (need > 0.009) {
-          need = D6.roundMoney(Math.max(0, need - stake));
-          user.wagerNeed = need;
-          if (need <= 0.009) {
-            user.wagerNeed = 0;
-            user.wagerLock = 0;
-          }
-        }
-      }
       user.lastStake = stake;
       persistOpen(user);
-      if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
+      if (D6.Chart && D6.Chart.captureTradeFrame) {
+        try { D6.Chart.captureTradeFrame(assetId, t.expiryTime + 1000); } catch (eF) { /* ignore */ }
+      }
       var pub = publicTrade(t);
-      // Ligne CALL/PUT immédiate (sync) — ne pas attendre le prochain tick/F5.
       if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
         try { D6.Chart.applyOpenTradeVisual(pub); } catch (eVis) { /* ignore */ }
       }
       return { ok: true, trade: pub };
     },
 
-    /** Annule un trade ouvert non réglé (ex. serveur a refusé la mise). */
+    /** Annule un trade que le serveur a refusé (aucune mise prise côté serveur). */
     abortOpenTrade: function (user, tradeId) {
-      if (!tradeId || !trades.length) return false;
-      var idx = -1;
       var i;
       for (i = 0; i < trades.length; i++) {
-        if (trades[i] && trades[i].id === tradeId) { idx = i; break; }
+        var trade = trades[i];
+        if (!trade || trade.id !== tradeId) continue;
+        if (trade.settled) return false;
+        trade.settled = true;
+        var mode = trade.mode === 'real' ? 'real' : 'demo';
+        var stake = round2(Number(trade.stake) || 0);
+        removeTrade(user, trade);
+        if (mode !== 'real' && user && stake > 0.009) setBal(user, 'demo', balOf(user, 'demo') + stake);
+        return true;
       }
-      if (idx < 0) return false;
-      var trade = trades[idx];
-      if (!trade || trade.settled || trade.status === 'won' || trade.status === 'lost' || trade.status === 'void') {
-        return false;
-      }
-      clearTradeTimer(trade.id);
-      if (D6.Chart && D6.Chart.removeTradeVisual) {
-        try { D6.Chart.removeTradeVisual(trade.id); } catch (eAbort) { /* ignore */ }
-      }
-      var mode = trade.mode === 'real' ? 'real' : 'demo';
-      var stake = D6.roundMoney(Number(trade.stake) || 0);
-      trades.splice(idx, 1);
-      // Démo : la mise avait été retirée localement → on la rend.
-      if (mode !== 'real' && user && stake > 0.009) {
-        setBal(user, 'demo', balOf(user, 'demo') + stake);
-      }
-      if (user) persistOpen(user);
-      return true;
+      return false;
     },
 
-    resolve: function (user, tradeId) {
+    /** Lance le règlement d'un trade expiré. Le résultat arrive par onSettled. */
+    resolve: function (user, tradeId, tries) {
       if (!user || !trades.length) return null;
-      var idx = -1;
+      var trade = null;
       var i;
-      var now = Date.now();
-      if (tradeId) {
-        for (i = 0; i < trades.length; i++) {
-          if (trades[i].id === tradeId) { idx = i; break; }
-        }
-      } else {
-        for (i = 0; i < trades.length; i++) {
-          if (isOpen(trades[i]) && now >= expiryOf(trades[i])) { idx = i; break; }
-        }
+      for (i = 0; i < trades.length; i++) {
+        if (trades[i] && trades[i].id === tradeId) { trade = trades[i]; break; }
       }
-      if (idx < 0) return null;
-      var trade = trades[idx];
-      clearTradeTimer(trade.id);
-      if (trade.settled || trade.status === 'won' || trade.status === 'lost' || trade.status === 'void') {
-        trades.splice(idx, 1);
-        persistOpen(user);
-        if (D6.Chart && D6.Chart.removeTradeVisual) {
-          try { D6.Chart.removeTradeVisual(trade.id); } catch (e0) { /* ignore */ }
-        }
+      if (!trade || trade.settled || settling[trade.id]) return null;
+      if (Date.now() < expiryOf(trade)) return null;
+      if (trade.userId && trade.userId !== user.id) {
+        trade.settled = true;
+        removeTrade(user, trade);
         return null;
       }
-      if (now < expiryOf(trade)) return null;
-
-      // Idempotence : marquer avant crédit.
-      trade.settled = true;
-
-      if (user.id !== trade.userId) {
-        if (D6.Chart && D6.Chart.removeTradeVisual) {
-          try { D6.Chart.removeTradeVisual(trade.id); } catch (eGone) { /* ignore */ }
-        }
-        trades.splice(idx, 1);
-        persistOpen(user);
+      // Pas encore confirmé par le serveur : on attend sa réponse (retry automatique).
+      if (!trade.guest && !trade.serverConfirmed) {
+        if ((tries || 0) < 40) setTimeout(function () { api.resolve(user, tradeId, (tries || 0) + 1); }, 500);
         return null;
       }
-
-      var mode = trade.mode === 'real' ? 'real' : 'demo';
-      var payout = normalizeOdds(trade.ticket && trade.ticket.payout != null ? trade.ticket.payout : trade.payout);
-      ensureMarkets();
-      var mkt = markets[trade.assetId];
-      if (mkt && C.ASSETS[trade.assetId]) {
-        syncMarket(mkt, C.ASSETS[trade.assetId], Date.now());
-      }
-      trade.payout = payout;
-      var entryPx = Number(trade.ticket && trade.ticket.entryPrice != null ? trade.ticket.entryPrice : trade.entryPrice);
-      var decided = decideTradeOutcome(user, trade, mode);
-      var exitPrice = Number(decided.target);
-      if (!(exitPrice > 0) || !isFinite(exitPrice)) exitPrice = entryPx;
-      if (StochasticCore && StochasticCore.round2) {
-        entryPx = StochasticCore.round2(entryPx);
-        exitPrice = StochasticCore.round2(exitPrice);
-      }
-      var voided = !!decided.voided;
-      var won = !voided && !!decided.wantWon;
-      if (mode === 'real' && !isAdminUser(user) && won && hasOppositeHedge(trade)) {
-        won = applyHedgeLock(trade, true);
-      } else if (mode === 'real' && !isAdminUser(user) && won) {
-        applyHedgeLock(trade, true);
-      }
-      if (mode !== 'real' && won && hasOppositeHedge(trade)) {
-        won = applyHedgeLock(trade, true);
-        if (!won) {
-          var hedgeSide = normalizeTradeSide((trade.ticket && trade.ticket.side) || trade.side);
-          exitPrice = forceExitPrice(entryPx, hedgeSide === 'call', false, trade.assetId, false);
-          trade._wantWon = false;
-          trade._exitTarget = exitPrice;
-        }
-      } else if (mode !== 'real' && won) {
-        applyHedgeLock(trade, true);
-      }
-      applyExitToMarket(trade, exitPrice);
-      if (D6.Chart && D6.Chart.removeTradeVisual) {
-        try { D6.Chart.removeTradeVisual(trade.id); } catch (e1) { /* ignore */ }
-      }
-
-      var payoutAmount = 0;
-      var net = 0;
-      var status = 'lost';
-
-      if (voided) {
-        status = 'void';
-        payoutAmount = trade.stake;
-        setBal(user, mode, balOf(user, mode) + trade.stake);
-        net = 0;
-        D6.Store.addTransaction(user, {
-          type: 'void',
-          amount: trade.stake,
-          mode: mode,
-          note: 'Égalité — mise rendue ' + C.ASSETS[trade.assetId].short
-        });
-      } else if (won) {
-        status = 'won';
-        var payoutPct = payoutPercent(payout);
-        payoutAmount = D6.roundMoney(trade.stake * payout);
-        var netProfit = D6.roundMoney(payoutAmount - trade.stake);
-        setBal(user, mode, balOf(user, mode) + payoutAmount);
-        net = netProfit;
-        user.wins = (user.wins || 0) + 1;
-        user.consecutiveWins = (user.consecutiveWins || 0) + 1;
-        user.consecutiveLosses = 0;
-        user.lastLost = false;
-        D6.Store.addTransaction(user, {
-          type: 'win',
-          amount: payoutAmount,
-          mode: mode,
-          note: 'Position gagnante ' + C.ASSETS[trade.assetId].short
-        });
-      } else {
-        status = 'lost';
-        net = -trade.stake;
-        user.consecutiveLosses = (user.consecutiveLosses || 0) + 1;
-        user.consecutiveWins = 0;
-        user.lastLost = true;
-        D6.Store.addTransaction(user, {
-          type: 'loss',
-          amount: -trade.stake,
-          mode: mode,
-          note: 'Position expirée ' + C.ASSETS[trade.assetId].short
-        });
-      }
-
-      trade.status = status;
-      trade.closePrice = exitPrice;
-      trade.exitPrice = exitPrice;
-      user.lastStake = trade.stake;
-
-      user.trades = (user.trades || 0) + 1;
-      if (mode === 'real') user.realTrades = (user.realTrades || 0) + 1;
-      else user.demoTrades = (user.demoTrades || 0) + 1;
-      user.recentResults.unshift({ won: won, mode: mode, voided: voided, payout: payout });
-      if (user.recentResults.length > 30) user.recentResults.length = 30;
-
-      var position = {
-        id: trade.id,
-        at: D6.nowIso(),
-        clock: D6.clock(),
-        assetId: trade.assetId,
-        assetName: C.ASSETS[trade.assetId].short,
-        side: (trade.ticket && trade.ticket.side) || trade.side,
-        stake: (trade.ticket && trade.ticket.stake != null) ? trade.ticket.stake : trade.stake,
-        payout: (trade.ticket && trade.ticket.payout != null) ? trade.ticket.payout : trade.payout,
-        entryPrice: (trade.ticket && trade.ticket.entryPrice != null) ? trade.ticket.entryPrice : trade.entryPrice,
-        duration: (trade.ticket && trade.ticket.duration != null) ? trade.ticket.duration : trade.duration,
-        exitPrice: exitPrice,
-        closePrice: exitPrice,
-        won: won,
-        voided: voided,
-        status: status,
-        net: net,
-        mode: mode,
-        accountType: mode
-      };
-      D6.Store.addPosition(user, position);
-      trades.splice(idx, 1);
-      if (!trades.filter(isLive).length) D6.holdRemote = false;
-      persistOpen(user);
-      if (D6.Supabase && D6.Supabase.saveOrder) {
-        D6.Supabase.saveOrder({
-          id: trade.id,
-          assetId: trade.assetId,
-          side: trade.side,
-          stake: trade.stake,
-          duration: trade.duration,
-          mode: mode,
-          payout: trade.payout,
-          entryPrice: trade.entryPrice,
-          exitPrice: exitPrice,
-          won: won,
-          voided: voided,
-          status: status,
-          net: net
-        }, 'closed');
-      }
-
-      try {
-        document.dispatchEvent(new CustomEvent('orolado-trade-settled', {
-          detail: { isWin: won, voided: voided, payout: payoutAmount, net: net, tradeId: trade.id }
-        }));
-      } catch (e) { /* ignore */ }
-
-      var closed = publicTrade(trade);
-      return {
-        trade: closed,
-        position: position,
-        won: won,
-        voided: voided,
-        net: net,
-        exitPrice: exitPrice,
-        closePrice: exitPrice,
-        status: status
-      };
+      settling[trade.id] = true;
+      if (trade.guest || !hasToken()) settleGuest(user, trade, 0);
+      else settleRemote(user, trade, tries || 0);
+      return null;
     },
 
     flushSettlements: function (user) {
@@ -2427,30 +1039,24 @@
       for (i = 0; i < trades.length; i++) {
         if (isOpen(trades[i]) && now >= expiryOf(trades[i])) ids.push(trades[i].id);
       }
-      var results = [];
-      for (i = 0; i < ids.length; i++) {
-        var res = api.resolve(user, ids[i]);
-        if (res) {
-          results.push(res);
-          if (typeof api.onSettled === 'function') {
-            try { api.onSettled(res); } catch (e) { /* ignore */ }
-          }
-        }
-      }
-      return results;
+      for (i = 0; i < ids.length; i++) api.resolve(user, ids[i]);
+      return [];
     },
 
     maxStakeHint: function (user) {
-      var probe = stakeCap(user, Number.MAX_SAFE_INTEGER, user && user.mode);
-      return probe.cap;
+      return stakeCap(user, Number.MAX_SAFE_INTEGER, user && user.mode).cap;
     }
   };
 
-  // Pas d’API publique nextPrice / seed / bougies futures.
-  D6.Synth = {};
+  ensureMarkets();
+  Object.keys(C.ASSETS).forEach(function (id) { payoutLive[id] = 1.88; });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) api.resyncClocks();
+  });
 
+  D6.Synth = {};
   D6.Engine = api;
   try {
     Object.defineProperty(D6, 'Engine', { configurable: false, writable: false, value: api });
   } catch (e) { /* ignore */ }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));
+})(typeof window !== 'undefined' ? window : this);

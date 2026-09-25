@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v2027';
+const CACHE = 'orolado-v2040';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -34,6 +34,8 @@ self.addEventListener('fetch', function (event) {
   var url = req.url || '';
   // Ne jamais intercepter HTML / CSS / JS : un fallback HTML-as-CSS gèle tous les clics.
   if (req.mode === 'navigate' || /\.(?:html|css|js)(?:\?|$)/i.test(url)) return;
+  // Flux de prix / API : toujours le réseau, jamais de cache (sinon des milliers d'entrées).
+  if (/\.php(?:\?|$)/i.test(url)) return;
   event.respondWith(
     fetch(req).then(function (res) {
       if (!res || res.status !== 200 || url.indexOf('http') !== 0) return res;

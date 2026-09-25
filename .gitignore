@@ -11,3 +11,6 @@ Thumbs.db
 server.ps1
 .cursor/
 
+
+data/feed/
+data/stakes/

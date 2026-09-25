@@ -26,7 +26,8 @@
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 28;
   var wantFitY = false;
-  var CANDLE_DURATION_MS = 1100;
+  // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
+  var CANDLE_DURATION_MS = 1000;
   // Tête de lecture : 62 % sur desktop, 60 % sur mobile, pour qu'elle tombe
   // toujours au milieu d'une case de la grille et jamais sur un trait.
   var HEAD_X_RATIO = 0.62;
@@ -332,6 +333,8 @@
       side: trade.side === 'put' ? 'put' : 'call',
       entryPrice: entry,
       openPrice: entry,
+      barrier: trade.barrier != null ? Number(trade.barrier) : entry,
+      payout: Number(trade.payout) || 1.88,
       startTime: trade.startTime || trade.startedAt || trade.openedAt || 0,
       expiryTime: exp,
       expiresAt: exp,
@@ -718,43 +721,10 @@
     requestAnimationFrame(function () { drawNow(); });
   }
 
-  function steerClose(price, ms, assetId) {
-    var p = Number(price);
-    if (!isFinite(p) || p <= 0) return;
-    var aid = assetId || activeAsset;
-    var from = lastDrawnClose;
-    if (aid !== activeAsset) {
-      var st = window.assetsState && window.assetsState[aid];
-      from = st && isFinite(st.lastPrice) ? st.lastPrice : p;
-    } else if (!(isFinite(from) && from > 0)) {
-      from = p;
-    }
-    steer = {
-      price: p,
-      from: from,
-      start: Date.now(),
-      end: Date.now() + Math.max(80, Number(ms) || 700),
-      assetId: aid
-    };
-  }
-
-  function steeredPrice(raw) {
-    if (!steer || steer.assetId !== activeAsset || !isFinite(steer.price)) return raw;
-    var now = Date.now();
-    if (now >= steer.end) return steer.price;
-    var t = (now - steer.start) / Math.max(1, steer.end - steer.start);
-    t = Math.max(0, Math.min(1, t));
-    t = t * t * (3 - 2 * t);
-    var from = isFinite(steer.from) ? steer.from : raw;
-    return from + (steer.price - from) * t;
-  }
-
-  function applySteerToMarket(market) {
-    /* Overlay only — never write into OHLC / history buffers. */
-    if (!market || !steer || steer.assetId !== activeAsset) return;
-    var p = steeredPrice(market.price);
-    if (!isFinite(p)) return;
-    market.displayPrice = p;
+  // Jeu équitable : la courbe n'est plus jamais déplacée pour coller à un résultat.
+  // steerClose reste exposé (appels anciens) mais ne fait plus rien.
+  function steerClose() {
+    steer = null;
   }
 
   function drawConstellation(pad, w, h) {
@@ -1607,6 +1577,51 @@
     ctx.stroke();
   }
 
+  // Ligne objectif (×5 / ×10 / ×50, ou ligne Boom/Crash) : c'est elle qui décide du gain.
+  // CALL gagne si le prix final est AU-DESSUS, PUT s'il est EN DESSOUS. Hors écran :
+  // on la colle au bord avec une flèche pour que le joueur sache toujours où elle est.
+  function drawBarrierOn(g, trade, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, isCall) {
+    var bar = Number(trade.barrier);
+    if (!isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
+    var by = priceToY(bar, pad, plotH, minP, maxP);
+    if (!isFinite(by)) return;
+    var off = 0;
+    if (by < plotTop + 8) { by = plotTop + 8; off = -1; }
+    if (by > plotBot - 8) { by = plotBot - 8; off = 1; }
+    by = Math.round(by * 2) / 2;
+    var mult = Number(trade.payout) || 1.88;
+    var gold = '#F5C518';
+    g.save();
+    g.setLineDash([6, 4]);
+    g.strokeStyle = gold;
+    g.lineWidth = 1.6;
+    g.globalAlpha = off ? 0.55 : 0.95;
+    g.beginPath();
+    g.moveTo(pad.l, by);
+    g.lineTo(layout.axisX, by);
+    g.stroke();
+    g.setLineDash(NO_DASH);
+    g.globalAlpha = 1;
+    var arrow = off < 0 ? '▲ ' : (off > 0 ? '▼ ' : '');
+    var tag = (mult >= 5 ? ('×' + mult) : (isCall ? 'Au-dessus' : 'En dessous')) + ' ' + arrow + formatAxisPrice(bar);
+    g.font = '800 10px "Hanken Grotesk", sans-serif';
+    var tw = Math.ceil(g.measureText(tag).width) + 12;
+    var tx = Math.max(pad.l + 4, layout.axisX - tw - 60);
+    var ty = by - 8;
+    g.fillStyle = 'rgba(10,15,29,0.92)';
+    g.strokeStyle = gold;
+    g.lineWidth = 1;
+    roundRectOn(g, tx, ty, tw, 16, 7);
+    g.fill();
+    g.stroke();
+    g.fillStyle = gold;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(tag, tx + tw / 2, by + 0.5);
+    g.textBaseline = 'alphabetic';
+    g.restore();
+  }
+
   // Trade ouvert : trait horizontal pointillé + pastille d'entrée CALL/PUT + décompte
   // à gauche. Aucun montant en dollars n'est tracé le long du trait.
   function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout, clusterN) {
@@ -1638,6 +1653,7 @@
     g.stroke();
     g.setLineDash(NO_DASH);
     g.globalAlpha = 1;
+    drawBarrierOn(g, trade, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, isCall);
 
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
@@ -1894,8 +1910,7 @@
     var wantSpan = Math.abs(h) * routeSpanPct(assetId);
     var span;
     var mid;
-    var softPair = (assetId === 'stable' || assetId === 'horizon50');
-    // Span sticky (taille inchangée). Mid figé au centre : seul le tracé avance.
+    // Span sticky (taille inchangée).
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
       span = span * 0.997 + wantSpan * 0.003;
@@ -1906,29 +1921,15 @@
       mid = (prevMin + prevMax) / 2;
     } else {
       span = wantSpan;
-      if (softPair) {
-        mid = h;
-      } else {
-        // 8 autres : ancrage initial sur la base (route moteur), pas sur un pic.
-        var cfg0 = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[assetId] : null;
-        var home0 = cfg0 && Number(cfg0.basePrice) > 0 ? Number(cfg0.basePrice) : h;
-        // Crash : lean 0.997 — caler le cadre sur le même milieu que la route.
-        if (assetId === 'crash300') home0 = home0 * 0.997;
-        mid = home0;
-      }
+      mid = h;
     }
     var half = span / 2;
-    if (softPair) {
-      // Stable Core / Oro Horizon 50 : VALIDÉS — ne pas retoucher.
-      var edge = span * 0.20;
-      var panK = 0.045;
-      if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
-      if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
-    } else {
-      // 8 autres (mobile + plein écran) : cadre 100 % figé au milieu.
-      // Zéro pan — c’est le pan qui créait l’effet « photo » haut/bas.
-      // La route moteur garde la tête dans le cadre.
-    }
+    // Jeu équitable : plus de « route » qui ramène le prix au centre, la courbe est libre.
+    // La caméra suit donc la tête pour les 10 actifs (recette Stable/Horizon validée).
+    var edge = span * 0.20;
+    var panK = 0.045;
+    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * panK;
+    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * panK;
     return { min: mid - half, max: mid + half };
   }
 
@@ -1998,7 +1999,21 @@
     var theme = plotTheme(asset);
     var market = D6.Engine && D6.Engine.getMarket ? D6.Engine.getMarket(activeAsset) : null;
     if (!market) return;
-    applySteerToMarket(market);
+    if (market.waiting) {
+      // Historique pas encore reçu du serveur : fond seul, jamais une fausse courbe.
+      ctx.fillStyle = '#0B0E14';
+      ctx.fillRect(0, 0, cssW, cssH);
+      ctx.fillStyle = 'rgba(245,197,24,0.55)';
+      ctx.font = '700 12px "Hanken Grotesk", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Connexion au marché…', cssW / 2, cssH / 2);
+      ctx.textAlign = 'left';
+      if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
+      viewMin = 0;
+      viewMax = 0;
+      wantFitY = true;
+      return;
+    }
     frameDisplayPrice = updateHeadPrice(activeAsset, market.price, now);
     var allTrades = collectOpenTradeVisuals();
     var primary = allTrades[0] || null;
@@ -2152,7 +2167,18 @@
       }
     }
     if (holdLock && st.lockMax > st.lockMin) {
-      // Cadre 100 % figé pendant le trade : trait d'entrée calme, taille inchangée.
+      // Cadre figé pendant le trade (trait d'entrée calme). Mais la courbe est désormais
+      // libre (vrai hasard) : si la tête s'approche d'un bord, le cadre glisse doucement,
+      // même taille, pour qu'elle ne sorte jamais de l'écran.
+      var lockSpan = st.lockMax - st.lockMin;
+      var lockEdge = lockSpan * 0.10;
+      var shiftY = 0;
+      if (head > st.lockMax - lockEdge) shiftY = head - (st.lockMax - lockEdge);
+      else if (head < st.lockMin + lockEdge) shiftY = head - (st.lockMin + lockEdge);
+      if (shiftY) {
+        st.lockMin += shiftY * 0.12;
+        st.lockMax += shiftY * 0.12;
+      }
       viewMin = st.lockMin;
       viewMax = st.lockMax;
     }

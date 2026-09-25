@@ -13,22 +13,14 @@
     QUICK_STAKES: [1, 5, 10, 25, 50],
     DURATIONS: [5, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 5,
-    DEMO_WIN_RATE: 0.55,
-    DEMO_FORCE_WINS: 0,
-    REAL_WIN_RATE: 0.48,
-    ADMIN_WIN_RATE: 0.70,
     REAL_PAYOUT: 1.88,
     ODDS_MULT: [1.88, 5, 10, 50],
     DEFAULT_ODDS: 1.88,
     PAYOUT_PCT: { '1.88': 88, '5': 500, '10': 1000, '50': 5000 },
-    // Joueurs ordinaires RÉEL — 48 % sur 1.88 ; autres cotes au même ratio (48/42).
-    ODDS_WIN_RATE: { '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018 },
-    // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
-    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 },
-    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 },
-    // Démo : 55 % au 88 %, autres payouts au même ratio que le réel.
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 },
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 },
+    // Jeu équitable : aucun taux de gain programmé. Le résultat vient du prix réel du flux
+    // serveur. Chances publiques (identiques démo / réel / admin, sur les 10 actifs) :
+    FAIR_WIN_CHANCE: { '1.88': 0.50, '5': 0.188, '10': 0.094, '50': 0.0188 },
+    FAIR_RTP: 0.94,
     WITHDRAW_MINS: {
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,

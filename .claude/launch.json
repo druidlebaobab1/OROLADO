@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "orolado-static",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\PC\\OROLADO\\server.ps1"],
+      "port": 8090
+    }
+  ]
+}

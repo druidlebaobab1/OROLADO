@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Vérif syntaxe JS</title></head>
+<body style="background:#111;color:#eee;font:14px monospace">
+<pre id="out"></pre>
+<script>
+  var out = document.getElementById('out');
+  var errs = [];
+  window.addEventListener('error', function (e) { errs.push((e.filename || '').split('/').pop() + ':' + e.lineno + ' ' + e.message); });
+  function done() {
+    out.textContent = errs.length ? ('ERREURS:\n' + errs.join('\n')) : 'OK : aucune erreur de syntaxe';
+    document.title = errs.length ? 'KO' : 'OK';
+  }
+</script>
+<!-- On vérifie seulement que chaque fichier se parse (les erreurs d'exécution sans page complète sont ignorées). -->
+<script>
+  var files = ['config.js','translations.js','i18n.js','store.js','api.js','supabase.js','auth.js','fair_table.js','engine.js','chart.js','app.js'];
+  var i = 0;
+  function next() {
+    if (i >= files.length) return done();
+    var f = files[i++];
+    fetch('../js/' + f).then(function (r) { return r.text(); }).then(function (src) {
+      try { new Function(src); } catch (e) { errs.push(f + ' : ' + e.message); }
+      next();
+    }, function (e) { errs.push(f + ' : lecture impossible ' + e); next(); });
+  }
+  next();
+</script>
+</body></html>

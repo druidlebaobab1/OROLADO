@@ -1293,15 +1293,9 @@
     return 88;
   }
 
+  // Jeu équitable : le gain affiché est le gain payé (88 % partout), jamais un chiffre au hasard.
   function assetPayoutPct(assetId, basePct) {
-    if (basePct !== 88) return basePct;
-    var asset = D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[assetId];
-    if (!asset) return basePct;
-    var lo = Number(asset.payoutMin);
-    var hi = Number(asset.payoutMax);
-    if (!(lo > 1) || !(hi >= lo)) return basePct;
-    var live = lo + Math.random() * (hi - lo);
-    return Math.round((live - 1) * 100);
+    return basePct;
   }
 
   function updatePayoutUi() {
@@ -1439,7 +1433,9 @@
       }
     }
     if (left <= 0.05 && D6.Engine.flushSettlements) D6.Engine.flushSettlements(u);
-    var diff = market.price - trade.entryPrice;
+    // Gagnant = du bon côté de la ligne objectif (= prix d'entrée en 88 %).
+    var line = trade.barrier != null ? Number(trade.barrier) : trade.entryPrice;
+    var diff = market.price - line;
     var winning = (trade.side === 'call' && diff > 0) || (trade.side === 'put' && diff < 0);
     pnl.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + ' pts';
     pnl.className = 'pnl-value ' + (winning ? 'up' : 'down');
@@ -2646,23 +2642,11 @@
     maybeLossStreakTip(user());
     patchHistorySoon();
     syncTradeButtons();
+    // Le résultat vient déjà du serveur (engine.js → settleOrder). Ici on applique
+    // seulement le solde officiel qu'il a renvoyé : plus aucun « j'ai gagné » envoyé.
     if (D6.Api && D6.Api.token() && id) {
       var trade = res.trade || {};
       var settleMode = trade.mode || lastSettleMode;
-      if (settleMode === 'real') D6.holdRemote = true;
-      var settleBody = {
-        orderId: id,
-        won: !!res.won,
-        voided: !!res.voided,
-        net: res.net,
-        exitPrice: res.exitPrice || res.closePrice,
-        entryPrice: trade.entryPrice,
-        side: trade.side,
-        stake: trade.stake,
-        mode: settleMode,
-        payout: trade.payout
-      };
-      if (settleMode === 'demo') settleBody.balanceAfter = D6.Store.demoBalance(uSettled);
       function applySettledVault(remote) {
         if (watchBan(remote)) {
           D6.holdRemote = false;
@@ -2702,27 +2686,8 @@
           D6.holdRemote = false;
         }, function () { D6.holdRemote = false; });
       }
-      D6.Api.post('settleOrder', settleBody, 25000).then(function (remote) {
-        if (applySettledVault(remote)) {
-          // Fix solde réel : réconciliation 3s après settle pour garantir Supabase = affichage.
-          if (settleMode === 'real') setTimeout(function () { forceMeReal(); }, 3000);
-          return;
-        }
-        if (settleMode === 'real') {
-          return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
-            if (!applySettledVault(again)) return forceMeReal();
-          }, function () { return forceMeReal(); });
-        }
-        D6.holdRemote = false;
-      }, function () {
-        if (settleMode !== 'real') {
-          D6.holdRemote = false;
-          return;
-        }
-        return D6.Api.post('settleOrder', settleBody, 25000).then(function (again) {
-          if (!applySettledVault(again)) return forceMeReal();
-        }, function () { return forceMeReal(); });
-      });
+      if (settleMode === 'real' && !applySettledVault(res.remote)) forceMeReal();
+      else if (settleMode !== 'real') D6.holdRemote = false;
     }
   }
 
@@ -2835,6 +2800,7 @@
       );
     }
     if (D6.Api && D6.Api.token()) {
+      // Le serveur fixe lui-même le prix d'entrée et la ligne objectif.
       var placeBody = {
         id: res.trade.id,
         stake: stake,
@@ -2842,7 +2808,6 @@
         duration: sealedDur,
         mode: mode,
         assetId: res.trade.assetId,
-        entryPrice: res.trade.entryPrice,
         payout: res.trade.payout || currentOdds(u)
       };
       var placedTradeId = res.trade.id;
@@ -2877,26 +2842,21 @@
           killUnfundedTrade(remote.reason || remote.error || '');
           return true;
         }
+        if (!(remote && remote.ok && remote.order)) return false;
+        // Ordre accepté : on s'aligne sur le vrai prix d'entrée / la ligne / l'expiration serveur.
+        if (D6.Engine && D6.Engine.confirmTrade) D6.Engine.confirmTrade(placedTradeId, remote.order);
         if (mode === 'real') {
-          if (!(remote && remote.ok && remote.vault && remote.vault.real != null)) return false;
-          var srvReal = Number(remote.vault.real);
-          if (isFinite(srvReal) && srvReal >= 0) {
-            // Filet : si le serveur renvoie encore l’ancien solde, forcer le débit local affiché.
-            if (realBefore != null && isFinite(realBefore) && srvReal > realBefore - stake + 0.05) {
-              srvReal = D6.roundMoney(Math.max(0, realBefore - stake));
-            }
+          clearStakeReserve();
+          if (remote.vault && remote.vault.real != null && isFinite(Number(remote.vault.real))) {
+            var srvReal = Number(remote.vault.real);
             applyOfficialReal(srvReal, { fromMe: true, force: true, allowZero: srvReal <= 0.009, fromTrade: true });
-            if (D6.Engine && D6.Engine.markTradeFunded) D6.Engine.markTradeFunded(placedTradeId);
-            clearStakeReserve();
             updateBalance(true);
+          } else {
+            // Réponse « déjà enregistré » (retry) : relire le solde officiel.
+            restoreRealFromServer();
           }
-          return true;
         }
-        if (remote && remote.ok) {
-          if (D6.Engine && D6.Engine.markTradeFunded) D6.Engine.markTradeFunded(placedTradeId);
-          return true;
-        }
-        return false;
+        return true;
       }
       function restoreRealFromServer() {
         clearStakeReserve();
