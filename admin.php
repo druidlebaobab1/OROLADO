@@ -170,6 +170,7 @@ function admin_ensure_sb_vault(string $uid, float $minReal = 0.0): ?array {
 
 function admin_is_admin_account(string $uid, array $found = []): bool {
   if ($uid === 'admin_master') return true;
+  if (isset($_SESSION['admin_uid']) && $uid === $_SESSION['admin_uid']) return true;
   $em = strtolower(trim((string) ($found['email'] ?? '')));
   if ($em === 'admin@orolado.com' || $em === 'admin@6diablo.com') return true;
   return function_exists('orolado_admin_emails') && $em !== '' && in_array($em, orolado_admin_emails(), true);

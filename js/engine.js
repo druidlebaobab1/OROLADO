@@ -1568,7 +1568,7 @@
     if (Math.abs(n - 1.88) < 0.02) return 88;
     if (Math.abs(n - 5) < 0.02) return 500;
     if (Math.abs(n - 10) < 0.02) return 1000;
-    if (Math.abs(n - 51) < 0.02) return 5000;
+    if (Math.abs(n - 50) < 0.02) return 5000;
     if (n >= 80) return n;
     if (n > 1 && n < 80) return Math.round((n - 1) * 100);
     return 88;
@@ -1723,7 +1723,7 @@
     var adj = base + gap * 0.9;
     var mult = Number(trade && trade.payout) || 1.88;
     var hi = base >= 0.4 ? Math.min(0.56, base + 0.12) : Math.min(base + 0.03, 0.95 / Math.max(1.2, mult));
-    var lo = Math.max(0.12, base * 0.62);
+    var lo = Math.max(0.001, base * 0.62);
     if (adj > hi) adj = hi;
     if (adj < lo) adj = lo;
     return adj;
@@ -2319,8 +2319,8 @@
       } else if (won) {
         status = 'won';
         var payoutPct = payoutPercent(payout);
-        var netProfit = D6.roundMoney(trade.stake * (payoutPct / 100));
-        payoutAmount = D6.roundMoney(trade.stake + netProfit);
+        payoutAmount = D6.roundMoney(trade.stake * payout);
+        var netProfit = D6.roundMoney(payoutAmount - trade.stake);
         setBal(user, mode, balOf(user, mode) + payoutAmount);
         net = netProfit;
         user.wins = (user.wins || 0) + 1;

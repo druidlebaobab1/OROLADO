@@ -452,7 +452,7 @@
     if (openLiveRealStake() > 0.009) return true;
     if (D6.stakeReserve && Date.now() < D6.stakeReserve.until) return true;
     // Fix solde réel : 8s suffisent pour que settleOrder réponde (au lieu de 45s).
-    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 8000) return true;
+    if (lastSettleAt && lastSettleMode === 'real' && Date.now() - lastSettleAt < 45000) return true;
     var locks = getBalanceLocks();
     if (locks && Date.now() < locks.until && locks.real != null) return true;
     return false;
