@@ -1035,9 +1035,9 @@ function admin_list_payload(string $view, array $req): array {
       $pay = (float) ($o['payout'] ?? $o['payoutMult'] ?? 0);
       $pct = 0;
       if (abs($pay - 1.88) < 0.02 || abs($pay - 88) < 0.05) $pct = 88;
-      else if (abs($pay - 6.0) < 0.02 || abs($pay - 500) < 0.05) $pct = 500;
-      else if (abs($pay - 11.0) < 0.02 || abs($pay - 1000) < 0.05) $pct = 1000;
-      else if (abs($pay - 51.0) < 0.02 || abs($pay - 5000) < 0.05) $pct = 5000;
+      else if (abs($pay - 5.0) < 0.02 || abs($pay - 500) < 0.05) $pct = 500;
+      else if (abs($pay - 10.0) < 0.02 || abs($pay - 1000) < 0.05) $pct = 1000;
+      else if (abs($pay - 50.0) < 0.02 || abs($pay - 5000) < 0.05) $pct = 5000;
       if ($pct === 0 || !isset($cnt[$pct])) continue;
       $uid = (string) ($o['user_id'] ?? '');
       $cnt[$pct]++;
