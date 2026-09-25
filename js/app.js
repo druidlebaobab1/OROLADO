@@ -1475,14 +1475,14 @@
       (kind === 'void' ? '0' : fmtOutcomeUsd(net)) + '</span></div>';
   }
 
-  function liveOrderRow(t) {
-    var asset = D6.CONFIG.ASSETS[t.assetId];
-    var name = (asset && (asset.short || asset.name)) || t.assetId;
-    var left = Math.max(0, Number(t.timeLeft) || 0);
+  function liveOrderRow(tr) {
+    var asset = D6.CONFIG.ASSETS[tr.assetId];
+    var name = (asset && (asset.short || asset.name)) || tr.assetId;
+    var left = Math.max(0, Number(tr.timeLeft) || 0);
     return '<div class="h-item live">' +
-      '<span class="h-badge ' + t.side + '">' + (t.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
+      '<span class="h-badge ' + tr.side + '">' + (tr.side === 'call' ? 'CALL' : 'PUT') + '</span>' +
       '<div><div class="h-main">' + name + ' · ' + (t('histOpen') || 'EN COURS') + ' · ' + fmtTimerLeft(left) + '</div>' +
-      '<div class="h-time">' + D6.fmtFCFA(t.stake) + ' · ' + (t.duration || '') + 's</div></div>' +
+      '<div class="h-time">' + D6.fmtFCFA(tr.stake) + ' · ' + (tr.duration || '') + 's</div></div>' +
       '<span class="h-gain">' + fmtTimerLeft(left) + '</span></div>';
   }
 

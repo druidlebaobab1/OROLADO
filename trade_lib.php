@@ -20,6 +20,10 @@ require_once __DIR__ . '/feed_lib.php';
 const OROLADO_UUID_RE = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
 
 function orolado_trade_rpc(string $fn, array $args): ?array {
+  // Tests locaux uniquement (scripts/test-trades.php) : fausse caisse, jamais en ligne.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_RPC']) && is_callable($GLOBALS['OROLADO_FAKE_RPC'])) {
+    return ($GLOBALS['OROLADO_FAKE_RPC'])($fn, $args);
+  }
   $hdrs = supabase_admin_headers();
   $url = rtrim(supabase_project_url(), '/');
   if (!$hdrs || $url === '') return null;
