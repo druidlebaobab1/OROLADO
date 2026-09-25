@@ -1784,7 +1784,7 @@ if ($action === 'settleOrder') {
   $reqEntry = isset($req['entryPrice']) ? (float) $req['entryPrice'] : (isset($req['openPrice']) ? (float) $req['openPrice'] : 0);
   $reqBal = array_key_exists('balanceAfter', $req) ? orolado_money($req['balanceAfter']) : null;
   if ($reqBal !== null && ($reqBal < 0 || $reqBal > 50000000)) $reqBal = null;
-  $oddsAllowed = [1.88, 6.0, 11.0, 51.0];
+  $oddsAllowed = [1.88, 5.0, 10.0, 50.0];
   $payoutReq = (float) ($req['payout'] ?? $req['odds'] ?? 1.88);
   $reqPayout = 1.88;
   foreach ($oddsAllowed as $od) {

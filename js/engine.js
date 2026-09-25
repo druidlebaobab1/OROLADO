@@ -13,7 +13,7 @@
       WIN_P_REAL: Object.freeze({ '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018 }),
       WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 }),
       WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 }),
-      PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
+      PROFIT_PCT: Object.freeze({ '1.88': 88, '5': 500, '10': 1000, '50': 5000 })
     });
 
     function boxMuller() {
@@ -73,9 +73,9 @@
     function oddsKey(mult) {
       var n = Number(mult);
       if (Math.abs(n - 1.88) < 0.001) return '1.88';
-      if (Math.abs(n - 6) < 0.001) return '6';
-      if (Math.abs(n - 11) < 0.001) return '11';
-      if (n >= 50) return '51';
+      if (Math.abs(n - 5) < 0.001) return '5';
+      if (Math.abs(n - 10) < 0.001) return '10';
+      if (n >= 40) return '50';
       return '1.88';
     }
 
@@ -1566,8 +1566,8 @@
     if (!isFinite(n) || n <= 0) return 88;
     if (n === 88 || n === 500 || n === 1000 || n === 5000) return n;
     if (Math.abs(n - 1.88) < 0.02) return 88;
-    if (Math.abs(n - 6) < 0.02) return 500;
-    if (Math.abs(n - 11) < 0.02) return 1000;
+    if (Math.abs(n - 5) < 0.02) return 500;
+    if (Math.abs(n - 10) < 0.02) return 1000;
     if (Math.abs(n - 51) < 0.02) return 5000;
     if (n >= 80) return n;
     if (n > 1 && n < 80) return Math.round((n - 1) * 100);
@@ -1633,9 +1633,9 @@
   function oddsKey(mult) {
     var o = normalizeOdds(mult);
     if (Math.abs(o - 1.88) < 0.001) return '1.88';
-    if (Math.abs(o - 6) < 0.001) return '6';
-    if (Math.abs(o - 11) < 0.001) return '11';
-    if (o >= 50) return '51';
+    if (Math.abs(o - 5) < 0.001) return '5';
+    if (Math.abs(o - 10) < 0.001) return '10';
+    if (o >= 40) return '50';
     return '1.88';
   }
 
