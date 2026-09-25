@@ -1,5 +1,5 @@
-/* ==========================================================================
-   CORE ENGINE - CALCUL STOCHASTIQUE SCELLÉ DÉFINITIF - NE PAS MODIFIER
+﻿/* ==========================================================================
+   CORE ENGINE - CALCUL STOCHASTIQUE SCELLÃ‰ DÃ‰FINITIF - NE PAS MODIFIER
    ========================================================================== */
 (function (root) {
   'use strict';
@@ -177,7 +177,7 @@
   var lastOrderAt = 0;
   var sessionNonce = D6.uid();
   var orderSeq = 0;
-      // Max simultané très élevé : pas de blocage à 2 trades.
+      // Max simultanÃ© trÃ¨s Ã©levÃ© : pas de blocage Ã  2 trades.
   var MAX_OPEN = (C.MAX_OPEN != null ? C.MAX_OPEN : 10);
   // Courbe : 1 bougie = 1100 ms (recul un peu plus doux, synchro chart/engine).
   var CANDLE_MS = 1100;
@@ -212,7 +212,7 @@
     return C.ASSETS[id] ? id : 'v100';
   }
 
-  // Profils indépendants : seed + vol + dérive + spikes (pas le même tableau + offset).
+  // Profils indÃ©pendants : seed + vol + dÃ©rive + spikes (pas le mÃªme tableau + offset).
   function feedProfile(assetId) {
     switch (assetId) {
       case 'stable':
@@ -253,7 +253,7 @@
       loMul = 0.78;
       hiMul = 1.22;
     }
-    // Bandes élargies : sans ça les actifs très volatils collent à leurs bornes.
+    // Bandes Ã©largies : sans Ã§a les actifs trÃ¨s volatils collent Ã  leurs bornes.
     if (id === 'titanpulse') {
       loMul = 0.42;
       hiMul = 1.58;
@@ -393,8 +393,8 @@
 
   var SIM = {
     // center > 0.5 : le bruit penche un peu vers le bas (actifs calmes).
-    // lean < 1 : le rappel se pose légèrement sous le prix de base.
-    // Les volatils restent centrés (center 0.5, lean 1) et tournent
+    // lean < 1 : le rappel se pose lÃ©gÃ¨rement sous le prix de base.
+    // Les volatils restent centrÃ©s (center 0.5, lean 1) et tournent
     // au milieu de leur plage, avant le plafond de bande.
     v100: { mode: 'candles', vol: 0.0026, stepMs: 70, pullK: 0.050, center: 0.50, lean: 1 },
     stable: { mode: 'line', vol: 0.00052, color: '#ff3366', coreWave: true, stepMs: 170, pullK: 0.048, center: 0.515, lean: 0.9985 },
@@ -438,8 +438,8 @@
   }
 
   function stepBoomBurst(asset, buf, price, tMs) {
-    // BoomSpike v9 — simulation neuve, simple, bornée à une route fixe.
-    // idle → charge → spike → settle. Jamais hors bande (mobile + plein écran).
+    // BoomSpike v9 â€” simulation neuve, simple, bornÃ©e Ã  une route fixe.
+    // idle â†’ charge â†’ spike â†’ settle. Jamais hors bande (mobile + plein Ã©cran).
     var from = price;
     var base = Number(asset && asset.basePrice) || from;
     if (!(base > 0)) base = from > 0 ? from : 3890;
@@ -455,7 +455,7 @@
     }
 
     if (!buf.boomPhase || buf.boomPhase === 'acc' || buf.boomPhase === 'burst' || buf.boomPhase === 'relax') {
-      // Reset des anciennes phases patchées.
+      // Reset des anciennes phases patchÃ©es.
       buf.boomPhase = 'idle';
       buf.boomPhaseUntil = tMs + 1600 + Math.random() * 2200;
       buf.boomMid = base;
@@ -529,8 +529,8 @@
     var sim = simOf(asset.id);
     var base = Number(asset.basePrice) || price;
     var vol = sim.vol;
-    // Pendant un trade : même volatilité / même rappel qu'à l'idle.
-    // (Le frein v1400 aplatissait la courbe et créait un « serpent » local.)
+    // Pendant un trade : mÃªme volatilitÃ© / mÃªme rappel qu'Ã  l'idle.
+    // (Le frein v1400 aplatissait la courbe et crÃ©ait un Â« serpent Â» local.)
     var bias = 0.49;
     if (!busyIn && sim.spike === 1) bias = 0.58;
     if (!busyIn && sim.spike === -1) bias = 0.40;
@@ -546,7 +546,7 @@
       var wH = (Math.random() - 0.5) * price * 0.0014;
       nextOut = price + gapH * 0.055 + nH + wH;
     } else if (sim.crashCalm && !opts.spike) {
-      // Remontée Crash un peu plus longue / fluide entre les ventes.
+      // RemontÃ©e Crash un peu plus longue / fluide entre les ventes.
       var riseC = 0.00032 + Math.random() * 0.00028;
       var jitC = (Math.random() - 0.58) * price * vol;
       var midC = base * (sim.lean != null ? sim.lean : 0.997);
@@ -564,8 +564,8 @@
     }
     var stepCap = tickCapPct(asset, !!opts.spike);
     nextOut = capPctMove(prevPrice, nextOut, stepCap);
-    // Route douce : la tête reste dans une bande autour du lean mid et n'atteint
-    // jamais les bords du graphique (évite les pics qui rentrent dans les barres).
+    // Route douce : la tÃªte reste dans une bande autour du lean mid et n'atteint
+    // jamais les bords du graphique (Ã©vite les pics qui rentrent dans les barres).
     if (sim.coreWave || sim.horizonCalm) {
       var routeMid = base * (sim.lean != null ? sim.lean : 1);
       var routeHalf = base * (sim.coreWave ? 0.0026 : 0.0022);
@@ -574,7 +574,7 @@
       if (nextOut > hiR) nextOut = nextOut + (hiR - nextOut) * 0.62;
       if (nextOut < loR) nextOut = nextOut + (loR - nextOut) * 0.62;
     } else if (sim.crashCalm) {
-      // Crash 300 : hard-clamp dans la route (ventes longues sans débordement).
+      // Crash 300 : hard-clamp dans la route (ventes longues sans dÃ©bordement).
       var routeMidC = base * (sim.lean != null ? sim.lean : 0.997);
       var routeHalfC = base * 0.0058;
       var loC = routeMidC - routeHalfC;
@@ -582,20 +582,20 @@
       if (nextOut > hiC) nextOut = hiC;
       if (nextOut < loC) nextOut = loC;
     } else if (!sim.boomBurst) {
-      // Huit actifs : même calage centre que Crash — le prix reste dans la bande,
-      // la caméra n'a plus besoin de « suivre la photo ».
+      // Huit actifs : mÃªme calage centre que Crash â€” le prix reste dans la bande,
+      // la camÃ©ra n'a plus besoin de Â« suivre la photo Â».
       var routeMidV = base * (sim.lean != null ? sim.lean : 1);
       var routeHalfV = base * 0.0062;
       if (asset && asset.id === 'goldtrend') routeHalfV = base * 0.0070;
       if (asset && asset.id === 'apex500') {
-        // Apex : bande un peu plus serrée (surtout FS où les pics frôlaient le bas).
+        // Apex : bande un peu plus serrÃ©e (surtout FS oÃ¹ les pics frÃ´laient le bas).
         routeHalfV = base * (isFsTradeUi() ? 0.0052 : 0.0060);
       }
       if (asset && asset.id === 'v100') {
         routeHalfV = base * (isFsTradeUi() ? 0.0050 : 0.0058);
       }
       if (asset && asset.id === 'titanpulse') {
-        // Même recette V100/Apex : retenue FS, mobile inchangé.
+        // MÃªme recette V100/Apex : retenue FS, mobile inchangÃ©.
         routeHalfV = base * (isFsTradeUi() ? 0.0058 : 0.0075);
       }
       if (asset && asset.id === 'nexusprime') {
@@ -647,8 +647,8 @@
         if (c >= o) c = o + Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
         else c = o - Math.min(maxHz, Math.max(ampHz, Math.abs(c - o)));
       } else if (sim.boomBurst) {
-        // Corps de phase calme lisibles : à 0.00014 les bougies hors explosion
-        // se réduisaient à des points invisibles.
+        // Corps de phase calme lisibles : Ã  0.00014 les bougies hors explosion
+        // se rÃ©duisaient Ã  des points invisibles.
         var tinyB = Math.max(Math.abs(o) * 0.0007, 0.05);
         c = c >= o ? o + tinyB : o - tinyB;
       } else if (sim.spike === 1) {
@@ -740,7 +740,7 @@
     return true;
   }
 
-  /* —— Persistance session : même trajectoire après F5 / retour d’onglet —— */
+  /* â€”â€” Persistance session : mÃªme trajectoire aprÃ¨s F5 / retour dâ€™onglet â€”â€” */
   var CURVE_SS_PREFIX = 'oro_curve_v2:';
   var CURVE_SS_MAX_AGE_MS = 45 * 60 * 1000;
   var CURVE_SS_KEEP_N = 720;
@@ -935,7 +935,7 @@
     var spiked = false;
     if (sim.crashCalm) {
       var midCr = base * (sim.lean != null ? sim.lean : 0.997);
-      // Remontée un peu plus douce ; ventes seed en 2 temps (plus fluides).
+      // RemontÃ©e un peu plus douce ; ventes seed en 2 temps (plus fluides).
       close = prev + (midCr - prev) * 0.065 + prev * (0.00007 + Math.random() * 0.00014);
       if (i > 8 && Math.random() < 0.028) {
         close = prev * (0.9978 - Math.random() * 0.0018);
@@ -967,8 +967,8 @@
       h = Math.max(open, close) + wick;
       l = Math.min(open, close) - wick;
     }
-    // Mèches bornées au corps, comme dans finishCandle : sans ça l'historique
-    // amorcé garderait des mèches calculées sur la volatilité seule.
+    // MÃ¨ches bornÃ©es au corps, comme dans finishCandle : sans Ã§a l'historique
+    // amorcÃ© garderait des mÃ¨ches calculÃ©es sur la volatilitÃ© seule.
     if (sim.wickK != null) {
       var bodyW = Math.abs(close - open);
       var capW = bodyW * sim.wickK;
@@ -1160,7 +1160,7 @@
     }
     var remain = elapsed - catchN * cms;
     if (remain < 0) remain = 0;
-    // C'est cette cadence, et non `sim.tickMs`, qui pilote réellement le rythme.
+    // C'est cette cadence, et non `sim.tickMs`, qui pilote rÃ©ellement le rythme.
     var stepMs = sim.stepMs || 120;
     var steps = Math.floor(remain / stepMs);
     if (remain < stepMs) steps = 0;
@@ -1182,7 +1182,7 @@
           }
           didSpike = true;
         } else if (sim.crashCalm && buf.crashSellUntil && tMs < buf.crashSellUntil) {
-          // Vente Crash allongée : descente fluide vers la cible, pas un seul tick.
+          // Vente Crash allongÃ©e : descente fluide vers la cible, pas un seul tick.
           var sellTgt = Number(buf.crashSellTarget) || (price * 0.995);
           var sellK = 0.145 + Math.random() * 0.04;
           var sellJit = (Math.random() - 0.55) * price * 0.00012;
@@ -1202,7 +1202,7 @@
         } else if (!busy && Date.now() >= (clickQuietUntil[asset.id] || 0) && sim.spike && tMs >= (buf.nextSpike || 0)) {
           var fromP = price;
           if (sim.crashCalm) {
-            // Démarre une vente plus longue (~1.6–2.5 s), harmonieuse.
+            // DÃ©marre une vente plus longue (~1.6â€“2.5 s), harmonieuse.
             buf.crashSellTarget = fromP * (1 - 0.0042 - Math.random() * 0.0020);
             buf.crashSellUntil = tMs + 1600 + Math.random() * 900;
             buf.crashSellFrom = fromP;
@@ -1239,7 +1239,7 @@
           forming = { o: price, h: price, l: price, c: price, t: bucket * cms };
         }
       }
-    // `rev` ne change que si la simulation a réellement avancé : tout l'étage de
+    // `rev` ne change que si la simulation a rÃ©ellement avancÃ© : tout l'Ã©tage de
     // publication (copies de tableaux, min/max) reste alors au repos entre deux pas.
     var moved = (steps > 0 || catchN > 0);
     buf.price = clampIndexPrice(price, asset);
@@ -1413,8 +1413,8 @@
   }
 
   function setBal(user, mode, value) {
-    // RÉEL : le serveur (placeOrder / settleOrder) est la seule écriture du solde.
-    // Sinon l’écran bouge puis me() ramène le montant du dépôt.
+    // RÃ‰EL : le serveur (placeOrder / settleOrder) est la seule Ã©criture du solde.
+    // Sinon lâ€™Ã©cran bouge puis me() ramÃ¨ne le montant du dÃ©pÃ´t.
     if (mode === 'real') return;
     if (D6.Store.setBalanceMode) D6.Store.setBalanceMode(user, mode, value);
     else {
@@ -1428,8 +1428,8 @@
   function stakeCap(user, stake, mode) {
     mode = mode || user.mode;
     var balance = balOf(user, mode);
-    // Réel : setBal ne débite pas → réserver seulement les mises pas encore confirmées serveur.
-    // (Après placeOrder OK, le store est déjà débité → ne pas re-soustraire.)
+    // RÃ©el : setBal ne dÃ©bite pas â†’ rÃ©server seulement les mises pas encore confirmÃ©es serveur.
+    // (AprÃ¨s placeOrder OK, le store est dÃ©jÃ  dÃ©bitÃ© â†’ ne pas re-soustraire.)
     if (mode === 'real') {
       var openSum = 0;
       try {
@@ -1568,7 +1568,7 @@
     if (Math.abs(n - 1.88) < 0.02) return 88;
     if (Math.abs(n - 5) < 0.02) return 500;
     if (Math.abs(n - 10) < 0.02) return 1000;
-    if (Math.abs(n - 51) < 0.02) return 5000;
+    if (Math.abs(n - 50) < 0.02) return 5000;
     if (n >= 80) return n;
     if (n > 1 && n < 80) return Math.round((n - 1) * 100);
     return 88;
@@ -1662,10 +1662,10 @@
     return false;
   }
 
-  /** Frein matengale (joueur réel uniquement).
-   *  1er et 2e double après perte = OK (joueur normal).
-   *  À partir du 3e double = matengale confirmée → proba en baisse.
-   *  Flat / mise stable = taux de base inchangé. */
+  /** Frein matengale (joueur rÃ©el uniquement).
+   *  1er et 2e double aprÃ¨s perte = OK (joueur normal).
+   *  Ã€ partir du 3e double = matengale confirmÃ©e â†’ proba en baisse.
+   *  Flat / mise stable = taux de base inchangÃ©. */
   function antiMartWinP(user, trade, baseP) {
     var p = Number(baseP);
     if (!(p > 0) || !isFinite(p)) return baseP;
@@ -1683,15 +1683,15 @@
       lossStreak += 1;
     }
     var rising = lastStake > 0.009 && stake >= lastStake * 1.75;
-    // 3 pertes + mise qui double = 3e double → frein. Avant ça : taux normal.
+    // 3 pertes + mise qui double = 3e double â†’ frein. Avant Ã§a : taux normal.
     if (!(lossStreak >= 5 && rising)) return p;
     var steps = Math.min(lossStreak - 2, 6);
     p = p * Math.pow(0.62, steps);
     return Math.max(0.001, Math.min(baseP * 0.55, p));
   }
 
-  /** Ramène une série réelle vers le taux prévu (48 % sur 1.88, etc.).
-   *  Une suite de pertes ne reste pas à 30 %. Le frein martingale n’est pas touché. */
+  /** RamÃ¨ne une sÃ©rie rÃ©elle vers le taux prÃ©vu (48 % sur 1.88, etc.).
+   *  Une suite de pertes ne reste pas Ã  30 %. Le frein martingale nâ€™est pas touchÃ©. */
   function sessionFairP(user, trade, baseP) {
     var base = Number(baseP);
     if (!(base > 0) || !isFinite(base) || base >= 1) return baseP;
@@ -1723,7 +1723,7 @@
     var adj = base + gap * 0.9;
     var mult = Number(trade && trade.payout) || 1.88;
     var hi = base >= 0.4 ? Math.min(0.56, base + 0.12) : Math.min(base + 0.03, 0.95 / Math.max(1.2, mult));
-    var lo = Math.max(0.12, base * 0.62);
+    var lo = Math.max(0.001, base * 0.62);
     if (adj > hi) adj = hi;
     if (adj < lo) adj = lo;
     return adj;
@@ -1737,7 +1737,7 @@
       : (isCall ? -1 : 1)) * nudge;
   }
 
-  /** Arbitrage étanche — démo / admin réel / joueur réel. */
+  /** Arbitrage Ã©tanche â€” dÃ©mo / admin rÃ©el / joueur rÃ©el. */
   function resolveWinProbability(user, trade, mode) {
     var demoMap = C.ODDS_WIN_RATE_DEMO || {
       '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02
@@ -1926,7 +1926,7 @@
       }).map(function (t) { return publicTrade(t); });
     },
 
-    /** Somme des mises ouvertes qui réservent encore le solde affiché (réel non confirmé). */
+    /** Somme des mises ouvertes qui rÃ©servent encore le solde affichÃ© (rÃ©el non confirmÃ©). */
     openStakeSum: function (mode) {
       mode = mode === 'real' ? 'real' : 'demo';
       var sum = 0;
@@ -1937,7 +1937,7 @@
       return D6.roundMoney ? D6.roundMoney(sum) : sum;
     },
 
-    /** Toutes les mises encore ouvertes (confirmées ou non) — pour geler l’affichage pendant le jeu. */
+    /** Toutes les mises encore ouvertes (confirmÃ©es ou non) â€” pour geler lâ€™affichage pendant le jeu. */
     openLiveStakeSum: function (mode) {
       mode = mode === 'real' ? 'real' : 'demo';
       var sum = 0;
@@ -1947,7 +1947,7 @@
       return D6.roundMoney ? D6.roundMoney(sum) : sum;
     },
 
-    /** placeOrder serveur OK : le solde store est déjà débité, ne plus réserver cette mise. */
+    /** placeOrder serveur OK : le solde store est dÃ©jÃ  dÃ©bitÃ©, ne plus rÃ©server cette mise. */
     markTradeFunded: function (tradeId) {
       if (!tradeId) return false;
       var i;
@@ -2071,7 +2071,7 @@
     },
 
     placeOrder: function (user, opts) {
-      if (automationDetected()) return { ok: false, reason: 'Session non sécurisée' };
+      if (automationDetected()) return { ok: false, reason: 'Session non sÃ©curisÃ©e' };
       if (!user || !D6.Store.current() || D6.Store.current().id !== user.id) {
         return { ok: false, reason: 'Session invalide' };
       }
@@ -2099,11 +2099,11 @@
       pendingBusyUntil[assetId] = Date.now() + duration * 1000 + 1500;
       clickQuietUntil[assetId] = Date.now() + 300;
       engineCaptureFrame(assetId, pendingBusyUntil[assetId]);
-      // Le tampon vif sert plus bas à caler le prix d'entrée sur la bougie en
-      // cours. Son `lastMs` n'est en revanche plus remis à l'heure du clic : il
-      // porte le temps non encore consommé par la simulation, et l'écraser
-      // jetait jusqu'à un pas entier, ce qui se voyait comme un à-coup du
-      // défilement au moment de la prise de position.
+      // Le tampon vif sert plus bas Ã  caler le prix d'entrÃ©e sur la bougie en
+      // cours. Son `lastMs` n'est en revanche plus remis Ã  l'heure du clic : il
+      // porte le temps non encore consommÃ© par la simulation, et l'Ã©craser
+      // jetait jusqu'Ã  un pas entier, ce qui se voyait comme un Ã -coup du
+      // dÃ©filement au moment de la prise de position.
       var liveBuf = window.assetBuffers && window.assetBuffers[assetId];
       var payout = wantPay;
       D6.holdRemote = true;
@@ -2155,7 +2155,7 @@
         seq: orderSeq,
         settled: false,
         status: 'open',
-        // Réel : false jusqu’à placeOrder serveur ; démo : débit local déjà fait.
+        // RÃ©el : false jusquâ€™Ã  placeOrder serveur ; dÃ©mo : dÃ©bit local dÃ©jÃ  fait.
         serverConfirmed: mode !== 'real'
       };
       t.ticket = Object.freeze({
@@ -2188,14 +2188,14 @@
       persistOpen(user);
       if (D6.Supabase && D6.Supabase.saveOrder) D6.Supabase.saveOrder(t, 'open');
       var pub = publicTrade(t);
-      // Ligne CALL/PUT immédiate (sync) — ne pas attendre le prochain tick/F5.
+      // Ligne CALL/PUT immÃ©diate (sync) â€” ne pas attendre le prochain tick/F5.
       if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
         try { D6.Chart.applyOpenTradeVisual(pub); } catch (eVis) { /* ignore */ }
       }
       return { ok: true, trade: pub };
     },
 
-    /** Annule un trade ouvert non réglé (ex. serveur a refusé la mise). */
+    /** Annule un trade ouvert non rÃ©glÃ© (ex. serveur a refusÃ© la mise). */
     abortOpenTrade: function (user, tradeId) {
       if (!tradeId || !trades.length) return false;
       var idx = -1;
@@ -2215,7 +2215,7 @@
       var mode = trade.mode === 'real' ? 'real' : 'demo';
       var stake = D6.roundMoney(Number(trade.stake) || 0);
       trades.splice(idx, 1);
-      // Démo : la mise avait été retirée localement → on la rend.
+      // DÃ©mo : la mise avait Ã©tÃ© retirÃ©e localement â†’ on la rend.
       if (mode !== 'real' && user && stake > 0.009) {
         setBal(user, 'demo', balOf(user, 'demo') + stake);
       }
@@ -2250,7 +2250,7 @@
       }
       if (now < expiryOf(trade)) return null;
 
-      // Idempotence : marquer avant crédit.
+      // Idempotence : marquer avant crÃ©dit.
       trade.settled = true;
 
       if (user.id !== trade.userId) {
@@ -2314,13 +2314,13 @@
           type: 'void',
           amount: trade.stake,
           mode: mode,
-          note: 'Égalité — mise rendue ' + C.ASSETS[trade.assetId].short
+          note: 'Ã‰galitÃ© â€” mise rendue ' + C.ASSETS[trade.assetId].short
         });
       } else if (won) {
         status = 'won';
-        var payoutPct = payoutPercent(payout);
-        var netProfit = D6.roundMoney(trade.stake * (payoutPct / 100));
-        payoutAmount = D6.roundMoney(trade.stake + netProfit);
+        payoutAmount = D6.roundMoney(trade.stake * payout);
+        var netProfit = D6.roundMoney(payoutAmount - trade.stake);
+        // Fix multiplier
         setBal(user, mode, balOf(user, mode) + payoutAmount);
         net = netProfit;
         user.wins = (user.wins || 0) + 1;
@@ -2343,7 +2343,7 @@
           type: 'loss',
           amount: -trade.stake,
           mode: mode,
-          note: 'Position expirée ' + C.ASSETS[trade.assetId].short
+          note: 'Position expirÃ©e ' + C.ASSETS[trade.assetId].short
         });
       }
 
@@ -2446,7 +2446,7 @@
     }
   };
 
-  // Pas d’API publique nextPrice / seed / bougies futures.
+  // Pas dâ€™API publique nextPrice / seed / bougies futures.
   D6.Synth = {};
 
   D6.Engine = api;

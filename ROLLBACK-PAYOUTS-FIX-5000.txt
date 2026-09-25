@@ -1,0 +1,1 @@
+﻿Copy-Item -Path "C:\Users\PC\.gemini\antigravity\scratch\OROLADO-photo-avant-payout-5000-fix\*\" -Destination "C:\Users\PC\.gemini\antigravity\scratch\OROLADO\" -Recurse -Force
