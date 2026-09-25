@@ -1,1 +1,0 @@
-﻿Copy-Item -Path "C:\Users\PC\.gemini\antigravity\scratch\OROLADO-backup-final\*\" -Destination "C:\Users\PC\.gemini\antigravity\scratch\OROLADO\" -Recurse -Force
