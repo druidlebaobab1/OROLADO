@@ -22,13 +22,13 @@
     DEFAULT_ODDS: 1.88,
     PAYOUT_PCT: { '1.88': 88, '5': 500, '10': 1000, '50': 5000 },
     // Joueurs ordinaires RÉEL — 48 % sur 1.88 ; autres cotes au même ratio (48/42).
-    ODDS_WIN_RATE: { '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017 },
+    ODDS_WIN_RATE: { '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018 },
     // Admin RÉEL : 70 % à 88 %, autres payouts relevés proportionnellement.
-    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
-    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 },
+    ODDS_WIN_RATE_FAVORABLE: { '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 },
+    ODDS_WIN_RATE_ADMIN_REAL: { '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 },
     // Démo : 55 % au 88 %, autres payouts au même ratio que le réel.
-    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 },
-    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 },
+    ODDS_WIN_RATE_ADMIN_DEMO: { '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 },
+    ODDS_WIN_RATE_DEMO: { '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 },
     WITHDRAW_MINS: {
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,

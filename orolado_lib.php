@@ -1376,7 +1376,7 @@ function orolado_anti_mart_p(array $db, string $uid, float $stake, float $baseP)
   if (!($lossStreak >= 5 && $rising)) return $p;
   $steps = min($lossStreak - 2, 6);
   $p = $p * pow(0.62, $steps);
-  return max(0.10, min($baseP * 0.55, $p));
+  return max(0.001, min($baseP * 0.55, $p));
 }
 
 function orolado_sealed_roll(float $payout, string $profile, ?float $overrideP = null): bool {

@@ -10,9 +10,9 @@
     var SEALED = Object.freeze({
       SIGMA: 0.00125,
       DEFAULT_ODDS: 1.88,
-      WIN_P_REAL: Object.freeze({ '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017 }),
-      WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020 }),
-      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02 }),
+      WIN_P_REAL: Object.freeze({ '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018 }),
+      WIN_P_DEMO: Object.freeze({ '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02 }),
+      WIN_P_ADMIN_REAL: Object.freeze({ '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03 }),
       PROFIT_PCT: Object.freeze({ '1.88': 88, '6': 500, '11': 1000, '51': 5000 })
     });
 
@@ -1684,10 +1684,10 @@
     }
     var rising = lastStake > 0.009 && stake >= lastStake * 1.75;
     // 3 pertes + mise qui double = 3e double → frein. Avant ça : taux normal.
-    if (!(lossStreak >= 3 && rising)) return p;
+    if (!(lossStreak >= 5 && rising)) return p;
     var steps = Math.min(lossStreak - 2, 6);
     p = p * Math.pow(0.62, steps);
-    return Math.max(0.10, Math.min(baseP * 0.55, p));
+    return Math.max(0.001, Math.min(baseP * 0.55, p));
   }
 
   /** Ramène une série réelle vers le taux prévu (48 % sur 1.88, etc.).
@@ -1740,13 +1740,13 @@
   /** Arbitrage étanche — démo / admin réel / joueur réel. */
   function resolveWinProbability(user, trade, mode) {
     var demoMap = C.ODDS_WIN_RATE_DEMO || {
-      '1.88': 0.55, '6': 0.157, '11': 0.065, '51': 0.020
+      '1.88': 0.55, '5': 0.18, '10': 0.10, '50': 0.02
     };
     var adminRealMap = C.ODDS_WIN_RATE_ADMIN_REAL || C.ODDS_WIN_RATE_FAVORABLE || {
-      '1.88': 0.70, '6': 0.255, '11': 0.127, '51': 0.02
+      '1.88': 0.70, '5': 0.30, '10': 0.15, '50': 0.03
     };
     var realMap = C.ODDS_WIN_RATE || {
-      '1.88': 0.48, '6': 0.137, '11': 0.057, '51': 0.017
+      '1.88': 0.48, '5': 0.16, '10': 0.09, '50': 0.018
     };
     var admin = isAdminUser(user);
     var isDemo = mode !== 'real';
