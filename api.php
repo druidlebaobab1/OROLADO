@@ -1595,7 +1595,7 @@ if ($action === 'placeOrder') {
       break;
     }
   }
-  $oddsAllowed = [1.88, 6.0, 11.0, 51.0];
+  $oddsAllowed = [1.88, 5.0, 10.0, 50.0];
   $payoutReq = (float) ($req['payout'] ?? $req['odds'] ?? 1.88);
   $payout = 1.88;
   foreach ($oddsAllowed as $od) {
@@ -2125,7 +2125,7 @@ if ($action === 'financeHistory') {
       'ref' => $d['id'] ?? $d['ref'] ?? '',
       'amount' => orolado_money($d['amount'] ?? 0),
       'status' => strtoupper((string) ($d['status'] ?? 'PENDING')),
-      'label' => (($d['note'] ?? '') === 'Bonus') ? 'Bonus' : 'Dépôt',
+      'label' => 'Dépôt',
       'operator' => $d['operator'] ?? ($d['op'] ?? '')
     ];
   }

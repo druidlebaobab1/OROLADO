@@ -1326,7 +1326,7 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   $txRow = [
     'id' => $ref,
     'at' => date('c'),
-    'type' => $isSelf ? 'deposit' : 'bonus',
+    'type' => 'deposit',
     'amount' => abs($delta),
     'note' => $isSelf ? $motif : 'Bonus',
     'mode' => 'real',
