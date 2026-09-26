@@ -68,12 +68,21 @@ html body .toast.lux-msg{
   top:75px;max-width:min(320px,86vw);
   align-items:center;gap:6px;padding:5px 12px;border-radius:10px;
   font-size:12px;line-height:1.3;font-weight:650;
-  background:rgba(18,22,34,.95);
-  border:1px solid #f59e0b;
-  color:#F8FAFC;
-  box-shadow:0 6px 18px rgba(0,0,0,.34)}
-html body #toast.toast.ok,html body .toast.ok{border-color:#f59e0b;color:#FDE68A}
-html body #toast.toast.err,html body .toast.err{border-color:#e58e00;color:#FED7AA}
+  background:linear-gradient(180deg,rgba(24,27,38,.96),rgba(14,16,24,.96));
+  border:1px solid rgba(212,175,55,.38);
+  color:#F3E6B5;
+  box-shadow:0 8px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.05)}
+/* Notifications : fond sombre commun, seule la teinte change (doux, jamais criard). */
+html body #toast.toast .lux-msg-ico{color:#D4AF37}
+html body #toast.toast.ok,html body .toast.ok{border-color:rgba(52,211,153,.45);color:#C9F2DF}
+html body #toast.toast.ok .lux-msg-ico{color:#34D399}
+html body #toast.toast.err,html body .toast.err{border-color:rgba(251,113,133,.40);color:#FBD5DC}
+html body #toast.toast.err .lux-msg-ico{color:#FB7185}
+html body #toast.toast.info,html body .toast.info{border-color:rgba(212,175,55,.40);color:#F3E6B5}
+html body #toast.toast.tie,html body .toast.tie{border-color:rgba(203,213,225,.32);color:#E2E8F0}
+html body #toast.toast.tie .lux-msg-ico{color:#CBD5E1;
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 9.5h12M6 14.5h12' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/14px no-repeat;
+  mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 9.5h12M6 14.5h12' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/14px no-repeat}
 html body #toast.toast.toast-bal,
 html body #toast.toast.toast-bal.err,
 html body .toast.lux-msg.toast-bal{

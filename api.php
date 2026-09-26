@@ -1311,9 +1311,12 @@ if ($action === 'suspendUser') {
 }
 
 if ($action === 'supportMessage') {
-  $me = session_user($db, $token);
-  if (!$me) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+  // Ouvert aussi aux visiteurs sans compte (formulaire « Aide »), avec une limite anti-robot :
+  // 5 messages par heure par adresse IP (et par compte).
+  $me = session_user($db, $token) ?: [];
+  $rateKey = 'ip:' . orolado_client_ip() . ($me ? '|u:' . (string) ($me['id'] ?? '') : '');
+  if (!orolado_rate_ok('support', $rateKey, 5, 3600)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Vous avez déjà envoyé plusieurs messages. Notre équipe vous répond au plus vite, merci de patienter un peu.']);
     exit;
   }
   $subject = trim((string) ($req['subject'] ?? ''));
@@ -1326,8 +1329,9 @@ if ($action === 'supportMessage') {
   if (!isset($db['support_messages']) || !is_array($db['support_messages'])) $db['support_messages'] = [];
   $db['support_messages'][] = [
     'id' => uniqid('msg_', true),
-    'userId' => $me['id'],
+    'userId' => (string) ($me['id'] ?? ''),
     'publicId' => (string) ($me['publicId'] ?? ''),
+    'guest' => !$me,
     'email' => substr($email, 0, 120),
     'subject' => substr($subject, 0, 80),
     'message' => substr($message, 0, 500),

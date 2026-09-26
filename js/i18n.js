@@ -2202,6 +2202,24 @@
     if (DICT[code]) Object.assign(DICT[code], TERMS_I18N[code]);
   });
 
+  // Messages clairs : « sessionInvalid » servait d'erreur générique → vrai message utile.
+  var MSG_I18N = {
+    en: { sessionInvalid: 'Couldn’t complete this right now. Check your connection and try again.', sessionExpiredMsg: 'Your session has expired. Please log in again to continue.', helpRetry: 'Couldn’t send right now, please try again in a moment.', reloginBtn: 'Log in', enterEmail: 'Enter your email address.', tieRefund: 'Tie — stake returned' },
+    fr: { sessionInvalid: 'Action impossible pour le moment. Vérifiez votre connexion et réessayez.', sessionExpiredMsg: 'Votre session a expiré. Reconnectez-vous pour continuer.', helpRetry: 'Envoi impossible pour le moment, réessayez dans un instant.', reloginBtn: 'Se connecter', enterEmail: 'Saisissez votre adresse e-mail.', tieRefund: 'Égalité — mise rendue' },
+    es: { sessionInvalid: 'No se pudo completar ahora. Verifique su conexión e inténtelo de nuevo.', sessionExpiredMsg: 'Su sesión ha expirado. Vuelva a iniciar sesión para continuar.', helpRetry: 'No se pudo enviar ahora, inténtelo de nuevo en un momento.', reloginBtn: 'Iniciar sesión', enterEmail: 'Introduzca su correo electrónico.', tieRefund: 'Empate — apuesta devuelta' },
+    pt: { sessionInvalid: 'Não foi possível concluir agora. Verifique sua conexão e tente novamente.', sessionExpiredMsg: 'Sua sessão expirou. Entre novamente para continuar.', helpRetry: 'Não foi possível enviar agora, tente novamente em instantes.', reloginBtn: 'Entrar', enterEmail: 'Informe seu e-mail.', tieRefund: 'Empate — aposta devolvida' },
+    ar: { sessionInvalid: 'تعذّر إتمام العملية الآن. تحقّق من اتصالك وحاول مجددًا.', sessionExpiredMsg: 'انتهت جلستك. سجّل الدخول مجددًا للمتابعة.', helpRetry: 'تعذّر الإرسال الآن، حاول مجددًا بعد قليل.', reloginBtn: 'تسجيل الدخول', enterEmail: 'أدخل بريدك الإلكتروني.', tieRefund: 'تعادل — تمت إعادة المبلغ' },
+    tr: { sessionInvalid: 'Şu anda tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.', sessionExpiredMsg: 'Oturumunuzun süresi doldu. Devam etmek için tekrar giriş yapın.', helpRetry: 'Şu anda gönderilemedi, birazdan tekrar deneyin.', reloginBtn: 'Giriş yap', enterEmail: 'E-posta adresinizi girin.', tieRefund: 'Beraberlik — tutar iade edildi' },
+    vi: { sessionInvalid: 'Chưa thể thực hiện lúc này. Hãy kiểm tra kết nối và thử lại.', sessionExpiredMsg: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.', helpRetry: 'Chưa gửi được lúc này, vui lòng thử lại sau giây lát.', reloginBtn: 'Đăng nhập', enterEmail: 'Nhập địa chỉ email của bạn.', tieRefund: 'Hòa — hoàn lại tiền cược' },
+    id: { sessionInvalid: 'Belum dapat diproses sekarang. Periksa koneksi Anda lalu coba lagi.', sessionExpiredMsg: 'Sesi Anda telah berakhir. Silakan masuk kembali untuk melanjutkan.', helpRetry: 'Belum dapat mengirim sekarang, coba lagi sebentar lagi.', reloginBtn: 'Masuk', enterEmail: 'Masukkan alamat email Anda.', tieRefund: 'Seri — taruhan dikembalikan' },
+    ru: { sessionInvalid: 'Сейчас не удалось выполнить. Проверьте подключение и повторите попытку.', sessionExpiredMsg: 'Сеанс истёк. Войдите снова, чтобы продолжить.', helpRetry: 'Не удалось отправить, попробуйте ещё раз через минуту.', reloginBtn: 'Войти', enterEmail: 'Введите адрес электронной почты.', tieRefund: 'Ничья — ставка возвращена' },
+    de: { sessionInvalid: 'Das hat gerade nicht geklappt. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.', sessionExpiredMsg: 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.', helpRetry: 'Senden gerade nicht möglich, bitte gleich noch einmal versuchen.', reloginBtn: 'Anmelden', enterEmail: 'Geben Sie Ihre E-Mail-Adresse ein.', tieRefund: 'Gleichstand — Einsatz zurückerstattet' },
+    hi: { sessionInvalid: 'अभी यह पूरा नहीं हो सका। अपना कनेक्शन जाँचें और फिर से कोशिश करें।', sessionExpiredMsg: 'आपका सत्र समाप्त हो गया है। जारी रखने के लिए फिर से लॉग इन करें।', helpRetry: 'अभी भेजा नहीं जा सका, कृपया थोड़ी देर में फिर कोशिश करें।', reloginBtn: 'लॉग इन करें', enterEmail: 'अपना ईमेल पता दर्ज करें।', tieRefund: 'बराबरी — राशि वापस' },
+  };
+  Object.keys(MSG_I18N).forEach(function (code) {
+    if (DICT[code]) Object.assign(DICT[code], MSG_I18N[code]);
+  });
+
   var LANG_KEY = 'orolado_lang';
   var LANG_USER_KEY = 'orolado_lang_user';
   var LANG_MANUAL_KEY = 'orolado_manual_lang';

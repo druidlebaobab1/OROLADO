@@ -273,17 +273,18 @@ function orolado_fair_env_float(string $key, float $def): float {
   return is_numeric($v) && (float) $v > 0 ? (float) $v : $def;
 }
 
+/** Plafonds (0 = aucun, choix du propriétaire). Réactivables via .env si besoin. */
 /** Gain maximum possible sur un seul trade (mise × cote). */
 function orolado_limit_max_payout(): float {
-  return orolado_fair_env_float('OROLADO_MAX_PAYOUT_PER_TRADE', 2000.0);
+  return orolado_fair_env_float('OROLADO_MAX_PAYOUT_PER_TRADE', 0.0);
 }
 
 /** Gains potentiels maximum de tous les trades réels ouverts sur un même actif. */
 function orolado_limit_asset_exposure(): float {
-  return orolado_fair_env_float('OROLADO_MAX_ASSET_EXPOSURE', 20000.0);
+  return orolado_fair_env_float('OROLADO_MAX_ASSET_EXPOSURE', 0.0);
 }
 
 /** Gains potentiels maximum des trades réels ouverts d'un même joueur. */
 function orolado_limit_user_exposure(): float {
-  return orolado_fair_env_float('OROLADO_MAX_USER_EXPOSURE', 5000.0);
+  return orolado_fair_env_float('OROLADO_MAX_USER_EXPOSURE', 0.0);
 }

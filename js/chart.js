@@ -342,7 +342,9 @@
       expiresAt: exp,
       settled: !!trade.settled,
       status: trade.status || 'open',
-      mode: trade.mode === 'real' ? 'real' : 'demo'
+      mode: trade.mode === 'real' ? 'real' : 'demo',
+      // En attente du serveur : pastille seule, le trait viendra au prix confirmé.
+      pending: trade.confirmed === false || trade.serverConfirmed === false
     };
   }
 
@@ -437,6 +439,9 @@
       delete openTradeVisuals[snap.id];
       return false;
     }
+    var prevSnap = openTradeVisuals[snap.id];
+    // Trait qui apparaît en fondu à la confirmation (trade tout juste ouvert).
+    if (!snap.pending) snap.lineAt = (prevSnap && prevSnap.lineAt) || (Date.now() - Number(snap.startTime || 0) < 4000 ? Date.now() : 0);
     openTradeVisuals[snap.id] = snap;
     if (snap.assetId) {
       var expL = snap.expiryTime || snap.expiresAt || 0;
@@ -1582,48 +1587,6 @@
   // Ligne objectif (×5 / ×10 / ×50, ou ligne Boom/Crash) : c'est elle qui décide du gain.
   // CALL gagne si le prix final est AU-DESSUS, PUT s'il est EN DESSOUS. Hors écran :
   // on la colle au bord avec une flèche pour que le joueur sache toujours où elle est.
-  function drawBarrierOn(g, trade, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, isCall) {
-    var bar = Number(trade.barrier);
-    if (!isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
-    var by = priceToY(bar, pad, plotH, minP, maxP);
-    if (!isFinite(by)) return;
-    var off = 0;
-    if (by < plotTop + 8) { by = plotTop + 8; off = -1; }
-    if (by > plotBot - 8) { by = plotBot - 8; off = 1; }
-    by = Math.round(by * 2) / 2;
-    var mult = Number(trade.payout) || 1.88;
-    var gold = '#F5C518';
-    g.save();
-    g.setLineDash([6, 4]);
-    g.strokeStyle = gold;
-    g.lineWidth = 1.6;
-    g.globalAlpha = off ? 0.55 : 0.95;
-    g.beginPath();
-    g.moveTo(pad.l, by);
-    g.lineTo(layout.axisX, by);
-    g.stroke();
-    g.setLineDash(NO_DASH);
-    g.globalAlpha = 1;
-    var arrow = off < 0 ? '▲ ' : (off > 0 ? '▼ ' : '');
-    var tag = (mult >= 5 ? ('×' + mult) : (isCall ? 'Au-dessus' : 'En dessous')) + ' ' + arrow + formatAxisPrice(bar);
-    g.font = '800 10px "Hanken Grotesk", sans-serif';
-    var tw = Math.ceil(g.measureText(tag).width) + 12;
-    var tx = Math.max(pad.l + 4, layout.axisX - tw - 60);
-    var ty = by - 8;
-    g.fillStyle = 'rgba(10,15,29,0.92)';
-    g.strokeStyle = gold;
-    g.lineWidth = 1;
-    roundRectOn(g, tx, ty, tw, 16, 7);
-    g.fill();
-    g.stroke();
-    g.fillStyle = gold;
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.fillText(tag, tx + tw / 2, by + 0.5);
-    g.textBaseline = 'alphabetic';
-    g.restore();
-  }
-
   // Trade ouvert : trait horizontal pointillé + pastille d'entrée CALL/PUT + décompte
   // à gauche. Aucun montant en dollars n'est tracé le long du trait.
   function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout, clusterN) {
@@ -1647,16 +1610,34 @@
     var badgeLift = isFinite(yShift) ? yShift : 0;
     var tNowE = xNow || Date.now();
     var winE = xWin > 0 ? xWin : (zoomSec() * 1000);
-    if (idx === 0) {
+    var pendingE = !!trade.pending;
+    var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 260) : 1;
+    if (idx === 0 && !pendingE) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = Number(trade.barrier) > 0 ? Number(trade.barrier) : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
       if (isFinite(zy)) {
         zy = Math.max(plotTop, Math.min(plotBot, zy));
         g.save();
-        g.fillStyle = isCall ? 'rgba(0,230,118,0.07)' : 'rgba(255,59,48,0.07)';
-        if (isCall) g.fillRect(pad.l, plotTop, layout.axisX - pad.l, zy - plotTop);
-        else g.fillRect(pad.l, zy, layout.axisX - pad.l, plotBot - zy);
+        // Seule l'ombre marque l'objectif (aucun second trait) : plus dense au bord.
+        var zw = layout.axisX - pad.l;
+        var zg;
+        g.globalAlpha = lineFade;
+        if (isCall) {
+          zg = g.createLinearGradient(0, zy, 0, plotTop);
+          zg.addColorStop(0, 'rgba(0,230,118,0.16)');
+          zg.addColorStop(0.35, 'rgba(0,230,118,0.06)');
+          zg.addColorStop(1, 'rgba(0,230,118,0.02)');
+          g.fillStyle = zg;
+          g.fillRect(pad.l, plotTop, zw, zy - plotTop);
+        } else {
+          zg = g.createLinearGradient(0, zy, 0, plotBot);
+          zg.addColorStop(0, 'rgba(255,59,48,0.16)');
+          zg.addColorStop(0.35, 'rgba(255,59,48,0.06)');
+          zg.addColorStop(1, 'rgba(255,59,48,0.02)');
+          g.fillStyle = zg;
+          g.fillRect(pad.l, zy, zw, plotBot - zy);
+        }
         g.restore();
       }
       // Ligne d'arrivée verticale : l'instant exact où le trade se termine.
@@ -1680,17 +1661,18 @@
         g.restore();
       }
     }
-    g.setLineDash(TRADE_DASH);
-    g.strokeStyle = lineCol;
-    g.lineWidth = lite ? 1 : 1.35;
-    g.globalAlpha = lite ? 0.72 : 0.92;
-    g.beginPath();
-    g.moveTo(0, ey);
-    g.lineTo(cssW, ey);
-    g.stroke();
-    g.setLineDash(NO_DASH);
-    g.globalAlpha = 1;
-    drawBarrierOn(g, trade, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, isCall);
+    if (!pendingE) {
+      g.setLineDash(TRADE_DASH);
+      g.strokeStyle = lineCol;
+      g.lineWidth = lite ? 1 : 1.35;
+      g.globalAlpha = (lite ? 0.72 : 0.92) * lineFade;
+      g.beginPath();
+      g.moveTo(0, ey);
+      g.lineTo(cssW, ey);
+      g.stroke();
+      g.setLineDash(NO_DASH);
+      g.globalAlpha = 1;
+    }
 
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
@@ -1942,17 +1924,27 @@
       mid = (prevMin + prevMax) / 2;
     } else {
       span = want;
-      // Premier cadrage : centré sur les bougies visibles si elles tiennent, sinon sur la tête.
+      // Premier cadrage : on part de la tête et on remonte les bougies tant qu'elles
+      // tiennent dans le cadre, puis on centre sur ce morceau. Résultat : le graphique
+      // apparaît entier et en place tout de suite (pas de moitié coupée qui glisse).
       var lo = h;
       var hi = h;
       var list = camCandles || [];
       var i;
-      for (i = 0; i < list.length; i++) {
-        if (!list[i]) continue;
-        if (list[i].l > 0 && list[i].l < lo) lo = list[i].l;
-        if (list[i].h > hi) hi = list[i].h;
+      for (i = list.length - 1; i >= 0; i--) {
+        var cd = list[i];
+        if (!cd) continue;
+        var nlo = cd.l > 0 && cd.l < lo ? cd.l : lo;
+        var nhi = cd.h > hi ? cd.h : hi;
+        if (nhi - nlo > span * 0.84) break;
+        lo = nlo;
+        hi = nhi;
       }
-      mid = (hi - lo) < span * 0.8 ? (hi + lo) / 2 : h;
+      mid = (hi + lo) / 2;
+      // Tête déjà dans la zone calme : aucun glissement juste après l'arrivée.
+      var calm = span / 2 - span * 0.22;
+      if (mid < h - calm) mid = h - calm;
+      if (mid > h + calm) mid = h + calm;
     }
     var half = span / 2;
     var edge = span * 0.22;
@@ -2348,15 +2340,31 @@
       if (inds.ema) legend.push(['EMA 9', '#00f0ff']);
       if (inds.bb) legend.push(['BB 20', '#b48cf0']);
       if (legend.length) {
+        // Pastilles lisibles (fond sombre, point de couleur) : jamais de texte sur les bougies.
         ctx.save();
         ctx.font = '700 10px "Hanken Grotesk", sans-serif';
-        ctx.textBaseline = 'top';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
         var lx = pad.l + 6;
+        var ly = pad.t + 4;
+        var lh = 16;
         legend.forEach(function (it) {
+          var tw = Math.ceil(ctx.measureText(it[0]).width);
+          var pw = tw + 20;
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = 'rgba(10,14,22,0.78)';
+          roundRectOn(ctx, lx, ly, pw, lh, 8);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
           ctx.fillStyle = it[1];
-          ctx.fillRect(lx, pad.t + 9, 8, 2);
-          ctx.fillText(it[0], lx + 11, pad.t + 5);
-          lx += ctx.measureText(it[0]).width + 24;
+          ctx.beginPath();
+          ctx.arc(lx + 8, ly + lh / 2, 2.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(235,240,250,0.92)';
+          ctx.fillText(it[0], lx + 14, ly + lh / 2 + 0.5);
+          lx += pw + 5;
         });
         ctx.restore();
       }

@@ -85,10 +85,10 @@ orolado_trade_settle($uid, 't1');
 orolado_trade_settle($uid, 't1');
 check('3 règlements = 1 seul crédit', abs($bank['real'][$uid] - $want) < 0.001);
 
-echo "3) Refus et limites\n";
+echo "3) Refus (pas de plafond de gain)\n";
 $bal = $bank['real'][$uid];
 $r = orolado_trade_place($me, ['id' => 't2', 'stake' => 5000, 'side' => 'put', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
-check('mise > limite de gain : refusée', empty($r['ok']) && abs($bank['real'][$uid] - $bal) < 0.001, $r['reason'] ?? '');
+check('mise > solde (aucun plafond de gain) : refusée', empty($r['ok']) && abs($bank['real'][$uid] - $bal) < 0.001, $r['reason'] ?? '');
 $r = orolado_trade_place($me, ['id' => 't3', 'stake' => 500, 'side' => 'put', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
 check('solde insuffisant : refusé, caisse intacte', empty($r['ok']) && abs($bank['real'][$uid] - $bal) < 0.001, $r['reason'] ?? '');
 $r = orolado_trade_place($me, ['id' => 't4', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'nope', 'payout' => 1.88]);

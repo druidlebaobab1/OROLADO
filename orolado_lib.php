@@ -91,6 +91,36 @@ function orolado_login_fail(string $scope = 'player'): void {
   orolado_login_throttle_save($all);
 }
 
+/**
+ * Limite anti-robot simple : au plus $max actions par $window secondes pour une clé
+ * (IP, compte…). Fichier léger data/rate_<scope>.json, sous verrou, nettoyé au passage.
+ */
+function orolado_rate_ok(string $scope, string $key, int $max, int $window): bool {
+  $scope = preg_replace('/[^a-z0-9_]/', '', strtolower($scope)) ?: 'x';
+  $path = orolado_data_dir() . '/rate_' . $scope . '.json';
+  $fp = @fopen($path, 'c+');
+  if (!$fp) return true;
+  flock($fp, LOCK_EX);
+  $all = json_decode((string) stream_get_contents($fp), true);
+  if (!is_array($all)) $all = [];
+  $now = time();
+  foreach ($all as $k => $hits) {
+    $all[$k] = array_values(array_filter((array) $hits, static fn($t) => (int) $t > $now - $window));
+    if (!$all[$k]) unset($all[$k]);
+  }
+  $h = substr(hash('sha256', $key), 0, 24);
+  $ok = count($all[$h] ?? []) < $max;
+  if ($ok) $all[$h][] = $now;
+  if (count($all) > 20000) $all = array_slice($all, -10000, null, true);
+  ftruncate($fp, 0);
+  rewind($fp);
+  fwrite($fp, json_encode($all));
+  fflush($fp);
+  flock($fp, LOCK_UN);
+  fclose($fp);
+  return $ok;
+}
+
 function orolado_login_ok(string $scope = 'player'): void {
   $key = $scope . ':' . orolado_client_ip();
   $all = orolado_login_throttle_map();

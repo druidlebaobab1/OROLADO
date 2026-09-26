@@ -50,6 +50,18 @@
         clearTimeout(timer);
         var json = null;
         try { json = await r.json(); } catch (eParse) { json = null; }
+        // « Session invalide » brut → message clair ; l'appli propose de se reconnecter
+        // (une fois, et jamais pour un visiteur sans compte).
+        if (json && json.ok === false && /session invalide|invalid session/i.test(String(json.reason || ''))) {
+          json.sessionExpired = true;
+          var tr = D6.I18N && D6.I18N.t ? D6.I18N.t('sessionExpiredMsg') : '';
+          json.reason = (tr && tr !== 'sessionExpiredMsg') ? tr : 'Votre session a expiré. Reconnectez-vous pour continuer.';
+          // Seulement si le jeton envoyé est toujours celui en cours (pas une requête
+          // partie juste avant une connexion / déconnexion).
+          if (body.token && body.token === D6.Api.token() && action !== 'upsert') {
+            try { document.dispatchEvent(new CustomEvent('orolado-session-expired', { detail: { action: action } })); } catch (eEv) { /* ignore */ }
+          }
+        }
         if (!r.ok) {
           console.warn('OROLADO api', action, r.status);
           return json;

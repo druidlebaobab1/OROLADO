@@ -146,7 +146,7 @@ function orolado_trade_place(array $me, array $req): array {
   if ($assetId === '') return ['ok' => false, 'reason' => 'Actif inconnu'];
   if ($stake < 1) return ['ok' => false, 'reason' => 'Mise minimum : 1 $'];
   $maxPay = orolado_limit_max_payout();
-  if ($mode === 'real' && $stake * $payout > $maxPay + 0.001) {
+  if ($mode === 'real' && $maxPay > 0 && $stake * $payout > $maxPay + 0.001) {
     $maxStake = floor(($maxPay / $payout) * 100) / 100;
     return ['ok' => false, 'reason' => 'Mise maximum pour cette cote : ' . number_format($maxStake, 2, '.', ' ') . ' $', 'limit' => true];
   }
@@ -163,10 +163,12 @@ function orolado_trade_place(array $me, array $req): array {
     if ($resolved !== '') $payId = $resolved;
     if (!preg_match(OROLADO_UUID_RE, $payId)) return ['ok' => false, 'reason' => 'Coffre réel introuvable'];
     $expo = $stake * $payout;
-    if (orolado_trade_exposure($db, $assetId) + $expo > orolado_limit_asset_exposure()) {
+    $lim = orolado_limit_asset_exposure();
+    if ($lim > 0 && orolado_trade_exposure($db, $assetId) + $expo > $lim) {
       return ['ok' => false, 'reason' => 'Volume maximum atteint sur cet actif, réessayez dans quelques secondes', 'limit' => true];
     }
-    if (orolado_trade_exposure($db, '', $uid) + $expo > orolado_limit_user_exposure()) {
+    $lim = orolado_limit_user_exposure();
+    if ($lim > 0 && orolado_trade_exposure($db, '', $uid) + $expo > $lim) {
       return ['ok' => false, 'reason' => 'Trop de gains potentiels ouverts, attendez la fin d’un trade', 'limit' => true];
     }
   }

@@ -705,6 +705,34 @@
     hardLogout(r.reason || 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.');
     return true;
   }
+  // Session vraiment expirée : on revérifie une fois, puis écran de connexion
+  // avec un message doux (au plus une fois par minute, jamais pour un invité).
+  var sessionCheckBusy = false;
+  var sessionPromptAt = 0;
+  document.addEventListener('orolado-session-expired', function () {
+    var u = user();
+    if (!u || isGuest(u) || sessionCheckBusy || bannedKickLock) return;
+    if (Date.now() - sessionPromptAt < 60000) return;
+    var tokAtFail = D6.Api && D6.Api.token ? D6.Api.token() : '';
+    if (!tokAtFail) return;
+    sessionCheckBusy = true;
+    setTimeout(function () {
+      D6.Api.post('me', {}).then(function (r) {
+        if (watchBan(r)) return;
+        if (r && r.ok) return;
+        if (!r || !r.sessionExpired) return;
+        if (D6.Api.token() !== tokAtFail) return;
+        sessionPromptAt = Date.now();
+        Promise.resolve(D6.Auth && D6.Auth.logout ? D6.Auth.logout() : null)
+          .catch(function () { /* ignore */ })
+          .then(function () {
+            try { ensureGuest(); enterApp(); } catch (eEnt) { /* ignore */ }
+            showAuthScreen('login');
+            toast(t('sessionExpiredMsg'), 'info', 6000);
+          });
+      }).catch(function () { /* ignore */ }).then(function () { sessionCheckBusy = false; });
+    }, 1500);
+  });
   var banWatchTimer = 0;
   var screenWakeLock = null;
   function adoptWagerBook(remote) {
@@ -824,7 +852,7 @@
     var el = $('toast');
     if (!el) return;
     var micro = kind === 'micro';
-    var tone = micro ? 'micro' : (kind === 'err' || kind === 'ok' ? kind : 'info');
+    var tone = micro ? 'micro' : (kind === 'err' || kind === 'ok' || kind === 'tie' ? kind : 'info');
     var isBal = false;
     try {
       isBal = String(msg || '') === String(t('insufficient') || '') || /solde insuffisant|insufficient balance/i.test(String(msg || ''));
@@ -2654,7 +2682,7 @@
     // Réel : le solde bouge seulement après settleOrder (vault). Pas de paint intermédiaire.
     if (outcomeMode !== 'real') updateBalance(true);
     if (res.voided) {
-      toast('Égalité — mise rendue', '');
+      toast(t('tieRefund'), 'tie');
       playNeutralTick();
     } else {
       showOutcomeToast(resultKind(res) === 'win', profitFromResult(res), id);
@@ -3338,7 +3366,7 @@
     if (code === 'reused') return t('cryptoErrReused');
     if (code === 'min') return t('depositMinErr');
     if (code === 'txid') return t('cryptoErrTx');
-    if (code === 'session') return t('sessionInvalid');
+    if (code === 'session') return t('sessionExpiredMsg');
     return t('cryptoErrPending');
   }
 
@@ -4100,7 +4128,7 @@
     if (depositing) return;
     var u = user();
     if (!u) {
-      toast(t('sessionInvalid'), 'err');
+      toast(t('sessionExpiredMsg'), 'info');
       return;
     }
     var min = minCardDeposit();
@@ -4121,7 +4149,7 @@
     try {
       var tok = await ensureApiToken();
       if (!tok) {
-        toast(t('sessionInvalid'), 'err');
+        toast(t('sessionExpiredMsg'), 'info');
         return;
       }
       var cc = '';
@@ -4148,7 +4176,7 @@
       openFlwInline(remote);
     } catch (err) {
       console.error('OROLADO deposit', err);
-      toast((err && err.message) || t('sessionInvalid'), 'err');
+      toast(t('sessionInvalid'), 'err');
     } finally {
       depositing = false;
       if (btn) {
@@ -5021,7 +5049,7 @@
       if (forgotLeft > 0 && forgotStep === 'otp') return;
       clearErrors();
       var email = String(($('resetId') && $('resetId').value) || '').trim().toLowerCase();
-      if (!email) { showFieldError('resetId', t('sessionInvalid')); return; }
+      if (!email) { showFieldError('resetId', t('enterEmail')); return; }
       forgotBusy = true;
       var res;
       try {
@@ -5773,10 +5801,9 @@
         var subject = ($('helpSubject') && $('helpSubject').value) || '';
         var message = ($('helpMessage') && $('helpMessage').value) || '';
         if (!email || !subject || !message) return;
-        var res = D6.Api && D6.Api.token()
-          ? await D6.Api.post('supportMessage', { email: email, subject: subject, message: message })
-          : { ok: false };
-        if (!res || !res.ok) { toast((res && res.reason) || t('sessionInvalid'), 'err'); return; }
+        // Avec ou sans compte : le message part toujours (le serveur limite les abus).
+        var res = D6.Api ? await D6.Api.post('supportMessage', { email: email, subject: subject, message: message }) : null;
+        if (!res || !res.ok) { toast((res && res.reason) || (t('helpRetry') !== 'helpRetry' ? t('helpRetry') : 'Envoi impossible pour le moment, réessayez dans un instant.'), 'err'); return; }
         closeModal('helpModal');
         if ($('helpEmail')) $('helpEmail').value = '';
         $('helpSubject').value = '';
@@ -6222,7 +6249,7 @@
           }
         }
       } else {
-        toast(t('sessionInvalid') || 'Session invalide', 'err');
+        toast(t('sessionInvalid'), 'err');
         return;
       }
       toast((delta >= 0 ? '+' : '−') + D6.fmtFCFA(Math.abs(delta)), 'ok');
@@ -6274,7 +6301,7 @@
     if ($('btnMaketouLog')) {
       $('btnMaketouLog').addEventListener('click', function () {
         var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
-        if (!tok) { toast(t('sessionInvalid'), 'err'); return; }
+        if (!tok) { toast(t('sessionExpiredMsg'), 'err'); return; }
         window.open('debug-maketou.php?lines=300&token=' + encodeURIComponent(tok), '_blank');
       });
     }
