@@ -618,7 +618,14 @@
           <button type="button" class="btn-copy-id" id="btnCopyPublicId" data-i18n="copyId" translate="no">Copier</button>
         </div>
       </div>
-      <div class="list-row"><span data-i18n="email">E-mail</span><strong id="profEmail">—</strong></div>
+      <div class="list-row">
+        <span data-i18n="email">E-mail</span>
+        <div class="prof-id-row">
+          <strong id="profEmail" class="prof-email">—</strong>
+          <button type="button" class="btn-copy-id" id="btnCopyEmail" data-i18n="copyId" translate="no">Copier</button>
+        </div>
+      </div>
+      <div class="list-row"><span data-i18n="memberSince">Membre depuis</span><strong id="profSince">—</strong></div>
     </div>
     <div class="wallet-card" id="profWalletCard">
       <div class="wallet-card-k" data-i18n="availBal">Solde disponible</div>
@@ -682,6 +689,16 @@
         <button type="button" class="drawer-item" id="btnOpenPass">
           <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
           <span class="di-label" data-i18n="changePass">Changer le mot de passe</span>
+          <span class="di-chev">›</span>
+        </button>
+        <button type="button" class="drawer-item" id="btnOpenEmail">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="m4 7 8 6 8-6"/></svg>
+          <span class="di-label" data-i18n="changeEmail">Changer d’adresse e-mail</span>
+          <span class="di-chev">›</span>
+        </button>
+        <button type="button" class="drawer-item" id="btnLogoutOthers">
+          <svg class="di-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="13" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M6 18h5M17 9h4v11h-6v-3"/></svg>
+          <span class="di-label" data-i18n="logoutOthers">Déconnecter mes autres appareils</span>
           <span class="di-chev">›</span>
         </button>
         <button type="button" class="drawer-item drawer-logout" id="btnLogout">
@@ -844,6 +861,41 @@
         </div>
         <button class="btn-gold" type="button" id="btnPassPrimary" data-i18n="sendCode">Send Code</button>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="emailModal">
+    <div class="modal-box glass">
+      <button type="button" class="btn-close" id="closeEmail">✕</button>
+      <div class="modal-title" data-i18n="changeEmail">Changer d’adresse e-mail</div>
+      <p class="otp-lead" id="emailLead"></p>
+      <form id="formEmail" data-step="new" novalidate>
+        <div class="field" id="emailStepNew">
+          <label data-i18n="newEmailLabel">Nouvelle adresse e-mail</label>
+          <input id="newEmail" type="email" autocomplete="email" inputmode="email" placeholder="exemple@gmail.com">
+          <p class="err-msg" id="err-newEmail"></p>
+        </div>
+        <div class="field hidden" id="emailStepCode">
+          <label data-i18n="passOtpCode">Code e-mail</label>
+          <input id="emailOtp" class="otp-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" minlength="6" placeholder="••••••" autocomplete="one-time-code">
+          <p class="err-msg" id="err-emailOtp"></p>
+          <p class="otp-resend-line">
+            <button type="button" class="otp-resend-link" id="btnEmailResend" data-i18n="otpResend">Renvoyer le code</button>
+          </p>
+        </div>
+        <button class="btn-gold" type="button" id="btnEmailPrimary" data-i18n="sendCode">Envoyer le code</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="logoutOthersModal">
+    <div class="modal-box glass logout-box">
+      <div class="modal-title" data-i18n="logoutOthers">Déconnecter mes autres appareils</div>
+      <p class="logout-lead" data-i18n="logoutOthersLead">Tous vos autres téléphones et ordinateurs seront déconnectés. Cet appareil reste connecté.</p>
+      <div class="logout-modal-row">
+        <button type="button" class="logout-cancel" id="btnLogoutOthersNo" data-i18n="cancel">Annuler</button>
+        <button type="button" class="logout-go" id="btnLogoutOthersYes" data-i18n="logoutOthersGo">Déconnecter</button>
+      </div>
     </div>
   </div>
 

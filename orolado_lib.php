@@ -2198,7 +2198,7 @@ function orolado_merge3_list(array $base, array $mine, array $cur): array {
 }
 
 function orolado_db_merge3(array $base, array $mine, array $cur): array {
-  $maps = ['users', 'vault', 'sessions', 'pendingRegistrations', 'pendingPasswordOtps', 'withdrawOtps', 'bans'];
+  $maps = ['users', 'vault', 'sessions', 'pendingRegistrations', 'pendingPasswordOtps', 'pendingEmailChanges', 'withdrawOtps', 'bans'];
   $lists = ['deposits', 'withdrawals', 'orders', 'support_messages', 'admin_logs', 'processedTx'];
   $out = $mine;
   foreach ($maps as $k) {
@@ -3968,6 +3968,10 @@ function brevo_send_otp(string $email, string $code): array {
   }
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
+  // Tests locaux uniquement (scripts/test-*.php) : aucun vrai e-mail envoyé.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) {
+    return ($GLOBALS['OROLADO_FAKE_MAIL'])($email, $code);
+  }
   $html = brevo_otp_html($code);
   $text = "Your Orolado security code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
   $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);

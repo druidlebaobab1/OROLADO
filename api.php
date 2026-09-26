@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/trade_lib.php';
 require_once __DIR__ . '/history_lib.php';
+require_once __DIR__ . '/account_lib.php';
 orolado_load_env();
 
 $ADMIN_EMAIL = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
@@ -697,6 +698,29 @@ if ($action === 'forgotPasswordSet') {
   $ok = orolado_overwrite_user_password($db, $email, $newPassword);
   save_db($file, $db);
   echo json_encode(['ok' => $ok, 'server' => true, 'reason' => $ok ? null : 'Unable to update password']);
+  exit;
+}
+
+// Changement d'e-mail : code à l'ancienne adresse, puis à la nouvelle ; appliqué partout.
+if ($action === 'emailChangeStart' || $action === 'emailChangeVerify' || $action === 'emailChangeResend' || $action === 'logoutOthers') {
+  $me = session_user($db, $token);
+  if (!$me) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  // Envois d'e-mails / appels Supabase hors verrou ; save_db fusionne avec les écritures concurrentes.
+  if ($action === 'emailChangeStart') $out = orolado_email_change_start($db, $me, (string) ($req['newEmail'] ?? ''));
+  elseif ($action === 'emailChangeResend') $out = orolado_email_change_resend($db, $me);
+  elseif ($action === 'emailChangeVerify') $out = orolado_email_change_verify($db, $me, (string) ($req['code'] ?? ''), (string) $token);
+  else $out = ['ok' => true, 'closed' => orolado_logout_other_devices($db, (string) ($me['id'] ?? ''), (string) $token)];
+  save_db($file, $db);
+  if (!empty($out['user']) && is_array($out['user'])) {
+    $pub = $out['user'];
+    unset($pub['passwordHash'], $pub['password'], $pub['emailHistory']);
+    $out['user'] = $pub;
+  }
+  $out['server'] = true;
+  echo json_encode($out, JSON_UNESCAPED_UNICODE);
   exit;
 }
 

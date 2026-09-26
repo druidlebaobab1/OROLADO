@@ -1833,6 +1833,7 @@
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
+    if ($('profSince')) $('profSince').textContent = fmtMemberSince(u.createdAt || u.created_at);
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
     if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
     profRecvCoin = 'usdt';
@@ -2040,6 +2041,207 @@
             copyBtn.classList.remove('is-copied');
           }, 1200);
         });
+      });
+    }
+  }
+
+  function fmtMemberSince(iso) {
+    var d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d.getTime())) return '—';
+    var lang = (D6.I18N && D6.I18N.lang) || 'fr';
+    try {
+      return d.toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (eDt) {
+      return d.toISOString().slice(0, 10);
+    }
+  }
+
+  function copyText(txt, btn) {
+    if (!txt || txt === '—') return;
+    function ok() {
+      if (!btn) return;
+      btn.textContent = t('copied') || 'Copié';
+      setTimeout(function () { btn.textContent = t('copyId') || 'Copier'; }, 1200);
+    }
+    function fallback() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); ok();
+      } catch (e) { /* ignore */ }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(fallback);
+    else fallback();
+  }
+
+  function bindCopyEmail() {
+    var btn = $('btnCopyEmail');
+    if (!btn || btn._oroBound) return;
+    btn._oroBound = true;
+    btn.addEventListener('click', function () {
+      copyText(($('profEmail') && $('profEmail').textContent) || '', btn);
+    });
+  }
+
+  /** Changer d'adresse : code à l'adresse actuelle, puis à la nouvelle ; « autres appareils ». */
+  function bindEmailChange() {
+    if (!$('btnOpenEmail') || $('btnOpenEmail')._oroBound) return;
+    $('btnOpenEmail')._oroBound = true;
+    var step = 'new';
+    var busy = false;
+    var left = 0;
+    var timer = null;
+    var target = '';
+    function err(id, msg) {
+      var el = $(id);
+      if (!el) return;
+      el.textContent = msg || '';
+      el.classList.toggle('on', !!msg);
+    }
+    function lead(msg) { if ($('emailLead')) $('emailLead').textContent = msg || ''; }
+    function paintResend() {
+      var link = $('btnEmailResend');
+      if (!link) return;
+      link.textContent = left > 0 ? t('otpResendIn').replace('{s}', String(left)) : t('otpResend');
+      setResendWait(link, left > 0);
+    }
+    function countdown(sec) {
+      left = Math.max(0, parseInt(sec, 10) || 60);
+      if (timer) clearInterval(timer);
+      paintResend();
+      timer = setInterval(function () {
+        left -= 1;
+        if (left <= 0) { left = 0; clearInterval(timer); timer = null; }
+        paintResend();
+      }, 1000);
+    }
+    function setStep(s) {
+      step = s;
+      if ($('formEmail')) $('formEmail').setAttribute('data-step', s);
+      if ($('emailStepNew')) $('emailStepNew').classList.toggle('hidden', s !== 'new');
+      if ($('emailStepCode')) $('emailStepCode').classList.toggle('hidden', s === 'new');
+      var btn = $('btnEmailPrimary');
+      if (btn) btn.textContent = s === 'new' ? t('sendCode') : t('continueBtn');
+      if (s === 'new') lead('');
+      else lead(t(s === 'old' ? 'emailStepOld' : 'emailStepNew').replace('{e}', target));
+      if (s !== 'new' && $('emailOtp')) {
+        $('emailOtp').value = '';
+        setTimeout(function () { $('emailOtp').focus(); }, 60);
+      }
+    }
+    function reset() {
+      busy = false;
+      left = 0;
+      if (timer) { clearInterval(timer); timer = null; }
+      if ($('newEmail')) $('newEmail').value = '';
+      err('err-newEmail', '');
+      err('err-emailOtp', '');
+      setStep('new');
+    }
+    function failText(res) {
+      if (res && res.code === 'taken') return t('emailTaken');
+      if (res && res.code === 'email') return t('emailInvalid');
+      if (res && res.code === 'bad') return otpFailText();
+      return (res && res.reason) || t('sessionInvalid');
+    }
+    async function start() {
+      var mail = String(($('newEmail') && $('newEmail').value) || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) { err('err-newEmail', t('emailInvalid')); return; }
+      err('err-newEmail', '');
+      busy = true;
+      var res;
+      try { res = await D6.Api.post('emailChangeStart', { newEmail: mail }, 25000); } finally { busy = false; }
+      if (!res || !res.ok) { err('err-newEmail', failText(res)); return; }
+      target = res.sentTo || (user() && user().email) || '';
+      setStep('old');
+      countdown(res.resendIn || 60);
+      toast(t('codeSent'), 'ok');
+    }
+    async function verify() {
+      var code = String(($('emailOtp') && $('emailOtp').value) || '').replace(/\D/g, '').slice(0, 6);
+      if (code.length !== 6) { err('err-emailOtp', otpFailText()); return; }
+      err('err-emailOtp', '');
+      busy = true;
+      var res;
+      try { res = await D6.Api.post('emailChangeVerify', { code: code }, 25000); } finally { busy = false; }
+      if (!res || !res.ok) {
+        err('err-emailOtp', failText(res));
+        if (res && res.code === 'none') setStep('new');
+        return;
+      }
+      if (res.step === 'new') {
+        target = res.sentTo || target;
+        setStep('newcode');
+        countdown(res.resendIn || 60);
+        toast(t('codeSent'), 'ok');
+        return;
+      }
+      var u = user();
+      if (u && res.email) {
+        u.email = res.email;
+        u.originalEmail = res.email;
+        D6.Store.saveUser(u);
+      }
+      fillProfile();
+      closeModal('emailModal');
+      toast(t('emailChanged'), 'ok', 4200);
+    }
+    async function resend() {
+      if (busy || left > 0 || step === 'new') return;
+      busy = true;
+      var res;
+      try { res = await D6.Api.post('emailChangeResend', {}, 25000); } finally { busy = false; }
+      if (res && res.ok) { countdown(res.resendIn || 60); toast(t('codeSent'), 'ok'); return; }
+      if (res && res.retryIn) { countdown(res.retryIn); return; }
+      err('err-emailOtp', failText(res));
+    }
+    $('btnOpenEmail').addEventListener('click', function () {
+      if (isGuest()) { requireAccount(); return; }
+      reset();
+      openFromProfile('emailModal');
+    });
+    bindAndroidTap($('closeEmail'), function () { closeModal('emailModal'); });
+    bindAndroidTap($('btnEmailPrimary'), function () {
+      if (busy) return;
+      if (step === 'new') start(); else verify();
+    });
+    bindAndroidTap($('btnEmailResend'), resend);
+    if ($('formEmail')) {
+      $('formEmail').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (busy) return;
+        if (step === 'new') start(); else verify();
+      });
+    }
+    if ($('emailOtp')) {
+      $('emailOtp').addEventListener('input', function () {
+        var v = String($('emailOtp').value || '').replace(/\D/g, '').slice(0, 6);
+        $('emailOtp').value = v;
+        if (v.length === 6 && !busy) verify();
+      });
+    }
+
+    // « Déconnecter mes autres appareils »
+    if ($('btnLogoutOthers')) {
+      $('btnLogoutOthers').addEventListener('click', function () {
+        if (isGuest()) { requireAccount(); return; }
+        openFromProfile('logoutOthersModal');
+      });
+    }
+    bindAndroidTap($('btnLogoutOthersNo'), function () { closeModal('logoutOthersModal'); });
+    bindAndroidTap($('btnLogoutOthersYes'), async function () {
+      if (busy) return;
+      busy = true;
+      var res;
+      try { res = await D6.Api.post('logoutOthers', {}, 20000); } finally { busy = false; }
+      closeModal('logoutOthersModal');
+      if (res && res.ok) toast(t('logoutOthersDone'), 'ok', 4200);
+      else toast((res && res.reason) || t('sessionInvalid'), 'err');
+    });
+    if ($('logoutOthersModal')) {
+      $('logoutOthersModal').addEventListener('click', function (e) {
+        if (e.target === $('logoutOthersModal')) closeModal('logoutOthersModal');
       });
     }
   }
@@ -5540,6 +5742,8 @@
       openFromProfile('passModal');
     });
     bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
+    bindCopyEmail();
+    bindEmailChange();
     var passOtpToken = '';
     var passTimer = null;
     var passLeft = 0;
