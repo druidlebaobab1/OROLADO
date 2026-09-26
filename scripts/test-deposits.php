@@ -51,8 +51,10 @@ $r = credit_paid_deposit(['ref' => 'oro_test_1', 'amount' => 100, 'paid' => true
 check('crédit accepté', !empty($r['ok']), json_encode($r));
 check('solde 50 → 150', abs($bank['real'][$uuid] - 150) < 0.001, (string) $bank['real'][$uuid]);
 
-echo "2) Une vieille copie du fichier remet le dépôt en attente\n";
-save_db(orolado_data_file(), $stale);
+echo "2) Pire cas forcé : une vieille copie écrasée telle quelle remet le dépôt en attente\n";
+// (save_db fusionne maintenant et l'empêcherait : on force l'écrasement brut pour tester
+// la 2e protection, la clé unique en base.)
+file_put_contents(orolado_data_file(), json_encode($stale));
 check('le fichier dit à nouveau PENDING', load_db()['deposits'][0]['status'] === 'PENDING');
 
 echo "3) Le webhook et la vérification du téléphone le retraitent (3 fois)\n";

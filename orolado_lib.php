@@ -1915,14 +1915,20 @@ function supabase_admin_set_password(string $userId, string $email, string $newP
   }
   $email = strtolower(trim($email));
   if ($email === '') return;
-  $list = supabase_http($url . '/auth/v1/admin/users?page=1&per_page=200', $hdrs);
-  $users = [];
-  if (is_array($list) && isset($list['users']) && is_array($list['users'])) $users = $list['users'];
-  foreach ($users as $row) {
-    if (!is_array($row)) continue;
-    $mail = strtolower(trim((string) ($row['email'] ?? '')));
-    $id = (string) ($row['id'] ?? '');
-    if ($mail !== $email || $id === '' || isset($done[$id])) continue;
+  // Recherche EXACTE du compte Supabase par e-mail (avant : seulement parmi les 200 premiers
+  // inscrits → pour les autres, l'ancien mot de passe restait valable côté Supabase).
+  $ids = [];
+  $rows = supabase_http($url . '/rest/v1/profiles?email=eq.' . rawurlencode($email) . '&select=id', $hdrs);
+  foreach ((array) $rows as $row) {
+    if (is_array($row) && !empty($row['id'])) $ids[] = (string) $row['id'];
+  }
+  $db = load_db();
+  foreach (($db['users'] ?? []) as $u) {
+    if (!is_array($u) || strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
+    if (!empty($u['sbId'])) $ids[] = (string) $u['sbId'];
+  }
+  foreach (array_unique($ids) as $id) {
+    if (isset($done[$id]) || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) continue;
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($id), $hdrs, $body, 'PUT');
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($id) . '/logout', $hdrs, '{}', 'POST');
     $done[$id] = true;
@@ -2107,19 +2113,107 @@ function load_db(?string $file = null): array {
   flock($fp, LOCK_UN);
   fclose($fp);
   $data = json_decode($raw ?: '', true);
-  return is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  $out = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  // Photo de départ de la requête (1re lecture) : sert à save_db pour ne jamais effacer
+  // ce qu'une autre requête a ajouté entre-temps (voir orolado_db_merge3).
+  if (!isset($GLOBALS['OROLADO_DB_BASE'][$file])) $GLOBALS['OROLADO_DB_BASE'][$file] = $out;
+  return $out;
+}
+
+/**
+ * Fusion à 3 versions d'une table indexée : base = ce que la requête avait lu, mine = ce
+ * qu'elle veut écrire, cur = le fichier à cet instant. Les changements des DEUX côtés sont
+ * gardés : une vieille copie ne peut plus effacer une session, un dépôt ou un joueur ajouté
+ * entre-temps par une autre requête.
+ */
+function orolado_merge3_map(array $base, array $mine, array $cur): array {
+  $out = [];
+  foreach ($cur as $k => $v) {
+    $inB = array_key_exists($k, $base);
+    if (array_key_exists($k, $mine)) {
+      $out[$k] = ($inB && $mine[$k] == $base[$k]) ? $v : $mine[$k];
+    } else if (!$inB) {
+      $out[$k] = $v; // ajouté par une autre requête : on le garde
+    }
+    // sinon : supprimé volontairement par cette requête
+  }
+  foreach ($mine as $k => $v) {
+    if (array_key_exists($k, $out) || array_key_exists($k, $cur)) continue;
+    if (array_key_exists($k, $base) && $v == $base[$k]) continue; // supprimé par une autre requête
+    $out[$k] = $v; // ajouté par cette requête
+  }
+  return $out;
+}
+
+/** Même fusion pour une liste d'enregistrements identifiés par 'id' (dépôts, retraits, ordres…). */
+function orolado_merge3_list(array $base, array $mine, array $cur): array {
+  $key = static function ($row) {
+    if (is_array($row) && isset($row['id']) && $row['id'] !== '') return 'i:' . (string) $row['id'];
+    return 'h:' . md5(json_encode($row));
+  };
+  $toMap = static function (array $list) use ($key): array {
+    $m = [];
+    foreach ($list as $row) $m[$key($row)] = $row;
+    return $m;
+  };
+  $merged = orolado_merge3_map($toMap($base), $toMap($mine), $toMap($cur));
+  // Ordre : celui de la version de cette requête, puis les ajouts des autres.
+  $out = [];
+  foreach ($mine as $row) {
+    $k = $key($row);
+    if (array_key_exists($k, $merged)) { $out[] = $merged[$k]; unset($merged[$k]); }
+  }
+  foreach ($merged as $row) $out[] = $row;
+  return $out;
+}
+
+function orolado_db_merge3(array $base, array $mine, array $cur): array {
+  $maps = ['users', 'vault', 'sessions', 'pendingRegistrations', 'pendingPasswordOtps', 'withdrawOtps', 'bans'];
+  $lists = ['deposits', 'withdrawals', 'orders', 'support_messages', 'admin_logs', 'processedTx'];
+  $out = $mine;
+  foreach ($maps as $k) {
+    $b = is_array($base[$k] ?? null) ? $base[$k] : [];
+    $m = is_array($mine[$k] ?? null) ? $mine[$k] : [];
+    $c = is_array($cur[$k] ?? null) ? $cur[$k] : [];
+    if (array_is_list($m) && array_is_list($c) && ($m || $c)) {
+      $out[$k] = orolado_merge3_list($b, $m, $c);
+    } else {
+      $out[$k] = orolado_merge3_map($b, $m, $c);
+    }
+  }
+  foreach ($lists as $k) {
+    $b = is_array($base[$k] ?? null) ? $base[$k] : [];
+    $m = is_array($mine[$k] ?? null) ? $mine[$k] : [];
+    $c = is_array($cur[$k] ?? null) ? $cur[$k] : [];
+    $out[$k] = orolado_merge3_list($b, $m, $c);
+  }
+  // Autres clés du fichier que cette requête ne connaissait pas : on les garde.
+  foreach ($cur as $k => $v) {
+    if (!array_key_exists($k, $out) && !array_key_exists($k, $base)) $out[$k] = $v;
+  }
+  return $out;
 }
 
 function save_db(string $file, array $db): bool {
   $fp = fopen($file, 'c+');
   if (!$fp) return false;
   flock($fp, LOCK_EX);
+  // Fusion avec le fichier ACTUEL (sous verrou) : une requête qui avait lu une vieille
+  // version n'efface plus les changements faits entre-temps par les autres.
+  $base = $GLOBALS['OROLADO_DB_BASE'][$file] ?? null;
+  if (is_array($base)) {
+    $raw = stream_get_contents($fp);
+    $cur = json_decode($raw ?: '', true);
+    if (is_array($cur)) $db = orolado_db_merge3($base, $db, array_merge(blank_db(), $cur));
+  }
   ftruncate($fp, 0);
   rewind($fp);
   $ok = fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE)) !== false;
   fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
+  // Nouvelle base : ce qui vient d'être écrit (pour un éventuel 2e save_db dans la requête).
+  $GLOBALS['OROLADO_DB_BASE'][$file] = $db;
   return $ok;
 }
 
