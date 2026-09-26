@@ -146,21 +146,55 @@ function orolado_email_apply(array &$db, string $uid, string $newEmail, string $
     if (!is_array($res) || strtolower((string) ($res['email'] ?? '')) !== $new) {
       return ['ok' => false, 'reason' => 'Changement impossible pour le moment, réessayez plus tard'];
     }
-    supabase_http($url . '/rest/v1/profiles?id=eq.' . rawurlencode($sbId), $hdrs,
-      json_encode(['email' => $new], JSON_UNESCAPED_UNICODE), 'PATCH');
   }
-  $u = $db['users'][$uid];
-  $old = strtolower(trim((string) ($u['email'] ?? '')));
-  $hist = is_array($u['emailHistory'] ?? null) ? $u['emailHistory'] : [];
-  $hist[] = ['from' => $old, 'to' => $new, 'at' => date('c')];
-  $u['emailHistory'] = array_slice($hist, -10);
-  $u['email'] = $new;
-  // originalEmail servait aussi à la connexion : il suit la nouvelle adresse.
-  $u['originalEmail'] = $new;
-  if ($sbId !== '' && orolado_email_uuid_ok($sbId)) $u['sbId'] = $sbId;
-  $u['updated_at'] = date('c');
-  $db['users'][$uid] = $u;
+  $old = strtolower(trim((string) ($db['users'][$uid]['email'] ?? '')));
+  if (supabase_admin_ready()) {
+    $url = rtrim(supabase_project_url(), '/');
+    $hdrs = supabase_admin_headers();
+    $body = json_encode(['email' => $new], JSON_UNESCAPED_UNICODE);
+    // Profil(s) Supabase : par identifiant ET par ancienne adresse (fiches en double du même joueur).
+    $okProfile = false;
+    for ($try = 0; $try < 2 && !$okProfile; $try++) {
+      if (orolado_email_uuid_ok($sbId)) {
+        $rows = supabase_http($url . '/rest/v1/profiles?id=eq.' . rawurlencode($sbId), $hdrs, $body, 'PATCH');
+        $okProfile = is_array($rows) && ($rows === [] || strtolower((string) ($rows[0]['email'] ?? '')) === $new);
+      } else {
+        $okProfile = true;
+      }
+    }
+    if ($old !== '') supabase_http($url . '/rest/v1/profiles?email=eq.' . rawurlencode($old), $hdrs, $body, 'PATCH');
+    if (!$okProfile && function_exists('orolado_health_event')) {
+      orolado_health_event('Comptes', 'Changement d’e-mail : le profil Supabase n’a pas été mis à jour (' . $new . '). La connexion marche déjà avec la nouvelle adresse.', 'warn');
+    }
+  }
+  // Toutes les fiches locales du même joueur (id court, id de la base, ancienne adresse) :
+  // avant, une seule était changée et l'autre gardait l'ancienne adresse (visible et utilisable).
+  $same = [];
+  foreach (($db['users'] ?? []) as $id => $row) {
+    if (!is_array($row)) continue;
+    $rid = (string) ($row['id'] ?? $id);
+    $mails = [strtolower(trim((string) ($row['email'] ?? ''))), strtolower(trim((string) ($row['originalEmail'] ?? '')))];
+    $mine = (string) $id === $uid || $rid === $uid
+      || ($sbId !== '' && ($rid === $sbId || (string) ($row['sbId'] ?? '') === $sbId))
+      || ($old !== '' && in_array($old, $mails, true));
+    if ($mine) $same[] = $id;
+  }
+  foreach ($same as $id) {
+    $u = $db['users'][$id];
+    $hist = is_array($u['emailHistory'] ?? null) ? $u['emailHistory'] : [];
+    $hist[] = ['from' => $old, 'to' => $new, 'at' => date('c')];
+    $u['emailHistory'] = array_slice($hist, -10);
+    $u['email'] = $new;
+    // originalEmail servait aussi à la connexion : il suit la nouvelle adresse.
+    $u['originalEmail'] = $new;
+    if ($sbId !== '' && orolado_email_uuid_ok($sbId)) $u['sbId'] = $sbId;
+    $u['updated_at'] = date('c');
+    $db['users'][$id] = $u;
+  }
   unset($db['pendingPasswordOtps'][$old]);
+  foreach ($same as $id) {
+    if ((string) $id !== $uid) orolado_revoke_user_sessions($db, (string) $id, $keepToken);
+  }
   orolado_logout_other_devices($db, $uid, $keepToken, $sbId);
   return ['ok' => true];
 }

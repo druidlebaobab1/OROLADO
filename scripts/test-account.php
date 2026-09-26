@@ -135,5 +135,29 @@ for ($i = 0; $i < 10; $i++) {
 }
 check('chaque connexion valide, chaque déconnexion effective', $okAll);
 
+echo "8) Joueur présent 2 fois (fiche à id court + fiche de la base) : l'ancienne adresse disparaît partout\n";
+$sb2 = 'cccccccc-bbbb-cccc-dddd-eeeeeeeeeeee';
+$auth[$sb2] = ['email' => 'double@test.com', 'password' => 'x'];
+$profiles[$sb2] = 'double@test.com';
+$db['users']['u_court'] = ['id' => 'u_court', 'email' => 'double@test.com', 'originalEmail' => 'double@test.com', 'sbId' => $sb2, 'passwordHash' => password_hash('Vieux1', PASSWORD_BCRYPT)];
+$db['users'][$sb2] = ['id' => $sb2, 'email' => 'double@test.com', 'passwordHash' => password_hash('Vieux1', PASSWORD_BCRYPT)];
+$db['sessions']['tokCourt'] = ['userId' => 'u_court'];
+$db['sessions']['tokBase'] = ['userId' => $sb2];
+$db['sessions']['tokAutre'] = ['userId' => $sb2];
+$me2 = $db['users'][$sb2];
+orolado_email_change_start($db, $me2, 'unique@test.com');
+orolado_email_change_verify($db, $me2, lastCodeFor($mails, 'double@test.com'), 'tokBase');
+$r = orolado_email_change_verify($db, $me2, lastCodeFor($mails, 'unique@test.com'), 'tokBase');
+check('changement confirmé', !empty($r['ok']) && ($r['step'] ?? '') === 'done', json_encode($r));
+save_db(orolado_data_file(), $db);
+$db = load_db();
+check('les 2 fiches ont la nouvelle adresse', $db['users']['u_court']['email'] === 'unique@test.com' && $db['users'][$sb2]['email'] === 'unique@test.com');
+check('l’ancienne adresse ne trouve plus aucun compte', loginFinds($db, 'double@test.com') === null);
+$hitOld = false;
+foreach ($db['users'] as $u) foreach (['email', 'originalEmail'] as $k) if (strtolower((string) ($u[$k] ?? '')) === 'double@test.com') $hitOld = true;
+check('plus aucune trace de l’ancienne adresse dans les fiches (hors historique admin)', !$hitOld);
+check('Supabase : connexion et profil à la nouvelle adresse', $auth[$sb2]['email'] === 'unique@test.com' && $profiles[$sb2] === 'unique@test.com');
+check('les sessions de l’autre fiche sont fermées, celle-ci reste', isset($db['sessions']['tokBase']) && !isset($db['sessions']['tokCourt']) && !isset($db['sessions']['tokAutre']));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

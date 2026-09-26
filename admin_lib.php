@@ -885,7 +885,8 @@ function admin_profiles(): array {
       ];
     } else {
       $aphone = trim((string) ($u['phone'] ?? ($meta['phone'] ?? ($meta['destination'] ?? ''))));
-      if ($byId[$id]['email'] === '' && $email !== '') $byId[$id]['email'] = $email;
+      // L'adresse de CONNEXION fait foi (après un changement d'e-mail, le profil peut être en retard).
+      if ($email !== '') $byId[$id]['email'] = strtolower($email);
       if ($byId[$id]['phone'] === '' && $aphone !== '') $byId[$id]['phone'] = $aphone;
       if ($byId[$id]['name'] === '') {
         $an = trim((string) ($meta['display_name'] ?? $meta['full_name'] ?? ''));
@@ -911,8 +912,12 @@ function admin_profiles(): array {
     if (!is_array($u)) continue;
     $id = (string) ($u['id'] ?? $id);
     if ($id === '') continue;
+    // Fiche locale à id court liée à son compte de la base : une seule ligne par joueur.
+    $sbLink = (string) ($u['sbId'] ?? '');
+    if (!isset($byId[$id]) && $sbLink !== '' && isset($byId[$sbLink])) $id = $sbLink;
     $pid = (string) ($u['publicId'] ?? '');
     if (isset($byId[$id])) {
+      if (!empty($u['emailHistory']) && (string) ($u['email'] ?? '') !== '') $byId[$id]['email'] = strtolower((string) $u['email']);
       if ($pid !== '') $byId[$id]['publicId'] = $pid;
       if ($byId[$id]['traffic'] === '') $byId[$id]['traffic'] = (string) ($u['trafficSource'] ?? '');
       $byId[$id]['trafficMedium'] = (string) ($u['trafficMedium'] ?? $byId[$id]['trafficMedium'] ?? '');
