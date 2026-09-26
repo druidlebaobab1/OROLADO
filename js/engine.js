@@ -1081,7 +1081,7 @@
 
     placeOrder: function (user, opts) {
       if (!user || !D6.Store.current() || D6.Store.current().id !== user.id) {
-        return { ok: false, reason: 'Session invalide' };
+        return { ok: false, reason: D6.I18N.t('sessionExpiredMsg') };
       }
       var mode = user.mode === 'real' ? 'real' : 'demo';
       var nowPerf = performance.now();

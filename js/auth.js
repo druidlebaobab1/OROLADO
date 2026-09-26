@@ -345,7 +345,7 @@
     },
 
     requestPasswordOtp: async function (user) {
-      if (!user) return { ok: false, reason: 'Session expirée' };
+      if (!user) return { ok: false, reason: D6.I18N.t('sessionExpiredMsg') };
       if (D6.Api && D6.Api.post) {
         var remote = await D6.Api.post('passwordOtpStart', { email: user.email || '' }, 20000);
         if (remote && remote.ok) return remote;
@@ -355,7 +355,7 @@
     },
 
     verifyPasswordOtp: async function (user, code) {
-      if (!user) return { ok: false, reason: 'Session expirée' };
+      if (!user) return { ok: false, reason: D6.I18N.t('sessionExpiredMsg') };
       code = String(code || '').replace(/\D/g, '');
       if (code.length !== 6) return { ok: false, reason: 'Code invalide' };
       if (D6.Api && D6.Api.post) {
@@ -412,7 +412,7 @@
     },
 
     changePassword: async function (user, current, next, otpToken) {
-      if (!user) return { ok: false, reason: 'Session expirée' };
+      if (!user) return { ok: false, reason: D6.I18N.t('sessionExpiredMsg') };
       if (String(next || '').length < 6) return { ok: false, reason: 'Nouveau mot de passe trop court' };
       if (!otpToken) return { ok: false, reason: 'Validez d’abord le code e-mail' };
       if (D6.Api && D6.Api.post) {
