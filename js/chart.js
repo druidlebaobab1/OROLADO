@@ -1917,7 +1917,7 @@
     var base = {
       v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0016,
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
-      boomspike: 0.0160, crash300: 0.0160
+      boomspike: 0.0090, crash300: 0.0090
     }[assetId] || 0.0090;
     // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
     // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.

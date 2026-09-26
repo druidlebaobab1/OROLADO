@@ -15,3 +15,6 @@ server.ps1
 data/feed/
 data/stakes/
 .claude/
+
+feedcache/*.json
+feedcache/*.tmp

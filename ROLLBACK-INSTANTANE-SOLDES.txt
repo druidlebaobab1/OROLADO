@@ -1,2 +1,0 @@
-﻿# ROLLBACK avant fix soldes (20260922-215518)
-powershell -ExecutionPolicy Bypass -File "C:\Users\PC\.gemini\antigravity\scratch\wheel-game\rollback-avant-fix-soldes-20260922-215518\restore.ps1"

@@ -22,7 +22,7 @@
   var BOOT_TICKS = 1440;
   // Retard d'affichage très court : ce qu'on voit est quasiment le prix serveur actuel,
   // donc le point d'entrée tombe là où le joueur clique. Rafraîchi toutes les 300 ms.
-  var DISPLAY_DELAY = 300;
+  var DISPLAY_DELAY = 450;
   var POLL_MS = 300;
   var MULTS = [1.88, 5, 10, 50];
 
@@ -232,9 +232,24 @@
     });
   }
 
+  /** Tranche reçue du serveur → liste de prix (format compressé « p0 + écarts » ou brut). */
+  function unpack(a) {
+    if (!a) return [];
+    if (Array.isArray(a.c)) return a.c;
+    if (!Array.isArray(a.d)) return [];
+    var out = [Number(a.p0)];
+    var v = Number(a.p0);
+    var i;
+    for (i = 0; i < a.d.length; i++) {
+      v += Number(a.d[i]);
+      out.push(v);
+    }
+    return out;
+  }
+
   /**
-   * Une seule requête pour les 10 actifs : au démarrage (6 min d'historique chacun),
-   * puis les nouveaux ticks de tous. Changer d'actif est donc instantané.
+   * Resynchronisation complète (démarrage, trou après une veille) : une requête pour les
+   * 10 actifs, 6 minutes d'historique chacun (ou juste ce qui manque).
    */
   var allBusy = false;
   var allFailAt = 0;
@@ -258,7 +273,7 @@
       Object.keys(j.assets).forEach(function (id) {
         if (!C.ASSETS[id]) return;
         var a = j.assets[id];
-        mergeTicks(id, a.first, a.c);
+        mergeTicks(id, a.first, unpack(a));
       });
     }, function () {
       allBusy = false;
@@ -266,6 +281,74 @@
     });
   }
 
+  /** Applique le « direct partagé ». Retourne false s'il manque des prix (→ resynchro). */
+  function applyLive(j) {
+    if (!j || !j.ok || !j.assets) return false;
+    var complete = true;
+    Object.keys(j.assets).forEach(function (id) {
+      if (!C.ASSETS[id]) return;
+      var a = j.assets[id];
+      var f = feedOf(id);
+      if (!f.loaded || Number(a.first) > f.last + 1) {
+        complete = false;
+        return;
+      }
+      mergeTicks(id, a.first, unpack(a));
+    });
+    return complete;
+  }
+
+  /**
+   * Rafraîchissement normal : tout le monde lit le MÊME petit fichier statique
+   * (feedcache/live.json, servi sans PHP). S'il date un peu, on demande à PHP de le refaire.
+   * Ainsi la charge serveur ne dépend plus du nombre de visiteurs.
+   */
+  var liveBusy = false;
+  var staleSeen = 0;
+  function pollLive() {
+    if (liveBusy || allBusy) return;
+    var ids = Object.keys(C.ASSETS);
+    var i;
+    for (i = 0; i < ids.length; i++) {
+      if (!feedOf(ids[i]).loaded) { pollAll(); return; }
+    }
+    liveBusy = true;
+    var done = function () { liveBusy = false; };
+    fetch('feedcache/live.json?t=' + Math.floor(Date.now() / 250), { cache: 'no-store' }).then(function (r) {
+      return r.ok ? r.json() : null;
+    }).then(function (j) {
+      var serverNow = Date.now() + clock.offset;
+      var age = j && j.at ? serverNow - Number(j.at) : Infinity;
+      if (j && age < 500) staleSeen = 0;
+      if (j && j.ok && !applyLive(j)) {
+        // Il manque des prix (retour de veille, connexion lente) : resynchro complète.
+        pollAll();
+        done();
+        return;
+      }
+      if (age < 500) {
+        done();
+        return;
+      }
+      // Fichier un peu ancien : on ne demande PAS tous en même temps à PHP de le refaire.
+      // 1re fois 15 % de chances, 2e fois 50 %, ensuite toujours : avec 1 000 visiteurs,
+      // quelques-uns seulement s'en chargent ; seul sur le site, on attend au plus ~1 s.
+      staleSeen += 1;
+      var chance = staleSeen === 1 ? 0.15 : (staleSeen === 2 ? 0.5 : 1);
+      if (age < 3000 && Math.random() > chance) {
+        done();
+        return;
+      }
+      staleSeen = 0;
+      return getJson('feed.php?live=1').then(function (j2) {
+        if (!applyLive(j2)) pollAll();
+        done();
+      });
+    }).then(done, function () {
+      done();
+      pollAll();
+    });
+  }
   function priceAtTick(id, tick) {
     var f = feeds[id];
     if (!f || !f.loaded || tick < f.first || tick > f.last) return NaN;
@@ -277,7 +360,7 @@
     pollAll();
     pollTimer = setInterval(function () {
       if (document.hidden) return;
-      pollAll();
+      pollLive();
       if (wantedAsset && feeds[wantedAsset] && feeds[wantedAsset].loaded) loadHistory(wantedAsset);
     }, POLL_MS);
   }

@@ -1,4 +1,0 @@
-﻿RESTORE parachute toolbar FS (20260924-050619)
-  Copy-Item -Force .\photo-avant-toolbar-fs-20260924-050619\index.html .\index.html
-  Copy-Item -Force .\photo-avant-toolbar-fs-20260924-050619\sw.js .\sw.js
-  Copy-Item -Force .\photo-avant-toolbar-fs-20260924-050619\css\app.css .\css\app.css

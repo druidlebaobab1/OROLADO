@@ -47,8 +47,8 @@ function orolado_feed_assets(): array {
     'v75' => $plain(8700.18, 0.00016),
     'nexusprime' => $plain(8120.60, 0.00018),
     'titanpulse' => $plain(9560.40, 0.00028),
-    'boomspike' => ['base' => 3890.20, 'sigma' => 0.000035, 'drift' => -$jMean, 'jumpP' => $jp, 'jumpMin' => $jMin, 'jumpMax' => $jMax, 'jumpDir' => 1],
-    'crash300' => ['base' => 4210.55, 'sigma' => 0.000035, 'drift' => $jMean, 'jumpP' => $jp, 'jumpMin' => $jMin, 'jumpMax' => $jMax, 'jumpDir' => -1],
+    'boomspike' => ['base' => 3890.20, 'sigma' => 0.00008, 'drift' => -$jMean, 'jumpP' => $jp, 'jumpMin' => $jMin, 'jumpMax' => $jMax, 'jumpDir' => 1],
+    'crash300' => ['base' => 4210.55, 'sigma' => 0.00008, 'drift' => $jMean, 'jumpP' => $jp, 'jumpMin' => $jMin, 'jumpMax' => $jMax, 'jumpDir' => -1],
   ];
   return $a;
 }

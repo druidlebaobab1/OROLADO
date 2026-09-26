@@ -4783,9 +4783,12 @@
 
   function financeRowFromServer(r) {
     var kind = r.kind === 'withdraw' ? 'withdraw' : (r.kind === 'bonus' ? 'bonus' : 'deposit');
+    var ref = String(r.ref || '—');
+    // Bonus : référence affichée « BONUS-XXXXXXXX » (l'identifiant interne adm_… reste en base).
+    if (kind === 'bonus') ref = 'BONUS-' + ref.replace(/^adm_/i, '').slice(0, 8).toUpperCase();
     return {
       at: r.at || '',
-      ref: r.ref || '—',
+      ref: ref,
       amount: Number(r.amount) || 0,
       status: normFinanceStatus(r.status, kind),
       label: kind === 'bonus' ? (t('txBonus') !== 'txBonus' ? t('txBonus') : 'Bonus') : financeKindLabel(kind),

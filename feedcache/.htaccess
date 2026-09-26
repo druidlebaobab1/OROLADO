@@ -1,0 +1,10 @@
+# Fichier de prix partagé : servi directement par l'hébergeur (sans PHP).
+# Cache très court : chaque visiteur relit la dernière version.
+<IfModule mod_headers.c>
+  Header set Cache-Control "no-cache, max-age=0"
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>
+<IfModule mod_mime.c>
+  AddType application/json .json
+</IfModule>
+Options -Indexes

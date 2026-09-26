@@ -24,6 +24,23 @@ function feed_out(array $j, int $code = 200): void {
   exit;
 }
 
+/**
+ * Compression : premier prix + écarts successifs (les écarts sont de petits nombres),
+ * environ 3 fois moins de données à envoyer que les prix complets.
+ */
+function feed_pack(int $first, array $vals): array {
+  if (!$vals) return ['first' => $first, 'p0' => 0, 'd' => []];
+  $d = [];
+  $prev = (int) $vals[0];
+  $n = count($vals);
+  for ($i = 1; $i < $n; $i++) {
+    $v = (int) $vals[$i];
+    $d[] = $v - $prev;
+    $prev = $v;
+  }
+  return ['first' => $first, 'p0' => (int) $vals[0], 'd' => $d];
+}
+
 /** Ticks d'un actif : historique (n derniers) ou depuis un tick. */
 function feed_slice(string $asset, ?int $since, int $hist): array {
   $st = orolado_feed_advance($asset);
@@ -35,6 +52,39 @@ function feed_slice(string $asset, ?int $since, int $hist): array {
 }
 
 $base = ['ok' => true, 'tickMs' => OROLADO_TICK_MS];
+
+/*
+ * Mode « direct partagé » (tenue de charge) : un seul fichier statique feedcache/live.json
+ * (les 12 derniers ticks des 10 actifs) que TOUS les visiteurs lisent directement, servi par
+ * l'hébergeur sans PHP. Ce script ne sert qu'à le rafraîchir (au plus ~4 fois par seconde),
+ * quel que soit le nombre de visiteurs.
+ */
+if (isset($_GET['live'])) {
+  $dir = __DIR__ . '/feedcache';
+  $file = $dir . '/live.json';
+  $raw = @file_get_contents($file);
+  $j = is_string($raw) ? json_decode($raw, true) : null;
+  $fresh = is_array($j) && isset($j['at']) && (orolado_feed_now_ms() - (int) $j['at']) < 200;
+  if (!$fresh) {
+    try {
+      $out = [];
+      foreach (array_keys(orolado_feed_assets()) as $id) {
+        $sl = feed_slice($id, null, 12);
+        $out[$id] = feed_pack((int) $sl['first'], $sl['c']);
+      }
+      $j = $base + ['at' => orolado_feed_now_ms(), 'assets' => $out];
+      if (!is_dir($dir)) @mkdir($dir, 0755, true);
+      $tmp = $dir . '/live.' . bin2hex(random_bytes(4)) . '.tmp';
+      if (@file_put_contents($tmp, json_encode($j, JSON_UNESCAPED_SLASHES)) !== false) {
+        if (!@rename($tmp, $file)) { @unlink($file); @rename($tmp, $file); }
+      }
+    } catch (Throwable $e) {
+      error_log('OROLADO feed live ' . $e->getMessage());
+      feed_out(['ok' => false, 'reason' => 'flux indisponible'], 503);
+    }
+  }
+  feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
+}
 
 if (isset($_GET['all'])) {
   $hist = max(1, min(OROLADO_FEED_BOOT_TICKS, (int) ($_GET['hist'] ?? 1440)));
@@ -48,7 +98,8 @@ if (isset($_GET['all'])) {
   $out = [];
   try {
     foreach (array_keys(orolado_feed_assets()) as $id) {
-      $out[$id] = feed_slice($id, $since[$id] ?? null, $hist);
+      $sl = feed_slice($id, $since[$id] ?? null, $hist);
+      $out[$id] = feed_pack((int) $sl['first'], $sl['c']);
     }
   } catch (Throwable $e) {
     error_log('OROLADO feed all ' . $e->getMessage());

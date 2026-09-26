@@ -1,5 +1,0 @@
-﻿RESTORE parachute boutons mise (20260924-040508)
-  Copy-Item -Force .\photo-avant-boutons-mise-20260924-040508\index.html .\index.html
-  Copy-Item -Force .\photo-avant-boutons-mise-20260924-040508\sw.js .\sw.js
-  Copy-Item -Force .\photo-avant-boutons-mise-20260924-040508\js\app.js .\js\app.js
-  Copy-Item -Force .\photo-avant-boutons-mise-20260924-040508\css\app.css .\css\app.css

@@ -1015,10 +1015,19 @@ if ($action === 'upsert') {
   unset($user['passwordHash'], $user['password']);
   $user['passwordHash'] = (string) ($existing['passwordHash'] ?? '');
   $user['positions'] = orolado_merge_positions($existing['positions'] ?? [], $user['positions'] ?? []);
-  foreach (['lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering'] as $keepK) {
-    if (!array_key_exists($keepK, $user) && array_key_exists($keepK, $existing)) {
-      $user[$keepK] = $existing[$keepK];
-    }
+  // Fichier principal léger : seulement les 50 derniers trades RÉELS (la démo reste sur le
+  // téléphone ; l'historique réel complet est dans Supabase, lu par tradeHistory).
+  $user['positions'] = array_slice(array_values(array_filter($user['positions'], static function ($p) {
+    return is_array($p) && (($p['mode'] ?? $p['accountType'] ?? 'demo') === 'real');
+  })), 0, 50);
+  if (isset($user['transactions']) && is_array($user['transactions'])) {
+    $user['transactions'] = array_slice($user['transactions'], 0, 80);
+  }
+  // Champs gérés UNIQUEMENT par le serveur : le téléphone ne peut jamais les écrire
+  // (lien vers le coffre réel, condition de mise ×2, identifiants, date d'inscription).
+  foreach (['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt'] as $keepK) {
+    if (array_key_exists($keepK, $existing)) $user[$keepK] = $existing[$keepK];
+    else unset($user[$keepK]);
   }
   foreach (['realDepositTotal', 'realStakeVolume', 'totalWageredSinceDeposit'] as $maxK) {
     $user[$maxK] = orolado_money(max(
