@@ -1149,6 +1149,9 @@ function orolado_balance_uuid(array $db, string $uid): string {
   if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid)) return $uid;
   $email = '';
   if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
+    // Lien déjà connu (enregistré par orolado_ensure_balance_uuid) : pas d'appel réseau.
+    $known = (string) ($db['users'][$uid]['sbId'] ?? '');
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $known)) return $known;
     $email = strtolower(trim((string) ($db['users'][$uid]['email'] ?? '')));
   }
   if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return '';
@@ -1159,6 +1162,71 @@ function orolado_balance_uuid(array $db, string $uid): string {
   if (!is_array($rows) || !isset($rows[0]['id'])) return '';
   $id = (string) $rows[0]['id'];
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) return '';
+  return $id;
+}
+
+/**
+ * Comme orolado_balance_uuid, mais CRÉE le coffre Supabase s'il manque.
+ * Cause : l'inscription « miroir » faite par le téléphone (signUp avec e-mail) est limitée
+ * par Supabase à quelques inscriptions/heure ; beaucoup de joueurs n'ont donc pas de coffre
+ * réel (admin : « joueur introuvable », trade réel : « coffre introuvable »).
+ * Ici on passe par l'API admin (clé service, e-mail confirmé d'office, aucun e-mail envoyé,
+ * donc aucune limite). Le trigger Supabase crée alors le profil et le coffre.
+ * $password : si connu (connexion), le joueur pourra aussi se connecter à Supabase avec.
+ * Le solde réel déjà noté en local est reporté UNE fois dans le nouveau coffre.
+ */
+function orolado_ensure_balance_uuid(string $uid, ?string $password = null): string {
+  $db = load_db();
+  $id = orolado_balance_uuid($db, $uid);
+  $u = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : null;
+  if ($id === '' && $u) {
+    $email = strtolower(trim((string) ($u['email'] ?? '')));
+    $hdrs = supabase_admin_headers();
+    $url = rtrim(supabase_project_url(), '/');
+    if ($hdrs && $url !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) && !str_ends_with($email, '.local') && !str_ends_with($email, '.invalid')) {
+      $pw = ($password !== null && strlen($password) >= 6) ? $password : bin2hex(random_bytes(16));
+      $made = supabase_http($url . '/auth/v1/admin/users', $hdrs, json_encode([
+        'email' => $email,
+        'password' => $pw,
+        'email_confirm' => true,
+        'user_metadata' => [
+          'display_name' => (string) ($u['displayName'] ?? ''),
+          'phone' => (string) ($u['phone'] ?? ''),
+          'country_code' => (string) ($u['countryCode'] ?? '+225'),
+        ],
+      ], JSON_UNESCAPED_UNICODE), 'POST');
+      $newId = is_array($made) ? (string) ($made['id'] ?? ($made['user']['id'] ?? '')) : '';
+      if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $newId)) {
+        // Déjà inscrit côté Supabase (e-mail existant) : on relit le profil.
+        $newId = orolado_balance_uuid($db, $uid);
+      }
+      $id = $newId;
+      if ($id !== '' && function_exists('orolado_ensure_sb_vault')) {
+        orolado_ensure_sb_vault($id, 0.0);
+        $local = orolado_money($db['vault'][$uid]['real'] ?? 0);
+        // Plafond de sécurité : jamais plus que (dépôts payés − retraits payés) du joueur.
+        $paidIn = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, $u) : 0.0;
+        $paidOut = 0.0;
+        foreach (($db['withdrawals'] ?? []) as $w) {
+          if (!is_array($w) || (string) ($w['userId'] ?? '') !== $uid) continue;
+          if (in_array(strtolower((string) ($w['status'] ?? '')), ['approved', 'paid', 'completed', 'success', 'pending'], true)) {
+            $paidOut += orolado_money($w['amount'] ?? 0);
+          }
+        }
+        $local = orolado_money(min($local, max(0.0, $paidIn - $paidOut)));
+        if ($local > 0.009 && function_exists('orolado_trade_credit_once')) {
+          orolado_trade_credit_once($id, 'migrate_' . $uid, $local);
+        }
+      }
+    }
+  }
+  if ($id !== '' && $u && (string) ($u['sbId'] ?? '') !== $id) {
+    with_db_lock(function ($box) use ($uid, $id) {
+      if (!isset($box->db['users'][$uid]) || !is_array($box->db['users'][$uid])) return ['ok' => true, 'skip_write' => true];
+      $box->db['users'][$uid]['sbId'] = $id;
+      return ['ok' => true];
+    });
+  }
   return $id;
 }
 
@@ -2544,6 +2612,15 @@ function credit_paid_deposit(array $hit): array {
   if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) {
     flock($fp, LOCK_UN);
     fclose($fp);
+    // Joueur sans coffre Supabase (inscription miroir ratée) : on le crée, puis on refait
+    // le crédit UNE fois. Sans ça, un dépôt payé restait non crédité.
+    if (empty($hit['_ensured']) && $uid !== 'admin_master' && function_exists('orolado_ensure_balance_uuid')) {
+      $made = orolado_ensure_balance_uuid($uid);
+      if ($made !== '') {
+        $hit['_ensured'] = 1;
+        return credit_paid_deposit($hit);
+      }
+    }
     return ['ok' => false, 'reason' => 'no_uuid'];
   }
   $vaultRow = function_exists('orolado_ensure_sb_vault') ? orolado_ensure_sb_vault($payId, 0) : supabase_admin_vault($payId);

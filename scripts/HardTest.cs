@@ -34,7 +34,7 @@ public static class HardTest
     {
         public double Deposits, Bonuses, Withdrawals, Volume;
         public long Trades, Players, WinnersOut;
-        public double[] Daily;
+        public double[] Daily; public double[] DayIn;
         public List<double> BestPlayers = new List<double>();
         public double BestPlayerDeposit;
     }
@@ -43,7 +43,7 @@ public static class HardTest
     public static Result Run(int days, int newPerDay, double bonusShare, ulong seed)
     {
         var r = new Rng(seed);
-        var res = new Result { Daily = new double[days] };
+        var res = new Result { Daily = new double[days], DayIn = new double[days] };
         var bal = new List<double>(); var dep = new List<double>(); var wag = new List<double>();
         var target = new List<double>(); var risk = new List<double>(); var alive = new List<bool>();
         var profit = new List<double>();
@@ -56,7 +56,7 @@ public static class HardTest
                 target.Add(1.5 + r.U() * 3.5);              // veut retirer à 1,5× à 5× son dépôt
                 risk.Add(0.02 + r.U() * 0.18);              // mise = 2 % à 20 % du solde
                 alive.Add(true);
-                res.Deposits += x; res.Daily[d] += x; res.Players++;
+                res.Deposits += x; res.Daily[d] += x; res.DayIn[d] += x; res.Players++;
             }
             for (int i = 0; i < bal.Count; i++)
             {
@@ -82,7 +82,7 @@ public static class HardTest
                 if (alive[i] && bal[i] < 1)
                 {
                     // Solde vide : 30 % rechargent, les autres arrêtent.
-                    if (r.U() < 0.30) { double x = FirstDeposit(r); bal[i] += x; dep[i] += x; profit[i] -= x; res.Deposits += x; res.Daily[d] += x; }
+                    if (r.U() < 0.30) { double x = FirstDeposit(r); bal[i] += x; dep[i] += x; profit[i] -= x; res.Deposits += x; res.Daily[d] += x; res.DayIn[d] += x; }
                     else alive[i] = false;
                 }
             }
@@ -90,6 +90,45 @@ public static class HardTest
         profit.Sort(); profit.Reverse();
         for (int i = 0; i < Math.Min(5, profit.Count); i++) res.BestPlayers.Add(profit[i]);
         return res;
+    }
+
+    // Détail jour par jour d'une simulation « typique » + besoin de réserve (pire baisse cumulée).
+    public static string DailyDetail(int days, int newPerDay, double bonusShare, int runs, int showFrom, int showTo)
+    {
+        var inv = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+        var draws = new List<double>();
+        Result typical = null;
+        var nets = new List<KeyValuePair<double, Result>>();
+        for (int k = 0; k < runs; k++)
+        {
+            var res = Run(days, newPerDay, bonusShare, (ulong)(5000 + k));
+            // Pire baisse de la caisse sur une suite de jours (après le 1er mois de rodage).
+            double cum = 0, peak = 0, maxDraw = 0;
+            for (int d = 30; d < days; d++)
+            {
+                cum += res.Daily[d];
+                if (cum > peak) peak = cum;
+                if (peak - cum > maxDraw) maxDraw = peak - cum;
+            }
+            draws.Add(maxDraw);
+            nets.Add(new KeyValuePair<double, Result>(res.Deposits - res.Withdrawals, res));
+        }
+        nets.Sort((a, b) => a.Key.CompareTo(b.Key));
+        typical = nets[nets.Count / 2].Value;
+        draws.Sort();
+        sb.AppendLine("JOUR;DEPOTS_ENTRES;RETRAITS_PAYES;RESTE_DANS_LA_CAISSE");
+        // Dépôts et retraits du jour reconstitués depuis la simulation typique.
+        for (int d = showFrom; d <= showTo && d < days; d++)
+        {
+            double net = typical.Daily[d];
+            double inn = typical.DayIn[d];
+            double outp = inn - net;
+            sb.AppendLine(string.Format(inv, "{0};{1:0};{2:0};{3:0}", d + 1, inn, outp, net));
+        }
+        sb.AppendLine(string.Format(inv, "RESERVE: pire baisse cumulee de la caisse (sur {0} simulations) : mediane {1:0} $ | 1 fois sur 20 {2:0} $ | pire {3:0} $",
+            runs, draws[draws.Count / 2], draws[(int)(draws.Count * 0.95)], draws[draws.Count - 1]));
+        return sb.ToString();
     }
 
     public static string Report(int days, int newPerDay, double bonusShare, int runs)

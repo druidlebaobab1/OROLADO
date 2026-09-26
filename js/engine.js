@@ -131,6 +131,50 @@
     });
   }
 
+  /*
+   * Mémoire de secours : la courbe (6 dernières minutes des 10 actifs) est gardée dans
+   * l'onglet quand on le quitte (téléphone verrouillé, autre appli, F5). Au retour, elle
+   * s'affiche tout de suite, figée à l'instant du départ, puis passe au direct dès que les
+   * nouveaux prix arrivent — jamais de « Connexion au marché » ni de long trait droit.
+   */
+  var SNAP_KEY = 'oro_feed_snap_v1';
+  var SNAP_MAX_AGE = 15 * 60 * 1000;
+
+  function saveSnapshot() {
+    try {
+      var out = { at: Date.now(), offset: clock.offset, feeds: {} };
+      Object.keys(feeds).forEach(function (id) {
+        var f = feeds[id];
+        if (!f || !f.loaded || !f.ticks.length) return;
+        var n = Math.min(f.ticks.length, BOOT_TICKS);
+        out.feeds[id] = { first: f.last - n + 1, c: f.ticks.slice(-n) };
+      });
+      sessionStorage.setItem(SNAP_KEY, JSON.stringify(out));
+    } catch (eSnap) { /* stockage plein ou interdit : pas grave */ }
+  }
+
+  function restoreSnapshot() {
+    try {
+      var raw = sessionStorage.getItem(SNAP_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (!s || !s.feeds || !(Date.now() - Number(s.at) < SNAP_MAX_AGE)) return;
+      clock.offset = Number(s.offset) || 0;
+      Object.keys(s.feeds).forEach(function (id) {
+        if (!C.ASSETS[id] || !s.feeds[id] || !Array.isArray(s.feeds[id].c)) return;
+        mergeTicks(id, s.feeds[id].first, s.feeds[id].c);
+      });
+    } catch (eRestore) { /* mémoire illisible : on attend simplement le serveur */ }
+  }
+
+  /** Retard d'affichage à appliquer quand les prix ne sont pas encore à jour (retour de veille). */
+  function feedLagMs(id) {
+    var f = feeds[id];
+    if (!f || !f.loaded) return 0;
+    var behind = Date.now() - tickToLocal(f.last);
+    return behind > 1200 ? behind : 0;
+  }
+
   /** Ajoute une tranche [first..] de ticks au flux d'un actif (historique ou nouveautés). */
   function mergeTicks(id, first, list) {
     var f = feedOf(id);
@@ -764,6 +808,11 @@
       ensureMarkets();
     },
 
+    /** Retard à appliquer à l'axe du temps (courbe figée proprement en attendant le direct). */
+    lagMs: function (id) {
+      return feedLagMs(canonAssetId(id));
+    },
+
     /** Prix affiché (dernier tick visible). */
     lastPrice: function (id) {
       var m = markets[canonAssetId(id)];
@@ -1086,11 +1135,18 @@
 
   ensureMarkets();
   Object.keys(C.ASSETS).forEach(function (id) { payoutLive[id] = 1.88; });
+  // Courbe gardée en mémoire (F5 / retour) : affichage immédiat, puis le direct.
+  restoreSnapshot();
   // Les 10 courbes tournent dès l'ouverture du site : elles sont prêtes avant qu'on les regarde.
   startPolling();
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) api.resyncClocks();
+    if (document.hidden) saveSnapshot();
+    else api.resyncClocks();
   });
+  window.addEventListener('pagehide', saveSnapshot);
+  window.addEventListener('pageshow', function () { if (!document.hidden) api.resyncClocks(); });
+  window.addEventListener('focus', function () { if (!document.hidden) api.resyncClocks(); });
+  window.addEventListener('online', function () { api.resyncClocks(); });
 
   D6.Synth = {};
   D6.Engine = api;

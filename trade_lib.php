@@ -158,6 +158,8 @@ function orolado_trade_place(array $me, array $req): array {
   $payId = $uid;
   if ($mode === 'real') {
     $resolved = orolado_balance_uuid($db, $uid);
+    // Joueur sans coffre Supabase (inscription miroir ratée) : on le crée maintenant.
+    if ($resolved === '' && function_exists('orolado_ensure_balance_uuid')) $resolved = orolado_ensure_balance_uuid($uid);
     if ($resolved !== '') $payId = $resolved;
     if (!preg_match(OROLADO_UUID_RE, $payId)) return ['ok' => false, 'reason' => 'Coffre réel introuvable'];
     $expo = $stake * $payout;

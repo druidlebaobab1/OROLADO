@@ -946,6 +946,16 @@ if ($action === 'login') {
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
   $uid = (string) $user['id'];
+  // Joueur sans coffre Supabase (inscription miroir ratée) : créé ici avec SON mot de passe,
+  // pour qu'il puisse jouer en réel et recevoir des crédits admin.
+  if (!orolado_is_admin_user($user) && !preg_match(OROLADO_UUID_RE, $uid) && function_exists('orolado_ensure_balance_uuid')) {
+    try {
+      $sbLinked = orolado_ensure_balance_uuid($uid, $password);
+      if ($sbLinked !== '' && isset($db['users'][$uid]) && is_array($db['users'][$uid])) $db['users'][$uid]['sbId'] = $sbLinked;
+    } catch (Throwable $eSb) {
+      error_log('OROLADO ensure_sb ' . $eSb->getMessage());
+    }
+  }
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $official = orolado_sync_official_real($uid, $jsonReal);
   if ($official <= 0.009 && function_exists('orolado_recover_wiped_real')) {

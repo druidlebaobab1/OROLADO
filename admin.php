@@ -147,6 +147,21 @@ function admin_resolve_player_uuid(string $uid, array $found = []): string {
         || (strcasecmp($oid, $uid) === 0);
       if ($match && admin_is_uuid($oid)) return $oid;
     }
+    // Joueur connu en local mais sans coffre Supabase (inscription miroir ratée) :
+    // on crée son coffre maintenant, au lieu de répondre « joueur introuvable ».
+    if (function_exists('orolado_ensure_balance_uuid')) {
+      foreach (($local['users'] ?? []) as $oid => $ou) {
+        if (!is_array($ou)) continue;
+        $oid = (string) ($ou['id'] ?? $oid);
+        $oem = strtolower(trim((string) ($ou['email'] ?? '')));
+        $opid = strtoupper(trim((string) ($ou['publicId'] ?? '')));
+        if (($email !== '' && $oem === $email) || ($publicId !== '' && $opid === $publicId) || strcasecmp($oid, $uid) === 0) {
+          $made = orolado_ensure_balance_uuid($oid);
+          if (admin_is_uuid($made)) return $made;
+          break;
+        }
+      }
+    }
   }
   return $uid;
 }

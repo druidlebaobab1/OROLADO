@@ -2085,6 +2085,12 @@
     zoomSmooth += (wantZoom - zoomSmooth) * 0.38;
     if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
     xNow = frameWallClock(now);
+    // Retour de veille : tant que les prix manqués n'ont pas été reçus, on affiche la courbe
+    // figée à son dernier instant (pas de trou, pas de trait droit), puis le direct.
+    if (D6.Engine && D6.Engine.lagMs) {
+      var feedLag = D6.Engine.lagMs(activeAsset);
+      if (feedLag > 0) xNow -= feedLag;
+    }
     xWin = Math.max(8000, zoomSmooth * 1000);
     // Ne plus forcer xWin sur la durée du plus vieux trade : ça bloquait le zoom+
     // dès qu'un trade était ouvert. Le zoom utilisateur prime.
