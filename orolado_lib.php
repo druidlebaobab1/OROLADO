@@ -313,6 +313,10 @@ function supabase_service_key(): string {
 }
 
 function supabase_http(string $url, array $headers, ?string $body = null, string $method = 'GET'): ?array {
+  // Tests locaux uniquement (scripts/test-*.php) : fausse base Supabase, jamais en ligne.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_HTTP']) && is_callable($GLOBALS['OROLADO_FAKE_HTTP'])) {
+    return ($GLOBALS['OROLADO_FAKE_HTTP'])($url, $body, strtoupper($method));
+  }
   if (!function_exists('curl_init')) return null;
   $ch = curl_init($url);
   $opts = [
@@ -446,6 +450,24 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
       'mode' => 'real',
     ]), 'POST');
   }
+}
+
+/**
+ * Crédit « une seule fois » garanti par la base (RPC resolve_trade : la clé est une clé
+ * primaire, un 2e crédit avec la même clé est refusé, même simultané, même si le fichier
+ * JSON a été réécrit entre-temps). Retour : ['real' => solde, 'duplicate' => bool] ou null.
+ */
+function orolado_vault_credit_once(string $payId, string $key, float $amount): ?array {
+  if ($key === '' || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $payId)) return null;
+  $hdrs = supabase_admin_headers();
+  $url = rtrim(supabase_project_url(), '/');
+  if (!$hdrs || $url === '') return null;
+  $res = supabase_http($url . '/rest/v1/rpc/resolve_trade', $hdrs, json_encode([
+    'p_user' => $payId, 'p_order' => $key, 'p_amount' => orolado_money(max(0, $amount)),
+  ], JSON_PRESERVE_ZERO_FRACTION), 'POST');
+  if (is_array($res) && isset($res[0]) && is_array($res[0])) $res = $res[0];
+  if (!is_array($res) || empty($res['ok'])) return null;
+  return ['real' => orolado_money($res['real'] ?? 0), 'duplicate' => !empty($res['duplicate'])];
 }
 
 /** Écrit le solde réel exact et vérifie la relecture. Sert aux moins (mise, perte) comme aux plus. */
@@ -2629,29 +2651,21 @@ function credit_paid_deposit(array $hit): array {
     fclose($fp);
     return ['ok' => false, 'reason' => 'vault_error'];
   }
-  $curOfficial = orolado_money($vaultRow['real'] ?? 0);
-  $expectAfter = orolado_money($curOfficial + $amount);
   $refId = (string) ($dep['id'] ?? $hit['ref'] ?? '');
 
-  // Crédit coffre d’abord (même geste que admin_manual_credit). Pas de COMPLETED tant que ça n’a pas monté.
-  supabase_credit_real($payId, $amount, false);
-  $sbAfter = supabase_admin_vault($payId);
-  $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : null;
-  if ($got === null || !orolado_credit_landed($curOfficial, $got, $amount)) {
-    $forced = function_exists('orolado_put_real_exact') ? orolado_put_real_exact($payId, $expectAfter) : null;
-    if ($forced !== null) $got = $forced;
-    else if (function_exists('supabase_set_real')) {
-      supabase_set_real($payId, $expectAfter);
-      $sbAfter = supabase_admin_vault($payId);
-      $got = $sbAfter ? orolado_money($sbAfter['real'] ?? 0) : null;
-    }
-  }
-  if ($got === null || !orolado_credit_landed($curOfficial, $got, $amount)) {
+  // Crédit du coffre UNE SEULE FOIS par dépôt, garanti par la base (clé « dep_<réf> »).
+  // Avant : un crédit « + montant » refait à chaque passage ; si le fichier JSON avait été
+  // réécrit avec une ancienne version (dépôt redevenu PENDING), le dépôt était crédité 2 fois.
+  // Clé = référence du dépôt (identique dans tous les chemins : webhook, vérification,
+  // page de retour, validation admin) : un même dépôt ne peut jamais être crédité 2 fois.
+  $once = $refId !== '' ? orolado_vault_credit_once($payId, 'dep_' . $refId, $amount) : null;
+  if ($once === null) {
     flock($fp, LOCK_UN);
     fclose($fp);
-    // PENDING reste → webhook peut réessayer. Pas de toast mensonger.
+    // PENDING reste → webhook / vérification peuvent réessayer, sans risque de double crédit.
     return ['ok' => false, 'reason' => 'credit'];
   }
+  $got = $once['real'];
 
   // Journal dépôt cloud (sans 2e crédit via complete_deposit RPC).
   if ($refId !== '') {
@@ -2687,11 +2701,16 @@ function credit_paid_deposit(array $hit): array {
     }
     $db['vault'][$payId]['real'] = $got;
   }
-  $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
-  $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
-  $db['users'][$uid]['lastDepositAmount'] = $amount;
-  $db['users'][$uid]['wagerLock'] = orolado_money(($db['users'][$uid]['wagerLock'] ?? 0) + $amount);
-  $db['users'][$uid]['wagerNeed'] = orolado_money(($db['users'][$uid]['wagerNeed'] ?? 0) + ($amount * 2));
+  // Déjà crédité par la base (le fichier avait « oublié ») : on remet juste le statut à jour,
+  // sans recompter le dépôt dans les totaux ni la condition de mise.
+  $alreadyCredited = !empty($once['duplicate']);
+  if (!$alreadyCredited) {
+    $db['users'][$uid]['realDepositTotal'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) + $amount);
+    $db['users'][$uid]['requiredWagering'] = orolado_money(($db['users'][$uid]['realDepositTotal'] ?? 0) * 2);
+    $db['users'][$uid]['lastDepositAmount'] = $amount;
+    $db['users'][$uid]['wagerLock'] = orolado_money(($db['users'][$uid]['wagerLock'] ?? 0) + $amount);
+    $db['users'][$uid]['wagerNeed'] = orolado_money(($db['users'][$uid]['wagerNeed'] ?? 0) + ($amount * 2));
+  }
   if (!isset($db['users'][$uid]['totalWageredSinceDeposit'])) {
     $db['users'][$uid]['totalWageredSinceDeposit'] = orolado_money($db['users'][$uid]['realStakeVolume'] ?? 0);
   }
@@ -2722,8 +2741,10 @@ function credit_paid_deposit(array $hit): array {
   if (!isset($db['users'][$uid]['transactions']) || !is_array($db['users'][$uid]['transactions'])) {
     $db['users'][$uid]['transactions'] = [];
   }
-  array_unshift($db['users'][$uid]['transactions'], $tx);
-  $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 1500);
+  if (!$alreadyCredited) {
+    array_unshift($db['users'][$uid]['transactions'], $tx);
+    $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 1500);
+  }
 
   rewind($fp);
   ftruncate($fp, 0);
@@ -2732,7 +2753,7 @@ function credit_paid_deposit(array $hit): array {
   flock($fp, LOCK_UN);
   fclose($fp);
   $op = strtolower((string) ($dep['operator'] ?? $txOp));
-  if (in_array($op, ['flutterwave', 'flw', 'oxapay', 'usdt'], true) && $amount > 0) {
+  if (!$alreadyCredited && in_array($op, ['flutterwave', 'flw', 'oxapay', 'usdt'], true) && $amount > 0) {
     orolado_meta_capi_purchase_later([
       'value' => $amount,
       'email' => (string) ($db['users'][$uid]['email'] ?? $dep['customerEmail'] ?? ''),
@@ -3506,10 +3527,8 @@ function orolado_confirm_deposit(array $req): array {
         'extId' => (string) ($dep['extId'] ?? ''),
         'sellId' => (string) ($dep['sellId'] ?? $dep['cartId'] ?? ''),
       ]);
-      if (empty($cred['ok'])) {
-        $rpc = supabase_complete_deposit($refId, orolado_money($proof['amount'] ?? ($dep['amount'] ?? 0)), $uid);
-        if (is_array($rpc) && !empty($rpc['ok'])) $cred = $rpc;
-      }
+      // Plus de 2e chemin de crédit (complete_deposit) : il pouvait ajouter le dépôt une
+      // 2e fois. En cas d'échec, le dépôt reste en attente et sera réessayé (crédit unique).
     } else {
       $cred = ['ok' => false, 'reason' => (string) ($proof['reason'] ?? 'not_paid')];
     }
@@ -4787,6 +4806,19 @@ function orolado_oxapay_usd(array $data): float {
   return $invoice > 0 ? orolado_money($invoice) : 0.0;
 }
 
+/** Ajoute un dépôt sous verrou (sans réécrire une vieille copie du fichier), s'il n'existe pas déjà. */
+function orolado_deposit_append_locked($dep): void {
+  if (!is_array($dep)) return;
+  with_db_lock(function ($box) use ($dep) {
+    $id = (string) ($dep['id'] ?? '');
+    foreach (($box->db['deposits'] ?? []) as $row) {
+      if (is_array($row) && (string) ($row['id'] ?? '') === $id) return ['ok' => true, 'skip_write' => true];
+    }
+    $box->db['deposits'][] = $dep;
+    return ['ok' => true];
+  });
+}
+
 function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, string $txid = '', string $address = '', string $email = ''): array {
   $dep0 = orolado_oxapay_find_dep($orderId, $trackId, $address);
   if ($dep0 && $usd + 0.0001 < orolado_oxapay_credit_floor()) {
@@ -4817,11 +4849,22 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
     if ($st === 'COMPLETED' || $st === 'PAID') {
       return ['ok' => true, 'duplicate' => true, 'amount' => orolado_money($d['amount'] ?? $usd), 'vault' => $uid !== '' ? orolado_crypto_vault($db, $uid) : null];
     }
-    $db['deposits'][$i]['amount'] = $usd;
-    $db['deposits'][$i]['trackId'] = $trackId;
-    $db['deposits'][$i]['txid'] = $txid !== '' ? $txid : $trackId;
-    $db['deposits'][$i]['operator'] = 'oxapay';
-    save_db($file, $db);
+    // Mise à jour sous verrou, sur le fichier à jour (une vieille copie pouvait remettre un
+    // dépôt déjà crédité en « PENDING » et provoquer un 2e crédit).
+    $depRef = $ref;
+    with_db_lock(function ($box) use ($depRef, $usd, $trackId, $txid) {
+      foreach ($box->db['deposits'] as $k => $row) {
+        if (!is_array($row) || (string) ($row['id'] ?? $row['ref'] ?? '') !== $depRef) continue;
+        $stRow = strtoupper((string) ($row['status'] ?? ''));
+        if ($stRow === 'COMPLETED' || $stRow === 'PAID') return ['ok' => true, 'skip_write' => true];
+        $box->db['deposits'][$k]['amount'] = $usd;
+        $box->db['deposits'][$k]['trackId'] = $trackId;
+        $box->db['deposits'][$k]['txid'] = $txid !== '' ? $txid : $trackId;
+        $box->db['deposits'][$k]['operator'] = 'oxapay';
+        return ['ok' => true];
+      }
+      return ['ok' => true, 'skip_write' => true];
+    });
     break;
   }
   if ($ref === '' && $email !== '') {
@@ -4842,7 +4885,7 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
         'txid' => $txid !== '' ? $txid : $trackId,
         'at' => date('c'),
       ];
-      save_db($file, $db);
+      orolado_deposit_append_locked(end($db['deposits']));
       break;
     }
   }
@@ -4863,7 +4906,7 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
         'txid' => $txid !== '' ? $txid : $trackId,
         'at' => date('c'),
       ];
-      save_db($file, $db);
+      orolado_deposit_append_locked(end($db['deposits']));
     }
   }
   if ($ref === '') return ['ok' => false, 'code' => 'unknown'];

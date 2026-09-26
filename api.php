@@ -1041,15 +1041,26 @@ if ($action === 'upsert') {
   if (!empty($existing['trafficSource']) && empty($user['trafficSource'])) {
     $user['trafficSource'] = $existing['trafficSource'];
   }
-  $db['users'][$id] = $user;
-  if (isset($req['vault']) && is_array($req['vault'])) {
-    $serverReal = orolado_money($db['vault'][$id]['real'] ?? 0);
-    $db['vault'][$id] = [
-      'demo' => orolado_money($req['vault']['demo'] ?? ($db['vault'][$id]['demo'] ?? 0)),
-      'real' => $serverReal
-    ];
-  }
-  save_db($file, $db);
+  // Sous verrou, sur le fichier à jour : seule la fiche de CE joueur (et son solde démo)
+  // est remplacée ; le reste du fichier (dépôts, retraits, autres joueurs) n'est jamais
+  // réécrit avec une vieille copie.
+  $demoIn = (isset($req['vault']) && is_array($req['vault']) && isset($req['vault']['demo'])) ? orolado_money($req['vault']['demo']) : null;
+  with_db_lock(function ($box) use ($id, $user, $demoIn) {
+    $cur = (isset($box->db['users'][$id]) && is_array($box->db['users'][$id])) ? $box->db['users'][$id] : [];
+    // Champs serveur relus au dernier moment (un dépôt a pu arriver pendant la requête).
+    foreach (['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'passwordHash', 'role'] as $k) {
+      if (array_key_exists($k, $cur)) $user[$k] = $cur[$k];
+    }
+    foreach (['realDepositTotal', 'realStakeVolume', 'totalWageredSinceDeposit', 'realTrades'] as $k) {
+      $user[$k] = max((float) ($user[$k] ?? 0), (float) ($cur[$k] ?? 0));
+    }
+    $box->db['users'][$id] = $user;
+    if ($demoIn !== null) {
+      if (!isset($box->db['vault'][$id]) || !is_array($box->db['vault'][$id])) $box->db['vault'][$id] = ['demo' => 0, 'real' => 0];
+      $box->db['vault'][$id]['demo'] = $demoIn;
+    }
+    return ['ok' => true];
+  });
   echo json_encode(['ok' => true, 'server' => true]);
   exit;
 }
@@ -1654,10 +1665,15 @@ if ($action === 'me') {
     exit;
   }
   $me = $stSess['user'];
+  // Écritures sous verrou, sur le fichier À JOUR (jamais une vieille copie chargée en début
+  // de requête : c'est ce qui pouvait remettre un dépôt en « attente » et le recréditer).
   if ($token !== '' && isset($db['sessions'][$token])) {
-    $db['sessions'][$token]['exp'] = time() + orolado_session_ttl();
-    $db['sessions'][$token]['at'] = date('c');
-    save_db($file, $db);
+    with_db_lock(function ($box) use ($token) {
+      if (!isset($box->db['sessions'][$token]) || !is_array($box->db['sessions'][$token])) return ['ok' => true, 'skip_write' => true];
+      $box->db['sessions'][$token]['exp'] = time() + orolado_session_ttl();
+      $box->db['sessions'][$token]['at'] = date('c');
+      return ['ok' => true];
+    });
     orolado_set_session_cookie($token);
   }
   $uid = (string) $me['id'];
@@ -1688,15 +1704,17 @@ if ($action === 'me') {
     $officialReal = 0.0;
   }
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);
-  if ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0) {
-    $demoNow = 1000000;
-    $db['vault'][$uid]['demo'] = 1000000;
-  }
-  $db['vault'][$uid]['real'] = $officialReal;
-  if (function_exists('orolado_mirror_vault_real')) {
-    orolado_mirror_vault_real($db, $uid, $officialReal);
-  }
-  save_db($file, $db);
+  $resetDemo = ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0);
+  if ($resetDemo) $demoNow = 1000000;
+  with_db_lock(function ($box) use ($uid, $officialReal, $resetDemo) {
+    if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+    if ($resetDemo) $box->db['vault'][$uid]['demo'] = 1000000;
+    $box->db['vault'][$uid]['real'] = $officialReal;
+    if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($box->db, $uid, $officialReal);
+    if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) $box->db['users'][$uid]['lastSeen'] = date('c');
+    return ['ok' => true];
+  });
+  $db = load_db($file);
   if (function_exists('supabase_touch_last_seen')) {
     supabase_touch_last_seen($uid);
   }
