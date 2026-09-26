@@ -1643,6 +1643,41 @@
     var idx = tagIndex || 0;
     var lite = IS_ANDROID_CHART;
     var badgeLift = isFinite(yShift) ? yShift : 0;
+    var tNowE = xNow || Date.now();
+    var winE = xWin > 0 ? xWin : (zoomSec() * 1000);
+    if (idx === 0) {
+      // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
+      var refP = Number(trade.barrier) > 0 ? Number(trade.barrier) : entry;
+      var zy = priceToY(refP, pad, plotH, minP, maxP);
+      if (isFinite(zy)) {
+        zy = Math.max(plotTop, Math.min(plotBot, zy));
+        g.save();
+        g.fillStyle = isCall ? 'rgba(0,230,118,0.07)' : 'rgba(255,59,48,0.07)';
+        if (isCall) g.fillRect(pad.l, plotTop, layout.axisX - pad.l, zy - plotTop);
+        else g.fillRect(pad.l, zy, layout.axisX - pad.l, plotBot - zy);
+        g.restore();
+      }
+      // Ligne d'arrivée verticale : l'instant exact où le trade se termine.
+      if (winE > 0) {
+        var fx = layout.headX + layout.seriesW * ((exp - tNowE) / winE);
+        var fOut = fx > layout.axisX - 4;
+        if (fOut) fx = layout.axisX - 4;
+        g.save();
+        g.setLineDash([3, 4]);
+        g.strokeStyle = 'rgba(255,255,255,' + (fOut ? '0.35' : '0.6') + ')';
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(fx, plotTop);
+        g.lineTo(fx, plotBot);
+        g.stroke();
+        g.setLineDash(NO_DASH);
+        g.fillStyle = 'rgba(255,255,255,0.85)';
+        g.font = '700 10px "Hanken Grotesk", sans-serif';
+        g.textAlign = fOut ? 'right' : 'center';
+        g.fillText('🏁', fx, plotTop + 11);
+        g.restore();
+      }
+    }
     g.setLineDash(TRADE_DASH);
     g.strokeStyle = lineCol;
     g.lineWidth = lite ? 1 : 1.35;
@@ -1873,40 +1908,54 @@
     return { min: minPrice - span * padBottomRatio(), max: maxPrice + span * padTopRatio() };
   }
 
-  // Hauteur MINIMUM du cadre (en % du prix), par actif. Calée sur la volatilité du flux
-  // serveur : assez serrée pour des bougies bien remplies, jamais au point de zoomer du bruit.
+  // Taille FIXE du cadre (en % du prix) par actif, calée sur la volatilité du flux serveur
+  // (~45 écarts-types d'un tick) : bougies bien lisibles, ni plates ni géantes. Le même
+  // cadre sert au petit écran et au plein écran (plus haut = encore plus d'aisance).
   function routeSpanPct(assetId) {
-    var pct = {
-      v100: 0.0016, stable: 0.00038, apex500: 0.0019, horizon50: 0.0003,
-      goldtrend: 0.0012, v75: 0.0013, nexusprime: 0.0014, titanpulse: 0.0022,
-      boomspike: 0.0032, crash300: 0.0032
-    }[assetId] || 0.0016;
-    // Petit écran : un peu plus d'air.
-    if (!fsActive && ((window.innerWidth || 0) <= 430)) pct *= 1.12;
-    return pct;
+    return {
+      v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0016,
+      goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
+      boomspike: 0.0160, crash300: 0.0160
+    }[assetId] || 0.0090;
   }
 
   var camCandles = null;
 
-  // Caméra « plateforme pro » : le cadre épouse les bougies visibles (+ marge haut/bas),
-  // donc elles restent grandes et la courbe ne touche jamais le plafond ni le sol.
+  // Caméra stable : cadre de taille fixe, la courbe défile dedans. Le cadre ne glisse
+  // (doucement) que lorsque la tête s'approche d'un bord ; jamais de zoom qui « respire ».
   function routeCamera(prevMin, prevMax, head, assetId) {
     var h = Number(head);
     if (!(h > 0) || !isFinite(h)) h = 10000;
-    var lo = h;
-    var hi = h;
-    var list = camCandles || [];
-    var i;
-    for (i = 0; i < list.length; i++) {
-      var c = list[i];
-      if (!c) continue;
-      if (c.l > 0 && c.l < lo) lo = c.l;
-      if (c.h > hi) hi = c.h;
+    var want = h * routeSpanPct(assetId);
+    var span;
+    var mid;
+    if (prevMax > prevMin) {
+      span = prevMax - prevMin;
+      span += (want - span) * 0.02;
+      mid = (prevMin + prevMax) / 2;
+    } else {
+      span = want;
+      // Premier cadrage : centré sur les bougies visibles si elles tiennent, sinon sur la tête.
+      var lo = h;
+      var hi = h;
+      var list = camCandles || [];
+      var i;
+      for (i = 0; i < list.length; i++) {
+        if (!list[i]) continue;
+        if (list[i].l > 0 && list[i].l < lo) lo = list[i].l;
+        if (list[i].h > hi) hi = list[i].h;
+      }
+      mid = (hi - lo) < span * 0.8 ? (hi + lo) / 2 : h;
     }
-    var span = Math.max(hi - lo, h * routeSpanPct(assetId));
-    var mid = (hi + lo) / 2;
-    span *= 1.34;
-    return { min: mid - span / 2, max: mid + span / 2 };
+    var half = span / 2;
+    var edge = span * 0.22;
+    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * 0.045;
+    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * 0.045;
+    // Filet dur : la tête ne sort jamais (pic Boom/Crash, retour de veille).
+    var hard = span * 0.06;
+    if (h > mid + half - hard) mid = h - half + hard;
+    if (h < mid - half + hard) mid = h + half - hard;
+    return { min: mid - half, max: mid + half };
   }
 
   function captureTradeFrame(assetId, untilMs) {
@@ -2107,13 +2156,10 @@
         viewMax = st.lockMax;
         strikeLock = { assetId: activeAsset, min: viewMin, max: viewMax, entry: null, ey: null };
       } else {
-        // Plein écran : même caméra que le mobile, en douceur (pas de saut).
+        // Plein écran : même caméra stable que le petit écran.
         var gFs = routeCamera(viewMin, viewMax, head, activeAsset);
-        viewMin += (gFs.min - viewMin) * 0.08;
-        viewMax += (gFs.max - viewMax) * 0.08;
-        var fsEdge = (viewMax - viewMin) * 0.06;
-        if (head > viewMax - fsEdge) { var fsUp = head - (viewMax - fsEdge); viewMin += fsUp; viewMax += fsUp; }
-        if (head < viewMin + fsEdge) { var fsDn = (viewMin + fsEdge) - head; viewMin -= fsDn; viewMax -= fsDn; }
+        viewMin = gFs.min;
+        viewMax = gFs.max;
       }
       if (holdLock && !(st.lockMax > st.lockMin)) {
         st.lockMin = viewMin;
@@ -2139,13 +2185,9 @@
       var prevMax = (viewMin && viewMax && viewMax > viewMin) ? viewMax : (st.viewMax || 0);
       var cam = routeCamera(prevMin, prevMax, head, activeAsset);
       if (prevMax > prevMin) {
-        var camK = 0.08;
-        viewMin = prevMin + (cam.min - prevMin) * camK;
-        viewMax = prevMax + (cam.max - prevMax) * camK;
-        // Filet : la tête ne sort jamais du cadre, même sur un pic Boom/Crash.
-        var camEdge = (viewMax - viewMin) * 0.06;
-        if (head > viewMax - camEdge) { var upS = head - (viewMax - camEdge); viewMin += upS; viewMax += upS; }
-        if (head < viewMin + camEdge) { var dnS = (viewMin + camEdge) - head; viewMin -= dnS; viewMax -= dnS; }
+        // routeCamera est déjà doux (glissement lent, taille fixe) : pas de second lissage.
+        viewMin = cam.min;
+        viewMax = cam.max;
       } else {
         viewMin = cam.min;
         viewMax = cam.max;
@@ -2155,15 +2197,35 @@
       // Cadre figé pendant le trade (trait d'entrée calme). Mais la courbe est désormais
       // libre (vrai hasard) : si la tête s'approche d'un bord, le cadre glisse doucement,
       // même taille, pour qu'elle ne sorte jamais de l'écran.
-      var lockSpan = st.lockMax - st.lockMin;
-      var lockEdge = lockSpan * 0.10;
-      var shiftY = 0;
-      if (head > st.lockMax - lockEdge) shiftY = head - (st.lockMax - lockEdge);
-      else if (head < st.lockMin + lockEdge) shiftY = head - (st.lockMin + lockEdge);
-      if (shiftY) {
-        st.lockMin += shiftY * 0.12;
-        st.lockMax += shiftY * 0.12;
+      // Tout ce qui compte doit rester visible : tête, prix d'entrée ET ligne objectif
+      // (même en ×50, petit écran comme plein écran). Si ça ne tient pas, le cadre
+      // s'agrandit juste ce qu'il faut, en douceur.
+      var needLo = head;
+      var needHi = head;
+      var nt;
+      for (nt = 0; nt < allTrades.length; nt++) {
+        var tv = allTrades[nt];
+        if (!tv || tv.assetId !== activeAsset) continue;
+        [Number(tv.entryPrice), Number(tv.barrier)].forEach(function (pv) {
+          if (!(pv > 0) || !isFinite(pv)) return;
+          if (pv < needLo) needLo = pv;
+          if (pv > needHi) needHi = pv;
+        });
       }
+      var lockSpan = st.lockMax - st.lockMin;
+      var wantSpan = Math.max(lockSpan, (needHi - needLo) * 1.3);
+      var lockMid = (st.lockMin + st.lockMax) / 2;
+      var margin = wantSpan * 0.10;
+      var targetMid = lockMid;
+      if (needHi > lockMid + wantSpan / 2 - margin) targetMid = needHi - wantSpan / 2 + margin;
+      if (needLo < targetMid - wantSpan / 2 + margin) targetMid = needLo + wantSpan / 2 - margin;
+      var newSpan = lockSpan + (wantSpan - lockSpan) * 0.15;
+      var newMid = lockMid + (targetMid - lockMid) * 0.15;
+      st.lockMin = newMid - newSpan / 2;
+      st.lockMax = newMid + newSpan / 2;
+      var hardL = newSpan * 0.04;
+      if (head > st.lockMax - hardL) { st.lockMin += head - (st.lockMax - hardL); st.lockMax = head + hardL; }
+      if (head < st.lockMin + hardL) { st.lockMax -= (st.lockMin + hardL) - head; st.lockMin = head - hardL; }
       viewMin = st.lockMin;
       viewMax = st.lockMax;
     }
@@ -2352,6 +2414,9 @@
     lastTs = performance.now();
     lastFlush = 0;
     lastDraw = 0;
+    // Réveil (téléphone déverrouillé) : pas de glissement lent depuis l'ancien prix,
+    // la tête repart directement du prix actuel.
+    if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
     if (D6.Engine && D6.Engine.resyncClocks) {
       try { D6.Engine.resyncClocks(); } catch (eRs) { /* ignore */ }
     }

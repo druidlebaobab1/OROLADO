@@ -20,9 +20,10 @@
   var HIST_TICKS = 5400;
   // Historique de départ, pour les 10 actifs d'un coup : 6 minutes.
   var BOOT_TICKS = 1440;
-  // Retard d'affichage : le dernier tick reçu s'affiche « maintenant ». Couvre la latence réseau.
-  var DISPLAY_DELAY = 700;
-  var POLL_MS = 400;
+  // Retard d'affichage très court : ce qu'on voit est quasiment le prix serveur actuel,
+  // donc le point d'entrée tombe là où le joueur clique. Rafraîchi toutes les 300 ms.
+  var DISPLAY_DELAY = 300;
+  var POLL_MS = 300;
   var MULTS = [1.88, 5, 10, 50];
 
   var markets = {};
@@ -930,6 +931,9 @@
     },
 
     resyncClocks: function () {
+      // Retour de veille : on va chercher tout de suite les prix manqués (sans attendre).
+      allFailAt = 0;
+      pollAll();
       var id;
       for (id in feeds) {
         if (feeds.hasOwnProperty(id) && feeds[id].loaded) rebuildBuffer(id);
