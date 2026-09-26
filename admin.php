@@ -264,7 +264,7 @@ function admin_persist_admin_log(string $adminEmail, string $targetPid, string $
 }
 
 function admin_badges(): array {
-  $cached = admin_cache_get('badges_epoch2', 12);
+  $cached = admin_cache_get('badges_epoch3', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_profiles();
   $wds = admin_withdrawals();
@@ -340,12 +340,40 @@ function admin_badges(): array {
     $uid = (string) ($w['userId'] ?? '');
     if ($uid !== '') $openByUser[$uid][] = $w;
   }
-  $wdSuspect = 0;
+  // Même calcul que la liste « Suspect » (avant : compteur et liste ne comptaient pas pareil).
+  $wdSuspect = count(admin_suspects());
   $payers = 0;
   foreach ($people as $p) {
     if ((float) ($p['depositTotal'] ?? 0) > 0) $payers++;
-    $uid = (string) ($p['id'] ?? '');
-    if (admin_is_suspect($p, [], $openByUser[$uid][0] ?? null)) $wdSuspect++;
+  }
+  // Trades réels du jour (compteurs Jeux / Top gagnants / Positions ouvertes).
+  $tradesToday = 0;
+  $winnersToday = [];
+  $liveNow = 0;
+  foreach (admin_orders() as $o) {
+    if (admin_order_is_live_real($o)) $liveNow++;
+    if (!admin_in_range((string) ($o['created_at'] ?? ''), $t0, $t1)) continue;
+    $tradesToday++;
+    $ou = (string) ($o['user_id'] ?? '');
+    if ($ou !== '') $winnersToday[$ou] = ($winnersToday[$ou] ?? 0.0) + (float) ($o['net'] ?? 0);
+  }
+  $nWinners = count(array_filter($winnersToday, static fn($v) => $v > 0.009));
+  $bonusN = 0;
+  $depositors = [];
+  $channels = [];
+  foreach ($deps as $d) {
+    if (admin_dep_bonus_paid($d)) $bonusN++;
+    if (admin_dep_is_paid($d)) {
+      $depositors[(string) ($d['userId'] ?? '')] = true;
+      $channels[admin_dep_channel((string) ($d['operator'] ?? ''))] = true;
+    }
+  }
+  $healthWarn = 0;
+  foreach (admin_health_rows() as $h) {
+    if (($h['level'] ?? '') !== 'warn') continue;
+    $fp = function_exists('admin_health_fp') ? admin_health_fp($h) : '';
+    if ($fp !== '' && isset($ackedHealth[$fp])) continue;
+    $healthWarn++;
   }
   [$w0, $w1] = admin_day_bounds('range', admin_now()->modify('-6 days')->format('Y-m-d'), admin_now()->format('Y-m-d'));
   $profitToday = admin_profit_between($deps, $wds, $t0, $t1);
@@ -363,15 +391,16 @@ function admin_badges(): array {
     'signup_date' => $nInscrits,
     'signup_hour' => $signupToday,
     'signup_geo' => $nInscrits,
-    'signup_idrange' => $nInscrits,
+    'signup_idrange' => null,
     'no_deposit' => $noDep,
     'signup_closed' => $closedN,
     'dep_today' => $depToday,
     'dep_pending' => $depPend,
     'dep_failed' => $depFail,
-    'dep_top' => $depPaidN,
+    'dep_top' => count($depositors),
     'dep_all' => $depPaidN,
-    'dep_method' => $depPaidN,
+    'dep_method' => count($channels),
+    'dep_bonus' => $bonusN,
     'wd_pending' => $wdOpen,
     'wd_today' => $wdToday,
     'wd_all' => $wdVisible,
@@ -380,23 +409,24 @@ function admin_badges(): array {
     'wd_suspect' => $wdSuspect,
     'online' => $online,
     'top_balances' => $payers,
-    'top_winners' => 0,
-    'games' => 0,
-    'trade_minutes' => 6,
+    'top_winners' => $nWinners,
+    'games' => $tradesToday,
+    'trade_minutes' => $tradesToday,
     'inactive' => $inactive,
     'payers' => $payers,
-    'open_positions' => 0,
+    'open_positions' => $liveNow,
     'profit_today' => round($profitToday, 2),
     'profit_7d' => round($profit7, 2),
     'profit_total' => round($profitAll, 2),
-    'payout_stats' => 4,
+    'payout_stats' => $tradesToday,
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
-    'alerts' => $healthErr,
+    'alerts' => $healthErr + $healthWarn,
+    'alerts_err' => $healthErr,
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
-  admin_cache_set('badges_epoch2', $out);
+  admin_cache_set('badges_epoch3', $out);
   return $out;
 }
 
@@ -632,6 +662,52 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' dépôt(s) · ' . admin_money($sum), 'actions' => $actions];
   }
 
+  // Bonus envoyés depuis l'admin : jamais mélangés aux dépôts (ce n'est pas de l'argent reçu).
+  if ($view === 'dep_bonus') {
+    $cols = ['Réf.', 'ID', 'Nom', 'E-mail', 'Montant', 'Motif', 'Date'];
+    $list = [];
+    foreach ($deps as $d) {
+      if (!admin_dep_bonus_paid($d) || (float) ($d['amount'] ?? 0) <= 0) continue;
+      $u = admin_user_lookup((string) $d['userId'], $pmap);
+      $d['email'] = (string) ($u['email'] ?? '');
+      $d['publicId'] = (string) ($u['publicId'] ?? '');
+      $d['name'] = (string) ($u['name'] ?? '');
+      $list[] = $d;
+    }
+    [$w0, $w1] = admin_day_bounds('range', admin_now()->modify('-6 days')->format('Y-m-d'), admin_now()->format('Y-m-d'));
+    $sumToday = 0.0; $sum7 = 0.0; $sumAll = 0.0;
+    foreach ($list as $d) {
+      $a = (float) $d['amount'];
+      $sumAll += $a;
+      if (admin_in_range($d['createdAt'] ?? null, $t0, $t1)) $sumToday += $a;
+      if (admin_in_range($d['createdAt'] ?? null, $w0, $w1)) $sum7 += $a;
+    }
+    $shown = admin_apply_filters($list, $req, 'createdAt');
+    $sumShown = 0.0;
+    foreach ($shown as $d) $sumShown += (float) $d['amount'];
+    [$slice, $total, $page, $pages] = admin_page($shown, $req);
+    foreach ($slice as $d) {
+      $motif = (string) ($d['motif'] ?? '');
+      $rows[] = [
+        'cells' => [
+          (string) $d['id'],
+          (string) ($d['publicId'] ?? ''),
+          (string) ($d['name'] ?? '—'),
+          (string) ($d['email'] ?? ''),
+          admin_money($d['amount']),
+          $motif !== '' && $motif !== 'Bonus' ? $motif : '—',
+          substr((string) ($d['createdAt'] ?? ''), 0, 16),
+        ],
+        'userId' => (string) ($d['userId'] ?? ''),
+        'wrap' => 5,
+      ];
+    }
+    $summary = $total . ' bonus · ' . admin_money($sumShown) . ' affichés'
+      . ' · Aujourd’hui ' . admin_money($sumToday) . ' · 7 jours ' . admin_money($sum7) . ' · Depuis le début ' . admin_money($sumAll)
+      . ' — non comptés dans les dépôts ni le bénéfice';
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false];
+  }
+
   if ($view === 'dep_top') {
     $cols = ['ID', 'Nom', 'E-mail', 'Total déposé', 'Solde réel'];
     $tot = [];
@@ -678,34 +754,13 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'wd_suspect') {
-    $cols = ['Joueur', 'Nom', 'E-mail', 'Motif', 'Retrait ouvert', 'Trades', 'Solde'];
-    $ordersByUser = [];
-    foreach ($orders as $o) {
-      if ((string) ($o['mode'] ?? '') !== 'real') continue;
-      $uid = (string) ($o['user_id'] ?? '');
-      if ($uid !== '') $ordersByUser[$uid][] = $o;
-    }
-    $openByUser = [];
-    foreach ($wds as $w) {
-      if (!admin_wd_is_open($w)) continue;
-      $uid = (string) ($w['userId'] ?? '');
-      if ($uid !== '') $openByUser[$uid][] = $w;
-    }
+    $cols = ['Joueur', 'Nom', 'E-mail', 'Motif', 'Retrait ouvert', 'Trades (30 j)', 'Solde'];
     $list = [];
-    foreach ($pmap as $uid => $p) {
-      $reason = admin_suspect_reason($p, $ordersByUser[$uid] ?? [], $openByUser[$uid][0] ?? null);
-      if ($reason === '') {
-        foreach (($openByUser[$uid] ?? []) as $w) {
-          $reason = admin_suspect_reason($p, $ordersByUser[$uid] ?? [], $w);
-          if ($reason !== '') break;
-        }
-      }
-      if ($reason === '') continue;
-      $openAmt = 0.0;
-      foreach (($openByUser[$uid] ?? []) as $w) $openAmt += (float) ($w['amount'] ?? 0);
-      $p['_reason'] = $reason;
-      $p['_openAmt'] = $openAmt;
-      $p['_trades'] = count($ordersByUser[$uid] ?? []);
+    foreach (admin_suspects() as $uid => $s) {
+      $p = $pmap[$uid] ?? admin_enrich_user_row(['id' => $uid], $vaults);
+      $p['_reason'] = $s['reason'];
+      $p['_openAmt'] = $s['openAmt'];
+      $p['_trades'] = $s['trades'];
       $list[] = $p;
     }
     usort($list, static fn($a, $b) => ((float) ($b['_openAmt'] ?? 0) <=> (float) ($a['_openAmt'] ?? 0)));
@@ -728,9 +783,10 @@ function admin_list_payload(string $view, array $req): array {
         'userId' => (string) ($p['id'] ?? ''),
         'flag' => 'suspect',
         'kind' => 'suspect',
+        'wrap' => 3,
       ];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' compte(s) au comportement anormal', 'actions' => false];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' compte(s) à vérifier avant de payer · cliquez une ligne pour voir la fiche', 'actions' => false];
   }
 
   if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
@@ -753,6 +809,7 @@ function admin_list_payload(string $view, array $req): array {
       $list = array_values(array_filter($wds, static fn($w) => !admin_wd_is_silenced($w)));
       $actions = true;
     }
+    $suspects = admin_suspects();
     $enriched = [];
     $sum = 0.0;
     $q = strtolower(trim((string) ($req['q'] ?? '')));
@@ -761,7 +818,7 @@ function admin_list_payload(string $view, array $req): array {
       $w = admin_enrich_wd($w, $pmap);
       $uid = (string) ($w['userId'] ?? '');
       $p = $pmap[$uid] ?? ['id' => $uid];
-      $w['_suspect'] = admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w);
+      $w['_suspect'] = (admin_wd_is_open($w) && isset($suspects[$uid])) || admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w);
       if ($q !== '' && !admin_match_q($w, $q) && !str_contains(strtolower((string) ($w['name'] ?? '')), $q)) continue;
       if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '') {
         $tmp = admin_apply_filters([$w], $req, 'createdAt');
@@ -988,12 +1045,12 @@ function admin_list_payload(string $view, array $req): array {
       if (!admin_dep_bonus_paid($d)) continue;
       if (!admin_in_range((string) ($d['createdAt'] ?? ''), $from, $to)) continue;
       $bonus += (float) $d['amount'];
-      $u = admin_user_lookup((string) $d['userId'], $pmap);
-      $rows[] = ['cells' => ['Bonus', (string) $d['id'], (string) ($u['name'] ?? $u['publicId'] ?? ''), admin_money($d['amount']), substr((string) ($d['createdAt'] ?? ''), 0, 16)], 'userId' => (string) $d['userId']];
     }
+    usort($rows, static fn($a, $b) => strcmp((string) ($b['cells'][4] ?? ''), (string) ($a['cells'][4] ?? '')));
     $net = $in - $out;
+    // Les bonus ne sont plus mélangés à ce tableau : détail dans le bouton « Bonus Offerts ».
     $summary = $label . ' · Dépôts ' . admin_money($in) . ' − Retraits ' . admin_money($out) . ' = Bénéfice ' . admin_money($net)
-      . ' · Bonus offerts ' . admin_money($bonus);
+      . ' · (Bonus offerts sur la période : ' . admin_money($bonus) . ', détail dans « Bonus Offerts »)';
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1, 'summary' => $summary, 'actions' => false];
   }
 
@@ -1206,9 +1263,19 @@ function admin_profile_payload(string $uid): array {
     }
   }
   $p = admin_enrich_user_row($p, $vaults);
+  // Dépôts payés et bonus : deux tableaux séparés, deux totaux séparés.
   $deps = [];
+  $bonuses = [];
+  $sumDep = 0.0;
+  $sumBonus = 0.0;
   foreach (admin_deposits() as $d) {
     if ((string) $d['userId'] !== $uid) continue;
+    if (admin_dep_is_bonus($d)) {
+      if (admin_dep_bonus_paid($d)) $sumBonus += (float) $d['amount'];
+      $bonuses[] = ['id' => $d['id'], 'amount' => $d['amount'], 'motif' => (string) ($d['motif'] ?? ''), 'at' => $d['createdAt']];
+      continue;
+    }
+    if (admin_dep_is_paid($d)) $sumDep += (float) $d['amount'];
     $deps[] = [
       'id' => $d['id'],
       'amount' => $d['amount'],
@@ -1218,9 +1285,13 @@ function admin_profile_payload(string $uid): array {
     ];
   }
   $wds = [];
+  $sumWdPaid = 0.0;
+  $sumWdOpen = 0.0;
   foreach (admin_withdrawals() as $w) {
     if ((string) $w['userId'] !== $uid) continue;
     if (admin_wd_is_silenced($w)) continue;
+    if (admin_wd_is_paid($w)) $sumWdPaid += (float) $w['amount'];
+    if (admin_wd_is_open($w)) $sumWdOpen += (float) $w['amount'];
     $w = admin_enrich_wd($w, $pmap);
     $wds[] = [
       'id' => $w['id'],
@@ -1233,9 +1304,13 @@ function admin_profile_payload(string $uid): array {
     ];
   }
   $games = [];
-  foreach (admin_orders() as $o) {
-    if ((string) ($o['user_id'] ?? '') !== $uid) continue;
-    if ((string) ($o['mode'] ?? '') !== 'real') continue;
+  $sumNet = 0.0;
+  $sumStake = 0.0;
+  $nTrades = 0;
+  foreach (admin_orders_for_user($uid) as $o) {
+    $sumNet += (float) ($o['net'] ?? 0);
+    $sumStake += (float) ($o['stake'] ?? 0);
+    $nTrades++;
     $games[] = [
       'id' => $o['id'] ?? '',
       'game' => admin_asset_name((string) ($o['asset_id'] ?? '')),
@@ -1262,7 +1337,18 @@ function admin_profile_payload(string $uid): array {
       'real' => (float) ($p['real'] ?? 0),
       'traffic' => (string) ($p['traffic'] ?? 'direct'),
     ],
+    'totals' => [
+      'deposits' => round($sumDep, 2),
+      'bonus' => round($sumBonus, 2),
+      'wdPaid' => round($sumWdPaid, 2),
+      'wdOpen' => round($sumWdOpen, 2),
+      'stake' => round($sumStake, 2),
+      'net' => round($sumNet, 2),
+      'trades' => $nTrades,
+    ],
+    'suspect' => (string) ((admin_suspects()[$uid]['reason'] ?? '')),
     'deposits' => $deps,
+    'bonuses' => $bonuses,
     'withdrawals' => $wds,
     'games' => array_slice($games, 0, 80),
   ];
@@ -1340,6 +1426,8 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
     'createdAt' => date('c'),
     'paidAt' => date('c'),
     'note' => $isSelf ? $motif : 'Bonus',
+    'motif' => $motif,
+    'by' => (string) ($_SESSION['admin_email'] ?? ''),
   ];
   $txRow = [
     'id' => $ref,
@@ -1673,6 +1761,7 @@ $ADMIN_TABS = [
     ['dep_top', 'Meilleurs Déposants'],
     ['dep_all', 'Historique Global Dépôts'],
     ['dep_method', 'Dépôts par Méthode'],
+    ['dep_bonus', 'Bonus Offerts'],
   ],
   'gC' => [
     ['wd_pending', 'Retraits en Cours'],
@@ -1680,7 +1769,7 @@ $ADMIN_TABS = [
     ['wd_all', 'Historique Global Retraits'],
     ['wd_rejected', 'Retraits Rejetés'],
     ['wd_volume', 'Volume Total à Payer'],
-    ['wd_suspect', 'Suspect'],
+    ['wd_suspect', 'Suspects à vérifier'],
   ],
   'gD' => [
     ['online', 'Joueurs en Ligne'],
@@ -1728,6 +1817,13 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .badge{display:inline-flex;min-width:22px;justify-content:center;background:linear-gradient(90deg,#F59E0B,#FBBF24);color:#0B0E14;font-size:.68rem;font-weight:900;border-radius:999px;padding:2px 7px}
     .badge.red{background:#F43F5E;color:#fff}
     .badge.zero{background:rgba(255,255,255,.08);color:var(--muted)}
+    .badge.orange{background:#F97316;color:#fff}
+    .health-bar.warn{background:linear-gradient(135deg,#C2410C,#F97316);color:#fff}
+    .totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
+    .totals div{background:#0E1420;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+    .totals b{display:block;font-size:.95rem;color:var(--text)}
+    .totals span{font-size:.62rem;color:var(--muted);text-transform:uppercase;font-weight:800}
+    .sus-box{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.45);color:#FECDD3;border-radius:10px;padding:8px 10px;margin:8px 0;font-weight:700}
     .filters{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;align-items:end}
     .filters input,.filters select{min-height:38px;border-radius:10px;border:1px solid var(--line);background:#0E1420;color:var(--text);padding:6px 10px;font:inherit}
     .filters input[type=search]{flex:1;min-width:180px}
@@ -1804,7 +1900,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="metrics" id="gB"><?php foreach ($ADMIN_TABS['gB'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">C · Retraits &amp; sorties d’argent</div>
     <div class="metrics" id="gC"><?php foreach ($ADMIN_TABS['gC'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
-    <div class="sec">D · Jouants, balances &amp; jeux</div>
+    <div class="sec">D · Joueurs, soldes &amp; jeux</div>
     <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
     <div class="metrics" id="gE"><?php foreach ($ADMIN_TABS['gE'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
@@ -1839,44 +1935,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   </div>
 
 <script>
-const TABS = [
-  {g:'gA', id:'signup_today', k:'Inscriptions du Jour'},
-  {g:'gA', id:'signup_yesterday', k:'Inscriptions d’Hier'},
-  {g:'gA', id:'signup_date', k:'Inscriptions par Date'},
-  {g:'gA', id:'signup_hour', k:'Inscriptions par Heure'},
-  {g:'gA', id:'signup_geo', k:'Inscriptions par Pays / IP'},
-  {g:'gA', id:'signup_idrange', k:'Recherche par Tranche d’ID'},
-  {g:'gA', id:'no_deposit', k:'Joueurs Sans Dépôt'},
-  {g:'gA', id:'signup_closed', k:'Comptes fermés / désinscrits'},
-  {g:'gB', id:'dep_today', k:'Dépôts du Jour'},
-  {g:'gB', id:'dep_pending', k:'Dépôts en Attente'},
-  {g:'gB', id:'dep_failed', k:'Dépôts Échoués'},
-  {g:'gB', id:'dep_top', k:'Meilleurs Déposants'},
-  {g:'gB', id:'dep_all', k:'Historique Global Dépôts'},
-  {g:'gB', id:'dep_method', k:'Dépôts par Méthode'},
-  {g:'gC', id:'wd_pending', k:'Retraits en Cours'},
-  {g:'gC', id:'wd_today', k:'Retraits Validés du Jour'},
-  {g:'gC', id:'wd_all', k:'Historique Global Retraits'},
-  {g:'gC', id:'wd_rejected', k:'Retraits Rejetés'},
-  {g:'gC', id:'wd_volume', k:'Volume Total à Payer'},
-  {g:'gC', id:'wd_suspect', k:'Suspect'},
-  {g:'gD', id:'online', k:'Joueurs en Ligne'},
-  {g:'gD', id:'payers', k:'Joueurs Actifs (Payeurs)'},
-  {g:'gD', id:'top_balances', k:'Top Balances / Soldes'},
-  {g:'gD', id:'top_winners', k:'Top Gagnants du Jour'},
-  {g:'gD', id:'profit_today', k:'Bénéfice du Jour'},
-  {g:'gD', id:'profit_7d', k:'Bénéfice 7 Jours'},
-  {g:'gD', id:'profit_total', k:'Bénéfice Total'},
-  {g:'gD', id:'open_positions', k:'Positions Ouvertes'},
-  {g:'gD', id:'payout_stats', k:'Payout Classement'},
-  {g:'gD', id:'games', k:'Statistiques des Jeux'},
-  {g:'gD', id:'trade_minutes', k:'Temps de jeu'},
-  {g:'gD', id:'inactive', k:'Joueurs Inactifs'},
-  {g:'gE', id:'traffic', k:'Sources de Trafic'},
-  {g:'gE', id:'otp_mails', k:'Mails & Codes OTP Envoyés'},
-  {g:'gE', id:'messages', k:'Messages'},
-  {g:'gE', id:'alerts', k:'Santé du Site'},
-];
+const TABS = <?php $jsTabs = []; foreach ($ADMIN_TABS as $g => $ts) { foreach ($ts as $t) $jsTabs[] = ['g' => $g, 'id' => $t[0], 'k' => $t[1]]; } echo json_encode($jsTabs, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG); ?>;
 let view = 'wd_pending';
 let page = 1;
 const TITLES = Object.fromEntries(TABS.map(t => [t.id, t.k]));
@@ -1888,8 +1947,11 @@ function ajax(body) {
     body: JSON.stringify(body)
   }).then(r => r.json());
 }
+const URGENT = {wd_pending:1, dep_pending:1, wd_suspect:1, messages:1};
+let alertsErr = 0;
 function badgeClass(id, n) {
-  if (id === 'alerts' || id === 'wd_suspect' || id === 'messages') return n > 0 ? 'badge red' : 'badge zero';
+  if (id === 'alerts') return n > 0 ? (alertsErr > 0 ? 'badge red' : 'badge orange') : 'badge zero';
+  if (URGENT[id]) return n > 0 ? 'badge red' : 'badge zero';
   return n ? 'badge' : 'badge zero';
 }
 const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_7d:1, profit_total:1};
@@ -1935,6 +1997,8 @@ function filters() {
 let listCache = {};
 let listReq = 0;
 function bustList() { listCache = {}; }
+function fdate(s) { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); }
+function money(n) { return (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $'; }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function paintHealth(h) {
   const bar = document.getElementById('btnHealthBar');
@@ -1942,9 +2006,21 @@ function paintHealth(h) {
   if (!bar || !h) return;
   const issues = h.issues || [];
   const bad = issues.length > 0;
-  bar.className = 'health-bar ' + (bad ? 'bad' : 'ok');
-  bar.textContent = bad ? (issues.length + ' bouton(s) ne suivent plus — cliquer pour voir') : 'Tous les boutons suivent';
+  const site = window._siteHealth || {err:0, warn:0};
   window._boardIssues = issues;
+  if (bad) {
+    bar.className = 'health-bar bad';
+    bar.textContent = issues.length + ' bouton(s) ne suivent plus — cliquer pour voir';
+  } else if (site.err > 0) {
+    bar.className = 'health-bar bad';
+    bar.textContent = site.err + ' panne(s) sur le site — cliquer pour voir « Santé du Site »';
+  } else if (site.warn > 0) {
+    bar.className = 'health-bar warn';
+    bar.textContent = site.warn + ' point(s) à surveiller — cliquer pour voir « Santé du Site »';
+  } else {
+    bar.className = 'health-bar ok';
+    bar.textContent = 'Site en bonne santé · tous les boutons suivent';
+  }
   if (pan && !bad) { pan.classList.remove('on'); pan.innerHTML = ''; }
 }
 function showBoardPanel() {
@@ -1976,7 +2052,10 @@ function showBoardPanel() {
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
-  renderButtons(j.badges || {});
+  const bd = j.badges || {};
+  alertsErr = Number(bd.alerts_err || 0);
+  window._siteHealth = {err: alertsErr, warn: Math.max(0, Number(bd.alerts || 0) - alertsErr)};
+  renderButtons(bd);
   paintHealth(j.board);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
 }
@@ -2124,15 +2203,26 @@ async function openUser(uid) {
   document.getElementById('userDetail').innerHTML =
     '<h2 style="color:var(--gold);margin:8px 0 4px">'+esc(u.publicId||u.id)+'</h2>'+
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
-    '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(u.createdAt||'—')+'</strong></p>'+
-    '<p>Solde réel : <strong>'+esc(u.real)+' $</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+'</p>'+
+    '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
+    '<p>Solde réel : <strong>'+esc(u.real)+' $</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
+    (j.suspect ? '<div class="sus-box">À vérifier : '+esc(j.suspect)+'</div>' : '')+
+    (j.totals ? '<div class="totals">'+
+      '<div><span>Argent déposé</span><b>'+money(j.totals.deposits)+'</b></div>'+
+      '<div><span>Bonus reçus</span><b>'+money(j.totals.bonus)+'</b></div>'+
+      '<div><span>Retraits payés</span><b>'+money(j.totals.wdPaid)+'</b></div>'+
+      '<div><span>Retraits en attente</span><b>'+money(j.totals.wdOpen)+'</b></div>'+
+      '<div><span>Misé (réel)</span><b>'+money(j.totals.stake)+'</b></div>'+
+      '<div><span>Gains nets jeux</span><b>'+money(j.totals.net)+'</b></div>'+
+      '<div><span>Trades réels</span><b>'+esc(j.totals.trades)+'</b></div>'+
+    '</div>' : '')+
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
     '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
-    tbl('Dépôts', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(d.at||'')+'</td></tr>')+
-    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(d.at||'')+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
-    tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(d.at||'')+'</td></tr>');
+    tbl('Dépôts (argent payé)', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
+    tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
+    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
+    tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(fdate(d.at))+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
   const go = async (sign) => {
     const motif = document.getElementById('adjMotif').value.trim() || (sign > 0 ? 'Crédit admin' : 'Débit admin');
@@ -2156,7 +2246,11 @@ async function openUser(uid) {
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
-document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
+document.getElementById('btnHealthBar').onclick = () => {
+  if ((window._boardIssues || []).length) { showBoardPanel(); return; }
+  view = 'alerts'; page = 1; loadList(true);
+  document.getElementById('viewTitle').scrollIntoView({behavior:'smooth', block:'start'});
+};
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });

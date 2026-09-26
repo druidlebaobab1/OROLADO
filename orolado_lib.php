@@ -95,6 +95,31 @@ function orolado_login_fail(string $scope = 'player'): void {
  * Limite anti-robot simple : au plus $max actions par $window secondes pour une clé
  * (IP, compte…). Fichier léger data/rate_<scope>.json, sous verrou, nettoyé au passage.
  */
+/**
+ * Signale un vrai problème au tableau admin (« Santé du Site »). Même fichier que les
+ * alertes admin ; un même message n'est noté qu'une fois par heure.
+ */
+function orolado_health_event(string $service, string $message, string $level = 'error'): void {
+  $file = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'admin_alerts.json';
+  $fp = @fopen($file, 'c+');
+  if (!$fp) return;
+  flock($fp, LOCK_EX);
+  $rows = json_decode((string) stream_get_contents($fp), true);
+  if (!is_array($rows)) $rows = [];
+  $sig = md5($service . '|' . $message . '|' . date('Y-m-d-H'));
+  foreach ($rows as $r) {
+    if (is_array($r) && ($r['sig'] ?? '') === $sig) { flock($fp, LOCK_UN); fclose($fp); return; }
+  }
+  array_unshift($rows, ['sig' => $sig, 'at' => date('c'), 'service' => $service, 'message' => $message, 'level' => $level]);
+  $rows = array_slice($rows, 0, 400);
+  ftruncate($fp, 0);
+  rewind($fp);
+  fwrite($fp, json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+  fflush($fp);
+  flock($fp, LOCK_UN);
+  fclose($fp);
+}
+
 function orolado_rate_ok(string $scope, string $key, int $max, int $window): bool {
   $scope = preg_replace('/[^a-z0-9_]/', '', strtolower($scope)) ?: 'x';
   $path = orolado_data_dir() . '/rate_' . $scope . '.json';
@@ -2787,6 +2812,7 @@ function credit_paid_deposit(array $hit): array {
     flock($fp, LOCK_UN);
     fclose($fp);
     // PENDING reste → webhook / vérification peuvent réessayer, sans risque de double crédit.
+    orolado_health_event('Dépôts', 'Dépôt payé mais pas encore crédité (réf. ' . $refId . ', ' . $amount . ' $) : la base n’a pas répondu, nouvel essai automatique. Si ça dure, validez-le dans « Dépôts en Attente ».');
     return ['ok' => false, 'reason' => 'credit'];
   }
   $got = $once['real'];
@@ -3986,6 +4012,9 @@ function brevo_send_otp(string $email, string $code): array {
     'status' => !empty($sent['ok']) ? 'envoyé' : 'échec',
     'detail' => (string) ($sent['via'] ?? $sent['reason'] ?? ''),
   ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+  if (empty($sent['ok'])) {
+    orolado_health_event('E-mails', 'Un code de vérification n’a pas pu être envoyé (' . (string) ($sent['reason'] ?? 'service e-mail') . '). Les joueurs ne peuvent plus s’inscrire ni retirer si ça continue.');
+  }
   return $sent;
 }
 

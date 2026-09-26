@@ -18,3 +18,4 @@ data/stakes/
 
 feedcache/*.json
 feedcache/*.tmp
+admin-apercu.html

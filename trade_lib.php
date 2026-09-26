@@ -311,6 +311,9 @@ function orolado_trade_settle(string $uid, string $oid): array {
     }
     $realAfter = orolado_trade_credit_once($payId, $oid, $credit);
     if ($realAfter === null) {
+      if (function_exists('orolado_health_event')) {
+        orolado_health_event('Trades', 'Le règlement d’un trade réel attend la base (nouvel essai automatique). Si ça dure, la base Supabase est peut-être en panne.', 'warn');
+      }
       return ['ok' => false, 'pending' => true, 'reason' => 'Règlement en cours', 'retryMs' => 2000];
     }
   }

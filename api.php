@@ -25,6 +25,14 @@ require_once __DIR__ . '/history_lib.php';
 require_once __DIR__ . '/account_lib.php';
 orolado_load_env();
 
+// Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
+register_shutdown_function(static function (): void {
+  $e = error_get_last();
+  if (!$e || !in_array($e['type'] ?? 0, [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) return;
+  $where = basename((string) ($e['file'] ?? '')) . ':' . (int) ($e['line'] ?? 0);
+  orolado_health_event('Serveur', 'Plantage de l’API joueurs (' . $where . ') : ' . mb_substr((string) ($e['message'] ?? ''), 0, 160));
+});
+
 $ADMIN_EMAIL = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
 if ($ADMIN_EMAIL === '') $ADMIN_EMAIL = 'admin@orolado.com';
 $ADMIN_PASS = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));

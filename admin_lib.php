@@ -218,6 +218,10 @@ function admin_alert_push(string $service, string $message, string $level = 'err
 
 /** Requête PostgREST avec Content-Range (comptage exact, pagination). */
 function admin_sb_req(string $path, array $extraHdr = [], string $method = 'GET', ?string $body = null): array {
+  // Tests locaux uniquement (scripts/test-admin.php) : fausse base, jamais en ligne.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_SB']) && is_callable($GLOBALS['OROLADO_FAKE_SB'])) {
+    return ($GLOBALS['OROLADO_FAKE_SB'])($path, strtoupper($method), $body, $extraHdr);
+  }
   $base = supabase_project_url();
   $hdrs = supabase_admin_headers();
   if ($base === '' || !$hdrs) {
@@ -330,7 +334,8 @@ function admin_sb_all(string $table, string $select, string $order, int $pageSiz
     $to = $from + $pageSize - 1;
     $qs = 'select=' . rawurlencode($sel) . '&order=' . rawurlencode($order);
     if ($filter !== '') $qs .= '&' . $filter;
-    $res = admin_sb_req('/rest/v1/' . $table . '?' . $qs, ['Range: ' . $from . '-' . $to, 'Prefer: count=exact']);
+    // Pas de « count=exact » : le comptage complet ralentit fortement les grosses tables.
+    $res = admin_sb_req('/rest/v1/' . $table . '?' . $qs, ['Range: ' . $from . '-' . $to]);
     if (empty($res['ok']) && $sel !== '*') {
       $sel = '*';
       $i--;
@@ -999,8 +1004,42 @@ function admin_profiles(): array {
     }
     if (($list[$i]['traffic'] ?? '') === '') $list[$i]['traffic'] = 'direct';
   }
+  // Bonus séparés de l'argent réellement payé : « depositTotal » = argent déposé seulement.
+  $bonusBy = admin_bonus_by_user();
+  foreach ($list as $i => $row) {
+    $b = (float) ($bonusBy[(string) ($row['id'] ?? '')] ?? 0);
+    $list[$i]['bonusTotal'] = round($b, 2);
+    $list[$i]['depositTotal'] = round(max(0.0, (float) ($row['depositTotal'] ?? 0) - $b), 2);
+  }
   admin_cache_set('profiles_epoch2', ['list' => $list]);
   return admin_apply_live_seen($list);
+}
+
+/**
+ * Total des bonus envoyés par l'admin, par joueur (opérateur « admin » / réf. adm_…).
+ * Lu directement (sans passer par admin_deposits, qui dépend de la liste des joueurs).
+ */
+function admin_bonus_by_user(): array {
+  $cached = admin_cache_get('bonus_by_user', 20);
+  if (is_array($cached)) return $cached;
+  $seen = [];
+  $by = [];
+  $add = static function (array $d) use (&$seen, &$by): void {
+    $id = (string) ($d['id'] ?? $d['ref'] ?? $d['reference'] ?? '');
+    if ($id === '' || isset($seen[$id]) || !admin_dep_bonus_paid($d)) return;
+    $seen[$id] = true;
+    $uid = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($uid === '') return;
+    $by[$uid] = ($by[$uid] ?? 0.0) + (float) ($d['amount'] ?? 0);
+  };
+  foreach (admin_sb_all('deposits', 'id,user_id,amount,status,operator,reference', 'created_at.desc', 1000, 'operator=eq.admin') as $d) {
+    if (is_array($d)) $add($d);
+  }
+  foreach ((admin_local_db()['deposits'] ?? []) as $d) {
+    if (is_array($d)) $add($d);
+  }
+  admin_cache_set('bonus_by_user', $by);
+  return $by;
 }
 
 function admin_profile_map(): array {
@@ -1371,10 +1410,12 @@ function admin_deposits(): array {
       'operator' => (string) ($d['operator'] ?? ''),
       'createdAt' => (string) ($d['paidAt'] ?? $d['createdAt'] ?? $d['at'] ?? ''),
       'createdRaw' => (string) ($d['createdAt'] ?? $d['at'] ?? ''),
+      'motif' => (string) ($d['motif'] ?? $d['note'] ?? ''),
     ];
     if (!isset($byId[$id])) {
       $byId[$id] = $row;
     } else {
+      if ($row['motif'] !== '') $byId[$id]['motif'] = $row['motif'];
       $cur = $byId[$id];
       $rowPaid = admin_dep_is_paid($row);
       $curPaid = admin_dep_is_paid($cur);
@@ -1404,23 +1445,39 @@ function admin_deposits(): array {
   return $list;
 }
 
+/** Nombre de jours de trades chargés pour les statistiques du tableau (au-delà : trop lourd). */
+const ADMIN_ORDERS_DAYS = 30;
+
+function admin_local_order_row(array $o): array {
+  $at = $o['createdAt'] ?? $o['at'] ?? '';
+  if (is_numeric($at)) $at = date('c', (int) $at);
+  return [
+    'id' => (string) ($o['id'] ?? ''),
+    'user_id' => (string) ($o['userId'] ?? $o['user_id'] ?? ''),
+    'asset_id' => (string) ($o['assetId'] ?? $o['asset_id'] ?? ''),
+    'side' => (string) ($o['side'] ?? ''),
+    'stake' => (float) ($o['stake'] ?? 0),
+    'duration' => (int) ($o['duration'] ?? 0),
+    'mode' => (string) ($o['mode'] ?? 'demo'),
+    'won' => $o['won'] ?? null,
+    'net' => (float) ($o['net'] ?? 0),
+    'status' => (string) ($o['status'] ?? ''),
+    'payout' => (float) ($o['payout'] ?? $o['payoutMult'] ?? 0),
+    'created_at' => (string) $at,
+    'expiryAt' => $o['expiryAt'] ?? $o['expiry_at'] ?? null,
+  ];
+}
+
+/**
+ * Trades RÉELS des 30 derniers jours (avant : jusqu'à 20 000 trades de tous les temps,
+ * rechargés toutes les 25 s — lent, et les statistiques devenaient fausses au-delà).
+ */
 function admin_orders(): array {
-  $cached = admin_cache_get('orders_epoch2', 25);
+  $cached = admin_cache_get('orders_epoch3', 25);
   if (is_array($cached)) return $cached;
-  $rows = admin_sb_all(
-    'orders',
-    'id,user_id,asset_id,side,stake,duration,mode,won,net,status,payout,created_at',
-    'created_at.desc',
-    1000
-  );
-  if (!$rows) {
-    $rows = admin_sb_all(
-      'orders',
-      'id,user_id,asset_id,side,stake,duration,mode,won,net,status,created_at',
-      'created_at.desc',
-      1000
-    );
-  }
+  $since = gmdate('Y-m-d\TH:i:s\Z', time() - ADMIN_ORDERS_DAYS * 86400);
+  $filter = 'mode=eq.real&created_at=gte.' . rawurlencode($since);
+  $rows = admin_sb_all('orders', 'id,user_id,asset_id,side,stake,duration,mode,won,net,status,payout,created_at', 'created_at.desc', 1000, $filter);
   $local = admin_local_db();
   $byId = [];
   foreach ($rows as $o) {
@@ -1428,25 +1485,14 @@ function admin_orders(): array {
     if ($id === '') continue;
     $byId[$id] = $o;
   }
+  $cut = time() - ADMIN_ORDERS_DAYS * 86400;
   foreach (($local['orders'] ?? []) as $o) {
     if (!is_array($o)) continue;
-    $id = (string) ($o['id'] ?? '');
-    if ($id === '' || isset($byId[$id])) continue;
-    $byId[$id] = [
-      'id' => $id,
-      'user_id' => (string) ($o['userId'] ?? $o['user_id'] ?? ''),
-      'asset_id' => (string) ($o['assetId'] ?? $o['asset_id'] ?? ''),
-      'side' => (string) ($o['side'] ?? ''),
-      'stake' => (float) ($o['stake'] ?? 0),
-      'duration' => (int) ($o['duration'] ?? 0),
-      'mode' => (string) ($o['mode'] ?? 'demo'),
-      'won' => $o['won'] ?? null,
-      'net' => (float) ($o['net'] ?? 0),
-      'status' => (string) ($o['status'] ?? ''),
-      'payout' => (float) ($o['payout'] ?? $o['payoutMult'] ?? 0),
-      'created_at' => (string) ($o['createdAt'] ?? $o['at'] ?? ''),
-      'expiryAt' => $o['expiryAt'] ?? $o['expiry_at'] ?? null,
-    ];
+    $row = admin_local_order_row($o);
+    if ($row['id'] === '' || isset($byId[$row['id']]) || $row['mode'] !== 'real') continue;
+    $t = strtotime($row['created_at']) ?: time();
+    if ($t < $cut) continue;
+    $byId[$row['id']] = $row;
   }
   $list = array_values($byId);
   $keepIds = admin_stat_visible_user_ids();
@@ -1454,8 +1500,37 @@ function admin_orders(): array {
     $uid = (string) ($o['user_id'] ?? $o['userId'] ?? '');
     return $uid !== '' && isset($keepIds[$uid]);
   }));
-  admin_cache_set('orders_epoch2', $list);
+  admin_cache_set('orders_epoch3', $list);
   return $list;
+}
+
+/** Tous les trades réels d'UN joueur (fiche joueur, contrôle anti-fraude). */
+function admin_orders_for_user(string $uid): array {
+  if ($uid === '') return [];
+  static $memo = [];
+  if (isset($memo[$uid])) return $memo[$uid];
+  $byId = [];
+  if (admin_is_uuid_str($uid)) {
+    $rows = admin_sb_all('orders', 'id,user_id,asset_id,side,stake,duration,mode,won,net,status,payout,created_at', 'created_at.desc', 1000,
+      'user_id=eq.' . rawurlencode($uid) . '&mode=eq.real');
+    foreach ($rows as $o) {
+      $id = (string) ($o['id'] ?? '');
+      if ($id !== '') $byId[$id] = $o;
+    }
+  }
+  foreach ((admin_local_db()['orders'] ?? []) as $o) {
+    if (!is_array($o)) continue;
+    $row = admin_local_order_row($o);
+    if ($row['id'] === '' || isset($byId[$row['id']]) || $row['mode'] !== 'real' || $row['user_id'] !== $uid) continue;
+    $byId[$row['id']] = $row;
+  }
+  $list = array_values($byId);
+  usort($list, static fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
+  return $memo[$uid] = $list;
+}
+
+function admin_is_uuid_str(string $id): bool {
+  return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id);
 }
 
 function admin_match_q(array $row, string $q): bool {
@@ -1580,7 +1655,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'health', 'live_seen', 'board_watch'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'health', 'live_seen', 'board_watch'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
@@ -2102,11 +2177,28 @@ function admin_order_is_live_real(array $o): bool {
 }
 
 /** Bots / scripts / cash-out sans jeu réel — pas les joueurs normaux. */
-function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null): string {
+function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, array $ctx = []): string {
   $role = strtolower((string) ($p['role'] ?? ''));
   if (in_array($role, ['suspended', 'banned'], true)) return 'Compte déjà suspendu';
   if ($wd && (!empty($wd['suspect']) || strtolower((string) ($wd['status'] ?? '')) === 'review')) {
     return 'Retrait signalé';
+  }
+  $paid = (float) ($p['depositTotal'] ?? 0);
+  $bonus = (float) ($p['bonusTotal'] ?? 0);
+  if ($wd && $paid <= 0) {
+    return $bonus > 0 ? 'Retrait sans dépôt payé (bonus seulement)' : 'Retrait sans aucun dépôt payé';
+  }
+  if ($wd && (float) ($ctx['excess'] ?? 0) >= 1) {
+    return 'Solde plus élevé que dépôts + bonus + gains (+' . admin_money($ctx['excess']) . ')';
+  }
+  if ($wd && !empty($ctx['sameDest'])) {
+    return 'Même destination de retrait que ' . implode(', ', array_slice((array) $ctx['sameDest'], 0, 3));
+  }
+  if ($wd && (float) ($ctx['bigWin'] ?? 0) >= 200) {
+    return 'Gros gain récent (+' . admin_money($ctx['bigWin']) . ') puis retrait';
+  }
+  if (!empty($ctx['sameIp']) && ($wd || $bonus > 0)) {
+    return 'Même IP que ' . implode(', ', array_slice((array) $ctx['sameIp'], 0, 3));
   }
   $trades = (int) ($p['realTrades'] ?? 0);
   $wagered = (float) ($p['realStakeVolume'] ?? 0);
@@ -2154,8 +2246,109 @@ function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null): s
   return '';
 }
 
-function admin_is_suspect(array $p, array $realOrders, ?array $wd = null): bool {
-  return admin_suspect_reason($p, $realOrders, $wd) !== '';
+function admin_is_suspect(array $p, array $realOrders, ?array $wd = null, array $ctx = []): bool {
+  return admin_suspect_reason($p, $realOrders, $wd, $ctx) !== '';
+}
+
+function admin_norm_dest(string $d): string {
+  $d = strtolower(trim($d));
+  if ($d === '' || $d === '—') return '';
+  // Téléphone : chiffres seuls (8 derniers) ; adresse crypto / e-mail : tel quel.
+  if (preg_match('/^[+\d\s().-]{8,}$/', $d)) {
+    $dig = preg_replace('/\D/', '', $d) ?? '';
+    return strlen($dig) >= 8 ? 'tel:' . substr($dig, -8) : '';
+  }
+  return 'd:' . $d;
+}
+
+/**
+ * Liste des comptes suspects (même calcul pour le compteur et pour la liste).
+ * Retour : [uid => ['reason', 'openAmt', 'trades']]
+ */
+function admin_suspects(): array {
+  $cached = admin_cache_get('suspects', 20);
+  if (is_array($cached)) return $cached;
+  $people = admin_profiles();
+  $pmap = [];
+  foreach ($people as $p) $pmap[(string) ($p['id'] ?? '')] = $p;
+  $vaults = admin_vaults();
+  $wds = admin_withdrawals();
+  $orders = admin_orders();
+  $ordersBy = [];
+  foreach ($orders as $o) {
+    $uid = (string) ($o['user_id'] ?? '');
+    if ($uid !== '') $ordersBy[$uid][] = $o;
+  }
+  $openBy = [];
+  $wdPaidBy = [];
+  $destBy = [];
+  foreach ($wds as $w) {
+    $uid = (string) ($w['userId'] ?? '');
+    if ($uid === '' || admin_wd_is_silenced($w)) continue;
+    if (admin_wd_is_open($w)) $openBy[$uid][] = $w;
+    if (admin_wd_is_paid($w)) $wdPaidBy[$uid] = ($wdPaidBy[$uid] ?? 0.0) + (float) ($w['amount'] ?? 0);
+    if (admin_wd_is_rejected($w)) continue;
+    $key = admin_norm_dest(admin_fill((string) ($w['phone'] ?? ''), (string) ($w['destination'] ?? '')));
+    if ($key !== '') $destBy[$key][$uid] = true;
+  }
+  $ipBy = [];
+  foreach ($people as $p) {
+    $ip = trim((string) ($p['ip'] ?? ''));
+    if ($ip !== '' && $ip !== '—') $ipBy[$ip][(string) $p['id']] = true;
+  }
+  $pidOf = static fn(string $uid): string => (string) (($pmap[$uid]['publicId'] ?? '') ?: $uid);
+  $dayAgo = time() - 86400;
+  $out = [];
+  foreach ($pmap as $uid => $p) {
+    if ($uid === '') continue;
+    $open = $openBy[$uid] ?? [];
+    $ctx = [];
+    if ($open) {
+      $mine = [];
+      foreach ($open as $w) {
+        $k = admin_norm_dest(admin_fill((string) ($w['phone'] ?? ''), (string) ($w['destination'] ?? '')));
+        if ($k === '') continue;
+        foreach (array_keys($destBy[$k] ?? []) as $other) if ($other !== $uid) $mine[$other] = $pidOf($other);
+      }
+      if ($mine) $ctx['sameDest'] = array_values($mine);
+      $big = 0.0;
+      foreach ($ordersBy[$uid] ?? [] as $o) {
+        $t = strtotime((string) ($o['created_at'] ?? '')) ?: 0;
+        if ($t >= $dayAgo) $big = max($big, (float) ($o['net'] ?? 0));
+      }
+      if ($big > 0) $ctx['bigWin'] = $big;
+      // Contrôle de cohérence (seulement pour les retraits en attente : 1 requête par joueur).
+      $net = 0.0;
+      foreach (admin_orders_for_user($uid) as $o) $net += (float) ($o['net'] ?? 0);
+      $openAmt = 0.0;
+      foreach ($open as $w) $openAmt += (float) ($w['amount'] ?? 0);
+      $expected = (float) ($p['depositTotal'] ?? 0) + (float) ($p['bonusTotal'] ?? 0) + $net - ($wdPaidBy[$uid] ?? 0) - $openAmt;
+      $real = (float) ($vaults[$uid]['real'] ?? 0);
+      if ($real > $expected + 1) $ctx['excess'] = round($real - $expected, 2);
+    }
+    $ip = trim((string) ($p['ip'] ?? ''));
+    // 2 à 4 comptes sur la même IP = probable multi-comptes. Au-delà, c'est en général
+    // l'IP partagée d'un opérateur mobile (des centaines de clients) : on ignore.
+    $nIp = count($ipBy[$ip] ?? []);
+    if ($ip !== '' && $nIp > 1 && $nIp <= 4) {
+      $others = [];
+      foreach (array_keys($ipBy[$ip]) as $other) if ($other !== $uid) $others[] = $pidOf($other);
+      $ctx['sameIp'] = $others;
+    }
+    $reason = admin_suspect_reason($p, $ordersBy[$uid] ?? [], $open[0] ?? null, $ctx);
+    if ($reason === '') {
+      foreach (array_slice($open, 1) as $w) {
+        $reason = admin_suspect_reason($p, $ordersBy[$uid] ?? [], $w, $ctx);
+        if ($reason !== '') break;
+      }
+    }
+    if ($reason === '') continue;
+    $openAmt = 0.0;
+    foreach ($open as $w) $openAmt += (float) ($w['amount'] ?? 0);
+    $out[$uid] = ['reason' => $reason, 'openAmt' => round($openAmt, 2), 'trades' => count($ordersBy[$uid] ?? [])];
+  }
+  admin_cache_set('suspects', $out);
+  return $out;
 }
 
 function admin_profit_between(array $deps, array $wds, string $from, string $to): float {
@@ -2293,9 +2486,114 @@ function admin_health_rows(): array {
     'message' => $apiOk ? 'api.php présent et lisible' : 'api.php introuvable',
     'level' => $apiOk ? 'ok' : 'error',
   ];
+  foreach (admin_health_live_checks() as $r) {
+    $rows[] = $r;
+  }
   foreach (admin_collect_alerts() as $a) {
     $rows[] = $a;
   }
+  // Problèmes d'abord (pannes, puis attentions), les lignes OK ensuite.
+  $rank = ['error' => 0, 'warn' => 1];
+  usort($rows, static function ($a, $b) use ($rank) {
+    $ra = $rank[$a['level'] ?? 'ok'] ?? 2;
+    $rb = $rank[$b['level'] ?? 'ok'] ?? 2;
+    return $ra <=> $rb ?: strcmp((string) ($b['at'] ?? ''), (string) ($a['at'] ?? ''));
+  });
   admin_cache_set('health', ['rows' => $rows]);
+  return $rows;
+}
+
+/**
+ * Contrôles « en direct » : ce qui casse vraiment un site de trading (avant, la santé ne
+ * vérifiait que la présence des fichiers, donc elle était toujours au vert).
+ */
+function admin_health_live_checks(): array {
+  $now = date('c');
+  $rows = [];
+  $row = static function (string $svc, string $msg, string $lvl) use ($now): array {
+    return ['at' => $now, 'service' => $svc, 'message' => $msg, 'level' => $lvl];
+  };
+
+  // 1. Flux de prix : figé alors que des joueurs sont en ligne = graphiques bloqués.
+  $online = admin_online_count();
+  $live = __DIR__ . '/feedcache/live.json';
+  $age = is_file($live) ? time() - (int) @filemtime($live) : -1;
+  if ($online > 0 && ($age < 0 || $age > 30)) {
+    $rows[] = $row('Flux de prix', 'Le flux de prix ne se met plus à jour (' . ($age < 0 ? 'fichier absent' : $age . ' s') . ') alors que ' . $online . ' joueur(s) sont en ligne : les graphiques sont figés.', 'error');
+  } else {
+    $rows[] = $row('Flux de prix', $online > 0 ? ('En direct · mis à jour il y a ' . max(0, $age) . ' s') : 'En veille (aucun joueur en ligne)', 'ok');
+  }
+
+  // 2. Trades réels expirés mais pas réglés (argent du joueur bloqué).
+  $stuck = 0;
+  $stuckSum = 0.0;
+  foreach ((admin_local_db()['orders'] ?? []) as $o) {
+    if (!is_array($o) || ($o['mode'] ?? '') !== 'real' || ($o['status'] ?? '') !== 'open') continue;
+    $exp = (float) ($o['expiryAt'] ?? 0);
+    if ($exp > 0 && $exp < time() - 120) { $stuck++; $stuckSum += (float) ($o['stake'] ?? 0); }
+  }
+  $rows[] = $stuck > 0
+    ? $row('Trades', $stuck . ' trade(s) réel(s) terminé(s) depuis plus de 2 min mais pas encore réglé(s) (' . admin_money($stuckSum) . ' misés). Ils se règlent au retour du joueur ; si le nombre grossit, la base est en panne.', $stuck >= 5 ? 'error' : 'warn')
+    : $row('Trades', 'Tous les trades réels terminés sont réglés', 'ok');
+
+  // 3. Retraits qui attendent depuis plus de 24 h.
+  $old = 0;
+  foreach (admin_withdrawals() as $w) {
+    if (!admin_wd_is_open($w)) continue;
+    $t = strtotime((string) ($w['createdAt'] ?? '')) ?: 0;
+    if ($t > 0 && $t < time() - 86400) $old++;
+  }
+  $rows[] = $old > 0
+    ? $row('Retraits', $old . ' retrait(s) en attente depuis plus de 24 h : les joueurs attendent leur argent.', 'warn')
+    : $row('Retraits', 'Aucun retrait en attente depuis plus de 24 h', 'ok');
+
+  // 4. E-mails de codes : échecs sur 24 h (inscription et retraits bloqués).
+  $sent = 0;
+  $fail = 0;
+  $log = admin_cache_file('otp_mail.log');
+  if (is_file($log)) {
+    foreach (array_slice(@file($log, FILE_IGNORE_NEW_LINES) ?: [], -400) as $line) {
+      $j = json_decode((string) $line, true);
+      if (!is_array($j)) continue;
+      $t = strtotime((string) ($j['ts'] ?? '')) ?: 0;
+      if ($t < time() - 86400) continue;
+      $sent++;
+      if (($j['status'] ?? '') !== 'envoyé') $fail++;
+    }
+  }
+  if ($fail > 0) {
+    $bad = $fail >= 5 || ($sent > 0 && $fail / $sent >= 0.3);
+    $rows[] = $row('E-mails', $fail . ' code(s) sur ' . $sent . ' non envoyé(s) en 24 h. Vérifiez le service d’e-mails (clé Brevo / quota).', $bad ? 'error' : 'warn');
+  } else {
+    $rows[] = $row('E-mails', $sent > 0 ? ($sent . ' code(s) envoyé(s) en 24 h, aucun échec') : 'Aucun code envoyé ces dernières 24 h', 'ok');
+  }
+
+  // 5. Jeu du jour : les joueurs gagnent-ils plus que prévu ? Gros gains à regarder.
+  [$t0, $t1] = admin_day_bounds('today');
+  $stake = 0.0;
+  $net = 0.0;
+  $bigWins = [];
+  foreach (admin_orders() as $o) {
+    if (!admin_in_range((string) ($o['created_at'] ?? ''), $t0, $t1)) continue;
+    $stake += (float) ($o['stake'] ?? 0);
+    $n = (float) ($o['net'] ?? 0);
+    $net += $n;
+    if ($n >= 500) $bigWins[] = $n;
+  }
+  if ($stake >= 300) {
+    $rtp = ($stake + $net) / $stake * 100;
+    $rows[] = $row('Jeu du jour', 'Mises ' . admin_money($stake) . ' · rendu aux joueurs ' . number_format($rtp, 1, ',', ' ') . ' % (normal ≈ 94 %)', $rtp > 110 ? 'warn' : 'ok');
+  }
+  if ($bigWins) {
+    rsort($bigWins);
+    $rows[] = $row('Gros gains', count($bigWins) . ' gain(s) de plus de 500 $ aujourd’hui (le plus gros : +' . admin_money($bigWins[0]) . '). Normal avec ×50, mais regardez « Suspect » avant de payer un retrait.', 'warn');
+  }
+
+  // 6. Fichier joueurs trop gros = site plus lent.
+  $file = orolado_data_file();
+  $mb = is_file($file) ? (int) @filesize($file) / 1048576 : 0;
+  if ($mb >= 25) {
+    $rows[] = $row('Coffre JSON', 'Le fichier joueurs pèse ' . number_format($mb, 1, ',', ' ') . ' Mo : le site ralentit. Prévenez le développeur.', $mb >= 60 ? 'error' : 'warn');
+  }
   return $rows;
 }
