@@ -173,10 +173,22 @@ function orolado_trade_place(array $me, array $req): array {
     }
   }
 
-  // Prix d'entrée = dernier tick du serveur à la réception de l'ordre.
+  // Prix d'entrée = prix à l'instant où l'ordre est ARRIVÉ sur le serveur (heure notée par PHP
+  // à la réception), pas après la lecture du fichier et les appels à la base : avant, plus le
+  // serveur était lent, plus le trait se posait loin du clic. Sûr : à cet instant, le joueur
+  // ne connaît pas encore le prix suivant.
   $st = orolado_feed_advance($assetId);
   $entryTick = $st['n'];
   $entryCents = $st['c'];
+  $arrivedMs = (int) floor((float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)) * 1000);
+  $arrivedTick = orolado_feed_tick_at($arrivedMs);
+  if ($arrivedTick < $entryTick && $arrivedTick >= $entryTick - 40) {
+    $atArrival = orolado_feed_price_at($assetId, $arrivedTick);
+    if ($atArrival !== null && $atArrival > 0) {
+      $entryTick = $arrivedTick;
+      $entryCents = (int) $atArrival;
+    }
+  }
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
 

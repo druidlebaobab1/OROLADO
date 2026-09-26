@@ -324,6 +324,23 @@
     void price;
   }
 
+  var GLIDE_MS = 320;
+  function tradeGlide(t) {
+    var entry = Number(t.entryPrice != null ? t.entryPrice : t.openPrice);
+    var bar = Number(t.barrier);
+    var start = Number(t.startTime || t.startedAt || t.openedAt || 0);
+    if (t.moveAt && t.fromEntry != null) {
+      var k = Math.min(1, (Date.now() - t.moveAt) / GLIDE_MS);
+      k = 1 - Math.pow(1 - k, 3);
+      if (k < 1) {
+        entry = t.fromEntry + (entry - t.fromEntry) * k;
+        if (isFinite(t.fromBarrier) && isFinite(bar)) bar = t.fromBarrier + (bar - t.fromBarrier) * k;
+        if (t.fromStart > 0 && start > 0) start = t.fromStart + (start - t.fromStart) * k;
+      }
+    }
+    return { entry: entry, barrier: bar, start: start };
+  }
+
   function snapshotTradeVisual(trade) {
     if (!trade || !trade.id) return null;
     var entry = tradeEntryPrice(trade);
@@ -440,8 +457,16 @@
       return false;
     }
     var prevSnap = openTradeVisuals[snap.id];
-    // Trait qui apparaît en fondu à la confirmation (trade tout juste ouvert).
-    if (!snap.pending) snap.lineAt = (prevSnap && prevSnap.lineAt) || (Date.now() - Number(snap.startTime || 0) < 4000 ? Date.now() : 0);
+    // Trait visible dès le clic (léger fondu), puis glissement en douceur vers le prix
+    // confirmé par le serveur : aucun saut, même si le prix officiel diffère d'un cheveu.
+    snap.lineAt = (prevSnap && prevSnap.lineAt) || (Date.now() - Number(snap.startTime || 0) < 4000 ? Date.now() : 0);
+    if (prevSnap && (prevSnap.entryPrice !== snap.entryPrice || prevSnap.barrier !== snap.barrier || prevSnap.startTime !== snap.startTime)) {
+      var cur = tradeGlide(prevSnap);
+      snap.fromEntry = cur.entry;
+      snap.fromBarrier = cur.barrier;
+      snap.fromStart = cur.start;
+      snap.moveAt = Date.now();
+    }
     openTradeVisuals[snap.id] = snap;
     if (snap.assetId) {
       var expL = snap.expiryTime || snap.expiresAt || 0;
@@ -1587,13 +1612,60 @@
   // Ligne objectif (×5 / ×10 / ×50, ou ligne Boom/Crash) : c'est elle qui décide du gain.
   // CALL gagne si le prix final est AU-DESSUS, PUT s'il est EN DESSOUS. Hors écran :
   // on la colle au bord avec une flèche pour que le joueur sache toujours où elle est.
+  // Ligne objectif (×5, ×10, ×50) : trait doré épais à longs tirets espacés + étiquette,
+  // bien différent du petit pointillé vert/rouge de l'entrée. En 88 %, pas de 2e trait :
+  // l'objectif est le prix d'entrée lui-même (l'ombre suffit).
+  var TARGET_DASH = [16, 9];
+  function drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, fade) {
+    var mult = Number(trade.payout) || 1.88;
+    if (mult < 4.99 || !isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
+    var by = priceToY(bar, pad, plotH, minP, maxP);
+    if (!isFinite(by)) return;
+    var off = 0;
+    if (by < plotTop + 9) { by = plotTop + 9; off = -1; }
+    if (by > plotBot - 9) { by = plotBot - 9; off = 1; }
+    by = Math.round(by * 2) / 2;
+    var gold = '#F5C518';
+    g.save();
+    g.globalAlpha = (off ? 0.6 : 0.95) * (fade == null ? 1 : fade);
+    g.setLineDash(TARGET_DASH);
+    g.strokeStyle = gold;
+    g.lineWidth = IS_ANDROID_CHART ? 1.6 : 2;
+    g.beginPath();
+    g.moveTo(pad.l, by);
+    g.lineTo(layout.axisX, by);
+    g.stroke();
+    g.setLineDash(NO_DASH);
+    if ((idx || 0) < 2) {
+      var arrow = off < 0 ? ' ▲' : (off > 0 ? ' ▼' : '');
+      var tag = '×' + (Math.round(mult * 10) / 10) + ' objectif' + arrow;
+      g.font = '800 10px "Hanken Grotesk", sans-serif';
+      var tw = Math.ceil(g.measureText(tag).width) + 14;
+      var tx = Math.max(pad.l + 4, layout.axisX - tw - 8);
+      var ty = by - 8 - (idx || 0) * 18;
+      g.fillStyle = 'rgba(10,15,29,0.92)';
+      g.strokeStyle = gold;
+      g.lineWidth = 1;
+      roundRectOn(g, tx, ty, tw, 16, 8);
+      g.fill();
+      g.stroke();
+      g.fillStyle = gold;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(tag, tx + tw / 2, ty + 8.5);
+      g.textBaseline = 'alphabetic';
+    }
+    g.restore();
+  }
+
   // Trade ouvert : trait horizontal pointillé + pastille d'entrée CALL/PUT + décompte
   // à gauche. Aucun montant en dollars n'est tracé le long du trait.
   function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout, clusterN) {
     if (!g || !trade || trade.settled) return;
     var exp = trade.expiryTime || trade.expiresAt;
     if (!exp || Date.now() >= exp) return;
-    var entry = Number(trade.entryPrice != null ? trade.entryPrice : trade.openPrice);
+    var glide = tradeGlide(trade);
+    var entry = glide.entry;
     if (!isFinite(entry)) return;
     var ey = priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
@@ -1610,11 +1682,10 @@
     var badgeLift = isFinite(yShift) ? yShift : 0;
     var tNowE = xNow || Date.now();
     var winE = xWin > 0 ? xWin : (zoomSec() * 1000);
-    var pendingE = !!trade.pending;
-    var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 260) : 1;
-    if (idx === 0 && !pendingE) {
+    var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 140) : 1;
+    if (idx === 0) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
-      var refP = Number(trade.barrier) > 0 ? Number(trade.barrier) : entry;
+      var refP = glide.barrier > 0 ? glide.barrier : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
       if (isFinite(zy)) {
         zy = Math.max(plotTop, Math.min(plotBot, zy));
@@ -1661,7 +1732,7 @@
         g.restore();
       }
     }
-    if (!pendingE) {
+    {
       g.setLineDash(TRADE_DASH);
       g.strokeStyle = lineCol;
       g.lineWidth = lite ? 1 : 1.35;
@@ -1673,10 +1744,11 @@
       g.setLineDash(NO_DASH);
       g.globalAlpha = 1;
     }
+    drawTargetLine(g, trade, glide.barrier, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, lineFade);
 
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
-    var t0 = Number(trade.startTime || trade.startedAt || trade.openedAt || 0);
+    var t0 = glide.start;
     var mx = layout.headX;
     if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
     mx += (idx % 3) * 5 - 5;

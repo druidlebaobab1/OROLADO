@@ -970,7 +970,6 @@
           armTradeTimer(t);
           if (D6.Chart && D6.Chart.applyOpenTradeVisual && (t.mode === currentAccountMode())) {
             try {
-              if (D6.Chart.removeTradeVisual) D6.Chart.removeTradeVisual(t.id);
               D6.Chart.applyOpenTradeVisual(publicTrade(t));
             } catch (eV) { /* ignore */ }
           }
