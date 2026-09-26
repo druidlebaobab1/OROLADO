@@ -4874,6 +4874,12 @@ function orolado_oxapay_paid_status(string $status): bool {
   ], true);
 }
 
+/** Paiement ENTIÈREMENT terminé (pas « en cours » ni « payé en partie »). */
+function orolado_oxapay_full_status(string $status): bool {
+  $s = str_replace(['-', ' '], '_', strtolower(trim($status)));
+  return in_array($s, ['paid', 'completed', 'complete', 'confirmed', 'success', 'successful', 'done', 'overpaid', 'paid_late', 'manual_accept'], true);
+}
+
 function orolado_oxapay_payload_status(array $data): string {
   foreach (['status', 'payment_status', 'paymentStatus', 'invoice_status', 'invoiceStatus', 'pay_status', 'payStatus'] as $k) {
     $v = trim((string) ($data[$k] ?? ''));
@@ -4915,38 +4921,145 @@ function orolado_oxapay_num(array $row, array $keys): float {
   return $best;
 }
 
-/** USD réellement reçu — jamais le price / pay_amount de la facture (évite le plafonnement à 5 $). */
-function orolado_oxapay_received_usd(array $data): float {
-  $recvKeys = [
-    'sent_value', 'sentValue', 'paid_amount', 'paidAmount',
-    'received_amount', 'receivedAmount', 'sent_amount', 'sentAmount',
-    'pay_amount_usd', 'payAmountUsd', 'usd_amount', 'usdAmount',
-    'auto_convert_amount', 'autoConvertAmount', 'auto_conversion_amount',
-    'converted_amount', 'to_amount',
-  ];
-  $fromTx = 0.0;
+/**
+ * Cours d'une crypto en dollars (1 pièce = X $). Stablecoins = 1. Sources publiques, sans clé :
+ * OxaPay, puis Binance, puis CoinGecko. Gardé 60 s. null si aucune source ne répond.
+ */
+function orolado_crypto_usd_price(string $sym): ?float {
+  $sym = strtoupper(trim($sym));
+  if ($sym === '') return null;
+  if (orolado_oxapay_is_usd_coin($sym)) return 1.0;
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_PRICES']) && is_array($GLOBALS['OROLADO_FAKE_PRICES'])) {
+    $p = $GLOBALS['OROLADO_FAKE_PRICES'][$sym] ?? null;
+    return is_numeric($p) && (float) $p > 0 ? (float) $p : null;
+  }
+  $file = orolado_data_dir() . '/crypto_prices.json';
+  $cache = json_decode((string) @file_get_contents($file), true);
+  if (!is_array($cache)) $cache = [];
+  $hit = $cache[$sym] ?? null;
+  if (is_array($hit) && (time() - (int) ($hit['at'] ?? 0)) < 60 && (float) ($hit['p'] ?? 0) > 0) return (float) $hit['p'];
+  $price = null;
+  $get = static function (string $url): ?array {
+    $raw = null;
+    if (function_exists('curl_init')) {
+      $ch = curl_init($url);
+      curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 6, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_HTTPHEADER => ['Accept: application/json', 'User-Agent: OROLADO/1.0']]);
+      $raw = curl_exec($ch);
+      curl_close($ch);
+    }
+    $j = is_string($raw) ? json_decode($raw, true) : null;
+    return is_array($j) ? $j : null;
+  };
+  // 1) OxaPay (même prestataire que les dépôts)
+  $ox = $get('https://api.oxapay.com/v1/common/prices');
+  $oxData = is_array($ox['data'] ?? null) ? $ox['data'] : $ox;
+  if (is_array($oxData)) {
+    if (isset($oxData[$sym]) && is_numeric($oxData[$sym])) $price = (float) $oxData[$sym];
+    foreach ($oxData as $row) {
+      if ($price || !is_array($row)) continue;
+      $s = strtoupper((string) ($row['symbol'] ?? $row['currency'] ?? ''));
+      $v = $row['price'] ?? $row['usd'] ?? $row['rate'] ?? null;
+      if ($s === $sym && is_numeric($v)) $price = (float) $v;
+    }
+  }
+  // 2) Binance
+  if (!($price > 0)) {
+    $bn = $get('https://api.binance.com/api/v3/ticker/price?symbol=' . rawurlencode(($sym === 'POL' ? 'POL' : $sym) . 'USDT'));
+    if (is_array($bn) && is_numeric($bn['price'] ?? null)) $price = (float) $bn['price'];
+  }
+  // 3) CoinGecko
+  if (!($price > 0)) {
+    $ids = ['BTC' => 'bitcoin', 'ETH' => 'ethereum', 'TRX' => 'tron', 'BNB' => 'binancecoin', 'SOL' => 'solana', 'LTC' => 'litecoin',
+      'DOGE' => 'dogecoin', 'XRP' => 'ripple', 'POL' => 'polygon-ecosystem-token', 'SHIB' => 'shiba-inu', 'GRAM' => 'gram-2',
+      'XMR' => 'monero', 'BCH' => 'bitcoin-cash', 'NOT' => 'notcoin', 'DOGS' => 'dogs-2', 'TON' => 'the-open-network'];
+    if (isset($ids[$sym])) {
+      $cg = $get('https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=' . $ids[$sym]);
+      if (is_array($cg) && is_numeric($cg[$ids[$sym]]['usd'] ?? null)) $price = (float) $cg[$ids[$sym]]['usd'];
+    }
+  }
+  if (!($price > 0)) return null;
+  $cache[$sym] = ['p' => $price, 'at' => time()];
+  @file_put_contents($file, json_encode($cache), LOCK_EX);
+  return $price;
+}
+
+/**
+ * Dollars réellement reçus pour une transaction crypto.
+ * Avant : le nombre de PIÈCES reçues était pris pour des dollars (20 TRX ≈ 7 $ crédités 20 $,
+ * 0,001 BTC ≈ 60 $ crédités 0,001 $). Maintenant : pièces × cours du moment, recoupé avec
+ * la valeur en dollars annoncée par OxaPay quand elle existe.
+ * Retour : ['usd' => float, 'known' => bool] (known = false : conversion impossible).
+ */
+function orolado_oxapay_piece_usd(array $row, string $fallbackCur): array {
+  $cur = strtoupper(trim((string) ($row['currency'] ?? $row['pay_currency'] ?? $row['payCurrency'] ?? $fallbackCur)));
+  $coins = 0.0;
+  foreach (['received_amount', 'receivedAmount', 'sent_amount', 'sentAmount', 'pay_amount', 'payAmount', 'amount'] as $k) {
+    if (isset($row[$k]) && is_numeric($row[$k]) && (float) $row[$k] > 0) { $coins = (float) $row[$k]; break; }
+  }
+  // Valeur en dollars annoncée par OxaPay (conversion automatique incluse).
+  $said = 0.0;
+  foreach (['value', 'sent_value', 'sentValue', 'usd_value', 'usdValue', 'amount_usd', 'usd_amount'] as $k) {
+    if (isset($row[$k]) && is_numeric($row[$k]) && (float) $row[$k] > 0) { $said = (float) $row[$k]; break; }
+  }
+  $ac = is_array($row['auto_convert'] ?? null) ? $row['auto_convert'] : [];
+  $acCur = strtoupper((string) ($ac['currency'] ?? $row['auto_convert_currency'] ?? ''));
+  $acAmt = (float) ($ac['amount'] ?? $row['auto_convert_amount'] ?? 0);
+  if ($acAmt > 0 && orolado_oxapay_is_usd_coin($acCur)) $said = max($said, $acAmt);
+  if ($coins <= 0 && $said <= 0) return ['usd' => 0.0, 'known' => true];
+  if ($cur === '' || orolado_oxapay_is_usd_coin($cur)) {
+    return ['usd' => orolado_money($coins > 0 ? $coins : $said), 'known' => true];
+  }
+  if ($coins <= 0) return ['usd' => orolado_money($said), 'known' => $said > 0];
+  $price = orolado_crypto_usd_price($cur);
+  if ($price === null && isset($row['rate']) && is_numeric($row['rate']) && (float) $row['rate'] > 0) $price = (float) $row['rate'];
+  if ($price !== null) {
+    $calc = $coins * $price;
+    // Même ordre de grandeur (±20 %) : on garde le chiffre exact d'OxaPay au moment du paiement.
+    if ($said > 0 && abs($said - $calc) <= 0.2 * $calc) return ['usd' => orolado_money($said), 'known' => true];
+    return ['usd' => orolado_money($calc), 'known' => true];
+  }
+  // Pas de cours : la valeur annoncée n'est fiable que si ce n'est pas simplement le nombre de pièces.
+  if ($said > 0 && abs($said - $coins) > 1e-9) return ['usd' => orolado_money($said), 'known' => true];
+  return ['usd' => 0.0, 'known' => false];
+}
+
+/** Dollars reçus pour un paiement OxaPay (somme des transactions). */
+function orolado_oxapay_received(array $data): array {
+  $cur = strtoupper((string) ($data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? ''));
+  $total = 0.0;
+  $known = true;
+  $any = false;
   if (!empty($data['txs']) && is_array($data['txs'])) {
     foreach ($data['txs'] as $tx) {
       if (!is_array($tx)) continue;
       $st = strtolower((string) ($tx['status'] ?? $tx['state'] ?? ''));
       if (in_array($st, ['failed', 'invalid', 'expired', 'replaced', 'rejected'], true)) continue;
-      $piece = orolado_oxapay_num($tx, $recvKeys);
-      $convert = 0.0;
-      if (!empty($tx['auto_convert']) && is_array($tx['auto_convert'])) {
-        $convert = orolado_oxapay_num($tx['auto_convert'], ['amount', 'value']);
-      }
-      if ($convert > $piece) $piece = $convert;
-      $val = orolado_oxapay_num($tx, ['value', 'amount']);
-      $txCur = strtoupper((string) ($tx['currency'] ?? $tx['pay_currency'] ?? ''));
-      if ($val > $piece && ($convert <= 0.0001 || orolado_oxapay_is_usd_coin($txCur))) {
-        if ($val + 0.0001 >= orolado_oxapay_credit_floor()) $piece = $val;
-      }
-      $fromTx += $piece;
+      $any = true;
+      $p = orolado_oxapay_piece_usd($tx, $cur);
+      $total += $p['usd'];
+      if (!$p['known']) $known = false;
     }
   }
-  if ($fromTx > 0.0001) return orolado_money($fromTx);
-  $top = orolado_oxapay_num($data, $recvKeys);
-  return $top > 0.0001 ? orolado_money($top) : 0.0;
+  if (!$any) {
+    // Pas de détail des transactions : seulement les champs « reçu » du paiement lui-même.
+    $top = [];
+    foreach (['received_amount', 'receivedAmount', 'sent_amount', 'sentAmount', 'paid_amount', 'paidAmount', 'sent_value', 'sentValue', 'value'] as $k) {
+      if (isset($data[$k])) $top[$k] = $data[$k];
+    }
+    if ($top) {
+      $top['currency'] = $cur;
+      $p = orolado_oxapay_piece_usd($top, $cur);
+      $total = $p['usd'];
+      $known = $p['known'];
+    }
+  }
+  return ['usd' => orolado_money($total), 'known' => $known];
+}
+
+/** USD réellement reçu (0 si rien de reçu ou conversion impossible). */
+function orolado_oxapay_received_usd(array $data): float {
+  $r = orolado_oxapay_received($data);
+  return $r['known'] ? (float) $r['usd'] : 0.0;
 }
 
 /** USD à créditer : montant réellement reçu. La facture n’est qu’un repli. */
@@ -5322,14 +5435,19 @@ function orolado_oxapay_status(array $req): array {
   if ($tid === '') return ['ok' => true, 'pending' => true];
   $data = orolado_oxapay_inquiry($tid);
   $status = orolado_oxapay_payload_status($data);
-  $received = orolado_oxapay_received_usd($data);
+  $recv = orolado_oxapay_received($data);
+  if (!$recv['known']) {
+    orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $tid . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main dans « Dépôts en Attente » après vérification sur OxaPay.');
+    return ['ok' => true, 'pending' => true];
+  }
+  $received = (float) $recv['usd'];
   $usd = $received > 0.0001 ? $received : orolado_oxapay_usd($data);
   $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor();
   if (!$payable) {
     return ['ok' => true, 'pending' => true, 'oxaStatus' => $status];
   }
   if ($received + 0.0001 >= orolado_oxapay_credit_floor()) $usd = $received;
-  elseif ($usd + 0.0001 < orolado_oxapay_credit_floor()) $usd = orolado_money($dep['amount'] ?? 0);
+  elseif ($usd + 0.0001 < orolado_oxapay_credit_floor() && orolado_oxapay_full_status($status)) $usd = orolado_money($dep['amount'] ?? 0);
   if (!orolado_oxapay_net_ok($data, $dep)) return ['ok' => true, 'pending' => true];
   if ($usd + 0.0001 < orolado_oxapay_credit_floor()) return ['ok' => true, 'pending' => true];
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $data['txs'][0]['txHash'] ?? $data['txs'][0]['hash'] ?? $tid);
@@ -5362,22 +5480,29 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
     }
   }
   $known = is_array($depProbe);
-  if (!$livePaid && !($signed && $hookPaid) && !($known && $hookPaid)) {
+  // Sécurité : sans signature valide, seuls les chiffres lus directement chez OxaPay comptent.
+  if (!$livePaid && !($signed && $hookPaid)) {
     orolado_oxapay_log('webhook_skip', ['reason' => 'unconfirmed', 'signed' => $signed, 'hookPaid' => $hookPaid, 'known' => $known, 'orderId' => $orderId, 'trackId' => $trackId]);
     return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   }
   $status = orolado_oxapay_payload_status($data);
-  $received = orolado_oxapay_received_usd($data);
+  $recv = orolado_oxapay_received($data);
+  if (!$recv['known']) {
+    orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $trackId . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main après vérification sur OxaPay.');
+    orolado_oxapay_log('webhook_skip', ['reason' => 'no_price', 'trackId' => $trackId]);
+    return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  }
+  $received = (float) $recv['usd'];
   $usd = $received > 0.0001 ? $received : orolado_oxapay_usd($data);
   $orderId = (string) ($data['order_id'] ?? $data['orderId'] ?? $orderId);
   $trackId = (string) ($data['track_id'] ?? $data['trackId'] ?? $trackId);
   $address = trim((string) ($data['address'] ?? $address));
   $email = strtolower(trim((string) ($data['email'] ?? $data['payer_email'] ?? $email)));
   $dep = orolado_oxapay_find_dep($orderId, $trackId, $address, $email);
-  $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor() || $livePaid || $hookPaid;
+  $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor() || $livePaid || ($signed && $hookPaid);
   if (!$payable) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   if ($received + 0.0001 >= orolado_oxapay_credit_floor()) $usd = $received;
-  elseif ($dep && $usd + 0.0001 < orolado_oxapay_credit_floor()) $usd = orolado_money($dep['amount'] ?? 0);
+  elseif ($dep && $usd + 0.0001 < orolado_oxapay_credit_floor() && orolado_oxapay_full_status($status)) $usd = orolado_money($dep['amount'] ?? 0);
   if (!orolado_oxapay_net_ok($data, $dep)) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $data['txs'][0]['txHash'] ?? $data['txs'][0]['hash'] ?? $data['tx_hash'] ?? $data['txHash'] ?? $trackId);
   if ($orderId === '' && $trackId === '' && $address === '' && $email === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];

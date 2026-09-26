@@ -3992,7 +3992,9 @@
       var need = oxaMinUsd();
       var net = oxaAsset === 'usdt' ? (' ' + (oxaNet || 'TRC20')) : '';
       var label = m.symbol + net;
-      $('oxaMinHint').textContent = 'Minimum : $' + need.toFixed(0) + ' (' + label + ')';
+      // Crypto : aucun minimum affiché — tout montant reçu est crédité au cours du moment.
+      void need; void label;
+      $('oxaMinHint').textContent = '';
       if ($('oxaMaxHint')) $('oxaMaxHint').textContent = '';
     }
     if ($('oxaNetLabel')) {
