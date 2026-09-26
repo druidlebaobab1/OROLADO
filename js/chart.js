@@ -16,13 +16,15 @@
   var viewMin = 0;
   var viewMax = 0;
   var onFrame = null;
-  // Paliers densifiés : 3 clics zoom+ ≈ 1 ancien cran (fluidité sans changer l'amplitude max).
+  // Secondes visibles derrière la tête. Zoom + jusqu'à 10 s (bougies de près).
+  // Zoom − plafonné à 11 min : un trade de 10 min reste entièrement visible, point
+  // d'entrée compris, sans écraser la courbe au milieu de l'écran.
   var ZOOM_STEPS = [
-    20, 23, 25, 28, 31, 35, 38, 41, 45, 48, 52, 56, 60,
+    10, 12, 14, 16, 18, 20, 23, 25, 28, 31, 35, 38, 41, 45, 48, 52, 56, 60,
     70, 80, 90, 100, 110, 120, 140, 160, 180, 220, 260, 300,
-    400, 500, 600, 700, 800, 900, 1000, 1100, 1200
+    360, 420, 480, 540, 600, 660
   ];
-  var DEFAULT_ZOOM_IDX = 3; // 28 (défaut d'origine)
+  var DEFAULT_ZOOM_IDX = 8; // 28 s (défaut d'origine)
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 28;
   var wantFitY = false;
@@ -1912,11 +1914,16 @@
   // (~45 écarts-types d'un tick) : bougies bien lisibles, ni plates ni géantes. Le même
   // cadre sert au petit écran et au plein écran (plus haut = encore plus d'aisance).
   function routeSpanPct(assetId) {
-    return {
+    var base = {
       v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0016,
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
       boomspike: 0.0160, crash300: 0.0160
     }[assetId] || 0.0090;
+    // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
+    // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.
+    var z = Number(zoomSec()) || 28;
+    var k = Math.sqrt(z / 28);
+    return base * Math.max(0.7, Math.min(5, k));
   }
 
   var camCandles = null;
@@ -1931,7 +1938,7 @@
     var mid;
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
-      span += (want - span) * 0.02;
+      span += (want - span) * 0.06;
       mid = (prevMin + prevMax) / 2;
     } else {
       span = want;
@@ -2327,6 +2334,24 @@
         ctx.save();
         ctx.shadowBlur = 0;
         drawEmaLine(map, closes, 9, startIdx);
+        ctx.restore();
+      }
+      // Légende des indicateurs actifs (comme sur les plateformes pro).
+      var legend = [];
+      if (inds.ma) legend.push(['MA 9', '#ffb703']);
+      if (inds.ema) legend.push(['EMA 9', '#00f0ff']);
+      if (inds.bb) legend.push(['BB 20', '#b48cf0']);
+      if (legend.length) {
+        ctx.save();
+        ctx.font = '700 10px "Hanken Grotesk", sans-serif';
+        ctx.textBaseline = 'top';
+        var lx = pad.l + 6;
+        legend.forEach(function (it) {
+          ctx.fillStyle = it[1];
+          ctx.fillRect(lx, pad.t + 9, 8, 2);
+          ctx.fillText(it[0], lx + 11, pad.t + 5);
+          lx += ctx.measureText(it[0]).width + 24;
+        });
         ctx.restore();
       }
     }

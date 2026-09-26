@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/admin_lib.php';
+require_once __DIR__ . '/trade_lib.php';
 orolado_load_env();
 date_default_timezone_set('Africa/Abidjan');
 
@@ -965,8 +966,19 @@ function admin_list_payload(string $view, array $req): array {
       $w = admin_enrich_wd($w, $pmap);
       $rows[] = ['cells' => ['Retrait', (string) $w['id'], (string) ($w['name'] ?? $w['publicId'] ?? ''), admin_money($w['amount']), substr((string) ($w['createdAt'] ?? ''), 0, 16)], 'userId' => (string) ($w['userId'] ?? '')];
     }
+    // Bonus offerts : affichés pour info. Ce n'est pas de l'argent reçu ; leur coût réel
+    // apparaît seulement s'ils finissent retirés (déjà compté dans « Retraits »).
+    $bonus = 0.0;
+    foreach ($deps as $d) {
+      if (!admin_dep_bonus_paid($d)) continue;
+      if (!admin_in_range((string) ($d['createdAt'] ?? ''), $from, $to)) continue;
+      $bonus += (float) $d['amount'];
+      $u = admin_user_lookup((string) $d['userId'], $pmap);
+      $rows[] = ['cells' => ['Bonus', (string) $d['id'], (string) ($u['name'] ?? $u['publicId'] ?? ''), admin_money($d['amount']), substr((string) ($d['createdAt'] ?? ''), 0, 16)], 'userId' => (string) $d['userId']];
+    }
     $net = $in - $out;
-    $summary = $label . ' · Dépôts ' . admin_money($in) . ' − Retraits ' . admin_money($out) . ' = Bénéfice ' . admin_money($net);
+    $summary = $label . ' · Dépôts ' . admin_money($in) . ' − Retraits ' . admin_money($out) . ' = Bénéfice ' . admin_money($net)
+      . ' · Bonus offerts ' . admin_money($bonus);
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1, 'summary' => $summary, 'actions' => false];
   }
 
@@ -1288,30 +1300,20 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   }
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $got = null;
+  $ref = 'adm_' . bin2hex(random_bytes(6));
   if (admin_is_uuid($uid)) {
     admin_ensure_sb_vault($uid, 0);
-    $sb = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
-    $cur = $sb ? orolado_money($sb['real'] ?? 0) : $jsonReal;
-    $expect = orolado_money($cur + $delta);
-    if (function_exists('supabase_credit_real')) {
-      supabase_credit_real($uid, $delta, false);
-    }
-    $again = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
-    $got = $again ? orolado_money($again['real'] ?? 0) : null;
-    if (($got === null || abs($got - $expect) > 0.05) && function_exists('supabase_set_real')) {
-      supabase_set_real($uid, $expect);
-      $again = function_exists('supabase_admin_vault') ? supabase_admin_vault($uid) : null;
-      $got = $again ? orolado_money($again['real'] ?? 0) : $got;
-    }
-    if ($got === null || abs($got - $expect) > 0.05) {
-      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $got ?? $cur];
+    // Crédit atomique, une seule fois par référence (même fonction que les gains de trade) :
+    // jamais d'écriture « valeur absolue » qui pourrait écraser un trade en cours.
+    $got = function_exists('orolado_trade_credit_once') ? orolado_trade_credit_once($uid, $ref, $delta) : null;
+    if ($got === null) {
+      return ['ok' => false, 'reason' => 'Le crédit n’a pas été enregistré en base. Réessayez.', 'real' => $jsonReal];
     }
   } else {
     $got = orolado_money($jsonReal + $delta);
   }
   $db['vault'][$uid]['real'] = $got;
 
-  $ref = 'adm_' . bin2hex(random_bytes(6));
   $isSelf = ($uid === ($_SESSION['admin_uid'] ?? ''));
   $depRow = [
     'id' => $ref,

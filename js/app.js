@@ -1534,6 +1534,16 @@
     var settled = ((u && u.positions) || []).filter(function (p) {
       return (p.mode || 'demo') === mode;
     });
+    // Compte réel : l'historique complet vient du serveur (durable, jusqu'à 2 000 trades).
+    if (mode === 'real' && D6.Api && D6.Api.token && D6.Api.token()) {
+      if (!tradePage.at || Date.now() - tradePage.at > 20000) loadTradePage(true);
+      if (tradePage.rows.length) {
+        var seenT = {};
+        tradePage.rows.forEach(function (p) { seenT[p.id] = 1; });
+        settled = settled.filter(function (p) { return p && p.id && !seenT[p.id]; }).concat(tradePage.rows);
+        settled.sort(function (a, b) { return String(b.at || '').localeCompare(String(a.at || '')); });
+      }
+    }
     // Android : miroir localStorage pour guests / reseau lent (demo only).
     if (IS_ANDROID && mode === 'demo') {
       var cached = readDemoTradeCache();
@@ -1570,7 +1580,8 @@
         '</td><td>' + (t('histOpen') || 'En cours') + ' · ' + durLabel(tr.duration) +
         '</td><td class="hist-pnl">—</td></tr>');
     });
-    settled.slice(0, 50).forEach(function (h) {
+    var shown = mode === 'real' ? Math.max(50, tradePage.rows.length) : 100;
+    settled.slice(0, shown).forEach(function (h) {
       var stake = Number(h.stake || 0);
       var payoutAmt = D6.roundMoney(stake * Number(h.payout || 1.88));
       var kind = resultKind(h);
@@ -1584,8 +1595,45 @@
     });
     el.innerHTML = rows.length
       ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Resultat</th><th>P&amp;L</th></tr></thead><tbody>' +
-        rows.join('') + '</tbody></table>'
+        rows.join('') + '</tbody></table>' +
+        (mode === 'real' && tradePage.more ? '<button type="button" class="btn-ghost tx-more" id="histMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : 'Voir plus') + '</button>' : '')
       : '<div class="empty-feed">' + (t('noTradesHint') || 'Aucun trade pour l\'instant') + '</div>';
+    var histMore = $('histMore');
+    if (histMore) histMore.onclick = function () { loadTradePage(false); };
+  }
+
+  // Trades réels terminés, lus sur le serveur 50 par 50.
+  var tradePage = { rows: [], more: false, busy: false, at: 0 };
+
+  function loadTradePage(reset) {
+    if (tradePage.busy || !(D6.Api && D6.Api.token && D6.Api.token())) return;
+    tradePage.busy = true;
+    tradePage.at = Date.now();
+    var offset = reset ? 0 : tradePage.rows.length;
+    D6.Api.post('tradeHistory', { offset: offset, limit: 50 }).then(function (remote) {
+      tradePage.busy = false;
+      if (!(remote && remote.ok && Array.isArray(remote.rows))) return;
+      var list = remote.rows.map(function (o) {
+        var asset = D6.CONFIG.ASSETS[o.assetId];
+        return {
+          id: o.id,
+          at: o.at,
+          assetId: o.assetId,
+          assetName: (asset && (asset.short || asset.name)) || o.assetId,
+          side: o.side,
+          stake: Number(o.stake) || 0,
+          duration: o.duration,
+          payout: Number(o.payout) || 1.88,
+          net: Number(o.net) || 0,
+          status: o.status,
+          mode: 'real'
+        };
+      });
+      tradePage.rows = reset ? list : tradePage.rows.concat(list);
+      tradePage.more = !!remote.more;
+      var sheet = $('historySheet');
+      if (sheet && sheet.classList.contains('active') && histSheetMode === 'real') renderHistorySheet('real');
+    }, function () { tradePage.busy = false; });
   }
 
   var TIP_LS = 'trading_tip_last_closed';
@@ -4729,6 +4777,63 @@
     return rows;
   }
 
+  // Historique financier DURABLE : lu par le serveur dans la base (dépôts, bonus, retraits),
+  // 50 lignes à la fois, « Voir plus » jusqu'à 2 000. Le téléphone ne sert plus que de secours.
+  var financePage = { rows: [], total: 0, busy: false };
+
+  function financeRowFromServer(r) {
+    var kind = r.kind === 'withdraw' ? 'withdraw' : (r.kind === 'bonus' ? 'bonus' : 'deposit');
+    return {
+      at: r.at || '',
+      ref: r.ref || '—',
+      amount: Number(r.amount) || 0,
+      status: normFinanceStatus(r.status, kind),
+      label: kind === 'bonus' ? (t('txBonus') !== 'txBonus' ? t('txBonus') : 'Bonus') : financeKindLabel(kind),
+      kind: kind,
+      gateway: kind === 'bonus' ? 'OROLADO' : gatewayLabel(r.gateway || '')
+    };
+  }
+
+  function paintFinancePage(tx) {
+    var rows = financePage.rows;
+    var html = rows.length ? rows.map(function (r) {
+      var st = r.status || { label: t('txPending'), cls: 'pending' };
+      return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
+        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
+        '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
+        st.label + '</span></div></div>';
+    }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
+    if (rows.length < financePage.total) {
+      html += '<button type="button" class="btn-ghost tx-more" id="txMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : 'Voir plus') + '</button>';
+    }
+    tx.innerHTML = html;
+    var more = $('txMore');
+    if (more) more.onclick = function () { loadFinancePage(tx, false); };
+    financeCache.html = html;
+    financeCache.at = Date.now();
+  }
+
+  function loadFinancePage(tx, reset) {
+    if (financePage.busy || !(D6.Api && D6.Api.token && D6.Api.token())) return Promise.resolve(false);
+    financePage.busy = true;
+    var offset = reset ? 0 : financePage.rows.length;
+    return D6.Api.post('financeHistory', { offset: offset, limit: 50 }).then(function (remote) {
+      financePage.busy = false;
+      if (!(remote && remote.ok && Array.isArray(remote.rows))) return false;
+      var list = remote.rows.map(financeRowFromServer).filter(function (r) {
+        return r.status.code !== 'HIDDEN' && Math.abs(r.amount) > 0;
+      });
+      financePage.rows = reset ? list : financePage.rows.concat(list);
+      financePage.total = Number(remote.total) || financePage.rows.length;
+      if ($('txFeed') === tx) paintFinancePage(tx);
+      return true;
+    }, function () {
+      financePage.busy = false;
+      return false;
+    });
+  }
+
   async function fillFinanceHistory() {
     var tx = $('txFeed');
     if (!tx) return;
@@ -4736,86 +4841,17 @@
     var uid = u ? u.id : '';
     if (financeCache.html && financeCache.userId === uid && (Date.now() - financeCache.at) < 60000) {
       tx.innerHTML = financeCache.html;
+      var moreC = $('txMore');
+      if (moreC) moreC.onclick = function () { loadFinancePage(tx, false); };
       return;
     }
-    var rows = collectLocalFinanceRows();
-    financeCache.html = renderFinanceRows(tx, rows);
-    financeCache.at = Date.now();
     financeCache.userId = uid;
-
-    if (D6.Supabase && D6.Supabase.listFinance) {
-      try {
-        var cloud = await D6.Supabase.listFinance();
-        (cloud.deposits || []).forEach(function (d) {
-          if (!isPaidDepositStatus(d.status)) return;
-          rows.push({
-            at: d.created_at || d.completed_at || '',
-            ref: d.reference || d.id || '—',
-            amount: Number(d.amount) || 0,
-            status: normFinanceStatus(d.status, 'deposit'),
-            label: t('txDeposit'),
-            kind: 'deposit',
-            gateway: gatewayLabel(d.operator || '')
-          });
-        });
-        (cloud.withdrawals || []).forEach(function (w) {
-          if (!isRealWithdrawRow(w)) return;
-          rows.push({
-            at: w.created_at || w.at || '',
-            ref: w.id || w.reference || '—',
-            amount: -Math.abs(Number(w.amount) || 0),
-            status: normFinanceStatus(w.status, 'withdraw'),
-            label: t('txWithdraw'),
-            kind: 'withdraw',
-            gateway: gatewayLabel(w.operator || '')
-          });
-        });
-        (cloud.txs || []).forEach(function (trow) {
-          var typ = String(trow.type || '');
-          if (typ !== 'deposit' && typ !== 'withdraw') return;
-          if (typ === 'deposit' && !isPaidDepositStatus(trow.status || trow.note)) return;
-          if (typ === 'withdraw' && !isRealWithdrawRow(trow)) return;
-          rows.push({
-            at: trow.created_at || '',
-            ref: trow.id || '—',
-            amount: Number(trow.amount) || 0,
-            status: normFinanceStatus(trow.status || trow.note, typ),
-            label: financeKindLabel(typ),
-            kind: typ,
-            gateway: gatewayLabel(trow.operator || trow.note || '')
-          });
-        });
-        financeCache.html = renderFinanceRows(tx, rows);
-        financeCache.at = Date.now();
-      } catch (e) { /* ignore */ }
-    }
-    // API PHP en arrière-plan (ne bloque plus l’ouverture).
-    if (D6.Api && D6.Api.post) {
-      D6.Api.post('financeHistory', {}).then(function (remote) {
-        if (!(remote && remote.ok && remote.rows && remote.rows.length)) return;
-        (remote.rows || []).forEach(function (r) {
-          var lab = String(r.label || '').toLowerCase();
-          var isDep = lab.indexOf('d\u00e9p') >= 0 || lab.indexOf('dep') >= 0 || lab === 'recharge';
-          if (isDep && !isPaidDepositStatus(r.status)) return;
-          if (!isDep && !isRealWithdrawRow(r)) return;
-          rows.push({
-            at: r.at || '',
-            ref: r.ref || '—',
-            amount: Number(r.amount) || 0,
-            status: normFinanceStatus(r.status, r.label),
-            label: isDep ? t('txDeposit') : t('txWithdraw'),
-            kind: isDep ? 'deposit' : 'withdraw',
-            gateway: gatewayLabel(r.operator || r.gateway || '')
-          });
-        });
-        if ($('txFeed') === tx) {
-          financeCache.html = renderFinanceRows(tx, rows);
-          financeCache.at = Date.now();
-        }
-      }).catch(function () { /* ignore */ });
-    }
+    // Affichage immédiat avec ce que le téléphone connaît, puis la version serveur (la vraie).
+    financeCache.html = renderFinanceRows(tx, collectLocalFinanceRows());
+    financeCache.at = 0;
+    var ok = await loadFinancePage(tx, true);
+    if (!ok) financeCache.at = Date.now();
   }
-
   function bindAuth() {
     var authScreen = $('screenAuth');
     if (authScreen && !authScreen._oroNoScroll) {

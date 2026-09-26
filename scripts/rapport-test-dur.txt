@@ -1,0 +1,29 @@
+Scenario : 100 nouveaux deposants/jour, 90 jours, bonus 0 % des joueurs actifs/jour, 40 simulations
+Par simulation (moyenne) : 9,000 joueurs, 1,107,263 trades, volume mise 8,111,583 $
+Depots 1,007,737 $ | Bonus offerts 0 $ | Retraits payes 504,176 $
+Benefice caisse sur la periode (depots - retraits) : mauvais cas 416,217 $ | normal 495,585 $ | bon cas 600,269 $
+Benefice moyen par jour : 5,595 $
+Jours ou la caisse sort plus qu'elle ne rentre : 14.2 %
+Pire journee observee : -30,542 $ (median des pires journees -12,684 $)
+Joueurs repartis avec un gain retire : 17.1 %
+Plus gros gain net d'un seul joueur (toutes simulations) : 13,463 $
+
+Scenario : 100 nouveaux deposants/jour, 90 jours, bonus 3 % des joueurs actifs/jour, 40 simulations
+Par simulation (moyenne) : 9,000 joueurs, 1,132,073 trades, volume mise 8,117,582 $
+Depots 1,004,133 $ | Bonus offerts 6,046 $ | Retraits payes 496,640 $
+Benefice caisse sur la periode (depots - retraits) : mauvais cas 441,322 $ | normal 515,277 $ | bon cas 554,295 $
+Benefice moyen par jour : 5,639 $
+Jours ou la caisse sort plus qu'elle ne rentre : 13.5 %
+Pire journee observee : -27,749 $ (median des pires journees -11,906 $)
+Joueurs repartis avec un gain retire : 17.0 %
+Plus gros gain net d'un seul joueur (toutes simulations) : 12,473 $
+
+Scenario : 200 nouveaux deposants/jour, 90 jours, bonus 3 % des joueurs actifs/jour, 40 simulations
+Par simulation (moyenne) : 18,000 joueurs, 2,267,259 trades, volume mise 16,455,635 $
+Depots 2,018,161 $ | Bonus offerts 12,042 $ | Retraits payes 999,564 $
+Benefice caisse sur la periode (depots - retraits) : mauvais cas 939,974 $ | normal 1,014,976 $ | bon cas 1,115,858 $
+Benefice moyen par jour : 11,318 $
+Jours ou la caisse sort plus qu'elle ne rentre : 7.5 %
+Pire journee observee : -19,822 $ (median des pires journees -10,522 $)
+Joueurs repartis avec un gain retire : 17.1 %
+Plus gros gain net d'un seul joueur (toutes simulations) : 13,363 $

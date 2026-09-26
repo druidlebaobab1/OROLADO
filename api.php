@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/trade_lib.php';
+require_once __DIR__ . '/history_lib.php';
 orolado_load_env();
 
 $ADMIN_EMAIL = strtolower(trim((string) (getenv('ADMIN_EMAIL') ?: ($_ENV['ADMIN_EMAIL'] ?? 'admin@orolado.com'))));
@@ -1602,6 +1603,7 @@ if ($action === 'settleOrder') {
   exit;
 }
 
+// Historique financier DURABLE (compte réel) : lu par le serveur dans la base, page par page.
 if ($action === 'financeHistory') {
   $stSess = orolado_session_inspect($db, $token);
   if (empty($stSess['ok'])) {
@@ -1609,37 +1611,20 @@ if ($action === 'financeHistory') {
     exit;
   }
   $me = $stSess['user'];
-  $rows = [];
-  foreach (($db['deposits'] ?? []) as $d) {
-    if (($d['userId'] ?? '') !== $me['id']) continue;
-    $depSt = strtoupper((string) ($d['status'] ?? ''));
-    if (!in_array($depSt, ['COMPLETED', 'PAID', 'SUCCESS', 'APPROVED'], true)) continue;
-    $rows[] = [
-      'at' => $d['paidAt'] ?? $d['at'] ?? '',
-      'ref' => $d['id'] ?? $d['ref'] ?? '',
-      'amount' => orolado_money($d['amount'] ?? 0),
-      'status' => strtoupper((string) ($d['status'] ?? 'PENDING')),
-      'label' => 'Dépôt',
-      'operator' => $d['operator'] ?? ($d['op'] ?? '')
-    ];
+  $res = orolado_finance_history($db, (string) $me['id'], orolado_is_admin_user($me), (int) ($req['offset'] ?? 0), (int) ($req['limit'] ?? 50));
+  echo json_encode(['ok' => true, 'server' => true] + $res);
+  exit;
+}
+
+// Historique des trades RÉELS (durable), page par page.
+if ($action === 'tradeHistory') {
+  $stSess = orolado_session_inspect($db, $token);
+  if (empty($stSess['ok'])) {
+    echo json_encode($stSess);
+    exit;
   }
-  foreach (($db['withdrawals'] ?? []) as $w) {
-    if (($w['userId'] ?? '') !== $me['id']) continue;
-    if (orolado_wd_is_hidden_from_player($w)) continue;
-    $st = strtoupper((string) ($w['status'] ?? 'pending'));
-    if ($st === 'PAID' || $st === 'APPROVED' || $st === 'SUCCESS' || $st === 'COMPLETED') $st = 'COMPLETED';
-    elseif ($st === 'REJECT' || $st === 'REJECTED' || $st === 'DENIED') $st = 'REJECTED';
-    else $st = 'PENDING';
-    $rows[] = [
-      'at' => $w['at'] ?? '',
-      'ref' => $w['id'] ?? '',
-      'amount' => -abs(orolado_money($w['amount'] ?? 0)),
-      'status' => $st,
-      'label' => 'Retrait',
-      'operator' => $w['operator'] ?? ''
-    ];
-  }
-  echo json_encode(['ok' => true, 'server' => true, 'rows' => $rows]);
+  $res = orolado_trade_history($db, (string) $stSess['user']['id'], (int) ($req['offset'] ?? 0), (int) ($req['limit'] ?? 50));
+  echo json_encode(['ok' => true, 'server' => true] + $res);
   exit;
 }
 
@@ -1661,6 +1646,8 @@ if ($action === 'me') {
   // Trades expirés pendant l'absence (F5, onglet fermé) : réglés ici, au prix réel d'expiration.
   try {
     if (orolado_trade_settle_due($uid) > 0) $db = load_db($file);
+    // Au plus toutes les 10 min : range les vieux trades en archive (site rapide sur des années).
+    if (orolado_archive_orders() > 0) $db = load_db($file);
   } catch (Throwable $eDue) {
     error_log('OROLADO settle_due ' . $eDue->getMessage());
   }

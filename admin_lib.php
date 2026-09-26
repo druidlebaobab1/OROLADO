@@ -682,9 +682,22 @@ function admin_wd_is_rejected(array $w): bool {
   return in_array($st, ['rejected', 'refused', 'canceled', 'cancelled', 'failed', 'denied'], true);
 }
 
+/** Bonus envoyé depuis l'admin (opérateur « admin », référence adm_…) : pas un vrai paiement. */
+function admin_dep_is_bonus(array $d): bool {
+  $op = strtolower(trim((string) ($d['operator'] ?? '')));
+  $ref = (string) ($d['id'] ?? $d['ref'] ?? $d['reference'] ?? '');
+  return $op === 'admin' || str_starts_with($ref, 'adm_');
+}
+
+function admin_dep_bonus_paid(array $d): bool {
+  $st = strtoupper(trim((string) ($d['status'] ?? '')));
+  return admin_dep_is_bonus($d) && in_array($st, ['COMPLETED', 'PAID', 'SUCCESS', 'CONFIRMED'], true);
+}
+
+/** Vrai dépôt payé. Les bonus sont exclus : ils ne sont pas de l'argent reçu (comptés à part). */
 function admin_dep_is_paid(array $d): bool {
   $st = strtoupper(trim((string) ($d['status'] ?? '')));
-  return in_array($st, ['COMPLETED', 'PAID', 'SUCCESS', 'CONFIRMED'], true);
+  return in_array($st, ['COMPLETED', 'PAID', 'SUCCESS', 'CONFIRMED'], true) && !admin_dep_is_bonus($d);
 }
 
 function admin_dep_is_pending(array $d): bool {
