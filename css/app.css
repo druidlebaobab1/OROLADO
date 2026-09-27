@@ -3610,3 +3610,5 @@ html.is-android #depositModal .deposit-box.is-crypto{padding-top:8px!important;m
 html.is-android #depositModal .deposit-box.is-crypto .crypto-step-head{margin-bottom:2px!important;min-height:0!important}
 html.is-android #depositModal .deposit-box.is-crypto .modal-title{margin-bottom:2px!important}
 html body #screenTrade::before{display:none!important;content:none!important;background:none!important}
+html body .asset-chip[data-asset="titanpulse"] .asset-ico.sig-ico,
+html body .asset-chip.on[data-asset="titanpulse"] .asset-ico.sig-ico{filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9)) drop-shadow(0 0 4px rgba(255,255,255,.35))!important}
