@@ -793,7 +793,8 @@
   ];
   var BACKDROP_COINS = ['ico-btc', 'ico-eth', 'ico-usdt', 'ico-sol', 'ico-bnb', 'ico-doge',
     'ico-ton', 'ico-ada', 'ico-trx', 'ico-avax', 'ico-ltc', 'ico-link', 'ico-usdc', 'ico-matic',
-    'ico-dot', 'ico-shib', 'ico-uni', 'ico-atom', 'ico-near', 'ico-bch', 'ico-xlm'];
+    'ico-dot', 'ico-shib', 'ico-uni', 'ico-atom', 'ico-near', 'ico-bch', 'ico-xlm',
+    'ico-pepe', 'ico-arb', 'ico-op', 'ico-sui', 'ico-fil', 'ico-apt'];
   var bgCanvas = null;
   var bgKey = '';
 
@@ -863,10 +864,10 @@
     function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
     for (i = 0; i < BACKDROP_COINS.length; i++) {
       var img = coinImg(BACKDROP_COINS[i]);
-      var col = i % 6;
-      var row = Math.floor(i / 6);
+      var col = i % 7;
+      var row = Math.floor(i / 7);
       var size = 16 + rnd() * 12;
-      var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 6);
+      var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 7);
       var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 4);
       if (img && img.complete && img.naturalWidth) {
         g.globalAlpha = 0.055 + rnd() * 0.03;
@@ -906,7 +907,7 @@
     ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
     var m = ctx.measureText('OROLADO').width || 420;
     ctx.restore();
-    wmCached = Math.max(46, Math.min(100 * (w * 0.97) / m, h * 0.48));
+    wmCached = Math.max(40, Math.min(100 * (w * 0.97) / m, h * 0.3));
     wmKey = key;
     return wmCached;
   }
@@ -2508,7 +2509,8 @@
     ctx.textBaseline = 'middle';
     ctx.globalAlpha = 0.06;
     ctx.fillStyle = '#E9D9B0';
-    ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
+    // Posé dans le bas du graphique (juste au-dessus des durées), là où la courbe passe peu.
+    ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h - wmSize * 0.62);
     ctx.restore();
 
     var map = null;
