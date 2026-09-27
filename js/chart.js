@@ -906,7 +906,7 @@
     ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
     var m = ctx.measureText('OROLADO').width || 420;
     ctx.restore();
-    wmCached = Math.max(44, Math.min(100 * (w * 0.92) / m, h * 0.42));
+    wmCached = Math.max(46, Math.min(100 * (w * 0.97) / m, h * 0.48));
     wmKey = key;
     return wmCached;
   }
@@ -2506,7 +2506,7 @@
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 0.075;
+    ctx.globalAlpha = 0.06;
     ctx.fillStyle = '#E9D9B0';
     ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
     ctx.restore();
