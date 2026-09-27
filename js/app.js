@@ -1625,9 +1625,9 @@
         '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td></tr>');
     });
     el.innerHTML = rows.length
-      ? '<table class="hist-table"><thead><tr><th>Heure</th><th>Actif</th><th>Sens</th><th>Montant</th><th>Resultat</th><th>P&amp;L</th></tr></thead><tbody>' +
+      ? '<table class="hist-table"><thead><tr><th>' + t('m_hTime') + '</th><th>' + t('m_hAsset') + '</th><th>' + t('m_hSide') + '</th><th>' + t('m_amount') + '</th><th>' + t('m_hResult') + '</th><th>P&amp;L</th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table>' +
-        (mode === 'real' && tradePage.more ? '<button type="button" class="btn-ghost tx-more" id="histMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : 'Voir plus') + '</button>' : '')
+        (mode === 'real' && tradePage.more ? '<button type="button" class="btn-ghost tx-more" id="histMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : t('m_seeMore')) + '</button>' : '')
       : '<div class="empty-feed">' + (t('noTradesHint') || 'Aucun trade pour l\'instant') + '</div>';
     var histMore = $('histMore');
     if (histMore) histMore.onclick = function () { loadTradePage(false); };
@@ -1832,7 +1832,7 @@
     var u = user();
     if (!u) return;
     loadRecvCache(u);
-    $('profName').textContent = u.displayName || 'Trader';
+    $('profName').textContent = isGuest(u) ? t('m_guest') : (u.displayName || 'Trader');
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
     if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
     $('profEmail').textContent = u.email;
@@ -4146,7 +4146,7 @@
     if ($('oxaAddrLabel')) {
       var memo = String((inv && inv.memo) || '');
       var netLab = (inv && inv.network) || (oxaAsset === 'usdt' ? oxaNet : oxaNetworkName());
-      $('oxaAddrLabel').textContent = 'Adresse ' + payCur + (netLab ? ' ' + netLab : '') + (memo ? ' · MEMO ' + memo : '');
+      $('oxaAddrLabel').textContent = t('m_addrOf').replace('{c}', payCur + (netLab ? ' ' + netLab : '')) + (memo ? ' · MEMO ' + memo : '');
     }
     syncOxaLabels();
     var wrap = $('oxaQrWrap');
@@ -5059,7 +5059,7 @@
         st.label + '</span></div></div>';
     }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
     if (rows.length < financePage.total) {
-      html += '<button type="button" class="btn-ghost tx-more" id="txMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : 'Voir plus') + '</button>';
+      html += '<button type="button" class="btn-ghost tx-more" id="txMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : t('m_seeMore')) + '</button>';
     }
     tx.innerHTML = html;
     var more = $('txMore');

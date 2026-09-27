@@ -831,14 +831,14 @@
     glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,110,40,0.07)');
     glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(245,197,24,0.045)');
     // Carte du monde en points.
-    var mw = w * 0.96;
-    var mh = Math.min(h * 0.9, mw * 0.46);
+    var mw = w * 1.1;
+    var mh = Math.min(h * 0.92, mw * 0.52);
     var mx = pad.l + (w - mw) / 2;
     var my = pad.t + (h - mh) / 2;
     var step = Math.max(5, mw / 72);
     var degX = 360 * step / mw;
-    var r = Math.max(0.8, step * 0.22);
-    g.fillStyle = 'rgba(150,175,215,0.16)';
+    var r = Math.max(0.95, step * 0.26);
+    g.fillStyle = 'rgba(160,185,225,0.24)';
     var i;
     var j;
     for (i = 0; i < WORLD_ROWS.length; i++) {
@@ -1166,7 +1166,7 @@
     var maxBody = 5;
     if (opts.apexAiry || opts.boomSmall) maxBody = 4;
     // Titan Pulse : +40 % de largeur par rapport aux bougies ordinaires.
-    if (opts.titanWide) maxBody = 7;
+    if (opts.titanWide) maxBody = 11;
     // Volatility 100 (actif principal) : grosses bougies façon TradingView.
     if (opts.v100Big) maxBody = 9;
     var cw = Math.max(1, Math.min(maxBody, slot - gap));
@@ -1181,12 +1181,14 @@
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
-      if (opts.crashDrop && !up) col = '#FF3B30';
+      // AZAZEL : braise orange à la hausse, rouge feu à la baisse.
+      if (opts.crashDrop) col = up ? '#FF9F43' : '#FF3B30';
       // Titan Pulse : blanc pur, sans aucune teinte froide.
       var edgeCol = null;
+      // APOCALYPSE : lumière blanche à la hausse, rouge sang à la baisse.
       if (opts.titanWhite) {
-        col = '#FFFFFF';
-        edgeCol = '#FFFFFF';
+        col = up ? '#FFFFFF' : '#FF1744';
+        edgeCol = col;
       }
       // Oro Horizon 50 : orange pur, corps rayé.
       if (opts.horizonOrange) {
@@ -1208,11 +1210,7 @@
       // Mèche fine et centrée sur le corps.
       var x = toX(i);
       ctx.strokeStyle = edgeCol || col;
-      ctx.lineWidth = opts.v100Big ? 1.4 : 1;
-      if (opts.titanWhite) {
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
-        ctx.shadowBlur = 6;
-      }
+      ctx.lineWidth = opts.v100Big ? 1.4 : (opts.titanWhite ? 1.6 : 1);
       ctx.beginPath();
       ctx.moveTo(x, toY(hWick));
       ctx.lineTo(x, toY(lWick));
@@ -1243,11 +1241,28 @@
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
-        // Corps pleins, blanc pur, halo blanc discret.
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
-        ctx.shadowBlur = 6;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(x - cw / 2, y1, cw, bh);
+        // Halo sans flou (léger pour les téléphones) + corps plein ; vrai flou
+        // lumineux seulement sur la bougie en cours.
+        ctx.fillStyle = up ? 'rgba(255,255,255,0.16)' : 'rgba(255,23,68,0.2)';
+        ctx.fillRect(x - cw / 2 - 2, y1 - 2, cw + 4, bh + 4);
+        if (i === candles.length - 1) {
+          ctx.shadowColor = up ? 'rgba(255,255,255,0.9)' : 'rgba(255,23,68,0.9)';
+          ctx.shadowBlur = 14;
+        }
+        if (up) {
+          // Hausse : contour blanc lumineux, corps rayé (style Python, en plus fort).
+          ctx.fillStyle = 'rgba(255,255,255,0.10)';
+          ctx.fillRect(x - cw / 2, y1, cw, bh);
+          ctx.fillStyle = 'rgba(255,255,255,0.55)';
+          var ay;
+          for (ay = y1 + 2; ay < y1 + bh - 1; ay += 3) ctx.fillRect(x - cw / 2 + 1, ay, Math.max(1, cw - 2), 1);
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 1.4;
+          ctx.strokeRect(x - cw / 2 + 0.7, y1 + 0.7, Math.max(1, cw - 1.4), Math.max(1, bh - 1.4));
+        } else {
+          ctx.fillStyle = col;
+          ctx.fillRect(x - cw / 2, y1, cw, bh);
+        }
       } else if (opts.horizonOrange) {
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
@@ -2005,7 +2020,7 @@
   }
 
   function dampedRange(candles, assetId, minP, maxP) {
-    if (assetId !== 'crash300' && assetId !== 'titanpulse') {
+    if (assetId !== 'titanpulse') {
       return { min: minP, max: maxP };
     }
     if (!candles || candles.length < 8) return { min: minP, max: maxP };
@@ -2088,7 +2103,7 @@
     var base = {
       v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0016,
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
-      boomspike: 0.0054, crash300: 0.0090
+      boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
     // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
     // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.
@@ -2101,6 +2116,19 @@
 
   // Caméra stable : cadre de taille fixe, la courbe défile dedans. Le cadre ne glisse
   // (doucement) que lorsque la tête s'approche d'un bord ; jamais de zoom qui « respire ».
+  // Coefficient de suivi par image, converti selon le temps réellement écoulé depuis
+  // l'image précédente (référence : 60 images/s). Plafonné pour un retour de veille.
+  var camLastAt = 0;
+  var camDt = 16.7;
+  function cameraTick() {
+    var t = (window.performance && performance.now) ? performance.now() : Date.now();
+    camDt = camLastAt ? Math.max(4, Math.min(250, t - camLastAt)) : 16.7;
+    camLastAt = t;
+  }
+  function cameraFollow(perFrame60) {
+    return 1 - Math.pow(1 - perFrame60, camDt / 16.7);
+  }
+
   function routeCamera(prevMin, prevMax, head, assetId) {
     var h = Number(head);
     if (!(h > 0) || !isFinite(h)) h = 10000;
@@ -2109,7 +2137,7 @@
     var mid;
     if (prevMax > prevMin) {
       span = prevMax - prevMin;
-      span += (want - span) * 0.06;
+      span += (want - span) * cameraFollow(0.06);
       mid = (prevMin + prevMax) / 2;
     } else {
       span = want;
@@ -2136,11 +2164,12 @@
       if (mid > h + calm) mid = h + calm;
     }
     var half = span / 2;
-    // Crash 300 monte sans cesse entre deux chutes : on le garde plus au centre
-    // (sinon la tête reste collée en haut de l'écran).
-    var edge = span * (assetId === 'crash300' ? 0.34 : 0.22);
-    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * 0.045;
-    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * 0.045;
+    var edge = span * 0.26;
+    // Suivi réglé en TEMPS et non par image : un vieil Android qui dessine 15 images/s
+    // suit la courbe aussi vite qu'un iPhone à 60 (avant, la courbe « s'enfonçait »).
+    var kf = cameraFollow(0.06);
+    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * kf;
+    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * kf;
     // Filet dur : la tête ne sort jamais (pic Boom/Crash, retour de veille).
     var hard = span * 0.06;
     if (h > mid + half - hard) mid = h - half + hard;
@@ -2204,6 +2233,7 @@
   }
 
   function drawFrame(now) {
+    cameraTick();
     try {
     if (!ctx) return;
     if (cssW < 8 || cssH < 8) resize();
@@ -2411,12 +2441,12 @@
       var lockSpan = st.lockMax - st.lockMin;
       var wantSpan = Math.max(lockSpan, (needHi - needLo) * 1.3);
       var lockMid = (st.lockMin + st.lockMax) / 2;
-      var margin = wantSpan * (activeAsset === 'crash300' ? 0.30 : 0.10);
+      var margin = wantSpan * 0.20;
       var targetMid = lockMid;
       if (needHi > lockMid + wantSpan / 2 - margin) targetMid = needHi - wantSpan / 2 + margin;
       if (needLo < targetMid - wantSpan / 2 + margin) targetMid = needLo + wantSpan / 2 - margin;
-      var newSpan = lockSpan + (wantSpan - lockSpan) * 0.15;
-      var newMid = lockMid + (targetMid - lockMid) * 0.15;
+      var newSpan = lockSpan + (wantSpan - lockSpan) * cameraFollow(0.15);
+      var newMid = lockMid + (targetMid - lockMid) * cameraFollow(0.15);
       st.lockMin = newMid - newSpan / 2;
       st.lockMax = newMid + newSpan / 2;
       var hardL = newSpan * 0.04;
@@ -2610,7 +2640,7 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (asset.id === 'crash300' && !primary) {
-      tagCol = market.price >= (market.candle && market.candle.o) ? '#00E676' : '#FF3B30';
+      tagCol = market.price >= (market.candle && market.candle.o) ? '#FF9F43' : '#FF3B30';
     }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';

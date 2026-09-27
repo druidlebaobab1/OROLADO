@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2062") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2063") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,8 +3559,53 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2062") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2063") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .payout-live{color:#B9F6CA!important;-webkit-text-fill-color:#B9F6CA}
+/* Signes des indices : petit logo propre à chacun, qui s'allume quand l'indice est choisi. */
+html body .asset-ico.sig-ico{display:inline-flex;align-items:center;justify-content:center;margin-right:5px;vertical-align:-5px;
+  background:none!important;-webkit-text-fill-color:initial!important;
+  filter:drop-shadow(0 0 1.5px var(--sig,#fff));opacity:.85;transition:filter .25s,opacity .25s}
+html body .asset-ico.sig-ico svg{display:block;width:19px;height:19px}
+html body .asset-chip.on .asset-ico.sig-ico{opacity:1;filter:drop-shadow(0 0 3px var(--sig,#fff)) drop-shadow(0 0 7px var(--sig,#fff))}
+/* Inscription : « Trading » petit et blanc sous OROLADO.COM. */
+html body #screenAuth .brand-sub{color:#FFFFFF!important;letter-spacing:.32em;text-transform:uppercase;font-weight:600;opacity:.9}
+/* Barre du solde : une pièce qui ne tient pas passe à la ligne (invisible) au lieu
+   d'être coupée à moitié derrière le montant (USDT sur Android). */
+html body .balance-card .bal-crypto-frieze{flex-wrap:wrap!important;align-content:flex-start;align-items:center;
+  height:24px;overflow:hidden;row-gap:10px;padding-top:1px}
+/* Bas de l'écran propre et noir : plus de bande de feu orange ni de ligne blanche
+   sous ACHETER / VENDRE (Android et iPhone). */
+html body .pad.glass::before,
+html body .pad.glass::after{display:none!important;content:none!important;background:none!important}
+html body .pad.glass{background:#0B0E14!important;border-bottom:0!important}
+html body #screenTrade,html body .trade-shell,html body .trade-wrap{background-color:#0B0E14}
+/* Croix de fermeture bien rangées dans l'angle, sans jamais toucher le texte.
+   1) Fenêtres avec une ligne de titre : la croix fait partie de cette ligne (à droite),
+      la ligne prend sa hauteur, donc rien en dessous ne passe sous la croix. */
+html body .modal-head-row,
+html body .wd-modal-head{display:flex!important;align-items:center!important;justify-content:space-between;gap:10px;
+  min-height:38px;margin-bottom:12px!important;position:relative}
+html body .modal-head-row > .btn-close:not(#oroX1):not(#oroX2),
+html body .wd-modal-head > .btn-close:not(#oroX1):not(#oroX2){
+  position:relative!important;top:auto!important;right:auto!important;margin:-4px -4px 0 auto!important;align-self:flex-start}
+html body .modal-head-row > .modal-title,
+html body .wd-modal-head > .modal-title{padding-right:0!important;flex:1 1 auto;min-width:0}
+/* 2) Croix posée directement dans la fenêtre : coin haut-droit, et le premier bloc
+      garde toujours une marge à droite + la hauteur de la croix. */
+html body .modal-box > .btn-close:not(#oroX1):not(#oroX2){top:8px!important;right:8px!important}
+html body .modal-box > .btn-close + *{padding-right:44px;min-height:38px;box-sizing:border-box}
+/* « PLEIN ÉCRAN » tient toujours dans la barre (ne déborde plus à droite sur Android). */
+html body .chart-toolbar .ind-pills{min-width:0;max-width:100%;overflow:hidden}
+html body .chart-toolbar .chart-fs-btn{flex:0 1 auto!important;min-width:0!important;max-width:100%;overflow:hidden;margin-left:auto;
+  padding-left:8px!important;padding-right:8px!important;gap:5px}
+html body .chart-toolbar .chart-fs-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:.72rem}
+@media (max-width:380px){html body .chart-toolbar .chart-fs-label{font-size:.64rem;letter-spacing:0}}
+@media (max-width:330px){html body .chart-toolbar .chart-fs-label{display:none}}
+/* Dépôt crypto sur Android : un peu moins d'espace en haut pour que tout tienne,
+   même sur les petits écrans (le QR code n'est pas touché). */
+html.is-android #depositModal .deposit-box.is-crypto{padding-top:8px!important;max-height:calc(100dvh - 12px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+html.is-android #depositModal .deposit-box.is-crypto .crypto-step-head{margin-bottom:2px!important;min-height:0!important}
+html.is-android #depositModal .deposit-box.is-crypto .modal-title{margin-bottom:2px!important}

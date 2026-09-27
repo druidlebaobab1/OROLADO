@@ -394,7 +394,7 @@
   }
 
   function spikeFlag(id, o, c) {
-    if (id !== 'crash300') return false;
+    return false; // plus aucun actif à pics (AZAZEL = flux régulier)
     return Math.abs(c - o) > o * 0.003;
   }
 

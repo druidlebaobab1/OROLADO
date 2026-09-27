@@ -35,10 +35,7 @@ public static class FairCalib
         a.Add(new Asset("nexusprime", 8120.60, 0.00018));
         a.Add(new Asset("titanpulse", 9560.40, 0.00028));
         a.Add(new Asset("boomspike", 3890.20, 0.00012));
-        var crash = new Asset("crash300", 4210.55, 0.00008);
-        crash.JumpP = 1.0 / 300; crash.JumpMin = 0.0025; crash.JumpMax = 0.0040; crash.JumpDir = -1;
-        crash.Drift = crash.JumpP * (crash.JumpMin + crash.JumpMax) / 2;
-        a.Add(crash);
+        a.Add(new Asset("crash300", 4210.55, 0.00022));
         return a;
     }
 

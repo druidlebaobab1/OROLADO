@@ -78,8 +78,8 @@
     ASSETS: {
       v100: {
         id: 'v100',
-        name: 'VOLATILITY 100 INDEX',
-        short: 'V100',
+        name: 'VOLATILITY 999',
+        short: 'VOLATILITY 999',
         tag: 'Haute volatilité',
         chart: 'candle',
         candleThin: false,
@@ -95,8 +95,8 @@
       },
       stable: {
         id: 'stable',
-        name: 'STABLE CORE INDEX',
-        short: 'SCI',
+        name: 'ZUL',
+        short: 'ZUL',
         tag: 'Basse volatilité',
         chart: 'line',
         lineColor: '#ff2244',
@@ -114,8 +114,8 @@
       },
       apex500: {
         id: 'apex500',
-        name: 'ORO APEX 500',
-        short: 'APEX',
+        name: 'ORO 888',
+        short: 'ORO 888',
         tag: 'Ultra-rapide',
         chart: 'candle',
         candleThin: false,
@@ -131,8 +131,8 @@
       },
       horizon50: {
         id: 'horizon50',
-        name: 'ORO HORIZON 50',
-        short: 'H50',
+        name: 'BAAL',
+        short: 'BAAL',
         tag: 'Doux et régulier',
         chart: 'line',
         lineStyle: 'smooth',
@@ -153,8 +153,8 @@
       },
       crash300: {
         id: 'crash300',
-        name: 'CRASH 300 INDEX',
-        short: 'C300',
+        name: 'AZAZEL',
+        short: 'AZAZEL',
         tag: 'Chutes rapides',
         chart: 'candle',
         candleThin: true,
@@ -170,8 +170,8 @@
       },
       goldtrend: {
         id: 'goldtrend',
-        name: 'ORO 888',
-        short: '888',
+        name: 'ORCUS',
+        short: 'ORCUS',
         tag: 'Grandes vagues',
         chart: 'line',
         lineColor: '#f5a623',
@@ -190,8 +190,8 @@
         id: 'boomspike',
         // Ancien « Boom Spike » : même identifiant (historique, stats), nouvelle
         // simulation simple et régulière, tracé vert émeraude.
-        name: 'ORO EMERALD',
-        short: 'EMRLD',
+        name: 'VALAC',
+        short: 'VALAC',
         tag: 'Emerald flow',
         chart: 'line',
         lineColor: '#00E676',
@@ -209,8 +209,8 @@
       },
       nexusprime: {
         id: 'nexusprime',
-        name: 'NEXUS PRIME',
-        short: 'NEXUS',
+        name: 'ASMODUS',
+        short: 'ASMODUS',
         tag: 'Flux haute fréquence',
         chart: 'candle',
         plotTheme: 'darkPro',
@@ -227,8 +227,8 @@
       },
       v75: {
         id: 'v75',
-        name: 'VOLATILITY 75 INDEX',
-        short: 'V75',
+        name: 'PYTHON',
+        short: 'PYTHON',
         tag: 'Vagues amples',
         chart: 'candle',
         plotTheme: 'darkPro',
@@ -245,8 +245,8 @@
       },
       titanpulse: {
         id: 'titanpulse',
-        name: 'TITAN PULSE',
-        short: 'TITAN',
+        name: 'APOCALYPSE',
+        short: 'APOCALYPSE',
         tag: 'Volatilité extrême',
         chart: 'candle',
         plotTheme: 'darkPro',

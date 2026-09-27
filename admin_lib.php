@@ -1692,9 +1692,9 @@ function admin_collect_alerts(): array {
 
 function admin_asset_name(string $id): string {
   $map = [
-    'v100' => 'VOLATILITY 100', 'v75' => 'VOLATILITY 75', 'stable' => 'STABLE CORE',
-    'apex' => 'ORO APEX 500', 'horizon' => 'ORO HORIZON 50', 'crash' => 'CRASH 300',
-    'gold' => 'ORO 888', 'boom' => 'ORO EMERALD', 'nexus' => 'NEXUS PRIME', 'titan' => 'TITAN PULSE',
+    'v100' => 'VOLATILITY 999', 'v75' => 'PYTHON', 'stable' => 'ZUL',
+    'apex' => 'ORO 888', 'horizon' => 'BAAL', 'crash' => 'AZAZEL',
+    'gold' => 'ORCUS', 'boom' => 'VALAC', 'nexus' => 'ASMODUS', 'titan' => 'APOCALYPSE',
   ];
   return $map[$id] ?? strtoupper($id !== '' ? $id : '—');
 }
