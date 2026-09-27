@@ -97,7 +97,7 @@ check('jeton utilisé il y a 29 jours : accepté', !empty($r['ok']), (string) ($
 $s = load_db()['sessions']['tokRecent'] ?? [];
 check('et prolongé de 30 jours', (int) ($s['exp'] ?? 0) > time() + 29 * 86400 && (int) ($s['exp'] ?? 0) < time() + 31 * 86400);
 $db = load_db();
-$n = orolado_prune_sessions($db);
+$n = orolado_prune_sessions($db, true);
 check('ménage : la session morte est retirée, les vivantes gardées', $n === 1 && !isset($db['sessions']['tokOld']) && isset($db['sessions']['tokMe']), (string) $n);
 
 echo "6) Mot de passe admin\n";

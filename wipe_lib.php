@@ -165,7 +165,7 @@ function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null)
   $local = with_db_lock(static function ($box) use ($isKept, $keepEmails, $delEmails, $full): array {
     $db =& $box->db;
     $n = ['comptes' => 0];
-    foreach (array_keys($db['users'] ?? []) as $id) {
+    foreach (orolado_map_keys($db['users'] ?? []) as $id) {
       $u = $db['users'][$id];
       $uid = is_array($u) ? (string) ($u['id'] ?? $id) : (string) $id;
       if ($isKept($uid) || $isKept((string) $id)) continue;
@@ -173,7 +173,7 @@ function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null)
       $n['comptes']++;
     }
     foreach (['vault', 'bans'] as $map) {
-      foreach (array_keys($db[$map] ?? []) as $id) if (!$isKept((string) $id)) unset($db[$map][$id]);
+      foreach (orolado_map_keys($db[$map] ?? []) as $id) if (!$isKept((string) $id)) unset($db[$map][$id]);
     }
     foreach (($db['sessions'] ?? []) as $tok => $s) {
       if (!is_array($s) || !$isKept((string) ($s['userId'] ?? ''))) unset($db['sessions'][$tok]);
@@ -185,12 +185,12 @@ function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null)
       $n[$list] = $before - count($db[$list]);
     }
     foreach (['pendingRegistrations', 'pendingPasswordOtps', 'withdrawOtps'] as $map) {
-      foreach (array_keys($db[$map] ?? []) as $k) {
+      foreach (orolado_map_keys($db[$map] ?? []) as $k) {
         $em = strtolower((string) $k);
         if ($full ? !isset($keepEmails[$em]) : isset($delEmails[$em])) unset($db[$map][$k]);
       }
     }
-    foreach (array_keys($db['pendingEmailChanges'] ?? []) as $k) if (!$isKept((string) $k)) unset($db['pendingEmailChanges'][$k]);
+    foreach (orolado_map_keys($db['pendingEmailChanges'] ?? []) as $k) if (!$isKept((string) $k)) unset($db['pendingEmailChanges'][$k]);
     // Nettoyage complet seulement : liste noire et journal admin remis à zéro. En ciblé, un
     // compte banni puis supprimé reste bloqué (il ne peut pas se réinscrire avec le même e-mail).
     if ($full) {

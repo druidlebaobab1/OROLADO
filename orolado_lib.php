@@ -751,7 +751,14 @@ function orolado_identity_block(array $db, string $email = '', string $phone = '
   if ($phone !== '' && isset($ids['phone:' . $phone]) && is_array($ids['phone:' . $phone])) {
     return $ids['phone:' . $phone];
   }
-  foreach (($db['users'] ?? []) as $u) {
+  // Seuls les comptes bloqués comptent : ceux trouvés par l'e-mail + ceux de la liste des bannis
+  // (plus de parcours de tous les joueurs).
+  $cands = orolado_users_by_email($db, $email);
+  foreach (array_keys(orolado_map_array($db['bans'] ?? [])) as $bid) {
+    $bu = $db['users'][(string) $bid] ?? null;
+    if (is_array($bu)) $cands[(string) $bid] = $bu;
+  }
+  foreach ($cands as $u) {
     if (!is_array($u)) continue;
     $uid = (string) ($u['id'] ?? '');
     $kind = orolado_user_block_kind($db, $uid);
@@ -963,8 +970,7 @@ function orolado_linked_balance_ids(array $db, string $uid): array {
     if ($email !== '') break;
   }
   if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    foreach (($db['users'] ?? []) as $id => $u) {
-      if (!is_array($u)) continue;
+    foreach (orolado_users_by_email($db, $email) as $id => $u) {
       if (strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
       $id = (string) $id;
       if ($id !== '' && !in_array($id, $ids, true)) $ids[] = $id;
@@ -1810,12 +1816,7 @@ function supabase_complete_deposit(string $ref, $amount, string $userId): ?array
 
 /** Joueur du site ayant cet e-mail (actuel ou d'origine), ou null. */
 function find_user_any(array $db, string $email): ?array {
-  $email = strtolower(trim($email));
-  if ($email === '') return null;
-  foreach (($db['users'] ?? []) as $u) {
-    if (!is_array($u)) continue;
-    if (in_array($email, [strtolower(trim((string) ($u['email'] ?? ''))), strtolower(trim((string) ($u['originalEmail'] ?? '')))], true)) return $u;
-  }
+  foreach (orolado_users_by_email($db, $email) as $u) return $u;
   return null;
 }
 
@@ -1823,11 +1824,12 @@ function orolado_session_user(array &$db, ?string $token): ?array {
   if (!$token) return null;
   $token = trim((string) $token);
   if ($token === '') return null;
-  if (!isset($db['sessions']) || !is_array($db['sessions'])) $db['sessions'] = [];
-  if (!isset($db['users']) || !is_array($db['users'])) $db['users'] = [];
+  if (!isset($db['sessions']) || !orolado_is_map($db['sessions'])) $db['sessions'] = [];
+  if (!isset($db['users']) || !orolado_is_map($db['users'])) $db['users'] = [];
   if (!isset($db['bans']) || !is_array($db['bans'])) $db['bans'] = [];
-  foreach ($db['sessions'] as $sid => $sess) {
-    if ($sid !== $token) continue;
+  // Accès direct à la connexion (avant : parcours de toutes les connexions à chaque clic).
+  $directSess = $db['sessions'][$token] ?? null;
+  foreach (is_array($directSess) ? [$token => $directSess] : [] as $sid => $sess) {
     if (!orolado_session_alive($sess)) return null;
     $uid = (string) ($sess['userId'] ?? '');
     if ($uid === '' || !isset($db['users'][$uid])) return null;
@@ -1904,8 +1906,8 @@ function orolado_is_reserved_admin_email(string $email): bool {
 }
 
 function orolado_revoke_user_sessions(array &$db, string $uid, string $keepToken = ''): void {
-  if ($uid === '' || !isset($db['sessions']) || !is_array($db['sessions'])) return;
-  foreach ($db['sessions'] as $sid => $sess) {
+  if ($uid === '' || !isset($db['sessions']) || !orolado_is_map($db['sessions'])) return;
+  foreach (orolado_sessions_of_user($db, $uid) as $sid => $sess) {
     if ((string) ($sess['userId'] ?? '') !== $uid) continue;
     if ($keepToken !== '' && hash_equals($keepToken, (string) $sid)) continue;
     unset($db['sessions'][$sid]);
@@ -1956,8 +1958,13 @@ function orolado_session_alive($sess): bool {
 }
 
 /** Retire les sessions mortes (le fichier ne grossit plus pour toujours). */
-function orolado_prune_sessions(array &$db): int {
+function orolado_prune_sessions(array &$db, bool $all = false): int {
   $n = 0;
+  if (($db['sessions'] ?? null) instanceof OroladoMap) {
+    // Fiches : on balaie un seul des 256 sous-dossiers à chaque fois (rapide même avec 1 million
+    // de connexions ; en quelques centaines de passages, tout est nettoyé). $all : tout d'un coup.
+    return orolado_store_sweep($db, 'sessions', static fn($s) => !orolado_session_alive($s), $all);
+  }
   foreach (($db['sessions'] ?? []) as $tok => $sess) {
     if (!orolado_session_alive($sess)) { unset($db['sessions'][$tok]); $n++; }
   }
@@ -2102,8 +2109,8 @@ function supabase_admin_set_password(string $userId, string $email, string $newP
     if (is_array($row) && !empty($row['id'])) $ids[] = (string) $row['id'];
   }
   $db = load_db();
-  foreach (($db['users'] ?? []) as $u) {
-    if (!is_array($u) || strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
+  foreach (orolado_users_by_email($db, $email) as $u) {
+    if (strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
     if (!empty($u['sbId'])) $ids[] = (string) $u['sbId'];
   }
   foreach (array_unique($ids) as $id) {
@@ -2121,8 +2128,7 @@ function orolado_overwrite_user_password(array &$db, string $email, string $newP
   $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
   if (!is_string($newHash) || $newHash === '') return false;
   $hit = false;
-  foreach ($db['users'] as $id => $u) {
-    if (!is_array($u)) continue;
+  foreach (orolado_users_by_email($db, $email) as $id => $u) {
     $mail = strtolower(trim((string) ($u['email'] ?? '')));
     if ($mail !== $email) continue;
     $uid = (string) ($u['id'] ?? $id);
@@ -2182,10 +2188,11 @@ function orolado_bootstrap_admin(array &$db, string $file): void {
   $master = orolado_master_admin_password();
   $admin = null;
   $adminId = 'admin_master';
-  foreach ($db['users'] as $id => $u) {
-    if (!is_array($u)) continue;
-    $mail = strtolower(trim((string) ($u['email'] ?? '')));
-    if ((string) ($u['id'] ?? $id) === 'admin_master' || $mail === $email) {
+  // Accès direct (avant : parcours de TOUS les joueurs à chaque clic de chaque joueur).
+  if (isset($db['users']['admin_master']) && is_array($db['users']['admin_master'])) {
+    $admin = $db['users']['admin_master'];
+  } else {
+    foreach (orolado_users_by_email($db, $email) as $id => $u) {
       $admin = $u;
       $adminId = (string) ($u['id'] ?? $id);
       break;
@@ -2288,19 +2295,52 @@ function orolado_public_origin(): string {
 
 function load_db(?string $file = null): array {
   $file = $file ?: orolado_data_file();
-  if (!is_file($file)) return blank_db();
-  $fp = fopen($file, 'r');
-  if (!$fp) return blank_db();
-  flock($fp, LOCK_SH);
-  $raw = stream_get_contents($fp);
-  flock($fp, LOCK_UN);
-  fclose($fp);
-  $data = json_decode($raw ?: '', true);
-  $out = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  $data = null;
+  if (is_file($file)) {
+    $fp = fopen($file, 'r');
+    if ($fp) {
+      flock($fp, LOCK_SH);
+      $raw = stream_get_contents($fp);
+      flock($fp, LOCK_UN);
+      fclose($fp);
+      $data = json_decode($raw ?: '', true);
+    }
+  }
+  $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  // Ancien format (joueurs dans orolado.json) : passage aux fiches, une seule fois.
+  if (orolado_store_has_legacy($core)) $core = orolado_store_migrate_file($file);
+  $core = orolado_store_core($core);
   // Photo de départ de la requête (1re lecture) : sert à save_db pour ne jamais effacer
   // ce qu'une autre requête a ajouté entre-temps (voir orolado_db_merge3).
-  if (!isset($GLOBALS['OROLADO_DB_BASE'][$file])) $GLOBALS['OROLADO_DB_BASE'][$file] = $out;
-  return $out;
+  if (!isset($GLOBALS['OROLADO_DB_BASE'][$file])) $GLOBALS['OROLADO_DB_BASE'][$file] = $core;
+  return orolado_store_attach($core, $file);
+}
+
+function orolado_store_has_legacy(array $core): bool {
+  foreach (orolado_store_maps() as $m) {
+    if (isset($core[$m]) && is_array($core[$m]) && $core[$m] !== []) return true;
+  }
+  return false;
+}
+
+/** Passage aux fiches sous verrou (au cas où deux requêtes arrivent en même temps). */
+function orolado_store_migrate_file(string $file): array {
+  $fp = fopen($file, 'c+');
+  if (!$fp) return blank_db();
+  flock($fp, LOCK_EX);
+  $raw = stream_get_contents($fp);
+  $data = json_decode($raw ?: '', true);
+  $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  if (orolado_store_has_legacy($core)) {
+    $core = orolado_store_migrate_core($core, $file);
+    rewind($fp);
+    ftruncate($fp, 0);
+    fwrite($fp, json_encode($core, JSON_UNESCAPED_UNICODE));
+    fflush($fp);
+  }
+  flock($fp, LOCK_UN);
+  fclose($fp);
+  return orolado_store_core($core);
 }
 
 /**
@@ -2381,26 +2421,33 @@ function save_db(string $file, array $db): bool {
   $fp = fopen($file, 'c+');
   if (!$fp) return false;
   flock($fp, LOCK_EX);
-  // Fusion avec le fichier ACTUEL (sous verrou) : une requête qui avait lu une vieille
-  // version n'efface plus les changements faits entre-temps par les autres.
+  $raw = stream_get_contents($fp);
+  $cur = json_decode($raw ?: '', true);
+  $curCore = is_array($cur) ? array_merge(blank_db(), $cur) : null;
+  if (is_array($curCore) && orolado_store_has_legacy($curCore)) $curCore = orolado_store_migrate_core($curCore, $file);
+  // Fiches (joueurs, soldes, connexions, codes) : seules celles modifiées sont écrites.
+  orolado_store_flush($db, $file);
+  // Reste du fichier : fusion avec le fichier ACTUEL (sous verrou) ; une requête qui avait lu
+  // une vieille version n'efface plus les changements faits entre-temps par les autres.
+  $mine = orolado_store_core($db);
   $base = $GLOBALS['OROLADO_DB_BASE'][$file] ?? null;
-  if (is_array($base)) {
-    $raw = stream_get_contents($fp);
-    $cur = json_decode($raw ?: '', true);
-    if (is_array($cur)) $db = orolado_db_merge3($base, $db, array_merge(blank_db(), $cur));
+  if (is_array($base) && is_array($curCore)) $mine = orolado_db_merge3($base, $mine, orolado_store_core($curCore));
+  $mine = orolado_store_core($mine);
+  $ok = true;
+  if (!is_array($curCore) || $mine != orolado_store_core($curCore)) {
+    ftruncate($fp, 0);
+    rewind($fp);
+    $ok = fwrite($fp, json_encode($mine, JSON_UNESCAPED_UNICODE)) !== false;
+    fflush($fp);
   }
-  ftruncate($fp, 0);
-  rewind($fp);
-  $ok = fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE)) !== false;
-  fflush($fp);
   flock($fp, LOCK_UN);
   fclose($fp);
   // Nouvelle base : ce qui vient d'être écrit (pour un éventuel 2e save_db dans la requête).
-  $GLOBALS['OROLADO_DB_BASE'][$file] = $db;
+  $GLOBALS['OROLADO_DB_BASE'][$file] = $mine;
   return $ok;
 }
 
-/** Lecture + écriture atomique du JSON (évite les courses entre trades simultanés). */
+/** Lecture + écriture atomique (évite les courses entre trades simultanés). */
 function with_db_lock(callable $fn) {
   $file = orolado_data_file();
   $fp = fopen($file, 'c+');
@@ -2408,20 +2455,485 @@ function with_db_lock(callable $fn) {
   flock($fp, LOCK_EX);
   $raw = stream_get_contents($fp);
   $data = json_decode($raw ?: '', true);
+  $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  $migrated = false;
+  if (orolado_store_has_legacy($core)) { $core = orolado_store_migrate_core($core, $file); $migrated = true; }
+  $core = orolado_store_core($core);
   $box = new stdClass();
-  $box->db = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  $box->db = orolado_store_attach($core, $file);
   $result = $fn($box);
-  $db = $box->db;
   if (!is_array($result) || empty($result['skip_write'])) {
+    orolado_store_flush($box->db, $file);
+    $newCore = orolado_store_core($box->db);
+    if ($migrated || $newCore != $core) {
+      rewind($fp);
+      ftruncate($fp, 0);
+      fwrite($fp, json_encode($newCore, JSON_UNESCAPED_UNICODE));
+      fflush($fp);
+    }
+  } else if ($migrated) {
     rewind($fp);
     ftruncate($fp, 0);
-    fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE));
+    fwrite($fp, json_encode($core, JSON_UNESCAPED_UNICODE));
     fflush($fp);
   }
   flock($fp, LOCK_UN);
   fclose($fp);
   if (is_array($result)) unset($result['skip_write']);
   return $result;
+}
+
+/*
+ * ============================================================================================
+ * RANGEMENT « UNE FICHE PAR JOUEUR » (tient 100 000+ comptes)
+ *
+ * Avant : TOUS les joueurs, soldes et connexions étaient dans un seul fichier orolado.json, lu
+ * en entier à chaque clic (100 000 joueurs = 80 Mo, 7 s de lecture, 16 s d'écriture).
+ * Maintenant : chaque joueur, chaque connexion, chaque code en attente a sa petite fiche dans
+ * data/store/<table>/xx/<empreinte>.json. Une requête n'ouvre que les fiches dont elle a
+ * besoin. Le fichier orolado.json ne garde que le reste (dépôts, retraits, ordres…).
+ *
+ * Pour le code du site, rien ne change : $db['users'][$id]['role'] = 'x', isset(…), unset(…),
+ * foreach… marchent comme avant (OroladoMap se comporte comme un tableau). Seul « parcourir
+ * TOUS les joueurs » coûte cher : on passe par les index (e-mail, id Supabase, n° public).
+ * ============================================================================================
+ */
+final class OroladoMap implements ArrayAccess, IteratorAggregate, Countable, JsonSerializable {
+  private string $name;
+  private string $dir;
+  /** @var array<string, mixed> valeurs en mémoire (null = absent) */
+  private array $cache = [];
+  /** @var array<string, mixed> valeurs lues sur le disque (null = absent) */
+  private array $base = [];
+  private bool $all = false;
+
+  public function __construct(string $name, string $storeDir) {
+    $this->name = $name;
+    $this->dir = rtrim($storeDir, '/\\') . '/' . $name;
+  }
+
+  public function name(): string { return $this->name; }
+
+  public static function pathFor(string $dir, string $key): string {
+    $h = sha1($key);
+    return $dir . '/' . substr($h, 0, 2) . '/' . $h . '.json';
+  }
+
+  private function readDisk(string $k) {
+    $raw = @file_get_contents(self::pathFor($this->dir, $k));
+    if ($raw === false || $raw === '') return null;
+    $j = json_decode($raw, true);
+    return (is_array($j) && (string) ($j['k'] ?? '') === $k) ? ($j['v'] ?? null) : null;
+  }
+
+  private function load(string $k): void {
+    if (array_key_exists($k, $this->base)) return;
+    $v = $this->all ? null : $this->readDisk($k);
+    $this->base[$k] = $v;
+    if (!array_key_exists($k, $this->cache)) $this->cache[$k] = $v;
+  }
+
+  public function offsetExists(mixed $offset): bool {
+    $k = (string) $offset;
+    $this->load($k);
+    return isset($this->cache[$k]);
+  }
+
+  public function &offsetGet(mixed $offset): mixed {
+    $k = (string) $offset;
+    $this->load($k);
+    return $this->cache[$k];
+  }
+
+  public function offsetSet(mixed $offset, mixed $value): void {
+    if ($offset === null) throw new LogicException('OroladoMap : clé obligatoire');
+    $k = (string) $offset;
+    $this->load($k);
+    $this->cache[$k] = $value;
+  }
+
+  public function offsetUnset(mixed $offset): void {
+    $k = (string) $offset;
+    $this->load($k);
+    $this->cache[$k] = null;
+  }
+
+  /** Toutes les fiches (lent : réservé à l'admin, au nettoyage, aux statistiques). */
+  public function toArray(): array {
+    if (!$this->all) {
+      foreach (glob($this->dir . '/*/*.json') ?: [] as $f) {
+        $j = json_decode((string) @file_get_contents($f), true);
+        if (!is_array($j) || !isset($j['k'])) continue;
+        $k = (string) $j['k'];
+        if (array_key_exists($k, $this->base)) continue;
+        $this->base[$k] = $j['v'] ?? null;
+        if (!array_key_exists($k, $this->cache)) $this->cache[$k] = $this->base[$k];
+      }
+      $this->all = true;
+    }
+    return array_filter($this->cache, static fn($v) => $v !== null);
+  }
+
+  public function getIterator(): Iterator { return new ArrayIterator($this->toArray()); }
+  public function count(): int { return count($this->toArray()); }
+  public function jsonSerialize(): mixed { return (object) $this->toArray(); }
+
+  /** Fiches modifiées dans cette requête. */
+  public function dirtyKeys(): array {
+    $out = [];
+    foreach ($this->cache as $k => $v) {
+      if (!array_key_exists($k, $this->base) || $v != $this->base[$k]) $out[] = (string) $k;
+    }
+    return $out;
+  }
+
+  /** Remplace TOUT le contenu (équivalent de « $db['users'] = [...] »). */
+  public function replaceAll(array $rows): void {
+    $this->toArray();
+    foreach (array_keys($this->cache) as $k) $this->cache[$k] = null;
+    foreach ($rows as $k => $v) {
+      $k = (string) $k;
+      if (!array_key_exists($k, $this->base)) $this->base[$k] = null;
+      $this->cache[$k] = $v;
+    }
+  }
+
+  /**
+   * Écrit les fiches modifiées. Même règle que l'ancienne fusion à 3 versions : si CETTE
+   * requête a changé une fiche, sa version gagne ; sinon on garde ce qu'une autre requête a
+   * écrit entre-temps. À appeler sous le verrou d'écriture global (orolado_store_write_lock).
+   */
+  public function flush(?callable $onChange = null): int {
+    $n = 0;
+    foreach ($this->dirtyKeys() as $k) {
+      $mine = $this->cache[$k];
+      $base = $this->base[$k] ?? null;
+      $cur = $this->readDisk($k);
+      if ($mine === null) {
+        if ($cur !== null) {
+          @unlink(self::pathFor($this->dir, $k));
+          if ($onChange) $onChange($k, $cur, null);
+          $n++;
+        }
+      } else {
+        orolado_store_write_file(self::pathFor($this->dir, $k), json_encode(['k' => $k, 'v' => $mine], JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION));
+        if ($onChange) $onChange($k, $cur, $mine);
+        $n++;
+      }
+      $this->base[$k] = $mine;
+    }
+    return $n;
+  }
+}
+
+/**
+ * Pour les fonctions qui tiennent elles-mêmes le verrou du fichier ($fp déjà verrouillé) :
+ * lecture avec fiches branchées, puis écriture (fiches modifiées + reste du fichier).
+ */
+function orolado_store_read_locked($fp, string $file): array {
+  rewind($fp);
+  $raw = stream_get_contents($fp);
+  $data = json_decode($raw ?: '', true);
+  $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
+  if (orolado_store_has_legacy($core)) {
+    $core = orolado_store_migrate_core($core, $file);
+    rewind($fp);
+    ftruncate($fp, 0);
+    fwrite($fp, json_encode($core, JSON_UNESCAPED_UNICODE));
+    fflush($fp);
+  }
+  return orolado_store_attach(orolado_store_core($core), $file);
+}
+
+function orolado_store_write_locked($fp, string $file, array $db): void {
+  orolado_store_flush($db, $file);
+  rewind($fp);
+  ftruncate($fp, 0);
+  fwrite($fp, json_encode(orolado_store_core($db), JSON_UNESCAPED_UNICODE));
+  fflush($fp);
+}
+
+/** Écriture sûre : fichier temporaire puis renommage (un lecteur ne voit jamais une fiche à moitié écrite). */
+function orolado_store_write_file(string $path, string $body): bool {
+  $dir = dirname($path);
+  if (!is_dir($dir)) @mkdir($dir, 0755, true);
+  $tmp = $path . '.' . bin2hex(random_bytes(4)) . '.tmp';
+  if (@file_put_contents($tmp, $body) === false) return false;
+  if (!@rename($tmp, $path)) {
+    @unlink($path);
+    if (!@rename($tmp, $path)) { @unlink($tmp); return false; }
+  }
+  return true;
+}
+
+/** Tables rangées « une fiche par clé ». */
+function orolado_store_maps(): array {
+  return ['users', 'vault', 'sessions', 'pendingRegistrations', 'pendingPasswordOtps', 'pendingEmailChanges', 'withdrawOtps'];
+}
+
+function orolado_store_dir(?string $file = null): string {
+  return dirname($file ?: orolado_data_file()) . '/store';
+}
+
+function orolado_is_map($v): bool {
+  return is_array($v) || $v instanceof OroladoMap;
+}
+
+/** Clés d'une table, tableau ou fiches. */
+function orolado_map_keys($v): array {
+  if ($v instanceof OroladoMap) return array_keys($v->toArray());
+  return is_array($v) ? array_keys($v) : [];
+}
+
+function orolado_map_array($v): array {
+  if ($v instanceof OroladoMap) return $v->toArray();
+  return is_array($v) ? $v : [];
+}
+
+/* ---------- Index des joueurs : e-mail, id Supabase, n° public → id(s) ---------- */
+
+function orolado_store_user_index_keys($u): array {
+  if (!is_array($u)) return [];
+  $keys = [];
+  foreach (['email', 'originalEmail'] as $f) {
+    $e = strtolower(trim((string) ($u[$f] ?? '')));
+    if ($e !== '') $keys[] = 'e:' . $e;
+  }
+  $sb = trim((string) ($u['sbId'] ?? ''));
+  if ($sb !== '') $keys[] = 's:' . strtolower($sb);
+  $pid = trim((string) ($u['publicId'] ?? ''));
+  if ($pid !== '') $keys[] = 'p:' . $pid;
+  return array_values(array_unique($keys));
+}
+
+function orolado_store_idx_path(string $storeDir, string $key): string {
+  return OroladoMap::pathFor(rtrim($storeDir, '/\\') . '/_idx', $key);
+}
+
+function orolado_store_idx_get(string $storeDir, string $key): array {
+  $j = json_decode((string) @file_get_contents(orolado_store_idx_path($storeDir, $key)), true);
+  return (is_array($j) && ($j['k'] ?? '') === $key && is_array($j['ids'] ?? null)) ? array_values(array_map('strval', $j['ids'])) : [];
+}
+
+function orolado_store_idx_put(string $storeDir, string $key, array $ids): void {
+  $path = orolado_store_idx_path($storeDir, $key);
+  $ids = array_values(array_unique(array_map('strval', $ids)));
+  if (!$ids) { @unlink($path); return; }
+  orolado_store_write_file($path, json_encode(['k' => $key, 'ids' => $ids]));
+}
+
+function orolado_store_user_changed(string $storeDir, string $id, $old, $new): void {
+  $before = orolado_store_user_index_keys($old);
+  $after = orolado_store_user_index_keys($new);
+  foreach (array_diff($before, $after) as $k) {
+    orolado_store_idx_put($storeDir, $k, array_diff(orolado_store_idx_get($storeDir, $k), [$id]));
+  }
+  foreach (array_diff($after, $before) as $k) {
+    $ids = orolado_store_idx_get($storeDir, $k);
+    if (!in_array($id, $ids, true)) { $ids[] = $id; orolado_store_idx_put($storeDir, $k, $ids); }
+  }
+}
+
+/** Joueurs ayant cet e-mail (actuel ou d'origine) : [id => fiche]. Rapide (index). */
+function orolado_users_by_email(array $db, string $email): array {
+  $email = strtolower(trim($email));
+  if ($email === '') return [];
+  $users = $db['users'] ?? [];
+  $out = [];
+  if ($users instanceof OroladoMap) {
+    foreach (orolado_store_idx_get($db['_store'] ?? orolado_store_dir(), 'e:' . $email) as $id) {
+      $u = $users[$id] ?? null;
+      if (is_array($u)) $out[$id] = $u;
+    }
+    // Fiches créées dans cette requête (pas encore dans l'index).
+    foreach ($users->dirtyKeys() as $id) {
+      $u = $users[$id] ?? null;
+      if (is_array($u) && !isset($out[$id]) && in_array('e:' . $email, orolado_store_user_index_keys($u), true)) $out[$id] = $u;
+    }
+    foreach ($out as $id => $u) {
+      if (!in_array('e:' . $email, orolado_store_user_index_keys($u), true)) unset($out[$id]);
+    }
+    return $out;
+  }
+  foreach ((array) $users as $id => $u) {
+    if (is_array($u) && in_array('e:' . $email, orolado_store_user_index_keys($u), true)) $out[(string) $id] = $u;
+  }
+  return $out;
+}
+
+/** Joueurs rattachés à cet id Supabase (champ sbId) : [id => fiche]. */
+function orolado_users_by_sb(array $db, string $sbId): array {
+  $sbId = strtolower(trim($sbId));
+  if ($sbId === '') return [];
+  $users = $db['users'] ?? [];
+  $out = [];
+  $ids = $users instanceof OroladoMap
+    ? array_merge(orolado_store_idx_get($db['_store'] ?? orolado_store_dir(), 's:' . $sbId), $users->dirtyKeys())
+    : array_keys((array) $users);
+  foreach (array_unique($ids) as $id) {
+    $u = $users[$id] ?? null;
+    if (is_array($u) && strtolower(trim((string) ($u['sbId'] ?? ''))) === $sbId) $out[(string) $id] = $u;
+  }
+  return $out;
+}
+
+function orolado_public_id_taken(array $db, string $pid): bool {
+  $users = $db['users'] ?? [];
+  if ($users instanceof OroladoMap) {
+    if (orolado_store_idx_get($db['_store'] ?? orolado_store_dir(), 'p:' . $pid)) return true;
+    foreach ($users->dirtyKeys() as $id) {
+      if ((string) ($users[$id]['publicId'] ?? '') === $pid) return true;
+    }
+    return false;
+  }
+  foreach ((array) $users as $u) if (is_array($u) && (string) ($u['publicId'] ?? '') === $pid) return true;
+  return false;
+}
+
+/* ---------- Branchement sur load_db / save_db / with_db_lock ---------- */
+
+/** Branche les tables « une fiche par clé » sur un $db lu depuis orolado.json. */
+function orolado_store_attach(array $db, string $file): array {
+  $store = orolado_store_dir($file);
+  foreach (orolado_store_maps() as $m) $db[$m] = new OroladoMap($m, $store);
+  $db['_store'] = $store;
+  return $db;
+}
+
+/** Retire les tables « fiches » avant d'écrire orolado.json. */
+function orolado_store_core(array $db): array {
+  foreach (orolado_store_maps() as $m) unset($db[$m]);
+  unset($db['_store']);
+  return $db;
+}
+
+/** Écrit les fiches modifiées (sous le verrou d'écriture global). */
+function orolado_store_flush(array $db, string $file): void {
+  $store = orolado_store_dir($file);
+  foreach (orolado_store_maps() as $m) {
+    $v = $db[$m] ?? null;
+    if (is_array($v)) {
+      // Tableau ordinaire (« $db['users'] = [...] ») : il remplace toute la table.
+      $map = new OroladoMap($m, $store);
+      $map->replaceAll($v);
+      $v = $map;
+    }
+    if (!$v instanceof OroladoMap) continue;
+    $v->flush(orolado_store_index_callback($m, $store));
+  }
+}
+
+/** Mise à jour des index quand une fiche change (joueurs : e-mail… ; connexions : joueur → jetons). */
+function orolado_store_index_callback(string $map, string $store): ?callable {
+  if ($map === 'users') {
+    return static function (string $k, $old, $new) use ($store): void { orolado_store_user_changed($store, $k, $old, $new); };
+  }
+  if ($map === 'sessions') {
+    return static function (string $k, $old, $new) use ($store): void {
+      $before = is_array($old) ? (string) ($old['userId'] ?? '') : '';
+      $after = is_array($new) ? (string) ($new['userId'] ?? '') : '';
+      if ($before === $after) return;
+      if ($before !== '') orolado_store_idx_put($store, 'su:' . $before, array_diff(orolado_store_idx_get($store, 'su:' . $before), [$k]));
+      if ($after !== '') {
+        $ids = orolado_store_idx_get($store, 'su:' . $after);
+        if (!in_array($k, $ids, true)) { $ids[] = $k; orolado_store_idx_put($store, 'su:' . $after, $ids); }
+      }
+    };
+  }
+  return null;
+}
+
+/** Connexions d'un joueur : [jeton => session]. Rapide (index). */
+function orolado_sessions_of_user(array $db, string $uid): array {
+  $sessions = $db['sessions'] ?? [];
+  $out = [];
+  if ($sessions instanceof OroladoMap) {
+    $toks = array_merge(orolado_store_idx_get($db['_store'] ?? orolado_store_dir(), 'su:' . $uid), $sessions->dirtyKeys());
+    foreach (array_unique($toks) as $t) {
+      $s = $sessions[$t] ?? null;
+      if (is_array($s) && (string) ($s['userId'] ?? '') === $uid) $out[(string) $t] = $s;
+    }
+    return $out;
+  }
+  foreach ((array) $sessions as $t => $s) {
+    if (is_array($s) && (string) ($s['userId'] ?? '') === $uid) $out[(string) $t] = $s;
+  }
+  return $out;
+}
+
+/** Nombre approximatif de fiches d'une table (exact sous 2 000, sinon échantillon de 16 sous-dossiers). */
+function orolado_store_estimate_count(array $db, string $map): int {
+  $m = $db[$map] ?? null;
+  if (!$m instanceof OroladoMap) return is_array($m) ? count($m) : 0;
+  $dir = rtrim($db['_store'] ?? orolado_store_dir(), '/\\') . '/' . $map;
+  $shards = glob($dir . '/*', GLOB_ONLYDIR) ?: [];
+  if (!$shards) return 0;
+  $sample = count($shards) <= 16 ? $shards : array_intersect_key($shards, array_flip(array_rand($shards, 16)));
+  $n = 0;
+  foreach ($sample as $sh) $n += count(glob($sh . '/*.json') ?: []);
+  $est = count($shards) <= 16 ? $n : (int) round($n / count($sample) * count($shards));
+  return $est;
+}
+
+/**
+ * Ménage d'une table « fiches » : supprime les fiches mortes d'UN sous-dossier pris au hasard
+ * (ou de tous si $all). Écrit sous le verrou global, index mis à jour.
+ */
+function orolado_store_sweep(array &$db, string $map, callable $isDead, bool $all = false): int {
+  $m = $db[$map] ?? null;
+  if (!$m instanceof OroladoMap) return 0;
+  $store = $db['_store'] ?? orolado_store_dir();
+  $dir = rtrim($store, '/\\') . '/' . $map;
+  $shards = $all ? (glob($dir . '/*', GLOB_ONLYDIR) ?: []) : [$dir . '/' . bin2hex(chr(random_int(0, 255)))];
+  $n = 0;
+  foreach ($shards as $sh) {
+    foreach (glob($sh . '/*.json') ?: [] as $f) {
+      $j = json_decode((string) @file_get_contents($f), true);
+      if (!is_array($j) || !isset($j['k'])) continue;
+      if (!$isDead($j['v'] ?? null)) continue;
+      unset($m[(string) $j['k']]);
+      $n++;
+    }
+  }
+  return $n;
+}
+
+/**
+ * Passage à l'ancien format → fiches (une seule fois, automatique, sous verrou). Une copie
+ * complète de l'ancien fichier est gardée dans data/archive/ avant tout changement.
+ */
+function orolado_store_migrate_core(array $core, string $file): array {
+  $legacy = false;
+  foreach (orolado_store_maps() as $m) {
+    if (isset($core[$m]) && is_array($core[$m]) && $core[$m] !== []) { $legacy = true; break; }
+  }
+  if (!$legacy) return orolado_store_core($core);
+  $arch = dirname($file) . '/archive';
+  if (!is_dir($arch)) @mkdir($arch, 0755, true);
+  @file_put_contents($arch . '/orolado-avant-fiches-' . date('Ymd-His') . '-' . bin2hex(random_bytes(2)) . '.json', json_encode($core, JSON_UNESCAPED_UNICODE));
+  $store = orolado_store_dir($file);
+  foreach (orolado_store_maps() as $m) {
+    $rows = (isset($core[$m]) && is_array($core[$m])) ? $core[$m] : [];
+    // L'ancien fichier est une photo complète : les fiches deviennent exactement cette photo.
+    $map = new OroladoMap($m, $store);
+    $map->replaceAll(array_filter($rows, static fn($v, $k) => $v !== null && (string) $k !== '', ARRAY_FILTER_USE_BOTH));
+    $map->flush(orolado_store_index_callback($m, $store));
+  }
+  return orolado_store_core($core);
+}
+
+/** Reconstruit les index des joueurs (outil de réparation, lent). */
+function orolado_store_rebuild_index(?string $file = null): int {
+  $store = orolado_store_dir($file);
+  $idx = $store . '/_idx';
+  foreach (glob($idx . '/*/*.json') ?: [] as $f) @unlink($f);
+  $n = 0;
+  foreach (['users', 'sessions'] as $name) {
+    $cb = orolado_store_index_callback($name, $store);
+    $map = new OroladoMap($name, $store);
+    foreach ($map->toArray() as $id => $row) { $cb((string) $id, null, $row); $n++; }
+  }
+  return $n;
 }
 
 function maketou_alias_email(?string $userId = null): string {
@@ -2823,10 +3335,8 @@ function credit_paid_deposit(array $hit): array {
   $fp = fopen($file, 'c+');
   if (!$fp) return ['ok' => false, 'reason' => 'db'];
   flock($fp, LOCK_EX);
-  $raw = stream_get_contents($fp);
-  $db = json_decode($raw ?: '', true);
-  if (!is_array($db)) $db = blank_db();
-  $db = array_merge(blank_db(), $db);
+  // Lecture sous verrou, fiches branchées (joueurs, soldes, connexions hors du gros fichier).
+  $db = orolado_store_read_locked($fp, $file);
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
   if (!isset($db['processedTx']) || !is_array($db['processedTx'])) $db['processedTx'] = [];
 
@@ -3027,10 +3537,7 @@ function credit_paid_deposit(array $hit): array {
     $db['users'][$uid]['transactions'] = array_slice($db['users'][$uid]['transactions'], 0, 1500);
   }
 
-  rewind($fp);
-  ftruncate($fp, 0);
-  fwrite($fp, json_encode($db, JSON_UNESCAPED_UNICODE));
-  fflush($fp);
+  orolado_store_write_locked($fp, $file, $db);
   flock($fp, LOCK_UN);
   fclose($fp);
   $op = strtolower((string) ($dep['operator'] ?? $txOp));
@@ -4231,8 +4738,8 @@ function brevo_send_wd_otp(string $email, string $code): array {
   return $sent;
 }
 
-function orolado_pending_regs(array &$db): array {
-  if (!isset($db['pendingRegistrations']) || !is_array($db['pendingRegistrations'])) {
+function orolado_pending_regs(array &$db): array|OroladoMap {
+  if (!isset($db['pendingRegistrations']) || !orolado_is_map($db['pendingRegistrations'])) {
     $db['pendingRegistrations'] = [];
   }
   return $db['pendingRegistrations'];
@@ -4303,15 +4810,24 @@ function orolado_otp_touch_expiry(array &$row): void {
 
 function orolado_purge_expired_pending(array &$db): void {
   $now = time();
-  if (!isset($db['pendingRegistrations']) || !is_array($db['pendingRegistrations'])) return;
-  foreach ($db['pendingRegistrations'] as $email => $row) {
+  if (!isset($db['pendingRegistrations']) || !orolado_is_map($db['pendingRegistrations'])) return;
+  $dead = static function ($row) use ($now): bool {
+    if (!is_array($row)) return true;
     $sessionExp = (int) ($row['sessionExpiresAt'] ?? 0);
     if ($sessionExp <= 0) {
       $created = (int) ($row['createdAtTs'] ?? 0);
       if ($created <= 0) $created = strtotime((string) ($row['createdAt'] ?? '')) ?: 0;
       $sessionExp = $created > 0 ? $created + OROLADO_OTP_PENDING_KEEP : (int) ($row['expiresAt'] ?? 0);
     }
-    if ($sessionExp > 0 && $sessionExp < $now) unset($db['pendingRegistrations'][$email]);
+    return $sessionExp > 0 && $sessionExp < $now;
+  };
+  // Fiches : ménage d'un seul sous-dossier par inscription (rapide, même avec 1 million de codes).
+  if ($db['pendingRegistrations'] instanceof OroladoMap) {
+    orolado_store_sweep($db, 'pendingRegistrations', $dead);
+    return;
+  }
+  foreach ($db['pendingRegistrations'] as $email => $row) {
+    if ($dead($row)) unset($db['pendingRegistrations'][$email]);
   }
 }
 
@@ -4884,15 +5400,21 @@ function orolado_oxapay_uid_from_order(string $orderId, array $db): string {
   $orderId = trim($orderId);
   if ($orderId === '' || !preg_match('/^oro_([a-zA-Z0-9]+)_/', $orderId, $m)) return '';
   $compact = strtolower((string) $m[1]);
-  foreach (($db['users'] ?? []) as $id => $u) {
-    $rawId = (string) (is_array($u) ? ($u['id'] ?? $id) : $id);
-    $uid = strtolower((string) preg_replace('/[^a-zA-Z0-9]/', '', $rawId));
-    if ($uid !== '' && $uid === $compact) return $rawId;
-  }
+  // D'abord le dépôt lui-même (il connaît son joueur).
   foreach (($db['deposits'] ?? []) as $d) {
     if (!is_array($d)) continue;
     $oid = (string) ($d['id'] ?? $d['ref'] ?? '');
     if ($oid !== '' && strcasecmp($oid, $orderId) === 0) return (string) ($d['userId'] ?? '');
+  }
+  // Sinon : l'id compacté (sans tirets) est retrouvé directement, sans parcourir tous les joueurs.
+  $cands = [];
+  if (preg_match('/^[0-9a-f]{32}$/', $compact)) {
+    $cands[] = substr($compact, 0, 8) . '-' . substr($compact, 8, 4) . '-' . substr($compact, 12, 4) . '-' . substr($compact, 16, 4) . '-' . substr($compact, 20);
+  }
+  if (str_starts_with($compact, 'u')) $cands[] = 'u_' . substr($compact, 1);
+  $cands[] = $compact;
+  foreach ($cands as $cand) {
+    if (isset($db['users'][$cand]) && is_array($db['users'][$cand])) return (string) ($db['users'][$cand]['id'] ?? $cand);
   }
   return '';
 }
@@ -5301,8 +5823,7 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
     break;
   }
   if ($ref === '' && $email !== '') {
-    foreach ($db['users'] as $id => $u) {
-      if (!is_array($u)) continue;
+    foreach (orolado_users_by_email($db, $email) as $id => $u) {
       if (strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
       $uid = (string) ($u['id'] ?? $id);
       $ref = $orderId !== '' ? $orderId : ('oro_wh_' . bin2hex(random_bytes(8)));

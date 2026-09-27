@@ -93,15 +93,8 @@ function make_token(string $userId, string $secret): string {
 }
 
 function find_user(array $db, string $email): ?array {
-  $email = strtolower(trim($email));
-  foreach ($db['users'] as $u) {
-    if (!is_array($u)) continue;
-    $mails = [
-      strtolower(trim((string) ($u['email'] ?? ''))),
-      strtolower(trim((string) ($u['originalEmail'] ?? ''))),
-    ];
-    if ($email !== '' && in_array($email, $mails, true)) return $u;
-  }
+  // Recherche par index (e-mail actuel ou d'origine) : plus de parcours de tous les joueurs.
+  foreach (orolado_users_by_email($db, $email) as $u) return $u;
   return null;
 }
 
@@ -170,16 +163,13 @@ function metrics(array $db): array {
 }
 
 function alloc_public_id(array &$db): string {
-  $used = [];
-  foreach ($db['users'] as $u) {
-    $p = (string) ($u['publicId'] ?? '');
-    if ($p !== '') $used[$p] = true;
+  // Vérification par index (plus de parcours de tous les joueurs). 6 chiffres d'abord ; si ça
+  // devient plein (des centaines de milliers de comptes), 8 chiffres.
+  for ($i = 0; $i < 60; $i++) {
+    $pid = 'ORO-' . (string) ($i < 20 ? random_int(100000, 999999) : random_int(10000000, 99999999));
+    if (!orolado_public_id_taken($db, $pid)) return $pid;
   }
-  for ($i = 0; $i < 40; $i++) {
-    $pid = 'ORO-' . (string) random_int(100000, 999999);
-    if (empty($used[$pid])) return $pid;
-  }
-  return 'ORO-' . substr((string) time(), -6);
+  return 'ORO-' . substr((string) time(), -6) . random_int(10, 99);
 }
 
 function admin_log(array &$db, string $adminEmail, string $targetPublicId, string $type, int $amount, string $motif): void {
@@ -327,7 +317,7 @@ if ($action === 'registerStart') {
   orolado_purge_expired_pending($db);
   orolado_pending_regs($db);
   $pending =& $db['pendingRegistrations'];
-  if (!is_array($pending)) $pending = [];
+  if (!orolado_is_map($pending)) $pending = [];
   $prev = $pending[$email] ?? null;
   $now = time();
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
@@ -536,7 +526,7 @@ if ($action === 'passwordOtpStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide']);
     exit;
   }
-  if (!isset($db['pendingPasswordOtps']) || !is_array($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
+  if (!isset($db['pendingPasswordOtps']) || !orolado_is_map($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
   $prev = $db['pendingPasswordOtps'][$email] ?? null;
   $now = time();
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
@@ -627,7 +617,7 @@ if ($action === 'forgotOtpStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Invalid email']);
     exit;
   }
-  if (!isset($db['pendingPasswordOtps']) || !is_array($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
+  if (!isset($db['pendingPasswordOtps']) || !orolado_is_map($db['pendingPasswordOtps'])) $db['pendingPasswordOtps'] = [];
   $now = time();
   $prev = $db['pendingPasswordOtps'][$email] ?? null;
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_OTP_RESEND_COOLDOWN) {
@@ -864,13 +854,7 @@ if ($action === 'login') {
     if ($pwTry !== '' && !in_array($pwTry, $passTries, true)) $passTries[] = $pwTry;
   }
   $matches = [];
-  foreach ($db['users'] as $id => $u) {
-    if (!is_array($u)) continue;
-    $mails = [
-      strtolower(trim((string) ($u['email'] ?? ''))),
-      strtolower(trim((string) ($u['originalEmail'] ?? ''))),
-    ];
-    if ($email === '' || !in_array($email, $mails, true)) continue;
+  foreach (orolado_users_by_email($db, $email) as $id => $u) {
     if (!isset($u['id']) || (string) $u['id'] === '') $u['id'] = (string) $id;
     $matches[] = $u;
   }
@@ -1320,14 +1304,9 @@ if ($action === 'adjust') {
   }
   if (!isset($db['users'][$uid]) && !isset($db['vault'][$uid])) {
     $em = strtolower(trim((string) ($req['email'] ?? '')));
-    if ($em !== '' && isset($db['users']) && is_array($db['users'])) {
-      foreach ($db['users'] as $oid => $ou) {
-        if (!is_array($ou)) continue;
-        if (strtolower(trim((string) ($ou['email'] ?? ''))) === $em) {
-          $uid = (string) ($ou['id'] ?? $oid);
-          break;
-        }
-      }
+    foreach (orolado_users_by_email($db, $em) as $oid => $ou) {
+      $uid = (string) ($ou['id'] ?? $oid);
+      break;
     }
   }
   if (!isset($db['vault'][$uid])) $db['vault'][$uid] = ['demo' => 0, 'real' => 0];
@@ -1448,7 +1427,7 @@ if ($action === 'withdrawOtp') {
     ]);
     exit;
   }
-  if (!isset($db['withdrawOtps']) || !is_array($db['withdrawOtps'])) $db['withdrawOtps'] = [];
+  if (!isset($db['withdrawOtps']) || !orolado_is_map($db['withdrawOtps'])) $db['withdrawOtps'] = [];
   $prev = $db['withdrawOtps'][$uid] ?? null;
   $now = time();
   if (is_array($prev) && !empty($prev['lastSentAt']) && ($now - (int) $prev['lastSentAt']) < OROLADO_WD_OTP_RESEND) {
@@ -1493,7 +1472,7 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code de confirmation requis', 'needOtp' => true]);
     exit;
   }
-  if (!isset($db['withdrawOtps']) || !is_array($db['withdrawOtps'])) $db['withdrawOtps'] = [];
+  if (!isset($db['withdrawOtps']) || !orolado_is_map($db['withdrawOtps'])) $db['withdrawOtps'] = [];
   $otpRow = $db['withdrawOtps'][$uidOtp] ?? null;
   $nowOtp = time();
   if (!is_array($otpRow)) {

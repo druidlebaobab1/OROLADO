@@ -23,13 +23,10 @@ function orolado_email_taken(array $db, string $email, string $exceptUid, string
   $email = strtolower(trim($email));
   if ($email === '') return true;
   if (orolado_is_reserved_admin_email($email)) return true;
-  foreach (($db['users'] ?? []) as $id => $u) {
-    if (!is_array($u)) continue;
+  foreach (orolado_users_by_email($db, $email) as $id => $u) {
     $uid = (string) ($u['id'] ?? $id);
     if ($uid === $exceptUid) continue;
-    foreach (['email', 'originalEmail'] as $k) {
-      if (strtolower(trim((string) ($u[$k] ?? ''))) === $email) return true;
-    }
+    return true;
   }
   if (supabase_admin_ready()) {
     $url = rtrim(supabase_project_url(), '/');
@@ -73,7 +70,7 @@ function orolado_email_change_start(array &$db, array $me, string $newEmail): ar
   $row = ['newEmail' => $new, 'oldEmail' => $old, 'sbId' => $sb, 'step' => 'old', 'at' => time()];
   $sent = orolado_email_change_send($row, $old);
   if (empty($sent['ok'])) return ['ok' => false, 'reason' => 'Envoi du code impossible pour le moment'];
-  if (!isset($db['pendingEmailChanges']) || !is_array($db['pendingEmailChanges'])) $db['pendingEmailChanges'] = [];
+  if (!isset($db['pendingEmailChanges']) || !orolado_is_map($db['pendingEmailChanges'])) $db['pendingEmailChanges'] = [];
   $db['pendingEmailChanges'][$uid] = $row;
   return ['ok' => true, 'step' => 'old', 'sentTo' => $old, 'resendIn' => OROLADO_OTP_RESEND_UI];
 }
@@ -170,7 +167,14 @@ function orolado_email_apply(array &$db, string $uid, string $newEmail, string $
   // Toutes les fiches locales du même joueur (id court, id de la base, ancienne adresse) :
   // avant, une seule était changée et l'autre gardait l'ancienne adresse (visible et utilisable).
   $same = [];
-  foreach (($db['users'] ?? []) as $id => $row) {
+  // Candidats trouvés par index (id, id Supabase, ancienne adresse) : plus de parcours de tous les joueurs.
+  $cands = orolado_users_by_email($db, $old);
+  if ($sbId !== '') {
+    $cands += orolado_users_by_sb($db, $sbId);
+    if (isset($db['users'][$sbId]) && is_array($db['users'][$sbId])) $cands[$sbId] = $db['users'][$sbId];
+  }
+  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) $cands[$uid] = $db['users'][$uid];
+  foreach ($cands as $id => $row) {
     if (!is_array($row)) continue;
     $rid = (string) ($row['id'] ?? $id);
     $mails = [strtolower(trim((string) ($row['email'] ?? ''))), strtolower(trim((string) ($row['originalEmail'] ?? '')))];
@@ -201,12 +205,13 @@ function orolado_email_apply(array &$db, string $uid, string $newEmail, string $
 
 /** Ferme toutes les sessions du joueur sauf celle de cet appareil. */
 function orolado_logout_other_devices(array &$db, string $uid, string $keepToken, string $sbId = ''): int {
-  $before = count($db['sessions'] ?? []);
+  // Compte seulement les connexions de ce joueur (avant : toutes les connexions du site).
+  $before = count(orolado_sessions_of_user($db, $uid));
   orolado_revoke_user_sessions($db, $uid, $keepToken);
   if ($sbId === '') $sbId = orolado_balance_uuid($db, $uid);
   if (supabase_admin_ready() && orolado_email_uuid_ok($sbId)) {
     $url = rtrim(supabase_project_url(), '/');
     supabase_http($url . '/auth/v1/admin/users/' . rawurlencode($sbId) . '/logout', supabase_admin_headers(), '{}', 'POST');
   }
-  return max(0, $before - count($db['sessions'] ?? []));
+  return max(0, $before - count(orolado_sessions_of_user($db, $uid)));
 }

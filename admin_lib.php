@@ -415,6 +415,9 @@ function admin_ensure_php_readable(string $file): bool {
 
 function admin_decode_db_file(string $file): ?array {
   if (!admin_ensure_php_readable($file)) return null;
+  // Fichier principal : lecture normale (joueurs, soldes et connexions sont dans les fiches).
+  // Sinon l'admin verrait une liste de joueurs vide… et l'écrirait par-dessus les vraies fiches.
+  if (realpath($file) !== false && realpath($file) === realpath(orolado_data_file())) return load_db($file);
   $raw = @file_get_contents($file);
   if (!is_string($raw) || trim($raw) === '') {
     $fp = @fopen($file, 'r');
@@ -517,7 +520,8 @@ function admin_json_state(): array {
     'wdOpen' => $wdOpen,
     'byStatus' => $byStatus,
     'line' => $line,
-    'db' => is_array($db) ? $db : blank_db(),
+    // Jamais un $db vide « ordinaire » : écrit, il remplacerait toutes les fiches des joueurs.
+    'db' => is_array($db) ? $db : orolado_store_attach(blank_db(), orolado_data_file()),
   ];
   return $state;
 }
@@ -530,7 +534,7 @@ function admin_json_probe_public(): array {
 
 function admin_local_db(): array {
   $p = admin_json_state();
-  return is_array($p['db'] ?? null) ? $p['db'] : blank_db();
+  return is_array($p['db'] ?? null) ? $p['db'] : orolado_store_attach(blank_db(), orolado_data_file());
 }
 
 function admin_fill(string ...$vals): string {
@@ -1834,7 +1838,7 @@ function admin_keep_purge_tick(): array {
   }
 
   $wiped = 0;
-  foreach (array_keys($db['users'] ?? []) as $id) {
+  foreach (orolado_map_keys($db['users'] ?? []) as $id) {
     $id = (string) $id;
     if (isset($keep[$id])) continue;
     unset($db['users'][$id], $db['vault'][$id], $db['bans'][$id]);
@@ -1850,8 +1854,8 @@ function admin_keep_purge_tick(): array {
       return $uid !== '' && isset($keep[$uid]);
     }));
   }
-  if (isset($db['sessions']) && is_array($db['sessions'])) {
-    foreach ($db['sessions'] as $tok => $s) {
+  if (isset($db['sessions']) && orolado_is_map($db['sessions'])) {
+    foreach (orolado_map_array($db['sessions']) as $tok => $s) {
       if (!isset($keep[(string) ($s['userId'] ?? '')])) unset($db['sessions'][$tok]);
     }
   }
@@ -2110,7 +2114,7 @@ function admin_wipe_except_admin(): array {
   }
 
   $wiped = 0;
-  foreach (array_keys($db['users'] ?? []) as $id) {
+  foreach (orolado_map_keys($db['users'] ?? []) as $id) {
     $id = (string) $id;
     if (isset($keep[$id])) continue;
     unset($db['users'][$id], $db['vault'][$id], $db['bans'][$id]);
@@ -2122,8 +2126,8 @@ function admin_wipe_except_admin(): array {
   $db['support_messages'] = [];
   $db['pendingRegistrations'] = [];
   $db['blocked_identities'] = [];
-  if (isset($db['sessions']) && is_array($db['sessions'])) {
-    foreach ($db['sessions'] as $tok => $s) {
+  if (isset($db['sessions']) && orolado_is_map($db['sessions'])) {
+    foreach (orolado_map_array($db['sessions']) as $tok => $s) {
       if (!isset($keep[(string) ($s['userId'] ?? '')])) unset($db['sessions'][$tok]);
     }
   }
@@ -2209,8 +2213,8 @@ function admin_wipe_except_admin(): array {
 
 function admin_kill_user_sessions(array &$db, string $uid): int {
   $n = 0;
-  if ($uid === '' || !isset($db['sessions']) || !is_array($db['sessions'])) return 0;
-  foreach ($db['sessions'] as $tok => $s) {
+  if ($uid === '' || !isset($db['sessions']) || !orolado_is_map($db['sessions'])) return 0;
+  foreach (orolado_sessions_of_user($db, $uid) as $tok => $s) {
     if ((string) ($s['userId'] ?? '') === $uid) {
       unset($db['sessions'][$tok]);
       $n++;
@@ -2514,12 +2518,14 @@ function admin_health_rows(): array {
     'level' => $miss === [] ? 'ok' : 'error',
   ];
   $db = admin_local_db();
-  $sessN = is_array($db['sessions'] ?? null) ? count($db['sessions']) : 0;
-  $userN = is_array($db['users'] ?? null) ? count($db['users']) : 0;
+  // Estimation rapide (échantillon de sous-dossiers) : compter 100 000 fiches à chaque
+  // rafraîchissement de l'admin serait trop lent.
+  $sessN = orolado_store_estimate_count($db, 'sessions');
+  $userN = orolado_store_estimate_count($db, 'users');
   $rows[] = [
     'at' => $now,
     'service' => 'Sessions locales',
-    'message' => $sessN . ' session(s) · ' . $userN . ' compte(s) JSON',
+    'message' => '≈ ' . $sessN . ' connexion(s) · ≈ ' . $userN . ' compte(s) (fiches)',
     'level' => 'ok',
   ];
   $svc = function_exists('supabase_service_key') ? supabase_service_key() : '';

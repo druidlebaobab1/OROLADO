@@ -68,12 +68,16 @@ echo "3) Suppression définitive\n";
 $r = orolado_wipe_run(true, 'SUPPRIMER');
 check('nettoyage terminé', !empty($r['ok']) && empty($r['more']), json_encode($r));
 $db = load_db();
-check('fichier du site : seuls admin + gmail restent', array_keys($db['users']) === ['admin_master', $gmail], implode(',', array_keys($db['users'])));
+$keptIds = orolado_map_keys($db['users']);
+sort($keptIds);
+$wantIds = ['admin_master', $gmail];
+sort($wantIds);
+check('fichier du site : seuls admin + gmail restent', $keptIds === $wantIds, implode(',', $keptIds));
 check('soldes des faux comptes effacés, celui du vrai joueur intact', !isset($db['vault'][$fake2]) && !isset($db['vault']['u_court']) && (float) $db['vault'][$gmail]['real'] === 12.0);
 check('dépôts / retraits / trades des faux comptes effacés, ceux du vrai joueur gardés',
   array_column($db['deposits'], 'id') === ['d1'] && $db['withdrawals'] === [] && array_column($db['orders'], 'id') === ['o1']);
 check('messages et sessions des faux comptes effacés', array_column($db['support_messages'], 'id') === ['m2'] && !isset($db['sessions']['tF']) && isset($db['sessions']['tA'], $db['sessions']['tG']));
-check('inscriptions en attente effacées', ($db['pendingRegistrations'] ?? []) === []);
+check('inscriptions en attente effacées', orolado_map_array($db['pendingRegistrations'] ?? []) === []);
 $arch = (string) file_get_contents($tmp . '/data/archive/orders-2026-09.jsonl');
 check('archives d’historique : plus de trace des faux comptes', str_contains($arch, 'a1') && !str_contains($arch, 'a2'));
 check('journaux et caches du tableau effacés', !is_file($tmp . '/data/otp_mail.log') && !is_file($tmp . '/data/admin_cache_profiles_epoch2.json'));

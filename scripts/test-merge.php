@@ -40,7 +40,9 @@ $a['users']['u1']['lastSeen'] = 'maintenant';
 unset($a['sessions']['tokVieux']);                                          // déconnexion voulue
 save_db($file, $a);
 
-$f = json_decode((string) file_get_contents($file), true);
+// Relecture neuve (joueurs et connexions sont dans les fiches, le reste dans orolado.json).
+unset($GLOBALS['OROLADO_DB_BASE']);
+$f = load_db($file);
 echo "Après l'enregistrement de la vieille copie :\n";
 check('la nouvelle connexion (session) n’est PAS effacée → plus de « Session invalide »', isset($f['sessions']['tokNeuf']));
 check('la déconnexion voulue est bien appliquée', !isset($f['sessions']['tokVieux']));

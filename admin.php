@@ -49,8 +49,7 @@ function admin_login_check(string $email, string $password): ?array {
     orolado_bootstrap_admin($db, orolado_data_file());
   }
   $user = null;
-  foreach (($db['users'] ?? []) as $u) {
-    if (!is_array($u)) continue;
+  foreach (orolado_users_by_email($db, $email) as $u) {
     if (strtolower((string) ($u['email'] ?? '')) === $email && orolado_is_admin_user($u)) {
       $user = $u;
       break;
@@ -209,15 +208,14 @@ function admin_persist_json_real(string $uid, float $real, ?array $tx = null, ?a
   if ($uid === '' || !function_exists('with_db_lock')) return;
   $real = orolado_money($real);
   with_db_lock(static function ($box) use ($uid, $real, $tx, $dep) {
-    if (!isset($box->db['vault']) || !is_array($box->db['vault'])) $box->db['vault'] = [];
+    if (!isset($box->db['vault']) || !orolado_is_map($box->db['vault'])) $box->db['vault'] = [];
     $targets = [$uid];
     $email = '';
     if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) {
       $email = strtolower(trim((string) ($box->db['users'][$uid]['email'] ?? '')));
     }
     if ($email !== '') {
-      foreach ($box->db['users'] as $oid => $ou) {
-        if (!is_array($ou)) continue;
+      foreach (orolado_users_by_email($box->db, $email) as $oid => $ou) {
         if (strtolower(trim((string) ($ou['email'] ?? ''))) === $email) $targets[] = (string) $oid;
       }
     }
