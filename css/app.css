@@ -3609,3 +3609,4 @@ html body .chart-toolbar .chart-fs-label{white-space:nowrap;overflow:hidden;text
 html.is-android #depositModal .deposit-box.is-crypto{padding-top:8px!important;max-height:calc(100dvh - 12px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 html.is-android #depositModal .deposit-box.is-crypto .crypto-step-head{margin-bottom:2px!important;min-height:0!important}
 html.is-android #depositModal .deposit-box.is-crypto .modal-title{margin-bottom:2px!important}
+html body #screenTrade::before{display:none!important;content:none!important;background:none!important}
