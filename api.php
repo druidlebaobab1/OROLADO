@@ -224,8 +224,6 @@ $OROLADO_RATE_RULES = [
   'login'             => [['e', 30, 3600], ['i', 600, 3600]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
-  'oxapayInvoice'     => [['t', 30, 3600]],
-  'flutterwaveCheckout' => [['t', 30, 3600]],
 ];
 if (isset($OROLADO_RATE_RULES[$action])) {
   $rlEmail = strtolower(trim((string) ($req['email'] ?? '')));

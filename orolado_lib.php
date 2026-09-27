@@ -5383,6 +5383,9 @@ function orolado_abandon_open_deposit(array $req): array {
 }
 
 function orolado_oxapay_invoice(array $req): array {
+  // Anti-robots : 30 demandes de paiement par heure et par compte (toutes portes confondues).
+  $rlTok = trim((string) ($req['token'] ?? ''));
+  if ($rlTok !== '' && !orolado_rate_ok('pay_oxapay', $rlTok, 30, 3600)) return ['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.'];
   $file = orolado_data_file();
   $db = load_db($file);
   $token = (string) ($req['token'] ?? '');
@@ -5969,6 +5972,9 @@ function orolado_flw_http(string $method, string $path, ?array $body = null): ?a
 }
 
 function orolado_flutterwave_checkout(array $req): array {
+  // Anti-robots : 30 demandes de paiement par heure et par compte (toutes portes confondues).
+  $rlTok = trim((string) ($req['token'] ?? ''));
+  if ($rlTok !== '' && !orolado_rate_ok('pay_flutterwave', $rlTok, 30, 3600)) return ['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.'];
   $file = orolado_data_file();
   $db = load_db($file);
   $token = (string) ($req['token'] ?? '');
