@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2064") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2065") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3534,8 +3534,8 @@ html.is-android body #drawerProfile .drawer-legal{padding-bottom:calc(8px + env(
    « :not(#btnCloseDrawer) » donne à cette règle la priorité sur les 40 anciennes règles.
    ========================================================================== */
 html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2){
-  position:absolute!important;top:10px!important;right:10px!important;left:auto!important;bottom:auto!important;
-  width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
+  position:absolute!important;top:6px!important;right:6px!important;left:auto!important;bottom:auto!important;
+  width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;
   margin:0!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
   border-radius:50%!important;border:1px solid rgba(245,197,24,.42)!important;
   background:rgba(10,14,22,.82)!important;color:#E8EEF9!important;
@@ -3548,7 +3548,7 @@ html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2)::after{content
 html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2):hover,
 html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2):focus-visible{border-color:rgba(245,197,24,.9)!important;color:#F5C518!important;background:rgba(18,24,36,.92)!important}
 html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2):active{transform:scale(.94)!important}
-html body .btn-close:not(#btnCloseDrawer) .x-ico{width:16px;height:16px;display:block;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+html body .btn-close:not(#btnCloseDrawer) .x-ico{width:14px;height:14px;display:block;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
 /* Étape crypto du dépôt : elle a son propre bouton retour, la croix reste cachée (comme avant). */
 html body .deposit-box.is-crypto #closeDeposit:not(#oroX1):not(#oroX2){display:none!important}
 /* Les titres ne passent jamais sous la croix. */
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2064") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2065") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -3584,13 +3584,12 @@ html body .wd-modal-head{display:flex!important;align-items:center!important;jus
   min-height:38px;margin-bottom:12px!important;position:relative}
 html body .modal-head-row > .btn-close:not(#oroX1):not(#oroX2),
 html body .wd-modal-head > .btn-close:not(#oroX1):not(#oroX2){
-  position:relative!important;top:auto!important;right:auto!important;margin:-4px -4px 0 auto!important;align-self:flex-start}
+  position:relative!important;top:auto!important;right:auto!important;margin:-12px -10px 0 auto!important;align-self:flex-start}
 html body .modal-head-row > .modal-title,
 html body .wd-modal-head > .modal-title{padding-right:0!important;flex:1 1 auto;min-width:0}
 /* 2) Croix posée directement dans la fenêtre : coin haut-droit, et le premier bloc
       garde toujours une marge à droite + la hauteur de la croix. */
-html body .modal-box > .btn-close:not(#oroX1):not(#oroX2){top:8px!important;right:8px!important}
-html body .modal-box > .btn-close + *{padding-right:44px;min-height:38px;box-sizing:border-box}
+html body .modal-box > .btn-close:not(#oroX1):not(#oroX2){top:6px!important;right:6px!important}
 /* « PLEIN ÉCRAN » tient toujours dans la barre (ne déborde plus à droite sur Android). */
 html body .chart-toolbar .ind-pills{min-width:0;max-width:100%;overflow:hidden}
 html body .chart-toolbar .chart-fs-btn{flex:0 1 auto!important;min-width:0!important;max-width:100%;overflow:hidden;margin-left:auto;
@@ -3598,11 +3597,6 @@ html body .chart-toolbar .chart-fs-btn{flex:0 1 auto!important;min-width:0!impor
 html body .chart-toolbar .chart-fs-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:.72rem}
 @media (max-width:380px){html body .chart-toolbar .chart-fs-label{font-size:.64rem;letter-spacing:0}}
 @media (max-width:330px){html body .chart-toolbar .chart-fs-label{display:none}}
-/* Dépôt crypto sur Android : un peu moins d'espace en haut pour que tout tienne,
-   même sur les petits écrans (le QR code n'est pas touché). */
-html.is-android #depositModal .deposit-box.is-crypto{padding-top:8px!important;max-height:calc(100dvh - 12px);overflow-y:auto;-webkit-overflow-scrolling:touch}
-html.is-android #depositModal .deposit-box.is-crypto .crypto-step-head{margin-bottom:2px!important;min-height:0!important}
-html.is-android #depositModal .deposit-box.is-crypto .modal-title{margin-bottom:2px!important}
 html body .asset-chip[data-asset="titanpulse"] .asset-ico.sig-ico,
 html body .asset-chip.on[data-asset="titanpulse"] .asset-ico.sig-ico{filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9)) drop-shadow(0 0 4px rgba(255,255,255,.35))!important}
 /* Feu du bas : transition très douce vers le noir tout en bas (plus de trait clair net
@@ -3655,3 +3649,33 @@ html body .asset-chip.on[data-asset="titanpulse"] .asset-ico.sig-ico{filter:drop
   html.is-fullscreen body #chartToolbar .ind-pills .ind-btn{min-height:42px!important;height:42px!important;min-width:60px!important;
     padding-left:15px!important;padding-right:15px!important;font-size:.9rem!important}
 }
+/* Recharger (étape crypto) sur Android uniquement : même cadre qu'avant, juste réduit de 5 %
+   de façon proportionnelle (rien n'est déformé), pour les petits téléphones. */
+html.is-android #depositModal .deposit-box.is-crypto{zoom:.95}
+/* Logo d'indice choisi : lueur très douce qui suit la forme (plus de fond carré). */
+html body .asset-chip .asset-ico.sig-ico,
+html body .asset-chip.on .asset-ico.sig-ico,
+html body .asset-chip[data-asset="titanpulse"] .asset-ico.sig-ico,
+html body .asset-chip.on[data-asset="titanpulse"] .asset-ico.sig-ico{filter:none!important;background:transparent!important;box-shadow:none!important;opacity:.9}
+html body .asset-chip.on .asset-ico.sig-ico{opacity:1}
+html body .asset-chip.on .asset-ico.sig-ico svg{filter:drop-shadow(0 0 1.5px var(--sig,#fff))}
+/* PC (petit écran ET plein écran) : barre d'indicateurs répartie sur toute la largeur.
+   MA · BB · EMA à gauche — « + − » au milieu — ↺ à droite (puis Plein écran). */
+@media (min-width:860px){
+  html body #chartToolbar .ind-pills{width:100%;gap:12px!important;align-items:center}
+  html body #chartToolbar .ind-pills .ind-btn{min-height:36px!important;height:36px!important;min-width:52px!important;
+    padding-left:13px!important;padding-right:13px!important;font-size:.85rem!important}
+  html body #chartToolbar .ind-pills #chartZoomIn{margin-left:auto!important}
+  html body #chartToolbar .ind-pills #chartReset{margin-left:auto!important}
+  html body #chartToolbar .ind-pills #btnChartFs{margin-left:14px!important}
+  html body #chartToolbar .ind-pills .chart-tool-sep{display:none!important}
+  html.fs-trade body #chartToolbar .ind-pills .ind-btn,
+  html.is-fullscreen body #chartToolbar .ind-pills .ind-btn{min-height:42px!important;height:42px!important;min-width:60px!important}
+}
+@media (min-width:860px){
+  html body #chartToolbar .ind-pills #btnChartFs{min-height:36px!important;height:36px!important}
+  html.fs-trade body #chartToolbar,html.is-fullscreen body #chartToolbar{width:100%!important;max-width:none!important;display:flex!important}
+  html.fs-trade body #chartToolbar .ind-pills,html.is-fullscreen body #chartToolbar .ind-pills{flex:1 1 auto!important;width:auto!important;max-width:none!important}
+}
+/* Retrait : croix remontée dans le coin, loin du cadre « Solde retirable ». */
+html body #withdrawModal .wd-modal-head > .btn-close:not(#oroX1):not(#oroX2){margin:-9px -8px 0 auto!important}

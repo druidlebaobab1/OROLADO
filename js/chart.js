@@ -791,7 +791,7 @@
     [-47.5, [[-75, -66], [167, 170]]],
     [-52.5, [[-74, -67]]]
   ];
-  var BACKDROP_COINS = ['ico-btc', 'ico-eth', 'ico-usdt', 'ico-sol', 'ico-bnb', 'ico-xrp', 'ico-doge',
+  var BACKDROP_COINS = ['ico-btc', 'ico-eth', 'ico-usdt', 'ico-sol', 'ico-bnb', 'ico-doge',
     'ico-ton', 'ico-ada', 'ico-trx', 'ico-avax', 'ico-ltc', 'ico-link', 'ico-usdc', 'ico-matic',
     'ico-dot', 'ico-shib', 'ico-uni', 'ico-atom', 'ico-near', 'ico-bch', 'ico-xlm'];
   var bgCanvas = null;
@@ -906,7 +906,7 @@
     ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
     var m = ctx.measureText('OROLADO').width || 420;
     ctx.restore();
-    wmCached = Math.max(40, Math.min(100 * (w * 0.9) / m, h * 0.4));
+    wmCached = Math.max(44, Math.min(100 * (w * 0.97) / m, h * 0.5));
     wmKey = key;
     return wmCached;
   }
@@ -2502,7 +2502,7 @@
     ctx.save();
     // Grand OROLADO : occupe ~90 % de la largeur du graphique (publicité sur chaque capture),
     // plus visible qu'avant mais toujours derrière les bougies.
-    ctx.globalAlpha = 0.2;
+    ctx.globalAlpha = 0.24;
     var wmSize = watermarkSize(w, h);
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
@@ -2510,11 +2510,16 @@
     var wx = pad.l + w / 2;
     var wy = pad.t + h / 2;
     var grad = ctx.createLinearGradient(wx - w * 0.45, wy, wx + w * 0.45, wy);
-    grad.addColorStop(0, 'rgba(180,120,32,0.55)');
-    grad.addColorStop(0.45, 'rgba(245,197,24,0.95)');
-    grad.addColorStop(1, 'rgba(180,120,32,0.55)');
+    grad.addColorStop(0, 'rgba(214,150,40,0.85)');
+    grad.addColorStop(0.5, 'rgba(255,214,90,1)');
+    grad.addColorStop(1, 'rgba(214,150,40,0.85)');
     ctx.fillStyle = grad;
     ctx.fillText('OROLADO', wx, wy);
+    // Fin contour doré : les lettres restent lisibles même sur une vidéo compressée.
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = Math.max(1, wmSize / 70);
+    ctx.strokeStyle = 'rgba(255,224,130,0.9)';
+    ctx.strokeText('OROLADO', wx, wy);
     ctx.restore();
 
     var map = null;
