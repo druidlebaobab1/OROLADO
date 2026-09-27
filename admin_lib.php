@@ -112,11 +112,21 @@ function admin_country_name(string $iso2): string {
     'US' => 'États-Unis', 'BR' => 'Brésil', 'IN' => 'Inde', 'CN' => 'Chine',
     'AE' => 'Émirats', 'SA' => 'Arabie saoudite', 'GN' => 'Guinée',
   ];
-  return $names[$iso2] ?? $iso2;
+  if (isset($names[$iso2])) return $names[$iso2];
+  // Tous les autres pays : nom français fourni par PHP (extension intl) si elle est installée.
+  if (class_exists('Locale')) {
+    $n = Locale::getDisplayRegion('-' . $iso2, 'fr');
+    if (is_string($n) && $n !== '' && strtoupper($n) !== $iso2) return $n;
+  }
+  return $iso2;
 }
 
 function admin_country_cell(array $p): string {
   $raw = trim((string) ($p['country'] ?? $p['countryCode'] ?? $p['country_code'] ?? ''));
+  if (preg_match('/^[A-Za-z]{2}$/', $raw)) {
+    $iso2 = strtoupper($raw);
+    return trim(admin_flag_emoji($iso2) . ' ' . admin_country_name($iso2));
+  }
   $iso = admin_dial_iso($raw);
   if ($iso === '') $iso = admin_dial_iso((string) ($p['phone'] ?? $p['whatsapp'] ?? $p['mobile'] ?? ''));
   if ($iso === '') {
@@ -932,7 +942,9 @@ function admin_profiles(): array {
       if ($locT > $curT) $byId[$id]['lastSeen'] = $locSeen;
       $locDep = (float) ($u['realDepositTotal'] ?? 0);
       if ($locDep > (float) ($byId[$id]['depositTotal'] ?? 0)) $byId[$id]['depositTotal'] = $locDep;
-      if (($byId[$id]['country'] ?? '') === '') $byId[$id]['country'] = (string) ($u['countryCode'] ?? $u['country'] ?? '');
+      $isoLoc = strtoupper((string) ($u['country'] ?? ''));
+      if (preg_match('/^[A-Z]{2}$/', $isoLoc)) $byId[$id]['country'] = $isoLoc;
+      elseif (($byId[$id]['country'] ?? '') === '') $byId[$id]['country'] = (string) ($u['countryCode'] ?? '');
       if (empty($byId[$id]['lang'])) $byId[$id]['lang'] = (string) ($u['lang'] ?? $u['locale'] ?? '');
       continue;
     }
@@ -941,7 +953,7 @@ function admin_profiles(): array {
       'email' => (string) ($u['email'] ?? ''),
       'name' => (string) ($u['displayName'] ?? ''),
       'phone' => (string) ($u['phone'] ?? ''),
-      'country' => (string) ($u['countryCode'] ?? ''),
+      'country' => preg_match('/^[A-Z]{2}$/', strtoupper((string) ($u['country'] ?? ''))) ? strtoupper((string) $u['country']) : (string) ($u['countryCode'] ?? ''),
       'role' => (string) ($u['role'] ?? 'user'),
       'createdAt' => (string) ($u['createdAt'] ?? ''),
       'lastSeen' => (string) ($u['lastSeen'] ?? ''),

@@ -252,6 +252,10 @@ if ($action === 'registerStart') {
   $displayName = trim((string) ($req['displayName'] ?? ''));
   $phone = preg_replace('/\D/', '', (string) ($req['phone'] ?? ''));
   $countryCode = preg_replace('/[^\d+]/', '', (string) ($req['countryCode'] ?? '+225'));
+  // Vrai pays du joueur (avant : +225 par défaut pour tout le monde → tout le monde « Côte d'Ivoire »).
+  $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? '')) ?? '');
+  if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($req['countryIso'] ?? '')) ?? '');
+  if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = '';
   $passwordHash = trim((string) ($req['passwordHash'] ?? ''));
   $trafficSource = strtolower(trim((string) ($req['trafficSource'] ?? 'direct')));
   if ($trafficSource === '') $trafficSource = 'direct';
@@ -315,6 +319,7 @@ if ($action === 'registerStart') {
     'email' => $email,
     'phone' => $phone,
     'countryCode' => $countryCode !== '' ? $countryCode : '+225',
+    'country' => $countryIso,
     'passwordHash' => $passwordHash,
     'trafficSource' => $trafficSource,
     'trafficMedium' => $trafficMedium,
@@ -432,6 +437,7 @@ if ($action === 'registerVerify') {
       'email' => $email,
       'phone' => $phoneRow,
       'countryCode' => (string) ($row['countryCode'] ?? '+225'),
+      'country' => (string) ($row['country'] ?? ''),
       'passwordHash' => (string) ($row['passwordHash'] ?? ''),
       'role' => 'user',
       'createdAt' => date('c'),

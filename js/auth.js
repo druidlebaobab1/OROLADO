@@ -111,6 +111,7 @@
         email: email,
         phone: phone || '',
         countryCode: countryCode,
+        countryIso: (function () { try { return String(sessionStorage.getItem('oro_pay_cc') || ''); } catch (eCc) { return ''; } })(),
         passwordHash: passwordHash,
         trafficSource: trafficSource,
         trafficMedium: trafficMeta.medium || '',
