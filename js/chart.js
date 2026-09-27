@@ -889,7 +889,7 @@
         }
       }
     }
-    // Logos crypto : tous la même taille, rangés en quinconce régulier sur toute la zone
+    // Logos crypto : tous la même taille, rangés en lignes droites régulières sur toute la zone
     // du graphique (sans toucher la colonne des prix), très discrets.
     var cSize = 18;
     var cCols = Math.max(5, Math.round(w / 56));
@@ -901,7 +901,7 @@
     var cc;
     g.globalAlpha = 0.047;
     for (rr = 0; rr < cRows; rr++) {
-      var shift = (rr % 2) ? cellW / 2 : 0;
+      var shift = 0;
       for (cc = 0; cc < cCols; cc++) {
         var cxp = pad.l + cellW * (cc + 0.5) + shift;
         if (cxp > pad.l + w - cSize * 0.6) continue;
