@@ -841,7 +841,7 @@
     var step = Math.max(5, mw / 72);
     var degX = 360 * step / mw;
     var r = Math.max(0.95, step * 0.26);
-    g.fillStyle = 'rgba(160,185,225,0.24)';
+    g.fillStyle = 'rgba(160,185,225,0.15)';
     var i;
     var j;
     for (i = 0; i < WORLD_ROWS.length; i++) {
@@ -869,7 +869,7 @@
       var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 6);
       var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 4);
       if (img && img.complete && img.naturalWidth) {
-        g.globalAlpha = 0.08 + rnd() * 0.04;
+        g.globalAlpha = 0.055 + rnd() * 0.03;
         g.drawImage(img, cx - size / 2, cy - size / 2, size, size);
       }
     }
@@ -904,9 +904,10 @@
     if (key === wmKey) return wmCached;
     ctx.save();
     ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
-    var m = ctx.measureText('OROLADO').width || 420;
+    try { ctx.letterSpacing = '8px'; } catch (eLs) { /* ignore */ }
+    var m = ctx.measureText('OROLADO').width || 470;
     ctx.restore();
-    wmCached = Math.max(44, Math.min(100 * (w * 0.97) / m, h * 0.5));
+    wmCached = Math.max(36, Math.min(100 * (w * 0.74) / m, h * 0.26));
     wmKey = key;
     return wmCached;
   }
@@ -2500,26 +2501,28 @@
     drawGrid(pad, w, seriesW, h, minP, maxP, theme);
 
     ctx.save();
-    // Grand OROLADO : occupe ~90 % de la largeur du graphique (publicité sur chaque capture),
-    // plus visible qu'avant mais toujours derrière les bougies.
-    ctx.globalAlpha = 0.24;
+    // OROLADO en « verre gravé » : lettres creuses au fin contour doré, remplissage à peine
+    // visible, posé dans le bas du graphique (là où la courbe passe le moins). Lisible sur
+    // une capture ou une vidéo, sans jamais concurrencer les bougies.
     var wmSize = watermarkSize(w, h);
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
+    try { ctx.letterSpacing = Math.round(wmSize * 0.08) + 'px'; } catch (eLs) { /* ignore */ }
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     var wx = pad.l + w / 2;
-    var wy = pad.t + h / 2;
-    var grad = ctx.createLinearGradient(wx - w * 0.45, wy, wx + w * 0.45, wy);
-    grad.addColorStop(0, 'rgba(214,150,40,0.85)');
-    grad.addColorStop(0.5, 'rgba(255,214,90,1)');
-    grad.addColorStop(1, 'rgba(214,150,40,0.85)');
-    ctx.fillStyle = grad;
+    var wy = pad.t + h * 0.76;
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = '#F5D27A';
     ctx.fillText('OROLADO', wx, wy);
-    // Fin contour doré : les lettres restent lisibles même sur une vidéo compressée.
-    ctx.globalAlpha = 0.3;
-    ctx.lineWidth = Math.max(1, wmSize / 70);
-    ctx.strokeStyle = 'rgba(255,224,130,0.9)';
+    var grad = ctx.createLinearGradient(wx - w * 0.4, wy, wx + w * 0.4, wy);
+    grad.addColorStop(0, 'rgba(201,150,58,0.9)');
+    grad.addColorStop(0.5, 'rgba(255,226,150,1)');
+    grad.addColorStop(1, 'rgba(201,150,58,0.9)');
+    ctx.globalAlpha = 0.34;
+    ctx.lineWidth = Math.max(1, wmSize / 55);
+    ctx.strokeStyle = grad;
     ctx.strokeText('OROLADO', wx, wy);
+    try { ctx.letterSpacing = '0px'; } catch (eLs2) { /* ignore */ }
     ctx.restore();
 
     var map = null;
