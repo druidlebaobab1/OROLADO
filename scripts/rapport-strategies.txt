@@ -1,22 +1,25 @@
 OROLADO — stratégies de joueurs contre le vrai moteur de prix et de règlement
-2026-09-26 19:46 — 600 joueurs par stratégie, jusqu'à 1000 tours chacun, 1 000 $ de départ, mise 1 $
+2026-09-27 00:38 — 400 joueurs par stratégie, jusqu'à 600 tours chacun, 1 000 $ de départ, mise 1 $
 Retour joueur = argent rendu ÷ argent misé. Moins de 100 % = la stratégie perd sur la durée.
 
 Stratégie                                            Ordres    Misé ($)    Retour    Joueurs +  Ruinés
-Au hasard (88 %)                                      600000      600 000    94.07%         1.8%        0
-Toujours ACHETER                                      600000      600 000    93.95%         2.0%        0
-ACHETER + VENDRE en même temps (88 %)               1200000    1 200 000    94.00%         0.0%        0
-ACHETER + VENDRE en même temps (×5)                1200000    1 200 000    94.14%         6.3%        0
-ACHETER + VENDRE en même temps (×50)               1200000    1 200 000    93.98%        27.7%        0
-Martingale (double après perte)                      507787    2 476 853    94.98%        64.0%      176
-Anti-martingale (double après gain)                  600000    1 794 062    93.97%         9.3%        0
-Suivre la tendance (10 s)                             600000      600 000    94.01%         1.5%        0
-Contre la tendance (10 s)                             600000      600 000    93.81%         1.7%        0
-Suivre la tendance longue (1 min, trade 1 min)        600000      600 000    93.93%         2.0%        0
-Chasse au ×50                                        600000      600 000    94.08%        34.8%        0
-Boom : toujours VENDRE entre les pics                 600000      600 000    93.82%         1.8%        0
-Boom : ACHETER ×50 en attendant un pic               600000      600 000    94.04%        33.3%        0
-Boom : VENDRE juste après un pic                       8143        8 143    93.99%        43.3%        0
-Crash : toujours ACHETER entre les chutes             600000      600 000    93.97%         2.5%        0
+Au hasard (88 %)                                      240000      240 000    93.75%         3.5%        0
+Toujours ACHETER                                      240000      240 000    93.79%         3.8%        0
+ACHETER + VENDRE en même temps (88 %)                480000      480 000    94.00%         0.0%        0
+ACHETER + VENDRE en même temps (×5)                 480000      480 000    93.98%        11.2%        0
+ACHETER + VENDRE en même temps (×50)                480000      480 000    95.96%        35.0%        0
+Martingale (double après perte)                      212430    1 070 474    93.43%        71.0%       85
+Anti-martingale (double après gain)                  240000      714 147    93.71%        14.5%        0
+Suivre la tendance (10 s)                             240000      240 000    93.91%         5.2%        0
+Contre la tendance (10 s)                             240000      240 000    94.16%         7.2%        0
+Suivre la tendance longue (1 min, trade 1 min)        240000      240 000    94.13%         5.8%        0
+Chasse au ×50                                        240000      240 000    92.46%        33.5%        0
+Boom : toujours VENDRE entre les pics                 240000      240 000    93.96%         4.5%        0
+Boom : ACHETER ×50 en attendant un pic               240000      240 000    90.88%        27.8%        0
+Boom : VENDRE juste après un pic                     240000      240 000    93.88%         4.8%        0
+Crash : toujours ACHETER entre les chutes             240000      240 000    93.93%         7.8%        0
+Tout en haut → VENDRE ×5 (attendre le retour)      240000      240 000    93.92%        20.5%        0
+Tout en bas → ACHETER ×5 (attendre le retour)      240000      240 000    92.80%        15.8%        0
+Tout en haut → VENDRE 88 % (attendre le retour)     240000      240 000    94.46%         6.2%        0
 
 « Joueurs + » = part des joueurs qui finissent au-dessus de leur départ (chance à court terme).
