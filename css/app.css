@@ -3463,3 +3463,18 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
   html body #withdrawModal#withdrawModal #wdStepGrid{overflow:visible!important;flex-shrink:0!important}
   html body #withdrawModal#withdrawModal .wd-wager-text{font-size:.58rem!important}
 }
+
+/* Profil sur petits écrans : le haut ne change pas ; seules les lignes du menu du bas
+   (historiques, retrait, mot de passe, e-mail, appareils, déconnexion) sont un peu moins
+   hautes, pour que « Se déconnecter » et « © 2026 OROLADO » restent entièrement visibles. */
+@media (max-width:859px) and (max-height:760px){
+  html body #drawerProfile .drawer-item{min-height:36px!important;padding:5px 8px!important}
+  html body #drawerProfile .drawer-item.drawer-logout{min-height:34px!important;margin-top:0!important}
+  html body #drawerProfile .drawer-nav{gap:0!important}
+}
+@media (max-width:859px) and (max-height:620px){
+  html body #drawerProfile .drawer-item{min-height:32px!important;padding:3px 8px!important}
+}
+@media (max-width:859px) and (max-height:620px){
+  html body #drawerProfile.drawer{overflow-y:auto!important;overscroll-behavior:contain}
+}

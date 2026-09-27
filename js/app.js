@@ -577,7 +577,7 @@
     }
     locked = D6.roundMoney(Math.max(0, locked));
     var free = D6.roundMoney(Math.max(0, bal - locked));
-    var msg = 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.';
+    var msg = depositWagerText();
     return {
       ok: left <= 0,
       canWithdraw: free > 0.009,
