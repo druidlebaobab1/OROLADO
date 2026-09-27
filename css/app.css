@@ -3483,3 +3483,24 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
    dépasser l'écran. Il défile alors au lieu de couper « Se déconnecter ». iPhone inchangé. */
 html.is-android body #drawerProfile.drawer{overflow-y:auto!important;overscroll-behavior:contain}
 html.is-android body #drawerProfile .drawer-legal{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+
+/* Android, écrans courts (la barre d'adresse + la barre du bas mangent ~100 px) : on gagne
+   un peu de place pour que « © 2026 OROLADO · 18+ » soit entièrement visible sous
+   « Se déconnecter », avec un petit espace. Même ordre, mêmes boutons. */
+@media (max-height:700px){
+  html.is-android body #drawerProfile .drawer-item{min-height:31px!important;padding:2px 8px!important}
+  html.is-android body #drawerProfile .drawer-item.drawer-logout{min-height:31px!important}
+  html.is-android body #drawerProfile .wallet-card{padding:7px 8px 6px!important;margin-bottom:4px!important}
+  html.is-android body #drawerProfile .wallet-xpress{min-height:28px!important;margin-bottom:5px!important}
+  html.is-android body #drawerProfile .wallet-tab{min-height:36px!important;padding:3px 2px!important}
+  html.is-android body #drawerProfile .wallet-tabs{margin-bottom:5px!important}
+  html.is-android body #drawerProfile .wallet-addr-row{min-height:30px!important;padding:4px 8px!important}
+  html.is-android body #drawerProfile .drawer-legal{margin:4px 12px 0!important;padding-bottom:10px!important}
+}
+@media (max-height:700px){
+  html.is-android body #drawerProfile .drawer-item,
+  html.is-android body #drawerProfile .drawer-item.drawer-logout{min-height:29px!important}
+  html.is-android body #drawerProfile .card .list-row{padding-top:3px!important;padding-bottom:3px!important;min-height:0!important}
+  html.is-android body #drawerProfile .drawer-head{padding-top:4px!important;padding-bottom:2px!important}
+  html.is-android body #drawerProfile .prof-head{padding-bottom:4px!important}
+}
