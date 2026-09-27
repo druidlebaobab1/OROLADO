@@ -2051,7 +2051,7 @@ let listReq = 0;
 function bustList() { listCache = {}; }
 function fdate(s) { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); }
 function money(n) { return (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $'; }
-function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function paintHealth(h) {
   const bar = document.getElementById('btnHealthBar');
   const pan = document.getElementById('healthPanel');
@@ -2100,7 +2100,7 @@ async function loadBadges() {
 }
 function renderList(j) {
   const panel = document.getElementById('panel');
-  if (!j.ok) { panel.innerHTML = '<p class="muted" style="padding:12px">'+(j.reason||'Erreur')+'</p>'; return; }
+  if (!j.ok) { panel.innerHTML = '<p class="muted" style="padding:12px">'+esc(j.reason||'Erreur')+'</p>'; return; }
   document.getElementById('viewSum').textContent = j.summary || '';
   let html = '<table><thead><tr>'+(j.cols||[]).map(c=>'<th>'+esc(c)+'</th>').join('');
   if (j.actions) html += '<th></th>';
@@ -2108,7 +2108,7 @@ function renderList(j) {
   (j.rows||[]).forEach((r, i) => {
     const flag = r.flag || (r.suspect ? 'suspect' : '');
     const clickable = r.userId || r.kind === 'message';
-    html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+(r.userId||'')+'" data-row="'+i+'">';
+    html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+esc(r.userId||'')+'" data-row="'+i+'">';
     (r.cells||[]).forEach((c, ci) => {
       if ((view === 'alerts' || view === 'watch') && ci === 0) {
         html += '<td>';
@@ -2130,7 +2130,7 @@ function renderList(j) {
       if (r.pending && r.kind === 'withdraw') {
         html += '<button class="mini ok" data-act="approve" data-kind="wd" data-id="'+esc(r.ref)+'">Valider</button>';
         html += '<button class="mini bad" data-act="reject" data-kind="wd" data-id="'+esc(r.ref)+'">Rejeter</button>';
-        html += '<button class="mini" data-act="suspend" data-kind="wd" data-id="'+esc(r.ref)+'" data-uid="'+(r.userId||'')+'">Suspendre</button>';
+        html += '<button class="mini" data-act="suspend" data-kind="wd" data-id="'+esc(r.ref)+'" data-uid="'+esc(r.userId||'')+'">Suspendre</button>';
         html += '<button class="mini" data-act="silent" data-kind="wd" data-id="'+esc(r.ref)+'">Masquer</button>';
       }
       if (r.pending && r.kind === 'deposit') {
@@ -2213,7 +2213,7 @@ async function loadList(force) {
 function openMessage(m) {
   document.getElementById('userDetail').innerHTML =
     '<h2 style="color:var(--gold);margin:8px 0 4px">Message</h2>'+
-    '<p class="muted">'+(m.at||'')+' · '+(m.unread?'Non lu':'Lu')+'</p>'+
+    '<p class="muted">'+esc(m.at||'')+' · '+(m.unread?'Non lu':'Lu')+'</p>'+
     '<p><strong>'+esc(m.name||'—')+'</strong> · '+esc(m.email||'')+'</p>'+
     '<p>Sujet : <strong>'+esc(m.subject||'(sans sujet)')+'</strong></p>'+
     '<div class="msg-full">'+esc(m.body||m.cells&&m.cells[5]||'')+'</div>'+
