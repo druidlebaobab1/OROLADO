@@ -1,0 +1,11 @@
+OROLADO — stratégies de joueurs contre le vrai moteur de prix et de règlement
+2026-09-27 03:02 — 200 joueurs par stratégie, jusqu'à 250 tours chacun, 1 000 $ de départ, mise 1 $
+Retour joueur = argent rendu ÷ argent misé. Moins de 100 % = la stratégie perd sur la durée.
+
+Stratégie                                            Ordres    Misé ($)    Retour    Joueurs +  Ruinés
+Indice à 2× son départ → VENDRE 88 % (10 min)     50000       50 000    96.58%        31.0%        0
+Indice à 2× son départ → VENDRE ×5 (10 min)      50000       50 000    96.77%        35.0%        0
+Indice à 0,5× son départ → ACHETER 88 % (10 min)     50000       50 000    96.22%        26.5%        0
+Crash à 2× son départ → VENDRE 88 % (10 min)      50000       50 000    97.15%        30.0%        0
+
+« Joueurs + » = part des joueurs qui finissent au-dessus de leur départ (chance à court terme).
