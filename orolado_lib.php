@@ -502,9 +502,9 @@ function supabase_credit_real(string $userId, $amount, bool $depositTx = true): 
   $after = supabase_admin_vault($userId);
   $afterReal = $after ? orolado_money($after['real'] ?? 0) : $beforeReal;
   if (!orolado_credit_landed($beforeReal, $afterReal, $amount)) {
-    if (!supabase_write_real_abs($userId, $expect)) {
-      error_log('OROLADO credit_real non persisté user=' . $userId . ' attendu=' . $expect);
-    }
+    // Pas d'écriture « solde = X » (risque d'écraser une autre opération) : on prévient l'admin.
+    error_log('OROLADO credit_real non persisté user=' . $userId . ' attendu=' . $expect);
+    orolado_health_event('Caisse', 'Crédit de ' . $amount . ' $ non confirmé par la base (coffre ' . $userId . ') : vérifiez ce solde.');
   }
   if ($depositTx && $amount > 0) {
     supabase_http($url . '/rest/v1/transactions', $hdrs, json_encode([
@@ -579,11 +579,13 @@ function supabase_debit_real(string $userId, $amount): bool {
   if (is_array($rpc) && isset($rpc[0]) && is_array($rpc[0])) $rpc = $rpc[0];
   if (is_array($rpc) && !empty($rpc['ok'])) return true;
   if (is_array($rpc) && isset($rpc['reason']) && $rpc['reason'] === 'insufficient') return false;
+  // Réponse illisible : on relit seulement. Plus jamais d'écriture « solde = X » en secours :
+  // deux opérations en même temps pouvaient s'écraser et fabriquer (ou effacer) de l'argent.
   $after = supabase_admin_vault($userId);
   $afterReal = $after ? orolado_money($after['real'] ?? 0) : $beforeReal;
-  if (abs($afterReal - $expect) <= 0.05) return true;
-  if (supabase_write_real_abs($userId, $expect)) return true;
-  return orolado_put_real_exact($userId, $expect) !== null;
+  if (abs($afterReal - $expect) <= 0.009) return true;
+  orolado_health_event('Caisse', 'Débit de ' . $amount . ' $ non confirmé par la base (coffre ' . $userId . ') : opération refusée, vérifiez ce solde.');
+  return false;
 }
 
 /**
@@ -1411,11 +1413,9 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
   $again = supabase_admin_vault($payId);
   $next = $again ? orolado_money($again['real'] ?? 0) : orolado_money(max(0, $cur + $delta));
   $expect = orolado_money(max(0, $cur + $delta));
-  if ($again && abs($next - $expect) > 0.05) {
-    supabase_set_real($payId, $expect);
-    $again = supabase_admin_vault($payId);
-    if ($again) $next = orolado_money($again['real'] ?? 0);
-  }
+  // Écart possible si le joueur tradait au même moment : c'est normal, on garde le chiffre de la
+  // base (plus d'écriture « solde = X » qui effacerait son trade).
+  if ($again && abs($next - $expect) > 0.05) error_log('OROLADO ledger_apply écart user=' . $uid . ' attendu=' . $expect . ' lu=' . $next);
   if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $next);
   else $db['vault'][$uid]['real'] = $next;
   if ($asDeposit && $delta > 0) {
@@ -1481,12 +1481,27 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
 }
 
 function orolado_refund_wd_once(array &$db, array &$w): bool {
-  if (!empty($w['refundedAt']) || !empty($w['refunded'])) return false;
+  if (!empty($w['refunded'])) return false;
   $uid = (string) ($w['userId'] ?? $w['user_id'] ?? '');
   $amt = orolado_money(abs((float) ($w['amount'] ?? 0)));
   if ($uid === '' || $amt <= 0) {
     $w['refundedAt'] = date('c');
     $w['refunded'] = true;
+    return false;
+  }
+  // Une seule fois, même si l'admin clique 2 fois en même temps : la clé « wdr_ » est unique en base.
+  $payId = orolado_balance_uuid($db, $uid);
+  $once = ($payId !== '' && !empty($w['id'])) ? orolado_vault_credit_once($payId, 'wdr_' . $w['id'], $amt) : null;
+  if ($once !== null) {
+    orolado_mirror_vault_real($db, $uid, (float) $once['real']);
+    $w['refundedAt'] = date('c');
+    $w['refunded'] = true;
+    $w['refundReal'] = $once['real'];
+    return !$once['duplicate'];
+  }
+  if ($payId !== '') {
+    // Base injoignable : rien n'est marqué remboursé, l'admin pourra recliquer sans risque.
+    orolado_health_event('Retraits', 'Remboursement du retrait ' . ($w['id'] ?? '') . ' (' . $amt . ' $) non passé : base injoignable, recliquez plus tard.');
     return false;
   }
   $res = orolado_ledger_apply($db, $uid, $amt, 'Remboursement retrait refusé', false);

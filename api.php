@@ -195,7 +195,8 @@ function admin_log(array &$db, string $adminEmail, string $targetPublicId, strin
   $db['admin_logs'] = array_slice($db['admin_logs'], 0, 500);
 }
 
-$raw = file_get_contents('php://input');
+// Tests locaux uniquement (scripts/test-*.php) : requête fournie par le test, jamais en ligne.
+$raw = (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_INPUT'])) ? (string) $GLOBALS['OROLADO_FAKE_INPUT'] : file_get_contents('php://input');
 $req = json_decode($raw ?: '', true);
 if (!is_array($req)) {
   echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Requête invalide']);
@@ -1511,15 +1512,17 @@ if ($action === 'withdraw') {
     exit;
   }
   $amount = orolado_money($req['amount'] ?? 0);
-  $jsonRealWd = orolado_money($db['vault'][$me['id']]['real'] ?? 0);
-  $sbVault = supabase_admin_vault((string) $me['id']);
-  if ($sbVault && $jsonRealWd > orolado_money($sbVault['real'] ?? 0) + 0.05 && function_exists('orolado_put_real_exact')) {
-    orolado_put_real_exact((string) $me['id'], $jsonRealWd);
-    $sbVault = supabase_admin_vault((string) $me['id']);
+  // SÉCURITÉ : un retrait se fait UNIQUEMENT sur le coffre Supabase (la vraie caisse), jamais
+  // sur le chiffre du fichier, et on ne « remonte » plus jamais le coffre au chiffre du fichier
+  // (c'était une façon de fabriquer de l'argent). Les comptes « u_… » passent par leur coffre.
+  $payId = orolado_balance_uuid($db, (string) $me['id']);
+  if ($payId === '' && function_exists('orolado_ensure_balance_uuid')) $payId = orolado_ensure_balance_uuid((string) $me['id']);
+  $sbVault = preg_match(OROLADO_UUID_RE, $payId) ? supabase_admin_vault($payId) : null;
+  if (!$sbVault) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Service momentanément indisponible, réessayez dans un instant.']);
+    exit;
   }
-  $real = $sbVault
-    ? orolado_money($sbVault['real'] ?? 0)
-    : $jsonRealWd;
+  $real = orolado_money($sbVault['real'] ?? 0);
   $operatorEarly = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? '')));
   $minWithdraw = function_exists('orolado_withdraw_min_for')
     ? orolado_withdraw_min_for($operatorEarly)
@@ -1573,12 +1576,24 @@ if ($action === 'withdraw') {
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
   $amountFcfa = orolado_usd_to_fcfa($amount);
-  if ($sbVault && !supabase_debit_real((string) $me['id'], $amount)) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+  // Le code est « consommé » sous verrou juste avant le débit : deux demandes envoyées en même
+  // temps avec le même code ne peuvent pas passer toutes les deux.
+  $claimed = with_db_lock(function ($box) use ($uidOtp, $otpCode) {
+    $row = $box->db['withdrawOtps'][$uidOtp] ?? null;
+    if (!is_array($row) || !orolado_wd_otp_row_match($row, $uidOtp, $otpCode)) return ['ok' => false, 'skip_write' => true];
+    unset($box->db['withdrawOtps'][$uidOtp]);
+    return ['ok' => true];
+  });
+  if (empty($claimed['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code.', 'needOtp' => true, 'expired' => true]);
     exit;
   }
   unset($db['withdrawOtps'][$uidOtp]);
-  $after = $sbVault ? supabase_admin_vault((string) $me['id']) : null;
+  if (!supabase_debit_real($payId, $amount)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant']);
+    exit;
+  }
+  $after = supabase_admin_vault($payId);
   $db['vault'][$me['id']]['real'] = $after
     ? orolado_money($after['real'] ?? 0)
     : orolado_money($real - $amount);
@@ -1617,10 +1632,11 @@ if ($action === 'resolveWithdraw') {
   foreach ($db['withdrawals'] as &$w) {
     if (($w['id'] ?? '') !== $id) continue;
     if ($act === 'silent') {
+      // Remboursement seulement si le retrait n'a pas encore été payé.
+      if (in_array((string) ($w['status'] ?? ''), ['pending', 'review'], true)) orolado_refund_wd_once($db, $w);
       $w['status'] = 'silenced';
       $w['adminHidden'] = true;
       $w['playerHidden'] = true;
-      orolado_refund_wd_once($db, $w);
       save_db($file, $db);
       echo json_encode(['ok' => true, 'server' => true, 'act' => 'silent']);
       exit;
@@ -1635,8 +1651,14 @@ if ($action === 'resolveWithdraw') {
       exit;
     }
     $approve = ($act === 'approve');
+    if (!$approve) {
+      orolado_refund_wd_once($db, $w);
+      if (empty($w['refunded'])) {
+        echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Remboursement non passé (base injoignable). Réessayez dans un instant.']);
+        exit;
+      }
+    }
     $w['status'] = $approve ? 'approved' : 'rejected';
-    if (!$approve) orolado_refund_wd_once($db, $w);
     save_db($file, $db);
     echo json_encode(['ok' => true, 'server' => true, 'act' => $act]);
     exit;

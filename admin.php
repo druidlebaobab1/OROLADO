@@ -1668,9 +1668,16 @@ if ($isAjax) {
       $row['playerHidden'] = false;
       $row['adminHidden'] = false;
     } else if ($act === 'reject') {
+      // Un retrait déjà validé (donc payé) ne peut plus être « refusé » : ça rembourserait le joueur une 2e fois.
+      if (in_array(strtolower((string) ($row['status'] ?? '')), ['approved', 'paid', 'completed'], true)) {
+        admin_json(['ok' => false, 'reason' => 'Ce retrait est déjà validé : il ne peut plus être refusé.']);
+      }
+      orolado_refund_wd_once($db, $row);
+      if (empty($row['refunded'])) {
+        admin_json(['ok' => false, 'reason' => 'Remboursement non passé (base injoignable). Réessayez dans un instant.']);
+      }
       $row['status'] = 'rejected';
       $row['adminHidden'] = false;
-      orolado_refund_wd_once($db, $row);
     } else if ($act === 'silent') {
       $row['status'] = 'silenced';
       $row['adminHidden'] = true;
