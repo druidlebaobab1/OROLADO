@@ -19,3 +19,13 @@ data/stakes/
 feedcache/*.json
 feedcache/*.tmp
 admin-apercu.html
+
+# Fichiers de fonctionnement du serveur (jamais dans le code publié)
+data/archive/
+data/*.log
+data/rate_*.json
+data/crypto_prices.json
+data/cash_ops/
+data/kicks/
+data/settle_*.ok
+data/admin_*.json
