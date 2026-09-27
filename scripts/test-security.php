@@ -111,5 +111,22 @@ check('le nouveau mot de passe marche', !empty($r['ok']), (string) ($r['reason']
 check('l’empreinte du mot de passe n’est jamais renvoyée au téléphone', !isset($r['user']['pwTag']) && !isset($r['user']['passwordHash']));
 putenv('ADMIN_PASSWORD');
 
+echo "7) Compte créé directement chez Supabase (en contournant le site)\n";
+putenv('SUPABASE_ANON_KEY=fake-anon');
+$authUsers = [
+  'eyJpirate1' => ['id' => 'f0000000-0000-0000-0000-000000000001', 'email' => 'moi@test.com', 'email_confirmed_at' => date('c')],
+  'eyJpirate2' => ['id' => 'f0000000-0000-0000-0000-000000000002', 'email' => 'nouveau@test.com', 'email_confirmed_at' => null],
+  'eyJlegit3'  => ['id' => 'f0000000-0000-0000-0000-000000000003', 'email' => 'legit@test.com', 'email_confirmed_at' => date('c')],
+];
+// Réponse de Supabase selon le jeton présenté.
+$db = load_db();
+$tryTok = function (string $tok) use (&$db, $authUsers) {
+  $GLOBALS['OROLADO_FAKE_HTTP'] = fn(string $url) => str_contains($url, '/auth/v1/user') ? $authUsers[$tok] : [];
+  return orolado_session_user($db, $tok);
+};
+check('e-mail d’un joueur existant (moi@test.com) : pas de compte en double', $tryTok('eyJpirate1') === null && !isset($db['users']['f0000000-0000-0000-0000-000000000001']));
+check('e-mail non confirmé : refusé', $tryTok('eyJpirate2') === null);
+check('vrai compte Supabase confirmé, e-mail libre : accepté', is_array($tryTok('eyJlegit3')));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

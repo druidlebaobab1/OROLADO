@@ -1808,6 +1808,17 @@ function supabase_complete_deposit(string $ref, $amount, string $userId): ?array
   return is_array($rpc) ? $rpc : ['ok' => false, 'reason' => 'credit'];
 }
 
+/** Joueur du site ayant cet e-mail (actuel ou d'origine), ou null. */
+function find_user_any(array $db, string $email): ?array {
+  $email = strtolower(trim($email));
+  if ($email === '') return null;
+  foreach (($db['users'] ?? []) as $u) {
+    if (!is_array($u)) continue;
+    if (in_array($email, [strtolower(trim((string) ($u['email'] ?? ''))), strtolower(trim((string) ($u['originalEmail'] ?? '')))], true)) return $u;
+  }
+  return null;
+}
+
 function orolado_session_user(array &$db, ?string $token): ?array {
   if (!$token) return null;
   $token = trim((string) $token);
@@ -1844,6 +1855,11 @@ function orolado_session_user(array &$db, ?string $token): ?array {
   }
   if (!isset($db['users'][$id])) {
     $email = strtolower((string) ($sb['email'] ?? ''));
+    // SÉCURITÉ : un compte créé directement chez Supabase (en contournant le site) n'ouvre pas
+    // de compte ici si son e-mail n'est pas confirmé, ou si cet e-mail appartient déjà à un
+    // joueur du site (sinon : compte en double au nom d'un autre, risque de lien vers sa caisse).
+    if (empty($sb['email_confirmed_at']) && empty($sb['confirmed_at'])) return null;
+    if ($email === '' || find_user_any($db, $email) !== null) return null;
     $meta = is_array($sb['user_metadata'] ?? null) ? $sb['user_metadata'] : [];
     $name = (string) ($meta['display_name'] ?? '');
     if ($name === '') $name = $email !== '' ? explode('@', $email)[0] : 'Trader';
