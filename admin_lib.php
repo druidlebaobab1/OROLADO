@@ -111,6 +111,16 @@ function admin_country_name(string $iso2): string {
     'IT' => 'Italie', 'ES' => 'Espagne', 'PT' => 'Portugal', 'GB' => 'Royaume-Uni',
     'US' => 'États-Unis', 'BR' => 'Brésil', 'IN' => 'Inde', 'CN' => 'Chine',
     'AE' => 'Émirats', 'SA' => 'Arabie saoudite', 'GN' => 'Guinée',
+    'CO' => 'Colombie', 'VE' => 'Venezuela', 'MX' => 'Mexique', 'AR' => 'Argentine', 'PE' => 'Pérou',
+    'CL' => 'Chili', 'EC' => 'Équateur', 'BO' => 'Bolivie', 'PY' => 'Paraguay', 'UY' => 'Uruguay',
+    'PA' => 'Panama', 'CR' => 'Costa Rica', 'DO' => 'Rép. dominicaine', 'GT' => 'Guatemala', 'HN' => 'Honduras',
+    'SV' => 'Salvador', 'NI' => 'Nicaragua', 'CU' => 'Cuba', 'PR' => 'Porto Rico', 'CA' => 'Canada',
+    'QA' => 'Qatar', 'KW' => 'Koweït', 'BH' => 'Bahreïn', 'OM' => 'Oman', 'JO' => 'Jordanie', 'LB' => 'Liban',
+    'IQ' => 'Irak', 'LY' => 'Libye', 'SD' => 'Soudan', 'MR' => 'Mauritanie', 'TR' => 'Turquie', 'RU' => 'Russie',
+    'ID' => 'Indonésie', 'VN' => 'Viêt Nam', 'PH' => 'Philippines', 'PK' => 'Pakistan', 'BD' => 'Bangladesh',
+    'MY' => 'Malaisie', 'TH' => 'Thaïlande', 'SG' => 'Singapour', 'JP' => 'Japon', 'KR' => 'Corée du Sud', 'AU' => 'Australie',
+    'NL' => 'Pays-Bas', 'LU' => 'Luxembourg', 'AO' => 'Angola', 'MZ' => 'Mozambique', 'ET' => 'Éthiopie', 'ZM' => 'Zambie',
+    'ZW' => 'Zimbabwe', 'MG' => 'Madagascar', 'HT' => 'Haïti', 'TD' => 'Tchad', 'CF' => 'Centrafrique', 'BI' => 'Burundi', 'DJ' => 'Djibouti',
   ];
   if (isset($names[$iso2])) return $names[$iso2];
   // Tous les autres pays : nom français fourni par PHP (extension intl) si elle est installée.
