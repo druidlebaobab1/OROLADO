@@ -3394,7 +3394,17 @@ function orolado_min_deposit(?array $me): float {
   return 5.0;
 }
 
+/**
+ * Moyens de paiement en pause (Maketou, USDT direct sur adresse fixe) : fermés côté serveur,
+ * pas seulement cachés à l'écran. Pour en rallumer un un jour : .env OROLADO_PAY_MAKETOU=1
+ * ou OROLADO_PAY_USDT_DIRECT=1. (Actifs : Flutterwave et OxaPay, qui ne passent pas par ici.)
+ */
+function orolado_pay_enabled(string $method): bool {
+  return supabase_env('OROLADO_PAY_' . strtoupper($method)) === '1';
+}
+
 function orolado_initiate_deposit(array $req): array {
+  if (!orolado_pay_enabled('maketou')) return ['ok' => false, 'server' => true, 'code' => 'disabled', 'reason' => 'Moyen de paiement indisponible'];
   $file = orolado_data_file();
   $db = load_db($file);
   $token = (string) ($req['token'] ?? '');
@@ -3688,6 +3698,12 @@ function orolado_confirm_deposit(array $req): array {
     return orolado_flutterwave_confirm($req, $dep);
   }
 
+  if (!orolado_pay_enabled('maketou')) {
+    $out = orolado_deposit_status($req);
+    $out['paid'] = !empty($out['paid']);
+    $out['success'] = !empty($out['paid']);
+    return $out;
+  }
   // Harmonise cartId / sellId pour la vérification Maketou.
   if (empty($dep['sellId']) && !empty($dep['cartId'])) $dep['sellId'] = $dep['cartId'];
 
@@ -3770,6 +3786,10 @@ function maketou_handle_webhook(): void {
     exit;
   }
 
+  if (!orolado_pay_enabled('maketou')) {
+    echo json_encode(['ok' => true, 'ignored' => true, 'reason' => 'disabled']);
+    exit;
+  }
   $raw = file_get_contents('php://input') ?: '';
   $hasSig = false;
   foreach ([
@@ -4534,6 +4554,8 @@ function orolado_crypto_vault(array $db, string $uid): array {
 }
 
 function orolado_verify_crypto_deposit(array $req): array {
+  // Adresse USDT fixe partagée : n'importe qui pourrait « réclamer » la transaction d'un autre.
+  if (!orolado_pay_enabled('usdt_direct')) return ['ok' => false, 'server' => true, 'code' => 'disabled', 'reason' => 'Moyen de paiement indisponible'];
   $file = orolado_data_file();
   $db = load_db($file);
   $token = (string) ($req['token'] ?? '');
