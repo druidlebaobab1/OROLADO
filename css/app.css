@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2061") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2062") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -2637,9 +2637,9 @@ html body button.tab-asset.active[data-id*="boom"],
 button.tab-asset.active[data-id*="boom"]{
   border:1.5px solid transparent!important;
   background:
-    linear-gradient(180deg,rgba(18,23,34,.96),rgba(12,16,24,.96)) padding-box,
-    linear-gradient(90deg,#10B981 0%,#10B981 42%,#F43F5E 58%,#F43F5E 100%) border-box!important;
-  box-shadow:0 0 10px rgba(16,185,129,.18),0 0 10px rgba(244,63,94,.16)!important;
+    linear-gradient(180deg,rgba(0,70,40,.96),rgba(10,24,18,.96)) padding-box,
+    linear-gradient(90deg,#00E676,#00C853) border-box!important;
+  box-shadow:0 0 12px rgba(0,230,118,.35)!important;
   color:#ffffff!important}
 html body button.asset-chip.on[data-asset*="boom"] .n,
 html body button.asset-chip.on[data-asset*="boom"] .asset-ico,
@@ -3559,11 +3559,8 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2061") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2062") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
-/* ORO EMERALD (ex-Boom Spike) : vert émeraude propre. */
-html body .asset-chip[data-asset="boomspike"].on{border:1.5px solid #00E676!important;box-shadow:0 0 12px rgba(0,230,118,.4)!important;
-  background:linear-gradient(180deg,rgba(0,230,118,.24),rgba(0,90,50,.16))!important;color:#00E676!important}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .payout-live{color:#B9F6CA!important;-webkit-text-fill-color:#B9F6CA}
