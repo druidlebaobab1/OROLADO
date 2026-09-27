@@ -5592,12 +5592,14 @@ function orolado_flw_xaf_countries(): array {
 }
 
 /** 3 USD = 2000 XOF/XAF — Flutterwave n’accepte pas les centimes CFA. */
+// Un seul taux pour la carte en francs CFA, dans les deux sens : 600 FCFA = 1 $ par défaut
+// (réglable dans .env : USD_FCFA_RATE). Avant : 666,67 FCFA par dollar.
 function orolado_usd_to_cfa_int($usd): int {
-  return (int) max(100, round(orolado_money($usd) * 2000 / 3));
+  return (int) max(100, round(orolado_money($usd) * orolado_usd_fcfa_rate()));
 }
 
 function orolado_cfa_to_usd($cfa): float {
-  return orolado_money(((float) $cfa) * 3 / 2000);
+  return orolado_money(((float) $cfa) / orolado_usd_fcfa_rate());
 }
 
 function orolado_flw_norm_cc(string $raw): string {
@@ -5989,6 +5991,9 @@ function orolado_flutterwave_credit(string $txRef, string $extId = '', float $ve
   $pending = orolado_money($dep['amount'] ?? 0);
   $verifiedUsd = orolado_money($verifiedUsd);
   $usd = $verifiedUsd > 0 ? $verifiedUsd : $pending;
+  // Jamais plus que le montant demandé (le paiement carte est d'un montant fixe) : protège aussi
+  // un paiement lancé à l'ancien taux et confirmé après un changement de taux.
+  if ($pending > 0 && $usd > $pending) $usd = $pending;
   if ($usd + 0.0001 < orolado_oxapay_credit_floor()) return ['ok' => false, 'code' => 'min'];
   $paid = credit_paid_deposit([
     'ref' => (string) ($dep['id'] ?? $txRef),

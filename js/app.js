@@ -3363,7 +3363,8 @@
     return '';
   }
   function usdToCfaInt(usd) {
-    return Math.max(100, Math.round(Number(usd || 0) * 2000 / 3));
+    var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600) || 600;
+    return Math.max(100, Math.round(Number(usd || 0) * rate));
   }
 
   function normalizeFlwSession(session) {

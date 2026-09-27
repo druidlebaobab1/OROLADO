@@ -84,9 +84,29 @@ function orolado_feed_z(): float {
   return sqrt(-2.0 * log($u)) * cos(2.0 * M_PI * $v);
 }
 
+/**
+ * « Élastique » très mou vers le prix de départ, pour que les indices restent dans une zone
+ * saine pendant des années (sans lui, un hasard pur finit par partir vers 0 ou vers l'infini).
+ * Réglé pour qu'à long terme le prix reste en général entre ~0,5× et ~2× son départ
+ * (écart-type du log-prix = OROLADO_PRICE_BAND). Sur un trade de 10 min, l'effet est
+ * d'environ 1 à 3 % du mouvement normal : imperceptible, et le rendu aux joueurs ne change pas.
+ */
+const OROLADO_PRICE_BAND = 0.35;
+
+function orolado_feed_pull(array $a): float {
+  $var = $a['sigma'] * $a['sigma'];
+  if (($a['jumpP'] ?? 0) > 0) {
+    $jmin = (float) $a['jumpMin']; $jmax = (float) $a['jumpMax'];
+    $var += $a['jumpP'] * ($jmin * $jmin + $jmin * $jmax + $jmax * $jmax) / 3.0;
+  }
+  return $var / (2.0 * OROLADO_PRICE_BAND * OROLADO_PRICE_BAND);
+}
+
 /** Un tick, en centimes entiers. Copie exacte de FairCalib.Step (C#). */
 function orolado_feed_step(array $a, int $cents): int {
   $rel = $a['sigma'] * orolado_feed_z() + $a['drift'];
+  $baseCents = (float) $a['base'] * 100.0;
+  if ($cents > 0 && $baseCents > 0) $rel -= orolado_feed_pull($a) * log($cents / $baseCents);
   if ($a['jumpP'] > 0 && orolado_feed_u() < $a['jumpP']) {
     $rel += $a['jumpDir'] * ($a['jumpMin'] + ($a['jumpMax'] - $a['jumpMin']) * orolado_feed_u());
   }

@@ -78,6 +78,12 @@ $S = [
   // « Quand la courbe est tout en haut, elle va forcément redescendre » : on attend une forte
   // montée (le prix au plus haut des 2 dernières minutes, bien au-dessus) puis on VEND en ×5 ;
   // et l'inverse tout en bas.
+  // Élastique de long terme : l'indice est 2 fois AU-DESSUS (ou en dessous) de son prix de
+  // départ, on parie sur le « retour » à chaque trade de 10 min. Doit rester sous 100 %.
+  'Indice à 2× son départ → VENDRE 88 % (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 1.88, 'stake' => 1]], 2.0],
+  'Indice à 2× son départ → VENDRE ×5 (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 5.0, 'stake' => 1]], 2.0],
+  'Indice à 0,5× son départ → ACHETER 88 % (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'call', 'mult' => 1.88, 'stake' => 1]], 0.5],
+  'Crash à 2× son départ → VENDRE 88 % (10 min)' => ['crash300', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 1.88, 'stake' => 1]], 2.0],
   'Tout en haut → VENDRE ×5 (attendre le retour)' => ['v100', 30, function ($p, &$st) {
     $n = count($p->hist);
     if ($n < 480) return [];
@@ -103,12 +109,18 @@ $S = [
   }],
 ];
 
+// Filtre facultatif : php scripts/test-strategies.php joueurs trades "mot"
+if (isset($argv[3]) && $argv[3] !== '') $S = array_filter($S, static fn($k) => str_contains($k, $argv[3]), ARRAY_FILTER_USE_KEY);
 $rows = [];
 $t0 = microtime(true);
-foreach ($S as $name => [$asset, $dur, $fn]) {
+foreach ($S as $name => $spec) {
+  [$asset, $dur, $fn] = $spec;
+  $startMult = (float) ($spec[3] ?? 1.0);
   $staked = 0.0; $back = 0.0; $up = 0; $ruined = 0; $best = -INF; $worst = INF; $n = 0;
   for ($pl = 0; $pl < $players; $pl++) {
     $p = new Path($A[$asset], $asset);
+    // Indice placé loin de son prix de départ (test de l'élastique de long terme).
+    if ($startMult !== 1.0) $p->c = (int) round($p->c * $startMult);
     $p->run(600);
     $bal = 1000.0; $st = []; $start = $bal;
     // Seuls les vrais trades comptent (une stratégie qui attend son moment passe son tour).
@@ -145,5 +157,5 @@ foreach ($rows as $r) {
   $out .= sprintf("%-50s %9d %12s %8.2f%% %11.1f%% %8d\n", $r[0], $r[1], number_format($r[2], 0, ',', ' '), $r[4], $r[5], $r[6]);
 }
 $out .= "\n« Joueurs + » = part des joueurs qui finissent au-dessus de leur départ (chance à court terme).\n";
-file_put_contents(__DIR__ . '/rapport-strategies.txt', $out);
+file_put_contents(__DIR__ . (isset($argv[3]) && $argv[3] !== '' ? '/rapport-strategies-elastique.txt' : '/rapport-strategies.txt'), $out);
 echo $out;

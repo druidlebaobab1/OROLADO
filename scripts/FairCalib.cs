@@ -75,9 +75,19 @@ public static class FairCalib
     }
 
     // Un tick du générateur serveur, en centimes entiers (copie exacte de feed_lib.php).
+    // Même « élastique » que feed_lib.php (orolado_feed_pull, bande 0,35).
+    public const double PriceBand = 0.35;
+    public static double Pull(Asset a)
+    {
+        double v = a.Sigma * a.Sigma;
+        if (a.JumpP > 0) v += a.JumpP * (a.JumpMin * a.JumpMin + a.JumpMin * a.JumpMax + a.JumpMax * a.JumpMax) / 3.0;
+        return v / (2.0 * PriceBand * PriceBand);
+    }
+
     public static long Step(Asset a, long cents, Rng r)
     {
         double rel = a.Sigma * r.Z() + a.Drift;
+        if (cents > 0 && a.Base > 0) rel -= Pull(a) * Math.Log(cents / (a.Base * 100.0));
         if (a.JumpP > 0 && r.U() < a.JumpP) rel += a.JumpDir * (a.JumpMin + (a.JumpMax - a.JumpMin) * r.U());
         long d = (long)Math.Round(cents * rel, MidpointRounding.AwayFromZero);
         long next = cents + d;
