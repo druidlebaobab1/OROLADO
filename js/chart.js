@@ -904,10 +904,9 @@
     if (key === wmKey) return wmCached;
     ctx.save();
     ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
-    try { ctx.letterSpacing = '8px'; } catch (eLs) { /* ignore */ }
-    var m = ctx.measureText('OROLADO').width || 470;
+    var m = ctx.measureText('OROLADO').width || 420;
     ctx.restore();
-    wmCached = Math.max(36, Math.min(100 * (w * 0.74) / m, h * 0.26));
+    wmCached = Math.max(44, Math.min(100 * (w * 0.92) / m, h * 0.42));
     wmKey = key;
     return wmCached;
   }
@@ -2501,28 +2500,15 @@
     drawGrid(pad, w, seriesW, h, minP, maxP, theme);
 
     ctx.save();
-    // OROLADO en « verre gravé » : lettres creuses au fin contour doré, remplissage à peine
-    // visible, posé dans le bas du graphique (là où la courbe passe le moins). Lisible sur
-    // une capture ou une vidéo, sans jamais concurrencer les bougies.
+    // Grand OROLADO au centre, façon grandes plateformes : une seule teinte douce, très
+    // transparente, sans contour. On lit le nom sur une capture, les bougies restent devant.
     var wmSize = watermarkSize(w, h);
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
-    try { ctx.letterSpacing = Math.round(wmSize * 0.08) + 'px'; } catch (eLs) { /* ignore */ }
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    var wx = pad.l + w / 2;
-    var wy = pad.t + h * 0.76;
-    ctx.globalAlpha = 0.05;
-    ctx.fillStyle = '#F5D27A';
-    ctx.fillText('OROLADO', wx, wy);
-    var grad = ctx.createLinearGradient(wx - w * 0.4, wy, wx + w * 0.4, wy);
-    grad.addColorStop(0, 'rgba(201,150,58,0.9)');
-    grad.addColorStop(0.5, 'rgba(255,226,150,1)');
-    grad.addColorStop(1, 'rgba(201,150,58,0.9)');
-    ctx.globalAlpha = 0.34;
-    ctx.lineWidth = Math.max(1, wmSize / 55);
-    ctx.strokeStyle = grad;
-    ctx.strokeText('OROLADO', wx, wy);
-    try { ctx.letterSpacing = '0px'; } catch (eLs2) { /* ignore */ }
+    ctx.globalAlpha = 0.075;
+    ctx.fillStyle = '#E9D9B0';
+    ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
     ctx.restore();
 
     var map = null;
