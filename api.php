@@ -886,9 +886,15 @@ if ($action === 'login') {
         break 2;
       }
     }
-    if (!$okPass) {
+    // Le site connaît déjà le mot de passe de ce compte et il ne correspond pas : réponse
+    // immédiate (avant : 2 appels Supabase de 0,5 à 2 s chacun, pour arriver au même refus).
+    $hasLocalHash = false;
+    foreach ($matches as $candUser) {
+      if (orolado_stored_password_hash($candUser) !== '') { $hasLocalHash = true; break; }
+    }
+    if (!$okPass && !$hasLocalHash) {
       $sbAuth = null;
-      foreach ($passTries as $pwTry) {
+      foreach (array_slice($passTries, 0, 1) as $pwTry) {
         $probe = orolado_supabase_password_grant($email, $pwTry);
         if (is_array($probe) && !empty($probe['id'])) {
           $sbAuth = $probe;
@@ -990,7 +996,8 @@ if ($action === 'login') {
   }
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $official = orolado_sync_official_real($uid, $jsonReal);
-  if ($official <= 0.009 && function_exists('orolado_recover_wiped_real')) {
+  // Deuxième lecture seulement si la première n'a pas pu joindre la base.
+  if ($official <= 0.009 && empty($GLOBALS['OROLADO_VAULT_READ_OK']) && function_exists('orolado_recover_wiped_real')) {
     $official = orolado_recover_wiped_real($db, $uid, is_array($user) ? $user : []);
   }
   // Nouveau compte sans dépôt : pas de fantôme. Mais ne JAMAIS écraser un coffre

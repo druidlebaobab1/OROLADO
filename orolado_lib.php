@@ -1317,6 +1317,7 @@ function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $uuid = orolado_balance_uuid($db, $uid);
   $look = $uuid !== '' ? supabase_vault_lookup($uuid) : ['state' => 'skip', 'real' => 0.0];
   $state = (string) ($look['state'] ?? 'skip');
+  $GLOBALS['OROLADO_VAULT_READ_OK'] = $state === 'ok';
   if ($state === 'error' || $state === 'skip') return $jsonReal;
   if ($state === 'ok') return orolado_money($look['real'] ?? 0);
   // missing : pas d’invention depuis books/json

@@ -259,8 +259,8 @@
           return { ok: true, user: logged };
         }
         if (remote && remote.server && !remote.ok) {
-          var viaCloudReject = await tryCloudLogin();
-          if (viaCloudReject) return viaCloudReject;
+          // Le serveur a déjà tout vérifié (y compris Supabase si besoin) : refus immédiat,
+          // plus de 2e vérification depuis le téléphone (1 à 2 s de plus pour rien).
           return { ok: false, reason: remote.reason || 'Identifiants introuvables', field: 'loginPass' };
         }
         if (!remote) {

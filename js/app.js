@@ -5129,7 +5129,17 @@
     $('formLogin').addEventListener('submit', async function (e) {
       e.preventDefault();
       clearErrors();
-      var res = await D6.Auth.login({ identifier: String($('loginId').value || '').trim().toLowerCase(), password: $('loginPass').value });
+      // Retour immédiat au clic : le bouton passe en « Connexion… » et ne peut pas être recliqué.
+      var loginBtn = $('formLogin') && $('formLogin').querySelector('button[type="submit"]');
+      if (loginBtn && loginBtn.disabled) return;
+      var loginLabel = loginBtn ? loginBtn.textContent : '';
+      if (loginBtn) { loginBtn.disabled = true; loginBtn.classList.add('busy'); loginBtn.textContent = t('loginBusy'); }
+      var res;
+      try {
+        res = await D6.Auth.login({ identifier: String($('loginId').value || '').trim().toLowerCase(), password: $('loginPass').value });
+      } finally {
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.classList.remove('busy'); loginBtn.textContent = loginLabel; }
+      }
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
       setTimeout(function () { enterApp({ openFullscreen: true }); }, 80);
     });
