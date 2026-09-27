@@ -35,8 +35,8 @@ function orolado_feed_assets(): array {
     return ['base' => $base, 'sigma' => $sigma, 'drift' => 0.0, 'jumpP' => 0.0, 'jumpMin' => 0.0, 'jumpMax' => 0.0, 'jumpDir' => 0];
   };
   $jp = 1.0 / 300.0;
-  $jMin = 0.0040;
-  $jMax = 0.0065;
+  $jMin = 0.0025;
+  $jMax = 0.0040;
   $jMean = $jp * ($jMin + $jMax) / 2.0;
   $a = [
     'v100' => $plain(13000.42, 0.00020),
@@ -47,7 +47,7 @@ function orolado_feed_assets(): array {
     'v75' => $plain(8700.18, 0.00016),
     'nexusprime' => $plain(8120.60, 0.00018),
     'titanpulse' => $plain(9560.40, 0.00028),
-    'boomspike' => ['base' => 3890.20, 'sigma' => 0.00008, 'drift' => -$jMean, 'jumpP' => $jp, 'jumpMin' => $jMin, 'jumpMax' => $jMax, 'jumpDir' => 1],
+    'boomspike' => $plain(3890.20, 0.00012),
     'crash300' => ['base' => 4210.55, 'sigma' => 0.00008, 'drift' => $jMean, 'jumpP' => $jp, 'jumpMin' => $jMin, 'jumpMax' => $jMax, 'jumpDir' => -1],
   ];
   return $a;

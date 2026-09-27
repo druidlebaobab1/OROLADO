@@ -1694,7 +1694,7 @@ function admin_asset_name(string $id): string {
   $map = [
     'v100' => 'VOLATILITY 100', 'v75' => 'VOLATILITY 75', 'stable' => 'STABLE CORE',
     'apex' => 'ORO APEX 500', 'horizon' => 'ORO HORIZON 50', 'crash' => 'CRASH 300',
-    'gold' => 'ORO GOLD', 'boom' => 'BOOM SPIKE', 'nexus' => 'NEXUS PRIME', 'titan' => 'TITAN PULSE',
+    'gold' => 'ORO 888', 'boom' => 'ORO EMERALD', 'nexus' => 'NEXUS PRIME', 'titan' => 'TITAN PULSE',
   ];
   return $map[$id] ?? strtoupper($id !== '' ? $id : '—');
 }

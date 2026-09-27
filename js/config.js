@@ -170,8 +170,8 @@
       },
       goldtrend: {
         id: 'goldtrend',
-        name: 'ORO GOLD',
-        short: 'GOLD',
+        name: 'ORO 888',
+        short: '888',
         tag: 'Grandes vagues',
         chart: 'line',
         lineColor: '#f5a623',
@@ -188,19 +188,23 @@
       },
       boomspike: {
         id: 'boomspike',
-        name: 'BOOM SPIKE',
-        short: 'BOOM',
-        tag: 'Explosions',
-        chart: 'candle',
-        candleThin: false,
+        // Ancien « Boom Spike » : même identifiant (historique, stats), nouvelle
+        // simulation simple et régulière, tracé vert émeraude.
+        name: 'ORO EMERALD',
+        short: 'EMRLD',
+        tag: 'Emerald flow',
+        chart: 'line',
+        lineColor: '#00E676',
+        lineWidth: 2.4,
+        areaRgb: '0,230,118',
         basePrice: 3890.20,
-        tickNoise: 0.62,
+        tickNoise: 0.40,
         tickMs: 28,
         ticksPerCandle: 8,
         payoutMin: 1.88,
         payoutMax: 1.98,
-        accent: '#D4A373',
-        accentDim: '212,163,115',
+        accent: '#00E676',
+        accentDim: '0,230,118',
         feed: 'boomspike'
       },
       nexusprime: {

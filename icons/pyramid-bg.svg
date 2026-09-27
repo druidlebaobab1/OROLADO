@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMax meet">
+  <defs>
+    <linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE7A0" stop-opacity=".22"/><stop offset="1" stop-color="#C98A12" stop-opacity=".10"/></linearGradient>
+    <linearGradient id="r" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8780C" stop-opacity=".12"/><stop offset="1" stop-color="#5E3A06" stop-opacity=".05"/></linearGradient>
+    <radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFD35A" stop-opacity=".30"/><stop offset="1" stop-color="#FFB300" stop-opacity="0"/></radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <mask id="m"><rect width="800" height="520" fill="url(#fade)"/></mask>
+  </defs>
+  <circle cx="400" cy="70" r="120" fill="url(#g)"/>
+  <g mask="url(#m)">
+    <path d="M400 70 L40 520 H400 Z" fill="url(#l)"/>
+    <path d="M400 70 V520 H760 Z" fill="url(#r)"/>
+    <g stroke="#F5C84C" stroke-opacity=".10" stroke-width="2" fill="none">
+      <path d="M400 70 L40 520 M400 70 L760 520 M400 70 V520"/>
+      <path d="M288 210 H512 M216 300 H584 M144 390 H656 M72 480 H728"/>
+    </g>
+  </g>
+</svg>

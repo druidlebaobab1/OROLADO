@@ -314,7 +314,9 @@
     }
     liveBusy = true;
     var done = function () { liveBusy = false; };
-    fetch('feedcache/live.json?t=' + Math.floor(Date.now() / 250), { cache: 'no-store' }).then(function (r) {
+    // Adresse différente toutes les 250 ms : Cloudflare peut servir la même copie à tous
+    // les joueurs de ce quart de seconde (pas d'en-tête no-cache qui l'en empêcherait).
+    fetch('feedcache/live.json?t=' + Math.floor(Date.now() / 250), { cache: 'default' }).then(function (r) {
       return r.ok ? r.json() : null;
     }).then(function (j) {
       var serverNow = Date.now() + clock.offset;
@@ -392,7 +394,7 @@
   }
 
   function spikeFlag(id, o, c) {
-    if (id !== 'boomspike' && id !== 'crash300') return false;
+    if (id !== 'crash300') return false;
     return Math.abs(c - o) > o * 0.003;
   }
 

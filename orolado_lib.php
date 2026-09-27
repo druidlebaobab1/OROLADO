@@ -168,7 +168,10 @@ function orolado_health_event(string $service, string $message, string $level = 
 
 function orolado_rate_ok(string $scope, string $key, int $max, int $window): bool {
   $scope = preg_replace('/[^a-z0-9_]/', '', strtolower($scope)) ?: 'x';
-  $path = orolado_data_dir() . '/rate_' . $scope . '.json';
+  $h = substr(hash('sha256', $key), 0, 24);
+  // 16 petits fichiers par règle (selon l'empreinte de la clé) au lieu d'un gros fichier
+  // relu et réécrit en entier à chaque requête : 16× moins d'attente et d'écriture.
+  $path = orolado_data_dir() . '/rate_' . $scope . '__' . $h[0] . '.json';
   $fp = @fopen($path, 'c+');
   if (!$fp) return true;
   flock($fp, LOCK_EX);
@@ -179,10 +182,9 @@ function orolado_rate_ok(string $scope, string $key, int $max, int $window): boo
     $all[$k] = array_values(array_filter((array) $hits, static fn($t) => (int) $t > $now - $window));
     if (!$all[$k]) unset($all[$k]);
   }
-  $h = substr(hash('sha256', $key), 0, 24);
   $ok = count($all[$h] ?? []) < $max;
   if ($ok) $all[$h][] = $now;
-  if (count($all) > 20000) $all = array_slice($all, -10000, null, true);
+  if (count($all) > 2000) $all = array_slice($all, -1000, null, true);
   ftruncate($fp, 0);
   rewind($fp);
   fwrite($fp, json_encode($all));
@@ -6584,7 +6586,7 @@ function orolado_flutterwave_checkout(array $req): array {
   $customizations = [
     'title' => 'OROLADO',
     'description' => 'Recharge de solde sécurisée',
-    'logo' => $origin . '/icons/icon.svg',
+    'logo' => $origin . '/icons/icon-192.png',
   ];
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
   $db['deposits'][] = [

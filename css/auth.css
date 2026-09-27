@@ -31,8 +31,8 @@ html body #screenAuth .auth-card{
   padding:12px 14px 28px!important;
   margin-bottom:0;flex-shrink:0}
 html body #screenAuth .brand-lockup{gap:2px;flex-shrink:0;margin-top:0}
-html body #screenAuth .logo-mark{width:28px;height:28px}
-html body #screenAuth .brand-xl{font-size:1.22rem;line-height:1.05}
+html body #screenAuth .logo-mark{width:40px;height:40px}
+html body #screenAuth .brand-xl{font-size:1.42rem;line-height:1.05}
 html body #screenAuth .brand-domain{font-size:.5rem;letter-spacing:.18em}
 html body #screenAuth .brand-sub{margin:2px 0 18px;font-size:.62rem}
 html body #screenAuth .auth-tabs{margin-bottom:8px;padding:3px;gap:4px}
@@ -63,8 +63,8 @@ html body #screenAuth .auth-crypto-in-form{
 html body #screenAuth .auth-crypto-after-card{display:none!important}
 html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
 @media (max-height:740px){
-  html body #screenAuth .logo-mark{width:26px;height:26px}
-  html body #screenAuth .brand-xl{font-size:1.12rem}
+  html body #screenAuth .logo-mark{width:34px;height:34px}
+  html body #screenAuth .brand-xl{font-size:1.3rem}
   html body #screenAuth .brand-sub{margin:1px 0 16px}
 }
 
@@ -74,8 +74,8 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
     justify-content:center!important;
     padding:18px 0 calc(14px + env(safe-area-inset-bottom,0px))!important}
   html:not(.is-android) body #screenAuth .auth-card{padding:16px 18px 28px!important}
-  html:not(.is-android) body #screenAuth .logo-mark{width:36px;height:36px}
-  html:not(.is-android) body #screenAuth .brand-xl{font-size:1.55rem;line-height:1.1}
+  html:not(.is-android) body #screenAuth .logo-mark{width:48px;height:48px}
+  html:not(.is-android) body #screenAuth .brand-xl{font-size:1.8rem;line-height:1.1}
   html:not(.is-android) body #screenAuth .brand-domain{font-size:.58rem}
   html:not(.is-android) body #screenAuth .brand-sub{margin:4px 0 18px;font-size:.72rem}
   html:not(.is-android) body #screenAuth .auth-tabs{margin-bottom:10px}

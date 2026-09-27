@@ -759,23 +759,138 @@
     steer = null;
   }
 
-  function drawConstellation(pad, w, h) {
-    var marks = ['ico-btc', 'ico-eth', 'ico-sol', 'ico-usdt', 'ico-trx'];
+  // Carte du monde originale en points : pour chaque latitude (pas de 5°), les
+  // tranches de longitude où il y a des terres. Volontairement simplifiée.
+  var WORLD_ROWS = [
+    [82.5, [[-60, -30]]],
+    [77.5, [[-120, -80], [-70, -20], [15, 25], [55, 105]]],
+    [72.5, [[-165, -140], [-138, -76], [-55, -20], [20, 30], [60, 180]]],
+    [67.5, [[-165, -95], [-80, -60], [-52, -25], [-22, -14], [12, 30], [30, 180]]],
+    [62.5, [[-165, -95], [-78, -65], [-50, -40], [5, 30], [30, 140], [155, 180]]],
+    [57.5, [[-160, -93], [-78, -60], [-6, -2], [8, 25], [28, 140], [156, 163]]],
+    [52.5, [[-130, -55], [-10, 2], [2, 40], [40, 140]]],
+    [47.5, [[-125, -53], [-5, 45], [54, 135], [141, 145]]],
+    [42.5, [[-124, -70], [-9, 3], [10, 28], [27, 48], [54, 130], [140, 142]]],
+    [37.5, [[-122, -76], [-9, 10], [22, 44], [44, 122], [126, 129], [132, 140]]],
+    [32.5, [[-118, -80], [-10, 35], [35, 60], [60, 122], [130, 132]]],
+    [27.5, [[-113, -97], [-82, -80], [-15, 33], [35, 56], [60, 120]]],
+    [22.5, [[-106, -97], [-84, -75], [-17, 37], [39, 59], [68, 90], [92, 110]]],
+    [17.5, [[-100, -88], [-16, 40], [42, 52], [73, 84], [95, 108], [120, 125]]],
+    [12.5, [[-90, -83], [-75, -60], [-17, 51], [76, 80], [98, 108], [122, 126]]],
+    [7.5, [[-78, -52], [-13, 48], [80, 81], [100, 104], [110, 118], [122, 126]]],
+    [2.5, [[-80, -50], [9, 42], [96, 106], [109, 119], [120, 125], [131, 150]]],
+    [-2.5, [[-80, -40], [10, 41], [102, 106], [110, 116], [132, 150]]],
+    [-7.5, [[-79, -35], [12, 40], [106, 115], [140, 148]]],
+    [-12.5, [[-77, -38], [13, 40], [49, 50], [130, 142]]],
+    [-17.5, [[-71, -39], [12, 38], [44, 50], [122, 146]]],
+    [-22.5, [[-70, -41], [14, 35], [43, 48], [114, 150]]],
+    [-27.5, [[-71, -48], [15, 32], [114, 153]]],
+    [-32.5, [[-72, -52], [18, 28], [115, 125], [135, 152]]],
+    [-37.5, [[-73, -57], [140, 150], [174, 178]]],
+    [-42.5, [[-74, -63], [145, 148], [170, 174]]],
+    [-47.5, [[-75, -66], [167, 170]]],
+    [-52.5, [[-74, -67]]]
+  ];
+  var BACKDROP_COINS = ['ico-btc', 'ico-eth', 'ico-usdt', 'ico-sol', 'ico-bnb', 'ico-xrp', 'ico-doge',
+    'ico-ton', 'ico-ada', 'ico-trx', 'ico-avax', 'ico-ltc', 'ico-link', 'ico-usdc', 'ico-matic'];
+  var bgCanvas = null;
+  var bgKey = '';
+
+  function backdropCoinsReady() {
     var i;
-    ctx.save();
-    ctx.globalAlpha = 0.09;
-    var t = Date.now() / 28000;
-    var size = 32;
-    for (i = 0; i < marks.length; i++) {
-      var img = coinImg(marks[i]);
-      var drift = ((t + i * 0.17) % 1);
-      var x = pad.l + w * (0.08 + ((i * 0.19 + drift * 0.22) % 0.84));
-      var y = pad.t + h * (0.18 + ((i * 0.29 + Math.sin(t * 2 + i) * 0.06) % 0.64));
-      if (img && img.complete && img.naturalWidth) {
-        ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+    for (i = 0; i < BACKDROP_COINS.length; i++) {
+      var img = coinImg(BACKDROP_COINS[i]);
+      if (img && !(img.complete && img.naturalWidth)) return false;
+    }
+    return true;
+  }
+
+  function buildBackdrop(pad, w, h) {
+    var s = Math.min(dpr || 1, 2);
+    var c = bgCanvas || document.createElement('canvas');
+    c.width = Math.max(1, Math.round(cssW * s));
+    c.height = Math.max(1, Math.round(cssH * s));
+    var g = c.getContext('2d');
+    g.setTransform(s, 0, 0, s, 0, 0);
+    // Fond bleu nuit, pas un noir plat.
+    var base = g.createLinearGradient(0, 0, 0, cssH);
+    base.addColorStop(0, '#0D1220');
+    base.addColorStop(1, '#0A0D16');
+    g.fillStyle = base;
+    g.fillRect(0, 0, cssW, cssH);
+    // Lumières chaudes (or en haut à gauche, ambre en bas à droite, halo au centre).
+    function glow(x, y, r, col) {
+      var rg = g.createRadialGradient(x, y, 0, x, y, r);
+      rg.addColorStop(0, col);
+      rg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = rg;
+      g.fillRect(0, 0, cssW, cssH);
+    }
+    var big = Math.max(cssW, cssH);
+    glow(cssW * 0.12, cssH * 0.05, big * 0.55, 'rgba(245,170,40,0.10)');
+    glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,110,40,0.07)');
+    glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(245,197,24,0.045)');
+    // Carte du monde en points.
+    var mw = w * 0.96;
+    var mh = Math.min(h * 0.9, mw * 0.46);
+    var mx = pad.l + (w - mw) / 2;
+    var my = pad.t + (h - mh) / 2;
+    var step = Math.max(5, mw / 72);
+    var degX = 360 * step / mw;
+    var r = Math.max(0.8, step * 0.22);
+    g.fillStyle = 'rgba(150,175,215,0.16)';
+    var i;
+    var j;
+    for (i = 0; i < WORLD_ROWS.length; i++) {
+      var lat = WORLD_ROWS[i][0];
+      var y = my + (85 - lat) / 145 * mh;
+      var spans = WORLD_ROWS[i][1];
+      for (j = 0; j < spans.length; j++) {
+        var lon = Math.ceil((spans[j][0] + 180) / degX) * degX - 180;
+        for (; lon <= spans[j][1]; lon += degX) {
+          var x = mx + (lon + 180) / 360 * mw;
+          g.beginPath();
+          g.arc(x, y, r, 0, Math.PI * 2);
+          g.fill();
+        }
       }
     }
-    ctx.restore();
+    // Logos crypto semés, fixes et très discrets (positions pseudo-aléatoires stables).
+    var seed = 7;
+    function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    for (i = 0; i < BACKDROP_COINS.length; i++) {
+      var img = coinImg(BACKDROP_COINS[i]);
+      var col = i % 5;
+      var row = Math.floor(i / 5);
+      var size = 16 + rnd() * 12;
+      var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 5);
+      var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 3);
+      if (img && img.complete && img.naturalWidth) {
+        g.globalAlpha = 0.08 + rnd() * 0.04;
+        g.drawImage(img, cx - size / 2, cy - size / 2, size, size);
+      }
+    }
+    g.globalAlpha = 1;
+    bgCanvas = c;
+  }
+
+  function drawBackdrop(pad, w, h) {
+    var ready = backdropCoinsReady();
+    var key = cssW + 'x' + cssH + '@' + dpr + ':' + pad.l + ',' + pad.t + ',' + Math.round(w) + ',' + Math.round(h) + (ready ? '' : ':wait');
+    if (!bgCanvas || key !== bgKey) {
+      try {
+        buildBackdrop(pad, w, h);
+        bgKey = key;
+      } catch (eBg) {
+        bgCanvas = null;
+      }
+    }
+    if (bgCanvas) {
+      ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
+    } else {
+      ctx.fillStyle = '#0B0E14';
+      ctx.fillRect(0, 0, cssW, cssH);
+    }
   }
 
   function visualFormingCandle(forming) {
@@ -1052,6 +1167,8 @@
     if (opts.apexAiry || opts.boomSmall) maxBody = 4;
     // Titan Pulse : +40 % de largeur par rapport aux bougies ordinaires.
     if (opts.titanWide) maxBody = 7;
+    // Volatility 100 (actif principal) : grosses bougies façon TradingView.
+    if (opts.v100Big) maxBody = 9;
     var cw = Math.max(1, Math.min(maxBody, slot - gap));
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
@@ -1091,7 +1208,7 @@
       // Mèche fine et centrée sur le corps.
       var x = toX(i);
       ctx.strokeStyle = edgeCol || col;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = opts.v100Big ? 1.4 : 1;
       if (opts.titanWhite) {
         ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
         ctx.shadowBlur = 6;
@@ -1888,7 +2005,7 @@
   }
 
   function dampedRange(candles, assetId, minP, maxP) {
-    if (assetId !== 'boomspike' && assetId !== 'crash300' && assetId !== 'titanpulse') {
+    if (assetId !== 'crash300' && assetId !== 'titanpulse') {
       return { min: minP, max: maxP };
     }
     if (!candles || candles.length < 8) return { min: minP, max: maxP };
@@ -1971,7 +2088,7 @@
     var base = {
       v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0016,
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
-      boomspike: 0.0090, crash300: 0.0090
+      boomspike: 0.0054, crash300: 0.0090
     }[assetId] || 0.0090;
     // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
     // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.
@@ -2019,7 +2136,9 @@
       if (mid > h + calm) mid = h + calm;
     }
     var half = span / 2;
-    var edge = span * 0.22;
+    // Crash 300 monte sans cesse entre deux chutes : on le garde plus au centre
+    // (sinon la tête reste collée en haut de l'écran).
+    var edge = span * (assetId === 'crash300' ? 0.34 : 0.22);
     if (h > mid + half - edge) mid += (h - (mid + half - edge)) * 0.045;
     if (h < mid - half + edge) mid += (h - (mid - half + edge)) * 0.045;
     // Filet dur : la tête ne sort jamais (pic Boom/Crash, retour de veille).
@@ -2102,7 +2221,7 @@
       ctx.fillStyle = 'rgba(245,197,24,0.55)';
       ctx.font = '700 12px "Hanken Grotesk", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Connexion au marché…', cssW / 2, cssH / 2);
+      ctx.fillText((D6.I18N && D6.I18N.t) ? D6.I18N.t('m_connecting') : 'Connecting to market…', cssW / 2, cssH / 2);
       ctx.textAlign = 'left';
       if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
       viewMin = 0;
@@ -2159,9 +2278,9 @@
     // Ne plus forcer xWin sur la durée du plus vieux trade : ça bloquait le zoom+
     // dès qu'un trade était ouvert. Le zoom utilisateur prime.
 
-    // Fond profond unique — zéro beige / blanc.
-    ctx.fillStyle = '#0B0E14';
-    ctx.fillRect(0, 0, cssW, cssH);
+    // Fond : carte du monde + logos crypto + lumières chaudes, dessiné une seule
+    // fois dans une image puis simplement recopié à chaque image.
+    drawBackdrop(pad, w, h);
 
     var candles = visibleCandles(market);
     camCandles = candles;
@@ -2292,7 +2411,7 @@
       var lockSpan = st.lockMax - st.lockMin;
       var wantSpan = Math.max(lockSpan, (needHi - needLo) * 1.3);
       var lockMid = (st.lockMin + st.lockMax) / 2;
-      var margin = wantSpan * 0.10;
+      var margin = wantSpan * (activeAsset === 'crash300' ? 0.30 : 0.10);
       var targetMid = lockMid;
       if (needHi > lockMid + wantSpan / 2 - margin) targetMid = needHi - wantSpan / 2 + margin;
       if (needLo < targetMid - wantSpan / 2 + margin) targetMid = needLo + wantSpan / 2 - margin;
@@ -2323,7 +2442,6 @@
 
     drawGrid(pad, w, seriesW, h, minP, maxP, theme);
 
-    drawConstellation(pad, w, h);
     ctx.save();
     ctx.globalAlpha = 0.10;
     ctx.font = '800 62px "Plus Jakarta Sans", system-ui, sans-serif';
@@ -2366,15 +2484,16 @@
         titanIce: false,
         v75Rose: asset.id === 'v75',
         horizonOrange: asset.id === 'horizon50',
-        crashDrop: asset.id === 'crash300'
+        crashDrop: asset.id === 'crash300',
+        v100Big: asset.id === 'v100'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
       map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ff9800', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(255,152,0,0.55)' : null));
-    } else if (asset.id === 'goldtrend') {
-      map = drawGradientLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', 2.5, '255,179,0');
+    } else if (asset.areaRgb || asset.id === 'goldtrend') {
+      map = drawGradientLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ffb300', asset.lineWidth || 2.5, asset.areaRgb || '255,179,0');
     } else {
       map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#f5a623');
     }
