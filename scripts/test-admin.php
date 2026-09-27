@@ -120,6 +120,7 @@ file_put_contents($tmp . '/data/orolado.json', json_encode([
 file_put_contents($tmp . '/feedcache/live.json', '{}');
 file_put_contents($tmp . '/data/otp_mail.log', json_encode(['ts' => date('c'), 'email' => 'a@b.c', 'status' => 'échec']) . "\n" . json_encode(['ts' => date('c'), 'email' => 'a@b.c', 'status' => 'envoyé']) . "\n");
 
+$GLOBALS['OROLADO_FAKE_PROBE'] = static fn(string $url): int => 200;
 ob_start();
 require $tmp . '/admin.php';
 ob_end_clean();
@@ -206,18 +207,31 @@ $j = admin_list_payload('wd_suspect', ['preset' => 'all']);
 check('compteur « Suspects » = nombre de lignes de la liste', (int) $b['wd_suspect'] === (int) $j['total'], $b['wd_suspect'] . ' / ' . $j['total']);
 
 echo "4) Compteurs\n";
-check('compteurs figés supprimés (Temps de jeu ≠ 6, Payout ≠ 4)', $b['trade_minutes'] === $b['games'] && $b['games'] >= 18, 'trades du jour ' . $b['games']);
-check('Top gagnants du jour compté', $b['top_winners'] >= 2, (string) $b['top_winners']);
+[$d0, $d1] = admin_day_bounds('today');
+$wantToday = 0;
+foreach ($T['orders'] as $o) if (admin_in_range($o['created_at'], $d0, $d1)) $wantToday++;
+check('compteurs figés supprimés (Temps de jeu / Payout = vrais trades du jour)', $b['trade_minutes'] === $b['games'] && $b['games'] === $wantToday + 1, 'trades du jour ' . $b['games'] . ' (attendu ' . ($wantToday + 1) . ', dont 1 local)');
+$netToday = [];
+foreach ($T['orders'] as $o) if (admin_in_range($o['created_at'], $d0, $d1)) $netToday[$o['user_id']] = ($netToday[$o['user_id']] ?? 0) + $o['net'];
+$wantWin = count(array_filter($netToday, static fn($v) => $v > 0.009));
+check('Top gagnants du jour compté', $b['top_winners'] === $wantWin, $b['top_winners'] . ' (attendu ' . $wantWin . ')');
 check('Bonus Offerts compté', $b['dep_bonus'] === 4, (string) $b['dep_bonus']);
 check('Retraits en cours = 5', $b['wd_pending'] === 5, (string) $b['wd_pending']);
 
-echo "5) Santé du site\n";
+echo "5) Santé du site (pannes) et « À surveiller » (le reste)\n";
 $h = admin_health_rows();
-$find = static function (string $svc) use ($h): array { foreach ($h as $r) if (($r['service'] ?? '') === $svc) return $r; return []; };
-check('trade bloqué détecté', ($find('Trades')['level'] ?? '') === 'warn', $find('Trades')['message'] ?? '');
-check('échecs d’e-mails détectés', in_array($find('E-mails')['level'] ?? '', ['warn', 'error'], true), $find('E-mails')['message'] ?? '');
-check('gros gain signalé', ($find('Gros gains')['level'] ?? '') === 'warn', $find('Gros gains')['message'] ?? '');
+$w = admin_watch_rows();
+$find = static function (array $rows, string $svc): array { foreach ($rows as $r) if (($r['service'] ?? '') === $svc) return $r; return []; };
+check('trade en retard → « À surveiller », pas dans la santé', ($find($w, 'Trades en retard')['level'] ?? '') === 'warn' && ($find($h, 'Trades')['level'] ?? '') === 'ok', $find($w, 'Trades en retard')['message'] ?? '');
+check('gros gain → « À surveiller »', ($find($w, 'Gros gains')['level'] ?? '') === 'warn' && $find($h, 'Gros gains') === []);
+check('beaucoup d’e-mails ratés → panne dans la santé', ($find($h, 'E-mails')['level'] ?? '') === 'error', $find($h, 'E-mails')['message'] ?? '');
+check('services externes qui répondent → OK', ($find($h, 'Paiement crypto (OxaPay)')['level'] ?? 'ok') === 'ok');
 check('problèmes affichés en premier', in_array($h[0]['level'] ?? '', ['error', 'warn'], true));
+$GLOBALS['OROLADO_FAKE_PROBE'] = static fn(string $url): int => str_contains($url, 'oxapay') ? 0 : 200;
+admin_bust_cache();
+$h2 = admin_health_rows();
+check('OxaPay injoignable → panne dans la santé', ($find($h2, 'Paiement crypto (OxaPay)')['level'] ?? '') === 'error', $find($h2, 'Paiement crypto (OxaPay)')['message'] ?? '');
+$GLOBALS['OROLADO_FAKE_PROBE'] = static fn(string $url): int => 200;
 orolado_health_event('Dépôts', 'Dépôt payé mais pas encore crédité (test)');
 admin_bust_cache();
 $h = admin_health_rows();

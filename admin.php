@@ -422,6 +422,7 @@ function admin_badges(): array {
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
     'alerts' => $healthErr + $healthWarn,
+    'watch' => count(array_filter(admin_watch_rows(), static fn($r) => ($r['level'] ?? '') === 'warn')),
     'alerts_err' => $healthErr,
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
@@ -970,9 +971,9 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' e-mail(s) / OTP', 'actions' => false];
   }
 
-  if ($view === 'alerts') {
+  if ($view === 'alerts' || $view === 'watch') {
     $cols = ['', 'Heure exacte', 'Service', 'État', 'Description'];
-    $list = admin_health_rows();
+    $list = $view === 'watch' ? admin_watch_rows() : admin_health_rows();
     $list = admin_apply_filters($list, $req, 'at');
     $acked = function_exists('admin_health_ack_map') ? admin_health_ack_map() : [];
     [$slice, $total, $page, $pages] = admin_page($list, $req);
@@ -1005,9 +1006,15 @@ function admin_list_payload(string $view, array $req): array {
         'canAck' => $canAck,
       ];
     }
-    $summary = $errN === 0
-      ? 'Santé du site : aucun incident. Serveur, scripts et base joignables.'
-      : ($errN . ' incident(s) à traiter');
+    if ($view === 'watch') {
+      $warnN = 0;
+      foreach ($list as $r) if (($r['level'] ?? '') === 'warn') $warnN++;
+      $summary = $warnN === 0 ? 'Rien de particulier à surveiller pour le moment.' : ($warnN . ' point(s) à regarder (ce ne sont pas des pannes)');
+    } else {
+      $summary = $errN === 0
+        ? 'Santé du site : aucune panne. Paiements, e-mails, base, prix et serveur répondent.'
+        : ($errN . ' panne(s) à traiter');
+    }
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false, 'alertOpen' => $errN];
   }
 
@@ -1519,7 +1526,7 @@ if ($isAjax) {
   }
   if ($action === 'list') {
     $view = (string) ($req['view'] ?? 'signup_date');
-    if ($view === 'online' || $view === 'messages' || $view === 'alerts') {
+    if ($view === 'online' || $view === 'messages' || $view === 'alerts' || $view === 'watch') {
       admin_json(admin_list_payload($view, $req));
     }
     $ck = 'list_e2_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
@@ -1790,6 +1797,7 @@ $ADMIN_TABS = [
     ['otp_mails', 'Mails & Codes OTP Envoyés'],
     ['messages', 'Messages'],
     ['alerts', 'Santé du Site'],
+    ['watch', 'À surveiller'],
   ],
 ];
 $inscritsHead = $logged ? admin_inscrits_count() : 0;
@@ -1951,6 +1959,7 @@ const URGENT = {wd_pending:1, dep_pending:1, wd_suspect:1, messages:1};
 let alertsErr = 0;
 function badgeClass(id, n) {
   if (id === 'alerts') return n > 0 ? (alertsErr > 0 ? 'badge red' : 'badge orange') : 'badge zero';
+  if (id === 'watch') return n > 0 ? 'badge orange' : 'badge zero';
   if (URGENT[id]) return n > 0 ? 'badge red' : 'badge zero';
   return n ? 'badge' : 'badge zero';
 }
@@ -2006,21 +2015,9 @@ function paintHealth(h) {
   if (!bar || !h) return;
   const issues = h.issues || [];
   const bad = issues.length > 0;
-  const site = window._siteHealth || {err:0, warn:0};
   window._boardIssues = issues;
-  if (bad) {
-    bar.className = 'health-bar bad';
-    bar.textContent = issues.length + ' bouton(s) ne suivent plus — cliquer pour voir';
-  } else if (site.err > 0) {
-    bar.className = 'health-bar bad';
-    bar.textContent = site.err + ' panne(s) sur le site — cliquer pour voir « Santé du Site »';
-  } else if (site.warn > 0) {
-    bar.className = 'health-bar warn';
-    bar.textContent = site.warn + ' point(s) à surveiller — cliquer pour voir « Santé du Site »';
-  } else {
-    bar.className = 'health-bar ok';
-    bar.textContent = 'Site en bonne santé · tous les boutons suivent';
-  }
+  bar.className = 'health-bar ' + (bad ? 'bad' : 'ok');
+  bar.textContent = bad ? (issues.length + ' bouton(s) ne suivent plus — cliquer pour voir') : 'Tous les boutons suivent';
   if (pan && !bad) { pan.classList.remove('on'); pan.innerHTML = ''; }
 }
 function showBoardPanel() {
@@ -2054,7 +2051,6 @@ async function loadBadges() {
   if (!j.ok) return;
   const bd = j.badges || {};
   alertsErr = Number(bd.alerts_err || 0);
-  window._siteHealth = {err: alertsErr, warn: Math.max(0, Number(bd.alerts || 0) - alertsErr)};
   renderButtons(bd);
   paintHealth(j.board);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
@@ -2071,7 +2067,7 @@ function renderList(j) {
     const clickable = r.userId || r.kind === 'message';
     html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+(r.userId||'')+'" data-row="'+i+'">';
     (r.cells||[]).forEach((c, ci) => {
-      if (view === 'alerts' && ci === 0) {
+      if ((view === 'alerts' || view === 'watch') && ci === 0) {
         html += '<td>';
         if (r.canAck && r.fp) html += '<button class="mini ok" data-act="healthack" data-fp="'+esc(r.fp)+'">C’est réglé</button>';
         html += '</td>';
@@ -2246,11 +2242,7 @@ async function openUser(uid) {
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
-document.getElementById('btnHealthBar').onclick = () => {
-  if ((window._boardIssues || []).length) { showBoardPanel(); return; }
-  view = 'alerts'; page = 1; loadList(true);
-  document.getElementById('viewTitle').scrollIntoView({behavior:'smooth', block:'start'});
-};
+document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });

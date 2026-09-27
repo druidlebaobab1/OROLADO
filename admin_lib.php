@@ -1672,7 +1672,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'health', 'live_seen', 'board_watch'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
@@ -1929,6 +1929,33 @@ function admin_board_issues_raw(): array {
   $orders = admin_sb_req('/rest/v1/orders?select=id&limit=1');
   if (empty($orders['ok'])) {
     $push($issues, ['open_positions', 'top_winners', 'games', 'trade_minutes', 'payout_stats'], 'Jeux', 'N’arrive plus à suivre les parties');
+  }
+  // Le bouton répond, mais ne reçoit plus rien alors qu'il devrait :
+  // 1) des codes d'inscription partent depuis 24 h, mais aucun nouvel inscrit n'apparaît.
+  if (!empty($prof['ok'])) {
+    $codes = 0;
+    foreach (admin_otp_rows() as $r) {
+      if (($r['type'] ?? '') !== 'OTP inscription') continue;
+      $t = strtotime((string) ($r['at'] ?? '')) ?: 0;
+      if ($t >= time() - 86400 && ($r['status'] ?? '') !== 'échec') $codes++;
+    }
+    $newUsers = 0;
+    foreach (admin_profiles() as $p) {
+      $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+      if ($t >= time() - 86400) $newUsers++;
+    }
+    if ($codes >= 5 && $newUsers === 0) {
+      $push($issues, ['signup_today'], 'Inscriptions du Jour', 'N’enregistre plus les inscrits (' . $codes . ' codes envoyés en 24 h, aucun nouveau compte)');
+    }
+  }
+  // 2) des trades réels ont lieu en ce moment, mais personne n'apparaît « en ligne ».
+  $recentTrades = 0;
+  foreach (admin_orders() as $o) {
+    $t = strtotime((string) ($o['created_at'] ?? '')) ?: 0;
+    if ($t >= time() - 300) $recentTrades++;
+  }
+  if ($recentTrades >= 3 && admin_online_count() === 0) {
+    $push($issues, ['online'], 'Joueurs en Ligne', 'Ne reçoit plus le direct (' . $recentTrades . ' trades ces 5 dernières minutes, 0 joueur en ligne affiché)');
   }
   admin_cache_set('board_watch', ['issues' => $issues]);
   return $issues;
@@ -2504,10 +2531,14 @@ function admin_health_rows(): array {
     'level' => $apiOk ? 'ok' : 'error',
   ];
   foreach (admin_health_live_checks() as $r) {
+    if (empty($r['watch'])) $rows[] = $r;
+  }
+  foreach (admin_service_probes() as $r) {
     $rows[] = $r;
   }
+  // « Santé du Site » = seulement ce qui est en PANNE (les points à surveiller ont leur bouton).
   foreach (admin_collect_alerts() as $a) {
-    $rows[] = $a;
+    if (($a['level'] ?? '') === 'error') $rows[] = $a;
   }
   // Problèmes d'abord (pannes, puis attentions), les lignes OK ensuite.
   $rank = ['error' => 0, 'warn' => 1];
@@ -2527,8 +2558,9 @@ function admin_health_rows(): array {
 function admin_health_live_checks(): array {
   $now = date('c');
   $rows = [];
-  $row = static function (string $svc, string $msg, string $lvl) use ($now): array {
-    return ['at' => $now, 'service' => $svc, 'message' => $msg, 'level' => $lvl];
+  // $watch = true : ce n'est pas une panne → bouton « À surveiller », pas « Santé du Site ».
+  $row = static function (string $svc, string $msg, string $lvl, bool $watch = false) use ($now): array {
+    return ['at' => $now, 'service' => $svc, 'message' => $msg, 'level' => $lvl, 'watch' => $watch];
   };
 
   // 1. Flux de prix : figé alors que des joueurs sont en ligne = graphiques bloqués.
@@ -2549,9 +2581,12 @@ function admin_health_live_checks(): array {
     $exp = (float) ($o['expiryAt'] ?? 0);
     if ($exp > 0 && $exp < time() - 120) { $stuck++; $stuckSum += (float) ($o['stake'] ?? 0); }
   }
-  $rows[] = $stuck > 0
-    ? $row('Trades', $stuck . ' trade(s) réel(s) terminé(s) depuis plus de 2 min mais pas encore réglé(s) (' . admin_money($stuckSum) . ' misés). Ils se règlent au retour du joueur ; si le nombre grossit, la base est en panne.', $stuck >= 5 ? 'error' : 'warn')
-    : $row('Trades', 'Tous les trades réels terminés sont réglés', 'ok');
+  if ($stuck >= 5) {
+    $rows[] = $row('Trades', $stuck . ' trades réels terminés ne sont pas réglés (' . admin_money($stuckSum) . ' misés) : la base ne répond plus correctement.', 'error');
+  } else {
+    $rows[] = $row('Trades', 'Les trades réels se règlent normalement', 'ok');
+    if ($stuck > 0) $rows[] = $row('Trades en retard', $stuck . ' trade(s) réel(s) terminé(s) depuis plus de 2 min, pas encore réglé(s) (' . admin_money($stuckSum) . ' misés). Ils se règlent au retour du joueur.', 'warn', true);
+  }
 
   // 3. Retraits qui attendent depuis plus de 24 h.
   $old = 0;
@@ -2561,8 +2596,8 @@ function admin_health_live_checks(): array {
     if ($t > 0 && $t < time() - 86400) $old++;
   }
   $rows[] = $old > 0
-    ? $row('Retraits', $old . ' retrait(s) en attente depuis plus de 24 h : les joueurs attendent leur argent.', 'warn')
-    : $row('Retraits', 'Aucun retrait en attente depuis plus de 24 h', 'ok');
+    ? $row('Retraits', $old . ' retrait(s) en attente depuis plus de 24 h : les joueurs attendent leur argent.', 'warn', true)
+    : $row('Retraits', 'Aucun retrait en attente depuis plus de 24 h', 'ok', true);
 
   // 4. E-mails de codes : échecs sur 24 h (inscription et retraits bloqués).
   $sent = 0;
@@ -2580,7 +2615,12 @@ function admin_health_live_checks(): array {
   }
   if ($fail > 0) {
     $bad = $fail >= 5 || ($sent > 0 && $fail / $sent >= 0.3);
-    $rows[] = $row('E-mails', $fail . ' code(s) sur ' . $sent . ' non envoyé(s) en 24 h. Vérifiez le service d’e-mails (clé Brevo / quota).', $bad ? 'error' : 'warn');
+    if ($bad) {
+      $rows[] = $row('E-mails', $fail . ' code(s) sur ' . $sent . ' non envoyé(s) en 24 h : les joueurs ne reçoivent plus leurs codes (inscription, retraits). Vérifiez le service d’e-mails (clé Brevo / quota).', 'error');
+    } else {
+      $rows[] = $row('E-mails', 'Les codes partent normalement', 'ok');
+      $rows[] = $row('E-mails ratés', $fail . ' code(s) sur ' . $sent . ' non envoyé(s) en 24 h (adresse fausse ou envoi ponctuellement refusé).', 'warn', true);
+    }
   } else {
     $rows[] = $row('E-mails', $sent > 0 ? ($sent . ' code(s) envoyé(s) en 24 h, aucun échec') : 'Aucun code envoyé ces dernières 24 h', 'ok');
   }
@@ -2599,18 +2639,87 @@ function admin_health_live_checks(): array {
   }
   if ($stake >= 300) {
     $rtp = ($stake + $net) / $stake * 100;
-    $rows[] = $row('Jeu du jour', 'Mises ' . admin_money($stake) . ' · rendu aux joueurs ' . number_format($rtp, 1, ',', ' ') . ' % (normal ≈ 94 %)', $rtp > 110 ? 'warn' : 'ok');
+    $rows[] = $row('Jeu du jour', 'Mises ' . admin_money($stake) . ' · rendu aux joueurs ' . number_format($rtp, 1, ',', ' ') . ' % (normal ≈ 94 %)', $rtp > 110 ? 'warn' : 'ok', true);
   }
   if ($bigWins) {
     rsort($bigWins);
-    $rows[] = $row('Gros gains', count($bigWins) . ' gain(s) de plus de 500 $ aujourd’hui (le plus gros : +' . admin_money($bigWins[0]) . '). Normal avec ×50, mais regardez « Suspect » avant de payer un retrait.', 'warn');
+    $rows[] = $row('Gros gains', count($bigWins) . ' gain(s) de plus de 500 $ aujourd’hui (le plus gros : +' . admin_money($bigWins[0]) . '). Normal avec ×50, mais regardez « Suspects à vérifier » avant de payer un retrait.', 'warn', true);
   }
 
   // 6. Fichier joueurs trop gros = site plus lent.
   $file = orolado_data_file();
   $mb = is_file($file) ? (int) @filesize($file) / 1048576 : 0;
   if ($mb >= 25) {
-    $rows[] = $row('Coffre JSON', 'Le fichier joueurs pèse ' . number_format($mb, 1, ',', ' ') . ' Mo : le site ralentit. Prévenez le développeur.', $mb >= 60 ? 'error' : 'warn');
+    $rows[] = $row('Coffre JSON', 'Le fichier joueurs pèse ' . number_format($mb, 1, ',', ' ') . ' Mo : le site ralentit. Prévenez le développeur.', $mb >= 60 ? 'error' : 'warn', $mb < 60);
   }
+  return $rows;
+}
+
+/**
+ * Les services dont le site dépend répondent-ils ? (paiements, e-mails). Une panne ici veut
+ * dire : des joueurs payent ou attendent un code en ce moment et ça ne marche pas.
+ * Vérifié au plus toutes les 2 minutes (appels légers, sans effet).
+ */
+function admin_service_probes(): array {
+  $cached = admin_cache_get('service_probes', 120);
+  if (is_array($cached) && isset($cached['rows'])) return $cached['rows'];
+  $now = date('c');
+  $call = static function (string $url, array $headers = []): int {
+    if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_PROBE']) && is_callable($GLOBALS['OROLADO_FAKE_PROBE'])) {
+      return (int) ($GLOBALS['OROLADO_FAKE_PROBE'])($url);
+    }
+    if (!function_exists('curl_init')) return -1;
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 6, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_HTTPHEADER => array_merge(['Accept: application/json'], $headers)]);
+    curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return $code;
+  };
+  $rows = [];
+  $judge = static function (string $svc, int $code, bool $keyed) use ($now): array {
+    if ($code >= 200 && $code < 300) return ['at' => $now, 'service' => $svc, 'message' => 'Répond normalement', 'level' => 'ok'];
+    if ($keyed && ($code === 401 || $code === 403)) {
+      return ['at' => $now, 'service' => $svc, 'message' => 'Clé refusée (HTTP ' . $code . ') : les paiements/envois ne passent plus. Vérifiez la clé dans les réglages de l’hébergeur.', 'level' => 'error'];
+    }
+    if ($code <= 0 || $code >= 500) {
+      return ['at' => $now, 'service' => $svc, 'message' => 'Injoignable' . ($code > 0 ? ' (HTTP ' . $code . ')' : '') . ' : le service est en panne ou bloqué.', 'level' => 'error'];
+    }
+    return ['at' => $now, 'service' => $svc, 'message' => 'Répond (HTTP ' . $code . ')', 'level' => 'ok'];
+  };
+  if (function_exists('orolado_oxapay_key') && orolado_oxapay_key() !== '') {
+    $rows[] = $judge('Paiement crypto (OxaPay)', $call('https://api.oxapay.com/v1/common/currencies'), false);
+  }
+  if (function_exists('orolado_flw_secret') && orolado_flw_secret() !== '') {
+    $rows[] = $judge('Paiement carte (Flutterwave)', $call('https://api.flutterwave.com/v3/banks/NG', ['Authorization: Bearer ' . orolado_flw_secret()]), true);
+  }
+  if (function_exists('brevo_api_key') && brevo_api_key() !== '') {
+    $rows[] = $judge('E-mails (Brevo)', $call('https://api.brevo.com/v3/account', ['api-key: ' . brevo_api_key()]), true);
+  }
+  admin_cache_set('service_probes', ['rows' => $rows]);
+  return $rows;
+}
+
+/**
+ * Bouton « À surveiller » : pas des pannes, mais des choses à regarder (retraits qui
+ * attendent, gros gains, rendu du jour, trades en retard, e-mails ratés isolés…).
+ */
+function admin_watch_rows(): array {
+  $cached = admin_cache_get('watch', 20);
+  if (is_array($cached) && isset($cached['rows'])) return $cached['rows'];
+  $rows = [];
+  foreach (admin_health_live_checks() as $r) {
+    if (!empty($r['watch'])) $rows[] = $r;
+  }
+  foreach (admin_collect_alerts() as $a) {
+    if (($a['level'] ?? '') !== 'error') $rows[] = $a;
+  }
+  $rank = ['error' => 0, 'warn' => 1];
+  usort($rows, static function ($a, $b) use ($rank) {
+    $ra = $rank[$a['level'] ?? 'ok'] ?? 2;
+    $rb = $rank[$b['level'] ?? 'ok'] ?? 2;
+    return $ra <=> $rb ?: strcmp((string) ($b['at'] ?? ''), (string) ($a['at'] ?? ''));
+  });
+  admin_cache_set('watch', ['rows' => $rows]);
   return $rows;
 }
