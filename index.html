@@ -188,7 +188,7 @@
 
   <div class="modal-backdrop" id="iosInstallModal">
     <div class="modal-box glass install-ios-box">
-      <button type="button" class="btn-close" id="closeIosInstall">✕</button>
+      <button type="button" class="btn-close" id="closeIosInstall"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="installIosTitle">Install OROLADO</div>
       <p class="install-ios-lead" data-i18n="installIosLead">Add the app to your iPhone home screen:</p>
       <ol class="install-ios-steps">
@@ -253,7 +253,7 @@
             <label data-i18n="password">Mot de passe</label>
             <div class="pass-wrap">
               <input id="loginPass" type="password" name="password" autocomplete="current-password" required>
-              <button type="button" class="pass-toggle" data-pass="loginPass" aria-label="Afficher le mot de passe">
+              <button type="button" class="pass-toggle" data-pass="loginPass" aria-label="Show password" data-i18n-aria="ariaShowPass">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
@@ -294,7 +294,7 @@
             <label data-i18n="password">Mot de passe</label>
             <div class="pass-wrap">
               <input id="regPass" type="password" name="password" autocomplete="new-password" required minlength="6">
-              <button type="button" class="pass-toggle" data-pass="regPass" aria-label="Afficher le mot de passe">
+              <button type="button" class="pass-toggle" data-pass="regPass" aria-label="Show password" data-i18n-aria="ariaShowPass">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
@@ -304,7 +304,7 @@
             <label data-i18n="confirmPass">Confirmer le mot de passe</label>
             <div class="pass-wrap">
               <input id="regPass2" type="password" name="password-confirm" autocomplete="new-password" required minlength="6">
-              <button type="button" class="pass-toggle" data-pass="regPass2" aria-label="Afficher le mot de passe">
+              <button type="button" class="pass-toggle" data-pass="regPass2" aria-label="Show password" data-i18n-aria="ariaShowPass">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
@@ -477,9 +477,9 @@
 
         <div class="chart-card notranslate" id="chart" translate="no">
           <div class="chart-toolbar" id="chartToolbar" style="margin-top:0;padding-top:0">
-            <div class="ind-pills" role="toolbar" aria-label="Indicateurs et zoom">
+            <div class="ind-pills" role="toolbar" aria-label="Indicators and zoom" data-i18n-aria="ariaIndicators">
               <button type="button" class="ind-btn" data-ind="ma" data-i18n="indMa" title="Moyenne mobile">MA</button>
-              <button type="button" class="ind-btn" data-ind="bb" data-i18n="indBb" title="Bandes de Bollinger">BB</button>
+              <button type="button" class="ind-btn" data-ind="bb" data-i18n="indBb" title="Bollinger Bands" data-i18n-title="titleBollinger">BB</button>
               <button type="button" class="ind-btn" data-ind="ema" data-i18n="indEma" title="EMA 9">EMA</button>
               <button type="button" class="ind-btn zoom-btn" id="chartZoomIn" data-i18n-aria="zoomIn" data-i18n-title="zoomIn" aria-label="Zoom in" title="Zoom +">+</button>
               <button type="button" class="ind-btn zoom-btn" id="chartZoomOut" data-i18n-aria="zoomOut" data-i18n-title="zoomOut" aria-label="Zoom out" title="Zoom −">−</button>
@@ -497,9 +497,9 @@
             <div id="installBanner" class="install-banner hidden">
               <button type="button" id="btnInstall">
                 <span class="install-ico" aria-hidden="true">↓</span>
-                <span>Installer <em>Orolado</em></span>
+                <span><span data-i18n="installApp">Install</span> <em>Orolado</em></span>
               </button>
-              <button type="button" class="install-x" id="btnInstallClose" aria-label="Fermer">✕</button>
+              <button type="button" class="install-x" id="btnInstallClose" aria-label="Close" data-i18n-aria="ariaClose">✕</button>
             </div>
             <canvas id="chartCanvas" width="800" height="380" style="display:block;visibility:visible;opacity:1;z-index:1;pointer-events:none;background:#0B0E14"></canvas>
             <div id="outcomeToast" class="chart-outcome" aria-live="assertive" role="status"></div>
@@ -587,7 +587,7 @@
       <div class="fs-top-end">
         <svg class="fs-coin fs-coin-usdt" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-usdt"></use></svg>
         <svg class="fs-coin fs-coin-sol" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-sol"></use></svg>
-        <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Quitter le plein écran" title="Quitter le plein écran">
+        <button type="button" class="fs-trade-close" id="btnChartFsExit" aria-label="Exit full screen" title="Exit full screen" data-i18n-aria="ariaExitFs" data-i18n-title="ariaExitFs">
           <svg class="fs-exit-ico" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5M4 4l5.2 5.2M20 4l-5.2 5.2M4 20l5.2-5.2M20 20l-5.2-5.2"/>
           </svg>
@@ -630,16 +630,17 @@
     <div class="wallet-card" id="profWalletCard">
       <div class="wallet-card-k" data-i18n="availBal">Solde disponible</div>
       <div class="wallet-card-v" id="profWalletBal">0 $</div>
-      <div class="wallet-xpress" aria-hidden="true">
+      <button type="button" class="wallet-xpress" id="btnExpressCrypto">
         <span class="wx-coins">
           <svg class="wx-coin"><use href="#ico-usdt"></use></svg>
           <svg class="wx-coin"><use href="#ico-btc"></use></svg>
           <svg class="wx-coin"><use href="#ico-eth"></use></svg>
           <svg class="wx-coin"><use href="#ico-trx"></use></svg>
         </span>
-        <span data-i18n="expressCrypto">Dépôt Express Crypto</span>
-      </div>
-      <div class="wallet-tabs" role="tablist" aria-label="Réseau de dépôt">
+        <span data-i18n="expressCrypto">Express Crypto Deposit</span>
+        <span class="wx-go" aria-hidden="true">›</span>
+      </button>
+      <div class="wallet-tabs" role="tablist" aria-label="Deposit network" data-i18n-aria="ariaDepositNet">
         <button type="button" class="wallet-tab on" data-recv="usdt" role="tab" aria-selected="true">
           <svg class="wallet-tab-ico" aria-hidden="true"><use href="#ico-usdt"></use></svg>
           <span class="wallet-tab-stack"><span>USDT TRC20</span><small data-i18n="netTron">TRON NETWORK</small></span>
@@ -755,14 +756,14 @@
 
   <div class="modal-backdrop" id="adminUserModal">
     <div class="modal-box glass admin-user-box" role="dialog" aria-modal="true">
-      <button type="button" class="btn-close" id="closeAdminUser" aria-label="Fermer">✕</button>
+      <button type="button" class="btn-close" id="closeAdminUser" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div id="adminUserDetail" class="admin-detail"></div>
     </div>
   </div>
 
   <div class="modal-backdrop" id="otpModal">
     <div class="modal-box glass otp-box">
-      <button type="button" class="btn-close" id="closeOtp" data-i18n-aria="closeLbl" aria-label="Close">✕</button>
+      <button type="button" class="btn-close" id="closeOtp" data-i18n-aria="closeLbl" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="otpTitle">Confirm your email</div>
       <p class="otp-lead"><span data-i18n="otpLeadBefore">A 6-digit code was sent to</span> <strong id="otpEmailLabel"></strong>. <span data-i18n="otpLeadAfter">Enter it to activate your account.</span></p>
       <form id="formOtp" autocomplete="one-time-code">
@@ -781,7 +782,7 @@
 
   <div class="modal-backdrop" id="forgotModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeForgot">✕</button>
+      <button type="button" class="btn-close" id="closeForgot"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="resetTitle">Reset password</div>
       <form id="formReset" data-step="email">
         <div class="field" id="forgotStepEmail">
@@ -824,7 +825,7 @@
 
   <div class="modal-backdrop" id="passModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closePass">✕</button>
+      <button type="button" class="btn-close" id="closePass"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="changePass">Changer de mot de passe</div>
       <p class="otp-lead" id="passOtpLead" data-i18n="passOtpLead">A 6-digit code will be emailed before you can change your password.</p>
       <form id="formPassword" data-step="email">
@@ -865,7 +866,7 @@
 
   <div class="modal-backdrop" id="emailModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeEmail">✕</button>
+      <button type="button" class="btn-close" id="closeEmail"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="changeEmail">Changer d’adresse e-mail</div>
       <p class="otp-lead" id="emailLead"></p>
       <form id="formEmail" data-step="new" novalidate>
@@ -902,7 +903,7 @@
     <div class="modal-box glass">
       <div class="modal-head-row">
         <div class="modal-title" data-i18n="financeHist">Historique financier</div>
-        <button type="button" class="btn-close" id="closeFinance">✕</button>
+        <button type="button" class="btn-close" id="closeFinance"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div id="txFeed"></div>
     </div>
@@ -913,7 +914,7 @@
       <div class="wd-modal-head">
         <button type="button" class="wd-back-ico hidden" id="btnWdBack" aria-label="Back">←</button>
         <div class="modal-title" data-i18n="withdrawTitle">Retrait</div>
-        <button type="button" class="btn-close" id="closeWithdraw">✕</button>
+        <button type="button" class="btn-close" id="closeWithdraw"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="wd-bal" id="wdBalanceLabel">
         <div class="wd-bal-secure" data-i18n="wdBalSecure">SOLDE RETIRABLE</div>
@@ -986,23 +987,23 @@
           <label id="wdPhoneLabel" data-i18n="wdPhone">Numéro de téléphone</label>
           <input id="wdPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ex: 0700000000">
           <label data-i18n="wdFullName">Nom complet</label>
-          <input id="wdFullName" type="text" autocomplete="name" maxlength="80" placeholder="Nom et prénom">
+          <input id="wdFullName" type="text" autocomplete="name" maxlength="80" placeholder="First and last name" data-i18n-placeholder="phFullName">
         </div>
         <div class="field hidden" id="wdCardFields">
           <label data-i18n="wdCardNumber">Numéro de carte (16 chiffres)</label>
           <input id="wdCardNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="•••• •••• •••• ••••">
           <label data-i18n="wdCardHolder">Nom complet du titulaire</label>
-          <input id="wdCardName" type="text" autocomplete="off" maxlength="80" placeholder="Nom et prénom">
+          <input id="wdCardName" type="text" autocomplete="off" maxlength="80" placeholder="First and last name" data-i18n-placeholder="phFullName">
         </div>
         <div class="field hidden" id="wdBankFields">
           <label data-i18n="wdBankCountry">Pays de la banque</label>
-          <select id="wdBankCountry" aria-label="Pays de la banque"></select>
+          <select id="wdBankCountry" aria-label="Bank country" data-i18n-aria="ariaBankCountry"></select>
           <label data-i18n="wdBankName">Nom de la banque</label>
-          <input id="wdBankName" type="text" autocomplete="off" maxlength="80" placeholder="Nom de la banque">
+          <input id="wdBankName" type="text" autocomplete="off" maxlength="80" placeholder="Bank name" data-i18n-placeholder="phBankName">
           <label data-i18n="wdIban">IBAN / Numéro de compte</label>
           <input id="wdIban" type="text" autocomplete="off" maxlength="48" placeholder="Ex: FR76 1234 5678 9012 3456 7890 123">
           <label data-i18n="wdHolder">Nom du titulaire</label>
-          <input id="wdBankHolder" type="text" autocomplete="off" maxlength="80" placeholder="Nom et prénom">
+          <input id="wdBankHolder" type="text" autocomplete="off" maxlength="80" placeholder="First and last name" data-i18n-placeholder="phFullName">
         </div>
         <div class="wd-trust">
           <span data-i18n="wdDelay">⚡ Instant payout (avg. 5–15 minutes)</span>
@@ -1021,7 +1022,7 @@
 
   <div class="modal-backdrop" id="wdConfirmModal">
     <div class="modal-box glass wd-confirm-box">
-      <button type="button" class="btn-close" id="closeWdConfirm" aria-label="Fermer">✕</button>
+      <button type="button" class="btn-close" id="closeWdConfirm" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="wd-confirm-ico" aria-hidden="true"></div>
       <div class="modal-title" data-i18n="wdConfirmTitle">Demande enregistrée</div>
       <div class="wd-confirm-row"><span>ID</span><strong id="wdConfirmId">—</strong></div>
@@ -1032,7 +1033,7 @@
 
   <div class="modal-backdrop" id="depositModal">
     <div class="modal-box glass withdraw-box deposit-box" id="depositBox">
-      <button type="button" class="btn-close deposit-close" id="closeDeposit" aria-label="Fermer">×</button>
+      <button type="button" class="btn-close deposit-close" id="closeDeposit" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div id="depositStepSelect">
         <div class="modal-title" data-i18n="depositTitle">Deposit in USD</div>
         <div class="field">
@@ -1050,7 +1051,7 @@
             </div>
             <span class="pay-method-desc" data-i18n="payMethodCardDesc">Visa, Mastercard, Apple Pay, virements locaux…</span>
           </button>
-          <button type="button" class="btn-gold btn-deposit-confirm" id="btnConfirmDeposit">VALIDER LA RECHARGE</button>
+          <button type="button" class="btn-gold btn-deposit-confirm" id="btnConfirmDeposit">CONFIRM DEPOSIT</button>
           <button type="button" class="pay-method-card" id="payMethodUsdt" data-pay="usdt" role="radio" aria-checked="false">
             <div class="pay-method-top">
               <span class="pay-method-title" data-i18n="payMethodUsdtTitle">CRYPTO DEPOSIT</span>
@@ -1072,7 +1073,7 @@
               <span class="pay-crypto-cell"><svg class="pay-crypto-badge"><use href="#ico-link"></use></svg><b>LINK</b></span>
               <span class="pay-crypto-cell"><svg class="pay-crypto-badge"><use href="#ico-matic"></use></svg><b>MATIC</b></span>
             </span>
-            <span class="pay-method-desc">USDT, USDC, BTC, ETH, TRX… • crédit auto</span>
+            <span class="pay-method-desc">USDT, USDC, BTC, ETH, TRX… • <span data-i18n="autoCredit">auto credit</span></span>
           </button>
         </div>
       </div>
@@ -1134,7 +1135,7 @@
 
   <div class="modal-backdrop" id="depositSuccessModal">
     <div class="modal-box glass convert-box">
-      <button type="button" class="btn-close" id="closeDepositSuccess">✕</button>
+      <button type="button" class="btn-close" id="closeDepositSuccess"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="convert-fire">✅</div>
       <div class="convert-title" data-i18n="depositSuccessTitle">Recharge réussie !</div>
       <p class="convert-copy" data-i18n="depositSuccessCopy">Votre solde a été crédité.</p>
@@ -1149,7 +1150,7 @@
       <div class="convert-title" id="depositWaitTitle">Paiement en cours</div>
       <p class="convert-copy" data-i18n="depositWaitCopy">Termine ton paiement dans l’onglet ouvert, puis reviens ici et clique sur le bouton ci-dessous.</p>
       <p class="wait-ref" id="depositWaitRef"></p>
-      <button type="button" class="btn-gold" id="btnDepositCheck">J’ai validé mon paiement Wave</button>
+      <button type="button" class="btn-gold" id="btnDepositCheck">I have completed my payment</button>
       <p class="wait-note" id="depositWaitNote"></p>
       <button type="button" class="btn-gold ghost-gold" id="btnDepositWaitClose" data-i18n="depositWaitClose">Fermer</button>
     </div>
@@ -1157,7 +1158,7 @@
 
   <div class="modal-backdrop" id="helpModal">
     <div class="modal-box glass">
-      <button type="button" class="btn-close" id="closeHelp">✕</button>
+      <button type="button" class="btn-close" id="closeHelp"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="helpTitle">Aide & support</div>
       <div class="help-live"><span class="help-live-dot" aria-hidden="true"></span><span data-i18n="helpLive">Support Opérationnel 24/7</span></div>
       <form id="formHelp">
@@ -1181,7 +1182,7 @@
 
   <div class="modal-backdrop" id="tipModal">
     <div class="modal-box glass convert-box tip-box">
-      <button type="button" class="btn-close tip-close" id="closeTip" aria-label="Fermer">✕</button>
+      <button type="button" class="btn-close tip-close" id="closeTip" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="convert-fire">💡</div>
       <div class="convert-title" data-i18n="tipTitle">Trading tip</div>
       <p class="convert-copy" data-i18n="lossStreakTip">Activez les indicateurs MA, BB et EMA au-dessus du graphique pour analyser la tendance avant de trader !</p>
@@ -1193,7 +1194,7 @@
     <div class="modal-box glass terms-box" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
       <div class="modal-head-row terms-head">
         <div class="modal-title" id="termsTitle" data-i18n="termsTitle">CONDITIONS GÉNÉRALES D'UTILISATION &amp; RISQUES</div>
-        <button type="button" class="btn-close" id="closeTerms" aria-label="Close">✕</button>
+        <button type="button" class="btn-close" id="closeTerms" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="terms-body">
         <p class="terms-date" data-i18n="tcDate">Last updated: September 26, 2026</p>
@@ -1241,7 +1242,7 @@
     <div class="modal-box glass sheet">
       <div class="modal-head-row">
         <div class="modal-title" id="histSheetTitle" data-i18n="tradeHist">Historique des trades</div>
-        <button type="button" class="btn-close" id="closeHistorySheet">✕</button>
+        <button type="button" class="btn-close" id="closeHistorySheet"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="hist-tabs" role="tablist">
         <button type="button" class="hist-tab on" data-hist-mode="real" data-i18n="histTabReal">Réel</button>

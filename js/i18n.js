@@ -2220,6 +2220,203 @@
     if (DICT[code]) Object.assign(DICT[code], MSG_I18N[code]);
   });
 
+  /*
+   * MESSAGES (erreurs, avis, petites notifications) dans les 11 langues.
+   * Ordre de chaque ligne : en, fr, es, pt, ar, ru, tr, vi, id, de, hi.
+   * D6.I18N.msg(texte) traduit aussi les messages français venant du serveur ou écrits
+   * en dur dans le code : plus aucun français dans les autres langues (anglais par défaut).
+   */
+  var MSG_LANGS = ['en', 'fr', 'es', 'pt', 'ar', 'ru', 'tr', 'vi', 'id', 'de', 'hi'];
+  var MSG_TABLE = {
+    m_tooMany: ['Too many requests. Please try again in a moment.', 'Trop de demandes. Réessayez dans un moment.', 'Demasiadas solicitudes. Inténtalo de nuevo en un momento.', 'Muitas solicitações. Tente novamente em instantes.', 'طلبات كثيرة جدًا. حاول مرة أخرى بعد قليل.', 'Слишком много запросов. Попробуйте чуть позже.', 'Çok fazla istek. Lütfen birazdan tekrar deneyin.', 'Quá nhiều yêu cầu. Vui lòng thử lại sau giây lát.', 'Terlalu banyak permintaan. Coba lagi sebentar lagi.', 'Zu viele Anfragen. Bitte versuche es gleich noch einmal.', 'बहुत सारे अनुरोध। कृपया थोड़ी देर में फिर से प्रयास करें।'],
+    m_busy: ['Service temporarily unavailable. Please try again.', 'Service momentanément indisponible, réessayez.', 'Servicio no disponible temporalmente. Inténtalo de nuevo.', 'Serviço temporariamente indisponível. Tente novamente.', 'الخدمة غير متاحة مؤقتًا. حاول مرة أخرى.', 'Сервис временно недоступен. Попробуйте ещё раз.', 'Hizmet geçici olarak kullanılamıyor. Lütfen tekrar deneyin.', 'Dịch vụ tạm thời không khả dụng. Vui lòng thử lại.', 'Layanan sementara tidak tersedia. Silakan coba lagi.', 'Dienst vorübergehend nicht verfügbar. Bitte erneut versuchen.', 'सेवा अस्थायी रूप से उपलब्ध नहीं है। कृपया फिर से प्रयास करें।'],
+    m_settling: ['Settling your trade…', 'Règlement en cours…', 'Liquidando tu operación…', 'Liquidando sua operação…', 'جارٍ تسوية صفقتك…', 'Сделка рассчитывается…', 'İşleminiz sonuçlandırılıyor…', 'Đang thanh toán lệnh…', 'Menyelesaikan transaksi Anda…', 'Dein Trade wird abgerechnet…', 'आपका ट्रेड निपटाया जा रहा है…'],
+    m_codeExpired: ['Code expired. Please request a new one.', 'Code expiré. Demandez un nouveau code.', 'Código caducado. Solicita uno nuevo.', 'Código expirado. Solicite um novo.', 'انتهت صلاحية الرمز. اطلب رمزًا جديدًا.', 'Срок действия кода истёк. Запросите новый.', 'Kodun süresi doldu. Lütfen yeni bir kod isteyin.', 'Mã đã hết hạn. Vui lòng yêu cầu mã mới.', 'Kode kedaluwarsa. Silakan minta kode baru.', 'Code abgelaufen. Bitte fordere einen neuen an.', 'कोड की समय-सीमा समाप्त हो गई। कृपया नया कोड मंगाएँ।'],
+    m_codeInvalid: ['Incorrect or expired code.', 'Code incorrect ou expiré.', 'Código incorrecto o caducado.', 'Código incorreto ou expirado.', 'رمز غير صحيح أو منتهي الصلاحية.', 'Неверный или просроченный код.', 'Kod hatalı veya süresi dolmuş.', 'Mã không đúng hoặc đã hết hạn.', 'Kode salah atau kedaluwarsa.', 'Falscher oder abgelaufener Code.', 'गलत या समाप्त कोड।'],
+    m_tooManyAttempts: ['Too many attempts. Please request a new code.', 'Trop de tentatives. Demandez un nouveau code.', 'Demasiados intentos. Solicita un nuevo código.', 'Muitas tentativas. Solicite um novo código.', 'محاولات كثيرة جدًا. اطلب رمزًا جديدًا.', 'Слишком много попыток. Запросите новый код.', 'Çok fazla deneme. Lütfen yeni bir kod isteyin.', 'Quá nhiều lần thử. Vui lòng yêu cầu mã mới.', 'Terlalu banyak percobaan. Silakan minta kode baru.', 'Zu viele Versuche. Bitte fordere einen neuen Code an.', 'बहुत अधिक प्रयास। कृपया नया कोड मंगाएँ।'],
+    m_tryInMin: ['Too many attempts. Try again in {n} min.', 'Trop d’essais. Réessayez dans {n} min.', 'Demasiados intentos. Inténtalo de nuevo en {n} min.', 'Muitas tentativas. Tente novamente em {n} min.', 'محاولات كثيرة جدًا. حاول مرة أخرى بعد {n} دقيقة.', 'Слишком много попыток. Повторите через {n} мин.', 'Çok fazla deneme. {n} dk sonra tekrar deneyin.', 'Quá nhiều lần thử. Thử lại sau {n} phút.', 'Terlalu banyak percobaan. Coba lagi dalam {n} menit.', 'Zu viele Versuche. Versuche es in {n} Min. erneut.', 'बहुत अधिक प्रयास। {n} मिनट बाद फिर से प्रयास करें।'],
+    m_waitSec: ['Please wait {n} s before trying again.', 'Patientez {n} s avant de relancer.', 'Espera {n} s antes de volver a intentarlo.', 'Aguarde {n} s antes de tentar novamente.', 'انتظر {n} ثانية قبل المحاولة مرة أخرى.', 'Подождите {n} с перед повторной попыткой.', 'Tekrar denemeden önce {n} sn bekleyin.', 'Vui lòng đợi {n} giây trước khi thử lại.', 'Tunggu {n} detik sebelum mencoba lagi.', 'Bitte warte {n} s, bevor du es erneut versuchst.', 'फिर से प्रयास करने से पहले {n} सेकंड प्रतीक्षा करें।'],
+    m_waitMin: ['Please wait a minute before trying again.', 'Patientez une minute avant de relancer.', 'Espera un minuto antes de volver a intentarlo.', 'Aguarde um minuto antes de tentar novamente.', 'انتظر دقيقة قبل المحاولة مرة أخرى.', 'Подождите минуту перед повторной попыткой.', 'Tekrar denemeden önce bir dakika bekleyin.', 'Vui lòng đợi một phút trước khi thử lại.', 'Tunggu satu menit sebelum mencoba lagi.', 'Bitte warte eine Minute, bevor du es erneut versuchst.', 'फिर से प्रयास करने से पहले एक मिनट प्रतीक्षा करें।'],
+    m_codeRequired: ['Confirmation code required.', 'Code de confirmation requis.', 'Se requiere el código de confirmación.', 'Código de confirmação obrigatório.', 'رمز التأكيد مطلوب.', 'Требуется код подтверждения.', 'Onay kodu gerekli.', 'Cần có mã xác nhận.', 'Kode konfirmasi diperlukan.', 'Bestätigungscode erforderlich.', 'पुष्टि कोड आवश्यक है।'],
+    m_wrongCreds: ['Incorrect email or password.', 'E-mail ou mot de passe incorrect.', 'Correo o contraseña incorrectos.', 'E-mail ou senha incorretos.', 'البريد الإلكتروني أو كلمة المرور غير صحيحة.', 'Неверный e-mail или пароль.', 'E-posta veya şifre hatalı.', 'Email hoặc mật khẩu không đúng.', 'Email atau kata sandi salah.', 'E-Mail oder Passwort falsch.', 'ईमेल या पासवर्ड गलत है।'],
+    m_passShort: ['Password must be at least 6 characters.', 'Mot de passe : 6 caractères minimum.', 'La contraseña debe tener al menos 6 caracteres.', 'A senha deve ter pelo menos 6 caracteres.', 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.', 'Пароль должен содержать не менее 6 символов.', 'Şifre en az 6 karakter olmalıdır.', 'Mật khẩu phải có ít nhất 6 ký tự.', 'Kata sandi minimal 6 karakter.', 'Das Passwort muss mindestens 6 Zeichen haben.', 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।'],
+    m_passMismatch: ['Passwords do not match.', 'Les mots de passe ne correspondent pas.', 'Las contraseñas no coinciden.', 'As senhas não coincidem.', 'كلمتا المرور غير متطابقتين.', 'Пароли не совпадают.', 'Şifreler eşleşmiyor.', 'Mật khẩu không khớp.', 'Kata sandi tidak cocok.', 'Die Passwörter stimmen nicht überein.', 'पासवर्ड मेल नहीं खाते।'],
+    m_must18: ['You must confirm that you are over 18.', 'Vous devez confirmer avoir plus de 18 ans.', 'Debes confirmar que eres mayor de 18 años.', 'Você deve confirmar que tem mais de 18 anos.', 'يجب أن تؤكد أن عمرك أكثر من 18 عامًا.', 'Подтвердите, что вам больше 18 лет.', '18 yaşından büyük olduğunuzu onaylamalısınız.', 'Bạn phải xác nhận mình trên 18 tuổi.', 'Anda harus mengonfirmasi bahwa usia Anda di atas 18 tahun.', 'Du musst bestätigen, dass du über 18 bist.', 'आपको पुष्टि करनी होगी कि आपकी आयु 18 वर्ष से अधिक है।'],
+    m_nameReq: ['Enter your name or nickname (at least 2 characters).', 'Indiquez votre nom ou pseudo (2 caractères min.).', 'Introduce tu nombre o apodo (mínimo 2 caracteres).', 'Informe seu nome ou apelido (mínimo 2 caracteres).', 'أدخل اسمك أو لقبك (حرفان على الأقل).', 'Введите имя или ник (не менее 2 символов).', 'Adınızı veya takma adınızı girin (en az 2 karakter).', 'Nhập tên hoặc biệt danh (ít nhất 2 ký tự).', 'Masukkan nama atau nama panggilan (minimal 2 karakter).', 'Gib deinen Namen oder Spitznamen ein (mind. 2 Zeichen).', 'अपना नाम या उपनाम दर्ज करें (कम से कम 2 अक्षर)।'],
+    m_phoneInvalid: ['Invalid phone number.', 'Numéro de téléphone invalide.', 'Número de teléfono no válido.', 'Número de telefone inválido.', 'رقم الهاتف غير صالح.', 'Неверный номер телефона.', 'Geçersiz telefon numarası.', 'Số điện thoại không hợp lệ.', 'Nomor telepon tidak valid.', 'Ungültige Telefonnummer.', 'अमान्य फ़ोन नंबर।'],
+    m_emailExists: ['An account already exists with this email.', 'Un compte existe déjà avec cet e-mail.', 'Ya existe una cuenta con este correo.', 'Já existe uma conta com este e-mail.', 'يوجد حساب بالفعل بهذا البريد الإلكتروني.', 'Аккаунт с этим e-mail уже существует.', 'Bu e-posta ile zaten bir hesap var.', 'Đã có tài khoản dùng email này.', 'Sudah ada akun dengan email ini.', 'Mit dieser E-Mail existiert bereits ein Konto.', 'इस ईमेल से पहले से एक खाता मौजूद है।'],
+    m_emailBlocked: ['This email address can no longer be used.', 'Cet e-mail ne peut plus être utilisé.', 'Este correo ya no se puede utilizar.', 'Este e-mail não pode mais ser usado.', 'لم يعد بالإمكان استخدام هذا البريد الإلكتروني.', 'Этот e-mail больше нельзя использовать.', 'Bu e-posta adresi artık kullanılamaz.', 'Email này không còn được sử dụng.', 'Email ini tidak dapat digunakan lagi.', 'Diese E-Mail-Adresse kann nicht mehr verwendet werden.', 'यह ईमेल पता अब उपयोग नहीं किया जा सकता।'],
+    m_passReq: ['Password required.', 'Mot de passe requis.', 'Contraseña obligatoria.', 'Senha obrigatória.', 'كلمة المرور مطلوبة.', 'Введите пароль.', 'Şifre gerekli.', 'Cần nhập mật khẩu.', 'Kata sandi diperlukan.', 'Passwort erforderlich.', 'पासवर्ड आवश्यक है।'],
+    m_enterCode6: ['Enter the 6-digit code sent to your email.', 'Saisissez le code à 6 chiffres reçu par e-mail.', 'Introduce el código de 6 dígitos enviado a tu correo.', 'Digite o código de 6 dígitos enviado ao seu e-mail.', 'أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك.', 'Введите 6-значный код из письма.', 'E-postanıza gönderilen 6 haneli kodu girin.', 'Nhập mã 6 chữ số đã gửi đến email của bạn.', 'Masukkan kode 6 digit yang dikirim ke email Anda.', 'Gib den 6-stelligen Code aus deiner E-Mail ein.', 'अपने ईमेल पर भेजा गया 6 अंकों का कोड दर्ज करें।'],
+    m_codeSendFail: ['Unable to send the code right now. Please try again.', 'Impossible d’envoyer le code pour le moment. Réessayez.', 'No se puede enviar el código ahora. Inténtalo de nuevo.', 'Não foi possível enviar o código agora. Tente novamente.', 'تعذر إرسال الرمز الآن. حاول مرة أخرى.', 'Не удалось отправить код. Попробуйте ещё раз.', 'Kod şu anda gönderilemiyor. Lütfen tekrar deneyin.', 'Không thể gửi mã lúc này. Vui lòng thử lại.', 'Tidak dapat mengirim kode saat ini. Silakan coba lagi.', 'Der Code kann gerade nicht gesendet werden. Bitte erneut versuchen.', 'अभी कोड नहीं भेजा जा सका। कृपया फिर से प्रयास करें।'],
+    m_validateFirst: ['Please validate the email code first.', 'Validez d’abord le code e-mail.', 'Primero valida el código del correo.', 'Primeiro valide o código do e-mail.', 'يرجى التحقق من رمز البريد أولًا.', 'Сначала подтвердите код из письма.', 'Lütfen önce e-posta kodunu doğrulayın.', 'Vui lòng xác nhận mã email trước.', 'Silakan validasi kode email terlebih dahulu.', 'Bitte bestätige zuerst den E-Mail-Code.', 'कृपया पहले ईमेल कोड सत्यापित करें।'],
+    m_passChangeFail: ['Unable to change the password.', 'Impossible de modifier le mot de passe.', 'No se puede cambiar la contraseña.', 'Não foi possível alterar a senha.', 'تعذر تغيير كلمة المرور.', 'Не удалось изменить пароль.', 'Şifre değiştirilemedi.', 'Không thể đổi mật khẩu.', 'Tidak dapat mengubah kata sandi.', 'Das Passwort konnte nicht geändert werden.', 'पासवर्ड नहीं बदला जा सका।'],
+    m_accountNotFound: ['No account found.', 'Aucun compte trouvé.', 'No se encontró ninguna cuenta.', 'Nenhuma conta encontrada.', 'لم يتم العثور على حساب.', 'Аккаунт не найден.', 'Hesap bulunamadı.', 'Không tìm thấy tài khoản.', 'Akun tidak ditemukan.', 'Kein Konto gefunden.', 'कोई खाता नहीं मिला।'],
+    m_minStake: ['Minimum stake: $1', 'Mise minimum : 1 $', 'Apuesta mínima: 1 $', 'Aposta mínima: 1 $', 'الحد الأدنى للرهان: 1 $', 'Минимальная ставка: 1 $', 'Minimum bahis: 1 $', 'Mức cược tối thiểu: 1 $', 'Taruhan minimum: 1 $', 'Mindesteinsatz: 1 $', 'न्यूनतम दांव: 1 $'],
+    m_maxStake: ['Maximum stake at these odds: {n} $', 'Mise maximum pour cette cote : {n} $', 'Apuesta máxima con esta cuota: {n} $', 'Aposta máxima para esta cotação: {n} $', 'الحد الأقصى للرهان بهذه النسبة: {n} $', 'Максимальная ставка при этом коэффициенте: {n} $', 'Bu oranda maksimum bahis: {n} $', 'Mức cược tối đa với tỷ lệ này: {n} $', 'Taruhan maksimum untuk rasio ini: {n} $', 'Höchsteinsatz bei dieser Quote: {n} $', 'इस ऑड्स पर अधिकतम दांव: {n} $'],
+    m_amountInvalid: ['Invalid amount.', 'Montant invalide.', 'Importe no válido.', 'Valor inválido.', 'مبلغ غير صالح.', 'Неверная сумма.', 'Geçersiz tutar.', 'Số tiền không hợp lệ.', 'Jumlah tidak valid.', 'Ungültiger Betrag.', 'अमान्य राशि।'],
+    m_minWithdraw: ['Minimum withdrawal is ${n}.', 'Le retrait minimum est de ${n}.', 'El retiro mínimo es de ${n}.', 'O saque mínimo é de ${n}.', 'الحد الأدنى للسحب هو ${n}.', 'Минимальный вывод — ${n}.', 'Minimum çekim tutarı ${n}.', 'Số tiền rút tối thiểu là ${n}.', 'Penarikan minimum adalah ${n}.', 'Die Mindestauszahlung beträgt ${n}.', 'न्यूनतम निकासी ${n} है।'],
+    m_minDeposit: ['Minimum deposit is ${n}.', 'Le dépôt minimum est de ${n}.', 'El depósito mínimo es de ${n}.', 'O depósito mínimo é de ${n}.', 'الحد الأدنى للإيداع هو ${n}.', 'Минимальный депозит — ${n}.', 'Minimum yatırım tutarı ${n}.', 'Số tiền nạp tối thiểu là ${n}.', 'Deposit minimum adalah ${n}.', 'Die Mindesteinzahlung beträgt ${n}.', 'न्यूनतम जमा ${n} है।'],
+    m_destReq: ['Enter the receiving account or address.', 'Indiquez le compte ou l’adresse de réception.', 'Introduce la cuenta o dirección de destino.', 'Informe a conta ou endereço de recebimento.', 'أدخل حساب أو عنوان الاستلام.', 'Укажите счёт или адрес получения.', 'Alıcı hesabı veya adresini girin.', 'Nhập tài khoản hoặc địa chỉ nhận tiền.', 'Masukkan akun atau alamat penerima.', 'Gib das Empfängerkonto oder die Adresse ein.', 'प्राप्ति खाता या पता दर्ज करें।'],
+    m_benefReq: ['Beneficiary name required.', 'Nom du bénéficiaire requis.', 'Se requiere el nombre del beneficiario.', 'Nome do beneficiário obrigatório.', 'اسم المستفيد مطلوب.', 'Укажите имя получателя.', 'Alıcı adı gerekli.', 'Cần nhập tên người nhận.', 'Nama penerima diperlukan.', 'Name des Empfängers erforderlich.', 'लाभार्थी का नाम आवश्यक है।'],
+    m_wager: ['You must wager 2× your deposit before you can withdraw.', 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.', 'Debes apostar 2× tu depósito antes de poder retirar.', 'Você precisa apostar 2× o seu depósito antes de sacar.', 'يجب أن تراهن بضعف إيداعك قبل أن تتمكن من السحب.', 'Перед выводом нужно сделать ставок на 2× от депозита.', 'Çekim yapmadan önce yatırımınızın 2 katı kadar bahis yapmalısınız.', 'Bạn cần đặt cược gấp 2 lần số tiền nạp trước khi rút.', 'Anda harus bertaruh 2× dari deposit sebelum bisa menarik dana.', 'Du musst das 2-Fache deiner Einzahlung setzen, bevor du auszahlen kannst.', 'निकासी से पहले आपको अपनी जमा राशि का 2 गुना दांव लगाना होगा।'],
+    m_payUnavailable: ['This payment method is temporarily unavailable.', 'Ce moyen de paiement est momentanément indisponible.', 'Este método de pago no está disponible temporalmente.', 'Este meio de pagamento está temporariamente indisponível.', 'طريقة الدفع هذه غير متاحة مؤقتًا.', 'Этот способ оплаты временно недоступен.', 'Bu ödeme yöntemi geçici olarak kullanılamıyor.', 'Phương thức thanh toán này tạm thời không khả dụng.', 'Metode pembayaran ini sementara tidak tersedia.', 'Diese Zahlungsmethode ist vorübergehend nicht verfügbar.', 'यह भुगतान तरीका अस्थायी रूप से उपलब्ध नहीं है।'],
+    m_cryptoNotAccepted: ['This crypto is not accepted.', 'Crypto non acceptée.', 'Esta cripto no se acepta.', 'Esta cripto não é aceita.', 'هذه العملة الرقمية غير مقبولة.', 'Эта криптовалюта не принимается.', 'Bu kripto kabul edilmiyor.', 'Tiền điện tử này không được chấp nhận.', 'Kripto ini tidak diterima.', 'Diese Kryptowährung wird nicht akzeptiert.', 'यह क्रिप्टो स्वीकार नहीं किया जाता।'],
+    m_stakeNotRecorded: ['Stake not recorded. Please try again.', 'Mise non enregistrée. Réessayez.', 'Apuesta no registrada. Inténtalo de nuevo.', 'Aposta não registrada. Tente novamente.', 'لم يتم تسجيل الرهان. حاول مرة أخرى.', 'Ставка не записана. Попробуйте ещё раз.', 'Bahis kaydedilmedi. Lütfen tekrar deneyin.', 'Chưa ghi nhận lệnh cược. Vui lòng thử lại.', 'Taruhan tidak tercatat. Silakan coba lagi.', 'Einsatz nicht gespeichert. Bitte erneut versuchen.', 'दांव दर्ज नहीं हुआ। कृपया फिर से प्रयास करें।'],
+    m_connecting: ['Connecting to the market…', 'Connexion au marché…', 'Conectando con el mercado…', 'Conectando ao mercado…', 'جارٍ الاتصال بالسوق…', 'Подключение к рынку…', 'Piyasaya bağlanılıyor…', 'Đang kết nối thị trường…', 'Menghubungkan ke pasar…', 'Verbindung zum Markt…', 'बाज़ार से जुड़ रहा है…'],
+    m_assetMax: ['Maximum volume reached on this asset. Try again in a few seconds.', 'Volume maximum atteint sur cet actif, réessayez dans quelques secondes.', 'Volumen máximo alcanzado en este activo. Inténtalo en unos segundos.', 'Volume máximo atingido neste ativo. Tente em alguns segundos.', 'تم بلوغ الحد الأقصى لهذا الأصل. حاول بعد بضع ثوانٍ.', 'Достигнут максимальный объём по активу. Повторите через несколько секунд.', 'Bu varlıkta maksimum hacme ulaşıldı. Birkaç saniye sonra tekrar deneyin.', 'Đã đạt khối lượng tối đa cho tài sản này. Thử lại sau vài giây.', 'Volume maksimum tercapai pada aset ini. Coba lagi dalam beberapa detik.', 'Maximales Volumen für diesen Wert erreicht. Versuche es in ein paar Sekunden.', 'इस एसेट पर अधिकतम वॉल्यूम पहुँच गया। कुछ सेकंड बाद प्रयास करें।'],
+    m_tooManyOpen: ['Too many open trades. Wait for one to finish.', 'Trop de gains potentiels ouverts, attendez la fin d’un trade.', 'Demasiadas operaciones abiertas. Espera a que termine una.', 'Muitas operações abertas. Aguarde uma terminar.', 'صفقات مفتوحة كثيرة جدًا. انتظر انتهاء إحداها.', 'Слишком много открытых сделок. Дождитесь окончания одной.', 'Çok fazla açık işlem var. Birinin bitmesini bekleyin.', 'Quá nhiều lệnh đang mở. Hãy đợi một lệnh kết thúc.', 'Terlalu banyak transaksi terbuka. Tunggu salah satunya selesai.', 'Zu viele offene Trades. Warte, bis einer endet.', 'बहुत सारे ट्रेड खुले हैं। किसी एक के पूरा होने की प्रतीक्षा करें।'],
+    m_sameEmail: ['This is already your current email.', 'C’est déjà votre adresse actuelle.', 'Este ya es tu correo actual.', 'Este já é o seu e-mail atual.', 'هذا هو بريدك الإلكتروني الحالي بالفعل.', 'Это уже ваш текущий e-mail.', 'Bu zaten mevcut e-postanız.', 'Đây đã là email hiện tại của bạn.', 'Ini sudah email Anda saat ini.', 'Das ist bereits deine aktuelle E-Mail.', 'यह पहले से आपका वर्तमान ईमेल है।'],
+    m_restartEmail: ['Please start the email change again.', 'Recommencez le changement d’adresse.', 'Vuelve a iniciar el cambio de correo.', 'Recomece a alteração de e-mail.', 'يرجى بدء تغيير البريد الإلكتروني من جديد.', 'Начните смену e-mail заново.', 'Lütfen e-posta değişikliğini yeniden başlatın.', 'Vui lòng bắt đầu lại việc đổi email.', 'Silakan mulai lagi perubahan email.', 'Bitte starte die E-Mail-Änderung erneut.', 'कृपया ईमेल बदलने की प्रक्रिया फिर से शुरू करें।'],
+    m_suspended: ['Your account has been suspended for violating the terms of use. If you think this is a mistake, contact OROLADO support.', 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support OROLADO.', 'Tu cuenta ha sido suspendida por incumplir las condiciones de uso. Si crees que es un error, contacta con el soporte de OROLADO.', 'Sua conta foi suspensa por violar os termos de uso. Se achar que é um erro, contate o suporte OROLADO.', 'تم تعليق حسابك لمخالفة شروط الاستخدام. إذا كنت تعتقد أن هذا خطأ، فتواصل مع دعم OROLADO.', 'Ваш аккаунт заблокирован за нарушение правил. Если это ошибка, свяжитесь с поддержкой OROLADO.', 'Hesabınız kullanım koşullarını ihlal ettiği için askıya alındı. Hata olduğunu düşünüyorsanız OROLADO destek ile iletişime geçin.', 'Tài khoản của bạn đã bị tạm khóa do vi phạm điều khoản. Nếu cho rằng có nhầm lẫn, hãy liên hệ hỗ trợ OROLADO.', 'Akun Anda ditangguhkan karena melanggar ketentuan penggunaan. Jika menurut Anda ini keliru, hubungi dukungan OROLADO.', 'Dein Konto wurde wegen Verstoßes gegen die Nutzungsbedingungen gesperrt. Falls das ein Fehler ist, kontaktiere den OROLADO-Support.', 'उपयोग की शर्तों के उल्लंघन के कारण आपका खाता निलंबित कर दिया गया है। यदि आपको लगता है कि यह गलती है, तो OROLADO सहायता से संपर्क करें।'],
+    m_closed: ['This account has been permanently closed. Contact OROLADO support if you think this is a mistake.', 'Ce compte a été fermé définitivement. Contactez le support OROLADO si vous pensez qu’il s’agit d’une erreur.', 'Esta cuenta ha sido cerrada definitivamente. Contacta con el soporte de OROLADO si crees que es un error.', 'Esta conta foi encerrada definitivamente. Contate o suporte OROLADO se achar que é um erro.', 'تم إغلاق هذا الحساب نهائيًا. تواصل مع دعم OROLADO إذا كنت تعتقد أن هذا خطأ.', 'Этот аккаунт закрыт навсегда. Если это ошибка, свяжитесь с поддержкой OROLADO.', 'Bu hesap kalıcı olarak kapatıldı. Hata olduğunu düşünüyorsanız OROLADO destek ile iletişime geçin.', 'Tài khoản này đã bị đóng vĩnh viễn. Hãy liên hệ hỗ trợ OROLADO nếu có nhầm lẫn.', 'Akun ini telah ditutup permanen. Hubungi dukungan OROLADO jika menurut Anda ini keliru.', 'Dieses Konto wurde endgültig geschlossen. Kontaktiere den OROLADO-Support, falls das ein Fehler ist.', 'यह खाता स्थायी रूप से बंद कर दिया गया है। यदि यह गलती है, तो OROLADO सहायता से संपर्क करें।'],
+    m_signupInvalid: ['Invalid registration.', 'Inscription invalide.', 'Registro no válido.', 'Cadastro inválido.', 'تسجيل غير صالح.', 'Неверная регистрация.', 'Geçersiz kayıt.', 'Đăng ký không hợp lệ.', 'Pendaftaran tidak valid.', 'Ungültige Registrierung.', 'अमान्य पंजीकरण।'],
+    m_supportRate: ['You have already sent several messages. Our team will reply as soon as possible — thank you for your patience.', 'Vous avez déjà envoyé plusieurs messages. Notre équipe vous répond au plus vite, merci de patienter un peu.', 'Ya has enviado varios mensajes. Nuestro equipo te responderá lo antes posible, gracias por tu paciencia.', 'Você já enviou várias mensagens. Nossa equipe responderá o mais rápido possível — obrigado pela paciência.', 'لقد أرسلت عدة رسائل بالفعل. سيرد فريقنا في أقرب وقت، شكرًا لصبرك.', 'Вы уже отправили несколько сообщений. Мы ответим как можно скорее — спасибо за терпение.', 'Zaten birkaç mesaj gönderdiniz. Ekibimiz en kısa sürede yanıt verecek, sabrınız için teşekkürler.', 'Bạn đã gửi nhiều tin nhắn. Đội ngũ sẽ phản hồi sớm nhất có thể — cảm ơn bạn đã kiên nhẫn.', 'Anda sudah mengirim beberapa pesan. Tim kami akan segera membalas — terima kasih atas kesabaran Anda.', 'Du hast bereits mehrere Nachrichten gesendet. Unser Team antwortet so schnell wie möglich – danke für deine Geduld.', 'आप पहले ही कई संदेश भेज चुके हैं। हमारी टीम जल्द से जल्द जवाब देगी — धैर्य के लिए धन्यवाद।'],
+    m_notFound: ['Not found.', 'Introuvable.', 'No encontrado.', 'Não encontrado.', 'غير موجود.', 'Не найдено.', 'Bulunamadı.', 'Không tìm thấy.', 'Tidak ditemukan.', 'Nicht gefunden.', 'नहीं मिला।'],
+    m_addrGen: ['Generating your address…', 'Génération de l’adresse…', 'Generando tu dirección…', 'Gerando seu endereço…', 'جارٍ إنشاء عنوانك…', 'Создаём ваш адрес…', 'Adresiniz oluşturuluyor…', 'Đang tạo địa chỉ của bạn…', 'Membuat alamat Anda…', 'Deine Adresse wird erstellt…', 'आपका पता बनाया जा रहा है…'],
+    m_openingPay: ['Opening payment…', 'Ouverture du paiement…', 'Abriendo el pago…', 'Abrindo o pagamento…', 'جارٍ فتح الدفع…', 'Открываем оплату…', 'Ödeme açılıyor…', 'Đang mở thanh toán…', 'Membuka pembayaran…', 'Zahlung wird geöffnet…', 'भुगतान खुल रहा है…'],
+    m_ref: ['Ref.', 'Réf.', 'Ref.', 'Ref.', 'مرجع', 'Реф.', 'Ref.', 'Mã', 'Ref.', 'Ref.', 'संदर्भ'],
+    m_guest: ['Guest', 'Invité', 'Invitado', 'Convidado', 'زائر', 'Гость', 'Misafir', 'Khách', 'Tamu', 'Gast', 'अतिथि'],
+    m_target: ['target', 'objectif', 'objetivo', 'alvo', 'الهدف', 'цель', 'hedef', 'mục tiêu', 'target', 'Ziel', 'लक्ष्य'],
+    m_secCheck: ['Security check', 'Vérification de sécurité', 'Verificación de seguridad', 'Verificação de segurança', 'فحص أمني', 'Проверка безопасности', 'Güvenlik kontrolü', 'Kiểm tra bảo mật', 'Pemeriksaan keamanan', 'Sicherheitsprüfung', 'सुरक्षा जांच'],
+    m_tieNote: ['Tie — stake returned', 'Égalité — mise rendue', 'Empate — apuesta devuelta', 'Empate — aposta devolvida', 'تعادل — تمت إعادة الرهان', 'Ничья — ставка возвращена', 'Beraberlik — bahis iade edildi', 'Hòa — hoàn lại tiền cược', 'Seri — taruhan dikembalikan', 'Unentschieden — Einsatz zurück', 'बराबरी — दांव लौटाया गया'],
+    m_expiredNote: ['Position expired', 'Position expirée', 'Posición vencida', 'Posição expirada', 'انتهت الصفقة', 'Позиция истекла', 'Pozisyon sona erdi', 'Lệnh đã hết hạn', 'Posisi berakhir', 'Position abgelaufen', 'पोज़िशन समाप्त'],
+    m_propagating: ['Transaction confirming on the network. If you just sent the funds, wait 30 seconds and try again.', 'Transaction en cours de confirmation sur le réseau. Si vous venez d’envoyer les fonds, patientez 30 secondes et réessayez.', 'Transacción confirmándose en la red. Si acabas de enviar los fondos, espera 30 segundos y vuelve a intentarlo.', 'Transação sendo confirmada na rede. Se acabou de enviar os fundos, aguarde 30 segundos e tente novamente.', 'المعاملة قيد التأكيد على الشبكة. إذا أرسلت الأموال للتو، انتظر 30 ثانية وحاول مجددًا.', 'Транзакция подтверждается в сети. Если вы только что отправили средства, подождите 30 секунд и повторите.', 'İşlem ağda onaylanıyor. Fonları yeni gönderdiyseniz 30 saniye bekleyip tekrar deneyin.', 'Giao dịch đang được xác nhận. Nếu bạn vừa gửi tiền, hãy đợi 30 giây rồi thử lại.', 'Transaksi sedang dikonfirmasi di jaringan. Jika baru mengirim dana, tunggu 30 detik lalu coba lagi.', 'Transaktion wird im Netzwerk bestätigt. Wenn du gerade gesendet hast, warte 30 Sekunden und versuche es erneut.', 'लेन-देन नेटवर्क पर पुष्टि हो रहा है। अगर आपने अभी धनराशि भेजी है, तो 30 सेकंड रुककर फिर प्रयास करें।'],
+    m_txInvalid: ['Invalid transaction: the funds were not sent to the official address.', 'Transaction invalide : les fonds n’ont pas été envoyés à l’adresse officielle.', 'Transacción no válida: los fondos no se enviaron a la dirección oficial.', 'Transação inválida: os fundos não foram enviados ao endereço oficial.', 'معاملة غير صالحة: لم تُرسل الأموال إلى العنوان الرسمي.', 'Неверная транзакция: средства отправлены не на официальный адрес.', 'Geçersiz işlem: fonlar resmi adrese gönderilmedi.', 'Giao dịch không hợp lệ: tiền không được gửi đến địa chỉ chính thức.', 'Transaksi tidak valid: dana tidak dikirim ke alamat resmi.', 'Ungültige Transaktion: Das Geld wurde nicht an die offizielle Adresse gesendet.', 'अमान्य लेन-देन: धनराशि आधिकारिक पते पर नहीं भेजी गई।'],
+    m_txReused: ['This transaction has already been credited.', 'Cette transaction a déjà été créditée.', 'Esta transacción ya fue acreditada.', 'Esta transação já foi creditada.', 'تم احتساب هذه المعاملة مسبقًا.', 'Эта транзакция уже зачислена.', 'Bu işlem zaten hesaba geçirildi.', 'Giao dịch này đã được ghi có.', 'Transaksi ini sudah dikreditkan.', 'Diese Transaktion wurde bereits gutgeschrieben.', 'यह लेन-देन पहले ही जमा हो चुका है।'],
+    m_payConfirmed: ['Payment confirmed! Your balance has been credited.', 'Paiement confirmé ! Votre solde a été crédité.', '¡Pago confirmado! Tu saldo ha sido acreditado.', 'Pagamento confirmado! Seu saldo foi creditado.', 'تم تأكيد الدفع! تمت إضافة الرصيد إلى حسابك.', 'Платёж подтверждён! Баланс пополнен.', 'Ödeme onaylandı! Bakiyeniz yüklendi.', 'Đã xác nhận thanh toán! Số dư của bạn đã được cộng.', 'Pembayaran dikonfirmasi! Saldo Anda telah ditambahkan.', 'Zahlung bestätigt! Dein Guthaben wurde gutgeschrieben.', 'भुगतान की पुष्टि हो गई! आपका बैलेंस जमा हो गया।'],
+    m_addrPh: ['e.g. receiving address', 'Ex : adresse de réception', 'Ej.: dirección de recepción', 'Ex.: endereço de recebimento', 'مثال: عنوان الاستلام', 'Напр.: адрес получения', 'Örn.: alıcı adresi', 'VD: địa chỉ nhận', 'Contoh: alamat penerima', 'z. B. Empfangsadresse', 'उदा.: प्राप्ति पता'],
+    m_signupDown: ['Registration service unavailable. Please try again.', 'Service d’inscription indisponible. Réessayez.', 'Servicio de registro no disponible. Inténtalo de nuevo.', 'Serviço de cadastro indisponível. Tente novamente.', 'خدمة التسجيل غير متاحة. حاول مرة أخرى.', 'Регистрация временно недоступна. Попробуйте ещё раз.', 'Kayıt hizmeti kullanılamıyor. Lütfen tekrar deneyin.', 'Dịch vụ đăng ký không khả dụng. Vui lòng thử lại.', 'Layanan pendaftaran tidak tersedia. Silakan coba lagi.', 'Registrierung nicht verfügbar. Bitte erneut versuchen.', 'पंजीकरण सेवा उपलब्ध नहीं है। कृपया फिर से प्रयास करें।'],
+    m_serverDown: ['Server unavailable. Please try again.', 'Serveur indisponible. Réessayez.', 'Servidor no disponible. Inténtalo de nuevo.', 'Servidor indisponível. Tente novamente.', 'الخادم غير متاح. حاول مرة أخرى.', 'Сервер недоступен. Попробуйте ещё раз.', 'Sunucu kullanılamıyor. Lütfen tekrar deneyin.', 'Máy chủ không khả dụng. Vui lòng thử lại.', 'Server tidak tersedia. Silakan coba lagi.', 'Server nicht erreichbar. Bitte erneut versuchen.', 'सर्वर उपलब्ध नहीं है। कृपया फिर से प्रयास करें।'],
+    m_insufficient: ['Insufficient balance.', 'Solde insuffisant.', 'Saldo insuficiente.', 'Saldo insuficiente.', 'الرصيد غير كافٍ.', 'Недостаточно средств.', 'Yetersiz bakiye.', 'Số dư không đủ.', 'Saldo tidak cukup.', 'Unzureichendes Guthaben.', 'अपर्याप्त बैलेंस।'],
+    installApp: ['Install', 'Installer', 'Instalar', 'Instalar', 'تثبيت', 'Установить', 'Yükle', 'Cài đặt', 'Pasang', 'Installieren', 'इंस्टॉल करें'],
+    autoCredit: ['auto credit', 'crédit auto', 'crédito automático', 'crédito automático', 'إيداع تلقائي', 'автозачисление', 'otomatik yükleme', 'cộng tự động', 'kredit otomatis', 'automatische Gutschrift', 'स्वतः जमा'],
+    phFullName: ['First and last name', 'Nom et prénom', 'Nombre y apellido', 'Nome e sobrenome', 'الاسم الكامل', 'Имя и фамилия', 'Ad ve soyad', 'Họ và tên', 'Nama lengkap', 'Vor- und Nachname', 'पूरा नाम'],
+    phBankName: ['Bank name', 'Nom de la banque', 'Nombre del banco', 'Nome do banco', 'اسم البنك', 'Название банка', 'Banka adı', 'Tên ngân hàng', 'Nama bank', 'Name der Bank', 'बैंक का नाम'],
+    ariaBankCountry: ['Bank country', 'Pays de la banque', 'País del banco', 'País do banco', 'بلد البنك', 'Страна банка', 'Banka ülkesi', 'Quốc gia ngân hàng', 'Negara bank', 'Land der Bank', 'बैंक का देश'],
+    ariaShowPass: ['Show password', 'Afficher le mot de passe', 'Mostrar contraseña', 'Mostrar senha', 'إظهار كلمة المرور', 'Показать пароль', 'Şifreyi göster', 'Hiện mật khẩu', 'Tampilkan kata sandi', 'Passwort anzeigen', 'पासवर्ड दिखाएँ'],
+    ariaClose: ['Close', 'Fermer', 'Cerrar', 'Fechar', 'إغلاق', 'Закрыть', 'Kapat', 'Đóng', 'Tutup', 'Schließen', 'बंद करें'],
+    ariaIndicators: ['Indicators and zoom', 'Indicateurs et zoom', 'Indicadores y zoom', 'Indicadores e zoom', 'المؤشرات والتكبير', 'Индикаторы и масштаб', 'Göstergeler ve yakınlaştırma', 'Chỉ báo và thu phóng', 'Indikator dan zoom', 'Indikatoren und Zoom', 'संकेतक और ज़ूम'],
+    titleBollinger: ['Bollinger Bands', 'Bandes de Bollinger', 'Bandas de Bollinger', 'Bandas de Bollinger', 'نطاقات بولينجر', 'Полосы Боллинджера', 'Bollinger Bantları', 'Dải Bollinger', 'Bollinger Bands', 'Bollinger-Bänder', 'बोलिंजर बैंड्स'],
+    ariaExitFs: ['Exit full screen', 'Quitter le plein écran', 'Salir de pantalla completa', 'Sair da tela cheia', 'الخروج من ملء الشاشة', 'Выйти из полноэкранного режима', 'Tam ekrandan çık', 'Thoát toàn màn hình', 'Keluar layar penuh', 'Vollbild beenden', 'फ़ुल स्क्रीन से बाहर निकलें'],
+    ariaDepositNet: ['Deposit network', 'Réseau de dépôt', 'Red de depósito', 'Rede de depósito', 'شبكة الإيداع', 'Сеть депозита', 'Yatırım ağı', 'Mạng nạp tiền', 'Jaringan deposit', 'Einzahlungsnetzwerk', 'जमा नेटवर्क']
+  };
+
+  /* Messages français connus (serveur ou code) → clé ci-dessus. Minuscules, apostrophes droites. */
+  var MSG_FR = {
+    'solde insuffisant': 'm_insufficient',
+    'envoi impossible': 'm_codeSendFail',
+    'erreur réseau brevo': 'm_codeSendFail',
+    'inscription impossible': 'm_signupDown',
+    'impossible de mettre à jour le mot de passe': 'm_passChangeFail',
+    'ordre refusé': 'm_stakeNotRecorded',
+    'moyen de paiement indisponible.': 'm_payUnavailable',
+    'trop de demandes. réessayez dans un moment.': 'm_tooMany',
+    'trop de demandes, réessayez plus tard': 'm_tooMany',
+    'service indisponible, réessayez': 'm_busy',
+    'service momentanément indisponible, réessayez dans un instant.': 'm_busy',
+    'changement impossible pour le moment, réessayez plus tard': 'm_busy',
+    'stockage indisponible': 'm_busy',
+    'règlement en cours': 'm_settling',
+    'code expiré': 'm_codeExpired',
+    'code expiré, demandez-en un nouveau': 'm_codeExpired',
+    'code expiré. demandez un nouveau code.': 'm_codeExpired',
+    'aucun code en attente': 'm_codeExpired',
+    'code incorrect': 'm_codeInvalid',
+    'code invalide': 'm_codeInvalid',
+    'code invalide ou expiré. demandez-en un nouveau.': 'm_codeInvalid',
+    'code incorrect ou expiré': 'm_codeInvalid',
+    'jeton otp invalide': 'm_codeInvalid',
+    'trop de tentatives': 'm_tooManyAttempts',
+    'trop de tentatives, recommencez': 'm_tooManyAttempts',
+    'trop de tentatives. demandez un nouveau code.': 'm_tooManyAttempts',
+    'patientez une minute avant de relancer.': 'm_waitMin',
+    'code de confirmation requis': 'm_codeRequired',
+    'identifiants introuvables': 'm_wrongCreds',
+    'mot de passe incorrect': 'm_wrongCreds',
+    'mot de passe invalide': 'm_passShort',
+    'mot de passe : 6 caractères minimum': 'm_passShort',
+    'nouveau mot de passe trop court': 'm_passShort',
+    'les mots de passe ne correspondent pas': 'm_passMismatch',
+    'vous devez confirmer avoir plus de 18 ans': 'm_must18',
+    'indiquez votre nom ou pseudo (2 caractères min.)': 'm_nameReq',
+    'numéro de téléphone invalide': 'm_phoneInvalid',
+    'numéro invalide': 'm_phoneInvalid',
+    'un compte existe déjà avec cet e-mail': 'm_emailExists',
+    'cet e-mail ne peut plus être utilisé pour une inscription.': 'm_emailBlocked',
+    'cette adresse ne peut pas être utilisée': 'm_emailBlocked',
+    'mot de passe requis': 'm_passReq',
+    'saisissez le code à 6 chiffres reçu par e-mail.': 'm_enterCode6',
+    "impossible d'envoyer le code. réessayez.": 'm_codeSendFail',
+    "impossible d'envoyer le code de confirmation": 'm_codeSendFail',
+    'envoi du code impossible pour le moment': 'm_codeSendFail',
+    "validez d'abord le code e-mail": 'm_validateFirst',
+    'impossible de modifier le mot de passe': 'm_passChangeFail',
+    'aucun compte associé': 'm_accountNotFound',
+    'compte introuvable': 'm_accountNotFound',
+    'mise minimum : 1 $': 'm_minStake',
+    'montant invalide': 'm_amountInvalid',
+    'indiquez le compte / adresse de réception': 'm_destReq',
+    'nom du bénéficiaire requis': 'm_benefReq',
+    'vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.': 'm_wager',
+    'moyen de paiement indisponible': 'm_payUnavailable',
+    'paiement carte indisponible pour le moment.': 'm_payUnavailable',
+    'crypto non acceptée.': 'm_cryptoNotAccepted',
+    'mise non enregistrée': 'm_stakeNotRecorded',
+    'connexion au marché…': 'm_connecting',
+    'volume maximum atteint sur cet actif, réessayez dans quelques secondes': 'm_assetMax',
+    "trop de gains potentiels ouverts, attendez la fin d'un trade": 'm_tooManyOpen',
+    'cette adresse est déjà utilisée par un autre compte': 'emailTaken',
+    "c'est déjà votre adresse actuelle": 'm_sameEmail',
+    "recommencez le changement d'adresse": 'm_restartEmail',
+    'inscription invalide': 'm_signupInvalid',
+    'vous avez déjà envoyé plusieurs messages. notre équipe vous répond au plus vite, merci de patienter un peu.': 'm_supportRate',
+    'dépôt introuvable': 'm_notFound',
+    'retrait introuvable': 'm_notFound',
+    'ordre introuvable': 'm_notFound',
+    'transaction introuvable': 'm_notFound',
+    "génération de l'adresse…": 'm_addrGen',
+    'adresse en cours…': 'm_addrGen',
+    'ouverture du paiement...': 'm_openingPay',
+    'vérification de sécurité': 'm_secCheck',
+    "service d'inscription indisponible. réessayez.": 'm_signupDown',
+    'serveur indisponible. réessayez.': 'm_serverDown',
+    'saisissez votre e-mail': 'enterEmail',
+    "saisissez l'e-mail du compte": 'enterEmail',
+    'e-mail invalide': 'emailInvalid',
+    'adresse e-mail invalide': 'emailInvalid',
+    'paiement confirmé ! votre solde a été crédité.': 'm_payConfirmed',
+    'ce hash de transaction a déjà été crédité.': 'm_txReused',
+    "transaction invalide : les fonds n'ont pas été envoyés à l'adresse officielle de la plateforme.": 'm_txInvalid',
+    "transaction en cours de confirmation sur le réseau tron. si vous venez d'envoyer les fonds, patientez 30 secondes et réessayez.": 'm_propagating'
+  };
+
+  /* Messages avec un nombre : [expression, clé]. Le 1er groupe capturé remplace {n}. */
+  var MSG_FR_PATTERNS = [
+    [/^trop d'essais\. réessayez dans (\d+) min\.?$/, 'm_tryInMin'],
+    [/^patientez (\d+) s avant de relancer\.?$/, 'm_waitSec'],
+    [/^patientez (\d+)/, 'm_waitSec'],
+    [/^mise maximum pour cette cote : ([\d .,]+) \$$/, 'm_maxStake'],
+    [/^le retrait minimum est de \$([\d,]+(?:\.\d+)?)\.?$/, 'm_minWithdraw'],
+    [/^le dépôt minimum est de \$([\d,]+(?:\.\d+)?)\.?$/, 'm_minDeposit'],
+    [/^votre compte a été suspendu/, 'm_suspended'],
+    [/^ce compte a été fermé définitivement/, 'm_closed'],
+    [/^votre session a expiré/, 'sessionExpiredMsg'],
+    [/^session invalide$/, 'sessionExpiredMsg'],
+    [/^égalité — mise rendue ?(.*)$/, 'm_tieNote', true],
+    [/^position expirée ?(.*)$/, 'm_expiredNote', true]
+  ];
+
+  (function mergeMsgTable() {
+    MSG_LANGS.forEach(function (code, i) {
+      if (!DICT[code]) DICT[code] = Object.assign({}, EN);
+      Object.keys(MSG_TABLE).forEach(function (k) {
+        var v = MSG_TABLE[k][i];
+        if (v) DICT[code][k] = v;
+      });
+    });
+  })();
+
   var LANG_KEY = 'orolado_lang';
   var LANG_USER_KEY = 'orolado_lang_user';
   var LANG_MANUAL_KEY = 'orolado_manual_lang';
@@ -2294,25 +2491,21 @@
     return candidates;
   }
 
+  // La 1re langue du téléphone que le site connaît gagne, anglais compris (le site est
+  // international : un téléphone en anglais reste en anglais, même en Afrique francophone).
   function detectFromNavigator() {
     var candidates = collectLangCandidates();
-    var seenEn = '';
     var i;
     for (i = 0; i < candidates.length; i++) {
       var hit = matchSupportedLang(candidates[i]);
-      if (!hit) continue;
-      if (hit === 'en') {
-        if (!seenEn) seenEn = 'en';
-        continue;
-      }
-      return hit;
+      if (hit) return hit;
     }
-    return seenEn;
+    return '';
   }
 
   function detectUserLanguage() {
     var fromPhone = detectFromNavigator();
-    if (fromPhone && fromPhone !== 'en') return fromPhone;
+    if (fromPhone) return fromPhone;
     try {
       var fromTz = langFromTimezone((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '');
       if (fromTz) return fromTz;
@@ -2399,6 +2592,33 @@
       return key;
     } catch (eT) {
       return key;
+    }
+  }
+
+  /**
+   * Traduit un message affiché au joueur (erreur, avis, notification). Les messages français
+   * connus (serveur ou code) deviennent la langue du joueur ; l'anglais par défaut.
+   */
+  function msg(text) {
+    try {
+      if (text == null) return text;
+      var raw = String(text);
+      if (!raw) return raw;
+      if (lang === 'fr') return raw;
+      var norm = raw.trim().toLowerCase().replace(/[\u2019\u2018]/g, "'").replace(/\s+/g, ' ');
+      var key = MSG_FR[norm] || MSG_FR[norm.replace(/[.!]$/, '')];
+      if (key) return t(key);
+      var i;
+      for (i = 0; i < MSG_FR_PATTERNS.length; i++) {
+        var m = norm.match(MSG_FR_PATTERNS[i][0]);
+        if (!m) continue;
+        var out = t(MSG_FR_PATTERNS[i][1]);
+        if (MSG_FR_PATTERNS[i][2]) return (out + ' ' + (m[1] ? raw.slice(raw.length - m[1].length) : '')).trim();
+        return m[1] != null ? out.replace('{n}', m[1].trim()) : out;
+      }
+      return raw;
+    } catch (eMsg) {
+      return text;
     }
   }
 
@@ -2503,6 +2723,7 @@
 
   D6.I18N = {
     t: t,
+    msg: msg,
     depositLabel: depositLabel,
     apply: apply,
     refineFromGeo: refineFromGeo,

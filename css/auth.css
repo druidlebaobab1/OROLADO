@@ -42,7 +42,7 @@ html body #screenAuth .field label{font-size:.58rem;letter-spacing:.05em;line-he
 html body #screenAuth .field input{
   padding:14px 16px!important;min-height:52px!important;font-size:16px!important;line-height:1.15;
   margin-bottom:16px!important}
-html body #screenAuth .pass-toggle{min-width:32px;min-height:32px;padding:5px}
+html body #screenAuth .pass-toggle{min-width:44px;min-height:44px;padding:8px}
 html body #screenAuth .check-row{margin:4px 0 8px;font-size:.64rem;line-height:1.25;gap:8px}
 html body #screenAuth .link-forgot{margin:0 0 8px;font-size:.64rem}
 html body #screenAuth .btn-gold{

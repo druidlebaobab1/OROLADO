@@ -290,7 +290,7 @@
     if (!existing) {
       existing = D6.Store.createUser({
         id: 'guest_local',
-        displayName: 'Invité',
+        displayName: t('m_guest'),
         email: 'guest@orolado.local',
         phone: '0700000000',
         countryCode: '+225',
@@ -635,6 +635,8 @@
     return sec.toFixed(1) + 's';
   }
   function t(k) { return D6.I18N.t(k); }
+  // Message affiché au joueur : les textes français connus passent dans sa langue.
+  function L(m) { return (D6.I18N && D6.I18N.msg) ? D6.I18N.msg(m) : m; }
   function mapAssetId(id) {
     if (id === 'boom300' || id === 'pulseai') return 'titanpulse';
     if (D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[id]) return id;
@@ -849,6 +851,7 @@
 
   function toast(msg, kind, ms) {
     if (isSilentTradeMsg(msg)) return;
+    msg = L(msg);
     var el = $('toast');
     if (!el) return;
     var micro = kind === 'micro';
@@ -974,7 +977,7 @@
 
   function showFieldError(field, msg) {
     var el = $('err-' + field);
-    if (el) { el.textContent = msg; el.classList.add('on'); }
+    if (el) { el.textContent = L(msg); el.classList.add('on'); }
     else toast(msg, 'err');
   }
 
@@ -1926,7 +1929,7 @@
     var addr = assignedRecv(profRecvCoin);
     var busy = !!recvBusy[meta.cache];
     if (el) {
-      el.textContent = addr || (busy ? 'Génération de l’adresse…' : 'Adresse en cours…');
+      el.textContent = addr || t('m_addrGen');
       el.title = addr;
     }
     if (copyBtn) copyBtn.disabled = !addr;
@@ -2093,10 +2096,11 @@
     var left = 0;
     var timer = null;
     var target = '';
+    var sentAt = 0;
     function err(id, msg) {
       var el = $(id);
       if (!el) return;
-      el.textContent = msg || '';
+      el.textContent = L(msg) || '';
       el.classList.toggle('on', !!msg);
     }
     function lead(msg) { if ($('emailLead')) $('emailLead').textContent = msg || ''; }
@@ -2154,6 +2158,7 @@
       try { res = await D6.Api.post('emailChangeStart', { newEmail: mail }, 25000); } finally { busy = false; }
       if (!res || !res.ok) { err('err-newEmail', failText(res)); return; }
       target = res.sentTo || (user() && user().email) || '';
+      sentAt = Date.now();
       setStep('old');
       countdown(res.resendIn || 60);
       toast(t('codeSent'), 'ok');
@@ -2172,6 +2177,7 @@
       }
       if (res.step === 'new') {
         target = res.sentTo || target;
+        sentAt = Date.now();
         setStep('newcode');
         countdown(res.resendIn || 60);
         toast(t('codeSent'), 'ok');
@@ -2198,7 +2204,8 @@
     }
     $('btnOpenEmail').addEventListener('click', function () {
       if (isGuest()) { requireAccount(); return; }
-      reset();
+      // Reprise à l'étape du code si la fenêtre a été fermée par erreur (moins de 9 min).
+      if (!(step !== 'new' && Date.now() - sentAt < 9 * 60 * 1000)) reset();
       openFromProfile('emailModal');
     });
     bindAndroidTap($('closeEmail'), function () { closeModal('emailModal'); });
@@ -3229,7 +3236,7 @@
     return amt;
   }
 
-  function openDeposit(preMsg) {
+  function openDeposit(preMsg, method) {
     if (!requireAccount()) return;
     depositSendConfirmed = false;
     closeLangMenus();
@@ -3252,6 +3259,8 @@
     paintDepositWagerNotes();
     closeDrawer();
     openModal('depositModal');
+    // « Dépôt Express Crypto » : on arrive directement sur le choix de la crypto et le QR code.
+    if (method === 'crypto') setDepositPayMethod('usdt');
   }
 
   var depositing = false;
@@ -3642,7 +3651,7 @@
   function setWaitNote(msg, kind) {
     var el = $('depositWaitNote');
     if (!el) return;
-    el.textContent = msg || '';
+    el.textContent = L(msg) || '';
     el.className = 'wait-note' + (kind ? ' ' + kind : '');
   }
 
@@ -3654,7 +3663,7 @@
   function openDepositWait(ref) {
     depositRef = ref || '';
     if ($('depositWaitTitle')) $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', opLabel());
-    if ($('depositWaitRef')) $('depositWaitRef').textContent = ref ? ('Réf. ' + ref) : '';
+    if ($('depositWaitRef')) $('depositWaitRef').textContent = ref ? (t('m_ref') + ' ' + ref) : '';
     var btn = $('btnDepositCheck');
     if (btn) {
       btn.disabled = false;
@@ -3670,7 +3679,7 @@
   function openDepositVerify(ref) {
     depositRef = ref || depositRef;
     if ($('depositWaitTitle')) $('depositWaitTitle').textContent = t('depositVerifyTitle');
-    if ($('depositWaitRef')) $('depositWaitRef').textContent = depositRef ? ('Réf. ' + depositRef) : '';
+    if ($('depositWaitRef')) $('depositWaitRef').textContent = depositRef ? (t('m_ref') + ' ' + depositRef) : '';
     var btn = $('btnDepositCheck');
     if (btn) {
       btn.disabled = true;
@@ -4339,7 +4348,7 @@
     var min = minCardDeposit();
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
-      showFieldError('depositAmt', 'Le dépôt minimum est de $3.');
+      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
       toast('Le dépôt minimum est de $3.', 'err');
       return;
     }
@@ -4349,7 +4358,7 @@
     if (btn) {
       btn.disabled = true;
       btn.classList.add('busy');
-      btn.textContent = 'Ouverture du paiement...';
+      btn.textContent = t('m_openingPay');
     }
     try {
       var tok = await ensureApiToken();
@@ -4580,7 +4589,7 @@
       } else {
         box.classList.remove('hidden');
         if (fill) fill.style.width = String(gate.pct) + '%';
-        if (txt) txt.textContent = gate.msg;
+        if (txt) txt.textContent = L(gate.msg);
         if (btn) btn.disabled = !(gate.canWithdraw);
       }
     }
@@ -4773,7 +4782,7 @@
     } else if (isCrypto) {
       label.setAttribute('data-i18n', 'wdWallet');
       label.textContent = t('wdWallet');
-      input.placeholder = 'Ex: Adresse de r\u00e9ception';
+      input.placeholder = t('m_addrPh');
       input.type = 'text';
     } else if (method === 'bnb') {
       label.setAttribute('data-i18n', 'wdBinanceId');
@@ -4846,6 +4855,15 @@
   function openFromProfile(id) {
     returnToProfile = true;
     openModal(id);
+  }
+
+  /**
+   * Fenêtres où l'on saisit un code ou un formulaire : elles ne se ferment QUE par la croix.
+   * (Avant : un doigt à côté, ou la fenêtre « mots de passe » du téléphone, fermait tout.)
+   */
+  var STICKY_MODALS = { otpModal: 1, forgotModal: 1, passModal: 1, emailModal: 1, withdrawModal: 1, wdConfirmModal: 1, depositModal: 1, helpModal: 1 };
+  function isStickyModal(el) {
+    return !!(el && (STICKY_MODALS[el.id] || (el.getAttribute && el.getAttribute('data-sticky') === '1')));
   }
 
   function openModal(id) {
@@ -5105,15 +5123,29 @@
     document.querySelectorAll('.pass-toggle').forEach(function (btn) {
       if (btn._oroEye) return;
       btn._oroEye = true;
-      btn.addEventListener('click', function () {
+      // Réagit dès que le doigt touche (pointerdown), SANS retirer le clavier : avant, le 1er
+      // toucher fermait le clavier, la page bougeait et il fallait taper 2 à 4 fois.
+      var lastEye = 0;
+      function toggleEye(e) {
+        if (e && e.cancelable) e.preventDefault();
+        var now = Date.now();
+        if (now - lastEye < 350) return;
+        lastEye = now;
         var id = btn.getAttribute('data-pass');
         var input = id && $(id);
         if (!input) return;
+        var focused = document.activeElement === input;
+        var pos = focused && typeof input.selectionStart === 'number' ? input.selectionStart : null;
         var show = input.type === 'password';
         input.type = show ? 'text' : 'password';
         btn.innerHTML = show ? eyeOffSvg : eyeSvg;
         btn.setAttribute('aria-label', show ? t('hidePass') : t('showPass'));
-      });
+        if (focused) {
+          try { input.focus({ preventScroll: true }); if (pos != null) input.setSelectionRange(pos, pos); } catch (eFocus) { /* ignore */ }
+        }
+      }
+      btn.addEventListener('pointerdown', toggleEye);
+      btn.addEventListener('click', toggleEye);
     });
     bindCopyPublicId();
     bindWalletCard();
@@ -5393,7 +5425,7 @@
       el.classList.add('on', 'otp-wait-live');
       function paintWait() {
         var s = Math.max(0, otpWaitLeft);
-        el.textContent = s > 0 ? ('Patientez ' + s + ' s avant de relancer.') : '';
+        el.textContent = s > 0 ? t('m_waitSec').replace('{n}', s) : '';
         el.classList.toggle('on', s > 0);
         if (s <= 0) {
           el.classList.remove('otp-wait-live');
@@ -5410,7 +5442,7 @@
       return;
     }
     el.classList.remove('otp-wait-live');
-    el.textContent = msg || '';
+    el.textContent = L(msg) || '';
     el.classList.toggle('on', !!msg);
   }
 
@@ -5751,7 +5783,9 @@
     if ($('closeTerms')) bindAndroidTap($('closeTerms'), function () { closeModal('termsModal'); });
     bindAndroidTap($('closeHistorySheet'), function () { closeModal('historySheet'); });
     $('btnOpenPass').addEventListener('click', function () {
-      resetPassModal();
+      // Fermée par erreur alors qu'un code est en cours (moins de 9 min) : on reprend à la même
+      // étape, sans renvoyer de code ni effacer ce qui était saisi.
+      if (!(passStep !== 'email' && Date.now() - passSentAt < 9 * 60 * 1000)) resetPassModal();
       openFromProfile('passModal');
     });
     bindAndroidTap($('closePass'), function () { closeModal('passModal'); });
@@ -5762,6 +5796,7 @@
     var passLeft = 0;
     var passBusy = false;
     var passStep = 'email';
+    var passSentAt = 0;
 
     function setPassStep(step) {
       passStep = step;
@@ -5782,7 +5817,7 @@
     function setPassOtpError(msg) {
       var el = $('err-passOtp');
       if (!el) return;
-      el.textContent = msg || '';
+      el.textContent = L(msg) || '';
       el.classList.toggle('on', !!msg);
     }
     function tickPassTimer() {
@@ -5863,6 +5898,7 @@
         return;
       }
       setPassStep('otp');
+      passSentAt = Date.now();
       startPassCountdown(res.resendIn || 60);
       setPassOtpError('');
       if ($('passOtp')) { $('passOtp').value = ''; $('passOtp').focus(); }
@@ -5942,6 +5978,7 @@
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
+    if ($('btnExpressCrypto')) bindAndroidTap($('btnExpressCrypto'), function () { openDeposit(null, 'crypto'); });
     if ($('oxaCoinBtn')) {
       bindAndroidTap($('oxaCoinBtn'), function () {
         var menu = $('oxaCoinMenu');
@@ -6041,6 +6078,7 @@
       document.querySelectorAll('.modal-backdrop').forEach(function (bd) {
         function closeIfOverlay(e) {
           if (!e || e.target !== bd) return;
+          if (isStickyModal(bd)) return;
           if (e.cancelable) e.preventDefault();
           if (bd.id) closeModal(bd.id);
         }
@@ -6368,7 +6406,7 @@
       });
     }
     document.querySelectorAll('.modal-backdrop').forEach(function (b) {
-      b.addEventListener('click', function (e) { if (e.target === b) b.classList.remove('active'); });
+      b.addEventListener('click', function (e) { if (e.target === b && !isStickyModal(b)) b.classList.remove('active'); });
     });
   }
 

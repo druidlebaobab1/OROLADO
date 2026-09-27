@@ -59,12 +59,45 @@ $base = ['ok' => true, 'tickMs' => OROLADO_TICK_MS];
  * l'hébergeur sans PHP. Ce script ne sert qu'à le rafraîchir (au plus ~4 fois par seconde),
  * quel que soit le nombre de visiteurs.
  */
+/**
+ * Compte les demandes « live=1 » de la seconde en cours et ajuste la probabilité de
+ * rafraîchissement : visée ≈ 5 demandes par seconde, quel que soit le nombre de joueurs.
+ */
+function feed_live_rate(string $dir): float {
+  if (!is_dir($dir)) @mkdir($dir, 0755, true);
+  $fp = @fopen($dir . '/live_rate.json', 'c+');
+  if (!$fp) return 1.0;
+  flock($fp, LOCK_EX);
+  $st = json_decode((string) stream_get_contents($fp), true);
+  if (!is_array($st)) $st = ['s' => 0, 'n' => 0, 'rp' => 1.0];
+  $sec = time();
+  $rp = (float) ($st['rp'] ?? 1.0);
+  if ((int) ($st['s'] ?? 0) !== $sec) {
+    // Nouvelle seconde : on corrige rp selon les demandes de la seconde écoulée (lissé).
+    $n = (int) ($st['s'] ?? 0) === $sec - 1 ? max(1, (int) ($st['n'] ?? 0)) : 1;
+    $rp = max(0.002, min(1.0, $rp * sqrt(5 / $n)));
+    $st = ['s' => $sec, 'n' => 0, 'rp' => $rp];
+  }
+  $st['n'] = (int) $st['n'] + 1;
+  rewind($fp);
+  ftruncate($fp, 0);
+  fwrite($fp, json_encode($st));
+  fflush($fp);
+  flock($fp, LOCK_UN);
+  fclose($fp);
+  return round($rp, 4);
+}
+
 if (isset($_GET['live'])) {
   $dir = __DIR__ . '/feedcache';
   $file = $dir . '/live.json';
   $raw = @file_get_contents($file);
   $j = is_string($raw) ? json_decode($raw, true) : null;
   $fresh = is_array($j) && isset($j['at']) && (orolado_feed_now_ms() - (int) $j['at']) < 200;
+  // Auto-réglage : on compte les demandes de rafraîchissement par seconde et on en déduit
+  // « rp », la probabilité qu'un téléphone doit utiliser pour en demander un. Seul sur le
+  // site : rp = 1 (fluide). 1 000 joueurs : rp tout petit (~4 demandes/s au total).
+  $rp = feed_live_rate($dir);
   if (!$fresh) {
     try {
       $out = [];
@@ -72,7 +105,7 @@ if (isset($_GET['live'])) {
         $sl = feed_slice($id, null, 12);
         $out[$id] = feed_pack((int) $sl['first'], $sl['c']);
       }
-      $j = $base + ['at' => orolado_feed_now_ms(), 'assets' => $out];
+      $j = $base + ['at' => orolado_feed_now_ms(), 'rp' => $rp, 'assets' => $out];
       if (!is_dir($dir)) @mkdir($dir, 0755, true);
       $tmp = $dir . '/live.' . bin2hex(random_bytes(4)) . '.tmp';
       if (@file_put_contents($tmp, json_encode($j, JSON_UNESCAPED_SLASHES)) !== false) {

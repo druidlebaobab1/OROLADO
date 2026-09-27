@@ -1638,7 +1638,7 @@
     g.setLineDash(NO_DASH);
     if ((idx || 0) < 2) {
       var arrow = off < 0 ? ' ▲' : (off > 0 ? ' ▼' : '');
-      var tag = '×' + (Math.round(mult * 10) / 10) + ' objectif' + arrow;
+      var tag = '×' + (Math.round(mult * 10) / 10) + ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target') + arrow;
       g.font = '800 10px "Hanken Grotesk", sans-serif';
       var tw = Math.ceil(g.measureText(tag).width) + 14;
       var tx = Math.max(pad.l + 4, layout.axisX - tw - 8);

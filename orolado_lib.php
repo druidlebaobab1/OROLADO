@@ -5941,9 +5941,6 @@ function orolado_abandon_open_deposit(array $req): array {
 }
 
 function orolado_oxapay_invoice(array $req): array {
-  // Anti-robots : 30 demandes de paiement par heure et par compte (toutes portes confondues).
-  $rlTok = trim((string) ($req['token'] ?? ''));
-  if ($rlTok !== '' && !orolado_rate_ok('pay_oxapay', $rlTok, 30, 3600)) return ['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.'];
   $file = orolado_data_file();
   $db = load_db($file);
   $token = (string) ($req['token'] ?? '');
@@ -5980,6 +5977,10 @@ function orolado_oxapay_invoice(array $req): array {
       'reused' => true,
     ];
   }
+  // Anti-robots : on ne compte que les NOUVELLES adresses créées chez OxaPay (60 par heure et par
+  // compte). Les adresses déjà créées et réutilisées (changer de monnaie, rouvrir) ne comptent pas.
+  $rlTok = trim((string) ($req['token'] ?? ''));
+  if ($rlTok !== '' && !orolado_rate_ok('pay_oxapay', $rlTok, 60, 3600)) return ['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.'];
   $orderId = 'oro_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . bin2hex(random_bytes(6));
   $callback = rtrim(orolado_public_origin(), '/') . '/api/oxapay/webhook';
   $payerEmail = orolado_oxapay_payer_email($me);

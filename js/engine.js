@@ -20,9 +20,10 @@
   var HIST_TICKS = 5400;
   // Historique de départ, pour les 10 actifs d'un coup : 6 minutes.
   var BOOT_TICKS = 1440;
-  // Retard d'affichage très court : ce qu'on voit est quasiment le prix serveur actuel,
-  // donc le point d'entrée tombe là où le joueur clique. Rafraîchi toutes les 300 ms.
-  var DISPLAY_DELAY = 450;
+  // Retard d'affichage court : ce qu'on voit est quasiment le prix serveur actuel, donc le
+  // point d'entrée tombe là où le joueur clique. Rafraîchi toutes les 300 ms. 800 ms laisse
+  // la marge d'un rafraîchissement + le réseau mobile : la courbe ne s'arrête plus en attendant.
+  var DISPLAY_DELAY = 800;
   var POLL_MS = 300;
   var MULTS = [1.88, 5, 10, 50];
 
@@ -304,7 +305,6 @@
    * Ainsi la charge serveur ne dépend plus du nombre de visiteurs.
    */
   var liveBusy = false;
-  var staleSeen = 0;
   function pollLive() {
     if (liveBusy || allBusy) return;
     var ids = Object.keys(C.ASSETS);
@@ -319,27 +319,25 @@
     }).then(function (j) {
       var serverNow = Date.now() + clock.offset;
       var age = j && j.at ? serverNow - Number(j.at) : Infinity;
-      if (j && age < 500) staleSeen = 0;
       if (j && j.ok && !applyLive(j)) {
         // Il manque des prix (retour de veille, connexion lente) : resynchro complète.
         pollAll();
         done();
         return;
       }
-      if (age < 500) {
+      if (age < 200) {
         done();
         return;
       }
-      // Fichier un peu ancien : on ne demande PAS tous en même temps à PHP de le refaire.
-      // 1re fois 15 % de chances, 2e fois 50 %, ensuite toujours : avec 1 000 visiteurs,
-      // quelques-uns seulement s'en chargent ; seul sur le site, on attend au plus ~1 s.
-      staleSeen += 1;
-      var chance = staleSeen === 1 ? 0.15 : (staleSeen === 2 ? 0.5 : 1);
-      if (age < 3000 && Math.random() > chance) {
+      // Fichier un peu ancien : on demande à PHP de le refaire, avec la probabilité « rp »
+      // que le serveur calcule selon le nombre de joueurs (seul sur le site : toujours, donc
+      // courbe fluide ; 1 000 joueurs : quelques-uns seulement, donc serveur tranquille).
+      // Avant : 15 % puis 50 %… → trous d'environ 1 s puis rattrapage en « tic-tic ».
+      var rp = j && isFinite(Number(j.rp)) ? Math.max(0.002, Math.min(1, Number(j.rp))) : 1;
+      if (age < 1500 && Math.random() > rp) {
         done();
         return;
       }
-      staleSeen = 0;
       return getJson('feed.php?live=1').then(function (j2) {
         if (!applyLive(j2)) pollAll();
         done();
@@ -746,7 +744,7 @@
 
     if (payoutAmount > 0) setBal(user, mode, balOf(user, mode) + payoutAmount);
     if (voided) {
-      D6.Store.addTransaction(user, { type: 'void', amount: stake, mode: mode, note: 'Égalité — mise rendue ' + short });
+      D6.Store.addTransaction(user, { type: 'void', amount: stake, mode: mode, note: (D6.I18N && D6.I18N.t ? D6.I18N.t('m_tieNote') : 'Tie — stake returned') + ' ' + short });
     } else if (won) {
       user.wins = (user.wins || 0) + 1;
       user.consecutiveWins = (user.consecutiveWins || 0) + 1;
@@ -757,7 +755,7 @@
       user.consecutiveLosses = (user.consecutiveLosses || 0) + 1;
       user.consecutiveWins = 0;
       user.lastLost = true;
-      D6.Store.addTransaction(user, { type: 'loss', amount: -stake, mode: mode, note: 'Position expirée ' + short });
+      D6.Store.addTransaction(user, { type: 'loss', amount: -stake, mode: mode, note: (D6.I18N && D6.I18N.t ? D6.I18N.t('m_expiredNote') : 'Position expired') + ' ' + short });
     }
     var status = voided ? 'void' : (won ? 'won' : 'lost');
     trade.status = status;
@@ -1096,12 +1094,12 @@
 
       var market = wakeMarket(assetId);
       var f = feedOf(assetId);
-      if (!f.loaded || market.waiting) return { ok: false, reason: 'Connexion au marché…' };
+      if (!f.loaded || market.waiting) return { ok: false, reason: (D6.I18N && D6.I18N.t ? D6.I18N.t('m_connecting') : 'Connecting to the market…') };
 
       // Entrée affichée tout de suite = tick visible ; le serveur confirme le vrai prix.
       var entryTick = visibleTick(f, Date.now());
       var entryCents = priceAtTick(assetId, entryTick);
-      if (!(entryCents > 0)) return { ok: false, reason: 'Connexion au marché…' };
+      if (!(entryCents > 0)) return { ok: false, reason: (D6.I18N && D6.I18N.t ? D6.I18N.t('m_connecting') : 'Connecting to the market…') };
       var expiryTick = entryTick + Math.round(duration * 1000 / TICK_MS);
       var bar = barrierCents(assetId, duration, side, payout, entryCents);
       var guest = !hasToken();

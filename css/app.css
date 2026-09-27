@@ -170,9 +170,9 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .field input:focus,.field select:focus,.phone-row input:focus,.phone-row select:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
 .phone-row{display:grid;grid-template-columns:108px 1fr;gap:8px}
 .pass-wrap{position:relative;display:flex;align-items:center}
-.pass-wrap input{width:100%;padding-right:46px}
+.pass-wrap input{width:100%;padding-right:52px}
 .pass-toggle{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--muted);
-  line-height:1;cursor:pointer;padding:8px;min-width:40px;min-height:40px;z-index:2;display:grid;place-items:center;border-radius:var(--radius-sm)}
+  line-height:1;cursor:pointer;padding:8px;min-width:44px;min-height:44px;z-index:2;display:grid;place-items:center;border-radius:var(--radius-sm);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .pass-toggle svg{width:20px;height:20px;display:block;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pass-toggle:hover{color:var(--text);background:rgba(255,255,255,.04)}
 .err-msg{min-height:0;font-size:.7rem;color:#FECDD3;font-weight:600;display:none}
@@ -1110,7 +1110,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .wallet-card-v{font-size:1.35rem;font-weight:900;color:#F8E7B8;margin:2px 0 6px;letter-spacing:.01em;
   text-shadow:0 0 18px rgba(245,158,11,.25);font-variant-numeric:tabular-nums}
 .wallet-xpress{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:34px;margin:0 0 8px;
-  padding:6px 10px;border-radius:10px;pointer-events:none;user-select:none;
+  padding:6px 10px;border:0;border-radius:10px;cursor:pointer;user-select:none;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative;transition:transform .12s ease,box-shadow .2s ease,filter .2s ease;
   background:linear-gradient(90deg,#F59E0B 0%,#EAB308 55%,#FBBF24 100%);
   color:#1A1204;font-size:.68rem;font-weight:900;letter-spacing:.02em;
   box-shadow:0 6px 16px rgba(245,158,11,.28)}
@@ -3504,3 +3504,51 @@ html.is-android body #drawerProfile .drawer-legal{padding-bottom:calc(8px + env(
   html.is-android body #drawerProfile .drawer-head{padding-top:4px!important;padding-bottom:2px!important}
   html.is-android body #drawerProfile .prof-head{padding-bottom:4px!important}
 }
+
+/* Profil sur téléphone : les lignes du menu (historiques, retrait, mot de passe, e-mail,
+   appareils, déconnexion) se RÉPARTISSENT dans la hauteur libre. Grand écran : plus d'air
+   entre elles (jusqu'à 56 px) ; petit écran : elles gardent leur hauteur minimale et le profil
+   défile comme avant. Plus de grand vide sous « © OROLADO ». */
+@media (max-width:859px){
+  html body #drawerProfile .drawer-nav{flex:1 1 auto!important;justify-content:flex-start}
+  html body #drawerProfile .drawer-nav .drawer-section{display:contents!important}
+  html body #drawerProfile .drawer-nav .drawer-section-title{flex:0 0 auto}
+  html body #drawerProfile .drawer-nav .drawer-item{flex:1 1 0!important;max-height:56px!important}
+  html body #drawerProfile .drawer-legal{flex:0 0 auto;margin-top:6px!important}
+}
+
+/* « Dépôt Express Crypto » (profil) : c'est maintenant un vrai bouton → ouvre le dépôt crypto. */
+.wallet-xpress:hover{filter:brightness(1.06);box-shadow:0 8px 20px rgba(245,158,11,.38)}
+.wallet-xpress:active{transform:scale(.98)}
+.wallet-xpress .wx-go{font-size:1.1em;line-height:1;margin-left:2px;opacity:.75;transform:translateY(-1px)}
+.wallet-xpress::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 45%,transparent 60%);
+  background-size:220% 100%;animation:oroXpressShine 3.6s ease-in-out infinite}
+@keyframes oroXpressShine{0%,55%{background-position:120% 0}100%{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){.wallet-xpress::after{animation:none}}
+
+/* ==========================================================================
+   CROIX DE FERMETURE — une seule forme pour tout le site (sauf la grande croix du profil,
+   qui reste telle quelle). Rond sombre, fin liseré doré, même taille et même place partout.
+   « :not(#btnCloseDrawer) » donne à cette règle la priorité sur les 40 anciennes règles.
+   ========================================================================== */
+html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2){
+  position:absolute!important;top:10px!important;right:10px!important;left:auto!important;bottom:auto!important;
+  width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
+  margin:0!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  border-radius:50%!important;border:1px solid rgba(245,197,24,.42)!important;
+  background:rgba(10,14,22,.82)!important;color:#E8EEF9!important;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  box-shadow:0 0 0 1px rgba(255,255,255,.05),0 4px 12px rgba(0,0,0,.45)!important;
+  font-size:1rem!important;line-height:1!important;cursor:pointer;z-index:95!important;transform:none!important;flex:none!important;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  transition:border-color .18s ease,color .18s ease,background .18s ease,transform .12s ease}
+html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2)::after{content:"";position:absolute;inset:-7px;border-radius:50%}
+html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2):hover,
+html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2):focus-visible{border-color:rgba(245,197,24,.9)!important;color:#F5C518!important;background:rgba(18,24,36,.92)!important}
+html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2):active{transform:scale(.94)!important}
+html body .btn-close:not(#btnCloseDrawer) .x-ico{width:16px;height:16px;display:block;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+/* Étape crypto du dépôt : elle a son propre bouton retour, la croix reste cachée (comme avant). */
+html body .deposit-box.is-crypto #closeDeposit:not(#oroX1):not(#oroX2){display:none!important}
+/* Les titres ne passent jamais sous la croix. */
+html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border-box}
