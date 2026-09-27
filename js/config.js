@@ -170,8 +170,8 @@
       },
       goldtrend: {
         id: 'goldtrend',
-        name: 'OROCUS',
-        short: 'OROCUS',
+        name: 'OROF',
+        short: 'OROF',
         tag: 'Grandes vagues',
         chart: 'line',
         lineColor: '#f5a623',

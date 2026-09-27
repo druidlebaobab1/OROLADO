@@ -6155,7 +6155,7 @@ function orolado_oxapay_status(array $req): array {
   $status = orolado_oxapay_payload_status($data);
   $recv = orolado_oxapay_received($data);
   if (!$recv['known']) {
-    orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $tid . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main dans « Dépôts en Attente » après vérification sur OxaPay.');
+    orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $tid . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main dans « Dépôts en Attente » après vérification sur OxaPay.', 'warn');
     return ['ok' => true, 'pending' => true];
   }
   $received = (float) $recv['usd'];
@@ -6206,7 +6206,7 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
   $status = orolado_oxapay_payload_status($data);
   $recv = orolado_oxapay_received($data);
   if (!$recv['known']) {
-    orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $trackId . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main après vérification sur OxaPay.');
+    orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $trackId . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main après vérification sur OxaPay.', 'warn');
     orolado_oxapay_log('webhook_skip', ['reason' => 'no_price', 'trackId' => $trackId]);
     return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   }
