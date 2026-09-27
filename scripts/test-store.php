@@ -99,7 +99,20 @@ check('aucune connexion perdue (6 × 13)', count(array_filter(orolado_map_keys($
 check('les autres joueurs n’ont pas été touchés', (float) ($db['vault']['u_200']['real'] ?? -1) === 200.0 && count(orolado_map_array($db['users'])) === 299);
 check('aucun fichier temporaire oublié', count(glob($tmp . '/data/store/*/*/*.tmp') ?: []) === 0);
 
-echo "4) Réparation des index\n";
+echo "4) Juste après une mise en ligne : un vieux code en mémoire écrit encore à l'ancienne\n";
+// Ce que ferait l'ancien code (« me » sous verrou) : le fichier principal avec UN seul joueur, à moitié.
+$core = json_decode((string) file_get_contents($file), true);
+$core['users'] = ['u_20' => ['lastSeen' => 'vieux-code']];
+$core['vault'] = ['u_20' => ['demo' => 123]];
+file_put_contents($file, json_encode($core));
+unset($GLOBALS['OROLADO_DB_BASE']);
+$db = load_db();
+check('aucun autre joueur effacé', count(orolado_map_array($db['users'])) === 299, (string) count(orolado_map_array($db['users'])));
+check('le joueur touché garde son e-mail et reçoit le changement', ($db['users']['u_20']['email'] ?? '') === 'j20@test.com' && ($db['users']['u_20']['lastSeen'] ?? '') === 'vieux-code');
+check('son solde réel n’est pas écrasé (seul le démo change)', (float) ($db['vault']['u_20']['real'] ?? -1) === 20.0 && (float) ($db['vault']['u_20']['demo'] ?? 0) === 123.0);
+check('les connexions sont toujours là', is_array(orolado_session_user($db, 'tok42')));
+
+echo "5) Réparation des index\n";
 foreach (glob($tmp . '/data/store/_idx/*/*.json') ?: [] as $f) unlink($f);
 unset($GLOBALS['OROLADO_DB_BASE']);
 $db = load_db();

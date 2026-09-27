@@ -2912,14 +2912,35 @@ function orolado_store_migrate_core(array $core, string $file): array {
   if (!is_dir($arch)) @mkdir($arch, 0755, true);
   @file_put_contents($arch . '/orolado-avant-fiches-' . date('Ymd-His') . '-' . bin2hex(random_bytes(2)) . '.json', json_encode($core, JSON_UNESCAPED_UNICODE));
   $store = orolado_store_dir($file);
+  // Première fois (fiches encore vides) : l'ancien fichier est une photo complète, les fiches
+  // deviennent exactement cette photo. Ensuite (fiches déjà en service), un « ancien format »
+  // ne peut venir que d'un vieux code encore en mémoire juste après une mise en ligne : il ne
+  // contient que les quelques joueurs qu'il a touchés, parfois à moitié. On COMPLÈTE alors les
+  // fiches (champ par champ), sans jamais rien effacer.
+  $first = !orolado_store_initialized($store);
   foreach (orolado_store_maps() as $m) {
-    $rows = (isset($core[$m]) && is_array($core[$m])) ? $core[$m] : [];
-    // L'ancien fichier est une photo complète : les fiches deviennent exactement cette photo.
+    $rows = array_filter((isset($core[$m]) && is_array($core[$m])) ? $core[$m] : [], static fn($v, $k) => $v !== null && (string) $k !== '', ARRAY_FILTER_USE_BOTH);
     $map = new OroladoMap($m, $store);
-    $map->replaceAll(array_filter($rows, static fn($v, $k) => $v !== null && (string) $k !== '', ARRAY_FILTER_USE_BOTH));
+    if ($first) {
+      $map->replaceAll($rows);
+    } else {
+      foreach ($rows as $k => $v) {
+        $cur = $map[(string) $k] ?? null;
+        $map[(string) $k] = (is_array($cur) && is_array($v)) ? array_replace($cur, $v) : $v;
+      }
+    }
     $map->flush(orolado_store_index_callback($m, $store));
   }
+  if ($first) orolado_store_write_file(rtrim($store, '/\\') . '/.ready', date('c'));
   return orolado_store_core($core);
+}
+
+/** Les fiches sont-elles déjà en service ? (repère .ready, ou dossier des joueurs non vide) */
+function orolado_store_initialized(string $store): bool {
+  $store = rtrim($store, '/\\');
+  if (is_file($store . '/.ready')) return true;
+  $dirs = @scandir($store . '/users');
+  return is_array($dirs) && count($dirs) > 2;
 }
 
 /** Reconstruit les index des joueurs (outil de réparation, lent). */
