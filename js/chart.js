@@ -839,23 +839,49 @@
     var mh = Math.min(h * 0.92, mw * 0.52);
     var mx = pad.l + (w - mw) / 2;
     var my = pad.t + (h - mh) / 2;
-    var step = Math.max(5, mw / 72);
+    // Fins « fils » du globe (méridiens et parallèles) : on sent que c'est la Terre.
+    g.save();
+    g.strokeStyle = 'rgba(160,185,225,0.05)';
+    g.lineWidth = 1;
+    var gcx = mx + mw / 2;
+    var gcy = my + mh / 2;
+    var gk;
+    for (gk = 1; gk <= 4; gk++) {
+      g.beginPath();
+      g.ellipse(gcx, gcy, (mw / 2) * gk / 4, mh / 2, 0, 0, Math.PI * 2);
+      g.stroke();
+    }
+    for (gk = -2; gk <= 2; gk++) {
+      var py = gcy + gk * mh / 6;
+      var half = (mw / 2) * Math.sqrt(Math.max(0, 1 - Math.pow((py - gcy) / (mh / 2), 2)));
+      g.beginPath();
+      g.moveTo(gcx - half, py);
+      g.lineTo(gcx + half, py);
+      g.stroke();
+    }
+    g.restore();
+    // Continents en points plus fins et plus serrés (deux rangées par bande) : la forme
+    // de la carte se lit mieux, sans être plus lumineuse.
+    var step = Math.max(3.4, mw / 110);
     var degX = 360 * step / mw;
-    var r = Math.max(0.95, step * 0.26);
-    g.fillStyle = 'rgba(160,185,225,0.15)';
+    var r = Math.max(0.7, step * 0.28);
+    g.fillStyle = 'rgba(160,185,225,0.13)';
     var i;
     var j;
+    var sub;
     for (i = 0; i < WORLD_ROWS.length; i++) {
-      var lat = WORLD_ROWS[i][0];
-      var y = my + (85 - lat) / 145 * mh;
       var spans = WORLD_ROWS[i][1];
-      for (j = 0; j < spans.length; j++) {
-        var lon = Math.ceil((spans[j][0] + 180) / degX) * degX - 180;
-        for (; lon <= spans[j][1]; lon += degX) {
-          var x = mx + (lon + 180) / 360 * mw;
-          g.beginPath();
-          g.arc(x, y, r, 0, Math.PI * 2);
-          g.fill();
+      for (sub = 0; sub < 2; sub++) {
+        var lat = WORLD_ROWS[i][0] + 1.25 - sub * 2.5;
+        var y = my + (85 - lat) / 145 * mh;
+        for (j = 0; j < spans.length; j++) {
+          var lon = Math.ceil((spans[j][0] + 180) / degX) * degX - 180 + (sub ? degX / 2 : 0);
+          for (; lon <= spans[j][1]; lon += degX) {
+            var x = mx + (lon + 180) / 360 * mw;
+            g.beginPath();
+            g.arc(x, y, r, 0, Math.PI * 2);
+            g.fill();
+          }
         }
       }
     }
@@ -870,7 +896,7 @@
       var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 7);
       var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 4);
       if (img && img.complete && img.naturalWidth) {
-        g.globalAlpha = 0.055 + rnd() * 0.03;
+        g.globalAlpha = 0.04 + rnd() * 0.022;
         g.drawImage(img, cx - size / 2, cy - size / 2, size, size);
       }
     }
@@ -2507,7 +2533,7 @@
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 0.048;
+    ctx.globalAlpha = 0.042;
     ctx.fillStyle = '#E9D9B0';
     ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
     ctx.restore();
