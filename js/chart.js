@@ -792,7 +792,8 @@
     [-52.5, [[-74, -67]]]
   ];
   var BACKDROP_COINS = ['ico-btc', 'ico-eth', 'ico-usdt', 'ico-sol', 'ico-bnb', 'ico-xrp', 'ico-doge',
-    'ico-ton', 'ico-ada', 'ico-trx', 'ico-avax', 'ico-ltc', 'ico-link', 'ico-usdc', 'ico-matic'];
+    'ico-ton', 'ico-ada', 'ico-trx', 'ico-avax', 'ico-ltc', 'ico-link', 'ico-usdc', 'ico-matic',
+    'ico-dot', 'ico-shib', 'ico-uni', 'ico-atom', 'ico-near', 'ico-bch', 'ico-xlm'];
   var bgCanvas = null;
   var bgKey = '';
 
@@ -831,7 +832,9 @@
     glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,110,40,0.07)');
     glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(245,197,24,0.045)');
     // Carte du monde en points.
-    var mw = w * 1.1;
+    // Sur téléphone (graphique plus haut que large, surtout en plein écran), la carte
+    // grandit avec la hauteur : un peu plus large que l écran, centrée sur Europe/Afrique.
+    var mw = Math.max(w * 1.1, Math.min(h * 1.25, w * 1.4));
     var mh = Math.min(h * 0.92, mw * 0.52);
     var mx = pad.l + (w - mw) / 2;
     var my = pad.t + (h - mh) / 2;
@@ -860,11 +863,11 @@
     function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
     for (i = 0; i < BACKDROP_COINS.length; i++) {
       var img = coinImg(BACKDROP_COINS[i]);
-      var col = i % 5;
-      var row = Math.floor(i / 5);
+      var col = i % 6;
+      var row = Math.floor(i / 6);
       var size = 16 + rnd() * 12;
-      var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 5);
-      var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 3);
+      var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 6);
+      var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 4);
       if (img && img.complete && img.naturalWidth) {
         g.globalAlpha = 0.08 + rnd() * 0.04;
         g.drawImage(img, cx - size / 2, cy - size / 2, size, size);
@@ -891,6 +894,21 @@
       ctx.fillStyle = '#0B0E14';
       ctx.fillRect(0, 0, cssW, cssH);
     }
+  }
+
+  var wmKey = '';
+  var wmCached = 62;
+  try { document.fonts.ready.then(function () { wmKey = ''; }); } catch (eFonts) { /* ignore */ }
+  function watermarkSize(w, h) {
+    var key = Math.round(w) + 'x' + Math.round(h);
+    if (key === wmKey) return wmCached;
+    ctx.save();
+    ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
+    var m = ctx.measureText('OROLADO').width || 420;
+    ctx.restore();
+    wmCached = Math.max(40, Math.min(100 * (w * 0.9) / m, h * 0.4));
+    wmKey = key;
+    return wmCached;
   }
 
   function visualFormingCandle(forming) {
@@ -1164,7 +1182,9 @@
     // d'où la bouillie floue.
     var gap = Math.min(3, Math.max(0.6, slot * 0.28));
     var maxBody = 5;
-    if (opts.apexAiry || opts.boomSmall) maxBody = 4;
+    if (opts.boomSmall) maxBody = 4;
+    // ORO 888 : bougies violettes un peu plus larges.
+    if (opts.apexAiry) maxBody = 6;
     // Titan Pulse : +40 % de largeur par rapport aux bougies ordinaires.
     if (opts.titanWide) maxBody = 11;
     // Volatility 100 (actif principal) : grosses bougies façon TradingView.
@@ -1181,6 +1201,7 @@
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
+      if (opts.apexAiry) col = up ? '#C084FC' : '#7C3AED';
       // AZAZEL : braise orange à la hausse, rouge feu à la baisse.
       if (opts.crashDrop) col = up ? '#FF9F43' : '#FF3B30';
       // Titan Pulse : blanc pur, sans aucune teinte froide.
@@ -1237,7 +1258,7 @@
         ctx.shadowBlur = 9;
       } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose &&
         !opts.titanWhite && !opts.horizonOrange) {
-        ctx.shadowColor = up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)';
+        ctx.shadowColor = opts.apexAiry ? 'rgba(192,132,252,0.7)' : (up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)');
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
@@ -1281,6 +1302,12 @@
       } else if (opts.v75Rose) {
         ctx.fillStyle = '#d80056';
         ctx.fillRect(x - cw / 2, y1, cw, bh);
+      } else if (opts.apexAiry) {
+        // ORO 888 : corps violet plein, liseré clair en haut (effet bijou).
+        ctx.fillStyle = col;
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
+        ctx.fillStyle = up ? 'rgba(243,232,255,0.85)' : 'rgba(196,181,253,0.55)';
+        ctx.fillRect(x - cw / 2, y1, cw, Math.min(1.5, bh));
       } else {
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
@@ -2473,12 +2500,16 @@
     drawGrid(pad, w, seriesW, h, minP, maxP, theme);
 
     ctx.save();
-    ctx.globalAlpha = 0.10;
-    ctx.font = '800 62px "Plus Jakarta Sans", system-ui, sans-serif';
+    // Grand OROLADO : occupe ~90 % de la largeur du graphique (publicité sur chaque capture),
+    // plus visible qu'avant mais toujours derrière les bougies.
+    ctx.globalAlpha = 0.2;
+    var wmSize = watermarkSize(w, h);
+    ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
-    var wx = cssW / 2;
+    ctx.textBaseline = 'middle';
+    var wx = pad.l + w / 2;
     var wy = pad.t + h / 2;
-    var grad = ctx.createLinearGradient(wx - 140, wy, wx + 140, wy);
+    var grad = ctx.createLinearGradient(wx - w * 0.45, wy, wx + w * 0.45, wy);
     grad.addColorStop(0, 'rgba(180,120,32,0.55)');
     grad.addColorStop(0.45, 'rgba(245,197,24,0.95)');
     grad.addColorStop(1, 'rgba(180,120,32,0.55)');
@@ -2645,6 +2676,7 @@
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
     if (asset.id === 'v75') tagCol = '#ff2d75';
+    if (asset.id === 'apex500') tagCol = '#C084FC';
     if (map) {
       drawBead(map, market.price, tagCol, now, theme);
       drawLivePriceBadge(map, market.price, layout, tagCol);

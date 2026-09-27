@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2063") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2064") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2063") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2064") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -3576,12 +3576,6 @@ html body #screenAuth .brand-sub{color:#FFFFFF!important;letter-spacing:.32em;te
    d'être coupée à moitié derrière le montant (USDT sur Android). */
 html body .balance-card .bal-crypto-frieze{flex-wrap:wrap!important;align-content:flex-start;align-items:center;
   height:24px;overflow:hidden;row-gap:10px;padding-top:1px}
-/* Bas de l'écran propre et noir : plus de bande de feu orange ni de ligne blanche
-   sous ACHETER / VENDRE (Android et iPhone). */
-html body .pad.glass::before,
-html body .pad.glass::after{display:none!important;content:none!important;background:none!important}
-html body .pad.glass{background:#0B0E14!important;border-bottom:0!important}
-html body #screenTrade,html body .trade-shell,html body .trade-wrap{background-color:#0B0E14}
 /* Croix de fermeture bien rangées dans l'angle, sans jamais toucher le texte.
    1) Fenêtres avec une ligne de titre : la croix fait partie de cette ligne (à droite),
       la ligne prend sa hauteur, donc rien en dessous ne passe sous la croix. */
@@ -3609,6 +3603,55 @@ html body .chart-toolbar .chart-fs-label{white-space:nowrap;overflow:hidden;text
 html.is-android #depositModal .deposit-box.is-crypto{padding-top:8px!important;max-height:calc(100dvh - 12px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 html.is-android #depositModal .deposit-box.is-crypto .crypto-step-head{margin-bottom:2px!important;min-height:0!important}
 html.is-android #depositModal .deposit-box.is-crypto .modal-title{margin-bottom:2px!important}
-html body #screenTrade::before{display:none!important;content:none!important;background:none!important}
 html body .asset-chip[data-asset="titanpulse"] .asset-ico.sig-ico,
 html body .asset-chip.on[data-asset="titanpulse"] .asset-ico.sig-ico{filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9)) drop-shadow(0 0 4px rgba(255,255,255,.35))!important}
+/* Feu du bas : transition très douce vers le noir tout en bas (plus de trait clair net
+   entre le feu et la bande sombre, vu sur Android). */
+@media (max-width:859px){
+  html:not(.is-tv) #screenTrade:not(.hidden)::after{
+    height:calc(34px + env(safe-area-inset-bottom, 10px))!important;
+    background:linear-gradient(180deg,rgba(5,6,8,0) 0%,rgba(5,6,8,.35) 35%,rgba(5,6,8,.8) 70%,#050608 100%)!important}
+}
+/* Bouton Recharger : un peu plus de corps (hauteur et largeur), sans toucher USDT/BTC. */
+@media (max-width:859px){
+  html body #screenTrade:not(.is-guest) .topbar-cta{gap:3px!important}
+  html body #screenTrade:not(.is-guest) #btnOpenDeposit.btn-deposit{
+    min-height:34px!important;padding-top:6px!important;padding-bottom:6px!important;
+    padding-left:12px!important;padding-right:12px!important;min-width:112px!important;max-width:none!important}
+  html body #screenTrade:not(.is-guest) #btnOpenDeposit .dep-label{font-size:1.04em}
+}
+/* PC : le texte d'ACHETER / VENDRE garde toujours une marge (ne déborde plus). */
+@media (min-width:860px){
+  html body #screenTrade button.btn-trade.btn-call,html body #screenTrade button.btn-trade.btn-put,
+  html body .fs-trade-overlay button.btn-trade.btn-call,html body .fs-trade-overlay button.btn-trade.btn-put{
+    letter-spacing:.1px!important;padding-left:6px!important;padding-right:6px!important;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
+  html body #screenTrade button.btn-trade > span,html body .fs-trade-overlay button.btn-trade > span{font-size:11.5px!important}
+}
+@media (min-width:860px){
+  html.fs-trade body .fs-trade-overlay .pad button.btn-trade,
+  html.is-fullscreen body .fs-trade-overlay .pad button.btn-trade{
+    letter-spacing:.1px!important;padding-left:6px!important;padding-right:6px!important;white-space:nowrap!important;overflow:hidden!important}
+  html body .fs-trade-overlay .pad button.btn-trade.btn-trade > span,
+  html.fs-trade body .fs-trade-overlay .pad button.btn-trade > span{font-size:11.5px!important}
+}
+@media (min-width:860px){
+  html body .fs-trade-overlay .pad #btnCall.btn-call,html body .fs-trade-overlay .pad #btnPut.btn-put,
+  html body #screenTrade #btnCall.btn-call,html body #screenTrade #btnPut.btn-put{padding-left:5px!important;padding-right:5px!important;letter-spacing:.1px!important}
+}
+@media (min-width:860px){
+  html body .fs-trade-overlay .pad button.btn-trade.btn-trade > span,
+  html.fs-trade body .fs-trade-overlay .pad button.btn-trade > span{font-size:11px!important}
+}
+/* PC plein écran : indicateurs (MA, BB, EMA, +, −, ↺) bien espacés et un peu plus hauts. */
+@media (min-width:860px){
+  html.fs-trade body .chart-toolbar .ind-pills,
+  html.is-fullscreen body .chart-toolbar .ind-pills{gap:16px!important}
+  html.fs-trade body .chart-toolbar .ind-btn,
+  html.is-fullscreen body .chart-toolbar .ind-btn{min-height:42px!important;height:42px!important;min-width:58px!important;padding-left:14px!important;padding-right:14px!important;font-size:.9rem!important}
+}
+@media (min-width:860px){
+  html.fs-trade body #chartToolbar .ind-pills .ind-btn,
+  html.is-fullscreen body #chartToolbar .ind-pills .ind-btn{min-height:42px!important;height:42px!important;min-width:60px!important;
+    padding-left:15px!important;padding-right:15px!important;font-size:.9rem!important}
+}

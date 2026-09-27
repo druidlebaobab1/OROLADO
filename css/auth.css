@@ -265,3 +265,21 @@ html.is-ios body #screenAuth .auth-card{
   html body #screenAuth #formRegister .btn-gold{min-height:44px!important;margin-top:6px!important;margin-bottom:6px!important}
   html body #screenAuth .auth-card{padding-bottom:8px!important}
 }
+/* Titre OROLADO.COM : plus grand, il respire (écart avec le logo), « TRADING » un peu plus bas. */
+html body #screenAuth .brand-lockup{gap:9px!important}
+html body #screenAuth .brand-xl{font-size:1.62rem!important;line-height:1.1!important}
+html body #screenAuth .brand-sub{margin:9px 0 18px!important}
+@media (max-height:740px){
+  html body #screenAuth .brand-lockup{gap:7px!important}
+  html body #screenAuth .brand-xl{font-size:1.46rem!important}
+  html body #screenAuth .brand-sub{margin:7px 0 14px!important}
+}
+@media (min-width:1024px){
+  html:not(.is-android) body #screenAuth .brand-xl{font-size:2.05rem!important}
+  html:not(.is-android) body #screenAuth .brand-sub{margin:10px 0 20px!important}
+}
+@media (max-height:600px){
+  html body #screenAuth .brand-lockup{gap:4px!important}
+  html body #screenAuth .brand-xl{font-size:1.15rem!important}
+  html body #screenAuth .brand-sub{margin:3px 0 8px!important}
+}

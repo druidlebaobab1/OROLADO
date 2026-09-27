@@ -78,8 +78,8 @@
     ASSETS: {
       v100: {
         id: 'v100',
-        name: 'VOLATILITY 999',
-        short: 'VOLATILITY 999',
+        name: 'VOLATILITY',
+        short: 'VOLATILITY',
         tag: 'Haute volatilité',
         chart: 'candle',
         candleThin: false,
@@ -170,8 +170,8 @@
       },
       goldtrend: {
         id: 'goldtrend',
-        name: 'ORCUS',
-        short: 'ORCUS',
+        name: 'OROCUS',
+        short: 'OROCUS',
         tag: 'Grandes vagues',
         chart: 'line',
         lineColor: '#f5a623',

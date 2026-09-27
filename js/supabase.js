@@ -128,7 +128,7 @@
   }
 
   function orderToPosition(o) {
-    var assetMap = { v100: 'VOLATILITY 999', stable: 'ZUL', v75: 'PYTHON', crash300: 'AZAZEL', apex500: 'ORO 888', horizon50: 'BAAL', goldtrend: 'ORCUS', boomspike: 'VALAC', nexusprime: 'ASMODUS', titanpulse: 'APOCALYPSE', pulseai: 'APOCALYPSE', boom300: 'APOCALYPSE' };
+    var assetMap = { v100: 'VOLATILITY', stable: 'ZUL', v75: 'PYTHON', crash300: 'AZAZEL', apex500: 'ORO 888', horizon50: 'BAAL', goldtrend: 'OROCUS', boomspike: 'VALAC', nexusprime: 'ASMODUS', titanpulse: 'APOCALYPSE', pulseai: 'APOCALYPSE', boom300: 'APOCALYPSE' };
     return {
       id: o.id,
       at: o.created_at,
