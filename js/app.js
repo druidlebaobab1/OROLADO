@@ -835,6 +835,7 @@
         if (watchBan(r)) return;
         adoptWagerBook(r);
         applyQuietVault(r);
+        mirrorOtherDeviceTrades(r);
         if (r && r.ok && r.vault && r.vault.real != null) {
           var incomingDep = Number(r.user && r.user.realDepositTotal) || 0;
           var localDep = Number(u.realDepositTotal) || 0;
@@ -1814,6 +1815,33 @@
       if (D6.Engine && D6.Engine.restoreOpen) D6.Engine.restoreOpen(u);
     }
     if (changed) D6.Store.saveUser(u);
+  }
+
+  /**
+   * Même compte ouvert sur plusieurs appareils : un trade RÉEL lancé sur le téléphone apparaît
+   * aussi sur le PC (et inversement) au prochain « me » (toutes les 8 s environ).
+   * Garde-fous : seulement le compte réel (le serveur tient le solde et paie une seule fois),
+   * jamais un trade déjà fini ici, ni un trade qui expire dans moins de 2 s.
+   */
+  function mirrorOtherDeviceTrades(r) {
+    try {
+      var u = user();
+      if (!u || !r || !r.ok || !Array.isArray(r.openOrders) || !r.openOrders.length) return;
+      if (isGuest(u)) return;
+      var done = {};
+      (u.positions || []).forEach(function (p) { if (p && p.id) done[p.id] = 1; });
+      var known = {};
+      (u.openTrades || []).forEach(function (t) { if (t && t.id) known[t.id] = 1; });
+      var now = Date.now();
+      var fresh = r.openOrders.filter(function (t) {
+        if (!t || !t.id || t.mode !== 'real' || t.settled) return false;
+        if (done[t.id] || known[t.id]) return false;
+        var exp = Number(t.expiryTime) || 0;
+        return !(exp > 0 && exp - now < 2000);
+      });
+      if (!fresh.length) return;
+      adoptServerBook({ openOrders: fresh });
+    } catch (eMirror) { /* ignore */ }
   }
 
   function adoptOfficialVault(vault, opts) {
