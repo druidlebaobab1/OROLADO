@@ -907,7 +907,7 @@
     ctx.font = '800 100px "Plus Jakarta Sans", system-ui, sans-serif';
     var m = ctx.measureText('OROLADO').width || 420;
     ctx.restore();
-    wmCached = Math.max(40, Math.min(100 * (w * 0.97) / m, h * 0.3));
+    wmCached = Math.max(46, Math.min(100 * (w * 0.97) / m, h * 0.48));
     wmKey = key;
     return wmCached;
   }
@@ -2507,10 +2507,9 @@
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 0.06;
+    ctx.globalAlpha = 0.048;
     ctx.fillStyle = '#E9D9B0';
-    // Posé dans le bas du graphique (juste au-dessus des durées), là où la courbe passe peu.
-    ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h - wmSize * 0.62);
+    ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
     ctx.restore();
 
     var map = null;
