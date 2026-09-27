@@ -90,5 +90,31 @@ $authDel = array_values(array_filter($del, static fn($c) => str_contains($c, '/a
 check('base : comptes de connexion des 2 faux supprimés, jamais admin ni gmail',
   count($authDel) === 2 && !array_filter($authDel, static fn($c) => str_contains($c, $admin) || str_contains($c, $gmail)), implode(' | ', $authDel));
 
+echo "4) Suppression d'UN compte coché (après un bannissement par exemple)\n";
+$fake3 = $U(5);
+$db = load_db();
+$db['users'][$fake3] = ['id' => $fake3, 'email' => 'banni@test.com'];
+$db['users']['u_autre'] = ['id' => 'u_autre', 'email' => 'autre@test.com'];
+$db['vault'][$fake3] = ['real' => 50, 'demo' => 1];
+$db['vault']['u_autre'] = ['real' => 70, 'demo' => 1];
+$db['deposits'][] = ['id' => 'd9', 'userId' => $fake3, 'amount' => 50];
+$db['deposits'][] = ['id' => 'd10', 'userId' => 'u_autre', 'amount' => 70];
+$db['blocked_identities'] = ['email:banni@test.com' => ['kind' => 'suspended']];
+$db['admin_logs'] = [['type' => 'debit']];
+save_db(orolado_data_file(), $db);
+$calls = [];
+$r = orolado_wipe_run(true, 'SUPPRIMER', ['banni@test.com', $fake3]);
+$db = load_db();
+check('suppression ciblée terminée', !empty($r['ok']) && $r['deletedAccounts'] === 1, json_encode($r));
+check('le compte coché a disparu (fiche, solde, dépôt)', !isset($db['users'][$fake3]) && !isset($db['vault'][$fake3]) && !in_array('d9', array_column($db['deposits'], 'id'), true));
+check('les comptes non cochés restent intacts (même non-gmail)', isset($db['users']['u_autre'], $db['users'][$gmail]) && (float) $db['vault']['u_autre']['real'] === 70.0 && in_array('d10', array_column($db['deposits'], 'id'), true));
+check('un banni supprimé reste bloqué (ne peut pas se réinscrire)', isset($db['blocked_identities']['email:banni@test.com']) && count($db['admin_logs'] ?? []) === 1);
+$del = array_values(array_filter($calls, static fn($c) => str_starts_with($c, 'DELETE')));
+$onlyHim = true;
+foreach ($del as $c) if (!str_contains($c, $fake3)) $onlyHim = false;
+check('base : seuls les identifiants du compte coché sont visés', $del !== [] && $onlyHim, implode(' | ', array_slice($del, 0, 3)));
+$r = orolado_wipe_run(true, 'SUPPRIMER', ['admin@orolado.com']);
+check('cocher l’admin ne le supprime jamais', empty($r['ok']) && isset(load_db()['users']['admin_master']), (string) ($r['reason'] ?? ''));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

@@ -39,11 +39,12 @@ function orolado_wipe_accounts(): array {
   $add = static function (string $id, string $email, array $extra = []) use (&$acc): void {
     $email = strtolower(trim($email));
     $key = $email !== '' ? 'e:' . $email : 'i:' . $id;
-    if (!isset($acc[$key])) $acc[$key] = ['email' => $email, 'ids' => [], 'admin' => false, 'name' => '', 'real' => 0.0];
+    if (!isset($acc[$key])) $acc[$key] = ['email' => $email, 'ids' => [], 'admin' => false, 'name' => '', 'real' => 0.0, 'pid' => ''];
     if ($id !== '') $acc[$key]['ids'][$id] = true;
     if (!empty($extra['admin'])) $acc[$key]['admin'] = true;
     if (isset($extra['real'])) $acc[$key]['real'] = max($acc[$key]['real'], (float) $extra['real']);
     if (($extra['name'] ?? '') !== '' && $acc[$key]['name'] === '') $acc[$key]['name'] = (string) $extra['name'];
+    if (($extra['pid'] ?? '') !== '' && $acc[$key]['pid'] === '') $acc[$key]['pid'] = (string) $extra['pid'];
   };
   $db = load_db(orolado_data_file());
   foreach (($db['users'] ?? []) as $id => $u) {
@@ -53,6 +54,7 @@ function orolado_wipe_accounts(): array {
       'admin' => orolado_wipe_is_admin($u, $id),
       'name' => (string) ($u['displayName'] ?? ''),
       'real' => (float) ($db['vault'][$id]['real'] ?? 0),
+      'pid' => (string) ($u['publicId'] ?? ''),
     ]);
     $sb = (string) ($u['sbId'] ?? '');
     if ($sb !== '') $add($sb, (string) ($u['email'] ?? ''));
@@ -96,6 +98,7 @@ function orolado_wipe_plan(bool $keepGmail): array {
       'ids' => array_keys($a['ids']),
       'real' => round($a['real'], 2),
       'admin' => $a['admin'],
+      'pid' => $a['pid'],
     ];
     if ($a['admin'] || ($keepGmail && orolado_wipe_is_gmail($a['email']))) $keep[] = $row;
     else $del[] = $row;
@@ -108,26 +111,58 @@ function orolado_wipe_plan(bool $keepGmail): array {
 /**
  * Suppression définitive. Sur une grosse base, faite par lots (~15 s) : tant que
  * 'more' = true, le tableau rappelle automatiquement pour terminer.
+ *
+ * $only = null  : nettoyage complet (tout sauf l'admin, et les @gmail.com si la case est cochée).
+ * $only = [...] : seulement les comptes COCHÉS (e-mails ou identifiants) ; le reste ne bouge pas.
+ *                 L'admin n'est jamais supprimé, même coché.
  */
-function orolado_wipe_run(bool $keepGmail, string $confirm): array {
+function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null): array {
   if ($confirm !== OROLADO_WIPE_CONFIRM) return ['ok' => false, 'reason' => 'Tapez ' . OROLADO_WIPE_CONFIRM . ' pour confirmer.'];
   @set_time_limit(40);
   if (function_exists('ignore_user_abort')) @ignore_user_abort(true);
   $t0 = microtime(true);
+  $full = $only === null;
   $plan = orolado_wipe_plan($keepGmail);
   if (!$plan['hasAdmin']) return ['ok' => false, 'reason' => 'Compte admin introuvable : nettoyage annulé par sécurité.'];
+  if (!$full) {
+    $want = [];
+    foreach ($only as $v) { $v = strtolower(trim((string) $v)); if ($v !== '') $want[$v] = true; }
+    $all = array_merge($plan['keep'], $plan['delete']);
+    $sel = [];
+    $rest = [];
+    foreach ($all as $a) {
+      $hit = isset($want[strtolower($a['email'])]);
+      foreach ($a['ids'] as $id) if (isset($want[strtolower((string) $id)])) $hit = true;
+      if ($hit && !$a['admin']) $sel[] = $a; else $rest[] = $a;
+    }
+    if (!$sel) return ['ok' => false, 'reason' => 'Aucun compte coché.'];
+    $plan['delete'] = $sel;
+    $plan['keep'] = $rest;
+    $plan['nDelete'] = count($sel);
+    $plan['nKeep'] = count($rest);
+  }
   $keepIds = ['admin_master' => true];
   $keepEmails = [];
   foreach ($plan['keep'] as $k) {
     foreach ($k['ids'] as $id) $keepIds[(string) $id] = true;
     if ($k['email'] !== '(sans e-mail)') $keepEmails[$k['email']] = true;
   }
+  $delIds = [];
+  $delEmails = [];
+  foreach ($plan['delete'] as $d) {
+    foreach ($d['ids'] as $id) if (!isset($keepIds[(string) $id])) $delIds[(string) $id] = true;
+    if ($d['email'] !== '(sans e-mail)') $delEmails[$d['email']] = true;
+  }
   $keepUuid = array_values(array_filter(array_keys($keepIds), static fn($id) => orolado_wipe_uuid((string) $id)));
-  $isKept = static fn(string $uid): bool => $uid !== '' && isset($keepIds[$uid]);
+  $delUuid = array_values(array_filter(array_keys($delIds), static fn($id) => orolado_wipe_uuid((string) $id)));
+  // Complet : tout ce qui n'est pas gardé part. Ciblé : seulement les comptes cochés partent.
+  $isKept = $full
+    ? static fn(string $uid): bool => $uid !== '' && isset($keepIds[$uid])
+    : static fn(string $uid): bool => $uid === '' || !isset($delIds[$uid]);
   $out = ['ok' => true, 'deletedAccounts' => $plan['nDelete'], 'kept' => $plan['nKeep'], 'site' => [], 'base' => [], 'files' => 0, 'more' => false, 'left' => 0];
 
   // 1. Fichier du site, sous verrou (écrit directement : rien ne peut revenir).
-  $local = with_db_lock(static function ($box) use ($isKept, $keepEmails): array {
+  $local = with_db_lock(static function ($box) use ($isKept, $keepEmails, $delEmails, $full): array {
     $db =& $box->db;
     $n = ['comptes' => 0];
     foreach (array_keys($db['users'] ?? []) as $id) {
@@ -150,11 +185,18 @@ function orolado_wipe_run(bool $keepGmail, string $confirm): array {
       $n[$list] = $before - count($db[$list]);
     }
     foreach (['pendingRegistrations', 'pendingPasswordOtps', 'withdrawOtps'] as $map) {
-      foreach (array_keys($db[$map] ?? []) as $k) if (!isset($keepEmails[strtolower((string) $k)])) unset($db[$map][$k]);
+      foreach (array_keys($db[$map] ?? []) as $k) {
+        $em = strtolower((string) $k);
+        if ($full ? !isset($keepEmails[$em]) : isset($delEmails[$em])) unset($db[$map][$k]);
+      }
     }
     foreach (array_keys($db['pendingEmailChanges'] ?? []) as $k) if (!$isKept((string) $k)) unset($db['pendingEmailChanges'][$k]);
-    $db['blocked_identities'] = [];
-    $db['admin_logs'] = [];
+    // Nettoyage complet seulement : liste noire et journal admin remis à zéro. En ciblé, un
+    // compte banni puis supprimé reste bloqué (il ne peut pas se réinscrire avec le même e-mail).
+    if ($full) {
+      $db['blocked_identities'] = [];
+      $db['admin_logs'] = [];
+    }
     return ['ok' => true, 'n' => $n];
   });
   $out['site'] = $local['n'] ?? [];
@@ -170,14 +212,16 @@ function orolado_wipe_run(bool $keepGmail, string $confirm): array {
     @file_put_contents($f, $keepLines ? implode("\n", $keepLines) . "\n" : '', LOCK_EX);
     $out['files']++;
   }
-  $patterns = ['admin_cache_*.json', 'admin_alerts.json', 'admin_health_ack.json', 'admin_board_ack.json', 'otp_mail.log',
-    'oxapay_webhook.log', 'debug_maketou.log', 'rate_*.json', 'keep_purge_v1.done', 'settle_*.ok', 'login_throttle.json'];
+  $patterns = $full
+    ? ['admin_cache_*.json', 'admin_alerts.json', 'admin_health_ack.json', 'admin_board_ack.json', 'otp_mail.log',
+      'oxapay_webhook.log', 'debug_maketou.log', 'rate_*.json', 'keep_purge_v1.done', 'settle_*.ok', 'login_throttle.json']
+    : ['admin_cache_*.json'];
   foreach ($patterns as $pat) {
     foreach (glob($dir . '/' . $pat) ?: [] as $f) {
       if (is_file($f) && @unlink($f)) $out['files']++;
     }
   }
-  foreach (['kicks', 'cash_ops'] as $sub) {
+  foreach ($full ? ['kicks', 'cash_ops'] : [] as $sub) {
     foreach (glob($dir . '/' . $sub . '/*') ?: [] as $f) {
       if ($sub === 'kicks' && $isKept(pathinfo((string) $f, PATHINFO_FILENAME))) continue;
       if (is_file($f) && @unlink($f)) $out['files']++;
@@ -188,12 +232,25 @@ function orolado_wipe_run(bool $keepGmail, string $confirm): array {
   if (supabase_admin_ready()) {
     $url = rtrim(supabase_project_url(), '/');
     $hdrs = array_merge(supabase_admin_headers(), ['Prefer: return=minimal']);
-    $notKept = $keepUuid ? 'not.in.(' . implode(',', $keepUuid) . ')' : 'not.is.null';
-    foreach (['orders' => 'user_id', 'deposits' => 'user_id', 'withdrawals' => 'user_id', 'transactions' => 'user_id', 'vaults' => 'user_id', 'profiles' => 'id'] as $table => $col) {
-      $r = supabase_http($url . '/rest/v1/' . $table . '?' . $col . '=' . $notKept, $hdrs, null, 'DELETE');
-      $out['base'][$table] = $r !== null ? 'effacé' : 'à revérifier';
-      // Lignes sans propriétaire (anciens essais) : effacées aussi.
-      if ($col === 'user_id') supabase_http($url . '/rest/v1/' . $table . '?user_id=is.null', $hdrs, null, 'DELETE');
+    $tables = ['orders' => 'user_id', 'deposits' => 'user_id', 'withdrawals' => 'user_id', 'transactions' => 'user_id', 'vaults' => 'user_id', 'profiles' => 'id'];
+    if ($full) {
+      $notKept = $keepUuid ? 'not.in.(' . implode(',', $keepUuid) . ')' : 'not.is.null';
+      foreach ($tables as $table => $col) {
+        $r = supabase_http($url . '/rest/v1/' . $table . '?' . $col . '=' . $notKept, $hdrs, null, 'DELETE');
+        $out['base'][$table] = $r !== null ? 'effacé' : 'à revérifier';
+        // Lignes sans propriétaire (anciens essais) : effacées aussi.
+        if ($col === 'user_id') supabase_http($url . '/rest/v1/' . $table . '?user_id=is.null', $hdrs, null, 'DELETE');
+      }
+    } else {
+      // Ciblé : seulement les identifiants des comptes cochés (par paquets de 100).
+      foreach ($tables as $table => $col) {
+        $okT = true;
+        foreach (array_chunk($delUuid, 100) as $chunk) {
+          $r = supabase_http($url . '/rest/v1/' . $table . '?' . $col . '=in.(' . implode(',', $chunk) . ')', $hdrs, null, 'DELETE');
+          if ($r === null) $okT = false;
+        }
+        $out['base'][$table] = $delUuid ? ($okT ? 'effacé' : 'à revérifier') : 'rien';
+      }
     }
     // 4. Comptes de connexion, un par un, par lots pour rester sous le délai du serveur.
     $done = 0;

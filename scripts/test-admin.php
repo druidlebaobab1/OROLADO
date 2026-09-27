@@ -134,7 +134,7 @@ if (in_array('--preview', $argv ?? [], true)) {
   $db['users']['admin_master'] = ['id' => 'admin_master', 'email' => 'admin@orolado.com', 'role' => 'admin'];
   file_put_contents($tmp . '/data/orolado.json', json_encode($db));
   $_SESSION['admin_uid'] = 'admin_master';
-  $resp = ['badges' => ['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()], 'list' => [], 'profile' => []];
+  $resp = ['badges' => ['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()], 'list' => [], 'profile' => [], 'wipe' => ['ok' => true, 'keep' => [['email' => 'admin@orolado.com', 'name' => 'Admin', 'ids' => ['admin_master'], 'real' => 0, 'admin' => true, 'pid' => 'ORO-ADMIN'], ['email' => 'vraijoueur@gmail.com', 'name' => 'Vrai', 'ids' => ['g1'], 'real' => 12, 'admin' => false, 'pid' => 'ORO-2']], 'delete' => [['email' => 'cc33@laoia.com', 'name' => 'Faux 1', 'ids' => ['f1'], 'real' => 900, 'admin' => false, 'pid' => 'ORO-3'], ['email' => 'x9@tempmail.xyz', 'name' => 'Faux 2', 'ids' => ['f2'], 'real' => 5000, 'admin' => false, 'pid' => 'ORO-4']]]];
   foreach ($ADMIN_TABS as $ts) foreach ($ts as $t) $resp['list'][$t[0]] = admin_list_payload($t[0], ['preset' => 'all', 'page' => 1]);
   foreach ([$p1, $p2, $p3, $p7] as $uid) $resp['profile'][$uid] = admin_profile_payload($uid);
   $logged = true;
@@ -146,7 +146,7 @@ if (in_array('--preview', $argv ?? [], true)) {
   eval('?>' . $html);
   $page = ob_get_clean();
   $inject = '<script>window.fetch = async (u, o) => { const b = JSON.parse(o.body); const R = ' . json_encode($resp, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . ';'
-    . ' let j = {ok:false, reason:"aperçu"}; if (b.action === "badges") j = R.badges; else if (b.action === "list") j = R.list[b.view] || j; else if (b.action === "profile") j = R.profile[b.userId] || j;'
+    . ' let j = {ok:false, reason:"aperçu"}; if (b.action === "badges") j = R.badges; else if (b.action === "list") j = R.list[b.view] || j; else if (b.action === "profile") j = R.profile[b.userId] || j; else if (b.action === "wipe_plan") j = R.wipe;'
     . ' return { json: async () => j }; };</script>';
   $page = preg_replace('/<script>/', $inject . '<script>', $page, 1);
   $out = __DIR__ . '/../admin-apercu.html';

@@ -1736,7 +1736,8 @@ if ($isAjax) {
     admin_json(orolado_wipe_plan(!empty($req['keepGmail'])));
   }
   if ($action === 'wipe_run') {
-    $res = orolado_wipe_run(!empty($req['keepGmail']), (string) ($req['confirm'] ?? ''));
+    $only = isset($req['only']) && is_array($req['only']) ? array_map('strval', $req['only']) : null;
+    $res = orolado_wipe_run(!empty($req['keepGmail']), (string) ($req['confirm'] ?? ''), $only);
     admin_bust_cache();
     if (!empty($res['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'nettoyage', 0, 'Nettoyage : ' . (int) ($res['deletedAccounts'] ?? 0) . ' compte(s) supprimé(s)');
     admin_json($res);
@@ -1947,8 +1948,16 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" type="button" id="closeWipe">Fermer</button>
       <h2 style="color:var(--red);margin:10px 0 4px">Nettoyer : suppression définitive</h2>
       <p class="muted">Les comptes supprimés et toutes leurs données (soldes, dépôts, retraits, trades, historiques, messages) sont effacés pour de bon, dans la base et sur le serveur. Rien ne reviendra. Le compte admin est toujours gardé.</p>
-      <p><label><input type="checkbox" id="wipeKeepGmail" checked> Garder les comptes <strong>@gmail.com</strong></label></p>
-      <p><button class="mini" type="button" id="btnWipePlan">1. Voir ce qui sera supprimé</button></p>
+      <p><label><input type="checkbox" id="wipeKeepGmail" checked> Ne pas cocher d’office les comptes <strong>@gmail.com</strong></label></p>
+      <p><button class="mini" type="button" id="btnWipePlan">1. Afficher les comptes</button></p>
+      <div id="wipeTools" style="display:none;margin:8px 0">
+        <input id="wipeSearch" type="search" placeholder="Rechercher : e-mail, nom, ORO-…" style="min-height:38px;width:100%;max-width:420px;border-radius:10px;border:1px solid var(--line);background:#0E1420;color:var(--text);padding:6px 10px;font:inherit">
+        <div style="margin-top:8px">
+          <button class="mini" type="button" id="btnWipeAll">Tout cocher</button>
+          <button class="mini" type="button" id="btnWipeNone">Tout décocher</button>
+          <span class="muted" id="wipeCount"></span>
+        </div>
+      </div>
       <div id="wipePlan"></div>
       <div id="wipeConfirmBox" style="display:none;margin-top:12px">
         <p>2. Pour confirmer, tapez <strong>SUPPRIMER</strong> :</p>
@@ -2238,7 +2247,8 @@ async function openUser(uid) {
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button> '+
+    '<button class="mini bad" id="btnDeleteUser">Supprimer ce compte</button></p>'+
     tbl('Dépôts (argent payé)', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
@@ -2257,6 +2267,10 @@ async function openUser(uid) {
   const btnDebit = document.getElementById('btnDebit');
   if (btnCredit) btnCredit.onclick = () => go(1);
   if (btnDebit) btnDebit.onclick = () => go(-1);
+  document.getElementById('btnDeleteUser').onclick = () => {
+    document.getElementById('userModal').classList.remove('on');
+    if (window.openWipe) window.openWipe(String(u.email || '').toLowerCase());
+  };
   document.getElementById('btnSuspend').onclick = async () => {
     if (!confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
     const r = await ajax({action:'suspend', userId:u.id});
@@ -2267,40 +2281,80 @@ async function openUser(uid) {
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
 (function () {
   const $w = id => document.getElementById(id);
-  const keep = () => $w('wipeKeepGmail').checked;
-  const list = (title, rows, color) => '<h3 class="panel-title" style="color:' + color + '">' + title + ' (' + rows.length + ')</h3>' +
-    (rows.length ? '<div class="table-wrap" style="max-height:28vh"><table><thead><tr><th>E-mail</th><th>Nom</th><th>Solde réel</th></tr></thead><tbody>' +
-      rows.map(r => '<tr><td>' + esc(r.email) + (r.admin ? ' <span class="pill pill-ok">admin</span>' : '') + '</td><td>' + esc(r.name || '—') + '</td><td>' + money(r.real) + '</td></tr>').join('') +
-      '</tbody></table></div>' : '<p class="muted">Aucun</p>');
-  $w('btnWipe').onclick = () => {
-    $w('wipePlan').innerHTML = ''; $w('wipeConfirmBox').style.display = 'none'; $w('wipeStatus').textContent = ''; $w('wipeConfirm').value = '';
-    $w('wipeModal').classList.add('on');
+  let rows = [];          // comptes (hors admin) : {email, name, pid, real, key, checked}
+  let admins = [];
+  const keepGmail = () => $w('wipeKeepGmail').checked;
+  const visible = () => {
+    const q = ($w('wipeSearch').value || '').trim().toLowerCase();
+    return q ? rows.filter(r => (r.email + ' ' + (r.name || '') + ' ' + (r.pid || '')).toLowerCase().includes(q)) : rows;
   };
-  $w('closeWipe').onclick = () => $w('wipeModal').classList.remove('on');
-  $w('wipeKeepGmail').onchange = () => { $w('wipePlan').innerHTML = ''; $w('wipeConfirmBox').style.display = 'none'; };
-  $w('btnWipePlan').onclick = async () => {
+  function paint() {
+    const vis = visible();
+    const nSel = rows.filter(r => r.checked).length;
+    $w('wipeCount').textContent = nSel + ' coché(s) sur ' + rows.length;
+    $w('wipePlan').innerHTML =
+      (admins.length ? '<p class="muted">Toujours gardé : ' + admins.map(a => esc(a.email)).join(', ') + '</p>' : '') +
+      '<div class="table-wrap" style="max-height:40vh"><table><thead><tr><th></th><th>E-mail</th><th>ID</th><th>Nom</th><th>Solde réel</th></tr></thead><tbody>' +
+      (vis.length ? vis.map(r => '<tr><td><input type="checkbox" data-wkey="' + esc(r.key) + '"' + (r.checked ? ' checked' : '') + '></td><td>' + esc(r.email) + '</td><td>' + esc(r.pid || '—') + '</td><td>' + esc(r.name || '—') + '</td><td>' + money(r.real) + '</td></tr>').join('')
+        : '<tr><td colspan="5" class="muted">Aucun compte ne correspond.</td></tr>') +
+      '</tbody></table></div>';
+    $w('wipePlan').querySelectorAll('input[data-wkey]').forEach(cb => cb.onchange = () => {
+      const r = rows.find(x => x.key === cb.getAttribute('data-wkey'));
+      if (r) r.checked = cb.checked;
+      $w('wipeCount').textContent = rows.filter(x => x.checked).length + ' coché(s) sur ' + rows.length;
+      $w('wipeConfirmBox').style.display = rows.some(x => x.checked) ? '' : 'none';
+    });
+    $w('wipeConfirmBox').style.display = nSel ? '' : 'none';
+  }
+  async function load(onlyEmail) {
     $w('wipeStatus').textContent = 'Lecture des comptes…';
-    const j = await ajax({action:'wipe_plan', keepGmail: keep()});
+    const j = await ajax({action:'wipe_plan', keepGmail: keepGmail()});
     if (!j.ok) { $w('wipeStatus').textContent = j.reason || 'Échec'; return; }
-    $w('wipePlan').innerHTML = list('Gardés', j.keep || [], 'var(--green)') + list('Supprimés définitivement', j.delete || [], 'var(--red)');
-    $w('wipeConfirmBox').style.display = (j.delete || []).length ? '' : 'none';
-    $w('wipeStatus').textContent = (j.delete || []).length ? '' : 'Rien à supprimer.';
+    admins = (j.keep || []).filter(a => a.admin);
+    const toDel = new Set((j.delete || []).map(r => r.email + '|' + (r.ids || []).join(',')));
+    rows = [...(j.keep || []).filter(a => !a.admin), ...(j.delete || [])].map(r => {
+      const key = r.email + '|' + (r.ids || []).join(',');
+      return {email: r.email, name: r.name, pid: r.pid, real: r.real, ids: r.ids || [], key,
+        checked: onlyEmail ? r.email === onlyEmail : toDel.has(key)};
+    });
+    rows.sort((a, b) => (b.checked - a.checked) || a.email.localeCompare(b.email));
+    $w('wipeTools').style.display = '';
+    $w('wipeSearch').value = onlyEmail || '';
+    $w('wipeStatus').textContent = '';
+    paint();
+  }
+  window.openWipe = (onlyEmail) => {
+    $w('wipePlan').innerHTML = ''; $w('wipeTools').style.display = 'none'; $w('wipeConfirmBox').style.display = 'none';
+    $w('wipeStatus').textContent = ''; $w('wipeConfirm').value = ''; rows = [];
+    $w('wipeModal').classList.add('on');
+    if (onlyEmail) load(onlyEmail);
   };
+  $w('btnWipe').onclick = () => window.openWipe('');
+  $w('closeWipe').onclick = () => $w('wipeModal').classList.remove('on');
+  $w('wipeKeepGmail').onchange = () => { if (rows.length) load(''); };
+  $w('btnWipePlan').onclick = () => load('');
+  $w('wipeSearch').oninput = paint;
+  $w('btnWipeAll').onclick = () => { visible().forEach(r => { r.checked = true; }); paint(); };
+  $w('btnWipeNone').onclick = () => { visible().forEach(r => { r.checked = false; }); paint(); };
   $w('btnWipeRun').onclick = async () => {
+    const sel = rows.filter(r => r.checked);
+    if (!sel.length) { alert('Cochez au moins un compte.'); return; }
     if ($w('wipeConfirm').value.trim() !== 'SUPPRIMER') { alert('Tapez SUPPRIMER pour confirmer.'); return; }
-    if (!confirm('Dernière vérification : supprimer définitivement ces comptes et toutes leurs données ?')) return;
+    if (!confirm('Supprimer définitivement ' + sel.length + ' compte(s) et toutes leurs données ?')) return;
+    const only = [];
+    sel.forEach(r => { if (r.email && r.email !== '(sans e-mail)') only.push(r.email); r.ids.forEach(id => only.push(id)); });
     $w('btnWipeRun').disabled = true;
-    let total = 0, j;
+    let j;
     do {
       $w('wipeStatus').textContent = 'Suppression en cours… ne fermez pas cette page.';
-      j = await ajax({action:'wipe_run', keepGmail: keep(), confirm: 'SUPPRIMER'});
+      j = await ajax({action:'wipe_run', keepGmail: keepGmail(), confirm: 'SUPPRIMER', only});
       if (!j.ok) { $w('wipeStatus').textContent = j.reason || 'Échec'; $w('btnWipeRun').disabled = false; return; }
-      total = j.deletedAccounts || total;
     } while (j.more);
     $w('btnWipeRun').disabled = false;
-    $w('wipeStatus').textContent = 'Terminé : ' + total + ' compte(s) supprimé(s) définitivement. ' + (j.kept || 0) + ' gardé(s).';
-    $w('wipePlan').innerHTML = ''; $w('wipeConfirmBox').style.display = 'none';
+    $w('wipeStatus').textContent = 'Terminé : ' + sel.length + ' compte(s) supprimé(s) définitivement.';
+    $w('wipeConfirm').value = '';
     bustList(); loadBadges(); loadList(true);
+    load('');
   };
 })();
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
