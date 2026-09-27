@@ -1681,6 +1681,26 @@ if ($action === 'placeOrder') {
   exit;
 }
 
+// Même compte sur plusieurs appareils : liste LÉGÈRE des trades réels encore ouverts
+// (lecture seule, ne touche ni au solde ni aux trades). Appelée toutes les ~3 s par un
+// appareil en compte réel, pour afficher les trades lancés depuis un autre appareil.
+if ($action === 'openTrades') {
+  $stSess = orolado_session_inspect($db, $token);
+  if (empty($stSess['ok'])) {
+    echo json_encode($stSess);
+    exit;
+  }
+  $uidOpen = (string) $stSess['user']['id'];
+  $open = [];
+  foreach (($db['orders'] ?? []) as $o) {
+    if (!is_array($o) || ($o['userId'] ?? '') !== $uidOpen) continue;
+    if ((string) ($o['status'] ?? '') !== 'open' || ($o['mode'] ?? '') !== 'real') continue;
+    $open[] = orolado_trade_public($o);
+  }
+  echo json_encode(['ok' => true, 'server' => true, 'openOrders' => $open, 'serverMs' => orolado_feed_now_ms()]);
+  exit;
+}
+
 if ($action === 'settleOrder') {
   $stSess = orolado_session_inspect($db, $token);
   if (empty($stSess['ok'])) {

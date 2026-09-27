@@ -847,6 +847,20 @@
       }).catch(function () { /* ignore */ });
     }
     banWatchTimer = setInterval(pollMe, 8000);
+    // Trades réels lancés depuis un autre appareil : vérification légère toutes les 3 s,
+    // seulement en compte réel et page à l'écran (le serveur reste tranquille).
+    var openBusy = false;
+    setInterval(function () {
+      if (document.hidden || openBusy) return;
+      var u = user();
+      if (!u || isGuest(u) || u.mode !== 'real') return;
+      if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
+      openBusy = true;
+      D6.Api.post('openTrades', {}, 6000).then(function (r) {
+        openBusy = false;
+        mirrorOtherDeviceTrades(r);
+      }, function () { openBusy = false; });
+    }, 3000);
     holdScreenAwake();
   }
 
