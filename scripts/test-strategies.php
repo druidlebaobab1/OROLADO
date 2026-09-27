@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Stratégies de joueurs contre le VRAI moteur (mêmes fonctions que le serveur :
  * orolado_feed_step pour les prix, orolado_fair_barrier / verdict / credit pour le règlement).
@@ -73,6 +75,32 @@ $S = [
   'Boom : ACHETER ×50 en attendant un pic' => ['boomspike', 10, fn($p, &$st) => [['side' => 'call', 'mult' => 50.0, 'stake' => 1]]],
   'Boom : VENDRE juste après un pic' => ['boomspike', 10, fn($p, &$st) => $p->spikeWithin(8) ? [['side' => 'put', 'mult' => 1.88, 'stake' => 1]] : []],
   'Crash : toujours ACHETER entre les chutes' => ['crash300', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.88, 'stake' => 1]]],
+  // « Quand la courbe est tout en haut, elle va forcément redescendre » : on attend une forte
+  // montée (le prix au plus haut des 2 dernières minutes, bien au-dessus) puis on VEND en ×5 ;
+  // et l'inverse tout en bas.
+  'Tout en haut → VENDRE ×5 (attendre le retour)' => ['v100', 30, function ($p, &$st) {
+    $n = count($p->hist);
+    if ($n < 480) return [];
+    $win = array_slice($p->hist, -480);
+    $hi = max($win);
+    $lo = min($win);
+    if ($p->c < $hi || ($hi - $lo) < $p->c * 0.004) return [];
+    return [['side' => 'put', 'mult' => 5.0, 'stake' => 1]];
+  }],
+  'Tout en bas → ACHETER ×5 (attendre le retour)' => ['v100', 30, function ($p, &$st) {
+    $n = count($p->hist);
+    if ($n < 480) return [];
+    $win = array_slice($p->hist, -480);
+    $hi = max($win);
+    $lo = min($win);
+    if ($p->c > $lo || ($hi - $lo) < $p->c * 0.004) return [];
+    return [['side' => 'call', 'mult' => 5.0, 'stake' => 1]];
+  }],
+  'Tout en haut → VENDRE 88 % (attendre le retour)' => ['v100', 60, function ($p, &$st) {
+    if (count($p->hist) < 480) return [];
+    $win = array_slice($p->hist, -480);
+    return $p->c >= max($win) ? [['side' => 'put', 'mult' => 1.88, 'stake' => 1]] : [];
+  }],
 ];
 
 $rows = [];
@@ -83,9 +111,11 @@ foreach ($S as $name => [$asset, $dur, $fn]) {
     $p = new Path($A[$asset], $asset);
     $p->run(600);
     $bal = 1000.0; $st = []; $start = $bal;
-    for ($i = 0; $i < $tradesPer; $i++) {
+    // Seuls les vrais trades comptent (une stratégie qui attend son moment passe son tour).
+    for ($i = 0, $waits = 0; $i < $tradesPer && $waits < $tradesPer * 300; ) {
       $orders = $fn($p, $st);
-      if (!$orders) { $p->run(4); continue; }
+      if (!$orders) { $p->run(4); $waits++; continue; }
+      $i++;
       $need = array_sum(array_column($orders, 'stake'));
       if ($need > $bal) {
         if (isset($orders[0]['mart']) || isset($orders[0]['anti'])) { $orders[0]['stake'] = floor($bal); $st['m'] = 1.0; $need = $orders[0]['stake']; }

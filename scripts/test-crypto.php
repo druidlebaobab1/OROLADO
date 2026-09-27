@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Test des dépôts crypto : chaque pièce doit être convertie en DOLLARS au bon cours.
  * Bug corrigé : 20 TRX (≈ 7 $) étaient crédités 20 $, et 0,001 BTC (≈ 60 $) aurait donné 0,001 $.

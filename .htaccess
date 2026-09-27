@@ -82,3 +82,15 @@ Options -Indexes
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
   </FilesMatch>
 </IfModule>
+
+# Fichiers internes jamais servis sur internet : notes, scripts, structure de la base,
+# bibliothèques PHP (elles ne s'appellent pas directement), fichiers cachés.
+<FilesMatch "(^\.|\.(sql|md|mdc|ps1|cs|csv|log|example|bak)$|_lib\.php$|^fair_table\.php$)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>

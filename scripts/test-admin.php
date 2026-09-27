@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Test du tableau admin : chaque bouton, les compteurs, les bonus séparés, la détection
  * « Suspects à vérifier » et la santé du site — avec une FAUSSE base (rien ne part en ligne).

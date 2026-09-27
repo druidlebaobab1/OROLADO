@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Test local du jeu équitable avec une FAUSSE caisse (aucun appel à Supabase).
  * Usage : php scripts/test-trades.php

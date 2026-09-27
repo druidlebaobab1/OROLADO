@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Test du double crédit de dépôt (fausse base Supabase, dossier data/ temporaire).
  * Scénario réel reproduit : un dépôt est crédité, puis une vieille copie du fichier le

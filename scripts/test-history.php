@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /** Test local de l'historique durable + mention Bonus + archivage (dossier data/ temporaire). */
 $tmp = sys_get_temp_dir() . '/orolado_hist_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);

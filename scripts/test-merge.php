@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Test de l'enregistrement « à 3 versions » (save_db) : une requête qui avait lu une vieille
  * version du fichier ne doit plus effacer ce qu'une autre requête a ajouté entre-temps.

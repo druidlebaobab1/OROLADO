@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Test du changement d'e-mail et de « Déconnecter mes autres appareils »
  * (fausse base Supabase, faux e-mails, dossier data/ temporaire : rien ne part en ligne).
