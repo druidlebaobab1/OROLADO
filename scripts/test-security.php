@@ -84,5 +84,21 @@ $_SERVER['REMOTE_ADDR'] = '41.66.7.8'; $_SERVER['HTTP_CF_CONNECTING_IP'] = '1.2.
 check('en-tête inventé par un pirate (pas Cloudflare) : ignoré', orolado_client_ip() === '41.66.7.8', orolado_client_ip());
 unset($_SERVER['HTTP_CF_CONNECTING_IP']);
 
+echo "5) Durée des connexions : 30 jours sans visite\n";
+with_db_lock(function ($box) {
+  $box->db['sessions']['tokOld'] = ['userId' => 'u_me', 'at' => date('c', time() - 31 * 86400), 'exp' => time() + 100 * 365 * 86400];
+  $box->db['sessions']['tokRecent'] = ['userId' => 'u_me', 'at' => date('c', time() - 29 * 86400), 'exp' => time() + 100 * 365 * 86400];
+  return ['ok' => true];
+});
+$r = $call(['action' => 'me', 'token' => 'tokOld']);
+check('ancien jeton (pas de visite depuis 31 jours) : refusé', empty($r['ok']), (string) ($r['reason'] ?? ''));
+$r = $call(['action' => 'me', 'token' => 'tokRecent']);
+check('jeton utilisé il y a 29 jours : accepté', !empty($r['ok']), (string) ($r['reason'] ?? ''));
+$s = load_db()['sessions']['tokRecent'] ?? [];
+check('et prolongé de 30 jours', (int) ($s['exp'] ?? 0) > time() + 29 * 86400 && (int) ($s['exp'] ?? 0) < time() + 31 * 86400);
+$db = load_db();
+$n = orolado_prune_sessions($db);
+check('ménage : la session morte est retirée, les vivantes gardées', $n === 1 && !isset($db['sessions']['tokOld']) && isset($db['sessions']['tokMe']), (string) $n);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

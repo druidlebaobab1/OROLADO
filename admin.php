@@ -1505,6 +1505,8 @@ if ($isAjax) {
       admin_json(['ok' => false, 'reason' => 'Identifiants incorrects'], 403);
     }
     if (function_exists('orolado_login_ok')) orolado_login_ok('admin');
+    // Nouvel identifiant de session à chaque connexion (un identifiant « planté » d'avance ne sert à rien).
+    session_regenerate_id(true);
     $_SESSION['admin_uid'] = (string) $u['id'];
     $_SESSION['admin_email'] = (string) $u['email'];
     admin_json(['ok' => true]);
@@ -1758,6 +1760,7 @@ if (!admin_me()) {
     $dbTok = admin_local_db();
     $uTok = orolado_session_user($dbTok, $tok);
     if (is_array($uTok) && orolado_is_admin_user($uTok)) {
+      session_regenerate_id(true);
       $_SESSION['admin_uid'] = (string) ($uTok['id'] ?? '');
       $_SESSION['admin_email'] = (string) ($uTok['email'] ?? '');
     }

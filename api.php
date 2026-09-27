@@ -1756,6 +1756,8 @@ if ($action === 'me') {
       if (!isset($box->db['sessions'][$token]) || !is_array($box->db['sessions'][$token])) return ['ok' => true, 'skip_write' => true];
       $box->db['sessions'][$token]['exp'] = time() + orolado_session_ttl();
       $box->db['sessions'][$token]['at'] = date('c');
+      // De temps en temps (1 fois sur 200), ménage des connexions mortes depuis 30 jours.
+      if (random_int(1, 200) === 1) orolado_prune_sessions($box->db);
       return ['ok' => true];
     });
     orolado_set_session_cookie($token);

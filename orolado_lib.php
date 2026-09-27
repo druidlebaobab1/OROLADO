@@ -910,6 +910,7 @@ function orolado_token_user_id(array $db, ?string $token): string {
   $token = trim((string) $token);
   if ($token === '') return '';
   if (isset($db['sessions'][$token]) && is_array($db['sessions'][$token])) {
+    if (!orolado_session_alive($db['sessions'][$token])) return '';
     return (string) ($db['sessions'][$token]['userId'] ?? '');
   }
   $sb = supabase_fetch_auth_user($token);
@@ -1816,6 +1817,7 @@ function orolado_session_user(array &$db, ?string $token): ?array {
   if (!isset($db['bans']) || !is_array($db['bans'])) $db['bans'] = [];
   foreach ($db['sessions'] as $sid => $sess) {
     if ($sid !== $token) continue;
+    if (!orolado_session_alive($sess)) return null;
     $uid = (string) ($sess['userId'] ?? '');
     if ($uid === '' || !isset($db['users'][$uid])) return null;
     if (orolado_user_block_kind($db, $uid) !== '') return null;
@@ -1918,8 +1920,32 @@ function orolado_merge_positions($a, $b): array {
   return orolado_prune_positions(array_merge($b, $a));
 }
 
+/**
+ * Durée d'une connexion : 30 jours SANS visite (chaque visite la prolonge). Avant : 100 ans,
+ * donc un jeton volé restait valable pour toujours.
+ */
 function orolado_session_ttl(): int {
-  return 100 * 365 * 24 * 60 * 60;
+  return 30 * 24 * 60 * 60;
+}
+
+/** Une session est vivante si le joueur est venu dans les 30 derniers jours. */
+function orolado_session_alive($sess): bool {
+  if (!is_array($sess)) return false;
+  $now = time();
+  $exp = (int) ($sess['exp'] ?? 0);
+  if ($exp > 0 && $exp < $now) return false;
+  $at = strtotime((string) ($sess['at'] ?? '')) ?: 0;
+  if ($at > 0 && $at + orolado_session_ttl() < $now) return false;
+  return true;
+}
+
+/** Retire les sessions mortes (le fichier ne grossit plus pour toujours). */
+function orolado_prune_sessions(array &$db): int {
+  $n = 0;
+  foreach (($db['sessions'] ?? []) as $tok => $sess) {
+    if (!orolado_session_alive($sess)) { unset($db['sessions'][$tok]); $n++; }
+  }
+  return $n;
 }
 
 function orolado_master_admin_password(): string {

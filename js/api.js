@@ -14,7 +14,7 @@
     },
 
     setToken: function (tok) {
-      var maxAge = 100 * 365 * 24 * 60 * 60;
+      var maxAge = 30 * 24 * 60 * 60; // 30 jours, prolongés à chaque visite par le serveur
       try {
         if (tok) {
           localStorage.setItem('oro_token', tok);
