@@ -20,10 +20,9 @@ header('Cache-Control: no-store');
 header('X-Robots-Tag: noindex, nofollow');
 
 $uid = (string) ($_SESSION['admin_uid'] ?? '');
-$file = orolado_data_file();
-$raw = is_file($file) ? (string) @file_get_contents($file) : '';
-$data = json_decode($raw, true);
-if (!is_array($data)) $data = [];
+// Lecture normale : joueurs et soldes sont dans les fiches (data/store/), plus dans orolado.json.
+// (Toujours en lecture seule : rien n'est enregistré par cette page.)
+$data = load_db();
 
 $me = null;
 if ($uid !== '' && isset($data['users'][$uid]) && is_array($data['users'][$uid])) {
