@@ -1716,7 +1716,10 @@ if ($action === 'me') {
   $me = $stSess['user'];
   // Écritures sous verrou, sur le fichier À JOUR (jamais une vieille copie chargée en début
   // de requête : c'est ce qui pouvait remettre un dépôt en « attente » et le recréditer).
-  if ($token !== '' && isset($db['sessions'][$token])) {
+  // Charge : prolongation de session au plus toutes les 5 min (avant : 2 écritures du fichier
+  // joueurs toutes les 8 s par joueur connecté).
+  $sessAt = strtotime((string) ($db['sessions'][$token]['at'] ?? '')) ?: 0;
+  if ($token !== '' && isset($db['sessions'][$token]) && (time() - $sessAt) >= 300) {
     with_db_lock(function ($box) use ($token) {
       if (!isset($box->db['sessions'][$token]) || !is_array($box->db['sessions'][$token])) return ['ok' => true, 'skip_write' => true];
       $box->db['sessions'][$token]['exp'] = time() + orolado_session_ttl();
@@ -1755,16 +1758,23 @@ if ($action === 'me') {
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);
   $resetDemo = ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0);
   if ($resetDemo) $demoNow = 1000000;
-  with_db_lock(function ($box) use ($uid, $officialReal, $resetDemo) {
-    if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
-    if ($resetDemo) $box->db['vault'][$uid]['demo'] = 1000000;
-    $box->db['vault'][$uid]['real'] = $officialReal;
-    if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($box->db, $uid, $officialReal);
-    if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) $box->db['users'][$uid]['lastSeen'] = date('c');
-    return ['ok' => true];
-  });
-  $db = load_db($file);
-  if (function_exists('supabase_touch_last_seen')) {
+  // Écrit seulement si quelque chose a changé : solde, démo à recharger, ou « vu en ligne »
+  // vieux de plus de 45 s (le compteur « en ligne » de l'admin regarde 90 s).
+  $seenAge = time() - (strtotime((string) ($me['lastSeen'] ?? '')) ?: 0);
+  $realChanged = abs(orolado_money($jsonVault['real'] ?? 0) - $officialReal) > 0.001;
+  $touchSeen = $seenAge >= 45;
+  if ($realChanged || $resetDemo || $touchSeen) {
+    with_db_lock(function ($box) use ($uid, $officialReal, $resetDemo) {
+      if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+      if ($resetDemo) $box->db['vault'][$uid]['demo'] = 1000000;
+      $box->db['vault'][$uid]['real'] = $officialReal;
+      if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($box->db, $uid, $officialReal);
+      if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) $box->db['users'][$uid]['lastSeen'] = date('c');
+      return ['ok' => true];
+    });
+    $db = load_db($file);
+  }
+  if ($touchSeen && function_exists('supabase_touch_last_seen')) {
     supabase_touch_last_seen($uid);
   }
   $vault = [

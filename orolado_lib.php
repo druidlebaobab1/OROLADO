@@ -247,8 +247,19 @@ function orolado_withdraw_min_for(string $op): float {
   return $map[$op] ?? 5.0;
 }
 
+/**
+ * Plafond par dépôt : AUCUN par défaut (décision du propriétaire). Avant : 100 000 $ ; au-delà,
+ * l'argent reçu n'était jamais crédité. Réglable via .env (OROLADO_MAX_DEPOSIT_USD) si besoin.
+ */
 function orolado_max_deposit_usd(): float {
-  return 100000.0;
+  $v = getenv('OROLADO_MAX_DEPOSIT_USD');
+  if ($v === false || $v === '') $v = $_ENV['OROLADO_MAX_DEPOSIT_USD'] ?? '';
+  return is_numeric($v) && (float) $v > 0 ? (float) $v : 0.0;
+}
+
+function orolado_deposit_over_cap(float $amount): bool {
+  $cap = orolado_max_deposit_usd();
+  return $cap > 0 && $amount > $cap;
 }
 
 function orolado_meta_pixel_id(): string {
@@ -2749,7 +2760,7 @@ function credit_paid_deposit(array $hit): array {
   $allowSmall = !empty($hit['allowSmall']) || in_array($opEarly, ['oxapay', 'flutterwave', 'flw', 'usdt'], true);
   if ($amount <= 0 && $pendingAmt > 0 && ($allowSmall || $pendingAmt >= orolado_min_deposit(null))) $amount = $pendingAmt;
   $minGate = $allowSmall ? orolado_oxapay_credit_floor() : orolado_min_deposit(null);
-  if ($amount + 0.0001 < $minGate || $amount > orolado_max_deposit_usd()) {
+  if ($amount + 0.0001 < $minGate || orolado_deposit_over_cap($amount)) {
     flock($fp, LOCK_UN);
     fclose($fp);
     return ['ok' => false, 'reason' => 'amount'];
@@ -2817,6 +2828,9 @@ function credit_paid_deposit(array $hit): array {
     return ['ok' => false, 'reason' => 'credit'];
   }
   $got = $once['real'];
+  if ($amount >= 10000 && empty($once['duplicate'])) {
+    orolado_health_event('Gros dépôt', 'Dépôt de ' . number_format($amount, 2, ',', ' ') . ' $ crédité (réf. ' . $refId . ').', 'warn');
+  }
 
   // Journal dépôt cloud (sans 2e crédit via complete_deposit RPC).
   if ($refId !== '') {
@@ -4559,7 +4573,7 @@ function orolado_verify_crypto_deposit(array $req): array {
   if ($receivedAmount + 0.0001 < $floor) {
     return ['ok' => false, 'server' => true, 'code' => 'min', 'reason' => orolado_crypto_msg('min')];
   }
-  if ($receivedAmount > orolado_max_deposit_usd()) {
+  if (orolado_deposit_over_cap($receivedAmount)) {
     return ['ok' => false, 'server' => true, 'code' => 'invalid', 'reason' => orolado_crypto_msg('invalid')];
   }
   $realAmt = $receivedAmount;
