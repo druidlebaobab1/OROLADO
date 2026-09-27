@@ -835,25 +835,29 @@
     // Carte du monde en points.
     // Sur téléphone (graphique plus haut que large, surtout en plein écran), la carte
     // grandit avec la hauteur : un peu plus large que l écran, centrée sur Europe/Afrique.
-    var mw = Math.max(w * 1.1, Math.min(h * 1.25, w * 1.4));
-    var mh = Math.min(h * 0.92, mw * 0.52);
+    // La carte tient entière dans le globe, lui-même entier dans le graphique.
+    var mw = w * 0.94;
+    var mh = Math.min(h * 0.9, mw * 0.52);
     var mx = pad.l + (w - mw) / 2;
     var my = pad.t + (h - mh) / 2;
     // Fins « fils » du globe (méridiens et parallèles) : on sent que c'est la Terre.
     g.save();
     g.strokeStyle = 'rgba(160,185,225,0.05)';
     g.lineWidth = 1;
-    var gcx = mx + mw / 2;
-    var gcy = my + mh / 2;
+    // Le globe tient toujours ENTIER dans le graphique (petit écran, plein écran, PC).
+    var gcx = pad.l + w / 2;
+    var gcy = pad.t + h / 2;
+    var grx = Math.min(mw / 2, w * 0.47);
+    var gry = Math.min(mh / 2, h * 0.46);
     var gk;
     for (gk = 1; gk <= 4; gk++) {
       g.beginPath();
-      g.ellipse(gcx, gcy, (mw / 2) * gk / 4, mh / 2, 0, 0, Math.PI * 2);
+      g.ellipse(gcx, gcy, grx * gk / 4, gry, 0, 0, Math.PI * 2);
       g.stroke();
     }
     for (gk = -2; gk <= 2; gk++) {
-      var py = gcy + gk * mh / 6;
-      var half = (mw / 2) * Math.sqrt(Math.max(0, 1 - Math.pow((py - gcy) / (mh / 2), 2)));
+      var py = gcy + gk * gry / 3;
+      var half = grx * Math.sqrt(Math.max(0, 1 - Math.pow((py - gcy) / gry, 2)));
       g.beginPath();
       g.moveTo(gcx - half, py);
       g.lineTo(gcx + half, py);
@@ -898,6 +902,16 @@
       if (img && img.complete && img.naturalWidth) {
         g.globalAlpha = 0.04 + rnd() * 0.022;
         g.drawImage(img, cx - size / 2, cy - size / 2, size, size);
+      }
+    }
+    // Trois logos de plus pour combler le coin bas-droit (au-dessus de 5 min / 10 min).
+    var extra = [['ico-avax', 0.64, 0.9], ['ico-ton', 0.79, 0.83], ['ico-link', 0.92, 0.93]];
+    for (i = 0; i < extra.length; i++) {
+      var ximg = coinImg(extra[i][0]);
+      if (ximg && ximg.complete && ximg.naturalWidth) {
+        var xs = 17 + i * 3;
+        g.globalAlpha = 0.045 + i * 0.006;
+        g.drawImage(ximg, pad.l + w * extra[i][1] - xs / 2, pad.t + h * extra[i][2] - xs / 2, xs, xs);
       }
     }
     g.globalAlpha = 1;
