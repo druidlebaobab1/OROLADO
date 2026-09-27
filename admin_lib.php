@@ -2615,7 +2615,10 @@ function admin_health_live_checks(): array {
   $online = admin_online_count();
   $live = __DIR__ . '/feedcache/live.json';
   $age = is_file($live) ? time() - (int) @filemtime($live) : -1;
-  if ($online > 0 && ($age < 0 || $age > 30)) {
+  // Le flux n'est recalculé que lorsqu'un téléphone le demande : un joueur qui vient de
+  // fermer l'appli compte encore « en ligne » 90 s. On ne crie à la panne que si le flux est
+  // figé depuis plus de 3 minutes avec des joueurs en ligne (vraie panne, pas une fausse alerte).
+  if ($online > 0 && ($age < 0 || $age > 180)) {
     $rows[] = $row('Flux de prix', 'Le flux de prix ne se met plus à jour (' . ($age < 0 ? 'fichier absent' : $age . ' s') . ') alors que ' . $online . ' joueur(s) sont en ligne : les graphiques sont figés.', 'error');
   } else {
     $rows[] = $row('Flux de prix', $online > 0 ? ('En direct · mis à jour il y a ' . max(0, $age) . ' s') : 'En veille (aucun joueur en ligne)', 'ok');

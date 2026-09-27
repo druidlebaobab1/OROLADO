@@ -421,7 +421,9 @@ function admin_badges(): array {
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
     'alerts' => $healthErr + $healthWarn,
-    'watch' => count(array_filter(admin_watch_rows(), static fn($r) => ($r['level'] ?? '') === 'warn')),
+    // Pastille « À surveiller » : seulement ce qui n'a pas encore été marqué « C'est réglé ».
+    'watch' => count(array_filter(admin_watch_rows(), static fn($r) => ($r['level'] ?? '') === 'warn'
+      && !isset($ackedHealth[function_exists('admin_health_fp') ? admin_health_fp($r) : '']))),
     'alerts_err' => $healthErr,
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
