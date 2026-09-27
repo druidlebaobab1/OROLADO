@@ -4975,6 +4975,8 @@ function orolado_oxapay_inquiry(string $trackId): array {
 }
 
 function orolado_oxapay_http(string $method, string $path, ?array $body = null): ?array {
+  // Tests locaux uniquement (scripts/test-*.php) : faux OxaPay, jamais en ligne.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_OXA']) && is_callable($GLOBALS['OROLADO_FAKE_OXA'])) return ($GLOBALS['OROLADO_FAKE_OXA'])($method, $path, $body);
   $url = 'https://api.oxapay.com' . $path;
   $headers = [
     'Accept: application/json',
@@ -5576,9 +5578,16 @@ function orolado_oxapay_status(array $req): array {
       'vault' => orolado_crypto_vault($db, $uid),
     ];
   }
-  $tid = $trackId !== '' ? $trackId : (string) ($dep['trackId'] ?? '');
+  // SÉCURITÉ : on vérifie TOUJOURS le paiement enregistré pour ce dépôt, jamais un numéro de
+  // suivi envoyé par le téléphone (sinon on pouvait faire créditer son dépôt avec le paiement
+  // d'un autre joueur).
+  $tid = (string) ($dep['trackId'] ?? '');
   if ($tid === '') return ['ok' => true, 'pending' => true];
   $data = orolado_oxapay_inquiry($tid);
+  $dataOrder = (string) ($data['order_id'] ?? $data['orderId'] ?? '');
+  if ($dataOrder !== '' && strcasecmp($dataOrder, (string) ($dep['id'] ?? '')) !== 0 && strcasecmp($dataOrder, (string) ($dep['ref'] ?? '')) !== 0) {
+    return ['ok' => true, 'pending' => true];
+  }
   $status = orolado_oxapay_payload_status($data);
   $recv = orolado_oxapay_received($data);
   if (!$recv['known']) {
@@ -5644,6 +5653,12 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
   $address = trim((string) ($data['address'] ?? $address));
   $email = strtolower(trim((string) ($data['email'] ?? $data['payer_email'] ?? $email)));
   $dep = orolado_oxapay_find_dep($orderId, $trackId, $address, $email);
+  // SÉCURITÉ : message non signé = on ne crédite que le dépôt dont le numéro de suivi est
+  // EXACTEMENT celui du paiement vérifié chez OxaPay (pas un autre dépôt désigné par l'envoyeur).
+  if (!$signed && (!$dep || strcasecmp((string) ($dep['trackId'] ?? ''), $trackId) !== 0)) {
+    orolado_oxapay_log('webhook_skip', ['reason' => 'track_mismatch', 'orderId' => $orderId, 'trackId' => $trackId]);
+    return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  }
   $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor() || $livePaid || ($signed && $hookPaid);
   if (!$payable) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   if ($received + 0.0001 >= orolado_oxapay_credit_floor()) $usd = $received;
@@ -5919,6 +5934,8 @@ function orolado_flw_customer(array $me, string $token): array {
 }
 
 function orolado_flw_http(string $method, string $path, ?array $body = null): ?array {
+  // Tests locaux uniquement (scripts/test-*.php) : faux Flutterwave, jamais en ligne.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_FLW']) && is_callable($GLOBALS['OROLADO_FAKE_FLW'])) return ($GLOBALS['OROLADO_FAKE_FLW'])($method, $path, $body);
   $secret = orolado_flw_secret();
   if ($secret === '') return null;
   $url = 'https://api.flutterwave.com/v3' . $path;
@@ -6088,7 +6105,14 @@ function orolado_flutterwave_verify(string $txRef, string $transactionId = ''): 
   $data = is_array($res['data'] ?? null) ? $res['data'] : [];
   $st = strtolower((string) ($data['status'] ?? ''));
   if ($st !== 'successful') return ['ok' => true, 'paid' => false, 'status' => $st];
-  $gotRef = (string) ($data['tx_ref'] ?? $txRef);
+  $gotRef = (string) ($data['tx_ref'] ?? '');
+  // SÉCURITÉ : le paiement trouvé chez Flutterwave doit être CELUI de ce dépôt. Sinon on pouvait
+  // faire créditer son dépôt avec le numéro de paiement (facile à deviner) d'un autre joueur.
+  if ($txRef !== '' && ($gotRef === '' || strcasecmp($gotRef, $txRef) !== 0)) {
+    error_log('OROLADO flutterwave verify: paiement ' . $transactionId . ' appartient à ' . $gotRef . ', pas à ' . $txRef);
+    return ['ok' => true, 'paid' => false, 'status' => 'mismatch'];
+  }
+  if ($gotRef === '') $gotRef = $txRef;
   $cur = strtoupper((string) ($data['currency'] ?? ''));
   $amt = (float) ($data['amount'] ?? 0);
   if ($amt <= 0) $amt = (float) ($data['charged_amount'] ?? 0);
