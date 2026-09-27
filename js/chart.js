@@ -889,29 +889,28 @@
         }
       }
     }
-    // Logos crypto semés, fixes et très discrets (positions pseudo-aléatoires stables).
-    var seed = 7;
-    function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
-    for (i = 0; i < BACKDROP_COINS.length; i++) {
-      var img = coinImg(BACKDROP_COINS[i]);
-      var col = i % 7;
-      var row = Math.floor(i / 7);
-      var size = 16 + rnd() * 12;
-      var cx = pad.l + w * ((col + 0.2 + rnd() * 0.6) / 7);
-      var cy = pad.t + h * ((row + 0.2 + rnd() * 0.6) / 4);
-      if (img && img.complete && img.naturalWidth) {
-        g.globalAlpha = 0.04 + rnd() * 0.022;
-        g.drawImage(img, cx - size / 2, cy - size / 2, size, size);
-      }
-    }
-    // Trois logos de plus pour combler le coin bas-droit (au-dessus de 5 min / 10 min).
-    var extra = [['ico-avax', 0.64, 0.9], ['ico-ton', 0.79, 0.83], ['ico-link', 0.92, 0.93]];
-    for (i = 0; i < extra.length; i++) {
-      var ximg = coinImg(extra[i][0]);
-      if (ximg && ximg.complete && ximg.naturalWidth) {
-        var xs = 17 + i * 3;
-        g.globalAlpha = 0.045 + i * 0.006;
-        g.drawImage(ximg, pad.l + w * extra[i][1] - xs / 2, pad.t + h * extra[i][2] - xs / 2, xs, xs);
+    // Logos crypto : tous la même taille, rangés en quinconce régulier sur toute la zone
+    // du graphique (sans toucher la colonne des prix), très discrets.
+    var cSize = 18;
+    var cCols = Math.max(5, Math.round(w / 56));
+    var cRows = Math.max(4, Math.round(h / 62));
+    var cellW = w / cCols;
+    var cellH = h / cRows;
+    var ci = 0;
+    var rr;
+    var cc;
+    g.globalAlpha = 0.047;
+    for (rr = 0; rr < cRows; rr++) {
+      var shift = (rr % 2) ? cellW / 2 : 0;
+      for (cc = 0; cc < cCols; cc++) {
+        var cxp = pad.l + cellW * (cc + 0.5) + shift;
+        if (cxp > pad.l + w - cSize * 0.6) continue;
+        var cyp = pad.t + cellH * (rr + 0.5);
+        var img = coinImg(BACKDROP_COINS[ci % BACKDROP_COINS.length]);
+        ci += 5;
+        if (img && img.complete && img.naturalWidth) {
+          g.drawImage(img, cxp - cSize / 2, cyp - cSize / 2, cSize, cSize);
+        }
       }
     }
     g.globalAlpha = 1;
