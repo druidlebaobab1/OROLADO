@@ -503,18 +503,10 @@
       email: user.email,
       phone: user.phone || '',
       country_code: user.countryCode || '+225',
-      role: user.role || 'user',
+      // Rôle et compteurs d'argent : écrits par le serveur seul (plus par le téléphone).
       mode: user.mode === 'real' ? 'real' : 'demo',
       asset_id: user.assetId || 'v100',
       duration: user.duration || 10,
-      consecutive_wins: user.consecutiveWins || 0,
-      consecutive_losses: user.consecutiveLosses || 0,
-      trades: user.trades || 0,
-      wins: user.wins || 0,
-      demo_trades: user.demoTrades || 0,
-      real_trades: user.realTrades || 0,
-      real_stake_volume: user.realStakeVolume || 0,
-      real_deposit_total: user.realDepositTotal || 0,
       updated_at: new Date().toISOString()
     }).then(function () { /* ignore */ });
     sb.from('vaults').update({
@@ -687,58 +679,10 @@
       return { paid: true, ok: true, amount: Number(row.amount) || 0, status: st, ref: row.reference || row.id };
     },
 
-    saveOrder: function (order, status) {
-      var sb = getClient();
-      var user = D6.Store.current();
-      if (!sb || !user || !uuidish(user.id) || !order) return;
-      var st = order.status || status || 'open';
-      // Persiste won/lost/void (pas seulement "closed") pour l’historique cloud.
-      sb.from('orders').upsert({
-        id: order.id,
-        user_id: user.id,
-        asset_id: order.assetId || 'v100',
-        side: order.side,
-        stake: order.stake,
-        duration: order.duration,
-        mode: order.mode || user.mode,
-        payout: order.payout,
-        entry_price: order.entryPrice,
-        exit_price: order.exitPrice,
-        won: order.won == null ? null : !!order.won,
-        net: order.net,
-        status: st
-      }).then(function () { /* ignore */ });
-    },
-
-    saveWithdrawal: function (row) {
-      var sb = getClient();
-      var user = D6.Store.current();
-      if (!sb || !user || !uuidish(user.id) || !row) return;
-      sb.from('withdrawals').upsert({
-        id: row.id,
-        user_id: user.id,
-        amount: Math.abs(Number(row.amount) || 0),
-        status: row.status || 'pending',
-        operator: row.operator || '',
-        phone: row.phone || '',
-        reference: row.id,
-        created_at: row.at || new Date().toISOString()
-      }).then(function () { /* ignore */ }).catch(function () { /* table absente */ });
-    },
-
-    saveTransaction: function (tx) {
-      var sb = getClient();
-      var user = D6.Store.current();
-      if (!sb || !user || !uuidish(user.id) || !tx) return;
-      sb.from('transactions').upsert({
-        id: tx.id || D6.uid(),
-        user_id: user.id,
-        type: tx.type,
-        amount: tx.amount,
-        note: tx.note || '',
-        mode: tx.mode || user.mode,
-        created_at: tx.at || new Date().toISOString()
-      }).then(function () { /* ignore */ });
-    }
+    // Ordres, retraits et opérations sont écrits par le SERVEUR (api.php) : le téléphone n'écrit
+    // plus dans ces tables (sinon un tricheur pouvait y créer de faux retraits « en attente »).
+    saveOrder: function () { /* serveur */ },
+    saveWithdrawal: function () { /* serveur */ },
+    saveTransaction: function () { /* serveur */ }
   };
 })(window.D6 = window.D6 || {});

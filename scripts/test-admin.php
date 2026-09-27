@@ -115,8 +115,14 @@ $GLOBALS['OROLADO_FAKE_SB'] = function (string $path, string $method, ?string $b
 };
 
 // Base locale : un trade réel resté ouvert 10 min après sa fin (règlement bloqué).
+// Un vrai retrait est toujours enregistré aussi par le serveur (fichier) : on recopie les retraits.
+$localWds = array_map(static fn($w) => ['id' => $w['id'], 'userId' => $w['user_id'], 'amount' => $w['amount'], 'status' => $w['status'],
+  'operator' => $w['operator'], 'phone' => $w['phone'], 'destination' => $w['destination'], 'at' => $w['created_at']], $T['withdrawals']);
+// Faux retrait écrit directement dans Supabase depuis un téléphone (aucun débit) : doit être bloqué.
+$T['withdrawals'][] = ['id' => 'wd_fake_phone', 'user_id' => $p1, 'amount' => 9999, 'status' => 'pending', 'operator' => 'wave', 'phone' => '0799999999',
+  'reference' => 'wd_fake_phone', 'destination' => '0799999999', 'created_at' => $iso($now - 600)];
 file_put_contents($tmp . '/data/orolado.json', json_encode([
-  'users' => [], 'vault' => [], 'sessions' => [], 'deposits' => [], 'withdrawals' => [], 'support_messages' => [],
+  'users' => [], 'vault' => [], 'sessions' => [], 'deposits' => [], 'withdrawals' => $localWds, 'support_messages' => [],
   'orders' => [['id' => 'stuck1', 'userId' => $p1, 'mode' => 'real', 'status' => 'open', 'stake' => 3, 'expiryAt' => $now - 600, 'at' => $now - 610]],
 ]));
 file_put_contents($tmp . '/feedcache/live.json', '{}');
@@ -218,7 +224,10 @@ foreach ($T['orders'] as $o) if (admin_in_range($o['created_at'], $d0, $d1)) $ne
 $wantWin = count(array_filter($netToday, static fn($v) => $v > 0.009));
 check('Top gagnants du jour compté', $b['top_winners'] === $wantWin, $b['top_winners'] . ' (attendu ' . $wantWin . ')');
 check('Bonus Offerts compté', $b['dep_bonus'] === 4, (string) $b['dep_bonus']);
-check('Retraits en cours = 5', $b['wd_pending'] === 5, (string) $b['wd_pending']);
+check('Retraits en cours = 5 (le faux retrait « hors site » n’est pas compté)', $b['wd_pending'] === 5, (string) $b['wd_pending']);
+$fake = admin_find_wd_row('wd_fake_phone');
+check('faux retrait écrit depuis un téléphone : marqué « hors site », non validable', !empty($fake['offsite']) && !admin_wd_is_open($fake), (string) ($fake['status'] ?? 'absent'));
+check('un vrai retrait reste validable', admin_wd_has_local(admin_local_db(), (string) $T['withdrawals'][0]['id']));
 
 echo "5) Santé du site (pannes) et « À surveiller » (le reste)\n";
 $h = admin_health_rows();

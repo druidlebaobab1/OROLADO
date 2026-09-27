@@ -1666,6 +1666,9 @@ if ($isAjax) {
     if ($motif !== '') $row['reason'] = $motif;
 
     if ($act === 'approve') {
+      if (!empty($row['offsite']) || !admin_wd_has_local($db, $id)) {
+        admin_json(['ok' => false, 'reason' => 'Retrait créé hors du site : aucun argent n’a été débité. Ne le payez pas.']);
+      }
       $row['status'] = 'approved';
       $row['playerHidden'] = false;
       $row['adminHidden'] = false;

@@ -1630,6 +1630,13 @@ if ($action === 'withdraw') {
   ];
   $db['withdrawals'] = array_values(array_reverse($db['withdrawals']));
   save_db($file, $db);
+  $hdrsWd = supabase_admin_headers();
+  if ($hdrsWd) {
+    supabase_http(supabase_project_url() . '/rest/v1/withdrawals', array_merge(array_values(array_filter($hdrsWd, static fn($h) => stripos($h, 'Prefer:') !== 0)), ['Prefer: resolution=merge-duplicates,return=minimal']), json_encode([
+      'id' => $wdId, 'user_id' => $payId, 'amount' => $amount, 'status' => 'pending',
+      'operator' => $operator, 'phone' => $destination, 'reference' => $wdId, 'created_at' => date('c'),
+    ], JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION), 'POST');
+  }
   echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect, 'vault' => $db['vault'][$me['id']], 'id' => $wdId, 'amount' => $amount]);
   exit;
 }

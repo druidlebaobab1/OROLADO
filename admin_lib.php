@@ -683,6 +683,7 @@ function admin_wd_is_silenced(array $w): bool {
 }
 
 function admin_wd_is_open(array $w): bool {
+  if (!empty($w['offsite'])) return false;
   if (admin_wd_is_paid($w) || admin_wd_is_rejected($w) || admin_wd_is_silenced($w)) return false;
   return true;
 }
@@ -1176,6 +1177,15 @@ function admin_find_wd_row(string $id): ?array {
   return null;
 }
 
+/** Le serveur a-t-il enregistré ce retrait (= la caisse a bien été débitée) ? */
+function admin_wd_has_local(array $db, string $id): bool {
+  if ($id === '') return false;
+  foreach (admin_collect_local_wds($db) as $w) {
+    if ((string) ($w['id'] ?? '') === $id || (string) ($w['reference'] ?? '') === $id) return true;
+  }
+  return false;
+}
+
 function admin_upsert_local_wd(array &$db, array $row): int {
   if (!isset($db['withdrawals']) || !is_array($db['withdrawals'])) $db['withdrawals'] = [];
   $id = (string) ($row['id'] ?? '');
@@ -1325,7 +1335,8 @@ function admin_withdrawals(): array {
   if (is_array($cached)) return $cached;
   $byId = [];
   $byFp = [];
-  $put = static function (array $row) use (&$byId, &$byFp): void {
+  $localIds = [];
+  $put = static function (array $row) use (&$byId, &$byFp, &$localIds): void {
     $id = admin_fill((string) ($row['id'] ?? ''));
     if ($id === '') return;
     $fp = admin_wd_fingerprint($row);
@@ -1348,6 +1359,7 @@ function admin_withdrawals(): array {
         unset($byId[$existId]);
         $byId[$id] = $row;
         $byFp[$fp] = $id;
+        if (isset($localIds[$existId])) $localIds[$id] = true;
       }
       return;
     }
@@ -1357,6 +1369,7 @@ function admin_withdrawals(): array {
 
   foreach (admin_collect_local_wds(admin_local_db()) as $w) {
     $put($w);
+    $localIds[admin_fill((string) ($w['id'] ?? ''))] = true;
   }
 
   $sbCached = admin_cache_get('wd_sb2', 20);
@@ -1381,6 +1394,14 @@ function admin_withdrawals(): array {
     $put(admin_wd_norm($tx, (string) ($tx['id'] ?? '')));
   }
 
+  // SÉCURITÉ : un vrai retrait est TOUJOURS enregistré par le serveur (fichier) au moment où il
+  // débite la caisse. Une ligne qui n'existe que dans Supabase (écrite depuis un téléphone) n'a
+  // débité personne : elle est marquée « hors site » et ne peut pas être validée.
+  foreach ($byId as $id => $w) {
+    if (isset($localIds[$id]) || !admin_wd_is_open($w)) continue;
+    $byId[$id]['offsite'] = true;
+    $byId[$id]['status'] = 'hors site (non débité, ne pas payer)';
+  }
   $list = array_values($byId);
   usort($list, static function ($a, $b) {
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
