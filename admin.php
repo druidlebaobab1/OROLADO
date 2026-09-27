@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/admin_lib.php';
 require_once __DIR__ . '/trade_lib.php';
+require_once __DIR__ . '/wipe_lib.php';
 orolado_load_env();
 date_default_timezone_set('Africa/Abidjan');
 
@@ -1730,10 +1731,15 @@ if ($isAjax) {
     admin_bust_cache();
     admin_json(['ok' => true]);
   }
-  if ($action === 'wipe_players') {
-    $confirm = (string) ($req['confirm'] ?? '');
-    if ($confirm !== 'RESET_OROLADO') admin_json(['ok' => false, 'reason' => 'Confirmation manquante']);
-    admin_json(admin_wipe_except_admin());
+  // Bouton « Nettoyer » : 1) aperçu (rien n'est touché), 2) suppression définitive confirmée.
+  if ($action === 'wipe_plan') {
+    admin_json(orolado_wipe_plan(!empty($req['keepGmail'])));
+  }
+  if ($action === 'wipe_run') {
+    $res = orolado_wipe_run(!empty($req['keepGmail']), (string) ($req['confirm'] ?? ''));
+    admin_bust_cache();
+    if (!empty($res['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'nettoyage', 0, 'Nettoyage : ' . (int) ($res['deletedAccounts'] ?? 0) . ' compte(s) supprimé(s)');
+    admin_json($res);
   }
   admin_json(['ok' => false, 'reason' => 'Action inconnue'], 400);
 }
@@ -1898,6 +1904,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <h1>Super Admin Dashboard</h1>
     <div>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
+      <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
   </header>
@@ -1933,6 +1940,23 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <p class="muted" id="viewSum"></p>
     <div class="table-wrap" id="panel"><p class="muted" style="padding:12px">Choisissez un bouton…</p></div>
     <div class="pager" id="pager"></div>
+  </div>
+
+  <div class="modal" id="wipeModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeWipe">Fermer</button>
+      <h2 style="color:var(--red);margin:10px 0 4px">Nettoyer : suppression définitive</h2>
+      <p class="muted">Les comptes supprimés et toutes leurs données (soldes, dépôts, retraits, trades, historiques, messages) sont effacés pour de bon, dans la base et sur le serveur. Rien ne reviendra. Le compte admin est toujours gardé.</p>
+      <p><label><input type="checkbox" id="wipeKeepGmail" checked> Garder les comptes <strong>@gmail.com</strong></label></p>
+      <p><button class="mini" type="button" id="btnWipePlan">1. Voir ce qui sera supprimé</button></p>
+      <div id="wipePlan"></div>
+      <div id="wipeConfirmBox" style="display:none;margin-top:12px">
+        <p>2. Pour confirmer, tapez <strong>SUPPRIMER</strong> :</p>
+        <input id="wipeConfirm" autocomplete="off" style="min-height:38px;border-radius:10px;border:1px solid var(--line);background:#0E1420;color:var(--text);padding:6px 10px;font:inherit">
+        <button class="mini bad" type="button" id="btnWipeRun" style="margin-left:6px">Supprimer définitivement</button>
+      </div>
+      <p class="muted" id="wipeStatus"></p>
+    </div>
   </div>
 
   <div class="modal" id="userModal">
@@ -2241,6 +2265,44 @@ async function openUser(uid) {
   };
 }
 document.getElementById('closeModal').onclick = () => document.getElementById('userModal').classList.remove('on');
+(function () {
+  const $w = id => document.getElementById(id);
+  const keep = () => $w('wipeKeepGmail').checked;
+  const list = (title, rows, color) => '<h3 class="panel-title" style="color:' + color + '">' + title + ' (' + rows.length + ')</h3>' +
+    (rows.length ? '<div class="table-wrap" style="max-height:28vh"><table><thead><tr><th>E-mail</th><th>Nom</th><th>Solde réel</th></tr></thead><tbody>' +
+      rows.map(r => '<tr><td>' + esc(r.email) + (r.admin ? ' <span class="pill pill-ok">admin</span>' : '') + '</td><td>' + esc(r.name || '—') + '</td><td>' + money(r.real) + '</td></tr>').join('') +
+      '</tbody></table></div>' : '<p class="muted">Aucun</p>');
+  $w('btnWipe').onclick = () => {
+    $w('wipePlan').innerHTML = ''; $w('wipeConfirmBox').style.display = 'none'; $w('wipeStatus').textContent = ''; $w('wipeConfirm').value = '';
+    $w('wipeModal').classList.add('on');
+  };
+  $w('closeWipe').onclick = () => $w('wipeModal').classList.remove('on');
+  $w('wipeKeepGmail').onchange = () => { $w('wipePlan').innerHTML = ''; $w('wipeConfirmBox').style.display = 'none'; };
+  $w('btnWipePlan').onclick = async () => {
+    $w('wipeStatus').textContent = 'Lecture des comptes…';
+    const j = await ajax({action:'wipe_plan', keepGmail: keep()});
+    if (!j.ok) { $w('wipeStatus').textContent = j.reason || 'Échec'; return; }
+    $w('wipePlan').innerHTML = list('Gardés', j.keep || [], 'var(--green)') + list('Supprimés définitivement', j.delete || [], 'var(--red)');
+    $w('wipeConfirmBox').style.display = (j.delete || []).length ? '' : 'none';
+    $w('wipeStatus').textContent = (j.delete || []).length ? '' : 'Rien à supprimer.';
+  };
+  $w('btnWipeRun').onclick = async () => {
+    if ($w('wipeConfirm').value.trim() !== 'SUPPRIMER') { alert('Tapez SUPPRIMER pour confirmer.'); return; }
+    if (!confirm('Dernière vérification : supprimer définitivement ces comptes et toutes leurs données ?')) return;
+    $w('btnWipeRun').disabled = true;
+    let total = 0, j;
+    do {
+      $w('wipeStatus').textContent = 'Suppression en cours… ne fermez pas cette page.';
+      j = await ajax({action:'wipe_run', keepGmail: keep(), confirm: 'SUPPRIMER'});
+      if (!j.ok) { $w('wipeStatus').textContent = j.reason || 'Échec'; $w('btnWipeRun').disabled = false; return; }
+      total = j.deletedAccounts || total;
+    } while (j.more);
+    $w('btnWipeRun').disabled = false;
+    $w('wipeStatus').textContent = 'Terminé : ' + total + ' compte(s) supprimé(s) définitivement. ' + (j.kept || 0) + ' gardé(s).';
+    $w('wipePlan').innerHTML = ''; $w('wipeConfirmBox').style.display = 'none';
+    bustList(); loadBadges(); loadList(true);
+  };
+})();
 document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {

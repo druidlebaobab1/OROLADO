@@ -735,6 +735,8 @@ function admin_stat_cutoff_ts(): int {
 }
 
 function admin_stat_user_visible(array $p): bool {
+  // Plus de masquage par date : le bouton « Nettoyer » supprime vraiment les comptes.
+  return true;
   $em = strtolower(trim((string) ($p['email'] ?? '')));
   $pid = strtoupper(trim((string) ($p['publicId'] ?? '')));
   $id = (string) ($p['id'] ?? '');
@@ -757,6 +759,7 @@ function admin_stat_visible_user_ids(): array {
 }
 
 function admin_stat_keep_deposit_id(string $id): bool {
+  return false;
   return $id === 'oro_8297217e1d0843fe8898ac452c3841b2_d6c00b5fd577';
 }
 
