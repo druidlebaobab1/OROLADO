@@ -207,6 +207,39 @@ $action = $req['action'] ?? '';
 $token = trim((string) ($req['token'] ?? ''));
 if ($token === '') $token = trim((string) ($_COOKIE['oro_token'] ?? ''));
 
+// Limites anti-robots, par adresse e-mail visée et par connexion. Les limites par connexion sont
+// larges : beaucoup de joueurs d'un même pays partagent la même adresse (opérateurs mobiles).
+// [qui, nombre, par N secondes] — qui : e = e-mail demandé, i = connexion, t = compte connecté.
+$OROLADO_RATE_RULES = [
+  'registerStart'     => [['e', 5, 3600], ['i', 100, 3600]],
+  'registerResend'    => [['e', 6, 3600], ['i', 100, 3600]],
+  'registerVerify'    => [['e', 20, 3600], ['i', 300, 3600]],
+  'forgotOtpStart'    => [['e', 5, 3600], ['i', 60, 3600]],
+  'forgotOtpVerify'   => [['e', 20, 3600], ['i', 300, 3600]],
+  'forgotPasswordSet' => [['e', 10, 3600], ['i', 100, 3600]],
+  'passwordOtpStart'  => [['t', 5, 3600], ['i', 60, 3600]],
+  'passwordOtpVerify' => [['t', 20, 3600], ['i', 300, 3600]],
+  'passwordChange'    => [['t', 10, 3600]],
+  'welcomeEmail'      => [['e', 2, 86400], ['i', 30, 3600]],
+  'login'             => [['e', 30, 3600], ['i', 600, 3600]],
+  'withdrawOtp'       => [['t', 8, 3600]],
+  'withdraw'          => [['t', 30, 3600]],
+  'oxapayInvoice'     => [['t', 30, 3600]],
+  'flutterwaveCheckout' => [['t', 30, 3600]],
+];
+if (isset($OROLADO_RATE_RULES[$action])) {
+  $rlEmail = strtolower(trim((string) ($req['email'] ?? '')));
+  foreach ($OROLADO_RATE_RULES[$action] as [$who, $max, $win]) {
+    $key = $who === 'e' ? $rlEmail : ($who === 't' ? $token : orolado_client_ip());
+    if ($key === '') continue;
+    if (!orolado_rate_ok('api_' . strtolower($action) . '_' . $who, $key, $max, $win)) {
+      http_response_code(429);
+      echo json_encode(['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.']);
+      exit;
+    }
+  }
+}
+
 if ($action === 'geo') {
   $cc = strtoupper(trim((string) (
     $_SERVER['HTTP_CF_IPCOUNTRY']
@@ -786,33 +819,11 @@ if ($action === 'passwordChange') {
   exit;
 }
 
+// SÉCURITÉ : ancienne inscription directe, sans code e-mail, qui acceptait une fiche joueur
+// envoyée par le téléphone (on pouvait y glisser le lien vers la caisse d'un autre joueur).
+// Le site utilise registerStart → registerVerify ; cette porte est fermée.
 if ($action === 'register') {
-  $user = $req['user'] ?? null;
-  $vault = $req['vault'] ?? ['demo' => 1000000, 'real' => 0];
-  if (!is_array($user) || empty($user['email']) || empty($user['id'])) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription invalide']);
-    exit;
-  }
-  $email = strtolower(trim($user['email']));
-  if (orolado_is_reserved_admin_email($email) || find_user($db, $email) || orolado_identity_block($db, $email, (string) ($user['phone'] ?? ''))) {
-    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.']);
-    exit;
-  }
-  $user['email'] = $email;
-  $user['role'] = 'user';
-  unset($user['is_admin']);
-  if (empty($user['publicId'])) $user['publicId'] = alloc_public_id($db);
-  $db['users'][$user['id']] = $user;
-  $vault = [
-    'demo' => 1000000,
-    'real' => 0
-  ];
-  $db['vault'][$user['id']] = $vault;
-  $tok = make_token($user['id'], $SECRET);
-  $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
-  save_db($file, $db);
-  orolado_set_session_cookie($tok);
-  echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
+  echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription invalide']);
   exit;
 }
 
@@ -821,6 +832,11 @@ if ($action === 'welcomeEmail') {
   $name = trim((string) ($req['displayName'] ?? $req['name'] ?? ''));
   if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'E-mail invalide']);
+    exit;
+  }
+  // Seulement pour un vrai inscrit (sinon n'importe qui pourrait faire envoyer des e-mails par le site).
+  if (!find_user($db, $email)) {
+    echo json_encode(['ok' => true, 'server' => true, 'skipped' => true]);
     exit;
   }
   if (brevo_welcome_already_sent($db, $email)) {
@@ -1071,15 +1087,11 @@ if ($action === 'upsert') {
   }
   // Champs gérés UNIQUEMENT par le serveur : le téléphone ne peut jamais les écrire
   // (lien vers le coffre réel, condition de mise ×2, identifiants, date d'inscription).
-  foreach (['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt'] as $keepK) {
+  // Compteurs d'argent (dépôts, montant misé, nombre de trades réels) : tenus UNIQUEMENT par le
+  // serveur. Avant, le téléphone pouvait les gonfler et sauter la règle « miser ×2 avant retrait ».
+  foreach (array_merge(orolado_server_user_fields(), orolado_server_user_counters()) as $keepK) {
     if (array_key_exists($keepK, $existing)) $user[$keepK] = $existing[$keepK];
     else unset($user[$keepK]);
-  }
-  foreach (['realDepositTotal', 'realStakeVolume', 'totalWageredSinceDeposit'] as $maxK) {
-    $user[$maxK] = orolado_money(max(
-      orolado_money($user[$maxK] ?? 0),
-      orolado_money($existing[$maxK] ?? 0)
-    ));
   }
   if (!empty($existing['lastSeen']) && empty($user['lastSeen'])) {
     $user['lastSeen'] = $existing['lastSeen'];
@@ -1094,11 +1106,9 @@ if ($action === 'upsert') {
   with_db_lock(function ($box) use ($id, $user, $demoIn) {
     $cur = (isset($box->db['users'][$id]) && is_array($box->db['users'][$id])) ? $box->db['users'][$id] : [];
     // Champs serveur relus au dernier moment (un dépôt a pu arriver pendant la requête).
-    foreach (['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'passwordHash', 'role'] as $k) {
+    foreach (array_merge(orolado_server_user_fields(), orolado_server_user_counters(), ['passwordHash', 'role']) as $k) {
       if (array_key_exists($k, $cur)) $user[$k] = $cur[$k];
-    }
-    foreach (['realDepositTotal', 'realStakeVolume', 'totalWageredSinceDeposit', 'realTrades'] as $k) {
-      $user[$k] = max((float) ($user[$k] ?? 0), (float) ($cur[$k] ?? 0));
+      else unset($user[$k]);
     }
     $box->db['users'][$id] = $user;
     if ($demoIn !== null) {

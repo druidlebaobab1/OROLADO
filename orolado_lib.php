@@ -41,8 +41,54 @@ function orolado_data_file(): string {
   return orolado_data_dir() . '/orolado.json';
 }
 
+/** Champs de la fiche joueur que le téléphone ne peut jamais écrire (action « upsert »). */
+function orolado_server_user_fields(): array {
+  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso'];
+}
+
+/** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */
+function orolado_server_user_counters(): array {
+  return ['realDepositTotal', 'realStakeVolume', 'totalWageredSinceDeposit', 'realTrades'];
+}
+
+/** Adresses officielles de Cloudflare (https://www.cloudflare.com/ips/). */
+function orolado_cloudflare_ranges(): array {
+  return [
+    '173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22', '141.101.64.0/18',
+    '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20', '197.234.240.0/22', '198.41.128.0/17',
+    '162.158.0.0/15', '104.16.0.0/13', '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22',
+    '2400:cb00::/32', '2606:4700::/32', '2803:f800::/32', '2405:b500::/32', '2405:8100::/32',
+    '2a06:98c0::/29', '2c0f:f248::/32',
+  ];
+}
+
+function orolado_ip_in_cidr(string $ip, string $cidr): bool {
+  [$net, $bits] = explode('/', $cidr) + [1 => ''];
+  $a = @inet_pton($ip);
+  $b = @inet_pton($net);
+  if ($a === false || $b === false || strlen($a) !== strlen($b)) return false;
+  $bits = (int) $bits;
+  $bytes = intdiv($bits, 8);
+  if (substr($a, 0, $bytes) !== substr($b, 0, $bytes)) return false;
+  $rest = $bits % 8;
+  if ($rest === 0) return true;
+  $mask = (0xFF << (8 - $rest)) & 0xFF;
+  return (ord($a[$bytes]) & $mask) === (ord($b[$bytes]) & $mask);
+}
+
+/**
+ * Adresse du VISITEUR. Derrière Cloudflare, REMOTE_ADDR est l'adresse de Cloudflare (partagée
+ * par des milliers de joueurs) : on prend alors CF-Connecting-IP, mais SEULEMENT si la demande
+ * vient vraiment de Cloudflare (sinon n'importe qui pourrait inventer cet en-tête).
+ */
 function orolado_client_ip(): string {
   $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0');
+  $cf = trim((string) ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? ''));
+  if ($cf !== '' && filter_var($cf, FILTER_VALIDATE_IP) && filter_var($ip, FILTER_VALIDATE_IP)) {
+    foreach (orolado_cloudflare_ranges() as $r) {
+      if (orolado_ip_in_cidr($ip, $r)) { $ip = $cf; break; }
+    }
+  }
   $ip = preg_replace('/[^0-9a-fA-F:.]/', '', $ip);
   return $ip !== '' ? $ip : '0';
 }
