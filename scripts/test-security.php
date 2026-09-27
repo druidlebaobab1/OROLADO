@@ -100,5 +100,16 @@ $db = load_db();
 $n = orolado_prune_sessions($db);
 check('ménage : la session morte est retirée, les vivantes gardées', $n === 1 && !isset($db['sessions']['tokOld']) && isset($db['sessions']['tokMe']), (string) $n);
 
+echo "6) Mot de passe admin\n";
+$r = $call(['action' => 'login', 'email' => 'admin@orolado.com', 'password' => 'AdminOrolado2026!']);
+check('sans réglage chez l’hébergeur : l’ancien mot de passe marche encore (pas de blocage)', !empty($r['ok']), (string) ($r['reason'] ?? ''));
+putenv('ADMIN_PASSWORD=Nouveau-MotDePasse-Test-42');
+$r = $call(['action' => 'login', 'email' => 'admin@orolado.com', 'password' => 'AdminOrolado2026!']);
+check('réglage fait : l’ancien mot de passe du code est REFUSÉ', empty($r['ok']), (string) ($r['reason'] ?? ''));
+$r = $call(['action' => 'login', 'email' => 'admin@orolado.com', 'password' => 'Nouveau-MotDePasse-Test-42']);
+check('le nouveau mot de passe marche', !empty($r['ok']), (string) ($r['reason'] ?? ''));
+check('l’empreinte du mot de passe n’est jamais renvoyée au téléphone', !isset($r['user']['pwTag']) && !isset($r['user']['passwordHash']));
+putenv('ADMIN_PASSWORD');
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

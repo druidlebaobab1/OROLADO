@@ -43,7 +43,7 @@ function orolado_data_file(): string {
 
 /** Champs de la fiche joueur que le téléphone ne peut jamais écrire (action « upsert »). */
 function orolado_server_user_fields(): array {
-  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso'];
+  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag'];
 }
 
 /** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */
@@ -1948,15 +1948,24 @@ function orolado_prune_sessions(array &$db): int {
   return $n;
 }
 
+/**
+ * Mot de passe admin = celui mis dans les réglages de l'hébergeur (.env : ADMIN_PASSWORD).
+ * Dès qu'il existe, l'ancien mot de passe écrit dans le code NE MARCHE PLUS (ni en clair, ni
+ * via l'ancienne empreinte : l'empreinte est refaite au premier passage).
+ * Tant qu'il n'est pas réglé, l'ancien reste accepté pour ne pas bloquer l'accès.
+ */
 function orolado_master_admin_password(): string {
-  return 'AdminOrolado2026!';
+  $env = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));
+  return $env !== '' ? $env : 'AdminOrolado2026!';
+}
+
+/** Vrai si le mot de passe admin vient bien des réglages de l'hébergeur (et plus du code). */
+function orolado_admin_password_from_env(): bool {
+  return trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? ''))) !== '';
 }
 
 function orolado_admin_plain_passwords(): array {
-  $env = trim((string) (getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? '')));
-  $out = [orolado_master_admin_password()];
-  if ($env !== '') $out[] = $env;
-  return array_values(array_unique($out));
+  return [orolado_master_admin_password()];
 }
 
 function orolado_hash_is_password_verify(string $storedHash): bool {
@@ -2198,8 +2207,12 @@ function orolado_bootstrap_admin(array &$db, string $file): void {
       $admin['role'] = 'admin';
       $needSave = true;
     }
-    if (!orolado_verify_password($master, (string) ($admin['passwordHash'] ?? ''))) {
+    // Empreinte refaite seulement quand le mot de passe change (avant : un calcul lent bcrypt à
+    // CHAQUE appel de l'API, pour chaque joueur).
+    $pwTag = hash('sha256', 'orolado-admin|' . $master);
+    if ((string) ($admin['pwTag'] ?? '') !== $pwTag) {
       $admin['passwordHash'] = orolado_hash_password($master);
+      $admin['pwTag'] = $pwTag;
       $needSave = true;
     }
   }
@@ -2223,7 +2236,7 @@ function orolado_is_admin_user(?array $me): bool {
 }
 
 function orolado_public_user(array $user): array {
-  unset($user['passwordHash'], $user['password'], $user['is_admin']);
+  unset($user['passwordHash'], $user['password'], $user['is_admin'], $user['pwTag']);
   return $user;
 }
 
@@ -4767,6 +4780,14 @@ function orolado_submit_usdt_deposit(array $req): array {
   return orolado_verify_crypto_deposit($req);
 }
 
+/** Vrai si la clé OxaPay vient des réglages de l'hébergeur (et plus de la clé de secours du code). */
+function orolado_oxapay_key_from_env(): bool {
+  orolado_load_env();
+  return trim((string) (getenv('OXAPAY_MERCHANT_KEY') ?: ($_ENV['OXAPAY_MERCHANT_KEY'] ?? $_SERVER['OXAPAY_MERCHANT_KEY'] ?? ''))) !== '';
+}
+
+// Clé de secours gardée seulement pour ne pas couper les dépôts crypto tant que la vraie clé
+// n'est pas dans les réglages de l'hébergeur (rappel affiché dans l'admin « À surveiller »).
 function orolado_oxapay_key(): string {
   orolado_load_env();
   $k = trim((string) (getenv('OXAPAY_MERCHANT_KEY') ?: ($_ENV['OXAPAY_MERCHANT_KEY'] ?? $_SERVER['OXAPAY_MERCHANT_KEY'] ?? '')));

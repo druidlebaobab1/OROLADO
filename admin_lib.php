@@ -2587,6 +2587,14 @@ function admin_health_live_checks(): array {
     return ['at' => $now, 'service' => $svc, 'message' => $msg, 'level' => $lvl, 'watch' => $watch];
   };
 
+  // 0. Secrets encore écrits dans le code (à mettre dans les réglages de l'hébergeur).
+  if (function_exists('orolado_admin_password_from_env') && !orolado_admin_password_from_env()) {
+    $rows[] = $row('Sécurité', 'Le mot de passe admin est encore celui écrit dans le code. Mettez le vôtre dans les réglages de l’hébergeur (ADMIN_PASSWORD).', 'warn', true);
+  }
+  if (function_exists('orolado_oxapay_key_from_env') && !orolado_oxapay_key_from_env()) {
+    $rows[] = $row('Sécurité', 'La clé OxaPay est encore celle écrite dans le code. Créez une nouvelle clé chez OxaPay et mettez-la dans les réglages de l’hébergeur (OXAPAY_MERCHANT_KEY).', 'warn', true);
+  }
+
   // 1. Flux de prix : figé alors que des joueurs sont en ligne = graphiques bloqués.
   $online = admin_online_count();
   $live = __DIR__ . '/feedcache/live.json';
