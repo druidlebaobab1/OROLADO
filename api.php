@@ -1377,7 +1377,7 @@ if ($action === 'suspendUser') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Joueur invalide']);
     exit;
   }
-  orolado_force_suspend($db, $uid, 'suspended');
+  orolado_force_suspend($db, $uid, 'suspended', strtolower(trim((string) ($req['email'] ?? ''))));
   save_db($file, $db);
   echo json_encode(['ok' => true, 'server' => true]);
   exit;

@@ -2277,8 +2277,7 @@ async function openUser(uid) {
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre</button> '+
-    '<button class="mini bad" id="btnDeleteUser">Supprimer ce compte</button></p>'+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
     tbl('Dépôts (argent payé)', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
@@ -2309,12 +2308,8 @@ async function openUser(uid) {
   const btnDebit = document.getElementById('btnDebit');
   if (btnCredit) btnCredit.onclick = () => go(1);
   if (btnDebit) btnDebit.onclick = () => go(-1);
-  document.getElementById('btnDeleteUser').onclick = () => {
-    document.getElementById('userModal').classList.remove('on');
-    if (window.openWipe) window.openWipe(String(u.email || '').toLowerCase());
-  };
   document.getElementById('btnSuspend').onclick = async () => {
-    if (!confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
+    if (!confirm('Suspendre ce joueur ? Il sera déconnecté tout de suite et ne pourra plus jamais se connecter ni créer un compte avec cet e-mail.')) return;
     const r = await ajax({action:'suspend', userId:u.id, email:u.email||''});
     if (!r.ok) alert(r.reason || 'Échec');
     else { bustList(); openUser(u.id); loadBadges(); }
