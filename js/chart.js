@@ -816,8 +816,8 @@
     g.setTransform(s, 0, 0, s, 0, 0);
     // Fond bleu nuit, pas un noir plat.
     var base = g.createLinearGradient(0, 0, 0, cssH);
-    base.addColorStop(0, '#0D1220');
-    base.addColorStop(1, '#0A0D16');
+    base.addColorStop(0, '#16203A');
+    base.addColorStop(1, '#0E1426');
     g.fillStyle = base;
     g.fillRect(0, 0, cssW, cssH);
     // Lumières chaudes (or en haut à gauche, ambre en bas à droite, halo au centre).
@@ -829,9 +829,9 @@
       g.fillRect(0, 0, cssW, cssH);
     }
     var big = Math.max(cssW, cssH);
-    glow(cssW * 0.12, cssH * 0.05, big * 0.55, 'rgba(245,170,40,0.10)');
-    glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,110,40,0.07)');
-    glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(245,197,24,0.045)');
+    glow(cssW * 0.12, cssH * 0.05, big * 0.55, 'rgba(245,175,50,0.17)');
+    glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,140,50,0.12)');
+    glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(120,160,255,0.07)');
     // Carte du monde en points.
     // Sur téléphone (graphique plus haut que large, surtout en plein écran), la carte
     // grandit avec la hauteur : un peu plus large que l écran, centrée sur Europe/Afrique.
