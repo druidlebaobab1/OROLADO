@@ -1,12 +1,18 @@
-# Prix en direct. live.js est demandé avec une adresse différente toutes les 250 ms
-# (?t=…, calée sur l'heure du serveur) : Cloudflare peut donc en garder une copie et la
-# servir à tous les joueurs de ce quart de seconde, sans jamais servir un vieux prix.
+# Fichier de prix partagé : servi directement par l'hébergeur (sans PHP).
+# live.json : cache très court, chaque visiteur relit la dernière version.
+# live.js : demandé avec une adresse différente toutes les 250 ms (?t=…, calée sur l'heure du
+# serveur) : Cloudflare peut en garder une copie et la servir à tous les joueurs de ce quart
+# de seconde, sans jamais servir un vieux prix.
 <IfModule mod_headers.c>
+  Header set Cache-Control "no-cache, max-age=0"
+  Header set X-Content-Type-Options "nosniff"
   <Files "live.js">
     Header set Cache-Control "public, max-age=30"
     Header unset Expires
   </Files>
 </IfModule>
 <IfModule mod_mime.c>
+  AddType application/json .json
   AddType application/javascript .js
 </IfModule>
+Options -Indexes

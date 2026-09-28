@@ -31,3 +31,5 @@ data/cash_ops/
 data/kicks/
 data/settle_*.ok
 data/admin_*.json
+feedcache/*.beat
+feedcache/*.lock
