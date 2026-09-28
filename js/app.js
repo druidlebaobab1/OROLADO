@@ -1087,6 +1087,24 @@
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (eVib) { /* ignore */ }
   }
 
+  // Feu du bas : sa hauteur suit la ligne « PAYOUT » (les flammes montent jusqu'à elle),
+  // quelle que soit la taille du téléphone.
+  function fitFire() {
+    try {
+      var fb = $('fireBed');
+      var lbl = document.querySelector('#screenTrade .odds-label');
+      if (!fb || !lbl || window.innerWidth >= 860) return;
+      var r = lbl.getBoundingClientRect();
+      if (!(r.height > 0)) return;
+      var h = Math.round(window.innerHeight - (r.top + r.height / 2));
+      if (h > 60 && h < 420) fb.style.height = h + 'px';
+    } catch (eFire) { /* ignore */ }
+  }
+  window.addEventListener('resize', fitFire);
+  window.addEventListener('orientationchange', function () { setTimeout(fitFire, 300); });
+  setTimeout(fitFire, 400);
+  setInterval(fitFire, 3000);
+
   var lastTapAt = 0;
   // Petit « clic » feutré pour les boutons.
   function playTap() {
