@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2094") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2095") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2094") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2095") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -4028,3 +4028,24 @@ html body .lang-dd-btn .lang-chev{font-size:8px!important;opacity:.8;transform:t
 }
 /* Flèche de langue un peu plus grande (toujours sous le drapeau, sans déborder). */
 html body .lang-dd-btn .lang-chev{font-size:11px!important;opacity:.9;transform:translateY(-3px) scaleX(1.25)!important}
+/* === Feu v8 (mobile) : liseré d'or en fusion au-dessus du cadre des boutons + braises plus
+   visibles + respiration du feu. Retour possible : tag git « feu-actuel ». === */
+@media (max-width:859px){
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .fire-rim{
+    position:absolute;left:0;right:0;height:2px;pointer-events:none;
+    bottom:calc(86px + env(safe-area-inset-bottom, 34px));
+    background:linear-gradient(90deg,rgba(255,170,40,0) 0%,rgba(255,200,90,.9) 12%,rgba(255,236,170,1) 50%,rgba(255,200,90,.9) 88%,rgba(255,170,40,0) 100%);
+    box-shadow:0 0 8px 2px rgba(255,170,40,.75),0 0 18px 4px rgba(255,120,0,.35)}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .fire-rim::after{
+    content:"";position:absolute;top:-2px;height:6px;width:22%;left:-25%;border-radius:6px;
+    background:radial-gradient(closest-side,rgba(255,255,235,1),rgba(255,230,160,0));
+    animation:oroRimRun 4.8s ease-in-out infinite}
+  @keyframes oroRimRun{0%{left:-25%}60%{left:103%}100%{left:103%}}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .spark{width:3px!important;height:3px!important;
+    box-shadow:0 0 6px 2px rgba(255,200,90,1),0 0 14px 4px rgba(255,140,30,.55)!important}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed{animation:oroBreath 3s ease-in-out infinite alternate!important}
+  @keyframes oroBreath{0%{opacity:.86;transform:scaleY(.95)}100%{opacity:1;transform:scaleY(1.05)}}
+}
+@media (max-width:859px) and (prefers-reduced-motion:reduce){
+  .fire-bed .fire-rim::after{animation:none!important;display:none!important}
+}
