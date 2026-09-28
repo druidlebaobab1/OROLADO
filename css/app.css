@@ -4049,3 +4049,19 @@ html body .lang-dd-btn .lang-chev{font-size:11px!important;opacity:.9;transform:
 @media (max-width:859px) and (prefers-reduced-motion:reduce){
   .fire-bed .fire-rim::after{animation:none!important;display:none!important}
 }
+
+/* === Arabe (écriture de droite à gauche) : les croix passent à GAUCHE, à l'opposé du titre
+   et de l'avatar, avec un vrai espace autour (sinon elles collent au texte). === */
+html[dir=rtl] body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2){right:auto!important;left:6px!important}
+html[dir=rtl] body #drawerProfile #btnCloseDrawer,
+html[dir=rtl].is-android body #drawerProfile #btnCloseDrawer,
+html[dir=rtl].is-ios body #drawerProfile #btnCloseDrawer{right:auto!important;left:12px!important;top:calc(12px + env(safe-area-inset-top, 0px))!important}
+html[dir=rtl] #drawerProfile .drawer-head{padding-right:12px!important;padding-left:58px!important}
+html[dir=rtl] .drawer-head h2,
+html[dir=rtl] .modal-title,
+html[dir=rtl] .modal-head-row .modal-title,
+html[dir=rtl] .wd-modal-head .modal-title,
+html[dir=rtl] #withdrawModal .wd-modal-head .modal-title,
+html[dir=rtl] #depositModal .modal-title{padding-right:0!important;padding-left:34px!important}
+/* Arabe / hindi : la police « machine à écrire » sépare les lettres ; on garde la police normale. */
+html[dir=rtl] #profWalletAddr,html[lang=hi] #profWalletAddr{font-family:inherit!important;letter-spacing:0!important}

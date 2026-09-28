@@ -2020,6 +2020,22 @@
     if (!DICT[code].txUnfinished) DICT[code].txUnfinished = EN.txUnfinished;
   });
 
+  // « Annuler » et onglets Réel / Démo de l'historique, restés en anglais dans 9 langues.
+  var SMALL_I18N = {
+    es: { cancel: 'Cancelar', histTabReal: 'Real', histTabDemo: 'Práctica' },
+    pt: { cancel: 'Cancelar', histTabReal: 'Real', histTabDemo: 'Treino' },
+    ar: { cancel: 'إلغاء', histTabReal: 'حقيقي', histTabDemo: 'تجريبي' },
+    tr: { cancel: 'İptal', histTabReal: 'Gerçek', histTabDemo: 'Deneme' },
+    vi: { cancel: 'Hủy', histTabReal: 'Thật', histTabDemo: 'Thử' },
+    id: { cancel: 'Batal', histTabReal: 'Nyata', histTabDemo: 'Latihan' },
+    ru: { cancel: 'Отмена', histTabReal: 'Реал', histTabDemo: 'Демо' },
+    de: { cancel: 'Abbrechen', histTabReal: 'Echt', histTabDemo: 'Übung' },
+    hi: { cancel: 'रद्द करें', histTabReal: 'असली', histTabDemo: 'डेमो' }
+  };
+  Object.keys(SMALL_I18N).forEach(function (code) {
+    if (DICT[code]) Object.assign(DICT[code], SMALL_I18N[code]);
+  });
+
   // Conditions d'utilisation (18 articles) + Bonus / Voir plus, pour les 9 autres langues.
   var TERMS_I18N = {
     es: {
@@ -2700,8 +2716,21 @@
   }
 
   function refineFromIpCountry() {
-    // Désactivé : l'adresse internet (IP) trompe avec un VPN. La langue vient du téléphone,
-    // puis du fuseau horaire (voir detectUserLanguage).
+    // Ordre : 1) langue du téléphone, 2) fuseau horaire, 3) EN DERNIER RECOURS seulement,
+    // le pays vu par Cloudflare (notre propre serveur, pas de service extérieur).
+    if (lockedLang || hasExplicitLang() || urlLang()) return;
+    if (detectFromNavigator()) return;
+    try {
+      if (langFromTimezone((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '')) return;
+    } catch (eTz2) { /* ignore */ }
+    try {
+      fetch('api.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'geo' }) })
+        .then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(function (j) {
+          var hit = langFromCountry(String((j && j.country) || '').toUpperCase());
+          if (hit) applyAutoLang(hit);
+        }).catch(function () { /* ignore */ });
+    } catch (eGeo) { /* ignore */ }
     return;
     // eslint-disable-next-line no-unreachable
     if (lockedLang || hasExplicitLang() || urlLang()) return;
