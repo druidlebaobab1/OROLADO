@@ -133,5 +133,27 @@ check('ancien trade : +7 $ rendus une fois', abs($bank['real'][$uid] - ($before 
 orolado_trade_settle_due($uid);
 check('pas de 2e remboursement', abs($bank['real'][$uid] - ($before + 7)) < 0.001);
 
+echo "7) Même ordre envoyé 2 fois EN MÊME TEMPS (réseau lent) : une seule mise prise\n";
+$orig = $GLOBALS['OROLADO_FAKE_RPC'];
+$race = true;
+$GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use ($orig, $uid, &$race, &$bank) {
+  if ($fn === 'debit_real' && $race) {
+    // Pendant ce débit, l'AUTRE demande (même ordre) a déjà débité et enregistré le trade.
+    $race = false;
+    $bank['real'][$uid] = round($bank['real'][$uid] - $a['p_amount'], 2);
+    with_db_lock(function ($box) use ($uid) {
+      $box->db['orders'][] = ['id' => 'race1', 'userId' => $uid, 'payId' => $uid, 'stake' => 5, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88, 'status' => 'open', 'at' => microtime(true), 'expiryAt' => microtime(true) + 5];
+      return ['ok' => true];
+    });
+  }
+  return $orig($fn, $a);
+};
+$before = $bank['real'][$uid];
+$r = orolado_trade_place($me, ['id' => 'race1', 'stake' => 5, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$GLOBALS['OROLADO_FAKE_RPC'] = $orig;
+$nRace = count(array_filter(load_db()['orders'], fn($x) => ($x['id'] ?? '') === 'race1'));
+check('un seul trade enregistré', !empty($r['duplicate']) && $nRace === 1);
+check('une seule mise de 5 $ prise (la 2e est rendue)', abs($bank['real'][$uid] - ($before - 5)) < 0.001, $before . ' → ' . $bank['real'][$uid]);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

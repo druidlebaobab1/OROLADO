@@ -263,7 +263,13 @@ function orolado_trade_place(array $me, array $req): array {
     if ($mode === 'real') orolado_trade_credit_once($payId, 'refund_' . $oid, $stake);
     return ['ok' => false, 'reason' => $placed['reason'] ?? 'Ordre refusé'];
   }
-  if (!empty($placed['duplicate'])) return ['ok' => true, 'duplicate' => true, 'order' => orolado_trade_public($placed['order'])];
+  if (!empty($placed['duplicate'])) {
+    // Même ordre arrivé 2 fois EN MÊME TEMPS (réseau lent qui renvoie) : les deux demandes ont
+    // passé le contrôle d'avant et ont débité la mise, mais un seul trade existe. On rend la mise
+    // prise en trop (clé unique pour ce débit : jamais rendue deux fois).
+    if ($mode === 'real') orolado_trade_credit_once($payId, 'dupref_' . $oid . '_' . bin2hex(random_bytes(4)), $stake);
+    return ['ok' => true, 'duplicate' => true, 'order' => orolado_trade_public($placed['order'])];
+  }
 
   if ($mode === 'real' && function_exists('supabase_put_order')) {
     supabase_put_order($payId, [
