@@ -450,6 +450,11 @@
     var t = Math.floor((nowMs + clock.offset - DISPLAY_DELAY) / TICK_MS);
     if (t > f.last) t = f.last;
     if (t < f.first) t = f.first;
+    // La courbe affichée ne recule JAMAIS : l'heure serveur estimée se corrige sans arrêt de
+    // quelques millisecondes (réseau chargé), ce qui faisait reculer d'un prix puis repartir
+    // (« deux tics derrière, devant »). Seul un gros écart (retour de veille, resynchro) repart.
+    if (f.shown != null && t < f.shown && f.shown - t < 20 && f.shown <= f.last) t = f.shown;
+    f.shown = t;
     return t;
   }
 
