@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2092") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2093") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2092") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2093") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -4009,4 +4009,12 @@ html body .lang-dd-btn .lang-chev{position:static!important;display:inline-block
 /* Recharger : remplit tout l'espace entre OROLADO et « Aide », même écart des deux côtés (bien droit). */
 @media (max-width:859px){
   html body #screenTrade:not(.is-guest) .topbar-cta{max-width:none!important;margin:0 2px 0 8px!important}
+}
+/* Langue v3 : drapeau un peu remonté, petite flèche dorée translucide JUSTE EN DESSOUS. */
+html body .lang-dd-btn{flex-direction:column!important;gap:0!important;min-width:28px!important;padding:1px 3px 0!important}
+html body .lang-dd-btn .lang-flag{line-height:1!important;transform:translateY(-1px)}
+html body .lang-dd-btn .lang-chev{font-size:8px!important;opacity:.8;transform:translateY(-2px) scaleX(1.3)!important;line-height:.8!important}
+/* Recharger : encore un peu plus long vers « Aide », pour être bien au centre de l'écran. */
+@media (max-width:859px){
+  html body #screenTrade:not(.is-guest) .topbar-cta{margin:0 -4px 0 8px!important}
 }
