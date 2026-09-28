@@ -336,7 +336,7 @@
     var done = function () { liveBusy = false; };
     // Adresse différente toutes les 250 ms : Cloudflare peut servir la même copie à tous
     // les joueurs de ce quart de seconde (pas d'en-tête no-cache qui l'en empêcherait).
-    fetch('feedcache/live.json?t=' + Math.floor(Date.now() / 250), { cache: 'default' }).then(function (r) {
+    fetch('feedcache/live.js?t=' + Math.floor((Date.now() + (clock.ready ? clock.offset : 0)) / 250), { cache: 'default' }).then(function (r) {
       return r.ok ? r.json() : null;
     }).then(function (j) {
       var serverNow = Date.now() + clock.offset;
@@ -347,7 +347,8 @@
         done();
         return;
       }
-      if (age < 200) {
+      // Moteur de diffusion (feed.php) : fichier refait 4 fois/s ; jusqu'à 700 ms c'est frais.
+      if (age < 700) {
         done();
         return;
       }

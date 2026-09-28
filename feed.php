@@ -88,35 +88,86 @@ function feed_live_rate(string $dir): float {
   return round($rp, 4);
 }
 
+/** Écrit feedcache/live.json : les 40 derniers prix (10 s) des 10 actifs. */
+function feed_live_write(string $dir, string $file, array $base, float $rp): array {
+  $out = [];
+  foreach (array_keys(orolado_feed_assets()) as $id) {
+    $sl = feed_slice($id, null, 40);
+    $out[$id] = feed_pack((int) $sl['first'], $sl['c']);
+  }
+  $j = $base + ['at' => orolado_feed_now_ms(), 'rp' => $rp, 'assets' => $out];
+  if (!is_dir($dir)) @mkdir($dir, 0755, true);
+  $json = json_encode($j, JSON_UNESCAPED_SLASHES);
+  // Deux exemplaires : live.json (anciens téléphones) et live.js (distribué par Cloudflare).
+  foreach ([$file, $dir . '/live.js'] as $dest) {
+    $tmp = $dir . '/live.' . bin2hex(random_bytes(4)) . '.tmp';
+    if (@file_put_contents($tmp, $json) !== false) {
+      if (!@rename($tmp, $dest)) { @unlink($dest); @rename($tmp, $dest); }
+    }
+  }
+  return $j;
+}
+
+/** Le moteur de diffusion a-t-il écrit il y a moins de 2 s ? */
+function feed_pump_alive(string $dir): bool {
+  $beat = (int) @file_get_contents($dir . '/pump.beat');
+  return $beat > 0 && (orolado_feed_now_ms() - $beat) < 2000;
+}
+
 if (isset($_GET['live'])) {
   $dir = __DIR__ . '/feedcache';
   $file = $dir . '/live.json';
   $raw = @file_get_contents($file);
   $j = is_string($raw) ? json_decode($raw, true) : null;
   $fresh = is_array($j) && isset($j['at']) && (orolado_feed_now_ms() - (int) $j['at']) < 200;
-  // Auto-réglage : on compte les demandes de rafraîchissement par seconde et on en déduit
-  // « rp », la probabilité qu'un téléphone doit utiliser pour en demander un. Seul sur le
-  // site : rp = 1 (fluide). 1 000 joueurs : rp tout petit (~4 demandes/s au total).
-  $rp = feed_live_rate($dir);
-  if (!$fresh) {
+  $pumpAlive = feed_pump_alive($dir);
+  // Moteur de diffusion en marche : les téléphones n'ont (presque) plus besoin de PHP.
+  // Sinon, ancien auto-réglage « rp » selon le nombre de demandes.
+  $rp = $pumpAlive ? 0.03 : feed_live_rate($dir);
+  if (!$fresh || !is_array($j)) {
     try {
-      $out = [];
-      foreach (array_keys(orolado_feed_assets()) as $id) {
-        $sl = feed_slice($id, null, 12);
-        $out[$id] = feed_pack((int) $sl['first'], $sl['c']);
-      }
-      $j = $base + ['at' => orolado_feed_now_ms(), 'rp' => $rp, 'assets' => $out];
-      if (!is_dir($dir)) @mkdir($dir, 0755, true);
-      $tmp = $dir . '/live.' . bin2hex(random_bytes(4)) . '.tmp';
-      if (@file_put_contents($tmp, json_encode($j, JSON_UNESCAPED_SLASHES)) !== false) {
-        if (!@rename($tmp, $file)) { @unlink($file); @rename($tmp, $file); }
-      }
+      $j = feed_live_write($dir, $file, $base, $rp);
     } catch (Throwable $e) {
       error_log('OROLADO feed live ' . $e->getMessage());
       feed_out(['ok' => false, 'reason' => 'flux indisponible'], 503);
     }
   }
-  feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
+  $canDetach = function_exists('litespeed_finish_request') || function_exists('fastcgi_finish_request');
+  if ($pumpAlive || !$canDetach) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
+
+  /*
+   * Moteur de diffusion : avant, le fichier des prix n'était refait QUE quand un téléphone le
+   * demandait ; avec beaucoup de visiteurs, les demandes faisaient la queue (jusqu'à ~2 s) et
+   * les prix arrivaient par à-coups (courbe qui se bloque puis « danse » en rattrapant).
+   * Maintenant, la première demande répond tout de suite au téléphone, puis continue seule en
+   * arrière-plan pendant ~55 s en refaisant le fichier 4 fois par seconde. Un seul moteur à la
+   * fois (verrou). Le visiteur suivant le relance quand il s'arrête.
+   */
+  $lock = @fopen($dir . '/pump.lock', 'c');
+  if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
+  http_response_code(200);
+  echo json_encode($j + ['serverMs' => orolado_feed_now_ms()], JSON_UNESCAPED_SLASHES);
+  while (ob_get_level() > 0) @ob_end_flush();
+  @flush();
+  if (function_exists('litespeed_finish_request')) litespeed_finish_request();
+  else fastcgi_finish_request();
+  ignore_user_abort(true);
+  @set_time_limit(80);
+  $end = microtime(true) + 55;
+  while (microtime(true) < $end) {
+    try {
+      feed_live_write($dir, $file, $base, 0.03);
+      @file_put_contents($dir . '/pump.beat', (string) orolado_feed_now_ms());
+    } catch (Throwable $e) {
+      error_log('OROLADO feed pump ' . $e->getMessage());
+    }
+    // Juste après le prochain tick (toutes les 250 ms).
+    $now = orolado_feed_now_ms();
+    $next = (intdiv($now, OROLADO_TICK_MS) + 1) * OROLADO_TICK_MS + 15;
+    usleep(max(20000, ($next - $now) * 1000));
+  }
+  flock($lock, LOCK_UN);
+  exit;
 }
 
 if (isset($_GET['all'])) {
