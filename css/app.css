@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2088") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2090") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2088") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2090") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -3962,4 +3962,41 @@ html body #chart.chart-card{background:#101729!important}
 }
 @media (max-width:859px) and (prefers-reduced-motion:reduce){
   .fire-bed .spark,.fire-bed .fire-shine{animation:none!important;display:none!important}
+}
+/* Langue : petite pastille dorée ▾ dans le coin, on sent qu'on peut changer (sans place en plus). */
+html body .lang-dd-btn{position:relative!important;overflow:visible!important}
+html body .lang-dd-btn .lang-chev{display:flex!important;position:absolute;right:-4px;bottom:-4px;width:13px;height:13px;
+  align-items:center;justify-content:center;border-radius:50%;background:#F5C518;color:#0B0E14;
+  font-size:8px;line-height:1;font-weight:900;box-shadow:0 0 0 1.5px #0D1322,0 0 6px rgba(245,197,24,.55);pointer-events:none}
+
+/* Recharger « marié » à USDT et BTC : le bouton s'étend sous les deux pièces, qui deviennent ses
+   deux embouts. Même place qu'avant, mais un bouton beaucoup plus long et plus imposant. */
+html body #screenTrade:not(.is-guest) .topbar-cta{gap:0!important;align-items:center}
+@media (max-width:859px){
+  html body #screenTrade:not(.is-guest) .topbar-cta{position:relative!important;left:auto!important;transform:none!important;
+    flex:1 1 auto!important;min-width:0;max-width:230px;margin:0 6px!important}
+}
+@media (min-width:860px){
+  html body #screenTrade:not(.is-guest) .topbar-cta{width:270px!important}
+}
+@media (max-width:350px){
+  html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{width:20px!important;height:20px!important}
+  html body #screenTrade:not(.is-guest) .topbar-cta #btnOpenDeposit.btn-deposit{padding-left:26px!important;padding-right:26px!important}
+  html body #screenTrade:not(.is-guest) .topbar-cta #btnOpenDeposit .dep-bolt{display:none!important}
+}
+html body #screenTrade:not(.is-guest) .topbar-cta #btnOpenDeposit.btn-deposit{
+  flex:1 1 auto;min-width:0!important;width:100%;
+  padding-left:34px!important;padding-right:34px!important;min-height:36px!important;
+  border-radius:999px!important;justify-content:center;position:relative!important;z-index:1!important}
+html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left,
+html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{
+  display:flex!important;position:absolute;top:50%;transform:translateY(-50%);z-index:9!important;pointer-events:none}
+html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-left{left:4px}
+html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-right{right:4px}
+html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{
+  width:26px!important;height:26px!important;border-radius:50%;
+  box-shadow:0 0 0 2px rgba(255,255,255,.35),0 2px 6px rgba(0,0,0,.35)}
+html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg:not(:first-child){display:none!important}
+@media (max-width:350px){
+  html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg.coin-svg{width:20px!important;height:20px!important}
 }
