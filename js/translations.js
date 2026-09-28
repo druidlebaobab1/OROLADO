@@ -9,7 +9,7 @@
     { code: 'ar', flag: '\uD83C\uDDF8\uD83C\uDDE6', name: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629' },
     { code: 'tr', flag: '\uD83C\uDDF9\uD83C\uDDF7', name: 'T\u00fcrk\u00e7e' },
     { code: 'vi', flag: '\uD83C\uDDFB\uD83C\uDDF3', name: 'Ti\u1ebfng Vi\u1ec7t' },
-    { code: 'id', flag: '\uD83C\uDDEE\uD83C\uDDE9', name: 'Bahasa Indonesia' },
+    { code: 'id', flag: '\uD83C\uDDEE\uD83C\uDDE9', name: 'Indonesia' },
     { code: 'ru', flag: '\uD83C\uDDF7\uD83C\uDDFA', name: '\u0420\u0443\u0441\u0441\u043a\u0438\u0439' },
     { code: 'de', flag: '\uD83C\uDDE9\uD83C\uDDEA', name: 'Deutsch' },
     { code: 'hi', flag: '\uD83C\uDDEE\uD83C\uDDF3', name: '\u0939\u093f\u0928\u094d\u0926\u0940' }

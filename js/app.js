@@ -263,7 +263,7 @@
     { code: 'ar', flag: '🇸🇦', name: 'العربية' },
     { code: 'tr', flag: '🇹🇷', name: 'Türkçe' },
     { code: 'vi', flag: '🇻🇳', name: 'Tiếng Việt' },
-    { code: 'id', flag: '🇮🇩', name: 'Bahasa Indonesia' },
+    { code: 'id', flag: '🇮🇩', name: 'Indonesia' },
     { code: 'ru', flag: '🇷🇺', name: 'Русский' },
     { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
     { code: 'hi', flag: '🇮🇳', name: 'हिन्दी' }
