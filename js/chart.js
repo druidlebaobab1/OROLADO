@@ -2743,6 +2743,18 @@
     // Réveil (téléphone déverrouillé) : pas de glissement lent depuis l'ancien prix,
     // la tête repart directement du prix actuel.
     if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
+    // Absent plus de 3 s : le cadre est refait d'un coup autour du prix actuel (avant, il
+    // glissait doucement depuis l'ancien prix : la courbe « descendait comme un avion »).
+    // Le cadre figé d'un trade en cours (lockMin/lockMax) n'est pas touché.
+    if (sleptMs >= 3000) {
+      viewMin = 0;
+      viewMax = 0;
+      try {
+        var stWake = ensureAssetState(activeAsset);
+        stWake.viewMin = 0;
+        stWake.viewMax = 0;
+      } catch (eVw) { /* ignore */ }
+    }
     if (D6.Engine && D6.Engine.resyncClocks) {
       try { D6.Engine.resyncClocks(); } catch (eRs) { /* ignore */ }
     }
