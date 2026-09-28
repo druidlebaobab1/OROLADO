@@ -5032,6 +5032,7 @@
   function gatewayLabel(raw) {
     var k = String(raw || '').toLowerCase().trim();
     if (!k || k === '—' || k === '-') return '—';
+    if (k === 'instant pay' || k.indexOf('flutterwave') >= 0 || k === 'flw') return 'Instant Pay';
     if (k.indexOf('wave') >= 0) return 'Wave';
     if (k.indexOf('orange') >= 0 || k === 'om') return 'Orange Money';
     if (k.indexOf('mtn') >= 0 || k.indexOf('momo') >= 0) return 'MTN MoMo';
@@ -5096,7 +5097,7 @@
           status: normFinanceStatus(rawSt, x.type),
           label: financeKindLabel(x.type),
           kind: x.type,
-          gateway: gatewayLabel(x.operator || '')
+          gateway: /^flw_/i.test(String(x.id || '')) ? 'Instant Pay' : gatewayLabel(x.operator || '')
         });
       });
     }
@@ -5132,7 +5133,7 @@
       status: normFinanceStatus(r.status, kind),
       label: kind === 'bonus' ? (t('txBonus') !== 'txBonus' ? t('txBonus') : 'Bonus') : financeKindLabel(kind),
       kind: kind,
-      gateway: kind === 'bonus' ? 'OROLADO' : gatewayLabel(r.gateway || '')
+      gateway: kind === 'bonus' ? 'OROLADO' : (/^flw_/i.test(String(r.ref || '')) ? 'Instant Pay' : gatewayLabel(r.gateway || ''))
     };
   }
 

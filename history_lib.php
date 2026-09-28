@@ -44,6 +44,18 @@ function orolado_history_wd_status(string $st): string {
 }
 
 /**
+ * Nom du moyen de paiement affiché dans l'historique. Les dépôts Flutterwave (référence « flw_… »)
+ * gardaient parfois l'ancien libellé « wave » (ancien prestataire) : ils s'affichent « Instant Pay ».
+ * Affichage seulement, rien ne change dans les paiements.
+ */
+function orolado_history_gateway(array $d): string {
+  $op = strtolower(trim((string) ($d['operator'] ?? $d['op'] ?? '')));
+  $ref = strtolower((string) ($d['reference'] ?? $d['id'] ?? $d['ref'] ?? ''));
+  if (str_starts_with($ref, 'flw_') || in_array($op, ['flutterwave', 'flw'], true)) return 'Instant Pay';
+  return (string) ($d['operator'] ?? $d['op'] ?? '');
+}
+
+/**
  * Historique financier d'un joueur, du plus récent au plus ancien.
  * $isAdmin : l'administrateur voit ses propres crédits comme des dépôts normaux.
  */
@@ -63,7 +75,7 @@ function orolado_finance_history(array $db, string $uid, bool $isAdmin, int $off
       'amount' => orolado_money($d['amount'] ?? 0),
       'kind' => $bonus ? 'bonus' : 'deposit',
       'status' => 'COMPLETED',
-      'gateway' => $bonus ? 'OROLADO' : (string) ($d['operator'] ?? $d['op'] ?? ''),
+      'gateway' => $bonus ? 'OROLADO' : orolado_history_gateway($d),
     ];
   };
 
