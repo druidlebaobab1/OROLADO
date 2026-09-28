@@ -786,6 +786,43 @@ function orolado_identity_block(array $db, string $email = '', string $phone = '
   return null;
 }
 
+/**
+ * Anciennes adresses e-mail (remplacées par un changement d'adresse) : réservées pour toujours.
+ * On ne peut plus s'inscrire, se connecter ni demander un code avec. Index « retired_emails »
+ * (adresse => id du compte), rempli une fois depuis l'historique des joueurs puis à chaque changement.
+ */
+function orolado_retired_emails_sync(array &$db): bool {
+  if (!empty($db['retired_emails_built']) && is_array($db['retired_emails'] ?? null)) return false;
+  $idx = is_array($db['retired_emails'] ?? null) ? $db['retired_emails'] : [];
+  foreach (orolado_map_array($db['users'] ?? []) as $id => $u) {
+    if (!is_array($u) || empty($u['emailHistory']) || !is_array($u['emailHistory'])) continue;
+    foreach ($u['emailHistory'] as $h) {
+      $from = orolado_norm_email((string) (is_array($h) ? ($h['from'] ?? '') : ''));
+      if ($from !== '' && !isset($idx[$from])) $idx[$from] = (string) ($u['id'] ?? $id);
+    }
+  }
+  $db['retired_emails'] = $idx;
+  $db['retired_emails_built'] = 1;
+  return true;
+}
+
+function orolado_retire_email(array &$db, string $email, string $uid): void {
+  orolado_retired_emails_sync($db);
+  $email = orolado_norm_email($email);
+  if ($email !== '') $db['retired_emails'][$email] = $uid;
+}
+
+/** Id du compte qui utilisait cette adresse avant de la changer, sinon ''. */
+function orolado_retired_email_owner(array &$db, string $email): string {
+  orolado_retired_emails_sync($db);
+  $email = orolado_norm_email($email);
+  if ($email === '' || !isset($db['retired_emails'][$email])) return '';
+  // Si l'adresse est de nouveau l'adresse actuelle d'un compte, elle n'est plus « ancienne ».
+  foreach (orolado_users_by_email($db, $email) as $u) {
+    if (is_array($u) && orolado_norm_email((string) ($u['email'] ?? '')) === $email) return '';
+  }
+  return (string) $db['retired_emails'][$email];
+}
 function orolado_block_message(string $kind): string {
   if ($kind === 'deleted') {
     return 'Ce compte a été fermé définitivement. Contactez le support Orolado si vous pensez qu’il s’agit d’une erreur.';

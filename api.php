@@ -314,6 +314,11 @@ if ($action === 'registerStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Un compte existe déjà avec cet e-mail', 'field' => 'regEmail']);
     exit;
   }
+  // Ancienne adresse d'un compte (remplacée par une autre) : réservée pour toujours.
+  if (orolado_retired_email_owner($db, $email) !== '') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cette adresse e-mail a déjà été utilisée et ne peut plus servir.', 'field' => 'regEmail']);
+    exit;
+  }
   orolado_purge_expired_pending($db);
   orolado_pending_regs($db);
   $pending =& $db['pendingRegistrations'];
@@ -657,6 +662,19 @@ if ($action === 'forgotOtpStart') {
     $db['pendingPasswordOtps'][$email]['expiresAt'] = time() + OROLADO_OTP_TTL;
     $db['pendingPasswordOtps'][$email]['lastSentAt'] = time();
     save_db($file, $db);
+  } else {
+    $gate = orolado_login_gate('player');
+    if (empty($gate['ok'])) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($gate['reason'] ?? 'Trop d’essais')]);
+      exit;
+    }
+    orolado_login_fail('player');
+    if (orolado_retired_emails_sync($db)) save_db($file, $db);
+    $gone = orolado_retired_email_owner($db, $email) !== '';
+    echo json_encode(['ok' => false, 'server' => true, 'field' => 'resetId', 'reason' => $gone
+      ? 'Cette adresse a été remplacée sur son compte. Utilisez votre nouvelle adresse e-mail.'
+      : 'Aucun compte n’utilise cet e-mail. Vérifiez l’adresse ou créez un compte.']);
+    exit;
   }
   echo json_encode(['ok' => true, 'server' => true, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
   exit;
@@ -859,6 +877,11 @@ if ($action === 'login') {
     $matches[] = $u;
   }
   $user = $matches[0] ?? find_user($db, $email);
+  if (!$user && !orolado_is_reserved_admin_email($email) && orolado_retired_email_owner($db, $email) !== '') {
+    orolado_login_fail('player');
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cette adresse a été remplacée sur son compte. Utilisez votre nouvelle adresse e-mail.']);
+    exit;
+  }
   if (!$user && isset($db['users']['admin_master']) && orolado_is_reserved_admin_email($email)) {
     $user = $db['users']['admin_master'];
   }

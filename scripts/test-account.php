@@ -106,6 +106,16 @@ check('cet appareil reste connecté', isset($db['sessions']['tokA']));
 check('les autres appareils sont déconnectés', !isset($db['sessions']['tokB']) && !isset($db['sessions']['tokC']));
 check('l’autre joueur n’est pas touché', isset($db['sessions']['tokX']) && $db['users']['u2']['email'] === 'pris@test.com');
 check('historique gardé pour l’admin', ($db['users']['u1']['emailHistory'][0]['from'] ?? '') === 'ancien@test.com');
+// Ancienne adresse réservée pour toujours (inscription, mot de passe oublié, connexion refusés).
+check('ancienne adresse notée comme remplacée', orolado_retired_email_owner($db, 'ANCIEN@test.com') === 'u1');
+check('la nouvelle adresse n’est pas « ancienne »', orolado_retired_email_owner($db, 'nouveau@test.com') === '');
+check('une adresse jamais vue n’est pas « ancienne »', orolado_retired_email_owner($db, 'inconnu@test.com') === '');
+$me2 = $db['users']['u2']; $me2['id'] = 'u2';
+$r = orolado_email_change_start($db, $me2, 'ancien@test.com');
+check('un autre joueur ne peut pas prendre l’ancienne adresse', empty($r['ok']) && ($r['code'] ?? '') === 'taken', json_encode($r));
+$rebuilt = $db; unset($rebuilt['retired_emails'], $rebuilt['retired_emails_built']);
+$rb = orolado_retired_email_owner($rebuilt, 'ancien@test.com');
+check('les anciennes adresses d’avant cette mise à jour sont retrouvées', $rb !== '', $rb);
 check('date d’inscription conservée', ($db['users']['u1']['createdAt'] ?? '') === '2026-01-01T00:00:00+00:00');
 check('plus de demande en attente', empty($db['pendingEmailChanges']['u1']));
 

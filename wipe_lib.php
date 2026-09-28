@@ -195,6 +195,7 @@ function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null)
     // compte banni puis supprimé reste bloqué (il ne peut pas se réinscrire avec le même e-mail).
     if ($full) {
       $db['blocked_identities'] = [];
+      $db['retired_emails'] = [];
       $db['admin_logs'] = [];
     }
     return ['ok' => true, 'n' => $n];

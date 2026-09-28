@@ -59,6 +59,8 @@ function orolado_email_change_start(array &$db, array $me, string $newEmail): ar
   }
   if ($new === $old) return ['ok' => false, 'code' => 'same', 'reason' => 'C’est déjà votre adresse actuelle'];
   if (orolado_identity_block($db, $new, '')) return ['ok' => false, 'code' => 'taken', 'reason' => 'Cette adresse ne peut pas être utilisée'];
+  $retiredBy = orolado_retired_email_owner($db, $new);
+  if ($retiredBy !== '' && $retiredBy !== $uid) return ['ok' => false, 'code' => 'taken', 'reason' => 'Cette adresse e-mail a déjà été utilisée et ne peut plus servir.'];
   $sb = orolado_balance_uuid($db, $uid);
   if (orolado_email_taken($db, $new, $uid, $sb)) return ['ok' => false, 'code' => 'taken', 'reason' => 'Cette adresse est déjà utilisée par un autre compte'];
   if (!orolado_rate_ok('email_change', $uid, 6, 3600)) return ['ok' => false, 'code' => 'rate', 'reason' => 'Trop de demandes, réessayez plus tard'];
@@ -195,6 +197,7 @@ function orolado_email_apply(array &$db, string $uid, string $newEmail, string $
     $u['updated_at'] = date('c');
     $db['users'][$id] = $u;
   }
+  orolado_retire_email($db, $old, $uid);
   unset($db['pendingPasswordOtps'][$old]);
   foreach ($same as $id) {
     if ((string) $id !== $uid) orolado_revoke_user_sessions($db, (string) $id, $keepToken);

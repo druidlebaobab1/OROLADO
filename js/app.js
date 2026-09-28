@@ -5406,7 +5406,8 @@
           startForgotCountdown(wait || 60);
           return;
         }
-        showFieldError('resetId', otpFailText());
+        // Adresse inconnue ou remplacée : le serveur le dit clairement (plus de faux « code envoyé »).
+        showFieldError('resetId', (res && res.reason && !/^(unable|invalid)/i.test(res.reason)) ? res.reason : otpFailText());
         return;
       }
       setForgotStep('otp');
