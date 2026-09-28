@@ -182,9 +182,9 @@ function orolado_trade_place(array $me, array $req): array {
   $entryCents = $st['c'];
   $arrivedMs = (int) floor((float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)) * 1000);
   $arrivedTick = orolado_feed_tick_at($arrivedMs);
-  // Au plus 2 s en arrière (8 ticks ; avant : 10 s). Plus loin, on prend le prix actuel :
-  // jamais un prix d'entrée trop ancien qu'un malin aurait pu voir avant de choisir son sens.
-  if ($arrivedTick < $entryTick && $arrivedTick >= $entryTick - 8) {
+  // Au plus 10 s en arrière (40 ticks) : l'entrée reste collée au clic même si le serveur
+  // est lent (2 s faisait sauter l'entrée à l'écran quand le serveur était chargé).
+  if ($arrivedTick < $entryTick && $arrivedTick >= $entryTick - 40) {
     $atArrival = orolado_feed_price_at($assetId, $arrivedTick);
     if ($atArrival !== null && $atArrival > 0) {
       $entryTick = $arrivedTick;
