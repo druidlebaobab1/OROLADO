@@ -6626,7 +6626,11 @@
         }
         var btn = e.target.closest('[data-adj-act], [data-reset="1"]');
         if (!btn || !btn.dataset.adj) return;
-        await runAdminAdjust(btn);
+        // Un seul envoi à la fois : un double toucher ne crédite plus deux fois.
+        if (runAdminAdjust.busy) return;
+        runAdminAdjust.busy = true;
+        btn.disabled = true;
+        try { await runAdminAdjust(btn); } finally { runAdminAdjust.busy = false; btn.disabled = false; }
       });
     }
     if ($('btnAdminMessages')) {

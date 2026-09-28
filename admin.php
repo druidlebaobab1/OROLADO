@@ -1576,6 +1576,20 @@ if ($isAjax) {
       $retry = admin_resolve_player_uuid((string) $targets[0], $found + $hint);
       if (admin_is_uuid($retry)) $targets = [$retry];
     }
+    // Anti-doublon : un même crédit/débit (même joueur, même montant, même motif) ne passe qu'une
+    // fois en 2 minutes, même si le bouton est touché 2 fois ou si 4 demandes arrivent ensemble.
+    // Création de fichier « x » = atomique : une seule demande gagne. (Avant : fenêtre à la minute
+    // pile, franchie à 20h39 → 20h40, et pas de blocage des demandes simultanées.)
+    $claimF = '';
+    if (function_exists('orolado_cash_ops_dir')) {
+      $claimF = orolado_cash_ops_dir() . DIRECTORY_SEPARATOR . hash('sha256', 'admclaim:' . $targets[0] . ':' . sprintf('%.2f', $delta) . ':' . strtolower($motif)) . '.lock';
+      if (is_file($claimF) && (time() - (int) @filemtime($claimF)) >= 120) @unlink($claimF);
+      $h = @fopen($claimF, 'x');
+      if ($h === false) {
+        admin_json(['ok' => false, 'reason' => 'Ce même montant vient déjà d’être envoyé à ce joueur (il y a moins de 2 minutes). Vérifiez son solde avant de recommencer.']);
+      }
+      fclose($h);
+    }
     $ok = false;
     $lastReal = 0.0;
     $reason = 'Échec';
@@ -1611,7 +1625,10 @@ if ($isAjax) {
         $reason = (string) ($res['reason'] ?? $reason);
       }
     }
-    if (!$ok) admin_json(['ok' => false, 'reason' => $reason]);
+    if (!$ok) {
+      if ($claimF !== '') @unlink($claimF);
+      admin_json(['ok' => false, 'reason' => $reason]);
+    }
     admin_persist_admin_log(
       (string) ($me['email'] ?? ''),
       (string) ($found['publicId'] ?? $uid),
@@ -2272,7 +2289,19 @@ async function openUser(uid) {
     const amt = Number(document.getElementById('adjAmt').value);
     if (!(amt > 0)) { alert('Montant obligatoire'); return; }
     if (sign < 0 && !confirm('Débiter '+amt+' $ de ce compte réel ?')) return;
-    const r = await ajax({action:'adjust', userId:u.id, email:u.email||'', publicId:u.publicId||'', delta: sign * Math.abs(amt), motif});
+    // Boutons bloqués pendant l'envoi : un double toucher ne crédite plus deux fois.
+    if (go.busy) return;
+    go.busy = true;
+    [btnCredit, btnDebit].forEach(b => { if (b) { b.disabled = true; b.style.opacity = '.5'; } });
+    let r;
+    try {
+      r = await ajax({action:'adjust', userId:u.id, email:u.email||'', publicId:u.publicId||'', delta: sign * Math.abs(amt), motif});
+    } catch (e) {
+      r = {ok:false, reason:'Réseau lent : vérifiez le solde du joueur avant de recommencer.'};
+    } finally {
+      go.busy = false;
+      [btnCredit, btnDebit].forEach(b => { if (b) { b.disabled = false; b.style.opacity = ''; } });
+    }
     if (!r.ok) alert(r.reason||'Échec');
     else { bustList(); openUser(u.id); loadBadges(); }
   };

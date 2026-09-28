@@ -1320,6 +1320,17 @@ if ($action === 'adjust') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Montant invalide']);
     exit;
   }
+  // Anti-doublon (comme admin.php) : même joueur + même montant + même motif = une fois en 2 min.
+  if (function_exists('orolado_cash_ops_dir')) {
+    $claimF = orolado_cash_ops_dir() . DIRECTORY_SEPARATOR . hash('sha256', 'apiadjclaim:' . $uid . ':' . $mode . ':' . sprintf('%.2f', $delta) . ':' . strtolower($motif)) . '.lock';
+    if (is_file($claimF) && (time() - (int) @filemtime($claimF)) >= 120) @unlink($claimF);
+    $h = @fopen($claimF, 'x');
+    if ($h === false) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Ce même montant vient déjà d’être envoyé (il y a moins de 2 minutes). Vérifiez le solde avant de recommencer.']);
+      exit;
+    }
+    fclose($h);
+  }
   // Résoudre publicId / e-mail → UUID coffre (même logique que admin.php).
   if ($mode === 'real' && function_exists('orolado_balance_uuid')) {
     $resolved = orolado_balance_uuid($db, $uid);
