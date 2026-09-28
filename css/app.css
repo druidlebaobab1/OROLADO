@@ -4065,3 +4065,7 @@ html[dir=rtl] #withdrawModal .wd-modal-head .modal-title,
 html[dir=rtl] #depositModal .modal-title{padding-right:0!important;padding-left:34px!important}
 /* Arabe / hindi : la police « machine à écrire » sépare les lettres ; on garde la police normale. */
 html[dir=rtl] #profWalletAddr,html[lang=hi] #profWalletAddr{font-family:inherit!important;letter-spacing:0!important}
+/* Arabe seulement (connecté, mobile) : écarts inversés, sinon Recharger touche le logo OROLADO. */
+@media (max-width:859px){
+  html[dir=rtl] body #screenTrade:not(.is-guest) .topbar-cta{margin:0 4px 0 2px!important}
+}
