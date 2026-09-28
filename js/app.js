@@ -1096,7 +1096,8 @@
       if (!fb || !lbl || window.innerWidth >= 860) return;
       var r = lbl.getBoundingClientRect();
       if (!(r.height > 0)) return;
-      var h = Math.round(window.innerHeight - (r.top + r.height / 2));
+      // Les flammes montent un peu au-dessus du titre PAYOUT (elles « inondent » les choix de gain).
+      var h = Math.round(window.innerHeight - (r.top - 10));
       if (h > 60 && h < 420) fb.style.height = h + 'px';
     } catch (eFire) { /* ignore */ }
   }
