@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2090") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2092") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2090") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2092") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -3999,4 +3999,14 @@ html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg{
 html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg:not(:first-child){display:none!important}
 @media (max-width:350px){
   html body #screenTrade:not(.is-guest) .topbar-cta .crypto-mini-row .coin-svg.coin-svg{width:20px!important;height:20px!important}
+}
+/* Langue v2 : drapeau + petite flèche dorée CÔTE À CÔTE (plus de pastille qui cache le drapeau). */
+html body .lang-dd-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:2px!important;
+  width:auto!important;min-width:34px!important;padding:0 5px!important}
+html body .lang-dd-btn .lang-chev{position:static!important;display:inline-block!important;width:auto!important;height:auto!important;
+  background:none!important;box-shadow:none!important;color:#F5C518!important;font-size:9px!important;line-height:1!important;
+  font-weight:900!important;margin:0!important;transform:translateY(1px)}
+/* Recharger : remplit tout l'espace entre OROLADO et « Aide », même écart des deux côtés (bien droit). */
+@media (max-width:859px){
+  html body #screenTrade:not(.is-guest) .topbar-cta{max-width:none!important;margin:0 2px 0 8px!important}
 }
