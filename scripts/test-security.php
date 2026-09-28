@@ -59,6 +59,12 @@ check('nombre de trades inchangé (1)', (int) ($u['realTrades'] ?? 0) === 1);
 check('total déposé inchangé (50 $)', (float) ($u['realDepositTotal'] ?? 0) === 50.0);
 check('lien de caisse inchangé (pas celui de la victime)', ($u['sbId'] ?? '') !== $victim);
 check('rôle inchangé (pas admin)', ($u['role'] ?? '') === 'user');
+$fakeWd = ['id' => 'wd_faux', 'type' => 'withdraw', 'amount' => 5000, 'status' => 'pending', 'mode' => 'real', 'phone' => 'TPirateAddr', 'operator' => 'usdt'];
+$fakeCr = ['id' => 'cr_faux', 'type' => 'credit', 'amount' => 99999, 'mode' => 'real'];
+$r = $call(['action' => 'upsert', 'token' => 'tokMe', 'user' => ['id' => 'u_me', 'email' => 'moi@test.com', 'displayName' => 'Nouveau nom', 'transactions' => [$fakeWd, $fakeCr]]]);
+$u = load_db()['users']['u_me'];
+$ids = array_column(is_array($u['transactions'] ?? null) ? $u['transactions'] : [], 'id');
+check('fausse demande de retrait / faux crédit refusés (liste des opérations = serveur seul)', !in_array('wd_faux', $ids, true) && !in_array('cr_faux', $ids, true), implode(',', $ids));
 
 echo "3) Limites anti-robots\n";
 $codes = [];

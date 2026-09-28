@@ -89,7 +89,7 @@ function ensure_admin_user(array &$db, string $email, string $hash): array {
 }
 
 function make_token(string $userId, string $secret): string {
-  return hash('sha256', $userId . '|' . $secret . '|' . bin2hex(random_bytes(8)));
+  return hash('sha256', $userId . '|' . $secret . '|' . bin2hex(random_bytes(16)));
 }
 
 function find_user(array $db, string $email): ?array {

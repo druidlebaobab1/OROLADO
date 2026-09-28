@@ -92,6 +92,22 @@
   }
 
   /* —— Règles publiques : ligne objectif et verdict (copie de feed_lib.php) —— */
+  // [prix de départ, sigma] de chaque actif (copie de orolado_feed_assets) et bande de l'élastique.
+  var FAIR_BASE = {
+    v100: [13000.42, 0.00020], stable: [10000.00, 0.000045], apex500: [5480.25, 0.00024],
+    horizon50: [10120.40, 0.000035], goldtrend: [7340.80, 0.00015], v75: [8700.18, 0.00016],
+    nexusprime: [8120.60, 0.00018], titanpulse: [9560.40, 0.00028], boomspike: [3890.20, 0.00012],
+    crash300: [4210.55, 0.00022]
+  };
+  var FAIR_BAND = 0.35;
+  function fairDrift(assetId, duration, entryCents) {
+    var a = FAIR_BASE[assetId];
+    if (!a || !(entryCents > 0)) return 0;
+    var base = a[0] * 100;
+    var pull = (a[1] * a[1]) / (2 * FAIR_BAND * FAIR_BAND);
+    var ticks = Math.floor(duration * 1000 / 250);
+    return -(1 - Math.pow(1 - pull, ticks)) * Math.log(entryCents / base);
+  }
   function barrierCents(assetId, duration, side, mult, entryCents) {
     var table = D6.FAIR_TABLE || {};
     var row = table[assetId] && table[assetId][String(duration)];
@@ -102,7 +118,11 @@
     else if (m === 10) idx = 2;
     else if (m === 50) idx = 3;
     if (idx > 0 && side === 'put') idx += 3;
-    var x = entryCents * (1 + Number(row[idx]));
+    var rel = Number(row[idx]);
+    // Gros payouts : la ligne suit le petit retour attendu vers le prix de départ (copie de
+    // orolado_fair_drift, feed_lib.php). Le 88 % reste au prix d'entrée.
+    if (idx > 0) rel = (1 + rel) * Math.exp(fairDrift(assetId, duration, entryCents)) - 1;
+    var x = entryCents * (1 + rel);
     // Arrondi « au plus loin de zéro », comme PHP round().
     return x >= 0 ? Math.floor(x + 0.5) : -Math.floor(-x + 0.5);
   }

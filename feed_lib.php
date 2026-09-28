@@ -263,7 +263,22 @@ function orolado_fair_barrier(string $asset, int $duration, string $side, float 
   else if ($mult === 50.0) $idx = 3;
   if ($idx > 0 && $side === 'put') $idx += 3;
   $rel = (float) $row[$idx];
+  // Gros payouts (×5, ×10, ×50) : la ligne suit aussi le petit retour attendu vers le prix de
+  // départ (l'élastique). Sans ça, quand un prix est très loin de sa base (ex. moitié), jouer
+  // « vers la base » en ×50 sur 10 min rapportait ~108 % : une faille rare mais réelle.
+  // Au prix de base, rien ne change. Le 88 % garde sa ligne au prix d'entrée.
+  if ($idx > 0) $rel = (1 + $rel) * exp(orolado_fair_drift($asset, $duration, $entryCents)) - 1;
   return (int) round($entryCents * (1 + $rel), 0, PHP_ROUND_HALF_UP);
+}
+
+/** Mouvement relatif (log) attendu à cause de l'élastique pendant la durée du trade. */
+function orolado_fair_drift(string $asset, int $duration, int $entryCents): float {
+  $a = orolado_feed_assets()[$asset] ?? null;
+  if (!is_array($a) || $entryCents <= 0) return 0.0;
+  $base = (float) $a['base'] * 100.0;
+  if ($base <= 0) return 0.0;
+  $ticks = intdiv($duration * 1000, OROLADO_TICK_MS);
+  return -(1.0 - pow(1.0 - orolado_feed_pull($a), $ticks)) * log($entryCents / $base);
 }
 
 /** 'won' | 'lost' | 'void' */
