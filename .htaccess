@@ -33,7 +33,7 @@ Options -Indexes
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType application/javascript "access plus 0 seconds"
   ExpiresByType image/svg+xml "access plus 30 days"
 </IfModule>
 
@@ -46,14 +46,8 @@ Options -Indexes
     Header set Pragma "no-cache"
   </FilesMatch>
   <FilesMatch "\.(js)$">
-    # Code du site : chaque fichier est appelé avec ?v=NNNN (changé à chaque mise à jour),
-    # on peut donc le garder 7 jours (ouverture bien plus rapide). sw.js : voir plus bas.
-    Header set Cache-Control "public, max-age=604800"
-  </FilesMatch>
-  <Files "sw.js">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
-    Header unset Expires
-  </Files>
+  </FilesMatch>
 </IfModule>
 
 <Files ".env">
@@ -72,7 +66,7 @@ Options -Indexes
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType application/javascript "access plus 0 seconds"
   ExpiresByType image/svg+xml "access plus 30 days"
 </IfModule>
 
@@ -85,14 +79,8 @@ Options -Indexes
     Header set Pragma "no-cache"
   </FilesMatch>
   <FilesMatch "\.(js)$">
-    # Code du site : chaque fichier est appelé avec ?v=NNNN (changé à chaque mise à jour),
-    # on peut donc le garder 7 jours (ouverture bien plus rapide). sw.js : voir plus bas.
-    Header set Cache-Control "public, max-age=604800"
-  </FilesMatch>
-  <Files "sw.js">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
-    Header unset Expires
-  </Files>
+  </FilesMatch>
 </IfModule>
 
 # Fichiers internes jamais servis sur internet : notes, scripts, structure de la base,

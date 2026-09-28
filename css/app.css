@@ -4069,26 +4069,3 @@ html[dir=rtl] #profWalletAddr,html[lang=hi] #profWalletAddr{font-family:inherit!
 @media (max-width:859px){
   html[dir=rtl] body #screenTrade:not(.is-guest) .topbar-cta{margin:0 4px 0 2px!important}
 }
-
-/* === iPhone : bande noire à la place de la barre du haut. Safari n'arrive plus à dessiner
-   l'effet « verre flouté » quand beaucoup d'animations tournent (feu v8) et le remplace par du
-   noir. Sur téléphone : fond sombre plein (même aspect) et animations du feu allégées
-   (opacité / translation au lieu de changer la taille ou la position à chaque image). === */
-@media (max-width:859px){
-  html body #screenTrade .topbar,
-  html body #screenTrade .glass,
-  html body #screenTrade .balance-card{
-    -webkit-backdrop-filter:none!important;
-    backdrop-filter:none!important}
-  html body #screenTrade .topbar{background-color:rgba(12,17,30,.97)!important}
-  html body #screenTrade .balance-card{background-color:rgba(18,24,38,.96)!important}
-  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed{
-    animation:oroBreathLite 3s ease-in-out infinite alternate!important;
-    transform:none!important}
-  @keyframes oroBreathLite{0%{opacity:.86}100%{opacity:1}}
-  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .fire-rim::after{
-    left:-25%!important;
-    animation:oroRimRunLite 4.8s ease-in-out infinite!important;
-    will-change:transform}
-  @keyframes oroRimRunLite{0%{transform:translateX(0)}60%{transform:translateX(582%)}100%{transform:translateX(582%)}}
-}
