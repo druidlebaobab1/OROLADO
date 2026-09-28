@@ -1048,78 +1048,105 @@
     } catch (e) { /* ignore */ }
   }
 
+  // —— Sons et vibrations « pro » : doux, courts, jamais agressifs. ——
+  // Tout passe par un compresseur léger pour un volume régulier sur tous les téléphones.
+  var sfxBus = null;
+  function sfxOut(ctx) {
+    if (sfxBus && sfxBus.context === ctx) return sfxBus;
+    try {
+      var comp = ctx.createDynamicsCompressor();
+      comp.threshold.setValueAtTime(-18, ctx.currentTime);
+      comp.ratio.setValueAtTime(4, ctx.currentTime);
+      var master = ctx.createGain();
+      master.gain.setValueAtTime(0.9, ctx.currentTime);
+      master.connect(comp);
+      comp.connect(ctx.destination);
+      sfxBus = master;
+    } catch (eBus) { sfxBus = ctx.destination; }
+    return sfxBus;
+  }
+  // Une note douce : attaque rapide, extinction naturelle.
+  function sfxTone(ctx, freq, start, dur, vol, type, endFreq) {
+    var now = ctx.currentTime + start;
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+    if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, now + dur);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(vol, now + Math.min(0.012, dur / 4));
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.connect(gain);
+    gain.connect(sfxOut(ctx));
+    osc.start(now);
+    osc.stop(now + dur + 0.03);
+  }
+  // Vibration discrète (Android ; l'iPhone ne permet pas la vibration depuis un site web).
+  function haptic(pattern) {
+    if (!soundOn()) return;
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (eVib) { /* ignore */ }
+  }
+
   var lastTapAt = 0;
+  // Petit « clic » feutré pour les boutons.
   function playTap() {
     if (!soundOn()) return;
     var tnow = Date.now();
-    if (tnow - lastTapAt < 300) return;
+    if (tnow - lastTapAt < 120) return;
     lastTapAt = tnow;
+    haptic(8);
     var ctx = getAudio();
     if (!ctx) return;
     try {
-      var now = ctx.currentTime;
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(210, now);
-      osc.frequency.exponentialRampToValueAtTime(165, now + 0.04);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.028, now + 0.004);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.05);
+      sfxTone(ctx, 1320, 0, 0.035, 0.05, 'sine', 980);
     } catch (e) { /* ignore */ }
   }
 
+  // Trade lancé : double note montante, courte et nette (confirmation).
+  function playTradeOpen() {
+    if (!soundOn()) return;
+    haptic(18);
+    var ctx = getAudio();
+    if (!ctx) return;
+    try {
+      sfxTone(ctx, 740, 0, 0.09, 0.07, 'sine');
+      sfxTone(ctx, 988, 0.06, 0.12, 0.06, 'sine');
+    } catch (e) { /* ignore */ }
+  }
+
+  // Trade gagné : petit carillon chaleureux (accord majeur arpégé).
   function playWinChime() {
     if (!soundOn()) return;
+    haptic([22, 50, 22]);
     var ctx = getAudio();
     if (!ctx) return;
     try {
-      var now = ctx.currentTime;
-      function tone(freq, start, dur, vol) {
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + start);
-        gain.gain.setValueAtTime(0.0001, now + start);
-        gain.gain.linearRampToValueAtTime(vol, now + start + 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + start);
-        osc.stop(now + start + dur + 0.04);
-      }
-      tone(392, 0, 0.55, 0.028);
-      tone(493.88, 0.05, 0.62, 0.024);
-      tone(587.33, 0.1, 0.7, 0.02);
+      sfxTone(ctx, 1046.5, 0, 0.5, 0.075, 'sine');
+      sfxTone(ctx, 1318.5, 0.07, 0.5, 0.06, 'sine');
+      sfxTone(ctx, 1568, 0.14, 0.65, 0.055, 'sine');
+      sfxTone(ctx, 2093, 0.14, 0.4, 0.012, 'triangle');
     } catch (e) { /* ignore */ }
   }
 
+  // Trade perdu : note grave et douce, qui descend un peu (pas de son agressif).
   function playLossThud() {
     if (!soundOn()) return;
+    haptic(30);
     var ctx = getAudio();
     if (!ctx) return;
     try {
-      var now = ctx.currentTime;
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.exponentialRampToValueAtTime(160, now + 0.14);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.18);
+      sfxTone(ctx, 294, 0, 0.26, 0.07, 'sine', 220);
+      sfxTone(ctx, 147, 0, 0.3, 0.05, 'sine', 120);
     } catch (e) { /* ignore */ }
   }
 
+  // Égalité : une seule note neutre.
   function playNeutralTick() {
-    playLossThud();
+    if (!soundOn()) return;
+    haptic(12);
+    var ctx = getAudio();
+    if (!ctx) return;
+    try { sfxTone(ctx, 660, 0, 0.22, 0.05, 'sine'); } catch (e) { /* ignore */ }
   }
 
   function burstSparkle() {
@@ -2941,7 +2968,7 @@
         playWinChime();
         burstSparkle();
       } else {
-        playNeutralTick();
+        playLossThud();
       }
     }
     var uSettled = user();
@@ -3025,7 +3052,7 @@
     lastExecSide = next;
     if (tradeQ.length >= (TRADE_Q_MAX || 9999)) return;
     tradeQ.push(next);
-    if (!IS_ANDROID || tradeQ.length === 1) playTap();
+    if (!IS_ANDROID || tradeQ.length === 1) playTradeOpen();
     pumpTradeQ();
   }
 

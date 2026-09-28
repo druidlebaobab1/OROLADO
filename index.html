@@ -20,10 +20,10 @@
   <meta name="twitter:title" content="Orolado | Crypto &amp; Indices Trading 24/7 in USD">
   <meta name="twitter:description" content="Trade Bitcoin, crypto and live indices 24/7 in US dollars. Free demo, account in seconds, fast crypto deposits and withdrawals. Fair, transparent, always open.">
   <title>Orolado | Crypto &amp; Indices Trading 24/7 in USD</title>
-  <link rel="manifest" href="manifest.json?v=2077">
-  <link rel="icon" href="icons/icon.svg?v=2077" type="image/svg+xml" sizes="any">
-  <link rel="icon" href="icons/icon-32.png?v=2077" type="image/png" sizes="32x32">
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=2077">
+  <link rel="manifest" href="manifest.json?v=2078">
+  <link rel="icon" href="icons/icon.svg?v=2078" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="icons/icon-32.png?v=2078" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=2078">
   <script>
   (function () {
     try {
@@ -140,9 +140,9 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=2077">
-    <link rel="stylesheet" href="css/auth.css?v=2077">
-    <link rel="stylesheet" href="css/tv.css?v=2077">
+    <link rel="stylesheet" href="css/app.css?v=2078">
+    <link rel="stylesheet" href="css/auth.css?v=2078">
+    <link rel="stylesheet" href="css/tv.css?v=2078">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -247,7 +247,7 @@
     <div class="auth-ambient"></div>
     <div class="auth-wrap">
       <div class="brand-lockup">
-        <img class="logo-mark" src="icons/icon.svg?v=2077" alt="OROLADO">
+        <img class="logo-mark" src="icons/icon.svg?v=2078" alt="OROLADO">
         <div class="brand-xl">ORO<span>LADO</span><em>.COM</em></div>
       </div>
       <p class="brand-sub" data-i18n="tagline">Trading</p>
@@ -371,11 +371,44 @@
   </section>
 
   <section id="screenTrade" class="screen">
+    <!-- Feu du bas : vraies flammes qui dansent (animation CSS légère, téléphone uniquement). -->
+    <div class="fire-bed" id="fireBed" aria-hidden="true">
+      <svg viewBox="0 0 400 120" preserveAspectRatio="none" focusable="false">
+        <defs>
+          <linearGradient id="flameOuter" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#ff3d00" stop-opacity=".95"/>
+            <stop offset=".45" stop-color="#ff7a00" stop-opacity=".85"/>
+            <stop offset=".8" stop-color="#ffb300" stop-opacity=".45"/>
+            <stop offset="1" stop-color="#ffd54f" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="flameInner" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#fff8e1" stop-opacity=".95"/>
+            <stop offset=".35" stop-color="#ffe082" stop-opacity=".9"/>
+            <stop offset=".75" stop-color="#ffb300" stop-opacity=".35"/>
+            <stop offset="1" stop-color="#ffb300" stop-opacity="0"/>
+          </linearGradient>
+          <symbol id="flameTongue" viewBox="0 0 60 120">
+            <path fill="url(#flameOuter)" d="M30 120C10 120 4 100 10 80C15 64 12 50 19 32C22 48 30 52 29 34C38 54 52 62 50 86C55 104 48 120 30 120Z"/>
+            <path fill="url(#flameInner)" d="M30 120C19 120 15 108 19 96C22 86 21 78 25 68C27 78 32 80 31 70C37 82 44 88 42 100C44 112 39 120 30 120Z"/>
+          </symbol>
+        </defs>
+        <g class="fl f1"><use href="#flameTongue" x="-14" y="18" width="62" height="102"/></g>
+        <g class="fl f2"><use href="#flameTongue" x="26" y="0" width="70" height="120"/></g>
+        <g class="fl f3"><use href="#flameTongue" x="72" y="24" width="56" height="96"/></g>
+        <g class="fl f4"><use href="#flameTongue" x="110" y="6" width="68" height="114"/></g>
+        <g class="fl f5"><use href="#flameTongue" x="156" y="28" width="54" height="92"/></g>
+        <g class="fl f6"><use href="#flameTongue" x="192" y="2" width="72" height="118"/></g>
+        <g class="fl f7"><use href="#flameTongue" x="242" y="22" width="58" height="98"/></g>
+        <g class="fl f8"><use href="#flameTongue" x="280" y="4" width="68" height="116"/></g>
+        <g class="fl f9"><use href="#flameTongue" x="326" y="26" width="56" height="94"/></g>
+        <g class="fl f10"><use href="#flameTongue" x="360" y="10" width="64" height="110"/></g>
+      </svg>
+    </div>
     <div class="trade-shell">
       <header class="topbar">
         <div class="topbar-row">
           <div class="brand-lockup mini" id="brandLockup">
-            <img class="logo-mark sm" src="icons/icon.svg?v=2077" alt="">
+            <img class="logo-mark sm" src="icons/icon.svg?v=2078" alt="">
             <div class="brand">ORO<span>LADO</span></div>
           </div>
           <div class="auth-quick hidden" id="authQuick">
@@ -1266,17 +1299,17 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=2077"></script>
-  <script src="js/translations.js?v=2077"></script>
-  <script src="js/i18n.js?v=2077"></script>
-  <script src="js/store.js?v=2077"></script>
-  <script src="js/api.js?v=2077"></script>
+  <script src="js/config.js?v=2078"></script>
+  <script src="js/translations.js?v=2078"></script>
+  <script src="js/i18n.js?v=2078"></script>
+  <script src="js/store.js?v=2078"></script>
+  <script src="js/api.js?v=2078"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=2077"></script>
-  <script src="js/auth.js?v=2077"></script>
-  <script src="js/fair_table.js?v=2077"></script>
-  <script src="js/engine.js?v=2077"></script>
-  <script src="js/chart.js?v=2077"></script>
+  <script src="js/supabase.js?v=2078"></script>
+  <script src="js/auth.js?v=2078"></script>
+  <script src="js/fair_table.js?v=2078"></script>
+  <script src="js/engine.js?v=2078"></script>
+  <script src="js/chart.js?v=2078"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <script>
   (function () {
@@ -1327,6 +1360,6 @@
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/app.js?v=2077"></script>
+  <script src="js/app.js?v=2078"></script>
 </body>
 </html>
