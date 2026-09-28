@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2087") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2088") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2087") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2088") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -3925,4 +3925,41 @@ html body #chart.chart-card{background:#101729!important}
       linear-gradient(180deg,rgba(255,120,10,.15) 0%,rgba(255,120,10,.5) 35%,rgba(255,106,0,.88) 100%)!important}
   html:not(.is-tv) body #screenTrade .pad::before{
     background:linear-gradient(180deg,rgba(255,150,40,.2) 0%,rgba(255,130,20,.6) 40%,rgba(255,106,0,.95) 100%)!important}
+}
+/* === Feu v7 : braises dorées qui montent et scintillent + reflet doré qui balaie le feu. === */
+@media (max-width:859px){
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .spark{display:block!important;
+    width:2.5px;height:2.5px;bottom:8%;background:#FFE3A1;
+    box-shadow:0 0 5px 1.5px rgba(255,190,80,.95),0 0 12px 3px rgba(255,140,30,.45);
+    animation:oroEmber 3.2s ease-out infinite}
+  .fire-bed .s1{left:6%;animation-delay:-.3s!important}
+  .fire-bed .s2{left:15%;animation-delay:-2.2s!important;animation-duration:3.8s!important}
+  .fire-bed .s3{left:24%;animation-delay:-1.1s!important}
+  .fire-bed .s4{left:33%;animation-delay:-2.9s!important;animation-duration:3.5s!important}
+  .fire-bed .s5{left:42%;animation-delay:-.7s!important;animation-duration:4.1s!important}
+  .fire-bed .s6{left:51%;animation-delay:-1.8s!important}
+  .fire-bed .s7{left:60%;animation-delay:-2.6s!important;animation-duration:3.6s!important}
+  .fire-bed .s8{left:69%;animation-delay:-.1s!important}
+  .fire-bed .s9{left:77%;animation-delay:-1.4s!important;animation-duration:3.9s!important}
+  .fire-bed .s10{left:85%;animation-delay:-2.4s!important}
+  .fire-bed .s11{left:92%;animation-delay:-.9s!important;animation-duration:3.4s!important}
+  .fire-bed .s12{left:97%;animation-delay:-3s!important}
+  @keyframes oroEmber{
+    0%{transform:translate(0,0) scale(1);opacity:0}
+    12%{opacity:1}
+    45%{transform:translate(5px,-45%) scale(.9);opacity:.95}
+    70%{opacity:.5}
+    100%{transform:translate(-6px,-95%) scale(.4);opacity:0}
+  }
+  /* Reflet doré lent qui traverse le feu (effet « or » d'OROLADO). */
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .fire-shine{
+    position:absolute;top:0;bottom:0;left:-40%;width:40%;pointer-events:none;
+    background:linear-gradient(100deg,transparent 0%,rgba(255,236,170,0) 30%,rgba(255,236,170,.38) 50%,rgba(255,236,170,0) 70%,transparent 100%);
+    -webkit-mask-image:linear-gradient(to top,#000 0%,#000 60%,transparent 100%);
+    mask-image:linear-gradient(to top,#000 0%,#000 60%,transparent 100%);
+    animation:oroShine 6.5s ease-in-out infinite}
+  @keyframes oroShine{0%{left:-40%}55%{left:110%}100%{left:110%}}
+}
+@media (max-width:859px) and (prefers-reduced-motion:reduce){
+  .fire-bed .spark,.fire-bed .fire-shine{animation:none!important;display:none!important}
 }
