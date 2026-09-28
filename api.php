@@ -636,6 +636,12 @@ if ($action === 'forgotOtpStart') {
     ]);
     exit;
   }
+  // Compte suspendu ou supprimé : message clair, aucun code envoyé.
+  $blk = orolado_identity_block($db, $email);
+  if ($blk) {
+    echo json_encode(orolado_block_payload((string) ($blk['kind'] ?? 'suspended')));
+    exit;
+  }
   $found = find_user($db, $email);
   if ($found) {
     $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);

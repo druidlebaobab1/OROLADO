@@ -120,5 +120,31 @@ check('base : seuls les identifiants du compte coché sont visés', $del !== [] 
 $r = orolado_wipe_run(true, 'SUPPRIMER', ['admin@orolado.com']);
 check('cocher l’admin ne le supprime jamais', empty($r['ok']) && isset(load_db()['users']['admin_master']), (string) ($r['reason'] ?? ''));
 
+echo "5) Supprimer un joueur NON banni : son e-mail est bloqué pour toujours\n";
+$r = orolado_wipe_run(true, 'SUPPRIMER', ['autre@test.com', 'u_autre']);
+$db = load_db();
+check('suppression faite', !empty($r['ok']) && !isset($db['users']['u_autre']), json_encode($r));
+$blk = orolado_identity_block($db, 'Autre@Test.com');
+check('son e-mail ne peut plus servir (inscription / connexion / mot de passe oublié)', is_array($blk) && ($blk['kind'] ?? '') === 'deleted', json_encode($blk));
+check('le vrai joueur gmail n’est pas bloqué', orolado_identity_block($db, 'vraijoueur@gmail.com') === null);
+
+echo "6) Suspendre un joueur qui a 2 fiches (fiche courte + fiche de la base)\n";
+$sus = $U(7);
+$db = load_db();
+$db['users']['u_sus'] = ['id' => 'u_sus', 'email' => 'fraudeur@test.com', 'sbId' => $sus];
+$db['users'][$sus] = ['id' => $sus, 'email' => 'fraudeur@test.com'];
+$db['sessions']['tokCourt'] = ['userId' => 'u_sus', 'createdAt' => date('c'), 'lastSeen' => time()];
+$db['sessions']['tokBase'] = ['userId' => $sus, 'createdAt' => date('c'), 'lastSeen' => time()];
+save_db(orolado_data_file(), $db);
+$db = load_db();
+orolado_force_suspend($db, $sus, 'suspended', 'fraudeur@test.com');
+save_db(orolado_data_file(), $db);
+$db = load_db();
+check('les DEUX fiches sont suspendues', orolado_user_block_kind($db, 'u_sus') === 'suspended' && orolado_user_block_kind($db, $sus) === 'suspended');
+check('ses connexions sur les deux fiches sont coupées', !isset($db['sessions']['tokCourt']) && !isset($db['sessions']['tokBase']));
+check('il ne peut plus jouer avec l’ancienne connexion', orolado_session_user($db, 'tokCourt') === null);
+check('son e-mail est bloqué (pas de nouveau compte)', is_array(orolado_identity_block($db, 'fraudeur@test.com')));
+check('l’admin n’est jamais touché', orolado_user_block_kind($db, 'admin_master') === '');
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

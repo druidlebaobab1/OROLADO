@@ -197,6 +197,15 @@ function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null)
       $db['blocked_identities'] = [];
       $db['retired_emails'] = [];
       $db['admin_logs'] = [];
+    } else {
+      // Compte supprimé un par un (bouton « Supprimer ce compte » ou comptes cochés) : son e-mail
+      // va sur la liste noire. Il ne peut plus se réinscrire ni se connecter avec (« compte supprimé »).
+      if (!isset($db['blocked_identities']) || !is_array($db['blocked_identities'])) $db['blocked_identities'] = [];
+      foreach (array_keys($delEmails) as $em) {
+        $em = strtolower(trim((string) $em));
+        if ($em === '' || !filter_var($em, FILTER_VALIDATE_EMAIL)) continue;
+        $db['blocked_identities']['email:' . $em] = ['uid' => '', 'kind' => 'deleted', 'email' => $em, 'phone' => '', 'at' => date('c')];
+      }
     }
     return ['ok' => true, 'n' => $n];
   });

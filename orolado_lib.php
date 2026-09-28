@@ -904,35 +904,69 @@ function supabase_admin_delete_auth(string $userId): void {
   supabase_http(rtrim(supabase_project_url(), '/') . '/auth/v1/admin/users/' . rawurlencode($userId), $hdrs, null, 'DELETE');
 }
 
-function orolado_force_suspend(array &$db, string $uid, string $kind = 'suspended'): void {
+/**
+ * Tous les ids d'un même joueur : fiche courte (u…), fiche de la base (UUID), fiches au même
+ * e-mail. Suspendre / supprimer doit toucher TOUTES ces fiches : avant, seule celle ouverte dans
+ * l'admin était bloquée et le joueur, connecté par l'autre, continuait à jouer.
+ */
+function orolado_player_all_ids(array $db, string $uid, string $email = ''): array {
+  $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
+  if (!in_array($uid, $ids, true)) array_unshift($ids, $uid);
+  foreach ($ids as $id) {
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) $id)) {
+      foreach (array_keys(orolado_users_by_sb($db, (string) $id)) as $sid) $ids[] = (string) $sid;
+    }
+    $sb = strtolower(trim((string) ($db['users'][$id]['sbId'] ?? '')));
+    if ($sb !== '') $ids[] = $sb;
+  }
+  $email = orolado_norm_email($email);
+  if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    foreach (array_keys(orolado_users_by_email($db, $email)) as $eid) $ids[] = (string) $eid;
+  }
+  return array_values(array_filter(array_unique(array_map('strval', $ids)), static fn($i) => $i !== '' && $i !== 'admin_master'));
+}
+
+function orolado_force_suspend(array &$db, string $uid, string $kind = 'suspended', string $email = ''): void {
   if ($uid === '' || $uid === 'admin_master') return;
   $kind = $kind === 'deleted' ? 'deleted' : 'suspended';
   if (!isset($db['bans']) || !is_array($db['bans'])) $db['bans'] = [];
-  $db['bans'][$uid] = ['at' => date('c'), 'kind' => $kind];
-  if (isset($db['users'][$uid]) && is_array($db['users'][$uid])) {
-    $u = $db['users'][$uid];
-    $orig = orolado_norm_email((string) ($u['originalEmail'] ?? $u['email'] ?? ''));
-    if ($orig !== '' && !str_ends_with($orig, '@orolado.invalid')) {
-      $db['users'][$uid]['originalEmail'] = $orig;
-    }
-    $db['users'][$uid]['role'] = $kind;
-    orolado_remember_blocked_identity($db, $db['users'][$uid], $kind);
-  }
-  if (function_exists('admin_kill_user_sessions')) {
-    admin_kill_user_sessions($db, $uid);
-  }
-  orolado_revoke_user_sessions($db, $uid);
+  $ids = orolado_player_all_ids($db, $uid, $email);
+  if (!$ids) return;
   $hdrs = supabase_admin_headers();
-  if ($hdrs) {
-    supabase_http(
-      rtrim(supabase_project_url(), '/') . '/rest/v1/profiles?id=eq.' . rawurlencode($uid),
-      $hdrs,
-      json_encode(['role' => $kind]),
-      'PATCH'
-    );
+  foreach ($ids as $id) {
+    $db['bans'][$id] = ['at' => date('c'), 'kind' => $kind];
+    if (isset($db['users'][$id]) && is_array($db['users'][$id])) {
+      $u = $db['users'][$id];
+      $orig = orolado_norm_email((string) ($u['originalEmail'] ?? $u['email'] ?? ''));
+      if ($orig !== '' && !str_ends_with($orig, '@orolado.invalid')) {
+        $db['users'][$id]['originalEmail'] = $orig;
+      }
+      $db['users'][$id]['role'] = $kind;
+      orolado_remember_blocked_identity($db, $db['users'][$id], $kind);
+    }
+    if (function_exists('admin_kill_user_sessions')) {
+      admin_kill_user_sessions($db, $id);
+    }
+    orolado_revoke_user_sessions($db, $id);
+    orolado_kick_now($id);
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) {
+      if ($hdrs) {
+        supabase_http(
+          rtrim(supabase_project_url(), '/') . '/rest/v1/profiles?id=eq.' . rawurlencode($id),
+          $hdrs,
+          json_encode(['role' => $kind]),
+          'PATCH'
+        );
+      }
+      supabase_force_logout($id);
+    }
   }
-  orolado_kick_now($uid);
-  supabase_force_logout($uid);
+  // Fiche absente du fichier local (joueur connu seulement de la base) : l'e-mail est quand même
+  // mis sur la liste noire, sinon il pourrait se réinscrire.
+  $email = orolado_norm_email($email);
+  if ($email !== '' && !isset($db['blocked_identities']['email:' . $email])) {
+    orolado_remember_blocked_identity($db, ['id' => $uid, 'email' => $email], $kind);
+  }
 }
 
 function orolado_force_delete_account(array &$db, string $uid): void {

@@ -1643,7 +1643,7 @@ if ($isAjax) {
     $uid = (string) ($req['userId'] ?? '');
     if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur manquant']);
     $db = admin_local_db();
-    orolado_force_suspend($db, $uid, 'suspended');
+    orolado_force_suspend($db, $uid, 'suspended', strtolower(trim((string) ($req['email'] ?? ''))));
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
     admin_json(['ok' => true]);
@@ -2315,7 +2315,7 @@ async function openUser(uid) {
   };
   document.getElementById('btnSuspend').onclick = async () => {
     if (!confirm('Suspendre ce compte et couper sa session immédiatement ?')) return;
-    const r = await ajax({action:'suspend', userId:u.id});
+    const r = await ajax({action:'suspend', userId:u.id, email:u.email||''});
     if (!r.ok) alert(r.reason || 'Échec');
     else { bustList(); openUser(u.id); loadBadges(); }
   };
