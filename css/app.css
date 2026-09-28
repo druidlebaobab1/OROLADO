@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 .auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2082") center 72%/min(820px,170vw) auto no-repeat,
+  url("../icons/pyramid-bg.svg?v=2083") center 72%/min(820px,170vw) auto no-repeat,
   radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
@@ -3559,7 +3559,7 @@ html body .modal-box .modal-title{padding-right:44px!important;box-sizing:border
 #screenAuth .auth-ambient{z-index:0}
 #screenAuth .auth-wrap{position:relative;z-index:1}
 /* Profil : même pyramide discrète en bas du panneau. */
-html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2082") center bottom/130% auto no-repeat,#0B0E14}
+html body #drawerProfile{background:url("../icons/pyramid-bg.svg?v=2083") center bottom/130% auto no-repeat,#0B0E14}
 .asset-ico.emerald-ico{color:#00E676}
 html body .asset-chip[data-asset="boomspike"].on .n,
 html body .asset-chip[data-asset="boomspike"].on .asset-ico{color:#00E676!important;-webkit-text-fill-color:#00E676}
@@ -3800,4 +3800,57 @@ html body #toast.toast.tie .lux-msg-ico{color:#7DD3FC!important}
     border:1px solid rgba(255,140,0,.42)!important;border-radius:16px!important;
     box-shadow:0 0 20px rgba(255,110,0,.18),inset 0 -60px 70px -40px rgba(255,90,0,.38),inset 0 1px 0 rgba(255,200,120,.12)!important;
     background:linear-gradient(180deg,#0b0e14 0%,#0b0e14 55%,rgba(60,18,4,.95) 100%)!important}
+}
+/* === Feu v5 (définitif) : une seule couleur, le jaune-orangé du cœur du feu, qui couvre tout
+   le bas en douceur et « brûle » (lueurs qui ondulent et scintillent). Plus de flammes
+   dessinées, plus de rouge, plus de séparations. Rendu identique sur tous les navigateurs. === */
+@media (max-width:859px){
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed svg,
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .spark{display:none!important}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed{
+    background:linear-gradient(to top,rgba(255,168,20,.96) 0%,rgba(255,178,40,.82) 28%,rgba(255,190,70,.45) 62%,rgba(255,200,90,0) 100%)!important;
+    -webkit-mask-image:none!important;mask-image:none!important;
+    animation:oroHeat 3.2s ease-in-out infinite alternate}
+  /* Deux couches de lueurs chaudes qui glissent et respirent : l'effet « ça brûle ». */
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::before,
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::after{
+    content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;top:0!important;
+    width:auto!important;height:auto!important;transform:none!important;pointer-events:none;
+    background-repeat:no-repeat!important;background-size:200% 100%!important}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::before{
+    background-image:
+      radial-gradient(30% 75% at 15% 100%,rgba(255,226,140,.85),rgba(255,200,80,0) 70%),
+      radial-gradient(26% 70% at 45% 100%,rgba(255,215,110,.8),rgba(255,190,60,0) 70%),
+      radial-gradient(32% 80% at 75% 100%,rgba(255,230,150,.85),rgba(255,200,80,0) 70%)!important;
+    animation:oroGlowA 5.5s ease-in-out infinite alternate!important}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::after{
+    background-image:
+      radial-gradient(28% 65% at 30% 100%,rgba(255,240,180,.7),rgba(255,210,100,0) 70%),
+      radial-gradient(30% 70% at 62% 100%,rgba(255,236,170,.65),rgba(255,205,90,0) 70%),
+      radial-gradient(26% 60% at 90% 100%,rgba(255,240,180,.7),rgba(255,210,100,0) 70%)!important;
+    animation:oroGlowB 4.2s ease-in-out infinite alternate!important}
+  @keyframes oroGlowA{0%{background-position:0% 100%;opacity:.75}50%{opacity:1}100%{background-position:100% 100%;opacity:.8}}
+  @keyframes oroGlowB{0%{background-position:100% 100%;opacity:.6}50%{opacity:.95}100%{background-position:0% 100%;opacity:.7}}
+  @keyframes oroHeat{0%{opacity:.88;transform:scaleY(.97)}100%{opacity:1;transform:scaleY(1.03)}}
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed{transform-origin:50% 100%}
+  /* Lueur sous le feu : même famille de couleur (plus de rouge). */
+  html:not(.is-tv) #screenTrade:not(.hidden)::before{
+    background:radial-gradient(ellipse 80% 130% at 50% 100%,rgba(255,190,60,.55) 0%,rgba(255,170,30,.25) 50%,transparent 80%)!important}
+}
+@media (max-width:859px) and (prefers-reduced-motion:reduce){
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed,
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::before,
+  html:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::after{animation:none!important}
+}
+@media (max-width:859px){
+  /* Le joli cadre du bas garde sa forme, mais dans la même couleur jaune-orangé (plus de rouge). */
+  html:not(.is-tv) #screenTrade .pad::after{
+    background:
+      radial-gradient(ellipse 18% 210% at 12% 100%,rgba(255,236,170,.9) 0%,rgba(255,190,60,.45) 40%,transparent 72%),
+      radial-gradient(ellipse 20% 230% at 38% 100%,rgba(255,226,140,.9) 0%,rgba(255,180,40,.45) 40%,transparent 74%),
+      radial-gradient(ellipse 18% 210% at 62% 100%,rgba(255,236,170,.9) 0%,rgba(255,190,60,.45) 40%,transparent 72%),
+      radial-gradient(ellipse 20% 230% at 88% 100%,rgba(255,226,140,.9) 0%,rgba(255,180,40,.45) 40%,transparent 74%),
+      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(255,170,30,.22) 30%,rgba(255,160,20,.5) 100%)!important}
+  html:not(.is-tv) #screenTrade .pad::before{
+    background:linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(255,210,110,.35) 30%,rgba(255,176,32,.62) 65%,rgba(255,160,20,.85) 100%)!important}
 }
