@@ -4069,3 +4069,7 @@ html[dir=rtl] #profWalletAddr,html[lang=hi] #profWalletAddr{font-family:inherit!
 @media (max-width:859px){
   html[dir=rtl] body #screenTrade:not(.is-guest) .topbar-cta{margin:0 4px 0 2px!important}
 }
+
+/* Zoom élastique : dans le cadre du graphique, le pincement est géré par le site (js/chart.js),
+   pas par le navigateur. Les boutons du cadre (MA, BB, +, −, plein écran) gardent leurs réglages. */
+html body #chart{touch-action:none}

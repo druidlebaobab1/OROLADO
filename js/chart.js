@@ -2954,10 +2954,12 @@
    * Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
    */
   function bindPinch() {
-    var stage = document.getElementById('chartStage');
+    // Les doigts sont écoutés sur le CADRE du graphique (#chart) : la zone de dessin est volontairement
+    // rendue « transparente » aux doigts par app.js (pour ne jamais bloquer un bouton), donc les vrais
+    // doigts n'y arrivaient pas. Le cadre, lui, les reçoit ; css/app.css y coupe le zoom du navigateur.
+    var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
     stage.__oroPinch = true;
-    stage.style.touchAction = 'none';
     var MIN = ZOOM_STEPS[0];
     var MAX = ZOOM_STEPS[ZOOM_STEPS.length - 1];
     var pts = {};
