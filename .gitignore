@@ -33,3 +33,5 @@ data/settle_*.ok
 data/admin_*.json
 feedcache/*.beat
 feedcache/*.lock
+data/online/
+data/visits/

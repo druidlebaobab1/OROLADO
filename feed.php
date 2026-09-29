@@ -18,6 +18,44 @@ if (!ini_get('zlib.output_compression') && function_exists('ob_gzhandler')) ob_s
 
 require_once __DIR__ . '/feed_lib.php';
 
+/*
+ * Signal de présence (feed.php?hb=1&v=<id de l'appareil>), envoyé toutes les 20 s par chaque
+ * page ouverte, inscrit ou non. Sert à : compter les personnes connectées maintenant et les
+ * visiteurs du jour (tableau admin), et faire tourner le moteur des prix seulement quand
+ * quelqu'un regarde. Très léger : un fichier touché, aucune base de données.
+ */
+if (isset($_GET['hb'])) {
+  $vid = substr(preg_replace('/[^a-f0-9]/', '', strtolower((string) ($_GET['v'] ?? ''))) ?? '', 0, 32);
+  if (strlen($vid) >= 12) {
+    $data = __DIR__ . '/data';
+    $on = $data . '/online';
+    if (!is_dir($on)) @mkdir($on, 0755, true);
+    @touch($on . '/' . $vid);
+    $day = date('Y-m-d');
+    $vd = $data . '/visits/' . $day;
+    if (!is_file($vd . '/' . $vid)) {
+      if (!is_dir($vd)) @mkdir($vd, 0755, true);
+      $cc = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? '')) ?? '');
+      if (strlen($cc) !== 2 || in_array($cc, ['XX', 'T1'], true)) $cc = '??';
+      @file_put_contents($vd . '/' . $vid, $cc);
+    }
+    @file_put_contents(__DIR__ . '/feedcache/visit.beat', (string) time());
+    // Ménage de temps en temps : présences de plus d'un jour, visites de plus de 90 jours.
+    if (random_int(1, 300) === 1) {
+      foreach ((array) @scandir($on) as $f) {
+        if ($f !== '.' && $f !== '..' && @filemtime($on . '/' . $f) < time() - 86400) @unlink($on . '/' . $f);
+      }
+      foreach ((array) @scandir($data . '/visits') as $d) {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $d) || strtotime($d) > time() - 90 * 86400) continue;
+        foreach ((array) @scandir($data . '/visits/' . $d) as $f) if ($f !== '.' && $f !== '..') @unlink($data . '/visits/' . $d . '/' . $f);
+        @rmdir($data . '/visits/' . $d);
+      }
+    }
+  }
+  echo '{"ok":true}';
+  exit;
+}
+
 function feed_out(array $j, int $code = 200): void {
   http_response_code($code);
   echo json_encode($j, JSON_UNESCAPED_SLASHES);
@@ -108,6 +146,44 @@ function feed_live_write(string $dir, string $file, array $base, float $rp): arr
   return $j;
 }
 
+/** Lance le moteur suivant (demande au site lui-même, réponse immédiate). */
+function feed_pump_relay(): void {
+  if (!function_exists('curl_init')) return;
+  $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+  if (!preg_match('/^[a-z0-9.-]+(:\d+)?$/', $host)) $host = 'orolado.com';
+  $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' || ($_SERVER['HTTP_CF_VISITOR'] ?? '') !== '' ? 'https' : 'http';
+  $url = $scheme . '://' . $host . '/feed.php?live=1&relay=1&r=' . bin2hex(random_bytes(3));
+  $bare = preg_replace('/:\d+$/', '', $host);
+  $port = $scheme === 'https' ? 443 : 80;
+  $ip = (string) ($_SERVER['SERVER_ADDR'] ?? '');
+  // 1) Directement sur ce serveur (sans passer par Cloudflare ni sa protection anti-robots).
+  // 2) En secours, par l'adresse publique.
+  $tries = [];
+  if (filter_var($ip, FILTER_VALIDATE_IP)) $tries[] = [$bare . ':' . $port . ':' . (str_contains($ip, ':') ? '[' . $ip . ']' : $ip)];
+  $tries[] = [];
+  foreach ($tries as $resolve) {
+    $ch = curl_init($url);
+    $opt = [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT_MS => 2500,
+      CURLOPT_CONNECTTIMEOUT_MS => 1200,
+      CURLOPT_NOSIGNAL => true,
+      CURLOPT_USERAGENT => 'Mozilla/5.0 (OROLADO relay)',
+    ];
+    if ($resolve) {
+      // Notre propre serveur : le certificat peut ne pas correspondre à l'adresse interne.
+      $opt[CURLOPT_RESOLVE] = $resolve;
+      $opt[CURLOPT_SSL_VERIFYPEER] = false;
+      $opt[CURLOPT_SSL_VERIFYHOST] = 0;
+    }
+    curl_setopt_array($ch, $opt);
+    $body = @curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($code === 200 && is_string($body) && str_contains($body, '"ok":true')) return;
+  }
+}
+
 /** Le moteur de diffusion a-t-il écrit il y a moins de 2 s ? */
 function feed_pump_alive(string $dir): bool {
   $beat = (int) @file_get_contents($dir . '/pump.beat');
@@ -133,18 +209,30 @@ if (isset($_GET['live'])) {
     }
   }
   $canDetach = function_exists('litespeed_finish_request') || function_exists('fastcgi_finish_request');
-  if ($pumpAlive || !$canDetach) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
+  // « relay=1 » : demande envoyée par le moteur en fin de vie pour lancer son remplaçant.
+  $relay = isset($_GET['relay']);
+  // Un téléphone qui demande le direct = quelqu'un regarde (anciens téléphones sans signal).
+  if (!$relay) @file_put_contents($dir . '/visit.beat', (string) time());
+  if (($pumpAlive && !$relay) || !$canDetach) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
 
   /*
    * Moteur de diffusion : avant, le fichier des prix n'était refait QUE quand un téléphone le
    * demandait ; avec beaucoup de visiteurs, les demandes faisaient la queue (jusqu'à ~2 s) et
    * les prix arrivaient par à-coups (courbe qui se bloque puis « danse » en rattrapant).
-   * Maintenant, la première demande répond tout de suite au téléphone, puis continue seule en
-   * arrière-plan pendant ~55 s en refaisant le fichier 4 fois par seconde. Un seul moteur à la
-   * fois (verrou). Le visiteur suivant le relance quand il s'arrête.
+   * Maintenant, la demande répond tout de suite, puis continue seule en arrière-plan pendant
+   * 30 s en refaisant le fichier 4 fois par seconde. RELAIS : à 20 s, le moteur lance lui-même
+   * son remplaçant (les deux se chevauchent ~10 s) ; avant, il s'arrêtait et le fichier restait
+   * vieux jusqu'à ce qu'un téléphone le relance (la courbe « dansait » toutes les minutes).
+   * Deux places au plus (verrous a et b) : jamais plus de deux moteurs en même temps.
    */
-  $lock = @fopen($dir . '/pump.lock', 'c');
-  if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
+  $lock = null;
+  $mine = '';
+  foreach (['a', 'b'] as $slot) {
+    $h = @fopen($dir . '/pump-' . $slot . '.lock', 'c');
+    if ($h && flock($h, LOCK_EX | LOCK_NB)) { $lock = $h; $mine = $slot; break; }
+    if ($h) fclose($h);
+  }
+  if (!$lock) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
   http_response_code(200);
   echo json_encode($j + ['serverMs' => orolado_feed_now_ms()], JSON_UNESCAPED_SLASHES);
   while (ob_get_level() > 0) @ob_end_flush();
@@ -152,14 +240,27 @@ if (isset($_GET['live'])) {
   if (function_exists('litespeed_finish_request')) litespeed_finish_request();
   else fastcgi_finish_request();
   ignore_user_abort(true);
-  @set_time_limit(80);
-  $end = microtime(true) + 55;
+  @set_time_limit(60);
+  $start = microtime(true);
+  $end = $start + 30;
+  $relayTries = [20, 24, 27];
   while (microtime(true) < $end) {
     try {
       feed_live_write($dir, $file, $base, 0.03);
       @file_put_contents($dir . '/pump.beat', (string) orolado_feed_now_ms());
     } catch (Throwable $e) {
       error_log('OROLADO feed pump ' . $e->getMessage());
+    }
+    // Relais : si l'autre place est libre (pas encore de remplaçant), on le lance.
+    // Seulement si quelqu'un regarde le site (signal de présence de moins de 3 min).
+    if ($relayTries && microtime(true) - $start >= $relayTries[0] && time() - (int) @file_get_contents($dir . '/visit.beat') < 180) {
+      array_shift($relayTries);
+      $other = @fopen($dir . '/pump-' . ($mine === 'a' ? 'b' : 'a') . '.lock', 'c');
+      $free = $other && flock($other, LOCK_EX | LOCK_NB);
+      if ($free) flock($other, LOCK_UN);
+      if ($other) fclose($other);
+      if ($free) feed_pump_relay();
+      else $relayTries = [];
     }
     // Juste après le prochain tick (toutes les 250 ms).
     $now = orolado_feed_now_ms();

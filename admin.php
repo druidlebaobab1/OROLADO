@@ -390,7 +390,7 @@ function admin_badges(): array {
     'signup_date' => $nInscrits,
     'signup_hour' => $signupToday,
     'signup_geo' => $nInscrits,
-    'signup_idrange' => null,
+    'visits' => count(glob(rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits/' . date('Y-m-d') . '/*') ?: []),
     'no_deposit' => $noDep,
     'signup_closed' => $closedN,
     'dep_today' => $depToday,
@@ -429,6 +429,35 @@ function admin_badges(): array {
     'inscrits' => $nInscrits,
   ];
   admin_cache_set('badges_epoch3', $out);
+  return $out;
+}
+
+/** Personnes connectées maintenant (inscrites ou non) : signal de présence de moins de 60 s. */
+function admin_online_now(): int {
+  $dir = rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/online';
+  $n = 0;
+  $lim = time() - 60;
+  foreach ((array) @scandir($dir) as $f) {
+    if ($f === '.' || $f === '..') continue;
+    if ((int) @filemtime($dir . '/' . $f) >= $lim) $n++;
+  }
+  return $n;
+}
+
+/** Visiteurs uniques (1 par appareil et par jour) : [pays ISO => nombre] pour ces jours. */
+function admin_visits_by_country(array $days): array {
+  $base = rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits/';
+  $out = [];
+  foreach ($days as $d) {
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $d) || !is_dir($base . $d)) continue;
+    foreach ((array) @scandir($base . $d) as $f) {
+      if ($f === '.' || $f === '..') continue;
+      $cc = strtoupper(trim((string) @file_get_contents($base . $d . '/' . $f)));
+      if (!preg_match('/^[A-Z?]{2}$/', $cc)) $cc = '??';
+      $out[$cc] = ($out[$cc] ?? 0) + 1;
+    }
+  }
+  arsort($out);
   return $out;
 }
 
@@ -598,6 +627,27 @@ function admin_list_payload(string $view, array $req): array {
       $rows[] = ['cells' => [sprintf('%02d:00 – %02d:59', $h, $h), (string) $n], 'userId' => ''];
     }
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => array_sum($bucket), 'page' => 1, 'pages' => 1, 'summary' => 'Pics horaires', 'actions' => false];
+  }
+
+  if ($view === 'visits') {
+    $preset = (string) ($req['preset'] ?? 'all');
+    $days = [date('Y-m-d')];
+    $label = 'aujourd’hui';
+    if ($preset === 'yesterday') { $days = [date('Y-m-d', strtotime('-1 day'))]; $label = 'hier'; }
+    if ($preset === 'date' && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['cal'] ?? ''))) { $days = [(string) $req['cal']]; $label = 'le ' . date('d/m/Y', strtotime((string) $req['cal'])); }
+    if ($preset === 'range' && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['dateFrom'] ?? '')) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['dateTo'] ?? ''))) {
+      $days = [];
+      for ($t = strtotime((string) $req['dateFrom']); $t <= strtotime((string) $req['dateTo']) && count($days) < 400; $t += 86400) $days[] = date('Y-m-d', $t);
+      $label = 'du ' . date('d/m', strtotime((string) $req['dateFrom'])) . ' au ' . date('d/m', strtotime((string) $req['dateTo']));
+    }
+    $geo = admin_visits_by_country($days);
+    $cols = ['Pays', 'Visiteurs'];
+    foreach ($geo as $cc => $n) {
+      $name = $cc === '??' ? 'Inconnu' : admin_country_name($cc);
+      $rows[] = ['cells' => [$name !== '' ? $name : $cc, (string) $n], 'userId' => ''];
+    }
+    $total = array_sum($geo);
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => 1, 'pages' => 1, 'summary' => $total . ' visiteurs ' . $label . ' (1 par appareil, inscrits ou non)', 'actions' => false];
   }
 
   if ($view === 'signup_geo') {
@@ -1518,6 +1568,9 @@ if ($isAjax) {
   }
 
   $me = admin_require();
+  if ($action === 'online_now') {
+    admin_json(['ok' => true, 'online' => admin_online_now()]);
+  }
   if ($action === 'badges') {
     admin_json(['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()]);
   }
@@ -1794,7 +1847,7 @@ $ADMIN_TABS = [
     ['signup_date', 'Inscriptions par Date'],
     ['signup_hour', 'Inscriptions par Heure'],
     ['signup_geo', 'Inscriptions par Pays / IP'],
-    ['signup_idrange', 'Recherche par Tranche d’ID'],
+    ['visits', 'Visites du Site (aujourd’hui)'],
     ['no_deposit', 'Joueurs Sans Dépôt'],
     ['signup_closed', 'Comptes fermés / désinscrits'],
   ],
@@ -1848,6 +1901,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <style>
     :root{--gold:#F59E0B;--muted:#94A3B8;--bg:#0A0F1D;--card:#121A2B;--line:rgba(255,255,255,.08);--text:#E8EEF9;--red:#F43F5E;--green:#34D399}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;background:linear-gradient(165deg,#0A0F1D,#121A2B);color:var(--text);min-height:100vh}
+    .online-box{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;margin-right:10px;border-radius:12px;border:1px solid rgba(34,197,94,.55);background:rgba(34,197,94,.12);color:#4ADE80;vertical-align:middle;max-width:100%}
+    .online-box b{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .online-box small{font-size:.72rem;color:#86EFAC;text-transform:uppercase;letter-spacing:.04em}
+    .online-box .dot{width:9px;height:9px;border-radius:50%;background:#22C55E;box-shadow:0 0 8px #22C55E;opacity:.35}
+    .online-box.live .dot{opacity:1;animation:onlinePulse 1.6s ease-in-out infinite}
+    @keyframes onlinePulse{50%{opacity:.35}}
     .head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
     .head h1{font-size:.95rem;color:var(--gold);margin:0}
     .wrap{padding:14px 12px 40px;max-width:1280px;margin:0 auto}
@@ -1934,6 +1993,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <header class="head">
     <h1>Super Admin Dashboard</h1>
     <div>
+      <span class="online-box" title="Personnes sur le site en ce moment (inscrites ou non)"><i class="dot"></i><b id="onlineNow">…</b><small>connectés</small></span>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
@@ -2109,6 +2169,17 @@ function showBoardPanel() {
     loadBadges();
   }));
 }
+async function loadOnline() {
+  try {
+    const j = await ajax({action:'online_now'});
+    if (j && j.ok) {
+      const n = Number(j.online || 0);
+      document.getElementById('onlineNow').textContent = n.toLocaleString('fr-FR');
+      document.querySelector('.online-box').classList.toggle('live', n > 0);
+    }
+  } catch (e) { /* ignore */ }
+}
+if (document.getElementById('onlineNow')) { loadOnline(); setInterval(loadOnline, 10000); }
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;

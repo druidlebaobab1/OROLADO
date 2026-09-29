@@ -24,6 +24,27 @@
   // point d'entrée tombe là où le joueur clique. Rafraîchi toutes les 300 ms. 800 ms laisse
   // la marge d'un rafraîchissement + le réseau mobile : la courbe ne s'arrête plus en attendant.
   var DISPLAY_DELAY = 800;
+  /*
+   * Retard d'affichage ADAPTÉ À CHAQUE CONNEXION. La courbe montre chaque prix un peu après son
+   * heure, pour avoir toujours le suivant en réserve. Avant : 0,8 s pour tout le monde ; sur un
+   * réseau mobile lent ou irrégulier, le prix suivant arrivait parfois après ce délai → la
+   * courbe s'arrêtait puis sautait deux prix (« tic tic »), à un moment différent sur chaque
+   * appareil. Maintenant chaque appareil mesure l'heure d'arrivée réelle des prix et garde un
+   * délai juste au-dessus (monte vite si besoin, redescend très lentement).
+   */
+  var dispDelay = DISPLAY_DELAY;
+  var needDelay = DISPLAY_DELAY;
+  function noteArrival(lastTick) {
+    if (!clock.ready || !(lastTick > 0)) return;
+    var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
+    if (!isFinite(lag) || lag < 0 || lag > 8000) return;
+    // Besoin = retard observé + marge de 2 intervalles de lecture.
+    var want = lag + 2 * POLL_MS;
+    needDelay = want > needDelay ? want : needDelay * 0.997 + want * 0.003;
+    var target = Math.max(DISPLAY_DELAY, Math.min(1800, needDelay));
+    if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 40);
+    else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - 4);
+  }
   var POLL_MS = 300;
   var MULTS = [1.88, 5, 10, 50];
 
@@ -59,12 +80,12 @@
 
   /** Heure d'affichage (téléphone) d'un tick serveur. */
   function tickToLocal(tick) {
-    return tick * TICK_MS - clock.offset + DISPLAY_DELAY;
+    return tick * TICK_MS - clock.offset + dispDelay;
   }
 
   /** Heure serveur (ms) → heure d'affichage téléphone. */
   function serverMsToLocal(ms) {
-    return Number(ms) - clock.offset + DISPLAY_DELAY;
+    return Number(ms) - clock.offset + dispDelay;
   }
 
   function canonAssetId(id) {
@@ -316,6 +337,8 @@
       }
       mergeTicks(id, a.first, unpack(a));
     });
+    var ref = feeds[Object.keys(j.assets)[0]];
+    if (complete && ref && ref.loaded) noteArrival(ref.last);
     return complete;
   }
 
@@ -357,7 +380,7 @@
       // courbe fluide ; 1 000 joueurs : quelques-uns seulement, donc serveur tranquille).
       // Avant : 15 % puis 50 %… → trous d'environ 1 s puis rattrapage en « tic-tic ».
       var rp = j && isFinite(Number(j.rp)) ? Math.max(0.002, Math.min(1, Number(j.rp))) : 1;
-      if (age < 1500 && Math.random() > rp) {
+      if (age < 1000 && Math.random() > rp) {
         done();
         return;
       }
@@ -376,7 +399,29 @@
     return f.ticks[tick - f.first];
   }
 
+  /* Signal de présence toutes les 20 s (page visible) : numéro anonyme de l'appareil, gardé
+     sur l'appareil. Compte les connectés et visiteurs (admin) et garde le moteur des prix actif. */
+  var hbTimer = null;
+  function heartbeat() {
+    if (document.hidden) return;
+    var vid = '';
+    try { vid = localStorage.getItem('oro_vid') || ''; } catch (eV) { /* ignore */ }
+    if (!/^[a-f0-9]{16,32}$/.test(vid)) {
+      vid = '';
+      for (var q = 0; q < 24; q++) vid += Math.floor(Math.random() * 16).toString(16);
+      try { localStorage.setItem('oro_vid', vid); } catch (eV2) { /* ignore */ }
+    }
+    try { fetch('feed.php?hb=1&v=' + vid, { cache: 'no-store' }).catch(function () { /* ignore */ }); } catch (eH) { /* ignore */ }
+  }
+  function startHeartbeat() {
+    if (hbTimer) return;
+    heartbeat();
+    hbTimer = setInterval(heartbeat, 20000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) heartbeat(); });
+  }
+
   function startPolling() {
+    startHeartbeat();
     if (pollTimer) return;
     pollAll();
     pollTimer = setInterval(function () {
@@ -448,7 +493,7 @@
 
   /** Tick le plus récent qu'on a le droit d'afficher à l'instant `nowMs`. */
   function visibleTick(f, nowMs) {
-    var t = Math.floor((nowMs + clock.offset - DISPLAY_DELAY) / TICK_MS);
+    var t = Math.floor((nowMs + clock.offset - dispDelay) / TICK_MS);
     if (t > f.last) t = f.last;
     if (t < f.first) t = f.first;
     // La courbe affichée ne recule JAMAIS : l'heure serveur estimée se corrige sans arrêt de
@@ -1086,6 +1131,9 @@
       if (markets[assetId]) markets[assetId].payout = 1.88;
       return 1.88;
     },
+
+    /** Retard d'affichage actuel de cet appareil (ms), pour contrôle. */
+    displayDelay: function () { return Math.round(dispDelay); },
 
     resyncClocks: function () {
       // Retour de veille : on va chercher tout de suite les prix manqués (sans attendre).
