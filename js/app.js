@@ -1735,12 +1735,17 @@
     try {
       var at = Number(localStorage.getItem(TIP_LS) || 0);
       if (at > 0 && (Date.now() - at) < TIP_COOLDOWN_MS) return true;
+      // Fermé 2 fois : le joueur connaît l'astuce, on ne la remontre plus sur cet appareil.
+      if (Number(localStorage.getItem('trading_tip_closes') || 0) >= 2) return true;
     } catch (eTip) { /* ignore */ }
     return false;
   }
 
   function markTipClosed() {
-    try { localStorage.setItem(TIP_LS, String(Date.now())); } catch (eTip) { /* ignore */ }
+    try {
+      localStorage.setItem(TIP_LS, String(Date.now()));
+      localStorage.setItem('trading_tip_closes', String(Number(localStorage.getItem('trading_tip_closes') || 0) + 1));
+    } catch (eTip) { /* ignore */ }
   }
 
   function maybeLossStreakTip(u) {

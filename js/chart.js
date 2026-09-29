@@ -2884,6 +2884,11 @@
   }
 
   function resetChartView() {
+    // Rien à remettre (zoom normal, aucun indicateur) : on ne touche pas au cadre. Avant, chaque
+    // clic recadrait la courbe (elle « descendait ») même sans zoom ni indicateur.
+    if (zoomIdx === DEFAULT_ZOOM_IDX && !inds.ma && !inds.bb && !inds.ema) return;
+    var stNow = ensureAssetState(activeAsset);
+    var tradeFrame = !!(stNow.lockUntil && Date.now() < stNow.lockUntil);
     zoomIdx = DEFAULT_ZOOM_IDX;
     zoomSmooth = zoomSec();
     persistView(activeAsset);
@@ -2892,14 +2897,17 @@
     inds.ema = false;
     persistView(activeAsset);
     syncIndButtons();
-    viewMin = 0;
-    viewMax = 0;
-    var st = ensureAssetState(activeAsset);
-    st.lockMin = 0;
-    st.lockMax = 0;
-    st.viewMin = 0;
-    st.viewMax = 0;
-    strikeLock = null;
+    // Pendant un trade : zoom et indicateurs remis, mais le cadre du trade reste en place.
+    if (!tradeFrame) {
+      viewMin = 0;
+      viewMax = 0;
+      var st = ensureAssetState(activeAsset);
+      st.lockMin = 0;
+      st.lockMax = 0;
+      st.viewMin = 0;
+      st.viewMax = 0;
+      strikeLock = null;
+    }
     if (isChartReady()) drawNow();
   }
 

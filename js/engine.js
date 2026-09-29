@@ -380,7 +380,9 @@
       // courbe fluide ; 1 000 joueurs : quelques-uns seulement, donc serveur tranquille).
       // Avant : 15 % puis 50 %… → trous d'environ 1 s puis rattrapage en « tic-tic ».
       var rp = j && isFinite(Number(j.rp)) ? Math.max(0.002, Math.min(1, Number(j.rp))) : 1;
-      if (age < 1000 && Math.random() > rp) {
+      // Moteur de diffusion en relais : on ne relance le serveur que s'il est vraiment arrêté
+      // (plus de 3 s de retard). Avant (1 s), des centaines de relances le surchargeaient.
+      if (age < 3000) {
         done();
         return;
       }
@@ -411,7 +413,9 @@
       for (var q = 0; q < 24; q++) vid += Math.floor(Math.random() * 16).toString(16);
       try { localStorage.setItem('oro_vid', vid); } catch (eV2) { /* ignore */ }
     }
-    try { fetch('feed.php?hb=1&v=' + vid, { cache: 'no-store' }).catch(function () { /* ignore */ }); } catch (eH) { /* ignore */ }
+    var adm = '';
+    try { if (localStorage.getItem('oro_admin_dev') === '1') adm = '&a=1'; } catch (eA) { /* ignore */ }
+    try { fetch('feed.php?hb=1&v=' + vid + adm, { cache: 'no-store' }).catch(function () { /* ignore */ }); } catch (eH) { /* ignore */ }
   }
   function startHeartbeat() {
     if (hbTimer) return;

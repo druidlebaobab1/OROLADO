@@ -26,7 +26,8 @@ require_once __DIR__ . '/feed_lib.php';
  */
 if (isset($_GET['hb'])) {
   $vid = substr(preg_replace('/[^a-f0-9]/', '', strtolower((string) ($_GET['v'] ?? ''))) ?? '', 0, 32);
-  if (strlen($vid) >= 12) {
+  // Appareil de l'admin (a=1) : ni compté comme connecté, ni comme visiteur.
+  if (strlen($vid) >= 12 && !isset($_GET['a'])) {
     $data = __DIR__ . '/data';
     $on = $data . '/online';
     if (!is_dir($on)) @mkdir($on, 0755, true);
@@ -52,6 +53,8 @@ if (isset($_GET['hb'])) {
       }
     }
   }
+  // Quelqu'un regarde (admin compris) : le moteur des prix reste actif.
+  if (strlen($vid) >= 12) @file_put_contents(__DIR__ . '/feedcache/visit.beat', (string) time());
   echo '{"ok":true}';
   exit;
 }
@@ -200,7 +203,8 @@ if (isset($_GET['live'])) {
   // Moteur de diffusion en marche : les téléphones n'ont (presque) plus besoin de PHP.
   // Sinon, ancien auto-réglage « rp » selon le nombre de demandes.
   $rp = $pumpAlive ? 0.03 : feed_live_rate($dir);
-  if (!$fresh || !is_array($j)) {
+  // Moteur en marche : on renvoie le fichier tel quel (pas de travail en double).
+  if ((!$fresh && !$pumpAlive) || !is_array($j)) {
     try {
       $j = feed_live_write($dir, $file, $base, $rp);
     } catch (Throwable $e) {

@@ -633,6 +633,10 @@ function admin_list_payload(string $view, array $req): array {
     $preset = (string) ($req['preset'] ?? 'all');
     $days = [date('Y-m-d')];
     $label = 'aujourd’hui';
+    if ($preset === 'all') {
+      $days = array_values(array_filter((array) @scandir(rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits'), static fn($d) => (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $d)));
+      $label = 'depuis le début';
+    }
     if ($preset === 'yesterday') { $days = [date('Y-m-d', strtotime('-1 day'))]; $label = 'hier'; }
     if ($preset === 'date' && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['cal'] ?? ''))) { $days = [(string) $req['cal']]; $label = 'le ' . date('d/m/Y', strtotime((string) $req['cal'])); }
     if ($preset === 'range' && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['dateFrom'] ?? '')) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['dateTo'] ?? ''))) {
@@ -1847,7 +1851,7 @@ $ADMIN_TABS = [
     ['signup_date', 'Inscriptions par Date'],
     ['signup_hour', 'Inscriptions par Heure'],
     ['signup_geo', 'Inscriptions par Pays / IP'],
-    ['visits', 'Visites du Site (aujourd’hui)'],
+    ['visits', 'Visites du Site'],
     ['no_deposit', 'Joueurs Sans Dépôt'],
     ['signup_closed', 'Comptes fermés / désinscrits'],
   ],
@@ -1901,10 +1905,11 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <style>
     :root{--gold:#F59E0B;--muted:#94A3B8;--bg:#0A0F1D;--card:#121A2B;--line:rgba(255,255,255,.08);--text:#E8EEF9;--red:#F43F5E;--green:#34D399}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;background:linear-gradient(165deg,#0A0F1D,#121A2B);color:var(--text);min-height:100vh}
-    .online-box{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;margin-right:10px;border-radius:12px;border:1px solid rgba(34,197,94,.55);background:rgba(34,197,94,.12);color:#4ADE80;vertical-align:middle;max-width:100%}
-    .online-box b{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-    .online-box small{font-size:.72rem;color:#86EFAC;text-transform:uppercase;letter-spacing:.04em}
-    .online-box .dot{width:9px;height:9px;border-radius:50%;background:#22C55E;box-shadow:0 0 8px #22C55E;opacity:.35}
+    .online-bar{padding:10px 16px 2px}
+    .online-box{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;padding:14px 18px;min-height:64px;border-radius:14px;border:1px solid rgba(34,197,94,.55);background:rgba(34,197,94,.12);color:#4ADE80;vertical-align:middle;max-width:100%}
+    .online-box b{font-size:clamp(1.6rem,6vw,2.4rem);line-height:1;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .online-box small{font-size:.8rem;color:#86EFAC;text-transform:uppercase;letter-spacing:.04em}
+    .online-box .dot{width:12px;height:12px;flex:none;border-radius:50%;background:#22C55E;box-shadow:0 0 8px #22C55E;opacity:.35}
     .online-box.live .dot{opacity:1;animation:onlinePulse 1.6s ease-in-out infinite}
     @keyframes onlinePulse{50%{opacity:.35}}
     .head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
@@ -1993,12 +1998,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <header class="head">
     <h1>Super Admin Dashboard</h1>
     <div>
-      <span class="online-box" title="Personnes sur le site en ce moment (inscrites ou non)"><i class="dot"></i><b id="onlineNow">…</b><small>connectés</small></span>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
   </header>
+  <div class="online-bar"><div class="online-box" title="Personnes sur le site en ce moment (inscrites ou non, hors appareil admin)"><i class="dot"></i><b id="onlineNow">…</b><small>personnes connectées en direct sur le site</small></div></div>
   <div class="wrap">
     <div class="sec">A · Inscriptions &amp; suivi pubs</div>
     <div class="metrics" id="gA"><?php foreach ($ADMIN_TABS['gA'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
@@ -2169,6 +2174,7 @@ function showBoardPanel() {
     loadBadges();
   }));
 }
+try { localStorage.setItem('oro_admin_dev', '1'); } catch (e) { /* ignore */ }
 async function loadOnline() {
   try {
     const j = await ajax({action:'online_now'});
