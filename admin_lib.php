@@ -768,7 +768,9 @@ function admin_stat_visible_user_ids(): array {
   $ids = [];
   foreach (admin_profiles() as $p) {
     $id = (string) ($p['id'] ?? '');
-    if ($id !== '') $ids[$id] = true;
+    // Compte admin : ses trades, dépôts, crédits et retraits ne comptent pas dans les statistiques.
+    if ($id === '' || admin_is_protected_account($p, $id)) continue;
+    $ids[$id] = true;
   }
   return $ids;
 }
@@ -2382,7 +2384,7 @@ function admin_suspects(): array {
   $dayAgo = time() - 86400;
   $out = [];
   foreach ($pmap as $uid => $p) {
-    if ($uid === '') continue;
+    if ($uid === '' || admin_is_protected_account($p, (string) $uid)) continue; // jamais le compte admin parmi les suspects
     $open = $openBy[$uid] ?? [];
     $ctx = [];
     if ($open) {
