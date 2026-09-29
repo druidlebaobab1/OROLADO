@@ -425,8 +425,8 @@
     // au moment où la courbe l'atteint : ils tombent pile sur la courbe et ne bougent plus.
     // Avant : posés sur l'écran au clic, puis déplacés vers le vrai prix à la réponse du serveur.
     // Filet de sécurité : sans confirmation au bout de 6 s, le trade s'affiche quand même.
-    var hideNow = (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 6000)) ||
-      (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime);
+    // Rond du trade affiché dès la confirmation du serveur (vrai prix d'entrée), sans attendre la courbe.
+    var hideNow = (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 6000));
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
