@@ -33,8 +33,8 @@
    * délai juste au-dessus (monte vite si besoin, redescend très lentement).
    */
   // Départ avec une marge confortable (avant : 0,8 s → « tic tic » à l'arrivée le temps de s'ajuster).
-  var dispDelay = 1500;
-  var needDelay = 1500;
+  var dispDelay = 1800;
+  var needDelay = 1800;
   function noteArrival(lastTick) {
     if (!clock.ready || !(lastTick > 0)) return;
     var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
@@ -42,8 +42,8 @@
     // Besoin = retard observé + un intervalle de lecture + 0,1 s de réserve.
     var want = lag + POLL_MS + 100;
     needDelay = want > needDelay ? want : needDelay * 0.997 + want * 0.003;
-    var target = Math.max(DISPLAY_DELAY, Math.min(1800, needDelay));
-    if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 40);
+    var target = Math.max(DISPLAY_DELAY, Math.min(2600, needDelay));
+    if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
     else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - 4);
   }
   var POLL_MS = 300;

@@ -25,7 +25,7 @@ $users = [];
 for ($i = 0; $i < $N; $i++) {
   $users[$i] = [
     'vid' => bin2hex(random_bytes(12)), 'next' => $ms() + random_int(0, 300), 'hb' => $ms() + random_int(0, 20000),
-    'busy' => false, 'last' => 0, 'delay' => 1500.0, 'need' => 1500.0, 'shown' => 0,
+    'busy' => false, 'last' => 0, 'delay' => 1800.0, 'need' => 1800.0, 'shown' => 0,
     'stalls' => 0, 'stallOn' => false,
   ];
 }
@@ -118,8 +118,8 @@ while ($ms() < $end || $jobs) {
     if ($lag >= 0 && $lag < 8000) {
       $w = $lag + 400;
       $u['need'] = $w > $u['need'] ? $w : $u['need'] * 0.997 + $w * 0.003;
-      $target = max(800, min(1800, $u['need']));
-      if ($u['delay'] < $target) $u['delay'] = min($target, $u['delay'] + 40);
+      $target = max(800, min(2600, $u['need']));
+      if ($u['delay'] < $target) $u['delay'] = min($target, $u['delay'] + 80);
       else if ($u['delay'] > $target + 150) $u['delay'] = max($target, $u['delay'] - 4);
     }
     // Prix en retard : le téléphone relance le serveur (comme engine.js).
