@@ -36,6 +36,27 @@
   // Trade touché (carte en haut) et positions des lignes de trade de la dernière image.
   var tradeCard = null;
   var tradeHits = [];
+  // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
+  // coupées, cadre des prix du passé, bouton « Direct ».
+  var panMs = 0;
+  var panMaxMs = 0;
+  var panEpoch = 0;
+  var panAnim = 0;
+  var panTrim = 0;
+  var panRightMs = 0;
+  var panView = null;
+  var panAsset = null;
+  var lastSeriesW = 0;
+  var lastTradeN = 0;
+  var liveBtn = null;
+  var liveBtnShown = false;
+  var panLastWall = 0;
+  var panDragRef = null;
+  var panLiveAnim = false;
+  // Sensation du balayage : lueur dorée sur le bord d'où arrivent les bougies.
+  var panFxV = 0;
+  var panFxAt = 0;
+
   var wantFitY = false;
   // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
   var CANDLE_DURATION_MS = 1000;
@@ -1005,9 +1026,21 @@
     candleScratch.length = 0;
     var i;
     var forming = visualFormingCandle((live && live.forming) || (market && market.candle));
-    var start = Math.max(0, done.length - n);
-    for (i = start; i < done.length; i++) candleScratch.push(done[i]);
-    if (forming) {
+    var end = done.length;
+    var withForming = !!forming;
+    panTrim = 0;
+    if (done.length > 1) panMaxMs = Math.max(0, (done[done.length - 1].t - done[0].t) - (xWin > 0 ? xWin : 28000) * 0.7);
+    if (panMs > 0 && done.length) {
+      // Historique regardé : seulement les bougies qui tombent dans l'écran (le bout à droite est coupé).
+      var rightT = xNow + panRightMs + CANDLE_DURATION_MS;
+      while (end > 0 && done[end - 1].t > rightT) end--;
+      if (end < done.length) withForming = false;
+      n += Math.ceil(panRightMs / CANDLE_DURATION_MS) + 2;
+      panTrim = (done.length - end) + ((forming && !withForming && done[done.length - 1].t !== forming.t) ? 1 : 0);
+    }
+    var start = Math.max(0, end - n);
+    for (i = start; i < end; i++) candleScratch.push(done[i]);
+    if (withForming) {
       if (!candleScratch.length || candleScratch[candleScratch.length - 1].t !== forming.t) {
         candleScratch.push(forming);
       } else {
@@ -1375,7 +1408,7 @@
       ctx.shadowBlur = 0;
     }
     var last = candles[candles.length - 1];
-    return { toX: toX, toY: toY, lastX: pad.l + w, lastY: toY(last.c), count: candles.length };
+    return { toX: toX, toY: toY, lastX: panMs > 0 ? toX(candles.length - 1) : pad.l + w, lastY: toY(last.c), count: candles.length };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
@@ -1404,7 +1437,7 @@
     var col = color || '#ff2d55';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.save();
@@ -1436,7 +1469,7 @@
     if (!data || data.length < 2) return null;
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var last = data.length - 1;
     function tracePath() {
@@ -1486,7 +1519,7 @@
     var col = color || '#f5a623';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     ctx.beginPath();
@@ -1528,7 +1561,7 @@
     if (!data || data.length < 2) return null;
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
-    var lastX = pad.l + w;
+    var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
     var lastY = toY(data[data.length - 1]);
     var i;
     var col = color || '#FF7A00';
@@ -1596,7 +1629,7 @@
         ctx.strokeStyle = color || '#2F6BFF';
       }
     }
-    var lastX = pad.l + w;
+    var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
     var lastY = toY(data[data.length - 1]);
     ctx.beginPath();
     ctx.moveTo(toX(data.length - 1), lastY);
@@ -2049,11 +2082,12 @@
       var haloDim = v75Head ? '233,30,99' : (titanHead ? '255,255,255' : (nexusHead ? '0,229,255' :
         (goldHead ? '255,179,0' : (horizonHead ? '255,152,0' : null))));
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 13 + pulse * 5, 0, Math.PI * 2);
+      ctx.globalAlpha = 0.5;
+      ctx.arc(map.lastX, map.lastY, 10 + pulse * 3, 0, Math.PI * 2);
       ctx.fillStyle = haloDim ? 'rgba(' + haloDim + ',0.16)' : (theme.beadGlow || 'rgba(255,215,0,0.16)');
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 9 + pulse * 2.5, 0, Math.PI * 2);
+      ctx.arc(map.lastX, map.lastY, 7.5 + pulse * 1.5, 0, Math.PI * 2);
       ctx.fillStyle = haloDim ? 'rgba(' + haloDim + ',0.3)' : (theme.beadGlow || 'rgba(255,215,0,0.24)');
       ctx.fill();
     }
@@ -2064,7 +2098,8 @@
     ctx.arc(map.lastX, map.lastY, compact ? 3.6 : 6, 0, Math.PI * 2);
     ctx.fillStyle = headCol;
     ctx.shadowColor = glowCol;
-    ctx.shadowBlur = compact ? 6 : 12 + pulse * 4;
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = compact ? 4 : 5 + pulse * 2;
     ctx.fill();
     // Second passage : le halo se cumule et reste net au centre.
     if (!compact) {
@@ -2098,90 +2133,43 @@
     var v = Number(lineData[i]);
     return { x: x, c: null, v: v, hi: v, lo: v, t: xTimes ? Number(xTimes[off + i]) || 0 : 0 };
   }
-  function drawHiLo(pad, h, layout, minP, maxP, candles, lineData, candleMode) {
-    var n = candleMode ? (candles ? candles.length : 0) : (lineData ? lineData.length : 0);
-    if (n < 4) return;
-    var hiI = -1;
-    var loI = -1;
-    var hiV = -Infinity;
-    var loV = Infinity;
-    var i;
-    for (i = 0; i < n; i++) {
-      var hv = candleMode ? Number(candles[i].h) : Number(lineData[i]);
-      var lv = candleMode ? Number(candles[i].l) : Number(lineData[i]);
-      if (isFinite(hv) && hv > hiV) { hiV = hv; hiI = i; }
-      if (isFinite(lv) && lv < loV) { loV = lv; loI = i; }
-    }
-    if (hiI < 0 || loI < 0 || !(hiV > loV)) return;
-    var top = pad.t;
-    var bot = pad.t + h;
+  function drawPanFx(pad, h, layout) {
+    var age = performance.now() - panFxAt;
+    var over = panMs < 0 ? -1 : (panMaxMs > 0 && panMs > panMaxMs ? 1 : 0);
+    var k = Math.max(0, 1 - age / 350) * Math.min(1, Math.abs(panFxV) * 0.035);
+    if (over) k = Math.max(k, 0.9);
+    if (k < 0.02) return;
+    // Glisser vers la droite (passé) : lueur à gauche ; vers la gauche (direct) : lueur à droite.
+    var left = over ? over > 0 : panFxV > 0;
+    var gw = 46;
+    var x0 = left ? pad.l : layout.axisX - gw;
+    var g = ctx.createLinearGradient(left ? pad.l : layout.axisX, 0, left ? pad.l + gw : layout.axisX - gw, 0);
+    g.addColorStop(0, 'rgba(245,197,24,' + (0.22 * k).toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(245,197,24,0)');
     ctx.save();
-    ctx.font = '600 9px ui-monospace, Menlo, Consolas, monospace';
-    ctx.textAlign = 'center';
-    [[hiI, hiV, true], [loI, loV, false]].forEach(function (it) {
-      var x = baseIndexX(it[0], n, pad, layout.seriesW);
-      if (x < pad.l + 14 || x > layout.headX - 26) return;
-      var y = plotToY(it[1], pad, h, minP, maxP);
-      var isHi = it[2];
-      // Petit triangle doré qui pointe le plus haut (par-dessus) ou le plus bas (par-dessous).
-      ctx.globalAlpha = 0.85;
-      ctx.fillStyle = '#F5C518';
-      ctx.beginPath();
-      if (isHi) { ctx.moveTo(x, y - 3); ctx.lineTo(x - 3.5, y - 8); ctx.lineTo(x + 3.5, y - 8); }
-      else { ctx.moveTo(x, y + 3); ctx.lineTo(x - 3.5, y + 8); ctx.lineTo(x + 3.5, y + 8); }
-      ctx.closePath();
-      ctx.fill();
-      ctx.globalAlpha = 0.75;
-      ctx.fillStyle = '#F8E7B0';
-      var txt = formatAxisPrice(it[1]);
-      if (isHi && y - 22 < top) { ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x + 7, y - 5); }
-      else if (!isHi && y + 22 > bot) { ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x + 7, y + 5); }
-      else {
-        ctx.textAlign = 'center';
-        ctx.textBaseline = isHi ? 'bottom' : 'top';
-        ctx.fillText(txt, x, isHi ? y - 10 : y + 10);
-      }
-    });
+    ctx.fillStyle = g;
+    ctx.fillRect(x0, pad.t, gw, h);
     ctx.restore();
   }
-  function drawTradeRing(map, trade, color) {
-    if (!map || !trade || !isFinite(map.lastX) || !isFinite(map.lastY)) return;
-    var st0 = Number(trade.startTime) || 0;
-    var exp = Number(trade.expiryTime || trade.expiresAt) || 0;
-    var nowMs = Date.now();
-    if (!(exp > st0) || !st0 || nowMs >= exp) return;
-    var k = Math.max(0, Math.min(1, (nowMs - st0) / (exp - st0)));
-    ctx.save();
-    ctx.lineWidth = 2.2;
-    ctx.globalAlpha = 0.18;
-    ctx.strokeStyle = color;
-    ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, 17, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.globalAlpha = 0.9;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, 17, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k);
-    ctx.stroke();
-    ctx.restore();
-  }
-  function infoPanel(lines, pad, layout, topY) {
-    // Petit panneau léger en haut au milieu (comme les grandes plateformes).
-    ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace';
+  function infoPanel(lines, pad, layout, topY, centerX, fontPx) {
+    // Petit panneau léger en haut (comme les grandes plateformes) ; il suit le trait vertical.
+    var fs = fontPx || 9;
+    var lh = fs + 4;
+    ctx.font = '600 ' + fs + 'px ui-monospace, Menlo, Consolas, monospace';
     var bw = 0;
     lines.forEach(function (ln) {
       var wsum = 0;
       ln.forEach(function (seg) { wsum += ctx.measureText(seg[0]).width; });
       if (wsum > bw) bw = wsum;
     });
-    bw = Math.ceil(bw) + 16;
-    var bh = lines.length * 14 + 6;
-    var cx = pad.l + (layout.axisX - pad.l) / 2;
+    bw = Math.ceil(bw) + 12;
+    var bh = lines.length * lh + 5;
+    var cx = isFinite(centerX) ? centerX : pad.l + (layout.axisX - pad.l) / 2;
     var bx = Math.max(pad.l + 2, Math.min(layout.axisX - bw - 2, cx - bw / 2));
-    ctx.fillStyle = 'rgba(10,14,24,0.55)';
-    roundRectOn(ctx, bx, topY, bw, bh, 7);
+    ctx.fillStyle = 'rgba(10,14,24,0.6)';
+    roundRectOn(ctx, bx, topY, bw, bh, 6);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(245,197,24,0.28)';
+    ctx.strokeStyle = 'rgba(245,197,24,0.25)';
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.textAlign = 'left';
@@ -2190,7 +2178,7 @@
       var wsum = 0;
       ln.forEach(function (seg) { wsum += ctx.measureText(seg[0]).width; });
       var x = bx + (bw - wsum) / 2;
-      var y = topY + 10 + li * 14;
+      var y = topY + 3 + lh / 2 + li * lh;
       ln.forEach(function (seg) {
         ctx.fillStyle = seg[1];
         ctx.fillText(seg[0], x, y);
@@ -2224,8 +2212,8 @@
     }
     var top = pad.t;
     var bot = pad.t + h;
-    var panelY = top + (legendOn ? 24 : 6);
-    var DIM = 'rgba(248,231,176,0.6)';
+    var panelY = top + (legendOn ? 24 : 5);
+    var DIM = 'rgba(248,231,176,0.55)';
     var UPC = '#00E676';
     var DNC = '#FF4D6A';
     if (!touchCross) {
@@ -2248,50 +2236,48 @@
       lines.push([[tt('tcLeft', 'Reste') + ' ', DIM], [Math.max(0, (expC - nowC) / 1000).toFixed(1) + ' s', '#F8E7B0']]);
       lines.push([[winning ? tt('tcWin', 'Gagnant en ce moment') : tt('tcLose', 'Perdant en ce moment'), winning ? UPC : DNC]]);
       ctx.save();
-      infoPanel(lines, pad, layout, panelY);
+      infoPanel(lines, pad, layout, panelY, NaN, 10);
       ctx.restore();
       return;
     }
-    var x = Math.max(pad.l, Math.min(layout.axisX, touchCross.x));
-    var y = Math.max(top, Math.min(bot, touchCross.y));
-    var price = minP + (1 - (y - top) / h) * Math.max(maxP - minP, 0.01);
+    // Croix : toujours accrochée à une vraie bougie (ou un vrai point de la courbe) affichée à
+    // l'écran, jamais au-delà du bout de la courbe ni dans le vide.
     var n = candleMode ? (candles ? candles.length : 0) : (lineData ? lineData.length : 0);
-    var pt = null;
-    if (n) {
-      var best = -1;
-      var bd = Infinity;
-      for (i = 0; i < n; i++) {
-        var d = Math.abs(baseIndexX(i, n, pad, layout.seriesW) - x);
-        if (d < bd) { bd = d; best = i; }
-      }
-      if (best >= 0 && bd < 40) {
-        pt = seriesPoint(best, n, pad, layout, candles, lineData, candleMode);
-        x = pt.x;
-      }
+    if (!n) return;
+    var fx = Math.max(pad.l, Math.min(layout.axisX, touchCross.x));
+    var y = Math.max(top, Math.min(bot, touchCross.y));
+    var best = -1;
+    var bd = Infinity;
+    for (i = 0; i < n; i++) {
+      var xi = baseIndexX(i, n, pad, layout.seriesW);
+      if (xi < pad.l - 2 || xi > layout.axisX - 2) continue;
+      var d = Math.abs(xi - fx);
+      if (d < bd) { bd = d; best = i; }
     }
-    var tAt = pt && pt.t ? pt.t : xNow - ((layout.headX - Math.min(x, layout.headX)) / Math.max(1, layout.seriesW)) * xWin;
+    if (best < 0) return;
+    var pt = seriesPoint(best, n, pad, layout, candles, lineData, candleMode);
+    var x = Math.round(pt.x) + 0.5;
+    var price = minP + (1 - (y - top) / h) * Math.max(maxP - minP, 0.01);
     ctx.save();
     ctx.lineWidth = 1;
-    // Trait vertical : fin et léger (la bougie / le moment regardé).
-    ctx.globalAlpha = 0.45;
-    ctx.strokeStyle = '#F5C518';
-    ctx.setLineDash([3, 5]);
+    ctx.strokeStyle = 'rgba(245,197,24,0.55)';
+    ctx.setLineDash([2, 4]);
     ctx.beginPath();
-    ctx.moveTo(Math.round(x) + 0.5, top);
-    ctx.lineTo(Math.round(x) + 0.5, bot);
-    ctx.stroke();
-    // Trait horizontal : le prix sous le doigt.
-    ctx.globalAlpha = 0.8;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, bot);
     ctx.moveTo(pad.l, Math.round(y) + 0.5);
     ctx.lineTo(layout.axisX, Math.round(y) + 0.5);
     ctx.stroke();
     ctx.setLineDash(NO_DASH);
-    ctx.globalAlpha = 1;
+    // Point de la bougie (clôture) / de la courbe, net avec un liseré sombre.
+    var py = plotToY(pt.v, pad, h, minP, maxP);
+    ctx.fillStyle = '#10141f';
+    ctx.beginPath();
+    ctx.arc(x, py, 4.5, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = '#F5C518';
     ctx.beginPath();
-    ctx.arc(x, pt && isFinite(pt.v) ? plotToY(pt.v, pad, h, minP, maxP) : y, 3.5, 0, Math.PI * 2);
+    ctx.arc(x, py, 3, 0, Math.PI * 2);
     ctx.fill();
     // Prix sous le doigt, sur la colonne des prix.
     ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace';
@@ -2305,28 +2291,20 @@
     ctx.fill();
     ctx.fillStyle = '#10141f';
     ctx.fillText(ptxt, px + pw / 2, y + 0.5);
-    // Panneau du haut : bougie (O H / L C) ou prix de la courbe, écart avec maintenant, heure.
-    var dt = new Date(tAt);
+    // Carré du haut : O H / L C (ou le prix de la courbe), l'heure en bas ; il suit le trait.
+    var dt = new Date(pt.t || xNow);
     var ttxt = pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()) + ':' + pad2(dt.getSeconds());
     var lines2 = [];
-    var ref = pt && isFinite(pt.v) ? pt.v : price;
-    if (pt && pt.c && isFinite(pt.c.o)) {
+    if (pt.c && isFinite(pt.c.o)) {
       var upB = Number(pt.c.c) >= Number(pt.c.o);
       var vc = upB ? UPC : DNC;
-      lines2.push([['O ', DIM], [formatAxisPrice(Number(pt.c.o)) + '   ', vc], ['H ', DIM], [formatAxisPrice(Number(pt.c.h)), vc]]);
-      lines2.push([['L ', DIM], [formatAxisPrice(Number(pt.c.l)) + '   ', vc], ['C ', DIM], [formatAxisPrice(Number(pt.c.c)), vc]]);
+      lines2.push([['O ', DIM], [formatAxisPrice(Number(pt.c.o)) + '  ', vc], ['H ', DIM], [formatAxisPrice(Number(pt.c.h)), vc]]);
+      lines2.push([['L ', DIM], [formatAxisPrice(Number(pt.c.l)) + '  ', vc], ['C ', DIM], [formatAxisPrice(Number(pt.c.c)), vc]]);
     } else {
-      lines2.push([[tt('tcPrice', 'Prix') + ' ', DIM], [formatAxisPrice(ref), '#F8E7B0']]);
-    }
-    if (isFinite(livePrice) && livePrice > 0 && isFinite(ref) && ref > 0) {
-      var diff = livePrice - ref;
-      var pct = diff / ref * 100;
-      var sgn = diff > 0 ? '+' : (diff < 0 ? '−' : '');
-      var dc = diff > 0 ? UPC : (diff < 0 ? DNC : '#F8E7B0');
-      lines2.push([[tt('tcVsNow', 'vs maintenant') + ' ', DIM], [sgn + formatAxisPrice(Math.abs(diff)) + ' (' + sgn + Math.abs(pct).toFixed(2) + ' %)', dc]]);
+      lines2.push([[formatAxisPrice(pt.v), '#F8E7B0']]);
     }
     lines2.push([[ttxt, DIM]]);
-    infoPanel(lines2, pad, layout, panelY);
+    infoPanel(lines2, pad, layout, panelY, x, 9);
     ctx.restore();
   }
 
@@ -2642,6 +2620,21 @@
       if (feedLag > 0) xNow -= feedLag;
     }
     xWin = Math.max(8000, zoomSmooth * 1000);
+    if (panAsset !== activeAsset) {
+      panAsset = activeAsset;
+      if (panMs) { stopPanAnim(); panEpoch++; panMs = 0; }
+      panView = null;
+    }
+    lastSeriesW = layout.seriesW;
+    panRightMs = Math.max(0, (layout.axisX - layout.headX) * xWin / Math.max(1, layout.seriesW));
+    var panWall = Date.now();
+    if (panLastWall && panMs > 0 && !panLiveAnim) {
+      var panDW = Math.max(0, Math.min(1000, panWall - panLastWall));
+      panMs += panDW;
+      if (panDragRef) panDragRef.ms += panDW;
+    }
+    panLastWall = panWall;
+    if (panMs) xNow -= panMs;
     // Ne plus forcer xWin sur la durée du plus vieux trade : ça bloquait le zoom+
     // dès qu'un trade était ouvert. Le zoom utilisateur prime.
 
@@ -2655,6 +2648,7 @@
     var xi;
     for (xi = 0; xi < candles.length; xi++) xTimes.push(candles[xi].t);
     var closes = closeSeries(market);
+    if (panTrim > 0) closes = closes.slice(0, Math.max(0, closes.length - panTrim));
     var visN = candles.length;
     var startIdx = Math.max(0, closes.length - visN);
     seriesScratch.length = 0;
@@ -2806,6 +2800,33 @@
 
     var minP = viewMin;
     var maxP = viewMax;
+    if (panMs > 0 && candles.length) {
+      var pLo = Infinity;
+      var pHi = -Infinity;
+      var pi;
+      for (pi = 0; pi < candles.length; pi++) {
+        var pl = Number(candles[pi].l);
+        var ph = Number(candles[pi].h);
+        if (!isFinite(pl) || !isFinite(ph)) { pl = Number(candles[pi].c); ph = pl; }
+        if (pl < pLo) pLo = pl;
+        if (ph > pHi) pHi = ph;
+      }
+      if (pHi > pLo) {
+        var pPad = (pHi - pLo) * 0.2;
+        var pMinSpan = (maxP - minP) * 0.5;
+        if ((pHi - pLo) + 2 * pPad < pMinSpan) pPad = (pMinSpan - (pHi - pLo)) / 2;
+        if (!panView) panView = { min: minP, max: maxP };
+        panView.min += ((pLo - pPad) - panView.min) * 0.2;
+        panView.max += ((pHi + pPad) - panView.max) * 0.2;
+        minP = panView.min;
+        maxP = panView.max;
+      }
+    } else if (panView) {
+      panView.min += (minP - panView.min) * 0.2;
+      panView.max += (maxP - panView.max) * 0.2;
+      if (Math.abs(panView.min - minP) + Math.abs(panView.max - maxP) < (maxP - minP) * 0.01) panView = null;
+      else { minP = panView.min; maxP = panView.max; }
+    }
 
     drawGrid(pad, w, seriesW, h, minP, maxP, theme);
 
@@ -2933,9 +2954,7 @@
     lastMaxP = maxP;
     lastMap = map;
 
-    // Plus haut / plus bas de l'écran (petits repères dorés).
     var touchCandleMode = asset.id !== 'stable' && (asset.id === 'titanpulse' || asset.chart === 'candle' || asset.id === 'horizon50');
-    try { drawHiLo(pad, h, layout, minP, maxP, candles, lineData, touchCandleMode); } catch (eHL) { /* ignore */ }
 
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     tradeYsScratch.length = 0;
@@ -2987,12 +3006,16 @@
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
     if (asset.id === 'v75') tagCol = '#ff2d75';
     if (asset.id === 'apex500') tagCol = '#C084FC';
-    if (map) {
+    // Historique regardé : le point du direct reste affiché tant que le bout de la courbe est à l'écran.
+    if (map && (!(panMs > 0) || (panTrim === 0 && map.lastX < layout.axisX - 70))) {
       drawBead(map, market.price, tagCol, now, theme);
       drawLivePriceBadge(map, market.price, layout, tagCol);
-      // Anneau de trade : se remplit autour du point en direct jusqu'à la fin du trade.
-      if (primary) drawTradeRing(map, primary, tagCol);
     }
+    if (panFxAt || panMs < 0 || panMs > panMaxMs) drawPanFx(pad, h, layout);
+    syncLiveBtn();
+    // Nouveau trade pendant qu'on regarde le passé : retour au direct.
+    if (allTrades.length > lastTradeN && panMs > 0) panGoLive();
+    lastTradeN = allTrades.length;
     if (touchCross || touchRipples.length || tradeCard) {
       drawTouchLayer(pad, h, layout, minP, maxP, candles, lineData, touchCandleMode, now, Number(market.price), !!(inds.ma || inds.bb || inds.ema));
     }
@@ -3167,6 +3190,7 @@
   function resetChartView() {
     // Rien à remettre (zoom normal, aucun indicateur) : on ne touche pas au cadre. Avant, chaque
     // clic recadrait la courbe (elle « descendait ») même sans zoom ni indicateur.
+    if (panMs) panGoLive();
     if (zoomIdx === DEFAULT_ZOOM_IDX && !inds.ma && !inds.bb && !inds.ema) return;
     var stNow = ensureAssetState(activeAsset);
     var tradeFrame = !!(stNow.lockUntil && Date.now() < stNow.lockUntil);
@@ -3221,21 +3245,96 @@
    * graphique réagit (le reste de la page ne bouge pas). Un doigt seul : rien ne change.
    * Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
    */
+  // Défilement de l'historique (affichage seulement) : recul en ms, élan, retour au direct.
+  function stopPanAnim() { if (panAnim) cancelAnimationFrame(panAnim); panAnim = 0; }
+  function panGoLive() {
+    // Retour au direct en glissant (bouton « Direct », Actualiser, nouveau trade).
+    stopPanAnim();
+    panEpoch++;
+    if (!(panMs > 0)) { panMs = 0; return; }
+    panLiveAnim = true;
+    var last = performance.now();
+    var epoch = panEpoch;
+    function step(t) {
+      if (epoch !== panEpoch) { panLiveAnim = false; panAnim = 0; return; }
+      var dt = Math.min(50, t - last);
+      last = t;
+      panMs += (0 - panMs) * Math.min(1, dt / 110);
+      if (panMs < 40) { panMs = 0; panAnim = 0; panLiveAnim = false; return; }
+      panAnim = requestAnimationFrame(step);
+    }
+    panAnim = requestAnimationFrame(step);
+  }
+  function panGlide(v) {
+    // Élan au lâcher, puis ressort si on a dépassé le direct ou le plus ancien.
+    stopPanAnim();
+    var last = performance.now();
+    var epoch = panEpoch;
+    function step(t) {
+      if (epoch !== panEpoch) { panAnim = 0; return; }
+      var dt = Math.min(50, t - last);
+      last = t;
+      var over = panMs < 0 || panMs > panMaxMs;
+      if (over) {
+        var target = panMs < 0 ? 0 : panMaxMs;
+        panMs += (target - panMs) * Math.min(1, dt / 90);
+        v = 0;
+        if (Math.abs(panMs - target) < 20) panMs = target;
+      } else {
+        panMs += v * dt;
+        v *= Math.pow(0.92, dt / 16.7);
+        panFxV = v / Math.max(0.001, (xWin > 0 ? xWin : 28000) / Math.max(40, lastSeriesW || 200)) * 16.7;
+        panFxAt = t;
+      }
+      if (panMs < 0 && !over) panMs = Math.max(panMs, -0.1 * xWin);
+      var stillOver = panMs < 0 || panMs > panMaxMs;
+      if (Math.abs(v) < 0.01 && !stillOver) { if (panMs < 40) panMs = 0; panAnim = 0; return; }
+      panAnim = requestAnimationFrame(step);
+    }
+    panAnim = requestAnimationFrame(step);
+  }
+  function ensureLiveBtn() {
+    var stage = document.getElementById('chart');
+    if (!stage) return null;
+    if (liveBtn && liveBtn.isConnected) return liveBtn;
+    liveBtn = document.createElement('button');
+    liveBtn.type = 'button';
+    liveBtn.className = 'chart-live-btn';
+    liveBtn.textContent = tt('liveBtn', 'Direct') + ' ⏩';
+    liveBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      panGoLive();
+    });
+    stage.appendChild(liveBtn);
+    return liveBtn;
+  }
+  function syncLiveBtn() {
+    var want = panMs > 1500;
+    if (want === liveBtnShown) return;
+    var b = ensureLiveBtn();
+    if (!b) return;
+    liveBtnShown = want;
+    b.textContent = tt('liveBtn', 'Direct') + ' ⏩';
+    b.classList.toggle('on', want);
+  }
+
   function bindPinch() {
     // Les doigts sont écoutés sur le CADRE du graphique (#chart) : la zone de dessin est volontairement
     // rendue « transparente » aux doigts par app.js (pour ne jamais bloquer un bouton). css/app.css y
     // coupe les gestes du navigateur. Événements tactiles classiques, reconnus par tous les téléphones.
     //  - deux doigts : zoom élastique (continu, résiste aux limites, revient au cran le plus proche) ;
-    //  - un doigt qui glisse : réticule (prix et heure sous le doigt, bulle de la bougie) ;
+    //  - un doigt qui glisse : défile l'historique (droite = passé), élan au lâcher, bouton « Direct » ;
+    //  - un doigt maintenu : croix (prix sous le doigt, carré O H L C et heure de la bougie) ;
     //  - un doigt qui tape : petite onde dorée ; sur la ligne d'un trade ouvert : sa carte.
-    // Affichage uniquement : la courbe, les prix, les trades et leur règlement ne sont pas concernés.
+    // Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
     var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
     stage.__oroPinch = true;
     // Petit message de découverte : écrans tactiles seulement, aux 4 premières visites de l'appareil,
     // disparaît seul après 5 s, et plus jamais dès que le joueur a utilisé un des gestes.
     var hintEl = null;
-    var hintKey = 'oro_gesture_hint2';
+    var hintKey = 'oro_gesture_hint3';
     function hintState() { try { return Number(localStorage.getItem(hintKey) || 0); } catch (eH) { return 99; } }
     function hideHint(forever) {
       if (forever) { try { localStorage.setItem(hintKey, '99'); } catch (eH2) { /* ignore */ } }
@@ -3246,7 +3345,7 @@
       setTimeout(function () {
         if (hintState() >= 4 || !stage.isConnected) return;
         try { localStorage.setItem(hintKey, String(hintState() + 1)); } catch (eH3) { /* ignore */ }
-        var txt = (D6.I18N && D6.I18N.t && D6.I18N.t('gestureHint') !== 'gestureHint') ? D6.I18N.t('gestureHint') : '2 doigts : zoom · 1 doigt : lire le prix';
+        var txt = tt('gestureHint', 'Glissez : historique · Maintenez : prix · Pincez : zoom');
         hintEl = document.createElement('div');
         hintEl.className = 'pinch-hint';
         hintEl.setAttribute('aria-hidden', 'true');
@@ -3254,7 +3353,7 @@
         hintEl.lastChild.textContent = txt;
         stage.appendChild(hintEl);
         requestAnimationFrame(function () { if (hintEl) hintEl.style.opacity = '1'; });
-        setTimeout(function () { hideHint(false); }, 5000);
+        setTimeout(function () { hideHint(false); }, 5500);
       }, 2500);
     }
     var MIN = ZOOM_STEPS[0];
@@ -3269,6 +3368,12 @@
       if (raw < MIN) return Math.max(MIN * 0.82, MIN - (MIN - raw) * 0.3);
       return raw;
     }
+    function elasticPan(raw) {
+      if (raw < 0) return Math.max(-0.1 * xWin, raw * 0.3);
+      if (raw > panMaxMs) return panMaxMs + (raw - panMaxMs) * 0.3;
+      return raw;
+    }
+    function msPerPx() { return (xWin > 0 ? xWin : 28000) / Math.max(40, lastSeriesW || 200); }
     function zoomEnd() {
       if (pinchSec === null) return;
       var cur = pinchSec;
@@ -3317,10 +3422,17 @@
         }
       } else if (e.touches.length === 1 && !mode) {
         var p = local(e.touches[0]);
-        one = { x0: p.x, y0: p.y, t: performance.now() };
-        // Doigt posé sans bouger un court instant : le réticule apparaît aussi.
+        var nowT = performance.now();
+        // Un doigt qui se pose arrête net l'élan en cours (comme les grandes plateformes).
+        if (panAnim) { stopPanAnim(); panEpoch++; }
+        panLiveAnim = false;
+        one = { x0: p.x, y0: p.y, t: nowT, ms: Math.max(0, panMs), lastX: p.x, lastT: nowT, v: 0, kind: '' };
+        panDragRef = one;
+        // Doigt maintenu sans bouger : la croix apparaît.
         clearTimeout(holdTimer);
-        holdTimer = setTimeout(function () { if (one) { touchCross = { x: one.x0, y: one.y0 }; hideHint(true); } }, 180);
+        holdTimer = setTimeout(function () {
+          if (one && !one.kind) { one.kind = 'cross'; touchCross = { x: one.x0, y: one.y0 }; hideHint(true); }
+        }, 260);
       }
     }, { passive: true });
     stage.addEventListener('touchmove', function (e) {
@@ -3330,14 +3442,29 @@
         if (e.cancelable) e.preventDefault();
         return;
       }
-      if (one && e.touches.length === 1) {
-        var p = local(e.touches[0]);
-        if (touchCross || Math.abs(p.x - one.x0) > 6 || Math.abs(p.y - one.y0) > 6) {
-          touchCross = { x: p.x, y: p.y };
-          hideHint(true);
-        }
-        if (e.cancelable) e.preventDefault();
+      if (!one || e.touches.length !== 1) return;
+      var p = local(e.touches[0]);
+      if (e.cancelable) e.preventDefault();
+      if (one.kind === 'cross') { touchCross = { x: p.x, y: p.y }; return; }
+      var dx = p.x - one.x0;
+      if (!one.kind) {
+        if (Math.abs(dx) < 8 && Math.abs(p.y - one.y0) < 8) return;
+        if (Math.abs(dx) < Math.abs(p.y - one.y0)) { one.kind = 'none'; clearTimeout(holdTimer); return; }
+        one.kind = 'pan';
+        clearTimeout(holdTimer);
+        tradeCard = null;
+        hideHint(true);
       }
+      if (one.kind !== 'pan') return;
+      var now = performance.now();
+      var k = msPerPx();
+      panMs = elasticPan(one.ms + dx * k);
+      var dtm = Math.max(1, now - one.lastT);
+      one.v = 0.6 * one.v + 0.4 * (((p.x - one.lastX) * k) / dtm);
+      one.lastX = p.x;
+      one.lastT = now;
+      panFxV = one.v / Math.max(0.001, k) * 16.7;
+      panFxAt = now;
     }, { passive: false });
     function onEnd(e) {
       if (mode === 'pinch') {
@@ -3346,9 +3473,15 @@
       }
       if (mode === 'wait') { if (!e.touches.length) mode = ''; return; }
       if (!one || e.touches.length) return;
-      var wasCross = !!touchCross;
+      panDragRef = null;
+      var kind = one.kind;
       crossOff();
-      if (e.type === 'touchend' && !wasCross && performance.now() - one.t < 350) {
+      if (kind === 'pan') {
+        // Élan seulement si le doigt bougeait encore au lâcher.
+        var v = (performance.now() - one.lastT) < 80 ? one.v : 0;
+        if (Math.abs(v) > 0.05 || panMs < 0 || panMs > panMaxMs) panGlide(v);
+        else if (panMs < 40) panMs = 0;
+      } else if (!kind && e.type === 'touchend' && performance.now() - one.t < 350) {
         touchRipples.push({ x: one.x0, y: one.y0, t: performance.now() });
         if (touchRipples.length > 4) touchRipples.shift();
         // Toucher la ligne d'un trade ouvert : sa carte (mise, gain possible, temps restant).

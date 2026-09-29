@@ -4084,3 +4084,8 @@ html body #chart .pinch-hint .pinch-ico{font-size:1.05rem}
 
 /* iPhone : pas de sélection de texte ni de menu « Copier » en touchant le graphique ou ses boutons. */
 html body #chart,html body #chart *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
+/* Bouton « Direct » : apparaît quand on regarde l'historique du graphique, ramène au direct. */
+html body #chart .chart-live-btn{position:absolute;right:64px;bottom:12px;z-index:31;display:none;align-items:center;gap:4px;
+  padding:6px 12px;border-radius:999px;border:1px solid rgba(245,197,24,.6);background:rgba(12,17,30,.9);color:#F8E7B0;
+  font-size:.74rem;font-weight:800;letter-spacing:.02em;box-shadow:0 4px 14px rgba(0,0,0,.45);cursor:pointer}
+html body #chart .chart-live-btn.on{display:inline-flex}
