@@ -4109,20 +4109,18 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
   html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after{height:92px!important}
   html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{height:54px!important}
 }
-/* iPhone : même rendu qu'Android — boutons à la même place ; plus de lueur de feu qui dépasse autour du
-   bloc ni de bande orange en dessous : une seule bordure sombre, et le bas sombre légèrement orangé
-   continue jusqu'en bas de l'écran. */
+/* iPhone : même rendu qu'Android — boutons à la même place. Le carré orange est entouré d'une petite
+   bordure sombre, légèrement chaude en bas, coupée net avec des coins arrondis : le bloc s'arrête là
+   (plus de lueur de feu autour ni de bande orange qui descend jusqu'en bas de l'écran). */
 @media (max-width:859px){
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad,
-  html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad.glass{box-shadow:none!important}
-  /* Le fond derrière le bloc : même sombre que la bordure du carré, légèrement orangé en bas, sans animation. */
-  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed{
-    background:linear-gradient(to top,#1f1a18 0%,#1a1719 40%,rgba(13,19,34,0) 100%)!important;animation:none!important;opacity:1!important}
-  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::before,
-  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed::after,
-  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed svg,
-  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .spark,
-  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed .fire-rim{display:none!important}
+  html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad.glass{
+    box-shadow:none!important;border-radius:14px 14px 18px 18px!important;
+    background:linear-gradient(180deg,#0D1322 0%,#0D1322 70%,#141722 86%,#211a16 100%)!important}
+  html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after,
+  html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{
+    bottom:12px!important;border-radius:0 0 14px 14px!important}
+  html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed,
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::before,
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::after{display:none!important}
 }

@@ -2019,8 +2019,13 @@
     mx += (idx % 3) * 5 - 5;
     ey += badgeLift;
     var r = lite ? 7 : 9;
-    if (mx < pad.l - r) mx = pad.l + r + 2;
-    if (mx > layout.headX) mx = layout.headX;
+    if (panMs > 0) {
+      // Historique regardé : le rond reste accroché à sa bougie et suit le défilement ; hors écran, caché.
+      if (mx < pad.l - r || mx > layout.axisX - r) mx = -1000;
+    } else {
+      if (mx < pad.l - r) mx = pad.l + r + 2;
+      if (mx > layout.headX) mx = layout.headX;
+    }
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
     g.save();
     g.beginPath();
@@ -2806,6 +2811,14 @@
         if (!isFinite(pl) || !isFinite(ph)) { pl = Number(candles[pi].c); ph = pl; }
         if (pl < pLo) pLo = pl;
         if (ph > pHi) pHi = ph;
+      }
+      // Les trades ouverts restent à leur vrai prix, toujours visibles (jamais collés en haut ou en bas).
+      for (pi = 0; pi < allTrades.length; pi++) {
+        var pe = allTrades[pi] && allTrades[pi].assetId === activeAsset ? Number(allTrades[pi].entryPrice) : NaN;
+        if (isFinite(pe) && pe > 0) {
+          if (pe < pLo) pLo = pe;
+          if (pe > pHi) pHi = pe;
+        }
       }
       if (pHi > pLo) {
         var pPad = (pHi - pLo) * 0.2;
