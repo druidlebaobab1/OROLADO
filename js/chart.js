@@ -659,7 +659,10 @@
       // La mesure est publiée dans une variable CSS plutôt qu'écrite en style
       // inline : la feuille Android impose déjà des hauteurs en `!important`, et
       // une bataille de priorités laissait la carte et la scène désaccordées.
-      if (stdH >= 240) {
+      // Seuil 150 px (avant 240) : sur un Android court (barre de Chrome + boutons Android), la place
+      // libre au-dessus des boutons fait ~210 px ; la mesure était ignorée et le bas du graphique
+      // passait SOUS la rangée des durées (la tête de la courbe s’y cachait quand le marché baissait).
+      if (stdH >= 150) {
         document.documentElement.style.setProperty('--oro-chart-h', stdH + 'px');
       }
     } else {
