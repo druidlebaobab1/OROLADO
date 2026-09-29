@@ -32,14 +32,15 @@
    * appareil. Maintenant chaque appareil mesure l'heure d'arrivée réelle des prix et garde un
    * délai juste au-dessus (monte vite si besoin, redescend très lentement).
    */
-  var dispDelay = DISPLAY_DELAY;
-  var needDelay = DISPLAY_DELAY;
+  // Départ avec une marge confortable (avant : 0,8 s → « tic tic » à l'arrivée le temps de s'ajuster).
+  var dispDelay = 1500;
+  var needDelay = 1500;
   function noteArrival(lastTick) {
     if (!clock.ready || !(lastTick > 0)) return;
     var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
     if (!isFinite(lag) || lag < 0 || lag > 8000) return;
-    // Besoin = retard observé + marge de 2 intervalles de lecture.
-    var want = lag + 2 * POLL_MS;
+    // Besoin = retard observé + un intervalle de lecture + 0,1 s de réserve.
+    var want = lag + POLL_MS + 100;
     needDelay = want > needDelay ? want : needDelay * 0.997 + want * 0.003;
     var target = Math.max(DISPLAY_DELAY, Math.min(1800, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 40);
