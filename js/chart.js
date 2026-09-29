@@ -387,6 +387,12 @@
     if (!ot || ot.assetId !== activeAsset) return;
     var otMode = ot.mode === 'real' ? 'real' : 'demo';
     if (otMode !== viewMode()) return;
+    // Le rond et le trait d'entrée n'apparaissent qu'au VRAI point d'entrée (fixé par le serveur),
+    // au moment où la courbe l'atteint : ils tombent pile sur la courbe et ne bougent plus.
+    // Avant : posés sur l'écran au clic, puis déplacés vers le vrai prix à la réponse du serveur.
+    // Filet de sécurité : sans confirmation au bout de 6 s, le trade s'affiche quand même.
+    if (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 6000)) return;
+    if (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime) return;
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
     var v = openTradeVisuals[ot.id];
