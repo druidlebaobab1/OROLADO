@@ -27,6 +27,9 @@
   var DEFAULT_ZOOM_IDX = 8; // 28 s (défaut d'origine)
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 28;
+  // Zoom élastique (pincement) : valeur continue pendant le geste, et douceur du suivi.
+  var pinchSec = null;
+  var zoomEase = 0.38;
   var wantFitY = false;
   // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
   var CANDLE_DURATION_MS = 1000;
@@ -131,6 +134,7 @@
   }
 
   function zoomSec() {
+    if (pinchSec !== null) return pinchSec;
     return ZOOM_STEPS[zoomIdx] || 60;
   }
 
@@ -2371,7 +2375,7 @@
 
     var wantZoom = zoomSec();
     if (!(zoomSmooth > 0)) zoomSmooth = wantZoom;
-    zoomSmooth += (wantZoom - zoomSmooth) * 0.38;
+    zoomSmooth += (wantZoom - zoomSmooth) * zoomEase;
     if (Math.abs(zoomSmooth - wantZoom) < 0.4) zoomSmooth = wantZoom;
     xNow = frameWallClock(now);
     // Retour de veille : tant que les prix manqués n'ont pas été reçus, on affiche la courbe
@@ -2942,7 +2946,101 @@
   }
 
   var toolsBound = false;
+  /*
+   * ZOOM ÉLASTIQUE : pincer à deux doigts sur le graphique (téléphone, tablette, PC tactile, pavé
+   * tactile). Pendant le geste le zoom suit les doigts en continu ; aux limites (10 s / 11 min) il
+   * résiste comme un élastique ; au lâcher il revient en douceur au cran le plus proche. Seul le
+   * graphique réagit (le reste de la page ne bouge pas). Un doigt seul : rien ne change.
+   * Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
+   */
+  function bindPinch() {
+    var stage = document.getElementById('chartStage');
+    if (!stage || stage.__oroPinch) return;
+    stage.__oroPinch = true;
+    stage.style.touchAction = 'none';
+    var MIN = ZOOM_STEPS[0];
+    var MAX = ZOOM_STEPS[ZOOM_STEPS.length - 1];
+    var pts = {};
+    var start = null;
+    var easeTimer = 0;
+    function count() { return Object.keys(pts).length; }
+    function dist() {
+      var k = Object.keys(pts);
+      if (k.length < 2) return 0;
+      var a = pts[k[0]];
+      var b = pts[k[1]];
+      return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+    }
+    function elastic(raw) {
+      if (raw > MAX) return Math.min(MAX * 1.18, MAX + (raw - MAX) * 0.3);
+      if (raw < MIN) return Math.max(MIN * 0.82, MIN - (MIN - raw) * 0.3);
+      return raw;
+    }
+    function begin(d) {
+      clearTimeout(easeTimer);
+      start = { dist: d, sec: pinchSec !== null ? pinchSec : (zoomSmooth || zoomSec()) };
+      pinchSec = start.sec;
+      zoomEase = 0.55;
+    }
+    function finish() {
+      if (pinchSec === null) return;
+      start = null;
+      var cur = pinchSec;
+      var best = zoomIdx;
+      var bd = Infinity;
+      var i;
+      for (i = 0; i < ZOOM_STEPS.length; i++) {
+        var dd = Math.abs(Math.log(ZOOM_STEPS[i] / Math.max(1, cur)));
+        if (dd < bd) { bd = dd; best = i; }
+      }
+      zoomIdx = best;
+      pinchSec = null;
+      // Retour « ressort » vers le cran, un peu plus lent, puis réglage normal.
+      zoomEase = 0.16;
+      easeTimer = setTimeout(function () { zoomEase = 0.38; }, 700);
+      wantFitY = true;
+      persistView(activeAsset);
+    }
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (count() === 2) {
+        var d = dist();
+        if (d > 16) begin(d);
+      }
+    }, { passive: true });
+    stage.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (!start || count() < 2) return;
+      var d = dist();
+      if (!(d > 0)) return;
+      pinchSec = elastic(start.sec * start.dist / d);
+      if (e.cancelable) e.preventDefault();
+    }, { passive: false });
+    function lift(e) {
+      if (!pts[e.pointerId]) return;
+      delete pts[e.pointerId];
+      if (count() < 2 && start) finish();
+    }
+    stage.addEventListener('pointerup', lift);
+    stage.addEventListener('pointercancel', lift);
+    // Pavé tactile d'ordinateur : le pincement arrive comme « molette + Ctrl ».
+    var wheelTimer = 0;
+    stage.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      clearTimeout(easeTimer);
+      var cur = pinchSec !== null ? pinchSec : zoomSec();
+      pinchSec = elastic(cur * Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.01));
+      zoomEase = 0.55;
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(finish, 180);
+    }, { passive: false });
+  }
+
   function bindTools() {
+    try { bindPinch(); } catch (ePinch) { /* ignore */ }
     if (toolsBound) return;
     toolsBound = true;
     ensureToolbarExtras();
