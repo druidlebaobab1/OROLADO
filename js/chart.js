@@ -52,6 +52,9 @@
   var panLiveAnim = false;
   // Suivi doux du doigt (cible du défilement) et bref message au bout de l'historique.
   var panFollow = false;
+  var HIST_VIEW_MS = 10 * 60 * 1000;
+  var panDataMaxMs = 0;
+  var pendingTrades = {};
   var panTarget = 0;
   var histMsgEl = null;
   var histMsgTimer = 0;
@@ -422,8 +425,15 @@
     // au moment où la courbe l'atteint : ils tombent pile sur la courbe et ne bougent plus.
     // Avant : posés sur l'écran au clic, puis déplacés vers le vrai prix à la réponse du serveur.
     // Filet de sécurité : sans confirmation au bout de 6 s, le trade s'affiche quand même.
-    if (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 6000)) return;
-    if (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime) return;
+    var hideNow = (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 6000)) ||
+      (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime);
+    if (hideNow) {
+      // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
+      if (!pendingTrades[ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
+      pendingTrades[ot.id].seen = collectNow;
+      return;
+    }
+    if (pendingTrades[ot.id]) delete pendingTrades[ot.id];
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
     var v = openTradeVisuals[ot.id];
@@ -1028,7 +1038,11 @@
     var end = done.length;
     var withForming = !!forming;
     panTrim = 0;
-    if (done.length > 1) panMaxMs = Math.max(0, (xNow + panMs) - done[0].t - (xWin > 0 ? xWin : 28000) + CANDLE_DURATION_MS * 0.6);
+    if (done.length > 1) {
+      var histSpan = (xNow + panMs) - done[0].t;
+      panDataMaxMs = Math.max(0, histSpan - (xWin > 0 ? xWin : 28000) + CANDLE_DURATION_MS * 0.6);
+      panMaxMs = Math.max(0, Math.min(histSpan, HIST_VIEW_MS) - (xWin > 0 ? xWin : 28000) + CANDLE_DURATION_MS * 0.6);
+    }
     if (panMs > 0 && done.length) {
       // Historique regardé : seulement les bougies qui tombent dans l'écran (le bout à droite est coupé).
       var rightT = xNow + panRightMs + CANDLE_DURATION_MS;
@@ -2065,6 +2079,26 @@
     octx.clearRect(0, 0, cssW, cssH);
   }
 
+  function drawPendingPulse(map, now) {
+    var id;
+    var pNow = performance.now();
+    for (id in pendingTrades) {
+      if (!pendingTrades.hasOwnProperty(id)) continue;
+      var pt = pendingTrades[id];
+      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500)) { delete pendingTrades[id]; continue; }
+      var k = ((pNow - pt.t) % 650) / 650;
+      var col = pt.side === 'put' ? '255,59,48' : '0,230,118';
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(' + col + ',' + (0.85 * (1 - k)).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(map.lastX, map.lastY, 8 + 16 * k, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      break;
+    }
+  }
+
   function drawBead(map, price, color, now, theme) {
     if (!map) return;
     theme = theme || plotTheme(null);
@@ -2589,8 +2623,10 @@
     var panWall = Date.now();
     if (panLastWall && panMs > 0 && !panLiveAnim) {
       var panDW = Math.max(0, Math.min(1000, panWall - panLastWall));
-      panMs += panDW;
-      if (panDragRef) panDragRef.ms += panDW;
+      if (!(panDataMaxMs > 0) || panMs + panDW <= panDataMaxMs) {
+        panMs += panDW;
+        if (panDragRef) panDragRef.ms += panDW;
+      }
       if (panFollow) panTarget += panDW;
     }
     panLastWall = panWall;
@@ -2970,6 +3006,7 @@
     if (map && (!(panMs > 0) || (panTrim === 0 && map.lastX < layout.axisX - 70))) {
       drawBead(map, market.price, tagCol, now, theme);
       drawLivePriceBadge(map, market.price, layout, tagCol);
+      drawPendingPulse(map, now);
     }
     // Nouveau trade pendant qu'on regarde le passé : retour au direct.
     if (allTrades.length > lastTradeN && panMs > 0) panGoLive();
@@ -3240,26 +3277,21 @@
     panAnim = requestAnimationFrame(step);
   }
   function panGlide(v) {
-    // Élan calme au lâcher (la courbe ralentit tranquillement), puis ressort si on a dépassé un bout.
+    // Élan calme au lâcher (la courbe ralentit tranquillement), arrêt net aux deux bouts.
     stopPanAnim();
+    var glideFrom = panMs;
     var last = performance.now();
     var epoch = panEpoch;
     function step(t) {
       if (epoch !== panEpoch) { panAnim = 0; return; }
       var dt = Math.min(50, t - last);
       last = t;
-      var over = panMs < 0 || panMs > panMaxMs;
-      if (over) {
-        var target = panMs < 0 ? 0 : panMaxMs;
-        panMs += (target - panMs) * Math.min(1, dt / 120);
-        v = 0;
-        if (Math.abs(panMs - target) < 15) panMs = target;
-      } else {
-        panMs += v * dt;
-        v *= Math.pow(0.95, dt / 16.7);
-      }
-      var stillOver = panMs < 0 || panMs > panMaxMs;
-      if (Math.abs(v) < 0.005 && !stillOver) { if (panMs < 40) panMs = 0; panAnim = 0; return; }
+      var wallG = Math.max(panMaxMs, glideFrom);
+      panMs += v * dt;
+      v *= Math.pow(0.95, dt / 16.7);
+      if (panMs <= 0) { panMs = 0; panAnim = 0; return; }
+      if (panMs >= wallG && v > 0) { panMs = wallG; panAnim = 0; showHistLimit(); return; }
+      if (Math.abs(v) < 0.005) { if (panMs < 40) panMs = 0; panAnim = 0; return; }
       panAnim = requestAnimationFrame(step);
     }
     panAnim = requestAnimationFrame(step);
@@ -3268,17 +3300,16 @@
     // Bref message quand on insiste au bout du passé : l'historique affiché est limité.
     var stage = document.getElementById('chart');
     if (!stage) return;
-    var mins = Math.max(1, Math.round((panMaxMs + (xWin > 0 ? xWin : 28000)) / 60000));
     if (!histMsgEl || !histMsgEl.isConnected) {
       histMsgEl = document.createElement('div');
       histMsgEl.className = 'chart-hist-msg';
       histMsgEl.setAttribute('aria-hidden', 'true');
       stage.appendChild(histMsgEl);
     }
-    histMsgEl.textContent = tt('histLimit', 'Historique limité aux {n} dernières minutes').replace('{n}', String(mins));
+    histMsgEl.textContent = '🔒 ' + tt('histLimit', 'Historique : 10 dernières min');
     histMsgEl.classList.add('on');
     clearTimeout(histMsgTimer);
-    histMsgTimer = setTimeout(function () { if (histMsgEl) histMsgEl.classList.remove('on'); }, 2200);
+    histMsgTimer = setTimeout(function () { if (histMsgEl) histMsgEl.classList.remove('on'); }, 1200);
   }
 
   function bindPinch() {
@@ -3305,9 +3336,11 @@
       if (raw < MIN) return Math.max(MIN * 0.82, MIN - (MIN - raw) * 0.3);
       return raw;
     }
-    function elasticPan(raw) {
-      if (raw < 0) return Math.max(-0.08 * xWin, raw * 0.25);
-      if (raw > panMaxMs) return panMaxMs + Math.min(0.08 * xWin, (raw - panMaxMs) * 0.25);
+    function clampPan(raw, from) {
+      // Mur net : au bout de l'historique la courbe ne bouge plus d'un millimètre (ni ressort, ni aspiration).
+      var wall = Math.max(panMaxMs, from || 0);
+      if (raw < 0) return 0;
+      if (raw > wall) return wall;
       return raw;
     }
     // Sensibilité calme : un glissement de doigt déplace la courbe de moitié moins.
@@ -3399,8 +3432,8 @@
       var now = performance.now();
       var k = msPerPx();
       var raw = one.ms + dx * k;
-      if (raw > panMaxMs + 0.03 * xWin && !one.warned) { one.warned = true; showHistLimit(); }
-      panTarget = elasticPan(raw);
+      if (raw > Math.max(panMaxMs, one.ms) + 0.02 * xWin && !one.warned) { one.warned = true; showHistLimit(); }
+      panTarget = clampPan(raw, one.ms);
       panFollowStart();
       var dtm = Math.max(1, now - one.lastT);
       one.v = 0.7 * one.v + 0.3 * (((p.x - one.lastX) * k) / dtm);
@@ -3421,7 +3454,7 @@
         // La courbe finit de rejoindre le doigt, puis l'élan (seulement si le doigt bougeait encore).
         panMs = panTarget;
         var v = (performance.now() - one.lastT) < 80 ? one.v : 0;
-        if (Math.abs(v) > 0.02 || panMs < 0 || panMs > panMaxMs) panGlide(v);
+        if (Math.abs(v) > 0.02) panGlide(v);
         else { stopPanAnim(); if (panMs < 40) panMs = 0; }
       } else if (!kind && e.type === 'touchend' && performance.now() - one.t < 350) {
         // Toucher la ligne d'un trade ouvert : sa carte (mise, gain possible, temps restant).

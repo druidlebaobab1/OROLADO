@@ -5688,6 +5688,19 @@
     }
     hook($('btnOpenDeposit'), function () { openDeposit(); });
     hook($('btnCall'), function () { execute('call'); });
+    // Retour visuel immédiat sur ACHETER / VENDRE (n'empêche aucun clic, même répété).
+    ['btnCall', 'btnPut'].forEach(function (bid) {
+      var b = $(bid);
+      if (!b || b.__oroSent) return;
+      b.__oroSent = true;
+      b.addEventListener('pointerdown', function () {
+        b.classList.remove('btn-sent');
+        void b.offsetWidth;
+        b.classList.add('btn-sent');
+        clearTimeout(b.__oroSentT);
+        b.__oroSentT = setTimeout(function () { b.classList.remove('btn-sent'); }, 500);
+      }, { passive: true });
+    });
     hook($('btnPut'), function () { execute('put'); });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       hook(chip, function () {
