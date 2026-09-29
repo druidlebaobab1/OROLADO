@@ -2047,6 +2047,23 @@
   Object.keys(GESTURE_I18N).forEach(function (code) {
     if (DICT[code]) DICT[code].gestureHint = GESTURE_I18N[code];
   });
+  // Carte d'un trade touché et panneau du réticule (graphique).
+  var TRADECARD_I18N = {
+    en: { tcBuy: 'BUY ↗', tcSell: 'SELL ↘', tcStake: 'Stake', tcGain: 'Possible gain', tcLeft: 'Left', tcWin: 'Winning now', tcLose: 'Losing now', tcPrice: 'Price', tcVsNow: 'vs now' },
+    fr: { tcBuy: 'ACHAT ↗', tcSell: 'VENTE ↘', tcStake: 'Mise', tcGain: 'Gain possible', tcLeft: 'Reste', tcWin: 'Gagnant en ce moment', tcLose: 'Perdant en ce moment', tcPrice: 'Prix', tcVsNow: 'vs maintenant' },
+    es: { tcBuy: 'COMPRA ↗', tcSell: 'VENTA ↘', tcStake: 'Apuesta', tcGain: 'Ganancia posible', tcLeft: 'Quedan', tcWin: 'Ganando ahora', tcLose: 'Perdiendo ahora', tcPrice: 'Precio', tcVsNow: 'vs ahora' },
+    pt: { tcBuy: 'COMPRA ↗', tcSell: 'VENDA ↘', tcStake: 'Aposta', tcGain: 'Ganho possível', tcLeft: 'Restam', tcWin: 'Ganhando agora', tcLose: 'Perdendo agora', tcPrice: 'Preço', tcVsNow: 'vs agora' },
+    ar: { tcBuy: 'شراء ↗', tcSell: 'بيع ↘', tcStake: 'الرهان', tcGain: 'الربح المحتمل', tcLeft: 'المتبقي', tcWin: 'رابح الآن', tcLose: 'خاسر الآن', tcPrice: 'السعر', tcVsNow: 'مقابل الآن' },
+    tr: { tcBuy: 'AL ↗', tcSell: 'SAT ↘', tcStake: 'Bahis', tcGain: 'Olası kazanç', tcLeft: 'Kalan', tcWin: 'Şu an kazanıyor', tcLose: 'Şu an kaybediyor', tcPrice: 'Fiyat', tcVsNow: 'şimdiye göre' },
+    vi: { tcBuy: 'MUA ↗', tcSell: 'BÁN ↘', tcStake: 'Tiền cược', tcGain: 'Lãi có thể', tcLeft: 'Còn', tcWin: 'Đang thắng', tcLose: 'Đang thua', tcPrice: 'Giá', tcVsNow: 'so với hiện tại' },
+    id: { tcBuy: 'BELI ↗', tcSell: 'JUAL ↘', tcStake: 'Taruhan', tcGain: 'Potensi untung', tcLeft: 'Sisa', tcWin: 'Sedang menang', tcLose: 'Sedang kalah', tcPrice: 'Harga', tcVsNow: 'vs sekarang' },
+    ru: { tcBuy: 'ПОКУПКА ↗', tcSell: 'ПРОДАЖА ↘', tcStake: 'Ставка', tcGain: 'Возможный выигрыш', tcLeft: 'Осталось', tcWin: 'Сейчас в плюсе', tcLose: 'Сейчас в минусе', tcPrice: 'Цена', tcVsNow: 'к текущей' },
+    de: { tcBuy: 'KAUF ↗', tcSell: 'VERKAUF ↘', tcStake: 'Einsatz', tcGain: 'Möglicher Gewinn', tcLeft: 'Noch', tcWin: 'Gerade im Plus', tcLose: 'Gerade im Minus', tcPrice: 'Preis', tcVsNow: 'vs jetzt' },
+    hi: { tcBuy: 'खरीद ↗', tcSell: 'बिक्री ↘', tcStake: 'दांव', tcGain: 'संभावित लाभ', tcLeft: 'बाकी', tcWin: 'अभी जीत रहे', tcLose: 'अभी हार रहे', tcPrice: 'कीमत', tcVsNow: 'अभी से तुलना' }
+  };
+  Object.keys(TRADECARD_I18N).forEach(function (code) {
+    if (DICT[code]) Object.assign(DICT[code], TRADECARD_I18N[code]);
+  });
 
   // Conditions d'utilisation (18 articles) + Bonus / Voir plus, pour les 9 autres langues.
   var TERMS_I18N = {

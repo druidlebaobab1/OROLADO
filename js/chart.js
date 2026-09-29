@@ -33,6 +33,9 @@
   // Doigt sur le graphique : position du réticule (null = caché) et ondes dorées en cours.
   var touchCross = null;
   var touchRipples = [];
+  // Trade touché (carte en haut) et positions des lignes de trade de la dernière image.
+  var tradeCard = null;
+  var tradeHits = [];
   var wantFitY = false;
   // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
   var CANDLE_DURATION_MS = 1000;
@@ -361,6 +364,7 @@
       openPrice: entry,
       barrier: trade.barrier != null ? Number(trade.barrier) : entry,
       payout: Number(trade.payout) || 1.88,
+      stake: Number(trade.stake) || 0,
       startTime: trade.startTime || trade.startedAt || trade.openedAt || 0,
       expiryTime: exp,
       expiresAt: exp,
@@ -2076,10 +2080,125 @@
     ctx.restore();
   }
 
-  // Doigt sur le graphique : réticule (lignes qui suivent le doigt, prix et heure, bulle de la bougie)
-  // et onde dorée au toucher. Dessin posé par-dessus, rien d'autre ne bouge.
+  // Doigt sur le graphique : réticule (prix sous le doigt à droite, infos de la bougie en haut au
+  // milieu, écart avec le prix actuel), onde dorée au toucher, carte d'un trade touché.
+  // Plus haut / plus bas de l'écran et anneau de trade. Dessins posés par-dessus : rien ne bouge.
   function pad2(v) { return (v < 10 ? '0' : '') + v; }
-  function drawTouchLayer(pad, h, layout, minP, maxP, candles, candleMode, now) {
+  function tt(key, fb) {
+    var s = (D6.I18N && D6.I18N.t) ? D6.I18N.t(key) : key;
+    return (s && s !== key) ? s : fb;
+  }
+  function seriesPoint(i, n, pad, layout, candles, lineData, candleMode) {
+    var x = baseIndexX(i, n, pad, layout.seriesW);
+    if (candleMode) {
+      var c = candles[i];
+      return { x: x, c: c, v: Number(c.c), hi: Number(c.h), lo: Number(c.l), t: Number(c.t) || 0 };
+    }
+    var off = xTimes && xTimes.length >= n ? xTimes.length - n : 0;
+    var v = Number(lineData[i]);
+    return { x: x, c: null, v: v, hi: v, lo: v, t: xTimes ? Number(xTimes[off + i]) || 0 : 0 };
+  }
+  function drawHiLo(pad, h, layout, minP, maxP, candles, lineData, candleMode) {
+    var n = candleMode ? (candles ? candles.length : 0) : (lineData ? lineData.length : 0);
+    if (n < 4) return;
+    var hiI = -1;
+    var loI = -1;
+    var hiV = -Infinity;
+    var loV = Infinity;
+    var i;
+    for (i = 0; i < n; i++) {
+      var hv = candleMode ? Number(candles[i].h) : Number(lineData[i]);
+      var lv = candleMode ? Number(candles[i].l) : Number(lineData[i]);
+      if (isFinite(hv) && hv > hiV) { hiV = hv; hiI = i; }
+      if (isFinite(lv) && lv < loV) { loV = lv; loI = i; }
+    }
+    if (hiI < 0 || loI < 0 || !(hiV > loV)) return;
+    var top = pad.t;
+    var bot = pad.t + h;
+    ctx.save();
+    ctx.font = '600 9px ui-monospace, Menlo, Consolas, monospace';
+    ctx.textAlign = 'center';
+    [[hiI, hiV, true], [loI, loV, false]].forEach(function (it) {
+      var x = baseIndexX(it[0], n, pad, layout.seriesW);
+      if (x < pad.l + 14 || x > layout.headX - 26) return;
+      var y = plotToY(it[1], pad, h, minP, maxP);
+      var isHi = it[2];
+      // Petit triangle doré qui pointe le plus haut (par-dessus) ou le plus bas (par-dessous).
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = '#F5C518';
+      ctx.beginPath();
+      if (isHi) { ctx.moveTo(x, y - 3); ctx.lineTo(x - 3.5, y - 8); ctx.lineTo(x + 3.5, y - 8); }
+      else { ctx.moveTo(x, y + 3); ctx.lineTo(x - 3.5, y + 8); ctx.lineTo(x + 3.5, y + 8); }
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 0.75;
+      ctx.fillStyle = '#F8E7B0';
+      var txt = formatAxisPrice(it[1]);
+      if (isHi && y - 22 < top) { ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x + 7, y - 5); }
+      else if (!isHi && y + 22 > bot) { ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, x + 7, y + 5); }
+      else {
+        ctx.textAlign = 'center';
+        ctx.textBaseline = isHi ? 'bottom' : 'top';
+        ctx.fillText(txt, x, isHi ? y - 10 : y + 10);
+      }
+    });
+    ctx.restore();
+  }
+  function drawTradeRing(map, trade, color) {
+    if (!map || !trade || !isFinite(map.lastX) || !isFinite(map.lastY)) return;
+    var st0 = Number(trade.startTime) || 0;
+    var exp = Number(trade.expiryTime || trade.expiresAt) || 0;
+    var nowMs = Date.now();
+    if (!(exp > st0) || !st0 || nowMs >= exp) return;
+    var k = Math.max(0, Math.min(1, (nowMs - st0) / (exp - st0)));
+    ctx.save();
+    ctx.lineWidth = 2.2;
+    ctx.globalAlpha = 0.18;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.arc(map.lastX, map.lastY, 17, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.9;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(map.lastX, map.lastY, 17, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k);
+    ctx.stroke();
+    ctx.restore();
+  }
+  function infoPanel(lines, pad, layout, topY) {
+    // Petit panneau léger en haut au milieu (comme les grandes plateformes).
+    ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace';
+    var bw = 0;
+    lines.forEach(function (ln) {
+      var wsum = 0;
+      ln.forEach(function (seg) { wsum += ctx.measureText(seg[0]).width; });
+      if (wsum > bw) bw = wsum;
+    });
+    bw = Math.ceil(bw) + 16;
+    var bh = lines.length * 14 + 6;
+    var cx = pad.l + (layout.axisX - pad.l) / 2;
+    var bx = Math.max(pad.l + 2, Math.min(layout.axisX - bw - 2, cx - bw / 2));
+    ctx.fillStyle = 'rgba(10,14,24,0.55)';
+    roundRectOn(ctx, bx, topY, bw, bh, 7);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(245,197,24,0.28)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    lines.forEach(function (ln, li) {
+      var wsum = 0;
+      ln.forEach(function (seg) { wsum += ctx.measureText(seg[0]).width; });
+      var x = bx + (bw - wsum) / 2;
+      var y = topY + 10 + li * 14;
+      ln.forEach(function (seg) {
+        ctx.fillStyle = seg[1];
+        ctx.fillText(seg[0], x, y);
+        x += ctx.measureText(seg[0]).width;
+      });
+    });
+  }
+  function drawTouchLayer(pad, h, layout, minP, maxP, candles, lineData, candleMode, now, livePrice, legendOn) {
     var i;
     if (touchRipples.length) {
       ctx.save();
@@ -2103,16 +2222,42 @@
       }
       ctx.restore();
     }
-    if (!touchCross) return;
     var top = pad.t;
     var bot = pad.t + h;
+    var panelY = top + (legendOn ? 24 : 6);
+    var DIM = 'rgba(248,231,176,0.6)';
+    var UPC = '#00E676';
+    var DNC = '#FF4D6A';
+    if (!touchCross) {
+      // Carte du trade touché (se ferme au toucher suivant, à la fin du trade ou après 6 s).
+      if (!tradeCard) return;
+      var tv = tradeCard.v;
+      var expC = Number(tv.expiryTime || tv.expiresAt) || 0;
+      var nowC = Date.now();
+      if (nowC >= expC || nowC > tradeCard.until || tv.assetId !== activeAsset) { tradeCard = null; return; }
+      var isCall = tv.side === 'call';
+      var entryC = Number(tv.entryPrice);
+      var winning = isCall ? livePrice > entryC : livePrice < entryC;
+      var stakeC = Number(tv.stake) || 0;
+      var sideCol = isCall ? UPC : DNC;
+      var lines = [[[isCall ? tt('tcBuy', 'ACHAT ↗') : tt('tcSell', 'VENTE ↘'), sideCol]]];
+      if (stakeC > 0) {
+        lines.push([[tt('tcStake', 'Mise') + ' ', DIM], [stakeC.toFixed(2) + ' $', '#F8E7B0']]);
+        lines.push([[tt('tcGain', 'Gain possible') + ' ', DIM], ['+' + (stakeC * ((Number(tv.payout) || 1.88) - 1)).toFixed(2) + ' $', UPC]]);
+      }
+      lines.push([[tt('tcLeft', 'Reste') + ' ', DIM], [Math.max(0, (expC - nowC) / 1000).toFixed(1) + ' s', '#F8E7B0']]);
+      lines.push([[winning ? tt('tcWin', 'Gagnant en ce moment') : tt('tcLose', 'Perdant en ce moment'), winning ? UPC : DNC]]);
+      ctx.save();
+      infoPanel(lines, pad, layout, panelY);
+      ctx.restore();
+      return;
+    }
     var x = Math.max(pad.l, Math.min(layout.axisX, touchCross.x));
     var y = Math.max(top, Math.min(bot, touchCross.y));
     var price = minP + (1 - (y - top) / h) * Math.max(maxP - minP, 0.01);
-    var tAt = 0;
-    var bar = null;
-    if (candleMode && candles && candles.length) {
-      var n = candles.length;
+    var n = candleMode ? (candles ? candles.length : 0) : (lineData ? lineData.length : 0);
+    var pt = null;
+    if (n) {
       var best = -1;
       var bd = Infinity;
       for (i = 0; i < n; i++) {
@@ -2120,20 +2265,25 @@
         if (d < bd) { bd = d; best = i; }
       }
       if (best >= 0 && bd < 40) {
-        bar = candles[best];
-        x = baseIndexX(best, n, pad, layout.seriesW);
-        tAt = Number(bar.t) || 0;
+        pt = seriesPoint(best, n, pad, layout, candles, lineData, candleMode);
+        x = pt.x;
       }
     }
-    if (!tAt) tAt = xNow - ((layout.headX - Math.min(x, layout.headX)) / Math.max(1, layout.seriesW)) * xWin;
+    var tAt = pt && pt.t ? pt.t : xNow - ((layout.headX - Math.min(x, layout.headX)) / Math.max(1, layout.seriesW)) * xWin;
     ctx.save();
-    ctx.globalAlpha = 0.85;
-    ctx.strokeStyle = '#F5C518';
     ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
+    // Trait vertical : fin et léger (la bougie / le moment regardé).
+    ctx.globalAlpha = 0.45;
+    ctx.strokeStyle = '#F5C518';
+    ctx.setLineDash([3, 5]);
     ctx.beginPath();
     ctx.moveTo(Math.round(x) + 0.5, top);
     ctx.lineTo(Math.round(x) + 0.5, bot);
+    ctx.stroke();
+    // Trait horizontal : le prix sous le doigt.
+    ctx.globalAlpha = 0.8;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
     ctx.moveTo(pad.l, Math.round(y) + 0.5);
     ctx.lineTo(layout.axisX, Math.round(y) + 0.5);
     ctx.stroke();
@@ -2141,12 +2291,12 @@
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#F5C518';
     ctx.beginPath();
-    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.arc(x, pt && isFinite(pt.v) ? plotToY(pt.v, pad, h, minP, maxP) : y, 3.5, 0, Math.PI * 2);
     ctx.fill();
+    // Prix sous le doigt, sur la colonne des prix.
     ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
-    // Prix sous le doigt, sur la colonne des prix.
     var ptxt = formatAxisPrice(price);
     var pw = Math.ceil(ctx.measureText(ptxt).width) + 10;
     var px = Math.min(cssW - pw - 1, layout.axisX + 2);
@@ -2155,44 +2305,28 @@
     ctx.fill();
     ctx.fillStyle = '#10141f';
     ctx.fillText(ptxt, px + pw / 2, y + 0.5);
-    // Heure du moment sous le doigt, en bas.
+    // Panneau du haut : bougie (O H / L C) ou prix de la courbe, écart avec maintenant, heure.
     var dt = new Date(tAt);
     var ttxt = pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()) + ':' + pad2(dt.getSeconds());
-    var tw = Math.ceil(ctx.measureText(ttxt).width) + 12;
-    var tx = Math.max(pad.l, Math.min(layout.axisX - tw, x - tw / 2));
-    ctx.fillStyle = 'rgba(12,17,30,0.92)';
-    roundRectOn(ctx, tx, bot - 22, tw, 18, 5);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(245,197,24,0.7)';
-    ctx.stroke();
-    ctx.fillStyle = '#F8E7B0';
-    ctx.fillText(ttxt, tx + tw / 2, bot - 12.5);
-    // Bulle de la bougie : ouverture, plus haut, plus bas, clôture.
-    if (bar && isFinite(bar.o) && isFinite(bar.c)) {
-      var up = Number(bar.c) >= Number(bar.o);
-      var rows = [['O', bar.o], ['H', bar.h], ['L', bar.l], ['C', bar.c]];
-      ctx.textAlign = 'left';
-      var bw = 0;
-      rows.forEach(function (r) { bw = Math.max(bw, ctx.measureText(r[0] + '  ' + formatAxisPrice(Number(r[1]))).width); });
-      bw = Math.ceil(bw) + 16;
-      var bh = rows.length * 14 + 8;
-      var bx = x + 12;
-      if (bx + bw > layout.axisX - 2) bx = x - 12 - bw;
-      if (bx < pad.l + 2) bx = pad.l + 2;
-      var by = Math.max(top + 24, Math.min(bot - bh - 28, y - bh - 12));
-      ctx.fillStyle = 'rgba(12,17,30,0.92)';
-      roundRectOn(ctx, bx, by, bw, bh, 7);
-      ctx.fill();
-      ctx.strokeStyle = up ? 'rgba(0,230,118,0.75)' : 'rgba(255,23,68,0.75)';
-      ctx.stroke();
-      rows.forEach(function (r, ri) {
-        var ry = by + 11 + ri * 14;
-        ctx.fillStyle = 'rgba(248,231,176,0.65)';
-        ctx.fillText(r[0], bx + 8, ry);
-        ctx.fillStyle = up ? '#00E676' : '#FF4D6A';
-        ctx.fillText(formatAxisPrice(Number(r[1])), bx + 22, ry);
-      });
+    var lines2 = [];
+    var ref = pt && isFinite(pt.v) ? pt.v : price;
+    if (pt && pt.c && isFinite(pt.c.o)) {
+      var upB = Number(pt.c.c) >= Number(pt.c.o);
+      var vc = upB ? UPC : DNC;
+      lines2.push([['O ', DIM], [formatAxisPrice(Number(pt.c.o)) + '   ', vc], ['H ', DIM], [formatAxisPrice(Number(pt.c.h)), vc]]);
+      lines2.push([['L ', DIM], [formatAxisPrice(Number(pt.c.l)) + '   ', vc], ['C ', DIM], [formatAxisPrice(Number(pt.c.c)), vc]]);
+    } else {
+      lines2.push([[tt('tcPrice', 'Prix') + ' ', DIM], [formatAxisPrice(ref), '#F8E7B0']]);
     }
+    if (isFinite(livePrice) && livePrice > 0 && isFinite(ref) && ref > 0) {
+      var diff = livePrice - ref;
+      var pct = diff / ref * 100;
+      var sgn = diff > 0 ? '+' : (diff < 0 ? '−' : '');
+      var dc = diff > 0 ? UPC : (diff < 0 ? DNC : '#F8E7B0');
+      lines2.push([[tt('tcVsNow', 'vs maintenant') + ' ', DIM], [sgn + formatAxisPrice(Math.abs(diff)) + ' (' + sgn + Math.abs(pct).toFixed(2) + ' %)', dc]]);
+    }
+    lines2.push([[ttxt, DIM]]);
+    infoPanel(lines2, pad, layout, panelY);
     ctx.restore();
   }
 
@@ -2799,8 +2933,13 @@
     lastMaxP = maxP;
     lastMap = map;
 
+    // Plus haut / plus bas de l'écran (petits repères dorés).
+    var touchCandleMode = asset.id !== 'stable' && (asset.id === 'titanpulse' || asset.chart === 'candle' || asset.id === 'horizon50');
+    try { drawHiLo(pad, h, layout, minP, maxP, candles, lineData, touchCandleMode); } catch (eHL) { /* ignore */ }
+
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     tradeYsScratch.length = 0;
+    tradeHits.length = 0;
     var ti;
     var drawnKeys = {};
     for (ti = 0; ti < allTrades.length; ti++) {
@@ -2828,6 +2967,7 @@
         if (Math.abs(y0 - tradeYsScratch[j]) < 10) shift += 8;
       }
       tradeYsScratch.push(y0);
+      tradeHits.push({ v: ot, y: y0 });
       drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout, count);
     }
     paintOverlay();
@@ -2850,9 +2990,11 @@
     if (map) {
       drawBead(map, market.price, tagCol, now, theme);
       drawLivePriceBadge(map, market.price, layout, tagCol);
+      // Anneau de trade : se remplit autour du point en direct jusqu'à la fin du trade.
+      if (primary) drawTradeRing(map, primary, tagCol);
     }
-    if (touchCross || touchRipples.length) {
-      drawTouchLayer(pad, h, layout, minP, maxP, candles, asset.id !== 'stable' && (asset.id === 'titanpulse' || asset.chart === 'candle' || asset.id === 'horizon50'), now);
+    if (touchCross || touchRipples.length || tradeCard) {
+      drawTouchLayer(pad, h, layout, minP, maxP, candles, lineData, touchCandleMode, now, Number(market.price), !!(inds.ma || inds.bb || inds.ema));
     }
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);
@@ -3085,7 +3227,7 @@
     // coupe les gestes du navigateur. Événements tactiles classiques, reconnus par tous les téléphones.
     //  - deux doigts : zoom élastique (continu, résiste aux limites, revient au cran le plus proche) ;
     //  - un doigt qui glisse : réticule (prix et heure sous le doigt, bulle de la bougie) ;
-    //  - un doigt qui tape : petite onde dorée.
+    //  - un doigt qui tape : petite onde dorée ; sur la ligne d'un trade ouvert : sa carte.
     // Affichage uniquement : la courbe, les prix, les trades et leur règlement ne sont pas concernés.
     var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
@@ -3209,6 +3351,15 @@
       if (e.type === 'touchend' && !wasCross && performance.now() - one.t < 350) {
         touchRipples.push({ x: one.x0, y: one.y0, t: performance.now() });
         if (touchRipples.length > 4) touchRipples.shift();
+        // Toucher la ligne d'un trade ouvert : sa carte (mise, gain possible, temps restant).
+        var hit = null;
+        var hd = 16;
+        var hi;
+        for (hi = 0; hi < tradeHits.length; hi++) {
+          var dd = Math.abs(tradeHits[hi].y - one.y0);
+          if (dd < hd) { hd = dd; hit = tradeHits[hi].v; }
+        }
+        tradeCard = hit ? { v: hit, until: Date.now() + 6000 } : null;
       }
       one = null;
     }
