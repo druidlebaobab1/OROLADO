@@ -30,6 +30,9 @@
   // Zoom élastique (pincement) : valeur continue pendant le geste, et douceur du suivi.
   var pinchSec = null;
   var zoomEase = 0.38;
+  // Doigt sur le graphique : position du réticule (null = caché) et ondes dorées en cours.
+  var touchCross = null;
+  var touchRipples = [];
   var wantFitY = false;
   // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
   var CANDLE_DURATION_MS = 1000;
@@ -2073,6 +2076,126 @@
     ctx.restore();
   }
 
+  // Doigt sur le graphique : réticule (lignes qui suivent le doigt, prix et heure, bulle de la bougie)
+  // et onde dorée au toucher. Dessin posé par-dessus, rien d'autre ne bouge.
+  function pad2(v) { return (v < 10 ? '0' : '') + v; }
+  function drawTouchLayer(pad, h, layout, minP, maxP, candles, candleMode, now) {
+    var i;
+    if (touchRipples.length) {
+      ctx.save();
+      for (i = touchRipples.length - 1; i >= 0; i--) {
+        var rp = touchRipples[i];
+        var k = (now - rp.t) / 650;
+        if (k < 0) k = 0;
+        if (!(k < 1)) { touchRipples.splice(i, 1); continue; }
+        var ease = 1 - Math.pow(1 - k, 3);
+        ctx.globalAlpha = 0.6 * (1 - k);
+        ctx.strokeStyle = '#F5C518';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(rp.x, rp.y, 6 + 30 * ease, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 0.2 * (1 - k);
+        ctx.fillStyle = '#F5C518';
+        ctx.beginPath();
+        ctx.arc(rp.x, rp.y, 4 + 14 * ease, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    if (!touchCross) return;
+    var top = pad.t;
+    var bot = pad.t + h;
+    var x = Math.max(pad.l, Math.min(layout.axisX, touchCross.x));
+    var y = Math.max(top, Math.min(bot, touchCross.y));
+    var price = minP + (1 - (y - top) / h) * Math.max(maxP - minP, 0.01);
+    var tAt = 0;
+    var bar = null;
+    if (candleMode && candles && candles.length) {
+      var n = candles.length;
+      var best = -1;
+      var bd = Infinity;
+      for (i = 0; i < n; i++) {
+        var d = Math.abs(baseIndexX(i, n, pad, layout.seriesW) - x);
+        if (d < bd) { bd = d; best = i; }
+      }
+      if (best >= 0 && bd < 40) {
+        bar = candles[best];
+        x = baseIndexX(best, n, pad, layout.seriesW);
+        tAt = Number(bar.t) || 0;
+      }
+    }
+    if (!tAt) tAt = xNow - ((layout.headX - Math.min(x, layout.headX)) / Math.max(1, layout.seriesW)) * xWin;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = '#F5C518';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(Math.round(x) + 0.5, top);
+    ctx.lineTo(Math.round(x) + 0.5, bot);
+    ctx.moveTo(pad.l, Math.round(y) + 0.5);
+    ctx.lineTo(layout.axisX, Math.round(y) + 0.5);
+    ctx.stroke();
+    ctx.setLineDash(NO_DASH);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#F5C518';
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    // Prix sous le doigt, sur la colonne des prix.
+    var ptxt = formatAxisPrice(price);
+    var pw = Math.ceil(ctx.measureText(ptxt).width) + 10;
+    var px = Math.min(cssW - pw - 1, layout.axisX + 2);
+    ctx.fillStyle = '#F5C518';
+    roundRectOn(ctx, px, y - 9, pw, 18, 5);
+    ctx.fill();
+    ctx.fillStyle = '#10141f';
+    ctx.fillText(ptxt, px + pw / 2, y + 0.5);
+    // Heure du moment sous le doigt, en bas.
+    var dt = new Date(tAt);
+    var ttxt = pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()) + ':' + pad2(dt.getSeconds());
+    var tw = Math.ceil(ctx.measureText(ttxt).width) + 12;
+    var tx = Math.max(pad.l, Math.min(layout.axisX - tw, x - tw / 2));
+    ctx.fillStyle = 'rgba(12,17,30,0.92)';
+    roundRectOn(ctx, tx, bot - 22, tw, 18, 5);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(245,197,24,0.7)';
+    ctx.stroke();
+    ctx.fillStyle = '#F8E7B0';
+    ctx.fillText(ttxt, tx + tw / 2, bot - 12.5);
+    // Bulle de la bougie : ouverture, plus haut, plus bas, clôture.
+    if (bar && isFinite(bar.o) && isFinite(bar.c)) {
+      var up = Number(bar.c) >= Number(bar.o);
+      var rows = [['O', bar.o], ['H', bar.h], ['L', bar.l], ['C', bar.c]];
+      ctx.textAlign = 'left';
+      var bw = 0;
+      rows.forEach(function (r) { bw = Math.max(bw, ctx.measureText(r[0] + '  ' + formatAxisPrice(Number(r[1]))).width); });
+      bw = Math.ceil(bw) + 16;
+      var bh = rows.length * 14 + 8;
+      var bx = x + 12;
+      if (bx + bw > layout.axisX - 2) bx = x - 12 - bw;
+      if (bx < pad.l + 2) bx = pad.l + 2;
+      var by = Math.max(top + 24, Math.min(bot - bh - 28, y - bh - 12));
+      ctx.fillStyle = 'rgba(12,17,30,0.92)';
+      roundRectOn(ctx, bx, by, bw, bh, 7);
+      ctx.fill();
+      ctx.strokeStyle = up ? 'rgba(0,230,118,0.75)' : 'rgba(255,23,68,0.75)';
+      ctx.stroke();
+      rows.forEach(function (r, ri) {
+        var ry = by + 11 + ri * 14;
+        ctx.fillStyle = 'rgba(248,231,176,0.65)';
+        ctx.fillText(r[0], bx + 8, ry);
+        ctx.fillStyle = up ? '#00E676' : '#FF4D6A';
+        ctx.fillText(formatAxisPrice(Number(r[1])), bx + 22, ry);
+      });
+    }
+    ctx.restore();
+  }
+
   function drawLivePriceBadge(map, price, layout, assetColor) {
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
@@ -2728,6 +2851,9 @@
       drawBead(map, market.price, tagCol, now, theme);
       drawLivePriceBadge(map, market.price, layout, tagCol);
     }
+    if (touchCross || touchRipples.length) {
+      drawTouchLayer(pad, h, layout, minP, maxP, candles, asset.id !== 'stable' && (asset.id === 'titanpulse' || asset.chart === 'candle' || asset.id === 'horizon50'), now);
+    }
     st.lastPrice = lastDrawnClose;
     st.candles = (candles || []).slice(-BUFFER_N);
     st.min = minP;
@@ -2958,16 +3084,16 @@
     // rendue « transparente » aux doigts par app.js (pour ne jamais bloquer un bouton). css/app.css y
     // coupe les gestes du navigateur. Événements tactiles classiques, reconnus par tous les téléphones.
     //  - deux doigts : zoom élastique (continu, résiste aux limites, revient au cran le plus proche) ;
-    //  - un doigt, deux touches rapides : zoom avant d'un cran (comme « + ») ; au zoom maximum, retour
-    //    à la vue normale. Un seul doigt qui glisse ne fait rien (la courbe reste au direct).
-    // Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
+    //  - un doigt qui glisse : réticule (prix et heure sous le doigt, bulle de la bougie) ;
+    //  - un doigt qui tape : petite onde dorée.
+    // Affichage uniquement : la courbe, les prix, les trades et leur règlement ne sont pas concernés.
     var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
     stage.__oroPinch = true;
     // Petit message de découverte : écrans tactiles seulement, aux 4 premières visites de l'appareil,
     // disparaît seul après 5 s, et plus jamais dès que le joueur a utilisé un des gestes.
     var hintEl = null;
-    var hintKey = 'oro_gesture_hint';
+    var hintKey = 'oro_gesture_hint2';
     function hintState() { try { return Number(localStorage.getItem(hintKey) || 0); } catch (eH) { return 99; } }
     function hideHint(forever) {
       if (forever) { try { localStorage.setItem(hintKey, '99'); } catch (eH2) { /* ignore */ } }
@@ -2978,11 +3104,11 @@
       setTimeout(function () {
         if (hintState() >= 4 || !stage.isConnected) return;
         try { localStorage.setItem(hintKey, String(hintState() + 1)); } catch (eH3) { /* ignore */ }
-        var txt = (D6.I18N && D6.I18N.t && D6.I18N.t('gestureHint') !== 'gestureHint') ? D6.I18N.t('gestureHint') : 'Zoom : pincez à 2 doigts ou touchez 2 fois';
+        var txt = (D6.I18N && D6.I18N.t && D6.I18N.t('gestureHint') !== 'gestureHint') ? D6.I18N.t('gestureHint') : '2 doigts : zoom · 1 doigt : lire le prix';
         hintEl = document.createElement('div');
         hintEl.className = 'pinch-hint';
         hintEl.setAttribute('aria-hidden', 'true');
-        hintEl.innerHTML = '<span class="pinch-ico">🤏</span><span></span>';
+        hintEl.innerHTML = '<span class="pinch-ico">👆</span><span></span>';
         hintEl.lastChild.textContent = txt;
         stage.appendChild(hintEl);
         requestAnimationFrame(function () { if (hintEl) hintEl.style.opacity = '1'; });
@@ -2994,8 +3120,8 @@
     var easeTimer = 0;
     var mode = '';
     var pinch = null;
-    var tap = null;
-    var lastTap = null;
+    var one = null;
+    var holdTimer = 0;
     function elasticZoom(raw) {
       if (raw > MAX) return Math.min(MAX * 1.18, MAX + (raw - MAX) * 0.3);
       if (raw < MIN) return Math.max(MIN * 0.82, MIN - (MIN - raw) * 0.3);
@@ -3019,15 +3145,11 @@
       wantFitY = true;
       persistView(activeAsset);
     }
-    function doubleTapZoom() {
-      // Zoom avant d'un cran, glissé en douceur ; au plus près, retour à la vue normale.
-      clearTimeout(easeTimer);
-      zoomIdx = zoomIdx > 0 ? zoomIdx - 1 : DEFAULT_ZOOM_IDX;
-      zoomEase = 0.2;
-      easeTimer = setTimeout(function () { zoomEase = 0.38; }, 700);
-      wantFitY = true;
-      persistView(activeAsset);
+    function local(t) {
+      var r = (canvas && canvas.getBoundingClientRect) ? canvas.getBoundingClientRect() : stage.getBoundingClientRect();
+      return { x: t.clientX - r.left, y: t.clientY - r.top };
     }
+    function crossOff() { clearTimeout(holdTimer); touchCross = null; }
     function dist(t) {
       var dx = t[0].clientX - t[1].clientX;
       var dy = t[0].clientY - t[1].clientY;
@@ -3038,10 +3160,10 @@
       return !!(el && el.closest && el.closest('button, a, input, .chart-toolbar'));
     }
     stage.addEventListener('touchstart', function (e) {
-      if (onButton(e)) { tap = null; return; }
+      if (onButton(e)) { one = null; return; }
       if (e.touches.length >= 2) {
-        tap = null;
-        lastTap = null;
+        one = null;
+        crossOff();
         mode = 'pinch';
         var d = dist(e.touches);
         if (d > 16) {
@@ -3052,7 +3174,11 @@
           hideHint(true);
         }
       } else if (e.touches.length === 1 && !mode) {
-        tap = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: performance.now() };
+        var p = local(e.touches[0]);
+        one = { x0: p.x, y0: p.y, t: performance.now() };
+        // Doigt posé sans bouger un court instant : le réticule apparaît aussi.
+        clearTimeout(holdTimer);
+        holdTimer = setTimeout(function () { if (one) { touchCross = { x: one.x0, y: one.y0 }; hideHint(true); } }, 180);
       }
     }, { passive: true });
     stage.addEventListener('touchmove', function (e) {
@@ -3062,9 +3188,13 @@
         if (e.cancelable) e.preventDefault();
         return;
       }
-      if (tap && e.touches.length === 1) {
-        var t = e.touches[0];
-        if (Math.abs(t.clientX - tap.x) > 12 || Math.abs(t.clientY - tap.y) > 12) tap = null;
+      if (one && e.touches.length === 1) {
+        var p = local(e.touches[0]);
+        if (touchCross || Math.abs(p.x - one.x0) > 6 || Math.abs(p.y - one.y0) > 6) {
+          touchCross = { x: p.x, y: p.y };
+          hideHint(true);
+        }
+        if (e.cancelable) e.preventDefault();
       }
     }, { passive: false });
     function onEnd(e) {
@@ -3073,18 +3203,14 @@
         return;
       }
       if (mode === 'wait') { if (!e.touches.length) mode = ''; return; }
-      if (e.type !== 'touchend' || !tap || e.touches.length) { tap = null; return; }
-      var now = performance.now();
-      if (now - tap.t > 300) { tap = null; lastTap = null; return; }
-      if (lastTap && now - lastTap.t < 350 && Math.abs(tap.x - lastTap.x) < 40 && Math.abs(tap.y - lastTap.y) < 40) {
-        lastTap = null;
-        tap = null;
-        hideHint(true);
-        doubleTapZoom();
-        return;
+      if (!one || e.touches.length) return;
+      var wasCross = !!touchCross;
+      crossOff();
+      if (e.type === 'touchend' && !wasCross && performance.now() - one.t < 350) {
+        touchRipples.push({ x: one.x0, y: one.y0, t: performance.now() });
+        if (touchRipples.length > 4) touchRipples.shift();
       }
-      lastTap = { x: tap.x, y: tap.y, t: now };
-      tap = null;
+      one = null;
     }
     stage.addEventListener('touchend', onEnd, { passive: true });
     stage.addEventListener('touchcancel', onEnd, { passive: true });

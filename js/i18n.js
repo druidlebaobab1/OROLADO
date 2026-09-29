@@ -2036,13 +2036,13 @@
     if (DICT[code]) Object.assign(DICT[code], SMALL_I18N[code]);
   });
 
-  // Message qui fait découvrir les gestes du graphique (pincer à 2 doigts, toucher 2 fois).
+  // Message qui fait découvrir les gestes du graphique (pincer à 2 doigts, glisser 1 doigt).
   var GESTURE_I18N = {
-    en: 'Zoom: pinch with 2 fingers or tap twice', fr: 'Zoom : pincez à 2 doigts ou touchez 2 fois',
-    es: 'Zoom: pellizca con 2 dedos o toca 2 veces', pt: 'Zoom: use 2 dedos ou toque 2 vezes',
-    ar: 'للتكبير: استخدم إصبعين أو المس مرتين', tr: 'Yakınlaştır: 2 parmakla sıkıştır veya 2 kez dokun',
-    vi: 'Phóng to: chụm 2 ngón tay hoặc chạm 2 lần', id: 'Zoom: cubit 2 jari atau ketuk 2 kali',
-    ru: 'Масштаб: два пальца или двойное касание', de: 'Zoom: mit 2 Fingern ziehen oder 2× tippen', hi: 'ज़ूम: 2 उंगलियों से पिंच करें या 2 बार टैप करें'
+    en: '2 fingers: zoom · 1 finger: read the price', fr: '2 doigts : zoom · 1 doigt : lire le prix',
+    es: '2 dedos: zoom · 1 dedo: ver el precio', pt: '2 dedos: zoom · 1 dedo: ver o preço',
+    ar: 'إصبعان: تكبير · إصبع واحد: قراءة السعر', tr: '2 parmak: yakınlaştır · 1 parmak: fiyatı gör',
+    vi: '2 ngón: phóng to · 1 ngón: xem giá', id: '2 jari: zoom · 1 jari: lihat harga',
+    ru: '2 пальца: масштаб · 1 палец: цена', de: '2 Finger: Zoom · 1 Finger: Preis ablesen', hi: '2 उंगलियां: ज़ूम · 1 उंगली: कीमत देखें'
   };
   Object.keys(GESTURE_I18N).forEach(function (code) {
     if (DICT[code]) DICT[code].gestureHint = GESTURE_I18N[code];

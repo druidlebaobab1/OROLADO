@@ -4081,3 +4081,6 @@ html body #chart .pinch-hint{position:absolute;left:50%;bottom:16px;transform:tr
   font-size:.78rem;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.45);pointer-events:none;
   opacity:0;transition:opacity .4s ease}
 html body #chart .pinch-hint .pinch-ico{font-size:1.05rem}
+
+/* iPhone : pas de sélection de texte ni de menu « Copier » en touchant le graphique ou ses boutons. */
+html body #chart,html body #chart *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
