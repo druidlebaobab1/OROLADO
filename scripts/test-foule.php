@@ -55,7 +55,8 @@ while ($ms() < $end || $jobs) {
       }
       if ($now >= $u['hb']) {
         $u['hb'] = $now + 20000;
-        $add($i, 'hb', $SITE . '/feed.php?hb=1&v=' . $u['vid']);
+        // a=1 : visiteurs de test, jamais comptés dans les visites ni les connectés.
+        $add($i, 'hb', $SITE . '/feed.php?hb=1&a=1&v=' . $u['vid']);
       }
       // Affichage de la courbe (comme engine.js) : le prix à montrer est-il arrivé ?
       if ($u['last'] > 0) {

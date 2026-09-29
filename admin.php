@@ -392,7 +392,7 @@ function admin_badges(): array {
     'signup_geo' => $nInscrits,
     'visits' => count(glob(rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits/' . date('Y-m-d') . '/*') ?: []),
     'no_deposit' => $noDep,
-    'signup_closed' => $closedN,
+    'signup_closed' => count(admin_closed_accounts($people ?? admin_profiles())),
     'dep_today' => $depToday,
     'dep_pending' => $depPend,
     'dep_failed' => $depFail,
@@ -461,6 +461,35 @@ function admin_visits_by_country(array $days): array {
   return $out;
 }
 
+/** Comptes suspendus et supprimés : [['kind'=>'suspended'|'deleted','id','publicId','email','at'], …] */
+function admin_closed_accounts(array $people): array {
+  $db = admin_local_db();
+  $out = [];
+  $seenEmail = [];
+  $bans = is_array($db['bans'] ?? null) ? $db['bans'] : [];
+  foreach ($people as $p) {
+    $id = (string) ($p['id'] ?? '');
+    $role = strtolower((string) ($p['role'] ?? ''));
+    $ban = $bans[$id] ?? null;
+    $kind = in_array($role, ['suspended', 'banned'], true) ? 'suspended' : ($role === 'deleted' ? 'deleted' : '');
+    if ($kind === '' && is_array($ban)) $kind = strtolower((string) ($ban['kind'] ?? '')) === 'deleted' ? 'deleted' : 'suspended';
+    if ($kind === '' || admin_is_protected_account($p, $id)) continue;
+    $em = strtolower(trim((string) ($p['email'] ?? '')));
+    if ($em !== '') $seenEmail[$em] = true;
+    $out[] = ['kind' => $kind, 'id' => $id, 'publicId' => (string) ($p['publicId'] ?? ''), 'email' => $em,
+      'at' => (string) (is_array($ban) ? ($ban['at'] ?? '') : ($p['updatedAt'] ?? $p['createdAt'] ?? ''))];
+  }
+  foreach ((is_array($db['blocked_identities'] ?? null) ? $db['blocked_identities'] : []) as $k => $row) {
+    if (!is_array($row) || !str_starts_with((string) $k, 'email:')) continue;
+    $em = strtolower(trim(substr((string) $k, 6)));
+    if ($em === '' || isset($seenEmail[$em])) continue;
+    $seenEmail[$em] = true;
+    $out[] = ['kind' => (($row['kind'] ?? '') === 'deleted') ? 'deleted' : 'suspended', 'id' => '', 'publicId' => '', 'email' => $em, 'at' => (string) ($row['at'] ?? '')];
+  }
+  usort($out, static fn($a, $b) => strcmp($b['at'], $a['at']));
+  return $out;
+}
+
 function admin_list_payload(string $view, array $req): array {
   $needPeople = !in_array($view, ['alerts', 'otp_mails', 'payout_stats', 'games', 'trade_minutes', 'messages'], true);
   $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
@@ -499,7 +528,19 @@ function admin_list_payload(string $view, array $req): array {
     ];
   };
 
-  if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'no_deposit', 'online', 'inactive', 'top_balances', 'signup_closed'], true)) {
+  if ($view === 'signup_closed') {
+    $all = admin_closed_accounts($people);
+    $sus = array_values(array_filter($all, static fn($r) => $r['kind'] === 'suspended'));
+    $del = array_values(array_filter($all, static fn($r) => $r['kind'] === 'deleted'));
+    $cols = ['Statut', 'ID', 'E-mail', 'Date'];
+    $fmt = static fn($at) => $at !== '' ? date('d/m/Y H:i', strtotime($at) ?: time()) : '—';
+    foreach ($sus as $r) $rows[] = ['cells' => ['⛔ Suspendu', $r['publicId'] !== '' ? $r['publicId'] : '—', $r['email'] !== '' ? $r['email'] : '—', $fmt($r['at'])], 'userId' => $r['id']];
+    foreach ($del as $r) $rows[] = ['cells' => ['🗑 Supprimé', $r['publicId'] !== '' ? $r['publicId'] : '—', $r['email'] !== '' ? $r['email'] : '—', $fmt($r['at'])], 'userId' => ''];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1,
+      'summary' => count($sus) . ' suspendu(s) · ' . count($del) . ' supprimé(s) — e-mails bloqués pour toujours', 'actions' => false];
+  }
+
+  if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'no_deposit', 'online', 'inactive', 'top_balances'], true)) {
     $cols = $userCols;
     $list = $people;
     if ($view === 'signup_today') {
@@ -1853,7 +1894,7 @@ $ADMIN_TABS = [
     ['signup_geo', 'Inscriptions par Pays / IP'],
     ['visits', 'Visites du Site'],
     ['no_deposit', 'Joueurs Sans Dépôt'],
-    ['signup_closed', 'Comptes fermés / désinscrits'],
+    ['signup_closed', 'Comptes suspendus / supprimés'],
   ],
   'gB' => [
     ['dep_today', 'Dépôts du Jour'],
