@@ -35,3 +35,5 @@ feedcache/*.beat
 feedcache/*.lock
 data/online/
 data/visits/
+feedcache/*.stat
+data/*.done
