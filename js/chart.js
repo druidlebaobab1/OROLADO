@@ -30,6 +30,11 @@
   // Zoom élastique (pincement) : valeur continue pendant le geste, et douceur du suivi.
   var pinchSec = null;
   var zoomEase = 0.38;
+  // Défilement à un doigt : recul dans le passé (ms), bougies du bout masquées, recul maximum.
+  var panMs = 0;
+  var panTrim = 0;
+  var panMaxMs = 0;
+  var panEpoch = 0;   // change à chaque « Actualiser » : arrête net l'élan en cours
   var wantFitY = false;
   // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
   var CANDLE_DURATION_MS = 1000;
@@ -996,10 +1001,21 @@
       done = market.candles;
     }
     candleScratch.length = 0;
-    var start = Math.max(0, done.length - n);
     var i;
-    for (i = start; i < done.length; i++) candleScratch.push(done[i]);
     var forming = visualFormingCandle((live && live.forming) || (market && market.candle));
+    panTrim = 0;
+    panMaxMs = done.length > 1 ? Math.max(0, (done[done.length - 1].t - done[0].t) - (xWin > 0 ? xWin : 60000) * 0.6) : 0;
+    if (panMs > 0 && done.length) {
+      // Défilement : les bougies dont l'heure est avant le bord droit reculé.
+      var end = done.length;
+      while (end > 0 && done[end - 1].t > xNow) end--;
+      var st0 = Math.max(0, end - n);
+      for (i = st0; i < end; i++) candleScratch.push(done[i]);
+      panTrim = (done.length - end) + ((forming && (!done.length || done[done.length - 1].t !== forming.t)) ? 1 : 0);
+      return candleScratch;
+    }
+    var start = Math.max(0, done.length - n);
+    for (i = start; i < done.length; i++) candleScratch.push(done[i]);
     if (forming) {
       if (!candleScratch.length || candleScratch[candleScratch.length - 1].t !== forming.t) {
         candleScratch.push(forming);
@@ -2385,6 +2401,7 @@
       if (feedLag > 0) xNow -= feedLag;
     }
     xWin = Math.max(8000, zoomSmooth * 1000);
+    if (panMs > 0) xNow -= panMs;
     // Ne plus forcer xWin sur la durée du plus vieux trade : ça bloquait le zoom+
     // dès qu'un trade était ouvert. Le zoom utilisateur prime.
 
@@ -2399,7 +2416,7 @@
     for (xi = 0; xi < candles.length; xi++) xTimes.push(candles[xi].t);
     var closes = closeSeries(market);
     var visN = candles.length;
-    var startIdx = Math.max(0, closes.length - visN);
+    var startIdx = Math.max(0, closes.length - visN - panTrim);
     seriesScratch.length = 0;
     var i;
     var band = visiblePriceBand(candles, market.price, asset.id);
@@ -2430,6 +2447,7 @@
       }
       st.lockUntil = Math.max(st.lockUntil || 0, expHold + 1000);
     }
+    if (panMs > 0 && !holdLock) wantFitY = true;
     var strikeP = primary && Number(primary.entryPrice);
     var extrasY = [head];
     if (isFinite(strikeP) && strikeP > 0) extrasY.push(strikeP);
@@ -2899,7 +2917,10 @@
   function resetChartView() {
     // Rien à remettre (zoom normal, aucun indicateur) : on ne touche pas au cadre. Avant, chaque
     // clic recadrait la courbe (elle « descendait ») même sans zoom ni indicateur.
-    if (zoomIdx === DEFAULT_ZOOM_IDX && !inds.ma && !inds.bb && !inds.ema) return;
+    if (zoomIdx === DEFAULT_ZOOM_IDX && !inds.ma && !inds.bb && !inds.ema && !(panMs > 0)) return;
+    panMs = 0;
+    panEpoch++;
+    wantFitY = true;
     var stNow = ensureAssetState(activeAsset);
     var tradeFrame = !!(stNow.lockUntil && Date.now() < stNow.lockUntil);
     zoomIdx = DEFAULT_ZOOM_IDX;
@@ -2955,64 +2976,38 @@
    */
   function bindPinch() {
     // Les doigts sont écoutés sur le CADRE du graphique (#chart) : la zone de dessin est volontairement
-    // rendue « transparente » aux doigts par app.js (pour ne jamais bloquer un bouton), donc les vrais
-    // doigts n'y arrivaient pas. Le cadre, lui, les reçoit ; css/app.css y coupe le zoom du navigateur.
+    // rendue « transparente » aux doigts par app.js (pour ne jamais bloquer un bouton). css/app.css y
+    // coupe les gestes du navigateur. Événements tactiles classiques, reconnus par tous les téléphones.
+    //  - deux doigts : zoom élastique (continu, résiste aux limites, revient au cran le plus proche) ;
+    //  - un doigt : glisser vers la droite = remonter dans le passé, vers la gauche = revenir au direct
+    //    (élan au lâcher, résistance au direct et au plus ancien). « Actualiser » remet le direct.
+    // Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
     var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
     stage.__oroPinch = true;
-    // Petit message pour faire découvrir le geste : écrans tactiles seulement, 2 fois au maximum
-    // par appareil, disparaît seul après 4 s, et plus jamais dès que le joueur a pincé une fois.
-    var hintEl = null;
-    var hintKey = 'oro_pinch_hint';
-    function hintState() { try { return Number(localStorage.getItem(hintKey) || 0); } catch (eH) { return 99; } }
-    function hideHint(forever) {
-      if (forever) { try { localStorage.setItem(hintKey, '99'); } catch (eH2) { /* ignore */ } }
-      if (hintEl) { hintEl.style.opacity = '0'; var el = hintEl; hintEl = null; setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 450); }
-    }
-    var touchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
-    if (touchCapable && hintState() < 2) {
-      setTimeout(function () {
-        if (hintState() >= 2 || !stage.isConnected) return;
-        try { localStorage.setItem(hintKey, String(hintState() + 1)); } catch (eH3) { /* ignore */ }
-        var txt = (D6.I18N && D6.I18N.t && D6.I18N.t('pinchHint') !== 'pinchHint') ? D6.I18N.t('pinchHint') : 'Pincez à deux doigts pour zoomer';
-        hintEl = document.createElement('div');
-        hintEl.className = 'pinch-hint';
-        hintEl.setAttribute('aria-hidden', 'true');
-        hintEl.innerHTML = '<span class="pinch-ico">🤏</span><span></span>';
-        hintEl.lastChild.textContent = txt;
-        stage.appendChild(hintEl);
-        requestAnimationFrame(function () { if (hintEl) hintEl.style.opacity = '1'; });
-        setTimeout(function () { hideHint(false); }, 4200);
-      }, 2500);
-    }
     var MIN = ZOOM_STEPS[0];
     var MAX = ZOOM_STEPS[ZOOM_STEPS.length - 1];
-    var pts = {};
-    var start = null;
     var easeTimer = 0;
-    function count() { return Object.keys(pts).length; }
-    function dist() {
-      var k = Object.keys(pts);
-      if (k.length < 2) return 0;
-      var a = pts[k[0]];
-      var b = pts[k[1]];
-      return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
-    }
-    function elastic(raw) {
+    var mode = '';
+    var pinch = null;
+    var pan = null;
+    var glide = 0;
+    function elasticZoom(raw) {
       if (raw > MAX) return Math.min(MAX * 1.18, MAX + (raw - MAX) * 0.3);
       if (raw < MIN) return Math.max(MIN * 0.82, MIN - (MIN - raw) * 0.3);
       return raw;
     }
-    function begin(d) {
-      clearTimeout(easeTimer);
-      start = { dist: d, sec: pinchSec !== null ? pinchSec : (zoomSmooth || zoomSec()) };
-      pinchSec = start.sec;
-      zoomEase = 0.55;
-      hideHint(true);
+    function elasticPan(raw) {
+      if (raw < 0) return Math.max(-0.12 * xWin, raw * 0.3);
+      if (panMaxMs > 0 && raw > panMaxMs) return panMaxMs + (raw - panMaxMs) * 0.3;
+      return raw;
     }
-    function finish() {
+    function msPerPx() {
+      var w = (stage.getBoundingClientRect().width || 300) - 60;
+      return (xWin > 0 ? xWin : 60000) / Math.max(120, w);
+    }
+    function zoomEnd() {
       if (pinchSec === null) return;
-      start = null;
       var cur = pinchSec;
       var best = zoomIdx;
       var bd = Infinity;
@@ -3023,49 +3018,118 @@
       }
       zoomIdx = best;
       pinchSec = null;
-      // Retour « ressort » vers le cran, un peu plus lent, puis réglage normal.
       zoomEase = 0.16;
+      clearTimeout(easeTimer);
       easeTimer = setTimeout(function () { zoomEase = 0.38; }, 700);
       wantFitY = true;
       persistView(activeAsset);
     }
-    stage.addEventListener('pointerdown', function (e) {
-      if (e.pointerType === 'mouse') return;
-      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
-      if (count() === 2) {
-        var d = dist();
-        if (d > 16) begin(d);
+    function stopGlide() { if (glide) cancelAnimationFrame(glide); glide = 0; }
+    function glideFrom(v) {
+      stopGlide();
+      var last = performance.now();
+      var epoch = panEpoch;
+      function step(t) {
+        if (epoch !== panEpoch) { glide = 0; return; }
+        var dt = Math.min(50, t - last);
+        last = t;
+        var over = panMs < 0 || (panMaxMs > 0 && panMs > panMaxMs);
+        if (over) {
+          var target = panMs < 0 ? 0 : panMaxMs;
+          panMs += (target - panMs) * Math.min(1, dt / 90);
+          v = 0;
+          if (Math.abs(panMs - target) < 30) panMs = target;
+        } else {
+          panMs += v * dt;
+          v *= Math.pow(0.9, dt / 16.7);
+        }
+        if (panMs <= 0 && Math.abs(v) < 0.02) { panMs = 0; wantFitY = true; glide = 0; return; }
+        if (Math.abs(v) < 0.02 && !(panMs < 0 || (panMaxMs > 0 && panMs > panMaxMs))) { glide = 0; return; }
+        glide = requestAnimationFrame(step);
+      }
+      glide = requestAnimationFrame(step);
+    }
+    function dist(t) {
+      var dx = t[0].clientX - t[1].clientX;
+      var dy = t[0].clientY - t[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function onButton(e) {
+      var el = e.target;
+      return !!(el && el.closest && el.closest('button, a, input, .chart-toolbar'));
+    }
+    stage.addEventListener('touchstart', function (e) {
+      if (onButton(e)) return;
+      stopGlide();
+      if (e.touches.length >= 2) {
+        pan = null;
+        mode = 'pinch';
+        var d = dist(e.touches);
+        if (d > 16) {
+          clearTimeout(easeTimer);
+          pinch = { dist: d, sec: pinchSec !== null ? pinchSec : (zoomSmooth || zoomSec()) };
+          pinchSec = pinch.sec;
+          zoomEase = 0.55;
+        }
+      } else if (e.touches.length === 1 && !mode) {
+        var x = e.touches[0].clientX;
+        pan = { x: x, y: e.touches[0].clientY, ms: Math.max(0, panMs), lastX: x, lastT: performance.now(), v: 0, moved: false };
       }
     }, { passive: true });
-    stage.addEventListener('pointermove', function (e) {
-      if (!pts[e.pointerId]) return;
-      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
-      if (!start || count() < 2) return;
-      var d = dist();
-      if (!(d > 0)) return;
-      pinchSec = elastic(start.sec * start.dist / d);
-      if (e.cancelable) e.preventDefault();
+    stage.addEventListener('touchmove', function (e) {
+      if (mode === 'pinch' && pinch && e.touches.length >= 2) {
+        var d = dist(e.touches);
+        if (d > 0) pinchSec = elasticZoom(pinch.sec * pinch.dist / d);
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+      if (pan && e.touches.length === 1) {
+        var t = e.touches[0];
+        var dx = t.clientX - pan.x;
+        if (!pan.moved && Math.abs(dx) < 8) return;
+        if (!pan.moved && Math.abs(t.clientY - pan.y) > Math.abs(dx) * 1.5) { pan = null; return; }
+        pan.moved = true;
+        mode = 'pan';
+        var now = performance.now();
+        var k = msPerPx();
+        panMs = elasticPan(pan.ms + dx * k);
+        var dtm = Math.max(1, now - pan.lastT);
+        pan.v = 0.7 * pan.v + 0.3 * (((t.clientX - pan.lastX) * k) / dtm);
+        pan.lastX = t.clientX;
+        pan.lastT = now;
+        if (e.cancelable) e.preventDefault();
+      }
     }, { passive: false });
-    function lift(e) {
-      if (!pts[e.pointerId]) return;
-      delete pts[e.pointerId];
-      if (count() < 2 && start) finish();
+    function onEnd(e) {
+      if (mode === 'pinch') {
+        if (e.touches.length < 2) { pinch = null; zoomEnd(); mode = e.touches.length ? 'wait' : ''; }
+        return;
+      }
+      if (mode === 'wait') { if (!e.touches.length) mode = ''; return; }
+      if (pan && !e.touches.length) {
+        var v = pan.moved ? pan.v : 0;
+        pan = null;
+        mode = '';
+        if (v || panMs < 0 || (panMaxMs > 0 && panMs > panMaxMs)) glideFrom(v);
+        else if (panMs <= 0) { panMs = 0; wantFitY = true; }
+      }
     }
-    stage.addEventListener('pointerup', lift);
-    stage.addEventListener('pointercancel', lift);
-    // Pavé tactile d'ordinateur : le pincement arrive comme « molette + Ctrl ».
+    stage.addEventListener('touchend', onEnd, { passive: true });
+    stage.addEventListener('touchcancel', onEnd, { passive: true });
+    // Pavé tactile d'ordinateur : pincement = « molette + Ctrl ».
     var wheelTimer = 0;
     stage.addEventListener('wheel', function (e) {
       if (!e.ctrlKey) return;
       e.preventDefault();
       clearTimeout(easeTimer);
       var cur = pinchSec !== null ? pinchSec : zoomSec();
-      pinchSec = elastic(cur * Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.01));
+      pinchSec = elasticZoom(cur * Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.01));
       zoomEase = 0.55;
       clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(finish, 180);
+      wheelTimer = setTimeout(zoomEnd, 180);
     }, { passive: false });
   }
+
 
   function bindTools() {
     try { bindPinch(); } catch (ePinch) { /* ignore */ }
@@ -3127,6 +3191,8 @@
   }
 
   D6.Chart = {
+    /** Recul actuel dans le passé (ms), pour contrôle. */
+    panOffset: function () { return Math.round(panMs); },
     attach: function (el, callback) {
       try {
         if (!el || typeof el.getContext !== 'function') {
