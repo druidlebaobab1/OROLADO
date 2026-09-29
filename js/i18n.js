@@ -2036,16 +2036,16 @@
     if (DICT[code]) Object.assign(DICT[code], SMALL_I18N[code]);
   });
 
-  // Message qui fait découvrir le zoom à deux doigts sur le graphique.
-  var PINCH_I18N = {
-    en: 'Pinch with two fingers to zoom', fr: 'Pincez à deux doigts pour zoomer',
-    es: 'Pellizca con dos dedos para hacer zoom', pt: 'Use dois dedos para dar zoom',
-    ar: 'قرّب أو بعّد بإصبعين', tr: 'Yakınlaştırmak için iki parmağınızı kullanın',
-    vi: 'Dùng hai ngón tay để phóng to', id: 'Cubit dengan dua jari untuk zoom',
-    ru: 'Масштаб — двумя пальцами', de: 'Mit zwei Fingern zoomen', hi: 'ज़ूम करने के लिए दो उंगलियों से पिंच करें'
+  // Message qui fait découvrir les gestes du graphique (pincer à 2 doigts, toucher 2 fois).
+  var GESTURE_I18N = {
+    en: 'Zoom: pinch with 2 fingers or tap twice', fr: 'Zoom : pincez à 2 doigts ou touchez 2 fois',
+    es: 'Zoom: pellizca con 2 dedos o toca 2 veces', pt: 'Zoom: use 2 dedos ou toque 2 vezes',
+    ar: 'للتكبير: استخدم إصبعين أو المس مرتين', tr: 'Yakınlaştır: 2 parmakla sıkıştır veya 2 kez dokun',
+    vi: 'Phóng to: chụm 2 ngón tay hoặc chạm 2 lần', id: 'Zoom: cubit 2 jari atau ketuk 2 kali',
+    ru: 'Масштаб: два пальца или двойное касание', de: 'Zoom: mit 2 Fingern ziehen oder 2× tippen', hi: 'ज़ूम: 2 उंगलियों से पिंच करें या 2 बार टैप करें'
   };
-  Object.keys(PINCH_I18N).forEach(function (code) {
-    if (DICT[code]) DICT[code].pinchHint = PINCH_I18N[code];
+  Object.keys(GESTURE_I18N).forEach(function (code) {
+    if (DICT[code]) DICT[code].gestureHint = GESTURE_I18N[code];
   });
 
   // Conditions d'utilisation (18 articles) + Bonus / Voir plus, pour les 9 autres langues.
