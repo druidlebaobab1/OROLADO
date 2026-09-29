@@ -2036,6 +2036,18 @@
     if (DICT[code]) Object.assign(DICT[code], SMALL_I18N[code]);
   });
 
+  // Message qui fait découvrir le zoom à deux doigts sur le graphique.
+  var PINCH_I18N = {
+    en: 'Pinch with two fingers to zoom', fr: 'Pincez à deux doigts pour zoomer',
+    es: 'Pellizca con dos dedos para hacer zoom', pt: 'Use dois dedos para dar zoom',
+    ar: 'قرّب أو بعّد بإصبعين', tr: 'Yakınlaştırmak için iki parmağınızı kullanın',
+    vi: 'Dùng hai ngón tay để phóng to', id: 'Cubit dengan dua jari untuk zoom',
+    ru: 'Масштаб — двумя пальцами', de: 'Mit zwei Fingern zoomen', hi: 'ज़ूम करने के लिए दो उंगलियों से पिंच करें'
+  };
+  Object.keys(PINCH_I18N).forEach(function (code) {
+    if (DICT[code]) DICT[code].pinchHint = PINCH_I18N[code];
+  });
+
   // Conditions d'utilisation (18 articles) + Bonus / Voir plus, pour les 9 autres langues.
   var TERMS_I18N = {
     es: {

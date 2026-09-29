@@ -1728,33 +1728,50 @@
     }, function () { tradePage.busy = false; });
   }
 
-  var TIP_LS = 'trading_tip_last_closed';
-  var TIP_COOLDOWN_MS = 7 * 24 * 3600 * 1000;
-
-  function tipCooldownActive() {
-    try {
-      var at = Number(localStorage.getItem(TIP_LS) || 0);
-      if (at > 0 && (Date.now() - at) < TIP_COOLDOWN_MS) return true;
-      // Fermé 2 fois : le joueur connaît l'astuce, on ne la remontre plus sur cet appareil.
-      if (Number(localStorage.getItem('trading_tip_closes') || 0) >= 2) return true;
-    } catch (eTip) { /* ignore */ }
-    return false;
+  /*
+   * « Astuce trading » (activer MA / BB / EMA), après 5 pertes de suite, jamais pendant un trade.
+   *  - DÉMO : une seule fois ; fermée → plus jamais en démo sur cet appareil.
+   *  - RÉEL : revient seulement après 60 nouveaux trades réels depuis la dernière fois, et jamais
+   *    deux fois le même jour (un joueur régulier la revoit de temps en temps, sans être agacé).
+   */
+  var TIP_STATE_LS = 'oro_tip_state';
+  var TIP_REAL_GAP = 60;
+  function tipState() {
+    try { return JSON.parse(localStorage.getItem(TIP_STATE_LS) || '{}') || {}; } catch (eT) { return {}; }
+  }
+  function saveTipState(s) {
+    try { localStorage.setItem(TIP_STATE_LS, JSON.stringify(s)); } catch (eT2) { /* ignore */ }
+  }
+  function noteSettledForTip(mode) {
+    if (mode !== 'real') return;
+    var s = tipState();
+    s.realCount = (s.realCount || 0) + 1;
+    saveTipState(s);
   }
 
   function markTipClosed() {
-    try {
-      localStorage.setItem(TIP_LS, String(Date.now()));
-      localStorage.setItem('trading_tip_closes', String(Number(localStorage.getItem('trading_tip_closes') || 0) + 1));
-    } catch (eTip) { /* ignore */ }
+    var s = tipState();
+    if (s.lastMode !== 'real') s.demoDone = true;
+    saveTipState(s);
   }
 
-  function maybeLossStreakTip(u) {
+  function maybeLossStreakTip(u, mode) {
     if (!u || (u.consecutiveLosses || 0) < 5) return;
-    if (tipCooldownActive()) return;
     if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
-    if (u.lossTipShownAt && (Date.now() - Number(u.lossTipShownAt)) < TIP_COOLDOWN_MS) return;
-    u.lossTipShownAt = Date.now();
-    D6.Store.saveUser(u);
+    mode = mode === 'real' ? 'real' : 'demo';
+    var s = tipState();
+    var today = new Date().toISOString().slice(0, 10);
+    if (mode === 'real') {
+      if (s.realShownAt != null && (s.realCount || 0) - s.realShownAt < TIP_REAL_GAP) return;
+      if (s.realShownDay === today) return;
+      s.realShownAt = s.realCount || 0;
+      s.realShownDay = today;
+    } else {
+      if (s.demoDone || s.demoShownDay === today) return;
+      s.demoShownDay = today;
+    }
+    s.lastMode = mode;
+    saveTipState(s);
     openModal('tipModal');
   }
 
@@ -3017,7 +3034,8 @@
       );
     }
     maybeConvertPrompt();
-    maybeLossStreakTip(user());
+    noteSettledForTip(lastSettleMode);
+    maybeLossStreakTip(user(), lastSettleMode);
     patchHistorySoon();
     syncTradeButtons();
     // Le résultat vient déjà du serveur (engine.js → settleOrder). Ici on applique

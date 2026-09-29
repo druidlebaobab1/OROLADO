@@ -2365,7 +2365,7 @@
     // `b` ne réservait de la place que pour les libellés de secondes, désormais
     // supprimés : la hauteur revient au tracé.
     var pad = fsOn
-      ? { t: 4, r: 56, b: 6, l: 4 }
+      ? { t: 4, r: 56, b: 18, l: 4 } // plein écran : marge du bas agrandie, le dernier prix de l’axe n’est plus coupé
       : { t: narrow ? 6 : 8, r: narrow ? 54 : 56, b: 8, l: 8 };
     var layout = plotLayout(pad);
     var w = layout.plotW;
@@ -2960,6 +2960,31 @@
     var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
     stage.__oroPinch = true;
+    // Petit message pour faire découvrir le geste : écrans tactiles seulement, 2 fois au maximum
+    // par appareil, disparaît seul après 4 s, et plus jamais dès que le joueur a pincé une fois.
+    var hintEl = null;
+    var hintKey = 'oro_pinch_hint';
+    function hintState() { try { return Number(localStorage.getItem(hintKey) || 0); } catch (eH) { return 99; } }
+    function hideHint(forever) {
+      if (forever) { try { localStorage.setItem(hintKey, '99'); } catch (eH2) { /* ignore */ } }
+      if (hintEl) { hintEl.style.opacity = '0'; var el = hintEl; hintEl = null; setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 450); }
+    }
+    var touchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+    if (touchCapable && hintState() < 2) {
+      setTimeout(function () {
+        if (hintState() >= 2 || !stage.isConnected) return;
+        try { localStorage.setItem(hintKey, String(hintState() + 1)); } catch (eH3) { /* ignore */ }
+        var txt = (D6.I18N && D6.I18N.t && D6.I18N.t('pinchHint') !== 'pinchHint') ? D6.I18N.t('pinchHint') : 'Pincez à deux doigts pour zoomer';
+        hintEl = document.createElement('div');
+        hintEl.className = 'pinch-hint';
+        hintEl.setAttribute('aria-hidden', 'true');
+        hintEl.innerHTML = '<span class="pinch-ico">🤏</span><span></span>';
+        hintEl.lastChild.textContent = txt;
+        stage.appendChild(hintEl);
+        requestAnimationFrame(function () { if (hintEl) hintEl.style.opacity = '1'; });
+        setTimeout(function () { hideHint(false); }, 4200);
+      }, 2500);
+    }
     var MIN = ZOOM_STEPS[0];
     var MAX = ZOOM_STEPS[ZOOM_STEPS.length - 1];
     var pts = {};
@@ -2983,6 +3008,7 @@
       start = { dist: d, sec: pinchSec !== null ? pinchSec : (zoomSmooth || zoomSec()) };
       pinchSec = start.sec;
       zoomEase = 0.55;
+      hideHint(true);
     }
     function finish() {
       if (pinchSec === null) return;

@@ -4073,3 +4073,11 @@ html[dir=rtl] #profWalletAddr,html[lang=hi] #profWalletAddr{font-family:inherit!
 /* Zoom élastique : dans le cadre du graphique, le pincement est géré par le site (js/chart.js),
    pas par le navigateur. Les boutons du cadre (MA, BB, +, −, plein écran) gardent leurs réglages. */
 html body #chart{touch-action:none}
+/* Message « pincez à deux doigts » (zoom élastique), 2 fois max par appareil. */
+html body #chart{position:relative}
+html body #chart .pinch-hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:30;
+  display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;white-space:nowrap;
+  background:rgba(12,17,30,.88);border:1px solid rgba(245,197,24,.55);color:#F8E7B0;
+  font-size:.78rem;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.45);pointer-events:none;
+  opacity:0;transition:opacity .4s ease}
+html body #chart .pinch-hint .pinch-ico{font-size:1.05rem}
