@@ -2049,17 +2049,17 @@
   });
   // Carte d'un trade touché et panneau du réticule (graphique).
   var TRADECARD_I18N = {
-    en: { liveBtn: 'Live', tcBuy: 'BUY ↗', tcSell: 'SELL ↘', tcStake: 'Stake', tcGain: 'Possible gain', tcLeft: 'Left', tcWin: 'Winning now', tcLose: 'Losing now', tcPrice: 'Price', tcVsNow: 'vs now' },
-    fr: { liveBtn: 'Direct', tcBuy: 'ACHAT ↗', tcSell: 'VENTE ↘', tcStake: 'Mise', tcGain: 'Gain possible', tcLeft: 'Reste', tcWin: 'Gagnant en ce moment', tcLose: 'Perdant en ce moment', tcPrice: 'Prix', tcVsNow: 'vs maintenant' },
-    es: { liveBtn: 'En vivo', tcBuy: 'COMPRA ↗', tcSell: 'VENTA ↘', tcStake: 'Apuesta', tcGain: 'Ganancia posible', tcLeft: 'Quedan', tcWin: 'Ganando ahora', tcLose: 'Perdiendo ahora', tcPrice: 'Precio', tcVsNow: 'vs ahora' },
-    pt: { liveBtn: 'Ao vivo', tcBuy: 'COMPRA ↗', tcSell: 'VENDA ↘', tcStake: 'Aposta', tcGain: 'Ganho possível', tcLeft: 'Restam', tcWin: 'Ganhando agora', tcLose: 'Perdendo agora', tcPrice: 'Preço', tcVsNow: 'vs agora' },
-    ar: { liveBtn: 'مباشر', tcBuy: 'شراء ↗', tcSell: 'بيع ↘', tcStake: 'الرهان', tcGain: 'الربح المحتمل', tcLeft: 'المتبقي', tcWin: 'رابح الآن', tcLose: 'خاسر الآن', tcPrice: 'السعر', tcVsNow: 'مقابل الآن' },
-    tr: { liveBtn: 'Canlı', tcBuy: 'AL ↗', tcSell: 'SAT ↘', tcStake: 'Bahis', tcGain: 'Olası kazanç', tcLeft: 'Kalan', tcWin: 'Şu an kazanıyor', tcLose: 'Şu an kaybediyor', tcPrice: 'Fiyat', tcVsNow: 'şimdiye göre' },
-    vi: { liveBtn: 'Trực tiếp', tcBuy: 'MUA ↗', tcSell: 'BÁN ↘', tcStake: 'Tiền cược', tcGain: 'Lãi có thể', tcLeft: 'Còn', tcWin: 'Đang thắng', tcLose: 'Đang thua', tcPrice: 'Giá', tcVsNow: 'so với hiện tại' },
-    id: { liveBtn: 'Langsung', tcBuy: 'BELI ↗', tcSell: 'JUAL ↘', tcStake: 'Taruhan', tcGain: 'Potensi untung', tcLeft: 'Sisa', tcWin: 'Sedang menang', tcLose: 'Sedang kalah', tcPrice: 'Harga', tcVsNow: 'vs sekarang' },
-    ru: { liveBtn: 'Сейчас', tcBuy: 'ПОКУПКА ↗', tcSell: 'ПРОДАЖА ↘', tcStake: 'Ставка', tcGain: 'Возможный выигрыш', tcLeft: 'Осталось', tcWin: 'Сейчас в плюсе', tcLose: 'Сейчас в минусе', tcPrice: 'Цена', tcVsNow: 'к текущей' },
-    de: { liveBtn: 'Live', tcBuy: 'KAUF ↗', tcSell: 'VERKAUF ↘', tcStake: 'Einsatz', tcGain: 'Möglicher Gewinn', tcLeft: 'Noch', tcWin: 'Gerade im Plus', tcLose: 'Gerade im Minus', tcPrice: 'Preis', tcVsNow: 'vs jetzt' },
-    hi: { liveBtn: 'लाइव', tcBuy: 'खरीद ↗', tcSell: 'बिक्री ↘', tcStake: 'दांव', tcGain: 'संभावित लाभ', tcLeft: 'बाकी', tcWin: 'अभी जीत रहे', tcLose: 'अभी हार रहे', tcPrice: 'कीमत', tcVsNow: 'अभी से तुलना' }
+    en: { histLimit: 'History limited to the last {n} minutes', liveBtn: 'Live', tcBuy: 'BUY ↗', tcSell: 'SELL ↘', tcStake: 'Stake', tcGain: 'Possible gain', tcLeft: 'Left', tcWin: 'Winning now', tcLose: 'Losing now', tcPrice: 'Price', tcVsNow: 'vs now' },
+    fr: { histLimit: 'Historique limité aux {n} dernières minutes', liveBtn: 'Direct', tcBuy: 'ACHAT ↗', tcSell: 'VENTE ↘', tcStake: 'Mise', tcGain: 'Gain possible', tcLeft: 'Reste', tcWin: 'Gagnant en ce moment', tcLose: 'Perdant en ce moment', tcPrice: 'Prix', tcVsNow: 'vs maintenant' },
+    es: { histLimit: 'Historial limitado a los últimos {n} minutos', liveBtn: 'En vivo', tcBuy: 'COMPRA ↗', tcSell: 'VENTA ↘', tcStake: 'Apuesta', tcGain: 'Ganancia posible', tcLeft: 'Quedan', tcWin: 'Ganando ahora', tcLose: 'Perdiendo ahora', tcPrice: 'Precio', tcVsNow: 'vs ahora' },
+    pt: { histLimit: 'Histórico limitado aos últimos {n} minutos', liveBtn: 'Ao vivo', tcBuy: 'COMPRA ↗', tcSell: 'VENDA ↘', tcStake: 'Aposta', tcGain: 'Ganho possível', tcLeft: 'Restam', tcWin: 'Ganhando agora', tcLose: 'Perdendo agora', tcPrice: 'Preço', tcVsNow: 'vs agora' },
+    ar: { histLimit: 'السجل محدود بآخر {n} دقيقة', liveBtn: 'مباشر', tcBuy: 'شراء ↗', tcSell: 'بيع ↘', tcStake: 'الرهان', tcGain: 'الربح المحتمل', tcLeft: 'المتبقي', tcWin: 'رابح الآن', tcLose: 'خاسر الآن', tcPrice: 'السعر', tcVsNow: 'مقابل الآن' },
+    tr: { histLimit: 'Geçmiş son {n} dakikayla sınırlı', liveBtn: 'Canlı', tcBuy: 'AL ↗', tcSell: 'SAT ↘', tcStake: 'Bahis', tcGain: 'Olası kazanç', tcLeft: 'Kalan', tcWin: 'Şu an kazanıyor', tcLose: 'Şu an kaybediyor', tcPrice: 'Fiyat', tcVsNow: 'şimdiye göre' },
+    vi: { histLimit: 'Lịch sử giới hạn {n} phút gần nhất', liveBtn: 'Trực tiếp', tcBuy: 'MUA ↗', tcSell: 'BÁN ↘', tcStake: 'Tiền cược', tcGain: 'Lãi có thể', tcLeft: 'Còn', tcWin: 'Đang thắng', tcLose: 'Đang thua', tcPrice: 'Giá', tcVsNow: 'so với hiện tại' },
+    id: { histLimit: 'Riwayat terbatas {n} menit terakhir', liveBtn: 'Langsung', tcBuy: 'BELI ↗', tcSell: 'JUAL ↘', tcStake: 'Taruhan', tcGain: 'Potensi untung', tcLeft: 'Sisa', tcWin: 'Sedang menang', tcLose: 'Sedang kalah', tcPrice: 'Harga', tcVsNow: 'vs sekarang' },
+    ru: { histLimit: 'История ограничена последними {n} мин', liveBtn: 'Сейчас', tcBuy: 'ПОКУПКА ↗', tcSell: 'ПРОДАЖА ↘', tcStake: 'Ставка', tcGain: 'Возможный выигрыш', tcLeft: 'Осталось', tcWin: 'Сейчас в плюсе', tcLose: 'Сейчас в минусе', tcPrice: 'Цена', tcVsNow: 'к текущей' },
+    de: { histLimit: 'Verlauf auf die letzten {n} Minuten begrenzt', liveBtn: 'Live', tcBuy: 'KAUF ↗', tcSell: 'VERKAUF ↘', tcStake: 'Einsatz', tcGain: 'Möglicher Gewinn', tcLeft: 'Noch', tcWin: 'Gerade im Plus', tcLose: 'Gerade im Minus', tcPrice: 'Preis', tcVsNow: 'vs jetzt' },
+    hi: { histLimit: 'इतिहास पिछले {n} मिनट तक सीमित', liveBtn: 'लाइव', tcBuy: 'खरीद ↗', tcSell: 'बिक्री ↘', tcStake: 'दांव', tcGain: 'संभावित लाभ', tcLeft: 'बाकी', tcWin: 'अभी जीत रहे', tcLose: 'अभी हार रहे', tcPrice: 'कीमत', tcVsNow: 'अभी से तुलना' }
   };
   Object.keys(TRADECARD_I18N).forEach(function (code) {
     if (DICT[code]) Object.assign(DICT[code], TRADECARD_I18N[code]);

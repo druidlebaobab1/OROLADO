@@ -55,14 +55,14 @@
       chain.forEach(function (el) {
         if (!el || !el.style) return;
         el.style.setProperty('pointer-events', 'auto', 'important');
-        el.style.setProperty('user-select', 'auto', 'important');
+        el.style.setProperty('user-select', 'none', 'important');
       });
       document.querySelectorAll(
         '.topbar,.asset-bar,.pad,.chart-toolbar,.dur-row,.odds-row,.trade-row,' +
         '.asset-chip,.dur-chip,.odds-chip,.btn-trade,.btn-deposit,.qbtn,.mode-btn,.icon-btn,.help-badge,.ind-btn,.chart-fs-btn'
       ).forEach(function (el) {
         el.style.setProperty('pointer-events', 'auto', 'important');
-        el.style.setProperty('user-select', 'auto', 'important');
+        el.style.setProperty('user-select', 'none', 'important');
       });
       ['chartStage', 'chartCanvas', 'chartOverlay'].forEach(function (id) {
         var n = $(id);

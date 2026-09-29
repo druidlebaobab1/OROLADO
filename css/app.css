@@ -4084,8 +4084,28 @@ html body #chart .pinch-hint .pinch-ico{font-size:1.05rem}
 
 /* iPhone : pas de sélection de texte ni de menu « Copier » en touchant le graphique ou ses boutons. */
 html body #chart,html body #chart *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
-/* Bouton « Direct » : apparaît quand on regarde l'historique du graphique, ramène au direct. */
-html body #chart .chart-live-btn{position:absolute;right:64px;bottom:12px;z-index:31;display:none;align-items:center;gap:4px;
-  padding:6px 12px;border-radius:999px;border:1px solid rgba(245,197,24,.6);background:rgba(12,17,30,.9);color:#F8E7B0;
-  font-size:.74rem;font-weight:800;letter-spacing:.02em;box-shadow:0 4px 14px rgba(0,0,0,.45);cursor:pointer}
-html body #chart .chart-live-btn.on{display:inline-flex}
+/* Bref message au bout de l'historique du graphique (on ne peut pas remonter plus loin). */
+html body #chart .chart-hist-msg{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);z-index:31;
+  padding:7px 14px;border-radius:10px;background:rgba(10,14,24,.88);border:1px solid rgba(245,197,24,.35);
+  color:#F8E7B0;font-size:.74rem;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .35s ease}
+html body #chart .chart-hist-msg.on{opacity:1}
+/* Appui long : pas de sélection ni de menu « Copier » sur le site (confort d'application).
+   Restent copiables : les cases où l'on écrit, les adresses de portefeuille et l'espace admin. */
+html body,html body *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+html body input,html body textarea,html body [contenteditable="true"],html body code,html body #profWalletAddr,html body #usdtAddr,
+html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
+/* Finition du bas (téléphones) : le bloc lumineux (payouts + boutons) devient un carré orange au milieu,
+   entouré d'une fine bordure sombre qui prolonge le site ; tout en bas, un léger reflet orangé, doux. */
+@media (max-width:859px){
+  html:not(.is-tv):not(.fs-trade) body #screenTrade .pad,
+  html:not(.is-tv):not(.fs-trade) body #screenTrade .pad.glass,
+  html:not(.is-tv):not(.fs-trade).is-android body #screenTrade .pad,
+  html:not(.is-tv):not(.fs-trade).is-ios body #screenTrade .pad{
+    background:linear-gradient(180deg,#0D1322 0%,#0D1322 70%,#141722 86%,#1f1a18 100%)!important}
+  html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after,
+  html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{
+    left:6px!important;right:6px!important;bottom:calc(8px + env(safe-area-inset-bottom, 0px))!important;
+    border-radius:0 0 14px 14px!important}
+  html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after{height:92px!important}
+  html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{height:54px!important}
+}

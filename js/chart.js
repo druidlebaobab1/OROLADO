@@ -32,7 +32,6 @@
   var zoomEase = 0.38;
   // Doigt sur le graphique : position du réticule (null = caché) et ondes dorées en cours.
   var touchCross = null;
-  var touchRipples = [];
   // Trade touché (carte en haut) et positions des lignes de trade de la dernière image.
   var tradeCard = null;
   var tradeHits = [];
@@ -48,14 +47,14 @@
   var panAsset = null;
   var lastSeriesW = 0;
   var lastTradeN = 0;
-  var liveBtn = null;
-  var liveBtnShown = false;
   var panLastWall = 0;
   var panDragRef = null;
   var panLiveAnim = false;
-  // Sensation du balayage : lueur dorée sur le bord d'où arrivent les bougies.
-  var panFxV = 0;
-  var panFxAt = 0;
+  // Suivi doux du doigt (cible du défilement) et bref message au bout de l'historique.
+  var panFollow = false;
+  var panTarget = 0;
+  var histMsgEl = null;
+  var histMsgTimer = 0;
 
   var wantFitY = false;
   // 1 bougie = 4 ticks serveur de 250 ms (voir engine.js).
@@ -1029,7 +1028,7 @@
     var end = done.length;
     var withForming = !!forming;
     panTrim = 0;
-    if (done.length > 1) panMaxMs = Math.max(0, (done[done.length - 1].t - done[0].t) - (xWin > 0 ? xWin : 28000) * 0.7);
+    if (done.length > 1) panMaxMs = Math.max(0, (xNow + panMs) - done[0].t - (xWin > 0 ? xWin : 28000) + CANDLE_DURATION_MS * 0.6);
     if (panMs > 0 && done.length) {
       // Historique regardé : seulement les bougies qui tombent dans l'écran (le bout à droite est coupé).
       var rightT = xNow + panRightMs + CANDLE_DURATION_MS;
@@ -2133,24 +2132,6 @@
     var v = Number(lineData[i]);
     return { x: x, c: null, v: v, hi: v, lo: v, t: xTimes ? Number(xTimes[off + i]) || 0 : 0 };
   }
-  function drawPanFx(pad, h, layout) {
-    var age = performance.now() - panFxAt;
-    var over = panMs < 0 ? -1 : (panMaxMs > 0 && panMs > panMaxMs ? 1 : 0);
-    var k = Math.max(0, 1 - age / 350) * Math.min(1, Math.abs(panFxV) * 0.035);
-    if (over) k = Math.max(k, 0.9);
-    if (k < 0.02) return;
-    // Glisser vers la droite (passé) : lueur à gauche ; vers la gauche (direct) : lueur à droite.
-    var left = over ? over > 0 : panFxV > 0;
-    var gw = 46;
-    var x0 = left ? pad.l : layout.axisX - gw;
-    var g = ctx.createLinearGradient(left ? pad.l : layout.axisX, 0, left ? pad.l + gw : layout.axisX - gw, 0);
-    g.addColorStop(0, 'rgba(245,197,24,' + (0.22 * k).toFixed(3) + ')');
-    g.addColorStop(1, 'rgba(245,197,24,0)');
-    ctx.save();
-    ctx.fillStyle = g;
-    ctx.fillRect(x0, pad.t, gw, h);
-    ctx.restore();
-  }
   function infoPanel(lines, pad, layout, topY, centerX, fontPx) {
     // Petit panneau léger en haut (comme les grandes plateformes) ; il suit le trait vertical.
     var fs = fontPx || 9;
@@ -2188,28 +2169,6 @@
   }
   function drawTouchLayer(pad, h, layout, minP, maxP, candles, lineData, candleMode, now, livePrice, legendOn) {
     var i;
-    if (touchRipples.length) {
-      ctx.save();
-      for (i = touchRipples.length - 1; i >= 0; i--) {
-        var rp = touchRipples[i];
-        var k = (now - rp.t) / 650;
-        if (k < 0) k = 0;
-        if (!(k < 1)) { touchRipples.splice(i, 1); continue; }
-        var ease = 1 - Math.pow(1 - k, 3);
-        ctx.globalAlpha = 0.6 * (1 - k);
-        ctx.strokeStyle = '#F5C518';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(rp.x, rp.y, 6 + 30 * ease, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.globalAlpha = 0.2 * (1 - k);
-        ctx.fillStyle = '#F5C518';
-        ctx.beginPath();
-        ctx.arc(rp.x, rp.y, 4 + 14 * ease, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
     var top = pad.t;
     var bot = pad.t + h;
     var panelY = top + (legendOn ? 24 : 5);
@@ -2632,6 +2591,7 @@
       var panDW = Math.max(0, Math.min(1000, panWall - panLastWall));
       panMs += panDW;
       if (panDragRef) panDragRef.ms += panDW;
+      if (panFollow) panTarget += panDW;
     }
     panLastWall = panWall;
     if (panMs) xNow -= panMs;
@@ -3011,12 +2971,10 @@
       drawBead(map, market.price, tagCol, now, theme);
       drawLivePriceBadge(map, market.price, layout, tagCol);
     }
-    if (panFxAt || panMs < 0 || panMs > panMaxMs) drawPanFx(pad, h, layout);
-    syncLiveBtn();
     // Nouveau trade pendant qu'on regarde le passé : retour au direct.
     if (allTrades.length > lastTradeN && panMs > 0) panGoLive();
     lastTradeN = allTrades.length;
-    if (touchCross || touchRipples.length || tradeCard) {
+    if (touchCross || tradeCard) {
       drawTouchLayer(pad, h, layout, minP, maxP, candles, lineData, touchCandleMode, now, Number(market.price), !!(inds.ma || inds.bb || inds.ema));
     }
     st.lastPrice = lastDrawnClose;
@@ -3245,10 +3203,11 @@
    * graphique réagit (le reste de la page ne bouge pas). Un doigt seul : rien ne change.
    * Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
    */
-  // Défilement de l'historique (affichage seulement) : recul en ms, élan, retour au direct.
-  function stopPanAnim() { if (panAnim) cancelAnimationFrame(panAnim); panAnim = 0; }
+  // Défilement de l'historique (affichage seulement) : recul en ms, suivi doux du doigt, élan calme,
+  // ressort aux deux bouts, retour au direct.
+  function stopPanAnim() { if (panAnim) cancelAnimationFrame(panAnim); panAnim = 0; panFollow = false; }
   function panGoLive() {
-    // Retour au direct en glissant (bouton « Direct », Actualiser, nouveau trade).
+    // Retour au direct en glissant (Actualiser, nouveau trade).
     stopPanAnim();
     panEpoch++;
     if (!(panMs > 0)) { panMs = 0; return; }
@@ -3259,14 +3218,29 @@
       if (epoch !== panEpoch) { panLiveAnim = false; panAnim = 0; return; }
       var dt = Math.min(50, t - last);
       last = t;
-      panMs += (0 - panMs) * Math.min(1, dt / 110);
+      panMs += (0 - panMs) * Math.min(1, dt / 140);
       if (panMs < 40) { panMs = 0; panAnim = 0; panLiveAnim = false; return; }
       panAnim = requestAnimationFrame(step);
     }
     panAnim = requestAnimationFrame(step);
   }
+  function panFollowStart() {
+    // Pendant que le doigt glisse, la courbe rejoint la position du doigt en douceur (pas de saut).
+    if (panFollow) return;
+    stopPanAnim();
+    panFollow = true;
+    var last = performance.now();
+    function step(t) {
+      if (!panFollow) { panAnim = 0; return; }
+      var dt = Math.min(50, t - last);
+      last = t;
+      panMs += (panTarget - panMs) * Math.min(1, dt / 70);
+      panAnim = requestAnimationFrame(step);
+    }
+    panAnim = requestAnimationFrame(step);
+  }
   function panGlide(v) {
-    // Élan au lâcher, puis ressort si on a dépassé le direct ou le plus ancien.
+    // Élan calme au lâcher (la courbe ralentit tranquillement), puis ressort si on a dépassé un bout.
     stopPanAnim();
     var last = performance.now();
     var epoch = panEpoch;
@@ -3277,46 +3251,34 @@
       var over = panMs < 0 || panMs > panMaxMs;
       if (over) {
         var target = panMs < 0 ? 0 : panMaxMs;
-        panMs += (target - panMs) * Math.min(1, dt / 90);
+        panMs += (target - panMs) * Math.min(1, dt / 120);
         v = 0;
-        if (Math.abs(panMs - target) < 20) panMs = target;
+        if (Math.abs(panMs - target) < 15) panMs = target;
       } else {
         panMs += v * dt;
-        v *= Math.pow(0.92, dt / 16.7);
-        panFxV = v / Math.max(0.001, (xWin > 0 ? xWin : 28000) / Math.max(40, lastSeriesW || 200)) * 16.7;
-        panFxAt = t;
+        v *= Math.pow(0.95, dt / 16.7);
       }
-      if (panMs < 0 && !over) panMs = Math.max(panMs, -0.1 * xWin);
       var stillOver = panMs < 0 || panMs > panMaxMs;
-      if (Math.abs(v) < 0.01 && !stillOver) { if (panMs < 40) panMs = 0; panAnim = 0; return; }
+      if (Math.abs(v) < 0.005 && !stillOver) { if (panMs < 40) panMs = 0; panAnim = 0; return; }
       panAnim = requestAnimationFrame(step);
     }
     panAnim = requestAnimationFrame(step);
   }
-  function ensureLiveBtn() {
+  function showHistLimit() {
+    // Bref message quand on insiste au bout du passé : l'historique affiché est limité.
     var stage = document.getElementById('chart');
-    if (!stage) return null;
-    if (liveBtn && liveBtn.isConnected) return liveBtn;
-    liveBtn = document.createElement('button');
-    liveBtn.type = 'button';
-    liveBtn.className = 'chart-live-btn';
-    liveBtn.textContent = tt('liveBtn', 'Direct') + ' ⏩';
-    liveBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      panGoLive();
-    });
-    stage.appendChild(liveBtn);
-    return liveBtn;
-  }
-  function syncLiveBtn() {
-    var want = panMs > 1500;
-    if (want === liveBtnShown) return;
-    var b = ensureLiveBtn();
-    if (!b) return;
-    liveBtnShown = want;
-    b.textContent = tt('liveBtn', 'Direct') + ' ⏩';
-    b.classList.toggle('on', want);
+    if (!stage) return;
+    var mins = Math.max(1, Math.round((panMaxMs + (xWin > 0 ? xWin : 28000)) / 60000));
+    if (!histMsgEl || !histMsgEl.isConnected) {
+      histMsgEl = document.createElement('div');
+      histMsgEl.className = 'chart-hist-msg';
+      histMsgEl.setAttribute('aria-hidden', 'true');
+      stage.appendChild(histMsgEl);
+    }
+    histMsgEl.textContent = tt('histLimit', 'Historique limité aux {n} dernières minutes').replace('{n}', String(mins));
+    histMsgEl.classList.add('on');
+    clearTimeout(histMsgTimer);
+    histMsgTimer = setTimeout(function () { if (histMsgEl) histMsgEl.classList.remove('on'); }, 2200);
   }
 
   function bindPinch() {
@@ -3324,38 +3286,13 @@
     // rendue « transparente » aux doigts par app.js (pour ne jamais bloquer un bouton). css/app.css y
     // coupe les gestes du navigateur. Événements tactiles classiques, reconnus par tous les téléphones.
     //  - deux doigts : zoom élastique (continu, résiste aux limites, revient au cran le plus proche) ;
-    //  - un doigt qui glisse : défile l'historique (droite = passé), élan au lâcher, bouton « Direct » ;
+    //  - un doigt qui glisse : défile l'historique (droite = passé) en douceur, élan calme au lâcher ;
     //  - un doigt maintenu : croix (prix sous le doigt, carré O H L C et heure de la bougie) ;
-    //  - un doigt qui tape : petite onde dorée ; sur la ligne d'un trade ouvert : sa carte.
+    //  - un toucher sur la ligne d'un trade ouvert : sa carte.
     // Affichage uniquement : les prix, les trades et leur règlement ne sont pas concernés.
     var stage = document.getElementById('chart');
     if (!stage || stage.__oroPinch) return;
     stage.__oroPinch = true;
-    // Petit message de découverte : écrans tactiles seulement, aux 4 premières visites de l'appareil,
-    // disparaît seul après 5 s, et plus jamais dès que le joueur a utilisé un des gestes.
-    var hintEl = null;
-    var hintKey = 'oro_gesture_hint3';
-    function hintState() { try { return Number(localStorage.getItem(hintKey) || 0); } catch (eH) { return 99; } }
-    function hideHint(forever) {
-      if (forever) { try { localStorage.setItem(hintKey, '99'); } catch (eH2) { /* ignore */ } }
-      if (hintEl) { hintEl.style.opacity = '0'; var el = hintEl; hintEl = null; setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 450); }
-    }
-    var touchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
-    if (touchCapable && hintState() < 4) {
-      setTimeout(function () {
-        if (hintState() >= 4 || !stage.isConnected) return;
-        try { localStorage.setItem(hintKey, String(hintState() + 1)); } catch (eH3) { /* ignore */ }
-        var txt = tt('gestureHint', 'Glissez : historique · Maintenez : prix · Pincez : zoom');
-        hintEl = document.createElement('div');
-        hintEl.className = 'pinch-hint';
-        hintEl.setAttribute('aria-hidden', 'true');
-        hintEl.innerHTML = '<span class="pinch-ico">👆</span><span></span>';
-        hintEl.lastChild.textContent = txt;
-        stage.appendChild(hintEl);
-        requestAnimationFrame(function () { if (hintEl) hintEl.style.opacity = '1'; });
-        setTimeout(function () { hideHint(false); }, 5500);
-      }, 2500);
-    }
     var MIN = ZOOM_STEPS[0];
     var MAX = ZOOM_STEPS[ZOOM_STEPS.length - 1];
     var easeTimer = 0;
@@ -3369,11 +3306,12 @@
       return raw;
     }
     function elasticPan(raw) {
-      if (raw < 0) return Math.max(-0.1 * xWin, raw * 0.3);
-      if (raw > panMaxMs) return panMaxMs + (raw - panMaxMs) * 0.3;
+      if (raw < 0) return Math.max(-0.08 * xWin, raw * 0.25);
+      if (raw > panMaxMs) return panMaxMs + Math.min(0.08 * xWin, (raw - panMaxMs) * 0.25);
       return raw;
     }
-    function msPerPx() { return (xWin > 0 ? xWin : 28000) / Math.max(40, lastSeriesW || 200); }
+    // Sensibilité calme : un glissement de doigt déplace la courbe de moitié moins.
+    function msPerPx() { return 0.5 * (xWin > 0 ? xWin : 28000) / Math.max(40, lastSeriesW || 200); }
     function zoomEnd() {
       if (pinchSec === null) return;
       var cur = pinchSec;
@@ -3411,6 +3349,7 @@
       if (e.touches.length >= 2) {
         one = null;
         crossOff();
+        if (panFollow) stopPanAnim();
         mode = 'pinch';
         var d = dist(e.touches);
         if (d > 16) {
@@ -3418,20 +3357,19 @@
           pinch = { dist: d, sec: pinchSec !== null ? pinchSec : (zoomSmooth || zoomSec()) };
           pinchSec = pinch.sec;
           zoomEase = 0.55;
-          hideHint(true);
         }
       } else if (e.touches.length === 1 && !mode) {
         var p = local(e.touches[0]);
         var nowT = performance.now();
-        // Un doigt qui se pose arrête net l'élan en cours (comme les grandes plateformes).
+        // Un doigt qui se pose arrête l'élan en cours (comme les grandes plateformes).
         if (panAnim) { stopPanAnim(); panEpoch++; }
         panLiveAnim = false;
-        one = { x0: p.x, y0: p.y, t: nowT, ms: Math.max(0, panMs), lastX: p.x, lastT: nowT, v: 0, kind: '' };
+        one = { x0: p.x, y0: p.y, t: nowT, ms: Math.max(0, panMs), lastX: p.x, lastT: nowT, v: 0, kind: '', warned: false };
         panDragRef = one;
         // Doigt maintenu sans bouger : la croix apparaît.
         clearTimeout(holdTimer);
         holdTimer = setTimeout(function () {
-          if (one && !one.kind) { one.kind = 'cross'; touchCross = { x: one.x0, y: one.y0 }; hideHint(true); }
+          if (one && !one.kind) { one.kind = 'cross'; touchCross = { x: one.x0, y: one.y0 }; }
         }, 260);
       }
     }, { passive: true });
@@ -3453,18 +3391,21 @@
         one.kind = 'pan';
         clearTimeout(holdTimer);
         tradeCard = null;
-        hideHint(true);
+        // Départ à partir du point de décollage : pas de petit saut de 8 px.
+        one.x0 = p.x;
+        dx = 0;
       }
       if (one.kind !== 'pan') return;
       var now = performance.now();
       var k = msPerPx();
-      panMs = elasticPan(one.ms + dx * k);
+      var raw = one.ms + dx * k;
+      if (raw > panMaxMs + 0.03 * xWin && !one.warned) { one.warned = true; showHistLimit(); }
+      panTarget = elasticPan(raw);
+      panFollowStart();
       var dtm = Math.max(1, now - one.lastT);
-      one.v = 0.6 * one.v + 0.4 * (((p.x - one.lastX) * k) / dtm);
+      one.v = 0.7 * one.v + 0.3 * (((p.x - one.lastX) * k) / dtm);
       one.lastX = p.x;
       one.lastT = now;
-      panFxV = one.v / Math.max(0.001, k) * 16.7;
-      panFxAt = now;
     }, { passive: false });
     function onEnd(e) {
       if (mode === 'pinch') {
@@ -3477,13 +3418,12 @@
       var kind = one.kind;
       crossOff();
       if (kind === 'pan') {
-        // Élan seulement si le doigt bougeait encore au lâcher.
+        // La courbe finit de rejoindre le doigt, puis l'élan (seulement si le doigt bougeait encore).
+        panMs = panTarget;
         var v = (performance.now() - one.lastT) < 80 ? one.v : 0;
-        if (Math.abs(v) > 0.05 || panMs < 0 || panMs > panMaxMs) panGlide(v);
-        else if (panMs < 40) panMs = 0;
+        if (Math.abs(v) > 0.02 || panMs < 0 || panMs > panMaxMs) panGlide(v);
+        else { stopPanAnim(); if (panMs < 40) panMs = 0; }
       } else if (!kind && e.type === 'touchend' && performance.now() - one.t < 350) {
-        touchRipples.push({ x: one.x0, y: one.y0, t: performance.now() });
-        if (touchRipples.length > 4) touchRipples.shift();
         // Toucher la ligne d'un trade ouvert : sa carte (mise, gain possible, temps restant).
         var hit = null;
         var hd = 16;
