@@ -4121,7 +4121,7 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{
     bottom:0!important;border-radius:0 0 18px 18px!important}
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .trade-wrap{
-    background:linear-gradient(to top,#211a16 0,#211a16 44px,rgba(33,26,22,0) 96px),#0b0e14!important}
+    background:linear-gradient(to top,#211a16 0,#211a16 140px,rgba(33,26,22,0) 230px),#0b0e14!important}
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed,
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::before,
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::after{display:none!important}
@@ -4129,3 +4129,7 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
 /* Clic sur ACHETER / VENDRE : le bouton s'enfonce et brille aussitôt (on sait que le clic est parti). */
 @keyframes oroSent{0%{filter:brightness(1.45);transform:scale(.965)}100%{filter:none;transform:none}}
 html body #btnCall.btn-sent,html body #btnPut.btn-sent{animation:oroSent .45s ease-out}
+/* Bulle de gain / perte sur le graphique : plus petite et plus fine (ne cache plus la courbe). */
+html body .chart-outcome.win{font-size:11px!important;padding:3px 8px!important;border-radius:11px!important;gap:4px!important}
+html body .chart-outcome.win .outcome-wallet{width:12px!important;height:12px!important}
+html body .chart-outcome.lose{font-size:9.5px!important;padding:2px 6px!important}

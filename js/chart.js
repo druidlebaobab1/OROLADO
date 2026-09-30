@@ -2021,7 +2021,10 @@
     if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
     mx += (idx % 3) * 5 - 5;
     ey += badgeLift;
-    var r = lite ? 7 : 9;
+    // Taille qui suit le zoom : bougies grosses = rond un peu plus grand ; dézoom = plus petit (5 à 8 px).
+    var stepW = candleStepWidth(layout.seriesW);
+    var r = Math.max(5, Math.min(lite ? 7 : 8, stepW * 0.6));
+    var rk = r / 9;
     if (panMs > 0) {
       // Historique regardé : le rond reste accroché à sa bougie et suit le défilement ; hors écran, caché.
       if (mx < pad.l - r || mx > layout.axisX - r) mx = -1000;
@@ -2042,13 +2045,13 @@
     g.fillStyle = '#ffffff';
     g.beginPath();
     if (isCall) {
-      g.moveTo(mx, ey - 5.2);
-      g.lineTo(mx + 4.2, ey + 3.4);
-      g.lineTo(mx - 4.2, ey + 3.4);
+      g.moveTo(mx, ey - 5.2 * rk);
+      g.lineTo(mx + 4.2 * rk, ey + 3.4 * rk);
+      g.lineTo(mx - 4.2 * rk, ey + 3.4 * rk);
     } else {
-      g.moveTo(mx, ey + 5.2);
-      g.lineTo(mx + 4.2, ey - 3.4);
-      g.lineTo(mx - 4.2, ey - 3.4);
+      g.moveTo(mx, ey + 5.2 * rk);
+      g.lineTo(mx + 4.2 * rk, ey - 3.4 * rk);
+      g.lineTo(mx - 4.2 * rk, ey - 3.4 * rk);
     }
     g.closePath();
     g.fill();
@@ -2060,8 +2063,8 @@
     if (secs >= 0.15) {
       var label = lite ? (Math.max(1, Math.ceil(secs)) + 's') : (secs.toFixed(1) + 's');
       if (label.charAt(0) !== '-') {
-        var timerW = 50;
-        var timerH = 16;
+        var timerW = 42;
+        var timerH = 14;
         var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
         var ty = ey - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
@@ -2072,7 +2075,7 @@
         g.fill();
         g.stroke();
         g.fillStyle = lineCol;
-        g.font = '800 11px "Hanken Grotesk", sans-serif';
+        g.font = '800 9.5px "Hanken Grotesk", sans-serif';
         g.textAlign = 'center';
         g.textBaseline = 'middle';
         g.fillText(label, leftX + timerW / 2, ty + timerH / 2 + 0.5);
@@ -2102,19 +2105,52 @@
       ctx.beginPath();
       ctx.arc(map.lastX, map.lastY, 8 + 16 * k, 0, Math.PI * 2);
       ctx.stroke();
-      var lbl = pt.side === 'put' ? tt('tcSell', 'VENTE ↘') : tt('tcBuy', 'ACHAT ↗');
-      ctx.font = '800 10px "Hanken Grotesk", sans-serif';
-      var lw = Math.ceil(ctx.measureText(lbl).width) + 12;
+      var isPut = pt.side === 'put';
+      var lbl = String(isPut ? tt('tcSell', 'VENTE') : tt('tcBuy', 'ACHAT')).replace(/[↗↘⬈⬊]/g, '').trim();
+      ctx.font = '800 9px "Hanken Grotesk", sans-serif';
+      var lw = Math.ceil(ctx.measureText(lbl).width) + 26;
+      var lh = 15;
       var lx = Math.max(4, map.lastX - lw / 2);
-      var ly = pt.side === 'put' ? map.lastY + 18 : map.lastY - 34;
-      ctx.globalAlpha = 0.95;
-      ctx.fillStyle = pt.side === 'put' ? '#FF3B30' : '#00C853';
-      roundRectOn(ctx, lx, ly, lw, 16, 8);
+      var ly = isPut ? map.lastY + 16 : map.lastY - 31;
+      var gr = ctx.createLinearGradient(lx, ly, lx, ly + lh);
+      gr.addColorStop(0, isPut ? '#FF6B5E' : '#22E08A');
+      gr.addColorStop(1, isPut ? '#C9221A' : '#009A48');
+      ctx.globalAlpha = 0.96;
+      ctx.shadowColor = isPut ? 'rgba(255,59,48,.45)' : 'rgba(0,200,83,.45)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = gr;
+      roundRectOn(ctx, lx, ly, lw, lh, lh / 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,255,255,.35)';
+      ctx.stroke();
+      // Petite flèche tracée (diagonale montante pour l'achat, descendante pour la vente).
+      var ax = lx + 9;
+      var ay = ly + lh / 2;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      if (isPut) {
+        ctx.moveTo(ax - 3, ay - 3);
+        ctx.lineTo(ax + 3, ay + 3);
+        ctx.moveTo(ax + 3, ay - 0.5);
+        ctx.lineTo(ax + 3, ay + 3);
+        ctx.lineTo(ax - 0.5, ay + 3);
+      } else {
+        ctx.moveTo(ax - 3, ay + 3);
+        ctx.lineTo(ax + 3, ay - 3);
+        ctx.moveTo(ax - 0.5, ay - 3);
+        ctx.lineTo(ax + 3, ay - 3);
+        ctx.lineTo(ax + 3, ay + 0.5);
+      }
+      ctx.stroke();
       ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
+      ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(lbl, lx + lw / 2, ly + 8.5);
+      ctx.fillText(lbl, lx + 17, ly + lh / 2 + 0.5);
       ctx.restore();
       break;
     }
@@ -2318,7 +2354,7 @@
       lines2.push([[formatAxisPrice(pt.v), '#F8E7B0']]);
     }
     lines2.push([[ttxt, DIM]]);
-    infoPanel(lines2, pad, layout, panelY, x, 9);
+    infoPanel(lines2, pad, layout, panelY, x, 8);
     ctx.restore();
   }
 

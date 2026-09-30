@@ -1,7 +1,7 @@
 {
-  "name": "Orolado — Crypto & Indices Trading 24/7",
+  "name": "OROLADO — Online Crypto Trading",
   "short_name": "Orolado",
-  "description": "Trade Bitcoin, crypto and live indices 24/7 in US dollars. Free demo, fast crypto deposits and withdrawals.",
+  "description": "Tradez des cryptos sur Orolado. Entraînez-vous sans risque avec un compte démo, analysez les graphiques du marché en direct et tradez en toute fluidité.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
