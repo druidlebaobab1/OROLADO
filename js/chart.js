@@ -36,6 +36,7 @@
   var tradeCard = null;
   var tradeHits = [];
   var lastEntryMarkX = NaN;
+  var shownMarks = {};
   // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
   // coupées, cadre des prix du passé, bouton « Direct ».
   var panMs = 0;
@@ -449,8 +450,10 @@
     // Filet de sécurité : sans confirmation au bout de 6 s, le trade s'affiche quand même.
     // Rond du trade : il n'apparaît que lorsque la courbe affichée atteint son moment d'entrée (démo comme réel),
     // pour tomber pile sur la courbe, jamais devant. Sans réponse du serveur au bout de 6 s, il s'affiche quand même.
-    var hideNow = (ot.startTime && collectNow < ot.startTime) ||
-      (!ot.serverConfirmed && !ot.guest && !(ot.startTime && collectNow - ot.startTime > 6000));
+    // Rond immédiat au clic, et une fois affiché il ne disparaît plus jamais (avant : la confirmation du serveur,
+    // qui déplace l'entrée un peu plus loin, le recachait → « parfois rapide, parfois lent »). Il reste collé au
+    // bout de la courbe (jamais devant la boule) jusqu'à ce que la courbe atteigne sa bougie.
+    var hideNow = !shownMarks[ot.id] && ot.startTime && collectNow < ot.startTime - 400;
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
@@ -465,6 +468,7 @@
       pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
+    shownMarks[ot.id] = collectNow;
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
     var v = openTradeVisuals[ot.id];
