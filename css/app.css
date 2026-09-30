@@ -4086,8 +4086,8 @@ html body #chart .pinch-hint .pinch-ico{font-size:1.05rem}
 html body #chart,html body #chart *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
 /* Bref message au bout de l'historique du graphique (on ne peut pas remonter plus loin). */
 html body #chart .chart-hist-msg{position:absolute;left:10px;top:50%;transform:translateY(-50%);z-index:31;
-  padding:4px 8px;border-radius:7px;background:rgba(10,14,24,.82);border:1px solid rgba(245,197,24,.28);
-  color:#F8E7B0;font-size:.64rem;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s ease}
+  padding:2px 6px;border-radius:6px;background:rgba(10,14,24,.82);border:1px solid rgba(245,197,24,.28);
+  color:#F8E7B0;font-size:.56rem;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s ease}
 html body #chart .chart-hist-msg.on{opacity:1}
 /* Appui long : pas de sélection ni de menu « Copier » sur le site (confort d'application).
    Restent copiables : les cases où l'on écrit, les adresses de portefeuille et l'espace admin. */
@@ -4130,6 +4130,9 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
 @keyframes oroSent{0%{filter:brightness(1.45);transform:scale(.965)}100%{filter:none;transform:none}}
 html body #btnCall.btn-sent,html body #btnPut.btn-sent{animation:oroSent .45s ease-out}
 /* Bulle de gain / perte sur le graphique : plus petite et plus fine (ne cache plus la courbe). */
-html body .chart-outcome.win{font-size:11px!important;padding:3px 8px!important;border-radius:11px!important;gap:4px!important}
-html body .chart-outcome.win .outcome-wallet{width:12px!important;height:12px!important}
-html body .chart-outcome.lose{font-size:9.5px!important;padding:2px 6px!important}
+html body .chart-outcome.win{font-size:9.5px!important;padding:2px 7px!important;border-radius:9px!important;gap:3px!important;line-height:1.25!important}
+html body .chart-outcome.win .outcome-wallet{width:10px!important;height:10px!important}
+html body .chart-outcome.lose{font-size:8.5px!important;padding:1px 5px!important}
+/* iPhone : sous la barre de Safari, le fond du bas continue la couleur sombre-orangée (plus de coupure). */
+html.is-ios{background:linear-gradient(180deg,#0D1322 0%,#0D1322 50%,#211a16 50%,#211a16 100%)!important}
+html.is-ios body:has(#screenTrade:not(.hidden)){background:linear-gradient(to top,#211a16 0,#211a16 120px,#0D1322 240px) #0D1322!important}

@@ -2330,14 +2330,14 @@
     ctx.arc(x, py, 3, 0, Math.PI * 2);
     ctx.fill();
     // Prix sous le doigt, sur la colonne des prix.
-    ctx.font = '600 10px ui-monospace, Menlo, Consolas, monospace';
+    ctx.font = '600 9px ui-monospace, Menlo, Consolas, monospace';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
     var ptxt = formatAxisPrice(price);
-    var pw = Math.ceil(ctx.measureText(ptxt).width) + 10;
+    var pw = Math.ceil(ctx.measureText(ptxt).width) + 8;
     var px = Math.min(cssW - pw - 1, layout.axisX + 2);
     ctx.fillStyle = '#F5C518';
-    roundRectOn(ctx, px, y - 9, pw, 18, 5);
+    roundRectOn(ctx, px, y - 7, pw, 14, 4);
     ctx.fill();
     ctx.fillStyle = '#10141f';
     ctx.fillText(ptxt, px + pw / 2, y + 0.5);
