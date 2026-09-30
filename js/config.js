@@ -61,7 +61,7 @@
       { flag: '\uD83C\uDDF5\uD83C\uDDED', name: 'Philippines' }
     ],
     DEMO_MAX_WIN_STREAK: 0,
-    MIN_ORDER_MS: 350,
+    MIN_ORDER_MS: 60,
     MIN_DEPOSIT: 5,
     USDT_TRC20_ADDRESS: 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1',
     MIN_WITHDRAW: 5,

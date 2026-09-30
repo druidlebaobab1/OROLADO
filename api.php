@@ -202,7 +202,7 @@ if ($token === '') $token = trim((string) ($_COOKIE['oro_token'] ?? ''));
 // [qui, nombre, par N secondes] — qui : e = e-mail demandé, i = connexion, t = compte connecté.
 // Limites par connexion relevées pour le lancement (pubs) : derrière un opérateur mobile, des
 // milliers de vrais joueurs arrivent par la même adresse. La vraie protection reste par e-mail / compte.
-// placeOrder : anti-robot seulement (30 ordres par 10 s par compte, bien au-delà d'un humain) ; ce
+// placeOrder : anti-robot seulement (120 ordres par 10 s par compte : un trader très rapide passe) ; ce
 // n'est pas une limite de mise : un robot qui envoie des centaines d'ordres ne bloque plus le site.
 $OROLADO_RATE_RULES = [
   'registerStart'     => [['e', 5, 3600], ['i', 400, 3600]],
@@ -218,7 +218,7 @@ $OROLADO_RATE_RULES = [
   'login'             => [['e', 30, 3600], ['i', 3000, 3600]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
-  'placeOrder'        => [['t', 30, 10]],
+  'placeOrder'        => [['t', 120, 10]],
 ];
 if (isset($OROLADO_RATE_RULES[$action])) {
   $rlEmail = strtolower(trim((string) ($req['email'] ?? '')));

@@ -1172,7 +1172,8 @@
       }
       var mode = user.mode === 'real' ? 'real' : 'demo';
       var nowPerf = performance.now();
-      if (nowPerf - lastOrderAt < 350) return { ok: false, reason: D6.I18N.t('antibot') };
+      // Chaque tap lance son trade à l'instant (60 ms : seulement pour qu'un même tap ne compte pas double).
+      if (nowPerf - lastOrderAt < 60) return { ok: false, reason: D6.I18N.t('antibot') };
 
       var stake = round2(Number(opts.stake) || 0);
       var duration = C.DURATIONS.indexOf(Number(opts.duration)) >= 0 ? Number(opts.duration) : C.DEFAULT_DURATION;
