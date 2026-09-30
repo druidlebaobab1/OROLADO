@@ -4119,7 +4119,9 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
     background:linear-gradient(180deg,#0D1322 0%,#0D1322 70%,#141722 86%,#211a16 100%)!important}
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after,
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{
-    bottom:12px!important;border-radius:0 0 14px 14px!important}
+    bottom:0!important;border-radius:0 0 18px 18px!important}
+  html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .trade-wrap{
+    background:linear-gradient(to top,#211a16 0,#211a16 44px,rgba(33,26,22,0) 96px),#0b0e14!important}
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden) .fire-bed,
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::before,
   html.is-ios:not(.is-tv) #screenTrade:not(.hidden)::after{display:none!important}

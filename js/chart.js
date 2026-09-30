@@ -426,7 +426,10 @@
     // Avant : posés sur l'écran au clic, puis déplacés vers le vrai prix à la réponse du serveur.
     // Filet de sécurité : sans confirmation au bout de 6 s, le trade s'affiche quand même.
     // Rond du trade affiché dès la confirmation du serveur (vrai prix d'entrée), sans attendre la courbe.
-    var hideNow = (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 6000));
+    // Rond posé sur la bougie et au prix que le joueur voyait au clic (jamais devant la courbe) ; affiché
+    // au plus tard 0,7 s après le clic, sans attendre la réponse du serveur, qui confirme au même endroit.
+    var hideNow = (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 700)) ||
+      (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime);
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
@@ -2023,7 +2026,7 @@
       // Historique regardé : le rond reste accroché à sa bougie et suit le défilement ; hors écran, caché.
       if (mx < pad.l - r || mx > layout.axisX - r) mx = -1000;
     } else {
-      if (mx < pad.l - r) mx = pad.l + r + 2;
+      if (mx < pad.l - r) mx = -1000;
       if (mx > layout.headX) mx = layout.headX;
     }
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
@@ -2099,6 +2102,19 @@
       ctx.beginPath();
       ctx.arc(map.lastX, map.lastY, 8 + 16 * k, 0, Math.PI * 2);
       ctx.stroke();
+      var lbl = pt.side === 'put' ? tt('tcSell', 'VENTE ↘') : tt('tcBuy', 'ACHAT ↗');
+      ctx.font = '800 10px "Hanken Grotesk", sans-serif';
+      var lw = Math.ceil(ctx.measureText(lbl).width) + 12;
+      var lx = Math.max(4, map.lastX - lw / 2);
+      var ly = pt.side === 'put' ? map.lastY + 18 : map.lastY - 34;
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = pt.side === 'put' ? '#FF3B30' : '#00C853';
+      roundRectOn(ctx, lx, ly, lw, 16, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(lbl, lx + lw / 2, ly + 8.5);
       ctx.restore();
       break;
     }
