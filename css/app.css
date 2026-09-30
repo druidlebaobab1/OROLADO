@@ -4250,3 +4250,9 @@ html:not(.fs-guest) body .fs-mode-switch{gap:6px!important;padding:3px 9px!impor
 html body .chart-outcome.win{font-size:11px!important;padding:4px 6px!important;line-height:1.25!important}
 html body .chart-outcome.win .outcome-wallet{width:12px!important;height:12px!important}
 html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important}
+/* iPhone / iPad seulement : Safari zoome toute la page quand on touche une case dont le texte fait moins
+   de 16 px (case de la mise, formulaire de retrait…), même avec « pas de zoom » dans la page. Texte des
+   cases à 16 px → plus de zoom. Android, PC et télé ne sont pas concernés. */
+@supports (-webkit-touch-callout: none) {
+  html body input, html body select, html body textarea { font-size: 16px !important; }
+}

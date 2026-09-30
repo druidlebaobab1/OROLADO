@@ -3110,7 +3110,16 @@
     lastExecGuard = now;
     lastExecSide = next;
     if (tradeQ.length >= (TRADE_Q_MAX || 9999)) return;
-    tradeQ.push(next);
+    // Chaque clic garde SA simulation, sa durée, son payout et son mode (démo / réel) au moment du
+    // tap : des clics rapides encore en file ne partent plus sur une autre simulation choisie entre-temps.
+    var uq = user();
+    tradeQ.push({
+      side: next,
+      asset: uq ? assetId(uq) : '',
+      dur: uq ? Number(uq.duration) : 0,
+      pay: uq ? currentOdds(uq) : 0,
+      mode: uq && uq.mode === 'real' ? 'real' : 'demo'
+    });
     if (!IS_ANDROID || tradeQ.length === 1) playTradeOpen();
     pumpTradeQ();
   }
@@ -3144,14 +3153,18 @@
         setTimeout(tick, Math.min(wait, 40));
         return;
       }
-      var nextSide = tradeQ.shift();
-      if (placeTradeNow(nextSide)) lastPlaceOkAt = Date.now();
+      var item = tradeQ.shift();
+      // Mode changé (démo ↔ réel) depuis le clic : ce clic est annulé, jamais débité sur l'autre compte.
+      if (item && typeof item === 'object' && item.mode !== mode) { setTimeout(tick, 0); return; }
+      if (placeTradeNow(item)) lastPlaceOkAt = Date.now();
       setTimeout(tick, 0);
     }
     tick();
   }
 
-  function placeTradeNow(side) {
+  function placeTradeNow(item) {
+    var side = item && typeof item === 'object' ? item.side : item;
+    var sealed = item && typeof item === 'object' ? item : null;
     var u = user();
     if (!u) return false;
     var mode = u.mode === 'real' ? 'real' : 'demo';
@@ -3171,9 +3184,9 @@
       tradeQ.length = 0;
       return false;
     }
-    var sealedDur = Number(u.duration);
-    var sealedPay = currentOdds(u);
-    var sealedAsset = assetId(u);
+    var sealedDur = sealed && sealed.dur ? sealed.dur : Number(u.duration);
+    var sealedPay = sealed && sealed.pay ? sealed.pay : currentOdds(u);
+    var sealedAsset = sealed && sealed.asset ? sealed.asset : assetId(u);
     var realBefore = (mode === 'real' && D6.Store.realBalance) ? Number(D6.Store.realBalance(u)) : null;
     var demoBefore = (mode === 'demo' && D6.Store.demoBalance) ? Number(D6.Store.demoBalance(u)) : null;
     var res = D6.Engine.placeOrder(u, {
@@ -7464,7 +7477,7 @@
         if (cur >= target) return;
         D6.Store.setBalanceMode(u, 'demo', target);
         updateBalance(true);
-        toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok', 2500);
+        // Plus de message « Démo rechargée : 1 000 000 $ » (le solde qui remonte suffit, à la demande du propriétaire).
       }
       if ($('btnDemoTopup')) $('btnDemoTopup').addEventListener('click', onBalancePlusClick);
       if ($('btnFsTopup')) $('btnFsTopup').addEventListener('click', onBalancePlusClick);
