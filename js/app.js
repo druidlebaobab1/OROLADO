@@ -1475,14 +1475,6 @@
 
   function selectAsset(rawId) {
     var id = mapAssetId(rawId);
-    // Changement de simulation : les clics encore en attente sur l'ancienne (pas encore partis, jamais
-    // débités) sont annulés, pour que les clics sur la nouvelle partent tout de suite (avant : ils
-    // attendaient derrière, 0,35 s par clic). Les trades déjà lancés continuent normalement.
-    if (id !== selectedAsset && tradeQ.length) {
-      for (var qi = tradeQ.length - 1; qi >= 0; qi--) {
-        if (tradeQ[qi] && typeof tradeQ[qi] === 'object' && tradeQ[qi].asset !== id) tradeQ.splice(qi, 1);
-      }
-    }
     selectedAsset = id;
     var u = user();
     if (u) {
