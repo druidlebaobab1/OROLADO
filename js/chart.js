@@ -452,7 +452,8 @@
     // pour tomber pile sur la courbe, jamais devant. Sans réponse du serveur au bout de 6 s, il s'affiche quand même.
     // Rond immédiat au clic, et une fois affiché il ne disparaît plus jamais (avant : la confirmation du serveur,
     // qui déplace l'entrée un peu plus loin, le recachait → « parfois rapide, parfois lent »). Il reste collé au
-    // bout de la courbe (jamais devant la boule) jusqu'à ce que la courbe atteigne sa bougie.
+    // Le rond reste pour de bon à l'endroit du clic : la réponse du serveur (qui fixe le vrai prix) ne le fait
+    // plus glisser le long de la courbe.
     var hideNow = !shownMarks[ot.id] && ot.startTime && collectNow < ot.startTime - 400;
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
@@ -468,7 +469,12 @@
       pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
-    shownMarks[ot.id] = collectNow;
+    if (!shownMarks[ot.id]) {
+      // Simulations en ligne (ZUL, VALAC…) : le rond reste à l'endroit du clic. Bougies : inchangé.
+      var aMk = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[ot.assetId] : null;
+      var lineMk = !!(aMk && aMk.chart !== 'candle' && aMk.id !== 'horizon50');
+      shownMarks[ot.id] = lineMk ? (Number(ot.startTime || ot.startedAt) || 1) : 1;
+    }
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
     var v = openTradeVisuals[ot.id];
@@ -2068,7 +2074,7 @@
 
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
-    var t0 = glide.start;
+    var t0 = shownMarks[trade.id] > 1 ? shownMarks[trade.id] : glide.start;
     var mx = layout.headX;
     if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
     mx += (idx % 3) * 5 - 5;
