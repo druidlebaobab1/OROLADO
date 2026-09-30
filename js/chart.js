@@ -2100,20 +2100,26 @@
   function drawPendingPulse(map, now) {
     var id;
     var pNow = performance.now();
+    var slot = 0;
     for (id in pendingTrades) {
       if (!pendingTrades.hasOwnProperty(id)) continue;
       var pt = pendingTrades[id];
       if (id.indexOf('done:') === 0) { if (pNow - pt > 60000) delete pendingTrades[id]; continue; }
-      // Au moins 1,2 s après le clic, et tant que le rond n'est pas encore posé.
+      // Bref : environ 0,55 s après le clic (plus longtemps seulement si le rond n'est pas encore posé).
+      // Un signe par clic : plusieurs clics rapides = plusieurs petits signes qui s'effacent vite.
       var stillHidden = pt.hid && Date.now() - pt.hid < 400;
-      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 1200 && !stillHidden)) {
+      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 550 && !stillHidden)) {
         delete pendingTrades[id];
         pendingTrades['done:' + id] = pNow;
         continue;
       }
       var k = ((pNow - pt.t) % 650) / 650;
       var col = pt.side === 'put' ? '255,59,48' : '0,230,118';
+      var fade = stillHidden ? 1 : Math.max(0, Math.min(1, 1 - (pNow - pt.t - 380) / 170));
+      var stack = slot * 14;
+      slot++;
       ctx.save();
+      ctx.globalAlpha = fade;
       ctx.lineWidth = 2;
       ctx.strokeStyle = 'rgba(' + col + ',' + (0.85 * (1 - k)).toFixed(3) + ')';
       ctx.beginPath();
@@ -2125,11 +2131,11 @@
       var lw = Math.ceil(ctx.measureText(lbl).width) + 20;
       var lh = 12;
       var lx = Math.max(4, map.lastX - lw / 2);
-      var ly = isPut ? map.lastY + 14 : map.lastY - 26;
+      var ly = isPut ? map.lastY + 14 + stack : map.lastY - 26 - stack;
       var gr = ctx.createLinearGradient(lx, ly, lx, ly + lh);
       gr.addColorStop(0, isPut ? '#FF6B5E' : '#22E08A');
       gr.addColorStop(1, isPut ? '#C9221A' : '#009A48');
-      ctx.globalAlpha = 0.96;
+      ctx.globalAlpha = 0.96 * fade;
       ctx.shadowColor = isPut ? 'rgba(255,59,48,.45)' : 'rgba(0,200,83,.45)';
       ctx.shadowBlur = 8;
       ctx.fillStyle = gr;
@@ -2166,7 +2172,6 @@
       ctx.textBaseline = 'middle';
       ctx.fillText(lbl, lx + 13, ly + lh / 2 + 0.5);
       ctx.restore();
-      break;
     }
   }
 

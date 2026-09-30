@@ -4144,3 +4144,11 @@ html.is-ios body:has(#screenTrade:not(.hidden)){background:linear-gradient(to to
   height:calc(10px + env(safe-area-inset-bottom, 0px));z-index:3;pointer-events:none;
   background:#211a16}}
 html.fs-trade #oroIosFloor{display:none!important}
+/* Plein écran : bouton « QUITTER » bien reconnaissable (bordure rouge, flèche qui sort, texte), même style que « PLEIN ÉCRAN ». */
+html body .fs-trade-close{width:auto!important;min-width:0!important;height:32px!important;padding:0 10px 0 8px!important;gap:5px!important;
+  border-radius:9px!important;border:1px solid rgba(255,77,77,.7)!important;background:linear-gradient(180deg,rgba(255,77,77,.22),rgba(170,20,20,.22))!important;
+  color:#FFE1DC!important;box-shadow:0 0 12px rgba(255,59,48,.25)!important;white-space:nowrap}
+html body .fs-trade-close .fs-exit-ico{width:16px!important;height:16px!important;flex-shrink:0}
+html body .fs-trade-close .fs-exit-txt{font-size:11px;font-weight:800;line-height:1;letter-spacing:.06em;text-transform:uppercase}
+html body .fs-trade-close:hover,html body .fs-trade-close:focus-visible{background:linear-gradient(180deg,rgba(255,77,77,.34),rgba(170,20,20,.32))!important;border-color:#FF6B6B!important}
+@media (max-width:380px){html body .fs-trade-close{height:30px!important;padding:0 8px 0 6px!important}html body .fs-trade-close .fs-exit-txt{font-size:10px}}

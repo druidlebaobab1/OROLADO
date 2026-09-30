@@ -2369,6 +2369,7 @@
     ariaClose: ['Close', 'Fermer', 'Cerrar', 'Fechar', 'إغلاق', 'Закрыть', 'Kapat', 'Đóng', 'Tutup', 'Schließen', 'बंद करें'],
     ariaIndicators: ['Indicators and zoom', 'Indicateurs et zoom', 'Indicadores y zoom', 'Indicadores e zoom', 'المؤشرات والتكبير', 'Индикаторы и масштаб', 'Göstergeler ve yakınlaştırma', 'Chỉ báo và thu phóng', 'Indikator dan zoom', 'Indikatoren und Zoom', 'संकेतक और ज़ूम'],
     titleBollinger: ['Bollinger Bands', 'Bandes de Bollinger', 'Bandas de Bollinger', 'Bandas de Bollinger', 'نطاقات بولينجر', 'Полосы Боллинджера', 'Bollinger Bantları', 'Dải Bollinger', 'Bollinger Bands', 'Bollinger-Bänder', 'बोलिंजर बैंड्स'],
+    fsExitShort: ['EXIT', 'QUITTER', 'SALIR', 'SAIR', 'خروج', 'ВЫЙТИ', 'ÇIKIŞ', 'THOÁT', 'KELUAR', 'BEENDEN', 'बाहर'],
     ariaExitFs: ['Exit full screen', 'Quitter le plein écran', 'Salir de pantalla completa', 'Sair da tela cheia', 'الخروج من ملء الشاشة', 'Выйти из полноэкранного режима', 'Tam ekrandan çık', 'Thoát toàn màn hình', 'Keluar layar penuh', 'Vollbild beenden', 'फ़ुल स्क्रीन से बाहर निकलें'],
     ariaDepositNet: ['Deposit network', 'Réseau de dépôt', 'Red de depósito', 'Rede de depósito', 'شبكة الإيداع', 'Сеть депозита', 'Yatırım ağı', 'Mạng nạp tiền', 'Jaringan deposit', 'Einzahlungsnetzwerk', 'जमा नेटवर्क']
   };
