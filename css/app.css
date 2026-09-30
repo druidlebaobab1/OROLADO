@@ -4172,3 +4172,8 @@ html.is-tv body .fs-trade-overlay.on .asset-bar{scrollbar-width:thin;scrollbar-c
   html.is-tv body .fs-trade-overlay.on .asset-chip .n{font-size:10px!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}
 }
 html.is-tv #screenTrade .fire-bed{display:none!important}
+/* Bouton « QUITTER » plus compact (tient dans toutes les langues sans pousser les pièces ni Démo/Réel). */
+html body .fs-trade-close{height:26px!important;padding:0 7px 0 5px!important;gap:4px!important;border-radius:7px!important;margin-left:6px!important;margin-right:6px!important}
+html body .fs-trade-close .fs-exit-ico{width:12px!important;height:12px!important}
+html body .fs-trade-close .fs-exit-txt{font-size:9px!important;letter-spacing:.03em!important;max-width:64px;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:400px){html body .fs-trade-close .fs-exit-txt{font-size:8.5px!important;max-width:56px}}
