@@ -45,6 +45,7 @@
   var tradeHits = [];
   var lastEntryMarkX = NaN;
   var lastEntryMarkY = NaN;
+  var lastEntryMarkR = NaN;
   var shownMarks = {};
   // Prix du rond au moment où il apparaît : il ne bouge plus ensuite (un seul rond, posé une fois).
   var shownPrice = {};
@@ -2386,7 +2387,9 @@
     // espacés (tagY) pour rester lisibles.
     var tagY = ey + badgeLift;
     // Taille qui suit le zoom : bougies grosses = rond un peu plus grand ; dézoom = plus petit (5 à 8 px).
-    var stepW = candleStepWidth(layout.seriesW);
+    // Même taille de rond sur les 10 simulations : mesurée comme au zoom de départ standard (28 s),
+    // même pour celles qui démarrent plus près (ZUL, BAAL, OROF 16 s ; VOLATILITY, ASMODUS 23 s).
+    var stepW = candleStepWidth(layout.seriesW) * ((ZOOM_STEPS[defaultZoomIdx(activeAsset)] || 28) / 28);
     var r = Math.max(5, Math.min(lite ? 7 : 8, stepW * 0.6));
     var rk = r / 9;
     if (panMs > 0) {
@@ -2399,6 +2402,7 @@
     }
     lastEntryMarkX = mx;
     lastEntryMarkY = ey;
+    lastEntryMarkR = r;
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
     g.save();
     g.beginPath();
@@ -4202,7 +4206,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { mark: lastEntryMarkX, markY: lastEntryMarkY, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0 }; },
+    markDebug: function () { return { mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0 }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
