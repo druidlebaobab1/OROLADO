@@ -4245,3 +4245,8 @@ html:not(.fs-guest) body .fs-mode-switch{gap:6px!important;padding:3px 9px!impor
   html:not(.fs-guest) body .fs-mode-switch{gap:2px!important}
   html:not(.fs-guest) body .fs-mode-switch .fs-mode-btn:not(.hidden){padding:4px 6px!important}
 }
+/* Bulle du gain / de la perte sur le graphique : un peu plus haute et texte légèrement plus grand (lisible en vidéo),
+   presque pas plus large. */
+html body .chart-outcome.win{font-size:11px!important;padding:4px 6px!important;line-height:1.25!important}
+html body .chart-outcome.win .outcome-wallet{width:12px!important;height:12px!important}
+html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important}
