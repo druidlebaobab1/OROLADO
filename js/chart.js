@@ -35,6 +35,7 @@
   // Trade touché (carte en haut) et positions des lignes de trade de la dernière image.
   var tradeCard = null;
   var tradeHits = [];
+  var lastEntryMarkX = NaN;
   // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
   // coupées, cadre des prix du passé, bouton « Direct ».
   var panMs = 0;
@@ -369,7 +370,7 @@
         var cd = camCandles[i];
         if (!cd || cd.tk == null) continue;
         if (tk >= cd.tk) {
-          if (tk < cd.tk + 4) return Number(cd.t) + (tk - cd.tk) * 250;
+          if (tk < cd.tk + 4) return Number(cd.t);
           break;
         }
       }
@@ -1057,6 +1058,7 @@
       l: Math.min(Number(forming.l) || frameDisplayPrice, Number(forming.o) || frameDisplayPrice, frameDisplayPrice),
       c: frameDisplayPrice,
       t: forming.t,
+      tk: forming.tk,
       _spike: !!forming._spike,
       _boom: !!forming._boom
     };
@@ -2077,7 +2079,9 @@
     } else {
       if (mx < pad.l - r) mx = -1000;
       if (mx > layout.headX) mx = layout.headX;
+      if (map && isFinite(map.lastX) && mx > map.lastX) mx = map.lastX;
     }
+    lastEntryMarkX = mx;
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
     g.save();
     g.beginPath();
@@ -3881,6 +3885,8 @@
     },
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
+    /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
+    markDebug: function () { return { mark: lastEntryMarkX, head: lastMap ? lastMap.lastX : NaN }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
