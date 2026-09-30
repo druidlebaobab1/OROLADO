@@ -32,9 +32,9 @@
    * appareil. Maintenant chaque appareil mesure l'heure d'arrivée réelle des prix et garde un
    * délai juste au-dessus (monte vite si besoin, redescend très lentement).
    */
-  // Départ avec une marge confortable (1,8 s, validé ; 0,8 s donnait des « tic tic ») ; ensuite chaque appareil s'ajuste seul.
-  var dispDelay = 1800;
-  var needDelay = 1800;
+  // Départ avec une marge confortable (1,4 s ; 0,8 s donnait des « tic tic ») ; ensuite chaque appareil s'ajuste seul.
+  var dispDelay = 1400;
+  var needDelay = 1400;
   function noteArrival(lastTick) {
     if (!clock.ready || !(lastTick > 0)) return;
     var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
