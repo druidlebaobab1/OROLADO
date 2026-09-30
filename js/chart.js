@@ -44,7 +44,10 @@
   var tradeCard = null;
   var tradeHits = [];
   var lastEntryMarkX = NaN;
+  var lastEntryMarkY = NaN;
   var shownMarks = {};
+  // Prix du rond au moment où il apparaît : il ne bouge plus ensuite (un seul rond, posé une fois).
+  var shownPrice = {};
   // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
   // coupées, cadre des prix du passé, bouton « Direct ».
   var panMs = 0;
@@ -478,10 +481,15 @@
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
     if (!shownMarks[ot.id]) {
-      // Simulations en ligne (ZUL, VALAC…) : le rond reste à l'endroit du clic. Bougies : inchangé.
+      // Le rond reste pour de bon à l'endroit du clic, sur les 10 simulations : la réponse du serveur
+      // (qui fixe le vrai prix d'entrée) ne le déplace plus (avant : il apparaissait, puis sautait à
+      // la seconde suivante). Lignes : l'instant exact du clic ; autres : le centre de sa seconde.
       var aMk = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[ot.assetId] : null;
-      var lineMk = !!(aMk && aMk.chart !== 'candle' && aMk.id !== 'horizon50');
-      shownMarks[ot.id] = lineMk ? (Number(ot.startTime || ot.startedAt) || 1) : 1;
+      var lineMk = !!(aMk && aMk.chart !== 'candle' && aMk.id !== 'horizon50' && !STYLED_ASSETS[aMk.id]);
+      var clickT = Number(ot.startTime || ot.startedAt) || 0;
+      shownMarks[ot.id] = (lineMk ? clickT : (liveTradeTime(ot.entryTick, clickT) || clickT)) || 1;
+      var p0 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
+      if (isFinite(p0) && p0 > 0) shownPrice[ot.id] = p0;
     }
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
@@ -2286,6 +2294,8 @@
     if (!exp || Date.now() >= exp) return;
     var glide = tradeGlide(trade);
     var entry = glide.entry;
+    // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
+    if (shownPrice[trade.id] > 0) entry = shownPrice[trade.id];
     if (!isFinite(entry)) return;
     var ey = priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
@@ -2386,6 +2396,7 @@
       if (map && isFinite(map.lastX) && mx > map.lastX) mx = map.lastX;
     }
     lastEntryMarkX = mx;
+    lastEntryMarkY = ey;
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
     g.save();
     g.beginPath();
@@ -2855,18 +2866,13 @@
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
       boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
-    // Vélocité (affichage seulement) : cadre resserré → chaque mouvement se voit plus grand, la
-    // courbe ondule plus vite. Les prix, les lignes objectif, les gains et l'équité ne changent pas.
-    // APOCALYPSE la plus rapide (×2 : au-delà elle débordait du cadre), ZUL en serpent rapide (sa
-    // vitesse vient surtout du zoom de départ 16 s : il défile plus vite sans pics plus hauts),
-    // OROF un peu plus haute (pyramides bien visibles), VOLATILITY un peu plus
-    // haute, BAAL plus calme (cadre plus large).
-    var fast = { titanpulse: 2.0, stable: 1.3, goldtrend: 1.15, nexusprime: 1.3, v100: 1.45, horizon50: 1.05 }[assetId] || 1;
-    base = base / fast;
-    // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
-    // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.
+    // Même recette sur les 10 simulations (celle qui ne déborde jamais) : aucune amplification
+    // verticale. Le cadre suit le zoom comme un vrai marché (l'amplitude grandit avec la racine du
+    // temps affiché), mesuré depuis le zoom de départ de CHAQUE simulation : un zoom de départ plus
+    // proche (bougies plus larges) n'agrandit pas les mouvements. Zoom arrière : rien n'est coupé.
     var z = Number(zoomSec()) || 28;
-    var k = Math.sqrt(z / 28);
+    var zRef = ZOOM_STEPS[defaultZoomIdx(assetId)] || 28;
+    var k = Math.sqrt(z / zRef);
     return base * Math.max(0.7, Math.min(5, k));
   }
 
@@ -4194,7 +4200,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { mark: lastEntryMarkX, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0 }; },
+    markDebug: function () { return { mark: lastEntryMarkX, markY: lastEntryMarkY, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0 }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
