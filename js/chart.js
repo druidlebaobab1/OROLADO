@@ -2101,6 +2101,16 @@
     var id;
     var pNow = performance.now();
     var slot = 0;
+    var newest = null;
+    for (id in pendingTrades) {
+      if (pendingTrades.hasOwnProperty(id) && id.indexOf('done:') !== 0 && (!newest || pendingTrades[id].t > pendingTrades[newest].t)) newest = id;
+    }
+    for (id in pendingTrades) {
+      if (pendingTrades.hasOwnProperty(id) && id.indexOf('done:') !== 0 && id !== newest) {
+        delete pendingTrades[id];
+        pendingTrades['done:' + id] = pNow;
+      }
+    }
     for (id in pendingTrades) {
       if (!pendingTrades.hasOwnProperty(id)) continue;
       var pt = pendingTrades[id];
@@ -2108,14 +2118,14 @@
       // Bref : environ 0,55 s après le clic (plus longtemps seulement si le rond n'est pas encore posé).
       // Un signe par clic : plusieurs clics rapides = plusieurs petits signes qui s'effacent vite.
       var stillHidden = pt.hid && Date.now() - pt.hid < 400;
-      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 550 && !stillHidden)) {
+      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 350 && !stillHidden)) {
         delete pendingTrades[id];
         pendingTrades['done:' + id] = pNow;
         continue;
       }
       var k = ((pNow - pt.t) % 650) / 650;
       var col = pt.side === 'put' ? '255,59,48' : '0,230,118';
-      var fade = stillHidden ? 1 : Math.max(0, Math.min(1, 1 - (pNow - pt.t - 380) / 170));
+      var fade = stillHidden ? 1 : Math.max(0, Math.min(1, 1 - (pNow - pt.t - 230) / 120));
       var stack = slot * 14;
       slot++;
       ctx.save();

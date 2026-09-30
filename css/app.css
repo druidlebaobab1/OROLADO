@@ -4184,3 +4184,21 @@ html body .fs-trade-close .fs-exit-txt{font-size:9px!important;letter-spacing:.0
   html.fs-trade .fs-top-end,html.is-fullscreen .fs-top-end,
   html.fs-trade .fs-top-start,html.is-fullscreen .fs-top-start{gap:4px!important}
 }
+/* Plein écran couché : flèches ▲ ▼ pour faire défiler la colonne des indices (télécommande, souris). */
+.fs-col-arrow{position:fixed;z-index:60;width:36px;height:28px;display:none;align-items:center;justify-content:center;
+  border-radius:8px;border:1px solid rgba(245,197,24,.6);background:rgba(10,14,24,.92);color:#F5C518;font-size:12px;cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,.45)}
+.fs-col-arrow.dim{opacity:.35}
+html.is-tv .fs-col-arrow:focus-visible{outline:3px solid #F5C518;outline-offset:2px}
+/* Bouton « PLEIN ÉCRAN » : tient dans toutes les langues (texte un peu plus petit sur petits écrans). */
+html body .chart-fs-btn{max-width:132px;overflow:hidden}
+html body .chart-fs-btn .chart-fs-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:400px){html body .chart-fs-btn .chart-fs-label{font-size:8.5px!important;letter-spacing:.02em!important}}
+/* Écrans couchés peu hauts (télé, petite fenêtre) : le feu ne passe plus sur le graphique, et les pages
+   d'inscription / connexion défilent pour atteindre tous les champs. */
+@media (orientation:landscape) and (max-height:620px) and (min-width:700px){
+  html body #screenTrade .fire-bed{display:none!important}
+  html body #screenAuth{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
+}
+html.is-tv body #screenAuth{overflow-y:auto!important}
+.terms-date{display:none!important}

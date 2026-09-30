@@ -153,8 +153,9 @@
       try { coarse = window.matchMedia('(pointer:coarse)').matches && !window.matchMedia('(pointer:fine)').matches; } catch (eMq) { coarse = false; }
       var iw = window.innerWidth || 0;
       var ih = window.innerHeight || 0;
-      var wideShort = !coarse && iw >= 900 && ih > 0 && ih <= 620 && iw / ih >= 1.5;
-      return !!(tvHint || (android && tvShape) || (noMobile && tvShape) || wideShort);
+      var wideShort = !coarse && iw >= 700 && ih > 0 && ih <= 620 && iw / ih >= 1.5;
+      var androidBigLandscape = noMobile && iw >= 800 && ih > 0 && iw / ih >= 1.4;
+      return !!(tvHint || (android && tvShape) || (noMobile && tvShape) || wideShort || androidBigLandscape);
     } catch (eTv) { return false; }
   })();
   if (IS_TV) {
@@ -7171,9 +7172,53 @@
     }
   }
 
+  function bindAssetColumnArrows() {
+    // Plein écran couché : la colonne des indices a deux flèches (haut / bas) quand tout ne tient pas.
+    // Utile sur télé (pointeur de télécommande) et partout ailleurs ; le défilement au doigt reste possible.
+    var bar = document.querySelector('#fsTradeOverlay .asset-bar') || $('assetBar');
+    var ov = $('fsTradeOverlay');
+    if (!ov || ov.__oroArrows) return;
+    ov.__oroArrows = true;
+    function mk(dir) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'fs-col-arrow fs-col-' + dir;
+      b.setAttribute('aria-label', dir === 'up' ? 'Up' : 'Down');
+      b.innerHTML = dir === 'up' ? '&#9650;' : '&#9660;';
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var col = document.querySelector('#fsTradeOverlay .asset-bar');
+        if (!col) return;
+        try { col.scrollBy({ top: (dir === 'up' ? -1 : 1) * Math.max(80, col.clientHeight * 0.6), behavior: 'smooth' }); }
+        catch (eS) { col.scrollTop += (dir === 'up' ? -1 : 1) * 120; }
+      });
+      ov.appendChild(b);
+      return b;
+    }
+    var up = mk('up');
+    var down = mk('down');
+    function sync() {
+      var col = document.querySelector('#fsTradeOverlay .asset-bar');
+      var on = !!(col && ov.classList.contains('on') && col.scrollHeight > col.clientHeight + 4 && col.clientWidth < col.clientHeight);
+      if (on) {
+        var r = col.getBoundingClientRect();
+        up.style.left = down.style.left = (r.left + r.width / 2 - 18) + 'px';
+        up.style.top = (r.top + 2) + 'px';
+        down.style.top = (r.bottom - 30) + 'px';
+        up.classList.toggle('dim', col.scrollTop <= 2);
+        down.classList.toggle('dim', col.scrollTop + col.clientHeight >= col.scrollHeight - 2);
+      }
+      up.style.display = down.style.display = on ? 'flex' : 'none';
+    }
+    setInterval(sync, 400);
+    document.addEventListener('scroll', sync, true);
+  }
+
   function bindFullscreenTrade() {
     var enter = $('btnChartFs');
     var exit = $('btnChartFsExit');
+    try { bindAssetColumnArrows(); } catch (eArr) { /* ignore */ }
     if (IS_TV) {
       // Télé : la vue plein écran (actifs à gauche, graphique, gros boutons à droite) est la plus adaptée ;
       // elle s'ouvre toute seule une fois. « QUITTER » ramène à la vue normale (profil, inscription…).
