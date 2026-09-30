@@ -105,3 +105,6 @@ html.is-tv.fs-trade body .fs-trade-overlay.on .trade-wrap{height:auto!important;
 html.is-tv body #assetBar .asset-chip{height:auto!important;max-height:30px!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:4px!important}
 html.is-tv body #assetBar{align-content:flex-start!important}
 html.is-tv body #assetBar .asset-chip .n{font-size:9.5px!important;letter-spacing:0!important}
+/* Plein écran télé : ACHETER / VENDRE regroupés au milieu de la colonne, l'un sous l'autre (jamais écartés ni hors cadre). */
+html.is-tv.fs-trade body .fs-trade-overlay.on .pad .trade-row{justify-content:center!important;gap:18px!important;flex:1 1 auto!important}
+html.is-tv.fs-trade body .fs-trade-overlay.on .pad .btn-trade{flex:0 0 auto!important;min-height:200px!important;max-height:260px!important;width:100%!important}
