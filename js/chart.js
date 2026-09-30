@@ -25,11 +25,15 @@
     360, 420, 480, 540, 600, 660
   ];
   var DEFAULT_ZOOM_IDX = 8; // 28 s (défaut d'origine)
-  // BAAL, la bougie calme : zoom de départ plus proche (18 s) → gros carreaux.
+  // Zoom de départ par simulation : BAAL (bougie calme, gros carreaux) 16 s ; VOLATILITY 23 s (bougies
+  // plus larges) ; ZUL 16 s (le serpent défile plus vite, sans pics plus hauts) ; OROF 16 s (grandes
+  // pyramides) ; ASMODUS 23 s (cristaux plus larges). Les autres : 28 s.
   function defaultZoomIdx(id) {
-    return id === 'horizon50' ? 4 : DEFAULT_ZOOM_IDX;
+    if (id === 'horizon50' || id === 'stable' || id === 'goldtrend') return 3;
+    if (id === 'v100' || id === 'nexusprime') return 6;
+    return DEFAULT_ZOOM_IDX;
   }
-  var zoomIdx = DEFAULT_ZOOM_IDX;
+  var zoomIdx = defaultZoomIdx('v100');
   var zoomSmooth = 28;
   // Zoom élastique (pincement) : valeur continue pendant le geste, et douceur du suivi.
   var pinchSec = null;
@@ -1345,7 +1349,9 @@
     var thin = !!opts.thin;
     var span = Math.max(maxP - minP, 0.01);
     var n = candles.length;
-    var slot = w / Math.max(1, n);
+    // Largeur = vrai espace entre deux bougies (placées selon le temps). Avant : écran ÷ nombre de
+    // bougies (au moins 24), donc bougies maigres et espacées dès que le zoom montrait moins de 24 s.
+    var slot = Math.max(w / Math.max(1, n), candleStepWidth(w));
     // Géométrie nette : corps de 5 px, espacement de 3 px, et surtout un corps
     // qui ne dépasse JAMAIS la place réellement disponible. L'ancien plancher
     // de 5 px indépendant du pas faisait se chevaucher les bougies au dézoom,
@@ -1495,16 +1501,16 @@
   /*
    * Quatre styles à part (mêmes bougies d'une seconde, mêmes prix, mêmes règles ; seul le dessin
    * change) : ORO 888 = perles, AZAZEL = colonnes de braise, ASMODUS = cristaux,
-   * PYTHON = barres de trader, OROF (la maison) = piles de pièces d'or,
+   * PYTHON = barres de trader, OROF (la maison) = pyramides d'or,
    * APOCALYPSE = le dieu : un éclair par seconde (lumière et sang). Chaque point est au centre de sa seconde, comme les bougies :
    * le rond du trade, la ligne objectif et la boule tombent au même endroit.
    */
-  var STYLED_ASSETS = { apex500: 'pearls', crash300: 'embers', nexusprime: 'crystals', v75: 'bars', goldtrend: 'coins', titanpulse: 'bolts' };
+  var STYLED_ASSETS = { apex500: 'pearls', crash300: 'embers', nexusprime: 'crystals', v75: 'bars', goldtrend: 'pyramids', titanpulse: 'bolts' };
 
   function drawStyledCandles(pad, w, h, candles, minP, maxP, style) {
     if (!candles || candles.length < 2) return null;
     var n = candles.length;
-    var slot = w / Math.max(1, n);
+    var slot = Math.max(w / Math.max(1, n), candleStepWidth(w));
     var toX = makeToX(n, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var visH = Math.max(maxP - minP, 0.01);
@@ -1579,7 +1585,7 @@
     } else if (style === 'bolts') {
       // APOCALYPSE, le dieu : un éclair par seconde, qui frappe du prix d'ouverture au prix de clôture.
       // Hausse = éclair blanc éclatant (lueur rouge) ; baisse = éclair rouge sang (cœur blanc).
-      // Le dernier éclair crépite et laisse une étincelle au point d'impact. Ciel rouge sombre qui
+      // Le dernier éclair brille simplement un peu plus (sobre, rien qui tourne). Ciel rouge sombre qui
       // respire. Un éclair sorti du cadre disparaît au lieu d'être coupé au bord.
       ctx.save();
       var topY = pad.t;
@@ -1619,7 +1625,7 @@
         yS = Math.max(topY, Math.min(botY, yS));
         var flip = (i % 2) === 1;
         var isLast = i === last && cssH >= 200;
-        var flick = isLast ? (0.65 + 0.35 * Math.abs(Math.sin(tMs / 90))) : 1;
+        var flick = 1;
         // Lueur (trait large et transparent), puis corps, puis cœur fin.
         ctx.globalAlpha = flick;
         ctx.strokeStyle = up ? 'rgba(255,40,70,0.35)' : 'rgba(255,23,68,0.45)';
@@ -1640,69 +1646,68 @@
         bolt(x, yS, yE, flip);
         ctx.stroke();
         ctx.globalAlpha = 1;
-        if (isLast) {
-          // Point d'impact : étincelle en croix qui tourne + onde qui pulse.
-          var ph = (tMs % 1200) / 1200;
-          var rot = tMs / 900;
-          var kS;
-          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-          ctx.lineWidth = 1.3;
-          ctx.beginPath();
-          for (kS = 0; kS < 4; kS++) {
-            var an = rot + kS * Math.PI / 2;
-            ctx.moveTo(x + Math.cos(an) * 2, yE + Math.sin(an) * 2);
-            ctx.lineTo(x + Math.cos(an) * (off * 2.4), yE + Math.sin(an) * (off * 2.4));
-          }
-          ctx.stroke();
-          ctx.strokeStyle = up ? 'rgba(255,255,255,' + (0.8 * (1 - ph)).toFixed(3) + ')' : 'rgba(255,40,70,' + (0.8 * (1 - ph)).toFixed(3) + ')';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(x, yE, off * (1 + ph * 3.2), 0, Math.PI * 2);
-          ctx.stroke();
-        }
       }
       ctx.restore();
-    } else if (style === 'coins') {
-      // OROF (la maison) : une pile de pièces d'or par seconde, de l'ouverture à la clôture.
-      // Or vif à la hausse, or vieilli à la baisse ; la pièce du dessus brille.
+    } else if (style === 'pyramids') {
+      // OROF (la maison, comme le logo) : une rangée de pyramides d'Égypte, toujours debout, dont le
+      // sommet se pose sur le prix de clôture. Or vif quand la seconde monte, bronze quand elle
+      // descend. Face éclairée à gauche, face dans l'ombre à droite, arêtes fines. La dernière porte
+      // une pierre de sommet lumineuse (comme le logo OROLADO).
       ctx.save();
-      var cwC = Math.max(2.5, Math.min(13, slot * 0.8));
-      var coinH = Math.max(2, Math.min(3.4, cwC * 0.3));
+      var pB = Math.max(5, Math.min(16, slot * 0.96));
+      var pH = pB * 0.78;
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
         x = toX(i);
-        var yTopC = toY(Math.max(c.o, c.c));
-        var yBotC = toY(Math.min(c.o, c.c));
-        if (yBotC - yTopC < coinH) { var ymC = (yTopC + yBotC) / 2; yTopC = ymC - coinH / 2; yBotC = ymC + coinH / 2; }
-        var steps = Math.max(1, Math.min(40, Math.round((yBotC - yTopC) / (coinH * 0.9))));
-        var gapC = steps > 1 ? (yBotC - yTopC - coinH) / (steps - 1) : 0;
-        var s2;
-        for (s2 = steps - 1; s2 >= 0; s2--) {
-          var cy = yTopC + s2 * gapC + coinH / 2;
-          ctx.fillStyle = up ? (s2 % 2 ? '#E0A100' : '#FFC107') : (s2 % 2 ? '#8A6417' : '#B08326');
+        var apex = toY(c.c);
+        var foot = apex + pH;
+        if (apex < pad.t || foot > pad.t + h + pH) continue;
+        ctx.fillStyle = up ? '#FFD54F' : '#A87B2C';
+        ctx.beginPath();
+        ctx.moveTo(x, apex);
+        ctx.lineTo(x - pB / 2, foot);
+        ctx.lineTo(x + pB * 0.08, foot);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = up ? '#C98A00' : '#6E4E14';
+        ctx.beginPath();
+        ctx.moveTo(x, apex);
+        ctx.lineTo(x + pB * 0.08, foot);
+        ctx.lineTo(x + pB / 2, foot);
+        ctx.closePath();
+        ctx.fill();
+        // Arêtes : un fil clair sur l'arête centrale, une ligne de sol.
+        ctx.strokeStyle = up ? 'rgba(255,248,220,0.7)' : 'rgba(230,200,140,0.45)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(x, apex);
+        ctx.lineTo(x + pB * 0.08, foot);
+        ctx.stroke();
+        if (i === last && cssH >= 200) {
+          // Pierre de sommet lumineuse.
+          var gCap = ctx.createRadialGradient(x, apex, 0, x, apex, pB * 1.1);
+          gCap.addColorStop(0, 'rgba(255,236,160,0.75)');
+          gCap.addColorStop(1, 'rgba(255,193,7,0)');
+          ctx.fillStyle = gCap;
           ctx.beginPath();
-          ctx.ellipse(x, cy, cwC / 2, coinH / 2, 0, 0, Math.PI * 2);
+          ctx.arc(x, apex, pB * 1.1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#FFF8E1';
+          ctx.beginPath();
+          ctx.moveTo(x, apex);
+          ctx.lineTo(x - pB * 0.16, apex + pH * 0.2);
+          ctx.lineTo(x + pB * 0.16, apex + pH * 0.2);
+          ctx.closePath();
           ctx.fill();
         }
-        if (i === last && cssH >= 200) {
-          ctx.shadowColor = 'rgba(255,193,7,0.9)';
-          ctx.shadowBlur = 12;
-        }
-        ctx.fillStyle = up ? '#FFE082' : '#D9B26A';
-        ctx.beginPath();
-        ctx.ellipse(x, yTopC + coinH / 2, cwC / 2, coinH / 2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(255,253,231,0.9)';
-        ctx.fillRect(x - cwC * 0.18, yTopC + coinH * 0.3, cwC * 0.36, 0.9);
       }
       ctx.restore();
     } else if (style === 'crystals') {
       // ASMODUS : une rangée de cristaux (losanges) : haut du losange = plus haut de la seconde,
       // bas = plus bas, centre = prix de clôture. Cyan à la hausse, bleu profond à la baisse.
       ctx.save();
-      var halfW = Math.max(1.5, Math.min(7, slot * 0.42));
+      var halfW = Math.max(2.2, Math.min(8, slot * 0.5));
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
@@ -1711,8 +1716,8 @@
         var loC = isFinite(c.l) ? c.l : Math.min(c.o, c.c);
         if (hiC - loC > capVis) { var midC = (hiC + loC) / 2; hiC = midC + capVis / 2; loC = midC - capVis / 2; }
         var yc = toY(c.c);
-        var yT = Math.min(toY(hiC), yc - 3);
-        var yB = Math.max(toY(loC), yc + 3);
+        var yT = Math.min(toY(hiC), yc - 7);
+        var yB = Math.max(toY(loC), yc + 7);
         if (i === last && cssH >= 200) {
           ctx.shadowColor = up ? 'rgba(0,229,255,0.9)' : 'rgba(41,121,255,0.9)';
           ctx.shadowBlur = 12;
@@ -2852,10 +2857,11 @@
     }[assetId] || 0.0090;
     // Vélocité (affichage seulement) : cadre resserré → chaque mouvement se voit plus grand, la
     // courbe ondule plus vite. Les prix, les lignes objectif, les gains et l'équité ne changent pas.
-    // APOCALYPSE la plus rapide (×2 : au-delà elle débordait du cadre), ZUL en serpent rapide,
-    // OROF un peu plus haute (piles de pièces bien visibles), VOLATILITY un peu plus
+    // APOCALYPSE la plus rapide (×2 : au-delà elle débordait du cadre), ZUL en serpent rapide (sa
+    // vitesse vient surtout du zoom de départ 16 s : il défile plus vite sans pics plus hauts),
+    // OROF un peu plus haute (pyramides bien visibles), VOLATILITY un peu plus
     // haute, BAAL plus calme (cadre plus large).
-    var fast = { titanpulse: 2.0, stable: 2.2, goldtrend: 1.6, v100: 1.25, horizon50: 0.8 }[assetId] || 1;
+    var fast = { titanpulse: 2.0, stable: 1.3, goldtrend: 1.15, nexusprime: 1.3, v100: 1.45, horizon50: 1.05 }[assetId] || 1;
     base = base / fast;
     // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
     // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.
@@ -4188,7 +4194,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { mark: lastEntryMarkX, head: lastMap ? lastMap.lastX : NaN }; },
+    markDebug: function () { return { mark: lastEntryMarkX, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0 }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
