@@ -64,30 +64,32 @@ html.is-tv .pad{
   margin:0!important;padding:10px!important}
 html.is-tv .pad .trade-row{margin-top:auto!important}
 
-/* Plein écran : le graphique occupe toute la hauteur ; les 10 indices sur une ligne défilante. */
-html.is-tv .fs-trade-overlay.on{overflow:hidden!important;height:100%!important}
-html.is-tv .fs-trade-overlay.on .trade-wrap{height:100%!important}
+/* Plein écran télé : comme en v2139 (validé par le propriétaire) — page réduite à 62 %, les 10 indices
+   sur une ligne, graphique au centre, gros boutons à droite. Seul le bouton QUITTER est agrandi. */
+html.is-tv.fs-trade{zoom:.62!important}
+html.is-tv .fs-trade-overlay.on{overflow:hidden!important}
 html.is-tv .fs-trade-overlay.on .asset-bar{
-  flex-direction:row!important;width:100%!important;max-width:none!important;height:auto!important;
-  overflow-x:auto!important;overflow-y:hidden!important}
-html.is-tv .fs-trade-overlay.on .chart-card,
-html.is-tv .fs-trade-overlay.on #chart{height:100%!important;min-height:0!important;flex:1 1 auto!important}
-html.is-tv .fs-trade-overlay.on .trade-wrap{grid-template-columns:minmax(0,1fr) 210px!important}
-html.is-tv .fs-trade-overlay.on .chart-card,
-html.is-tv .fs-trade-overlay.on #chart{width:100%!important;max-width:100%!important;min-width:0!important}
-html.is-tv .fs-trade-overlay.on .pad{width:100%!important;max-width:none!important}
-/* Bouton QUITTER un peu plus grand sur télé (lisible de loin). */
-html.is-tv body .fs-trade-close{height:32px!important;padding:0 10px 0 8px!important}
-html.is-tv body .fs-trade-close .fs-exit-ico{width:15px!important;height:15px!important}
-html.is-tv body .fs-trade-close .fs-exit-txt{font-size:11px!important;max-width:none!important}
-/* Plein écran télé : colonne de droite = mise en haut, puis ACHETER et VENDRE en deux grandes tuiles. */
-html.is-tv .fs-trade-overlay.on .pad{width:100%!important;display:flex!important;flex-direction:column!important;gap:12px!important;padding:12px!important}
-html.is-tv .fs-trade-overlay.on .pad .trade-row{flex:1 1 auto!important;display:flex!important;flex-direction:column!important;gap:14px!important;margin:0!important}
-html.is-tv .fs-trade-overlay.on .pad .btn-trade{flex:1 1 0!important;min-height:140px!important;max-height:340px!important;width:100%!important;font-size:18px!important;border-radius:14px!important}
-html.is-tv .fs-trade-overlay.on .pad .btn-trade span{font-size:18px!important}
-/* Priorité sur les anciennes règles du plein écran (colonne figée à 148 px, boutons qui ne grandissent pas). */
-html.is-tv.fs-trade body .fs-trade-overlay.on .pad,
-html.is-tv.is-fullscreen body .fs-trade-overlay.on .pad{width:100%!important;flex:1 1 auto!important;max-width:none!important}
-html.is-tv.fs-trade body .fs-trade-overlay.on .pad .trade-row{justify-content:center!important;flex:1 1 auto!important}
-html.is-tv.fs-trade body .fs-trade-overlay.on .pad .trade-row .btn-trade,
-html.is-tv.is-fullscreen body .fs-trade-overlay.on .pad .trade-row .btn-trade{flex:1 1 0!important;min-height:140px!important;max-height:340px!important;height:auto!important;width:100%!important}
+  flex-direction:row!important;width:100%!important;max-width:none!important;height:auto!important;overflow:hidden!important}
+html.is-tv body .fs-trade-close{height:46px!important;padding:0 16px 0 12px!important;gap:8px!important;border-radius:11px!important;border-width:2px!important}
+html.is-tv body .fs-trade-close .fs-exit-ico{width:22px!important;height:22px!important}
+html.is-tv body .fs-trade-close .fs-exit-txt{font-size:17px!important;max-width:none!important;letter-spacing:.05em!important}
+
+/* Connexion / inscription télé : tout le formulaire tient dans l'écran, centré. */
+html.is-tv body #screenAuth .auth-wrap{zoom:.64;width:560px!important;max-width:560px!important}
+html.is-tv body #screenAuth.screen{justify-content:center!important}
+
+/* Vue normale télé : les 10 indices visibles (2 rangées de 5), colonne de droite plus large et rangée. */
+html.is-tv .trade-wrap{grid-template-columns:minmax(0,1fr) minmax(300px,30vw)!important}
+html.is-tv .asset-bar,html.is-tv .markets-scroll{flex-wrap:wrap!important;overflow:hidden!important;gap:5px!important}
+html.is-tv .asset-chip{flex:1 1 calc(20% - 5px)!important;min-width:0!important;min-height:38px!important;padding:3px 6px!important}
+html.is-tv .asset-chip .n{font-size:11px!important}
+html.is-tv .asset-chip .payout-live{font-size:10px!important}
+html.is-tv .pad .dur-row{flex-wrap:wrap!important;gap:4px!important}
+html.is-tv .pad .dur-chip{flex:1 1 calc(33% - 4px)!important;min-width:0!important;font-size:12px!important;padding:6px 2px!important}
+html.is-tv .pad .stake-line{flex-wrap:wrap!important;gap:6px!important}
+html.is-tv .pad .odds-row{gap:4px!important}
+html.is-tv .pad .odds-chip{min-width:0!important;font-size:11px!important;padding:4px 2px!important;line-height:1.1!important}
+html.is-tv .pad .btn-trade{min-height:64px!important;font-size:15px!important}
+html.is-tv body #screenTrade .chart-card,html.is-tv body #screenTrade #chart{height:100%!important;max-height:100%!important;min-height:0!important}
+html.is-tv body #screenTrade .chart-stage{height:auto!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important}
+html.is-tv .asset-chip{min-height:32px!important;padding:2px 6px!important}
