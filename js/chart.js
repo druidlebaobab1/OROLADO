@@ -2381,8 +2381,10 @@
     var t0 = shownMarks[trade.id] > 1 ? shownMarks[trade.id] : glide.start;
     var mx = layout.headX;
     if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
-    mx += (idx % 3) * 5 - 5;
-    ey += badgeLift;
+    // Chaque rond reste PILE à l'endroit de son clic : plusieurs trades au même endroit s'empilent
+    // naturellement (avant : décalés de côté et vers le haut). Seuls les chronos à gauche restent
+    // espacés (tagY) pour rester lisibles.
+    var tagY = ey + badgeLift;
     // Taille qui suit le zoom : bougies grosses = rond un peu plus grand ; dézoom = plus petit (5 à 8 px).
     var stepW = candleStepWidth(layout.seriesW);
     var r = Math.max(5, Math.min(lite ? 7 : 8, stepW * 0.6));
@@ -2431,7 +2433,7 @@
         var timerW = 42;
         var timerH = 14;
         var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
-        var ty = ey - timerH / 2;
+        var ty = tagY - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
         g.fillStyle = 'rgba(10,15,29,0.92)';
         g.strokeStyle = lineCol;

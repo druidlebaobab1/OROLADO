@@ -7460,7 +7460,8 @@
         }
         var target = D6.CONFIG.DEMO_START || 1000000;
         var cur = D6.Store.demoBalance(u);
-        if (cur >= target) { toast(t('demoAlready') || 'Démo déjà rechargé', 'micro', 1800); return; }
+        // Démo déjà pleine : rien ne se passe (plus de message « Démo déjà rechargé », à la demande du propriétaire).
+        if (cur >= target) return;
         D6.Store.setBalanceMode(u, 'demo', target);
         updateBalance(true);
         toast('Démo rechargée : ' + D6.fmtFCFA(target), 'ok', 2500);

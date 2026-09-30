@@ -1,11 +1,11 @@
 OROLADO — gros joueurs (départ 10 000 $, grosses mises, tous actifs / payouts / durées)
-2026-09-28 15:53 — 1500 joueurs par profil, jusqu'à 300 trades chacun
+2026-09-30 18:15 — 800 joueurs par profil, jusqu'à 300 trades chacun
 
 Profil                                           Misé total   Retour  Gagnants Ruinés    Gain du site   Pire perte du site (1 joueur)
-Prudent (mise 1-2 %, surtout 88 %)              59 123 045 $   93.95%     15.6%       0     3 574 351 $                        22 468 $
-Joueur (mise 5 %, tous payouts)                141 778 935 $   92.73%      5.2%       3    10 304 472 $                       282 092 $
-Flambeur (mise 10-25 %, gros payouts)           78 877 264 $   80.98%      0.0%    1499    14 999 081 $                             0 $
-Chasseur ×50 (mise 2 %, 5000 % seulement)      67 097 337 $   89.12%     11.0%       0     7 300 459 $                       208 046 $
+Prudent (mise 1-2 %, surtout 88 %)              31 787 539 $   94.34%     16.2%       0     1 798 626 $                        17 305 $
+Joueur (mise 5 %, tous payouts)                 71 751 874 $   91.83%      5.4%       3     5 859 749 $                        80 321 $
+Flambeur (mise 10-25 %, gros payouts)           61 610 656 $   87.02%      0.0%     800     7 999 587 $                             0 $
+Chasseur ×50 (mise 2 %, 5000 % seulement)      40 072 768 $   91.38%     11.1%       0     3 454 973 $                       208 036 $
 
 « Gagnants » = joueurs qui finissent au-dessus de 10 000 $ (chance à court terme).
 « Pire perte du site » = le plus gros gain fait par UN seul joueur (le risque sans plafond de mise).
