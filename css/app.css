@@ -4164,3 +4164,11 @@ html body .fs-trade-close:hover,html body .fs-trade-close:focus-visible{backgrou
 html.is-tv button:focus-visible,html.is-tv .asset-chip:focus-visible,html.is-tv .dur-chip:focus-visible,
 html.is-tv .odds-chip:focus-visible,html.is-tv a:focus-visible,html.is-tv input:focus-visible{
   outline:3px solid #F5C518!important;outline-offset:2px!important;box-shadow:0 0 0 6px rgba(245,197,24,.25)!important}
+/* Télé : plein écran de trading confortable (colonne des actifs plus large et lisible, défilement visible). */
+html.is-tv body .fs-trade-overlay.on .asset-bar{scrollbar-width:thin;scrollbar-color:rgba(245,197,24,.75) rgba(255,255,255,.06)}
+@media (orientation:landscape){
+  html.is-tv body .fs-trade-overlay.on .asset-bar{overflow-y:auto!important}
+  html.is-tv body .fs-trade-overlay.on .asset-chip{min-height:44px!important}
+  html.is-tv body .fs-trade-overlay.on .asset-chip .n{font-size:10px!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}
+}
+html.is-tv #screenTrade .fire-bed{display:none!important}

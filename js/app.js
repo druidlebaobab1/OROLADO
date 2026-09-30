@@ -148,7 +148,13 @@
       var longSide = Math.max(w, h);
       var shortSide = Math.min(w, h);
       var tvShape = longSide >= 1100 && shortSide >= 600 && (longSide / shortSide) >= 1.5;
-      return !!(tvHint || (android && tvShape) || (noMobile && tvShape));
+      // Écran large et peu haut piloté sans doigt (télé avec navigateur « PC », pointeur de télécommande).
+      var coarse = false;
+      try { coarse = window.matchMedia('(pointer:coarse)').matches && !window.matchMedia('(pointer:fine)').matches; } catch (eMq) { coarse = false; }
+      var iw = window.innerWidth || 0;
+      var ih = window.innerHeight || 0;
+      var wideShort = !coarse && iw >= 900 && ih > 0 && ih <= 620 && iw / ih >= 1.5;
+      return !!(tvHint || (android && tvShape) || (noMobile && tvShape) || wideShort);
     } catch (eTv) { return false; }
   })();
   if (IS_TV) {
@@ -7168,6 +7174,21 @@
   function bindFullscreenTrade() {
     var enter = $('btnChartFs');
     var exit = $('btnChartFsExit');
+    if (IS_TV) {
+      // Télé : la vue plein écran (actifs à gauche, graphique, gros boutons à droite) est la plus adaptée ;
+      // elle s'ouvre toute seule une fois. « QUITTER » ramène à la vue normale (profil, inscription…).
+      var tvTries = 0;
+      var tvTimer = setInterval(function () {
+        tvTries++;
+        var tr = $('screenTrade');
+        if (tr && !tr.classList.contains('hidden') && !fsTradeActive) {
+          clearInterval(tvTimer);
+          try { enterTradeFullscreen(); } catch (eTvFs) { /* ignore */ }
+        } else if (fsTradeActive || tvTries > 40) {
+          clearInterval(tvTimer);
+        }
+      }, 500);
+    }
     if (enter) {
       enter.addEventListener('click', function (e) {
         e.preventDefault();
