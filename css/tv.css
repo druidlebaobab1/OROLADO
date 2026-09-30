@@ -93,3 +93,15 @@ html.is-tv .pad .btn-trade{min-height:64px!important;font-size:15px!important}
 html.is-tv body #screenTrade .chart-card,html.is-tv body #screenTrade #chart{height:100%!important;max-height:100%!important;min-height:0!important}
 html.is-tv body #screenTrade .chart-stage{height:auto!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important}
 html.is-tv .asset-chip{min-height:32px!important;padding:2px 6px!important}
+/* Vue normale télé : indices plus bas (plus de place pour le graphique) ; texte « Mise min » masqué (il se coupait en « M »). */
+html.is-tv .asset-chip{min-height:26px!important;padding:1px 6px!important}
+html.is-tv .asset-chip .n{font-size:10px!important;line-height:1.1!important}
+html.is-tv .asset-chip .payout-live{font-size:9px!important;line-height:1.1!important}
+html.is-tv .asset-chip img,html.is-tv .asset-chip svg{width:14px!important;height:14px!important}
+html.is-tv .pad .stake-min-label{display:none!important}
+/* Plein écran télé : la page réduite à 62 % remplit aussi toute la HAUTEUR (avant : coupée à mi-écran). */
+html.is-tv.fs-trade body .fs-trade-overlay.on{height:calc(100vh / .62)!important;max-height:none!important;bottom:auto!important}
+html.is-tv.fs-trade body .fs-trade-overlay.on .trade-wrap{height:auto!important;flex:1 1 auto!important;min-height:0!important}
+html.is-tv body #assetBar .asset-chip{height:auto!important;max-height:30px!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:4px!important}
+html.is-tv body #assetBar{align-content:flex-start!important}
+html.is-tv body #assetBar .asset-chip .n{font-size:9.5px!important;letter-spacing:0!important}

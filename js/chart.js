@@ -738,6 +738,15 @@
       var freeH = vpH - topOff - bottomRes - 4;
       var chrome = mobile ? 132 : 96;
       var fsH = Math.max(240, Math.min(Math.round(vpH - chrome), freeH));
+      // Télé en plein écran : la page y est réduite (zoom 62 %) ; les mesures de l'écran sont converties en
+      // tailles de page pour que le graphique remplisse toute la hauteur. Téléphones et PC : inchangé.
+      var tvZ = 1;
+      try {
+        if (document.documentElement.classList.contains('is-tv') && document.documentElement.classList.contains('fs-trade')) {
+          tvZ = parseFloat(window.getComputedStyle(document.documentElement).zoom) || 1;
+        }
+      } catch (eZ) { tvZ = 1; }
+      if (tvZ > 0 && tvZ < 0.99) fsH = Math.max(240, Math.round((vpH - topOff - 6) / tvZ));
       // Tolérance : sans elle, un écart d'un pixel relancerait sans fin le
       // cycle mesure → redimensionnement → mesure.
       var curH = Math.round(parent.clientHeight || 0);
@@ -745,6 +754,7 @@
       var landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
       var sideChrome = (!mobile && landscape) ? 240 : 0;
       var fsW = Math.max(280, Math.round((window.innerWidth || 800) - sideChrome));
+      if (tvZ > 0 && tvZ < 0.99) fsW = Math.max(280, Math.round((window.innerWidth || 800) / tvZ - 320));
       parent.style.setProperty('min-height', fsH + 'px', 'important');
       parent.style.setProperty('height', fsH + 'px', 'important');
       parent.style.setProperty('width', '100%', 'important');

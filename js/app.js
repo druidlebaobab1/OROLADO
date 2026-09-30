@@ -5156,6 +5156,9 @@
     var ref = String(r.ref || '—');
     // Bonus : référence affichée « BONUS-XXXXXXXX » (l'identifiant interne adm_… reste en base).
     if (kind === 'bonus') ref = 'BONUS-' + ref.replace(/^adm_/i, '').slice(0, 8).toUpperCase();
+    // Dépôt crédité par l'équipe (identifiant interne adm_…) : affiché « OROLADO · DEP-XXXXXXXX » (affichage seulement).
+    var byTeam = kind === 'deposit' && /^adm_/i.test(String(r.ref || ''));
+    if (byTeam) ref = 'DEP-' + ref.replace(/^adm_/i, '').slice(0, 8).toUpperCase();
     return {
       at: r.at || '',
       ref: ref,
@@ -5163,7 +5166,7 @@
       status: normFinanceStatus(r.status, kind),
       label: kind === 'bonus' ? (t('txBonus') !== 'txBonus' ? t('txBonus') : 'Bonus') : financeKindLabel(kind),
       kind: kind,
-      gateway: kind === 'bonus' ? 'OROLADO' : (/^flw_/i.test(String(r.ref || '')) ? 'Instant Pay' : gatewayLabel(r.gateway || ''))
+      gateway: (kind === 'bonus' || byTeam) ? 'OROLADO' : (/^flw_/i.test(String(r.ref || '')) ? 'Instant Pay' : gatewayLabel(r.gateway || ''))
     };
   }
 
