@@ -160,6 +160,16 @@
   })();
   if (IS_TV) {
     try { document.documentElement.classList.add('is-tv'); } catch (eTv2) { /* ignore */ }
+    // Télé : « Se déconnecter » remonté tout en haut du profil (juste sous l'en-tête), toujours visible.
+    var tvMoveLogout = function () {
+      try {
+        var lo = document.getElementById('btnLogout');
+        var dr = document.getElementById('drawerProfile');
+        var head = dr && dr.querySelector('.drawer-head');
+        if (lo && head && lo.previousElementSibling !== head) { head.parentNode.insertBefore(lo, head.nextSibling); lo.classList.add('tv-logout-top'); }
+      } catch (eLo) { /* ignore */ }
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tvMoveLogout); else tvMoveLogout();
   }
   if (IS_ANDROID) {
     try { document.documentElement.classList.add('is-android'); } catch (eAnd) { /* ignore */ }

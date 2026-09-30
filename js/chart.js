@@ -425,11 +425,10 @@
     // au moment où la courbe l'atteint : ils tombent pile sur la courbe et ne bougent plus.
     // Avant : posés sur l'écran au clic, puis déplacés vers le vrai prix à la réponse du serveur.
     // Filet de sécurité : sans confirmation au bout de 6 s, le trade s'affiche quand même.
-    // Rond du trade affiché dès la confirmation du serveur (vrai prix d'entrée), sans attendre la courbe.
-    // Rond posé sur la bougie et au prix que le joueur voyait au clic (jamais devant la courbe) ; affiché
-    // au plus tard 0,7 s après le clic, sans attendre la réponse du serveur, qui confirme au même endroit.
-    var hideNow = (!ot.serverConfirmed && !(ot.startTime && collectNow - ot.startTime > 700)) ||
-      (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime);
+    // Rond du trade : il n'apparaît que lorsque la courbe affichée atteint son moment d'entrée (démo comme réel),
+    // pour tomber pile sur la courbe, jamais devant. Sans réponse du serveur au bout de 6 s, il s'affiche quand même.
+    var hideNow = (ot.startTime && collectNow < ot.startTime) ||
+      (!ot.serverConfirmed && !ot.guest && !(ot.startTime && collectNow - ot.startTime > 6000));
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
@@ -694,7 +693,7 @@
           if (window.getComputedStyle(stdPad).position === 'fixed') {
             var padTop = Math.round(stdPad.getBoundingClientRect().top);
             var cardTop = Math.round((stdCard || parent).getBoundingClientRect().top);
-            if (padTop > 0 && cardTop >= 0) stdH = padTop - cardTop - 4;
+            if (padTop > 0 && cardTop >= 0) stdH = padTop - cardTop - 10;
           }
         } catch (eStd) { stdH = 0; }
       }
@@ -713,7 +712,7 @@
       // Seuil 150 px (avant 240) : sur un Android court (barre de Chrome + boutons Android), la place
       // libre au-dessus des boutons fait ~210 px ; la mesure était ignorée et le bas du graphique
       // passait SOUS la rangée des durées (la tête de la courbe s’y cachait quand le marché baissait).
-      if (stdH >= 150) {
+      if (stdH >= 120) {
         document.documentElement.style.setProperty('--oro-chart-h', stdH + 'px');
       }
     } else {
@@ -746,7 +745,15 @@
           tvZ = parseFloat(window.getComputedStyle(document.documentElement).zoom) || 1;
         }
       } catch (eZ) { tvZ = 1; }
-      if (tvZ > 0 && tvZ < 0.99) fsH = Math.max(240, Math.round((vpH - topOff - 6) / tvZ));
+      if (tvZ > 0 && tvZ < 0.99) {
+        try {
+          var tvOv = document.getElementById('fsTradeOverlay');
+          var ovR = tvOv.getBoundingClientRect();
+          var stR = parent.getBoundingClientRect();
+          var frac = (ovR.bottom - stR.top) / Math.max(1, ovR.height);
+          fsH = Math.max(240, Math.round(tvOv.clientHeight * frac) - 8);
+        } catch (eTvH) { fsH = Math.max(240, Math.round((vpH - topOff - 6) / tvZ)); }
+      }
       // Tolérance : sans elle, un écart d'un pixel relancerait sans fin le
       // cycle mesure → redimensionnement → mesure.
       var curH = Math.round(parent.clientHeight || 0);
