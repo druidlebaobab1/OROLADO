@@ -1469,7 +1469,8 @@
       ctx.shadowBlur = 0;
     }
     var last = candles[candles.length - 1];
-    return { toX: toX, toY: toY, lastX: panMs > 0 ? toX(candles.length - 1) : pad.l + w, lastY: toY(last.c), count: candles.length };
+    // Boule du prix en direct posée au centre de la dernière bougie (comme les grandes plateformes).
+    return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
