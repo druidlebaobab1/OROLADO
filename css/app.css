@@ -4136,3 +4136,11 @@ html body .chart-outcome.lose{font-size:8.5px!important;padding:1px 5px!importan
 /* iPhone : sous la barre de Safari, le fond du bas continue la couleur sombre-orangée (plus de coupure). */
 html.is-ios{background:linear-gradient(180deg,#0D1322 0%,#0D1322 50%,#211a16 50%,#211a16 100%)!important}
 html.is-ios body:has(#screenTrade:not(.hidden)){background:linear-gradient(to top,#211a16 0,#211a16 120px,#0D1322 240px) #0D1322!important}
+/* iPhone (Safari) : bande fixe tout en bas, couleur sombre-orangée, sur l'écran de trading seulement.
+   Safari reprend la couleur des éléments fixés en bas pour teinter la zone sous sa barre : le bas du site
+   continue ainsi jusqu'au bord de l'écran. Seulement la zone de la barre d'accueil : aucun bouton dessous. */
+#oroIosFloor{display:none}
+html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor{display:block;position:fixed;left:0;right:0;bottom:0;
+  height:calc(10px + env(safe-area-inset-bottom, 0px));z-index:3;pointer-events:none;
+  background:#211a16}
+html.fs-trade #oroIosFloor{display:none!important}

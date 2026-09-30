@@ -432,11 +432,18 @@
       (ot.serverConfirmed && !ot.guest && ot.startTime && collectNow < ot.startTime);
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
-      if (!pendingTrades[ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
-      pendingTrades[ot.id].seen = collectNow;
+      if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
+      if (pendingTrades[ot.id]) {
+        pendingTrades[ot.id].seen = collectNow;
+        pendingTrades[ot.id].hid = collectNow;
+      }
       return;
     }
-    if (pendingTrades[ot.id]) delete pendingTrades[ot.id];
+    // Nouveau trade (même déjà confirmé) : le signe ACHAT / VENTE reste 1,2 s après le clic.
+    if (!pendingTrades[ot.id] && ot.startTime && collectNow - ot.startTime < 1000 && !pendingTrades['done:' + ot.id]) {
+      pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
+    }
+    if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
     var e2 = ot.expiryTime || ot.expiresAt;
     if (e2 && collectNow >= e2) return;
     var v = openTradeVisuals[ot.id];
@@ -2096,7 +2103,14 @@
     for (id in pendingTrades) {
       if (!pendingTrades.hasOwnProperty(id)) continue;
       var pt = pendingTrades[id];
-      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500)) { delete pendingTrades[id]; continue; }
+      if (id.indexOf('done:') === 0) { if (pNow - pt > 60000) delete pendingTrades[id]; continue; }
+      // Au moins 1,2 s après le clic, et tant que le rond n'est pas encore posé.
+      var stillHidden = pt.hid && Date.now() - pt.hid < 400;
+      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 1200 && !stillHidden)) {
+        delete pendingTrades[id];
+        pendingTrades['done:' + id] = pNow;
+        continue;
+      }
       var k = ((pNow - pt.t) % 650) / 650;
       var col = pt.side === 'put' ? '255,59,48' : '0,230,118';
       ctx.save();
@@ -2107,11 +2121,11 @@
       ctx.stroke();
       var isPut = pt.side === 'put';
       var lbl = String(isPut ? tt('tcSell', 'VENTE') : tt('tcBuy', 'ACHAT')).replace(/[↗↘⬈⬊]/g, '').trim();
-      ctx.font = '800 9px "Hanken Grotesk", sans-serif';
-      var lw = Math.ceil(ctx.measureText(lbl).width) + 26;
-      var lh = 15;
+      ctx.font = '800 7.5px "Hanken Grotesk", sans-serif';
+      var lw = Math.ceil(ctx.measureText(lbl).width) + 20;
+      var lh = 12;
       var lx = Math.max(4, map.lastX - lw / 2);
-      var ly = isPut ? map.lastY + 16 : map.lastY - 31;
+      var ly = isPut ? map.lastY + 14 : map.lastY - 26;
       var gr = ctx.createLinearGradient(lx, ly, lx, ly + lh);
       gr.addColorStop(0, isPut ? '#FF6B5E' : '#22E08A');
       gr.addColorStop(1, isPut ? '#C9221A' : '#009A48');
@@ -2126,31 +2140,31 @@
       ctx.strokeStyle = 'rgba(255,255,255,.35)';
       ctx.stroke();
       // Petite flèche tracée (diagonale montante pour l'achat, descendante pour la vente).
-      var ax = lx + 9;
+      var ax = lx + 7;
       var ay = ly + lh / 2;
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.6;
+      ctx.lineWidth = 1.3;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
       if (isPut) {
-        ctx.moveTo(ax - 3, ay - 3);
-        ctx.lineTo(ax + 3, ay + 3);
-        ctx.moveTo(ax + 3, ay - 0.5);
-        ctx.lineTo(ax + 3, ay + 3);
-        ctx.lineTo(ax - 0.5, ay + 3);
+        ctx.moveTo(ax - 2.3, ay - 2.3);
+        ctx.lineTo(ax + 2.3, ay + 2.3);
+        ctx.moveTo(ax + 2.3, ay - 0.3);
+        ctx.lineTo(ax + 2.3, ay + 2.3);
+        ctx.lineTo(ax - 0.3, ay + 2.3);
       } else {
-        ctx.moveTo(ax - 3, ay + 3);
-        ctx.lineTo(ax + 3, ay - 3);
-        ctx.moveTo(ax - 0.5, ay - 3);
-        ctx.lineTo(ax + 3, ay - 3);
-        ctx.lineTo(ax + 3, ay + 0.5);
+        ctx.moveTo(ax - 2.3, ay + 2.3);
+        ctx.lineTo(ax + 2.3, ay - 2.3);
+        ctx.moveTo(ax - 0.3, ay - 2.3);
+        ctx.lineTo(ax + 2.3, ay - 2.3);
+        ctx.lineTo(ax + 2.3, ay + 0.3);
       }
       ctx.stroke();
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(lbl, lx + 17, ly + lh / 2 + 0.5);
+      ctx.fillText(lbl, lx + 13, ly + lh / 2 + 0.5);
       ctx.restore();
       break;
     }
