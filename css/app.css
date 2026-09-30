@@ -4202,13 +4202,3 @@ html body .chart-fs-btn .chart-fs-label{overflow:hidden;text-overflow:ellipsis;w
 }
 html.is-tv body #screenAuth{overflow-y:auto!important}
 .terms-date{display:none!important}
-/* Plein écran : les 4 pièces sont DANS la capsule Démo / Réel (2 de chaque côté), comme le bandeau du solde ;
-   le bouton QUITTER est seul à droite, un peu plus grand et un peu plus à l'intérieur de l'écran. */
-html body .fs-mode-switch{display:inline-flex!important;align-items:center!important;gap:3px!important;flex-wrap:nowrap!important}
-html body .fs-mode-switch .fs-coin{display:block!important;width:20px!important;height:20px!important;flex:0 0 auto!important;margin:0 1px!important;border-radius:50%}
-html body .fs-mode-switch .fs-coin-btc{margin-left:6px!important}
-html body .fs-mode-switch .fs-coin-sol{margin-right:6px!important}
-html body .fs-trade-close{height:30px!important;padding:0 9px 0 7px!important;margin-right:14px!important}
-html body .fs-trade-close .fs-exit-ico{width:14px!important;height:14px!important}
-html body .fs-trade-close .fs-exit-txt{font-size:10px!important}
-@media (max-width:400px){html body .fs-mode-switch .fs-coin{width:18px!important;height:18px!important}html body .fs-trade-close .fs-exit-txt{font-size:9.5px!important}}

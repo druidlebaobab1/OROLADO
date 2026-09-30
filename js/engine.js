@@ -972,13 +972,6 @@
       return feedLagMs(canonAssetId(id));
     },
 
-    /** Courbe prête (écran de chargement) : prix de l'actif affiché reçus et à jour (aucun rattrapage en cours). */
-    feedReady: function () {
-      var f = wantedAsset ? feeds[canonAssetId(wantedAsset)] : null;
-      if (!f || !f.loaded) return false;
-      return (Date.now() - tickToLocal(f.last)) <= 1200;
-    },
-
     /** Prix affiché (dernier tick visible). */
     lastPrice: function (id) {
       var m = markets[canonAssetId(id)];
