@@ -25,6 +25,10 @@
     360, 420, 480, 540, 600, 660
   ];
   var DEFAULT_ZOOM_IDX = 8; // 28 s (défaut d'origine)
+  // BAAL, la bougie calme : zoom de départ plus proche (18 s) → gros carreaux.
+  function defaultZoomIdx(id) {
+    return id === 'horizon50' ? 4 : DEFAULT_ZOOM_IDX;
+  }
   var zoomIdx = DEFAULT_ZOOM_IDX;
   var zoomSmooth = 28;
   // Zoom élastique (pincement) : valeur continue pendant le geste, et douceur du suivi.
@@ -138,7 +142,7 @@
         lockUntil: 0,
         lastPrice: 0,
         at: 0,
-        zoomIdx: DEFAULT_ZOOM_IDX,
+        zoomIdx: defaultZoomIdx(id),
         inds: { ma: false, bb: false, ema: false }
       };
     }
@@ -190,7 +194,7 @@
   function applyAssetView(id) {
     var st = ensureAssetState(id || activeAsset);
     var z = st.zoomIdx;
-    if (!(z >= 0) || z >= ZOOM_STEPS.length) z = DEFAULT_ZOOM_IDX;
+    if (!(z >= 0) || z >= ZOOM_STEPS.length) z = defaultZoomIdx(id || activeAsset);
     zoomIdx = z;
     zoomSmooth = zoomSec();
     var saved = st.inds || {};
@@ -1346,15 +1350,18 @@
     // qui ne dépasse JAMAIS la place réellement disponible. L'ancien plancher
     // de 5 px indépendant du pas faisait se chevaucher les bougies au dézoom,
     // d'où la bouillie floue.
-    var gap = Math.min(3, Math.max(0.6, slot * 0.28));
+    // Bougies un peu plus larges (elles étaient maigres sur téléphone) : espace plus fin entre elles.
+    var gap = Math.min(2.4, Math.max(0.6, slot * 0.18));
     var maxBody = 5;
     if (opts.boomSmall) maxBody = 4;
     // ORO 888 : bougies violettes un peu plus larges.
     if (opts.apexAiry) maxBody = 6;
     // Titan Pulse : +40 % de largeur par rapport aux bougies ordinaires.
-    if (opts.titanWide) maxBody = 11;
+    if (opts.titanWide) maxBody = 13;
     // Volatility 100 (actif principal) : grosses bougies façon TradingView.
-    if (opts.v100Big) maxBody = 9;
+    if (opts.v100Big) maxBody = 12;
+    // BAAL : la bougie calme, gros carreaux.
+    if (opts.horizonOrange) maxBody = 14;
     var cw = Math.max(1, Math.min(maxBody, slot - gap));
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
@@ -1483,6 +1490,288 @@
     var last = candles[candles.length - 1];
     // Boule du prix en direct posée au centre de la dernière bougie (comme les grandes plateformes).
     return { toX: toX, toY: toY, lastX: toX(candles.length - 1), lastY: toY(last.c), count: candles.length };
+  }
+
+  /*
+   * Quatre styles à part (mêmes bougies d'une seconde, mêmes prix, mêmes règles ; seul le dessin
+   * change) : ORO 888 = perles, AZAZEL = colonnes de braise, ASMODUS = cristaux,
+   * PYTHON = barres de trader, OROF (la maison) = piles de pièces d'or,
+   * APOCALYPSE = le dieu : un éclair par seconde (lumière et sang). Chaque point est au centre de sa seconde, comme les bougies :
+   * le rond du trade, la ligne objectif et la boule tombent au même endroit.
+   */
+  var STYLED_ASSETS = { apex500: 'pearls', crash300: 'embers', nexusprime: 'crystals', v75: 'bars', goldtrend: 'coins', titanpulse: 'bolts' };
+
+  function drawStyledCandles(pad, w, h, candles, minP, maxP, style) {
+    if (!candles || candles.length < 2) return null;
+    var n = candles.length;
+    var slot = w / Math.max(1, n);
+    var toX = makeToX(n, pad, w);
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
+    var visH = Math.max(maxP - minP, 0.01);
+    var capVis = visH * 0.55;
+    var last = n - 1;
+    var i;
+    var c;
+    var x;
+    var up;
+    if (style === 'pearls') {
+      // ORO 888 : fil violet discret qui relie des perles ; une perle grossit quand ça bouge fort.
+      ctx.save();
+      ctx.strokeStyle = 'rgba(192,132,252,0.38)';
+      ctx.lineWidth = 1.2;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (i = 0; i < n; i++) {
+        x = toX(i);
+        if (i === 0) ctx.moveTo(x, toY(candles[i].c)); else ctx.lineTo(x, toY(candles[i].c));
+      }
+      ctx.stroke();
+      var rMax = Math.max(2.6, Math.min(8, slot * 0.46));
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        x = toX(i);
+        var y = toY(c.c);
+        var move = Math.abs(toY(c.o) - y);
+        var r = Math.max(2.4, Math.min(rMax, 2.4 + move * 0.35));
+        if (i === last && cssH >= 200) {
+          ctx.shadowColor = 'rgba(192,132,252,0.85)';
+          ctx.shadowBlur = 12;
+        }
+        ctx.fillStyle = up ? '#C084FC' : '#7C3AED';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = up ? 'rgba(250,245,255,0.85)' : 'rgba(221,214,254,0.6)';
+        ctx.beginPath();
+        ctx.arc(x - r * 0.3, y - r * 0.3, Math.max(0.8, r * 0.32), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    } else if (style === 'embers') {
+      // AZAZEL : colonnes qui montent du bas jusqu'au prix, braise orange (hausse) / rouge feu (baisse).
+      ctx.save();
+      var bot = pad.t + h;
+      var gUp = ctx.createLinearGradient(0, pad.t, 0, bot);
+      gUp.addColorStop(0, 'rgba(255,159,67,0.85)');
+      gUp.addColorStop(1, 'rgba(255,159,67,0.04)');
+      var gDn = ctx.createLinearGradient(0, pad.t, 0, bot);
+      gDn.addColorStop(0, 'rgba(255,59,48,0.85)');
+      gDn.addColorStop(1, 'rgba(255,59,48,0.04)');
+      var cwE = Math.max(1, Math.min(12, slot * 0.72));
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        x = toX(i);
+        var top = Math.max(pad.t, Math.min(bot, toY(c.c)));
+        ctx.fillStyle = up ? gUp : gDn;
+        ctx.fillRect(x - cwE / 2, top, cwE, bot - top);
+        if (i === last && cssH >= 200) {
+          ctx.shadowColor = up ? 'rgba(255,159,67,0.9)' : 'rgba(255,59,48,0.9)';
+          ctx.shadowBlur = 12;
+        }
+        ctx.fillStyle = up ? '#FFB570' : '#FF5A4E';
+        ctx.fillRect(x - cwE / 2, top - 1, cwE, 2.5);
+        ctx.shadowBlur = 0;
+      }
+      ctx.restore();
+    } else if (style === 'bolts') {
+      // APOCALYPSE, le dieu : un éclair par seconde, qui frappe du prix d'ouverture au prix de clôture.
+      // Hausse = éclair blanc éclatant (lueur rouge) ; baisse = éclair rouge sang (cœur blanc).
+      // Le dernier éclair crépite et laisse une étincelle au point d'impact. Ciel rouge sombre qui
+      // respire. Un éclair sorti du cadre disparaît au lieu d'être coupé au bord.
+      ctx.save();
+      var topY = pad.t;
+      var botY = pad.t + h;
+      var tMs = xNow || Date.now();
+      var off = Math.max(1.6, Math.min(5, slot * 0.3));
+      var lxS = toX(last);
+      var lyS = Math.max(topY, Math.min(botY, toY(candles[last].c)));
+      var breath = 0.75 + 0.25 * Math.sin(tMs / 700);
+      var gSky = ctx.createRadialGradient(lxS, lyS, 0, lxS, lyS, Math.max(w, h) * 0.9);
+      gSky.addColorStop(0, 'rgba(150,0,25,' + (0.2 * breath).toFixed(3) + ')');
+      gSky.addColorStop(0.5, 'rgba(90,0,15,0.07)');
+      gSky.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = gSky;
+      ctx.fillRect(pad.l, topY, w + pad.r, h);
+      ctx.lineJoin = 'miter';
+      ctx.lineCap = 'round';
+      var bolt = function (bx, y0, y1, flip) {
+        var d = y1 - y0;
+        var s = flip ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(bx, y0);
+        ctx.lineTo(bx + off * s, y0 + d * 0.38);
+        ctx.lineTo(bx - off * 0.6 * s, y0 + d * 0.52);
+        ctx.lineTo(bx + off * 0.5 * s, y0 + d * 0.78);
+        ctx.lineTo(bx, y1);
+      };
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        x = toX(i);
+        var yS = toY(c.o);
+        var yE = toY(c.c);
+        if (yE < topY + 2 || yE > botY - 2) continue;
+        // Éclair toujours visible : au moins 12 px de long.
+        if (Math.abs(yE - yS) < 12) yS = yE + (up ? 12 : -12);
+        yS = Math.max(topY, Math.min(botY, yS));
+        var flip = (i % 2) === 1;
+        var isLast = i === last && cssH >= 200;
+        var flick = isLast ? (0.65 + 0.35 * Math.abs(Math.sin(tMs / 90))) : 1;
+        // Lueur (trait large et transparent), puis corps, puis cœur fin.
+        ctx.globalAlpha = flick;
+        ctx.strokeStyle = up ? 'rgba(255,40,70,0.35)' : 'rgba(255,23,68,0.45)';
+        ctx.lineWidth = isLast ? 7 : 4.5;
+        bolt(x, yS, yE, flip);
+        ctx.stroke();
+        ctx.strokeStyle = up ? '#FFFFFF' : '#FF1744';
+        ctx.lineWidth = isLast ? 2.6 : 2;
+        if (isLast) {
+          ctx.shadowColor = up ? 'rgba(255,255,255,1)' : 'rgba(255,23,68,1)';
+          ctx.shadowBlur = IS_ANDROID_CHART ? 10 : 18;
+        }
+        bolt(x, yS, yE, flip);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = up ? 'rgba(255,220,225,0.9)' : 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 0.9;
+        bolt(x, yS, yE, flip);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        if (isLast) {
+          // Point d'impact : étincelle en croix qui tourne + onde qui pulse.
+          var ph = (tMs % 1200) / 1200;
+          var rot = tMs / 900;
+          var kS;
+          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+          ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          for (kS = 0; kS < 4; kS++) {
+            var an = rot + kS * Math.PI / 2;
+            ctx.moveTo(x + Math.cos(an) * 2, yE + Math.sin(an) * 2);
+            ctx.lineTo(x + Math.cos(an) * (off * 2.4), yE + Math.sin(an) * (off * 2.4));
+          }
+          ctx.stroke();
+          ctx.strokeStyle = up ? 'rgba(255,255,255,' + (0.8 * (1 - ph)).toFixed(3) + ')' : 'rgba(255,40,70,' + (0.8 * (1 - ph)).toFixed(3) + ')';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x, yE, off * (1 + ph * 3.2), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    } else if (style === 'coins') {
+      // OROF (la maison) : une pile de pièces d'or par seconde, de l'ouverture à la clôture.
+      // Or vif à la hausse, or vieilli à la baisse ; la pièce du dessus brille.
+      ctx.save();
+      var cwC = Math.max(2.5, Math.min(13, slot * 0.8));
+      var coinH = Math.max(2, Math.min(3.4, cwC * 0.3));
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        x = toX(i);
+        var yTopC = toY(Math.max(c.o, c.c));
+        var yBotC = toY(Math.min(c.o, c.c));
+        if (yBotC - yTopC < coinH) { var ymC = (yTopC + yBotC) / 2; yTopC = ymC - coinH / 2; yBotC = ymC + coinH / 2; }
+        var steps = Math.max(1, Math.min(40, Math.round((yBotC - yTopC) / (coinH * 0.9))));
+        var gapC = steps > 1 ? (yBotC - yTopC - coinH) / (steps - 1) : 0;
+        var s2;
+        for (s2 = steps - 1; s2 >= 0; s2--) {
+          var cy = yTopC + s2 * gapC + coinH / 2;
+          ctx.fillStyle = up ? (s2 % 2 ? '#E0A100' : '#FFC107') : (s2 % 2 ? '#8A6417' : '#B08326');
+          ctx.beginPath();
+          ctx.ellipse(x, cy, cwC / 2, coinH / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        if (i === last && cssH >= 200) {
+          ctx.shadowColor = 'rgba(255,193,7,0.9)';
+          ctx.shadowBlur = 12;
+        }
+        ctx.fillStyle = up ? '#FFE082' : '#D9B26A';
+        ctx.beginPath();
+        ctx.ellipse(x, yTopC + coinH / 2, cwC / 2, coinH / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(255,253,231,0.9)';
+        ctx.fillRect(x - cwC * 0.18, yTopC + coinH * 0.3, cwC * 0.36, 0.9);
+      }
+      ctx.restore();
+    } else if (style === 'crystals') {
+      // ASMODUS : une rangée de cristaux (losanges) : haut du losange = plus haut de la seconde,
+      // bas = plus bas, centre = prix de clôture. Cyan à la hausse, bleu profond à la baisse.
+      ctx.save();
+      var halfW = Math.max(1.5, Math.min(7, slot * 0.42));
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        x = toX(i);
+        var hiC = isFinite(c.h) ? c.h : Math.max(c.o, c.c);
+        var loC = isFinite(c.l) ? c.l : Math.min(c.o, c.c);
+        if (hiC - loC > capVis) { var midC = (hiC + loC) / 2; hiC = midC + capVis / 2; loC = midC - capVis / 2; }
+        var yc = toY(c.c);
+        var yT = Math.min(toY(hiC), yc - 3);
+        var yB = Math.max(toY(loC), yc + 3);
+        if (i === last && cssH >= 200) {
+          ctx.shadowColor = up ? 'rgba(0,229,255,0.9)' : 'rgba(41,121,255,0.9)';
+          ctx.shadowBlur = 12;
+        }
+        ctx.fillStyle = up ? 'rgba(0,229,255,0.85)' : 'rgba(21,101,192,0.95)';
+        ctx.beginPath();
+        ctx.moveTo(x, yT);
+        ctx.lineTo(x + halfW, yc);
+        ctx.lineTo(x, yB);
+        ctx.lineTo(x - halfW, yc);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // Reflet : petite facette claire en haut à gauche (effet pierre taillée).
+        ctx.fillStyle = up ? 'rgba(224,255,255,0.75)' : 'rgba(144,202,249,0.55)';
+        ctx.beginPath();
+        ctx.moveTo(x, yT);
+        ctx.lineTo(x, yc);
+        ctx.lineTo(x - halfW, yc);
+        ctx.closePath();
+        ctx.globalAlpha = 0.45;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    } else {
+      // PYTHON : barres de trader (trait haut-bas, crochet à gauche = ouverture, à droite = clôture).
+      ctx.save();
+      var tick = Math.max(2.5, Math.min(7, slot * 0.42));
+      ctx.lineCap = 'butt';
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        x = toX(i);
+        var hw = isFinite(c.h) ? c.h : Math.max(c.o, c.c);
+        var lw = isFinite(c.l) ? c.l : Math.min(c.o, c.c);
+        if (hw - lw > capVis) { var mw = (hw + lw) / 2; hw = mw + capVis / 2; lw = mw - capVis / 2; }
+        var yTop = toY(hw);
+        var yBot = toY(lw);
+        if (yBot - yTop < 3) { var yMid = (yTop + yBot) / 2; yTop = yMid - 1.5; yBot = yMid + 1.5; }
+        if (i === last && cssH >= 200) {
+          ctx.shadowColor = up ? 'rgba(255,45,117,0.8)' : 'rgba(216,0,86,0.8)';
+          ctx.shadowBlur = 10;
+        }
+        ctx.strokeStyle = up ? '#ff2d75' : '#e0206a';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.moveTo(x, yTop);
+        ctx.lineTo(x, yBot);
+        ctx.moveTo(x - tick, toY(c.o));
+        ctx.lineTo(x, toY(c.o));
+        ctx.moveTo(x, toY(c.c));
+        ctx.lineTo(x + tick, toY(c.c));
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+      ctx.restore();
+    }
+    return { toX: toX, toY: toY, lastX: toX(last), lastY: toY(candles[last].c), count: n };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
@@ -2561,6 +2850,13 @@
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
       boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
+    // Vélocité (affichage seulement) : cadre resserré → chaque mouvement se voit plus grand, la
+    // courbe ondule plus vite. Les prix, les lignes objectif, les gains et l'équité ne changent pas.
+    // APOCALYPSE la plus rapide (×2 : au-delà elle débordait du cadre), ZUL en serpent rapide,
+    // OROF un peu plus haute (piles de pièces bien visibles), VOLATILITY un peu plus
+    // haute, BAAL plus calme (cadre plus large).
+    var fast = { titanpulse: 2.0, stable: 2.2, goldtrend: 1.6, v100: 1.25, horizon50: 0.8 }[assetId] || 1;
+    base = base / fast;
     // Le cadre suit le zoom comme un vrai marché : l'amplitude grandit avec la racine du
     // temps affiché (28 s = taille de base). Zoom arrière : rien n'est coupé en bas/haut.
     var z = Number(zoomSec()) || 28;
@@ -3001,15 +3297,10 @@
     ctx.beginPath();
     ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, h));
     ctx.clip();
-    if (asset.id === 'titanpulse') {
-      map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
-        thin: false,
-        capWicks: true,
-        titanWhite: true,
-        titanWide: true
-      });
-    } else if (asset.id === 'stable') {
+    if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2244', 3);
+    } else if (STYLED_ASSETS[asset.id]) {
+      map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id]);
     } else if (asset.chart === 'candle' || asset.id === 'horizon50') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
@@ -3343,10 +3634,10 @@
     // Rien à remettre (zoom normal, aucun indicateur) : on ne touche pas au cadre. Avant, chaque
     // clic recadrait la courbe (elle « descendait ») même sans zoom ni indicateur.
     if (panMs) panGoLive();
-    if (zoomIdx === DEFAULT_ZOOM_IDX && !inds.ma && !inds.bb && !inds.ema) return;
+    if (zoomIdx === defaultZoomIdx(activeAsset) && !inds.ma && !inds.bb && !inds.ema) return;
     var stNow = ensureAssetState(activeAsset);
     var tradeFrame = !!(stNow.lockUntil && Date.now() < stNow.lockUntil);
-    zoomIdx = DEFAULT_ZOOM_IDX;
+    zoomIdx = defaultZoomIdx(activeAsset);
     zoomSmooth = zoomSec();
     persistView(activeAsset);
     inds.ma = false;
