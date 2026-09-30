@@ -107,10 +107,22 @@ function orolado_login_throttle_save(array $map): void {
   @file_put_contents(orolado_data_dir() . '/login_throttle.json', json_encode($map, JSON_UNESCAPED_UNICODE), LOCK_EX);
 }
 
-function orolado_login_gate(string $scope = 'player'): array {
+/**
+ * Clé du compteur d'essais ratés. Joueurs : IP + e-mail visé. Beaucoup d'opérateurs mobiles
+ * (Afrique surtout) font passer des milliers de clients par la MÊME adresse IP : compter par IP
+ * seule bloquait tout un opérateur après 8 erreurs de quelques personnes. Le vol de compte par
+ * essais reste bloqué (8 essais / 15 min par compte et par IP, + 30 / h par e-mail dans api.php).
+ */
+function orolado_login_key(string $scope, string $sub = ''): string {
+  $key = $scope . ':' . orolado_client_ip();
+  $sub = strtolower(trim($sub));
+  return $sub === '' ? $key : $key . ':' . substr(hash('sha256', $sub), 0, 20);
+}
+
+function orolado_login_gate(string $scope = 'player', string $sub = ''): array {
   $max = 8;
   $window = 900;
-  $key = $scope . ':' . orolado_client_ip();
+  $key = orolado_login_key($scope, $sub);
   $all = orolado_login_throttle_map();
   $row = is_array($all[$key] ?? null) ? $all[$key] : ['n' => 0, 't' => 0];
   $t = (int) ($row['t'] ?? 0);
@@ -126,8 +138,8 @@ function orolado_login_gate(string $scope = 'player'): array {
   return ['ok' => true];
 }
 
-function orolado_login_fail(string $scope = 'player'): void {
-  $key = $scope . ':' . orolado_client_ip();
+function orolado_login_fail(string $scope = 'player', string $sub = ''): void {
+  $key = orolado_login_key($scope, $sub);
   $all = orolado_login_throttle_map();
   $row = is_array($all[$key] ?? null) ? $all[$key] : ['n' => 0, 't' => 0];
   $t = (int) ($row['t'] ?? 0);
@@ -197,8 +209,8 @@ function orolado_rate_ok(string $scope, string $key, int $max, int $window): boo
   return $ok;
 }
 
-function orolado_login_ok(string $scope = 'player'): void {
-  $key = $scope . ':' . orolado_client_ip();
+function orolado_login_ok(string $scope = 'player', string $sub = ''): void {
+  $key = orolado_login_key($scope, $sub);
   $all = orolado_login_throttle_map();
   if (!isset($all[$key])) return;
   unset($all[$key]);

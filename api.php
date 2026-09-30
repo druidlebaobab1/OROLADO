@@ -200,20 +200,25 @@ if ($token === '') $token = trim((string) ($_COOKIE['oro_token'] ?? ''));
 // Limites anti-robots, par adresse e-mail visée et par connexion. Les limites par connexion sont
 // larges : beaucoup de joueurs d'un même pays partagent la même adresse (opérateurs mobiles).
 // [qui, nombre, par N secondes] — qui : e = e-mail demandé, i = connexion, t = compte connecté.
+// Limites par connexion relevées pour le lancement (pubs) : derrière un opérateur mobile, des
+// milliers de vrais joueurs arrivent par la même adresse. La vraie protection reste par e-mail / compte.
+// placeOrder : anti-robot seulement (30 ordres par 10 s par compte, bien au-delà d'un humain) ; ce
+// n'est pas une limite de mise : un robot qui envoie des centaines d'ordres ne bloque plus le site.
 $OROLADO_RATE_RULES = [
-  'registerStart'     => [['e', 5, 3600], ['i', 100, 3600]],
-  'registerResend'    => [['e', 6, 3600], ['i', 100, 3600]],
-  'registerVerify'    => [['e', 20, 3600], ['i', 300, 3600]],
-  'forgotOtpStart'    => [['e', 5, 3600], ['i', 60, 3600]],
-  'forgotOtpVerify'   => [['e', 20, 3600], ['i', 300, 3600]],
-  'forgotPasswordSet' => [['e', 10, 3600], ['i', 100, 3600]],
-  'passwordOtpStart'  => [['t', 5, 3600], ['i', 60, 3600]],
-  'passwordOtpVerify' => [['t', 20, 3600], ['i', 300, 3600]],
+  'registerStart'     => [['e', 5, 3600], ['i', 400, 3600]],
+  'registerResend'    => [['e', 6, 3600], ['i', 400, 3600]],
+  'registerVerify'    => [['e', 20, 3600], ['i', 1500, 3600]],
+  'forgotOtpStart'    => [['e', 5, 3600], ['i', 300, 3600]],
+  'forgotOtpVerify'   => [['e', 20, 3600], ['i', 1500, 3600]],
+  'forgotPasswordSet' => [['e', 10, 3600], ['i', 400, 3600]],
+  'passwordOtpStart'  => [['t', 5, 3600], ['i', 300, 3600]],
+  'passwordOtpVerify' => [['t', 20, 3600], ['i', 1500, 3600]],
   'passwordChange'    => [['t', 10, 3600]],
-  'welcomeEmail'      => [['e', 2, 86400], ['i', 30, 3600]],
-  'login'             => [['e', 30, 3600], ['i', 600, 3600]],
+  'welcomeEmail'      => [['e', 2, 86400], ['i', 300, 3600]],
+  'login'             => [['e', 30, 3600], ['i', 3000, 3600]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
+  'placeOrder'        => [['t', 30, 10]],
 ];
 if (isset($OROLADO_RATE_RULES[$action])) {
   $rlEmail = strtolower(trim((string) ($req['email'] ?? '')));
@@ -669,12 +674,12 @@ if ($action === 'forgotOtpStart') {
     $db['pendingPasswordOtps'][$email]['lastSentAt'] = time();
     save_db($file, $db);
   } else {
-    $gate = orolado_login_gate('player');
+    $gate = orolado_login_gate('player', $email);
     if (empty($gate['ok'])) {
       echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($gate['reason'] ?? 'Trop d’essais')]);
       exit;
     }
-    orolado_login_fail('player');
+    orolado_login_fail('player', $email);
     if (orolado_retired_emails_sync($db)) save_db($file, $db);
     $gone = orolado_retired_email_owner($db, $email) !== '';
     echo json_encode(['ok' => false, 'server' => true, 'field' => 'resetId', 'reason' => $gone
@@ -865,12 +870,12 @@ if ($action === 'welcomeEmail') {
 }
 
 if ($action === 'login') {
-  $gate = orolado_login_gate('player');
+  $email = strtolower(trim($req['email'] ?? ''));
+  $gate = orolado_login_gate('player', $email);
   if (empty($gate['ok'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($gate['reason'] ?? 'Trop d’essais')]);
     exit;
   }
-  $email = strtolower(trim($req['email'] ?? ''));
   $passwordRaw = (string) ($req['password'] ?? '');
   $password = trim($passwordRaw);
   $passTries = [];
@@ -884,7 +889,7 @@ if ($action === 'login') {
   }
   $user = $matches[0] ?? find_user($db, $email);
   if (!$user && !orolado_is_reserved_admin_email($email) && orolado_retired_email_owner($db, $email) !== '') {
-    orolado_login_fail('player');
+    orolado_login_fail('player', $email);
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cette adresse a été remplacée sur son compte. Utilisez votre nouvelle adresse e-mail.']);
     exit;
   }
@@ -901,7 +906,7 @@ if ($action === 'login') {
       }
     }
     if (!$adminOk) {
-      orolado_login_fail('player');
+      orolado_login_fail('player', $email);
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
@@ -982,11 +987,11 @@ if ($action === 'login') {
     if (!$okPass) {
       $blockedEarly = orolado_identity_block($db, $email);
       if ($blockedEarly) {
-        orolado_login_fail('player');
+        orolado_login_fail('player', $email);
         echo json_encode(orolado_block_payload((string) ($blockedEarly['kind'] ?? 'suspended')));
         exit;
       }
-      orolado_login_fail('player');
+      orolado_login_fail('player', $email);
       echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
       exit;
     }
@@ -1012,7 +1017,7 @@ if ($action === 'login') {
     echo json_encode(orolado_block_payload($banKind));
     exit;
   }
-  orolado_login_ok('player');
+  orolado_login_ok('player', $email);
   // Multi-appareils : on garde les sessions actives (PC + téléphone).
   // Révocation uniquement au changement de mot de passe / ban (orolado_revoke_user_sessions ailleurs).
   $tok = make_token($user['id'], $SECRET);
