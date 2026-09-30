@@ -32,9 +32,9 @@
    * appareil. Maintenant chaque appareil mesure l'heure d'arrivée réelle des prix et garde un
    * délai juste au-dessus (monte vite si besoin, redescend très lentement).
    */
-  // Départ avec une marge confortable (1,6 s ; avant 1,8 s, et 0,8 s donnait des « tic tic ») ; ensuite chaque appareil s'ajuste seul.
-  var dispDelay = 1600;
-  var needDelay = 1600;
+  // Départ avec une marge confortable (1,4 s ; avant 1,8 s, et 0,8 s donnait des « tic tic ») ; ensuite chaque appareil s'ajuste seul.
+  var dispDelay = 1400;
+  var needDelay = 1400;
   function noteArrival(lastTick) {
     if (!clock.ready || !(lastTick > 0)) return;
     var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
@@ -493,7 +493,7 @@
     }
     if (!isFinite(o)) return null;
     var spike = spikeFlag(id, o, c);
-    return { o: o, h: h, l: l, c: c, t: tickToLocal(t0), _spike: spike, _boom: spike && id === 'boomspike' };
+    return { o: o, h: h, l: l, c: c, t: tickToLocal(t0), tk: t0, _spike: spike, _boom: spike && id === 'boomspike' };
   }
 
   /** Tick le plus récent qu'on a le droit d'afficher à l'instant `nowMs`. */
@@ -1139,6 +1139,8 @@
 
     /** Retard d'affichage actuel de cet appareil (ms), pour contrôle. */
     displayDelay: function () { return Math.round(dispDelay); },
+    /** Numéro de prix du serveur → heure d'affichage actuelle (suit le décalage qui s'ajuste). */
+    tickToLocal: function (tick) { return tickToLocal(Number(tick)); },
 
     resyncClocks: function () {
       // Retour de veille : on va chercher tout de suite les prix manqués (sans attendre).

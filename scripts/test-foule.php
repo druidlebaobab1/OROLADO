@@ -25,7 +25,7 @@ $users = [];
 for ($i = 0; $i < $N; $i++) {
   $users[$i] = [
     'vid' => bin2hex(random_bytes(12)), 'next' => $ms() + random_int(0, 300), 'hb' => $ms() + random_int(0, 20000),
-    'busy' => false, 'last' => 0, 'delay' => 1600.0, 'need' => 1600.0, 'shown' => 0,
+    'busy' => false, 'last' => 0, 'delay' => 1400.0, 'need' => 1400.0, 'shown' => 0,
     'stalls' => 0, 'stallOn' => false,
   ];
 }

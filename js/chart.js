@@ -358,10 +358,29 @@
   }
 
   var GLIDE_MS = 320;
+  // Heure d'affichage d'un trade prise SUR SA BOUGIE : le rond se pose exactement sur la bougie qui contient
+  // son prix d'entrée, telle qu'elle est dessinée (le décalage d'affichage peut s'ajuster pendant le trade ;
+  // une heure calculée au clic pouvait faire glisser le rond devant sa bougie). Sinon : heure du clic.
+  function liveTradeTime(tick, fallback) {
+    var tk = Number(tick);
+    if (tick != null && isFinite(tk) && camCandles && camCandles.length) {
+      var i;
+      for (i = camCandles.length - 1; i >= 0; i--) {
+        var cd = camCandles[i];
+        if (!cd || cd.tk == null) continue;
+        if (tk >= cd.tk) {
+          if (tk < cd.tk + 4) return Number(cd.t) + (tk - cd.tk) * 250;
+          break;
+        }
+      }
+    }
+    return Number(fallback) || 0;
+  }
+
   function tradeGlide(t) {
     var entry = Number(t.entryPrice != null ? t.entryPrice : t.openPrice);
     var bar = Number(t.barrier);
-    var start = Number(t.startTime || t.startedAt || t.openedAt || 0);
+    var start = liveTradeTime(t.entryTick, t.startTime || t.startedAt || t.openedAt || 0);
     if (t.moveAt && t.fromEntry != null) {
       var k = Math.min(1, (Date.now() - t.moveAt) / GLIDE_MS);
       k = 1 - Math.pow(1 - k, 3);
@@ -389,6 +408,8 @@
       payout: Number(trade.payout) || 1.88,
       stake: Number(trade.stake) || 0,
       startTime: trade.startTime || trade.startedAt || trade.openedAt || 0,
+      entryTick: trade.entryTick != null ? Number(trade.entryTick) : null,
+      expiryTick: trade.expiryTick != null ? Number(trade.expiryTick) : null,
       expiryTime: exp,
       expiresAt: exp,
       settled: !!trade.settled,
@@ -1954,7 +1975,7 @@
   // à gauche. Aucun montant en dollars n'est tracé le long du trait.
   function drawEntryOn(g, map, trade, now, pad, tagIndex, minP, maxP, plotH, yShift, layout, clusterN) {
     if (!g || !trade || trade.settled) return;
-    var exp = trade.expiryTime || trade.expiresAt;
+    var exp = liveTradeTime(trade.expiryTick, trade.expiryTime || trade.expiresAt);
     if (!exp || Date.now() >= exp) return;
     var glide = tradeGlide(trade);
     var entry = glide.entry;
