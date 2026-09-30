@@ -2620,14 +2620,15 @@
       if (mid > h + calm) mid = h + calm;
     }
     var half = span / 2;
-    var edge = span * 0.26;
+    // Android : la courbe garde un peu plus d'air en haut et en bas (elle « descendait » vers le bord).
+    var edge = span * (IS_ANDROID_CHART ? 0.30 : 0.26);
     // Suivi réglé en TEMPS et non par image : un vieil Android qui dessine 15 images/s
     // suit la courbe aussi vite qu'un iPhone à 60 (avant, la courbe « s'enfonçait »).
     var kf = cameraFollow(0.06);
     if (h > mid + half - edge) mid += (h - (mid + half - edge)) * kf;
     if (h < mid - half + edge) mid += (h - (mid - half + edge)) * kf;
     // Filet dur : la tête ne sort jamais (pic Boom/Crash, retour de veille).
-    var hard = span * 0.06;
+    var hard = span * (IS_ANDROID_CHART ? 0.12 : 0.06);
     if (h > mid + half - hard) mid = h - half + hard;
     if (h < mid - half + hard) mid = h + half - hard;
     return { min: mid - half, max: mid + half };
