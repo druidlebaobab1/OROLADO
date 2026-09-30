@@ -2249,11 +2249,11 @@
         (goldHead ? '255,179,0' : (horizonHead ? '255,152,0' : null))));
       ctx.beginPath();
       ctx.globalAlpha = 0.5;
-      ctx.arc(map.lastX, map.lastY, 10 + pulse * 3, 0, Math.PI * 2);
+      ctx.arc(map.lastX, map.lastY, 5 + pulse * 1.5, 0, Math.PI * 2);
       ctx.fillStyle = haloDim ? 'rgba(' + haloDim + ',0.16)' : (theme.beadGlow || 'rgba(255,215,0,0.16)');
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 7.5 + pulse * 1.5, 0, Math.PI * 2);
+      ctx.arc(map.lastX, map.lastY, 3.8 + pulse * 0.8, 0, Math.PI * 2);
       ctx.fillStyle = haloDim ? 'rgba(' + haloDim + ',0.3)' : (theme.beadGlow || 'rgba(255,215,0,0.24)');
       ctx.fill();
     }
@@ -2261,18 +2261,18 @@
     var headCol = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
     var glowCol = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
     ctx.beginPath();
-    ctx.arc(map.lastX, map.lastY, compact ? 3.6 : 6, 0, Math.PI * 2);
+    ctx.arc(map.lastX, map.lastY, compact ? 2.2 : 3, 0, Math.PI * 2);
     ctx.fillStyle = headCol;
     ctx.shadowColor = glowCol;
     ctx.globalAlpha = 1;
-    ctx.shadowBlur = compact ? 4 : 5 + pulse * 2;
+    ctx.shadowBlur = compact ? 3 : 5 + pulse * 2;
     ctx.fill();
     // Second passage : le halo se cumule et reste net au centre.
     if (!compact) {
       ctx.fill();
       ctx.shadowBlur = 0;
       ctx.beginPath();
-      ctx.arc(map.lastX, map.lastY, 2.2, 0, Math.PI * 2);
+      ctx.arc(map.lastX, map.lastY, 1.2, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.globalAlpha = 0.9;
       ctx.fill();
