@@ -112,3 +112,10 @@ html.is-tv.fs-trade body .fs-trade-overlay.on .pad .btn-trade{flex:0 0 auto!impo
 html.is-tv #drawerProfile{zoom:.66;height:calc(100vh / .66)!important;max-height:none!important;overflow:hidden!important}
 html.is-tv #drawerProfile .drawer-nav{overflow:visible!important;max-height:none!important;flex:0 0 auto!important;height:auto!important}
 html.is-tv #drawerProfile #btnLogout.tv-logout-top{flex:0 0 auto!important;margin:4px 12px 8px!important;width:auto!important;border:1px solid rgba(255,77,77,.6)!important;border-radius:10px!important}
+/* Plein écran télé : colonne de droite plus large → ACHETER / VENDRE moins étroits. */
+html.is-tv .fs-trade-overlay.on .trade-wrap{grid-template-columns:minmax(0,1fr) 230px!important}
+/* Profil télé : « Se déconnecter » sous la croix (plus de chevauchement). */
+html.is-tv #drawerProfile #btnLogout.tv-logout-top{margin-top:26px!important}
+/* Plein écran télé : la colonne des boutons prend toute sa largeur (ACHETER / VENDRE plus larges). */
+html.is-tv.fs-trade body .fs-trade-overlay.on .pad{width:100%!important;flex:1 1 auto!important;max-width:none!important;min-width:0!important}
+html.is-tv.fs-trade body .fs-trade-overlay.on .pad .btn-trade{width:100%!important}
