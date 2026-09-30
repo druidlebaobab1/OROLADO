@@ -2118,14 +2118,18 @@
       // Bref : environ 0,55 s après le clic (plus longtemps seulement si le rond n'est pas encore posé).
       // Un signe par clic : plusieurs clics rapides = plusieurs petits signes qui s'effacent vite.
       var stillHidden = pt.hid && Date.now() - pt.hid < 400;
-      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 350 && !stillHidden)) {
+      if (pNow - pt.t > 6000 || (pt.seen && Date.now() - pt.seen > 1500) || (pNow - pt.t > 300 && !stillHidden)) {
         delete pendingTrades[id];
         pendingTrades['done:' + id] = pNow;
         continue;
       }
       var k = ((pNow - pt.t) % 650) / 650;
       var col = pt.side === 'put' ? '255,59,48' : '0,230,118';
-      var fade = stillHidden ? 1 : Math.max(0, Math.min(1, 1 - (pNow - pt.t - 230) / 120));
+      var age = pNow - pt.t;
+      var fade = stillHidden ? 1 : Math.max(0, Math.min(1, 1 - (age - 200) / 100));
+      // Signe ACHAT / VENTE : un flash de 0,3 s (petit « pop » à l'apparition), même si le rond n'est pas encore posé.
+      var lblAlpha = age < 300 ? Math.max(0, Math.min(1, 1 - (age - 200) / 100)) : 0;
+      var pop = age < 90 ? 0.7 + 0.3 * (age / 90) : 1;
       var stack = slot * 14;
       slot++;
       ctx.save();
@@ -2136,6 +2140,7 @@
       ctx.arc(map.lastX, map.lastY, 8 + 16 * k, 0, Math.PI * 2);
       ctx.stroke();
       var isPut = pt.side === 'put';
+      if (lblAlpha > 0) {
       var lbl = String(isPut ? tt('tcSell', 'VENTE') : tt('tcBuy', 'ACHAT')).replace(/[↗↘⬈⬊]/g, '').trim();
       ctx.font = '800 7.5px "Hanken Grotesk", sans-serif';
       var lw = Math.ceil(ctx.measureText(lbl).width) + 20;
@@ -2145,7 +2150,10 @@
       var gr = ctx.createLinearGradient(lx, ly, lx, ly + lh);
       gr.addColorStop(0, isPut ? '#FF6B5E' : '#22E08A');
       gr.addColorStop(1, isPut ? '#C9221A' : '#009A48');
-      ctx.globalAlpha = 0.96 * fade;
+      ctx.globalAlpha = 0.96 * lblAlpha;
+      ctx.translate(lx + lw / 2, ly + lh / 2);
+      ctx.scale(pop, pop);
+      ctx.translate(-(lx + lw / 2), -(ly + lh / 2));
       ctx.shadowColor = isPut ? 'rgba(255,59,48,.45)' : 'rgba(0,200,83,.45)';
       ctx.shadowBlur = 8;
       ctx.fillStyle = gr;
@@ -2181,6 +2189,7 @@
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(lbl, lx + 13, ly + lh / 2 + 0.5);
+      }
       ctx.restore();
     }
   }
