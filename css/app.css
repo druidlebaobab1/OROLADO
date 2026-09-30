@@ -4218,3 +4218,11 @@ html body .fs-trade-close .fs-exit-ico{width:14px!important;height:14px!importan
 html body .fs-trade-close .fs-exit-txt{font-size:10px!important}
 @media (max-width:380px){html body .fs-mode-switch .fs-coin{width:17px!important;height:17px!important;flex-basis:17px!important}
   html body .fs-mode-switch{gap:3px!important;padding:3px 4px!important}}
+/* Visiteur : la pilule dorée DÉMO contient les 4 pièces (2 de chaque côté du mot DÉMO). */
+html.fs-guest body .fs-mode-switch{background:linear-gradient(135deg,rgba(245,166,35,.25),rgba(245,166,35,.08))!important;
+  border:1px solid #f5a623!important;border-radius:999px!important;box-shadow:0 0 14px rgba(255,193,7,.28)!important;
+  padding:4px 8px!important;gap:5px!important;width:auto!important;min-height:34px!important}
+html.fs-guest body .fs-mode-switch .fs-mode-btn.mode-btn[data-mode="demo"],
+html.fs-guest.fs-trade body .fs-mode-switch .fs-mode-btn.mode-btn.on[data-mode="demo"]{
+  background:transparent!important;border:none!important;box-shadow:none!important;min-width:0!important;
+  padding:2px 8px!important;min-height:0!important}
