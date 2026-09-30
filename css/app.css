@@ -4140,7 +4140,7 @@ html.is-ios body:has(#screenTrade:not(.hidden)){background:linear-gradient(to to
    Safari reprend la couleur des éléments fixés en bas pour teinter la zone sous sa barre : le bas du site
    continue ainsi jusqu'au bord de l'écran. Seulement la zone de la barre d'accueil : aucun bouton dessous. */
 #oroIosFloor{display:none}
-html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor{display:block;position:fixed;left:0;right:0;bottom:0;
+@media (max-width:859px){html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor{display:block;position:fixed;left:0;right:0;bottom:0;
   height:calc(10px + env(safe-area-inset-bottom, 0px));z-index:3;pointer-events:none;
-  background:#211a16}
+  background:#211a16}}
 html.fs-trade #oroIosFloor{display:none!important}
