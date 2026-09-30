@@ -4177,3 +4177,10 @@ html body .fs-trade-close{height:26px!important;padding:0 7px 0 5px!important;ga
 html body .fs-trade-close .fs-exit-ico{width:12px!important;height:12px!important}
 html body .fs-trade-close .fs-exit-txt{font-size:9px!important;letter-spacing:.03em!important;max-width:64px;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:400px){html body .fs-trade-close .fs-exit-txt{font-size:8.5px!important;max-width:56px}}
+/* Plein écran sur téléphone : pièces du haut un peu plus petites et plus serrées, pour laisser la place
+   au sélecteur Démo / Réel (compte connecté) et au bouton QUITTER, dans toutes les langues. */
+@media (max-width:480px){
+  html.fs-trade .fs-coin,html.is-fullscreen .fs-coin{width:22px!important;height:22px!important}
+  html.fs-trade .fs-top-end,html.is-fullscreen .fs-top-end,
+  html.fs-trade .fs-top-start,html.is-fullscreen .fs-top-start{gap:4px!important}
+}
