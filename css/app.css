@@ -4202,3 +4202,19 @@ html body .chart-fs-btn .chart-fs-label{overflow:hidden;text-overflow:ellipsis;w
 }
 html.is-tv body #screenAuth{overflow-y:auto!important}
 .terms-date{display:none!important}
+/* Plein écran : les 4 pièces rangées dans la capsule Démo / Réel (2 de chaque côté). Rangée souple : chaque
+   élément garde sa vraie largeur (le « + » caché ne décale plus rien) ; le bouton QUITTER reste seul à droite. */
+html body .fs-mode-switch{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:center!important;
+  gap:4px!important;max-width:none!important;width:auto!important;padding:3px 6px!important}
+html body .fs-mode-switch .fs-coin{display:block!important;width:20px!important;height:20px!important;border-radius:50%;flex:0 0 20px!important}
+html body .fs-mode-switch .fs-mode-btn:not(.hidden){flex:0 0 auto!important;width:auto!important;min-width:0!important;white-space:nowrap!important;overflow:visible!important}
+html body .fs-mode-switch .fs-mid-plus{flex:0 0 auto!important}
+html.fs-guest body .fs-mode-switch .fs-mode-btn.mode-btn[data-mode="demo"]{padding:6px 20px!important}
+@media (max-width:859px){
+  html.fs-trade body .fs-top-mid-home,html.is-fullscreen body .fs-top-mid-home{max-width:min(360px,76%)!important}
+}
+html body .fs-trade-close{height:30px!important;padding:0 9px 0 7px!important}
+html body .fs-trade-close .fs-exit-ico{width:14px!important;height:14px!important}
+html body .fs-trade-close .fs-exit-txt{font-size:10px!important}
+@media (max-width:380px){html body .fs-mode-switch .fs-coin{width:17px!important;height:17px!important;flex-basis:17px!important}
+  html body .fs-mode-switch{gap:3px!important;padding:3px 4px!important}}
