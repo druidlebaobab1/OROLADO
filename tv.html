@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>OROLADO — mesure d'écran</title>
+<style>body{margin:0;background:#0D1322;color:#F8E7B0;font:600 22px/1.5 system-ui,sans-serif;padding:24px}b{color:#F5C518}h1{font-size:26px;margin:0 0 12px}</style>
+</head><body>
+<h1>OROLADO — mesure de l'écran</h1>
+<div id="m"></div>
+<script>
+/* Page de mesure (aucune donnée personnelle) : prendre une photo de l'écran et l'envoyer. */
+(function () {
+  var q = function (s) { try { return matchMedia(s).matches ? 'oui' : 'non'; } catch (e) { return '?'; } };
+  var rows = [
+    ['Largeur x hauteur (site)', innerWidth + ' x ' + innerHeight],
+    ['Écran', screen.width + ' x ' + screen.height],
+    ['Zoom (DPR)', String(window.devicePixelRatio || 1)],
+    ['Pointeur fin (souris)', q('(pointer:fine)')],
+    ['Pointeur doigt', q('(pointer:coarse)')],
+    ['Survol possible', q('(hover:hover)')],
+    ['Navigateur', navigator.userAgent]
+  ];
+  document.getElementById('m').innerHTML = rows.map(function (r) { return '<div>' + r[0] + ' : <b></b></div>'; }).join('');
+  var bs = document.querySelectorAll('#m b');
+  rows.forEach(function (r, i) { bs[i].textContent = r[1]; });
+})();
+</script>
+</body></html>

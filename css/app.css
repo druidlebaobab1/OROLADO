@@ -4152,3 +4152,15 @@ html body .fs-trade-close .fs-exit-ico{width:16px!important;height:16px!importan
 html body .fs-trade-close .fs-exit-txt{font-size:11px;font-weight:800;line-height:1;letter-spacing:.06em;text-transform:uppercase}
 html body .fs-trade-close:hover,html body .fs-trade-close:focus-visible{background:linear-gradient(180deg,rgba(255,77,77,.34),rgba(170,20,20,.32))!important;border-color:#FF6B6B!important}
 @media (max-width:380px){html body .fs-trade-close{height:30px!important;padding:0 8px 0 6px!important}html body .fs-trade-close .fs-exit-txt{font-size:10px}}
+/* Plein écran couché (télé, tablette, téléphone à l'horizontale) : la colonne des actifs montre une
+   barre de défilement dorée bien visible (le pointeur d'une télécommande peut la saisir). */
+@media (orientation:landscape){
+  html body .fs-trade-overlay.on .asset-bar{scrollbar-width:thin;scrollbar-color:rgba(245,197,24,.75) rgba(255,255,255,.06);overscroll-behavior:contain}
+  html body .fs-trade-overlay.on .asset-bar::-webkit-scrollbar{width:7px;height:7px}
+  html body .fs-trade-overlay.on .asset-bar::-webkit-scrollbar-thumb{background:rgba(245,197,24,.75);border-radius:6px}
+  html body .fs-trade-overlay.on .asset-bar::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:6px}
+}
+/* Télé (télécommande) : le bouton sélectionné est entouré d'un contour doré bien visible. */
+html.is-tv button:focus-visible,html.is-tv .asset-chip:focus-visible,html.is-tv .dur-chip:focus-visible,
+html.is-tv .odds-chip:focus-visible,html.is-tv a:focus-visible,html.is-tv input:focus-visible{
+  outline:3px solid #F5C518!important;outline-offset:2px!important;box-shadow:0 0 0 6px rgba(245,197,24,.25)!important}
