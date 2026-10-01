@@ -4727,3 +4727,13 @@ html:not(.is-tv) body #withdrawModal #wdLocalGrid{grid-template-columns:repeat(5
 html:not(.is-tv) body #withdrawModal #wdCryptoGrid,html:not(.is-tv) body #withdrawModal #wdBankGrid{grid-template-columns:repeat(6,minmax(0,1fr))!important}
 html:not(.is-tv) body #depositModal .modal-box{width:min(560px,94vw)!important;max-width:560px!important;padding-top:12px!important;padding-bottom:10px!important}
 }
+
+/* ===== v2235 — Connexion (visiteur) et langue de la page Connexion / Inscription en bleu ciel ;
+   espacements égaux autour de la mise (5 px partout) ===== */
+html body #screenTrade #btnGoLogin:not(.on){background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.03))!important;border:1px solid rgba(56,189,248,.5)!important;color:#E0F2FE!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #screenTrade #btnGoLogin:not(.on):active{border-color:#7DD3FC!important;box-shadow:0 0 14px rgba(56,189,248,.55)!important}
+html body #screenAuth #langBarAuth .lang-dd-btn{background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.55)!important;box-shadow:0 0 9px rgba(56,189,248,.3),inset 0 0 6px rgba(56,189,248,.15)!important}
+html body #screenTrade .stake-field{gap:5px!important}
+html body #screenTrade .stake-line{gap:5px!important}
+html body #fsTradeOverlay .stake-field{gap:5px!important}
+html body #fsTradeOverlay .stake-line{gap:5px!important}
