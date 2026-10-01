@@ -4297,73 +4297,58 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
   html body #screenAuth{padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important}
   html body #screenAuth .lang-bar-auth{top:calc(10px + env(safe-area-inset-top,0px))!important}
 }
-/* ===== COULEURS PLEINES sur le thème noir (demande du propriétaire, 1er octobre 2026) =====
-   Le site reste noir ; les boutons et cadres prennent des couleurs PLEINES (orange, blanc, rouge, vert, une couleur
-   par simulation). Fonds / bordures / couleurs seulement : aucune taille ni position ne change. Graphique non touché. */
-html body #screenTrade .help-badge,html body #screenTrade #btnProfile{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important;box-shadow:0 2px 8px rgba(247,147,26,.35)!important}
-html body #screenTrade .lang-dd-btn{background:#FFFFFF!important;border:1px solid #FFFFFF!important;color:#1E2329!important}
-html body #screenTrade .btn-auth-link:not(.on){background:#FFFFFF!important;border:1px solid #FFFFFF!important;color:#1E2329!important}
-html body #screenTrade .btn-auth-link.on{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,.4)!important}
-html body #screenTrade .balance-card{background:linear-gradient(90deg,#F7931A 0%,#FFB15C 100%)!important;border:1px solid #FFC48A!important;box-shadow:0 3px 14px rgba(247,147,26,.35)!important}
-html body #screenTrade .balance-card .bal{color:#1A1205!important}
-html body #screenTrade .asset-chip{border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 2px 8px rgba(0,0,0,.35)!important}
-html body #screenTrade .asset-chip .n,html body #screenTrade .asset-chip .payout-live,html body #screenTrade .asset-chip *:not(svg):not(use):not(img){color:#FFFFFF!important}
-html body #screenTrade .asset-chip[data-asset="v100"]{background:#059669!important}
-html body #screenTrade .asset-chip[data-asset="stable"]{background:#DC2626!important}
-html body #screenTrade .asset-chip[data-asset="apex500"]{background:#7C3AED!important}
-html body #screenTrade .asset-chip[data-asset="horizon50"]{background:#EA580C!important}
-html body #screenTrade .asset-chip[data-asset="crash300"]{background:#BE185D!important}
-html body #screenTrade .asset-chip[data-asset="goldtrend"]{background:#B45309!important}
-html body #screenTrade .asset-chip[data-asset="boomspike"]{background:#0D9488!important}
-html body #screenTrade .asset-chip[data-asset="nexusprime"]{background:#2563EB!important}
-html body #screenTrade .asset-chip[data-asset="v75"]{background:#A21CAF!important}
-html body #screenTrade .asset-chip[data-asset="titanpulse"]{background:#991B1B!important}
-html body #screenTrade .asset-chip.on{border:2px solid #FFFFFF!important;box-shadow:0 0 14px rgba(255,255,255,.35)!important;filter:brightness(1.12)}
-html body #screenTrade .chart-toolbar .ind-btn{background:#FFFFFF!important;border:1px solid #FFFFFF!important;color:#1E2329!important}
-html body #screenTrade .chart-toolbar .ind-btn.on,html body #screenTrade .chart-toolbar .ind-btn.active,html body #screenTrade .chart-toolbar .chart-reset-btn{background:#F7931A!important;border-color:#FFB15C!important;color:#1A1205!important}
-html body #screenTrade .chart-fs-btn{background:#EF4444!important;border:1px solid #F87171!important;color:#FFFFFF!important;box-shadow:0 2px 8px rgba(239,68,68,.35)!important}
-html body #screenTrade .chart-fs-btn *{color:#FFFFFF!important}
-html body #screenTrade .dur-chip:not(.on):not(.active){background:#FFE0BF!important;border:1px solid #FFC48A!important;color:#1A1205!important}
-html body #screenTrade .dur-chip.on,html body #screenTrade .dur-chip.active{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important}
-html body #screenTrade #inputStake{background:#FFF4E8!important;border:1px solid #FFC48A!important;color:#1A1205!important}
-html body #screenTrade .stake-min{color:#FFC48A!important}
-html body #screenTrade .qbtn.stake-act:not(.qbtn-back){background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important}
-html body #screenTrade .qbtn.qbtn-back{background:#EF4444!important;border:1px solid #F87171!important;color:#FFFFFF!important}
-html body #screenTrade .win-preview{background:#10B981!important;border:1px solid #34D399!important;border-radius:10px!important;box-shadow:0 2px 10px rgba(16,185,129,.35)!important}
-html body #screenTrade .win-preview *{color:#FFFFFF!important}
-html body #screenTrade .odds-label.payout-badge{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important}
-html body #screenTrade .help-badge:active,html body #screenTrade #btnProfile:active,html body #screenTrade .btn-auth-link:active,html body #screenTrade .asset-chip:active,html body #screenTrade .ind-btn:active,html body #screenTrade .chart-fs-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .qbtn:active{filter:brightness(1.2)!important}
-/* Mêmes couleurs dans le plein écran */
-html body #fsTradeOverlay .help-badge,html body #fsTradeOverlay #btnProfile{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important;box-shadow:0 2px 8px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay .lang-dd-btn{background:#FFFFFF!important;border:1px solid #FFFFFF!important;color:#1E2329!important}
-html body #fsTradeOverlay .btn-auth-link:not(.on){background:#FFFFFF!important;border:1px solid #FFFFFF!important;color:#1E2329!important}
-html body #fsTradeOverlay .btn-auth-link.on{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,.4)!important}
-html body #fsTradeOverlay .balance-card{background:linear-gradient(90deg,#F7931A 0%,#FFB15C 100%)!important;border:1px solid #FFC48A!important;box-shadow:0 3px 14px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay .balance-card .bal{color:#1A1205!important}
-html body #fsTradeOverlay .asset-chip{border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 2px 8px rgba(0,0,0,.35)!important}
-html body #fsTradeOverlay .asset-chip .n,html body #fsTradeOverlay .asset-chip .payout-live,html body #fsTradeOverlay .asset-chip *:not(svg):not(use):not(img){color:#FFFFFF!important}
-html body #fsTradeOverlay .asset-chip[data-asset="v100"]{background:#059669!important}
-html body #fsTradeOverlay .asset-chip[data-asset="stable"]{background:#DC2626!important}
-html body #fsTradeOverlay .asset-chip[data-asset="apex500"]{background:#7C3AED!important}
-html body #fsTradeOverlay .asset-chip[data-asset="horizon50"]{background:#EA580C!important}
-html body #fsTradeOverlay .asset-chip[data-asset="crash300"]{background:#BE185D!important}
-html body #fsTradeOverlay .asset-chip[data-asset="goldtrend"]{background:#B45309!important}
-html body #fsTradeOverlay .asset-chip[data-asset="boomspike"]{background:#0D9488!important}
-html body #fsTradeOverlay .asset-chip[data-asset="nexusprime"]{background:#2563EB!important}
-html body #fsTradeOverlay .asset-chip[data-asset="v75"]{background:#A21CAF!important}
-html body #fsTradeOverlay .asset-chip[data-asset="titanpulse"]{background:#991B1B!important}
-html body #fsTradeOverlay .asset-chip.on{border:2px solid #FFFFFF!important;box-shadow:0 0 14px rgba(255,255,255,.35)!important;filter:brightness(1.12)}
-html body #fsTradeOverlay .chart-toolbar .ind-btn{background:#FFFFFF!important;border:1px solid #FFFFFF!important;color:#1E2329!important}
-html body #fsTradeOverlay .chart-toolbar .ind-btn.on,html body #fsTradeOverlay .chart-toolbar .ind-btn.active,html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{background:#F7931A!important;border-color:#FFB15C!important;color:#1A1205!important}
-html body #fsTradeOverlay .chart-fs-btn{background:#EF4444!important;border:1px solid #F87171!important;color:#FFFFFF!important;box-shadow:0 2px 8px rgba(239,68,68,.35)!important}
-html body #fsTradeOverlay .chart-fs-btn *{color:#FFFFFF!important}
-html body #fsTradeOverlay .dur-chip:not(.on):not(.active){background:#FFE0BF!important;border:1px solid #FFC48A!important;color:#1A1205!important}
-html body #fsTradeOverlay .dur-chip.on,html body #fsTradeOverlay .dur-chip.active{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important}
-html body #fsTradeOverlay #inputStake{background:#FFF4E8!important;border:1px solid #FFC48A!important;color:#1A1205!important}
-html body #fsTradeOverlay .stake-min{color:#FFC48A!important}
-html body #fsTradeOverlay .qbtn.stake-act:not(.qbtn-back){background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important}
-html body #fsTradeOverlay .qbtn.qbtn-back{background:#EF4444!important;border:1px solid #F87171!important;color:#FFFFFF!important}
-html body #fsTradeOverlay .win-preview{background:#10B981!important;border:1px solid #34D399!important;border-radius:10px!important;box-shadow:0 2px 10px rgba(16,185,129,.35)!important}
-html body #fsTradeOverlay .win-preview *{color:#FFFFFF!important}
-html body #fsTradeOverlay .odds-label.payout-badge{background:#F7931A!important;border:1px solid #FFB15C!important;color:#1A1205!important}
-html body #fsTradeOverlay .help-badge:active,html body #fsTradeOverlay #btnProfile:active,html body #fsTradeOverlay .btn-auth-link:active,html body #fsTradeOverlay .asset-chip:active,html body #fsTradeOverlay .ind-btn:active,html body #fsTradeOverlay .chart-fs-btn:active,html body #fsTradeOverlay .dur-chip:active,html body #fsTradeOverlay .qbtn:active{filter:brightness(1.2)!important}
+/* ===== COULEURS PROFESSIONNELLES sur le thème noir (demande du propriétaire, 1er octobre 2026) =====
+   Pas de blanc, pas d'arc-en-ciel : boutons sombres avec accent ; UNE couleur principale (orange) pour l'essentiel ;
+   simulations : légère teinte + fin contour de leur couleur ; rouge / vert discrets. Couleurs seulement. */
+html body #screenTrade .help-badge,html body #screenTrade #btnProfile{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,.75)!important;color:#FFB15C!important;box-shadow:none!important}
+html body #screenTrade .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,.55)!important;color:#F8FAFC!important}
+html body #screenTrade .btn-auth-link.on{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,.3)!important}
+html body #screenTrade .balance-card{background:linear-gradient(90deg,rgba(247,147,26,.16) 0%,rgba(18,23,34,.95) 60%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 2px 12px rgba(247,147,26,.12)!important}
+html body #screenTrade .asset-chip{border-width:1px!important;border-style:solid!important}
+html body #screenTrade .asset-chip[data-asset="v100"]{background:rgba(5,150,105,.14)!important;border-color:rgba(16,185,129,.45)!important}
+html body #screenTrade .asset-chip[data-asset="stable"]{background:rgba(220,38,38,.14)!important;border-color:rgba(239,68,68,.45)!important}
+html body #screenTrade .asset-chip[data-asset="apex500"]{background:rgba(124,58,237,.14)!important;border-color:rgba(139,92,246,.45)!important}
+html body #screenTrade .asset-chip[data-asset="horizon50"]{background:rgba(234,88,12,.14)!important;border-color:rgba(249,115,22,.45)!important}
+html body #screenTrade .asset-chip[data-asset="crash300"]{background:rgba(190,24,93,.14)!important;border-color:rgba(236,72,153,.45)!important}
+html body #screenTrade .asset-chip[data-asset="goldtrend"]{background:rgba(180,83,9,.14)!important;border-color:rgba(245,158,11,.45)!important}
+html body #screenTrade .asset-chip[data-asset="boomspike"]{background:rgba(13,148,136,.14)!important;border-color:rgba(45,212,191,.45)!important}
+html body #screenTrade .asset-chip[data-asset="nexusprime"]{background:rgba(37,99,235,.14)!important;border-color:rgba(96,165,250,.45)!important}
+html body #screenTrade .asset-chip[data-asset="v75"]{background:rgba(162,28,175,.14)!important;border-color:rgba(217,70,239,.45)!important}
+html body #screenTrade .asset-chip[data-asset="titanpulse"]{background:rgba(153,27,27,.16)!important;border-color:rgba(248,113,113,.45)!important}
+html body #screenTrade .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#E2E8F0!important}
+html body #screenTrade .chart-toolbar .ind-btn.on,html body #screenTrade .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
+html body #screenTrade .chart-toolbar .chart-reset-btn{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,.75)!important;color:#FFB15C!important}
+html body #screenTrade .chart-fs-btn{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.7)!important;color:#FCA5A5!important}
+html body #screenTrade .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,.35)!important;color:#E2E8F0!important}
+html body #screenTrade .dur-chip.on,html body #screenTrade .dur-chip.active{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important}
+html body #screenTrade #inputStake{background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,.5)!important}
+html body #screenTrade .qbtn.stake-act:not(.qbtn-back){background:rgba(247,147,26,.16)!important;border:1px solid rgba(247,147,26,.65)!important;color:#FFB15C!important}
+html body #screenTrade .qbtn.qbtn-back{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.65)!important;color:#FCA5A5!important}
+html body #screenTrade .win-preview{background:rgba(16,185,129,.12)!important;border:1px solid rgba(16,185,129,.5)!important;border-radius:10px!important}
+html body #screenTrade .help-badge:active,html body #screenTrade #btnProfile:active,html body #screenTrade .btn-auth-link:active,html body #screenTrade .asset-chip:active,html body #screenTrade .ind-btn:active,html body #screenTrade .chart-fs-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .qbtn:active{filter:brightness(1.25)!important}
+html body #fsTradeOverlay .help-badge,html body #fsTradeOverlay #btnProfile{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,.75)!important;color:#FFB15C!important;box-shadow:none!important}
+html body #fsTradeOverlay .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,.55)!important;color:#F8FAFC!important}
+html body #fsTradeOverlay .btn-auth-link.on{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,.3)!important}
+html body #fsTradeOverlay .balance-card{background:linear-gradient(90deg,rgba(247,147,26,.16) 0%,rgba(18,23,34,.95) 60%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 2px 12px rgba(247,147,26,.12)!important}
+html body #fsTradeOverlay .asset-chip{border-width:1px!important;border-style:solid!important}
+html body #fsTradeOverlay .asset-chip[data-asset="v100"]{background:rgba(5,150,105,.14)!important;border-color:rgba(16,185,129,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="stable"]{background:rgba(220,38,38,.14)!important;border-color:rgba(239,68,68,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="apex500"]{background:rgba(124,58,237,.14)!important;border-color:rgba(139,92,246,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="horizon50"]{background:rgba(234,88,12,.14)!important;border-color:rgba(249,115,22,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="crash300"]{background:rgba(190,24,93,.14)!important;border-color:rgba(236,72,153,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="goldtrend"]{background:rgba(180,83,9,.14)!important;border-color:rgba(245,158,11,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="boomspike"]{background:rgba(13,148,136,.14)!important;border-color:rgba(45,212,191,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="nexusprime"]{background:rgba(37,99,235,.14)!important;border-color:rgba(96,165,250,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="v75"]{background:rgba(162,28,175,.14)!important;border-color:rgba(217,70,239,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="titanpulse"]{background:rgba(153,27,27,.16)!important;border-color:rgba(248,113,113,.45)!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#E2E8F0!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn.on,html body #fsTradeOverlay .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
+html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,.75)!important;color:#FFB15C!important}
+html body #fsTradeOverlay .chart-fs-btn{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.7)!important;color:#FCA5A5!important}
+html body #fsTradeOverlay .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,.35)!important;color:#E2E8F0!important}
+html body #fsTradeOverlay .dur-chip.on,html body #fsTradeOverlay .dur-chip.active{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important}
+html body #fsTradeOverlay #inputStake{background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,.5)!important}
+html body #fsTradeOverlay .qbtn.stake-act:not(.qbtn-back){background:rgba(247,147,26,.16)!important;border:1px solid rgba(247,147,26,.65)!important;color:#FFB15C!important}
+html body #fsTradeOverlay .qbtn.qbtn-back{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.65)!important;color:#FCA5A5!important}
+html body #fsTradeOverlay .win-preview{background:rgba(16,185,129,.12)!important;border:1px solid rgba(16,185,129,.5)!important;border-radius:10px!important}
+html body #fsTradeOverlay .help-badge:active,html body #fsTradeOverlay #btnProfile:active,html body #fsTradeOverlay .btn-auth-link:active,html body #fsTradeOverlay .asset-chip:active,html body #fsTradeOverlay .ind-btn:active,html body #fsTradeOverlay .chart-fs-btn:active,html body #fsTradeOverlay .dur-chip:active,html body #fsTradeOverlay .qbtn:active{filter:brightness(1.25)!important}
