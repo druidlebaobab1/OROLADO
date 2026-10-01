@@ -2281,14 +2281,13 @@
   function livePriceBadgeBox(map, price, layout) {
     if (!map || !isFinite(map.lastY)) return null;
     ctx.save();
-    ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 8;
+    ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 10;
     ctx.restore();
-    var th = 12;
+    var th = 15;
     var y = Math.max(2, Math.min(cssH - th - 2, map.lastY - th / 2));
-    var x = map.lastX + 9;
-    var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
-    if (x + tw > axisX - 2) x = axisX - tw - 2;
+    // Dans la colonne des prix, calé à droite comme les chiffres (par-dessus eux).
+    var x = Math.max((layout && layout.axisX != null ? layout.axisX : cssW - 50) - 6, cssW - PRICE_AXIS_GAP - tw + 6);
     return { x0: x, x1: x + tw, y0: y, y1: y + th };
   }
 
@@ -2529,8 +2528,15 @@
         g.lineWidth = 1.2;
         roundRectOn(g, leftX, ty, timerW, timerH, 7);
         g.fill();
-        g.stroke();
+        // Fond teinté de la couleur du trade (vert ACHAT / rouge VENTE), texte blanc.
+        g.save();
+        g.globalAlpha = 0.32;
         g.fillStyle = lineCol;
+        roundRectOn(g, leftX, ty, timerW, timerH, 7);
+        g.fill();
+        g.restore();
+        g.stroke();
+        g.fillStyle = '#FFFFFF';
         g.font = '800 9.5px "Hanken Grotesk", sans-serif';
         g.textAlign = 'center';
         g.textBaseline = 'middle';
@@ -2850,17 +2856,30 @@
     var txt = formatAxisPrice(price);
     ctx.save();
     var accent = assetColor || '#F5A623';
-    ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(txt).width) + 8;
-    var th = 12;
-    var y = map.lastY - th / 2;
-    y = Math.max(2, Math.min(cssH - th - 2, y));
-    var x = map.lastX + 9;
-    var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
-    if (x + tw > axisX - 2) x = axisX - tw - 2;
-    ctx.fillStyle = 'rgba(11,14,20,0.28)';
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-    ctx.lineWidth = 0.6;
+    // Comme IQ Option : un long trait fin part du bout de la courbe jusqu'à la colonne des prix,
+    // et le prix est posé DANS cette colonne, par-dessus les chiffres : il glisse le long de la
+    // colonne quand le cours monte ou descend, sans jamais se bloquer contre une étiquette.
+    var box = livePriceBadgeBox(map, price, layout);
+    if (!box) { ctx.restore(); return; }
+    var x = box.x0;
+    var y = box.y0;
+    var tw = box.x1 - box.x0;
+    var th = box.y1 - box.y0;
+    var ly = Math.round(map.lastY) + 0.5;
+    if (x > map.lastX + 6) {
+      ctx.strokeStyle = accent;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(map.lastX + 5, ly);
+      ctx.lineTo(x, ly);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
+    ctx.fillStyle = 'rgba(11,14,20,0.96)';
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1;
     roundRect(x, y, tw, th, 7);
     ctx.fill();
     ctx.stroke();

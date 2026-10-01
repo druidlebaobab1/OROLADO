@@ -4352,3 +4352,16 @@ html body #fsTradeOverlay .qbtn.stake-act:not(.qbtn-back){background:rgba(247,14
 html body #fsTradeOverlay .qbtn.qbtn-back{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.65)!important;color:#FCA5A5!important}
 html body #fsTradeOverlay .win-preview{background:rgba(16,185,129,.12)!important;border:1px solid rgba(16,185,129,.5)!important;border-radius:10px!important}
 html body #fsTradeOverlay .help-badge:active,html body #fsTradeOverlay #btnProfile:active,html body #fsTradeOverlay .btn-auth-link:active,html body #fsTradeOverlay .asset-chip:active,html body #fsTradeOverlay .ind-btn:active,html body #fsTradeOverlay .chart-fs-btn:active,html body #fsTradeOverlay .dur-chip:active,html body #fsTradeOverlay .qbtn:active{filter:brightness(1.25)!important}
+/* Finitions : étiquette PAYOUT encadrée, gain prévu vert soigné, durées vivantes (demande du propriétaire). */
+html body #screenTrade .odds-label.payout-badge{background:linear-gradient(90deg,rgba(247,147,26,.28),rgba(247,147,26,.08))!important;border:1px solid rgba(247,147,26,.65)!important;color:#FFB15C!important;letter-spacing:.08em!important;box-shadow:0 0 10px rgba(247,147,26,.15)!important}
+html body #screenTrade .win-preview{background:linear-gradient(135deg,rgba(16,185,129,.24) 0%,rgba(16,185,129,.06) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;border-radius:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 14px rgba(16,185,129,.16)!important}
+html body #screenTrade .win-preview .amount{color:#34D399!important;text-shadow:0 0 10px rgba(52,211,153,.35)!important}
+html body #screenTrade .win-preview .mult,html body #screenTrade .win-preview .label{color:#A7F3D0!important}
+html body #screenTrade .dur-chip:not(.on):not(.active){background:linear-gradient(180deg,rgba(247,147,26,.14),rgba(255,255,255,.03))!important;border:1px solid rgba(247,147,26,.42)!important;color:#FCD9B6!important}
+html body #screenTrade .dur-chip.on,html body #screenTrade .dur-chip.active{box-shadow:0 0 12px rgba(247,147,26,.4)!important}
+html body #fsTradeOverlay .odds-label.payout-badge{background:linear-gradient(90deg,rgba(247,147,26,.28),rgba(247,147,26,.08))!important;border:1px solid rgba(247,147,26,.65)!important;color:#FFB15C!important;letter-spacing:.08em!important;box-shadow:0 0 10px rgba(247,147,26,.15)!important}
+html body #fsTradeOverlay .win-preview{background:linear-gradient(135deg,rgba(16,185,129,.24) 0%,rgba(16,185,129,.06) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;border-radius:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 0 14px rgba(16,185,129,.16)!important}
+html body #fsTradeOverlay .win-preview .amount{color:#34D399!important;text-shadow:0 0 10px rgba(52,211,153,.35)!important}
+html body #fsTradeOverlay .win-preview .mult,html body #fsTradeOverlay .win-preview .label{color:#A7F3D0!important}
+html body #fsTradeOverlay .dur-chip:not(.on):not(.active){background:linear-gradient(180deg,rgba(247,147,26,.14),rgba(255,255,255,.03))!important;border:1px solid rgba(247,147,26,.42)!important;color:#FCD9B6!important}
+html body #fsTradeOverlay .dur-chip.on,html body #fsTradeOverlay .dur-chip.active{box-shadow:0 0 12px rgba(247,147,26,.4)!important}
