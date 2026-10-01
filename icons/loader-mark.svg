@@ -2,9 +2,9 @@
   <!-- OROLADO — Pyramide Royale : pyramide égyptienne en or, pierre de faîte lumineuse avec un œil discret. -->
   <defs>
     <radialGradient id="bgA" cx="50%" cy="38%" r="75%">
-      <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset=".6" stop-color="#FFF8EE"/>
-      <stop offset="1" stop-color="#FDE7CF"/>
+      <stop offset="0" stop-color="#1A2338"/>
+      <stop offset=".6" stop-color="#0E1424"/>
+      <stop offset="1" stop-color="#070B15"/>
     </radialGradient>
     <linearGradient id="ringA" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#FFE9A8"/>
@@ -62,8 +62,8 @@
   <!-- pièce crypto crantée -->
   <circle cx="256" cy="262" r="200" fill="none" stroke="url(#ringA)" stroke-width="10" stroke-dasharray="6 9" opacity=".7"/>
   <circle cx="256" cy="262" r="186" fill="none" stroke="#E6B23A" stroke-opacity=".3" stroke-width="2.5"/>
-  <rect x="100" y="408" width="312" height="60" rx="30" fill="#FFF1E3" stroke="#F7931A" stroke-opacity=".95" stroke-width="3"/>
-  <text x="259" y="451" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" letter-spacing="7" fill="#C2410C" text-anchor="middle" text-rendering="geometricPrecision">OROLADO</text>
+  <rect x="100" y="408" width="312" height="60" rx="30" fill="#0B1120" stroke="#F2C14E" stroke-opacity=".85" stroke-width="3"/>
+  <text x="259" y="451" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" letter-spacing="7" fill="#F7C948" text-anchor="middle" text-rendering="geometricPrecision">OROLADO</text>
   <!-- sol -->
   <path d="M104 398 H408" stroke="url(#ringA)" stroke-width="6" stroke-linecap="round" opacity=".9"/>
 </svg>
