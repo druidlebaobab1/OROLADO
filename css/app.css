@@ -4737,3 +4737,9 @@ html body #screenTrade .stake-field{gap:5px!important}
 html body #screenTrade .stake-line{gap:5px!important}
 html body #fsTradeOverlay .stake-field{gap:5px!important}
 html body #fsTradeOverlay .stake-line{gap:5px!important}
+
+/* ===== v2236 — Mise : espacement exact (5 px partout, le carré du gain finit pile sur la ligne des boutons) ;
+   bouton langue retiré de la page Connexion / Inscription (la langue se choisit sur le site) ===== */
+html body #screenTrade .stake-min,html body #fsTradeOverlay .stake-min{margin:0!important;padding:0!important}
+html body #screenAuth #langBarAuth{display:none!important}
+@media (min-width:860px){html:not(.is-tv) body #screenTrade .stake-field{flex:1 1 0!important;max-width:none!important;width:auto!important}html:not(.is-tv) body #screenTrade .win-preview{margin-left:0!important}}
