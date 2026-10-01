@@ -2282,10 +2282,10 @@
   function livePriceBadgeBox(map, price, layout) {
     if (!map || !isFinite(map.lastY)) return null;
     ctx.save();
-    ctx.font = '800 9px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 7;
+    ctx.font = '800 8.5px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 6;
     ctx.restore();
-    var th = 13;
+    var th = 12;
     var y = Math.max(2, Math.min(cssH - th - 2, map.lastY - th / 2));
     // Dans la colonne des prix, calé à droite comme les chiffres (par-dessus eux).
     var x = Math.max((layout && layout.axisX != null ? layout.axisX : cssW - 50) - 6, cssW - PRICE_AXIS_GAP - tw + 6);
@@ -2359,11 +2359,8 @@
       g.globalAlpha = it.fade;
       // Fond plein doré, texte sombre : lisible d'un coup d'œil.
       g.fillStyle = gold;
-      g.strokeStyle = 'rgba(255,255,255,0.7)';
-      g.lineWidth = 1;
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
-      g.stroke();
       g.fillStyle = '#1A1205';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
@@ -2745,10 +2742,17 @@
     var bh = lines.length * lh + 5;
     var cx = isFinite(centerX) ? centerX : pad.l + (layout.axisX - pad.l) / 2;
     var bx = Math.max(pad.l + 2, Math.min(layout.axisX - bw - 2, cx - bw / 2));
-    ctx.fillStyle = 'rgba(10,14,24,0.6)';
+    ctx.fillStyle = 'rgba(10,14,24,0.82)';
     roundRectOn(ctx, bx, topY, bw, bh, 6);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(245,197,24,0.25)';
+    // Légère couleur à l'intérieur (orange doux), comme le reste du site.
+    var ipg = ctx.createLinearGradient(0, topY, 0, topY + bh);
+    ipg.addColorStop(0, 'rgba(247,147,26,0.22)');
+    ipg.addColorStop(1, 'rgba(247,147,26,0.06)');
+    ctx.fillStyle = ipg;
+    roundRectOn(ctx, bx, topY, bw, bh, 6);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(247,147,26,0.6)';
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.textAlign = 'left';
@@ -2865,6 +2869,24 @@
     ctx.restore();
   }
 
+  function readableOnWhite(col) {
+    var r, gg, b, m;
+    var s = String(col || '').trim();
+    if (/^#[0-9a-f]{6}$/i.test(s)) {
+      r = parseInt(s.substr(1, 2), 16); gg = parseInt(s.substr(3, 2), 16); b = parseInt(s.substr(5, 2), 16);
+    } else if (/^#[0-9a-f]{3}$/i.test(s)) {
+      r = parseInt(s.charAt(1) + s.charAt(1), 16); gg = parseInt(s.charAt(2) + s.charAt(2), 16); b = parseInt(s.charAt(3) + s.charAt(3), 16);
+    } else if ((m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i))) {
+      r = +m[1]; gg = +m[2]; b = +m[3];
+    } else {
+      return '#0B0E14';
+    }
+    var lum = (0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255;
+    if (lum <= 0.45) return 'rgb(' + r + ',' + gg + ',' + b + ')';
+    var f = Math.max(0.3, 0.45 / lum);
+    return 'rgb(' + Math.round(r * f) + ',' + Math.round(gg * f) + ',' + Math.round(b * f) + ')';
+  }
+
   function drawLivePriceBadge(map, price, layout, assetColor) {
     if (!map || !isFinite(map.lastY)) return;
     var txt = formatAxisPrice(price);
@@ -2890,21 +2912,13 @@
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    // Fond blanc léger (voile blanc sur fond sombre) ; les chiffres gardent leur couleur.
-    ctx.font = '800 9px ui-monospace, Menlo, Consolas, monospace';
-    ctx.fillStyle = 'rgba(11,14,20,0.96)';
+    // Comme IQ Option : petite pastille BLANCHE pure ; les chiffres gardent la couleur de la
+    // courbe (assombrie seulement si elle est trop claire pour se lire sur le blanc).
+    ctx.font = '800 8.5px ui-monospace, Menlo, Consolas, monospace';
+    ctx.fillStyle = '#FFFFFF';
     roundRect(x, y, tw, th, 6);
     ctx.fill();
-    var glass = ctx.createLinearGradient(0, y, 0, y + th);
-    glass.addColorStop(0, 'rgba(255,255,255,0.34)');
-    glass.addColorStop(1, 'rgba(255,255,255,0.12)');
-    ctx.fillStyle = glass;
-    roundRect(x, y, tw, th, 6);
-    ctx.fill();
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = accent;
+    ctx.fillStyle = readableOnWhite(accent);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(txt, x + tw / 2, y + th / 2 + 0.4);
