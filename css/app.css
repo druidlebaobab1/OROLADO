@@ -4767,3 +4767,10 @@ html body .hc-pnl{font-weight:800;font-size:14px;color:#E2E8F0;white-space:nowra
 html body .hc-pnl.w{color:#22E07A}html body .hc-pnl.l{color:#FF5577}
 html body .hc-st{font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;white-space:nowrap}
 html body .hc .rc-dlbtn{width:30px;height:30px}
+
+/* ===== v2239 — Titres importants avec lueur bleu ciel ; « Voir plus » soigné ; logo de la page Connexion plus grand et net ===== */
+html body #histSheetTitle,html body #financeModal .modal-title,html body #withdrawModal .modal-title,html body #depositModal .modal-title,html body #depositModal #payMethodUsdt .pay-method-title,html body #drawerProfile #profTitle{display:inline-block!important;padding:5px 14px!important;border-radius:10px!important;border:1px solid rgba(56,189,248,.55)!important;background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.03))!important;box-shadow:0 0 10px rgba(56,189,248,.3),inset 0 0 6px rgba(56,189,248,.12)!important;color:#FFB15C!important;line-height:1.25!important}
+html body .tx-more{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:42px!important;margin:10px 0 2px!important;border-radius:12px!important;border:1px solid rgba(56,189,248,.6)!important;background:linear-gradient(180deg,rgba(56,189,248,.2),rgba(37,99,235,.08))!important;color:#E0F2FE!important;font-weight:800!important;font-size:14px!important;box-shadow:0 0 10px rgba(56,189,248,.3)!important}
+html body .tx-more:active{box-shadow:0 0 16px rgba(56,189,248,.6)!important}
+html body #screenAuth .logo-mark{width:64px!important;height:64px!important;image-rendering:auto!important}
+@media (max-width:420px){html body #screenAuth .logo-mark{width:58px!important;height:58px!important}}
