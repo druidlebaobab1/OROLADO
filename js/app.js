@@ -1375,6 +1375,12 @@
     var demo = Number(D6.Store.demoBalance(u));
     var real = Number(D6.Store.realBalance ? D6.Store.realBalance(u) : 0);
     if (!isFinite(demo)) demo = 0;
+    // Démo vide (ex. juste après l'inscription) : rechargée toute seule à 1 000 000 $, sans attendre
+    // que le joueur appuie sur « + ». Jamais pendant un trade démo ouvert.
+    if (!isGuest(u) && demo < (D6.CONFIG.MIN_STAKE || 1) && !(D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount())) {
+      var demoTarget = D6.CONFIG.DEMO_START || 1000000;
+      try { D6.Store.setBalanceMode(u, 'demo', demoTarget); demo = demoTarget; } catch (eDemo) { /* ignore */ }
+    }
     if (!isFinite(real)) real = 0;
     try { localStorage.setItem('oro_last_mode', isReal ? 'real' : 'demo'); } catch (eMode) { /* ignore */ }
     if (isReal) lastOfficialReal = real;

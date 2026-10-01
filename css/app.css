@@ -4806,3 +4806,8 @@ html,body,button,.btn-trade,.qbtn,.dur-chip,.odds-chip,.asset-chip,.ind-btn,inpu
 /* ===== v2243 — Arabe (droite à gauche) : les titres restent à droite, la croix à gauche, sans se croiser ===== */
 html[dir=rtl] body #histSheetTitle,html[dir=rtl] body #financeModal .modal-title,html[dir=rtl] body #depositModal .modal-head-row .modal-title,html[dir=rtl] body #passModal .modal-title,html[dir=rtl] body #emailModal .modal-title{margin-right:0!important;margin-left:auto!important;max-width:calc(100% - 64px)!important}
 html[dir=rtl] body #historySheet .modal-head-row,html[dir=rtl] body #financeModal .modal-head-row{padding-left:52px!important}
+
+/* ===== v2244 — DÉMO / COMPTE RÉEL : chaque bouton remplit sa case (plus de vide à droite de COMPTE RÉEL) ===== */
+html body #screenTrade #modeSwitcher{grid-template-columns:minmax(0,37fr) minmax(0,63fr)!important}
+html body #screenTrade #modeSwitcher > .mode-btn{width:100%!important;min-width:0!important;justify-self:stretch!important;margin:0!important}
+html body #screenTrade #modeSwitcher > .mode-btn:not(.on),html body #fsTradeOverlay .fs-mode-btn:not(.on){transform:none!important}

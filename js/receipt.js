@@ -430,34 +430,49 @@
       try { current.canvas.toBlob(function (b) { res(b); }, 'image/png'); } catch (e) { res(null); }
     });
   }
+  var IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function fileOf(b) {
+    try { return new File([b], current.name, { type: 'image/png' }); } catch (e) { return null; }
+  }
+  function canShareFile(file) {
+    try { return !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
+  }
+  // L'image est préparée dès l'ouverture du reçu : le partage part tout de suite au toucher
+  // (sur iPhone, un partage lancé trop tard après le toucher est refusé).
+  function withBlob(fn) {
+    if (current.blob) return fn(current.blob);
+    return toBlob().then(function (b) { if (b) current.blob = b; return b ? fn(b) : null; });
+  }
+  function saveByLink(b) {
+    var url = URL.createObjectURL(b);
+    var a = document.createElement('a');
+    a.href = url; a.download = current.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  // Télécharger : sur iPhone, menu du téléphone avec « Enregistrer l'image » (pas de page
+  // « Afficher » qui sortait du site) ; ailleurs, l'image est enregistrée directement.
   function download() {
-    return toBlob().then(function (b) {
-      if (!b) return;
-      var url = URL.createObjectURL(b);
-      var a = document.createElement('a');
-      a.href = url; a.download = current.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-    });
-  }
-  function share(wa) {
-    var t = L();
-    return toBlob().then(function (b) {
-      if (!b) return;
-      var file = null;
-      try { file = new File([b], current.name, { type: 'image/png' }); } catch (e) { file = null; }
-      var data = { files: file ? [file] : [], text: t.shareText + ' · https://orolado.com' };
-      if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-        // Téléphone : le menu de partage s'ouvre avec l'image (WhatsApp, Facebook, Instagram, TikTok…).
-        return navigator.share(data).catch(function () { /* annulé */ });
+    return withBlob(function (b) {
+      var file = fileOf(b);
+      if (IOS && canShareFile(file)) {
+        return navigator.share({ files: [file] }).catch(function () { /* annulé */ });
       }
-      // Ordinateur (pas de partage d'image) : on enregistre l'image et on ouvre WhatsApp avec le lien.
-      return download().then(function () {
-        if (wa) window.open('https://wa.me/?text=' + encodeURIComponent(data.text), '_blank', 'noopener');
-        else if (navigator.share) navigator.share({ text: data.text, url: 'https://orolado.com' }).catch(function () { /* ignore */ });
-      });
+      saveByLink(b);
     });
   }
+  // Partager : l'image seule (avec un texte en plus, « Enregistrer l'image » ne marchait pas sur iPhone).
+  function share() {
+    return withBlob(function (b) {
+      var file = fileOf(b);
+      if (canShareFile(file)) {
+        return navigator.share({ files: [file] }).catch(function () { /* annulé */ });
+      }
+      saveByLink(b);
+      if (navigator.share) navigator.share({ url: 'https://orolado.com' }).catch(function () { /* ignore */ });
+    });
+  }
+
   // WhatsApp : ouvre directement l'application WhatsApp (choix d'un contact) avec le lien du site.
   // Une page web ne peut pas joindre l'image toute seule : pour envoyer l'image ou la mettre
   // en statut, c'est « Partager » → WhatsApp.
@@ -483,7 +498,8 @@
     return Promise.all([fontsReady(), logo()]).then(function (res) {
       return build(res[1]);
     }).then(function (cv) {
-      current.canvas = cv; current.name = name;
+      current.canvas = cv; current.name = name; current.blob = null;
+      try { cv.toBlob(function (bb) { if (current.canvas === cv) current.blob = bb; }, 'image/png'); } catch (eB) { /* ignore */ }
       var img = new Image();
       img.className = 'rc-img';
       img.alt = 'OROLADO';

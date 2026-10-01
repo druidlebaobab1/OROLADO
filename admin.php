@@ -2384,6 +2384,7 @@ async function openUser(uid) {
     '<p>Solde réel : <strong>'+esc(u.real)+' $</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
     (j.suspect ? '<div class="sus-box">À vérifier : '+esc(j.suspect)+'</div>' : '')+
     (j.totals ? '<div class="totals">'+
+      '<div style="background:linear-gradient(180deg,rgba(34,197,94,.28),rgba(22,163,74,.12));border:1px solid rgba(74,222,128,.75);box-shadow:0 0 12px rgba(34,197,94,.35)"><span style="color:#BBF7D0">Solde réel actuel</span><b style="color:#4ADE80;font-size:1.25em">'+money(u.real)+'</b></div>'+
       '<div><span>Argent déposé</span><b>'+money(j.totals.deposits)+'</b></div>'+
       '<div><span>Bonus reçus</span><b>'+money(j.totals.bonus)+'</b></div>'+
       '<div><span>Retraits payés</span><b>'+money(j.totals.wdPaid)+'</b></div>'+
