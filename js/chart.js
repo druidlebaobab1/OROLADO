@@ -2360,10 +2360,10 @@
     var i;
     for (i = 0; i < targetTagQueue.length; i++) {
       var t = targetTagQueue[i];
-      var key = t.off !== 0 ? t.off + '|' + t.mult : '0|' + t.mult + '|' + Math.round(t.by / 14);
+      var key = t.entry ? 'e|' + t.off + '|' + t.side : (t.off !== 0 ? t.off + '|' + t.mult : '0|' + t.mult + '|' + Math.round(t.by / 14));
       var gr = byKey[key];
       if (!gr) {
-        gr = { mult: t.mult, off: t.off, by: t.by, bar: t.bar, n: 0, fade: 0, pad: t.pad, layout: t.layout, top: t.top, bot: t.bot };
+        gr = { mult: t.mult, off: t.off, by: t.by, bar: t.bar, n: 0, fade: 0, pad: t.pad, layout: t.layout, top: t.top, bot: t.bot, entry: !!t.entry, side: t.side };
         byKey[key] = gr;
         groups.push(gr);
       }
@@ -2387,10 +2387,15 @@
     g.font = '800 9px "Hanken Grotesk", sans-serif';
     for (i = 0; i < groups.length; i++) {
       var it = groups[i];
-      var label = '×' + it.mult;
-      if (it.off < 0) label += ' ▲ ' + fmtTargetPrice(it.bar);
-      else if (it.off > 0) label += ' ▼ ' + fmtTargetPrice(it.bar);
-      else label += ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target');
+      var label;
+      if (it.entry) {
+        label = (it.off < 0 ? '▲ ' : '▼ ') + fmtTargetPrice(it.bar);
+      } else {
+        label = '×' + it.mult;
+        if (it.off < 0) label += ' ▲ ' + fmtTargetPrice(it.bar);
+        else if (it.off > 0) label += ' ▼ ' + fmtTargetPrice(it.bar);
+        else label += ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target');
+      }
       if (it.n > 1) label += ' · ' + it.n;
       var top = it.top + 2;
       var bot = it.bot - H - 2;
@@ -2418,7 +2423,8 @@
       placed.push(ty);
       g.globalAlpha = it.fade;
       // Fond vert plein (le vert des ronds d'achat), texte blanc : lisible d'un coup d'œil.
-      g.fillStyle = '#00A83E';
+      // Prix d'entrée collé au bord : couleur du trade (vert ACHAT / rouge VENTE).
+      g.fillStyle = it.entry ? (it.side === 'call' ? '#00A83E' : '#E8173A') : '#00A83E';
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
       g.fillStyle = '#FFFFFF';
@@ -2447,6 +2453,11 @@
     ey = Math.round(ey * 2) / 2;
     var plotTop = pad ? pad.t : 4;
     var plotBot = pad ? (pad.t + plotH) : (cssH - 4);
+    // Prix d'entrée hors du cadre (trade long, prix parti loin) : le trait reste collé au bord,
+    // avec une étiquette « ▲ / ▼ prix » ; la courbe garde sa taille normale.
+    var eOff = 0;
+    if (ey < plotTop + 9) { ey = plotTop + 9; eOff = -1; }
+    else if (ey > plotBot - 9) { ey = plotBot - 9; eOff = 1; }
     layout = layout || plotLayout(pad);
     var isCall = trade.side === 'call';
     var lineCol = isCall ? '#00e676' : '#ff3b30';
@@ -2510,7 +2521,7 @@
       g.setLineDash(TRADE_DASH);
       g.strokeStyle = lineCol;
       g.lineWidth = lite ? 1 : 1.35;
-      g.globalAlpha = (lite ? 0.72 : 0.92) * lineFade;
+      g.globalAlpha = (lite ? 0.72 : 0.92) * lineFade * (eOff ? 0.6 : 1);
       g.beginPath();
       g.moveTo(0, ey);
       g.lineTo(cssW, ey);
@@ -2519,6 +2530,9 @@
       g.globalAlpha = 1;
     }
     drawTargetLine(g, trade, glide.barrier, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, lineFade);
+    if (eOff) {
+      targetTagQueue.push({ entry: true, side: isCall ? 'call' : 'put', mult: 0, bar: entry, by: ey, off: eOff, fade: lineFade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
+    }
 
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
@@ -3429,7 +3443,9 @@
         if (!tv || tv.assetId !== activeAsset) continue;
         [Number(tv.entryPrice), Number(tv.barrier)].forEach(function (pv, k) {
           if (!(pv > 0) || !isFinite(pv)) return;
-          if (k === 1 && Math.abs(pv - head) > nearBar) return;
+          // Objectif (k = 1) ET prix d'entrée (k = 0) : s'ils sont loin de la tête (trade de 5 ou 10 min),
+          // ils ne déforment plus le cadre ; leur trait reste collé au bord avec une étiquette.
+          if (Math.abs(pv - head) > nearBar) return;
           if (pv < needLo) needLo = pv;
           if (pv > needHi) needHi = pv;
         });
