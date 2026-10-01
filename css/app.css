@@ -4660,3 +4660,40 @@ html body #screenTrade .win-preview .label{display:block!important;font-size:8px
 html body #screenTrade .win-preview .amount{font-size:16px!important;font-weight:900!important;white-space:nowrap!important}
 html body #screenTrade .win-preview .mult{display:inline-block!important;font-size:8.5px!important;padding:2px 7px!important;border-radius:999px!important;border:1px solid rgba(56,189,248,.5)!important;background:rgba(56,189,248,.14)!important;white-space:nowrap!important}
 }
+
+/* ===== v2231 — Titres « Rendement estimé », « PAYOUT » et « Mise min » retirés ; montant du gain remonté ;
+   boutons + − ÷2 ×2 ⌫ sur toute la largeur, égaux et bien alignés ; nouveau bouton − (bleu comme sa zone) ===== */
+html body #screenTrade .win-preview .label,html body #screenTrade .odds-label.payout-badge,html body #screenTrade .stake-min-label{display:none!important}
+html body #screenTrade .win-preview{justify-content:center!important;gap:3px!important}
+html body #screenTrade .stake-min{display:flex!important;width:100%!important;justify-content:stretch!important}
+html body #screenTrade .stake-min-actions{display:flex!important;flex:1 1 auto!important;width:100%!important;gap:5px!important;justify-content:space-between!important}
+html body #screenTrade .stake-min-actions .qbtn.stake-act{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important}
+html body #screenTrade .qbtn.stake-act[data-add="-1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-add="-1"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-add="-1"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay .win-preview .label,html body #fsTradeOverlay .odds-label.payout-badge,html body #fsTradeOverlay .stake-min-label{display:none!important}
+html body #fsTradeOverlay .win-preview{justify-content:center!important;gap:3px!important}
+html body #fsTradeOverlay .stake-min{display:flex!important;width:100%!important;justify-content:stretch!important}
+html body #fsTradeOverlay .stake-min-actions{display:flex!important;flex:1 1 auto!important;width:100%!important;gap:5px!important;justify-content:space-between!important}
+html body #fsTradeOverlay .stake-min-actions .qbtn.stake-act{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade .win-preview,html body #fsTradeOverlay .win-preview{gap:7px!important}
+html body #screenTrade .win-preview .amount,html body #fsTradeOverlay .win-preview .amount{margin-top:-2px!important}
+
+/* ===== v2231 (suite) — PC : les 10 simulations toujours visibles sans défiler (2 lignes de 5, nom et % sur la même ligne)
+   sauf sur très grand écran où une seule ligne suffit ; Retrait PC plus large (5 colonnes) pour ne plus défiler ;
+   carré du gain : plus d'espace entre le montant et « Payout ». ===== */
+@media (min-width:860px){
+html body #depositModal .modal-box{width:min(600px,94vw)!important;max-width:600px!important;scrollbar-width:none!important}
+html body #depositModal .modal-box::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+html body #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important}
+}
+@media (min-width:860px){
+/* PC : les 10 simulations sur UNE seule ligne, toutes visibles, sans défiler : chaque case cède quelques pixels et le nom s'adapte à la largeur. */
+html:not(.is-tv) body #screenTrade #assetBar{overflow:hidden!important;gap:4px!important}
+html:not(.is-tv) body #screenTrade #assetBar .asset-chip{flex:1 1 0!important;min-width:0!important;padding-left:5px!important;padding-right:5px!important}
+html:not(.is-tv) body #screenTrade #assetBar .asset-chip .n{font-size:clamp(7.5px,.62vw,11.5px)!important;letter-spacing:-.01em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;min-width:0!important}
+html:not(.is-tv) body #screenTrade #assetBar .asset-chip .payout-live{font-size:clamp(8px,.66vw,10.9px)!important}
+}
+@media (min-width:860px){html:not(.is-tv) body #screenTrade #assetBar .asset-chip[data-asset="titanpulse"] .n{font-size:clamp(7px,.56vw,10.4px)!important}}
+@media (min-width:860px) and (max-width:1199px){html:not(.is-tv) body #screenTrade #assetBar .asset-chip .asset-ico{display:none!important}html:not(.is-tv) body #screenTrade #assetBar .asset-chip{padding-left:3px!important;padding-right:3px!important}}

@@ -1510,9 +1510,21 @@
     selectAsset(assetId(u) || selectedAsset);
   }
 
+  // Durée : à chaque ouverture / actualisation du site (et à chaque nouvelle connexion), on repart sur 5 s.
+  // Le joueur peut choisir une autre durée, mais elle n'est plus gardée après une actualisation
+  // (un « 10 min » oublié surprenait les joueurs).
+  var durResetFor = null;
   function updateDurationUi() {
     var u = user();
     if (!u) return;
+    var durKey = String(u.id || u.email || u.username || 'guest');
+    if (durResetFor !== durKey) {
+      durResetFor = durKey;
+      if (Number(u.duration) !== 5) {
+        u.duration = 5;
+        D6.Store.saveUser(u);
+      }
+    }
     if (Number(u.duration) === 3) {
       u.duration = 5;
       D6.Store.saveUser(u);
