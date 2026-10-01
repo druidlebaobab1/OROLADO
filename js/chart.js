@@ -2280,6 +2280,40 @@
   var targetTagQueue = [];
   var chronoPlaced = [];
   var chronoQueue = [];
+  // Chrono affiché : jamais plus que la durée choisie, et il ne remonte jamais.
+  // La courbe est montrée ~1,5 s derrière le serveur ; quand le serveur confirme le trade, la fin
+  // recule d'autant à l'écran. Au lieu de sauter (5 s → 6,4 s), le chrono ralentit un peu et
+  // arrive à 0 pile quand la courbe touche le drapeau. Les prix et le résultat ne changent pas.
+  var chronoState = {};
+  var chronoCount = 0;
+  function chronoSecs(trade, raw) {
+    var id = trade && trade.id != null ? String(trade.id) : '';
+    if (!id || !isFinite(raw)) return raw;
+    var nowMs = Date.now();
+    var dur = Number(trade.duration);
+    var st = chronoState[id];
+    if (!st) {
+      if (++chronoCount > 300) {
+        var k;
+        for (k in chronoState) {
+          if (nowMs - chronoState[k].t > 120000) delete chronoState[k];
+        }
+        chronoCount = 0;
+      }
+      st = { v: (dur > 0 ? Math.min(raw, dur) : raw), t: nowMs };
+      chronoState[id] = st;
+      return st.v;
+    }
+    var dt = Math.max(0, (nowMs - st.t) / 1000);
+    st.t = nowMs;
+    var rate = raw > 0.05 ? Math.min(1, st.v / raw) : 1;
+    var v = st.v - dt * Math.max(0.6, rate);
+    if (v > raw) v = raw;
+    if (dur > 0 && v > dur) v = dur;
+    if (v < 0) v = 0;
+    st.v = v;
+    return v;
+  }
   // Chronos : fond rouge plein bien visible, chiffres blancs qui comptent ; posés par-dessus les traits.
   function drawChronos() {
     var i;
@@ -2538,7 +2572,7 @@
     g.restore();
 
     var remaining = exp - Date.now();
-    var secs = remaining / 1000;
+    var secs = chronoSecs(trade, remaining / 1000);
     if (lite && idx > 0) return;
     if (secs >= 0.15) {
       var label = lite ? (Math.max(1, Math.ceil(secs)) + 's') : (secs.toFixed(1) + 's');
