@@ -4798,8 +4798,8 @@ html body #logoutOthersModal .modal-title{white-space:normal!important;overflow:
 /* Retrait, étape formulaire (pas de croix, seulement la flèche retour) : lueur longue comme avant */
 html body #withdrawModal .wd-modal-head:has(#closeWithdraw.hidden) .modal-title{flex:1 1 auto!important;max-width:none!important;width:auto!important;margin:0 0 0 8px!important;text-align:center!important}
 /* Android, joueur connecté : « Aide » ne touche plus « Recharger » */
-html.is-android:not(.fs-guest) body #screenTrade .topbar-actions{margin-left:10px!important;margin-right:8px!important;gap:6px!important}
-html.is-android:not(.fs-guest) body #screenTrade #btnOpenDeposit{min-width:0!important;flex-shrink:1!important}
+html.is-android:not(.oro-guest) body #screenTrade .topbar-actions{margin-left:10px!important;margin-right:8px!important;gap:6px!important}
+html.is-android:not(.oro-guest) body #screenTrade #btnOpenDeposit{min-width:0!important;flex-shrink:1!important}
 /* pas de zoom au double toucher (le zoom restait après actualisation) */
 html,body,button,.btn-trade,.qbtn,.dur-chip,.odds-chip,.asset-chip,.ind-btn,input{touch-action:manipulation}
 
@@ -4827,5 +4827,5 @@ html body #fsTradeOverlay #fsBtnReal.on{background:linear-gradient(135deg,#FFE08
 html body #fsTradeOverlay #fsTopMid:has(#fsBtnDemo.on) #fsTopBalance{color:#FFB21A!important;-webkit-text-fill-color:#FFB21A!important}
 html body #fsTradeOverlay #fsTopMid:has(#fsBtnReal.on) #fsTopBalance{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important}
 html body #fsTradeOverlay .fs-mode-switch #fsBtnReal{gap:clamp(3px,1.2vw,7px)!important}
-/* v2247 — Android, plein écran : « Quitter » un peu plus à droite, Solana ne touche plus sa lueur */
-html.is-android body .fs-trade-close{margin-right:0!important;margin-left:12px!important}
+/* v2247/2248 — plein écran (tous appareils) : « Quitter » un peu plus à droite, Solana ne touche plus sa lueur */
+html body .fs-trade-close{margin-right:0!important;margin-left:12px!important}

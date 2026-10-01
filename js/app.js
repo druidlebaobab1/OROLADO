@@ -537,9 +537,11 @@
     document.querySelectorAll('.fs-mode-btn').forEach(function (el) {
       el.classList.toggle('on', el.dataset.mode === (real ? 'real' : 'demo'));
     });
-    try { document.documentElement.classList.toggle('fs-guest', !!guest); } catch (eG) { /* ignore */ }
-    if ($('btnFsMidPlus')) $('btnFsMidPlus').classList.toggle('hidden', !!guest);
-    if ($('fsBtnReal')) $('fsBtnReal').classList.toggle('hidden', !!guest);
+    // Plein écran identique connecté / non inscrit : DÉMO, « + » et RÉEL toujours affichés.
+    // Non inscrit : « + » et RÉEL ouvrent l'inscription (requireAccount dans openDeposit / switchMode).
+    try { document.documentElement.classList.toggle('oro-guest', !!guest); } catch (eG) { /* ignore */ }
+    if ($('btnFsMidPlus')) $('btnFsMidPlus').classList.remove('hidden');
+    if ($('fsBtnReal')) $('fsBtnReal').classList.remove('hidden');
   }
 
   function wagerLockFifo(deposits, done) {
@@ -7588,6 +7590,8 @@
       if ($('btnFsMidPlus')) $('btnFsMidPlus').addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+        // Non inscrit : on quitte le plein écran puis page d'inscription (comme RÉEL).
+        if (isGuest()) { leaveTradeFullscreen(); requireAccount(); return; }
         openDeposit();
       });
       if ($('closeTip')) { /* bound in bindModals */ }
