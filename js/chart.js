@@ -2266,7 +2266,8 @@
     g.lineWidth = IS_ANDROID_CHART ? 1.6 : 2;
     g.beginPath();
     g.moveTo(pad.l, by);
-    g.lineTo(layout.axisX, by);
+    // Le trait s'arrête sous l'étiquette verte (posée jusqu'à axisX - 6) : son bout ne dépasse pas.
+    g.lineTo(layout.axisX - 12, by);
     g.stroke();
     g.setLineDash(NO_DASH);
     g.restore();
@@ -2787,7 +2788,7 @@
     var i;
     var top = pad.t;
     var bot = pad.t + h;
-    var panelY = top + (legendOn ? 24 : 5);
+    var panelY = top + (legendOn ? 22 : 2);
     var DIM = 'rgba(248,231,176,0.55)';
     var UPC = '#00E676';
     var DNC = '#FF4D6A';
@@ -2837,8 +2838,11 @@
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'rgba(245,197,24,0.55)';
     ctx.setLineDash([2, 4]);
+    // Le trait vertical part du bas du carré O H L C (rien ne dépasse au-dessus du carré).
+    var panelLines = (pt.c && isFinite(pt.c.o)) ? 3 : 2;
+    var vTop = Math.min(bot, panelY + panelLines * 12 + 5);
     ctx.beginPath();
-    ctx.moveTo(x, top);
+    ctx.moveTo(x, vTop);
     ctx.lineTo(x, bot);
     ctx.moveTo(pad.l, Math.round(y) + 0.5);
     ctx.lineTo(layout.axisX, Math.round(y) + 0.5);
