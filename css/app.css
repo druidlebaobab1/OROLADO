@@ -4786,3 +4786,19 @@ html body #drawerProfile .drawer-item:not(#btnWithdraw):not(.drawer-logout):acti
 html body #drawerProfile #btnWithdraw{background:linear-gradient(180deg,rgba(247,147,26,.32),rgba(194,65,12,.14))!important;border:1px solid rgba(247,147,26,.8)!important;border-radius:12px!important;box-shadow:0 0 14px rgba(247,147,26,.38),inset 0 0 10px rgba(247,147,26,.12)!important;margin-bottom:6px!important}
 html body #drawerProfile #btnWithdraw .di-label{color:#FFD9A8!important;font-weight:800!important}
 html body #passModal .modal-title,html body #emailModal .modal-title,html body #logoutOthersModal .modal-title{display:inline-block!important;flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 58px)!important;margin-right:auto!important;padding:5px 14px!important;border-radius:10px!important;border:1px solid rgba(56,189,248,.55)!important;background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.03))!important;box-shadow:0 0 10px rgba(56,189,248,.3)!important;color:#FFB15C!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+/* ===== v2241 ===== */
+/* « Solde insuffisant » (compte réel seulement) : message plein orange, bien lisible */
+html body #toast.toast.lux-msg.toast-bal{background:linear-gradient(180deg,#FBA43A,#F7931A)!important;border:1px solid #FFD29A!important;box-shadow:0 8px 24px rgba(247,147,26,.45)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #toast.toast.toast-bal .lux-msg-txt{color:#1A1205!important;font-size:.86rem!important;font-weight:800!important}
+/* reçus : affichés carrés aussi à l'écran */
+html body #rcptModal .rc-img{border-radius:0!important}
+/* « Déconnecter mes autres appareils » : titre écrit en entier sur tous les téléphones */
+html body #logoutOthersModal .modal-title{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:100%!important;margin:0 auto!important;text-align:center!important;font-size:clamp(13px,3.9vw,17px)!important;line-height:1.25!important}
+/* Retrait, étape formulaire (pas de croix, seulement la flèche retour) : lueur longue comme avant */
+html body #withdrawModal .wd-modal-head:has(#closeWithdraw.hidden) .modal-title{flex:1 1 auto!important;max-width:none!important;width:auto!important;margin:0 0 0 8px!important;text-align:center!important}
+/* Android, joueur connecté : « Aide » ne touche plus « Recharger » */
+html.is-android:not(.fs-guest) body #screenTrade .topbar-actions{margin-left:10px!important;margin-right:8px!important;gap:6px!important}
+html.is-android:not(.fs-guest) body #screenTrade #btnOpenDeposit{min-width:0!important;flex-shrink:1!important}
+/* pas de zoom au double toucher (le zoom restait après actualisation) */
+html,body,button,.btn-trade,.qbtn,.dur-chip,.odds-chip,.asset-chip,.ind-btn,input{touch-action:manipulation}

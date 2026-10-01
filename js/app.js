@@ -900,6 +900,12 @@
     try {
       isBal = String(msg || '') === String(t('insufficient') || '') || /solde insuffisant|insufficient balance/i.test(String(msg || ''));
     } catch (eBal) { isBal = /solde insuffisant|insufficient balance/i.test(String(msg || '')); }
+    // Démo : jamais de « Solde insuffisant » (argent illimité, le joueur rejoue simplement).
+    if (isBal) {
+      var uBal = null;
+      try { uBal = user(); } catch (eU) { uBal = null; }
+      if (!uBal || uBal.mode !== 'real') return;
+    }
     if (isBal) {
       el.style.setProperty('top', 'calc(14px + env(safe-area-inset-top, 0px))', 'important');
     } else if (micro) el.style.removeProperty('top');
