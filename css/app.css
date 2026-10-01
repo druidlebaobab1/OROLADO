@@ -4362,3 +4362,29 @@ html body #screenTrade .help-badge:active,html body #screenTrade .lang-dd-btn:ac
 html body #screenTrade .btn-auth-link:active,html body #screenTrade .asset-chip:active,html body #screenTrade .ind-btn:active,
 html body #screenTrade .chart-fs-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .qbtn:active{
   filter:brightness(1.3)!important}
+/* ===== COULEURS — Connexion / Inscription ===== (fonds, cadres, couleurs seulement ; aucune taille ne change) */
+html body #screenAuth .auth-back{
+  background:linear-gradient(180deg,rgba(245,197,24,.30),rgba(245,158,11,.10))!important;
+  border:1px solid rgba(245,197,24,.75)!important;color:#FDE68A!important;box-shadow:0 0 10px rgba(245,158,11,.22)!important}
+html body #screenAuth .lang-dd-btn{
+  background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.07))!important;
+  border:1px solid rgba(245,197,24,.6)!important}
+html body #screenAuth .auth-card{
+  background:linear-gradient(160deg,rgba(245,197,24,.12) 0%,rgba(13,19,31,.93) 38%,rgba(13,19,31,.93) 72%,rgba(245,158,11,.10) 100%)!important;
+  border:1px solid rgba(245,197,24,.45)!important;box-shadow:0 0 22px rgba(245,158,11,.14),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenAuth .auth-tabs{
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(245,197,24,.4)!important}
+html body #screenAuth .auth-tab:not(.on){
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06))!important;
+  color:#FFFFFF!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)!important}
+html body #screenAuth .field label{color:#FCD9A0!important}
+html body #screenAuth .field input{
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.035))!important;
+  border-color:rgba(245,197,24,.45)!important}
+html body #screenAuth .field input:focus{
+  border-color:#F5C518!important;box-shadow:0 0 0 2px rgba(245,197,24,.22)!important}
+html body #screenAuth .pass-toggle{color:#FDE68A!important}
+html body #screenAuth .check-row{color:#E2E8F0!important}
+html body #screenAuth .check-row input[type=checkbox]{accent-color:#F59E0B}
+html body #screenAuth .auth-back:active,html body #screenAuth .auth-tab:active,html body #screenAuth .lang-dd-btn:active{filter:brightness(1.3)!important}
