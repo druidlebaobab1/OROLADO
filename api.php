@@ -1633,6 +1633,7 @@ if ($action === 'withdraw') {
   $db['withdrawals'][] = [
     'id' => $wdId,
     'userId' => $me['id'],
+    'sbUserId' => $payId,
     'name' => $beneficiary,
     'email' => $me['email'] ?? '',
     'amount' => $amount,
@@ -1651,7 +1652,21 @@ if ($action === 'withdraw') {
     'clock' => date('H:i:s')
   ];
   $db['withdrawals'] = array_values(array_reverse($db['withdrawals']));
-  save_db($file, $db);
+  // Écriture sous verrou, sur le fichier À JOUR : une autre requête (solde, trade) qui enregistre
+  // en même temps ne peut plus effacer ce retrait (l'argent est déjà débité).
+  $wdRow = null;
+  foreach ($db['withdrawals'] as $wdTmp) { if (is_array($wdTmp) && ($wdTmp['id'] ?? '') === $wdId) { $wdRow = $wdTmp; break; } }
+  $wdVault = $db['vault'][$me['id']] ?? null;
+  $wdMeId = (string) $me['id'];
+  with_db_lock(function ($box) use ($wdRow, $wdVault, $wdMeId) {
+    if (!isset($box->db['withdrawals']) || !is_array($box->db['withdrawals'])) $box->db['withdrawals'] = [];
+    $have = false;
+    foreach ($box->db['withdrawals'] as $x) { if (is_array($x) && ($x['id'] ?? '') === ($wdRow['id'] ?? '')) { $have = true; break; } }
+    if (!$have && is_array($wdRow)) array_unshift($box->db['withdrawals'], $wdRow);
+    if (is_array($wdVault)) $box->db['vault'][$wdMeId] = $wdVault;
+    if (isset($box->db['withdrawOtps'][$wdMeId])) unset($box->db['withdrawOtps'][$wdMeId]);
+    return ['ok' => true];
+  });
   $hdrsWd = supabase_admin_headers();
   if ($hdrsWd) {
     supabase_http(supabase_project_url() . '/rest/v1/withdrawals', array_merge(array_values(array_filter($hdrsWd, static fn($h) => stripos($h, 'Prefer:') !== 0)), ['Prefer: resolution=merge-duplicates,return=minimal']), json_encode([

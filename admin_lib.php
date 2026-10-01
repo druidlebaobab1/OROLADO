@@ -1383,7 +1383,21 @@ function admin_withdrawals(): array {
     if ($fp !== '') $byFp[$fp] = $id;
   };
 
-  foreach (admin_collect_local_wds(admin_local_db()) as $w) {
+  // Un retrait est enregistré dans le fichier sous l'identifiant LOCAL du joueur (ex. « ub3c… »),
+  // alors que l'admin range les joueurs par identifiant Supabase : sans cette conversion, le retrait
+  // était filtré et n'apparaissait nulle part (ni onglet Retraits, ni fiche du joueur).
+  $wdLocalDb = admin_local_db();
+  $wdSbOf = static function (string $uid) use ($wdLocalDb): string {
+    if ($uid === '' || preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid)) return $uid;
+    $sb = (string) ($wdLocalDb['users'][$uid]['sbId'] ?? '');
+    if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $sb)) return $sb;
+    if (function_exists('orolado_balance_uuid')) { $sb = (string) orolado_balance_uuid($wdLocalDb, $uid); if ($sb !== '') return $sb; }
+    return $uid;
+  };
+  foreach (admin_collect_local_wds($wdLocalDb) as $w) {
+    $sbUid = (string) ($w['sbUserId'] ?? '');
+    if ($sbUid === '') $sbUid = $wdSbOf((string) ($w['userId'] ?? ''));
+    if ($sbUid !== '') $w['userId'] = $sbUid;
     $put($w);
     $localIds[admin_fill((string) ($w['id'] ?? ''))] = true;
   }

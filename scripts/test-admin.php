@@ -118,11 +118,17 @@ $GLOBALS['OROLADO_FAKE_SB'] = function (string $path, string $method, ?string $b
 // Un vrai retrait est toujours enregistré aussi par le serveur (fichier) : on recopie les retraits.
 $localWds = array_map(static fn($w) => ['id' => $w['id'], 'userId' => $w['user_id'], 'amount' => $w['amount'], 'status' => $w['status'],
   'operator' => $w['operator'], 'phone' => $w['phone'], 'destination' => $w['destination'], 'at' => $w['created_at']], $T['withdrawals']);
+// P8 : joueur dont le fichier utilise un identifiant LOCAL (« ulocal8 », lié à son profil Supabase).
+// Son retrait n'existe que dans le fichier, sous l'identifiant local : l'admin doit quand même le voir.
+$p8 = $mk(8, 10, 5);
+$localWds[] = ['id' => 'wd_local8', 'userId' => 'ulocal8', 'amount' => 5, 'status' => 'pending', 'operator' => 'opay',
+  'phone' => '0788888888', 'destination' => '0788888888', 'at' => $iso($now - 900)];
+$localUsers8 = ['ulocal8' => ['id' => 'ulocal8', 'email' => 'joueur8@test.com', 'sbId' => $p8]];
 // Faux retrait écrit directement dans Supabase depuis un téléphone (aucun débit) : doit être bloqué.
 $T['withdrawals'][] = ['id' => 'wd_fake_phone', 'user_id' => $p1, 'amount' => 9999, 'status' => 'pending', 'operator' => 'wave', 'phone' => '0799999999',
   'reference' => 'wd_fake_phone', 'destination' => '0799999999', 'created_at' => $iso($now - 600)];
 file_put_contents($tmp . '/data/orolado.json', json_encode([
-  'users' => [], 'vault' => [], 'sessions' => [], 'deposits' => [], 'withdrawals' => $localWds, 'support_messages' => [],
+  'users' => $localUsers8, 'vault' => [], 'sessions' => [], 'deposits' => [], 'withdrawals' => $localWds, 'support_messages' => [],
   'orders' => [['id' => 'stuck1', 'userId' => $p1, 'mode' => 'real', 'status' => 'open', 'stake' => 3, 'expiryAt' => $now - 600, 'at' => $now - 610]],
 ]));
 file_put_contents($tmp . '/feedcache/live.json', '{}');
@@ -183,6 +189,14 @@ foreach ($views as $v) {
 check(count($views) . ' boutons ouvrent leur liste sans erreur', $fail === 0);
 check('aucun bouton lent (> 1,5 s)', $slow === [], implode(', ', $slow));
 
+echo "1b) Retrait enregistré sous l'identifiant local du joueur\n";
+$w8 = null;
+foreach (admin_withdrawals() as $w) if (($w['id'] ?? '') === 'wd_local8') $w8 = $w;
+check('le retrait apparaît dans l\'onglet Retraits, rattaché au profil du joueur', $w8 !== null && ($w8['userId'] ?? '') === $p8, json_encode($w8));
+check('il est payable (pas « hors site »)', $w8 !== null && empty($w8['offsite']));
+$pp8 = admin_profile_payload($p8);
+check('il apparaît sur la fiche du joueur, en attente 5 $', in_array('wd_local8', array_map(static fn($r) => (string) ($r['id'] ?? ''), $pp8['withdrawals'] ?? []), true) && abs(($pp8['totals']['wdOpen'] ?? 0) - 5) < 0.01, json_encode($pp8['totals'] ?? []));
+
 echo "2) Bonus jamais mélangés aux dépôts\n";
 $j = admin_list_payload('dep_all', ['preset' => 'all']);
 check('« Historique Global Dépôts » : 6 dépôts payés, 250 $, aucun bonus', ($j['total'] ?? 0) === 6 && str_contains($j['summary'], '250'), $j['summary'] ?? '');
@@ -224,7 +238,7 @@ foreach ($T['orders'] as $o) if (admin_in_range($o['created_at'], $d0, $d1)) $ne
 $wantWin = count(array_filter($netToday, static fn($v) => $v > 0.009));
 check('Top gagnants du jour compté', $b['top_winners'] === $wantWin, $b['top_winners'] . ' (attendu ' . $wantWin . ')');
 check('Bonus Offerts compté', $b['dep_bonus'] === 4, (string) $b['dep_bonus']);
-check('Retraits en cours = 5 (le faux retrait « hors site » n’est pas compté)', $b['wd_pending'] === 5, (string) $b['wd_pending']);
+check('Retraits en cours = 6 (dont celui sous identifiant local ; le faux « hors site » n’est pas compté)', $b['wd_pending'] === 6, (string) $b['wd_pending']);
 $fake = admin_find_wd_row('wd_fake_phone');
 check('faux retrait écrit depuis un téléphone : marqué « hors site », non validable', !empty($fake['offsite']) && !admin_wd_is_open($fake), (string) ($fake['status'] ?? 'absent'));
 check('un vrai retrait reste validable', admin_wd_has_local(admin_local_db(), (string) $T['withdrawals'][0]['id']));
