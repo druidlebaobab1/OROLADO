@@ -4278,3 +4278,14 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
     max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
   html.fs-trade body .pad #fsTopMid,html.is-fullscreen body .pad #fsTopMid{width:100%!important;min-width:0!important}
 }
+/* Profil sur PC : « Se déconnecter » était collé en bas de la petite zone qui défile et passait PAR-DESSUS
+   « Changer d'adresse e-mail » / « Déconnecter mes autres appareils » (compte admin, écran pas très haut).
+   Lignes plus compactes (comme avant), « Se déconnecter » à sa place en fin de liste, et si l'écran est
+   trop petit c'est tout le profil qui défile d'un bloc — plus rien ne se chevauche. Téléphones : inchangés. */
+@media (min-width:860px){
+  html body #drawerProfile.drawer{overflow-y:auto!important;overscroll-behavior:contain}
+  html body #drawerProfile .drawer-nav{flex:0 0 auto!important;overflow:visible!important;gap:2px!important;padding:2px 8px 6px!important}
+  html body #drawerProfile .drawer-item{min-height:32px!important;padding:5px 10px!important;flex-shrink:0!important}
+  html body #drawerProfile .drawer-item.drawer-logout{position:static!important;bottom:auto!important}
+  html body #drawerProfile .drawer-legal{flex-shrink:0!important}
+}
