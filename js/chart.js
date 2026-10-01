@@ -2278,6 +2278,31 @@
 
   var targetTagQueue = [];
   var chronoPlaced = [];
+  var chronoQueue = [];
+  // Chronos : fond rouge plein bien visible, chiffres blancs qui comptent ; posés par-dessus les traits.
+  function drawChronos() {
+    var i;
+    for (i = 0; i < chronoQueue.length; i++) {
+      var c = chronoQueue[i];
+      var g = c.g;
+      g.save();
+      g.globalAlpha = 1;
+      g.setLineDash(NO_DASH);
+      g.fillStyle = '#E8173A';
+      g.strokeStyle = 'rgba(255,255,255,0.85)';
+      g.lineWidth = 1;
+      roundRectOn(g, c.x, c.y, c.w, c.h, 7);
+      g.fill();
+      g.stroke();
+      g.fillStyle = '#FFFFFF';
+      g.font = '800 9.5px "Hanken Grotesk", sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(c.label, c.x + c.w / 2, c.y + c.h / 2 + 0.5);
+      g.restore();
+    }
+    chronoQueue.length = 0;
+  }
   // Même place que drawLivePriceBadge (cadre du prix au bout de la courbe).
   function livePriceBadgeBox(map, price, layout) {
     if (!map || !isFinite(map.lastY)) return null;
@@ -2540,19 +2565,8 @@
           cguard++;
         }
         chronoPlaced.push(ty);
-        // Chrono : fond rouge plein bien visible, chiffres blancs qui comptent.
-        g.fillStyle = '#E8173A';
-        g.strokeStyle = 'rgba(255,255,255,0.85)';
-        g.lineWidth = 1;
-        roundRectOn(g, leftX, ty, timerW, timerH, 7);
-        g.fill();
-        g.stroke();
-        g.fillStyle = '#FFFFFF';
-        g.font = '800 9.5px "Hanken Grotesk", sans-serif';
-        g.textAlign = 'center';
-        g.textBaseline = 'middle';
-        g.fillText(label, leftX + timerW / 2, ty + timerH / 2 + 0.5);
-        g.textBaseline = 'alphabetic';
+        // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
+        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label });
       }
     }
   }
@@ -3577,6 +3591,7 @@
     tradeHits.length = 0;
     targetTagQueue.length = 0;
     chronoPlaced.length = 0;
+    chronoQueue.length = 0;
     var ti;
     var drawnKeys = {};
     for (ti = 0; ti < allTrades.length; ti++) {
@@ -3608,6 +3623,7 @@
       drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout, count);
     }
     drawTargetTags(ctx, map && !(panMs > 0) ? livePriceBadgeBox(map, market.price, layout) : null);
+    drawChronos();
     paintOverlay();
 
     var tagCol = asset.chart === 'candle'
