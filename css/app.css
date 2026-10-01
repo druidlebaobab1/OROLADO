@@ -4581,3 +4581,40 @@ html.is-android body #screenTrade .topbar-actions{margin-right:16px!important;ma
 html.is-android body #screenTrade #authQuick{min-width:0!important;flex-shrink:1!important}
 html.is-android body #screenTrade #authQuick > button{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 @media (max-width:359px){html.is-android body #screenTrade #authQuick > button{padding-left:7px!important;padding-right:7px!important}html.is-android body #screenTrade .topbar-actions{margin-right:12px!important;margin-left:6px!important}}
+
+/* ===== v2226 — (1) VRAIE cause Android : la boîte #langBarTrade faisait 26 px et cachait ce qui dépasse, le bouton en fait 28 :
+   son bord droit était coupé. La boîte prend maintenant la taille du bouton. Aide rapproché d'Inscription (Android).
+   (2) Zone durées / mise / gain en BLEU ciel (le chiffre orange de la mise ne change pas, ⌫ reste rouge).
+   (3) Cadre du solde : vraie lueur orange en DÉMO, verte en RÉEL. ===== */
+html body #screenTrade #langBarTrade{width:auto!important;min-width:28px!important;overflow:visible!important}
+html.is-android body #screenTrade .topbar-actions{margin-left:0!important;margin-right:20px!important}
+html body #screenTrade .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-add="1"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-add="1"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-a="half"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="half"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade #inputStake{border-color:rgba(56,189,248,.42)!important;background:linear-gradient(180deg,rgba(56,189,248,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(56,189,248,.14)!important}
+html body #screenTrade #inputStake:focus{border-color:rgba(56,189,248,.85)!important;box-shadow:0 0 0 3px rgba(56,189,248,.16)!important}
+html body #screenTrade .stake-min-label{border-color:rgba(56,189,248,.45)!important;background:linear-gradient(180deg,rgba(56,189,248,.12),rgba(56,189,248,.03))!important;color:#BAE6FD!important;box-shadow:0 0 6px rgba(56,189,248,.2)!important}
+html body #screenTrade .win-preview{background:linear-gradient(160deg,rgba(56,189,248,.26) 0%,rgba(12,74,110,.4) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(56,189,248,.7)!important}
+html body #screenTrade .win-preview .label{color:#BAE6FD!important}
+html body #screenTrade .win-preview .amount{color:#7DD3FC!important;text-shadow:0 0 12px rgba(56,189,248,.5)!important}
+html body #screenTrade .win-preview .mult{background:rgba(56,189,248,.18)!important;border-color:rgba(56,189,248,.5)!important;color:#E0F2FE!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-add="1"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="half"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay #inputStake{border-color:rgba(56,189,248,.42)!important;background:linear-gradient(180deg,rgba(56,189,248,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(56,189,248,.14)!important}
+html body #fsTradeOverlay #inputStake:focus{border-color:rgba(56,189,248,.85)!important;box-shadow:0 0 0 3px rgba(56,189,248,.16)!important}
+html body #fsTradeOverlay .stake-min-label{border-color:rgba(56,189,248,.45)!important;background:linear-gradient(180deg,rgba(56,189,248,.12),rgba(56,189,248,.03))!important;color:#BAE6FD!important;box-shadow:0 0 6px rgba(56,189,248,.2)!important}
+html body #fsTradeOverlay .win-preview{background:linear-gradient(160deg,rgba(56,189,248,.26) 0%,rgba(12,74,110,.4) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(56,189,248,.7)!important}
+html body #fsTradeOverlay .win-preview .label{color:#BAE6FD!important}
+html body #fsTradeOverlay .win-preview .amount{color:#7DD3FC!important;text-shadow:0 0 12px rgba(56,189,248,.5)!important}
+html body #fsTradeOverlay .win-preview .mult{background:rgba(56,189,248,.18)!important;border-color:rgba(56,189,248,.5)!important;color:#E0F2FE!important}
+@media (max-width:859px){html body #screenTrade .win-preview{box-shadow:0 0 5px rgba(56,189,248,.35),inset 0 0 10px rgba(56,189,248,.16),inset 0 1px 0 rgba(255,255,255,.1)!important}}
+@media (min-width:860px){html body #screenTrade .win-preview{box-shadow:0 0 10px rgba(56,189,248,.25),inset 0 1px 0 rgba(255,255,255,.1)!important}}
+html body #screenTrade .balance-card{background:linear-gradient(135deg,rgba(247,147,26,.14) 0%,rgba(247,147,26,.04) 45%,rgba(18,23,34,.95) 100%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 0 12px rgba(247,147,26,.22),inset 0 0 14px rgba(247,147,26,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenTrade.mode-real .balance-card{background:linear-gradient(135deg,rgba(52,211,153,.14) 0%,rgba(52,211,153,.04) 45%,rgba(18,23,34,.95) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;box-shadow:0 0 12px rgba(52,211,153,.22),inset 0 0 14px rgba(52,211,153,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
