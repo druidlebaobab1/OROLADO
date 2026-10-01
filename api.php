@@ -1945,6 +1945,11 @@ if ($action === 'oxapayInvoice') {
   exit;
 }
 
+if ($action === 'oxapayRecheck') {
+  echo json_encode(orolado_oxapay_recheck(['token' => $token] + $req));
+  exit;
+}
+
 if ($action === 'oxapayStatus') {
   echo json_encode(orolado_oxapay_status(['token' => $token] + $req));
   exit;

@@ -841,6 +841,7 @@
     checkDepositReturn();
     try { if (D6.Chart && D6.Chart.resize) D6.Chart.resize(); } catch (e2) { /* ignore */ }
   }
+  var oxaRecheckAt = 0;
   function startBanWatch() {
     if (banWatchTimer) return;
     function pollMe() {
@@ -848,6 +849,12 @@
       var u = user();
       if (!u || (typeof isGuest === 'function' && isGuest(u))) return;
       if (!(D6.Api && D6.Api.token && D6.Api.token())) return;
+      // Dépôts crypto : le serveur redemande à OxaPay (au plus toutes les 2 min) ; un dépôt
+      // rattrapé arrive ensuite par me() comme d'habitude.
+      if (Date.now() - oxaRecheckAt > 120000) {
+        oxaRecheckAt = Date.now();
+        D6.Api.post('oxapayRecheck', {}, 30000).catch(function () { /* ignore */ });
+      }
       D6.Api.post('me', {}).then(function (r) {
         if (watchBan(r)) return;
         adoptWagerBook(r);
