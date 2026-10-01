@@ -708,9 +708,9 @@
     canvas.style.visibility = 'visible';
     canvas.style.opacity = '1';
     canvas.style.zIndex = '10';
-    canvas.style.backgroundColor = '#0B0E14';
-    canvas.style.background = '#0B0E14';
-    parent.style.backgroundColor = '#0B0E14';
+    canvas.style.backgroundColor = '#FFFFFF';
+    canvas.style.background = '#FFFFFF';
+    parent.style.backgroundColor = '#FFFFFF';
     parent.style.position = 'relative';
     parent.style.width = '100%';
     if (fsMode) {
@@ -942,8 +942,9 @@
     g.setTransform(s, 0, 0, s, 0, 0);
     // Fond bleu nuit, pas un noir plat.
     var base = g.createLinearGradient(0, 0, 0, cssH);
-    base.addColorStop(0, '#16203A');
-    base.addColorStop(1, '#0E1426');
+    // Thème clair (style Binance) : fond blanc.
+    base.addColorStop(0, '#FFFFFF');
+    base.addColorStop(1, '#F7F8FA');
     g.fillStyle = base;
     g.fillRect(0, 0, cssW, cssH);
     // Lumières chaudes (or en haut à gauche, ambre en bas à droite, halo au centre).
@@ -955,9 +956,9 @@
       g.fillRect(0, 0, cssW, cssH);
     }
     var big = Math.max(cssW, cssH);
-    glow(cssW * 0.12, cssH * 0.05, big * 0.55, 'rgba(245,175,50,0.17)');
-    glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,140,50,0.12)');
-    glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(120,160,255,0.07)');
+    glow(cssW * 0.12, cssH * 0.05, big * 0.55, 'rgba(255,159,67,0.08)');
+    glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(247,147,26,0.05)');
+    glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(30,35,41,0.02)');
     // Carte du monde en points.
     // Sur téléphone (graphique plus haut que large, surtout en plein écran), la carte
     // grandit avec la hauteur : un peu plus large que l écran, centrée sur Europe/Afrique.
@@ -968,7 +969,7 @@
     var my = pad.t + (h - mh) / 2;
     // Fins « fils » du globe (méridiens et parallèles) : on sent que c'est la Terre.
     g.save();
-    g.strokeStyle = 'rgba(160,185,225,0.05)';
+    g.strokeStyle = 'rgba(30,35,41,0.06)';
     g.lineWidth = 1;
     // Le globe tient toujours ENTIER dans le graphique (petit écran, plein écran, PC).
     var gcx = pad.l + w / 2;
@@ -995,7 +996,7 @@
     var step = Math.max(3.4, mw / 110);
     var degX = 360 * step / mw;
     var r = Math.max(0.7, step * 0.28);
-    g.fillStyle = 'rgba(160,185,225,0.13)';
+    g.fillStyle = 'rgba(30,35,41,0.09)';
     var i;
     var j;
     var sub;
@@ -1025,7 +1026,7 @@
     var ci = 0;
     var rr;
     var cc;
-    g.globalAlpha = 0.047;
+    g.globalAlpha = 0.07;
     for (rr = 0; rr < cRows; rr++) {
       var shift = 0;
       for (cc = 0; cc < cCols; cc++) {
@@ -1057,7 +1058,7 @@
     if (bgCanvas) {
       ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
     } else {
-      ctx.fillStyle = '#0B0E14';
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, cssW, cssH);
     }
   }
@@ -1238,16 +1239,16 @@
     if (id === 'v75' || (asset && asset.plotTheme === 'darkPro')) {
       return {
         id: 'darkPro',
-        bg0: '#0B0E14',
-        bg1: '#0B0E14',
-        gridH: 'rgba(255,255,255,0.05)',
-        gridHStrong: 'rgba(255,255,255,0.05)',
-        gridV: 'rgba(255,255,255,0.05)',
+        bg0: '#FFFFFF',
+        bg1: '#FFFFFF',
+        gridH: 'rgba(30,35,41,0.07)',
+        gridHStrong: 'rgba(30,35,41,0.07)',
+        gridV: 'rgba(30,35,41,0.07)',
         border: null,
-        priceTxt: '#64748B',
-        timeTxt: '#64748B',
+        priceTxt: '#707A8A',
+        timeTxt: '#707A8A',
         watermark: 'rgba(255,215,0,0.028)',
-        rsiBg: 'rgba(8,12,22,0.72)',
+        rsiBg: 'rgba(255,255,255,0.85)',
         rsiBorder: 'rgba(255,215,0,0.12)',
         rsiTxt: 'rgba(168,180,204,0.85)',
         maFast: 'rgba(255,213,79,0.95)',
@@ -1259,16 +1260,16 @@
     }
     return {
       id: 'darkLegacy',
-      bg0: '#0B0E14',
-      bg1: '#0B0E14',
-      gridH: 'rgba(255,255,255,0.05)',
-      gridHStrong: 'rgba(255,255,255,0.05)',
-      gridV: 'rgba(255,255,255,0.05)',
+      bg0: '#FFFFFF',
+      bg1: '#FFFFFF',
+      gridH: 'rgba(30,35,41,0.07)',
+      gridHStrong: 'rgba(30,35,41,0.07)',
+      gridV: 'rgba(30,35,41,0.07)',
       border: null,
-      priceTxt: '#64748B',
-      timeTxt: '#64748B',
+      priceTxt: '#707A8A',
+      timeTxt: '#707A8A',
       watermark: 'rgba(255,215,0,0.028)',
-      rsiBg: 'rgba(8,12,22,0.72)',
+      rsiBg: 'rgba(255,255,255,0.85)',
       rsiBorder: 'rgba(255,215,0,0.12)',
       rsiTxt: 'rgba(168,180,204,0.85)',
       maFast: 'rgba(255,213,79,0.95)',
@@ -2258,7 +2259,7 @@
     if (by < plotTop + 9) { by = plotTop + 9; off = -1; }
     if (by > plotBot - 9) { by = plotBot - 9; off = 1; }
     by = Math.round(by * 2) / 2;
-    var gold = '#F5C518';
+    var gold = '#F7931A';
     g.save();
     g.globalAlpha = (off ? 0.6 : 0.95) * (fade == null ? 1 : fade);
     g.setLineDash(TARGET_DASH);
@@ -2294,7 +2295,7 @@
 
   function drawTargetTags(g, avoid) {
     if (!targetTagQueue.length) return;
-    var gold = '#F5C518';
+    var gold = '#F7931A';
     var groups = [];
     var byKey = {};
     var i;
@@ -2357,13 +2358,14 @@
       }
       placed.push(ty);
       g.globalAlpha = it.fade;
-      g.fillStyle = 'rgb(10,15,29)';
+      // Thème clair : étiquette orange léger pleine, texte noir.
+      g.fillStyle = '#FFA552';
       g.strokeStyle = gold;
       g.lineWidth = 1;
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
       g.stroke();
-      g.fillStyle = gold;
+      g.fillStyle = '#1E2329';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(label, tx + tw / 2, ty + H / 2 + 0.5);
@@ -2524,7 +2526,7 @@
         var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
         var ty = tagY - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        g.fillStyle = 'rgba(10,15,29,0.92)';
+        g.fillStyle = '#FFFFFF';
         g.strokeStyle = lineCol;
         g.lineWidth = 1.2;
         roundRectOn(g, leftX, ty, timerW, timerH, 7);
@@ -2850,6 +2852,13 @@
     var txt = formatAxisPrice(price);
     ctx.save();
     var accent = assetColor || '#F5A623';
+    // Thème clair : une couleur trop claire (blanc d'APOCALYPSE…) deviendrait invisible → texte noir.
+    var hx = /^#([0-9a-f]{6})$/i.exec(String(accent));
+    if (hx) {
+      var nv = parseInt(hx[1], 16);
+      var lum = (0.299 * (nv >> 16) + 0.587 * ((nv >> 8) & 255) + 0.114 * (nv & 255)) / 255;
+      if (lum > 0.72) accent = '#1E2329';
+    }
     ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
     var tw = Math.ceil(ctx.measureText(txt).width) + 8;
     var th = 12;
@@ -2858,8 +2867,8 @@
     var x = map.lastX + 9;
     var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
     if (x + tw > axisX - 2) x = axisX - tw - 2;
-    ctx.fillStyle = 'rgba(11,14,20,0.28)';
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.strokeStyle = 'rgba(30,35,41,0.18)';
     ctx.lineWidth = 0.6;
     roundRect(x, y, tw, th, 7);
     ctx.fill();
@@ -3103,7 +3112,7 @@
     if (!market) return;
     if (market.waiting) {
       // Historique pas encore reçu du serveur : fond seul, jamais une fausse courbe.
-      ctx.fillStyle = '#0B0E14';
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, cssW, cssH);
       ctx.fillStyle = 'rgba(245,197,24,0.55)';
       ctx.font = '700 12px "Hanken Grotesk", sans-serif';
@@ -3404,8 +3413,8 @@
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 0.042;
-    ctx.fillStyle = '#E9D9B0';
+    ctx.globalAlpha = 0.045;
+    ctx.fillStyle = '#1E2329';
     ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
     ctx.restore();
 
@@ -4141,8 +4150,8 @@
         canvas.style.zIndex = '10';
         canvas.style.pointerEvents = 'none';
         canvas.style.touchAction = 'none';
-        canvas.style.backgroundColor = '#0B0E14';
-        canvas.style.background = '#0B0E14';
+        canvas.style.backgroundColor = '#FFFFFF';
+        canvas.style.background = '#FFFFFF';
         if (overlay) {
           overlay.style.background = 'transparent';
           overlay.style.backgroundColor = 'transparent';
@@ -4150,7 +4159,7 @@
           overlay.style.pointerEvents = 'none';
         }
         if (canvas.parentElement) {
-          canvas.parentElement.style.backgroundColor = '#0B0E14';
+          canvas.parentElement.style.backgroundColor = '#FFFFFF';
           canvas.parentElement.style.position = 'relative';
         }
         if (D6.Engine && D6.Engine.preloadAll) {
