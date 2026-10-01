@@ -4572,3 +4572,12 @@ html body .btn-close.hidden:not(#oroNoX1):not(#oroNoX2):not(#oroNoX3):not(#oroNo
 html body #screenTrade .dur-chip.tap-lit.tap-lit.tap-lit.tap-lit,html body #screenTrade .dur-chip.hit,html body #screenTrade .dur-chip:active,
 html body #fsTradeOverlay .dur-chip.tap-lit.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .dur-chip.hit,html body #fsTradeOverlay .dur-chip:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 10px rgba(56,189,248,.55)!important}
 html.is-android body #screenTrade .topbar-actions{margin-right:12px!important;margin-left:6px!important}
+
+/* ===== v2225 — Android uniquement : bouton langue toujours entier (son contour fait tout le tour).
+   Taille du texte bloquée (Chrome Android grossit parfois le texte et poussait la langue hors de l'écran) ;
+   Aide et langue décollés du bord (16 px) ; Connexion / Inscription cèdent la place au lieu de pousser. ===== */
+html.is-android{-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important}
+html.is-android body #screenTrade .topbar-actions{margin-right:16px!important;margin-left:8px!important;flex:0 0 auto!important}
+html.is-android body #screenTrade #authQuick{min-width:0!important;flex-shrink:1!important}
+html.is-android body #screenTrade #authQuick > button{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+@media (max-width:359px){html.is-android body #screenTrade #authQuick > button{padding-left:7px!important;padding-right:7px!important}html.is-android body #screenTrade .topbar-actions{margin-right:12px!important;margin-left:6px!important}}
