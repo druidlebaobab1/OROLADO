@@ -2245,6 +2245,10 @@
   // bien différent du petit pointillé vert/rouge de l'entrée. En 88 %, pas de 2e trait :
   // l'objectif est le prix d'entrée lui-même (l'ombre suffit).
   var TARGET_DASH = [16, 9];
+  function fmtTargetPrice(p) {
+    var v = Number(p);
+    return isFinite(v) ? v.toFixed(2) : '';
+  }
   function drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, fade) {
     var mult = Number(trade.payout) || 1.88;
     if (mult < 4.99 || !isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
@@ -2266,7 +2270,8 @@
     g.stroke();
     g.setLineDash(NO_DASH);
     if ((idx || 0) < 2) {
-      var arrow = off < 0 ? ' ▲' : (off > 0 ? ' ▼' : '');
+      // Hors écran : flèche + prix de l'objectif, pour savoir où il est sans aplatir la courbe.
+      var arrow = off < 0 ? ' ▲ ' + fmtTargetPrice(bar) : (off > 0 ? ' ▼ ' + fmtTargetPrice(bar) : '');
       var tag = '×' + (Math.round(mult * 10) / 10) + ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target') + arrow;
       g.font = '800 10px "Hanken Grotesk", sans-serif';
       var tw = Math.ceil(g.measureText(tag).width) + 14;
@@ -2989,6 +2994,7 @@
     st.lockMin = lo;
     st.lockMax = hi;
     st.lockUntil = Math.max(st.lockUntil || 0, untilMs);
+    st.lockMode = viewMode();
     if (assetId === activeAsset) {
       viewMin = lo;
       viewMax = hi;
@@ -3130,6 +3136,17 @@
       var hc = Number(candles[candles.length - 1].c);
       if (hc > 0 && hc < 1e7) head = hc;
     }
+    // Cadre figé par les trades de l'AUTRE compte (réel ↔ démo) : on le relâche, sinon la
+    // démo restait aplatie par les ×50 du réel jusqu'à la fin de ces trades.
+    var vmNow = viewMode();
+    if (!allTrades.length && st.lockUntil && st.lockMode && st.lockMode !== vmNow) {
+      st.lockMin = 0;
+      st.lockMax = 0;
+      st.lockUntil = 0;
+      st.lockMode = '';
+      strikeLock = null;
+    }
+    if (allTrades.length) st.lockMode = vmNow;
     var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
     if (allTrades.length) {
       var expHold = 0;
@@ -3213,17 +3230,20 @@
       // Cadre figé pendant le trade (trait d'entrée calme). Mais la courbe est désormais
       // libre (vrai hasard) : si la tête s'approche d'un bord, le cadre glisse doucement,
       // même taille, pour qu'elle ne sorte jamais de l'écran.
-      // Tout ce qui compte doit rester visible : tête, prix d'entrée ET ligne objectif
-      // (même en ×50, petit écran comme plein écran). Si ça ne tient pas, le cadre
-      // s'agrandit juste ce qu'il faut, en douceur.
+      // Tout ce qui compte doit rester visible : tête et prix d'entrée. La ligne objectif
+      // (×5, ×10, ×50) n'agrandit le cadre que si elle est proche de la tête ; plus loin
+      // (×50 sur 5 ou 10 min), elle reste collée au bord avec sa flèche et son prix, et la
+      // courbe garde sa taille normale (avant : elle devenait toute plate).
       var needLo = head;
       var needHi = head;
+      var nearBar = Math.abs(head) * routeSpanPct(activeAsset) * 0.42;
       var nt;
       for (nt = 0; nt < allTrades.length; nt++) {
         var tv = allTrades[nt];
         if (!tv || tv.assetId !== activeAsset) continue;
-        [Number(tv.entryPrice), Number(tv.barrier)].forEach(function (pv) {
+        [Number(tv.entryPrice), Number(tv.barrier)].forEach(function (pv, k) {
           if (!(pv > 0) || !isFinite(pv)) return;
+          if (k === 1 && Math.abs(pv - head) > nearBar) return;
           if (pv < needLo) needLo = pv;
           if (pv > needHi) needHi = pv;
         });
