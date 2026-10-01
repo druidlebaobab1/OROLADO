@@ -2270,38 +2270,58 @@
     g.stroke();
     g.setLineDash(NO_DASH);
     g.restore();
-    // Hors écran : flèche + prix de l'objectif. Les étiquettes sont posées APRÈS tous les
-    // traits (drawTargetTags) : aucun trait ne les traverse, aucune n'en cache une autre.
-    var arrow = off < 0 ? ' ▲ ' + fmtTargetPrice(bar) : (off > 0 ? ' ▼ ' + fmtTargetPrice(bar) : '');
-    var tag = '×' + (Math.round(mult * 10) / 10) + ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target') + arrow;
-    var q;
-    for (q = 0; q < targetTagQueue.length; q++) {
-      if (targetTagQueue[q].tag === tag && Math.abs(targetTagQueue[q].by - by) < 2) return;
-    }
-    targetTagQueue.push({ tag: tag, bar: bar, by: by, off: off, fade: fade == null ? 1 : fade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
+    // Les étiquettes sont posées APRÈS tous les traits (drawTargetTags) : aucun trait ne les
+    // traverse. Elles sont regroupées comme les ronds d'entrée : un seul petit badge par
+    // objectif et par bord, avec le nombre de trades — elles ne peuvent jamais couvrir la courbe.
+    targetTagQueue.push({ mult: Math.round(mult * 10) / 10, bar: bar, by: by, off: off, fade: fade == null ? 1 : fade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
   }
 
   var targetTagQueue = [];
   function drawTargetTags(g) {
     if (!targetTagQueue.length) return;
     var gold = '#F5C518';
-    // Ordre des prix : le plus loin collé au bord, le plus proche vers la courbe.
-    var list = targetTagQueue.slice(0, 10).sort(function (a, b) {
+    var groups = [];
+    var byKey = {};
+    var i;
+    for (i = 0; i < targetTagQueue.length; i++) {
+      var t = targetTagQueue[i];
+      var key = t.off !== 0 ? t.off + '|' + t.mult : '0|' + t.mult + '|' + Math.round(t.by / 14);
+      var gr = byKey[key];
+      if (!gr) {
+        gr = { mult: t.mult, off: t.off, by: t.by, bar: t.bar, n: 0, fade: 0, pad: t.pad, layout: t.layout, top: t.top, bot: t.bot };
+        byKey[key] = gr;
+        groups.push(gr);
+      }
+      gr.n++;
+      if (t.fade > gr.fade) gr.fade = t.fade;
+      // Prix affiché : l'objectif le plus proche de la courbe.
+      if (t.off < 0 && t.bar < gr.bar) gr.bar = t.bar;
+      if (t.off > 0 && t.bar > gr.bar) gr.bar = t.bar;
+    }
+    // Bord du haut d'abord, puis l'écran, puis le bas ; le plus grand objectif collé au bord.
+    groups.sort(function (a, b) {
       if (a.off !== b.off) return a.off - b.off;
-      return a.off < 0 ? b.bar - a.bar : a.bar - b.bar;
+      if (a.off !== 0) return b.mult - a.mult;
+      return a.by - b.by;
     });
+    if (groups.length > 9) groups.length = 9;
+    var H = 13;
+    var STEP = 15;
     var placed = [];
     g.save();
-    g.font = '800 10px "Hanken Grotesk", sans-serif';
-    var i;
-    for (i = 0; i < list.length; i++) {
-      var it = list[i];
+    g.font = '800 9px "Hanken Grotesk", sans-serif';
+    for (i = 0; i < groups.length; i++) {
+      var it = groups[i];
+      var label = '×' + it.mult;
+      if (it.off < 0) label += ' ▲ ' + fmtTargetPrice(it.bar);
+      else if (it.off > 0) label += ' ▼ ' + fmtTargetPrice(it.bar);
+      else label += ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target');
+      if (it.n > 1) label += ' · ' + it.n;
       var top = it.top + 2;
-      var bot = it.bot - 18;
-      // Posée sur son trait (comme avant) ; si la place est prise, on empile vers l'intérieur
-      // du graphique (vers le bas depuis le bord du haut, vers le haut sinon), jamais dehors.
+      var bot = it.bot - H - 2;
+      // Posée sur son trait ; si la place est prise, on décale vers l'intérieur, jamais dehors.
       var dir = it.off < 0 ? 1 : -1;
-      var ty = it.by - 8;
+      var ty = it.by - H / 2;
       var guard = 0;
       var hit = true;
       while (hit && guard < 24) {
@@ -2310,25 +2330,25 @@
         hit = false;
         var k;
         for (k = 0; k < placed.length; k++) {
-          if (Math.abs(placed[k] - ty) < 18) { hit = true; break; }
+          if (Math.abs(placed[k] - ty) < STEP) { hit = true; break; }
         }
-        if (hit) ty += dir * 18;
+        if (hit) ty += dir * STEP;
         guard++;
       }
       placed.push(ty);
-      var tw = Math.ceil(g.measureText(it.tag).width) + 14;
-      var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 8);
+      var tw = Math.ceil(g.measureText(label).width) + 10;
+      var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 6);
       g.globalAlpha = it.fade;
       g.fillStyle = 'rgb(10,15,29)';
       g.strokeStyle = gold;
       g.lineWidth = 1;
-      roundRectOn(g, tx, ty, tw, 16, 8);
+      roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
       g.stroke();
       g.fillStyle = gold;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
-      g.fillText(it.tag, tx + tw / 2, ty + 8.5);
+      g.fillText(label, tx + tw / 2, ty + H / 2 + 0.5);
     }
     g.textBaseline = 'alphabetic';
     g.restore();
