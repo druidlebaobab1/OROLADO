@@ -2269,15 +2269,57 @@
     g.lineTo(layout.axisX, by);
     g.stroke();
     g.setLineDash(NO_DASH);
-    if ((idx || 0) < 2) {
-      // Hors écran : flèche + prix de l'objectif, pour savoir où il est sans aplatir la courbe.
-      var arrow = off < 0 ? ' ▲ ' + fmtTargetPrice(bar) : (off > 0 ? ' ▼ ' + fmtTargetPrice(bar) : '');
-      var tag = '×' + (Math.round(mult * 10) / 10) + ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target') + arrow;
-      g.font = '800 10px "Hanken Grotesk", sans-serif';
-      var tw = Math.ceil(g.measureText(tag).width) + 14;
-      var tx = Math.max(pad.l + 4, layout.axisX - tw - 8);
-      var ty = by - 8 - (idx || 0) * 18;
-      g.fillStyle = 'rgba(10,15,29,0.92)';
+    g.restore();
+    // Hors écran : flèche + prix de l'objectif. Les étiquettes sont posées APRÈS tous les
+    // traits (drawTargetTags) : aucun trait ne les traverse, aucune n'en cache une autre.
+    var arrow = off < 0 ? ' ▲ ' + fmtTargetPrice(bar) : (off > 0 ? ' ▼ ' + fmtTargetPrice(bar) : '');
+    var tag = '×' + (Math.round(mult * 10) / 10) + ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target') + arrow;
+    var q;
+    for (q = 0; q < targetTagQueue.length; q++) {
+      if (targetTagQueue[q].tag === tag && Math.abs(targetTagQueue[q].by - by) < 2) return;
+    }
+    targetTagQueue.push({ tag: tag, bar: bar, by: by, off: off, fade: fade == null ? 1 : fade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
+  }
+
+  var targetTagQueue = [];
+  function drawTargetTags(g) {
+    if (!targetTagQueue.length) return;
+    var gold = '#F5C518';
+    // Ordre des prix : le plus loin collé au bord, le plus proche vers la courbe.
+    var list = targetTagQueue.slice(0, 10).sort(function (a, b) {
+      if (a.off !== b.off) return a.off - b.off;
+      return a.off < 0 ? b.bar - a.bar : a.bar - b.bar;
+    });
+    var placed = [];
+    g.save();
+    g.font = '800 10px "Hanken Grotesk", sans-serif';
+    var i;
+    for (i = 0; i < list.length; i++) {
+      var it = list[i];
+      var top = it.top + 2;
+      var bot = it.bot - 18;
+      // Posée sur son trait (comme avant) ; si la place est prise, on empile vers l'intérieur
+      // du graphique (vers le bas depuis le bord du haut, vers le haut sinon), jamais dehors.
+      var dir = it.off < 0 ? 1 : -1;
+      var ty = it.by - 8;
+      var guard = 0;
+      var hit = true;
+      while (hit && guard < 24) {
+        if (ty < top) { ty = top; dir = 1; }
+        if (ty > bot) { ty = bot; dir = -1; }
+        hit = false;
+        var k;
+        for (k = 0; k < placed.length; k++) {
+          if (Math.abs(placed[k] - ty) < 18) { hit = true; break; }
+        }
+        if (hit) ty += dir * 18;
+        guard++;
+      }
+      placed.push(ty);
+      var tw = Math.ceil(g.measureText(it.tag).width) + 14;
+      var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 8);
+      g.globalAlpha = it.fade;
+      g.fillStyle = 'rgb(10,15,29)';
       g.strokeStyle = gold;
       g.lineWidth = 1;
       roundRectOn(g, tx, ty, tw, 16, 8);
@@ -2286,9 +2328,9 @@
       g.fillStyle = gold;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
-      g.fillText(tag, tx + tw / 2, ty + 8.5);
-      g.textBaseline = 'alphabetic';
+      g.fillText(it.tag, tx + tw / 2, ty + 8.5);
     }
+    g.textBaseline = 'alphabetic';
     g.restore();
   }
 
@@ -3441,6 +3483,7 @@
     // Lignes de trade sur le canvas principal (PC + mobile) ; overlay vidé.
     tradeYsScratch.length = 0;
     tradeHits.length = 0;
+    targetTagQueue.length = 0;
     var ti;
     var drawnKeys = {};
     for (ti = 0; ti < allTrades.length; ti++) {
@@ -3471,6 +3514,7 @@
       tradeHits.push({ v: ot, y: y0 });
       drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout, count);
     }
+    drawTargetTags(ctx);
     paintOverlay();
 
     var tagCol = asset.chart === 'candle'
