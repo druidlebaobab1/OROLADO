@@ -4567,3 +4567,8 @@ html body #fsTradeOverlay .stake-min-label{display:inline-flex!important;align-i
 /* ===== v2222 — Croix (×) : quand l'application la cache (formulaires de retrait, où la flèche ← sert de retour), elle disparaît vraiment.
    Une ancienne règle (.btn-close … inline-flex !important) la forçait à rester visible. ===== */
 html body .btn-close.hidden:not(#oroNoX1):not(#oroNoX2):not(#oroNoX3):not(#oroNoX4){display:none!important}
+
+/* ===== v2223 — Durées : plus aucun flash orange au toucher (bleu ciel seulement) ; Android : « Aide » et la langue décollés du bord ===== */
+html body #screenTrade .dur-chip.tap-lit.tap-lit.tap-lit.tap-lit,html body #screenTrade .dur-chip.hit,html body #screenTrade .dur-chip:active,
+html body #fsTradeOverlay .dur-chip.tap-lit.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .dur-chip.hit,html body #fsTradeOverlay .dur-chip:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 10px rgba(56,189,248,.55)!important}
+html.is-android body #screenTrade .topbar-actions{margin-right:12px!important;margin-left:6px!important}

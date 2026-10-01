@@ -2382,11 +2382,11 @@
       }
       placed.push(ty);
       g.globalAlpha = it.fade;
-      // Fond plein doré, texte sombre : lisible d'un coup d'œil.
-      g.fillStyle = gold;
+      // Fond vert plein (le vert des ronds d'achat), texte blanc : lisible d'un coup d'œil.
+      g.fillStyle = '#00A83E';
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
-      g.fillStyle = '#1A1205';
+      g.fillStyle = '#FFFFFF';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(label, tx + tw / 2, ty + H / 2 + 0.5);
