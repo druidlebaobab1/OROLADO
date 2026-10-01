@@ -2277,14 +2277,15 @@
   }
 
   var targetTagQueue = [];
+  var chronoPlaced = [];
   // Même place que drawLivePriceBadge (cadre du prix au bout de la courbe).
   function livePriceBadgeBox(map, price, layout) {
     if (!map || !isFinite(map.lastY)) return null;
     ctx.save();
-    ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
-    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 10;
+    ctx.font = '800 9px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 7;
     ctx.restore();
-    var th = 15;
+    var th = 13;
     var y = Math.max(2, Math.min(cssH - th - 2, map.lastY - th / 2));
     // Dans la colonne des prix, calé à droite comme les chiffres (par-dessus eux).
     var x = Math.max((layout && layout.axisX != null ? layout.axisX : cssW - 50) - 6, cssW - PRICE_AXIS_GAP - tw + 6);
@@ -2336,7 +2337,7 @@
       var tw = Math.ceil(g.measureText(label).width) + 10;
       var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 6);
       // Le cadre du prix de la courbe : l'étiquette ne passe jamais dessus.
-      var nearBadge = !!(avoid && tx < avoid.x1 + 2 && tx + tw > avoid.x0 - 2);
+      var nearBadge = !!(avoid && tx < avoid.x1 && tx + tw > avoid.x0);
       // Posée sur son trait ; si la place est prise, on décale vers l'intérieur, jamais dehors.
       var dir = it.off < 0 ? 1 : -1;
       var ty = it.by - H / 2;
@@ -2356,13 +2357,14 @@
       }
       placed.push(ty);
       g.globalAlpha = it.fade;
-      g.fillStyle = 'rgb(10,15,29)';
-      g.strokeStyle = gold;
+      // Fond plein doré, texte sombre : lisible d'un coup d'œil.
+      g.fillStyle = gold;
+      g.strokeStyle = 'rgba(255,255,255,0.7)';
       g.lineWidth = 1;
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
       g.stroke();
-      g.fillStyle = gold;
+      g.fillStyle = '#1A1205';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(label, tx + tw / 2, ty + H / 2 + 0.5);
@@ -2523,18 +2525,30 @@
         var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
         var ty = tagY - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        g.fillStyle = 'rgba(10,15,29,0.92)';
-        g.strokeStyle = lineCol;
-        g.lineWidth = 1.2;
+        // Deux chronos ne se posent jamais l'un sur l'autre : le suivant se décale d'un cran.
+        var cdir = ty > plotBot - timerH - 20 ? -1 : 1;
+        var cguard = 0;
+        var chit = true;
+        while (chit && cguard < 16) {
+          chit = false;
+          var ck;
+          for (ck = 0; ck < chronoPlaced.length; ck++) {
+            if (Math.abs(chronoPlaced[ck] - ty) < timerH + 2) { chit = true; break; }
+          }
+          if (chit) {
+            ty += cdir * (timerH + 2);
+            if (ty > plotBot - timerH - 2) { ty = plotBot - timerH - 2; cdir = -1; }
+            if (ty < plotTop + 2) { ty = plotTop + 2; cdir = 1; }
+          }
+          cguard++;
+        }
+        chronoPlaced.push(ty);
+        // Chrono : fond rouge plein bien visible, chiffres blancs qui comptent.
+        g.fillStyle = '#E8173A';
+        g.strokeStyle = 'rgba(255,255,255,0.85)';
+        g.lineWidth = 1;
         roundRectOn(g, leftX, ty, timerW, timerH, 7);
         g.fill();
-        // Fond teinté de la couleur du trade (vert ACHAT / rouge VENTE), texte blanc.
-        g.save();
-        g.globalAlpha = 0.32;
-        g.fillStyle = lineCol;
-        roundRectOn(g, leftX, ty, timerW, timerH, 7);
-        g.fill();
-        g.restore();
         g.stroke();
         g.fillStyle = '#FFFFFF';
         g.font = '800 9.5px "Hanken Grotesk", sans-serif';
@@ -2876,12 +2890,19 @@
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    ctx.font = '700 10px ui-monospace, Menlo, Consolas, monospace';
+    // Fond blanc léger (voile blanc sur fond sombre) ; les chiffres gardent leur couleur.
+    ctx.font = '800 9px ui-monospace, Menlo, Consolas, monospace';
     ctx.fillStyle = 'rgba(11,14,20,0.96)';
+    roundRect(x, y, tw, th, 6);
+    ctx.fill();
+    var glass = ctx.createLinearGradient(0, y, 0, y + th);
+    glass.addColorStop(0, 'rgba(255,255,255,0.34)');
+    glass.addColorStop(1, 'rgba(255,255,255,0.12)');
+    ctx.fillStyle = glass;
+    roundRect(x, y, tw, th, 6);
+    ctx.fill();
     ctx.strokeStyle = accent;
     ctx.lineWidth = 1;
-    roundRect(x, y, tw, th, 7);
-    ctx.fill();
     ctx.stroke();
     ctx.fillStyle = accent;
     ctx.textAlign = 'center';
@@ -3541,6 +3562,7 @@
     tradeYsScratch.length = 0;
     tradeHits.length = 0;
     targetTagQueue.length = 0;
+    chronoPlaced.length = 0;
     var ti;
     var drawnKeys = {};
     for (ti = 0; ti < allTrades.length; ti++) {

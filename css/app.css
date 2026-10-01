@@ -4304,17 +4304,17 @@ html body #screenTrade .help-badge,html body #screenTrade #btnProfile{background
 html body #screenTrade .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,.55)!important;color:#F8FAFC!important}
 html body #screenTrade .btn-auth-link.on{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,.3)!important}
 html body #screenTrade .balance-card{background:linear-gradient(90deg,rgba(247,147,26,.16) 0%,rgba(18,23,34,.95) 60%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 2px 12px rgba(247,147,26,.12)!important}
-html body #screenTrade .asset-chip{border-width:1px!important;border-style:solid!important}
-html body #screenTrade .asset-chip[data-asset="v100"]{background:rgba(5,150,105,.14)!important;border-color:rgba(16,185,129,.45)!important}
-html body #screenTrade .asset-chip[data-asset="stable"]{background:rgba(220,38,38,.14)!important;border-color:rgba(239,68,68,.45)!important}
-html body #screenTrade .asset-chip[data-asset="apex500"]{background:rgba(124,58,237,.14)!important;border-color:rgba(139,92,246,.45)!important}
-html body #screenTrade .asset-chip[data-asset="horizon50"]{background:rgba(234,88,12,.14)!important;border-color:rgba(249,115,22,.45)!important}
-html body #screenTrade .asset-chip[data-asset="crash300"]{background:rgba(190,24,93,.14)!important;border-color:rgba(236,72,153,.45)!important}
-html body #screenTrade .asset-chip[data-asset="goldtrend"]{background:rgba(180,83,9,.14)!important;border-color:rgba(245,158,11,.45)!important}
-html body #screenTrade .asset-chip[data-asset="boomspike"]{background:rgba(13,148,136,.14)!important;border-color:rgba(45,212,191,.45)!important}
-html body #screenTrade .asset-chip[data-asset="nexusprime"]{background:rgba(37,99,235,.14)!important;border-color:rgba(96,165,250,.45)!important}
-html body #screenTrade .asset-chip[data-asset="v75"]{background:rgba(162,28,175,.14)!important;border-color:rgba(217,70,239,.45)!important}
-html body #screenTrade .asset-chip[data-asset="titanpulse"]{background:rgba(153,27,27,.16)!important;border-color:rgba(248,113,113,.45)!important}
+html body #screenTrade .asset-chip:not(.on){border-width:1px!important;border-style:solid!important}
+html body #screenTrade .asset-chip[data-asset="v100"]:not(.on){background:rgba(5,150,105,.14)!important;border-color:rgba(16,185,129,.45)!important}
+html body #screenTrade .asset-chip[data-asset="stable"]:not(.on){background:rgba(220,38,38,.14)!important;border-color:rgba(239,68,68,.45)!important}
+html body #screenTrade .asset-chip[data-asset="apex500"]:not(.on){background:rgba(124,58,237,.14)!important;border-color:rgba(139,92,246,.45)!important}
+html body #screenTrade .asset-chip[data-asset="horizon50"]:not(.on){background:rgba(234,88,12,.14)!important;border-color:rgba(249,115,22,.45)!important}
+html body #screenTrade .asset-chip[data-asset="crash300"]:not(.on){background:rgba(190,24,93,.14)!important;border-color:rgba(236,72,153,.45)!important}
+html body #screenTrade .asset-chip[data-asset="goldtrend"]:not(.on){background:rgba(180,83,9,.14)!important;border-color:rgba(245,158,11,.45)!important}
+html body #screenTrade .asset-chip[data-asset="boomspike"]:not(.on){background:rgba(13,148,136,.14)!important;border-color:rgba(45,212,191,.45)!important}
+html body #screenTrade .asset-chip[data-asset="nexusprime"]:not(.on){background:rgba(37,99,235,.14)!important;border-color:rgba(96,165,250,.45)!important}
+html body #screenTrade .asset-chip[data-asset="v75"]:not(.on){background:rgba(162,28,175,.14)!important;border-color:rgba(217,70,239,.45)!important}
+html body #screenTrade .asset-chip[data-asset="titanpulse"]:not(.on){background:rgba(153,27,27,.16)!important;border-color:rgba(248,113,113,.45)!important}
 html body #screenTrade .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#E2E8F0!important}
 html body #screenTrade .chart-toolbar .ind-btn.on,html body #screenTrade .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
 html body #screenTrade .chart-toolbar .chart-reset-btn{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,.75)!important;color:#FFB15C!important}
@@ -4330,17 +4330,17 @@ html body #fsTradeOverlay .help-badge,html body #fsTradeOverlay #btnProfile{back
 html body #fsTradeOverlay .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,.55)!important;color:#F8FAFC!important}
 html body #fsTradeOverlay .btn-auth-link.on{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,.3)!important}
 html body #fsTradeOverlay .balance-card{background:linear-gradient(90deg,rgba(247,147,26,.16) 0%,rgba(18,23,34,.95) 60%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 2px 12px rgba(247,147,26,.12)!important}
-html body #fsTradeOverlay .asset-chip{border-width:1px!important;border-style:solid!important}
-html body #fsTradeOverlay .asset-chip[data-asset="v100"]{background:rgba(5,150,105,.14)!important;border-color:rgba(16,185,129,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="stable"]{background:rgba(220,38,38,.14)!important;border-color:rgba(239,68,68,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="apex500"]{background:rgba(124,58,237,.14)!important;border-color:rgba(139,92,246,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="horizon50"]{background:rgba(234,88,12,.14)!important;border-color:rgba(249,115,22,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="crash300"]{background:rgba(190,24,93,.14)!important;border-color:rgba(236,72,153,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="goldtrend"]{background:rgba(180,83,9,.14)!important;border-color:rgba(245,158,11,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="boomspike"]{background:rgba(13,148,136,.14)!important;border-color:rgba(45,212,191,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="nexusprime"]{background:rgba(37,99,235,.14)!important;border-color:rgba(96,165,250,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="v75"]{background:rgba(162,28,175,.14)!important;border-color:rgba(217,70,239,.45)!important}
-html body #fsTradeOverlay .asset-chip[data-asset="titanpulse"]{background:rgba(153,27,27,.16)!important;border-color:rgba(248,113,113,.45)!important}
+html body #fsTradeOverlay .asset-chip:not(.on){border-width:1px!important;border-style:solid!important}
+html body #fsTradeOverlay .asset-chip[data-asset="v100"]:not(.on){background:rgba(5,150,105,.14)!important;border-color:rgba(16,185,129,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="stable"]:not(.on){background:rgba(220,38,38,.14)!important;border-color:rgba(239,68,68,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="apex500"]:not(.on){background:rgba(124,58,237,.14)!important;border-color:rgba(139,92,246,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="horizon50"]:not(.on){background:rgba(234,88,12,.14)!important;border-color:rgba(249,115,22,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="crash300"]:not(.on){background:rgba(190,24,93,.14)!important;border-color:rgba(236,72,153,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="goldtrend"]:not(.on){background:rgba(180,83,9,.14)!important;border-color:rgba(245,158,11,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="boomspike"]:not(.on){background:rgba(13,148,136,.14)!important;border-color:rgba(45,212,191,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="nexusprime"]:not(.on){background:rgba(37,99,235,.14)!important;border-color:rgba(96,165,250,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="v75"]:not(.on){background:rgba(162,28,175,.14)!important;border-color:rgba(217,70,239,.45)!important}
+html body #fsTradeOverlay .asset-chip[data-asset="titanpulse"]:not(.on){background:rgba(153,27,27,.16)!important;border-color:rgba(248,113,113,.45)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#E2E8F0!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.on,html body #fsTradeOverlay .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
 html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,.75)!important;color:#FFB15C!important}
@@ -4385,3 +4385,64 @@ html body #withdrawModal .wd-group-label{color:#E9BC8C!important}
 html body #withdrawModal .wd-card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(11,16,28,.92))!important;border-color:rgba(247,147,26,.18)!important;transition:border-color .15s,background .15s}
 html body #withdrawModal .wd-card:hover,html body #withdrawModal .wd-card:active,html body #withdrawModal .wd-card.on,html body #withdrawModal .wd-card.active{border-color:rgba(247,147,26,.65)!important;background:linear-gradient(180deg,rgba(247,147,26,.16),rgba(11,16,28,.92))!important}
 html body #withdrawModal .modal-title,html body #depositModal .modal-title,html body #withdrawModal .wd-bal-amt{color:#FFB15C!important}
+
+/* ===== v2213 — Vie et lumière (demande du propriétaire) : logo, simulations, payout, carré du gain, boutons qui s'allument ===== */
+html body #screenTrade #brandLockup{background:linear-gradient(135deg,rgba(247,147,26,.2),rgba(247,147,26,.04))!important;border:1px solid rgba(247,147,26,.55)!important;box-shadow:0 0 12px rgba(247,147,26,.22),inset 0 1px 0 rgba(255,255,255,.08)!important;border-radius:10px!important}
+html body #screenTrade .asset-chip:not(.on){box-shadow:0 0 10px rgba(247,147,26,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenTrade .asset-chip.on{filter:brightness(1.12)}
+html body #screenTrade .odds-chip{background-clip:padding-box!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
+html body #screenTrade .odds-chip[data-odds="1.88"]:not(.on){background:linear-gradient(rgba(249,115,22,.18),rgba(249,115,22,.18)),#10172A!important}
+html body #screenTrade .odds-chip[data-odds="5"]:not(.on){background:linear-gradient(rgba(6,182,212,.18),rgba(6,182,212,.18)),#10172A!important}
+html body #screenTrade .odds-chip[data-odds="10"]:not(.on){background:linear-gradient(rgba(168,85,247,.2),rgba(168,85,247,.2)),#10172A!important}
+html body #screenTrade .odds-chip[data-odds="50"]:not(.on){background:linear-gradient(rgba(245,158,11,.18),rgba(245,158,11,.18)),#10172A!important}
+html body #screenTrade .odds-chip[data-odds="1.88"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;box-shadow:0 0 16px rgba(249,115,22,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #screenTrade .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#22D3EE,#0891B2)!important;box-shadow:0 0 16px rgba(6,182,212,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #screenTrade .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#C084FC,#9333EA)!important;box-shadow:0 0 16px rgba(168,85,247,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #screenTrade .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#FBBF24,#D97706)!important;box-shadow:0 0 16px rgba(245,158,11,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #screenTrade .odds-chip .odds-pct{color:#CBD5E1!important;opacity:1!important}
+html body #screenTrade .odds-chip.on .odds-pct,html body #screenTrade .odds-chip.on .odds-mult{color:#FFFFFF!important}
+html body #screenTrade .qbtn,html body #screenTrade .ind-btn,html body #screenTrade .dur-chip,html body #screenTrade .chart-fs-btn,html body #screenTrade .asset-chip,html body #screenTrade .odds-chip,html body #screenTrade .help-badge,html body #screenTrade #btnProfile{transition:box-shadow .12s,filter .12s,transform .12s!important}
+html body #screenTrade .qbtn:active,html body #screenTrade .ind-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .chart-fs-btn:active,html body #screenTrade .odds-chip:active,html body #screenTrade .asset-chip:active{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,.65),0 0 0 1px rgba(255,200,120,.6)!important;transform:scale(.96)!important}
+html body #screenTrade .qbtn-back:active{box-shadow:0 0 14px rgba(239,68,68,.7),0 0 0 1px rgba(252,165,165,.6)!important}
+html body #screenTrade .qbtn.hit,html body #screenTrade .ind-btn.hit,html body #screenTrade .dur-chip.hit,html body #screenTrade .odds-chip.hit{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,.65)!important}
+html body #fsTradeOverlay #brandLockup{background:linear-gradient(135deg,rgba(247,147,26,.2),rgba(247,147,26,.04))!important;border:1px solid rgba(247,147,26,.55)!important;box-shadow:0 0 12px rgba(247,147,26,.22),inset 0 1px 0 rgba(255,255,255,.08)!important;border-radius:10px!important}
+html body #fsTradeOverlay .asset-chip:not(.on){box-shadow:0 0 10px rgba(247,147,26,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #fsTradeOverlay .asset-chip.on{filter:brightness(1.12)}
+html body #fsTradeOverlay .odds-chip{background-clip:padding-box!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
+html body #fsTradeOverlay .odds-chip[data-odds="1.88"]:not(.on){background:linear-gradient(rgba(249,115,22,.18),rgba(249,115,22,.18)),#10172A!important}
+html body #fsTradeOverlay .odds-chip[data-odds="5"]:not(.on){background:linear-gradient(rgba(6,182,212,.18),rgba(6,182,212,.18)),#10172A!important}
+html body #fsTradeOverlay .odds-chip[data-odds="10"]:not(.on){background:linear-gradient(rgba(168,85,247,.2),rgba(168,85,247,.2)),#10172A!important}
+html body #fsTradeOverlay .odds-chip[data-odds="50"]:not(.on){background:linear-gradient(rgba(245,158,11,.18),rgba(245,158,11,.18)),#10172A!important}
+html body #fsTradeOverlay .odds-chip[data-odds="1.88"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;box-shadow:0 0 16px rgba(249,115,22,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #fsTradeOverlay .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#22D3EE,#0891B2)!important;box-shadow:0 0 16px rgba(6,182,212,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #fsTradeOverlay .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#C084FC,#9333EA)!important;box-shadow:0 0 16px rgba(168,85,247,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #fsTradeOverlay .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#FBBF24,#D97706)!important;box-shadow:0 0 16px rgba(245,158,11,.6),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #fsTradeOverlay .odds-chip .odds-pct{color:#CBD5E1!important;opacity:1!important}
+html body #fsTradeOverlay .odds-chip.on .odds-pct,html body #fsTradeOverlay .odds-chip.on .odds-mult{color:#FFFFFF!important}
+html body #fsTradeOverlay .qbtn,html body #fsTradeOverlay .ind-btn,html body #fsTradeOverlay .dur-chip,html body #fsTradeOverlay .chart-fs-btn,html body #fsTradeOverlay .asset-chip,html body #fsTradeOverlay .odds-chip,html body #fsTradeOverlay .help-badge,html body #fsTradeOverlay #btnProfile{transition:box-shadow .12s,filter .12s,transform .12s!important}
+html body #fsTradeOverlay .qbtn:active,html body #fsTradeOverlay .ind-btn:active,html body #fsTradeOverlay .dur-chip:active,html body #fsTradeOverlay .chart-fs-btn:active,html body #fsTradeOverlay .odds-chip:active,html body #fsTradeOverlay .asset-chip:active{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,.65),0 0 0 1px rgba(255,200,120,.6)!important;transform:scale(.96)!important}
+html body #fsTradeOverlay .qbtn-back:active{box-shadow:0 0 14px rgba(239,68,68,.7),0 0 0 1px rgba(252,165,165,.6)!important}
+html body #fsTradeOverlay .qbtn.hit,html body #fsTradeOverlay .ind-btn.hit,html body #fsTradeOverlay .dur-chip.hit,html body #fsTradeOverlay .odds-chip.hit{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,.65)!important}
+html body #withdrawModal select{background:#0B0F18!important;border:1px solid rgba(247,147,26,.3)!important;color:#F8FAFC!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important}
+html body #withdrawModal select:focus{border-color:rgba(247,147,26,.8)!important;box-shadow:0 0 0 3px rgba(247,147,26,.15)!important;outline:none!important}
+html body #withdrawModal input,html body #withdrawModal select{transition:border-color .15s,box-shadow .15s}
+html body #withdrawModal .wd-card:active,html body #depositModal .pay-crypto-cell:active,html body #depositModal .pay-method-card:active{box-shadow:0 0 14px rgba(247,147,26,.5)!important;transform:scale(.97)}
+html body #screenAuth .auth-tab:active,html body #screenAuth .btn-gold:active,html body #depositModal .btn-gold:active,html body #withdrawModal .btn-gold:active{filter:brightness(1.15)!important;box-shadow:0 0 18px rgba(247,147,26,.6)!important}
+@media (max-width:859px){
+html body #screenTrade .stake-line{align-items:stretch!important}
+html body #screenTrade .stake-field{flex:1 1 auto!important;min-width:0!important}
+html body #screenTrade .win-preview{flex:0 0 116px!important;width:116px!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:1px!important;padding:5px 6px!important;background:linear-gradient(160deg,rgba(16,185,129,.34) 0%,rgba(6,78,59,.42) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(52,211,153,.75)!important;border-radius:12px!important;box-shadow:0 0 16px rgba(16,185,129,.28),inset 0 1px 0 rgba(255,255,255,.12)!important;text-align:center!important;overflow:hidden!important}
+html body #screenTrade .win-preview .label{display:block!important;font-size:8px!important;font-weight:800!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#A7F3D0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;line-height:1.1!important}
+html body #screenTrade .win-preview .amount{font-size:17px!important;font-weight:900!important;line-height:1.15!important;color:#34D399!important;text-shadow:0 0 12px rgba(52,211,153,.5)!important;white-space:nowrap!important}
+html body #screenTrade .win-preview .mult{display:inline-block!important;font-size:8.5px!important;font-weight:800!important;line-height:1!important;padding:2px 7px!important;border-radius:999px!important;background:rgba(52,211,153,.18)!important;border:1px solid rgba(52,211,153,.45)!important;color:#D1FAE5!important;white-space:nowrap!important}
+html body #fsTradeOverlay .stake-line{align-items:stretch!important}
+html body #fsTradeOverlay .stake-field{flex:1 1 auto!important;min-width:0!important}
+html body #fsTradeOverlay .win-preview{flex:0 0 116px!important;width:116px!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:1px!important;padding:5px 6px!important;background:linear-gradient(160deg,rgba(16,185,129,.34) 0%,rgba(6,78,59,.42) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(52,211,153,.75)!important;border-radius:12px!important;box-shadow:0 0 16px rgba(16,185,129,.28),inset 0 1px 0 rgba(255,255,255,.12)!important;text-align:center!important;overflow:hidden!important}
+html body #fsTradeOverlay .win-preview .label{display:block!important;font-size:8px!important;font-weight:800!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#A7F3D0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;line-height:1.1!important}
+html body #fsTradeOverlay .win-preview .amount{font-size:17px!important;font-weight:900!important;line-height:1.15!important;color:#34D399!important;text-shadow:0 0 12px rgba(52,211,153,.5)!important;white-space:nowrap!important}
+html body #fsTradeOverlay .win-preview .mult{display:inline-block!important;font-size:8.5px!important;font-weight:800!important;line-height:1!important;padding:2px 7px!important;border-radius:999px!important;background:rgba(52,211,153,.18)!important;border:1px solid rgba(52,211,153,.45)!important;color:#D1FAE5!important;white-space:nowrap!important}
+}
+@media (min-width:860px){
+html body #screenTrade .stake-field,html body #fsTradeOverlay .stake-field{flex:1 1 auto!important;min-width:176px!important}
+html body #screenTrade .win-preview,html body #fsTradeOverlay .win-preview{flex:0 1 150px!important;min-width:0!important}
+}
