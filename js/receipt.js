@@ -118,6 +118,21 @@
     return Promise.resolve();
   }
 
+  function sitePill(g, x, cy, size, txtCol, fillCol, lineCol) {
+    g.save();
+    g.shadowBlur = 0; g.shadowColor = 'rgba(0,0,0,0)';
+    g.font = '800 ' + size + 'px ' + FONT;
+    var w = g.measureText('orolado.com').width + size * 1.2;
+    var h = size * 1.6;
+    rr(g, x, cy - h / 2, w, h, h / 2);
+    g.fillStyle = fillCol; g.fill();
+    if (lineCol) { g.lineWidth = 2; g.strokeStyle = lineCol; g.stroke(); }
+    g.fillStyle = txtCol;
+    g.textBaseline = 'middle';
+    g.fillText('orolado.com', x + size * 0.6, cy + 1);
+    g.restore();
+  }
+
   function fitText(g, txt, maxW, size, weight, family) {
     var s = size;
     g.font = weight + ' ' + s + 'px ' + family;
@@ -210,14 +225,15 @@
     var amt = (net > 0 ? '+' : (net < 0 ? '−' : '')) + money(net);
     fitText(g, amt, 520, 104, '800', FONT);
     if (won && !isDemo) { g.shadowColor = 'rgba(34,197,94,0.30)'; g.shadowBlur = 24; }
-    g.fillText(amt, 58, 382);
+    g.fillText(amt, 58, 368);
     g.shadowBlur = 0;
+    sitePill(g, 60, 440, 26, isDemo ? '#4338CA' : '#C2410C', isDemo ? '#EEF2FF' : '#FFF1E0', isDemo ? '#C7D2FE' : '#FDBA74');
     g.fillStyle = '#475569'; g.font = '700 28px ' + FONT;
-    g.fillText(t.stake + ' ' + money(stake) + '  ·  Payout ' + Math.round((mult < 2 ? mult - 1 : mult) * 100) + ' %', 62, 462);
+    g.fillText(t.stake + ' ' + money(stake) + '  ·  Payout ' + Math.round((mult < 2 ? mult - 1 : mult) * 100) + ' %', 62, 506);
     if (isDemo) {
-      rr(g, 60, 500, 470, 52, 26); g.fillStyle = '#EEF2FF'; g.fill();
+      rr(g, 60, 532, 470, 46, 23); g.fillStyle = '#EEF2FF'; g.fill();
       g.fillStyle = '#4338CA'; g.font = '700 22px ' + FONT;
-      g.fillText(t.demoNote, 84, 527);
+      g.fillText(t.demoNote, 84, 556);
     }
 
     // colonne droite : petits cadres
@@ -242,13 +258,9 @@
 
     // pied
     g.strokeStyle = isDemo ? '#E0E7FF' : '#FDE7C8'; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(60, 586); g.lineTo(W - 60, 586); g.stroke();
-    var sg = g.createLinearGradient(60, 0, 330, 0);
-    sg.addColorStop(0, A.a); sg.addColorStop(1, isDemo ? '#4F46E5' : '#16A34A');
-    g.fillStyle = sg; g.font = '800 38px ' + FONT;
-    g.fillText('orolado.com', 60, 630);
+    g.beginPath(); g.moveTo(60, 600); g.lineTo(W - 60, 600); g.stroke();
     g.textAlign = 'right'; g.fillStyle = '#64748B'; g.font = '700 22px ' + MONO;
-    g.fillText(t.no + ' ' + receiptNo(p.id, isDemo ? 'D' : 'T'), W - 60, 630);
+    g.fillText(t.no + ' ' + receiptNo(p.id, isDemo ? 'D' : 'T'), W - 60, 640);
     g.textAlign = 'left';
 
     return cv;
@@ -331,16 +343,18 @@
     g.fillText(label.split('').join(String.fromCharCode(8202)), 56, 214);
     var amt = (r.amount >= 0 ? '+' : '−') + money(r.amount);
     fitText(g, amt, W - 120, 96, '800', FONT);
-    g.fillText(amt, 52, 300);
+    g.fillText(amt, 52, 292);
+    sitePill(g, 56, 362, 24, '#FFFFFF', 'rgba(255,255,255,0.20)', 'rgba(255,255,255,0.55)');
+    g.fillStyle = '#FFFFFF'; g.shadowColor = 'rgba(0,0,0,0.22)'; g.shadowBlur = 8; g.shadowOffsetY = 2;
     g.font = '700 28px ' + FONT; g.globalAlpha = 0.95;
-    g.fillText((r.method ? r.method + '  ·  ' : '') + when(r.at), 56, 380);
+    g.fillText((r.method ? r.method + '  ·  ' : '') + when(r.at), 56, 428);
     g.globalAlpha = 1;
     g.shadowBlur = 0; g.shadowOffsetY = 0; g.shadowColor = 'rgba(0,0,0,0)';
     g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(56, 456); g.lineTo(W - 56, 456); g.stroke();
-    g.font = '800 34px ' + FONT; g.fillText('orolado.com', 56, 504);
+    g.beginPath(); g.moveTo(56, 474); g.lineTo(W - 56, 474); g.stroke();
+    g.fillStyle = '#FFFFFF';
     g.textAlign = 'right'; g.font = '700 20px ' + MONO; g.globalAlpha = 0.9;
-    g.fillText(t.no + ' ' + receiptNo(r.ref || r.at, kind === 'deposit' ? 'D' : (kind === 'bonus' ? 'B' : 'R')), W - 56, 504);
+    g.fillText(t.no + ' ' + receiptNo(r.ref || r.at, kind === 'deposit' ? 'D' : (kind === 'bonus' ? 'B' : 'R')), W - 56, 512);
     g.globalAlpha = 1; g.textAlign = 'left';
     return cv;
   }

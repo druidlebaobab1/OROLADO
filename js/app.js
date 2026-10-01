@@ -1718,15 +1718,26 @@
     function fmtHistMoney(n) {
       return String(D6.fmtFCFA(n) || '').replace(/ \$/, '\u00a0$');
     }
+    // Format en cartes (lisible sur tous les écrans, sans défilement de côté) :
+    // logo + simulation + sens à gauche, gain / perte à droite, bouton reçu au bout.
+    function hcIcon(assetId) {
+      try {
+        var ico = document.querySelector('.asset-chip[data-asset="' + assetId + '"] .asset-ico');
+        return ico ? ico.innerHTML : '';
+      } catch (eI) { return ''; }
+    }
+    function hcSide(side) {
+      return side === 'call' ? '<span class="hc-side call">CALL ↗</span>' : '<span class="hc-side put">PUT ↘</span>';
+    }
     live.forEach(function (tr) {
       var stake = Number(tr.stake || 0);
       var left = Math.max(0, Number(tr.timeLeft) || 0);
       var asset = D6.CONFIG.ASSETS[tr.assetId];
       var name = (asset && (asset.short || asset.name)) || tr.assetId || '-';
-      rows.push('<tr class="hist-open"><td>' + fmtTimerLeft(left) + '</td><td>' + name +
-        '</td><td>' + (tr.side === 'call' ? 'CALL' : 'PUT') + '</td><td class="hist-amt">' + fmtHistMoney(stake) +
-        '</td><td>' + (t('histOpen') || 'En cours') + ' · ' + durLabel(tr.duration) +
-        '</td><td class="hist-pnl">—</td></tr>');
+      rows.push('<div class="hc hc-live"><div class="hc-ico">' + hcIcon(tr.assetId) + '</div>' +
+        '<div class="hc-main"><div class="hc-name">' + name + ' ' + hcSide(tr.side) + '</div>' +
+        '<div class="hc-meta">' + (t('histOpen') || 'En cours') + ' · ' + fmtTimerLeft(left) + ' · ' + fmtHistMoney(stake) + '</div></div>' +
+        '<div class="hc-res"><div class="hc-pnl">—</div><div class="hc-st">' + durLabel(tr.duration) + '</div></div><span></span></div>');
     });
     var shown = mode === 'real' ? Math.max(50, tradePage.rows.length) : 100;
     var rcList = settled.slice(0, shown);
@@ -1736,23 +1747,23 @@
       var kind = resultKind(h);
       var net = kind === 'void' ? 0 : (kind === 'win' ? (payoutAmt - stake) : -stake);
       var res = kind === 'void' ? '0' : (kind === 'win' ? t('won') : t('expired'));
-      var pnlCls = net > 0 ? 'w hist-pnl' : (net < 0 ? 'l hist-pnl' : 'hist-pnl');
+      var pnlCls = net > 0 ? 'hc-pnl w' : (net < 0 ? 'hc-pnl l' : 'hc-pnl');
       var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + fmtHistMoney(Math.abs(net));
-      rows.push('<tr class="rc-open" data-rc="' + rcIdx + '"><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
-        '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td class="hist-amt">' + fmtHistMoney(stake) +
-        '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td>' +
-        '<td class="hist-rc"><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></td></tr>');
+      rows.push('<div class="hc rc-open" data-rc="' + rcIdx + '"><div class="hc-ico">' + hcIcon(h.assetId) + '</div>' +
+        '<div class="hc-main"><div class="hc-name">' + (h.assetName || h.assetId || '-') + ' ' + hcSide(h.side) + '</div>' +
+        '<div class="hc-meta">' + (h.clock || fmtWhen(h.at)) + ' · ' + durLabel(h.duration) + ' · ' + fmtHistMoney(stake) + '</div></div>' +
+        '<div class="hc-res"><div class="' + pnlCls + '">' + pnlTxt + '</div><div class="hc-st">' + res + '</div></div>' +
+        '<button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div>');
     });
     el.innerHTML = rows.length
-      ? '<table class="hist-table"><thead><tr><th>' + t('m_hTime') + '</th><th>' + t('m_hAsset') + '</th><th>' + t('m_hSide') + '</th><th>' + t('m_amount') + '</th><th>' + t('m_hResult') + '</th><th>P&amp;L</th><th></th></tr></thead><tbody>' +
-        rows.join('') + '</tbody></table>' +
+      ? '<div class="hc-list">' + rows.join('') + '</div>' +
         (mode === 'real' && tradePage.more ? '<button type="button" class="btn-ghost tx-more" id="histMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : t('m_seeMore')) + '</button>' : '')
       : '<div class="empty-feed">' + (t('noTradesHint') || 'Aucun trade pour l\'instant') + '</div>';
     var histMore = $('histMore');
     if (histMore) histMore.onclick = function () { loadTradePage(false); };
     // Reçu : un clic sur la ligne (ou sur le bouton) ouvre le reçu du trade.
     el.onclick = function (ev) {
-      var trR = ev.target && ev.target.closest ? ev.target.closest('tr[data-rc]') : null;
+      var trR = ev.target && ev.target.closest ? ev.target.closest('[data-rc]') : null;
       if (!trR || !D6.Receipt) return;
       var hR = rcList[Number(trR.getAttribute('data-rc'))];
       if (hR) D6.Receipt.trade(hR, mode);
