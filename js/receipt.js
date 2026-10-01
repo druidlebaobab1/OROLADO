@@ -178,14 +178,14 @@
     var bg = g.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, '#FFFFFF');
     bg.addColorStop(1, isDemo ? '#F4F6FF' : '#FFF7EC');
-    rr(g, 0, 0, W, H, 30); g.fillStyle = bg; g.fill();
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
     var bd = g.createLinearGradient(0, 0, W, H);
     bd.addColorStop(0, A.a); bd.addColorStop(1, A.b);
-    g.lineWidth = 5; g.strokeStyle = bd; rr(g, 2.5, 2.5, W - 5, H - 5, 28); g.stroke();
+    g.lineWidth = 6; g.strokeStyle = bd; g.strokeRect(3, 3, W - 6, H - 6);
     var gl = g.createRadialGradient(W - 60, 30, 5, W - 60, 30, 260);
     gl.addColorStop(0, isDemo ? 'rgba(99,102,241,0.10)' : 'rgba(247,147,26,0.14)');
     gl.addColorStop(1, 'rgba(255,255,255,0)');
-    g.save(); rr(g, 5, 5, W - 10, H - 10, 26); g.clip(); g.fillStyle = gl; g.fillRect(0, 0, W, H); g.restore();
+    g.save(); g.beginPath(); g.rect(6, 6, W - 12, H - 12); g.clip(); g.fillStyle = gl; g.fillRect(0, 0, W, H); g.restore();
 
     // en-tête : grand logo net + OROLADO.com
     g.textBaseline = 'middle'; g.textAlign = 'left';
@@ -322,8 +322,8 @@
       : (kind === 'withdraw' ? ['#FCA5A5', '#F87171', '#E0475E'] : ['#FDE68A', '#F59E0B', '#B45309']);
     var bg = g.createLinearGradient(0, 0, W * 0.6, H);
     bg.addColorStop(0, C[0]); bg.addColorStop(0.55, C[1]); bg.addColorStop(1, C[2]);
-    rr(g, 0, 0, W, H, 30); g.fillStyle = bg; g.fill();
-    g.save(); rr(g, 0, 0, W, H, 30); g.clip();
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    g.save(); g.beginPath(); g.rect(0, 0, W, H); g.clip();
     g.fillStyle = 'rgba(255,255,255,0.10)';
     g.beginPath(); g.arc(W - 40, 60, 170, 0, Math.PI * 2); g.fill();
     g.fillStyle = 'rgba(255,255,255,0.07)';

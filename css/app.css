@@ -4774,3 +4774,15 @@ html body .tx-more{display:flex!important;align-items:center!important;justify-c
 html body .tx-more:active{box-shadow:0 0 16px rgba(56,189,248,.6)!important}
 html body #screenAuth .logo-mark{width:64px!important;height:64px!important;image-rendering:auto!important}
 @media (max-width:420px){html body #screenAuth .logo-mark{width:58px!important;height:58px!important}}
+
+/* ===== v2240 — Lueur des titres ajustée au texte (ne touche plus la croix) ; profil : petites lueurs sur chaque ligne, « Retirer des fonds » mis en avant ===== */
+html body #historySheet .modal-head-row,html body #financeModal .modal-head-row{justify-content:space-between!important}
+html body #histSheetTitle,html body #financeModal .modal-title{flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 58px)!important;margin-right:auto!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body #withdrawModal .wd-modal-head{justify-content:center!important;position:relative!important}
+html body #withdrawModal .wd-modal-head .modal-title{flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 110px)!important;margin:0 auto!important}
+html body #depositModal .modal-head-row .modal-title,html body #depositModal > .modal-box > .modal-title{flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 58px)!important}
+html body #drawerProfile .drawer-item:not(#btnWithdraw):not(.drawer-logout){border:1px solid rgba(56,189,248,.28)!important;border-radius:12px!important;background:linear-gradient(180deg,rgba(56,189,248,.06),rgba(56,189,248,.01))!important;box-shadow:0 0 6px rgba(56,189,248,.14)!important;margin-bottom:6px!important}
+html body #drawerProfile .drawer-item:not(#btnWithdraw):not(.drawer-logout):active{border-color:rgba(56,189,248,.7)!important;box-shadow:0 0 12px rgba(56,189,248,.4)!important}
+html body #drawerProfile #btnWithdraw{background:linear-gradient(180deg,rgba(247,147,26,.32),rgba(194,65,12,.14))!important;border:1px solid rgba(247,147,26,.8)!important;border-radius:12px!important;box-shadow:0 0 14px rgba(247,147,26,.38),inset 0 0 10px rgba(247,147,26,.12)!important;margin-bottom:6px!important}
+html body #drawerProfile #btnWithdraw .di-label{color:#FFD9A8!important;font-weight:800!important}
+html body #passModal .modal-title,html body #emailModal .modal-title,html body #logoutOthersModal .modal-title{display:inline-block!important;flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 58px)!important;margin-right:auto!important;padding:5px 14px!important;border-radius:10px!important;border:1px solid rgba(56,189,248,.55)!important;background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.03))!important;box-shadow:0 0 10px rgba(56,189,248,.3)!important;color:#FFB15C!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
