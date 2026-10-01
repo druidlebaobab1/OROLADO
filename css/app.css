@@ -4563,3 +4563,7 @@ html body #fsTradeOverlay .stake-min-label{display:inline-flex!important;align-i
 @media (max-width:859px){html body #screenTrade .win-preview{box-shadow:0 0 5px rgba(16,185,129,.35),inset 0 0 10px rgba(16,185,129,.16),inset 0 1px 0 rgba(255,255,255,.1)!important}}
 @media (max-width:340px){html body #screenTrade .stake-min-label{display:none!important}}
 @media (max-width:400px){html body #screenTrade .stake-min-label{padding:1px 5px!important;font-size:9px!important;letter-spacing:0!important}html body #screenTrade .stake-min-actions .qbtn.stake-act{width:33px!important;min-width:33px!important;max-width:33px!important}}
+
+/* ===== v2222 — Croix (×) : quand l'application la cache (formulaires de retrait, où la flèche ← sert de retour), elle disparaît vraiment.
+   Une ancienne règle (.btn-close … inline-flex !important) la forçait à rester visible. ===== */
+html body .btn-close.hidden:not(#oroNoX1):not(#oroNoX2):not(#oroNoX3):not(#oroNoX4){display:none!important}
