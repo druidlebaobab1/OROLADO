@@ -1729,7 +1729,8 @@
         '</td><td class="hist-pnl">—</td></tr>');
     });
     var shown = mode === 'real' ? Math.max(50, tradePage.rows.length) : 100;
-    settled.slice(0, shown).forEach(function (h) {
+    var rcList = settled.slice(0, shown);
+    rcList.forEach(function (h, rcIdx) {
       var stake = Number(h.stake || 0);
       var payoutAmt = D6.roundMoney(stake * Number(h.payout || 1.88));
       var kind = resultKind(h);
@@ -1737,17 +1738,25 @@
       var res = kind === 'void' ? '0' : (kind === 'win' ? t('won') : t('expired'));
       var pnlCls = net > 0 ? 'w hist-pnl' : (net < 0 ? 'l hist-pnl' : 'hist-pnl');
       var pnlTxt = (net > 0 ? '+' : (net < 0 ? '-' : '')) + fmtHistMoney(Math.abs(net));
-      rows.push('<tr><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
+      rows.push('<tr class="rc-open" data-rc="' + rcIdx + '"><td>' + (h.clock || fmtWhen(h.at)) + '</td><td>' + (h.assetName || h.assetId || '-') +
         '</td><td>' + (h.side === 'call' ? 'CALL' : 'PUT') + '</td><td class="hist-amt">' + fmtHistMoney(stake) +
-        '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td></tr>');
+        '</td><td>' + res + ' · ' + durLabel(h.duration) + '</td><td class="' + pnlCls + '">' + pnlTxt + '</td>' +
+        '<td class="hist-rc"><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></td></tr>');
     });
     el.innerHTML = rows.length
-      ? '<table class="hist-table"><thead><tr><th>' + t('m_hTime') + '</th><th>' + t('m_hAsset') + '</th><th>' + t('m_hSide') + '</th><th>' + t('m_amount') + '</th><th>' + t('m_hResult') + '</th><th>P&amp;L</th></tr></thead><tbody>' +
+      ? '<table class="hist-table"><thead><tr><th>' + t('m_hTime') + '</th><th>' + t('m_hAsset') + '</th><th>' + t('m_hSide') + '</th><th>' + t('m_amount') + '</th><th>' + t('m_hResult') + '</th><th>P&amp;L</th><th></th></tr></thead><tbody>' +
         rows.join('') + '</tbody></table>' +
         (mode === 'real' && tradePage.more ? '<button type="button" class="btn-ghost tx-more" id="histMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : t('m_seeMore')) + '</button>' : '')
       : '<div class="empty-feed">' + (t('noTradesHint') || 'Aucun trade pour l\'instant') + '</div>';
     var histMore = $('histMore');
     if (histMore) histMore.onclick = function () { loadTradePage(false); };
+    // Reçu : un clic sur la ligne (ou sur le bouton) ouvre le reçu du trade.
+    el.onclick = function (ev) {
+      var trR = ev.target && ev.target.closest ? ev.target.closest('tr[data-rc]') : null;
+      if (!trR || !D6.Receipt) return;
+      var hR = rcList[Number(trR.getAttribute('data-rc'))];
+      if (hR) D6.Receipt.trade(hR, mode);
+    };
   }
 
   // Trades réels terminés, lus sur le serveur 50 par 50.
@@ -1774,6 +1783,8 @@
           payout: Number(o.payout) || 1.88,
           net: Number(o.net) || 0,
           status: o.status,
+          entryPrice: o.entryPrice,
+          exitPrice: o.exitPrice,
           mode: 'real'
         };
       });
@@ -5171,16 +5182,30 @@
     });
     rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
     rows = rows.slice(0, 20);
-    var html = rows.length ? rows.map(function (r) {
+    var html = rows.length ? rows.map(function (r, rcfIdx) {
       var st = r.status || { label: t('txPending'), cls: 'pending' };
-      return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
+      return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
         fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
-        '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        '</div></div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
-        st.label + '</span></div></div>';
+        st.label + '</span></div><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div></div>';
     }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
     tx.innerHTML = html;
+    bindFinanceReceipts(tx, rows);
     return html;
+  }
+
+  // Reçu d'une opération (dépôt, retrait, bonus) : moyen résumé (Crypto / Instant), jamais le détail.
+  function bindFinanceReceipts(tx, rows) {
+    tx.onclick = function (ev) {
+      var rowEl = ev.target && ev.target.closest ? ev.target.closest('[data-rcf]') : null;
+      if (!rowEl || !D6.Receipt) return;
+      var r = rows[Number(rowEl.getAttribute('data-rcf'))];
+      if (!r) return;
+      var gw = String(r.gateway || '');
+      var method = /instant/i.test(gw) ? 'Instant' : (/usdt|btc|eth|trx|sol|bnb|ton|ltc|xrp|doge|matic|link|avax|ada|crypto|oxa|binance/i.test(gw + ' ' + (r.ref || '')) ? 'Crypto' : '');
+      D6.Receipt.money({ kind: r.kind, amount: r.amount, at: r.at, ref: r.ref, method: r.kind === 'bonus' ? '' : method, statusLabel: r.kind === 'withdraw' && r.status ? r.status.label : '' });
+    };
   }
 
   function collectLocalFinanceRows() {
@@ -5244,18 +5269,19 @@
 
   function paintFinancePage(tx) {
     var rows = financePage.rows;
-    var html = rows.length ? rows.map(function (r) {
+    var html = rows.length ? rows.map(function (r, rcfIdx) {
       var st = r.status || { label: t('txPending'), cls: 'pending' };
-      return '<div class="tx-feed-row"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
+      return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
         fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
-        '</div></div><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        '</div></div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
-        st.label + '</span></div></div>';
+        st.label + '</span></div><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div></div>';
     }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
     if (rows.length < financePage.total) {
       html += '<button type="button" class="btn-ghost tx-more" id="txMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : t('m_seeMore')) + '</button>';
     }
     tx.innerHTML = html;
+    bindFinanceReceipts(tx, rows);
     var more = $('txMore');
     if (more) more.onclick = function () { loadFinancePage(tx, false); };
     financeCache.html = html;

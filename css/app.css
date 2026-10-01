@@ -4743,3 +4743,9 @@ html body #fsTradeOverlay .stake-line{gap:5px!important}
 html body #screenTrade .stake-min,html body #fsTradeOverlay .stake-min{margin:0!important;padding:0!important}
 html body #screenAuth #langBarAuth{display:none!important}
 @media (min-width:860px){html:not(.is-tv) body #screenTrade .stake-field{flex:1 1 0!important;max-width:none!important;width:auto!important}html:not(.is-tv) body #screenTrade .win-preview{margin-left:0!important}}
+
+/* ===== v2237 — Reçus : colonne du bouton reçu dans l'historique des trades ===== */
+html body .hist-table td.hist-rc{width:24px!important;min-width:24px!important;max-width:24px!important;padding:2px 0 2px 2px!important;text-align:right!important;overflow:visible!important}
+html body .hist-table td.hist-rc .rc-dlbtn{width:22px!important;height:22px!important;min-width:22px!important;border-radius:7px!important}
+html body .hist-table td.hist-rc .rc-dlbtn svg{width:12px!important;height:12px!important}
+html body .hist-table tr.rc-open td{cursor:pointer}
