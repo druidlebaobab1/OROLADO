@@ -6289,12 +6289,15 @@ function orolado_oxapay_extra_payment(array $data, array $dep): array {
     if (!$p['known']) return ['ok' => false, 'code' => 'no_price'];
     $total += $p['usd'];
     $h = trim((string) ($tx['tx_hash'] ?? $tx['txHash'] ?? $tx['hash'] ?? ''));
-    if ($h === '' || isset($known[strtolower($h)]) || orolado_txid_already_used($db, $h)) continue;
+    if ($h !== '' && (isset($known[strtolower($h)]) || orolado_txid_already_used($db, $h))) { $oldInList = true; continue; }
+    if ($h === '') continue;
     $newUsd += $p['usd'];
     $newHashes[] = $h;
   }
   if (!$newHashes) return ['ok' => true, 'duplicate' => true];
-  $usd = orolado_money(min($newUsd, $total - $already));
+  // Les anciens envois sont dans la même liste : on retire ce qui a déjà été crédité.
+  // Paiement séparé chez OxaPay (seulement les nouveaux envois) : tout est nouveau.
+  $usd = orolado_money(!empty($oldInList) ? min($newUsd, $total - $already) : $newUsd);
   // Moins de la moitié des nouvelles transactions est « en plus » : elles étaient déjà comptées.
   if ($usd + 0.0001 < orolado_oxapay_credit_floor() || $usd + 0.0001 < 0.5 * $newUsd) return ['ok' => true, 'duplicate' => true];
   sort($newHashes);
@@ -6353,9 +6356,52 @@ function orolado_oxapay_recheck(array $req): array {
     $at = strtotime((string) ($d['at'] ?? '')) ?: 0;
     if ($at < $cut) continue;
     $list[] = $d;
-    if (count($list) >= 4) break;
+    if (count($list) >= 6) break;
   }
   $credited = 0.0;
+  // Envois déjà passés sur une adresse payée, sous un autre numéro de suivi chez OxaPay : on
+  // reprend les numéros notés dans le journal (48 h), chacun interrogé UNE seule fois en tout.
+  // Le dépôt est celui qu'OxaPay désigne lui-même (numéro de commande ou adresse).
+  $doneFile = orolado_data_dir() . '/oxapay_tracks_done.json';
+  $done = is_file($doneFile) ? (json_decode((string) @file_get_contents($doneFile), true) ?: []) : [];
+  $knownTracks = [];
+  foreach (($db['deposits'] ?? []) as $d) if (is_array($d) && ($d['trackId'] ?? '') !== '') $knownTracks[strtolower((string) $d['trackId'])] = true;
+  $logFile = orolado_data_dir() . '/oxapay_webhook.log';
+  $todo = [];
+  if (is_file($logFile)) {
+    foreach (array_reverse(array_slice(file($logFile, FILE_IGNORE_NEW_LINES) ?: [], -3000)) as $line) {
+      $row = json_decode($line, true);
+      if (!is_array($row)) continue;
+      $tid = trim((string) ($row['trackId'] ?? ''));
+      if ($tid === '' || isset($knownTracks[strtolower($tid)]) || isset($done[$tid]) || isset($todo[$tid])) continue;
+      if ((strtotime((string) ($row['ts'] ?? '')) ?: 0) < $cut) continue;
+      $todo[$tid] = true;
+      if (count($todo) >= 4) break;
+    }
+  }
+  foreach (array_keys($todo) as $tid) {
+    $tid = (string) $tid;
+    $live = orolado_oxapay_inquiry($tid);
+    if (!$live) continue;
+    $liveOrder = (string) ($live['order_id'] ?? $live['orderId'] ?? '');
+    $liveAddr = orolado_oxapay_addr($live);
+    $d = ($liveOrder !== '' || $liveAddr !== '') ? orolado_oxapay_find_dep($liveOrder, '', $liveAddr) : null;
+    $st = $d ? strtoupper((string) ($d['status'] ?? '')) : '';
+    if ($st !== 'COMPLETED' && $st !== 'PAID') { $done[$tid] = time(); continue; }
+    // Envoi pas encore confirmé : on réessaiera à la prochaine ouverture.
+    $recvL = orolado_oxapay_received($live);
+    if (!$recvL['known'] || $recvL['usd'] + 0.0001 < orolado_oxapay_credit_floor()) continue;
+    $done[$tid] = time();
+    $x = orolado_oxapay_extra_payment($live, $d);
+    if (!empty($x['ok']) && empty($x['duplicate'])) {
+      if ((string) ($d['userId'] ?? '') === $uid) $credited += (float) ($x['amount'] ?? 0);
+      orolado_oxapay_log('recheck_extra', ['orderId' => (string) ($d['id'] ?? ''), 'track' => $tid] + $x);
+    }
+  }
+  if ($todo) {
+    foreach ($done as $k => $t) if ((int) $t < time() - 7 * 86400) unset($done[$k]);
+    @file_put_contents($doneFile, json_encode($done), LOCK_EX);
+  }
   foreach ($list as $d) {
     $st = strtoupper((string) ($d['status'] ?? ''));
     if ($st === 'COMPLETED' || $st === 'PAID') {

@@ -864,6 +864,7 @@
           var incomingDep = Number(r.user && r.user.realDepositTotal) || 0;
           var localDep = Number(u.realDepositTotal) || 0;
           if (incomingDep > localDep + 0.009) {
+            recvFresh = {};
             applyOfficialReal(Number(r.vault.real), { fromMe: true, allowRaise: true, force: true });
             updateBalance(false);
           }
@@ -1987,6 +1988,11 @@
   var recvBusy = {};
   var recvFailed = {};
   var recvTimers = {};
+  // Une adresse OxaPay ne sert qu'une fois (payée ou expirée = OxaPay ne la surveille plus) :
+  // on ne montre une adresse que si le serveur l'a donnée il y a moins de 10 min, et jamais
+  // après un dépôt crédité (le serveur en donne alors une nouvelle).
+  var recvFresh = {};
+  function recvIsFresh(key) { return !!recvFresh[key] && Date.now() - recvFresh[key] < 600000; }
 
   function recvCacheKey(u) {
     return 'oro_recv_cache_' + String((u && u.id) || 'guest');
@@ -2019,6 +2025,7 @@
     if (!addr || isStaticPlatAddr(addr)) return;
     var key = profRecvMeta(id).cache;
     recvCache[key] = addr;
+    recvFresh[key] = Date.now();
     var u = user();
     if (!u || isGuest(u)) return;
     u.recvAddrs = u.recvAddrs || {};
@@ -2043,6 +2050,7 @@
 
   function assignedRecv(id) {
     var key = profRecvMeta(id).cache;
+    if (!recvIsFresh(key)) return '';
     var u = user();
     var addr = '';
     if (u && u.recvAddrs && u.recvAddrs[key]) addr = String(u.recvAddrs[key] || '');
@@ -2089,7 +2097,7 @@
     paintProfRecv();
     if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
     recvTimers[meta.cache] = setTimeout(function () {
-      if (!recvCache[meta.cache]) {
+      if (!recvIsFresh(meta.cache)) {
         recvBusy[meta.cache] = false;
         recvFailed[meta.cache] = true;
         paintProfRecv();
@@ -3682,6 +3690,7 @@
   function applyUsdtCredit(remote) {
     if (!remote || !remote.ok) return false;
     if (!(remote.paid || remote.success) || !(remote.amount > 0)) return false;
+    recvFresh = {};
     var u = user();
     var vault = remote.vault;
     if (!vault && remote.new_balance > 0) vault = { real: remote.new_balance };
@@ -4161,7 +4170,8 @@
   }
 
   function cachedOxaAddr() {
-    var a = oxaAsset === 'usdt' ? (recvCache[oxaCoin] || recvCache.usdt || '') : (recvCache[oxaCoin] || '');
+    var a = recvIsFresh(oxaCoin) ? (recvCache[oxaCoin] || '') : '';
+    if (!a && oxaAsset === 'usdt' && recvIsFresh('usdt')) a = recvCache.usdt || '';
     return isStaticPlatAddr(a) ? '' : a;
   }
 
@@ -4282,7 +4292,8 @@
     var cacheKey = String((inv && inv.coin) || oxaCoin || 'usdt_trc20');
     if (liveDepositAddr) {
       recvCache[cacheKey] = liveDepositAddr;
-      if (oxaAsset === 'usdt' && (cacheKey === 'usdt_trc20' || cacheKey.indexOf('usdt_') === 0)) recvCache.usdt = liveDepositAddr;
+      recvFresh[cacheKey] = Date.now();
+      if (oxaAsset === 'usdt' && (cacheKey === 'usdt_trc20' || cacheKey.indexOf('usdt_') === 0)) { recvCache.usdt = liveDepositAddr; recvFresh.usdt = Date.now(); }
     }
     var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
     if ($('usdtPayAmt')) $('usdtPayAmt').textContent = '';

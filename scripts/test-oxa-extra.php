@@ -29,7 +29,7 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
 };
 $OXA = [];
 $GLOBALS['OROLADO_FAKE_OXA'] = function ($m, $p) use (&$OXA) {
-  foreach ($OXA as $tid => $resp) if (str_contains($p, '/payment/' . $tid)) return ['data' => $resp];
+  foreach ($OXA as $tid => $resp) if (str_ends_with($p, '/payment/' . $tid)) return ['data' => $resp];
   return null;
 };
 $pass = 0; $fail = 0;
@@ -121,6 +121,36 @@ $r = orolado_oxapay_recheck(['token' => 'tokV']);
 check('autre joueur : aucun dépôt touché', ($r['credited'] ?? -1) == 0 && $money($V) === 0.0, json_encode($r));
 $r = orolado_oxapay_recheck(['token' => 'nope']);
 check('sans connexion → refusé', empty($r['ok']));
+
+echo "7) 2e envoi compté À PART par OxaPay (nouveau numéro de suivi, seulement le nouvel envoi)\n";
+$fresh([$dep('o8', $A, 'T8', 'ADDR8', 'COMPLETED', 7.27, 'h8')]);
+$OXA['T8'] = $pay('T8', 'o8', 'ADDR8', [$tx('h8', 7.27)]);
+$OXA['T8b'] = $pay('T8b', '', 'ADDR8', [$tx('h8b', 7.70)]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'T8b', 'address' => 'ADDR8', 'status' => 'Paid']), '');
+check('22 TRX (7,70 $) renvoyés sur l\'adresse TRX déjà payée → 7,70 $', abs($money($A) - 7.70) < 0.001, (string) $money($A));
+orolado_oxapay_webhook(json_encode(['track_id' => 'T8b', 'address' => 'ADDR8', 'status' => 'Paid']), '');
+check('message répété → pas de 2e crédit', abs($money($A) - 7.70) < 0.001, (string) $money($A));
+
+echo "8) Rattrapage des envois déjà passés (notés dans le journal, jamais crédités)\n";
+$fresh([$dep('o9', $A, 'T9', 'ADDR9', 'COMPLETED', 7.27, 'h9'), $dep('oW', $V, 'TW', 'ADDRW', 'COMPLETED', 5, 'hW')]);
+$OXA['T9'] = $pay('T9', 'o9', 'ADDR9', [$tx('h9', 7.27)]);
+$OXA['T9b'] = $pay('T9b', '', 'ADDR9', [$tx('h9b', 7.70)]);
+$OXA['TWb'] = $pay('TWb', '', 'ADDRW', [$tx('hWb', 4)]);
+$OXA['TZ'] = $pay('TZ', '', 'ADDR-INCONNUE', [$tx('hZ', 50)]);
+@file_put_contents(orolado_data_dir() . '/oxapay_webhook.log', implode("\n", [
+  json_encode(['ts' => date('c', time() - 3600), 'event' => 'webhook_in', 'trackId' => 'T9b', 'orderId' => '']),
+  json_encode(['ts' => date('c', time() - 3000), 'event' => 'webhook_in', 'trackId' => 'TWb', 'orderId' => '']),
+  json_encode(['ts' => date('c', time() - 2000), 'event' => 'webhook_in', 'trackId' => 'TZ', 'orderId' => '']),
+  json_encode(['ts' => date('c', time() - 9 * 86400), 'event' => 'webhook_in', 'trackId' => 'TOLD', 'orderId' => '']),
+]) . "\n");
+$r = orolado_oxapay_recheck(['token' => 'tokA']);
+check('ancien envoi TRX jamais crédité → 7,70 $ rattrapés', abs($money($A) - 7.70) < 0.001, json_encode($r));
+check('envoi d\'un autre joueur → crédité à LUI (4 $), pas à moi', abs($money($V) - 4.0) < 0.001, (string) $money($V));
+check('adresse inconnue → personne n\'est crédité', abs($money($A) + $money($V) - 11.70) < 0.001);
+$doneT = json_decode((string) file_get_contents(orolado_data_dir() . '/oxapay_tracks_done.json'), true);
+check('chaque numéro interrogé une seule fois, les vieux (> 48 h) ignorés', isset($doneT['T9b'], $doneT['TWb'], $doneT['TZ']) && !isset($doneT['TOLD']));
+$x = orolado_oxapay_extra_payment($OXA['T9b'], load_db()['deposits'][0]);
+check('rejoué à la main → pas de 2e crédit', !empty($x['duplicate']) && abs($money($A) - 7.70) < 0.001, json_encode($x));
 
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
