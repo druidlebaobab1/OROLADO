@@ -2277,7 +2277,22 @@
   }
 
   var targetTagQueue = [];
-  function drawTargetTags(g) {
+  // Même place que drawLivePriceBadge (cadre du prix au bout de la courbe).
+  function livePriceBadgeBox(map, price, layout) {
+    if (!map || !isFinite(map.lastY)) return null;
+    ctx.save();
+    ctx.font = '500 10px ui-monospace, Menlo, Consolas, monospace';
+    var tw = Math.ceil(ctx.measureText(formatAxisPrice(price)).width) + 8;
+    ctx.restore();
+    var th = 12;
+    var y = Math.max(2, Math.min(cssH - th - 2, map.lastY - th / 2));
+    var x = map.lastX + 9;
+    var axisX = layout && layout.axisX != null ? layout.axisX : cssW - 8;
+    if (x + tw > axisX - 2) x = axisX - tw - 2;
+    return { x0: x, x1: x + tw, y0: y, y1: y + th };
+  }
+
+  function drawTargetTags(g, avoid) {
     if (!targetTagQueue.length) return;
     var gold = '#F5C518';
     var groups = [];
@@ -2304,7 +2319,7 @@
       if (a.off !== 0) return b.mult - a.mult;
       return a.by - b.by;
     });
-    if (groups.length > 9) groups.length = 9;
+    // Pas de limite de nombre : au bord, les badges sont déjà regroupés (au plus ×5, ×10, ×50).
     var H = 13;
     var STEP = 15;
     var placed = [];
@@ -2319,6 +2334,10 @@
       if (it.n > 1) label += ' · ' + it.n;
       var top = it.top + 2;
       var bot = it.bot - H - 2;
+      var tw = Math.ceil(g.measureText(label).width) + 10;
+      var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 6);
+      // Le cadre du prix de la courbe : l'étiquette ne passe jamais dessus.
+      var nearBadge = !!(avoid && tx < avoid.x1 + 2 && tx + tw > avoid.x0 - 2);
       // Posée sur son trait ; si la place est prise, on décale vers l'intérieur, jamais dehors.
       var dir = it.off < 0 ? 1 : -1;
       var ty = it.by - H / 2;
@@ -2332,12 +2351,11 @@
         for (k = 0; k < placed.length; k++) {
           if (Math.abs(placed[k] - ty) < STEP) { hit = true; break; }
         }
+        if (!hit && nearBadge && ty < avoid.y1 + 2 && ty + H > avoid.y0 - 2) hit = true;
         if (hit) ty += dir * STEP;
         guard++;
       }
       placed.push(ty);
-      var tw = Math.ceil(g.measureText(label).width) + 10;
-      var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 6);
       g.globalAlpha = it.fade;
       g.fillStyle = 'rgb(10,15,29)';
       g.strokeStyle = gold;
@@ -3534,7 +3552,7 @@
       tradeHits.push({ v: ot, y: y0 });
       drawEntryOn(ctx, map, ot, now, pad, ti, minP, maxP, h, shift, layout, count);
     }
-    drawTargetTags(ctx);
+    drawTargetTags(ctx, map && !(panMs > 0) ? livePriceBadgeBox(map, market.price, layout) : null);
     paintOverlay();
 
     var tagCol = asset.chart === 'candle'

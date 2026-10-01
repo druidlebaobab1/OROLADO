@@ -4256,3 +4256,25 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
 @supports (-webkit-touch-callout: none) {
   html body input, html body select, html body textarea { font-size: 16px !important; }
 }
+/* Plein écran PC / TV (couché, large) : la capsule Démo / Réel tient TOUJOURS dans la colonne de droite (168 px).
+   Avant, connecté (DÉMO + « + » + RÉEL + 4 pièces ≈ 270 px) elle débordait sur le graphique, et un peu aussi en
+   visiteur. Deux lignes : boutons en haut, les 4 pièces en dessous. Téléphones (< 860 px) : rien ne change. */
+@media (orientation:landscape) and (min-width:860px){
+  html.fs-trade body .pad .fs-mode-switch,html.is-fullscreen body .pad .fs-mode-switch{
+    display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;grid-auto-flow:row!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;
+    gap:5px 2px!important;padding:5px 6px!important;border-radius:14px!important;overflow:hidden!important;
+    justify-items:center!important;align-items:center!important}
+  html.fs-trade body .pad .fs-mode-switch .fs-coin,html.is-fullscreen body .pad .fs-mode-switch .fs-coin{
+    grid-row:2!important;grid-column:span 3!important;width:18px!important;height:18px!important;flex:none!important}
+  html.fs-trade body .pad .fs-mode-switch .fs-mode-btn[data-mode="demo"],html.is-fullscreen body .pad .fs-mode-switch .fs-mode-btn[data-mode="demo"],
+  html.fs-trade body .pad .fs-mode-switch .fs-mode-btn[data-mode="real"],html.is-fullscreen body .pad .fs-mode-switch .fs-mode-btn[data-mode="real"]{
+    grid-row:1!important;grid-column:span 5!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;
+    padding:4px 2px!important;min-height:24px!important;font-size:9.5px!important;white-space:nowrap!important;overflow:hidden!important}
+  html.fs-trade body .pad .fs-mode-switch .fs-mid-plus,html.is-fullscreen body .pad .fs-mode-switch .fs-mid-plus{
+    grid-row:1!important;grid-column:span 2!important;width:22px!important;height:22px!important;min-width:22px!important}
+  html.fs-guest body .pad .fs-mode-switch .fs-mode-btn[data-mode="demo"]{grid-column:span 12!important}
+  html.fs-trade body .pad .fs-top-bal,html.is-fullscreen body .pad .fs-top-bal{
+    max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  html.fs-trade body .pad #fsTopMid,html.is-fullscreen body .pad #fsTopMid{width:100%!important;min-width:0!important}
+}
