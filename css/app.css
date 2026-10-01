@@ -4684,9 +4684,9 @@ html body #screenTrade .win-preview .amount,html body #fsTradeOverlay .win-previ
    sauf sur très grand écran où une seule ligne suffit ; Retrait PC plus large (5 colonnes) pour ne plus défiler ;
    carré du gain : plus d'espace entre le montant et « Payout ». ===== */
 @media (min-width:860px){
-html body #depositModal .modal-box{width:min(600px,94vw)!important;max-width:600px!important;scrollbar-width:none!important}
-html body #depositModal .modal-box::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
-html body #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important}
+html:not(.is-tv) body #depositModal .modal-box{width:min(600px,94vw)!important;max-width:600px!important;scrollbar-width:none!important}
+html:not(.is-tv) body #depositModal .modal-box::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+html:not(.is-tv) body #depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important}
 }
 @media (min-width:860px){
 /* PC : les 10 simulations sur UNE seule ligne, toutes visibles, sans défiler : chaque case cède quelques pixels et le nom s'adapte à la largeur. */
@@ -4697,3 +4697,33 @@ html:not(.is-tv) body #screenTrade #assetBar .asset-chip .payout-live{font-size:
 }
 @media (min-width:860px){html:not(.is-tv) body #screenTrade #assetBar .asset-chip[data-asset="titanpulse"] .n{font-size:clamp(7px,.56vw,10.4px)!important}}
 @media (min-width:860px) and (max-width:1199px){html:not(.is-tv) body #screenTrade #assetBar .asset-chip .asset-ico{display:none!important}html:not(.is-tv) body #screenTrade #assetBar .asset-chip{padding-left:3px!important;padding-right:3px!important}}
+
+/* ===== v2234 — Aide / langue / profil en bleu ciel (plus de violet) ; espace entre les boutons de mise et les payout ;
+   montant du gain qui rétrécit pour tenir ; petites flèches des cases montant retirées ; PC : « Retirer des fonds » coloré
+   comme sur téléphone, Retrait sans défilement (plus large), Dépôt un peu plus petit ===== */
+html body #screenTrade .help-badge:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.5)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #screenTrade .help-badge.tap-lit.tap-lit.tap-lit,html body #screenTrade .help-badge:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade #langBarTrade .lang-dd-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.5)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #screenTrade #langBarTrade .lang-dd-btn.tap-lit.tap-lit.tap-lit,html body #screenTrade #langBarTrade .lang-dd-btn:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade #btnProfile:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.5)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #screenTrade #btnProfile.tap-lit.tap-lit.tap-lit,html body #screenTrade #btnProfile:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #screenTrade .win-preview .amount{display:block!important;width:100%!important;max-width:100%!important;overflow:hidden!important;white-space:nowrap!important;text-align:center!important}
+html body #fsTradeOverlay .help-badge:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.5)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #fsTradeOverlay .help-badge.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .help-badge:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay #langBarTrade .lang-dd-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.5)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #fsTradeOverlay #langBarTrade .lang-dd-btn.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay #langBarTrade .lang-dd-btn:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay #btnProfile:not(.tap-lit){background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.5)!important;color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
+html body #fsTradeOverlay #btnProfile.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay #btnProfile:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border-color:#BAE6FD!important;color:#04202E!important;box-shadow:0 0 12px rgba(56,189,248,.55)!important}
+html body #fsTradeOverlay .win-preview .amount{display:block!important;width:100%!important;max-width:100%!important;overflow:hidden!important;white-space:nowrap!important;text-align:center!important}
+html body #screenTrade .stake-line{margin-bottom:9px!important}
+html body input[type=number]::-webkit-inner-spin-button,html body input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none!important;appearance:none!important;margin:0!important}
+html body input[type=number]{-moz-appearance:textfield!important;appearance:textfield!important}
+@media (min-width:860px){
+html:not(.is-tv) body #drawerProfile #btnWithdraw{background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(180,83,9,.1))!important;border:1px solid rgba(245,158,11,.45)!important;border-radius:10px!important;box-shadow:0 0 12px rgba(245,158,11,.18)!important}
+html:not(.is-tv) body #withdrawModal .withdraw-box{width:min(720px,94vw)!important;max-width:720px!important;scrollbar-width:none!important}
+html:not(.is-tv) body #withdrawModal .withdraw-box::-webkit-scrollbar,html:not(.is-tv) body #withdrawModal #wdStepGrid::-webkit-scrollbar{display:none!important;width:0!important}
+html:not(.is-tv) body #withdrawModal #wdStepGrid{scrollbar-width:none!important}
+html:not(.is-tv) body #withdrawModal #wdLocalGrid{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+html:not(.is-tv) body #withdrawModal #wdCryptoGrid,html:not(.is-tv) body #withdrawModal #wdBankGrid{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+html:not(.is-tv) body #depositModal .modal-box{width:min(560px,94vw)!important;max-width:560px!important;padding-top:12px!important;padding-bottom:10px!important}
+}

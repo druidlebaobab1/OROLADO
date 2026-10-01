@@ -1427,7 +1427,10 @@
     var stakeEl = $('inputStake');
     var stake = Math.max(D6.CONFIG.MIN_STAKE, D6.roundMoney(Number(stakeEl && stakeEl.value) || 1));
     var netGain = D6.roundMoney(stake * (pct / 100));
-    if ($('previewGain')) $('previewGain').textContent = D6.fmtFCFA(netGain);
+    if ($('previewGain')) {
+      $('previewGain').textContent = D6.fmtFCFA(netGain);
+      fitGainText($('previewGain'));
+    }
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
       btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);
@@ -1514,6 +1517,22 @@
   // Le joueur peut choisir une autre durée, mais elle n'est plus gardée après une actualisation
   // (un « 10 min » oublié surprenait les joueurs).
   var durResetFor = null;
+  // Gain prévu : le montant rétrécit tout seul pour toujours tenir dans son carré (même 40 millions).
+  function fitGainText(el) {
+    try {
+      if (!el) return;
+      el.style.removeProperty('font-size');
+      if (!el.clientWidth) return;
+      var fs = parseFloat(window.getComputedStyle(el).fontSize) || 17;
+      var guard = 0;
+      while (el.scrollWidth > el.clientWidth + 1 && fs > 8 && guard < 30) {
+        fs -= 0.5;
+        el.style.setProperty('font-size', fs + 'px', 'important');
+        guard++;
+      }
+    } catch (eFit) { /* ignore */ }
+  }
+
   function updateDurationUi() {
     var u = user();
     if (!u) return;
@@ -5882,7 +5901,9 @@
         }
         if (a !== 'back') {
           if (cap > 0 && stake > cap) stake = cap;
-          if (stake < min) stake = min;
+          // « − » descend jusqu'à 0 comme la touche effacer ; les autres boutons gardent la mise minimum.
+          if (add < 0) { if (stake < 0) stake = 0; }
+          else if (stake < min) stake = min;
         }
         if (stakeEl) stakeEl.value = stake;
         btn.classList.add('hit');
