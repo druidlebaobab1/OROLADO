@@ -4802,3 +4802,7 @@ html.is-android:not(.fs-guest) body #screenTrade .topbar-actions{margin-left:10p
 html.is-android:not(.fs-guest) body #screenTrade #btnOpenDeposit{min-width:0!important;flex-shrink:1!important}
 /* pas de zoom au double toucher (le zoom restait après actualisation) */
 html,body,button,.btn-trade,.qbtn,.dur-chip,.odds-chip,.asset-chip,.ind-btn,input{touch-action:manipulation}
+
+/* ===== v2243 — Arabe (droite à gauche) : les titres restent à droite, la croix à gauche, sans se croiser ===== */
+html[dir=rtl] body #histSheetTitle,html[dir=rtl] body #financeModal .modal-title,html[dir=rtl] body #depositModal .modal-head-row .modal-title,html[dir=rtl] body #passModal .modal-title,html[dir=rtl] body #emailModal .modal-title{margin-right:0!important;margin-left:auto!important;max-width:calc(100% - 64px)!important}
+html[dir=rtl] body #historySheet .modal-head-row,html[dir=rtl] body #financeModal .modal-head-row{padding-left:52px!important}
