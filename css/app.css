@@ -4421,3 +4421,80 @@ html body #depositWaitModal .ghost-gold{color:var(--oro-l-orange-text)!important
 /* Croix de fermeture : orange léger partout (dépasse l'ancienne règle « html body .btn-close:not(#…)… »). */
 html body .btn-close:not(#oroL1):not(#oroL2):not(#oroL3):not(#oroL4),html body #drawerProfile #btnCloseDrawer:not(#oroL1){
   background:var(--oro-l-orange-soft)!important;border:1px solid var(--oro-l-orange-line)!important;color:var(--oro-l-orange-text)!important;box-shadow:none!important}
+/* ===== THÈME CLAIR — copie pour le plein écran ===== */
+html body #fsTradeOverlay,html body #fsTradeOverlay .trade-shell{background:var(--oro-l-bg)!important;color:var(--oro-l-text)}
+html body #fsTradeOverlay .trade-wrap,html body #fsTradeOverlay #tradeWrap{background:transparent!important}
+html body #fsTradeOverlay .topbar{background:var(--oro-l-card)!important;border-bottom:1px solid var(--oro-l-line)!important;box-shadow:var(--oro-l-shadow)!important}
+html body #fsTradeOverlay .brand-lockup.mini{background:var(--oro-l-card)!important;border:1px solid var(--oro-l-line)!important}
+html body #fsTradeOverlay .help-badge{background:var(--oro-l-yellow)!important;border:1px solid var(--oro-l-yellow)!important;color:var(--oro-l-text)!important;box-shadow:none!important}
+html body #fsTradeOverlay .lang-dd-btn{background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay #btnProfile{background:var(--oro-l-yellow)!important;border:1px solid var(--oro-l-yellow)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .btn-auth-link:not(.on){background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .btn-auth-link.on{background:var(--oro-l-yellow)!important;border:1px solid var(--oro-l-yellow)!important;color:var(--oro-l-text)!important;box-shadow:none!important}
+html body #fsTradeOverlay .mode-switch{background:var(--oro-l-card)!important;border:1px solid var(--oro-l-line)!important;box-shadow:var(--oro-l-shadow)!important}
+html body #fsTradeOverlay .mode-btn:not(.on){color:var(--oro-l-muted)!important}
+html body #fsTradeOverlay .balance-card{background:var(--oro-l-card)!important;border:1px solid var(--oro-l-line)!important;box-shadow:var(--oro-l-shadow)!important}
+html body #fsTradeOverlay .balance-card .bal{color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .asset-chip:not(.on):not(.active){background:var(--oro-l-card)!important;border:1px solid var(--oro-l-line)!important;box-shadow:var(--oro-l-shadow)!important}
+html body #fsTradeOverlay .asset-chip:not(.on):not(.active) .n{color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .chart-toolbar{background:var(--oro-l-card)!important;border-bottom:1px solid var(--oro-l-line)!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn{background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn.on,html body #fsTradeOverlay .chart-toolbar .ind-btn.active{background:var(--oro-l-yellow)!important;border-color:var(--oro-l-yellow)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{background:var(--oro-l-yellow)!important;border:1px solid var(--oro-l-yellow)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .chart-fs-btn{background:var(--oro-l-red)!important;border:1px solid var(--oro-l-red)!important;color:#FFFFFF!important;box-shadow:none!important}
+html body #fsTradeOverlay .chart-fs-btn *{color:#FFFFFF!important}
+html body #fsTradeOverlay .trade-wrap .pad.glass,html body #fsTradeOverlay .trade-wrap .pad,html.is-android body #fsTradeOverlay .trade-wrap .pad{
+  background:var(--oro-l-card)!important;background-image:none!important;border-top:1px solid var(--oro-l-line)!important;box-shadow:0 -2px 8px rgba(0,0,0,.06)!important}
+html body #fsTradeOverlay .dur-chip:not(.on):not(.active){background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .dur-chip.on,html body #fsTradeOverlay .dur-chip.active{background:var(--oro-l-yellow)!important;border-color:var(--oro-l-yellow)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay #inputStake{background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .stake-min{color:var(--oro-l-muted)!important}
+html body #fsTradeOverlay .qbtn.stake-act:not(.qbtn-back){background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .qbtn.qbtn-back{background:#FDE7EA!important;border:1px solid #F9C2CA!important;color:var(--oro-l-red)!important}
+html body #fsTradeOverlay .win-preview{background:#E7F7F0!important;border:1px solid #BDEBD8!important;border-radius:10px!important}
+html body #fsTradeOverlay .win-preview *{color:#0E9F6E!important}
+html body #fsTradeOverlay .odds-label.payout-badge{background:var(--oro-l-bg)!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+
+html body #fsTradeOverlay .help-badge:active,html body #fsTradeOverlay .lang-dd-btn:active,html body #fsTradeOverlay #btnProfile:active,
+html body #fsTradeOverlay .btn-auth-link:active,html body #fsTradeOverlay .asset-chip:active,html body #fsTradeOverlay .ind-btn:active,
+html body #fsTradeOverlay .chart-fs-btn:active,html body #fsTradeOverlay .dur-chip:active,html body #fsTradeOverlay .qbtn:active{filter:brightness(.92)!important}
+
+html body #fsTradeOverlay .chart-card,html body #fsTradeOverlay #chart,html body #fsTradeOverlay .chart-stage,
+html.is-android body #fsTradeOverlay .chart-card,html.is-android body #fsTradeOverlay #chart,html.is-android body #fsTradeOverlay .chart-stage{
+  background:#FFFFFF!important;background-color:#FFFFFF!important}
+html body #fsTradeOverlay #chartCanvas,html.is-android body #fsTradeOverlay #chartCanvas{background:#FFFFFF!important;background-color:#FFFFFF!important}
+html body #fsTradeOverlay .chart-card,html body #fsTradeOverlay #chart{border-color:var(--oro-l-line)!important;box-shadow:var(--oro-l-shadow)!important}
+
+html body #fsTradeOverlay .btn-auth-link:not(.on),html body #fsTradeOverlay .lang-dd-btn,
+html body #fsTradeOverlay .chart-toolbar .ind-btn,html body #fsTradeOverlay .dur-chip:not(.on):not(.active),
+html body #fsTradeOverlay .qbtn.stake-act:not(.qbtn-back),html body #fsTradeOverlay #inputStake,
+html body #fsTradeOverlay .odds-label.payout-badge{
+  background:var(--oro-l-orange-soft)!important;border:1px solid var(--oro-l-orange-line)!important;color:var(--oro-l-orange-text)!important}
+html body #fsTradeOverlay #inputStake{color:var(--oro-l-text)!important}
+
+html:not(.is-tv):not(.fs-trade) body #fsTradeOverlay #tradeWrap .pad.glass,html:not(.is-tv):not(.fs-trade) body #fsTradeOverlay #tradeWrap .pad,
+html body #fsTradeOverlay #tradeWrap .pad.glass,html body #fsTradeOverlay #tradeWrap .pad{
+  background:var(--oro-l-card)!important;background-image:none!important;border-top:1px solid var(--oro-l-line)!important}
+
+html body #fsTradeOverlay .fire-bed{opacity:.28!important}
+/* ===== THÈME CLAIR — plein écran du jeu (mêmes couleurs que l'écran normal) ===== */
+html body .fs-trade-overlay,html body #fsTradeOverlay{background:var(--oro-l-bg)!important}
+html body #fsTradeOverlay .fs-trade-topbar{background:var(--oro-l-card)!important;border-bottom:1px solid var(--oro-l-line)!important;box-shadow:var(--oro-l-shadow)!important}
+html body #fsTradeOverlay .fs-top-bal{color:var(--oro-l-text)!important}
+html body #fsTradeOverlay .fs-mode-switch,html.fs-guest body #fsTradeOverlay .fs-mode-switch{background:var(--oro-l-orange-soft)!important;border:1px solid var(--oro-l-orange-line)!important;box-shadow:none!important}
+html body #fsTradeOverlay .fs-mode-btn:not(.on){color:var(--oro-l-muted)!important}
+html body #fsTradeOverlay .fs-trade-close{background:var(--oro-l-orange-soft)!important;border:1px solid var(--oro-l-orange-line)!important;color:var(--oro-l-orange-text)!important}
+html body #fsTradeOverlay .fs-trade-close *{color:var(--oro-l-orange-text)!important}
+html body #fsTradeOverlay .chart-card,html body #fsTradeOverlay #chart,html body #fsTradeOverlay .chart-stage,html body #fsTradeOverlay #chartCanvas{background:#FFFFFF!important;background-color:#FFFFFF!important}
+html body #fsTradeOverlay .asset-bar{background:var(--oro-l-card)!important;border-color:var(--oro-l-line)!important}
+/* ===== THÈME CLAIR — profil : détails ===== */
+html body #drawerProfile .badge-ok{background:#E7F7F0!important;border:1px solid #BDEBD8!important;color:#0E9F6E!important}
+html body #drawerProfile .wallet-card-v,html body #drawerProfile #profWalletBal{color:var(--oro-l-text)!important}
+html body #drawerProfile .wallet-tab{background:var(--oro-l-card)!important;background-image:none!important;border:1px solid var(--oro-l-line)!important;color:var(--oro-l-text)!important}
+html body #drawerProfile .wallet-tab *:not(svg):not(use){color:var(--oro-l-text)!important}
+html body #drawerProfile .wallet-tab.on,html body #drawerProfile .wallet-tab[aria-selected="true"]{background:var(--oro-l-orange-soft)!important;border-color:var(--oro-l-orange-line)!important}
+html body #drawerProfile .wallet-tab.on *:not(svg):not(use),html body #drawerProfile .wallet-tab[aria-selected="true"] *:not(svg):not(use){color:var(--oro-l-orange-text)!important}
+html body #drawerProfile #profWalletAddr,html body #drawerProfile .wallet-addr-row code{color:var(--oro-l-text)!important}
+html body #drawerProfile .wallet-addr-row{background:var(--oro-l-card)!important;border:1px solid var(--oro-l-line)!important}
+html body #drawerProfile .drawer-item.drawer-logout{background:#FDE7EA!important;border:1px solid #F9C2CA!important;color:var(--oro-l-red)!important}
+html body #drawerProfile .drawer-item.drawer-logout .di-label,html body #drawerProfile .drawer-item.drawer-logout .di-ico{color:var(--oro-l-red)!important}
