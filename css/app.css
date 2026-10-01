@@ -4827,3 +4827,5 @@ html body #fsTradeOverlay #fsBtnReal.on{background:linear-gradient(135deg,#FFE08
 html body #fsTradeOverlay #fsTopMid:has(#fsBtnDemo.on) #fsTopBalance{color:#FFB21A!important;-webkit-text-fill-color:#FFB21A!important}
 html body #fsTradeOverlay #fsTopMid:has(#fsBtnReal.on) #fsTopBalance{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important}
 html body #fsTradeOverlay .fs-mode-switch #fsBtnReal{gap:clamp(3px,1.2vw,7px)!important}
+/* v2247 — Android, plein écran : « Quitter » un peu plus à droite, Solana ne touche plus sa lueur */
+html.is-android body .fs-trade-close{margin-right:0!important;margin-left:12px!important}

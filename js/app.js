@@ -1440,9 +1440,11 @@
     // Mise à 0 (ou vide) : gain affiché 0 $ (avant : il montrait le gain d'une mise de 1 $).
     var stakeRaw = D6.roundMoney(Number(stakeEl && stakeEl.value) || 0);
     var stake = stakeRaw > 0 ? Math.max(D6.CONFIG.MIN_STAKE, stakeRaw) : 0;
-    var netGain = D6.roundMoney(stake * (pct / 100));
+    // Comme les grandes plateformes : le carré montre le TOTAL reçu si on gagne,
+    // exactement ce que le serveur crédite (mise × cote, cf. orolado_fair_credit).
+    var totalWin = D6.roundMoney(stake * (Number(odds) || 1.88));
     if ($('previewGain')) {
-      $('previewGain').textContent = D6.fmtFCFA(netGain);
+      $('previewGain').textContent = D6.fmtFCFA(totalWin);
       fitGainText($('previewGain'));
     }
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
