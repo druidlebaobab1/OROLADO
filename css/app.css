@@ -4297,3 +4297,68 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
   html body #screenAuth{padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important}
   html body #screenAuth .lang-bar-auth{top:calc(10px + env(safe-area-inset-top,0px))!important}
 }
+/* ===== COULEURS — écran de jeu (1er octobre 2026, demande du propriétaire) =====
+   Le site était trop noir : fonds, cadres et couleurs sur tout ce qui entoure le graphique.
+   SEULEMENT fonds / bordures / couleurs de texte / ombres : aucune taille, aucune position ne change
+   (rien ne peut déborder). Le graphique (la courbe et ses couleurs) et les payouts ne sont pas touchés.
+   Couleurs du site : or #F5C518, ambre #F59E0B, blanc, et un rouge léger pour PLEIN ÉCRAN / effacer. */
+html body #screenTrade .topbar{
+  background:linear-gradient(180deg,rgba(245,197,24,.09) 0%,rgba(10,15,29,.92) 70%)!important;
+  border-bottom:1px solid rgba(245,197,24,.28)!important}
+html body #screenTrade .help-badge{
+  background:linear-gradient(180deg,rgba(245,197,24,.32),rgba(245,158,11,.14))!important;
+  border:1px solid rgba(245,197,24,.75)!important;color:#FDE68A!important;
+  box-shadow:0 0 10px rgba(245,158,11,.22)!important}
+html body #screenTrade .lang-dd-btn{
+  background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.07))!important;
+  border:1px solid rgba(245,197,24,.6)!important}
+html body #screenTrade #btnProfile{
+  background:linear-gradient(180deg,rgba(245,197,24,.26),rgba(245,158,11,.10))!important;
+  border:1px solid rgba(245,197,24,.7)!important;box-shadow:0 0 10px rgba(245,158,11,.2)!important}
+html body #screenTrade .btn-auth-link:not(.on){
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06))!important;
+  border:1px solid rgba(255,255,255,.55)!important;color:#FFFFFF!important}
+html body #screenTrade .btn-auth-link.on{
+  background:linear-gradient(180deg,#FCD34D,#F59E0B)!important;
+  border:1px solid #FDE68A!important;color:#1A1205!important;box-shadow:0 0 12px rgba(245,158,11,.35)!important}
+html body #screenTrade .mode-switch{
+  background:linear-gradient(180deg,rgba(245,197,24,.10),rgba(10,15,29,.85))!important;
+  border:1px solid rgba(245,197,24,.35)!important}
+html body #screenTrade .balance-card{
+  background:linear-gradient(135deg,rgba(245,197,24,.18) 0%,rgba(18,23,34,.96) 48%,rgba(245,158,11,.12) 100%)!important;
+  border:1px solid rgba(245,197,24,.6)!important;box-shadow:0 0 14px rgba(245,158,11,.16),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenTrade .asset-chip:not(.on):not(.active){
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(245,197,24,.30)!important}
+html body #screenTrade .chart-toolbar .ind-btn{
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08))!important;
+  border:1px solid rgba(255,255,255,.42)!important;color:#FFFFFF!important}
+html body #screenTrade .chart-toolbar .ind-btn.on,html body #screenTrade .chart-toolbar .ind-btn.active{
+  background:linear-gradient(180deg,#FCD34D,#F59E0B)!important;border-color:#FDE68A!important;color:#1A1205!important}
+html body #screenTrade .chart-toolbar .chart-reset-btn{
+  background:linear-gradient(180deg,rgba(245,197,24,.34),rgba(245,158,11,.12))!important;
+  border:1px solid rgba(245,197,24,.85)!important;color:#FDE68A!important}
+html body #screenTrade .chart-fs-btn{
+  background:linear-gradient(180deg,rgba(239,68,68,.32),rgba(239,68,68,.12))!important;
+  border:1px solid rgba(248,113,113,.8)!important;color:#FEE2E2!important;box-shadow:0 0 10px rgba(239,68,68,.2)!important}
+html body #screenTrade .dur-chip:not(.on):not(.active){
+  background:linear-gradient(180deg,rgba(245,197,24,.13),rgba(10,15,29,.78))!important;
+  border:1px solid rgba(245,197,24,.5)!important}
+html body #screenTrade #inputStake{
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04))!important;
+  border:1px solid rgba(245,197,24,.6)!important}
+html body #screenTrade .qbtn.stake-act:not(.qbtn-back){
+  background:linear-gradient(180deg,rgba(245,197,24,.26),rgba(245,197,24,.08))!important;
+  border:1px solid rgba(245,197,24,.75)!important;color:#FDE68A!important}
+html body #screenTrade .qbtn.qbtn-back{
+  background:linear-gradient(180deg,rgba(239,68,68,.30),rgba(239,68,68,.10))!important;
+  border:1px solid rgba(248,113,113,.8)!important;color:#FECACA!important}
+html body #screenTrade .win-preview{
+  background:linear-gradient(180deg,rgba(16,185,129,.20),rgba(16,185,129,.06))!important;
+  border:1px solid rgba(52,211,153,.6)!important;border-radius:10px!important;
+  box-shadow:0 0 10px rgba(16,185,129,.18)!important}
+/* On sent le clic : petit éclat + léger enfoncement (boutons ci-dessus seulement). */
+html body #screenTrade .help-badge:active,html body #screenTrade .lang-dd-btn:active,html body #screenTrade #btnProfile:active,
+html body #screenTrade .btn-auth-link:active,html body #screenTrade .asset-chip:active,html body #screenTrade .ind-btn:active,
+html body #screenTrade .chart-fs-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .qbtn:active{
+  filter:brightness(1.3)!important}
