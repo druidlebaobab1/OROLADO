@@ -4293,7 +4293,7 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
    L'écran Connexion / Inscription commençait tout en haut : le logo, OROLADO.COM, TRADING et le drapeau
    étaient sous l'heure. Ils descendent juste de la hauteur de cette barre (Android : 0, rien ne bouge).
    Le site dans le navigateur ne change pas. */
-@media (display-mode: standalone){
+@media (display-mode: standalone),(display-mode: fullscreen){
   html body #screenAuth{padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important}
   html body #screenAuth .lang-bar-auth{top:calc(10px + env(safe-area-inset-top,0px))!important}
 }
