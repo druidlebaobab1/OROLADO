@@ -555,6 +555,9 @@
       if (!ref || !scr) return;
       var h = ref.offsetHeight;
       if (h > 0) scr.style.setProperty('--oro-top-h', h + 'px');
+      // Connecté : le profil prend exactement la largeur de « Aide ».
+      var help = $('btnHelp');
+      if (help && help.offsetWidth > 0) scr.style.setProperty('--oro-help-w', help.offsetWidth + 'px');
     } catch (eH) { /* ignore */ }
   }
 

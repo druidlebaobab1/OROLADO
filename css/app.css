@@ -4872,3 +4872,5 @@ html body #screenTrade .topbar .topbar-actions #btnHelp{width:auto!important;min
 html body #screenTrade .topbar .topbar-actions #langBarTrade{margin:0!important;width:auto!important}
 @media (max-width:360px){html body #screenTrade .topbar .topbar-actions{gap:4px!important}html body #screenTrade .topbar .topbar-actions #btnHelp{padding:0 7px!important;font-size:10px!important}}
 html body #screenTrade .topbar .topbar-actions #langBarTrade{width:var(--oro-top-h,34px)!important;min-width:var(--oro-top-h,34px)!important;max-width:var(--oro-top-h,34px)!important;flex:0 0 var(--oro-top-h,34px)!important;height:var(--oro-top-h,34px)!important}
+/* v2254 — connecté : le profil a la même forme (largeur) que « Aide », même place */
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:var(--oro-help-w,44px)!important;min-width:var(--oro-help-w,44px)!important;max-width:var(--oro-help-w,44px)!important;flex:0 0 var(--oro-help-w,44px)!important}
