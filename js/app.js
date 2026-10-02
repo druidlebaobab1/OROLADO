@@ -546,6 +546,65 @@
     syncTopBtnHeight();
   }
 
+  // Safari iPhone : sa barre flottante en bas laisse à la page plus de hauteur que Chrome, et la courbe
+  // (hauteur fixe sur téléphone) laissait un vide sous ACHETER / VENDRE. On agrandit la courbe de
+  // exactement ce vide, en s'arrêtant au-dessus de la barre de Safari. Chrome, Android, autres : rien.
+  var UA_SAFARI_IOS = (function () {
+    try {
+      var ua = navigator.userAgent || '';
+      var ios = /iP(hone|od|ad)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      return ios && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//.test(ua);
+    } catch (eUa) { return false; }
+  })();
+  var safariGapW = 0;
+  function safeBottomPx() {
+    try {
+      var p = document.createElement('div');
+      p.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none';
+      document.body.appendChild(p);
+      var v = p.offsetHeight || 0;
+      p.remove();
+      return v;
+    } catch (eSb) { return 0; }
+  }
+  function fillSafariGap(force) {
+    if (!UA_SAFARI_IOS) return;
+    try {
+      var html = document.documentElement;
+      if (html.classList.contains('fs-trade') || html.classList.contains('is-fullscreen')) return;
+      var card = document.querySelector('#screenTrade .chart-card');
+      var pad = document.querySelector('#tradeWrap > .pad');
+      if (!card || !pad || !card.offsetHeight || window.innerWidth >= 860) return;
+      // Pas de recalcul quand seule la hauteur bouge (clavier, barre) : la page ne saute pas en tapant.
+      if (!force && safariGapW === window.innerWidth) return;
+      safariGapW = window.innerWidth;
+      var els = [card, document.getElementById('chart')];
+      els.forEach(function (el) {
+        if (!el) return;
+        ['height', 'min-height', 'max-height', 'flex-basis'].forEach(function (k) { el.style.removeProperty(k); });
+      });
+      var base = card.offsetHeight;
+      var target = window.innerHeight - (safeBottomPx() + 46);
+      var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
+      if (gap > 4) {
+        var hpx = (base + Math.min(gap, 300)) + 'px';
+        els.forEach(function (el) {
+          if (!el) return;
+          el.style.setProperty('height', hpx, 'important');
+          el.style.setProperty('min-height', hpx, 'important');
+          el.style.setProperty('max-height', hpx, 'important');
+          el.style.setProperty('flex-basis', hpx, 'important');
+        });
+        try { bumpChartLayout(); } catch (eBl) { /* ignore */ }
+      }
+    } catch (eFg) { /* ignore */ }
+  }
+  if (UA_SAFARI_IOS) {
+    window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
+    window.addEventListener('orientationchange', function () { setTimeout(function () { fillSafariGap(true); }, 400); });
+    window.addEventListener('load', function () { setTimeout(function () { fillSafariGap(true); }, 300); });
+  }
+
   // « Aide », le drapeau (et le profil si connecté) prennent exactement la hauteur de « Connexion »
   // (non inscrit) ou de « Recharger » (connecté), selon l'écran.
   function syncTopBtnHeight() {
@@ -711,7 +770,10 @@
       }
     });
     if (name !== 'screenTrade') closeDrawer();
-    else setTimeout(syncTopBtnHeight, 50);
+    else {
+      setTimeout(syncTopBtnHeight, 50);
+      setTimeout(function () { fillSafariGap(true); }, 300);
+    }
     metaPageView(name);
   }
 
@@ -7355,6 +7417,7 @@
   function leaveTradeFullscreen() {
     try {
       unmountTradeFullscreen();
+      setTimeout(function () { fillSafariGap(true); }, 350);
       if (isNativeFullscreen()) {
         Promise.resolve(exitFsNative()).catch(function (err) {
           try { console.warn(err); } catch (e) { /* ignore */ }
