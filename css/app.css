@@ -4876,3 +4876,6 @@ html body #screenTrade .topbar .topbar-actions #langBarTrade{width:var(--oro-top
 html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnHelp{width:var(--oro-top-h,34px)!important;min-width:var(--oro-top-h,34px)!important;max-width:var(--oro-top-h,34px)!important;flex:0 0 var(--oro-top-h,34px)!important;padding:0!important;font-size:10px!important;letter-spacing:0!important}
 html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:48px!important;min-width:48px!important;max-width:48px!important;flex:0 0 48px!important}
 @media (max-width:360px){html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:38px!important;min-width:38px!important;max-width:38px!important;flex:0 0 38px!important}}
+/* v2257 — connecté : le profil rentre juste ce qu il faut pour que son bord droit soit aligné sur la case du solde (Recharger inchangé) */
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:var(--oro-prof-w,48px)!important;min-width:var(--oro-prof-w,48px)!important;max-width:var(--oro-prof-w,48px)!important;flex:0 0 var(--oro-prof-w,48px)!important}
+html:not(.oro-guest) body #screenTrade.prof-fit .topbar .topbar-actions{margin-right:var(--oro-act-mr,0px)!important}

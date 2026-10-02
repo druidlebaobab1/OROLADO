@@ -555,6 +555,24 @@
       if (!ref || !scr) return;
       var h = ref.offsetHeight;
       if (h > 0) scr.style.setProperty('--oro-top-h', h + 'px');
+      // Connecté : le bord droit du profil s'aligne sur le bord droit de la case du solde.
+      // Le profil rétrécit de ce qui dépasse, la marge droite reprend la même place
+      // (« Recharger » garde sa taille).
+      scr.style.removeProperty('--oro-prof-w');
+      scr.style.removeProperty('--oro-act-mr');
+      scr.classList.remove('prof-fit');
+      var prof = $('btnProfile');
+      var card = $('balanceCard');
+      if (!isGuest() && prof && card && prof.offsetWidth > 0 && card.offsetWidth > 0) {
+        var over = prof.getBoundingClientRect().right - card.getBoundingClientRect().right;
+        if (over > 0.5) {
+          var acts = prof.parentNode;
+          var mr = acts ? (parseFloat(getComputedStyle(acts).marginRight) || 0) : 0;
+          scr.style.setProperty('--oro-prof-w', Math.max(36, prof.offsetWidth - over).toFixed(1) + 'px');
+          scr.style.setProperty('--oro-act-mr', (mr + over).toFixed(1) + 'px');
+          scr.classList.add('prof-fit');
+        }
+      }
     } catch (eH) { /* ignore */ }
   }
 
