@@ -284,7 +284,9 @@ if (isset($_GET['live'])) {
     try {
       $it++;
       $tm = [0, 0];
-      feed_live_write($dir, $file, $base, 0.03, $it % 4 === 1, $tm, $mem);
+      // live.json refait à CHAQUE tour (4×/s) comme live.js : c'est la voie de secours des
+      // téléphones quand la copie Cloudflare de live.js tarde (~1 s), cause des « tic-tic ».
+      feed_live_write($dir, $file, $base, 0.03, true, $tm, $mem);
       $nowL = microtime(true);
       $stat['tours']++;
       $stat['travail_moy'] += ($tm[0] - $stat['travail_moy']) / $stat['tours'];

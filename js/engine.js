@@ -360,9 +360,7 @@
     var done = function () { liveBusy = false; };
     // Adresse différente toutes les 250 ms : Cloudflare peut servir la même copie à tous
     // les joueurs de ce quart de seconde (pas d'en-tête no-cache qui l'en empêcherait).
-    fetch('feedcache/live.js?t=' + Math.floor((Date.now() + (clock.ready ? clock.offset : 0)) / 250), { cache: 'default' }).then(function (r) {
-      return r.ok ? r.json() : null;
-    }).then(function (j) {
+    livePick('feedcache/live.js?t=' + Math.floor((Date.now() + (clock.ready ? clock.offset : 0)) / 250)).then(function (j) {
       var serverNow = Date.now() + clock.offset;
       var age = j && j.at ? serverNow - Number(j.at) : Infinity;
       if (j && j.ok && !applyLive(j)) {
@@ -396,6 +394,44 @@
       pollAll();
     });
   }
+  /*
+   * Lecture des prix en direct : d'abord la copie Cloudflare (live.js). Mesuré le 2026-10-02 :
+   * elle met parfois ~1 s (alors que le serveur répond en 0,3 s) → la courbe attendait puis
+   * rattrapait d'un coup (« tic-tic »). Si elle tarde plus de 350 ms (ou échoue), on prend la
+   * version directe du même fichier (live.json, refaite 4×/s, mêmes prix) ; la 1re arrivée gagne.
+   */
+  function livePick(cfUrl) {
+    return new Promise(function (resolve) {
+      var settled = false;
+      var directStarted = false;
+      var pending = 0;
+      function finish(j) {
+        if (settled) return;
+        if (j) { settled = true; resolve(j); return; }
+        if (pending > 0) return;
+        if (!directStarted) startDirect();
+        else { settled = true; resolve(null); }
+      }
+      function get(url, opt) {
+        pending++;
+        fetch(url, opt).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+          pending--;
+          finish(j && j.ok ? j : null);
+        }, function () {
+          pending--;
+          finish(null);
+        });
+      }
+      function startDirect() {
+        if (directStarted || settled) return;
+        directStarted = true;
+        get('feedcache/live.json?r=' + Date.now(), { cache: 'no-store' });
+      }
+      get(cfUrl, { cache: 'default' });
+      setTimeout(startDirect, 350);
+    });
+  }
+
   function priceAtTick(id, tick) {
     var f = feeds[id];
     if (!f || !f.loaded || tick < f.first || tick > f.last) return NaN;
