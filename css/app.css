@@ -4844,3 +4844,12 @@ html body #fsTradeOverlay .stake-field .fs-stake-win{display:block;position:abso
   padding-top:2px;border-top:1px solid rgba(52,211,153,.22);text-shadow:0 0 6px rgba(52,211,153,.35);font-variant-numeric:tabular-nums}
 html body #fsTradeOverlay .stake-field #inputStake{padding-bottom:12px!important}
 html body #fsTradeOverlay .stake-field::before{top:calc(50% - 6px)!important}
+
+/* ===== v2250 — Plein écran, case de la mise : « $ » collé à la mise, même couleur qu'elle (orange démo / vert réel),
+   bien aligné ; estimation en blanc, toujours DANS la case (ne déborde plus) ===== */
+html body #fsTradeOverlay .stake-field #inputStake{text-align:left!important;padding:0 6px 14px 22px!important}
+html body #fsTradeOverlay .stake-field::before{top:var(--fs-dollar-top,15px)!important;left:9px!important;transform:translateY(-50%)!important;
+  color:#F59E0B!important;font-weight:900!important;line-height:1!important}
+html body:has(#screenTrade.mode-real) #fsTradeOverlay .stake-field::before{color:#22E07A!important;text-shadow:0 0 8px rgba(34,224,122,.35)!important}
+html body #fsTradeOverlay .stake-field .fs-stake-win{top:var(--fs-win-top,28px)!important;bottom:auto!important;left:6px!important;right:6px!important;
+  color:#F8FAFC!important;text-shadow:none!important;text-align:left!important;border-top:1px solid rgba(255,255,255,.16)!important;padding-top:2px!important}

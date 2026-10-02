@@ -1429,6 +1429,22 @@
     return basePct;
   }
 
+  // Plein écran : l'estimation est posée en bas, DANS le cadre de la mise (jamais sur sa bordure),
+  // et le « $ » au même niveau que le montant, quelle que soit la hauteur de la case sur le téléphone.
+  function placeFsStakeWin() {
+    var w = $('fsStakeWin');
+    var inp = $('inputStake');
+    if (!w || !inp || !fsTradeActive) return;
+    var h = inp.offsetHeight;
+    if (!h) return;
+    var wh = w.offsetHeight || 12;
+    var field = inp.parentNode;
+    if (!field || !field.style) return;
+    field.style.setProperty('--fs-win-top', Math.max(0, inp.offsetTop + h - wh - 4) + 'px');
+    var pb = parseFloat(getComputedStyle(inp).paddingBottom) || 0;
+    field.style.setProperty('--fs-dollar-top', Math.round(inp.offsetTop + (h - pb) / 2) + 'px');
+  }
+
   function updatePayoutUi() {
     if (!document.querySelector('.asset-chip .payout-live')) return;
     var odds = currentOdds(user());
@@ -1455,6 +1471,7 @@
       $('fsStakeWin').textContent = fsWinTxt;
       // Très gros montants : texte un peu plus petit pour rester dans la case.
       $('fsStakeWin').style.fontSize = fsWinTxt.length > 17 ? '7px' : (fsWinTxt.length > 14 ? '8px' : '');
+      placeFsStakeWin();
     }
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
@@ -5904,7 +5921,11 @@
     onClick($('modeDemo'), function () { switchMode('demo'); });
     onClick($('modeReal'), function () { switchMode('real'); });
     onClick($('fsBtnDemo'), function () { switchMode('demo'); });
-    onClick($('fsBtnReal'), function () { switchMode('real'); });
+    onClick($('fsBtnReal'), function () {
+      // Non inscrit : on quitte d'abord le plein écran (sinon il reste par-dessus l'inscription sur téléphone).
+      if (isGuest()) { leaveTradeFullscreen(); requireAccount(); return; }
+      switchMode('real');
+    });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       chip.addEventListener('click', function (e) {
         e.preventDefault();
@@ -7219,6 +7240,7 @@
       document.body.style.overflow = 'hidden';
       fsTradeActive = true;
       syncFsCapsule();
+      try { setTimeout(placeFsStakeWin, 60); setTimeout(placeFsStakeWin, 400); } catch (ePl) { /* ignore */ }
       var enterBtn = $('btnChartFs');
       if (enterBtn) {
         enterBtn.setAttribute('aria-pressed', 'true');
@@ -7411,6 +7433,7 @@
     });
     window.addEventListener('resize', function () {
       try { syncFsCapsule(); } catch (eC) { /* ignore */ }
+      try { setTimeout(placeFsStakeWin, 120); } catch (ePw) { /* ignore */ }
       try { bumpChartLayout(); } catch (eR) { try { console.warn(eR); } catch (e) { /* ignore */ } }
     });
   }
