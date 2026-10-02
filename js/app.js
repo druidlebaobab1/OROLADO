@@ -597,6 +597,9 @@
       ];
       scr.classList.remove('saf-fill');
       parts.forEach(function (p) { scr.style.removeProperty(p.v); });
+      // Application installée : la mesure « 100dvh » de l'iPhone y est plus petite que le vrai écran
+      // (le cadre s'arrêtait trop haut et coupait le bas des boutons) → on prend la vraie hauteur.
+      if (IOS_STANDALONE) html.style.setProperty('--oro-app-h', window.innerHeight + 'px');
       // Deux cas selon la version de Safari : la page passe SOUS la barre flottante (hauteur = tout
       // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
@@ -606,6 +609,10 @@
       var target = IOS_STANDALONE
         ? Math.min(window.innerHeight, (window.screen && window.screen.height ? window.screen.height : window.innerHeight) - safeBottomPx()) - 6
         : window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
+      // Sécurité : jamais plus bas que le cadre qui contient les boutons (sinon ils seraient coupés).
+      var wrapEl = document.querySelector('#screenTrade #tradeWrap');
+      var clipB = Math.min(scr.getBoundingClientRect().bottom, wrapEl ? wrapEl.getBoundingClientRect().bottom : Infinity);
+      if (isFinite(clipB)) target = Math.min(target, clipB - 6);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
       if (gap <= 4) return;
       parts.forEach(function (p) {
