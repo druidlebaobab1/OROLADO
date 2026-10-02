@@ -4874,3 +4874,11 @@ html body #screenTrade .topbar .topbar-actions #langBarTrade{margin:0!important;
 html body #screenTrade .topbar .topbar-actions #langBarTrade{width:var(--oro-top-h,34px)!important;min-width:var(--oro-top-h,34px)!important;max-width:var(--oro-top-h,34px)!important;flex:0 0 var(--oro-top-h,34px)!important;height:var(--oro-top-h,34px)!important}
 /* v2254 — connecté : le profil a la même forme (largeur) que « Aide », même place */
 html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:var(--oro-help-w,44px)!important;min-width:var(--oro-help-w,44px)!important;max-width:var(--oro-help-w,44px)!important;flex:0 0 var(--oro-help-w,44px)!important}
+/* v2255 — connecté seulement : « Recharger » reprend sa taille d avant ; Aide et FR petits et égaux, le profil plus large qu eux */
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions{gap:4px!important}
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnHelp,html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #langBarTrade,html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #langBarTrade .lang-dd-btn{width:28px!important;min-width:28px!important;max-width:28px!important;flex:0 0 28px!important;padding:0!important}
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnHelp{font-size:9px!important;letter-spacing:0!important;overflow:hidden!important}
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:40px!important;min-width:40px!important;max-width:40px!important;flex:0 0 40px!important}
+/* connecté : profil le plus grand (40), Aide moyen (32), FR le plus petit (24) ; total inchangé, Recharger garde sa taille */
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnHelp{width:32px!important;min-width:32px!important;max-width:32px!important;flex:0 0 32px!important}
+html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #langBarTrade,html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #langBarTrade .lang-dd-btn{width:24px!important;min-width:24px!important;max-width:24px!important;flex:0 0 24px!important}
