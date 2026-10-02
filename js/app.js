@@ -549,10 +549,17 @@
   // Safari iPhone : sa barre flottante en bas laisse à la page plus de hauteur que Chrome, et la courbe
   // (hauteur fixe sur téléphone) laissait un vide sous ACHETER / VENDRE. On agrandit la courbe de
   // exactement ce vide, en s'arrêtant au-dessus de la barre de Safari. Chrome, Android, autres : rien.
+  var IOS_STANDALONE = (function () {
+    try {
+      return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    } catch (eSa) { return false; }
+  })();
   var UA_SAFARI_IOS = (function () {
     try {
       var ua = navigator.userAgent || '';
       var ios = /iP(hone|od|ad)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      // Site installé sur l'écran d'accueil (application) : pas de « Safari » dans l'identité du navigateur.
+      if (ios && IOS_STANDALONE) return true;
       return ios && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//.test(ua);
     } catch (eUa) { return false; }
   })();
@@ -593,7 +600,10 @@
       // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
       var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
-      var target = window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
+      // Application installée (plein écran, sans barre) : jusqu'en bas, au-dessus de la barre d'accueil.
+      var target = IOS_STANDALONE
+        ? window.innerHeight - safeBottomPx() - 6
+        : window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
       if (gap <= 4) return;
       parts.forEach(function (p) {
