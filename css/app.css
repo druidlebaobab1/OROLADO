@@ -4879,3 +4879,26 @@ html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width
 /* v2257 — connecté : le profil rentre juste ce qu il faut pour que son bord droit soit aligné sur la case du solde (Recharger inchangé) */
 html:not(.oro-guest) body #screenTrade .topbar .topbar-actions #btnProfile{width:var(--oro-prof-w,48px)!important;min-width:var(--oro-prof-w,48px)!important;max-width:var(--oro-prof-w,48px)!important;flex:0 0 var(--oro-prof-w,48px)!important}
 html:not(.oro-guest) body #screenTrade.prof-fit .topbar .topbar-actions{margin-right:var(--oro-act-mr,0px)!important}
+
+/* ===== v2258 — Idée 2 choisie : barre du haut (inscrit ou non), Aide / langue / profil = icônes rondes sans cadre.
+   « ? » à la place du mot Aide, drapeau rond, profil rond orange OROLADO ; même diamètre que le bouton voisin, écarts égaux. ===== */
+html body #screenTrade .topbar .topbar-actions{gap:8px!important;align-items:center!important}
+html body #screenTrade .topbar .topbar-actions #btnHelp.help-badge.help-badge,
+html body #screenTrade .topbar .topbar-actions #langBarTrade.lang-dd.lang-dd,
+html body #screenTrade .topbar .topbar-actions #langBarTrade.lang-dd .lang-dd-btn.lang-dd-btn,
+html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn{
+  width:var(--oro-top-h,34px)!important;min-width:var(--oro-top-h,34px)!important;max-width:var(--oro-top-h,34px)!important;flex:0 0 var(--oro-top-h,34px)!important;
+  height:var(--oro-top-h,34px)!important;min-height:0!important;max-height:none!important;border-radius:50%!important;padding:0!important;margin:0!important;box-sizing:border-box!important}
+html body #screenTrade .topbar .topbar-actions #btnHelp.help-badge.help-badge:not(.tap-lit),
+html body #screenTrade .topbar .topbar-actions #langBarTrade.lang-dd .lang-dd-btn.lang-dd-btn:not(.tap-lit){background:rgba(255,255,255,.08)!important;border:0!important;box-shadow:none!important}
+/* « ? » dessiné à la place du mot (le mot reste pour les lecteurs d'écran via le titre) */
+html body #screenTrade .topbar .topbar-actions #btnHelp.help-badge.help-badge{font-size:0!important;color:transparent!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;position:relative!important;overflow:hidden!important}
+html body #screenTrade .topbar .topbar-actions #btnHelp.help-badge.help-badge::before{content:"?";font-size:16px;font-weight:900;line-height:1;color:#FDE68A;font-family:inherit}
+/* profil : rond orange OROLADO */
+html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn:not(.tap-lit){background:linear-gradient(135deg,#FFB300,#FF6D00)!important;border:0!important;box-shadow:0 0 10px rgba(255,140,0,.35)!important;color:#1a0d00!important}
+html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important}
+html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn.hidden{display:none!important}
+@media (max-width:360px){html body #screenTrade .topbar .topbar-actions{gap:5px!important}}
+/* non inscrit : la barre de droite va jusqu au bord de la case du solde (plus de vide à droite) */
+html.oro-guest body #screenTrade .topbar .topbar-row .topbar-actions{margin-right:2px!important}
+html:not(.oro-guest) body #screenTrade:not(.prof-fit) .topbar .topbar-row .topbar-actions{margin-right:2px!important}
