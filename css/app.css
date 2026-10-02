@@ -4902,3 +4902,5 @@ html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn.hid
 /* non inscrit : la barre de droite va jusqu au bord de la case du solde (plus de vide à droite) */
 html.oro-guest body #screenTrade .topbar .topbar-row .topbar-actions{margin-right:2px!important}
 html:not(.oro-guest) body #screenTrade:not(.prof-fit) .topbar .topbar-row .topbar-actions{margin-right:2px!important}
+/* v2259 — profil : même fond que « ? » et la langue (plus d orange) */
+html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn:not(.tap-lit){background:rgba(255,255,255,.08)!important;border:0!important;box-shadow:none!important;color:#E8ECF4!important}
