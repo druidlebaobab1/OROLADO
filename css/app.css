@@ -4904,3 +4904,5 @@ html.oro-guest body #screenTrade .topbar .topbar-row .topbar-actions{margin-righ
 html:not(.oro-guest) body #screenTrade:not(.prof-fit) .topbar .topbar-row .topbar-actions{margin-right:2px!important}
 /* v2259 — profil : même fond que « ? » et la langue (plus d orange) */
 html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn:not(.tap-lit){background:rgba(255,255,255,.08)!important;border:0!important;box-shadow:none!important;color:#E8ECF4!important}
+/* v2260 — lueur bleue à l intérieur du bord des 3 ronds (ombre intérieure : taille inchangée) */
+html body #screenTrade .topbar .topbar-actions #btnHelp.help-badge.help-badge:not(.tap-lit),html body #screenTrade .topbar .topbar-actions #langBarTrade.lang-dd .lang-dd-btn.lang-dd-btn:not(.tap-lit),html body #screenTrade .topbar .topbar-actions #btnProfile.icon-btn.icon-btn:not(.tap-lit){box-shadow:inset 0 0 0 1px rgba(56,189,248,.55),inset 0 0 9px rgba(56,189,248,.38)!important}
