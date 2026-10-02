@@ -584,7 +584,11 @@
         ['height', 'min-height', 'max-height', 'flex-basis'].forEach(function (k) { el.style.removeProperty(k); });
       });
       var base = card.offsetHeight;
-      var target = window.innerHeight - (safeBottomPx() + 46);
+      // Deux cas selon la version de Safari : la page passe SOUS la barre flottante (hauteur = tout
+      // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
+      var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
+      var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
+      var target = window.innerHeight - (underBar ? (safeBottomPx() + 46) : 8);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
       if (gap > 4) {
         var hpx = (base + Math.min(gap, 300)) + 'px';
