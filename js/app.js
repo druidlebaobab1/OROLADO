@@ -542,6 +542,18 @@
     try { document.documentElement.classList.toggle('oro-guest', !!guest); } catch (eG) { /* ignore */ }
     if ($('btnFsMidPlus')) $('btnFsMidPlus').classList.remove('hidden');
     if ($('fsBtnReal')) $('fsBtnReal').classList.remove('hidden');
+    syncTopBtnHeight();
+  }
+
+  // Non inscrit : « Aide » et le drapeau prennent exactement la hauteur de « Connexion » (selon l'écran).
+  function syncTopBtnHeight() {
+    try {
+      var ref = $('btnGoLogin');
+      var scr = $('screenTrade');
+      if (!ref || !scr) return;
+      var h = ref.offsetHeight;
+      if (h > 0) scr.style.setProperty('--oro-top-h', h + 'px');
+    } catch (eH) { /* ignore */ }
   }
 
   function wagerLockFifo(deposits, done) {
@@ -679,6 +691,7 @@
       }
     });
     if (name !== 'screenTrade') closeDrawer();
+    else setTimeout(syncTopBtnHeight, 50);
     metaPageView(name);
   }
 
@@ -7434,6 +7447,7 @@
     window.addEventListener('resize', function () {
       try { syncFsCapsule(); } catch (eC) { /* ignore */ }
       try { setTimeout(placeFsStakeWin, 120); } catch (ePw) { /* ignore */ }
+      try { setTimeout(syncTopBtnHeight, 120); } catch (eTh) { /* ignore */ }
       try { bumpChartLayout(); } catch (eR) { try { console.warn(eR); } catch (e) { /* ignore */ } }
     });
   }

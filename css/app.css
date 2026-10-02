@@ -4853,3 +4853,8 @@ html body #fsTradeOverlay .stake-field::before{top:var(--fs-dollar-top,15px)!imp
 html body:has(#screenTrade.mode-real) #fsTradeOverlay .stake-field::before{color:#22E07A!important;text-shadow:0 0 8px rgba(34,224,122,.35)!important}
 html body #fsTradeOverlay .stake-field .fs-stake-win{top:var(--fs-win-top,28px)!important;bottom:auto!important;left:6px!important;right:6px!important;
   color:#F8FAFC!important;text-shadow:none!important;text-align:left!important;border-top:1px solid rgba(255,255,255,.16)!important;padding-top:2px!important}
+
+/* v2251 — barre du haut (non inscrit) : « Aide » et le drapeau à la même hauteur que Connexion / Inscription (largeur inchangée) */
+html.oro-guest body #screenTrade #btnHelp,html.oro-guest body #screenTrade #langBarTrade .lang-dd-btn{height:var(--oro-top-h,34px)!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding-top:0!important;padding-bottom:0!important;align-self:center!important}
+html.oro-guest body #screenTrade #langBarTrade{height:auto!important;max-height:none!important;align-self:center!important}
+@media (max-width:380px){html.oro-guest body #screenTrade{--oro-top-h:32px}}
