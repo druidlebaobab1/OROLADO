@@ -572,38 +572,61 @@
     try {
       var html = document.documentElement;
       if (html.classList.contains('fs-trade') || html.classList.contains('is-fullscreen')) return;
-      var card = document.querySelector('#screenTrade .chart-card');
-      var pad = document.querySelector('#tradeWrap > .pad');
-      if (!card || !pad || !card.offsetHeight || window.innerWidth >= 860) return;
+      var scr = $('screenTrade');
+      var pad = document.querySelector('#screenTrade #tradeWrap > .pad');
+      if (!scr || !pad || !pad.offsetHeight || window.innerWidth >= 860) return;
       // Pas de recalcul quand seule la hauteur bouge (clavier, barre) : la page ne saute pas en tapant.
       if (!force && safariGapW === window.innerWidth) return;
       safariGapW = window.innerWidth;
-      var els = [card, document.getElementById('chart')];
-      els.forEach(function (el) {
-        if (!el) return;
-        ['height', 'min-height', 'max-height', 'flex-basis'].forEach(function (k) { el.style.removeProperty(k); });
-      });
-      var base = card.offsetHeight;
+      // La COURBE ne bouge pas : l'espace libre est partagé entre les parties du bas (durées, mise,
+      // boutons de mise, payouts et surtout ACHETER / VENDRE), qui deviennent un peu plus hautes.
+      var parts = [
+        { v: '--saf-dur', sel: '.dur-chip', w: 0.18, cap: 18 },
+        { v: '--saf-inp', sel: '#inputStake', w: 0.12, cap: 14 },
+        { v: '--saf-q', sel: '.qbtn.stake-act', w: 0.12, cap: 14 },
+        { v: '--saf-odds', sel: '.odds-chip', w: 0.18, cap: 18 },
+        { v: '--saf-buy', sel: '.btn-trade', w: 0.40, cap: 40 }
+      ];
+      scr.classList.remove('saf-fill');
+      parts.forEach(function (p) { scr.style.removeProperty(p.v); });
       // Deux cas selon la version de Safari : la page passe SOUS la barre flottante (hauteur = tout
       // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
       var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
-      // Réglé sur l'iPhone du propriétaire (v2264) : ~10 px d'espace entre le bloc orange et la barre.
-      var target = window.innerHeight - (underBar ? (safeBottomPx() + 31) : 8);
+      var target = window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
-      if (gap > 4) {
-        var hpx = (base + Math.min(gap, 300)) + 'px';
-        els.forEach(function (el) {
-          if (!el) return;
-          el.style.setProperty('height', hpx, 'important');
-          el.style.setProperty('min-height', hpx, 'important');
-          el.style.setProperty('max-height', hpx, 'important');
-          el.style.setProperty('flex-basis', hpx, 'important');
-        });
-        try { bumpChartLayout(); } catch (eBl) { /* ignore */ }
-      }
+      if (gap <= 4) return;
+      parts.forEach(function (p) {
+        var el = pad.querySelector(p.sel);
+        if (!el || !el.offsetHeight) return;
+        var add = Math.min(p.cap, Math.floor(gap * p.w));
+        scr.style.setProperty(p.v, (el.offsetHeight + add) + 'px');
+      });
+      scr.classList.add('saf-fill');
     } catch (eFg) { /* ignore */ }
   }
+
+  // Outil de mesure : orolado.com/?diag=1 affiche les vraies mesures de l'écran (pour régler Safari).
+  (function startDiag() {
+    try {
+      if (!/[?&]diag=1\b/.test(location.search)) return;
+      if (!document.body) { document.addEventListener('DOMContentLoaded', startDiag); return; }
+      var box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:6px;top:60px;z-index:99999;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:6px 8px;border-radius:8px;pointer-events:none;white-space:pre';
+      document.body.appendChild(box);
+      setInterval(function () {
+        var pad = document.querySelector('#tradeWrap > .pad');
+        var vv = window.visualViewport;
+        box.textContent = 'safari=' + UA_SAFARI_IOS +
+          '\ninner=' + window.innerWidth + 'x' + window.innerHeight +
+          '\nscreen=' + (screen.width || 0) + 'x' + (screen.height || 0) +
+          '\nvisual=' + (vv ? Math.round(vv.height) : '-') +
+          '\nsafeBas=' + safeBottomPx() +
+          '\npadBas=' + (pad ? Math.round(pad.getBoundingClientRect().bottom) : '-') +
+          '\nfill=' + (($('screenTrade') || {}).className || '').indexOf('saf-fill');
+      }, 1000);
+    } catch (eDg) { /* ignore */ }
+  })();
   if (UA_SAFARI_IOS) {
     window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
     window.addEventListener('orientationchange', function () { setTimeout(function () { fillSafariGap(true); }, 400); });
