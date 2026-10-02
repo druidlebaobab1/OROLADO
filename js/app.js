@@ -588,7 +588,8 @@
       // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
       var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
-      var target = window.innerHeight - (underBar ? (safeBottomPx() + 46) : 8);
+      // Réglé sur l'iPhone du propriétaire (v2264) : ~10 px d'espace entre le bloc orange et la barre.
+      var target = window.innerHeight - (underBar ? (safeBottomPx() + 31) : 8);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
       if (gap > 4) {
         var hpx = (base + Math.min(gap, 300)) + 'px';
