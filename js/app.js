@@ -554,6 +554,7 @@
       return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
     } catch (eSa) { return false; }
   })();
+  try { if (IOS_STANDALONE && /iP(hone|od|ad)/.test(navigator.userAgent || '')) document.documentElement.classList.add('ios-app'); } catch (eIa) { /* ignore */ }
   var UA_SAFARI_IOS = (function () {
     try {
       var ua = navigator.userAgent || '';
@@ -601,8 +602,9 @@
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
       var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
       // Application installée (plein écran, sans barre) : jusqu'en bas, au-dessus de la barre d'accueil.
+      // (l'iPhone arrête déjà la page au-dessus de sa barre d'accueil : on ne la retire pas deux fois)
       var target = IOS_STANDALONE
-        ? window.innerHeight - safeBottomPx() - 6
+        ? Math.min(window.innerHeight, (window.screen && window.screen.height ? window.screen.height : window.innerHeight) - safeBottomPx()) - 6
         : window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
       if (gap <= 4) return;
