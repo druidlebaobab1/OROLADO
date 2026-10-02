@@ -378,6 +378,7 @@
     if ($('btnProfile')) $('btnProfile').classList.toggle('hidden', guest);
     if ($('topbarCta')) $('topbarCta').classList.toggle('hidden', guest);
     if ($('btnOpenDeposit')) $('btnOpenDeposit').classList.toggle('hidden', guest);
+    setTimeout(syncTopBtnHeight, 50);
   }
 
   function lockBalanceOptimistic(demo, real, ms) {
@@ -545,10 +546,11 @@
     syncTopBtnHeight();
   }
 
-  // Non inscrit : « Aide » et le drapeau prennent exactement la hauteur de « Connexion » (selon l'écran).
+  // « Aide », le drapeau (et le profil si connecté) prennent exactement la hauteur de « Connexion »
+  // (non inscrit) ou de « Recharger » (connecté), selon l'écran.
   function syncTopBtnHeight() {
     try {
-      var ref = $('btnGoLogin');
+      var ref = isGuest() ? $('btnGoLogin') : $('btnOpenDeposit');
       var scr = $('screenTrade');
       if (!ref || !scr) return;
       var h = ref.offsetHeight;

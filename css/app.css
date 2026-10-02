@@ -4858,3 +4858,7 @@ html body #fsTradeOverlay .stake-field .fs-stake-win{top:var(--fs-win-top,28px)!
 html.oro-guest body #screenTrade #btnHelp,html.oro-guest body #screenTrade #langBarTrade .lang-dd-btn{height:var(--oro-top-h,34px)!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding-top:0!important;padding-bottom:0!important;align-self:center!important}
 html.oro-guest body #screenTrade #langBarTrade{height:auto!important;max-height:none!important;align-self:center!important}
 @media (max-width:380px){html.oro-guest body #screenTrade{--oro-top-h:32px}}
+/* v2252 — pareil quand connecté : « Aide », le drapeau et le profil à la hauteur exacte de « Recharger » (largeur inchangée) */
+html:not(.oro-guest) body #screenTrade #btnHelp,html:not(.oro-guest) body #screenTrade #langBarTrade .lang-dd-btn,html:not(.oro-guest) body #screenTrade #btnProfile{height:var(--oro-top-h,36px)!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding-top:0!important;padding-bottom:0!important;align-self:center!important}
+html:not(.oro-guest) body #screenTrade #langBarTrade{height:auto!important;max-height:none!important;align-self:center!important}
+html:not(.oro-guest) body #screenTrade #btnProfile.hidden{display:none!important}
