@@ -885,38 +885,6 @@
     steer = null;
   }
 
-  // Carte du monde originale en points : pour chaque latitude (pas de 5°), les
-  // tranches de longitude où il y a des terres. Volontairement simplifiée.
-  var WORLD_ROWS = [
-    [82.5, [[-60, -30]]],
-    [77.5, [[-120, -80], [-70, -20], [15, 25], [55, 105]]],
-    [72.5, [[-165, -140], [-138, -76], [-55, -20], [20, 30], [60, 180]]],
-    [67.5, [[-165, -95], [-80, -60], [-52, -25], [-22, -14], [12, 30], [30, 180]]],
-    [62.5, [[-165, -95], [-78, -65], [-50, -40], [5, 30], [30, 140], [155, 180]]],
-    [57.5, [[-160, -93], [-78, -60], [-6, -2], [8, 25], [28, 140], [156, 163]]],
-    [52.5, [[-130, -55], [-10, 2], [2, 40], [40, 140]]],
-    [47.5, [[-125, -53], [-5, 45], [54, 135], [141, 145]]],
-    [42.5, [[-124, -70], [-9, 3], [10, 28], [27, 48], [54, 130], [140, 142]]],
-    [37.5, [[-122, -76], [-9, 10], [22, 44], [44, 122], [126, 129], [132, 140]]],
-    [32.5, [[-118, -80], [-10, 35], [35, 60], [60, 122], [130, 132]]],
-    [27.5, [[-113, -97], [-82, -80], [-15, 33], [35, 56], [60, 120]]],
-    [22.5, [[-106, -97], [-84, -75], [-17, 37], [39, 59], [68, 90], [92, 110]]],
-    [17.5, [[-100, -88], [-16, 40], [42, 52], [73, 84], [95, 108], [120, 125]]],
-    [12.5, [[-90, -83], [-75, -60], [-17, 51], [76, 80], [98, 108], [122, 126]]],
-    [7.5, [[-78, -52], [-13, 48], [80, 81], [100, 104], [110, 118], [122, 126]]],
-    [2.5, [[-80, -50], [9, 42], [96, 106], [109, 119], [120, 125], [131, 150]]],
-    [-2.5, [[-80, -40], [10, 41], [102, 106], [110, 116], [132, 150]]],
-    [-7.5, [[-79, -35], [12, 40], [106, 115], [140, 148]]],
-    [-12.5, [[-77, -38], [13, 40], [49, 50], [130, 142]]],
-    [-17.5, [[-71, -39], [12, 38], [44, 50], [122, 146]]],
-    [-22.5, [[-70, -41], [14, 35], [43, 48], [114, 150]]],
-    [-27.5, [[-71, -48], [15, 32], [114, 153]]],
-    [-32.5, [[-72, -52], [18, 28], [115, 125], [135, 152]]],
-    [-37.5, [[-73, -57], [140, 150], [174, 178]]],
-    [-42.5, [[-74, -63], [145, 148], [170, 174]]],
-    [-47.5, [[-75, -66], [167, 170]]],
-    [-52.5, [[-74, -67]]]
-  ];
   var BACKDROP_COINS = ['ico-btc', 'ico-eth', 'ico-usdt', 'ico-sol', 'ico-bnb', 'ico-doge',
     'ico-ton', 'ico-ada', 'ico-trx', 'ico-avax', 'ico-ltc', 'ico-link', 'ico-usdc', 'ico-matic',
     'ico-dot', 'ico-shib', 'ico-uni', 'ico-atom', 'ico-near', 'ico-bch', 'ico-xlm',
@@ -940,13 +908,13 @@
     c.height = Math.max(1, Math.round(cssH * s));
     var g = c.getContext('2d');
     g.setTransform(s, 0, 0, s, 0, 0);
-    // Fond bleu nuit, pas un noir plat.
+    // Fond « univers » : nuit bleu-violet (pas un noir plat), nébuleuses douces, étoiles,
+    // quelques planètes et les cryptos. Décor seulement : rien ici ne touche aux prix.
     var base = g.createLinearGradient(0, 0, 0, cssH);
-    base.addColorStop(0, '#16203A');
-    base.addColorStop(1, '#0E1426');
+    base.addColorStop(0, '#13113A');
+    base.addColorStop(1, '#0A0A20');
     g.fillStyle = base;
     g.fillRect(0, 0, cssW, cssH);
-    // Lumières chaudes (or en haut à gauche, ambre en bas à droite, halo au centre).
     function glow(x, y, r, col) {
       var rg = g.createRadialGradient(x, y, 0, x, y, r);
       rg.addColorStop(0, col);
@@ -955,88 +923,207 @@
       g.fillRect(0, 0, cssW, cssH);
     }
     var big = Math.max(cssW, cssH);
-    glow(cssW * 0.12, cssH * 0.05, big * 0.55, 'rgba(245,175,50,0.17)');
-    glow(cssW * 0.92, cssH * 0.98, big * 0.5, 'rgba(255,140,50,0.12)');
-    glow(pad.l + w / 2, pad.t + h / 2, Math.min(w, h) * 0.7, 'rgba(120,160,255,0.07)');
-    // Carte du monde en points.
-    // Sur téléphone (graphique plus haut que large, surtout en plein écran), la carte
-    // grandit avec la hauteur : un peu plus large que l écran, centrée sur Europe/Afrique.
-    // La carte tient entière dans le globe, lui-même entier dans le graphique.
-    var mw = w * 0.94;
-    var mh = Math.min(h * 0.9, mw * 0.52);
-    var mx = pad.l + (w - mw) / 2;
-    var my = pad.t + (h - mh) / 2;
-    // Fins « fils » du globe (méridiens et parallèles) : on sent que c'est la Terre.
-    g.save();
-    g.strokeStyle = 'rgba(160,185,225,0.05)';
-    g.lineWidth = 1;
-    // Le globe tient toujours ENTIER dans le graphique (petit écran, plein écran, PC).
-    var gcx = pad.l + w / 2;
-    var gcy = pad.t + h / 2;
-    var grx = Math.min(mw / 2, w * 0.47);
-    var gry = Math.min(mh / 2, h * 0.46);
-    var gk;
-    for (gk = 1; gk <= 4; gk++) {
+    var small = Math.min(w, h);
+    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(124,58,237,0.20)');
+    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(255,138,0,0.08)');
+    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(70,110,255,0.07)');
+    // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
+    var seed = 7;
+    function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    var nStars = Math.round(cssW * cssH / 2400);
+    var k;
+    for (k = 0; k < nStars; k++) {
+      var sx = rnd() * cssW;
+      var sy = rnd() * cssH;
+      var sr = rnd() * 1.05 + 0.25;
+      g.fillStyle = 'rgba(255,255,255,' + (rnd() * 0.5 + 0.12).toFixed(2) + ')';
       g.beginPath();
-      g.ellipse(gcx, gcy, grx * gk / 4, gry, 0, 0, Math.PI * 2);
-      g.stroke();
+      g.arc(sx, sy, sr, 0, Math.PI * 2);
+      g.fill();
     }
-    for (gk = -2; gk <= 2; gk++) {
-      var py = gcy + gk * gry / 3;
-      var half = grx * Math.sqrt(Math.max(0, 1 - Math.pow((py - gcy) / gry, 2)));
+    // Quelques étoiles brillantes en croix.
+    for (k = 0; k < 6; k++) {
+      var bx = pad.l + rnd() * w;
+      var by = pad.t + rnd() * h;
+      var bl = 3 + rnd() * 3;
+      g.strokeStyle = 'rgba(255,240,220,0.32)';
+      g.lineWidth = 0.8;
       g.beginPath();
-      g.moveTo(gcx - half, py);
-      g.lineTo(gcx + half, py);
+      g.moveTo(bx - bl, by); g.lineTo(bx + bl, by);
+      g.moveTo(bx, by - bl); g.lineTo(bx, by + bl);
       g.stroke();
+      g.fillStyle = 'rgba(255,248,235,0.8)';
+      g.beginPath();
+      g.arc(bx, by, 0.9, 0, Math.PI * 2);
+      g.fill();
     }
-    g.restore();
-    // Continents en points plus fins et plus serrés (deux rangées par bande) : la forme
-    // de la carte se lit mieux, sans être plus lumineuse.
-    var step = Math.max(3.4, mw / 110);
-    var degX = 360 * step / mw;
-    var r = Math.max(0.7, step * 0.28);
-    g.fillStyle = 'rgba(160,185,225,0.13)';
-    var i;
-    var j;
-    var sub;
-    for (i = 0; i < WORLD_ROWS.length; i++) {
-      var spans = WORLD_ROWS[i][1];
-      for (sub = 0; sub < 2; sub++) {
-        var lat = WORLD_ROWS[i][0] + 1.25 - sub * 2.5;
-        var y = my + (85 - lat) / 145 * mh;
-        for (j = 0; j < spans.length; j++) {
-          var lon = Math.ceil((spans[j][0] + 180) / degX) * degX - 180 + (sub ? degX / 2 : 0);
-          for (; lon <= spans[j][1]; lon += degX) {
-            var x = mx + (lon + 180) / 360 * mw;
-            g.beginPath();
-            g.arc(x, y, r, 0, Math.PI * 2);
-            g.fill();
-          }
+    // Planètes : dégradé de lumière, ombre douce, anneau pour la grande.
+    function planet(x, y, r, c0, c1, c2, alpha, ring) {
+      g.save();
+      g.globalAlpha = alpha;
+      var halo = g.createRadialGradient(x, y, r * 0.9, x, y, r * 2.1);
+      halo.addColorStop(0, c1.replace('1)', '0.22)'));
+      halo.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = halo;
+      g.beginPath();
+      g.arc(x, y, r * 2.1, 0, Math.PI * 2);
+      g.fill();
+      if (ring) {
+        g.save();
+        g.translate(x, y);
+        g.rotate(-0.32);
+        g.strokeStyle = 'rgba(255,214,160,0.55)';
+        g.lineWidth = Math.max(1, r * 0.09);
+        g.beginPath();
+        g.ellipse(0, 0, r * 1.95, r * 0.42, 0, Math.PI, Math.PI * 2);
+        g.stroke();
+        g.restore();
+      }
+      var body = g.createRadialGradient(x - r * 0.42, y - r * 0.45, r * 0.08, x, y, r);
+      body.addColorStop(0, c0);
+      body.addColorStop(0.55, c1);
+      body.addColorStop(1, c2);
+      g.fillStyle = body;
+      g.beginPath();
+      g.arc(x, y, r, 0, Math.PI * 2);
+      g.fill();
+      // bandes très légères à l'intérieur
+      g.save();
+      g.beginPath();
+      g.arc(x, y, r, 0, Math.PI * 2);
+      g.clip();
+      g.strokeStyle = 'rgba(255,255,255,0.07)';
+      g.lineWidth = Math.max(1, r * 0.08);
+      var bi;
+      for (bi = -2; bi <= 2; bi++) {
+        g.beginPath();
+        g.ellipse(x, y + bi * r * 0.36, r * 1.1, r * 0.12, -0.18, 0, Math.PI * 2);
+        g.stroke();
+      }
+      var shade = g.createRadialGradient(x + r * 0.55, y + r * 0.6, r * 0.2, x + r * 0.2, y + r * 0.25, r * 1.4);
+      shade.addColorStop(0, 'rgba(5,5,20,0.55)');
+      shade.addColorStop(1, 'rgba(5,5,20,0)');
+      g.fillStyle = shade;
+      g.fillRect(x - r, y - r, r * 2, r * 2);
+      g.restore();
+      if (ring) {
+        g.save();
+        g.translate(x, y);
+        g.rotate(-0.32);
+        var rg2 = g.createLinearGradient(-r * 2, 0, r * 2, 0);
+        rg2.addColorStop(0, 'rgba(255,214,160,0.15)');
+        rg2.addColorStop(0.5, 'rgba(255,226,180,0.8)');
+        rg2.addColorStop(1, 'rgba(255,214,160,0.15)');
+        g.strokeStyle = rg2;
+        g.lineWidth = Math.max(1, r * 0.09);
+        g.beginPath();
+        g.ellipse(0, 0, r * 1.95, r * 0.42, 0, 0, Math.PI);
+        g.stroke();
+        g.restore();
+      }
+      g.restore();
+    }
+    var pr = Math.max(14, small * 0.12);
+    var planets = [
+      { x: pad.l + w * 0.76, y: pad.t + h * 0.22, r: pr },
+      { x: pad.l + w * 0.13, y: pad.t + h * 0.82, r: pr * 0.62 },
+      { x: pad.l + w * 0.40, y: pad.t + h * 0.10, r: pr * 0.30 },
+      { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.18 },
+      { x: pad.l + w * 0.02, y: pad.t + h * 0.40, r: pr * 0.85 },
+      { x: pad.l + w * 0.88, y: pad.t + h * 0.88, r: pr * 0.24 },
+      { x: pad.l + w * 0.26, y: pad.t + h * 0.30, r: pr * 0.13 },
+      { x: pad.l + w * 0.93, y: pad.t + h * 0.50, r: pr * 0.15 },
+      { x: pad.l + w * 0.36, y: pad.t + h * 0.74, r: pr * 0.11 },
+      { x: pad.l + w * 0.70, y: pad.t + h * 0.05, r: pr * 0.12 },
+      { x: pad.l + w * 0.08, y: pad.t + h * 0.12, r: pr * 0.20 },
+      { x: pad.l + w * 0.80, y: pad.t + h * 0.70, r: pr * 0.09 }
+    ];
+    // Petite galaxie spirale, très douce (décor).
+    (function () {
+      var gx = pad.l + w * 0.56;
+      var gy = pad.t + h * 0.90;
+      var gr = Math.max(18, small * 0.16);
+      g.save();
+      g.translate(gx, gy);
+      g.rotate(-0.42);
+      g.scale(1, 0.38);
+      var sg = g.createRadialGradient(0, 0, 0, 0, 0, gr);
+      sg.addColorStop(0, 'rgba(255,236,210,0.55)');
+      sg.addColorStop(0.18, 'rgba(200,170,255,0.30)');
+      sg.addColorStop(0.6, 'rgba(120,90,230,0.10)');
+      sg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = sg;
+      g.beginPath();
+      g.arc(0, 0, gr, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = 'rgba(210,190,255,0.16)';
+      g.lineWidth = 2;
+      var ga;
+      for (ga = 0; ga < 2; ga++) {
+        g.beginPath();
+        var gt;
+        for (gt = 0; gt <= 1.0001; gt += 0.05) {
+          var ang = ga * Math.PI + gt * Math.PI * 1.6;
+          var rad = gr * (0.15 + gt * 0.8);
+          var px = Math.cos(ang) * rad;
+          var py = Math.sin(ang) * rad;
+          if (gt === 0) g.moveTo(px, py); else g.lineTo(px, py);
         }
+        g.stroke();
+      }
+      g.restore();
+    })();
+    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.5, true);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.45, false);
+    planet(planets[2].x, planets[2].y, planets[2].r, '#EEDCFF', 'rgba(139,92,246,1)', '#26105A', 0.5, false);
+    planet(planets[3].x, planets[3].y, planets[3].r, '#FFD0C8', 'rgba(220,80,70,1)', '#3A0B0B', 0.35, false);
+    planet(planets[4].x, planets[4].y, planets[4].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.22, false);
+    planet(planets[5].x, planets[5].y, planets[5].r, '#D9FFC8', 'rgba(101,190,60,1)', '#12300A', 0.42, false);
+    planet(planets[6].x, planets[6].y, planets[6].r, '#FFF2C8', 'rgba(230,190,90,1)', '#3A2A08', 0.4, false);
+    planet(planets[7].x, planets[7].y, planets[7].r, '#D6F6FF', 'rgba(56,189,248,1)', '#082A44', 0.4, false);
+    planet(planets[8].x, planets[8].y, planets[8].r, '#FFD9EC', 'rgba(236,72,153,1)', '#3A0820', 0.38, false);
+    planet(planets[9].x, planets[9].y, planets[9].r, '#E8E4FF', 'rgba(160,150,230,1)', '#1E1A44', 0.4, false);
+    planet(planets[10].x, planets[10].y, planets[10].r, '#FFE9C8', 'rgba(240,150,70,1)', '#3A1A06', 0.32, true);
+    planet(planets[11].x, planets[11].y, planets[11].r, '#C8FFE6', 'rgba(40,200,150,1)', '#05301E', 0.4, false);
+    // Cryptos : quelques-unes en orbite autour de la grande planète, les autres semées
+    // très discrètement dans l'espace (jamais sur une planète ni sur la colonne des prix).
+    var orbit = ['ico-btc', 'ico-eth', 'ico-usdt'];
+    var p0 = planets[0];
+    for (k = 0; k < orbit.length; k++) {
+      var oa = 2.55 + k * 0.62;
+      var ox = p0.x + Math.cos(oa) * p0.r * 1.95 * Math.cos(-0.32) - Math.sin(oa) * p0.r * 0.42 * Math.sin(-0.32);
+      var oy = p0.y + Math.cos(oa) * p0.r * 1.95 * Math.sin(-0.32) + Math.sin(oa) * p0.r * 0.42 * Math.cos(-0.32);
+      var oimg = coinImg(orbit[k]);
+      var os = Math.max(10, p0.r * 0.34);
+      if (oimg && oimg.complete && oimg.naturalWidth) {
+        g.globalAlpha = 0.42;
+        g.drawImage(oimg, ox - os / 2, oy - os / 2, os, os);
       }
     }
-    // Logos crypto : tous la même taille, rangés en lignes droites régulières sur toute la zone
-    // du graphique (sans toucher la colonne des prix), très discrets.
-    var cSize = 18;
-    var cCols = Math.max(5, Math.round(w / 56));
-    var cRows = Math.max(4, Math.round(h / 62));
-    var cellW = w / cCols;
-    var cellH = h / cRows;
+    g.globalAlpha = 1;
+    var nCoins = Math.max(14, Math.round(w * h / 4200));
     var ci = 0;
-    var rr;
-    var cc;
-    g.globalAlpha = 0.047;
-    for (rr = 0; rr < cRows; rr++) {
-      var shift = 0;
-      for (cc = 0; cc < cCols; cc++) {
-        var cxp = pad.l + cellW * (cc + 0.5) + shift;
-        if (cxp > pad.l + w - cSize * 0.6) continue;
-        var cyp = pad.t + cellH * (rr + 0.5);
-        var img = coinImg(BACKDROP_COINS[ci % BACKDROP_COINS.length]);
-        ci += 5;
-        if (img && img.complete && img.naturalWidth) {
-          g.drawImage(img, cxp - cSize / 2, cyp - cSize / 2, cSize, cSize);
-        }
+    var tries = 0;
+    var placed = 0;
+    while (placed < nCoins && tries < nCoins * 6) {
+      tries++;
+      var cSize = 14 + rnd() * 7;
+      var cx2 = pad.l + cSize + rnd() * Math.max(1, w - cSize * 2.2);
+      var cy2 = pad.t + cSize + rnd() * Math.max(1, h - cSize * 2);
+      var hit = false;
+      var pi;
+      for (pi = 0; pi < planets.length; pi++) {
+        var dx = cx2 - planets[pi].x;
+        var dy = cy2 - planets[pi].y;
+        if (Math.sqrt(dx * dx + dy * dy) < planets[pi].r * (pi === 0 ? 2.3 : 1.6) + cSize) { hit = true; break; }
+      }
+      if (hit) continue;
+      var img = coinImg(BACKDROP_COINS[ci % BACKDROP_COINS.length]);
+      ci += 5;
+      placed++;
+      if (img && img.complete && img.naturalWidth) {
+        g.globalAlpha = 0.085;
+        g.drawImage(img, cx2 - cSize / 2, cy2 - cSize / 2, cSize, cSize);
       }
     }
     g.globalAlpha = 1;
@@ -1388,7 +1475,7 @@
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
-      if (opts.v75Rose) col = up ? '#ff2d75' : '#d80056';
+      if (opts.v75Rose) col = up ? '#E0001B' : '#7A000C';
       if (opts.apexAiry) col = up ? '#C084FC' : '#7C3AED';
       // AZAZEL : braise orange à la hausse, rouge feu à la baisse.
       if (opts.crashDrop) col = up ? '#FF9F43' : '#FF3B30';
@@ -1436,7 +1523,7 @@
         ctx.shadowColor = 'rgba(255,59,48,0.65)';
         ctx.shadowBlur = 10;
       } else if (opts.v75Rose && i === candles.length - 1) {
-        ctx.shadowColor = up ? 'rgba(255,45,117,0.4)' : 'rgba(216,0,86,0.5)';
+        ctx.shadowColor = up ? 'rgba(224,0,27,0.55)' : 'rgba(122,0,12,0.6)';
         ctx.shadowBlur = 8;
       } else if (opts.nexusCyber && i === candles.length - 1) {
         ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
@@ -1484,11 +1571,11 @@
         ctx.lineWidth = 1;
         ctx.strokeRect(x - cw / 2 + 0.5, y1 + 0.5, Math.max(1, cw - 1), Math.max(1, bh - 1));
       } else if (opts.v75Rose && up) {
-        ctx.strokeStyle = '#ff2d75';
+        ctx.strokeStyle = '#E0001B';
         ctx.lineWidth = 1.15;
         ctx.strokeRect(x - cw / 2, y1, cw, bh);
       } else if (opts.v75Rose) {
-        ctx.fillStyle = '#d80056';
+        ctx.fillStyle = '#7A000C';
         ctx.fillRect(x - cw / 2, y1, cw, bh);
       } else if (opts.apexAiry) {
         // ORO 888 : corps violet plein, liseré clair en haut (effet bijou).
@@ -1766,7 +1853,7 @@
       }
       ctx.restore();
     } else {
-      // PYTHON : barres de trader (trait haut-bas, crochet à gauche = ouverture, à droite = clôture).
+      // ZUL : barres de trader rouge sang (trait haut-bas, crochet à gauche = ouverture, à droite = clôture).
       ctx.save();
       var tick = Math.max(2.5, Math.min(7, slot * 0.42));
       ctx.lineCap = 'butt';
@@ -1781,10 +1868,10 @@
         var yBot = toY(lw);
         if (yBot - yTop < 3) { var yMid = (yTop + yBot) / 2; yTop = yMid - 1.5; yBot = yMid + 1.5; }
         if (i === last && cssH >= 200) {
-          ctx.shadowColor = up ? 'rgba(255,45,117,0.8)' : 'rgba(216,0,86,0.8)';
+          ctx.shadowColor = up ? 'rgba(230,10,30,0.8)' : 'rgba(150,0,15,0.8)';
           ctx.shadowBlur = 10;
         }
-        ctx.strokeStyle = up ? '#ff2d75' : '#e0206a';
+        ctx.strokeStyle = up ? '#F0102A' : '#A8000F';
         ctx.lineWidth = 2.6;
         ctx.beginPath();
         ctx.moveTo(x, yTop);
@@ -1841,8 +1928,8 @@
     ctx.lineWidth = width || 1.8;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    if (col === '#ff2244') {
-      ctx.shadowColor = 'rgba(255,34,68,0.55)';
+    if (col === '#ff2244' || col === '#ff2d75') {
+      ctx.shadowColor = col === '#ff2d75' ? 'rgba(255,45,117,0.55)' : 'rgba(255,34,68,0.55)';
       ctx.shadowBlur = 8;
     } else {
       ctx.shadowBlur = 0;
@@ -2762,8 +2849,8 @@
       ctx.fill();
     }
     // Point actuel : noyau de 6 px et halo pulsant de 12 px, quel que soit l'actif.
-    var headCol = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
-    var glowCol = compact ? '#ff2244' : (v75Head ? '#ff2d75' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
+    var headCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
+    var glowCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 2.2 : 3, 0, Math.PI * 2);
     ctx.fillStyle = headCol;
@@ -3539,7 +3626,7 @@
     ctx.font = '800 ' + wmSize + 'px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 0.042;
+    ctx.globalAlpha = 0.03;
     ctx.fillStyle = '#E9D9B0';
     ctx.fillText('OROLADO', pad.l + w / 2, pad.t + h / 2);
     ctx.restore();
@@ -3551,7 +3638,7 @@
     ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, h));
     ctx.clip();
     if (asset.id === 'stable') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2244', 3);
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3);
     } else if (STYLED_ASSETS[asset.id]) {
       map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id]);
     } else if (asset.chart === 'candle' || asset.id === 'horizon50') {

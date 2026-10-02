@@ -2035,6 +2035,12 @@
   Object.keys(SMALL_I18N).forEach(function (code) {
     if (DICT[code]) Object.assign(DICT[code], SMALL_I18N[code]);
   });
+  // Boutons ACHETER / VENDRE : texte court sans « (CALL ↗) », la flèche est dessinée à côté.
+  Object.keys(DICT).forEach(function (code) {
+    var d = DICT[code];
+    d.buyShort = String(d.buy || EN.buy).replace(/\s*\(.*\)\s*$/, '');
+    d.sellShort = String(d.sell || EN.sell).replace(/\s*\(.*\)\s*$/, '');
+  });
 
   // Message qui fait découvrir les gestes du graphique (pincer à 2 doigts, glisser 1 doigt).
   var GESTURE_I18N = {

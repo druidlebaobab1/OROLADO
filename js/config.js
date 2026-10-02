@@ -95,11 +95,11 @@
       },
       stable: {
         id: 'stable',
-        name: 'ZUL',
-        short: 'ZUL',
+        name: 'PYTHON',
+        short: 'PYTHON',
         tag: 'Basse volatilité',
         chart: 'line',
-        lineColor: '#ff2244',
+        lineColor: '#ff2d75',
         lineWidth: 3,
         lineHalo: null,
         basePrice: 10000.00,
@@ -108,8 +108,8 @@
         ticksPerCandle: 12,
         payoutMin: 1.80,
         payoutMax: 1.88,
-        accent: '#E53935',
-        accentDim: '229,57,53',
+        accent: '#E91E63',
+        accentDim: '233,30,99',
         feed: 'stable'
       },
       apex500: {
@@ -189,22 +189,22 @@
       boomspike: {
         id: 'boomspike',
         // Ancien « Boom Spike » : même identifiant (historique, stats), nouvelle
-        // simulation simple et régulière, tracé vert émeraude.
+        // simulation simple et régulière, tracé blanc (demande du propriétaire).
         name: 'VALAC',
         short: 'VALAC',
         tag: 'Emerald flow',
         chart: 'line',
-        lineColor: '#00E676',
+        lineColor: '#F2F4FF',
         lineWidth: 2.4,
-        areaRgb: '0,230,118',
+        areaRgb: '225,232,255',
         basePrice: 3890.20,
         tickNoise: 0.40,
         tickMs: 28,
         ticksPerCandle: 8,
         payoutMin: 1.88,
         payoutMax: 1.98,
-        accent: '#00E676',
-        accentDim: '0,230,118',
+        accent: '#E8ECFF',
+        accentDim: '232,236,255',
         feed: 'boomspike'
       },
       nexusprime: {
@@ -227,8 +227,8 @@
       },
       v75: {
         id: 'v75',
-        name: 'PYTHON',
-        short: 'PYTHON',
+        name: 'ZUL',
+        short: 'ZUL',
         tag: 'Vagues amples',
         chart: 'candle',
         plotTheme: 'darkPro',
@@ -239,8 +239,8 @@
         ticksPerCandle: 6,
         payoutMin: 1.82,
         payoutMax: 1.92,
-        accent: '#E91E63',
-        accentDim: '233,30,99',
+        accent: '#E53935',
+        accentDim: '229,57,53',
         feed: 'v75'
       },
       titanpulse: {

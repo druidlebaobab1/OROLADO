@@ -510,7 +510,38 @@
         card.classList.add('flash');
       }
     }
+    paintModeAmounts();
   }
+
+  // Boutons DÉMO / COMPTE RÉEL : chacun affiche son solde, tout le temps. Le mode actif reprend
+  // exactement le solde affiché (mêmes règles de gel pendant un trade) ; l'autre lit le solde
+  // enregistré. Affichage seulement : aucun calcul d'argent ne change.
+  var modeAmtLast = {};
+  function paintModeAmounts() {
+    try {
+      var u = user();
+      var guest = !u || isGuest(u);
+      var real = !!(u && u.mode === 'real');
+      var cur = lastPaintedBalance || ($('balanceDisplay') ? $('balanceDisplay').textContent : '');
+      var demoTxt;
+      var realTxt;
+      if (real) {
+        realTxt = cur;
+        demoTxt = D6.fmtFCFA(Number(D6.Store.demoBalance ? D6.Store.demoBalance(u) : 0) || 0);
+      } else {
+        demoTxt = cur;
+        realTxt = D6.fmtFCFA(guest ? 0 : Math.max(0, availableStakeBalance(u, 'real')));
+      }
+      [['modeDemoAmt', demoTxt], ['fsDemoAmt', demoTxt], ['modeRealAmt', realTxt], ['fsRealAmt', realTxt]].forEach(function (p) {
+        if (!p[1] || modeAmtLast[p[0]] === p[1]) return;
+        var el = $(p[0]);
+        if (!el) return;
+        el.textContent = p[1];
+        modeAmtLast[p[0]] = p[1];
+      });
+    } catch (eMa) { /* ignore */ }
+  }
+  setInterval(paintModeAmounts, 1000);
 
   function setModeChrome(u) {
     var trade = $('screenTrade');
@@ -543,6 +574,8 @@
     try { document.documentElement.classList.toggle('oro-guest', !!guest); } catch (eG) { /* ignore */ }
     if ($('btnFsMidPlus')) $('btnFsMidPlus').classList.remove('hidden');
     if ($('fsBtnReal')) $('fsBtnReal').classList.remove('hidden');
+    modeAmtLast = {};
+    paintModeAmounts();
     syncTopBtnHeight();
   }
 
