@@ -1622,6 +1622,14 @@
         ctx.lineTo(bx + off * 0.5 * s, y0 + d * 0.78);
         ctx.lineTo(bx, y1);
       };
+      // Sens du zigzag attaché à LA SECONDE de l'éclair (son tick), pas à sa place dans la liste :
+      // avant, chaque nouvelle seconde décalait tout d'une place et TOUS les éclairs se retournaient.
+      // Écart entre deux secondes = le plus petit écart vu (robuste si une seconde manque).
+      var tkStep = 0;
+      for (i = 1; i < n; i++) {
+        var dTk = (candles[i].tk != null && candles[i - 1].tk != null) ? candles[i].tk - candles[i - 1].tk : 0;
+        if (dTk > 0 && (!tkStep || dTk < tkStep)) tkStep = dTk;
+      }
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
@@ -1629,10 +1637,15 @@
         var yS = toY(c.o);
         var yE = toY(c.c);
         if (yE < topY + 2 || yE > botY - 2) continue;
-        // Éclair toujours visible : au moins 12 px de long.
-        if (Math.abs(yE - yS) < 12) yS = yE + (up ? 12 : -12);
+        // Éclair toujours visible : au moins 12 px de long, CENTRÉ entre ouverture et clôture
+        // (avant : quand le prix repassait l'ouverture, l'éclair sautait de 24 px d'un côté à l'autre).
+        if (Math.abs(yE - yS) < 12) {
+          var yMid = (yS + yE) / 2;
+          yS = yMid + (up ? 6 : -6);
+          yE = yMid + (up ? -6 : 6);
+        }
         yS = Math.max(topY, Math.min(botY, yS));
-        var flip = (i % 2) === 1;
+        var flip = tkStep ? (Math.round(c.tk / tkStep) % 2) === 1 : (i % 2) === 1;
         var isLast = i === last && cssH >= 200;
         var flick = 1;
         // Lueur (trait large et transparent), puis corps, puis cœur fin.
