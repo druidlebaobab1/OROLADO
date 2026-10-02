@@ -1449,6 +1449,13 @@
       $('previewGain').textContent = D6.fmtFCFA(totalWin);
       fitGainText($('previewGain'));
     }
+    // Plein écran : estimation du total reçu, en petit sous la mise.
+    if ($('fsStakeWin')) {
+      var fsWinTxt = '≈ ' + D6.fmtFCFA(totalWin);
+      $('fsStakeWin').textContent = fsWinTxt;
+      // Très gros montants : texte un peu plus petit pour rester dans la case.
+      $('fsStakeWin').style.fontSize = fsWinTxt.length > 17 ? '7px' : (fsWinTxt.length > 14 ? '8px' : '');
+    }
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
       btn.classList.toggle('on', Math.abs(Number(btn.dataset.odds) - odds) < 0.001);

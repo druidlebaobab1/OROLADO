@@ -4829,3 +4829,18 @@ html body #fsTradeOverlay #fsTopMid:has(#fsBtnReal.on) #fsTopBalance{color:#22E0
 html body #fsTradeOverlay .fs-mode-switch #fsBtnReal{gap:clamp(3px,1.2vw,7px)!important}
 /* v2247/2248 — plein écran (tous appareils) : « Quitter » un peu plus à droite, Solana ne touche plus sa lueur */
 html body .fs-trade-close{margin-right:0!important;margin-left:12px!important}
+
+/* ===== v2249 — RÉEL touché (inscrit ou non, écran normal et plein écran) : directement le vert de « RÉEL choisi »,
+   sans couleur sombre avant ===== */
+html body #screenTrade #modeReal:not(.on).tap-lit.tap-lit.tap-lit,html body #screenTrade #modeReal:not(.on):active,
+html body #fsTradeOverlay #fsBtnReal:not(.on).tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay #fsBtnReal:not(.on):active,
+html body #screenTrade #fsBtnReal:not(.on).tap-lit.tap-lit.tap-lit,html body #screenTrade #fsBtnReal:not(.on):active{background:linear-gradient(135deg,#FFE082,#00E676 55%,#00C853)!important;color:#04140a!important;border:1px solid rgba(255,215,0,.7)!important;box-shadow:0 0 14px rgba(0,230,118,.45)!important;transition:none!important}
+html body #screenTrade #modeReal,html body #fsTradeOverlay #fsBtnReal,html body #screenTrade #fsBtnReal{-webkit-tap-highlight-color:transparent!important}
+
+/* ===== v2249 — Plein écran : estimation du total reçu, en petit sous la mise (même case) ===== */
+.fs-stake-win{display:none}
+html body #fsTradeOverlay .stake-field .fs-stake-win{display:block;position:absolute;left:3px;right:3px;bottom:3px;z-index:2;pointer-events:none;
+  text-align:center;font-size:9px;font-weight:800;line-height:1;letter-spacing:.02em;color:#34D399;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding-top:2px;border-top:1px solid rgba(52,211,153,.22);text-shadow:0 0 6px rgba(52,211,153,.35);font-variant-numeric:tabular-nums}
+html body #fsTradeOverlay .stake-field #inputStake{padding-bottom:12px!important}
+html body #fsTradeOverlay .stake-field::before{top:calc(50% - 6px)!important}
