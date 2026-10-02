@@ -549,18 +549,10 @@
   // Safari iPhone : sa barre flottante en bas laisse à la page plus de hauteur que Chrome, et la courbe
   // (hauteur fixe sur téléphone) laissait un vide sous ACHETER / VENDRE. On agrandit la courbe de
   // exactement ce vide, en s'arrêtant au-dessus de la barre de Safari. Chrome, Android, autres : rien.
-  var IOS_STANDALONE = (function () {
-    try {
-      return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    } catch (eSa) { return false; }
-  })();
-  try { if (IOS_STANDALONE && /iP(hone|od|ad)/.test(navigator.userAgent || '')) document.documentElement.classList.add('ios-app'); } catch (eIa) { /* ignore */ }
   var UA_SAFARI_IOS = (function () {
     try {
       var ua = navigator.userAgent || '';
       var ios = /iP(hone|od|ad)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      // Site installé sur l'écran d'accueil (application) : pas de « Safari » dans l'identité du navigateur.
-      if (ios && IOS_STANDALONE) return true;
       return ios && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//.test(ua);
     } catch (eUa) { return false; }
   })();
@@ -597,22 +589,11 @@
       ];
       scr.classList.remove('saf-fill');
       parts.forEach(function (p) { scr.style.removeProperty(p.v); });
-      // Application installée : la mesure « 100dvh » de l'iPhone y est plus petite que le vrai écran
-      // (le cadre s'arrêtait trop haut et coupait le bas des boutons) → on prend la vraie hauteur.
-      if (IOS_STANDALONE) html.style.setProperty('--oro-app-h', window.innerHeight + 'px');
       // Deux cas selon la version de Safari : la page passe SOUS la barre flottante (hauteur = tout
       // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
       var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
-      // Application installée (plein écran, sans barre) : jusqu'en bas, au-dessus de la barre d'accueil.
-      // (l'iPhone arrête déjà la page au-dessus de sa barre d'accueil : on ne la retire pas deux fois)
-      var target = IOS_STANDALONE
-        ? Math.min(window.innerHeight, (window.screen && window.screen.height ? window.screen.height : window.innerHeight) - safeBottomPx()) - 6
-        : window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
-      // Sécurité : jamais plus bas que le cadre qui contient les boutons (sinon ils seraient coupés).
-      var wrapEl = document.querySelector('#screenTrade #tradeWrap');
-      var clipB = Math.min(scr.getBoundingClientRect().bottom, wrapEl ? wrapEl.getBoundingClientRect().bottom : Infinity);
-      if (isFinite(clipB)) target = Math.min(target, clipB - 6);
+      var target = window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
       var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
       if (gap <= 4) return;
       parts.forEach(function (p) {

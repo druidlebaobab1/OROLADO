@@ -4914,8 +4914,3 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap #i
 html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .qbtn.stake-act{height:var(--saf-q)!important;min-height:var(--saf-q)!important;max-height:none!important}
 html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .odds-chip{height:var(--saf-odds)!important;min-height:var(--saf-odds)!important;max-height:none!important}
 html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .btn-trade{height:var(--saf-buy)!important;min-height:var(--saf-buy)!important;max-height:none!important}
-/* v2267 — application installée sur iPhone : pas de marge orange en double sous ACHETER / VENDRE (l iPhone garde déjà la place de sa barre d accueil) */
-html.ios-app:not(.fs-trade):not(.is-fullscreen) body #screenTrade .trade-wrap > .pad{padding-bottom:10px!important}
-/* v2268 — application installée sur iPhone : l écran du site prend la VRAIE hauteur (100dvh y est trop petit et coupait le bas) */
-html.ios-app,html.ios-app body{height:var(--oro-app-h,100dvh)!important;min-height:0!important;max-height:none!important}
-html.ios-app body .screen,html.ios-app body #screenTrade,html.ios-app body #screenTrade .trade-shell{height:var(--oro-app-h,100dvh)!important;max-height:var(--oro-app-h,100dvh)!important;min-height:0!important}
