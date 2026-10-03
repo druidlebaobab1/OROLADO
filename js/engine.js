@@ -117,7 +117,7 @@
   // [prix de départ, sigma] de chaque actif (copie de orolado_feed_assets) et bande de l'élastique.
   var FAIR_BASE = {
     v100: [13000.42, 0.00020], stable: [10000.00, 0.000045], apex500: [5480.25, 0.00024],
-    horizon50: [10120.40, 0.000035], goldtrend: [7340.80, 0.00015], v75: [8700.18, 0.00016],
+    horizon50: [10120.40, 0.000012, 1 / 300, 0.002, 0.004], goldtrend: [7340.80, 0.00015], v75: [8700.18, 0.00016],
     nexusprime: [8120.60, 0.00018], titanpulse: [9560.40, 0.00028], boomspike: [3890.20, 0.00012],
     crash300: [4210.55, 0.00022]
   };
@@ -126,7 +126,10 @@
     var a = FAIR_BASE[assetId];
     if (!a || !(entryCents > 0)) return 0;
     var base = a[0] * 100;
-    var pull = (a[1] * a[1]) / (2 * FAIR_BAND * FAIR_BAND);
+    // Variance d'un tick (+ pics au hasard quand l'actif en a, ex. BAAL) : même calcul que feed_lib.php.
+    var v = a[1] * a[1];
+    if (a[2] > 0) v += a[2] * (a[3] * a[3] + a[3] * a[4] + a[4] * a[4]) / 3;
+    var pull = v / (2 * FAIR_BAND * FAIR_BAND);
     var ticks = Math.floor(duration * 1000 / 250);
     return -(1 - Math.pow(1 - pull, ticks)) * Math.log(entryCents / base);
   }

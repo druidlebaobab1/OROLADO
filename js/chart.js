@@ -31,7 +31,9 @@
   // 2026-10-03 (propriétaire : « bougies trop maigres ») : départ un peu plus proche, bougies plus
   // larges ; AZAZEL juste un cran (un peu plus large, même hauteur).
   function defaultZoomIdx(id) {
-    if (id === 'horizon50' || id === 'stable' || id === 'goldtrend') return 3;
+    // BAAL (Boom) : on voit plus de temps (41 s) pour voir la descente ET les pics.
+    if (id === 'horizon50') return 12;
+    if (id === 'stable' || id === 'goldtrend') return 3;
     if (id === 'v100' || id === 'nexusprime') return 4;
     if (id === 'crash300') return 7;
     if (id === 'v75') return 3;
@@ -1516,7 +1518,8 @@
       if (!(isFinite(hWick))) hWick = hiB;
       if (!(isFinite(lWick))) lWick = loB;
       var wickRange = hWick - lWick;
-      if (wickRange > capVis) {
+      // BAAL (Boom) : les longs pics sont vrais, leur mèche n'est jamais coupée (avant : pic « cassé »).
+      if (wickRange > capVis && !opts.horizonOrange) {
         var midW = (hWick + lWick) / 2;
         hWick = midW + capVis / 2;
         lWick = midW - capVis / 2;
@@ -1577,6 +1580,20 @@
           ctx.fillStyle = col;
           ctx.fillRect(x - cw / 2, y1, cw, bh);
         }
+      } else if (opts.horizonOrange && up && (c.c - c.o) > Math.abs(c.o) * 0.0012) {
+        // BAAL : un PIC (grande hausse d'un coup) = bougie or lumineuse, bien différente des petites.
+        var gSp = ctx.createLinearGradient(0, y1, 0, y1 + bh);
+        gSp.addColorStop(0, '#FFF3B0');
+        gSp.addColorStop(0.35, '#FFC93C');
+        gSp.addColorStop(1, '#FF7A00');
+        ctx.shadowColor = 'rgba(255,190,60,0.8)';
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = gSp;
+        ctx.fillRect(x - cw / 2, y1, cw, bh);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#FFE08A';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - cw / 2 + 0.5, y1 + 0.5, Math.max(1, cw - 1), Math.max(1, bh - 1));
       } else if (opts.horizonOrange) {
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
@@ -3191,7 +3208,7 @@
   // cadre sert au petit écran et au plein écran (plus haut = encore plus d'aisance).
   function routeSpanPct(assetId) {
     var base = {
-      v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0016,
+      v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0110,
       goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
       boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
@@ -3202,14 +3219,14 @@
     var z = Number(zoomSec()) || 28;
     var zRef = ZOOM_STEPS[defaultZoomIdx(assetId)] || 28;
     var k = Math.sqrt(z / zRef);
-    // Un peu plus haut (mouvements plus grands à l'écran), sauf AZAZEL (hauteur gardée).
-    var taller = assetId === 'crash300' ? 1 : 0.82;
+    // Un peu plus haut (mouvements plus grands à l'écran). Ceux qui « s'envolaient » (ZUL, APOCALYPSE,
+    // ORO) et AZAZEL gardent leur ancienne hauteur, qui tenait bien dans le cadre.
+    var keep = { crash300: 1, v75: 1, titanpulse: 1, apex500: 1, horizon50: 1 };
+    var taller = keep[assetId] ? 1 : 0.9;
     return base * taller * Math.max(0.7, Math.min(5, k));
   }
 
   var camCandles = null;
-  // Recentrage en cours du cadre ({ asset, mid }), null quand le cadre est immobile.
-  var camGlide = null;
 
   // Caméra stable : cadre de taille fixe, la courbe défile dedans. Le cadre ne glisse
   // (doucement) que lorsque la tête s'approche d'un bord ; jamais de zoom qui « respire ».
@@ -3265,17 +3282,13 @@
     // avion ») : le cadre reste immobile tant que la tête est dans la grande zone du milieu.
     // Quand elle approche d'un bord, le cadre se recentre UNE fois, doucement, sur la tête,
     // puis s'arrête de nouveau (avant : il glissait sans arrêt derrière la tête).
-    var edge = span * (IS_ANDROID_CHART ? 0.22 : 0.18);
-    if (camGlide && camGlide.asset !== assetId) camGlide = null;
-    if (prevMax > prevMin && !camGlide && (h > mid + half - edge || h < mid - half + edge)) {
-      camGlide = { asset: assetId, mid: h };
-    }
-    if (camGlide) {
-      // Suivi réglé en TEMPS et non par image (vieux Android à 15 images/s = même vitesse).
-      var dm = camGlide.mid - mid;
-      mid += dm * cameraFollow(0.07);
-      if (Math.abs(camGlide.mid - mid) < span * 0.01) camGlide = null;
-    }
+    // Recette (2e version, le recentrage d'un coup faisait « s'envoler » tout le graphique) :
+    // zone libre = la moitié du milieu ; au-delà, le cadre ne bouge QUE de l'écart, très doucement.
+    var edge = span * 0.25;
+    // Suivi réglé en TEMPS et non par image (vieux Android à 15 images/s = même vitesse).
+    var kf = cameraFollow(0.045);
+    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * kf;
+    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * kf;
     // Filet dur : la tête ne sort jamais (pic Boom/Crash, retour de veille).
     var hard = span * (IS_ANDROID_CHART ? 0.12 : 0.06);
     if (h > mid + half - hard) mid = h - half + hard;

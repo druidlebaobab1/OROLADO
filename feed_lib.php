@@ -38,7 +38,10 @@ function orolado_feed_assets(): array {
     'v100' => $plain(13000.42, 0.00020),
     'stable' => $plain(10000.00, 0.000045),
     'apex500' => $plain(5480.25, 0.00024),
-    'horizon50' => $plain(10120.40, 0.000035),
+    // BAAL façon « Boom » (demande du propriétaire, 2026-10-03) : petites bougies qui descendent doucement,
+    // grands pics vers le haut AU HASARD (en moyenne 1 tous les 300 ticks = 75 s, sans mémoire : attendre ne
+    // rend pas un pic plus probable). Descente et pics s'équilibrent : mouvement moyen nul.
+    'horizon50' => ['base' => 10120.40, 'sigma' => 0.000012, 'drift' => -0.00001, 'jumpP' => 1 / 300, 'jumpMin' => 0.002, 'jumpMax' => 0.004, 'jumpDir' => 1],
     'goldtrend' => $plain(7340.80, 0.00015),
     'v75' => $plain(8700.18, 0.00016),
     'nexusprime' => $plain(8120.60, 0.00018),

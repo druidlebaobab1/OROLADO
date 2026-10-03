@@ -19,7 +19,7 @@ require __DIR__ . '/../feed_lib.php';
 ini_set('memory_limit', '-1');
 
 $NAMES = [
-  'v100' => 'VOLATILITY', 'stable' => 'ZUL', 'apex500' => 'ORO 888', 'horizon50' => 'BAAL',
+  'v100' => 'VOLATILITY', 'stable' => 'ZUL', 'apex500' => 'BAAL', 'horizon50' => 'ORO 999',
   'goldtrend' => 'OROF', 'v75' => 'PYTHON', 'nexusprime' => 'ASMODUS', 'titanpulse' => 'APOCALYPSE',
   'boomspike' => 'VALAC', 'crash300' => 'AZAZEL',
 ];

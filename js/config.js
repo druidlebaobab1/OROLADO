@@ -114,8 +114,8 @@
       },
       apex500: {
         id: 'apex500',
-        name: 'ORO 888',
-        short: 'ORO 888',
+        name: 'BAAL',
+        short: 'BAAL',
         tag: 'Ultra-rapide',
         chart: 'candle',
         candleThin: false,
@@ -131,8 +131,8 @@
       },
       horizon50: {
         id: 'horizon50',
-        name: 'BAAL',
-        short: 'BAAL',
+        name: 'ORO 999',
+        short: 'ORO 999',
         tag: 'Doux et régulier',
         chart: 'line',
         lineStyle: 'smooth',
