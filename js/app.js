@@ -1433,8 +1433,14 @@
     // Accroché par son bord DROIT sous le drapeau (quelle que soit sa largeur réelle) : avant, il
     // apparaissait décalé sous « Connexion » / « Recharger ».
     void left;
-    menu.style.left = 'auto';
-    menu.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+    if (r.left + r.width / 2 < window.innerWidth / 2) {
+      // Drapeau à GAUCHE de l'écran (arabe, de droite à gauche) : menu accroché par son bord gauche.
+      menu.style.right = 'auto';
+      menu.style.left = Math.max(8, Math.round(r.left)) + 'px';
+    } else {
+      menu.style.left = 'auto';
+      menu.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+    }
     menu.style.width = w + 'px';
     menu.style.maxHeight = 'none';
     menu.style.overflow = 'hidden';

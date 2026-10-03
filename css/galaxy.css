@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2288") center top/cover no-repeat,
+    url("galaxy-space.svg?v=2289") center top/cover no-repeat,
     radial-gradient(1.2px 1.2px at 12% 8%,rgba(255,255,255,.85),transparent 60%),
     radial-gradient(1px 1px at 78% 4%,rgba(255,255,255,.7),transparent 60%),
     radial-gradient(1.4px 1.4px at 92% 22%,rgba(255,230,190,.8),transparent 60%),
@@ -628,7 +628,7 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
-    url("galaxy-space2.svg?v=2288") center top/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center top/cover no-repeat,
     radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
     linear-gradient(180deg,#0E0B28,#080817)!important;
@@ -637,7 +637,7 @@ html body #screenAuth#screenAuth{
 html body .modal-backdrop .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
-    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center/cover no-repeat,
     #0B0D22!important;
   border:1px solid rgba(150,140,255,.22)!important;
 }
@@ -646,7 +646,7 @@ html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
     linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
-    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center/cover no-repeat,
     #08121E!important;
   border-color:rgba(45,212,191,.28)!important;
 }
@@ -655,7 +655,7 @@ html body #withdrawModal .modal-box{
   background:
     radial-gradient(90% 50% at 0% 0%,rgba(34,197,94,.14),transparent 65%),
     linear-gradient(180deg,rgba(8,22,20,.66),rgba(5,14,14,.80)),
-    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center/cover no-repeat,
     #071311!important;
   border-color:rgba(74,222,128,.26)!important;
 }
@@ -664,7 +664,7 @@ html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
-    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center/cover no-repeat,
     #0C0820!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
@@ -739,13 +739,13 @@ html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
-    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
-    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2289") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
@@ -826,7 +826,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2288") center top/cover no-repeat,
+    url("galaxy-auth.svg?v=2289") center top/cover no-repeat,
     linear-gradient(180deg,#0E0B28,#080817)!important;
 }
 
@@ -854,7 +854,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2288") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2289") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -862,7 +862,7 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2288") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2289") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
@@ -873,7 +873,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2288") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2289") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -1327,7 +1327,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 html body #drawerProfile#drawerProfile{
   background:
     linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
-    url("galaxy-loader.svg?v=2288") center/cover no-repeat,
+    url("galaxy-loader.svg?v=2289") center/cover no-repeat,
     linear-gradient(180deg,#130F36,#0A0A20)!important;
   border-left:1px solid rgba(170,150,255,.25)!important;
 }
@@ -1408,13 +1408,13 @@ html body #helpModal .modal-box,
 html body #termsModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
-    url("galaxy-modal.svg?v=2288") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2289") center/cover no-repeat,
     linear-gradient(180deg,#120F34,#0A0A20)!important;
 }
 html body #depositModal .modal-box{background:
     radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
     linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
-    url("galaxy-modal.svg?v=2288") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2289") center/cover no-repeat,
     linear-gradient(180deg,#0F1434,#090C20)!important}
 
 /* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
@@ -1681,3 +1681,74 @@ html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip .mk-art{width:38
 html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:8.5px!important;max-width:100%!important;overflow:hidden!important;text-overflow:clip!important}
 html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-bar{gap:2px!important;column-gap:2px!important}
 html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip{flex:0 0 calc((100% - 34px) / 10)!important;width:calc((100% - 34px) / 10)!important}
+
+/* =====================================================================
+   Retouches 21 : actualiser jamais collé à « − » (plein écran partout, PC écran normal),
+   jamais au-dessus de la colonne des prix ; indicateurs moins serrés à gauche sur PC / TV
+   ===================================================================== */
+@media (max-width:859px){
+  html.fs-trade body #tradeWrap#tradeWrap .chart-toolbar .ind-btn:not(.zoom-btn){min-width:42px!important}
+  html.fs-trade body #tradeWrap#tradeWrap #chartZoomOut{margin-left:2px!important}
+  html.fs-trade body #tradeWrap#tradeWrap #chartReset#chartReset{margin-left:18px!important}
+}
+@media (min-width:860px){
+  html:not(.fs-trade) body #tradeWrap#tradeWrap #chartReset{margin-left:34px!important}
+  html.fs-trade body #tradeWrap#tradeWrap .chart-toolbar .ind-pills{padding-left:16px!important;gap:22px!important}
+  html.fs-trade body #tradeWrap#tradeWrap .chart-toolbar .ind-btn:not(.zoom-btn){min-width:84px!important}
+  html.fs-trade body #tradeWrap#tradeWrap #chartZoomOut{margin-left:6px!important}
+  html.fs-trade body #tradeWrap#tradeWrap #chartReset#chartReset{margin-left:38px!important}
+}
+html.is-tv body #tradeWrap#tradeWrap #chartReset#chartReset{margin-left:30px!important}
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .chart-toolbar .ind-pills{padding-left:14px!important;gap:20px!important;padding-right:90px!important}
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .chart-toolbar .ind-btn:not(.zoom-btn){min-width:70px!important}
+/* Arabe (de droite à gauche) : la croix du profil tout au bout à GAUCHE, jamais collée au titre */
+html[dir="rtl"] body #drawerProfile#drawerProfile .drawer-head .btn-close{margin-left:0!important;margin-right:auto!important}
+html[dir="rtl"] body .drawer .drawer-head .btn-close,html[dir="rtl"] body .modal .btn-close{margin-left:0!important;margin-right:auto!important}
+/* Arabe : les MONTANTS et nombres s'écrivent toujours de gauche à droite (« 1 000 000 $ » et non
+   « $ 000 000 1 », « ×2 » et non « 2× ») ; le texte arabe autour reste de droite à gauche */
+html[dir="rtl"] body .mb-amt,
+html[dir="rtl"] body .stake-act,
+html[dir="rtl"] body #previewGain,
+html[dir="rtl"] body #inputStake,
+html[dir="rtl"] body #profWalletBal,
+html[dir="rtl"] body #profPublicId,
+html[dir="rtl"] body .wallet-card-v,
+html[dir="rtl"] body .fs-stake-est,
+html[dir="rtl"] body .strip-price{direction:ltr!important;unicode-bidi:isolate!important}
+/* Petits téléphones : « Connexion / Inscription » tiennent dans toutes les langues (russe, espagnol…) */
+@media (max-width:400px){
+  html.oro-guest body #screenTrade#screenTrade #authQuick .btn-auth-link{font-size:12px!important;letter-spacing:-.01em!important;padding:0 6px!important}
+}
+
+/* =====================================================================
+   Retouches 22 : grands écrans (PC, TV)
+   ===================================================================== */
+/* le fond agrandi mettait de grosses planètes juste à côté des marchés : fond étoilé sans planètes
+   (celui des pages d'inscription) ; les planètes dessinées DANS la courbe restent */
+@media (min-width:860px){
+  html body #screenTrade#screenTrade,html body #fsTradeOverlay#fsTradeOverlay{
+    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2289") center top/cover no-repeat,#13113A!important}
+}
+html.is-tv body #screenTrade#screenTrade,html.is-tv body #fsTradeOverlay#fsTradeOverlay{
+  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2289") center top/cover no-repeat,#13113A!important}
+/* TV : noms des marchés lisibles en entier (VOLATILITY, APOCALYPSE…) */
+html.is-tv body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7.6px!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important}
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:9px!important}
+/* TV : la case du gain plus grande, « Payout 88% » écrit en entier */
+html.is-tv body #tradeWrap#tradeWrap .win-preview .amount{font-size:24px!important}
+html.is-tv body #tradeWrap#tradeWrap .win-preview .mult{font-size:10px!important;max-width:none!important;overflow:visible!important;padding:1px 6px!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7px!important;letter-spacing:-.03em!important}
+/* TV écran normal : la courbe et le terminal descendent jusqu'en bas de l'écran */
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap{padding-bottom:0!important}
+html.is-tv:not(.fs-trade) body #screenTrade .trade-shell{padding-bottom:0!important}
+/* TV plein écran : mise, BUY, SELL regroupés (plus de grand vide), BUY et SELL bien séparés
+   (télécommande / souris : pas de clic sur le mauvais bouton) */
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .pad{justify-content:center!important;gap:14px!important}
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .stake-line,
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .trade-row{flex:0 0 auto!important;height:auto!important;min-height:0!important}
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .trade-row{display:flex!important;flex-direction:column!important;gap:16px!important;row-gap:16px!important;justify-content:flex-start!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .trade-row{gap:16px!important;column-gap:16px!important}
+/* Toutes les fenêtres (dépôt, retrait, aide…) : si le contenu dépasse la hauteur de l'écran (TV, petit
+   PC, téléphone couché), la fenêtre DÉFILE au lieu de couper le bas (ex. TV : « Dépôt crypto » coupé) */
+html body .modal-backdrop > .modal-box{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+html body .modal-backdrop > .modal-box:is(#oroToutesFenetres,.modal-box):is(#oroToutesFenetres2,.modal-box){overflow-y:auto!important}

@@ -860,13 +860,13 @@
       if (cardFs) {
         // Télé : la carte contient la barre d'outils AU-DESSUS de la courbe ; sans l'ajouter, le bas de
         // la courbe (les prix les plus bas) était caché sous le bord de la carte.
+        // (Tous les appareils : sur téléphone aussi, la carte coupait ~24 px du bas de la courbe.)
         var cardH = fsH;
-        if (tvZ > 0 && tvZ < 0.99) {
-          try {
-            var tb = (parent.getBoundingClientRect().top - cardFs.getBoundingClientRect().top) / tvZ;
-            if (tb > 0 && tb < 120) cardH = fsH + Math.round(tb);
-          } catch (eTb) { cardH = fsH; }
-        }
+        try {
+          var zTb = (tvZ > 0 && tvZ < 0.99) ? tvZ : 1;
+          var tb = (parent.getBoundingClientRect().top - cardFs.getBoundingClientRect().top) / zTb;
+          if (tb > 0 && tb < 120) cardH = fsH + Math.round(tb);
+        } catch (eTb) { cardH = fsH; }
         cardFs.style.setProperty('height', cardH + 'px', 'important');
         cardFs.style.setProperty('min-height', cardH + 'px', 'important');
         cardFs.style.setProperty('min-width', '240px', 'important');
@@ -975,7 +975,8 @@
     var big = Math.max(cssW, cssH);
     var small = Math.min(w, h);
     glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(124,58,237,0.20)');
-    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(255,138,0,0.08)');
+    // (Ancien halo orange en bas à droite retiré : le propriétaire voyait une « lueur jaune » près des prix.)
+    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(40,70,190,0.07)');
     glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(70,110,255,0.07)');
     // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
     var seed = 7;
