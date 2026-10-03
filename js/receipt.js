@@ -34,7 +34,7 @@
   function money(n) {
     var v = Number(n) || 0;
     if (D6.fmtFCFA) return String(D6.fmtFCFA(Math.abs(v)));
-    return Math.abs(v).toFixed(2) + ' $';
+    return '$\u00a0\u00a0' + Math.abs(v).toFixed(2);
   }
   function price(n) {
     var v = Number(n);

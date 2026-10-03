@@ -688,7 +688,7 @@
       if (amount < minWd) {
         var minErr = D6.I18N.t('withdrawMinErrDyn');
         if (!minErr || minErr === 'withdrawMinErrDyn') minErr = D6.I18N.t('withdrawMinErr');
-        return { ok: false, reason: String(minErr).replace('${min}', '$' + minWd).replace('$3', '$' + minWd) };
+        return { ok: false, reason: String(minErr).replace('${min}', D6.fmtMoney(minWd)).replace('$\u00a0\u00a03', D6.fmtMoney(minWd)).replace('$3', D6.fmtMoney(minWd)) };
       }
       if (amount > real) return { ok: false, reason: D6.I18N.t('insufficient') };
       var deposits = Number(user.realDepositTotal) || 0;

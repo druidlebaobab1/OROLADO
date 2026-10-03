@@ -1133,7 +1133,7 @@
     var cents = Math.round((v - Math.floor(v)) * 100);
     var grouped = Math.floor(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     var body = cents ? (grouped + '.' + (cents < 10 ? '0' : '') + cents) : grouped;
-    return (signed < 0 ? '-' : '+') + '$' + body;
+    return (signed < 0 ? '-' : '+') + '$\u00a0\u00a0' + body;
   }
 
   function resultKind(h) {
@@ -1180,7 +1180,7 @@
     if (isWin) {
       el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
-      el.textContent = '+$0';
+      el.textContent = '+$\u00a0\u00a00';
     }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {
@@ -1997,7 +1997,7 @@
       return d + 's';
     }
     function fmtHistMoney(n) {
-      return String(D6.fmtFCFA(n) || '').replace(/ \$/, '\u00a0$');
+      return String(D6.fmtFCFA(n) || '');
     }
     // Format en cartes (lisible sur tous les écrans, sans défilement de côté) :
     // logo + simulation + sens à gauche, gain / perte à droite, bouton reçu au bout.
@@ -3710,13 +3710,13 @@
   function formatWdMin(min) {
     var s = t('withdrawMinDyn');
     if (!s || s === 'withdrawMinDyn') s = 'Minimum withdrawal: ${min}';
-    return s.replace('${min}', '$' + min);
+    return s.replace('${min}', D6.fmtMoney(min));
   }
 
   function formatWdMinErr(min) {
     var s = t('withdrawMinErrDyn');
     if (!s || s === 'withdrawMinErrDyn') s = t('withdrawMinErr') || 'The minimum withdrawal is ${min}.';
-    return s.replace('${min}', '$' + min).replace('$3', '$' + min);
+    return s.replace('${min}', D6.fmtMoney(min)).replace('$\u00a0\u00a03', D6.fmtMoney(min)).replace('$3', D6.fmtMoney(min));
   }
 
   function setDepositAmt(n) {
@@ -3742,7 +3742,7 @@
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) hint.textContent = 'Minimum $3';
+    if (hint) hint.textContent = 'Minimum $\u00a0\u00a03';
     setDepositPayMethod('card');
     resetOxaWallet();
     showDepositStep('select');
@@ -4842,7 +4842,7 @@
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
-      toast('Le dépôt minimum est de $3.', 'err');
+      toast('Le dépôt minimum est de $\u00a0\u00a03.', 'err');
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });

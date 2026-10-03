@@ -314,7 +314,7 @@
     return Math.round(x * 100) / 100;
   };
 
-  /** Affichage USD : 50 $ si entier, 1.50 $ s’il y a de vrais centimes. */
+  /** Affichage USD : « $ 50 » si entier, « $ 1.50 » s’il y a de vrais centimes. */
   D6.fmtMoney = function (n) {
     var v = D6.roundMoney(n);
     if (!isFinite(v)) v = 0;
@@ -323,7 +323,10 @@
     var cents = Math.round((abs - Math.floor(abs)) * 100);
     var grouped = Math.floor(abs).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     var body = cents ? (grouped + '.' + (cents < 10 ? '0' : '') + cents) : grouped;
-    return (neg ? '-' : '') + body + ' $';
+    var out = (neg ? '-' : '') + '$\u00a0\u00a0' + body;
+    // Arabe (de droite à gauche) : on isole le montant pour que « $ » reste devant.
+    if (typeof document !== 'undefined' && document.documentElement && document.documentElement.dir === 'rtl') out = '\u2066' + out + '\u2069';
+    return out;
   };
 
   /** Alias historique — toute l’UI passe par USD. */
