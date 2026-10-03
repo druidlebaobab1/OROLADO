@@ -637,7 +637,7 @@
       var cardTop = card.getBoundingClientRect().top;
       var toolsH = Math.max(0, stage.getBoundingClientRect().top - cardTop);
       var padH = pad.getBoundingClientRect().height;
-      var h = Math.floor(window.innerHeight - bottomRes - padH - cardTop - 6);
+      var h = Math.floor(window.innerHeight - bottomRes - padH - cardTop);
       if (h < 200) h = 200;
       html.style.setProperty('--ios-chart-h', h + 'px');
       html.style.setProperty('--ios-stage-h', Math.max(150, h - toolsH) + 'px');
