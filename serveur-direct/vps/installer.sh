@@ -57,7 +57,7 @@ systemctl enable orolado-direct >/dev/null 2>&1
 
 # 8) Mise en ligne automatique depuis GitHub (toutes les minutes).
 cp deployer.sh /usr/local/bin/orolado-deployer.sh
-sed -i 's/$//' /usr/local/bin/orolado-deployer.sh
+sed -i 's/\r$//' /usr/local/bin/orolado-deployer.sh
 cp orolado-deploy.service orolado-deploy.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now orolado-deploy.timer >/dev/null 2>&1
