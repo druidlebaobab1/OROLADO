@@ -36,6 +36,11 @@
     </radialGradient>
     <clipPath id="clipL"><path d="M256 168 L112 392 L256 392 Z"/></clipPath>
     <clipPath id="clipR"><path d="M256 168 L256 392 L400 392 Z"/></clipPath>
+    <linearGradient id="banA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE9A8"/>
+      <stop offset=".45" stop-color="#F6C94D"/>
+      <stop offset="1" stop-color="#C98A12"/>
+    </linearGradient>
   </defs>
   <circle cx="256" cy="262" r="248" fill="url(#bgA)"/>
   <!-- halo derrière la pierre de faîte -->
@@ -62,8 +67,9 @@
   <!-- pièce crypto crantée -->
   <circle cx="256" cy="262" r="200" fill="none" stroke="url(#ringA)" stroke-width="10" stroke-dasharray="6 9" opacity=".7"/>
   <circle cx="256" cy="262" r="186" fill="none" stroke="#E6B23A" stroke-opacity=".3" stroke-width="2.5"/>
-  <rect x="100" y="408" width="312" height="60" rx="30" fill="#0B1120" stroke="#F2C14E" stroke-opacity=".85" stroke-width="3"/>
-  <text x="259" y="451" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" letter-spacing="7" fill="#F7C948" text-anchor="middle" text-rendering="geometricPrecision">OROLADO</text>
+  <rect x="100" y="408" width="312" height="60" rx="30" fill="url(#banA)" stroke="#8A5A12" stroke-opacity=".9" stroke-width="3"/>
+  <rect x="108" y="413" width="296" height="22" rx="11" fill="#FFF6D6" fill-opacity=".28"/>
+  <text x="259" y="451" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" letter-spacing="7" fill="#3A2205" text-anchor="middle" text-rendering="geometricPrecision">OROLADO</text>
   <!-- sol -->
   <path d="M104 398 H408" stroke="url(#ringA)" stroke-width="6" stroke-linecap="round" opacity=".9"/>
 </svg>

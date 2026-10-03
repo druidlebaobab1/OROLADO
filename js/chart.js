@@ -19,12 +19,14 @@
   // Secondes visibles derrière la tête. Zoom + jusqu'à 10 s (bougies de près).
   // Zoom − plafonné à 11 min : un trade de 10 min reste entièrement visible, point
   // d'entrée compris, sans écraser la courbe au milieu de l'écran.
+  // 4, 6, 7 et 8 s (ajoutés le 2026-10-04) : zoom de départ des simulations « vélocité »
+  // (APOCALYPSE 4 s, PYTHON 7 s, ASMODUS 8 s, AZAZEL 10 s).
   var ZOOM_STEPS = [
-    10, 12, 14, 16, 18, 20, 23, 25, 28, 31, 35, 38, 41, 45, 48, 52, 56, 60,
+    4, 6, 7, 8, 10, 12, 14, 16, 18, 20, 23, 25, 28, 31, 35, 38, 41, 45, 48, 52, 56, 60,
     70, 80, 90, 100, 110, 120, 140, 160, 180, 220, 260, 300,
     360, 420, 480, 540, 600, 660
   ];
-  var DEFAULT_ZOOM_IDX = 8; // 28 s (défaut d'origine)
+  var DEFAULT_ZOOM_IDX = 12; // 28 s (défaut d'origine)
   // Zoom de départ par simulation : BAAL (bougie calme, gros carreaux) 16 s ; VOLATILITY 23 s (bougies
   // plus larges) ; ZUL 16 s (le serpent défile plus vite, sans pics plus hauts) ; OROF 16 s (grandes
   // pyramides) ; ASMODUS 23 s (cristaux plus larges). Les autres : 28 s.
@@ -32,12 +34,19 @@
   // larges ; AZAZEL juste un cran (un peu plus large, même hauteur).
   function defaultZoomIdx(id) {
     // BAAL (Boom) : on voit plus de temps (41 s) pour voir la descente ET les pics.
-    if (id === 'horizon50') return 12;
-    if (id === 'stable' || id === 'goldtrend') return 3;
-    if (id === 'v100' || id === 'nexusprime') return 4;
-    if (id === 'crash300') return 7;
-    if (id === 'v75') return 3;
-    return 6;
+    // ORO 999 (style Boom : descente en zigzag + grands pics) : on voit 35 s pour voir la descente ET les pics.
+    if (id === 'horizon50') return 14;
+    // Vélocité (demande du propriétaire) : PYTHON 7 s, ASMODUS 8 s, AZAZEL 10 s à l'écran.
+    if (id === 'stable') return 2;
+    if (id === 'nexusprime') return 3;
+    if (id === 'crash300') return 4;
+    if (id === 'goldtrend') return 7;
+    if (id === 'v100') return 8;
+    if (id === 'v75') return 7;
+    // APOCALYPSE (vélocité, demande du propriétaire) : le PLUS RAPIDE, seulement 4 s à l'écran →
+    // l'historique file vite vers la gauche, comme une voiture lancée. Affichage seulement.
+    if (id === 'titanpulse') return 0;
+    return 10;
   }
   var zoomIdx = defaultZoomIdx('v100');
   var zoomSmooth = 28;
@@ -1728,13 +1737,15 @@
     } else if (style === 'embers') {
       // AZAZEL : colonnes qui montent du bas jusqu'au prix, braise orange (hausse) / rouge feu (baisse).
       ctx.save();
-      var bot = pad.t + h;
+      // Les colonnes sortent du sol : elles descendent jusqu'au bas du cadre (avant : bande vide sous
+      // les colonnes, comme si AZAZEL était coupé). Dessin seulement, les prix ne changent pas.
+      var bot = Math.max(pad.t + h, cssH || 0);
       var gUp = ctx.createLinearGradient(0, pad.t, 0, bot);
       gUp.addColorStop(0, 'rgba(255,159,67,0.85)');
-      gUp.addColorStop(1, 'rgba(255,159,67,0.04)');
+      gUp.addColorStop(1, 'rgba(255,159,67,0.38)');
       var gDn = ctx.createLinearGradient(0, pad.t, 0, bot);
       gDn.addColorStop(0, 'rgba(255,59,48,0.85)');
-      gDn.addColorStop(1, 'rgba(255,59,48,0.04)');
+      gDn.addColorStop(1, 'rgba(255,59,48,0.38)');
       var cwE = Math.max(1, Math.min(12 * sizeK(), slot * 0.72));
       for (i = 0; i < n; i++) {
         c = candles[i];
@@ -2425,7 +2436,11 @@
   }
   function drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, fade) {
     var mult = Number(trade.payout) || 1.88;
-    if (mult < 4.99 || !isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
+    // La ligne qui DÉCIDE le résultat (objectif du serveur) est toujours montrée quand elle n'est pas
+    // au prix d'entrée — aussi en 88 % (ex. ORO 999 : objectif un peu sous l'entrée, car le prix
+    // descend doucement entre ses sauts). Avant, en 88 % elle était cachée : le joueur jugeait avec le
+    // prix d'entrée et croyait « gagné » quand c'était perdu (et l'inverse). Dessin seulement.
+    if (!isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
     var by = priceToY(bar, pad, plotH, minP, maxP);
     if (!isFinite(by)) return;
     var off = 0;
@@ -3248,10 +3263,14 @@
   function routeSpanPct(assetId) {
     var base = {
       // Cadres agrandis moins vite que les vitesses (×vitesse^0,6) : on sent la vitesse sans déborder.
-      v100: 0.0090, stable: 0.00347, apex500: 0.01377, horizon50: 0.0110,
+      v100: 0.0090, stable: 0.00347, apex500: 0.01377, horizon50: 0.0080,
       goldtrend: 0.00796, v75: 0.00955, nexusprime: 0.01033, titanpulse: 0.0244,
       boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
+    // Vélocité : moins de secondes à l'écran → le cadre se resserre d'autant (racine du temps), pour
+    // garder la même hauteur de mouvement qu'avant (sinon la courbe paraîtrait plate). Ancien → nouveau.
+    var velo = { titanpulse: Math.sqrt(5.5 / 23), stable: Math.sqrt(7 / 16), nexusprime: Math.sqrt(8 / 18), crash300: Math.sqrt(10 / 25) }[assetId];
+    if (velo) base *= velo;
     // Même recette sur les 10 simulations (celle qui ne déborde jamais) : aucune amplification
     // verticale. Le cadre suit le zoom comme un vrai marché (l'amplitude grandit avec la racine du
     // temps affiché), mesuré depuis le zoom de départ de CHAQUE simulation : un zoom de départ plus
@@ -3718,7 +3737,10 @@
     var lineData = closes.slice(startIdx);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, h));
+    // AZAZEL : ses colonnes sortent du sol → la zone de dessin descend jusqu'au bas du cadre (sous la
+    // ligne des secondes), sinon une bande vide restait sous les colonnes. Les autres : inchangé.
+    var clipH = asset.id === 'crash300' ? Math.max(h, (cssH || 0) - pad.t) : h;
+    ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, clipH));
     ctx.clip();
     if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3.6);

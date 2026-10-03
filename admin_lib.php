@@ -46,7 +46,7 @@ function admin_in_range(?string $iso, string $from, string $to): bool {
 }
 
 function admin_money($n): string {
-  return number_format((float) $n, 2, '.', ' ') . ' $';
+  return '$ ' . number_format((float) $n, 2, '.', ' ');
 }
 
 function admin_esc(string $s): string {
@@ -2710,7 +2710,7 @@ function admin_health_live_checks(): array {
   }
   if ($bigWins) {
     rsort($bigWins);
-    $rows[] = $row('Gros gains', count($bigWins) . ' gain(s) de plus de 500 $ aujourd’hui (le plus gros : +' . admin_money($bigWins[0]) . '). Normal avec ×50, mais regardez « Suspects à vérifier » avant de payer un retrait.', 'warn', true);
+    $rows[] = $row('Gros gains', count($bigWins) . ' gain(s) de plus de $ 500 aujourd’hui (le plus gros : +' . admin_money($bigWins[0]) . '). Normal avec ×50, mais regardez « Suspects à vérifier » avant de payer un retrait.', 'warn', true);
   }
 
   // 6. Fichier joueurs trop gros = site plus lent.

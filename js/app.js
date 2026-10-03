@@ -160,16 +160,8 @@
   })();
   if (IS_TV) {
     try { document.documentElement.classList.add('is-tv'); } catch (eTv2) { /* ignore */ }
-    // Télé : « Se déconnecter » remonté tout en haut du profil (juste sous l'en-tête), toujours visible.
-    var tvMoveLogout = function () {
-      try {
-        var lo = document.getElementById('btnLogout');
-        var dr = document.getElementById('drawerProfile');
-        var head = dr && dr.querySelector('.drawer-head');
-        if (lo && head && lo.previousElementSibling !== head) { head.parentNode.insertBefore(lo, head.nextSibling); lo.classList.add('tv-logout-top'); }
-      } catch (eLo) { /* ignore */ }
-    };
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tvMoveLogout); else tvMoveLogout();
+    // Télé : « Se déconnecter » reste à sa place normale, en bas du profil (le profil tient maintenant en
+    // entier dans l'écran de la télé, plus besoin de le remonter en haut).
   }
   if (IS_ANDROID) {
     try { document.documentElement.classList.add('is-android'); } catch (eAnd) { /* ignore */ }
@@ -667,7 +659,13 @@
       var cardTop = card.getBoundingClientRect().top;
       var toolsH = Math.max(0, stage.getBoundingClientRect().top - cardTop);
       var padH = pad.getBoundingClientRect().height;
-      var h = Math.floor(window.innerHeight - bottomRes - padH - cardTop);
+      // Application installée sur l'écran d'accueil (iPhone) : la page est plus courte que la fenêtre
+      // (≈ hauteur de la barre d'état en moins). Avant, le calcul prenait toute la fenêtre : ACHETER /
+      // VENDRE passaient sous la bande bleue du bas. On prend le vrai bas de la page s'il est plus haut.
+      var viewBottom = window.innerHeight;
+      var scrBottom = scr.getBoundingClientRect().bottom;
+      if (scrBottom > 300 && scrBottom < viewBottom - 2) viewBottom = scrBottom;
+      var h = Math.floor(viewBottom - bottomRes - padH - cardTop);
       if (h < 200) h = 200;
       html.style.setProperty('--ios-chart-h', h + 'px');
       html.style.setProperty('--ios-stage-h', Math.max(150, h - toolsH) + 'px');
@@ -677,25 +675,54 @@
   }
 
   // Outil de mesure : orolado.com/?diag=1 affiche les vraies mesures de l'écran (pour régler Safari).
-  (function startDiag() {
+  // Dans l'application installée (pas de barre d'adresse) : toucher 5 fois vite « Aide » l'affiche aussi.
+  var diagOn = false;
+  function startDiag() {
     try {
-      if (!/[?&]diag=1\b/.test(location.search)) return;
+      if (diagOn) return;
       if (!document.body) { document.addEventListener('DOMContentLoaded', startDiag); return; }
+      diagOn = true;
       var box = document.createElement('div');
-      box.style.cssText = 'position:fixed;left:6px;top:60px;z-index:99999;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:6px 8px;border-radius:8px;pointer-events:none;white-space:pre';
+      box.style.cssText = 'position:fixed;left:6px;top:60px;z-index:2176483647;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:6px 8px;border-radius:8px;pointer-events:none;white-space:pre';
+      var probe = function (unit) {
+        var p = document.createElement('div');
+        p.style.cssText = 'position:fixed;left:-9px;top:0;width:1px;visibility:hidden;pointer-events:none;height:100' + unit;
+        document.body.appendChild(p);
+        var h = Math.round(p.getBoundingClientRect().height);
+        p.remove();
+        return h;
+      };
       document.body.appendChild(box);
       setInterval(function () {
         var pad = document.querySelector('#tradeWrap > .pad');
+        var scr = $('screenTrade');
         var vv = window.visualViewport;
-        box.textContent = 'safari=' + UA_SAFARI_IOS +
+        var appli = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+        box.textContent = 'safari=' + UA_SAFARI_IOS + ' appli=' + appli +
           '\ninner=' + window.innerWidth + 'x' + window.innerHeight +
           '\nscreen=' + (screen.width || 0) + 'x' + (screen.height || 0) +
           '\nvisual=' + (vv ? Math.round(vv.height) : '-') +
+          '\nvh=' + probe('vh') + ' dvh=' + probe('dvh') + ' svh=' + probe('svh') + ' lvh=' + probe('lvh') +
+          '\nhtml=' + Math.round(document.documentElement.getBoundingClientRect().height) + ' body=' + Math.round(document.body.getBoundingClientRect().height) +
+          '\nscrBas=' + (scr ? Math.round(scr.getBoundingClientRect().bottom) : '-') +
           '\nsafeBas=' + safeBottomPx() +
           '\npadBas=' + (pad ? Math.round(pad.getBoundingClientRect().bottom) : '-') +
-          '\nfill=' + (($('screenTrade') || {}).className || '').indexOf('saf-fill');
+          '\nfill=' + ((scr || {}).className || '').indexOf('saf-fill');
       }, 1000);
     } catch (eDg) { /* ignore */ }
+  }
+  if (/[?&]diag=1\b/.test(location.search)) startDiag();
+  (function diagByTaps() {
+    var taps = [];
+    document.addEventListener('click', function (e) {
+      try {
+        if (!e.target || !e.target.closest || !e.target.closest('#btnHelp')) return;
+        var now = Date.now();
+        taps = taps.filter(function (t) { return now - t < 2500; });
+        taps.push(now);
+        if (taps.length >= 5) startDiag();
+      } catch (eTp) { /* ignore */ }
+    }, true);
   })();
   if (IOS_ANY) {
     window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
@@ -1704,13 +1731,14 @@
       $('previewGain').textContent = D6.fmtFCFA(totalWin);
       fitGainText($('previewGain'));
     }
+    fitStakeText(stakeEl);
     // Plein écran : estimation du total reçu, en petit sous la mise.
     if ($('fsStakeWin')) {
       var fsWinTxt = '≈ ' + D6.fmtFCFA(totalWin);
       $('fsStakeWin').textContent = fsWinTxt;
       // Très gros montants : texte un peu plus petit pour rester dans la case.
-      $('fsStakeWin').style.fontSize = fsWinTxt.length > 17 ? '7px' : (fsWinTxt.length > 14 ? '8px' : '');
       placeFsStakeWin();
+      fitGainText($('fsStakeWin'));
     }
     if ($('previewMult')) $('previewMult').textContent = t('payoutPreview').replace('{pct}', String(pct));
     document.querySelectorAll('.odds-chip').forEach(function (btn) {
@@ -1812,6 +1840,26 @@
         guard++;
       }
     } catch (eFit) { /* ignore */ }
+  }
+
+  // Mise : le chiffre rétrécit tout seul quand on tape un grand montant (10 000 000…), pour toujours le voir
+  // en entier dans sa case (écran normal et plein écran). Mesure au canevas : un champ de saisie ne « déborde » pas.
+  var fitStakeCtx = null;
+  function fitStakeText(el) {
+    try {
+      if (!el) return;
+      el.style.removeProperty('font-size');
+      if (!el.clientWidth) return;
+      var cs = window.getComputedStyle(el);
+      var fs = parseFloat(cs.fontSize) || 18;
+      var avail = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) - 6;
+      if (avail <= 0) return;
+      var txt = String(el.value || '');
+      if (!fitStakeCtx) fitStakeCtx = document.createElement('canvas').getContext('2d');
+      fitStakeCtx.font = cs.fontWeight + ' ' + fs + 'px ' + cs.fontFamily;
+      var w = fitStakeCtx.measureText(txt).width + (parseFloat(cs.letterSpacing) || 0) * txt.length;
+      if (w > avail) el.style.setProperty('font-size', Math.max(9, Math.floor(fs * avail / w * 10) / 10) + 'px', 'important');
+    } catch (eFitS) { /* ignore */ }
   }
 
   function updateDurationUi() {
@@ -6238,6 +6286,18 @@
         stake = Math.max(0, D6.roundMoney(Number(this.value) || 0));
         updatePayoutUi();
       });
+      // Passage plein écran / rotation : la case change de largeur → on réajuste la taille du chiffre.
+      try {
+        if (window.ResizeObserver) {
+          var stakeRoW = 0;
+          new ResizeObserver(function (ents) {
+            var w = Math.round((ents[0] && ents[0].contentRect.width) || 0);
+            if (w === stakeRoW) return;
+            stakeRoW = w;
+            fitStakeText($('inputStake'));
+          }).observe($('inputStake'));
+        }
+      } catch (eRoS) { /* ignore */ }
     }
     function tap(el, fn) {
       if (!el) return;

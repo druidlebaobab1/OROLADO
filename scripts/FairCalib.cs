@@ -29,7 +29,7 @@ public static class FairCalib
         a.Add(new Asset("v100", 13000.42, 0.00020));
         a.Add(new Asset("stable", 10000.00, 0.0001125));
         a.Add(new Asset("apex500", 5480.25, 0.00036));
-        a.Add(new Asset("horizon50", 10120.40, 0.000012) { Drift = -0.00001, JumpP = 1.0 / 300, JumpMin = 0.002, JumpMax = 0.004, JumpDir = 1 });
+        a.Add(new Asset("horizon50", 10120.40, 0.00009) { Drift = -0.0000043, JumpP = 1.0 / 700, JumpMin = 0.002, JumpMax = 0.004, JumpDir = 1 });
         a.Add(new Asset("goldtrend", 7340.80, 0.000195));
         a.Add(new Asset("v75", 8700.18, 0.000256));
         a.Add(new Asset("nexusprime", 8120.60, 0.00027));

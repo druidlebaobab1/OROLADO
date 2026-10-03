@@ -2136,7 +2136,7 @@ const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_7d:1, profit_total:1};
 function fmtBadge(id, n) {
   if (MONEY_BADGE[id]) {
     const v = Number(n)||0;
-    return v.toLocaleString('fr-FR', {maximumFractionDigits:2}) + ' $';
+    return '$ ' + v.toLocaleString('fr-FR', {maximumFractionDigits:2});
   }
   return String(n ?? 0);
 }
@@ -2176,7 +2176,7 @@ let listCache = {};
 let listReq = 0;
 function bustList() { listCache = {}; }
 function fdate(s) { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); }
-function money(n) { return (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $'; }
+function money(n) { return '$ ' + (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function paintHealth(h) {
   const bar = document.getElementById('btnHealthBar');
@@ -2381,7 +2381,7 @@ async function openUser(uid) {
     '<h2 style="color:var(--gold);margin:8px 0 4px">'+esc(u.publicId||u.id)+'</h2>'+
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
-    '<p>Solde réel : <strong>'+esc(u.real)+' $</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
+    '<p>Solde réel : <strong>$ '+esc(u.real)+'</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
     (j.suspect ? '<div class="sus-box">À vérifier : '+esc(j.suspect)+'</div>' : '')+
     (j.totals ? '<div class="totals">'+
       '<div style="background:linear-gradient(180deg,rgba(34,197,94,.28),rgba(22,163,74,.12));border:1px solid rgba(74,222,128,.75);box-shadow:0 0 12px rgba(34,197,94,.35)"><span style="color:#BBF7D0">Solde réel actuel</span><b style="color:#4ADE80;font-size:1.25em">'+money(u.real)+'</b></div>'+

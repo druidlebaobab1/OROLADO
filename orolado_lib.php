@@ -1582,7 +1582,7 @@ function orolado_ledger_apply(array &$db, string $uid, float $delta, string $not
     }
     supabase_insert_deposit([
       'id' => $ref,
-      'user_id' => $uid,
+      'user_id' => orolado_balance_uuid($db, $uid),
       'amount' => $delta,
       'status' => 'COMPLETED',
       'operator' => 'admin',
@@ -1653,6 +1653,10 @@ function orolado_refund_wd_once(array &$db, array &$w): bool {
 }
 
 function supabase_insert_deposit(array $row): void {
+  // La table Supabase « deposits » n'accepte qu'un identifiant UUID : un joueur encore sans coffre
+  // Supabase (identifiant local « u_… ») est ignoré ici (le dépôt reste dans data/ et sera recopié
+  // avec le bon UUID au moment du crédit, cf. credit_paid_deposit). Avant : erreur 400 « 22P02 ».
+  if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) ($row['user_id'] ?? ''))) return;
   $hdrs = supabase_admin_headers();
   if (!$hdrs) return;
   $url = supabase_project_url() . '/rest/v1/deposits';
@@ -4175,7 +4179,7 @@ function orolado_initiate_deposit(array $req): array {
   save_db($file, $db);
   supabase_insert_deposit([
     'id' => $ref,
-    'user_id' => $me['id'],
+    'user_id' => orolado_balance_uuid($db, (string) $me['id']),
     'amount' => $amountUsd,
     'status' => 'PENDING',
     'reference' => $ref,
@@ -5374,7 +5378,7 @@ function orolado_verify_crypto_deposit(array $req): array {
     save_db($file, $db);
     supabase_insert_deposit([
       'id' => $ref,
-      'user_id' => $uid,
+      'user_id' => orolado_balance_uuid($db, $uid),
       'amount' => $realAmt,
       'status' => 'PENDING',
       'reference' => $ref,
@@ -6175,7 +6179,7 @@ function orolado_oxapay_invoice(array $req): array {
   if ($confirmed) {
     supabase_insert_deposit([
       'id' => $orderId,
-      'user_id' => $uid,
+      'user_id' => orolado_balance_uuid($db, $uid),
       'amount' => $amount,
       'status' => 'PENDING',
       'reference' => $orderId,
@@ -6881,7 +6885,7 @@ function orolado_flutterwave_checkout(array $req): array {
   save_db($file, $db);
   supabase_insert_deposit([
     'id' => $ref,
-    'user_id' => $uid,
+    'user_id' => orolado_balance_uuid($db, $uid),
     'amount' => $amountUsd,
     'status' => 'PENDING',
     'reference' => $ref,
