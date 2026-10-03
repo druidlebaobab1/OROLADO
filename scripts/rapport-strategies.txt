@@ -1,29 +1,29 @@
 OROLADO — stratégies de joueurs contre le vrai moteur de prix et de règlement
-2026-09-30 18:41 — 150 joueurs par stratégie, jusqu'à 400 tours chacun, 1 000 $ de départ, mise 1 $
+2026-10-03 21:11 — 60 joueurs par stratégie, jusqu'à 200 tours chacun, 1 000 $ de départ, mise 1 $
 Retour joueur = argent rendu ÷ argent misé. Moins de 100 % = la stratégie perd sur la durée.
 
 Stratégie                                            Ordres    Misé ($)    Retour    Joueurs +  Ruinés
-Au hasard (88 %)                                       60000       60 000    94.12%        10.7%        0
-Toujours ACHETER                                       60000       60 000    93.54%         8.0%        0
-ACHETER + VENDRE en même temps (88 %)                120000      120 000    94.00%         0.0%        0
-ACHETER + VENDRE en même temps (×5)                 120000      120 000    94.22%        14.7%        0
-ACHETER + VENDRE en même temps (×50)                120000      120 000    92.17%        32.7%        0
-Martingale (double après perte)                       55284      277 121    93.86%        78.7%       22
-Anti-martingale (double après gain)                   60000      179 162    94.25%        18.0%        0
-Suivre la tendance (10 s)                              60000       60 000    94.02%        10.7%        0
-Contre la tendance (10 s)                              60000       60 000    94.38%        11.3%        0
-Suivre la tendance longue (1 min, trade 1 min)         60000       60 000    95.13%        15.3%        0
-Chasse au ×50                                         60000       60 000    92.09%        34.0%        0
-Boom : toujours VENDRE entre les pics                  60000       60 000    93.62%        10.7%        0
-Boom : ACHETER ×50 en attendant un pic                60000       60 000    92.35%        35.3%        0
+Au hasard (88 %)                                       12000       12 000    95.69%        21.7%        0
+Toujours ACHETER                                       12000       12 000    94.06%        18.3%        0
+ACHETER + VENDRE en même temps (88 %)                 24000       24 000    94.00%         0.0%        0
+ACHETER + VENDRE en même temps (×5)                  24000       24 000    94.10%        26.7%        0
+ACHETER + VENDRE en même temps (×50)                 24000       24 000    96.46%        38.3%        0
+Martingale (double après perte)                       11493       55 565    94.73%        76.7%        4
+Anti-martingale (double après gain)                   12000       35 221    92.94%        20.0%        0
+Suivre la tendance (10 s)                              12000       12 000    93.55%        11.7%        0
+Contre la tendance (10 s)                              12000       12 000    94.91%        25.0%        0
+Suivre la tendance longue (1 min, trade 1 min)         12000       12 000    95.17%        26.7%        0
+Chasse au ×50                                         12000       12 000    91.67%        31.7%        0
+Boom : toujours VENDRE entre les pics                  12000       12 000    92.81%        11.7%        0
+Boom : ACHETER ×50 en attendant un pic                12000       12 000    88.35%        36.7%        0
 Boom : VENDRE juste après un pic                          0            0     0.00%         0.0%        0
-Crash : toujours ACHETER entre les chutes              60000       60 000    93.72%        10.0%        0
-Indice à 2× son départ → VENDRE 88 % (10 min)     60000       60 000    96.79%        28.7%        0
-Indice à 2× son départ → VENDRE ×5 (10 min)      60000       60 000    92.85%        21.3%        0
-Indice à 0,5× son départ → ACHETER 88 % (10 min)     60000       60 000    95.70%        17.3%        0
-Crash à 2× son départ → VENDRE 88 % (10 min)      60000       60 000    96.96%        30.0%        0
-Tout en haut → VENDRE ×5 (attendre le retour)       60000       60 000    94.21%        27.3%        0
-Tout en bas → ACHETER ×5 (attendre le retour)       60000       60 000    95.01%        31.3%        0
-Tout en haut → VENDRE 88 % (attendre le retour)      60000       60 000    93.81%         7.3%        0
+Crash : toujours ACHETER entre les chutes              12000       12 000    93.67%        16.7%        0
+Indice à 2× son départ → VENDRE 88 % (10 min)     12000       12 000    96.65%        36.7%        0
+Indice à 2× son départ → VENDRE ×5 (10 min)      12000       12 000    93.38%        26.7%        0
+Indice à 0,5× son départ → ACHETER 88 % (10 min)     12000       12 000    96.72%        31.7%        0
+Crash à 2× son départ → VENDRE 88 % (10 min)      12000       12 000    96.44%        31.7%        0
+Tout en haut → VENDRE ×5 (attendre le retour)       12000       12 000    93.97%        23.3%        0
+Tout en bas → ACHETER ×5 (attendre le retour)       12000       12 000    93.26%        31.7%        0
+Tout en haut → VENDRE 88 % (attendre le retour)      12000       12 000    94.87%        18.3%        0
 
 « Joueurs + » = part des joueurs qui finissent au-dessus de leur départ (chance à court terme).

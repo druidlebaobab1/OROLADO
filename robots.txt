@@ -5,3 +5,5 @@ Disallow: /admin
 Disallow: /api.php
 Disallow: /api/
 Disallow: /data/
+
+Sitemap: https://www.orolado.com/sitemap.xml

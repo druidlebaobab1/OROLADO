@@ -3309,9 +3309,36 @@
     var span;
     var mid;
     if (prevMax > prevMin) {
+      // Caméra « pro » (2026-10-04, comme les grandes plateformes) : le cadre s'ajuste en douceur à
+      // TOUTES les bougies visibles (pas seulement à la tête), avec une marge en haut et en bas.
+      // Quand le prix descend, les vieilles bougies sortent à gauche et le cadre suit l'ensemble,
+      // tranquillement : on ne sent plus la caméra « tirer » derrière la tête. Il s'agrandit vite
+      // (un pic n'est jamais coupé) et se resserre lentement (pas de zoom nerveux). Affichage seulement.
+      var vlo = h;
+      var vhi = h;
+      var vis = camCandles || [];
+      for (var vi = 0; vi < vis.length; vi++) {
+        var vc = vis[vi];
+        if (!vc) continue;
+        if (vc.l > 0 && vc.l < vlo) vlo = vc.l;
+        if (vc.h > vhi) vhi = vc.h;
+      }
       span = prevMax - prevMin;
-      span += (want - span) * cameraFollow(0.06);
       mid = (prevMin + prevMax) / 2;
+      var tSpan = Math.max((vhi - vlo) / 0.68, want * 0.55);
+      span += (tSpan - span) * cameraFollow(tSpan > span ? 0.10 : 0.018);
+      var tMid = (vhi + vlo) / 2;
+      // La tête (dernier prix) reste dans la zone du milieu (≈ 20 % à 80 % de la hauteur) : le cadre
+      // vise un centre qui ne la laisse jamais coller à un bord.
+      var keepH = span * 0.30;
+      if (tMid < h - keepH) tMid = h - keepH;
+      if (tMid > h + keepH) tMid = h + keepH;
+      mid += (tMid - mid) * cameraFollow(0.035);
+      var halfP = span / 2;
+      var hardP = span * (IS_ANDROID_CHART ? 0.12 : 0.06);
+      if (h > mid + halfP - hardP) mid = h - halfP + hardP;
+      if (h < mid - halfP + hardP) mid = h + halfP - hardP;
+      return { min: mid - halfP, max: mid + halfP };
     } else {
       span = want;
       // Premier cadrage : on part de la tête et on remonte les bougies tant qu'elles
