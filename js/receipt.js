@@ -87,12 +87,17 @@
   }
   var logoP = null;
   function logo() {
-    if (!logoP) logoP = loadImg('icons/icon-512.png?v=r1');
+    // Nouveau logo rond OROLADO (sans carré) ; l'ancienne icône en secours.
+    if (!logoP) logoP = loadImg('icons/logo-ring.svg?v=r2').then(function (im) { if (im) { im._ring = true; return im; } return loadImg('icons/icon-512.png?v=r1'); });
     return logoP;
   }
   // Logo de la simulation : le même dessin que sur les cases du site.
   function assetIcon(assetId) {
     try {
+      // Globe du marché (planète + dessin), comme sur le site ; ancien pictogramme en secours.
+      var chip = document.querySelector('.asset-chip[data-asset="' + assetId + '"]');
+      var art = chip && chip.querySelector('.mk-art svg');
+      if (art) return globeIcon(chip, art);
       var svg = document.querySelector('.asset-chip[data-asset="' + assetId + '"] .asset-ico svg');
       if (!svg) return Promise.resolve(null);
       var c = svg.cloneNode(true);
@@ -105,6 +110,26 @@
       var light = /^#?(f{3}|f{6})$/i.test(String(col || '').replace(/\s/g, ''));
       return loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(str)).then(function (im) { if (im) im._light = light; return im; });
     } catch (e) { return Promise.resolve(null); }
+  }
+  function globeIcon(chip, art) {
+    var cs = getComputedStyle(chip);
+    var p1 = (cs.getPropertyValue('--p1') || '#C9B8FF').trim() || '#C9B8FF';
+    var p2 = (cs.getPropertyValue('--p2') || '#3B1D8F').trim() || '#3B1D8F';
+    var c = art.cloneNode(true);
+    c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    c.setAttribute('width', '96');
+    c.setAttribute('height', '96');
+    var str = new XMLSerializer().serializeToString(c);
+    return loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(str)).then(function (im) {
+      var cv = document.createElement('canvas');
+      cv.width = 96; cv.height = 96;
+      var g = cv.getContext('2d');
+      var gr = g.createRadialGradient(36, 32, 4, 48, 48, 48);
+      gr.addColorStop(0, p1); gr.addColorStop(0.62, p2); gr.addColorStop(1, '#07051A');
+      g.fillStyle = gr; g.beginPath(); g.arc(48, 48, 47, 0, Math.PI * 2); g.fill();
+      if (im) g.drawImage(im, 17, 17, 62, 62);
+      return cv;
+    });
   }
   function fontsReady() {
     try {
@@ -141,6 +166,12 @@
   }
   function spaced(s) { return String(s).split('').join(String.fromCharCode(8202)); }
   function drawLogo(g, img, x, y, s) {
+    if (img && img._ring) {
+      // Logo rond : posé tel quel, avec une ombre douce (plus de carré sombre derrière).
+      g.save(); g.shadowColor = 'rgba(15,23,42,0.30)'; g.shadowBlur = 12; g.shadowOffsetY = 3;
+      g.drawImage(img, x - s * 0.06, y - s * 0.06, s * 1.12, s * 1.12); g.restore();
+      return;
+    }
     g.save(); g.shadowColor = 'rgba(15,23,42,0.28)'; g.shadowBlur = 10; g.shadowOffsetY = 3;
     rr(g, x, y, s, s, s * 0.22); g.fillStyle = '#0F172A'; g.fill(); g.restore();
     if (img) { g.save(); rr(g, x, y, s, s, s * 0.22); g.clip(); g.drawImage(img, x, y, s, s); g.restore(); }

@@ -836,7 +836,8 @@
       var curH = Math.round(parent.clientHeight || 0);
       if (curH > 0 && Math.abs(fsH - curH) <= 2) fsH = curH;
       var landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
-      var sideChrome = (!mobile && landscape) ? 240 : 0;
+      // PC : la courbe s'approche un peu plus de la colonne ACHETER / VENDRE (avant : 240).
+      var sideChrome = (!mobile && landscape) ? 226 : 0;
       var fsW = Math.max(280, Math.round((window.innerWidth || 800) - sideChrome));
       if (tvZ > 0 && tvZ < 0.99) {
         fsW = Math.max(280, Math.round((window.innerWidth || 800) / tvZ - 320));

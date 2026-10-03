@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- OROLADO — Pyramide Royale : pyramide égyptienne en or, pierre de faîte lumineuse avec un œil discret. -->
+  <!-- OROLADO — Pyramide Royale (anneau doré seul, sans disque sombre) : pyramide égyptienne en or, pierre de faîte lumineuse avec un œil discret. -->
   <defs>
     <radialGradient id="bgA" cx="50%" cy="38%" r="75%">
       <stop offset="0" stop-color="#1A2338"/>
@@ -37,8 +37,6 @@
     <clipPath id="clipL"><path d="M256 168 L112 392 L256 392 Z"/></clipPath>
     <clipPath id="clipR"><path d="M256 168 L256 392 L400 392 Z"/></clipPath>
   </defs>
-  <rect width="512" height="512" rx="116" fill="url(#bgA)"/>
-  <rect x="14" y="14" width="484" height="484" rx="104" fill="none" stroke="url(#ringA)" stroke-width="7" opacity=".85"/>
   <!-- halo derrière la pierre de faîte -->
   <circle cx="256" cy="128" r="118" fill="url(#haloA)"/>
   <!-- corps de la pyramide (2 faces) -->
@@ -61,10 +59,10 @@
   <circle cx="256" cy="122" r="5.5" fill="#7A4A06" fill-opacity=".8"/>
   <circle cx="254.2" cy="120.4" r="1.8" fill="#FFFFFF"/>
   <!-- pièce crypto crantée -->
-  <circle cx="256" cy="262" r="200" fill="none" stroke="url(#ringA)" stroke-width="10" stroke-dasharray="6 9" opacity=".7"/>
-  <circle cx="256" cy="262" r="186" fill="none" stroke="#E6B23A" stroke-opacity=".3" stroke-width="2.5"/>
-  <rect x="132" y="416" width="248" height="44" rx="22" fill="#0B1120" stroke="#E6B23A" stroke-opacity=".6" stroke-width="2"/>
-  <text x="258" y="449" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="28" letter-spacing="9" fill="url(#ringA)" text-anchor="middle">OROLADO</text>
+  <circle cx="256" cy="262" r="200" fill="none" stroke="url(#ringA)" stroke-width="10" stroke-dasharray="6 9"/>
+  <circle cx="256" cy="262" r="186" fill="none" stroke="#E6B23A" stroke-opacity=".55" stroke-width="2.5"/>
+  <rect x="100" y="408" width="312" height="60" rx="30" fill="#0B1120" stroke="#F2C14E" stroke-opacity=".85" stroke-width="3"/>
+  <text x="259" y="451" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" letter-spacing="7" fill="#F7C948" text-anchor="middle" text-rendering="geometricPrecision">OROLADO</text>
   <!-- sol -->
   <path d="M104 398 H408" stroke="url(#ringA)" stroke-width="6" stroke-linecap="round" opacity=".9"/>
 </svg>
