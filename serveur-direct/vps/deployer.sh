@@ -32,6 +32,8 @@ rsync -a --delete \
   --exclude 'data/***' --include 'data/.htaccess' \
   --exclude 'feedcache/***' \
   --exclude '.deploye' \
+  --exclude '/.env' \
+  --exclude '/.user.ini' \
   "$REPO/" "$SITE/"
 # Les .htaccess de data/ et feedcache/ venant de GitHub (sans effet sous nginx, gardés pour mémoire).
 cp -f "$REPO/data/.htaccess" "$SITE/data/.htaccess" 2>/dev/null || true
