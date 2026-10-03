@@ -600,42 +600,49 @@
       return v;
     } catch (eSb) { return 0; }
   }
+  // iPhone / iPad (Safari, Chrome et les autres navigateurs) : le terminal n'est pas fixé en bas comme
+  // sur Android. La COURBE prend toute la place libre jusqu'au terminal, posé en bas de l'écran ;
+  // ACHETER / VENDRE gardent leur taille normale. (?iosfit=1 : même calcul pour tester sur PC.)
+  var IOS_ANY = (function () {
+    try {
+      var ua = navigator.userAgent || '';
+      return /iP(hone|od|ad)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+        /[?&]iosfit=1\b/.test(location.search);
+    } catch (eIa) { return false; }
+  })();
   function fillSafariGap(force) {
-    if (!UA_SAFARI_IOS) return;
+    if (!IOS_ANY) return;
     try {
       var html = document.documentElement;
       if (html.classList.contains('fs-trade') || html.classList.contains('is-fullscreen')) return;
       var scr = $('screenTrade');
       var pad = document.querySelector('#screenTrade #tradeWrap > .pad');
-      if (!scr || !pad || !pad.offsetHeight || window.innerWidth >= 860) return;
+      var card = $('chart');
+      var stage = $('chartStage');
+      if (!scr || !pad || !card || !stage || !pad.offsetHeight || window.innerWidth >= 860) return;
       // Pas de recalcul quand seule la hauteur bouge (clavier, barre) : la page ne saute pas en tapant.
       if (!force && safariGapW === window.innerWidth) return;
       safariGapW = window.innerWidth;
-      // La COURBE ne bouge pas : l'espace libre est partagé entre les parties du bas (durées, mise,
-      // boutons de mise, payouts et surtout ACHETER / VENDRE), qui deviennent un peu plus hautes.
-      var parts = [
-        { v: '--saf-dur', sel: '.dur-chip', w: 0.18, cap: 18 },
-        { v: '--saf-inp', sel: '#inputStake', w: 0.12, cap: 14 },
-        { v: '--saf-q', sel: '.qbtn.stake-act', w: 0.12, cap: 14 },
-        { v: '--saf-odds', sel: '.odds-chip', w: 0.18, cap: 18 },
-        { v: '--saf-buy', sel: '.btn-trade', w: 0.40, cap: 40 }
-      ];
       scr.classList.remove('saf-fill');
-      parts.forEach(function (p) { scr.style.removeProperty(p.v); });
-      // Deux cas selon la version de Safari : la page passe SOUS la barre flottante (hauteur = tout
-      // l'écran) → on garde la place de la barre ; sinon la barre est déjà hors de la page → petite marge.
-      var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
-      var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
-      var target = window.innerHeight - (underBar ? (safeBottomPx() + 31) : 2);
-      var gap = Math.floor(target - pad.getBoundingClientRect().bottom);
-      if (gap <= 4) return;
-      parts.forEach(function (p) {
-        var el = pad.querySelector(p.sel);
-        if (!el || !el.offsetHeight) return;
-        var add = Math.min(p.cap, Math.floor(gap * p.w));
-        scr.style.setProperty(p.v, (el.offsetHeight + add) + 'px');
-      });
-      scr.classList.add('saf-fill');
+      // Safari : la page peut passer SOUS sa barre flottante (hauteur = tout l'écran) → on garde la
+      // place de la barre ; sinon petite marge. Autres navigateurs iPhone : la zone de la barre d'accueil.
+      var bottomRes;
+      if (UA_SAFARI_IOS) {
+        var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
+        var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
+        bottomRes = underBar ? (safeBottomPx() + 31) : 2;
+      } else {
+        bottomRes = safeBottomPx() + 4;
+      }
+      var cardTop = card.getBoundingClientRect().top;
+      var toolsH = Math.max(0, stage.getBoundingClientRect().top - cardTop);
+      var padH = pad.getBoundingClientRect().height;
+      var h = Math.floor(window.innerHeight - bottomRes - padH - cardTop - 6);
+      if (h < 200) h = 200;
+      html.style.setProperty('--ios-chart-h', h + 'px');
+      html.style.setProperty('--ios-stage-h', Math.max(150, h - toolsH) + 'px');
+      html.classList.add('ios-fit');
+      bumpChartLayout();
     } catch (eFg) { /* ignore */ }
   }
 
@@ -660,7 +667,7 @@
       }, 1000);
     } catch (eDg) { /* ignore */ }
   })();
-  if (UA_SAFARI_IOS) {
+  if (IOS_ANY) {
     window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
     window.addEventListener('orientationchange', function () { setTimeout(function () { fillSafariGap(true); }, 400); });
     window.addEventListener('load', function () { setTimeout(function () { fillSafariGap(true); }, 300); });
