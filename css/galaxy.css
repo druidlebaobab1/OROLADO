@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2278") center top/cover no-repeat,
+    url("galaxy-space.svg?v=2279") center top/cover no-repeat,
     radial-gradient(1.2px 1.2px at 12% 8%,rgba(255,255,255,.85),transparent 60%),
     radial-gradient(1px 1px at 78% 4%,rgba(255,255,255,.7),transparent 60%),
     radial-gradient(1.4px 1.4px at 92% 22%,rgba(255,230,190,.8),transparent 60%),
@@ -628,7 +628,7 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
-    url("galaxy-space2.svg?v=2278") center top/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center top/cover no-repeat,
     radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
     linear-gradient(180deg,#0E0B28,#080817)!important;
@@ -637,7 +637,7 @@ html body #screenAuth#screenAuth{
 html body .modal-backdrop .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
-    url("galaxy-space2.svg?v=2278") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center/cover no-repeat,
     #0B0D22!important;
   border:1px solid rgba(150,140,255,.22)!important;
 }
@@ -646,7 +646,7 @@ html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
     linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
-    url("galaxy-space2.svg?v=2278") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center/cover no-repeat,
     #08121E!important;
   border-color:rgba(45,212,191,.28)!important;
 }
@@ -655,7 +655,7 @@ html body #withdrawModal .modal-box{
   background:
     radial-gradient(90% 50% at 0% 0%,rgba(34,197,94,.14),transparent 65%),
     linear-gradient(180deg,rgba(8,22,20,.66),rgba(5,14,14,.80)),
-    url("galaxy-space2.svg?v=2278") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center/cover no-repeat,
     #071311!important;
   border-color:rgba(74,222,128,.26)!important;
 }
@@ -664,7 +664,7 @@ html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
-    url("galaxy-space2.svg?v=2278") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center/cover no-repeat,
     #0C0820!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
@@ -739,13 +739,13 @@ html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
-    url("galaxy-space2.svg?v=2278") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
-    url("galaxy-space2.svg?v=2278") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2279") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
@@ -826,7 +826,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2278") center top/cover no-repeat,
+    url("galaxy-auth.svg?v=2279") center top/cover no-repeat,
     linear-gradient(180deg,#0E0B28,#080817)!important;
 }
 
@@ -854,7 +854,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2278") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2279") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -862,7 +862,7 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2278") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2279") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
@@ -873,7 +873,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2278") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2279") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -1327,7 +1327,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 html body #drawerProfile#drawerProfile{
   background:
     linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
-    url("galaxy-loader.svg?v=2278") center/cover no-repeat,
+    url("galaxy-loader.svg?v=2279") center/cover no-repeat,
     linear-gradient(180deg,#130F36,#0A0A20)!important;
   border-left:1px solid rgba(170,150,255,.25)!important;
 }
@@ -1389,3 +1389,80 @@ html body #drawerProfile#drawerProfile .drawer-head .btn-close{background:rgba(1
   html.is-ios,html.is-ios body{background-color:#18275C!important}
 }
 @media (max-width:859px){html:not(.oro-guest) body #screenTrade#screenTrade .topbar .topbar-row > #topbarCta#topbarCta{width:clamp(120px,calc(100vw - 236px),186px)!important}}
+
+/* =====================================================================
+   Retouches 14 (demandées par le propriétaire)
+   ===================================================================== */
+/* le « creux bleu » à droite de la courbe (iPhone surtout) : la carte de la courbe a elle-même la couleur
+   de la courbe ; si le dessin s'arrête quelques pixels avant le bord, on ne voit plus aucun vide */
+html body #tradeWrap#tradeWrap .chart-card,
+html body #tradeWrap#tradeWrap #chartStage{
+  background:linear-gradient(180deg,rgb(19,18,59) 0%,rgb(17,18,50) 50%,rgb(12,12,35) 100%)!important;
+}
+html body #tradeWrap#tradeWrap .chart-card .chart-toolbar{background:linear-gradient(180deg,rgba(19,18,59,0),rgb(19,18,59))!important}
+/* fenêtres (dépôt, retrait, aide, conditions…) : le nouvel univers des fenêtres, sans traits ni planètes coupées */
+html body .modal-backdrop .modal-box,
+html body #depositModal .modal-box,
+html body #withdrawModal .modal-box,
+html body #helpModal .modal-box,
+html body #termsModal .modal-box{
+  background:
+    linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
+    url("galaxy-modal.svg?v=2279") center/cover no-repeat,
+    linear-gradient(180deg,#120F34,#0A0A20)!important;
+}
+html body #depositModal .modal-box{background:
+    radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
+    linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
+    url("galaxy-modal.svg?v=2279") center/cover no-repeat,
+    linear-gradient(180deg,#0F1434,#090C20)!important}
+
+/* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
+   Recharger prend toute la place entre les deux */
+@media (max-width:859px){
+  html:not(.oro-guest) body #screenTrade#screenTrade .topbar .topbar-row{display:flex!important;justify-content:flex-start!important;gap:0!important}
+  html:not(.oro-guest) body #screenTrade#screenTrade .topbar .topbar-row > #topbarCta#topbarCta{
+    position:relative!important;left:auto!important;top:auto!important;transform:none!important;
+    flex:1 1 auto!important;width:auto!important;min-width:0!important;max-width:220px!important;margin:0 10px!important;
+  }
+  html:not(.oro-guest) body #screenTrade#screenTrade .topbar .topbar-row > .topbar-actions{margin-left:auto!important}
+}
+/* Recharger : les pièces USDT et BTC plus grosses et jolies ; le mot ne touche jamais les pièces, dans toutes les langues */
+html body #screenTrade#screenTrade #topbarCta.topbar-cta{gap:4px!important;padding:0 4px!important}
+html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-row{flex:0 0 auto!important}
+html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-row .coin-svg{
+  width:28px!important;height:28px!important;border-radius:50%!important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.75),0 2px 6px rgba(90,35,0,.45)!important;filter:none!important;
+}
+html body #screenTrade#screenTrade #topbarCta.topbar-cta #btnOpenDeposit{flex:1 1 auto!important;min-width:0!important;overflow:hidden!important}
+html body #screenTrade#screenTrade #topbarCta.topbar-cta #btnOpenDeposit .dep-label{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;display:block!important}
+
+/* APOCALYPSE (dernier marché) : bien visible quand on arrive au bout de la liste */
+html body #tradeWrap#tradeWrap .asset-bar{mask-image:none!important;-webkit-mask-image:none!important;scroll-padding-right:12px!important}
+html body #tradeWrap#tradeWrap .asset-bar::after{content:""!important;flex:0 0 10px!important;display:block!important}
+
+/* case du gain : « Payout 88% » plus petit, un peu plus bas sous le montant, ne déborde dans aucune langue */
+html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{
+  font-size:8.5px!important;padding:1px 6px!important;margin-top:4px!important;max-width:92%!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;box-sizing:border-box!important;
+}
+
+/* plein écran : la mise s'écrit jusqu'à 10 000 000 sans être coupée (la case ne change pas) */
+html.fs-trade body #tradeWrap#tradeWrap #inputStake{font-size:16px!important;letter-spacing:-.02em!important}
+@media (max-width:400px){html.fs-trade body #tradeWrap#tradeWrap #inputStake{font-size:14.5px!important}}
+/* plein écran Android : un vrai espace entre la mise et ACHETER */
+@media (max-width:859px){html.fs-trade body #tradeWrap#tradeWrap .trade-row{margin-left:8px!important}}
+
+/* Safari iPhone : sous la barre, un bleu nuit foncé (couleur du bas de l'univers), pas un bleu vif */
+@media (max-width:859px){
+  html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor{background:#101838!important}
+  html.is-ios,html.is-ios body{background-color:#101838!important}
+}
+
+/* profil : la croix n'est plus coupée par la ligne du haut */
+html body #drawerProfile#drawerProfile .drawer-head{border-bottom:0!important;padding-top:10px!important;padding-bottom:8px!important;align-items:center!important;overflow:visible!important}
+html body #drawerProfile#drawerProfile .drawer-head .btn-close{position:relative!important;top:0!important;z-index:3!important}
