@@ -1,0 +1,6 @@
+[Unit]
+Description=OROLADO mise en ligne depuis GitHub (main)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /usr/local/bin/orolado-deployer.sh
