@@ -1399,10 +1399,16 @@
     // Pas horizontal de référence : c'est lui qui donne au maillage sa maille
     // carrée, les lignes de prix s'alignent ensuite sur le même écart.
     var refStepX = gridStepX(seriesW, span);
-    var rowsY = Math.max(3, Math.min(8, Math.round(h / refStepX)));
-    for (i = 0; i <= rowsY; i++) {
-      var y = pad.t + (h / rowsY) * i;
-      var pVal = maxP - (i / rowsY) * (maxP - minP);
+    // Carreaux « coupés » sur tous les bords : on ajuste le pas pour que la largeur fasse un nombre
+    // entier de carreaux, et chaque ligne tombe au milieu d'un pas → demi-carreau à gauche, à droite,
+    // en haut et en bas (jamais de petit carreau fermé collé au bord). Dessin seulement.
+    var colsX = Math.max(2, Math.round(cssW / Math.max(8, refStepX)));
+    var stepX = cssW / colsX;
+    var rowsY = Math.max(3, Math.min(9, Math.round(cssH / stepX)));
+    var rowH = cssH / rowsY;
+    for (i = 0; i < rowsY; i++) {
+      var y = rowH * (i + 0.5);
+      var pVal = maxP - ((y - pad.t) / Math.max(1, h)) * (maxP - minP);
       // Police resserrée sur écran étroit : la colonne reste discrète sans
       // jamais rogner les décimales.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') +
@@ -1411,7 +1417,7 @@
       // elles s'interrompent juste le temps du chiffre du prix.
       var lblW = ctx.measureText(formatAxisPrice(pVal)).width;
       var lblL = cssW - PRICE_AXIS_GAP - lblW - 4;
-      ctx.strokeStyle = i === rowsY ? theme.gridHStrong : theme.gridH;
+      ctx.strokeStyle = theme.gridH;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(Math.max(0, lblL), y);
@@ -1429,20 +1435,13 @@
     // la tête tombe au centre d'un carreau, sans trait par-dessus. Plus aucun
     // libellé de secondes n'est tracé : la hauteur ainsi libérée revient à la
     // courbe.
-    var stepX = refStepX;
-    var headXg = pad.l + seriesW;
-    var axisR = pad.l + plotW;
-    // Les carreaux couvrent toute la largeur (sous la colonne des prix aussi).
-    axisR = cssW;
-    var kMin = -Math.ceil(headXg / stepX) - 1;
-    var kMax = Math.ceil((axisR - headXg) / stepX);
+    // Les carreaux couvrent toute la largeur et toute la hauteur (sous la colonne des prix aussi).
     ctx.strokeStyle = theme.gridV;
     ctx.beginPath();
-    for (i = kMin; i <= kMax; i++) {
-      var gx = headXg + stepX * (i + 0.5);
-      if (gx < -0.5 || gx > axisR + 0.5) continue;
-      ctx.moveTo(gx, pad.t);
-      ctx.lineTo(gx, pad.t + h);
+    for (i = 0; i < colsX; i++) {
+      var gx = Math.round(stepX * (i + 0.5)) + 0.5;
+      ctx.moveTo(gx, 0);
+      ctx.lineTo(gx, cssH);
     }
     ctx.stroke();
   }
