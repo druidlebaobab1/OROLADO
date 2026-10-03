@@ -826,9 +826,9 @@
           var frac = (ovR.bottom - stR.top) / Math.max(1, ovR.height);
           fsH = Math.max(240, Math.round(tvOv.clientHeight * frac) - 8);
           // Mesure réelle : la carte va jusqu'en bas de l'écran (avant : ~40 px vides en bas).
-          var cdR = document.getElementById('chart').getBoundingClientRect();
+          // (mesure sur la zone de dessin elle-même : la carte contient aussi la barre d'outils)
           var curStage = Math.round(parent.clientHeight || 0);
-          if (curStage > 0 && cdR.height > 0) fsH = Math.max(240, Math.round(curStage + (ovR.bottom - cdR.bottom) / tvZ) - 2);
+          if (curStage > 0 && stR.height > 0) fsH = Math.max(240, Math.round(curStage + (ovR.bottom - stR.bottom) / tvZ) - 2);
         } catch (eTvH) { fsH = Math.max(240, Math.round((vpH - topOff - 6) / tvZ)); }
       }
       // Tolérance : sans elle, un écart d'un pixel relancerait sans fin le
@@ -858,8 +858,17 @@
       parent.style.setProperty('min-width', '240px', 'important');
       var cardFs = document.getElementById('chart');
       if (cardFs) {
-        cardFs.style.setProperty('height', fsH + 'px', 'important');
-        cardFs.style.setProperty('min-height', fsH + 'px', 'important');
+        // Télé : la carte contient la barre d'outils AU-DESSUS de la courbe ; sans l'ajouter, le bas de
+        // la courbe (les prix les plus bas) était caché sous le bord de la carte.
+        var cardH = fsH;
+        if (tvZ > 0 && tvZ < 0.99) {
+          try {
+            var tb = (parent.getBoundingClientRect().top - cardFs.getBoundingClientRect().top) / tvZ;
+            if (tb > 0 && tb < 120) cardH = fsH + Math.round(tb);
+          } catch (eTb) { cardH = fsH; }
+        }
+        cardFs.style.setProperty('height', cardH + 'px', 'important');
+        cardFs.style.setProperty('min-height', cardH + 'px', 'important');
         cardFs.style.setProperty('min-width', '240px', 'important');
         if (!mobile && landscape) {
           cardFs.style.setProperty('width', fsW + 'px', 'important');

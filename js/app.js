@@ -589,6 +589,8 @@
       return ios && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//.test(ua);
     } catch (eUa) { return false; }
   })();
+  // Marque « Safari iPhone » : la bande du bas (sous la barre flottante) n'existe que sur Safari.
+  if (UA_SAFARI_IOS) { try { document.documentElement.classList.add('is-ios-safari'); } catch (eSc) { /* ignore */ } }
   var safariGapW = 0;
   function safeBottomPx() {
     try {
@@ -1428,8 +1430,11 @@
     if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6);
     menu.style.position = 'fixed';
     menu.style.top = top + 'px';
-    menu.style.left = left + 'px';
-    menu.style.right = 'auto';
+    // Accroché par son bord DROIT sous le drapeau (quelle que soit sa largeur réelle) : avant, il
+    // apparaissait décalé sous « Connexion » / « Recharger ».
+    void left;
+    menu.style.left = 'auto';
+    menu.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
     menu.style.width = w + 'px';
     menu.style.maxHeight = 'none';
     menu.style.overflow = 'hidden';

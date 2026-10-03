@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2287") center top/cover no-repeat,
+    url("galaxy-space.svg?v=2288") center top/cover no-repeat,
     radial-gradient(1.2px 1.2px at 12% 8%,rgba(255,255,255,.85),transparent 60%),
     radial-gradient(1px 1px at 78% 4%,rgba(255,255,255,.7),transparent 60%),
     radial-gradient(1.4px 1.4px at 92% 22%,rgba(255,230,190,.8),transparent 60%),
@@ -628,7 +628,7 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
-    url("galaxy-space2.svg?v=2287") center top/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center top/cover no-repeat,
     radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
     linear-gradient(180deg,#0E0B28,#080817)!important;
@@ -637,7 +637,7 @@ html body #screenAuth#screenAuth{
 html body .modal-backdrop .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
-    url("galaxy-space2.svg?v=2287") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
     #0B0D22!important;
   border:1px solid rgba(150,140,255,.22)!important;
 }
@@ -646,7 +646,7 @@ html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
     linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
-    url("galaxy-space2.svg?v=2287") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
     #08121E!important;
   border-color:rgba(45,212,191,.28)!important;
 }
@@ -655,7 +655,7 @@ html body #withdrawModal .modal-box{
   background:
     radial-gradient(90% 50% at 0% 0%,rgba(34,197,94,.14),transparent 65%),
     linear-gradient(180deg,rgba(8,22,20,.66),rgba(5,14,14,.80)),
-    url("galaxy-space2.svg?v=2287") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
     #071311!important;
   border-color:rgba(74,222,128,.26)!important;
 }
@@ -664,7 +664,7 @@ html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
-    url("galaxy-space2.svg?v=2287") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
     #0C0820!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
@@ -739,13 +739,13 @@ html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
-    url("galaxy-space2.svg?v=2287") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
-    url("galaxy-space2.svg?v=2287") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2288") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
@@ -826,7 +826,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2287") center top/cover no-repeat,
+    url("galaxy-auth.svg?v=2288") center top/cover no-repeat,
     linear-gradient(180deg,#0E0B28,#080817)!important;
 }
 
@@ -854,7 +854,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2287") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2288") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -862,7 +862,7 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2287") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2288") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
@@ -873,7 +873,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2287") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2288") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -1327,7 +1327,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 html body #drawerProfile#drawerProfile{
   background:
     linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
-    url("galaxy-loader.svg?v=2287") center/cover no-repeat,
+    url("galaxy-loader.svg?v=2288") center/cover no-repeat,
     linear-gradient(180deg,#130F36,#0A0A20)!important;
   border-left:1px solid rgba(170,150,255,.25)!important;
 }
@@ -1408,13 +1408,13 @@ html body #helpModal .modal-box,
 html body #termsModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
-    url("galaxy-modal.svg?v=2287") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2288") center/cover no-repeat,
     linear-gradient(180deg,#120F34,#0A0A20)!important;
 }
 html body #depositModal .modal-box{background:
     radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
     linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
-    url("galaxy-modal.svg?v=2287") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2288") center/cover no-repeat,
     linear-gradient(180deg,#0F1434,#090C20)!important}
 
 /* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
@@ -1632,3 +1632,52 @@ html.fs-trade body #tradeWrap#tradeWrap #chartReset{margin:0 auto 0 10px!importa
 /* plein écran : le groupe + − actualiser au MILIEU (une ancienne règle le collait à droite) */
 html.fs-trade body #tradeWrap#tradeWrap #chartReset#chartReset{margin-right:auto!important}
 html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn#chartZoomIn{margin-left:auto!important}
+
+/* =====================================================================
+   Retouches 20 (demandes du propriétaire, mesures sur ses captures)
+   ===================================================================== */
+@media (max-width:859px){
+  /* iPhone : la bande sous la barre de Safari prend ENFIN le bleu des fenêtres (#1A2A68) sur l'écran de
+     jeu aussi (une ancienne règle plus forte gardait #101838 « bleu pur ») ; et elle n'existe que sur
+     Safari : sur Chrome / autres navigateurs iPhone, plus de bande sous ACHETER / VENDRE */
+  html.is-ios.is-ios-safari body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor,
+  html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor{background:#1A2A68!important;background-image:none!important}
+  html.is-ios:not(.is-ios-safari) body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor,
+  html.is-ios:not(.is-ios-safari) body #oroIosFloor#oroIosFloor{display:none!important}
+  /* Safari iPhone : page d'inscription / connexion plus compacte (le bas du cadre n'est plus mangé) */
+  html.is-ios-safari body #screenAuth .field{margin-bottom:6px!important}
+  html.is-ios-safari body #screenAuth .err-msg{min-height:0!important;margin-top:2px!important;margin-bottom:0!important}
+  html.is-ios-safari body #screenAuth .auth-card{padding-bottom:12px!important}
+  /* PLEIN ÉCRAN téléphone : la ligne du bas (mise, ACHETER, VENDRE) moins haute et un peu plus bas ;
+     la place gagnée revient à la courbe */
+  html.fs-trade body #tradeWrap#tradeWrap .btn-trade,
+  html.fs-trade body #fsTradeOverlay .btn-trade{min-height:46px!important;height:46px!important}
+  html.fs-trade body #tradeWrap#tradeWrap .stake-field,
+  html.fs-trade body #tradeWrap#tradeWrap #inputStake{min-height:46px!important;height:46px!important}
+  html.fs-trade body #tradeWrap#tradeWrap .pad{padding-top:4px!important;padding-bottom:2px!important}
+}
+@media (max-width:859px){
+  html.fs-trade body #tradeWrap#tradeWrap #btnCall#btnCall,
+  html.fs-trade body #tradeWrap#tradeWrap #btnPut#btnPut{min-height:46px!important;height:46px!important;max-height:46px!important}
+}
+
+/* =====================================================================
+   TV (toutes les télés) : les règles « téléphone » (écran < 860 px) ne s'appliquent JAMAIS à une télé.
+   Une télé annonce souvent ~844 px de large : elle recevait la courbe et le terminal étirés à 100 % de
+   l'écran → courbe sortie à gauche, terminal qui déborde à droite.
+   ===================================================================== */
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .chart-card.chart-card,
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .chart-card{width:auto!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .pad{width:auto!important;max-width:none!important;margin-left:0!important;margin-right:0!important;padding-left:10px!important;padding-right:10px!important}
+html.is-tv body #tradeWrap#tradeWrap .trade-row{margin-left:0!important;margin-right:0!important}
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .chart-card.chart-card,
+html.is-tv.fs-trade body #tradeWrap#tradeWrap .chart-card{margin-left:0!important;margin-right:0!important;max-width:none!important}
+/* TV : la ligne des marchés remplit toute sa largeur (avant : tous serrés à gauche, vide à droite) */
+html.is-tv body #tradeWrap#tradeWrap .asset-bar{justify-content:space-between!important;padding-left:8px!important;padding-right:8px!important}
+html.is-tv body #tradeWrap#tradeWrap .asset-bar::after{display:none!important}
+/* TV, écran normal : les 10 marchés tiennent sur la ligne (globes un peu plus petits) */
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip{flex:0 0 calc((100% - 16px) / 10)!important;width:calc((100% - 16px) / 10)!important;min-width:0!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip .mk-art{width:38px!important;height:38px!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:8.5px!important;max-width:100%!important;overflow:hidden!important;text-overflow:clip!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-bar{gap:2px!important;column-gap:2px!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .asset-chip{flex:0 0 calc((100% - 34px) / 10)!important;width:calc((100% - 34px) / 10)!important}
