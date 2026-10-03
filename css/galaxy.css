@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2301") center top/cover no-repeat,
+    url("galaxy-space.svg?v=2310") center top/cover no-repeat,
     radial-gradient(1.2px 1.2px at 12% 8%,rgba(255,255,255,.85),transparent 60%),
     radial-gradient(1px 1px at 78% 4%,rgba(255,255,255,.7),transparent 60%),
     radial-gradient(1.4px 1.4px at 92% 22%,rgba(255,230,190,.8),transparent 60%),
@@ -628,7 +628,7 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
-    url("galaxy-space2.svg?v=2301") center top/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center top/cover no-repeat,
     radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
     linear-gradient(180deg,#0E0B28,#080817)!important;
@@ -637,7 +637,7 @@ html body #screenAuth#screenAuth{
 html body .modal-backdrop .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
-    url("galaxy-space2.svg?v=2301") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
     #0B0D22!important;
   border:1px solid rgba(150,140,255,.22)!important;
 }
@@ -646,7 +646,7 @@ html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
     linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
-    url("galaxy-space2.svg?v=2301") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
     #08121E!important;
   border-color:rgba(45,212,191,.28)!important;
 }
@@ -655,7 +655,7 @@ html body #withdrawModal .modal-box{
   background:
     radial-gradient(90% 50% at 0% 0%,rgba(34,197,94,.14),transparent 65%),
     linear-gradient(180deg,rgba(8,22,20,.66),rgba(5,14,14,.80)),
-    url("galaxy-space2.svg?v=2301") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
     #071311!important;
   border-color:rgba(74,222,128,.26)!important;
 }
@@ -664,7 +664,7 @@ html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
-    url("galaxy-space2.svg?v=2301") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
     #0C0820!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
@@ -739,13 +739,13 @@ html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
-    url("galaxy-space2.svg?v=2301") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
-    url("galaxy-space2.svg?v=2301") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
@@ -826,7 +826,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2301") center top/cover no-repeat,
+    url("galaxy-auth.svg?v=2310") center top/cover no-repeat,
     linear-gradient(180deg,#0E0B28,#080817)!important;
 }
 
@@ -854,7 +854,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2301") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2310") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -862,7 +862,7 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2301") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2310") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
@@ -873,7 +873,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2301") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2310") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -1327,7 +1327,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 html body #drawerProfile#drawerProfile{
   background:
     linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
-    url("galaxy-loader.svg?v=2301") center/cover no-repeat,
+    url("galaxy-loader.svg?v=2310") center/cover no-repeat,
     linear-gradient(180deg,#130F36,#0A0A20)!important;
   border-left:1px solid rgba(170,150,255,.25)!important;
 }
@@ -1408,13 +1408,13 @@ html body #helpModal .modal-box,
 html body #termsModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
-    url("galaxy-modal.svg?v=2301") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2310") center/cover no-repeat,
     linear-gradient(180deg,#120F34,#0A0A20)!important;
 }
 html body #depositModal .modal-box{background:
     radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
     linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
-    url("galaxy-modal.svg?v=2301") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2310") center/cover no-repeat,
     linear-gradient(180deg,#0F1434,#090C20)!important}
 
 /* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
@@ -1727,10 +1727,10 @@ html[dir="rtl"] body .strip-price{direction:ltr!important;unicode-bidi:isolate!i
    (celui des pages d'inscription) ; les planètes dessinées DANS la courbe restent */
 @media (min-width:860px){
   html body #screenTrade#screenTrade,html body #fsTradeOverlay#fsTradeOverlay{
-    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2301") center top/cover no-repeat,#13113A!important}
+    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2310") center top/cover no-repeat,#13113A!important}
 }
 html.is-tv body #screenTrade#screenTrade,html.is-tv body #fsTradeOverlay#fsTradeOverlay{
-  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2301") center top/cover no-repeat,#13113A!important}
+  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2310") center top/cover no-repeat,#13113A!important}
 /* TV : noms des marchés lisibles en entier (VOLATILITY, APOCALYPSE…) */
 html.is-tv body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7.6px!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important}
 html.is-tv.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:9px!important}
@@ -1779,9 +1779,8 @@ html body #screenAuth#screenAuth .legal{margin-top:10px!important;padding-bottom
   html.is-android:not(.is-tv):not(.fs-trade) body #tradeWrap#tradeWrap .trade-row,
   html.is-android:not(.is-tv):not(.fs-trade) body #tradeWrap#tradeWrap .trade-row #btnCall,
   html.is-android:not(.is-tv):not(.fs-trade) body #tradeWrap#tradeWrap .trade-row #btnPut{height:52px!important;min-height:52px!important}
-  html.is-android.fs-trade:not(.is-tv) body #tradeWrap#tradeWrap .trade-row,
-  html.is-android.fs-trade:not(.is-tv) body #tradeWrap#tradeWrap .trade-row #btnCall,
-  html.is-android.fs-trade:not(.is-tv) body #tradeWrap#tradeWrap .trade-row #btnPut{height:42px!important;min-height:42px!important}
+  /* Plein écran : la rangée garde EXACTEMENT la hauteur de la case de mise et des boutons (46 px). Avant (v2291) :
+     rangée à 42 px mais boutons à 46 px → ils dépassaient de 4 px, la ligne mise / ACHETER / VENDRE n'était pas droite. */
 }
 
 /* ===== v2291 — TV, écran normal ===== */
@@ -1862,3 +1861,88 @@ html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposi
   html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor{display:none!important}
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap > .pad{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
 }
+
+/* =====================================================================
+   v2302 — Bouton « Recharger » sérieux (demande du propriétaire) : rectangle aux coins à peine arrondis
+   (plus de pilule), vrai « + » blanc, épais et net (plus de rond), même dégradé coucher de soleil.
+   Le texte rétrécit tout seul s'il manque de place (Android étroit, langues longues) : jamais « Rech… ».
+   ===================================================================== */
+html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta,
+html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposit{border-radius:12px!important}
+html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposit{gap:8px!important;padding:0 10px!important}
+html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposit .dep-bolt{flex:0 0 16px!important;width:16px!important;height:16px!important;
+  background:none!important;box-shadow:none!important;border-radius:0!important;filter:drop-shadow(0 1px 1.5px rgba(110,15,40,.45))!important}
+html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposit .dep-bolt::before{content:""!important;width:16px!important;height:16px!important;transform:none!important;
+  background:linear-gradient(#fff,#fff) center/4px 16px no-repeat,linear-gradient(#fff,#fff) center/16px 4px no-repeat!important;border-radius:1px}
+html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposit .dep-label{overflow:visible!important;text-overflow:clip!important;letter-spacing:0!important}
+
+/* v2302 — Cases des durées : « 1 / 5 / 10 » + « min » plus petit, collés (même allure partout, plus de débordement
+   sur TV / PC) ; contenu des 6 cases remonté d'un cheveu */
+html body #tradeWrap#tradeWrap .dur-chip .dc-t{display:inline-flex!important;align-items:baseline!important;gap:1px!important;white-space:nowrap!important;line-height:1!important}
+html body #tradeWrap#tradeWrap .dur-chip .dc-u{font-size:.78em!important;font-weight:700!important;letter-spacing:-.02em!important;opacity:.92}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip{padding-top:0!important;padding-bottom:3px!important;overflow:hidden!important}
+html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .stake-line{grid-template-columns:114px minmax(0,1fr) minmax(0,1.2fr)!important}
+html.is-tv body #tradeWrap#tradeWrap .dur-chip .dc-t{font-size:10.5px!important}
+/* v2304 — appli iPhone (classe posée par js/app.js) : fond bleu du terminal partout, jusqu'au bas de l'écran */
+html.ios-app, html.ios-app body{background-color:#1A2A68!important}
+html.ios-app body #screenTrade#screenTrade{min-height:100vh!important}
+/* v2305 — case de mise (écran normal) : l'ancien « $ » fixe (PC, penché, posé à un endroit fixe) est remplacé par
+   le « $ » qui suit le chiffre (#stakeCur, js/app.js). Le plein écran garde le sien. */
+html:not(.fs-trade) body #tradeWrap#tradeWrap .stake-field::before{content:none!important;display:none!important}
+html.fs-trade #stakeCur{display:none!important}
+/* v2306 — boutons tapés très souvent (ACHETER, VENDRE, ×2, ÷2, effacer, payouts, durées, + / − / actualiser, Aide,
+   drapeau, profil, Recharger) : JAMAIS de zoom de la page, même en tapant vite (y compris sur le texte / l'icône
+   à l'intérieur du bouton). */
+html body button, html body button *, html body .qbtn, html body .qbtn *, html body .dur-chip *, html body .odds-chip *,
+html body .asset-chip *, html body .ind-btn *, html body .help-badge *, html body .lang-dd-btn *, html body #btnProfile *,
+html body #topbarCta, html body #topbarCta *{touch-action:manipulation!important}
+/* v2306 — lumière au toucher bien visible sur + / − / actualiser (avant : on ne savait pas si le toucher avait marché) */
+html body #tradeWrap#tradeWrap .ind-btn.zoom-btn.tap-lit,
+html body #tradeWrap#tradeWrap .ind-btn.chart-reset-btn.tap-lit{box-shadow:0 0 0 2px rgba(255,214,140,.95),0 0 16px rgba(255,170,60,.85)!important;transform:scale(.94)!important;transition:transform .08s ease,box-shadow .08s ease!important}
+/* v2307 — Safari iPhone : la phrase « © 2026 OROLADO.COM » revient visible en CONNEXION et remonte un peu en
+   INSCRIPTION (la grande marge v2291 = 18 px + zone de la barre d'accueil la poussait hors de l'écran).
+   Les autres navigateurs (validés) ne changent pas. */
+html.is-ios-safari body #screenAuth#screenAuth .legal{margin-top:8px!important;padding-bottom:22px!important}
+
+/* =====================================================================
+   v2308 — Notifications plus pros (demande du propriétaire) : carte large et nette, coins à peine arrondis,
+   barre de couleur sur le côté selon le type (rouge erreur, vert succès, bleu info, ambre égalité), icône dans un
+   petit carré, texte sur une ligne quand c'est possible. Les petits messages « micro » ne changent pas.
+   ===================================================================== */
+html body #toast.toast.lux-msg:not(.micro){
+  width:max-content;min-width:min(260px,88vw);max-width:min(380px,92vw);
+  display:flex!important;align-items:center!important;gap:10px!important;text-align:left!important;
+  padding:10px 14px 10px 12px!important;border-radius:10px!important;
+  font-size:13px!important;font-weight:700!important;line-height:1.3!important;letter-spacing:.005em!important;
+  background:linear-gradient(180deg,rgba(26,24,62,.97),rgba(14,13,38,.97))!important;
+  border:1px solid rgba(150,140,255,.28)!important;border-left:4px solid #60A5FA!important;color:#EEF2FF!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico{
+  width:24px!important;height:24px!important;flex:0 0 24px!important;margin:0!important;border-radius:6px!important;opacity:1!important;
+  background:rgba(96,165,250,.18)!important;-webkit-mask:none!important;mask:none!important;position:relative}
+html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico::after{content:"i";position:absolute;inset:0;display:grid;place-items:center;
+  font:800 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;color:#93C5FD}
+html body #toast.toast.err:not(.micro){border-left-color:#F43F5E!important;color:#FFE4E8!important}
+html body #toast.toast.err:not(.micro) .lux-msg-ico{background:rgba(244,63,94,.18)!important}
+html body #toast.toast.err:not(.micro) .lux-msg-ico::after{content:"!";color:#FB7185}
+html body #toast.toast.ok:not(.micro){border-left-color:#22C55E!important;color:#DCFCE7!important}
+html body #toast.toast.ok:not(.micro) .lux-msg-ico{background:rgba(34,197,94,.18)!important}
+html body #toast.toast.ok:not(.micro) .lux-msg-ico::after{content:"✓";color:#4ADE80}
+html body #toast.toast.tie:not(.micro){border-left-color:#F59E0B!important;color:#FEF3C7!important}
+html body #toast.toast.tie:not(.micro) .lux-msg-ico{background:rgba(245,158,11,.18)!important}
+html body #toast.toast.tie:not(.micro) .lux-msg-ico::after{content:"=";color:#FBBF24}
+html body #toast.toast.lux-msg:not(.micro) .lux-msg-txt{flex:1 1 auto;min-width:0}
+/* v2309 — notifications COLORÉES aux couleurs du site (le propriétaire : « pas des notifications noires, sombres »).
+   Dégradé plein et lumineux selon le type, texte blanc, icône dans un carré clair. */
+html body #toast.toast.lux-msg:not(.micro){
+  background:linear-gradient(135deg,#6D28D9 0%,#4F46E5 55%,#2563EB 100%)!important;border:1px solid rgba(255,255,255,.28)!important;
+  border-left:1px solid rgba(255,255,255,.28)!important;color:#FFFFFF!important;
+  box-shadow:0 10px 28px rgba(79,70,229,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico{background:rgba(255,255,255,.22)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico::after{color:#FFFFFF!important}
+html body #toast.toast.err:not(.micro){background:linear-gradient(135deg,#F43F5E 0%,#E11D48 55%,#BE185D 100%)!important;color:#fff!important;
+  box-shadow:0 10px 28px rgba(225,29,72,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #toast.toast.ok:not(.micro){background:linear-gradient(135deg,#22C55E 0%,#16A34A 55%,#0F766E 100%)!important;color:#fff!important;
+  box-shadow:0 10px 28px rgba(22,163,74,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body #toast.toast.tie:not(.micro){background:linear-gradient(135deg,#FBBF24 0%,#F59E0B 55%,#EA580C 100%)!important;color:#fff!important;
+  box-shadow:0 10px 28px rgba(245,158,11,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important}

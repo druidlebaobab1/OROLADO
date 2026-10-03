@@ -100,8 +100,59 @@
         label = 'Deposit';
       }
       el.textContent = label;
+      fitDepositLabel();
     } catch (ePaint) { /* ignore */ }
   }
+
+  // « Recharger » toujours écrit en entier : s'il manque de place (Android étroit, langue longue),
+  // le texte rétrécit un peu (jusqu'à 10 px) au lieu d'être coupé en « Rech… ».
+  function fitDepositLabel() {
+    try {
+      var btn = $('btnOpenDeposit');
+      var el = $('btnDepositLabel');
+      if (!btn || !el) return;
+      el.style.removeProperty('font-size');
+      if (!btn.clientWidth) return;
+      var fs = parseFloat(window.getComputedStyle(el).fontSize) || 15;
+      var guard = 0;
+      while (btn.scrollWidth > btn.clientWidth + 1 && fs > 10 && guard < 20) {
+        fs -= 0.5;
+        el.style.setProperty('font-size', fs + 'px', 'important');
+        guard++;
+      }
+    } catch (eFitD) { /* ignore */ }
+  }
+  // Le bouton change de largeur (connexion, rotation, langue) → on réajuste le texte.
+  function watchDepositLabel() {
+    try {
+      var btn = $('btnOpenDeposit');
+      if (!btn) { document.addEventListener('DOMContentLoaded', watchDepositLabel); return; }
+      if (window.ResizeObserver) {
+        var lastW = 0;
+        new ResizeObserver(function (ents) {
+          var w = Math.round((ents[0] && ents[0].contentRect.width) || 0);
+          if (w === lastW) return;
+          lastW = w;
+          fitDepositLabel();
+        }).observe(btn);
+      }
+    } catch (eWd) { /* ignore */ }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchDepositLabel); else watchDepositLabel();
+
+  // Cases « 1 min / 5 min / 10 min » : le chiffre en taille normale et « min » un peu plus petit, collés
+  // (avant : « 10 min » débordait sur TV et paraissait plus gros que les autres). Les secondes ne changent pas.
+  function splitDurLabels() {
+    try {
+      document.querySelectorAll('.dur-chip').forEach(function (el) {
+        if (el.querySelector('.dc-n')) return;
+        var m = String(el.textContent || '').trim().match(/^(\d+)\s*(min)$/i);
+        if (!m) return;
+        el.innerHTML = '<span class="dc-t"><span class="dc-n">' + m[1] + '</span><span class="dc-u">' + m[2] + '</span></span>';
+      });
+    } catch (eDur) { /* ignore */ }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', splitDurLabels); else splitDurLabels();
 
   var stake = 100;
   var toastTimer = null;
@@ -712,6 +763,55 @@
     } catch (eDg) { /* ignore */ }
   }
   if (/[?&]diag=1\b/.test(location.search)) startDiag();
+
+  // Écran de jeu : un double toucher rapide (ACHETER plusieurs fois, ×2, + / −…) ne zoome jamais la page.
+  // Le pincement de la courbe (zoom des bougies) n'est pas touché : il est géré par le graphique.
+  (function noDoubleTapZoom() {
+    try {
+      var lastTouch = 0;
+      document.addEventListener('touchend', function (e) {
+        var now = Date.now();
+        if (now - lastTouch < 320 && e.target && e.target.closest &&
+            e.target.closest('#screenTrade, #fsTradeOverlay') && !e.target.closest('input, textarea, select')) {
+          e.preventDefault();
+          // Le 2e toucher compte quand même (×2, ÷2, + / −…), sauf ACHETER / VENDRE : un double toucher
+          // très rapide n'ouvre jamais deux trades par accident.
+          try {
+            var hit = e.target.closest('button, .qbtn, .dur-chip, .odds-chip, .asset-chip, .ind-btn, .help-badge, .lang-dd-btn, #btnProfile');
+            if (hit && !hit.closest('#btnCall, #btnPut, .btn-trade, .trade-row')) hit.click();
+          } catch (eC) { /* ignore */ }
+        }
+        lastTouch = now;
+      }, { passive: false });
+      document.addEventListener('dblclick', function (e) {
+        if (e.target && e.target.closest && e.target.closest('#screenTrade, #fsTradeOverlay')) e.preventDefault();
+      }, { passive: false });
+    } catch (eDz) { /* ignore */ }
+  })();
+
+  // Application iPhone installée (écran d'accueil) : la page se prolonge jusqu'au vrai bas de l'écran et
+  // tout le fond est le bleu du terminal (avant : bande sombre / noire sous ACHETER / VENDRE).
+  (function iosAppFloor() {
+    try {
+      var ua = navigator.userAgent || '';
+      var ios = /iP(hone|od|ad)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var app = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+      if (!ios || !app) return;
+      var root = document.documentElement;
+      root.classList.add('ios-app');
+      root.style.setProperty('background', '#1A2A68', 'important');
+      var paint = function () {
+        try {
+          if (document.body) {
+            document.body.style.setProperty('background-color', '#1A2A68', 'important');
+            document.body.style.setProperty('min-height', Math.max(window.innerHeight || 0, (screen && screen.height) || 0) + 'px', 'important');
+          }
+        } catch (eP) { /* ignore */ }
+      };
+      if (document.body) paint(); else document.addEventListener('DOMContentLoaded', paint);
+      window.addEventListener('resize', paint);
+    } catch (eIa) { /* ignore */ }
+  })();
   (function diagByTaps() {
     var taps = [];
     document.addEventListener('click', function (e) {
@@ -1858,8 +1958,46 @@
       if (!fitStakeCtx) fitStakeCtx = document.createElement('canvas').getContext('2d');
       fitStakeCtx.font = cs.fontWeight + ' ' + fs + 'px ' + cs.fontFamily;
       var w = fitStakeCtx.measureText(txt).width + (parseFloat(cs.letterSpacing) || 0) * txt.length;
-      if (w > avail) el.style.setProperty('font-size', Math.max(9, Math.floor(fs * avail / w * 10) / 10) + 'px', 'important');
+      // Place réservée au « $ » posé devant le chiffre (écran normal) : le chiffre rétrécit un peu plus tôt.
+      var curRoom = document.documentElement.classList.contains('fs-trade') ? 0 : fs * 0.95;
+      if (w + curRoom > avail) {
+        var nfs = Math.max(9, Math.floor(fs * avail / (w + curRoom) * 10) / 10);
+        el.style.setProperty('font-size', nfs + 'px', 'important');
+        w = w * nfs / fs;
+        fs = nfs;
+      }
+      placeStakeCur(el, w, fs, cs);
     } catch (eFitS) { /* ignore */ }
+  }
+
+  // « $ » juste devant le chiffre de la mise (écran normal, tous appareils) : même couleur, même taille que le
+  // chiffre (il rétrécit avec lui), petit espace entre les deux, bien droit. Le plein écran garde son « $ ».
+  function placeStakeCur(el, textW, fs, cs) {
+    try {
+      var field = el.parentElement;
+      if (!field) return;
+      var cur = document.getElementById('stakeCur');
+      if (!cur) {
+        cur = document.createElement('span');
+        cur.id = 'stakeCur';
+        cur.setAttribute('aria-hidden', 'true');
+        cur.textContent = '$';
+        field.appendChild(cur);
+      }
+      if (document.documentElement.classList.contains('fs-trade') || !el.clientWidth) { cur.style.display = 'none'; return; }
+      var fr = field.getBoundingClientRect();
+      var ir = el.getBoundingClientRect();
+      var curFs = Math.max(9, fs * 0.92);
+      var curW = curFs * 0.62;
+      var gap = Math.max(4, fs * 0.32);
+      var center = ir.left + ir.width / 2 - fr.left;
+      var left = center - textW / 2 - gap - curW;
+      if (left < ir.left - fr.left + 2) left = ir.left - fr.left + 2;
+      cur.style.cssText = 'display:block;position:absolute;pointer-events:none;z-index:2;line-height:1;' +
+        'left:' + left.toFixed(1) + 'px;top:' + (ir.top - fr.top + ir.height / 2).toFixed(1) + 'px;transform:translateY(-52%);' +
+        'font-size:' + curFs.toFixed(1) + 'px;font-weight:' + cs.fontWeight + ';font-family:' + cs.fontFamily + ';' +
+        'color:' + cs.color + ';-webkit-text-fill-color:' + cs.color + ';text-shadow:' + cs.textShadow + ';font-style:normal';
+    } catch (eCur) { /* ignore */ }
   }
 
   function updateDurationUi() {
@@ -7163,9 +7301,22 @@
     function isIos() {
       return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     }
+    // Appli installée : iPhone (navigator.standalone), Android en mode « autonome » OU « plein écran »
+    // (le manifeste demande d'abord le plein écran). Avant : le plein écran Android n'était pas reconnu
+    // → « Installer Orolado » s'affichait DANS l'appli.
     function isStandalone() {
-      return !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+      try {
+        if (window.navigator.standalone) return true;
+        var mq = function (m) { return window.matchMedia('(display-mode: ' + m + ')').matches; };
+        if (mq('standalone') || mq('fullscreen') || mq('minimal-ui')) return true;
+        return localStorage.getItem('oro_app_installed') === '1' && /android/i.test(navigator.userAgent || '') && document.referrer.indexOf('android-app://') === 0;
+      } catch (eSa) { return false; }
     }
+    // Installation faite (Android) : plus jamais le message « Installer Orolado » sur ce téléphone.
+    window.addEventListener('appinstalled', function () {
+      try { localStorage.setItem('oro_install_dismissed', '1'); localStorage.setItem('oro_app_installed', '1'); } catch (eAi) { /* ignore */ }
+      try { hideInstallBanner(); } catch (eAh) { /* ignore */ }
+    });
     function isMobileUi() {
       return window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
     }
@@ -7221,7 +7372,10 @@
       $('btnInstall').addEventListener('click', async function () {
         if (deferredPrompt) {
           deferredPrompt.prompt();
-          try { await deferredPrompt.userChoice; } catch (e) { /* ignore */ }
+          try {
+            var choice = await deferredPrompt.userChoice;
+            if (choice && choice.outcome === 'accepted') localStorage.setItem('oro_install_dismissed', '1');
+          } catch (e) { /* ignore */ }
           deferredPrompt = null;
           hideInstallBanner();
           return;
@@ -7337,7 +7491,7 @@
       startAdminPresence();
       setTimeout(function () {
         try {
-          var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+          var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: minimal-ui)').matches);
           var mobile = window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
           var forever = false;
           try {
