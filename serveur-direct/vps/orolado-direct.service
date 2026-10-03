@@ -1,0 +1,23 @@
+# OROLADO — ligne directe des prix + moteur continu (systemd).
+# Redémarre tout seul s'il s'arrête, et au démarrage du serveur.
+[Unit]
+Description=OROLADO ligne directe des prix (direct.js + moteur-prix.php)
+After=network.target php8.3-fpm.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/orolado
+Environment=PHP_BIN=/usr/bin/php
+Environment=DIRECT_PORT=8092
+Environment=DIRECT_HOST=127.0.0.1
+ExecStart=/usr/local/bin/node /var/www/orolado/serveur-direct/direct.js
+Restart=always
+RestartSec=1
+LimitNOFILE=65535
+# Priorité haute : les prix passent avant tout le reste.
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target
