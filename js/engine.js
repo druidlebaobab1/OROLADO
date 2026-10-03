@@ -327,6 +327,8 @@
   /** Applique le « direct partagé ». Retourne false s'il manque des prix (→ resynchro). */
   function applyLive(j) {
     if (!j || !j.ok || !j.assets) return false;
+    // Le serveur annonce une ligne directe (moteur VPS) : le téléphone peut s'y brancher.
+    if (j.direct === 1) direct.allowed = true;
     var complete = true;
     Object.keys(j.assets).forEach(function (id) {
       if (!C.ASSETS[id]) return;
@@ -432,6 +434,72 @@
     });
   }
 
+  /*
+   * Ligne directe (serveur VPS) : le serveur ENVOIE chaque nouveau prix dès qu'il existe
+   * (WebSocket /direct), au lieu que chaque téléphone relise le fichier 3 fois par seconde.
+   * Mêmes prix (même format que live.json, appliqués par applyLive). Tant que la ligne directe
+   * apporte des prix frais, la lecture du fichier se met en pause ; si elle tombe ou se tait,
+   * la lecture du fichier reprend toute seule (secours). Hébergement sans ligne directe : après
+   * 3 essais ratés, on n'essaie plus pendant 10 minutes (aucune charge en plus).
+   */
+  var direct = { allowed: false, ws: null, lastAt: 0, fails: 0, everOpen: false, retryAt: 0, timer: 0 };
+  function directUrl() {
+    var u = '';
+    try { u = localStorage.getItem('oro_direct') || ''; } catch (eD) { /* ignore */ }
+    if (/^wss?:\/\/[^\s]+$/.test(u)) return u;
+    if (u === 'off') return '';
+    if (!/^https?:$/.test(location.protocol)) return '';
+    return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/direct';
+  }
+  function directFresh() {
+    return !!(direct.ws && direct.ws.readyState === 1 && Date.now() - direct.lastAt < 1000);
+  }
+  function directConnect() {
+    if (direct.ws || document.hidden || typeof WebSocket === 'undefined') return;
+    var forced = '';
+    try { forced = localStorage.getItem('oro_direct') || ''; } catch (eF) { /* ignore */ }
+    if (!direct.allowed && !/^wss?:/.test(forced)) return;
+    if (Date.now() < direct.retryAt) return;
+    var url = directUrl();
+    if (!url) return;
+    var ws;
+    try { ws = new WebSocket(url); } catch (eW) { direct.fails++; return; }
+    direct.ws = ws;
+    ws.onopen = function () {
+      direct.fails = 0;
+      direct.everOpen = true;
+    };
+    ws.onmessage = function (ev) {
+      var j = null;
+      try { j = JSON.parse(ev.data); } catch (eJ) { return; }
+      if (!j || !j.ok) return;
+      direct.lastAt = Date.now();
+      // Il manque des prix (le premier message, ou un retour de veille) : resynchro complète.
+      if (!applyLive(j)) pollAll();
+    };
+    ws.onclose = ws.onerror = function () {
+      if (direct.ws !== ws) return;
+      direct.ws = null;
+      try { ws.close(); } catch (eC) { /* ignore */ }
+      direct.fails++;
+      // Jamais ouverte après 3 essais : pas de ligne directe ici → on réessaie dans 10 min.
+      // Déjà ouverte avant (coupure réseau, redémarrage) : on réessaie vite (1 s, 2 s, 4 s… 30 s).
+      var wait = !direct.everOpen && direct.fails >= 3 ? 600000 : Math.min(30000, 1000 * Math.pow(2, Math.min(5, direct.fails - 1)));
+      direct.retryAt = Date.now() + wait;
+    };
+  }
+  function directStop() {
+    if (!direct.ws) return;
+    var ws = direct.ws;
+    direct.ws = null;
+    try { ws.close(); } catch (eS) { /* ignore */ }
+  }
+  document.addEventListener('visibilitychange', function () {
+    // Page cachée : on ferme la ligne (rien à afficher, serveur soulagé) ; elle revient au retour.
+    if (document.hidden) directStop();
+    else { direct.retryAt = 0; directConnect(); }
+  });
+
   function priceAtTick(id, tick) {
     var f = feeds[id];
     if (!f || !f.loaded || tick < f.first || tick > f.last) return NaN;
@@ -467,7 +535,9 @@
     pollAll();
     pollTimer = setInterval(function () {
       if (document.hidden) return;
-      pollLive();
+      directConnect();
+      // Ligne directe active et fraîche : pas besoin de relire le fichier.
+      if (!directFresh()) pollLive();
       if (wantedAsset && feeds[wantedAsset] && feeds[wantedAsset].loaded) loadHistory(wantedAsset);
     }, POLL_MS);
   }
