@@ -1416,7 +1416,7 @@
       var curCode = 'en';
       try { curCode = (D6.I18N && D6.I18N.lang) || 'en'; } catch (eLangCur) { curCode = 'en'; }
       var cur = LANGS.filter(function (l) { return l.code === curCode; })[0] || LANGS[0];
-      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span></button>' +
+      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span><span class="lang-code">' + String(cur.code || '').toUpperCase() + '</span></button>' +
         '<div class="lang-dd-menu hidden" role="listbox" data-owner="' + boxId + '">' + LANGS.map(function (l) {
           return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '" role="option">' +
             '<span class="lang-flag">' + l.flag + '</span><span class="lang-name">' + (l.name || l.code) + '</span></button>';
@@ -7368,7 +7368,9 @@
     var home = $('fsTopMidHome');
     var pad = $('fsPadCapsule');
     if (!mid || !home || !pad) return;
-    var desktop = !!fsTradeActive && isFsDesktop();
+    // Design Galaxy : DÉMO / COMPTE RÉEL restent en haut du plein écran, sur PC comme sur téléphone
+    // (dans la colonne de droite ils étaient écrasés entre ACHETER et VENDRE).
+    var desktop = false;
     if (desktop) {
       if (mid.parentNode !== pad) pad.appendChild(mid);
     } else if (mid.parentNode !== home) {
