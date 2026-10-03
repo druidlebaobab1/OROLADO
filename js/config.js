@@ -195,7 +195,7 @@
         tag: 'Emerald flow',
         chart: 'line',
         lineColor: '#F2F4FF',
-        lineWidth: 2.4,
+        lineWidth: 3,
         areaRgb: '225,232,255',
         basePrice: 3890.20,
         tickNoise: 0.40,

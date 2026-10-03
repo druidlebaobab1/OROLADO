@@ -28,10 +28,14 @@
   // Zoom de départ par simulation : BAAL (bougie calme, gros carreaux) 16 s ; VOLATILITY 23 s (bougies
   // plus larges) ; ZUL 16 s (le serpent défile plus vite, sans pics plus hauts) ; OROF 16 s (grandes
   // pyramides) ; ASMODUS 23 s (cristaux plus larges). Les autres : 28 s.
+  // 2026-10-03 (propriétaire : « bougies trop maigres ») : départ un peu plus proche, bougies plus
+  // larges ; AZAZEL juste un cran (un peu plus large, même hauteur).
   function defaultZoomIdx(id) {
     if (id === 'horizon50' || id === 'stable' || id === 'goldtrend') return 3;
-    if (id === 'v100' || id === 'nexusprime') return 6;
-    return DEFAULT_ZOOM_IDX;
+    if (id === 'v100' || id === 'nexusprime') return 4;
+    if (id === 'crash300') return 7;
+    if (id === 'v75') return 3;
+    return 6;
   }
   var zoomIdx = defaultZoomIdx('v100');
   var zoomSmooth = 28;
@@ -241,6 +245,12 @@
     var key = id || activeAsset;
     return (window.ASSET_BUFFERS && window.ASSET_BUFFERS[key]) ||
       (window.assetBuffers && window.assetBuffers[key]) || null;
+  }
+
+  // Taille des bougies / perles / cristaux… (demande du propriétaire : « trop maigres ») :
+  // un peu plus grosses sur le petit écran, nettement plus en plein écran. Dessin seulement.
+  function sizeK() {
+    return fsActive ? 1.5 : 1.2;
   }
 
   function candleStepWidth(seriesW) {
@@ -1471,6 +1481,7 @@
     if (opts.v100Big) maxBody = 12;
     // BAAL : la bougie calme, gros carreaux.
     if (opts.horizonOrange) maxBody = 14;
+    maxBody *= sizeK();
     var cw = Math.max(1, Math.min(maxBody, slot - gap));
     var toX = makeToX(candles.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
@@ -1635,7 +1646,7 @@
         if (i === 0) ctx.moveTo(x, toY(candles[i].c)); else ctx.lineTo(x, toY(candles[i].c));
       }
       ctx.stroke();
-      var rMax = Math.max(2.6, Math.min(8, slot * 0.46));
+      var rMax = Math.max(2.6, Math.min(8 * sizeK(), slot * 0.46));
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
@@ -1668,7 +1679,7 @@
       var gDn = ctx.createLinearGradient(0, pad.t, 0, bot);
       gDn.addColorStop(0, 'rgba(255,59,48,0.85)');
       gDn.addColorStop(1, 'rgba(255,59,48,0.04)');
-      var cwE = Math.max(1, Math.min(12, slot * 0.72));
+      var cwE = Math.max(1, Math.min(12 * sizeK(), slot * 0.72));
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
@@ -1694,7 +1705,7 @@
       var topY = pad.t;
       var botY = pad.t + h;
       var tMs = xNow || Date.now();
-      var off = Math.max(1.6, Math.min(5, slot * 0.3));
+      var off = Math.max(1.6, Math.min(5 * sizeK(), slot * 0.3));
       var lxS = toX(last);
       var lyS = Math.max(topY, Math.min(botY, toY(candles[last].c)));
       var breath = 0.75 + 0.25 * Math.sin(tMs / 700);
@@ -1770,7 +1781,7 @@
       // descend. Face éclairée à gauche, face dans l'ombre à droite, arêtes fines. La dernière porte
       // une pierre de sommet lumineuse (comme le logo OROLADO).
       ctx.save();
-      var pB = Math.max(5, Math.min(16, slot * 0.96));
+      var pB = Math.max(5, Math.min(16 * sizeK(), slot * 0.96));
       var pH = pB * 0.78;
       for (i = 0; i < n; i++) {
         c = candles[i];
@@ -1823,7 +1834,7 @@
       // ASMODUS : une rangée de cristaux (losanges) : haut du losange = plus haut de la seconde,
       // bas = plus bas, centre = prix de clôture. Cyan à la hausse, bleu profond à la baisse.
       ctx.save();
-      var halfW = Math.max(2.2, Math.min(8, slot * 0.5));
+      var halfW = Math.max(2.2, Math.min(8 * sizeK(), slot * 0.5));
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
@@ -1862,7 +1873,7 @@
     } else {
       // ZUL : barres de trader rouge sang (trait haut-bas, crochet à gauche = ouverture, à droite = clôture).
       ctx.save();
-      var tick = Math.max(2.5, Math.min(7, slot * 0.42));
+      var tick = Math.max(2.5, Math.min(7 * sizeK(), slot * 0.42));
       ctx.lineCap = 'butt';
       for (i = 0; i < n; i++) {
         c = candles[i];
@@ -3191,10 +3202,14 @@
     var z = Number(zoomSec()) || 28;
     var zRef = ZOOM_STEPS[defaultZoomIdx(assetId)] || 28;
     var k = Math.sqrt(z / zRef);
-    return base * Math.max(0.7, Math.min(5, k));
+    // Un peu plus haut (mouvements plus grands à l'écran), sauf AZAZEL (hauteur gardée).
+    var taller = assetId === 'crash300' ? 1 : 0.82;
+    return base * taller * Math.max(0.7, Math.min(5, k));
   }
 
   var camCandles = null;
+  // Recentrage en cours du cadre ({ asset, mid }), null quand le cadre est immobile.
+  var camGlide = null;
 
   // Caméra stable : cadre de taille fixe, la courbe défile dedans. Le cadre ne glisse
   // (doucement) que lorsque la tête s'approche d'un bord ; jamais de zoom qui « respire ».
@@ -3246,13 +3261,21 @@
       if (mid > h + calm) mid = h + calm;
     }
     var half = span / 2;
-    // Android : la courbe garde un peu plus d'air en haut et en bas (elle « descendait » vers le bord).
-    var edge = span * (IS_ANDROID_CHART ? 0.30 : 0.26);
-    // Suivi réglé en TEMPS et non par image : un vieil Android qui dessine 15 images/s
-    // suit la courbe aussi vite qu'un iPhone à 60 (avant, la courbe « s'enfonçait »).
-    var kf = cameraFollow(0.06);
-    if (h > mid + half - edge) mid += (h - (mid + half - edge)) * kf;
-    if (h < mid - half + edge) mid += (h - (mid - half + edge)) * kf;
+    // Cadre « bloqué » (demande du propriétaire : la courbe ne doit plus « s'envoler comme un
+    // avion ») : le cadre reste immobile tant que la tête est dans la grande zone du milieu.
+    // Quand elle approche d'un bord, le cadre se recentre UNE fois, doucement, sur la tête,
+    // puis s'arrête de nouveau (avant : il glissait sans arrêt derrière la tête).
+    var edge = span * (IS_ANDROID_CHART ? 0.22 : 0.18);
+    if (camGlide && camGlide.asset !== assetId) camGlide = null;
+    if (prevMax > prevMin && !camGlide && (h > mid + half - edge || h < mid - half + edge)) {
+      camGlide = { asset: assetId, mid: h };
+    }
+    if (camGlide) {
+      // Suivi réglé en TEMPS et non par image (vieux Android à 15 images/s = même vitesse).
+      var dm = camGlide.mid - mid;
+      mid += dm * cameraFollow(0.07);
+      if (Math.abs(camGlide.mid - mid) < span * 0.01) camGlide = null;
+    }
     // Filet dur : la tête ne sort jamais (pic Boom/Crash, retour de veille).
     var hard = span * (IS_ANDROID_CHART ? 0.12 : 0.06);
     if (h > mid + half - hard) mid = h - half + hard;
@@ -3645,7 +3668,7 @@
     ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, h));
     ctx.clip();
     if (asset.id === 'stable') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3);
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3.6);
     } else if (STYLED_ASSETS[asset.id]) {
       map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id]);
     } else if (asset.chart === 'candle' || asset.id === 'horizon50') {
