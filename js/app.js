@@ -630,7 +630,7 @@
       if (UA_SAFARI_IOS) {
         var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
         var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
-        bottomRes = underBar ? (safeBottomPx() + 31) : 2;
+        bottomRes = underBar ? (safeBottomPx() + 39) : 10;
       } else {
         bottomRes = safeBottomPx() + 4;
       }

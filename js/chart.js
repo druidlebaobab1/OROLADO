@@ -1402,17 +1402,23 @@
     var rowsY = Math.max(3, Math.min(8, Math.round(h / refStepX)));
     for (i = 0; i <= rowsY; i++) {
       var y = pad.t + (h / rowsY) * i;
-      ctx.strokeStyle = i === rowsY ? theme.gridHStrong : theme.gridH;
-      ctx.beginPath();
-      ctx.moveTo(pad.l, y);
-      ctx.lineTo(pad.l + plotW, y);
-      ctx.stroke();
       var pVal = maxP - (i / rowsY) * (maxP - minP);
-      ctx.fillStyle = '#64748B';
       // Police resserrée sur écran étroit : la colonne reste discrète sans
       // jamais rogner les décimales.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') +
         '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
+      // Les lignes de prix vont d'un bord à l'autre (plus de creux à gauche ni sous la colonne des prix) ;
+      // elles s'interrompent juste le temps du chiffre du prix.
+      var lblW = ctx.measureText(formatAxisPrice(pVal)).width;
+      var lblL = cssW - PRICE_AXIS_GAP - lblW - 4;
+      ctx.strokeStyle = i === rowsY ? theme.gridHStrong : theme.gridH;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(Math.max(0, lblL), y);
+      ctx.moveTo(Math.min(cssW, cssW - PRICE_AXIS_GAP + 3), y);
+      ctx.lineTo(cssW, y);
+      ctx.stroke();
+      ctx.fillStyle = '#64748B';
       // Calage à droite sur une marge de sécurité fixe : les décimales ne
       // peuvent plus être rognées par le bord de l'écran, quelle que soit la
       // longueur du cours.
@@ -1426,13 +1432,15 @@
     var stepX = refStepX;
     var headXg = pad.l + seriesW;
     var axisR = pad.l + plotW;
-    var kMin = -Math.ceil((headXg - pad.l) / stepX) - 1;
+    // Les carreaux couvrent toute la largeur (sous la colonne des prix aussi).
+    axisR = cssW;
+    var kMin = -Math.ceil(headXg / stepX) - 1;
     var kMax = Math.ceil((axisR - headXg) / stepX);
     ctx.strokeStyle = theme.gridV;
     ctx.beginPath();
     for (i = kMin; i <= kMax; i++) {
       var gx = headXg + stepX * (i + 0.5);
-      if (gx < pad.l - 0.5 || gx > axisR + 0.5) continue;
+      if (gx < -0.5 || gx > axisR + 0.5) continue;
       ctx.moveTo(gx, pad.t);
       ctx.lineTo(gx, pad.t + h);
     }
