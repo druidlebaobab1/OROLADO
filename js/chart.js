@@ -184,7 +184,10 @@
 
   function zoomSec() {
     if (pinchSec !== null) return pinchSec;
-    return ZOOM_STEPS[zoomIdx] || 60;
+    var zs = ZOOM_STEPS[zoomIdx] || 60;
+    // Plein écran : on voit un peu moins de secondes → bougies plus grandes (VALAC est déjà grand).
+    if (fsActive && activeAsset !== 'boomspike') zs *= 0.75;
+    return zs;
   }
 
   function padBottomRatio() {
@@ -252,7 +255,7 @@
   // Taille des bougies / perles / cristaux… (demande du propriétaire : « trop maigres ») :
   // un peu plus grosses sur le petit écran, nettement plus en plein écran. Dessin seulement.
   function sizeK() {
-    return fsActive ? 1.5 : 1.2;
+    return fsActive ? 1.7 : 1.2;
   }
 
   function candleStepWidth(seriesW) {
@@ -757,6 +760,15 @@
             if (padTop > 0 && cardTop >= 0) stdH = padTop - cardTop - 10;
           }
         } catch (eStd) { stdH = 0; }
+      }
+      // Retour du plein écran : on efface ses tailles forcées (sinon la carte gardait la hauteur du
+      // plein écran → la courbe passait sous le terminal sur Android, et une bande vide à droite).
+      if (parent.style.getPropertyPriority('height') === 'important') {
+        ['min-height', 'height', 'width', 'min-width'].forEach(function (p) { parent.style.removeProperty(p); });
+      }
+      var cardBack = document.getElementById('chart');
+      if (cardBack && (cardBack.style.getPropertyPriority('height') === 'important' || cardBack.style.getPropertyPriority('min-width') === 'important')) {
+        ['height', 'min-height', 'min-width', 'width', 'flex'].forEach(function (p) { cardBack.style.removeProperty(p); });
       }
       parent.style.minHeight = minH + 'px';
       if (!parent.style.height || parseInt(parent.style.height, 10) < minH) {
@@ -1730,8 +1742,8 @@
       gSky.addColorStop(0, 'rgba(150,0,25,' + (0.2 * breath).toFixed(3) + ')');
       gSky.addColorStop(0.5, 'rgba(90,0,15,0.07)');
       gSky.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = gSky;
-      ctx.fillRect(pad.l, topY, w + pad.r, h);
+      // (Ciel rouge retiré : le propriétaire voyait un « fond rouge » dans la courbe.)
+      void gSky;
       ctx.lineJoin = 'miter';
       ctx.lineCap = 'round';
       var bolt = function (bx, y0, y1, flip) {
@@ -1773,11 +1785,11 @@
         // Lueur (trait large et transparent), puis corps, puis cœur fin.
         ctx.globalAlpha = flick;
         ctx.strokeStyle = up ? 'rgba(255,40,70,0.35)' : 'rgba(255,23,68,0.45)';
-        ctx.lineWidth = isLast ? 7 : 4.5;
+        ctx.lineWidth = (isLast ? 7 : 4.5) * sizeK();
         bolt(x, yS, yE, flip);
         ctx.stroke();
         ctx.strokeStyle = up ? '#FFFFFF' : '#FF1744';
-        ctx.lineWidth = isLast ? 2.6 : 2;
+        ctx.lineWidth = (isLast ? 2.6 : 2) * sizeK();
         if (isLast) {
           ctx.shadowColor = up ? 'rgba(255,255,255,1)' : 'rgba(255,23,68,1)';
           ctx.shadowBlur = IS_ANDROID_CHART ? 10 : 18;
@@ -3208,8 +3220,9 @@
   // cadre sert au petit écran et au plein écran (plus haut = encore plus d'aisance).
   function routeSpanPct(assetId) {
     var base = {
-      v100: 0.0090, stable: 0.0020, apex500: 0.0108, horizon50: 0.0110,
-      goldtrend: 0.0068, v75: 0.0072, nexusprime: 0.0081, titanpulse: 0.0126,
+      // Cadres agrandis moins vite que les vitesses (×vitesse^0,6) : on sent la vitesse sans déborder.
+      v100: 0.0090, stable: 0.00347, apex500: 0.01377, horizon50: 0.0110,
+      goldtrend: 0.00796, v75: 0.00955, nexusprime: 0.01033, titanpulse: 0.0244,
       boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
     // Même recette sur les 10 simulations (celle qui ne déborde jamais) : aucune amplification
@@ -3721,6 +3734,8 @@
       var air = 0.15;
       var yLo = pad.t + h * air;
       var yHi = pad.t + h * (1 - air);
+      // Mesure de contrôle (tests) : position réelle de la tête dans le cadre, avant le garde-fou.
+      window.__oroHead = { a: activeAsset, fs: !!fsOn, r: (map.lastY - pad.t) / Math.max(1, h), lo: minP, hi: maxP };
       if (map.lastY < yLo) map.lastY = yLo;
       if (map.lastY > yHi) map.lastY = yHi;
     }
@@ -4465,6 +4480,25 @@
         window.addEventListener('orientationchange', function () {
           scheduleResize(120);
         });
+        // Android : quand la barre de Chrome se cache / revient, le terminal (fixé en bas) bouge mais la
+        // courbe gardait son ancienne hauteur → elle passait SOUS le terminal (la tête « descendait »)
+        // ou laissait un creux, selon l'actualisation. Chaque seconde : si le bas de la courbe ne touche
+        // plus le haut du terminal, on la réajuste.
+        var androidGapTried = null;
+        if (IS_ANDROID_CHART) {
+          setInterval(function () {
+            try {
+              if (document.hidden || fsActive) return;
+              var aPad = document.querySelector('#screenTrade .pad');
+              var aCard = document.getElementById('chart');
+              if (!aPad || !aCard || window.getComputedStyle(aPad).position !== 'fixed') return;
+              var gap = Math.round(aPad.getBoundingClientRect().top - aCard.getBoundingClientRect().bottom);
+              // Pas de réessai en boucle si le même écart persiste (rien de plus à faire).
+              if (Math.abs(gap) > 2 && gap !== androidGapTried) { androidGapTried = gap; lastGeomKey = ''; resize(true); }
+              else if (Math.abs(gap) <= 2) androidGapTried = null;
+            } catch (eAg) { /* ignore */ }
+          }, 1000);
+        }
         if (window.visualViewport) {
           try {
             visualViewport.addEventListener('resize', function () {

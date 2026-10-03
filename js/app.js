@@ -600,6 +600,34 @@
       return v;
     } catch (eSb) { return 0; }
   }
+  // PC : la courbe va jusqu'au bord gauche et jusqu'en bas de l'écran (demande du propriétaire). On
+  // mesure la marge qui reste et on la donne au CSS (--oro-bleed-l / --oro-bleed-b, css/galaxy.css).
+  function bleedChartPc() {
+    try {
+      var root = document.documentElement;
+      var card = document.querySelector('#tradeWrap .chart-card');
+      var off = (window.innerWidth || 0) < 860 || root.classList.contains('fs-trade') || root.classList.contains('is-tv');
+      if (!card || off) {
+        root.style.removeProperty('--oro-bleed-l');
+        root.style.removeProperty('--oro-bleed-b');
+        return;
+      }
+      var cs = window.getComputedStyle(root);
+      var curL = parseFloat(cs.getPropertyValue('--oro-bleed-l')) || 0;
+      var curB = parseFloat(cs.getPropertyValue('--oro-bleed-b')) || 0;
+      var r = card.getBoundingClientRect();
+      if (!(r.width > 0)) return;
+      var l = Math.max(0, Math.round(r.left + curL));
+      var b = Math.max(0, Math.round((window.innerHeight || 0) - (r.bottom - curB)));
+      if (l > 120 || b > 120) return; // mise en page inattendue : on ne touche à rien
+      if (Math.abs(l - curL) >= 1) root.style.setProperty('--oro-bleed-l', l + 'px');
+      if (Math.abs(b - curB) >= 1) root.style.setProperty('--oro-bleed-b', b + 'px');
+    } catch (eBl) { /* ignore */ }
+  }
+  window.addEventListener('resize', function () { setTimeout(bleedChartPc, 60); });
+  window.addEventListener('load', function () { setTimeout(bleedChartPc, 300); });
+  setTimeout(bleedChartPc, 900);
+  setInterval(bleedChartPc, 2000);
   // iPhone / iPad (Safari, Chrome et les autres navigateurs) : le terminal n'est pas fixé en bas comme
   // sur Android. La COURBE prend toute la place libre jusqu'au terminal, posé en bas de l'écran ;
   // ACHETER / VENDRE gardent leur taille normale. (?iosfit=1 : même calcul pour tester sur PC.)
@@ -1415,6 +1443,43 @@
     });
   }
 
+  // Drapeaux dessinés (Windows n'affiche pas les drapeaux « emoji » : il écrivait « FR » à la place).
+  // Même dessin partout : PC, TV, iPhone, Android.
+  var FLAG_SVG = (function () {
+    var h = function (inner) { return '<svg class="flag-svg" viewBox="0 0 30 20" aria-hidden="true">' + inner + '</svg>'; };
+    var bands = function (dir, cols) {
+      var n = cols.length, out = '', i;
+      for (i = 0; i < n; i++) {
+        out += dir === 'v'
+          ? '<rect x="' + (30 / n * i) + '" y="0" width="' + (30 / n + 0.2) + '" height="20" fill="' + cols[i] + '"/>'
+          : '<rect x="0" y="' + (20 / n * i) + '" width="30" height="' + (20 / n + 0.2) + '" fill="' + cols[i] + '"/>';
+      }
+      return out;
+    };
+    var star = function (cx, cy, r, col) {
+      var p = [], k;
+      for (k = 0; k < 10; k++) {
+        var a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.42 : r;
+        p.push((cx + rr * Math.cos(a)).toFixed(2) + ',' + (cy + rr * Math.sin(a)).toFixed(2));
+      }
+      return '<polygon points="' + p.join(' ') + '" fill="' + col + '"/>';
+    };
+    return {
+      en: h('<rect width="30" height="20" fill="#012169"/><path d="M0 0L30 20M30 0L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0L30 20M30 0L0 20" stroke="#C8102E" stroke-width="1.6"/><path d="M15 0V20M0 10H30" stroke="#fff" stroke-width="6"/><path d="M15 0V20M0 10H30" stroke="#C8102E" stroke-width="3.4"/>'),
+      fr: h(bands('v', ['#002395', '#fff', '#ED2939'])),
+      es: h('<rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/>'),
+      pt: h('<rect width="30" height="20" fill="#009C3B"/><polygon points="15,2.5 27,10 15,17.5 3,10" fill="#FFDF00"/><circle cx="15" cy="10" r="4.3" fill="#002776"/><path d="M10.9 9.2q4.1-1.3 8.2.9" stroke="#fff" stroke-width=".8" fill="none"/>'),
+      ar: h('<rect width="30" height="20" fill="#006C35"/><path d="M8 8.2h14" stroke="#fff" stroke-width="1.4" stroke-dasharray="2 .8"/><path d="M8.5 13h12.5l1.5-1" stroke="#fff" stroke-width="1" fill="none"/>'),
+      tr: h('<rect width="30" height="20" fill="#E30A17"/><circle cx="11" cy="10" r="5" fill="#fff"/><circle cx="12.3" cy="10" r="4" fill="#E30A17"/>' + star(18.2, 10, 2.6, '#fff')),
+      vi: h('<rect width="30" height="20" fill="#DA251D"/>' + star(15, 10.4, 6, '#FFFF00')),
+      id: h(bands('h', ['#CE1126', '#fff'])),
+      ru: h(bands('h', ['#fff', '#0039A6', '#D52B1E'])),
+      de: h(bands('h', ['#000', '#DD0000', '#FFCE00'])),
+      hi: h(bands('h', ['#FF9933', '#fff', '#138808']) + '<circle cx="15" cy="10" r="2.6" fill="none" stroke="#000080" stroke-width=".7"/><circle cx="15" cy="10" r=".6" fill="#000080"/>')
+    };
+  })();
+  function flagOf(l) { return (l && FLAG_SVG[l.code]) || (l && l.flag) || ''; }
+
   function fillLangBars() {
     document.querySelectorAll('body > .lang-dd-menu').forEach(function (m) { m.remove(); });
     function render(boxId) {
@@ -1423,10 +1488,10 @@
       var curCode = 'en';
       try { curCode = (D6.I18N && D6.I18N.lang) || 'en'; } catch (eLangCur) { curCode = 'en'; }
       var cur = LANGS.filter(function (l) { return l.code === curCode; })[0] || LANGS[0];
-      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + cur.flag + '</span><span class="lang-chev">▾</span><span class="lang-code">' + String(cur.code || '').toUpperCase() + '</span></button>' +
+      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + flagOf(cur) + '</span><span class="lang-chev">▾</span><span class="lang-code">' + String(cur.code || '').toUpperCase() + '</span></button>' +
         '<div class="lang-dd-menu hidden" role="listbox" data-owner="' + boxId + '">' + LANGS.map(function (l) {
           return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '" role="option">' +
-            '<span class="lang-flag">' + l.flag + '</span><span class="lang-name">' + (l.name || l.code) + '</span></button>';
+            '<span class="lang-flag">' + flagOf(l) + '</span><span class="lang-name">' + (l.name || l.code) + '</span></button>';
         }).join('') + '</div>';
     }
     render('langBarAuth');
