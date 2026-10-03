@@ -825,6 +825,10 @@
           var stR = parent.getBoundingClientRect();
           var frac = (ovR.bottom - stR.top) / Math.max(1, ovR.height);
           fsH = Math.max(240, Math.round(tvOv.clientHeight * frac) - 8);
+          // Mesure réelle : la carte va jusqu'en bas de l'écran (avant : ~40 px vides en bas).
+          var cdR = document.getElementById('chart').getBoundingClientRect();
+          var curStage = Math.round(parent.clientHeight || 0);
+          if (curStage > 0 && cdR.height > 0) fsH = Math.max(240, Math.round(curStage + (ovR.bottom - cdR.bottom) / tvZ) - 2);
         } catch (eTvH) { fsH = Math.max(240, Math.round((vpH - topOff - 6) / tvZ)); }
       }
       // Tolérance : sans elle, un écart d'un pixel relancerait sans fin le
@@ -834,7 +838,19 @@
       var landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
       var sideChrome = (!mobile && landscape) ? 240 : 0;
       var fsW = Math.max(280, Math.round((window.innerWidth || 800) - sideChrome));
-      if (tvZ > 0 && tvZ < 0.99) fsW = Math.max(280, Math.round((window.innerWidth || 800) / tvZ - 320));
+      if (tvZ > 0 && tvZ < 0.99) {
+        fsW = Math.max(280, Math.round((window.innerWidth || 800) / tvZ - 320));
+        // Mesure réelle : la courbe va jusqu'à la colonne ACHETER / VENDRE (avant : ~90 px vides).
+        try {
+          var tvPad = document.querySelector('#fsTradeOverlay .pad, .fs-trade-overlay.on .pad');
+          var tvCard = document.getElementById('chart');
+          if (tvPad && tvCard) {
+            var pR = tvPad.getBoundingClientRect();
+            var cR = tvCard.getBoundingClientRect();
+            if (pR.left > cR.left + 100) fsW = Math.max(280, Math.round((pR.left - cR.left) / tvZ) - 10);
+          }
+        } catch (eTvW) { /* ignore */ }
+      }
       parent.style.setProperty('min-height', fsH + 'px', 'important');
       parent.style.setProperty('height', fsH + 'px', 'important');
       parent.style.setProperty('width', '100%', 'important');
