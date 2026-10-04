@@ -508,9 +508,7 @@
       pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
-    // v2342 : rond posé seulement quand le serveur a confirmé (prix et heure officiels) → rond, trait et ligne
-    // objectif apparaissent ENSEMBLE, une seule fois, au même endroit (démo invité : confirmé tout de suite).
-    if (!shownMarks[ot.id] && ot.confirmed !== false && ot.serverConfirmed !== false) {
+    if (!shownMarks[ot.id]) {
       // Le rond reste pour de bon à l'endroit du clic, sur les 10 simulations : la réponse du serveur
       // (qui fixe le vrai prix d'entrée) ne le déplace plus (avant : il apparaissait, puis sautait à
       // la seconde suivante). Lignes : l'instant exact du clic ; autres : le centre de sa seconde.
@@ -596,11 +594,8 @@
     snap.lineAt = (prevSnap && prevSnap.lineAt) || (Date.now() - Number(snap.startTime || 0) < 4000 ? Date.now() : 0);
     if (prevSnap && (prevSnap.entryPrice !== snap.entryPrice || prevSnap.barrier !== snap.barrier || prevSnap.startTime !== snap.startTime)) {
       var cur = tradeGlide(prevSnap);
-      // v2341 : trait encore jamais dessiné (trade en attente du serveur) → il apparaît à son vrai prix, sans glisser.
-      snap.fromEntry = prevSnap.pending ? snap.entryPrice : cur.entry;
-      // v2341 : la ligne objectif n'était pas dessinée tant que le trade attendait le serveur → elle apparaît
-      // directement à sa vraie place (aucun glissement de l'objectif après le clic).
-      snap.fromBarrier = prevSnap.pending ? snap.barrier : cur.barrier;
+      snap.fromEntry = cur.entry;
+      snap.fromBarrier = cur.barrier;
       snap.fromStart = cur.start;
       snap.moveAt = Date.now();
     }
@@ -2450,9 +2445,6 @@
     // descend doucement entre ses sauts). Avant, en 88 % elle était cachée : le joueur jugeait avec le
     // prix d'entrée et croyait « gagné » quand c'était perdu (et l'inverse). Dessin seulement.
     if (!isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
-    // v2341 : pas de ligne objectif tant que le serveur n'a pas confirmé le trade (sinon elle se posait au prix
-    // calculé par le téléphone puis glissait vers le vrai). Le trait et le rond d'entrée, eux, restent au clic.
-    if (trade.pending || trade.serverConfirmed === false || trade.confirmed === false) return;
     var by = priceToY(bar, pad, plotH, minP, maxP);
     if (!isFinite(by)) return;
     var off = 0;
@@ -2645,10 +2637,6 @@
     if (!exp || Date.now() >= exp) return;
     var glide = tradeGlide(trade);
     var entry = glide.entry;
-    // v2341 : trade en attente du serveur → seulement le rond (au clic) ; traits dessinés une fois confirmés.
-    var tPend = !!(trade.pending || trade.serverConfirmed === false || trade.confirmed === false);
-    // v2344 : en attente du serveur → seulement le rond, tout de suite au clic ; trait et ligne objectif
-    // apparaissent à la confirmation (rond posé alors au prix officiel, écart minime depuis le retard 0,45 s).
     // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
     // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
     // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de
@@ -2679,7 +2667,7 @@
     var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 140) : 1;
     if (idx === 0) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
-      var refP = glide.barrier > 0 && !tPend ? glide.barrier : entry;
+      var refP = glide.barrier > 0 ? glide.barrier : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
       if (isFinite(zy)) {
         zy = Math.max(plotTop, Math.min(plotBot, zy));
@@ -2726,7 +2714,7 @@
         g.restore();
       }
     }
-    if (!tPend) {
+    {
       g.setLineDash(TRADE_DASH);
       g.strokeStyle = lineCol;
       g.lineWidth = lite ? 1 : 1.35;
@@ -2766,11 +2754,6 @@
       if (mx > layout.headX) mx = layout.headX;
       if (map && isFinite(map.lastX) && mx > map.lastX) mx = map.lastX;
     }
-    // v2341 : le rond reste TOUJOURS au prix du clic (immédiat, ne bouge jamais) ; le trait, lui, suit le
-    // prix confirmé par le serveur (pour le 90 %, la différence est de l'ordre du mouvement d'une demi-seconde).
-    var rp = shownPrice[trade.id] > 0 ? shownPrice[trade.id] : entry;
-    var ry = priceToY(rp, pad, plotH, minP, maxP);
-    if (isFinite(ry)) ey = Math.round(ry * 2) / 2;
     lastEntryMarkX = mx;
     lastEntryMarkY = ey;
     lastEntryMarkR = r;
