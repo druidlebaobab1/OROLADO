@@ -508,7 +508,9 @@
       pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
-    if (!shownMarks[ot.id]) {
+    // v2342 : rond posé seulement quand le serveur a confirmé (prix et heure officiels) → rond, trait et ligne
+    // objectif apparaissent ENSEMBLE, une seule fois, au même endroit (démo invité : confirmé tout de suite).
+    if (!shownMarks[ot.id] && ot.confirmed !== false && ot.serverConfirmed !== false) {
       // Le rond reste pour de bon à l'endroit du clic, sur les 10 simulations : la réponse du serveur
       // (qui fixe le vrai prix d'entrée) ne le déplace plus (avant : il apparaissait, puis sautait à
       // la seconde suivante). Lignes : l'instant exact du clic ; autres : le centre de sa seconde.
@@ -2645,6 +2647,8 @@
     var entry = glide.entry;
     // v2341 : trade en attente du serveur → seulement le rond (au clic) ; traits dessinés une fois confirmés.
     var tPend = !!(trade.pending || trade.serverConfirmed === false || trade.confirmed === false);
+    // v2342 : en attente du serveur, rien n'est dessiné ici (le signe ACHAT / VENTE du clic s'affiche déjà).
+    if (tPend) return;
     // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
     // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
     // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de
