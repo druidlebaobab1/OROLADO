@@ -235,6 +235,8 @@
       f.ticks = vals;
       f.last = end;
       f.loaded = true;
+      // v2336 : après un trou, seul le court historique reste → on redemandera le long (zoom arrière).
+      f.full = false;
       rebuildBuffer(id);
       return;
     }

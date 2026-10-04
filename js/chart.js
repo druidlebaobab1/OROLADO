@@ -37,16 +37,16 @@
     // ORO 999 (style Boom : descente en zigzag + grands pics) : on voit 35 s pour voir la descente ET les pics.
     if (id === 'horizon50') return 14;
     // Vélocité (demande du propriétaire) : PYTHON 7 s, ASMODUS 8 s, AZAZEL 10 s à l'écran.
-    if (id === 'stable') return 2;
-    if (id === 'nexusprime') return 3;
-    if (id === 'crash300') return 4;
-    if (id === 'goldtrend') return 7;
-    if (id === 'v100') return 8;
-    if (id === 'v75') return 7;
+    if (id === 'stable') return 4;
+    if (id === 'nexusprime') return 5;
+    if (id === 'crash300') return 6;
+    if (id === 'goldtrend') return 9;
+    if (id === 'v100') return 10;
+    if (id === 'v75') return 9;
     // APOCALYPSE (vélocité, demande du propriétaire) : le PLUS RAPIDE, seulement 4 s à l'écran →
     // l'historique file vite vers la gauche, comme une voiture lancée. Affichage seulement.
-    if (id === 'titanpulse') return 0;
-    return 10;
+    if (id === 'titanpulse') return 2;
+    return 12;
   }
   var zoomIdx = defaultZoomIdx('v100');
   var zoomSmooth = 28;
@@ -3274,7 +3274,8 @@
     }[assetId] || 0.0090;
     // Vélocité : moins de secondes à l'écran → le cadre se resserre d'autant (racine du temps), pour
     // garder la même hauteur de mouvement qu'avant (sinon la courbe paraîtrait plate). Ancien → nouveau.
-    var velo = { titanpulse: Math.sqrt(5.5 / 23), stable: Math.sqrt(7 / 16), nexusprime: Math.sqrt(8 / 18), crash300: Math.sqrt(10 / 25) }[assetId];
+    // v2336 : zooms de départ un peu plus larges (APOCALYPSE 7 s, PYTHON 10 s, ASMODUS 12 s, AZAZEL 14 s).
+    var velo = { titanpulse: Math.sqrt(9.625 / 23), stable: Math.sqrt(10 / 16), nexusprime: Math.sqrt(12 / 18), crash300: Math.sqrt(14 / 25) }[assetId];
     if (velo) base *= velo;
     // Même recette sur les 10 simulations (celle qui ne déborde jamais) : aucune amplification
     // verticale. Le cadre suit le zoom comme un vrai marché (l'amplitude grandit avec la racine du
@@ -3330,7 +3331,9 @@
       }
       span = prevMax - prevMin;
       mid = (prevMin + prevMax) / 2;
-      var tSpan = Math.max((vhi - vlo) / 0.68, want * 0.55);
+      // v2336 : jamais plus serré que 90 % du cadre normal (avant 55 %) → mêmes proportions avant et après un
+      // trade (le cadre du trade ne s’agrandit plus d’un coup) et plus de mouvements qui « s’envolent ».
+      var tSpan = Math.max((vhi - vlo) / 0.68, want * 0.90);
       span += (tSpan - span) * cameraFollow(tSpan > span ? 0.10 : 0.018);
       var tMid = (vhi + vlo) / 2;
       // La tête (dernier prix) reste dans la zone du milieu (≈ 20 % à 80 % de la hauteur) : le cadre
