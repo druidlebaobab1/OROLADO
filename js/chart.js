@@ -2635,7 +2635,11 @@
     var glide = tradeGlide(trade);
     var entry = glide.entry;
     // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
-    if (shownPrice[trade.id] > 0) entry = shownPrice[trade.id];
+    // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
+    // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de
+    // ligne jaune « objectif » en 90 % quand un pic tombe entre le clic et l'arrivée de l'ordre (ORO 999).
+    var hasTarget = isFinite(glide.barrier) && Math.abs(glide.barrier - glide.entry) >= 0.005;
+    if (shownPrice[trade.id] > 0 && hasTarget) entry = shownPrice[trade.id];
     if (!isFinite(entry)) return;
     var ey = priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
