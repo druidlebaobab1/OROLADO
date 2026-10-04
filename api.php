@@ -158,8 +158,22 @@ function metrics(array $db): array {
     'withdrawals' => $paidWd,
     'exposure' => $exposure,
     'profit' => $deposits - $paidWd - $exposure,
-    'users' => $userCount
+    'users' => $userCount,
+    // v2340 — personnes qui regardent les courbes EN CE MOMENT (ligne directe du VPS, inscrits + visiteurs).
+    'direct' => orolado_direct_count()
   ];
+}
+
+/**
+ * Nombre de connexions à la ligne directe des prix (serveur-direct/direct.js, accessible seulement en local).
+ * Lecture seule, 1 s maximum ; null si le serveur direct ne répond pas (hébergement sans VPS, panne).
+ */
+function orolado_direct_count(): ?int {
+  $ctx = stream_context_create(['http' => ['timeout' => 1.0, 'ignore_errors' => true]]);
+  $raw = @file_get_contents('http://127.0.0.1:8092/direct/etat', false, $ctx);
+  if (!is_string($raw) || $raw === '') return null;
+  $j = json_decode($raw, true);
+  return (is_array($j) && isset($j['joueurs'])) ? (int) $j['joueurs'] : null;
 }
 
 function alloc_public_id(array &$db): string {

@@ -3189,6 +3189,12 @@
     if ($('mExposure')) $('mExposure').textContent = D6.fmtFCFA(m.exposure || 0);
     $('mProfit').textContent = D6.fmtFCFA(m.profit != null ? m.profit : 0);
     $('mUsers').textContent = String(m.users || 0);
+    // v2340 : personnes connectées en direct (VPS). Orange dès 1 500, rouge dès 2 000 → agrandir le VPS.
+    if ($('mDirect')) {
+      var nDir = m.direct;
+      $('mDirect').textContent = nDir == null ? '—' : String(nDir);
+      $('mDirect').style.color = nDir >= 2000 ? '#F43F5E' : (nDir >= 1500 ? '#F59E0B' : '');
+    }
     if ($('mDepPending')) $('mDepPending').textContent = String(adminCache.deposits.length);
     if ($('mWdPending')) {
       var wp = adminCache.withdrawals.filter(function (w) { return !w.adminHidden && (w.status === 'pending' || w.status === 'review'); }).length;
