@@ -2920,6 +2920,141 @@
     }
   }
 
+  /* v2335 — textes qui restaient en anglais (surtout hindi : connexion, inscription, dépôt, retrait, aide…). */
+  var EXTRA_TR = {
+      "es": {
+          "histOpen": "En curso",
+          "wdGroupCrypto": "Cripto"
+      },
+      "pt": {
+          "histOpen": "Em andamento",
+          "wdGroupCrypto": "Cripto"
+      },
+      "ar": {
+          "histOpen": "جارية",
+          "wdGroupCrypto": "عملات رقمية"
+      },
+      "ru": {
+          "histOpen": "Открыта",
+          "wdGroupCrypto": "Криптовалюта"
+      },
+      "tr": {
+          "histOpen": "Açık",
+          "wdGroupCrypto": "Kripto"
+      },
+      "vi": {
+          "histOpen": "Đang mở",
+          "wdGroupCrypto": "Tiền mã hóa"
+      },
+      "id": {
+          "histOpen": "Berjalan",
+          "wdGroupCrypto": "Kripto",
+          "titleBollinger": "Pita Bollinger"
+      },
+      "de": {
+          "histOpen": "Offen",
+          "wdGroupCrypto": "Krypto"
+      },
+      "hi": {
+          "histOpen": "चालू",
+          "wdGroupCrypto": "क्रिप्टो",
+          "login": "लॉग इन",
+          "register": "साइन अप",
+          "enter": "लॉग इन करें",
+          "createAccount": "मेरा खाता बनाएँ",
+          "idLabel": "ईमेल",
+          "password": "पासवर्ड",
+          "forgot": "पासवर्ड भूल गए?",
+          "name": "पूरा नाम / उपनाम",
+          "email": "ईमेल",
+          "confirmPass": "पासवर्ड की पुष्टि करें",
+          "resetTitle": "पासवर्ड रीसेट करें",
+          "real": "असली खाता",
+          "recharge": "जमा करें",
+          "fsEnter": "फ़ुल स्क्रीन",
+          "fsExit": "फ़ुल स्क्रीन से बाहर",
+          "estYield": "अनुमानित भुगतान",
+          "depositTitle": "USD में जमा करें",
+          "expired": "हार",
+          "continue": "जारी रखें",
+          "verified": "सत्यापित खाता",
+          "changePass": "पासवर्ड बदलें",
+          "financeHist": "वित्तीय इतिहास",
+          "withdraw": "राशि निकालें",
+          "withdrawTitle": "निकासी",
+          "wdAmount": "राशि ($)",
+          "wdPhone": "फ़ोन नंबर",
+          "wdMethod": "निकासी का तरीका",
+          "wdWallet": "वॉलेट पता",
+          "wdDestErr": "खाता या प्राप्ति पता दर्ज करें",
+          "wdPaypalErr": "अमान्य PayPal ईमेल",
+          "wdDelay": "तुरंत भुगतान (औसतन 5–15 मिनट)",
+          "withdrawMinErr": "न्यूनतम निकासी राशि है ⁦$  3.⁩",
+          "wagerBlocked": "निकासी से पहले आपको अपनी जमा राशि का 2x दांव लगाना होगा।",
+          "lastTrades": "हाल के ट्रेड",
+          "noTradesHint": "अभी कोई पोज़िशन नहीं।",
+          "helpBtn": "सहायता",
+          "helpTitle": "सहायता और सपोर्ट",
+          "helpSubject": "विषय",
+          "helpMessage": "संदेश",
+          "helpSend": "भेजें",
+          "helpSent": "संदेश भेजा गया",
+          "publicId": "सार्वजनिक ID",
+          "depositConfirm": "जमा की पुष्टि करें",
+          "depositAmtLabel": "डॉलर में जमा राशि (कार्ड और तुरंत भुगतान)",
+          "lossStreakTip": "ट्रेड करने से पहले रुझान समझने के लिए चार्ट के ऊपर MA, BB और EMA इंडिकेटर चालू करें!",
+          "depositMinErr": "न्यूनतम जमा राशि है ⁦$  5.⁩",
+          "depositOk": "जमा की पुष्टि हुई",
+          "depositSuccessTitle": "जमा सफल!",
+          "depositSuccessCopy": "आपके बैलेंस में राशि जोड़ दी गई है।",
+          "depositWaitTitle": "{op} भुगतान प्रक्रिया में",
+          "depositVerifyTitle": "आपकी जमा राशि की पुष्टि हो रही है…",
+          "depositWaitCopy": "खुले टैब में भुगतान पूरा करें, फिर वापस आकर नीचे दिया बटन दबाएँ।",
+          "depositCheckBtn": "मैंने अपना {op} भुगतान पूरा कर लिया",
+          "depositChecking": "{op} से जाँच हो रही है…",
+          "depositPending": "भुगतान पुष्टि की प्रतीक्षा में है। आपका बैलेंस जल्द अपडेट होगा, या अपने संदर्भ नंबर के साथ सहायता से संपर्क करें।",
+          "depositWaitClose": "बंद करें",
+          "showPass": "पासवर्ड दिखाएँ",
+          "hidePass": "पासवर्ड छिपाएँ",
+          "newPass": "नया पासवर्ड",
+          "save": "सेव करें",
+          "minHint": "न्यूनतम दांव: ⁦$  1⁩",
+          "insufficient": "अपर्याप्त बैलेंस",
+          "installIos": "iPhone पर: शेयर → होम स्क्रीन में जोड़ें",
+          "authBack": "वापस",
+          "otpTitle": "अपने ईमेल की पुष्टि करें",
+          "otpLeadBefore": "6 अंकों का कोड इस पते पर भेजा गया:",
+          "otpLeadAfter": "अपना खाता सक्रिय करने के लिए इसे दर्ज करें। 1 मिनट तक मान्य।",
+          "otpCode": "पुष्टि कोड",
+          "otpVerify": "मेरा खाता सत्यापित करें",
+          "otpResend": "कोड फिर से भेजें",
+          "installIosTitle": "OROLADO इंस्टॉल करें",
+          "installIosLead": "ऐप को अपने iPhone की होम स्क्रीन पर जोड़ें:",
+          "installIos1": "Safari स्क्रीन के नीचे शेयर बटन दबाएँ।",
+          "installIos2": "स्क्रॉल करें और होम स्क्रीन में जोड़ें चुनें।",
+          "installIos3": "जोड़ें दबाकर पुष्टि करें।",
+          "tipTitle": "ट्रेडिंग टिप",
+          "closeLbl": "बंद करें",
+          "payMethodLabel": "भुगतान का तरीका",
+          "payMethodCardTitle": "कार्ड और तुरंत भुगतान",
+          "payMethodCardRec": "अनुशंसित",
+          "depositProceed": "भुगतान पर जाएँ →",
+          "cryptoBack": "← वापस",
+          "cryptoCopy": "पता कॉपी करें",
+          "cryptoCopied": "✓ क्लिपबोर्ड पर कॉपी हो गया!",
+          "cryptoOkTitle": "भुगतान की पुष्टि हुई!",
+          "cryptoOkCopy": "आपके बैलेंस में {amt} जोड़ दिए गए हैं।",
+          "cryptoOkDone": "हो गया",
+          "cryptoErrTx": "मान्य Tron TxID दर्ज करें",
+          "cryptoErrReused": "यह ट्रांज़ैक्शन हैश पहले ही जमा किया जा चुका है।",
+          "cryptoErrInvalid": "अमान्य ट्रांज़ैक्शन: राशि प्लेटफ़ॉर्म के आधिकारिक पते पर नहीं भेजी गई।"
+      }
+  };
+  Object.keys(EXTRA_TR).forEach(function (l) {
+    if (!DICT[l]) return;
+    Object.keys(EXTRA_TR[l]).forEach(function (k) { DICT[l][k] = EXTRA_TR[l][k]; });
+  });
+
   D6.I18N = {
     t: t, short: shortMsg,
     msg: msg,
