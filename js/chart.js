@@ -513,7 +513,8 @@
       pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
-    if (!shownMarks[ot.id]) {
+    // v2347 (choix B) : rond et prix d'entrée fixés seulement quand le serveur a confirmé (prix officiel).
+    if (!shownMarks[ot.id] && ot.confirmed !== false && ot.serverConfirmed !== false) {
       // Le rond reste pour de bon à l'endroit du clic, sur les 10 simulations : la réponse du serveur
       // (qui fixe le vrai prix d'entrée) ne le déplace plus (avant : il apparaissait, puis sautait à
       // la seconde suivante). Lignes : l'instant exact du clic ; autres : le centre de sa seconde.
@@ -599,8 +600,9 @@
     snap.lineAt = (prevSnap && prevSnap.lineAt) || (Date.now() - Number(snap.startTime || 0) < 4000 ? Date.now() : 0);
     if (prevSnap && (prevSnap.entryPrice !== snap.entryPrice || prevSnap.barrier !== snap.barrier || prevSnap.startTime !== snap.startTime)) {
       var cur = tradeGlide(prevSnap);
-      snap.fromEntry = cur.entry;
-      snap.fromBarrier = cur.barrier;
+      // v2347 : rien n'était dessiné avant la confirmation → apparition directe à la vraie place, sans glissement.
+      snap.fromEntry = prevSnap.pending ? snap.entryPrice : cur.entry;
+      snap.fromBarrier = prevSnap.pending ? snap.barrier : cur.barrier;
       snap.fromStart = cur.start;
       snap.moveAt = Date.now();
     }
@@ -2642,6 +2644,10 @@
     if (!exp || Date.now() >= exp) return;
     var glide = tradeGlide(trade);
     var entry = glide.entry;
+    // v2347 (choix B, comme les grandes plateformes) : tant que le serveur n'a pas confirmé, rien n'est dessiné
+    // ici (le signe ACHAT / VENTE du clic s'affiche déjà) ; à la confirmation (le temps d'un aller-retour réseau),
+    // rond, trait et ligne objectif apparaissent ENSEMBLE à leur vraie place et ne bougent plus.
+    if (trade.pending || trade.serverConfirmed === false || trade.confirmed === false) return;
     // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
     // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
     // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de

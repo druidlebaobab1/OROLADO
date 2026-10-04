@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2346") center top/cover no-repeat,
+    url("galaxy-space.svg?v=2347") center top/cover no-repeat,
     radial-gradient(1.2px 1.2px at 12% 8%,rgba(255,255,255,.85),transparent 60%),
     radial-gradient(1px 1px at 78% 4%,rgba(255,255,255,.7),transparent 60%),
     radial-gradient(1.4px 1.4px at 92% 22%,rgba(255,230,190,.8),transparent 60%),
@@ -628,7 +628,7 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
-    url("galaxy-space2.svg?v=2346") center top/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center top/cover no-repeat,
     radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
     linear-gradient(180deg,#0E0B28,#080817)!important;
@@ -637,7 +637,7 @@ html body #screenAuth#screenAuth{
 html body .modal-backdrop .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
-    url("galaxy-space2.svg?v=2346") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center/cover no-repeat,
     #0B0D22!important;
   border:1px solid rgba(150,140,255,.22)!important;
 }
@@ -646,7 +646,7 @@ html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
     linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
-    url("galaxy-space2.svg?v=2346") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center/cover no-repeat,
     #08121E!important;
   border-color:rgba(45,212,191,.28)!important;
 }
@@ -655,7 +655,7 @@ html body #withdrawModal .modal-box{
   background:
     radial-gradient(90% 50% at 0% 0%,rgba(34,197,94,.14),transparent 65%),
     linear-gradient(180deg,rgba(8,22,20,.66),rgba(5,14,14,.80)),
-    url("galaxy-space2.svg?v=2346") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center/cover no-repeat,
     #071311!important;
   border-color:rgba(74,222,128,.26)!important;
 }
@@ -664,7 +664,7 @@ html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
-    url("galaxy-space2.svg?v=2346") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center/cover no-repeat,
     #0C0820!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
@@ -739,13 +739,13 @@ html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
-    url("galaxy-space2.svg?v=2346") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
-    url("galaxy-space2.svg?v=2346") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2347") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
@@ -826,7 +826,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2346") center top/cover no-repeat,
+    url("galaxy-auth.svg?v=2347") center top/cover no-repeat,
     linear-gradient(180deg,#0E0B28,#080817)!important;
 }
 
@@ -854,7 +854,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2346") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2347") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -862,7 +862,7 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2346") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2347") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
@@ -873,7 +873,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2346") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2347") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -1327,7 +1327,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 html body #drawerProfile#drawerProfile{
   background:
     linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
-    url("galaxy-loader.svg?v=2346") center/cover no-repeat,
+    url("galaxy-loader.svg?v=2347") center/cover no-repeat,
     linear-gradient(180deg,#130F36,#0A0A20)!important;
   border-left:1px solid rgba(170,150,255,.25)!important;
 }
@@ -1408,13 +1408,13 @@ html body #helpModal .modal-box,
 html body #termsModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
-    url("galaxy-modal.svg?v=2346") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2347") center/cover no-repeat,
     linear-gradient(180deg,#120F34,#0A0A20)!important;
 }
 html body #depositModal .modal-box{background:
     radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
     linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
-    url("galaxy-modal.svg?v=2346") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2347") center/cover no-repeat,
     linear-gradient(180deg,#0F1434,#090C20)!important}
 
 /* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
@@ -1727,10 +1727,10 @@ html[dir="rtl"] body .strip-price{direction:ltr!important;unicode-bidi:isolate!i
    (celui des pages d'inscription) ; les planètes dessinées DANS la courbe restent */
 @media (min-width:860px){
   html body #screenTrade#screenTrade,html body #fsTradeOverlay#fsTradeOverlay{
-    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2346") center top/cover no-repeat,#13113A!important}
+    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2347") center top/cover no-repeat,#13113A!important}
 }
 html.is-tv body #screenTrade#screenTrade,html.is-tv body #fsTradeOverlay#fsTradeOverlay{
-  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2346") center top/cover no-repeat,#13113A!important}
+  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2347") center top/cover no-repeat,#13113A!important}
 /* TV : noms des marchés lisibles en entier (VOLATILITY, APOCALYPSE…) */
 html.is-tv body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7.6px!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important}
 html.is-tv.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:9px!important}
