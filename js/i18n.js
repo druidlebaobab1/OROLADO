@@ -2293,6 +2293,17 @@
    */
   var MSG_LANGS = ['en', 'fr', 'es', 'pt', 'ar', 'ru', 'tr', 'vi', 'id', 'de', 'hi'];
   var MSG_TABLE = {
+    m2_copied: ['Address copied!', 'Adresse copiée !', '¡Dirección copiada!', 'Endereço copiado!', 'تم نسخ العنوان!', 'Адрес скопирован!', 'Adres kopyalandı!', 'Đã sao chép địa chỉ!', 'Alamat disalin!', 'Adresse kopiert!', 'पता कॉपी हुआ!'],
+    m2_addrGen: ['Generating address…', 'Adresse en cours de génération…', 'Generando dirección…', 'Gerando endereço…', 'جارٍ إنشاء العنوان…', 'Создаём адрес…', 'Adres oluşturuluyor…', 'Đang tạo địa chỉ…', 'Membuat alamat…', 'Adresse wird erstellt…', 'पता बन रहा है…'],
+    m2_payAmount: ['Invalid payment amount', 'Montant de paiement invalide', 'Monto de pago inválido', 'Valor de pagamento inválido', 'مبلغ الدفع غير صالح', 'Неверная сумма платежа', 'Geçersiz ödeme tutarı', 'Số tiền thanh toán không hợp lệ', 'Jumlah pembayaran tidak valid', 'Ungültiger Zahlungsbetrag', 'भुगतान राशि अमान्य'],
+    m2_error: ['Error', 'Erreur', 'Error', 'Erro', 'خطأ', 'Ошибка', 'Hata', 'Lỗi', 'Kesalahan', 'Fehler', 'त्रुटि'],
+    m2_payInProgress: ['Payment in progress…', 'Paiement en cours…', 'Pago en curso…', 'Pagamento em andamento…', 'الدفع قيد التنفيذ…', 'Платёж выполняется…', 'Ödeme sürüyor…', 'Đang thanh toán…', 'Pembayaran diproses…', 'Zahlung läuft…', 'भुगतान जारी है…'],
+    m2_amountReq: ['Amount required', 'Montant obligatoire', 'Monto obligatorio', 'Valor obrigatório', 'المبلغ مطلوب', 'Укажите сумму', 'Tutar gerekli', 'Cần nhập số tiền', 'Jumlah wajib diisi', 'Betrag erforderlich', 'राशि आवश्यक'],
+    m2_posOpen: ['Position still open', 'Position encore ouverte', 'Posición aún abierta', 'Posição ainda aberta', 'الصفقة لا تزال مفتوحة', 'Позиция ещё открыта', 'Pozisyon hâlâ açık', 'Lệnh vẫn đang mở', 'Posisi masih terbuka', 'Position noch offen', 'पोज़िशन अभी खुली है'],
+    m2_badRequest: ['Invalid request', 'Requête invalide', 'Solicitud inválida', 'Solicitação inválida', 'طلب غير صالح', 'Неверный запрос', 'Geçersiz istek', 'Yêu cầu không hợp lệ', 'Permintaan tidak valid', 'Ungültige Anfrage', 'अमान्य अनुरोध'],
+    m2_badRef: ['Invalid reference', 'Référence invalide', 'Referencia inválida', 'Referência inválida', 'مرجع غير صالح', 'Неверная ссылка', 'Geçersiz referans', 'Mã tham chiếu không hợp lệ', 'Referensi tidak valid', 'Ungültige Referenz', 'अमान्य संदर्भ'],
+    m2_txid: ['Enter a valid Tron TxID', 'Saisissez un TxID Tron valide', 'Introduce un TxID de Tron válido', 'Digite um TxID Tron válido', 'أدخل TxID صالحًا لشبكة Tron', 'Введите корректный TxID Tron', 'Geçerli bir Tron TxID girin', 'Nhập TxID Tron hợp lệ', 'Masukkan TxID Tron yang valid', 'Gültige Tron-TxID eingeben', 'मान्य Tron TxID डालें'],
+    m2_sessionExp: ['Session expired, please log in', 'Session expirée, reconnectez-vous', 'Sesión caducada, inicia sesión', 'Sessão expirada, entre novamente', 'انتهت الجلسة، سجّل الدخول', 'Сессия истекла, войдите снова', 'Oturum sona erdi, giriş yapın', 'Phiên hết hạn, hãy đăng nhập', 'Sesi berakhir, silakan masuk', 'Sitzung abgelaufen, bitte anmelden', 'सत्र समाप्त, फिर लॉग इन करें'],
     m_tooMany: ['Too many requests. Please try again in a moment.', 'Trop de demandes. Réessayez dans un moment.', 'Demasiadas solicitudes. Inténtalo de nuevo en un momento.', 'Muitas solicitações. Tente novamente em instantes.', 'طلبات كثيرة جدًا. حاول مرة أخرى بعد قليل.', 'Слишком много запросов. Попробуйте чуть позже.', 'Çok fazla istek. Lütfen birazdan tekrar deneyin.', 'Quá nhiều yêu cầu. Vui lòng thử lại sau giây lát.', 'Terlalu banyak permintaan. Coba lagi sebentar lagi.', 'Zu viele Anfragen. Bitte versuche es gleich noch einmal.', 'बहुत सारे अनुरोध। कृपया थोड़ी देर में फिर से प्रयास करें।'],
     m_busy: ['Service temporarily unavailable. Please try again.', 'Service momentanément indisponible, réessayez.', 'Servicio no disponible temporalmente. Inténtalo de nuevo.', 'Serviço temporariamente indisponível. Tente novamente.', 'الخدمة غير متاحة مؤقتًا. حاول مرة أخرى.', 'Сервис временно недоступен. Попробуйте ещё раз.', 'Hizmet geçici olarak kullanılamıyor. Lütfen tekrar deneyin.', 'Dịch vụ tạm thời không khả dụng. Vui lòng thử lại.', 'Layanan sementara tidak tersedia. Silakan coba lagi.', 'Dienst vorübergehend nicht verfügbar. Bitte erneut versuchen.', 'सेवा अस्थायी रूप से उपलब्ध नहीं है। कृपया फिर से प्रयास करें।'],
     m_settling: ['Settling your trade…', 'Règlement en cours…', 'Liquidando tu operación…', 'Liquidando sua operação…', 'جارٍ تسوية صفقتك…', 'Сделка рассчитывается…', 'İşleminiz sonuçlandırılıyor…', 'Đang thanh toán lệnh…', 'Menyelesaikan transaksi Anda…', 'Dein Trade wird abgerechnet…', 'आपका ट्रेड निपटाया जा रहा है…'],
@@ -2382,6 +2393,22 @@
 
   /* Messages français connus (serveur ou code) → clé ci-dessus. Minuscules, apostrophes droites. */
   var MSG_FR = {
+    'adresse copiée !': 'm2_copied',
+    'adresse copiée': 'm2_copied',
+    'adresse en cours de génération…': 'm2_addrGen',
+    'adresse en cours de génération...': 'm2_addrGen',
+    'montant de paiement invalide.': 'm2_payAmount',
+    'montant de paiement invalide': 'm2_payAmount',
+    'erreur': 'm2_error',
+    'paiement en cours…': 'm2_payInProgress',
+    'identifiants incorrects': 'm_wrongCreds',
+    'montant obligatoire': 'm2_amountReq',
+    'position encore ouverte': 'm2_posOpen',
+    'requête invalide': 'm2_badRequest',
+    'référence invalide': 'm2_badRef',
+    'référence manquante': 'm2_badRef',
+    'saisissez un txid tron valide': 'm2_txid',
+    'session expirée': 'm2_sessionExp',
     'solde insuffisant': 'm_insufficient',
     'envoi impossible': 'm_codeSendFail',
     'erreur réseau brevo': 'm_codeSendFail',
