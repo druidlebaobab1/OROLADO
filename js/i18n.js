@@ -2822,8 +2822,11 @@
    * Ordre : en, fr, es, pt, ar, ru, tr, vi, id, de, hi. Les textes des formulaires ne changent pas.
    */
   var SHORT_TABLE = {
+    s_tradeFail: ['Trade not saved', 'Trade non enregistré', 'Operación no registrada', 'Operação não registrada', 'لم تُسجَّل الصفقة', 'Сделка не записана', 'İşlem kaydedilmedi', 'Lệnh chưa được ghi', 'Trade tidak tersimpan', 'Trade nicht gespeichert', 'ट्रेड सेव नहीं हुआ'],
+    s_validate: ['Validate the email code', 'Validez le code e-mail', 'Valida el código del correo', 'Valide o código do e-mail', 'أكّد رمز البريد', 'Подтвердите код из письма', 'E-posta kodunu doğrulayın', 'Xác nhận mã email', 'Validasi kode email', 'E-Mail-Code bestätigen', 'ईमेल कोड सत्यापित करें'],
+    s_emailExists: ['Account already exists', 'Compte déjà existant', 'La cuenta ya existe', 'A conta já existe', 'الحساب موجود بالفعل', 'Аккаунт уже существует', 'Hesap zaten var', 'Tài khoản đã tồn tại', 'Akun sudah ada', 'Konto existiert bereits', 'खाता पहले से मौजूद'],
     s_codeSent: ['Code sent by email', 'Code envoyé par e-mail', 'Código enviado por correo', 'Código enviado por e-mail', 'تم إرسال الرمز إلى بريدك', 'Код отправлен на почту', 'Kod e-postanıza gönderildi', 'Đã gửi mã qua email', 'Kode dikirim ke email', 'Code per E-Mail gesendet', 'कोड ईमेल पर भेजा गया'],
-    s_enterCode: ['Enter the email code to confirm', 'Saisissez le code e-mail pour confirmer', 'Introduce el código del correo para confirmar', 'Digite o código do e-mail para confirmar', 'أدخل رمز البريد للتأكيد', 'Введите код из письма', 'Onaylamak için e-posta kodunu girin', 'Nhập mã email để xác nhận', 'Masukkan kode email untuk konfirmasi', 'E-Mail-Code zur Bestätigung eingeben', 'पुष्टि के लिए ईमेल कोड डालें'],
+    s_enterCode: ['Enter the email code to confirm', 'Saisissez le code e-mail pour confirmer', 'Introduce el código del correo', 'Digite o código do e-mail para confirmar', 'أدخل رمز البريد للتأكيد', 'Введите код из письма', 'Onaylamak için e-posta kodunu girin', 'Nhập mã email để xác nhận', 'Masukkan kode email untuk konfirmasi', 'E-Mail-Code zur Bestätigung eingeben', 'पुष्टि के लिए ईमेल कोड डालें'],
     s_codeInvalid: ['Invalid or expired code', 'Code invalide ou expiré', 'Código inválido o caducado', 'Código inválido ou expirado', 'رمز غير صالح أو منتهي', 'Неверный или истёкший код', 'Geçersiz veya süresi dolmuş kod', 'Mã sai hoặc hết hạn', 'Kode salah atau kedaluwarsa', 'Code ungültig oder abgelaufen', 'कोड गलत या समाप्त'],
     s_conn: ['Connection issue, try again', 'Connexion instable, réessayez', 'Conexión inestable, reinténtalo', 'Conexão instável, tente de novo', 'اتصال غير مستقر، أعد المحاولة', 'Сбой связи, повторите', 'Bağlantı sorunu, tekrar deneyin', 'Kết nối yếu, thử lại', 'Koneksi bermasalah, coba lagi', 'Verbindungsproblem, erneut versuchen', 'कनेक्शन समस्या, फिर कोशिश करें'],
     s_sessionExp: ['Session expired, please log in', 'Session expirée, reconnectez-vous', 'Sesión caducada, inicia sesión', 'Sessão expirada, entre novamente', 'انتهت الجلسة، سجّل الدخول', 'Сессия истекла, войдите снова', 'Oturum sona erdi, giriş yapın', 'Phiên hết hạn, hãy đăng nhập', 'Sesi berakhir, silakan masuk', 'Sitzung abgelaufen, bitte anmelden', 'सत्र समाप्त, फिर लॉग इन करें'],
@@ -2849,11 +2852,12 @@
     wdOtpSent: 's_codeSent', wdOtpNeed: 's_enterCode', wdOtpErr: 's_codeInvalid', sessionInvalid: 's_conn',
     sessionExpiredMsg: 's_sessionExp', passMismatch: 's_passMismatch', logoutOthersDone: 's_logoutOthers',
     helpRetry: 's_sendFail', depositPending: 's_payPending', cryptoErrPending: 's_payPending', wdDestErr: 's_destReq',
-    wdCardErr: 's_cardErr',
+    wdCardErr: 's_cardErr', tradeFailed: 's_tradeFail', passOtpNeed: 's_validate',
     m_codeInvalid: 's_codeInvalid', m_codeExpired: 's_codeInvalid', m_enterCode6: 's_enterCode',
     m_tooManyAttempts: 's_tooManyAttempts', m_tooMany: 's_tooMany', m_busy: 's_busy', m_assetMax: 's_assetMax',
     m_supportRate: 's_supportRate', m_emailRetired: 's_emailUsed', m_nameReq: 's_nameShort', m_payUnavailable: 's_cardOff',
-    m_payOpenFail: 's_payOpen', m_destReq: 's_destReq', m_passMismatch: 's_passMismatch', m_codeSendFail: 's_sendFail'
+    m_payOpenFail: 's_payOpen', m_destReq: 's_destReq', m_passMismatch: 's_passMismatch', m_codeSendFail: 's_sendFail',
+    m_validateFirst: 's_validate', m_emailExists: 's_emailExists'
   };
   var SHORT_RAW = { "trop de gains potentiels ouverts, attendez la fin d'un trade": 's_openMax' };
   function shortRow(k) {
