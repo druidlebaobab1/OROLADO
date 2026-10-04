@@ -143,7 +143,8 @@
     else if (m === 10) idx = 2;
     else if (m === 50) idx = 3;
     if (idx > 0 && side === 'put') idx += 3;
-    var rel = Number(row[idx]);
+    // Payout de base (90 %) : ligne toujours au prix d'entrée (copie de feed_lib.php).
+    var rel = idx === 0 ? 0 : Number(row[idx]);
     // Gros payouts : la ligne suit le petit retour attendu vers le prix de départ (copie de
     // orolado_fair_drift, feed_lib.php). Le 88 % reste au prix d'entrée.
     if (idx > 0) rel = (1 + rel) * Math.exp(fairDrift(assetId, duration, entryCents)) - 1;

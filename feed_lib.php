@@ -42,7 +42,9 @@ function orolado_feed_assets(): array {
     // BAAL façon « Boom » (demande du propriétaire, 2026-10-03) : petites bougies qui descendent doucement,
     // grands pics vers le haut AU HASARD (en moyenne 1 tous les 300 ticks = 75 s, sans mémoire : attendre ne
     // rend pas un pic plus probable). Descente et pics s'équilibrent : mouvement moyen nul.
-    'horizon50' => ['base' => 10120.40, 'sigma' => 0.00009, 'drift' => -0.0000043, 'jumpP' => 1 / 700, 'jumpMin' => 0.002, 'jumpMax' => 0.004, 'jumpDir' => 1],
+    // ORO 999 (2026-10-04) : zigzags + grands pics SURPRISE dans les deux sens (haut ou bas, à chance égale),
+    // aucune pente → en 90 % la ligne est au prix d'entrée, comme les 9 autres marchés.
+    'horizon50' => ['base' => 10120.40, 'sigma' => 0.00009, 'drift' => 0.0, 'jumpP' => 1 / 700, 'jumpMin' => 0.002, 'jumpMax' => 0.004, 'jumpDir' => 2],
     'goldtrend' => $plain(7340.80, 0.000195),
     'v75' => $plain(8700.18, 0.000256),
     'nexusprime' => $plain(8120.60, 0.00027),
@@ -108,7 +110,9 @@ function orolado_feed_step(array $a, int $cents): int {
   $baseCents = (float) $a['base'] * 100.0;
   if ($cents > 0 && $baseCents > 0) $rel -= orolado_feed_pull($a) * log($cents / $baseCents);
   if ($a['jumpP'] > 0 && orolado_feed_u() < $a['jumpP']) {
-    $rel += $a['jumpDir'] * ($a['jumpMin'] + ($a['jumpMax'] - $a['jumpMin']) * orolado_feed_u());
+    // jumpDir = 2 : pic vers le haut OU vers le bas, au hasard à chance égale (ORO 999).
+    $dir = (int) $a['jumpDir'] === 2 ? (orolado_feed_u() < 0.5 ? -1 : 1) : $a['jumpDir'];
+    $rel += $dir * ($a['jumpMin'] + ($a['jumpMax'] - $a['jumpMin']) * orolado_feed_u());
   }
   $next = $cents + (int) round($cents * $rel, 0, PHP_ROUND_HALF_UP);
   return $next < 100 ? 100 : $next;
@@ -267,7 +271,9 @@ function orolado_fair_barrier(string $asset, int $duration, string $side, float 
   else if ($mult === 10.0) $idx = 2;
   else if ($mult === 50.0) $idx = 3;
   if ($idx > 0 && $side === 'put') $idx += 3;
-  $rel = (float) $row[$idx];
+  // Payout de base (90 %) : les 10 marchés sont à pile ou face (aucune pente) → la ligne est TOUJOURS
+  // exactement le prix d'entrée (le petit écart de la table n'est que le bruit du calcul). Pas de ligne objectif.
+  $rel = $idx === 0 ? 0.0 : (float) $row[$idx];
   // Gros payouts (×5, ×10, ×50) : la ligne suit aussi le petit retour attendu vers le prix de
   // départ (l'élastique). Sans ça, quand un prix est très loin de sa base (ex. moitié), jouer
   // « vers la base » en ×50 sur 10 min rapportait ~108 % : une faille rare mais réelle.

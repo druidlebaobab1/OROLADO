@@ -31,7 +31,7 @@ public static class FairCalib
         a.Add(new Asset("v100", 13000.42, 0.00020));
         a.Add(new Asset("stable", 10000.00, 0.0001125));
         a.Add(new Asset("apex500", 5480.25, 0.00036));
-        a.Add(new Asset("horizon50", 10120.40, 0.00009) { Drift = -0.0000043, JumpP = 1.0 / 700, JumpMin = 0.002, JumpMax = 0.004, JumpDir = 1 });
+        a.Add(new Asset("horizon50", 10120.40, 0.00009) { Drift = 0, JumpP = 1.0 / 700, JumpMin = 0.002, JumpMax = 0.004, JumpDir = 2 });
         a.Add(new Asset("goldtrend", 7340.80, 0.000195));
         a.Add(new Asset("v75", 8700.18, 0.000256));
         a.Add(new Asset("nexusprime", 8120.60, 0.00027));
@@ -80,11 +80,14 @@ public static class FairCalib
         return v / (2.0 * PriceBand * PriceBand);
     }
 
+    // Sens d'un pic : JumpDir = 1 (haut), -1 (bas) ou 2 = au hasard, haut ou bas à chance égale (ORO 999).
+    static int JumpSign(Asset a, Rng r) { return a.JumpDir == 2 ? (r.U() < 0.5 ? -1 : 1) : a.JumpDir; }
+
     public static long Step(Asset a, long cents, Rng r)
     {
         double rel = a.Sigma * r.Z() + a.Drift;
         if (cents > 0 && a.Base > 0) rel -= Pull(a) * Math.Log(cents / (a.Base * 100.0));
-        if (a.JumpP > 0 && r.U() < a.JumpP) rel += a.JumpDir * (a.JumpMin + (a.JumpMax - a.JumpMin) * r.U());
+        if (a.JumpP > 0 && r.U() < a.JumpP) rel += JumpSign(a, r) * (a.JumpMin + (a.JumpMax - a.JumpMin) * r.U());
         long d = (long)Math.Round(cents * rel, MidpointRounding.AwayFromZero);
         long next = cents + d;
         return next < 100 ? 100 : next;
@@ -105,7 +108,7 @@ public static class FairCalib
                 double L = Math.Exp(-lam), p = 1; int k = 0;
                 do { k++; p *= r.U(); } while (p > L);
                 k -= 1;
-                for (int j = 0; j < k; j++) x += a.JumpDir * (a.JumpMin + (a.JumpMax - a.JumpMin) * r.U());
+                for (int j = 0; j < k; j++) x += JumpSign(a, r) * (a.JumpMin + (a.JumpMax - a.JumpMin) * r.U());
             }
             res[i] = x;
         }
