@@ -196,6 +196,9 @@
     var zs = ZOOM_STEPS[zoomIdx] || 60;
     // Plein écran : on voit un peu moins de secondes → bougies plus grandes (VALAC est déjà grand).
     if (fsActive && activeAsset !== 'boomspike') zs *= 0.75;
+    // v2339 : VOLATILITY en petit écran : un peu moins de secondes → bougies ~35 % plus larges (même hauteur
+    // de mouvements : le cadre suit la racine du temps affiché). Plein écran inchangé.
+    else if (!fsActive && activeAsset === 'v100') zs *= 0.74;
     return zs;
   }
 
@@ -3293,6 +3296,8 @@
   }
 
   var camCandles = null;
+  // v2339 : état du cadre photo par marché (immobile / en train de se recentrer).
+  var camState = {};
 
   // Caméra stable : cadre de taille fixe, la courbe défile dedans. Le cadre ne glisse
   // (doucement) que lorsque la tête s'approche d'un bord ; jamais de zoom qui « respire ».
@@ -3337,16 +3342,24 @@
       // v2338 : un peu plus d’air (bougies visibles = 60 % de la hauteur, plancher = cadre normal) → la
       // caméra a beaucoup moins besoin de s’agrandir (PYTHON « respirait ») et les courbes sont moins grosses.
       var tSpan = Math.max((vhi - vlo) / 0.60, want * 1.0);
-      // v2338 : agrandissement plus doux (0,06 au lieu de 0,10) → plus d’à-coups de 4-5 % sur un grand mouvement.
-      span += (tSpan - span) * cameraFollow(tSpan > span ? 0.06 : 0.018);
       var tMid = (vhi + vlo) / 2;
-      // La tête (dernier prix) reste dans la zone du milieu (≈ 20 % à 80 % de la hauteur) : le cadre
-      // vise un centre qui ne la laisse jamais coller à un bord.
-      // v2338 : tête gardée entre ~28 % et ~72 % de la hauteur (avant ±30 % : PYTHON descendait à 9 %).
       var keepH = span * 0.22;
       if (tMid < h - keepH) tMid = h - keepH;
       if (tMid > h + keepH) tMid = h + keepH;
-      mid += (tMid - mid) * cameraFollow(0.05);
+      // v2339 — CADRE PHOTO (demande du propriétaire : « comme une photo », trading sérieux, pas un jeu
+      // d'avion) : le cadre reste IMMOBILE tant que le prix est dans la zone du milieu (20 % à 80 % de la
+      // hauteur). Seulement quand le prix approche d'un bord, un recentrage rapide et unique le ramène au
+      // milieu, puis le cadre se fige de nouveau. Il ne s'agrandit que si un mouvement ne tient plus (pics
+      // d'ORO 999) et ne se resserre que pendant un recentrage. Affichage seulement.
+      var cs = camState[assetId] || (camState[assetId] = { moving: false });
+      if (tSpan > span) span += (tSpan - span) * cameraFollow(0.06);
+      if (!cs.moving && Math.abs(h - mid) > span * 0.30) cs.moving = true;
+      if (cs.moving) {
+        mid += (tMid - mid) * cameraFollow(0.12);
+        // resserrement doux pendant le recentrage (BAAL : pas de changement de taille brusque)
+        if (tSpan < span) span += (tSpan - span) * cameraFollow(0.03);
+        if (Math.abs(tMid - mid) < span * 0.02) cs.moving = false;
+      }
       var halfP = span / 2;
       var hardP = span * (IS_ANDROID_CHART ? 0.12 : 0.06);
       if (h > mid + halfP - hardP) mid = h - halfP + hardP;

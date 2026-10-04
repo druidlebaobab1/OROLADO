@@ -8,6 +8,8 @@
  *   hmin / hmax = position du prix dans la hauteur (%)               → entre ~20 et ~80
  *   clic = changement de taille du cadre juste après les clics (%)   → ≈ 0
  * Résultat v2338 : 0 changement de taille sur 9 marchés ; ORO 999 s'agrandit seulement pour ses grands pics.
+ * v2339 (cadre photo) : cadre immobile 93-100 % du temps sur les 10 marchés, 0 à 4 recentrages par minute,
+ * prix toujours entre ~13 % et ~83 % de la hauteur. Un « mj » > 0 pendant un recentrage est normal.
  * Utilisation : coller ce fichier, puis  await testCamera(['v100','stable'])  (≈ 2 min par marché).
  */
 window.testCamera = async function (ids) {
