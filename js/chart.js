@@ -2581,10 +2581,10 @@
       if (it.entry) {
         label = (it.off < 0 ? '▲ ' : '▼ ') + fmtTargetPrice(it.bar);
       } else {
-        label = '×' + it.mult;
-        if (it.off < 0) label += ' ▲ ' + fmtTargetPrice(it.bar);
-        else if (it.off > 0) label += ' ▼ ' + fmtTargetPrice(it.bar);
-        else label += ' ' + (D6.I18N && D6.I18N.t ? D6.I18N.t('m_target') : 'target');
+        // v2338 : MÊME écriture pour toutes les lignes objectif : « ×N ▲ prix » ou « ×N ▼ prix » (la flèche dit
+        // si l’objectif est au-dessus ou en dessous du prix actuel), qu’elles soient à l’écran ou collées au bord.
+        var upT = it.off < 0 || (!it.off && !(Number(it.bar) < Number(lastDrawnClose)));
+        label = '×' + it.mult + (upT ? ' ▲ ' : ' ▼ ') + fmtTargetPrice(it.bar);
       }
       if (it.n > 1) label += ' · ' + it.n;
       var top = it.top + 2;
@@ -3268,8 +3268,8 @@
   function routeSpanPct(assetId) {
     var base = {
       // Cadres agrandis moins vite que les vitesses (×vitesse^0,6) : on sent la vitesse sans déborder.
-      v100: 0.0090, stable: 0.00347, apex500: 0.01377, horizon50: 0.0080,
-      goldtrend: 0.00796, v75: 0.00955, nexusprime: 0.01033, titanpulse: 0.0244,
+      v100: 0.0120, stable: 0.0055, apex500: 0.01377, horizon50: 0.0080,
+      goldtrend: 0.0110, v75: 0.00955, nexusprime: 0.01033, titanpulse: 0.0330,
       boomspike: 0.0054, crash300: 0.0099
     }[assetId] || 0.0090;
     // Vélocité : moins de secondes à l'écran → le cadre se resserre d'autant (racine du temps), pour
@@ -3334,15 +3334,19 @@
       mid = (prevMin + prevMax) / 2;
       // v2336 : jamais plus serré que 90 % du cadre normal (avant 55 %) → mêmes proportions avant et après un
       // trade (le cadre du trade ne s’agrandit plus d’un coup) et plus de mouvements qui « s’envolent ».
-      var tSpan = Math.max((vhi - vlo) / 0.68, want * 0.90);
-      span += (tSpan - span) * cameraFollow(tSpan > span ? 0.10 : 0.018);
+      // v2338 : un peu plus d’air (bougies visibles = 60 % de la hauteur, plancher = cadre normal) → la
+      // caméra a beaucoup moins besoin de s’agrandir (PYTHON « respirait ») et les courbes sont moins grosses.
+      var tSpan = Math.max((vhi - vlo) / 0.60, want * 1.0);
+      // v2338 : agrandissement plus doux (0,06 au lieu de 0,10) → plus d’à-coups de 4-5 % sur un grand mouvement.
+      span += (tSpan - span) * cameraFollow(tSpan > span ? 0.06 : 0.018);
       var tMid = (vhi + vlo) / 2;
       // La tête (dernier prix) reste dans la zone du milieu (≈ 20 % à 80 % de la hauteur) : le cadre
       // vise un centre qui ne la laisse jamais coller à un bord.
-      var keepH = span * 0.30;
+      // v2338 : tête gardée entre ~28 % et ~72 % de la hauteur (avant ±30 % : PYTHON descendait à 9 %).
+      var keepH = span * 0.22;
       if (tMid < h - keepH) tMid = h - keepH;
       if (tMid > h + keepH) tMid = h + keepH;
-      mid += (tMid - mid) * cameraFollow(0.035);
+      mid += (tMid - mid) * cameraFollow(0.05);
       var halfP = span / 2;
       var hardP = span * (IS_ANDROID_CHART ? 0.12 : 0.06);
       if (h > mid + halfP - hardP) mid = h - halfP + hardP;
@@ -4702,7 +4706,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0 }; },
+    markDebug: function () { return { mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,

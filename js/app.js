@@ -7425,6 +7425,48 @@
         return navigator.serviceWorker.register('sw.js?v=2000');
       }).catch(function () { /* ignore */ });
     }
+    watchNewVersion();
+  }
+
+  /**
+   * v2338 — Mise à jour automatique (comme les grandes plateformes) : un joueur qui laisse le site ouvert
+   * des heures gardait l'ancienne version. Toutes les 5 min on lit le numéro de version en ligne (sw.js) ;
+   * s'il est plus récent, la page se recharge discrètement quand le joueur revient sur l'onglet / l'appli,
+   * jamais pendant un trade ouvert.
+   */
+  function watchNewVersion() {
+    var mine = 0;
+    try {
+      var sc = document.querySelector('script[src*="js/app.js"]');
+      var m = sc && /[?&]v=(\d+)/.exec(sc.getAttribute('src') || '');
+      mine = m ? Number(m[1]) : 0;
+    } catch (eV) { mine = 0; }
+    if (!(mine > 0)) return;
+    var newer = false;
+    var reloading = false;
+    function check() {
+      if (newer || typeof fetch !== 'function') return;
+      fetch('sw.js?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r && r.ok ? r.text() : ''; })
+        .then(function (txt) {
+          var m2 = /orolado-v(\d+)/.exec(String(txt || ''));
+          if (m2 && Number(m2[1]) > mine) newer = true;
+        }).catch(function () { /* hors ligne : on réessaiera */ });
+    }
+    function openTrades() {
+      try { return D6.Engine && D6.Engine.liveCount ? Number(D6.Engine.liveCount()) || 0 : 0; } catch (eL) { return 0; }
+    }
+    function maybeReload() {
+      if (!newer || reloading || document.hidden || openTrades() > 0) return;
+      reloading = true;
+      try { location.reload(); } catch (eR) { reloading = false; }
+    }
+    setInterval(check, 5 * 60 * 1000);
+    setTimeout(check, 60 * 1000);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) check();
+      else maybeReload();
+    });
+    window.addEventListener('focus', maybeReload);
   }
 
   function lockGestures() { /* no global capture / stopPropagation */ }
