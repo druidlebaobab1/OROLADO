@@ -37,16 +37,16 @@
     // ORO 999 (style Boom : descente en zigzag + grands pics) : on voit 35 s pour voir la descente ET les pics.
     if (id === 'horizon50') return 14;
     // Vélocité (demande du propriétaire) : PYTHON 7 s, ASMODUS 8 s, AZAZEL 10 s à l'écran.
-    if (id === 'stable') return 4;
-    if (id === 'nexusprime') return 5;
-    if (id === 'crash300') return 6;
-    if (id === 'goldtrend') return 9;
-    if (id === 'v100') return 10;
-    if (id === 'v75') return 9;
+    if (id === 'stable') return 8;
+    if (id === 'nexusprime') return 9;
+    if (id === 'crash300') return 10;
+    if (id === 'goldtrend') return 12;
+    if (id === 'v100') return 13;
+    if (id === 'v75') return 12;
     // APOCALYPSE (vélocité, demande du propriétaire) : le PLUS RAPIDE, seulement 4 s à l'écran →
     // l'historique file vite vers la gauche, comme une voiture lancée. Affichage seulement.
-    if (id === 'titanpulse') return 2;
-    return 12;
+    if (id === 'titanpulse') return 6;
+    return 14;
   }
   var zoomIdx = defaultZoomIdx('v100');
   var zoomSmooth = 28;
@@ -3275,7 +3275,8 @@
     // Vélocité : moins de secondes à l'écran → le cadre se resserre d'autant (racine du temps), pour
     // garder la même hauteur de mouvement qu'avant (sinon la courbe paraîtrait plate). Ancien → nouveau.
     // v2336 : zooms de départ un peu plus larges (APOCALYPSE 7 s, PYTHON 10 s, ASMODUS 12 s, AZAZEL 14 s).
-    var velo = { titanpulse: Math.sqrt(9.625 / 23), stable: Math.sqrt(10 / 16), nexusprime: Math.sqrt(12 / 18), crash300: Math.sqrt(14 / 25) }[assetId];
+    // v2337 : bougies moins grosses (APOCALYPSE 14 s, PYTHON 18 s, ASMODUS 20 s, AZAZEL 23 s à l’écran).
+    var velo = { titanpulse: Math.sqrt(19.25 / 23), crash300: Math.sqrt(23 / 25) }[assetId];
     if (velo) base *= velo;
     // Même recette sur les 10 simulations (celle qui ne déborde jamais) : aucune amplification
     // verticale. Le cadre suit le zoom comme un vrai marché (l'amplitude grandit avec la racine du
@@ -3391,6 +3392,8 @@
   }
 
   function captureTradeFrame(assetId, untilMs) {
+    // v2337 : cadre figé supprimé (voir holdLock). Fonction gardée pour compatibilité.
+    return;
     var st = ensureAssetState(assetId);
     untilMs = Number(untilMs) || 0;
     if (st.lockMin && st.lockMax && st.lockMax > st.lockMin && st.lockUntil > Date.now()) {
@@ -3584,7 +3587,12 @@
       strikeLock = null;
     }
     if (allTrades.length) st.lockMode = vmNow;
-    var holdLock = allTrades.length || (st.lockUntil && Date.now() < st.lockUntil);
+    // v2337 — PLUS DE CADRE FIGÉ PENDANT LES TRADES (décision définitive) : une seule caméra douce, avec ou
+    // sans trade, comme les grandes plateformes. Avant, le cadre figé s’agrandissait pour la ligne objectif
+    // (courbe écrasée / qui « tire » en ×5-×50) et restait faux après un zoom ou une actualisation (courbe
+    // « raide »). Les lignes hors du cadre restent collées au bord avec leur flèche (drawTargetLine).
+    var holdLock = false;
+    st.lockMin = 0; st.lockMax = 0; st.lockUntil = 0;
     if (allTrades.length) {
       var expHold = 0;
       var th;

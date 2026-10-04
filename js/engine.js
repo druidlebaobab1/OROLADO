@@ -40,9 +40,12 @@
     var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
     if (!isFinite(lag) || lag < 0 || lag > 8000) return;
     // Besoin = retard observé + un intervalle de lecture + 0,1 s de réserve.
-    var want = lag + POLL_MS + 100;
+    // v2337 : ligne directe du VPS (prix poussés en ~0,1-0,2 s) → marge plus courte : le point d’entrée
+    // tombe presque au prix du serveur (il ne « glisse » plus après le clic). Lecture du fichier : inchangé.
+    var live = directFresh();
+    var want = lag + (live ? 150 : POLL_MS + 100);
     needDelay = want > needDelay ? want : needDelay * 0.997 + want * 0.003;
-    var target = Math.max(DISPLAY_DELAY, Math.min(2600, needDelay));
+    var target = Math.max(live ? 450 : DISPLAY_DELAY, Math.min(2600, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
     else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - 4);
   }
