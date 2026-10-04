@@ -1227,7 +1227,10 @@
 
   function toast(msg, kind, ms) {
     if (isSilentTradeMsg(msg)) return;
-    msg = L(msg);
+    // v2326 : texte court sur une ligne quand il existe (notifications par-dessus l'écran)
+    var shortTxt = null;
+    try { shortTxt = D6.I18N && D6.I18N.short ? D6.I18N.short(msg) : null; } catch (eSh) { shortTxt = null; }
+    msg = shortTxt || L(msg);
     var el = $('toast');
     if (!el) return;
     var micro = kind === 'micro';

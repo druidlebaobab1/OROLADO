@@ -2816,8 +2816,76 @@
     else refineFromIpCountry();
   }
 
+  /**
+   * v2326 — Notifications COURTES (demande du propriétaire) : les notifications qui s'affichent par-dessus
+   * l'écran tiennent sur une ligne, sans détail inutile (« 6 chiffres », « réessayez dans un instant »…).
+   * Ordre : en, fr, es, pt, ar, ru, tr, vi, id, de, hi. Les textes des formulaires ne changent pas.
+   */
+  var SHORT_TABLE = {
+    s_codeSent: ['Code sent by email', 'Code envoyé par e-mail', 'Código enviado por correo', 'Código enviado por e-mail', 'تم إرسال الرمز إلى بريدك', 'Код отправлен на почту', 'Kod e-postanıza gönderildi', 'Đã gửi mã qua email', 'Kode dikirim ke email', 'Code per E-Mail gesendet', 'कोड ईमेल पर भेजा गया'],
+    s_enterCode: ['Enter the email code to confirm', 'Saisissez le code e-mail pour confirmer', 'Introduce el código del correo para confirmar', 'Digite o código do e-mail para confirmar', 'أدخل رمز البريد للتأكيد', 'Введите код из письма', 'Onaylamak için e-posta kodunu girin', 'Nhập mã email để xác nhận', 'Masukkan kode email untuk konfirmasi', 'E-Mail-Code zur Bestätigung eingeben', 'पुष्टि के लिए ईमेल कोड डालें'],
+    s_codeInvalid: ['Invalid or expired code', 'Code invalide ou expiré', 'Código inválido o caducado', 'Código inválido ou expirado', 'رمز غير صالح أو منتهي', 'Неверный или истёкший код', 'Geçersiz veya süresi dolmuş kod', 'Mã sai hoặc hết hạn', 'Kode salah atau kedaluwarsa', 'Code ungültig oder abgelaufen', 'कोड गलत या समाप्त'],
+    s_conn: ['Connection issue, try again', 'Connexion instable, réessayez', 'Conexión inestable, reinténtalo', 'Conexão instável, tente de novo', 'اتصال غير مستقر، أعد المحاولة', 'Сбой связи, повторите', 'Bağlantı sorunu, tekrar deneyin', 'Kết nối yếu, thử lại', 'Koneksi bermasalah, coba lagi', 'Verbindungsproblem, erneut versuchen', 'कनेक्शन समस्या, फिर कोशिश करें'],
+    s_sessionExp: ['Session expired, please log in', 'Session expirée, reconnectez-vous', 'Sesión caducada, inicia sesión', 'Sessão expirada, entre novamente', 'انتهت الجلسة، سجّل الدخول', 'Сессия истекла, войдите снова', 'Oturum sona erdi, giriş yapın', 'Phiên hết hạn, hãy đăng nhập', 'Sesi berakhir, silakan masuk', 'Sitzung abgelaufen, bitte anmelden', 'सत्र समाप्त, फिर लॉग इन करें'],
+    s_passMismatch: ['Passwords don’t match', 'Mots de passe différents', 'Las contraseñas no coinciden', 'As senhas não coincidem', 'كلمتا المرور غير متطابقتين', 'Пароли не совпадают', 'Şifreler eşleşmiyor', 'Mật khẩu không khớp', 'Kata sandi tidak cocok', 'Passwörter stimmen nicht überein', 'पासवर्ड मेल नहीं खाते'],
+    s_logoutOthers: ['Other devices logged out', 'Autres appareils déconnectés', 'Otros dispositivos desconectados', 'Outros dispositivos desconectados', 'تم تسجيل خروج الأجهزة الأخرى', 'Другие устройства отключены', 'Diğer cihazların oturumu kapatıldı', 'Đã đăng xuất thiết bị khác', 'Perangkat lain telah keluar', 'Andere Geräte abgemeldet', 'अन्य डिवाइस लॉग आउट हुए'],
+    s_sendFail: ['Sending failed, try again', 'Envoi impossible, réessayez', 'Envío fallido, reinténtalo', 'Falha no envio, tente de novo', 'تعذّر الإرسال، أعد المحاولة', 'Не отправлено, повторите', 'Gönderilemedi, tekrar deneyin', 'Gửi thất bại, thử lại', 'Gagal mengirim, coba lagi', 'Senden fehlgeschlagen, erneut versuchen', 'भेजा नहीं गया, फिर कोशिश करें'],
+    s_payPending: ['Payment awaiting validation', 'Paiement en attente de validation', 'Pago pendiente de validación', 'Pagamento aguardando validação', 'الدفع بانتظار التأكيد', 'Платёж ожидает проверки', 'Ödeme onay bekliyor', 'Thanh toán đang chờ duyệt', 'Pembayaran menunggu validasi', 'Zahlung wird geprüft', 'भुगतान पुष्टि की प्रतीक्षा में'],
+    s_destReq: ['Receiving address missing', 'Adresse de réception manquante', 'Falta la dirección de recepción', 'Endereço de recebimento ausente', 'عنوان الاستلام مفقود', 'Укажите адрес получения', 'Alıcı adresi eksik', 'Thiếu địa chỉ nhận', 'Alamat penerima kosong', 'Empfangsadresse fehlt', 'प्राप्ति पता नहीं दिया'],
+    s_cardErr: ['Invalid card number', 'Numéro de carte invalide', 'Número de tarjeta inválido', 'Número de cartão inválido', 'رقم البطاقة غير صالح', 'Неверный номер карты', 'Geçersiz kart numarası', 'Số thẻ không hợp lệ', 'Nomor kartu tidak valid', 'Ungültige Kartennummer', 'कार्ड नंबर अमान्य'],
+    s_cardOff: ['Card unavailable', 'Carte indisponible', 'Tarjeta no disponible', 'Cartão indisponível', 'البطاقة غير متاحة', 'Карта недоступна', 'Kart kullanılamıyor', 'Thẻ không khả dụng', 'Kartu tidak tersedia', 'Karte nicht verfügbar', 'कार्ड उपलब्ध नहीं'],
+    s_payOpen: ['Payment didn’t open, try again', 'Paiement non ouvert, réessayez', 'El pago no se abrió, reinténtalo', 'Pagamento não abriu, tente de novo', 'لم يُفتح الدفع، أعد المحاولة', 'Оплата не открылась, повторите', 'Ödeme açılmadı, tekrar deneyin', 'Không mở được thanh toán, thử lại', 'Pembayaran gagal dibuka, coba lagi', 'Zahlung nicht geöffnet, erneut versuchen', 'भुगतान नहीं खुला, फिर कोशिश करें'],
+    s_tooManyAttempts: ['Too many attempts, request a new code', 'Trop d’essais, demandez un nouveau code', 'Demasiados intentos, pide otro código', 'Muitas tentativas, peça novo código', 'محاولات كثيرة، اطلب رمزًا جديدًا', 'Много попыток, запросите новый код', 'Çok fazla deneme, yeni kod isteyin', 'Quá nhiều lần, yêu cầu mã mới', 'Terlalu banyak percobaan, minta kode baru', 'Zu viele Versuche, neuen Code anfordern', 'बहुत प्रयास, नया कोड मांगें'],
+    s_tooMany: ['Too many requests, please wait', 'Trop de demandes, patientez', 'Demasiadas solicitudes, espera', 'Muitas solicitações, aguarde', 'طلبات كثيرة، انتظر قليلًا', 'Слишком много запросов, подождите', 'Çok fazla istek, bekleyin', 'Quá nhiều yêu cầu, vui lòng chờ', 'Terlalu banyak permintaan, tunggu', 'Zu viele Anfragen, bitte warten', 'बहुत अनुरोध, कृपया रुकें'],
+    s_busy: ['Service unavailable, try again', 'Service indisponible, réessayez', 'Servicio no disponible, reinténtalo', 'Serviço indisponível, tente de novo', 'الخدمة غير متاحة، أعد المحاولة', 'Сервис недоступен, повторите', 'Hizmet kullanılamıyor, tekrar deneyin', 'Dịch vụ tạm ngưng, thử lại', 'Layanan tidak tersedia, coba lagi', 'Dienst nicht verfügbar, erneut versuchen', 'सेवा उपलब्ध नहीं, फिर कोशिश करें'],
+    s_assetMax: ['Market busy, try again', 'Marché saturé, réessayez', 'Mercado saturado, reinténtalo', 'Mercado lotado, tente de novo', 'السوق مزدحم، أعد المحاولة', 'Рынок перегружен, повторите', 'Piyasa yoğun, tekrar deneyin', 'Thị trường quá tải, thử lại', 'Pasar penuh, coba lagi', 'Markt ausgelastet, erneut versuchen', 'बाज़ार व्यस्त, फिर कोशिश करें'],
+    s_openMax: ['Wait for a trade to finish', 'Attendez la fin d’un trade', 'Espera a que termine una operación', 'Aguarde o fim de uma operação', 'انتظر انتهاء صفقة', 'Дождитесь окончания сделки', 'Bir işlemin bitmesini bekleyin', 'Chờ một lệnh kết thúc', 'Tunggu satu trade selesai', 'Warte, bis ein Trade endet', 'किसी ट्रेड के खत्म होने तक रुकें'],
+    s_supportRate: ['Message received, reply soon', 'Message bien reçu, réponse bientôt', 'Mensaje recibido, respuesta pronto', 'Mensagem recebida, resposta em breve', 'تم استلام رسالتك، سنرد قريبًا', 'Сообщение получено, скоро ответим', 'Mesaj alındı, yakında yanıt', 'Đã nhận tin, sẽ trả lời sớm', 'Pesan diterima, segera dibalas', 'Nachricht erhalten, Antwort folgt', 'संदेश मिला, जल्द जवाब'],
+    s_emailUsed: ['Email already used', 'E-mail déjà utilisé', 'Correo ya utilizado', 'E-mail já utilizado', 'البريد مستخدم من قبل', 'Почта уже использована', 'E-posta zaten kullanıldı', 'Email đã được dùng', 'Email sudah dipakai', 'E-Mail bereits verwendet', 'ईमेल पहले से उपयोग में'],
+    s_nameShort: ['Nickname too short', 'Pseudo trop court', 'Apodo demasiado corto', 'Apelido muito curto', 'الاسم قصير جدًا', 'Слишком короткое имя', 'Takma ad çok kısa', 'Biệt danh quá ngắn', 'Nama panggilan terlalu pendek', 'Spitzname zu kurz', 'उपनाम बहुत छोटा']
+  };
+  // clé du dictionnaire OU clé de message serveur → texte court
+  var SHORT_OF = {
+    wdOtpSent: 's_codeSent', wdOtpNeed: 's_enterCode', wdOtpErr: 's_codeInvalid', sessionInvalid: 's_conn',
+    sessionExpiredMsg: 's_sessionExp', passMismatch: 's_passMismatch', logoutOthersDone: 's_logoutOthers',
+    helpRetry: 's_sendFail', depositPending: 's_payPending', cryptoErrPending: 's_payPending', wdDestErr: 's_destReq',
+    wdCardErr: 's_cardErr',
+    m_codeInvalid: 's_codeInvalid', m_codeExpired: 's_codeInvalid', m_enterCode6: 's_enterCode',
+    m_tooManyAttempts: 's_tooManyAttempts', m_tooMany: 's_tooMany', m_busy: 's_busy', m_assetMax: 's_assetMax',
+    m_supportRate: 's_supportRate', m_emailRetired: 's_emailUsed', m_nameReq: 's_nameShort', m_payUnavailable: 's_cardOff',
+    m_payOpenFail: 's_payOpen', m_destReq: 's_destReq', m_passMismatch: 's_passMismatch', m_codeSendFail: 's_sendFail'
+  };
+  var SHORT_RAW = { "trop de gains potentiels ouverts, attendez la fin d'un trade": 's_openMax' };
+  function shortRow(k) {
+    var row = SHORT_TABLE[k];
+    if (!row) return null;
+    var i = MSG_LANGS.indexOf(lang);
+    return row[i >= 0 ? i : 0] || row[0];
+  }
+  /** Texte court pour une notification, ou null si le message est déjà court. */
+  function shortMsg(text) {
+    try {
+      if (text == null) return null;
+      var raw = String(text);
+      var norm = raw.trim().toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ');
+      var k = SHORT_RAW[norm] || SHORT_RAW[norm.replace(/[.!]$/, '')];
+      if (k) return shortRow(k);
+      var mk = MSG_FR[norm] || MSG_FR[norm.replace(/[.!]$/, '')];
+      if (mk && SHORT_OF[mk]) return shortRow(SHORT_OF[mk]);
+      var dk;
+      for (dk in SHORT_OF) {
+        if (!Object.prototype.hasOwnProperty.call(SHORT_OF, dk) || dk.indexOf('m_') === 0) continue;
+        var cur = t(dk), fr = DICT.fr && DICT.fr[dk], en = DICT.en && DICT.en[dk];
+        if ((cur && cur !== dk && raw === cur) || (fr && raw === fr) || (en && raw === en)) return shortRow(SHORT_OF[dk]);
+      }
+      return null;
+    } catch (eS) {
+      return null;
+    }
+  }
+
   D6.I18N = {
-    t: t,
+    t: t, short: shortMsg,
     msg: msg,
     depositLabel: depositLabel,
     apply: apply,
