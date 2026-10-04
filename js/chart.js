@@ -1628,18 +1628,19 @@
           ctx.fillStyle = col;
           ctx.fillRect(x - cw / 2, y1, cw, bh);
         }
-      } else if (opts.horizonOrange && up && (c.c - c.o) > Math.abs(c.o) * 0.0012) {
-        // BAAL : un PIC (grande hausse d'un coup) = bougie or lumineuse, bien différente des petites.
+      } else if (opts.horizonOrange && Math.abs(c.c - c.o) > Math.abs(c.o) * 0.0010) {
+        // ORO 999 : un GRAND PIC (vers le haut OU vers le bas, ≥ 0,1 % d'un coup) = bougie JAUNE PUR lumineuse,
+        // bien différente des petites bougies orange (demande du propriétaire).
         var gSp = ctx.createLinearGradient(0, y1, 0, y1 + bh);
-        gSp.addColorStop(0, '#FFF3B0');
-        gSp.addColorStop(0.35, '#FFC93C');
-        gSp.addColorStop(1, '#FF7A00');
-        ctx.shadowColor = 'rgba(255,190,60,0.8)';
-        ctx.shadowBlur = 12;
+        gSp.addColorStop(0, '#FFFBD0');
+        gSp.addColorStop(0.4, '#FFEA00');
+        gSp.addColorStop(1, '#FFD000');
+        ctx.shadowColor = 'rgba(255,234,0,0.85)';
+        ctx.shadowBlur = 14;
         ctx.fillStyle = gSp;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
         ctx.shadowBlur = 0;
-        ctx.strokeStyle = '#FFE08A';
+        ctx.strokeStyle = '#FFF59D';
         ctx.lineWidth = 1;
         ctx.strokeRect(x - cw / 2 + 0.5, y1 + 0.5, Math.max(1, cw - 1), Math.max(1, bh - 1));
       } else if (opts.horizonOrange) {

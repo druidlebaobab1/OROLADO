@@ -764,6 +764,18 @@
   }
   if (/[?&]diag=1\b/.test(location.search)) startDiag();
 
+  // Plein écran : « QUITTER » au MILIEU, entre Démo et Compte réel (demande du propriétaire : tout bien droit,
+  // sur mesure). Le bouton est seulement déplacé (ses actions restent les mêmes).
+  (function placeFsExit() {
+    try {
+      var ex = document.getElementById('btnChartFsExit');
+      var demo = document.getElementById('fsBtnDemo');
+      if (!ex || !demo) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placeFsExit); return; }
+      if (demo.nextElementSibling !== ex) demo.parentNode.insertBefore(ex, demo.nextElementSibling);
+      document.documentElement.classList.add('fs-exit-mid');
+    } catch (eFe) { /* ignore */ }
+  })();
+
   // Écran de jeu : un double toucher rapide (ACHETER plusieurs fois, ×2, + / −…) ne zoome jamais la page.
   // Le pincement de la courbe (zoom des bougies) n'est pas touché : il est géré par le graphique.
   (function noDoubleTapZoom() {
@@ -802,6 +814,8 @@
       root.style.setProperty('background', '#1A2A68', 'important');
       var paint = function () {
         try {
+          // Hauteur réelle de l'écran (l'appli iPhone a une fenêtre plus courte que l'écran) : utilisée par le profil.
+          root.style.setProperty('--ios-full-h', Math.max(window.innerHeight || 0, (screen && screen.height) || 0) + 'px');
           if (document.body) {
             document.body.style.setProperty('background-color', '#1A2A68', 'important');
             document.body.style.setProperty('min-height', Math.max(window.innerHeight || 0, (screen && screen.height) || 0) + 'px', 'important');

@@ -44,7 +44,7 @@ function orolado_feed_assets(): array {
     // rend pas un pic plus probable). Descente et pics s'équilibrent : mouvement moyen nul.
     // ORO 999 (2026-10-04) : zigzags + grands pics SURPRISE dans les deux sens (haut ou bas, à chance égale),
     // aucune pente → en 90 % la ligne est au prix d'entrée, comme les 9 autres marchés.
-    'horizon50' => ['base' => 10120.40, 'sigma' => 0.00009, 'drift' => 0.0, 'jumpP' => 1 / 700, 'jumpMin' => 0.002, 'jumpMax' => 0.004, 'jumpDir' => 2],
+    'horizon50' => ['base' => 10120.40, 'sigma' => 0.00009, 'drift' => 0.0, 'jumpP' => 1 / 100, 'jumpMin' => 0.0004, 'jumpMax' => 0.003, 'jumpDir' => 2],
     'goldtrend' => $plain(7340.80, 0.000195),
     'v75' => $plain(8700.18, 0.000256),
     'nexusprime' => $plain(8120.60, 0.00027),

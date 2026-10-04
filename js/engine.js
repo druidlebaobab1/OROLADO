@@ -117,7 +117,7 @@
   // [prix de départ, sigma] de chaque actif (copie de orolado_feed_assets) et bande de l'élastique.
   var FAIR_BASE = {
     v100: [13000.42, 0.00020], stable: [10000.00, 0.0001125], apex500: [5480.25, 0.00036],
-    horizon50: [10120.40, 0.00009, 1 / 700, 0.002, 0.004], goldtrend: [7340.80, 0.000195], v75: [8700.18, 0.000256],
+    horizon50: [10120.40, 0.00009, 1 / 100, 0.0004, 0.003], goldtrend: [7340.80, 0.000195], v75: [8700.18, 0.000256],
     nexusprime: [8120.60, 0.00027], titanpulse: [9560.40, 0.00084], boomspike: [3890.20, 0.00012],
     crash300: [4210.55, 0.00022]
   };
