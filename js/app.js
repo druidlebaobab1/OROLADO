@@ -5095,7 +5095,7 @@
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('busy');
-        btn.textContent = 'CONFIRM DEPOSIT';
+        btn.textContent = t('depositConfirm');
       }
     }
   }

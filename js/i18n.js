@@ -2293,6 +2293,8 @@
    */
   var MSG_LANGS = ['en', 'fr', 'es', 'pt', 'ar', 'ru', 'tr', 'vi', 'id', 'de', 'hi'];
   var MSG_TABLE = {
+    m2_banned: ['Your account has been suspended for breaking the terms of use. If you think this is a mistake, contact Orolado support.', 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.', 'Tu cuenta ha sido suspendida por incumplir las condiciones de uso. Si crees que es un error, contacta con el soporte de Orolado.', 'Sua conta foi suspensa por violar os termos de uso. Se acha que é um erro, contate o suporte Orolado.', 'تم تعليق حسابك لمخالفة شروط الاستخدام. إذا كنت تعتقد أن ذلك خطأ، تواصل مع دعم Orolado.', 'Ваш аккаунт заблокирован за нарушение правил. Если это ошибка, напишите в поддержку Orolado.', 'Hesabınız kullanım koşullarını ihlal ettiği için askıya alındı. Bunun bir hata olduğunu düşünüyorsanız Orolado desteğiyle iletişime geçin.', 'Tài khoản của bạn đã bị tạm khóa do vi phạm điều khoản. Nếu bạn cho rằng đây là nhầm lẫn, hãy liên hệ hỗ trợ Orolado.', 'Akun Anda ditangguhkan karena melanggar ketentuan penggunaan. Jika menurut Anda ini keliru, hubungi dukungan Orolado.', 'Dein Konto wurde wegen Verstoßes gegen die Nutzungsbedingungen gesperrt. Wenn du denkst, dass dies ein Fehler ist, kontaktiere den Orolado-Support.', 'उपयोग की शर्तों के उल्लंघन के कारण आपका खाता निलंबित कर दिया गया है। अगर आपको लगता है कि यह गलती है, तो Orolado सपोर्ट से संपर्क करें।'],
+    m2_tradeNotSaved: ['Trade not saved', 'Mise non enregistrée', 'Operación no registrada', 'Operação não registrada', 'لم تُسجَّل الصفقة', 'Сделка не записана', 'İşlem kaydedilmedi', 'Lệnh chưa được ghi', 'Trade tidak tersimpan', 'Trade nicht gespeichert', 'ट्रेड सेव नहीं हुआ'],
     m2_copied: ['Address copied!', 'Adresse copiée !', '¡Dirección copiada!', 'Endereço copiado!', 'تم نسخ العنوان!', 'Адрес скопирован!', 'Adres kopyalandı!', 'Đã sao chép địa chỉ!', 'Alamat disalin!', 'Adresse kopiert!', 'पता कॉपी हुआ!'],
     m2_addrGen: ['Generating address…', 'Adresse en cours de génération…', 'Generando dirección…', 'Gerando endereço…', 'جارٍ إنشاء العنوان…', 'Создаём адрес…', 'Adres oluşturuluyor…', 'Đang tạo địa chỉ…', 'Membuat alamat…', 'Adresse wird erstellt…', 'पता बन रहा है…'],
     m2_payAmount: ['Invalid payment amount', 'Montant de paiement invalide', 'Monto de pago inválido', 'Valor de pagamento inválido', 'مبلغ الدفع غير صالح', 'Неверная сумма платежа', 'Geçersiz ödeme tutarı', 'Số tiền thanh toán không hợp lệ', 'Jumlah pembayaran tidak valid', 'Ungültiger Zahlungsbetrag', 'भुगतान राशि अमान्य'],
@@ -2393,6 +2395,9 @@
 
   /* Messages français connus (serveur ou code) → clé ci-dessus. Minuscules, apostrophes droites. */
   var MSG_FR = {
+    "votre compte a été suspendu pour non-respect des règles d'utilisation. si vous pensez qu'il s'agit d'une erreur, contactez le support orolado.": 'm2_banned',
+    "votre compte a été suspendu pour non-respect des règles d'utilisation. si vous pensez qu'il s'agit d'une erreur, contactez le support orolado": 'm2_banned',
+    'mise non enregistrée': 'm2_tradeNotSaved',
     'adresse copiée !': 'm2_copied',
     'adresse copiée': 'm2_copied',
     'adresse en cours de génération…': 'm2_addrGen',
