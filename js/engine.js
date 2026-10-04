@@ -35,19 +35,29 @@
   // Départ avec une marge confortable (1,4 s ; 0,8 s donnait des « tic tic ») ; ensuite chaque appareil s'ajuste seul.
   var dispDelay = 1400;
   var needDelay = 1400;
+  // v2344 : mesures en lecture seule du réglage du retard (D6.Engine.delayDebug()), pour vérifier sur le vrai site.
+  var delayDbg = { calls: 0, lastLag: null, maxLag: 0, refused: 0, live: false };
   function noteArrival(lastTick) {
-    if (!clock.ready || !(lastTick > 0)) return;
+    delayDbg.calls++;
+    if (!clock.ready || !(lastTick > 0)) { delayDbg.refused++; return; }
     var lag = (Date.now() + clock.offset) - lastTick * TICK_MS;
-    if (!isFinite(lag) || lag < 0 || lag > 8000) return;
+    // v2344 : avec la ligne directe, le prix arrive presque à son heure : un petit écart d'horloge téléphone /
+    // serveur peut donner un retard légèrement négatif ; la mesure était alors jetée. On la garde, ramenée à 0.
+    if (!isFinite(lag) || lag < -1500 || lag > 8000) { delayDbg.refused++; return; }
+    if (lag < 0) lag = 0;
+    delayDbg.lastLag = Math.round(lag);
+    if (lag > delayDbg.maxLag) delayDbg.maxLag = Math.round(lag);
     // Besoin = retard observé + un intervalle de lecture + 0,1 s de réserve.
     // v2337 : ligne directe du VPS (prix poussés en ~0,1-0,2 s) → marge plus courte : le point d’entrée
     // tombe presque au prix du serveur (il ne « glisse » plus après le clic). Lecture du fichier : inchangé.
     var live = directFresh();
+    delayDbg.live = live;
     var want = lag + (live ? 150 : POLL_MS + 100);
-    needDelay = want > needDelay ? want : needDelay * 0.997 + want * 0.003;
+    // v2344 : descend en quelques secondes (avant ~1 min et plus) ; remonte toujours tout de suite si besoin.
+    needDelay = want > needDelay ? want : needDelay * (live ? 0.97 : 0.997) + want * (live ? 0.03 : 0.003);
     var target = Math.max(live ? 450 : DISPLAY_DELAY, Math.min(2600, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
-    else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - 4);
+    else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - (live ? 12 : 4));
   }
   var POLL_MS = 300;
   var MULTS = [1.9, 5, 10, 50];
@@ -334,7 +344,7 @@
   }
 
   /** Applique le « direct partagé ». Retourne false s'il manque des prix (→ resynchro). */
-  function applyLive(j) {
+  function applyLive(j, fromDirect) {
     if (!j || !j.ok || !j.assets) return false;
     // Le serveur annonce une ligne directe (moteur VPS) : le téléphone peut s'y brancher.
     if (j.direct === 1) direct.allowed = true;
@@ -350,7 +360,10 @@
       mergeTicks(id, a.first, unpack(a));
     });
     var ref = feeds[Object.keys(j.assets)[0]];
-    if (complete && ref && ref.loaded) noteArrival(ref.last);
+    // v2344 : ligne directe ouverte → seuls SES prix règlent le retard d'affichage (une copie du fichier des prix
+    // gardée par Cloudflare peut avoir 1 s de retard et bloquait le réglage vers le haut).
+    var directOpen = !!(direct.ws && direct.ws.readyState === 1);
+    if (complete && ref && ref.loaded && (fromDirect || !directOpen)) noteArrival(ref.last);
     return complete;
   }
 
@@ -484,7 +497,7 @@
       if (!j || !j.ok) return;
       direct.lastAt = Date.now();
       // Il manque des prix (le premier message, ou un retour de veille) : resynchro complète.
-      if (!applyLive(j)) pollAll();
+      if (!applyLive(j, true)) pollAll();
     };
     ws.onclose = ws.onerror = function () {
       if (direct.ws !== ws) return;
@@ -1261,6 +1274,7 @@
 
     /** Retard d'affichage actuel de cet appareil (ms), pour contrôle. */
     displayDelay: function () { return Math.round(dispDelay); },
+    delayDebug: function () { return { delay: Math.round(dispDelay), need: Math.round(needDelay), calls: delayDbg.calls, refused: delayDbg.refused, lastLag: delayDbg.lastLag, maxLag: delayDbg.maxLag, live: delayDbg.live, clockReady: clock.ready, offset: Math.round(clock.offset) }; },
     /** Numéro de prix du serveur → heure d'affichage actuelle (suit le décalage qui s'ajuste). */
     tickToLocal: function (tick) { return tickToLocal(Number(tick)); },
 

@@ -2647,8 +2647,8 @@
     var entry = glide.entry;
     // v2341 : trade en attente du serveur → seulement le rond (au clic) ; traits dessinés une fois confirmés.
     var tPend = !!(trade.pending || trade.serverConfirmed === false || trade.confirmed === false);
-    // v2342 : en attente du serveur, rien n'est dessiné ici (le signe ACHAT / VENTE du clic s'affiche déjà).
-    if (tPend) return;
+    // v2344 : en attente du serveur → seulement le rond, tout de suite au clic ; trait et ligne objectif
+    // apparaissent à la confirmation (rond posé alors au prix officiel, écart minime depuis le retard 0,45 s).
     // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
     // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
     // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de
