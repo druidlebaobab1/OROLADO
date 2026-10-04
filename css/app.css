@@ -597,8 +597,8 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
   border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
 .odds-chip .odds-mult{font-size:.78rem;font-weight:700;line-height:1.1;font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text)}
 .odds-chip .odds-pct{font-size:.58rem;font-weight:600;color:var(--muted);line-height:1.1;text-transform:uppercase;letter-spacing:.03em}
-.odds-chip[data-odds="1.88"]{border:1px solid #F97316;background:rgba(249,115,22,.15)}
-.odds-chip[data-odds="1.88"] .odds-mult{color:#FDBA74}
+.odds-chip[data-odds="1.9"]{border:1px solid #F97316;background:rgba(249,115,22,.15)}
+.odds-chip[data-odds="1.9"] .odds-mult{color:#FDBA74}
 .odds-chip[data-odds="5"]{border:1px solid #06B6D4;background:rgba(6,182,212,.15)}
 .odds-chip[data-odds="5"] .odds-mult{color:#67E8F9}
 .odds-chip[data-odds="10"]{border:1px solid #A855F7;background:rgba(168,85,247,.15)}
@@ -606,8 +606,8 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .odds-chip[data-odds="50"]{border:1px solid #F59E0B;background:rgba(245,158,11,.15)}
 .odds-chip[data-odds="50"] .odds-mult{color:#FCD34D}
 .odds-chip.on{color:#fff}
-.odds-chip[data-odds="1.88"].on{border-color:#F97316;background:rgba(249,115,22,.9);box-shadow:0 0 16px rgba(249,115,22,.55)}
-.odds-chip[data-odds="1.88"].on .odds-mult,.odds-chip[data-odds="1.88"].on .odds-pct{color:#fff}
+.odds-chip[data-odds="1.9"].on{border-color:#F97316;background:rgba(249,115,22,.9);box-shadow:0 0 16px rgba(249,115,22,.55)}
+.odds-chip[data-odds="1.9"].on .odds-mult,.odds-chip[data-odds="1.9"].on .odds-pct{color:#fff}
 .odds-chip[data-odds="5"].on{border-color:#06B6D4;background:rgba(6,182,212,.9);box-shadow:0 0 16px rgba(6,182,212,.55)}
 .odds-chip[data-odds="5"].on .odds-mult,.odds-chip[data-odds="5"].on .odds-pct{color:#fff}
 .odds-chip[data-odds="10"].on{border-color:#A855F7;background:rgba(168,85,247,.9);box-shadow:0 0 18px rgba(168,85,247,.55)}
@@ -4366,11 +4366,11 @@ html body #withdrawModal .modal-title,html body #depositModal .modal-title,html 
 
 /* ===== v2213 — Vie et lumière (demande du propriétaire) : logo, simulations, payout, carré du gain, boutons qui s'allument ===== */
 html body #screenTrade .odds-chip{background-clip:padding-box!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)!important}
-html body #screenTrade .odds-chip[data-odds="1.88"]:not(.on){background:linear-gradient(rgba(249,115,22,.18),rgba(249,115,22,.18)),#10172A!important}
+html body #screenTrade .odds-chip[data-odds="1.9"]:not(.on){background:linear-gradient(rgba(249,115,22,.18),rgba(249,115,22,.18)),#10172A!important}
 html body #screenTrade .odds-chip[data-odds="5"]:not(.on){background:linear-gradient(rgba(6,182,212,.18),rgba(6,182,212,.18)),#10172A!important}
 html body #screenTrade .odds-chip[data-odds="10"]:not(.on){background:linear-gradient(rgba(168,85,247,.2),rgba(168,85,247,.2)),#10172A!important}
 html body #screenTrade .odds-chip[data-odds="50"]:not(.on){background:linear-gradient(rgba(245,158,11,.18),rgba(245,158,11,.18)),#10172A!important}
-html body #screenTrade .odds-chip[data-odds="1.88"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;box-shadow:0 0 16px rgba(249,115,22,0.22),inset 0 1px 0 rgba(255,255,255,0.18)!important}
+html body #screenTrade .odds-chip[data-odds="1.9"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;box-shadow:0 0 16px rgba(249,115,22,0.22),inset 0 1px 0 rgba(255,255,255,0.18)!important}
 html body #screenTrade .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#22D3EE,#0891B2)!important;box-shadow:0 0 16px rgba(6,182,212,0.36),inset 0 1px 0 rgba(255,255,255,0.18)!important}
 html body #screenTrade .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#C084FC,#9333EA)!important;box-shadow:0 0 16px rgba(168,85,247,0.36),inset 0 1px 0 rgba(255,255,255,0.18)!important}
 html body #screenTrade .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#FBBF24,#D97706)!important;box-shadow:0 0 16px rgba(245,158,11,0.22),inset 0 1px 0 rgba(255,255,255,0.18)!important}
@@ -4381,11 +4381,11 @@ html body #screenTrade .qbtn:active,html body #screenTrade .ind-btn:active,html 
 html body #screenTrade .qbtn-back:active{box-shadow:0 0 14px rgba(239,68,68,0.42),0 0 0 1px rgba(252,165,165,0.36)!important}
 html body #screenTrade .qbtn.hit,html body #screenTrade .ind-btn.hit,html body #screenTrade .dur-chip.hit,html body #screenTrade .odds-chip.hit{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,0.23)!important}
 html body #fsTradeOverlay .odds-chip{background-clip:padding-box!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)!important}
-html body #fsTradeOverlay .odds-chip[data-odds="1.88"]:not(.on){background:linear-gradient(rgba(249,115,22,.18),rgba(249,115,22,.18)),#10172A!important}
+html body #fsTradeOverlay .odds-chip[data-odds="1.9"]:not(.on){background:linear-gradient(rgba(249,115,22,.18),rgba(249,115,22,.18)),#10172A!important}
 html body #fsTradeOverlay .odds-chip[data-odds="5"]:not(.on){background:linear-gradient(rgba(6,182,212,.18),rgba(6,182,212,.18)),#10172A!important}
 html body #fsTradeOverlay .odds-chip[data-odds="10"]:not(.on){background:linear-gradient(rgba(168,85,247,.2),rgba(168,85,247,.2)),#10172A!important}
 html body #fsTradeOverlay .odds-chip[data-odds="50"]:not(.on){background:linear-gradient(rgba(245,158,11,.18),rgba(245,158,11,.18)),#10172A!important}
-html body #fsTradeOverlay .odds-chip[data-odds="1.88"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;box-shadow:0 0 16px rgba(249,115,22,0.22),inset 0 1px 0 rgba(255,255,255,0.18)!important}
+html body #fsTradeOverlay .odds-chip[data-odds="1.9"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;box-shadow:0 0 16px rgba(249,115,22,0.22),inset 0 1px 0 rgba(255,255,255,0.18)!important}
 html body #fsTradeOverlay .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#22D3EE,#0891B2)!important;box-shadow:0 0 16px rgba(6,182,212,0.36),inset 0 1px 0 rgba(255,255,255,0.18)!important}
 html body #fsTradeOverlay .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#C084FC,#9333EA)!important;box-shadow:0 0 16px rgba(168,85,247,0.36),inset 0 1px 0 rgba(255,255,255,0.18)!important}
 html body #fsTradeOverlay .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#FBBF24,#D97706)!important;box-shadow:0 0 16px rgba(245,158,11,0.22),inset 0 1px 0 rgba(255,255,255,0.18)!important}

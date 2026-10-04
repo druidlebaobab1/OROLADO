@@ -13,14 +13,15 @@
     QUICK_STAKES: [1, 5, 10, 25, 50],
     DURATIONS: [5, 10, 30, 60, 300, 600],
     DEFAULT_DURATION: 5,
-    REAL_PAYOUT: 1.88,
-    ODDS_MULT: [1.88, 5, 10, 50],
-    DEFAULT_ODDS: 1.88,
-    PAYOUT_PCT: { '1.88': 88, '5': 500, '10': 1000, '50': 5000 },
+    REAL_PAYOUT: 1.9,
+    ODDS_MULT: [1.9, 5, 10, 50],
+    DEFAULT_ODDS: 1.9,
+    PAYOUT_PCT: { '1.9': 90, '1.88': 88, '5': 500, '10': 1000, '50': 5000 },
     // Jeu équitable : aucun taux de gain programmé. Le résultat vient du prix réel du flux
     // serveur. Chances publiques (identiques démo / réel / admin, sur les 10 actifs) :
-    FAIR_WIN_CHANCE: { '1.88': 0.50, '5': 0.188, '10': 0.094, '50': 0.0188 },
-    FAIR_RTP: 0.94,
+    // 2026-10-04 : payout de base 90 % (×1,90) à 50 % ; ×5 / ×10 / ×50 : 90 % rendu sur la durée (10 % pour la maison).
+    FAIR_WIN_CHANCE: { '1.9': 0.50, '5': 0.18, '10': 0.09, '50': 0.018 },
+    FAIR_RTP: 0.95,
     WITHDRAW_MINS: {
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,
@@ -107,7 +108,7 @@
         tickMs: 48,
         ticksPerCandle: 12,
         payoutMin: 1.80,
-        payoutMax: 1.88,
+        payoutMax: 1.9,
         accent: '#E91E63',
         accentDim: '233,30,99',
         feed: 'stable'
@@ -146,7 +147,7 @@
         tickMs: 56,
         ticksPerCandle: 12,
         payoutMin: 1.80,
-        payoutMax: 1.88,
+        payoutMax: 1.9,
         accent: '#38BDF8',
         accentDim: '56,189,248',
         feed: 'horizon50'
@@ -162,7 +163,7 @@
         tickNoise: 0.55,
         tickMs: 28,
         ticksPerCandle: 8,
-        payoutMin: 1.88,
+        payoutMin: 1.9,
         payoutMax: 1.98,
         accent: '#B87333',
         accentDim: '184,115,51',
@@ -201,7 +202,7 @@
         tickNoise: 0.40,
         tickMs: 28,
         ticksPerCandle: 8,
-        payoutMin: 1.88,
+        payoutMin: 1.9,
         payoutMax: 1.98,
         accent: '#E8ECFF',
         accentDim: '232,236,255',

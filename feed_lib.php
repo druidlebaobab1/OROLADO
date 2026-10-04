@@ -26,7 +26,8 @@ const OROLADO_FEED_KEEP_FILES = 48;
 const OROLADO_FEED_MAX_GAP = 1036800;
 const OROLADO_FEED_BOOT_TICKS = 5400;
 const OROLADO_DURATIONS = [5, 10, 30, 60, 300, 600];
-const OROLADO_MULTS = [1.88, 5.0, 10.0, 50.0];
+// Payout de base : 90 % (×1,90) depuis le 2026-10-04 (avant 88 %, ×1,88). 50 % de chance.
+const OROLADO_MULTS = [1.9, 5.0, 10.0, 50.0];
 
 function orolado_feed_assets(): array {
   static $a = null;
@@ -248,7 +249,8 @@ function orolado_fair_mult(float $m): float {
   foreach (OROLADO_MULTS as $ok) {
     if (abs($ok - $m) < 0.001) return $ok;
   }
-  return 1.88;
+  // Ancienne version (téléphone pas encore à jour) qui demande 1,88 : le joueur reçoit 1,90 (à son avantage).
+  return 1.9;
 }
 
 function orolado_fair_duration(int $d): int {

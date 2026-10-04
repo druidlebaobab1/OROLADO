@@ -47,7 +47,7 @@
     else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - 4);
   }
   var POLL_MS = 300;
-  var MULTS = [1.88, 5, 10, 50];
+  var MULTS = [1.9, 5, 10, 50];
 
   var markets = {};
   var feeds = {};
@@ -104,7 +104,7 @@
     for (i = 0; i < MULTS.length; i++) {
       if (Math.abs(MULTS[i] - n) < 0.001) return MULTS[i];
     }
-    return 1.88;
+    return 1.9;
   }
 
   function normalizeTradeSide(side) {
@@ -747,7 +747,7 @@
         candles: [],
         candle: { o: asset.basePrice, h: asset.basePrice, l: asset.basePrice, c: asset.basePrice },
         ticksInCandle: 0,
-        payout: 1.88,
+        payout: 1.9,
         waiting: true
       };
     }
@@ -1246,11 +1246,11 @@
       return trades.length;
     },
 
-    // Plus de cote « aléatoire » affichée : 88 % partout, pour tout le monde.
+    // Plus de cote « aléatoire » affichée : 90 % partout, pour tout le monde.
     refreshPayout: function (assetId) {
-      payoutLive[assetId] = 1.88;
-      if (markets[assetId]) markets[assetId].payout = 1.88;
-      return 1.88;
+      payoutLive[assetId] = 1.9;
+      if (markets[assetId]) markets[assetId].payout = 1.9;
+      return 1.9;
     },
 
     /** Retard d'affichage actuel de cet appareil (ms), pour contrôle. */
@@ -1414,7 +1414,7 @@
   };
 
   ensureMarkets();
-  Object.keys(C.ASSETS).forEach(function (id) { payoutLive[id] = 1.88; });
+  Object.keys(C.ASSETS).forEach(function (id) { payoutLive[id] = 1.9; });
   // Courbe gardée en mémoire (F5 / retour) : affichage immédiat, puis le direct.
   restoreSnapshot();
   // Les 10 courbes tournent dès l'ouverture du site : elles sont prêtes avant qu'on les regarde.

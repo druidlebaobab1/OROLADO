@@ -168,7 +168,7 @@
   var lastSettleMode = null;
   var lastExecGuard = 0;
   var lastExecSide = '';
-  var selectedOddsLive = 1.88;
+  var selectedOddsLive = 1.9;
   var tradeQ = [];
   var tradeQBusy = false;
   var lastPlaceOkAt = 0;
@@ -1777,17 +1777,19 @@
 
   function payoutPctOf(odds) {
     var n = Number(odds);
-    var map = (D6.CONFIG && D6.CONFIG.PAYOUT_PCT) || { '1.88': 88, '5': 500, '10': 1000, '50': 5000 };
+    var map = (D6.CONFIG && D6.CONFIG.PAYOUT_PCT) || { '1.9': 90, '5': 500, '10': 1000, '50': 5000 };
+    if (n === 90) return 90;
     if (n === 88) return 88;
     if (n === 500) return 500;
     if (n === 1000) return 1000;
     if (n === 5000) return 5000;
-    if (Math.abs(n - 1.88) < 0.02) return Number(map['1.88']) || 88;
+    if (Math.abs(n - 1.9) < 0.005) return Number(map['1.9']) || 90;
+    if (Math.abs(n - 1.88) < 0.005) return Number(map['1.88']) || 88;
     if (Math.abs(n - 5) < 0.02) return Number(map['5']) || 500;
     if (Math.abs(n - 10) < 0.02) return Number(map['10']) || 1000;
     if (n >= 40) return Number(map['50']) || 5000;
     if (map[String(n)] != null) return Number(map[String(n)]);
-    return 88;
+    return 90;
   }
 
   // Jeu équitable : le gain affiché est le gain payé (88 % partout), jamais un chiffre au hasard.
@@ -1826,7 +1828,7 @@
     var stake = stakeRaw > 0 ? Math.max(D6.CONFIG.MIN_STAKE, stakeRaw) : 0;
     // Comme les grandes plateformes : le carré montre le TOTAL reçu si on gagne,
     // exactement ce que le serveur crédite (mise × cote, cf. orolado_fair_credit).
-    var totalWin = D6.roundMoney(stake * (Number(odds) || 1.88));
+    var totalWin = D6.roundMoney(stake * (Number(odds) || 1.9));
     if ($('previewGain')) {
       $('previewGain').textContent = D6.fmtFCFA(totalWin);
       fitGainText($('previewGain'));
@@ -1847,9 +1849,10 @@
   }
 
   function normalizePayoutMult(raw) {
-    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.88, 5, 10, 50];
+    var list = (D6.CONFIG && D6.CONFIG.ODDS_MULT) || [1.9, 5, 10, 50];
     var n = Number(raw);
-    if (n === 88) n = 1.88;
+    // Ancien choix enregistré (88 % / ×1,88) : devient le payout de base actuel (90 %).
+    if (n === 88 || n === 90 || Math.abs(n - 1.88) < 0.001) n = 1.9;
     else if (n === 500) n = 5;
     else if (n === 1000) n = 10;
     else if (n === 5000) n = 50;
@@ -1866,7 +1869,7 @@
     if (u && u.odds != null) return normalizePayoutMult(u.odds);
     var on = document.querySelector('.odds-chip.on');
     if (on && on.dataset.odds != null) return normalizePayoutMult(on.dataset.odds);
-    return normalizePayoutMult((D6.CONFIG && D6.CONFIG.DEFAULT_ODDS) || 1.88);
+    return normalizePayoutMult((D6.CONFIG && D6.CONFIG.DEFAULT_ODDS) || 1.9);
   }
 
   function setOdds(mult) {

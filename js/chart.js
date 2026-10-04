@@ -443,7 +443,7 @@
       entryPrice: entry,
       openPrice: entry,
       barrier: trade.barrier != null ? Number(trade.barrier) : entry,
-      payout: Number(trade.payout) || 1.88,
+      payout: Number(trade.payout) || 1.9,
       stake: Number(trade.stake) || 0,
       startTime: trade.startTime || trade.startedAt || trade.openedAt || 0,
       entryTick: trade.entryTick != null ? Number(trade.entryTick) : null,
@@ -2435,7 +2435,7 @@
     return isFinite(v) ? v.toFixed(2) : '';
   }
   function drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, fade) {
-    var mult = Number(trade.payout) || 1.88;
+    var mult = Number(trade.payout) || 1.9;
     // La ligne qui DÉCIDE le résultat (objectif du serveur) est toujours montrée quand elle n'est pas
     // au prix d'entrée — aussi en 88 % (ex. ORO 999 : objectif un peu sous l'entrée, car le prix
     // descend doucement entre ses sauts). Avant, en 88 % elle était cachée : le joueur jugeait avec le
@@ -3044,7 +3044,7 @@
       var lines = [[[isCall ? tt('tcBuy', 'ACHAT ↗') : tt('tcSell', 'VENTE ↘'), sideCol]]];
       if (stakeC > 0) {
         lines.push([[tt('tcStake', 'Mise') + ' ', DIM], ['$\u00a0\u00a0' + stakeC.toFixed(2), '#F8E7B0']]);
-        lines.push([[tt('tcGain', 'Gain possible') + ' ', DIM], ['+$\u00a0\u00a0' + (stakeC * ((Number(tv.payout) || 1.88) - 1)).toFixed(2), UPC]]);
+        lines.push([[tt('tcGain', 'Gain possible') + ' ', DIM], ['+$\u00a0\u00a0' + (stakeC * ((Number(tv.payout) || 1.9) - 1)).toFixed(2), UPC]]);
       }
       lines.push([[tt('tcLeft', 'Reste') + ' ', DIM], [Math.max(0, (expC - nowC) / 1000).toFixed(1) + ' s', '#F8E7B0']]);
       lines.push([[winning ? tt('tcWin', 'Gagnant en ce moment') : tt('tcLose', 'Perdant en ce moment'), winning ? UPC : DNC]]);

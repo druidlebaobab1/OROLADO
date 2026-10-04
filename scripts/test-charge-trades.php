@@ -29,7 +29,7 @@ if (($argv[1] ?? '') === 'enfant') {
   require $tmp . '/trade_lib.php';
   $me = ['id' => $uid, 'email' => $uid . '@test.local', 'role' => 'user'];
   $assets = array_keys(orolado_feed_assets());
-  $mults = [1.88, 5.0, 10.0, 50.0];
+  $mults = [1.9, 5.0, 10.0, 50.0];
   $ok = 0; $dup = 0; $ko = 0;
   for ($i = 0; $i < (int) $n; $i++) {
     $req = ['id' => $uid . '_o' . $i, 'stake' => [1, 7.5, 50, 500, 1000][$i % 5], 'side' => $i % 2 ? 'put' : 'call',

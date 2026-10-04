@@ -1486,6 +1486,7 @@ function orolado_trade_credit(bool $won, bool $voided, float $stake, float $payo
 
 function orolado_odds_key($payout): string {
   $n = (float) $payout;
+  if (abs($n - 1.9) < 0.001) return '1.9';
   if (abs($n - 1.88) < 0.001) return '1.88';
   if (abs($n - 5.0) < 0.001) return '5';
   if (abs($n - 10.0) < 0.001) return '10';

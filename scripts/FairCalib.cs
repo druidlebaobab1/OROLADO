@@ -12,8 +12,10 @@ public static class FairCalib
 {
     public const int TICK_MS = 250;
     public static readonly int[] DURATIONS = { 5, 10, 30, 60, 300, 600 };
-    public static readonly double[] MULTS = { 1.88, 5, 10, 50 };
-    public const double RTP = 0.94;
+    // 2026-10-04 (propriétaire) : payout de base 90 % (×1,90, 50 % de chance = 95 % rendu) ;
+    // ×5 / ×10 / ×50 : 90 % rendu au joueur sur la durée (10 % pour la maison), ligne objectif affichée.
+    public static readonly double[] MULTS = { 1.9, 5, 10, 50 };
+    public const double RTP = 0.90;
 
     public class Asset
     {
@@ -39,7 +41,7 @@ public static class FairCalib
         return a;
     }
 
-    // Probabilités de gain visées : RTP / multiplicateur (1.88 → 50 %).
+    // Probabilités de gain visées : 50 % pour le payout de base (×1,90), RTP / multiplicateur sinon.
     public static double TargetP(double mult) { return mult < 2 ? 0.5 : RTP / mult; }
 
     static double InvNorm(double p)

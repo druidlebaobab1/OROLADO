@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2310") center top/cover no-repeat,
+    url("galaxy-space.svg?v=2312") center top/cover no-repeat,
     radial-gradient(1.2px 1.2px at 12% 8%,rgba(255,255,255,.85),transparent 60%),
     radial-gradient(1px 1px at 78% 4%,rgba(255,255,255,.7),transparent 60%),
     radial-gradient(1.4px 1.4px at 92% 22%,rgba(255,230,190,.8),transparent 60%),
@@ -319,15 +319,15 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip{
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip .odds-mult{font-size:14px!important;font-weight:800!important;line-height:1.15!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip .odds-pct{font-size:8.5px!important;font-weight:800!important;letter-spacing:.12em!important;color:rgba(255,255,255,.7)!important;text-transform:uppercase!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.88"]:not(.on){background:rgba(249,115,22,.16)!important;border:1px solid #F97316!important;box-shadow:none!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.88"]:not(.on) .odds-mult{color:#FDBA74!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on){background:rgba(249,115,22,.16)!important;border:1px solid #F97316!important;box-shadow:none!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on) .odds-mult{color:#FDBA74!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on){background:rgba(6,182,212,.16)!important;border:1px solid #06B6D4!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on) .odds-mult{color:#67E8F9!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on){background:rgba(168,85,247,.18)!important;border:1px solid #A855F7!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on) .odds-mult{color:#D8B4FE!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on){background:rgba(245,158,11,.16)!important;border:1px solid #F59E0B!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on) .odds-mult{color:#FCD34D!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.88"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;border:1px solid #FDBA74!important;box-shadow:0 0 16px rgba(249,115,22,.55)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;border:1px solid #FDBA74!important;box-shadow:0 0 16px rgba(249,115,22,.55)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#22D3EE,#0891B2)!important;border:1px solid #A5F3FC!important;box-shadow:0 0 16px rgba(6,182,212,.55)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#C084FC,#9333EA)!important;border:1px solid #E9D5FF!important;box-shadow:0 0 18px rgba(168,85,247,.55)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#FBBF24,#D97706)!important;border:1px solid #FDE68A!important;box-shadow:0 0 18px rgba(245,158,11,.55)!important}
@@ -628,7 +628,7 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
-    url("galaxy-space2.svg?v=2310") center top/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center top/cover no-repeat,
     radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
     linear-gradient(180deg,#0E0B28,#080817)!important;
@@ -637,7 +637,7 @@ html body #screenAuth#screenAuth{
 html body .modal-backdrop .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
-    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center/cover no-repeat,
     #0B0D22!important;
   border:1px solid rgba(150,140,255,.22)!important;
 }
@@ -646,7 +646,7 @@ html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
     linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
-    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center/cover no-repeat,
     #08121E!important;
   border-color:rgba(45,212,191,.28)!important;
 }
@@ -655,7 +655,7 @@ html body #withdrawModal .modal-box{
   background:
     radial-gradient(90% 50% at 0% 0%,rgba(34,197,94,.14),transparent 65%),
     linear-gradient(180deg,rgba(8,22,20,.66),rgba(5,14,14,.80)),
-    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center/cover no-repeat,
     #071311!important;
   border-color:rgba(74,222,128,.26)!important;
 }
@@ -664,7 +664,7 @@ html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
-    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center/cover no-repeat,
     #0C0820!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
@@ -739,13 +739,13 @@ html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
-    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
-    url("galaxy-space2.svg?v=2310") center/cover no-repeat,
+    url("galaxy-space2.svg?v=2312") center/cover no-repeat,
     #0B0D22!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
@@ -786,13 +786,13 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F4FBFF!important;text-shadow:0 0 8px rgba(160,220,255,.7),0 1px 2px rgba(4,30,80,.7)!important}
 /* une petite lueur de la couleur du payout choisi (sans casser le bleu) */
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 10px rgba(249,115,22,.30)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 10px rgba(249,115,22,.30)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(6,182,212,.40)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(168,85,247,.40)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(245,158,11,.40)!important}
 /* « Payout 88% » sous le montant prend la couleur du payout choisi */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{transition:background .3s ease,border-color .3s ease!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview .mult{background:rgba(249,115,22,.55)!important;border-color:rgba(253,186,116,.8)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult{background:rgba(249,115,22,.55)!important;border-color:rgba(253,186,116,.8)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult{background:rgba(6,182,212,.55)!important;border-color:rgba(165,243,252,.8)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult{background:rgba(168,85,247,.55)!important;border-color:rgba(233,213,255,.8)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{background:rgba(245,158,11,.6)!important;border-color:rgba(253,230,138,.85)!important}
@@ -826,7 +826,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 html body #screenAuth#screenAuth{
   background:
     linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2310") center top/cover no-repeat,
+    url("galaxy-auth.svg?v=2312") center top/cover no-repeat,
     linear-gradient(180deg,#0E0B28,#080817)!important;
 }
 
@@ -841,11 +841,11 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   border:1px solid rgba(160,215,250,.55)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),0 0 8px rgba(125,211,252,.16)!important;
 }
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(125,211,252,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(125,211,252,.16)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(6,182,212,.8),0 0 8px rgba(125,211,252,.16)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(168,85,247,.8),0 0 8px rgba(125,211,252,.16)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview .mult{background:rgba(249,115,22,.20)!important;border-color:rgba(253,186,116,.45)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult{background:rgba(249,115,22,.20)!important;border-color:rgba(253,186,116,.45)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult{background:rgba(6,182,212,.20)!important;border-color:rgba(165,243,252,.45)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult{background:rgba(168,85,247,.20)!important;border-color:rgba(233,213,255,.45)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{background:rgba(245,158,11,.22)!important;border-color:rgba(253,230,138,.5)!important}
@@ -854,7 +854,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2310") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2312") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -862,7 +862,7 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2310") center/cover no-repeat,
+    url("galaxy-auth.svg?v=2312") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
@@ -873,7 +873,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2310") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2312") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -1216,11 +1216,11 @@ html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,
 html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(12,12,35) 0,rgb(14,18,50) 24px,rgba(18,30,78,.85) 100%)!important}
 
 /* case du gain : le petit « Payout 88% » garde le même bleu que tout le terminal, quel que soit le payout choisi */
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview{box-shadow:0 0 8px rgba(56,189,248,.14)!important;border-color:rgba(56,189,248,.5)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{background:rgba(14,165,233,.22)!important;border:1px solid rgba(125,211,252,.35)!important;color:#BAE6FD!important}
@@ -1327,7 +1327,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 html body #drawerProfile#drawerProfile{
   background:
     linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
-    url("galaxy-loader.svg?v=2310") center/cover no-repeat,
+    url("galaxy-loader.svg?v=2312") center/cover no-repeat,
     linear-gradient(180deg,#130F36,#0A0A20)!important;
   border-left:1px solid rgba(170,150,255,.25)!important;
 }
@@ -1408,13 +1408,13 @@ html body #helpModal .modal-box,
 html body #termsModal .modal-box{
   background:
     linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
-    url("galaxy-modal.svg?v=2310") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2312") center/cover no-repeat,
     linear-gradient(180deg,#120F34,#0A0A20)!important;
 }
 html body #depositModal .modal-box{background:
     radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
     linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
-    url("galaxy-modal.svg?v=2310") center/cover no-repeat,
+    url("galaxy-modal.svg?v=2312") center/cover no-repeat,
     linear-gradient(180deg,#0F1434,#090C20)!important}
 
 /* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
@@ -1443,7 +1443,7 @@ html body #tradeWrap#tradeWrap .asset-bar::after{content:""!important;flex:0 0 1
 
 /* case du gain : « Payout 88% » plus petit, un peu plus bas sous le montant, ne déborde dans aucune langue */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{
@@ -1499,7 +1499,7 @@ html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-right{righ
 }
 /* case du gain : « Payout 5000% » s'écrit en entier (toutes les langues) : écriture minuscule, case basse */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.88"].on) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{
@@ -1727,10 +1727,10 @@ html[dir="rtl"] body .strip-price{direction:ltr!important;unicode-bidi:isolate!i
    (celui des pages d'inscription) ; les planètes dessinées DANS la courbe restent */
 @media (min-width:860px){
   html body #screenTrade#screenTrade,html body #fsTradeOverlay#fsTradeOverlay{
-    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2310") center top/cover no-repeat,#13113A!important}
+    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2312") center top/cover no-repeat,#13113A!important}
 }
 html.is-tv body #screenTrade#screenTrade,html.is-tv body #fsTradeOverlay#fsTradeOverlay{
-  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2310") center top/cover no-repeat,#13113A!important}
+  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2312") center top/cover no-repeat,#13113A!important}
 /* TV : noms des marchés lisibles en entier (VOLATILITY, APOCALYPSE…) */
 html.is-tv body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7.6px!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important}
 html.is-tv.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:9px!important}
@@ -1946,3 +1946,9 @@ html body #toast.toast.ok:not(.micro){background:linear-gradient(135deg,#22C55E 
   box-shadow:0 10px 28px rgba(22,163,74,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important}
 html body #toast.toast.tie:not(.micro){background:linear-gradient(135deg,#FBBF24 0%,#F59E0B 55%,#EA580C 100%)!important;color:#fff!important;
   box-shadow:0 10px 28px rgba(245,158,11,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important}
+/* v2311 — appli iPhone : plus de bande bleue sous ACHETER / VENDRE ; le fond galaxie remonte jusque juste sous les
+   boutons (demande du propriétaire, capture de l'appli). Petit espace de 6 px sous les boutons. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap > .pad.pad{padding-bottom:6px!important}
+}
+html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap > .pad.pad{padding-bottom:6px!important}

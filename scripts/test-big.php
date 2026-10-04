@@ -80,7 +80,7 @@ check('règle ×2 : 4 400 000 $ à miser', abs((float) ($db['users'][$uid]['requ
 echo "2) Grosses mises en réel (aucun plafond)\n";
 $me = load_db()['users'][$uid];
 $orders = [];
-$plan = [[1000, 1.88, 'call'], [2000, 1.88, 'put'], [10000, 5, 'call'], [100000, 10, 'put'], [500000, 50, 'call'], [12345.67, 1.88, 'put']];
+$plan = [[1000, 1.9, 'call'], [2000, 1.9, 'put'], [10000, 5, 'call'], [100000, 10, 'put'], [500000, 50, 'call'], [12345.67, 1.9, 'put']];
 $staked = 0;
 foreach ($plan as $i => [$stake, $mult, $side]) {
   $before = $bank['c'][$uid];
@@ -90,7 +90,7 @@ foreach ($plan as $i => [$stake, $mult, $side]) {
   check('mise de ' . $money($stake) . ' ×' . $mult . ' acceptée, débit exact', $ok && abs($debited - $stake) < 0.001, $ok ? $money($debited) : ($r['reason'] ?? ''));
   if ($ok) { $orders[] = ['id' => 'big' . $i, 'stake' => $stake, 'mult' => $mult]; $staked += $stake; }
 }
-$r = orolado_trade_place($me, ['id' => 'trop', 'stake' => 5000000, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 'trop', 'stake' => 5000000, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('mise plus grande que le solde : refusée proprement', empty($r['ok']), (string) ($r['reason'] ?? ''));
 sleep(6);
 $credited = 0.0;
@@ -123,7 +123,7 @@ $me = load_db()['users'][$uid];
 $ids = [];
 $sum = 0;
 for ($i = 0; $i < 300; $i++) {
-  $r = orolado_trade_place($me, ['id' => 'm' . $i, 'stake' => 10000, 'side' => $i % 2 ? 'put' : 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+  $r = orolado_trade_place($me, ['id' => 'm' . $i, 'stake' => 10000, 'side' => $i % 2 ? 'put' : 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
   if (!empty($r['ok'])) { $ids[] = 'm' . $i; $sum += 10000; }
 }
 check('300 mises de 10 000 $ acceptées', count($ids) === 300, (string) count($ids));
@@ -132,7 +132,7 @@ $cred = 0;
 foreach ($ids as $id) {
   $s = orolado_trade_settle($uid, $id);
   $st = (string) ($s['order']['status'] ?? '');
-  if ($st === 'won') $cred += 1880000; elseif ($st === 'void') $cred += 1000000;
+  if ($st === 'won') $cred += 1900000; elseif ($st === 'void') $cred += 1000000;
 }
 $want = 1000000000 - $sum * 100 + $cred;
 check('caisse exacte au centime après 300 gros trades', $bank['c'][$uid] === $want, $money($bank['c'][$uid] / 100) . ' / attendu ' . $money($want / 100));

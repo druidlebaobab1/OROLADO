@@ -155,7 +155,7 @@ function report(array $res, array $NAMES, array $MULTS, array $DURS, float $mill
   $out = [];
   $out[] = 'OROLADO — contrôle complet des 4 payouts, 10 actifs, 6 durées';
   $out[] = date('Y-m-d H:i') . " — " . number_format($millions, 1) . " million(s) de prix simulés par actif (vrai moteur, vraies règles)";
-  $out[] = 'Retour = argent rendu ÷ argent misé. Sous 100 % = le site gagne sur la durée. Visé : ~94 %.';
+  $out[] = 'Retour = argent rendu ÷ argent misé. Sous 100 % = le site gagne sur la durée. Visé : ~95 % au payout de base (90 %), ~85 % sur ×5 / ×10 / ×50.';
   $out[] = '';
   $flags = [];
   $global = [0 => [0, 0.0], 1 => [0, 0.0], 2 => [0, 0.0], 3 => [0, 0.0]];

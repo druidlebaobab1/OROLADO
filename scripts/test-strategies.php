@@ -54,36 +54,36 @@ function settle(Path $p, int $dur, array $orders): float {
  * L'état garde ce que le joueur « se rappelle » (dernière perte, mise en cours…).
  */
 $S = [
-  'Au hasard (88 %)' => ['v100', 5, fn($p, &$st) => [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 1.88, 'stake' => 1]]],
-  'Toujours ACHETER' => ['v100', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.88, 'stake' => 1]]],
-  'ACHETER + VENDRE en même temps (88 %)' => ['v100', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.88, 'stake' => 1], ['side' => 'put', 'mult' => 1.88, 'stake' => 1]]],
+  'Au hasard (88 %)' => ['v100', 5, fn($p, &$st) => [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 1.9, 'stake' => 1]]],
+  'Toujours ACHETER' => ['v100', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.9, 'stake' => 1]]],
+  'ACHETER + VENDRE en même temps (88 %)' => ['v100', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.9, 'stake' => 1], ['side' => 'put', 'mult' => 1.9, 'stake' => 1]]],
   'ACHETER + VENDRE en même temps (×5)' => ['v100', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 5.0, 'stake' => 1], ['side' => 'put', 'mult' => 5.0, 'stake' => 1]]],
   'ACHETER + VENDRE en même temps (×50)' => ['v100', 10, fn($p, &$st) => [['side' => 'call', 'mult' => 50.0, 'stake' => 1], ['side' => 'put', 'mult' => 50.0, 'stake' => 1]]],
   'Martingale (double après perte)' => ['v100', 5, function ($p, &$st) {
     $st['m'] = $st['m'] ?? 1.0;
-    return [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 1.88, 'stake' => $st['m'], 'mart' => 1]];
+    return [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 1.9, 'stake' => $st['m'], 'mart' => 1]];
   }],
   'Anti-martingale (double après gain)' => ['v100', 5, function ($p, &$st) {
     $st['m'] = $st['m'] ?? 1.0;
-    return [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 1.88, 'stake' => $st['m'], 'anti' => 1]];
+    return [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 1.9, 'stake' => $st['m'], 'anti' => 1]];
   }],
-  'Suivre la tendance (10 s)' => ['v100', 5, fn($p, &$st) => [['side' => $p->c >= $p->back(40) ? 'call' : 'put', 'mult' => 1.88, 'stake' => 1]]],
-  'Contre la tendance (10 s)' => ['v100', 5, fn($p, &$st) => [['side' => $p->c >= $p->back(40) ? 'put' : 'call', 'mult' => 1.88, 'stake' => 1]]],
-  'Suivre la tendance longue (1 min, trade 1 min)' => ['v100', 60, fn($p, &$st) => [['side' => $p->c >= $p->back(240) ? 'call' : 'put', 'mult' => 1.88, 'stake' => 1]]],
+  'Suivre la tendance (10 s)' => ['v100', 5, fn($p, &$st) => [['side' => $p->c >= $p->back(40) ? 'call' : 'put', 'mult' => 1.9, 'stake' => 1]]],
+  'Contre la tendance (10 s)' => ['v100', 5, fn($p, &$st) => [['side' => $p->c >= $p->back(40) ? 'put' : 'call', 'mult' => 1.9, 'stake' => 1]]],
+  'Suivre la tendance longue (1 min, trade 1 min)' => ['v100', 60, fn($p, &$st) => [['side' => $p->c >= $p->back(240) ? 'call' : 'put', 'mult' => 1.9, 'stake' => 1]]],
   'Chasse au ×50' => ['v100', 10, fn($p, &$st) => [['side' => random_int(0, 1) ? 'call' : 'put', 'mult' => 50.0, 'stake' => 1]]],
-  'Boom : toujours VENDRE entre les pics' => ['boomspike', 5, fn($p, &$st) => [['side' => 'put', 'mult' => 1.88, 'stake' => 1]]],
+  'Boom : toujours VENDRE entre les pics' => ['boomspike', 5, fn($p, &$st) => [['side' => 'put', 'mult' => 1.9, 'stake' => 1]]],
   'Boom : ACHETER ×50 en attendant un pic' => ['boomspike', 10, fn($p, &$st) => [['side' => 'call', 'mult' => 50.0, 'stake' => 1]]],
-  'Boom : VENDRE juste après un pic' => ['boomspike', 10, fn($p, &$st) => $p->spikeWithin(8) ? [['side' => 'put', 'mult' => 1.88, 'stake' => 1]] : []],
-  'Crash : toujours ACHETER entre les chutes' => ['crash300', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.88, 'stake' => 1]]],
+  'Boom : VENDRE juste après un pic' => ['boomspike', 10, fn($p, &$st) => $p->spikeWithin(8) ? [['side' => 'put', 'mult' => 1.9, 'stake' => 1]] : []],
+  'Crash : toujours ACHETER entre les chutes' => ['crash300', 5, fn($p, &$st) => [['side' => 'call', 'mult' => 1.9, 'stake' => 1]]],
   // « Quand la courbe est tout en haut, elle va forcément redescendre » : on attend une forte
   // montée (le prix au plus haut des 2 dernières minutes, bien au-dessus) puis on VEND en ×5 ;
   // et l'inverse tout en bas.
   // Élastique de long terme : l'indice est 2 fois AU-DESSUS (ou en dessous) de son prix de
   // départ, on parie sur le « retour » à chaque trade de 10 min. Doit rester sous 100 %.
-  'Indice à 2× son départ → VENDRE 88 % (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 1.88, 'stake' => 1]], 2.0],
+  'Indice à 2× son départ → VENDRE 88 % (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 1.9, 'stake' => 1]], 2.0],
   'Indice à 2× son départ → VENDRE ×5 (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 5.0, 'stake' => 1]], 2.0],
-  'Indice à 0,5× son départ → ACHETER 88 % (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'call', 'mult' => 1.88, 'stake' => 1]], 0.5],
-  'Crash à 2× son départ → VENDRE 88 % (10 min)' => ['crash300', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 1.88, 'stake' => 1]], 2.0],
+  'Indice à 0,5× son départ → ACHETER 88 % (10 min)' => ['v100', 600, fn($p, &$st) => [['side' => 'call', 'mult' => 1.9, 'stake' => 1]], 0.5],
+  'Crash à 2× son départ → VENDRE 88 % (10 min)' => ['crash300', 600, fn($p, &$st) => [['side' => 'put', 'mult' => 1.9, 'stake' => 1]], 2.0],
   'Tout en haut → VENDRE ×5 (attendre le retour)' => ['v100', 30, function ($p, &$st) {
     $n = count($p->hist);
     if ($n < 480) return [];
@@ -105,7 +105,7 @@ $S = [
   'Tout en haut → VENDRE 88 % (attendre le retour)' => ['v100', 60, function ($p, &$st) {
     if (count($p->hist) < 480) return [];
     $win = array_slice($p->hist, -480);
-    return $p->c >= max($win) ? [['side' => 'put', 'mult' => 1.88, 'stake' => 1]] : [];
+    return $p->c >= max($win) ? [['side' => 'put', 'mult' => 1.9, 'stake' => 1]] : [];
   }],
 ];
 

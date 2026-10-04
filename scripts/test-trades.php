@@ -67,11 +67,11 @@ foreach (array_keys(orolado_feed_assets()) as $a) {
 }
 
 echo "2) Trade réel 10 \$ CALL 88 % sur 5 s\n";
-$r = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('ordre accepté', !empty($r['ok']), $r['reason'] ?? '');
 check('MOINS : caisse 100 → 90', abs($bank['real'][$uid] - 90) < 0.001, (string) $bank['real'][$uid]);
 check('ligne = prix d’entrée à 88 %', ($r['order']['barrier'] ?? null) === ($r['order']['entryPrice'] ?? -1));
-$r2 = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$r2 = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('double clic même ordre : pas de 2e débit', !empty($r2['duplicate']) && abs($bank['real'][$uid] - 90) < 0.001);
 $early = orolado_trade_settle($uid, 't1');
 check('règlement avant la fin : refusé (en cours)', !empty($early['pending']));
@@ -81,7 +81,7 @@ $o = $s['order'] ?? [];
 $exit = orolado_feed_price_at('v100', (int) $o['expiryTick']);
 $expect = $exit > (int) round($o['barrier'] * 100) ? 'won' : ($exit === (int) round($o['barrier'] * 100) ? 'void' : 'lost');
 check('verdict = vrai prix d’expiration', ($o['status'] ?? '') === $expect, ($o['status'] ?? '?') . ' entrée ' . $o['entryPrice'] . ' sortie ' . ($exit / 100));
-$want = $expect === 'won' ? 108.8 : ($expect === 'void' ? 100.0 : 90.0);
+$want = $expect === 'won' ? 109.0 : ($expect === 'void' ? 100.0 : 90.0);
 check('PLUS/perte : caisse correcte', abs($bank['real'][$uid] - $want) < 0.001, $bank['real'][$uid] . ' attendu ' . $want);
 orolado_trade_settle($uid, 't1');
 orolado_trade_settle($uid, 't1');
@@ -89,11 +89,11 @@ check('3 règlements = 1 seul crédit', abs($bank['real'][$uid] - $want) < 0.001
 
 echo "3) Refus (pas de plafond de gain)\n";
 $bal = $bank['real'][$uid];
-$r = orolado_trade_place($me, ['id' => 't2', 'stake' => 5000, 'side' => 'put', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 't2', 'stake' => 5000, 'side' => 'put', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('mise > solde (aucun plafond de gain) : refusée', empty($r['ok']) && abs($bank['real'][$uid] - $bal) < 0.001, $r['reason'] ?? '');
-$r = orolado_trade_place($me, ['id' => 't3', 'stake' => 500, 'side' => 'put', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 't3', 'stake' => 500, 'side' => 'put', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('solde insuffisant : refusé, caisse intacte', empty($r['ok']) && abs($bank['real'][$uid] - $bal) < 0.001, $r['reason'] ?? '');
-$r = orolado_trade_place($me, ['id' => 't4', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'nope', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 't4', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'nope', 'payout' => 1.9]);
 check('actif inconnu : refusé', empty($r['ok']));
 
 echo "4) ×5 PUT sur Boom + ×50 CALL sur Crash + démo\n";
@@ -101,7 +101,7 @@ $r = orolado_trade_place($me, ['id' => 't5', 'stake' => 2, 'side' => 'put', 'dur
 check('×5 accepté, ligne sous l’entrée', !empty($r['ok']) && $r['order']['barrier'] < $r['order']['entryPrice'], ($r['order']['entryPrice'] ?? '') . ' → ' . ($r['order']['barrier'] ?? ''));
 $r = orolado_trade_place($me, ['id' => 't6', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'crash300', 'payout' => 50]);
 check('×50 accepté, ligne au-dessus', !empty($r['ok']) && $r['order']['barrier'] > $r['order']['entryPrice']);
-$r = orolado_trade_place($me, ['id' => 'd1', 'stake' => 100, 'side' => 'put', 'duration' => 5, 'mode' => 'demo', 'assetId' => 'stable', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 'd1', 'stake' => 100, 'side' => 'put', 'duration' => 5, 'mode' => 'demo', 'assetId' => 'stable', 'payout' => 1.9]);
 $dv = load_db()['vault'][$uid]['demo'];
 check('démo : 1000 → 900', !empty($r['ok']) && abs($dv - 900) < 0.001, (string) $dv);
 
@@ -119,12 +119,12 @@ foreach ($db2['orders'] as $x) {
 }
 check('caisse réelle = avant + gains', abs($bank['real'][$uid] - ($before + $credits)) < 0.001, $before . ' + ' . $credits . ' = ' . $bank['real'][$uid]);
 $demoOrder = array_values(array_filter($db2['orders'], fn($x) => $x['id'] === 'd1'))[0];
-$wantDemo = 900 + orolado_fair_credit($demoOrder['status'], 100, 1.88);
+$wantDemo = 900 + orolado_fair_credit($demoOrder['status'], 100, (float) ($demoOrder['payout'] ?? 1.9));
 check('démo créditée une fois', abs($db2['vault'][$uid]['demo'] - $wantDemo) < 0.001, $demoOrder['status'] . ' → ' . $db2['vault'][$uid]['demo']);
 
 echo "6) Ancien trade ouvert (avant mise à jour) : mise rendue\n";
 with_db_lock(function ($box) use ($uid) {
-  $box->db['orders'][] = ['id' => 'old1', 'userId' => $uid, 'payId' => $uid, 'stake' => 7, 'side' => 'call', 'duration' => 10, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88, 'status' => 'open', 'at' => microtime(true) - 100, 'expiryAt' => microtime(true) - 90];
+  $box->db['orders'][] = ['id' => 'old1', 'userId' => $uid, 'payId' => $uid, 'stake' => 7, 'side' => 'call', 'duration' => 10, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9, 'status' => 'open', 'at' => microtime(true) - 100, 'expiryAt' => microtime(true) - 90];
   return ['ok' => true];
 });
 $before = $bank['real'][$uid];
@@ -142,14 +142,14 @@ $GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use ($orig, $uid,
     $race = false;
     $bank['real'][$uid] = round($bank['real'][$uid] - $a['p_amount'], 2);
     with_db_lock(function ($box) use ($uid) {
-      $box->db['orders'][] = ['id' => 'race1', 'userId' => $uid, 'payId' => $uid, 'stake' => 5, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88, 'status' => 'open', 'at' => microtime(true), 'expiryAt' => microtime(true) + 5];
+      $box->db['orders'][] = ['id' => 'race1', 'userId' => $uid, 'payId' => $uid, 'stake' => 5, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9, 'status' => 'open', 'at' => microtime(true), 'expiryAt' => microtime(true) + 5];
       return ['ok' => true];
     });
   }
   return $orig($fn, $a);
 };
 $before = $bank['real'][$uid];
-$r = orolado_trade_place($me, ['id' => 'race1', 'stake' => 5, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.88]);
+$r = orolado_trade_place($me, ['id' => 'race1', 'stake' => 5, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 $GLOBALS['OROLADO_FAKE_RPC'] = $orig;
 $nRace = count(array_filter(load_db()['orders'], fn($x) => ($x['id'] ?? '') === 'race1'));
 check('un seul trade enregistré', !empty($r['duplicate']) && $nRace === 1);

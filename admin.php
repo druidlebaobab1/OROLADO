@@ -1202,7 +1202,7 @@ function admin_list_payload(string $view, array $req): array {
 
   if ($view === 'payout_stats') {
     $cols = ['Payout', 'Trades', 'Part des trades', 'Joueurs', 'Part des joueurs'];
-    $want = [88, 500, 1000, 5000];
+    $want = [90, 500, 1000, 5000];
     $cnt = [];
     $who = [];
     foreach ($want as $b) { $cnt[$b] = 0; $who[$b] = []; }
@@ -1222,7 +1222,8 @@ function admin_list_payload(string $view, array $req): array {
       if ((string) ($o['mode'] ?? '') !== 'real') continue;
       $pay = (float) ($o['payout'] ?? $o['payoutMult'] ?? 0);
       $pct = 0;
-      if (abs($pay - 1.88) < 0.02 || abs($pay - 88) < 0.05) $pct = 88;
+      // Payout de base (90 % ; les anciens trades à 88 % sont comptés avec lui).
+      if (abs($pay - 1.9) < 0.03 || abs($pay - 90) < 0.05 || abs($pay - 88) < 0.05) $pct = 90;
       else if (abs($pay - 5.0) < 0.02 || abs($pay - 500) < 0.05) $pct = 500;
       else if (abs($pay - 10.0) < 0.02 || abs($pay - 1000) < 0.05) $pct = 1000;
       else if (abs($pay - 50.0) < 0.02 || abs($pay - 5000) < 0.05) $pct = 5000;
