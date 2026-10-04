@@ -1136,7 +1136,8 @@ if ($action === 'upsert') {
   with_db_lock(function ($box) use ($id, $user, $demoIn) {
     $cur = (isset($box->db['users'][$id]) && is_array($box->db['users'][$id])) ? $box->db['users'][$id] : [];
     // Champs serveur relus au dernier moment (un dépôt a pu arriver pendant la requête).
-    foreach (array_merge(orolado_server_user_fields(), orolado_server_user_counters(), ['passwordHash', 'role']) as $k) {
+    // v2343 : 'demoRefillAt' (dernière recharge auto de la démo) n'est écrit QUE par le serveur.
+    foreach (array_merge(orolado_server_user_fields(), orolado_server_user_counters(), ['passwordHash', 'role', 'demoRefillAt']) as $k) {
       if (array_key_exists($k, $cur)) $user[$k] = $cur[$k];
       else unset($user[$k]);
     }
@@ -1870,15 +1871,35 @@ if ($action === 'me') {
   $demoNow = orolado_money($jsonVault['demo'] ?? 0);
   $resetDemo = ($demoNow <= 0 && (int) ($me['trades'] ?? 0) === 0);
   if ($resetDemo) $demoNow = 1000000;
+  // v2343 — Démo rechargée automatiquement (demande du propriétaire) : sous 1 000 $, aucun trade démo
+  // ouvert, au plus une fois par 24 h → retour à 1 000 000 $. Argent fictif seulement (le réel n'est
+  // jamais touché). Le téléphone affiche « Compte démo rechargé ».
+  $demoRefilled = false;
+  $demoRefillWait = 0;
+  if (!$resetDemo && $demoNow < 1000) {
+    $demoOpen = false;
+    foreach (($db['orders'] ?? []) as $oD) {
+      if (($oD['userId'] ?? '') === $uid && ($oD['status'] ?? '') === 'open' && ($oD['mode'] ?? 'demo') !== 'real') { $demoOpen = true; break; }
+    }
+    $sinceRefill = time() - (int) ($me['demoRefillAt'] ?? 0);
+    if (!$demoOpen && $sinceRefill >= 86400) {
+      $resetDemo = true;
+      $demoRefilled = true;
+      $demoNow = 1000000;
+    } else if (!$demoOpen) {
+      $demoRefillWait = 86400 - $sinceRefill;
+    }
+  }
   // Écrit seulement si quelque chose a changé : solde, démo à recharger, ou « vu en ligne »
   // vieux de plus de 45 s (le compteur « en ligne » de l'admin regarde 90 s).
   $seenAge = time() - (strtotime((string) ($me['lastSeen'] ?? '')) ?: 0);
   $realChanged = abs(orolado_money($jsonVault['real'] ?? 0) - $officialReal) > 0.001;
   $touchSeen = $seenAge >= 45;
   if ($realChanged || $resetDemo || $touchSeen) {
-    with_db_lock(function ($box) use ($uid, $officialReal, $resetDemo) {
+    with_db_lock(function ($box) use ($uid, $officialReal, $resetDemo, $demoRefilled) {
       if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
       if ($resetDemo) $box->db['vault'][$uid]['demo'] = 1000000;
+      if ($demoRefilled && isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) $box->db['users'][$uid]['demoRefillAt'] = time();
       $box->db['vault'][$uid]['real'] = $officialReal;
       if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($box->db, $uid, $officialReal);
       if (isset($box->db['users'][$uid]) && is_array($box->db['users'][$uid])) $box->db['users'][$uid]['lastSeen'] = date('c');
@@ -1933,6 +1954,8 @@ if ($action === 'me') {
     'user' => orolado_public_user($me),
     'vault' => $vault,
     'wager' => $wagerMe,
+    'demoRefilled' => $demoRefilled,
+    'demoRefillWait' => $demoRefillWait,
     'openOrders' => $openOrders,
     'positions' => array_slice(array_reverse($recentPositions), 0, (($officialReal > 0 || $depRowsMe > 0) ? 1500 : 80))
   ]);

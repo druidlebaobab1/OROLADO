@@ -1196,6 +1196,12 @@
         adoptWagerBook(r);
         applyQuietVault(r);
         mirrorOtherDeviceTrades(r);
+        // v2343 : démo rechargée par le serveur (solde sous 1 000 $, une fois par 24 h).
+        if (r && r.ok && r.demoRefilled && r.vault && r.vault.demo != null && D6.Store.setBalanceMode) {
+          D6.Store.setBalanceMode(u, 'demo', Number(r.vault.demo));
+          updateBalance(false);
+          toast(t('demoRefilled'), 'ok', 3500);
+        }
         if (r && r.ok && r.vault && r.vault.real != null) {
           var incomingDep = Number(r.user && r.user.realDepositTotal) || 0;
           var localDep = Number(u.realDepositTotal) || 0;

@@ -3055,6 +3055,15 @@
     Object.keys(EXTRA_TR[l]).forEach(function (k) { DICT[l][k] = EXTRA_TR[l][k]; });
   });
 
+  // v2343 — message de la recharge automatique du compte démo (11 langues).
+  var DEMO_REFILL = {
+    en: 'Demo account refilled: $1,000,000', fr: 'Compte démo rechargé : 1 000 000 $', es: 'Cuenta demo recargada: 1 000 000 $',
+    pt: 'Conta demo recarregada: $1.000.000', ar: 'تمت إعادة شحن الحساب التجريبي: 1,000,000$', ru: 'Демо-счёт пополнен: 1 000 000 $',
+    tr: 'Demo hesap yenilendi: 1.000.000 $', vi: 'Đã nạp lại tài khoản demo: 1.000.000 $', id: 'Akun demo diisi ulang: $1.000.000',
+    de: 'Demokonto aufgeladen: 1.000.000 $', hi: 'डेमो खाता रिचार्ज हुआ: $1,000,000'
+  };
+  Object.keys(DEMO_REFILL).forEach(function (l) { if (DICT[l]) DICT[l].demoRefilled = DEMO_REFILL[l]; });
+
   D6.I18N = {
     t: t, short: shortMsg,
     msg: msg,
