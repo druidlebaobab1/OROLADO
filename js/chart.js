@@ -493,7 +493,12 @@
     // qui déplace l'entrée un peu plus loin, le recachait → « parfois rapide, parfois lent »). Il reste collé au
     // Le rond reste pour de bon à l'endroit du clic : la réponse du serveur (qui fixe le vrai prix) ne le fait
     // plus glisser le long de la courbe.
-    var hideNow = !shownMarks[ot.id] && ot.startTime && collectNow < ot.startTime - 400;
+    // v2346 — Compte CONNECTÉ (réel et démo) : le serveur fixe l'entrée à l'instant réel, que la courbe affichée
+    // (en retard de quelques centaines de ms) n'atteint qu'après coup ; on cachait le rond jusque-là → 1 à 2 s
+    // d'attente après le clic (« lent »), alors qu'un visiteur le voyait tout de suite. Désormais : jamais caché,
+    // rond et trait affichés dès le clic pour tout le monde (le rond reste au bout de la courbe le temps qu'elle
+    // l'atteigne).
+    var hideNow = false;
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
