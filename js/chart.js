@@ -1028,6 +1028,12 @@
     // Deux planètes de plus, très discrètes.
     planet(pad.l + w * 0.53, pad.t + h * 0.40, pr * 0.42, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.13, false);
     planet(pad.l + w * 0.17, pad.t + h * 0.60, pr * 0.30, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.12, false);
+    // À droite, là où la courbe n'arrive jamais (demande du propriétaire) : une 2e jolie planète à anneau
+    // en haut, et de petites planètes adoucies en bas.
+    planet(pad.l + w * 0.93, pad.t + h * 0.10, pr * 0.40, '#E4F4FF', 'rgba(110,140,255,1)', '#141A4A', 0.34, true);
+    planet(pad.l + w * 0.78, pad.t + h * 0.95, pr * 0.30, '#FFE2EC', 'rgba(244,114,182,1)', '#3A0A22', 0.20, false);
+    planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.14, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.22, false);
+    planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.16, false);
     var gx = pad.l + w * 0.36, gy = pad.t + h * 0.52, gR = small * 0.70;
     // Lueurs du cœur (rondes : elles n'ont pas besoin de tourner).
     halo(gx, gy, gR * 1.05, 'rgba(120,80,255,0.07)');
