@@ -1622,6 +1622,8 @@ if ($action === 'withdraw') {
     exit;
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
+  // v2359 : gagne trop souvent grâce au prix du clic (robot ?) → retrait signalé dans l'admin.
+  if (function_exists('orolado_click_edge_reason') && orolado_click_edge_reason($me) !== '') $suspect = true;
   $amountFcfa = orolado_usd_to_fcfa($amount);
   // Le code est « consommé » sous verrou juste avant le débit : deux demandes envoyées en même
   // temps avec le même code ne peuvent pas passer toutes les deux.

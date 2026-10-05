@@ -3848,7 +3848,9 @@
         duration: sealedDur,
         mode: mode,
         assetId: res.trade.assetId,
-        payout: res.trade.payout || currentOdds(u)
+        payout: res.trade.payout || currentOdds(u),
+        // v2359 : prix vu au clic (le serveur le prend s'il date de moins de 1,5 s) → ligne = rond, comme en démo.
+        seenTick: res.seenTick
       };
       var placedTradeId = res.trade.id;
       function killUnfundedTrade(reason) {

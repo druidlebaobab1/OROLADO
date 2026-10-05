@@ -2278,6 +2278,11 @@ function admin_order_is_live_real(array $o): bool {
 function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, array $ctx = []): string {
   $role = strtolower((string) ($p['role'] ?? ''));
   if (in_array($role, ['suspended', 'banned'], true)) return 'Compte déjà suspendu';
+  // v2359 : prix du clic accepté → un robot gagnerait presque toujours grâce à lui (voir trade_lib.php).
+  if (function_exists('orolado_click_edge_reason')) {
+    $clickWhy = orolado_click_edge_reason($p);
+    if ($clickWhy !== '') return $clickWhy;
+  }
   if ($wd && (!empty($wd['suspect']) || strtolower((string) ($wd['status'] ?? '')) === 'review')) {
     return 'Retrait signalé';
   }

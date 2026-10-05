@@ -133,6 +133,25 @@ function orolado_trade_exposure(array $db, string $assetId = '', string $uid = '
  * Ouvre un trade. $req = données du navigateur (mise, sens, durée, actif, cote, id, mode).
  * Le prix d'entrée et la ligne objectif sont décidés ICI, jamais par le navigateur.
  */
+/** v2359 : prix du clic accepté jusqu'à 1,5 s en arrière (6 prix de 250 ms). */
+if (!defined('OROLADO_CLICK_MAX_TICKS')) define('OROLADO_CLICK_MAX_TICKS', 6);
+
+/**
+ * v2359 : comportement de robot. Entre le clic et l'arrivée de l'ordre, le prix a souvent déjà bougé :
+ * un joueur honnête a choisi son sens AVANT ce mouvement, il tombe juste ~1 fois sur 2 (clickFav ≈ clickUnfav).
+ * Un robot qui lit les prix en direct choisit le sens APRÈS l'avoir vu et prétend avoir cliqué avant :
+ * il tombe juste presque toujours. Seuil large pour ne pas gêner les vrais joueurs (hasard < 0,5 %).
+ * Renvoie la raison (texte) ou ''.
+ */
+function orolado_click_edge_reason(array $u): string {
+  $fav = (int) ($u['clickFav'] ?? 0);
+  $unfav = (int) ($u['clickUnfav'] ?? 0);
+  if ($fav >= 15 && $fav >= 5 * max(1, $unfav)) {
+    return 'Choisit presque toujours le sens que le prix a déjà pris depuis son clic (robot ?) : ' . $fav . ' fois contre ' . $unfav;
+  }
+  return '';
+}
+
 function orolado_trade_place(array $me, array $req): array {
   $uid = (string) ($me['id'] ?? '');
   $stake = orolado_money($req['stake'] ?? 0);
@@ -191,6 +210,27 @@ function orolado_trade_place(array $me, array $req): array {
       $entryCents = (int) $atArrival;
     }
   }
+  // v2359 (choix du propriétaire) : prix du CLIC accepté. Le téléphone envoie le numéro du prix qu'il affichait
+  // au clic (seenTick) ; le serveur le prend s'il est récent (au plus OROLADO_CLICK_MAX_TICKS en arrière), jamais
+  // dans le futur. Le rond et la ligne tombent alors exactement au même endroit, comme en démo visiteur.
+  // Protection : on note si le prix a déjà bougé DANS le sens choisi entre le clic et l'arrivée (clickFav) ou
+  // contre lui (clickUnfav). Robot = presque toujours dans le bon sens → compte et retraits « suspects » (admin).
+  $arrivalTick = $entryTick;
+  $arrivalCents = $entryCents;
+  $clickLag = 0;
+  $seenTick = (isset($req['seenTick']) && is_numeric($req['seenTick'])) ? (int) $req['seenTick'] : 0;
+  if ($seenTick > 0 && $seenTick < $entryTick && $seenTick >= $entryTick - OROLADO_CLICK_MAX_TICKS) {
+    $atSeen = orolado_feed_price_at($assetId, $seenTick);
+    if ($atSeen !== null && $atSeen > 0) {
+      $clickLag = $entryTick - $seenTick;
+      $entryTick = $seenTick;
+      $entryCents = (int) $atSeen;
+    }
+  }
+  $clickMove = '';
+  if ($clickLag > 0 && $arrivalCents !== $entryCents) {
+    $clickMove = (($side === 'call') === ($arrivalCents > $entryCents)) ? 'fav' : 'unfav';
+  }
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
 
@@ -228,8 +268,11 @@ function orolado_trade_place(array $me, array $req): array {
     'expiryAt' => ($expiryTick * OROLADO_TICK_MS) / 1000,
     'stakeTaken' => $mode === 'real',
     'fair' => 1,
+    'clickLag' => $clickLag,
+    'arrivalTick' => $arrivalTick,
+    'arrivalCents' => $arrivalCents,
   ];
-  $placed = with_db_lock(function ($box) use ($order, $uid, $mode, $stake, $realAfter) {
+  $placed = with_db_lock(function ($box) use ($order, $uid, $mode, $stake, $realAfter, $clickMove) {
     $locked =& $box->db;
     if (!isset($locked['orders']) || !is_array($locked['orders'])) $locked['orders'] = [];
     foreach ($locked['orders'] as $o) {
@@ -252,6 +295,8 @@ function orolado_trade_place(array $me, array $req): array {
         $u['totalWageredSinceDeposit'] = $u['realStakeVolume'];
         $u['requiredWagering'] = orolado_money(($u['realDepositTotal'] ?? 0) * 2);
         $u['realTrades'] = (int) ($u['realTrades'] ?? 0) + 1;
+        if ($clickMove === 'fav') $u['clickFav'] = (int) ($u['clickFav'] ?? 0) + 1;
+        if ($clickMove === 'unfav') $u['clickUnfav'] = (int) ($u['clickUnfav'] ?? 0) + 1;
         if (function_exists('orolado_apply_wager_progress')) orolado_apply_wager_progress($u, $stake);
         unset($u);
       }
@@ -370,8 +415,7 @@ function orolado_trade_settle(string $uid, string $oid): array {
             'note' => $verdict === 'void' ? 'Égalité — mise rendue' : ($verdict === 'won' ? 'Gain' : 'Perte'),
             'mode' => 'real',
           ]);
-          $locked['users'][$uid]['transactions'] = array_slice($locked['users'][$uid]['transactions'], 0, 80);
-        }
+          $locked['users'][$uid]['transactions'] = array_slice($locked['users'][$uid]['transactions'], 0, 80);        }
       }
       $row['status'] = $verdict;
       $row['won'] = $verdict === 'won';

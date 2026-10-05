@@ -1376,7 +1376,8 @@
       if (D6.Chart && D6.Chart.applyOpenTradeVisual) {
         try { D6.Chart.applyOpenTradeVisual(pub); } catch (eVis) { /* ignore */ }
       }
-      return { ok: true, trade: pub };
+      // v2359 : numéro du prix affiché au clic, envoyé au serveur (il le prend s'il est récent).
+      return { ok: true, trade: pub, seenTick: entryTick };
     },
 
     /** Annule un trade que le serveur a refusé (aucune mise prise côté serveur). */
