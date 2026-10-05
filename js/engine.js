@@ -57,9 +57,9 @@
     var want = lag + (live ? 100 : POLL_MS + 100);
     // v2344 : descend en quelques secondes (avant ~1 min et plus) ; remonte toujours tout de suite si besoin.
     needDelay = want > needDelay ? want : needDelay * (live ? 0.97 : 0.997) + want * (live ? 0.03 : 0.003);
-    // v2353 : 0,5 s de réserve en direct : la confirmation du serveur (~0,3-0,45 s) arrive avant que la courbe
-    // atteigne le point d'entrée, donc le rond (collé au bout de la courbe) s'y arrête sans bouger.
-    var target = Math.max(live ? 500 : DISPLAY_DELAY, Math.min(2600, needDelay));
+    // v2354 : 0,2 s de réserve minimum en direct : la courbe colle au serveur, donc après un clic connecté le vrai
+    // point d'entrée est déjà (ou presque) affiché quand la réponse du serveur arrive → le rond apparaît vite.
+    var target = Math.max(live ? 200 : DISPLAY_DELAY, Math.min(2600, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
     else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - (live ? 12 : 4));
   }

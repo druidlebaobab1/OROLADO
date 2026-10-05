@@ -69,6 +69,8 @@
   // v2353 : rond « collé au bout de la courbe » jusqu'au vrai point d'entrée du serveur.
   var rideState = {};
   var rideDbg = null;
+  // v2354 : début de l'attente (serveur + courbe) de chaque trade connecté, pour le filet de 6 s.
+  var hiddenSince = {};
   // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
   // coupées, cadre des prix du passé, bouton « Direct ».
   var panMs = 0;
@@ -506,7 +508,20 @@
     // v2350 : le trade confirmé apparaît quand la courbe affichée ATTEINT son vrai point d'entrée (prix et heure du
     // serveur) : le rond tombe pile sur la courbe et la ligne part exactement de lui (~0,5 s après le clic).
     // v2352 : jamais caché → le trade s'affiche à l'instant du clic, comme pour un visiteur.
+    // v2354 (solution 1 choisie par le propriétaire, comme les grands sites) : compte connecté, le rond, le trait et
+    // la ligne objectif attendent la réponse du serveur (~0,3 s) puis l'instant où la courbe affichée atteint le vrai
+    // point d'entrée ; ils apparaissent alors UNE fois, pile sur la courbe, et ne bougent plus. En attendant, le
+    // signe ACHAT / VENTE et l'anneau au bout de la courbe s'affichent dès le clic. Visiteur : inchangé (immédiat).
+    // Filet : jamais caché plus de 6 s.
     var hideNow = false;
+    if (!ot.guest) {
+      var waitSrv = !ot.serverConfirmed;
+      var waitHead = !waitSrv && Number(ot.startTime) > (xNow || collectNow);
+      if (waitSrv || waitHead) {
+        if (!hiddenSince[ot.id]) hiddenSince[ot.id] = collectNow;
+        hideNow = collectNow - hiddenSince[ot.id] < 6000;
+      }
+    }
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
