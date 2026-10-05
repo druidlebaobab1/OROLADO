@@ -1717,7 +1717,6 @@
       var near = Math.max(30, S * pxSec * 1.3);
       function boost(x) { var d = (x - headX) / near; return Math.exp(-d * d); }
       for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
-        if (Math.abs(T / majorMs - Math.round(T / majorMs)) < 1e-6) continue;
         var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
         if (gx < 0 || gx > cssW) continue;
         ctx.strokeStyle = 'rgba(255,255,255,' + (0.045 + 0.04 * boost(gx)).toFixed(3) + ')';
@@ -1728,11 +1727,18 @@
       }
       // Traits principaux : DOUBLE trait qui défile (trait clair, petite bande sombre, trait doux) avec une
       // ombre douce autour ; plus lumineux au passage de la tête.
+      // v2384 (propriétaire) : les traits ÉCLAIRÉS (doubles traits) vont vers la DROITE, à la même vitesse
+      // que les traits pâles qui vont vers la gauche : les deux familles se croisent et se dépassent sans
+      // arrêt. (Les heures restent sous les traits pâles du temps, donc toujours justes.)
       var M0 = Math.floor(tLeft / majorMs) * majorMs;
       var halo = Math.max(5, Math.min(9, cssW / 70));
-      for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
-        var mx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
-        if (mx < -halo || mx > cssW + halo) continue;
+      var mSpace = Math.max(40, M * pxSec);
+      var mPhase = ((xNow / 1000) * pxSec) % mSpace;
+      var mk;
+      for (mk = -1, guard = 0; guard < 40; mk++, guard++) {
+        var mx = Math.round(mPhase + mk * mSpace) + 0.5;
+        if (mx > cssW + halo) break;
+        if (mx < -halo) continue;
         var b = boost(mx);
         var sh = ctx.createLinearGradient(mx - halo, 0, mx + 4 + halo, 0);
         sh.addColorStop(0, 'rgba(255,255,255,0)');
