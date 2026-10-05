@@ -1746,43 +1746,30 @@
         sh.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = sh;
         ctx.fillRect(mx - halo, 0, halo * 2 + 4, lineBot);
-        ctx.fillStyle = 'rgba(2,3,14,' + (0.10 + 0.06 * b).toFixed(3) + ')';
-        ctx.fillRect(mx + 0.5, 0, 3, lineBot);
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.075 + 0.07 * b).toFixed(3) + ')';
+        // v2385 : un SEUL trait blanc (plus de double), un peu plus visible que les traits pâles.
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.11 + 0.07 * b).toFixed(3) + ')';
         ctx.beginPath();
         ctx.moveTo(mx, 0);
         ctx.lineTo(mx, lineBot);
         ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.04 + 0.04 * b).toFixed(3) + ')';
-        ctx.beginPath();
-        ctx.moveTo(mx + 4, 0);
-        ctx.lineTo(mx + 4, lineBot);
-        ctx.stroke();
       }
-      // v2382 (propriétaire, d'après IQ Option) : le DOUBLE TRAIT À OMBRE reste toujours entre 1 et 2 carreaux
-      // devant la tête, mais il n'est jamais immobile : il glisse avec la grille, et quand le trait suivant
-      // arrive, il passe en douceur sur lui (fondu croisé) → il ne s'efface jamais, il « se remplace ».
-      var cellW = S * pxSec;
-      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
-        var px = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
-        var dc = (px - headX) / Math.max(1, cellW);
-        var wIn = Math.max(0, Math.min(1, (2.15 - dc) / 0.3));
-        var wOut = Math.max(0, Math.min(1, (dc - 0.85) / 0.3));
-        var w2 = wIn * wOut;
-        if (w2 <= 0.01 || px > priceColL0) continue;
-        var sg = ctx.createLinearGradient(px - 8, 0, px + 14, 0);
-        sg.addColorStop(0, 'rgba(255,255,255,0)');
-        sg.addColorStop(0.45, 'rgba(255,255,255,' + (0.035 * w2).toFixed(3) + ')');
-        sg.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = sg;
-        ctx.fillRect(px - 8, 0, 22, lineBot);
-        ctx.fillStyle = 'rgba(2,3,14,' + (0.17 * w2).toFixed(3) + ')';
-        ctx.fillRect(px + 0.5, 0, 3, lineBot);
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.16 * w2).toFixed(3) + ')';
-        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, lineBot); ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.08 * w2).toFixed(3) + ')';
-        ctx.beginPath(); ctx.moveTo(px + 4, 0); ctx.lineTo(px + 4, lineBot); ctx.stroke();
-      }
+      // v2385 (propriétaire) : au milieu (au bout de la courbe), une OMBRE LÉGÈRE qui n'est jamais fixe :
+      // elle grandit et fonce quand un trait (pâle ou blanc) passe près d'elle, surtout quand deux traits
+      // s'y croisent, puis rétrécit quand ils s'éloignent → elle « respire » avec les croisements.
+      var cellW = Math.max(24, S * pxSec);
+      var reach = cellW * 0.7;
+      var dW = Infinity, dP = Infinity, q;
+      for (q = -1; q < 40; q++) { var wx = mPhase + q * mSpace; if (wx > cssW + mSpace) break; dW = Math.min(dW, Math.abs(wx - headX)); }
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) { dP = Math.min(dP, Math.abs(headX + ((T - xNow) / 1000) * pxSec - headX)); }
+      var fW = Math.exp(-(dW / reach) * (dW / reach)), fP = Math.exp(-(dP / reach) * (dP / reach));
+      var I = 0.25 + 0.40 * fW + 0.20 * fP + 0.15 * fW * fP;
+      var bw = cellW * (0.55 + 0.75 * I);
+      var og = ctx.createLinearGradient(headX - bw, 0, headX + bw, 0);
+      og.addColorStop(0, 'rgba(2,3,14,0)');
+      og.addColorStop(0.5, 'rgba(2,3,14,' + (0.20 * I).toFixed(3) + ')');
+      og.addColorStop(1, 'rgba(2,3,14,0)');
+      ctx.fillStyle = og;
+      ctx.fillRect(headX - bw, 0, bw * 2, lineBot);
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.fillStyle = '#64748B';
