@@ -1720,7 +1720,7 @@
         if (Math.abs(T / majorMs - Math.round(T / majorMs)) < 1e-6) continue;
         var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
         if (gx < 0 || gx > cssW) continue;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.05 + 0.07 * boost(gx)).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.045 + 0.04 * boost(gx)).toFixed(3) + ')';
         ctx.beginPath();
         ctx.moveTo(gx, 0);
         ctx.lineTo(gx, lineBot);
@@ -1736,18 +1736,18 @@
         var b = boost(mx);
         var sh = ctx.createLinearGradient(mx - halo, 0, mx + 4 + halo, 0);
         sh.addColorStop(0, 'rgba(255,255,255,0)');
-        sh.addColorStop(0.5, 'rgba(255,255,255,' + (0.030 + 0.03 * b).toFixed(3) + ')');
+        sh.addColorStop(0.5, 'rgba(255,255,255,' + (0.020 + 0.02 * b).toFixed(3) + ')');
         sh.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = sh;
         ctx.fillRect(mx - halo, 0, halo * 2 + 4, lineBot);
-        ctx.fillStyle = 'rgba(2,3,14,' + (0.16 + 0.08 * b).toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(2,3,14,' + (0.10 + 0.06 * b).toFixed(3) + ')';
         ctx.fillRect(mx + 0.5, 0, 3, lineBot);
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.09 + 0.14 * b).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.075 + 0.07 * b).toFixed(3) + ')';
         ctx.beginPath();
         ctx.moveTo(mx, 0);
         ctx.lineTo(mx, lineBot);
         ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.05 + 0.07 * b).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.04 + 0.04 * b).toFixed(3) + ')';
         ctx.beginPath();
         ctx.moveTo(mx + 4, 0);
         ctx.lineTo(mx + 4, lineBot);
@@ -1766,15 +1766,15 @@
         if (w2 <= 0.01 || px > priceColL0) continue;
         var sg = ctx.createLinearGradient(px - 8, 0, px + 14, 0);
         sg.addColorStop(0, 'rgba(255,255,255,0)');
-        sg.addColorStop(0.45, 'rgba(255,255,255,' + (0.05 * w2).toFixed(3) + ')');
+        sg.addColorStop(0.45, 'rgba(255,255,255,' + (0.035 * w2).toFixed(3) + ')');
         sg.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = sg;
         ctx.fillRect(px - 8, 0, 22, lineBot);
-        ctx.fillStyle = 'rgba(2,3,14,' + (0.26 * w2).toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(2,3,14,' + (0.17 * w2).toFixed(3) + ')';
         ctx.fillRect(px + 0.5, 0, 3, lineBot);
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.26 * w2).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.16 * w2).toFixed(3) + ')';
         ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, lineBot); ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.13 * w2).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.08 * w2).toFixed(3) + ')';
         ctx.beginPath(); ctx.moveTo(px + 4, 0); ctx.lineTo(px + 4, lineBot); ctx.stroke();
       }
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
@@ -3544,12 +3544,15 @@
     var ly = Math.round(map.lastY) + 0.5;
     if (x > map.lastX + 6) {
       ctx.strokeStyle = accent;
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.6;
       ctx.lineWidth = 1;
+      // v2383 : en pointillés, comme IQ Option.
+      ctx.setLineDash([4, 3]);
       ctx.beginPath();
       ctx.moveTo(map.lastX + 5, ly);
       ctx.lineTo(x, ly);
       ctx.stroke();
+      ctx.setLineDash([]);
       ctx.globalAlpha = 1;
     }
     // Comme IQ Option : petite pastille BLANCHE pure ; les chiffres gardent la couleur de la
