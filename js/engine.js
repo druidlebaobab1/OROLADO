@@ -52,10 +52,12 @@
     // tombe presque au prix du serveur (il ne « glisse » plus après le clic). Lecture du fichier : inchangé.
     var live = directFresh();
     delayDbg.live = live;
-    var want = lag + (live ? 150 : POLL_MS + 100);
+    // v2352 : ligne directe → réserve plus courte (0,2 s) : la courbe affichée colle au serveur, le prix pris au clic
+    // est à ~un pas de prix de ce que voit le joueur. Remonte tout seul si la connexion devient irrégulière.
+    var want = lag + (live ? 100 : POLL_MS + 100);
     // v2344 : descend en quelques secondes (avant ~1 min et plus) ; remonte toujours tout de suite si besoin.
     needDelay = want > needDelay ? want : needDelay * (live ? 0.97 : 0.997) + want * (live ? 0.03 : 0.003);
-    var target = Math.max(live ? 450 : DISPLAY_DELAY, Math.min(2600, needDelay));
+    var target = Math.max(live ? 200 : DISPLAY_DELAY, Math.min(2600, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
     else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - (live ? 12 : 4));
   }

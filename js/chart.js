@@ -502,7 +502,8 @@
     // l'atteigne).
     // v2350 : le trade confirmé apparaît quand la courbe affichée ATTEINT son vrai point d'entrée (prix et heure du
     // serveur) : le rond tombe pile sur la courbe et la ligne part exactement de lui (~0,5 s après le clic).
-    var hideNow = !shownMarks[ot.id] && ot.startTime && collectNow < ot.startTime;
+    // v2352 : jamais caché → le trade s'affiche à l'instant du clic, comme pour un visiteur.
+    var hideNow = false;
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
@@ -519,7 +520,7 @@
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
     if (!clickAt[ot.id] && ot.startTime) clickAt[ot.id] = Number(ot.startTime);
     // v2347 (choix B) : rond et prix d'entrée fixés seulement quand le serveur a confirmé (prix officiel).
-    if (!shownMarks[ot.id] && ot.confirmed !== false && ot.serverConfirmed !== false) {
+    if (!shownMarks[ot.id]) {
       // Le rond reste pour de bon à l'endroit du clic, sur les 10 simulations : la réponse du serveur
       // (qui fixe le vrai prix d'entrée) ne le déplace plus (avant : il apparaissait, puis sautait à
       // la seconde suivante). Lignes : l'instant exact du clic ; autres : le centre de sa seconde.
@@ -608,8 +609,8 @@
     if (prevSnap && (prevSnap.entryPrice !== snap.entryPrice || prevSnap.barrier !== snap.barrier || prevSnap.startTime !== snap.startTime)) {
       var cur = tradeGlide(prevSnap);
       // v2347 : rien n'était dessiné avant la confirmation → apparition directe à la vraie place, sans glissement.
-      snap.fromEntry = prevSnap.pending ? snap.entryPrice : cur.entry;
-      snap.fromBarrier = prevSnap.pending ? snap.barrier : cur.barrier;
+      snap.fromEntry = cur.entry;
+      snap.fromBarrier = cur.barrier;
       snap.fromStart = cur.start;
       snap.moveAt = Date.now();
     }
@@ -2654,7 +2655,7 @@
     // v2347 (choix B, comme les grandes plateformes) : tant que le serveur n'a pas confirmé, rien n'est dessiné
     // ici (le signe ACHAT / VENTE du clic s'affiche déjà) ; à la confirmation (le temps d'un aller-retour réseau),
     // rond, trait et ligne objectif apparaissent ENSEMBLE à leur vraie place et ne bougent plus.
-    if (trade.pending || trade.serverConfirmed === false || trade.confirmed === false) return;
+    // v2352 : dessiné dès le clic (plus d'attente de la confirmation du serveur).
     // Rond et trait d'entrée restent au prix du clic (la ligne objectif, elle, reste celle du serveur).
     // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
     // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de
