@@ -1972,9 +1972,28 @@
     }
   }
 
+  // v2368 (demande du propriétaire) : on retient sur ce téléphone le marché regardé et l'heure.
+  // À la connexion / inscription / déconnexion / réouverture, on revient sur ce marché s'il date
+  // de moins de 30 min ; sinon (ou si rien n'est retenu) : VOLATILITY.
+  var VIEW_KEY = 'oro_view_asset', VIEW_TTL = 30 * 60 * 1000;
+  function rememberView(id) {
+    try { localStorage.setItem(VIEW_KEY, JSON.stringify({ id: id, at: Date.now() })); } catch (e) { /* ignore */ }
+  }
+  function recentView() {
+    try {
+      var o = JSON.parse(localStorage.getItem(VIEW_KEY) || 'null');
+      if (o && o.id && Date.now() - Number(o.at) < VIEW_TTL) {
+        var id = mapAssetId(o.id);
+        if (D6.CONFIG.ASSETS[id]) return id;
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
   function selectAsset(rawId) {
     var id = mapAssetId(rawId);
     selectedAsset = id;
+    rememberView(id);
     var u = user();
     if (u) {
       u.assetId = id;
@@ -1998,7 +2017,7 @@
   function updateAssetUi() {
     var u = user();
     if (!u) return;
-    selectAsset(assetId(u) || selectedAsset);
+    selectAsset(recentView() || 'v100');
   }
 
   // Durée : à chaque ouverture / actualisation du site (et à chaque nouvelle connexion), on repart sur 5 s.
