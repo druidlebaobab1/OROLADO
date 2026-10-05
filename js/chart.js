@@ -500,7 +500,9 @@
     // d'attente après le clic (« lent »), alors qu'un visiteur le voyait tout de suite. Désormais : jamais caché,
     // rond et trait affichés dès le clic pour tout le monde (le rond reste au bout de la courbe le temps qu'elle
     // l'atteigne).
-    var hideNow = false;
+    // v2350 : le trade confirmé apparaît quand la courbe affichée ATTEINT son vrai point d'entrée (prix et heure du
+    // serveur) : le rond tombe pile sur la courbe et la ligne part exactement de lui (~0,5 s après le clic).
+    var hideNow = !shownMarks[ot.id] && ot.startTime && collectNow < ot.startTime;
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
@@ -525,9 +527,8 @@
       var lineMk = !!(aMk && aMk.chart !== 'candle' && aMk.id !== 'horizon50' && !STYLED_ASSETS[aMk.id]);
       // v2349 : le rond se pose à l'heure du CLIC (là où le joueur a cliqué sur la courbe), à la hauteur du prix
       // confirmé par le serveur ; avant, il se posait à l'heure d'arrivée de l'ordre, donc « devant » la courbe.
-      var clickT = clickAt[ot.id] || Number(ot.startTime || ot.startedAt) || 0;
-      void lineMk;
-      shownMarks[ot.id] = clickT || 1;
+      var clickT = Number(ot.startTime || ot.startedAt) || 0;
+      shownMarks[ot.id] = (lineMk ? clickT : (liveTradeTime(ot.entryTick, clickT) || clickT)) || 1;
       var p0 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
       if (isFinite(p0) && p0 > 0) shownPrice[ot.id] = p0;
     }
