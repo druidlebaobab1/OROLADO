@@ -1728,11 +1728,11 @@
         if (mx < -halo || mx > cssW + halo) continue;
         var sh = ctx.createLinearGradient(mx - halo, 0, mx + halo, 0);
         sh.addColorStop(0, 'rgba(255,255,255,0)');
-        sh.addColorStop(0.5, 'rgba(255,255,255,0.045)');
+        sh.addColorStop(0.5, 'rgba(255,255,255,0.034)');
         sh.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = sh;
         ctx.fillRect(mx - halo, 0, halo * 2, lineBot);
-        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
         ctx.beginPath();
         ctx.moveTo(Math.round(mx) + 0.5, 0);
         ctx.lineTo(Math.round(mx) + 0.5, lineBot);
@@ -1747,6 +1747,43 @@
         var lx = headX + ((T - xNow) / 1000) * pxSec;
         if (lx < 24 || lx > priceColL) continue;
         ctx.fillText(gridClock(T, M), lx, cssH - 5);
+      }
+      // v2380 (mesuré sur IQ Option) : deux repères FIXES pendant que la grille défile à travers eux →
+      // 1) trait pointillé au bout de la courbe ; 2) à la fin du trade (durée choisie), un DOUBLE trait :
+      // trait clair, petite bande sombre, second trait plus doux (« deux traits qui font une ombre »).
+      var fx = Math.round(headX) + 0.5;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(fx, 0);
+      ctx.lineTo(fx, lineBot);
+      ctx.stroke();
+      ctx.restore();
+      var durSec = 5;
+      try {
+        var uDur = D6.Store && D6.Store.current && D6.Store.current();
+        if (uDur && Number(uDur.duration) > 0) durSec = Number(uDur.duration);
+      } catch (eDur) { /* 5 s par défaut */ }
+      var ex = Math.round(headX + durSec * pxSec) + 0.5;
+      if (ex > fx + 6 && ex + 6 < priceColL) {
+        ctx.fillStyle = 'rgba(2,3,14,0.30)';
+        ctx.fillRect(ex + 0.5, 0, 3, lineBot);
+        var eg = ctx.createLinearGradient(ex + 4, 0, ex + 16, 0);
+        eg.addColorStop(0, 'rgba(255,255,255,0.05)');
+        eg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = eg;
+        ctx.fillRect(ex + 4, 0, 12, lineBot);
+        ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+        ctx.beginPath();
+        ctx.moveTo(ex, 0);
+        ctx.lineTo(ex, lineBot);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+        ctx.beginPath();
+        ctx.moveTo(ex + 4, 0);
+        ctx.lineTo(ex + 4, lineBot);
+        ctx.stroke();
       }
     }
   }
