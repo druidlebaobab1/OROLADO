@@ -80,11 +80,11 @@ check('prix du futur : refusé (prix d’arrivée)', !empty($r['ok']) && $r['ord
 $r = place($meH, ['id' => 'c4', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9]);
 check('sans prix du clic (ancien téléphone) : prix d’arrivée', !empty($r['ok']));
 
-echo "2) Robot tricheur, robot MALIN (triche 1 fois sur 2) et joueur honnête (160 trades chacun)\n";
+echo "2) Robot tricheur, robot MALIN (triche 1 fois sur 2) et joueur honnête (320 trades chacun)\n";
 // Robot : il lit les prix en direct, voit le mouvement des 1,5 dernières secondes, puis prétend avoir cliqué
 // 1,5 s plus tôt dans le bon sens. Robot malin : ne triche qu'une fois sur deux pour se cacher.
 // Joueur honnête : clic vu ~0,25-0,5 s avant l'arrivée, sens au hasard.
-$N = 160;
+$N = 320;
 for ($i = 0; $i < $N; $i++) {
   $st = orolado_feed_advance($asset);
   $n = $st['n'];
