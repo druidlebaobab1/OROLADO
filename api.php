@@ -1746,13 +1746,22 @@ if ($action === 'placeOrder') {
     echo json_encode($stSess);
     exit;
   }
+  $tAvant = microtime(true);
   try {
     $res = orolado_trade_place($stSess['user'], $req);
   } catch (Throwable $e) {
     error_log('OROLADO placeOrder ' . $e->getMessage());
     $res = ['ok' => false, 'reason' => 'Service indisponible, réessayez'];
   }
-  echo json_encode($res + ['server' => true, 'tickMs' => OROLADO_TICK_MS, 'serverMs' => orolado_feed_now_ms()]);
+  // v2348 — mesure du temps de traitement des ordres (lecture seule, aucun effet sur le trade) :
+  // total depuis l'arrivée de la requête, dont le temps passé à enregistrer le trade lui-même.
+  $tFin = microtime(true);
+  $t0 = (float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? $tAvant);
+  $srvMs = (int) round(($tFin - $t0) * 1000);
+  $placeMs = (int) round(($tFin - $tAvant) * 1000);
+  @file_put_contents(__DIR__ . '/data/temps_ordres.log', date('c') . ' ' . (($req['mode'] ?? '') === 'real' ? 'reel' : 'demo')
+    . ' total=' . $srvMs . 'ms avant=' . ($srvMs - $placeMs) . 'ms trade=' . $placeMs . 'ms ok=' . (!empty($res['ok']) ? 1 : 0) . "\n", FILE_APPEND);
+  echo json_encode($res + ['server' => true, 'tickMs' => OROLADO_TICK_MS, 'serverMs' => orolado_feed_now_ms(), 'srvMs' => $srvMs]);
   exit;
 }
 

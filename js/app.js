@@ -3874,7 +3874,14 @@
         });
       }
       function postPlace(triesLeft) {
+        var tPost = Date.now();
         return D6.Api.post('placeOrder', placeBody, 25000).then(function (remote) {
+          // v2348 — mesure (compte admin seulement) : temps de traitement du serveur et aller-retour complet.
+          try {
+            if (remote && remote.ok && D6.Auth && D6.Auth.isAdmin && D6.Auth.isAdmin(user())) {
+              toast('⏱ serveur ' + (remote.srvMs != null ? remote.srvMs : '?') + ' ms · aller-retour ' + (Date.now() - tPost) + ' ms', 'micro', 2600);
+            }
+          } catch (eT) { /* ignore */ }
           if (remote && remote.ok === false) {
             killUnfundedTrade(remote.reason || 'Mise non enregistrée');
             return;
