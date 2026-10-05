@@ -96,8 +96,8 @@
       },
       stable: {
         id: 'stable',
-        name: 'PYTHON',
-        short: 'PYTHON',
+        name: 'COBRA',
+        short: 'COBRA',
         tag: 'Basse volatilité',
         chart: 'line',
         lineColor: '#ff2d75',
