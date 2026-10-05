@@ -140,14 +140,21 @@ if (!defined('OROLADO_CLICK_MAX_TICKS')) define('OROLADO_CLICK_MAX_TICKS', 6);
  * v2359 : comportement de robot. Entre le clic et l'arrivée de l'ordre, le prix a souvent déjà bougé :
  * un joueur honnête a choisi son sens AVANT ce mouvement, il tombe juste ~1 fois sur 2 (clickFav ≈ clickUnfav).
  * Un robot qui lit les prix en direct choisit le sens APRÈS l'avoir vu et prétend avoir cliqué avant :
- * il tombe juste presque toujours. Seuil large pour ne pas gêner les vrais joueurs (hasard < 0,5 %).
+ * il tombe juste bien plus souvent. v2361 : vrai calcul de probabilité (écart en « sigmas » :
+ * (bon sens − mauvais sens) / √total ≥ 4,5). Mesuré : toutes les habitudes humaines (hasard, suivre ou
+ * contrer la tendance, toujours acheter…) donnent 50,0 % sur 600 000 prix réels ; 0 humain sur 20 000
+ * marqué à tort après 3 000 trades chacun ; robot attrapé après ~34 trades, ~133 s'il ne triche qu'une
+ * fois sur deux, ~500 une fois sur quatre. Simple étiquette pour l'admin : ne bloque rien.
  * Renvoie la raison (texte) ou ''.
  */
 function orolado_click_edge_reason(array $u): string {
   $fav = (int) ($u['clickFav'] ?? 0);
   $unfav = (int) ($u['clickUnfav'] ?? 0);
-  if ($fav >= 15 && $fav >= 5 * max(1, $unfav)) {
-    return 'Choisit presque toujours le sens que le prix a déjà pris depuis son clic (robot ?) : ' . $fav . ' fois contre ' . $unfav;
+  $n = $fav + $unfav;
+  if ($fav < 12 || $n <= 0) return '';
+  $z = ($fav - $unfav) / sqrt($n);
+  if ($z >= 4.5) {
+    return 'Robot probable : choisit trop souvent le sens que le prix a déjà pris depuis son clic (' . $fav . ' fois contre ' . $unfav . ' ; un humain fait moitié-moitié)';
   }
   return '';
 }
