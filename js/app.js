@@ -751,6 +751,43 @@
         return h;
       };
       document.body.appendChild(box);
+      // v2355 : mesures du dernier trade (lecture seule, visibles seulement dans cette case) : version chargée,
+      // retard de la courbe, réponse du serveur, apparition du rond et nombre de fois où il bouge.
+      var tr = { id: '', click: 0, conf: 0, first: 0, moves: 0, pmoves: 0, lastY: NaN, lastP: NaN, lo: NaN, hi: NaN, ride: null, dmin: 0, dmax: 0 };
+      var verM = /[?&]v=(\d+)/.exec(((document.querySelector('script[src*="app.js"]') || {}).src) || '');
+      try {
+        var E = D6.Engine;
+        var origPlace = E.placeOrder;
+        E.placeOrder = function () {
+          var r = origPlace.apply(E, arguments);
+          if (r && r.ok && r.trade) {
+            tr = { id: r.trade.id, click: performance.now(), conf: 0, first: 0, moves: 0, pmoves: 0, lastY: NaN, lastP: NaN, lo: NaN, hi: NaN, ride: D6.Chart.markDebug().ride, dmin: 1e9, dmax: 0 };
+            var loopT = function () {
+              if (!tr.click || performance.now() - tr.click > 6000) return;
+              var m = D6.Chart.markDebug();
+              var dd = E.displayDelay();
+              if (dd < tr.dmin) tr.dmin = dd;
+              if (dd > tr.dmax) tr.dmax = dd;
+              if (m.ride && m.ride !== tr.ride) {
+                if (!tr.first) tr.first = performance.now();
+                var p = m.ride.entry;
+                if (isFinite(tr.lastP) && Math.abs(p - tr.lastP) > 1e-9) tr.pmoves++;
+                if (isFinite(tr.lastY) && Math.abs(m.markY - tr.lastY) > 1 && m.lo === tr.lo && m.hi === tr.hi) tr.moves++;
+                tr.lastP = p; tr.lastY = m.markY; tr.lo = m.lo; tr.hi = m.hi;
+              }
+              tr.ride = m.ride;
+              requestAnimationFrame(loopT);
+            };
+            requestAnimationFrame(loopT);
+          }
+          return r;
+        };
+        var origConf = E.confirmTrade;
+        E.confirmTrade = function (id) {
+          if (id === tr.id && !tr.conf) tr.conf = performance.now();
+          return origConf.apply(E, arguments);
+        };
+      } catch (eTr) { /* ignore */ }
       setInterval(function () {
         var pad = document.querySelector('#tradeWrap > .pad');
         var scr = $('screenTrade');
@@ -765,8 +802,11 @@
           '\nscrBas=' + (scr ? Math.round(scr.getBoundingClientRect().bottom) : '-') +
           '\nsafeBas=' + safeBottomPx() +
           '\npadBas=' + (pad ? Math.round(pad.getBoundingClientRect().bottom) : '-') +
-          '\nfill=' + ((scr || {}).className || '').indexOf('saf-fill');
-      }, 1000);
+          '\nfill=' + ((scr || {}).className || '').indexOf('saf-fill') +
+          '\nversion=' + (verM ? verM[1] : '?') + ' retard=' + (D6.Engine.displayDelay ? D6.Engine.displayDelay() : '?') +
+          '\ntrade: serveur=' + (tr.conf ? Math.round(tr.conf - tr.click) : '-') + ' rond=' + (tr.first ? Math.round(tr.first - tr.click) : '-') +
+          '\nbouge=' + tr.moves + ' prix=' + tr.pmoves + ' retard ' + (tr.click ? tr.dmin + '-' + tr.dmax : '-');
+      }, 500);
     } catch (eDg) { /* ignore */ }
   }
   if (/[?&]diag=1\b/.test(location.search)) startDiag();
