@@ -5008,3 +5008,70 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .b
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .btn-trade .bt-txt{font-size:13.5px!important;letter-spacing:.2px!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .btn-trade .bt-arr{width:14px!important;height:14px!important}
 }
+
+/* ===== v2363 — PLEIN ÉCRAN sur téléphone COUCHÉ (s'ouvre aussi tout seul après la connexion) =====
+   Avant : colonne de droite plus haute que l'écran → mise remontée sous la barre du haut, ACHETER / VENDRE
+   coupés en bas. Désormais : barre du haut plus fine, mise en haut de la colonne, ACHETER et VENDRE se
+   partagent la place restante ; graphique sur toute la hauteur restante. Même design qu'avant (durées et
+   payouts restent cachés en plein écran, comme voulu). Portrait, PC et télé : inchangés. */
+@media (orientation:landscape) and (max-height:500px){
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-topbar{height:40px!important;min-height:40px!important;padding-top:0!important;padding-bottom:0!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-topbar .fs-top-mid-home,
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-topbar .fs-top-mid{height:40px!important;min-height:40px!important;padding-top:3px!important;padding-bottom:3px!important;box-sizing:border-box!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-mode-switch{height:34px!important;min-height:34px!important;margin:0!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-mode-switch > button{height:34px!important;min-height:34px!important;max-height:34px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #fsTradeSlot{min-height:0!important;height:calc(100% - 40px)!important;flex:1 1 auto!important;overflow:hidden!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap{
+    height:100%!important;min-height:0!important;max-height:100%!important;
+    grid-template-columns:minmax(0,1fr) clamp(180px,26vw,280px)!important;
+    grid-template-rows:auto minmax(0,1fr)!important;overflow:hidden!important;
+  }
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #assetBar{height:44px!important;min-height:44px!important;max-height:44px!important;padding-top:2px!important;padding-bottom:2px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #assetBar .asset-chip{height:40px!important;min-height:40px!important;max-height:40px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #chart{height:auto!important;min-height:0!important;max-height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #chartToolbar{height:28px!important;min-height:28px!important;flex:0 0 28px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #chartStage{flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad{
+    height:auto!important;min-height:0!important;max-height:100%!important;overflow:hidden!important;
+    display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:6px!important;
+    padding:6px 6px max(6px,env(safe-area-inset-bottom)) 6px!important;box-sizing:border-box!important;
+  }
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .stake-line{flex:0 0 auto!important;margin:0!important;top:0!important;transform:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .trade-row{
+    flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;
+    display:flex!important;flex-direction:column!important;gap:6px!important;margin:0!important;padding:0!important;top:0!important;transform:none!important;
+  }
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .trade-row .btn-trade{
+    flex:1 1 0!important;height:auto!important;min-height:36px!important;max-height:96px!important;margin:0!important;
+  }
+}
+/* v2363 — téléphone couché, compte connecté : « Recharger » prend seulement la place libre entre le logo et les icônes (avant : 440 px fixes, il passait sur le logo). */
+@media (orientation:landscape) and (max-height:500px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row{display:flex!important;gap:6px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row .brand-lockup{flex:0 0 auto!important;position:relative!important;z-index:2!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row #topbarCta{flex:1 1 auto!important;width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;left:auto!important;right:auto!important;transform:none!important;height:30px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row #btnOpenDeposit{width:100%!important;min-width:0!important;max-width:none!important;height:30px!important;min-height:30px!important;margin:0!important;left:auto!important;transform:none!important;font-size:14px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row #authQuick{flex:1 1 auto!important;min-width:0!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row .topbar-actions{flex:0 0 auto!important;margin-left:auto!important}
+}
+/* v2363 — plein écran, téléphone couché ÉTROIT (Android) : même disposition en 2 colonnes (avant : boutons collés en bas, par-dessus le graphique). */
+@media (orientation:landscape) and (max-height:500px){
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap{display:grid!important;align-items:stretch!important;column-gap:6px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #assetBar{grid-column:1!important;grid-row:1!important;width:auto!important;min-width:0!important;max-width:100%!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #chart{grid-column:1!important;grid-row:2!important;min-width:0!important;max-width:100%!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad{grid-column:2!important;grid-row:1 / 3!important;position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:auto!important;max-width:none!important;transform:none!important;margin:0!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap #chart{margin:0!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap{padding:0!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad{align-self:stretch!important;height:auto!important;max-height:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .stake-line,
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .stake-field{width:100%!important;max-width:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .trade-row{align-items:stretch!important;width:100%!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap > .pad .trade-row .btn-trade{width:100%!important;max-width:none!important;align-self:stretch!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #btnCall#btnCall,
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #btnPut#btnPut{flex:1 1 0!important;height:auto!important;min-height:40px!important;max-height:96px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap .trade-row{justify-content:flex-start!important}
+}

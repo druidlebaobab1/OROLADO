@@ -285,6 +285,15 @@
   // Horloge murale haute résolution calée sur la timeline requestAnimationFrame :
   // Date.now() est quantifié à la milliseconde et peut reculer, ce qui hache le
   // défilement. On garde le temps mur exact à 250 ms près, en sous-milliseconde.
+  // v2363 : téléphone couché (paysage, hauteur ≤ 500 px), hors télé : même règle que css/app.css (fin).
+  function phoneLandscape() {
+    try {
+      var iw = window.innerWidth || 0;
+      var ih = window.innerHeight || 0;
+      return iw > ih && ih > 0 && ih <= 500 && !document.documentElement.classList.contains('is-tv');
+    } catch (ePl) { return false; }
+  }
+
   function frameWallClock(perfNow) {
     var p = isFinite(perfNow) ? perfNow : performance.now();
     var wall = Date.now();
@@ -852,6 +861,9 @@
       var freeH = vpH - topOff - bottomRes - 4;
       var chrome = mobile ? 132 : 96;
       var fsH = Math.max(240, Math.min(Math.round(vpH - chrome), freeH));
+      // v2363 : téléphone couché (275 à 430 px de haut) : 240 px minimum faisait sortir le bas du graphique de
+      // l'écran ; on prend la place réellement libre jusqu'en bas.
+      if (phoneLandscape()) fsH = Math.max(100, freeH);
       // Télé en plein écran : la page y est réduite (zoom 62 %) ; les mesures de l'écran sont converties en
       // tailles de page pour que le graphique remplisse toute la hauteur. Téléphones et PC : inchangé.
       var tvZ = 1;
@@ -912,7 +924,7 @@
         cardFs.style.setProperty('height', cardH + 'px', 'important');
         cardFs.style.setProperty('min-height', cardH + 'px', 'important');
         cardFs.style.setProperty('min-width', '240px', 'important');
-        if (!mobile && landscape) {
+        if (!mobile && landscape && !phoneLandscape()) {
           cardFs.style.setProperty('width', fsW + 'px', 'important');
           cardFs.style.setProperty('flex', '1 1 0%', 'important');
         } else {
@@ -924,7 +936,8 @@
     var rect = parent.getBoundingClientRect();
     var w = Math.max(0, Math.floor(parent.clientWidth || rect.width || canvas.offsetWidth || 0));
     var h = Math.max(0, Math.floor(parent.clientHeight || rect.height || canvas.offsetHeight || 0));
-    if (IS_ANDROID_CHART && !document.hidden && cssH >= 240 && h > 0 && h < 180) {
+    // (v2363 : sauf téléphone couché, où un graphique de moins de 180 px de haut est normal.)
+    if (IS_ANDROID_CHART && !document.hidden && cssH >= 240 && h > 0 && h < 180 && !phoneLandscape()) {
       lastGeomKey = '';
       scheduleResize(160);
       return;
@@ -938,7 +951,8 @@
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
     if (boxH >= 8) h = boxH;
-    if (IS_ANDROID_CHART && !document.hidden && cssH >= 240 && h > 0 && h < 180) {
+    // (v2363 : sauf téléphone couché, où un graphique de moins de 180 px de haut est normal.)
+    if (IS_ANDROID_CHART && !document.hidden && cssH >= 240 && h > 0 && h < 180 && !phoneLandscape()) {
       lastGeomKey = '';
       scheduleResize(160);
       return;
