@@ -2735,9 +2735,9 @@
     var badgeLift = isFinite(yShift) ? yShift : 0;
     var tNowE = xNow || Date.now();
     var winE = xWin > 0 ? xWin : (zoomSec() * 1000);
-    var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 140) : 1;
-    // v2358 : la ligne qui décide n'apparaît qu'au prix officiel du serveur (jamais déplacée ensuite).
-    if (trade.pending) lineFade = 0;
+    // v2360 : le serveur prend le prix du CLIC (v2359) → la ligne est déjà à sa vraie place au clic : elle apparaît
+    // en même temps que le rond, d'un coup (avant : attente de la réponse du serveur, puis fondu).
+    var lineFade = 1;
     if (idx === 0) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = bar > 0 ? bar : entry;
