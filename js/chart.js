@@ -1030,7 +1030,7 @@
     planet(pad.l + w * 0.17, pad.t + h * 0.60, pr * 0.30, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.12, false);
     // À droite, là où la courbe n'arrive jamais (demande du propriétaire) : une 2e jolie planète à anneau
     // en haut, et de petites planètes adoucies en bas.
-    planet(pad.l + w * 0.93, pad.t + h * 0.10, pr * 0.40, '#E4F4FF', 'rgba(110,140,255,1)', '#141A4A', 0.34, true);
+    planet(pad.l + w * 0.90, pad.t + h * 0.055, pr * 0.40, '#E4F4FF', 'rgba(110,140,255,1)', '#141A4A', 0.34, true);
     planet(pad.l + w * 0.78, pad.t + h * 0.95, pr * 0.30, '#FFE2EC', 'rgba(244,114,182,1)', '#3A0A22', 0.20, false);
     planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.14, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.22, false);
     planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.16, false);
@@ -1187,7 +1187,13 @@
         g.save();
         g.translate(x, y);
         g.rotate(-0.32);
-        g.strokeStyle = 'rgba(255,214,160,0.55)';
+        // v2373 (propriétaire) : le bout droit de l'anneau s'efface doucement (il ne touche plus les prix).
+        var rgB = g.createLinearGradient(-r * 2, 0, r * 2, 0);
+        rgB.addColorStop(0, 'rgba(255,214,160,0.55)');
+        rgB.addColorStop(0.62, 'rgba(255,214,160,0.50)');
+        rgB.addColorStop(0.84, 'rgba(255,214,160,0.16)');
+        rgB.addColorStop(1, 'rgba(255,214,160,0)');
+        g.strokeStyle = rgB;
         g.lineWidth = Math.max(1, r * 0.09);
         g.beginPath();
         g.ellipse(0, 0, r * 1.95, r * 0.42, 0, Math.PI, Math.PI * 2);
@@ -1228,7 +1234,9 @@
         var rg2 = g.createLinearGradient(-r * 2, 0, r * 2, 0);
         rg2.addColorStop(0, 'rgba(255,214,160,0.15)');
         rg2.addColorStop(0.5, 'rgba(255,226,180,0.8)');
-        rg2.addColorStop(1, 'rgba(255,214,160,0.15)');
+        rg2.addColorStop(0.74, 'rgba(255,220,170,0.42)');
+        rg2.addColorStop(0.9, 'rgba(255,214,160,0.08)');
+        rg2.addColorStop(1, 'rgba(255,214,160,0)');
         g.strokeStyle = rg2;
         g.lineWidth = Math.max(1, r * 0.09);
         g.beginPath();
@@ -1240,7 +1248,9 @@
     }
     var pr = Math.max(14, small * 0.12);
     var planets = [
-      { x: pad.l + w * 0.76, y: pad.t + h * 0.22, r: pr },
+      // v2373 (propriétaire) : un peu à droite, plus bas et un peu plus petite → la tête de la courbe
+      // (60–62 % de la largeur) ne rentre plus dans la planète ; l'anneau reste hors des prix.
+      { x: pad.l + w * 0.84, y: pad.t + h * 0.26, r: pr * 0.85 },
       { x: pad.l + w * 0.13, y: pad.t + h * 0.82, r: pr * 0.62 },
       { x: pad.l + w * 0.40, y: pad.t + h * 0.10, r: pr * 0.30 },
       { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.18 },
