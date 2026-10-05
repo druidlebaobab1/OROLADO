@@ -516,19 +516,9 @@
     // v2356 (test en compte connecté) : l'anneau et l'étiquette du clic se posaient au bout de la courbe au prix du
     // clic, puis le vrai rond apparaissait à côté au prix du serveur → « deux positions ». Compte connecté : plus
     // aucun signe au clic, seulement le vrai rond, une seule fois. Visiteur : inchangé (les deux tombent au même endroit).
-    if (!ot.guest && !pendingTrades['done:' + ot.id]) {
-      delete pendingTrades[ot.id];
-      pendingTrades['done:' + ot.id] = performance.now();
-    }
+    // v2358 (choix du propriétaire) : compte connecté comme un visiteur : le rond se pose tout de suite à l'endroit
+    // et au prix du CLIC et n'en bouge plus. Seule la ligne qui décide (prix du serveur) attend la confirmation.
     var hideNow = false;
-    if (!ot.guest) {
-      var waitSrv = !ot.serverConfirmed;
-      var waitHead = !waitSrv && Number(ot.startTime) > (xNow || collectNow);
-      if (waitSrv || waitHead) {
-        if (!hiddenSince[ot.id]) hiddenSince[ot.id] = collectNow;
-        hideNow = collectNow - hiddenSince[ot.id] < 6000;
-      }
-    }
     if (hideNow) {
       // Signal immédiat au clic (sans rien changer au vrai point d'entrée, qui arrive ensuite).
       if (!pendingTrades[ot.id] && !pendingTrades['done:' + ot.id]) pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
@@ -2699,7 +2689,10 @@
     // Bougies : le rond se pose sur la bougie (même repère que sa place finale), pas au bord droit.
     var rideCandleT = 0;
     if (!lineRd && camCandles && camCandles.length) rideCandleT = Number(camCandles[camCandles.length - 1].t) || 0;
-    var riding = !(panMs > 0) && lastDrawnClose > 0 && (trade.pending || (rideEntryT > 0 && rideHeadT < rideEntryT));
+    // v2358 : rond au clic (prix et heure du clic gardés dans shownPrice / shownMarks) : plus de suivi de la courbe.
+    var clickMode = shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
+    if (clickMode) rideEntryT = 0;
+    var riding = !clickMode && !(panMs > 0) && lastDrawnClose > 0 && (trade.pending || (rideEntryT > 0 && rideHeadT < rideEntryT));
     var rs = rideState[trade.id];
     var rideMarkT = 0;
     if (riding) {
@@ -2743,6 +2736,8 @@
     var tNowE = xNow || Date.now();
     var winE = xWin > 0 ? xWin : (zoomSec() * 1000);
     var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 140) : 1;
+    // v2358 : la ligne qui décide n'apparaît qu'au prix officiel du serveur (jamais déplacée ensuite).
+    if (trade.pending) lineFade = 0;
     if (idx === 0) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = bar > 0 ? bar : entry;
@@ -2832,6 +2827,10 @@
     // naturellement (avant : décalés de côté et vers le haut). Seuls les chronos à gauche restent
     // espacés (tagY) pour rester lisibles.
     var tagY = ey + badgeLift;
+    if (clickMode) {
+      var cyClick = priceToY(shownPrice[trade.id], pad, plotH, minP, maxP);
+      if (isFinite(cyClick)) ey = Math.max(plotTop + 9, Math.min(plotBot - 9, Math.round(cyClick * 2) / 2));
+    }
     // Taille qui suit le zoom : bougies grosses = rond un peu plus grand ; dézoom = plus petit (5 à 8 px).
     // Même taille de rond sur les 10 simulations : mesurée comme au zoom de départ standard (28 s),
     // même pour celles qui démarrent plus près (ZUL, BAAL, OROF 16 s ; VOLATILITY, ASMODUS 23 s).
