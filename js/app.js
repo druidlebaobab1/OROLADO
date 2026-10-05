@@ -5779,6 +5779,11 @@
       return { code: 'COMPLETED', label: t('txValidated'), cls: 'ok' };
     }
     if (s === 'REJECT' || s === 'REJECTED' || s === 'DENIED' || s === 'FAILED' || s === 'CANCELED' || s === 'CANCELLED') {
+      // v2392 (propriétaire) : un retrait refusé l'est presque toujours à cause de coordonnées fausses →
+      // on le dit clairement au joueur, avec quoi faire (affichage seulement).
+      if (/withdraw/i.test(String(kind || '')) && t('txWdRejected') !== 'txWdRejected') {
+        return { code: 'REJECTED', label: t('txWdRejected'), cls: 'bad', hint: t('txWdRejectedHint') };
+      }
       return { code: 'REJECTED', label: t('txRejected'), cls: 'bad' };
     }
     if (s === 'UNFINISHED' || s === 'DRAFT' || s === 'ABANDONED' || s === 'INCOMPLETE') {
@@ -5847,7 +5852,8 @@
       var st = r.status || { label: t('txPending'), cls: 'pending' };
       return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
         fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
-        '</div></div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        '</div>' + (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') +
+        '</div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
         st.label + '</span></div><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div></div>';
     }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
@@ -5934,7 +5940,8 @@
       var st = r.status || { label: t('txPending'), cls: 'pending' };
       return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
         fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
-        '</div></div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
+        '</div>' + (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') +
+        '</div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
         st.label + '</span></div><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div></div>';
     }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';

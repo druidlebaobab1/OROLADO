@@ -1748,15 +1748,18 @@
       //    et blancs ; plus ils partent vers la gauche (le passé), plus ils deviennent fins et transparents ;
       // 3) parallaxe : les étoiles qui dérivent lentement sont dessinées dans drawStarDrift (fond).
       var priceColL0 = cssW - PRICE_AXIS_GAP - 46;
-      function depth(x) { return x >= headX ? 1 : Math.max(0.12, Math.pow(Math.max(0, x) / Math.max(1, headX), 1.4)); }
+      // v2392 (propriétaire) : couleur plus douce pour tous (celle du « 4e trait » d'avant) et l'effacement ne
+      // commence qu'un carreau à gauche de la tête, plus progressivement.
+      var fadeFrom = headX - Math.max(24, S * pxSec);
+      function depth(x) { return x >= fadeFrom ? 1 : Math.max(0.3, Math.pow(Math.max(0, x) / Math.max(1, fadeFrom), 0.9)); }
       // v2391 : tous les traits SE RESSEMBLENT (plus de trait principal plus large ni d'ombre) ; seul le
       // dégradé de profondeur change leur intensité selon leur place.
       for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
         var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
         if (gx < 0 || gx > cssW) continue;
         var dp = depth(gx);
-        ctx.lineWidth = 0.6 + 0.5 * dp;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.11 * dp).toFixed(3) + ')';
+        ctx.lineWidth = 0.55 + 0.35 * dp;
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.065 * dp).toFixed(3) + ')';
         ctx.beginPath();
         ctx.moveTo(gx, 0);
         ctx.lineTo(gx, lineBot);

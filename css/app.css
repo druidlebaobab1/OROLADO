@@ -5175,3 +5175,7 @@ html[dir="rtl"] body #depositModal #payMethodUsdt .pay-go-arrow svg{transform:sc
 html body #depositModal #payMethodUsdt:active{transform:scale(.985)}
 @keyframes oroGoPulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.55)}70%{box-shadow:0 0 0 10px rgba(245,158,11,0)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
 @media (prefers-reduced-motion:reduce){html body #depositModal #payMethodUsdt .pay-go-arrow{animation:none}}
+
+/* v2392 — Historique financier : sous un retrait refusé, phrase claire (coordonnées à vérifier ou autre moyen). */
+html body .tx-feed-row .tx-hint{margin-top:3px;font-size:11px;line-height:1.35;font-weight:600;color:#FBBF24;max-width:230px;white-space:normal}
+html[dir="rtl"] body .tx-feed-row .tx-hint{text-align:right}
