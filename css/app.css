@@ -5165,3 +5165,13 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .b
 @media (orientation:landscape) and (max-height:500px){
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap > .pad{margin-top:12px!important;padding-top:6px!important}
 }
+/* v2370 — Recharger : la case « DÉPÔT CRYPTO » se voit cliquable (demande du propriétaire) :
+   contour orange comme « Carte & paiement instantané » + petit rond orange avec une flèche à droite du titre. */
+html body #depositModal #payMethodUsdt.pay-method-card{border:1px solid rgba(245,158,11,.85)!important;box-shadow:0 0 0 1px rgba(245,158,11,.35),0 8px 20px rgba(245,158,11,.08)!important;cursor:pointer}
+html body #depositModal #payMethodUsdt .pay-method-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+html body #depositModal #payMethodUsdt .pay-go-arrow{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(90deg,#f59e0b,#fbbf24);box-shadow:0 0 0 0 rgba(245,158,11,.55);animation:oroGoPulse 2.2s ease-out infinite}
+html body #depositModal #payMethodUsdt .pay-go-arrow svg{width:20px;height:20px;fill:none;stroke:#1a1203;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+html[dir="rtl"] body #depositModal #payMethodUsdt .pay-go-arrow svg{transform:scaleX(-1)}
+html body #depositModal #payMethodUsdt:active{transform:scale(.985)}
+@keyframes oroGoPulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.55)}70%{box-shadow:0 0 0 10px rgba(245,158,11,0)}100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}}
+@media (prefers-reduced-motion:reduce){html body #depositModal #payMethodUsdt .pay-go-arrow{animation:none}}
