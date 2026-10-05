@@ -1713,6 +1713,7 @@
       var lineBot = cssH - 16;
       // v2381 (propriétaire) : AUCUN trait fixe — tous défilent. Quand un trait passe au niveau de la tête de
       // la courbe, il s'éclaire doucement puis repâlit en s'éloignant (« il se régénère quand ça se croise »).
+      var priceColL0 = cssW - PRICE_AXIS_GAP - 46;
       var near = Math.max(30, S * pxSec * 1.3);
       function boost(x) { var d = (x - headX) / near; return Math.exp(-d * d); }
       for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
@@ -1751,6 +1752,30 @@
         ctx.moveTo(mx + 4, 0);
         ctx.lineTo(mx + 4, lineBot);
         ctx.stroke();
+      }
+      // v2382 (propriétaire, d'après IQ Option) : le DOUBLE TRAIT À OMBRE reste toujours entre 1 et 2 carreaux
+      // devant la tête, mais il n'est jamais immobile : il glisse avec la grille, et quand le trait suivant
+      // arrive, il passe en douceur sur lui (fondu croisé) → il ne s'efface jamais, il « se remplace ».
+      var cellW = S * pxSec;
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
+        var px = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
+        var dc = (px - headX) / Math.max(1, cellW);
+        var wIn = Math.max(0, Math.min(1, (2.15 - dc) / 0.3));
+        var wOut = Math.max(0, Math.min(1, (dc - 0.85) / 0.3));
+        var w2 = wIn * wOut;
+        if (w2 <= 0.01 || px > priceColL0) continue;
+        var sg = ctx.createLinearGradient(px - 8, 0, px + 14, 0);
+        sg.addColorStop(0, 'rgba(255,255,255,0)');
+        sg.addColorStop(0.45, 'rgba(255,255,255,' + (0.05 * w2).toFixed(3) + ')');
+        sg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sg;
+        ctx.fillRect(px - 8, 0, 22, lineBot);
+        ctx.fillStyle = 'rgba(2,3,14,' + (0.26 * w2).toFixed(3) + ')';
+        ctx.fillRect(px + 0.5, 0, 3, lineBot);
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.26 * w2).toFixed(3) + ')';
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, lineBot); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.13 * w2).toFixed(3) + ')';
+        ctx.beginPath(); ctx.moveTo(px + 4, 0); ctx.lineTo(px + 4, lineBot); ctx.stroke();
       }
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
