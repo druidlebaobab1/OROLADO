@@ -1762,28 +1762,14 @@
       for (q = -1; q < 40; q++) { var wx = mPhase + q * mSpace; if (wx > cssW + mSpace) break; dW = Math.min(dW, Math.abs(wx - headX)); }
       for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) { dP = Math.min(dP, Math.abs(headX + ((T - xNow) / 1000) * pxSec - headX)); }
       var fW = Math.exp(-(dW / reach) * (dW / reach)), fP = Math.exp(-(dP / reach) * (dP / reach));
-      var I = 0.55 + 0.25 * fW + 0.12 * fP + 0.08 * fW * fP;
-      // v2386 (propriétaire) : l'ombre VOYAGE avec le temps (une case de large, posée sur la case de temps
-      // en cours) : elle arrive par la droite, la tête rentre dedans (la plupart du temps), elle glisse
-      // vers la gauche, la tête en ressort, et la suivante est déjà là. Plus marquée quand elle est sur la
-      // tête et quand des traits s'y croisent.
-      var slot0 = Math.floor(xNow / stepMs) * stepMs;
-      var sk;
-      for (sk = -1; sk <= 2; sk++) {
-        var sMid = slot0 + (sk + 0.5) * stepMs;
-        var scx = headX + ((sMid - xNow) / 1000) * pxSec;
-        var dd = (scx - headX) / (cellW * 0.95);
-        var aS = Math.exp(-dd * dd) * I;
-        if (aS < 0.02) continue;
-        var half = cellW * 0.62;
-        var og = ctx.createLinearGradient(scx - half, 0, scx + half, 0);
-        og.addColorStop(0, 'rgba(2,3,14,0)');
-        og.addColorStop(0.22, 'rgba(2,3,14,' + (0.17 * aS).toFixed(3) + ')');
-        og.addColorStop(0.78, 'rgba(2,3,14,' + (0.17 * aS).toFixed(3) + ')');
-        og.addColorStop(1, 'rgba(2,3,14,0)');
-        ctx.fillStyle = og;
-        ctx.fillRect(scx - half, 0, half * 2, lineBot);
-      }
+      var I = 0.25 + 0.40 * fW + 0.20 * fP + 0.15 * fW * fP;
+      var bw = cellW * (0.55 + 0.75 * I);
+      var og = ctx.createLinearGradient(headX - bw, 0, headX + bw, 0);
+      og.addColorStop(0, 'rgba(2,3,14,0)');
+      og.addColorStop(0.5, 'rgba(2,3,14,' + (0.20 * I).toFixed(3) + ')');
+      og.addColorStop(1, 'rgba(2,3,14,0)');
+      ctx.fillStyle = og;
+      ctx.fillRect(headX - bw, 0, bw * 2, lineBot);
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.fillStyle = '#64748B';
