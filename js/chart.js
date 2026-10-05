@@ -1749,8 +1749,9 @@
       // 3) parallaxe : les étoiles qui dérivent lentement sont dessinées dans drawStarDrift (fond).
       var priceColL0 = cssW - PRICE_AXIS_GAP - 46;
       function depth(x) { return x >= headX ? 1 : Math.max(0.12, Math.pow(Math.max(0, x) / Math.max(1, headX), 1.4)); }
+      // v2391 : tous les traits SE RESSEMBLENT (plus de trait principal plus large ni d'ombre) ; seul le
+      // dégradé de profondeur change leur intensité selon leur place.
       for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
-        if (Math.abs(T / majorMs - Math.round(T / majorMs)) < 1e-6) continue;
         var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
         if (gx < 0 || gx > cssW) continue;
         var dp = depth(gx);
@@ -1762,24 +1763,6 @@
         ctx.stroke();
       }
       var M0 = Math.floor(tLeft / majorMs) * majorMs;
-      var halo = Math.max(5, Math.min(9, cssW / 70));
-      for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
-        var mx = headX + ((T - xNow) / 1000) * pxSec;
-        if (mx < -halo || mx > cssW + halo) continue;
-        var dm = depth(mx);
-        var sh = ctx.createLinearGradient(mx - halo, 0, mx + halo, 0);
-        sh.addColorStop(0, 'rgba(255,255,255,0)');
-        sh.addColorStop(0.5, 'rgba(255,255,255,' + (0.05 * dm).toFixed(3) + ')');
-        sh.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = sh;
-        ctx.fillRect(mx - halo, 0, halo * 2, lineBot);
-        ctx.lineWidth = 0.7 + 0.6 * dm;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.18 * dm).toFixed(3) + ')';
-        ctx.beginPath();
-        ctx.moveTo(Math.round(mx) + 0.5, 0);
-        ctx.lineTo(Math.round(mx) + 0.5, lineBot);
-        ctx.stroke();
-      }
       ctx.lineWidth = 1;
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
