@@ -5083,3 +5083,23 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .b
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar .asset-chip .mk-art svg{width:32px!important;height:32px!important}
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar .asset-chip > span:not(.mk-art){font-size:8.5px!important;line-height:11px!important;margin:0!important;white-space:nowrap!important;position:static!important;transform:none!important}
 }
+
+/* ===== v2365 — téléphone COUCHÉ : profil plein écran + plein écran mieux espacé =====
+   1) Profil (et autres panneaux latéraux) : avant, panneau étroit collé au bord comme sur un ordinateur ;
+      désormais tout l'écran, contenu centré (comme le téléphone debout). Arabe (droite à gauche) : idem.
+   2) Plein écran : la case de la mise touchait la case « Compte réel » au-dessus → petit espace en haut
+      de la colonne, mise / ACHETER / VENDRE légèrement réduits. Portrait, PC et télé : inchangés. */
+@media (orientation:landscape) and (max-height:500px){
+  html body #drawerProfile#drawerProfile.drawer{
+    left:0!important;right:0!important;width:100%!important;max-width:none!important;min-width:0!important;
+    border-radius:0!important;box-sizing:border-box!important;
+    padding-left:max(12px,env(safe-area-inset-left))!important;padding-right:max(12px,env(safe-area-inset-right))!important;
+  }
+  html body #drawerProfile#drawerProfile.drawer > *{
+    width:100%!important;max-width:560px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;
+  }
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap > .pad{padding-top:10px!important;gap:6px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap > .pad .stake-field{max-height:50px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #btnCall#btnCall,
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #btnPut#btnPut{max-height:78px!important}
+}
