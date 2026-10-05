@@ -10,11 +10,12 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 
 $tmp = sys_get_temp_dir() . '/orolado_clic_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php'] as $f) {
-  copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'admin_lib.php', 'history_lib.php', 'wipe_lib.php'] as $f) {
+  if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 }
 require $tmp . '/orolado_lib.php';
 require $tmp . '/trade_lib.php';
+require_once $tmp . '/admin_lib.php';
 
 $bank = ['real' => [], 'settled' => []];
 $GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use (&$bank) {
@@ -114,6 +115,16 @@ check('tous les trades réglés', $rw + $rl >= $N - 3 && $hw + $hl >= $N - 3);
 $why = orolado_click_edge_reason($uR);
 check('robot repéré « suspect »', $why !== '', $why);
 check('joueur honnête PAS suspect', orolado_click_edge_reason($uH) === '');
+
+echo "3) Ce que montre l'admin (même calcul que la liste « Suspects » et que les retraits)\n";
+$adminR = admin_suspect_reason($uR, [], null, []);
+$adminH = admin_suspect_reason($uH, [], null, []);
+echo '     admin, robot   : « ' . $adminR . " »\n";
+echo '     admin, honnête : « ' . ($adminH === '' ? '(rien, pas suspect)' : $adminH) . " »\n";
+check('admin : robot dans les suspects', strpos($adminR, 'robot') !== false);
+check('admin : joueur honnête absent', $adminH === '');
+$wdR = admin_suspect_reason($uR, [], ['amount' => 50, 'status' => 'pending'], []);
+check('retrait du robot : signalé', $wdR !== '', $wdR);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
