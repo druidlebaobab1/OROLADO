@@ -1711,47 +1711,39 @@
       var T0 = Math.floor(tLeft / stepMs) * stepMs;
       var T, guard;
       var lineBot = cssH - 16;
-      // v2381 (propriétaire) : AUCUN trait fixe — tous défilent. Quand un trait passe au niveau de la tête de
-      // la courbe, il s'éclaire doucement puis repâlit en s'éloignant (« il se régénère quand ça se croise »).
+      // v2389 (propriétaire) : TOUS les traits IDENTIQUES et très discrets (même finesse, même couleur, même
+      // petite lueur fine à gauche et à droite). Une famille va vers la gauche (le temps, au rythme des bougies,
+      // heures justes en bas), l'autre vers la droite à la même vitesse et au même écart : elles se croisent sans
+      // qu'on puisse les distinguer. Aucun trait fixe, aucun trait plus clair que les autres.
       var priceColL0 = cssW - PRICE_AXIS_GAP - 46;
-      var near = Math.max(30, S * pxSec * 1.3);
-      function boost(x) { var d = (x - headX) / near; return Math.exp(-d * d); }
-      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
-        var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
-        if (gx < 0 || gx > cssW) continue;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.045 + 0.04 * boost(gx)).toFixed(3) + ')';
+      var glowW = 4;
+      function gridLine(x) {
+        var gl = ctx.createLinearGradient(x - glowW, 0, x + glowW, 0);
+        gl.addColorStop(0, 'rgba(255,255,255,0)');
+        gl.addColorStop(0.5, 'rgba(255,255,255,0.022)');
+        gl.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gl;
+        ctx.fillRect(x - glowW, 0, glowW * 2, lineBot);
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
         ctx.beginPath();
-        ctx.moveTo(gx, 0);
-        ctx.lineTo(gx, lineBot);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, lineBot);
         ctx.stroke();
       }
-      // Traits principaux : DOUBLE trait qui défile (trait clair, petite bande sombre, trait doux) avec une
-      // ombre douce autour ; plus lumineux au passage de la tête.
-      // v2384 (propriétaire) : les traits ÉCLAIRÉS (doubles traits) vont vers la DROITE, à la même vitesse
-      // que les traits pâles qui vont vers la gauche : les deux familles se croisent et se dépassent sans
-      // arrêt. (Les heures restent sous les traits pâles du temps, donc toujours justes.)
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
+        var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
+        if (gx < -glowW || gx > cssW + glowW) continue;
+        gridLine(gx);
+      }
       var M0 = Math.floor(tLeft / majorMs) * majorMs;
-      var halo = Math.max(5, Math.min(9, cssW / 70));
-      var mSpace = Math.max(40, M * pxSec);
+      var mSpace = Math.max(24, S * pxSec);
       var mPhase = ((xNow / 1000) * pxSec) % mSpace;
       var mk;
-      for (mk = -1, guard = 0; guard < 40; mk++, guard++) {
+      for (mk = -1, guard = 0; guard < 80; mk++, guard++) {
         var mx = Math.round(mPhase + mk * mSpace) + 0.5;
-        if (mx > cssW + halo) break;
-        if (mx < -halo) continue;
-        var b = boost(mx);
-        var sh = ctx.createLinearGradient(mx - halo, 0, mx + 4 + halo, 0);
-        sh.addColorStop(0, 'rgba(255,255,255,0)');
-        sh.addColorStop(0.5, 'rgba(255,255,255,' + (0.020 + 0.02 * b).toFixed(3) + ')');
-        sh.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = sh;
-        ctx.fillRect(mx - halo, 0, halo * 2 + 4, lineBot);
-        // v2385 : un SEUL trait blanc (plus de double), un peu plus visible que les traits pâles.
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.11 + 0.07 * b).toFixed(3) + ')';
-        ctx.beginPath();
-        ctx.moveTo(mx, 0);
-        ctx.lineTo(mx, lineBot);
-        ctx.stroke();
+        if (mx > cssW + glowW) break;
+        if (mx < -glowW) continue;
+        gridLine(mx);
       }
       // v2385 (propriétaire) : au milieu (au bout de la courbe), une OMBRE LÉGÈRE qui n'est jamais fixe :
       // elle grandit et fonce quand un trait (pâle ou blanc) passe près d'elle, surtout quand deux traits
