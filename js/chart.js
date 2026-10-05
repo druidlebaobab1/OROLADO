@@ -1007,6 +1007,108 @@
     return true;
   }
 
+  // « Galaxie crypto » (choisie par le propriétaire le 2026-10-05) : décor seulement.
+  // Les planètes et la lueur du cœur sont dans l'image de fond (dessinée une fois) ; la galaxie
+  // elle-même est une petite image à part qui tourne très lentement (un tour en 4 min) :
+  // une seule copie d'image par affichage, et ~16 petites pièces redressées. Ne touche ni aux prix,
+  // ni à la courbe, ni aux trades.
+  var galaxy = null;
+  var GALAXY_TURN_MS = 240000;
+  var GALAXY_COINS = ['ico-btc', 'ico-trx', 'ico-ton', 'ico-btc', 'ico-eth', 'ico-usdt', 'ico-btc', 'ico-bnb',
+    'ico-sol', 'ico-btc', 'ico-xrp', 'ico-usdc', 'ico-btc', 'ico-doge', 'ico-ton', 'ico-trx'];
+
+  function cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr) {
+    function halo(x, y, r, col) {
+      var rg = g.createRadialGradient(x, y, 0, x, y, r);
+      rg.addColorStop(0, col);
+      rg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = rg;
+      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    }
+    // Deux planètes de plus, très discrètes.
+    planet(pad.l + w * 0.53, pad.t + h * 0.40, pr * 0.42, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.13, false);
+    planet(pad.l + w * 0.17, pad.t + h * 0.60, pr * 0.30, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.12, false);
+    var gx = pad.l + w * 0.36, gy = pad.t + h * 0.52, gR = small * 0.70;
+    // Lueurs du cœur (rondes : elles n'ont pas besoin de tourner).
+    halo(gx, gy, gR * 1.05, 'rgba(120,80,255,0.07)');
+    halo(gx, gy, gR * 0.45, 'rgba(180,120,255,0.07)');
+    halo(gx, gy, small * 0.16, 'rgba(255,200,110,0.16)');
+    halo(gx, gy, small * 0.07, 'rgba(255,240,210,0.17)');
+    // La galaxie « vue de face » dans sa propre image ; elle sera penchée et tournée à l'affichage.
+    var s = Math.min(dpr || 1, 2);
+    var size = Math.ceil(gR * 2.3);
+    var lay = document.createElement('canvas');
+    lay.width = Math.max(1, Math.round(size * s));
+    lay.height = lay.width;
+    var lg = lay.getContext('2d');
+    lg.setTransform(s, 0, 0, s, 0, 0);
+    lg.translate(size / 2, size / 2);
+    function spiral(arm, t) {
+      var ang = arm * Math.PI + t * Math.PI * 2.0, rad = gR * (0.08 + t * 0.92);
+      return { x: Math.cos(ang) * rad, y: Math.sin(ang) * rad, a: ang, r: rad };
+    }
+    var arm, t, q, k;
+    var coins = [];
+    for (arm = 0; arm < 2; arm++) {
+      lg.save();
+      lg.lineCap = 'round';
+      for (q = 0; q < 2; q++) {
+        lg.strokeStyle = q ? 'rgba(200,170,255,0.07)' : 'rgba(120,90,255,0.06)';
+        lg.lineWidth = q ? small * 0.035 : small * 0.09;
+        lg.beginPath();
+        for (t = 0; t <= 1.0001; t += 0.02) {
+          var pp = spiral(arm, t);
+          if (t === 0) lg.moveTo(pp.x, pp.y); else lg.lineTo(pp.x, pp.y);
+        }
+        lg.stroke();
+      }
+      lg.restore();
+      for (t = 0; t < 1; t += 0.006) {
+        var ja = (rnd() - 0.5) * 0.35, jr = 0.9 + rnd() * 0.2;
+        var ang2 = arm * Math.PI + t * Math.PI * 2.0 + ja, rad2 = gR * (0.08 + t * 0.92) * jr;
+        lg.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.35 - t * 0.25).toFixed(2) + ')';
+        lg.beginPath(); lg.arc(Math.cos(ang2) * rad2, Math.sin(ang2) * rad2, 0.5 + rnd() * 0.9, 0, Math.PI * 2); lg.fill();
+      }
+      // Pièces le long du bras (BTC en priorité), de plus en plus petites et pâles vers l'extérieur.
+      for (k = 0; k < 8; k++) {
+        var tc = 0.14 + k * 0.105;
+        var cp = spiral(arm, tc);
+        coins.push({ a: cp.a, r: cp.r, id: GALAXY_COINS[arm * 8 + k], s: 15 - k * 0.9, al: 0.30 - k * 0.022 });
+      }
+    }
+    galaxy = { x: gx, y: gy, layer: lay, size: size, tilt: -0.38, sq: 0.48, coins: coins, core: Math.max(12, small * 0.10) };
+  }
+
+  function drawGalaxy() {
+    if (!galaxy) return;
+    var G = galaxy;
+    var spin = ((Date.now() % GALAXY_TURN_MS) / GALAXY_TURN_MS) * Math.PI * 2;
+    ctx.save();
+    ctx.translate(G.x, G.y);
+    ctx.rotate(G.tilt);
+    ctx.scale(1, G.sq);
+    ctx.rotate(spin);
+    ctx.drawImage(G.layer, -G.size / 2, -G.size / 2, G.size, G.size);
+    ctx.restore();
+    var i, ct = Math.cos(G.tilt), st = Math.sin(G.tilt);
+    for (i = 0; i < G.coins.length; i++) {
+      var c = G.coins[i];
+      var im = coinImg(c.id);
+      if (!im || !im.complete || !im.naturalWidth) continue;
+      var px = Math.cos(c.a + spin) * c.r, py = Math.sin(c.a + spin) * c.r * G.sq;
+      var x = G.x + px * ct - py * st, y = G.y + px * st + py * ct;
+      // un peu plus pâles quand elles passent « derrière » (haut de l'ellipse)
+      ctx.globalAlpha = c.al * (Math.sin(c.a + spin) > 0 ? 1 : 0.72);
+      ctx.drawImage(im, x - c.s / 2, y - c.s / 2, c.s, c.s);
+    }
+    var core = coinImg('ico-btc');
+    if (core && core.complete && core.naturalWidth) {
+      ctx.globalAlpha = 0.27;
+      ctx.drawImage(core, G.x - G.core / 2, G.y - G.core / 2, G.core, G.core);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function buildBackdrop(pad, w, h) {
     var s = Math.min(dpr || 1, 2);
     var c = bgCanvas || document.createElement('canvas');
@@ -1234,6 +1336,9 @@
       }
     }
     g.globalAlpha = 1;
+    galaxy = null;
+    try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
+    g.globalAlpha = 1;
     bgCanvas = c;
   }
 
@@ -1250,6 +1355,7 @@
     }
     if (bgCanvas) {
       ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
+      try { drawGalaxy(); } catch (eGal) { galaxy = null; }
     } else {
       ctx.fillStyle = '#0B0E14';
       ctx.fillRect(0, 0, cssW, cssH);
