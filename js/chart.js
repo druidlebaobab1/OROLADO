@@ -1036,8 +1036,9 @@
     // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
     // v2377 (propriétaire) : le « cœur » de la courbe, au centre exact du graphique, un peu plus petit,
     // et toujours un espace libre avant l'anneau de la grande planète.
-    var cx = pad.l + w * 0.5, cy = pad.t + h * 0.5;
-    var R = Math.min(w * 0.29, h * 0.38);
+    // v2378 : centre de TOUT l'espace du graphique (colonne des prix comprise), un peu plus petite.
+    var cx = cssW * 0.5, cy = cssH * 0.5;
+    var R = Math.min(cssW * 0.27, cssH * 0.36);
     var p0 = planets[0];
     var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.7;
     // bout gauche de l'anneau (incliné de -0.32) + quelques points de l'anneau côté spirale
@@ -1637,12 +1638,27 @@
     // temps, exactement au rythme des bougies (comme les grandes plateformes). Dessin seulement : aucun
     // prix, trade ou calcul n'en dépend.
     var cellPx = Math.max(44, Math.min(84, cssW / 6));
-    var rowsY = Math.max(3, Math.min(11, Math.round(cssH / cellPx)));
-    if (rowsY % 2 === 0) rowsY += (cssH / (rowsY + 1) >= 36) ? 1 : -1;
-    var rowH = cssH / rowsY;
-    for (i = 0; i < rowsY; i++) {
-      var y = rowH * (i + 0.5);
-      var pVal = maxP - ((y - pad.t) / Math.max(1, h)) * (maxP - minP);
+    // v2378 (comme IQ Option) : lignes de prix posées sur des PRIX RONDS (ex. 9700.00, 9705.00…) ; elles
+    // glissent en haut / en bas avec la courbe. Pas « rond » (1, 2, 5 × 10ⁿ) choisi pour ~1 carreau.
+    var pSpan = Math.max(1e-9, maxP - minP);
+    var perPx = pSpan / Math.max(1, h);
+    var rawStep = perPx * cellPx;
+    var mag = Math.pow(10, Math.floor(Math.log(rawStep) / Math.LN10));
+    var fr = rawStep / mag;
+    var pStep = (fr < 1.5 ? 1 : fr < 3.5 ? 2 : fr < 7.5 ? 5 : 10) * mag;
+    var pTop = maxP + (pad.t / Math.max(1, h)) * pSpan;
+    var pBot = maxP - ((cssH - pad.t) / Math.max(1, h)) * pSpan;
+    var pFirst = Math.ceil(pBot / pStep) * pStep;
+    var priceLines = [];
+    for (i = 0; i < 40; i++) {
+      var pv = pFirst + i * pStep;
+      if (pv > pTop) break;
+      priceLines.push(pv);
+    }
+    for (i = 0; i < priceLines.length; i++) {
+      var pVal = priceLines[i];
+      var y = Math.round(pad.t + ((maxP - pVal) / pSpan) * h) + 0.5;
+      if (y < 6 || y > cssH - 18) continue;
       // Police resserrée sur écran étroit : la colonne reste discrète sans
       // jamais rogner les décimales.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') +
@@ -1677,25 +1693,57 @@
     var sW = Math.max(32, seriesW);
     var pxSec = candleStepWidth(sW);
     var headX = pad.l + sW;
-    var S = gridCellSeconds(sW);
-    if (pxSec > 0 && S > 0 && isFinite(xNow) && xNow > 0) {
-      var guard = 0;
-      while (S * pxSec < cellPx * 0.55 && guard++ < 12) S *= 2;
-      while (S * pxSec > cellPx * 1.8 && guard++ < 24) S /= 2;
+    // v2378 : le pas de temps est un pas ROND (5 s, 10 s, 15 s, 30 s, 1 min…) le plus proche de la taille
+    // de carreau voulue → les heures écrites en bas tombent juste (10:32:00, 10:32:05…), comme IQ Option.
+    if (pxSec > 0 && isFinite(xNow) && xNow > 0) {
+      var k = gridNiceIndex(gridCellSeconds(sW));
+      while (GRID_NICE_SEC[k] * pxSec < cellPx * 0.62 && k < GRID_NICE_SEC.length - 1) k++;
+      while (GRID_NICE_SEC[k] * pxSec > cellPx * 1.8 && k > 0) k--;
+      var S = GRID_NICE_SEC[k];
       var stepMs = S * 1000;
       var tLeft = xNow - (headX / pxSec) * 1000;
       var tRight = xNow + ((cssW - headX) / pxSec) * 1000;
-      var T = Math.floor(tLeft / stepMs) * stepMs;
+      var T0 = Math.floor(tLeft / stepMs) * stepMs;
+      var T, guard;
       ctx.strokeStyle = theme.gridV;
       ctx.beginPath();
-      for (guard = 0; T <= tRight + stepMs && guard < 80; T += stepMs, guard++) {
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 80; T += stepMs, guard++) {
         var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
         if (gx < 0 || gx > cssW) continue;
         ctx.moveTo(gx, 0);
         ctx.lineTo(gx, cssH);
       }
       ctx.stroke();
-    }  }
+      // Heures en bas, sous chaque trait (une sur deux si les carreaux sont étroits) ; jamais sous la
+      // colonne des prix ni collées au bord gauche.
+      ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.textAlign = 'center';
+      var every = (S * pxSec < 52) ? 2 : 1;
+      var priceColL = cssW - PRICE_AXIS_GAP - 46;
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 80; T += stepMs, guard++) {
+        if (Math.round(T / stepMs) % every) continue;
+        var lx = headX + ((T - xNow) / 1000) * pxSec;
+        if (lx < 24 || lx > priceColL) continue;
+        ctx.fillText(gridClock(T, S), lx, cssH - 5);
+      }
+    }
+  }
+
+  var GRID_NICE_SEC = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+  function gridNiceIndex(s) {
+    var best = 0, bd = Infinity, i;
+    for (i = 0; i < GRID_NICE_SEC.length; i++) {
+      var d = Math.abs(Math.log(GRID_NICE_SEC[i] / Math.max(0.01, s)));
+      if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+  function gridClock(t, S) {
+    var d = new Date(t);
+    function z(n) { return (n < 10 ? '0' : '') + n; }
+    return z(d.getHours()) + ':' + z(d.getMinutes()) + (S < 60 ? ':' + z(d.getSeconds()) : '');
+  }
 
   // Durée (secondes) d'un carreau : la même taille à l'écran pour tous les marchés à leur zoom de départ.
   function gridCellSeconds(sW) {
