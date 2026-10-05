@@ -1034,9 +1034,10 @@
     planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.14, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.22, false);
     planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.16, false);
     // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
-    // v2375 (propriétaire) : un peu plus bas, et toujours un espace libre avant l'anneau de la grande planète.
-    var cx = pad.l + w * 0.47, cy = pad.t + h * 0.53;
-    var R = Math.min(w * 0.31, h * 0.40);
+    // v2377 (propriétaire) : le « cœur » de la courbe, au centre exact du graphique, un peu plus petit,
+    // et toujours un espace libre avant l'anneau de la grande planète.
+    var cx = pad.l + w * 0.5, cy = pad.t + h * 0.5;
+    var R = Math.min(w * 0.29, h * 0.38);
     var p0 = planets[0];
     var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.7;
     // bout gauche de l'anneau (incliné de -0.32) + quelques points de l'anneau côté spirale
@@ -1632,13 +1633,12 @@
     ctx.lineWidth = 1;
     // Pas horizontal de référence : c'est lui qui donne au maillage sa maille
     // carrée, les lignes de prix s'alignent ensuite sur le même écart.
-    var refStepX = gridStepX(seriesW, span);
-    // Carreaux « coupés » sur tous les bords : on ajuste le pas pour que la largeur fasse un nombre
-    // entier de carreaux, et chaque ligne tombe au milieu d'un pas → demi-carreau à gauche, à droite,
-    // en haut et en bas (jamais de petit carreau fermé collé au bord). Dessin seulement.
-    var colsX = Math.max(2, Math.round(cssW / Math.max(8, refStepX)));
-    var stepX = cssW / colsX;
-    var rowsY = Math.max(3, Math.min(9, Math.round(cssH / stepX)));
+    // v2377 (propriétaire) : mêmes carreaux sur les 10 marchés, et les traits verticaux DÉFILENT avec le
+    // temps, exactement au rythme des bougies (comme les grandes plateformes). Dessin seulement : aucun
+    // prix, trade ou calcul n'en dépend.
+    var cellPx = Math.max(44, Math.min(84, cssW / 6));
+    var rowsY = Math.max(3, Math.min(11, Math.round(cssH / cellPx)));
+    if (rowsY % 2 === 0) rowsY += (cssH / (rowsY + 1) >= 36) ? 1 : -1;
     var rowH = cssH / rowsY;
     for (i = 0; i < rowsY; i++) {
       var y = rowH * (i + 0.5);
@@ -1670,14 +1670,41 @@
     // libellé de secondes n'est tracé : la hauteur ainsi libérée revient à la
     // courbe.
     // Les carreaux couvrent toute la largeur et toute la hauteur (sous la colonne des prix aussi).
-    ctx.strokeStyle = theme.gridV;
-    ctx.beginPath();
-    for (i = 0; i < colsX; i++) {
-      var gx = Math.round(stepX * (i + 0.5)) + 0.5;
-      ctx.moveTo(gx, 0);
-      ctx.lineTo(gx, cssH);
-    }
-    ctx.stroke();
+    // Traits verticaux posés sur des instants fixes (tous les S secondes) et placés avec la même règle
+    // que les bougies (x = tête + (instant − maintenant) × largeur d'une seconde) : ils glissent vers la
+    // gauche avec la courbe. S est choisi pour que le carreau ait la même taille sur tous les marchés à leur
+    // zoom de départ ; quand on zoome, les carreaux grandissent / rétrécissent (et se dédoublent).
+    var sW = Math.max(32, seriesW);
+    var pxSec = candleStepWidth(sW);
+    var headX = pad.l + sW;
+    var S = gridCellSeconds(sW);
+    if (pxSec > 0 && S > 0 && isFinite(xNow) && xNow > 0) {
+      var guard = 0;
+      while (S * pxSec < cellPx * 0.55 && guard++ < 12) S *= 2;
+      while (S * pxSec > cellPx * 1.8 && guard++ < 24) S /= 2;
+      var stepMs = S * 1000;
+      var tLeft = xNow - (headX / pxSec) * 1000;
+      var tRight = xNow + ((cssW - headX) / pxSec) * 1000;
+      var T = Math.floor(tLeft / stepMs) * stepMs;
+      ctx.strokeStyle = theme.gridV;
+      ctx.beginPath();
+      for (guard = 0; T <= tRight + stepMs && guard < 80; T += stepMs, guard++) {
+        var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
+        if (gx < 0 || gx > cssW) continue;
+        ctx.moveTo(gx, 0);
+        ctx.lineTo(gx, cssH);
+      }
+      ctx.stroke();
+    }  }
+
+  // Durée (secondes) d'un carreau : la même taille à l'écran pour tous les marchés à leur zoom de départ.
+  function gridCellSeconds(sW) {
+    var w0 = ZOOM_STEPS[defaultZoomIdx(activeAsset)] || 28;
+    if (fsActive && activeAsset !== 'boomspike') w0 *= 0.75;
+    else if (!fsActive && activeAsset === 'v100') w0 *= 0.74;
+    w0 = Math.max(8, w0);
+    var cellPx = Math.max(44, Math.min(84, cssW / 6));
+    return cellPx * w0 / Math.max(1, sW);
   }
 
   function drawCandles(pad, w, h, candles, minP, maxP, opts) {
