@@ -66,6 +66,9 @@
   var shownPrice = {};
   // v2349 : heure du CLIC (vue à l'écran) de chaque trade, pour poser le rond là où le joueur a cliqué.
   var clickAt = {};
+  // v2353 : rond « collé au bout de la courbe » jusqu'au vrai point d'entrée du serveur.
+  var rideState = {};
+  var rideDbg = null;
   // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
   // coupées, cadre des prix du passé, bouton « Direct ».
   var panMs = 0;
@@ -608,9 +611,9 @@
     snap.lineAt = (prevSnap && prevSnap.lineAt) || (Date.now() - Number(snap.startTime || 0) < 4000 ? Date.now() : 0);
     if (prevSnap && (prevSnap.entryPrice !== snap.entryPrice || prevSnap.barrier !== snap.barrier || prevSnap.startTime !== snap.startTime)) {
       var cur = tradeGlide(prevSnap);
-      // v2347 : rien n'était dessiné avant la confirmation → apparition directe à la vraie place, sans glissement.
-      snap.fromEntry = cur.entry;
-      snap.fromBarrier = cur.barrier;
+      // v2353 : à la confirmation, aucun glissement (le rond est collé au bout de la courbe, voir drawEntryOn).
+      snap.fromEntry = prevSnap.pending ? snap.entryPrice : cur.entry;
+      snap.fromBarrier = prevSnap.pending ? snap.barrier : cur.barrier;
       snap.fromStart = cur.start;
       snap.moveAt = Date.now();
     }
@@ -2660,8 +2663,42 @@
     // v2332 — Payout 90 % : la ligne qui décide EST le prix d'entrée du serveur. Le trait d'entrée glisse
     // donc jusqu'à ce prix confirmé (au lieu de rester au prix du clic, vu ~1,5 s en retard) : plus de
     // ligne jaune « objectif » en 90 % quand un pic tombe entre le clic et l'arrivée de l'ordre (ORO 999).
-    var hasTarget = isFinite(glide.barrier) && Math.abs(glide.barrier - glide.entry) >= 0.005;
-    if (shownPrice[trade.id] > 0 && hasTarget) entry = shownPrice[trade.id];
+    var bar = glide.barrier;
+    // v2353 — Compte connecté : le serveur fixe l'entrée au prix de l'instant où l'ordre ARRIVE ; la courbe affichée
+    // n'y est pas encore (~0,4 s de retard). Au lieu de poser le rond au clic puis de le replacer, il reste collé au
+    // BOUT de la courbe jusqu'à ce qu'elle atteigne le vrai point d'entrée : là, la courbe passe exactement par ce prix,
+    // donc le rond s'y arrête sans aucun saut. Apparition instantanée, jamais de déplacement hors de la courbe.
+    var rideEntryT = 0;
+    // Heure d'affichage du vrai point d'entrée (fixée par le serveur à la confirmation).
+    if (!trade.pending) rideEntryT = Number(trade.startTime) || 0;
+    var aRd = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[trade.assetId] : null;
+    var lineRd = !!(aRd && aRd.chart !== 'candle' && aRd.id !== 'horizon50' && !STYLED_ASSETS[aRd.id]);
+    var rideHeadT = xNow || Date.now();
+    // Bougies : le rond se pose sur la bougie (même repère que sa place finale), pas au bord droit.
+    var rideCandleT = 0;
+    if (!lineRd && camCandles && camCandles.length) rideCandleT = Number(camCandles[camCandles.length - 1].t) || 0;
+    var riding = !(panMs > 0) && lastDrawnClose > 0 && (trade.pending || (rideEntryT > 0 && rideHeadT < rideEntryT));
+    var rs = rideState[trade.id];
+    var rideMarkT = 0;
+    if (riding) {
+      entry = lastDrawnClose;
+      if (isFinite(glide.barrier) && isFinite(glide.entry)) bar = lastDrawnClose + (glide.barrier - glide.entry);
+      rideState[trade.id] = { t: rideCandleT || rideHeadT, h: rideHeadT, p: entry, b: bar, end: 0 };
+    } else if (rs) {
+      // Confirmation arrivée APRÈS que la courbe a dépassé l'entrée (réseau très lent) : court glissement vers la vraie place.
+      if (!rs.end) { rs.end = Date.now(); rs.late = rideEntryT > 0 && Math.abs(rs.p - entry) > 1e-9; }
+      if (rs.late) {
+        var rk2 = Math.min(1, (Date.now() - rs.end) / 260);
+        rk2 = 1 - Math.pow(1 - rk2, 3);
+        if (rk2 < 1) {
+          entry = rs.p + (entry - rs.p) * rk2;
+          if (isFinite(rs.b) && isFinite(bar)) bar = rs.b + (bar - rs.b) * rk2;
+          rideMarkT = Math.max(rk2, 0.000001);
+        }
+      }
+    }
+    rideDbg = { riding: riding, entryT: rideEntryT, headT: rideHeadT, pending: !!trade.pending, entry: entry, head: lastDrawnClose };
+    var hasTarget = isFinite(bar) && Math.abs(bar - entry) >= 0.005;
     if (!isFinite(entry)) return;
     var ey = priceToY(entry, pad, plotH, minP, maxP);
     if (!isFinite(ey)) return;
@@ -2686,7 +2723,7 @@
     var lineFade = trade.lineAt ? Math.min(1, (Date.now() - trade.lineAt) / 140) : 1;
     if (idx === 0) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
-      var refP = glide.barrier > 0 ? glide.barrier : entry;
+      var refP = bar > 0 ? bar : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
       if (isFinite(zy)) {
         zy = Math.max(plotTop, Math.min(plotBot, zy));
@@ -2745,7 +2782,7 @@
       g.setLineDash(NO_DASH);
       g.globalAlpha = 1;
     }
-    drawTargetLine(g, trade, glide.barrier, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, lineFade);
+    drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, lineFade);
     if (eOff) {
       targetTagQueue.push({ entry: true, side: isCall ? 'call' : 'put', mult: 0, bar: entry, by: ey, off: eOff, fade: lineFade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
     }
@@ -2753,8 +2790,22 @@
     var tNow = xNow || Date.now();
     var win = xWin > 0 ? xWin : (zoomSec() * 1000);
     var t0 = shownMarks[trade.id] > 1 ? shownMarks[trade.id] : glide.start;
+    if (rideEntryT > 0) {
+      t0 = rideEntryT;
+      // Bougies : début de la bougie qui contient l'entrée (même repère que pendant le suivi).
+      if (!lineRd && camCandles && camCandles.length) {
+        var ci;
+        for (ci = camCandles.length - 1; ci >= 0; ci--) {
+          var cdR = camCandles[ci];
+          if (cdR && Number(cdR.t) <= rideEntryT + 1) { t0 = Number(cdR.t); break; }
+        }
+      }
+    }
+    if (rideMarkT > 0 && rs && rs.t > 0) t0 = rs.t + (t0 - rs.t) * rideMarkT;
     var mx = layout.headX;
-    if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
+    if (riding && rideCandleT > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - rideCandleT) / win);
+    else if (riding) mx = map && isFinite(map.lastX) ? map.lastX : layout.headX;
+    else if (t0 > 0 && win > 0) mx = layout.headX - layout.seriesW * ((tNow - t0) / win);
     // Chaque rond reste PILE à l'endroit de son clic : plusieurs trades au même endroit s'empilent
     // naturellement (avant : décalés de côté et vers le haut). Seuls les chronos à gauche restent
     // espacés (tagY) pour rester lisibles.
@@ -4738,7 +4789,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose }; },
+    markDebug: function () { return { ride: rideDbg, mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
