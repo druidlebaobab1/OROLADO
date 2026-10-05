@@ -1770,6 +1770,34 @@
       og.addColorStop(1, 'rgba(2,3,14,0)');
       ctx.fillStyle = og;
       ctx.fillRect(headX - bw, 0, bw * 2, lineBot);
+      // v2388 (mesuré sur IQ Option) : CONTRASTE devant la tête, sans aucun trait tracé (bords en fondu) :
+      // zone un peu plus sombre jusqu'à la fin du trade (durée choisie), fine bande sombre douce, puis zone
+      // un peu plus claire au-delà. Dessin seulement.
+      var zDur = 5;
+      try {
+        var zU = D6.Store && D6.Store.current && D6.Store.current();
+        if (zU && Number(zU.duration) > 0) zDur = Number(zU.duration);
+      } catch (eZ) { /* 5 s */ }
+      var zEnd = headX + Math.max(cellW * 0.9, Math.min(zDur * pxSec, cssW - headX - 70));
+      if (zEnd > headX + 12 && zEnd < cssW - 20) {
+        var zd = ctx.createLinearGradient(headX, 0, zEnd, 0);
+        zd.addColorStop(0, 'rgba(2,3,14,0)');
+        zd.addColorStop(0.18, 'rgba(2,3,14,0.09)');
+        zd.addColorStop(1, 'rgba(2,3,14,0.11)');
+        ctx.fillStyle = zd;
+        ctx.fillRect(headX, 0, zEnd - headX, lineBot);
+        var zs = ctx.createLinearGradient(zEnd - 2, 0, zEnd + 7, 0);
+        zs.addColorStop(0, 'rgba(2,3,14,0.11)');
+        zs.addColorStop(0.4, 'rgba(2,3,14,0.20)');
+        zs.addColorStop(1, 'rgba(2,3,14,0)');
+        ctx.fillStyle = zs;
+        ctx.fillRect(zEnd - 2, 0, 9, lineBot);
+        var zl = ctx.createLinearGradient(zEnd + 5, 0, zEnd + 24, 0);
+        zl.addColorStop(0, 'rgba(255,255,255,0)');
+        zl.addColorStop(1, 'rgba(255,255,255,0.028)');
+        ctx.fillStyle = zl;
+        ctx.fillRect(zEnd + 5, 0, cssW - zEnd - 5, lineBot);
+      }
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.fillStyle = '#64748B';
