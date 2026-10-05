@@ -1008,14 +1008,14 @@
   }
 
   // « Galaxie crypto » (choisie par le propriétaire le 2026-10-05) : décor seulement.
-  // Les planètes et la lueur du cœur sont dans l'image de fond (dessinée une fois) ; la galaxie
-  // elle-même est une petite image à part qui tourne très lentement (un tour en 4 min) :
-  // une seule copie d'image par affichage, et ~16 petites pièces redressées. Ne touche ni aux prix,
-  // ni à la courbe, ni aux trades.
+  // v2374 : spirale bien ronde (pas penchée), centrée, immobile (pas de vertige) ; seules les petites
+  // cryptos glissent très lentement le long des bras vers le centre en devenant minuscules.
+  // Ne touche ni aux prix, ni à la courbe, ni aux trades.
   var galaxy = null;
-  var GALAXY_TURN_MS = 240000;
-  var GALAXY_COINS = ['ico-btc', 'ico-trx', 'ico-ton', 'ico-btc', 'ico-eth', 'ico-usdt', 'ico-btc', 'ico-bnb',
-    'ico-sol', 'ico-btc', 'ico-xrp', 'ico-usdc', 'ico-btc', 'ico-doge', 'ico-ton', 'ico-trx'];
+  var GALAXY_TRIP_MS = 180000;
+  var GALAXY_COINS = ['ico-btc', 'ico-trx', 'ico-ton', 'ico-btc', 'ico-eth', 'ico-usdt', 'ico-btc',
+    'ico-bnb', 'ico-sol', 'ico-btc', 'ico-xrp', 'ico-usdc', 'ico-btc', 'ico-doge'];
+  var GALAXY_TURNS = 1.6;
 
   function cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr) {
     function halo(x, y, r, col) {
@@ -1025,92 +1025,85 @@
       g.fillStyle = rg;
       g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     }
-    // Deux planètes de plus, très discrètes.
-    planet(pad.l + w * 0.53, pad.t + h * 0.40, pr * 0.42, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.13, false);
-    planet(pad.l + w * 0.17, pad.t + h * 0.60, pr * 0.30, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.12, false);
-    // À droite, là où la courbe n'arrive jamais (demande du propriétaire) : une 2e jolie planète à anneau
-    // en haut, et de petites planètes adoucies en bas.
+    // Deux planètes discrètes, hors de la spirale.
+    planet(pad.l + w * 0.74, pad.t + h * 0.60, pr * 0.32, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.13, false);
+    planet(pad.l + w * 0.25, pad.t + h * 0.95, pr * 0.26, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.12, false);
+    // À droite, là où la courbe n'arrive jamais : 2e planète à anneau en haut, petites planètes en bas.
     planet(pad.l + w * 0.90, pad.t + h * 0.055, pr * 0.40, '#E4F4FF', 'rgba(110,140,255,1)', '#141A4A', 0.34, true);
     planet(pad.l + w * 0.78, pad.t + h * 0.95, pr * 0.30, '#FFE2EC', 'rgba(244,114,182,1)', '#3A0A22', 0.20, false);
     planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.14, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.22, false);
     planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.16, false);
-    var gx = pad.l + w * 0.36, gy = pad.t + h * 0.52, gR = small * 0.70;
-    // Lueurs du cœur (rondes : elles n'ont pas besoin de tourner).
-    halo(gx, gy, gR * 1.05, 'rgba(120,80,255,0.07)');
-    halo(gx, gy, gR * 0.45, 'rgba(180,120,255,0.07)');
-    halo(gx, gy, small * 0.16, 'rgba(255,200,110,0.16)');
-    halo(gx, gy, small * 0.07, 'rgba(255,240,210,0.17)');
-    // La galaxie « vue de face » dans sa propre image ; elle sera penchée et tournée à l'affichage.
-    var s = Math.min(dpr || 1, 2);
-    var size = Math.ceil(gR * 2.3);
-    var lay = document.createElement('canvas');
-    lay.width = Math.max(1, Math.round(size * s));
-    lay.height = lay.width;
-    var lg = lay.getContext('2d');
-    lg.setTransform(s, 0, 0, s, 0, 0);
-    lg.translate(size / 2, size / 2);
+    // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
+    var cx = pad.l + w * 0.47, cy = pad.t + h * 0.50;
+    var R = Math.min(w * 0.31, h * 0.42);
+    var p0 = planets[0];
+    var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.7;
+    if (room < R) R = Math.max(30, room);
     function spiral(arm, t) {
-      var ang = arm * Math.PI + t * Math.PI * 2.0, rad = gR * (0.08 + t * 0.92);
-      return { x: Math.cos(ang) * rad, y: Math.sin(ang) * rad, a: ang, r: rad };
+      var ang = arm * Math.PI + t * Math.PI * 2 * GALAXY_TURNS;
+      var rad = R * (0.05 + 0.95 * t);
+      return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
     }
-    var arm, t, q, k;
-    var coins = [];
+    halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.06)');
+    halo(cx, cy, R * 0.45, 'rgba(180,120,255,0.06)');
+    var arm, t, q;
     for (arm = 0; arm < 2; arm++) {
-      lg.save();
-      lg.lineCap = 'round';
+      g.save();
+      g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        lg.strokeStyle = q ? 'rgba(200,170,255,0.07)' : 'rgba(120,90,255,0.06)';
-        lg.lineWidth = q ? small * 0.035 : small * 0.09;
-        lg.beginPath();
-        for (t = 0; t <= 1.0001; t += 0.02) {
+        g.strokeStyle = q ? 'rgba(200,170,255,0.06)' : 'rgba(120,90,255,0.05)';
+        g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
+        g.beginPath();
+        for (t = 0; t <= 1.0001; t += 0.01) {
           var pp = spiral(arm, t);
-          if (t === 0) lg.moveTo(pp.x, pp.y); else lg.lineTo(pp.x, pp.y);
+          if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y);
         }
-        lg.stroke();
+        g.stroke();
       }
-      lg.restore();
-      for (t = 0; t < 1; t += 0.006) {
-        var ja = (rnd() - 0.5) * 0.35, jr = 0.9 + rnd() * 0.2;
-        var ang2 = arm * Math.PI + t * Math.PI * 2.0 + ja, rad2 = gR * (0.08 + t * 0.92) * jr;
-        lg.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.35 - t * 0.25).toFixed(2) + ')';
-        lg.beginPath(); lg.arc(Math.cos(ang2) * rad2, Math.sin(ang2) * rad2, 0.5 + rnd() * 0.9, 0, Math.PI * 2); lg.fill();
-      }
-      // Pièces le long du bras (BTC en priorité), de plus en plus petites et pâles vers l'extérieur.
-      for (k = 0; k < 8; k++) {
-        var tc = 0.14 + k * 0.105;
-        var cp = spiral(arm, tc);
-        coins.push({ a: cp.a, r: cp.r, id: GALAXY_COINS[arm * 8 + k], s: 15 - k * 0.9, al: 0.30 - k * 0.022 });
+      g.restore();
+      for (t = 0.02; t < 1; t += 0.004) {
+        var sp = spiral(arm, t);
+        var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.12 + t * 0.2).toFixed(2) + ')';
+        g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
-    galaxy = { x: gx, y: gy, layer: lay, size: size, tilt: -0.38, sq: 0.48, coins: coins, core: Math.max(12, small * 0.10) };
+    // Cœur doré (adouci) + BTC au centre.
+    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.15)');
+    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.16)');
+    var core = coinImg('ico-btc');
+    var cs = Math.max(12, R * 0.16);
+    if (core && core.complete && core.naturalWidth) {
+      g.globalAlpha = 0.27;
+      g.drawImage(core, cx - cs / 2, cy - cs / 2, cs, cs);
+      g.globalAlpha = 1;
+    }
+    var coins = [], k;
+    for (arm = 0; arm < 2; arm++) {
+      for (k = 0; k < 7; k++) coins.push({ arm: arm, u0: k / 7 + arm * 0.07, id: GALAXY_COINS[arm * 7 + k] });
+    }
+    galaxy = { cx: cx, cy: cy, R: R, coins: coins };
   }
 
+  // Les petites cryptos glissent doucement vers le centre (un trajet en 3 min), de plus en plus petites.
   function drawGalaxy() {
     if (!galaxy) return;
-    var G = galaxy;
-    var spin = ((Date.now() % GALAXY_TURN_MS) / GALAXY_TURN_MS) * Math.PI * 2;
-    ctx.save();
-    ctx.translate(G.x, G.y);
-    ctx.rotate(G.tilt);
-    ctx.scale(1, G.sq);
-    ctx.rotate(spin);
-    ctx.drawImage(G.layer, -G.size / 2, -G.size / 2, G.size, G.size);
-    ctx.restore();
-    var i, ct = Math.cos(G.tilt), st = Math.sin(G.tilt);
+    var G = galaxy, now = Date.now() / GALAXY_TRIP_MS, i;
     for (i = 0; i < G.coins.length; i++) {
       var c = G.coins[i];
+      var u = (c.u0 + now) % 1;
+      var t = 1 - u * 0.92;
       var im = coinImg(c.id);
       if (!im || !im.complete || !im.naturalWidth) continue;
-      var px = Math.cos(c.a + spin) * c.r, py = Math.sin(c.a + spin) * c.r * G.sq;
-      var x = G.x + px * ct - py * st, y = G.y + px * st + py * ct;
-      // un peu plus pâles quand elles passent « derrière » (haut de l'ellipse)
-      ctx.globalAlpha = c.al * (Math.sin(c.a + spin) > 0 ? 1 : 0.72);
-      ctx.drawImage(im, x - c.s / 2, y - c.s / 2, c.s, c.s);
-    }
-    var core = coinImg('ico-btc');
-    if (core && core.complete && core.naturalWidth) {
-      ctx.globalAlpha = 0.27;
-      ctx.drawImage(core, G.x - G.core / 2, G.y - G.core / 2, G.core, G.core);
+      var ang = c.arm * Math.PI + t * Math.PI * 2 * GALAXY_TURNS;
+      var rad = G.R * (0.05 + 0.95 * t);
+      var x = G.cx + Math.cos(ang) * rad, y = G.cy + Math.sin(ang) * rad;
+      var s = 3 + 12 * t;
+      var a = 0.30 * t + 0.04;
+      if (u < 0.06) a *= u / 0.06;
+      if (u > 0.85) a *= (1 - u) / 0.15;
+      ctx.globalAlpha = a;
+      ctx.drawImage(im, x - s / 2, y - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
   }
@@ -1314,12 +1307,15 @@
     // très discrètement dans l'espace (jamais sur une planète ni sur la colonne des prix).
     var orbit = ['ico-btc', 'ico-eth', 'ico-usdt'];
     var p0 = planets[0];
+    // v2374 (propriétaire) : les 3 logos passent en haut à droite de la planète, un peu plus petits,
+    // sans toucher les prix (avant : à gauche, sur le chemin de la tête de la courbe).
+    var orbitMaxX = pad.l + w - 6;
     for (k = 0; k < orbit.length; k++) {
-      var oa = 2.55 + k * 0.62;
-      var ox = p0.x + Math.cos(oa) * p0.r * 1.95 * Math.cos(-0.32) - Math.sin(oa) * p0.r * 0.42 * Math.sin(-0.32);
-      var oy = p0.y + Math.cos(oa) * p0.r * 1.95 * Math.sin(-0.32) + Math.sin(oa) * p0.r * 0.42 * Math.cos(-0.32);
+      var oa = -1.2 + k * 0.5;
+      var os = Math.max(8, p0.r * 0.27);
+      var ox = Math.min(p0.x + Math.cos(oa) * p0.r * 1.32, orbitMaxX - os / 2);
+      var oy = p0.y + Math.sin(oa) * p0.r * 1.32;
       var oimg = coinImg(orbit[k]);
-      var os = Math.max(10, p0.r * 0.34);
       if (oimg && oimg.complete && oimg.naturalWidth) {
         g.globalAlpha = 0.42;
         g.drawImage(oimg, ox - os / 2, oy - os / 2, os, os);
