@@ -15,7 +15,8 @@
 #
 # Installé dans .git/hooks/pre-commit (copie de ce fichier).
 # ============================================================================
-PROTEGES="feed_lib.php fair_table.php js/fair_table.js feed.php feedcache/.htaccess js/engine.js js/chart.js trade_lib.php"
+# 2026-10-05 (v2367, demande du propriétaire) : + moteur continu des prix et diffusion en direct du VPS.
+PROTEGES="feed_lib.php fair_table.php js/fair_table.js feed.php feedcache/.htaccess js/engine.js js/chart.js trade_lib.php scripts/moteur-prix.php serveur-direct/direct.js"
 PROTEGES_ARGENT="orolado_lib.php api.php account_lib.php admin_lib.php admin.php history_lib.php wipe_lib.php retraits-paiement.php api/deposit-confirm.php api/deposit-initiate.php api/deposit-verify-crypto.php api/deposit-webhook.php api/flutterwave-callback.php api/flutterwave-charge.php api/flutterwave-checkout.php api/flutterwave-status.php api/flutterwave-verify.php api/flutterwave-webhook.php api/maketou-webhook.php api/oxapay-invoice.php api/oxapay-status.php api/oxapay-webhook.php"
 
 sim=""

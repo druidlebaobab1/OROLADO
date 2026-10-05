@@ -5095,9 +5095,22 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .b
     border-radius:0!important;box-sizing:border-box!important;
     padding-left:max(12px,env(safe-area-inset-left))!important;padding-right:max(12px,env(safe-area-inset-right))!important;
   }
-  html body #drawerProfile#drawerProfile.drawer > *{
-    width:100%!important;max-width:560px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;
+  /* v2367 : profil en DEUX colonnes (identité + solde à gauche, menu à droite) : deux fois moins haut,
+     puis réduit pour tenir entier (js/app.js, fitLandscapeBoxes). */
+  html body #drawerProfile#drawerProfile.drawer{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-auto-rows:auto!important;column-gap:16px!important;row-gap:8px!important;align-content:start!important;
   }
+  html body #drawerProfile#drawerProfile.drawer > *{
+    width:auto!important;max-width:none!important;min-width:0!important;margin:0!important;box-sizing:border-box!important;
+  }
+  html body #drawerProfile#drawerProfile.drawer > .drawer-head{grid-column:1 / -1!important;grid-row:1!important}
+  html body #drawerProfile#drawerProfile.drawer > .prof-head{grid-column:1!important;grid-row:2!important}
+  html body #drawerProfile#drawerProfile.drawer > .card{grid-column:1!important;grid-row:3!important}
+  html body #drawerProfile#drawerProfile.drawer > .wallet-card{grid-column:1!important;grid-row:4 / span 3!important}
+  html body #drawerProfile#drawerProfile.drawer > .drawer-nav{grid-column:2!important;grid-row:2 / span 3!important}
+  html body #drawerProfile#drawerProfile.drawer > .drawer-admin{grid-column:2!important;grid-row:5!important}
+  html body #drawerProfile#drawerProfile.drawer > .legal{grid-column:2!important;grid-row:6!important}
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap > .pad{padding-top:10px!important;gap:6px!important}
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap > .pad .stake-field{max-height:50px!important}
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #btnCall#btnCall,
@@ -5147,4 +5160,8 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .b
   html body #depositModal .pay-method-label{margin-top:4px!important;margin-bottom:3px!important}
   html body #depositModal #payMethodCard.pay-method-card{padding-top:6px!important;padding-bottom:6px!important}
   html body #depositModal #btnConfirmDeposit.btn-deposit-confirm{padding-top:11px!important;padding-bottom:11px!important;margin-bottom:10px!important}
+}
+/* v2367 — plein écran couché : le bloc de droite (bordure comprise) descend un peu, il ne touche plus la case « Compte réel » au-dessus. */
+@media (orientation:landscape) and (max-height:500px){
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap > .pad{margin-top:12px!important;padding-top:6px!important}
 }

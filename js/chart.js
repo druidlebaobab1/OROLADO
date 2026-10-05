@@ -2560,7 +2560,8 @@
       g.save();
       g.globalAlpha = 1;
       g.setLineDash(NO_DASH);
-      g.fillStyle = '#E8173A';
+      // v2367 : chrono de la couleur du trade (vert = ACHAT, rouge = VENTE) ; avant, toujours rouge.
+      g.fillStyle = c.call ? '#0FA958' : '#E8173A';
       g.strokeStyle = 'rgba(255,255,255,0.85)';
       g.lineWidth = 1;
       roundRectOn(g, c.x, c.y, c.w, c.h, 7);
@@ -2917,7 +2918,7 @@
         }
         chronoPlaced.push(ty);
         // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
-        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label });
+        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall });
       }
     }
   }

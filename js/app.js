@@ -5633,6 +5633,82 @@
     return !!(el && (STICKY_MODALS[el.id] || (el.getAttribute && el.getAttribute('data-sticky') === '1')));
   }
 
+  // v2367 — Téléphone COUCHÉ (demande du propriétaire) : les fenêtres (connexion / inscription, recharger,
+  // dépôt crypto, retrait, historiques, mot de passe, aide…) sont RÉDUITES pour tenir entières à l'écran,
+  // au lieu de dépasser en bas. Élargies d'abord à tout l'écran, puis réduites (jamais sous 42 %) ;
+  // au-delà, le reste défile. Profil : rangé en 2 colonnes (css/app.css), puis réduit de même.
+  // Téléphone debout, tablette, PC : rien ne change (aucune réduction).
+  var LS_FIT_SEL = '.modal-backdrop.active > .modal-box, #screenAuth:not(.hidden) .auth-card, #drawerProfile.drawer.on';
+  var lsFitted = [];
+  function lsPhoneLandscape() {
+    var iw = window.innerWidth || 0;
+    var ih = window.innerHeight || 0;
+    return iw > ih && ih > 0 && ih <= 500 && !document.documentElement.classList.contains('is-tv');
+  }
+  function lsUnfit(el) {
+    el.style.removeProperty('zoom');
+    el.style.removeProperty('max-height');
+    el.style.removeProperty('width');
+    el.style.removeProperty('max-width');
+    el.style.removeProperty('height');
+  }
+  function fitLandscapeBoxes() {
+    var els = [];
+    try { els = Array.prototype.slice.call(document.querySelectorAll(LS_FIT_SEL)); } catch (eSel) { els = []; }
+    lsFitted.forEach(function (el) { if (els.indexOf(el) < 0 || !lsPhoneLandscape()) lsUnfit(el); });
+    lsFitted = [];
+    if (!lsPhoneLandscape()) return;
+    var avail = (window.innerHeight || 0) - 12;
+    els.forEach(function (el) {
+      if (!el.offsetWidth) return;
+      lsUnfit(el);
+      el.style.setProperty('max-height', 'none', 'important');
+      var nat = el.scrollHeight;
+      if (nat > avail && avail > 100) {
+        // Fenêtres : d'abord élargies à tout l'écran couché (le contenu s'étale, la fenêtre est moins
+        // haute), puis réduites juste ce qu'il faut. (Connexion : la carte garde sa colonne.)
+        var isDrawer = el.classList.contains('drawer');
+        var widen = isDrawer || el.classList.contains('modal-box');
+        // Profil : il occupe tout l'écran ; réduit, il garde toute la largeur (largeur / réduction).
+        var fullW = isDrawer ? (window.innerWidth || 0) : Math.min((window.innerWidth || 0) - 24, 1100);
+        var z = 1;
+        var k;
+        for (k = 0; k < 3; k++) {
+          z = Math.max(0.42, Math.floor((avail / nat) * 1000) / 1000);
+          if (!widen) break;
+          el.style.setProperty('width', Math.floor(fullW / z) + 'px', 'important');
+          el.style.setProperty('max-width', 'none', 'important');
+          el.style.setProperty('zoom', String(z));
+          nat = el.scrollHeight;
+          if (nat * z <= avail + 1) break;
+        }
+        el.style.setProperty('zoom', String(z));
+        el.style.setProperty('max-height', Math.floor(avail / z) + 'px', 'important');
+        // Profil (panneau fixé sur tout l'écran) : une fois réduit, il doit garder toute la hauteur.
+        if (isDrawer) {
+          el.style.setProperty('height', Math.floor((window.innerHeight || 0) / z) + 'px', 'important');
+          el.style.setProperty('max-height', Math.floor((window.innerHeight || 0) / z) + 'px', 'important');
+        }
+      } else {
+        el.style.removeProperty('max-height');
+      }
+      lsFitted.push(el);
+    });
+  }
+  var lsFitRaf = 0;
+  function scheduleLandscapeFit() {
+    if (lsFitRaf) return;
+    lsFitRaf = requestAnimationFrame(function () {
+      lsFitRaf = 0;
+      try { fitLandscapeBoxes(); } catch (eFit) { /* ignore */ }
+    });
+  }
+  try {
+    new MutationObserver(scheduleLandscapeFit).observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
+    window.addEventListener('resize', function () { setTimeout(scheduleLandscapeFit, 120); });
+    window.addEventListener('orientationchange', function () { setTimeout(scheduleLandscapeFit, 350); });
+  } catch (eObs) { /* ignore */ }
+
   function openModal(id) {
     var el = $(id);
     if (!el) return;
