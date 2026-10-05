@@ -6361,7 +6361,8 @@
       };
     }
     hook($('btnOpenDeposit'), function () { openDeposit(); });
-    hook($('btnCall'), function () { execute('call'); });
+    // (v2364 : clic ignoré s'il suit un doigt déjà compté sur ce bouton, voir plus bas.)
+    hook($('btnCall'), function () { if (Date.now() - ($('btnCall').__oroTouchAt || 0) < 700) return; execute('call'); });
     // Retour visuel immédiat sur ACHETER / VENDRE (n'empêche aucun clic, même répété).
     ['btnCall', 'btnPut'].forEach(function (bid) {
       var b = $(bid);
@@ -6375,7 +6376,24 @@
         b.__oroSentT = setTimeout(function () { b.classList.remove('btn-sent'); }, 500);
       }, { passive: true });
     });
-    hook($('btnPut'), function () { execute('put'); });
+    hook($('btnPut'), function () { if (Date.now() - ($('btnPut').__oroTouchAt || 0) < 700) return; execute('put'); });
+    // v2364 : ACHETER / VENDRE au doigt qui se lève. Deux pouces sur l'écran en même temps (ACHETER puis
+    // VENDRE très vite) : le navigateur n'envoie pas de « clic » (geste à deux doigts) → le trade était perdu.
+    // Le « clic » qui suit un doigt déjà compté est ignoré (jamais deux trades pour une touche).
+    [['btnCall', 'call'], ['btnPut', 'put']].forEach(function (pair) {
+      var b = $(pair[0]);
+      if (!b || b.__oroTouch) return;
+      b.__oroTouch = true;
+      b.addEventListener('touchend', function (e) {
+        var tch = e.changedTouches && e.changedTouches[0];
+        if (!tch) return;
+        var r = b.getBoundingClientRect();
+        if (tch.clientX < r.left || tch.clientX > r.right || tch.clientY < r.top || tch.clientY > r.bottom) return;
+        b.__oroTouchAt = Date.now();
+        try { if (e.cancelable) e.preventDefault(); } catch (eP) { /* ignore */ }
+        try { execute(pair[1]); } catch (eX) { try { console.warn(eX); } catch (e0) { /* ignore */ } }
+      }, { passive: false });
+    });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       hook(chip, function () {
         var u = user();

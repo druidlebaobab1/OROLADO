@@ -5075,3 +5075,11 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .b
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #btnPut#btnPut{flex:1 1 0!important;height:auto!important;min-height:40px!important;max-height:96px!important}
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap .trade-row{justify-content:flex-start!important}
 }
+/* v2364 — plein écran, téléphone couché : planètes en LIGNE sur iPhone aussi (une règle « PC couché » les mettait en colonne : une seule visible) ; noms sous les planètes plus coupés (Android). */
+@media (orientation:landscape) and (max-height:500px){
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar{flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;height:54px!important;min-height:54px!important;max-height:54px!important;padding-top:1px!important;padding-bottom:1px!important;gap:4px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar .asset-chip{flex:0 0 auto!important;height:52px!important;min-height:52px!important;max-height:52px!important;width:62px!important;min-width:62px!important;padding:1px 0 2px!important;margin:0!important;justify-content:flex-start!important;gap:1px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar .asset-chip .mk-art{width:32px!important;height:32px!important;min-width:32px!important;flex:0 0 32px!important;margin:0 auto!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar .asset-chip .mk-art svg{width:32px!important;height:32px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap #assetBar .asset-chip > span:not(.mk-art){font-size:8.5px!important;line-height:11px!important;margin:0!important;white-space:nowrap!important;position:static!important;transform:none!important}
+}
