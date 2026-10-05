@@ -513,6 +513,13 @@
     // point d'entrée ; ils apparaissent alors UNE fois, pile sur la courbe, et ne bougent plus. En attendant, le
     // signe ACHAT / VENTE et l'anneau au bout de la courbe s'affichent dès le clic. Visiteur : inchangé (immédiat).
     // Filet : jamais caché plus de 6 s.
+    // v2356 (test en compte connecté) : l'anneau et l'étiquette du clic se posaient au bout de la courbe au prix du
+    // clic, puis le vrai rond apparaissait à côté au prix du serveur → « deux positions ». Compte connecté : plus
+    // aucun signe au clic, seulement le vrai rond, une seule fois. Visiteur : inchangé (les deux tombent au même endroit).
+    if (!ot.guest && !pendingTrades['done:' + ot.id]) {
+      delete pendingTrades[ot.id];
+      pendingTrades['done:' + ot.id] = performance.now();
+    }
     var hideNow = false;
     if (!ot.guest) {
       var waitSrv = !ot.serverConfirmed;
