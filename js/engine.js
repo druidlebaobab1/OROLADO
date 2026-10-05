@@ -54,14 +54,16 @@
     delayDbg.live = live;
     // v2352 : ligne directe → réserve plus courte (0,2 s) : la courbe affichée colle au serveur, le prix pris au clic
     // est à ~un pas de prix de ce que voit le joueur. Remonte tout seul si la connexion devient irrégulière.
-    var want = lag + (live ? 100 : POLL_MS + 100);
+    // v2357 : réserve encore réduite en direct (0,06 s au-dessus du retard mesuré) : le rond d'un trade connecté
+    // tombe environ deux fois plus près de l'endroit du clic. Remonte tout seul si un prix arrive en retard.
+    var want = lag + (live ? 60 : POLL_MS + 100);
     // v2344 : descend en quelques secondes (avant ~1 min et plus) ; remonte toujours tout de suite si besoin.
     needDelay = want > needDelay ? want : needDelay * (live ? 0.97 : 0.997) + want * (live ? 0.03 : 0.003);
     // v2354 : 0,2 s de réserve minimum en direct : la courbe colle au serveur, donc après un clic connecté le vrai
     // point d'entrée est déjà (ou presque) affiché quand la réponse du serveur arrive → le rond apparaît vite.
-    var target = Math.max(live ? 200 : DISPLAY_DELAY, Math.min(2600, needDelay));
+    var target = Math.max(live ? 120 : DISPLAY_DELAY, Math.min(2600, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
-    else if (dispDelay > target + 150) dispDelay = Math.max(target, dispDelay - (live ? 12 : 4));
+    else if (dispDelay > target + (live ? 30 : 150)) dispDelay = Math.max(target, dispDelay - (live ? 12 : 4));
   }
   var POLL_MS = 300;
   var MULTS = [1.9, 5, 10, 50];
