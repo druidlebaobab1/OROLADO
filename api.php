@@ -1747,6 +1747,8 @@ if ($action === 'placeOrder') {
     exit;
   }
   $tAvant = microtime(true);
+  // v2349 : tâches d'archive à faire après la réponse (voir orolado_trade_place).
+  $GLOBALS['OROLADO_AFTER'] = [];
   try {
     $res = orolado_trade_place($stSess['user'], $req);
   } catch (Throwable $e) {
@@ -1762,6 +1764,15 @@ if ($action === 'placeOrder') {
   @file_put_contents(__DIR__ . '/data/temps_ordres.log', date('c') . ' ' . (($req['mode'] ?? '') === 'real' ? 'reel' : 'demo')
     . ' total=' . $srvMs . 'ms avant=' . ($srvMs - $placeMs) . 'ms trade=' . $placeMs . 'ms ok=' . (!empty($res['ok']) ? 1 : 0) . "\n", FILE_APPEND);
   echo json_encode($res + ['server' => true, 'tickMs' => OROLADO_TICK_MS, 'serverMs' => orolado_feed_now_ms(), 'srvMs' => $srvMs]);
+  // Réponse envoyée au téléphone, puis copie d'archive Supabase (le trade est déjà sûr).
+  $after = $GLOBALS['OROLADO_AFTER'];
+  $GLOBALS['OROLADO_AFTER'] = null;
+  if ($after) {
+    if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+    foreach ($after as $job) {
+      try { $job(); } catch (Throwable $eJob) { error_log('OROLADO archive ordre ' . $eJob->getMessage()); }
+    }
+  }
   exit;
 }
 

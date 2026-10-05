@@ -274,10 +274,17 @@ function orolado_trade_place(array $me, array $req): array {
   }
 
   if ($mode === 'real' && function_exists('supabase_put_order')) {
-    supabase_put_order($payId, [
+    // v2349 : copie d'archive dans Supabase faite APRÈS la réponse au téléphone quand c'est possible (le trade
+    // est déjà enregistré et la mise déjà débitée) → le trait arrive plus vite. En ligne de commande : tout de suite.
+    $putRow = [
       'id' => $oid, 'asset_id' => $assetId, 'side' => $side, 'stake' => $stake, 'duration' => $duration,
       'mode' => 'real', 'payout' => $payout, 'entry_price' => $entryCents / 100, 'status' => 'open',
-    ]);
+    ];
+    if (isset($GLOBALS['OROLADO_AFTER']) && is_array($GLOBALS['OROLADO_AFTER'])) {
+      $GLOBALS['OROLADO_AFTER'][] = static function () use ($payId, $putRow) { supabase_put_order($payId, $putRow); };
+    } else {
+      supabase_put_order($payId, $putRow);
+    }
   }
   return ['ok' => true, 'order' => orolado_trade_public($order), 'vault' => $placed['vault']];
 }

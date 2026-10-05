@@ -64,6 +64,8 @@
   var shownMarks = {};
   // Prix du rond au moment où il apparaît : il ne bouge plus ensuite (un seul rond, posé une fois).
   var shownPrice = {};
+  // v2349 : heure du CLIC (vue à l'écran) de chaque trade, pour poser le rond là où le joueur a cliqué.
+  var clickAt = {};
   // Historique regardé (un doigt qui glisse) : recul en ms, recul maximum, élan, bougies du bout
   // coupées, cadre des prix du passé, bouton « Direct ».
   var panMs = 0;
@@ -513,6 +515,7 @@
       pendingTrades[ot.id] = { t: performance.now(), side: ot.side === 'put' ? 'put' : 'call' };
     }
     if (pendingTrades[ot.id]) pendingTrades[ot.id].seen = collectNow;
+    if (!clickAt[ot.id] && ot.startTime) clickAt[ot.id] = Number(ot.startTime);
     // v2347 (choix B) : rond et prix d'entrée fixés seulement quand le serveur a confirmé (prix officiel).
     if (!shownMarks[ot.id] && ot.confirmed !== false && ot.serverConfirmed !== false) {
       // Le rond reste pour de bon à l'endroit du clic, sur les 10 simulations : la réponse du serveur
@@ -520,8 +523,11 @@
       // la seconde suivante). Lignes : l'instant exact du clic ; autres : le centre de sa seconde.
       var aMk = D6.CONFIG && D6.CONFIG.ASSETS ? D6.CONFIG.ASSETS[ot.assetId] : null;
       var lineMk = !!(aMk && aMk.chart !== 'candle' && aMk.id !== 'horizon50' && !STYLED_ASSETS[aMk.id]);
-      var clickT = Number(ot.startTime || ot.startedAt) || 0;
-      shownMarks[ot.id] = (lineMk ? clickT : (liveTradeTime(ot.entryTick, clickT) || clickT)) || 1;
+      // v2349 : le rond se pose à l'heure du CLIC (là où le joueur a cliqué sur la courbe), à la hauteur du prix
+      // confirmé par le serveur ; avant, il se posait à l'heure d'arrivée de l'ordre, donc « devant » la courbe.
+      var clickT = clickAt[ot.id] || Number(ot.startTime || ot.startedAt) || 0;
+      void lineMk;
+      shownMarks[ot.id] = clickT || 1;
       var p0 = Number(ot.entryPrice != null ? ot.entryPrice : ot.openPrice);
       if (isFinite(p0) && p0 > 0) shownPrice[ot.id] = p0;
     }
