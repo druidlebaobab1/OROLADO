@@ -1038,16 +1038,16 @@
     // et toujours un espace libre avant l'anneau de la grande planète.
     // v2378 : centre de TOUT l'espace du graphique (colonne des prix comprise), un peu plus petite.
     var cx = cssW * 0.5, cy = cssH * 0.5;
-    var R = Math.min(cssW * 0.27, cssH * 0.36);
+    var R = Math.min(cssW * 0.30, cssH * 0.40);
     var p0 = planets[0];
-    var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.7;
+    var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.45;
     // bout gauche de l'anneau (incliné de -0.32) + quelques points de l'anneau côté spirale
     var ra;
     for (ra = 2.4; ra <= 3.9; ra += 0.1) {
       var ex = Math.cos(ra) * p0.r * 1.95, ey = Math.sin(ra) * p0.r * 0.42;
       var rx = p0.x + ex * Math.cos(-0.32) - ey * Math.sin(-0.32);
       var ry = p0.y + ex * Math.sin(-0.32) + ey * Math.cos(-0.32);
-      room = Math.min(room, Math.hypot(rx - cx, ry - cy) - Math.max(12, R * 0.12));
+      room = Math.min(room, Math.hypot(rx - cx, ry - cy) - 6);
     }
     if (room < R) R = Math.max(30, room);
     function spiral(arm, t) {
@@ -1062,7 +1062,7 @@
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,170,255,0.06)' : 'rgba(120,90,255,0.05)';
+        g.strokeStyle = q ? 'rgba(200,170,255,0.05)' : 'rgba(120,90,255,0.04)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) {
@@ -1075,7 +1075,7 @@
       for (t = 0.02; t < 1; t += 0.004) {
         var sp = spiral(arm, t);
         var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
-        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.12 + t * 0.2).toFixed(2) + ')';
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.10 + t * 0.16).toFixed(2) + ')';
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
@@ -1085,7 +1085,7 @@
     var core = coinImg('ico-btc');
     var cs = Math.max(12, R * 0.16);
     if (core && core.complete && core.naturalWidth) {
-      g.globalAlpha = 0.27;
+      g.globalAlpha = 0.22;
       g.drawImage(core, cx - cs / 2, cy - cs / 2, cs, cs);
       g.globalAlpha = 1;
     }
@@ -1110,7 +1110,7 @@
       var rad = G.R * (0.05 + 0.95 * t);
       var x = G.cx + Math.cos(ang) * rad, y = G.cy + Math.sin(ang) * rad;
       var s = 3 + 12 * t;
-      var a = 0.30 * t + 0.04;
+      var a = 0.22 * t + 0.03;
       if (u < 0.06) a *= u / 0.06;
       if (u > 0.85) a *= (1 - u) / 0.15;
       ctx.globalAlpha = a;
@@ -1701,31 +1701,52 @@
       while (GRID_NICE_SEC[k] * pxSec > cellPx * 1.8 && k > 0) k--;
       var S = GRID_NICE_SEC[k];
       var stepMs = S * 1000;
+      // v2379 (comme IQ Option) : un trait PRINCIPAL toutes les M secondes rondes (≈ 3 carreaux), plus
+      // large avec une ombre douce de chaque côté ; les heures ne sont écrites que sous lui ; la bande
+      // du bas (heures) reste libre de tout trait.
+      var M = gridMajorSec(S);
+      var majorMs = M * 1000;
       var tLeft = xNow - (headX / pxSec) * 1000;
       var tRight = xNow + ((cssW - headX) / pxSec) * 1000;
       var T0 = Math.floor(tLeft / stepMs) * stepMs;
       var T, guard;
+      var lineBot = cssH - 16;
       ctx.strokeStyle = theme.gridV;
       ctx.beginPath();
-      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 80; T += stepMs, guard++) {
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
+        if (Math.abs(T / majorMs - Math.round(T / majorMs)) < 1e-6) continue;
         var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
         if (gx < 0 || gx > cssW) continue;
         ctx.moveTo(gx, 0);
-        ctx.lineTo(gx, cssH);
+        ctx.lineTo(gx, lineBot);
       }
       ctx.stroke();
-      // Heures en bas, sous chaque trait (une sur deux si les carreaux sont étroits) ; jamais sous la
-      // colonne des prix ni collées au bord gauche.
+      var M0 = Math.floor(tLeft / majorMs) * majorMs;
+      var halo = Math.max(5, Math.min(9, cssW / 70));
+      for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
+        var mx = headX + ((T - xNow) / 1000) * pxSec;
+        if (mx < -halo || mx > cssW + halo) continue;
+        var sh = ctx.createLinearGradient(mx - halo, 0, mx + halo, 0);
+        sh.addColorStop(0, 'rgba(255,255,255,0)');
+        sh.addColorStop(0.5, 'rgba(255,255,255,0.045)');
+        sh.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sh;
+        ctx.fillRect(mx - halo, 0, halo * 2, lineBot);
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.beginPath();
+        ctx.moveTo(Math.round(mx) + 0.5, 0);
+        ctx.lineTo(Math.round(mx) + 0.5, lineBot);
+        ctx.stroke();
+      }
+      // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.fillStyle = '#64748B';
       ctx.textAlign = 'center';
-      var every = (S * pxSec < 52) ? 2 : 1;
       var priceColL = cssW - PRICE_AXIS_GAP - 46;
-      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 80; T += stepMs, guard++) {
-        if (Math.round(T / stepMs) % every) continue;
+      for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
         var lx = headX + ((T - xNow) / 1000) * pxSec;
         if (lx < 24 || lx > priceColL) continue;
-        ctx.fillText(gridClock(T, S), lx, cssH - 5);
+        ctx.fillText(gridClock(T, M), lx, cssH - 5);
       }
     }
   }
@@ -1738,6 +1759,15 @@
       if (d < bd) { bd = d; best = i; }
     }
     return best;
+  }
+  // Trait principal : le plus petit pas rond qui fait au moins 3 carreaux et tombe juste sur eux.
+  function gridMajorSec(S) {
+    var i;
+    for (i = 0; i < GRID_NICE_SEC.length; i++) {
+      var m = GRID_NICE_SEC[i];
+      if (m >= S * 3 && m % S === 0) return m;
+    }
+    return S * 4;
   }
   function gridClock(t, S) {
     var d = new Date(t);
