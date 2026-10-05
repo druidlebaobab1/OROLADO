@@ -1119,6 +1119,36 @@
     ctx.globalAlpha = 1;
   }
 
+  // v2390 (propriétaire) : PARALLAXE. Une couche d'étoiles fines qui dérive lentement vers la gauche
+  // (~8 fois moins vite que la grille), par-dessus le fond fixe → profondeur. Les planètes et la spirale
+  // restent à leur place (placées pour ne jamais toucher la tête ni les prix). Décor seulement.
+  var driftStars = null;
+  function drawStarDrift() {
+    if (!driftStars) {
+      var sd = 91, arr = [], i;
+      for (i = 0; i < 46; i++) {
+        sd = (sd * 16807) % 2147483647; var rx = (sd - 1) / 2147483646;
+        sd = (sd * 16807) % 2147483647; var ry = (sd - 1) / 2147483646;
+        sd = (sd * 16807) % 2147483647; var rs = (sd - 1) / 2147483646;
+        arr.push({ x: rx, y: ry, r: 0.45 + rs * 0.9, a: 0.25 + rs * 0.45 });
+      }
+      driftStars = arr;
+    }
+    var speed = 1.15 * Math.max(0.6, cssW / 375);
+    var off = ((Date.now() / 1000) * speed) % Math.max(1, cssW);
+    var k;
+    for (k = 0; k < driftStars.length; k++) {
+      var s = driftStars[k];
+      var x = ((s.x * cssW - off) % cssW + cssW) % cssW;
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(x, s.y * cssH, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function buildBackdrop(pad, w, h) {
     var s = Math.min(dpr || 1, 2);
     var c = bgCanvas || document.createElement('canvas');
@@ -1379,6 +1409,7 @@
     if (bgCanvas) {
       ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
       try { drawGalaxy(); } catch (eGal) { galaxy = null; }
+      try { drawStarDrift(); } catch (eStar) { /* décor seulement */ }
     } else {
       ctx.fillStyle = '#0B0E14';
       ctx.fillRect(0, 0, cssW, cssH);
@@ -1711,85 +1742,45 @@
       var T0 = Math.floor(tLeft / stepMs) * stepMs;
       var T, guard;
       var lineBot = cssH - 16;
-      // v2389 (propriétaire) : TOUS les traits IDENTIQUES et très discrets (même finesse, même couleur, même
-      // petite lueur fine à gauche et à droite). Une famille va vers la gauche (le temps, au rythme des bougies,
-      // heures justes en bas), l'autre vers la droite à la même vitesse et au même écart : elles se croisent sans
-      // qu'on puisse les distinguer. Aucun trait fixe, aucun trait plus clair que les autres.
+      // v2390 (propriétaire, choix de l'ancienne grille v2379 + ses 3 consignes) :
+      // 1) UN SEUL SENS : tous les traits défilent de la droite vers la gauche, au rythme des bougies ;
+      // 2) DÉGRADÉ DE PROFONDEUR : à droite (tête, là où naissent les bougies) les traits sont bien visibles
+      //    et blancs ; plus ils partent vers la gauche (le passé), plus ils deviennent fins et transparents ;
+      // 3) parallaxe : les étoiles qui dérivent lentement sont dessinées dans drawStarDrift (fond).
       var priceColL0 = cssW - PRICE_AXIS_GAP - 46;
-      var glowW = 4;
-      function gridLine(x) {
-        var gl = ctx.createLinearGradient(x - glowW, 0, x + glowW, 0);
-        gl.addColorStop(0, 'rgba(255,255,255,0)');
-        gl.addColorStop(0.5, 'rgba(255,255,255,0.022)');
-        gl.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = gl;
-        ctx.fillRect(x - glowW, 0, glowW * 2, lineBot);
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      function depth(x) { return x >= headX ? 1 : Math.max(0.12, Math.pow(Math.max(0, x) / Math.max(1, headX), 1.4)); }
+      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
+        if (Math.abs(T / majorMs - Math.round(T / majorMs)) < 1e-6) continue;
+        var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
+        if (gx < 0 || gx > cssW) continue;
+        var dp = depth(gx);
+        ctx.lineWidth = 0.6 + 0.5 * dp;
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.11 * dp).toFixed(3) + ')';
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, lineBot);
+        ctx.moveTo(gx, 0);
+        ctx.lineTo(gx, lineBot);
         ctx.stroke();
       }
-      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
-        var gx = Math.round(headX + ((T - xNow) / 1000) * pxSec) + 0.5;
-        if (gx < -glowW || gx > cssW + glowW) continue;
-        gridLine(gx);
-      }
       var M0 = Math.floor(tLeft / majorMs) * majorMs;
-      var mSpace = Math.max(24, S * pxSec);
-      var mPhase = ((xNow / 1000) * pxSec) % mSpace;
-      var mk;
-      for (mk = -1, guard = 0; guard < 80; mk++, guard++) {
-        var mx = Math.round(mPhase + mk * mSpace) + 0.5;
-        if (mx > cssW + glowW) break;
-        if (mx < -glowW) continue;
-        gridLine(mx);
+      var halo = Math.max(5, Math.min(9, cssW / 70));
+      for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
+        var mx = headX + ((T - xNow) / 1000) * pxSec;
+        if (mx < -halo || mx > cssW + halo) continue;
+        var dm = depth(mx);
+        var sh = ctx.createLinearGradient(mx - halo, 0, mx + halo, 0);
+        sh.addColorStop(0, 'rgba(255,255,255,0)');
+        sh.addColorStop(0.5, 'rgba(255,255,255,' + (0.05 * dm).toFixed(3) + ')');
+        sh.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sh;
+        ctx.fillRect(mx - halo, 0, halo * 2, lineBot);
+        ctx.lineWidth = 0.7 + 0.6 * dm;
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.18 * dm).toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.moveTo(Math.round(mx) + 0.5, 0);
+        ctx.lineTo(Math.round(mx) + 0.5, lineBot);
+        ctx.stroke();
       }
-      // v2385 (propriétaire) : au milieu (au bout de la courbe), une OMBRE LÉGÈRE qui n'est jamais fixe :
-      // elle grandit et fonce quand un trait (pâle ou blanc) passe près d'elle, surtout quand deux traits
-      // s'y croisent, puis rétrécit quand ils s'éloignent → elle « respire » avec les croisements.
-      var cellW = Math.max(24, S * pxSec);
-      var reach = cellW * 0.7;
-      var dW = Infinity, dP = Infinity, q;
-      for (q = -1; q < 40; q++) { var wx = mPhase + q * mSpace; if (wx > cssW + mSpace) break; dW = Math.min(dW, Math.abs(wx - headX)); }
-      for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) { dP = Math.min(dP, Math.abs(headX + ((T - xNow) / 1000) * pxSec - headX)); }
-      var fW = Math.exp(-(dW / reach) * (dW / reach)), fP = Math.exp(-(dP / reach) * (dP / reach));
-      var I = 0.25 + 0.40 * fW + 0.20 * fP + 0.15 * fW * fP;
-      var bw = cellW * (0.55 + 0.75 * I);
-      var og = ctx.createLinearGradient(headX - bw, 0, headX + bw, 0);
-      og.addColorStop(0, 'rgba(2,3,14,0)');
-      og.addColorStop(0.5, 'rgba(2,3,14,' + (0.20 * I).toFixed(3) + ')');
-      og.addColorStop(1, 'rgba(2,3,14,0)');
-      ctx.fillStyle = og;
-      ctx.fillRect(headX - bw, 0, bw * 2, lineBot);
-      // v2388 (mesuré sur IQ Option) : CONTRASTE devant la tête, sans aucun trait tracé (bords en fondu) :
-      // zone un peu plus sombre jusqu'à la fin du trade (durée choisie), fine bande sombre douce, puis zone
-      // un peu plus claire au-delà. Dessin seulement.
-      var zDur = 5;
-      try {
-        var zU = D6.Store && D6.Store.current && D6.Store.current();
-        if (zU && Number(zU.duration) > 0) zDur = Number(zU.duration);
-      } catch (eZ) { /* 5 s */ }
-      var zEnd = headX + Math.max(cellW * 0.9, Math.min(zDur * pxSec, cssW - headX - 70));
-      if (zEnd > headX + 12 && zEnd < cssW - 20) {
-        var zd = ctx.createLinearGradient(headX, 0, zEnd, 0);
-        zd.addColorStop(0, 'rgba(2,3,14,0)');
-        zd.addColorStop(0.18, 'rgba(2,3,14,0.09)');
-        zd.addColorStop(1, 'rgba(2,3,14,0.11)');
-        ctx.fillStyle = zd;
-        ctx.fillRect(headX, 0, zEnd - headX, lineBot);
-        var zs = ctx.createLinearGradient(zEnd - 2, 0, zEnd + 7, 0);
-        zs.addColorStop(0, 'rgba(2,3,14,0.11)');
-        zs.addColorStop(0.4, 'rgba(2,3,14,0.20)');
-        zs.addColorStop(1, 'rgba(2,3,14,0)');
-        ctx.fillStyle = zs;
-        ctx.fillRect(zEnd - 2, 0, 9, lineBot);
-        var zl = ctx.createLinearGradient(zEnd + 5, 0, zEnd + 24, 0);
-        zl.addColorStop(0, 'rgba(255,255,255,0)');
-        zl.addColorStop(1, 'rgba(255,255,255,0.028)');
-        ctx.fillStyle = zl;
-        ctx.fillRect(zEnd + 5, 0, cssW - zEnd - 5, lineBot);
-      }
+      ctx.lineWidth = 1;
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.fillStyle = '#64748B';
