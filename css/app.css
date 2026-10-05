@@ -4914,3 +4914,97 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap #i
 html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .qbtn.stake-act{height:var(--saf-q)!important;min-height:var(--saf-q)!important;max-height:none!important}
 html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .odds-chip{height:var(--saf-odds)!important;min-height:var(--saf-odds)!important;max-height:none!important}
 html:not(.fs-trade):not(.is-fullscreen) body #screenTrade.saf-fill #tradeWrap .btn-trade{height:var(--saf-buy)!important;min-height:var(--saf-buy)!important;max-height:none!important}
+
+/* ===== v2362 — Téléphone COUCHÉ (paysage, hauteur ≤ 500 px : tous les iPhone et Android) =====
+   Barre du haut fine, soldes en haut à droite, planètes en petite ligne, graphique en grand à gauche,
+   boutons (durées, mise, payouts, ACHETER / VENDRE) en colonne à droite. Portrait, tablettes et
+   ordinateurs : inchangés. Plein écran : inchangé. */
+@media (orientation:landscape) and (max-height:500px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .trade-shell{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) clamp(232px,33vw,330px)!important;
+    grid-template-rows:auto auto minmax(0,1fr)!important;
+    column-gap:6px!important;row-gap:0!important;
+    height:100vh!important;height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+    overflow:hidden!important;
+    width:100%!important;max-width:none!important;margin:0!important;
+    padding:0 max(4px,env(safe-area-inset-right)) 0 max(4px,env(safe-area-inset-left))!important;
+    box-sizing:border-box!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .trade-shell > header.topbar,
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap{display:contents!important}
+  /* Rangée du haut, à gauche : logo, Recharger / Connexion, Aide, langue, profil. */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row{
+    grid-column:1!important;grid-row:1!important;
+    height:38px!important;min-height:38px!important;padding:3px 2px!important;margin:0!important;
+    position:relative!important;align-items:center!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row .brand-lockup{height:30px!important;transform:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row #authQuick{height:30px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row #authQuick > *{height:30px!important;min-height:30px!important;font-size:13px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row .topbar-actions{height:32px!important;transform:scale(.86)!important;transform-origin:right center!important}
+  /* Rangée du haut, à droite : soldes Démo / Réel. */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-mode{
+    grid-column:2!important;grid-row:1!important;
+    height:38px!important;min-height:38px!important;padding:3px 0!important;margin:0!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #modeSwitcher{width:100%!important;height:32px!important;min-height:32px!important;margin:0!important;gap:4px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #modeSwitcher .mode-btn{height:32px!important;min-height:32px!important;padding:1px 8px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #modeSwitcher .mb-lbl{font-size:8.5px!important;line-height:1.05!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #modeSwitcher .mb-amt{font-size:13px!important;line-height:1.1!important}
+  /* Planètes : petite ligne qui défile, au-dessus du graphique. */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar{
+    grid-column:1!important;grid-row:2!important;
+    width:auto!important;max-width:100%!important;min-width:0!important;
+    height:40px!important;min-height:40px!important;max-height:40px!important;
+    padding:2px 0!important;margin:0!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar .asset-chip{
+    height:36px!important;min-height:36px!important;width:auto!important;min-width:0!important;
+    flex:0 0 auto!important;flex-direction:row!important;align-items:center!important;gap:4px!important;
+    padding:2px 7px 2px 3px!important;margin:0!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar .asset-chip .mk-art{width:28px!important;height:28px!important;min-width:28px!important;margin:0!important;flex:0 0 28px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar .asset-chip .mk-art svg{width:28px!important;height:28px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar .asset-chip > span:not(.mk-art){font-size:9.5px!important;line-height:1!important;margin:0!important;white-space:nowrap!important;position:static!important;transform:none!important}
+  /* Graphique : toute la place restante à gauche. */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap #chart{
+    grid-column:1!important;grid-row:3!important;
+    width:auto!important;max-width:100%!important;min-width:0!important;left:auto!important;right:auto!important;transform:none!important;
+    height:auto!important;min-height:0!important;max-height:none!important;margin:0 0 max(2px,env(safe-area-inset-bottom)) 0!important;
+    display:flex!important;flex-direction:column!important;position:relative!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #chartToolbar{height:28px!important;min-height:28px!important;flex:0 0 28px!important;padding:0 4px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #chartStage{flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important}
+  /* Boutons : colonne de droite, sous les soldes. */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap > .pad{
+    grid-column:2!important;grid-row:2 / 4!important;
+    position:relative!important;inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    transform:none!important;width:auto!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;
+    margin:0!important;padding:4px 4px max(4px,env(safe-area-inset-bottom)) 4px!important;
+    display:flex!important;flex-direction:column!important;justify-content:space-between!important;gap:4px!important;
+    overflow-y:auto!important;overflow-x:hidden!important;border-radius:12px!important;box-sizing:border-box!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap > .pad .stake-line{
+    display:grid!important;grid-template-columns:1fr 1fr!important;grid-template-rows:auto auto!important;gap:4px!important;margin:0!important;height:auto!important;
+  }
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap > .pad .dur-row{grid-column:1 / -1!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;gap:3px!important;width:auto!important;height:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .dur-chip{height:26px!important;min-height:26px!important;max-height:26px!important;padding:0!important;font-size:10px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .dur-chip svg{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap > .pad .stake-field,
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap > .pad .win-preview{width:auto!important;min-width:0!important;height:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap #inputStake{height:28px!important;min-height:28px!important;max-height:28px!important;font-size:15px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .qbtn.stake-act{height:24px!important;min-height:24px!important;max-height:24px!important;font-size:12px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap #oddsRow{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:3px!important;margin:0!important;height:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .odds-chip{height:30px!important;min-height:30px!important;max-height:30px!important;padding:0 2px!important;font-size:11px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .trade-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;margin:0!important;padding:0!important;height:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .btn-trade{height:44px!important;min-height:44px!important;max-height:44px!important;font-size:15px!important;padding:0 6px!important}
+}
+/* v2362 — très petits téléphones couchés (moins de 700 px de large) : textes un peu plus petits pour ne rien couper. */
+@media (orientation:landscape) and (max-height:500px) and (max-width:700px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row #authQuick > *{font-size:11px!important;padding:0 6px!important;letter-spacing:0!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade .topbar-row .brand-lockup{transform:scale(.88)!important;transform-origin:left center!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .btn-trade{font-size:13px!important;letter-spacing:0!important;padding:0 4px!important;gap:5px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .btn-trade .bt-txt{font-size:13.5px!important;letter-spacing:.2px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap .btn-trade .bt-arr{width:14px!important;height:14px!important}
+}

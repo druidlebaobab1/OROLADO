@@ -693,6 +693,12 @@
       var pad = document.querySelector('#screenTrade #tradeWrap > .pad');
       var card = $('chart');
       var stage = $('chartStage');
+      // v2362 : téléphone couché → sa propre mise en page (css/app.css, fin) ; ce calcul du portrait ne s'applique pas.
+      if (scr && window.innerWidth > window.innerHeight && window.innerHeight <= 500) {
+        scr.classList.remove('saf-fill');
+        safariGapW = 0;
+        return;
+      }
       if (!scr || !pad || !card || !stage || !pad.offsetHeight || window.innerWidth >= 860) return;
       // Pas de recalcul pendant la saisie (clavier ouvert) : la page ne saute pas en tapant.
       // v2351 : MAIS si la hauteur change vraiment (barre de Safari qui grandit / rétrécit au chargement ou au
