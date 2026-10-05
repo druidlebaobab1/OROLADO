@@ -635,6 +635,7 @@
   // Marque « Safari iPhone » : la bande du bas (sous la barre flottante) n'existe que sur Safari.
   if (UA_SAFARI_IOS) { try { document.documentElement.classList.add('is-ios-safari'); } catch (eSc) { /* ignore */ } }
   var safariGapW = 0;
+  var safariGapH = 0;
   function safeBottomPx() {
     try {
       var p = document.createElement('div');
@@ -693,9 +694,15 @@
       var card = $('chart');
       var stage = $('chartStage');
       if (!scr || !pad || !card || !stage || !pad.offsetHeight || window.innerWidth >= 860) return;
-      // Pas de recalcul quand seule la hauteur bouge (clavier, barre) : la page ne saute pas en tapant.
-      if (!force && safariGapW === window.innerWidth) return;
+      // Pas de recalcul pendant la saisie (clavier ouvert) : la page ne saute pas en tapant.
+      // v2351 : MAIS si la hauteur change vraiment (barre de Safari qui grandit / rétrécit au chargement ou au
+      // défilement), on recalcule : avant, le calcul fait au mauvais moment laissait une bande vide en bas.
+      var typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName || '');
+      var sameW = safariGapW === window.innerWidth;
+      var sameH = Math.abs((safariGapH || 0) - window.innerHeight) < 30;
+      if (!force && sameW && (sameH || typing)) return;
       safariGapW = window.innerWidth;
+      safariGapH = window.innerHeight;
       scr.classList.remove('saf-fill');
       // Safari : la page peut passer SOUS sa barre flottante (hauteur = tout l'écran) → on garde la
       // place de la barre ; sinon petite marge. Autres navigateurs iPhone : la zone de la barre d'accueil.
