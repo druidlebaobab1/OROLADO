@@ -1034,10 +1034,19 @@
     planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.14, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.22, false);
     planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.16, false);
     // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
-    var cx = pad.l + w * 0.47, cy = pad.t + h * 0.50;
-    var R = Math.min(w * 0.31, h * 0.42);
+    // v2375 (propriétaire) : un peu plus bas, et toujours un espace libre avant l'anneau de la grande planète.
+    var cx = pad.l + w * 0.47, cy = pad.t + h * 0.53;
+    var R = Math.min(w * 0.31, h * 0.40);
     var p0 = planets[0];
     var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.7;
+    // bout gauche de l'anneau (incliné de -0.32) + quelques points de l'anneau côté spirale
+    var ra;
+    for (ra = 2.4; ra <= 3.9; ra += 0.1) {
+      var ex = Math.cos(ra) * p0.r * 1.95, ey = Math.sin(ra) * p0.r * 0.42;
+      var rx = p0.x + ex * Math.cos(-0.32) - ey * Math.sin(-0.32);
+      var ry = p0.y + ex * Math.sin(-0.32) + ey * Math.cos(-0.32);
+      room = Math.min(room, Math.hypot(rx - cx, ry - cy) - Math.max(12, R * 0.12));
+    }
     if (room < R) R = Math.max(30, room);
     function spiral(arm, t) {
       var ang = arm * Math.PI + t * Math.PI * 2 * GALAXY_TURNS;
