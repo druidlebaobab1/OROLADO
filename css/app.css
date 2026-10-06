@@ -5263,3 +5263,10 @@ html body #screenAuth .g-official .g-holder{transform:scale(1.12);transform-orig
 html.saf-under body #screenAuth#screenAuth .auth-wrap{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 78px)!important}
 html.auth-tight body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
 html.auth-tight body #screenAuth#screenAuth .auth-card form .field input{height:40px!important;min-height:40px!important;margin-bottom:2px!important;padding-top:6px!important;padding-bottom:6px!important}
+/* v2401 — iPhone Safari (vrai téléphone du propriétaire : la page est ~35 px plus haute que prévu,
+   Google collé à la barre flottante, « © » caché dessous). iPhone SEULEMENT (Android inchangé) :
+   moins d'espace entre CRÉER MON COMPTE / SE CONNECTER et « OU », bouton Google plus grand. */
+html.saf-under body #screenAuth .auth-or{margin:4px 0 6px!important}
+html.saf-under body #screenAuth .g-official{min-height:50px}
+html.saf-under body #screenAuth .g-official .g-holder{transform:scale(1.2)}
+html.saf-under body #screenAuth .google-note{margin-top:4px}

@@ -286,7 +286,8 @@
         });
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
           // Dessiné à 1/1,12 de la largeur puis agrandi ×1,12 en CSS (.g-holder) : même hauteur que le bouton orange.
-          var w = Math.max(200, Math.min(400, Math.round(((box.parentElement || box).getBoundingClientRect().width || 320) / 1.12)));
+          var gsc = document.documentElement.classList.contains('saf-under') ? 1.2 : 1.12;
+          var w = Math.max(200, Math.min(400, Math.round(((box.parentElement || box).getBoundingClientRect().width || 320) / gsc)));
           var holder = box.querySelector('.g-holder');
           if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }
           holder.innerHTML = '';
@@ -843,7 +844,7 @@
       var under = !!(UA_SAFARI_IOS && fullScreenH > 0 && ih >= fullScreenH - 4 && window.innerWidth < window.innerHeight);
       html.classList.toggle('saf-under', under);
       var visible = under ? ih - safeBottomPx() - 70 : ih;
-      html.classList.toggle('auth-tight', window.innerWidth < 860 && window.innerWidth < ih && visible < 700);
+      html.classList.toggle('auth-tight', window.innerWidth < 860 && window.innerWidth < ih && (visible < 700 || (under && visible < 820)));
     } catch (eAf) { /* ignore */ }
   }
   authFit();
