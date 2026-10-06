@@ -5241,3 +5241,6 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
   html body #screenAuth#screenAuth .auth-wrap{padding-top:4px!important}
   html body #screenAuth#screenAuth .auth-wrap > .legal{margin-top:4px!important}
 }
+/* v2398 — décision du propriétaire : bouton Google CACHÉ tant que la page Google affiche
+   « supabase.co » au lieu d'OROLADO (marque à faire vérifier). Pour le remettre : supprimer ce bloc. */
+html body #screenAuth .auth-or,html body #screenAuth .btn-google,html body #screenAuth .google-note{display:none!important}
