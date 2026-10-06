@@ -5257,7 +5257,6 @@ html body #screenAuth .g-official.g-age-ok .g-age-block{display:none}
 /* v2400 — demande du propriétaire : la ligne de logos des formulaires est retirée (place pour Google) ;
    bouton officiel Google agrandi (même hauteur que le bouton orange) ; iPhone Safari : la place de la
    barre flottante est gardée en bas ; cases un peu serrées seulement si la VRAIE zone visible est petite. */
-html body #screenAuth#screenAuth .auth-crypto-in-form{display:none!important}
 html body #screenAuth .g-official{min-height:46px;margin:2px 0}
 html body #screenAuth .g-official .g-holder{transform:scale(1.12);transform-origin:center center;min-height:40px;align-items:center}
 html.saf-under body #screenAuth#screenAuth .auth-wrap{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 78px)!important}
@@ -5270,3 +5269,19 @@ html.saf-under body #screenAuth .auth-or{margin:4px 0 6px!important}
 html.saf-under body #screenAuth .g-official{min-height:50px}
 html.saf-under body #screenAuth .g-official .g-holder{transform:scale(1.2)}
 html.saf-under body #screenAuth .google-note{margin-top:4px}
+/* v2402 — VERSION FINALE Connexion / Inscription (demande du propriétaire) : la ligne de logos REVIENT,
+   bien alignée en bas ; bouton Google bien gros partout (48 px) ; pour que tout tienne sur iPhone
+   (sous la barre flottante de Safari) et Android, toutes les cases sont resserrées (auth-tight :
+   téléphones jusqu'à 860 px de zone visible). La petite phrase sous Google (Connexion) est retirée :
+   la case « 18 ans » de l'Inscription et les conditions restent. */
+html body #screenAuth .g-official{min-height:50px}
+html body #screenAuth .g-official .g-holder{transform:scale(1.2)}
+html body #screenAuth .google-note{display:none!important}
+html.auth-tight body #screenAuth .auth-or{margin:4px 0 6px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-card form .field{margin-bottom:2px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-card form .field input{height:40px!important;min-height:40px!important;margin-bottom:1px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-tabs .auth-tab{min-height:44px!important;height:44px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-wrap > .legal{margin-top:6px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-crypto-in-form{margin-top:8px!important}
+html.auth-tight body #screenAuth#screenAuth #formRegister .check-row{margin-top:6px!important;margin-bottom:6px!important}
+html.auth-tight body #screenAuth#screenAuth #formRegister .btn-gold,html.auth-tight body #screenAuth#screenAuth #formLogin .btn-gold{margin-top:4px!important}
