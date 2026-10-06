@@ -286,7 +286,7 @@
         });
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
           // Dessiné à 1/1,12 de la largeur puis agrandi ×1,12 en CSS (.g-holder) : même hauteur que le bouton orange.
-          var gsc = 1.2;
+          var gsc = 1.15;
           var w = Math.max(200, Math.min(400, Math.round(((box.parentElement || box).getBoundingClientRect().width || 320) / gsc)));
           var holder = box.querySelector('.g-holder');
           if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }

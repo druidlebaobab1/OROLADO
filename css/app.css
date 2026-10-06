@@ -5285,3 +5285,12 @@ html.auth-tight body #screenAuth#screenAuth .auth-wrap > .legal{margin-top:6px!i
 html.auth-tight body #screenAuth#screenAuth .auth-crypto-in-form{margin-top:8px!important}
 html.auth-tight body #screenAuth#screenAuth #formRegister .check-row{margin-top:6px!important;margin-bottom:6px!important}
 html.auth-tight body #screenAuth#screenAuth #formRegister .btn-gold,html.auth-tight body #screenAuth#screenAuth #formLogin .btn-gold{margin-top:4px!important}
+/* v2403 — retour du propriétaire sur son iPhone : un peu trop serré → cases un peu plus hautes,
+   un peu plus d'air, bouton Google un tout petit peu moins gros (≈ hauteur du bouton orange). */
+html.auth-tight body #screenAuth#screenAuth .auth-card form .field{margin-bottom:5px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-card form .field input{height:43px!important;min-height:43px!important;margin-bottom:2px!important}
+html.auth-tight body #screenAuth .auth-or{margin:8px 0 8px!important}
+html body #screenAuth .g-official .g-holder{transform:scale(1.15)}
+html body #screenAuth .g-official{min-height:48px}
+html.saf-under body #screenAuth .g-official .g-holder{transform:scale(1.15)}
+html.saf-under body #screenAuth .auth-or{margin:8px 0 8px!important}
