@@ -928,7 +928,7 @@ function admin_list_payload(string $view, array $req): array {
     foreach ($slice as $w) {
       $open = admin_wd_is_open($w);
       $method = admin_method_label(admin_fill((string) ($w['operator'] ?? '')));
-      $dest = admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? ''))]);
+      $dest = admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? '')), 'countryCode' => (string) ($w['countryCode'] ?? '')]);
       $suspect = !empty($w['_suspect']);
       $rows[] = [
         'cells' => [
@@ -1384,6 +1384,7 @@ function admin_profile_payload(string $uid): array {
       'id' => $d['id'],
       'amount' => $d['amount'],
       'status' => $d['status'],
+      'paid' => admin_dep_is_paid($d),
       'method' => admin_dep_channel((string) ($d['operator'] ?? '')),
       'at' => $d['createdAt'],
     ];
@@ -1402,7 +1403,7 @@ function admin_profile_payload(string $uid): array {
       'amount' => $w['amount'],
       'status' => $w['status'],
       'method' => admin_method_label(admin_fill((string) ($w['operator'] ?? ''))),
-      'phone' => admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? ''))]),
+      'phone' => admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? '')), 'countryCode' => (string) ($w['countryCode'] ?? '')]),
       'at' => $w['createdAt'],
       'reason' => $w['reason'] ?? '',
     ];
@@ -2398,7 +2399,10 @@ async function openUser(uid) {
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
     '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
-    tbl('Dépôts (argent payé)', j.deposits, ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
+    // v2405 : seuls les dépôts VRAIMENT payés sous « argent payé » ; les pages de paiement ouvertes puis
+    // abandonnées (en attente, jamais payées) à part, pour ne plus croire qu'un joueur a payé.
+    tbl('Dépôts (argent payé)', (j.deposits||[]).filter(d => d.paid !== false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
+    tbl('Dépôts NON payés (page ouverte, jamais payée)', (j.deposits||[]).filter(d => d.paid === false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
     tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(fdate(d.at))+'</td></tr>');

@@ -158,8 +158,14 @@ function admin_country_cell(array $p): string {
 function admin_phone_cell(array $p): string {
   $phone = trim((string) ($p['phone'] ?? ''));
   if ($phone === '') return '—';
-  [$iso, $dial] = admin_match_dial($phone);
-  if ($iso === '') [$iso, $dial] = admin_match_dial((string) ($p['country'] ?? $p['countryCode'] ?? ''));
+  // v2405 — Un indicatif n'est retiré QUE si le numéro est écrit en international (+… ou 00…).
+  // Avant : « 7040130058 » (PalmPay Nigeria) devenait « 🇷🇺 040130058 » (le 7 pris pour la Russie,
+  // un chiffre perdu). Sinon : numéro affiché EN ENTIER, drapeau pris sur le pays du joueur.
+  $compact0 = preg_replace('/[^\d+]/', '', $phone) ?? $phone;
+  $intl = str_starts_with($compact0, '+') || str_starts_with($compact0, '00');
+  if ($intl && str_starts_with($compact0, '00')) $phone = '+' . substr($compact0, 2);
+  [$iso, $dial] = $intl ? admin_match_dial($phone) : ['', ''];
+  if ($iso === '') { [$iso] = admin_match_dial((string) (($p['country'] ?? '') !== '' ? $p['country'] : ($p['countryCode'] ?? ''))); $dial = ''; }
   $flag = $iso !== '' ? admin_flag_emoji($iso) : '';
   $shown = $phone;
   if ($dial !== '') {
