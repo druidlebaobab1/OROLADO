@@ -2772,7 +2772,8 @@
     // Les étiquettes sont posées APRÈS tous les traits (drawTargetTags) : aucun trait ne les
     // traverse. Elles sont regroupées comme les ronds d'entrée : un seul petit badge par
     // objectif et par bord, avec le nombre de trades — elles ne peuvent jamais couvrir la courbe.
-    targetTagQueue.push({ mult: Math.round(mult * 10) / 10, bar: bar, by: by, off: off, fade: fade == null ? 1 : fade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
+    // v2393 : on garde le sens du trade pour colorier l'étiquette (vert ACHAT / rouge VENTE).
+    targetTagQueue.push({ mult: Math.round(mult * 10) / 10, bar: bar, by: by, off: off, fade: fade == null ? 1 : fade, pad: pad, layout: layout, top: plotTop, bot: plotBot, side: trade && trade.side === 'put' ? 'put' : 'call' });
   }
 
   var targetTagQueue = [];
@@ -2859,7 +2860,7 @@
     var i;
     for (i = 0; i < targetTagQueue.length; i++) {
       var t = targetTagQueue[i];
-      var key = t.entry ? 'e|' + t.off + '|' + t.side : (t.off !== 0 ? t.off + '|' + t.mult : '0|' + t.mult + '|' + Math.round(t.by / 14));
+      var key = t.entry ? 'e|' + t.off + '|' + t.side : (t.off !== 0 ? t.off + '|' + t.mult + '|' + t.side : '0|' + t.mult + '|' + t.side + '|' + Math.round(t.by / 14));
       var gr = byKey[key];
       if (!gr) {
         gr = { mult: t.mult, off: t.off, by: t.by, bar: t.bar, n: 0, fade: 0, pad: t.pad, layout: t.layout, top: t.top, bot: t.bot, entry: !!t.entry, side: t.side };
@@ -2923,7 +2924,8 @@
       g.globalAlpha = it.fade;
       // Fond vert plein (le vert des ronds d'achat), texte blanc : lisible d'un coup d'œil.
       // Prix d'entrée collé au bord : couleur du trade (vert ACHAT / rouge VENTE).
-      g.fillStyle = it.entry ? (it.side === 'call' ? '#00A83E' : '#E8173A') : '#00A83E';
+      // v2393 : l'étiquette de la ligne objectif prend aussi la couleur du trade (avant : toujours verte).
+      g.fillStyle = it.side === 'put' ? '#E8173A' : '#00A83E';
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
       g.fillStyle = '#FFFFFF';
