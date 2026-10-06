@@ -332,7 +332,12 @@
     // v2399 — bouton officiel Google (fenêtre « Se connecter à orolado.com »).
     googleWithIdToken: async function (idToken, rawNonce) {
       var sess = null;
-      try { sess = await D6.Supabase.googleIdToken(idToken, rawNonce); } catch (eTok) { sess = null; }
+      if (D6.Supabase) D6.Supabase.lastGoogleError = '';
+      try { sess = await D6.Supabase.googleIdToken(idToken, rawNonce); } catch (eTok) { sess = null; if (D6.Supabase) D6.Supabase.lastGoogleError = String((eTok && eTok.message) || eTok); }
+      if (!sess) {
+        var why = (D6.Supabase && D6.Supabase.lastGoogleError) || 'session';
+        return { ok: false, reason: ((D6.I18N && D6.I18N.t('googleFail')) || 'Connexion Google impossible.') + ' (' + why.slice(0, 120) + ')' };
+      }
       return D6.Auth.googleComplete(sess);
     },
 

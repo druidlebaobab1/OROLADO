@@ -626,7 +626,8 @@
       var sb = getClient();
       if (!sb) return null;
       var res = await sb.auth.signInWithIdToken({ provider: 'google', token: idToken, nonce: rawNonce });
-      if (res && res.error) return null;
+      // v2407 : la raison exacte de Supabase est gardée (affichée au joueur pour trouver la cause).
+      if (res && res.error) { D6.Supabase.lastGoogleError = String(res.error.message || res.error.code || res.error); return null; }
       return (res && res.data && res.data.session) || null;
     },
 
