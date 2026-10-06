@@ -2287,6 +2287,16 @@
     // logo + simulation + sens à gauche, gain / perte à droite, bouton reçu au bout.
     function hcIcon(assetId) {
       try {
+        // v2394 : le nouveau logo (globe du marché, comme sur les cases du site) ; l'ancien pictogramme en secours.
+        var chip = document.querySelector('.asset-chip[data-asset="' + assetId + '"]');
+        var art = chip && chip.querySelector('.mk-art');
+        if (art && art.querySelector('svg')) {
+          var cs = getComputedStyle(chip);
+          var p1 = (cs.getPropertyValue('--p1') || '').trim() || '#C9B8FF';
+          var p2 = (cs.getPropertyValue('--p2') || '').trim() || '#3B1D8F';
+          var pg = (cs.getPropertyValue('--pg') || '').trim() || 'rgba(167,139,250,.45)';
+          return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + art.innerHTML + '</span>';
+        }
         var ico = document.querySelector('.asset-chip[data-asset="' + assetId + '"] .asset-ico');
         return ico ? ico.innerHTML : '';
       } catch (eI) { return ''; }
