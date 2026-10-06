@@ -158,6 +158,8 @@ function admin_country_cell(array $p): string {
 function admin_phone_cell(array $p): string {
   $phone = trim((string) ($p['phone'] ?? ''));
   if ($phone === '') return '—';
+  // Adresse crypto, IBAN, e-mail… (lettres dedans) : affichée TELLE QUELLE, jamais découpée.
+  if (!preg_match('/^[\d\s+().\-]+$/', $phone)) return $phone;
   // v2405 — Un indicatif n'est retiré QUE si le numéro est écrit en international (+… ou 00…).
   // Avant : « 7040130058 » (PalmPay Nigeria) devenait « 🇷🇺 040130058 » (le 7 pris pour la Russie,
   // un chiffre perdu). Sinon : numéro affiché EN ENTIER, drapeau pris sur le pays du joueur.
