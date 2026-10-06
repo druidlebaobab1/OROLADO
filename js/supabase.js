@@ -620,6 +620,16 @@
       return { ok: true };
     },
 
+    // v2399 — bouton officiel Google : le jeton d'identité reçu sur orolado.com est échangé
+    // contre une session Supabase (nonce brut ici, nonce haché donné à Google).
+    googleIdToken: async function (idToken, rawNonce) {
+      var sb = getClient();
+      if (!sb) return null;
+      var res = await sb.auth.signInWithIdToken({ provider: 'google', token: idToken, nonce: rawNonce });
+      if (res && res.error) return null;
+      return (res && res.data && res.data.session) || null;
+    },
+
     googleSession: async function () {
       var sb = getClient();
       if (!sb) return null;

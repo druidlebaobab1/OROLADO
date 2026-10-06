@@ -326,6 +326,17 @@
         ['code', 'error', 'error_code', 'error_description', 'state'].forEach(function (k) { url.searchParams.delete(k); });
         history.replaceState(null, '', url.pathname + url.search + url.hash);
       } catch (eUrl) { /* ignore */ }
+      return D6.Auth.googleComplete(sess);
+    },
+
+    // v2399 — bouton officiel Google (fenêtre « Se connecter à orolado.com »).
+    googleWithIdToken: async function (idToken, rawNonce) {
+      var sess = null;
+      try { sess = await D6.Supabase.googleIdToken(idToken, rawNonce); } catch (eTok) { sess = null; }
+      return D6.Auth.googleComplete(sess);
+    },
+
+    googleComplete: async function (sess) {
       if (!sess || !sess.access_token) return { ok: false };
       var trafficSource = 'direct';
       var trafficMeta = {};

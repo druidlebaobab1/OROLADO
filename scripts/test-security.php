@@ -66,6 +66,11 @@ $u = load_db()['users']['u_me'];
 $ids = array_column(is_array($u['transactions'] ?? null) ? $u['transactions'] : [], 'id');
 check('fausse demande de retrait / faux crédit refusés (liste des opérations = serveur seul)', !in_array('wd_faux', $ids, true) && !in_array('cr_faux', $ids, true), implode(',', $ids));
 
+$r = $call(['action' => 'upsert', 'token' => 'tokMe', 'user' => ['id' => 'u_me', 'email' => 'moi@test.com', 'displayName' => 'Nouveau nom', 'admin' => true, 'isAdmin' => true, 'balance' => 99999, 'real' => 99999, 'kyc' => 'approved', '<img src=x>' => 1, 'recvAddrs' => ['usdt' => 'Tabc'], 'settings' => ['sound' => true]]]);
+$u = load_db()['users']['u_me'];
+check('faux champs refusés (admin, balance, real, kyc, nom bizarre)', !isset($u['admin']) && !isset($u['isAdmin']) && !isset($u['balance']) && !isset($u['real']) && !isset($u['kyc']) && !isset($u['<img src=x>']));
+check('vrais champs gardés (adresses de dépôt, réglages)', ($u['recvAddrs']['usdt'] ?? '') === 'Tabc' && !empty($u['settings']['sound']));
+
 echo "3) Limites anti-robots\n";
 $codes = [];
 for ($i = 1; $i <= 7; $i++) {

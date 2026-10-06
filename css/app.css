@@ -5244,3 +5244,13 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
 /* v2398 — décision du propriétaire : bouton Google CACHÉ tant que la page Google affiche
    « supabase.co » au lieu d'OROLADO (marque à faire vérifier). Pour le remettre : supprimer ce bloc. */
 html body #screenAuth .auth-or,html body #screenAuth .btn-google,html body #screenAuth .google-note{display:none!important}
+/* v2399 — bouton OFFICIEL Google (dessiné par Google). Caché par défaut ; visible avec html.g-on
+   (CONFIG.GOOGLE_PUBLIC ou essai ?gtest=1). Navigateur d'appli (Facebook…) : ancien bouton. */
+html body #screenAuth .g-official{display:none;position:relative;width:100%;min-height:44px}
+html.g-on body #screenAuth .auth-or{display:flex!important}
+html.g-on body #screenAuth .google-note{display:block!important}
+html.g-on:not(.g-inapp) body #screenAuth .g-official{display:flex;justify-content:center;align-items:center}
+html.g-on.g-inapp body #screenAuth .btn-google{display:flex!important}
+html body #screenAuth .g-official .g-holder{width:100%;display:flex;justify-content:center;min-height:44px;color-scheme:light}
+html body #screenAuth .g-official .g-age-block{position:absolute;inset:0;z-index:2;background:transparent;border:0;padding:0;margin:0;cursor:pointer}
+html body #screenAuth .g-official.g-age-ok .g-age-block{display:none}

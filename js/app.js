@@ -227,6 +227,94 @@
     return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|musical_ly|TikTok|BytedanceWebview|Line\/|Snapchat/i.test(navigator.userAgent || '');
   }
 
+  // v2399 — bouton OFFICIEL de Google (dessiné par Google) : petite fenêtre « Se connecter à
+  // orolado.com » au lieu de la page qui affichait l'adresse technique de Supabase.
+  // Visible si CONFIG.GOOGLE_PUBLIC, ou pour l'essai du propriétaire (orolado.com/?gtest=1).
+  // Navigateur d'une appli (Facebook…) : Google y refuse ; on garde l'ancien bouton (Chrome / message).
+  function setupGoogleOfficial() {
+    var cfg = D6.CONFIG || {};
+    var on = !!cfg.GOOGLE_PUBLIC;
+    try {
+      if (/[?&]gtest=1(&|$)/.test(location.search)) sessionStorage.setItem('oro_gtest', '1');
+      if (sessionStorage.getItem('oro_gtest') === '1') on = true;
+    } catch (eT) { /* ignore */ }
+    if (!on || !cfg.GOOGLE_CLIENT_ID) return;
+    var root = document.documentElement;
+    root.classList.add('g-on');
+    if (googleInApp()) { root.classList.add('g-inapp'); return; }
+    var rawNonce = '';
+    function regAgeSync() {
+      var ok = !!($('regAge') && $('regAge').checked);
+      document.querySelectorAll('[data-g-register]').forEach(function (el) { el.classList.toggle('g-age-ok', ok); });
+      if (ok && $('err-regAge')) { $('err-regAge').textContent = ''; $('err-regAge').classList.remove('on'); }
+    }
+    if ($('regAge')) $('regAge').addEventListener('change', regAgeSync);
+    document.querySelectorAll('.g-age-block').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        clearErrors();
+        showFieldError('regAge', 'Vous devez confirmer avoir plus de 18 ans');
+      });
+    });
+    regAgeSync();
+    async function onCredential(resp) {
+      if (!resp || !resp.credential) return;
+      var res = null;
+      try { res = await D6.Auth.googleWithIdToken(resp.credential, rawNonce); } catch (eC) { res = null; }
+      if (res && res.ok && D6.Auth.current() && !isGuest()) {
+        if (res.isNew) metaTrack('CompleteRegistration');
+        enterApp({ openFullscreen: true });
+        return;
+      }
+      toast((res && res.reason) || t('googleFail'), 'err', 4000);
+    }
+    function render() {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      var bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      rawNonce = Array.from(bytes).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce)).then(function (buf) {
+        var hashed = Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        google.accounts.id.initialize({
+          client_id: cfg.GOOGLE_CLIENT_ID,
+          callback: onCredential,
+          nonce: hashed,
+          ux_mode: 'popup',
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          itp_support: true
+        });
+        document.querySelectorAll('[data-g-official]').forEach(function (box) {
+          var w = Math.max(200, Math.min(400, Math.round((box.parentElement || box).getBoundingClientRect().width || 320)));
+          var holder = box.querySelector('.g-holder');
+          if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }
+          holder.innerHTML = '';
+          google.accounts.id.renderButton(holder, {
+            type: 'standard', theme: 'outline', size: 'large', text: 'continue_with',
+            shape: 'rectangular', logo_alignment: 'center', width: w,
+            locale: (D6.I18N && D6.I18N.lang) || 'fr'
+          });
+        });
+      });
+    }
+    if (window.google && window.google.accounts && window.google.accounts.id) { render(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.defer = true;
+    s.onload = render;
+    document.head.appendChild(s);
+    // Largeur juste quand l'écran de connexion s'ouvre ou tourne (le bouton est dessiné à une largeur fixe).
+    var lastW = 0;
+    window.addEventListener('resize', function () {
+      var bw = ($('formLogin') && $('formLogin').getBoundingClientRect().width) || 0;
+      if (bw && Math.abs(bw - lastW) > 20) { lastW = bw; render(); }
+    });
+    document.querySelectorAll('.auth-tab').forEach(function (tab) { tab.addEventListener('click', function () { setTimeout(render, 30); }); });
+    if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { setTimeout(render, 60); });
+    if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { setTimeout(render, 60); });
+  }
+
   function bindAndroidTap(el, fn) {
     if (!el || typeof fn !== 'function') return;
     var last = 0;
@@ -6091,7 +6179,9 @@
         if (googleInApp()) {
           // Android : on rouvre le site dans Chrome, qui lance Google tout seul (?google=1).
           if (IS_ANDROID) {
-            location.href = 'intent://' + location.host + '/?google=1#Intent;scheme=https;package=com.android.chrome;end';
+            var gt = '';
+            try { if (sessionStorage.getItem('oro_gtest') === '1') gt = '&gtest=1'; } catch (eGt) { /* ignore */ }
+            location.href = 'intent://' + location.host + '/?google=1' + gt + '#Intent;scheme=https;package=com.android.chrome;end';
             return;
           }
           toast(t('googleInApp'), 'err', 6000);
@@ -6105,6 +6195,7 @@
         }
       });
     });
+    setupGoogleOfficial();
     // Retour arrière depuis la page Google : boutons de nouveau cliquables.
     window.addEventListener('pageshow', function () {
       document.querySelectorAll('[data-google-login]').forEach(function (b) { b.disabled = false; b.classList.remove('busy'); });
@@ -8400,9 +8491,10 @@
               gu.searchParams.delete('google');
               history.replaceState(null, '', gu.pathname + gu.search + gu.hash);
             } catch (eGu) { /* ignore */ }
+            // v2399 : plus de départ automatique vers l'ancienne page Google ; on ouvre la connexion,
+            // le joueur touche le bouton officiel Google.
             if (!D6.Auth.current() || isGuest()) {
-              var started = await D6.Auth.googleStart();
-              if (started && started.ok) return;
+              setTimeout(function () { if ($('btnGoLogin')) $('btnGoLogin').click(); }, 900);
             }
           }
           var cloud = null;

@@ -76,6 +76,10 @@
     SUPABASE_URL: 'https://tubyuyxuswwzebicrhkg.supabase.co',
     // Clé anon / publishable (eyJ… ou sb_publishable_…). Pas l’URL du projet.
     SUPABASE_ANON_KEY: 'sb_publishable_zaJSnXA3yY17-I4eBXCtsw_F_-tCW1z',
+    // v2399 — bouton officiel Google (fenêtre « Se connecter à orolado.com »). Identifiant public.
+    // GOOGLE_PUBLIC false : visible seulement avec orolado.com/?gtest=1 (essai du propriétaire).
+    GOOGLE_CLIENT_ID: '549155545150-2efbga9m4me35us0a70q3tkrfbhq7sjn.apps.googleusercontent.com',
+    GOOGLE_PUBLIC: false,
     ASSETS: {
       v100: {
         id: 'v100',

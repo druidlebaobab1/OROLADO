@@ -1258,6 +1258,20 @@ if ($action === 'upsert') {
   $existing = $db['users'][$id] ?? [];
   $user['role'] = $existing['role'] ?? 'user';
   unset($user['is_admin']);
+  // v2399 — un pirate a écrit de faux champs dans sa fiche (« admin », « balance 99999 »…).
+  // Sans effet (solde et rôle sont lus ailleurs), mais on ne les garde plus : noms étranges refusés,
+  // noms « argent / admin » refusés, fiche de taille raisonnable.
+  foreach (array_keys($user) as $fk) {
+    $fkl = strtolower((string) $fk);
+    if (!preg_match('/^[A-Za-z][A-Za-z0-9_]{0,40}$/', (string) $fk)
+      || in_array($fkl, ['admin', 'isadmin', 'is_admin', 'superadmin', 'balance', 'real', 'bankroll', 'winnings', 'credits', 'credit', 'equity', 'net', 'profit', 'amount', 'kyc', 'verified', 'suspended', 'banned', 'permissions', 'scope', 'token'], true)) {
+      unset($user[$fk]);
+    }
+  }
+  if (strlen((string) json_encode($user)) > 200000) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Fiche trop lourde']);
+    exit;
+  }
   if (!$isAdm) {
     $user['email'] = $existing['email'] ?? $user['email'] ?? '';
     if (orolado_is_reserved_admin_email((string) $user['email'])) {
