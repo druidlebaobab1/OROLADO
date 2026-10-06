@@ -88,6 +88,37 @@ function ensure_admin_user(array &$db, string $email, string $hash): array {
   return $admin;
 }
 
+// v2408 — Connexion Google : identifiant PUBLIC du bouton (le même que js/config.js GOOGLE_CLIENT_ID).
+const OROLADO_GOOGLE_CLIENT_ID = '549155545150-2efbga9m4me35us0a70q3tkrfbhq7sjn.apps.googleusercontent.com';
+
+/**
+ * Demande à Google si le ticket (jeton d'identité) est authentique : Google vérifie la signature et
+ * renvoie son contenu (e-mail, nom, destinataire, expiration, nonce). null si refusé ou injoignable.
+ */
+function orolado_google_tokeninfo(string $idToken): ?array {
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_GOOGLE']) && is_callable($GLOBALS['OROLADO_FAKE_GOOGLE'])) {
+    return ($GLOBALS['OROLADO_FAKE_GOOGLE'])($idToken);
+  }
+  if ($idToken === '' || strlen($idToken) > 4096 || !preg_match('/^[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+$/', $idToken)) return null;
+  $url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($idToken);
+  $raw = false;
+  $code = 0;
+  if (function_exists('curl_init')) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_CONNECTTIMEOUT => 4]);
+    $raw = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+  } else {
+    $ctx = stream_context_create(['http' => ['timeout' => 8, 'ignore_errors' => true]]);
+    $raw = @file_get_contents($url, false, $ctx);
+    $code = (is_string($raw) && isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $m)) ? (int) $m[1] : 0;
+  }
+  if (!is_string($raw) || $code !== 200) return null;
+  $j = json_decode($raw, true);
+  return is_array($j) ? $j : null;
+}
+
 function make_token(string $userId, string $secret): string {
   return hash('sha256', $userId . '|' . $secret . '|' . bin2hex(random_bytes(16)));
 }
@@ -889,6 +920,35 @@ if ($action === 'welcomeEmail') {
 // session du site comme une connexion normale. Même e-mail qu'un compte existant = CE compte (même
 // solde). Nouvel e-mail = nouveau compte démo (id = celui de Supabase, donc coffre réel déjà lié).
 if ($action === 'googleLogin') {
+  $sb = null;
+  $sid = '';
+  $email = '';
+  $gName = '';
+  $idTok = trim((string) ($req['idToken'] ?? ''));
+  if ($idTok !== '') {
+    // v2408 — bouton officiel Google : le ticket (jeton d'identité) est vérifié DIRECTEMENT auprès de
+    // Google par le serveur (signature, destinataire = notre identifiant, e-mail vérifié, pas expiré,
+    // nonce). Plus besoin que Supabase accepte les inscriptions (elles restent fermées : protection).
+    $gi = orolado_google_tokeninfo($idTok);
+    $nonceRaw = (string) ($req['nonce'] ?? '');
+    $ev = $gi['email_verified'] ?? '';
+    $okTok = is_array($gi)
+      && hash_equals(OROLADO_GOOGLE_CLIENT_ID, (string) ($gi['aud'] ?? ''))
+      && in_array((string) ($gi['iss'] ?? ''), ['accounts.google.com', 'https://accounts.google.com'], true)
+      && ($ev === true || $ev === 'true' || $ev === 1 || $ev === '1')
+      && (int) ($gi['exp'] ?? 0) > time()
+      && $nonceRaw !== '' && hash_equals(hash('sha256', $nonceRaw), (string) ($gi['nonce'] ?? ''));
+    if (!$okTok) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Connexion Google impossible. Réessayez.']);
+      exit;
+    }
+    $email = strtolower(trim((string) ($gi['email'] ?? '')));
+    $gName = trim((string) ($gi['name'] ?? ''));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Connexion Google impossible. Réessayez.']);
+      exit;
+    }
+  } else {
   $sb = supabase_fetch_auth_user(trim((string) ($req['accessToken'] ?? '')));
   $sid = is_array($sb) ? (string) ($sb['id'] ?? '') : '';
   $email = is_array($sb) ? strtolower(trim((string) ($sb['email'] ?? ''))) : '';
@@ -898,6 +958,7 @@ if ($action === 'googleLogin') {
   if (!preg_match(OROLADO_UUID_RE, $sid) || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$confirmed || !in_array('google', $providers, true)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Connexion Google impossible. Réessayez.']);
     exit;
+  }
   }
   if (orolado_is_reserved_admin_email($email)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
@@ -919,7 +980,7 @@ if ($action === 'googleLogin') {
     if (!isset($u['id']) || (string) $u['id'] === '') $u['id'] = (string) $id;
     if (!$user || (string) $u['id'] === $sid) $user = $u;
   }
-  if (!$user && isset($db['users'][$sid]) && is_array($db['users'][$sid])) $user = $db['users'][$sid];
+  if (!$user && $sid !== '' && isset($db['users'][$sid]) && is_array($db['users'][$sid])) $user = $db['users'][$sid];
   if (!$user && orolado_retired_email_owner($db, $email) !== '') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cette adresse a été remplacée sur son compte. Utilisez votre nouvelle adresse e-mail.']);
     exit;
@@ -927,18 +988,20 @@ if ($action === 'googleLogin') {
   $isNew = false;
   if (!$user) {
     $meta = is_array($sb['user_metadata'] ?? null) ? $sb['user_metadata'] : [];
-    $name = trim((string) ($meta['full_name'] ?? $meta['name'] ?? ''));
+    $name = trim((string) ($meta['full_name'] ?? $meta['name'] ?? $gName));
     if (strlen($name) < 2) $name = explode('@', $email)[0];
+    // v2408 : sans Supabase (ticket Google vérifié par le serveur), id du site u_… comme une inscription normale.
+    $newId = $sid !== '' ? $sid : 'u_' . bin2hex(random_bytes(8));
     if (preg_match('/^.{0,32}/us', $name, $cut)) $name = $cut[0];
     $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? '')) ?? '');
     if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($req['countryIso'] ?? '')) ?? '');
     if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = '';
     $trafficSource = strtolower(trim((string) ($req['trafficSource'] ?? 'direct')));
-    $made = with_db_lock(function ($box) use ($sid, $email, $name, $countryIso, $trafficSource, $req) {
+    $made = with_db_lock(function ($box) use ($newId, $email, $name, $countryIso, $trafficSource, $req) {
       $locked =& $box->db;
-      if (find_user($locked, $email) || isset($locked['users'][$sid])) return ['ok' => true, 'user' => find_user($locked, $email) ?? $locked['users'][$sid], 'skip_write' => true];
+      if (find_user($locked, $email) || isset($locked['users'][$newId])) return ['ok' => true, 'user' => find_user($locked, $email) ?? $locked['users'][$newId], 'skip_write' => true];
       $user = [
-        'id' => $sid,
+        'id' => $newId,
         'displayName' => $name,
         'email' => $email,
         'phone' => '',
@@ -964,8 +1027,8 @@ if ($action === 'googleLogin') {
         'transactions' => [],
         'positions' => []
       ];
-      $locked['users'][$sid] = $user;
-      if (!isset($locked['vault'][$sid])) $locked['vault'][$sid] = ['demo' => 1000000, 'real' => 0];
+      $locked['users'][$newId] = $user;
+      if (!isset($locked['vault'][$newId])) $locked['vault'][$newId] = ['demo' => 1000000, 'real' => 0];
       return ['ok' => true, 'user' => $user, 'new' => true];
     });
     if (empty($made['ok']) || !is_array($made['user'] ?? null)) {
@@ -993,7 +1056,16 @@ if ($action === 'googleLogin') {
   // On le relie au compte et on y reporte UNE fois le solde réel noté ici (même plafond que
   // orolado_ensure_balance_uuid : jamais plus que dépôts payés − retraits). Sinon le solde réel
   // de ce joueur serait lu à 0.
-  if (!preg_match(OROLADO_UUID_RE, $uid) && !preg_match(OROLADO_UUID_RE, (string) ($user['sbId'] ?? ''))) {
+  if ($sid === '' && !preg_match(OROLADO_UUID_RE, $uid)) {
+    // v2408 : ticket Google vérifié par le serveur → même chemin qu'une connexion par mot de passe :
+    // coffre Supabase trouvé ou créé par le serveur (clé admin), solde réel reporté une seule fois.
+    try {
+      orolado_ensure_balance_uuid($uid, null);
+    } catch (Throwable $eSb) {
+      error_log('OROLADO google ensure_sb ' . $eSb->getMessage());
+    }
+    $db = load_db($file);
+  } elseif (!preg_match(OROLADO_UUID_RE, $uid) && !preg_match(OROLADO_UUID_RE, (string) ($user['sbId'] ?? ''))) {
     if (function_exists('orolado_ensure_sb_vault')) orolado_ensure_sb_vault($sid, 0.0);
     $localReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
     $paidIn = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, $user) : 0.0;

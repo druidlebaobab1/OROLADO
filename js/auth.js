@@ -330,19 +330,15 @@
     },
 
     // v2399 — bouton officiel Google (fenêtre « Se connecter à orolado.com »).
+    // v2408 : le ticket Google part DIRECTEMENT au serveur, qui le fait vérifier par Google (Supabase
+    // n'est plus utilisé ici : ses inscriptions directes restent fermées, c'est une protection).
     googleWithIdToken: async function (idToken, rawNonce) {
-      var sess = null;
-      if (D6.Supabase) D6.Supabase.lastGoogleError = '';
-      try { sess = await D6.Supabase.googleIdToken(idToken, rawNonce); } catch (eTok) { sess = null; if (D6.Supabase) D6.Supabase.lastGoogleError = String((eTok && eTok.message) || eTok); }
-      if (!sess) {
-        var why = (D6.Supabase && D6.Supabase.lastGoogleError) || 'session';
-        return { ok: false, reason: ((D6.I18N && D6.I18N.t('googleFail')) || 'Connexion Google impossible.') + ' (' + why.slice(0, 120) + ')' };
-      }
-      return D6.Auth.googleComplete(sess);
+      if (!idToken) return { ok: false };
+      return D6.Auth.googleComplete(null, { idToken: idToken, nonce: rawNonce || '' });
     },
 
-    googleComplete: async function (sess) {
-      if (!sess || !sess.access_token) return { ok: false };
+    googleComplete: async function (sess, direct) {
+      if (!direct && (!sess || !sess.access_token)) return { ok: false };
       var trafficSource = 'direct';
       var trafficMeta = {};
       try {
@@ -350,7 +346,9 @@
         trafficMeta = JSON.parse(localStorage.getItem('orolado_utm_meta') || '{}') || {};
       } catch (eUtm) { /* ignore */ }
       var remote = await D6.Api.post('googleLogin', {
-        accessToken: sess.access_token,
+        accessToken: direct ? '' : sess.access_token,
+        idToken: direct ? direct.idToken : '',
+        nonce: direct ? direct.nonce : '',
         countryIso: (function () { try { return String(sessionStorage.getItem('oro_pay_cc') || ''); } catch (eCc) { return ''; } })(),
         trafficSource: trafficSource,
         trafficMedium: trafficMeta.medium || '',
@@ -358,7 +356,7 @@
         trafficReferrer: trafficMeta.referrer || ''
       }, 25000);
       // La session Supabase n'a servi qu'à prouver l'identité : le site garde sa propre session.
-      try { if (D6.Supabase && D6.Supabase.signOut) await D6.Supabase.signOut(); } catch (eOut) { /* ignore */ }
+      if (!direct) { try { if (D6.Supabase && D6.Supabase.signOut) await D6.Supabase.signOut(); } catch (eOut) { /* ignore */ } }
       if (!remote || !remote.ok || !remote.user) {
         return { ok: false, reason: (remote && remote.reason) || '' };
       }

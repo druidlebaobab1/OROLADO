@@ -41,6 +41,15 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
     $id = rawurldecode($m[1]);
     return isset($vaults[$id]) ? [['user_id' => $id, 'demo' => 1000000, 'real' => $vaults[$id]['real']]] : [];
   }
+  if (str_contains($url, '/auth/v1/admin/users') && $method === 'POST') {
+    $b = json_decode((string) $body, true) ?: [];
+    $id = 'eeeeeeee-0000-0000-0000-' . substr(md5((string) ($b['email'] ?? '')), 0, 12);
+    file_put_contents($tmp . '/admincreated.log', ($b['email'] ?? '') . ' ' . $id . "\n", FILE_APPEND);
+    $vaults[$id] = $vaults[$id] ?? ['real' => 0];
+    file_put_contents($tmp . '/vaults.json', json_encode($vaults));
+    return ['id' => $id, 'email' => $b['email'] ?? ''];
+  }
+  if (str_contains($url, '/rest/v1/profiles?email=eq.')) return [];
   if (str_contains($url, '/rest/v1/vaults') && $method === 'POST') {
     $b = json_decode((string) $body, true) ?: [];
     if (!isset($vaults[$b['user_id']])) $vaults[$b['user_id']] = ['real' => (float) ($b['real'] ?? 0)];
@@ -50,6 +59,8 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
   return [];
 };
 $GLOBALS['OROLADO_FAKE_MAIL'] = fn() => ['ok' => true];
+// Faux Google (vérification du ticket) : contenu lu dans googleinfo.json, null si absent.
+$GLOBALS['OROLADO_FAKE_GOOGLE'] = function (string $tok) use ($tmp) { return json_decode((string) @file_get_contents($tmp . '/googleinfo.json'), true); };
 $GLOBALS['OROLADO_FAKE_INPUT'] = file_get_contents($argv[2]);
 $_SERVER['REQUEST_METHOD'] = 'POST';
 $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -145,6 +156,49 @@ echo "5) Suspendu / liste noire\n";
 $googleUser('dddddddd-1111-2222-3333-444444444444', 'banni@gmail.com');
 $r = $call(['action' => 'googleLogin', 'accessToken' => 'eyJban']);
 check('compte suspendu refusé', empty($r['ok']) && empty($r['token']));
+
+echo "6) Bouton officiel : ticket Google vérifié par le serveur (sans Supabase)\n";
+$cid = '549155545150-2efbga9m4me35us0a70q3tkrfbhq7sjn.apps.googleusercontent.com';
+$gInfo = function (string $email, array $over = []) use ($tmp, $cid): void {
+  file_put_contents($tmp . '/googleinfo.json', json_encode(array_merge([
+    'iss' => 'https://accounts.google.com', 'aud' => $cid, 'email' => $email, 'email_verified' => 'true',
+    'name' => 'Kofi Mensah', 'exp' => (string) (time() + 600), 'nonce' => hash('sha256', 'n0nce'),
+  ], $over)));
+};
+$gInfo('kofi@gmail.com', ['aud' => 'autre-site.apps.googleusercontent.com']);
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+check('ticket d\'un AUTRE site refusé', empty($r['ok']) && empty($r['token']));
+$gInfo('kofi@gmail.com', ['exp' => (string) (time() - 5)]);
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+check('ticket expiré refusé', empty($r['ok']));
+$gInfo('kofi@gmail.com', ['email_verified' => 'false']);
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+check('e-mail non vérifié par Google refusé', empty($r['ok']));
+$gInfo('kofi@gmail.com');
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'mauvais']);
+check('ticket rejoué (mauvais nonce) refusé', empty($r['ok']));
+@unlink($tmp . '/googleinfo.json');
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+check('Google injoignable / faux ticket refusé', empty($r['ok']));
+$nk0 = 0; foreach (load_db()['users'] as $x) if (($x['email'] ?? '') === 'kofi@gmail.com') $nk0++;
+check('aucun compte créé par ces essais', $nk0 === 0);
+$gInfo('Kofi@Gmail.com');
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce', 'trafficSource' => 'facebook']);
+$kid = (string) ($r['user']['id'] ?? '');
+$ku = load_db()['users'][$kid] ?? [];
+check('nouveau joueur connecté (session du site)', !empty($r['ok']) && !empty($r['token']), (string) ($r['reason'] ?? ''));
+check('compte du site u_… créé, nom Google, source pub', str_starts_with($kid, 'u_') && ($ku['displayName'] ?? '') === 'Kofi Mensah' && ($ku['trafficSource'] ?? '') === 'facebook' && ($ku['email'] ?? '') === 'kofi@gmail.com');
+check('coffre Supabase créé par le serveur et relié', str_contains((string) @file_get_contents($tmp . '/admincreated.log'), 'kofi@gmail.com') && str_starts_with((string) ($ku['sbId'] ?? ''), 'eeeeeeee-'));
+check('démo 1 000 000, réel 0', (float) ($r['vault']['demo'] ?? 0) === 1000000.0 && (float) ($r['vault']['real'] ?? -1) === 0.0);
+$r2 = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+$nk = 0; foreach (load_db()['users'] as $x) if (($x['email'] ?? '') === 'kofi@gmail.com') $nk++;
+check('2e connexion : même compte, pas de doublon', ($r2['user']['id'] ?? '') === $kid && $nk === 1);
+$gInfo('relie@gmail.com');
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+check('joueur existant (même Gmail) : SON compte, solde 40 $', ($r['user']['id'] ?? '') === 'u_relie' && (float) ($r['vault']['real'] ?? 0) === 40.0);
+$gInfo('admin@orolado.com');
+$r = $call(['action' => 'googleLogin', 'idToken' => 'a.b.c', 'nonce' => 'n0nce']);
+check('adresse admin refusée', empty($r['ok']) && empty($r['token']));
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
