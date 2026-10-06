@@ -285,7 +285,8 @@
           itp_support: true
         });
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
-          var w = Math.max(200, Math.min(400, Math.round((box.parentElement || box).getBoundingClientRect().width || 320)));
+          // Dessiné à 1/1,12 de la largeur puis agrandi ×1,12 en CSS (.g-holder) : même hauteur que le bouton orange.
+          var w = Math.max(200, Math.min(400, Math.round(((box.parentElement || box).getBoundingClientRect().width || 320) / 1.12)));
           var holder = box.querySelector('.g-holder');
           if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }
           holder.innerHTML = '';
@@ -830,6 +831,24 @@
       bumpChartLayout();
     } catch (eFg) { /* ignore */ }
   }
+
+  // v2400 — Connexion / Inscription sur iPhone : Safari annonce TOUTE la hauteur de l'écran mais sa
+  // barre flottante cache le bas. On garde la place de cette barre (saf-under) et on serre un peu les
+  // cases si la vraie zone visible est petite (auth-tight). Même idée sur les autres téléphones.
+  function authFit() {
+    try {
+      var html = document.documentElement;
+      var ih = window.innerHeight || 0;
+      var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
+      var under = !!(UA_SAFARI_IOS && fullScreenH > 0 && ih >= fullScreenH - 4 && window.innerWidth < window.innerHeight);
+      html.classList.toggle('saf-under', under);
+      var visible = under ? ih - safeBottomPx() - 70 : ih;
+      html.classList.toggle('auth-tight', window.innerWidth < 860 && window.innerWidth < ih && visible < 700);
+    } catch (eAf) { /* ignore */ }
+  }
+  authFit();
+  window.addEventListener('resize', function () { setTimeout(authFit, 60); });
+  window.addEventListener('orientationchange', function () { setTimeout(authFit, 300); });
 
   // Outil de mesure : orolado.com/?diag=1 affiche les vraies mesures de l'écran (pour régler Safari).
   // Dans l'application installée (pas de barre d'adresse) : toucher 5 fois vite « Aide » l'affiche aussi.

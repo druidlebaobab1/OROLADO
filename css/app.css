@@ -5227,7 +5227,7 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
 /* v2396 — demande du propriétaire : écrans de téléphone pas très hauts (iPhone dans Safari…) : les cases
    de saisie un peu moins hautes et un peu plus serrées, pour que la ligne de logos crypto reste visible
    sous le bouton Google. Grands écrans et PC : inchangés. */
-@media (orientation:portrait) and (max-height:760px){
+@media (orientation:portrait) and (max-height:700px){
   html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
   html body #screenAuth#screenAuth .auth-card form .field input{height:38px!important;min-height:38px!important;margin-bottom:2px!important;padding-top:6px!important;padding-bottom:6px!important}
   html body #screenAuth .auth-or{margin:7px 0 6px}
@@ -5254,3 +5254,12 @@ html.g-on.g-inapp body #screenAuth .btn-google{display:flex!important}
 html body #screenAuth .g-official .g-holder{width:100%;display:flex;justify-content:center;min-height:44px;color-scheme:light}
 html body #screenAuth .g-official .g-age-block{position:absolute;inset:0;z-index:2;background:transparent;border:0;padding:0;margin:0;cursor:pointer}
 html body #screenAuth .g-official.g-age-ok .g-age-block{display:none}
+/* v2400 — demande du propriétaire : la ligne de logos des formulaires est retirée (place pour Google) ;
+   bouton officiel Google agrandi (même hauteur que le bouton orange) ; iPhone Safari : la place de la
+   barre flottante est gardée en bas ; cases un peu serrées seulement si la VRAIE zone visible est petite. */
+html body #screenAuth#screenAuth .auth-crypto-in-form{display:none!important}
+html body #screenAuth .g-official{min-height:46px;margin:2px 0}
+html body #screenAuth .g-official .g-holder{transform:scale(1.12);transform-origin:center center;min-height:40px;align-items:center}
+html.saf-under body #screenAuth#screenAuth .auth-wrap{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 78px)!important}
+html.auth-tight body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
+html.auth-tight body #screenAuth#screenAuth .auth-card form .field input{height:40px!important;min-height:40px!important;margin-bottom:2px!important;padding-top:6px!important;padding-bottom:6px!important}

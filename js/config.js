@@ -79,7 +79,7 @@
     // v2399 — bouton officiel Google (fenêtre « Se connecter à orolado.com »). Identifiant public.
     // GOOGLE_PUBLIC false : visible seulement avec orolado.com/?gtest=1 (essai du propriétaire).
     GOOGLE_CLIENT_ID: '549155545150-2efbga9m4me35us0a70q3tkrfbhq7sjn.apps.googleusercontent.com',
-    GOOGLE_PUBLIC: false,
+    GOOGLE_PUBLIC: true,
     ASSETS: {
       v100: {
         id: 'v100',
