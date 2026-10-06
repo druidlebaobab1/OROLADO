@@ -5294,3 +5294,9 @@ html body #screenAuth .g-official .g-holder{transform:scale(1.15)}
 html body #screenAuth .g-official{min-height:48px}
 html.saf-under body #screenAuth .g-official .g-holder{transform:scale(1.15)}
 html.saf-under body #screenAuth .auth-or{margin:8px 0 8px!important}
+/* v2404 — vrai iPhone v2403 : ~38 px libres sous « © » → cases de l'Inscription un tout petit peu
+   plus hautes (45 px) ; Connexion (beaucoup de place) : cases 48 px et un peu plus d'air. */
+html.auth-tight body #screenAuth#screenAuth #formRegister .field input{height:45px!important;min-height:45px!important}
+html.auth-tight body #screenAuth#screenAuth #formLogin .field input{height:48px!important;min-height:48px!important}
+html.auth-tight body #screenAuth#screenAuth #formLogin .field{margin-bottom:9px!important}
+html.auth-tight body #screenAuth#screenAuth #formLogin .btn-gold{margin-top:10px!important}

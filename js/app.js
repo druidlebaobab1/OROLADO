@@ -268,12 +268,15 @@
       }
       toast((res && res.reason) || t('googleFail'), 'err', 4000);
     }
-    function render() {
-      if (!window.google || !google.accounts || !google.accounts.id) return;
+    // v2404 : Google initialisé UNE fois ; chaque bouton dessiné une seule fois pour une largeur donnée
+    // (avant : redessiné à chaque clic Connexion / Inscription → le bouton « clignotait »).
+    var gReady = null;
+    function initOnce() {
+      if (gReady) return gReady;
       var bytes = new Uint8Array(16);
       crypto.getRandomValues(bytes);
       rawNonce = Array.from(bytes).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
-      crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce)).then(function (buf) {
+      gReady = crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce)).then(function (buf) {
         var hashed = Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
         google.accounts.id.initialize({
           client_id: cfg.GOOGLE_CLIENT_ID,
@@ -284,10 +287,24 @@
           cancel_on_tap_outside: true,
           itp_support: true
         });
+      });
+      return gReady;
+    }
+    function render() {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      // Largeur prise sur la carte (toujours visible quand l'écran de connexion est ouvert), pas sur le
+      // formulaire (caché = largeur 0) : les deux boutons sont dessinés ensemble, une seule fois.
+      var card = document.querySelector('#screenAuth .auth-card');
+      var cw = card ? card.clientWidth : 0;
+      if (cw < 200) return;
+      var cs = window.getComputedStyle(card);
+      var inner = cw - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+      // Dessiné à 1/1,15 de la largeur puis agrandi ×1,15 en CSS (.g-holder) : hauteur du bouton orange.
+      var w = Math.max(200, Math.min(400, Math.round(inner / 1.15)));
+      initOnce().then(function () {
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
-          // Dessiné à 1/1,12 de la largeur puis agrandi ×1,12 en CSS (.g-holder) : même hauteur que le bouton orange.
-          var gsc = 1.15;
-          var w = Math.max(200, Math.min(400, Math.round(((box.parentElement || box).getBoundingClientRect().width || 320) / gsc)));
+          if (box.getAttribute('data-gw') === String(w)) return;
+          box.setAttribute('data-gw', String(w));
           var holder = box.querySelector('.g-holder');
           if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }
           holder.innerHTML = '';
@@ -299,22 +316,22 @@
         });
       });
     }
-    if (window.google && window.google.accounts && window.google.accounts.id) { render(); return; }
-    var s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true;
-    s.defer = true;
-    s.onload = render;
-    document.head.appendChild(s);
-    // Largeur juste quand l'écran de connexion s'ouvre ou tourne (le bouton est dessiné à une largeur fixe).
-    var lastW = 0;
-    window.addEventListener('resize', function () {
-      var bw = ($('formLogin') && $('formLogin').getBoundingClientRect().width) || 0;
-      if (bw && Math.abs(bw - lastW) > 20) { lastW = bw; render(); }
-    });
-    document.querySelectorAll('.auth-tab').forEach(function (tab) { tab.addEventListener('click', function () { setTimeout(render, 30); }); });
+    if (window.google && window.google.accounts && window.google.accounts.id) { render(); }
+    else {
+      var s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client';
+      s.async = true;
+      s.defer = true;
+      s.onload = render;
+      document.head.appendChild(s);
+    }
+    // Ouverture de l'écran de connexion / rotation : dessiné si pas encore fait à cette largeur (sinon rien).
+    window.addEventListener('resize', function () { setTimeout(render, 120); });
     if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { setTimeout(render, 60); });
     if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { setTimeout(render, 60); });
+    // Écran de connexion ouvert par un autre chemin (bouton RÉEL d'un visiteur…) : petite vérification
+    // chaque seconde (ne fait rien si le bouton est déjà dessiné à la bonne largeur).
+    setInterval(render, 1000);
   }
 
   function bindAndroidTap(el, fn) {
