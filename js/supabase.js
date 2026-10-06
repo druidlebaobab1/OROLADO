@@ -607,6 +607,26 @@
       return loadAccount(res.data.user);
     },
 
+    // v2395 — Connexion Google : part chez Google, qui revient sur orolado.com avec ?code=…
+    // (échangé automatiquement contre une session au démarrage, detectSessionInUrl + pkce).
+    googleStart: async function () {
+      var sb = getClient();
+      if (!sb) return { ok: false };
+      var res = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: location.origin + '/', queryParams: { prompt: 'select_account' } }
+      });
+      if (res && res.error) return { ok: false, reason: res.error.message };
+      return { ok: true };
+    },
+
+    googleSession: async function () {
+      var sb = getClient();
+      if (!sb) return null;
+      var s = await sb.auth.getSession();
+      return (s && s.data && s.data.session) || null;
+    },
+
     signOut: async function () {
       stopRealtime();
       var sb = getClient();

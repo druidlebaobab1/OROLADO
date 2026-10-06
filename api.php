@@ -230,6 +230,7 @@ $OROLADO_RATE_RULES = [
   'passwordChange'    => [['t', 10, 3600]],
   'welcomeEmail'      => [['e', 2, 86400], ['i', 300, 3600]],
   'login'             => [['e', 30, 3600], ['i', 3000, 3600]],
+  'googleLogin'       => [['i', 3000, 3600]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
   'placeOrder'        => [['t', 120, 10]],
@@ -880,6 +881,167 @@ if ($action === 'welcomeEmail') {
     save_db($file, $db);
   }
   echo json_encode(['ok' => !empty($sent['ok']), 'server' => true, 'skipped' => !empty($sent['skipped']), 'reason' => $sent['reason'] ?? null]);
+  exit;
+}
+
+// Connexion / inscription avec Google (v2395). Le téléphone envoie le jeton que Supabase lui a donné
+// après Google ; le serveur le fait vérifier par Supabase (impossible à inventer), puis ouvre une
+// session du site comme une connexion normale. Même e-mail qu'un compte existant = CE compte (même
+// solde). Nouvel e-mail = nouveau compte démo (id = celui de Supabase, donc coffre réel déjà lié).
+if ($action === 'googleLogin') {
+  $sb = supabase_fetch_auth_user(trim((string) ($req['accessToken'] ?? '')));
+  $sid = is_array($sb) ? (string) ($sb['id'] ?? '') : '';
+  $email = is_array($sb) ? strtolower(trim((string) ($sb['email'] ?? ''))) : '';
+  $app = is_array($sb['app_metadata'] ?? null) ? $sb['app_metadata'] : [];
+  $providers = array_map('strval', is_array($app['providers'] ?? null) ? $app['providers'] : [(string) ($app['provider'] ?? '')]);
+  $confirmed = !empty($sb['email_confirmed_at']) || !empty($sb['confirmed_at']);
+  if (!preg_match(OROLADO_UUID_RE, $sid) || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$confirmed || !in_array('google', $providers, true)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Connexion Google impossible. Réessayez.']);
+    exit;
+  }
+  if (orolado_is_reserved_admin_email($email)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
+    exit;
+  }
+  $gate = orolado_login_gate('player', $email);
+  if (empty($gate['ok'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($gate['reason'] ?? 'Trop d’essais')]);
+    exit;
+  }
+  $idBlock = orolado_identity_block($db, $email, '');
+  if ($idBlock) {
+    echo json_encode(orolado_block_payload((string) ($idBlock['kind'] ?? 'suspended')));
+    exit;
+  }
+  $user = null;
+  foreach (orolado_users_by_email($db, $email) as $id => $u) {
+    if (!is_array($u)) continue;
+    if (!isset($u['id']) || (string) $u['id'] === '') $u['id'] = (string) $id;
+    if (!$user || (string) $u['id'] === $sid) $user = $u;
+  }
+  if (!$user && isset($db['users'][$sid]) && is_array($db['users'][$sid])) $user = $db['users'][$sid];
+  if (!$user && orolado_retired_email_owner($db, $email) !== '') {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cette adresse a été remplacée sur son compte. Utilisez votre nouvelle adresse e-mail.']);
+    exit;
+  }
+  $isNew = false;
+  if (!$user) {
+    $meta = is_array($sb['user_metadata'] ?? null) ? $sb['user_metadata'] : [];
+    $name = trim((string) ($meta['full_name'] ?? $meta['name'] ?? ''));
+    if (strlen($name) < 2) $name = explode('@', $email)[0];
+    if (preg_match('/^.{0,32}/us', $name, $cut)) $name = $cut[0];
+    $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? '')) ?? '');
+    if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($req['countryIso'] ?? '')) ?? '');
+    if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = '';
+    $trafficSource = strtolower(trim((string) ($req['trafficSource'] ?? 'direct')));
+    $made = with_db_lock(function ($box) use ($sid, $email, $name, $countryIso, $trafficSource, $req) {
+      $locked =& $box->db;
+      if (find_user($locked, $email) || isset($locked['users'][$sid])) return ['ok' => true, 'user' => find_user($locked, $email) ?? $locked['users'][$sid], 'skip_write' => true];
+      $user = [
+        'id' => $sid,
+        'displayName' => $name,
+        'email' => $email,
+        'phone' => '',
+        'countryCode' => '+225',
+        'country' => $countryIso,
+        'passwordHash' => '',
+        'authProvider' => 'google',
+        'role' => 'user',
+        'createdAt' => date('c'),
+        'mode' => 'demo',
+        'assetId' => 'v100',
+        'duration' => 10,
+        'trades' => 0,
+        'wins' => 0,
+        'realTrades' => 0,
+        'realStakeVolume' => 0,
+        'realDepositTotal' => 0,
+        'trafficSource' => $trafficSource !== '' ? $trafficSource : 'direct',
+        'trafficMedium' => strtolower(trim((string) ($req['trafficMedium'] ?? ''))),
+        'trafficCampaign' => strtolower(trim((string) ($req['trafficCampaign'] ?? ''))),
+        'trafficReferrer' => strtolower(trim((string) ($req['trafficReferrer'] ?? ''))),
+        'publicId' => alloc_public_id($locked),
+        'transactions' => [],
+        'positions' => []
+      ];
+      $locked['users'][$sid] = $user;
+      if (!isset($locked['vault'][$sid])) $locked['vault'][$sid] = ['demo' => 1000000, 'real' => 0];
+      return ['ok' => true, 'user' => $user, 'new' => true];
+    });
+    if (empty($made['ok']) || !is_array($made['user'] ?? null)) {
+      echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription impossible. Réessayez.']);
+      exit;
+    }
+    $user = $made['user'];
+    $isNew = !empty($made['new']);
+    $db = load_db($file);
+  }
+  $uid = (string) ($user['id'] ?? '');
+  $banKind = orolado_user_block_kind($db, $uid);
+  if ($banKind === '' && in_array(strtolower((string) ($user['role'] ?? '')), orolado_blocked_roles(), true)) {
+    $banKind = strtolower((string) $user['role']) === 'deleted' ? 'deleted' : 'suspended';
+  }
+  if ($uid === '' || $uid === 'admin_master' || orolado_is_admin_user($user)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Identifiants introuvables']);
+    exit;
+  }
+  if ($banKind !== '') {
+    echo json_encode(orolado_block_payload($banKind));
+    exit;
+  }
+  // Ancien compte du site sans coffre Supabase connu : Google vient de créer ce coffre (vide).
+  // On le relie au compte et on y reporte UNE fois le solde réel noté ici (même plafond que
+  // orolado_ensure_balance_uuid : jamais plus que dépôts payés − retraits). Sinon le solde réel
+  // de ce joueur serait lu à 0.
+  if (!preg_match(OROLADO_UUID_RE, $uid) && !preg_match(OROLADO_UUID_RE, (string) ($user['sbId'] ?? ''))) {
+    if (function_exists('orolado_ensure_sb_vault')) orolado_ensure_sb_vault($sid, 0.0);
+    $localReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
+    $paidIn = function_exists('orolado_user_deposit_total') ? orolado_user_deposit_total($db, $uid, $user) : 0.0;
+    $paidOut = 0.0;
+    foreach (($db['withdrawals'] ?? []) as $w) {
+      if (!is_array($w) || (string) ($w['userId'] ?? '') !== $uid) continue;
+      if (in_array(strtolower((string) ($w['status'] ?? '')), ['approved', 'paid', 'completed', 'success', 'pending'], true)) {
+        $paidOut += orolado_money($w['amount'] ?? 0);
+      }
+    }
+    $localReal = orolado_money(min($localReal, max(0.0, $paidIn - $paidOut)));
+    if ($localReal > 0.009) orolado_trade_credit_once($sid, 'migrate_' . $uid, $localReal);
+    with_db_lock(function ($box) use ($uid, $sid) {
+      if (!isset($box->db['users'][$uid]) || !is_array($box->db['users'][$uid])) return ['ok' => true, 'skip_write' => true];
+      $box->db['users'][$uid]['sbId'] = $sid;
+      return ['ok' => true];
+    });
+    $db = load_db($file);
+  } elseif (preg_match(OROLADO_UUID_RE, $uid) && function_exists('orolado_ensure_sb_vault')) {
+    orolado_ensure_sb_vault($uid, 0.0);
+  }
+  orolado_login_ok('player', $email);
+  $tok = make_token($uid, $SECRET);
+  $db['sessions'][$tok] = orolado_new_session($uid);
+  $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
+  $official = orolado_sync_official_real($uid, $jsonReal);
+  if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
+    $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+  }
+  $db['vault'][$uid]['real'] = $official;
+  if (function_exists('orolado_mirror_vault_real')) orolado_mirror_vault_real($db, $uid, $official);
+  $demoNow = orolado_money($db['vault'][$uid]['demo'] ?? 0);
+  if ($demoNow <= 0 && (int) ($user['trades'] ?? 0) === 0) {
+    $db['vault'][$uid]['demo'] = 1000000;
+    $demoNow = 1000000;
+  }
+  save_db($file, $db);
+  orolado_set_session_cookie($tok);
+  if ($isNew && !brevo_welcome_already_sent($db, $email)) {
+    $welcome = brevo_send_welcome($email, (string) ($user['displayName'] ?? ''));
+    if (!empty($welcome['ok'])) {
+      $db = load_db($file);
+      brevo_mark_welcome_sent($db, $email);
+      save_db($file, $db);
+    }
+  }
+  $user = $db['users'][$uid] ?? $user;
+  echo json_encode(['ok' => true, 'server' => true, 'new' => $isNew, 'user' => orolado_public_user($user), 'vault' => ['demo' => $demoNow, 'real' => $official], 'token' => $tok]);
   exit;
 }
 

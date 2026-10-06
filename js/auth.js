@@ -298,6 +298,66 @@
       return { ok: true, user: user };
     },
 
+    // v2395 — Connexion Google. Le départ note l'heure ; au retour (?code=…), le jeton Supabase est
+    // envoyé au serveur (googleLogin), qui ouvre une session du site comme une connexion normale.
+    googleStart: async function () {
+      try { localStorage.setItem('oro_google_pending', String(Date.now())); } catch (eG) { /* ignore */ }
+      var res = null;
+      try { res = await D6.Supabase.googleStart(); } catch (eStart) { res = null; }
+      if (!res || !res.ok) {
+        try { localStorage.removeItem('oro_google_pending'); } catch (eG2) { /* ignore */ }
+        return { ok: false };
+      }
+      return { ok: true };
+    },
+
+    googleReturning: function () {
+      var at = 0;
+      try { at = Number(localStorage.getItem('oro_google_pending')) || 0; } catch (eG) { at = 0; }
+      return at > 0 && Date.now() - at < 30 * 60 * 1000 && /[?&](code|error)=/.test(location.search);
+    },
+
+    googleFinish: async function () {
+      try { localStorage.removeItem('oro_google_pending'); } catch (eG) { /* ignore */ }
+      var sess = null;
+      try { sess = await D6.Supabase.googleSession(); } catch (eSess) { sess = null; }
+      try {
+        var url = new URL(location.href);
+        ['code', 'error', 'error_code', 'error_description', 'state'].forEach(function (k) { url.searchParams.delete(k); });
+        history.replaceState(null, '', url.pathname + url.search + url.hash);
+      } catch (eUrl) { /* ignore */ }
+      if (!sess || !sess.access_token) return { ok: false };
+      var trafficSource = 'direct';
+      var trafficMeta = {};
+      try {
+        trafficSource = String(localStorage.getItem('orolado_utm_source') || 'direct').toLowerCase().trim() || 'direct';
+        trafficMeta = JSON.parse(localStorage.getItem('orolado_utm_meta') || '{}') || {};
+      } catch (eUtm) { /* ignore */ }
+      var remote = await D6.Api.post('googleLogin', {
+        accessToken: sess.access_token,
+        countryIso: (function () { try { return String(sessionStorage.getItem('oro_pay_cc') || ''); } catch (eCc) { return ''; } })(),
+        trafficSource: trafficSource,
+        trafficMedium: trafficMeta.medium || '',
+        trafficCampaign: trafficMeta.campaign || '',
+        trafficReferrer: trafficMeta.referrer || ''
+      }, 25000);
+      // La session Supabase n'a servi qu'à prouver l'identité : le site garde sa propre session.
+      try { if (D6.Supabase && D6.Supabase.signOut) await D6.Supabase.signOut(); } catch (eOut) { /* ignore */ }
+      if (!remote || !remote.ok || !remote.user) {
+        return { ok: false, reason: (remote && remote.reason) || '' };
+      }
+      D6.Store.importRemote(remote.user, remote.vault, { official: true });
+      if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
+      D6.Store.setSession({
+        userId: remote.user.id,
+        at: D6.nowIso(),
+        exp: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
+      });
+      var logged = D6.Store.getUser(remote.user.id) || remote.user;
+      D6.Auth.seedFreshDemo(logged);
+      return { ok: true, user: logged, isNew: !!remote.new };
+    },
+
     resetPassword: async function (form) {
       var id = resolveLoginId(form);
       var next = String(form.password || '');

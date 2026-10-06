@@ -222,6 +222,11 @@
   }
   var DEMO_TRADES_KEY = 'orolado_demo_trades_v1';
 
+  // Navigateur intégré d'une appli (Facebook, Instagram, TikTok…) : Google y refuse la connexion.
+  function googleInApp() {
+    return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|musical_ly|TikTok|BytedanceWebview|Line\/|Snapchat/i.test(navigator.userAgent || '');
+  }
+
   function bindAndroidTap(el, fn) {
     if (!el || typeof fn !== 'function') return;
     var last = 0;
@@ -6074,6 +6079,36 @@
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
       setTimeout(function () { enterApp({ openFullscreen: true }); }, 80);
     });
+    // v2395 — « Continuer avec Google » (Connexion et Inscription).
+    document.querySelectorAll('[data-google-login]').forEach(function (gBtn) {
+      bindAndroidTap(gBtn, async function () {
+        clearErrors();
+        // Inscription : même case « J'ai plus de 18 ans » que le bouton orange.
+        if (gBtn.closest('#formRegister') && $('regAge') && !$('regAge').checked) {
+          showFieldError('regAge', 'Vous devez confirmer avoir plus de 18 ans');
+          return;
+        }
+        if (googleInApp()) {
+          // Android : on rouvre le site dans Chrome, qui lance Google tout seul (?google=1).
+          if (IS_ANDROID) {
+            location.href = 'intent://' + location.host + '/?google=1#Intent;scheme=https;package=com.android.chrome;end';
+            return;
+          }
+          toast(t('googleInApp'), 'err', 6000);
+          return;
+        }
+        document.querySelectorAll('[data-google-login]').forEach(function (b) { b.disabled = true; b.classList.add('busy'); });
+        var res = await D6.Auth.googleStart();
+        if (!res || !res.ok) {
+          document.querySelectorAll('[data-google-login]').forEach(function (b) { b.disabled = false; b.classList.remove('busy'); });
+          toast(t('googleFail'), 'err', 4000);
+        }
+      });
+    });
+    // Retour arrière depuis la page Google : boutons de nouveau cliquables.
+    window.addEventListener('pageshow', function () {
+      document.querySelectorAll('[data-google-login]').forEach(function (b) { b.disabled = false; b.classList.remove('busy'); });
+    });
     $('regPass2').addEventListener('input', function () {
       if ($('regPass').value && this.value && $('regPass').value !== this.value) showFieldError('regPass2', t('passMismatch'));
       else { $('err-regPass2').textContent = ''; $('err-regPass2').classList.remove('on'); }
@@ -8345,6 +8380,31 @@
       if ($('btnTipOk')) { /* bound in bindModals */ }
       (async function bootSession() {
         try {
+          // v2395 — retour de Google (?code=…) : on finit la connexion avant tout le reste.
+          if (D6.Auth.googleReturning && D6.Auth.googleReturning()) {
+            var g = null;
+            try { g = await D6.Auth.googleFinish(); } catch (eG) { g = null; }
+            if (g && g.ok && D6.Auth.current() && !isGuest()) {
+              if (g.isNew) metaTrack('CompleteRegistration');
+              enterApp();
+              return;
+            }
+            finishBoot();
+            if (g && g.reason) toast(g.reason, 'err', 4000);
+            else if (g) toast(t('googleFail'), 'err', 4000);
+            return;
+          }
+          if (/[?&]google=1(&|$)/.test(location.search) && !googleInApp()) {
+            try {
+              var gu = new URL(location.href);
+              gu.searchParams.delete('google');
+              history.replaceState(null, '', gu.pathname + gu.search + gu.hash);
+            } catch (eGu) { /* ignore */ }
+            if (!D6.Auth.current() || isGuest()) {
+              var started = await D6.Auth.googleStart();
+              if (started && started.ok) return;
+            }
+          }
           var cloud = null;
           if (D6.Supabase && D6.Supabase.restore) {
             try { cloud = await D6.Supabase.restore(); } catch (e) { cloud = null; }

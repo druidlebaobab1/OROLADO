@@ -5192,3 +5192,29 @@ html body .hist-tab.on[data-hist-mode="demo"]{border-color:#F5C518!important;col
 html body #drawerProfile .prof-head{align-items:center!important}
 html body #drawerProfile .prof-head > div:not(.avatar){display:flex;align-items:center;min-height:44px}
 html body #drawerProfile .prof-name{font-size:1.05rem!important;font-weight:800!important;letter-spacing:.01em;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
+/* v2395 — bouton « Continuer avec Google » (Connexion + Inscription), style sombre officiel de Google. */
+html body #screenAuth .auth-or{display:flex;align-items:center;gap:10px;margin:10px 0 8px;color:rgba(255,255,255,.42);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+html body #screenAuth .auth-or::before,html body #screenAuth .auth-or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.12)}
+html body #screenAuth .btn-google{width:100%;min-height:var(--btn-h);display:flex;align-items:center;justify-content:center;gap:10px;padding:0 14px;border-radius:var(--radius);border:1px solid #8E918F;background:#131314;color:#E3E3E3;font:inherit;font-size:14px;font-weight:600;letter-spacing:.01em;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media (max-width:859px){html body #screenAuth .btn-google{min-height:var(--btn-h-m)}}
+html body #screenAuth .btn-google svg{width:20px;height:20px;flex:0 0 20px}
+html body #screenAuth .btn-google span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #screenAuth .btn-google:active{filter:brightness(1.25)}
+html body #screenAuth .btn-google:disabled{opacity:.55;cursor:wait}
+html body #screenAuth .google-note{margin:6px 2px 0;font-size:10.5px;line-height:1.35;color:rgba(255,255,255,.45);text-align:center}
+/* v2395 — portrait : la carte de connexion / inscription défile si l'écran est trop petit (avant :
+   bas de l'inscription coupé sur les petits téléphones). Grands écrans : rien ne bouge. */
+@media (orientation:portrait),(min-height:501px){
+  html body #screenAuth#screenAuth .auth-wrap{overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  html body #screenAuth#screenAuth .auth-wrap::-webkit-scrollbar{display:none}
+}
+@media (max-height:700px) and (orientation:portrait){
+  html body #screenAuth .auth-or{margin:7px 0 6px}
+  html body #screenAuth .btn-google{min-height:42px}
+}
+/* v2395 — nouveau logo Google (G en dégradé dans un rond blanc), dessiné en vectoriel : net partout. */
+html body #screenAuth .btn-google .g-badge{width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+html body #screenAuth .btn-google .g-mark{width:17px;height:17px;display:block;
+  background:conic-gradient(from -20deg at 50% 50%,#FF4131 0deg,#FF4131 22deg,#3086FF 92deg,#3086FF 150deg,#00A63E 192deg,#00A63E 212deg,#FFBD00 252deg,#FFBD00 290deg,#FF4131 335deg);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 40 40'%3E%3Cpath d='M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 40 40'%3E%3Cpath d='M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z'/%3E%3C/svg%3E") center/contain no-repeat}

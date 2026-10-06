@@ -3064,6 +3064,22 @@
   };
   Object.keys(DEMO_REFILL).forEach(function (l) { if (DICT[l]) DICT[l].demoRefilled = DEMO_REFILL[l]; });
 
+  // v2395 — bouton « Continuer avec Google » (11 langues).
+  var GOOGLE_TR = {
+    en: { authOr: 'or', googleBtn: 'Continue with Google', googleNote: 'By continuing, you confirm you are over 18 and accept the terms of use.', googleFail: 'Google sign-in failed. Please try again.', googleInApp: 'To continue with Google, open orolado.com in Safari or Chrome.' },
+    fr: { authOr: 'ou', googleBtn: 'Continuer avec Google', googleNote: 'En continuant, vous confirmez avoir plus de 18 ans et accepter les conditions d’utilisation.', googleFail: 'Connexion Google impossible. Réessayez.', googleInApp: 'Pour continuer avec Google, ouvrez orolado.com dans Safari ou Chrome.' },
+    es: { authOr: 'o', googleBtn: 'Continuar con Google', googleNote: 'Al continuar, confirmas que eres mayor de 18 años y aceptas las condiciones de uso.', googleFail: 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.', googleInApp: 'Para continuar con Google, abre orolado.com en Safari o Chrome.' },
+    pt: { authOr: 'ou', googleBtn: 'Continuar com Google', googleNote: 'Ao continuar, você confirma ter mais de 18 anos e aceita os termos de uso.', googleFail: 'Falha no login com Google. Tente novamente.', googleInApp: 'Para continuar com Google, abra orolado.com no Safari ou Chrome.' },
+    ar: { authOr: 'أو', googleBtn: 'المتابعة باستخدام Google', googleNote: 'بالمتابعة، تؤكد أن عمرك أكثر من 18 عاماً وتقبل شروط الاستخدام.', googleFail: 'تعذر تسجيل الدخول عبر Google. حاول مرة أخرى.', googleInApp: 'للمتابعة باستخدام Google، افتح orolado.com في Safari أو Chrome.' },
+    tr: { authOr: 'veya', googleBtn: 'Google ile devam et', googleNote: 'Devam ederek 18 yaşından büyük olduğunuzu ve kullanım koşullarını kabul ettiğinizi onaylarsınız.', googleFail: 'Google ile giriş başarısız. Tekrar deneyin.', googleInApp: 'Google ile devam etmek için orolado.com’u Safari veya Chrome’da açın.' },
+    vi: { authOr: 'hoặc', googleBtn: 'Tiếp tục với Google', googleNote: 'Khi tiếp tục, bạn xác nhận đã trên 18 tuổi và đồng ý điều khoản sử dụng.', googleFail: 'Đăng nhập Google thất bại. Vui lòng thử lại.', googleInApp: 'Để tiếp tục với Google, hãy mở orolado.com bằng Safari hoặc Chrome.' },
+    id: { authOr: 'atau', googleBtn: 'Lanjutkan dengan Google', googleNote: 'Dengan melanjutkan, Anda menyatakan berusia di atas 18 tahun dan menerima ketentuan penggunaan.', googleFail: 'Masuk dengan Google gagal. Coba lagi.', googleInApp: 'Untuk lanjut dengan Google, buka orolado.com di Safari atau Chrome.' },
+    ru: { authOr: 'или', googleBtn: 'Продолжить с Google', googleNote: 'Продолжая, вы подтверждаете, что вам больше 18 лет, и принимаете условия.', googleFail: 'Не удалось войти через Google. Попробуйте снова.', googleInApp: 'Чтобы войти через Google, откройте orolado.com в Safari или Chrome.' },
+    de: { authOr: 'oder', googleBtn: 'Weiter mit Google', googleNote: 'Mit dem Fortfahren bestätigen Sie, über 18 zu sein, und akzeptieren die Nutzungsbedingungen.', googleFail: 'Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.', googleInApp: 'Um mit Google fortzufahren, öffnen Sie orolado.com in Safari oder Chrome.' },
+    hi: { authOr: 'या', googleBtn: 'Google के साथ जारी रखें', googleNote: 'जारी रखकर आप पुष्टि करते हैं कि आपकी आयु 18 से अधिक है और आप शर्तें स्वीकार करते हैं।', googleFail: 'Google से लॉगिन नहीं हो सका। फिर कोशिश करें।', googleInApp: 'Google से जारी रखने के लिए orolado.com को Safari या Chrome में खोलें।' }
+  };
+  Object.keys(GOOGLE_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], GOOGLE_TR[l]); });
+
   D6.I18N = {
     t: t, short: shortMsg,
     msg: msg,
