@@ -6648,7 +6648,7 @@ html body .wd-payeer .wd-brand-pr,html body .wd-pmoney .wd-brand-pm,html body .w
   width:18px!important;height:18px!important;min-width:18px;border-radius:5px!important;flex:0 0 18px!important;padding:0!important;
   font-size:0!important;color:transparent!important;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 2px 6px rgba(0,0,0,.35)!important;
   background:center/cover no-repeat!important;display:inline-block!important}
-html body .wd-orange .wd-mm-dot{background-image:url("../icons/pay/orange.svg")!important}
+html body .wd-orange .wd-mm-dot{background-image:url("../icons/pay/orange.svg?v=2445")!important}
 html body .wd-mtn .wd-mm-dot{background-image:url("../icons/pay/mtn.svg")!important}
 html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg")!important}
 html body .wd-mpesa .wd-mm-dot{background-image:url("../icons/pay/mpesa.svg")!important}
