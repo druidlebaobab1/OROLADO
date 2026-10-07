@@ -26,6 +26,7 @@ require_once __DIR__ . '/account_lib.php';
 // Défi (v2409) : optionnel — si le fichier manque, le reste du site fonctionne normalement.
 if (is_file(__DIR__ . '/defi_lib.php')) require_once __DIR__ . '/defi_lib.php';
 if (is_file(__DIR__ . '/aff_lib.php')) require_once __DIR__ . '/aff_lib.php';
+if (is_file(__DIR__ . '/top_lib.php')) require_once __DIR__ . '/top_lib.php';
 orolado_load_env();
 
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
@@ -267,6 +268,8 @@ $OROLADO_RATE_RULES = [
   'googleLogin'       => [['i', 3000, 3600]],
   'defiStatus'        => [['t', 120, 60]],
   'affStatus'         => [['t', 60, 60]],
+  'affClick'          => [['i', 30, 3600]],
+  'topStatus'         => [['t', 60, 60]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
@@ -361,6 +364,37 @@ if ($action === 'affStatus') {
     $res = orolado_aff_status($db, $me);
   } catch (Throwable $eAff) {
     error_log('OROLADO aff ' . $eAff->getMessage());
+    $res = ['ok' => false, 'reason' => 'Indisponible'];
+  }
+  echo json_encode(['server' => true] + $res);
+  exit;
+}
+
+// v2414 — clic sur un lien d'invitation (visiteur, sans compte) : compté une fois par jour et par téléphone.
+if ($action === 'affClick') {
+  $okC = false;
+  if (function_exists('orolado_aff_click')) {
+    try { $okC = orolado_aff_click((string) ($req['ami'] ?? ''), (string) ($req['device'] ?? '')); } catch (Throwable $eC) { $okC = false; }
+  }
+  echo json_encode(['ok' => true, 'server' => true, 'counted' => $okC]);
+  exit;
+}
+
+// v2414 — Classement DÉMO de la semaine (top_lib.php) : lecture seule des trades réglés.
+if ($action === 'topStatus') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  if (!function_exists('orolado_top_status')) {
+    echo json_encode(['ok' => true, 'server' => true, 'enabled' => false]);
+    exit;
+  }
+  try {
+    $res = orolado_top_status($db, $me, !empty($req['prev']));
+  } catch (Throwable $eTop) {
+    error_log('OROLADO top ' . $eTop->getMessage());
     $res = ['ok' => false, 'reason' => 'Indisponible'];
   }
   echo json_encode(['server' => true] + $res);

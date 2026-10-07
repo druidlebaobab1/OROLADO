@@ -114,5 +114,14 @@ foreach ([1, 1, 1, 1, 500] as $s) trade($db, 'u_malin', (string) $r['market'], '
 $r = orolado_defi_status($db, $malin);
 check('récompense = 5 × 1 $ = 5 $ (pas 504 $)', abs($r['reward'] - 5) < 0.001, (string) $r['reward']);
 
+echo "7) Ancien défi de 7 jours (avant v2411) : ramené à minuit de son jour\n";
+$db['users']['u_vieux'] = ['id' => 'u_vieux', 'email' => 'vieux@gmail.com', 'role' => 'user', 'sbId' => 'dddddddd-1111-2222-3333-444444444444'];
+$hier = time() - 86400;
+orolado_defi_with('u_vieux', function (&$st) use ($hier) { $st = ['id' => 'x', 'market' => 'v100', 'activatedAt' => $hier, 'expiresAt' => $hier + 7 * 86400, 'streak' => 0, 'history' => []]; });
+$r = orolado_defi_status($db, $db['users']['u_vieux']);
+check('ancien défi d\'hier : terminé (plus de chrono de 6 jours)', empty($r['active']) && !empty($r['canActivate']));
+$r = orolado_defi_status($db, $db['users']['u_vieux'], true);
+check('nouveau défi du jour, fin à minuit', !empty($r['active']) && $r['expiresAt'] === (int) strtotime(date('Y-m-d') . ' 23:59:59'));
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);

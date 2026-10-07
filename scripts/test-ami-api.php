@@ -139,5 +139,44 @@ echo "6) Sans session : refusé\n";
 $r = $call(['action' => 'affStatus', 'token' => 'faux']);
 check('session invalide', empty($r['ok']));
 
+echo "7) Ouvert à tous : un vrai joueur invite — clics, gains, historique, liste\n";
+putenv('OROLADO_AFF_PUBLIC=1');
+$pend = function (string $email) {
+  $d = load_db();
+  $d['pendingRegistrations'][$email] = ['displayName' => 'Parrain', 'email' => $email, 'phone' => '', 'countryCode' => '+225', 'country' => 'CI',
+    'passwordHash' => str_repeat('b', 64), 'trafficSource' => 'direct', 'codeHash' => orolado_otp_hash($email, '654321'),
+    'expiresAt' => time() + 600, 'lastSentAt' => time(), 'attempts' => 0, 'createdAt' => date('c'), 'createdAtTs' => time(), 'sessionExpiresAt' => time() + 3600, 'prevHashes' => []];
+  save_db(orolado_data_file(), $d);
+};
+$pend('parrain@gmail.com');
+$r = $call(['action' => 'registerVerify', 'email' => 'parrain@gmail.com', 'code' => '654321']);
+$pid = (string) ($r['user']['id'] ?? '');
+$ptok = (string) ($r['token'] ?? '');
+$r = $call(['action' => 'affStatus', 'token' => $ptok]);
+$pcode = (string) ($r['code'] ?? '');
+check('le joueur a son lien', !empty($r['enabled']) && strlen($pcode) === 8);
+$c1 = $call(['action' => 'affClick', 'ami' => $pcode, 'device' => 'tel1']);
+$c2 = $call(['action' => 'affClick', 'ami' => $pcode, 'device' => 'tel1']);
+check('clic compté une fois par téléphone et par jour (sans compte)', !empty($c1['counted']) && empty($c2['counted']));
+$google('filleul@gmail.com', 'n9');
+$r = $call(['action' => 'googleLogin', 'idToken' => 'tok9', 'nonce' => 'n9', 'ami' => $pcode]);
+$fid = (string) ($r['user']['id'] ?? '');
+$ftok = (string) ($r['token'] ?? '');
+$d = load_db();
+foreach ([['flw_f1', 40], ['flw_f2', 60]] as [$id, $amt]) $d['deposits'][] = ['id' => $id, 'ref' => $id, 'userId' => $fid, 'amount' => $amt, 'status' => 'COMPLETED', 'operator' => 'flutterwave', 'createdAt' => date('c', time() - 60 + $amt), 'paidAt' => date('c', time() - 60 + $amt)];
+$d['users'][$fid]['realTrades'] = 3;
+save_db(orolado_data_file(), $d);
+$call(['action' => 'affStatus', 'token' => $ftok]);
+$r = $call(['action' => 'affStatus', 'token' => $ptok]);
+check('carrés : 1 clic, 1 inscrit, 1 a déposé, 1 a joué, total 100 $, gagné 5 $', ($r['clicks'] ?? -1) === 1 && $r['friends'] === 1 && $r['deposited'] === 1 && $r['played'] === 1 && abs($r['total'] - 100) < 0.001 && abs($r['earned'] - 5) < 0.001, json_encode(array_intersect_key($r, array_flip(['clicks', 'friends', 'deposited', 'played', 'total', 'earned']))));
+$row = $r['list'][0] ?? [];
+check('liste : numéro ORO (pas de nom), fin = inscription + 365 jours', str_starts_with((string) ($row['id'] ?? ''), 'ORO-') && !isset($row['name']) && ($row['until'] - $row['at']) === 365 * 86400);
+$h = $call(['action' => 'financeHistory', 'token' => $ptok]);
+$bon = array_values(array_filter((array) ($h['rows'] ?? []), fn($x) => ($x['kind'] ?? '') === 'bonus'));
+check('historique de celui qui invite : 2 lignes « bonus » (2 $ + 3 $)', count($bon) === 2 && abs(array_sum(array_column($bon, 'amount')) - 5) < 0.001, json_encode($h['rows'] ?? $h));
+$hf = $call(['action' => 'financeHistory', 'token' => $ftok]);
+$bf = array_values(array_filter((array) ($hf['rows'] ?? []), fn($x) => ($x['kind'] ?? '') === 'bonus'));
+check('historique de l\'ami : 1 ligne « bonus » de 2 $ (5 % de son 1er dépôt de 40 $)', count($bf) === 1 && abs($bf[0]['amount'] - 2) < 0.001);
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);

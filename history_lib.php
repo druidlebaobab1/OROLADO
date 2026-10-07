@@ -122,6 +122,12 @@ function orolado_finance_history(array $db, string $uid, bool $isAdmin, int $off
     ]);
   }
 
+  // v2414 — gains « Inviter un ami » de celui qui invite (argent libre, sans ligne de dépôt) : affichage
+  // seulement, comme un bonus OROLADO. Pas pour l'admin (en test, sa part va sur sa démo).
+  if (!$isAdmin && function_exists('orolado_aff_history_rows')) {
+    foreach (orolado_aff_history_rows($uid) as $r) $push($r);
+  }
+
   $rows = array_values(array_filter($rows, static fn($r) => abs((float) $r['amount']) > 0.0));
   usort($rows, static fn($a, $b) => strcmp((string) $b['at'], (string) $a['at']));
   $rows = array_slice($rows, 0, OROLADO_HISTORY_MAX);

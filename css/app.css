@@ -5572,3 +5572,140 @@ html body #portalModal .aff-big b{font-size:13.5px!important}
   html body #portalModal#portalModal.tabs-on .defi-rl li{font-size:11.5px!important}
   html body #portalModal#portalModal.tabs-on .defi-how.defi-open{margin-top:6px!important;padding-top:6px!important}
 }
+/* v2414 — Portail à 3 onglets : Défi | Inviter (6 carrés + liste des amis) | Top 25 démo de la semaine. */
+html body #portalModal .pt-tab.hidden{display:none!important}
+html body #portalModal .pt-tab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (min-width:860px){html body #portalModal .modal-box.portal-box{max-width:600px!important}}
+/* Inviter : 3 étapes côte à côte */
+html body #portalModal .aff-steps3{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+html body #portalModal .aff-steps3 li{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 5px 7px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);text-align:center}
+html body #portalModal .aff-steps3 li span{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#F2B33D;color:#1A1205;font-weight:900;font-size:10.5px;box-shadow:0 0 0 3px rgba(12,17,40,.95)}
+html body #portalModal .aff-steps3 .pi{width:20px;height:20px;stroke:#FFD27A;margin-top:3px}
+html body #portalModal .aff-steps3 em{font-style:normal;font-size:11px;line-height:1.25;color:#DDE2F5}
+/* Inviter : 6 carrés */
+html body #portalModal .aff-stats6{grid-template-columns:repeat(3,1fr)!important}
+html body #portalModal .aff-stats6 div{position:relative;padding:7px 3px 6px!important}
+html body #portalModal .aff-stats6 .pi{width:14px;height:14px;stroke:#8E9AD0;margin-bottom:1px}
+html body #portalModal .aff-stats6 b{font-size:15px!important}
+html body #portalModal .aff-stats6 span{font-size:10px!important}
+html body #portalModal .aff-stats6 .gold{background:rgba(242,179,61,.12)!important;border-color:rgba(242,179,61,.45)!important}
+html body #portalModal .aff-stats6 .gold b{color:#FFD27A!important}
+html body #portalModal .aff-stats6 .gold .pi{stroke:#F2B33D}
+html body #portalModal .aff-listbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:7px;height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#DDE2F5;font:800 12.5px/1 inherit;font-family:inherit;cursor:pointer}
+html body #portalModal .aff-listbtn .pi{width:16px;height:16px;stroke:currentColor}
+html body #portalModal .aff-listbtn b{min-width:22px;height:20px;padding:0 6px;border-radius:10px;display:grid;place-items:center;background:#F2B33D;color:#1A1205;font-size:11px}
+html body #portalModal .aff-main.hidden,html body #portalModal .aff-listview.hidden{display:none!important}
+/* Inviter : liste des amis */
+html body #portalModal .aff-listview{display:flex;flex-direction:column;gap:8px}
+html body #portalModal .aff-lv-top{display:flex;align-items:center;gap:10px}
+html body #portalModal .aff-lv-top b{font-size:15px;color:#FFE6A6;font-weight:900}
+html body #portalModal .aff-back{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);display:grid;place-items:center;color:#fff;cursor:pointer}
+html body #portalModal .aff-back .pi{width:18px;height:18px;stroke:currentColor}
+html[dir=rtl] body #portalModal .aff-back .pi{transform:scaleX(-1)}
+html body #portalModal .aff-filter{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:3px;border-radius:11px;background:rgba(0,0,0,.25)}
+html body #portalModal .aff-filter button{height:32px;border:0;border-radius:8px;background:transparent;color:#AEB6D6;font:800 12.5px/1 inherit;font-family:inherit;cursor:pointer}
+html body #portalModal .aff-filter button.on{background:rgba(242,179,61,.18);color:#FFE6A6;box-shadow:inset 0 0 0 1px rgba(242,179,61,.45)}
+html body #portalModal .aff-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+html body #portalModal .aff-sum div{display:flex;flex-direction:column;align-items:center;padding:7px 4px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+html body #portalModal .aff-sum b{font-size:15px;color:#fff;font-weight:900;direction:ltr}
+html body #portalModal .aff-sum span{font-size:10.5px;color:#AEB6D6}
+html body #portalModal .aff-sum .gold b{color:#FFD27A}
+html body #portalModal .aff-rows{display:flex;flex-direction:column;gap:5px;max-height:min(46vh,420px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+html body #portalModal .aff-row{display:grid;grid-template-columns:1.2fr 1fr 1.25fr;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+html body #portalModal .aff-row b{display:block;font-size:13px;color:#fff;font-weight:800;direction:ltr}
+html body #portalModal .aff-row span{display:block;font-size:10.5px;color:#9AA4CC}
+html body #portalModal .aff-row i{font-style:normal;color:#3DDC97}
+html body #portalModal .aff-row .ar-gain{text-align:end}
+html body #portalModal .aff-row .ar-gain b{color:#3DDC97}
+html body #portalModal .aff-row .ar-left{font-variant-numeric:tabular-nums;color:#FFD27A}
+html body #portalModal .aff-empty{margin:14px 0;text-align:center;font-size:13px;color:#9AA4CC}
+/* Top 25 */
+html body #portalModal .top-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(12,17,40,.92);border:1px solid rgba(242,179,61,.30);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+html body #portalModal .top-card.hidden{display:none!important}
+html body #portalModal .top-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html body #portalModal .top-title{display:flex;align-items:center;gap:8px;color:#FFE6A6;font-size:15.5px;font-weight:900}
+html body #portalModal .top-title .pi{width:20px;height:20px;stroke:#F2B33D}
+html body #portalModal .top-timer{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:800;color:#FFD27A;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+html body #portalModal .top-timer .pi{width:15px;height:15px;stroke:currentColor}
+html body #portalModal .top-sub{margin:6px 0 0;font-size:12.5px;line-height:1.4;color:#C9CEE6}
+html body #portalModal .top-podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:6px;margin-top:10px}
+html body #portalModal .tp{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-width:0}
+html body #portalModal .tp b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:#fff;font-weight:800}
+html body #portalModal .tp span{font-size:11px;color:#FFD27A;font-weight:800;direction:ltr}
+html body #portalModal .tp small{font-size:9.5px;color:#8E9AD0}
+html body #portalModal .tp-medal{position:relative;width:40px;height:48px}
+html body #portalModal .tp1 .tp-medal{width:50px;height:60px;filter:drop-shadow(0 0 12px rgba(255,210,122,.55))}
+html body #portalModal .tp-medal svg{width:100%;height:100%}
+html body #portalModal .tp-medal em{position:absolute;left:0;right:0;bottom:22%;text-align:center;font-style:normal;font-weight:900;font-size:13px;color:#2A1A00}
+html body #portalModal .tp1 .tp-medal em{font-size:16px}
+html body #portalModal .tp-medal .rb{fill:#3B4C9A}
+html body #portalModal .tp1 .md{fill:#F2B33D}
+html body #portalModal .tp1 .mi{fill:#FFE19A}
+html body #portalModal .tp2 .md{fill:#AEB8CF}
+html body #portalModal .tp2 .mi{fill:#E6ECF7}
+html body #portalModal .tp3 .md{fill:#C27A3A}
+html body #portalModal .tp3 .mi{fill:#E9A86A}
+html body #portalModal .tp-step{width:100%;margin-top:4px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,rgba(242,179,61,.28),rgba(242,179,61,.05));border:1px solid rgba(242,179,61,.30);border-bottom:0}
+html body #portalModal .tp1 .tp-step{height:34px}
+html body #portalModal .tp2 .tp-step{height:22px;background:linear-gradient(180deg,rgba(174,184,207,.25),rgba(174,184,207,.04));border-color:rgba(174,184,207,.3)}
+html body #portalModal .tp3 .tp-step{height:14px;background:linear-gradient(180deg,rgba(194,122,58,.28),rgba(194,122,58,.05));border-color:rgba(194,122,58,.35)}
+html body #portalModal .tp.empty{opacity:.45}
+html body #portalModal .tp.me b{color:#3DDC97}
+html body #portalModal .top-rows{display:grid;grid-template-columns:1fr;gap:4px;margin-top:8px;max-height:min(30vh,300px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media (min-height:820px){html body #portalModal .top-rows{grid-template-columns:1fr 1fr;max-height:none;overflow:visible}}
+html body #portalModal .tr{display:grid;grid-template-columns:22px 1fr auto auto;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.05);min-width:0}
+html body #portalModal .tr em{font-style:normal;font-weight:900;font-size:11.5px;color:#8E9AD0;text-align:center}
+html body #portalModal .tr b{font-size:12px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #portalModal .tr span{font-size:11.5px;color:#FFD27A;font-weight:800;direction:ltr}
+html body #portalModal .tr small{grid-column:1/-1;font-size:9.5px;color:#8E9AD0;direction:ltr;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #portalModal .tr.me{background:rgba(61,220,151,.12);border-color:rgba(61,220,151,.45)}
+html body #portalModal .tf{font-style:normal;font-size:9px;font-weight:800;color:#AEB6D6;padding:1px 4px;border-radius:4px;background:rgba(255,255,255,.08)}
+html body #portalModal .tf:empty{display:none}
+html body #portalModal .top-me{display:flex;align-items:center;gap:8px;margin-top:8px;padding:9px 11px;border-radius:11px;background:rgba(242,179,61,.10);border:1px solid rgba(242,179,61,.38);color:#FFE6A6;font-size:12.5px;font-weight:800}
+html body #portalModal .top-me .pi{width:18px;height:18px;stroke:currentColor;flex:0 0 18px}
+html body #portalModal .top-me.in{background:rgba(61,220,151,.12);border-color:rgba(61,220,151,.5);color:#BFF5DC}
+html body #portalModal .top-rule{margin:7px 0 0;font-size:11px;line-height:1.4;color:#9AA4CC}
+html body #portalModal .top-actions{display:flex;gap:8px;margin-top:9px}
+html body #portalModal .top-play{flex:1 1 auto}
+html body #portalModal .top-prev{flex:0 0 auto;height:44px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#DDE2F5;font:800 12px/1 inherit;font-family:inherit;cursor:pointer}
+html body #portalModal .top-prev.hidden{display:none!important}
+@media (max-width:859px){html body #portalModal#portalModal .top-card{margin-bottom:auto!important}}
+@media (max-width:859px) and (max-height:760px){
+  html body #portalModal#portalModal .top-card{padding:11px!important}
+  html body #portalModal#portalModal .tp1 .tp-medal{width:42px;height:50px}
+  html body #portalModal#portalModal .tp-medal{width:34px;height:41px}
+  html body #portalModal#portalModal .tp1 .tp-step{height:24px}
+  html body #portalModal#portalModal .tp2 .tp-step{height:15px}
+  html body #portalModal#portalModal .tp3 .tp-step{height:9px}
+  html body #portalModal#portalModal .top-rows{max-height:calc(100dvh - 470px)}
+  html body #portalModal#portalModal .aff-steps3 em{font-size:10.5px}
+  html body #portalModal#portalModal .aff-rows{max-height:calc(100dvh - 330px)}
+}
+/* v2414 — petits écrans (hauteur ≤ 760) : tout tient sans défiler. */
+@media (max-width:859px) and (max-height:760px){
+  html body #portalModal#portalModal.tabs-on .portal-emblem{display:none!important}
+  html body #portalModal#portalModal.tabs-on .portal-head{margin:4px 40px 8px!important}
+  html body #portalModal#portalModal .aff-steps3 .pi{display:none}
+  html body #portalModal#portalModal .aff-steps3 li{padding:9px 4px 6px}
+  html body #portalModal#portalModal .aff-stats6{gap:5px!important;margin-top:7px!important}
+  html body #portalModal#portalModal .aff-stats6 div{padding:5px 2px 4px!important;gap:0!important}
+  html body #portalModal#portalModal .aff-stats6 .pi{display:none}
+  html body #portalModal#portalModal .aff-stats6 b{font-size:14px!important}
+  html body #portalModal#portalModal .aff-stats6 span{font-size:9.5px!important;line-height:1.15!important}
+  html body #portalModal#portalModal .aff-share{height:40px!important;margin-top:6px!important}
+  html body #portalModal#portalModal .aff-link{margin-top:8px!important}
+  html body #portalModal#portalModal .aff-ex{padding:5px 9px!important}
+  html body #portalModal#portalModal .aff-ex p{font-size:11.5px!important;line-height:1.35!important}
+  html body #portalModal#portalModal .aff-rl{margin-top:7px!important;gap:3px!important}
+  html body #portalModal#portalModal .aff-rl li{font-size:11.5px!important;line-height:1.3!important}
+  html body #portalModal#portalModal .aff-big{margin-bottom:8px!important}
+  html body #portalModal#portalModal .aff-big b{padding:7px 4px!important}
+  html body #portalModal#portalModal .top-rows{max-height:calc(100dvh - 470px)!important}
+  html body #portalModal#portalModal .top-sub{font-size:11.5px!important}
+}
+/* v2414 — iPhone Safari : la barre flottante cache le bas → le Portail garde sa place (rien sous la barre). */
+@media (max-width:859px){
+  html.saf-under body #portalModal#portalModal#portalModal > .modal-box.portal-box{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 92px)!important}
+  html body #portalModal#portalModal#portalModal > .modal-box.portal-box{padding-top:calc(env(safe-area-inset-top,0px) + 8px)!important}
+}
+@media (max-width:859px) and (min-height:820px){html.saf-under body #portalModal#portalModal .top-rows{max-height:196px;overflow-y:auto}}

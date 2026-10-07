@@ -6689,6 +6689,8 @@
     });
     window.oroUi = {
       deposit: function () { try { openDeposit(); } catch (e) { /* ignore */ } },
+      // v2414 — bouton « Jouer en démo » du Top 25 (Portail).
+      mode: function (m) { try { switchMode(m === 'real' ? 'real' : 'demo'); } catch (e) { /* ignore */ } },
       call: function () { try { execute('call'); } catch (e) { /* ignore */ } },
       put: function () { try { execute('put'); } catch (e) { /* ignore */ } },
       asset: function (el) {

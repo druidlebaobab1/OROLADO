@@ -217,6 +217,10 @@ function orolado_defi_status(array &$db, array $user, bool $activate = false): a
   $now = time();
   return orolado_defi_with($uid, static function (&$st) use (&$db, $uid, $activate, $now, $mode) {
     if (!isset($st['history']) || !is_array($st['history'])) $st['history'] = [];
+    // Ancien défi de 7 jours (avant la v2411) : ramené à la fin de SON jour (un défi = 24 h, minuit).
+    if (!empty($st['activatedAt']) && (float) ($st['expiresAt'] ?? 0) > orolado_defi_day_end((int) $st['activatedAt'])) {
+      $st['expiresAt'] = orolado_defi_day_end((int) $st['activatedAt']);
+    }
     $running = !empty($st['activatedAt']) && empty($st['finished']);
     // Chrono fini sans réussite : le défi se termine (on garde une trace).
     if ($running && $now > (float) ($st['expiresAt'] ?? 0)) {

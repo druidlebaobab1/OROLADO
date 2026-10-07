@@ -265,7 +265,10 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
       if (!empty($st['deps'][$d['id']]['paid'])) continue;
       $g = orolado_aff_gift($d['amount']);
       $ok = $g < 0.01 ? true : orolado_aff_pay_inviter($db, $inviter, $g, 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24));
-      if ($ok) $st['deps'][$d['id']] = ['amount' => $d['amount'], 'gift' => $g, 'paid' => true, 'at' => date('c')];
+      if ($ok) {
+        $st['deps'][$d['id']] = ['amount' => $d['amount'], 'gift' => $g, 'paid' => true, 'at' => date('c')];
+        if ($g >= 0.01) $st['newPays'][] = ['ref' => 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24), 'amount' => $g, 'deposit' => $d['amount'], 'at' => date('c')];
+      }
     }
     $earned = 0.0;
     $total = 0.0;
@@ -276,8 +279,16 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
     return $st;
   });
   if (!is_array($res)) return $inv;
+  $newPays = (array) ($res['newPays'] ?? []);
+  if ($newPays) orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) { unset($st['newPays']); });
+  unset($res['newPays']);
   // Résumé chez celui qui invite (affichage seulement).
-  orolado_aff_with(orolado_aff_owner_name($inviter), static function (&$own) use ($friendUid, $res) {
+  orolado_aff_with(orolado_aff_owner_name($inviter), static function (&$own) use ($friendUid, $res, $newPays) {
+    // Journal des gains de celui qui invite (affiché dans son historique et dans sa liste).
+    if (!isset($own['log']) || !is_array($own['log'])) $own['log'] = [];
+    $known = [];
+    foreach ($own['log'] as $l) $known[(string) ($l['ref'] ?? '')] = 1;
+    foreach ($newPays as $p) if (empty($known[$p['ref']])) $own['log'][] = $p + ['friend' => $friendUid];
     $sum = 0.0;
     foreach (($own['friends'] ?? []) as $i => $f) {
       if (($f['uid'] ?? '') === $friendUid) {
@@ -322,8 +333,68 @@ function orolado_aff_status(array $db, array $user): array {
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
   $out['enabled'] = true;
   $out['code'] = $code;
+  $out['days'] = OROLADO_AFF_DAYS;
+  $out['now'] = time();
+  $out['clicks'] = (int) ($own['clicks'] ?? 0);
   $out['friends'] = count($friends);
   $out['deposited'] = count(array_filter($friends, static fn($f) => !empty($f['paid'])));
+  $played = 0;
+  $total = 0.0;
+  $list = [];
+  foreach ($friends as $f) {
+    $fu = $db['users'][(string) ($f['uid'] ?? '')] ?? [];
+    $realTrades = (int) ($fu['realTrades'] ?? 0);
+    if ($realTrades > 0) $played++;
+    $total += (float) ($f['deposit'] ?? 0);
+    $t = (int) strtotime((string) ($f['at'] ?? ''));
+    $list[] = [
+      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'),
+      'at' => $t,
+      'until' => $t > 0 ? $t + OROLADO_AFF_DAYS * 86400 : 0,
+      'deposit' => orolado_money($f['deposit'] ?? 0),
+      'gift' => orolado_money($f['gift'] ?? 0),
+      'played' => $realTrades > 0,
+    ];
+  }
+  usort($list, static fn($x, $y) => $y['at'] <=> $x['at']);
+  $out['played'] = $played;
+  $out['total'] = orolado_money($total);
   $out['earned'] = orolado_money($own['earned'] ?? 0);
+  $out['list'] = array_slice($list, 0, 200);
   return $out;
+}
+
+/**
+ * Clic sur un lien d'invitation (affichage seulement : « clics sur ton lien »).
+ * Un même téléphone (ou une même connexion) n'est compté qu'UNE fois par jour et par lien.
+ */
+function orolado_aff_click(string $code, string $device): bool {
+  $code = orolado_aff_clean_code($code);
+  if ($code === '') return false;
+  $inviter = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
+  if ($inviter === '') return false;
+  $device = substr(preg_replace('/[^A-Za-z0-9]/', '', $device) ?? '', 0, 40);
+  $day = date('Y-m-d');
+  $keys = [hash('sha256', 'ip|' . orolado_aff_client_ip()), $device !== '' ? hash('sha256', 'dev|' . $device) : ''];
+  return (bool) orolado_aff_with(orolado_aff_owner_name($inviter), static function (&$own) use ($keys, $day) {
+    if (!isset($own['clickSeen']) || !is_array($own['clickSeen']) || ($own['clickDay'] ?? '') !== $day) {
+      $own['clickSeen'] = [];
+      $own['clickDay'] = $day;
+    }
+    foreach ($keys as $k) if ($k !== '' && isset($own['clickSeen'][substr($k, 0, 16)])) return false;
+    foreach ($keys as $k) if ($k !== '') $own['clickSeen'][substr($k, 0, 16)] = 1;
+    $own['clicks'] = (int) ($own['clicks'] ?? 0) + 1;
+    return true;
+  });
+}
+
+/** Lignes d'historique des gains de celui qui invite (affichage : « Cadeau invitation »). */
+function orolado_aff_history_rows(string $uid): array {
+  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  $rows = [];
+  foreach ((array) ($own['log'] ?? []) as $l) {
+    if (!is_array($l) || empty($l['ref'])) continue;
+    $rows[] = ['at' => (string) ($l['at'] ?? ''), 'ref' => (string) $l['ref'], 'amount' => orolado_money($l['amount'] ?? 0), 'kind' => 'bonus', 'status' => 'COMPLETED', 'gateway' => 'OROLADO', 'note' => 'Invitation'];
+  }
+  return $rows;
 }
