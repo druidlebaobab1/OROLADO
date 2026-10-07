@@ -1025,6 +1025,36 @@
     window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
     window.addEventListener('orientationchange', function () { setTimeout(function () { fillSafariGap(true); }, 400); });
     window.addEventListener('load', function () { setTimeout(function () { fillSafariGap(true); }, 300); });
+    // v2429 — ACHETER / VENDRE parfois cachés sous la barre de Safari (il fallait fermer la page) : la hauteur
+    // de la courbe était calculée une seule fois ; si la barre du haut grandit APRÈS (tuiles « Cadeaux » qui
+    // apparaissent, police chargée…), tout descendait. Toutes les 1,5 s (presque rien) : si le haut de la courbe
+    // a bougé ou si ACHETER / VENDRE dépassent du bas visible, on refait le calcul.
+    var lastChartTop = -1, lastSafFix = 0;
+    setTimeout(function () { try { lastChartTop = Math.round($('chart').getBoundingClientRect().top); } catch (eLt) { /* ignore */ } }, 1200);
+    setInterval(function () {
+      try {
+        if (document.hidden) return;
+        var html = document.documentElement;
+        // Safari ne prévient pas toujours quand sa barre du bas apparaît / disparaît (après une fenêtre fermée,
+        // un défilement…) : on revérifie ici « page sous la barre » ; si ça change, on refait la mise en page.
+        var wasUnder = html.classList.contains('saf-under');
+        authFit();
+        if (wasUnder !== html.classList.contains('saf-under')) { lastSafFix = Date.now(); fillSafariGap(true); }
+        if (html.classList.contains('fs-trade') || html.classList.contains('is-fullscreen')) return;
+        var card = $('chart'), pad = document.querySelector('#screenTrade #tradeWrap > .pad');
+        if (!card || !pad || !pad.offsetHeight || window.innerWidth >= 860) return;
+        var top = Math.round(card.getBoundingClientRect().top);
+        var padBottom = pad.getBoundingClientRect().bottom;
+        var vis = window.visualViewport ? window.visualViewport.height + window.visualViewport.offsetTop : window.innerHeight;
+        var typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName || '');
+        if (typing) return;
+        var moved = lastChartTop >= 0 && Math.abs(top - lastChartTop) > 2;
+        // Boutons qui dépassent : au plus un recalcul toutes les 8 s (jamais de boucle qui ferait trembler la courbe).
+        var hidden = padBottom > vis + 2 && Date.now() - lastSafFix > 8000;
+        if (moved || hidden) { lastSafFix = Date.now(); fillSafariGap(true); }
+        lastChartTop = Math.round(card.getBoundingClientRect().top);
+      } catch (eWt) { /* ignore */ }
+    }, 1500);
   }
 
   // « Aide », le drapeau (et le profil si connecté) prennent exactement la hauteur de « Connexion »

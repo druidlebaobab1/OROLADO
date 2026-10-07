@@ -6269,3 +6269,9 @@ html body #portalModal#portalModal .bon-head .top-timer{margin:0 auto!important;
 @media (orientation:landscape) and (max-height:500px){html body #portalModal .gift-scene{flex-basis:110px!important;min-height:110px}}
 html body #portalModal#portalModal .bon-head{flex-wrap:nowrap!important}
 html body #portalModal#portalModal .bon-head .bon-big{flex:0 0 auto!important;width:100%!important}
+
+/* ===== v2429 — Textes propres sur tout le site (fenêtres, messages, connexion, conditions…) ===== */
+/* Les paragraphes et listes évitent le mot seul en fin de texte ; les titres courts ont des lignes équilibrées.
+   Les boutons de l'écran de trading (ACHETER, VENDRE, mises, durées, payouts, Recharger) ne sont pas concernés. */
+html body .modal-box :is(p,li,small,label),html body #screenAuth :is(p,small,label),html body .toast{text-wrap:pretty;overflow-wrap:break-word}
+html body .modal-box :is(h2,h3,h4,.modal-title),html body #screenAuth :is(h1,h2,h3){text-wrap:balance}

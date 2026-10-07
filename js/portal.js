@@ -381,6 +381,10 @@
   }
   function bind() {
     scenes();
+    // v2429 — changement de langue : les textes construits ici (cases, listes, classement) sont refaits aussitôt.
+    document.addEventListener('oro:lang', function () {
+      try { render(); renderAff(); renderTop(); renderBon(); } catch (eL) { /* ignore */ }
+    });
     var b = $('btnPortal');
     if (b) b.addEventListener('click', openPortal);
     if ($('closePortal')) $('closePortal').addEventListener('click', closePortal);
@@ -494,7 +498,8 @@
     var dep = 0, gain = 0;
     rows.forEach(function (r) { dep += Number(r.deposit || 0); gain += Number(r.gift || 0); });
     if ($('affSum')) $('affSum').innerHTML = '<div><b>' + rows.length + '</b><span>' + esc(t('affDeposited')) + '</span></div>' +
-      '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
+      // v2429 — même phrase que sur la 1re page : « Total déposé par tes amis » (11 langues).
+      '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affTotal')) + '</span></div>' +
       '<div class="gold"><b>+' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
     $('affRowsAll').innerHTML = rows.length ? rows.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmpty')) + '</p>';
   }

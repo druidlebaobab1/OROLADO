@@ -3628,7 +3628,8 @@
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {
       var v = DICT[l][k];
-      if (typeof v !== 'string' || !/^(aff|defi|top|bon|tc|gift|guest|portal)/.test(k)) return;
+      // v2429 : sur tous les textes du site (sauf ceux qui contiennent du code HTML).
+      if (typeof v !== 'string' || v.indexOf('<') >= 0) return;
       DICT[l][k] = v.replace(/(\d) (?=\d{3}\b)/g, '$1\u00a0').replace(/(\d) (?=[$%])/g, '$1\u00a0').replace(/ (?=[★→←:;!?»])/g, '\u00a0').replace(/« /g, '«\u00a0');
     });
   });
@@ -3645,6 +3646,9 @@
       lockedLang = true;
       persistManualLang(code);
       apply();
+      // v2429 — textes des fenêtres ouvertes réglés pour la nouvelle langue (js/fit.js).
+      try { document.dispatchEvent(new Event('oro:lang')); } catch (eEv) { /* ignore */ }
+      try { if (D6.Fit) D6.Fit.open(); } catch (eFit) { /* ignore */ }
     }
   };
 
