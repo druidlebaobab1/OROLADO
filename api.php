@@ -25,6 +25,7 @@ require_once __DIR__ . '/history_lib.php';
 require_once __DIR__ . '/account_lib.php';
 // Défi (v2409) : optionnel — si le fichier manque, le reste du site fonctionne normalement.
 if (is_file(__DIR__ . '/defi_lib.php')) require_once __DIR__ . '/defi_lib.php';
+if (is_file(__DIR__ . '/aff_lib.php')) require_once __DIR__ . '/aff_lib.php';
 orolado_load_env();
 
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
@@ -265,6 +266,7 @@ $OROLADO_RATE_RULES = [
   'login'             => [['e', 30, 3600], ['i', 3000, 3600]],
   'googleLogin'       => [['i', 3000, 3600]],
   'defiStatus'        => [['t', 120, 60]],
+  'affStatus'         => [['t', 60, 60]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
@@ -338,6 +340,28 @@ if ($action === 'defiStatus' || $action === 'defiActivate') {
   } catch (Throwable $eDefi) {
     error_log('OROLADO defi ' . $eDefi->getMessage());
     $res = ['ok' => false, 'reason' => 'Défi indisponible'];
+  }
+  echo json_encode(['server' => true] + $res);
+  exit;
+}
+
+// v2413 — Inviter un ami (aff_lib.php) : lien du joueur, ses amis, ses gains ; verse les cadeaux dus
+// (5 % au 1er dépôt de l'ami ; 5 % de chaque dépôt de l'ami pendant 365 jours pour celui qui invite).
+if ($action === 'affStatus') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  if (!function_exists('orolado_aff_status')) {
+    echo json_encode(['ok' => true, 'server' => true, 'enabled' => false]);
+    exit;
+  }
+  try {
+    $res = orolado_aff_status($db, $me);
+  } catch (Throwable $eAff) {
+    error_log('OROLADO aff ' . $eAff->getMessage());
+    $res = ['ok' => false, 'reason' => 'Indisponible'];
   }
   echo json_encode(['server' => true] + $res);
   exit;
@@ -579,6 +603,9 @@ if ($action === 'registerVerify') {
   $tok = $created['token'];
   orolado_set_session_cookie($tok);
   $db = load_db($file);
+  if (function_exists('orolado_aff_attach') && !empty($req['ami'])) {
+    try { orolado_aff_attach($db, (string) $user['id'], (string) $req['ami']); } catch (Throwable $eAff) { error_log('OROLADO aff attach ' . $eAff->getMessage()); }
+  }
   $welcome = ['ok' => false];
   if (!brevo_welcome_already_sent($db, $email)) {
     $welcome = brevo_send_welcome($email, (string) $user['displayName']);
@@ -1131,6 +1158,9 @@ if ($action === 'googleLogin') {
   }
   save_db($file, $db);
   orolado_set_session_cookie($tok);
+  if ($isNew && function_exists('orolado_aff_attach') && !empty($req['ami'])) {
+    try { orolado_aff_attach($db, $uid, (string) $req['ami']); } catch (Throwable $eAff) { error_log('OROLADO aff attach ' . $eAff->getMessage()); }
+  }
   if ($isNew && !brevo_welcome_already_sent($db, $email)) {
     $welcome = brevo_send_welcome($email, (string) ($user['displayName'] ?? ''));
     if (!empty($welcome['ok'])) {

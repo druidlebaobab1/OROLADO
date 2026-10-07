@@ -256,7 +256,101 @@
     }, 1500);
   }
 
-  D6.Portal = { refresh: refresh, open: openPortal };
+  // v2413 — Inviter un ami : tout est décidé et payé par le serveur (api.php affStatus, aff_lib.php).
+  // Ici : onglet « Inviter » (lien, copier / partager, chiffres) et message « cadeau reçu » pour l'ami.
+  var aff = null;
+  var affT = 0;
+  var ICO_GIFT = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg>';
+  function affLink() { return aff && aff.code ? location.origin + '/?ami=' + aff.code : ''; }
+  function renderAff() {
+    var on = !!(aff && aff.enabled && aff.code);
+    var tabs = $('portalTabs');
+    show(tabs, on);
+    if ($('portalModal')) $('portalModal').classList.toggle('tabs-on', on);
+    if (!on) { show($('affCard'), false); show($('defiCard'), true); }
+    if (!on) return;
+    $('affUrl').textContent = affLink().replace(/^https?:\/\//, '');
+    $('affFriends').textContent = String(aff.friends || 0);
+    $('affDeposited').textContent = String(aff.deposited || 0);
+    $('affEarned').textContent = money(aff.earned || 0);
+  }
+  function giftPopup(amount) {
+    var box = document.createElement('div');
+    box.className = 'defi-win';
+    box.innerHTML = '<div class="dw-in"><div class="dw-cup">' + ICO_GIFT + '</div><div class="dw-t"></div><div class="dw-a"></div></div>';
+    box.querySelector('.dw-t').textContent = t('affGiftTitle');
+    box.querySelector('.dw-a').textContent = '+' + money(amount);
+    document.body.appendChild(box);
+    setTimeout(function () { box.classList.add('out'); }, 3200);
+    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 3800);
+  }
+  async function refreshAff() {
+    clearTimeout(affT);
+    if (!loggedIn()) { aff = null; renderAff(); return; }
+    var r = await call('affStatus');
+    if (r && r.ok !== false) {
+      aff = r;
+      renderAff();
+      if (r.invited && r.invited.justPaid && r.invited.gift > 0) {
+        giftPopup(r.invited.gift);
+        if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eW) { /* ignore */ } }
+      }
+    }
+    // Ami invité qui n'a pas encore reçu son cadeau, ou celui qui invite : on revérifie chaque minute.
+    if (r && ((r.invited && !r.invited.paid) || r.enabled)) {
+      affT = setTimeout(function () { if (!document.hidden) refreshAff(); else affT = setTimeout(refreshAff, 60000); }, 60000);
+    }
+  }
+  function setTab(name) {
+    var isAff = name === 'aff';
+    show($('defiCard'), !isAff);
+    show($('affCard'), isAff);
+    if ($('portalModal')) $('portalModal').classList.toggle('aff-on', isAff);
+    var bs = document.querySelectorAll('#portalTabs .pt-tab');
+    for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].getAttribute('data-tab') === name);
+    if (isAff) refreshAff();
+  }
+  async function copyLink() {
+    var link = affLink();
+    if (!link) return false;
+    try { await navigator.clipboard.writeText(link); return true; } catch (e) { /* repli ci-dessous */ }
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = link; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      return true;
+    } catch (e2) { return false; }
+  }
+  function bindAff() {
+    var tabs = document.querySelectorAll('#portalTabs .pt-tab');
+    for (var i = 0; i < tabs.length; i++) tabs[i].addEventListener('click', function () { setTab(this.getAttribute('data-tab')); });
+    if ($('affCopy')) $('affCopy').addEventListener('click', async function () {
+      var btn = this, lbl = btn.querySelector('span');
+      if (await copyLink()) {
+        btn.classList.add('done');
+        lbl.textContent = t('affCopied');
+        setTimeout(function () { btn.classList.remove('done'); lbl.textContent = t('affCopy'); }, 1800);
+      }
+    });
+    if ($('affShare')) $('affShare').addEventListener('click', async function () {
+      var link = affLink();
+      if (!link) return;
+      if (navigator.share) {
+        try { await navigator.share({ title: 'OROLADO', text: t('affShareText'), url: link }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      if (await copyLink() && $('affCopy')) $('affCopy').click();
+    });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshAff(); });
+    var lastTok = '';
+    setInterval(function () {
+      var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
+      if (tok !== lastTok) { lastTok = tok; aff = null; renderAff(); if (tok) refreshAff(); }
+    }, 1500);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindAff);
+  else bindAff();
+
+  D6.Portal = { refresh: refresh, open: openPortal, refreshAff: refreshAff };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })(window.D6 = window.D6 || {});

@@ -1,6 +1,26 @@
 (function (D6) {
   'use strict';
 
+  // v2413 — lien d'invitation « orolado.com/?ami=CODE » : on garde le code (30 jours) jusqu'à l'inscription.
+  (function () {
+    try {
+      var m = /[?&]ami=([A-Za-z0-9]{8})(?:&|$)/.exec(location.search || '');
+      if (!m) return;
+      localStorage.setItem('oro_ami', JSON.stringify({ c: m[1].toUpperCase(), t: Date.now() }));
+      if (history.replaceState) {
+        var q = (location.search || '').replace(/([?&])ami=[^&]*(&|$)/, '$1').replace(/[?&]$/, '');
+        history.replaceState(null, '', location.pathname + q + location.hash);
+      }
+    } catch (eAmi) { /* ignore */ }
+  })();
+  function oroAmiCode() {
+    try {
+      var o = JSON.parse(localStorage.getItem('oro_ami') || 'null');
+      if (o && o.c && Date.now() - (o.t || 0) < 30 * 86400000) return String(o.c);
+    } catch (eAmi) { /* ignore */ }
+    return '';
+  }
+
   function normalizeEmail(email) {
     return String(email || '').trim().toLowerCase();
   }
@@ -154,7 +174,7 @@
         return { ok: false, reason: 'Saisissez le code à 6 chiffres reçu par e-mail.' };
       }
       if (!D6.Api || !D6.Api.post) return { ok: false, reason: 'Service indisponible' };
-      var remote = await D6.Api.post('registerVerify', { email: email, code: code });
+      var remote = await D6.Api.post('registerVerify', { email: email, code: code, ami: oroAmiCode() });
       if (!remote || !remote.ok) {
         return { ok: false, reason: (remote && remote.reason) || 'Code incorrect ou expiré' };
       }
@@ -353,7 +373,8 @@
         trafficSource: trafficSource,
         trafficMedium: trafficMeta.medium || '',
         trafficCampaign: trafficMeta.campaign || '',
-        trafficReferrer: trafficMeta.referrer || ''
+        trafficReferrer: trafficMeta.referrer || '',
+        ami: oroAmiCode()
       }, 25000);
       // La session Supabase n'a servi qu'à prouver l'identité : le site garde sa propre session.
       if (!direct) { try { if (D6.Supabase && D6.Supabase.signOut) await D6.Supabase.signOut(); } catch (eOut) { /* ignore */ } }
