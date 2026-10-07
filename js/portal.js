@@ -98,7 +98,8 @@
       s = { enabled: true, active: false, canActivate: true, market: 'v100', streak: 0, need: 5, guest: true };
       if (!aff || !aff.guest) aff = { enabled: true, guest: true, code: '', clicks: 0, friends: 0, deposited: 0, played: 0, total: 0, earned: 0, list: [] };
       if (!top || !top.guest) top = { enabled: true, guest: true, top: [], me: { need: 20, rank: 0, points: 0 }, endsAt: nextMonday(), show: 25 };
-      setTimeout(function () { renderAff(); renderTop(); }, 0);
+      if (!bon || !bon.guest) bon = { enabled: true, guest: true, phase: 'off', weekEnd: nextMonday() };
+      setTimeout(function () { renderAff(); renderTop(); renderBon(); }, 0);
     }
     if (!on) return;
     // Progression du défi affichée SUR la maison (« 3/5 ») : aucune pastille sur le graphique.
@@ -374,16 +375,16 @@
     return d + t('defiD') + ' ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
   }
   function tabsOn() {
-    var a = !!(aff && aff.enabled && (aff.code || aff.guest)), b = !!(top && top.enabled);
-    show($('portalTabs'), a || b);
+    var a = !!(aff && aff.enabled && (aff.code || aff.guest)), b = !!(top && top.enabled), c = !!(bon && bon.enabled);
+    show($('portalTabs'), a || b || c);
     var bs = document.querySelectorAll('#portalTabs .pt-tab');
     for (var i = 0; i < bs.length; i++) {
       var k = bs[i].getAttribute('data-tab');
-      show(bs[i], k === 'defi' || (k === 'aff' && a) || (k === 'top' && b));
+      show(bs[i], k === 'defi' || (k === 'aff' && a) || (k === 'top' && b) || (k === 'bon' && c));
     }
-    if ($('portalTabs')) $('portalTabs').style.gridTemplateColumns = 'repeat(' + (1 + (a ? 1 : 0) + (b ? 1 : 0)) + ',1fr)';
-    if ($('portalModal')) $('portalModal').classList.toggle('tabs-on', a || b);
-    if ((curTab === 'aff' && !a) || (curTab === 'top' && !b)) setTab('defi');
+    if ($('portalTabs')) $('portalTabs').style.gridTemplateColumns = 'repeat(' + (1 + (a ? 1 : 0) + (b ? 1 : 0) + (c ? 1 : 0)) + ',1fr)';
+    if ($('portalModal')) $('portalModal').classList.toggle('tabs-on', a || b || c);
+    if ((curTab === 'aff' && !a) || (curTab === 'top' && !b) || (curTab === 'bon' && !c)) setTab('defi');
   }
   function renderAff() {
     tabsOn();
@@ -426,6 +427,7 @@
   function tickLists() {
     var els = document.querySelectorAll('#affRows .ar-left, #affRowsAll .ar-left');
     for (var i = 0; i < els.length; i++) els[i].textContent = t('affLeft') + ' ' + daysLeft(Number(els[i].getAttribute('data-until')));
+    if (bon && bon.enabled && $('bonTimer')) $('bonTimer').innerHTML = ICO_CLOCK + '<span>' + esc(daysLeft(bon.phase === 'filling' ? bon.until : bon.weekEnd)) + '</span>';
     if (top && top.enabled && $('topTimer')) $('topTimer').innerHTML = ICO_CLOCK + '<span>' + esc(top.prev ? t('topEnded') : daysLeft(top.endsAt)) + '</span>';
   }
   function giftPopup(amount) {
@@ -506,11 +508,58 @@
     }
     if (r && r.enabled) topT = setTimeout(function () { if (!document.hidden && curTab === 'top') refreshTop(); else topT = setTimeout(refreshTop, 120000); }, 60000);
   }
+  // v2417 — Bonus dépôt de la semaine : tout est décidé et payé par le serveur (bonus_lib.php).
+  var bon = null;
+  var bonT = 0;
+  function renderBon() {
+    tabsOn();
+    if (!bon || !bon.enabled || !$('bonCard')) return;
+    var ph = bon.phase || 'off';
+    var target = Number(bon.target || 0), got = Number(bon.credited || 0);
+    show($('bonMeter'), ph === 'filling' || ph === 'full' || ph === 'expired');
+    $('bonMeterTxt').textContent = '+' + money(got) + ' / ' + money(target);
+    $('bonMeterFill').style.width = (target > 0 ? Math.min(100, got / target * 100) : 0) + '%';
+    $('bonMeterSub').textContent = ph === 'filling' ? t('bonNext', { s: money(bon.nextIn || 0) }) : '';
+    var st = '';
+    if (ph === 'waiting') st = t('bonWaiting');
+    else if (ph === 'filling') st = t('bonFilling', { d: money(bon.deposit || 0) });
+    else if (ph === 'full') st = t('bonFull', { r: money(target) });
+    else if (ph === 'expired') st = t('bonExpired');
+    $('bonState').textContent = st;
+    $('bonState').className = 'bon-state ' + ph;
+    show($('bonActivate'), ph === 'off');
+    show($('bonDeposit'), ph === 'waiting' || ph === 'off' && !!bon.guest);
+    if (bon.guest) show($('bonDeposit'), false);
+    show($('bonTest'), !!bon.test && ph === 'waiting');
+    tickLists();
+    fitPortal();
+  }
+  async function refreshBon(action, extra) {
+    clearTimeout(bonT);
+    if (!loggedIn()) { if (!guestGift()) bon = null; renderBon(); return; }
+    var r = null;
+    try { r = await D6.Api.post(action || 'bonusStatus', extra || {}, 15000); } catch (e) { r = null; }
+    if (r && r.ok !== false) {
+      if (r.now) skew = r.now - Date.now() / 1000;
+      var before = bon ? Number(bon.credited || 0) : -1;
+      bon = r;
+      renderBon();
+      // Un nouveau morceau de bonus vient d'arriver : petite notification + solde à jour.
+      if (before >= 0 && Number(r.credited || 0) > before + 0.009) {
+        bigToast(ICO_GIFT, t('bonGotT'), '+' + money(Number(r.credited) - before), 'dw-start');
+        if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eV) { /* ignore */ } }
+      }
+    }
+    // Pendant le remplissage : on revérifie toutes les 20 s (le bonus monte pendant que le joueur joue).
+    if (r && r.enabled) bonT = setTimeout(function () { if (!document.hidden) refreshBon(); else bonT = setTimeout(refreshBon, 60000); }, r.phase === 'filling' ? 20000 : 60000);
+  }
+
   function setTab(name) {
     curTab = name;
     show($('defiCard'), name === 'defi');
     show($('affCard'), name === 'aff');
     show($('topCard'), name === 'top');
+    show($('bonCard'), name === 'bon');
     if ($('portalModal')) {
       $('portalModal').classList.toggle('aff-on', name === 'aff');
       $('portalModal').classList.toggle('top-on', name === 'top');
@@ -519,6 +568,7 @@
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].getAttribute('data-tab') === name);
     if (name === 'aff') { showAffList(false); refreshAff(); }
     if (name === 'top') refreshTop();
+    if (name === 'bon') refreshBon();
     fitPortal();
   }
   // v2415 : la liste des amis est toujours affichée sous les carrés (plus de bouton « Voir mes amis »).
@@ -594,13 +644,26 @@
     };
     if ($('giftGuestGo')) $('giftGuestGo').addEventListener('click', function () { goAuth('register'); });
     if ($('giftGuestLogin')) $('giftGuestLogin').addEventListener('click', function () { goAuth('login'); });
+    if ($('bonActivate')) $('bonActivate').addEventListener('click', async function () {
+      if (needAccount()) return;
+      this.disabled = true;
+      await refreshBon('bonusActivate');
+      this.disabled = false;
+      if (bon && bon.phase === 'waiting') bigToast(ICO_GIFT, t('bonOnT'), t('bonOnS'), 'dw-start');
+    });
+    if ($('bonDeposit')) $('bonDeposit').addEventListener('click', function () {
+      if (needAccount()) return;
+      closePortal();
+      if (window.oroUi && window.oroUi.deposit) window.oroUi.deposit();
+    });
+    if ($('bonTest')) $('bonTest').addEventListener('click', function () { refreshBon('bonusTestDeposit', { amount: 200 }); });
     if ($('topPrev')) $('topPrev').addEventListener('click', function () { topPrev = !topPrev; refreshTop(); });
     setInterval(function () { if ($('portalModal') && $('portalModal').classList.contains('active')) tickLists(); }, 1000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshAff(); });
     var lastTok = '';
     setInterval(function () {
       var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
-      if (tok !== lastTok) { lastTok = tok; aff = null; top = null; setTab('defi'); renderAff(); renderTop(); if (tok) { refreshAff(); refreshTop(); } }
+      if (tok !== lastTok) { lastTok = tok; aff = null; top = null; bon = null; setTab('defi'); renderAff(); renderTop(); renderBon(); if (tok) { refreshAff(); refreshTop(); refreshBon(); } }
     }, 1500);
     setTimeout(sendClick, 1500);
   }
@@ -637,7 +700,7 @@
   document.addEventListener('click', function (e) { if (e.target && e.target.closest && e.target.closest('#portalModal')) fitPortal(); }, true);
   setInterval(function () { var m = $('portalModal'); if (m && m.classList.contains('active')) fitPortal(); }, 2000);
 
-  D6.Portal = { refresh: refresh, open: openPortal, refreshAff: refreshAff, refreshTop: refreshTop, tab: setTab, fit: fitPortal };
+  D6.Portal = { refresh: refresh, open: openPortal, refreshAff: refreshAff, refreshTop: refreshTop, refreshBon: refreshBon, tab: setTab, fit: fitPortal };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })(window.D6 = window.D6 || {});

@@ -150,12 +150,12 @@ function orolado_aff_pay_uuid(array $db, string $uid): string {
 }
 
 /** Cadeau de l'ami : bonus (opérateur admin) → règle « miser ×2 avant retrait ». Une seule fois. */
-function orolado_aff_pay_friend(array $db, string $uid, float $gift, string $ref): bool {
+function orolado_aff_pay_friend(array $db, string $uid, float $gift, string $ref, string $note = 'Cadeau invitation'): bool {
   $payId = orolado_aff_pay_uuid($db, $uid);
   if ($payId === '') return false;
   $got = orolado_trade_credit_once($payId, $ref, $gift);
   if ($got === null) return false;
-  with_db_lock(static function ($box) use ($uid, $gift, $ref, $got) {
+  with_db_lock(static function ($box) use ($uid, $gift, $ref, $got, $note) {
     $locked =& $box->db;
     foreach (($locked['deposits'] ?? []) as $d) {
       if (is_array($d) && (string) ($d['id'] ?? '') === $ref) return ['ok' => true, 'skip_write' => true];
@@ -163,7 +163,7 @@ function orolado_aff_pay_friend(array $db, string $uid, float $gift, string $ref
     if (!isset($locked['deposits']) || !is_array($locked['deposits'])) $locked['deposits'] = [];
     $locked['deposits'][] = [
       'id' => $ref, 'ref' => $ref, 'userId' => $uid, 'amount' => $gift, 'status' => 'COMPLETED',
-      'operator' => 'admin', 'createdAt' => date('c'), 'paidAt' => date('c'), 'note' => 'Cadeau invitation', 'motif' => 'Cadeau invitation',
+      'operator' => 'admin', 'createdAt' => date('c'), 'paidAt' => date('c'), 'note' => $note, 'motif' => $note,
     ];
     if (isset($locked['users'][$uid]) && is_array($locked['users'][$uid])) {
       $u =& $locked['users'][$uid];
@@ -172,7 +172,7 @@ function orolado_aff_pay_friend(array $db, string $uid, float $gift, string $ref
       $u['wagerLock'] = orolado_money(($u['wagerLock'] ?? 0) + $gift);
       $u['wagerNeed'] = orolado_money(($u['wagerNeed'] ?? 0) + $gift * 2);
       if (!isset($u['transactions']) || !is_array($u['transactions'])) $u['transactions'] = [];
-      array_unshift($u['transactions'], ['id' => $ref, 'at' => date('c'), 'type' => 'deposit', 'amount' => $gift, 'note' => 'Cadeau invitation', 'mode' => 'real', 'status' => 'COMPLETED']);
+      array_unshift($u['transactions'], ['id' => $ref, 'at' => date('c'), 'type' => 'deposit', 'amount' => $gift, 'note' => $note, 'mode' => 'real', 'status' => 'COMPLETED']);
       $u['transactions'] = array_slice($u['transactions'], 0, 80);
       unset($u);
     }

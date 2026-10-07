@@ -3,7 +3,7 @@ declare(strict_types=1);
 // Script de test : uniquement en ligne de commande, jamais depuis internet.
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
- * Défi OROLADO (defi_lib.php) : série de 5 victoires, récompense 5 × plus petite mise, une seule fois,
+ * Défi OROLADO (defi_lib.php) : série de 5 victoires, récompense 3 × plus petite mise, une seule fois,
  * un défi par jour (même marché pour tous, jusqu'à minuit), réservé à l'admin tant que ce n'est pas ouvert à tous.
  * Faux Supabase, dossier temporaire : rien ne part en ligne.
  */
@@ -75,14 +75,14 @@ trade($db, 'admin_master', $m, 'real', 50, true);
 $r = orolado_defi_status($db, $admin);
 check('trade du mauvais compte (réel) ignoré pour le testeur', $r['streak'] === 0);
 
-echo "4) 5 victoires d'affilée : récompense = 5 × la plus petite mise, versée une seule fois\n";
+echo "4) 5 victoires d'affilée : récompense = 3 × la plus petite mise, versée une seule fois\n";
 foreach ([2, 5, 3, 10, 4] as $s) trade($db, 'admin_master', $m, 'demo', $s, true);
 $demoBefore = (float) load_db()['vault']['admin_master']['demo'];
 $r = orolado_defi_status($db, $admin);
 $demoAfter = (float) load_db()['vault']['admin_master']['demo'];
 check('défi réussi', !empty($r['won']) && !empty($r['paid']));
-check('récompense 5 × 2 $ = 10 $', abs($r['reward'] - 10) < 0.001, (string) $r['reward']);
-check('versée sur la démo du testeur (+10)', abs(($demoAfter - $demoBefore) - 10) < 0.001, $demoBefore . ' → ' . $demoAfter);
+check('récompense 3 × 2 $ = 6 $', abs($r['reward'] - 6) < 0.001, (string) $r['reward']);
+check('versée sur la démo du testeur (+6)', abs(($demoAfter - $demoBefore) - 6) < 0.001, $demoBefore . ' → ' . $demoAfter);
 orolado_defi_status($db, $admin); orolado_defi_status($db, $admin);
 check('3 lectures de plus : toujours une seule récompense', abs((float) load_db()['vault']['admin_master']['demo'] - $demoAfter) < 0.001);
 $r = orolado_defi_status($db, $admin, true);
@@ -98,13 +98,13 @@ $r = orolado_defi_status($db, $joueur);
 check('4 victoires : pas encore réussi', $r['streak'] === 4 && empty($r['won']));
 trade($db, 'u_joueur', $jm, 'real', 10, true);
 $r = orolado_defi_status($db, $joueur);
-check('5e victoire : 50 $ (5 × 10 $)', !empty($r['paid']) && abs($r['reward'] - 50) < 0.001, (string) $r['reward']);
-check('crédit réel envoyé une seule fois sur le coffre du joueur', count(array_filter(array_keys($credits), fn($k) => str_starts_with($k, $uuid . '|adm_defi_'))) === 1 && abs(array_sum($credits) - 50) < 0.001);
+check('5e victoire : 30 $ (3 × 10 $)', !empty($r['paid']) && abs($r['reward'] - 30) < 0.001, (string) $r['reward']);
+check('crédit réel envoyé une seule fois sur le coffre du joueur', count(array_filter(array_keys($credits), fn($k) => str_starts_with($k, $uuid . '|adm_defi_'))) === 1 && abs(array_sum($credits) - 30) < 0.001);
 $d = load_db();
 $dep = array_values(array_filter((array) $d['deposits'], fn($x) => str_starts_with((string) ($x['id'] ?? ''), 'adm_defi_')));
-check('enregistré comme bonus (opérateur admin) avec la règle « miser ×2 »', count($dep) === 1 && ($dep[0]['operator'] ?? '') === 'admin' && (float) ($d['users']['u_joueur']['wagerNeed'] ?? 0) >= 100);
+check('enregistré comme bonus (opérateur admin) avec la règle « miser ×2 »', count($dep) === 1 && ($dep[0]['operator'] ?? '') === 'admin' && (float) ($d['users']['u_joueur']['wagerNeed'] ?? 0) >= 60);
 orolado_defi_status($db, $joueur); orolado_defi_status($db, $joueur);
-check('pas de double paiement', abs(array_sum($credits) - 50) < 0.001);
+check('pas de double paiement', abs(array_sum($credits) - 30) < 0.001);
 
 echo "6) Tricheur : 4 toutes petites mises (1 $) puis une grosse\n";
 $db['users']['u_malin'] = ['id' => 'u_malin', 'email' => 'malin@gmail.com', 'role' => 'user', 'sbId' => 'bbbbbbbb-1111-2222-3333-444444444444'];
@@ -112,7 +112,7 @@ $malin = $db['users']['u_malin'];
 $r = orolado_defi_status($db, $malin, true);
 foreach ([1, 1, 1, 1, 500] as $s) trade($db, 'u_malin', (string) $r['market'], 'real', $s, true);
 $r = orolado_defi_status($db, $malin);
-check('récompense = 5 × 1 $ = 5 $ (pas 504 $)', abs($r['reward'] - 5) < 0.001, (string) $r['reward']);
+check('récompense = 3 × 1 $ = 3 $ (pas 1 500 $)', abs($r['reward'] - 3) < 0.001, (string) $r['reward']);
 
 echo "7) Ancien défi de 7 jours (avant v2411) : ramené à minuit de son jour\n";
 $db['users']['u_vieux'] = ['id' => 'u_vieux', 'email' => 'vieux@gmail.com', 'role' => 'user', 'sbId' => 'dddddddd-1111-2222-3333-444444444444'];

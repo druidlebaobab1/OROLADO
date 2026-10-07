@@ -100,6 +100,16 @@ check('admin : +10 $', abs((float) $d['vault']['admin_master']['demo'] - $demo0 
 check('ami : toujours 5 $ seulement', abs(sum_for($credits, $B) - 5) < 0.001);
 check('admin voit : 1 ami a déposé, gagné 15 $', $r['deposited'] === 1 && abs($r['earned'] - 15) < 0.001, (string) $r['earned']);
 
+echo "5b) Les bonus de l'ami (bonus dépôt, défi, bonus admin) ne comptent JAMAIS comme dépôts pour l'affilié\n";
+$demoB = (float) load_db()['vault']['admin_master']['demo'];
+$d = load_db();
+foreach ([['adm_bon_test1', 100], ['adm_defi_test2', 30], ['adm_x9', 500]] as [$id, $amt]) {
+  $d['deposits'][] = ['id' => $id, 'ref' => $id, 'userId' => 'u_ami', 'amount' => $amt, 'status' => 'COMPLETED', 'operator' => 'admin', 'createdAt' => date('c'), 'paidAt' => date('c')];
+}
+save_db(orolado_data_file(), $d);
+for ($i = 0; $i < 3; $i++) orolado_aff_status(load_db(), load_db()['users']['admin_master']);
+check('630 $ de bonus reçus par l\'ami : 0 $ de commission en plus', abs((float) load_db()['vault']['admin_master']['demo'] - $demoB) < 0.001, (string) ((float) load_db()['vault']['admin_master']['demo'] - $demoB));
+
 echo "6) Ouvert à tous : Pierre invite, son argent est LIBRE (retirable sans jouer)\n";
 putenv('OROLADO_AFF_PUBLIC=1');
 $pc = (string) orolado_aff_status(load_db(), load_db()['users']['u_pierre'])['code'];

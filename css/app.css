@@ -5833,3 +5833,32 @@ html body #portalModal#portalModal .aff-rows-all{max-height:calc(100dvh - 330px)
 html.saf-under body #portalModal#portalModal .aff-rows-all{max-height:calc(100dvh - 420px)!important}
 @media (max-width:859px){html body #portalModal#portalModal.tabs-on .portal-head{display:none!important}html body #portalModal#portalModal.tabs-on .portal-tabs{margin-top:auto!important}html body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-top:calc(env(safe-area-inset-top,0px) + 50px)!important}}
 html body #portalModal#portalModal.tabs-on .portal-head{display:none!important}
+/* v2417 — 4e onglet « Bonus dépôt » (bleu) : +10 % rempli en jouant, barre de progression, chrono. */
+html body #portalModal .t-bon .pt-ico{background:rgba(92,155,255,.16);box-shadow:inset 0 0 0 1px rgba(92,155,255,.5)}
+html body #portalModal .t-bon svg{stroke:#7FB2FF}
+html body #portalModal .pt-tab.on.t-bon{background:linear-gradient(180deg,rgba(92,155,255,.24),rgba(92,155,255,.06))!important;color:#D6E6FF!important;box-shadow:inset 0 0 0 1px rgba(92,155,255,.6)!important}
+html body #portalModal .pt-tab{font-size:11px!important}
+html body #portalModal .bon-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(12,17,40,.92);border:1px solid rgba(92,155,255,.38);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+html body #portalModal .bon-card.hidden{display:none!important}
+html body #portalModal .bon-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+html body #portalModal .bon-big{margin:0;font-size:17px;line-height:1.25;font-weight:900;color:#D6E6FF}
+html body #portalModal .bon-head .top-timer{color:#9CC4FF;flex:0 0 auto}
+html body #portalModal .bon-steps{margin-top:12px!important}
+html body #portalModal .bon-steps li span{background:#5C9BFF!important;color:#06142E!important}
+html body #portalModal .bon-meter{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(92,155,255,.08);border:1px solid rgba(92,155,255,.35)}
+html body #portalModal .bon-meter.hidden{display:none!important}
+html body #portalModal .bm-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px}
+html body #portalModal .bm-top b{font-size:17px;font-weight:900;color:#fff;direction:ltr}
+html body #portalModal .bm-top span{font-size:11.5px;color:#9CC4FF;font-weight:700}
+html body #portalModal .bm-bar{height:12px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
+html body #portalModal .bm-bar i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,#5C9BFF,#3DDCA6);box-shadow:0 0 12px rgba(92,155,255,.6);transition:width .6s ease}
+html[dir=rtl] body #portalModal .bm-bar i{margin-inline-start:auto}
+html body #portalModal .bon-state{margin:10px 0 0;font-size:13.5px;line-height:1.4;font-weight:800;color:#ECEFFA;text-align:center}
+html body #portalModal .bon-state:empty{display:none}
+html body #portalModal .bon-state.full{color:#8FE3B8}
+html body #portalModal .bon-state.expired{color:#FFB3BE}
+html body #portalModal .bon-go{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:48px;margin-top:10px;font-size:15px!important;font-weight:900!important}
+html body #portalModal .bon-go.hidden,html body #portalModal .bon-test.hidden{display:none!important}
+html body #portalModal .bon-ex{margin-top:10px!important;border-left-color:#5C9BFF!important;background:rgba(92,155,255,.08)!important}
+html body #portalModal .bon-test{margin-top:8px;width:100%;height:34px!important}
+@media (max-width:859px){html body #portalModal#portalModal .bon-card{margin-bottom:auto!important}}

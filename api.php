@@ -27,6 +27,7 @@ require_once __DIR__ . '/account_lib.php';
 if (is_file(__DIR__ . '/defi_lib.php')) require_once __DIR__ . '/defi_lib.php';
 if (is_file(__DIR__ . '/aff_lib.php')) require_once __DIR__ . '/aff_lib.php';
 if (is_file(__DIR__ . '/top_lib.php')) require_once __DIR__ . '/top_lib.php';
+if (is_file(__DIR__ . '/bonus_lib.php')) require_once __DIR__ . '/bonus_lib.php';
 orolado_load_env();
 
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
@@ -270,6 +271,9 @@ $OROLADO_RATE_RULES = [
   'affStatus'         => [['t', 60, 60]],
   'affClick'          => [['i', 30, 3600]],
   'topStatus'         => [['t', 60, 60]],
+  'bonusStatus'       => [['t', 60, 60]],
+  'bonusActivate'     => [['t', 10, 60]],
+  'bonusTestDeposit'  => [['t', 10, 60]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
@@ -377,6 +381,29 @@ if ($action === 'affClick') {
     try { $okC = orolado_aff_click((string) ($req['ami'] ?? ''), (string) ($req['device'] ?? '')); } catch (Throwable $eC) { $okC = false; }
   }
   echo json_encode(['ok' => true, 'server' => true, 'counted' => $okC]);
+  exit;
+}
+
+// v2417 — Bonus dépôt de la semaine (bonus_lib.php) : +10 % d'un dépôt de 100 $ ou plus, rempli en jouant.
+if ($action === 'bonusStatus' || $action === 'bonusActivate' || $action === 'bonusTestDeposit') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  if (!function_exists('orolado_bonus_status')) {
+    echo json_encode(['ok' => true, 'server' => true, 'enabled' => false]);
+    exit;
+  }
+  try {
+    // Compte admin seulement (test) : dépôt simulé, aucun argent réel ne bouge.
+    if ($action === 'bonusTestDeposit') orolado_bonus_test_deposit($me, (float) ($req['amount'] ?? 0));
+    $res = orolado_bonus_status($db, $me, $action === 'bonusActivate');
+  } catch (Throwable $eBon) {
+    error_log('OROLADO bonus ' . $eBon->getMessage());
+    $res = ['ok' => false, 'reason' => 'Indisponible'];
+  }
+  echo json_encode(['server' => true] + $res);
   exit;
 }
 

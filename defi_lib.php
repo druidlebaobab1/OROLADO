@@ -14,6 +14,8 @@ declare(strict_types=1);
  */
 
 const OROLADO_DEFI_STREAK = 5;
+// v2417 — cadeau = plus petite mise × 3 (avec × 5, un joueur patient à 1 $ gagnait ~+2 $ par jour et par compte).
+const OROLADO_DEFI_MULT = 3;
 const OROLADO_DEFI_MIN_STAKE = 1.0;
 
 function orolado_defi_markets(): array {
@@ -117,7 +119,7 @@ function orolado_defi_progress(array $db, string $uid, array $st, string $mode):
       $run[] = $r['stake'];
       if (count($run) >= OROLADO_DEFI_STREAK) {
         $last = array_slice($run, -OROLADO_DEFI_STREAK);
-        return ['streak' => OROLADO_DEFI_STREAK, 'done' => true, 'stakes' => $last, 'reward' => orolado_money(min($last) * OROLADO_DEFI_STREAK)];
+        return ['streak' => OROLADO_DEFI_STREAK, 'done' => true, 'stakes' => $last, 'reward' => orolado_money(min($last) * OROLADO_DEFI_MULT)];
       }
     } else {
       $run = [];
