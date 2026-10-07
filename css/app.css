@@ -6341,3 +6341,36 @@ html body #wdConfirmModal #wdConfirmAmt{color:#FF7A8E!important;text-shadow:0 0 
 html body #wdConfirmModal .modal-box .cosmo-sp i{background:radial-gradient(circle,#fff,#FF8A9A 45%,rgba(255,60,90,0) 70%);box-shadow:0 0 8px #FF5A72}
 html body #depositSuccessModal .modal-box .cosmo-sp i{background:radial-gradient(circle,#fff,#7FF5CF 45%,rgba(46,229,157,0) 70%);box-shadow:0 0 8px #2EE59D}
 html body .modal-box .cosmo-ico{width:88px!important;height:88px!important}
+
+/* ===== v2436 — Tournoi : plus aucun chevauchement sur iPhone + classement en 4 groupes. ===== */
+/* Safari (saf-under) limitait la liste à 300 px alors qu'elle déborde (overflow visible) → la barre « Toi », la
+   phrase, les boutons et la scène passaient PAR-DESSUS les lignes. La liste prend maintenant toute sa hauteur. */
+html body #portalModal#portalModal#portalModal .top-rows,
+html.saf-under body #portalModal#portalModal#portalModal .top-rows,
+html.is-ios body #portalModal#portalModal#portalModal .top-rows{max-height:none!important;height:auto!important;overflow:visible!important;flex:0 0 auto!important}
+html body #portalModal#portalModal#portalModal #topMe{position:relative!important;bottom:auto!important;top:auto!important}
+/* Scène de l'univers du tournoi : petite, tout en bas (elle ne gêne jamais le classement). */
+html body #portalModal#portalModal .top-card .gift-scene{flex:0 0 110px!important;min-height:110px!important;height:110px}
+/* Petits titres de groupe. */
+html body #portalModal .tr-tier{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font:900 11px/1 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.12em}
+html body #portalModal .tr-tier::before,html body #portalModal .tr-tier::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:.55}
+html body #portalModal .tr-tier span{padding:4px 10px;border-radius:999px;border:1px solid currentColor;background:rgba(0,0,0,.25)}
+html body #portalModal .tr-tier.tt1{color:#FFD27A}
+html body #portalModal .tr-tier.tt2{color:#7FE8F5}
+html body #portalModal .tr-tier.tt3{color:#C9A2FF}
+html body #portalModal .tr-tier.tt4{color:#9AA3C7}
+/* Lignes : Top 10 en or (plus grandes, médaille de rang), 11–20 bleu-vert, 21–30 violet, 31–50 simples. */
+html body #portalModal .tr.tt1{min-height:46px;border:1px solid rgba(255,210,122,.55)!important;
+  background:linear-gradient(90deg,rgba(255,210,122,.20),rgba(255,180,80,.06) 60%,rgba(255,210,122,.14))!important;box-shadow:0 0 14px rgba(255,190,80,.18)}
+html body #portalModal .tr.tt1 em{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-style:normal;font-weight:900;color:#2A1604!important;
+  background:radial-gradient(circle at 35% 30%,#FFF4CF,#F6C453 55%,#C77A14);box-shadow:0 0 10px rgba(255,200,90,.6)}
+html body #portalModal .tr.tt1 b{color:#FFF3D6!important}
+html body #portalModal .tr.tt2{border:1px solid rgba(127,232,245,.40)!important;background:linear-gradient(90deg,rgba(127,232,245,.13),rgba(127,232,245,.03))!important}
+html body #portalModal .tr.tt2 em{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-style:normal;font-weight:900;color:#06323A!important;
+  background:radial-gradient(circle at 35% 30%,#E6FCFF,#7FE8F5 55%,#2BA7B8)}
+html body #portalModal .tr.tt3{border:1px solid rgba(201,162,255,.35)!important;background:linear-gradient(90deg,rgba(201,162,255,.11),rgba(201,162,255,.02))!important}
+html body #portalModal .tr.tt3 em{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-weight:900;color:#24104A!important;
+  background:radial-gradient(circle at 35% 30%,#F3E9FF,#C9A2FF 55%,#7C4DFF)}
+html body #portalModal .tr.tt4{opacity:.9;min-height:34px}
+html body #portalModal .tr.tt4 em{color:#9AA3C7!important}
+html body #portalModal .tr.me{outline:2px solid #2EE59D;outline-offset:-1px}

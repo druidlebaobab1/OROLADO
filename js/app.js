@@ -259,6 +259,8 @@
     regAgeSync();
     async function onCredential(resp) {
       if (!resp || !resp.credential) return;
+      gGotCred = true;
+      gClicked = 0;
       var res = null;
       try { res = await D6.Auth.googleWithIdToken(resp.credential, rawNonce); } catch (eC) { res = null; }
       // v2435 — bouton seulement redessiné (même code de sécurité : le serveur vérifie que le ticket de
@@ -277,7 +279,7 @@
     // v2435 — Boutons redessinés SANS refaire la préparation de Google ni changer le code de sécurité :
     // Google demande « initialize() une seule fois » (sinon « comportement imprévu » : bouton qui ne répond
     // plus, qui clignote) et le serveur refuse un ticket dont le code ne correspond plus.
-    var gClicked = 0, gLastReset = 0;
+    var gClicked = 0, gLastReset = 0, gGotCred = false;
     function resetG() {
       if (Date.now() - gLastReset < 1500) return;
       gLastReset = Date.now();
@@ -324,7 +326,7 @@
           google.accounts.id.renderButton(holder, {
             type: 'standard', theme: 'outline', size: 'large', text: 'continue_with',
             shape: 'rectangular', logo_alignment: 'center', width: w,
-            click_listener: function () { gClicked = Date.now(); },
+            click_listener: function () { gClicked = Date.now(); gGotCred = false; },
             locale: (D6.I18N && D6.I18N.lang) || 'fr'
           });
         });
@@ -349,12 +351,52 @@
     // lui-même la main en s'affichant → boucle : bouton refait sans arrêt, il clignotait et ne répondait plus).
     // On utilise l'avertissement officiel de Google « bouton cliqué » (click_listener), puis UN seul nouveau
     // départ quand on revient sur la page, au plus une fois toutes les 3 s.
-    window.addEventListener('focus', function () {
-      if (!gClicked || Date.now() - gClicked > 120000) return;
-      gClicked = 0;
-      if (Date.now() - gLastReset < 3000) return;
-      setTimeout(resetG, 600);
+    // v2436 — iPhone : la fenêtre Google s'ouvre dans un autre onglet ; en revenant (retour arrière, onglet
+    // fermé), Safari ressort la page gardée en mémoire avec un bouton Google « figé » qui ne répond plus (il
+    // fallait fermer / recharger la page à la main). Le site le fait maintenant tout seul : de retour sur
+    // l'écran de connexion SANS connexion réussie → page rechargée proprement (1 à 2 s).
+    function authOpenNotLogged() {
+      var sa = $('screenAuth');
+      var shown = sa && (sa.offsetParent || getComputedStyle(sa).display !== 'none') && !sa.classList.contains('hidden');
+      var logged = D6.Auth && D6.Auth.current && D6.Auth.current() && !isGuest();
+      return !!shown && !logged;
+    }
+    function reloadIfStuck() {
+      if (!gClicked || Date.now() - gClicked > 600000) return;
+      setTimeout(function () {
+        if (!gClicked || gGotCred) return;
+        if (!authOpenNotLogged()) { gClicked = 0; return; }
+        gClicked = 0;
+        try {
+          var on = document.querySelector('#screenAuth .auth-tab.on');
+          sessionStorage.setItem('oro_g_reload', JSON.stringify({ t: Date.now(), tab: on ? on.getAttribute('data-tab') : 'register' }));
+        } catch (eR) { /* ignore */ }
+        location.reload();
+      }, 1500);
+    }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) reloadIfStuck(); });
+    window.addEventListener('focus', reloadIfStuck);
+    // Page ressortie de la mémoire de Safari (retour arrière) sur l'écran de connexion : rechargée.
+    window.addEventListener('pageshow', function (ev) {
+      if (ev && ev.persisted && authOpenNotLogged()) {
+        try {
+          var on = document.querySelector('#screenAuth .auth-tab.on');
+          sessionStorage.setItem('oro_g_reload', JSON.stringify({ t: Date.now(), tab: on ? on.getAttribute('data-tab') : 'register' }));
+        } catch (eP) { /* ignore */ }
+        location.reload();
+      }
     });
+    // Juste après ce rechargement : on rouvre l'écran de connexion sur le même onglet (rien à refaire).
+    try {
+      var back = JSON.parse(sessionStorage.getItem('oro_g_reload') || 'null');
+      sessionStorage.removeItem('oro_g_reload');
+      if (back && Date.now() - (back.t || 0) < 30000 && !(D6.Auth && D6.Auth.current && D6.Auth.current() && !isGuest())) {
+        setTimeout(function () {
+          var btn = $(back.tab === 'login' ? 'btnGoLogin' : 'btnGoRegister');
+          if (btn) btn.click();
+        }, 700);
+      }
+    } catch (eB) { /* ignore */ }
     // Onglets Connexion / Inscription de l'écran de connexion : bouton Google refait aussi.
     document.querySelectorAll('#screenAuth .auth-tab, #screenAuth [data-auth-tab], #tabLogin, #tabRegister').forEach(function (el) {
       el.addEventListener('click', function () { setTimeout(resetG, 80); });

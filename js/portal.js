@@ -557,9 +557,19 @@
     }).join('');
     var rest = list.slice(3);
     if (!list.length) $('topRows').innerHTML = '<p class="aff-empty">' + esc(t('topEmpty')) + '</p>';
-    else $('topRows').innerHTML = rest.map(function (r) {
-      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b>' + oroAmt(r.points) + '</div>';
-    }).join('');
+    else {
+      // v2436 — classement en 4 groupes bien distincts (donner envie de monter) : Top 10 (or), 11–20, 21–30, 31–50.
+      var lastTier = 0;
+      $('topRows').innerHTML = rest.map(function (r) {
+        var tier = r.rank <= 10 ? 1 : r.rank <= 20 ? 2 : r.rank <= 30 ? 3 : 4;
+        var head = '';
+        if (tier !== lastTier) {
+          lastTier = tier;
+          head = '<div class="tr-tier tt' + tier + '"><span>' + ['', 'TOP 10', '11 – 20', '21 – 30', '31 – 50'][tier] + '</span></div>';
+        }
+        return head + '<div class="tr tt' + tier + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b>' + oroAmt(r.points) + '</div>';
+      }).join('');
+    }
     var me = top.me || {};
     var txt;
     if (top.guest) txt = t('topGuest');
