@@ -5472,3 +5472,44 @@ html body #portalModal .portal-test{display:none!important}
 html body #portalModal .portal-box{background:linear-gradient(180deg,#0A0F26 0%,#070B1D 60%,#060918 100%)!important}
 html body #portalModal .portal-box{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 html body #portalModal .defi-how p:first-of-type{font-size:14px;font-weight:700;color:#FFE6A6}
+/* v2412 — Portail : tout est écrit directement (plus de « Comment ça marche ? »), la page tient sur un seul écran sans défiler. */
+html body #portalModal .defi-dots{display:none!important}
+html body #portalModal .defi-how.defi-open{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+html body #portalModal .defi-how .defi-gift{display:flex;align-items:center;gap:8px;margin:0 0 6px!important;font-size:14px!important;font-weight:800!important;color:#FFE6A6!important}
+html body #portalModal .defi-how .defi-gift .pi{width:20px;height:20px;flex:0 0 20px;stroke:#F2B33D}
+html body #portalModal .defi-how .defi-ex{margin:6px 0 0!important;padding:6px 10px!important;font-size:12.5px!important;line-height:1.4!important}
+html body #portalModal .defi-rl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+html body #portalModal .defi-rl li{display:flex;align-items:center;gap:9px;font-size:12.5px;line-height:1.35;color:#C9CEE6}
+html body #portalModal .defi-rl .pi{width:18px;height:18px;flex:0 0 18px;stroke:#9FB0E8}
+html body #portalModal .defi-rule{margin:10px 0 0!important}
+@media (max-width:859px){
+  html body #portalModal .modal-box.portal-box{display:flex!important;flex-direction:column;justify-content:center;overflow-y:hidden!important;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 10px)!important}
+}
+@media (max-width:859px) and (max-height:760px){
+  html body #portalModal .portal-emblem{width:78px!important;height:78px!important}
+  html body #portalModal .portal-head{margin:0 34px 8px!important}
+  html body #portalModal .defi-ring{width:96px!important;height:96px!important;flex-basis:96px!important}
+  html body #portalModal .defi-card{padding:12px!important}
+}
+/* Écran vraiment trop petit : on autorise le défilement plutôt que de couper le texte. */
+@media (max-width:859px) and (max-height:600px){
+  html body #portalModal .modal-box.portal-box{justify-content:flex-start;overflow-y:auto!important}
+}
+/* v2412 (suite) : centrage « sûr » (jamais de haut coupé) et règle plus forte que les anciennes. */
+@media (max-width:859px){
+  html body #portalModal#portalModal .modal-box.portal-box{justify-content:flex-start!important;overflow-y:hidden!important}
+  html body #portalModal#portalModal .portal-head{margin-top:auto!important}
+  html body #portalModal#portalModal .defi-card{margin-bottom:auto!important}
+}
+@media (max-width:859px) and (max-height:760px){
+  html body #portalModal#portalModal .portal-title{font-size:20px!important}
+  html body #portalModal#portalModal .defi-how.defi-open{margin-top:8px!important;padding-top:8px!important}
+  html body #portalModal#portalModal .defi-rl{margin-top:8px!important;gap:4px!important}
+}
+@media (max-width:859px) and (max-height:600px){
+  html body #portalModal#portalModal .modal-box.portal-box{overflow-y:auto!important}
+}
+@media (max-width:859px){html body #portalModal#portalModal#portalModal > .modal-box.portal-box{overflow-y:hidden!important}}
+@media (max-width:859px) and (max-height:600px){html body #portalModal#portalModal#portalModal > .modal-box.portal-box{overflow-y:auto!important}}
+/* v2412 — en arabe, le compteur « 3 / 5 » reste dans le bon sens. */
+html body #portalModal .defi-count,html body #btnPortal .pw-prog,html body #portalModal .defi-timer{direction:ltr;unicode-bidi:isolate}

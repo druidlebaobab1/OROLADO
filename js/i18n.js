@@ -3198,6 +3198,21 @@
     hi: { portalSub: 'OROLADO चुनौतियाँ और उपहार', defiRule: 'आज {m} पर लगातार 5 बार जीतें और उपहार पाएँ!', defiReward: 'आपका उपहार = आपका सबसे छोटा दांव × 5।', defiEx1: 'आप $10 पाँच बार खेलते हैं और पाँचों जीतते हैं: $50 उपहार।', defiEx2: 'आप $2, $5, $3, $10, $4 खेलते हैं और पाँचों जीतते हैं: सबसे छोटा दांव $2, $10 उपहार।', defiRules: 'केवल चुनौती वाले बाज़ार के ट्रेड गिने जाते हैं। उस बाज़ार पर एक बार हारे तो 0 से शुरू। हर दिन नई चुनौती। निकालने से पहले उपहार को 2 बार खेलना होगा।', defiWonMsg: '{r} उपहार आपके बैलेंस में जोड़ा गया', defiLost: 'आज की चुनौती शुरू करें!' }
   };
   Object.keys(DEFI_SIMPLE).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], DEFI_SIMPLE[l]); });
+  // v2412 — règles écrites directement sur la page (3 lignes courtes), défi au hasard pour chacun.
+  var DEFI_RULES = {
+    fr: { defiR1: 'Tu perds une fois sur ce marché : retour à 0.', defiR2: 'Un nouveau défi chaque jour, rien que pour toi.', defiR3: 'Le cadeau se joue 2 fois avant le retrait.' },
+    en: { defiR1: 'Lose once on this market: back to 0.', defiR2: 'A new challenge every day, just for you.', defiR3: 'The gift must be played twice before withdrawal.' },
+    es: { defiR1: 'Pierdes una vez en este mercado: vuelves a 0.', defiR2: 'Un reto nuevo cada día, solo para ti.', defiR3: 'El regalo se juega 2 veces antes del retiro.' },
+    pt: { defiR1: 'Perdes uma vez neste mercado: voltas a 0.', defiR2: 'Um desafio novo todos os dias, só para ti.', defiR3: 'O presente joga-se 2 vezes antes do levantamento.' },
+    ar: { defiR1: 'تخسر مرة على هذا السوق: تعود إلى 0.', defiR2: 'تحدٍّ جديد كل يوم، لك وحدك.', defiR3: 'تُلعب الهدية مرتين قبل السحب.' },
+    tr: { defiR1: 'Bu piyasada bir kez kaybedersen: 0’a dönersin.', defiR2: 'Her gün sadece sana özel yeni bir görev.', defiR3: 'Hediye çekimden önce 2 kez oynanır.' },
+    vi: { defiR1: 'Thua một lần trên thị trường này: về 0.', defiR2: 'Mỗi ngày một thử thách mới, dành riêng cho bạn.', defiR3: 'Quà phải chơi 2 lần trước khi rút.' },
+    id: { defiR1: 'Kalah sekali di pasar ini: kembali ke 0.', defiR2: 'Tantangan baru setiap hari, khusus untukmu.', defiR3: 'Hadiah dimainkan 2 kali sebelum ditarik.' },
+    ru: { defiR1: 'Один проигрыш на этом рынке — снова 0.', defiR2: 'Каждый день новое задание, только для вас.', defiR3: 'Подарок нужно отыграть 2 раза перед выводом.' },
+    de: { defiR1: 'Einmal auf diesem Markt verloren: zurück auf 0.', defiR2: 'Jeden Tag eine neue Challenge, nur für dich.', defiR3: 'Das Geschenk wird vor der Auszahlung 2-mal gespielt.' },
+    hi: { defiR1: 'इस बाज़ार पर एक बार हारे: वापस 0 पर।', defiR2: 'हर दिन सिर्फ़ आपके लिए नई चुनौती।', defiR3: 'निकासी से पहले उपहार 2 बार खेलना होगा।' }
+  };
+  Object.keys(DEFI_RULES).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], DEFI_RULES[l]); });
 
   D6.I18N = {
     t: t, short: shortMsg,

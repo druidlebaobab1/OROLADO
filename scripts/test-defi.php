@@ -49,12 +49,16 @@ echo "1) Fermé aux joueurs tant que ce n'est pas ouvert à tous\n";
 $r = orolado_defi_status($db, $joueur, true);
 check('joueur normal : pas de défi', empty($r['enabled']));
 
-echo "2) Admin : activation, marché du jour (le même pour tous), fin à minuit\n";
+echo "2) Admin : activation, marché du jour (au hasard pour chacun), fin à minuit\n";
 $r = orolado_defi_status($db, $admin, true);
 $m = (string) $r['market'];
 check('activé, mode démo (aucun argent réel)', !empty($r['active']) && $r['mode'] === 'demo', $m);
 check("défi valable jusqu'à minuit (aujourd'hui)", $r['expiresAt'] === (int) strtotime(date('Y-m-d') . ' 23:59:59'));
-check('marché du jour identique pour tous les joueurs', orolado_defi_pick_market('u_a', time()) === orolado_defi_pick_market('u_b', time()) && $m === orolado_defi_pick_market('x', time()));
+$vus = []; foreach (range(1, 40) as $k) $vus[orolado_defi_pick_market('u_' . $k, time())] = 1;
+check('marché au hasard pour chaque joueur (40 joueurs → plusieurs marchés)', count($vus) >= 5, count($vus) . ' marchés');
+check('même joueur, même jour : même marché', $m === orolado_defi_pick_market('admin_master', time()));
+$diff = true; foreach (range(1, 40) as $k) { $t = time() + $k * 86400; if (orolado_defi_pick_market('u_x', $t) === orolado_defi_pick_market('u_x', $t - 86400)) $diff = false; }
+check('pas le même marché que la veille (40 jours de suite)', $diff);
 $other = $m === 'v100' ? 'v75' : 'v100';
 
 echo "3) Série : victoires, défaite qui remet à 0, autres marchés et petites mises ignorés\n";

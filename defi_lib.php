@@ -72,10 +72,16 @@ function orolado_defi_day_end(int $now): int {
   return (int) strtotime(date('Y-m-d', $now) . ' 23:59:59');
 }
 
-/** Marché du jour : tiré au hasard chaque jour, LE MÊME pour tous les joueurs. */
+/** Marché du jour : tiré au hasard pour CHAQUE joueur, chaque jour (jamais le même qu'hier pour lui). */
 function orolado_defi_pick_market(string $uid, int $now): string {
   $m = orolado_defi_markets();
-  return $m[crc32('orolado-defi|' . orolado_defi_day($now)) % count($m)];
+  $n = count($m);
+  // Marche jour après jour depuis le 1er octobre 2026 : chaque jour avance de 1 à n-1 cases → jamais le même que la veille.
+  $debut = (int) strtotime('2026-10-01 12:00:00');
+  $jours = max(0, (int) floor(((int) strtotime(orolado_defi_day($now) . ' 12:00:00') - $debut) / 86400 + 0.5));
+  $i = crc32('orolado-defi|' . $uid) % $n;
+  for ($d = 1; $d <= $jours; $d++) $i = ($i + 1 + crc32('orolado-defi|' . $uid . '|' . $d) % ($n - 1)) % $n;
+  return $m[$i];
 }
 
 /**
