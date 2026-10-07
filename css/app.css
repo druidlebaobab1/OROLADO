@@ -6407,3 +6407,53 @@ html body #portalModal .aff-sort::-webkit-scrollbar{display:none}
 html body #portalModal .aff-sort button{flex:1 0 auto;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
   color:#C9CEE6;font:700 12px/1 "Plus Jakarta Sans",system-ui,sans-serif;white-space:nowrap;cursor:pointer}
 html body #portalModal .aff-sort button.on{background:linear-gradient(135deg,#2BD49A,#14A374);border-color:#2BD49A;color:#05301F}
+
+/* ===== v2438 ===== */
+/* Tournoi : signe bien visible — « + » vert, « − » rouge (ce n'est plus un tiret). */
+html body #portalModal .oro-amt .oa-s{font-style:normal;font-weight:900;margin-inline-end:1px}
+html body #portalModal .oro-amt .oa-s.pos{color:#2EE59D;text-shadow:0 0 8px rgba(46,229,157,.45)}
+html body #portalModal .oro-amt .oa-s.neg{color:#FF4D6A;text-shadow:0 0 8px rgba(255,77,106,.45)}
+html body #portalModal .oro-amt.neg .oa-n{color:#FF8A9A!important}
+
+/* Invitation → « Voir plus » : la page tient entièrement à l'écran (pas de défilement de la page) ;
+   seule la liste des amis a sa propre zone qui défile quand il y a beaucoup d'amis. */
+html body #portalModal#portalModal .aff-card.full-on:not(.hidden){overflow:hidden!important}
+html body #portalModal#portalModal .aff-card.full-on > .aff-full:not(.hidden){display:flex!important;flex-direction:column!important;flex:1 1 auto!important;min-height:0!important}
+html body #portalModal#portalModal .aff-card.full-on > .aff-full > *{flex:0 0 auto}
+html body #portalModal#portalModal .aff-card.full-on #affRowsAll{flex:1 1 auto!important;min-height:60px!important;max-height:none!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+/* Plus compact pour tenir sur les petits téléphones. */
+html body #portalModal#portalModal .aff-full .aff-lv-top{margin-bottom:6px!important}
+html body #portalModal#portalModal .aff-full .aff-filter{margin:0 0 6px!important}
+html body #portalModal#portalModal .aff-full .aff-sum div{padding:6px 4px!important}
+html body #portalModal#portalModal .aff-full .aff-sum2{margin-top:5px}
+html body #portalModal#portalModal .aff-full .aff-search{height:38px;margin-top:7px}
+html body #portalModal#portalModal .aff-full .aff-search input{font-size:15px}
+/* Les 3 boutons de tri : toujours visibles en entier sur une ligne (le texte se réduit, sans coupure). */
+html body #portalModal#portalModal .aff-sort{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible!important;margin:7px 0 6px}
+html body #portalModal#portalModal .aff-sort button{min-width:0;padding:7px 4px!important;font-size:clamp(10px,3vw,12px)!important;white-space:normal!important;line-height:1.15!important;text-align:center;text-wrap:balance}
+
+/* Montants élastiques : un gros montant rétrécit pour tenir dans sa case (réglé par js/fit.js). */
+html body .oro-num-fit{white-space:nowrap!important;display:inline-block;max-width:100%}
+
+/* ===== v2438 — Signature « OROLADO.com » (écran normal + plein écran), comme le logo de la page de connexion. ===== */
+html body .oro-sign{display:flex;align-items:center;justify-content:center;gap:8px;margin:1px auto 3px;padding:0 10px;height:18px;
+  pointer-events:none;user-select:none;-webkit-user-select:none;font-family:var(--font,"Plus Jakarta Sans"),system-ui,sans-serif;line-height:1}
+html body .oro-sign .os-word{font-weight:900;font-size:15px;letter-spacing:.16em;
+  background:linear-gradient(180deg,#FFF1C2 0%,#FBBF24 45%,#E08A12 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 6px rgba(251,191,36,.35))}
+html body .oro-sign .os-com{font-weight:800;font-size:10px;letter-spacing:.08em;color:#FBBF24;margin-left:-4px;align-self:flex-end;padding-bottom:2px}
+html body .oro-sign .os-line{flex:0 1 46px;height:1px;background:linear-gradient(90deg,transparent,rgba(251,191,36,.75))}
+html body .oro-sign .os-line:last-child{background:linear-gradient(90deg,rgba(251,191,36,.75),transparent)}
+/* Plein écran : plus petite, entre la barre du haut et les marchés. */
+html body .oro-sign.fs{height:14px;margin:0 auto 1px}
+html body .oro-sign.fs .os-word{font-size:11.5px;letter-spacing:.18em}
+html body .oro-sign.fs .os-com{font-size:8px}
+html body .oro-sign.fs .os-line{flex-basis:30px}
+/* Écrans larges (PC, TV) : un peu plus grande. */
+@media (min-width:860px){html body .oro-sign:not(.fs){height:22px}html body .oro-sign:not(.fs) .os-word{font-size:18px}html body .oro-sign:not(.fs) .os-com{font-size:12px}}
+/* Téléphone couché : on garde la place pour le graphique (signature masquée hors plein écran). */
+@media (orientation:landscape) and (max-height:500px){html body .oro-sign:not(.fs){display:none}}
+html body #portalModal#portalModal .aff-sum2 b{white-space:nowrap!important;flex:0 0 auto}
+html body #portalModal#portalModal .aff-sum2 span{min-width:0;line-height:1.15}
+html body #portalModal#portalModal :is(.aff-sum,.aff-stats) b,html body #portalModal#portalModal .aff-row :is(.ar-dep,.ar-gain) b{white-space:nowrap!important}
+html body #portalModal .top-me .oro-amt{margin:0 0 0 2px!important}

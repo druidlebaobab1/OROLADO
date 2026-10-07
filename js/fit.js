@@ -109,5 +109,54 @@
   window.addEventListener('resize', fitOpen);
   window.addEventListener('orientationchange', fitOpen);
   document.addEventListener('oro:lang', fitOpen);
-  D6.Fit = { box: fitBox, open: fitOpen };
+  // v2438 — MONTANTS ÉLASTIQUES partout : si un montant (10 000 $, 30 000 $, 1 250 000 ORO…) dépasse de sa case,
+  // il rétrécit juste assez pour tenir (jusqu'à 55 % de sa taille) ; s'il redevient petit, sa taille revient.
+  // [case qui ne doit pas déborder, montant à réduire dedans]
+  var NUMS = [
+    ['.topbar-mode .mode-btn', '.mb-amt'],
+    ['#balanceCard .bal-stack', '.bal'],
+    ['#portalModal .aff-stats > div', 'b'],
+    ['#portalModal .aff-sum > div', 'b'],
+    ['#portalModal .aff-sum2 > div', 'b'],
+    ['#portalModal .aff-row .ar-dep', 'b'],
+    ['#portalModal .aff-row .ar-gain', 'b'],
+    ['#portalModal .tr', '.oro-amt'],
+    ['#portalModal .tp', '.oro-amt'],
+    ['#portalModal .top-me', '.oro-amt'],
+    ['#portalModal .bm-top', 'b'],
+    ['#portalModal .aff-big', 'b'],
+    ['.modal-box', '#depositSuccessAmt'],
+    ['#wdConfirmModal .wd-confirm-row', 'strong']
+  ];
+  function fitNums() {
+    if (document.hidden) return;
+    for (var i = 0; i < NUMS.length; i++) {
+      var boxes = document.querySelectorAll(NUMS[i][0]);
+      for (var j = 0; j < boxes.length; j++) {
+        var box = boxes[j];
+        if (!box.offsetParent && getComputedStyle(box).position !== 'fixed') continue;
+        var el = box.querySelector(NUMS[i][1]);
+        if (!el) continue;
+        var txt = el.textContent;
+        // Texte changé ou case agrandie : on repart de la taille normale.
+        if (el.getAttribute('data-fit-t') !== txt || (el.style.fontSize && box.scrollWidth < box.clientWidth * 0.85)) {
+          el.style.removeProperty('font-size');
+          el.setAttribute('data-fit-t', txt);
+        }
+        if (box.scrollWidth <= box.clientWidth + 1) continue;
+        var base = parseFloat(el.getAttribute('data-fit-fs') || '') || parseFloat(getComputedStyle(el).fontSize) || 14;
+        el.setAttribute('data-fit-fs', String(base));
+        var fs = parseFloat(getComputedStyle(el).fontSize) || base, guard = 0;
+        while (box.scrollWidth > box.clientWidth + 1 && fs > base * 0.55 && guard < 40) {
+          fs -= 0.5;
+          el.style.setProperty('font-size', fs + 'px', 'important');
+          guard++;
+        }
+      }
+    }
+  }
+  setInterval(fitNums, 1000);
+  window.addEventListener('resize', function () { setTimeout(fitNums, 120); });
+
+  D6.Fit = { box: fitBox, open: fitOpen, nums: fitNums };
 })(window.D6 = window.D6 || {});

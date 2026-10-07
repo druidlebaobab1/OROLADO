@@ -449,9 +449,12 @@
     return n <= 1 ? t('affLeft1') : t('affLeftN', { n: n });
   }
   // Points du tournoi : « 1 000 000 [pièce] ORO ».
+  // v2438 — signe bien visible : « + » vert au-dessus de 0, « − » rouge en dessous (ce n'est plus un simple tiret).
   function oroAmt(p) {
-    var v = String(Math.round(Number(p) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
-    return '<span class="oro-amt"><span class="oa-n">' + v + '</span>' + ICO_ORO + '<span class="oa-u">ORO</span></span>';
+    var n = Math.round(Number(p) || 0);
+    var v = String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
+    var sign = n > 0 ? '<i class="oa-s pos">+</i>' : n < 0 ? '<i class="oa-s neg">\u2212</i>' : '';
+    return '<span class="oro-amt' + (n > 0 ? ' pos' : n < 0 ? ' neg' : '') + '">' + sign + '<span class="oa-n">' + v + '</span>' + ICO_ORO + '<span class="oa-u">ORO</span></span>';
   }
   function tabsOn() {
     var a = !!(aff && aff.enabled && (aff.code || aff.guest)), b = !!(top && top.enabled), c = !!(bon && bon.enabled);
@@ -592,7 +595,7 @@
     else if (me.need > 0) txt = t('topMeNeed', { n: me.need });
     else txt = t('topMeOut', { p: me.points });
     $('topMe').innerHTML = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg><span></span>';
-    $('topMe').lastChild.innerHTML = esc(txt).replace(/(\d[\d\u00a0.,]*(?:\s\d{3})*)\s?ORO/g, function (m0, num) { return oroAmt(num.replace(/[^\d-]/g, '')); });
+    $('topMe').lastChild.innerHTML = esc(txt).replace(/([-\u2212]\s?)?(\d[\d\u00a0.,]*(?:\s\d{3})*)\s?ORO/g, function (m0, neg, num) { return oroAmt((neg ? '-' : '') + num.replace(/[^\d]/g, '')); });
     $('topMe').classList.toggle('in', !!me.rank && me.rank <= (top.show || 25));
     // Bouton « Semaine dernière » : seulement pour l'admin (il voit les numéros ORO pour récompenser).
     var isAdmin = !!top.admin || topPrev;
