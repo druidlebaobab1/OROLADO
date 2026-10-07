@@ -6459,3 +6459,17 @@ html body #portalModal#portalModal :is(.aff-sum,.aff-stats) b,html body #portalM
 html body #portalModal .top-me .oro-amt{margin:0 0 0 2px!important}
 /* v2439 — Tournoi : le montant positif aussi en vert (comme le « + »), le négatif en rouge. */
 html body #portalModal .oro-amt.pos .oa-n{color:#2EE59D!important;text-shadow:0 0 8px rgba(46,229,157,.35)}
+
+/* ===== v2440 — Signature plus petite et serrée : la courbe retrouve sa taille d'avant (téléphones). =====
+   La place est prise sur les petits espaces vides (sous la ligne du haut, au-dessus des soldes et des planètes),
+   jamais sur les boutons, les soldes ou les planètes. */
+@media (max-width:859px){
+  html body #screenTrade#screenTrade .topbar .topbar-row{padding-bottom:2px!important}
+  html body #screenTrade#screenTrade .oro-sign:not(.fs){height:13px;margin:-1px auto 0}
+  html body #screenTrade#screenTrade .oro-sign:not(.fs) .os-word{font-size:12.5px;letter-spacing:.14em}
+  html body #screenTrade#screenTrade .oro-sign:not(.fs) .os-com{font-size:8.5px;padding-bottom:1px;margin-left:-3px}
+  html body #screenTrade#screenTrade .oro-sign:not(.fs) .os-line{flex-basis:34px}
+  html body #screenTrade#screenTrade .topbar .topbar-mode{padding-top:2px!important}
+  html body #screenTrade#screenTrade #tradeWrap{padding-top:1px!important}
+  html body #screenTrade#screenTrade #assetBar{margin-top:1px!important}
+}
