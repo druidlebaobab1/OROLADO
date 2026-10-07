@@ -261,8 +261,8 @@
       if (!resp || !resp.credential) return;
       var res = null;
       try { res = await D6.Auth.googleWithIdToken(resp.credential, rawNonce); } catch (eC) { res = null; }
-      // v2432 — le code de sécurité (nonce) ne sert qu'une fois : bouton refait avec un nouveau code après
-      // CHAQUE essai (avant : il fallait recharger la page pour pouvoir recliquer sur Google).
+      // v2435 — bouton seulement redessiné (même code de sécurité : le serveur vérifie que le ticket de
+      // Google correspond à CE code ; le changer pendant une connexion la faisait échouer).
       resetG();
       if (res && res.ok && D6.Auth.current() && !isGuest()) {
         if (res.isNew) metaTrack('CompleteRegistration');
@@ -274,11 +274,13 @@
     // v2404 : Google initialisé UNE fois ; chaque bouton dessiné une seule fois pour une largeur donnée
     // (avant : redessiné à chaque clic Connexion / Inscription → le bouton « clignotait »).
     var gReady = null;
-    // Nouveau départ : nouveau code de sécurité, boutons redessinés.
+    // v2435 — Boutons redessinés SANS refaire la préparation de Google ni changer le code de sécurité :
+    // Google demande « initialize() une seule fois » (sinon « comportement imprévu » : bouton qui ne répond
+    // plus, qui clignote) et le serveur refuse un ticket dont le code ne correspond plus.
     var gClicked = 0, gLastReset = 0;
     function resetG() {
+      if (Date.now() - gLastReset < 1500) return;
       gLastReset = Date.now();
-      gReady = null;
       document.querySelectorAll('[data-g-official]').forEach(function (b) { b.removeAttribute('data-gw'); });
       setTimeout(render, 50);
     }
