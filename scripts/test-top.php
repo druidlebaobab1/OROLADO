@@ -72,7 +72,7 @@ check('aucun e-mail montré à un joueur', !isset($r['top'][0]['email']));
 $rp = orolado_top_status(load_db(), $db['users']['u_peu']);
 check('Petit : encore 1 trade pour entrer', $rp['me']['need'] === 1 && $rp['me']['rank'] === 0);
 $ra = orolado_top_status(load_db(), $db['users']['admin_master']);
-check('admin : voit numéro ORO et e-mail (pour récompenser)', ($ra['top'][0]['email'] ?? '') === 'u_a@gmail.com' && str_starts_with((string) ($ra['top'][0]['id'] ?? ''), 'ORO-'));
+check('admin : numéro ORO seulement, AUCUN e-mail (même pour le compte admin)', !isset($ra['top'][0]['email']) && !empty($ra['admin']) && str_starts_with((string) ($ra['top'][0]['id'] ?? ''), 'ORO-'));
 check('fin de semaine annoncée = dimanche 23:59:59', $r['endsAt'] === $w['end']);
 
 echo "3) Chaque trade compté une seule fois, même après l'archivage\n";

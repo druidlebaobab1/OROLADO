@@ -134,7 +134,8 @@
       show(go, false);
     } else {
       tm.textContent = '';
-      st.textContent = s.finished && !s.won ? t('defiLost') : '';
+      st.textContent = s.finished && !s.won ? t('defiLost') + ' ' + left(s.expiresAt - now) : '';
+      st.className = 'defi-state' + (s.finished && !s.won ? ' lost' : '');
       st.className = 'defi-state';
       act.textContent = t('defiStart', { m: mk });
       show(act, !!s.canActivate);
@@ -259,7 +260,16 @@
     if (!stage) return;
     var el = $('defiHud');
     var on = !!(s && s.enabled && s.active && !guestGift());
-    if (!on) { if (el) el.classList.add('hidden'); hudLast = -1; return; }
+    if (!on) {
+      // Défi perdu (une seule défaite) : le compteur devient rouge « Défi perdu », puis disparaît.
+      if (el && !el.classList.contains('hidden') && s && s.finished && !s.won && !el.classList.contains('lost')) {
+        el.classList.add('lost');
+        el.setAttribute('data-lost', t('defiLostHud'));
+        setTimeout(function () { el.classList.remove('lost'); el.classList.add('hidden'); }, 3000);
+      } else if (el && !el.classList.contains('lost')) el.classList.add('hidden');
+      hudLast = -1;
+      return;
+    }
     if (!el) {
       el = document.createElement('button');
       el.type = 'button';
@@ -281,6 +291,8 @@
     hudLast = n;
   }
 
+  // Pièce ORO (monnaie des points du site) : pièce dorée avec la pyramide OROLADO.
+  var ICO_ORO = '<svg class="oro-coin" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" class="oc-out"/><circle cx="10" cy="10" r="6.8" class="oc-in"/><path d="M10 5.2 14.2 13.6H5.8z" class="oc-pyr"/><circle cx="10" cy="10.6" r="1.1" class="oc-eye"/></svg>';
   var ICO_TARGET = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg>';
   // Ferme les Récompenses et ouvre le marché du défi (démo pour le compte admin en test, réel sinon).
   function goDefiMarket() {
@@ -396,7 +408,7 @@
     $('affPlayed').textContent = String(aff.played || 0);
     $('affTotal').textContent = money(aff.total || 0);
     $('affEarned').textContent = money(aff.earned || 0);
-    $('affListCount').textContent = String(aff.friends || 0);
+    $('affListCount').textContent = String(aff.deposited || 0);
     renderAffList();
     fitPortal();
   }
@@ -409,7 +421,7 @@
   // Aperçu (3 derniers amis) sous les carrés + page complète « Voir plus » (filtre, totaux, tous les amis).
   function renderAffList() {
     if (!aff || !$('affRows')) return;
-    var all = aff.list || [];
+    var all = (aff.list || []).filter(function (r) { return Number(r.deposit || 0) > 0; });
     $('affRows').innerHTML = all.length ? all.slice(0, 2).map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmptyAll')) + '</p>';
     show($('affMore'), all.length > 0);
     if (!$('affRowsAll')) return;
@@ -471,13 +483,12 @@
       var place = [2, 1, 3][i];
       if (!r) return '<div class="tp tp' + place + ' empty"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>—</b><span>&nbsp;</span><div class="tp-step"></div></div>';
       return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(r.id) + '</b>' +
-        '<span>' + esc(r.points) + ' ' + esc(t('topPts')) + '</span>' + (r.email ? '<small>' + esc(r.email) + '</small>' : '') + '<div class="tp-step"></div></div>';
+        '<span class="oro-amt">' + ICO_ORO + esc(r.points) + ' ORO</span><div class="tp-step"></div></div>';
     }).join('');
     var rest = list.slice(3);
     if (!list.length) $('topRows').innerHTML = '<p class="aff-empty">' + esc(t('topEmpty')) + '</p>';
     else $('topRows').innerHTML = rest.map(function (r) {
-      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b><span>' + esc(r.points) + '</span>' +
-        (r.email ? '<small>' + esc(r.email) + '</small>' : '') + '</div>';
+      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b><span class="oro-amt">' + ICO_ORO + esc(r.points) + '</span></div>';
     }).join('');
     var me = top.me || {};
     var txt;
@@ -489,7 +500,7 @@
     $('topMe').lastChild.textContent = txt;
     $('topMe').classList.toggle('in', !!me.rank && me.rank <= (top.show || 25));
     // Bouton « Semaine dernière » : seulement pour l'admin (il voit les numéros ORO pour récompenser).
-    var isAdmin = list.some(function (r) { return !!r.email; }) || topPrev;
+    var isAdmin = !!top.admin || topPrev;
     show($('topPrev'), isAdmin);
     if ($('topPrev')) $('topPrev').textContent = topPrev ? t('topThis') : t('topPrev');
     if ($('topCard')) $('topCard').classList.toggle('is-prev', !!topPrev);
@@ -519,7 +530,7 @@
     show($('bonMeter'), ph === 'filling' || ph === 'full' || ph === 'expired');
     $('bonMeterTxt').textContent = '+' + money(got) + ' / ' + money(target);
     $('bonMeterFill').style.width = (target > 0 ? Math.min(100, got / target * 100) : 0) + '%';
-    $('bonMeterSub').textContent = ph === 'filling' ? t('bonNext', { s: money(bon.nextIn || 0) }) : '';
+    $('bonMeterSub').textContent = t('bonToWin', { r: money(target) });
     var st = '';
     if (ph === 'waiting') st = t('bonWaiting');
     else if (ph === 'filling') st = t('bonFilling', { d: money(bon.deposit || 0) });

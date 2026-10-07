@@ -13,7 +13,7 @@ declare(strict_types=1);
  */
 
 const OROLADO_TOP_MIN_TRADES = 20;
-const OROLADO_TOP_SHOW = 25;
+const OROLADO_TOP_SHOW = 50;
 
 function orolado_top_public(): bool {
   $v = getenv('OROLADO_TOP_PUBLIC');
@@ -151,10 +151,6 @@ function orolado_top_status(array $db, array $user, bool $prev = false): array {
   $top = [];
   foreach (array_slice($rank, 0, OROLADO_TOP_SHOW) as $r) {
     $row = ['rank' => $r['rank'], 'id' => $r['id'], 'points' => $r['points'], 'trades' => $r['trades'], 'me' => $r['uid'] === $uid];
-    if ($isAdmin) {
-      $u = $db['users'][$r['uid']] ?? [];
-      $row['email'] = (string) ($u['email'] ?? '');
-    }
     $top[] = $row;
   }
   $mine = $st['users'][$uid] ?? ['n' => 0, 'w' => 0, 'stake' => 0, 'net' => 0];
@@ -164,6 +160,6 @@ function orolado_top_status(array $db, array $user, bool $prev = false): array {
   return [
     'ok' => true, 'enabled' => true, 'week' => $wk['key'], 'endsAt' => $wk['end'], 'now' => $now,
     'players' => count($rank), 'min' => OROLADO_TOP_MIN_TRADES, 'show' => OROLADO_TOP_SHOW,
-    'top' => $top, 'me' => $me, 'prev' => $prev,
+    'top' => $top, 'me' => $me, 'prev' => $prev, 'admin' => $isAdmin,
   ];
 }

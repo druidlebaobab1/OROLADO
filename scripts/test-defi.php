@@ -61,7 +61,7 @@ $diff = true; foreach (range(1, 40) as $k) { $t = time() + $k * 86400; if (orola
 check('pas le même marché que la veille (40 jours de suite)', $diff);
 $other = $m === 'v100' ? 'v75' : 'v100';
 
-echo "3) Série : victoires, défaite qui remet à 0, autres marchés et petites mises ignorés\n";
+echo "3) Série : victoires, autres marchés et petites mises ignorés ; UNE défaite = défi perdu pour la journée\n";
 trade($db, 'admin_master', $m, 'demo', 10, true);
 trade($db, 'admin_master', $m, 'demo', 10, true);
 trade($db, 'admin_master', $other, 'demo', 10, false);
@@ -70,7 +70,17 @@ $r = orolado_defi_status($db, $admin);
 check('2 victoires (autre marché et petite mise ignorés)', $r['streak'] === 2, (string) $r['streak']);
 trade($db, 'admin_master', $m, 'demo', 10, false);
 $r = orolado_defi_status($db, $admin);
-check('défaite sur le marché : série à 0', $r['streak'] === 0);
+check('défaite sur le marché : défi perdu, terminé', empty($r['active']) && empty($r['won']) && !empty($r['finished']));
+$r = orolado_defi_status($db, $admin, true);
+check('pas de nouveau défi avant minuit', empty($r['active']) && empty($r['canActivate']));
+foreach ([10, 10, 10, 10, 10] as $s) trade($db, 'admin_master', $m, 'demo', $s, true);
+$r = orolado_defi_status($db, $admin);
+check('5 victoires APRÈS la défaite : rien (défi déjà perdu)', empty($r['won']) && empty($r['paid']));
+// Le lendemain : on recule l'heure du défi d'hier et des anciens trades.
+orolado_defi_with('admin_master', function (&$st) { $st['activatedAt'] = time() - 86400 - 60; $st['expiresAt'] = time() - 60; });
+foreach ($db['orders'] as &$o) { $o['openedAt'] -= 3600; $o['at'] -= 3600; } unset($o);
+$r = orolado_defi_status($db, $admin, true);
+check('le lendemain : nouveau défi possible', !empty($r['active']));
 trade($db, 'admin_master', $m, 'real', 50, true);
 $r = orolado_defi_status($db, $admin);
 check('trade du mauvais compte (réel) ignoré pour le testeur', $r['streak'] === 0);

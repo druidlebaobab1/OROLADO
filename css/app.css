@@ -5862,3 +5862,61 @@ html body #portalModal .bon-go.hidden,html body #portalModal .bon-test.hidden{di
 html body #portalModal .bon-ex{margin-top:10px!important;border-left-color:#5C9BFF!important;background:rgba(92,155,255,.08)!important}
 html body #portalModal .bon-test{margin-top:8px;width:100%;height:34px!important}
 @media (max-width:859px){html body #portalModal#portalModal .bon-card{margin-bottom:auto!important}}
+/* v2418 — corrections du propriétaire (captures iPhone + Android). */
+/* Compteur « 1/5 » du cadeau : plus petit, ne touche plus le haut de l'écran. */
+html body .topbar .portal-btn.portal-btn .pw-prog{top:-1px!important;right:-6px!important;min-width:18px!important;padding:0 3px!important;border-radius:7px!important;font-size:7.5px!important;line-height:11px!important;box-shadow:0 0 0 1.5px rgba(10,14,40,.9)}
+/* Compteur du défi sur le graphique : plus petit ; rouge « Défi perdu » puis il disparaît. */
+html body #chartStage .defi-hud{height:24px!important;padding:0 8px 0 6px!important;gap:5px!important;font-size:10.5px!important;border-radius:12px!important}
+html body #chartStage .defi-hud .pi{width:13px!important;height:13px!important}
+html body #chartStage .defi-hud .dh-dots i{width:6px!important;height:6px!important}
+html body #chartStage .defi-hud.lost{border-color:#FF4D6A!important;background:rgba(120,10,30,.85)!important;color:#FFD0D6!important}
+html body #chartStage .defi-hud.lost .dh-dots i{background:rgba(255,77,106,.45)!important;box-shadow:none!important}
+html body #chartStage .defi-hud.lost::after{top:28px!important;font-size:11px!important}
+html body #portalModal .defi-state.lost{color:#FF8A9A!important}
+/* Défi : la ligne du cadeau ne déborde plus. */
+html body #portalModal .defi-how .defi-gift{font-size:13px!important;line-height:1.3!important}
+/* Invitation : ronds 1-2-3 plus petits (ne touchent plus les cases du dessus sur Android). */
+html body #portalModal .aff-steps3 li span{width:15px!important;height:15px!important;font-size:9px!important;top:-6px!important;box-shadow:0 0 0 2px rgba(12,17,40,.95)!important}
+html body #portalModal .aff-steps3{margin-top:9px!important}
+/* Invitation : exemples de gains séparés par des traits. */
+html body #portalModal .aff-proj p{padding:4px 0}
+html body #portalModal .aff-proj p + p{border-top:1px dashed rgba(143,227,184,.35)}
+html body #portalModal .aff-proj small{font-size:10px!important}
+/* Pièce ORO (monnaie des points). */
+html body #portalModal .oro-coin{width:13px;height:13px;flex:0 0 13px;vertical-align:-2px;margin-inline-end:3px}
+html body #portalModal .oro-coin .oc-out{fill:#C8861A}
+html body #portalModal .oro-coin .oc-in{fill:#F6C453;stroke:#FFE7A3;stroke-width:.8}
+html body #portalModal .oro-coin .oc-pyr{fill:#7A4A06}
+html body #portalModal .oro-coin .oc-eye{fill:#FFF3C4}
+html body #portalModal .oro-amt{display:inline-flex;align-items:center;white-space:nowrap}
+html body #portalModal .tp .oro-amt{font-size:11px;color:#FFD27A;font-weight:800}
+html body #portalModal .tr .oro-amt{font-size:11.5px;color:#FFD27A;font-weight:800}
+html body #portalModal .tr{grid-template-columns:24px 1fr auto!important}
+html body #portalModal .tr b{text-align:center}
+/* Tournoi : chrono plus petit et aligné, textes qui ne débordent plus. */
+html body #portalModal .top-head{flex-wrap:nowrap}
+html body #portalModal .top-title{font-size:14px!important;min-width:0}
+html body #portalModal .top-title b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #portalModal .top-timer{font-size:11px!important;flex:0 0 auto;white-space:nowrap}
+html body #portalModal .top-timer .pi{width:13px!important;height:13px!important}
+html body #portalModal .top-sub{font-size:11.5px!important}
+html body #portalModal .top-rule{font-size:10.5px!important}
+html body #portalModal .top-play{font-size:14px!important;white-space:nowrap}
+/* Bonus dépôt : titre encadré plus petit, barre centrée, chrono plus petit. */
+html body #portalModal .bon-head{align-items:center}
+html body #portalModal .bon-big{flex:1 1 auto;font-size:14px!important;line-height:1.3!important;padding:8px 10px;border-radius:12px;background:rgba(92,155,255,.10);border:1px solid rgba(92,155,255,.45);color:#E2EDFF!important}
+html body #portalModal .bon-head .top-timer{font-size:11px!important}
+html body #portalModal .bm-top{flex-direction:column-reverse!important;align-items:center!important;gap:2px!important;margin-bottom:8px!important}
+html body #portalModal .bm-top b{font-size:20px!important}
+html body #portalModal .bm-top span{font-size:11px!important;color:#9CC4FF!important}
+html body #portalModal .bon-state{font-size:12.5px!important}
+html body #portalModal .bon-steps li em{font-size:10.5px!important}
+/* v2418 — Android : Aide, langue, profil et cadeau un peu plus grands (moins de vide autour). */
+@media (max-width:859px){html.is-android body #screenTrade .topbar-row .tb-left > *,html.is-android body #screenTrade .topbar-row .topbar-actions > *{transform:scale(1.12);transform-origin:center}}
+/* v2418 — Top 50 : la liste défile à l'intérieur, la page reste fixe. */
+@media (max-width:859px){
+  html body #portalModal#portalModal#portalModal .top-rows{max-height:clamp(140px,calc(100dvh - 520px),380px)!important;overflow-y:auto!important}
+  html.saf-under body #portalModal#portalModal#portalModal .top-rows{max-height:clamp(140px,calc(100dvh - 600px),300px)!important}
+}
+/* v2418 — écrans étroits : une seule colonne pour que les numéros ORO ne soient jamais coupés. */
+@media (max-width:419px){html body #portalModal#portalModal .top-rows{grid-template-columns:1fr!important}}

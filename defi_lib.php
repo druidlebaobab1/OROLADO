@@ -122,7 +122,8 @@ function orolado_defi_progress(array $db, string $uid, array $st, string $mode):
         return ['streak' => OROLADO_DEFI_STREAK, 'done' => true, 'stakes' => $last, 'reward' => orolado_money(min($last) * OROLADO_DEFI_MULT)];
       }
     } else {
-      $run = [];
+      // v2418 (règle du propriétaire) : UNE défaite sur le marché du défi = défi perdu pour la journée.
+      return ['streak' => 0, 'done' => false, 'lost' => true, 'stakes' => [], 'reward' => 0.0];
     }
   }
   return ['streak' => count($run), 'done' => false, 'stakes' => $run, 'reward' => 0.0];
@@ -257,7 +258,15 @@ function orolado_defi_status(array &$db, array $user, bool $activate = false): a
       $p = orolado_defi_progress($db, $uid, $st, (string) ($st['mode'] ?? $mode));
       $st['streak'] = $p['streak'];
       $st['stakes'] = $p['stakes'];
-      if ($p['done']) {
+      if (!empty($p['lost'])) {
+        // Défi perdu : terminé jusqu'à minuit (un nouveau défi demain).
+        $st['finished'] = true;
+        $st['won'] = false;
+        $st['lostAt'] = date('c');
+        if (!isset($st['history']) || !is_array($st['history'])) $st['history'] = [];
+        array_unshift($st['history'], ['market' => $st['market'] ?? '', 'won' => false, 'reward' => 0, 'at' => date('c')]);
+        $st['history'] = array_slice($st['history'], 0, 20);
+      } elseif ($p['done']) {
         $ref = 'adm_defi_' . (string) ($st['id'] ?? bin2hex(random_bytes(6)));
         $ok = orolado_defi_pay($db, $uid, (float) $p['reward'], $ref, (string) ($st['mode'] ?? $mode));
         if ($ok) {
