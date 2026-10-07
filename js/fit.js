@@ -52,6 +52,31 @@
     }
   }
 
+  // v2430 — fenêtres d'argent en mode univers (retrait enregistré, recharge réussie) : étincelles à l'ouverture.
+  var COSMO = { wdConfirmModal: 1, depositSuccessModal: 1 };
+  function burst(modal) {
+    try {
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var box = modal.querySelector('.modal-box');
+      if (!box) return;
+      var old = box.querySelector('.cosmo-sp');
+      if (old) old.remove();
+      var sp = document.createElement('div');
+      sp.className = 'cosmo-sp';
+      sp.setAttribute('aria-hidden', 'true');
+      var html = '';
+      for (var i = 0; i < 22; i++) {
+        var a = Math.round(i * 360 / 22 + Math.random() * 12), d = Math.round(80 + Math.random() * 80), z = (Math.random() * 0.35).toFixed(2);
+        html += '<i style="--a:' + a + 'deg;--d:' + d + 'px;--z:' + z + 's"></i>';
+      }
+      sp.innerHTML = html;
+      box.insertBefore(sp, box.firstChild);
+      box.classList.remove('cosmo-pop');
+      void box.offsetWidth;
+      box.classList.add('cosmo-pop');
+    } catch (e) { /* ignore */ }
+  }
+
   var t = 0;
   function fitOpen() {
     clearTimeout(t);
@@ -68,7 +93,11 @@
     var mo = new MutationObserver(function (list) {
       for (var i = 0; i < list.length; i++) {
         var m = list[i];
-        if (m.type === 'attributes' && m.target.classList && m.target.classList.contains('modal-backdrop')) { fitOpen(); return; }
+        if (m.type === 'attributes' && m.target.classList && m.target.classList.contains('modal-backdrop')) {
+          if (m.target.classList.contains('active') && COSMO[m.target.id]) burst(m.target);
+          fitOpen();
+          return;
+        }
       }
     });
     var start = function () {

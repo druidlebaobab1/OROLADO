@@ -6275,3 +6275,56 @@ html body #portalModal#portalModal .bon-head .bon-big{flex:0 0 auto!important;wi
    Les boutons de l'écran de trading (ACHETER, VENDRE, mises, durées, payouts, Recharger) ne sont pas concernés. */
 html body .modal-box :is(p,li,small,label),html body #screenAuth :is(p,small,label),html body .toast{text-wrap:pretty;overflow-wrap:break-word}
 html body .modal-box :is(h2,h3,h4,.modal-title),html body #screenAuth :is(h1,h2,h3){text-wrap:balance}
+
+/* ===== v2430 — Fenêtres d'argent en mode univers : « Demande enregistrée » (retrait) et « Recharge réussie ». ===== */
+html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box{position:relative;overflow:hidden!important;text-align:center;
+  border:1px solid rgba(255,210,122,.65)!important;
+  background:radial-gradient(circle at 50% -10%,rgba(255,210,122,.42),rgba(124,77,255,.20) 45%,rgba(9,10,32,.97) 76%),
+    url("galaxy-modal.svg?v=2430") center/cover no-repeat,#0A0B22!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(255,190,80,.30),0 0 100px rgba(124,77,255,.30)!important}
+html body #depositSuccessModal > .modal-box{border-color:rgba(75,227,168,.6)!important;
+  background:radial-gradient(circle at 50% -10%,rgba(75,227,168,.40),rgba(124,77,255,.20) 45%,rgba(9,10,32,.97) 76%),
+    url("galaxy-modal.svg?v=2430") center/cover no-repeat,#0A0B22!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(46,229,157,.28),0 0 100px rgba(124,77,255,.30)!important}
+html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box > :not(.cosmo-rays):not(.cosmo-sp){position:relative;z-index:2}
+html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box > .btn-close{position:absolute!important;z-index:3}
+html body .modal-box.cosmo-pop{animation:cosmoPop .55s cubic-bezier(.2,1.4,.4,1) both}
+/* « scale » (et non « transform ») : la fenêtre reste bien centrée pendant l apparition. */
+@keyframes cosmoPop{0%{scale:.6;opacity:0}100%{scale:1;opacity:1}}
+/* Rayons qui tournent derrière la planète. */
+html body .modal-box .cosmo-rays{position:absolute;z-index:0;left:50%;top:62px;width:250px;height:250px;margin:-125px 0 0 -125px;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,214,110,.30) 0deg 6deg,transparent 6deg 20deg);
+  -webkit-mask:radial-gradient(circle,#000 16%,transparent 66%);mask:radial-gradient(circle,#000 16%,transparent 66%);animation:dwSpin 10s linear infinite}
+html body #depositSuccessModal .modal-box .cosmo-rays{background:repeating-conic-gradient(from 0deg,rgba(120,240,200,.30) 0deg 6deg,transparent 6deg 20deg)}
+/* La planète-icône qui flotte. */
+html body .modal-box .cosmo-ico{display:block!important;width:82px!important;height:82px!important;margin:6px auto 10px!important;border-radius:0!important;
+  background:none!important;box-shadow:none!important;font-size:0!important;animation:dwFloat 2.6s ease-in-out .5s infinite}
+html body .modal-box .cosmo-ico::before,html body .modal-box .cosmo-ico::after{display:none!important;content:none!important}
+html body .modal-box .cosmo-ico svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 14px rgba(255,200,90,.65))}
+html body #depositSuccessModal .modal-box .cosmo-ico svg{filter:drop-shadow(0 0 14px rgba(46,229,157,.65))}
+/* Étincelles. */
+html body .modal-box .cosmo-sp{position:absolute;z-index:1;left:50%;top:62px;width:0;height:0;pointer-events:none}
+html body .modal-box .cosmo-sp i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle,#fff,#FFD27A 45%,rgba(255,160,60,0) 70%);box-shadow:0 0 8px #FFD27A;opacity:0;animation:dwSpark 1.4s ease-out var(--z) both}
+html body .modal-box .cosmo-sp i:nth-child(3n){background:radial-gradient(circle,#fff,#B9A2FF 45%,transparent 70%);box-shadow:0 0 8px #9B7BFF}
+html body .modal-box .cosmo-sp i:nth-child(4n){background:radial-gradient(circle,#fff,#7FF5CF 45%,transparent 70%);box-shadow:0 0 8px #2EE59D}
+/* Titres dorés / verts en dégradé. */
+html body #wdConfirmModal .modal-title{justify-content:center!important;font-size:1.05rem!important;font-weight:900;
+  background:linear-gradient(90deg,#FFF6D8,#FFD27A 45%,#F2A33D);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+html body #depositSuccessModal .convert-title{font-weight:900;background:linear-gradient(90deg,#EFFFF8,#7FF5CF 45%,#2EE59D);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+/* Retrait : lignes ID / Montant en petites cartes vitrées. */
+html body #wdConfirmModal .wd-confirm-row{margin:6px 0;padding:9px 12px;border:1px solid rgba(255,255,255,.10)!important;border-radius:12px;
+  background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.02));font-size:.8rem;align-items:center}
+html body #wdConfirmModal .wd-confirm-row span{color:#AEB6D6}
+html body #wdConfirmModal .wd-confirm-row strong{color:#fff;font-weight:900;direction:ltr;unicode-bidi:isolate}
+html body #wdConfirmModal #wdConfirmAmt{color:#FFD27A!important;font-size:1.05rem;text-shadow:0 0 12px rgba(255,200,90,.45)}
+/* Statut « En cours de traitement » : badge ambré avec un point qui pulse. */
+html body #wdConfirmModal .wd-confirm-status{display:inline-flex!important;align-items:center;gap:8px;margin:14px auto 2px!important;padding:7px 14px;border-radius:999px;
+  background:rgba(242,179,61,.12);border:1px solid rgba(242,179,61,.5);color:#FFD27A!important;font-size:.74rem!important;letter-spacing:.03em}
+html body #wdConfirmModal .wd-confirm-status::before{content:"";width:8px;height:8px;border-radius:50%;background:#F6C453;box-shadow:0 0 0 0 rgba(246,196,83,.7);animation:cosmoPulse 1.6s ease-out infinite}
+@keyframes cosmoPulse{0%{box-shadow:0 0 0 0 rgba(246,196,83,.7)}100%{box-shadow:0 0 0 10px rgba(246,196,83,0)}}
+/* Recharge réussie : le montant crédité, gros et vert. */
+html body #depositSuccessModal #depositSuccessAmt{font-size:1.6rem!important;font-weight:900;color:#2EE59D!important;text-shadow:0 0 18px rgba(46,229,157,.55);margin:6px 0 10px}
+html body #depositSuccessModal #depositSuccessAmt:not(:empty)::before{content:"+"}
+@media (prefers-reduced-motion: reduce){html body :is(#wdConfirmModal,#depositSuccessModal) *,html body .modal-box.cosmo-pop{animation:none!important}}
+html body .modal-box .cosmo-ico{border:0!important;outline:0!important}
