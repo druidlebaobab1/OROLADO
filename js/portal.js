@@ -76,7 +76,7 @@
   function needAccount() {
     if (!guestGift()) return false;
     if (needT) return true;
-    bigToast(ICO_LOCK, t('guestLockT'), t('guestLockS'), 'dw-start dw-lock');
+    bigToast(ICO_LOCK, t('guestJoin'), '', 'dw-start dw-lock dw-one');
     needT = setTimeout(function () {
       needT = 0;
       closePortal();

@@ -3605,6 +3605,9 @@
     de: { guestLockT: 'Kostenlose Anmeldung', guestLockS: 'Erstelle dein Konto in 1 Minute, um es zu nutzen.', topPrevNone: 'Du hast am Turnier der letzten Woche nicht teilgenommen. Das Turnier dieser Woche ist offen: versuch dein Glück!' },
     hi: { guestLockT: 'मुफ़्त रजिस्ट्रेशन', guestLockS: 'इसका लाभ लेने के लिए 1 मिनट में खाता बनाएँ।', topPrevNone: 'आपने पिछले हफ़्ते के टूर्नामेंट में भाग नहीं लिया। इस हफ़्ते का टूर्नामेंट खुला है: अपनी किस्मत आज़माएँ!' }
   };
+  // v2424 — message court pour le visiteur (le propriétaire ne veut pas « Inscription gratuite »).
+  var GUEST_JOIN = { fr: 'Inscris-toi pour en profiter', en: 'Sign up to enjoy it', es: 'Regístrate para aprovecharlo', pt: 'Inscreve-te para aproveitar', ar: 'سجّل لتستفيد', tr: 'Yararlanmak için kaydol', vi: 'Đăng ký để nhận ưu đãi', id: 'Daftar untuk menikmatinya', ru: 'Зарегистрируйтесь, чтобы воспользоваться', de: 'Melde dich an, um es zu nutzen', hi: 'इसका लाभ लेने के लिए जुड़ें' };
+  Object.keys(GUEST_JOIN).forEach(function (l) { if (DICT[l]) DICT[l].guestJoin = GUEST_JOIN[l]; });
   Object.keys(V2423_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], V2423_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {

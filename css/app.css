@@ -5775,7 +5775,6 @@ html body #portalModal .gg-list li i.t-aff{background:#3DDCA6}
 html body #portalModal .gg-list li i.t-top{background:#F6C453}
 html body #portalModal .gg-go{width:100%}
 html body #portalModal .gg-login{margin-top:10px;border:0;background:none;color:#AEB6D6;font:700 13px/1 inherit;font-family:inherit;text-decoration:underline;cursor:pointer}
-html body #portalModal.is-guest .portal-tabs{display:none!important}
 @media (max-width:859px){html body #portalModal#portalModal .gift-guest{margin-bottom:auto!important}}
 /* v2415 — liste des amis : environ 3 lignes visibles, le reste défile dans la liste (la page ne bouge pas). */
 html body #portalModal#portalModal .aff-rows{max-height:104px!important;overflow-y:auto!important;overscroll-behavior:contain}
@@ -6094,3 +6093,6 @@ html body #portalModal#portalModal#portalModal.tabs-on .portal-tabs{margin-top:1
 /* Page « Voir plus » : les 3 cases du haut, texte centré sur 2 lignes propres (« Amis inscrits qui ont déposé »). */
 html body #portalModal#portalModal .aff-sum div{justify-content:center;text-align:center;min-width:0}
 html body #portalModal#portalModal .aff-sum span{font-size:10.5px!important;line-height:1.25!important;text-align:center;text-wrap:balance;max-width:100%}
+/* v2425 — notification visiteur : une seule phrase, sans sous-titre. */
+html body .defi-win.dw-one .dw-s{display:none!important}
+html body .defi-win.dw-one .dw-t{text-transform:none!important;font-size:19px!important;line-height:1.25!important;text-wrap:balance}
