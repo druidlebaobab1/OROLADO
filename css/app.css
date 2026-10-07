@@ -7084,3 +7084,48 @@ html body #depositModal#depositModal #payMethodCard .pay-method-title{white-spac
 html body #depositModal#depositModal #payMethodCard .pay-method-title{display:inline!important;white-space:normal!important;font-size:inherit!important}
 html body #depositModal#depositModal #payMethodCard .pay-method-title{font-size:15px!important}
 @media (max-width:380px){html body #depositModal#depositModal #payMethodCard .pay-method-title{font-size:14px!important}}
+
+/* ===== v2446 — Retrait : le moyen choisi a le même cadre vitré bleu que les cases (plus de lueur jaune) ===== */
+html body #withdrawModal#withdrawModal .wd-selected{background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(124,77,255,.12))!important;
+  border:1px solid rgba(125,211,252,.6)!important;box-shadow:0 0 14px rgba(56,189,248,.30),0 0 0 1px rgba(255,255,255,.05) inset!important;color:#fff!important}
+html body #withdrawModal .wd-sel-ico{background:rgba(255,255,255,.12)!important;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+/* Case touchée : elle s'allume dans la couleur de son groupe (pas en jaune). */
+html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card.on{border-color:#5EEAD4!important;box-shadow:0 0 16px rgba(94,234,212,.55)!important}
+html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card.on{border-color:#7DD3FC!important;box-shadow:0 0 16px rgba(125,211,252,.55)!important}
+html body #withdrawModal#withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdBankGrid .wd-card.on{border-color:#C4B5FD!important;box-shadow:0 0 16px rgba(196,181,253,.55)!important}
+/* Indicatif fixe (Nigeria…) : même case vitrée colorée que les autres. */
+html body #withdrawModal#withdrawModal .wd-dial-fixed{background:linear-gradient(180deg,rgba(120,160,255,.17),rgba(150,100,255,.10))!important;
+  border:1px solid rgba(160,190,255,.45)!important;color:#fff!important;border-radius:12px!important}
+html body #withdrawModal#withdrawModal .wd-dest-help{color:#BAE6FD!important}
+html body #withdrawModal#withdrawModal .wd-wager-box{background:rgba(251,191,36,.10)!important;border:1px solid rgba(251,191,36,.45)!important;border-radius:12px}
+html body #withdrawModal#withdrawModal .wd-wager-fill{background:linear-gradient(90deg,#2EE59D,#FBBF24)!important}
+
+/* ===== v2446 — Les dernières fenêtres sombres passent en univers lumineux (Conditions, Installer sur iPhone, Astuce, Paiement en cours) ===== */
+html body #termsModal#termsModal .modal-box,html body #iosInstallModal#iosInstallModal .modal-box,
+html body #tipModal#tipModal .modal-box,html body #depositWaitModal#depositWaitModal .modal-box{
+  --c:124,77,255;
+  background:radial-gradient(110% 45% at 50% 0%,rgba(var(--c),.45),rgba(var(--c),0) 62%),
+    radial-gradient(80% 50% at 0% 100%,rgba(168,85,247,.40),rgba(168,85,247,0) 65%),
+    radial-gradient(80% 50% at 100% 80%,rgba(56,189,248,.28),rgba(56,189,248,0) 65%),
+    linear-gradient(180deg,#1B1F5E 0%,#22165A 55%,#2A1460 100%)!important;
+  border:1px solid rgba(var(--c),.7)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 36px rgba(var(--c),.38),0 0 80px rgba(124,77,255,.22)!important}
+html body #iosInstallModal#iosInstallModal .modal-box{--c:56,189,248}
+html body #tipModal#tipModal .modal-box{--c:251,191,36}
+html body #depositWaitModal#depositWaitModal .modal-box{--c:46,229,157}
+html body #termsModal .modal-box h3,html body #termsModal .modal-box h4,html body #termsModal .modal-box strong{color:#FFE7A3!important}
+html body #termsModal .modal-box p,html body #termsModal .modal-box li{color:#E0E7FF!important}
+html body #iosInstallModal .install-ios-lead{color:#D6E4FF!important}
+html body #iosInstallModal .install-ios-ico{background:radial-gradient(circle at 32% 28%,#BAE6FD,#38BDF8 45%,#0369A1)!important;color:#fff!important;
+  border:0!important;box-shadow:0 0 12px rgba(56,189,248,.6)!important;border-radius:50%!important}
+html body #iosInstallModal .install-ios-step{background:rgba(255,255,255,.07);border:1px solid rgba(125,211,252,.3);border-radius:12px;padding:8px 10px}
+html body #tipModal .convert-fire{filter:drop-shadow(0 0 14px rgba(251,191,36,.9));animation:dwFloat 2.8s ease-in-out infinite}
+html body #tipModal .convert-title,html body #depositWaitModal .convert-title{background:linear-gradient(180deg,#FFFFFF,#FFE7A3 45%,#FBBF24)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent;font-weight:900!important;filter:drop-shadow(0 0 8px rgba(251,191,36,.45))}
+html body #tipModal .convert-copy,html body #depositWaitModal .convert-copy{color:#E0E7FF!important}
+html body #depositWaitModal .wait-ref{color:#B9FFE0!important}
+html body #depositWaitModal #btnDepositCheck{background:linear-gradient(135deg,#6EF7C2,#22C55E 45%,#0E9F6E)!important;color:#fff!important;text-shadow:0 1px 3px rgba(0,60,30,.5);
+  box-shadow:0 6px 20px rgba(34,197,94,.5)!important}
+html body #depositWaitModal .ghost-gold{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important}
+html body #iosInstallModal .btn-gold,html body #tipModal .btn-gold,html body #termsModal .btn-gold{position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#2A1600!important;box-shadow:0 6px 18px rgba(251,191,36,.45)!important}
