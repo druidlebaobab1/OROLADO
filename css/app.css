@@ -6084,3 +6084,13 @@ html[dir="rtl"] body #portalModal > .modal-box{direction:rtl}
 /* TV / grand écran : le classement restait sur 2 colonnes trop étroites (numéros ORO cachés) → 1 colonne. */
 html body #portalModal#portalModal#portalModal #topRows{grid-template-columns:1fr!important}
 html body #portalModal#portalModal#portalModal #topRows .tr{grid-template-columns:28px minmax(0,1fr) auto!important}
+/* v2423 — croix des Récompenses : vrai rond 30 × 30 (elle était ovale 26 × 30), même style que les autres croix du site,
+   10 px au-dessus du cadre des onglets (elle ne le touche plus). */
+html body #portalModal#portalModal#portalModal #closePortal{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;max-width:30px!important;max-height:30px!important;
+  padding:0!important;aspect-ratio:1/1;border-radius:50%!important;display:grid!important;place-items:center!important;box-sizing:border-box!important;}
+html body #portalModal#portalModal#portalModal #closePortal::after{content:""!important;position:absolute!important;inset:-8px!important;width:auto!important;height:auto!important;border-radius:50%!important;background:none!important;border:0!important;box-shadow:none!important}
+html body #portalModal#portalModal#portalModal #closePortal .x-ico{width:13px!important;height:13px!important;stroke:currentColor!important}
+html body #portalModal#portalModal#portalModal.tabs-on .portal-tabs{margin-top:14px!important}
+/* Page « Voir plus » : les 3 cases du haut, texte centré sur 2 lignes propres (« Amis inscrits qui ont déposé »). */
+html body #portalModal#portalModal .aff-sum div{justify-content:center;text-align:center;min-width:0}
+html body #portalModal#portalModal .aff-sum span{font-size:10.5px!important;line-height:1.25!important;text-align:center;text-wrap:balance;max-width:100%}

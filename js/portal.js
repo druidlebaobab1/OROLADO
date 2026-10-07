@@ -70,11 +70,19 @@
     return Math.floor(d.getTime() / 1000) + add * 86400 - 1;
   }
   // Visiteur qui veut agir : on ferme et on ouvre l'inscription. Renvoie true si c'était un visiteur.
+  // v2423 — le visiteur voit les 4 pages ; quand il appuie sur une action : belle notification « Inscription gratuite »,
+  // puis la page d'inscription s'ouvre.
+  var needT = 0;
   function needAccount() {
     if (!guestGift()) return false;
-    closePortal();
-    var b = document.getElementById('btnGoRegister');
-    if (b) b.click();
+    if (needT) return true;
+    bigToast(ICO_LOCK, t('guestLockT'), t('guestLockS'), 'dw-start dw-lock');
+    needT = setTimeout(function () {
+      needT = 0;
+      closePortal();
+      var b = document.getElementById('btnGoRegister');
+      if (b) b.click();
+    }, 1400);
     return true;
   }
   function guestGift() {
@@ -98,10 +106,7 @@
     if ($('portalModal')) $('portalModal').classList.toggle('is-guest', guest);
     // v2416 — visiteur : il voit TOUTES les pages (exemple du défi, invitation, tournoi) ; chaque bouton
     // d'action lui demande de créer un compte (needAccount).
-    var tbs = document.querySelectorAll('#portalTabs .pt-tab');
-    for (var ti = 0; ti < tbs.length; ti++) tbs[ti].classList.toggle('locked', guest && tbs[ti].getAttribute('data-tab') !== 'defi');
     if (guest) {
-      if (curTab !== 'defi') setTab('defi');
       s = { enabled: true, active: false, canActivate: true, market: 'v100', streak: 0, need: 5, guest: true };
       if (!aff || !aff.guest) aff = { enabled: true, guest: true, code: '', clicks: 0, friends: 0, deposited: 0, played: 0, total: 0, earned: 0, list: [] };
       if (!top || !top.guest) top = { enabled: true, guest: true, top: [], me: { need: 20, rank: 0, points: 0 }, endsAt: nextMonday(), show: 25 };
@@ -601,13 +606,6 @@
 
   var ICO_LOCK = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><circle cx="12" cy="15.4" r="1.3" class="pi-fill"/></svg>';
   function setTab(name) {
-    // v2422 — visiteur non inscrit : seul le Défi du jour est ouvert ; les 3 autres demandent une inscription.
-    if (name !== 'defi' && guestGift()) {
-      var lb = document.querySelector('#portalTabs [data-tab="' + name + '"] span:last-child');
-      bigToast(ICO_LOCK, t('guestLockT'), t('guestLockS', { x: lb ? lb.textContent : '' }), 'dw-start dw-lock');
-      setTimeout(needAccount, 1500);
-      return;
-    }
     curTab = name;
     show($('defiCard'), name === 'defi');
     show($('affCard'), name === 'aff');
@@ -729,7 +727,7 @@
   // v2422 — lignes propres dans toutes les langues : un texte qui déborde d'à peine sur une ligne de plus
   // (dernier mot presque seul) est très légèrement réduit (jusqu'à -10 %) pour tenir sur une ligne de moins ;
   // sinon les lignes sont équilibrées (pas de mot orphelin). Aucun texte ne peut en chevaucher un autre.
-  var FIT_SEL = 'p, small, li > span, li > em, .aff-big b, .top-me > span, .bon-state, .bm-top span, .aff-stats span, .ar-id span';
+  var FIT_SEL = 'p, small, li > span, .aff-big b, .top-me > span, .bon-state, .bm-top span, .aff-stats span, .ar-id span';
   function lineInfo(el) {
     var r = document.createRange();
     r.selectNodeContents(el);

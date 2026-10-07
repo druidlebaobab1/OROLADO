@@ -3591,6 +3591,21 @@
   };
   Object.keys(TC_WHERE).forEach(function (l) { if (DICT[l]) DICT[l].tcWhere = TC_WHERE[l]; });
 
+  // v2423 — visiteur : notification avant l'inscription ; tournoi terminé sans participation.
+  var V2423_TR = {
+    fr: { guestLockT: 'Inscription gratuite', guestLockS: 'Crée ton compte en 1 minute pour en profiter.', topPrevNone: 'Tu n’as pas participé au tournoi de la semaine dernière. Le tournoi de cette semaine est ouvert : tente ta chance !' },
+    en: { guestLockT: 'Free sign-up', guestLockS: 'Create your account in 1 minute to enjoy it.', topPrevNone: 'You did not take part in last week’s tournament. This week’s tournament is open: try your luck!' },
+    es: { guestLockT: 'Registro gratis', guestLockS: 'Crea tu cuenta en 1 minuto para aprovecharlo.', topPrevNone: 'No participaste en el torneo de la semana pasada. El torneo de esta semana está abierto: ¡prueba suerte!' },
+    pt: { guestLockT: 'Inscrição grátis', guestLockS: 'Cria a tua conta em 1 minuto para aproveitar.', topPrevNone: 'Não participaste no torneio da semana passada. O torneio desta semana está aberto: tenta a tua sorte!' },
+    ar: { guestLockT: 'تسجيل مجاني', guestLockS: 'أنشئ حسابك في دقيقة واحدة لتستفيد.', topPrevNone: 'لم تشارك في بطولة الأسبوع الماضي. بطولة هذا الأسبوع مفتوحة: جرّب حظك!' },
+    tr: { guestLockT: 'Ücretsiz kayıt', guestLockS: 'Yararlanmak için hesabını 1 dakikada oluştur.', topPrevNone: 'Geçen haftanın turnuvasına katılmadın. Bu haftanın turnuvası açık: şansını dene!' },
+    vi: { guestLockT: 'Đăng ký miễn phí', guestLockS: 'Tạo tài khoản trong 1 phút để nhận ưu đãi.', topPrevNone: 'Bạn chưa tham gia giải tuần trước. Giải tuần này đang mở: hãy thử vận may!' },
+    id: { guestLockT: 'Daftar gratis', guestLockS: 'Buat akunmu dalam 1 menit untuk menikmatinya.', topPrevNone: 'Kamu tidak ikut turnamen minggu lalu. Turnamen minggu ini sudah dibuka: coba peruntunganmu!' },
+    ru: { guestLockT: 'Бесплатная регистрация', guestLockS: 'Создайте аккаунт за 1 минуту, чтобы воспользоваться.', topPrevNone: 'Вы не участвовали в турнире прошлой недели. Турнир этой недели открыт: испытайте удачу!' },
+    de: { guestLockT: 'Kostenlose Anmeldung', guestLockS: 'Erstelle dein Konto in 1 Minute, um es zu nutzen.', topPrevNone: 'Du hast am Turnier der letzten Woche nicht teilgenommen. Das Turnier dieser Woche ist offen: versuch dein Glück!' },
+    hi: { guestLockT: 'मुफ़्त रजिस्ट्रेशन', guestLockS: 'इसका लाभ लेने के लिए 1 मिनट में खाता बनाएँ।', topPrevNone: 'आपने पिछले हफ़्ते के टूर्नामेंट में भाग नहीं लिया। इस हफ़्ते का टूर्नामेंट खुला है: अपनी किस्मत आज़माएँ!' }
+  };
+  Object.keys(V2423_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], V2423_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {
