@@ -3624,6 +3624,21 @@
     hi: 'हफ़्ते में एक बार आप जमा बोनस चालू कर सकते हैं। चालू करने के बाद हफ़्ते की पहली $100 या ज़्यादा की जमा पर +10% का हक़ मिलता है। असली खाते में खेलते समय बोनस भरता है, जमा के +10% तक। भरने के लिए 7 दिन, भले ही इस बीच हफ़्ता ख़त्म हो जाए। हर बोनस सामान्य जमा की तरह तुरंत बैलेंस में जुड़ता है। एक समय में एक बोनस: जब तक आपका बोनस भर रहा है, आप दूसरा चालू नहीं कर सकते। अगर किसी दोस्त ने आपको बुलाया है, तो आपकी पहली जमा को पहले ही +5% उपहार मिलता है: वह साप्ताहिक बोनस में नहीं गिनी जाती, अगली जमा गिनी जाती हैं। सभी बोनस की तरह, अनुच्छेद 9 लागू।'
   };
   Object.keys(TC22_TR).forEach(function (l) { if (DICT[l]) DICT[l].tc22 = TC22_TR[l]; });
+  // v2437 — espace affilié : recherche, tri, dépôt moyen, plus gros dépôt.
+  var AFF2_TR = {
+    fr: { affSearchPh: 'Rechercher un ami (ORO-…)', affSortNew: 'Plus récents', affSortDep: 'Plus gros dépôts', affSortGain: 'Plus gros gains', affAvg: 'Dépôt moyen', affBiggest: 'Plus gros dépôt', affNoMatch: 'Aucun ami trouvé avec ce numéro.' },
+    en: { affSearchPh: 'Search a friend (ORO-…)', affSortNew: 'Most recent', affSortDep: 'Biggest deposits', affSortGain: 'Biggest earnings', affAvg: 'Average deposit', affBiggest: 'Biggest deposit', affNoMatch: 'No friend found with this number.' },
+    es: { affSearchPh: 'Buscar un amigo (ORO-…)', affSortNew: 'Más recientes', affSortDep: 'Mayores depósitos', affSortGain: 'Mayores ganancias', affAvg: 'Depósito medio', affBiggest: 'Mayor depósito', affNoMatch: 'Ningún amigo con este número.' },
+    pt: { affSearchPh: 'Procurar um amigo (ORO-…)', affSortNew: 'Mais recentes', affSortDep: 'Maiores depósitos', affSortGain: 'Maiores ganhos', affAvg: 'Depósito médio', affBiggest: 'Maior depósito', affNoMatch: 'Nenhum amigo com este número.' },
+    ar: { affSearchPh: 'ابحث عن صديق (ORO-…)', affSortNew: 'الأحدث', affSortDep: 'أكبر الإيداعات', affSortGain: 'أكبر الأرباح', affAvg: 'متوسط الإيداع', affBiggest: 'أكبر إيداع', affNoMatch: 'لا يوجد صديق بهذا الرقم.' },
+    tr: { affSearchPh: 'Arkadaş ara (ORO-…)', affSortNew: 'En yeni', affSortDep: 'En büyük yatırımlar', affSortGain: 'En büyük kazançlar', affAvg: 'Ortalama yatırım', affBiggest: 'En büyük yatırım', affNoMatch: 'Bu numarayla arkadaş bulunamadı.' },
+    vi: { affSearchPh: 'Tìm bạn (ORO-…)', affSortNew: 'Mới nhất', affSortDep: 'Nạp nhiều nhất', affSortGain: 'Lãi nhiều nhất', affAvg: 'Nạp trung bình', affBiggest: 'Lần nạp lớn nhất', affNoMatch: 'Không tìm thấy bạn với số này.' },
+    id: { affSearchPh: 'Cari teman (ORO-…)', affSortNew: 'Terbaru', affSortDep: 'Deposit terbesar', affSortGain: 'Untung terbesar', affAvg: 'Rata-rata deposit', affBiggest: 'Deposit terbesar', affNoMatch: 'Tidak ada teman dengan nomor ini.' },
+    ru: { affSearchPh: 'Найти друга (ORO-…)', affSortNew: 'Новые', affSortDep: 'Крупные пополнения', affSortGain: 'Крупные доходы', affAvg: 'Среднее пополнение', affBiggest: 'Самое крупное', affNoMatch: 'Друг с таким номером не найден.' },
+    de: { affSearchPh: 'Freund suchen (ORO-…)', affSortNew: 'Neueste', affSortDep: 'Größte Einzahlungen', affSortGain: 'Größte Gewinne', affAvg: 'Ø Einzahlung', affBiggest: 'Größte Einzahlung', affNoMatch: 'Kein Freund mit dieser Nummer.' },
+    hi: { affSearchPh: 'दोस्त खोजें (ORO-…)', affSortNew: 'सबसे नए', affSortDep: 'सबसे बड़ी जमा', affSortGain: 'सबसे बड़ी कमाई', affAvg: 'औसत जमा', affBiggest: 'सबसे बड़ी जमा', affNoMatch: 'इस नंबर का कोई दोस्त नहीं मिला।' }
+  };
+  Object.keys(AFF2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF2_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

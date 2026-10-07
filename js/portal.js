@@ -427,6 +427,7 @@
   var topT = 0;
   var topPrev = false;
   var affFilter = 'all';
+  var affSortBy = 'new';
   var curTab = 'defi';
   var ICO_GIFT = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg>';
   var ICO_MEDAL = '<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M12 2h6l4 12h-6zM28 2h-6l-4 12h6z" class="rb"/><circle cx="20" cy="30" r="14" class="md"/><circle cx="20" cy="30" r="10" class="mi"/></svg>';
@@ -501,7 +502,20 @@
       // v2429 — même phrase que sur la 1re page : « Total déposé par tes amis » (11 langues).
       '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affTotal')) + '</span></div>' +
       '<div class="gold"><b>+' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
-    $('affRowsAll').innerHTML = rows.length ? rows.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmpty')) + '</p>';
+    // v2437 — 2 petites cases en plus : dépôt moyen et plus gros dépôt (sur la période choisie).
+    var biggest = 0;
+    rows.forEach(function (r) { biggest = Math.max(biggest, Number(r.deposit || 0)); });
+    if ($('affSum2')) $('affSum2').innerHTML = '<div><span>' + esc(t('affAvg')) + '</span><b>' + esc(money(rows.length ? dep / rows.length : 0)) + '</b></div>' +
+      '<div><span>' + esc(t('affBiggest')) + '</span><b>' + esc(money(biggest)) + '</b></div>';
+    // Recherche par numéro ORO (« 7030 », « oro-703098 »…) et tri choisi.
+    var q = String(($('affSearch') && $('affSearch').value) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    var shown = rows.filter(function (r) { return !q || String(r.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0; });
+    shown.sort(function (a, b) {
+      if (affSortBy === 'dep') return Number(b.deposit || 0) - Number(a.deposit || 0);
+      if (affSortBy === 'gain') return Number(b.gift || 0) - Number(a.gift || 0);
+      return Number(b.at || 0) - Number(a.at || 0);
+    });
+    $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : 'affEmpty')) + '</p>';
   }
   function tickLists() {
     var els = document.querySelectorAll('#affRows .ar-left, #affRowsAll .ar-left');
@@ -677,6 +691,8 @@
     show($('affMain'), !full);
     show($('affListView'), !full);
     show($('affFull'), !!full);
+    // v2437 — page des amis : pas de grande planète (place pour la liste, la recherche et le tri).
+    if ($('affCard')) $('affCard').classList.toggle('full-on', !!full);
     renderAffList();
     fitPortal();
   }
@@ -725,6 +741,15 @@
       if (await copyLink() && $('affCopy')) $('affCopy').click();
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
+    // v2437 — recherche (à chaque lettre) et tri.
+    if ($('affSearch')) $('affSearch').addEventListener('input', renderAffList);
+    document.querySelectorAll('#affSort button').forEach(function (bt) {
+      bt.addEventListener('click', function () {
+        affSortBy = bt.getAttribute('data-s') || 'new';
+        document.querySelectorAll('#affSort button').forEach(function (x) { x.classList.toggle('on', x === bt); });
+        renderAffList();
+      });
+    });
     if ($('affBack')) $('affBack').addEventListener('click', function () { showAffList(false); });
     var fb = document.querySelectorAll('#affFilter button');
     for (var j = 0; j < fb.length; j++) fb[j].addEventListener('click', function () {

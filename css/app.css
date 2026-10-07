@@ -6374,3 +6374,36 @@ html body #portalModal .tr.tt3 em{display:grid;place-items:center;width:22px;hei
 html body #portalModal .tr.tt4{opacity:.9;min-height:34px}
 html body #portalModal .tr.tt4 em{color:#9AA3C7!important}
 html body #portalModal .tr.me{outline:2px solid #2EE59D;outline-offset:-1px}
+
+/* ===== v2437 — Espace affilié plus agréable ===== */
+/* « Voir plus » : un vrai bouton (cadre vert lumineux, flèche dans un rond, légère pulsation). */
+html body #portalModal#portalModal .aff-more{display:flex!important;align-items:center;justify-content:center;gap:10px;width:100%;margin:10px 0 0!important;padding:11px 14px!important;
+  border-radius:14px!important;border:1px solid rgba(43,212,154,.7)!important;background:linear-gradient(135deg,rgba(43,212,154,.22),rgba(43,212,154,.06))!important;
+  color:#C8F7E6!important;font:900 14px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.02em;cursor:pointer;
+  box-shadow:0 0 0 0 rgba(43,212,154,.45);animation:affMorePulse 2.6s ease-out infinite}
+html body #portalModal .aff-more.hidden{display:none!important}
+html body #portalModal .aff-more .aff-more-go{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#2BD49A;font-style:normal}
+html body #portalModal .aff-more .aff-more-go svg{width:14px!important;height:14px!important;stroke:#05301F!important;stroke-width:3}
+html body #portalModal .aff-more:active{transform:scale(.98)}
+@keyframes affMorePulse{0%{box-shadow:0 0 0 0 rgba(43,212,154,.45)}70%{box-shadow:0 0 0 10px rgba(43,212,154,0)}100%{box-shadow:0 0 0 0 rgba(43,212,154,0)}}
+/* Page des amis : pas de grande planète. */
+html body #portalModal .aff-card.full-on .gift-scene{display:none!important}
+/* Dépôt moyen / Plus gros dépôt. */
+html body #portalModal .aff-sum2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+html body #portalModal .aff-sum2 div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;
+  background:rgba(43,212,154,.07);border:1px solid rgba(43,212,154,.25)}
+html body #portalModal .aff-sum2 span{font-size:11px;color:#AEB6D6}
+html body #portalModal .aff-sum2 b{font-size:13px;color:#fff;font-weight:900;direction:ltr;unicode-bidi:isolate}
+/* Barre de recherche. */
+html body #portalModal .aff-search{display:flex;align-items:center;gap:8px;margin:10px 0 0;padding:0 12px;height:42px;border-radius:12px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14)}
+html body #portalModal .aff-search:focus-within{border-color:rgba(43,212,154,.7);box-shadow:0 0 0 3px rgba(43,212,154,.15)}
+html body #portalModal .aff-search .pi{width:17px;height:17px;flex:0 0 17px;stroke:#7FF5CF;fill:none;stroke-width:2}
+html body #portalModal .aff-search input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;color:#fff;font:600 16px/1 "Plus Jakarta Sans",system-ui,sans-serif}
+html body #portalModal .aff-search input::placeholder{color:#8E97BC}
+/* Boutons de tri. */
+html body #portalModal .aff-sort{display:flex;gap:6px;margin:8px 0 6px;overflow-x:auto;scrollbar-width:none}
+html body #portalModal .aff-sort::-webkit-scrollbar{display:none}
+html body #portalModal .aff-sort button{flex:1 0 auto;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
+  color:#C9CEE6;font:700 12px/1 "Plus Jakarta Sans",system-ui,sans-serif;white-space:nowrap;cursor:pointer}
+html body #portalModal .aff-sort button.on{background:linear-gradient(135deg,#2BD49A,#14A374);border-color:#2BD49A;color:#05301F}
