@@ -6328,3 +6328,16 @@ html body #depositSuccessModal #depositSuccessAmt{font-size:1.6rem!important;fon
 html body #depositSuccessModal #depositSuccessAmt:not(:empty)::before{content:"+"}
 @media (prefers-reduced-motion: reduce){html body :is(#wdConfirmModal,#depositSuccessModal) *,html body .modal-box.cosmo-pop{animation:none!important}}
 html body .modal-box .cosmo-ico{border:0!important;outline:0!important}
+
+/* ===== v2431 — Retrait = ROUGE, Dépôt = VERT (vraies icônes : portefeuille + flèche qui sort / qui entre). ===== */
+html body #wdConfirmModal > .modal-box{border-color:rgba(255,77,106,.7)!important;
+  background:radial-gradient(circle at 50% -10%,rgba(255,77,106,.42),rgba(124,77,255,.18) 45%,rgba(9,10,32,.97) 76%),
+    url("galaxy-modal.svg?v=2431") center/cover no-repeat,#0A0B22!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(255,59,87,.32),0 0 100px rgba(124,77,255,.28)!important}
+html body #wdConfirmModal .modal-box .cosmo-rays{background:repeating-conic-gradient(from 0deg,rgba(255,110,130,.32) 0deg 6deg,transparent 6deg 20deg)!important}
+html body #wdConfirmModal .modal-box .cosmo-ico svg{filter:drop-shadow(0 0 16px rgba(255,59,87,.7))!important}
+html body #wdConfirmModal .modal-title{background:linear-gradient(90deg,#FFE3E8,#FF8A9A 45%,#FF3B57)!important;-webkit-background-clip:text!important;background-clip:text!important}
+html body #wdConfirmModal #wdConfirmAmt{color:#FF7A8E!important;text-shadow:0 0 12px rgba(255,59,87,.45)!important}
+html body #wdConfirmModal .modal-box .cosmo-sp i{background:radial-gradient(circle,#fff,#FF8A9A 45%,rgba(255,60,90,0) 70%);box-shadow:0 0 8px #FF5A72}
+html body #depositSuccessModal .modal-box .cosmo-sp i{background:radial-gradient(circle,#fff,#7FF5CF 45%,rgba(46,229,157,0) 70%);box-shadow:0 0 8px #2EE59D}
+html body .modal-box .cosmo-ico{width:88px!important;height:88px!important}
