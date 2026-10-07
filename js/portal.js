@@ -46,6 +46,8 @@
     m.style.setProperty('pointer-events', 'auto', 'important');
     refresh();
     if (D6.Portal && D6.Portal.refreshAff) { D6.Portal.refreshAff(); D6.Portal.refreshBon(); }
+    // v2422 — on rouvre sur le Tournoi : classement relu tout de suite (les trades démo joués entre-temps comptent).
+    if (curTab === 'top' && D6.Portal && D6.Portal.refreshTop) D6.Portal.refreshTop();
     setTimeout(function () { sky(true); }, 30);
   }
   function closePortal() {
@@ -96,7 +98,10 @@
     if ($('portalModal')) $('portalModal').classList.toggle('is-guest', guest);
     // v2416 — visiteur : il voit TOUTES les pages (exemple du défi, invitation, tournoi) ; chaque bouton
     // d'action lui demande de créer un compte (needAccount).
+    var tbs = document.querySelectorAll('#portalTabs .pt-tab');
+    for (var ti = 0; ti < tbs.length; ti++) tbs[ti].classList.toggle('locked', guest && tbs[ti].getAttribute('data-tab') !== 'defi');
     if (guest) {
+      if (curTab !== 'defi') setTab('defi');
       s = { enabled: true, active: false, canActivate: true, market: 'v100', streak: 0, need: 5, guest: true };
       if (!aff || !aff.guest) aff = { enabled: true, guest: true, code: '', clicks: 0, friends: 0, deposited: 0, played: 0, total: 0, earned: 0, list: [] };
       if (!top || !top.guest) top = { enabled: true, guest: true, top: [], me: { need: 20, rank: 0, points: 0 }, endsAt: nextMonday(), show: 25 };
@@ -109,7 +114,8 @@
     if (!prog) { prog = document.createElement('span'); prog.className = 'pw-prog'; $('btnPortal').appendChild(prog); }
     prog.textContent = s.active ? (s.streak || 0) + '/' + (s.need || 5) : '';
     $('btnPortal').classList.toggle('has-prog', !!s.active);
-    var mk = marketName(s.market);
+    // Nom du marché jamais coupé en fin de ligne (« ORO 999 »).
+    var mk = marketName(s.market).replace(/ /g, ' ');
     $('defiMarket').textContent = mk;
     $('defiRule').textContent = t('defiRule', { m: mk });
     var dots = $('defiDots').children;
@@ -158,7 +164,10 @@
         var pg = (cs.getPropertyValue('--pg') || '').trim() || 'rgba(167,139,250,.45)';
         // v2419 — les dégradés du dessin sont renommés (sinon ils pointent vers une copie cachée → logo gris).
         var html = art.innerHTML.replace(/id="([^"]+)"/g, 'id="$1_pg"').replace(/url\(#([^)]+)\)/g, 'url(#$1_pg)').replace(/href="#([^"]+)"/g, 'href="#$1_pg"');
-        return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + html + '</span>';
+        // v2422 — la PLANÈTE entière (fond, reflet, ombre de la case du marché) avec son logo dessus.
+        var acs = getComputedStyle(art);
+        var planet = 'background-image:' + acs.backgroundImage.replace(/"/g, "'") + ';box-shadow:' + acs.boxShadow + ';border-radius:50%';
+        return '<span class="hc-globe hc-planet" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + ';' + planet + '">' + html + '</span>';
       }
     } catch (e) { /* ignore */ }
     return '';
@@ -296,7 +305,7 @@
   }
 
   // Pièce ORO (monnaie des points du site) : pièce dorée avec la pyramide OROLADO.
-  var ICO_ORO = '<svg class="oro-coin" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" class="oc-out"/><circle cx="10" cy="10" r="6.8" class="oc-in"/><path d="M10 5.2 14.2 13.6H5.8z" class="oc-pyr"/><circle cx="10" cy="10.6" r="1.1" class="oc-eye"/></svg>';
+  var ICO_ORO = '<svg class="oro-coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.6" r="11" class="oc-edge"/><circle cx="12" cy="11.4" r="11" class="oc-out"/><circle cx="12" cy="11.4" r="8.6" class="oc-in"/><path d="M12 5.4 17.6 16.2H6.4z" class="oc-pyr"/><path d="M12 5.4 17.6 16.2H12z" class="oc-pyr2"/><path d="M8.4 12.6h7.2M7.4 14.4h9.2" class="oc-line"/><circle cx="12" cy="10.4" r="1.2" class="oc-eye"/><path d="M5.5 7.2A8.2 8.2 0 0 1 9.4 3.9" class="oc-shine"/></svg>';
   var ICO_TARGET = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg>';
   // Ferme les Récompenses et ouvre le marché du défi (démo pour le compte admin en test, réel sinon).
   function goDefiMarket() {
@@ -392,6 +401,16 @@
     var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
     return d + t('defiD') + ' ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
   }
+  // v2422 — liste des amis : seulement les jours restants (« Reste 364 jours »), pas de secondes qui défilent.
+  function daysOnly(until) {
+    var n = Math.ceil((until - nowSrv()) / 86400);
+    return n <= 1 ? t('affLeft1') : t('affLeftN', { n: n });
+  }
+  // Points du tournoi : « 1 000 000 [pièce] ORO ».
+  function oroAmt(p) {
+    var v = String(Math.round(Number(p) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0');
+    return '<span class="oro-amt"><span class="oa-n">' + v + '</span>' + ICO_ORO + '<span class="oa-u">ORO</span></span>';
+  }
   function tabsOn() {
     var a = !!(aff && aff.enabled && (aff.code || aff.guest)), b = !!(top && top.enabled), c = !!(bon && bon.enabled);
     show($('portalTabs'), a || b || c);
@@ -422,7 +441,7 @@
     var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
     return '<div class="aff-row"><div class="ar-id"><b>' + esc(r.id) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
       '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
-      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(t('affLeft')) + ' ' + esc(daysLeft(r.until)) + '</span></div></div>';
+      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(daysOnly(r.until)) + '</span></div></div>';
   }
   // Aperçu (3 derniers amis) sous les carrés + page complète « Voir plus » (filtre, totaux, tous les amis).
   function renderAffList() {
@@ -444,7 +463,7 @@
   }
   function tickLists() {
     var els = document.querySelectorAll('#affRows .ar-left, #affRowsAll .ar-left');
-    for (var i = 0; i < els.length; i++) els[i].textContent = t('affLeft') + ' ' + daysLeft(Number(els[i].getAttribute('data-until')));
+    for (var i = 0; i < els.length; i++) els[i].textContent = daysOnly(Number(els[i].getAttribute('data-until')));
     if (bon && bon.enabled && $('bonTimer')) $('bonTimer').innerHTML = ICO_CLOCK + '<span>' + esc(daysLeft(bon.phase === 'filling' ? bon.until : bon.weekEnd)) + '</span>';
     if (top && top.enabled && $('topTimer')) $('topTimer').innerHTML = ICO_CLOCK + '<span>' + esc(top.prev ? t('topEnded') : daysLeft(top.endsAt)) + '</span>';
   }
@@ -491,12 +510,12 @@
       var place = [2, 1, 3][i];
       if (!r) return '<div class="tp tp' + place + ' empty"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>—</b><span>&nbsp;</span><div class="tp-step"></div></div>';
       return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(r.id) + '</b>' +
-        '<span class="oro-amt">' + esc(r.points) + ' ORO</span><div class="tp-step"></div></div>';
+        oroAmt(r.points) + '<div class="tp-step"></div></div>';
     }).join('');
     var rest = list.slice(3);
     if (!list.length) $('topRows').innerHTML = '<p class="aff-empty">' + esc(t('topEmpty')) + '</p>';
     else $('topRows').innerHTML = rest.map(function (r) {
-      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b><span class="oro-amt">' + esc(r.points) + ' ORO</span></div>';
+      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b>' + oroAmt(r.points) + '</div>';
     }).join('');
     var me = top.me || {};
     var txt;
@@ -506,7 +525,7 @@
     else if (me.need > 0) txt = t('topMeNeed', { n: me.need });
     else txt = t('topMeOut', { p: me.points });
     $('topMe').innerHTML = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg><span></span>';
-    $('topMe').lastChild.textContent = txt;
+    $('topMe').lastChild.innerHTML = esc(txt).replace(/(\d[\d\u00a0.,]*(?:\s\d{3})*)\s?ORO/g, function (m0, num) { return oroAmt(num.replace(/[^\d-]/g, '')); });
     $('topMe').classList.toggle('in', !!me.rank && me.rank <= (top.show || 25));
     // Bouton « Semaine dernière » : seulement pour l'admin (il voit les numéros ORO pour récompenser).
     var isAdmin = !!top.admin || topPrev;
@@ -580,7 +599,15 @@
     if (r && r.enabled && (r.phase === 'filling' || portalOpen())) bonT = setTimeout(function () { if (!document.hidden) refreshBon(); else bonT = setTimeout(refreshBon, 60000); }, r.phase === 'filling' ? 45000 : 60000);
   }
 
+  var ICO_LOCK = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><circle cx="12" cy="15.4" r="1.3" class="pi-fill"/></svg>';
   function setTab(name) {
+    // v2422 — visiteur non inscrit : seul le Défi du jour est ouvert ; les 3 autres demandent une inscription.
+    if (name !== 'defi' && guestGift()) {
+      var lb = document.querySelector('#portalTabs [data-tab="' + name + '"] span:last-child');
+      bigToast(ICO_LOCK, t('guestLockT'), t('guestLockS', { x: lb ? lb.textContent : '' }), 'dw-start dw-lock');
+      setTimeout(needAccount, 1500);
+      return;
+    }
     curTab = name;
     show($('defiCard'), name === 'defi');
     show($('affCard'), name === 'aff');
@@ -699,11 +726,50 @@
   // v2414 — la page du Portail tient TOUJOURS sur l'écran visible (barre Safari, petits téléphones) :
   // si le contenu dépasse, il est resserré d'un coup (zoom) au lieu de défiler. Jamais en dessous de 78 %.
   var fitT = 0;
+  // v2422 — lignes propres dans toutes les langues : un texte qui déborde d'à peine sur une ligne de plus
+  // (dernier mot presque seul) est très légèrement réduit (jusqu'à -10 %) pour tenir sur une ligne de moins ;
+  // sinon les lignes sont équilibrées (pas de mot orphelin). Aucun texte ne peut en chevaucher un autre.
+  var FIT_SEL = 'p, small, li > span, li > em, .aff-big b, .top-me > span, .bon-state, .bm-top span, .aff-stats span, .ar-id span';
+  function lineInfo(el) {
+    var r = document.createRange();
+    r.selectNodeContents(el);
+    var rects = r.getClientRects(), tops = [], lastL = 1e9, lastR = -1e9, lastTop = -1e9;
+    for (var i = 0; i < rects.length; i++) {
+      var q = rects[i];
+      if (q.width < 1) continue;
+      var tp = Math.round(q.top);
+      if (tops.every(function (x) { return Math.abs(x - tp) > 3; })) tops.push(tp);
+      if (tp > lastTop + 3) { lastTop = tp; lastL = q.left; lastR = q.right; }
+      else if (Math.abs(tp - lastTop) <= 3) { lastL = Math.min(lastL, q.left); lastR = Math.max(lastR, q.right); }
+    }
+    var w = el.clientWidth || 1;
+    return { n: tops.length, fill: (lastR - lastL) / w };
+  }
+  function fitLines(box) {
+    var els = box.querySelectorAll(FIT_SEL);
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (!el.offsetParent || !el.textContent.trim()) continue;
+      el.style.fontSize = '';
+      el.style.letterSpacing = '';
+      el.style.textWrap = '';
+      var a = lineInfo(el);
+      if (a.n < 2 || a.fill > 0.45) continue;
+      var base = parseFloat(getComputedStyle(el).fontSize) || 13, done = false;
+      for (var k = 0.97; k >= 0.885; k -= 0.02) {
+        el.style.setProperty('font-size', (base * k).toFixed(2) + 'px', 'important');
+        el.style.setProperty('letter-spacing', '-0.01em', 'important');
+        if (lineInfo(el).n < a.n) { done = true; break; }
+      }
+      if (!done) { el.style.fontSize = ''; el.style.letterSpacing = ''; el.style.textWrap = a.n === 2 ? 'balance' : 'pretty'; }
+    }
+  }
   function fitPortal() {
     clearTimeout(fitT);
     fitT = setTimeout(function () {
       var box = document.querySelector('#portalModal .portal-box');
       var m = $('portalModal');
+      if (box && m && m.classList.contains('active')) fitLines(box);
       if (!box || !m || !m.classList.contains('active') || window.innerWidth >= 860) return;
       // v2419 : plus de resserrage (zoom) : les cartes ont toutes la même taille et défilent si besoin.
       for (var z = 0; z < box.children.length; z++) box.children[z].style.zoom = '';

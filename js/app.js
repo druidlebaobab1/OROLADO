@@ -2425,7 +2425,10 @@
           var p1 = (cs.getPropertyValue('--p1') || '').trim() || '#C9B8FF';
           var p2 = (cs.getPropertyValue('--p2') || '').trim() || '#3B1D8F';
           var pg = (cs.getPropertyValue('--pg') || '').trim() || 'rgba(167,139,250,.45)';
-          return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + art.innerHTML + '</span>';
+          // v2422 : dégradés renommés (sinon le logo peut apparaître gris).
+          var uid = 'h' + Math.random().toString(36).slice(2, 7);
+          var ih = art.innerHTML.replace(/id="([^"]+)"/g, 'id="$1_' + uid + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1_' + uid + ')');
+          return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + ih + '</span>';
         }
         var ico = document.querySelector('.asset-chip[data-asset="' + assetId + '"] .asset-ico');
         return ico ? ico.innerHTML : '';

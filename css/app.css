@@ -6026,3 +6026,61 @@ html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnPr
 @media (max-width:859px){html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile .pf-txt{margin-top:2px!important}html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade#langBarTrade > .lang-dd-btn{padding-top:3px!important}}
 /* v2420 — visiteur non inscrit : le bouton Profil reste caché (comme avant). */
 html.oro-guest.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile.hidden{display:none!important}
+/* v2422 — Défi du jour : la planète entière du marché avec son logo. */
+html body #portalModal .defi-globe .hc-globe.hc-planet{width:76px!important;height:76px!important;display:grid!important;place-items:center!important;background-size:auto!important}
+html body #portalModal .defi-globe .hc-globe.hc-planet svg{width:64%!important;height:64%!important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+
+/* v2422 — Récompenses : lignes propres (aucun texte qui se chevauche), pièce ORO, croix plus petite, onglets réservés aux inscrits. */
+html body #portalModal .portal-box :is(p,li,em,b,span,small){overflow-wrap:break-word}
+html body #portalModal .portal-box :is(p,li > span,li > em,small,.top-me span){text-wrap:pretty}
+html body #portalModal .portal-box :is(.aff-big b,.bon-big,.top-sub,.defi-rule,.aff-paid,.top-rule){text-wrap:balance}
+/* Croix : un peu plus petite, un peu plus d'espace avec les onglets (même place). */
+html body #portalModal#portalModal#portalModal #closePortal{width:26px!important;height:26px!important;min-width:26px!important}
+html body #portalModal#portalModal#portalModal #closePortal .x-ico{width:13px!important;height:13px!important}
+html body #portalModal#portalModal#portalModal.tabs-on .portal-tabs{margin-top:8px!important}
+/* Onglets réservés (visiteur) : un petit cadenas doré. */
+html body #portalModal .pt-tab.locked{position:relative}
+html body #portalModal .pt-tab.locked::after{content:"";position:absolute;top:4px;right:6px;width:12px;height:12px;border-radius:50%;
+  background:#F2B33D url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='11' width='12' height='9' rx='2' fill='%231a1206'/%3E%3Cpath d='M8.5 11V8.5a3.5 3.5 0 0 1 7 0V11' fill='none' stroke='%231a1206' stroke-width='2.4'/%3E%3C/svg%3E") center/9px no-repeat;box-shadow:0 0 0 1.5px rgba(10,8,24,.9)}
+/* Invitation : les 2 grandes cases toujours sur la même ligne, même hauteur, texte jamais coupé. */
+html body #portalModal#portalModal .aff-big{display:flex!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:6px!important}
+html body #portalModal#portalModal .aff-big b{flex:1 1 0!important;min-width:0!important;display:flex!important;align-items:center;justify-content:center;text-align:center;white-space:normal!important;
+  font-size:clamp(11.5px,3.5vw,14px)!important;line-height:1.2!important;padding:8px 6px!important;height:auto!important}
+html body #portalModal#portalModal .aff-big i{align-self:center;flex:0 0 auto}
+/* Invitation : exemples en liste claire. */
+html body #portalModal .aff-ex .ae-h{display:block;font-size:13px;font-weight:900;color:#FFE6A6;margin:0 0 2px}
+html body #portalModal .aff-ex .ae-h + p{border-top:0!important}
+html body #portalModal .aff-ex .ae-note{color:#F6C453;font-size:11px!important;font-style:italic;border-top:0!important;padding-top:0!important}
+html body #portalModal .aff-ex .ae-sub{font-weight:700;color:#FFE6A6}
+html body #portalModal .aff-ex .ae-li{position:relative;padding-inline-start:14px!important;border-top:0!important}
+html body #portalModal .aff-ex .ae-li::before{content:"";position:absolute;inset-inline-start:3px;top:.85em;width:5px;height:5px;border-radius:50%;background:#F2B33D}
+/* Bonus : le grand titre ne chevauche jamais le chrono. */
+html body #portalModal#portalModal .bon-head{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:6px!important}
+html body #portalModal#portalModal .bon-big{position:static!important;flex:1 1 100%!important;min-width:0!important;white-space:normal!important;text-align:center}
+html body #portalModal#portalModal .bon-head .top-timer{position:static!important;margin-inline-start:auto}
+/* Pièce ORO dessinée : « 1 000 000 [pièce] ORO ». */
+html body #portalModal .oro-amt{display:inline-flex!important;align-items:center;gap:3px;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body #portalModal .oro-amt .oro-coin{width:15px;height:15px;flex:0 0 15px;margin:0;vertical-align:middle;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55))}
+html body #portalModal .oro-coin .oc-edge{fill:#8A5208}
+html body #portalModal .oro-coin .oc-out{fill:#E7A93A}
+html body #portalModal .oro-coin .oc-in{fill:#FFD66E;stroke:#FFF0B8;stroke-width:.9}
+html body #portalModal .oro-coin .oc-pyr{fill:#9A5E0A}
+html body #portalModal .oro-coin .oc-pyr2{fill:#6E4005}
+html body #portalModal .oro-coin .oc-line{stroke:#FFD66E;stroke-width:.9;fill:none;opacity:.8}
+html body #portalModal .oro-coin .oc-eye{fill:#FFF6D2}
+html body #portalModal .oro-coin .oc-shine{stroke:#FFFBEA;stroke-width:1.3;fill:none;stroke-linecap:round;opacity:.85}
+html body #portalModal .top-me .oro-amt{margin:0 2px}
+/* v2422 — logo bien centré DANS la planète du défi, un peu plus petit et discret. */
+html body #portalModal#portalModal#portalModal .defi-globe .hc-globe.hc-planet{position:relative!important;overflow:hidden!important}
+html body #portalModal#portalModal#portalModal .defi-globe .hc-globe.hc-planet > svg{position:absolute!important;inset:0!important;margin:auto!important;width:54%!important;height:54%!important;transform:none!important;opacity:.95;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))!important}
+html body #portalModal#portalModal#portalModal .defi-ring .defi-globe{inset:12px!important;width:auto!important;height:auto!important}
+html body #portalModal#portalModal#portalModal .defi-globe .hc-globe.hc-planet{width:100%!important;height:100%!important}
+/* Chronos et montants ORO toujours lus de gauche à droite (arabe : « 2ي 23:59:59 », « 312 500 ORO »). */
+html body #portalModal :is(.top-timer,.defi-timer) span,html body #portalModal .oro-amt{direction:ltr;unicode-bidi:isolate}
+html body #portalModal :is(#bonMeterTxt,.ar-dep b,.ar-gain b,.aff-stats b,#affUrl){direction:ltr;unicode-bidi:isolate}
+/* Arabe sur PC / TV : la fenêtre des Cadeaux restait hors de l'écran (placement « gauche 50 % » inversé). */
+html[dir="rtl"] body #portalModal{direction:ltr}
+html[dir="rtl"] body #portalModal > .modal-box{direction:rtl}
+/* TV / grand écran : le classement restait sur 2 colonnes trop étroites (numéros ORO cachés) → 1 colonne. */
+html body #portalModal#portalModal#portalModal #topRows{grid-template-columns:1fr!important}
+html body #portalModal#portalModal#portalModal #topRows .tr{grid-template-columns:28px minmax(0,1fr) auto!important}
