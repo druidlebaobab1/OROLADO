@@ -275,7 +275,9 @@
     // (avant : redessiné à chaque clic Connexion / Inscription → le bouton « clignotait »).
     var gReady = null;
     // Nouveau départ : nouveau code de sécurité, boutons redessinés.
+    var gClicked = 0, gLastReset = 0;
     function resetG() {
+      gLastReset = Date.now();
       gReady = null;
       document.querySelectorAll('[data-g-official]').forEach(function (b) { b.removeAttribute('data-gw'); });
       setTimeout(render, 50);
@@ -320,6 +322,7 @@
           google.accounts.id.renderButton(holder, {
             type: 'standard', theme: 'outline', size: 'large', text: 'continue_with',
             shape: 'rectangular', logo_alignment: 'center', width: w,
+            click_listener: function () { gClicked = Date.now(); },
             locale: (D6.I18N && D6.I18N.lang) || 'fr'
           });
         });
@@ -340,17 +343,15 @@
     if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { setTimeout(render, 60); });
     // v2432 — fenêtre Google fermée sans finir (annulée, erreur) : quand on revient sur le site, le bouton est
     // refait avec un nouveau code, il se reclique tout de suite.
-    var gClicked = false;
-    window.addEventListener('blur', function () {
-      setTimeout(function () {
-        var a = document.activeElement;
-        if (a && a.tagName === 'IFRAME' && a.closest && a.closest('[data-g-official]')) gClicked = true;
-      }, 0);
-    });
+    // v2434 : on ne regarde plus « la page perd / reprend la main » (sur iPhone, le bouton de Google prend
+    // lui-même la main en s'affichant → boucle : bouton refait sans arrêt, il clignotait et ne répondait plus).
+    // On utilise l'avertissement officiel de Google « bouton cliqué » (click_listener), puis UN seul nouveau
+    // départ quand on revient sur la page, au plus une fois toutes les 3 s.
     window.addEventListener('focus', function () {
-      if (!gClicked) return;
-      gClicked = false;
-      setTimeout(resetG, 400);
+      if (!gClicked || Date.now() - gClicked > 120000) return;
+      gClicked = 0;
+      if (Date.now() - gLastReset < 3000) return;
+      setTimeout(resetG, 600);
     });
     // Onglets Connexion / Inscription de l'écran de connexion : bouton Google refait aussi.
     document.querySelectorAll('#screenAuth .auth-tab, #screenAuth [data-auth-tab], #tabLogin, #tabRegister').forEach(function (el) {
