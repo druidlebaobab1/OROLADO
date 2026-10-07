@@ -429,7 +429,8 @@
   function esc(x) {
     return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   }
-  function affLink() { return aff && aff.code ? location.origin + '/?ami=' + aff.code : ''; }
+  // v2428 — lien court et propre : orolado.com/r/CODE (sans « www », sans mot français).
+  function affLink() { return aff && aff.code ? 'https://orolado.com/r/' + aff.code : ''; }
   function nowSrv() { return Date.now() / 1000 + skew; }
   // Compte à rebours qui tourne chaque seconde : « 358j 04:12:33 ».
   function daysLeft(until) {
@@ -675,7 +676,7 @@
       return true;
     } catch (e2) { return false; }
   }
-  // Clic sur un lien d'ami (orolado.com/?ami=CODE) : envoyé une fois ; le serveur filtre par téléphone et par jour.
+  // Clic sur un lien d'ami (orolado.com/r/CODE) : envoyé une fois ; le serveur filtre par téléphone et par jour.
   function sendClick() {
     try {
       var o = JSON.parse(localStorage.getItem('oro_ami') || 'null');

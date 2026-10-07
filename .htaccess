@@ -3,6 +3,8 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+# v2428 — lien d'invitation court : /r/CODE -> /?ref=CODE
+RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
   RewriteCond %{HTTPS} !=on
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   RewriteRule ^admin/?$ admin.php [L,QSA]

@@ -1,14 +1,16 @@
 (function (D6) {
   'use strict';
 
-  // v2413 — lien d'invitation « orolado.com/?ami=CODE » : on garde le code (30 jours) jusqu'à l'inscription.
+  // v2413 — lien d'invitation : on garde le code (30 jours) jusqu'à l'inscription.
+  // v2428 — nouveau lien court « orolado.com/r/CODE » (le serveur le renvoie vers « /?ref=CODE ») ;
+  // les anciens liens « /?ami=CODE » déjà partagés marchent toujours.
   (function () {
     try {
-      var m = /[?&]ami=([A-Za-z0-9]{8})(?:&|$)/.exec(location.search || '');
+      var m = /[?&](?:ref|ami)=([A-Za-z0-9]{8})(?:&|$)/.exec(location.search || '');
       if (!m) return;
       localStorage.setItem('oro_ami', JSON.stringify({ c: m[1].toUpperCase(), t: Date.now() }));
       if (history.replaceState) {
-        var q = (location.search || '').replace(/([?&])ami=[^&]*(&|$)/, '$1').replace(/[?&]$/, '');
+        var q = (location.search || '').replace(/([?&])(?:ref|ami)=[^&]*(&|$)/, '$1').replace(/[?&]$/, '');
         history.replaceState(null, '', location.pathname + q + location.hash);
       }
     } catch (eAmi) { /* ignore */ }
