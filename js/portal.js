@@ -60,6 +60,19 @@
   (function () {
     try { if (/[?&]cadeaux=1(?:&|$)/.test(location.search || '')) sessionStorage.setItem('oro_gift_prev', '1'); } catch (e) { /* ignore */ }
   })();
+  function nextMonday() {
+    var d = new Date(); d.setUTCHours(0, 0, 0, 0);
+    var add = (8 - (d.getUTCDay() || 7)) % 7 || 7;
+    return Math.floor(d.getTime() / 1000) + add * 86400 - 1;
+  }
+  // Visiteur qui veut agir : on ferme et on ouvre l'inscription. Renvoie true si c'était un visiteur.
+  function needAccount() {
+    if (!guestGift()) return false;
+    closePortal();
+    var b = document.getElementById('btnGoRegister');
+    if (b) b.click();
+    return true;
+  }
   function guestGift() {
     if (loggedIn()) return false;
     var pub = !!(D6.CONFIG && D6.CONFIG.GIFTS_PUBLIC);
@@ -72,18 +85,20 @@
     var guest = guestGift();
     var on = !!(s && s.enabled) || guest;
     show($('btnPortal'), on);
+    if (!on || guest) hud(null);
     document.documentElement.classList.toggle('portal-on', on);
     document.documentElement.classList.toggle('gift-guest-on', guest);
     layoutTopbar(on);
     show($('defiChip'), false);
-    show($('giftGuest'), guest);
+    show($('giftGuest'), false);
     if ($('portalModal')) $('portalModal').classList.toggle('is-guest', guest);
+    // v2416 — visiteur : il voit TOUTES les pages (exemple du défi, invitation, tournoi) ; chaque bouton
+    // d'action lui demande de créer un compte (needAccount).
     if (guest) {
-      show($('defiCard'), false); show($('affCard'), false); show($('topCard'), false); show($('portalTabs'), false);
-      var pg = $('btnPortal').querySelector('.pw-prog');
-      if (pg) pg.textContent = '';
-      $('btnPortal').classList.remove('has-prog');
-      return;
+      s = { enabled: true, active: false, canActivate: true, market: 'v100', streak: 0, need: 5, guest: true };
+      if (!aff || !aff.guest) aff = { enabled: true, guest: true, code: '', clicks: 0, friends: 0, deposited: 0, played: 0, total: 0, earned: 0, list: [] };
+      if (!top || !top.guest) top = { enabled: true, guest: true, top: [], me: { need: 20, rank: 0, points: 0 }, endsAt: nextMonday(), show: 25 };
+      setTimeout(function () { renderAff(); renderTop(); }, 0);
     }
     if (!on) return;
     // Progression du défi affichée SUR la maison (« 3/5 ») : aucune pastille sur le graphique.
@@ -107,7 +122,7 @@
       st.textContent = '';
       st.className = 'defi-state';
       show(act, false);
-      go.textContent = t('defiGo', { m: mk });
+      go.textContent = t('defiContinue', { m: mk });
       show(go, true);
     } else if (s.won && !s.canActivate) {
       tm.textContent = '';
@@ -120,9 +135,11 @@
       tm.textContent = '';
       st.textContent = s.finished && !s.won ? t('defiLost') : '';
       st.className = 'defi-state';
+      act.textContent = t('defiStart', { m: mk });
       show(act, !!s.canActivate);
       show(go, false);
     }
+    hud(s);
   }
 
   // Le globe du marché : le même dessin que sur les cases des marchés du site.
@@ -221,6 +238,58 @@
     setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 3200);
   }
 
+  // v2416 — grande notification au centre de l'écran (« Le défi a commencé ! », « C'est parti ! »…).
+  function bigToast(ico, title, sub, cls) {
+    var box = document.createElement('div');
+    box.className = 'defi-win ' + (cls || '');
+    box.innerHTML = '<div class="dw-in"><div class="dw-cup">' + ico + '</div><div class="dw-t"></div><div class="dw-s"></div></div>';
+    box.querySelector('.dw-t').textContent = title;
+    box.querySelector('.dw-s').textContent = sub || '';
+    document.body.appendChild(box);
+    setTimeout(function () { box.classList.add('out'); }, 2600);
+    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 3200);
+  }
+
+  // v2416 — petit compteur discret sur le graphique pendant le défi : « BAAL ●●●○○ 3/5 ».
+  // « Défi perdu » s'affiche un instant quand la série retombe à 0 ; on peut recommencer jusqu'à minuit.
+  var hudLast = -1;
+  function hud(s) {
+    var stage = $('chartStage');
+    if (!stage) return;
+    var el = $('defiHud');
+    var on = !!(s && s.enabled && s.active && !guestGift());
+    if (!on) { if (el) el.classList.add('hidden'); hudLast = -1; return; }
+    if (!el) {
+      el = document.createElement('button');
+      el.type = 'button';
+      el.id = 'defiHud';
+      el.className = 'defi-hud';
+      el.addEventListener('click', function () { openPortal(); setTimeout(function () { if (D6.Portal.tab) D6.Portal.tab('defi'); }, 30); });
+      stage.appendChild(el);
+    }
+    var n = s.streak || 0, need = s.need || 5, dots = '';
+    for (var i = 0; i < need; i++) dots += '<i class="' + (i < n ? 'on' : '') + '"></i>';
+    el.innerHTML = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg><b></b><span class="dh-dots">' + dots + '</span><em>' + n + '/' + need + '</em>';
+    el.querySelector('b').textContent = marketName(s.market);
+    el.classList.remove('hidden');
+    if (hudLast > 0 && n === 0) {
+      el.classList.add('lost');
+      el.setAttribute('data-lost', t('defiLostHud'));
+      setTimeout(function () { el.classList.remove('lost'); }, 2600);
+    }
+    hudLast = n;
+  }
+
+  var ICO_TARGET = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg>';
+  // Ferme les Récompenses et ouvre le marché du défi (démo pour le compte admin en test, réel sinon).
+  function goDefiMarket() {
+    closePortal();
+    if (!state || !state.market) return;
+    try { if (window.oroUi && window.oroUi.mode) window.oroUi.mode(state.mode === 'demo' ? 'demo' : 'real'); } catch (e) { /* ignore */ }
+    var id = state.market;
+    if (window.oroUi && window.oroUi.asset) window.oroUi.asset({ getAttribute: function () { return id; } });
+  }
+
   async function call(action) {
     if (!loggedIn() || !D6.Api || !D6.Api.post) return null;
     try { return await D6.Api.post(action, {}, 15000); } catch (e) { return null; }
@@ -254,18 +323,18 @@
     var m = $('portalModal');
     if (m) m.addEventListener('click', function (e) { if (e.target === m) closePortal(); });
     if ($('defiActivate')) $('defiActivate').addEventListener('click', async function () {
+      if (needAccount()) return;
       var btn = this;
       btn.disabled = true;
       await refresh(true);
       btn.disabled = false;
-    });
-    if ($('defiTrade')) $('defiTrade').addEventListener('click', function () {
-      closePortal();
-      if (state && state.market && window.oroUi && window.oroUi.asset) {
-        var id = state.market;
-        window.oroUi.asset({ getAttribute: function () { return id; } });
+      // v2416 : le défi démarre → grande notification puis direction le marché du défi.
+      if (state && state.active) {
+        goDefiMarket();
+        bigToast(ICO_TARGET, t('defiStartedT'), t('defiStartedS', { m: marketName(state.market) }), 'dw-start');
       }
     });
+    if ($('defiTrade')) $('defiTrade').addEventListener('click', goDefiMarket);
     if ($('defiChip')) {
       $('defiChip').addEventListener('click', openPortal);
     }
@@ -305,7 +374,7 @@
     return d + t('defiD') + ' ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
   }
   function tabsOn() {
-    var a = !!(aff && aff.enabled && aff.code), b = !!(top && top.enabled);
+    var a = !!(aff && aff.enabled && (aff.code || aff.guest)), b = !!(top && top.enabled);
     show($('portalTabs'), a || b);
     var bs = document.querySelectorAll('#portalTabs .pt-tab');
     for (var i = 0; i < bs.length; i++) {
@@ -318,8 +387,8 @@
   }
   function renderAff() {
     tabsOn();
-    if (!(aff && aff.enabled && aff.code)) return;
-    $('affUrl').textContent = affLink().replace(/^https?:\/\//, '');
+    if (!(aff && aff.enabled && (aff.code || aff.guest))) return;
+    $('affUrl').textContent = aff.guest ? t('affGuestLink') : affLink().replace(/^https?:\/\//, '');
     $('affClicks').textContent = String(aff.clicks || 0);
     $('affFriends').textContent = String(aff.friends || 0);
     $('affDeposited').textContent = String(aff.deposited || 0);
@@ -330,21 +399,32 @@
     renderAffList();
     fitPortal();
   }
+  function affRowHtml(r) {
+    var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
+    return '<div class="aff-row"><div class="ar-id"><b>' + esc(r.id) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
+      '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
+      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(t('affLeft')) + ' ' + esc(daysLeft(r.until)) + '</span></div></div>';
+  }
+  // Aperçu (3 derniers amis) sous les carrés + page complète « Voir plus » (filtre, totaux, tous les amis).
   function renderAffList() {
     if (!aff || !$('affRows')) return;
+    var all = aff.list || [];
+    $('affRows').innerHTML = all.length ? all.slice(0, 2).map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmptyAll')) + '</p>';
+    show($('affMore'), all.length > 0);
+    if (!$('affRowsAll')) return;
     var now = nowSrv();
-    var from = affFilter === 'day' ? Math.floor(new Date().setHours(0, 0, 0, 0) / 1000) : (affFilter === 'week' ? now - 7 * 86400 : 0);
-    var rows = (aff.list || []).filter(function (r) { return r.at >= from; });
-    if (!rows.length) { $('affRows').innerHTML = '<p class="aff-empty">' + esc(t('affEmpty')) + '</p>'; return; }
-    $('affRows').innerHTML = rows.map(function (r) {
-      var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' });
-      return '<div class="aff-row"><div class="ar-id"><b>' + esc(r.id) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
-        '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
-        '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(t('affLeft')) + ' ' + esc(daysLeft(r.until)) + '</span></div></div>';
-    }).join('');
+    var from = affFilter === 'day' ? Math.floor(new Date().setHours(0, 0, 0, 0) / 1000)
+      : affFilter === 'week' ? now - 7 * 86400 : affFilter === 'month' ? now - 30 * 86400 : 0;
+    var rows = all.filter(function (r) { return r.at >= from; });
+    var dep = 0, gain = 0;
+    rows.forEach(function (r) { dep += Number(r.deposit || 0); gain += Number(r.gift || 0); });
+    if ($('affSum')) $('affSum').innerHTML = '<div><b>' + rows.length + '</b><span>' + esc(t('affFriends')) + '</span></div>' +
+      '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
+      '<div class="gold"><b>+' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
+    $('affRowsAll').innerHTML = rows.length ? rows.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmpty')) + '</p>';
   }
   function tickLists() {
-    var els = document.querySelectorAll('#affRows .ar-left');
+    var els = document.querySelectorAll('#affRows .ar-left, #affRowsAll .ar-left');
     for (var i = 0; i < els.length; i++) els[i].textContent = t('affLeft') + ' ' + daysLeft(Number(els[i].getAttribute('data-until')));
     if (top && top.enabled && $('topTimer')) $('topTimer').innerHTML = ICO_CLOCK + '<span>' + esc(top.prev ? t('topEnded') : daysLeft(top.endsAt)) + '</span>';
   }
@@ -360,7 +440,7 @@
   }
   async function refreshAff() {
     clearTimeout(affT);
-    if (!loggedIn()) { aff = null; renderAff(); return; }
+    if (!loggedIn()) { if (!guestGift()) aff = null; renderAff(); return; }
     var r = await call('affStatus');
     if (r && r.ok !== false) {
       if (r.now) skew = r.now - Date.now() / 1000;
@@ -399,7 +479,8 @@
     }).join('');
     var me = top.me || {};
     var txt;
-    if (me.rank) txt = t('topMeRank', { r: me.rank, p: me.points, n: top.players || 0 });
+    if (top.guest) txt = t('topGuest');
+    else if (me.rank) txt = t('topMeRank', { r: me.rank, p: me.points });
     else if (me.need > 0) txt = t('topMeNeed', { n: me.need });
     else txt = t('topMeOut', { p: me.points });
     $('topMe').innerHTML = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg><span></span>';
@@ -415,7 +496,7 @@
   }
   async function refreshTop() {
     clearTimeout(topT);
-    if (!loggedIn()) { top = null; renderTop(); return; }
+    if (!loggedIn()) { if (!guestGift()) top = null; renderTop(); return; }
     var r = null;
     try { r = await D6.Api.post('topStatus', topPrev ? { prev: 1 } : {}, 15000); } catch (e) { r = null; }
     if (r && r.ok !== false) {
@@ -441,7 +522,13 @@
     fitPortal();
   }
   // v2415 : la liste des amis est toujours affichée sous les carrés (plus de bouton « Voir mes amis »).
-  function showAffList() { renderAffList(); fitPortal(); }
+  function showAffList(full) {
+    show($('affMain'), !full);
+    show($('affListView'), !full);
+    show($('affFull'), !!full);
+    renderAffList();
+    fitPortal();
+  }
   async function copyLink() {
     var link = affLink();
     if (!link) return false;
@@ -469,6 +556,7 @@
     var tabs = document.querySelectorAll('#portalTabs .pt-tab');
     for (var i = 0; i < tabs.length; i++) tabs[i].addEventListener('click', function () { setTab(this.getAttribute('data-tab')); });
     if ($('affCopy')) $('affCopy').addEventListener('click', async function () {
+      if (needAccount()) return;
       var btn = this, lbl = btn.querySelector('span');
       if (await copyLink()) {
         btn.classList.add('done');
@@ -477,6 +565,7 @@
       }
     });
     if ($('affShare')) $('affShare').addEventListener('click', async function () {
+      if (needAccount()) return;
       var link = affLink();
       if (!link) return;
       if (navigator.share) {
@@ -484,8 +573,8 @@
       }
       if (await copyLink() && $('affCopy')) $('affCopy').click();
     });
-    if ($('affListOpen')) $('affListOpen').addEventListener('click', function () { showAffList(true); });
-    if ($('affListBack')) $('affListBack').addEventListener('click', function () { showAffList(false); });
+    if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
+    if ($('affBack')) $('affBack').addEventListener('click', function () { showAffList(false); });
     var fb = document.querySelectorAll('#affFilter button');
     for (var j = 0; j < fb.length; j++) fb[j].addEventListener('click', function () {
       affFilter = this.getAttribute('data-f');
@@ -493,8 +582,10 @@
       renderAffList();
     });
     if ($('topPlay')) $('topPlay').addEventListener('click', function () {
+      if (needAccount()) return;
       closePortal();
       if (window.oroUi && window.oroUi.mode) window.oroUi.mode('demo');
+      bigToast(ICO_TROPHY, t('topGoT'), t('topGoS'), 'dw-start');
     });
     var goAuth = function (which) {
       closePortal();
@@ -533,9 +624,9 @@
       }
       kids.forEach(function (k) { k.style.zoom = ''; });
       var cs = getComputedStyle(box);
-      var avail = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var avail = box.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
       var need = 0;
-      kids.forEach(function (k) { var r = k.getBoundingClientRect(), s = getComputedStyle(k); need += r.height + parseFloat(s.marginTop) + parseFloat(s.marginBottom); });
+      kids.forEach(function (k) { var r = k.getBoundingClientRect(), s = getComputedStyle(k); if (s.display === 'none') return; need += r.height + (parseFloat(s.marginTop) || 0) + (parseFloat(s.marginBottom) || 0); });
       if (need > avail + 1) {
         var z = Math.max(0.78, Math.floor((avail / need) * 1000) / 1000);
         kids.forEach(function (k) { k.style.zoom = String(z); });

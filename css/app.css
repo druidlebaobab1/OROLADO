@@ -5782,3 +5782,54 @@ html body #portalModal#portalModal .aff-rows{max-height:104px!important;overflow
 @media (max-height:760px){html body #portalModal#portalModal .aff-rows{max-height:96px!important}}
 @media (max-width:859px){html body #portalModal#portalModal .aff-stats6 .pi{display:none}html body #portalModal#portalModal .aff-stats6 div{padding:6px 3px 5px!important}}
 @media (max-width:859px){html body #portalModal#portalModal .aff-steps3 .pi{display:none}html body #portalModal#portalModal .aff-steps3 li{padding:10px 4px 6px}html body #portalModal#portalModal .aff-listview{margin-top:8px;padding-top:8px}}
+/* v2416 — retouches du propriétaire : phrase du défi encadrée, bouton « Commencer le défi », compteur discret
+   sur le graphique, grandes notifications, exemples de gains, « Voir plus », lignes d'amis plus fines. */
+html body #portalModal .defi-rule{margin:12px 0 0!important;padding:11px 12px;border-radius:12px;background:linear-gradient(180deg,rgba(242,179,61,.14),rgba(242,179,61,.05));border:1px solid rgba(242,179,61,.42);font-size:15px!important;line-height:1.4!important;font-weight:800!important;color:#FFF3D1!important;text-align:center}
+html body #portalModal .defi-go,html body #portalModal .defi-trade{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:48px;margin-top:10px!important;font-size:15px!important;font-weight:900!important;letter-spacing:.02em}
+html body #portalModal .defi-go.hidden,html body #portalModal .defi-trade.hidden{display:none!important}
+html body #portalModal .defi-trade{border-radius:14px;border:0;cursor:pointer;color:#1A1205;background:linear-gradient(180deg,#FFD978,#F2A82A);box-shadow:0 6px 18px rgba(242,168,42,.35)}
+html body #portalModal .defi-how .defi-ex{font-size:12.5px!important}
+
+/* Grandes notifications (Le défi a commencé / C'est parti / Félicitations). */
+html body .defi-win .dw-s{margin-top:6px;font-size:14px;line-height:1.35;color:#E6EAFA;max-width:260px;text-align:center}
+html body .defi-win .dw-s:empty{display:none}
+html body .defi-win.dw-start .dw-cup .pi{stroke:#FFD27A}
+html body .defi-win.dw-start .dw-t{font-size:22px}
+
+/* Compteur discret du défi sur le graphique. */
+html body #chartStage{position:relative}
+html body #chartStage .defi-hud{position:absolute;left:8px;top:8px;z-index:24;display:flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 7px;border-radius:14px;border:1px solid rgba(242,179,61,.35);background:rgba(8,12,30,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:#FFE6A6;font:800 11.5px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer;opacity:.92}
+html body #chartStage .defi-hud.hidden{display:none!important}
+html body #chartStage .defi-hud .pi{width:15px;height:15px;stroke:#FF6F80;fill:none;stroke-width:1.8}
+html body #chartStage .defi-hud .pi .pi-fill{fill:#FF6F80;stroke:none}
+html body #chartStage .defi-hud .dh-dots{display:flex;gap:3px}
+html body #chartStage .defi-hud .dh-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18)}
+html body #chartStage .defi-hud .dh-dots i.on{background:#F6C453;box-shadow:0 0 6px rgba(246,196,83,.7)}
+html body #chartStage .defi-hud em{font-style:normal;color:#fff;direction:ltr}
+html body #chartStage .defi-hud.lost{border-color:rgba(255,90,110,.7);background:rgba(60,8,20,.75)}
+html body #chartStage .defi-hud.lost::after{content:attr(data-lost);position:absolute;left:0;top:32px;white-space:nowrap;padding:5px 10px;border-radius:10px;background:rgba(255,77,106,.92);color:#fff;font-size:12px;font-weight:900;animation:hudLost 2.6s ease forwards}
+@keyframes hudLost{0%{opacity:0;transform:translateY(-4px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+html[dir=rtl] body #chartStage .defi-hud{left:auto;right:8px}
+
+/* Invitation : exemples de gains, aperçu de 3 amis + « Voir plus », page complète. */
+html body #portalModal .aff-big i{font-size:15px!important}
+html body #portalModal .aff-proj{margin-top:9px;padding:9px 11px;border-radius:12px;background:linear-gradient(160deg,rgba(43,212,154,.12),rgba(43,212,154,.03));border:1px solid rgba(43,212,154,.35)}
+html body #portalModal .aff-proj b{display:block;font-size:12.5px;color:#BFF5DC;font-weight:900;margin-bottom:4px}
+html body #portalModal .aff-proj p{margin:2px 0 0;font-size:12px;line-height:1.35;color:#ECEFFA;font-weight:700}
+html body #portalModal .aff-proj small{display:block;margin-top:5px;font-size:10.5px;line-height:1.3;color:#8FE3B8}
+html body #portalModal .aff-row{padding:5px 9px!important;border-radius:9px!important}
+html body #portalModal .aff-row b{font-size:12px!important}
+html body #portalModal .aff-row span{font-size:9.5px!important}
+html body #portalModal#portalModal .aff-rows{max-height:none!important;overflow:visible!important;min-height:0}
+html body #portalModal .aff-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:34px;margin-top:6px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#FFE6A6;font:800 12.5px/1 inherit;font-family:inherit;cursor:pointer}
+html body #portalModal .aff-more.hidden{display:none!important}
+html body #portalModal .aff-more .pi{width:15px;height:15px;stroke:currentColor}
+html[dir=rtl] body #portalModal .aff-more .pi{transform:scaleX(-1)}
+html body #portalModal .aff-full{display:flex;flex-direction:column;gap:8px}
+html body #portalModal .aff-full.hidden,html body #portalModal .aff-listview.hidden{display:none!important}
+html body #portalModal .aff-full .aff-lv-top{display:flex;align-items:center;gap:10px}
+html body #portalModal .aff-full .aff-filter{display:grid;grid-template-columns:repeat(4,1fr)}
+html body #portalModal#portalModal .aff-rows-all{max-height:calc(100dvh - 330px)!important;overflow-y:auto!important;overscroll-behavior:contain}
+html.saf-under body #portalModal#portalModal .aff-rows-all{max-height:calc(100dvh - 420px)!important}
+@media (max-width:859px){html body #portalModal#portalModal.tabs-on .portal-head{display:none!important}html body #portalModal#portalModal.tabs-on .portal-tabs{margin-top:auto!important}html body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-top:calc(env(safe-area-inset-top,0px) + 50px)!important}}
+html body #portalModal#portalModal.tabs-on .portal-head{display:none!important}
