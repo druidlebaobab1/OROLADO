@@ -82,7 +82,7 @@
     GOOGLE_PUBLIC: true,
     // v2415 — case dorée « Cadeaux » pour les visiteurs NON inscrits (invite à créer un compte).
     // false pendant les tests : visible seulement avec orolado.com/?cadeaux=1. Mettre true à l'ouverture à tous.
-    GIFTS_PUBLIC: false,
+    GIFTS_PUBLIC: true,
     ASSETS: {
       v100: {
         id: 'v100',
