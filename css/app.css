@@ -7171,3 +7171,111 @@ html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDra
 html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer{position:relative}
 html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer::before{content:"";position:absolute;left:-28%;right:-28%;top:64%;height:22%;border-radius:50%;
   border:1.5px solid rgba(255,214,120,.85);border-top-color:transparent;transform:rotate(-18deg);pointer-events:none}
+
+/* ===== v2450 — ACHETER / VENDRE style « Galaxie » (choix C) : verre vert / rouge transparent, vraies planètes qui glissent
+   doucement à l'intérieur, rond blanc avec la flèche et anneau doré qui tourne. Au toucher : le vert / rouge plein revient.
+   Mêmes tailles, mêmes places (écran normal ET plein écran). ===== */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade{
+  background-repeat:repeat-x,no-repeat!important;background-size:auto 100%,100% 100%!important;
+  animation:btPlanets 60s linear infinite!important;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.55)!important;
+  padding-left:52px!important;transition:background-color .15s,box-shadow .2s,transform .1s!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{
+  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(90deg,rgba(34,197,94,.62),rgba(8,40,30,.55) 85%)!important;
+  border:1.5px solid #22C55E!important;box-shadow:0 0 14px rgba(34,197,94,.5),0 0 14px rgba(34,197,94,.22) inset!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{
+  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(90deg,rgba(244,63,94,.62),rgba(40,8,20,.55) 85%)!important;
+  border:1.5px solid #F43F5E!important;box-shadow:0 0 14px rgba(244,63,94,.5),0 0 14px rgba(244,63,94,.22) inset!important;animation-direction:reverse!important}
+@keyframes btPlanets{from{background-position:0 0,0 0}to{background-position:-400px 0,0 0}}
+/* Au toucher : la couleur pleine d'avant revient, bien vive. */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call:active{
+  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(180deg,#5BF5B8,#22C55E 50%,#10A86B)!important;box-shadow:0 0 26px rgba(34,197,94,.9)!important;transform:scale(.98)}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put:active{
+  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(180deg,#FF8A9A,#F43F5E 50%,#E11D48)!important;box-shadow:0 0 26px rgba(244,63,94,.9)!important;transform:scale(.98)}
+/* Rond blanc avec la flèche, à gauche, bien au centre en hauteur. */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{position:absolute!important;left:6px;top:50%;
+  height:calc(100% - 14px)!important;width:auto!important;aspect-ratio:1;max-height:44px!important;max-width:44px!important;transform:translateY(-50%);
+  box-sizing:border-box;padding:9px!important;border-radius:50%;background:#fff;stroke-width:3.4!important;fill:none!important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.18),0 2px 8px rgba(0,0,0,.35);z-index:2}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call .bt-arr,html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call .bt-arr path{stroke:#15803D!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr,html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr path{stroke:#BE123C!important}
+/* Anneau doré en pointillés qui tourne autour du rond. */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade::after{content:""!important;position:absolute!important;left:2px;top:50%;
+  height:calc(100% - 6px);width:auto;aspect-ratio:1;max-height:52px;transform-origin:center;translate:0 -50%;
+  border-radius:50%;border:2px dashed rgba(255,226,140,.9);animation:btRing 5s linear infinite;pointer-events:none;z-index:1;background:none!important;display:block!important;box-sizing:border-box}
+@keyframes btRing{to{transform:rotate(360deg)}}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{position:relative;z-index:2}
+
+/* ===== v2450 — TERMINAL sombre et transparent, planètes très légères, cases qui s'allument « comme de l'eau » ===== */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .pad{
+  background:url("../icons/ui/pad-planets.svg?v=2450") center/cover no-repeat,linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78))!important;
+  border:0!important;box-shadow:none!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .dur-chip,
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .qbtn{
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03))!important;border:1px solid rgba(199,210,254,.22)!important;color:#D6E4FF!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset!important;transition:transform .1s,box-shadow .2s!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .qbtn:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;color:#05263A!important;box-shadow:0 0 14px rgba(56,189,248,.8)!important;transform:scale(.95)}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .dur-chip.on{
+  background:linear-gradient(120deg,#0EA5E9,#7DD3FC 30%,#38BDF8 50%,#BAE6FD 70%,#0EA5E9)!important;background-size:250% 100%!important;
+  animation:oroWater 3.2s ease-in-out infinite!important;color:#04263A!important;border-color:#E0F2FE!important;
+  box-shadow:0 0 14px rgba(56,189,248,.75),0 0 0 1px rgba(255,255,255,.5) inset!important}
+@keyframes oroWater{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #inputStake{
+  background:linear-gradient(180deg,rgba(46,229,157,.10),rgba(8,20,30,.6))!important;border:1px solid rgba(46,229,157,.65)!important;
+  box-shadow:0 0 12px rgba(46,229,157,.25)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .win-preview{
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))!important;border:1px solid rgba(251,191,36,.45)!important;
+  box-shadow:0 0 12px rgba(251,191,36,.15)!important}
+/* Payouts : couleur légère au repos, couleur pleine « eau » quand choisi. */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:251,146,60;
+  background:linear-gradient(180deg,rgba(var(--c),.20),rgba(var(--c),.05))!important;border:1px solid rgba(var(--c),.55)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset!important;transition:transform .1s,box-shadow .2s!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:56,189,248}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:167,139,250}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:251,191,36}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip.on{
+  background:linear-gradient(120deg,rgba(var(--c),.85),rgba(var(--c),1) 35%,rgba(255,255,255,.55) 50%,rgba(var(--c),1) 65%,rgba(var(--c),.85))!important;
+  background-size:250% 100%!important;animation:oroWater 3.2s ease-in-out infinite!important;border-color:rgba(255,255,255,.7)!important;
+  box-shadow:0 0 16px rgba(var(--c),.8),0 0 0 1px rgba(255,255,255,.35) inset!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip.on .odds-mult,
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip.on .odds-pct{color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.45)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:active,
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .dur-chip:active{transform:scale(.95)}
+
+/* ===== v2450 — Ligne MA / BB / EMA / zoom / plein écran : même verre sombre transparent, sans trait dur sur la courbe ===== */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar{background:linear-gradient(180deg,rgba(14,12,40,.55),rgba(14,12,40,0))!important;border:0!important;box-shadow:none!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar .ind-btn{
+  background-color:rgba(255,255,255,.08)!important;border:1px solid rgba(199,210,254,.25)!important;border-radius:9px!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset!important;transition:transform .1s,box-shadow .2s!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar .ind-btn.on:not(.zoom-btn){
+  background:linear-gradient(120deg,rgba(251,191,36,.55),rgba(251,191,36,.9) 40%,rgba(255,255,255,.5) 52%,rgba(251,191,36,.9) 64%,rgba(251,191,36,.55))!important;
+  background-size:250% 100%!important;animation:oroWater 3.2s ease-in-out infinite!important;color:#2A1600!important;border-color:#FFE7A3!important;box-shadow:0 0 12px rgba(251,191,36,.6)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar .ind-btn:active{transform:scale(.94);box-shadow:0 0 12px rgba(125,211,252,.7)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar .chart-fs-btn{background-color:rgba(251,191,36,.08)!important;border:1px solid rgba(251,191,36,.5)!important;border-radius:9px!important;box-shadow:0 0 10px rgba(251,191,36,.18)!important}
+@media (prefers-reduced-motion:reduce){html body #tradeWrap .btn-trade,html body #tradeWrap .btn-trade::after,html body #tradeWrap .dur-chip,html body #tradeWrap .odds-chip,html body #tradeWrap .ind-btn{animation:none!important}}
+/* v2450 — Rond blanc net et centré (sans anneau qui tourne), comme le n° 9. */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade::after{display:none!important;animation:none!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{left:7px!important;box-shadow:0 0 0 4px rgba(255,255,255,.22),0 2px 8px rgba(0,0,0,.35)!important}
+/* v2450 — « Carte & paiement instantané » sur une ligne (rétrécit seul si besoin, js/fit.js). */
+html body #depositModal#depositModal#depositModal #payMethodCard .pay-method-title{display:inline-block!important;white-space:nowrap!important;min-width:0;font-size:15px}
+html body #depositModal#depositModal #payMethodCard .pay-method-top{gap:8px!important;align-items:center!important;flex-wrap:nowrap!important}
+html body #depositModal#depositModal #payMethodCard .pay-method-rec{flex:0 0 auto}
+/* v2450 — Croix encore plus épaisses (bien reconnaissables sur téléphone). */
+html body .btn-close:not(#oroZ1):not(#oroZ2):not(#oroZ3):not(#oroZ4) .x-ico,
+html body #portalModal#portalModal#portalModal#portalModal .btn-close .x-ico{width:24px!important;height:24px!important;stroke-width:4.6!important}
+html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer{background-size:64% 64%,100% 100%!important}
+/* v2450 — Petites flèches › bien au centre de leur rond (Dépôt crypto, Dépôt Express). */
+html body #depositModal .pay-go-arrow{display:grid!important;place-items:center!important;padding:0!important;line-height:0!important}
+html body #depositModal .pay-go-arrow svg{display:block;margin:0!important;width:72%!important;height:72%!important;stroke-width:3.2!important;transform:translateX(1px)}
+html body #drawerProfile#drawerProfile#drawerProfile .wx-go{font-size:0!important;background:#2A1600 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFE08A' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.5 6l6 6-6 6'/%3E%3C/svg%3E") center/62% no-repeat!important}
+/* v2450 — Ronds bien placés : décollés du bord, centrés en hauteur ; ACHETER rond à gauche, VENDRE rond à droite (miroir). */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{height:calc(100% - 18px)!important;max-height:40px!important;max-width:40px!important;
+  left:9px!important;right:auto!important;top:50%!important;transform:translateY(-50%)!important;padding:8px!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr{left:auto!important;right:9px!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:54px!important;padding-right:10px!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-left:10px!important;padding-right:54px!important}
+/* v2450 — Plein écran (boutons plus petits) : rond plus près du bord, texte qui tient. */
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{left:6px!important;max-height:28px!important;max-width:28px!important;padding:6px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr{left:auto!important;right:6px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:38px!important;padding-right:6px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-left:6px!important;padding-right:38px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{font-size:clamp(13px,4vw,17px)!important;white-space:nowrap}

@@ -126,7 +126,9 @@
     ['#portalModal .bm-top', 'b'],
     ['#portalModal .aff-big', 'b'],
     ['.modal-box', '#depositSuccessAmt'],
-    ['#wdConfirmModal .wd-confirm-row', 'strong']
+    ['#wdConfirmModal .wd-confirm-row', 'strong'],
+    // v2450 — « Carte & paiement instantané » (toutes les langues) : rétrécit pour tenir sur une ligne.
+    ['#payMethodCard .pay-method-top', '.pay-method-title']
   ];
   function fitNums() {
     if (document.hidden) return;

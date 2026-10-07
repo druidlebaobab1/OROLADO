@@ -597,6 +597,8 @@
     $('topMe').innerHTML = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg><span></span>';
     $('topMe').lastChild.innerHTML = esc(txt).replace(/([-\u2212]\s?)?(\d[\d\u00a0.,]*(?:\s\d{3})*)\s?ORO/g, function (m0, neg, num) { return oroAmt((neg ? '-' : '') + num.replace(/[^\d]/g, '')); });
     $('topMe').classList.toggle('in', !!me.rank && me.rank <= (top.show || 25));
+    // v2450 — visiteur : seulement « Joue 20 trades démo pour entrer ! » (le 2e message « Inscris-toi… » est retiré).
+    $('topMe').style.display = top.guest ? 'none' : '';
     // Bouton « Semaine dernière » : seulement pour l'admin (il voit les numéros ORO pour récompenser).
     var isAdmin = !!top.admin || topPrev;
     show($('topPrev'), isAdmin);
