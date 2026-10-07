@@ -55,13 +55,36 @@
     m.style.setProperty('visibility', 'hidden', 'important');
   }
 
+  // v2415 — visiteur NON inscrit : la case dorée « Cadeaux » s'affiche et invite à créer un compte.
+  // Seulement quand les cadeaux sont ouverts à tous (CONFIG.GIFTS_PUBLIC), ou en aperçu : orolado.com/?cadeaux=1.
+  (function () {
+    try { if (/[?&]cadeaux=1(?:&|$)/.test(location.search || '')) sessionStorage.setItem('oro_gift_prev', '1'); } catch (e) { /* ignore */ }
+  })();
+  function guestGift() {
+    if (loggedIn()) return false;
+    var pub = !!(D6.CONFIG && D6.CONFIG.GIFTS_PUBLIC);
+    try { if (sessionStorage.getItem('oro_gift_prev') === '1') pub = true; } catch (e) { /* ignore */ }
+    return pub;
+  }
+
   function render() {
     var s = state;
-    var on = !!(s && s.enabled);
+    var guest = guestGift();
+    var on = !!(s && s.enabled) || guest;
     show($('btnPortal'), on);
     document.documentElement.classList.toggle('portal-on', on);
+    document.documentElement.classList.toggle('gift-guest-on', guest);
     layoutTopbar(on);
     show($('defiChip'), false);
+    show($('giftGuest'), guest);
+    if ($('portalModal')) $('portalModal').classList.toggle('is-guest', guest);
+    if (guest) {
+      show($('defiCard'), false); show($('affCard'), false); show($('topCard'), false); show($('portalTabs'), false);
+      var pg = $('btnPortal').querySelector('.pw-prog');
+      if (pg) pg.textContent = '';
+      $('btnPortal').classList.remove('has-prog');
+      return;
+    }
     if (!on) return;
     // Progression du défi affichée SUR la maison (« 3/5 ») : aucune pastille sur le graphique.
     var prog = $('btnPortal').querySelector('.pw-prog');
@@ -251,6 +274,8 @@
     // Connexion / déconnexion / retour sur l'onglet : on relit l'état.
     document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
     var lastTok = '';
+    // Visiteur non inscrit : la case dorée s'affiche dès le chargement (si les cadeaux sont ouverts).
+    setTimeout(render, 800);
     setInterval(function () {
       var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
       if (tok !== lastTok) { lastTok = tok; state = null; render(); if (tok) refresh(); }
@@ -264,7 +289,7 @@
   var top = null;
   var topT = 0;
   var topPrev = false;
-  var affFilter = 'day';
+  var affFilter = 'all';
   var curTab = 'defi';
   var ICO_GIFT = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg>';
   var ICO_MEDAL = '<svg viewBox="0 0 40 48" aria-hidden="true"><path d="M12 2h6l4 12h-6zM28 2h-6l-4 12h6z" class="rb"/><circle cx="20" cy="30" r="14" class="md"/><circle cx="20" cy="30" r="10" class="mi"/></svg>';
@@ -310,11 +335,6 @@
     var now = nowSrv();
     var from = affFilter === 'day' ? Math.floor(new Date().setHours(0, 0, 0, 0) / 1000) : (affFilter === 'week' ? now - 7 * 86400 : 0);
     var rows = (aff.list || []).filter(function (r) { return r.at >= from; });
-    var dep = 0, gain = 0;
-    rows.forEach(function (r) { dep += Number(r.deposit || 0); gain += Number(r.gift || 0); });
-    $('affSum').innerHTML = '<div><b>' + rows.length + '</b><span>' + esc(t('affFriends')) + '</span></div>' +
-      '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
-      '<div class="gold"><b>' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
     if (!rows.length) { $('affRows').innerHTML = '<p class="aff-empty">' + esc(t('affEmpty')) + '</p>'; return; }
     $('affRows').innerHTML = rows.map(function (r) {
       var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' });
@@ -368,14 +388,14 @@
     $('topPodium').innerHTML = pod.map(function (r, i) {
       var place = [2, 1, 3][i];
       if (!r) return '<div class="tp tp' + place + ' empty"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>—</b><span>&nbsp;</span><div class="tp-step"></div></div>';
-      return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(r.name) + '</b>' +
-        '<span>' + esc(r.points) + ' ' + esc(t('topPts')) + '</span>' + (r.publicId ? '<small>' + esc(r.publicId) + '</small>' : '') + '<div class="tp-step"></div></div>';
+      return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(r.id) + '</b>' +
+        '<span>' + esc(r.points) + ' ' + esc(t('topPts')) + '</span>' + (r.email ? '<small>' + esc(r.email) + '</small>' : '') + '<div class="tp-step"></div></div>';
     }).join('');
     var rest = list.slice(3);
     if (!list.length) $('topRows').innerHTML = '<p class="aff-empty">' + esc(t('topEmpty')) + '</p>';
     else $('topRows').innerHTML = rest.map(function (r) {
-      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.name) + '</b>' + flag(r.country) + '<span>' + esc(r.points) + '</span>' +
-        (r.publicId ? '<small>' + esc(r.publicId + ' · ' + r.email) + '</small>' : '') + '</div>';
+      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b><span>' + esc(r.points) + '</span>' +
+        (r.email ? '<small>' + esc(r.email) + '</small>' : '') + '</div>';
     }).join('');
     var me = top.me || {};
     var txt;
@@ -386,7 +406,7 @@
     $('topMe').lastChild.textContent = txt;
     $('topMe').classList.toggle('in', !!me.rank && me.rank <= (top.show || 25));
     // Bouton « Semaine dernière » : seulement pour l'admin (il voit les numéros ORO pour récompenser).
-    var isAdmin = list.some(function (r) { return !!r.publicId; }) || topPrev;
+    var isAdmin = list.some(function (r) { return !!r.email; }) || topPrev;
     show($('topPrev'), isAdmin);
     if ($('topPrev')) $('topPrev').textContent = topPrev ? t('topThis') : t('topPrev');
     if ($('topCard')) $('topCard').classList.toggle('is-prev', !!topPrev);
@@ -420,12 +440,8 @@
     if (name === 'top') refreshTop();
     fitPortal();
   }
-  function showAffList(on) {
-    show($('affMain'), !on);
-    show($('affListView'), on);
-    if (on) renderAffList();
-    fitPortal();
-  }
+  // v2415 : la liste des amis est toujours affichée sous les carrés (plus de bouton « Voir mes amis »).
+  function showAffList() { renderAffList(); fitPortal(); }
   async function copyLink() {
     var link = affLink();
     if (!link) return false;
@@ -480,13 +496,20 @@
       closePortal();
       if (window.oroUi && window.oroUi.mode) window.oroUi.mode('demo');
     });
+    var goAuth = function (which) {
+      closePortal();
+      var b = $(which === 'login' ? 'btnGoLogin' : 'btnGoRegister');
+      if (b) b.click();
+    };
+    if ($('giftGuestGo')) $('giftGuestGo').addEventListener('click', function () { goAuth('register'); });
+    if ($('giftGuestLogin')) $('giftGuestLogin').addEventListener('click', function () { goAuth('login'); });
     if ($('topPrev')) $('topPrev').addEventListener('click', function () { topPrev = !topPrev; refreshTop(); });
     setInterval(function () { if ($('portalModal') && $('portalModal').classList.contains('active')) tickLists(); }, 1000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshAff(); });
     var lastTok = '';
     setInterval(function () {
       var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
-      if (tok !== lastTok) { lastTok = tok; aff = null; top = null; renderAff(); renderTop(); if (tok) { refreshAff(); refreshTop(); } }
+      if (tok !== lastTok) { lastTok = tok; aff = null; top = null; setTab('defi'); renderAff(); renderTop(); if (tok) { refreshAff(); refreshTop(); } }
     }, 1500);
     setTimeout(sendClick, 1500);
   }

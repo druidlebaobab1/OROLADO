@@ -60,9 +60,11 @@ $db['orders'] = $o;
 save_db(orolado_data_file(), $db);
 putenv('OROLADO_TOP_PUBLIC=1');
 $r = orolado_top_status(load_db(), $db['users']['u_b']);
-$names = array_map(fn($x) => $x['name'] . ':' . $x['points'], $r['top']);
-check('ordre : Awa (330) > Bruno (140) > Chloé (−50)', $names === ['Awa K.:330', 'Bruno:140', 'Chloé M.:-50'], implode(' | ', $names));
-check('moins de 20 trades : absent', !in_array('Petit', array_column($r['top'], 'name'), true));
+$pid = fn($u) => $db['users'][$u]['publicId'];
+$names = array_map(fn($x) => $x['id'] . ':' . $x['points'], $r['top']);
+check('ordre : Awa (330) > Bruno (140) > Chloé (−50)', $names === [$pid('u_a') . ':330', $pid('u_b') . ':140', $pid('u_c') . ':-50'], implode(' | ', $names));
+check('anonyme : ni nom ni pays envoyés', !isset($r['top'][0]['name']) && !isset($r['top'][0]['country']) && !str_contains(json_encode($r), 'Awa'));
+check('moins de 20 trades : absent', !in_array($pid('u_peu'), array_column($r['top'], 'id'), true));
 check('admin et compte suspendu : absents', count($r['top']) === 3);
 check('Bruno voit sa place : 2e', $r['me']['rank'] === 2 && !empty($r['top'][1]['me']));
 check('réel / semaine dernière / ordre ouvert : ignorés (Chloé = 20 trades)', $r['top'][2]['trades'] === 20);
@@ -70,7 +72,7 @@ check('aucun e-mail montré à un joueur', !isset($r['top'][0]['email']));
 $rp = orolado_top_status(load_db(), $db['users']['u_peu']);
 check('Petit : encore 1 trade pour entrer', $rp['me']['need'] === 1 && $rp['me']['rank'] === 0);
 $ra = orolado_top_status(load_db(), $db['users']['admin_master']);
-check('admin : voit numéro ORO et e-mail (pour récompenser)', ($ra['top'][0]['email'] ?? '') === 'u_a@gmail.com' && str_starts_with((string) ($ra['top'][0]['publicId'] ?? ''), 'ORO-'));
+check('admin : voit numéro ORO et e-mail (pour récompenser)', ($ra['top'][0]['email'] ?? '') === 'u_a@gmail.com' && str_starts_with((string) ($ra['top'][0]['id'] ?? ''), 'ORO-'));
 check('fin de semaine annoncée = dimanche 23:59:59', $r['endsAt'] === $w['end']);
 
 echo "3) Chaque trade compté une seule fois, même après l'archivage\n";
@@ -92,12 +94,12 @@ $st = json_decode((string) file_get_contents($file), true);
 $st['scanAt'] = 0;
 file_put_contents($file, json_encode($st));
 $r = orolado_top_status(load_db(), $db['users']['u_b']);
-$awa = array_values(array_filter($r['top'], fn($x) => $x['name'] === 'Awa K.'))[0] ?? [];
+$awa = array_values(array_filter($r['top'], fn($x) => $x['id'] === $pid('u_a')))[0] ?? [];
 check('archivés gardés + 5 nouveaux = 25 trades', ($awa['trades'] ?? 0) === 25, (string) ($awa['trades'] ?? ''));
 // Compteur perdu (nouveau fichier) : tout est relu depuis les archives.
 @unlink($file);
 $r = orolado_top_status(load_db(), $db['users']['u_b']);
-$awa = array_values(array_filter($r['top'], fn($x) => $x['name'] === 'Awa K.'))[0] ?? [];
+$awa = array_values(array_filter($r['top'], fn($x) => $x['id'] === $pid('u_a')))[0] ?? [];
 check('compteur effacé : retrouvé grâce aux archives (25 trades)', ($awa['trades'] ?? 0) === 25, (string) ($awa['trades'] ?? ''));
 
 echo "4) Fermé aux joueurs tant que ce n'est pas ouvert à tous\n";

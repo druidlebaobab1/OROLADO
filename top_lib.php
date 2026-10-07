@@ -126,8 +126,8 @@ function orolado_top_rank(array $db, array $st): array {
     if (function_exists('orolado_user_block_kind') && orolado_user_block_kind($db, (string) $uid) !== '') continue;
     $rows[] = [
       'uid' => (string) $uid,
-      'name' => orolado_top_name($u),
-      'country' => strtoupper((string) ($u['country'] ?? '')),
+      // v2415 : anonyme — seulement le numéro ORO du joueur (ni nom, ni pays).
+      'id' => (string) ($u['publicId'] ?? '') !== '' ? (string) $u['publicId'] : 'ORO-' . strtoupper(substr(hash('sha256', (string) $uid), 0, 6)),
       'points' => (int) round(1000 * (float) $a['net'] / (float) $a['stake']),
       'trades' => (int) $a['n'],
       'wins' => (int) $a['w'],
@@ -150,10 +150,9 @@ function orolado_top_status(array $db, array $user, bool $prev = false): array {
   $isAdmin = function_exists('orolado_is_admin_user') && orolado_is_admin_user($user);
   $top = [];
   foreach (array_slice($rank, 0, OROLADO_TOP_SHOW) as $r) {
-    $row = ['rank' => $r['rank'], 'name' => $r['name'], 'country' => $r['country'], 'points' => $r['points'], 'trades' => $r['trades'], 'me' => $r['uid'] === $uid];
+    $row = ['rank' => $r['rank'], 'id' => $r['id'], 'points' => $r['points'], 'trades' => $r['trades'], 'me' => $r['uid'] === $uid];
     if ($isAdmin) {
       $u = $db['users'][$r['uid']] ?? [];
-      $row['publicId'] = (string) ($u['publicId'] ?? '');
       $row['email'] = (string) ($u['email'] ?? '');
     }
     $top[] = $row;
