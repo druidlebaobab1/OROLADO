@@ -36,6 +36,7 @@
 
   function show(el, on) { if (el) el.classList.toggle('hidden', !on); }
 
+  function portalOpen() { var m = document.getElementById('portalModal'); return !!(m && m.classList.contains('active')); }
   function openPortal() {
     var m = $('portalModal');
     if (!m) return;
@@ -44,6 +45,7 @@
     m.style.setProperty('display', 'block', 'important');
     m.style.setProperty('pointer-events', 'auto', 'important');
     refresh();
+    if (D6.Portal && D6.Portal.refreshAff) { D6.Portal.refreshAff(); D6.Portal.refreshBon(); }
     setTimeout(function () { sky(true); }, 30);
   }
   function closePortal() {
@@ -328,7 +330,9 @@
     clearTimeout(pollT);
     if (!state || !state.enabled) return;
     // Pendant un défi : toutes les 8 s (pour suivre la série) ; sinon toutes les 60 s.
-    pollT = setTimeout(function () { if (!document.hidden) refresh(); else schedule(); }, state.active ? 8000 : 60000);
+    // v2420 (charge serveur) : défi en cours → toutes les 15 s ; sinon seulement si les Récompenses sont ouvertes.
+    if (!state.active && !portalOpen()) return;
+    pollT = setTimeout(function () { if (!document.hidden) refresh(); else schedule(); }, state.active ? 15000 : 60000);
   }
 
   function bind() {
@@ -469,6 +473,8 @@
     }
     // Ami invité qui n'a pas encore reçu son cadeau, ou celui qui invite : on revérifie chaque minute.
     if (r && ((r.invited && !r.invited.paid) || r.enabled)) {
+      // Celui qui invite : seulement quand les Récompenses sont ouvertes. L'ami en attente de son cadeau : chaque minute.
+      if (!(r.invited && !r.invited.paid) && !portalOpen()) return;
       affT = setTimeout(function () { if (!document.hidden) refreshAff(); else affT = setTimeout(refreshAff, 60000); }, 60000);
     }
   }
@@ -570,7 +576,8 @@
       }
     }
     // Pendant le remplissage : on revérifie toutes les 20 s (le bonus monte pendant que le joueur joue).
-    if (r && r.enabled) bonT = setTimeout(function () { if (!document.hidden) refreshBon(); else bonT = setTimeout(refreshBon, 60000); }, r.phase === 'filling' ? 20000 : 60000);
+    // Bonus en train de se remplir : toutes les 45 s (pour verser les paliers) ; sinon seulement Récompenses ouvertes.
+    if (r && r.enabled && (r.phase === 'filling' || portalOpen())) bonT = setTimeout(function () { if (!document.hidden) refreshBon(); else bonT = setTimeout(refreshBon, 60000); }, r.phase === 'filling' ? 45000 : 60000);
   }
 
   function setTab(name) {

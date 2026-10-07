@@ -5974,3 +5974,55 @@ html body #portalModal .top-card.is-prev .top-prev{flex:1 1 auto;justify-content
   /* Les listes ne défilent plus à part : c'est la carte entière qui défile. */
   html body #portalModal#portalModal#portalModal .top-rows,html body #portalModal#portalModal#portalModal .aff-rows-all{max-height:none!important;overflow:visible!important}
 }
+/* v2420 — barre du haut professionnelle : Cadeaux, Aide, langue et Profil = 4 tuiles identiques (même taille,
+   même fond vitré, même texte dessous), espacées régulièrement de chaque côté de « Recharger » (taille inchangée). */
+@media (max-width:859px){
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row > .tb-left,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row > .topbar-actions{display:flex!important;align-items:center!important;justify-content:space-evenly!important;gap:0!important;min-width:0}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row > .tb-left > *,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row > .topbar-actions > *{transform:none!important}
+  /* Chaque tuile : 48 px de large, icône dans un carré arrondi de 34 px, texte dessous. */
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade > .lang-dd-btn,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile{
+    width:48px!important;min-width:48px!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;border-radius:0!important}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade{width:48px!important;min-width:48px!important;display:flex!important;justify-content:center}
+  /* Le carré de l'icône (même pour les 4). */
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp > svg,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile > svg,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade .lang-flag,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn > svg{
+    order:0!important;box-sizing:border-box!important;width:34px!important;height:34px!important;min-width:34px!important;max-width:34px!important;min-height:34px!important;max-height:34px!important;flex:0 0 34px!important;border-radius:11px!important;
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04))!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 0 12px rgba(120,150,255,.18),0 2px 8px rgba(0,0,0,.25)!important;
+    display:grid!important;place-items:center!important;filter:none!important}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp > svg,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile > svg{padding:7px!important;color:#E6EAFF!important}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade .lang-flag{padding:0!important;overflow:hidden}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade .lang-flag .flag-svg{width:22px!important;height:15px!important;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+  /* Le cadeau : même carré, en doré. */
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn > svg{padding:6px!important;
+    background:linear-gradient(145deg,#FFE7A3 0%,#F6C453 40%,#E39A1E 100%)!important;
+    box-shadow:inset 0 0 0 1px rgba(255,236,170,.75),0 2px 10px rgba(242,160,30,.45)!important}
+  /* Le texte sous chaque tuile : même police, même taille. */
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp .hb-txt,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile .pf-txt,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade .lang-code,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn .pw-lbl{
+    order:1!important;display:block!important;margin:0!important;font:700 9px/11px "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.02em!important;text-transform:none!important;color:#D9DEF8!important;white-space:nowrap;position:static!important}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn .pw-lbl{color:#FFD27A!important}
+  /* Compteur 1/5 et point rouge : posés sur le coin du carré doré. */
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn .pw-prog{top:-4px!important;right:-2px!important}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn .pw-dot{top:-1px!important;right:4px!important}
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > .portal-btn.portal-btn.has-prog .pw-dot{display:none!important}
+}
+@media (max-width:859px){
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade#langBarTrade > .lang-dd-btn,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left > #btnPortal#btnPortal{height:50px!important;min-height:50px!important;max-height:50px!important;justify-content:flex-start!important;padding-top:2px!important;overflow:visible!important}
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile .pf-txt,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp .hb-txt,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade#langBarTrade .lang-code,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal .pw-lbl{height:auto!important;max-height:none!important;overflow:visible!important;font-size:9px!important;line-height:11px!important;opacity:1!important}
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile > svg,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp > svg{margin:0!important;transform:none!important;position:static!important}
+}
+@media (max-width:859px){html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile .pf-txt{margin-top:2px!important}html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #langBarTrade#langBarTrade > .lang-dd-btn{padding-top:3px!important}}
+/* v2420 — visiteur non inscrit : le bouton Profil reste caché (comme avant). */
+html.oro-guest.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile,html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile.hidden{display:none!important}
