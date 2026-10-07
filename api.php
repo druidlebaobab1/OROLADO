@@ -23,6 +23,8 @@ require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/trade_lib.php';
 require_once __DIR__ . '/history_lib.php';
 require_once __DIR__ . '/account_lib.php';
+// Défi (v2409) : optionnel — si le fichier manque, le reste du site fonctionne normalement.
+if (is_file(__DIR__ . '/defi_lib.php')) require_once __DIR__ . '/defi_lib.php';
 orolado_load_env();
 
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
@@ -262,6 +264,8 @@ $OROLADO_RATE_RULES = [
   'welcomeEmail'      => [['e', 2, 86400], ['i', 300, 3600]],
   'login'             => [['e', 30, 3600], ['i', 3000, 3600]],
   'googleLogin'       => [['i', 3000, 3600]],
+  'defiStatus'        => [['t', 120, 60]],
+  'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
   'placeOrder'        => [['t', 120, 10]],
@@ -313,6 +317,29 @@ if ($action === 'presence') {
     }
   }
   echo json_encode(['ok' => true, 'server' => true]);
+  exit;
+}
+
+// v2409 — Défi OROLADO (defi_lib.php) : état du défi du joueur, activation. Lit les trades réglés,
+// paie la récompense une seule fois. Visible seulement du compte admin tant que le propriétaire
+// n'a pas validé (OROLADO_DEFI_PUBLIC=1).
+if ($action === 'defiStatus' || $action === 'defiActivate') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']);
+    exit;
+  }
+  if (!function_exists('orolado_defi_status')) {
+    echo json_encode(['ok' => true, 'server' => true, 'enabled' => false]);
+    exit;
+  }
+  try {
+    $res = orolado_defi_status($db, $me, $action === 'defiActivate');
+  } catch (Throwable $eDefi) {
+    error_log('OROLADO defi ' . $eDefi->getMessage());
+    $res = ['ok' => false, 'reason' => 'Défi indisponible'];
+  }
+  echo json_encode(['server' => true] + $res);
   exit;
 }
 
