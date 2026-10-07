@@ -6457,3 +6457,5 @@ html body #portalModal#portalModal .aff-sum2 b{white-space:nowrap!important;flex
 html body #portalModal#portalModal .aff-sum2 span{min-width:0;line-height:1.15}
 html body #portalModal#portalModal :is(.aff-sum,.aff-stats) b,html body #portalModal#portalModal .aff-row :is(.ar-dep,.ar-gain) b{white-space:nowrap!important}
 html body #portalModal .top-me .oro-amt{margin:0 0 0 2px!important}
+/* v2439 — Tournoi : le montant positif aussi en vert (comme le « + »), le négatif en rouge. */
+html body #portalModal .oro-amt.pos .oa-n{color:#2EE59D!important;text-shadow:0 0 8px rgba(46,229,157,.35)}
