@@ -491,6 +491,26 @@ function admin_closed_accounts(array $people): array {
   return $out;
 }
 
+/** v2433 — Bonus par sorte, arrondis ; Affiliation = cadeau reçu comme ami invité + 5 % gagnés en invitant. */
+function admin_bonus_by(array $by, string $uid, array $p): array {
+  if (function_exists('orolado_aff_owner_name')) {
+    $db = load_db();
+    $users = $db['users'] ?? [];
+    $local = '';
+    if ($uid !== '' && isset($users[$uid])) $local = $uid;
+    if ($local === '' && is_iterable($users)) {
+      $mail = strtolower(trim((string) ($p['email'] ?? '')));
+      foreach ($users as $k => $u) {
+        if (!is_array($u)) continue;
+        if ((string) ($u['sbId'] ?? '') === $uid || ($mail !== '' && strtolower((string) ($u['email'] ?? '')) === $mail)) { $local = (string) $k; break; }
+      }
+    }
+    if ($local !== '') $by['aff'] += (float) (orolado_aff_read(orolado_aff_owner_name($local))['earned'] ?? 0);
+  }
+  foreach ($by as $k => $v) $by[$k] = round((float) $v, 2);
+  return $by;
+}
+
 function admin_list_payload(string $view, array $req): array {
   // v2426 — rubrique F · Cadeaux (lecture seule).
   if (str_starts_with($view, 'gift_')) return admin_gift_payload($view, $req, admin_profiles());
@@ -1375,10 +1395,17 @@ function admin_profile_payload(string $uid): array {
   $bonuses = [];
   $sumDep = 0.0;
   $sumBonus = 0.0;
+  $bonusBy = ['defi' => 0.0, 'aff' => 0.0, 'dep' => 0.0, 'adm' => 0.0];
   foreach (admin_deposits() as $d) {
     if ((string) $d['userId'] !== $uid) continue;
     if (admin_dep_is_bonus($d)) {
-      if (admin_dep_bonus_paid($d)) $sumBonus += (float) $d['amount'];
+      if (admin_dep_bonus_paid($d)) {
+        $sumBonus += (float) $d['amount'];
+        // v2433 — bonus rangés par sorte (Défi du jour, Bonus dépôt, Affiliation, Admin) d'après leur référence.
+        $bref = (string) ($d['id'] ?? '');
+        $bkind = str_starts_with($bref, 'adm_defi_') ? 'defi' : (str_starts_with($bref, 'adm_bon_') ? 'dep' : (str_starts_with($bref, 'adm_ami_') ? 'aff' : 'adm'));
+        $bonusBy[$bkind] += (float) $d['amount'];
+      }
       $bonuses[] = ['id' => $d['id'], 'amount' => $d['amount'], 'motif' => (string) ($d['motif'] ?? ''), 'at' => $d['createdAt']];
       continue;
     }
@@ -1448,6 +1475,7 @@ function admin_profile_payload(string $uid): array {
     'totals' => [
       'deposits' => round($sumDep, 2),
       'bonus' => round($sumBonus, 2),
+      'bonusBy' => admin_bonus_by($bonusBy, $uid, $p),
       'wdPaid' => round($sumWdPaid, 2),
       'wdOpen' => round($sumWdOpen, 2),
       'stake' => round($sumStake, 2),
@@ -2407,6 +2435,10 @@ async function openUser(uid) {
       '<div><span>Misé (réel)</span><b>'+money(j.totals.stake)+'</b></div>'+
       '<div><span>Gains nets jeux</span><b>'+money(j.totals.net)+'</b></div>'+
       '<div><span>Trades réels</span><b>'+esc(j.totals.trades)+'</b></div>'+
+      (j.totals.bonusBy ? '<div style="border-color:rgba(255,104,124,.55)"><span>Bonus Défi du jour</span><b style="color:#FF9AA8">'+money(j.totals.bonusBy.defi)+'</b></div>'+
+      '<div style="border-color:rgba(43,212,154,.55)"><span>Bonus Affiliation</span><b style="color:#7FF5CF">'+money(j.totals.bonusBy.aff)+'</b></div>'+
+      '<div style="border-color:rgba(92,155,255,.55)"><span>Bonus dépôt</span><b style="color:#A9C8FF">'+money(j.totals.bonusBy.dep)+'</b></div>'+
+      '<div style="border-color:rgba(242,179,61,.55)"><span>Bonus admin</span><b style="color:#FFD27A">'+money(j.totals.bonusBy.adm)+'</b></div>' : '')+
     '</div>' : '')+
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+

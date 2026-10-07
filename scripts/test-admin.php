@@ -210,6 +210,7 @@ $j = admin_list_payload('profit_total', ['preset' => 'all']);
 check('Bénéfice = 250 − 25 = 225 $, bonus à part', str_contains($j['summary'], 'Bénéfice $ 225') && !in_array('Bonus', array_map(static fn($r) => $r['cells'][0], $j['rows']), true), $j['summary'] ?? '');
 $pp = admin_profile_payload($p2);
 check('Fiche joueur : argent déposé 0 $ / bonus 20 $ séparés', ($pp['totals']['deposits'] ?? -1) == 0 && ($pp['totals']['bonus'] ?? 0) == 20 && count($pp['deposits']) === 0 && count($pp['bonuses']) === 1);
+check('Fiche joueur (v2433) : bonus rangés par sorte, le bonus envoyé depuis l’admin est dans « Bonus admin »', ($pp['totals']['bonusBy']['adm'] ?? 0) == 20 && ($pp['totals']['bonusBy']['defi'] ?? -1) == 0 && ($pp['totals']['bonusBy']['dep'] ?? -1) == 0, json_encode($pp['totals']['bonusBy'] ?? null));
 $pp = admin_profile_payload($p1);
 check('Fiche joueur honnête : 100 $ déposés, 11 trades (dont 1 en cours), net −20 $', ($pp['totals']['deposits'] ?? 0) == 100 && ($pp['totals']['trades'] ?? 0) === 11 && abs(($pp['totals']['net'] ?? 0) + 20) < 0.01, json_encode($pp['totals'] ?? []));
 
