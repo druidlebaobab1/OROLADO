@@ -7845,7 +7845,7 @@
       installHideTimer = setTimeout(function () {
         hideInstallBanner();
         try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ }
-      }, 5000);
+      }, 10000); // v2441 : 10 s
     }
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault();
@@ -8040,7 +8040,7 @@
                 }
               }, 450);
               try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
-            }, 5000);
+            }, 10000); // v2441 : 10 s au lieu de 5 (demande du propriétaire)
           }
         } catch (eInst) { /* ignore */ }
       }, 1800);

@@ -53,7 +53,7 @@
   }
 
   // v2430 — fenêtres d'argent en mode univers (retrait enregistré, recharge réussie) : étincelles à l'ouverture.
-  var COSMO = { wdConfirmModal: 1, depositSuccessModal: 1 };
+  var COSMO = { wdConfirmModal: 1, depositSuccessModal: 1, helpModal: 1 };
   function burst(modal) {
     try {
       if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;

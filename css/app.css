@@ -6473,3 +6473,85 @@ html body #portalModal .oro-amt.pos .oa-n{color:#2EE59D!important;text-shadow:0 
   html body #screenTrade#screenTrade #tradeWrap{padding-top:1px!important}
   html body #screenTrade#screenTrade #assetBar{margin-top:1px!important}
 }
+
+/* ===== v2441 — Fenêtre « Aide & support » en mode univers (bleu « assistance »). Mêmes champs, même envoi. ===== */
+html body #helpModal > .modal-box{position:relative;overflow:hidden!important;text-align:left;
+  border:1px solid rgba(92,155,255,.6)!important;
+  background:radial-gradient(circle at 50% -8%,rgba(92,155,255,.42),rgba(124,77,255,.20) 42%,rgba(9,10,32,.97) 74%),
+    url("galaxy-modal.svg?v=2441") center/cover no-repeat,#0A0B22!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(92,155,255,.30),0 0 100px rgba(124,77,255,.28)!important}
+html body #helpModal > .modal-box > :not(.cosmo-sp):not(.help-hero){position:relative;z-index:2}
+html body #helpModal > .modal-box > .btn-close{position:absolute!important;z-index:3}
+html body #helpModal .help-hero{position:relative;height:84px;display:grid;place-items:center;margin:2px 0 4px;z-index:1}
+html body #helpModal .help-hero .cosmo-rays{top:42px;background:repeating-conic-gradient(from 0deg,rgba(140,190,255,.30) 0deg 6deg,transparent 6deg 20deg)!important}
+html body #helpModal .help-hero-ico{position:relative;z-index:2;width:72px;height:72px;filter:drop-shadow(0 0 16px rgba(92,155,255,.75));animation:dwFloat 2.8s ease-in-out infinite}
+html body #helpModal .modal-title{justify-content:center!important;text-align:center;font-size:1.1rem!important;font-weight:900;padding-right:0!important;
+  background:linear-gradient(90deg,#E6F0FF,#9FD3FF 45%,#7C9CFF);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+html body #helpModal .help-live{display:flex!important;justify-content:center;margin:6px auto 12px!important;width:max-content;max-width:100%}
+html body #helpModal .help-live-dot{animation:cosmoPulseG 1.6s ease-out infinite}
+@keyframes cosmoPulseG{0%{box-shadow:0 0 0 0 rgba(46,229,157,.7)}100%{box-shadow:0 0 0 9px rgba(46,229,157,0)}}
+/* Champs vitrés avec icône et lueur au toucher. */
+html body #helpModal .field{position:relative;margin-bottom:10px}
+html body #helpModal .field label{color:#AFC4F0!important;letter-spacing:.06em}
+html body #helpModal .field input,html body #helpModal .field textarea{background:rgba(255,255,255,.06)!important;border:1px solid rgba(146,180,255,.28)!important;border-radius:12px!important;color:#fff!important;transition:border-color .2s,box-shadow .2s}
+html body #helpModal .field input{padding-left:40px!important}
+html body #helpModal .field input:focus,html body #helpModal .field textarea:focus{border-color:rgba(120,170,255,.85)!important;box-shadow:0 0 0 3px rgba(92,155,255,.20),0 0 18px rgba(92,155,255,.25)!important;outline:0}
+html body #helpModal .help-in-ico{position:absolute;left:12px;bottom:0;height:44px;display:grid;place-items:center;pointer-events:none;z-index:3}
+html body #helpModal .help-in-ico svg{width:18px;height:18px;fill:none;stroke:#8FB8FF;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+/* Bouton Envoyer : icône d'avion en papier. */
+html body #helpModal .help-send{display:flex!important;align-items:center;justify-content:center;gap:10px}
+html body #helpModal .help-send-ico{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+html body #helpModal .help-terms{display:block;margin:12px auto 0!important;text-align:center}
+@media (max-height:700px){html body #helpModal .help-hero{height:66px}html body #helpModal .help-hero-ico{width:56px;height:56px}}
+
+/* ===== v2441 — Bouton « Installer Orolado » : vraie pastille dorée bien cliquable (logo + flèche), reste 10 s. ===== */
+html body #installBanner.install-banner{top:8px!important;gap:2px!important;padding:3px 4px 3px 3px!important;min-height:38px!important;border-radius:999px!important;
+  background:linear-gradient(135deg,rgba(40,28,8,.92),rgba(14,12,34,.94) 55%,rgba(30,18,60,.94))!important;
+  border:1px solid rgba(251,191,36,.75)!important;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 6px 20px rgba(0,0,0,.5),0 0 18px rgba(251,191,36,.35)!important;
+  animation:instIn .5s cubic-bezier(.2,1.4,.4,1) both,instGlow 2.2s ease-in-out .5s infinite}
+html body #installBanner.install-banner::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(110deg,transparent 30%,rgba(255,236,170,.32) 48%,transparent 66%);background-size:250% 100%;animation:instShine 2.6s ease-in-out infinite}
+html body #installBanner #btnInstall{position:relative;z-index:1;gap:8px!important;padding:0 10px 0 2px!important;min-height:32px!important;height:32px;
+  font-size:13px!important;font-weight:800!important;color:#FFF6DA!important;letter-spacing:.01em}
+html body #installBanner #btnInstall em{font-weight:900!important;font-style:normal;
+  background:linear-gradient(180deg,#FFF1C2,#FBBF24 50%,#E08A12);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+/* Icône : le logo OROLADO avec une petite flèche verte « télécharger » posée dessus. */
+html body #installBanner .install-ico{position:relative;width:32px!important;height:32px!important;max-width:32px!important;max-height:32px!important;
+  border-radius:50%!important;background:radial-gradient(circle,rgba(251,191,36,.25),rgba(0,0,0,0) 70%)!important;display:grid!important;place-items:center;flex:0 0 32px;font-size:0!important}
+html body #installBanner .install-logo{width:30px;height:30px;display:block;filter:drop-shadow(0 0 5px rgba(251,191,36,.55))}
+html body #installBanner .install-dl{position:absolute;right:-3px;bottom:-2px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(180deg,#34F5A8,#10B981);box-shadow:0 0 0 2px #120F24,0 0 8px rgba(46,229,157,.8);animation:instBob 1.3s ease-in-out infinite}
+html body #installBanner .install-dl svg{width:11px;height:11px;fill:none;stroke:#062B1C;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+html body #installBanner .install-x{position:relative;z-index:1;width:24px!important;height:24px!important;max-width:24px!important;max-height:24px!important;
+  border-radius:50%!important;display:grid!important;place-items:center;background:rgba(255,255,255,.08)!important;margin-left:2px;padding:0}
+html body #installBanner .install-x svg{width:12px;height:12px;fill:none;stroke:#C9D3E6;stroke-width:2.6;stroke-linecap:round}
+html body #installBanner #btnInstall:active{transform:scale(.96)}
+@keyframes instIn{0%{opacity:0;transform:translateX(-50%) translateY(-14px) scale(.85)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes instGlow{0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 6px 20px rgba(0,0,0,.5),0 0 14px rgba(251,191,36,.30)}50%{box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 6px 20px rgba(0,0,0,.5),0 0 26px rgba(251,191,36,.60)}}
+@keyframes instShine{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+@keyframes instBob{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+@media (prefers-reduced-motion:reduce){html body #installBanner.install-banner,html body #installBanner.install-banner::before,html body #installBanner .install-dl{animation:none!important}}
+
+/* ===== v2441 — Liste des langues : fenêtre univers plus lumineuse, drapeaux ronds, langue choisie en or avec ✓. ===== */
+html body .lang-dd-menu.lang-dd-menu{border-radius:16px!important;padding:8px!important;gap:5px!important;width:min(236px,calc(100vw - 16px))!important;max-width:min(236px,calc(100vw - 16px))!important;
+  background:radial-gradient(circle at 50% -10%,rgba(56,189,248,.30),rgba(124,77,255,.20) 45%,rgba(10,10,32,.0) 75%),
+    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2367") center top/cover no-repeat,#0D0B26!important;
+  border:1px solid rgba(125,211,252,.5)!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 26px rgba(56,189,248,.28),0 0 0 1px rgba(255,255,255,.04) inset!important;
+  transform-origin:top right;animation:langPop .22s cubic-bezier(.2,1.3,.4,1)}
+html body .lang-dd-menu.lang-dd-menu .lang-btn{gap:7px!important;padding:6px 7px!important;min-height:32px!important;border-radius:10px!important;font-size:11.5px!important;font-weight:700!important;
+  color:#E6ECFF!important;background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.07)!important;transition:background .15s,border-color .15s,transform .1s}
+html body .lang-dd-menu.lang-dd-menu .lang-btn:hover{background:rgba(125,211,252,.14)!important;border-color:rgba(125,211,252,.45)!important}
+html body .lang-dd-menu.lang-dd-menu .lang-btn:active{transform:scale(.96)}
+html body .lang-dd-menu.lang-dd-menu .lang-flag{flex:0 0 20px;width:20px;height:20px;border-radius:50%;overflow:hidden;display:grid;place-items:center;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.35),0 2px 6px rgba(0,0,0,.4)}
+html body .lang-dd-menu.lang-dd-menu .lang-flag .flag-svg{width:30px!important;height:20px!important;max-width:none!important;display:block}
+html body .lang-dd-menu.lang-dd-menu .lang-btn.on{color:#FFE7A3!important;background:linear-gradient(135deg,rgba(251,191,36,.30),rgba(224,138,18,.14))!important;
+  border-color:rgba(251,191,36,.8)!important;box-shadow:0 0 12px rgba(251,191,36,.30)}
+html body .lang-dd-menu.lang-dd-menu .lang-btn.on .lang-flag{box-shadow:0 0 0 1.5px #FBBF24,0 0 8px rgba(251,191,36,.6)}
+html body .lang-dd-menu.lang-dd-menu .lang-btn.on::after{content:"✓";flex:0 0 auto;font-weight:900;font-size:11px;color:#FBBF24}
+@keyframes langPop{0%{opacity:0;transform:scale(.88) translateY(-6px)}100%{opacity:1;transform:none}}
+/* Petits écrans : la fenêtre Aide tient sans barre de défilement. */
+@media (max-height:720px){html body #helpModal .field{margin-bottom:7px}html body #helpModal .help-live{margin:4px auto 8px!important}html body #helpModal .help-terms{margin-top:8px!important}}
+html body #helpModal > .modal-box{scrollbar-width:none}html body #helpModal > .modal-box::-webkit-scrollbar{display:none}
