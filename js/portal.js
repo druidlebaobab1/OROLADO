@@ -44,6 +44,7 @@
     m.style.setProperty('display', 'block', 'important');
     m.style.setProperty('pointer-events', 'auto', 'important');
     refresh();
+    setTimeout(function () { sky(true); }, 30);
   }
   function closePortal() {
     var m = $('portalModal');
@@ -73,12 +74,15 @@
     $('defiRule').textContent = t('defiRule', { m: mk });
     var dots = $('defiDots').children;
     for (var i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i < (s.streak || 0));
+    drawRing(s.streak || 0, s.need || 5);
+    $('defiGlobe').innerHTML = globeHtml(s.market);
+    $('defiCount').textContent = (s.streak || 0) + ' / ' + (s.need || 5);
     var now = Date.now() / 1000 + skew;
     var st = $('defiState'), act = $('defiActivate'), go = $('defiTrade'), tm = $('defiTimer');
     if (s.active) {
       tm.innerHTML = ICO_CLOCK + '<span></span>';
       tm.lastChild.textContent = left(s.expiresAt - now);
-      st.textContent = t('defiStreak', { n: s.streak || 0 });
+      st.textContent = '';
       st.className = 'defi-state';
       show(act, false);
       go.textContent = t('defiGo', { m: mk });
@@ -97,6 +101,62 @@
       show(act, !!s.canActivate);
       show(go, false);
     }
+  }
+
+  // Le globe du marché : le même dessin que sur les cases des marchés du site.
+  function globeHtml(id) {
+    try {
+      var chip = document.querySelector('.asset-chip[data-asset="' + id + '"]');
+      var art = chip && chip.querySelector('.mk-art');
+      if (art && art.querySelector('svg')) {
+        var cs = getComputedStyle(chip);
+        var p1 = (cs.getPropertyValue('--p1') || '').trim() || '#C9B8FF';
+        var p2 = (cs.getPropertyValue('--p2') || '').trim() || '#3B1D8F';
+        var pg = (cs.getPropertyValue('--pg') || '').trim() || 'rgba(167,139,250,.45)';
+        return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + art.innerHTML + '</span>';
+      }
+    } catch (e) { /* ignore */ }
+    return '';
+  }
+
+  // Anneau de 5 arcs autour du globe : chaque victoire allume un arc doré.
+  function drawRing(n, need) {
+    var g = $('defiRing');
+    if (!g) return;
+    var out = '', R = 54, cx = 60, cy = 60, gap = 7;
+    for (var i = 0; i < need; i++) {
+      var a0 = (-90 + i * 360 / need + gap / 2) * Math.PI / 180;
+      var a1 = (-90 + (i + 1) * 360 / need - gap / 2) * Math.PI / 180;
+      var x0 = cx + R * Math.cos(a0), y0 = cy + R * Math.sin(a0), x1 = cx + R * Math.cos(a1), y1 = cy + R * Math.sin(a1);
+      out += '<path class="' + (i < n ? 'on' : '') + '" d="M' + x0.toFixed(2) + ' ' + y0.toFixed(2) + ' A' + R + ' ' + R + ' 0 0 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2) + '"/>';
+    }
+    g.innerHTML = out;
+  }
+
+  // Ciel étoilé animé derrière le Portail (seulement quand il est ouvert).
+  var skyRaf = 0, stars = [];
+  function sky(on) {
+    var c = $('portalSky');
+    cancelAnimationFrame(skyRaf);
+    if (!c || !on) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    function size() { c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr; }
+    size();
+    if (!stars.length) for (var i = 0; i < 90; i++) stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.2 + .3, t: Math.random() * 6 });
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function frame(ts) {
+      if (c.clientWidth * dpr !== c.width) size();
+      var x = c.getContext('2d'), w = c.width, h = c.height;
+      x.clearRect(0, 0, w, h);
+      stars.forEach(function (s) {
+        x.globalAlpha = .25 + .45 * (0.5 + 0.5 * Math.sin(s.t + ts / 1100));
+        x.fillStyle = '#fff';
+        x.beginPath(); x.arc(s.x * w, s.y * h, s.r * dpr, 0, 6.3); x.fill();
+      });
+      x.globalAlpha = 1;
+      if (!reduce && $('portalModal').classList.contains('active')) skyRaf = requestAnimationFrame(frame);
+    }
+    skyRaf = requestAnimationFrame(frame);
   }
 
   // Icônes dessinées (pas d'émojis) : horloge, trophée.
