@@ -7279,3 +7279,13 @@ html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#
 html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:38px!important;padding-right:6px!important}
 html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-left:6px!important;padding-right:38px!important}
 html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{font-size:clamp(13px,4vw,17px)!important;white-space:nowrap}
+
+/* ===== v2451 — Durées et ÷2 / ×2 / ⌫ en OR CHAMPAGNE (couleur de la marque, choix du propriétaire) ===== */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .dur-chip,
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .qbtn{
+  border-color:rgba(245,197,81,.35)!important;color:#FFE7A3!important;background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .dur-chip.on{
+  background:linear-gradient(120deg,#D9A43A,#FFE7A3 30%,#F5C451 50%,#FFFFFF 62%,#D9A43A)!important;background-size:250% 100%!important;
+  color:#1E1200!important;border-color:#FFF6DA!important;box-shadow:0 0 14px rgba(245,197,81,.75)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .qbtn:active{background:linear-gradient(180deg,#FFE7A3,#F5C451)!important;color:#1E1200!important;box-shadow:0 0 14px rgba(245,197,81,.8)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .win-preview .mult{background:rgba(245,197,81,.16)!important;color:#FFE7A3!important;border-color:rgba(245,197,81,.5)!important}
