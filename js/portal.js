@@ -367,7 +367,20 @@
     pollT = setTimeout(function () { if (!document.hidden) refresh(); else schedule(); }, state.active ? 15000 : 60000);
   }
 
+  // v2427 — scène de l'univers en bas de chaque page des Cadeaux (galaxie qui tourne, planète, lunes, étoiles filantes).
+  function scenes() {
+    ['defiCard', 'affCard', 'topCard', 'bonCard'].forEach(function (id) {
+      var c = $(id);
+      if (!c || c.querySelector(':scope > .gift-scene')) return;
+      var sc = document.createElement('div');
+      sc.className = 'gift-scene';
+      sc.setAttribute('aria-hidden', 'true');
+      sc.innerHTML = '<i class="gs-neb"></i><i class="gs-gal"></i><i class="gs-core"></i><i class="gs-planet"><b></b></i><i class="gs-ring"></i><i class="gs-moon m1"></i><i class="gs-moon m2"></i><i class="gs-shoot s1"></i><i class="gs-shoot s2"></i><i class="gs-dust"></i>';
+      c.appendChild(sc);
+    });
+  }
   function bind() {
+    scenes();
     var b = $('btnPortal');
     if (b) b.addEventListener('click', openPortal);
     if ($('closePortal')) $('closePortal').addEventListener('click', closePortal);

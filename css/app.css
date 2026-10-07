@@ -6192,3 +6192,80 @@ html body .defi-win.dw-planet .dw-cup .hc-globe > svg{position:absolute;inset:0;
 }
 html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card){overflow-x:hidden!important}
 html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card)::before,html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card)::after{opacity:.32!important}
+
+/* ===== v2427 — Cadeaux : l'univers du site partout (plus de grandes zones sombres et vides). ===== */
+/* Le dessin d'univers des fenêtres du site (galaxy-modal.svg) sous les nébuleuses colorées. */
+html body #portalModal#portalModal#portalModal > .modal-box.portal-box{background:
+  radial-gradient(60% 38% at 12% 8%,rgba(var(--tc),.24),transparent 70%),
+  radial-gradient(55% 40% at 92% 30%,rgba(124,77,255,.22),transparent 70%),
+  radial-gradient(70% 45% at 30% 100%,rgba(0,190,255,.14),transparent 70%),
+  radial-gradient(40% 30% at 80% 90%,rgba(var(--tc2),.14),transparent 70%),
+  url("galaxy-modal.svg?v=2427") center/cover no-repeat,
+  linear-gradient(180deg,#0A0B22 0%,#070818 60%,#05061A 100%)!important;
+  background-size:140% 140%,140% 140%,140% 140%,140% 140%,cover,100% 100%!important}
+/* Cartes un peu plus lumineuses, teintées de la couleur de la page. */
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card):not(.hidden){display:flex!important;flex-direction:column!important;
+  background:linear-gradient(180deg,rgba(var(--tc),.13),rgba(30,24,70,.55) 34%,rgba(16,14,44,.62) 70%,rgba(var(--tc),.10))!important}
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card) > :not(.gift-scene){flex:0 0 auto}
+
+/* La scène : elle remplit tout l'espace libre en bas de la page (au moins 170 px). */
+html body #portalModal .gift-scene{position:relative!important;z-index:1;flex:1 0 170px!important;min-height:170px;margin-top:14px;border-radius:18px;overflow:hidden;
+  border:1px solid rgba(var(--tc),.28);box-shadow:inset 0 0 40px rgba(0,0,0,.45),0 0 24px rgba(var(--tc),.12);pointer-events:none}
+html body #portalModal .gift-scene i{position:absolute;display:block;font-style:normal}
+/* Nébuleuse + poussière d'étoiles. */
+html body #portalModal .gift-scene .gs-neb{inset:0;background:
+  radial-gradient(45% 60% at 18% 70%,rgba(var(--tc),.45),transparent 70%),
+  radial-gradient(40% 55% at 82% 30%,rgba(124,77,255,.45),transparent 70%),
+  radial-gradient(50% 50% at 60% 100%,rgba(0,190,255,.28),transparent 70%),
+  url("galaxy-modal.svg?v=2427") center/cover no-repeat,
+  linear-gradient(180deg,#120E34,#07071A);animation:gsNeb 18s ease-in-out infinite alternate}
+@keyframes gsNeb{0%{filter:hue-rotate(0deg) brightness(1)}100%{filter:hue-rotate(18deg) brightness(1.15)}}
+html body #portalModal .gift-scene .gs-dust{inset:0;opacity:.9;background:
+  radial-gradient(1.4px 1.4px at 8% 20%,#fff,transparent 60%),radial-gradient(1px 1px at 22% 62%,#fff,transparent 60%),
+  radial-gradient(1.2px 1.2px at 35% 14%,#FFE6B0,transparent 60%),radial-gradient(1px 1px at 48% 80%,#fff,transparent 60%),
+  radial-gradient(1.5px 1.5px at 63% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 72% 70%,#D9CCFF,transparent 60%),
+  radial-gradient(1.3px 1.3px at 88% 12%,#fff,transparent 60%),radial-gradient(1px 1px at 93% 58%,#fff,transparent 60%),
+  radial-gradient(1px 1px at 4% 88%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 56% 46%,#BFF7FF,transparent 60%);
+  animation:gsTwinkle 3.5s ease-in-out infinite alternate}
+@keyframes gsTwinkle{0%{opacity:.55}100%{opacity:1}}
+/* Galaxie en spirale qui tourne lentement. */
+html body #portalModal .gift-scene .gs-gal{left:4%;top:50%;width:190px;height:190px;margin-top:-95px;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 0deg,rgba(255,255,255,.55) 20deg,transparent 70deg,rgba(var(--tc2),.6) 120deg,transparent 170deg,
+    rgba(255,255,255,.45) 200deg,transparent 250deg,rgba(var(--tc),.6) 300deg,transparent 350deg);
+  -webkit-mask:radial-gradient(circle,#000 8%,rgba(0,0,0,.65) 35%,transparent 70%);mask:radial-gradient(circle,#000 8%,rgba(0,0,0,.65) 35%,transparent 70%);
+  filter:blur(1.5px);transform:scaleY(.42) rotate(0deg);animation:gsSpin 40s linear infinite;opacity:.95}
+@keyframes gsSpin{to{transform:scaleY(.42) rotate(360deg)}}
+html body #portalModal .gift-scene .gs-core{left:calc(4% + 80px);top:50%;width:30px;height:30px;margin-top:-15px;border-radius:50%;
+  background:radial-gradient(circle,#fff,rgba(255,236,190,.85) 30%,rgba(var(--tc2),.4) 60%,transparent 75%);box-shadow:0 0 28px rgba(255,230,180,.8);
+  animation:gsPulse 4s ease-in-out infinite}
+@keyframes gsPulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.25);opacity:1}}
+/* Grande planète avec bandes et ombre, couleur de la page. */
+html body #portalModal .gift-scene .gs-planet{right:12%;top:50%;width:86px;height:86px;margin-top:-43px;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.9),rgba(var(--tc2),1) 16%,rgba(var(--tc),1) 46%,rgba(40,14,70,1) 86%);
+  box-shadow:inset -14px -10px 22px rgba(0,0,0,.55),0 0 34px rgba(var(--tc),.55);animation:gsFloat 6s ease-in-out infinite}
+html body #portalModal .gift-scene .gs-planet b{position:absolute;inset:0;border-radius:50%;
+  background:repeating-linear-gradient(-18deg,transparent 0 9px,rgba(255,255,255,.13) 9px 13px,transparent 13px 20px,rgba(0,0,0,.12) 20px 24px);mix-blend-mode:overlay}
+html body #portalModal .gift-scene .gs-ring{right:calc(12% - 30px);top:50%;width:146px;height:34px;margin-top:-17px;border-radius:50%;
+  border:3px solid rgba(var(--tc2),.75);border-top-color:rgba(var(--tc2),.2);transform:rotate(-16deg);box-shadow:0 0 12px rgba(var(--tc2),.5);
+  animation:gsFloat 6s ease-in-out infinite}
+@keyframes gsFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+/* Lunes qui tournent autour. */
+html body #portalModal .gift-scene .gs-moon{border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#B9C2FF 45%,#3A3570 90%);box-shadow:0 0 8px rgba(185,194,255,.7)}
+html body #portalModal .gift-scene .gs-moon.m1{right:calc(12% + 36px);top:50%;width:12px;height:12px;animation:gsOrbit 9s linear infinite}
+html body #portalModal .gift-scene .gs-moon.m2{right:calc(12% + 36px);top:50%;width:8px;height:8px;animation:gsOrbit 13s linear infinite reverse;
+  background:radial-gradient(circle at 35% 30%,#fff,rgba(var(--tc2),1) 50%,rgba(var(--tc),1) 90%)}
+@keyframes gsOrbit{from{transform:rotate(0deg) translateX(70px) rotate(0deg) scaleY(1)}to{transform:rotate(360deg) translateX(70px) rotate(-360deg)}}
+/* Étoiles filantes. */
+html body #portalModal .gift-scene .gs-shoot{top:18%;left:-30%;width:120px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.95));box-shadow:0 0 8px rgba(255,255,255,.8);transform:rotate(18deg);opacity:0;
+  animation:gsShoot 6.5s ease-in 1.2s infinite}
+html body #portalModal .gift-scene .gs-shoot.s2{top:62%;animation-delay:4.4s;animation-duration:8s;width:90px}
+@keyframes gsShoot{0%{left:-30%;opacity:0}6%{opacity:1}22%{left:110%;opacity:0}100%{left:110%;opacity:0}}
+/* Bonus : le chrono bien au centre, sous le grand titre. */
+html body #portalModal#portalModal .bon-head{flex-direction:column!important;justify-content:center!important;align-items:center!important}
+html body #portalModal#portalModal .bon-head .top-timer{margin:0 auto!important;align-self:center!important;justify-content:center}
+@media (prefers-reduced-motion: reduce){html body #portalModal .gift-scene *{animation:none!important}}
+/* Téléphone couché : scène plus petite. */
+@media (orientation:landscape) and (max-height:500px){html body #portalModal .gift-scene{flex-basis:110px!important;min-height:110px}}
+html body #portalModal#portalModal .bon-head{flex-wrap:nowrap!important}
+html body #portalModal#portalModal .bon-head .bon-big{flex:0 0 auto!important;width:100%!important}
