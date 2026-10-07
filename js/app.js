@@ -261,6 +261,9 @@
       if (!resp || !resp.credential) return;
       var res = null;
       try { res = await D6.Auth.googleWithIdToken(resp.credential, rawNonce); } catch (eC) { res = null; }
+      // v2432 — le code de sécurité (nonce) ne sert qu'une fois : bouton refait avec un nouveau code après
+      // CHAQUE essai (avant : il fallait recharger la page pour pouvoir recliquer sur Google).
+      resetG();
       if (res && res.ok && D6.Auth.current() && !isGuest()) {
         if (res.isNew) metaTrack('CompleteRegistration');
         enterApp({ openFullscreen: true });
@@ -271,6 +274,12 @@
     // v2404 : Google initialisé UNE fois ; chaque bouton dessiné une seule fois pour une largeur donnée
     // (avant : redessiné à chaque clic Connexion / Inscription → le bouton « clignotait »).
     var gReady = null;
+    // Nouveau départ : nouveau code de sécurité, boutons redessinés.
+    function resetG() {
+      gReady = null;
+      document.querySelectorAll('[data-g-official]').forEach(function (b) { b.removeAttribute('data-gw'); });
+      setTimeout(render, 50);
+    }
     function initOnce() {
       if (gReady) return gReady;
       var bytes = new Uint8Array(16);
@@ -329,6 +338,24 @@
     window.addEventListener('resize', function () { setTimeout(render, 120); });
     if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { setTimeout(render, 60); });
     if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { setTimeout(render, 60); });
+    // v2432 — fenêtre Google fermée sans finir (annulée, erreur) : quand on revient sur le site, le bouton est
+    // refait avec un nouveau code, il se reclique tout de suite.
+    var gClicked = false;
+    window.addEventListener('blur', function () {
+      setTimeout(function () {
+        var a = document.activeElement;
+        if (a && a.tagName === 'IFRAME' && a.closest && a.closest('[data-g-official]')) gClicked = true;
+      }, 0);
+    });
+    window.addEventListener('focus', function () {
+      if (!gClicked) return;
+      gClicked = false;
+      setTimeout(resetG, 400);
+    });
+    // Onglets Connexion / Inscription de l'écran de connexion : bouton Google refait aussi.
+    document.querySelectorAll('#screenAuth .auth-tab, #screenAuth [data-auth-tab], #tabLogin, #tabRegister').forEach(function (el) {
+      el.addEventListener('click', function () { setTimeout(resetG, 80); });
+    });
     // Écran de connexion ouvert par un autre chemin (bouton RÉEL d'un visiteur…) : petite vérification
     // chaque seconde (ne fait rien si le bouton est déjà dessiné à la bonne largeur).
     setInterval(render, 1000);
