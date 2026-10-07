@@ -7157,3 +7157,17 @@ html body #withdrawModal .wd-back-ico,html body #screenAuth#screenAuth#screenAut
 html body #drawerProfile#drawerProfile#drawerProfile .avatar{font-size:17px!important;font-weight:900!important;letter-spacing:.02em;color:#fff!important;
   -webkit-text-stroke:.6px #fff;text-shadow:0 0 3px rgba(60,20,0,.95),0 1px 2px rgba(60,20,0,.9),0 0 8px rgba(80,30,0,.6)!important}
 html body #drawerProfile#drawerProfile#drawerProfile .avatar::before{top:66%!important;height:24%!important;border-top-color:transparent!important}
+
+/* ===== v2449 — Retours ← et croix du profil : symbole dessiné, parfaitement centré dans la mini-planète ===== */
+html body #withdrawModal .wd-back-ico,html body #screenAuth#screenAuth#screenAuth .auth-back,html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer{
+  font-size:0!important;color:transparent!important;-webkit-text-stroke:0!important;text-shadow:none!important;padding:0!important;
+  background-repeat:no-repeat!important;background-position:center,center!important;background-size:58% 58%,100% 100%!important}
+html body #withdrawModal .wd-back-ico,html body #screenAuth#screenAuth#screenAuth .auth-back{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M11 5l-7 7 7 7'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 34% 28%,#C7D2FE 0%,#7C6CF2 38%,#3B1E9A 72%,#1A0F4A 100%)!important}
+html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.6' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 34% 28%,#C7D2FE 0%,#7C6CF2 38%,#3B1E9A 72%,#1A0F4A 100%)!important}
+html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer{position:relative}
+html body #drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer#btnCloseDrawer::before{content:"";position:absolute;left:-28%;right:-28%;top:64%;height:22%;border-radius:50%;
+  border:1.5px solid rgba(255,214,120,.85);border-top-color:transparent;transform:rotate(-18deg);pointer-events:none}
