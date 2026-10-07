@@ -154,7 +154,9 @@
         var p1 = (cs.getPropertyValue('--p1') || '').trim() || '#C9B8FF';
         var p2 = (cs.getPropertyValue('--p2') || '').trim() || '#3B1D8F';
         var pg = (cs.getPropertyValue('--pg') || '').trim() || 'rgba(167,139,250,.45)';
-        return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + art.innerHTML + '</span>';
+        // v2419 — les dégradés du dessin sont renommés (sinon ils pointent vers une copie cachée → logo gris).
+        var html = art.innerHTML.replace(/id="([^"]+)"/g, 'id="$1_pg"').replace(/url\(#([^)]+)\)/g, 'url(#$1_pg)').replace(/href="#([^"]+)"/g, 'href="#$1_pg"');
+        return '<span class="hc-globe" style="--p1:' + p1 + ';--p2:' + p2 + ';--pg:' + pg + '">' + html + '</span>';
       }
     } catch (e) { /* ignore */ }
     return '';
@@ -431,7 +433,7 @@
     var rows = all.filter(function (r) { return r.at >= from; });
     var dep = 0, gain = 0;
     rows.forEach(function (r) { dep += Number(r.deposit || 0); gain += Number(r.gift || 0); });
-    if ($('affSum')) $('affSum').innerHTML = '<div><b>' + rows.length + '</b><span>' + esc(t('affFriends')) + '</span></div>' +
+    if ($('affSum')) $('affSum').innerHTML = '<div><b>' + rows.length + '</b><span>' + esc(t('affDeposited')) + '</span></div>' +
       '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
       '<div class="gold"><b>+' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
     $('affRowsAll').innerHTML = rows.length ? rows.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmpty')) + '</p>';
@@ -483,16 +485,17 @@
       var place = [2, 1, 3][i];
       if (!r) return '<div class="tp tp' + place + ' empty"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>—</b><span>&nbsp;</span><div class="tp-step"></div></div>';
       return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(r.id) + '</b>' +
-        '<span class="oro-amt">' + ICO_ORO + esc(r.points) + ' ORO</span><div class="tp-step"></div></div>';
+        '<span class="oro-amt">' + esc(r.points) + ' ORO</span><div class="tp-step"></div></div>';
     }).join('');
     var rest = list.slice(3);
     if (!list.length) $('topRows').innerHTML = '<p class="aff-empty">' + esc(t('topEmpty')) + '</p>';
     else $('topRows').innerHTML = rest.map(function (r) {
-      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b><span class="oro-amt">' + ICO_ORO + esc(r.points) + '</span></div>';
+      return '<div class="tr' + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b><span class="oro-amt">' + esc(r.points) + ' ORO</span></div>';
     }).join('');
     var me = top.me || {};
     var txt;
     if (top.guest) txt = t('topGuest');
+    else if (topPrev) txt = me.rank ? t('topPrevMe', { r: me.rank, p: me.points }) : t('topPrevNone');
     else if (me.rank) txt = t('topMeRank', { r: me.rank, p: me.points });
     else if (me.need > 0) txt = t('topMeNeed', { n: me.need });
     else txt = t('topMeOut', { p: me.points });
@@ -502,7 +505,12 @@
     // Bouton « Semaine dernière » : seulement pour l'admin (il voit les numéros ORO pour récompenser).
     var isAdmin = !!top.admin || topPrev;
     show($('topPrev'), isAdmin);
-    if ($('topPrev')) $('topPrev').textContent = topPrev ? t('topThis') : t('topPrev');
+    if ($('topPrevLbl')) $('topPrevLbl').textContent = topPrev ? t('topThis') : t('topPrev');
+    // Semaine dernière : un écran « terminé » (titre, bandeau, ton résultat final, pas de bouton Jouer).
+    show($('topEnded'), !!topPrev);
+    show($('topPlay'), !topPrev);
+    var ttl = document.querySelector('#topCard .top-title b');
+    if (ttl) ttl.textContent = topPrev ? t('topPrevTitle') : t('topTitle');
     if ($('topCard')) $('topCard').classList.toggle('is-prev', !!topPrev);
     tickLists();
     fitPortal();
@@ -690,6 +698,9 @@
       var box = document.querySelector('#portalModal .portal-box');
       var m = $('portalModal');
       if (!box || !m || !m.classList.contains('active') || window.innerWidth >= 860) return;
+      // v2419 : plus de resserrage (zoom) : les cartes ont toutes la même taille et défilent si besoin.
+      for (var z = 0; z < box.children.length; z++) box.children[z].style.zoom = '';
+      return;
       var kids = [];
       for (var i = 0; i < box.children.length; i++) {
         var k = box.children[i];

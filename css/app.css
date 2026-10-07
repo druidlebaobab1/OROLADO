@@ -5456,8 +5456,8 @@ html body #portalModal .defi-market{display:none!important}
 html body #portalModal .defi-hero{display:flex;align-items:center;gap:16px;margin:6px 0 12px}
 html body #portalModal .defi-ring{position:relative;width:118px;height:118px;flex:0 0 118px}
 html body #portalModal .defi-ring svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-html body #portalModal .defi-ring path{fill:none;stroke:rgba(255,255,255,.14);stroke-width:7;stroke-linecap:round;transition:stroke .4s}
-html body #portalModal .defi-ring path.on{stroke:#F2B33D;filter:drop-shadow(0 0 6px rgba(242,179,61,.75))}
+html body #portalModal .defi-ring #defiRing path{fill:none;stroke:rgba(255,255,255,.14);stroke-width:7;stroke-linecap:round;transition:stroke .4s}
+html body #portalModal .defi-ring #defiRing path.on{stroke:#F2B33D;filter:drop-shadow(0 0 6px rgba(242,179,61,.75))}
 html body #portalModal .defi-globe{position:absolute;inset:19px;display:grid;place-items:center}
 html body #portalModal .defi-globe .hc-globe{width:80px!important;height:80px!important;flex:none!important}
 html body #portalModal .defi-globe .hc-globe svg{width:100%!important;height:100%!important}
@@ -5920,3 +5920,57 @@ html body #portalModal .bon-steps li em{font-size:10.5px!important}
 }
 /* v2418 — écrans étroits : une seule colonne pour que les numéros ORO ne soient jamais coupés. */
 @media (max-width:419px){html body #portalModal#portalModal .top-rows{grid-template-columns:1fr!important}}
+/* v2419 — retouches du propriétaire. */
+/* Point rouge du cadeau : petit, sans contour noir, clignote doucement (comme « Plein écran »). */
+html body .topbar .portal-btn.portal-btn .pw-dot{width:6px!important;height:6px!important;box-shadow:none!important;background:#EF4444!important;animation:fsLiveDot 1.5s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){html body .topbar .portal-btn.portal-btn .pw-dot{animation:none}}
+/* Croix plus petite et plus haute : tout remonte, « Voir plus » reste visible sur les petits Android. */
+@media (max-width:859px){
+  html body #portalModal#portalModal .portal-box > .btn-close{width:30px!important;height:30px!important;top:calc(env(safe-area-inset-top,0px) + 4px)!important;right:6px!important}
+  html body #portalModal#portalModal .portal-box > .btn-close .x-ico{width:15px!important;height:15px!important}
+  html body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-top:calc(env(safe-area-inset-top,0px) + 38px)!important}
+}
+/* Exemples : séparés par des traits, parenthèses aérées. */
+html body #portalModal .aff-ex p:empty{display:none}
+html body #portalModal .aff-ex p{padding:3px 0}
+html body #portalModal .aff-ex p + p{border-top:1px dashed rgba(242,179,61,.28)}
+html body #portalModal .bon-ex p + p{border-top-color:rgba(92,155,255,.3)}
+/* Petits écrans (Android) : textes qui ne débordent plus. */
+@media (max-width:420px){
+  html body #portalModal .defi-how .defi-ex{font-size:11.5px!important}
+  html body #portalModal .aff-ex p{font-size:11.5px!important}
+  html body #portalModal .top-sub{font-size:10.5px!important;line-height:1.35!important}
+  html body #portalModal .bon-big{font-size:12.5px!important;padding:7px 9px!important}
+  html body #portalModal .defi-rl li,html body #portalModal .aff-rl li{font-size:11.5px!important}
+}
+/* Tous les chronos : petits, sur une seule ligne, jamais par-dessus un texte. */
+html body #portalModal .top-timer,html body #portalModal .defi-timer{white-space:nowrap!important;flex:0 0 auto!important;font-size:11px!important}
+html body #portalModal .defi-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html body #portalModal .defi-top .defi-badge{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Tournoi : « Semaine dernière » se voit cliquable ; écran « terminé » différent. */
+html body #portalModal .top-prev{display:inline-flex!important;align-items:center;gap:4px;border-color:rgba(242,179,61,.45)!important;color:#FFE6A6!important}
+html body #portalModal .top-prev .pi{width:14px;height:14px;stroke:currentColor}
+html body #portalModal .top-prev.hidden{display:none!important}
+html[dir=rtl] body #portalModal .top-prev .pi{transform:scaleX(-1)}
+html body #portalModal .top-ended{margin:8px 0 0;padding:7px 10px;border-radius:10px;background:rgba(255,77,106,.14);border:1px solid rgba(255,77,106,.45);color:#FFC2CB;font-size:12.5px;font-weight:900;text-align:center;letter-spacing:.04em;text-transform:uppercase}
+html body #portalModal .top-ended.hidden{display:none!important}
+html body #portalModal .top-card.is-prev{border-color:rgba(160,170,200,.35)!important}
+html body #portalModal .top-card.is-prev .top-sub,html body #portalModal .top-card.is-prev .top-rule{display:none}
+html body #portalModal .top-card.is-prev .tp-medal{filter:saturate(.7)}
+html body #portalModal .top-card.is-prev .top-me{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.18);color:#E6EAFA}
+html body #portalModal .top-card.is-prev .top-prev{flex:1 1 auto;justify-content:center}
+/* v2419 — les 4 pages ont TOUTES la même grande taille (toute la hauteur sous les onglets) ; texte à taille
+   normale ; s'il y a beaucoup de texte, c'est la carte qui défile (plus de resserrage qui rend tout petit). */
+@media (max-width:859px){
+  html body #portalModal#portalModal#portalModal > .modal-box.portal-box{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;overflow:hidden!important}
+  html body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)!important}
+  html.saf-under body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 92px)!important}
+  html body #portalModal#portalModal .portal-tabs{margin-top:0!important;flex:0 0 auto}
+  html body #portalModal#portalModal .portal-box > .defi-card,
+  html body #portalModal#portalModal .portal-box > .aff-card,
+  html body #portalModal#portalModal .portal-box > .top-card,
+  html body #portalModal#portalModal .portal-box > .bon-card,
+  html body #portalModal#portalModal .portal-box > .gift-guest{flex:1 1 auto!important;min-height:0!important;margin:0!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;zoom:1!important}
+  /* Les listes ne défilent plus à part : c'est la carte entière qui défile. */
+  html body #portalModal#portalModal#portalModal .top-rows,html body #portalModal#portalModal#portalModal .aff-rows-all{max-height:none!important;overflow:visible!important}
+}
