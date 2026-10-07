@@ -318,7 +318,10 @@
       var w = Math.max(200, Math.min(400, Math.round(inner / 1.15)));
       initOnce().then(function () {
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
-          if (box.getAttribute('data-gw') === String(w)) return;
+          // v2444 — « tic-tic » : on ne redessine plus pour 1 ou 2 pixels de différence (barre de défilement,
+          // barre de Safari qui bouge…) ; seulement si la largeur change vraiment (rotation, autre écran).
+          var gwOld = parseFloat(box.getAttribute('data-gw') || '');
+          if (gwOld && Math.abs(gwOld - w) < 12) return;
           box.setAttribute('data-gw', String(w));
           var holder = box.querySelector('.g-holder');
           if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }
@@ -397,9 +400,10 @@
         }, 700);
       }
     } catch (eB) { /* ignore */ }
-    // Onglets Connexion / Inscription de l'écran de connexion : bouton Google refait aussi.
+    // Onglets Connexion / Inscription : le bouton Google déjà dessiné est GARDÉ (v2444 — avant, il était effacé
+    // puis redessiné à chaque changement d'onglet : c'était le « tic-tic »). Dessiné seulement s'il manque.
     document.querySelectorAll('#screenAuth .auth-tab, #screenAuth [data-auth-tab], #tabLogin, #tabRegister').forEach(function (el) {
-      el.addEventListener('click', function () { setTimeout(resetG, 80); });
+      el.addEventListener('click', function () { setTimeout(render, 80); });
     });
     // Écran de connexion ouvert par un autre chemin (bouton RÉEL d'un visiteur…) : petite vérification
     // chaque seconde (ne fait rien si le bouton est déjà dessiné à la bonne largeur).
