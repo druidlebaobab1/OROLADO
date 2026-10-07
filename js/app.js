@@ -5688,7 +5688,25 @@
       $('withdrawAmt').min = String(min);
       $('withdrawAmt').placeholder = String(min);
     }
-    if ($('wdSelectedLabel')) $('wdSelectedLabel').textContent = WD_NAMES[selectedOp] || selectedOp || '';
+    if ($('wdSelectedLabel')) {
+      // v2443 — le moyen choisi s'affiche avec son logo (copie de l'icône de sa case).
+      var selLab = $('wdSelectedLabel');
+      selLab.textContent = '';
+      selLab.setAttribute('data-wd', selectedOp || '');
+      try {
+        var selCard = document.querySelector('#withdrawModal .wd-card[data-wd="' + selectedOp + '"]');
+        if (selCard && selCard.firstElementChild) {
+          var selIco = document.createElement('span');
+          selIco.className = 'wd-sel-ico ' + selCard.className.replace(/\bwd-card\b|\bon\b|\bact\w*\b/g, '');
+          selIco.appendChild(selCard.firstElementChild.cloneNode(true));
+          selLab.appendChild(selIco);
+        }
+      } catch (eSel) { /* ignore */ }
+      var selTxt = document.createElement('span');
+      selTxt.className = 'wd-sel-name';
+      selTxt.textContent = WD_NAMES[selectedOp] || selectedOp || '';
+      selLab.appendChild(selTxt);
+    }
   }
 
   function fillWdDial(method) {

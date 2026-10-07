@@ -6635,3 +6635,167 @@ html body #installBanner .install-x{width:22px!important;height:22px!important;m
 html body #installBanner .install-x svg{stroke:#fff}
 html body #helpModal .field input{height:48px!important;min-height:48px!important;box-sizing:border-box!important;font-size:15px!important}
 html body #helpModal .field:not(:has(textarea)) .help-in-ico{bottom:9px!important}
+
+/* ===== v2443 — RETRAIT et RECHARGER pleins de vie : fenêtres lumineuses, vrais logos des moyens de paiement,
+   cases vitrées colorées, montants qui brillent. Mêmes dimensions, mêmes boutons, même fonctionnement. ===== */
+
+/* --- Logos des moyens de paiement (dessins dans icons/pay) --- */
+html body .wd-orange .wd-mm-dot,html body .wd-mtn .wd-mm-dot,html body .wd-wave .wd-mm-dot,html body .wd-mpesa .wd-mm-dot,
+html body .wd-moov .wd-mm-dot,html body .wd-airtel .wd-mm-dot,html body .wd-pix .wd-mm-dot,html body .wd-mpago .wd-mm-dot,
+html body .wd-nequi .wd-mm-dot,html body .wd-gcash .wd-mm-dot,html body .wd-upi .wd-mm-dot,html body .wd-stc .wd-mm-dot,
+html body .wd-palmpay .wd-mm-dot,html body .wd-opay .wd-opay-mark,html body .wd-picpay .wd-brand-pp,html body .wd-papara .wd-brand-pa,
+html body .wd-payeer .wd-brand-pr,html body .wd-pmoney .wd-brand-pm,html body .wd-skrill .wd-brand-sk,html body .wd-neteller .wd-brand-nt{
+  width:18px!important;height:18px!important;min-width:18px;border-radius:5px!important;flex:0 0 18px!important;padding:0!important;
+  font-size:0!important;color:transparent!important;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 2px 6px rgba(0,0,0,.35)!important;
+  background:center/cover no-repeat!important;display:inline-block!important}
+html body .wd-orange .wd-mm-dot{background-image:url("../icons/pay/orange.svg")!important}
+html body .wd-mtn .wd-mm-dot{background-image:url("../icons/pay/mtn.svg")!important}
+html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg")!important}
+html body .wd-mpesa .wd-mm-dot{background-image:url("../icons/pay/mpesa.svg")!important}
+html body .wd-moov .wd-mm-dot{background-image:url("../icons/pay/moov.svg")!important}
+html body .wd-airtel .wd-mm-dot{background-image:url("../icons/pay/airtel.svg")!important}
+html body .wd-pix .wd-mm-dot{background-image:url("../icons/pay/pix.svg")!important}
+html body .wd-mpago .wd-mm-dot{background-image:url("../icons/pay/mpago.svg")!important}
+html body .wd-nequi .wd-mm-dot{background-image:url("../icons/pay/nequi.svg")!important}
+html body .wd-gcash .wd-mm-dot{background-image:url("../icons/pay/gcash.svg")!important}
+html body .wd-upi .wd-mm-dot{background-image:url("../icons/pay/upi.svg")!important}
+html body .wd-stc .wd-mm-dot{background-image:url("../icons/pay/stc.svg")!important}
+html body .wd-palmpay .wd-mm-dot{background-image:url("../icons/pay/palmpay.svg")!important}
+html body .wd-opay .wd-opay-mark{background-image:url("../icons/pay/opay.svg")!important}
+html body .wd-picpay .wd-brand-pp{background-image:url("../icons/pay/picpay.svg")!important}
+html body .wd-papara .wd-brand-pa{background-image:url("../icons/pay/papara.svg")!important}
+html body .wd-payeer .wd-brand-pr{background-image:url("../icons/pay/payeer.svg")!important}
+html body .wd-pmoney .wd-brand-pm{background-image:url("../icons/pay/perfectmoney.svg")!important}
+html body .wd-skrill .wd-brand-sk{background-image:url("../icons/pay/skrill.svg")!important}
+html body .wd-neteller .wd-brand-nt{background-image:url("../icons/pay/neteller.svg")!important}
+html body #withdrawModal .wd-card-ico{filter:drop-shadow(0 0 4px rgba(255,255,255,.25))}
+
+/* --- Fenêtre RETRAIT --- */
+html body #withdrawModal#withdrawModal .modal-box{
+  background:
+    radial-gradient(110% 45% at 50% 0%,rgba(46,229,157,.30),rgba(46,229,157,0) 60%),
+    radial-gradient(80% 50% at 0% 100%,rgba(168,85,247,.50),rgba(168,85,247,0) 65%),
+    radial-gradient(80% 50% at 100% 70%,rgba(56,189,248,.35),rgba(56,189,248,0) 65%),
+    linear-gradient(180deg,#152A5E 0%,#1E1A62 55%,#2A1664 100%)!important;
+  border:1px solid rgba(130,230,200,.6)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 36px rgba(46,229,157,.30),0 0 80px rgba(124,77,255,.30)!important}
+html body #withdrawModal#withdrawModal .modal-title{color:transparent!important;background-image:linear-gradient(90deg,#FFF1C2,#FBBF24 55%,#F59E0B)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;font-weight:900!important;letter-spacing:.02em}
+/* Solde retirable : carte « argent » verte lumineuse, reflet qui passe. */
+html body #withdrawModal#withdrawModal .wd-bal{position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(46,229,157,.30),rgba(16,185,129,.10) 55%,rgba(251,191,36,.16))!important;
+  border:1px solid rgba(46,229,157,.75)!important;box-shadow:0 0 18px rgba(46,229,157,.30),0 0 0 1px rgba(255,255,255,.06) inset!important}
+html body #withdrawModal#withdrawModal .wd-bal::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);background-size:250% 100%;animation:instShine 3.2s ease-in-out infinite}
+html body #withdrawModal#withdrawModal .wd-bal-secure{color:#B9FFE0!important;font-weight:800!important}
+html body #withdrawModal#withdrawModal .wd-bal-amt{color:transparent!important;background-image:linear-gradient(180deg,#FFFFFF,#7CF5C4)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;filter:drop-shadow(0 0 8px rgba(46,229,157,.55))}
+/* Titres des groupes : point lumineux + trait coloré. */
+html body #withdrawModal#withdrawModal .wd-group-label{display:flex!important;align-items:center;gap:6px;font-weight:900!important;letter-spacing:.06em}
+html body #withdrawModal#withdrawModal .wd-group-label::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;flex:0 0 6px}
+html body #withdrawModal#withdrawModal .wd-group-label::after{content:"";flex:1 1 auto;height:1px;background:linear-gradient(90deg,currentColor,transparent);opacity:.6}
+html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(1){color:#5EEAD4!important}
+html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(2){color:#7DD3FC!important}
+html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(3){color:#C4B5FD!important}
+/* Cases : verre coloré par groupe, bord lumineux, apparition en cascade. */
+html body #withdrawModal#withdrawModal .wd-card{color:#fff!important;font-weight:800!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 3px 10px rgba(5,4,30,.35)!important;
+  transition:transform .12s,box-shadow .2s,border-color .2s;animation:wdIn .38s ease-out both}
+html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(135deg,rgba(45,212,191,.26),rgba(45,212,191,.07))!important;border:1px solid rgba(94,234,212,.55)!important}
+html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card{background:linear-gradient(135deg,rgba(56,189,248,.24),rgba(56,189,248,.06))!important;border:1px solid rgba(125,211,252,.5)!important}
+html body #withdrawModal#withdrawModal #wdBankGrid .wd-card{background:linear-gradient(135deg,rgba(167,139,250,.28),rgba(167,139,250,.07))!important;border:1px solid rgba(196,181,253,.55)!important}
+html body #withdrawModal#withdrawModal .wd-card:active,html body #withdrawModal#withdrawModal .wd-card.on{transform:scale(.97);
+  border-color:#FBBF24!important;box-shadow:0 0 0 1px rgba(251,191,36,.5) inset,0 0 16px rgba(251,191,36,.45)!important}
+html body #withdrawModal#withdrawModal .wd-card:nth-child(3n+2){animation-delay:.05s}
+html body #withdrawModal#withdrawModal .wd-card:nth-child(3n){animation-delay:.1s}
+@keyframes wdIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
+/* Page du moyen choisi (montant, numéro…). */
+html body #withdrawModal#withdrawModal .wd-selected{display:flex!important;align-items:center;gap:9px;width:max-content;max-width:100%;margin:2px 0 8px!important;
+  padding:5px 14px 5px 5px!important;border-radius:999px;background:linear-gradient(90deg,rgba(251,191,36,.26),rgba(251,191,36,.06));
+  border:1px solid rgba(251,191,36,.7);box-shadow:0 0 14px rgba(251,191,36,.28);color:#FFE7A3!important;font-weight:900!important;font-size:14px!important}
+html body #withdrawModal .wd-sel-ico{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(10,8,40,.6);flex:0 0 28px}
+html body #withdrawModal .wd-sel-ico > *{width:20px!important;height:20px!important;flex-basis:20px!important;min-width:20px}
+html body #withdrawModal .wd-sel-ico .wd-card-brands{transform:scale(.7)}
+html body #withdrawModal#withdrawModal #wdStepForm label{color:#D6E4FF!important;font-weight:800!important}
+html body #withdrawModal#withdrawModal #wdStepForm input,html body #withdrawModal#withdrawModal #wdStepForm select{
+  background:linear-gradient(180deg,rgba(120,160,255,.17),rgba(150,100,255,.10))!important;border:1px solid rgba(160,190,255,.45)!important;
+  color:#fff!important;border-radius:12px!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important}
+html body #withdrawModal#withdrawModal #wdStepForm input:focus,html body #withdrawModal#withdrawModal #wdStepForm select:focus{
+  border-color:rgba(46,229,157,.9)!important;box-shadow:0 0 0 3px rgba(46,229,157,.2),0 0 14px rgba(46,229,157,.3)!important;outline:0}
+html body #withdrawModal#withdrawModal #withdrawAmt{color:#FFE08A!important;font-weight:900!important;border-color:rgba(251,191,36,.6)!important}
+html body #withdrawModal#withdrawModal #wdStepForm input::placeholder{color:rgba(220,230,255,.5)!important}
+html body #withdrawModal#withdrawModal #wdStepForm select option{background:#1E1A62;color:#fff}
+html body #withdrawModal#withdrawModal .hint-min{color:#AFC4F0!important}
+html body #withdrawModal#withdrawModal .wd-trust{display:flex!important;justify-content:center}
+html body #withdrawModal#withdrawModal .wd-trust span{display:inline-block;padding:4px 12px;border-radius:999px;color:#B9FFE0!important;font-weight:800!important;
+  background:rgba(46,229,157,.16);border:1px solid rgba(46,229,157,.6);animation:hpLive 2s ease-in-out infinite}
+html body #withdrawModal#withdrawModal .btn-wd-confirm,html body #depositModal#depositModal .btn-deposit-confirm{position:relative;overflow:hidden}
+html body #withdrawModal#withdrawModal .btn-wd-confirm::after,html body #depositModal#depositModal .btn-deposit-confirm::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);background-size:250% 100%;animation:instShine 2.8s ease-in-out infinite}
+html body #withdrawModal#withdrawModal .btn-wd-confirm{background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#2A1600!important;
+  box-shadow:0 6px 20px rgba(251,191,36,.45),0 0 0 1px rgba(255,255,255,.35) inset!important}
+
+/* --- Fenêtre RECHARGER --- */
+html body #depositModal#depositModal .modal-box{
+  background:
+    radial-gradient(110% 45% at 50% 0%,rgba(46,229,157,.38),rgba(46,229,157,0) 60%),
+    radial-gradient(80% 50% at 100% 100%,rgba(251,191,36,.30),rgba(251,191,36,0) 65%),
+    radial-gradient(80% 50% at 0% 70%,rgba(168,85,247,.42),rgba(168,85,247,0) 65%),
+    linear-gradient(180deg,#0F3A55 0%,#1A2262 55%,#26185E 100%)!important;
+  border:1px solid rgba(46,229,157,.7)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 38px rgba(46,229,157,.38),0 0 80px rgba(251,191,36,.18)!important}
+html body #depositModal#depositModal .modal-title{color:#EFFFF7!important;background:linear-gradient(90deg,rgba(46,229,157,.38),rgba(16,185,129,.16))!important;
+  border:1px solid rgba(46,229,157,.8)!important;box-shadow:0 0 14px rgba(46,229,157,.35)!important;font-weight:900!important}
+html body #depositModal#depositModal label{color:#C8F7E2!important}
+html body #depositModal#depositModal .dep-amt-input{background:linear-gradient(180deg,rgba(46,229,157,.16),rgba(20,60,80,.30))!important;
+  border:1.5px solid rgba(46,229,157,.75)!important;color:#fff!important;font-weight:900!important;
+  box-shadow:0 0 16px rgba(46,229,157,.28),0 0 0 1px rgba(255,255,255,.05) inset!important;animation:depGlow 2.4s ease-in-out infinite}
+html body #depositModal#depositModal .dep-amt-input:focus{border-color:#FBBF24!important;box-shadow:0 0 0 3px rgba(251,191,36,.22),0 0 18px rgba(251,191,36,.4)!important;animation:none;outline:0}
+@keyframes depGlow{0%,100%{box-shadow:0 0 10px rgba(46,229,157,.22)}50%{box-shadow:0 0 22px rgba(46,229,157,.5)}}
+html body #depositModal#depositModal .hint-min{color:#AFE9D0!important}
+html body #depositModal#depositModal .pay-method-label{color:#FFE7A3!important;font-weight:900!important}
+html body #depositModal#depositModal #payMethodCard{background:linear-gradient(135deg,rgba(251,191,36,.26),rgba(251,191,36,.06) 60%,rgba(46,229,157,.12))!important;
+  border:1px solid rgba(251,191,36,.85)!important;box-shadow:0 0 16px rgba(251,191,36,.30),0 0 0 1px rgba(255,255,255,.05) inset!important}
+html body #depositModal#depositModal #payMethodCard .pay-method-desc{color:#F3E8C8!important}
+html body #depositModal#depositModal .pay-method-rec{background:linear-gradient(90deg,#FFE08A,#FBBF24)!important;color:#2A1600!important;animation:recPulse 1.8s ease-in-out infinite}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.6)}50%{box-shadow:0 0 0 5px rgba(251,191,36,0)}}
+html body #depositModal#depositModal .btn-deposit-confirm{background:linear-gradient(135deg,#5BF5B8,#22C55E 45%,#0EA371)!important;color:#fff!important;
+  text-shadow:0 1px 3px rgba(0,60,30,.5);box-shadow:0 6px 22px rgba(34,197,94,.5),0 0 0 1px rgba(255,255,255,.35) inset!important}
+html body #depositModal#depositModal #payMethodUsdt{background:linear-gradient(135deg,rgba(124,77,255,.30),rgba(56,189,248,.12) 55%,rgba(251,191,36,.12))!important;
+  border:1px solid rgba(196,181,253,.75)!important;box-shadow:0 0 18px rgba(124,77,255,.35),0 0 0 1px rgba(255,255,255,.05) inset!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-method-desc{color:#E0E7FF!important}
+html body #depositModal#depositModal .pay-crypto-cell{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03))!important;
+  border:1px solid rgba(196,181,253,.35)!important;animation:cellFloat 3s ease-in-out infinite}
+html body #depositModal#depositModal .pay-crypto-cell:nth-child(2n){animation-delay:.6s}
+html body #depositModal#depositModal .pay-crypto-cell:nth-child(3n){animation-delay:1.2s}
+html body #depositModal#depositModal .pay-crypto-cell b{color:#fff!important}
+html body #depositModal#depositModal .pay-crypto-badge{filter:drop-shadow(0 0 6px rgba(255,255,255,.35))}
+@keyframes cellFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+html body #depositModal#depositModal .pay-go-arrow{animation:instBob 1.3s ease-in-out infinite}
+/* Page crypto (adresse, réseau). */
+html body #depositModal#depositModal .oxa-dd-btn,html body #depositModal#depositModal .oxa-wallet{background:linear-gradient(180deg,rgba(120,160,255,.16),rgba(150,100,255,.08))!important;
+  border:1px solid rgba(160,190,255,.45)!important}
+html body #depositModal#depositModal .oxa-net{background:rgba(255,255,255,.07)!important;border:1px solid rgba(160,190,255,.35)!important;color:#fff!important}
+html body #depositModal#depositModal .oxa-net.on{background:linear-gradient(135deg,rgba(251,191,36,.32),rgba(251,191,36,.08))!important;border-color:#FBBF24!important;box-shadow:0 0 12px rgba(251,191,36,.35)!important}
+html body #depositModal#depositModal .oxa-act{background:linear-gradient(135deg,rgba(251,191,36,.35),rgba(245,158,11,.18))!important;border:1px solid rgba(251,191,36,.8)!important;color:#FFE7A3!important}
+html body #depositModal#depositModal .crypto-back{color:#7CF5C4!important}
+@media (prefers-reduced-motion:reduce){html body #withdrawModal *,html body #depositModal *{animation:none!important}}
+html body #depositModal#depositModal .pay-crypto-cell{overflow:hidden!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-method-title{color:#fff!important;background:linear-gradient(90deg,rgba(124,77,255,.55),rgba(56,189,248,.3))!important;border-color:rgba(196,181,253,.8)!important;box-shadow:0 0 12px rgba(124,77,255,.4)!important}
+html body #depositModal#depositModal .pay-go-arrow{background:linear-gradient(135deg,#FFE08A,#F59E0B)!important;box-shadow:0 0 12px rgba(251,191,36,.6)!important}
+html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(3){color:#7DD3FC!important}
+html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(5){color:#C4B5FD!important}
+html body #withdrawModal#withdrawModal .wd-modal-head .modal-title{border:1px solid rgba(251,191,36,.75)!important;background-color:rgba(251,191,36,.10)!important;box-shadow:0 0 14px rgba(251,191,36,.35),0 0 0 1px rgba(255,255,255,.05) inset!important}
+html body #withdrawModal#withdrawModal .is-wd-form .wd-modal-head,html body #withdrawModal#withdrawModal .withdraw-box.is-wd-form .wd-modal-head{border-color:rgba(251,191,36,.6)!important;box-shadow:0 0 14px rgba(251,191,36,.3)!important}
+
+/* ===== v2443 — Signature « OROLADO.com » DANS la courbe (choix A du propriétaire) : en haut au centre,
+   petite et douce (la courbe et les ronds des trades passent au-dessus). Le bouton Installer se pose juste dessous. ===== */
+html body #screenTrade#screenTrade .oro-sign.in-chart{position:absolute!important;left:0;right:0;top:3px;margin:0 auto!important;z-index:12;height:14px!important;
+  opacity:.62;pointer-events:none}
+html body #screenTrade#screenTrade .oro-sign.in-chart .os-word{font-size:11.5px!important;letter-spacing:.2em!important;filter:none!important}
+html body #screenTrade#screenTrade .oro-sign.in-chart .os-com{font-size:8px!important;margin-left:-3px;padding-bottom:1px}
+html body #screenTrade#screenTrade .oro-sign.in-chart .os-line{flex:0 1 30px!important}
+@media (min-width:860px){html body #screenTrade#screenTrade .oro-sign.in-chart{top:6px;height:18px!important}html body #screenTrade#screenTrade .oro-sign.in-chart .os-word{font-size:14px!important}html body #screenTrade#screenTrade .oro-sign.in-chart .os-com{font-size:9.5px!important}}
+html.fs-trade body .oro-sign.in-chart,html.is-fullscreen body .oro-sign.in-chart{display:none!important}
+html body #installBanner.install-banner{top:22px!important}
+@media (max-width:859px){html body #screenTrade#screenTrade .topbar .topbar-mode{padding-top:6px!important}}
