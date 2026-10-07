@@ -5467,3 +5467,8 @@ html body #portalModal .defi-hero-txt b{font-size:22px;letter-spacing:.06em;colo
 html body #portalModal .defi-count{font-size:28px;font-weight:900;color:#F2B33D;font-variant-numeric:tabular-nums;line-height:1.1;text-shadow:0 0 14px rgba(242,179,61,.45)}
 html body #portalModal .defi-dots{display:none!important}
 html body #portalModal .defi-rule{font-size:15px}
+/* v2411 — Portail : plus de message « mode test », plus de taches de couleur (seulement les étoiles et l'emblème), page qui défile. */
+html body #portalModal .portal-test{display:none!important}
+html body #portalModal .portal-box{background:linear-gradient(180deg,#0A0F26 0%,#070B1D 60%,#060918 100%)!important}
+html body #portalModal .portal-box{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+html body #portalModal .defi-how p:first-of-type{font-size:14px;font-weight:700;color:#FFE6A6}

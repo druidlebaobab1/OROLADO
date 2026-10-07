@@ -68,7 +68,7 @@
     if (!prog) { prog = document.createElement('span'); prog.className = 'pw-prog'; $('btnPortal').appendChild(prog); }
     prog.textContent = s.active ? (s.streak || 0) + '/' + (s.need || 5) : '';
     $('btnPortal').classList.toggle('has-prog', !!s.active);
-    show($('portalTest'), s.mode === 'demo');
+    show($('portalTest'), false);
     var mk = marketName(s.market);
     $('defiMarket').textContent = mk;
     $('defiRule').textContent = t('defiRule', { m: mk });

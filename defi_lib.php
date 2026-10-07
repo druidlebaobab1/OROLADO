@@ -14,7 +14,6 @@ declare(strict_types=1);
  */
 
 const OROLADO_DEFI_STREAK = 5;
-const OROLADO_DEFI_DAYS = 7;
 const OROLADO_DEFI_MIN_STAKE = 1.0;
 
 function orolado_defi_markets(): array {
@@ -63,10 +62,20 @@ function orolado_defi_with(string $uid, callable $fn) {
   return $res;
 }
 
-/** Marché proposé : change chaque jour et d'un joueur à l'autre (pas tout le monde sur le même). */
+/** Jour du défi (heure du serveur) : un nouveau défi toutes les 24 h. */
+function orolado_defi_day(int $now): string {
+  return date('Y-m-d', $now);
+}
+
+/** Fin du jour du défi (minuit, heure du serveur). */
+function orolado_defi_day_end(int $now): int {
+  return (int) strtotime(date('Y-m-d', $now) . ' 23:59:59');
+}
+
+/** Marché du jour : tiré au hasard chaque jour, LE MÊME pour tous les joueurs. */
 function orolado_defi_pick_market(string $uid, int $now): string {
   $m = orolado_defi_markets();
-  return $m[(intdiv($now, 86400) + (crc32($uid) % 97)) % count($m)];
+  return $m[crc32('orolado-defi|' . orolado_defi_day($now)) % count($m)];
 }
 
 /**
@@ -211,7 +220,7 @@ function orolado_defi_status(array &$db, array $user, bool $activate = false): a
       $st['history'] = array_slice($st['history'], 0, 20);
       $running = false;
     }
-    // UN défi par période de 7 jours : un défi réussi vite ne se relance qu'à la fin de son chrono
+    // UN défi par jour (le même marché pour tous) : un défi réussi ne se relance que le lendemain
     // (sinon on pourrait enchaîner les défis et la récompense coûterait plus que le jeu ne rapporte).
     $periodOver = $now >= (float) ($st['expiresAt'] ?? 0);
     if ($activate && !$running && $periodOver) {
@@ -220,7 +229,7 @@ function orolado_defi_status(array &$db, array $user, bool $activate = false): a
         'id' => bin2hex(random_bytes(6)),
         'market' => orolado_defi_pick_market($uid, $now),
         'activatedAt' => $now,
-        'expiresAt' => $now + OROLADO_DEFI_DAYS * 86400,
+        'expiresAt' => orolado_defi_day_end($now),
         'streak' => 0,
         'stakes' => [],
         'finished' => false,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
  * Défi OROLADO (defi_lib.php) : série de 5 victoires, récompense 5 × plus petite mise, une seule fois,
- * chrono de 7 jours, un défi par période, réservé à l'admin tant que ce n'est pas ouvert à tous.
+ * un défi par jour (même marché pour tous, jusqu'à minuit), réservé à l'admin tant que ce n'est pas ouvert à tous.
  * Faux Supabase, dossier temporaire : rien ne part en ligne.
  */
 $tmp = sys_get_temp_dir() . '/orolado_defi_' . bin2hex(random_bytes(4));
@@ -49,11 +49,12 @@ echo "1) Fermé aux joueurs tant que ce n'est pas ouvert à tous\n";
 $r = orolado_defi_status($db, $joueur, true);
 check('joueur normal : pas de défi', empty($r['enabled']));
 
-echo "2) Admin : activation, marché, chrono 7 jours\n";
+echo "2) Admin : activation, marché du jour (le même pour tous), fin à minuit\n";
 $r = orolado_defi_status($db, $admin, true);
 $m = (string) $r['market'];
 check('activé, mode démo (aucun argent réel)', !empty($r['active']) && $r['mode'] === 'demo', $m);
-check('chrono de 7 jours', abs(($r['expiresAt'] - $r['activatedAt']) - 7 * 86400) < 2);
+check("défi valable jusqu'à minuit (aujourd'hui)", $r['expiresAt'] === (int) strtotime(date('Y-m-d') . ' 23:59:59'));
+check('marché du jour identique pour tous les joueurs', orolado_defi_pick_market('u_a', time()) === orolado_defi_pick_market('u_b', time()) && $m === orolado_defi_pick_market('x', time()));
 $other = $m === 'v100' ? 'v75' : 'v100';
 
 echo "3) Série : victoires, défaite qui remet à 0, autres marchés et petites mises ignorés\n";
@@ -81,7 +82,7 @@ check('versée sur la démo du testeur (+10)', abs(($demoAfter - $demoBefore) - 
 orolado_defi_status($db, $admin); orolado_defi_status($db, $admin);
 check('3 lectures de plus : toujours une seule récompense', abs((float) load_db()['vault']['admin_master']['demo'] - $demoAfter) < 0.001);
 $r = orolado_defi_status($db, $admin, true);
-check('pas de nouveau défi avant la fin des 7 jours', empty($r['active']) && empty($r['canActivate']) && !empty($r['won']));
+check('pas de nouveau défi avant demain', empty($r['active']) && empty($r['canActivate']) && !empty($r['won']));
 
 echo "5) Ouvert à tous : joueur en réel, bonus versé une fois sur le vrai solde\n";
 putenv('OROLADO_DEFI_PUBLIC=1');
