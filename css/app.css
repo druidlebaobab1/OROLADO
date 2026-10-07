@@ -6096,3 +6096,99 @@ html body #portalModal#portalModal .aff-sum span{font-size:10.5px!important;line
 /* v2425 — notification visiteur : une seule phrase, sans sous-titre. */
 html body .defi-win.dw-one .dw-s{display:none!important}
 html body .defi-win.dw-one .dw-t{text-transform:none!important;font-size:19px!important;line-height:1.25!important;text-wrap:balance}
+
+/* ===== v2426 — Les Cadeaux prennent vie : univers coloré, une couleur et une planète par page, notifications « étoiles ». ===== */
+/* Couleur de chaque page : Défi (corail), Invitation (émeraude), Tournoi (or), Bonus (bleu). */
+html body #portalModal{--tc:255,104,124;--tc2:255,180,92}
+html body #portalModal.aff-on{--tc:43,212,154;--tc2:120,240,210}
+html body #portalModal.top-on{--tc:242,179,61;--tc2:255,226,140}
+html body #portalModal.bon-on{--tc:92,155,255;--tc2:170,120,255}
+/* Fond de l'univers : nébuleuses colorées qui dérivent lentement derrière les étoiles. */
+html body #portalModal#portalModal#portalModal > .modal-box.portal-box{background:
+  radial-gradient(60% 38% at 12% 8%,rgba(var(--tc),.20),transparent 70%),
+  radial-gradient(55% 40% at 92% 30%,rgba(124,77,255,.20),transparent 70%),
+  radial-gradient(70% 45% at 30% 100%,rgba(0,190,255,.13),transparent 70%),
+  radial-gradient(40% 30% at 80% 90%,rgba(var(--tc2),.12),transparent 70%),
+  linear-gradient(180deg,#0A0B22 0%,#070818 60%,#05061A 100%)!important;
+  background-size:140% 140%,140% 140%,140% 140%,140% 140%,100% 100%!important;
+  animation:oroNebula 26s ease-in-out infinite alternate}
+@keyframes oroNebula{0%{background-position:0% 0%,100% 0%,0% 100%,100% 100%,0 0}100%{background-position:18% 12%,82% 14%,14% 86%,86% 84%,0 0}}
+/* Onglets : chaque icône dans un carré coloré et lumineux (comme les tuiles du haut). */
+html body #portalModal .pt-tab .pt-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 3px 10px rgba(0,0,0,.35);transition:transform .25s,box-shadow .25s}
+html body #portalModal .pt-tab .pt-ico svg{width:19px!important;height:19px!important;stroke:#fff!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+html body #portalModal .pt-tab.t-defi .pt-ico{background:linear-gradient(145deg,#FF9AA8,#FF5A6E 55%,#C2185B)}
+html body #portalModal .pt-tab.t-aff .pt-ico{background:linear-gradient(145deg,#8FF5CF,#2BD49A 55%,#0E8F6A)}
+html body #portalModal .pt-tab.t-top .pt-ico{background:linear-gradient(145deg,#FFE7A3,#F6C453 50%,#D9891A)}
+html body #portalModal .pt-tab.t-bon .pt-ico{background:linear-gradient(145deg,#A9C8FF,#5C9BFF 55%,#6A3DFF)}
+html body #portalModal .pt-tab.on .pt-ico{transform:translateY(-2px) scale(1.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 0 16px rgba(var(--tc),.75),0 4px 12px rgba(0,0,0,.4)}
+html body #portalModal .pt-tab:not(.on) .pt-ico{filter:saturate(.7) brightness(.85)}
+/* Cartes : bord lumineux de la couleur de la page + une petite planète avec son anneau dans le coin. */
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card){position:relative;
+  border:1px solid rgba(var(--tc),.45)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 0 26px rgba(var(--tc),.16),0 10px 30px rgba(0,0,0,.35)!important;
+  background:linear-gradient(180deg,rgba(var(--tc),.07),rgba(10,12,32,.55) 38%,rgba(8,10,26,.6))!important}
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card)::before{content:"";position:absolute;z-index:0;pointer-events:none;
+  top:-14px;right:-18px;width:84px;height:84px;border-radius:50%;opacity:.5;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.75),rgba(var(--tc2),.9) 18%,rgba(var(--tc),.85) 48%,rgba(20,10,50,.95) 78%);
+  box-shadow:0 0 30px rgba(var(--tc),.45);animation:oroFloat 7s ease-in-out infinite}
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card)::after{content:"";position:absolute;z-index:0;pointer-events:none;
+  top:20px;right:-34px;width:118px;height:22px;border-radius:50%;border:2px solid rgba(var(--tc2),.5);transform:rotate(-18deg);opacity:.5;animation:oroFloat 7s ease-in-out infinite}
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card) > *{position:relative;z-index:1}
+@keyframes oroFloat{0%,100%{translate:0 0}50%{translate:-4px 5px}}
+/* Titres en dégradé de la couleur de la page. */
+html body #portalModal :is(.defi-top .defi-badge > span,.top-title b,.ae-h){background:linear-gradient(90deg,#fff,rgb(var(--tc2)) 55%,rgb(var(--tc)));-webkit-background-clip:text;background-clip:text;color:transparent!important}
+html body #portalModal .defi-top .defi-badge .pi,html body #portalModal .top-title .pi{stroke:rgb(var(--tc2))!important}
+/* Grandes cases (Invitation +5 %, Bonus +10 %) : vivantes, avec un reflet qui passe. */
+html body #portalModal#portalModal :is(.aff-big b,.bon-big){position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(var(--tc),.30),rgba(var(--tc2),.12))!important;border-color:rgba(var(--tc),.65)!important;color:#fff!important;
+  box-shadow:0 0 18px rgba(var(--tc),.25),inset 0 1px 0 rgba(255,255,255,.18)!important}
+html body #portalModal#portalModal :is(.aff-big b,.bon-big)::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);animation:oroShine 4.5s ease-in-out infinite}
+@keyframes oroShine{0%,62%{left:-60%}100%{left:130%}}
+/* Pastilles 1-2-3 des étapes : couleur de la page. */
+html body #portalModal .aff-steps3 li > span{background:linear-gradient(145deg,rgb(var(--tc2)),rgb(var(--tc)))!important;color:#160C24!important;box-shadow:0 0 10px rgba(var(--tc),.55)!important}
+/* Barre du bonus : dégradé vivant qui scintille. */
+html body #portalModal .bm-bar i{background:linear-gradient(90deg,#5C9BFF,#8A6BFF,#2EE59D,#5C9BFF)!important;background-size:200% 100%!important;animation:oroBar 3s linear infinite;box-shadow:0 0 12px rgba(92,155,255,.6)}
+@keyframes oroBar{0%{background-position:0 0}100%{background-position:200% 0}}
+/* Podium du tournoi : la 1re place brille. */
+html body #portalModal .tp.tp1 .tp-medal{filter:drop-shadow(0 0 12px rgba(255,210,122,.75));animation:oroFloat 4s ease-in-out infinite}
+/* Bouton doré principal : lueur douce qui respire. */
+html body #portalModal :is(#defiActivate,#defiTrade,#affShare,#topPlay,#bonActivate,#bonDeposit):not(.hidden){animation:oroBreath 2.8s ease-in-out infinite}
+@keyframes oroBreath{0%,100%{box-shadow:0 4px 14px rgba(242,179,61,.25)}50%{box-shadow:0 4px 26px rgba(242,179,61,.6)}}
+
+/* ===== Notifications (défi commencé, défi gagné, bonus reçu, cadeau d'ami, inscription) : explosion d'étoiles. ===== */
+html body .defi-win{background:radial-gradient(circle at 50% 50%,rgba(40,20,80,.55),rgba(3,4,14,.78))!important}
+html body .defi-win .dw-in{position:relative;overflow:visible!important;min-width:250px;max-width:300px;padding:26px 26px 22px!important;
+  background:radial-gradient(circle at 50% -10%,rgba(255,210,122,.45),rgba(124,77,255,.22) 45%,rgba(9,10,32,.97) 75%)!important;
+  border:1px solid rgba(255,210,122,.7)!important;box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 50px rgba(255,190,80,.35),0 0 110px rgba(124,77,255,.35)!important;
+  animation:dwPop .55s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes dwPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+html body .defi-win .dw-in > :not(.dw-rays):not(.dw-sp){position:relative;z-index:2}
+/* Rayons dorés qui tournent derrière l'icône. */
+html body .defi-win .dw-rays{position:absolute;z-index:0;left:50%;top:58px;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,214,110,.32) 0deg 6deg,transparent 6deg 20deg);
+  -webkit-mask:radial-gradient(circle,#000 18%,transparent 68%);mask:radial-gradient(circle,#000 18%,transparent 68%);animation:dwSpin 9s linear infinite}
+@keyframes dwSpin{to{transform:rotate(360deg)}}
+/* Étincelles qui jaillissent. */
+html body .defi-win .dw-sp{position:absolute;z-index:1;left:50%;top:58px;width:0;height:0;pointer-events:none}
+html body .defi-win .dw-sp i{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle,#fff,#FFD27A 45%,rgba(255,160,60,0) 70%);box-shadow:0 0 8px #FFD27A;opacity:0;
+  animation:dwSpark 1.4s ease-out var(--z) both}
+html body .defi-win .dw-sp i:nth-child(3n){background:radial-gradient(circle,#fff,#B9A2FF 45%,transparent 70%);box-shadow:0 0 8px #9B7BFF}
+html body .defi-win .dw-sp i:nth-child(4n){background:radial-gradient(circle,#fff,#7FF5CF 45%,transparent 70%);box-shadow:0 0 8px #2EE59D}
+@keyframes dwSpark{0%{transform:rotate(var(--a)) translateY(0) scale(.4);opacity:0}15%{opacity:1}100%{transform:rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(1);opacity:0}}
+html body .defi-win .dw-cup{animation:dwFloat 2.4s ease-in-out .4s infinite}
+@keyframes dwFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+html body .defi-win .dw-t{background:linear-gradient(90deg,#FFF6D8,#FFD27A 45%,#F2A33D);-webkit-background-clip:text;background-clip:text;color:transparent!important;
+  filter:drop-shadow(0 2px 6px rgba(242,160,40,.35));margin-top:6px}
+html body .defi-win .dw-a{text-shadow:0 0 18px rgba(46,229,157,.6)}
+/* Défi commencé : la planète du marché, avec son logo, au centre. */
+html body .defi-win.dw-planet .dw-cup .hc-globe{display:block;position:relative;width:86px;height:86px;margin:0 auto;border-radius:50%;overflow:hidden;
+  box-shadow:0 0 0 3px rgba(255,210,122,.55),0 0 30px rgba(255,190,80,.6),0 0 60px rgba(124,77,255,.45)!important}
+html body .defi-win.dw-planet .dw-cup .hc-globe > svg{position:absolute;inset:0;margin:auto;width:56%;height:56%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+@media (prefers-reduced-motion: reduce){
+  html body #portalModal *,html body #portalModal *::before,html body #portalModal *::after,html body .defi-win *,html body #portalModal#portalModal#portalModal > .modal-box.portal-box{animation:none!important}
+}
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card){overflow-x:hidden!important}
+html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card)::before,html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card)::after{opacity:.32!important}

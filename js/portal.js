@@ -168,7 +168,9 @@
         var p2 = (cs.getPropertyValue('--p2') || '').trim() || '#3B1D8F';
         var pg = (cs.getPropertyValue('--pg') || '').trim() || 'rgba(167,139,250,.45)';
         // v2419 — les dégradés du dessin sont renommés (sinon ils pointent vers une copie cachée → logo gris).
-        var html = art.innerHTML.replace(/id="([^"]+)"/g, 'id="$1_pg"').replace(/url\(#([^)]+)\)/g, 'url(#$1_pg)').replace(/href="#([^"]+)"/g, 'href="#$1_pg"');
+        // v2426 : nom unique à chaque copie (la carte du défi ET la notification affichent le même logo).
+        var sfx = '_pg' + Math.random().toString(36).slice(2, 7);
+        var html = art.innerHTML.replace(/id="([^"]+)"/g, 'id="$1' + sfx + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + sfx + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + sfx + '"');
         // v2422 — la PLANÈTE entière (fond, reflet, ombre de la case du marché) avec son logo dessus.
         var acs = getComputedStyle(art);
         var planet = 'background-image:' + acs.backgroundImage.replace(/"/g, "'") + ';box-shadow:' + acs.boxShadow + ';border-radius:50%';
@@ -250,7 +252,8 @@
     try { localStorage.setItem('oro_defi_seen', key); } catch (e2) { /* ignore */ }
     var box = document.createElement('div');
     box.className = 'defi-win';
-    box.innerHTML = '<div class="dw-in"><div class="dw-cup">' + ICO_TROPHY + '</div><div class="dw-t"></div><div class="dw-a"></div></div>';
+    box.innerHTML = '<div class="dw-in"><div class="dw-rays"></div><div class="dw-cup">' + ICO_TROPHY + '</div><div class="dw-t"></div><div class="dw-a"></div></div>';
+    sparkle(box);
     box.querySelector('.dw-t').textContent = t('defiWon');
     box.querySelector('.dw-a').textContent = '+' + money(s.reward);
     document.body.appendChild(box);
@@ -258,11 +261,26 @@
     setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 3200);
   }
 
+  // v2426 — étincelles et rayons dorés derrière les grandes notifications (rien si « animations réduites »).
+  function sparkle(box) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var sp = document.createElement('div');
+    sp.className = 'dw-sp';
+    var html = '';
+    for (var i = 0; i < 22; i++) {
+      var a = Math.round(i * 360 / 22 + Math.random() * 12), d = Math.round(90 + Math.random() * 90), z = (Math.random() * 0.35).toFixed(2);
+      html += '<i style="--a:' + a + 'deg;--d:' + d + 'px;--z:' + z + 's"></i>';
+    }
+    sp.innerHTML = html;
+    var inn = box.querySelector('.dw-in');
+    if (inn) inn.insertBefore(sp, inn.firstChild);
+  }
   // v2416 — grande notification au centre de l'écran (« Le défi a commencé ! », « C'est parti ! »…).
   function bigToast(ico, title, sub, cls) {
     var box = document.createElement('div');
     box.className = 'defi-win ' + (cls || '');
-    box.innerHTML = '<div class="dw-in"><div class="dw-cup">' + ico + '</div><div class="dw-t"></div><div class="dw-s"></div></div>';
+    box.innerHTML = '<div class="dw-in"><div class="dw-rays"></div><div class="dw-cup">' + ico + '</div><div class="dw-t"></div><div class="dw-s"></div></div>';
+    sparkle(box);
     box.querySelector('.dw-t').textContent = title;
     box.querySelector('.dw-s').textContent = sub || '';
     document.body.appendChild(box);
@@ -364,7 +382,7 @@
       // v2416 : le défi démarre → grande notification puis direction le marché du défi.
       if (state && state.active) {
         goDefiMarket();
-        bigToast(ICO_TARGET, t('defiStartedT'), t('defiStartedS', { m: marketName(state.market) }), 'dw-start');
+        bigToast(globeHtml(state.market) || ICO_TARGET, t('defiStartedT'), t('defiStartedS', { m: marketName(state.market) }), 'dw-start dw-planet');
       }
     });
     if ($('defiTrade')) $('defiTrade').addEventListener('click', goDefiMarket);
@@ -475,7 +493,8 @@
   function giftPopup(amount) {
     var box = document.createElement('div');
     box.className = 'defi-win';
-    box.innerHTML = '<div class="dw-in"><div class="dw-cup">' + ICO_GIFT + '</div><div class="dw-t"></div><div class="dw-a"></div></div>';
+    box.innerHTML = '<div class="dw-in"><div class="dw-rays"></div><div class="dw-cup">' + ICO_GIFT + '</div><div class="dw-t"></div><div class="dw-a"></div></div>';
+    sparkle(box);
     box.querySelector('.dw-t').textContent = t('affGiftTitle');
     box.querySelector('.dw-a').textContent = '+' + money(amount);
     document.body.appendChild(box);
@@ -614,6 +633,8 @@
     if ($('portalModal')) {
       $('portalModal').classList.toggle('aff-on', name === 'aff');
       $('portalModal').classList.toggle('top-on', name === 'top');
+      $('portalModal').classList.toggle('bon-on', name === 'bon');
+      $('portalModal').classList.toggle('defi-on', name === 'defi');
     }
     var bs = document.querySelectorAll('#portalTabs .pt-tab');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].getAttribute('data-tab') === name);

@@ -5,6 +5,7 @@ require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/admin_lib.php';
 require_once __DIR__ . '/trade_lib.php';
 require_once __DIR__ . '/wipe_lib.php';
+require_once __DIR__ . '/admin_gift_lib.php';
 orolado_load_env();
 date_default_timezone_set('Africa/Abidjan');
 
@@ -491,6 +492,8 @@ function admin_closed_accounts(array $people): array {
 }
 
 function admin_list_payload(string $view, array $req): array {
+  // v2426 — rubrique F · Cadeaux (lecture seule).
+  if (str_starts_with($view, 'gift_')) return admin_gift_payload($view, $req, admin_profiles());
   $needPeople = !in_array($view, ['alerts', 'otp_mails', 'payout_stats', 'games', 'trade_minutes', 'messages'], true);
   $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
   $needWds = str_starts_with($view, 'wd_') || str_starts_with($view, 'profit_');
@@ -1936,6 +1939,14 @@ $ADMIN_TABS = [
     ['alerts', 'Santé du Site'],
     ['watch', 'À surveiller'],
   ],
+  'gF' => [
+    ['gift_aff', 'Invitation : Affiliés'],
+    ['gift_friends', 'Invitation : Amis invités'],
+    ['gift_top', 'Tournoi démo : cette semaine'],
+    ['gift_top_prev', 'Tournoi démo : semaine dernière'],
+    ['gift_bon', 'Bonus dépôt'],
+    ['gift_defi', 'Défi du jour'],
+  ],
 ];
 $inscritsHead = $logged ? admin_inscrits_count() : 0;
 ?><!DOCTYPE html>
@@ -2058,6 +2069,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
     <div class="metrics" id="gE"><?php foreach ($ADMIN_TABS['gE'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
+    <div class="sec">F · Cadeaux (Invitation, Tournoi, Bonus, Défi)</div>
+    <div class="metrics" id="gF"><?php foreach ($ADMIN_TABS['gF'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <button type="button" class="health-bar ok" id="btnHealthBar">Tous les boutons suivent</button>
     <div class="health-panel" id="healthPanel"></div>
 

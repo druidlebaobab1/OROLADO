@@ -72,8 +72,16 @@ function orolado_bonus_find_deposit(array $db, string $uid, int $from, int $to):
   $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
   if (!$ids) $ids = [$uid];
   $best = null;
+  // v2426 — le tout premier vrai dépôt d'un ami invité ne compte pas (il reçoit déjà +5 % ; sinon un tricheur
+  // qui s'invite lui-même toucherait 5 % + 5 % + bonus sur le même dépôt).
+  $skip = '';
+  if (function_exists('orolado_aff_read') && function_exists('orolado_aff_inv_name') && function_exists('orolado_aff_real_deposits')) {
+    $inv = orolado_aff_read(orolado_aff_inv_name($uid));
+    if (!empty($inv['inviter'])) $skip = (string) (orolado_aff_real_deposits($db, $uid)[0]['id'] ?? '');
+  }
   foreach (($db['deposits'] ?? []) as $d) {
     if (!is_array($d) || !in_array((string) ($d['userId'] ?? $d['user_id'] ?? ''), $ids, true)) continue;
+    if ($skip !== '' && (string) ($d['id'] ?? $d['ref'] ?? '') === $skip) continue;
     $st = strtoupper((string) ($d['status'] ?? ''));
     if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
     $id = (string) ($d['id'] ?? $d['ref'] ?? '');
@@ -152,8 +160,75 @@ function orolado_bonus_invite_gift(string $uid, string $depositId): float {
   return $first !== '' && $first === $depositId ? orolado_money($inv['friendGift'] ?? 0) : 0.0;
 }
 
+/** Fin (dimanche 23:59:59) de la semaine d'une clé « 2026-W41 ». */
+function orolado_bonus_key_end(string $key, array $w): int {
+  if (!empty($w['weekEnd'])) return (int) $w['weekEnd'];
+  $t = strtotime(str_replace('-W', 'W', $key));
+  return $t ? orolado_bonus_week($t)['end'] : 0;
+}
+
+/**
+ * Fait avancer UN bonus (une semaine) : trouve le dépôt, puis verse les paliers gagnés.
+ * v2426 : appelé pour chaque semaine encore ouverte, pas seulement la semaine en cours (un bonus commencé
+ * samedi continue de se remplir pendant ses 7 jours, même après lundi).
+ */
+function orolado_bonus_step(array $db, string $uid, array &$w, string $key, bool $demo, int $now): void {
+  if (empty($w['activatedAt'])) return;
+  // Dépôt de 100 $ ou plus après l'activation, dans la semaine de l'activation.
+  if (empty($w['depositId'])) {
+    $end = orolado_bonus_key_end($key, $w);
+    if ($demo) {
+      if (!empty($w['testDeposit'])) {
+        $w['depositId'] = 'test_' . $key;
+        $w['depositAmount'] = (float) $w['testDeposit'];
+        $w['depositTs'] = (int) $w['testDepositTs'];
+      }
+    } elseif ($end > 0) {
+      $dep = orolado_bonus_find_deposit($db, $uid, (int) $w['activatedAt'], $end);
+      if ($dep) {
+        $w['depositId'] = $dep['id'];
+        $w['depositAmount'] = $dep['amount'];
+        $w['depositTs'] = $dep['ts'];
+      }
+    }
+    if (!empty($w['depositId'])) {
+      $full = orolado_money(floor($w['depositAmount'] * OROLADO_BONUS_PCT * 100 + 0.0001) / 100);
+      $invite = $demo ? 0.0 : orolado_bonus_invite_gift($uid, (string) $w['depositId']);
+      $w['target'] = orolado_money(max(0.0, $full - $invite));
+      $w['inviteGift'] = $invite;
+      $w['until'] = (int) $w['depositTs'] + OROLADO_BONUS_DAYS * 86400;
+      $w['credited'] = 0.0;
+      $w['staked'] = 0.0;
+    }
+  }
+  // Remplissage : +1 $ pour chaque 30 $ misés, jusqu'au bonus complet, pendant 7 jours.
+  if (empty($w['depositId']) || (float) ($w['credited'] ?? 0) + 0.009 >= (float) ($w['target'] ?? 0)) return;
+  // Bonus fini depuis plus d'un jour et déjà recompté après la fin : plus rien à faire.
+  if ($now > (int) $w['until'] + 86400 && (int) ($w['scanAt'] ?? 0) > (int) $w['until']) return;
+  orolado_bonus_scan($db, $uid, $w, $demo);
+  $ratio = ((float) $w['staked']) / OROLADO_BONUS_PER_STAKE;
+  $earned = $ratio + 0.0001 >= (float) $w['target'] ? (float) $w['target'] : floor($ratio + 0.0001);
+  $earned = orolado_money($earned);
+  $step = orolado_money($earned - (float) ($w['credited'] ?? 0));
+  if ($step >= 0.01) {
+    $ref = 'adm_bon_' . substr(hash('sha256', $uid), 0, 12) . '_' . str_replace('-', '', $key) . '_' . (int) round($earned * 100);
+    if (orolado_bonus_pay($db, $uid, $step, $ref, $demo)) {
+      $w['credited'] = $earned;
+      $w['lastStep'] = $step;
+      $w['lastStepAt'] = $now;
+    }
+  }
+}
+
+/** Ce bonus est-il encore en train de se remplir (dépôt reçu, pas plein, 7 jours pas finis) ? */
+function orolado_bonus_running(array $w, int $now): bool {
+  return !empty($w['depositId']) && (float) ($w['credited'] ?? 0) + 0.009 < (float) ($w['target'] ?? 0) && (int) ($w['until'] ?? 0) >= $now;
+}
+
 /**
  * État du bonus (et versement des paliers gagnés). $activate : active le bonus de la semaine.
+ * v2426 : toutes les semaines encore ouvertes avancent ; tant qu'un bonus d'une semaine précédente se remplit,
+ * c'est lui qui est affiché et on ne peut pas en activer un autre (les mêmes mises ne comptent jamais deux fois).
  */
 function orolado_bonus_status(array $db, array $user, bool $activate = false): array {
   $uid = (string) ($user['id'] ?? '');
@@ -164,55 +239,25 @@ function orolado_bonus_status(array $db, array $user, bool $activate = false): a
   $res = orolado_bonus_with($uid, static function (&$st) use ($db, $uid, $activate, $now, $wk, $demo) {
     if (!isset($st['weeks']) || !is_array($st['weeks'])) $st['weeks'] = [];
     $key = $wk['key'];
+    // 1) Les semaines précédentes encore ouvertes (bonus en attente de dépôt ou en train de se remplir).
+    foreach ($st['weeks'] as $k => $old) {
+      if ((string) $k === $key || !is_array($old)) continue;
+      orolado_bonus_step($db, $uid, $old, (string) $k, $demo, $now);
+      $st['weeks'][$k] = $old;
+    }
+    $runKey = '';
+    foreach ($st['weeks'] as $k => $old) if ((string) $k !== $key && is_array($old) && orolado_bonus_running($old, $now)) $runKey = (string) $k;
+    // 2) La semaine en cours (activation bloquée tant qu'un bonus précédent se remplit).
     $w = is_array($st['weeks'][$key] ?? null) ? $st['weeks'][$key] : [];
-    if ($activate && empty($w['activatedAt'])) $w['activatedAt'] = $now;
-    // Dépôt de 100 $ ou plus après l'activation, dans la semaine.
-    if (!empty($w['activatedAt']) && empty($w['depositId'])) {
-      if ($demo) {
-        // Compte admin (test, aucun argent réel) : le dépôt est simulé par le bouton « Profiter de l'offre ».
-        if (!empty($w['testDeposit'])) {
-          $w['depositId'] = 'test_' . $key;
-          $w['depositAmount'] = (float) $w['testDeposit'];
-          $w['depositTs'] = (int) $w['testDepositTs'];
-        }
-      } else {
-        $dep = orolado_bonus_find_deposit($db, $uid, (int) $w['activatedAt'], $wk['end']);
-        if ($dep) {
-          $w['depositId'] = $dep['id'];
-          $w['depositAmount'] = $dep['amount'];
-          $w['depositTs'] = $dep['ts'];
-        }
-      }
-      if (!empty($w['depositId'])) {
-        $full = orolado_money(floor($w['depositAmount'] * OROLADO_BONUS_PCT * 100 + 0.0001) / 100);
-        $invite = $demo ? 0.0 : orolado_bonus_invite_gift($uid, (string) $w['depositId']);
-        $w['target'] = orolado_money(max(0.0, $full - $invite));
-        $w['inviteGift'] = $invite;
-        $w['until'] = (int) $w['depositTs'] + OROLADO_BONUS_DAYS * 86400;
-        $w['credited'] = 0.0;
-        $w['staked'] = 0.0;
-      }
-    }
-    // Remplissage : +1 $ pour chaque 30 $ misés, jusqu'au bonus complet, pendant 7 jours.
-    if (!empty($w['depositId']) && (float) ($w['credited'] ?? 0) + 0.009 < (float) ($w['target'] ?? 0)) {
-      orolado_bonus_scan($db, $uid, $w, $demo);
-      $ratio = ((float) $w['staked']) / OROLADO_BONUS_PER_STAKE;
-      $earned = $ratio + 0.0001 >= (float) $w['target'] ? (float) $w['target'] : floor($ratio + 0.0001);
-      $earned = orolado_money($earned);
-      $step = orolado_money($earned - (float) ($w['credited'] ?? 0));
-      if ($step >= 0.01) {
-        $ref = 'adm_bon_' . substr(hash('sha256', $uid), 0, 12) . '_' . str_replace('-', '', $key) . '_' . (int) round($earned * 100);
-        if (orolado_bonus_pay($db, $uid, $step, $ref, $demo)) {
-          $w['credited'] = $earned;
-          $w['lastStep'] = $step;
-          $w['lastStepAt'] = $now;
-        }
-      }
-    }
-    $st['weeks'][$key] = $w;
+    if ($activate && $runKey === '' && empty($w['activatedAt'])) { $w['activatedAt'] = $now; $w['weekEnd'] = $wk['end']; }
+    orolado_bonus_step($db, $uid, $w, $key, $demo, $now);
+    if ($w) $st['weeks'][$key] = $w;
     // On garde les 8 dernières semaines seulement.
     if (count($st['weeks']) > 8) $st['weeks'] = array_slice($st['weeks'], -8, null, true);
-    return $w;
+    $useRun = $runKey !== '' && empty($w['activatedAt']);
+    $shown = $useRun ? $st['weeks'][$runKey] : $w;
+    $shown['_weekEnd'] = $useRun ? orolado_bonus_key_end($runKey, $st['weeks'][$runKey]) : $wk['end'];
+    return $shown;
   });
   $w = is_array($res) ? $res : [];
   $staked = (float) ($w['staked'] ?? 0);
@@ -220,7 +265,7 @@ function orolado_bonus_status(array $db, array $user, bool $activate = false): a
   $credited = (float) ($w['credited'] ?? 0);
   $phase = empty($w['activatedAt']) ? 'off' : (empty($w['depositId']) ? 'waiting' : ($credited + 0.009 >= $target ? 'full' : ((int) ($w['until'] ?? 0) < $now ? 'expired' : 'filling')));
   return [
-    'ok' => true, 'enabled' => true, 'now' => $now, 'weekEnd' => $wk['end'], 'phase' => $phase,
+    'ok' => true, 'enabled' => true, 'now' => $now, 'weekEnd' => (int) ($w['_weekEnd'] ?? $wk['end']), 'phase' => $phase,
     'min' => OROLADO_BONUS_MIN_DEPOSIT, 'pct' => (int) round(OROLADO_BONUS_PCT * 100), 'per' => OROLADO_BONUS_PER_STAKE,
     'deposit' => (float) ($w['depositAmount'] ?? 0), 'target' => $target, 'credited' => $credited, 'staked' => $staked,
     'nextIn' => $phase === 'filling' ? orolado_money(OROLADO_BONUS_PER_STAKE - fmod($staked, OROLADO_BONUS_PER_STAKE)) : 0,

@@ -115,13 +115,16 @@ dep('u_jo', 1000, $now + 400);
 orolado_bonus_status(load_db(), $jo);
 check('2e gros dépôt la même semaine : pas de 2e bonus', abs(bsum($credits, $A) - 20) < 0.001);
 
-echo "6) Pas de cumul avec le cadeau d'ami invité\n";
+echo "6) Ami invité : son 1er dépôt a déjà le cadeau de +5 %, il ne donne pas le bonus dépôt (v2426)\n";
 orolado_aff_with(orolado_aff_inv_name('u_ami'), function (&$st) { $st = ['inviter' => 'u_jo', 'at' => date('c'), 'friendPaid' => true, 'friendGift' => 10.0, 'deps' => []]; });
 $ami = load_db()['users']['u_ami'];
 orolado_bonus_status(load_db(), $ami, true);
 dep('u_ami', 200, $now + 5);
 $r = orolado_bonus_status(load_db(), $ami);
-check('1er dépôt de 200 $ avec cadeau d\'ami de 10 $ : bonus réduit à +10 $ (20 − 10)', abs($r['target'] - 10) < 0.001, (string) $r['target']);
+check('1er dépôt de 200 $ d\'un ami invité : pas de bonus dépôt (il a déjà +5 %)', $r['phase'] === 'waiting' && $r['target'] < 0.01, $r['phase'] . ' ' . $r['target']);
+dep('u_ami', 150, $now + 6);
+$r = orolado_bonus_status(load_db(), $ami);
+check('2e dépôt de 150 $ la même semaine : bonus +15 $', $r['phase'] === 'filling' && abs($r['target'] - 15) < 0.001, $r['phase'] . ' ' . $r['target']);
 
 echo "7) Après 7 jours : les trades ne comptent plus\n";
 $e = 'eeeeeeee-1111-2222-3333-444444444444';
@@ -146,6 +149,31 @@ $demo0 = (float) load_db()['vault']['admin_master']['demo'];
 play('admin_master', 10, time() + 2, 'demo', 9);
 $r = orolado_bonus_status(load_db(), $adm);
 check('90 $ misés en démo → +3 $ sur la démo (cible +15 $)', abs($r['target'] - 15) < 0.001 && abs((float) load_db()['vault']['admin_master']['demo'] - $demo0 - 3) < 0.001, $r['credited'] . ' / ' . $r['target']);
+
+echo "9) Bonus commencé en fin de semaine : il continue de se remplir après lundi (v2426)\n";
+putenv('OROLADO_BONUS_PUBLIC=1');
+$s9 = 'ffffffff-1111-2222-3333-444444444444';
+$d = load_db();
+$d['users']['u_sam'] = ['id' => 'u_sam', 'email' => 'sam@gmail.com', 'role' => 'user', 'sbId' => $s9];
+save_db(orolado_data_file(), $d);
+$sam = load_db()['users']['u_sam'];
+$wkNow = orolado_bonus_week(time());
+$prev = orolado_bonus_week($wkNow['start'] - 3600);
+$satTs = $prev['end'] - 36 * 3600;
+$depSam = dep('u_sam', 200, $satTs);
+orolado_bonus_with('u_sam', static function (&$st) use ($prev, $satTs, $depSam) {
+  $st['weeks'][$prev['key']] = ['activatedAt' => $satTs - 60, 'weekEnd' => $prev['end'], 'depositId' => $depSam, 'depositAmount' => 200,
+    'depositTs' => $satTs, 'target' => 20, 'credited' => 0, 'staked' => 0, 'until' => $satTs + 7 * 86400];
+});
+play('u_sam', 30, $wkNow['start'] + 600, 'real', 10);
+$r = orolado_bonus_status(load_db(), $sam);
+check('dépôt samedi, 300 $ joués lundi → +10 $ versés, bonus toujours affiché', $r['phase'] === 'filling' && abs(bsum($credits, $s9) - 10) < 0.001, $r['phase'] . ' ' . bsum($credits, $s9));
+$r = orolado_bonus_status(load_db(), $sam, true);
+check('pas de 2e bonus tant que le premier se remplit (les mêmes mises ne comptent pas deux fois)', $r['phase'] === 'filling' && abs($r['target'] - 20) < 0.001, $r['phase'] . ' ' . $r['target']);
+dep('u_sam', 500, time() + 5);
+play('u_sam', 30, time() + 10, 'real', 10);
+orolado_bonus_status(load_db(), $sam);
+check('nouveau dépôt pendant ce temps : seulement le 1er bonus avance (+20 $ au total, pas plus)', abs(bsum($credits, $s9) - 20) < 0.001, (string) bsum($credits, $s9));
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
