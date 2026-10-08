@@ -3781,6 +3781,21 @@
     }
   };
   Object.keys(TERMS_V2462).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], TERMS_V2462[l]); });
+  // v2465 — Défi : « Nouveau défi disponible ! » quand le compte à rebours est fini ; Bonus : un seul message quand il est complet.
+  var V2465_TR = {
+    fr: { defiReady: 'Nouveau défi disponible !', bonDoneT: 'Bonus complet !' },
+    en: { defiReady: 'New challenge available!', bonDoneT: 'Bonus complete!' },
+    es: { defiReady: '¡Nuevo reto disponible!', bonDoneT: '¡Bono completo!' },
+    pt: { defiReady: 'Novo desafio disponível!', bonDoneT: 'Bónus completo!' },
+    ar: { defiReady: 'تحدٍّ جديد متاح!', bonDoneT: 'اكتمل البونص!' },
+    tr: { defiReady: 'Yeni görev hazır!', bonDoneT: 'Bonus tamamlandı!' },
+    vi: { defiReady: 'Có thử thách mới!', bonDoneT: 'Thưởng đã đầy!' },
+    id: { defiReady: 'Tantangan baru tersedia!', bonDoneT: 'Bonus lengkap!' },
+    ru: { defiReady: 'Новое задание доступно!', bonDoneT: 'Бонус заполнен!' },
+    de: { defiReady: 'Neue Challenge verfügbar!', bonDoneT: 'Bonus komplett!' },
+    hi: { defiReady: 'नई चुनौती उपलब्ध है!', bonDoneT: 'बोनस पूरा हुआ!' }
+  };
+  Object.keys(V2465_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], V2465_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

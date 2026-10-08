@@ -138,7 +138,7 @@
       show(act, false);
       go.textContent = t('defiContinue', { m: mk });
       show(go, true);
-    } else if (s.won && !s.canActivate) {
+    } else if (s.won && !s.canActivate && now < Number(s.expiresAt || 0)) {
       tm.textContent = '';
       st.innerHTML = ICO_TROPHY + '<span></span>';
       st.lastChild.textContent = t('defiWonMsg', { r: money(s.reward) }) + ' · ' + t('defiNext') + ' ' + left(s.expiresAt - now);
@@ -146,12 +146,19 @@
       show(act, false);
       show(go, false);
     } else {
+      // v2465 — compte à rebours fini (ou aucun défi en cours) : « Nouveau défi disponible ! » + le bouton,
+      // au lieu de « Défi perdu. Nouveau défi dans 00:00:00 ».
+      var ready = !!s.canActivate || (!s.active && now >= Number(s.expiresAt || 0));
       tm.textContent = '';
-      st.textContent = s.finished && !s.won ? t('defiLost') + ' ' + left(s.expiresAt - now) : '';
-      st.className = 'defi-state' + (s.finished && !s.won ? ' lost' : '');
-      st.className = 'defi-state';
+      if (ready) {
+        st.textContent = t('defiReady');
+        st.className = 'defi-state ready';
+      } else {
+        st.textContent = s.finished && !s.won ? t('defiLost') + ' ' + left(s.expiresAt - now) : '';
+        st.className = 'defi-state';
+      }
       act.textContent = t('defiStart', { m: mk });
-      show(act, !!s.canActivate);
+      show(act, ready);
       show(go, false);
     }
     hud(s);
@@ -408,7 +415,7 @@
       $('defiChip').addEventListener('click', openPortal);
     }
     clearInterval(tickT);
-    tickT = setInterval(function () { if (state && state.enabled && (state.active || state.won)) render(); }, 1000);
+    tickT = setInterval(function () { if (state && state.enabled && (state.active || state.won || state.finished)) render(); }, 1000);
     // Connexion / déconnexion / retour sur l'onglet : on relit l'état.
     document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
     var lastTok = '';
@@ -663,8 +670,12 @@
       renderBon();
       // Un nouveau morceau de bonus vient d'arriver : petite notification + solde à jour.
       if (before >= 0 && Number(r.credited || 0) > before + 0.009) {
-        // v2463 — compte admin (mode test, argent DÉMO seulement) : c'est écrit dessus, pour ne pas le prendre pour du vrai argent.
-        bigToast(ICO_GIFT, t('bonGotT'), '+' + money(Number(r.credited) - before) + (r.test ? ' · TEST ADMIN (DÉMO)' : ''), 'dw-start');
+        // v2465 (demande du propriétaire) : l'argent du bonus arrive petit à petit dans le solde SANS message à chaque fois ;
+        // un seul message « Bonus complet ! » quand il est entièrement rempli.
+        if (r.phase === 'full') {
+          // v2463 — compte admin (mode test, argent DÉMO seulement) : c'est écrit dessus, pour ne pas le prendre pour du vrai argent.
+          bigToast(ICO_GIFT, t('bonDoneT'), '+' + money(Number(r.credited)) + (r.test ? ' · TEST ADMIN (DÉMO)' : ''), 'dw-start');
+        }
         if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eV) { /* ignore */ } }
       }
     }

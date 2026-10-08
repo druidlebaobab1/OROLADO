@@ -3088,6 +3088,17 @@
     else fallback();
   }
 
+  // v2465 — « Copier » : le bouton s'allume en vert un court instant, on voit tout de suite que c'est copié.
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('.btn-copy-id, .wallet-copy') : null;
+    if (!b) return;
+    b.classList.remove('is-copied');
+    void b.offsetWidth;
+    b.classList.add('is-copied');
+    clearTimeout(b._copiedT);
+    b._copiedT = setTimeout(function () { b.classList.remove('is-copied'); }, 1500);
+  }, true);
+
   function bindCopyEmail() {
     var btn = $('btnCopyEmail');
     if (!btn || btn._oroBound) return;

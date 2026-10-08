@@ -402,6 +402,12 @@
   // ---------- Fenêtre du reçu ----------
   var css = '#rcptModal{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(3,6,12,.78);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}' +
     '#rcptModal.on{display:flex}' +
+    // v2465 — bouton « ‹ Retour » au-dessus du reçu (hors de l'image du reçu), style OROLADO.
+    '#rcptModal .rc-back{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px 0 6px;border-radius:999px;border:1px solid rgba(251,191,36,.7);cursor:pointer;' +
+    'background:linear-gradient(135deg,rgba(40,28,8,.92),rgba(20,16,44,.94));color:#FFF3C4;font:800 13.5px/1 "Hanken Grotesk",system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.45),0 0 12px rgba(251,191,36,.25)}' +
+    '#rcptModal .rc-back i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C)}' +
+    '#rcptModal .rc-back i svg{width:14px;height:14px;fill:none;stroke:#2A1600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}' +
+    '#rcptModal .rc-back:active{transform:scale(.96)}' +
     '#rcptModal .rc-box{position:relative;width:min(380px,100%);display:flex;flex-direction:column;gap:12px}' +
     '#rcptModal .rc-img{width:100%;height:auto;max-height:70vh;object-fit:contain;display:block;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55)}' +
     '#rcptModal .rc-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}' +
@@ -442,13 +448,14 @@
     ensureStyle();
     modal = document.createElement('div');
     modal.id = 'rcptModal';
-    modal.innerHTML = '<div class="rc-box"><div class="rc-body"></div>' +
+    modal.innerHTML = '<div class="rc-box"><button type="button" class="rc-back"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg></i><span class="t-back"></span></button><div class="rc-body"></div>' +
       '<div class="rc-btns"><button type="button" class="rc-btn rc-wa">' + ICO.wa + '<span class="t-wa"></span></button>' +
       '<button type="button" class="rc-btn rc-sh">' + ICO.sh + '<span class="t-sh"></span></button>' +
       '<button type="button" class="rc-btn rc-dl">' + ICO.dl + '<span class="t-dl"></span></button></div></div>';
     document.body.appendChild(modal);
     modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    modal.querySelector('.rc-back').addEventListener('click', function () { close(); });
     modal.querySelector('.rc-dl').addEventListener('click', function () { download(); });
     modal.querySelector('.rc-sh').addEventListener('click', function () { share(false); });
     modal.querySelector('.rc-wa').addEventListener('click', function () { openWhatsApp(); });
@@ -523,6 +530,9 @@
     m.querySelector('.t-wa').textContent = t.wa;
     m.querySelector('.t-sh').textContent = t.share;
     m.querySelector('.t-dl').textContent = t.dl;
+    var BACK = { fr: 'Retour', en: 'Back', es: 'Volver', pt: 'Voltar', ar: 'رجوع', tr: 'Geri', vi: 'Quay lại', id: 'Kembali', ru: 'Назад', de: 'Zurück', hi: 'वापस' };
+    var lg = (D6.I18N && D6.I18N.lang) || 'en';
+    m.querySelector('.t-back').textContent = BACK[lg] || BACK.en;
     var body = m.querySelector('.rc-body');
     body.innerHTML = '<div class="rc-wait">…</div>';
     m.classList.add('on');
