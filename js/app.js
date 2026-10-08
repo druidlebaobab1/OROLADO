@@ -2295,7 +2295,7 @@
       // Place réservée au « $ » posé devant le chiffre (écran normal) : le chiffre rétrécit un peu plus tôt.
       var curRoom = document.documentElement.classList.contains('fs-trade') ? 0 : fs * 0.95;
       if (w + curRoom > avail) {
-        var nfs = Math.max(9, Math.floor(fs * avail / (w + curRoom) * 10) / 10);
+        var nfs = Math.max(7, Math.floor(fs * avail / (w + curRoom) * 10) / 10);
         el.style.setProperty('font-size', nfs + 'px', 'important');
         w = w * nfs / fs;
         fs = nfs;
@@ -2321,7 +2321,7 @@
       if (document.documentElement.classList.contains('fs-trade') || !el.clientWidth) { cur.style.display = 'none'; return; }
       var fr = field.getBoundingClientRect();
       var ir = el.getBoundingClientRect();
-      var curFs = Math.max(9, fs * 0.92);
+      var curFs = Math.max(7, fs * 0.92);
       var curW = curFs * 0.62;
       var gap = Math.max(4, fs * 0.32);
       var center = ir.left + ir.width / 2 - fr.left;

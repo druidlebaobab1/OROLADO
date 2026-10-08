@@ -7690,3 +7690,19 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{flex-basis:22px;width:22px;height:22px}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row{padding:0 2px!important}
 }
+/* v2458 — Le GAIN reste toujours la case la plus large (même sur très petit téléphone). */
+@media (max-width:380px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.82fr 1.08fr 1.22fr!important}
+}
+/* v2458 — Le montant du gain se mesure à sa vraie largeur : il rétrécit jusqu'à tenir en entier (js/fit.js). */
+html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .amount{display:inline-block!important;width:auto!important;max-width:none!important}
+html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview{padding-left:7px!important;padding-right:7px!important}
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.78fr 1.06fr 1.18fr!important}
+}
+@media (min-width:860px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.78fr 1.06fr 1.18fr!important}
+}
+@media (max-width:380px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.74fr 1.08fr 1.18fr!important}
+}

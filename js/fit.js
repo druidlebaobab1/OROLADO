@@ -151,11 +151,15 @@
           el.style.removeProperty('font-size');
           el.setAttribute('data-fit-t', txt);
         }
-        if (box.scrollWidth <= box.clientWidth + 1) continue;
+        // v2458 — on compare aussi le montant à l'INTÉRIEUR réel de sa case (sans les marges intérieures).
+        var bcs = getComputedStyle(box);
+        var avail = box.clientWidth - (parseFloat(bcs.paddingLeft) || 0) - (parseFloat(bcs.paddingRight) || 0);
+        var tooWide = function () { return box.scrollWidth > box.clientWidth + 1 || el.getBoundingClientRect().width > avail + 0.5; };
+        if (!tooWide()) continue;
         var base = parseFloat(el.getAttribute('data-fit-fs') || '') || parseFloat(getComputedStyle(el).fontSize) || 14;
         el.setAttribute('data-fit-fs', String(base));
         var fs = parseFloat(getComputedStyle(el).fontSize) || base, guard = 0;
-        while (box.scrollWidth > box.clientWidth + 1 && fs > base * 0.55 && guard < 40) {
+        while (tooWide() && fs > base * 0.55 && guard < 40) {
           fs -= 0.5;
           el.style.setProperty('font-size', fs + 'px', 'important');
           guard++;
