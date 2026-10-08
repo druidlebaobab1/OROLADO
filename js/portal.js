@@ -490,10 +490,13 @@
     renderAffList();
     fitPortal();
   }
+  function affN(r) { return r.n != null ? Number(r.n) || 0 : (Number(r.deposit || 0) > 0 ? 1 : 0); }
   function affRowHtml(r) {
     var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
     return '<div class="aff-row"><div class="ar-id"><b>' + esc(r.id) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
       '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
+      // v2489 — nombre de dépôts de l'ami.
+      '<div class="ar-n"><b>' + affN(r) + '</b><span>' + esc(t('affColN')) + '</span></div>' +
       '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(daysOnly(r.until)) + '</span></div></div>';
   }
   // Aperçu (3 derniers amis) sous les carrés + page complète « Voir plus » (filtre, totaux, tous les amis).
@@ -517,7 +520,9 @@
     var biggest = 0;
     rows.forEach(function (r) { biggest = Math.max(biggest, Number(r.deposit || 0)); });
     if ($('affSum2')) $('affSum2').innerHTML = '<div><span>' + esc(t('affAvg')) + '</span><b>' + esc(money(rows.length ? dep / rows.length : 0)) + '</b></div>' +
-      '<div><span>' + esc(t('affBiggest')) + '</span><b>' + esc(money(biggest)) + '</b></div>';
+      '<div><span>' + esc(t('affBiggest')) + '</span><b>' + esc(money(biggest)) + '</b></div>' +
+      // v2489 — nombre total de dépôts faits par les amis (sur la période choisie).
+      '<div class="as-n"><span>' + esc(t('affNDep')) + '</span><b>' + rows.reduce(function (s, r) { return s + affN(r); }, 0) + '</b></div>';
     // Recherche par numéro ORO (« 7030 », « oro-703098 »…) et tri choisi.
     var q = String(($('affSearch') && $('affSearch').value) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     var shown = rows.filter(function (r) { return !q || String(r.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0; });

@@ -347,12 +347,19 @@ function orolado_aff_status(array $db, array $user): array {
     if ($realTrades > 0) $played++;
     $total += (float) ($f['deposit'] ?? 0);
     $t = (int) strtotime((string) ($f['at'] ?? ''));
+    // v2489 : nombre de dépôts de l'ami (affichage seulement, lu dans son fichier d'invitation).
+    $nDep = 0;
+    if (!empty($f['paid']) && (string) ($f['uid'] ?? '') !== '') {
+      $invF = orolado_aff_read(orolado_aff_inv_name((string) $f['uid']));
+      $nDep = is_array($invF['deps'] ?? null) ? count($invF['deps']) : 0;
+    }
     $list[] = [
       'id' => (string) ($fu['publicId'] ?? 'ORO-??????'),
       'at' => $t,
       'until' => $t > 0 ? $t + OROLADO_AFF_DAYS * 86400 : 0,
       'deposit' => orolado_money($f['deposit'] ?? 0),
       'gift' => orolado_money($f['gift'] ?? 0),
+      'n' => $nDep,
       'played' => $realTrades > 0,
     ];
   }

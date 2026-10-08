@@ -3639,6 +3639,21 @@
     hi: { affSearchPh: 'दोस्त खोजें (ORO-…)', affSortNew: 'सबसे नए', affSortDep: 'सबसे बड़ी जमा', affSortGain: 'सबसे बड़ी कमाई', affAvg: 'औसत जमा', affBiggest: 'सबसे बड़ी जमा', affNoMatch: 'इस नंबर का कोई दोस्त नहीं मिला।' }
   };
   Object.keys(AFF2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF2_TR[l]); });
+  // v2489 — nombre de dépôts des amis (case globale + colonne dans chaque ligne).
+  var AFFN_TR = {
+    fr: { affNDep: 'Nombre de dépôts de tes amis', affColN: 'Dépôts' },
+    en: { affNDep: 'Number of deposits by your friends', affColN: 'Deposits' },
+    es: { affNDep: 'Número de depósitos de tus amigos', affColN: 'Depósitos' },
+    pt: { affNDep: 'Número de depósitos dos teus amigos', affColN: 'Depósitos' },
+    ar: { affNDep: 'عدد إيداعات أصدقائك', affColN: 'الإيداعات' },
+    tr: { affNDep: 'Arkadaşlarının yatırım sayısı', affColN: 'Yatırım' },
+    vi: { affNDep: 'Số lần nạp của bạn bè', affColN: 'Lần nạp' },
+    id: { affNDep: 'Jumlah deposit teman-temanmu', affColN: 'Deposit' },
+    ru: { affNDep: 'Число пополнений друзей', affColN: 'Пополнения' },
+    de: { affNDep: 'Anzahl Einzahlungen deiner Freunde', affColN: 'Einzahlungen' },
+    hi: { affNDep: 'आपके दोस्तों की जमा की संख्या', affColN: 'जमा' }
+  };
+  Object.keys(AFFN_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFFN_TR[l]); });
   // v2454 — bouton « Apprendre à trader » (connexion / inscription, conditions) ; la page elle-même est dans js/learn.js.
   var LEARN_TR = {
     fr: { learnBtn: 'Apprendre à trader sur OROLADO', learnBtnSub: 'Guide gratuit, pas à pas', learnTermsLead: 'Nouveau sur OROLADO ? Un guide simple, avec des images, vous montre tout pas à pas : inscription, recharge, premier trade, cadeaux et retrait.' },

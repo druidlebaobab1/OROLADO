@@ -8159,3 +8159,12 @@ html body #chartCanvas,html body #chartOverlay{
     flex:0 0 calc((100% - 16px) / 5)!important;width:calc((100% - 16px) / 5)!important;
     min-width:0!important;max-width:none!important;scroll-snap-align:start!important;scroll-snap-stop:normal!important}
 }
+
+
+/* ===== v2489 — Invitation : colonne « Dépôts » (nombre de dépôts de l'ami) dans chaque ligne + case
+   « Nombre de dépôts de tes amis » sur toute la largeur sous Dépôt moyen / Plus gros dépôt. ===== */
+html body #portalModal#portalModal .aff-row{grid-template-columns:1.25fr 1fr .72fr 1.2fr!important}
+html body #portalModal#portalModal .aff-row .ar-n{text-align:center}
+html body #portalModal#portalModal .aff-row .ar-n b{color:#FFD27A;font-variant-numeric:tabular-nums}
+html body #portalModal#portalModal .aff-sum2 .as-n{grid-column:1/-1}
+html body #portalModal#portalModal .aff-sum2 .as-n b{color:#FFD27A;font-variant-numeric:tabular-nums}
