@@ -7646,3 +7646,17 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
     color:#5BF5B8!important;text-shadow:0 0 10px rgba(46,229,157,.55)!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #inputStake{font-size:clamp(15px,4.4vw,17px)!important}
 }
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on){opacity:1!important;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.14),rgba(var(--c),.16) 45%,rgba(var(--c),.05) 80%,rgba(10,9,32,.4))!important;
+    border:1.5px solid rgba(var(--c),.6)!important;box-shadow:0 0 8px rgba(var(--c),.2),0 0 0 1px rgba(255,255,255,.04) inset!important;transform:none}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-mult{color:rgb(var(--c))!important;text-shadow:0 0 8px rgba(var(--c),.5)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-pct{color:rgba(255,255,255,.75)!important;text-shadow:none!important}
+}
+@media (min-width:860px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on){opacity:1!important;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.14),rgba(var(--c),.16) 45%,rgba(var(--c),.05) 80%,rgba(10,9,32,.4))!important;
+    border:1.5px solid rgba(var(--c),.6)!important;box-shadow:0 0 8px rgba(var(--c),.2),0 0 0 1px rgba(255,255,255,.04) inset!important;transform:none}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-mult{color:rgb(var(--c))!important;text-shadow:0 0 8px rgba(var(--c),.5)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-pct{color:rgba(255,255,255,.75)!important;text-shadow:none!important}
+}
