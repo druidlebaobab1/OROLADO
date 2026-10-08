@@ -2753,7 +2753,10 @@
     var by = priceToY(bar, pad, plotH, minP, maxP);
     if (!isFinite(by)) return;
     var off = 0;
-    if (by < plotTop + 9) { by = plotTop + 9; off = -1; }
+    // v2480 — objectif au-dessus de l'écran (ACHETER) : le trait se colle au même niveau que son étiquette, sous le titre
+    // OROLADO (avant : trait tout en haut et étiquette plus bas, séparés). Même chose que pour VENDRE en bas.
+    if (by < plotTop + 9) { by = plotTop + 26.5; off = -1; }
+    else if (by < plotTop + 26.5) by = plotTop + 26.5;
     if (by > plotBot - 9) { by = plotBot - 9; off = 1; }
     by = Math.round(by * 2) / 2;
     // v2463 — ligne objectif DORÉE (comme expliqué dans le guide), avec une lueur ; l'étiquette garde la couleur du trade.
