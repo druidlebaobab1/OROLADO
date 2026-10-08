@@ -2756,11 +2756,15 @@
     if (by < plotTop + 9) { by = plotTop + 9; off = -1; }
     if (by > plotBot - 9) { by = plotBot - 9; off = 1; }
     by = Math.round(by * 2) / 2;
-    var gold = '#F5C518';
+    // v2461 — ligne objectif de la couleur du trade (vert ACHAT / rouge VENTE) avec une lueur : on ne la confond
+    // plus avec la ligne du prix. Dessin seulement.
+    var tCol = trade && trade.side === 'put' ? '#FF4D6A' : '#22E58F';
     g.save();
     g.globalAlpha = (off ? 0.6 : 0.95) * (fade == null ? 1 : fade);
     g.setLineDash(TARGET_DASH);
-    g.strokeStyle = gold;
+    g.strokeStyle = tCol;
+    g.shadowColor = tCol;
+    g.shadowBlur = IS_ANDROID_CHART ? 4 : 7;
     g.lineWidth = IS_ANDROID_CHART ? 1.6 : 2;
     g.beginPath();
     g.moveTo(pad.l, by);
@@ -2952,7 +2956,8 @@
       g.lineWidth = 1;
       g.strokeStyle = it.side === 'put' ? 'rgba(251,113,133,0.95)' : 'rgba(74,222,128,0.95)';
       g.stroke();
-      g.fillStyle = '#FFFFFF';
+      // v2461 — texte (et triangle ▲ / ▼) de la couleur du trade.
+      g.fillStyle = it.side === 'put' ? '#FFC2CC' : '#B9FFD9';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(label, tx + tw / 2, ty + H / 2 + 0.5);
@@ -3051,7 +3056,13 @@
         zy = Math.max(plotTop, Math.min(plotBot, zy));
         g.save();
         // Seule l'ombre marque l'objectif (aucun second trait) : plus dense au bord.
-        var zw = layout.axisX - pad.l;
+        // v2461 — comme les grandes plateformes : la zone va du point d'entrée jusqu'à la ligne d'arrivée (pas toute la largeur).
+        var zStart = shownMarks[trade.id] > 1 ? shownMarks[trade.id] : (Number(trade.startTime) || glide.start || tNowE);
+        var zx0 = winE > 0 ? layout.headX - layout.seriesW * ((tNowE - zStart) / winE) : pad.l;
+        var zx1 = winE > 0 ? Math.min(layout.axisX - 4, layout.headX + layout.seriesW * ((exp - tNowE) / winE)) : layout.axisX;
+        if (!isFinite(zx0) || zx0 < pad.l) zx0 = pad.l;
+        if (!isFinite(zx1) || zx1 > layout.axisX) zx1 = layout.axisX;
+        var zw = Math.max(2, zx1 - zx0);
         var zg;
         g.globalAlpha = lineFade * zoneK;
         if (isCall) {
@@ -3060,14 +3071,14 @@
           zg.addColorStop(0.35, 'rgba(0,230,118,0.06)');
           zg.addColorStop(1, 'rgba(0,230,118,0.02)');
           g.fillStyle = zg;
-          g.fillRect(pad.l, plotTop, zw, zy - plotTop);
+          g.fillRect(zx0, plotTop, zw, zy - plotTop);
         } else {
           zg = g.createLinearGradient(0, zy, 0, plotBot);
           zg.addColorStop(0, 'rgba(255,59,48,0.16)');
           zg.addColorStop(0.35, 'rgba(255,59,48,0.06)');
           zg.addColorStop(1, 'rgba(255,59,48,0.02)');
           g.fillStyle = zg;
-          g.fillRect(pad.l, zy, zw, plotBot - zy);
+          g.fillRect(zx0, zy, zw, plotBot - zy);
         }
         g.restore();
       }
