@@ -8013,3 +8013,34 @@ html body #rcptModal#rcptModal .rc-back::before{content:"";position:absolute;lef
 .learn-modal .lg-pl::after{content:"";position:absolute;left:6%;right:6%;bottom:-4px;height:9px;border-radius:50%;border:1.5px solid rgba(var(--c),.6);border-top-color:transparent}
 .learn-modal .lg-pl.on::after{border-color:#fff;border-top-color:transparent}
 .learn-modal .lg-pls{gap:14px!important}
+
+/* ===== v2471 — Téléphone : PLUS DE TRAIT entre la courbe et la ligne Durée / Mise / Gain. Le fond du terminal
+   commence en fondu (transparent en haut) et le bas de la courbe s'y fond doucement. ===== */
+@media (max-width:859px){
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
+    background:url("../icons/ui/pad-planets.svg?v=2450") center/cover no-repeat,
+      linear-gradient(180deg,rgba(14,12,40,0) 0,rgba(14,12,40,.42) 22px,rgba(14,12,40,.58) 44px,rgba(10,9,32,.78) 100%)!important;
+    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.0) 0,#000 10px);mask-image:linear-gradient(180deg,rgba(0,0,0,.0) 0,#000 10px);
+    -webkit-mask-image:none;mask-image:none}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade .chart-stage::after{height:26px!important;background:linear-gradient(180deg,rgba(14,12,40,0),rgba(14,12,40,.22))!important}
+}
+/* v2471 (suite) — raccord exact : le haut du terminal commence avec la couleur du bas de la courbe (#0A0A20), puis se fond. */
+@media (max-width:859px){
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
+    background:url("../icons/ui/pad-planets.svg?v=2450") center/cover no-repeat,
+      linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
+      linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78))!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade .chart-stage::after{display:none!important}
+}
+/* v2471 — payouts un tout petit peu plus grands (+2 px), même place, rien ne touche. */
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow{padding-bottom:2px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(1){width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(2){width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;max-width:48px!important;max-height:48px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(3){width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important;max-width:52px!important;max-height:52px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(4){width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;max-width:56px!important;max-height:56px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(1) .odds-mult{font-size:12px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(2) .odds-mult{font-size:12.5px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(3) .odds-mult{font-size:13px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(4) .odds-mult{font-size:14px!important}
+}
