@@ -7914,3 +7914,16 @@ html body #btnCopyPublicId#btnCopyPublicId.is-copied,html body #btnCopyEmail#btn
 html body #drawerProfile#drawerProfile#drawerProfile .btn-copy-id.is-copied,html body #drawerProfile#drawerProfile#drawerProfile .wallet-copy.is-copied{
   background:linear-gradient(135deg,#6EF7C2,#22C55E 50%,#0E9F6E)!important;border-color:#86EFAC!important;color:#04261A!important;
   box-shadow:0 0 0 2px rgba(34,197,94,.35),0 0 14px rgba(34,197,94,.65)!important;animation:copyPop .35s ease-out}
+
+/* ===== v2466 — Résultat du trade : petite pastille élastique et sobre (verre sombre), sans trophée. Gagné : coche verte + montant vert.
+   Perdu : « +$ 0 » discret (pas de gros carré rouge). ===== */
+html body .chart-stage .chart-outcome.show.chart-outcome{padding:3px 9px 3px 4px!important;border-radius:999px!important;font-size:12px!important;gap:5px!important;font-weight:900!important;
+  white-space:nowrap!important;max-width:none!important;line-height:1!important;min-height:0!important;text-shadow:none!important;letter-spacing:.01em;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+html body .chart-stage .chart-outcome.show.win.chart-outcome{background:linear-gradient(135deg,rgba(6,40,26,.88),rgba(10,14,32,.88))!important;border:1px solid rgba(74,222,128,.85)!important;
+  color:#4ADE80!important;box-shadow:0 0 12px rgba(34,197,94,.35),0 0 0 1px rgba(255,255,255,.05) inset!important}
+html body .chart-stage .chart-outcome.show.lose.chart-outcome{padding:3px 9px!important;background:rgba(14,12,32,.78)!important;border:1px solid rgba(248,113,113,.45)!important;
+  color:rgba(254,202,202,.85)!important;box-shadow:none!important;font-size:11px!important}
+html body .chart-stage .chart-outcome .oc-ic{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;flex:0 0 16px;
+  background:radial-gradient(circle at 32% 28%,#BBF7D0,#22C55E 55%,#15803D);box-shadow:0 0 8px rgba(34,197,94,.7)}
+html body .chart-stage .chart-outcome .oc-ic svg{width:11px;height:11px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}

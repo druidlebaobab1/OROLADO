@@ -1617,10 +1617,10 @@
     el.style.setProperty('--ox', dx + 'px');
     el.style.setProperty('--oy', dy + 'px');
     if (isWin) {
-      // v2463 — logo de victoire : petite coupe dorée (même texte « +$ montant » qu'avant).
-      el.innerHTML = '<svg class="outcome-wallet outcome-cup" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v4.2a5 5 0 0 1-10 0z" fill="#FFD54A" stroke="#8A5A00" stroke-width="1.1" stroke-linejoin="round"/><path d="M7 5H4.2v1.4A3.2 3.2 0 0 0 7.6 9.6M17 5h2.8v1.4a3.2 3.2 0 0 1-3.4 3.2" fill="none" stroke="#FFD54A" stroke-width="1.6" stroke-linecap="round"/><path d="M12 12.7v3.3M8.6 20.5h6.8l-.8-3.2H9.4z" fill="#FFD54A" stroke="#8A5A00" stroke-width="1.1" stroke-linejoin="round"/><path d="M9.4 5.2c.2 1.8.8 3 1.8 3.8" fill="none" stroke="#FFF6CC" stroke-width="1.1" stroke-linecap="round"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
+      // v2466 — signe de gain sobre (comme les grandes plateformes) : petit rond vert avec une coche, montant en vert.
+      el.innerHTML = '<i class="oc-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.2 8.4l2.4 2.4 5.2-5.4"/></svg></i><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
-      el.textContent = '+$\u00a0\u00a00';
+      el.innerHTML = '<span>+$\u00a0\u00a00</span>';
     }
     clearTimeout(outcomeToastTimer);
     outcomeToastTimer = setTimeout(function () {

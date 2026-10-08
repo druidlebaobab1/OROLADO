@@ -3322,54 +3322,60 @@
       ctx.stroke();
       var isPut = pt.side === 'put';
       if (lblAlpha > 0) {
+      // v2466 — signe ACHAT / VENTE plus joli (même forme de pastille, même durée) : verre sombre bordé de la couleur
+      // du trade, petit rond blanc avec la flèche (comme sur les boutons ACHETER / VENDRE), texte blanc. Dessin seulement.
       var lbl = String(isPut ? tt('tcSell', 'VENTE') : tt('tcBuy', 'ACHAT')).replace(/[↗↘⬈⬊]/g, '').trim();
-      ctx.font = '800 7.5px "Hanken Grotesk", sans-serif';
-      var lw = Math.ceil(ctx.measureText(lbl).width) + 20;
-      var lh = 12;
+      ctx.font = '900 8px "Hanken Grotesk", sans-serif';
+      var lh = 16;
+      var lw = Math.ceil(ctx.measureText(lbl).width) + lh + 12;
       var lx = Math.max(4, map.lastX - lw / 2);
-      var ly = isPut ? map.lastY + 14 + stack : map.lastY - 26 - stack;
-      var gr = ctx.createLinearGradient(lx, ly, lx, ly + lh);
-      gr.addColorStop(0, isPut ? '#FF6B5E' : '#22E08A');
-      gr.addColorStop(1, isPut ? '#C9221A' : '#009A48');
-      ctx.globalAlpha = 0.96 * lblAlpha;
+      var ly = isPut ? map.lastY + 13 + stack : map.lastY - 29 - stack;
+      var gr = ctx.createLinearGradient(lx, ly, lx + lw, ly + lh);
+      gr.addColorStop(0, isPut ? 'rgba(120,10,30,0.92)' : 'rgba(6,80,44,0.92)');
+      gr.addColorStop(1, isPut ? 'rgba(244,63,94,0.92)' : 'rgba(34,197,94,0.92)');
+      ctx.globalAlpha = 0.97 * lblAlpha;
       ctx.translate(lx + lw / 2, ly + lh / 2);
       ctx.scale(pop, pop);
       ctx.translate(-(lx + lw / 2), -(ly + lh / 2));
-      ctx.shadowColor = isPut ? 'rgba(255,59,48,.45)' : 'rgba(0,200,83,.45)';
-      ctx.shadowBlur = 8;
+      ctx.shadowColor = isPut ? 'rgba(255,59,48,.6)' : 'rgba(34,229,143,.6)';
+      ctx.shadowBlur = 10;
       ctx.fillStyle = gr;
       roundRectOn(ctx, lx, ly, lw, lh, lh / 2);
       ctx.fill();
       ctx.shadowBlur = 0;
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(255,255,255,.35)';
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = isPut ? 'rgba(255,170,180,.9)' : 'rgba(170,255,210,.9)';
       ctx.stroke();
-      // Petite flèche tracée (diagonale montante pour l'achat, descendante pour la vente).
-      var ax = lx + 7;
+      // Petit rond blanc avec la flèche (diagonale montante pour l'achat, descendante pour la vente).
+      var ax = lx + lh / 2;
       var ay = ly + lh / 2;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.3;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(ax, ay, lh / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = isPut ? '#BE123C' : '#15803D';
+      ctx.lineWidth = 1.6;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
       if (isPut) {
-        ctx.moveTo(ax - 2.3, ay - 2.3);
-        ctx.lineTo(ax + 2.3, ay + 2.3);
-        ctx.moveTo(ax + 2.3, ay - 0.3);
-        ctx.lineTo(ax + 2.3, ay + 2.3);
-        ctx.lineTo(ax - 0.3, ay + 2.3);
+        ctx.moveTo(ax - 2.4, ay - 2.4);
+        ctx.lineTo(ax + 2.4, ay + 2.4);
+        ctx.moveTo(ax + 2.4, ay - 0.2);
+        ctx.lineTo(ax + 2.4, ay + 2.4);
+        ctx.lineTo(ax + 0.2, ay + 2.4);
       } else {
-        ctx.moveTo(ax - 2.3, ay + 2.3);
-        ctx.lineTo(ax + 2.3, ay - 2.3);
-        ctx.moveTo(ax - 0.3, ay - 2.3);
-        ctx.lineTo(ax + 2.3, ay - 2.3);
-        ctx.lineTo(ax + 2.3, ay + 0.3);
+        ctx.moveTo(ax - 2.4, ay + 2.4);
+        ctx.lineTo(ax + 2.4, ay - 2.4);
+        ctx.moveTo(ax + 0.2, ay - 2.4);
+        ctx.lineTo(ax + 2.4, ay - 2.4);
+        ctx.lineTo(ax + 2.4, ay - 0.2);
       }
       ctx.stroke();
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(lbl, lx + 13, ly + lh / 2 + 0.5);
+      ctx.fillText(lbl, lx + lh + 3, ly + lh / 2 + 0.5);
       }
       ctx.restore();
     }
