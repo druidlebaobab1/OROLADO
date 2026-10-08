@@ -758,10 +758,11 @@
       if (needAccount()) return;
       var link = affLink();
       if (!link) return;
-      if (navigator.share) {
-        try { await navigator.share({ title: 'OROLADO', text: t('affShareText'), url: link }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
-      }
-      if (await copyLink() && $('affCopy')) $('affCopy').click();
+      // v2490 (propriétaire) : « Partager » ouvre directement WhatsApp (plus le menu du téléphone avec SMS…).
+      var wa = 'https://wa.me/?text=' + encodeURIComponent(t('affShareText') + ' ' + link);
+      var win = null;
+      try { win = window.open(wa, '_blank'); if (win) win.opener = null; } catch (e) { win = null; }
+      if (!win) location.href = wa;
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
     // v2437 — recherche (à chaque lettre) et tri.
