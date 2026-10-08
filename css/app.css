@@ -6536,7 +6536,7 @@ html body #installBanner #btnInstall:active{transform:scale(.96)}
 /* ===== v2441 — Liste des langues : fenêtre univers plus lumineuse, drapeaux ronds, langue choisie en or avec ✓. ===== */
 html body .lang-dd-menu.lang-dd-menu{border-radius:16px!important;padding:8px!important;gap:5px!important;width:min(236px,calc(100vw - 16px))!important;max-width:min(236px,calc(100vw - 16px))!important;
   background:radial-gradient(circle at 50% -10%,rgba(56,189,248,.30),rgba(124,77,255,.20) 45%,rgba(10,10,32,.0) 75%),
-    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2367") center top/cover no-repeat,#0D0B26!important;
+    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2481") center top/cover no-repeat,#0D0B26!important;
   border:1px solid rgba(125,211,252,.5)!important;
   box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 26px rgba(56,189,248,.28),0 0 0 1px rgba(255,255,255,.04) inset!important;
   transform-origin:top right;animation:langPop .22s cubic-bezier(.2,1.3,.4,1)}
@@ -8093,3 +8093,27 @@ html body #fsTradeOverlay .asset-bar .asset-chip .mk-name{top:-3px!important}
 html body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap #chart#chart.chart-card{
   background:linear-gradient(180deg,rgba(19,18,59,0) 0,rgba(19,18,59,.6) 26px,rgb(19,18,59) 48px,rgb(17,18,50) 50%,rgb(12,12,35) 100%)!important}
 .learn-modal .lg-oc-cap{margin:-4px 0 2px -14px;font-size:11px;font-weight:800;color:#FFE7A3}
+
+/* ===== v2481 — Plein écran comme l'écran normal : la scène de la courbe n'a plus son propre fond (il recommençait
+   d'un coup sous MA / BB / EMA et faisait un trait) ; c'est la boîte de la courbe, en fondu, qui donne la couleur. ===== */
+html body #tradeWrap#tradeWrap#tradeWrap #chartStage#chartStage,html body #fsTradeOverlay#fsTradeOverlay #chartStage#chartStage{background:none!important}
+/* ===== v2481 — Terminal du téléphone OPAQUE : la nébuleuse bleue du fond ne transparaît plus en bas à droite
+   (elle formait une lueur en « carré » au-dessus du gain et des payouts). ===== */
+@media (max-width:859px){
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
+    background:url("../icons/ui/pad-planets.svg?v=2450") center/cover no-repeat,
+      linear-gradient(180deg,rgb(10,10,32) 0,rgb(12,11,36) 40%,rgb(13,12,38) 100%)!important}
+}
+/* ===== v2481 — Bouton « Installer » : la petite pastille verte « télécharger » entière (plus coupée par le bord). ===== */
+html body #installBanner.install-banner{overflow:visible!important}
+html body #installBanner .install-ico{overflow:visible!important}
+html body #installBanner .install-dl{right:-4px!important;bottom:-1px!important;z-index:3}
+html.is-ios body #installBanner .install-dl{width:14px!important;height:14px!important;right:-4px!important;bottom:-2px!important}
+html.is-ios body #installBanner .install-dl svg{width:9.5px!important;height:9.5px!important}
+/* v2481 — ACHETER / VENDRE allumés au toucher : vert plein / rouge plein, lumineux (420 ms). */
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #btnCall.is-lit,html body #fsTradeOverlay#fsTradeOverlay #btnCall.is-lit{
+  background:linear-gradient(180deg,#3BE07C 0%,#16A34A 100%)!important;border-color:#86EFAC!important;
+  box-shadow:0 0 0 2px rgba(134,239,172,.35),0 0 22px rgba(34,197,94,.75),inset 0 1px 0 rgba(255,255,255,.35)!important;transition:background .08s,box-shadow .08s}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #btnPut.is-lit,html body #fsTradeOverlay#fsTradeOverlay #btnPut.is-lit{
+  background:linear-gradient(180deg,#FF5C72 0%,#D11F3A 100%)!important;border-color:#FDA4AF!important;
+  box-shadow:0 0 0 2px rgba(253,164,175,.35),0 0 22px rgba(244,63,94,.75),inset 0 1px 0 rgba(255,255,255,.3)!important;transition:background .08s,box-shadow .08s}

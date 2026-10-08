@@ -2961,7 +2961,11 @@
       g.fill();
       g.lineWidth = 1;
       g.strokeStyle = it.side === 'put' ? 'rgba(251,113,133,0.95)' : 'rgba(74,222,128,0.95)';
+      // v2481 (demande du propriétaire) : étiquette d'OBJECTIF (×5, ×10, ×50) bordée de DORÉ, comme sa ligne : on sait tout de
+      // suite que c'est l'objectif. L'intérieur, le texte et le triangle restent vert (ACHETER) ou rouge (VENDRE).
+      if (!it.entry) { g.strokeStyle = '#F5C518'; g.lineWidth = 1.4; g.setLineDash([3, 2]); }
       g.stroke();
+      g.setLineDash(NO_DASH);
       // v2461 — texte (et triangle ▲ / ▼) de la couleur du trade.
       g.fillStyle = it.side === 'put' ? '#FFC2CC' : '#B9FFD9';
       g.textAlign = 'center';

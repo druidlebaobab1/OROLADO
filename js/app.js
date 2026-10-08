@@ -3111,6 +3111,21 @@
     else fallback();
   }
 
+  // v2481 — ACHETER / VENDRE : au toucher, le bouton s'allume en VERT plein (achat) ou ROUGE plein (vente), comme sur
+  // les grandes plateformes. Affichage seulement (le trade, lui, part comme avant).
+  (function tradeLight() {
+    var ev = window.PointerEvent ? 'pointerdown' : 'touchstart';
+    document.addEventListener(ev, function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('#btnCall, #btnPut, .btn-trade') : null;
+      if (!b) return;
+      b.classList.remove('is-lit');
+      void b.offsetWidth;
+      b.classList.add('is-lit');
+      clearTimeout(b._litT);
+      b._litT = setTimeout(function () { b.classList.remove('is-lit'); }, 420);
+    }, { passive: true, capture: true });
+  })();
+
   // v2465 — « Copier » : le bouton s'allume en vert un court instant, on voit tout de suite que c'est copié.
   document.addEventListener('click', function (e) {
     var b = e.target && e.target.closest ? e.target.closest('.btn-copy-id, .wallet-copy') : null;
