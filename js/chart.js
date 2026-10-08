@@ -3066,25 +3066,19 @@
         var zw = Math.max(2, zx1 - zx0);
         var zg;
         g.globalAlpha = lineFade * zoneK;
-        if (isCall) {
-          zg = g.createLinearGradient(0, zy, 0, plotTop);
-          // v2463 — zone un peu plus forte (on voit bien le côté gagnant).
-          zg.addColorStop(0, 'rgba(0,230,118,0.30)');
-          zg.addColorStop(0.35, 'rgba(0,230,118,0.13)');
-          zg.addColorStop(1, 'rgba(0,230,118,0.04)');
-          g.fillStyle = zg;
-          g.fillRect(zx0, plotTop, zw, zy - plotTop);
-        } else {
-          zg = g.createLinearGradient(0, zy, 0, plotBot);
-          zg.addColorStop(0, 'rgba(255,59,48,0.30)');
-          zg.addColorStop(0.35, 'rgba(255,59,48,0.13)');
-          zg.addColorStop(1, 'rgba(255,59,48,0.04)');
-          g.fillStyle = zg;
-          g.fillRect(zx0, zy, zw, plotBot - zy);
-        }
-        // v2463 — bord lumineux de la zone (la limite à dépasser) + halo doux vers l'arrivée : l'endroit où le prix
-        // doit se trouver à la fin se voit d'un coup d'œil. Dessin seulement.
+        // v2463b — comme les grandes plateformes : la couleur reste une BANDE près de la ligne à dépasser
+        // (entre l'entrée et l'arrivée), forte au bord et qui s'efface vite ; elle ne remplit plus toute la hauteur.
         var zc = isCall ? '0,230,118' : '255,59,48';
+        var bandH = Math.max(34, Math.min(70, plotH * 0.3));
+        var by0 = isCall ? Math.max(plotTop, zy - bandH) : zy;
+        var by1 = isCall ? zy : Math.min(plotBot, zy + bandH);
+        zg = g.createLinearGradient(0, zy, 0, isCall ? zy - bandH : zy + bandH);
+        zg.addColorStop(0, 'rgba(' + zc + ',0.30)');
+        zg.addColorStop(0.45, 'rgba(' + zc + ',0.12)');
+        zg.addColorStop(1, 'rgba(' + zc + ',0)');
+        g.fillStyle = zg;
+        if (by1 > by0) g.fillRect(zx0, by0, zw, by1 - by0);
+        // Bord lumineux de la zone (la limite à dépasser) + halo doux vers l'arrivée. Dessin seulement.
         g.globalAlpha = lineFade * zoneK;
         g.shadowColor = 'rgba(' + zc + ',0.9)';
         g.shadowBlur = lite ? 4 : 9;
@@ -3098,10 +3092,9 @@
         var hw = Math.min(zw, 46);
         var hg = g.createLinearGradient(zx0 + zw - hw, 0, zx0 + zw, 0);
         hg.addColorStop(0, 'rgba(' + zc + ',0)');
-        hg.addColorStop(1, 'rgba(' + zc + ',0.16)');
+        hg.addColorStop(1, 'rgba(' + zc + ',0.14)');
         g.fillStyle = hg;
-        if (isCall) g.fillRect(zx0 + zw - hw, plotTop, hw, zy - plotTop);
-        else g.fillRect(zx0 + zw - hw, zy, hw, plotBot - zy);
+        if (by1 > by0) g.fillRect(zx0 + zw - hw, by0, hw, by1 - by0);
         g.restore();
       }
       // Ligne d'arrivée verticale : l'instant exact où le trade se termine.
