@@ -4,7 +4,6 @@
 <radialGradient id="b" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFE7B0"/><stop offset=".5" stop-color="#C77A1C"/><stop offset="1" stop-color="#3A1C06" stop-opacity="0"/></radialGradient>
 <radialGradient id="c" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#BAE6FD"/><stop offset=".5" stop-color="#0E7490"/><stop offset="1" stop-color="#062C3A" stop-opacity="0"/></radialGradient>
 </defs>
-<g fill="#fff" opacity=".7"><circle cx="30" cy="20" r=".9"/><circle cx="120" cy="80" r=".7"/><circle cx="210" cy="30" r="1"/><circle cx="260" cy="150" r=".8"/><circle cx="340" cy="60" r=".9"/><circle cx="80" cy="190" r=".8"/><circle cx="380" cy="200" r=".7"/><circle cx="170" cy="120" r=".6"/></g>
 
 <ellipse cx="25" cy="200" rx="70" ry="12" fill="none" stroke="#FFE2A0" stroke-opacity=".25" stroke-width="1.5" transform="rotate(-12 25 200)"/>
 <circle cx="25" cy="200" r="38" fill="url(#b)" opacity=".45"/>

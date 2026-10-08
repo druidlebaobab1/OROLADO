@@ -6536,7 +6536,7 @@ html body #installBanner #btnInstall:active{transform:scale(.96)}
 /* ===== v2441 — Liste des langues : fenêtre univers plus lumineuse, drapeaux ronds, langue choisie en or avec ✓. ===== */
 html body .lang-dd-menu.lang-dd-menu{border-radius:16px!important;padding:8px!important;gap:5px!important;width:min(236px,calc(100vw - 16px))!important;max-width:min(236px,calc(100vw - 16px))!important;
   background:radial-gradient(circle at 50% -10%,rgba(56,189,248,.30),rgba(124,77,255,.20) 45%,rgba(10,10,32,.0) 75%),
-    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2481") center top/cover no-repeat,#0D0B26!important;
+    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2487") center top/cover no-repeat,#0D0B26!important;
   border:1px solid rgba(125,211,252,.5)!important;
   box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 26px rgba(56,189,248,.28),0 0 0 1px rgba(255,255,255,.04) inset!important;
   transform-origin:top right;animation:langPop .22s cubic-bezier(.2,1.3,.4,1)}
@@ -7180,17 +7180,17 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade{
   animation:btPlanets 60s linear infinite!important;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.55)!important;
   padding-left:52px!important;transition:background-color .15s,box-shadow .2s,transform .1s!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{
-  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(90deg,rgba(34,197,94,.62),rgba(8,40,30,.55) 85%)!important;
+  background-image:url("../icons/ui/btn-planets.svg?v=2487"),linear-gradient(90deg,rgba(34,197,94,.62),rgba(8,40,30,.55) 85%)!important;
   border:1.5px solid #22C55E!important;box-shadow:0 0 14px rgba(34,197,94,.5),0 0 14px rgba(34,197,94,.22) inset!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{
-  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(90deg,rgba(244,63,94,.62),rgba(40,8,20,.55) 85%)!important;
+  background-image:url("../icons/ui/btn-planets.svg?v=2487"),linear-gradient(90deg,rgba(244,63,94,.62),rgba(40,8,20,.55) 85%)!important;
   border:1.5px solid #F43F5E!important;box-shadow:0 0 14px rgba(244,63,94,.5),0 0 14px rgba(244,63,94,.22) inset!important;animation-direction:reverse!important}
 @keyframes btPlanets{from{background-position:0 0,0 0}to{background-position:-400px 0,0 0}}
 /* Au toucher : la couleur pleine d'avant revient, bien vive. */
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call:active{
-  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(180deg,#5BF5B8,#22C55E 50%,#10A86B)!important;box-shadow:0 0 26px rgba(34,197,94,.9)!important;transform:scale(.98)}
+  background-image:url("../icons/ui/btn-planets.svg?v=2487"),linear-gradient(180deg,#5BF5B8,#22C55E 50%,#10A86B)!important;box-shadow:0 0 26px rgba(34,197,94,.9)!important;transform:scale(.98)}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put:active{
-  background-image:url("../icons/ui/btn-planets.svg?v=2450c"),linear-gradient(180deg,#FF8A9A,#F43F5E 50%,#E11D48)!important;box-shadow:0 0 26px rgba(244,63,94,.9)!important;transform:scale(.98)}
+  background-image:url("../icons/ui/btn-planets.svg?v=2487"),linear-gradient(180deg,#FF8A9A,#F43F5E 50%,#E11D48)!important;box-shadow:0 0 26px rgba(244,63,94,.9)!important;transform:scale(.98)}
 /* Rond blanc avec la flèche, à gauche, bien au centre en hauteur. */
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{position:absolute!important;left:6px;top:50%;
   height:calc(100% - 14px)!important;width:auto!important;aspect-ratio:1;max-height:44px!important;max-width:44px!important;transform:translateY(-50%);
@@ -7207,7 +7207,7 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .
 
 /* ===== v2450 — TERMINAL sombre et transparent, planètes très légères, cases qui s'allument « comme de l'eau » ===== */
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .pad{
-  background:url("../icons/ui/pad-planets.svg?v=2486") center/cover no-repeat,linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78))!important;
+  background:url("../icons/ui/pad-planets.svg?v=2487") center/cover no-repeat,linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78))!important;
   border:0!important;box-shadow:none!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .dur-chip,
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .qbtn{
@@ -8018,7 +8018,7 @@ html body #rcptModal#rcptModal .rc-back::before{content:"";position:absolute;lef
    commence en fondu (transparent en haut) et le bas de la courbe s'y fond doucement. ===== */
 @media (max-width:859px){
   html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-    background:url("../icons/ui/pad-planets.svg?v=2486") center/cover no-repeat,
+    background:url("../icons/ui/pad-planets.svg?v=2487") center/cover no-repeat,
       linear-gradient(180deg,rgba(14,12,40,0) 0,rgba(14,12,40,.42) 22px,rgba(14,12,40,.58) 44px,rgba(10,9,32,.78) 100%)!important;
     -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.0) 0,#000 10px);mask-image:linear-gradient(180deg,rgba(0,0,0,.0) 0,#000 10px);
     -webkit-mask-image:none;mask-image:none}
@@ -8027,7 +8027,7 @@ html body #rcptModal#rcptModal .rc-back::before{content:"";position:absolute;lef
 /* v2471 (suite) — raccord exact : le haut du terminal commence avec la couleur du bas de la courbe (#0A0A20), puis se fond. */
 @media (max-width:859px){
   html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-    background:url("../icons/ui/pad-planets.svg?v=2486") center/cover no-repeat,
+    background:url("../icons/ui/pad-planets.svg?v=2487") center/cover no-repeat,
       linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
       linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78))!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade .chart-stage::after{display:none!important}
@@ -8101,7 +8101,7 @@ html body #tradeWrap#tradeWrap#tradeWrap #chartStage#chartStage,html body #fsTra
    (elle formait une lueur en « carré » au-dessus du gain et des payouts). ===== */
 @media (max-width:859px){
   html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-    background:url("../icons/ui/pad-planets.svg?v=2486") center/cover no-repeat,
+    background:url("../icons/ui/pad-planets.svg?v=2487") center/cover no-repeat,
       linear-gradient(180deg,rgb(10,10,32) 0,rgb(12,11,36) 40%,rgb(13,12,38) 100%)!important}
 }
 /* ===== v2481 — Bouton « Installer » : la petite pastille verte « télécharger » entière (plus coupée par le bord). ===== */
@@ -8122,3 +8122,22 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #btnPut.is-l
 html body #chartCanvas,html body #chartOverlay{
   -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 calc(100% - 34px),rgba(0,0,0,.72) calc(100% - 14px),rgba(0,0,0,.6) 100%);
   mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 calc(100% - 34px),rgba(0,0,0,.72) calc(100% - 14px),rgba(0,0,0,.6) 100%)}
+
+/* ===== v2487 — Cases du bas (durée, mise, gain) : leur lueur ne monte plus dans la courbe.
+   Avant : halos de 12-16 px autour des cases, visibles au-dessus d'elles quand la luminosité est forte.
+   Maintenant : la lueur reste DANS la case (intérieure), avec un tout petit halo vers le bas seulement. ===== */
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .win-preview,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .win-preview,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .win-preview{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 14px rgba(251,191,36,.16),0 5px 8px -5px rgba(0,0,0,.5)!important}
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .stake-field,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .stake-field{
+  box-shadow:inset 0 0 12px rgba(46,229,157,.16)!important}
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .dur-chip.on,html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .dur-chip.active,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .dur-chip.on,html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .dur-chip.active{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 4px rgba(245,197,81,.45)!important}
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .dur-nav,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .dur-nav,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .stake-pm,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .stake-pm{
+  box-shadow:0 0 4px rgba(255,255,255,.12)!important}
