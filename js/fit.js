@@ -128,7 +128,13 @@
     ['.modal-box', '#depositSuccessAmt'],
     ['#wdConfirmModal .wd-confirm-row', 'strong'],
     // v2450 — « Carte & paiement instantané » (toutes les langues) : rétrécit pour tenir sur une ligne.
-    ['#payMethodCard .pay-method-top', '.pay-method-title']
+    ['#payMethodCard .pay-method-top', '.pay-method-title'],
+    // v2457 — nouveau terminal : textes des planètes payout, gain et durée élastiques (jamais de débordement).
+    ['#oddsRow .odds-chip', '.odds-mult'],
+    ['#oddsRow .odds-chip', '.odds-pct'],
+    ['#tradeWrap .win-preview', '.amount'],
+    ['#tradeWrap .win-preview', '.mult'],
+    ['#tradeWrap .dur-row', '.dur-chip.on']
   ];
   function fitNums() {
     if (document.hidden) return;
