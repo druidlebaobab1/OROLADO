@@ -134,7 +134,10 @@
     ['#oddsRow .odds-chip', '.odds-pct'],
     ['#tradeWrap .win-preview', '.amount'],
     ['#tradeWrap .win-preview', '.mult'],
-    ['#tradeWrap .dur-row', '.dur-chip.on']
+    ['#tradeWrap .dur-row', '.dur-chip.on'],
+    // v2460 — ACHETER / VENDRE (longs mots, ex. « VERKAUFEN ») : rétrécit seul si le bouton est étroit.
+    ['#btnCall', '.bt-txt'],
+    ['#btnPut', '.bt-txt']
   ];
   function fitNums() {
     if (document.hidden) return;
@@ -154,7 +157,7 @@
         // v2458 — on compare aussi le montant à l'INTÉRIEUR réel de sa case (sans les marges intérieures).
         var bcs = getComputedStyle(box);
         var avail = box.clientWidth - (parseFloat(bcs.paddingLeft) || 0) - (parseFloat(bcs.paddingRight) || 0);
-        var tooWide = function () { return box.scrollWidth > box.clientWidth + 1 || el.getBoundingClientRect().width > avail + 0.5; };
+        var tooWide = function () { return box.scrollWidth > box.clientWidth + 1 || el.getBoundingClientRect().width > avail + 0.5 || (el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1); };
         if (!tooWide()) continue;
         var base = parseFloat(el.getAttribute('data-fit-fs') || '') || parseFloat(getComputedStyle(el).fontSize) || 14;
         el.setAttribute('data-fit-fs', String(base));
