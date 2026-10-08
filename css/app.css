@@ -7706,3 +7706,32 @@ html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrad
 @media (max-width:380px) and (orientation:portrait){
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.74fr 1.08fr 1.18fr!important}
 }
+
+/* ===== v2459 — PLEIN ÉCRAN : la mise devient une vraie case comme l'écran normal (− à gauche, + à droite, « ≈ gain » dessous sans trait) ===== */
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .stake-field{position:relative!important;display:block!important;
+  box-sizing:border-box!important;border-radius:12px!important;border:1px solid rgba(46,229,157,.7)!important;overflow:hidden!important;
+  background:linear-gradient(180deg,rgba(46,229,157,.12),rgba(8,20,30,.62))!important;box-shadow:0 0 12px rgba(46,229,157,.25)!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .stake-field::before{display:none!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) #inputStake{position:absolute!important;left:22px!important;right:22px!important;top:2px!important;
+  width:auto!important;height:26px!important;min-height:26px!important;max-height:26px!important;padding:0!important;margin:0!important;
+  background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;text-align:center!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-pm{display:grid!important;place-items:center!important;position:absolute!important;top:5px!important;
+  width:20px!important;height:20px!important;min-height:20px!important;max-height:20px!important;padding:0!important;border-radius:50%!important;border:0!important;
+  font-size:15px!important;font-weight:900!important;line-height:1!important;color:#04261A!important;
+  background:radial-gradient(circle at 32% 28%,#D1FAE5,#2EE59D 50%,#0E7A52)!important;box-shadow:0 0 7px rgba(46,229,157,.55)!important;z-index:3}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-minus{left:3px!important;right:auto!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-plus{right:3px!important;left:auto!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-pm:active{transform:scale(.88)}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) #fsStakeWin{position:absolute!important;left:3px!important;right:3px!important;bottom:3px!important;top:auto!important;
+  border:0!important;padding:0!important;margin:0!important;text-align:center!important;font-size:9.5px!important;line-height:1.1!important;color:#FFE7A3!important;
+  white-space:nowrap!important;overflow:hidden!important;background:none!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-pm{visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .stake-field #stakeCur{display:block!important;visibility:visible!important}
+/* v2459 — Téléphone couché : rond blanc plus petit, ACHETER / VENDRE entiers. */
+@media (orientation:landscape) and (max-height:500px){
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{max-height:28px!important;max-width:28px!important;padding:6px!important;left:5px!important}
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr{left:auto!important;right:5px!important}
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:36px!important;padding-right:4px!important}
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-right:36px!important;padding-left:4px!important}
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{font-size:clamp(11px,2.4vw,15px)!important;white-space:nowrap}
+}

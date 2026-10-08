@@ -2293,7 +2293,7 @@
       fitStakeCtx.font = cs.fontWeight + ' ' + fs + 'px ' + cs.fontFamily;
       var w = fitStakeCtx.measureText(txt).width + (parseFloat(cs.letterSpacing) || 0) * txt.length;
       // Place réservée au « $ » posé devant le chiffre (écran normal) : le chiffre rétrécit un peu plus tôt.
-      var curRoom = document.documentElement.classList.contains('fs-trade') ? 0 : fs * 0.95;
+      var curRoom = fs * 0.95; // v2459 : le « $ » est aussi devant le chiffre en plein écran
       if (w + curRoom > avail) {
         var nfs = Math.max(7, Math.floor(fs * avail / (w + curRoom) * 10) / 10);
         el.style.setProperty('font-size', nfs + 'px', 'important');
@@ -2318,7 +2318,7 @@
         cur.textContent = '$';
         field.appendChild(cur);
       }
-      if (document.documentElement.classList.contains('fs-trade') || !el.clientWidth) { cur.style.display = 'none'; return; }
+      if (!el.clientWidth) { cur.style.display = 'none'; return; }
       var fr = field.getBoundingClientRect();
       var ir = el.getBoundingClientRect();
       var curFs = Math.max(7, fs * 0.92);
