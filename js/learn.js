@@ -144,8 +144,8 @@
     var WAL = '<svg viewBox="0 0 24 24"><path d="M4 7.5h14.5a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 17.5V6.5A2.5 2.5 0 0 1 5.5 4H16v3.5" fill="none" stroke="#0E6B32" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/><rect x="14.5" y="11.5" width="6" height="4.5" rx="1.6" fill="#0E6B32"/><circle cx="16.8" cy="13.75" r="1" fill="#fff"/></svg>';
     var EQ = '<svg viewBox="0 0 16 16"><path d="M4 6.2h8M4 9.8h8" fill="none" stroke="#334155" stroke-width="2.6" stroke-linecap="round"/></svg>';
     var tieWord = String(S('tieRefund', 'Tie')).split(/\s[—–-]\s/)[0];
-    return '<div class="lg-art lg-ocs">' +
-      '<div class="lg-oc-row"><span class="lg-oc win"><i>' + WAL + '</i>+$&nbsp;&nbsp;9</span><small>' + esc(T('lWin')) + '</small></div>' +
+    return '<div class="lg-art lg-ocs"><div class="lg-oc-cap">' + esc(T('s10cap')) + '</div>' +
+      '<div class="lg-oc-row"><span class="lg-oc win"><i>' + WAL + '</i>+$&nbsp;&nbsp;19</span><small>' + esc(T('lWin')) + '</small></div>' +
       '<div class="lg-oc-row"><span class="lg-oc tie"><i>' + EQ + '</i>' + esc(tieWord) + ' · $&nbsp;10</span><small>' + esc(T('lTie')) + '</small></div>' +
       '<div class="lg-oc-row"><span class="lg-oc lose">+$&nbsp;&nbsp;0</span><small>' + esc(T('lLose')) + '</small></div></div>';
   }
@@ -202,10 +202,10 @@
     h += step(4, T('s4t'), [T('s4a'), T('s4b'), T('s4c'), T('s4d'), T('s4e')], artScreen() + artChartKinds());
     h += step(5, T('s5t'), [T('s5a'), T('s5b')], artDuration());
     h += step(6, T('s6t'), [T('s6a'), T('s6b'), T('s6c'), T('s6d')], artStake(), '<div class="lg-ex">' + I('bulb', 'ex') + ' ' + esc(T('s6e')) + '</div>');
-    h += step(7, T('s7t'), [T('s7a'), T('s7b'), T('s7c')], artPayout());
+    h += step(7, T('s7t'), [T('s7a'), T('s7b'), T('s7d'), T('s7c')], artPayout());
     h += step(8, T('s8t'), [T('s8a'), T('s8b'), T('s8c'), T('s8d'), T('s8e')], artBuySell(), '<div class="lg-ex">' + I('bulb', 'ex') + ' ' + esc(T('s8ex')) + '</div>');
     h += step(9, T('s9t'), [T('s9a'), T('s9b'), T('s9c'), T('s9d'), T('s9e')], artTrade());
-    h += step(10, T('s10t'), [T('s10a'), T('s10c'), T('s10d'), T('s10e'), T('s10b')], artResult());
+    h += step(10, T('s10t'), [T('s10a'), T('s10c'), T('s10d'), T('s10e'), T('s10b')], artResult(), '<div class="lg-ex">' + I('bulb', 'ex') + ' ' + esc(T('s10ex')) + '</div>');
     h += step(11, T('s11t'), [T('s11a'), T('s11b'), T('s11c')], artTools());
     h += step(12, T('s12t'), [T('s12a'), T('s12b'), T('s12c'), T('s12g'), T('s12f'), T('s12e'), T('s12d')], '');
     h += '<div class="lg-part">' + esc(T('partC')) + '</div>';
