@@ -114,14 +114,17 @@
   }
   function artPayout() {
     return '<div class="lg-art lg-row lg-pls">' +
-      '<div class="lg-pl on" style="--c:251,146,60">90%</div><div class="lg-pl" style="--c:56,189,248">500%</div><div class="lg-pl" style="--c:167,139,250">1000%</div><div class="lg-pl" style="--c:251,191,36">5000%</div></div>';
+      // v2470 — comme sur l'écran : en échelle, du plus petit (90 %) au plus grand (5000 %), petit anneau à la base.
+      '<div class="lg-pl on" style="--c:251,146,60;--s:40px">90%</div><div class="lg-pl" style="--c:56,189,248;--s:45px">500%</div><div class="lg-pl" style="--c:167,139,250;--s:50px">1000%</div><div class="lg-pl" style="--c:251,191,36;--s:55px">5000%</div></div>';
   }
   function artBuySell() {
     return '<div class="lg-art lg-bs"><div class="lg-b buy"><i>' + UP + '</i><span>' + esc(S('buyShort', 'BUY')) + '</span></div><div class="lg-b sell"><span>' + esc(S('sellShort', 'SELL')) + '</span><i>' + DN + '</i></div></div>';
   }
   function artTrade() {
     return '<div class="lg-art lg-screen"><svg class="lg-chart" viewBox="0 0 300 120" preserveAspectRatio="none">' +
-      '<rect x="0" y="0" width="300" height="62" fill="rgba(34,197,94,.14)"/>' +
+      // v2470 — comme sur l'écran : bande verte près de la ligne, seulement entre l'entrée et l'arrivée, bord en tirets.
+      '<defs><linearGradient id="lgZone" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="rgba(0,230,118,.32)"/><stop offset=".45" stop-color="rgba(0,230,118,.12)"/><stop offset="1" stop-color="rgba(0,230,118,0)"/></linearGradient></defs>' +
+      '<rect x="160" y="30" width="102" height="32" fill="url(#lgZone)"/><line x1="160" y1="62" x2="262" y2="62" stroke="#00E676" stroke-width="1.6" stroke-dasharray="6 5"/>' +
       candles(18, true) +
       '<line x1="0" y1="62" x2="300" y2="62" stroke="#22C55E" stroke-dasharray="4 4"/>' +
       '<circle cx="160" cy="62" r="6" fill="#16C25E" stroke="#fff"/><path d="M160 58l3.4 6h-6.8z" fill="#fff"/>' +

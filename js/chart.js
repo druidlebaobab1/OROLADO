@@ -3053,7 +3053,9 @@
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = bar > 0 ? bar : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
-      if (isFinite(zy)) {
+      // v2470 — objectif HORS de l'écran (ex. 5000 % sur 10 min) : la zone gagnante est entièrement hors de l'écran,
+      // on ne dessine rien (avant : un trait coloré collé tout en haut, sur le titre OROLADO, qui s'allongeait).
+      if (isFinite(zy) && zy > plotTop + 2 && zy < plotBot - 2) {
         zy = Math.max(plotTop, Math.min(plotBot, zy));
         g.save();
         // Seule l'ombre marque l'objectif (aucun second trait) : plus dense au bord.
@@ -3084,10 +3086,13 @@
         g.shadowBlur = lite ? 4 : 9;
         g.strokeStyle = 'rgba(' + zc + ',0.85)';
         g.lineWidth = lite ? 1.4 : 1.8;
+        // v2470 — bord de la zone en TIRETS, comme toutes les lignes de la courbe.
+        g.setLineDash([6, 5]);
         g.beginPath();
         g.moveTo(zx0, zy);
         g.lineTo(zx0 + zw, zy);
         g.stroke();
+        g.setLineDash(NO_DASH);
         g.shadowBlur = 0;
         var hw = Math.min(zw, 46);
         var hg = g.createLinearGradient(zx0 + zw - hw, 0, zx0 + zw, 0);

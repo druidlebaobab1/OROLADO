@@ -533,6 +533,7 @@
     var BACK = { fr: 'Retour', en: 'Back', es: 'Volver', pt: 'Voltar', ar: 'رجوع', tr: 'Geri', vi: 'Quay lại', id: 'Kembali', ru: 'Назад', de: 'Zurück', hi: 'वापस' };
     var lg = (D6.I18N && D6.I18N.lang) || 'en';
     m.querySelector('.t-back').textContent = BACK[lg] || BACK.en;
+    m.querySelector('.rc-back').setAttribute('aria-label', BACK[lg] || BACK.en);
     var body = m.querySelector('.rc-body');
     body.innerHTML = '<div class="rc-wait">…</div>';
     m.classList.add('on');
