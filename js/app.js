@@ -1589,6 +1589,29 @@
     return 'lose';
   }
 
+  function showOutcomeTie(stake, tradeId) {
+    if (tradeId) {
+      if (outcomeToastSeen[tradeId]) return;
+      outcomeToastSeen[tradeId] = true;
+    }
+    var el = document.getElementById('outcomeToast');
+    var stage = document.querySelector('.chart-stage');
+    if (!el || !stage) { toast(t('tieRefund'), 'tie'); return; }
+    if (el.parentElement !== stage) stage.appendChild(el);
+    var amt = Math.abs(Number(stake) || 0);
+    var word = String(t('tieRefund') || '').split(/\s[—–-]\s/)[0] || '=';
+    el.className = 'chart-outcome show tie';
+    el.style.setProperty('--ox', '0px');
+    el.style.setProperty('--oy', '0px');
+    el.innerHTML = '<i class="oc-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 6.2h8M4 9.8h8"/></svg></i><span></span>';
+    el.querySelector('span').textContent = word + ' · $ ' + D6.roundMoney(amt);
+    clearTimeout(outcomeToastTimer);
+    outcomeToastTimer = setTimeout(function () {
+      el.className = 'chart-outcome';
+      el.textContent = '';
+    }, IS_ANDROID ? 1100 : 1300);
+  }
+
   function showOutcomeToast(isWin, payout, tradeId) {
     if (tradeId) {
       if (outcomeToastSeen[tradeId]) return;
@@ -3918,7 +3941,8 @@
     // Réel : le solde bouge seulement après settleOrder (vault). Pas de paint intermédiaire.
     if (outcomeMode !== 'real') updateBalance(true);
     if (res.voided) {
-      toast(t('tieRefund'), 'tie');
+      // v2476 — égalité : pastille sur la courbe, même style que gagné / perdu (argent, rond « = »), au lieu du bandeau.
+      showOutcomeTie(res.trade && res.trade.stake, id);
       playNeutralTick();
     } else {
       showOutcomeToast(resultKind(res) === 'win', profitFromResult(res), id);

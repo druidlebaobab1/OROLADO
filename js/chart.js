@@ -2760,12 +2760,14 @@
     // Objectif hors de l'écran : pas de trait collé au bord (il passait sur le titre OROLADO) : seule l'étiquette ▲ / ▼ reste.
     var tCol = '#F5C518';
     g.save();
-    g.globalAlpha = (off ? 0 : 0.95) * (fade == null ? 1 : fade);
-    g.setLineDash(TARGET_DASH);
+    // v2476 (demande du propriétaire) : objectif loin (hors écran) = la ligne revient, collée au bord, mais en tirets dorés
+    // fins et légers : on la voit (« l'objectif est plus loin ») sans qu'elle gêne le titre OROLADO.
+    g.globalAlpha = (off ? 0.42 : 0.95) * (fade == null ? 1 : fade);
+    g.setLineDash(off ? [7, 7] : TARGET_DASH);
     g.strokeStyle = tCol;
     g.shadowColor = tCol;
-    g.shadowBlur = IS_ANDROID_CHART ? 4 : 7;
-    g.lineWidth = IS_ANDROID_CHART ? 1.6 : 2;
+    g.shadowBlur = off ? 2 : (IS_ANDROID_CHART ? 4 : 7);
+    g.lineWidth = off ? 1.2 : (IS_ANDROID_CHART ? 1.6 : 2);
     g.beginPath();
     g.moveTo(pad.l, by);
     // Le trait s'arrête sous l'étiquette verte (posée jusqu'à axisX - 6) : son bout ne dépasse pas.

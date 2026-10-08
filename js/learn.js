@@ -128,6 +128,10 @@
       candles(18, true) +
       '<line x1="0" y1="62" x2="300" y2="62" stroke="#22C55E" stroke-dasharray="4 4"/>' +
       '<circle cx="160" cy="62" r="6" fill="#16C25E" stroke="#fff"/><path d="M160 58l3.4 6h-6.8z" fill="#fff"/>' +
+      // v2476 — le signe ACHAT qui apparaît au clic (vert plein, rond blanc et flèche), comme sur la courbe.
+      '<defs><linearGradient id="lgBuyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34D673"/><stop offset="1" stop-color="#16A34A"/></linearGradient></defs>' +
+      '<rect x="133" y="34" width="54" height="16" rx="8" fill="url(#lgBuyG)"/><circle cx="141" cy="42" r="6" fill="#fff"/><path d="M138.6 44.4l4.8-4.8M140.6 39.6h2.8v2.8" fill="none" stroke="#15803D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<text x="165" y="45" fill="#fff" font-size="8" font-weight="900" text-anchor="middle">' + esc(String(S('tcBuy', 'BUY')).replace(/[↗↘]/g, '').trim()) + '</text>' +
       '<line x1="262" y1="22" x2="262" y2="120" stroke="#FFE28C" stroke-dasharray="3 4"/>' +
       '<circle cx="262" cy="13" r="8" fill="#F5C451"/><circle cx="262" cy="13" r="4.4" fill="none" stroke="#2A1600" stroke-width="1.4"/><path d="M262 13v-2.8M262 13l2 .6" stroke="#2A1600" stroke-width="1.4"/>' +
       '<circle cx="22" cy="62" r="13" fill="rgba(22,163,74,.6)"/><circle cx="22" cy="62" r="15" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2.6"/>' +
@@ -136,7 +140,14 @@
   }
   function artResult() {
     function card(k, ic, amt, lbl) { return '<div class="lg-res ' + k + '"><i>' + ic + '</i><small>' + esc(T(lbl)) + '</small><b>' + amt + '</b></div>'; }
-    return '<div class="lg-art lg-row lg-ress">' + card('win', I('check'), '+$ 9.00', 'lWin') + card('tie', I('eq'), '$ 10.00', 'lTie') + card('lose', I('cross'), '−$ 10.00', 'lLose') + '</div>';
+    // v2476 — les VRAIES pastilles de la courbe : gagné (vert + portefeuille), égalité (argent + « = »), perdu (rouge).
+    var WAL = '<svg viewBox="0 0 24 24"><path d="M4 7.5h14.5a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 17.5V6.5A2.5 2.5 0 0 1 5.5 4H16v3.5" fill="none" stroke="#0E6B32" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/><rect x="14.5" y="11.5" width="6" height="4.5" rx="1.6" fill="#0E6B32"/><circle cx="16.8" cy="13.75" r="1" fill="#fff"/></svg>';
+    var EQ = '<svg viewBox="0 0 16 16"><path d="M4 6.2h8M4 9.8h8" fill="none" stroke="#334155" stroke-width="2.6" stroke-linecap="round"/></svg>';
+    var tieWord = String(S('tieRefund', 'Tie')).split(/\s[—–-]\s/)[0];
+    return '<div class="lg-art lg-ocs">' +
+      '<div class="lg-oc-row"><span class="lg-oc win"><i>' + WAL + '</i>+$&nbsp;&nbsp;9</span><small>' + esc(T('lWin')) + '</small></div>' +
+      '<div class="lg-oc-row"><span class="lg-oc tie"><i>' + EQ + '</i>' + esc(tieWord) + ' · $&nbsp;10</span><small>' + esc(T('lTie')) + '</small></div>' +
+      '<div class="lg-oc-row"><span class="lg-oc lose">+$&nbsp;&nbsp;0</span><small>' + esc(T('lLose')) + '</small></div></div>';
   }
   function artTools() {
     return '<div class="lg-art lg-row lg-tools"><span>MA</span><span>BB</span><span>EMA</span><span>' + I('zin') + '</span><span>' + I('zout') + '</span><span class="fs">' + I('full') + '</span></div>';
