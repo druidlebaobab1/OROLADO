@@ -7927,3 +7927,19 @@ html body .chart-stage .chart-outcome.show.lose.chart-outcome{padding:3px 9px!im
 html body .chart-stage .chart-outcome .oc-ic{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;flex:0 0 16px;
   background:radial-gradient(circle at 32% 28%,#BBF7D0,#22C55E 55%,#15803D);box-shadow:0 0 8px rgba(34,197,94,.7)}
 html body .chart-stage .chart-outcome .oc-ic svg{width:11px;height:11px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== v2467 — Résultat du trade, modèle D (choix du propriétaire) : pastille VERTE pleine (gagné) avec un rond vert et blanc
+   + portefeuille posé au bord ; perdu : petite pastille ROUGE pleine. Élastique : s'allonge avec le montant, ne déborde pas. ===== */
+html body .chart-stage .chart-outcome.show.chart-outcome{height:22px!important;min-height:22px!important;padding:0 10px!important;border-radius:999px!important;
+  font-size:12.5px!important;font-weight:900!important;gap:0!important;line-height:1!important;white-space:nowrap!important;overflow:visible!important;
+  color:#fff!important;text-shadow:0 1px 1px rgba(0,0,0,.28)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body .chart-stage .chart-outcome.show.win.chart-outcome{padding:0 11px 0 19px!important;margin-left:13px!important;
+  background:linear-gradient(180deg,#2FD06B,#15993F)!important;border:1px solid rgba(187,247,208,.85)!important;
+  box-shadow:0 3px 10px rgba(22,163,74,.55),inset 0 1px 0 rgba(255,255,255,.3)!important}
+html body .chart-stage .chart-outcome.show.lose.chart-outcome{font-size:11.5px!important;background:linear-gradient(180deg,#F2566A,#C81E3A)!important;border:1px solid rgba(254,205,211,.7)!important;
+  box-shadow:0 3px 10px rgba(200,30,58,.45),inset 0 1px 0 rgba(255,255,255,.25)!important;color:#fff!important}
+html body .chart-stage .chart-outcome.win .oc-ic{position:absolute!important;left:-13px;top:50%;margin-top:-13px;width:26px!important;height:26px!important;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 34% 28%,#FFFFFF 0,#E9FFF1 26%,#86EFAC 58%,#22C55E 82%,#15803D 100%)!important;
+  box-shadow:0 0 0 2px #fff,0 0 10px rgba(34,197,94,.75),0 2px 5px rgba(0,0,0,.35)!important}
+html body .chart-stage .chart-outcome.win .oc-ic svg{width:15px!important;height:15px!important;stroke:none;fill:none}
+html body .chart-stage .chart-outcome.show.win.chart-outcome,html body .chart-stage .chart-outcome.show.lose.chart-outcome{color:#fff!important}

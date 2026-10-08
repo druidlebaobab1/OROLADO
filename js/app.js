@@ -1617,8 +1617,8 @@
     el.style.setProperty('--ox', dx + 'px');
     el.style.setProperty('--oy', dy + 'px');
     if (isWin) {
-      // v2466 — signe de gain sobre (comme les grandes plateformes) : petit rond vert avec une coche, montant en vert.
-      el.innerHTML = '<i class="oc-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.2 8.4l2.4 2.4 5.2-5.4"/></svg></i><span>' + fmtOutcomeUsd(amount) + '</span>';
+      // v2467 (modèle D choisi par le propriétaire) : pastille verte pleine + rond vert et blanc avec un portefeuille, posé au bord.
+      el.innerHTML = '<i class="oc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h14.5a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 17.5V6.5A2.5 2.5 0 0 1 5.5 4H16v3.5" fill="none" stroke="#0E6B32" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/><rect x="14.5" y="11.5" width="6" height="4.5" rx="1.6" fill="#0E6B32"/><circle cx="16.8" cy="13.75" r="1" fill="#fff"/></svg></i><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
       el.innerHTML = '<span>+$\u00a0\u00a00</span>';
     }
