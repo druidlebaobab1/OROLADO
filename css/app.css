@@ -7375,3 +7375,274 @@ html body .chart-stage .chart-outcome.show.win.chart-outcome{background:rgba(22,
 html body .chart-stage .chart-outcome.show.lose.chart-outcome{background:rgba(225,29,72,.24)!important;border:1px solid rgba(251,113,133,.75)!important;color:#FECDD3!important;
   box-shadow:0 0 16px rgba(244,63,94,.35)!important}
 html body .chart-stage .chart-outcome.show.win.chart-outcome .outcome-wallet{width:16px!important;height:16px!important;color:#BBF7D0}
+
+/* ===== v2454 — Carte Inscription / Connexion : bouton « Apprendre à trader », cryptos plus nombreuses (même allure tranquille) ===== */
+html body #screenAuth .auth-crypto-track{animation-duration:48s!important;-webkit-animation-duration:48s!important}
+html body #screenAuth#screenAuth#screenAuth .auth-coin-ring{background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.22),rgba(255,255,255,.04) 70%)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 0 10px rgba(124,77,255,.35)!important}
+html body #screenAuth#screenAuth#screenAuth .auth-crypto-line > span[data-i18n="authInstant"]{font-size:11px!important;opacity:.85}
+/* v2454 — Petits écrans (hauteur ≤ 720, surtout Android) : la carte Inscription / Connexion tient en entier. */
+@media (max-height:720px) and (orientation:portrait){
+  html body #screenAuth#screenAuth#screenAuth .logo-mark{width:46px!important;height:46px!important;max-height:46px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-brand,html body #screenAuth#screenAuth#screenAuth .brand-lockup{margin-bottom:4px!important;gap:2px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-wrap{padding-top:6px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-card{padding:8px 10px 8px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-tabs{margin-bottom:6px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-tab{min-height:36px!important;height:36px!important;padding:0 6px!important}
+  html body #screenAuth#screenAuth#screenAuth form .field{margin-bottom:5px!important}
+  html body #screenAuth#screenAuth#screenAuth form .field label{font-size:10px!important;margin-bottom:2px!important}
+  html body #screenAuth#screenAuth#screenAuth form .field input{height:38px!important;min-height:38px!important;font-size:15px!important}
+  html body #screenAuth#screenAuth#screenAuth form .check-row{margin:2px 0 6px!important}
+  html body #screenAuth#screenAuth#screenAuth form .btn-gold{min-height:40px!important;height:40px!important}
+  html body #screenAuth#screenAuth#screenAuth form .auth-or{margin:5px 0!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-crypto-in-form{gap:3px!important;margin-top:4px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-coin-ring .coin-svg{width:15px!important;height:15px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-learn{margin:6px 0 0!important;padding:5px 8px!important}
+  html body #screenAuth#screenAuth#screenAuth .auth-learn .al-ico{flex-basis:34px;width:34px;height:34px}html body #screenAuth .auth-learn .al-ico svg{width:28px;height:28px}
+  html body #screenAuth#screenAuth#screenAuth .auth-learn .al-txt b{font-size:13px}
+  html body #screenAuth#screenAuth#screenAuth .auth-learn .al-txt small{font-size:9.5px}
+  html body #screenAuth#screenAuth#screenAuth .legal{margin-top:4px!important;font-size:9px!important}
+}
+@media (max-height:720px) and (orientation:portrait){
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) form .field input{height:35px!important;min-height:35px!important;max-height:35px!important;padding-top:0!important;padding-bottom:0!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) form .field{margin-bottom:3px!important;gap:2px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-tabs{height:auto!important;padding:3px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-tab{min-height:32px!important;height:32px!important;max-height:32px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .brand-lockup{transform:scale(.8);transform-origin:center top;margin-bottom:-12px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .brand-sub{margin-top:-4px!important;font-size:9px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) form .check-row{margin:0 0 4px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) form .auth-or{margin:3px 0!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-crypto-in-form > span{display:none!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-learn{padding:4px 8px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .legal{margin-top:2px!important;line-height:1.2!important}
+}
+@media (max-height:720px) and (orientation:portrait){
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .brand-lockup{margin-bottom:-16px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-card{padding-top:6px!important;padding-bottom:6px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) form .field label{margin-bottom:1px!important}
+}
+
+/* ===== v2454 — Bouton « Apprendre à trader » (connexion / inscription et conditions) : icône diplôme + livre + courbe, étiquette GUIDE, bougies en fond ===== */
+html body .auth-learn{position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;padding:8px 10px;border-radius:14px;cursor:pointer;
+  text-align:start;color:#fff;font:inherit;background:linear-gradient(135deg,rgba(14,165,233,.30),rgba(124,77,255,.32));border:1px solid rgba(125,211,252,.75);
+  box-shadow:0 0 16px rgba(56,189,248,.3),0 0 0 1px rgba(255,255,255,.06) inset;animation:alGlow 2.4s ease-in-out infinite}
+@keyframes alGlow{0%,100%{box-shadow:0 0 10px rgba(56,189,248,.25)}50%{box-shadow:0 0 22px rgba(56,189,248,.55)}}
+html body .auth-learn .al-bg{position:absolute;inset:0;pointer-events:none;opacity:.22;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Cg fill='%2322C55E'%3E%3Crect x='70' y='22' width='6' height='12'/%3E%3Crect x='94' y='16' width='6' height='14'/%3E%3Crect x='130' y='10' width='6' height='14'/%3E%3Crect x='154' y='6' width='6' height='12'/%3E%3Crect x='178' y='3' width='6' height='12'/%3E%3C/g%3E%3Cg fill='%23EF4444'%3E%3Crect x='82' y='20' width='6' height='9'/%3E%3Crect x='118' y='14' width='6' height='9'/%3E%3Crect x='166' y='5' width='6' height='8'/%3E%3C/g%3E%3Cpath d='M60 34 L100 24 L140 14 L196 2' stroke='%2393C5FD' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right center/auto 100% no-repeat}
+html body .auth-learn > *:not(.al-bg){position:relative}
+html body .auth-learn:active{transform:scale(.98)}
+html body .auth-learn .al-ico{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+  background:radial-gradient(circle at 32% 28%,#7DD3FC,#2563EB 55%,#1E1B6E);box-shadow:0 0 14px rgba(56,189,248,.6),0 0 0 1px rgba(255,255,255,.3) inset}
+html body .auth-learn .al-ico svg{width:32px;height:32px}
+html body .auth-learn .al-txt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .auth-learn .al-txt b{font-size:14px;font-weight:900;line-height:1.15;color:#F0F9FF;white-space:normal;text-wrap:balance}
+html body .auth-learn .al-txt small{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#BAE6FD;line-height:1.2;min-width:0}
+html body .auth-learn .al-tag{font-style:normal;font-weight:900;font-size:8.5px;letter-spacing:.08em;color:#2A1600;background:linear-gradient(90deg,#FFE08A,#FBBF24);border-radius:5px;padding:1px 5px;flex:0 0 auto}
+html body .auth-learn .al-go{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);animation:xpGo 1.2s ease-in-out infinite}
+html body .auth-learn .al-go svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+html[dir=rtl] body .auth-learn .al-go svg{transform:scaleX(-1)}
+html body #termsModal .terms-learn{margin:18px 0 6px;padding:12px;border-radius:14px;background:rgba(56,189,248,.08);border:1px solid rgba(125,211,252,.35)}
+html body #termsModal .terms-learn p{margin:0 0 10px!important;color:#E0F2FE!important;font-weight:600}
+
+/* ===== v2454 — La page « Apprendre à trader » ===== */
+.learn-modal{position:fixed;inset:0;z-index:2147480000;display:none;flex-direction:column;
+  background:radial-gradient(120% 60% at 50% 0%,#2A1A6A,#140F3C 55%,#0A0A20);color:#fff;font-family:var(--font,"Plus Jakarta Sans"),system-ui,sans-serif}
+.learn-modal.on{display:flex;animation:lgIn .25s ease-out}
+@keyframes lgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+html.learn-on body{overflow:hidden}
+.learn-modal .lg-top{position:relative;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 60px 12px 14px;
+  background:linear-gradient(180deg,rgba(14,12,40,.95),rgba(14,12,40,.75));border-bottom:1px solid rgba(196,181,253,.2)}
+.learn-modal .lg-top-ico{flex:0 0 34px;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:radial-gradient(circle at 32% 28%,#7DD3FC,#2563EB 55%,#1E1B6E)}
+.learn-modal .lg-top-ico svg{width:28px;height:28px}
+.learn-modal .lg-top-t{font-weight:900;font-size:15px;line-height:1.2;background:linear-gradient(180deg,#fff,#FFE7A3 50%,#FBBF24);-webkit-background-clip:text;background-clip:text;color:transparent}
+html body .learn-modal .lg-close.btn-close{position:absolute!important;top:calc(10px + env(safe-area-inset-top,0px))!important;right:12px!important;left:auto!important;width:36px!important;height:36px!important}
+html[dir=rtl] body .learn-modal .lg-close.btn-close{right:auto!important;left:12px!important}
+.learn-modal .lg-progress{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:rgba(255,255,255,.06)}
+.learn-modal .lg-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#38BDF8,#FBBF24);box-shadow:0 0 8px #FBBF24;transition:width .15s}
+.learn-modal .lg-scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.learn-modal .lg-body{max-width:640px;margin:0 auto;padding:16px 14px calc(30px + env(safe-area-inset-bottom,0px))}
+.learn-modal .lg-hero{text-align:center;padding:10px 6px 16px}
+.learn-modal .lg-hero-ico{width:84px;height:84px;margin:0 auto 10px;border-radius:24px;display:grid;place-items:center;
+  background:radial-gradient(circle at 32% 28%,#7DD3FC,#2563EB 55%,#1E1B6E);box-shadow:0 0 30px rgba(56,189,248,.55),0 0 0 6px rgba(56,189,248,.12);animation:dwFloat 3s ease-in-out infinite}
+.learn-modal .lg-hero-ico svg{width:66px;height:66px}
+.learn-modal .lg-hero h2{margin:0 0 8px;font-size:clamp(20px,6vw,28px);font-weight:900;line-height:1.15;background:linear-gradient(180deg,#fff,#FFE7A3 50%,#FBBF24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.learn-modal .lg-hero p{margin:0 auto 12px;max-width:520px;color:#D6E4FF;font-size:14.5px;line-height:1.55}
+.learn-modal .lg-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.learn-modal .lg-chips span{font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(196,181,253,.35);color:#E0E7FF}
+.learn-modal .lg-part{margin:22px 0 10px;padding:8px 12px;border-radius:12px;font-weight:900;font-size:13px;letter-spacing:.04em;color:#2A1600;
+  background:linear-gradient(90deg,#FFE08A,#FBBF24 60%,#F59E0B);box-shadow:0 0 14px rgba(251,191,36,.35)}
+.learn-modal .lg-step{position:relative;margin:0 0 12px;padding:14px 14px 12px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(124,77,255,.16),rgba(56,189,248,.06));border:1px solid rgba(196,181,253,.3)}
+.learn-modal .lg-num{position:absolute;top:-10px;left:12px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:13px;color:#2A1600;
+  background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C);box-shadow:0 0 10px rgba(245,197,81,.6)}
+html[dir=rtl] .learn-modal .lg-num{left:auto;right:12px}
+.learn-modal .lg-step h3{margin:6px 0 10px 26px;font-size:16px;font-weight:900;color:#fff;line-height:1.25}
+html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
+.learn-modal .lg-step ul{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.learn-modal .lg-step li{position:relative;padding-inline-start:20px;color:#E0E7FF;font-size:14px;line-height:1.5}
+.learn-modal .lg-step li::before{content:"";position:absolute;inset-inline-start:2px;top:.55em;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#BAE6FD,#38BDF8);box-shadow:0 0 6px #38BDF8}
+.learn-modal .lg-ex{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.45);color:#FFF3C4;font-size:13.5px;line-height:1.5}
+.learn-modal .lg-end{text-align:center;margin:24px 0 0;padding:20px 14px;border-radius:18px;background:linear-gradient(180deg,rgba(46,229,157,.16),rgba(124,77,255,.12));border:1px solid rgba(46,229,157,.5)}
+.learn-modal .lg-trophy{font-size:44px;animation:dwFloat 2.6s ease-in-out infinite}
+.learn-modal .lg-end h3{margin:6px 0;font-size:20px;font-weight:900;color:#B9FFE0}
+.learn-modal .lg-end p{color:#E0E7FF;font-size:14px;line-height:1.5;margin:0 0 14px}
+.learn-modal .lg-cta{border:0;cursor:pointer;padding:13px 26px;border-radius:14px;font-weight:900;font-size:15px;color:#2A1600;background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B);box-shadow:0 6px 20px rgba(251,191,36,.45)}
+.learn-modal .lg-sign{margin:14px 0 0!important;font-size:10px!important;opacity:.6;letter-spacing:.08em}
+/* Dessins */
+.learn-modal .lg-art{margin:4px 0 6px;padding:10px;border-radius:14px;background:rgba(10,8,36,.55);border:1px solid rgba(255,255,255,.08)}
+.learn-modal .lg-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px}
+.learn-modal .lg-phone{max-width:260px;margin-inline:auto;display:flex;flex-direction:column;gap:6px}
+.learn-modal .lg-f{display:flex;flex-direction:column;gap:2px}
+.learn-modal .lg-f span{font-size:9px;font-weight:800;color:#C7D2FE;text-transform:uppercase}
+.learn-modal .lg-f i{font-style:normal;font-size:12px;padding:6px 8px;border-radius:8px;background:rgba(120,160,255,.16);border:1px solid rgba(160,190,255,.4);color:#fff}
+.learn-modal .lg-check{font-size:11px;color:#E0E7FF}.learn-modal .lg-check b{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:4px;background:#22C55E;color:#fff;font-size:10px;margin-inline-end:4px}
+.learn-modal .lg-gold{text-align:center;padding:7px;border-radius:9px;font-weight:900;font-size:12px;color:#2A1600;background:linear-gradient(135deg,#FFE08A,#FBBF24)}
+.learn-modal .lg-mail{margin-top:4px;padding:8px;border-radius:10px;background:#fff;color:#111}
+.learn-modal .lg-mail-h{font-size:10px;font-weight:800;color:#4338CA;margin-bottom:4px}
+.learn-modal .lg-code{font:900 20px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-align:center;color:#111}
+.learn-modal .lg-recharge{padding:8px 14px;border-radius:12px;font-weight:900;font-size:14px;color:#fff;background:linear-gradient(135deg,#FF8A3D,#FF3D7F)}
+.learn-modal .lg-pay{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.6);font-size:11.5px;font-weight:800}
+.learn-modal .lg-pay-c{background:rgba(124,77,255,.16);border-color:rgba(196,181,253,.6)}
+.learn-modal .lg-mode{min-width:110px;padding:8px 12px;border-radius:12px;display:flex;flex-direction:column}
+.learn-modal .lg-mode small{font-size:9.5px;font-weight:900;letter-spacing:.08em;opacity:.85}.learn-modal .lg-mode b{font-size:16px;font-weight:900}
+.learn-modal .lg-demo{background:rgba(124,77,255,.25);border:1px solid rgba(196,181,253,.6);color:#FFE7A3}
+.learn-modal .lg-real{background:linear-gradient(135deg,#86EFAC,#22C55E);color:#052e16}
+.learn-modal .lg-screen{padding:6px}
+.learn-modal .lg-planets{display:flex;gap:10px;justify-content:center;margin-bottom:6px}
+.learn-modal .lg-planets i{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.75),var(--c) 50%,rgba(0,0,0,.4))}
+.learn-modal .lg-planets i:first-child{box-shadow:0 0 0 2px #FBBF24}
+.learn-modal .lg-chart{display:block;width:100%;height:110px}
+.learn-modal .lg-dur,.learn-modal .lg-stake{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:12px;font-weight:900;font-size:16px}
+.learn-modal .lg-dur{background:rgba(245,197,81,.12);border:1px solid rgba(245,197,81,.5);color:#FFE7A3}
+.learn-modal .lg-dur i,.learn-modal .lg-stake i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900}
+.learn-modal .lg-dur i{background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C);color:#2A1600}
+.learn-modal .lg-durlist{font-size:12px;color:#C7D2FE}.learn-modal .lg-durlist b{color:#FFE7A3}
+.learn-modal .lg-stake{background:rgba(46,229,157,.1);border:1px solid rgba(46,229,157,.6);color:#2EE59D}
+.learn-modal .lg-stake i{background:radial-gradient(circle at 32% 28%,#D1FAE5,#2EE59D 50%,#0E7A52);color:#04261A}
+.learn-modal .lg-gain{display:flex;flex-direction:column;align-items:center;padding:6px 14px;border-radius:12px;border:1px solid rgba(251,191,36,.6);background:rgba(251,191,36,.08)}
+.learn-modal .lg-gain b{color:#2EE59D;font-size:17px}.learn-modal .lg-gain small{font-size:9px;color:#FFE7A3}
+.learn-modal .lg-pl{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:12px;text-shadow:0 1px 3px rgba(0,0,0,.6);opacity:.75;
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.75),rgba(var(--c),1) 40%,rgba(var(--c),.45) 85%)}
+.learn-modal .lg-pl.on{opacity:1;box-shadow:0 0 0 2px #fff,0 0 16px rgba(var(--c),.9)}
+.learn-modal .lg-bs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.learn-modal .lg-b{height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:900;font-size:15px}
+.learn-modal .lg-b i{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.learn-modal .lg-b i svg{width:16px;height:16px;fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.learn-modal .lg-b.buy{background:linear-gradient(90deg,rgba(34,197,94,.65),rgba(8,40,30,.6));border:1.5px solid #22C55E}.learn-modal .lg-b.buy svg{stroke:#15803D}
+.learn-modal .lg-b.sell{background:linear-gradient(90deg,rgba(40,8,20,.6),rgba(244,63,94,.65));border:1.5px solid #F43F5E}.learn-modal .lg-b.sell svg{stroke:#BE123C}
+.learn-modal .lg-res{padding:8px 14px;border-radius:12px;font-weight:900;font-size:15px}
+.learn-modal .lg-res.win{background:rgba(22,163,74,.28);border:1px solid rgba(74,222,128,.8)}
+.learn-modal .lg-res.tie{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.35)}
+.learn-modal .lg-tools span{min-width:34px;padding:6px 8px;border-radius:9px;text-align:center;font-weight:900;font-size:12px;background:rgba(255,255,255,.1);border:1px solid rgba(199,210,254,.3)}
+.learn-modal .lg-tools span:first-child{background:linear-gradient(120deg,#FBBF24,#FFE7A3);color:#2A1600}
+.learn-modal .lg-gifts div{display:flex;flex-direction:column;align-items:center;gap:3px;width:70px}
+.learn-modal .lg-gifts i{font-style:normal;font-size:24px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(196,181,253,.35)}
+.learn-modal .lg-gifts small{font-size:10px;text-align:center;color:#E0E7FF}
+.learn-modal .lg-wd{display:flex;flex-direction:column;gap:8px;align-items:center}
+.learn-modal .lg-wd-bal{display:flex;flex-direction:column;align-items:center;padding:6px 16px;border-radius:12px;background:rgba(46,229,157,.18);border:1px solid rgba(46,229,157,.7)}
+.learn-modal .lg-wd-bal small{font-size:9px;font-weight:800;color:#B9FFE0}.learn-modal .lg-wd-bal b{font-size:18px}
+.learn-modal .lg-wd-logos{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.learn-modal .lg-wd-logos i{width:30px;height:30px;border-radius:8px;background:center/cover no-repeat;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.learn-modal .lg-wd-logos i.usdt{background:#26A17B;display:grid;place-items:center;font-style:normal;font-weight:900}
+.learn-modal .lg-wd-ok{padding:8px 14px;border-radius:12px;font-weight:900;font-size:13px;background:linear-gradient(135deg,#6EF7C2,#22C55E 45%,#0E9F6E)}
+@media (prefers-reduced-motion:reduce){.learn-modal *,.auth-learn,.auth-learn *{animation:none!important}}
+@media (max-height:720px) and (orientation:portrait){
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .brand-lockup{margin-bottom:-10px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .brand-sub{margin-top:0!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-learn .al-txt b{font-size:12.5px!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-learn{margin-top:4px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-crypto-in-form{margin-top:2px!important}
+  html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) form .btn-gold{min-height:38px!important;height:38px!important}
+}
+
+/* ===== v2454 — Case du GAIN plus grande et plus mise en valeur que la mise (téléphone debout) ===== */
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.95fr 1.05fr 1.2fr!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview{
+    background:radial-gradient(120% 120% at 50% 0%,rgba(251,191,36,.28),rgba(251,191,36,.06) 60%,rgba(10,9,32,.4))!important;
+    border:1.5px solid rgba(251,191,36,.85)!important;box-shadow:0 0 16px rgba(251,191,36,.35),0 0 0 1px rgba(255,255,255,.06) inset!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .amount{font-size:clamp(17px,5.2vw,21px)!important;font-weight:900!important;
+    color:#5BF5B8!important;text-shadow:0 0 10px rgba(46,229,157,.55)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #inputStake{font-size:clamp(15px,4.4vw,17px)!important}
+}
+
+/* ===== v2454 — Le nouveau terminal aussi sur PC / TV (mêmes règles que le téléphone, sauf la bande des marchés) ===== */
+.dur-nav,.stake-pm{display:none}
+@media (min-width:860px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{
+    display:grid!important;grid-template-columns:1fr 1.18fr 1fr!important;grid-template-rows:auto!important;gap:6px!important;align-items:stretch!important;height:auto!important;margin:0!important}
+  /* Durée : ◀ 30s ▶ */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row{
+    grid-column:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:2px!important;
+    height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 3px!important;box-sizing:border-box!important;border-radius:12px!important;
+    background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important;border:1px solid rgba(245,197,81,.45)!important;width:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip:not(.on){display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on{
+    flex:1 1 auto!important;min-width:0!important;height:36px!important;min-height:36px!important;max-height:36px!important;padding:0 2px!important;
+    font-size:clamp(13px,4.2vw,16px)!important;font-weight:900!important;white-space:nowrap!important;border-radius:9px!important;pointer-events:none}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on svg{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{
+    display:grid!important;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border-radius:50%;border:0;cursor:pointer;
+    background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C);box-shadow:0 0 8px rgba(245,197,81,.55);transition:transform .1s}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#2A1600;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav:active,
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav.hit{transform:scale(.88)}
+  /* Mise : − $ 1 + */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-field{
+    display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important;height:44px!important;min-height:44px!important;max-height:44px!important;
+    padding:0 3px!important;box-sizing:border-box!important;border-radius:12px!important;width:auto!important;min-width:0!important;
+    background:linear-gradient(180deg,rgba(46,229,157,.10),rgba(8,20,30,.6))!important;border:1px solid rgba(46,229,157,.65)!important;box-shadow:0 0 12px rgba(46,229,157,.22)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-field .stake-min{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #inputStake{
+    flex:1 1 auto!important;min-width:0!important;width:auto!important;height:36px!important;min-height:36px!important;max-height:36px!important;
+    background:transparent!important;border:0!important;box-shadow:none!important;text-align:center!important;padding:0!important;margin:0!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .qbtn.stake-pm{
+    display:grid!important;place-items:center!important;flex:0 0 26px!important;width:26px!important;height:26px!important;min-height:26px!important;max-height:26px!important;
+    padding:0!important;border-radius:50%!important;font-size:18px!important;font-weight:900!important;line-height:1!important;color:#04261A!important;
+    background:radial-gradient(circle at 32% 28%,#D1FAE5,#2EE59D 50%,#0E7A52)!important;border:0!important;box-shadow:0 0 8px rgba(46,229,157,.55)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .qbtn.stake-pm:active{transform:scale(.88)}
+  /* Gain : montant, et le petit « Payout 90% » dessous sans cadre */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview{
+    height:44px!important;min-height:44px!important;max-height:44px!important;padding:2px 4px!important;box-sizing:border-box!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;width:auto!important;min-width:0!important;border-radius:12px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .label{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .amount{font-size:clamp(15px,4.6vw,19px)!important;line-height:1.05!important;white-space:nowrap!important;margin:0!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .mult{
+    background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;font-size:9px!important;line-height:1!important;color:#FFE7A3!important;opacity:.85;white-space:nowrap!important}
+  /* Payouts : 4 planètes */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .payout-badge{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow{
+    display:flex!important;justify-content:space-around!important;align-items:center!important;gap:6px!important;height:auto!important;margin:2px 0 0!important;padding:0 4px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
+    flex:0 0 auto!important;width:50px!important;height:50px!important;min-height:50px!important;max-height:50px!important;padding:0 3px!important;border-radius:50%!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;opacity:.72;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.75),rgba(var(--c),1) 40%,rgba(var(--c),.45) 85%,rgba(0,0,0,.35))!important;background-size:100% 100%!important;
+    border:1px solid rgba(255,255,255,.35)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.3) inset,0 0 10px rgba(var(--c),.35)!important;animation:none!important;transition:transform .12s,opacity .2s,box-shadow .2s!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{opacity:1;transform:scale(1.06);
+    box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(255,255,255,.85),0 0 18px rgba(var(--c),.95)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult{
+    font-size:13px!important;font-weight:900!important;line-height:1!important;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.6)!important;white-space:nowrap!important;letter-spacing:-.02em}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
+    display:block!important;max-width:44px!important;font-size:6.5px!important;line-height:1!important;letter-spacing:.02em!important;color:#fff!important;opacity:.95;white-space:nowrap!important;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:active{transform:scale(.94)}
+}
+@media (min-width:860px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on::before{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on{flex-direction:row!important;align-items:center!important;justify-content:center!important;padding-top:0!important}
+}
+@media (min-width:860px){
+  /* Planètes des marchés un peu plus grandes (elles restent plus grosses que les planètes des payouts). */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{width:48px!important;height:48px!important;min-height:48px!important;max-height:48px!important}
+}
+@media (min-width:860px){
+
+}
+@media (min-width:860px){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{grid-template-columns:.95fr 1.05fr 1.2fr!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview{
+    background:radial-gradient(120% 120% at 50% 0%,rgba(251,191,36,.28),rgba(251,191,36,.06) 60%,rgba(10,9,32,.4))!important;
+    border:1.5px solid rgba(251,191,36,.85)!important;box-shadow:0 0 16px rgba(251,191,36,.35),0 0 0 1px rgba(255,255,255,.06) inset!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .amount{font-size:clamp(17px,5.2vw,21px)!important;font-weight:900!important;
+    color:#5BF5B8!important;text-shadow:0 0 10px rgba(46,229,157,.55)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #inputStake{font-size:clamp(15px,4.4vw,17px)!important}
+}

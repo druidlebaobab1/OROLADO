@@ -3639,6 +3639,21 @@
     hi: { affSearchPh: 'दोस्त खोजें (ORO-…)', affSortNew: 'सबसे नए', affSortDep: 'सबसे बड़ी जमा', affSortGain: 'सबसे बड़ी कमाई', affAvg: 'औसत जमा', affBiggest: 'सबसे बड़ी जमा', affNoMatch: 'इस नंबर का कोई दोस्त नहीं मिला।' }
   };
   Object.keys(AFF2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF2_TR[l]); });
+  // v2454 — bouton « Apprendre à trader » (connexion / inscription, conditions) ; la page elle-même est dans js/learn.js.
+  var LEARN_TR = {
+    fr: { learnBtn: 'Apprendre à trader sur OROLADO', learnBtnSub: 'Guide gratuit, pas à pas', learnTermsLead: 'Nouveau sur OROLADO ? Un guide simple, avec des images, vous montre tout pas à pas : inscription, recharge, premier trade, cadeaux et retrait.' },
+    en: { learnBtn: 'Learn to trade on OROLADO', learnBtnSub: 'Free step-by-step guide', learnTermsLead: 'New to OROLADO? A simple guide with pictures shows you everything step by step: sign-up, deposit, first trade, gifts and withdrawal.' },
+    es: { learnBtn: 'Aprende a operar en OROLADO', learnBtnSub: 'Guía gratis, paso a paso', learnTermsLead: '¿Nuevo en OROLADO? Una guía sencilla con imágenes te lo muestra todo paso a paso: registro, recarga, primer trade, regalos y retiro.' },
+    pt: { learnBtn: 'Aprenda a operar na OROLADO', learnBtnSub: 'Guia grátis, passo a passo', learnTermsLead: 'Novo na OROLADO? Um guia simples com imagens mostra tudo passo a passo: cadastro, recarga, primeiro trade, presentes e saque.' },
+    ar: { learnBtn: 'تعلّم التداول على OROLADO', learnBtnSub: 'دليل مجاني خطوة بخطوة', learnTermsLead: 'جديد على OROLADO؟ دليل بسيط بالصور يشرح لك كل شيء خطوة بخطوة: التسجيل، الشحن، أول صفقة، الهدايا والسحب.' },
+    tr: { learnBtn: "OROLADO'da işlem yapmayı öğren", learnBtnSub: 'Ücretsiz, adım adım rehber', learnTermsLead: "OROLADO'da yeni misin? Resimli basit bir rehber her şeyi adım adım gösterir: kayıt, yükleme, ilk işlem, hediyeler ve çekim." },
+    vi: { learnBtn: 'Học giao dịch trên OROLADO', learnBtnSub: 'Hướng dẫn miễn phí, từng bước', learnTermsLead: 'Mới đến OROLADO? Hướng dẫn đơn giản có hình ảnh chỉ cho bạn từng bước: đăng ký, nạp tiền, giao dịch đầu tiên, quà tặng và rút tiền.' },
+    id: { learnBtn: 'Belajar trading di OROLADO', learnBtnSub: 'Panduan gratis, langkah demi langkah', learnTermsLead: 'Baru di OROLADO? Panduan sederhana bergambar menunjukkan semuanya langkah demi langkah: daftar, isi saldo, trade pertama, hadiah dan penarikan.' },
+    ru: { learnBtn: 'Научитесь торговать на OROLADO', learnBtnSub: 'Бесплатное пошаговое руководство', learnTermsLead: 'Впервые на OROLADO? Простое руководство с картинками покажет всё шаг за шагом: регистрация, пополнение, первая сделка, подарки и вывод.' },
+    de: { learnBtn: 'Traden lernen auf OROLADO', learnBtnSub: 'Kostenlose Schritt-für-Schritt-Anleitung', learnTermsLead: 'Neu bei OROLADO? Eine einfache Anleitung mit Bildern zeigt dir alles Schritt für Schritt: Anmeldung, Einzahlung, erster Trade, Geschenke und Auszahlung.' },
+    hi: { learnBtn: 'OROLADO पर ट्रेड करना सीखें', learnBtnSub: 'मुफ़्त, कदम-दर-कदम गाइड', learnTermsLead: 'OROLADO पर नए हैं? तस्वीरों वाली आसान गाइड सब कुछ कदम-दर-कदम दिखाती है: रजिस्ट्रेशन, रिचार्ज, पहला ट्रेड, उपहार और निकासी।' }
+  };
+  Object.keys(LEARN_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], LEARN_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {
