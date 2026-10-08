@@ -353,8 +353,9 @@
     state = r;
     render();
     fitPortal();
+    // v2463 — la fête « Défi gagné » seulement au moment où le défi suivi se termine gagné. Avant, un ancien défi
+    // déjà payé était refêté sur un autre téléphone / l'application installée (on croyait recevoir un nouveau cadeau).
     if (wasActive && r.won) celebrate(r);
-    else if (r.won && r.paid) celebrate(r);
     schedule();
   }
 
@@ -662,7 +663,8 @@
       renderBon();
       // Un nouveau morceau de bonus vient d'arriver : petite notification + solde à jour.
       if (before >= 0 && Number(r.credited || 0) > before + 0.009) {
-        bigToast(ICO_GIFT, t('bonGotT'), '+' + money(Number(r.credited) - before), 'dw-start');
+        // v2463 — compte admin (mode test, argent DÉMO seulement) : c'est écrit dessus, pour ne pas le prendre pour du vrai argent.
+        bigToast(ICO_GIFT, t('bonGotT'), '+' + money(Number(r.credited) - before) + (r.test ? ' · TEST ADMIN (DÉMO)' : ''), 'dw-start');
         if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eV) { /* ignore */ } }
       }
     }

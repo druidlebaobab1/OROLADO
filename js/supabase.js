@@ -390,6 +390,10 @@
         var row = payload.new;
         if (row && String(row.status || '').toUpperCase() === 'COMPLETED') {
           pullVault();
+          // v2463 — un cadeau (défi, invitation, bonus) ou une correction de l'admin n'est PAS une recharge :
+          // le solde se met à jour, mais pas de « Recharge réussie ! » (ni de faux « achat » compté pour la publicité).
+          var rfx = String(row.reference || row.id || '');
+          if (/^adm_/i.test(rfx) || String(row.operator || '').toLowerCase() === 'admin') return;
           try {
             document.dispatchEvent(new CustomEvent('orolado-deposit-completed', {
               detail: { ref: row.reference || row.id, amount: Number(row.amount) || 0, status: 'COMPLETED' }

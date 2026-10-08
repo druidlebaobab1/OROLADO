@@ -2756,11 +2756,11 @@
     if (by < plotTop + 9) { by = plotTop + 9; off = -1; }
     if (by > plotBot - 9) { by = plotBot - 9; off = 1; }
     by = Math.round(by * 2) / 2;
-    // v2461 — ligne objectif de la couleur du trade (vert ACHAT / rouge VENTE) avec une lueur : on ne la confond
-    // plus avec la ligne du prix. Dessin seulement.
-    var tCol = trade && trade.side === 'put' ? '#FF4D6A' : '#22E58F';
+    // v2463 — ligne objectif DORÉE (comme expliqué dans le guide), avec une lueur ; l'étiquette garde la couleur du trade.
+    // Objectif hors de l'écran : pas de trait collé au bord (il passait sur le titre OROLADO) : seule l'étiquette ▲ / ▼ reste.
+    var tCol = '#F5C518';
     g.save();
-    g.globalAlpha = (off ? 0.6 : 0.95) * (fade == null ? 1 : fade);
+    g.globalAlpha = (off ? 0 : 0.95) * (fade == null ? 1 : fade);
     g.setLineDash(TARGET_DASH);
     g.strokeStyle = tCol;
     g.shadowColor = tCol;
@@ -2921,7 +2921,8 @@
         label = '×' + it.mult + (upT ? ' ▲ ' : ' ▼ ') + fmtTargetPrice(it.bar);
       }
       if (it.n > 1) label += ' · ' + it.n;
-      var top = it.top + 2;
+      // v2463 — en haut, les étiquettes restent SOUS le petit titre « OROLADO.com » (elles ne le couvrent plus).
+      var top = it.top + 20;
       var bot = it.bot - H - 2;
       var tw = Math.ceil(g.measureText(label).width) + 10;
       var tx = Math.max(it.pad.l + 4, it.layout.axisX - tw - 6);
@@ -3067,19 +3068,40 @@
         g.globalAlpha = lineFade * zoneK;
         if (isCall) {
           zg = g.createLinearGradient(0, zy, 0, plotTop);
-          zg.addColorStop(0, 'rgba(0,230,118,0.16)');
-          zg.addColorStop(0.35, 'rgba(0,230,118,0.06)');
-          zg.addColorStop(1, 'rgba(0,230,118,0.02)');
+          // v2463 — zone un peu plus forte (on voit bien le côté gagnant).
+          zg.addColorStop(0, 'rgba(0,230,118,0.30)');
+          zg.addColorStop(0.35, 'rgba(0,230,118,0.13)');
+          zg.addColorStop(1, 'rgba(0,230,118,0.04)');
           g.fillStyle = zg;
           g.fillRect(zx0, plotTop, zw, zy - plotTop);
         } else {
           zg = g.createLinearGradient(0, zy, 0, plotBot);
-          zg.addColorStop(0, 'rgba(255,59,48,0.16)');
-          zg.addColorStop(0.35, 'rgba(255,59,48,0.06)');
-          zg.addColorStop(1, 'rgba(255,59,48,0.02)');
+          zg.addColorStop(0, 'rgba(255,59,48,0.30)');
+          zg.addColorStop(0.35, 'rgba(255,59,48,0.13)');
+          zg.addColorStop(1, 'rgba(255,59,48,0.04)');
           g.fillStyle = zg;
           g.fillRect(zx0, zy, zw, plotBot - zy);
         }
+        // v2463 — bord lumineux de la zone (la limite à dépasser) + halo doux vers l'arrivée : l'endroit où le prix
+        // doit se trouver à la fin se voit d'un coup d'œil. Dessin seulement.
+        var zc = isCall ? '0,230,118' : '255,59,48';
+        g.globalAlpha = lineFade * zoneK;
+        g.shadowColor = 'rgba(' + zc + ',0.9)';
+        g.shadowBlur = lite ? 4 : 9;
+        g.strokeStyle = 'rgba(' + zc + ',0.85)';
+        g.lineWidth = lite ? 1.4 : 1.8;
+        g.beginPath();
+        g.moveTo(zx0, zy);
+        g.lineTo(zx0 + zw, zy);
+        g.stroke();
+        g.shadowBlur = 0;
+        var hw = Math.min(zw, 46);
+        var hg = g.createLinearGradient(zx0 + zw - hw, 0, zx0 + zw, 0);
+        hg.addColorStop(0, 'rgba(' + zc + ',0)');
+        hg.addColorStop(1, 'rgba(' + zc + ',0.16)');
+        g.fillStyle = hg;
+        if (isCall) g.fillRect(zx0 + zw - hw, plotTop, hw, zy - plotTop);
+        else g.fillRect(zx0 + zw - hw, zy, hw, plotBot - zy);
         g.restore();
       }
       // Ligne d'arrivée verticale : l'instant exact où le trade se termine.

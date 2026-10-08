@@ -7850,3 +7850,46 @@ html body #termsModal#termsModal .tc-gifts-h{margin:22px 0 8px;padding:10px 12px
 html body #termsModal#termsModal .tc-gifts-h ~ h3{margin:18px 0 6px!important;padding:7px 10px!important;border-radius:10px;font-size:14.5px!important;text-transform:none!important;letter-spacing:.01em!important;
   background:rgba(251,191,36,.12);border-inline-start:4px solid #FBBF24;color:#FFE7A3!important}
 .learn-modal .lg-res b,.learn-modal .lg-wd-time,.learn-modal .lg-wd-bal b,.learn-modal .lg-mode b,.learn-modal .lg-stake b,.learn-modal .lg-gain b{direction:ltr;unicode-bidi:isolate}
+
+/* ===== v2463 — Téléphone : la ligne Durée / Mise / Gain prend les petits vides de gauche et de droite (alignée sur ACHETER / VENDRE),
+   la case des durées gagne le plus, mise et gain un peu, et un peu plus d'espace entre les cases. ===== */
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{
+    margin-left:-9px!important;margin-right:-9px!important;width:calc(100% + 18px)!important;max-width:none!important;
+    column-gap:6px!important;grid-template-columns:1.04fr 1.18fr 1.3fr!important}
+}
+@media (max-width:380px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{
+    margin-left:-8px!important;margin-right:-8px!important;width:calc(100% + 16px)!important;column-gap:5px!important;grid-template-columns:1.02fr 1.16fr 1.3fr!important}
+}
+/* v2463 — noms des marchés un tout petit peu plus bas : la lueur de la planète ne les touche plus (même hauteur de barre). */
+html body #screenTrade #assetBar .asset-chip .mk-name,html body #fsTradeOverlay .asset-bar .asset-chip .mk-name{position:relative!important;top:3px!important}
+/* v2463 — Résultat du trade : carte un peu plus petite, couleurs PLEINES comme les grandes plateformes (vert gagné, rouge perdu), coupe dorée. */
+html body .chart-stage .chart-outcome.show.chart-outcome{padding:5px 10px!important;border-radius:10px!important;font-size:13px!important;gap:5px!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+html body .chart-stage .chart-outcome.show.win.chart-outcome{background:linear-gradient(135deg,#22C55E,#15803D)!important;border:1px solid #86EFAC!important;color:#fff!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35);box-shadow:0 4px 16px rgba(34,197,94,.55),0 0 0 1px rgba(255,255,255,.15) inset!important}
+html body .chart-stage .chart-outcome.show.lose.chart-outcome{background:linear-gradient(135deg,#F43F5E,#B91C3C)!important;border:1px solid #FDA4AF!important;color:#fff!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35);box-shadow:0 4px 14px rgba(244,63,94,.5),0 0 0 1px rgba(255,255,255,.15) inset!important}
+html body .chart-stage .chart-outcome.show.win.chart-outcome .outcome-cup{width:17px!important;height:17px!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+/* v2463 — Profil : plus de petite étoile blanche qui clignote sous le titre « PROFIL » (on la prenait pour une notification). */
+html body #drawerProfile .prof-head .avatar::after{content:none!important;display:none!important}
+/* v2463 — Guide : vrais logos des cadeaux et vraies cases de l'écran de retrait. */
+.learn-modal .lg-gifts .lg-gico{width:44px;height:44px;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+.learn-modal .lg-g .lg-gico{flex:0 0 32px;width:32px;height:32px}
+.learn-modal .lg-wd-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:330px}
+.learn-modal .lg-wd-cards .wd-card{display:flex;align-items:center;gap:6px;min-width:0;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);font-size:11px;font-weight:800;color:#fff;cursor:default}
+.learn-modal .lg-wd-cards .wd-card > span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.learn-modal .lg-wd-cards .wd-card-ico{width:20px;height:20px;flex:0 0 20px}
+.learn-modal .lg-wd-cards .wd-card-brands{display:flex;align-items:center;gap:2px;flex-shrink:0}
+/* v2463 — Aide / Conditions : un vrai cadeau dessiné dans le grand titre, et le logo de chaque cadeau devant A, B, C, D. */
+html body #termsModal#termsModal .tc-gifts-h{display:flex;align-items:center;justify-content:center;gap:10px}
+html body #termsModal#termsModal .tc-gifts-h::before{content:"";flex:0 0 38px;width:38px;height:38px;background:url("../icons/ui/gift-box.svg?v=2463") center/contain no-repeat;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+html body #termsModal#termsModal .tc-gifts-h ~ h3{display:flex!important;align-items:center;gap:9px}
+html body #termsModal#termsModal .tc-gifts-h ~ h3::before{content:"";flex:0 0 28px;width:28px;height:28px;background:center/contain no-repeat}
+html body #termsModal#termsModal h3[data-i18n="tc19t"]::before{background-image:url("../icons/ui/gift-defi.svg?v=2463")}
+html body #termsModal#termsModal h3[data-i18n="tc20t"]::before{background-image:url("../icons/ui/gift-aff.svg?v=2463")}
+html body #termsModal#termsModal h3[data-i18n="tc21t"]::before{background-image:url("../icons/ui/gift-top.svg?v=2463")}
+html body #termsModal#termsModal h3[data-i18n="tc22t"]::before{background-image:url("../icons/ui/gift-bon.svg?v=2463")}
+.learn-modal .lg-wd-cards .wd-card{padding:6px 6px;gap:5px;font-size:10px;line-height:1.12;min-height:38px}
+.learn-modal .lg-wd-cards .wd-card > span:last-child{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+.learn-modal .lg-wd-cards .wd-card-ico{width:18px;height:18px;flex:0 0 18px}

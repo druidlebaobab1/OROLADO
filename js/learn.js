@@ -69,7 +69,7 @@
       document.querySelectorAll('#assetBar .asset-chip').forEach(function (c, i) {
         var art = c.querySelector('.mk-art'), nm = c.querySelector('.mk-name');
         if (!art) return;
-        var svg = art.innerHTML.replace(/id="([^"]+)"/g, 'id="lg$1"').replace(/url\(#([^)]+)\)/g, 'url(#lg$1)');
+        var svg = art.innerHTML.replace(/id="([^"]+)"/g, 'id="lg$1"').replace(/url\(#([^)]+)\)/g, 'url(#lg$1)').replace(/href="#([^"]+)"/g, 'href="#lg$1"');
         h += '<div class="lg-mk-i' + (i === 0 ? ' on' : '') + '"><i>' + svg + '</i><small>' + esc(nm ? nm.textContent : '') + '</small></div>';
       });
     } catch (e) { /* ignore */ }
@@ -116,23 +116,24 @@
   function artTools() {
     return '<div class="lg-art lg-row lg-tools"><span>MA</span><span>BB</span><span>EMA</span><span>＋</span><span>－</span><span class="fs">⛶</span></div>';
   }
+  // v2463 — vrais logos des 4 cadeaux (les mêmes que les onglets de la fenêtre Cadeaux).
+  function gIco(k) { return '<img class="lg-gico" src="icons/ui/gift-' + k + '.svg?v=2463" alt="" aria-hidden="true">'; }
   function artGifts() {
-    return '<div class="lg-art lg-row lg-gifts"><div><i>🎯</i><small>' + esc(S('defiTab', 'Daily challenge')) + '</small></div><div><i>✉️</i><small>' + esc(S('affTab', 'Invite')) + '</small></div><div><i>🏆</i><small>' + esc(S('topTab', 'Tournament')) + '</small></div><div><i>🎁</i><small>' + esc(S('bonTab', 'Bonus')) + '</small></div></div>';
-  }
+    return '<div class="lg-art lg-row lg-gifts"><div>' + gIco('defi') + '<small>' + esc(S('defiTab', 'Daily challenge')) + '</small></div><div>' + gIco('aff') + '<small>' + esc(S('affTab', 'Invite')) + '</small></div><div>' + gIco('top') + '<small>' + esc(S('topTab', 'Tournament')) + '</small></div><div>' + gIco('bon') + '<small>' + esc(S('bonTab', 'Bonus')) + '</small></div></div>';
+  }  // v2463 — les VRAIS logos de l'écran de retrait (copiés de ses cases) : crypto, PayPal, carte, banque, Revolut, Skrill.
   function artWithdraw() {
-    var M = [
-      ['c-btc', '₿', 'Bitcoin'], ['c-usdt', '₮', 'USDT'], ['c-eth', 'Ξ', 'Ethereum'],
-      ['c-pp', '<b>P</b>', 'PayPal'], ['c-visa', 'VISA', 'Visa'], ['c-mc', '<span></span><span></span>', 'Mastercard'],
-      ['c-bank', '🏦', 'Bank'], ['c-rev', 'R', 'Revolut'], ['c-sk', 'S', 'Skrill']
-    ];
-    var h = '<div class="lg-art lg-wd"><div class="lg-wd-bal"><small>' + esc(S('wdBalSecure', 'Withdrawable balance')) + '</small><b>$ 120</b></div><div class="lg-wd-logos">';
-    M.forEach(function (m) { h += '<i class="' + m[0] + '" title="' + m[2] + '">' + m[1] + '</i>'; });
+    var W = ['usdt', 'btc', 'eth', 'bnb', 'paypal', 'card', 'bank', 'revolut', 'skrill'];
+    var h = '<div class="lg-art lg-wd"><div class="lg-wd-bal"><small>' + esc(S('wdBalSecure', 'Withdrawable balance')) + '</small><b>$ 120</b></div><div class="lg-wd-cards">';
+    W.forEach(function (k) {
+      var b = document.querySelector('#withdrawModal .wd-card[data-wd="' + k + '"]');
+      if (!b) return;
+      h += '<div class="' + esc(b.className) + '">' + b.innerHTML + '</div>';
+    });
     return h + '</div><div class="lg-wd-more">' + esc(T('lMore')) + '</div><div class="lg-wd-ok">✓ ' + esc(S('wdConfirmBtn', 'Confirm withdrawal')) + '</div>' +
       '<div class="lg-wd-time">⏱ 24 h max</div></div>';
   }
-
   function gifts() {
-    var G = [['🎯', 's13b'], ['✉️', 's13c'], ['🏆', 's13d'], ['🎁', 's13e']];
+    var G = [[gIco('defi'), 's13b'], [gIco('aff'), 's13c'], [gIco('top'), 's13d'], [gIco('bon'), 's13e']];
     return '<div class="lg-gl">' + G.map(function (g) {
       var t = T(g[1]), k = t.indexOf(':');
       return '<div class="lg-g"><i>' + g[0] + '</i><p>' + (k > 0 ? '<b>' + esc(t.slice(0, k)) + '</b>' + esc(t.slice(k)) : esc(t)) + '</p></div>';

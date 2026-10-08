@@ -1617,7 +1617,8 @@
     el.style.setProperty('--ox', dx + 'px');
     el.style.setProperty('--oy', dy + 'px');
     if (isWin) {
-      el.innerHTML = '<svg class="outcome-wallet" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 10h18"/><circle cx="16.2" cy="14.2" r="1.2" fill="currentColor"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
+      // v2463 — logo de victoire : petite coupe dorée (même texte « +$ montant » qu'avant).
+      el.innerHTML = '<svg class="outcome-wallet outcome-cup" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v4.2a5 5 0 0 1-10 0z" fill="#FFD54A" stroke="#8A5A00" stroke-width="1.1" stroke-linejoin="round"/><path d="M7 5H4.2v1.4A3.2 3.2 0 0 0 7.6 9.6M17 5h2.8v1.4a3.2 3.2 0 0 1-3.4 3.2" fill="none" stroke="#FFD54A" stroke-width="1.6" stroke-linecap="round"/><path d="M12 12.7v3.3M8.6 20.5h6.8l-.8-3.2H9.4z" fill="#FFD54A" stroke="#8A5A00" stroke-width="1.1" stroke-linejoin="round"/><path d="M9.4 5.2c.2 1.8.8 3 1.8 3.8" fill="none" stroke="#FFF6CC" stroke-width="1.1" stroke-linecap="round"/></svg><span>' + fmtOutcomeUsd(amount) + '</span>';
     } else {
       el.textContent = '+$\u00a0\u00a00';
     }
@@ -5486,7 +5487,9 @@
       return;
     }
     if (depositApplied) return;
-    if (!info.fromUrl && !ref) return;
+    // v2463 — sans référence de dépôt, rien à vérifier : avant, le serveur renvoyait alors N'IMPORTE QUEL ancien
+    // dépôt payé (ou un cadeau) et l'écran affichait un faux « Recharge réussie ! ».
+    if (!ref) return;
     if (hadUrlParams) depositReturn = { state: info.state, params: info.params };
     if (ref) {
       depositRef = ref;
@@ -8500,6 +8503,8 @@
       window.addEventListener('message', function (ev) {
         var d = ev && ev.data;
         if (!d || d.orolado !== 'deposit-done') return;
+        // v2463 — seulement notre propre page (pay-blank.html), jamais un autre site.
+        if (ev.origin && location.origin && ev.origin !== location.origin) return;
         var ref = d.ref || '';
         if (ref) {
           try { localStorage.setItem('oro_dep_ref', ref); } catch (e) {}
