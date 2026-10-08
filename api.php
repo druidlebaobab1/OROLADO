@@ -1987,7 +1987,15 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Nom du bénéficiaire requis']);
     exit;
   }
-  $suspect = (($me['realTrades'] ?? 0) === 0) || (($me['realStakeVolume'] ?? 0) < $amount);
+  // v2486 (accord du propriétaire) : on ne signale plus un simple GAGNANT (retrait plus grand que le total misé :
+  // normal quand on gagne). Reste signalé : aucun trade réel du tout, SAUF si le retrait est couvert par l'argent
+  // d'invitation (libre, retirable sans jouer). La règle « jouer ×2 les dépôts » ne change pas.
+  $affEarned = 0.0;
+  if (function_exists('orolado_aff_read') && function_exists('orolado_aff_owner_name')) {
+    $affOwn = orolado_aff_read(orolado_aff_owner_name((string) ($me['id'] ?? '')));
+    $affEarned = (float) ($affOwn['earned'] ?? 0);
+  }
+  $suspect = (($me['realTrades'] ?? 0) === 0) && $amount > $affEarned + 0.01;
   // v2359 : gagne trop souvent grâce au prix du clic (robot ?) → retrait signalé dans l'admin.
   if (function_exists('orolado_click_edge_reason') && orolado_click_edge_reason($me) !== '') $suspect = true;
   $amountFcfa = orolado_usd_to_fcfa($amount);

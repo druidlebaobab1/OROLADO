@@ -2283,6 +2283,13 @@ function admin_order_is_live_real(array $o): bool {
 }
 
 /** Bots / scripts / cash-out sans jeu réel — pas les joueurs normaux. */
+/** v2486 — argent d'invitation déjà gagné par ce joueur (libre, retirable sans jouer). 0 si inconnu. */
+function admin_aff_earned(string $uid): float {
+  if ($uid === '' || !function_exists('orolado_aff_read') || !function_exists('orolado_aff_owner_name')) return 0.0;
+  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  return (float) ($own['earned'] ?? 0);
+}
+
 function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, array $ctx = []): string {
   $role = strtolower((string) ($p['role'] ?? ''));
   if (in_array($role, ['suspended', 'banned'], true)) return 'Compte déjà suspendu';
@@ -2296,7 +2303,10 @@ function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, ar
   }
   $paid = (float) ($p['depositTotal'] ?? 0);
   $bonus = (float) ($p['bonusTotal'] ?? 0);
-  if ($wd && $paid <= 0) {
+  // v2486 : un parrain qui retire son argent d'invitation (sans dépôt) n'est plus suspect.
+  $aff = (float) ($ctx['affEarned'] ?? 0);
+  $wdAmt = $wd ? (float) ($wd['amount'] ?? 0) : 0.0;
+  if ($wd && $paid <= 0 && !($aff > 0 && $wdAmt <= $aff + 0.01)) {
     return $bonus > 0 ? 'Retrait sans dépôt payé (bonus seulement)' : 'Retrait sans aucun dépôt payé';
   }
   if ($wd && (float) ($ctx['excess'] ?? 0) >= 1) {
@@ -2319,7 +2329,7 @@ function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, ar
   $n = count($realOrders);
   if ($trades <= 0) $trades = $n;
   $amt = $wd ? (float) ($wd['amount'] ?? 0) : 0.0;
-  if ($wd && $trades <= 0 && $amt >= 5) return 'Retrait sans aucun trade réel';
+  if ($wd && $trades <= 0 && $amt >= 5 && !($aff > 0 && $amt <= $aff + 0.01)) return 'Retrait sans aucun trade réel';
   if ($wd && $amt >= 50 && $wagered + 0.01 < $amt && $trades < 4) return 'Retrait supérieur aux mises';
   $created = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
   if ($wd && $created > 0 && (time() - $created) < 180 && $amt >= 5) return 'Retrait dans les 3 min après inscription';
@@ -2335,10 +2345,12 @@ function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, ar
     }
     sort($times);
     for ($i = 0; $i + 7 < count($times); $i++) {
-      if ($times[$i + 7] - $times[$i] <= 12) return '8 paris en moins de 12 s';
+      // v2486 : 8 trades en 5 s (avant 12 s : un joueur rapide humain y arrivait).
+      if ($times[$i + 7] - $times[$i] <= 5) return '8 trades en moins de 5 s (robot ?)';
     }
   }
-  if ($n >= 12) {
+  // v2486 : « 12 mises identiques » retiré : beaucoup de vrais joueurs misent toujours 1 $.
+  if (false && $n >= 12) {
     $stakes = [];
     foreach ($realOrders as $o) {
       $k = (string) round((float) ($o['stake'] ?? 0), 2);
@@ -2353,7 +2365,8 @@ function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, ar
     $side = strtolower((string) ($o['side'] ?? ''));
     if (isset($sides[$side])) $sides[$side]++;
   }
-  if ($n >= 15 && max($sides) / max(1, $n) >= 0.95) return 'Toujours le même sens (CALL/PUT)';
+  // v2486 : seulement après 40 trades (certains joueurs aiment toujours ACHETER).
+  if ($n >= 40 && max($sides) / max(1, $n) >= 0.95) return 'Toujours le même sens (CALL/PUT)';
   return '';
 }
 
@@ -2435,6 +2448,9 @@ function admin_suspects(): array {
       foreach ($open as $w) $openAmt += (float) ($w['amount'] ?? 0);
       $expected = (float) ($p['depositTotal'] ?? 0) + (float) ($p['bonusTotal'] ?? 0) + $net - ($wdPaidBy[$uid] ?? 0) - $openAmt;
       $real = (float) ($vaults[$uid]['real'] ?? 0);
+      // v2486 : l'argent d'invitation (libre) compte dans ce qui est attendu.
+      $ctx['affEarned'] = admin_aff_earned((string) $uid);
+      $expected += $ctx['affEarned'];
       if ($real > $expected + 1) $ctx['excess'] = round($real - $expected, 2);
     }
     $ip = trim((string) ($p['ip'] ?? ''));

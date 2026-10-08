@@ -8,5 +8,5 @@
 
 <ellipse cx="25" cy="200" rx="70" ry="12" fill="none" stroke="#FFE2A0" stroke-opacity=".25" stroke-width="1.5" transform="rotate(-12 25 200)"/>
 <circle cx="25" cy="200" r="38" fill="url(#b)" opacity=".45"/>
-<circle cx="230" cy="105" r="14" fill="url(#c)" opacity=".35"/>
+
 </svg>
