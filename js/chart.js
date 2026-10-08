@@ -116,6 +116,8 @@
   var steer = null;
   var tmpCloses = [];
   var lastPad = null;
+  // v2488 : heures du bas, redessinées après le fondu du bas de la courbe (voir fadeChartBottom).
+  var timeLabelsQ = [];
   var lastPlotH = 0;
   var lastMinP = 0;
   var lastMaxP = 0;
@@ -1659,6 +1661,7 @@
   }
 
   function drawGrid(pad, plotW, seriesW, h, minP, maxP, theme) {
+    timeLabelsQ.length = 0;
     theme = theme || plotTheme(null);
     var i;
     var span = zoomSmooth || zoomSec();
@@ -1773,10 +1776,12 @@
       ctx.fillStyle = '#64748B';
       ctx.textAlign = 'center';
       var priceColL = cssW - PRICE_AXIS_GAP - 46;
+      timeLabelsQ.length = 0;
       for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
         var lx = headX + ((T - xNow) / 1000) * pxSec;
         if (lx < 24 || lx > priceColL) continue;
         ctx.fillText(gridClock(T, M), lx, cssH - 5);
+        timeLabelsQ.push(gridClock(T, M), lx);
       }
     }
   }
@@ -2049,13 +2054,18 @@
       ctx.save();
       // Les colonnes sortent du sol : elles descendent jusqu'au bas du cadre (avant : bande vide sous
       // les colonnes, comme si AZAZEL était coupé). Dessin seulement, les prix ne changent pas.
-      var bot = Math.max(pad.t + h, cssH || 0);
+      // v2488 (propriétaire) : les colonnes s'arrêtent AU-DESSUS de la ligne des heures et s'effacent
+      // doucement vers le bas (plus de trait net au bas de la courbe, les heures ne sont plus cachées).
+      var bot = Math.max(pad.t + 20, (cssH || (pad.t + h)) - 20);
+      var fadeF = Math.max(0, Math.min(0.95, (bot - 56 - pad.t) / Math.max(1, bot - pad.t)));
       var gUp = ctx.createLinearGradient(0, pad.t, 0, bot);
       gUp.addColorStop(0, 'rgba(255,159,67,0.85)');
-      gUp.addColorStop(1, 'rgba(255,159,67,0.38)');
+      gUp.addColorStop(fadeF, 'rgba(255,159,67,0.45)');
+      gUp.addColorStop(1, 'rgba(255,159,67,0)');
       var gDn = ctx.createLinearGradient(0, pad.t, 0, bot);
       gDn.addColorStop(0, 'rgba(255,59,48,0.85)');
-      gDn.addColorStop(1, 'rgba(255,59,48,0.38)');
+      gDn.addColorStop(fadeF, 'rgba(255,59,48,0.45)');
+      gDn.addColorStop(1, 'rgba(255,59,48,0)');
       var cwE = Math.max(1, Math.min(12 * sizeK(), slot * 0.72));
       for (i = 0; i < n; i++) {
         c = candles[i];
@@ -4383,6 +4393,7 @@
       }
     }
     ctx.restore();
+    fadeChartBottom();
 
     lastPad = pad;
     lastPlotH = h;
@@ -4465,6 +4476,33 @@
     st.max = maxP;
     st.at = Date.now();
     } catch (eFrame) { /* keep candles alive */ }
+  }
+
+  /**
+   * v2488 (propriétaire) : le bas de la courbe ne se termine plus par un « trait » net (planètes, étoiles,
+   * bougies et colonnes coupées au bord). Le bas s'efface doucement (34 px) vers le fond du terminal, puis
+   * les heures sont redessinées nettes par-dessus. Dessin seulement : aucun prix, aucun trade ne change.
+   */
+  function fadeChartBottom() {
+    if (!ctx || !(cssH > 80) || !(cssW > 0)) return;
+    var fz = 34;
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    var gF = ctx.createLinearGradient(0, cssH - fz, 0, cssH);
+    gF.addColorStop(0, 'rgba(0,0,0,0)');
+    gF.addColorStop(0.55, 'rgba(0,0,0,0.55)');
+    gF.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = gF;
+    ctx.fillRect(0, cssH - fz, cssW, fz);
+    ctx.globalCompositeOperation = 'source-over';
+    if (timeLabelsQ.length) {
+      ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      for (var q = 0; q < timeLabelsQ.length; q += 2) ctx.fillText(timeLabelsQ[q], timeLabelsQ[q + 1], cssH - 5);
+    }
+    ctx.restore();
   }
 
   function ensureChartPulse() {

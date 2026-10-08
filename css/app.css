@@ -6536,7 +6536,7 @@ html body #installBanner #btnInstall:active{transform:scale(.96)}
 /* ===== v2441 — Liste des langues : fenêtre univers plus lumineuse, drapeaux ronds, langue choisie en or avec ✓. ===== */
 html body .lang-dd-menu.lang-dd-menu{border-radius:16px!important;padding:8px!important;gap:5px!important;width:min(236px,calc(100vw - 16px))!important;max-width:min(236px,calc(100vw - 16px))!important;
   background:radial-gradient(circle at 50% -10%,rgba(56,189,248,.30),rgba(124,77,255,.20) 45%,rgba(10,10,32,.0) 75%),
-    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2487") center top/cover no-repeat,#0D0B26!important;
+    linear-gradient(180deg,rgba(14,10,40,.62),rgba(8,8,28,.80)),url("galaxy-space.svg?v=2488") center top/cover no-repeat,#0D0B26!important;
   border:1px solid rgba(125,211,252,.5)!important;
   box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 26px rgba(56,189,248,.28),0 0 0 1px rgba(255,255,255,.04) inset!important;
   transform-origin:top right;animation:langPop .22s cubic-bezier(.2,1.3,.4,1)}
@@ -8141,3 +8141,21 @@ html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):no
 html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .stake-pm,
 html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5) .stake-pm{
   box-shadow:0 0 4px rgba(255,255,255,.12)!important}
+
+/* ===== v2488 — Bas de la courbe : le fondu est maintenant dessiné dans la courbe (chart.js, fadeChartBottom),
+   les heures restent nettes. Le masque ne garde que le fondu du haut. ===== */
+html body #chartCanvas,html body #chartOverlay{
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 100%);
+  mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 100%)}
+
+/* ===== v2488 — Rangée des marchés (téléphone, écran normal) : 5 planètes ENTIÈRES qui remplissent toute la
+   largeur, bien alignées ; plus de planète coupée au bord droit. Le défilement s'arrête toujours sur une
+   planète entière (aimant). ===== */
+@media (max-width:859px){
+  html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap .asset-bar{
+    scroll-snap-type:x mandatory!important;scroll-padding-left:2px!important;scroll-padding-right:2px!important;
+    padding-left:2px!important;padding-right:2px!important;gap:4px!important}
+  html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap .asset-bar > .asset-chip{
+    flex:0 0 calc((100% - 16px) / 5)!important;width:calc((100% - 16px) / 5)!important;
+    min-width:0!important;max-width:none!important;scroll-snap-align:start!important;scroll-snap-stop:normal!important}
+}
