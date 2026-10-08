@@ -7779,3 +7779,74 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap
 @media (min-height:721px) and (orientation:portrait){html.is-ios body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .legal{margin-top:8px!important;padding-top:0!important}html.is-ios body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-crypto-after-card{display:none!important}}
 @media (min-height:721px) and (orientation:portrait){html.is-ios body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .auth-card{margin-bottom:0!important}html.is-ios body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .legal{font-size:10px!important;line-height:1.3!important;margin-bottom:0!important}}
 @media (min-height:721px) and (orientation:portrait){html.is-ios body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .legal{white-space:nowrap!important;font-size:9.5px!important;overflow:hidden;text-overflow:ellipsis}html.is-ios body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) .logo-mark{width:50px!important;height:50px!important;max-height:50px!important}}
+
+/* ===== v2462 — Guide « Apprendre à trader » : pastilles de sommaire, cadres d'importance, nouveaux dessins ===== */
+.learn-modal .lg-chips a{font-size:12px;font-weight:800;padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(196,181,253,.4);color:#E0E7FF;text-decoration:none;white-space:nowrap}
+.learn-modal .lg-chips a:active{background:rgba(251,191,36,.2)}
+.learn-modal .lg-step{scroll-margin-top:16px}
+.learn-modal .lg-step.lg-imp3{border:2px solid rgba(251,191,36,.95);background:linear-gradient(180deg,rgba(251,191,36,.16),rgba(124,77,255,.12));box-shadow:0 0 18px rgba(251,191,36,.35),0 0 0 1px rgba(255,255,255,.06) inset}
+.learn-modal .lg-step.lg-imp2{border:1.5px solid rgba(56,189,248,.85);box-shadow:0 0 12px rgba(56,189,248,.25)}
+.learn-modal .lg-step.lg-imp1{border:1px solid rgba(46,229,157,.6)}
+.learn-modal .lg-step li{text-wrap:pretty}
+/* Inscription */
+.learn-modal .lg-check{display:flex;align-items:flex-start;gap:5px;line-height:1.35}
+.learn-modal .lg-check b{flex:0 0 14px;margin:1px 0 0!important}
+.learn-modal .lg-check u{color:#FBBF24;text-decoration:underline}
+.learn-modal .lg-valid{background:linear-gradient(135deg,#6EF7C2,#22C55E 45%,#0E9F6E);color:#04261A}
+/* Démo orange / réel vert, comme sur le site */
+.learn-modal .lg-demo{background:linear-gradient(135deg,#FFB300,#FF6D00);border:1px solid rgba(255,171,64,.8);color:#1a0d00}
+.learn-modal .lg-mode b{white-space:nowrap}
+/* 10 marchés alignés */
+.learn-modal .lg-mk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px 4px;margin-bottom:8px}
+.learn-modal .lg-mk-i{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.learn-modal .lg-mk-i i{width:36px;height:36px;display:block;border-radius:50%;background:rgba(255,255,255,.05)}
+.learn-modal .lg-mk-i i svg{width:100%;height:100%;display:block}
+.learn-modal .lg-mk-i.on i{box-shadow:0 0 0 2px #FBBF24,0 0 10px rgba(251,191,36,.6)}
+.learn-modal .lg-mk-i small{font-size:8.5px;font-weight:800;color:#C7D2FE;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.learn-modal .lg-kinds{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px}
+.learn-modal .lg-chart-s{height:70px;border-radius:8px;background:rgba(255,255,255,.03)}
+/* Résultat : gagné / égalité / perdu */
+.learn-modal .lg-ress{flex-wrap:nowrap;gap:6px}
+.learn-modal .lg-ress .lg-res{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px}
+.learn-modal .lg-res i{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:900;color:#fff}
+.learn-modal .lg-res small{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.learn-modal .lg-res b{font-size:13.5px;white-space:nowrap}
+.learn-modal .lg-res.win{color:#B9FFD9}.learn-modal .lg-res.win i{background:#22C55E}
+.learn-modal .lg-res.tie{color:#E5E7EB}.learn-modal .lg-res.tie i{background:#6B7280}
+.learn-modal .lg-res.lose{background:rgba(239,68,68,.2);border:1px solid rgba(248,113,113,.8);color:#FFC2CC}.learn-modal .lg-res.lose i{background:#EF4444}
+/* Cadeaux un par un */
+.learn-modal .lg-gl{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.learn-modal .lg-g{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(196,181,253,.3)}
+.learn-modal .lg-g i{flex:0 0 32px;height:32px;font-style:normal;font-size:18px;border-radius:10px;display:grid;place-items:center;background:rgba(251,191,36,.14)}
+.learn-modal .lg-g p{margin:0;font-size:13.5px;line-height:1.45;color:#E0E7FF;text-wrap:pretty}
+.learn-modal .lg-g p b{color:#FFE7A3}
+/* Retrait : moyens internationaux */
+.learn-modal .lg-wd-logos{max-width:300px}
+.learn-modal .lg-wd-logos i{display:grid;place-items:center;font-style:normal;font-weight:900;font-size:14px;color:#fff;width:34px;height:34px;border-radius:9px}
+.learn-modal .lg-wd-logos .c-btc{background:#F7931A}
+.learn-modal .lg-wd-logos .c-usdt{background:#26A17B}
+.learn-modal .lg-wd-logos .c-eth{background:#627EEA}
+.learn-modal .lg-wd-logos .c-pp{background:#fff}.learn-modal .lg-wd-logos .c-pp b{color:#003087;font-style:italic;font-size:17px;text-shadow:2px 1px 0 #009CDE}
+.learn-modal .lg-wd-logos .c-visa{background:#fff;color:#1A1F71;font-size:9.5px;font-style:italic;letter-spacing:.02em}
+.learn-modal .lg-wd-logos .c-mc{background:#1A1A1A;position:relative}
+.learn-modal .lg-wd-logos .c-mc span{position:absolute;top:10px;width:14px;height:14px;border-radius:50%;background:#EB001B}
+.learn-modal .lg-wd-logos .c-mc span:first-child{left:6px}
+.learn-modal .lg-wd-logos .c-mc span+span{left:14px;background:#F79E1B;opacity:.9}
+.learn-modal .lg-wd-logos .c-bank{background:#334155;font-size:17px}
+.learn-modal .lg-wd-logos .c-rev{background:#0A0A0A;font-family:Georgia,serif}
+.learn-modal .lg-wd-logos .c-sk{background:#862165;font-family:Georgia,serif}
+.learn-modal .lg-wd-more{font-size:11.5px;font-weight:800;color:#FFE7A3;letter-spacing:.02em}
+.learn-modal .lg-wd-time{font-size:11.5px;font-weight:800;color:#B9FFE0}
+.learn-modal .lg-wd-ok{animation:lgPulse 2.2s ease-in-out infinite}
+@keyframes lgPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 7px rgba(34,197,94,0)}}
+@media (prefers-reduced-motion:reduce){.learn-modal .lg-wd-ok{animation:none}}
+.learn-modal .lg-gifts{flex-wrap:nowrap}
+.learn-modal .lg-gifts div{width:auto;flex:1 1 0;min-width:0}
+.learn-modal .lg-wd-logos{max-width:206px}
+/* v2462 — Conditions : texte NON justifié (pas de lignes droites en fin de ligne), lignes équilibrées ; grand titre des Cadeaux. */
+html body #termsModal#termsModal .modal-box p,html body #termsModal#termsModal .modal-box li,html body #termsModal#termsModal .modal-box h3{text-align:start!important;text-wrap:pretty;hyphens:none;word-spacing:normal}
+html body #termsModal#termsModal .tc-gifts-h{margin:22px 0 8px;padding:10px 12px;border-radius:12px;text-align:center;font-size:19px;font-weight:900;color:#2A1600!important;
+  background:linear-gradient(90deg,#FFE08A,#FBBF24 60%,#F59E0B);box-shadow:0 0 16px rgba(251,191,36,.4)}
+html body #termsModal#termsModal .tc-gifts-h ~ h3{margin:18px 0 6px!important;padding:7px 10px!important;border-radius:10px;font-size:14.5px!important;text-transform:none!important;letter-spacing:.01em!important;
+  background:rgba(251,191,36,.12);border-inline-start:4px solid #FBBF24;color:#FFE7A3!important}
+.learn-modal .lg-res b,.learn-modal .lg-wd-time,.learn-modal .lg-wd-bal b,.learn-modal .lg-mode b,.learn-modal .lg-stake b,.learn-modal .lg-gain b{direction:ltr;unicode-bidi:isolate}

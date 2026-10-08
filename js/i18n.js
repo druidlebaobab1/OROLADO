@@ -3654,6 +3654,133 @@
     hi: { learnBtn: 'OROLADO पर ट्रेड करना सीखें', learnBtnSub: 'मुफ़्त, कदम-दर-कदम गाइड', learnTermsLead: 'OROLADO पर नए हैं? तस्वीरों वाली आसान गाइड सब कुछ कदम-दर-कदम दिखाती है: रजिस्ट्रेशन, रिचार्ज, पहला ट्रेड, उपहार और निकासी।' }
   };
   Object.keys(LEARN_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], LEARN_TR[l]); });
+  // v2462 — Conditions d'utilisation corrigées (demande du propriétaire) : prix « en continu » (plus de « aléatoire »),
+  // compte suspendu en cas de fraude au bonus, plus de frais du prestataire (OROLADO les paie), article 14 plus clair,
+  // article 18 sans date, grand titre « Les Cadeaux OROLADO » avec 4 points A à D, bonus sans « premier dépôt ».
+  var TERMS_V2462 = {
+    fr: {
+      tc4: 'Les cours évoluent en continu, avec une nouvelle cotation toutes les 0,25 seconde. Le même cours est affiché à tous les joueurs. Aucun résultat n’est décidé à l’avance : personne, y compris l’équipe OROLADO, ne peut connaître la cotation suivante.',
+      tc9: 'OROLADO peut offrir des bonus, à sa seule discrétion. Ils apparaissent dans l’historique sous la mention « Bonus » et suivent les mêmes règles que les dépôts, y compris l’article 10. Si un bonus est obtenu par fraude ou au moyen de plusieurs comptes, le compte est suspendu.',
+      tc10: 'Avant un retrait, le total des mises doit atteindre 2 fois le total des dépôts et bonus reçus. Les montants minimums de retrait sont affichés dans l’écran de retrait, selon le moyen choisi. Les retraits sont traités dans les meilleurs délais après validation ; le délai peut varier selon le moyen de paiement.',
+      tc14: 'Un trade se termine toujours au prix enregistré à son échéance, même si le joueur se déconnecte ou ferme la page. La mise est rendue uniquement si ce prix n’a pas pu être enregistré à cause d’un incident technique de notre côté.',
+      tc18: 'Ces conditions peuvent évoluer. Nous vous invitons à venir les relire de temps en temps. Continuer à utiliser le site après une modification vaut acceptation de la nouvelle version.',
+      tcGiftsT: 'Les Cadeaux OROLADO',
+      tc19t: 'A — Défi du jour', tc20t: 'B — Invitation', tc21t: 'C — Tournoi démo', tc22t: 'D — Bonus de dépôt',
+      tc22: 'Une fois par semaine, tu peux activer ton bonus de dépôt. Après l’activation, un dépôt d’au moins 100 $ te donne droit à +10 % de ce dépôt. Ce bonus se remplit pendant que tu joues en compte réel : +1 $ pour chaque 30 $ joués, jusqu’à +10 % de ton dépôt. Tu as 7 jours pour le remplir ; ce qui n’est pas rempli après 7 jours n’est pas versé. Chaque bonus reçu s’ajoute instantanément à ton solde. Un seul dépôt compte par semaine. Sur le même dépôt, le bonus de la semaine et le cadeau d’ami invité ne s’additionnent pas : tu reçois le plus grand des deux. Comme tous les bonus, il suit l’article 9.',
+      learnTermsLead: 'Pour bien commencer, suivez notre guide illustré : inscription, recharge, premier trade, cadeaux et retrait, expliqués pas à pas.'
+    },
+    en: {
+      tc4: 'Prices move continuously, with a new quote every 0.25 second. The same price is shown to every player. No result is decided in advance: nobody, including the OROLADO team, can know the next quote.',
+      tc9: 'OROLADO may offer bonuses at its sole discretion. They appear in the history as “Bonus” and follow the same rules as deposits, including Article 10. If a bonus is obtained by fraud or through several accounts, the account is suspended.',
+      tc10: 'Before a withdrawal, total stakes must reach 2 times the total deposits and bonuses received. Minimum withdrawal amounts are shown on the withdrawal screen for each method. Withdrawals are processed as quickly as possible after validation; timing may vary with the payment method.',
+      tc14: 'A trade always ends at the price recorded at its expiry, even if the player disconnects or closes the page. The stake is returned only if that price could not be recorded because of a technical incident on our side.',
+      tc18: 'These terms may change. We invite you to come back and read them from time to time. Continuing to use the site after a change means accepting the new version.',
+      tcGiftsT: 'OROLADO Gifts',
+      tc19t: 'A — Daily Challenge', tc20t: 'B — Invite friends', tc21t: 'C — Demo tournament', tc22t: 'D — Deposit bonus',
+      tc22: 'Once a week you can activate your deposit bonus. After activation, a deposit of at least $100 entitles you to +10% of that deposit. The bonus fills up while you play on the real account: +$1 for every $30 played, up to +10% of your deposit. You have 7 days to fill it; whatever is not filled after 7 days is not paid. Each bonus received is added instantly to your balance. Only one deposit counts per week. On the same deposit, the weekly bonus and the invited-friend gift do not add up: you get the larger of the two. Like all bonuses, it follows Article 9.',
+      learnTermsLead: 'To get off to a good start, follow our illustrated guide: sign-up, deposit, first trade, gifts and withdrawal, explained step by step.'
+    },
+    es: {
+      tc4: 'Los precios evolucionan de forma continua, con una nueva cotización cada 0,25 segundos. Todos los jugadores ven el mismo precio. Ningún resultado se decide de antemano: nadie, ni siquiera el equipo de OROLADO, puede conocer la siguiente cotización.',
+      tc9: 'OROLADO puede ofrecer bonos a su entera discreción. Aparecen en el historial con la mención «Bono» y siguen las mismas reglas que los depósitos, incluido el artículo 10. Si un bono se obtiene de forma fraudulenta o mediante varias cuentas, la cuenta se suspende.',
+      tc10: 'Antes de un retiro, el total apostado debe alcanzar 2 veces el total de depósitos y bonos recibidos. Los importes mínimos de retiro se muestran en la pantalla de retiro según el método elegido. Los retiros se procesan lo antes posible tras su validación; el plazo puede variar según el método de pago.',
+      tc14: 'Un trade siempre termina al precio registrado en su vencimiento, aunque el jugador se desconecte o cierre la página. La apuesta solo se devuelve si ese precio no pudo registrarse por un incidente técnico de nuestra parte.',
+      tc18: 'Estas condiciones pueden cambiar. Te invitamos a volver a leerlas de vez en cuando. Seguir utilizando el sitio tras una modificación implica la aceptación de la nueva versión.',
+      tcGiftsT: 'Los Regalos de OROLADO',
+      tc19t: 'A — Reto del día', tc20t: 'B — Invitación', tc21t: 'C — Torneo demo', tc22t: 'D — Bono de depósito',
+      tc22: 'Una vez por semana puedes activar tu bono de depósito. Tras activarlo, un depósito de al menos 100 $ te da derecho a +10 % de ese depósito. El bono se llena mientras juegas en cuenta real: +1 $ por cada 30 $ jugados, hasta +10 % de tu depósito. Tienes 7 días para llenarlo; lo que no se llene en 7 días no se paga. Cada bono recibido se suma al instante a tu saldo. Solo cuenta un depósito por semana. En el mismo depósito, el bono semanal y el regalo de amigo invitado no se suman: recibes el mayor de los dos. Como todos los bonos, sigue el artículo 9.',
+      learnTermsLead: 'Para empezar bien, sigue nuestra guía ilustrada: registro, recarga, primer trade, regalos y retiro, explicados paso a paso.'
+    },
+    pt: {
+      tc4: 'Os preços evoluem continuamente, com uma nova cotação a cada 0,25 segundo. O mesmo preço é exibido para todos os jogadores. Nenhum resultado é decidido antecipadamente: ninguém, nem mesmo a equipe OROLADO, pode saber a próxima cotação.',
+      tc9: 'A OROLADO pode oferecer bônus, a seu exclusivo critério. Eles aparecem no histórico com a menção «Bônus» e seguem as mesmas regras dos depósitos, incluindo o artigo 10. Se um bônus for obtido por fraude ou por meio de várias contas, a conta é suspensa.',
+      tc10: 'Antes de um saque, o total apostado deve atingir 2 vezes o total de depósitos e bônus recebidos. Os valores mínimos de saque são exibidos na tela de saque, conforme o método escolhido. Os saques são processados o mais rápido possível após a validação; o prazo pode variar conforme o método de pagamento.',
+      tc14: 'Um trade sempre termina no preço registrado no seu vencimento, mesmo que o jogador se desconecte ou feche a página. A aposta só é devolvida se esse preço não pôde ser registrado por causa de um incidente técnico do nosso lado.',
+      tc18: 'Estas condições podem mudar. Convidamos você a voltar e relê-las de vez em quando. Continuar a usar o site após uma alteração significa aceitar a nova versão.',
+      tcGiftsT: 'Os Presentes OROLADO',
+      tc19t: 'A — Desafio do dia', tc20t: 'B — Convite', tc21t: 'C — Torneio demo', tc22t: 'D — Bônus de depósito',
+      tc22: 'Uma vez por semana podes ativar o teu bônus de depósito. Depois de ativado, um depósito de pelo menos 100 $ dá direito a +10 % desse depósito. O bônus enche enquanto jogas em conta real: +1 $ por cada 30 $ jogados, até +10 % do depósito. Tens 7 dias para o encher; o que não for preenchido em 7 dias não é pago. Cada bônus recebido entra instantaneamente no saldo. Só conta um depósito por semana. No mesmo depósito, o bônus semanal e o presente de amigo convidado não se somam: recebes o maior dos dois. Como todos os bônus, segue o artigo 9.',
+      learnTermsLead: 'Para começar bem, siga o nosso guia ilustrado: cadastro, recarga, primeiro trade, presentes e saque, explicados passo a passo.'
+    },
+    ar: {
+      tc4: 'تتحرك الأسعار باستمرار، مع تسعيرة جديدة كل 0.25 ثانية. يُعرض السعر نفسه لجميع اللاعبين. لا تُحدَّد أي نتيجة مسبقًا: لا أحد، بما في ذلك فريق OROLADO، يمكنه معرفة التسعيرة التالية.',
+      tc9: 'يمكن لأورولادو تقديم مكافآت وفق تقديرها وحدها. تظهر في السجل بعبارة «مكافأة» وتخضع لقواعد الإيداعات نفسها، بما في ذلك المادة 10. إذا تم الحصول على مكافأة بالاحتيال أو عبر عدة حسابات، يُعلَّق الحساب.',
+      tc10: 'قبل أي سحب، يجب أن يبلغ إجمالي المراهنات ضعفي إجمالي الإيداعات والمكافآت المستلمة. تُعرض المبالغ الدنيا للسحب في شاشة السحب حسب الوسيلة المختارة. تُعالج السحوبات في أقرب وقت ممكن بعد التحقق؛ وقد تختلف المدة حسب وسيلة الدفع.',
+      tc14: 'تنتهي الصفقة دائمًا بالسعر المسجَّل عند موعد انتهائها، حتى لو انقطع اتصال اللاعب أو أغلق الصفحة. لا يُعاد الرهان إلا إذا تعذّر تسجيل هذا السعر بسبب عطل تقني من جهتنا.',
+      tc18: 'قد تتغير هذه الشروط. ندعوك إلى العودة لقراءتها من حين لآخر. يُعد الاستمرار في استخدام الموقع بعد أي تعديل قبولًا للنسخة الجديدة.',
+      tcGiftsT: 'هدايا OROLADO',
+      tc19t: 'أ — تحدي اليوم', tc20t: 'ب — الدعوة', tc21t: 'ج — البطولة التجريبية', tc22t: 'د — بونص الإيداع',
+      tc22: 'مرة في الأسبوع يمكنك تفعيل بونص الإيداع. بعد التفعيل، يمنحك إيداع بقيمة 100$ على الأقل +10% منه. يمتلئ البونص بينما تلعب بالحساب الحقيقي: +1$ عن كل 30$ تلعبها، حتى +10% من إيداعك. لديك 7 أيام لملئه؛ وما لم يمتلئ بعد 7 أيام لا يُدفع. يُضاف كل بونص فورًا إلى رصيدك. يُحتسب إيداع واحد فقط في الأسبوع. على الإيداع نفسه لا يُجمع البونص الأسبوعي مع هدية الصديق المدعو: تحصل على الأكبر منهما. مثل كل البونصات، يخضع للمادة 9.',
+      learnTermsLead: 'لبداية جيدة، اتبع دليلنا المصوَّر: التسجيل، الشحن، أول صفقة، الهدايا والسحب، مشروحة خطوة بخطوة.'
+    },
+    tr: {
+      tc4: 'Fiyatlar, her 0,25 saniyede yeni bir kotasyonla sürekli değişir. Tüm oyunculara aynı fiyat gösterilir. Hiçbir sonuç önceden belirlenmez: OROLADO ekibi dahil hiç kimse bir sonraki kotasyonu bilemez.',
+      tc9: 'OROLADO tamamen kendi takdirine bağlı olarak bonus verebilir. Bonuslar geçmişte «Bonus» ibaresiyle görünür ve 10. madde dahil yatırımlarla aynı kurallara tabidir. Bir bonus dolandırıcılıkla veya birden fazla hesapla elde edilirse hesap askıya alınır.',
+      tc10: 'Para çekmeden önce toplam bahis, alınan toplam yatırım ve bonusların 2 katına ulaşmalıdır. Minimum çekim tutarları, seçilen yönteme göre çekim ekranında gösterilir. Çekimler onaydan sonra en kısa sürede işlenir; süre ödeme yöntemine göre değişebilir.',
+      tc14: 'Bir işlem, oyuncunun bağlantısı kopsa veya sayfayı kapatsa bile her zaman bitiş anında kaydedilen fiyatla sonuçlanır. Bahis yalnızca bu fiyat bizim tarafımızdaki teknik bir arıza nedeniyle kaydedilemediyse iade edilir.',
+      tc18: 'Bu koşullar değişebilir. Onları zaman zaman yeniden okumanızı öneririz. Bir değişiklikten sonra siteyi kullanmaya devam etmek, yeni sürümün kabulü anlamına gelir.',
+      tcGiftsT: 'OROLADO Hediyeleri',
+      tc19t: 'A — Günün görevi', tc20t: 'B — Davet', tc21t: 'C — Demo turnuvası', tc22t: 'D — Yatırım bonusu',
+      tc22: 'Haftada bir kez yatırım bonusunu etkinleştirebilirsin. Etkinleştirdikten sonra en az 100 $’lık bir yatırım sana bu yatırımın +%10’u hakkını verir. Bonus gerçek hesapta oynadıkça dolar: oynanan her 30 $ için +1 $, yatırımının +%10’una kadar. Doldurmak için 7 günün var; 7 gün sonunda dolmayan kısım ödenmez. Her bonus anında bakiyene eklenir. Haftada sadece bir yatırım sayılır. Aynı yatırımda haftalık bonus ile davet hediyesi toplanmaz: büyük olanı alırsın. Tüm bonuslar gibi Madde 9’a tabidir.',
+      learnTermsLead: 'İyi bir başlangıç için resimli rehberimizi izle: kayıt, yükleme, ilk işlem, hediyeler ve çekim adım adım anlatılıyor.'
+    },
+    vi: {
+      tc4: 'Giá biến động liên tục, với báo giá mới mỗi 0,25 giây. Mọi người chơi đều thấy cùng một mức giá. Không kết quả nào được định trước: không ai, kể cả đội ngũ OROLADO, có thể biết báo giá tiếp theo.',
+      tc9: 'OROLADO có thể tặng thưởng theo quyết định riêng. Tiền thưởng hiển thị trong lịch sử với chữ «Thưởng» và tuân theo các quy tắc như tiền nạp, bao gồm Điều 10. Nếu tiền thưởng có được do gian lận hoặc qua nhiều tài khoản, tài khoản sẽ bị tạm khóa.',
+      tc10: 'Trước khi rút, tổng tiền cược phải đạt 2 lần tổng tiền nạp và thưởng đã nhận. Số tiền rút tối thiểu hiển thị trên màn hình rút tiền tùy phương thức. Lệnh rút được xử lý sớm nhất có thể sau khi duyệt; thời gian có thể khác nhau tùy phương thức.',
+      tc14: 'Một giao dịch luôn kết thúc theo giá được ghi lại lúc hết hạn, kể cả khi người chơi mất kết nối hoặc đóng trang. Tiền cược chỉ được hoàn lại nếu không thể ghi lại giá đó do sự cố kỹ thuật từ phía chúng tôi.',
+      tc18: 'Các điều kiện này có thể thay đổi. Mời bạn thỉnh thoảng quay lại đọc. Tiếp tục sử dụng trang sau khi thay đổi đồng nghĩa với việc chấp nhận phiên bản mới.',
+      tcGiftsT: 'Quà tặng OROLADO',
+      tc19t: 'A — Thử thách hôm nay', tc20t: 'B — Mời bạn', tc21t: 'C — Giải đấu demo', tc22t: 'D — Thưởng nạp tiền',
+      tc22: 'Mỗi tuần một lần bạn có thể kích hoạt thưởng nạp. Sau khi kích hoạt, một lần nạp ít nhất 100 $ cho bạn quyền nhận +10% khoản nạp đó. Thưởng đầy dần khi bạn chơi tài khoản thật: +1 $ cho mỗi 30 $ đã chơi, tối đa +10% khoản nạp. Bạn có 7 ngày để làm đầy; phần chưa đầy sau 7 ngày sẽ không được trả. Mỗi khoản thưởng được cộng ngay vào số dư. Mỗi tuần chỉ tính một khoản nạp. Trên cùng một khoản nạp, thưởng tuần và quà bạn được mời không cộng dồn: bạn nhận khoản lớn hơn. Như mọi khoản thưởng, áp dụng Điều 9.',
+      learnTermsLead: 'Để bắt đầu thuận lợi, hãy xem hướng dẫn có hình của chúng tôi: đăng ký, nạp tiền, giao dịch đầu tiên, quà tặng và rút tiền, giải thích từng bước.'
+    },
+    id: {
+      tc4: 'Harga bergerak terus-menerus, dengan kuotasi baru setiap 0,25 detik. Harga yang sama ditampilkan kepada semua pemain. Tidak ada hasil yang ditentukan sebelumnya: tidak seorang pun, termasuk tim OROLADO, dapat mengetahui kuotasi berikutnya.',
+      tc9: 'OROLADO dapat memberikan bonus atas kebijakannya sendiri. Bonus muncul di riwayat dengan keterangan «Bonus» dan mengikuti aturan yang sama dengan deposit, termasuk Pasal 10. Jika bonus diperoleh dengan kecurangan atau melalui beberapa akun, akun akan ditangguhkan.',
+      tc10: 'Sebelum penarikan, total taruhan harus mencapai 2 kali total deposit dan bonus yang diterima. Jumlah penarikan minimum ditampilkan di layar penarikan sesuai metode yang dipilih. Penarikan diproses secepat mungkin setelah divalidasi; waktunya dapat berbeda menurut metode pembayaran.',
+      tc14: 'Sebuah trade selalu berakhir pada harga yang tercatat saat kedaluwarsa, meskipun pemain terputus atau menutup halaman. Taruhan hanya dikembalikan jika harga itu tidak dapat dicatat karena gangguan teknis dari pihak kami.',
+      tc18: 'Syarat ini dapat berubah. Kami mengajakmu untuk membacanya kembali sesekali. Terus menggunakan situs setelah perubahan berarti menerima versi baru.',
+      tcGiftsT: 'Hadiah OROLADO',
+      tc19t: 'A — Tantangan harian', tc20t: 'B — Undangan', tc21t: 'C — Turnamen demo', tc22t: 'D — Bonus deposit',
+      tc22: 'Seminggu sekali kamu bisa mengaktifkan bonus deposit. Setelah aktif, deposit minimal $100 memberi hak +10% dari deposit itu. Bonus terisi saat kamu bermain di akun real: +$1 untuk setiap $30 yang dimainkan, sampai +10% deposit. Kamu punya 7 hari untuk mengisinya; yang belum terisi setelah 7 hari tidak dibayarkan. Setiap bonus langsung masuk saldo. Hanya satu deposit dihitung per minggu. Pada deposit yang sama, bonus mingguan dan hadiah teman undangan tidak dijumlah: kamu dapat yang lebih besar. Seperti semua bonus, berlaku Pasal 9.',
+      learnTermsLead: 'Agar mulai dengan baik, ikuti panduan bergambar kami: daftar, isi saldo, trade pertama, hadiah dan penarikan, dijelaskan langkah demi langkah.'
+    },
+    ru: {
+      tc4: 'Цены меняются непрерывно, новая котировка — каждые 0,25 секунды. Всем игрокам показывается одна и та же цена. Ни один результат не определяется заранее: никто, включая команду OROLADO, не может знать следующую котировку.',
+      tc9: 'OROLADO может предоставлять бонусы по собственному усмотрению. Они отображаются в истории с пометкой «Бонус» и подчиняются тем же правилам, что и пополнения, включая статью 10. Если бонус получен мошенническим путём или через несколько аккаунтов, аккаунт блокируется.',
+      tc10: 'Перед выводом общая сумма ставок должна достичь двукратной суммы полученных пополнений и бонусов. Минимальные суммы вывода указаны на экране вывода для каждого способа. Выводы обрабатываются как можно быстрее после подтверждения; срок зависит от способа оплаты.',
+      tc14: 'Сделка всегда завершается по цене, записанной в момент её окончания, даже если игрок отключился или закрыл страницу. Ставка возвращается только если эту цену не удалось записать из-за технического сбоя с нашей стороны.',
+      tc18: 'Эти условия могут меняться. Приглашаем вас время от времени перечитывать их. Продолжение использования сайта после изменения означает принятие новой версии.',
+      tcGiftsT: 'Подарки OROLADO',
+      tc19t: 'A — Задание дня', tc20t: 'B — Приглашение', tc21t: 'C — Демо-турнир', tc22t: 'D — Бонус на депозит',
+      tc22: 'Раз в неделю можно активировать бонус на депозит. После активации пополнение от 100 $ даёт право на +10 % от него. Бонус заполняется, пока вы играете на реальном счёте: +1 $ за каждые 30 $ ставок, до +10 % депозита. На заполнение 7 дней; то, что не заполнено за 7 дней, не выплачивается. Каждый бонус мгновенно зачисляется на баланс. В неделю учитывается только одно пополнение. На одно пополнение недельный бонус и подарок приглашённому не суммируются: вы получаете больший. Как и все бонусы, действует статья 9.',
+      learnTermsLead: 'Чтобы хорошо начать, откройте наше руководство с картинками: регистрация, пополнение, первая сделка, подарки и вывод — шаг за шагом.'
+    },
+    de: {
+      tc4: 'Die Kurse bewegen sich fortlaufend, mit einer neuen Notierung alle 0,25 Sekunden. Allen Spielern wird derselbe Kurs angezeigt. Kein Ergebnis steht im Voraus fest: Niemand, auch nicht das OROLADO-Team, kann die nächste Notierung kennen.',
+      tc9: 'OROLADO kann nach eigenem Ermessen Boni gewähren. Sie erscheinen im Verlauf mit dem Vermerk „Bonus“ und unterliegen denselben Regeln wie Einzahlungen, einschließlich Artikel 10. Wird ein Bonus durch Betrug oder über mehrere Konten erlangt, wird das Konto gesperrt.',
+      tc10: 'Vor einer Auszahlung muss die Summe der Einsätze das Zweifache der erhaltenen Einzahlungen und Boni erreichen. Die Mindestauszahlungsbeträge werden im Auszahlungsbildschirm je nach Methode angezeigt. Auszahlungen werden nach der Freigabe schnellstmöglich bearbeitet; die Dauer kann je nach Zahlungsmethode variieren.',
+      tc14: 'Ein Trade endet immer zum Preis, der bei seinem Ablauf erfasst wird, auch wenn der Spieler die Verbindung verliert oder die Seite schließt. Der Einsatz wird nur zurückgegeben, wenn dieser Preis wegen einer technischen Störung auf unserer Seite nicht erfasst werden konnte.',
+      tc18: 'Diese Bedingungen können sich ändern. Wir laden dich ein, sie von Zeit zu Zeit erneut zu lesen. Die weitere Nutzung der Website nach einer Änderung gilt als Annahme der neuen Fassung.',
+      tcGiftsT: 'Die OROLADO-Geschenke',
+      tc19t: 'A — Tages-Challenge', tc20t: 'B — Einladung', tc21t: 'C — Demo-Turnier', tc22t: 'D — Einzahlungsbonus',
+      tc22: 'Einmal pro Woche kannst du deinen Einzahlungsbonus aktivieren. Danach gibt dir eine Einzahlung ab 100 $ Anspruch auf +10 % davon. Der Bonus füllt sich, während du auf dem Echtkonto spielst: +1 $ je 30 $ Einsatz, bis +10 % der Einzahlung. Du hast 7 Tage Zeit; was nach 7 Tagen nicht gefüllt ist, wird nicht ausgezahlt. Jeder Bonus kommt sofort aufs Guthaben. Pro Woche zählt nur eine Einzahlung. Auf dieselbe Einzahlung werden Wochenbonus und Einladungsgeschenk nicht addiert: du bekommst das größere. Wie alle Boni gilt Artikel 9.',
+      learnTermsLead: 'Für einen guten Start folge unserer bebilderten Anleitung: Anmeldung, Einzahlung, erster Trade, Geschenke und Auszahlung, Schritt für Schritt erklärt.'
+    },
+    hi: {
+      tc4: 'कीमतें लगातार बदलती हैं, हर 0.25 सेकंड में एक नया भाव आता है। सभी खिलाड़ियों को एक ही कीमत दिखाई जाती है। कोई भी परिणाम पहले से तय नहीं होता: OROLADO टीम सहित कोई भी अगला भाव नहीं जान सकता।',
+      tc9: 'OROLADO अपने विवेक से बोनस दे सकता है। वे इतिहास में «बोनस» के रूप में दिखते हैं और जमा के समान नियमों का पालन करते हैं, अनुच्छेद 10 सहित। अगर बोनस धोखाधड़ी या कई खातों से लिया गया हो, तो खाता निलंबित कर दिया जाता है।',
+      tc10: 'निकासी से पहले कुल दांव प्राप्त जमा और बोनस की कुल राशि का 2 गुना होना चाहिए। न्यूनतम निकासी राशियाँ चुने गए तरीके के अनुसार निकासी स्क्रीन पर दिखती हैं। स्वीकृति के बाद निकासी यथाशीघ्र संसाधित होती है; समय भुगतान के तरीके पर निर्भर करता है।',
+      tc14: 'ट्रेड हमेशा अपनी समाप्ति पर दर्ज कीमत पर खत्म होता है, भले ही खिलाड़ी का कनेक्शन टूट जाए या पेज बंद हो जाए। दांव तभी लौटाया जाता है जब हमारी तरफ़ की किसी तकनीकी खराबी के कारण वह कीमत दर्ज न हो सकी हो।',
+      tc18: 'ये शर्तें बदल सकती हैं। हम आपको समय-समय पर इन्हें दोबारा पढ़ने के लिए आमंत्रित करते हैं। बदलाव के बाद साइट का उपयोग जारी रखने का मतलब नए संस्करण को स्वीकार करना है।',
+      tcGiftsT: 'OROLADO उपहार',
+      tc19t: 'A — आज की चुनौती', tc20t: 'B — आमंत्रण', tc21t: 'C — डेमो टूर्नामेंट', tc22t: 'D — जमा बोनस',
+      tc22: 'हफ़्ते में एक बार आप जमा बोनस चालू कर सकते हैं। चालू करने के बाद कम से कम $100 की जमा पर +10% का हक़ मिलता है। असली खाते में खेलते समय बोनस भरता है: हर $30 खेलने पर +$1, जमा के +10% तक। भरने के लिए 7 दिन हैं; 7 दिन बाद जो नहीं भरा, वह नहीं दिया जाता। हर बोनस तुरंत बैलेंस में जुड़ता है। हफ़्ते में केवल एक जमा गिनी जाती है। एक ही जमा पर साप्ताहिक बोनस और आमंत्रण उपहार नहीं जुड़ते: बड़ा वाला मिलता है। सभी बोनस की तरह, अनुच्छेद 9 लागू।',
+      learnTermsLead: 'अच्छी शुरुआत के लिए हमारी चित्रों वाली गाइड देखें: रजिस्ट्रेशन, रिचार्ज, पहला ट्रेड, उपहार और निकासी, कदम-दर-कदम।'
+    }
+  };
+  Object.keys(TERMS_V2462).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], TERMS_V2462[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {
