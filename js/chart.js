@@ -2822,18 +2822,38 @@
       g.save();
       g.globalAlpha = 1;
       g.setLineDash(NO_DASH);
-      // v2367 : chrono de la couleur du trade (vert = ACHAT, rouge = VENTE) ; avant, toujours rouge.
-      g.fillStyle = c.call ? '#0FA958' : '#E8173A';
-      g.strokeStyle = 'rgba(255,255,255,0.85)';
-      g.lineWidth = 1;
-      roundRectOn(g, c.x, c.y, c.w, c.h, 7);
+      // v2453 — chrono en petite planète transparente (vert = ACHAT, rouge = VENTE) ; la lueur autour se vide
+      // avec le temps qui reste ; les secondes comptent au centre.
+      var ccx = c.x + c.w / 2, ccy = c.y + c.h / 2, cr = c.w / 2 - 3;
+      var cgr = g.createRadialGradient(ccx - cr * 0.35, ccy - cr * 0.4, 1, ccx, ccy, cr);
+      cgr.addColorStop(0, c.call ? 'rgba(187,247,208,0.75)' : 'rgba(254,205,211,0.75)');
+      cgr.addColorStop(0.55, c.call ? 'rgba(22,163,74,0.62)' : 'rgba(225,29,72,0.62)');
+      cgr.addColorStop(1, c.call ? 'rgba(6,60,30,0.7)' : 'rgba(90,10,25,0.7)');
+      g.fillStyle = cgr;
+      g.beginPath();
+      g.arc(ccx, ccy, cr, 0, Math.PI * 2);
       g.fill();
+      g.lineWidth = 2.6;
+      g.strokeStyle = 'rgba(255,255,255,0.18)';
+      g.beginPath();
+      g.arc(ccx, ccy, cr + 1.5, 0, Math.PI * 2);
       g.stroke();
+      var cf = c.frac == null ? 1 : c.frac;
+      if (cf > 0) {
+        g.strokeStyle = c.call ? '#4ADE80' : '#FB7185';
+        g.shadowColor = c.call ? 'rgba(74,222,128,0.9)' : 'rgba(251,113,133,0.9)';
+        g.shadowBlur = 6;
+        g.lineCap = 'round';
+        g.beginPath();
+        g.arc(ccx, ccy, cr + 1.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * cf);
+        g.stroke();
+        g.shadowBlur = 0;
+      }
       g.fillStyle = '#FFFFFF';
-      g.font = '800 9.5px "Hanken Grotesk", sans-serif';
+      g.font = '800 ' + (c.label.length > 3 ? '7.5' : '8.5') + 'px "Hanken Grotesk", sans-serif';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
-      g.fillText(c.label, c.x + c.w / 2, c.y + c.h / 2 + 0.5);
+      g.fillText(c.label, ccx, ccy + 0.5);
       g.restore();
     }
     chronoQueue.length = 0;
@@ -2925,9 +2945,13 @@
       // Fond vert plein (le vert des ronds d'achat), texte blanc : lisible d'un coup d'œil.
       // Prix d'entrée collé au bord : couleur du trade (vert ACHAT / rouge VENTE).
       // v2393 : l'étiquette de la ligne objectif prend aussi la couleur du trade (avant : toujours verte).
-      g.fillStyle = it.side === 'put' ? '#E8173A' : '#00A83E';
+      // v2453 — étiquette en verre : fond sombre transparent, bord de la couleur du trade.
+      g.fillStyle = it.side === 'put' ? 'rgba(90,10,30,0.72)' : 'rgba(6,60,30,0.72)';
       roundRectOn(g, tx, ty, tw, H, H / 2);
       g.fill();
+      g.lineWidth = 1;
+      g.strokeStyle = it.side === 'put' ? 'rgba(251,113,133,0.95)' : 'rgba(74,222,128,0.95)';
+      g.stroke();
       g.fillStyle = '#FFFFFF';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
@@ -3016,7 +3040,10 @@
     // v2360 : le serveur prend le prix du CLIC (v2359) → la ligne est déjà à sa vraie place au clic : elle apparaît
     // en même temps que le rond, d'un coup (avant : attente de la réponse du serveur, puis fondu).
     var lineFade = 1;
-    if (idx === 0) {
+    // v2453 — chaque trade a sa zone (jusqu'à 3 à la fois), de plus en plus légère : 1er plein, 2e et 3e plus légers.
+    // Dessin seulement : les prix, l'objectif et le résultat ne changent pas.
+    var zoneK = idx === 0 ? 1 : idx === 1 ? 0.6 : 0.38;
+    if (idx < 3) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = bar > 0 ? bar : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
@@ -3026,7 +3053,7 @@
         // Seule l'ombre marque l'objectif (aucun second trait) : plus dense au bord.
         var zw = layout.axisX - pad.l;
         var zg;
-        g.globalAlpha = lineFade;
+        g.globalAlpha = lineFade * zoneK;
         if (isCall) {
           zg = g.createLinearGradient(0, zy, 0, plotTop);
           zg.addColorStop(0, 'rgba(0,230,118,0.16)');
@@ -3050,18 +3077,39 @@
         var fOut = fx > layout.axisX - 4;
         if (fOut) fx = layout.axisX - 4;
         g.save();
+        g.globalAlpha = zoneK;
+        // v2453 — ligne d'arrivée dorée (champagne) avec un petit rond-chrono à la place du drapeau.
         g.setLineDash([3, 4]);
-        g.strokeStyle = 'rgba(255,255,255,' + (fOut ? '0.35' : '0.6') + ')';
-        g.lineWidth = 1;
+        g.strokeStyle = 'rgba(255,226,140,' + (fOut ? '0.4' : '0.75') + ')';
+        g.lineWidth = 1.2;
         g.beginPath();
-        g.moveTo(fx, plotTop);
+        g.moveTo(fx, plotTop + 18);
         g.lineTo(fx, plotBot);
         g.stroke();
         g.setLineDash(NO_DASH);
-        g.fillStyle = 'rgba(255,255,255,0.85)';
-        g.font = '700 10px "Hanken Grotesk", sans-serif';
-        g.textAlign = fOut ? 'right' : 'center';
-        g.fillText('🏁', fx, plotTop + 11);
+        var fcx = fOut ? fx - 8 : fx;
+        var fcy = plotTop + 10;
+        var fgr = g.createRadialGradient(fcx - 2.5, fcy - 3, 0.5, fcx, fcy, 8);
+        fgr.addColorStop(0, '#FFF6DA');
+        fgr.addColorStop(0.5, '#F5C451');
+        fgr.addColorStop(1, '#9A6410');
+        g.shadowColor = 'rgba(245,197,81,0.8)';
+        g.shadowBlur = 8;
+        g.fillStyle = fgr;
+        g.beginPath();
+        g.arc(fcx, fcy, 7.5, 0, Math.PI * 2);
+        g.fill();
+        g.shadowBlur = 0;
+        g.strokeStyle = '#2A1600';
+        g.lineWidth = 1.4;
+        g.lineCap = 'round';
+        g.beginPath();
+        g.arc(fcx, fcy, 4.2, 0, Math.PI * 2);
+        g.moveTo(fcx, fcy);
+        g.lineTo(fcx, fcy - 2.8);
+        g.moveTo(fcx, fcy);
+        g.lineTo(fcx + 2, fcy + 0.6);
+        g.stroke();
         g.restore();
       }
     }
@@ -3128,13 +3176,21 @@
     lastEntryMarkR = r;
     ey = Math.max(plotTop + r + 2, Math.min(plotBot - r - 2, ey));
     g.save();
+    // v2453 — rond d'entrée en petite planète lumineuse (vert ACHAT / rouge VENTE). Même place, même taille.
+    var pgr = g.createRadialGradient(mx - r * 0.35, ey - r * 0.4, r * 0.1, mx, ey, r);
+    pgr.addColorStop(0, isCall ? '#BBF7D0' : '#FECDD3');
+    pgr.addColorStop(0.5, isCall ? '#16C25E' : '#F43F5E');
+    pgr.addColorStop(1, fillCol);
+    g.shadowColor = isCall ? 'rgba(34,197,94,0.85)' : 'rgba(244,63,94,0.85)';
+    g.shadowBlur = lite ? 6 : 10;
     g.beginPath();
     g.arc(mx, ey, r, 0, Math.PI * 2);
-    g.fillStyle = fillCol;
+    g.fillStyle = pgr;
     g.globalAlpha = 1;
     g.fill();
-    g.lineWidth = 1.35;
-    g.strokeStyle = '#ffffff';
+    g.shadowBlur = 0;
+    g.lineWidth = 1.2;
+    g.strokeStyle = 'rgba(255,255,255,0.9)';
     g.stroke();
     g.fillStyle = '#ffffff';
     g.beginPath();
@@ -3153,12 +3209,15 @@
 
     var remaining = exp - Date.now();
     var secs = chronoSecs(trade, remaining / 1000);
-    if (lite && idx > 0) return;
+    // v2453 — jusqu'à 3 chronos (un par trade, comme les zones), aussi sur Android.
+    if (idx > 2) return;
     if (secs >= 0.15) {
-      var label = lite ? (Math.max(1, Math.ceil(secs)) + 's') : (secs.toFixed(1) + 's');
+      // v2453 — chrono en petite planète : secondes au centre (m:ss à partir d'une minute), lueur qui fait le tour.
+      var sInt = Math.max(1, Math.ceil(secs));
+      var label = sInt >= 60 ? (Math.floor(sInt / 60) + ':' + ('0' + (sInt % 60)).slice(-2)) : (sInt + 's');
       if (label.charAt(0) !== '-') {
-        var timerW = 42;
-        var timerH = 14;
+        var timerW = 26;
+        var timerH = 26;
         var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
         var ty = tagY - timerH / 2;
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
@@ -3181,7 +3240,8 @@
         }
         chronoPlaced.push(ty);
         // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
-        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall });
+        var durT = Number(trade.duration) || 0;
+        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall, frac: durT > 0 ? Math.max(0, Math.min(1, secs / durT)) : 1, k: zoneK });
       }
     }
   }
@@ -3550,10 +3610,14 @@
     // Comme IQ Option : petite pastille BLANCHE pure ; les chiffres gardent la couleur de la
     // courbe (assombrie seulement si elle est trop claire pour se lire sur le blanc).
     ctx.font = '800 8.5px ui-monospace, Menlo, Consolas, monospace';
-    ctx.fillStyle = '#FFFFFF';
+    // v2453 — prix dans une étiquette en verre sombre, bord de la couleur de la courbe, chiffres blancs.
+    ctx.fillStyle = 'rgba(14,12,40,0.86)';
     roundRect(x, y, tw, th, 6);
     ctx.fill();
-    ctx.fillStyle = readableOnWhite(accent);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = accent;
+    ctx.stroke();
+    ctx.fillStyle = '#FFFFFF';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(txt, x + tw / 2, y + th / 2 + 0.4);
