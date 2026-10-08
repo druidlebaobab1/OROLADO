@@ -368,6 +368,14 @@ function orolado_aff_status(array $db, array $user): array {
   $out['total'] = orolado_money($total);
   $out['earned'] = orolado_money($own['earned'] ?? 0);
   $out['list'] = array_slice($list, 0, 200);
+  // v2491 : gains de celui qui invite, date par date (pour le petit graphique ; affichage seulement).
+  $gains = [];
+  foreach ((array) ($own['log'] ?? []) as $l) {
+    $ts = (int) strtotime((string) ($l['at'] ?? ''));
+    $amt = (float) ($l['amount'] ?? 0);
+    if ($ts > 0 && $amt > 0) $gains[] = [$ts, orolado_money($amt)];
+  }
+  $out['gains'] = array_slice($gains, -1000);
   return $out;
 }
 

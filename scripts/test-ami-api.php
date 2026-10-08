@@ -172,6 +172,7 @@ check('carrés : 1 clic, 1 inscrit, 1 a déposé, 1 a joué, total 100 $, gagné
 $row = $r['list'][0] ?? [];
 check('liste : numéro ORO (pas de nom), fin = inscription + 365 jours', str_starts_with((string) ($row['id'] ?? ''), 'ORO-') && !isset($row['name']) && ($row['until'] - $row['at']) === 365 * 86400);
 check('liste : nombre de dépôts de cet ami = 2 (v2489)', ($row['n'] ?? -1) === 2, json_encode($row));
+check('graphique : 2 gains datés (2 $ + 3 $) pour celui qui invite (v2491)', count($r['gains'] ?? []) === 2 && abs(array_sum(array_column($r['gains'], 1)) - 5) < 0.001 && ($r['gains'][0][0] ?? 0) > time() - 600, json_encode($r['gains'] ?? null));
 $h = $call(['action' => 'financeHistory', 'token' => $ptok]);
 $bon = array_values(array_filter((array) ($h['rows'] ?? []), fn($x) => ($x['kind'] ?? '') === 'bonus'));
 check('historique de celui qui invite : 2 lignes « bonus » (2 $ + 3 $)', count($bon) === 2 && abs(array_sum(array_column($bon, 'amount')) - 5) < 0.001, json_encode($h['rows'] ?? $h));

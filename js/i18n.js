@@ -3654,6 +3654,24 @@
     hi: { affNDep: 'आपके दोस्तों की जमा की संख्या', affColN: 'जमा' }
   };
   Object.keys(AFFN_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFFN_TR[l]); });
+  // v2491 — case courte « Nombre de dépôts » + petit graphique des gains.
+  var AFFG_TR = {
+    fr: { affNDepS: 'Nombre de dépôts', affGT: 'Tes gains', affG7: '7 derniers jours', affG30: '30 derniers jours', affGW: 'depuis le début' },
+    en: { affNDepS: 'Number of deposits', affGT: 'Your earnings', affG7: 'last 7 days', affG30: 'last 30 days', affGW: 'since the start' },
+    es: { affNDepS: 'Número de depósitos', affGT: 'Tus ganancias', affG7: 'últimos 7 días', affG30: 'últimos 30 días', affGW: 'desde el inicio' },
+    pt: { affNDepS: 'Número de depósitos', affGT: 'Os teus ganhos', affG7: 'últimos 7 dias', affG30: 'últimos 30 dias', affGW: 'desde o início' },
+    ar: { affNDepS: 'عدد الإيداعات', affGT: 'أرباحك', affG7: 'آخر 7 أيام', affG30: 'آخر 30 يومًا', affGW: 'منذ البداية' },
+    tr: { affNDepS: 'Yatırım sayısı', affGT: 'Kazançların', affG7: 'son 7 gün', affG30: 'son 30 gün', affGW: 'başından beri' },
+    vi: { affNDepS: 'Số lần nạp', affGT: 'Thu nhập của bạn', affG7: '7 ngày qua', affG30: '30 ngày qua', affGW: 'từ đầu' },
+    id: { affNDepS: 'Jumlah deposit', affGT: 'Penghasilanmu', affG7: '7 hari terakhir', affG30: '30 hari terakhir', affGW: 'sejak awal' },
+    ru: { affNDepS: 'Число пополнений', affGT: 'Твой доход', affG7: 'последние 7 дней', affG30: 'последние 30 дней', affGW: 'с самого начала' },
+    de: { affNDepS: 'Anzahl Einzahlungen', affGT: 'Deine Einnahmen', affG7: 'letzte 7 Tage', affG30: 'letzte 30 Tage', affGW: 'seit Beginn' },
+    hi: { affNDepS: 'जमा की संख्या', affGT: 'आपकी कमाई', affG7: 'पिछले 7 दिन', affG30: 'पिछले 30 दिन', affGW: 'शुरुआत से' }
+  };
+  Object.keys(AFFG_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFFG_TR[l]); });
+  // v2491 — « Dépôt moyen » était ambigu (on pouvait croire « le plus petit dépôt »).
+  var AFFAVG_TR = { fr: 'Dépôt moyen par ami', en: 'Average deposit per friend', es: 'Depósito medio por amigo', pt: 'Depósito médio por amigo', ar: 'متوسط الإيداع لكل صديق', tr: 'Arkadaş başı ort. yatırım', vi: 'Nạp TB mỗi bạn', id: 'Rata-rata deposit per teman', ru: 'Средний депозит на друга', de: 'Ø Einzahlung pro Freund', hi: 'प्रति दोस्त औसत जमा' };
+  Object.keys(AFFAVG_TR).forEach(function (l) { if (DICT[l]) DICT[l].affAvg = AFFAVG_TR[l]; });
   // v2454 — bouton « Apprendre à trader » (connexion / inscription, conditions) ; la page elle-même est dans js/learn.js.
   var LEARN_TR = {
     fr: { learnBtn: 'Apprendre à trader sur OROLADO', learnBtnSub: 'Guide gratuit, pas à pas', learnTermsLead: 'Nouveau sur OROLADO ? Un guide simple, avec des images, vous montre tout pas à pas : inscription, recharge, premier trade, cadeaux et retrait.' },

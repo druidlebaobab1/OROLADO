@@ -490,6 +490,7 @@
     renderAffList();
     fitPortal();
   }
+  function affInt(n) { try { return Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 }); } catch (e) { return String(Math.round(Number(n || 0))); } }
   function affN(r) { return r.n != null ? Number(r.n) || 0 : (Number(r.deposit || 0) > 0 ? 1 : 0); }
   function affRowHtml(r) {
     var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
@@ -499,6 +500,75 @@
       '<div class="ar-n"><b>' + affN(r) + '</b><span>' + esc(t('affColN')) + '</span></div>' +
       '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(daysOnly(r.until)) + '</span></div></div>';
   }
+  // v2491 — petit graphique des gains de celui qui invite (barres). 7 jours (Aujourd'hui / 7 jours) avec le nom du jour,
+  // 30 jours avec la date, « Tout » = par semaine (12 dernières). Affichage seulement.
+  // v2491 — un montant trop long (ex. 125 430,50 $) rétrécit un peu pour rester dans sa case, sur tous les téléphones et toutes les langues.
+  function fitAffNumbers() {
+    var els = document.querySelectorAll('#affSum b, #affSum2 b, #affGraph .ag-h b, #affRowsAll .aff-row b, #affRows .aff-row b, #affMain .aff-stats b');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i], box = el.parentElement;
+      el.style.fontSize = '';
+      var fs = parseFloat(getComputedStyle(el).fontSize) || 14, guard = 0;
+      while (box && el.scrollWidth > box.clientWidth - 6 && fs > 9 && guard++ < 12) { fs -= 0.5; el.style.fontSize = fs + 'px'; }
+    }
+  }
+  function renderAffGraph() {
+    var box = $('affGraph');
+    if (!box || !aff) return;
+    var gains = (aff.gains || []).map(function (g) { return [Number(g[0]) || 0, Number(g[1]) || 0]; });
+    var lang = document.documentElement.lang || undefined;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var b = [], i, ref;
+    // Le propriétaire veut les NOMS DES JOURS (lundi, mardi…), jamais des dates.
+    // Aujourd'hui / 7 jours : les 7 derniers jours, aujourd'hui à droite.
+    // 30 jours / Tout : total de chaque jour de la semaine (lundi → dimanche) sur la période.
+    if (affFilter === 'day' || affFilter === 'week') {
+      for (i = 6; i >= 0; i--) {
+        var ds = new Date(today); ds.setDate(ds.getDate() - i);
+        var de = new Date(ds); de.setDate(de.getDate() + 1);
+        b.push({ s: ds.getTime(), e: de.getTime(), l: ds.toLocaleDateString(lang, { weekday: 'short' }).replace(/\.$/, ''), hot: i === 0 });
+      }
+    } else {
+      var from = affFilter === 'month' ? new Date(today).setDate(today.getDate() - 29) : 0;
+      ref = new Date(2024, 0, 1); // un lundi
+      for (i = 0; i < 7; i++) {
+        var dn = new Date(ref); dn.setDate(ref.getDate() + i);
+        b.push({ wd: (i + 1) % 7, from: from, l: dn.toLocaleDateString(lang, { weekday: 'short' }).replace(/\.$/, ''), hot: ((i + 1) % 7) === today.getDay() });
+      }
+    }
+    b.forEach(function (x) { x.show = true; });
+    var tot = 0, max = 0;
+    b.forEach(function (x) {
+      x.v = 0;
+      gains.forEach(function (g) {
+        var ms = g[0] * 1000;
+        if (x.wd != null) { if (ms >= x.from && new Date(ms).getDay() === x.wd) x.v += g[1]; }
+        else if (ms >= x.s && ms < x.e) x.v += g[1];
+      });
+      tot += x.v; if (x.v > max) max = x.v;
+    });
+    // v2491 — chaque barre porte son montant au-dessus (ce que tu as gagné ce jour-là) ; le chiffre en haut à
+    // droite = total de toutes les barres. Dessin à la vraie largeur de la case (texte jamais étiré).
+    var W = Math.max(220, Math.round((box.clientWidth || 320) - 22)), H = 34, TOP = 13, n2 = b.length, gap = 6, bw = (W - gap * (n2 - 1)) / n2, svg = '';
+    var short = function (v) {
+      if (v >= 10000) return '+' + Math.round(v / 1000) + 'k';
+      if (v >= 1000) return '+' + (Math.round(v / 100) / 10).toLocaleString() + 'k';
+      return '+' + (Math.round(v * 100) / 100).toLocaleString(undefined, { maximumFractionDigits: v >= 100 ? 0 : 2 });
+    };
+    b.forEach(function (x, k) {
+      var h = max > 0 ? Math.max(x.v > 0 ? 4 : 2, x.v / max * H) : 2;
+      var X = k * (bw + gap);
+      svg += '<rect x="' + X.toFixed(1) + '" y="' + (TOP + H - h).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + Math.min(4, bw / 3).toFixed(1) +
+        '" fill="' + (x.hot ? '#3DDC97' : (x.v > 0 ? 'rgba(61,220,151,.5)' : 'rgba(255,255,255,.10)')) + '"/>';
+      // Montant écrit petit ; il rétrécit encore s'il est plus large que sa barre (jamais de chevauchement).
+      if (x.v > 0) { var lab = short(x.v), fsz = Math.max(6, Math.min(8, (bw + gap - 3) / (lab.length * 0.58)));
+        svg += '<text x="' + (X + bw / 2).toFixed(1) + '" y="' + (TOP + H - h - 3).toFixed(1) + '" fill="' + (x.hot ? '#3DDC97' : '#C9F5E2') + '" font-size="' + fsz.toFixed(1) + '" font-weight="700" text-anchor="middle" direction="ltr" unicode-bidi="embed">' + esc(lab) + '</text>'; }
+      svg += '<text x="' + (X + bw / 2).toFixed(1) + '" y="' + (TOP + H + 12) + '" fill="' + (x.hot ? '#3DDC97' : '#9AA4CC') + '" font-size="' + Math.max(6.5, Math.min(9, (bw + gap - 2) / (String(x.l).length * 0.55))).toFixed(1) + '" text-anchor="middle">' + esc(x.l) + '</text>';
+    });
+    var sub = affFilter === 'all' ? t('affGW') : (affFilter === 'month' ? t('affG30') : t('affG7'));
+    box.innerHTML = '<div class="ag-h"><span>' + esc(t('affGT')) + ' · ' + esc(sub) + '</span><b>+' + esc(money(tot)) + '</b></div>' +
+      '<svg viewBox="0 0 ' + W + ' ' + (TOP + H + 15) + '" width="100%" height="' + (TOP + H + 15) + '" aria-hidden="true">' + svg + '</svg>';
+  }
   // Aperçu (3 derniers amis) sous les carrés + page complète « Voir plus » (filtre, totaux, tous les amis).
   function renderAffList() {
     if (!aff || !$('affRows')) return;
@@ -506,23 +576,35 @@
     $('affRows').innerHTML = all.length ? all.slice(0, 2).map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmptyAll')) + '</p>';
     show($('affMore'), all.length > 0);
     if (!$('affRowsAll')) return;
-    var now = nowSrv();
-    var from = affFilter === 'day' ? Math.floor(new Date().setHours(0, 0, 0, 0) / 1000)
-      : affFilter === 'week' ? now - 7 * 86400 : affFilter === 'month' ? now - 30 * 86400 : 0;
+    // v2491 : périodes en jours entiers (aujourd'hui, les 7 / 30 derniers jours depuis minuit), comme le graphique.
+    var midnight = Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
+    var from = affFilter === 'day' ? midnight
+      : affFilter === 'week' ? midnight - 6 * 86400 : affFilter === 'month' ? midnight - 29 * 86400 : 0;
     var rows = all.filter(function (r) { return r.at >= from; });
     var dep = 0, gain = 0;
     rows.forEach(function (r) { dep += Number(r.deposit || 0); gain += Number(r.gift || 0); });
-    if ($('affSum')) $('affSum').innerHTML = '<div><b>' + rows.length + '</b><span>' + esc(t('affDeposited')) + '</span></div>' +
-      // v2429 — même phrase que sur la 1re page : « Total déposé par tes amis » (11 langues).
+    // v2491 : « Tu as gagné » = gains vraiment reçus pendant la période (même chiffre que le graphique)
+    // ; « Tout » = tout ce qui a été gagné depuis le début.
+    if (Array.isArray(aff.gains)) {
+      gain = affFilter === 'all' ? Number(aff.earned || 0) : aff.gains.reduce(function (s, g) { return s + (Number(g[0]) >= from ? Number(g[1]) || 0 : 0); }, 0);
+    }
+    // v2491 — page « Voir plus » rangée comme la page Invitation :
+    // ligne 1 : clics · amis inscrits · amis qui ont déposé ; ligne 2 : total déposé · nombre de dépôts · tu as gagné ;
+    // ligne 3 : dépôt moyen · plus gros dépôt ; puis le petit graphique des gains (suit la période choisie).
+    var signed = (aff.list || []).filter(function (r) { return r.at >= from; }).length;
+    var nDep = rows.reduce(function (s, r) { return s + affN(r); }, 0);
+    if ($('affSum')) $('affSum').innerHTML = '<div><b>' + affInt(aff.clicks) + '</b><span>' + esc(t('affClicks')) + '</span></div>' +
+      '<div><b>' + affInt(signed) + '</b><span>' + esc(t('affFriends')) + '</span></div>' +
+      '<div><b>' + affInt(rows.length) + '</b><span>' + esc(t('affDeposited')) + '</span></div>' +
       '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affTotal')) + '</span></div>' +
+      '<div class="gold"><b>' + affInt(nDep) + '</b><span>' + esc(t('affNDepS')) + '</span></div>' +
       '<div class="gold"><b>+' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
-    // v2437 — 2 petites cases en plus : dépôt moyen et plus gros dépôt (sur la période choisie).
     var biggest = 0;
     rows.forEach(function (r) { biggest = Math.max(biggest, Number(r.deposit || 0)); });
     if ($('affSum2')) $('affSum2').innerHTML = '<div><span>' + esc(t('affAvg')) + '</span><b>' + esc(money(rows.length ? dep / rows.length : 0)) + '</b></div>' +
-      '<div><span>' + esc(t('affBiggest')) + '</span><b>' + esc(money(biggest)) + '</b></div>' +
-      // v2489 — nombre total de dépôts faits par les amis (sur la période choisie).
-      '<div class="as-n"><span>' + esc(t('affNDep')) + '</span><b>' + rows.reduce(function (s, r) { return s + affN(r); }, 0) + '</b></div>';
+      '<div><span>' + esc(t('affBiggest')) + '</span><b>' + esc(money(biggest)) + '</b></div>';
+    renderAffGraph();
+    fitAffNumbers();
     // Recherche par numéro ORO (« 7030 », « oro-703098 »…) et tri choisi.
     var q = String(($('affSearch') && $('affSearch').value) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     var shown = rows.filter(function (r) { return !q || String(r.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0; });
@@ -714,6 +796,7 @@
     show($('affMain'), !full);
     show($('affListView'), !full);
     show($('affFull'), !!full);
+    if (full) { affFilter = 'all'; document.querySelectorAll('#affFilter button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); }
     // v2437 — page des amis : pas de grande planète (place pour la liste, la recherche et le tri).
     if ($('affCard')) $('affCard').classList.toggle('full-on', !!full);
     renderAffList();
