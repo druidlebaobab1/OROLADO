@@ -7971,3 +7971,24 @@ html body .chart-stage .chart-outcome.show.win.chart-outcome,html body .chart-st
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(4) .odds-mult{font-size:13.5px!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(n+3) .odds-pct{font-size:6.5px!important;max-width:44px!important}
 }
+
+/* ===== v2469 — Guide : vrais logos dessinés (plus d'images-écriture du téléphone). ===== */
+.learn-modal .lg-i{width:15px;height:15px;display:inline-block;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.learn-modal .lg-chips a{display:inline-flex;align-items:center;gap:5px}
+.learn-modal .lg-chips a .lg-i{color:#FBBF24}
+.learn-modal .lg-ex{display:flex;gap:8px;align-items:flex-start}
+.learn-modal .lg-ex .lg-i.ex{width:18px;height:18px;color:#FBBF24;margin-top:1px}
+.learn-modal .lg-mail-h .lg-i{width:13px;height:13px;vertical-align:-2px}
+.learn-modal .lg-gold .lg-i,.learn-modal .lg-wd-ok .lg-i{width:14px;height:14px;stroke-width:2.6}
+.learn-modal .lg-wd-time{display:inline-flex;align-items:center;gap:4px}.learn-modal .lg-wd-time .lg-i{width:13px;height:13px}
+.learn-modal .lg-res i .lg-i{width:14px;height:14px;stroke:#fff;stroke-width:2.8;vertical-align:0}
+.learn-modal .lg-tools span{display:inline-grid;place-items:center}.learn-modal .lg-tools .lg-i{width:15px;height:15px}
+.learn-modal .lg-trophy .lg-cup{width:56px;height:56px;filter:drop-shadow(0 0 12px rgba(245,197,81,.55))}
+.learn-modal .lg-pay .wd-card-brands{display:inline-flex;align-items:center;gap:3px}
+.learn-modal .lg-coins{display:inline-flex}.learn-modal .lg-coins svg{width:18px;height:18px;margin-left:-4px;border-radius:50%;box-shadow:0 0 0 1.5px #1a1440}.learn-modal .lg-coins svg:first-child{margin-left:0}
+.learn-modal .lg-check b .lg-i{width:11px;height:11px;stroke:#fff;stroke-width:3;vertical-align:0}
+/* v2469 — Payouts en échelle ÉCARTÉS sur toute la largeur (pas regroupés au milieu), alignés sur la ligne Durée / Mise / Gain. */
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow{
+    justify-content:space-between!important;margin-left:-9px!important;margin-right:-9px!important;width:calc(100% + 18px)!important;max-width:none!important;padding:0 8px 4px!important}
+}

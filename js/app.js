@@ -7300,7 +7300,7 @@
       if (!$('oxaPickWrap') || $('oxaPickWrap').classList.contains('hidden')) return;
       if (e.target && e.target.closest && e.target.closest('#oxaPickWrap')) return;
       closeOxaMenus();
-    });
+    }, true); // v2469 — capture : sur Android la fenêtre arrête les clics (le menu des cryptos ne se fermait pas).
     if ($('btnUsdtCopy')) bindAndroidTap($('btnUsdtCopy'), function () { copyUsdtAddr(); });
     if ($('btnUsdtBack')) bindAndroidTap($('btnUsdtBack'), function () {
       abandonUnconfirmedDeposit();
