@@ -1689,7 +1689,8 @@
     for (i = 0; i < priceLines.length; i++) {
       var pVal = priceLines[i];
       var y = Math.round(pad.t + ((maxP - pVal) / pSpan) * h) + 0.5;
-      if (y < 6 || y > cssH - 18) continue;
+      // v2484 — pas de ligne de prix collée au-dessus des heures (elle faisait un « trait » en bas de la courbe).
+      if (y < 6 || y > cssH - 30) continue;
       // Police resserrée sur écran étroit : la colonne reste discrète sans
       // jamais rogner les décimales.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') +

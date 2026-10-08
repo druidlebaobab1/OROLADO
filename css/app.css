@@ -8117,3 +8117,8 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #btnCall.is-
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #btnPut.is-lit,html body #fsTradeOverlay#fsTradeOverlay #btnPut.is-lit{
   background:linear-gradient(180deg,#FF5C72 0%,#D11F3A 100%)!important;border-color:#FDA4AF!important;
   box-shadow:0 0 0 2px rgba(253,164,175,.35),0 0 22px rgba(244,63,94,.75),inset 0 1px 0 rgba(255,255,255,.3)!important;transition:background .08s,box-shadow .08s}
+
+/* ===== v2484 — Bas de la courbe : la petite limite au-dessus des heures se fond (fondu plus long), sans trait. ===== */
+html body #chartCanvas,html body #chartOverlay{
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 calc(100% - 34px),rgba(0,0,0,.72) calc(100% - 14px),rgba(0,0,0,.6) 100%);
+  mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 calc(100% - 34px),rgba(0,0,0,.72) calc(100% - 14px),rgba(0,0,0,.6) 100%)}
