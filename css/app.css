@@ -7289,3 +7289,79 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .du
   color:#1E1200!important;border-color:#FFF6DA!important;box-shadow:0 0 14px rgba(245,197,81,.75)!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .qbtn:active{background:linear-gradient(180deg,#FFE7A3,#F5C451)!important;color:#1E1200!important;box-shadow:0 0 14px rgba(245,197,81,.8)!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .win-preview .mult{background:rgba(245,197,81,.16)!important;color:#FFE7A3!important;border-color:rgba(245,197,81,.5)!important}
+
+/* ===== v2452 — NOUVEAU TERMINAL (téléphone debout) : ligne 1 = ◀ durée ▶ | − mise + | gain ; ligne 2 = 4 payouts en planètes.
+   La place gagnée va à la courbe. PC, tablette, téléphone couché et plein écran : inchangés. ===== */
+.dur-nav,.stake-pm{display:none}
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{
+    display:grid!important;grid-template-columns:1fr 1.18fr 1fr!important;grid-template-rows:auto!important;gap:6px!important;align-items:stretch!important;height:auto!important;margin:0!important}
+  /* Durée : ◀ 30s ▶ */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row{
+    grid-column:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:2px!important;
+    height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 3px!important;box-sizing:border-box!important;border-radius:12px!important;
+    background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important;border:1px solid rgba(245,197,81,.45)!important;width:auto!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip:not(.on){display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on{
+    flex:1 1 auto!important;min-width:0!important;height:36px!important;min-height:36px!important;max-height:36px!important;padding:0 2px!important;
+    font-size:clamp(13px,4.2vw,16px)!important;font-weight:900!important;white-space:nowrap!important;border-radius:9px!important;pointer-events:none}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on svg{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{
+    display:grid!important;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border-radius:50%;border:0;cursor:pointer;
+    background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C);box-shadow:0 0 8px rgba(245,197,81,.55);transition:transform .1s}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#2A1600;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav:active,
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav.hit{transform:scale(.88)}
+  /* Mise : − $ 1 + */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-field{
+    display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important;height:44px!important;min-height:44px!important;max-height:44px!important;
+    padding:0 3px!important;box-sizing:border-box!important;border-radius:12px!important;width:auto!important;min-width:0!important;
+    background:linear-gradient(180deg,rgba(46,229,157,.10),rgba(8,20,30,.6))!important;border:1px solid rgba(46,229,157,.65)!important;box-shadow:0 0 12px rgba(46,229,157,.22)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .stake-field .stake-min{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #inputStake{
+    flex:1 1 auto!important;min-width:0!important;width:auto!important;height:36px!important;min-height:36px!important;max-height:36px!important;
+    background:transparent!important;border:0!important;box-shadow:none!important;text-align:center!important;padding:0!important;margin:0!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .qbtn.stake-pm{
+    display:grid!important;place-items:center!important;flex:0 0 26px!important;width:26px!important;height:26px!important;min-height:26px!important;max-height:26px!important;
+    padding:0!important;border-radius:50%!important;font-size:18px!important;font-weight:900!important;line-height:1!important;color:#04261A!important;
+    background:radial-gradient(circle at 32% 28%,#D1FAE5,#2EE59D 50%,#0E7A52)!important;border:0!important;box-shadow:0 0 8px rgba(46,229,157,.55)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .qbtn.stake-pm:active{transform:scale(.88)}
+  /* Gain : montant, et le petit « Payout 90% » dessous sans cadre */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview{
+    height:44px!important;min-height:44px!important;max-height:44px!important;padding:2px 4px!important;box-sizing:border-box!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;width:auto!important;min-width:0!important;border-radius:12px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .label{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .amount{font-size:clamp(15px,4.6vw,19px)!important;line-height:1.05!important;white-space:nowrap!important;margin:0!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .win-preview .mult{
+    background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;font-size:9px!important;line-height:1!important;color:#FFE7A3!important;opacity:.85;white-space:nowrap!important}
+  /* Payouts : 4 planètes */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .payout-badge{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow{
+    display:flex!important;justify-content:space-around!important;align-items:center!important;gap:6px!important;height:auto!important;margin:2px 0 0!important;padding:0 4px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
+    flex:0 0 auto!important;width:50px!important;height:50px!important;min-height:50px!important;max-height:50px!important;padding:0 3px!important;border-radius:50%!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;opacity:.72;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.75),rgba(var(--c),1) 40%,rgba(var(--c),.45) 85%,rgba(0,0,0,.35))!important;background-size:100% 100%!important;
+    border:1px solid rgba(255,255,255,.35)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.3) inset,0 0 10px rgba(var(--c),.35)!important;animation:none!important;transition:transform .12s,opacity .2s,box-shadow .2s!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{opacity:1;transform:scale(1.06);
+    box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(255,255,255,.85),0 0 18px rgba(var(--c),.95)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult{
+    font-size:13px!important;font-weight:900!important;line-height:1!important;color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.6)!important;white-space:nowrap!important;letter-spacing:-.02em}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
+    display:block!important;max-width:44px!important;font-size:6.5px!important;line-height:1!important;letter-spacing:.02em!important;color:#fff!important;opacity:.95;white-space:nowrap!important;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:active{transform:scale(.94)}
+}
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on::before{display:none!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on{flex-direction:row!important;align-items:center!important;justify-content:center!important;padding-top:0!important}
+}
+@media (max-width:859px) and (orientation:portrait){
+  /* Planètes des marchés un peu plus grandes (elles restent plus grosses que les planètes des payouts). */
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar#assetBar:not(#z1):not(#z2) .asset-chip .mk-art{width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;max-width:56px!important;max-height:56px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar#assetBar:not(#z1):not(#z2) .asset-chip .mk-art > svg{width:36px!important;height:36px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{width:48px!important;height:48px!important;min-height:48px!important;max-height:48px!important}
+}
+@media (max-width:859px) and (orientation:portrait){
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap > #assetBar#assetBar:not(#z1):not(#z2){height:79px!important;min-height:79px!important;max-height:79px!important}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #assetBar#assetBar:not(#z1):not(#z2) .asset-chip .mk-name{margin-top:-2px!important}
+}

@@ -6846,6 +6846,24 @@
     };
   }
 
+  // v2452 — Nouveau terminal (téléphone debout) : ◀ ▶ font tourner les durées 5s → 10s → 30s → 1 min → 5 min → 10 min.
+  document.addEventListener('click', function (e) {
+    var nav = e.target && e.target.closest ? e.target.closest('.dur-nav') : null;
+    if (!nav) return;
+    e.preventDefault();
+    try {
+      var chips = Array.prototype.slice.call(document.querySelectorAll('#tradeWrap .dur-row .dur-chip'));
+      if (!chips.length) return;
+      var cur = chips.findIndex(function (c) { return c.classList.contains('on'); });
+      if (cur < 0) cur = 0;
+      var step = Number(nav.getAttribute('data-step')) || 1;
+      var next = chips[(cur + step + chips.length) % chips.length];
+      if (window.oroUi && window.oroUi.dur) window.oroUi.dur(next);
+      nav.classList.add('hit');
+      setTimeout(function () { nav.classList.remove('hit'); }, 160);
+    } catch (eNav) { /* ignore */ }
+  });
+
   function bindTrade() {
     function onClick(el, fn) {
       if (!el || typeof fn !== 'function') return;
