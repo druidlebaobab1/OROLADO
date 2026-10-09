@@ -338,7 +338,14 @@
   document.addEventListener('click', function (e) {
     var t = e.target && e.target.closest ? e.target : null;
     if (!t) return;
-    if (t.closest('[data-learn-open]')) { e.preventDefault(); open(); return; }
+    var lo = t.closest('[data-learn-open]');
+    if (lo) {
+      e.preventDefault(); open();
+      // v2506 — depuis « Recharger » : le guide s'ouvre directement à l'étape 2 (dépôt).
+      var ls = lo.getAttribute('data-learn-step');
+      if (ls) setTimeout(function () { var el = document.getElementById('lgStep' + ls), sc = document.getElementById('learnScroll'); if (el && sc) sc.scrollTop += el.getBoundingClientRect().top - sc.getBoundingClientRect().top - 14; }, 60);
+      return;
+    }
     if (t.closest('[data-learn-close]')) { e.preventDefault(); close(); return; }
     var go = t.closest('[data-lg-go]');
     if (go) {

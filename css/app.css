@@ -8544,3 +8544,18 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2) #bt
 .learn-modal .lg-buy-g{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .learn-modal .lg-buy-g span{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px;border-radius:10px;background:rgba(0,0,0,.28)}
 .learn-modal .lg-buy-g b{font-size:14px;color:#fff}
+/* v2506 — bouton « Apprendre à trader » en bas de « Recharger », sous les cryptos (ouvre le guide à l'étape 2). */
+html body #depositModal .dep-learn{margin:12px 0 2px}
+html body #depositModal .dep-learn .auth-learn{width:100%;margin:0}
+/* v2506 — petits écrans (iPhone SE, petits Android) : on resserre un peu « Recharger » pour que le bouton du guide tienne en entier. */
+@media (orientation:portrait) and (max-height:760px){
+  html body #depositModal #payMethodUsdt{padding-top:6px!important;padding-bottom:6px!important}
+  html body #depositModal .pay-crypto-wall{gap:3px!important}
+  html body #depositModal .pay-crypto-cell{padding:3px 2px 2px!important}
+  html body #depositModal .pay-crypto-cell .pay-crypto-badge{width:21px!important;height:21px!important}
+  html body #depositModal .dep-learn{margin:8px 0 0}
+  html body #depositModal .dep-learn .auth-learn{padding-top:5px!important;padding-bottom:5px!important}
+  html body #depositModal .dep-learn .al-ico{width:34px!important;height:34px!important;flex-basis:34px!important}
+  html body #depositModal #depositAmt{min-height:38px!important;height:38px!important}
+  html body #depositModal .pay-method-grid{gap:4px!important}
+}
