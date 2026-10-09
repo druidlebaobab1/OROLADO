@@ -5712,6 +5712,15 @@
       }
       var cc = '';
       try { cc = await detectPayCountry(); } catch (eCc) { cc = ''; }
+      // v2550 — compte ADMIN seulement : ?paycc=CM (ou SN, BF, GH…) ouvre la vraie page Flutterwave comme pour un
+      // joueur de ce pays, pour voir quels moyens de paiement s'affichent. Fermer sans payer. Joueurs : rien ne change.
+      try {
+        var mPc = /[?&]paycc=([A-Za-z]{2})\b/.exec(location.search);
+        if (mPc && u && u.role === 'admin') {
+          cc = mPc[1].toUpperCase();
+          toast('Test admin : paiement comme un joueur de ' + cc, 'info', 3000);
+        }
+      } catch (ePc) { /* ignore */ }
       var cfa = flwCfaCurrency(cc);
       var remote = await postFlutterwaveCheckout({
         token: tok,
