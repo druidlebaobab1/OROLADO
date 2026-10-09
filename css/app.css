@@ -8820,3 +8820,9 @@ html body #helpModal#helpModal#helpModal > .modal-box > #closeHelp.btn-close{wid
 /* v2518 — Notifications : un message long s'écrasait dans une colonne de ~180 px (6 lignes) à cause du centrage
    (left:50 %). Il prend maintenant sa vraie largeur, sans jamais dépasser l'écran. */
 html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100vw - 28px))!important}
+
+/* ===== v2520 — PC / TV plein écran : COMPTE RÉEL et DÉMO s'étiraient chacun sur la moitié de l'écran (647 px sur un
+   écran de 1366). Cases de 240 px max, regroupées autour de QUITTER, comme sur téléphone couché. ===== */
+@media (min-width:821px) and (min-height:501px){
+  html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch{grid-template-columns:minmax(0,240px) 48px minmax(0,240px)!important;justify-content:center!important;column-gap:14px!important}
+}

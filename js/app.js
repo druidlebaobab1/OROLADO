@@ -7127,7 +7127,7 @@
         if (now - last < 400) return;
         last = now;
         returnToProfile = true;
-        openHistorySheet(mode);
+        openHistorySheet(typeof mode === 'function' ? mode() : mode);
       }
       btn.addEventListener('click', function (e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -7140,7 +7140,8 @@
         }, { passive: false });
       }
     }
-    bindHistDrawer($('btnHistTrade'), 'real');
+    // v2520 — l'historique s'ouvre sur le mode où joue le joueur (avant : toujours « Réel », même en démo).
+    bindHistDrawer($('btnHistTrade'), function () { var hu = user(); return hu && hu.mode === 'real' ? 'real' : 'demo'; });
     document.querySelectorAll('.hist-tab').forEach(function (btn) {
       if (btn._oroBound) return;
       btn._oroBound = true;
@@ -7939,13 +7940,8 @@
         renderAdmin();
       });
     }
-    if ($('btnMaketouLog')) {
-      $('btnMaketouLog').addEventListener('click', function () {
-        var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
-        if (!tok) { toast(t('sessionExpiredMsg'), 'err'); return; }
-        window.open('debug-maketou.php?lines=300&token=' + encodeURIComponent(tok), '_blank');
-      });
-    }
+    // v2520 — ancien bouton « journal Maketou » retiré : la page n'existe plus (commit 4a5cc86) et il mettait le jeton
+    // admin dans l'adresse web (journaux Hostinger / Cloudflare).
   }
 
   function bindInstall() {
