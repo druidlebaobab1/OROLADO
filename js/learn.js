@@ -17,6 +17,8 @@
 
   // v2469 — vrais logos dessinés (plus d'images-écriture du téléphone).
   var ICO_P = {
+    alert: '<path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.2v.2"/>',
+    lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
     user: '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.8 3.6-5.6 7-5.6s6.2 1.8 7 5.6"/><path d="M18 4.5v4M16 6.5h4"/>',
     card: '<rect x="3" y="6" width="18" height="12.5" rx="2.4"/><path d="M3 10h18M6.5 15h4"/>',
     cap: '<path d="M12 4 2.5 8.6 12 13.2l9.5-4.6z"/><path d="M6.5 10.8v4.4c1.4 1.5 3.4 2.3 5.5 2.3s4.1-.8 5.5-2.3v-4.4M21.5 8.6v5"/>',
@@ -169,6 +171,27 @@
     return h + '</div><div class="lg-wd-more">' + esc(T('lMore')) + '</div><div class="lg-wd-ok">' + I('check') + ' ' + esc(S('wdConfirmBtn', 'Confirm withdrawal')) + '</div>' +
       '<div class="lg-wd-time">' + I('clock') + ' 24 h max</div></div>';
   }
+  // v2504 — fête : confettis dessinés (pas d'émoji), étoiles qui scintillent.
+  function confetti(n) {
+    var C = ['#FFD27A', '#3CF5A6', '#7AA7FF', '#FF8A8A', '#C4B5FD', '#FFFFFF'], h = '<i class="lg-conf" aria-hidden="true">', k;
+    for (k = 0; k < n; k++) {
+      var x = (k * 37 + 11) % 100, d = (k * 0.37) % 2.6, s = 5 + (k % 4) * 2, r = (k * 47) % 360;
+      h += '<b style="left:' + x + '%;width:' + s + 'px;height:' + Math.round(s * 1.6) + 'px;background:' + C[k % C.length] + ';animation-delay:-' + d.toFixed(2) + 's;transform:rotate(' + r + 'deg)"></b>';
+    }
+    return h + '</i>';
+  }
+  // v2504 — guide du dépôt : 2 blocs (carte / paiement local, puis crypto en 5 étapes numérotées).
+  function depGuide() {
+    var li = function (k) { return '<li>' + esc(T(k)) + '</li>'; };
+    return '<div class="lg-dg"><div class="lg-dg-b"><h4>' + I('card') + ' ' + esc(T('gdA')) + '</h4><ul>' + li('gd1') + li('gd2') + '</ul></div>' +
+      '<div class="lg-dg-b lg-dg-c"><h4><span class="lg-coins" aria-hidden="true"><svg><use href="#ico-usdt"></use></svg><svg><use href="#ico-btc"></use></svg></span> ' + esc(T('gdB')) + '</h4>' +
+      '<p>' + esc(T('gc1')) + '</p><ol>' + li('gc2') + li('gc3') + li('gc4') + li('gc5') + li('gc6') + '</ol>' +
+      '<div class="lg-dg-warn">' + I('alert') + ' ' + esc(T('gcw')) + '</div><div class="lg-ex">' + I('bulb', 'ex') + ' ' + esc(T('gct')) + '</div></div></div>';
+  }
+  // v2504 — bas de l'étape retrait : 4 assurances qui rassurent (vraies), avec une lueur qui passe.
+  function wdTrust() {
+    return '<div class="lg-trust">' + [['clock', 'gw1'], ['out', 'gw2'], ['lock', 'gw3'], ['chart', 'gw4']].map(function (x) { return '<span>' + I(x[0]) + ' ' + esc(T(x[1])) + '</span>'; }).join('') + '</div>';
+  }
   function gifts() {
     var G = [[gIco('defi'), 's13b'], [gIco('aff'), 's13c'], [gIco('top'), 's13d'], [gIco('bon'), 's13e']];
     return '<div class="lg-gl">' + G.map(function (g) {
@@ -178,7 +201,7 @@
   }
 
   // Cadres d'importance : 3 = très important, 2 = important, 1 = léger.
-  var IMP = { 1: 3, 2: 3, 8: 3, 13: 3, 14: 3, 4: 2, 7: 2, 10: 1 };
+  var IMP = { 1: 3, 2: 3, 8: 3, 13: 3, 14: 'f', 4: 2, 7: 2, 10: 1 };
   function step(n, title, lines, art, extra) {
     var h = '<section class="lg-step' + (IMP[n] ? ' lg-imp' + IMP[n] : '') + '" id="lgStep' + n + '"><div class="lg-num">' + n + '</div><h3>' + esc(title) + '</h3>';
     if (art) h += art;
@@ -197,7 +220,7 @@
       }).join('') + '</div></div>';
     h += '<div class="lg-part">' + esc(T('partA')) + '</div>';
     h += step(1, T('s1t'), [T('s1a'), T('s1b'), T('s1c'), T('s1d')], artSignup());
-    h += step(2, T('s2t'), [T('s2a'), T('s2b'), T('s2c')], artDeposit());
+    h += step(2, T('s2t'), [T('s2a'), T('s2b'), T('s2c')], artDeposit(), depGuide());
     h += step(3, T('s3t'), [T('s3a'), T('s3b')], artDemo());
     h += '<div class="lg-part">' + esc(T('partB')) + '</div>';
     h += step(4, T('s4t'), [T('s4a'), T('s4b'), T('s4c'), T('s4d'), T('s4e')], artScreen() + artChartKinds());
@@ -211,8 +234,11 @@
     h += step(12, T('s12t'), [T('s12a'), T('s12b'), T('s12c'), T('s12g'), T('s12f'), T('s12e'), T('s12d')], '');
     h += '<div class="lg-part">' + esc(T('partC')) + '</div>';
     h += step(13, T('s13t'), [T('s13a')], artGifts(), gifts());
-    h += step(14, T('s14t'), [T('s14a'), T('s14b'), T('s14c'), T('s14d')], artWithdraw());
-    h += '<div class="lg-end"><div class="lg-trophy">' + TROPHY + '</div><h3>' + esc(T('endT')) + '</h3><p>' + esc(T('endA')) + '</p>' +
+    h += step(14, T('s14t'), [T('s14a'), T('s14b'), T('s14c'), T('s14d')],
+      '<i class="lg-aura" aria-hidden="true"></i><div class="lg-cel">' + confetti(18) + '<span class="lg-cel-ico">' + I('check') + '</span><b>' + esc(T('s14cel')) + '</b></div>' + artWithdraw(), wdTrust());
+    // v2504 — dernière carte : vraie fête (rayons, confettis, trophée qui brille, ce qu'on a appris coché).
+    h += '<div class="lg-end lg-end-fete">' + confetti(28) + '<i class="lg-rays" aria-hidden="true"></i><div class="lg-trophy">' + TROPHY + '</div><h3>' + esc(T('endT')) + '</h3><p>' + esc(T('endA')) + '</p>' +
+      '<div class="lg-done">' + [1, 2, 3, 4, 5, 6].map(function (i) { return '<span>' + I('check') + ' ' + esc(T('n' + i)) + '</span>'; }).join('') + '</div>' +
       '<button type="button" class="lg-cta" data-learn-close>' + esc(T('endBtn')) + '</button>' +
       '<p class="lg-sign">© 2026 OROLADO.COM</p></div>';
     box.innerHTML = h;
