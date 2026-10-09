@@ -49,6 +49,49 @@
     else start();
   })();
 
+  // v2538 — MODE LÉGER automatique : sur un téléphone qui n'arrive pas à suivre (plus d'1 image sur 3 lente,
+  // deux fois de suite, écran de trading affiché), on pose html.oro-lite : les décors coûteux s'immobilisent
+  // (voir css/app.css v2538). Retenu 7 jours sur ce téléphone. Test : ?lite=1 (forcé) / ?lite=0 (jamais).
+  (function liteWatch() {
+    var KEY = 'oro_lite_at';
+    var html = document.documentElement;
+    var force = null;
+    try { var m = /[?&]lite=([01])/.exec(location.search); if (m) force = m[1] === '1'; } catch (eQ) { /* ignore */ }
+    function setLite(on, remember) {
+      html.classList.toggle('oro-lite', !!on);
+      D6.lite = !!on;
+      if (remember) { try { localStorage.setItem(KEY, String(Date.now())); } catch (eS) { /* ignore */ } }
+    }
+    if (force !== null) { setLite(force, false); return; }
+    try {
+      var at = Number(localStorage.getItem(KEY) || 0);
+      if (at && Date.now() - at < 7 * 864e5) { setLite(true, false); return; }
+    } catch (eR) { /* ignore */ }
+    var slow = 0, n = 0, last = 0, t0 = 0, bad = 0;
+    function shown() {
+      var st = $('screenTrade');
+      var ld = $('oroLoader');
+      return !document.hidden && st && !st.classList.contains('hidden') && !(ld && !ld.classList.contains('off'));
+    }
+    function frame(t) {
+      if (html.classList.contains('oro-lite')) return;
+      if (!shown()) { last = 0; n = 0; slow = 0; t0 = 0; setTimeout(function () { requestAnimationFrame(frame); }, 1000); return; }
+      if (last) {
+        var d = t - last;
+        if (d < 250) { n++; if (d > 25) slow++; }
+      }
+      last = t;
+      if (!t0) t0 = t;
+      if (t - t0 >= 3000) {
+        if (n >= 30 && slow / n > 0.34) bad++; else bad = 0;
+        if (bad >= 2) { setLite(true, true); return; }
+        n = 0; slow = 0; t0 = t;
+      }
+      requestAnimationFrame(frame);
+    }
+    setTimeout(function () { requestAnimationFrame(frame); }, 4000);
+  })();
+
   function unlockPointerLayers() {
     try {
       var dr = $('drawerProfile');
