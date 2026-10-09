@@ -6201,9 +6201,12 @@
     if (k.indexOf('mpesa') >= 0) return 'M-Pesa';
     if (k.indexOf('airtel') >= 0) return 'Airtel';
     if (k.indexOf('paypal') >= 0) return 'PayPal';
-    if (k === 'bank' || k.indexOf('virement') >= 0) return 'Virement bancaire';
+    if (k === 'bank' || k.indexOf('virement') >= 0) return t('wdMethodBank');
     if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0 || k.indexOf('eth') >= 0 || k.indexOf('sol') >= 0 || k.indexOf('trx') >= 0 || k.indexOf('bnb') >= 0 || k.indexOf('ltc') >= 0 || k.indexOf('doge') >= 0 || k.indexOf('oxapay') >= 0 || k.indexOf('usdt') >= 0) return 'Crypto';
-    if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return 'Carte bancaire';
+    if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return t('wdMethodCard');
+    // v2518 — noms propres des moyens de retrait (avant : « opay », « palmpay », « mercadopago »… en minuscules).
+    var NAMES = { opay: 'OPay', palmpay: 'PalmPay', pix: 'PIX', mercadopago: 'Mercado Pago', nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara', payeer: 'Payeer', perfectmoney: 'Perfect Money', skrill: 'Skrill', neteller: 'Neteller', revolut: 'Revolut', bnb: 'Binance Pay' };
+    if (NAMES[k]) return NAMES[k];
     return String(raw);
   }
 
@@ -6233,7 +6236,7 @@
     var html = rows.length ? rows.map(function (r, rcfIdx) {
       var st = r.status || { label: t('txPending'), cls: 'pending' };
       return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
-        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
+        fmtWhen(r.at) + ' · ' + adminEsc(r.gateway || '—') + ' · ' + adminEsc(r.ref || '—') +
         '</div>' + (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') +
         '</div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
@@ -6321,7 +6324,7 @@
     var html = rows.length ? rows.map(function (r, rcfIdx) {
       var st = r.status || { label: t('txPending'), cls: 'pending' };
       return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
-        fmtWhen(r.at) + ' · ' + (r.gateway || '—') + ' · ' + (r.ref || '—') +
+        fmtWhen(r.at) + ' · ' + adminEsc(r.gateway || '—') + ' · ' + adminEsc(r.ref || '—') +
         '</div>' + (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') +
         '</div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
         (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +

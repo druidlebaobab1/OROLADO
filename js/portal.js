@@ -734,7 +734,10 @@
       top = r;
       renderTop();
     }
-    if (r && r.enabled) topT = setTimeout(function () { if (!document.hidden && curTab === 'top') refreshTop(); else topT = setTimeout(refreshTop, 120000); }, 60000);
+    // v2518 — mise à jour du classement SEULEMENT quand le joueur le regarde (Cadeaux ouvert, onglet Tournoi, page visible).
+    // Avant : chaque joueur connecté interrogeait le serveur toutes les ~3 min, même sans jamais ouvrir les Cadeaux.
+    // Ouvrir les Cadeaux / l'onglet Tournoi recharge déjà le classement (openPortal, setTab).
+    if (r && r.enabled) topT = setTimeout(function () { if (!document.hidden && portalOpen() && curTab === 'top') refreshTop(); }, 60000);
   }
   // v2417 — Bonus dépôt de la semaine : tout est décidé et payé par le serveur (bonus_lib.php).
   var bon = null;
@@ -909,7 +912,7 @@
     if ($('bonTest')) $('bonTest').addEventListener('click', function () { refreshBon('bonusTestDeposit', { amount: 200 }); });
     if ($('topPrev')) $('topPrev').addEventListener('click', function () { topPrev = !topPrev; refreshTop(); });
     setInterval(function () { if ($('portalModal') && $('portalModal').classList.contains('active')) tickLists(); }, 1000);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshAff(); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) { refreshAff(); if (portalOpen() && curTab === 'top') refreshTop(); } });
     var lastTok = '';
     setInterval(function () {
       var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
