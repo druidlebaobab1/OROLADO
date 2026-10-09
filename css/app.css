@@ -8917,3 +8917,12 @@ html body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#
 /* v2543 — logo BANQUE (remplace Moov) dans « Carte & paiement instantané » : bleu marine, bâtiment doré, un peu plus large. */
 html body #depositModal #payMethodCard .pl-logo.pl-bank{background:linear-gradient(180deg,#1E40AF,#0B2363);color:#fff;padding:0 10px;gap:5px;letter-spacing:.02em;font-style:normal}
 html body #depositModal .pl-bank svg{width:14px;height:14px;fill:#FCD34D;flex:0 0 auto}
+
+/* v2544 — nouveaux logos de « Carte & paiement instantané » (couleurs des marques). */
+html body #depositModal .pl-opay{background:#1DCF9F;color:#073B2E;font-weight:900}
+html body #depositModal .pl-ussd{background:#2B2F3A;color:#fff}
+html body #depositModal .pl-ussd b{color:#FCD34D;margin-right:2px}
+html body #depositModal .pl-telecel{background:#E30613;color:#fff;text-transform:lowercase}
+html body #depositModal .pl-tigo{background:#00377B;color:#fff}
+html body #depositModal .pl-tigo small{color:#FCD34D;margin-left:2px;font-size:.85em}
+html body #depositModal .pl-zamtel{background:#00A651;color:#fff}

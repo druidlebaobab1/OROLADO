@@ -4567,17 +4567,22 @@
   fetchPayCountryIp();
   // v2509 — case « Carte & paiement instantané » : un téléphone simple et les logos des moyens de paiement
   // (les mêmes pour tout le monde). Affichage seulement.
+  // v2509 → v2544 : ordre = cartes, banque / USSD / OPay, puis mobile money (Orange, MTN, M-Pesa, Airtel, Telecel, Tigo Pesa, Zamtel).
   var PAY_LOGOS =
     '<i class="pl-logo pl-visa">VISA</i>' +
     '<i class="pl-logo pl-mc"><b></b><b></b></i>' +
     '<i class="pl-logo pl-apple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8c-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.4-1-2.4-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.3z"/></svg>Pay</i>' +
     '<i class="pl-logo pl-gpay"><b class="g">G</b>Pay</i>' +
+    '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
+    '<i class="pl-logo pl-ussd"><b>*#</b>USSD</i>' +
+    '<i class="pl-logo pl-opay">OPay</i>' +
     '<i class="pl-logo pl-om"><b></b>Orange Money</i>' +
     '<i class="pl-logo pl-mtn"><b>MTN</b>MoMo</i>' +
     '<i class="pl-logo pl-mpesa">M-PESA</i>' +
-    // v2543 — Moov remplacé par la BANQUE (on recharge aussi par virement) : bâtiment doré + mot traduit.
-    '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
-    '<i class="pl-logo pl-airtel">airtel<small>money</small></i>';
+    '<i class="pl-logo pl-airtel">airtel<small>money</small></i>' +
+    '<i class="pl-logo pl-telecel">telecel</i>' +
+    '<i class="pl-logo pl-tigo">tigo<small>pesa</small></i>' +
+    '<i class="pl-logo pl-zamtel">zamtel</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;
