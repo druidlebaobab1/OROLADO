@@ -4702,6 +4702,23 @@
     }
   }
   var fsSkip = { was: false, heavy: false, ema: 16.7, n: 0, flip: false };
+  // v2556 — téléphone qui rame (mode léger ou saturation détectée) : les 18 halos flous du dessin (shadowBlur :
+  // chronos, ronds d'entrée, dernière bougie, lignes…) sont coupés automatiquement — c'est l'effet le plus coûteux,
+  // recalculé à chaque image et pour chaque trade (mesuré sur iPhone : 3 trades ouverts → 20 img/s, 87 % lentes).
+  // Téléphone qui suit : halos inchangés. Dessin seulement.
+  (function guardShadowBlur() {
+    try {
+      var P = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
+      var d = P && Object.getOwnPropertyDescriptor(P, 'shadowBlur');
+      if (!d || !d.set || !d.get) return;
+      Object.defineProperty(P, 'shadowBlur', {
+        configurable: true,
+        enumerable: d.enumerable,
+        get: function () { return d.get.call(this); },
+        set: function (v) { d.set.call(this, (D6.lite || fsSkip.heavy) ? 0 : v); }
+      });
+    } catch (eSb) { /* ignore */ }
+  })();
 
   function syncIndButtons() {
     document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
