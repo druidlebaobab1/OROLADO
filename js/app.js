@@ -1133,12 +1133,29 @@
           return origConf.apply(E, arguments);
         };
       } catch (eTr) { /* ignore */ }
+      // v2553 — FLUIDITÉ mesurée sur le vrai téléphone : images/s, images lentes (> 34 ms), pire image, sur 2 s.
+      var fpsW = [], fpsLast = 0;
+      (function fpsLoop(t) {
+        if (fpsLast) fpsW.push([t, t - fpsLast]);
+        fpsLast = t;
+        while (fpsW.length && t - fpsW[0][0] > 2000) fpsW.shift();
+        requestAnimationFrame(fpsLoop);
+      })(performance.now());
+      function fpsTxt() {
+        if (!fpsW.length) return '-';
+        var slow = 0, worst = 0, i;
+        for (i = 0; i < fpsW.length; i++) { if (fpsW[i][1] > 34) slow++; if (fpsW[i][1] > worst) worst = fpsW[i][1]; }
+        var cv = $('chartCanvas');
+        return Math.round(fpsW.length / 2) + ' img/s, lentes ' + Math.round(slow * 100 / fpsW.length) + '%, pire ' + Math.round(worst) + 'ms' +
+          '\nplein=' + (document.documentElement.classList.contains('fs-trade') ? 'oui' : 'non') + ' leger=' + (D6.lite ? 'oui' : 'non') +
+          ' dpr=' + (window.devicePixelRatio || 1) + ' courbe=' + (cv ? cv.width + 'x' + cv.height : '-');
+      }
       setInterval(function () {
         var pad = document.querySelector('#tradeWrap > .pad');
         var scr = $('screenTrade');
         var vv = window.visualViewport;
         var appli = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
-        box.textContent = 'safari=' + UA_SAFARI_IOS + ' appli=' + appli +
+        box.textContent = 'FLUIDITE: ' + fpsTxt() + '\n' + 'safari=' + UA_SAFARI_IOS + ' appli=' + appli +
           '\ninner=' + window.innerWidth + 'x' + window.innerHeight +
           '\nscreen=' + (screen.width || 0) + 'x' + (screen.height || 0) +
           '\nvisual=' + (vv ? Math.round(vv.height) : '-') +
