@@ -954,6 +954,8 @@
     // l'iPhone devait redessiner ~4,6 millions de points par image (courbe + calque) → accrocs. Dessin seulement.
     // v2554 — plafond 2× partout (écran normal compris) : mesuré sur iPhone 3× (?diag=1) écran normal 11 img/s → trop de points.
     dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    // v2559 — téléphone en mode léger : 1,5× (44 % de points en moins à envoyer à l'écran, presque invisible à l'œil).
+    if (IS_MOBILE_CHART && D6.lite) dpr = Math.min(dpr, 1.5);
     var boxW = Math.max(0, Math.floor(parent.clientWidth || 0));
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
@@ -3290,10 +3292,15 @@
     }
   }
 
+  // v2559 — le calque du dessus n'est plus utilisé (rien n'y est dessiné) : l'effacer à CHAQUE image obligeait
+  // la carte graphique à le renvoyer à l'écran en plein format (mesuré : c'est elle qui sature sur iPhone quand
+  // on filme). Il est effacé une seule fois ; un redimensionnement le vide de toute façon.
+  var overlayClean = false;
   function paintOverlay() {
-    if (!octx || cssW < 8 || cssH < 8) return;
+    if (overlayClean || !octx || cssW < 8 || cssH < 8) return;
     octx.setTransform(dpr, 0, 0, dpr, 0, 0);
     octx.clearRect(0, 0, cssW, cssH);
+    overlayClean = true;
   }
 
   function drawPendingPulse(map, now) {
