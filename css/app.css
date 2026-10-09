@@ -8265,7 +8265,7 @@ html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not
 /* ===== v2493 — mot « Payout » sous 90 % / 500 % / 1000 % / 5000 % : un peu plus petit dans les langues où il est long
    (espagnol, portugais, vietnamien, russe, allemand, turc) pour ne jamais toucher le bord du rond. ===== */
 html:is([data-lang="es"],[data-lang="pt"],[data-lang="vi"],[data-lang="ru"],[data-lang="de"],[data-lang="tr"]) body #oddsRow#oddsRow .odds-chip .odds-pct{
-  font-size:6.2px!important;letter-spacing:0!important;max-width:78%!important;overflow:hidden!important;white-space:nowrap!important}
+  font-size:6.2px!important;letter-spacing:0!important;max-width:78%!important;white-space:nowrap!important}
 
 /* ===== v2494 — + / − de la mise : plus de rond. Un + et un − nets et épais (comme le + du bouton Recharger),
    dessinés en traits, sans cercle autour (écran normal et plein écran). ===== */
@@ -8289,3 +8289,16 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-plus::after,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-pm::before,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-plus::after{box-shadow:0 0 6px rgba(255,255,255,.55),0 0 2px rgba(255,255,255,.8)!important}
+
+/* ===== v2495 — mot « Payout » de la case du gain : le bas des lettres (p, g, %) n'est plus coupé (la ligne faisait
+   exactement la hauteur des lettres et le surplus était caché). Toutes langues, normal et plein écran. ===== */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .mult,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .mult{
+  line-height:1.3!important;height:auto!important;max-height:none!important;overflow:visible!important;padding-bottom:1px!important}
+/* v2495 — mot sous les ronds de payout : assez de hauteur pour toutes les écritures (arabe, hindi…), jamais coupé en bas. */
+html body #oddsRow#oddsRow#oddsRow .odds-chip .odds-pct{line-height:1.35!important;overflow:visible!important;padding-bottom:1px!important}
+html[data-lang="ar"] body #oddsRow#oddsRow#oddsRow#oddsRow .odds-chip .odds-pct,html.lang-ar body #oddsRow#oddsRow#oddsRow#oddsRow .odds-chip .odds-pct{line-height:1.45!important;overflow:visible!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip .odds-pct,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #oddsRow#oddsRow .odds-chip .odds-pct{line-height:1.35!important;overflow:visible!important}
+html.lang-ar body #screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip .odds-pct,
+html.lang-ar body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #oddsRow#oddsRow .odds-chip .odds-pct{line-height:1.5!important}
