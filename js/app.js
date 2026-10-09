@@ -4303,10 +4303,13 @@
       syncTradeButtons();
       return false;
     }
+    // v2555 — applyOpenTradeVisual dessine déjà le rond tout de suite : le 2ᵉ dessin complet qui suivait (iPhone / PC)
+    // doublait le travail à chaque clic (mesuré sur iPhone : 25 % d'images lentes en lançant des trades).
+    var visDone = false;
     if (D6.Chart && D6.Chart.applyOpenTradeVisual && res.trade) {
-      D6.Chart.applyOpenTradeVisual(res.trade);
+      visDone = D6.Chart.applyOpenTradeVisual(res.trade) !== false;
     }
-    if (!IS_ANDROID && D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
+    if (!visDone && !IS_ANDROID && D6.Chart && D6.Chart.drawNow) D6.Chart.drawNow();
     updateBalance(true);
     updatePriceHud();
     patchHistorySoon();
