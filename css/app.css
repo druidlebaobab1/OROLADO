@@ -8559,3 +8559,77 @@ html body #depositModal .dep-learn .auth-learn{width:100%;margin:0}
   html body #depositModal #depositAmt{min-height:38px!important;height:38px!important}
   html body #depositModal .pay-method-grid{gap:4px!important}
 }
+
+/* ===== v2507 — « Carte & paiement instantané » : téléphone qui envoie, logos (pays du joueur), 3 garanties. ===== */
+html body #depositModal #payMethodCard{display:flex!important;flex-direction:column;align-items:stretch;gap:7px}
+html body #depositModal #payMethodCard > .pay-method-desc{display:none!important}
+html body #depositModal .pay-local{display:flex;flex-direction:column;gap:7px;text-align:start}
+html body #depositModal .pl-row{display:flex;align-items:center;gap:10px}
+html body #depositModal .pl-phone{position:relative;flex:0 0 34px;height:52px}
+html body #depositModal .pl-phone svg{width:34px;height:52px;overflow:visible}
+html body #depositModal .pl-phone rect{fill:#0B1020;stroke:#FFD27A;stroke-width:2.4}
+html body #depositModal .pl-phone rect.scr{fill:#14203F;stroke:none}
+html body #depositModal .pl-phone .sp{stroke:#FFD27A;stroke-width:2;stroke-linecap:round}
+html body #depositModal .pl-phone .ln{stroke:rgba(255,255,255,.35);stroke-width:2.4;stroke-linecap:round;fill:none}
+html body #depositModal .pl-phone .ok{fill:#22C55E}
+html body #depositModal .pl-phone .tick{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@keyframes plFly{0%{transform:translate(0,0) scale(.6);opacity:0}25%{opacity:1}100%{transform:translate(26px,-14px) scale(1);opacity:0}}
+html body #depositModal .pl-fly{position:absolute;left:24px;top:16px;width:1px;height:1px;pointer-events:none}
+html body #depositModal .pl-fly b{position:absolute;left:0;top:0;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF3C4,#F5B83D 60%,#B9770E);box-shadow:0 0 6px rgba(255,210,122,.8);animation:plFly 1.8s ease-out infinite}
+html body #depositModal .pl-fly b:nth-child(2){animation-delay:.6s}
+html body #depositModal .pl-fly b:nth-child(3){animation-delay:1.2s}
+html body #depositModal .pl-main{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 auto}
+html body #depositModal .pl-lead{font-size:13px;font-weight:900;color:#fff;line-height:1.2}
+html body #depositModal .pl-where{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#FFD27A}
+html body #depositModal .pl-where svg{width:12px;height:12px;flex:0 0 12px;fill:none;stroke:#FFD27A;stroke-width:2.2}
+html body #depositModal .pl-logos{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+html body #depositModal .pl-logo{display:inline-flex;align-items:center;gap:3px;height:20px;padding:0 6px;border-radius:5px;font-style:normal;font-size:10.5px;font-weight:900;line-height:1;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+html body #depositModal .pl-logo small{font-size:8.5px;font-weight:700;opacity:.9}
+html body #depositModal .pl-visa{background:#fff;color:#1A1F71;font-style:italic;letter-spacing:.02em;font-size:11px}
+html body #depositModal .pl-mc{background:#fff;padding:0 5px}
+html body #depositModal .pl-mc b{width:12px;height:12px;border-radius:50%;background:#EB001B;display:block}
+html body #depositModal .pl-mc b+b{background:#F79E1B;margin-left:-6px;mix-blend-mode:multiply}
+html body #depositModal .pl-apple{background:#000;color:#fff;border:1px solid rgba(255,255,255,.35)}
+html body #depositModal .pl-apple svg{width:12px;height:12px;fill:#fff}
+html body #depositModal .pl-gpay{background:#fff;color:#3C4043}
+html body #depositModal .pl-gpay .g{font-size:12px;background:conic-gradient(from -45deg,#EA4335 0 25%,#4285F4 0 50%,#34A853 0 75%,#FBBC05 0);-webkit-background-clip:text;background-clip:text;color:transparent}
+html body #depositModal .pl-om{background:#000;color:#fff}
+html body #depositModal .pl-om b{width:11px;height:11px;background:#FF7900;display:block;border-radius:1px}
+html body #depositModal .pl-mtn{background:#FFCB05;color:#000}
+html body #depositModal .pl-mtn b{background:#000;color:#FFCB05;border-radius:50%/60%;padding:1px 3px;font-size:8.5px}
+html body #depositModal .pl-moov{background:#0069B4;color:#fff;font-style:italic}
+html body #depositModal .pl-airtel{background:#E40000;color:#fff}
+html body #depositModal .pl-mpesa{background:#fff;color:#2E9E3E;letter-spacing:.02em}
+html body #depositModal .pl-telecel{background:#E30613;color:#fff}
+html body #depositModal .pl-bank{background:rgba(255,255,255,.12);color:#E6EBFF;border:1px solid rgba(255,255,255,.25)}
+html body #depositModal .pl-bank svg{width:12px;height:12px;fill:none;stroke:#E6EBFF;stroke-width:2;stroke-linecap:round}
+html body #depositModal .pl-ok{display:flex;justify-content:space-between;gap:4px;padding-top:6px;border-top:1px solid rgba(255,210,122,.22)}
+html body #depositModal .pl-ok span{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:#C8F7DC;white-space:nowrap}
+html body #depositModal .pl-ok svg{width:13px;height:13px;flex:0 0 13px;fill:none;stroke:#3CF5A6;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+html[dir="rtl"] body #depositModal .pl-fly{left:auto;right:24px;transform:scaleX(-1)}
+/* v2507 — la fenêtre Recharger peut utiliser presque tout l'écran (la case instantanée est plus riche). */
+@media (max-width:820px){ html body #depositModal #depositBox{max-height:calc(100dvh - 20px)!important} }
+@media (orientation:portrait) and (max-height:760px){
+  html body #depositModal .pay-crypto-wall .pay-crypto-cell:nth-child(n+11){display:none!important}
+  html body #depositModal .pl-phone{flex-basis:28px;height:44px}
+  html body #depositModal .pl-phone svg{width:28px;height:44px}
+  html body #depositModal #payMethodCard{gap:5px!important}
+  html body #depositModal .pl-ok{padding-top:5px}
+}
+/* v2507 — case instantanée aux couleurs de la fenêtre (vert émeraude + bleu, comme « Valider la recharge »), plus de doré / orange. */
+@keyframes plGlow{0%,100%{box-shadow:0 0 0 1px rgba(60,245,166,.55),0 0 14px rgba(46,229,157,.25)}50%{box-shadow:0 0 0 1px rgba(60,245,166,.85),0 0 22px rgba(46,229,157,.45)}}
+html body #depositModal #payMethodCard.pay-method-card{border:0!important;border-radius:14px!important;
+  background:linear-gradient(135deg,rgba(46,229,157,.16),rgba(56,189,248,.10) 55%,rgba(124,77,255,.10))!important;animation:plGlow 2.8s ease-in-out infinite!important}
+html body #depositModal #payMethodCard .pay-method-title{color:#fff!important;text-shadow:0 0 10px rgba(60,245,166,.35)!important;-webkit-text-fill-color:#fff!important;background:none!important}
+html body #depositModal #payMethodCard .pay-method-rec{color:#04261A!important;background:linear-gradient(180deg,#6EF7BE,#22C55E)!important;border:0!important;box-shadow:0 0 10px rgba(46,229,157,.45)!important;animation:none!important}
+html body #depositModal #payMethodCard::after{background:linear-gradient(110deg,transparent 35%,rgba(180,255,225,.22) 50%,transparent 65%)!important}
+html body #depositModal .pl-where{color:#7FE7FF!important}
+html body #depositModal .pl-where svg{stroke:#7FE7FF!important}
+html body #depositModal .pl-phone rect{stroke:#5CF7B5!important}
+html body #depositModal .pl-phone .sp{stroke:#5CF7B5!important}
+html body #depositModal .pl-fly b{background:radial-gradient(circle at 35% 35%,#E8FFF5,#3CF5A6 60%,#0E9F5E)!important;box-shadow:0 0 6px rgba(60,245,166,.8)!important}
+html body #depositModal .pl-ok{border-top-color:rgba(60,245,166,.25)!important}
+html body #depositModal #depositBox #payMethodCard#payMethodCard#payMethodCard.pay-method-card{border:0!important;
+  background:linear-gradient(135deg,rgba(46,229,157,.16),rgba(56,189,248,.10) 55%,rgba(124,77,255,.10))!important;animation:plGlow 2.8s ease-in-out infinite!important}
+html body #depositModal #depositBox .pay-method-label.pay-method-label{color:#C8F7E2!important;text-shadow:none!important}
+html body #depositModal #depositBox #payMethodCard#payMethodCard#payMethodCard.pay-method-card{box-shadow:0 0 0 1.5px rgba(60,245,166,.75),0 0 18px rgba(46,229,157,.35),inset 0 0 0 1px rgba(255,255,255,.05)!important;animation:none!important}
