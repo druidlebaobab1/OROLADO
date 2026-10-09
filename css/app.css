@@ -8702,3 +8702,17 @@ html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#clo
   html body #drawerProfile#drawerProfile#drawerProfile#drawerProfile{grid-template-rows:none!important;grid-auto-rows:auto!important;align-content:start!important;padding-bottom:12px!important}
   html body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-card{overflow:visible!important}
 }
+
+/* ===== v2512 — Bouton « Recharger » plus imposant sur téléphone debout (Android et iPhone) : MÊMES couleurs,
+   seulement la taille et la forme (50 px de haut au lieu de 42, coins plus ronds, texte et « + » plus grands). ===== */
+@media (orientation:portrait) and (max-width:820px){
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #topbarCta{height:50px!important;min-height:50px!important;max-height:50px!important;border-radius:16px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #btnOpenDeposit{height:50px!important;min-height:50px!important;max-height:50px!important;border-radius:16px!important;font-size:17px!important;font-weight:900!important;gap:10px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #btnOpenDeposit .dep-bolt{width:20px!important;height:20px!important;min-width:20px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #btnOpenDeposit .dep-bolt::before{width:20px!important;height:20px!important;background-size:4.5px 20px,20px 4.5px!important}
+}
+@media (orientation:portrait) and (max-width:345px){
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #btnOpenDeposit{font-size:13px!important;gap:5px!important;padding:0 6px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #btnOpenDeposit .dep-bolt{width:15px!important;height:15px!important;min-width:15px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #btnOpenDeposit .dep-bolt::before{width:15px!important;height:15px!important;background-size:3.5px 15px,15px 3.5px!important}
+}
