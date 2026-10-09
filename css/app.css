@@ -8633,3 +8633,10 @@ html body #depositModal #depositBox #payMethodCard#payMethodCard#payMethodCard.p
   background:linear-gradient(135deg,rgba(46,229,157,.16),rgba(56,189,248,.10) 55%,rgba(124,77,255,.10))!important;animation:plGlow 2.8s ease-in-out infinite!important}
 html body #depositModal #depositBox .pay-method-label.pay-method-label{color:#C8F7E2!important;text-shadow:none!important}
 html body #depositModal #depositBox #payMethodCard#payMethodCard#payMethodCard.pay-method-card{box-shadow:0 0 0 1.5px rgba(60,245,166,.75),0 0 18px rgba(46,229,157,.35),inset 0 0 0 1px rgba(255,255,255,.05)!important;animation:none!important}
+/* v2508 — Dépôt crypto : le rond orange devient un vrai bouton « Ouvrir › » aux couleurs du bloc (violet → bleu). */
+@keyframes payGoPill{0%,100%{box-shadow:0 0 0 0 rgba(124,77,255,.55),0 4px 14px rgba(56,189,248,.35)}50%{box-shadow:0 0 0 6px rgba(124,77,255,0),0 4px 18px rgba(56,189,248,.5)}}
+html body #depositModal#depositModal #payMethodUsdt .pay-go-arrow.pay-go-pill{display:inline-flex!important;align-items:center!important;gap:3px;width:auto!important;height:34px!important;padding:0 10px 0 14px!important;border-radius:999px!important;line-height:1!important;
+  background:linear-gradient(135deg,#8B5CF6,#38BDF8)!important;border:1px solid rgba(255,255,255,.35)!important;animation:payGoPill 2.2s ease-out infinite!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-go-pill b{font-size:13px;font-weight:900;color:#fff;letter-spacing:.02em;white-space:nowrap}
+html body #depositModal#depositModal #payMethodUsdt .pay-go-pill svg{width:16px!important;height:16px!important;stroke:#fff!important;stroke-width:3.2!important;transform:none!important}
+html[dir="rtl"] body #depositModal#depositModal #payMethodUsdt .pay-go-pill svg{transform:scaleX(-1)!important}

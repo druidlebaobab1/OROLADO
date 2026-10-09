@@ -3686,6 +3686,7 @@
   };
   var AUDIT_LANGS = ['en', 'fr', 'es', 'pt', 'ar', 'tr', 'vi', 'id', 'ru', 'de', 'hi'];
   // v2507 — case « Carte & paiement instantané » (téléphone, logos, garanties).
+  AUDIT_TR.payGo = ['Open', 'Ouvrir', 'Abrir', 'Abrir', 'فتح', 'Aç', 'Mở', 'Buka', 'Открыть', 'Öffnen', 'खोलें'];
   AUDIT_TR.payLocLead = ["Pay in 1 minute from your phone","Payez en 1 minute depuis votre téléphone","Paga en 1 minuto desde tu teléfono","Paga em 1 minuto pelo telemóvel","ادفع في دقيقة واحدة من هاتفك","Telefonundan 1 dakikada öde","Thanh toán trong 1 phút từ điện thoại","Bayar 1 menit dari ponselmu","Оплата за 1 минуту с телефона","In 1 Minute vom Handy bezahlen","अपने फ़ोन से 1 मिनट में भुगतान करें"];
   AUDIT_TR.payLocFor = ["Methods for","Moyens pour","Medios para","Meios para","وسائل الدفع في","Ödeme yolları:","Phương thức cho","Metode untuk","Способы для","Zahlwege für","भुगतान के तरीके:"];
   AUDIT_TR.payLocWorld = ["the whole world","le monde entier","todo el mundo","o mundo inteiro","العالم كله","tüm dünya","toàn thế giới","seluruh dunia","всего мира","die ganze Welt","पूरी दुनिया"];
