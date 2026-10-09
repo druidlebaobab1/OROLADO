@@ -8808,3 +8808,15 @@ html[dir="rtl"] body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverla
    de la fenêtre reste en arabe (droite à gauche). */
 html[dir="rtl"] body .modal-backdrop{direction:ltr}
 html[dir="rtl"] body .modal-backdrop > .modal-box{direction:rtl}
+/* v2518 — Android debout : depuis la ligne mise / durées à 36 px (v2516), le gain prévu (« $ 1.90 ») touchait le haut de sa
+   case. Chiffre un peu plus petit (18,7 → 16 px) et « Payout 90% » serré : tout respire dans la case. */
+@media (orientation:portrait) and (max-width:820px){
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line .win-preview #previewGain{font-size:16px!important;line-height:1!important}
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line .win-preview #previewMult{font-size:9px!important;line-height:1.1!important}
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line .win-preview{justify-content:center!important;gap:1px!important}
+}
+/* v2518 — Croix de l'Aide alignée sur toutes les autres (27 → 30 px). */
+html body #helpModal#helpModal#helpModal > .modal-box > #closeHelp.btn-close{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important}
+/* v2518 — Notifications : un message long s'écrasait dans une colonne de ~180 px (6 lignes) à cause du centrage
+   (left:50 %). Il prend maintenant sa vraie largeur, sans jamais dépasser l'écran. */
+html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100vw - 28px))!important}

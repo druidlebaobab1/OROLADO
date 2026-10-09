@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v2517';
+const CACHE = 'orolado-v2518';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -37,6 +37,9 @@ self.addEventListener('fetch', function (event) {
   if (req.mode === 'navigate' || /\.(?:html|css|js)(?:\?|$)/i.test(url)) return;
   // Flux de prix / API : toujours le réseau, jamais de cache (sinon des milliers d'entrées).
   if (/\.php(?:\?|$)/i.test(url)) return;
+  // v2518 — prix en direct (feedcache/live.json?r=…, adresse différente à chaque lecture) et toute lecture « no-store » :
+  // jamais copiés, sinon la mémoire du téléphone grossirait sans fin.
+  if (/\/feedcache\//i.test(url) || req.cache === 'no-store') return;
   event.respondWith(
     fetch(req).then(function (res) {
       if (!res || res.status !== 200 || url.indexOf('http') !== 0) return res;
