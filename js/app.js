@@ -7929,6 +7929,25 @@
         el.classList.remove('fade-out');
       }, 450);
     }
+    function installHelp(kind) {
+      var box = $('iosInstallModal');
+      if (!box) return;
+      var ios = kind === 'ios';
+      var set = function (sel, key) { var el = box.querySelector(sel); if (el) el.textContent = t(key); };
+      set('[data-i18n="installIosTitle"]', 'installIosTitle');
+      set('.install-ios-lead', ios ? 'installIosLead' : 'installAndLead');
+      var steps = box.querySelectorAll('.install-ios-step');
+      ['1', '2', '3'].forEach(function (n, i) {
+        var sp = steps[i] && steps[i].querySelector('span[data-i18n]');
+        if (sp) sp.textContent = t((ios ? 'installIos' : 'installAnd') + n);
+      });
+      var ico = steps[0] && steps[0].querySelector('.install-ios-ico');
+      if (ico) {
+        if (!ico.getAttribute('data-ios')) ico.setAttribute('data-ios', ico.innerHTML);
+        ico.innerHTML = ios ? ico.getAttribute('data-ios') : '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+      }
+      openModal('iosInstallModal');
+    }
     function showInstallBanner() {
       if (!isMobileUi() || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install')) return;
       var el = $('installBanner');
@@ -7961,12 +7980,10 @@
           hideInstallBanner();
           return;
         }
-        if (isIos()) {
-          hideInstallBanner();
-          openModal('iosInstallModal');
-          return;
-        }
-        toast(t('installIos') || 'Utilise le menu du navigateur → Installer l’application', '');
+        // v2493 : iPhone = 3 étapes iPhone ; Android (Chrome pas encore prêt) = 3 étapes Android dans la même fenêtre
+        // (avant : petit message avec la consigne iPhone « Partager… », incompréhensible sur Android).
+        hideInstallBanner();
+        installHelp(isIos() ? 'ios' : 'android');
       });
     }
     if ($('btnInstallClose')) {

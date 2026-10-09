@@ -8220,3 +8220,49 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOv
   html body #portalModal#portalModal#portalModal .modal-box.portal-box{width:min(920px,94vw)!important;max-width:none!important;max-height:94vh!important;min-height:min(780px,94vh)!important}
   html body #portalModal#portalModal#portalModal .portal-box :is(.defi-card,.aff-card,.top-card,.bon-card,.gift-guest){max-width:760px!important;margin-inline:auto!important;width:100%!important}
 }
+
+/* ===== v2493 — Application installée (iPhone / Android) : la croix des Cadeaux descend sous la barre de l'heure
+   (au moins 44 px, même si l'iPhone ne donne pas sa marge) ; plus grande et facile à toucher. ===== */
+@media (display-mode: standalone),(display-mode: fullscreen){
+  html body #portalModal#portalModal#portalModal#portalModal .portal-box > #closePortal{
+    top:calc(max(env(safe-area-inset-top,0px),44px) + 6px)!important;right:10px!important;
+    width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;max-width:36px!important;max-height:36px!important;z-index:30!important}
+  html body #portalModal#portalModal#portalModal#portalModal .portal-box > #closePortal .x-ico{width:15px!important;height:15px!important}
+}
+
+/* ===== v2493 — Plein écran : les + / − de la mise comme en écran normal (ronds dorés transparents) ; la mise
+   gain « ≈ … $ » en BLANC (la mise garde ses couleurs normales). ===== */
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .stake-pm{
+  background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important;color:#FFE7A3!important;border:0!important;box-shadow:0 0 4px rgba(255,255,255,.12)!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6)  #fsStakeWin{
+  color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important}
+
+/* ===== v2493 (le propriétaire change d'avis) — tout en BLANC : + / − de la mise (normal et plein écran), petites
+   flèches de la case des secondes, et le mot « Payout » de la case du gain (une seule couleur, sans lueur). ===== */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .stake-pm,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .stake-pm,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .stake-pm{
+  background:rgba(255,255,255,.08)!important;color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:none!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg,
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg path,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg path{
+  stroke:#FFFFFF!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .mult,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .mult{
+  color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;text-shadow:none!important;filter:none!important;background:none!important}
+
+/* ===== v2493 — Connexion / inscription : « Se connecter » et « Créer mon compte » un peu plus hauts (52 px) que le
+   bouton Google (46 px) : on ne les confond plus. ===== */
+html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) :is(#formLogin,#formRegister) > .btn-gold[type="submit"]{
+  min-height:52px!important;height:52px!important;padding-top:0!important;padding-bottom:0!important}
+@media (max-height:720px){html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not(#z1) :is(#formLogin,#formRegister) > .btn-gold[type="submit"]{min-height:50px!important;height:50px!important}}
+/* v2493 — encore plus grands (il reste de la place) : Se connecter 58 px, Créer mon compte 56 px (54 px sur petit écran). Google : 46-48 px. */
+html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not(#z1):not(#z2) #formLogin > .btn-gold[type="submit"]{min-height:58px!important;height:58px!important;font-size:17px!important}
+html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not(#z1):not(#z2) #formRegister > .btn-gold[type="submit"]{min-height:56px!important;height:56px!important;font-size:17px!important}
+@media (max-height:720px){html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not(#z1):not(#z2) #formRegister > .btn-gold[type="submit"]{min-height:54px!important;height:54px!important}}
+
+/* ===== v2493 — mot « Payout » sous 90 % / 500 % / 1000 % / 5000 % : un peu plus petit dans les langues où il est long
+   (espagnol, portugais, vietnamien, russe, allemand, turc) pour ne jamais toucher le bord du rond. ===== */
+html:is([data-lang="es"],[data-lang="pt"],[data-lang="vi"],[data-lang="ru"],[data-lang="de"],[data-lang="tr"]) body #oddsRow#oddsRow .odds-chip .odds-pct{
+  font-size:6.2px!important;letter-spacing:0!important;max-width:78%!important;overflow:hidden!important;white-space:nowrap!important}
