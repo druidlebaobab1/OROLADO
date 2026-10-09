@@ -4611,6 +4611,44 @@
     return Math.max(100, Math.round(Number(usd || 0) * rate));
   }
 
+  // v2541 — Wave ne fonctionne pas dans la page Flutterwave (on ne peut pas le retirer de leur liste).
+  // Pour les pays où Wave apparaît (Côte d'Ivoire, Sénégal), petite fenêtre AVANT la page de paiement :
+  // « Wave est en maintenance, payez avec … ». Affichage seulement : rien ne change au paiement lui-même.
+  var WAVE_OPS = { CI: ['orange', 'mtn', 'moov'], SN: ['orange'] };
+  var WAVE_NAMES = { orange: 'Orange Money', mtn: 'MTN MoMo', moov: 'Moov Money' };
+  function waveNotice(country) {
+    var cc = String(country || '').toUpperCase();
+    var ops = WAVE_OPS[cc];
+    if (!ops) return Promise.resolve(true);
+    var en = /^en/i.test(String(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr'));
+    var names = ops.map(function (o) { return WAVE_NAMES[o]; });
+    var list = names.length > 1 ? names.slice(0, -1).join(', ') + (en ? ' or ' : ' ou ') + names[names.length - 1] : names[0];
+    var txt = en
+      ? { t: 'Wave is under maintenance', p: 'Please pay with ' + list + '. On the next page, choose your operator and follow the steps.', go: 'Continue', no: 'Cancel' }
+      : { t: 'Wave est en maintenance', p: 'Payez avec ' + list + '. Sur la page suivante, choisissez votre opérateur et suivez les étapes.', go: 'Continuer', no: 'Annuler' };
+    return new Promise(function (resolve) {
+      var old = $('waveNotice');
+      if (old) old.remove();
+      var bd = document.createElement('div');
+      bd.id = 'waveNotice';
+      bd.className = 'wave-notice';
+      bd.setAttribute('role', 'dialog');
+      bd.setAttribute('aria-modal', 'true');
+      var logos = ops.map(function (o) {
+        return '<span class="wn-op"><img src="icons/pay/' + o + '.svg" alt=""><b>' + WAVE_NAMES[o] + '</b></span>';
+      }).join('');
+      bd.innerHTML = '<div class="wn-box"><div class="wn-wave"><img src="icons/pay/wave.svg" alt=""><i>✕</i></div>' +
+        '<h3>' + txt.t + '</h3><p>' + txt.p + '</p><div class="wn-ops">' + logos + '</div>' +
+        '<button type="button" class="wn-go">' + txt.go + '</button><button type="button" class="wn-no">' + txt.no + '</button></div>';
+      document.body.appendChild(bd);
+      function done(v) { try { bd.remove(); } catch (eR) { /* ignore */ } resolve(v); }
+      bd.querySelector('.wn-go').addEventListener('click', function () { done(true); });
+      bd.querySelector('.wn-no').addEventListener('click', function () { done(false); });
+      bd.addEventListener('click', function (e) { if (e.target === bd) done(false); });
+    });
+  }
+
+
   function normalizeFlwSession(session) {
     var s = session || {};
     var cur = String(s.currency || 'USD').toUpperCase();
@@ -5632,6 +5670,8 @@
       }
       try { sessionStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e2) { /* ignore */ }
+      // v2541 — Côte d'Ivoire / Sénégal : Wave ne marche pas chez Flutterwave → on prévient AVANT d'ouvrir la page.
+      if (!(await waveNotice(remote.country))) return;
       openFlwInline(remote);
     } catch (err) {
       console.error('OROLADO deposit', err);
