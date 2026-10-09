@@ -49,6 +49,21 @@
     else start();
   })();
 
+  // v2551 — iPhone : après le clavier, Safari gardait la page remontée, et la REMETTAIT décalée même après une
+  // actualisation (ligne des planètes plus dessinée). La page repart toujours à sa place : en haut, sans décalage.
+  (function scrollHome() {
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (eSr) { /* ignore */ }
+    function home() {
+      try {
+        var ae = document.activeElement;
+        if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+        if (window.scrollY || window.pageYOffset) window.scrollTo(0, 0);
+      } catch (eH) { /* ignore */ }
+    }
+    window.addEventListener('pageshow', function () { home(); setTimeout(home, 300); });
+    window.addEventListener('load', function () { setTimeout(home, 50); });
+  })();
+
   // v2538 — MODE LÉGER automatique : sur un téléphone qui n'arrive pas à suivre (plus d'1 image sur 3 lente,
   // deux fois de suite, écran de trading affiché), on pose html.oro-lite : les décors coûteux s'immobilisent
   // (voir css/app.css v2538). Retenu 7 jours sur ce téléphone. Test : ?lite=1 (forcé) / ?lite=0 (jamais).
@@ -7297,6 +7312,41 @@
       };
       $('inputStake').addEventListener('blur', stakeRefill);
       $('inputStake').addEventListener('change', stakeRefill);
+      // v2551 — clavier refermé (iPhone surtout) : l'écran restait remonté et il fallait actualiser. On le remet
+      // à sa place tout seul, seulement sur l'écran de trading et seulement s'il n'y a plus de case en saisie.
+      var kbBackT = 0;
+      var kbBack = function () {
+        clearTimeout(kbBackT);
+        kbBackT = setTimeout(function () {
+          try {
+            var ae = document.activeElement;
+            if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+            var st = $('screenTrade');
+            if (!st || st.classList.contains('hidden')) return;
+            if (document.querySelector('.modal-backdrop.active')) return;
+            if (window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop) {
+              window.scrollTo(0, 0);
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            }
+            ['screenTrade', 'tradeWrap', 'fsTradeOverlay'].forEach(function (id) {
+              var el = $(id);
+              if (el && el.scrollTop) el.scrollTop = 0;
+            });
+            var shell = document.querySelector('.trade-shell');
+            if (shell && shell.scrollTop) shell.scrollTop = 0;
+          } catch (eKb) { /* ignore */ }
+        }, 120);
+      };
+      $('inputStake').addEventListener('blur', function () { kbBack(); setTimeout(kbBack, 400); });
+      if (window.visualViewport) {
+        var vvLastH = window.visualViewport.height;
+        window.visualViewport.addEventListener('resize', function () {
+          var h = window.visualViewport.height;
+          if (h > vvLastH + 60) kbBack();
+          vvLastH = h;
+        });
+      }
       // Passage plein écran / rotation : la case change de largeur → on réajuste la taille du chiffre.
       try {
         if (window.ResizeObserver) {
