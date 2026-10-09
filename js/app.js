@@ -770,7 +770,28 @@
         el.textContent = p[1];
         modeAmtLast[p[0]] = p[1];
       });
+      paintModeExtras(realTxt, demoTxt);
     } catch (eMa) { /* ignore */ }
+  }
+  // v2497 — DÉMO / COMPTE RÉEL : le solde qui « vit »
+  // (éclat vert quand il monte, petit effet doux quand il descend). Affichage seulement.
+  var modeAmtNum = {};
+  function amtNum(txt) { var n = parseFloat(String(txt || '').replace(/[^0-9.,-]/g, '').replace(/,(?=\d{3}\b)/g, '').replace(',', '.')); return isFinite(n) ? n : NaN; }
+  function paintModeExtras(realTxt, demoTxt) {
+    [['modeDemo', demoTxt], ['modeReal', realTxt], ['fsBtnDemo', demoTxt], ['fsBtnReal', realTxt]].forEach(function (p) {
+      var n = amtNum(p[1]);
+      if (!isFinite(n)) return;
+      var prev = modeAmtNum[p[0]];
+      modeAmtNum[p[0]] = n;
+      if (prev == null || Math.abs(n - prev) < 0.005) return;
+      var b = $(p[0]);
+      if (!b) return;
+      b.classList.remove('bal-up', 'bal-down');
+      void b.offsetWidth;
+      b.classList.add(n > prev ? 'bal-up' : 'bal-down');
+      clearTimeout(b._balT);
+      b._balT = setTimeout(function () { b.classList.remove('bal-up', 'bal-down'); }, 1100);
+    });
   }
   setInterval(paintModeAmounts, 1000);
 
