@@ -8926,3 +8926,9 @@ html body #depositModal .pl-telecel{background:#E30613;color:#fff;text-transform
 html body #depositModal .pl-tigo{background:#00377B;color:#fff}
 html body #depositModal .pl-tigo small{color:#FCD34D;margin-left:2px;font-size:.85em}
 html body #depositModal .pl-zamtel{background:#00A651;color:#fff}
+
+/* v2545 — logos RANGÉS : grille de 3 colonnes égales, tous la même taille, contenu centré ; dernière ligne centrée. */
+html body #depositModal#depositModal #payMethodCard .pl-logos{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:5px!important;align-content:flex-start!important}
+html body #depositModal#depositModal #payMethodCard .pl-logo{flex:0 0 calc((100% - 10px) / 3)!important;width:calc((100% - 10px) / 3)!important;max-width:calc((100% - 10px) / 3)!important;min-width:0!important;box-sizing:border-box!important;height:24px!important;padding:0 4px!important;justify-content:center!important;overflow:hidden!important;font-size:10.5px!important}
+html body #depositModal#depositModal #payMethodCard .pl-logo.pl-om,html body #depositModal#depositModal #payMethodCard .pl-logo.pl-airtel,html body #depositModal#depositModal #payMethodCard .pl-logo.pl-tigo{font-size:9.5px!important;letter-spacing:-.01em}
+@media (max-width:359px){html body #depositModal#depositModal #payMethodCard .pl-logo.pl-om{font-size:8px!important;gap:2px!important;padding:0 2px!important;letter-spacing:-.02em}}
