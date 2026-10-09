@@ -3268,8 +3268,8 @@
 
     var remaining = exp - Date.now();
     var secs = chronoSecs(trade, remaining / 1000);
-    // v2453 — jusqu'à 3 chronos (un par trade, comme les zones), aussi sur Android.
-    if (idx > 2) return;
+    // v2558 (propriétaire) : un chrono pour CHAQUE trade, posé sur sa propre ligne (avant : 3 au plus).
+    if (idx > 40) return;
     if (secs >= 0.15) {
       // v2453 — chrono en petite planète : secondes au centre (m:ss à partir d'une minute), lueur qui fait le tour.
       var sInt = Math.max(1, Math.ceil(secs));
@@ -4677,7 +4677,9 @@
         if (fsSkip.n > 90 && fsSkip.ema > 21) fsSkip.heavy = true;
       }
       var skipDraw = false;
-      if (fsSkip.heavy || D6.lite) { fsSkip.flip = !fsSkip.flip; skipDraw = fsSkip.flip; }
+      // v2558 : sur TOUS les téléphones, 30 images/s régulières en permanence (moitié moins de travail : moins de chauffe,
+      // de batterie, et l'enregistrement d'écran tient). Ordinateurs : 60, sauf saturation / mode léger.
+      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { fsSkip.flip = !fsSkip.flip; skipDraw = fsSkip.flip; }
       if (!skipDraw) {
         drawFrame(ts);
         if (onFrame) onFrame(ts);
