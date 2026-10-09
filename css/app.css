@@ -8721,3 +8721,13 @@ html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#clo
 @media (orientation:portrait) and (max-width:820px){
   html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row{grid-template-columns:auto minmax(0,1fr) auto!important;column-gap:4px!important}
 }
+/* v2514 — Barre du haut (téléphone debout, joueur connecté) RANGÉE AU PIXEL : Cadeaux, Aide, drapeau, Profil ont la même
+   largeur (48 px), et TOUS les espaces visibles sont égaux (16 px) : marge gauche, entre chaque élément, marge droite.
+   Recharger est donc parfaitement centré et prend le reste de la place. Mesuré de 320 à 430 px, iPhone et Android, 11 langues. */
+@media (orientation:portrait) and (max-width:820px){
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row{grid-template-columns:auto minmax(0,1fr) auto!important;column-gap:9px!important;padding-left:9px!important;padding-right:9px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row>.tb-left,
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row>.topbar-actions{display:flex!important;gap:2px!important;justify-content:flex-start!important;padding:0!important;margin:0!important;width:auto!important;min-width:0!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) :is(#btnPortal,#btnHelp,#langBarTrade,#btnProfile){width:48px!important;min-width:48px!important;max-width:48px!important;flex:0 0 48px!important;margin:0!important;padding-left:0!important;padding-right:0!important;justify-content:center!important;align-items:center!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #topbarCta{width:100%!important;max-width:none!important;margin:0!important}
+}
