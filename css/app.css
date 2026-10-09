@@ -8826,3 +8826,9 @@ html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100v
 @media (min-width:821px) and (min-height:501px){
   html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch{grid-template-columns:minmax(0,240px) 48px minmax(0,240px)!important;justify-content:center!important;column-gap:14px!important}
 }
+
+/* v2524 — Téléphone debout (Android + iPhone) : la ligne du solde (COMPTE RÉEL / DÉMO) est coupée pour être
+   pile alignée sur le carré Cadeaux (à gauche) et le rond Profil (à droite). Rien d'autre ne change. */
+@media (orientation:portrait) and (max-width:820px){
+  html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-mode{padding-left:16px!important;padding-right:16px!important}
+}
