@@ -8393,3 +8393,11 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):
    la couleur vive va vers le bord, comme VENDRE. ===== */
 html body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) #btnCall.btn-call,html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#z1):not(#z2):not(#z3):not(#z4) #btnCall.btn-call{
   background-image:url("../icons/ui/btn-planets.svg?v=2500"),linear-gradient(270deg,rgba(34,197,94,.62),rgba(8,40,30,.55) 85%)!important}
+
+/* ===== v2502 — Portefeuille du COMPTE RÉEL à GAUCHE, devant le solde (choix A du propriétaire) : il ne peut plus
+   être confondu avec la DÉMO. ===== */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal{padding-left:54px!important;padding-right:10px!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal .mb-wal{left:10px!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;margin:0!important;width:34px!important;height:34px!important;border-radius:10px!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal .mb-wal svg{width:20px!important;height:20px!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal{padding-left:40px!important;padding-right:8px!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal .mb-wal{left:8px!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;margin:0!important;width:26px!important;height:26px!important;border-radius:8px!important}
