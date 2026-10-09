@@ -952,7 +952,8 @@
 
     // v2549 — PLEIN ÉCRAN : définition plafonnée à 2× (iPhone = 3×) : la courbe y est 2,3 fois plus grande, et à 3×
     // l'iPhone devait redessiner ~4,6 millions de points par image (courbe + calque) → accrocs. Dessin seulement.
-    dpr = Math.max(1, Math.min(fsMode ? 2 : 4, window.devicePixelRatio || 1));
+    // v2554 — plafond 2× partout (écran normal compris) : mesuré sur iPhone 3× (?diag=1) écran normal 11 img/s → trop de points.
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     var boxW = Math.max(0, Math.floor(parent.clientWidth || 0));
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
@@ -4684,13 +4685,14 @@
       // Dessin seulement : prix, trades et chronos ne changent pas.
       var fsOnNow = document.documentElement.classList.contains('fs-trade');
       if (fsOnNow !== fsSkip.was) { fsSkip.was = fsOnNow; fsSkip.heavy = false; fsSkip.ema = 16.7; fsSkip.n = 0; fsSkip.flip = false; }
-      if (fsOnNow && !fsSkip.heavy) {
+      // v2554 : même protection sur l'écran normal (mesuré : 11 img/s sur iPhone) — détection par écran.
+      if (!fsSkip.heavy) {
         fsSkip.ema = fsSkip.ema * 0.9 + Math.min(dt, 60) * 0.1;
         fsSkip.n++;
         if (fsSkip.n > 90 && fsSkip.ema > 21) fsSkip.heavy = true;
       }
       var skipDraw = false;
-      if (fsOnNow && (fsSkip.heavy || D6.lite)) { fsSkip.flip = !fsSkip.flip; skipDraw = fsSkip.flip; }
+      if (fsSkip.heavy || D6.lite) { fsSkip.flip = !fsSkip.flip; skipDraw = fsSkip.flip; }
       if (!skipDraw) {
         drawFrame(ts);
         if (onFrame) onFrame(ts);
