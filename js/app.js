@@ -4694,7 +4694,8 @@
       function finish(v) { if (done) return; done = true; flwScriptWait = null; resolve(v); }
       try {
         var s = document.createElement('script');
-        s.src = 'https://checkout.flutterwave.com/v3.js';
+        // v2546 : adresse neuve à chaque essai → jamais une vieille copie abîmée gardée par le téléphone.
+        s.src = 'https://checkout.flutterwave.com/v3.js?r=' + Date.now();
         s.async = true;
         s.onload = function () { finish(!!window.FlutterwaveCheckout); };
         s.onerror = function () { finish(false); };
