@@ -8913,3 +8913,7 @@ html body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#
 #waveNotice .wn-op img{width:46px;height:46px;border-radius:12px;background:#fff;padding:3px;box-sizing:border-box;box-shadow:0 0 0 2px rgba(34,224,122,.55)}
 #waveNotice .wn-go{display:block;width:100%;border:0;border-radius:14px;padding:13px;font:900 16px system-ui;color:#fff;background:linear-gradient(180deg,#34D673,#16A34A);cursor:pointer}
 #waveNotice .wn-no{display:block;width:100%;margin-top:8px;border:0;background:transparent;color:#9DB7FF;font:700 14px system-ui;padding:6px;cursor:pointer}
+
+/* v2543 — logo BANQUE (remplace Moov) dans « Carte & paiement instantané » : bleu marine, bâtiment doré, un peu plus large. */
+html body #depositModal #payMethodCard .pl-logo.pl-bank{background:linear-gradient(180deg,#1E40AF,#0B2363);color:#fff;padding:0 10px;gap:5px;letter-spacing:.02em;font-style:normal}
+html body #depositModal .pl-bank svg{width:14px;height:14px;fill:#FCD34D;flex:0 0 auto}

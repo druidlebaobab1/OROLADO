@@ -4465,6 +4465,14 @@
     if (hint) hint.textContent = 'Minimum $\u00a0\u00a03';
     setDepositPayMethod('card');
     paintPayLocal();
+  // v2543 — mot « Banque » dans la langue du joueur (et à chaque changement de langue).
+  var BANK_WORD = { fr: 'Banque', en: 'Bank', es: 'Banco', pt: 'Banco', ar: 'بنك', tr: 'Banka', vi: 'Ngân hàng', id: 'Bank', ru: 'Банк', de: 'Bank', hi: 'बैंक' };
+  function paintBankWord() {
+    var lg = String(document.documentElement.getAttribute('data-lang') || 'fr').slice(0, 2);
+    document.querySelectorAll('.pl-bank-t').forEach(function (el) { el.textContent = BANK_WORD[lg] || BANK_WORD.en; });
+  }
+  paintBankWord();
+  document.addEventListener('oro:lang', function () { setTimeout(paintBankWord, 0); });
     resetOxaWallet();
     showDepositStep('select');
     paintDepositWagerNotes();
@@ -4567,7 +4575,8 @@
     '<i class="pl-logo pl-om"><b></b>Orange Money</i>' +
     '<i class="pl-logo pl-mtn"><b>MTN</b>MoMo</i>' +
     '<i class="pl-logo pl-mpesa">M-PESA</i>' +
-    '<i class="pl-logo pl-moov">moov<small>money</small></i>' +
+    // v2543 — Moov remplacé par la BANQUE (on recharge aussi par virement) : bâtiment doré + mot traduit.
+    '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
     '<i class="pl-logo pl-airtel">airtel<small>money</small></i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
