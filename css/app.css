@@ -8832,13 +8832,3 @@ html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100v
 @media (orientation:portrait) and (max-width:820px){
   html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-mode{padding-left:16px!important;padding-right:16px!important}
 }
-
-/* v2525 — Téléphone debout (Android + iPhone) : la ligne secondes / mise / gain est alignée sur le menu du haut
-   (même bord que Cadeaux et Profil) et la mise est pile au milieu, sous Recharger. ACHETER / VENDRE et payouts inchangés. */
-@media (orientation:portrait) and (max-width:820px){
-  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap > .pad .stake-line{margin-left:2px!important;margin-right:2px!important;width:auto!important;max-width:none!important;grid-template-columns:1fr 1.16fr 1fr!important}
-}
-/* v2525 — très petits téléphones (≤ 359 px) : un gros gain (ex. 18 998.10) reste dans sa case. */
-@media (orientation:portrait) and (max-width:359px){
-  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap > .pad .stake-line .win-preview{padding-left:3px!important;padding-right:3px!important}
-}
