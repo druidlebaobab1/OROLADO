@@ -8350,3 +8350,31 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn{background-color:rgba(255,255,255,.08)!important;border:.8px solid rgba(199,210,254,.25)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;color:#FF8A8A!important;-webkit-text-fill-color:#FF8A8A!important;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF8A8A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/%3E%3C/svg%3E")!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#FF8A8A!important;-webkit-text-fill-color:#FF8A8A!important;animation:oroLive 1.8s ease-in-out infinite!important;text-shadow:0 0 6px rgba(255,90,90,.35)!important}
+
+/* ===== v2497 — Guide « Apprendre » : mêmes visuels que le nouveau site (barre DÉMO bleu / RÉEL vert, cases durée, mise
+   et gain en bleu verre, + / − et flèches simples bleu ciel, « Payout » bleu ciel, MA / BB / EMA et PLEIN ÉCRAN rouge léger). ===== */
+html body .learn-modal .lg-modebar{display:grid;grid-template-columns:45fr 55fr;width:100%;max-width:360px;padding:3px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(92,155,255,.16),rgba(70,90,200,.10));border:1px solid rgba(110,160,255,.75);box-shadow:inset 0 0 14px rgba(92,155,255,.16),0 0 14px rgba(92,155,255,.25)}
+html body .learn-modal .lg-modebar .lg-mode{min-width:0;border:0!important;border-radius:13px;background:transparent!important;color:#fff!important;position:relative}
+html body .learn-modal .lg-modebar .lg-demo::after{content:"";position:absolute;right:0;top:22%;bottom:22%;width:1px;background:rgba(255,255,255,.18)}
+html body .learn-modal .lg-modebar .lg-demo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 12px rgba(92,155,255,.35)}
+html body .learn-modal .lg-modebar .lg-demo small{color:#A9C4FF}
+html body .learn-modal .lg-modebar .lg-real small{color:#5CF7B5}
+html body .learn-modal .lg-modebar .lg-real{opacity:.85;padding-right:40px}
+html body .learn-modal .lg-modebar .lg-real b{font-size:18px}
+html body .learn-modal .lg-wal{position:absolute;right:8px;top:50%;margin-top:-13px;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(34,212,127,.22);border:1px solid rgba(60,245,166,.55)}
+html body .learn-modal .lg-wal svg{width:15px;height:15px;fill:none;stroke:#5CF7B5;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+html body .learn-modal :is(.lg-dur,.lg-stake,.lg-gain){background:rgba(92,155,255,.08)!important;border:1px solid rgba(92,155,255,.45)!important;box-shadow:inset 0 0 12px rgba(92,155,255,.12)!important}
+html body .learn-modal .lg-dur{color:#E2EDFF!important}
+html body .learn-modal .lg-dur b{text-shadow:0 0 8px rgba(120,170,255,.45)}
+html body .learn-modal .lg-stake{color:#FFB65C!important}
+html body .learn-modal :is(.lg-dur,.lg-stake) i{background:transparent!important;color:#9DB7FF!important;font-size:20px!important;text-shadow:0 0 6px rgba(157,183,255,.7)}
+html body .learn-modal .lg-durlist b{color:#9DB7FF!important}
+html body .learn-modal .lg-gain b{color:#FFC24D!important}
+html body .learn-modal .lg-gain small{color:#9DB7FF!important;line-height:1.3}
+html body .learn-modal .lg-tools span{background:rgba(255,255,255,.08)!important;border:.8px solid rgba(199,210,254,.25)!important;color:#C7D2FE}
+html body .learn-modal .lg-tools span:nth-child(1){color:#FBBF24!important}
+html body .learn-modal .lg-tools span:nth-child(2){color:#A78BFA!important}
+html body .learn-modal .lg-tools span:nth-child(3){color:#22D3EE!important}
+html body .learn-modal .lg-tools span.fs{color:#FF8A8A!important;animation:oroLive 1.8s ease-in-out infinite}
+html body .learn-modal .lg-tools span.fs .lg-i{stroke:#FF8A8A!important;color:#FF8A8A!important}

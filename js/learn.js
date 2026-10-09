@@ -61,10 +61,11 @@
       '</div>';
   }
   function artDemo() {
-    return '<div class="lg-art lg-row">' +
-      '<div class="lg-mode lg-demo"><small>' + esc(S('fsDemo', 'DEMO')) + '</small><b>$ 1 000 000</b></div>' +
-      '<div class="lg-mode lg-real"><small>' + esc(S('fsReal', 'REAL')) + '</small><b>$ 25</b></div>' +
-      '</div>';
+    // v2497 — comme le site : une seule barre bleu verre, DÉMO bleu (choisi), COMPTE RÉEL vert avec portefeuille.
+    return '<div class="lg-art lg-row"><div class="lg-modebar">' +
+      '<div class="lg-mode lg-demo on"><small>' + esc(S('fsDemo', 'DEMO')) + '</small><b>$ 1 000 000</b></div>' +
+      '<div class="lg-mode lg-real"><small>' + esc(S('fsReal', 'REAL')) + '</small><b>$ 25</b><i class="lg-wal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.6"/><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4z"/></svg></i></div>' +
+      '</div></div>';
   }
   function candles(n, up) {
     var s = '', y = 60;
