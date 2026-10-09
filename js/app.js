@@ -4358,8 +4358,7 @@
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
     if (hint) hint.textContent = 'Minimum $\u00a0\u00a03';
     setDepositPayMethod('card');
-    paintPayLocal(payLocalCc());
-    detectPayCountry().then(function (cc) { paintPayLocal(cc); });
+    paintPayLocal();
     resetOxaWallet();
     showDepositStep('select');
     paintDepositWagerNotes();
@@ -4452,61 +4451,30 @@
   }
 
   fetchPayCountryIp();
-  // v2507 — case « Carte & paiement instantané » : téléphone qui envoie l'argent, logos des moyens de paiement
-  // (ceux du pays du joueur d'abord : Mobile Money, etc.), et 3 garanties. Affichage seulement.
-  function payEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  var PAY_LOGO = {
-    visa: '<i class="pl-logo pl-visa">VISA</i>',
-    mc: '<i class="pl-logo pl-mc"><b></b><b></b></i>',
-    apple: '<i class="pl-logo pl-apple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8c-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.4-1-2.4-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.3z"/></svg>Pay</i>',
-    gpay: '<i class="pl-logo pl-gpay"><b class="g">G</b>Pay</i>',
-    om: '<i class="pl-logo pl-om"><b></b>Orange Money</i>',
-    mtn: '<i class="pl-logo pl-mtn"><b>MTN</b>MoMo</i>',
-    moov: '<i class="pl-logo pl-moov">moov<small>money</small></i>',
-    airtel: '<i class="pl-logo pl-airtel">airtel<small>money</small></i>',
-    mpesa: '<i class="pl-logo pl-mpesa">M-PESA</i>',
-    telecel: '<i class="pl-logo pl-telecel">Telecel<small>cash</small></i>',
-    bank: function () { return '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3.5 20h17"/></svg>' + payEsc(t('payLocBank')) + '</i>'; }
-  };
-  function payLocalList(cc) {
-    var XOF = { CI: 1, SN: 1, BF: 1, ML: 1, TG: 1, BJ: 1, NE: 1, GW: 1 }, XAF = { CM: 1, GA: 1, CG: 1, TD: 1, CF: 1, GQ: 1 };
-    if (XOF[cc]) return ['om', 'mtn', 'moov', 'visa', 'mc'];
-    if (XAF[cc]) return ['om', 'mtn', 'airtel', 'visa', 'mc'];
-    if (cc === 'GH') return ['mtn', 'telecel', 'airtel', 'visa', 'mc'];
-    if (cc === 'KE') return ['mpesa', 'airtel', 'visa', 'mc'];
-    if (cc === 'NG' || cc === 'ZA') return ['bank', 'visa', 'mc', 'apple', 'gpay'];
-    return ['visa', 'mc', 'apple', 'gpay', 'bank'];
-  }
-  function paintPayLocal(cc) {
+  // v2509 — case « Carte & paiement instantané » : un téléphone simple et les logos des moyens de paiement
+  // (les mêmes pour tout le monde). Affichage seulement.
+  var PAY_LOGOS =
+    '<i class="pl-logo pl-visa">VISA</i>' +
+    '<i class="pl-logo pl-mc"><b></b><b></b></i>' +
+    '<i class="pl-logo pl-apple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8c-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.4-1-2.4-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.3z"/></svg>Pay</i>' +
+    '<i class="pl-logo pl-gpay"><b class="g">G</b>Pay</i>' +
+    '<i class="pl-logo pl-om"><b></b>Orange Money</i>' +
+    '<i class="pl-logo pl-mtn"><b>MTN</b>MoMo</i>' +
+    '<i class="pl-logo pl-mpesa">M-PESA</i>' +
+    '<i class="pl-logo pl-moov">moov<small>money</small></i>' +
+    '<i class="pl-logo pl-airtel">airtel<small>money</small></i>';
+  function paintPayLocal() {
     var card = $('payMethodCard');
-    if (!card) return;
-    cc = String(cc || '').toUpperCase().replace(/[^A-Z]/g, '');
-    var box = card.querySelector('.pay-local');
-    if (!box) { box = document.createElement('span'); box.className = 'pay-local'; card.appendChild(box); }
-    var where = t('payLocWorld');
-    if (cc.length === 2) {
-      try { var dn = new Intl.DisplayNames([D6.I18N.lang || 'en'], { type: 'region' }).of(cc); if (dn && dn !== cc) where = dn; } catch (eDn) { /* ignore */ }
-    }
-    var logos = payLocalList(cc).map(function (k) { var l = PAY_LOGO[k]; return typeof l === 'function' ? l() : l; }).join('');
-    var ok = function (ico, k) { return '<span><svg viewBox="0 0 24 24" aria-hidden="true">' + ico + '</svg>' + payEsc(t(k)) + '</span>'; };
+    if (!card || card.querySelector('.pay-local')) return;
+    var box = document.createElement('span');
+    box.className = 'pay-local';
+    box.setAttribute('aria-hidden', 'true');
     box.innerHTML =
-      '<span class="pl-row">' +
-        '<span class="pl-phone" aria-hidden="true"><svg viewBox="0 0 40 64"><rect x="2" y="2" width="36" height="60" rx="8"/><rect x="6" y="9" width="28" height="44" rx="3" class="scr"/><path d="M15 5.5h10" class="sp"/><circle cx="20" cy="40" r="7" class="ok"/><path d="m16.8 40 2.2 2.2 4.2-4.4" class="tick"/><path d="M11 18h18M11 23h12M11 28h15" class="ln"/></svg>' +
-        '<i class="pl-fly"><b></b><b></b><b></b></i></span>' +
-        '<span class="pl-main"><b class="pl-lead">' + payEsc(t('payLocLead')) + '</b>' +
-        '<small class="pl-where"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>' + payEsc(t('payLocFor')) + ' ' + payEsc(where) + '</small>' +
-        '<span class="pl-logos">' + logos + '</span></span>' +
-      '</span>' +
-      '<span class="pl-ok">' +
-        ok('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', 'payLocInstant') +
-        ok('<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>', 'payLocSafe') +
-        ok('<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16.3 9"/>', 'payLocAuto') +
-      '</span>';
+      '<span class="pl-phone"><svg viewBox="0 0 40 64"><rect x="2" y="2" width="36" height="60" rx="8"/><rect x="6" y="9" width="28" height="44" rx="3" class="scr"/><path d="M15 5.5h10" class="sp"/><circle cx="20" cy="31" r="8" class="ok"/><path d="m16.4 31 2.6 2.6 4.8-5" class="tick"/></svg></span>' +
+      '<span class="pl-logos">' + PAY_LOGOS + '</span>';
+    card.appendChild(box);
   }
-  function payLocalCc() { try { return sessionStorage.getItem('oro_pay_cc') || ''; } catch (e) { return ''; } }
-  paintPayLocal(payLocalCc());
-  document.addEventListener('oro:lang', function () { paintPayLocal(payLocalCc()); });
-  fetchPayCountryIp().then(function (cc) { paintPayLocal(cc || payLocalCc()); });
+  paintPayLocal();
 
   async function postFlwVerify(payload) {
     try {

@@ -8640,3 +8640,25 @@ html body #depositModal#depositModal #payMethodUsdt .pay-go-arrow.pay-go-pill{di
 html body #depositModal#depositModal #payMethodUsdt .pay-go-pill b{font-size:13px;font-weight:900;color:#fff;letter-spacing:.02em;white-space:nowrap}
 html body #depositModal#depositModal #payMethodUsdt .pay-go-pill svg{width:16px!important;height:16px!important;stroke:#fff!important;stroke-width:3.2!important;transform:none!important}
 html[dir="rtl"] body #depositModal#depositModal #payMethodUsdt .pay-go-pill svg{transform:scaleX(-1)!important}
+
+/* ===== v2509 — case instantanée : téléphone simple + logos (sans textes) ; croix de Recharger aux couleurs de la fenêtre. ===== */
+html body #depositModal #payMethodCard .pay-local{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;padding:2px 0 1px}
+html body #depositModal #payMethodCard .pl-phone{flex:0 0 30px;height:48px}
+html body #depositModal #payMethodCard .pl-phone svg{width:30px;height:48px}
+html body #depositModal #payMethodCard .pl-phone .ok{fill:#22C55E}
+html body #depositModal #payMethodCard .pl-logos{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:5px;margin:0;justify-content:flex-start}
+html body #depositModal #payMethodCard .pl-logo{height:23px;padding:0 7px;border-radius:7px;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.18)}
+html body #depositModal #payMethodCard .pl-mc b{width:13px;height:13px}
+html body #depositModal #payMethodCard .pl-mc b+b{margin-left:-6px}
+html body #depositModal #payMethodCard .pl-apple svg{width:13px;height:13px}
+html body #depositModal #payMethodCard .pl-om b{width:12px;height:12px}
+@media (orientation:portrait) and (max-height:760px){
+  html body #depositModal #payMethodCard .pl-phone{flex-basis:26px;height:42px}
+  html body #depositModal #payMethodCard .pl-phone svg{width:26px;height:42px}
+  html body #depositModal #payMethodCard .pl-logo{height:21px;padding:0 6px;font-size:10.5px}
+}
+/* croix : verre sombre, contour vert d'eau, lueur émeraude (comme « Valider la recharge »). */
+html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close{background:radial-gradient(circle at 35% 30%,#1E5A4A,#0E2E2A 70%)!important;border:1.5px solid rgba(110,247,190,.75)!important;
+  box-shadow:0 0 10px rgba(46,229,157,.45),inset 0 0 0 1px rgba(255,255,255,.08)!important}
+html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close::before,html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close::after{display:none!important}
+html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close svg{stroke:#EFFFF8!important}

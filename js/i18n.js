@@ -3685,15 +3685,8 @@
     m_payOpenFail: ['The payment could not open. Please try again.', 'Le paiement n’a pas pu s’ouvrir. Réessayez.', 'No se pudo abrir el pago. Inténtalo de nuevo.', 'Não foi possível abrir o pagamento. Tente novamente.', 'تعذّر فتح صفحة الدفع. حاول مرة أخرى.', 'Ödeme açılamadı. Tekrar dene.', 'Không thể mở trang thanh toán. Hãy thử lại.', 'Pembayaran tidak bisa dibuka. Coba lagi.', 'Не удалось открыть оплату. Попробуйте снова.', 'Die Zahlung konnte nicht geöffnet werden. Bitte erneut versuchen.', 'भुगतान नहीं खुल सका। फिर से कोशिश करें।']
   };
   var AUDIT_LANGS = ['en', 'fr', 'es', 'pt', 'ar', 'tr', 'vi', 'id', 'ru', 'de', 'hi'];
-  // v2507 — case « Carte & paiement instantané » (téléphone, logos, garanties).
+  // v2507 — bouton « Ouvrir » du dépôt crypto.
   AUDIT_TR.payGo = ['Open', 'Ouvrir', 'Abrir', 'Abrir', 'فتح', 'Aç', 'Mở', 'Buka', 'Открыть', 'Öffnen', 'खोलें'];
-  AUDIT_TR.payLocLead = ["Pay in 1 minute from your phone","Payez en 1 minute depuis votre téléphone","Paga en 1 minuto desde tu teléfono","Paga em 1 minuto pelo telemóvel","ادفع في دقيقة واحدة من هاتفك","Telefonundan 1 dakikada öde","Thanh toán trong 1 phút từ điện thoại","Bayar 1 menit dari ponselmu","Оплата за 1 минуту с телефона","In 1 Minute vom Handy bezahlen","अपने फ़ोन से 1 मिनट में भुगतान करें"];
-  AUDIT_TR.payLocFor = ["Methods for","Moyens pour","Medios para","Meios para","وسائل الدفع في","Ödeme yolları:","Phương thức cho","Metode untuk","Способы для","Zahlwege für","भुगतान के तरीके:"];
-  AUDIT_TR.payLocWorld = ["the whole world","le monde entier","todo el mundo","o mundo inteiro","العالم كله","tüm dünya","toàn thế giới","seluruh dunia","всего мира","die ganze Welt","पूरी दुनिया"];
-  AUDIT_TR.payLocInstant = ["Instant","Instantané","Instantáneo","Instantâneo","فوري","Anında","Tức thì","Instan","Мгновенно","Sofort","तुरंत"];
-  AUDIT_TR.payLocSafe = ["Secure","Sécurisé","Seguro","Seguro","آمن","Güvenli","An toàn","Aman","Надёжно","Sicher","सुरक्षित"];
-  AUDIT_TR.payLocAuto = ["Auto credit","Crédit auto","Crédito auto","Crédito auto","إضافة تلقائية","Otomatik yükleme","Cộng tự động","Kredit otomatis","Автозачисление","Auto-Gutschrift","ऑटो क्रेडिट"];
-  AUDIT_TR.payLocBank = ["Bank transfer","Virement","Transferencia","Transferência","تحويل بنكي","Havale","Chuyển khoản","Transfer bank","Перевод","Überweisung","बैंक ट्रांसफ़र"];
   // v2493 — bouton Installer sur Android : 3 étapes Android (plus la consigne iPhone).
   AUDIT_TR.installAndLead = ['Add the app to your phone:', 'Ajoute l’application sur ton téléphone :', 'Añade la app a tu teléfono:', 'Adiciona a app ao teu telemóvel:', 'أضف التطبيق إلى هاتفك:', 'Uygulamayı telefonuna ekle:', 'Thêm ứng dụng vào điện thoại:', 'Tambahkan aplikasi ke ponselmu:', 'Добавьте приложение на телефон:', 'Füge die App deinem Handy hinzu:', 'ऐप को अपने फ़ोन में जोड़ें:'];
   AUDIT_TR.installAnd1 = ['Tap the ⋮ menu at the top right of Chrome.', 'Touche le menu ⋮ en haut à droite de Chrome.', 'Toca el menú ⋮ arriba a la derecha de Chrome.', 'Toca no menu ⋮ no canto superior direito do Chrome.', 'اضغط على القائمة ⋮ أعلى يمين Chrome.', 'Chrome’un sağ üstündeki ⋮ menüsüne dokun.', 'Chạm vào menu ⋮ ở góc trên bên phải Chrome.', 'Ketuk menu ⋮ di kanan atas Chrome.', 'Нажмите меню ⋮ в правом верхнем углу Chrome.', 'Tippe oben rechts in Chrome auf das Menü ⋮.', 'Chrome में ऊपर दाईं ओर ⋮ मेनू दबाएँ।'];
