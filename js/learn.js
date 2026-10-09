@@ -181,16 +181,65 @@
     return h + '</i>';
   }
   // v2504 — guide du dépôt : 2 blocs (carte / paiement local, puis crypto en 5 étapes numérotées).
+  function qrArt() {
+    // Petit QR dessiné (exemple seulement, pas une vraie adresse).
+    var s = '', x, y, sd = 7;
+    for (y = 0; y < 21; y++) for (x = 0; x < 21; x++) {
+      var fin = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+      if (fin) { var fx = x % 14, fy = y % 14; var on = fx === 0 || fx === 6 || fy === 0 || fy === 6 || (fx > 1 && fx < 5 && fy > 1 && fy < 5); if (on) s += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>'; continue; }
+      sd = (sd * 16807) % 2147483647; if (sd % 3 === 0) s += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+    }
+    return '<svg class="lg-qr" viewBox="-1 -1 23 23" aria-hidden="true"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#0B1020">' + s + '</g></svg>';
+  }
+  // v2505 — exemple dessiné : la case de dépôt OROLADO (QR, adresse, Copier) puis le retrait dans Binance (adresse collée).
+  function depExample() {
+    var addr = 'TQ8h…x9Lr';
+    return '<div class="lg-dx"><div class="lg-dx-h">' + esc(T('gex1')) + '</div>' +
+      '<div class="lg-dx-oro"><div class="lg-dx-nets"><span class="on">TRC20</span><span>ERC20</span><span>BEP20</span></div>' + qrArt() +
+      '<div class="lg-dx-lbl">' + esc(T('gex2')) + '</div><div class="lg-dx-addr">TQ8hF2…kP7mx9Lr</div>' +
+      '<div class="lg-dx-copy">' + I('check') + ' ' + esc(T('gex3')) + '<i class="lg-dx-tap" aria-hidden="true"></i></div></div>' +
+      '<div class="lg-dx-arrow" aria-hidden="true">↓</div><div class="lg-dx-h">' + esc(T('gex4')) + '</div>' +
+      '<div class="lg-dx-bn"><div class="lg-dx-row"><small>Coin</small><b><span class="lg-coins"><svg><use href="#ico-usdt"></use></svg></span> USDT</b></div>' +
+      '<div class="lg-dx-row"><small>' + esc(T('gex5')) + '</small><b class="lg-dx-mono">TQ8hF2…kP7mx9Lr</b></div>' +
+      '<div class="lg-dx-row"><small>Network</small><b class="lg-dx-net">TRC20</b></div>' +
+      '<div class="lg-dx-row"><small>Amount</small><b>20 USDT</b></div><div class="lg-dx-send">' + esc(T('gex6')) + '</div></div></div>';
+  }
+  // v2505 — les 5 plateformes, le P2P expliqué.
+  function depApps() {
+    var A = [['Binance', '#F0B90B', 'gp1', 'binance.com'], ['OKX', '#FFFFFF', 'gp2', 'okx.com'], ['Bybit', '#F7A600', 'gp3', 'bybit.com'], ['KuCoin', '#23AF91', 'gp4', 'kucoin.com'], ['Bitget', '#00F0FF', 'gp5', 'bitget.com']];
+    var web = function (d) { return '<a class="lg-web" href="https://www.' + d + '" target="_blank" rel="noopener noreferrer">' + d + '</a>'; };
+    var B = [['MoonPay', 'moonpay.com'], ['Paybis', 'paybis.com'], ['Mercuryo', 'mercuryo.io'], ['Guardarian', 'guardarian.com'], ['Changelly', 'changelly.com'], ['Coinbase', 'coinbase.com']];
+    return '<div class="lg-apps"><h5>' + esc(T('gpT')) + '</h5>' + A.map(function (a) { return '<div class="lg-app"><i style="background:' + a[1] + '">' + a[0].charAt(0) + '</i><p>' + esc(T(a[2])) + ' ' + web(a[3]) + '</p></div>'; }).join('') +
+      '<p class="lg-apps-web">' + esc(T('gp7')) + '</p>' +
+      '<div class="lg-dg-warn lg-dg-info">' + I('user') + ' ' + esc(T('gp6')) + '</div></div>' +
+      '<div class="lg-apps lg-buy"><h5>' + I('card') + ' ' + esc(T('gqT')) + '</h5><div class="lg-buy-g">' + B.map(function (b) { return '<span><b>' + b[0] + '</b>' + web(b[1]) + '</span>'; }).join('') + '</div>' +
+      '<p>' + esc(T('gq1')) + '</p><p class="lg-apps-web">' + esc(T('gq2')) + '</p></div>';
+  }
+  // v2505 — c'est quoi une adresse + même crypto des deux côtés (tableau avec délais).
+  function depAddr() {
+    var R = [['usdt', 'USDT', 'USDT · TRC20', 'T…', 'gt1'], ['btc', 'BTC', 'BTC', 'bc1… / 1… / 3…', 'gt2'], ['eth', 'ETH', 'ETH · ERC20', '0x…', 'gt3']];
+    return '<div class="lg-addr"><h5>' + I('mail') + ' ' + esc(T('gaT')) + '</h5><p>' + esc(T('ga1')) + '</p><p class="lg-addr-gold">' + I('star') + ' ' + esc(T('ga2')) + '</p>' +
+      '<div class="lg-addr-t"><div class="h"><span>' + esc(T('gtc')) + '</span><span>' + esc(T('gta')) + '</span><span>' + esc(T('gtt')) + '</span></div>' +
+      R.map(function (r) { return '<div><span class="c"><span class="lg-coins" aria-hidden="true"><svg><use href="#ico-' + r[0] + '"></use></svg></span> ' + r[1] + '</span><span><b>' + r[2] + '</b><small>' + r[3] + '</small></span><span class="tm">' + I('clock') + ' ' + esc(T(r[4])) + '</span></div>'; }).join('') + '</div>' +
+      '<div class="lg-dg-warn">' + I('alert') + ' ' + esc(T('ga3')) + '</div></div>';
+  }
+  // v2505 — guide du dépôt en grand : carte (et pourquoi elle peut être refusée), puis crypto en 7 étapes avec exemple dessiné.
   function depGuide() {
     var li = function (k) { return '<li>' + esc(T(k)) + '</li>'; };
-    return '<div class="lg-dg"><div class="lg-dg-b"><h4>' + I('card') + ' ' + esc(T('gdA')) + '</h4><ul>' + li('gd1') + li('gd2') + '</ul></div>' +
+    var yt = ['gty1', 'gty2', 'gty3', 'gty4'].map(function (k) { return '<span class="lg-yt-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>' + esc(T(k)) + '</span>'; }).join('');
+    return '<div class="lg-dg"><div class="lg-dg-b"><h4>' + I('card') + ' ' + esc(T('gdA')) + '</h4><ul>' + li('gd1') + li('gd2') + li('gd3') + '</ul>' +
+      '<div class="lg-dg-warn lg-dg-info">' + I('bulb') + ' ' + esc(T('gd4')) + '</div></div>' +
       '<div class="lg-dg-b lg-dg-c"><h4><span class="lg-coins" aria-hidden="true"><svg><use href="#ico-usdt"></use></svg><svg><use href="#ico-btc"></use></svg></span> ' + esc(T('gdB')) + '</h4>' +
-      '<p>' + esc(T('gc1')) + '</p><ol>' + li('gc2') + li('gc3') + li('gc4') + li('gc5') + li('gc6') + '</ol>' +
-      '<div class="lg-dg-warn">' + I('alert') + ' ' + esc(T('gcw')) + '</div><div class="lg-ex">' + I('bulb', 'ex') + ' ' + esc(T('gct')) + '</div></div></div>';
+      '<p>' + esc(T('gc1')) + '</p>' + depApps() + depAddr() +
+      '<ol>' + li('gc2') + li('gc3') + li('gc4') + li('gc5') + li('gc6') + li('gc7') + '</ol>' + depExample() +
+      '<p class="lg-dg-min">' + esc(T('gcm')) + '</p>' +
+      '<div class="lg-dg-warn">' + I('alert') + ' ' + esc(T('gcw')) + '</div>' +
+      '<div class="lg-dg-yt"><div class="lg-yt-logo" aria-hidden="true"><i><svg viewBox="0 0 24 24"><path d="M9 7l8 5-8 5z"/></svg></i>YouTube</div><b>' + esc(T('gct')) + '</b>' + yt + '</div></div></div>';
   }
   // v2504 — bas de l'étape retrait : 4 assurances qui rassurent (vraies), avec une lueur qui passe.
   function wdTrust() {
-    return '<div class="lg-trust">' + [['clock', 'gw1'], ['out', 'gw2'], ['lock', 'gw3'], ['chart', 'gw4']].map(function (x) { return '<span>' + I(x[0]) + ' ' + esc(T(x[1])) + '</span>'; }).join('') + '</div>';
+    return '<div class="lg-trust">' + [['clock', 'gw1'], ['out', 'gw2'], ['lock', 'gw3'], ['chart', 'gw4']].map(function (x) { return '<span>' + I(x[0]) + ' ' + esc(T(x[1])) + '</span>'; }).join('') + '</div>' +
+      '<div class="lg-win"><p class="lg-win-good">' + I('star') + ' ' + esc(T('gw5')) + '</p><p class="lg-win-resp">' + I('bulb') + ' ' + esc(T('gw6')) + '</p></div>';
   }
   function gifts() {
     var G = [[gIco('defi'), 's13b'], [gIco('aff'), 's13c'], [gIco('top'), 's13d'], [gIco('bon'), 's13e']];

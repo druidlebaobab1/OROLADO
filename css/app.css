@@ -8472,3 +8472,75 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOv
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2) #authQuick .btn-auth-link{height:42px!important;min-height:42px!important;max-height:42px!important;font-size:14px!important;border-radius:12px!important;padding:0 12px!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2) #btnOpenDeposit{height:42px!important;min-height:42px!important;max-height:42px!important;font-size:15px!important;border-radius:12px!important}
 .learn-modal .lg-dg ol li::before{display:none!important;content:none!important}.learn-modal .lg-dg ol{list-style:decimal!important}.learn-modal .lg-dg ol li{padding-left:2px!important;list-style:decimal!important}
+
+/* ===== v2505 — Guide : dépôt en grand (exemple dessiné QR + copier + Binance, recherches YouTube) et retrait positif. ===== */
+.learn-modal .lg-dg-info{background:rgba(92,155,255,.10)!important;border-color:rgba(92,155,255,.5)!important;color:#DCE7FF!important}
+.learn-modal .lg-dg-info .lg-i{stroke:#9DB7FF!important}
+.learn-modal .lg-dg-x{color:#FFE7A3!important;font-weight:700}
+.learn-modal .lg-dg-min{font-size:13px!important;color:#AEB6D6!important;margin:8px 0!important}
+.learn-modal .lg-dx{margin:12px 0 4px;padding:12px;border-radius:14px;background:rgba(6,10,30,.55);border:1px dashed rgba(255,210,122,.5)}
+.learn-modal .lg-dx-h{font-size:12px;font-weight:900;letter-spacing:.04em;color:#FFD27A;text-transform:uppercase;margin:0 0 8px;text-align:center}
+.learn-modal .lg-dx-oro,.learn-modal .lg-dx-bn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(92,155,255,.10);border:1px solid rgba(92,155,255,.4)}
+.learn-modal .lg-dx-nets{display:flex;gap:6px}
+.learn-modal .lg-dx-nets span{padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900;color:#AEB6D6;border:1px solid rgba(255,255,255,.18)}
+.learn-modal .lg-dx-nets span.on{color:#04261A;background:#3CF5A6;border-color:#3CF5A6}
+.learn-modal .lg-qr{width:120px;height:120px;border-radius:8px;box-shadow:0 0 0 4px #fff}
+.learn-modal .lg-dx-lbl{font-size:12px;font-weight:800;color:#C7D2FE}
+.learn-modal .lg-dx-addr,.learn-modal .lg-dx-mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#fff;direction:ltr;unicode-bidi:isolate}
+.learn-modal .lg-dx-addr{padding:7px 10px;border-radius:9px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15)}
+.learn-modal .lg-dx-copy{position:relative;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:12px;font-weight:900;font-size:14px;color:#04261A;background:linear-gradient(180deg,#5CF7B5,#22C55E)}
+.learn-modal .lg-dx-copy .lg-i{width:16px;height:16px;stroke:#04261A!important}
+@keyframes lgTap{0%,60%,100%{transform:scale(1);opacity:0}70%{opacity:.9;transform:scale(.7)}85%{opacity:.6;transform:scale(1.4)}}
+.learn-modal .lg-dx-tap{position:absolute;right:-8px;bottom:-8px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 3px rgba(255,255,255,.25);animation:lgTap 2.4s ease-in-out infinite}
+.learn-modal .lg-dx-arrow{text-align:center;font-size:24px;font-weight:900;color:#FFD27A;margin:6px 0}
+.learn-modal .lg-dx-bn{align-items:stretch;background:rgba(240,185,11,.08);border-color:rgba(240,185,11,.5)}
+.learn-modal .lg-dx-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.25)}
+.learn-modal .lg-dx-row small{font-size:11px;color:#AEB6D6}
+.learn-modal .lg-dx-row b{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#fff}
+.learn-modal .lg-dx-row .lg-coins svg{width:16px;height:16px}
+.learn-modal .lg-dx-net{color:#3CF5A6!important}
+.learn-modal .lg-dx-send{text-align:center;padding:9px;border-radius:10px;font-weight:900;color:#1A1200;background:linear-gradient(180deg,#FCD535,#F0B90B)}
+.learn-modal .lg-dg-yt{margin-top:10px;padding:12px;border-radius:12px;background:rgba(255,0,0,.08);border:1px solid rgba(255,80,80,.45);display:flex;flex-direction:column;gap:6px}
+.learn-modal .lg-dg-yt b{font-size:14px;color:#fff;line-height:1.4}
+.learn-modal .lg-dg-yt span{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;color:#FFD6D6}
+.learn-modal .lg-dg-yt .lg-i{width:15px;height:15px;stroke:#FF8A8A}
+.learn-modal .lg-win{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.learn-modal .lg-win p{display:flex;gap:8px;align-items:flex-start;margin:0;padding:11px 12px;border-radius:12px;font-size:14px;line-height:1.5}
+.learn-modal .lg-win .lg-i{flex:0 0 18px;width:18px;height:18px}
+.learn-modal .lg-win-good{color:#FFF3C4;background:linear-gradient(135deg,rgba(255,210,122,.18),rgba(60,245,166,.10));border:1px solid rgba(255,210,122,.55)}
+.learn-modal .lg-win-good .lg-i{stroke:#FFD27A}
+.learn-modal .lg-win-resp{color:#DCE7FF;background:rgba(92,155,255,.10);border:1px solid rgba(92,155,255,.45)}
+.learn-modal .lg-win-resp .lg-i{stroke:#9DB7FF}
+/* v2505 — plateformes + « c'est quoi une adresse » + tableau même crypto / délais. */
+.learn-modal .lg-apps,.learn-modal .lg-addr{margin:12px 0;padding:12px;border-radius:14px;background:rgba(6,10,30,.5);border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:8px}
+.learn-modal .lg-apps h5,.learn-modal .lg-addr h5{margin:0 0 2px;font-size:15px;font-weight:900;color:#FFD27A;display:flex;align-items:center;gap:7px}
+.learn-modal .lg-app{display:flex;gap:10px;align-items:flex-start}
+.learn-modal .lg-app i{flex:0 0 30px;height:30px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:15px;color:#0B1020}
+.learn-modal .lg-app p,.learn-modal .lg-addr p{margin:0;font-size:14px;line-height:1.5;color:#E6EBFF}
+.learn-modal .lg-addr-gold{display:flex;gap:7px;padding:10px;border-radius:10px;background:rgba(255,210,122,.12);border:1px solid rgba(255,210,122,.5);color:#FFF3C4!important;font-weight:700}
+.learn-modal .lg-addr-gold .lg-i{flex:0 0 17px;stroke:#FFD27A}
+.learn-modal .lg-addr-t{display:flex;flex-direction:column;gap:5px}
+.learn-modal .lg-addr-t>div{display:grid;grid-template-columns:72px 1fr 92px;gap:6px;align-items:center;padding:8px;border-radius:9px;background:rgba(0,0,0,.28);font-size:13px;color:#fff}
+.learn-modal .lg-addr-t>div.h{background:none;padding:0 8px;font-size:11px;font-weight:800;color:#AEB6D6}
+.learn-modal .lg-addr-t .c{display:flex;align-items:center;gap:5px;font-weight:900}
+.learn-modal .lg-addr-t .lg-coins svg{width:18px;height:18px}
+.learn-modal .lg-addr-t b{display:block;font-size:12.5px}
+.learn-modal .lg-addr-t small{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#9DB7FF;direction:ltr;unicode-bidi:isolate}
+.learn-modal .lg-addr-t .tm{display:flex;align-items:center;gap:4px;font-weight:800;color:#3CF5A6;font-size:12px}
+.learn-modal .lg-addr-t .tm .lg-i{width:13px;height:13px;flex:0 0 13px;stroke:#3CF5A6}
+/* v2505 — YouTube bien visible : logo rouge + recherches en barres de recherche. */
+.learn-modal .lg-dg-yt{background:linear-gradient(180deg,rgba(255,0,0,.14),rgba(255,0,0,.05))!important;border:2px solid rgba(255,60,60,.7)!important;gap:8px!important}
+.learn-modal .lg-yt-logo{display:flex;align-items:center;gap:7px;font-size:20px;font-weight:900;color:#fff;letter-spacing:-.02em}
+.learn-modal .lg-yt-logo i{display:grid;place-items:center;width:38px;height:27px;border-radius:8px;background:#FF0000}
+.learn-modal .lg-yt-logo svg{width:18px;height:18px;fill:#fff}
+.learn-modal .lg-dg-yt span.lg-yt-q{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:#fff;color:#111!important;font-weight:700!important;font-size:13.5px!important}
+.learn-modal .lg-yt-q svg{flex:0 0 16px;width:16px;height:16px;fill:none;stroke:#555;stroke-width:2.4;stroke-linecap:round}
+/* v2505 — adresses web cliquables + 6 sites d'achat direct par carte. */
+.learn-modal a.lg-web{display:inline-block;margin-top:2px;padding:2px 8px;border-radius:999px;font-size:12.5px;font-weight:800;color:#7FD3FF!important;background:rgba(92,155,255,.14);border:1px solid rgba(92,155,255,.45);text-decoration:none;direction:ltr;unicode-bidi:isolate}
+.learn-modal .lg-apps-web{font-size:13px!important;color:#C7D2FE!important}
+.learn-modal .lg-buy{border-color:rgba(60,245,166,.45)!important}
+.learn-modal .lg-buy h5{color:#3CF5A6!important}
+.learn-modal .lg-buy h5 .lg-i{stroke:#3CF5A6}
+.learn-modal .lg-buy-g{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.learn-modal .lg-buy-g span{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px;border-radius:10px;background:rgba(0,0,0,.28)}
+.learn-modal .lg-buy-g b{font-size:14px;color:#fff}
