@@ -8870,3 +8870,7 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTra
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0)!important;-webkit-mask-composite:xor!important;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)!important}
   html[dir="rtl"]:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher#modeSwitcher::before{background:linear-gradient(270deg,rgba(60,245,166,.75) 0,rgba(60,245,166,.75) 53.5%,rgba(122,167,255,.8) 56.5%,rgba(122,167,255,.8) 100%)!important}
 }
+
+/* v2533 — iPhone, plein écran : Safari dessinait en CARRÉ la lueur (ombre) autour du rond blanc des flèches ACHETER / VENDRE.
+   Même anneau, mais fait avec un contour (outline), que Safari récent dessine rond ; taille et place du rond inchangées. Android inchangé. */
+html.is-ios body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap #btnCall .bt-arr,html.is-ios body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap #btnPut .bt-arr{box-shadow:0 2px 8px rgba(0,0,0,.35)!important;outline:4px solid rgba(255,255,255,.22)!important;outline-offset:0!important}
