@@ -7070,10 +7070,25 @@
       });
     });
     if ($('inputStake')) {
+      var stakeLastGood = D6.CONFIG.MIN_STAKE || 1;
       $('inputStake').addEventListener('input', function () {
         stake = Math.max(0, D6.roundMoney(Number(this.value) || 0));
+        if (stake > 0) stakeLastGood = stake;
         updatePayoutUi();
       });
+      // La case de mise ne reste jamais vide : clavier effacé, ou virgule refusée par l'iPhone (« 1,5 ») →
+      // en quittant la case, on remet la dernière mise valable (sinon la mise minimum).
+      var stakeRefill = function () {
+        var el = $('inputStake');
+        if (!el) return;
+        var bad = el.validity && el.validity.badInput;
+        if (String(el.value).trim() !== '' && !bad) return;
+        stake = stakeLastGood || D6.CONFIG.MIN_STAKE || 1;
+        el.value = stake;
+        updatePayoutUi();
+      };
+      $('inputStake').addEventListener('blur', stakeRefill);
+      $('inputStake').addEventListener('change', stakeRefill);
       // Passage plein écran / rotation : la case change de largeur → on réajuste la taille du chiffre.
       try {
         if (window.ResizeObserver) {
