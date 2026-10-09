@@ -102,12 +102,16 @@
   function xorCrypt(str, decode, salt) {
     salt = salt || SALT;
     var src = decode ? atob(str) : str;
-    var out = [];
-    var i;
-    for (i = 0; i < src.length; i++) {
-      out.push(String.fromCharCode(src.charCodeAt(i) ^ salt.charCodeAt(i % salt.length)));
+    // v2539 — même résultat qu'avant (lettre par lettre), mais par paquets de 4096 : ~10× plus rapide
+    // (la mémoire du site fait ~100 000 lettres, encodée à chaque enregistrement).
+    var n = src.length, sl = salt.length, parts = [], i, j;
+    for (i = 0; i < n; i += 4096) {
+      var end = Math.min(n, i + 4096);
+      var codes = new Array(end - i);
+      for (j = i; j < end; j++) codes[j - i] = src.charCodeAt(j) ^ salt.charCodeAt(j % sl);
+      parts.push(String.fromCharCode.apply(null, codes));
     }
-    var joined = out.join('');
+    var joined = parts.join('');
     return decode ? joined : btoa(joined);
   }
 
@@ -201,6 +205,7 @@
     try { localStorage.setItem(histKey(user), JSON.stringify(prunePositions(user.positions || []))); } catch (eW) { /* ignore */ }
   }
 
+  var histMemo = {};
   function hydrate(user) {
     if (!user) return null;
     if (!user.displayName) user.displayName = (user.email || 'Trader').split('@')[0];
@@ -217,7 +222,19 @@
     }
     if (!Array.isArray(user.openTrades)) user.openTrades = [];
     if (!Array.isArray(user.positions)) user.positions = [];
-    user.positions = mergePositions(user.positions, readHistMirror(user));
+    // v2539 — FLUIDITÉ : hydrate() est appelé ~56 fois par seconde (la courbe demande le joueur à chaque image).
+    // Avant, il relisait ET refusionnait tout l'historique (jusqu'à 200 trades) à chaque appel : le site ralentissait
+    // au fil des trades (≈ 1/4 de la puissance d'un téléphone). On ne refusionne plus que si quelque chose a changé
+    // (copie de l'historique dans le téléphone, liste remplacée, ou trade ajouté / retiré). Résultat identique.
+    var hRaw = '';
+    try { hRaw = localStorage.getItem(histKey(user)) || ''; } catch (eHr) { hRaw = ''; }
+    var hm = histMemo[user.id];
+    if (!(hm && hm.raw === hRaw && hm.arr === user.positions && hm.len === user.positions.length)) {
+      var hList = [];
+      try { hList = JSON.parse(hRaw || '[]'); if (!Array.isArray(hList)) hList = []; } catch (eHp) { hList = []; }
+      user.positions = mergePositions(user.positions, hList);
+      histMemo[user.id] = { raw: hRaw, arr: user.positions, len: user.positions.length };
+    }
     if (!Array.isArray(user.transactions)) user.transactions = [];
     if (!Array.isArray(user.recentResults)) user.recentResults = [];
     if (!user.recvAddrs || typeof user.recvAddrs !== 'object') user.recvAddrs = {};
