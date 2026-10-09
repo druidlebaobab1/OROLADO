@@ -346,9 +346,9 @@
     if (window.oroUi && window.oroUi.asset) window.oroUi.asset({ getAttribute: function () { return id; } });
   }
 
-  async function call(action) {
+  async function call(action, data) {
     if (!loggedIn() || !D6.Api || !D6.Api.post) return null;
-    try { return await D6.Api.post(action, {}, 15000); } catch (e) { return null; }
+    try { return await D6.Api.post(action, data || {}, 15000); } catch (e) { return null; }
   }
 
   async function refresh(activate) {
@@ -490,6 +490,11 @@
     renderAffList();
     fitPortal();
   }
+  var affFound = null, affSearchT = 0;
+  async function affServerSearch(q) {
+    var r = await call('affStatus', { tz: new Date().getTimezoneOffset(), q: q });
+    if (r && r.ok !== false && Array.isArray(r.found)) { affFound = { q: q, rows: r.found }; renderAffList(); }
+  }
   function affInt(n) { try { return Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 }); } catch (e) { return String(Math.round(Number(n || 0))); } }
   function affN(r) { return r.n != null ? Number(r.n) || 0 : (Number(r.deposit || 0) > 0 ? 1 : 0); }
   function affRowHtml(r) {
@@ -593,21 +598,31 @@
     // ligne 3 : dépôt moyen · plus gros dépôt ; puis le petit graphique des gains (suit la période choisie).
     var signed = (aff.list || []).filter(function (r) { return r.at >= from; }).length;
     var nDep = rows.reduce(function (s, r) { return s + affN(r); }, 0);
+    var nPaid = rows.length;
+    // v2492 : totaux de la période calculés par le serveur sur TOUS les amis (aucune limite).
+    var P = aff.periods && aff.periods[affFilter];
+    if (P) { signed = Number(P.signed) || 0; nPaid = Number(P.paid) || 0; dep = Number(P.dep) || 0; nDep = Number(P.n) || 0; gain = Number(P.gain) || 0; }
     if ($('affSum')) $('affSum').innerHTML = '<div><b>' + affInt(aff.clicks) + '</b><span>' + esc(t('affClicks')) + '</span></div>' +
       '<div><b>' + affInt(signed) + '</b><span>' + esc(t('affFriends')) + '</span></div>' +
-      '<div><b>' + affInt(rows.length) + '</b><span>' + esc(t('affDeposited')) + '</span></div>' +
+      '<div><b>' + affInt(nPaid) + '</b><span>' + esc(t('affDeposited')) + '</span></div>' +
       '<div><b>' + esc(money(dep)) + '</b><span>' + esc(t('affTotal')) + '</span></div>' +
       '<div class="gold"><b>' + affInt(nDep) + '</b><span>' + esc(t('affNDepS')) + '</span></div>' +
       '<div class="gold"><b>+' + esc(money(gain)) + '</b><span>' + esc(t('affEarned')) + '</span></div>';
     var biggest = 0;
     rows.forEach(function (r) { biggest = Math.max(biggest, Number(r.deposit || 0)); });
-    if ($('affSum2')) $('affSum2').innerHTML = '<div><span>' + esc(t('affAvg')) + '</span><b>' + esc(money(rows.length ? dep / rows.length : 0)) + '</b></div>' +
+    if (P) biggest = Number(P.big) || 0;
+    if ($('affSum2')) $('affSum2').innerHTML = '<div><span>' + esc(t('affAvg')) + '</span><b>' + esc(money(nPaid ? dep / nPaid : 0)) + '</b></div>' +
       '<div><span>' + esc(t('affBiggest')) + '</span><b>' + esc(money(biggest)) + '</b></div>';
     renderAffGraph();
     fitAffNumbers();
     // Recherche par numéro ORO (« 7030 », « oro-703098 »…) et tri choisi.
     var q = String(($('affSearch') && $('affSearch').value) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     var shown = rows.filter(function (r) { return !q || String(r.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0; });
+    // v2492 : plus de 2 000 amis → la recherche se fait sur le serveur, parmi TOUS les amis.
+    if (q && aff.more) {
+      if (affFound && affFound.q === q) shown = affFound.rows.slice();
+      else { clearTimeout(affSearchT); affSearchT = setTimeout(function () { affServerSearch(q); }, 450); }
+    }
     shown.sort(function (a, b) {
       if (affSortBy === 'dep') return Number(b.deposit || 0) - Number(a.deposit || 0);
       if (affSortBy === 'gain') return Number(b.gift || 0) - Number(a.gift || 0);
@@ -635,7 +650,7 @@
   async function refreshAff() {
     clearTimeout(affT);
     if (!loggedIn()) { if (!guestGift()) aff = null; renderAff(); return; }
-    var r = await call('affStatus');
+    var r = await call('affStatus', { tz: new Date().getTimezoneOffset() });
     if (r && r.ok !== false) {
       if (r.now) skew = r.now - Date.now() / 1000;
       aff = r;

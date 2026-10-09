@@ -118,6 +118,8 @@
   var lastPad = null;
   // v2488 : heures du bas, redessinées après le fondu du bas de la courbe (voir fadeChartBottom).
   var timeLabelsQ = [];
+  var fadeRGB = '15,14,41';
+  var fadeSampleAt = 0;
   var lastPlotH = 0;
   var lastMinP = 0;
   var lastMaxP = 0;
@@ -3374,7 +3376,8 @@
       ctx.strokeStyle = 'rgba(255,255,255,.28)';
       ctx.stroke();
       // Petit rond blanc avec la flèche (diagonale montante pour l'achat, descendante pour la vente).
-      var ax = lx + lh / 2;
+      // v2492 (propriétaire) : VENTE = rond blanc à DROITE, comme sur le bouton VENDRE ; ACHAT = à gauche.
+      var ax = isPut ? lx + lw - lh / 2 : lx + lh / 2;
       var ay = ly + lh / 2;
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
@@ -3402,7 +3405,7 @@
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(lbl, lx + lh + 3, ly + lh / 2 + 0.5);
+      ctx.fillText(lbl, isPut ? lx + 9 : lx + lh + 3, ly + lh / 2 + 0.5);
       }
       ctx.restore();
     }
@@ -4485,16 +4488,35 @@
    */
   function fadeChartBottom() {
     if (!ctx || !(cssH > 80) || !(cssW > 0)) return;
+    // v2492 (propriétaire) : plus de « lueur noire ». Le bas se fond dans le BLEU de la courbe elle-même
+    // (couleur relevée sur la courbe toutes les 2 s) ; le haut du terminal reprend exactement ce bleu
+    // (variable --oro-chart-foot) : pas de bande sombre, pas de trait.
     var fz = 16;
+    var nowF = Date.now();
+    if (nowF - fadeSampleAt > 2000) {
+      fadeSampleAt = nowF;
+      try {
+        var cvs = ctx.canvas, k = cvs.height / cssH, yS = Math.max(0, Math.round((cssH - fz - 3) * k));
+        var px = ctx.getImageData(0, yS, cvs.width, 1).data, vals = [], xi;
+        for (xi = 0; xi < cvs.width; xi += Math.max(4, Math.round(cvs.width / 60))) {
+          var o4 = xi * 4;
+          vals.push([px[o4], px[o4 + 1], px[o4 + 2], px[o4] + px[o4 + 1] + px[o4 + 2]]);
+        }
+        vals.sort(function (p, q) { return p[3] - q[3]; });
+        var md = vals[Math.floor(vals.length * 0.35)];
+        if (md && md[3] > 0) {
+          fadeRGB = md[0] + ',' + md[1] + ',' + md[2];
+          try { document.documentElement.style.setProperty('--oro-chart-foot', 'rgb(' + fadeRGB + ')'); } catch (eV) { /* ignore */ }
+        }
+      } catch (eS) { /* ignore */ }
+    }
     ctx.save();
-    ctx.globalCompositeOperation = 'destination-out';
     var gF = ctx.createLinearGradient(0, cssH - fz, 0, cssH);
-    gF.addColorStop(0, 'rgba(0,0,0,0)');
-    gF.addColorStop(0.5, 'rgba(0,0,0,0.5)');
-    gF.addColorStop(1, 'rgba(0,0,0,1)');
+    gF.addColorStop(0, 'rgba(' + fadeRGB + ',0)');
+    gF.addColorStop(0.55, 'rgba(' + fadeRGB + ',0.7)');
+    gF.addColorStop(1, 'rgba(' + fadeRGB + ',1)');
     ctx.fillStyle = gF;
     ctx.fillRect(0, cssH - fz, cssW, fz);
-    ctx.globalCompositeOperation = 'source-over';
     if (timeLabelsQ.length) {
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
       ctx.fillStyle = '#64748B';

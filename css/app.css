@@ -8178,3 +8178,45 @@ html body #portalModal#portalModal .aff-graph .ag-h b{font-size:12.5px;color:#3D
 html body #portalModal#portalModal .aff-graph svg{display:block}
 html[dir="rtl"] body #portalModal#portalModal .aff-graph svg{transform:scaleX(-1)}
 html[dir="rtl"] body #portalModal#portalModal .aff-graph svg text{transform-box:fill-box;transform-origin:center;transform:scaleX(-1)}
+/* ===== v2492 — Plus de « lueur noire » en bas de la courbe : le haut du terminal commence avec le BLEU
+   relevé sur le bas de la courbe (--oro-chart-foot, mis par js/chart.js), puis rejoint doucement son bleu nuit. ===== */
+@media (max-width:859px){
+  html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
+    background:url("../icons/ui/pad-planets.svg?v=2487") center/cover no-repeat,
+      linear-gradient(180deg,var(--oro-chart-foot,rgb(15,14,41)) 0,rgb(12,11,36) 46px,rgb(13,12,38) 100%)!important}
+}
+
+/* ===== v2492 — titre du Bonus dépôt (avec « minimum ») un peu plus petit : il tient sur tous les téléphones, toutes les langues. ===== */
+html body #portalModal#portalModal .bon-head .bon-big{font-size:12.5px!important;line-height:1.25!important;padding:7px 9px!important;text-wrap:balance}
+@media (max-width:380px){html body #portalModal#portalModal .bon-head .bon-big{font-size:11.5px!important}}
+
+/* ===== v2492 — Case des durées : design 1 « bleu » choisi par le propriétaire. Plus de case champagne ni de gros
+   ronds dorés : bord bleu léger, durée en blanc avec une petite lueur bleue, flèches fines sans rond. ===== */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row{
+  background:rgba(92,155,255,.08)!important;border:1px solid rgba(92,155,255,.45)!important;box-shadow:inset 0 0 12px rgba(92,155,255,.12)!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on{
+  background:transparent!important;border:0!important;color:#E2EDFF!important;box-shadow:none!important;text-shadow:0 0 8px rgba(120,170,255,.45)!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on *,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on *{
+  color:inherit!important;-webkit-text-fill-color:currentColor!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav{
+  background:transparent!important;border:0!important;box-shadow:none!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg,
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg path,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-nav svg path{
+  stroke:#9DB7FF!important;fill:none!important;stroke-width:2.6!important}
+
+/* ===== v2492 — Mise et gain prennent le même bleu que la case des durées (moins de couleurs dans le terminal). ===== */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview),
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview){
+  background:rgba(92,155,255,.08)!important;border:1px solid rgba(92,155,255,.45)!important;box-shadow:inset 0 0 12px rgba(92,155,255,.12)!important}
+
+/* ===== v2492 — PC : la fenêtre Cadeaux s'ouvre en GRAND (comme la page Apprendre), plus en petite page de téléphone. ===== */
+@media (min-width:860px){
+  html body #portalModal#portalModal#portalModal .modal-box.portal-box{width:min(920px,94vw)!important;max-width:none!important;max-height:94vh!important;min-height:min(780px,94vh)!important}
+  html body #portalModal#portalModal#portalModal .portal-box :is(.defi-card,.aff-card,.top-card,.bon-card,.gift-guest){max-width:760px!important;margin-inline:auto!important;width:100%!important}
+}

@@ -365,7 +365,8 @@ if ($action === 'affStatus') {
     exit;
   }
   try {
-    $res = orolado_aff_status($db, $me);
+    // v2492 : heure du téléphone (périodes) + recherche d'un ami parmi tous (affichage seulement).
+    $res = orolado_aff_status($db, $me, ['tz' => (int) ($req['tz'] ?? 0), 'q' => substr((string) ($req['q'] ?? ''), 0, 20)]);
   } catch (Throwable $eAff) {
     error_log('OROLADO aff ' . $eAff->getMessage());
     $res = ['ok' => false, 'reason' => 'Indisponible'];

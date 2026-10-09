@@ -5435,7 +5435,7 @@
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
-      toast('Le dépôt minimum est de $\u00a0\u00a03.', 'err');
+      toast('Le dépôt minimum est de $3.', 'err');
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });

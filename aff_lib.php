@@ -120,13 +120,32 @@ function orolado_aff_attach(array $db, string $newUid, string $code): bool {
   return true;
 }
 
+/**
+ * v2492 — dépôts rangés par joueur. Utilisé SEULEMENT pendant le calcul de la page Invitation (affStatus) :
+ * avant, toute la liste des dépôts du site était relue pour chaque ami (très lent avec des milliers d'amis).
+ * Partout ailleurs (dépôt, webhook…), la liste fraîche est toujours relue.
+ */
+function orolado_aff_build_deposit_index(array $db): array {
+  $idx = [];
+  foreach ((array) ($db['deposits'] ?? []) as $d) {
+    if (!is_array($d)) continue;
+    $u = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($u !== '') $idx[$u][] = $d;
+  }
+  return $idx;
+}
+
 /** Vrais dépôts confirmés du joueur (pas les bonus admin / défi / cadeaux), du plus ancien au plus récent. */
 function orolado_aff_real_deposits(array $db, string $uid): array {
   $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
   if (!$ids) $ids = [$uid];
   $list = [];
   $seen = [];
-  foreach (($db['deposits'] ?? []) as $d) {
+  $mine = [];
+  $idx = $GLOBALS['OROLADO_AFF_DEPIDX'] ?? null;
+  if (is_array($idx)) { foreach ($ids as $oneId) foreach ($idx[(string) $oneId] ?? [] as $d) $mine[] = $d; }
+  else $mine = (array) ($db['deposits'] ?? []);
+  foreach ($mine as $d) {
     if (!is_array($d)) continue;
     if (!in_array((string) ($d['userId'] ?? $d['user_id'] ?? ''), $ids, true)) continue;
     $st = strtoupper((string) ($d['status'] ?? ''));
@@ -295,6 +314,7 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
         $own['friends'][$i]['paid'] = true;
         $own['friends'][$i]['deposit'] = (float) ($res['depositTotal'] ?? 0);
         $own['friends'][$i]['gift'] = (float) ($res['earned'] ?? 0);
+        $own['friends'][$i]['n'] = count((array) ($res['deps'] ?? [])); // v2492 : nombre de dépôts (affichage)
       }
       $sum += (float) ($own['friends'][$i]['gift'] ?? 0);
     }
@@ -304,7 +324,7 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
 }
 
 /** Ce que voit le joueur : son lien, ses amis, ses gains ; et s'il a été invité, son cadeau. */
-function orolado_aff_status(array $db, array $user): array {
+function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $uid = (string) ($user['id'] ?? '');
   $out = ['ok' => true, 'enabled' => false, 'pct' => (int) round(OROLADO_AFF_PCT * 100)];
   // Côté ami invité : vérifier / verser son cadeau (même si le Portail ne lui est pas encore ouvert).
@@ -321,14 +341,22 @@ function orolado_aff_status(array $db, array $user): array {
   $own = orolado_aff_read(orolado_aff_owner_name($uid));
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
   // Amis encore dans leur année : on vérifie leurs nouveaux dépôts au passage.
+  $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
   $changed = false;
   foreach ($friends as $f) {
     $t = (int) strtotime((string) ($f['at'] ?? ''));
     if (!empty($f['uid']) && $t > 0 && time() - $t <= (OROLADO_AFF_DAYS + 2) * 86400) {
+      // v2492 : on ne rouvre le fichier de l'ami QUE s'il a un dépôt pas encore payé (avant : à chaque fois, lent).
+      $fd = orolado_aff_real_deposits($db, (string) $f['uid']);
+      if (!$fd) continue;
+      $inWin = 0;
+      foreach ($fd as $d1) if ($d1['ts'] > 0 && $d1['ts'] <= $t + OROLADO_AFF_DAYS * 86400 + 172800) $inWin++;
+      if (!empty($f['paid']) && isset($f['n']) && (int) $f['n'] >= $inWin) continue;
       orolado_aff_settle($db, (string) $f['uid']);
       $changed = true;
     }
   }
+  unset($GLOBALS['OROLADO_AFF_DEPIDX']);
   if ($changed) $own = orolado_aff_read(orolado_aff_owner_name($uid));
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
   $out['enabled'] = true;
@@ -341,6 +369,8 @@ function orolado_aff_status(array $db, array $user): array {
   $played = 0;
   $total = 0.0;
   $list = [];
+  $depCount = 0;
+  $fixN = [];
   foreach ($friends as $f) {
     $fu = $db['users'][(string) ($f['uid'] ?? '')] ?? [];
     $realTrades = (int) ($fu['realTrades'] ?? 0);
@@ -348,10 +378,11 @@ function orolado_aff_status(array $db, array $user): array {
     $total += (float) ($f['deposit'] ?? 0);
     $t = (int) strtotime((string) ($f['at'] ?? ''));
     // v2489 : nombre de dépôts de l'ami (affichage seulement, lu dans son fichier d'invitation).
-    $nDep = 0;
-    if (!empty($f['paid']) && (string) ($f['uid'] ?? '') !== '') {
+    $nDep = isset($f['n']) ? (int) $f['n'] : 0;
+    if (!isset($f['n']) && !empty($f['paid']) && (string) ($f['uid'] ?? '') !== '') {
       $invF = orolado_aff_read(orolado_aff_inv_name((string) $f['uid']));
       $nDep = is_array($invF['deps'] ?? null) ? count($invF['deps']) : 0;
+      $fixN[(string) $f['uid']] = $nDep;
     }
     $list[] = [
       'id' => (string) ($fu['publicId'] ?? 'ORO-??????'),
@@ -362,20 +393,68 @@ function orolado_aff_status(array $db, array $user): array {
       'n' => $nDep,
       'played' => $realTrades > 0,
     ];
+    $depCount += $nDep;
   }
   usort($list, static fn($x, $y) => $y['at'] <=> $x['at']);
   $out['played'] = $played;
   $out['total'] = orolado_money($total);
   $out['earned'] = orolado_money($own['earned'] ?? 0);
-  $out['list'] = array_slice($list, 0, 200);
+  // v2492 (audit, accord du propriétaire) : AUCUNE limite d'amis. Les totaux de chaque période (Aujourd'hui,
+  // 7 jours, 30 jours, Tout) sont comptés ici sur TOUS les amis, à l'heure du téléphone ; la liste envoyée garde
+  // les 2 000 plus récents (léger pour le téléphone) et la recherche (ORO-…) cherche parmi TOUS les amis.
+  // Anciens amis (avant v2492) : leur nombre de dépôts est recopié une fois chez le parrain (affichage).
+  if ($fixN) orolado_aff_with(orolado_aff_owner_name($uid), static function (&$o) use ($fixN) {
+    foreach (($o['friends'] ?? []) as $i => $fr) { $fu2 = (string) ($fr['uid'] ?? ''); if ($fu2 !== '' && isset($fixN[$fu2]) && !isset($fr['n'])) $o['friends'][$i]['n'] = $fixN[$fu2]; }
+  });
+  $out['depCount'] = $depCount;
+  $tz = max(-840, min(840, (int) ($opts['tz'] ?? 0)));
+  $nowT = time();
+  $mid = intdiv($nowT - $tz * 60, 86400) * 86400 + $tz * 60;
+  $froms = ['day' => $mid, 'week' => $mid - 6 * 86400, 'month' => $mid - 29 * 86400, 'all' => 0];
+  $per = [];
+  foreach ($froms as $pk => $from) $per[$pk] = ['from' => $from, 'signed' => 0, 'paid' => 0, 'dep' => 0.0, 'n' => 0, 'big' => 0.0, 'gain' => 0.0];
+  foreach ($list as $row) {
+    foreach ($froms as $pk => $from) {
+      if ($row['at'] < $from) continue;
+      $per[$pk]['signed']++;
+      if ($row['deposit'] > 0) {
+        $per[$pk]['paid']++;
+        $per[$pk]['dep'] += $row['deposit'];
+        $per[$pk]['n'] += $row['n'];
+        if ($row['deposit'] > $per[$pk]['big']) $per[$pk]['big'] = $row['deposit'];
+      }
+    }
+  }
+  foreach ((array) ($own['log'] ?? []) as $l) {
+    $ts = (int) strtotime((string) ($l['at'] ?? ''));
+    $amt = (float) ($l['amount'] ?? 0);
+    if ($ts <= 0 || $amt <= 0) continue;
+    foreach ($froms as $pk => $from) if ($pk !== 'all' && $ts >= $from) $per[$pk]['gain'] += $amt;
+  }
+  $per['all']['gain'] = (float) ($own['earned'] ?? 0);
+  foreach ($per as $pk => $p) { $per[$pk]['dep'] = orolado_money($p['dep']); $per[$pk]['big'] = orolado_money($p['big']); $per[$pk]['gain'] = orolado_money($p['gain']); }
+  $out['periods'] = $per;
+  $out['more'] = count($list) > 2000;
+  $q = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($opts['q'] ?? '')));
+  if ($q !== '') {
+    $found = [];
+    foreach ($list as $row) {
+      if (strpos(preg_replace('/[^A-Z0-9]/', '', strtoupper($row['id'])), $q) !== false) { $found[] = $row; if (count($found) >= 200) break; }
+    }
+    $out['found'] = $found;
+  }
+  $out['list'] = array_slice($list, 0, 2000);
   // v2491 : gains de celui qui invite, date par date (pour le petit graphique ; affichage seulement).
   $gains = [];
   foreach ((array) ($own['log'] ?? []) as $l) {
     $ts = (int) strtotime((string) ($l['at'] ?? ''));
     $amt = (float) ($l['amount'] ?? 0);
-    if ($ts > 0 && $amt > 0) $gains[] = [$ts, orolado_money($amt)];
+    if ($ts > 0 && $amt > 0) { $h = intdiv($ts, 3600) * 3600; $gains[$h] = ($gains[$h] ?? 0) + $amt; }
   }
-  $out['gains'] = array_slice($gains, -1000);
+  // v2492 : regroupés par heure (tous les gains depuis le début, sans limite de nombre).
+  ksort($gains);
+  $out['gains'] = [];
+  foreach ($gains as $h => $sumH) $out['gains'][] = [$h, orolado_money($sumH)];
   return $out;
 }
 
