@@ -5,7 +5,4 @@
 <radialGradient id="c" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#BAE6FD"/><stop offset=".5" stop-color="#0E7490"/><stop offset="1" stop-color="#062C3A" stop-opacity="0"/></radialGradient>
 </defs>
 
-<ellipse cx="25" cy="200" rx="70" ry="12" fill="none" stroke="#FFE2A0" stroke-opacity=".25" stroke-width="1.5" transform="rotate(-12 25 200)"/>
-<circle cx="25" cy="200" r="38" fill="url(#b)" opacity=".45"/>
-
 </svg>
