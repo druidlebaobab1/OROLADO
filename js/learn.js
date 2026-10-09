@@ -218,7 +218,9 @@
   // v2505 — c'est quoi une adresse + même crypto des deux côtés (tableau avec délais).
   function depAddr() {
     var R = [['usdt', 'USDT', 'USDT · TRC20', 'T…', 'gt1'], ['btc', 'BTC', 'BTC', 'bc1… / 1… / 3…', 'gt2'], ['eth', 'ETH', 'ETH · ERC20', '0x…', 'gt3']];
-    return '<div class="lg-addr"><h5>' + I('mail') + ' ' + esc(T('gaT')) + '</h5><p>' + esc(T('ga1')) + '</p><p class="lg-addr-gold">' + I('star') + ' ' + esc(T('ga2')) + '</p>' +
+    return '<div class="lg-addr"><h5>' + I('mail') + ' ' + esc(T('gaT')) + '</h5><p class="lg-addr-def">' + esc(T('ga0')) + '</p>' +
+      '<div class="lg-addr-ex"><small>' + esc(T('gaE')) + '</small><code>TQ8hF2xR9wLmN4vB7cK1pZ3sD6gH5x9Lr</code><em>' + esc(T('gaN')) + '</em></div>' +
+      '<p>' + esc(T('ga1')) + '</p><p class="lg-addr-gold">' + I('star') + ' ' + esc(T('ga2')) + '</p>' +
       '<div class="lg-addr-t"><div class="h"><span>' + esc(T('gtc')) + '</span><span>' + esc(T('gta')) + '</span><span>' + esc(T('gtt')) + '</span></div>' +
       R.map(function (r) { return '<div><span class="c"><span class="lg-coins" aria-hidden="true"><svg><use href="#ico-' + r[0] + '"></use></svg></span> ' + r[1] + '</span><span><b>' + r[2] + '</b><small>' + r[3] + '</small></span><span class="tm">' + I('clock') + ' ' + esc(T(r[4])) + '</span></div>'; }).join('') + '</div>' +
       '<div class="lg-dg-warn">' + I('alert') + ' ' + esc(T('ga3')) + '</div></div>';

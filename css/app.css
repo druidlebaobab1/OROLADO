@@ -8662,3 +8662,21 @@ html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#clo
   box-shadow:0 0 10px rgba(46,229,157,.45),inset 0 0 0 1px rgba(255,255,255,.08)!important}
 html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close::before,html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close::after{display:none!important}
 html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#closeDeposit.deposit-close svg{stroke:#EFFFF8!important}
+/* v2510 — « C'est quoi une adresse ? » : définition claire + exemple d'adresse (qui passe à la ligne sur les petits écrans). */
+.learn-modal .lg-addr .lg-addr-def{font-weight:700;color:#fff!important}
+.learn-modal .lg-addr-ex{display:flex;flex-direction:column;gap:5px;padding:10px;border-radius:10px;background:rgba(0,0,0,.32);border:1px dashed rgba(127,211,255,.5)}
+.learn-modal .lg-addr-ex small{font-size:12.5px;font-weight:800;color:#9DB7FF}
+.learn-modal .lg-addr-ex code{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700;color:#3CF5A6;word-break:break-all;overflow-wrap:anywhere;direction:ltr;unicode-bidi:isolate;text-align:left}
+.learn-modal .lg-addr-ex em{font-size:11.5px;font-style:normal;color:#FFB4B4}
+/* adresses des sites : jamais de débordement, même sur un téléphone très étroit */
+.learn-modal a.lg-web{max-width:100%;overflow-wrap:anywhere;word-break:break-all}
+.learn-modal .lg-buy-g span{min-width:0}
+.learn-modal .lg-addr-t>div>span{min-width:0;overflow-wrap:anywhere}
+@media (max-width:360px){.learn-modal .lg-addr-t>div{grid-template-columns:62px minmax(0,1fr) 80px;gap:5px;padding:7px 6px}}
+/* v2510 — 6 sites : une adresse ne se coupe jamais au milieu ; sur petit téléphone, un site par ligne (nom à gauche, adresse à droite). */
+.learn-modal a.lg-web{word-break:normal!important;overflow-wrap:normal!important;white-space:nowrap}
+@media (max-width:400px){
+  .learn-modal .lg-buy-g{grid-template-columns:1fr!important;gap:5px!important}
+  .learn-modal .lg-buy-g span{flex-direction:row!important;align-items:center!important;justify-content:space-between;padding:7px 9px!important}
+}
+@media (max-width:400px){ .learn-modal .lg-buy-g span{flex-wrap:wrap;gap:4px 8px!important} }
