@@ -8832,3 +8832,10 @@ html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100v
 @media (orientation:portrait) and (max-width:820px){
   html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-mode{padding-left:16px!important;padding-right:16px!important}
 }
+
+/* v2527 — DÉMO = bleu partout (comme RÉEL = vert) : en démo, la case de la mise passe de l’orange au bleu de la démo ;
+   en plein écran, la case DÉMO non choisie est bleue (plus orange). Rien d'autre ne change. */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #inputStake,
+html body:has(#screenTrade:not(.mode-real)) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #inputStake{color:#7AA7FF!important;-webkit-text-fill-color:#7AA7FF!important;caret-color:#7AA7FF!important;text-shadow:0 0 8px rgba(122,167,255,.35)!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #fsBtnDemo:not(.on):not(.tap-lit),
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #modeDemo:not(.on):not(.tap-lit){background:linear-gradient(135deg,rgba(92,155,255,.16),rgba(92,155,255,.05))!important;border:1px solid rgba(122,167,255,.6)!important;color:#D6E0FF!important;box-shadow:none!important}
