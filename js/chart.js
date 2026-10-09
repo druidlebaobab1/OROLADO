@@ -4678,12 +4678,28 @@
         payoutAcc = 0;
       }
 
-      drawFrame(ts);
-      if (onFrame) onFrame(ts);
+      // v2552 — PLEIN ÉCRAN sur un téléphone qui ne suit pas (enregistrement d'écran, téléphone faible, mode léger) :
+      // on dessine une image sur deux = 30 images/s RÉGULIÈRES (au lieu de 60 qui hésitent → accrocs).
+      // Détection : moyenne des écarts entre images > 21 ms pendant ~1,5 s. Retour à 60 en quittant le plein écran.
+      // Dessin seulement : prix, trades et chronos ne changent pas.
+      var fsOnNow = document.documentElement.classList.contains('fs-trade');
+      if (fsOnNow !== fsSkip.was) { fsSkip.was = fsOnNow; fsSkip.heavy = false; fsSkip.ema = 16.7; fsSkip.n = 0; fsSkip.flip = false; }
+      if (fsOnNow && !fsSkip.heavy) {
+        fsSkip.ema = fsSkip.ema * 0.9 + Math.min(dt, 60) * 0.1;
+        fsSkip.n++;
+        if (fsSkip.n > 90 && fsSkip.ema > 21) fsSkip.heavy = true;
+      }
+      var skipDraw = false;
+      if (fsOnNow && (fsSkip.heavy || D6.lite)) { fsSkip.flip = !fsSkip.flip; skipDraw = fsSkip.flip; }
+      if (!skipDraw) {
+        drawFrame(ts);
+        if (onFrame) onFrame(ts);
+      }
     } catch (eLoop) {
       try { drawNow(); } catch (e2) { /* ignore */ }
     }
   }
+  var fsSkip = { was: false, heavy: false, ema: 16.7, n: 0, flip: false };
 
   function syncIndButtons() {
     document.querySelectorAll('.ind-btn[data-ind]').forEach(function (btn) {
