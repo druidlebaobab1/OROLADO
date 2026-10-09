@@ -4669,7 +4669,42 @@
     return !!(document.querySelector('iframe[src*="flutterwave"], iframe[name*="checkout"], .flwp-container, #flwp-container, [class*="flw-checkout"]'));
   }
 
+  // v2542 — le programme de paiement Flutterwave (checkout.flutterwave.com/v3.js) peut ne pas s'être chargé
+  // (Safari / bloqueur, réseau lent) : on le recharge et on l'attend (8 s au plus) avant d'abandonner.
+  var flwScriptWait = null;
+  function ensureFlwScript() {
+    if (window.FlutterwaveCheckout) return Promise.resolve(true);
+    if (flwScriptWait) return flwScriptWait;
+    flwScriptWait = new Promise(function (resolve) {
+      var done = false;
+      function finish(v) { if (done) return; done = true; flwScriptWait = null; resolve(v); }
+      try {
+        var s = document.createElement('script');
+        s.src = 'https://checkout.flutterwave.com/v3.js';
+        s.async = true;
+        s.onload = function () { finish(!!window.FlutterwaveCheckout); };
+        s.onerror = function () { finish(false); };
+        document.head.appendChild(s);
+      } catch (eS) { finish(false); }
+      var t0 = Date.now();
+      (function poll() {
+        if (window.FlutterwaveCheckout) { finish(true); return; }
+        if (Date.now() - t0 > 8000) { finish(false); return; }
+        setTimeout(poll, 200);
+      })();
+    });
+    return flwScriptWait;
+  }
+
   function openFlwInline(session) {
+    if (window.FlutterwaveCheckout) { openFlwInlineNow(session); return; }
+    ensureFlwScript().then(function (ok) {
+      if (ok) openFlwInlineNow(session);
+      else toast('La page de paiement est bloquée par votre navigateur. Essayez avec Chrome, ou désactivez le bloqueur de contenu, puis réessayez.', 'err', 7000);
+    });
+  }
+
+  function openFlwInlineNow(session) {
     if (!window.FlutterwaveCheckout) {
       toast('Paiement carte indisponible pour le moment.', 'err');
       return;
@@ -5659,19 +5694,20 @@
         lang: String(navigator.language || navigator.userLanguage || ''),
         currency: cfa || ''
       });
+      // v2542 — compte admin seulement : petit code à la fin du message pour savoir d'où vient un refus.
+      var flwDiag = (u && u.role === 'admin') ? function (tag) { return ' [' + tag + ']'; } : function () { return ''; };
       if (remote && remote.ok === false) {
         console.error('OROLADO flutterwave fail', remote);
-        toast(String((remote && remote.reason) || t('sessionInvalid')), 'err');
+        toast(String((remote && remote.reason) || t('sessionInvalid')) + flwDiag('srv:' + String(remote.code || remote.error || '?')), 'err', 7000);
         return;
       }
       if (!remote || !remote.inline || !remote.public_key || !remote.tx_ref) {
-        toast(String((remote && remote.reason) || 'Paiement carte indisponible pour le moment.'), 'err');
+        toast(String((remote && remote.reason) || 'Paiement carte indisponible pour le moment.') + flwDiag('rep:' + (remote ? Object.keys(remote).slice(0, 6).join(',') : 'vide')), 'err', 7000);
         return;
       }
       try { sessionStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e2) { /* ignore */ }
-      // v2541 — Côte d'Ivoire / Sénégal : Wave ne marche pas chez Flutterwave → on prévient AVANT d'ouvrir la page.
-      if (!(await waveNotice(remote.country))) return;
+      // v2542 : fenêtre « Wave en maintenance » retirée de ce parcours (le propriétaire préfère revenir au paiement d'avant).
       openFlwInline(remote);
     } catch (err) {
       console.error('OROLADO deposit', err);
