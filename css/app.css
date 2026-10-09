@@ -8826,3 +8826,32 @@ html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100v
 @media (min-width:821px) and (min-height:501px){
   html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch{grid-template-columns:minmax(0,240px) 48px minmax(0,240px)!important;justify-content:center!important;column-gap:14px!important}
 }
+
+/* ===== v2521 — ÉCRAN RANGÉ « COMME LES PROS » (validé par le propriétaire, idée de Yaya) — téléphone debout, Android et iPhone.
+   Une seule grille : toutes les lignes ont le même bord (8 px), le terminal du haut et celui du bas se répondent
+   (COMPTE RÉEL / DÉMO coupés en 50/50 pile au-dessus d'ACHETER / VENDRE), mêmes hauteurs (Recharger = ACHETER = VENDRE = 50 px,
+   cases du haut = cases du bas = 38 px), même arrondi, même espace (8 px) entre les lignes du haut, planètes un peu plus
+   légères, PLEIN ÉCRAN calé à droite. Couleurs et style inchangés. Retour possible : photo v2520. ===== */
+@media (orientation:portrait) and (max-width:820px){
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line,
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .trade-row,
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #oddsRow{margin-left:-6px!important;margin-right:-6px!important;width:auto!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher{grid-template-columns:1fr 1fr!important;margin-top:2px!important;margin-bottom:5px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher :is(#modeReal,#modeDemo){border-radius:12px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .trade-row .btn-trade,
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #btnCall,
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #btnPut{height:50px!important;min-height:50px!important;max-height:50px!important}
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line,
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line > *{height:38px!important;min-height:38px!important;max-height:38px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row{padding-left:1px!important;padding-right:1px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #assetBar{padding-left:0!important;padding-right:0!important;height:auto!important;min-height:0!important;max-height:none!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #assetBar .asset-chip{height:70px!important;min-height:70px!important;max-height:70px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #assetBar .asset-chip .mk-art{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #assetBar .asset-chip .mk-art svg{width:32px!important;height:32px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #assetBar .asset-chip .mk-name{font-size:9px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #chartToolbar{padding-left:8px!important;padding-right:8px!important;margin-top:8px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #chartToolbar .ind-pills{flex:1 1 auto!important;width:100%!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #chartToolbar #btnChartFs{margin-left:auto!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #chartToolbar .ind-btn,
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #chartToolbar button{height:24px!important;min-height:24px!important}
+}
