@@ -8731,3 +8731,15 @@ html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#clo
   html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) :is(#btnPortal,#btnHelp,#langBarTrade,#btnProfile){width:48px!important;min-width:48px!important;max-width:48px!important;flex:0 0 48px!important;margin:0!important;padding-left:0!important;padding-right:0!important;justify-content:center!important;align-items:center!important}
   html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #topbarCta{width:100%!important;max-width:none!important;margin:0!important}
 }
+
+/* ===== v2515 — Plus de place pour la COURBE (téléphone debout, écran normal). ===== */
+@media (orientation:portrait) and (max-width:820px){
+  /* COMPTE RÉEL / DÉMO un peu moins hauts (52 → 46 px), Android et iPhone */
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher :is(#modeReal,#modeDemo){height:46px!important;min-height:46px!important;max-height:46px!important}
+  /* Android seulement : ligne mise / durées (44 → 40 px) et cases payout (58 → 52 px) */
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line,
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad .stake-line > *{height:40px!important;min-height:40px!important;max-height:40px!important}
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #oddsRow{height:52px!important;min-height:52px!important;max-height:52px!important}
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #oddsRow .odds-chip{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+  html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #oddsRow .odds-chip.on{width:41px!important;height:41px!important;min-width:41px!important;min-height:41px!important}
+}
