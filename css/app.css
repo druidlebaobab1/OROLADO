@@ -8758,3 +8758,53 @@ html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#clo
   html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #oddsRow .odds-chip{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}
   html.is-android body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .pad #oddsRow .odds-chip.on{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
 }
+
+/* ===== v2517 — Revue complète. Visiteur, petit téléphone : Connexion / Inscription rognaient le texte de quelques px
+   (FR, ES, PT, AR, RU, DE). Marge intérieure réduite (12 → 5 px) ; texte et bouton gardent leur taille. ===== */
+@media (max-width:400px){
+  html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #authQuick .btn-auth-link{padding-left:5px!important;padding-right:5px!important;white-space:nowrap!important}
+}
+@media (max-width:400px){
+  html[lang="ru"] body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #authQuick .btn-auth-link{font-size:13px!important;letter-spacing:-.3px!important}
+}
+/* v2517 — Profil fermé = invisible : en passant français ↔ arabe (sens de l'écriture), il traversait l'écran ~0,25 s.
+   L'ouverture et la fermeture gardent leur glissement (la visibilité ne change qu'à la fin de la fermeture). */
+html body #drawerProfile.drawer:not(.on){visibility:hidden!important;transition:transform .28s cubic-bezier(.22,.8,.24,1),visibility 0s linear .28s!important}
+html body #drawerProfile.drawer.on{visibility:visible!important;transition:transform .28s cubic-bezier(.22,.8,.24,1),visibility 0s linear 0s!important}
+/* v2517 — Invitation (visiteur) : la phrase de la case du lien passe à la ligne au lieu d'être coupée par « … ». */
+html body #portalModal #affUrl.aff-url.aff-url-msg{white-space:normal!important;text-overflow:clip!important;overflow:visible!important;line-height:1.25!important}
+/* v2517 — Cadeaux : noms des onglets en arabe / hindi (lettres hautes) un peu rognés en haut et en bas. */
+html:is([lang="ar"],[lang="hi"]) body #portalModal .pt-tab span{line-height:1.55!important;padding:1px 0!important}
+/* v2517 — Guide : « APOCALYPSE » rogné de 3 px dans l'image des marchés ; badges du retrait trop étroits pour les mots longs (PT). */
+.learn-modal .lg-mk-i small{letter-spacing:-.3px!important;text-overflow:clip!important}
+@media (max-width:380px){ .learn-modal .lg-trust span{font-size:12px!important;overflow-wrap:anywhere!important;hyphens:auto} }
+/* v2517 — Barre du haut quand les CADEAUX sont désactivés (ou pendant le 1er chargement) : 3 colonnes fixes de 108 px,
+   Aide + drapeau + Profil (162 px) débordaient → Profil sortait de l'écran sur petit téléphone. Rangement propre ici aussi. */
+@media (orientation:portrait) and (max-width:820px){
+  html:not(.portal-on) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row{grid-template-columns:auto minmax(0,1fr) auto!important;column-gap:8px!important;padding-left:8px!important;padding-right:8px!important}
+  html:not(.portal-on) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row>.topbar-actions{display:flex!important;gap:2px!important;width:auto!important;max-width:none!important;min-width:0!important;padding:0!important;margin:0!important;justify-content:flex-end!important}
+  html:not(.portal-on) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .topbar-row>.topbar-actions>:is(#btnHelp,#langBarTrade,#btnProfile){width:46px!important;min-width:46px!important;max-width:46px!important;flex:0 0 46px!important;padding-left:0!important;padding-right:0!important;margin:0!important}
+  html:not(.portal-on) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #topbarCta{width:100%!important;max-width:none!important;margin:0!important}
+}
+@media (orientation:portrait) and (max-width:400px){
+  html:not(.portal-on) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #brandLockup .brand{display:none!important}
+  html:not(.portal-on) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.is-guest):not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #brandLockup{padding-left:6px!important;padding-right:6px!important;min-width:0!important;width:auto!important}
+}
+/* v2517 — Arabe (droite à gauche) : le portefeuille du COMPTE RÉEL va du côté EXTÉRIEUR (à droite, « devant le solde »),
+   comme en français il est à gauche ; il n'est plus collé à la case DÉMO. Écran normal et plein écran, toutes tailles. */
+html[dir="rtl"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal{padding-left:10px!important;padding-right:42px!important}
+html[dir="rtl"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal .mb-wal{left:auto!important;right:8px!important}
+html[dir="rtl"] body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal{padding-left:8px!important;padding-right:40px!important}
+html[dir="rtl"] body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal .mb-wal{left:auto!important;right:8px!important}
+@media (orientation:landscape) and (max-height:500px){
+  html[dir="rtl"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal{padding-left:6px!important;padding-right:30px!important}
+  html[dir="rtl"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal .mb-wal{right:5px!important}
+  html[dir="rtl"] body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal{padding-right:30px!important}
+  html[dir="rtl"] body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal .mb-wal{right:6px!important}
+}
+/* v2517 — BUG IMPORTANT (arabe, écriture de droite à gauche) : sur PC / tablette, 13 fenêtres s'ouvraient HORS de l'écran
+   (code de création de compte, mot de passe, historiques, aide, conditions, confirmation de retrait…). Leur centrage
+   (left:50 % + décalage) poussait la fenêtre vers la droite en sens arabe. Le FOND se centre en sens normal ; le CONTENU
+   de la fenêtre reste en arabe (droite à gauche). */
+html[dir="rtl"] body .modal-backdrop{direction:ltr}
+html[dir="rtl"] body .modal-backdrop > .modal-box{direction:rtl}

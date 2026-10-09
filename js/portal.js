@@ -480,6 +480,8 @@
     tabsOn();
     if (!(aff && aff.enabled && (aff.code || aff.guest))) return;
     $('affUrl').textContent = aff.guest ? t('affGuestLink') : affLink().replace(/^https?:\/\//, '');
+    // v2517 — visiteur : la phrase « Inscris-toi pour avoir ton lien » passe à la ligne au lieu d'être coupée (PT, RU, DE).
+    $('affUrl').classList.toggle('aff-url-msg', !!aff.guest);
     $('affClicks').textContent = String(aff.clicks || 0);
     $('affFriends').textContent = String(aff.friends || 0);
     $('affDeposited').textContent = String(aff.deposited || 0);

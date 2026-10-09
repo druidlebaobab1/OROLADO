@@ -353,7 +353,8 @@
     if (go) {
       e.preventDefault();
       var el = document.getElementById('lgStep' + go.getAttribute('data-lg-go')), sc = document.getElementById('learnScroll');
-      if (el && sc) sc.scrollTo({ top: el.offsetTop - 18, behavior: 'smooth' });
+      // v2517 — position mesurée dans la zone qui défile (offsetTop comptait aussi la barre du titre : l'étape arrivait 41 px trop haut, titre caché).
+      if (el && sc) sc.scrollTo({ top: sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - 14, behavior: 'smooth' });
     }
     // v2469 — écouté AVANT les fenêtres (phase de capture) : sur Android, les fenêtres (Conditions, Aide…) arrêtent
     // les clics à l'intérieur ; le bouton « Apprendre à trader » des Conditions ne répondait donc pas.

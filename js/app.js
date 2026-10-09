@@ -2506,6 +2506,15 @@
   }
 
   var histSheetMode = 'real';
+  // v2517 — changement de langue pendant que l'historique est ouvert : on le réécrit (sinon « Aucune position… »
+  // et les mots des lignes restaient dans l'ancienne langue jusqu'à la prochaine ouverture).
+  document.addEventListener('oro:lang', function () {
+    try {
+      renderHistory();
+      var hs = $('historySheet');
+      if (hs && hs.classList.contains('active')) renderHistorySheet();
+    } catch (eHl) { /* ignore */ }
+  });
 
   function renderHistorySheet(forceMode) {
     var el = $('historySheetFeed');
@@ -5148,6 +5157,13 @@
     return isStaticPlatAddr(a) ? '' : a;
   }
 
+  // v2517 — titre de l’adresse mis à jour TOUT DE SUITE au changement de crypto / réseau (avant, il gardait l’ancien
+  // nom, ex. « USDT TRC20 », jusqu’à l’arrivée de la nouvelle adresse). L’adresse et le QR sont déjà vidés à ce moment.
+  function paintOxaAddrLabel() {
+    if (!$('oxaAddrLabel')) return;
+    var nl = oxaAsset === 'usdt' ? oxaNet : oxaNetworkName();
+    $('oxaAddrLabel').textContent = t('m_addrOf').replace('{c}', oxaMeta(oxaAsset).symbol + (nl ? ' ' + nl : ''));
+  }
   function clearCryptoPreview() {
     liveDepositAddr = '';
     if ($('usdtAddr')) $('usdtAddr').textContent = '';
@@ -6347,13 +6363,17 @@
     if (!tx) return;
     var u = user();
     var uid = u ? u.id : '';
-    if (financeCache.html && financeCache.userId === uid && (Date.now() - financeCache.at) < 60000) {
+    // v2517 — la mémoire de 60 s tient compte de la langue (avant : rouvert dans une autre langue, l'historique
+    // restait dans l'ancienne : « Retrait », « Retrait refusé… » en français sur un téléphone en anglais).
+    var finLang = (D6.I18N && D6.I18N.lang) || '';
+    if (financeCache.html && financeCache.userId === uid && financeCache.lang === finLang && (Date.now() - financeCache.at) < 60000) {
       tx.innerHTML = financeCache.html;
       var moreC = $('txMore');
       if (moreC) moreC.onclick = function () { loadFinancePage(tx, false); };
       return;
     }
     financeCache.userId = uid;
+    financeCache.lang = finLang;
     // Affichage immédiat avec ce que le téléphone connaît, puis la version serveur (la vraie).
     financeCache.html = renderFinanceRows(tx, collectLocalFinanceRows());
     financeCache.at = 0;
@@ -7365,6 +7385,7 @@
         syncOxaLabels();
         closeOxaMenus();
         clearCryptoPreview();
+        paintOxaAddrLabel();
         var preview = cachedOxaAddr();
         if (preview) paintPreviewAddr(preview);
         else showCryptoInvoice(false);
@@ -7376,6 +7397,7 @@
         oxaCoin = oxaCoinKey();
         syncOxaNetUi();
         clearCryptoPreview();
+        paintOxaAddrLabel();
         var preview = cachedOxaAddr();
         if (preview) paintPreviewAddr(preview);
         else showCryptoInvoice(false);
