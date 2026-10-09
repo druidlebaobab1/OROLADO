@@ -3,6 +3,52 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
+  // v2535 — Fluidité : les règles CSS « :has() » posées sur <body> obligeaient le navigateur à revérifier
+  // TOUTE la page à chaque petit changement (prix, solde, chrono…), ~15 ms par changement sur téléphone.
+  // On pose à la place de petites étiquettes, tenues à jour ici, que le CSS lit sans rien fouiller :
+  //   body.oro-real (#screenTrade.mode-real) · body.oro-shown (#screenTrade visible)
+  //   #modeSwitcher.hz-mdemo / .hz-mreal · #fsTopMid.hz-fdemo / .hz-freal (bouton « on »)
+  //   .pad[data-hz-odds="…"] (payout choisi dans ce bloc)
+  (function hasFlags() {
+    function flag(el, cls, on) {
+      if (el && el.classList.contains(cls) !== on) el.classList.toggle(cls, on);
+    }
+    function sync() {
+      var st = $('screenTrade');
+      var body = document.body;
+      if (st && body) {
+        flag(body, 'oro-real', st.classList.contains('mode-real'));
+        flag(body, 'oro-shown', !st.classList.contains('hidden'));
+      }
+      var ms = $('modeSwitcher');
+      flag(ms, 'hz-mdemo', !!($('modeDemo') && $('modeDemo').classList.contains('on')));
+      flag(ms, 'hz-mreal', !!($('modeReal') && $('modeReal').classList.contains('on')));
+      var fm = $('fsTopMid');
+      flag(fm, 'hz-fdemo', !!($('fsBtnDemo') && $('fsBtnDemo').classList.contains('on')));
+      flag(fm, 'hz-freal', !!($('fsBtnReal') && $('fsBtnReal').classList.contains('on')));
+      document.querySelectorAll('.pad').forEach(function (pad) {
+        var on = pad.querySelector('.odds-chip.on');
+        var v = on ? String(on.getAttribute('data-odds') || '') : null;
+        if (v === null) { if (pad.hasAttribute('data-hz-odds')) pad.removeAttribute('data-hz-odds'); }
+        else if (pad.getAttribute('data-hz-odds') !== v) pad.setAttribute('data-hz-odds', v);
+      });
+    }
+    function start() {
+      sync();
+      if (!window.MutationObserver) return;
+      // Seulement l'attribut « class » de ces quelques éléments : ne coûte rien.
+      var mo = new MutationObserver(sync);
+      ['screenTrade', 'modeDemo', 'modeReal', 'fsBtnDemo', 'fsBtnReal'].forEach(function (id) {
+        if ($(id)) mo.observe($(id), { attributes: true, attributeFilter: ['class'] });
+      });
+      document.querySelectorAll('.odds-chip').forEach(function (chip) {
+        mo.observe(chip, { attributes: true, attributeFilter: ['class'] });
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+  })();
+
   function unlockPointerLayers() {
     try {
       var dr = $('drawerProfile');

@@ -600,7 +600,7 @@ html.fs-trade body #tradeWrap#tradeWrap #inputStake{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(255,140,30,.18)!important;
   font-size:20px!important;font-weight:800!important;text-align:center!important;padding:0 8px 16px 18px!important;line-height:1!important;
 }
-html.fs-trade body:has(#screenTrade.mode-real) #tradeWrap#tradeWrap #inputStake{border-color:rgba(34,224,122,.85)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(34,224,122,.2)!important}
+html.fs-trade body:where(.oro-real):not(#oroQ):not(.oroQ) #tradeWrap#tradeWrap #inputStake{border-color:rgba(34,224,122,.85)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(34,224,122,.2)!important}
 html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
   font-size:12px!important;font-weight:800!important;color:#F0F9FF!important;text-align:center!important;letter-spacing:.01em!important;
   text-shadow:0 0 8px rgba(125,211,252,.45)!important;
@@ -674,7 +674,7 @@ html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap #inputStake
   box-shadow:inset 0 1px 6px rgba(0,0,0,.35),0 0 12px rgba(56,189,248,.22)!important;
 }
 html.fs-trade body #tradeWrap#tradeWrap #inputStake,
-html.fs-trade body:has(#screenTrade.mode-real) #tradeWrap#tradeWrap #inputStake{
+html.fs-trade body:where(.oro-real):not(#oroQ):not(.oroQ) #tradeWrap#tradeWrap #inputStake{
   border-color:rgba(56,189,248,.8)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(56,189,248,.22)!important;
 }
 
@@ -771,16 +771,16 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F4FBFF!important;text-shadow:0 0 8px rgba(160,220,255,.7),0 1px 2px rgba(4,30,80,.7)!important}
 /* une petite lueur de la couleur du payout choisi (sans casser le bleu) */
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 10px rgba(249,115,22,.30)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(6,182,212,.40)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(168,85,247,.40)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(245,158,11,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 10px rgba(249,115,22,.30)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(6,182,212,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(168,85,247,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(245,158,11,.40)!important}
 /* « Payout 88% » sous le montant prend la couleur du payout choisi */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{transition:background .3s ease,border-color .3s ease!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult{background:rgba(249,115,22,.55)!important;border-color:rgba(253,186,116,.8)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult{background:rgba(6,182,212,.55)!important;border-color:rgba(165,243,252,.8)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult{background:rgba(168,85,247,.55)!important;border-color:rgba(233,213,255,.8)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{background:rgba(245,158,11,.6)!important;border-color:rgba(253,230,138,.85)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(249,115,22,.55)!important;border-color:rgba(253,186,116,.8)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(6,182,212,.55)!important;border-color:rgba(165,243,252,.8)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(168,85,247,.55)!important;border-color:rgba(233,213,255,.8)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(245,158,11,.6)!important;border-color:rgba(253,230,138,.85)!important}
 
 /* plein écran : le haut (DÉMO / COMPTE RÉEL / QUITTER) et les marchés prennent moins de place → courbe plus grande */
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-topbar{padding-top:max(2px,env(safe-area-inset-top))!important;padding-bottom:0!important}
@@ -826,14 +826,14 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   border:1px solid rgba(160,215,250,.55)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),0 0 8px rgba(125,211,252,.16)!important;
 }
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(6,182,212,.8),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(168,85,247,.8),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult{background:rgba(249,115,22,.20)!important;border-color:rgba(253,186,116,.45)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult{background:rgba(6,182,212,.20)!important;border-color:rgba(165,243,252,.45)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult{background:rgba(168,85,247,.20)!important;border-color:rgba(233,213,255,.45)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{background:rgba(245,158,11,.22)!important;border-color:rgba(253,230,138,.5)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(125,211,252,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(6,182,212,.8),0 0 8px rgba(125,211,252,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(168,85,247,.8),0 0 8px rgba(125,211,252,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(125,211,252,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(249,115,22,.20)!important;border-color:rgba(253,186,116,.45)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(6,182,212,.20)!important;border-color:rgba(165,243,252,.45)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(168,85,247,.20)!important;border-color:rgba(233,213,255,.45)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(245,158,11,.22)!important;border-color:rgba(253,230,138,.5)!important}
 
 /* Aide : univers sérieux (sans planètes, sombre) */
 html body #helpModal .modal-box{
@@ -1125,7 +1125,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close{
    ===================================================================== */
 /* case du gain : couleur normale du terminal bleu (plus de givre, plus de couleur de payout) */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip.on) .win-preview{
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds]):not(.oroQ):not(.oroQ2) .win-preview{
   background:linear-gradient(180deg,rgba(56,189,248,.18),rgba(56,189,248,.05))!important;
   border:1px solid rgba(56,189,248,.5)!important;
   box-shadow:0 0 8px rgba(56,189,248,.14)!important;
@@ -1135,7 +1135,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::before,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::after{display:none!important;content:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F0F9FF!important;text-shadow:0 0 8px rgba(125,211,252,.4)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip.on) .win-preview .mult{
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds]):not(.oroQ):not(.oroQ2) .win-preview .mult{
   background:rgba(14,165,233,.22)!important;border:1px solid rgba(125,211,252,.35)!important;color:#BAE6FD!important;
 }
 
@@ -1197,14 +1197,14 @@ html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,
 html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(12,12,35) 0,rgb(14,18,50) 24px,rgba(18,30,78,.85) 100%)!important}
 
 /* case du gain : le petit « Payout 88% » garde le même bleu que tout le terminal, quel que soit le payout choisi */
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview{box-shadow:0 0 8px rgba(56,189,248,.14)!important;border-color:rgba(56,189,248,.5)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{background:rgba(14,165,233,.22)!important;border:1px solid rgba(125,211,252,.35)!important;color:#BAE6FD!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:0 0 8px rgba(56,189,248,.14)!important;border-color:rgba(56,189,248,.5)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(14,165,233,.22)!important;border:1px solid rgba(125,211,252,.35)!important;color:#BAE6FD!important}
 
 /* non inscrit : Connexion et Inscription plus larges ; même espace entre OROLADO et Connexion qu'entre Inscription et Aide */
 @media (max-width:859px){
@@ -1359,7 +1359,7 @@ html body #drawerProfile#drawerProfile .drawer-head{background:transparent!impor
 html body #drawerProfile#drawerProfile .drawer-head .btn-close{background:rgba(124,58,237,.22)!important;border:1px solid rgba(170,150,255,.45)!important;color:#E9DDFF!important}
 /* Safari iPhone : sous la barre de Safari, l'univers continue (plus de bande sombre / brune en bas) */
 @media (max-width:859px){
-  html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor{background:#18275C!important;height:calc(14px + env(safe-area-inset-bottom,0px))!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#18275C!important;height:calc(14px + env(safe-area-inset-bottom,0px))!important}
   html.is-ios,html.is-ios body{background-color:#18275C!important}
 }
 @media (max-width:859px){html:not(.oro-guest) body #screenTrade#screenTrade .topbar .topbar-row > #topbarCta#topbarCta{width:clamp(120px,calc(100vw - 236px),186px)!important}}
@@ -1417,10 +1417,10 @@ html body #tradeWrap#tradeWrap .asset-bar::after{content:""!important;flex:0 0 1
 
 /* case du gain : « Payout 88% » plus petit, un peu plus bas sous le montant, ne déborde dans aucune langue */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{
   font-size:8.5px!important;padding:1px 6px!important;margin-top:4px!important;max-width:92%!important;
   overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;box-sizing:border-box!important;
 }
@@ -1433,7 +1433,7 @@ html.fs-trade body #tradeWrap#tradeWrap #inputStake{font-size:16px!important;let
 
 /* Safari iPhone : sous la barre, un bleu nuit foncé (couleur du bas de l'univers), pas un bleu vif */
 @media (max-width:859px){
-  html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor{background:#101838!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#101838!important}
   html.is-ios,html.is-ios body{background-color:#101838!important}
 }
 
@@ -1473,10 +1473,10 @@ html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-right{righ
 }
 /* case du gain : « Payout 5000% » s'écrit en entier (toutes les langues) : écriture minuscule, case basse */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="1.9"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="5"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="10"].on) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:has(.odds-chip[data-odds="50"].on) .win-preview .mult{
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{
   font-size:7px!important;line-height:1.25!important;letter-spacing:0!important;padding:0 4px!important;max-width:96%!important;font-weight:700!important;
 }
 /* profil : sur un écran court (Android), les lignes gardent leur taille et la page défile ;
@@ -1604,9 +1604,9 @@ html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn#chartZoomIn{margin-left:aut
   /* iPhone : la bande sous la barre de Safari prend ENFIN le bleu des fenêtres (#1A2A68) sur l'écran de
      jeu aussi (une ancienne règle plus forte gardait #101838 « bleu pur ») ; et elle n'existe que sur
      Safari : sur Chrome / autres navigateurs iPhone, plus de bande sous ACHETER / VENDRE */
-  html.is-ios.is-ios-safari body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor,
+  html.is-ios.is-ios-safari body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor,
   html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor{background:#1A2A68!important;background-image:none!important}
-  html.is-ios:not(.is-ios-safari) body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor,
+  html.is-ios:not(.is-ios-safari) body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor,
   html.is-ios:not(.is-ios-safari) body #oroIosFloor#oroIosFloor{display:none!important}
   /* Safari iPhone : page d'inscription / connexion plus compacte (le bas du cadre n'est plus mangé) */
   html.is-ios-safari body #screenAuth .field{margin-bottom:6px!important}
@@ -1725,7 +1725,7 @@ html body .modal-backdrop > .modal-box:is(#oroToutesFenetres,.modal-box):is(#oro
 /* ===== v2290 — Case du gain : même couleur que la mise (orange en DÉMO, vert en RÉEL) ===== */
 html body #tradeWrap .win-preview #previewGain#previewGain{color:#F7931A!important;-webkit-text-fill-color:#F7931A!important}
 html:not(.fs-trade) body #tradeWrap .win-preview #previewGain#previewGain{color:#FFB65C!important;-webkit-text-fill-color:#FFB65C!important}
-html body:has(#screenTrade.mode-real) #tradeWrap .win-preview #previewGain#previewGain{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important}
+html body:where(.oro-real):not(#oroQ):not(.oroQ) #tradeWrap .win-preview #previewGain#previewGain{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important}
 
 /* ===== v2291 — Arabe, profil (Android et autres) : la croix ne colle plus au coin, même espace que sur iPhone ===== */
 html[dir="rtl"]:not(.is-ios) body #drawerProfile#drawerProfile .drawer-head{padding-top:16px!important;padding-left:16px!important;padding-bottom:10px!important}
@@ -1822,7 +1822,7 @@ html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposi
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html.is-ios, html.is-ios body{background-color:#1A2A68!important}
   html.is-ios body #oroIosFloor#oroIosFloor,
-  html.is-ios body:has(#screenTrade:not(.hidden)) #oroIosFloor#oroIosFloor{display:none!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{display:none!important}
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap > .pad{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
 }
 
