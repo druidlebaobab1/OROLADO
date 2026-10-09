@@ -379,6 +379,11 @@ function admin_badges(): array {
   $profitToday = admin_profit_between($deps, $wds, $t0, $t1);
   $profit7 = admin_profit_between($deps, $wds, $w0, $w1);
   $profitAll = admin_profit_between($deps, $wds, '', '');
+  // Barres B / C : mêmes règles que le bénéfice (dépôts payés ; retraits validés, hors masqués).
+  $sumDepAll = 0.0;
+  foreach ($deps as $d) { if (admin_dep_is_paid($d)) $sumDepAll += (float) ($d['amount'] ?? 0); }
+  $sumWdPaid = 0.0;
+  foreach ($wds as $w) { if (admin_wd_is_paid($w) && !admin_wd_is_silenced($w)) $sumWdPaid += (float) ($w['amount'] ?? 0); }
   $unreadMsg = 0;
   foreach ((admin_local_db()['support_messages'] ?? []) as $m) {
     if (!is_array($m)) continue;
@@ -418,6 +423,8 @@ function admin_badges(): array {
     'profit_today' => round($profitToday, 2),
     'profit_7d' => round($profit7, 2),
     'profit_total' => round($profitAll, 2),
+    'sum_dep_all' => round($sumDepAll, 2),
+    'sum_wd_paid' => round($sumWdPaid, 2),
     'payout_stats' => $tradesToday,
     'traffic' => $nInscrits,
     'otp_mails' => $otp,
@@ -2048,6 +2055,10 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .health-bar.ok{background:linear-gradient(135deg,#059669,#34D399);color:#06281d;box-shadow:0 0 0 1px rgba(52,211,153,.35)}
     .health-bar.bad{background:linear-gradient(135deg,#BE123C,#F43F5E);color:#fff;box-shadow:0 0 0 1px rgba(244,63,94,.4)}
     .health-bar:hover{filter:brightness(1.06)}
+    .sum-bar{display:block;width:100%;margin:10px 0 0;min-height:52px;border-radius:14px;font-size:.92rem;font-weight:900;letter-spacing:.02em;padding:14px 16px;text-align:center;box-sizing:border-box}
+    .sum-bar b{font-size:1.08rem;margin-left:4px}
+    .sum-bar.dep{background:linear-gradient(135deg,#059669,#34D399);color:#06281d}
+    .sum-bar.wd{background:linear-gradient(135deg,#C2410C,#F97316);color:#fff}
     .health-ack{display:none;width:100%;margin:8px 0 0;min-height:44px;border:1px solid rgba(52,211,153,.45);border-radius:12px;background:rgba(52,211,153,.12);color:#34D399;font:inherit;font-weight:800;cursor:pointer}
     .health-ack.on{display:block}
     .health-panel{display:none;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:#0E1420;padding:12px;font-size:.8rem;line-height:1.45}
@@ -2091,8 +2102,10 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="metrics" id="gA"><?php foreach ($ADMIN_TABS['gA'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">B · Dépôts &amp; entrées d’argent</div>
     <div class="metrics" id="gB"><?php foreach ($ADMIN_TABS['gB'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
+    <div class="sum-bar dep" id="sumDepBar">Total de tous les dépôts : <b id="sumDepVal">—</b></div>
     <div class="sec">C · Retraits &amp; sorties d’argent</div>
     <div class="metrics" id="gC"><?php foreach ($ADMIN_TABS['gC'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
+    <div class="sum-bar wd" id="sumWdBar">Total des retraits validés : <b id="sumWdVal">—</b></div>
     <div class="sec">D · Joueurs, soldes &amp; jeux</div>
     <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
@@ -2276,6 +2289,10 @@ async function loadBadges() {
   const bd = j.badges || {};
   alertsErr = Number(bd.alerts_err || 0);
   renderButtons(bd);
+  const sfmt = v => Number(v || 0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
+  const sd = document.getElementById('sumDepVal'), sw = document.getElementById('sumWdVal');
+  if (sd && bd.sum_dep_all != null) sd.textContent = sfmt(bd.sum_dep_all);
+  if (sw && bd.sum_wd_paid != null) sw.textContent = sfmt(bd.sum_wd_paid);
   paintHealth(j.board);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
 }
