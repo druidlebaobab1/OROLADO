@@ -4714,8 +4714,19 @@
   function openFlwInline(session) {
     if (window.FlutterwaveCheckout) { openFlwInlineNow(session); return; }
     ensureFlwScript().then(function (ok) {
-      if (ok) openFlwInlineNow(session);
-      else toast('La page de paiement est bloquée par votre navigateur. Essayez avec Chrome, ou désactivez le bloqueur de contenu, puis réessayez.', 'err', 7000);
+      if (ok) { openFlwInlineNow(session); return; }
+      // v2547 — compte admin seulement : relevé pour savoir où ça casse (programme reçu ? erreur ? navigateur).
+      var diag = '';
+      try {
+        var uu = user();
+        if (uu && uu.role === 'admin') {
+          var tags = document.querySelectorAll('script[src*="checkout.flutterwave.com"]').length;
+          diag = ' [tag:' + String(window.__flwLoad || '?') + ' n:' + tags + ' type:' + (typeof window.FlutterwaveCheckout) +
+            ' ua:' + (/iPhone|iPad/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'and' : 'pc')) +
+            (/CriOS/.test(navigator.userAgent) ? '-chrome' : '') + ']';
+        }
+      } catch (eD) { /* ignore */ }
+      toast('La page de paiement est bloquée par votre navigateur. Essayez avec Chrome, ou désactivez le bloqueur de contenu, puis réessayez.' + diag, 'err', 9000);
     });
   }
 
