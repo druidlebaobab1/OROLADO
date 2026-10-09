@@ -950,7 +950,9 @@
     if (w < 8) w = Math.max(320, Math.floor(window.innerWidth || 360));
     if (h < 8) h = fsMode ? Math.max(220, Math.floor((window.innerHeight || 700) - 140)) : 380;
 
-    dpr = Math.max(1, window.devicePixelRatio || 1);
+    // v2549 — PLEIN ÉCRAN : définition plafonnée à 2× (iPhone = 3×) : la courbe y est 2,3 fois plus grande, et à 3×
+    // l'iPhone devait redessiner ~4,6 millions de points par image (courbe + calque) → accrocs. Dessin seulement.
+    dpr = Math.max(1, Math.min(fsMode ? 2 : 4, window.devicePixelRatio || 1));
     var boxW = Math.max(0, Math.floor(parent.clientWidth || 0));
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
