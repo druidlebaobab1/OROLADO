@@ -8266,3 +8266,26 @@ html body #screenAuth#screenAuth#screenAuth#screenAuth#screenAuth#screenAuth:not
    (espagnol, portugais, vietnamien, russe, allemand, turc) pour ne jamais toucher le bord du rond. ===== */
 html:is([data-lang="es"],[data-lang="pt"],[data-lang="vi"],[data-lang="ru"],[data-lang="de"],[data-lang="tr"]) body #oddsRow#oddsRow .odds-chip .odds-pct{
   font-size:6.2px!important;letter-spacing:0!important;max-width:78%!important;overflow:hidden!important;white-space:nowrap!important}
+
+/* ===== v2494 — + / − de la mise : plus de rond. Un + et un − nets et épais (comme le + du bouton Recharger),
+   dessinés en traits, sans cercle autour (écran normal et plein écran). ===== */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-pm,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-pm{
+  background:transparent!important;border:0!important;box-shadow:none!important;border-radius:6px!important;
+  font-size:0!important;color:transparent!important;-webkit-text-fill-color:transparent!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-pm{position:relative!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-pm::before,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-pm::before{
+  content:""!important;position:absolute!important;left:50%!important;top:50%!important;width:14px!important;height:3px!important;
+  margin:-1.5px 0 0 -7px!important;border-radius:2px!important;background:#FFFFFF!important;display:block!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-plus::after,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-plus::after{
+  content:""!important;position:absolute!important;left:50%!important;top:50%!important;width:3px!important;height:14px!important;
+  margin:-7px 0 0 -1.5px!important;border-radius:2px!important;background:#FFFFFF!important;display:block!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1) .stake-pm{
+  width:24px!important;min-width:24px!important;max-width:24px!important;height:24px!important;min-height:24px!important;flex:0 0 24px!important;padding:0!important;line-height:24px!important}
+/* v2494 — légère lueur sur le + et le − (aucun rond visible). */
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-pm::before,
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-plus::after,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-pm::before,
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2) .stake-plus::after{box-shadow:0 0 6px rgba(255,255,255,.55),0 0 2px rgba(255,255,255,.8)!important}
