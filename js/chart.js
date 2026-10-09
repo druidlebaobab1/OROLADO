@@ -1189,7 +1189,10 @@
       var sx = rnd() * cssW;
       var sy = rnd() * cssH;
       var sr = rnd() * 1.05 + 0.25;
-      g.fillStyle = 'rgba(255,255,255,' + (rnd() * 0.5 + 0.12).toFixed(2) + ')';
+      var sa = rnd() * 0.5 + 0.12;
+      // v2501 (propriétaire) : moins d'étoiles regroupées en bas à droite (sous les derniers prix, au-dessus du gain).
+      if (sx > cssW - 95 && sy > cssH * 0.62 && (k % 3) !== 0) continue;
+      g.fillStyle = 'rgba(255,255,255,' + sa.toFixed(2) + ')';
       g.beginPath();
       g.arc(sx, sy, sr, 0, Math.PI * 2);
       g.fill();
