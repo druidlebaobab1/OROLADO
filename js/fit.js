@@ -149,6 +149,13 @@
         var el = box.querySelector(NUMS[i][1]);
         if (!el) continue;
         var txt = el.textContent;
+        // v2536 — rien n'a changé depuis la dernière fois (même texte, même largeur, et ça tenait) : on passe,
+        // sans rien relire ni réécrire (avant : 25 cases relues et réécrites chaque seconde, recalculs forcés).
+        var bw = box.clientWidth;
+        if (el._fitOk && el._fitTxt === txt && el._fitBw === bw) continue;
+        el._fitTxt = txt;
+        el._fitBw = bw;
+        el._fitOk = false;
         // Texte changé ou case agrandie : on repart de la taille normale.
         if (el.getAttribute('data-fit-t') !== txt || (el.style.fontSize && box.scrollWidth < box.clientWidth * 0.85)) {
           el.style.removeProperty('font-size');
@@ -158,15 +165,16 @@
         var bcs = getComputedStyle(box);
         var avail = box.clientWidth - (parseFloat(bcs.paddingLeft) || 0) - (parseFloat(bcs.paddingRight) || 0);
         var tooWide = function () { return box.scrollWidth > box.clientWidth + 1 || el.getBoundingClientRect().width > avail + 0.5 || (el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1); };
-        if (!tooWide()) continue;
+        if (!tooWide()) { el._fitOk = true; continue; }
         var base = parseFloat(el.getAttribute('data-fit-fs') || '') || parseFloat(getComputedStyle(el).fontSize) || 14;
-        el.setAttribute('data-fit-fs', String(base));
+        if (el.getAttribute('data-fit-fs') !== String(base)) el.setAttribute('data-fit-fs', String(base));
         var fs = parseFloat(getComputedStyle(el).fontSize) || base, guard = 0;
         while (tooWide() && fs > base * 0.55 && guard < 40) {
           fs -= 0.5;
           el.style.setProperty('font-size', fs + 'px', 'important');
           guard++;
         }
+        el._fitOk = true;
       }
     }
   }

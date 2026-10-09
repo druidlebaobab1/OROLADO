@@ -832,11 +832,19 @@
       if (prev == null || Math.abs(n - prev) < 0.005) return;
       var b = $(p[0]);
       if (!b) return;
+      var cls = n > prev ? 'bal-up' : 'bal-down';
       b.classList.remove('bal-up', 'bal-down');
-      void b.offsetWidth;
-      b.classList.add(n > prev ? 'bal-up' : 'bal-down');
+      // v2536 — relance de l'éclat SANS « void offsetWidth » (qui forçait le recalcul de toute la page,
+      // ~15 ms à chaque changement de solde) : on remet la classe deux images plus tard, même effet.
+      var tok = (b._balTok || 0) + 1;
+      b._balTok = tok;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (b._balTok === tok) b.classList.add(cls);
+        });
+      });
       clearTimeout(b._balT);
-      b._balT = setTimeout(function () { b.classList.remove('bal-up', 'bal-down'); }, 1100);
+      b._balT = setTimeout(function () { if (b._balTok === tok) b.classList.remove('bal-up', 'bal-down'); }, 1150);
     });
   }
   setInterval(paintModeAmounts, 1000);
