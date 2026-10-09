@@ -8680,3 +8680,25 @@ html body #depositModal#depositModal#depositModal #closeDeposit#closeDeposit#clo
   .learn-modal .lg-buy-g span{flex-direction:row!important;align-items:center!important;justify-content:space-between;padding:7px 9px!important}
 }
 @media (max-width:400px){ .learn-modal .lg-buy-g span{flex-wrap:wrap;gap:4px 8px!important} }
+
+/* ===== v2511 — TÉLÉPHONE COUCHÉ : cases COMPTE RÉEL / DÉMO et portefeuille à la bonne taille (ils gardaient leur taille « debout »). ===== */
+@media (orientation:landscape) and (max-height:500px){
+  /* écran normal : portefeuille plus petit, « COMPTE RÉEL » tient dans sa case, montants de même taille */
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal{padding-left:30px!important;padding-right:6px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal .mb-wal{left:5px!important;width:21px!important;height:21px!important;border-radius:6px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher #modeReal .mb-wal svg{width:13px!important;height:13px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher :is(#modeReal,#modeDemo) .mb-lbl{font-size:8px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher :is(#modeReal,#modeDemo) .mb-amt{font-size:13px!important;line-height:1.1!important;white-space:nowrap!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) #modeSwitcher :is(#modeReal,#modeDemo){min-width:0!important;overflow:hidden!important}
+  /* plein écran : cases étroites regroupées autour de QUITTER, portefeuille plus petit */
+  html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch{grid-template-columns:minmax(0,170px) 48px minmax(0,170px)!important;justify-content:center!important;column-gap:12px!important}
+  html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal{padding-left:30px!important}
+  html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal .mb-wal{left:6px!important;width:20px!important;height:20px!important;border-radius:6px!important}
+  html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5) .fs-mode-switch #fsBtnReal .mb-wal svg{width:12px!important;height:12px!important}
+}
+/* v2511 — PROFIL couché : la case portefeuille (Dépôt Express Crypto + adresses) était écrasée à 85 px et coupée.
+   Les lignes prennent maintenant leur vraie hauteur (le site réduit ensuite le profil pour qu'il tienne en entier). */
+@media (orientation:landscape) and (max-height:500px){
+  html body #drawerProfile#drawerProfile#drawerProfile#drawerProfile{grid-template-rows:none!important;grid-auto-rows:auto!important;align-content:start!important;padding-bottom:12px!important}
+  html body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-card{overflow:visible!important}
+}
