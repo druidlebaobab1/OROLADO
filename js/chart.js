@@ -3278,25 +3278,10 @@
         var timerW = 26;
         var timerH = 26;
         var leftX = (pad && pad.l != null ? pad.l : 8) + 4;
-        var ty = tagY - timerH / 2;
+        var ty = ey - timerH / 2; // v2557 : pile sur la ligne / le rond du trade (avant : tagY, décalé pour empiler)
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
-        // Deux chronos ne se posent jamais l'un sur l'autre : le suivant se décale d'un cran.
-        var cdir = ty > plotBot - timerH - 20 ? -1 : 1;
-        var cguard = 0;
-        var chit = true;
-        while (chit && cguard < 16) {
-          chit = false;
-          var ck;
-          for (ck = 0; ck < chronoPlaced.length; ck++) {
-            if (Math.abs(chronoPlaced[ck] - ty) < timerH + 2) { chit = true; break; }
-          }
-          if (chit) {
-            ty += cdir * (timerH + 2);
-            if (ty > plotBot - timerH - 2) { ty = plotBot - timerH - 2; cdir = -1; }
-            if (ty < plotTop + 2) { ty = plotTop + 2; cdir = 1; }
-          }
-          cguard++;
-        }
+        // v2557 (propriétaire) : chaque chrono reste COLLÉ sur la ligne de son trade, jamais décalé ailleurs.
+        // Plusieurs trades au même niveau → leurs chronos se superposent (comme les ronds d'entrée).
         chronoPlaced.push(ty);
         // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
         var durT = Number(trade.duration) || 0;
