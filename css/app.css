@@ -8940,3 +8940,14 @@ html body #depositModal#depositModal #payMethodCard .pl-logo.pl-om,html body #de
 html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):not(#fz7):not(#fz8):not(#fz9):not(#fz10):not(#fz11):not(#fz12) .pad.glass,html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):not(#fz7):not(#fz8):not(#fz9):not(#fz10):not(#fz11):not(#fz12) .card.glass,html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):not(#fz7):not(#fz8):not(#fz9):not(#fz10):not(#fz11):not(#fz12) .topbar,html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):not(#fz7):not(#fz8):not(#fz9):not(#fz10):not(#fz11):not(#fz12) #btnChartFsExit{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):not(#fz7):not(#fz8):not(#fz9):not(#fz10):not(#fz11):not(#fz12) .topbar{background-color:rgba(10,9,30,.42)!important}
 html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):not(#fz7):not(#fz8):not(#fz9):not(#fz10):not(#fz11):not(#fz12) #btnChartFsExit{background-color:rgba(10,9,30,.5)!important}
+/* v2561 — Fenêtre « Recharger » (1re étape) sur téléphone debout : réduite de 10 % de façon
+   proportionnelle (rien n'est déformé), avec ~40 px libres en haut et en bas pour tous les
+   iPhone / Android. Navigateur sans « zoom » : seulement la marge (défilement interne si besoin). */
+@media (max-width:820px) and (orientation:portrait){
+  html body #depositModal #depositBox:not(.is-crypto){max-height:calc(100dvh - 72px)!important}
+}
+@supports (zoom:.9){
+  @media (max-width:820px) and (orientation:portrait){
+    html body #depositModal #depositBox:not(.is-crypto){zoom:.9;max-height:calc((100dvh - 72px) / .9)!important}
+  }
+}
