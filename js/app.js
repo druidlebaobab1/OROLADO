@@ -9032,6 +9032,8 @@
           }
           var wantAuth = '';
           try { wantAuth = sessionStorage.getItem('oro_auth_tab') || ''; } catch (eWant) { wantAuth = ''; }
+          // v2565 — liens de la page orolado.online : « ?inscription=1 » / « ?connexion=1 » ouvrent le bon écran.
+          try { if (/[?&]inscription=1\b/.test(location.search)) wantAuth = 'register'; else if (/[?&]connexion=1\b/.test(location.search)) wantAuth = 'login'; } catch (eQ) { /* ignore */ }
           if (wantAuth === 'register' || wantAuth === 'login') {
             showAuthScreen(wantAuth);
             return;
