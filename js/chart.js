@@ -120,6 +120,7 @@
   var timeLabelsQ = [];
   var fadeRGB = '15,14,41';
   var fadeSampleAt = 0;
+  var fadeSampleN = 0;
   var lastPlotH = 0;
   var lastMinP = 0;
   var lastMaxP = 0;
@@ -4491,8 +4492,11 @@
     // (variable --oro-chart-foot) : pas de bande sombre, pas de trait.
     var fz = 16;
     var nowF = Date.now();
-    if (nowF - fadeSampleAt > 2000) {
+    // v2563 : relire les pixels de la courbe (getImageData) bloque la carte graphique (arrêts de 1 à 3 s
+    // mesurés sur Android) → téléphone : 3 relevés au démarrage puis plus jamais ; ordinateur : 1 par minute.
+    if (IS_MOBILE_CHART ? (fadeSampleN < 3 && nowF - fadeSampleAt > 3000) : (nowF - fadeSampleAt > 60000)) {
       fadeSampleAt = nowF;
+      fadeSampleN++;
       try {
         var cvs = ctx.canvas, k = cvs.height / cssH, yS = Math.max(0, Math.round((cssH - fz - 3) * k));
         var px = ctx.getImageData(0, yS, cvs.width, 1).data, vals = [], xi;
@@ -5218,6 +5222,7 @@
     setAsset: function (id) {
       if (id === 'boom300' || id === 'pulseai') id = 'titanpulse';
       if (!D6.CONFIG.ASSETS[id]) id = 'v100';
+      if (id !== activeAsset) { fadeSampleN = 0; fadeSampleAt = 0; } // v2563 : nouveau marché → couleur du fondu relevée de nouveau (3 fois)
       if (id === activeAsset) {
         if (isChartReady()) drawNow();
         return;
