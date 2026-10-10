@@ -1417,6 +1417,8 @@
   }
 
   function drawBackdrop(pad, w, h) {
+    // v2570 — lien de test « ?test=decor » seulement : fond uni, sans planètes / galaxie / pièces (pour mesurer).
+    if (D6.testDecor) { ctx.fillStyle = '#120F38'; ctx.fillRect(0, 0, cssW, cssH); return; }
     var ready = backdropCoinsReady();
     var key = cssW + 'x' + cssH + '@' + dpr + ':' + pad.l + ',' + pad.t + ',' + Math.round(w) + ',' + Math.round(h) + (ready ? '' : ':wait');
     if (!bgCanvas || key !== bgKey) {

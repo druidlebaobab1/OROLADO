@@ -93,18 +93,35 @@
       if (!shown()) { last = 0; n = 0; slow = 0; t0 = 0; setTimeout(function () { requestAnimationFrame(frame); }, 1000); return; }
       if (last) {
         var d = t - last;
-        if (d < 250) { n++; if (d > 25) slow++; }
+        // v2570 : les images très lentes (0,25 à 1 s) comptent aussi. Avant, à moins de 10 img/s
+        // (iPhone pendant un enregistrement : 8 img/s), le téléphone n'était jamais jugé lent.
+        if (d < 1000) { n++; if (d > 25) slow++; }
       }
       last = t;
       if (!t0) t0 = t;
       if (t - t0 >= 3000) {
-        if (n >= 30 && slow / n > 0.34) bad++; else bad = 0;
+        if (n >= 8 && slow / n > 0.34) bad++; else bad = 0;
         if (bad >= 2) { setLite(true, true); return; }
         n = 0; slow = 0; t0 = t;
       }
       requestAnimationFrame(frame);
     }
     setTimeout(function () { requestAnimationFrame(frame); }, 4000);
+  })();
+
+  // v2570 — liens de test pour trouver ce qui ralentit un téléphone précis (aucun effet sans le lien) :
+  // ?test=decor (fond de la courbe uni), ?test=ombres (ombres / lueurs / flous), ?test=anim (animations
+  // de la page), ?test=fond (images et dégradés de fond), ?test=tout. Combinables : ?test=decor,ombres
+  (function testFlags() {
+    var m = /[?&]test=([a-z,]+)/.exec(location.search || '');
+    if (!m) return;
+    var f = m[1].split(','), all = f.indexOf('tout') >= 0, html = document.documentElement;
+    function has(k) { return all || f.indexOf(k) >= 0; }
+    if (has('ombres')) html.classList.add('t-noshadow');
+    if (has('anim')) html.classList.add('t-noanim');
+    if (has('fond')) html.classList.add('t-nobg');
+    if (has('decor')) D6.testDecor = true;
+    D6.testFlags = m[1];
   })();
 
   function unlockPointerLayers() {
@@ -1155,7 +1172,7 @@
         var scr = $('screenTrade');
         var vv = window.visualViewport;
         var appli = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
-        box.textContent = 'FLUIDITE: ' + fpsTxt() + '\n' + 'safari=' + UA_SAFARI_IOS + ' appli=' + appli +
+        box.textContent = (D6.testFlags ? 'TEST=' + D6.testFlags + String.fromCharCode(10) : '') + 'FLUIDITE: ' + fpsTxt() + '\n' + 'safari=' + UA_SAFARI_IOS + ' appli=' + appli +
           '\ninner=' + window.innerWidth + 'x' + window.innerHeight +
           '\nscreen=' + (screen.width || 0) + 'x' + (screen.height || 0) +
           '\nvisual=' + (vv ? Math.round(vv.height) : '-') +

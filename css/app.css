@@ -8958,3 +8958,8 @@ html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWra
 html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .stake-field,
 html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .trade-row,
 html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .btn-trade{height:50px!important;min-height:50px!important;max-height:50px!important}
+/* v2570 — liens de test (?test=ombres / anim / fond / tout) : seulement pour mesurer ce qui ralentit un téléphone. */
+html.t-noshadow *,html.t-noshadow *::before,html.t-noshadow *::after{box-shadow:none!important;text-shadow:none!important;filter:none!important;-webkit-filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.t-noanim *,html.t-noanim *::before,html.t-noanim *::after{animation:none!important;transition:none!important}
+html.t-nobg body,html.t-nobg body *:not(canvas):not(svg):not(img){background-image:none!important}
+html.t-nobg body{background:#0B0A24!important}
