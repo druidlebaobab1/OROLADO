@@ -1267,7 +1267,7 @@
   if (IOS_ANY) {
     window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
     window.addEventListener('orientationchange', function () { setTimeout(function () { fillSafariGap(true); }, 400); });
-    window.addEventListener('load', function () { setTimeout(function () { fillSafariGap(true); }, 300); });
+    window.addEventListener('load', function () { [300, 1000, 2500, 5000].forEach(function (ms) { setTimeout(function () { fillSafariGap(true); }, ms); }); }); // v2573 : recalculs en plus (barre de Safari qui rétrécit après le chargement)
     // v2429 — ACHETER / VENDRE parfois cachés sous la barre de Safari (il fallait fermer la page) : la hauteur
     // de la courbe était calculée une seule fois ; si la barre du haut grandit APRÈS (tuiles « Cadeaux » qui
     // apparaissent, police chargée…), tout descendait. Toutes les 1,5 s (presque rien) : si le haut de la courbe
