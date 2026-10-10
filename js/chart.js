@@ -956,7 +956,8 @@
     // v2554 — plafond 2× partout (écran normal compris) : mesuré sur iPhone 3× (?diag=1) écran normal 11 img/s → trop de points.
     dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     // v2559 — téléphone en mode léger : 1,5× (44 % de points en moins à envoyer à l'écran, presque invisible à l'œil).
-    if (IS_MOBILE_CHART && D6.lite) dpr = Math.min(dpr, 1.5);
+    // v2574 : téléphone en mode léger (lent) → courbe en ×1 (2,25 fois moins de points à dessiner qu'en ×1,5).
+    if (IS_MOBILE_CHART && D6.lite) dpr = 1;
     var boxW = Math.max(0, Math.floor(parent.clientWidth || 0));
     var boxH = Math.max(0, Math.floor(parent.clientHeight || 0));
     if (boxW >= 8) w = boxW;
@@ -4700,7 +4701,10 @@
       var skipDraw = false;
       // v2558 : sur TOUS les téléphones, 30 images/s régulières en permanence (moitié moins de travail : moins de chauffe,
       // de batterie, et l'enregistrement d'écran tient). Ordinateurs : 60, sauf saturation / mode léger.
-      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { fsSkip.flip = !fsSkip.flip; skipDraw = fsSkip.flip; }
+      // v2574 : limite SUR LE TEMPS (au plus ~30 images/s) au lieu de « une image sur deux » : avant, un téléphone déjà
+      // à 2 img/s (Android + enregistrement d'écran) tombait à 1 img/s. Maintenant, si le téléphone est lent, AUCUNE image n'est sautée.
+      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { if (ts - (fsSkip.lastDraw || 0) < 30) skipDraw = true; }
+      if (!skipDraw) fsSkip.lastDraw = ts;
       if (!skipDraw) {
         drawFrame(ts);
         if (onFrame) onFrame(ts);
