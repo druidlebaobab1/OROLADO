@@ -1008,12 +1008,20 @@
   var bgCanvas = null;
   var bgKey = '';
 
+  // v2569 (fluidité) : largeur de l'écran gardée en mémoire ; lire window.innerWidth à chaque image
+  // pouvait forcer le recalcul de toute la page (mesuré : jusqu'à 342 ms sur 10 s, téléphone simulé).
+  var winWCache = window.innerWidth || 0;
+  window.addEventListener('resize', function () { winWCache = window.innerWidth || 0; }, { passive: true });
+  window.addEventListener('orientationchange', function () { setTimeout(function () { winWCache = window.innerWidth || 0; }, 300); }, { passive: true });
+  var backdropCoinsOk = false; // v2569 : une fois toutes chargées, plus besoin de revérifier à chaque image
   function backdropCoinsReady() {
+    if (backdropCoinsOk) return true;
     var i;
     for (i = 0; i < BACKDROP_COINS.length; i++) {
       var img = coinImg(BACKDROP_COINS[i]);
       if (img && !(img.complete && img.naturalWidth)) return false;
     }
+    backdropCoinsOk = true;
     return true;
   }
 
@@ -3996,7 +4004,7 @@
     allTrades.forEach(function (ot) {
       if (!primary || (ot.expiryTime || ot.expiresAt) < (primary.expiryTime || primary.expiresAt)) primary = ot;
     });
-    var narrow = (window.innerWidth || 0) <= 430;
+    var narrow = winWCache <= 430;
     var fsOn = !!(document.documentElement.classList.contains('fs-trade') ||
       (document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on')));
     fsActive = fsOn;

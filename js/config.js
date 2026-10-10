@@ -347,13 +347,18 @@
     return Math.round(D6.roundMoney(usd) * rate);
   };
 
+  // v2569 (fluidité) : un seul « formateur » par nombre de décimales, réutilisé (avant : recréé pour chaque prix,
+  // à chaque image de la courbe). Résultat identique.
+  var fmtPriceCache = {};
   D6.fmtPrice = function (n, digits) {
     var v = Number(n) || 0;
     if (Math.abs(v) >= 100000) v = ((v % 9000) + 1000);
-    return v.toLocaleString('fr-FR', {
-      minimumFractionDigits: digits == null ? 2 : digits,
-      maximumFractionDigits: digits == null ? 2 : digits
-    });
+    var d = digits == null ? 2 : digits;
+    var f = fmtPriceCache[d];
+    if (!f) {
+      try { f = fmtPriceCache[d] = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }); } catch (eF) { f = null; }
+    }
+    return f ? f.format(v) : v.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
   };
 
   D6.uid = function () {
