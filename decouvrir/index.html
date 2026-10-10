@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>OROLADO — Apprendre le trading avec un compte démo gratuit (Mobile Money, carte, crypto)</title>
-  <meta name="description" content="OROLADO : apprenez le trading sur mobile avec 1 000 000 $ de démo gratuite. 10 marchés en direct 24h/24, trades de 5 secondes à 10 minutes, dépôt dès 3 $ par Orange Money, MTN MoMo, M-Pesa, carte ou crypto. Astuces, lexique et réponses aux questions des débutants.">
+  <title>OROLADO — Trading synthétique et prédiction de prix en ligne | Démo gratuite + convertisseur</title>
+  <meta name="description" content="OROLADO : trading synthétique et prédiction de prix en ligne, 24h/24 sur mobile. Compte démo gratuit de 1 000 000 $, 10 marchés en direct, dépôt dès 3 $ par Mobile Money, carte ou crypto. Convertisseur gratuit de devises et cryptos (dollar, euro, FCFA, Bitcoin, USDT…).">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://orolado.online/">
+  <link rel="canonical" href="https://orolado.online/decouvrir/">
   <meta name="theme-color" content="#13113A">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="OROLADO">
-  <meta property="og:title" content="OROLADO — Apprendre le trading avec un compte démo gratuit">
-  <meta property="og:description" content="1 000 000 $ de démo gratuite, 10 marchés en direct 24h/24, dépôt dès 3 $ par Mobile Money, carte ou crypto.">
-  <meta property="og:url" content="https://orolado.online/">
+  <meta property="og:title" content="OROLADO — Trading synthétique et prédiction de prix en ligne">
+  <meta property="og:description" content="Démo gratuite de 1 000 000 $, 10 marchés en direct 24h/24, convertisseur gratuit de devises et cryptos.">
+  <meta property="og:url" content="https://orolado.online/decouvrir/">
   <meta property="og:image" content="https://orolado.online/icons/icon-512.png">
   <link rel="icon" href="/icons/icon-32.png" sizes="32x32">
   <link rel="apple-touch-icon" href="/icons/icon-180.png">
@@ -105,6 +105,36 @@
     footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:.84rem}
     footer p{margin:0 0 8px}
     .warn{border:1px solid rgba(255,77,109,.35);background:rgba(255,77,109,.07);border-radius:12px;padding:12px 14px;color:#FFC9D3}
+    /* Convertisseur */
+    .cv{border-radius:22px;border:1px solid rgba(251,191,36,.28);background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+    .cv-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .cv-head h2{margin:0}
+    .cv-upd{font-size:.8rem;color:var(--muted)}
+    .cv-upd i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:middle}
+    .cv-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:end}
+    .cv-box{min-width:0;background:rgba(7,6,26,.6);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+    .cv-box label{display:block;font-size:.75rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .cv-in{display:flex;gap:8px;align-items:center}
+    .cv-in input,.cv-out{flex:1;min-width:0;background:transparent;border:0;color:var(--txt);font:800 1.5rem "Plus Jakarta Sans",system-ui,sans-serif;outline:none;padding:4px 0;font-variant-numeric:tabular-nums}
+    .cv-out{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gold)}
+    .cv-in select{width:48%;max-width:48%;min-width:0;text-overflow:ellipsis;background:#1B1847;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:9px 8px;font:700 .9rem "Plus Jakarta Sans",system-ui,sans-serif}
+    .cv-swap{width:46px;height:46px;border-radius:50%;border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.1);color:var(--gold);font-size:1.25rem;cursor:pointer;margin-bottom:12px}
+    .cv-rate{margin:14px 2px 0;color:var(--muted);font-size:.92rem}
+    .cv-rate b{color:var(--txt)}
+    .cv-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .cv-quick button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--txt);border-radius:999px;padding:7px 12px;font:700 .82rem "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}
+    .cv-quick button:hover{border-color:rgba(251,191,36,.5)}
+    .cv-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+    .cv-foot p{margin:0;color:var(--muted);font-size:.85rem}
+    @media (max-width:640px){
+      .cv{padding:16px}
+      .cv-row{grid-template-columns:1fr}
+      .cv-swap{margin:-4px auto;transform:rotate(90deg)}
+      .cv-in input,.cv-out{font-size:1.3rem}
+      .cv-in{flex-wrap:wrap}
+      .cv-in input,.cv-out{flex:1 1 100%}
+      .cv-in select{max-width:none;width:100%}
+    }
     @media (max-width:860px){
       .hero{grid-template-columns:1fr;padding-top:34px}
       .nav{height:58px}
@@ -160,6 +190,45 @@
       <div class="bs"><span class="up">ACHETER ↑</span><span class="dn">VENDRE ↓</span></div>
     </div>
   </div>
+
+  <section id="convertisseur" style="padding-top:8px">
+    <div class="wrap">
+      <div class="cv">
+        <div class="cv-head">
+          <div>
+            <h2>Convertisseur de devises et crypto</h2>
+            <p class="sub" style="margin:4px 0 0">Dollar, euro, FCFA, naira, Bitcoin, USDT… plus de 160 monnaies, gratuit.</p>
+          </div>
+          <span class="cv-upd" id="cvUpd"><i></i>Chargement des taux…</span>
+        </div>
+        <div class="cv-row">
+          <div class="cv-box">
+            <label for="cvAmt">Montant</label>
+            <div class="cv-in"><input id="cvAmt" type="text" inputmode="decimal" value="100" autocomplete="off" aria-label="Montant"><select id="cvFrom" aria-label="Monnaie de départ"></select></div>
+          </div>
+          <button class="cv-swap" id="cvSwap" type="button" aria-label="Inverser">⇄</button>
+          <div class="cv-box">
+            <label for="cvTo">Résultat</label>
+            <div class="cv-in"><output class="cv-out" id="cvOut" aria-live="polite">—</output><select id="cvTo" aria-label="Monnaie d'arrivée"></select></div>
+          </div>
+        </div>
+        <p class="cv-rate" id="cvRate">&nbsp;</p>
+        <div class="cv-quick" id="cvQuick">
+          <button type="button" data-f="USD" data-t="XOF">USD → FCFA</button>
+          <button type="button" data-f="EUR" data-t="XOF">EUR → FCFA</button>
+          <button type="button" data-f="USDT" data-t="XOF">USDT → FCFA</button>
+          <button type="button" data-f="BTC" data-t="USD">BTC → USD</button>
+          <button type="button" data-f="USD" data-t="NGN">USD → Naira</button>
+          <button type="button" data-f="EUR" data-t="USD">EUR → USD</button>
+          <button type="button" data-f="ETH" data-t="EUR">ETH → EUR</button>
+        </div>
+        <div class="cv-foot">
+          <p>Taux indicatifs, mis à jour automatiquement.</p>
+          <a class="btn btn-gold" href="https://orolado.app/?inscription=1">Trader 24h/24 sur OROLADO</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <div class="wrap">
     <div class="stats">
@@ -292,5 +361,96 @@
     <p>© 2026 OROLADO · Trading sur indices synthétiques · Support 24h/24 depuis votre compte.</p>
   </div>
 </footer>
+<script>
+(function () {
+  // Taux : unités de chaque monnaie pour 1 USD. Monnaies : open.er-api.com ; cryptos : Coinbase, puis CoinGecko en secours.
+  var CRYPTO = { BTC: 'bitcoin', ETH: 'ethereum', USDT: 'tether', USDC: 'usd-coin', BNB: 'binancecoin', SOL: 'solana', TRX: 'tron', XRP: 'ripple', TON: 'the-open-network', DOGE: 'dogecoin', ADA: 'cardano', LTC: 'litecoin' };
+  var CNAME = { BTC: 'Bitcoin', ETH: 'Ethereum', USDT: 'Tether', USDC: 'USD Coin', BNB: 'BNB', SOL: 'Solana', TRX: 'TRON', XRP: 'XRP', TON: 'Toncoin', DOGE: 'Dogecoin', ADA: 'Cardano', LTC: 'Litecoin' };
+  var TOP = ['USD', 'EUR', 'XOF', 'XAF', 'NGN', 'GHS', 'KES', 'GBP', 'CAD', 'MAD', 'ZAR', 'CNY', 'INR', 'BRL'];
+  var rates = {}, when = 0, want = { f: 'USD', t: 'XOF' };
+  var $ = function (id) { return document.getElementById(id); };
+  var amt = $('cvAmt'), from = $('cvFrom'), to = $('cvTo'), out = $('cvOut'), rateEl = $('cvRate'), upd = $('cvUpd');
+  var names = null;
+  try { names = new Intl.DisplayNames(['fr'], { type: 'currency' }); } catch (e) { names = null; }
+  function label(c) {
+    if (CNAME[c]) return c + ' · ' + CNAME[c];
+    if (c === 'XOF') return 'XOF · Franc CFA (BCEAO)';
+    if (c === 'XAF') return 'XAF · Franc CFA (BEAC)';
+    var n = ''; try { n = names ? names.of(c) : ''; } catch (e) { n = ''; }
+    return n && n !== c ? c + ' · ' + n.charAt(0).toUpperCase() + n.slice(1) : c;
+  }
+  function timeout(p, ms) { return Promise.race([p, new Promise(function (_, rej) { setTimeout(function () { rej(new Error('délai')); }, ms); })]); }
+  function getJSON(u) { return timeout(fetch(u, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }), 9000); }
+  function fill() {
+    var all = Object.keys(rates);
+    var fiat = all.filter(function (c) { return !CRYPTO[c]; });
+    var cr = Object.keys(CRYPTO).filter(function (c) { return rates[c]; });
+    var top = TOP.filter(function (c) { return rates[c]; });
+    var rest = fiat.filter(function (c) { return top.indexOf(c) < 0; }).sort();
+    function build(sel, keep) {
+      var html = '<optgroup label="Principales">' + top.map(o).join('') + '</optgroup>';
+      if (cr.length) html += '<optgroup label="Cryptos">' + cr.map(o).join('') + '</optgroup>';
+      html += '<optgroup label="Toutes les monnaies">' + rest.map(o).join('') + '</optgroup>';
+      sel.innerHTML = html;
+      if (keep && rates[keep]) sel.value = keep;
+    }
+    function o(c) { return '<option value="' + c + '">' + label(c) + '</option>'; }
+    build(from, want.f); build(to, want.t);
+  }
+  function num(v) { var x = parseFloat(String(v).replace(/\s/g, '').replace(',', '.')); return isFinite(x) ? x : 0; }
+  function fmt(x, c) {
+    var d = CRYPTO[c] ? (x >= 1 ? 6 : 8) : (x >= 1000 ? 0 : 2);
+    if (!CRYPTO[c] && x < 1 && x > 0) d = 4;
+    try { return x.toLocaleString('fr-FR', { maximumFractionDigits: d }); } catch (e) { return String(x); }
+  }
+  function calc() {
+    var f = from.value, t = to.value;
+    if (!rates[f] || !rates[t]) { out.textContent = '—'; rateEl.innerHTML = '&nbsp;'; return; }
+    var r = rates[t] / rates[f], a = num(amt.value);
+    out.textContent = fmt(a * r, t) + ' ' + t;
+    rateEl.innerHTML = '<b>1 ' + f + ' = ' + fmt(r, t) + ' ' + t + '</b> · 1 ' + t + ' = ' + fmt(1 / r, f) + ' ' + f;
+  }
+  function pick() { want.f = from.value; want.t = to.value; calc(); }
+  amt.addEventListener('input', calc);
+  [from, to].forEach(function (el) { el.addEventListener('change', pick); });
+  $('cvSwap').addEventListener('click', function () { var a = from.value; from.value = to.value; to.value = a; pick(); });
+  $('cvQuick').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (!rates[b.dataset.f] || !rates[b.dataset.t]) return;
+    from.value = b.dataset.f; to.value = b.dataset.t; pick();
+  });
+  function stamp(ok) {
+    if (!ok) { upd.innerHTML = '<i style="background:#FF4D6D"></i>Taux indisponibles pour le moment'; return; }
+    var d = new Date(when || Date.now());
+    upd.innerHTML = '<i></i>Taux du ' + d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+  // Chaque source affiche ses taux dès qu'elle répond (les monnaies n'attendent pas les cryptos).
+  function show() {
+    rates.USD = 1;
+    if (Object.keys(rates).length > 1) { fill(); calc(); stamp(true); }
+  }
+  var fiatP = getJSON('https://open.er-api.com/v6/latest/USD').then(function (j) {
+    if (j && j.rates) { Object.keys(j.rates).forEach(function (c) { rates[c] = +j.rates[c]; }); when = (j.time_last_update_unix || 0) * 1000 || Date.now(); show(); }
+  }).catch(function () { /* secours : Coinbase donne aussi les monnaies */ });
+  var cbP = getJSON('https://api.coinbase.com/v2/exchange-rates?currency=USD').then(function (j) {
+    var r = j && j.data && j.data.rates; if (!r) return;
+    Object.keys(r).forEach(function (c) { if (CRYPTO[c] || !rates[c]) rates[c] = +r[c]; });
+    show();
+  }).catch(function () { /* CoinGecko en parallèle */ });
+  var ids = Object.keys(CRYPTO).map(function (k) { return CRYPTO[k]; }).join(',');
+  var cgP = getJSON('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd').then(function (j) {
+    Object.keys(CRYPTO).forEach(function (c) { var p = j[CRYPTO[c]] && j[CRYPTO[c]].usd; if (p > 0 && !rates[c]) rates[c] = 1 / p; });
+    show();
+  }).catch(function () { /* cryptos indisponibles : elles ne s'affichent pas, jamais de faux chiffre */ });
+  // 3ᵉ source (souvent accessible quand les autres sont bloquées) : prix en USDT ; 1 USDT ≈ 1 USD.
+  var BN = ['BTC', 'ETH', 'BNB', 'SOL', 'TRX', 'XRP', 'TON', 'DOGE', 'ADA', 'LTC', 'USDC'];
+  var bnP = getJSON('https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(BN.map(function (c) { return c + 'USDT'; })))).then(function (arr) {
+    (arr || []).forEach(function (t) { var c = String(t.symbol || '').replace(/USDT$/, ''); var p = +t.price; if (CRYPTO[c] && p > 0 && !rates[c]) rates[c] = 1 / p; });
+    if (!rates.USDT) rates.USDT = 1;
+    show();
+  }).catch(function () { /* ignore */ });
+  Promise.all([fiatP, cbP, cgP, bnP]).then(function () { if (Object.keys(rates).length < 2) stamp(false); });
+})();
+</script>
 </body>
 </html>
