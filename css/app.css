@@ -8951,3 +8951,10 @@ html.fs-trade body:not(#fz1):not(#fz2):not(#fz3):not(#fz4):not(#fz5):not(#fz6):n
     html body #depositModal #depositBox:not(.is-crypto){zoom:.9;max-height:calc((100dvh - 72px) / .9)!important}
   }
 }
+/* v2562 — Plein écran Android (site et application) : rangée du bas (mise, ACHETER, VENDRE)
+   très légèrement agrandie : marges des côtés 8 → 5 px, hauteur 46 → 50 px ; même espace entre les 3. */
+html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad{padding-left:5px!important;padding-right:5px!important}
+html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .stake-line,
+html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .stake-field,
+html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .trade-row,
+html.is-android.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5) > .pad .btn-trade{height:50px!important;min-height:50px!important;max-height:50px!important}
