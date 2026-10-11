@@ -692,6 +692,7 @@
     try { sessionStorage.setItem('oro_auth_tab', tab === 'login' ? 'login' : 'register'); } catch (eTab) { /* ignore */ }
     showScreen('screenAuth');
     markBootReady();
+    setTimeout(pcAuthFit, 80);
     var auth = $('screenAuth');
     if (auth) {
       auth.classList.remove('hidden');
@@ -1091,6 +1092,32 @@
     } catch (eAf) { /* ignore */ }
   }
   authFit();
+  // v2575 — Connexion / Inscription sur ORDINATEUR : sur un écran peu haut (portable à 100 %), le bloc dépassait
+  // et le logo était coupé en haut. On réduit tout le bloc d'un seul coup (proportionnel) pour qu'il tienne.
+  function pcAuthFit() {
+    try {
+      var wrap = document.querySelector('#screenAuth .auth-wrap');
+      if (!wrap) return;
+      if (window.innerWidth < 900 || window.innerWidth < window.innerHeight) { wrap.style.zoom = ''; return; }
+      var scr = $('screenAuth');
+      if (!scr || scr.classList.contains('hidden') || !wrap.offsetHeight) return;
+      wrap.style.zoom = '';
+      var kids = wrap.children, top = Infinity, bot = -Infinity, i;
+      for (i = 0; i < kids.length; i++) {
+        if (!kids[i].offsetParent) continue;
+        var r = kids[i].getBoundingClientRect();
+        if (r.height <= 0) continue;
+        if (r.top < top) top = r.top;
+        if (r.bottom > bot) bot = r.bottom;
+      }
+      var need = bot - top;
+      var room = (window.innerHeight || 0) - 56;
+      if (need > 0 && room > 200 && need > room) wrap.style.zoom = String(Math.max(0.6, Math.floor(room / need * 100) / 100));
+    } catch (ePa) { /* ignore */ }
+  }
+  setTimeout(pcAuthFit, 400);
+  window.addEventListener('resize', function () { setTimeout(pcAuthFit, 120); });
+  document.addEventListener('click', function (e) { if (e.target && e.target.closest && e.target.closest('#screenAuth, #btnGoLogin, #btnGoRegister, [data-auth-tab]')) setTimeout(pcAuthFit, 120); }, true);
   window.addEventListener('resize', function () { setTimeout(authFit, 60); });
   window.addEventListener('orientationchange', function () { setTimeout(authFit, 300); });
 
