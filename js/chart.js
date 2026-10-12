@@ -2351,6 +2351,7 @@
       ctx.lineTo(toX(i), toY(data[i]));
     }
     ctx.lineTo(lastX, lastY);
+    fakeGlow(col, width || 1.8);
     ctx.strokeStyle = col;
     ctx.lineWidth = width || 1.8;
     ctx.lineJoin = 'round';
@@ -2407,6 +2408,7 @@
     ctx.fillStyle = grad;
     ctx.fill();
     tracePath();
+    fakeGlow(color, width || 2.5);
     ctx.strokeStyle = color;
     ctx.lineWidth = width || 2.5;
     ctx.lineJoin = 'round';
@@ -2416,6 +2418,24 @@
     ctx.stroke();
     ctx.restore();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
+  }
+
+  // v2579 — quand le flou (shadowBlur) est coupé (mode léger / téléphone qui rame), la ligne des prix perdait toute sa lueur
+  // et paraissait « morte ». Fausse lueur presque gratuite : le même tracé (chemin déjà posé) repassé 2 fois, plus large et
+  // transparent, juste sous la ligne. Dessin seulement : prix et trades inchangés. Téléphone qui suit : rien ne change.
+  function fakeGlow(color, width) {
+    if (!(D6.lite || fsSkip.heavy)) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.globalAlpha = 0.14;
+    ctx.lineWidth = width + 9;
+    ctx.stroke();
+    ctx.globalAlpha = 0.26;
+    ctx.lineWidth = width + 4;
+    ctx.stroke();
+    ctx.restore();
   }
 
   function drawLine(pad, w, h, data, minP, maxP, color) {
@@ -2452,6 +2472,7 @@
       ctx.quadraticCurveTo(toX(i - 1), toY(data[i - 1]), cx2, cy2);
     }
     ctx.lineTo(lastX, lastY);
+    fakeGlow(col, col === '#ffb300' ? 3.2 : 2.2);
     ctx.strokeStyle = col;
     ctx.lineWidth = col === '#ffb300' ? 3.2 : 2.2;
     ctx.shadowColor = 'rgba(245,166,35,0.85)';
@@ -2494,6 +2515,7 @@
       }
       ctx.lineTo(lastX, lastY);
     }
+    fakeGlow(halo || col, width || 3);
     ctx.strokeStyle = col;
     ctx.lineWidth = width || 3;
     ctx.lineJoin = 'round';
