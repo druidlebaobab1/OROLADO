@@ -426,13 +426,42 @@
       });
       return gReady;
     }
+    // v2586 — le bouton Google « disparaissait » une fois sur deux : si le script de Google finissait de charger
+    // pendant l'écran de chargement (écran de connexion pas encore affiché, largeur 0), le bouton n'était jamais
+    // dessiné tant qu'on ne touchait à rien. Maintenant on réessaie tout seul (toutes les 0,4 s, au plus ~40 s).
+    var gWait = null, gTries = 0;
+    function renderLater() {
+      if (gWait || gTries > 100) return;
+      gTries++;
+      gWait = setTimeout(function () { gWait = null; render(); }, 400);
+    }
+    // v2586 — pas de « flash » : le bouton reste invisible pendant que Google le construit (case blanche vide
+    // puis texte), puis apparaît d'un coup en fondu quand il est prêt.
+    function revealWhenReady(holder) {
+      holder.classList.remove('g-in');
+      var done = false;
+      function show() { if (done) return; done = true; setTimeout(function () { holder.classList.add('g-in'); }, 120); }
+      setTimeout(show, 2500); // sécurité : jamais caché plus de 2,5 s
+      function hook() {
+        var f = holder.querySelector('iframe');
+        if (!f) return false;
+        f.addEventListener('load', show);
+        return true;
+      }
+      if (hook()) return;
+      try {
+        var mo = new MutationObserver(function () { if (hook()) mo.disconnect(); });
+        mo.observe(holder, { childList: true, subtree: true });
+        setTimeout(function () { mo.disconnect(); }, 3000);
+      } catch (eMo) { show(); }
+    }
     function render() {
       if (!window.google || !google.accounts || !google.accounts.id) return;
       // Largeur prise sur la carte (toujours visible quand l'écran de connexion est ouvert), pas sur le
       // formulaire (caché = largeur 0) : les deux boutons sont dessinés ensemble, une seule fois.
       var card = document.querySelector('#screenAuth .auth-card');
       var cw = card ? card.clientWidth : 0;
-      if (cw < 200) return;
+      if (cw < 200) { renderLater(); return; }
       var cs = window.getComputedStyle(card);
       var inner = cw - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
       // Dessiné à 1/1,15 de la largeur puis agrandi ×1,15 en CSS (.g-holder) : hauteur du bouton orange.
@@ -447,6 +476,7 @@
           var holder = box.querySelector('.g-holder');
           if (!holder) { holder = document.createElement('div'); holder.className = 'g-holder'; box.insertBefore(holder, box.firstChild); }
           holder.innerHTML = '';
+          revealWhenReady(holder);
           google.accounts.id.renderButton(holder, {
             type: 'standard', theme: 'outline', size: 'large', text: 'continue_with',
             shape: 'rectangular', logo_alignment: 'center', width: w,

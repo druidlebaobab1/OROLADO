@@ -8969,3 +8969,8 @@ html.t-noshadow *,html.t-noshadow *::before,html.t-noshadow *::after{box-shadow:
 html.t-noanim *,html.t-noanim *::before,html.t-noanim *::after{animation:none!important;transition:none!important}
 html.t-nobg body,html.t-nobg body *:not(canvas):not(svg):not(img){background-image:none!important}
 html.t-nobg body{background:#0B0A24!important}
+
+/* v2586 — bouton Google : invisible pendant que Google le construit (plus de « flash » de case blanche vide),
+   puis fondu court quand il est prêt (js/app.js revealWhenReady ; jamais caché plus de 2,5 s). */
+html body #screenAuth .g-official .g-holder{opacity:0;transition:opacity .2s ease}
+html body #screenAuth .g-official .g-holder.g-in{opacity:1}
