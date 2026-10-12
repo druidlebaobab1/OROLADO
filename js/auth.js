@@ -413,6 +413,14 @@
     },
 
     logout: async function () {
+      // v2606 : « Déconnexion » d'un compte admin ferme aussi la connexion longue de l'admin.
+      try {
+        var was = D6.Store.current && D6.Store.current();
+        if (was && D6.Auth.isAdmin(was)) {
+          fetch('/admin.php?ajax=1', { method: 'POST', credentials: 'same-origin', keepalive: true,
+            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }).catch(function () { /* ignore */ });
+        }
+      } catch (eAdm) { /* ignore */ }
       D6.holdRemote = true;
       D6.holdPull = true;
       if (D6.Supabase && D6.Supabase.stopRealtime) D6.Supabase.stopRealtime();

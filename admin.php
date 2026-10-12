@@ -67,6 +67,81 @@ function admin_login_check(string $email, string $password): ?array {
   return $ok ? $user : null;
 }
 
+// v2606 — L'admin reste connecté jusqu'à « Déconnexion » (avant : la session PHP s'effaçait à la
+// fermeture du navigateur ou après ~24 min sans clic → mot de passe redemandé à chaque retour).
+// Une connexion longue est rangée dans les connexions du site + un cookie illisible par la page.
+// Elle tombe aussi si le mot de passe admin change (empreinte « pw »).
+const ADMIN_KEEP_COOKIE = 'oro_admin_keep';
+
+function admin_keep_pwtag(): string {
+  return hash('sha256', 'orolado-admin-keep|' . orolado_master_admin_password());
+}
+
+function admin_keep_cookie(string $tok, int $expires): void {
+  setcookie(ADMIN_KEEP_COOKIE, $tok, [
+    'expires' => $expires,
+    'path' => '/',
+    'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+      || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'),
+    'httponly' => true,
+    'samesite' => 'Lax',
+  ]);
+}
+
+function admin_keep_issue(string $uid): void {
+  if ($uid === '') return;
+  $tok = 'adm' . bin2hex(random_bytes(32));
+  $pw = admin_keep_pwtag();
+  with_db_lock(static function ($box) use ($tok, $uid, $pw): array {
+    $db =& $box->db;
+    $db['sessions'][$tok] = orolado_new_session($uid) + ['adminKeep' => 1, 'pw' => $pw];
+    return ['ok' => true];
+  });
+  admin_keep_cookie($tok, time() + orolado_session_ttl());
+}
+
+function admin_keep_drop(): void {
+  $tok = trim((string) ($_COOKIE[ADMIN_KEEP_COOKIE] ?? ''));
+  if ($tok !== '') {
+    with_db_lock(static function ($box) use ($tok): array {
+      $db =& $box->db;
+      if (isset($db['sessions'][$tok])) unset($db['sessions'][$tok]);
+      return ['ok' => true];
+    });
+  }
+  admin_keep_cookie('', time() - 3600);
+}
+
+/** Page rechargée sans session PHP : on reprend la connexion longue (ou celle du jeu, si admin). */
+function admin_keep_restore(): void {
+  if (admin_me()) return;
+  $db = admin_local_db();
+  $keep = trim((string) ($_COOKIE[ADMIN_KEEP_COOKIE] ?? ''));
+  if ($keep !== '') {
+    $sess = $db['sessions'][$keep] ?? null;
+    $u = null;
+    if (is_array($sess) && !empty($sess['adminKeep']) && hash_equals(admin_keep_pwtag(), (string) ($sess['pw'] ?? ''))) {
+      $u = orolado_session_user($db, $keep);
+    }
+    if (is_array($u) && orolado_is_admin_user($u)) {
+      session_regenerate_id(true);
+      $_SESSION['admin_uid'] = (string) ($u['id'] ?? '');
+      $_SESSION['admin_email'] = (string) ($u['email'] ?? '');
+      return;
+    }
+    admin_keep_cookie('', time() - 3600);
+  }
+  $tok = trim((string) ($_COOKIE['oro_token'] ?? ''));
+  if ($tok !== '' && isset($db['sessions'][$tok])) {
+    $uTok = orolado_session_user($db, $tok);
+    if (is_array($uTok) && orolado_is_admin_user($uTok)) {
+      session_regenerate_id(true);
+      $_SESSION['admin_uid'] = (string) ($uTok['id'] ?? '');
+      $_SESSION['admin_email'] = (string) ($uTok['email'] ?? '');
+    }
+  }
+}
+
 function admin_apply_filters(array $rows, array $req, string $dateField = 'createdAt'): array {
   $q = strtolower(trim((string) ($req['q'] ?? '')));
   $preset = (string) ($req['preset'] ?? 'all');
@@ -1622,6 +1697,8 @@ $isAjax = ($_SERVER['REQUEST_METHOD'] === 'POST') && (
   || str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')
 );
 
+admin_keep_restore();
+
 if ($isAjax) {
   $raw = file_get_contents('php://input') ?: '';
   $req = json_decode($raw, true);
@@ -1644,9 +1721,11 @@ if ($isAjax) {
     session_regenerate_id(true);
     $_SESSION['admin_uid'] = (string) $u['id'];
     $_SESSION['admin_email'] = (string) $u['email'];
+    admin_keep_issue((string) $u['id']);
     admin_json(['ok' => true]);
   }
   if ($action === 'logout') {
+    admin_keep_drop();
     $_SESSION = [];
     session_destroy();
     admin_json(['ok' => true]);
@@ -1912,18 +1991,6 @@ if ($isAjax) {
   admin_json(['ok' => false, 'reason' => 'Action inconnue'], 400);
 }
 
-if (!admin_me()) {
-  $tok = trim((string) ($_COOKIE['oro_token'] ?? ''));
-  if ($tok !== '') {
-    $dbTok = admin_local_db();
-    $uTok = orolado_session_user($dbTok, $tok);
-    if (is_array($uTok) && orolado_is_admin_user($uTok)) {
-      session_regenerate_id(true);
-      $_SESSION['admin_uid'] = (string) ($uTok['id'] ?? '');
-      $_SESSION['admin_email'] = (string) ($uTok['email'] ?? '');
-    }
-  }
-}
 $logged = admin_me() !== null;
 $ADMIN_TABS = [
   'gA' => [
