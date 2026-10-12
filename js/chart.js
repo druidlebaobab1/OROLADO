@@ -1203,9 +1203,14 @@
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
     var nStars = Math.round(cssW * cssH / 3400); // v2580 (propriétaire) : ~30 % d'étoiles fixes en moins
     var k;
-    for (k = 0; k < nStars; k++) {
-      var sx = rnd() * cssW;
-      var sy = rnd() * cssH;
+    // v2583 (propriétaire) : étoiles RÉPARTIES partout (une par case d'une grille, légèrement décalée) : plus de coin
+    // vide (haut à gauche…) ni d'étoiles collées ; même nombre qu'avant.
+    var gCols = Math.max(1, Math.round(Math.sqrt(nStars * cssW / Math.max(1, cssH))));
+    var gRows = Math.max(1, Math.ceil(nStars / gCols));
+    var cellW = cssW / gCols, cellH = cssH / gRows;
+    for (k = 0; k < gCols * gRows; k++) {
+      var sx = ((k % gCols) + 0.2 + rnd() * 0.6) * cellW;
+      var sy = (Math.floor(k / gCols) + 0.2 + rnd() * 0.6) * cellH;
       var sr = rnd() * 1.05 + 0.25;
       var sa = rnd() * 0.5 + 0.12;
       // v2501 (propriétaire) : moins d'étoiles regroupées en bas à droite (sous les derniers prix, au-dessus du gain).
@@ -1216,9 +1221,11 @@
       g.fill();
     }
     // Quelques étoiles brillantes en croix.
-    for (k = 0; k < 6; k++) {
-      var bx = pad.l + rnd() * w;
-      var by = pad.t + rnd() * h;
+    // v2583 (propriétaire) : les étoiles brillantes aux 4 coins + 2 au milieu, bien séparées (avant : au hasard, coins vides).
+    var crossAt = [[0.06, 0.07], [0.62, 0.05], [0.05, 0.93], [0.70, 0.93], [0.30, 0.42], [0.55, 0.62]];
+    for (k = 0; k < crossAt.length; k++) {
+      var bx = pad.l + crossAt[k][0] * w + (rnd() - 0.5) * 8;
+      var by = pad.t + crossAt[k][1] * h + (rnd() - 0.5) * 8;
       var bl = 3 + rnd() * 3;
       g.strokeStyle = 'rgba(255,240,220,0.32)';
       g.lineWidth = 0.8;
@@ -2046,8 +2053,10 @@
     if (style === 'pearls') {
       // ORO 888 : fil violet discret qui relie des perles ; une perle grossit quand ça bouge fort.
       ctx.save();
-      ctx.strokeStyle = 'rgba(192,132,252,0.38)';
-      ctx.lineWidth = 1.2;
+      // v2583 (propriétaire) : BAAL plus visible, sans lueur : fil plus épais et plus clair, perles un peu plus
+      // grosses et plus vives, fin contour clair (on ne les confond plus avec les bulles du décor).
+      ctx.strokeStyle = 'rgba(216,180,254,0.78)';
+      ctx.lineWidth = 2 * sizeK();
       ctx.lineJoin = 'round';
       ctx.beginPath();
       for (i = 0; i < n; i++) {
@@ -2055,23 +2064,26 @@
         if (i === 0) ctx.moveTo(x, toY(candles[i].c)); else ctx.lineTo(x, toY(candles[i].c));
       }
       ctx.stroke();
-      var rMax = Math.max(2.6, Math.min(8 * sizeK(), slot * 0.46));
+      var rMax = Math.max(3.4, Math.min(9.5 * sizeK(), slot * 0.5));
       for (i = 0; i < n; i++) {
         c = candles[i];
         up = c.c >= c.o;
         x = toX(i);
         var y = toY(c.c);
         var move = Math.abs(toY(c.o) - y);
-        var r = Math.max(2.4, Math.min(rMax, 2.4 + move * 0.35));
+        var r = Math.max(3.2, Math.min(rMax, 3.2 + move * 0.35));
         if (i === last && cssH >= 200) {
           ctx.shadowColor = 'rgba(192,132,252,0.85)';
           ctx.shadowBlur = 12;
         }
-        ctx.fillStyle = up ? '#C084FC' : '#7C3AED';
+        ctx.fillStyle = up ? '#D58BFF' : '#8B4BFF';
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.strokeStyle = up ? 'rgba(250,240,255,0.85)' : 'rgba(221,204,255,0.6)';
+        ctx.lineWidth = 0.9;
+        ctx.stroke();
         ctx.fillStyle = up ? 'rgba(250,245,255,0.85)' : 'rgba(221,214,254,0.6)';
         ctx.beginPath();
         ctx.arc(x - r * 0.3, y - r * 0.3, Math.max(0.8, r * 0.32), 0, Math.PI * 2);
