@@ -515,8 +515,15 @@
         });
       });
     }
-    if (window.google && window.google.accounts && window.google.accounts.id) { render(); }
-    else {
+    // v2588 — le script et le bouton de Google ne sont chargés qu'APRÈS la fin du chargement de la page (+ 1,2 s) :
+    // préparés pendant le chargement (v2587), ils le prolongeaient → sur iPhone, Safari restait « en chargement »
+    // (barre bleue, grande barre du bas) et ACHETER / VENDRE restaient mal placés. Exception : si l'écran de
+    // connexion est déjà ouvert ou qu'on touche Connexion / Inscription, Google est chargé tout de suite.
+    var gsiAsked = false;
+    function loadGsi() {
+      if (window.google && window.google.accounts && window.google.accounts.id) { render(); return; }
+      if (gsiAsked) return;
+      gsiAsked = true;
       var s = document.createElement('script');
       s.src = 'https://accounts.google.com/gsi/client';
       s.async = true;
@@ -524,10 +531,20 @@
       s.onload = render;
       document.head.appendChild(s);
     }
+    function loadGsiAfterPage() { setTimeout(loadGsi, 1200); }
+    if (authOpenNotLoggedEarly()) loadGsi();
+    else if (document.readyState === 'complete') loadGsiAfterPage();
+    else window.addEventListener('load', loadGsiAfterPage);
+    function authOpenNotLoggedEarly() {
+      try {
+        var sa = document.getElementById('screenAuth');
+        return !!(sa && !sa.classList.contains('hidden') && getComputedStyle(sa).display !== 'none' && sa.offsetWidth > 0);
+      } catch (eE) { return false; }
+    }
     // Ouverture de l'écran de connexion / rotation : dessiné si pas encore fait à cette largeur (sinon rien).
     window.addEventListener('resize', function () { setTimeout(render, 120); });
-    if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { setTimeout(render, 60); });
-    if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { setTimeout(render, 60); });
+    if ($('btnGoLogin')) $('btnGoLogin').addEventListener('click', function () { loadGsi(); setTimeout(render, 60); });
+    if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { loadGsi(); setTimeout(render, 60); });
     // v2432 — fenêtre Google fermée sans finir (annulée, erreur) : quand on revient sur le site, le bouton est
     // refait avec un nouveau code, il se reclique tout de suite.
     // v2434 : on ne regarde plus « la page perd / reprend la main » (sur iPhone, le bouton de Google prend
