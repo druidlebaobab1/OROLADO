@@ -9006,3 +9006,5 @@ html body #withdrawModal .wd-back-ico.hidden{display:none!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{width:26px!important;height:26px!important;border-radius:2px!important;
   background:#FF7900!important;color:#fff!important;font:800 6.8px/1 Arial,Helvetica,sans-serif!important;letter-spacing:-.01em!important;
   display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;padding:0 0 3px 2px!important;box-sizing:border-box!important;text-transform:lowercase}
+/* v2593 (propriétaire) — « orange » centré dans le carré, un peu plus petit, jamais en dehors. */
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{align-items:center!important;justify-content:center!important;padding:0!important;font-size:5.4px!important;overflow:hidden!important;white-space:nowrap!important}
