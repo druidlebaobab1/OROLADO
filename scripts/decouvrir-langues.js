@@ -27,9 +27,15 @@ const css = `    /* Sélecteur de langue */
       .lang{padding:0 8px;gap:5px}
       .lang .code{display:inline}
       .lang select{position:absolute;inset:0;width:100%;max-width:none;opacity:0;cursor:pointer}
+      /* Bouton doré : texte court sur tous les téléphones (le texte long poussait la flèche hors de l'écran) */
+      .nav .long{display:none} .nav .short{display:inline}
+      .nav .btn{min-width:0;flex:0 1 auto;overflow:hidden;padding-left:13px;padding-right:13px;gap:6px}
     }
-    @media (max-width:400px){ .nav .btn .arrow{display:none} .nav .btn{padding:11px 12px} .brand{gap:6px} .brand img{width:34px;height:34px;flex-basis:34px} }
-    @media (max-width:340px){ .brand b{font-size:.92rem;letter-spacing:.06em} }
+    @media (max-width:400px){ .nav .btn .arrow{display:none} .nav .btn{padding:11px 11px;font-size:.88rem} .brand{gap:6px} .brand img{width:34px;height:34px;flex-basis:34px} }
+    @media (max-width:360px){
+      .nav{gap:5px} .nav .btn{padding:10px 8px;font-size:.8rem} .lang{padding:0 5px;gap:3px}
+      .brand{gap:5px} .brand img{width:30px;height:30px;flex-basis:30px} .brand b{font-size:.9rem;letter-spacing:.05em}
+    }
 `;
 for (const l of order) {
   const k = langs.indexOf(l);
