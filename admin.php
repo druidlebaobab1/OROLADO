@@ -1987,6 +1987,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
 ?><!DOCTYPE html>
 <html lang="fr">
 <head>
+  <!-- v2601 : fond sombre dès la 1re image (plus d'écran blanc à l'ouverture de l'admin dans son onglet). -->
+  <meta name="color-scheme" content="dark"><style>html{background:#0A0F1D}</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">

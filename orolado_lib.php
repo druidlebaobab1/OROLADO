@@ -2034,14 +2034,15 @@ function orolado_merge_positions($a, $b): array {
 }
 
 /**
- * Durée d'une connexion : 30 jours SANS visite (chaque visite la prolonge). Avant : 100 ans,
- * donc un jeton volé restait valable pour toujours.
+ * Durée d'une connexion : 5 ANS sans visite (chaque visite la prolonge) — v2601, décision du propriétaire :
+ * un joueur reste connecté pratiquement « à vie » tant qu'il ne se déconnecte pas (beaucoup oublient leur
+ * mot de passe). Un retrait demande toujours le code reçu par e-mail. Avant : 30 jours (et encore avant : 100 ans).
  */
 function orolado_session_ttl(): int {
-  return 30 * 24 * 60 * 60;
+  return 5 * 365 * 24 * 60 * 60;
 }
 
-/** Une session est vivante si le joueur est venu dans les 30 derniers jours. */
+/** Une session est vivante si le joueur est venu dans les 5 dernières années. */
 function orolado_session_alive($sess): bool {
   if (!is_array($sess)) return false;
   $now = time();
