@@ -4750,6 +4750,31 @@
     card.appendChild(box);
   }
   paintPayLocal();
+  // v2594 (propriétaire) — les logos de la fenêtre Retrait (Wave, Orange, MTN…) n'étaient téléchargés qu'à son
+  // ouverture → ils apparaissaient l'un après l'autre devant le joueur. Ils sont maintenant préparés en avance,
+  // discrètement, 2 s après la fin du chargement de la page (rien de plus pendant le chargement).
+  (function preloadWdLogos() {
+    function go() {
+      // Copie invisible des grilles de logos, hors de l'écran, quelques secondes : le téléphone télécharge ET
+      // prépare les images exactement comme à l'ouverture de Retrait, puis les garde en mémoire.
+      try {
+        var box = document.createElement('div');
+        box.setAttribute('aria-hidden', 'true');
+        box.style.cssText = 'position:fixed;left:-10000px;top:0;width:360px;visibility:hidden;pointer-events:none;contain:strict;height:600px;overflow:hidden';
+        ['wdLocalGrid', 'wdBankGrid'].forEach(function (id) {
+          var g = document.getElementById(id);
+          if (!g) return;
+          var c = g.cloneNode(true);
+          c.removeAttribute('id');
+          box.appendChild(c);
+        });
+        document.body.appendChild(box);
+        setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 8000);
+      } catch (ePre) { /* ignore */ }
+    }
+    function later() { setTimeout(go, 2000); }
+    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+  })();
 
   async function postFlwVerify(payload) {
     try {
