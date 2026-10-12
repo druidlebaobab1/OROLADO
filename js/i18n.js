@@ -262,7 +262,7 @@
     antibot: 'Anti-bot protection: slow down',
     insufficient: 'Insufficient balance',
     installIos: 'On iPhone: Share \u2192 Add to Home Screen',
-    legal: '© 2026 OROLADO.COM · Secure crypto trading 24/7 · 18+',
+    legal: '© 2026 OROLADO.COM · Synthetic indices trading 24/7 · 18+',
     authBack: 'Back',
     otpTitle: 'Confirm your email',
     otpLeadBefore: 'A 6-digit code was sent to',
@@ -607,7 +607,7 @@
     antibot: 'Protection anti-bot : ralentissez',
     insufficient: 'Solde insuffisant',
     installIos: 'Sur iPhone : Partager \u2192 Sur l\u2019\u00e9cran d\u2019accueil \u2192 Ajouter',
-    legal: '© 2026 OROLADO.COM · Trading crypto sécurisé 24h/24 · 18+',
+    legal: '© 2026 OROLADO.COM · Trading d’indices synthétiques 24h/24 · 18+',
     authBack: 'Retour',
     otpTitle: 'Confirmez votre e-mail',
     otpLeadBefore: 'Un code \u00e0 6 chiffres a \u00e9t\u00e9 envoy\u00e9 \u00e0',
@@ -701,7 +701,7 @@
     es: pack({
       tagline: 'Trading',
       fsDemo: 'PRÁCTICA', fsReal: 'REAL',
-      legal: '© 2026 OROLADO.COM · Trading cripto seguro 24/7 · 18+',
+      legal: '© 2026 OROLADO.COM · Trading de índices sintéticos 24/7 · 18+',
       authRealPitch: 'Crea tu cuenta o inicia sesi\u00f3n en 30 segundos para recargar y retirar ganancias reales.',
       login: 'Iniciar sesi\u00f3n', register: 'Registrarse', enter: 'Entrar',
       createAccount: 'Crear mi cuenta',
@@ -843,7 +843,7 @@
     pt: pack({
       tagline: 'Trading',
       fsDemo: 'TREINO', fsReal: 'REAL',
-      legal: '© 2026 OROLADO.COM · Trading cripto seguro 24/7 · 18+',
+      legal: '© 2026 OROLADO.COM · Trading de índices sintéticos 24/7 · 18+',
       authRealPitch: 'Crie sua conta ou entre em 30 segundos para recarregar e sacar ganhos reais.',
       login: 'Entrar', register: 'Criar conta', enter: 'Entrar',
       createAccount: 'Criar minha conta',
@@ -984,7 +984,7 @@
     }),
     ar: pack({
       tagline: 'Trading',
-      legal: '© 2026 OROLADO.COM · تداول عملات رقمية آمن 24/7 · +18',
+      legal: '© 2026 OROLADO.COM · تداول المؤشرات الاصطناعية 24/7 · +18',
       authRealPitch: '\u0623\u0646\u0634\u0626 \u062d\u0633\u0627\u0628\u0643 \u0623\u0648 \u0633\u062c\u0651\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u062e\u0644\u0627\u0644 30 \u062b\u0627\u0646\u064a\u0629 \u0644\u0634\u062d\u0646 \u0631\u0635\u064a\u062f\u0643 \u0648\u0633\u062d\u0628 \u0623\u0631\u0628\u0627\u062d\u0643 \u0627\u0644\u062d\u0642\u064a\u0642\u064a\u0629.',
       login: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644', register: '\u0625\u0646\u0634\u0627\u0621 \u062d\u0633\u0627\u0628', enter: '\u062f\u062e\u0648\u0644',
       createAccount: '\u0625\u0646\u0634\u0627\u0621 \u062d\u0633\u0627\u0628\u064a',
@@ -1118,7 +1118,7 @@
     tr: pack({
       tagline: 'Trading',
       fsDemo: 'DENEME', fsReal: 'GERÇEK',
-      legal: '© 2026 OROLADO.COM · Güvenli kripto işlem 7/24 · 18+',
+      legal: '© 2026 OROLADO.COM · Sentetik endeks işlemleri 7/24 · 18+',
       authRealPitch: 'Bakiyeyi y\u00fcklemek ve ger\u00e7ek kazanc\u0131 \u00e7ekmek i\u00e7in 30 saniyede hesap a\u00e7\u0131n veya giri\u015f yap\u0131n.',
       login: 'Giri\u015f', register: 'Kay\u0131t', enter: 'Giri\u015f yap',
       createAccount: 'Hesab\u0131m\u0131 olu\u015ftur',
@@ -1243,7 +1243,7 @@
     vi: pack({
       tagline: 'Trading',
       fsDemo: 'THỬ', fsReal: 'THẬT',
-      legal: '© 2026 OROLADO.COM · Giao dịch crypto an toàn 24/7 · 18+',
+      legal: '© 2026 OROLADO.COM · Giao dịch chỉ số tổng hợp 24/7 · 18+',
       authRealPitch: 'T\u1ea1o t\u00e0i kho\u1ea3n ho\u1eb7c \u0111\u0103ng nh\u1eadp trong 30 gi\u00e2y \u0111\u1ec3 n\u1ea1p v\u00e0 r\u00fat ti\u1ec1n th\u1eadt.',
       login: '\u0110\u0103ng nh\u1eadp', register: '\u0110\u0103ng k\u00fd', enter: '\u0110\u0103ng nh\u1eadp',
       createAccount: 'T\u1ea1o t\u00e0i kho\u1ea3n',
@@ -1363,7 +1363,7 @@
     id: pack({
       tagline: 'Trading',
       fsDemo: 'LATIHAN', fsReal: 'NYATA',
-      legal: '© 2026 OROLADO.COM · Trading kripto aman 24/7 · 18+',
+      legal: '© 2026 OROLADO.COM · Trading indeks sintetis 24/7 · 18+',
       authRealPitch: 'Buat akun atau masuk dalam 30 detik untuk isi saldo dan tarik keuntungan nyata.',
       login: 'Masuk', register: 'Daftar', enter: 'Masuk',
       createAccount: 'Buat akun saya',
@@ -1483,7 +1483,7 @@
     ru: pack({
       tagline: 'Trading',
       fsDemo: 'ДЕМО', fsReal: 'РЕАЛ',
-      legal: '© 2026 OROLADO.COM · Безопасный крипто-трейдинг 24/7 · 18+',
+      legal: '© 2026 OROLADO.COM · Синтетические индексы 24/7 · 18+',
       authRealPitch: '\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0438\u043b\u0438 \u0432\u043e\u0439\u0434\u0438\u0442\u0435 \u0437\u0430 30 \u0441\u0435\u043a\u0443\u043d\u0434, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0431\u0430\u043b\u0430\u043d\u0441 \u0438 \u0432\u044b\u0432\u0435\u0441\u0442\u0438 \u0440\u0435\u0430\u043b\u044c\u043d\u0443\u044e \u043f\u0440\u0438\u0431\u044b\u043b\u044c.',
       login: '\u0412\u0445\u043e\u0434', register: '\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f', enter: '\u0412\u043e\u0439\u0442\u0438',
       createAccount: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
@@ -1603,7 +1603,7 @@
     de: pack({
       tagline: 'Trading',
       fsDemo: 'ÜBUNG', fsReal: 'ECHT',
-      legal: '© 2026 OROLADO.COM · Sicherer Krypto-Handel rund um die Uhr · 18+',
+      legal: '© 2026 OROLADO.COM · Synthetische Indizes 24/7 · 18+',
       authRealPitch: 'Konto erstellen oder in 30 Sekunden anmelden, um aufzuladen und echte Gewinne auszuzahlen.',
       login: 'Anmelden', register: 'Registrieren', enter: 'Anmelden',
       createAccount: 'Konto erstellen',
@@ -3867,6 +3867,33 @@
     hi: { defiReady: 'नई चुनौती उपलब्ध है!', bonDoneT: 'बोनस पूरा हुआ!' }
   };
   Object.keys(V2465_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], V2465_TR[l]); });
+  // v2578 — Conditions (demande du propriétaire, pour les vérifications des prestataires de paiement) :
+  // article 1 = « indices synthétiques » + e-mail du support ; article 10 = pièce d'identité possible avant un retrait.
+  var TERMS_V2578 = {
+    fr: { tc1: 'OROLADO est une plateforme en ligne de trading d’indices synthétiques, accessible sur orolado.com. Pour toute question, notre support est joignable à tout moment depuis la rubrique « Aide » du site ou par e-mail : support@orolado.com.',
+      tc10: 'Avant un retrait, le total des mises doit atteindre 2 fois le total des dépôts et bonus reçus. Les montants minimums de retrait sont affichés dans l’écran de retrait, selon le moyen choisi. Les retraits sont traités dans les meilleurs délais après validation ; le délai peut varier selon le moyen de paiement. Pour protéger les joueurs et lutter contre la fraude et le blanchiment d’argent, OROLADO peut demander une pièce d’identité avant de valider un retrait.' },
+    en: { tc1: 'OROLADO is an online synthetic-indices trading platform available at orolado.com. For any question, our support team can be reached at any time from the “Help” section of the site or by e-mail: support@orolado.com.',
+      tc10: 'Before a withdrawal, total stakes must reach 2 times the total deposits and bonuses received. Minimum withdrawal amounts are shown on the withdrawal screen for each method. Withdrawals are processed as quickly as possible after validation; timing may vary with the payment method. To protect players and prevent fraud and money laundering, OROLADO may ask for an identity document before approving a withdrawal.' },
+    es: { tc1: 'OROLADO es una plataforma en línea de trading de índices sintéticos, disponible en orolado.com. Para cualquier pregunta, nuestro soporte está disponible en todo momento desde la sección «Ayuda» del sitio o por correo: support@orolado.com.',
+      tc10: 'Antes de un retiro, el total apostado debe alcanzar 2 veces el total de depósitos y bonos recibidos. Los importes mínimos de retiro se muestran en la pantalla de retiro según el método elegido. Los retiros se procesan lo antes posible tras su validación; el plazo puede variar según el método de pago. Para proteger a los jugadores y luchar contra el fraude y el blanqueo de dinero, OROLADO puede solicitar un documento de identidad antes de validar un retiro.' },
+    pt: { tc1: 'A OROLADO é uma plataforma online de trading de índices sintéticos, disponível em orolado.com. Para qualquer dúvida, o nosso suporte está disponível a qualquer momento na seção «Ajuda» do site ou por e-mail: support@orolado.com.',
+      tc10: 'Antes de um saque, o total apostado deve atingir 2 vezes o total de depósitos e bônus recebidos. Os valores mínimos de saque são exibidos na tela de saque, conforme o método escolhido. Os saques são processados o mais rápido possível após a validação; o prazo pode variar conforme o método de pagamento. Para proteger os jogadores e combater a fraude e a lavagem de dinheiro, a OROLADO pode pedir um documento de identidade antes de validar um saque.' },
+    ar: { tc1: 'أورولادو (OROLADO) منصة تداول للمؤشرات الاصطناعية عبر الإنترنت، متاحة على orolado.com. لأي سؤال، فريق الدعم متاح في أي وقت من قسم «المساعدة» في الموقع أو عبر البريد الإلكتروني: support@orolado.com.',
+      tc10: 'قبل أي سحب، يجب أن يبلغ إجمالي المراهنات ضعفي إجمالي الإيداعات والمكافآت المستلمة. تُعرض المبالغ الدنيا للسحب في شاشة السحب حسب الوسيلة المختارة. تُعالج السحوبات في أقرب وقت ممكن بعد التحقق؛ وقد تختلف المدة حسب وسيلة الدفع. لحماية اللاعبين ومكافحة الاحتيال وغسل الأموال، يجوز لأورولادو طلب وثيقة هوية قبل الموافقة على السحب.' },
+    tr: { tc1: 'OROLADO, orolado.com adresinden erişilebilen çevrimiçi bir sentetik endeks işlem platformudur. Her türlü soru için destek ekibimize sitenin «Yardım» bölümünden veya e-posta ile her zaman ulaşabilirsiniz: support@orolado.com.',
+      tc10: 'Para çekmeden önce toplam bahis, alınan toplam yatırım ve bonusların 2 katına ulaşmalıdır. Minimum çekim tutarları, seçilen yönteme göre çekim ekranında gösterilir. Çekimler onaydan sonra en kısa sürede işlenir; süre ödeme yöntemine göre değişebilir. Oyuncuları korumak, dolandırıcılığı ve kara para aklamayı önlemek için OROLADO, bir çekimi onaylamadan önce kimlik belgesi isteyebilir.' },
+    de: { tc1: 'OROLADO ist eine Online-Handelsplattform für synthetische Indizes, erreichbar unter orolado.com. Bei Fragen ist unser Support jederzeit über den Bereich „Hilfe“ der Website oder per E-Mail erreichbar: support@orolado.com.',
+      tc10: 'Vor einer Auszahlung muss die Summe der Einsätze das Zweifache der erhaltenen Einzahlungen und Boni erreichen. Die Mindestauszahlungsbeträge werden im Auszahlungsbildschirm je nach Methode angezeigt. Auszahlungen werden nach der Freigabe schnellstmöglich bearbeitet; die Dauer kann je nach Zahlungsmethode variieren. Zum Schutz der Spieler und zur Verhinderung von Betrug und Geldwäsche kann OROLADO vor der Freigabe einer Auszahlung ein Ausweisdokument verlangen.' },
+    ru: { tc1: 'OROLADO — онлайн-платформа для трейдинга синтетическими индексами, доступная на orolado.com. По любым вопросам наша поддержка доступна в любое время в разделе «Помощь» на сайте или по электронной почте: support@orolado.com.',
+      tc10: 'Перед выводом общая сумма ставок должна достичь двукратной суммы полученных пополнений и бонусов. Минимальные суммы вывода указаны на экране вывода для каждого способа. Выводы обрабатываются как можно быстрее после подтверждения; срок зависит от способа оплаты. Для защиты игроков и борьбы с мошенничеством и отмыванием денег OROLADO может запросить документ, удостоверяющий личность, перед подтверждением вывода.' },
+    id: { tc1: 'OROLADO adalah platform online untuk trading indeks sintetis yang dapat diakses di orolado.com. Untuk pertanyaan apa pun, tim dukungan kami siap kapan saja melalui bagian «Bantuan» di situs atau melalui e-mail: support@orolado.com.',
+      tc10: 'Sebelum penarikan, total taruhan harus mencapai 2 kali total deposit dan bonus yang diterima. Jumlah penarikan minimum ditampilkan di layar penarikan sesuai metode yang dipilih. Penarikan diproses secepat mungkin setelah divalidasi; waktunya dapat berbeda menurut metode pembayaran. Untuk melindungi pemain serta mencegah penipuan dan pencucian uang, OROLADO dapat meminta dokumen identitas sebelum menyetujui penarikan.' },
+    vi: { tc1: 'OROLADO là nền tảng giao dịch chỉ số tổng hợp trực tuyến, truy cập tại orolado.com. Mọi câu hỏi, đội hỗ trợ luôn sẵn sàng qua mục «Trợ giúp» trên trang hoặc qua e-mail: support@orolado.com.',
+      tc10: 'Trước khi rút, tổng tiền cược phải đạt 2 lần tổng tiền nạp và thưởng đã nhận. Số tiền rút tối thiểu hiển thị trên màn hình rút tiền tùy phương thức. Lệnh rút được xử lý sớm nhất có thể sau khi duyệt; thời gian có thể khác nhau tùy phương thức. Để bảo vệ người chơi và chống gian lận, rửa tiền, OROLADO có thể yêu cầu giấy tờ tùy thân trước khi duyệt lệnh rút.' },
+    hi: { tc1: 'OROLADO सिंथेटिक इंडेक्स का ऑनलाइन ट्रेडिंग प्लेटफ़ॉर्म है, जो orolado.com पर उपलब्ध है। किसी भी प्रश्न के लिए हमारी सहायता टीम साइट के «सहायता» अनुभाग से या ई-मेल द्वारा हर समय उपलब्ध है: support@orolado.com।',
+      tc10: 'निकासी से पहले कुल दांव प्राप्त जमा और बोनस की कुल राशि का 2 गुना होना चाहिए। न्यूनतम निकासी राशियाँ चुने गए तरीके के अनुसार निकासी स्क्रीन पर दिखती हैं। स्वीकृति के बाद निकासी यथाशीघ्र संसाधित होती है; समय भुगतान के तरीके पर निर्भर करता है। खिलाड़ियों की सुरक्षा और धोखाधड़ी व मनी लॉन्ड्रिंग रोकने के लिए OROLADO निकासी स्वीकृत करने से पहले पहचान पत्र माँग सकता है।' }
+  };
+  Object.keys(TERMS_V2578).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], TERMS_V2578[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

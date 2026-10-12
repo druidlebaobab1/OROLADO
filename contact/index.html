@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>OROLADO — Contact</title>
+  <meta name="description" content="Contact OROLADO support: support@orolado.com">
+  <link rel="canonical" href="https://www.orolado.com/contact/">
+  <meta name="theme-color" content="#0B0A24">
+  <link rel="icon" href="/icons/favicon-blanc-48.png" sizes="48x48" type="image/png">
+  <style>
+    :root{--bg:#0B0A24;--card:#14123A;--line:rgba(255,255,255,.12);--txt:#EEF0FA;--mut:#B8BDD8;--gold:#FBBF24}
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    a{color:var(--gold)}
+    header{position:sticky;top:0;background:rgba(11,10,36,.96);border-bottom:1px solid var(--line);z-index:5}
+    .bar{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:8px;color:var(--txt);text-decoration:none;font-weight:800;letter-spacing:.08em}
+    .brand img{width:34px;height:34px}
+    nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+    nav.tabs a{padding:6px 10px;border-radius:9px;text-decoration:none;color:var(--mut);font-weight:700;font-size:14px;border:1px solid transparent}
+    nav.tabs a.on{color:var(--txt);border-color:var(--line);background:rgba(255,255,255,.06)}
+    select{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font:inherit;font-size:14px;max-width:150px}
+    main{max-width:860px;margin:0 auto;padding:22px 16px 60px}
+    h1{font-size:1.55rem;line-height:1.25;margin:4px 0 4px}
+    .upd{color:var(--mut);font-size:14px;margin:0 0 18px}
+    h2{font-size:1.2rem;margin:30px 0 8px;color:var(--gold)}
+    h3{font-size:1.02rem;margin:22px 0 4px}
+    p,li{color:#DCDFF0}
+    .ex{color:var(--mut);font-size:15px;border-left:3px solid var(--line);padding-left:10px}
+    .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0}
+    .go{display:inline-block;margin-top:26px;background:linear-gradient(135deg,#FCD34D,#F59E0B);color:#1A1203;font-weight:800;text-decoration:none;padding:12px 18px;border-radius:12px}
+    footer{border-top:1px solid var(--line);color:var(--mut);font-size:13px;text-align:center;padding:18px 16px 28px}
+    [dir=rtl] nav.tabs{margin-left:0;margin-right:auto}
+    [dir=rtl] .ex{border-left:0;border-right:3px solid var(--line);padding-left:0;padding-right:10px}
+    [hidden]{display:none!important}
+  </style>
+</head>
+<body>
+<header><div class="bar">
+  <a class="brand" href="https://www.orolado.com/"><img src="/icons/logo-ring.svg" alt="" width="34" height="34">OROLADO</a>
+  <nav class="tabs">
+    <a href="/conditions/" data-t="terms">Terms</a>
+    <a href="/confidentialite/" data-t="privacy">Privacy</a>
+    <a href="/contact/" class="on" data-t="contact">Contact</a>
+  </nav>
+  <select id="lang" aria-label="Language"><option value="en">English</option><option value="fr">Français</option></select>
+</div></header>
+<main id="main">
+<h1>Contact</h1>
+<p class="upd">Last updated: October 12, 2026</p>
+<div class="box"><b>Support e-mail</b><br><a href="mailto:support@orolado.com">support@orolado.com</a></div>
+<div class="box"><b>On the site</b><br>Sign in at <a href="https://www.orolado.com/">orolado.com</a>, then open the “Help” section.</div>
+<p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>
+<p>Partners and payment providers: please write to the same address.</p>
+<a class="go" href="https://www.orolado.com/">Go to OROLADO →</a>
+</main>
+<footer>© 2026 OROLADO · support@orolado.com · 18+</footer>
+<script>
+(function(){
+  var LANGS=["en","fr"], NAV={"fr":{"terms":"Conditions","privacy":"Confidentialité","contact":"Contact","back":"Aller sur OROLADO","upd":"Dernière mise à jour : 12 octobre 2026"},"en":{"terms":"Terms","privacy":"Privacy","contact":"Contact","back":"Go to OROLADO","upd":"Last updated: October 12, 2026"}};
+  function pick(){
+    var q=(location.search.match(/[?&]lang=([a-z]{2})/)||[])[1];
+    var s=null; try{s=localStorage.getItem('oroLegalLang')}catch(e){}
+    var n=String((navigator.languages&&navigator.languages[0])||navigator.language||'en').slice(0,2).toLowerCase();
+    return [q,s,n].filter(function(x){return x&&LANGS.indexOf(x)>=0})[0]||'en';
+  }
+  var DATA={"fr":"<h1>Contact</h1>\n<p class=\"upd\">Dernière mise à jour : 12 octobre 2026</p>\n<div class=\"box\"><b>E-mail du support</b><br><a href=\"mailto:support@orolado.com\">support@orolado.com</a></div>\n<div class=\"box\"><b>Sur le site</b><br>Connectez-vous sur <a href=\"https://www.orolado.com/\">orolado.com</a>, puis ouvrez la rubrique « Aide ».</div>\n<p>Nous répondons en français et en anglais, dans les plus brefs délais. Pour une question sur un dépôt ou un retrait, indiquez votre numéro de joueur (ORO-…) et la date de l’opération. Ne nous envoyez jamais votre mot de passe.</p>\n<p>Partenaires et prestataires de paiement : écrivez à la même adresse.</p>\n<a class=\"go\" href=\"https://www.orolado.com/\">Aller sur OROLADO →</a>","en":"<h1>Contact</h1>\n<p class=\"upd\">Last updated: October 12, 2026</p>\n<div class=\"box\"><b>Support e-mail</b><br><a href=\"mailto:support@orolado.com\">support@orolado.com</a></div>\n<div class=\"box\"><b>On the site</b><br>Sign in at <a href=\"https://www.orolado.com/\">orolado.com</a>, then open the “Help” section.</div>\n<p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>\n<p>Partners and payment providers: please write to the same address.</p>\n<a class=\"go\" href=\"https://www.orolado.com/\">Go to OROLADO →</a>"};
+  function render(l){document.getElementById('main').innerHTML=DATA[l]||DATA.en}
+  function setLang(l){
+    document.documentElement.lang=l; document.documentElement.dir=(l==='ar')?'rtl':'ltr';
+    var nv=NAV[l]||NAV.en; [].forEach.call(document.querySelectorAll('[data-t]'),function(a){a.textContent=nv[a.getAttribute('data-t')]});
+    document.getElementById('lang').value=l; render(l);
+  }
+  document.getElementById('lang').addEventListener('change',function(){try{localStorage.setItem('oroLegalLang',this.value)}catch(e){} setLang(this.value)});
+  setLang(pick());
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
-  "name": "OROLADO — Online Crypto Trading",
+  "name": "OROLADO — Synthetic Indices Trading",
   "short_name": "Orolado",
-  "description": "Tradez des cryptos sur Orolado. Entraînez-vous sans risque avec un compte démo, analysez les graphiques du marché en direct et tradez en toute fluidité.",
+  "description": "Tradez des indices synthétiques sur OROLADO, 24h/24. Entraînez-vous sans risque avec un compte démo, suivez les graphiques en direct et tradez en toute fluidité.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
