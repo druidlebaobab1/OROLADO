@@ -439,8 +439,13 @@
     // puis texte), puis apparaît d'un coup en fondu quand il est prêt.
     function revealWhenReady(holder) {
       holder.classList.remove('g-in');
+      var box = holder.parentNode;
+      if (box && box.classList) box.classList.remove('g-ok');
       var done = false;
-      function show() { if (done) return; done = true; setTimeout(function () { holder.classList.add('g-in'); }, 120); }
+      function show() {
+        if (done) return; done = true;
+        setTimeout(function () { holder.classList.add('g-in'); if (box && box.classList) box.classList.add('g-ok'); }, 120);
+      }
       setTimeout(show, 2500); // sécurité : jamais caché plus de 2,5 s
       function hook() {
         var f = holder.querySelector('iframe');
@@ -461,13 +466,37 @@
       // formulaire (caché = largeur 0) : les deux boutons sont dessinés ensemble, une seule fois.
       var card = document.querySelector('#screenAuth .auth-card');
       var cw = card ? card.clientWidth : 0;
-      if (cw < 200) { renderLater(); return; }
-      var cs = window.getComputedStyle(card);
-      var inner = cw - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-      // Dessiné à 1/1,15 de la largeur puis agrandi ×1,15 en CSS (.g-holder) : hauteur du bouton orange.
-      var w = Math.max(200, Math.min(400, Math.round(inner / 1.15)));
+      var w;
+      if (cw >= 200) {
+        var cs = window.getComputedStyle(card);
+        var inner = cw - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+        // Dessiné à 1/1,15 de la largeur puis agrandi ×1,15 en CSS (.g-holder) : hauteur du bouton orange.
+        w = Math.max(200, Math.min(400, Math.round(inner / 1.15)));
+        try { localStorage.setItem('oroGW', String(w) + '@' + (window.innerWidth || 0)); } catch (eGw) { /* ignore */ }
+      } else {
+        // v2587 — écran de connexion pas encore affiché (1re visite, écran de chargement, partie en cours) : le
+        // bouton est PRÉPARÉ quand même, à la largeur retenue la dernière fois (ou estimée), pour être déjà là
+        // au clic sur Connexion / Inscription. S'il faut l'ajuster, il est refait une fois sous la copie fixe.
+        var savedW = 0;
+        try { var sv = String(localStorage.getItem('oroGW') || '').split('@'); if (+sv[1] === (window.innerWidth || 0)) savedW = +sv[0] || 0; } catch (eSv) { savedW = 0; }
+        w = savedW || Math.max(200, Math.min(400, Math.round((Math.min(window.innerWidth || 390, 480) - 64) / 1.15)));
+        renderLater();
+      }
+      var gLabel = t('googleBtn');
       initOnce().then(function () {
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
+          // v2587 — copie fixe du bouton (blanc, logo G, « Continuer avec Google ») affichée tout de suite, sous
+          // le vrai bouton de Google qui la remplace en fondu dès qu'il est prêt : plus de case vide ni d'éclair.
+          var ph = box.querySelector('.g-ph');
+          if (!ph) {
+            ph = document.createElement('div');
+            ph.className = 'g-ph';
+            ph.setAttribute('aria-hidden', 'true');
+            ph.innerHTML = '<span class="g-ph-mark"></span><span class="g-ph-txt"></span>';
+            box.insertBefore(ph, box.firstChild);
+          }
+          ph.style.width = Math.round(w * 1.15) + 'px';
+          ph.querySelector('.g-ph-txt').textContent = gLabel;
           // v2444 — « tic-tic » : on ne redessine plus pour 1 ou 2 pixels de différence (barre de défilement,
           // barre de Safari qui bouge…) ; seulement si la largeur change vraiment (rotation, autre écran).
           var gwOld = parseFloat(box.getAttribute('data-gw') || '');
