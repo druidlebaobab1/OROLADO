@@ -1201,7 +1201,9 @@
     // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
     var seed = 7;
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
-    var nStars = Math.round(cssW * cssH / 3400); // v2580 (propriétaire) : ~30 % d'étoiles fixes en moins
+    // v2580 : ~30 % d'étoiles fixes en moins ; v2584 (propriétaire) : quelques-unes remises (dessinées une seule fois
+    // dans le décor fixe, elles ne coûtent rien à chaque image), toujours réparties partout.
+    var nStars = Math.round(cssW * cssH / 3000);
     var k;
     // v2583 (propriétaire) : étoiles RÉPARTIES partout (une par case d'une grille, légèrement décalée) : plus de coin
     // vide (haut à gauche…) ni d'étoiles collées ; même nombre qu'avant.
