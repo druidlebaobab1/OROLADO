@@ -49,7 +49,6 @@
 </div></header>
 <main id="main">
 <h1>Contact</h1>
-<p class="upd">Last updated: October 12, 2026</p>
 <div class="box"><b>Support e-mail</b><br><a href="mailto:support@orolado.com">support@orolado.com</a></div>
 <div class="box"><b>On the site</b><br>Sign in at <a href="https://www.orolado.com/">orolado.com</a>, then open the “Help” section.</div>
 <p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>
@@ -59,14 +58,14 @@
 <footer>© 2026 OROLADO · support@orolado.com · 18+</footer>
 <script>
 (function(){
-  var LANGS=["en","fr"], NAV={"fr":{"terms":"Conditions","privacy":"Confidentialité","contact":"Contact","back":"Aller sur OROLADO","upd":"Dernière mise à jour : 12 octobre 2026"},"en":{"terms":"Terms","privacy":"Privacy","contact":"Contact","back":"Go to OROLADO","upd":"Last updated: October 12, 2026"}};
+  var LANGS=["en","fr"], NAV={"fr":{"terms":"Conditions","privacy":"Confidentialité","contact":"Contact","back":"Aller sur OROLADO","upd":""},"en":{"terms":"Terms","privacy":"Privacy","contact":"Contact","back":"Go to OROLADO","upd":""}};
   function pick(){
     var q=(location.search.match(/[?&]lang=([a-z]{2})/)||[])[1];
     var s=null; try{s=localStorage.getItem('oroLegalLang')}catch(e){}
     var n=String((navigator.languages&&navigator.languages[0])||navigator.language||'en').slice(0,2).toLowerCase();
     return [q,s,n].filter(function(x){return x&&LANGS.indexOf(x)>=0})[0]||'en';
   }
-  var DATA={"fr":"<h1>Contact</h1>\n<p class=\"upd\">Dernière mise à jour : 12 octobre 2026</p>\n<div class=\"box\"><b>E-mail du support</b><br><a href=\"mailto:support@orolado.com\">support@orolado.com</a></div>\n<div class=\"box\"><b>Sur le site</b><br>Connectez-vous sur <a href=\"https://www.orolado.com/\">orolado.com</a>, puis ouvrez la rubrique « Aide ».</div>\n<p>Nous répondons en français et en anglais, dans les plus brefs délais. Pour une question sur un dépôt ou un retrait, indiquez votre numéro de joueur (ORO-…) et la date de l’opération. Ne nous envoyez jamais votre mot de passe.</p>\n<p>Partenaires et prestataires de paiement : écrivez à la même adresse.</p>\n<a class=\"go\" href=\"https://www.orolado.com/\">Aller sur OROLADO →</a>","en":"<h1>Contact</h1>\n<p class=\"upd\">Last updated: October 12, 2026</p>\n<div class=\"box\"><b>Support e-mail</b><br><a href=\"mailto:support@orolado.com\">support@orolado.com</a></div>\n<div class=\"box\"><b>On the site</b><br>Sign in at <a href=\"https://www.orolado.com/\">orolado.com</a>, then open the “Help” section.</div>\n<p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>\n<p>Partners and payment providers: please write to the same address.</p>\n<a class=\"go\" href=\"https://www.orolado.com/\">Go to OROLADO →</a>"};
+  var DATA={"fr":"<h1>Contact</h1>\n<div class=\"box\"><b>E-mail du support</b><br><a href=\"mailto:support@orolado.com\">support@orolado.com</a></div>\n<div class=\"box\"><b>Sur le site</b><br>Connectez-vous sur <a href=\"https://www.orolado.com/\">orolado.com</a>, puis ouvrez la rubrique « Aide ».</div>\n<p>Nous répondons en français et en anglais, dans les plus brefs délais. Pour une question sur un dépôt ou un retrait, indiquez votre numéro de joueur (ORO-…) et la date de l’opération. Ne nous envoyez jamais votre mot de passe.</p>\n<p>Partenaires et prestataires de paiement : écrivez à la même adresse.</p>\n<a class=\"go\" href=\"https://www.orolado.com/\">Aller sur OROLADO →</a>","en":"<h1>Contact</h1>\n<div class=\"box\"><b>Support e-mail</b><br><a href=\"mailto:support@orolado.com\">support@orolado.com</a></div>\n<div class=\"box\"><b>On the site</b><br>Sign in at <a href=\"https://www.orolado.com/\">orolado.com</a>, then open the “Help” section.</div>\n<p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>\n<p>Partners and payment providers: please write to the same address.</p>\n<a class=\"go\" href=\"https://www.orolado.com/\">Go to OROLADO →</a>"};
   function render(l){document.getElementById('main').innerHTML=DATA[l]||DATA.en}
   function setLang(l){
     document.documentElement.lang=l; document.documentElement.dir=(l==='ar')?'rtl':'ltr';

@@ -5,7 +5,6 @@
 // Lancer : node scripts/pages-legales.js   (à relancer après chaque changement des conditions dans js/i18n.js)
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const root = path.dirname(__dirname);
-const MAJ = { fr: '12 octobre 2026', en: 'October 12, 2026' };
 const MAIL = 'support@orolado.com';
 
 // 1) Textes des conditions, langue par langue, lus dans js/i18n.js (même texte que la fenêtre du site).
@@ -33,8 +32,8 @@ function loadTerms() {
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const NAMES = { en: 'English', fr: 'Français', es: 'Español', pt: 'Português', ar: 'العربية', tr: 'Türkçe', de: 'Deutsch', ru: 'Русский', id: 'Bahasa Indonesia', vi: 'Tiếng Việt', hi: 'हिन्दी' };
 const NAV = {
-  fr: { terms: 'Conditions', privacy: 'Confidentialité', contact: 'Contact', back: 'Aller sur OROLADO', upd: 'Dernière mise à jour : ' + MAJ.fr },
-  en: { terms: 'Terms', privacy: 'Privacy', contact: 'Contact', back: 'Go to OROLADO', upd: 'Last updated: ' + MAJ.en }
+  fr: { terms: 'Conditions', privacy: 'Confidentialité', contact: 'Contact', back: 'Aller sur OROLADO', upd: '' },
+  en: { terms: 'Terms', privacy: 'Privacy', contact: 'Contact', back: 'Go to OROLADO', upd: '' }
 };
 
 // 2) Habillage commun (simple, lisible, sans décor animé).
@@ -119,7 +118,7 @@ ${body}
 // 3) Page Conditions : 11 langues, le texte anglais est écrit en dur (pour Google et les vérificateurs).
 function termsHtml(T, l) {
   const t = T[l]; const upd = (NAV[l] || NAV.en).upd;
-  let h = `<h1>${esc(t.termsTitle)}</h1>\n<p class="upd">${esc(l === 'fr' ? NAV.fr.upd : NAV.en.upd)}</p>\n`;
+  let h = `<h1>${esc(t.termsTitle)}</h1>\n`;
   for (let i = 1; i <= 18; i++) h += `<h3>${esc(t['tc' + i + 't'])}</h3>\n<p>${esc(t['tc' + i])}</p>\n`;
   h += `<h2>${esc(t.tcGiftsT)}</h2>\n`;
   for (let i = 19; i <= 22; i++) h += `<h3>${esc(t['tc' + i + 't'])}</h3>\n<p>${esc(t['tc' + i])}</p>\n<p class="ex">${esc(t['tc' + i + 'b'])}</p>\n`;
@@ -131,7 +130,6 @@ function termsHtml(T, l) {
 // 4) Confidentialité et Contact (français + anglais).
 const PRIVACY = {
   fr: `<h1>Politique de confidentialité</h1>
-<p class="upd">${NAV.fr.upd}</p>
 <p>Cette page explique quelles données OROLADO (orolado.com) utilise, pourquoi, et quels sont vos droits.</p>
 <h3>1. Données que nous utilisons</h3>
 <ul>
@@ -144,9 +142,9 @@ const PRIVACY = {
 <h3>2. Pourquoi</h3>
 <p>Pour créer et gérer votre compte, exécuter vos trades, créditer vos dépôts, payer vos retraits, vous envoyer les e-mails utiles (codes, informations sur votre compte), protéger le site contre la fraude et le blanchiment d’argent, et respecter nos obligations légales.</p>
 <h3>3. Avec qui</h3>
-<p>Vos données ne sont <b>jamais vendues</b>. Elles sont seulement transmises aux prestataires techniques qui font fonctionner le site : hébergement et base de données (Hostinger, Supabase), sécurité du site (Cloudflare), envoi des e-mails (Brevo), connexion avec Google (Google), paiements (par exemple Flutterwave, OxaPay, Maketou), et mesure de nos publicités (Meta / Facebook). Chacun ne reçoit que ce qui lui est nécessaire.</p>
+<p>Vos données ne sont <b>jamais vendues</b>. Elles sont seulement transmises, quand c’est nécessaire, à nos partenaires de confiance qui nous aident à faire fonctionner le service (paiements, envoi des e-mails, sécurité). Chacun ne reçoit que ce qui lui est nécessaire.</p>
 <h3>4. Cookies et stockage du téléphone</h3>
-<p>Le site enregistre dans votre navigateur ce qui est nécessaire à son fonctionnement (connexion, langue, réglages, historique récent). Un outil de mesure publicitaire (pixel Meta) peut aussi être chargé pour savoir si nos publicités fonctionnent.</p>
+<p>Le site enregistre dans votre navigateur ce qui est nécessaire à son fonctionnement (connexion, langue, réglages, historique récent). Des outils de mesure peuvent aussi être utilisés pour améliorer le service.</p>
 <h3>5. Durée de conservation</h3>
 <p>Les données sont gardées tant que le compte est actif, puis le temps exigé par la loi pour les opérations financières.</p>
 <h3>6. Vos droits</h3>
@@ -154,11 +152,10 @@ const PRIVACY = {
 <h3>7. Mineurs</h3>
 <p>OROLADO est réservé aux personnes de 18 ans et plus. Nous fermons tout compte ouvert par un mineur.</p>
 <h3>8. Sécurité</h3>
-<p>Connexions chiffrées (HTTPS), mots de passe jamais stockés en clair, accès aux données limité.</p>
+<p>Nous protégeons vos données avec des mesures de sécurité adaptées.</p>
 <h3>9. Modifications</h3>
-<p>Cette politique peut évoluer ; la date de mise à jour est indiquée en haut de la page.</p>`,
+<p>Cette politique peut évoluer.</p>`,
   en: `<h1>Privacy Policy</h1>
-<p class="upd">${NAV.en.upd}</p>
 <p>This page explains what data OROLADO (orolado.com) uses, why, and what your rights are.</p>
 <h3>1. Data we use</h3>
 <ul>
@@ -171,9 +168,9 @@ const PRIVACY = {
 <h3>2. Why</h3>
 <p>To create and manage your account, execute your trades, credit your deposits, pay your withdrawals, send you useful e-mails (codes, account information), protect the site against fraud and money laundering, and meet our legal obligations.</p>
 <h3>3. Who we share it with</h3>
-<p>Your data is <b>never sold</b>. It is only shared with the technical providers that run the site: hosting and database (Hostinger, Supabase), site security (Cloudflare), e-mail delivery (Brevo), Google sign-in (Google), payments (for example Flutterwave, OxaPay, Maketou), and advertising measurement (Meta / Facebook). Each one only receives what it needs.</p>
+<p>Your data is <b>never sold</b>. It is only shared, when needed, with trusted partners that help us run the service (payments, e-mail delivery, security). Each one only receives what it needs.</p>
 <h3>4. Cookies and device storage</h3>
-<p>The site stores in your browser what it needs to work (sign-in, language, settings, recent history). An advertising measurement tool (Meta pixel) may also be loaded to know whether our ads work.</p>
+<p>The site stores in your browser what it needs to work (sign-in, language, settings, recent history). Measurement tools may also be used to improve the service.</p>
 <h3>5. Retention</h3>
 <p>Data is kept while the account is active, then for the period required by law for financial operations.</p>
 <h3>6. Your rights</h3>
@@ -181,20 +178,18 @@ const PRIVACY = {
 <h3>7. Minors</h3>
 <p>OROLADO is only for people aged 18 and over. We close any account opened by a minor.</p>
 <h3>8. Security</h3>
-<p>Encrypted connections (HTTPS), passwords never stored in plain text, limited access to data.</p>
+<p>We protect your data with appropriate security measures.</p>
 <h3>9. Changes</h3>
-<p>This policy may change; the update date is shown at the top of this page.</p>`
+<p>This policy may change.</p>`
 };
 const CONTACT = {
   fr: `<h1>Contact</h1>
-<p class="upd">${NAV.fr.upd}</p>
 <div class="box"><b>E-mail du support</b><br><a href="mailto:${MAIL}">${MAIL}</a></div>
 <div class="box"><b>Sur le site</b><br>Connectez-vous sur <a href="https://www.orolado.com/">orolado.com</a>, puis ouvrez la rubrique « Aide ».</div>
 <p>Nous répondons en français et en anglais, dans les plus brefs délais. Pour une question sur un dépôt ou un retrait, indiquez votre numéro de joueur (ORO-…) et la date de l’opération. Ne nous envoyez jamais votre mot de passe.</p>
 <p>Partenaires et prestataires de paiement : écrivez à la même adresse.</p>
 <a class="go" href="https://www.orolado.com/">${NAV.fr.back} →</a>`,
   en: `<h1>Contact</h1>
-<p class="upd">${NAV.en.upd}</p>
 <div class="box"><b>Support e-mail</b><br><a href="mailto:${MAIL}">${MAIL}</a></div>
 <div class="box"><b>On the site</b><br>Sign in at <a href="https://www.orolado.com/">orolado.com</a>, then open the “Help” section.</div>
 <p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>
