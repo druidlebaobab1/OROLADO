@@ -1148,9 +1148,11 @@
   function drawStarDrift() {
     if (!driftStars) {
       var sd = 91, arr = [], i;
-      for (i = 0; i < 28; i++) { // v2580 (propriétaire) : 46 → 28, un peu moins d'étoiles
-        sd = (sd * 16807) % 2147483647; var rx = (sd - 1) / 2147483646;
-        sd = (sd * 16807) % 2147483647; var ry = (sd - 1) / 2147483646;
+      // v2585 (propriétaire) : le nombre d'avant (48), mais une étoile par case d'une grille 8 × 6 (légèrement
+      // décalée) : réparties partout, jamais collées.
+      for (i = 0; i < 48; i++) {
+        sd = (sd * 16807) % 2147483647; var rx = ((i % 8) + 0.15 + 0.7 * (sd - 1) / 2147483646) / 8;
+        sd = (sd * 16807) % 2147483647; var ry = (Math.floor(i / 8) + 0.15 + 0.7 * (sd - 1) / 2147483646) / 6;
         sd = (sd * 16807) % 2147483647; var rs = (sd - 1) / 2147483646;
         arr.push({ x: rx, y: ry, r: 0.45 + rs * 0.9, a: 0.25 + rs * 0.45 });
       }
@@ -1203,7 +1205,8 @@
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
     // v2580 : ~30 % d'étoiles fixes en moins ; v2584 (propriétaire) : quelques-unes remises (dessinées une seule fois
     // dans le décor fixe, elles ne coûtent rien à chaque image), toujours réparties partout.
-    var nStars = Math.round(cssW * cssH / 3000);
+    // v2585 (propriétaire) : même nombre d'étoiles qu'avant la v2580, mais réparties sur la grille (coins compris).
+    var nStars = Math.round(cssW * cssH / 2400);
     var k;
     // v2583 (propriétaire) : étoiles RÉPARTIES partout (une par case d'une grille, légèrement décalée) : plus de coin
     // vide (haut à gauche…) ni d'étoiles collées ; même nombre qu'avant.
@@ -1215,8 +1218,8 @@
       var sy = (Math.floor(k / gCols) + 0.2 + rnd() * 0.6) * cellH;
       var sr = rnd() * 1.05 + 0.25;
       var sa = rnd() * 0.5 + 0.12;
-      // v2501 (propriétaire) : moins d'étoiles regroupées en bas à droite (sous les derniers prix, au-dessus du gain).
-      if (sx > cssW - 95 && sy > cssH * 0.62 && (k % 3) !== 0) continue;
+      // (v2501 retirait 2 étoiles sur 3 en bas à droite parce qu'elles étaient collées ; v2585 : la grille les sépare
+      // déjà, donc ce coin garde ses étoiles, comme les autres — demande du propriétaire.)
       g.fillStyle = 'rgba(255,255,255,' + sa.toFixed(2) + ')';
       g.beginPath();
       g.arc(sx, sy, sr, 0, Math.PI * 2);
