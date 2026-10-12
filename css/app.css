@@ -9011,3 +9011,7 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{a
 /* v2595 (propriétaire) — Retrait : plus d'apparition « en cascade » (1re colonne, puis 2e, puis 3e, en glissant) :
    toutes les cases s'affichent d'un coup à l'ouverture. */
 html body #withdrawModal#withdrawModal .wd-card,html body #withdrawModal#withdrawModal .wd-card:nth-child(n){animation:none!important;opacity:1!important}
+/* v2605 — titre de la fenêtre des Conditions invisible (lettres transparentes d'un ancien effet doré sans son dégradé) :
+   texte doré plein, lisible, un peu plus grand. */
+html body #termsModal #termsTitle{-webkit-text-fill-color:#FCD34D!important;color:#FCD34D!important;background:none!important;
+  font-size:14px!important;line-height:1.25!important;letter-spacing:.03em!important;white-space:normal!important;padding:4px 0!important;height:auto!important}

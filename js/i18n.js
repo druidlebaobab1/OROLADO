@@ -3894,6 +3894,17 @@
       tc10: 'निकासी से पहले कुल दांव प्राप्त जमा और बोनस की कुल राशि का 2 गुना होना चाहिए। न्यूनतम निकासी राशियाँ चुने गए तरीके के अनुसार निकासी स्क्रीन पर दिखती हैं। स्वीकृति के बाद निकासी यथाशीघ्र संसाधित होती है; समय भुगतान के तरीके पर निर्भर करता है। खिलाड़ियों की सुरक्षा और धोखाधड़ी व मनी लॉन्ड्रिंग रोकने के लिए OROLADO निकासी स्वीकृत करने से पहले पहचान पत्र माँग सकता है।' }
   };
   Object.keys(TERMS_V2578).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], TERMS_V2578[l]); });
+  // v2605 — bouton « Confidentialité » dans Aide (sous les Conditions).
+  var PRIV_LINK = { fr: 'Confidentialité', en: 'Privacy', es: 'Privacidad', pt: 'Privacidade', ar: 'الخصوصية', tr: 'Gizlilik',
+    de: 'Datenschutz', ru: 'Конфиденциальность', id: 'Privasi', vi: 'Quyền riêng tư', hi: 'गोपनीयता' };
+  Object.keys(PRIV_LINK).forEach(function (l) { if (DICT[l]) DICT[l].privacyLink = PRIV_LINK[l]; });
+  // Inscription : « … conditions d'utilisation et la confidentialité ».
+  var PRIV_AND = {
+    fr: [' et la ', 'confidentialité'], en: [' and the ', 'privacy policy'], es: [' y la ', 'privacidad'], pt: [' e a ', 'privacidade'],
+    ar: [' و', 'سياسة الخصوصية'], tr: [' ve ', 'gizlilik politikası'], de: [' und den ', 'Datenschutz'], ru: [' и ', 'конфиденциальность'],
+    id: [' dan ', 'kebijakan privasi'], vi: [' và ', 'quyền riêng tư'], hi: [' और ', 'गोपनीयता नीति']
+  };
+  Object.keys(PRIV_AND).forEach(function (l) { if (DICT[l]) { DICT[l].ageAnd = PRIV_AND[l][0]; DICT[l].privacyLink2 = PRIV_AND[l][1]; } });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

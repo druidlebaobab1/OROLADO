@@ -33,7 +33,16 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const NAMES = { en: 'English', fr: 'Français', es: 'Español', pt: 'Português', ar: 'العربية', tr: 'Türkçe', de: 'Deutsch', ru: 'Русский', id: 'Bahasa Indonesia', vi: 'Tiếng Việt', hi: 'हिन्दी' };
 const NAV = {
   fr: { terms: 'Conditions', privacy: 'Confidentialité', contact: 'Contact', back: 'Aller sur OROLADO', upd: '' },
-  en: { terms: 'Terms', privacy: 'Privacy', contact: 'Contact', back: 'Go to OROLADO', upd: '' }
+  en: { terms: 'Terms', privacy: 'Privacy', contact: 'Contact', back: 'Go to OROLADO', upd: '' },
+  es: { terms: 'Condiciones', privacy: 'Privacidad', contact: 'Contacto', back: 'Ir a OROLADO', upd: '' },
+  pt: { terms: 'Termos', privacy: 'Privacidade', contact: 'Contacto', back: 'Ir para a OROLADO', upd: '' },
+  ar: { terms: 'الشروط', privacy: 'الخصوصية', contact: 'اتصل بنا', back: 'اذهب إلى OROLADO', upd: '' },
+  tr: { terms: 'Koşullar', privacy: 'Gizlilik', contact: 'İletişim', back: 'OROLADO’ya git', upd: '' },
+  de: { terms: 'Bedingungen', privacy: 'Datenschutz', contact: 'Kontakt', back: 'Zu OROLADO', upd: '' },
+  ru: { terms: 'Условия', privacy: 'Конфиденциальность', contact: 'Контакты', back: 'Перейти на OROLADO', upd: '' },
+  id: { terms: 'Ketentuan', privacy: 'Privasi', contact: 'Kontak', back: 'Buka OROLADO', upd: '' },
+  vi: { terms: 'Điều khoản', privacy: 'Quyền riêng tư', contact: 'Liên hệ', back: 'Vào OROLADO', upd: '' },
+  hi: { terms: 'शर्तें', privacy: 'गोपनीयता', contact: 'संपर्क', back: 'OROLADO पर जाएँ', upd: '' }
 };
 
 // 2) Habillage commun (simple, lisible, sans décor animé).
@@ -127,75 +136,31 @@ function termsHtml(T, l) {
   return h;
 }
 
-// 4) Confidentialité et Contact (français + anglais).
-const PRIVACY = {
-  fr: `<h1>Politique de confidentialité</h1>
-<p>Cette page explique quelles données OROLADO (orolado.com) utilise, pourquoi, et quels sont vos droits.</p>
-<h3>1. Données que nous utilisons</h3>
-<ul>
-<li><b>Compte</b> : adresse e-mail, nom d’affichage, numéro de joueur ; si vous vous connectez avec Google, votre adresse e-mail et votre nom Google.</li>
-<li><b>Opérations</b> : dépôts, retraits, trades, bonus et soldes (démo et réel).</li>
-<li><b>Retraits</b> : les coordonnées nécessaires pour vous payer (par exemple un numéro de Mobile Money ou une adresse de portefeuille crypto).</li>
-<li><b>Sécurité</b> : adresse IP, type d’appareil et de navigateur, dates de connexion, pour protéger les comptes et éviter la fraude.</li>
-<li><b>Vérification d’identité</b> : si nous vous demandons une pièce d’identité avant un retrait (voir les Conditions, article 10), elle sert uniquement à cette vérification.</li>
-</ul>
-<h3>2. Pourquoi</h3>
-<p>Pour créer et gérer votre compte, exécuter vos trades, créditer vos dépôts, payer vos retraits, vous envoyer les e-mails utiles (codes, informations sur votre compte), protéger le site contre la fraude et le blanchiment d’argent, et respecter nos obligations légales.</p>
-<h3>3. Avec qui</h3>
-<p>Vos données ne sont <b>jamais vendues</b>. Elles sont seulement transmises, quand c’est nécessaire, à nos partenaires de confiance qui nous aident à faire fonctionner le service (paiements, envoi des e-mails, sécurité). Chacun ne reçoit que ce qui lui est nécessaire.</p>
-<h3>4. Cookies et stockage du téléphone</h3>
-<p>Le site enregistre dans votre navigateur ce qui est nécessaire à son fonctionnement (connexion, langue, réglages, historique récent). Des outils de mesure peuvent aussi être utilisés pour améliorer le service.</p>
-<h3>5. Durée de conservation</h3>
-<p>Les données sont gardées tant que le compte est actif, puis le temps exigé par la loi pour les opérations financières.</p>
-<h3>6. Vos droits</h3>
-<p>Vous pouvez demander à consulter, corriger ou supprimer vos données, ou fermer votre compte, depuis la rubrique « Aide » du site ou par e-mail à <a href="mailto:${MAIL}">${MAIL}</a>. Certaines données d’opérations doivent être conservées quand la loi l’exige.</p>
-<h3>7. Mineurs</h3>
-<p>OROLADO est réservé aux personnes de 18 ans et plus. Nous fermons tout compte ouvert par un mineur.</p>
-<h3>8. Sécurité</h3>
-<p>Nous protégeons vos données avec des mesures de sécurité adaptées.</p>
-<h3>9. Modifications</h3>
-<p>Cette politique peut évoluer.</p>`,
-  en: `<h1>Privacy Policy</h1>
-<p>This page explains what data OROLADO (orolado.com) uses, why, and what your rights are.</p>
-<h3>1. Data we use</h3>
-<ul>
-<li><b>Account</b>: e-mail address, display name, player number; if you sign in with Google, your Google e-mail address and name.</li>
-<li><b>Operations</b>: deposits, withdrawals, trades, bonuses and balances (demo and real).</li>
-<li><b>Withdrawals</b>: the details needed to pay you (for example a Mobile Money number or a crypto wallet address).</li>
-<li><b>Security</b>: IP address, device and browser type, sign-in dates, to protect accounts and prevent fraud.</li>
-<li><b>Identity check</b>: if we ask for an identity document before a withdrawal (see the Terms, Article 10), it is used only for that check.</li>
-</ul>
-<h3>2. Why</h3>
-<p>To create and manage your account, execute your trades, credit your deposits, pay your withdrawals, send you useful e-mails (codes, account information), protect the site against fraud and money laundering, and meet our legal obligations.</p>
-<h3>3. Who we share it with</h3>
-<p>Your data is <b>never sold</b>. It is only shared, when needed, with trusted partners that help us run the service (payments, e-mail delivery, security). Each one only receives what it needs.</p>
-<h3>4. Cookies and device storage</h3>
-<p>The site stores in your browser what it needs to work (sign-in, language, settings, recent history). Measurement tools may also be used to improve the service.</p>
-<h3>5. Retention</h3>
-<p>Data is kept while the account is active, then for the period required by law for financial operations.</p>
-<h3>6. Your rights</h3>
-<p>You can ask to access, correct or delete your data, or close your account, from the “Help” section of the site or by e-mail at <a href="mailto:${MAIL}">${MAIL}</a>. Some operation records must be kept when the law requires it.</p>
-<h3>7. Minors</h3>
-<p>OROLADO is only for people aged 18 and over. We close any account opened by a minor.</p>
-<h3>8. Security</h3>
-<p>We protect your data with appropriate security measures.</p>
-<h3>9. Changes</h3>
-<p>This policy may change.</p>`
-};
-const CONTACT = {
-  fr: `<h1>Contact</h1>
-<div class="box"><b>E-mail du support</b><br><a href="mailto:${MAIL}">${MAIL}</a></div>
-<div class="box"><b>Sur le site</b><br>Connectez-vous sur <a href="https://www.orolado.com/">orolado.com</a>, puis ouvrez la rubrique « Aide ».</div>
-<p>Nous répondons en français et en anglais, dans les plus brefs délais. Pour une question sur un dépôt ou un retrait, indiquez votre numéro de joueur (ORO-…) et la date de l’opération. Ne nous envoyez jamais votre mot de passe.</p>
-<p>Partenaires et prestataires de paiement : écrivez à la même adresse.</p>
-<a class="go" href="https://www.orolado.com/">${NAV.fr.back} →</a>`,
-  en: `<h1>Contact</h1>
-<div class="box"><b>Support e-mail</b><br><a href="mailto:${MAIL}">${MAIL}</a></div>
-<div class="box"><b>On the site</b><br>Sign in at <a href="https://www.orolado.com/">orolado.com</a>, then open the “Help” section.</div>
-<p>We reply in English and French as quickly as possible. For a question about a deposit or a withdrawal, please give your player number (ORO-…) and the date of the operation. Never send us your password.</p>
-<p>Partners and payment providers: please write to the same address.</p>
-<a class="go" href="https://www.orolado.com/">${NAV.en.back} →</a>`
-};
+// 4) Confidentialité (8 parties courtes) et Contact, dans les 11 langues — textes dans scripts/pages-legales-textes.js.
+// v2605 (propriétaire) : aucun nom de service, aucune date, rien de sensible ; tout renvoie au même e-mail.
+const TXT = require('./pages-legales-textes.js');
+const PRIV_KEEP = [0, 1, 2, 4, 8, 9, 11, 13]; // qui / infos / pourquoi / partage / sécurité / droits / mineurs / contact
+const mailLink = '<a href="mailto:' + MAIL + '">' + MAIL + '</a>';
+const fill = s => esc(s).split('{MAIL}').join(mailLink).split('{SITE}').join('<a href="https://www.orolado.com/">orolado.com</a>');
+const PRIVACY = {}, CONTACT = {};
+for (const l of Object.keys(TXT.PRIVACY)) {
+  const P = TXT.PRIVACY[l];
+  let h = '<h1>' + esc(P.title) + '</h1>\n<p>' + esc(P.intro) + '</p>\n';
+  PRIV_KEEP.forEach((k, i) => {
+    const sec = P.s[k];
+    h += '<h3>' + esc((i + 1) + '. ' + sec[0].replace(/^\d+\.\s*/, '')) + '</h3>\n<p>' + fill(sec[1]) + '</p>\n';
+  });
+  PRIVACY[l] = h;
+}
+for (const l of Object.keys(TXT.CONTACT)) {
+  const C = TXT.CONTACT[l];
+  let h = '<h1>' + esc(C.title) + '</h1>\n';
+  h += '<div class="box"><b>' + esc(C.mailT) + '</b><br>' + mailLink + '</div>\n';
+  h += '<div class="box"><b>' + esc(C.siteT) + '</b><br>' + fill(C.site) + '</div>\n';
+  C.p.forEach(x => { h += '<p>' + fill(x) + '</p>\n'; });
+  h += '<a class="go" href="https://www.orolado.com/">' + esc(C.back) + ' →</a>';
+  CONTACT[l] = h;
+}
 
 const T = loadTerms();
 const termLangs = Object.keys(T);
@@ -204,8 +169,8 @@ const render2 = (DATA) => `var DATA=${JSON.stringify(DATA)};
 const termData = {}; termLangs.forEach(l => termData[l] = termsHtml(T, l));
 const out = [
   { file: 'conditions', title: 'OROLADO — Terms of Use & Risks', desc: 'OROLADO terms of use: synthetic indices trading, deposits, withdrawals, bonuses, risks and responsible gaming.', body: termData.en, langs: termLangs, script: render2(termData) },
-  { file: 'confidentialite', title: 'OROLADO — Privacy Policy', desc: 'How OROLADO uses and protects your personal data.', body: PRIVACY.en, langs: ['en', 'fr'], script: render2(PRIVACY) },
-  { file: 'contact', title: 'OROLADO — Contact', desc: 'Contact OROLADO support: ' + MAIL, body: CONTACT.en, langs: ['en', 'fr'], script: render2(CONTACT) }
+  { file: 'confidentialite', title: 'OROLADO — Privacy Policy', desc: 'How OROLADO uses and protects your personal data.', body: PRIVACY.en, langs: termLangs, script: render2(PRIVACY) },
+  { file: 'contact', title: 'OROLADO — Contact', desc: 'Contact OROLADO support: ' + MAIL, body: CONTACT.en, langs: termLangs, script: render2(CONTACT) }
 ];
 for (const p of out) {
   const dir = path.join(root, p.file); fs.mkdirSync(dir, { recursive: true });

@@ -7600,6 +7600,22 @@
       $('btnOpenTerms').addEventListener('pointerdown', function (e) { e.stopPropagation(); });
     }
     if ($('btnHelpTerms')) bindAndroidTap($('btnHelpTerms'), openTerms);
+    // v2605 — « Confidentialité » (Aide) : la page publique dans la langue du joueur, dans un onglet à part
+    // (le jeu reste ouvert derrière).
+    function openPrivacy(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      var lg = (D6.I18N && D6.I18N.lang) || 'fr';
+      var url = '/confidentialite/?lang=' + encodeURIComponent(lg);
+      var w = null;
+      try { w = window.open(url, '_blank'); } catch (eP) { w = null; }
+      if (!w) location.href = url;
+    }
+    if ($('btnHelpPrivacy')) bindAndroidTap($('btnHelpPrivacy'), openPrivacy);
+    if ($('btnOpenPrivacy')) {
+      // Dans la case « 18 ans » : ouvrir la page sans cocher / décocher la case.
+      $('btnOpenPrivacy').addEventListener('click', openPrivacy);
+      $('btnOpenPrivacy').addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+    }
     if ($('closeTerms')) bindAndroidTap($('closeTerms'), function () { closeModal('termsModal'); });
     // v2602 (propriétaire) — fenêtre des Conditions ouverte : l'adresse du navigateur devient /conditions/ (la vraie page
     // publique, à copier et envoyer) ; fermée, l'adresse d'avant revient. Rien d'autre ne change (même fenêtre).
