@@ -573,6 +573,7 @@ function admin_method_label(string $op): string {
     'paypal' => 'PayPal', 'bank' => 'Banque', 'card' => 'Carte',
     'usdt' => 'USDT', 'btc' => 'BTC', 'eth' => 'ETH', 'trx' => 'TRX',
     'sol' => 'SOL', 'bnb' => 'BNB', 'ltc' => 'LTC', 'doge' => 'DOGE',
+    'usdc' => 'USDC', 'ada' => 'ADA', 'avax' => 'AVAX', 'matic' => 'POL (MATIC)',
     'pix' => 'PIX', 'gcash' => 'GCash', 'upi' => 'UPI', 'stcpay' => 'STCpay',
   ];
   return $map[$k] ?? $op;
@@ -790,7 +791,7 @@ function admin_stat_keep_deposit_id(string $id): bool {
 
 function admin_dep_channel(string $op): string {
   $op = strtolower(trim($op));
-  if (in_array($op, ['oxapay', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'crypto'], true)) return 'Crypto';
+  if (in_array($op, ['oxapay', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'usdc', 'ada', 'avax', 'matic', 'crypto'], true)) return 'Crypto';
   if (in_array($op, ['flutterwave', 'flw', 'card', 'card_flw'], true)) return 'Carte';
   if ($op === 'admin') return 'Crédit admin';
   if ($op === 'refund') return 'Remboursement';

@@ -6111,7 +6111,7 @@
   var wdOtpPending = false;
   var wdOtpTimer = null;
   var wdOtpLeft = 0;
-  var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1 };
+  var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1, usdc: 1, ada: 1, avax: 1, matic: 1 };
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
     nequi: 1, gcash: 1, stcpay: 1, papara: 1, mercadopago: 1
@@ -6119,6 +6119,7 @@
   var WD_EMAIL = { paypal: 1, skrill: 1, neteller: 1 };
   var WD_NAMES = {
     usdt: 'USDT TRC-20', trx: 'TRX', sol: 'SOL', bnb: 'Binance Pay', btc: 'BTC', eth: 'ETH',
+    ltc: 'LTC', doge: 'DOGE', usdc: 'USDC', ada: 'ADA', avax: 'AVAX', matic: 'POL (MATIC)',
     opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange', mtn: 'MTN',
     mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
     nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
@@ -6565,7 +6566,7 @@
     if (k.indexOf('airtel') >= 0) return 'Airtel';
     if (k.indexOf('paypal') >= 0) return 'PayPal';
     if (k === 'bank' || k.indexOf('virement') >= 0) return t('wdMethodBank');
-    if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0 || k.indexOf('eth') >= 0 || k.indexOf('sol') >= 0 || k.indexOf('trx') >= 0 || k.indexOf('bnb') >= 0 || k.indexOf('ltc') >= 0 || k.indexOf('doge') >= 0 || k.indexOf('oxapay') >= 0 || k.indexOf('usdt') >= 0) return 'Crypto';
+    if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0 || k.indexOf('eth') >= 0 || k.indexOf('sol') >= 0 || k.indexOf('trx') >= 0 || k.indexOf('bnb') >= 0 || k.indexOf('ltc') >= 0 || k.indexOf('doge') >= 0 || k.indexOf('usdc') >= 0 || k === 'ada' || k.indexOf('avax') >= 0 || k.indexOf('matic') >= 0 || k.indexOf('oxapay') >= 0 || k.indexOf('usdt') >= 0) return 'Crypto';
     if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return t('wdMethodCard');
     // v2518 — noms propres des moyens de retrait (avant : « opay », « palmpay », « mercadopago »… en minuscules).
     var NAMES = { opay: 'OPay', palmpay: 'PalmPay', pix: 'PIX', mercadopago: 'Mercado Pago', nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara', payeer: 'Payeer', perfectmoney: 'Perfect Money', skrill: 'Skrill', neteller: 'Neteller', revolut: 'Revolut', bnb: 'Binance Pay' };

@@ -8995,3 +8995,7 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo:is(.pl-vi
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om{flex:0 0 100%!important;width:100%!important;max-width:100%!important;height:32px!important;font-size:14.5px!important;letter-spacing:.01em!important;gap:8px!important;padding:0 10px!important;border-radius:9px!important;margin-top:2px}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{width:16px!important;height:16px!important;border-radius:2px}
 @media (max-width:359px){html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om{font-size:13px!important;gap:6px!important;letter-spacing:0!important}}
+/* v2591 — Retrait : la case « Carte bancaire » était coupée (« Carte banc ») sur téléphone, les logos VISA /
+   Mastercard prenant la place du texte → logos au-dessus, texte en dessous (toujours entier). */
+html body #withdrawModal .wd-card[data-wd="card"]{flex-direction:column!important;justify-content:center!important;gap:3px!important;text-align:center}
+html body #withdrawModal .wd-card[data-wd="card"] > span[data-i18n]{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.1}
