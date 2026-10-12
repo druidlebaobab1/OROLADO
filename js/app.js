@@ -7601,6 +7601,37 @@
     }
     if ($('btnHelpTerms')) bindAndroidTap($('btnHelpTerms'), openTerms);
     if ($('closeTerms')) bindAndroidTap($('closeTerms'), function () { closeModal('termsModal'); });
+    // v2602 (propriétaire) — fenêtre des Conditions ouverte : l'adresse du navigateur devient /conditions/ (la vraie page
+    // publique, à copier et envoyer) ; fermée, l'adresse d'avant revient. Rien d'autre ne change (même fenêtre).
+    (function termsUrl() {
+      var tm = $('termsModal');
+      if (!tm || !window.history || !history.replaceState || !window.MutationObserver) return;
+      var before = null, home = null;
+      function isOpen() { return tm.classList.contains('active') && tm.style.getPropertyValue('display') !== 'none'; }
+      function putBack() {
+        // Le bouton « retour » du téléphone (js/back.js) ajoute / retire sa propre étape d'historique : on remet
+        // l'adresse d'avant sur l'étape où l'on se retrouve, à plusieurs moments (juste après et après son retour).
+        if (isOpen() || !home) return;
+        try { if (location.pathname === '/conditions/') history.replaceState(history.state, '', home); } catch (eB) { /* ignore */ }
+      }
+      function sync() {
+        var open = isOpen();
+        try {
+          if (open && before === null) {
+            before = location.pathname + location.search + location.hash;
+            home = before;
+            history.replaceState(history.state, '', '/conditions/');
+          } else if (!open && before !== null) {
+            before = null;
+            putBack();
+            setTimeout(putBack, 120);
+            setTimeout(putBack, 450);
+          }
+        } catch (eU) { /* ignore */ }
+      }
+      window.addEventListener('popstate', function () { setTimeout(putBack, 0); });
+      new MutationObserver(sync).observe(tm, { attributes: true, attributeFilter: ['class', 'style'] });
+    })();
     bindAndroidTap($('closeHistorySheet'), function () { closeModal('historySheet'); });
     $('btnOpenPass').addEventListener('click', function () {
       // Fermée par erreur alors qu'un code est en cours (moins de 9 min) : on reprend à la même
