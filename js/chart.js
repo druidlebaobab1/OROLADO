@@ -1145,7 +1145,7 @@
   function drawStarDrift() {
     if (!driftStars) {
       var sd = 91, arr = [], i;
-      for (i = 0; i < 46; i++) {
+      for (i = 0; i < 28; i++) { // v2580 (propriétaire) : 46 → 28, un peu moins d'étoiles
         sd = (sd * 16807) % 2147483647; var rx = (sd - 1) / 2147483646;
         sd = (sd * 16807) % 2147483647; var ry = (sd - 1) / 2147483646;
         sd = (sd * 16807) % 2147483647; var rs = (sd - 1) / 2147483646;
@@ -1198,7 +1198,7 @@
     // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
     var seed = 7;
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
-    var nStars = Math.round(cssW * cssH / 2400);
+    var nStars = Math.round(cssW * cssH / 3400); // v2580 (propriétaire) : ~30 % d'étoiles fixes en moins
     var k;
     for (k = 0; k < nStars; k++) {
       var sx = rnd() * cssW;
@@ -1432,8 +1432,12 @@
     }
     if (bgCanvas) {
       ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
-      try { drawGalaxy(); } catch (eGal) { galaxy = null; }
-      try { drawStarDrift(); } catch (eStar) { /* décor seulement */ }
+      // v2580 — mode léger (téléphone lent, enregistrement d'écran) : les petits logos et étoiles qui glissent
+      // ne sont plus dessinés (moins de travail à chaque image) ; le décor fixe reste.
+      if (!(D6.lite || fsSkip.heavy)) {
+        try { drawGalaxy(); } catch (eGal) { galaxy = null; }
+        try { drawStarDrift(); } catch (eStar) { /* décor seulement */ }
+      }
     } else {
       ctx.fillStyle = '#0B0E14';
       ctx.fillRect(0, 0, cssW, cssH);
@@ -2060,6 +2064,13 @@
           ctx.shadowColor = 'rgba(192,132,252,0.85)';
           ctx.shadowBlur = 12;
         }
+        // v2580 — mode léger : halo sans flou autour de chaque perle (le flou est coupé, BAAL paraissait éteint).
+        if (D6.lite || fsSkip.heavy) {
+          ctx.fillStyle = up ? 'rgba(192,132,252,0.20)' : 'rgba(124,58,237,0.20)';
+          ctx.beginPath();
+          ctx.arc(x, y, r * (i === last ? 2.6 : 1.8), 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.fillStyle = up ? '#C084FC' : '#7C3AED';
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -2429,11 +2440,11 @@
     ctx.strokeStyle = color;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.globalAlpha = 0.14;
-    ctx.lineWidth = width + 9;
+    ctx.globalAlpha = 0.18; // v2580 (propriétaire) : lueur un peu plus forte
+    ctx.lineWidth = width + 10;
     ctx.stroke();
-    ctx.globalAlpha = 0.26;
-    ctx.lineWidth = width + 4;
+    ctx.globalAlpha = 0.34;
+    ctx.lineWidth = width + 4.5;
     ctx.stroke();
     ctx.restore();
   }
