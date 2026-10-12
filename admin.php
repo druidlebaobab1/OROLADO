@@ -2580,7 +2580,13 @@ document.getElementById('closeModal').onclick = () => document.getElementById('u
     load('');
   };
 })();
-document.getElementById('btnBack').onclick = () => { window.location.href = '/'; };
+// v2600 (propriétaire) : « Retour » sans recharger le jeu. Admin ouvert dans un onglet à part → on le ferme (le jeu est
+// resté ouvert derrière). Sinon, page précédente du site si possible, et en dernier recours l'accueil.
+document.getElementById('btnBack').onclick = () => {
+  try { if (window.opener && !window.opener.closed) { window.opener.focus(); window.close(); return; } } catch (e) { /* ignore */ }
+  try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (e) { /* ignore */ }
+  window.location.href = '/';
+};
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });

@@ -8235,7 +8235,11 @@
   function bindAdmin() {
     async function openAdmin() {
       if (!D6.Auth.isAdmin(user())) return;
-      window.location.href = '/admin.php';
+      // v2600 (propriétaire) : l'admin s'ouvre dans un NOUVEL onglet ; la page du jeu reste ouverte derrière (plus de
+      // rechargement complet au retour). Si le navigateur bloque l'onglet, on y va dans la même page comme avant.
+      var w = null;
+      try { w = window.open('/admin.php', '_blank'); } catch (eW) { w = null; }
+      if (!w) window.location.href = '/admin.php';
     }
     $('btnAdmin2').addEventListener('click', openAdmin);
     $('btnCloseAdmin').addEventListener('click', function () {
