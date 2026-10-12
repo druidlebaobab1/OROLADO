@@ -4737,7 +4737,7 @@
     '<i class="pl-logo pl-mpesa">M-PESA</i>' +
     '<i class="pl-logo pl-airtel">airtel<small>money</small></i>' +
     '<i class="pl-logo pl-telecel">telecel</i>' +
-    '<i class="pl-logo pl-om"><b></b>Orange Money</i>';
+    '<i class="pl-logo pl-om"><b>orange</b>Orange Money</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;

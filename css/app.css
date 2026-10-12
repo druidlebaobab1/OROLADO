@@ -8999,3 +8999,10 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{w
    Mastercard prenant la place du texte → logos au-dessus, texte en dessous (toujours entier). */
 html body #withdrawModal .wd-card[data-wd="card"]{flex-direction:column!important;justify-content:center!important;gap:3px!important;text-align:center}
 html body #withdrawModal .wd-card[data-wd="card"] > span[data-i18n]{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.1}
+/* v2592 — Retrait : la flèche « retour » s'affichait aussi sur le 1er écran (à côté de la croix) : une règle
+   « display:grid !important » (v2453) passait devant « .hidden ». Elle n'apparaît plus que sur le formulaire. */
+html body #withdrawModal .wd-back-ico.hidden{display:none!important}
+/* v2592 (propriétaire) — logo Orange Money de Recharger : le carré orange porte le mot « orange » (comme le vrai logo). */
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{width:26px!important;height:26px!important;border-radius:2px!important;
+  background:#FF7900!important;color:#fff!important;font:800 6.8px/1 Arial,Helvetica,sans-serif!important;letter-spacing:-.01em!important;
+  display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;padding:0 0 3px 2px!important;box-sizing:border-box!important;text-transform:lowercase}
