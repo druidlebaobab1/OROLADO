@@ -14,12 +14,22 @@ const url = l => 'https://orolado.online/decouvrir/' + (l === 'en' ? '' : l + '/
 const rep = (h, a, b) => h.split(a).join(b);
 let alt = order.map(l => `  <link rel="alternate" hreflang="${l}" href="${url(l)}">`).join('\n') + `\n  <link rel="alternate" hreflang="x-default" href="${url('en')}">`;
 const css = `    /* Sélecteur de langue */
-    .lang{display:inline-flex;align-items:center;gap:4px;margin-left:auto;border:1px solid var(--line);border-radius:10px;padding:0 4px 0 8px;background:rgba(255,255,255,.05);color:var(--txt);font-size:14px}
-    .lang select{background:transparent;color:var(--txt);border:0;font:700 13px "Plus Jakarta Sans",system-ui,sans-serif;padding:8px 2px;max-width:112px;outline:none}
+    .lang{position:relative;display:inline-flex;align-items:center;gap:4px;margin-left:auto;border:1px solid var(--line);border-radius:10px;padding:0 4px 0 8px;background:rgba(255,255,255,.05);color:var(--txt);font-size:14px;flex:0 0 auto}
+    .lang select{background:transparent;color:var(--txt);border:0;font:700 13px "Plus Jakarta Sans",system-ui,sans-serif;padding:8px 2px;max-width:130px;outline:none}
     .lang option{color:#111}
+    .lang .code{display:none;font:800 13px "Plus Jakarta Sans",system-ui,sans-serif;padding:9px 0;white-space:nowrap}
     [dir=rtl] .tape,[dir=rtl] .live svg,[dir=rtl] .tk .p{direction:ltr}
     [dir=rtl] .lang{margin-left:0;margin-right:auto}
-    @media (max-width:420px){ .lang select{max-width:78px} }
+    /* Téléphone : sélecteur compact « 🌐 EN ▾ » (la vraie liste s'ouvre au toucher), le nom OROLADO garde toute sa place */
+    @media (max-width:600px){
+      .nav{gap:8px}
+      .brand{flex:0 0 auto}
+      .lang{padding:0 8px;gap:5px}
+      .lang .code{display:inline}
+      .lang select{position:absolute;inset:0;width:100%;max-width:none;opacity:0;cursor:pointer}
+    }
+    @media (max-width:400px){ .nav .btn .arrow{display:none} .nav .btn{padding:11px 12px} .brand{gap:6px} .brand img{width:34px;height:34px;flex-basis:34px} }
+    @media (max-width:340px){ .brand b{font-size:.92rem;letter-spacing:.06em} }
 `;
 for (const l of order) {
   const k = langs.indexOf(l);
@@ -34,7 +44,7 @@ for (const l of order) {
   if (!h.includes("    @media (max-width:860px){\n      .hero{")) throw new Error('CSS non posé ' + l);
   h = rep(h, "    @media (max-width:860px){\n      .hero{", css + "    @media (max-width:860px){\n      .hero{");
   const opts = order.map(o => `<option value="${url(o)}"${o === l ? ' selected' : ''}>${names[o]}</option>`).join('');
-  const sel = `<label class="lang" title="Language"><span aria-hidden="true">🌐</span><select aria-label="Language" onchange="try{localStorage.setItem('oroLangPick',this.value)}catch(e){}location.href=this.value">${opts}</select></label>\n    `;
+  const sel = `<label class="lang" title="Language"><span aria-hidden="true">🌐</span><span class="code" aria-hidden="true">${l.toUpperCase()} ▾</span><select aria-label="Language" onchange="try{localStorage.setItem('oroLangPick',this.value)}catch(e){}location.href=this.value">${opts}</select></label>\n    `;
   const re = /(<header>\s*<div class="wrap nav">\s*<a class="brand"[^\n]*\n\s*)/;
   if (!re.test(h)) throw new Error('Sélecteur non posé ' + l);
   h = h.replace(re, (m) => m + sel);
