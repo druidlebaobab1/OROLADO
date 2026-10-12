@@ -9007,7 +9007,7 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{w
   background:#FF7900!important;color:#fff!important;font:800 6.8px/1 Arial,Helvetica,sans-serif!important;letter-spacing:-.01em!important;
   display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;padding:0 0 3px 2px!important;box-sizing:border-box!important;text-transform:lowercase}
 /* v2593 (propriétaire) — « orange » centré dans le carré, un peu plus petit, jamais en dehors. */
-html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{align-items:center!important;justify-content:center!important;padding:0!important;font-size:6.6px!important;letter-spacing:-.03em!important;overflow:hidden!important;white-space:nowrap!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-om b{align-items:flex-end!important;justify-content:flex-start!important;padding:0 0 3px 1.5px!important;font-size:6.6px!important;letter-spacing:-.03em!important;overflow:hidden!important;white-space:nowrap!important}
 /* v2595 (propriétaire) — Retrait : plus d'apparition « en cascade » (1re colonne, puis 2e, puis 3e, en glissant) :
    toutes les cases s'affichent d'un coup à l'ouverture. */
 html body #withdrawModal#withdrawModal .wd-card,html body #withdrawModal#withdrawModal .wd-card:nth-child(n){animation:none!important;opacity:1!important}
