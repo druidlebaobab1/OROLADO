@@ -1945,6 +1945,13 @@
         ctx.shadowColor = opts.apexAiry ? 'rgba(192,132,252,0.7)' : (up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)');
         ctx.shadowBlur = 8;
       }
+      // v2581 — mode léger : halo sans flou derrière chaque bougie (le flou est coupé, les bougies paraissaient éteintes).
+      if (liteGlow()) {
+        ctx.globalAlpha = i === candles.length - 1 ? 0.34 : 0.2;
+        ctx.fillStyle = col;
+        ctx.fillRect(x - cw / 2 - 2.5, y1 - 2.5, cw + 5, bh + 5);
+        ctx.globalAlpha = 1;
+      }
       if (opts.titanWhite) {
         // Halo sans flou (léger pour les téléphones) + corps plein ; vrai flou
         // lumineux seulement sur la bougie en cours.
@@ -2111,6 +2118,10 @@
           ctx.shadowColor = up ? 'rgba(255,159,67,0.9)' : 'rgba(255,59,48,0.9)';
           ctx.shadowBlur = 12;
         }
+        if (liteGlow()) { // v2581 — braise lumineuse sans flou en haut de chaque colonne (mode léger)
+          ctx.fillStyle = up ? 'rgba(255,181,112,0.35)' : 'rgba(255,90,78,0.35)';
+          ctx.fillRect(x - cwE / 2 - 2, top - 3.5, cwE + 4, 7);
+        }
         ctx.fillStyle = up ? '#FFB570' : '#FF5A4E';
         ctx.fillRect(x - cwE / 2, top - 1, cwE, 2.5);
         ctx.shadowBlur = 0;
@@ -2179,6 +2190,12 @@
         ctx.lineWidth = (isLast ? 7 : 4.5) * sizeK();
         bolt(x, yS, yE, flip);
         ctx.stroke();
+        if (isLast && liteGlow()) { // v2581 — l'éclair en cours garde son éclat sans flou (mode léger)
+          ctx.globalAlpha = 0.25;
+          ctx.lineWidth = 13 * sizeK();
+          ctx.stroke();
+          ctx.globalAlpha = flick;
+        }
         ctx.strokeStyle = up ? '#FFFFFF' : '#FF1744';
         ctx.lineWidth = (isLast ? 2.6 : 2) * sizeK();
         if (isLast) {
@@ -2210,6 +2227,15 @@
         var apex = toY(c.c);
         var foot = apex + pH;
         if (apex < pad.t || foot > pad.t + h + pH) continue;
+        if (liteGlow()) { // v2581 — halo doré sans flou (mode léger)
+          ctx.fillStyle = up ? 'rgba(255,213,79,0.22)' : 'rgba(205,150,60,0.16)';
+          ctx.beginPath();
+          ctx.moveTo(x, apex - 3);
+          ctx.lineTo(x - pB / 2 - 3, foot + 1.5);
+          ctx.lineTo(x + pB / 2 + 3, foot + 1.5);
+          ctx.closePath();
+          ctx.fill();
+        }
         ctx.fillStyle = up ? '#FFD54F' : '#A87B2C';
         ctx.beginPath();
         ctx.moveTo(x, apex);
@@ -2269,6 +2295,16 @@
           ctx.shadowColor = up ? 'rgba(0,229,255,0.9)' : 'rgba(41,121,255,0.9)';
           ctx.shadowBlur = 12;
         }
+        if (liteGlow()) { // v2581 — halo cyan / bleu sans flou (mode léger)
+          ctx.fillStyle = up ? 'rgba(0,229,255,0.22)' : 'rgba(41,121,255,0.2)';
+          ctx.beginPath();
+          ctx.moveTo(x, yT - 3);
+          ctx.lineTo(x + halfW + 3, yc);
+          ctx.lineTo(x, yB + 3);
+          ctx.lineTo(x - halfW - 3, yc);
+          ctx.closePath();
+          ctx.fill();
+        }
         ctx.fillStyle = up ? 'rgba(0,229,255,0.85)' : 'rgba(21,101,192,0.95)';
         ctx.beginPath();
         ctx.moveTo(x, yT);
@@ -2318,6 +2354,13 @@
         ctx.lineTo(x, toY(c.o));
         ctx.moveTo(x, toY(c.c));
         ctx.lineTo(x + tick, toY(c.c));
+        if (liteGlow()) { // v2581 — halo rouge sans flou (mode léger), même tracé plus large et transparent
+          ctx.globalAlpha = 0.24;
+          ctx.lineWidth = 7;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          ctx.lineWidth = 2.6;
+        }
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
@@ -2434,8 +2477,9 @@
   // v2579 — quand le flou (shadowBlur) est coupé (mode léger / téléphone qui rame), la ligne des prix perdait toute sa lueur
   // et paraissait « morte ». Fausse lueur presque gratuite : le même tracé (chemin déjà posé) repassé 2 fois, plus large et
   // transparent, juste sous la ligne. Dessin seulement : prix et trades inchangés. Téléphone qui suit : rien ne change.
+  function liteGlow() { return !!(D6.lite || fsSkip.heavy); }
   function fakeGlow(color, width) {
-    if (!(D6.lite || fsSkip.heavy)) return;
+    if (!liteGlow()) return;
     ctx.save();
     ctx.strokeStyle = color;
     ctx.lineJoin = 'round';
