@@ -7,18 +7,20 @@
    * 3) Appli installée ouverte : signalée une fois par jour (compteur Android / iPhone de l'admin).
    * Jamais au démarrage, jamais pendant un clic sur ACHETER / VENDRE, au plus 3 « Plus tard ».
    */
+  // v2608 (propriétaire) : texte qui donne envie + rassure ; après « Activer », on montre où appuyer.
+  // [titre, texte, ligne rassurante, Activer, Plus tard, activé, consigne « Autoriser »]
   var TXT = {
-    fr: ['Alertes OROLADO', 'Recevez les marchés en vogue et vos bonus directement sur votre téléphone.', 'Activer', 'Plus tard', 'Alertes activées ✓'],
-    en: ['OROLADO alerts', 'Get trending markets and your bonuses straight to your phone.', 'Turn on', 'Later', 'Alerts on ✓'],
-    es: ['Alertas OROLADO', 'Recibe los mercados en tendencia y tus bonos directamente en tu teléfono.', 'Activar', 'Más tarde', 'Alertas activadas ✓'],
-    pt: ['Alertas OROLADO', 'Receba os mercados em alta e seus bônus direto no seu celular.', 'Ativar', 'Mais tarde', 'Alertas ativados ✓'],
-    ar: ['تنبيهات OROLADO', 'استقبل الأسواق الرائجة ومكافآتك مباشرة على هاتفك.', 'تفعيل', 'لاحقًا', 'تم تفعيل التنبيهات ✓'],
-    tr: ['OROLADO bildirimleri', 'Trend piyasaları ve bonuslarınızı doğrudan telefonunuza alın.', 'Aç', 'Sonra', 'Bildirimler açık ✓'],
-    vi: ['Thông báo OROLADO', 'Nhận thị trường đang hot và tiền thưởng ngay trên điện thoại.', 'Bật', 'Để sau', 'Đã bật thông báo ✓'],
-    id: ['Notifikasi OROLADO', 'Dapatkan pasar yang sedang tren dan bonus Anda langsung di ponsel.', 'Aktifkan', 'Nanti', 'Notifikasi aktif ✓'],
-    ru: ['Уведомления OROLADO', 'Получайте популярные рынки и бонусы прямо на телефон.', 'Включить', 'Позже', 'Уведомления включены ✓'],
-    de: ['OROLADO-Benachrichtigungen', 'Erhalte Trend-Märkte und deine Boni direkt aufs Handy.', 'Aktivieren', 'Später', 'Benachrichtigungen an ✓'],
-    hi: ['OROLADO अलर्ट', 'ट्रेंडिंग मार्केट और अपने बोनस सीधे अपने फ़ोन पर पाएं।', 'चालू करें', 'बाद में', 'अलर्ट चालू ✓']
+    fr: ['Ne ratez plus les bons moments', 'Une alerte dès qu’un marché est en vogue, et vos bonus en direct sur votre téléphone.', 'Jamais de publicité · Arrêt à tout moment', 'Activer les alertes', 'Plus tard', 'Alertes activées ✓', 'Appuyez sur « Autoriser »'],
+    en: ['Never miss the right moment', 'An alert as soon as a market is trending, plus your bonuses, straight to your phone.', 'No ads ever · Turn off anytime', 'Turn on alerts', 'Later', 'Alerts on ✓', 'Tap “Allow”'],
+    es: ['No te pierdas los buenos momentos', 'Una alerta en cuanto un mercado está en tendencia, y tus bonos directo en tu teléfono.', 'Nunca publicidad · Desactiva cuando quieras', 'Activar alertas', 'Más tarde', 'Alertas activadas ✓', 'Pulsa «Permitir»'],
+    pt: ['Não perca os bons momentos', 'Um alerta assim que um mercado estiver em alta, e seus bônus direto no celular.', 'Nunca publicidade · Desative quando quiser', 'Ativar alertas', 'Mais tarde', 'Alertas ativados ✓', 'Toque em “Permitir”'],
+    ar: ['لا تفوّت اللحظات المناسبة', 'تنبيه فور أن يصبح سوق رائجًا، ومكافآتك مباشرة على هاتفك.', 'بدون إعلانات أبدًا · يمكنك الإيقاف في أي وقت', 'تفعيل التنبيهات', 'لاحقًا', 'تم تفعيل التنبيهات ✓', 'اضغط على «السماح»'],
+    tr: ['Doğru anı kaçırmayın', 'Bir piyasa trend olduğunda anında uyarı ve bonuslarınız doğrudan telefonunuzda.', 'Asla reklam yok · İstediğiniz zaman kapatın', 'Uyarıları aç', 'Sonra', 'Uyarılar açık ✓', '“İzin Ver”e dokunun'],
+    vi: ['Đừng bỏ lỡ thời điểm vàng', 'Nhận cảnh báo ngay khi một thị trường đang hot, cùng tiền thưởng ngay trên điện thoại.', 'Không bao giờ quảng cáo · Tắt bất cứ lúc nào', 'Bật cảnh báo', 'Để sau', 'Đã bật cảnh báo ✓', 'Nhấn “Cho phép”'],
+    id: ['Jangan lewatkan momen terbaik', 'Peringatan saat pasar sedang tren, dan bonus Anda langsung di ponsel.', 'Tanpa iklan · Matikan kapan saja', 'Aktifkan peringatan', 'Nanti', 'Peringatan aktif ✓', 'Ketuk “Izinkan”'],
+    ru: ['Не упустите удачный момент', 'Уведомление, как только рынок в тренде, и ваши бонусы прямо на телефон.', 'Никакой рекламы · Отключить можно в любой момент', 'Включить уведомления', 'Позже', 'Уведомления включены ✓', 'Нажмите «Разрешить»'],
+    de: ['Verpasse keinen guten Moment', 'Eine Benachrichtigung, sobald ein Markt im Trend ist, und deine Boni direkt aufs Handy.', 'Niemals Werbung · Jederzeit abschaltbar', 'Benachrichtigungen an', 'Später', 'Benachrichtigungen an ✓', 'Tippe auf „Erlauben“'],
+    hi: ['सही मौका कभी न चूकें', 'जैसे ही कोई मार्केट ट्रेंड में हो, अलर्ट पाएं, और अपने बोनस सीधे फ़ोन पर।', 'कभी कोई विज्ञापन नहीं · कभी भी बंद करें', 'अलर्ट चालू करें', 'बाद में', 'अलर्ट चालू ✓', '“अनुमति दें” पर टैप करें']
   };
   var reg = null;
   var asked = false;
@@ -120,12 +122,13 @@
     card.setAttribute('dir', lang() === 'ar' ? 'rtl' : 'ltr');
     card.innerHTML =
       '<div class="push-ask-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2z"/></svg></div>' +
-      '<div class="push-ask-txt"><b></b><span></span></div>' +
+      '<div class="push-ask-txt"><b></b><span></span><em></em></div>' +
       '<div class="push-ask-btns"><button type="button" class="push-ask-no"></button><button type="button" class="push-ask-yes"></button></div>';
     card.querySelector('b').textContent = txt(0);
     card.querySelector('span').textContent = txt(1);
-    card.querySelector('.push-ask-yes').textContent = txt(2);
-    card.querySelector('.push-ask-no').textContent = txt(3);
+    card.querySelector('em').textContent = txt(2);
+    card.querySelector('.push-ask-yes').textContent = txt(3);
+    card.querySelector('.push-ask-no').textContent = txt(4);
     card.querySelector('.push-ask-no').addEventListener('click', function () {
       ls('oro_push_later', Date.now());
       ls('oro_push_later_n', (parseInt(ls('oro_push_later_n') || '0', 10) || 0) + 1);
@@ -134,6 +137,11 @@
     card.querySelector('.push-ask-yes').addEventListener('click', function () {
       var p;
       try { p = Notification.requestPermission(); } catch (e) { p = null; }
+      // Pendant que la fenêtre du téléphone est ouverte : on montre où appuyer.
+      card.classList.add('wait');
+      card.querySelector('b').textContent = txt(6);
+      card.querySelector('span').textContent = '';
+      card.querySelector('em').textContent = txt(2);
       Promise.resolve(p).then(function (res) {
         res = res || Notification.permission;
         if (res !== 'granted') {
@@ -142,9 +150,11 @@
         }
         return subscribe().then(function (j) {
           if (j && j.ok) {
+            card.classList.remove('wait');
             card.classList.add('done');
-            card.querySelector('b').textContent = txt(4);
+            card.querySelector('b').textContent = txt(5);
             card.querySelector('span').textContent = '';
+            card.querySelector('em').textContent = '';
             setTimeout(function () { hideCard(card); }, 1800);
           } else {
             hideCard(card);
@@ -159,11 +169,12 @@
     var reveal = function () { card.classList.add('on'); };
     requestAnimationFrame(function () { requestAnimationFrame(reveal); });
     setTimeout(reveal, 80); // si l'écran ne rafraîchit pas tout de suite
-    setTimeout(function () { if (card.parentNode && !card.classList.contains('done')) hideCard(card); }, 20000);
+    setTimeout(function () { if (card.parentNode && !card.classList.contains('done') && !card.classList.contains('wait')) hideCard(card); }, 20000);
   }
 
   function canAsk() {
-    if (!supported() || Notification.permission !== 'default') return false;
+    // v2608 (propriétaire) : seulement dans l'application installée (pas dans le navigateur).
+    if (!supported() || !isApp() || Notification.permission !== 'default') return false;
     if ((parseInt(ls('oro_push_later_n') || '0', 10) || 0) >= 3) return false;
     var later = parseInt(ls('oro_push_later') || '0', 10) || 0;
     return !later || Date.now() - later > 3 * 86400000;

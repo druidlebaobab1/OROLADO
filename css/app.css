@@ -9034,3 +9034,12 @@ html body .push-ask-no{background:transparent;border:1px solid rgba(203,213,225,
 html body .push-ask-yes{background:linear-gradient(145deg,#FCD34D,#F59E0B);border:0;color:#1A1203}
 html body .push-ask.done .push-ask-btns{display:none}
 html body .push-ask.done .push-ask-txt b{color:#34D399}
+
+/* v2608 — Carte Alertes : ligne rassurante (vert) + état « Appuyez sur Autoriser » (boutons cachés). */
+html body .push-ask-txt b{font-size:15px}
+html body .push-ask-txt em{font-style:normal;font-size:11.5px;font-weight:700;color:#34D399;margin-top:3px}
+html body .push-ask-txt em:empty{display:none}
+html body .push-ask-txt em::before{content:"✓ "}
+html body .push-ask.wait .push-ask-btns{display:none}
+html body .push-ask.wait .push-ask-txt b{font-size:16px;color:#FCD34D}
+html body .push-ask-yes{min-width:46%}
