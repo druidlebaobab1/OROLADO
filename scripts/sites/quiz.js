@@ -89,7 +89,7 @@ function body(T) {
 
 const script = `
 (function(){
-var $=function(i){return document.getElementById(i)},Q=T.questions,N=Q.length,i=0,score=0,order=[];
+var $=function(i){return document.getElementById(i)},ALL=T.questions,Q=[],N=15,i=0,score=0;
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)})}
 function shuffle(a){for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),t=a[k];a[k]=a[j];a[j]=t}return a}
 function ask(){var q=Q[i];$('qn').textContent=T.q+' '+(i+1)+'/'+N;$('qs').textContent=T.scoreL+' '+score;$('qb').style.width=(i/N*100)+'%';$('qt').textContent=q.q;
@@ -100,7 +100,8 @@ var r=$('qr');r.textContent=ok?T.correct:T.incorrect;r.className=ok?'ok':'ko';$(
 var n=$('qnext');n.textContent=i<N-1?T.next:T.seeResult;n.style.display='flex';}
 $('qnext').addEventListener('click',function(){i++;if(i<N){ask();$('s-q').scrollTop=0}else end()});
 function end(){$('qb').style.width='100%';$('es').textContent=score+'/'+N;var lv=score>=12?2:score>=8?1:0;$('el').textContent=T.levels[lv];$('em').textContent=T.msgs[lv];show('s-end')}
-function start(){i=0;score=0;show('s-q');ask()}
+// Chaque partie : 15 questions tirées au hasard parmi toute la banque (jamais deux fois le même quiz).
+function start(){Q=shuffle(ALL.slice()).slice(0,N);i=0;score=0;show('s-q');ask()}
 $('go').addEventListener('click',start);$('again').addEventListener('click',start);
 })();
 `;
