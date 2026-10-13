@@ -3217,6 +3217,10 @@ function maketou_extract_payment(array $payload): array {
     if ($sellId === '' && (str_contains($k, 'sellid') || $k === 'sell_id' || str_contains($k, 'sell_id'))) {
       if ($v !== '') $sellId = $v;
     }
+    // v2621 : le panier Maketou peut aussi s'appeler cartId / cart_id / cart.id.
+    if ($sellId === '' && (str_contains($k, 'cartid') || str_contains($k, 'cart_id') || $k === 'cart.id' || str_ends_with($k, '.cart.id'))) {
+      if (maketou_looks_like_ref($v)) $sellId = $v;
+    }
     if ($phone === '' && (str_contains($k, 'phone') || str_contains($k, 'whatsapp') || str_contains($k, 'msisdn'))) {
       $digits = preg_replace('/\D/', '', $v) ?? '';
       if (strlen($digits) >= 8) $phone = $digits;
@@ -3318,6 +3322,11 @@ function maketou_looks_like_ref($value): bool {
 
 function maketou_http_get(string $url, string $key, ?int &$status = null): ?array {
   $status = 0;
+  // Tests en ligne de commande seulement (scripts/test-maketou.php) : faux Maketou.
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAKETOU']) && is_callable($GLOBALS['OROLADO_FAKE_MAKETOU'])) {
+    [$status, $json] = ($GLOBALS['OROLADO_FAKE_MAKETOU'])($url);
+    return ($status >= 200 && $status < 300 && is_array($json)) ? $json : null;
+  }
   if (!function_exists('curl_init')) {
     maketou_log('maketou_api_call', ['url' => $url, 'status' => 0, 'error' => 'curl indisponible']);
     return null;
@@ -3437,12 +3446,24 @@ function maketou_reason_is_blocking(string $reason): bool {
 /** Retrouve le dépôt local visé par un webhook (ref, alias e-mail, sellId ou extId). */
 function orolado_find_deposit_by_hit(array $hit): ?array {
   $db = load_db(orolado_data_file());
-  foreach (($db['deposits'] ?? []) as $d) {
-    $matchRef = ($hit['ref'] ?? '') !== '' && (($d['id'] ?? '') === $hit['ref'] || ($d['ref'] ?? '') === $hit['ref']);
-    $matchMail = ($hit['email'] ?? '') !== '' && strtolower((string) ($d['aliasEmail'] ?? '')) === strtolower((string) $hit['email']);
-    $matchExt = ($hit['extId'] ?? '') !== '' && (($d['extId'] ?? '') === $hit['extId']);
-    $matchSell = ($hit['sellId'] ?? '') !== '' && (($d['sellId'] ?? '') === $hit['sellId']);
-    if ($matchRef || $matchMail || $matchExt || $matchSell) return $d;
+  $deps = $db['deposits'] ?? [];
+  if (!is_array($deps)) return null;
+  // v2621 : ordre de confiance — notre référence, puis le panier Maketou, puis l'e-mail unique du dépôt,
+  // puis l'identifiant externe (avant : le premier dépôt qui collait à N'IMPORTE lequel des quatre).
+  $ref = (string) ($hit['ref'] ?? '');
+  $sell = (string) ($hit['sellId'] ?? '');
+  $mail = strtolower((string) ($hit['email'] ?? ''));
+  $ext = (string) ($hit['extId'] ?? '');
+  $tests = [
+    static fn($d) => $ref !== '' && (($d['id'] ?? '') === $ref || ($d['ref'] ?? '') === $ref),
+    static fn($d) => $sell !== '' && (($d['sellId'] ?? '') === $sell || ($d['cartId'] ?? '') === $sell),
+    static fn($d) => $mail !== '' && strtolower((string) ($d['aliasEmail'] ?? '')) === $mail,
+    static fn($d) => $ext !== '' && (($d['extId'] ?? '') === $ext || ($d['sellId'] ?? '') === $ext || ($d['cartId'] ?? '') === $ext),
+  ];
+  foreach ($tests as $test) {
+    foreach ($deps as $d) {
+      if (is_array($d) && $test($d)) return $d;
+    }
   }
   return null;
 }
@@ -4116,7 +4137,8 @@ function orolado_min_deposit_fcfa(?array $me): int {
 
 /** Seuil dépôt UI / vault (USD). Le crédit utilise le montant réellement reçu. */
 function orolado_min_deposit(?array $me): float {
-  return 5.0;
+  // v2621 (propriétaire) : 3 $ comme affiché sur le site (avant 5 $ : un dépôt Mobile Money de 3 $ était refusé).
+  return 3.0;
 }
 
 /**
@@ -4149,7 +4171,7 @@ function orolado_initiate_deposit(array $req): array {
   $minUsd = orolado_min_deposit($me);
   $minFcfa = orolado_min_deposit_fcfa($me);
   if ($amountUsd + 0.0001 < $minUsd && $amountFcfa < $minFcfa) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $5.00.'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.'];
   }
   if ($amountFcfa < 1 || $amountFcfa > 5000000) {
     return ['ok' => false, 'server' => true, 'reason' => 'Montant invalide'];
@@ -4484,6 +4506,49 @@ function orolado_confirm_deposit(array $req): array {
   return $out;
 }
 
+/**
+ * v2621 — Rattrapage Mobile Money : un joueur qui a payé chez Maketou mais n'est pas revenu sur le site (page fermée,
+ * réseau coupé) et dont le webhook n'est pas arrivé est crédité quand même. Appelé par le téléphone toutes les 2 min
+ * (avec oxapayRecheck) : on redemande à Maketou l'état de SES dépôts Mobile Money en attente (48 h, 4 au plus).
+ * Crédit seulement si Maketou dit « payé » (même règle que orolado_confirm_deposit), une seule fois.
+ */
+function orolado_maketou_recheck(array $req): array {
+  if (!orolado_pay_enabled('maketou')) return ['ok' => true, 'skipped' => true];
+  $db = load_db(orolado_data_file());
+  $me = orolado_session_user($db, (string) ($req['token'] ?? ''));
+  if (!$me) return ['ok' => false, 'server' => true, 'code' => 'session'];
+  $uid = (string) $me['id'];
+  if (!orolado_rate_ok('mkt_recheck', $uid, 1, 90)) return ['ok' => true, 'skipped' => true];
+  $cut = time() - 48 * 3600;
+  $list = [];
+  foreach (array_reverse($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
+    if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
+    $op = strtolower((string) ($d['operator'] ?? ''));
+    if (in_array($op, ['oxapay', 'flutterwave', 'flw', 'usdt', 'admin', 'refund', 'card'], true)) continue;
+    if (str_starts_with(strtolower((string) ($d['id'] ?? '')), 'flw_')) continue;
+    if (trim((string) ($d['sellId'] ?? $d['cartId'] ?? '')) === '') continue;
+    if ((strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
+    $list[] = $d;
+    if (count($list) >= 4) break;
+  }
+  $credited = 0.0;
+  foreach ($list as $d) {
+    $proof = maketou_verify_remote_payment($d, 1, 1);
+    if (empty($proof['paid'])) continue;
+    $res = credit_paid_deposit([
+      'ref' => (string) ($d['id'] ?? $d['ref'] ?? ''),
+      'amount' => orolado_money($proof['amount'] ?? ($d['amount'] ?? 0)),
+      'paid' => true,
+      'extId' => '',
+      'sellId' => (string) ($d['sellId'] ?? $d['cartId'] ?? ''),
+    ]);
+    maketou_log('recheck_credit', ['ref' => (string) ($d['id'] ?? ''), 'result' => $res]);
+    if (!empty($res['ok']) && empty($res['duplicate'])) $credited += (float) ($res['amount'] ?? 0);
+  }
+  return ['ok' => true, 'checked' => count($list), 'credited' => $credited];
+}
+
 function maketou_handle_webhook(): void {
   header('Content-Type: application/json; charset=utf-8');
   header('X-Content-Type-Options: nosniff');
@@ -4515,7 +4580,7 @@ function maketou_handle_webhook(): void {
     echo json_encode(['ok' => true, 'ignored' => true, 'reason' => 'disabled']);
     exit;
   }
-  $raw = file_get_contents('php://input') ?: '';
+  $raw = (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_INPUT'])) ? (string) $GLOBALS['OROLADO_FAKE_INPUT'] : (file_get_contents('php://input') ?: '');
   $hasSig = false;
   foreach ([
     $_SERVER['HTTP_X_SHOPLINE_HMAC_SHA256'] ?? '',
@@ -4525,13 +4590,10 @@ function maketou_handle_webhook(): void {
   ] as $h) {
     if (trim((string) $h) !== '') $hasSig = true;
   }
-  if ($hasSig && maketou_api_key() !== '' && !maketou_verify_hmac($raw)) {
-    error_log('OROLADO webhook signature invalide');
-    http_response_code(401);
-    echo json_encode(['ok' => false, 'reason' => 'signature']);
-    exit;
-  }
   $signed = $hasSig && maketou_api_key() !== '' && maketou_verify_hmac($raw);
+  // v2621 : signature non reconnue → on ne jette plus le message (avant : 401, le paiement n'était jamais crédité
+  // par le webhook) ; il est traité comme non signé, donc revérifié directement chez Maketou avant tout crédit.
+  if ($hasSig && !$signed) maketou_log('webhook_bad_signature', ['len' => strlen($raw)]);
 
   $payload = json_decode($raw, true);
   if (!is_array($payload)) {
@@ -4549,26 +4611,45 @@ function maketou_handle_webhook(): void {
     exit;
   }
 
-  // Un POST non signé peut venir de n'importe qui : on rejoue la vérification
-  // chez Maketou avant tout crédit.
-  if (!$signed) {
-    $dep = orolado_find_deposit_by_hit($hit);
-    if (!$dep) {
-      error_log('OROLADO webhook non signé sans dépôt correspondant');
-      echo json_encode(['ok' => true, 'ignored' => true, 'reason' => 'unknown']);
+  $dep = orolado_find_deposit_by_hit($hit);
+  if (!$dep) {
+    maketou_log('webhook_unknown', ['hit' => $hit, 'signed' => $signed]);
+    echo json_encode(['ok' => true, 'ignored' => true, 'reason' => 'unknown']);
+    exit;
+  }
+  $expectedFcfa = (int) ($dep['amountFcfa'] ?? 0);
+  if ($expectedFcfa <= 0) $expectedFcfa = orolado_usd_to_fcfa(orolado_money($dep['amount'] ?? 0));
+  if ($signed) {
+    // v2621 : même message signé, un montant payé plus petit que le panier ne crédite rien (FCFA comparés à FCFA).
+    $gotFcfa = (int) ($hit['amount'] ?? 0);
+    if ($gotFcfa > 0 && $expectedFcfa > 0 && $gotFcfa < $expectedFcfa) {
+      maketou_log('webhook_amount_mismatch', ['ref' => (string) ($dep['id'] ?? ''), 'expectedFcfa' => $expectedFcfa, 'gotFcfa' => $gotFcfa]);
+      http_response_code(202);
+      echo json_encode(['ok' => false, 'reason' => 'amount']);
       exit;
     }
+  } else {
+    // Un POST non signé peut venir de n'importe qui : on rejoue la vérification chez Maketou avant tout crédit.
     $proof = maketou_verify_remote_payment($dep, 2, 2);
     if (empty($proof['paid'])) {
-      error_log('OROLADO webhook non signé refusé (' . (string) ($proof['reason'] ?? 'not_paid') . ')');
+      maketou_log('webhook_unverified', ['ref' => (string) ($dep['id'] ?? ''), 'reason' => (string) ($proof['reason'] ?? 'not_paid')]);
       http_response_code(202);
       echo json_encode(['ok' => false, 'pending' => true, 'reason' => 'unverified']);
       exit;
     }
-    $hit['amount'] = (int) ($proof['amount'] ?? $hit['amount']);
   }
 
-  $result = credit_paid_deposit($hit);
+  // v2621 : on crédite LE dépôt retrouvé, en dollars (avant : le chiffre FCFA du message, ou le montant arrondi
+  // à l'entier, était passé tel quel).
+  $result = credit_paid_deposit([
+    'ref' => (string) ($dep['id'] ?? $dep['ref'] ?? ''),
+    'amount' => orolado_money($dep['amount'] ?? 0),
+    'paid' => true,
+    // Pas d'identifiant externe : un « id » générique du message (boutique, produit…) aurait bloqué les paiements
+    // suivants comme « déjà traité ». Le double crédit reste impossible : le dépôt passe COMPLETED sous verrou.
+    'extId' => '',
+    'sellId' => (string) ($dep['sellId'] ?? $dep['cartId'] ?? ''),
+  ]);
   maketou_log('webhook_credit', ['signed' => $signed, 'hit' => $hit, 'result' => $result]);
   echo json_encode(['ok' => !empty($result['ok']), 'duplicate' => !empty($result['duplicate'])]);
 }

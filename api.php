@@ -2395,7 +2395,12 @@ if ($action === 'oxapayInvoice') {
 }
 
 if ($action === 'oxapayRecheck') {
-  echo json_encode(orolado_oxapay_recheck(['token' => $token] + $req));
+  $oxaRe = orolado_oxapay_recheck(['token' => $token] + $req);
+  // v2621 : même passage, rattrapage des dépôts Mobile Money (Maketou) payés mais pas encore crédités.
+  if (function_exists('orolado_maketou_recheck')) {
+    try { $oxaRe['maketou'] = orolado_maketou_recheck(['token' => $token] + $req); } catch (Throwable $eMk) { /* jamais bloquant */ }
+  }
+  echo json_encode($oxaRe);
   exit;
 }
 

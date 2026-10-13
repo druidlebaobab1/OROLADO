@@ -4734,10 +4734,9 @@
     '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
     '<i class="pl-logo pl-ussd"><b>*#</b>USSD</i>' +
     '<i class="pl-logo pl-opay">OPay</i>' +
+    // v2621 (propriétaire) : Orange Money et Airtel passent dans la case Mobile Money (Maketou).
     '<i class="pl-logo pl-mpesa">M-PESA</i>' +
-    '<i class="pl-logo pl-airtel">airtel<small>money</small></i>' +
-    '<i class="pl-logo pl-telecel">telecel</i>' +
-    '<i class="pl-logo pl-om"><b>orange</b>Orange Money</i>';
+    '<i class="pl-logo pl-telecel">telecel</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;
@@ -5114,7 +5113,7 @@
   function refreshCryptoI18n() {
     var main = $('btnConfirmDeposit');
     if (main) {
-      main.textContent = depositPayMethod === 'usdt' ? t('depositProceed') : t('depositConfirm');
+      main.textContent = depositPayMethod === 'usdt' ? t('depositProceed') : t('payCardBtn');
     }
     syncOxaLabels();
     var note = $('usdtPendingNote');
@@ -5160,7 +5159,7 @@
   var OP_LABELS = { wave: 'Wave', orange: 'Orange Money', mtn: 'MTN MoMo', moov: 'Moov Money' };
 
   function opLabel() {
-    return OP_LABELS[depositOp] || 'Wave';
+    return OP_LABELS[depositOp] || 'Mobile Money';
   }
 
   function setWaitNote(msg, kind) {
@@ -5597,7 +5596,7 @@
     var main = $('btnConfirmDeposit');
     if (main) {
       main.hidden = false;
-      main.textContent = t('depositConfirm');
+      main.textContent = t('payCardBtn');
     }
     resetOxaWallet();
     showDepositStep('select');
@@ -5851,6 +5850,57 @@
     toast(addr, '');
   }
 
+  // v2621 (propriétaire) — Mobile Money par Maketou (Wave, Orange, MTN, Moov…). Le serveur crée le panier Maketou
+  // (montant en FCFA, taux fixe) et renvoie son adresse ; le joueur y paie puis revient sur ?deposit=success&ref=…
+  // Le crédit n'arrive QUE si Maketou confirme le paiement (vérification serveur ou message signé).
+  var momoBusy = false;
+  async function startMomoDeposit() {
+    if (momoBusy || depositing) return;
+    var u = user();
+    if (!u || !requireAccount()) return;
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    if (amt < 3) {
+      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
+      return;
+    }
+    metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
+    var btn = $('btnMomoDeposit');
+    var lab = btn && btn.querySelector('span');
+    momoBusy = true;
+    if (btn) { btn.disabled = true; btn.classList.add('busy'); }
+    if (lab) lab.textContent = t('m_openingPay');
+    var leaving = false;
+    try {
+      var tok = await ensureApiToken();
+      if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
+      depositOp = 'momo';
+      var remote = await postDepositInitiate({ token: tok, amount: amt, operator: 'wave' });
+      var url = resolveDepositCheckoutUrl((remote && (remote.checkout_url || remote.url)) || '');
+      if (!remote || remote.ok === false || !url) {
+        console.error('OROLADO maketou fail', remote);
+        var why = String((remote && remote.reason) || '');
+        if (remote && remote.code === 'disabled') why = t('momoOff');
+        toast(why || t('momoOff'), 'err', 6000);
+        return;
+      }
+      var ref = String(remote.ref || '');
+      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e1) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
+      depositRef = ref;
+      depositApplied = false;
+      leaving = true;
+      // Même onglet : fiable sur téléphone (une nouvelle fenêtre ouverte après une attente est bloquée).
+      window.location.href = url;
+    } catch (err) {
+      console.error('OROLADO maketou', err);
+      toast(t('sessionInvalid'), 'err');
+    } finally {
+      momoBusy = false;
+      if (btn && !leaving) { btn.disabled = false; btn.classList.remove('busy'); }
+      if (lab && !leaving) lab.textContent = t('payMomoBtn');
+    }
+  }
+
   function onConfirmDepositClick() {
     if (depositPayMethod === 'usdt') {
       depositSendConfirmed = true;
@@ -5932,7 +5982,7 @@
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('busy');
-        btn.textContent = t('depositConfirm');
+        btn.textContent = t('payCardBtn');
       }
     }
   }
@@ -8020,6 +8070,13 @@
       e.stopPropagation();
       onConfirmDepositClick();
     });
+    if ($('btnMomoDeposit')) {
+      $('btnMomoDeposit').addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        startMomoDeposit();
+      });
+    }
     document.querySelectorAll('.wd-card').forEach(function (card) {
       card.addEventListener('click', function () {
         setWithdrawMethod(card.getAttribute('data-wd') || 'usdt');
