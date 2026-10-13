@@ -347,18 +347,28 @@
     var frameNow = nowMs || performance.now();
     var dt = Math.max(1, Math.min(80, frameNow - (state.lastFrame || frameNow)));
     if (!isFinite(state.value) || state.value <= 0) state.value = target;
-    if (assetId === 'crash300' && target < state.value) {
-      // Vente Crash : suivi plus rapide mais fluide (plus de snap brutal).
-      var lerpDown = 1 - Math.pow(0.86, dt / (1000 / 60));
-      state.value += (target - state.value) * lerpDown;
-      if (Math.abs(target - state.value) < target * 0.000002) state.value = target;
-    } else {
-      var lerp = 1 - Math.pow(0.94, dt / (1000 / 60));
-      state.value += (target - state.value) * lerp;
-      if (Math.abs(target - state.value) < target * 0.000002) state.value = target;
-    }
+    // v2612 (propriétaire, AZAZEL « vibre ») : plus de suivi plus rapide à la baisse pour AZAZEL (reste de
+    // l'ancien Crash à pics) — montée et descente glissent à la même vitesse que les autres marchés.
+    var lerp = 1 - Math.pow(0.94, dt / (1000 / 60));
+    state.value += (target - state.value) * lerp;
+    if (Math.abs(target - state.value) < target * 0.000002) state.value = target;
     state.lastFrame = frameNow;
     return state.value;
+  }
+
+  // v2612 — AZAZEL : couleur de la colonne en cours fixée pour toute sa seconde (sens du 1er mouvement),
+  // au lieu de changer orange / rouge à chaque prix. La colonne terminée prend sa vraie couleur.
+  var emberLock = { t: null, up: null, prevUp: true, cur: true };
+  function emberUp(c) {
+    if (c.t !== emberLock.t) {
+      if (emberLock.up !== null) emberLock.prevUp = emberLock.up;
+      emberLock.t = c.t;
+      emberLock.up = null;
+    }
+    if (emberLock.up === null && c.c !== c.o) emberLock.up = c.c > c.o;
+    emberLock.raw = c.c >= c.o; // couleur qu'aurait prise l'ancien dessin (mesure seulement)
+    emberLock.cur = emberLock.up === null ? emberLock.prevUp : emberLock.up;
+    return emberLock.cur;
   }
 
   function makeToX(n, pad, seriesW) {
@@ -2115,18 +2125,15 @@
       var cwE = Math.max(1, Math.min(12 * sizeK(), slot * 0.72));
       for (i = 0; i < n; i++) {
         c = candles[i];
-        up = c.c >= c.o;
+        // v2612 (propriétaire) : la colonne en cours garde UNE couleur pendant sa seconde (plus de
+        // clignotement orange / rouge à chaque mouvement) ; plus de lueur autour (elle clignotait aussi).
+        up = i === last ? emberUp(c) : c.c >= c.o;
         x = toX(i);
         var top = Math.max(pad.t, Math.min(bot, toY(c.c)));
         ctx.fillStyle = up ? gUp : gDn;
         ctx.fillRect(x - cwE / 2, top, cwE, bot - top);
-        if (i === last && cssH >= 200) {
-          ctx.shadowColor = up ? 'rgba(255,159,67,0.9)' : 'rgba(255,59,48,0.9)';
-          ctx.shadowBlur = 12;
-        }
         ctx.fillStyle = up ? '#FFB570' : '#FF5A4E';
         ctx.fillRect(x - cwE / 2, top - 1, cwE, 2.5);
-        ctx.shadowBlur = 0;
       }
       ctx.restore();
     } else if (style === 'bolts') {
@@ -4489,7 +4496,8 @@
       tagCol = liveWin ? '#00E676' : '#FF1744';
     }
     if (asset.id === 'crash300' && !primary) {
-      tagCol = market.price >= (market.candle && market.candle.o) ? '#FF9F43' : '#FF3B30';
+      // v2612 : même couleur que la colonne en cours (fixée pour sa seconde, plus de clignotement).
+      tagCol = emberLock.cur ? '#FF9F43' : '#FF3B30';
     }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
@@ -5341,7 +5349,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { ride: rideDbg, mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose }; },
+    markDebug: function () { return { ride: rideDbg, mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose, emberT: emberLock.t, ember: emberLock.cur, emberRaw: emberLock.raw }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
