@@ -103,8 +103,6 @@
   var HEAD_X_RATIO = 0.62;
   var HEAD_X_RATIO_MOBILE = 0.60;
   var Y_PAD_RATIO = 0.12;
-  // v2610 : hauteur des bougies (1 = avant ; 1,3 = 30 % plus hautes). Voir routeSpanPct.
-  var CANDLE_TALL = 1.3;
   // Plein écran : 15 % de marge en haut comme en bas, recentrés en continu.
   var Y_PAD_FS = 0.15;
   var FS_Y_LERP = 0.08;
@@ -3826,9 +3824,7 @@
     // ORO) et AZAZEL gardent leur ancienne hauteur, qui tenait bien dans le cadre.
     var keep = { crash300: 1, v75: 1, titanpulse: 1, apex500: 1, horizon50: 1 };
     var taller = keep[assetId] ? 1 : 0.9;
-    // v2610 (propriétaire) : bougies ~30 % plus hautes sur les 10 marchés (cadre un peu plus serré).
-    // Affichage seulement : la caméra (cadre photo, recentrage doux) reste la même.
-    return base * taller * Math.max(0.7, Math.min(5, k)) / CANDLE_TALL;
+    return base * taller * Math.max(0.7, Math.min(5, k));
   }
 
   var camCandles = null;
@@ -3877,9 +3873,7 @@
       // trade (le cadre du trade ne s’agrandit plus d’un coup) et plus de mouvements qui « s’envolent ».
       // v2338 : un peu plus d’air (bougies visibles = 60 % de la hauteur, plancher = cadre normal) → la
       // caméra a beaucoup moins besoin de s’agrandir (PYTHON « respirait ») et les courbes sont moins grosses.
-      // v2610 (propriétaire) : les PETITES bougies grandissent (CANDLE_TALL, marché calme) ; les grandes à peine
-      // (bougies visibles = 63 % de la hauteur, avant 60 %) → la caméra garde son calme dans les gros mouvements.
-      var tSpan = Math.max((vhi - vlo) / 0.63, want * 1.0);
+      var tSpan = Math.max((vhi - vlo) / 0.60, want * 1.0);
       var tMid = (vhi + vlo) / 2;
       var keepH = span * 0.22;
       if (tMid < h - keepH) tMid = h - keepH;
