@@ -975,6 +975,13 @@ function admin_profiles(): array {
       if (preg_match('/^[A-Z]{2}$/', $isoLoc)) $byId[$id]['country'] = $isoLoc;
       elseif (($byId[$id]['country'] ?? '') === '') $byId[$id]['country'] = (string) ($u['countryCode'] ?? '');
       if (empty($byId[$id]['lang'])) $byId[$id]['lang'] = (string) ($u['lang'] ?? $u['locale'] ?? '');
+      // v2613 : vraie date d'inscription = la plus ancienne. Un joueur dont la caisse est créée plus tard
+      // (ex. au 1er bonus admin) ne doit pas réapparaître dans « Inscriptions du Jour ».
+      $locC = (string) ($u['createdAt'] ?? '');
+      $curC = (string) ($byId[$id]['createdAt'] ?? '');
+      $locCt = $locC !== '' ? (strtotime($locC) ?: 0) : 0;
+      $curCt = $curC !== '' ? (strtotime($curC) ?: 0) : 0;
+      if ($locCt > 0 && ($curCt === 0 || $locCt < $curCt)) $byId[$id]['createdAt'] = $locC;
       continue;
     }
     $byId[$id] = [
@@ -1023,7 +1030,10 @@ function admin_profiles(): array {
     }
     $ca = (string) ($keep['createdAt'] ?? '');
     $cb = (string) ($src['createdAt'] ?? '');
-    if ($cb !== '' && ($ca === '' || strcmp($cb, $ca) < 0)) $keep['createdAt'] = $cb;
+    // v2613 : comparaison en vraie date (les deux fiches n'écrivent pas l'heure au même format).
+    $cat = $ca !== '' ? (strtotime($ca) ?: 0) : 0;
+    $cbt = $cb !== '' ? (strtotime($cb) ?: 0) : 0;
+    if ($cbt > 0 && ($cat === 0 || $cbt < $cat)) $keep['createdAt'] = $cb;
     $uniq[$key] = $keep;
   }
   $list = array_values($uniq);

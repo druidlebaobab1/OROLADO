@@ -124,6 +124,12 @@ $p8 = $mk(8, 10, 5);
 $localWds[] = ['id' => 'wd_local8', 'userId' => 'ulocal8', 'amount' => 5, 'status' => 'pending', 'operator' => 'opay',
   'phone' => '0788888888', 'destination' => '0788888888', 'at' => $iso($now - 900)];
 $localUsers8 = ['ulocal8' => ['id' => 'ulocal8', 'email' => 'joueur8@test.com', 'sbId' => $p8]];
+// P9 (v2613) : inscrit il y a 5 jours sur le site, mais sa caisse Supabase n'a été créée qu'AUJOURD'HUI
+// (1er bonus admin) : il ne doit pas réapparaître dans « Inscriptions du Jour ».
+$p9 = $mk(9, 0, 0);
+$T['profiles'][count($T['profiles']) - 1]['created_at'] = $iso($now - 120);
+$auth[count($auth) - 1]['created_at'] = $iso($now - 120);
+$localUsers8['ulocal9'] = ['id' => 'ulocal9', 'email' => 'joueur9@test.com', 'sbId' => $p9, 'createdAt' => date('c', $now - 5 * 86400)];
 // Faux retrait écrit directement dans Supabase depuis un téléphone (aucun débit) : doit être bloqué.
 $T['withdrawals'][] = ['id' => 'wd_fake_phone', 'user_id' => $p1, 'amount' => 9999, 'status' => 'pending', 'operator' => 'wave', 'phone' => '0799999999',
   'reference' => 'wd_fake_phone', 'destination' => '0799999999', 'created_at' => $iso($now - 600)];
@@ -196,6 +202,14 @@ check('le retrait apparaît dans l\'onglet Retraits, rattaché au profil du joue
 check('il est payable (pas « hors site »)', $w8 !== null && empty($w8['offsite']));
 $pp8 = admin_profile_payload($p8);
 check('il apparaît sur la fiche du joueur, en attente 5 $', in_array('wd_local8', array_map(static fn($r) => (string) ($r['id'] ?? ''), $pp8['withdrawals'] ?? []), true) && abs(($pp8['totals']['wdOpen'] ?? 0) - 5) < 0.01, json_encode($pp8['totals'] ?? []));
+
+echo "1c) Vraie date d'inscription gardée quand la caisse est créée plus tard\n";
+$j = admin_list_payload('signup_today', ['preset' => 'all']);
+$todayIds = array_map(static fn($r) => (string) ($r['userId'] ?? ''), $j['rows'] ?? []);
+check('joueur inscrit il y a 5 jours (caisse créée aujourd\'hui) absent des « Inscriptions du Jour »', !in_array($p9, $todayIds, true), implode(',', $todayIds));
+$p9row = null;
+foreach (admin_profiles() as $pr) if (($pr['id'] ?? '') === $p9) $p9row = $pr;
+check('sa date d\'inscription affichée = la vraie (il y a 5 jours)', $p9row !== null && abs((strtotime((string) $p9row['createdAt']) ?: 0) - ($now - 5 * 86400)) < 5, (string) ($p9row['createdAt'] ?? 'absent'));
 
 echo "2) Bonus jamais mélangés aux dépôts\n";
 $j = admin_list_payload('dep_all', ['preset' => 'all']);
