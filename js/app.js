@@ -6334,13 +6334,13 @@
     }
     if (isCard) {
       if (help) { help.textContent = ''; help.classList.add('hidden'); }
-      if ($('wdCardName') && u && !$('wdCardName').value) $('wdCardName').value = u.displayName || '';
+      // v2620 (propriétaire) : case vide, le joueur écrit lui-même le nom du titulaire (avant : nom du profil, ex. « Invité »).
       return;
     }
     if (isBank) {
       if (help) { help.textContent = ''; help.classList.add('hidden'); }
       fillWdBankCountry();
-      if ($('wdBankHolder') && u && !$('wdBankHolder').value) $('wdBankHolder').value = u.displayName || '';
+      // v2620 (propriétaire) : « Nom du titulaire » vide, le joueur l'écrit lui-même (avant : nom du profil, ex. « Invité »).
       return;
     }
     if (!label || !input) return;
