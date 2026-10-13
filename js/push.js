@@ -7,20 +7,20 @@
    * 3) Appli installée ouverte : signalée une fois par jour (compteur Android / iPhone de l'admin).
    * Jamais au démarrage, jamais pendant un clic sur ACHETER / VENDRE, au plus 3 « Plus tard ».
    */
-  // v2608 (propriétaire) : texte qui donne envie + rassure ; après « Activer », on montre où appuyer.
-  // [titre, texte, ligne rassurante, Activer, Plus tard, activé, consigne « Autoriser »]
+  // v2609 (texte validé par le propriétaire) : sérieux, sans ligne « publicité ».
+  // [titre, texte, (vide), Activer, Plus tard, activé, consigne « Autoriser », Non merci (3e fois)]
   var TXT = {
-    fr: ['Ne ratez plus les bons moments', 'Une alerte dès qu’un marché est en vogue, et vos bonus en direct sur votre téléphone.', 'Jamais de publicité · Arrêt à tout moment', 'Activer les alertes', 'Plus tard', 'Alertes activées ✓', 'Appuyez sur « Autoriser »'],
-    en: ['Never miss the right moment', 'An alert as soon as a market is trending, plus your bonuses, straight to your phone.', 'No ads ever · Turn off anytime', 'Turn on alerts', 'Later', 'Alerts on ✓', 'Tap “Allow”'],
-    es: ['No te pierdas los buenos momentos', 'Una alerta en cuanto un mercado está en tendencia, y tus bonos directo en tu teléfono.', 'Nunca publicidad · Desactiva cuando quieras', 'Activar alertas', 'Más tarde', 'Alertas activadas ✓', 'Pulsa «Permitir»'],
-    pt: ['Não perca os bons momentos', 'Um alerta assim que um mercado estiver em alta, e seus bônus direto no celular.', 'Nunca publicidade · Desative quando quiser', 'Ativar alertas', 'Mais tarde', 'Alertas ativados ✓', 'Toque em “Permitir”'],
-    ar: ['لا تفوّت اللحظات المناسبة', 'تنبيه فور أن يصبح سوق رائجًا، ومكافآتك مباشرة على هاتفك.', 'بدون إعلانات أبدًا · يمكنك الإيقاف في أي وقت', 'تفعيل التنبيهات', 'لاحقًا', 'تم تفعيل التنبيهات ✓', 'اضغط على «السماح»'],
-    tr: ['Doğru anı kaçırmayın', 'Bir piyasa trend olduğunda anında uyarı ve bonuslarınız doğrudan telefonunuzda.', 'Asla reklam yok · İstediğiniz zaman kapatın', 'Uyarıları aç', 'Sonra', 'Uyarılar açık ✓', '“İzin Ver”e dokunun'],
-    vi: ['Đừng bỏ lỡ thời điểm vàng', 'Nhận cảnh báo ngay khi một thị trường đang hot, cùng tiền thưởng ngay trên điện thoại.', 'Không bao giờ quảng cáo · Tắt bất cứ lúc nào', 'Bật cảnh báo', 'Để sau', 'Đã bật cảnh báo ✓', 'Nhấn “Cho phép”'],
-    id: ['Jangan lewatkan momen terbaik', 'Peringatan saat pasar sedang tren, dan bonus Anda langsung di ponsel.', 'Tanpa iklan · Matikan kapan saja', 'Aktifkan peringatan', 'Nanti', 'Peringatan aktif ✓', 'Ketuk “Izinkan”'],
-    ru: ['Не упустите удачный момент', 'Уведомление, как только рынок в тренде, и ваши бонусы прямо на телефон.', 'Никакой рекламы · Отключить можно в любой момент', 'Включить уведомления', 'Позже', 'Уведомления включены ✓', 'Нажмите «Разрешить»'],
-    de: ['Verpasse keinen guten Moment', 'Eine Benachrichtigung, sobald ein Markt im Trend ist, und deine Boni direkt aufs Handy.', 'Niemals Werbung · Jederzeit abschaltbar', 'Benachrichtigungen an', 'Später', 'Benachrichtigungen an ✓', 'Tippe auf „Erlauben“'],
-    hi: ['सही मौका कभी न चूकें', 'जैसे ही कोई मार्केट ट्रेंड में हो, अलर्ट पाएं, और अपने बोनस सीधे फ़ोन पर।', 'कभी कोई विज्ञापन नहीं · कभी भी बंद करें', 'अलर्ट चालू करें', 'बाद में', 'अलर्ट चालू ✓', '“अनुमति दें” पर टैप करें']
+    fr: ['Activez les alertes OROLADO', 'Soyez prévenu dès qu’un marché s’emballe, et recevez vos bonus et nos annonces importantes en direct. Ne ratez plus aucun bon moment.', '', 'Activer', 'Plus tard', 'Alertes activées ✓', 'Appuyez sur « Autoriser » pour recevoir vos alertes.', 'Non merci'],
+    en: ['Turn on OROLADO alerts', 'Be notified as soon as a market takes off, and get your bonuses and important announcements instantly. Never miss a good moment again.', '', 'Turn on', 'Later', 'Alerts on ✓', 'Tap “Allow” to receive your alerts.', 'No thanks'],
+    es: ['Activa las alertas de OROLADO', 'Recibe un aviso en cuanto un mercado se dispare, y tus bonos y anuncios importantes al instante. No te pierdas ningún buen momento.', '', 'Activar', 'Más tarde', 'Alertas activadas ✓', 'Pulsa «Permitir» para recibir tus alertas.', 'No, gracias'],
+    pt: ['Ative os alertas da OROLADO', 'Seja avisado assim que um mercado disparar, e receba seus bônus e avisos importantes na hora. Não perca mais nenhum bom momento.', '', 'Ativar', 'Mais tarde', 'Alertas ativados ✓', 'Toque em “Permitir” para receber seus alertas.', 'Não, obrigado'],
+    ar: ['فعّل تنبيهات OROLADO', 'كن أول من يعلم عندما ينطلق أحد الأسواق، واستلم مكافآتك وإعلاناتنا المهمة فورًا. لا تفوّت أي لحظة مناسبة بعد اليوم.', '', 'تفعيل', 'لاحقًا', 'تم تفعيل التنبيهات ✓', 'اضغط على «السماح» لتلقي تنبيهاتك.', 'لا، شكرًا'],
+    tr: ['OROLADO uyarılarını açın', 'Bir piyasa hareketlendiği anda haberdar olun; bonuslarınızı ve önemli duyurularımızı anında alın. Hiçbir fırsatı kaçırmayın.', '', 'Aç', 'Sonra', 'Uyarılar açık ✓', 'Uyarıları almak için “İzin Ver”e dokunun.', 'Hayır, teşekkürler'],
+    vi: ['Bật thông báo OROLADO', 'Nhận cảnh báo ngay khi một thị trường bùng nổ, cùng tiền thưởng và thông báo quan trọng tức thì. Không bỏ lỡ bất kỳ thời điểm tốt nào.', '', 'Bật', 'Để sau', 'Đã bật thông báo ✓', 'Nhấn “Cho phép” để nhận thông báo.', 'Không, cảm ơn'],
+    id: ['Aktifkan notifikasi OROLADO', 'Dapatkan kabar begitu sebuah pasar melonjak, serta bonus dan pengumuman penting secara langsung. Jangan lewatkan momen terbaik.', '', 'Aktifkan', 'Nanti', 'Notifikasi aktif ✓', 'Ketuk “Izinkan” untuk menerima notifikasi.', 'Tidak, terima kasih'],
+    ru: ['Включите уведомления OROLADO', 'Узнавайте сразу, когда рынок резко движется, и мгновенно получайте бонусы и важные объявления. Не упускайте удачных моментов.', '', 'Включить', 'Позже', 'Уведомления включены ✓', 'Нажмите «Разрешить», чтобы получать уведомления.', 'Нет, спасибо'],
+    de: ['OROLADO-Benachrichtigungen aktivieren', 'Erfahre sofort, wenn ein Markt durchstartet, und erhalte deine Boni und wichtige Ankündigungen direkt. Verpasse keinen guten Moment mehr.', '', 'Aktivieren', 'Später', 'Benachrichtigungen an ✓', 'Tippe auf „Erlauben“, um deine Benachrichtigungen zu erhalten.', 'Nein, danke'],
+    hi: ['OROLADO अलर्ट चालू करें', 'जैसे ही कोई मार्केट तेज़ी पकड़े, तुरंत जानें, और अपने बोनस व ज़रूरी घोषणाएं तुरंत पाएं। कोई भी अच्छा मौका न चूकें।', '', 'चालू करें', 'बाद में', 'अलर्ट चालू ✓', 'अलर्ट पाने के लिए “अनुमति दें” पर टैप करें।', 'नहीं, धन्यवाद']
   };
   var reg = null;
   var asked = false;
@@ -128,7 +128,8 @@
     card.querySelector('span').textContent = txt(1);
     card.querySelector('em').textContent = txt(2);
     card.querySelector('.push-ask-yes').textContent = txt(3);
-    card.querySelector('.push-ask-no').textContent = txt(4);
+    // 1re et 2e fois « Plus tard » (la carte revient 3 jours après) ; 3e fois « Non merci » (plus jamais).
+    card.querySelector('.push-ask-no').textContent = (parseInt(ls('oro_push_later_n') || '0', 10) || 0) >= 2 ? txt(7) : txt(4);
     card.querySelector('.push-ask-no').addEventListener('click', function () {
       ls('oro_push_later', Date.now());
       ls('oro_push_later_n', (parseInt(ls('oro_push_later_n') || '0', 10) || 0) + 1);

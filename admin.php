@@ -2315,6 +2315,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         </select>
         <div class="nt-lab">Aperçu sur le téléphone</div>
         <div class="nt-prev"><img src="/icons/icon-192.png" alt=""><div><small>OROLADO · maintenant</small><b id="ntPrevT">Titre</b><span id="ntPrevB">Message</span></div></div>
+        <p class="nt-who" id="ntWho"></p>
         <p style="margin-top:12px">
           <button class="mini ok" type="button" id="btnNtTest">1. Envoyer un test (mes appareils)</button>
           <button class="mini bad" type="button" id="btnNtAll">2. Envoyer à tous les abonnés</button>
@@ -2336,6 +2337,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .nt-prev small{font-size:.7rem;color:#6B7280}
     .nt-prev b{font-size:.9rem;margin:1px 0}
     .nt-prev span{font-size:.85rem;color:#374151;white-space:pre-wrap;word-break:break-word}
+    .nt-who{margin:12px 0 0;font-size:.85rem;color:#FCD34D;font-weight:800}
     .nt-log td,.nt-log th{padding:4px 6px;border-bottom:1px solid var(--line);font-size:.78rem;text-align:left;vertical-align:top}
   </style>
 
@@ -2771,6 +2773,17 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 (function () {
   const $n = id => document.getElementById(id);
   let pubKey = '';
+  let lastStats = null;
+  // Nombre de téléphones qui recevront le message « à tous » (selon la langue choisie).
+  const reach = () => {
+    if (!lastStats) return null;
+    const lg = $n('ntLang').value;
+    return lg ? ((lastStats.langs || {})[lg] || 0) : lastStats.subs;
+  };
+  const paintWho = () => {
+    const r = reach();
+    $n('ntWho').textContent = r === null ? '' : '« Envoyer à tous » partira vers ' + r + ' téléphone(s)' + ($n('ntLang').value ? ' (' + (LANGN[$n('ntLang').value] || '') + ')' : '') + '.';
+  };
   const LANGN = {fr:'Français',en:'Anglais',es:'Espagnol',pt:'Portugais',ar:'Arabe',tr:'Turc',vi:'Vietnamien',id:'Indonésien',ru:'Russe',de:'Allemand',hi:'Hindi'};
   const plat = () => /android/i.test(navigator.userAgent) ? 'android' : (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : 'pc');
   const isApp = () => !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches);
@@ -2778,6 +2791,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     const j = await ajax({action:'push_stats'});
     if (!j.ok) { $n('ntStats').textContent = j.reason || 'Erreur'; return; }
     pubKey = j.key || '';
+    lastStats = j.stats;
+    paintWho();
     const s = j.stats, a7 = s.apps7, a30 = s.apps30, aa = s.appsAll;
     const langs = Object.entries(s.langs || {}).map(([k, v]) => esc(LANGN[k] || k) + ' ' + v).join(' · ') || '—';
     $n('ntStats').innerHTML =
@@ -2797,6 +2812,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     $n('ntTitleN').textContent = $n('ntTitle').value.length + '/80';
     $n('ntBodyN').textContent = $n('ntBody').value.length + '/240';
   }
+  $n('ntLang').onchange = paintWho;
   $n('ntTitle').oninput = preview;
   $n('ntBody').oninput = preview;
   $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; loadStats(); };
@@ -2826,7 +2842,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     if (!title) { $n('ntSt').textContent = 'Écrivez un titre.'; return; }
     let confirmTxt = '';
     if (target === 'all') {
-      confirmTxt = prompt('Envoyer « ' + title + ' » à TOUS les abonnés' + (lang ? ' (' + (LANGN[lang] || lang) + ')' : '') + ' ?\nTapez ENVOYER pour confirmer :') || '';
+      const r = reach();
+      confirmTxt = prompt('Envoyer « ' + title + ' » à TOUS les abonnés' + (lang ? ' (' + (LANGN[lang] || lang) + ')' : '') + (r !== null ? ' — ' + r + ' téléphone(s)' : '') + ' ?\nTapez ENVOYER pour confirmer :') || '';
       if (confirmTxt.trim().toUpperCase() !== 'ENVOYER') { $n('ntSt').textContent = 'Envoi annulé.'; return; }
       confirmTxt = 'ENVOYER';
     }
