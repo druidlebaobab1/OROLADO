@@ -108,16 +108,12 @@ input[type=range]{width:100%;accent-color:#F5C542}
     <div class="card"><span>Gain si vous gagnez</span><b class="pos" id="gWin">—</b></div>
     <div class="card"><span>Somme reçue si vous gagnez</span><b class="gl" id="gBack">—</b></div>
     <div class="card"><span>Perte si vous perdez</span><b class="neg" id="gLose">—</b></div>
-    <div class="card"><span>Réussite minimum pour ne pas perdre</span><b id="gBe">—</b></div>
-    <p class="note">Plus le taux de gain est élevé, plus le taux de réussite nécessaire est bas.</p>
   </section>
   <section class="panel" id="p-risk">
-    <h2>Gestion du risque</h2>
+    <h2>Planifier son budget</h2>
     <label class="f">Capital ($)<input id="rCap" type="number" inputmode="decimal" min="1" value="100"></label>
-    <label class="f">Risque par trade : <b id="rPctV" class="gl">2 %</b><input id="rPct" type="range" min="1" max="10" step="1" value="2"></label>
-    <div class="card"><span>Mise conseillée par trade</span><b class="gl" id="rStake">—</b></div>
-    <div class="card"><span>Pertes de suite avant de perdre la moitié du capital</span><b id="rStreak">—</b></div>
-    <p class="note">Les traders prudents risquent 1 à 2 % de leur capital par trade.</p>
+    <label class="f">Nombre de trades prévus : <b id="rPctV" class="gl">20</b><input id="rPct" type="range" min="5" max="100" step="5" value="20"></label>
+    <div class="card"><span>Mise par trade</span><b class="gl" id="rStake">—</b></div>
   </section>
   <section class="panel about" id="p-about">
     <h2>À propos</h2>
@@ -129,13 +125,13 @@ input[type=range]{width:100%;accent-color:#F5C542}
 <nav class="tabs" aria-label="menu">
   <button type="button" class="on" data-p="p-pred"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M16 6h4v4"/></svg>Prédiction</button>
   <button type="button" data-p="p-gain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>Gains</button>
-  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Risque</button>
+  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Budget</button>
   <button type="button" data-p="p-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>À propos</button>
 </nav>
 </div>
 <script>
 (function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
-var T={"title":"OROLADO Tools — Entraînement à la prédiction en trading et calculateurs","desc":"Entraînez-vous à lire un graphique : prédisez si la prochaine bougie monte ou descend. Calculateurs de gains et de gestion du risque, gratuits et sans inscription.","brand":"OROLADO Tools","lang":"Langue","tabPred":"Prédiction","tabGain":"Gains","tabRisk":"Risque","tabAbout":"À propos","predHead":"Entraînement à la prédiction","predSub":"La prochaine bougie va-t-elle monter ou descendre ?","up":"Hausse","down":"Baisse","round":"Manche","score":"Score","right":"Bien vu !","wrong":"Raté…","resTitle":"Votre résultat","acc":"Précision","resText":"Bien joué ! Lire un graphique s’apprend avec la pratique. Continuez à vous entraîner, ou passez sur un vrai graphique en démo gratuite.","again":"Continuer","tryReal":"Essayer sur un vrai graphique (démo gratuite)","gainHead":"Calculateur de gains","stake":"Mise ($)","payout":"Taux de gain (%)","ifWin":"Gain si vous gagnez","ifLose":"Perte si vous perdez","back":"Somme reçue si vous gagnez","breakeven":"Réussite minimum pour ne pas perdre","gainNote":"Plus le taux de gain est élevé, plus le taux de réussite nécessaire est bas.","riskHead":"Gestion du risque","capital":"Capital ($)","riskPct":"Risque par trade","advised":"Mise conseillée par trade","streak":"Pertes de suite avant de perdre la moitié du capital","riskNote":"Les traders prudents risquent 1 à 2 % de leur capital par trade.","aboutHead":"À propos","aboutText":"OROLADO Tools est un espace gratuit pour s’entraîner à lire un graphique et préparer ses trades : entraînement à la prédiction, calcul des gains et gestion du risque. Aucune inscription n’est nécessaire.","warn":"Le trading comporte des risques de perte. Ne misez jamais plus que ce que vous pouvez vous permettre de perdre.","demo":"Ouvrir un compte démo gratuit sur OROLADO"};
+var T={"title":"OROLADO Tools — Entraînement à la prédiction en trading et calculateurs","desc":"Entraînez-vous à lire un graphique : prédisez si la prochaine bougie monte ou descend. Calculateurs de gains et de gestion du risque, gratuits et sans inscription.","brand":"OROLADO Tools","lang":"Langue","tabPred":"Prédiction","tabGain":"Gains","tabRisk":"Budget","tabAbout":"À propos","predHead":"Entraînement à la prédiction","predSub":"La prochaine bougie va-t-elle monter ou descendre ?","up":"Hausse","down":"Baisse","round":"Manche","score":"Score","right":"Bien vu !","wrong":"Raté…","resTitle":"Votre résultat","acc":"Précision","resText":"Bien joué ! Lire un graphique s’apprend avec la pratique. Continuez à vous entraîner, ou passez sur un vrai graphique en démo gratuite.","again":"Continuer","tryReal":"Essayer sur un vrai graphique (démo gratuite)","gainHead":"Calculateur de gains","stake":"Mise ($)","payout":"Taux de gain (%)","ifWin":"Gain si vous gagnez","ifLose":"Perte si vous perdez","back":"Somme reçue si vous gagnez","riskHead":"Planifier son budget","capital":"Capital ($)","riskPct":"Nombre de trades prévus","advised":"Mise par trade","aboutHead":"À propos","aboutText":"OROLADO Tools est un espace gratuit pour s’entraîner à lire un graphique et préparer ses trades : entraînement à la prédiction, calcul des gains et gestion du risque. Aucune inscription n’est nécessaire.","warn":"Le trading comporte des risques de perte. Ne misez jamais plus que ce que vous pouvez vous permettre de perdre.","demo":"Ouvrir un compte démo gratuit sur OROLADO"};
 
 (function(){
 var L=document.documentElement.lang;
@@ -145,7 +141,7 @@ var money=function(n){return '$ '+nf(n,2)};
 // Onglets
 var tabs=document.querySelectorAll('.tabs button');
 tabs.forEach(function(b){b.addEventListener('click',function(){tabs.forEach(function(x){x.classList.toggle('on',x===b)});document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p)});if(b.dataset.p==='p-pred')draw();});});
-// --- Entraînement à la prédiction (graphique au hasard, comme un vrai marché) ---
+// --- Entraînement à la prédiction ---
 var VIS=30,STEP=10,cv=$('cv'),ctx=cv.getContext('2d'),C=[],r=0,score=0,busy=false,lo=0,hi=0;
 function gauss(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 // Partie sans fin : les bougies sont créées au fur et à mesure ; un bilan tous les 10 coups.
@@ -168,11 +164,11 @@ $('bUp').addEventListener('click',function(){guess(true)});$('bDn').addEventList
 window.addEventListener('resize',draw);
 // --- Calculateur de gains ---
 function gain(){var s=Math.max(0,parseFloat($('gStake').value)||0),p=Math.max(0,parseFloat($('gPay').value)||0);
-$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s);$('gBe').textContent=p>0?nf(100/(1+p/100),1)+' %':'—'}
+$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s)}
 ['gStake','gPay'].forEach(function(i){$(i).addEventListener('input',gain)});
 // --- Gestion du risque ---
-function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||1;$('rPctV').textContent=q+' %';
-$('rStake').textContent=money(c*q/100);$('rStreak').textContent=String(Math.ceil(Math.log(0.5)/Math.log(1-q/100)))}
+function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||20;$('rPctV').textContent=String(q);
+$('rStake').textContent=money(c/q)}
 ['rCap','rPct'].forEach(function(i){$(i).addEventListener('input',risk)});
 newGame();gain();risk();
 })();

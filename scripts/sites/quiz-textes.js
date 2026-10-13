@@ -1,15 +1,16 @@
 // Textes du Quiz du Trader (orolad0.com), 8 langues. Dans chaque question, la 1re réponse est la bonne
-// (l'ordre est mélangé à l'affichage). Aucun « OROLADO » dans le titre ni la description. 29 questions, 15 tirées au hasard par partie.
+// (l'ordre est mélangé à l'affichage). Aucun « OROLADO » dans le titre ni la description. Banque de 50 questions :
+// chaque jour, une sélection différente (le nombre total n'est jamais affiché).
 'use strict';
 module.exports = {
  "fr": {
   "title": "Quiz du Trader — Testez vos connaissances en trading",
-  "desc": "15 questions pour tester vos bases en trading : bougies, risque, tendances. Score immédiat et explication de chaque réponse. Gratuit, sans inscription.",
+  "desc": "Des questions pour tester vos bases en trading : bougies, risque, tendances. Score immédiat et explication de chaque réponse. Nouveau quiz chaque jour, gratuit et sans inscription.",
   "brand": "Quiz du Trader",
   "lang": "Langue",
-  "badge": "15 questions · 3 minutes",
+  "badge": "Nouveau quiz chaque jour",
   "startHead": "Testez vos connaissances en trading",
-  "startText": "Bougies, tendances, gestion du risque : répondez à 15 questions et découvrez votre niveau. Chaque réponse est expliquée.",
+  "startText": "Bougies, tendances, gestion du risque : répondez aux questions du jour et découvrez votre niveau. Chaque réponse est expliquée.",
   "startBtn": "Commencer le quiz",
   "q": "Question",
   "scoreL": "Score",
@@ -28,7 +29,7 @@ module.exports = {
    "Belles bases ! Continuez à travailler la gestion du risque.",
    "Excellent ! Vous maîtrisez les bases : gardez toujours une mise prudente."
   ],
-  "again": "Recommencer",
+  "again": "Rejouer le quiz du jour",
   "demo": "S’entraîner sur un compte démo gratuit",
   "warn": "Le trading comporte des risques de perte. Ne misez jamais plus que ce que vous pouvez vous permettre de perdre.",
   "questions": [
@@ -67,15 +68,6 @@ module.exports = {
      "Le prix d’ouverture du jour"
     ],
     "x": "Un support est un repère, pas un mur : il peut être cassé."
-   },
-   {
-    "q": "Combien les traders prudents risquent-ils par trade ?",
-    "o": [
-     "1 à 2 % de leur capital",
-     "25 % de leur capital",
-     "La moitié de leur capital"
-    ],
-    "x": "Une petite mise permet de supporter une série de pertes sans vider le compte."
    },
    {
     "q": "Que faire après une perte ?",
@@ -130,15 +122,6 @@ module.exports = {
      "La durée d’un trade"
     ],
     "x": "Plus un marché est volatil, plus ses mouvements sont grands et rapides."
-   },
-   {
-    "q": "Avec un gain de 90 % et une mise fixe, quel taux de réussite minimum faut-il pour ne pas perdre ?",
-    "o": [
-     "Environ 53 %",
-     "10 %",
-     "90 %"
-    ],
-    "x": "1 ÷ (1 + 0,9) ≈ 52,6 % : en dessous, on perd sur la durée."
    },
    {
     "q": "Quel est le meilleur moment pour trader ?",
@@ -240,15 +223,6 @@ module.exports = {
     "x": "Relire ses trades aide à voir ce qui marche pour vous."
    },
    {
-    "q": "Avec 50 $ de budget et 2 % de risque par trade, la mise est de…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × 2 % = 1 $."
-   },
-   {
     "q": "Après trois pertes de suite, le mieux est de…",
     "o": [
      "Faire une pause",
@@ -285,24 +259,243 @@ module.exports = {
     "x": "Une limite fixée à l’avance protège votre budget."
    },
    {
-    "q": "Plus le taux de gain est élevé…",
+    "q": "Que montre une bougie rouge ?",
     "o": [
-     "Plus le taux de réussite nécessaire est bas",
-     "Plus la mise doit être grosse",
-     "Plus le marché est lent"
+     "Le prix a fini plus bas qu’à l’ouverture",
+     "Le prix a fini plus haut qu’à l’ouverture",
+     "Le marché est fermé"
     ],
-    "x": "Avec un gain plus élevé, chaque trade gagnant compte davantage."
+    "x": "Une bougie rouge clôture sous son prix d’ouverture."
+   },
+   {
+    "q": "Que représente le corps d’une bougie ?",
+    "o": [
+     "L’écart entre l’ouverture et la clôture",
+     "Le nombre de traders",
+     "La durée du trade"
+    ],
+    "x": "Le corps va du prix d’ouverture au prix de clôture."
+   },
+   {
+    "q": "Sur un graphique, l’axe vertical indique…",
+    "o": [
+     "Le prix",
+     "L’heure",
+     "Le nombre de trades"
+    ],
+    "x": "Plus on monte sur le graphique, plus le prix est élevé."
+   },
+   {
+    "q": "Sur un graphique, l’axe horizontal indique…",
+    "o": [
+     "Le temps",
+     "Le prix",
+     "Le gain"
+    ],
+    "x": "Les bougies se suivent de gauche à droite, dans l’ordre du temps."
+   },
+   {
+    "q": "Une tendance baissière fait…",
+    "o": [
+     "Des creux de plus en plus bas",
+     "Des sommets de plus en plus hauts",
+     "Uniquement des bougies rouges"
+    ],
+    "x": "Elle peut contenir des bougies vertes : c’est la suite de creux plus bas qui compte."
+   },
+   {
+    "q": "Quand le prix franchit une résistance, on parle de…",
+    "o": [
+     "Cassure",
+     "Clôture",
+     "Dépôt"
+    ],
+    "x": "Une cassure montre que le prix a dépassé un niveau important."
+   },
+   {
+    "q": "Que fait un trader qui « attend la confirmation » ?",
+    "o": [
+     "Il attend un signe de plus avant d’entrer",
+     "Il entre tout de suite",
+     "Il ferme son compte"
+    ],
+    "x": "Attendre un signe supplémentaire aide à prendre des décisions plus réfléchies."
+   },
+   {
+    "q": "Une bougie sans corps (ouverture = clôture) s’appelle…",
+    "o": [
+     "Un doji",
+     "Un marteau",
+     "Une mèche"
+    ],
+    "x": "Le doji montre un équilibre entre acheteurs et vendeurs sur la période."
+   },
+   {
+    "q": "Un « marteau » est une bougie avec…",
+    "o": [
+     "Un petit corps et une longue mèche en bas",
+     "Un long corps sans mèche",
+     "Deux corps"
+    ],
+    "x": "Sa longue mèche basse montre que le prix est remonté après être descendu."
+   },
+   {
+    "q": "Que signifie « entrer en position » ?",
+    "o": [
+     "Ouvrir un trade",
+     "Fermer un trade",
+     "Créer un compte"
+    ],
+    "x": "Entrer en position, c’est démarrer un trade."
+   },
+   {
+    "q": "Le prix d’entrée d’un trade est…",
+    "o": [
+     "Le prix au moment où le trade s’ouvre",
+     "Le prix à la fin de la journée",
+     "Le prix moyen de la semaine"
+    ],
+    "x": "C’est la référence à laquelle le prix final sera comparé."
+   },
+   {
+    "q": "À la fin de la durée, le résultat dépend…",
+    "o": [
+     "Du prix final comparé au prix d’entrée",
+     "Du nombre de bougies vertes",
+     "De l’heure"
+    ],
+    "x": "On compare simplement le prix final au prix d’entrée."
+   },
+   {
+    "q": "Un mouvement de prix rapide et fort s’appelle souvent…",
+    "o": [
+     "Une impulsion",
+     "Un range",
+     "Une pause"
+    ],
+    "x": "Une impulsion est une montée ou une descente franche."
+   },
+   {
+    "q": "Une moyenne mobile qui monte indique en général…",
+    "o": [
+     "Une tendance haussière",
+     "Une tendance baissière",
+     "Un marché fermé"
+    ],
+    "x": "La moyenne suit la direction générale du prix."
+   },
+   {
+    "q": "Quand le prix passe au-dessus de sa moyenne mobile, beaucoup de traders y voient…",
+    "o": [
+     "Un signe de force des acheteurs",
+     "Un marché fermé",
+     "Une erreur du graphique"
+    ],
+    "x": "C’est un repère souvent utilisé pour juger la force du marché."
+   },
+   {
+    "q": "À quoi sert le choix de la durée (5 s, 1 min…) ?",
+    "o": [
+     "À choisir combien de temps dure le trade",
+     "À changer la devise",
+     "À choisir la langue"
+    ],
+    "x": "Une durée courte donne un résultat rapide, une durée longue laisse le temps au mouvement."
+   },
+   {
+    "q": "Pourquoi zoomer sur un graphique ?",
+    "o": [
+     "Pour voir plus de détails ou plus d’historique",
+     "Pour changer le prix",
+     "Pour changer de marché"
+    ],
+    "x": "Le zoom change seulement ce que vous voyez, pas le prix."
+   },
+   {
+    "q": "Qu’est-ce qu’un « pullback » ?",
+    "o": [
+     "Un petit retour du prix pendant une tendance",
+     "La fermeture du marché",
+     "Un dépôt rapide"
+    ],
+    "x": "Après un mouvement, le prix fait souvent une petite pause en sens inverse."
+   },
+   {
+    "q": "Un marché « haussier » est un marché qui…",
+    "o": [
+     "Monte",
+     "Descend",
+     "Ne bouge pas"
+    ],
+    "x": "On dit aussi « bullish » en anglais."
+   },
+   {
+    "q": "Un marché « baissier » est un marché qui…",
+    "o": [
+     "Descend",
+     "Monte",
+     "Est fermé"
+    ],
+    "x": "On dit aussi « bearish » en anglais."
+   },
+   {
+    "q": "Qu’est-ce qu’un plan de trading ?",
+    "o": [
+     "Les règles qu’on se fixe avant de trader",
+     "Un graphique spécial",
+     "Un type de bougie"
+    ],
+    "x": "Un plan aide à rester constant d’un trade à l’autre."
+   },
+   {
+    "q": "Après un trade gagnant, le meilleur réflexe est de…",
+    "o": [
+     "Garder sa méthode et rester calme",
+     "Tout miser sur le suivant",
+     "Arrêter d’analyser"
+    ],
+    "x": "La régularité vaut mieux que l’excitation du moment."
+   },
+   {
+    "q": "Que veut dire la « clôture » d’une bougie ?",
+    "o": [
+     "Le dernier prix de la période",
+     "Le premier prix de la période",
+     "Le prix le plus haut"
+    ],
+    "x": "La clôture est le prix au moment où la bougie se termine."
+   },
+   {
+    "q": "Que veut dire l’« ouverture » d’une bougie ?",
+    "o": [
+     "Le premier prix de la période",
+     "Le dernier prix de la période",
+     "Le prix le plus bas"
+    ],
+    "x": "L’ouverture est le prix au moment où la bougie commence."
+   },
+   {
+    "q": "Pourquoi s’entraîner régulièrement ?",
+    "o": [
+     "Pour mieux lire les graphiques avec l’expérience",
+     "Ce n’est jamais utile",
+     "Pour changer les prix"
+    ],
+    "x": "Comme tout savoir-faire, la lecture des graphiques s’améliore avec la pratique."
    }
-  ]
+  ],
+  "good": "bonnes réponses",
+  "nextQuiz": "Nouveau quiz dans",
+  "comeBack": "Revenez chaque jour : chaque nouveau quiz vous fait progresser, et vos connaissances grandissent pas à pas."
  },
  "en": {
   "title": "Trader Quiz — Test Your Trading Knowledge",
-  "desc": "15 questions to test your trading basics: candlesticks, risk and trends. Instant score and an explanation for every answer. Free, no sign-up.",
+  "desc": "Questions to test your trading basics: candlesticks, risk and trends. Instant score and an explanation for every answer. A new quiz every day, free, no sign-up.",
   "brand": "Trader Quiz",
   "lang": "Language",
-  "badge": "15 questions · 3 minutes",
+  "badge": "A new quiz every day",
   "startHead": "Test your trading knowledge",
-  "startText": "Candlesticks, trends, risk management: answer 15 questions and find out your level. Every answer is explained.",
+  "startText": "Candlesticks, trends, risk management: answer today’s questions and find out your level. Every answer is explained.",
   "startBtn": "Start the quiz",
   "q": "Question",
   "scoreL": "Score",
@@ -321,7 +514,7 @@ module.exports = {
    "Solid basics! Keep working on your risk management.",
    "Excellent! You know the basics: always keep your stakes careful."
   ],
-  "again": "Try again",
+  "again": "Replay today’s quiz",
   "demo": "Practise on a free demo account",
   "warn": "Trading involves a risk of loss. Never stake more than you can afford to lose.",
   "questions": [
@@ -360,15 +553,6 @@ module.exports = {
      "The day’s opening price"
     ],
     "x": "Support is a landmark, not a wall: it can be broken."
-   },
-   {
-    "q": "How much do careful traders risk per trade?",
-    "o": [
-     "1 to 2% of their capital",
-     "25% of their capital",
-     "Half of their capital"
-    ],
-    "x": "A small stake lets you survive a losing streak without emptying your account."
    },
    {
     "q": "What should you do after a loss?",
@@ -423,15 +607,6 @@ module.exports = {
      "The length of a trade"
     ],
     "x": "The more volatile a market, the bigger and faster its moves."
-   },
-   {
-    "q": "With a 90% payout and a fixed stake, what minimum win rate do you need to break even?",
-    "o": [
-     "About 53%",
-     "10%",
-     "90%"
-    ],
-    "x": "1 ÷ (1 + 0.9) ≈ 52.6%: below that, you lose over time."
    },
    {
     "q": "When is the best time to trade?",
@@ -533,15 +708,6 @@ module.exports = {
     "x": "Reviewing your trades helps you see what works for you."
    },
    {
-    "q": "With a $50 budget and 2% risk per trade, the stake is…",
-    "o": [
-     "$1",
-     "$10",
-     "$25"
-    ],
-    "x": "$50 × 2% = $1."
-   },
-   {
     "q": "After three losses in a row, the best thing is to…",
     "o": [
      "Take a break",
@@ -578,24 +744,243 @@ module.exports = {
     "x": "A limit set in advance protects your budget."
    },
    {
-    "q": "The higher the payout rate…",
+    "q": "What does a red candle show?",
     "o": [
-     "The lower the win rate you need",
-     "The bigger your stake must be",
-     "The slower the market"
+     "The price closed lower than it opened",
+     "The price closed higher than it opened",
+     "The market is closed"
     ],
-    "x": "With a higher payout, each winning trade counts for more."
+    "x": "A red candle closes below its opening price."
+   },
+   {
+    "q": "What does a candle’s body represent?",
+    "o": [
+     "The gap between the open and the close",
+     "The number of traders",
+     "The trade duration"
+    ],
+    "x": "The body runs from the opening price to the closing price."
+   },
+   {
+    "q": "On a chart, the vertical axis shows…",
+    "o": [
+     "The price",
+     "The time",
+     "The number of trades"
+    ],
+    "x": "The higher you go on the chart, the higher the price."
+   },
+   {
+    "q": "On a chart, the horizontal axis shows…",
+    "o": [
+     "Time",
+     "The price",
+     "The profit"
+    ],
+    "x": "Candles follow each other from left to right, in time order."
+   },
+   {
+    "q": "A downtrend makes…",
+    "o": [
+     "Lower and lower lows",
+     "Higher and higher highs",
+     "Only red candles"
+    ],
+    "x": "It can contain green candles: what matters is the series of lower lows."
+   },
+   {
+    "q": "When the price breaks through resistance, it is called…",
+    "o": [
+     "A breakout",
+     "A close",
+     "A deposit"
+    ],
+    "x": "A breakout shows the price has passed an important level."
+   },
+   {
+    "q": "What does a trader “waiting for confirmation” do?",
+    "o": [
+     "Waits for one more sign before entering",
+     "Enters immediately",
+     "Closes the account"
+    ],
+    "x": "Waiting for an extra sign helps you make more thoughtful decisions."
+   },
+   {
+    "q": "A candle with no body (open = close) is called…",
+    "o": [
+     "A doji",
+     "A hammer",
+     "A wick"
+    ],
+    "x": "A doji shows a balance between buyers and sellers over the period."
+   },
+   {
+    "q": "A “hammer” is a candle with…",
+    "o": [
+     "A small body and a long lower wick",
+     "A long body and no wick",
+     "Two bodies"
+    ],
+    "x": "Its long lower wick shows the price climbed back after falling."
+   },
+   {
+    "q": "What does “entering a position” mean?",
+    "o": [
+     "Opening a trade",
+     "Closing a trade",
+     "Creating an account"
+    ],
+    "x": "Entering a position means starting a trade."
+   },
+   {
+    "q": "A trade’s entry price is…",
+    "o": [
+     "The price when the trade opens",
+     "The price at the end of the day",
+     "The week’s average price"
+    ],
+    "x": "It is the reference the final price is compared with."
+   },
+   {
+    "q": "At the end of the duration, the result depends on…",
+    "o": [
+     "The final price compared with the entry price",
+     "The number of green candles",
+     "The time of day"
+    ],
+    "x": "You simply compare the final price with the entry price."
+   },
+   {
+    "q": "A fast, strong price move is often called…",
+    "o": [
+     "An impulse",
+     "A range",
+     "A pause"
+    ],
+    "x": "An impulse is a clear rise or fall."
+   },
+   {
+    "q": "A rising moving average usually indicates…",
+    "o": [
+     "An uptrend",
+     "A downtrend",
+     "A closed market"
+    ],
+    "x": "The average follows the general direction of the price."
+   },
+   {
+    "q": "When the price moves above its moving average, many traders see…",
+    "o": [
+     "A sign of buyer strength",
+     "A closed market",
+     "A chart error"
+    ],
+    "x": "It is a common landmark to judge market strength."
+   },
+   {
+    "q": "What is choosing the duration (5 s, 1 min…) for?",
+    "o": [
+     "Choosing how long the trade lasts",
+     "Changing the currency",
+     "Choosing the language"
+    ],
+    "x": "A short duration gives a quick result; a long one gives the move time."
+   },
+   {
+    "q": "Why zoom in on a chart?",
+    "o": [
+     "To see more detail or more history",
+     "To change the price",
+     "To change market"
+    ],
+    "x": "Zooming only changes what you see, not the price."
+   },
+   {
+    "q": "What is a “pullback”?",
+    "o": [
+     "A small move back during a trend",
+     "The market closing",
+     "A quick deposit"
+    ],
+    "x": "After a move, the price often pauses slightly in the other direction."
+   },
+   {
+    "q": "A “bullish” market is a market that…",
+    "o": [
+     "Is rising",
+     "Is falling",
+     "Is not moving"
+    ],
+    "x": "Bullish means rising."
+   },
+   {
+    "q": "A “bearish” market is a market that…",
+    "o": [
+     "Is falling",
+     "Is rising",
+     "Is closed"
+    ],
+    "x": "Bearish means falling."
+   },
+   {
+    "q": "What is a trading plan?",
+    "o": [
+     "The rules you set before trading",
+     "A special chart",
+     "A type of candle"
+    ],
+    "x": "A plan helps you stay consistent from one trade to the next."
+   },
+   {
+    "q": "After a winning trade, the best reflex is to…",
+    "o": [
+     "Keep your method and stay calm",
+     "Stake everything on the next one",
+     "Stop analysing"
+    ],
+    "x": "Consistency beats the excitement of the moment."
+   },
+   {
+    "q": "What is a candle’s “close”?",
+    "o": [
+     "The last price of the period",
+     "The first price of the period",
+     "The highest price"
+    ],
+    "x": "The close is the price when the candle ends."
+   },
+   {
+    "q": "What is a candle’s “open”?",
+    "o": [
+     "The first price of the period",
+     "The last price of the period",
+     "The lowest price"
+    ],
+    "x": "The open is the price when the candle starts."
+   },
+   {
+    "q": "Why practise regularly?",
+    "o": [
+     "To read charts better with experience",
+     "It is never useful",
+     "To change prices"
+    ],
+    "x": "Like any skill, chart reading improves with practice."
    }
-  ]
+  ],
+  "good": "correct answers",
+  "nextQuiz": "New quiz in",
+  "comeBack": "Come back every day: each new quiz helps you progress, and your knowledge grows step by step."
  },
  "es": {
   "title": "Quiz del Trader — Pon a prueba tus conocimientos de trading",
-  "desc": "15 preguntas para evaluar tus bases de trading: velas, riesgo y tendencias. Puntuación inmediata y explicación de cada respuesta. Gratis, sin registro.",
+  "desc": "Preguntas para evaluar tus bases de trading: velas, riesgo y tendencias. Puntuación inmediata y explicación de cada respuesta. Un quiz nuevo cada día, gratis y sin registro.",
   "brand": "Quiz del Trader",
   "lang": "Idioma",
-  "badge": "15 preguntas · 3 minutos",
+  "badge": "Un quiz nuevo cada día",
   "startHead": "Pon a prueba tus conocimientos de trading",
-  "startText": "Velas, tendencias, gestión del riesgo: responde 15 preguntas y descubre tu nivel. Cada respuesta se explica.",
+  "startText": "Velas, tendencias, gestión del riesgo: responde las preguntas del día y descubre tu nivel. Cada respuesta se explica.",
   "startBtn": "Empezar el quiz",
   "q": "Pregunta",
   "scoreL": "Puntos",
@@ -614,7 +999,7 @@ module.exports = {
    "¡Buenas bases! Sigue trabajando la gestión del riesgo.",
    "¡Excelente! Dominas lo básico: mantén siempre inversiones prudentes."
   ],
-  "again": "Volver a empezar",
+  "again": "Repetir el quiz de hoy",
   "demo": "Practicar en una cuenta demo gratis",
   "warn": "El trading implica riesgo de pérdida. Nunca inviertas más de lo que puedes permitirte perder.",
   "questions": [
@@ -653,15 +1038,6 @@ module.exports = {
      "El precio de apertura del día"
     ],
     "x": "Un soporte es una referencia, no un muro: puede romperse."
-   },
-   {
-    "q": "¿Cuánto arriesgan por operación los traders prudentes?",
-    "o": [
-     "Del 1 al 2 % de su capital",
-     "El 25 % de su capital",
-     "La mitad de su capital"
-    ],
-    "x": "Una inversión pequeña permite aguantar una racha de pérdidas sin vaciar la cuenta."
    },
    {
     "q": "¿Qué hacer después de una pérdida?",
@@ -716,15 +1092,6 @@ module.exports = {
      "La duración de una operación"
     ],
     "x": "Cuanto más volátil es un mercado, más grandes y rápidos son sus movimientos."
-   },
-   {
-    "q": "Con un pago del 90 % y una inversión fija, ¿qué tasa de acierto mínima necesitas para no perder?",
-    "o": [
-     "Alrededor del 53 %",
-     "10 %",
-     "90 %"
-    ],
-    "x": "1 ÷ (1 + 0,9) ≈ 52,6 %: por debajo, pierdes con el tiempo."
    },
    {
     "q": "¿Cuál es el mejor momento para operar?",
@@ -826,15 +1193,6 @@ module.exports = {
     "x": "Revisar tus operaciones te ayuda a ver qué te funciona."
    },
    {
-    "q": "Con 50 $ de presupuesto y 2 % de riesgo por operación, la inversión es…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × 2 % = 1 $."
-   },
-   {
     "q": "Tras tres pérdidas seguidas, lo mejor es…",
     "o": [
      "Hacer una pausa",
@@ -871,24 +1229,243 @@ module.exports = {
     "x": "Un límite fijado de antemano protege tu presupuesto."
    },
    {
-    "q": "Cuanto mayor es la tasa de pago…",
+    "q": "¿Qué muestra una vela roja?",
     "o": [
-     "Menor es la tasa de acierto necesaria",
-     "Mayor debe ser la inversión",
-     "Más lento es el mercado"
+     "El precio cerró más bajo que la apertura",
+     "El precio cerró más alto que la apertura",
+     "El mercado está cerrado"
     ],
-    "x": "Con un pago mayor, cada operación ganadora cuenta más."
+    "x": "Una vela roja cierra por debajo de su precio de apertura."
+   },
+   {
+    "q": "¿Qué representa el cuerpo de una vela?",
+    "o": [
+     "La diferencia entre apertura y cierre",
+     "El número de traders",
+     "La duración de la operación"
+    ],
+    "x": "El cuerpo va del precio de apertura al de cierre."
+   },
+   {
+    "q": "En un gráfico, el eje vertical indica…",
+    "o": [
+     "El precio",
+     "La hora",
+     "El número de operaciones"
+    ],
+    "x": "Cuanto más arriba en el gráfico, más alto el precio."
+   },
+   {
+    "q": "En un gráfico, el eje horizontal indica…",
+    "o": [
+     "El tiempo",
+     "El precio",
+     "La ganancia"
+    ],
+    "x": "Las velas se suceden de izquierda a derecha, en orden de tiempo."
+   },
+   {
+    "q": "Una tendencia bajista marca…",
+    "o": [
+     "Mínimos cada vez más bajos",
+     "Máximos cada vez más altos",
+     "Solo velas rojas"
+    ],
+    "x": "Puede tener velas verdes: lo que cuenta es la serie de mínimos más bajos."
+   },
+   {
+    "q": "Cuando el precio supera una resistencia, se habla de…",
+    "o": [
+     "Ruptura",
+     "Cierre",
+     "Depósito"
+    ],
+    "x": "Una ruptura muestra que el precio superó un nivel importante."
+   },
+   {
+    "q": "¿Qué hace un trader que «espera la confirmación»?",
+    "o": [
+     "Espera una señal más antes de entrar",
+     "Entra de inmediato",
+     "Cierra su cuenta"
+    ],
+    "x": "Esperar una señal extra ayuda a decidir con más calma."
+   },
+   {
+    "q": "Una vela sin cuerpo (apertura = cierre) se llama…",
+    "o": [
+     "Doji",
+     "Martillo",
+     "Mecha"
+    ],
+    "x": "El doji muestra equilibrio entre compradores y vendedores."
+   },
+   {
+    "q": "Un «martillo» es una vela con…",
+    "o": [
+     "Cuerpo pequeño y mecha inferior larga",
+     "Cuerpo largo sin mecha",
+     "Dos cuerpos"
+    ],
+    "x": "Su mecha inferior larga muestra que el precio se recuperó tras bajar."
+   },
+   {
+    "q": "¿Qué significa «entrar en posición»?",
+    "o": [
+     "Abrir una operación",
+     "Cerrar una operación",
+     "Crear una cuenta"
+    ],
+    "x": "Entrar en posición es iniciar una operación."
+   },
+   {
+    "q": "El precio de entrada de una operación es…",
+    "o": [
+     "El precio cuando se abre la operación",
+     "El precio al final del día",
+     "El precio medio de la semana"
+    ],
+    "x": "Es la referencia con la que se compara el precio final."
+   },
+   {
+    "q": "Al final de la duración, el resultado depende…",
+    "o": [
+     "Del precio final frente al de entrada",
+     "Del número de velas verdes",
+     "De la hora"
+    ],
+    "x": "Solo se compara el precio final con el de entrada."
+   },
+   {
+    "q": "Un movimiento rápido y fuerte del precio se llama a menudo…",
+    "o": [
+     "Impulso",
+     "Rango",
+     "Pausa"
+    ],
+    "x": "Un impulso es una subida o bajada clara."
+   },
+   {
+    "q": "Una media móvil que sube indica en general…",
+    "o": [
+     "Una tendencia alcista",
+     "Una tendencia bajista",
+     "Un mercado cerrado"
+    ],
+    "x": "La media sigue la dirección general del precio."
+   },
+   {
+    "q": "Cuando el precio pasa por encima de su media móvil, muchos traders ven…",
+    "o": [
+     "Una señal de fuerza compradora",
+     "Un mercado cerrado",
+     "Un error del gráfico"
+    ],
+    "x": "Es una referencia común para medir la fuerza del mercado."
+   },
+   {
+    "q": "¿Para qué sirve elegir la duración (5 s, 1 min…)?",
+    "o": [
+     "Para elegir cuánto dura la operación",
+     "Para cambiar la moneda",
+     "Para elegir el idioma"
+    ],
+    "x": "Una duración corta da un resultado rápido; una larga deja tiempo al movimiento."
+   },
+   {
+    "q": "¿Por qué hacer zoom en un gráfico?",
+    "o": [
+     "Para ver más detalle o más historial",
+     "Para cambiar el precio",
+     "Para cambiar de mercado"
+    ],
+    "x": "El zoom solo cambia lo que ves, no el precio."
+   },
+   {
+    "q": "¿Qué es un «pullback»?",
+    "o": [
+     "Un pequeño retroceso del precio en una tendencia",
+     "El cierre del mercado",
+     "Un depósito rápido"
+    ],
+    "x": "Tras un movimiento, el precio suele hacer una pausa en sentido contrario."
+   },
+   {
+    "q": "Un mercado «alcista» es un mercado que…",
+    "o": [
+     "Sube",
+     "Baja",
+     "No se mueve"
+    ],
+    "x": "En inglés se dice «bullish»."
+   },
+   {
+    "q": "Un mercado «bajista» es un mercado que…",
+    "o": [
+     "Baja",
+     "Sube",
+     "Está cerrado"
+    ],
+    "x": "En inglés se dice «bearish»."
+   },
+   {
+    "q": "¿Qué es un plan de trading?",
+    "o": [
+     "Las reglas que te fijas antes de operar",
+     "Un gráfico especial",
+     "Un tipo de vela"
+    ],
+    "x": "Un plan ayuda a ser constante de una operación a otra."
+   },
+   {
+    "q": "Tras una operación ganadora, el mejor reflejo es…",
+    "o": [
+     "Mantener tu método y la calma",
+     "Invertir todo en la siguiente",
+     "Dejar de analizar"
+    ],
+    "x": "La constancia vale más que la emoción del momento."
+   },
+   {
+    "q": "¿Qué es el «cierre» de una vela?",
+    "o": [
+     "El último precio del periodo",
+     "El primer precio del periodo",
+     "El precio más alto"
+    ],
+    "x": "El cierre es el precio cuando termina la vela."
+   },
+   {
+    "q": "¿Qué es la «apertura» de una vela?",
+    "o": [
+     "El primer precio del periodo",
+     "El último precio del periodo",
+     "El precio más bajo"
+    ],
+    "x": "La apertura es el precio cuando empieza la vela."
+   },
+   {
+    "q": "¿Por qué practicar con regularidad?",
+    "o": [
+     "Para leer mejor los gráficos con la experiencia",
+     "Nunca es útil",
+     "Para cambiar los precios"
+    ],
+    "x": "Como toda habilidad, leer gráficos mejora con la práctica."
    }
-  ]
+  ],
+  "good": "respuestas correctas",
+  "nextQuiz": "Nuevo quiz en",
+  "comeBack": "Vuelve cada día: cada nuevo quiz te hace progresar y tus conocimientos crecen paso a paso."
  },
  "pt": {
   "title": "Quiz do Trader — Teste seus conhecimentos de trading",
-  "desc": "15 perguntas para testar suas bases de trading: velas, risco e tendências. Pontuação imediata e explicação de cada resposta. Grátis, sem cadastro.",
+  "desc": "Perguntas para testar suas bases de trading: velas, risco e tendências. Pontuação imediata e explicação de cada resposta. Um quiz novo todo dia, grátis e sem cadastro.",
   "brand": "Quiz do Trader",
   "lang": "Idioma",
-  "badge": "15 perguntas · 3 minutos",
+  "badge": "Um quiz novo todo dia",
   "startHead": "Teste seus conhecimentos de trading",
-  "startText": "Velas, tendências, gestão de risco: responda 15 perguntas e descubra seu nível. Cada resposta é explicada.",
+  "startText": "Velas, tendências, gestão de risco: responda às perguntas do dia e descubra seu nível. Cada resposta é explicada.",
   "startBtn": "Começar o quiz",
   "q": "Pergunta",
   "scoreL": "Pontos",
@@ -907,7 +1484,7 @@ module.exports = {
    "Boas bases! Continue trabalhando a gestão de risco.",
    "Excelente! Você domina o básico: mantenha sempre valores prudentes."
   ],
-  "again": "Recomeçar",
+  "again": "Refazer o quiz de hoje",
   "demo": "Praticar numa conta demo grátis",
   "warn": "O trading envolve risco de perda. Nunca invista mais do que pode perder.",
   "questions": [
@@ -946,15 +1523,6 @@ module.exports = {
      "O preço de abertura do dia"
     ],
     "x": "Um suporte é uma referência, não um muro: pode ser rompido."
-   },
-   {
-    "q": "Quanto os traders prudentes arriscam por operação?",
-    "o": [
-     "1 a 2% do capital",
-     "25% do capital",
-     "Metade do capital"
-    ],
-    "x": "Um valor pequeno permite aguentar uma série de perdas sem esvaziar a conta."
    },
    {
     "q": "O que fazer após uma perda?",
@@ -1009,15 +1577,6 @@ module.exports = {
      "A duração de uma operação"
     ],
     "x": "Quanto mais volátil um mercado, maiores e mais rápidos seus movimentos."
-   },
-   {
-    "q": "Com retorno de 90% e valor fixo, qual taxa de acerto mínima é preciso para não perder?",
-    "o": [
-     "Cerca de 53%",
-     "10%",
-     "90%"
-    ],
-    "x": "1 ÷ (1 + 0,9) ≈ 52,6%: abaixo disso, perde-se com o tempo."
    },
    {
     "q": "Qual é o melhor momento para operar?",
@@ -1119,15 +1678,6 @@ module.exports = {
     "x": "Rever suas operações ajuda a ver o que funciona para você."
    },
    {
-    "q": "Com 50 $ de orçamento e 2% de risco por operação, o valor é…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × 2% = 1 $."
-   },
-   {
     "q": "Após três perdas seguidas, o melhor é…",
     "o": [
      "Fazer uma pausa",
@@ -1164,24 +1714,243 @@ module.exports = {
     "x": "Um limite definido antes protege seu orçamento."
    },
    {
-    "q": "Quanto maior a taxa de retorno…",
+    "q": "O que mostra uma vela vermelha?",
     "o": [
-     "Menor a taxa de acerto necessária",
-     "Maior deve ser o valor",
-     "Mais lento o mercado"
+     "O preço fechou abaixo da abertura",
+     "O preço fechou acima da abertura",
+     "O mercado está fechado"
     ],
-    "x": "Com retorno maior, cada operação vencedora conta mais."
+    "x": "Uma vela vermelha fecha abaixo do seu preço de abertura."
+   },
+   {
+    "q": "O que representa o corpo de uma vela?",
+    "o": [
+     "A diferença entre abertura e fechamento",
+     "O número de traders",
+     "A duração da operação"
+    ],
+    "x": "O corpo vai do preço de abertura ao de fechamento."
+   },
+   {
+    "q": "Num gráfico, o eixo vertical indica…",
+    "o": [
+     "O preço",
+     "A hora",
+     "O número de operações"
+    ],
+    "x": "Quanto mais alto no gráfico, maior o preço."
+   },
+   {
+    "q": "Num gráfico, o eixo horizontal indica…",
+    "o": [
+     "O tempo",
+     "O preço",
+     "O ganho"
+    ],
+    "x": "As velas se sucedem da esquerda para a direita, na ordem do tempo."
+   },
+   {
+    "q": "Uma tendência de baixa faz…",
+    "o": [
+     "Fundos cada vez mais baixos",
+     "Topos cada vez mais altos",
+     "Só velas vermelhas"
+    ],
+    "x": "Pode ter velas verdes: o que conta é a série de fundos mais baixos."
+   },
+   {
+    "q": "Quando o preço ultrapassa uma resistência, fala-se de…",
+    "o": [
+     "Rompimento",
+     "Fechamento",
+     "Depósito"
+    ],
+    "x": "Um rompimento mostra que o preço passou um nível importante."
+   },
+   {
+    "q": "O que faz um trader que “espera a confirmação”?",
+    "o": [
+     "Espera mais um sinal antes de entrar",
+     "Entra imediatamente",
+     "Fecha a conta"
+    ],
+    "x": "Esperar um sinal extra ajuda a decidir com mais calma."
+   },
+   {
+    "q": "Uma vela sem corpo (abertura = fechamento) chama-se…",
+    "o": [
+     "Doji",
+     "Martelo",
+     "Pavio"
+    ],
+    "x": "O doji mostra equilíbrio entre compradores e vendedores."
+   },
+   {
+    "q": "Um “martelo” é uma vela com…",
+    "o": [
+     "Corpo pequeno e pavio inferior longo",
+     "Corpo longo sem pavio",
+     "Dois corpos"
+    ],
+    "x": "O pavio inferior longo mostra que o preço voltou a subir após cair."
+   },
+   {
+    "q": "O que significa “entrar em posição”?",
+    "o": [
+     "Abrir uma operação",
+     "Fechar uma operação",
+     "Criar uma conta"
+    ],
+    "x": "Entrar em posição é começar uma operação."
+   },
+   {
+    "q": "O preço de entrada de uma operação é…",
+    "o": [
+     "O preço quando a operação abre",
+     "O preço no fim do dia",
+     "O preço médio da semana"
+    ],
+    "x": "É a referência com a qual o preço final será comparado."
+   },
+   {
+    "q": "No fim da duração, o resultado depende…",
+    "o": [
+     "Do preço final comparado ao de entrada",
+     "Do número de velas verdes",
+     "Da hora"
+    ],
+    "x": "Basta comparar o preço final com o de entrada."
+   },
+   {
+    "q": "Um movimento rápido e forte do preço chama-se muitas vezes…",
+    "o": [
+     "Impulso",
+     "Lateralização",
+     "Pausa"
+    ],
+    "x": "Um impulso é uma alta ou queda clara."
+   },
+   {
+    "q": "Uma média móvel subindo indica em geral…",
+    "o": [
+     "Uma tendência de alta",
+     "Uma tendência de baixa",
+     "Um mercado fechado"
+    ],
+    "x": "A média acompanha a direção geral do preço."
+   },
+   {
+    "q": "Quando o preço passa acima da média móvel, muitos traders veem…",
+    "o": [
+     "Um sinal de força compradora",
+     "Um mercado fechado",
+     "Um erro no gráfico"
+    ],
+    "x": "É uma referência comum para avaliar a força do mercado."
+   },
+   {
+    "q": "Para que serve escolher a duração (5 s, 1 min…)?",
+    "o": [
+     "Para escolher quanto tempo dura a operação",
+     "Para mudar a moeda",
+     "Para escolher o idioma"
+    ],
+    "x": "Uma duração curta dá resultado rápido; uma longa dá tempo ao movimento."
+   },
+   {
+    "q": "Por que dar zoom num gráfico?",
+    "o": [
+     "Para ver mais detalhes ou mais histórico",
+     "Para mudar o preço",
+     "Para mudar de mercado"
+    ],
+    "x": "O zoom muda só o que você vê, não o preço."
+   },
+   {
+    "q": "O que é um “pullback”?",
+    "o": [
+     "Um pequeno recuo do preço numa tendência",
+     "O fechamento do mercado",
+     "Um depósito rápido"
+    ],
+    "x": "Após um movimento, o preço costuma fazer uma pausa no sentido contrário."
+   },
+   {
+    "q": "Um mercado “de alta” é um mercado que…",
+    "o": [
+     "Sobe",
+     "Desce",
+     "Não se move"
+    ],
+    "x": "Em inglês, diz-se “bullish”."
+   },
+   {
+    "q": "Um mercado “de baixa” é um mercado que…",
+    "o": [
+     "Desce",
+     "Sobe",
+     "Está fechado"
+    ],
+    "x": "Em inglês, diz-se “bearish”."
+   },
+   {
+    "q": "O que é um plano de trading?",
+    "o": [
+     "As regras que você define antes de operar",
+     "Um gráfico especial",
+     "Um tipo de vela"
+    ],
+    "x": "Um plano ajuda a manter a consistência entre operações."
+   },
+   {
+    "q": "Após uma operação vencedora, o melhor reflexo é…",
+    "o": [
+     "Manter o método e ficar calmo",
+     "Apostar tudo na próxima",
+     "Parar de analisar"
+    ],
+    "x": "A regularidade vale mais que a empolgação do momento."
+   },
+   {
+    "q": "O que é o “fechamento” de uma vela?",
+    "o": [
+     "O último preço do período",
+     "O primeiro preço do período",
+     "O preço mais alto"
+    ],
+    "x": "O fechamento é o preço quando a vela termina."
+   },
+   {
+    "q": "O que é a “abertura” de uma vela?",
+    "o": [
+     "O primeiro preço do período",
+     "O último preço do período",
+     "O preço mais baixo"
+    ],
+    "x": "A abertura é o preço quando a vela começa."
+   },
+   {
+    "q": "Por que treinar com regularidade?",
+    "o": [
+     "Para ler melhor os gráficos com a experiência",
+     "Nunca é útil",
+     "Para mudar os preços"
+    ],
+    "x": "Como toda habilidade, ler gráficos melhora com a prática."
    }
-  ]
+  ],
+  "good": "respostas certas",
+  "nextQuiz": "Novo quiz em",
+  "comeBack": "Volte todos os dias: cada novo quiz faz você evoluir, e seus conhecimentos crescem passo a passo."
  },
  "ar": {
   "title": "اختبار المتداول — اختبر معلوماتك في التداول",
-  "desc": "15 سؤالًا لاختبار أساسياتك في التداول: الشموع والمخاطر والاتجاهات. نتيجة فورية وشرح لكل إجابة. مجاني وبدون تسجيل.",
+  "desc": "أسئلة لاختبار أساسياتك في التداول: الشموع والمخاطر والاتجاهات. نتيجة فورية وشرح لكل إجابة. اختبار جديد كل يوم، مجاني وبدون تسجيل.",
   "brand": "اختبار المتداول",
   "lang": "اللغة",
-  "badge": "15 سؤالًا · 3 دقائق",
+  "badge": "اختبار جديد كل يوم",
   "startHead": "اختبر معلوماتك في التداول",
-  "startText": "الشموع والاتجاهات وإدارة المخاطر: أجب عن 15 سؤالًا واكتشف مستواك. كل إجابة مشروحة.",
+  "startText": "الشموع والاتجاهات وإدارة المخاطر: أجب عن أسئلة اليوم واكتشف مستواك. كل إجابة مشروحة.",
   "startBtn": "ابدأ الاختبار",
   "q": "السؤال",
   "scoreL": "النقاط",
@@ -1200,7 +1969,7 @@ module.exports = {
    "أساسيات جيدة! واصل العمل على إدارة المخاطر.",
    "ممتاز! أنت تتقن الأساسيات: حافظ دائمًا على مبالغ حذرة."
   ],
-  "again": "إعادة المحاولة",
+  "again": "أعد اختبار اليوم",
   "demo": "تدرّب على حساب تجريبي مجاني",
   "warn": "ينطوي التداول على خطر الخسارة. لا تخاطر أبدًا بأكثر مما يمكنك تحمّل خسارته.",
   "questions": [
@@ -1239,15 +2008,6 @@ module.exports = {
      "سعر افتتاح اليوم"
     ],
     "x": "الدعم معلَم وليس جدارًا: يمكن كسره."
-   },
-   {
-    "q": "بكم يخاطر المتداولون الحذرون في كل صفقة؟",
-    "o": [
-     "من 1 إلى 2٪ من رأس المال",
-     "25٪ من رأس المال",
-     "نصف رأس المال"
-    ],
-    "x": "المبلغ الصغير يتيح تحمّل سلسلة خسائر دون إفراغ الحساب."
    },
    {
     "q": "ماذا تفعل بعد الخسارة؟",
@@ -1302,15 +2062,6 @@ module.exports = {
      "مدة الصفقة"
     ],
     "x": "كلما زاد تقلب السوق، كانت حركاته أكبر وأسرع."
-   },
-   {
-    "q": "بعائد 90٪ ومبلغ ثابت، ما أدنى نسبة نجاح لعدم الخسارة؟",
-    "o": [
-     "حوالي 53٪",
-     "10٪",
-     "90٪"
-    ],
-    "x": "1 ÷ (1 + 0.9) ≈ 52.6٪: تحت هذه النسبة تخسر مع الوقت."
    },
    {
     "q": "ما أفضل وقت للتداول؟",
@@ -1412,15 +2163,6 @@ module.exports = {
     "x": "مراجعة صفقاتك تساعدك على معرفة ما ينجح معك."
    },
    {
-    "q": "بميزانية 50 $ ومخاطرة 2٪ في كل صفقة، يكون المبلغ…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × 2٪ = 1 $."
-   },
-   {
     "q": "بعد ثلاث خسائر متتالية، الأفضل هو…",
     "o": [
      "أخذ استراحة",
@@ -1457,24 +2199,243 @@ module.exports = {
     "x": "الحد المحدد مسبقًا يحمي ميزانيتك."
    },
    {
-    "q": "كلما ارتفعت نسبة العائد…",
+    "q": "ماذا تُظهر الشمعة الحمراء؟",
     "o": [
-     "انخفضت نسبة النجاح المطلوبة",
-     "وجب أن يكون المبلغ أكبر",
-     "أصبح السوق أبطأ"
+     "أغلق السعر أدنى من الافتتاح",
+     "أغلق السعر أعلى من الافتتاح",
+     "السوق مغلق"
     ],
-    "x": "مع عائد أعلى، تُحسب كل صفقة رابحة أكثر."
+    "x": "الشمعة الحمراء تُغلق تحت سعر افتتاحها."
+   },
+   {
+    "q": "ماذا يمثّل جسم الشمعة؟",
+    "o": [
+     "الفرق بين الافتتاح والإغلاق",
+     "عدد المتداولين",
+     "مدة الصفقة"
+    ],
+    "x": "يمتد الجسم من سعر الافتتاح إلى سعر الإغلاق."
+   },
+   {
+    "q": "في الرسم البياني، يُظهر المحور العمودي…",
+    "o": [
+     "السعر",
+     "الوقت",
+     "عدد الصفقات"
+    ],
+    "x": "كلما صعدنا في الرسم، ارتفع السعر."
+   },
+   {
+    "q": "في الرسم البياني، يُظهر المحور الأفقي…",
+    "o": [
+     "الوقت",
+     "السعر",
+     "الربح"
+    ],
+    "x": "تتتابع الشموع من اليسار إلى اليمين حسب الوقت."
+   },
+   {
+    "q": "الاتجاه الهابط يصنع…",
+    "o": [
+     "قيعانًا أدنى فأدنى",
+     "قممًا أعلى فأعلى",
+     "شموعًا حمراء فقط"
+    ],
+    "x": "قد يحتوي على شموع خضراء: المهم هو تتابع القيعان الأدنى."
+   },
+   {
+    "q": "عندما يتجاوز السعر المقاومة، نسمّي ذلك…",
+    "o": [
+     "اختراقًا",
+     "إغلاقًا",
+     "إيداعًا"
+    ],
+    "x": "الاختراق يعني أن السعر تجاوز مستوى مهمًا."
+   },
+   {
+    "q": "ماذا يفعل المتداول الذي «ينتظر التأكيد»؟",
+    "o": [
+     "ينتظر إشارة إضافية قبل الدخول",
+     "يدخل فورًا",
+     "يُغلق حسابه"
+    ],
+    "x": "انتظار إشارة إضافية يساعد على قرارات أكثر تأنيًا."
+   },
+   {
+    "q": "الشمعة بلا جسم (الافتتاح = الإغلاق) تُسمّى…",
+    "o": [
+     "دوجي",
+     "المطرقة",
+     "الفتيل"
+    ],
+    "x": "الدوجي يُظهر توازنًا بين المشترين والبائعين."
+   },
+   {
+    "q": "«المطرقة» شمعة لها…",
+    "o": [
+     "جسم صغير وفتيل سفلي طويل",
+     "جسم طويل بلا فتيل",
+     "جسمان"
+    ],
+    "x": "فتيلها السفلي الطويل يُظهر أن السعر عاد للصعود بعد الهبوط."
+   },
+   {
+    "q": "ماذا يعني «الدخول في مركز»؟",
+    "o": [
+     "فتح صفقة",
+     "إغلاق صفقة",
+     "إنشاء حساب"
+    ],
+    "x": "الدخول في مركز يعني بدء صفقة."
+   },
+   {
+    "q": "سعر الدخول في الصفقة هو…",
+    "o": [
+     "السعر عند فتح الصفقة",
+     "السعر في نهاية اليوم",
+     "متوسط سعر الأسبوع"
+    ],
+    "x": "إنه المرجع الذي يُقارن به السعر النهائي."
+   },
+   {
+    "q": "في نهاية المدة، تعتمد النتيجة على…",
+    "o": [
+     "السعر النهائي مقارنةً بسعر الدخول",
+     "عدد الشموع الخضراء",
+     "الساعة"
+    ],
+    "x": "يكفي مقارنة السعر النهائي بسعر الدخول."
+   },
+   {
+    "q": "الحركة السريعة والقوية للسعر تُسمّى غالبًا…",
+    "o": [
+     "اندفاعًا",
+     "نطاقًا عرضيًا",
+     "توقفًا"
+    ],
+    "x": "الاندفاع صعود أو هبوط واضح."
+   },
+   {
+    "q": "المتوسط المتحرك الصاعد يدل عادةً على…",
+    "o": [
+     "اتجاه صاعد",
+     "اتجاه هابط",
+     "سوق مغلق"
+    ],
+    "x": "يتبع المتوسط الاتجاه العام للسعر."
+   },
+   {
+    "q": "عندما يتجاوز السعر متوسطه المتحرك، يرى كثير من المتداولين…",
+    "o": [
+     "إشارة على قوة المشترين",
+     "سوقًا مغلقًا",
+     "خطأً في الرسم"
+    ],
+    "x": "إنه معلَم شائع لتقدير قوة السوق."
+   },
+   {
+    "q": "ما فائدة اختيار المدة (5 ث، 1 د…)؟",
+    "o": [
+     "اختيار مدة الصفقة",
+     "تغيير العملة",
+     "اختيار اللغة"
+    ],
+    "x": "المدة القصيرة تعطي نتيجة سريعة، والطويلة تترك وقتًا للحركة."
+   },
+   {
+    "q": "لماذا نكبّر الرسم البياني؟",
+    "o": [
+     "لرؤية تفاصيل أو تاريخ أكثر",
+     "لتغيير السعر",
+     "لتغيير السوق"
+    ],
+    "x": "التكبير يغيّر ما تراه فقط، لا السعر."
+   },
+   {
+    "q": "ما هو «الارتداد» (pullback)؟",
+    "o": [
+     "رجوع بسيط للسعر خلال الاتجاه",
+     "إغلاق السوق",
+     "إيداع سريع"
+    ],
+    "x": "بعد الحركة، يتوقف السعر غالبًا قليلًا في الاتجاه المعاكس."
+   },
+   {
+    "q": "السوق «الصاعد» هو سوق…",
+    "o": [
+     "يرتفع",
+     "ينخفض",
+     "لا يتحرك"
+    ],
+    "x": "يُقال له بالإنجليزية «bullish»."
+   },
+   {
+    "q": "السوق «الهابط» هو سوق…",
+    "o": [
+     "ينخفض",
+     "يرتفع",
+     "مغلق"
+    ],
+    "x": "يُقال له بالإنجليزية «bearish»."
+   },
+   {
+    "q": "ما هي خطة التداول؟",
+    "o": [
+     "القواعد التي تحددها قبل التداول",
+     "رسم بياني خاص",
+     "نوع من الشموع"
+    ],
+    "x": "الخطة تساعدك على الثبات من صفقة إلى أخرى."
+   },
+   {
+    "q": "بعد صفقة رابحة، أفضل تصرف هو…",
+    "o": [
+     "الحفاظ على طريقتك والبقاء هادئًا",
+     "المخاطرة بكل شيء في التالية",
+     "التوقف عن التحليل"
+    ],
+    "x": "الانتظام أفضل من حماس اللحظة."
+   },
+   {
+    "q": "ما هو «إغلاق» الشمعة؟",
+    "o": [
+     "آخر سعر في الفترة",
+     "أول سعر في الفترة",
+     "أعلى سعر"
+    ],
+    "x": "الإغلاق هو السعر عند انتهاء الشمعة."
+   },
+   {
+    "q": "ما هو «افتتاح» الشمعة؟",
+    "o": [
+     "أول سعر في الفترة",
+     "آخر سعر في الفترة",
+     "أدنى سعر"
+    ],
+    "x": "الافتتاح هو السعر عند بداية الشمعة."
+   },
+   {
+    "q": "لماذا نتدرّب بانتظام؟",
+    "o": [
+     "لقراءة الرسوم البيانية بشكل أفضل مع الخبرة",
+     "لا فائدة منه أبدًا",
+     "لتغيير الأسعار"
+    ],
+    "x": "مثل أي مهارة، تتحسن قراءة الرسوم بالممارسة."
    }
-  ]
+  ],
+  "good": "إجابات صحيحة",
+  "nextQuiz": "اختبار جديد بعد",
+  "comeBack": "عُد كل يوم: كل اختبار جديد يساعدك على التقدم، وتنمو معرفتك خطوة بخطوة."
  },
  "tr": {
   "title": "Trader Testi — Trading bilginizi test edin",
-  "desc": "Trading temellerinizi ölçen 15 soru: mumlar, risk ve trendler. Anında puan ve her cevabın açıklaması. Ücretsiz, kayıt gerekmez.",
+  "desc": "Trading temellerinizi ölçen sorular: mumlar, risk ve trendler. Anında puan ve her cevabın açıklaması. Her gün yeni bir test, ücretsiz ve kayıtsız.",
   "brand": "Trader Testi",
   "lang": "Dil",
-  "badge": "15 soru · 3 dakika",
+  "badge": "Her gün yeni bir test",
   "startHead": "Trading bilginizi test edin",
-  "startText": "Mumlar, trendler, risk yönetimi: 15 soruyu yanıtlayın ve seviyenizi öğrenin. Her cevap açıklanır.",
+  "startText": "Mumlar, trendler, risk yönetimi: günün sorularını yanıtlayın ve seviyenizi öğrenin. Her cevap açıklanır.",
   "startBtn": "Teste başla",
   "q": "Soru",
   "scoreL": "Puan",
@@ -1493,7 +2454,7 @@ module.exports = {
    "Sağlam temeller! Risk yönetimi üzerinde çalışmaya devam edin.",
    "Mükemmel! Temelleri biliyorsunuz: tutarlarınızı her zaman temkinli tutun."
   ],
-  "again": "Yeniden başla",
+  "again": "Bugünün testini tekrarla",
   "demo": "Ücretsiz demo hesapta pratik yapın",
   "warn": "Trading kayıp riski içerir. Kaybetmeyi göze alabileceğinizden fazlasını asla yatırmayın.",
   "questions": [
@@ -1532,15 +2493,6 @@ module.exports = {
      "Günün açılış fiyatı"
     ],
     "x": "Destek bir işarettir, duvar değil: kırılabilir."
-   },
-   {
-    "q": "Temkinli trader’lar işlem başına ne kadar risk alır?",
-    "o": [
-     "Sermayenin %1–2’si",
-     "Sermayenin %25’i",
-     "Sermayenin yarısı"
-    ],
-    "x": "Küçük tutar, hesabı boşaltmadan bir kayıp serisine dayanmayı sağlar."
    },
    {
     "q": "Kayıptan sonra ne yapmalı?",
@@ -1595,15 +2547,6 @@ module.exports = {
      "Bir işlemin süresi"
     ],
     "x": "Piyasa ne kadar volatilse, hareketleri o kadar büyük ve hızlıdır."
-   },
-   {
-    "q": "%90 ödeme ve sabit tutarla, zarar etmemek için gereken en düşük başarı oranı nedir?",
-    "o": [
-     "Yaklaşık %53",
-     "%10",
-     "%90"
-    ],
-    "x": "1 ÷ (1 + 0,9) ≈ %52,6: bunun altında zamanla kaybedilir."
    },
    {
     "q": "İşlem yapmak için en iyi zaman ne zaman?",
@@ -1705,15 +2648,6 @@ module.exports = {
     "x": "İşlemlerinizi gözden geçirmek, size neyin uyduğunu gösterir."
    },
    {
-    "q": "50 $ bütçe ve işlem başına %2 riskle tutar…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × %2 = 1 $."
-   },
-   {
     "q": "Art arda üç kayıptan sonra en iyisi…",
     "o": [
      "Ara vermek",
@@ -1750,24 +2684,243 @@ module.exports = {
     "x": "Önceden belirlenen sınır bütçenizi korur."
    },
    {
-    "q": "Ödeme oranı ne kadar yüksekse…",
+    "q": "Kırmızı mum neyi gösterir?",
     "o": [
-     "Gereken başarı oranı o kadar düşük",
-     "Tutar o kadar büyük olmalı",
-     "Piyasa o kadar yavaş"
+     "Fiyat açılıştan düşük kapandı",
+     "Fiyat açılıştan yüksek kapandı",
+     "Piyasa kapalı"
     ],
-    "x": "Daha yüksek ödemeyle her kazanan işlem daha çok değer taşır."
+    "x": "Kırmızı mum açılış fiyatının altında kapanır."
+   },
+   {
+    "q": "Mumun gövdesi neyi temsil eder?",
+    "o": [
+     "Açılış ile kapanış arasındaki farkı",
+     "Trader sayısını",
+     "İşlem süresini"
+    ],
+    "x": "Gövde açılış fiyatından kapanış fiyatına uzanır."
+   },
+   {
+    "q": "Grafikte dikey eksen neyi gösterir?",
+    "o": [
+     "Fiyatı",
+     "Saati",
+     "İşlem sayısını"
+    ],
+    "x": "Grafikte yukarı çıktıkça fiyat yükselir."
+   },
+   {
+    "q": "Grafikte yatay eksen neyi gösterir?",
+    "o": [
+     "Zamanı",
+     "Fiyatı",
+     "Kazancı"
+    ],
+    "x": "Mumlar zaman sırasına göre soldan sağa dizilir."
+   },
+   {
+    "q": "Düşüş trendi…",
+    "o": [
+     "Giderek daha düşük dipler yapar",
+     "Giderek daha yüksek tepeler yapar",
+     "Sadece kırmızı mumlar yapar"
+    ],
+    "x": "Yeşil mumlar da olabilir: önemli olan düşen diplerdir."
+   },
+   {
+    "q": "Fiyat bir direnci geçtiğinde buna ne denir?",
+    "o": [
+     "Kırılım",
+     "Kapanış",
+     "Para yatırma"
+    ],
+    "x": "Kırılım, fiyatın önemli bir seviyeyi aştığını gösterir."
+   },
+   {
+    "q": "“Onay bekleyen” bir trader ne yapar?",
+    "o": [
+     "Girmeden önce bir işaret daha bekler",
+     "Hemen girer",
+     "Hesabını kapatır"
+    ],
+    "x": "Ek bir işaret beklemek daha düşünülmüş kararlar almayı sağlar."
+   },
+   {
+    "q": "Gövdesiz mum (açılış = kapanış) nasıl adlandırılır?",
+    "o": [
+     "Doji",
+     "Çekiç",
+     "Fitil"
+    ],
+    "x": "Doji, alıcılar ile satıcılar arasında dengeyi gösterir."
+   },
+   {
+    "q": "“Çekiç” mumunda ne vardır?",
+    "o": [
+     "Küçük gövde ve uzun alt fitil",
+     "Fitilsiz uzun gövde",
+     "İki gövde"
+    ],
+    "x": "Uzun alt fitil, fiyatın düştükten sonra toparlandığını gösterir."
+   },
+   {
+    "q": "“Pozisyona girmek” ne demektir?",
+    "o": [
+     "İşlem açmak",
+     "İşlem kapatmak",
+     "Hesap açmak"
+    ],
+    "x": "Pozisyona girmek bir işleme başlamaktır."
+   },
+   {
+    "q": "Bir işlemin giriş fiyatı nedir?",
+    "o": [
+     "İşlemin açıldığı andaki fiyat",
+     "Gün sonundaki fiyat",
+     "Haftanın ortalama fiyatı"
+    ],
+    "x": "Son fiyatın karşılaştırılacağı referanstır."
+   },
+   {
+    "q": "Süre sonunda sonuç neye bağlıdır?",
+    "o": [
+     "Son fiyatın giriş fiyatıyla karşılaştırmasına",
+     "Yeşil mum sayısına",
+     "Saate"
+    ],
+    "x": "Son fiyat yalnızca giriş fiyatıyla karşılaştırılır."
+   },
+   {
+    "q": "Hızlı ve güçlü fiyat hareketine genellikle ne denir?",
+    "o": [
+     "İtki",
+     "Yatay seyir",
+     "Duraklama"
+    ],
+    "x": "İtki, belirgin bir yükseliş veya düşüştür."
+   },
+   {
+    "q": "Yükselen hareketli ortalama genelde neyi gösterir?",
+    "o": [
+     "Yükseliş trendini",
+     "Düşüş trendini",
+     "Kapalı piyasayı"
+    ],
+    "x": "Ortalama, fiyatın genel yönünü izler."
+   },
+   {
+    "q": "Fiyat hareketli ortalamasının üstüne çıktığında birçok trader bunu nasıl görür?",
+    "o": [
+     "Alıcıların gücüne dair bir işaret",
+     "Kapalı piyasa",
+     "Grafik hatası"
+    ],
+    "x": "Piyasanın gücünü değerlendirmek için sık kullanılan bir işarettir."
+   },
+   {
+    "q": "Süre seçimi (5 sn, 1 dk…) ne işe yarar?",
+    "o": [
+     "İşlemin ne kadar süreceğini seçmeye",
+     "Para birimini değiştirmeye",
+     "Dili seçmeye"
+    ],
+    "x": "Kısa süre hızlı sonuç verir; uzun süre harekete zaman tanır."
+   },
+   {
+    "q": "Grafikte neden yakınlaştırma yapılır?",
+    "o": [
+     "Daha fazla ayrıntı ya da geçmiş görmek için",
+     "Fiyatı değiştirmek için",
+     "Piyasayı değiştirmek için"
+    ],
+    "x": "Yakınlaştırma yalnızca gördüğünüzü değiştirir, fiyatı değil."
+   },
+   {
+    "q": "“Pullback” nedir?",
+    "o": [
+     "Trend içinde fiyatın küçük geri çekilmesi",
+     "Piyasanın kapanması",
+     "Hızlı para yatırma"
+    ],
+    "x": "Bir hareketten sonra fiyat çoğu zaman ters yönde kısa bir mola verir."
+   },
+   {
+    "q": "“Boğa” piyasası nasıl bir piyasadır?",
+    "o": [
+     "Yükselen",
+     "Düşen",
+     "Hareketsiz"
+    ],
+    "x": "İngilizcede “bullish” denir."
+   },
+   {
+    "q": "“Ayı” piyasası nasıl bir piyasadır?",
+    "o": [
+     "Düşen",
+     "Yükselen",
+     "Kapalı"
+    ],
+    "x": "İngilizcede “bearish” denir."
+   },
+   {
+    "q": "Trading planı nedir?",
+    "o": [
+     "İşlemden önce belirlediğiniz kurallar",
+     "Özel bir grafik",
+     "Bir mum türü"
+    ],
+    "x": "Plan, işlemden işleme tutarlı kalmanıza yardım eder."
+   },
+   {
+    "q": "Kazanan bir işlemden sonra en iyi tepki nedir?",
+    "o": [
+     "Yönteminizi korumak ve sakin kalmak",
+     "Bir sonrakine her şeyi yatırmak",
+     "Analizi bırakmak"
+    ],
+    "x": "İstikrar, anlık heyecandan daha değerlidir."
+   },
+   {
+    "q": "Mumun “kapanışı” nedir?",
+    "o": [
+     "Dönemin son fiyatı",
+     "Dönemin ilk fiyatı",
+     "En yüksek fiyat"
+    ],
+    "x": "Kapanış, mum bittiği andaki fiyattır."
+   },
+   {
+    "q": "Mumun “açılışı” nedir?",
+    "o": [
+     "Dönemin ilk fiyatı",
+     "Dönemin son fiyatı",
+     "En düşük fiyat"
+    ],
+    "x": "Açılış, mum başladığı andaki fiyattır."
+   },
+   {
+    "q": "Neden düzenli pratik yapmalı?",
+    "o": [
+     "Deneyimle grafikleri daha iyi okumak için",
+     "Hiç faydası yoktur",
+     "Fiyatları değiştirmek için"
+    ],
+    "x": "Her beceri gibi grafik okumak da pratikle gelişir."
    }
-  ]
+  ],
+  "good": "doğru cevap",
+  "nextQuiz": "Yeni teste kalan süre",
+  "comeBack": "Her gün geri gelin: her yeni test sizi geliştirir, bilginiz adım adım büyür."
  },
  "ru": {
   "title": "Тест трейдера — Проверьте свои знания трейдинга",
-  "desc": "15 вопросов, чтобы проверить основы трейдинга: свечи, риск и тренды. Мгновенный результат и объяснение каждого ответа. Бесплатно, без регистрации.",
+  "desc": "Вопросы для проверки основ трейдинга: свечи, риск и тренды. Мгновенный результат и объяснение каждого ответа. Новый тест каждый день, бесплатно и без регистрации.",
   "brand": "Тест трейдера",
   "lang": "Язык",
-  "badge": "15 вопросов · 3 минуты",
+  "badge": "Новый тест каждый день",
   "startHead": "Проверьте свои знания трейдинга",
-  "startText": "Свечи, тренды, управление риском: ответьте на 15 вопросов и узнайте свой уровень. Каждый ответ объясняется.",
+  "startText": "Свечи, тренды, управление риском: ответьте на вопросы дня и узнайте свой уровень. Каждый ответ объясняется.",
   "startBtn": "Начать тест",
   "q": "Вопрос",
   "scoreL": "Очки",
@@ -1786,7 +2939,7 @@ module.exports = {
    "Хорошая база! Продолжайте работать над управлением риском.",
    "Отлично! Вы знаете основы: всегда держите суммы сделок осторожными."
   ],
-  "again": "Пройти заново",
+  "again": "Пройти тест дня заново",
   "demo": "Тренироваться на бесплатном демо-счёте",
   "warn": "Трейдинг связан с риском потерь. Никогда не рискуйте суммой, которую не можете позволить себе потерять.",
   "questions": [
@@ -1825,15 +2978,6 @@ module.exports = {
      "Цена открытия дня"
     ],
     "x": "Поддержка — ориентир, а не стена: её можно пробить."
-   },
-   {
-    "q": "Сколько рискуют осторожные трейдеры в одной сделке?",
-    "o": [
-     "1–2 % капитала",
-     "25 % капитала",
-     "Половину капитала"
-    ],
-    "x": "Небольшая сумма позволяет пережить серию убытков, не опустошив счёт."
    },
    {
     "q": "Что делать после убытка?",
@@ -1888,15 +3032,6 @@ module.exports = {
      "Длительность сделки"
     ],
     "x": "Чем волатильнее рынок, тем крупнее и быстрее его движения."
-   },
-   {
-    "q": "При доходности 90 % и фиксированной сумме какой минимальный процент успеха нужен, чтобы не терять?",
-    "o": [
-     "Около 53 %",
-     "10 %",
-     "90 %"
-    ],
-    "x": "1 ÷ (1 + 0,9) ≈ 52,6 %: ниже этого со временем вы теряете."
    },
    {
     "q": "Когда лучше всего торговать?",
@@ -1998,15 +3133,6 @@ module.exports = {
     "x": "Разбор сделок помогает понять, что работает именно у вас."
    },
    {
-    "q": "При бюджете 50 $ и риске 2 % на сделку сумма равна…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × 2 % = 1 $."
-   },
-   {
     "q": "После трёх убытков подряд лучше всего…",
     "o": [
      "Сделать паузу",
@@ -2043,24 +3169,243 @@ module.exports = {
     "x": "Заранее заданный лимит защищает ваш бюджет."
    },
    {
-    "q": "Чем выше доходность…",
+    "q": "Что показывает красная свеча?",
     "o": [
-     "Тем ниже нужный процент успеха",
-     "Тем больше должна быть сумма",
-     "Тем медленнее рынок"
+     "Цена закрылась ниже открытия",
+     "Цена закрылась выше открытия",
+     "Рынок закрыт"
     ],
-    "x": "При большей доходности каждая выигрышная сделка значит больше."
+    "x": "Красная свеча закрывается ниже цены открытия."
+   },
+   {
+    "q": "Что означает тело свечи?",
+    "o": [
+     "Разницу между открытием и закрытием",
+     "Число трейдеров",
+     "Длительность сделки"
+    ],
+    "x": "Тело идёт от цены открытия до цены закрытия."
+   },
+   {
+    "q": "На графике вертикальная ось показывает…",
+    "o": [
+     "Цену",
+     "Время",
+     "Число сделок"
+    ],
+    "x": "Чем выше на графике, тем выше цена."
+   },
+   {
+    "q": "На графике горизонтальная ось показывает…",
+    "o": [
+     "Время",
+     "Цену",
+     "Прибыль"
+    ],
+    "x": "Свечи идут слева направо в порядке времени."
+   },
+   {
+    "q": "Нисходящий тренд делает…",
+    "o": [
+     "Всё более низкие впадины",
+     "Всё более высокие вершины",
+     "Только красные свечи"
+    ],
+    "x": "В нём бывают зелёные свечи: важна череда более низких впадин."
+   },
+   {
+    "q": "Когда цена пробивает сопротивление, это называют…",
+    "o": [
+     "Пробоем",
+     "Закрытием",
+     "Пополнением"
+    ],
+    "x": "Пробой показывает, что цена прошла важный уровень."
+   },
+   {
+    "q": "Что делает трейдер, который «ждёт подтверждения»?",
+    "o": [
+     "Ждёт ещё один сигнал перед входом",
+     "Входит сразу",
+     "Закрывает счёт"
+    ],
+    "x": "Дополнительный сигнал помогает принимать более взвешенные решения."
+   },
+   {
+    "q": "Свеча без тела (открытие = закрытие) называется…",
+    "o": [
+     "Доджи",
+     "Молот",
+     "Тень"
+    ],
+    "x": "Доджи показывает равновесие покупателей и продавцов."
+   },
+   {
+    "q": "«Молот» — это свеча с…",
+    "o": [
+     "Маленьким телом и длинной нижней тенью",
+     "Длинным телом без тени",
+     "Двумя телами"
+    ],
+    "x": "Длинная нижняя тень показывает, что цена вернулась вверх после падения."
+   },
+   {
+    "q": "Что значит «войти в позицию»?",
+    "o": [
+     "Открыть сделку",
+     "Закрыть сделку",
+     "Создать счёт"
+    ],
+    "x": "Войти в позицию — значит начать сделку."
+   },
+   {
+    "q": "Цена входа в сделку — это…",
+    "o": [
+     "Цена в момент открытия сделки",
+     "Цена в конце дня",
+     "Средняя цена за неделю"
+    ],
+    "x": "С ней сравнивается итоговая цена."
+   },
+   {
+    "q": "В конце срока результат зависит…",
+    "o": [
+     "От итоговой цены по сравнению с ценой входа",
+     "От числа зелёных свечей",
+     "От времени суток"
+    ],
+    "x": "Итоговую цену просто сравнивают с ценой входа."
+   },
+   {
+    "q": "Быстрое и сильное движение цены часто называют…",
+    "o": [
+     "Импульсом",
+     "Боковиком",
+     "Паузой"
+    ],
+    "x": "Импульс — это явный рост или падение."
+   },
+   {
+    "q": "Растущая скользящая средняя обычно указывает на…",
+    "o": [
+     "Восходящий тренд",
+     "Нисходящий тренд",
+     "Закрытый рынок"
+    ],
+    "x": "Средняя следует за общим направлением цены."
+   },
+   {
+    "q": "Когда цена поднимается выше скользящей средней, многие трейдеры видят…",
+    "o": [
+     "Признак силы покупателей",
+     "Закрытый рынок",
+     "Ошибку графика"
+    ],
+    "x": "Это частый ориентир для оценки силы рынка."
+   },
+   {
+    "q": "Зачем выбирать длительность (5 с, 1 мин…)?",
+    "o": [
+     "Чтобы выбрать, сколько длится сделка",
+     "Чтобы сменить валюту",
+     "Чтобы выбрать язык"
+    ],
+    "x": "Короткий срок даёт быстрый результат, длинный оставляет время движению."
+   },
+   {
+    "q": "Зачем увеличивать масштаб графика?",
+    "o": [
+     "Чтобы видеть больше деталей или истории",
+     "Чтобы изменить цену",
+     "Чтобы сменить рынок"
+    ],
+    "x": "Масштаб меняет только то, что вы видите, а не цену."
+   },
+   {
+    "q": "Что такое «откат» (pullback)?",
+    "o": [
+     "Небольшой возврат цены внутри тренда",
+     "Закрытие рынка",
+     "Быстрое пополнение"
+    ],
+    "x": "После движения цена часто ненадолго идёт в обратную сторону."
+   },
+   {
+    "q": "«Бычий» рынок — это рынок, который…",
+    "o": [
+     "Растёт",
+     "Падает",
+     "Не движется"
+    ],
+    "x": "По-английски — «bullish»."
+   },
+   {
+    "q": "«Медвежий» рынок — это рынок, который…",
+    "o": [
+     "Падает",
+     "Растёт",
+     "Закрыт"
+    ],
+    "x": "По-английски — «bearish»."
+   },
+   {
+    "q": "Что такое торговый план?",
+    "o": [
+     "Правила, которые вы задаёте до торговли",
+     "Особый график",
+     "Тип свечи"
+    ],
+    "x": "План помогает быть последовательным от сделки к сделке."
+   },
+   {
+    "q": "После выигрышной сделки лучше всего…",
+    "o": [
+     "Сохранить метод и спокойствие",
+     "Поставить всё на следующую",
+     "Перестать анализировать"
+    ],
+    "x": "Постоянство важнее азарта момента."
+   },
+   {
+    "q": "Что такое «закрытие» свечи?",
+    "o": [
+     "Последняя цена периода",
+     "Первая цена периода",
+     "Самая высокая цена"
+    ],
+    "x": "Закрытие — цена в момент окончания свечи."
+   },
+   {
+    "q": "Что такое «открытие» свечи?",
+    "o": [
+     "Первая цена периода",
+     "Последняя цена периода",
+     "Самая низкая цена"
+    ],
+    "x": "Открытие — цена в момент начала свечи."
+   },
+   {
+    "q": "Зачем тренироваться регулярно?",
+    "o": [
+     "Чтобы с опытом лучше читать графики",
+     "Это никогда не полезно",
+     "Чтобы менять цены"
+    ],
+    "x": "Как любой навык, чтение графиков улучшается с практикой."
    }
-  ]
+  ],
+  "good": "верных ответов",
+  "nextQuiz": "Новый тест через",
+  "comeBack": "Возвращайтесь каждый день: каждый новый тест помогает расти, а знания прибавляются шаг за шагом."
  },
  "id": {
   "title": "Kuis Trader — Uji Pengetahuan Trading Anda",
-  "desc": "15 pertanyaan untuk menguji dasar trading Anda: lilin, risiko, dan tren. Skor langsung dan penjelasan setiap jawaban. Gratis, tanpa daftar.",
+  "desc": "Pertanyaan untuk menguji dasar trading Anda: lilin, risiko, dan tren. Skor langsung dan penjelasan setiap jawaban. Kuis baru setiap hari, gratis tanpa daftar.",
   "brand": "Kuis Trader",
   "lang": "Bahasa",
-  "badge": "15 pertanyaan · 3 menit",
+  "badge": "Kuis baru setiap hari",
   "startHead": "Uji pengetahuan trading Anda",
-  "startText": "Lilin, tren, manajemen risiko: jawab 15 pertanyaan dan ketahui level Anda. Setiap jawaban dijelaskan.",
+  "startText": "Lilin, tren, manajemen risiko: jawab pertanyaan hari ini dan ketahui level Anda. Setiap jawaban dijelaskan.",
   "startBtn": "Mulai kuis",
   "q": "Pertanyaan",
   "scoreL": "Skor",
@@ -2079,7 +3424,7 @@ module.exports = {
    "Dasar yang kuat! Terus latih manajemen risiko Anda.",
    "Luar biasa! Anda menguasai dasarnya: selalu jaga nominal tetap hati-hati."
   ],
-  "again": "Ulangi",
+  "again": "Ulangi kuis hari ini",
   "demo": "Berlatih di akun demo gratis",
   "warn": "Trading mengandung risiko kerugian. Jangan pernah mempertaruhkan lebih dari yang sanggup Anda rugikan.",
   "questions": [
@@ -2118,15 +3463,6 @@ module.exports = {
      "Harga pembukaan hari ini"
     ],
     "x": "Support adalah patokan, bukan tembok: bisa ditembus."
-   },
-   {
-    "q": "Berapa risiko trader yang berhati-hati per transaksi?",
-    "o": [
-     "1–2% dari modal",
-     "25% dari modal",
-     "Setengah modal"
-    ],
-    "x": "Nominal kecil membuat Anda tahan menghadapi kekalahan beruntun tanpa menguras akun."
    },
    {
     "q": "Apa yang dilakukan setelah rugi?",
@@ -2181,15 +3517,6 @@ module.exports = {
      "Lamanya sebuah transaksi"
     ],
     "x": "Semakin volatil pasar, semakin besar dan cepat pergerakannya."
-   },
-   {
-    "q": "Dengan pembayaran 90% dan nominal tetap, berapa tingkat menang minimum agar tidak rugi?",
-    "o": [
-     "Sekitar 53%",
-     "10%",
-     "90%"
-    ],
-    "x": "1 ÷ (1 + 0,9) ≈ 52,6%: di bawah itu, Anda rugi dalam jangka panjang."
    },
    {
     "q": "Kapan waktu terbaik untuk trading?",
@@ -2291,15 +3618,6 @@ module.exports = {
     "x": "Meninjau transaksi membantu melihat apa yang cocok bagi Anda."
    },
    {
-    "q": "Dengan anggaran 50 $ dan risiko 2% per transaksi, nominalnya…",
-    "o": [
-     "1 $",
-     "10 $",
-     "25 $"
-    ],
-    "x": "50 $ × 2% = 1 $."
-   },
-   {
     "q": "Setelah tiga kekalahan beruntun, sebaiknya…",
     "o": [
      "Beristirahat",
@@ -2336,14 +3654,233 @@ module.exports = {
     "x": "Batas yang ditetapkan sebelumnya melindungi anggaran Anda."
    },
    {
-    "q": "Semakin tinggi tingkat pembayaran…",
+    "q": "Apa yang ditunjukkan lilin merah?",
     "o": [
-     "Semakin rendah tingkat menang yang dibutuhkan",
-     "Semakin besar nominal yang harus dipasang",
-     "Semakin lambat pasar"
+     "Harga ditutup lebih rendah dari pembukaan",
+     "Harga ditutup lebih tinggi dari pembukaan",
+     "Pasar sedang tutup"
     ],
-    "x": "Dengan pembayaran lebih tinggi, setiap transaksi menang lebih berarti."
+    "x": "Lilin merah ditutup di bawah harga pembukaannya."
+   },
+   {
+    "q": "Apa arti badan lilin?",
+    "o": [
+     "Selisih antara pembukaan dan penutupan",
+     "Jumlah trader",
+     "Durasi transaksi"
+    ],
+    "x": "Badan lilin dari harga pembukaan ke harga penutupan."
+   },
+   {
+    "q": "Pada grafik, sumbu vertikal menunjukkan…",
+    "o": [
+     "Harga",
+     "Waktu",
+     "Jumlah transaksi"
+    ],
+    "x": "Semakin ke atas grafik, semakin tinggi harganya."
+   },
+   {
+    "q": "Pada grafik, sumbu horizontal menunjukkan…",
+    "o": [
+     "Waktu",
+     "Harga",
+     "Keuntungan"
+    ],
+    "x": "Lilin berurutan dari kiri ke kanan sesuai waktu."
+   },
+   {
+    "q": "Tren turun membuat…",
+    "o": [
+     "Lembah yang makin rendah",
+     "Puncak yang makin tinggi",
+     "Hanya lilin merah"
+    ],
+    "x": "Bisa ada lilin hijau: yang penting rangkaian lembah yang makin rendah."
+   },
+   {
+    "q": "Saat harga menembus resistance, disebut…",
+    "o": [
+     "Breakout",
+     "Penutupan",
+     "Deposit"
+    ],
+    "x": "Breakout menunjukkan harga melewati level penting."
+   },
+   {
+    "q": "Apa yang dilakukan trader yang “menunggu konfirmasi”?",
+    "o": [
+     "Menunggu satu tanda lagi sebelum masuk",
+     "Langsung masuk",
+     "Menutup akun"
+    ],
+    "x": "Menunggu tanda tambahan membantu keputusan lebih matang."
+   },
+   {
+    "q": "Lilin tanpa badan (buka = tutup) disebut…",
+    "o": [
+     "Doji",
+     "Hammer",
+     "Sumbu"
+    ],
+    "x": "Doji menunjukkan keseimbangan pembeli dan penjual."
+   },
+   {
+    "q": "“Hammer” adalah lilin dengan…",
+    "o": [
+     "Badan kecil dan sumbu bawah panjang",
+     "Badan panjang tanpa sumbu",
+     "Dua badan"
+    ],
+    "x": "Sumbu bawah panjang menunjukkan harga naik lagi setelah turun."
+   },
+   {
+    "q": "Apa arti “masuk posisi”?",
+    "o": [
+     "Membuka transaksi",
+     "Menutup transaksi",
+     "Membuat akun"
+    ],
+    "x": "Masuk posisi berarti memulai transaksi."
+   },
+   {
+    "q": "Harga masuk sebuah transaksi adalah…",
+    "o": [
+     "Harga saat transaksi dibuka",
+     "Harga di akhir hari",
+     "Harga rata-rata minggu ini"
+    ],
+    "x": "Itu acuan yang dibandingkan dengan harga akhir."
+   },
+   {
+    "q": "Di akhir durasi, hasilnya bergantung pada…",
+    "o": [
+     "Harga akhir dibanding harga masuk",
+     "Jumlah lilin hijau",
+     "Jam"
+    ],
+    "x": "Cukup bandingkan harga akhir dengan harga masuk."
+   },
+   {
+    "q": "Pergerakan harga yang cepat dan kuat sering disebut…",
+    "o": [
+     "Impuls",
+     "Sideways",
+     "Jeda"
+    ],
+    "x": "Impuls adalah kenaikan atau penurunan yang jelas."
+   },
+   {
+    "q": "Moving average yang naik biasanya menandakan…",
+    "o": [
+     "Tren naik",
+     "Tren turun",
+     "Pasar tutup"
+    ],
+    "x": "Rata-rata mengikuti arah umum harga."
+   },
+   {
+    "q": "Saat harga naik di atas moving average, banyak trader melihatnya sebagai…",
+    "o": [
+     "Tanda kekuatan pembeli",
+     "Pasar tutup",
+     "Kesalahan grafik"
+    ],
+    "x": "Ini patokan umum untuk menilai kekuatan pasar."
+   },
+   {
+    "q": "Untuk apa memilih durasi (5 dtk, 1 mnt…)?",
+    "o": [
+     "Memilih berapa lama transaksi berlangsung",
+     "Mengganti mata uang",
+     "Memilih bahasa"
+    ],
+    "x": "Durasi pendek memberi hasil cepat; durasi panjang memberi waktu bagi pergerakan."
+   },
+   {
+    "q": "Mengapa memperbesar grafik?",
+    "o": [
+     "Untuk melihat lebih banyak detail atau riwayat",
+     "Untuk mengubah harga",
+     "Untuk mengganti pasar"
+    ],
+    "x": "Zoom hanya mengubah tampilan, bukan harga."
+   },
+   {
+    "q": "Apa itu “pullback”?",
+    "o": [
+     "Kemunduran kecil harga dalam tren",
+     "Pasar ditutup",
+     "Deposit cepat"
+    ],
+    "x": "Setelah bergerak, harga sering berhenti sejenak ke arah berlawanan."
+   },
+   {
+    "q": "Pasar “bullish” adalah pasar yang…",
+    "o": [
+     "Naik",
+     "Turun",
+     "Diam"
+    ],
+    "x": "Bullish berarti naik."
+   },
+   {
+    "q": "Pasar “bearish” adalah pasar yang…",
+    "o": [
+     "Turun",
+     "Naik",
+     "Tutup"
+    ],
+    "x": "Bearish berarti turun."
+   },
+   {
+    "q": "Apa itu rencana trading?",
+    "o": [
+     "Aturan yang Anda tetapkan sebelum trading",
+     "Grafik khusus",
+     "Jenis lilin"
+    ],
+    "x": "Rencana membantu tetap konsisten dari satu transaksi ke transaksi lain."
+   },
+   {
+    "q": "Setelah transaksi menang, refleks terbaik adalah…",
+    "o": [
+     "Pertahankan metode dan tetap tenang",
+     "Pasang semuanya di transaksi berikutnya",
+     "Berhenti menganalisis"
+    ],
+    "x": "Konsistensi lebih penting daripada euforia sesaat."
+   },
+   {
+    "q": "Apa itu “penutupan” lilin?",
+    "o": [
+     "Harga terakhir pada periode itu",
+     "Harga pertama pada periode itu",
+     "Harga tertinggi"
+    ],
+    "x": "Penutupan adalah harga saat lilin selesai."
+   },
+   {
+    "q": "Apa itu “pembukaan” lilin?",
+    "o": [
+     "Harga pertama pada periode itu",
+     "Harga terakhir pada periode itu",
+     "Harga terendah"
+    ],
+    "x": "Pembukaan adalah harga saat lilin dimulai."
+   },
+   {
+    "q": "Mengapa berlatih secara rutin?",
+    "o": [
+     "Agar makin pandai membaca grafik dengan pengalaman",
+     "Tidak pernah berguna",
+     "Untuk mengubah harga"
+    ],
+    "x": "Seperti keterampilan lain, membaca grafik membaik dengan latihan."
    }
-  ]
+  ],
+  "good": "jawaban benar",
+  "nextQuiz": "Kuis baru dalam",
+  "comeBack": "Kembalilah setiap hari: setiap kuis baru membuat Anda berkembang, dan pengetahuan Anda tumbuh selangkah demi selangkah."
  }
 };

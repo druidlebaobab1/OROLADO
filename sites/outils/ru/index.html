@@ -108,16 +108,12 @@ input[type=range]{width:100%;accent-color:#F5C542}
     <div class="card"><span>Прибыль при выигрыше</span><b class="pos" id="gWin">—</b></div>
     <div class="card"><span>Сумма к получению при выигрыше</span><b class="gl" id="gBack">—</b></div>
     <div class="card"><span>Убыток при проигрыше</span><b class="neg" id="gLose">—</b></div>
-    <div class="card"><span>Минимальный процент успеха, чтобы не терять</span><b id="gBe">—</b></div>
-    <p class="note">Чем выше доходность, тем ниже нужный процент успешных сделок.</p>
   </section>
   <section class="panel" id="p-risk">
-    <h2>Управление риском</h2>
+    <h2>Планируйте бюджет</h2>
     <label class="f">Капитал ($)<input id="rCap" type="number" inputmode="decimal" min="1" value="100"></label>
-    <label class="f">Риск на сделку : <b id="rPctV" class="gl">2 %</b><input id="rPct" type="range" min="1" max="10" step="1" value="2"></label>
-    <div class="card"><span>Рекомендуемая сумма сделки</span><b class="gl" id="rStake">—</b></div>
-    <div class="card"><span>Убытков подряд до потери половины капитала</span><b id="rStreak">—</b></div>
-    <p class="note">Осторожные трейдеры рискуют 1–2 % капитала в одной сделке.</p>
+    <label class="f">Запланированное число сделок : <b id="rPctV" class="gl">20</b><input id="rPct" type="range" min="5" max="100" step="5" value="20"></label>
+    <div class="card"><span>Сумма на сделку</span><b class="gl" id="rStake">—</b></div>
   </section>
   <section class="panel about" id="p-about">
     <h2>О сайте</h2>
@@ -129,13 +125,13 @@ input[type=range]{width:100%;accent-color:#F5C542}
 <nav class="tabs" aria-label="menu">
   <button type="button" class="on" data-p="p-pred"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M16 6h4v4"/></svg>Прогноз</button>
   <button type="button" data-p="p-gain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>Прибыль</button>
-  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Риск</button>
+  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Бюджет</button>
   <button type="button" data-p="p-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>О сайте</button>
 </nav>
 </div>
 <script>
 (function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
-var T={"title":"OROLADO Tools — Тренажёр прогноза цены в трейдинге и калькуляторы","desc":"Учитесь читать график: угадайте, вырастет или упадёт следующая свеча. Бесплатные калькуляторы прибыли и управления риском, без регистрации.","brand":"OROLADO Tools","lang":"Язык","tabPred":"Прогноз","tabGain":"Прибыль","tabRisk":"Риск","tabAbout":"О сайте","predHead":"Тренажёр прогноза","predSub":"Следующая свеча вырастет или упадёт?","up":"Рост","down":"Падение","round":"Раунд","score":"Очки","right":"Верно!","wrong":"Мимо…","resTitle":"Ваш результат","acc":"Точность","resText":"Отлично! Читать графики учатся на практике. Продолжайте тренироваться или перейдите к настоящему графику на бесплатном демо.","again":"Продолжить","tryReal":"Попробовать на настоящем графике (бесплатное демо)","gainHead":"Калькулятор прибыли","stake":"Сумма ($)","payout":"Доходность (%)","ifWin":"Прибыль при выигрыше","ifLose":"Убыток при проигрыше","back":"Сумма к получению при выигрыше","breakeven":"Минимальный процент успеха, чтобы не терять","gainNote":"Чем выше доходность, тем ниже нужный процент успешных сделок.","riskHead":"Управление риском","capital":"Капитал ($)","riskPct":"Риск на сделку","advised":"Рекомендуемая сумма сделки","streak":"Убытков подряд до потери половины капитала","riskNote":"Осторожные трейдеры рискуют 1–2 % капитала в одной сделке.","aboutHead":"О сайте","aboutText":"OROLADO Tools — бесплатное пространство, чтобы учиться читать графики и готовить сделки: тренажёр прогноза, расчёт прибыли и управление риском. Регистрация не нужна.","warn":"Трейдинг связан с риском потерь. Никогда не рискуйте суммой, которую не можете позволить себе потерять.","demo":"Открыть бесплатный демо-счёт на OROLADO"};
+var T={"title":"OROLADO Tools — Тренажёр прогноза цены в трейдинге и калькуляторы","desc":"Учитесь читать график: угадайте, вырастет или упадёт следующая свеча. Бесплатные калькуляторы прибыли и управления риском, без регистрации.","brand":"OROLADO Tools","lang":"Язык","tabPred":"Прогноз","tabGain":"Прибыль","tabRisk":"Бюджет","tabAbout":"О сайте","predHead":"Тренажёр прогноза","predSub":"Следующая свеча вырастет или упадёт?","up":"Рост","down":"Падение","round":"Раунд","score":"Очки","right":"Верно!","wrong":"Мимо…","resTitle":"Ваш результат","acc":"Точность","resText":"Отлично! Читать графики учатся на практике. Продолжайте тренироваться или перейдите к настоящему графику на бесплатном демо.","again":"Продолжить","tryReal":"Попробовать на настоящем графике (бесплатное демо)","gainHead":"Калькулятор прибыли","stake":"Сумма ($)","payout":"Доходность (%)","ifWin":"Прибыль при выигрыше","ifLose":"Убыток при проигрыше","back":"Сумма к получению при выигрыше","riskHead":"Планируйте бюджет","capital":"Капитал ($)","riskPct":"Запланированное число сделок","advised":"Сумма на сделку","aboutHead":"О сайте","aboutText":"OROLADO Tools — бесплатное пространство, чтобы учиться читать графики и готовить сделки: тренажёр прогноза, расчёт прибыли и управление риском. Регистрация не нужна.","warn":"Трейдинг связан с риском потерь. Никогда не рискуйте суммой, которую не можете позволить себе потерять.","demo":"Открыть бесплатный демо-счёт на OROLADO"};
 
 (function(){
 var L=document.documentElement.lang;
@@ -145,7 +141,7 @@ var money=function(n){return '$ '+nf(n,2)};
 // Onglets
 var tabs=document.querySelectorAll('.tabs button');
 tabs.forEach(function(b){b.addEventListener('click',function(){tabs.forEach(function(x){x.classList.toggle('on',x===b)});document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p)});if(b.dataset.p==='p-pred')draw();});});
-// --- Entraînement à la prédiction (graphique au hasard, comme un vrai marché) ---
+// --- Entraînement à la prédiction ---
 var VIS=30,STEP=10,cv=$('cv'),ctx=cv.getContext('2d'),C=[],r=0,score=0,busy=false,lo=0,hi=0;
 function gauss(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 // Partie sans fin : les bougies sont créées au fur et à mesure ; un bilan tous les 10 coups.
@@ -168,11 +164,11 @@ $('bUp').addEventListener('click',function(){guess(true)});$('bDn').addEventList
 window.addEventListener('resize',draw);
 // --- Calculateur de gains ---
 function gain(){var s=Math.max(0,parseFloat($('gStake').value)||0),p=Math.max(0,parseFloat($('gPay').value)||0);
-$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s);$('gBe').textContent=p>0?nf(100/(1+p/100),1)+' %':'—'}
+$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s)}
 ['gStake','gPay'].forEach(function(i){$(i).addEventListener('input',gain)});
 // --- Gestion du risque ---
-function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||1;$('rPctV').textContent=q+' %';
-$('rStake').textContent=money(c*q/100);$('rStreak').textContent=String(Math.ceil(Math.log(0.5)/Math.log(1-q/100)))}
+function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||20;$('rPctV').textContent=String(q);
+$('rStake').textContent=money(c/q)}
 ['rCap','rPct'].forEach(function(i){$(i).addEventListener('input',risk)});
 newGame();gain();risk();
 })();

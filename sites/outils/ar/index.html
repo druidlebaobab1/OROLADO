@@ -108,16 +108,12 @@ input[type=range]{width:100%;accent-color:#F5C542}
     <div class="card"><span>الربح عند الفوز</span><b class="pos" id="gWin">—</b></div>
     <div class="card"><span>المبلغ المستلم عند الفوز</span><b class="gl" id="gBack">—</b></div>
     <div class="card"><span>الخسارة عند الخسارة</span><b class="neg" id="gLose">—</b></div>
-    <div class="card"><span>أدنى نسبة نجاح لعدم الخسارة</span><b id="gBe">—</b></div>
-    <p class="note">كلما ارتفعت نسبة العائد، انخفضت نسبة النجاح المطلوبة.</p>
   </section>
   <section class="panel" id="p-risk">
-    <h2>إدارة المخاطر</h2>
+    <h2>خطّط لميزانيتك</h2>
     <label class="f">رأس المال ($)<input id="rCap" type="number" inputmode="decimal" min="1" value="100"></label>
-    <label class="f">المخاطرة في كل صفقة : <b id="rPctV" class="gl">2 %</b><input id="rPct" type="range" min="1" max="10" step="1" value="2"></label>
-    <div class="card"><span>المبلغ المقترح لكل صفقة</span><b class="gl" id="rStake">—</b></div>
-    <div class="card"><span>عدد الخسائر المتتالية قبل خسارة نصف رأس المال</span><b id="rStreak">—</b></div>
-    <p class="note">يخاطر المتداولون الحذرون بنسبة 1 إلى 2٪ من رأس مالهم في كل صفقة.</p>
+    <label class="f">عدد الصفقات المخطط لها : <b id="rPctV" class="gl">20</b><input id="rPct" type="range" min="5" max="100" step="5" value="20"></label>
+    <div class="card"><span>المبلغ لكل صفقة</span><b class="gl" id="rStake">—</b></div>
   </section>
   <section class="panel about" id="p-about">
     <h2>حول</h2>
@@ -129,13 +125,13 @@ input[type=range]{width:100%;accent-color:#F5C542}
 <nav class="tabs" aria-label="menu">
   <button type="button" class="on" data-p="p-pred"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M16 6h4v4"/></svg>التوقع</button>
   <button type="button" data-p="p-gain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>الأرباح</button>
-  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>المخاطر</button>
+  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>الميزانية</button>
   <button type="button" data-p="p-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>حول</button>
 </nav>
 </div>
 <script>
 (function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
-var T={"title":"OROLADO Tools — تدريب على توقع الأسعار في التداول وحاسبات","desc":"تدرّب على قراءة الرسم البياني: توقّع هل الشمعة التالية ستصعد أم ستهبط. حاسبات مجانية للأرباح وإدارة المخاطر، بدون تسجيل.","brand":"OROLADO Tools","lang":"اللغة","tabPred":"التوقع","tabGain":"الأرباح","tabRisk":"المخاطر","tabAbout":"حول","predHead":"تدريب على التوقع","predSub":"هل ستصعد الشمعة التالية أم ستهبط؟","up":"صعود","down":"هبوط","round":"الجولة","score":"النقاط","right":"أحسنت!","wrong":"خطأ…","resTitle":"نتيجتك","acc":"الدقة","resText":"أحسنت! قراءة الرسم البياني مهارة تُكتسب بالممارسة. واصل التدرّب، أو انتقل إلى رسم بياني حقيقي في حساب تجريبي مجاني.","again":"متابعة","tryReal":"جرّب على رسم بياني حقيقي (حساب تجريبي مجاني)","gainHead":"حاسبة الأرباح","stake":"المبلغ ($)","payout":"نسبة العائد (%)","ifWin":"الربح عند الفوز","ifLose":"الخسارة عند الخسارة","back":"المبلغ المستلم عند الفوز","breakeven":"أدنى نسبة نجاح لعدم الخسارة","gainNote":"كلما ارتفعت نسبة العائد، انخفضت نسبة النجاح المطلوبة.","riskHead":"إدارة المخاطر","capital":"رأس المال ($)","riskPct":"المخاطرة في كل صفقة","advised":"المبلغ المقترح لكل صفقة","streak":"عدد الخسائر المتتالية قبل خسارة نصف رأس المال","riskNote":"يخاطر المتداولون الحذرون بنسبة 1 إلى 2٪ من رأس مالهم في كل صفقة.","aboutHead":"حول","aboutText":"OROLADO Tools مساحة مجانية للتدرّب على قراءة الرسوم البيانية والتحضير لصفقاتك: تدريب على التوقع، حساب الأرباح وإدارة المخاطر. لا حاجة للتسجيل.","warn":"ينطوي التداول على خطر الخسارة. لا تخاطر أبدًا بأكثر مما يمكنك تحمّل خسارته.","demo":"افتح حسابًا تجريبيًا مجانيًا على OROLADO"};
+var T={"title":"OROLADO Tools — تدريب على توقع الأسعار في التداول وحاسبات","desc":"تدرّب على قراءة الرسم البياني: توقّع هل الشمعة التالية ستصعد أم ستهبط. حاسبات مجانية للأرباح وإدارة المخاطر، بدون تسجيل.","brand":"OROLADO Tools","lang":"اللغة","tabPred":"التوقع","tabGain":"الأرباح","tabRisk":"الميزانية","tabAbout":"حول","predHead":"تدريب على التوقع","predSub":"هل ستصعد الشمعة التالية أم ستهبط؟","up":"صعود","down":"هبوط","round":"الجولة","score":"النقاط","right":"أحسنت!","wrong":"خطأ…","resTitle":"نتيجتك","acc":"الدقة","resText":"أحسنت! قراءة الرسم البياني مهارة تُكتسب بالممارسة. واصل التدرّب، أو انتقل إلى رسم بياني حقيقي في حساب تجريبي مجاني.","again":"متابعة","tryReal":"جرّب على رسم بياني حقيقي (حساب تجريبي مجاني)","gainHead":"حاسبة الأرباح","stake":"المبلغ ($)","payout":"نسبة العائد (%)","ifWin":"الربح عند الفوز","ifLose":"الخسارة عند الخسارة","back":"المبلغ المستلم عند الفوز","riskHead":"خطّط لميزانيتك","capital":"رأس المال ($)","riskPct":"عدد الصفقات المخطط لها","advised":"المبلغ لكل صفقة","aboutHead":"حول","aboutText":"OROLADO Tools مساحة مجانية للتدرّب على قراءة الرسوم البيانية والتحضير لصفقاتك: تدريب على التوقع، حساب الأرباح وإدارة المخاطر. لا حاجة للتسجيل.","warn":"ينطوي التداول على خطر الخسارة. لا تخاطر أبدًا بأكثر مما يمكنك تحمّل خسارته.","demo":"افتح حسابًا تجريبيًا مجانيًا على OROLADO"};
 
 (function(){
 var L=document.documentElement.lang;
@@ -145,7 +141,7 @@ var money=function(n){return '$ '+nf(n,2)};
 // Onglets
 var tabs=document.querySelectorAll('.tabs button');
 tabs.forEach(function(b){b.addEventListener('click',function(){tabs.forEach(function(x){x.classList.toggle('on',x===b)});document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p)});if(b.dataset.p==='p-pred')draw();});});
-// --- Entraînement à la prédiction (graphique au hasard, comme un vrai marché) ---
+// --- Entraînement à la prédiction ---
 var VIS=30,STEP=10,cv=$('cv'),ctx=cv.getContext('2d'),C=[],r=0,score=0,busy=false,lo=0,hi=0;
 function gauss(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 // Partie sans fin : les bougies sont créées au fur et à mesure ; un bilan tous les 10 coups.
@@ -168,11 +164,11 @@ $('bUp').addEventListener('click',function(){guess(true)});$('bDn').addEventList
 window.addEventListener('resize',draw);
 // --- Calculateur de gains ---
 function gain(){var s=Math.max(0,parseFloat($('gStake').value)||0),p=Math.max(0,parseFloat($('gPay').value)||0);
-$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s);$('gBe').textContent=p>0?nf(100/(1+p/100),1)+' %':'—'}
+$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s)}
 ['gStake','gPay'].forEach(function(i){$(i).addEventListener('input',gain)});
 // --- Gestion du risque ---
-function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||1;$('rPctV').textContent=q+' %';
-$('rStake').textContent=money(c*q/100);$('rStreak').textContent=String(Math.ceil(Math.log(0.5)/Math.log(1-q/100)))}
+function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||20;$('rPctV').textContent=String(q);
+$('rStake').textContent=money(c/q)}
 ['rCap','rPct'].forEach(function(i){$(i).addEventListener('input',risk)});
 newGame();gain();risk();
 })();

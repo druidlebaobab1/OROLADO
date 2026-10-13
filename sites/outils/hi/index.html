@@ -108,16 +108,12 @@ input[type=range]{width:100%;accent-color:#F5C542}
     <div class="card"><span>जीतने पर मुनाफ़ा</span><b class="pos" id="gWin">—</b></div>
     <div class="card"><span>जीतने पर मिलने वाली राशि</span><b class="gl" id="gBack">—</b></div>
     <div class="card"><span>हारने पर नुकसान</span><b class="neg" id="gLose">—</b></div>
-    <div class="card"><span>नुकसान से बचने के लिए न्यूनतम सफलता दर</span><b id="gBe">—</b></div>
-    <p class="note">भुगतान दर जितनी अधिक होगी, ज़रूरी सफलता दर उतनी कम होगी।</p>
   </section>
   <section class="panel" id="p-risk">
-    <h2>जोखिम प्रबंधन</h2>
+    <h2>अपना बजट तय करें</h2>
     <label class="f">पूंजी ($)<input id="rCap" type="number" inputmode="decimal" min="1" value="100"></label>
-    <label class="f">प्रति ट्रेड जोखिम : <b id="rPctV" class="gl">2 %</b><input id="rPct" type="range" min="1" max="10" step="1" value="2"></label>
-    <div class="card"><span>प्रति ट्रेड सुझाई गई राशि</span><b class="gl" id="rStake">—</b></div>
-    <div class="card"><span>आधी पूंजी गंवाने से पहले लगातार हार</span><b id="rStreak">—</b></div>
-    <p class="note">सावधान ट्रेडर हर ट्रेड में अपनी पूंजी का 1–2% ही जोखिम में डालते हैं।</p>
+    <label class="f">नियोजित ट्रेडों की संख्या : <b id="rPctV" class="gl">20</b><input id="rPct" type="range" min="5" max="100" step="5" value="20"></label>
+    <div class="card"><span>प्रति ट्रेड राशि</span><b class="gl" id="rStake">—</b></div>
   </section>
   <section class="panel about" id="p-about">
     <h2>परिचय</h2>
@@ -129,13 +125,13 @@ input[type=range]{width:100%;accent-color:#F5C542}
 <nav class="tabs" aria-label="menu">
   <button type="button" class="on" data-p="p-pred"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M16 6h4v4"/></svg>अनुमान</button>
   <button type="button" data-p="p-gain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>मुनाफ़ा</button>
-  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>जोखिम</button>
+  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>बजट</button>
   <button type="button" data-p="p-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>परिचय</button>
 </nav>
 </div>
 <script>
 (function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
-var T={"title":"OROLADO Tools — ट्रेडिंग मूल्य अनुमान अभ्यास और कैलकुलेटर","desc":"चार्ट पढ़ने का अभ्यास करें: अनुमान लगाएं कि अगली कैंडल ऊपर जाएगी या नीचे। मुनाफ़े और जोखिम प्रबंधन के मुफ़्त कैलकुलेटर, बिना साइन-अप।","brand":"OROLADO Tools","lang":"भाषा","tabPred":"अनुमान","tabGain":"मुनाफ़ा","tabRisk":"जोखिम","tabAbout":"परिचय","predHead":"अनुमान अभ्यास","predSub":"अगली कैंडल ऊपर जाएगी या नीचे?","up":"ऊपर","down":"नीचे","round":"राउंड","score":"स्कोर","right":"सही पहचाना!","wrong":"चूक गए…","resTitle":"आपका परिणाम","acc":"सटीकता","resText":"बहुत बढ़िया! चार्ट पढ़ना अभ्यास से आता है। अभ्यास जारी रखें, या मुफ़्त डेमो में असली चार्ट पर जाएं।","again":"जारी रखें","tryReal":"असली चार्ट पर आज़माएं (मुफ़्त डेमो)","gainHead":"मुनाफ़ा कैलकुलेटर","stake":"राशि ($)","payout":"भुगतान दर (%)","ifWin":"जीतने पर मुनाफ़ा","ifLose":"हारने पर नुकसान","back":"जीतने पर मिलने वाली राशि","breakeven":"नुकसान से बचने के लिए न्यूनतम सफलता दर","gainNote":"भुगतान दर जितनी अधिक होगी, ज़रूरी सफलता दर उतनी कम होगी।","riskHead":"जोखिम प्रबंधन","capital":"पूंजी ($)","riskPct":"प्रति ट्रेड जोखिम","advised":"प्रति ट्रेड सुझाई गई राशि","streak":"आधी पूंजी गंवाने से पहले लगातार हार","riskNote":"सावधान ट्रेडर हर ट्रेड में अपनी पूंजी का 1–2% ही जोखिम में डालते हैं।","aboutHead":"परिचय","aboutText":"OROLADO Tools चार्ट पढ़ने का अभ्यास करने और ट्रेड की तैयारी के लिए एक मुफ़्त जगह है: अनुमान अभ्यास, मुनाफ़े की गणना और जोखिम प्रबंधन। साइन-अप की ज़रूरत नहीं।","warn":"ट्रेडिंग में नुकसान का जोखिम होता है। उतना ही लगाएं जितना खोना आप सह सकें।","demo":"OROLADO पर मुफ़्त डेमो खाता खोलें"};
+var T={"title":"OROLADO Tools — ट्रेडिंग मूल्य अनुमान अभ्यास और कैलकुलेटर","desc":"चार्ट पढ़ने का अभ्यास करें: अनुमान लगाएं कि अगली कैंडल ऊपर जाएगी या नीचे। मुनाफ़े और जोखिम प्रबंधन के मुफ़्त कैलकुलेटर, बिना साइन-अप।","brand":"OROLADO Tools","lang":"भाषा","tabPred":"अनुमान","tabGain":"मुनाफ़ा","tabRisk":"बजट","tabAbout":"परिचय","predHead":"अनुमान अभ्यास","predSub":"अगली कैंडल ऊपर जाएगी या नीचे?","up":"ऊपर","down":"नीचे","round":"राउंड","score":"स्कोर","right":"सही पहचाना!","wrong":"चूक गए…","resTitle":"आपका परिणाम","acc":"सटीकता","resText":"बहुत बढ़िया! चार्ट पढ़ना अभ्यास से आता है। अभ्यास जारी रखें, या मुफ़्त डेमो में असली चार्ट पर जाएं।","again":"जारी रखें","tryReal":"असली चार्ट पर आज़माएं (मुफ़्त डेमो)","gainHead":"मुनाफ़ा कैलकुलेटर","stake":"राशि ($)","payout":"भुगतान दर (%)","ifWin":"जीतने पर मुनाफ़ा","ifLose":"हारने पर नुकसान","back":"जीतने पर मिलने वाली राशि","riskHead":"अपना बजट तय करें","capital":"पूंजी ($)","riskPct":"नियोजित ट्रेडों की संख्या","advised":"प्रति ट्रेड राशि","aboutHead":"परिचय","aboutText":"OROLADO Tools चार्ट पढ़ने का अभ्यास करने और ट्रेड की तैयारी के लिए एक मुफ़्त जगह है: अनुमान अभ्यास, मुनाफ़े की गणना और जोखिम प्रबंधन। साइन-अप की ज़रूरत नहीं।","warn":"ट्रेडिंग में नुकसान का जोखिम होता है। उतना ही लगाएं जितना खोना आप सह सकें।","demo":"OROLADO पर मुफ़्त डेमो खाता खोलें"};
 
 (function(){
 var L=document.documentElement.lang;
@@ -145,7 +141,7 @@ var money=function(n){return '$ '+nf(n,2)};
 // Onglets
 var tabs=document.querySelectorAll('.tabs button');
 tabs.forEach(function(b){b.addEventListener('click',function(){tabs.forEach(function(x){x.classList.toggle('on',x===b)});document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p)});if(b.dataset.p==='p-pred')draw();});});
-// --- Entraînement à la prédiction (graphique au hasard, comme un vrai marché) ---
+// --- Entraînement à la prédiction ---
 var VIS=30,STEP=10,cv=$('cv'),ctx=cv.getContext('2d'),C=[],r=0,score=0,busy=false,lo=0,hi=0;
 function gauss(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 // Partie sans fin : les bougies sont créées au fur et à mesure ; un bilan tous les 10 coups.
@@ -168,11 +164,11 @@ $('bUp').addEventListener('click',function(){guess(true)});$('bDn').addEventList
 window.addEventListener('resize',draw);
 // --- Calculateur de gains ---
 function gain(){var s=Math.max(0,parseFloat($('gStake').value)||0),p=Math.max(0,parseFloat($('gPay').value)||0);
-$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s);$('gBe').textContent=p>0?nf(100/(1+p/100),1)+' %':'—'}
+$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s)}
 ['gStake','gPay'].forEach(function(i){$(i).addEventListener('input',gain)});
 // --- Gestion du risque ---
-function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||1;$('rPctV').textContent=q+' %';
-$('rStake').textContent=money(c*q/100);$('rStreak').textContent=String(Math.ceil(Math.log(0.5)/Math.log(1-q/100)))}
+function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||20;$('rPctV').textContent=String(q);
+$('rStake').textContent=money(c/q)}
 ['rCap','rPct'].forEach(function(i){$(i).addEventListener('input',risk)});
 newGame();gain();risk();
 })();

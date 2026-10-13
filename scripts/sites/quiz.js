@@ -79,6 +79,8 @@ function body(T) {
       <div class="score" id="es">0/15</div>
       <div class="level" id="el"></div>
       <p class="lead" id="em"></p>
+      <p class="badge" id="cd"></p>
+      <p class="lead"><b>${esc(T.comeBack)}</b></p>
       <button class="btn teal" id="again" type="button">${esc(T.again)}</button>
       <a class="btn ghost" href="${DEMO}" rel="noopener">${esc(T.demo)}</a>
       <p class="warn">${esc(T.warn)}</p>
@@ -89,19 +91,25 @@ function body(T) {
 
 const script = `
 (function(){
-var $=function(i){return document.getElementById(i)},ALL=T.questions,Q=[],N=15,i=0,score=0;
+var $=function(i){return document.getElementById(i)},ALL=T.questions,Q=[],N=12,i=0,score=0,timer=0;
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)})}
-function shuffle(a){for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),t=a[k];a[k]=a[j];a[j]=t}return a}
-function ask(){var q=Q[i];$('qn').textContent=T.q+' '+(i+1)+'/'+N;$('qs').textContent=T.scoreL+' '+score;$('qb').style.width=(i/N*100)+'%';$('qt').textContent=q.q;
+function rnd(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){r=r||Math.random;for(var k=a.length-1;k>0;k--){var j=Math.floor(r()*(k+1)),x=a[k];a[k]=a[j];a[j]=x}return a}
+// Quiz du jour : la sélection dépend de la date (change à minuit, heure du téléphone).
+function pickDay(){var d=new Date(),day=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),p=shuffle(ALL.slice(),rnd(20261013)),s=(day*N)%p.length,out=[];for(var k=0;k<N;k++)out.push(p[(s+k)%p.length]);return out}
+function ask(){var q=Q[i];$('qn').textContent=T.q+' '+(i+1);$('qs').textContent=T.scoreL+' '+score;$('qb').style.width=(i/N*100)+'%';$('qt').textContent=q.q;
 $('qe').classList.remove('on');$('qnext').style.display='none';var box=$('qo');box.innerHTML='';
 shuffle([0,1,2]).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='opt';b.textContent=q.o[k];b.addEventListener('click',function(){pick(k,b)});b.dataset.k=k;box.appendChild(b)});}
 function pick(k,btn){var ok=k===0;if(ok)score++;document.querySelectorAll('.opt').forEach(function(b){b.disabled=true;if(b.dataset.k==='0')b.classList.add('good')});if(!ok)btn.classList.add('bad');
 var r=$('qr');r.textContent=ok?T.correct:T.incorrect;r.className=ok?'ok':'ko';$('qx').textContent=Q[i].x;$('qe').classList.add('on');$('qs').textContent=T.scoreL+' '+score;
 var n=$('qnext');n.textContent=i<N-1?T.next:T.seeResult;n.style.display='flex';}
 $('qnext').addEventListener('click',function(){i++;if(i<N){ask();$('s-q').scrollTop=0}else end()});
-function end(){$('qb').style.width='100%';$('es').textContent=score+'/'+N;var lv=score>=12?2:score>=8?1:0;$('el').textContent=T.levels[lv];$('em').textContent=T.msgs[lv];show('s-end')}
-// Chaque partie : 15 questions tirées au hasard parmi toute la banque (jamais deux fois le même quiz).
-function start(){Q=shuffle(ALL.slice()).slice(0,N);i=0;score=0;show('s-q');ask()}
+function pad(x){return(x<10?'0':'')+x}
+function countdown(){var d=new Date(),m=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1),s=Math.max(0,Math.floor((m-d)/1000));
+$('cd').textContent=T.nextQuiz+' '+pad(Math.floor(s/3600))+':'+pad(Math.floor(s/60)%60)+':'+pad(s%60);}
+function end(){$('qb').style.width='100%';$('es').textContent=String(score);$('el').textContent=T.good;var lv=score>=10?2:score>=6?1:0;$('em').textContent=T.msgs[lv]+' — '+T.levels[lv];
+show('s-end');countdown();clearInterval(timer);timer=setInterval(countdown,1000);}
+function start(){clearInterval(timer);Q=pickDay();i=0;score=0;show('s-q');ask()}
 $('go').addEventListener('click',start);$('again').addEventListener('click',start);
 })();
 `;

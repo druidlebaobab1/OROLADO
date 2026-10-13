@@ -26,7 +26,7 @@ module.exports = {
     "t": "Qu’est-ce qu’un indice synthétique ?",
     "s": "Un marché ouvert 24 h/24, 7 j/7",
     "p": [
-     "Un indice synthétique est un marché simulé par ordinateur, ouvert 24 h/24 et 7 j/7. Son prix évolue selon un hasard contrôlé, sans dépendre de l’actualité ni des entreprises.",
+     "Un indice synthétique est un marché en ligne, ouvert 24 h/24 et 7 j/7, avec ses propres graphiques et ses propres mouvements. Il ne dépend ni de l’actualité ni des résultats des entreprises.",
      "Vous ne possédez rien : vous prédisez simplement si le prix va monter ou descendre pendant une durée choisie."
     ],
     "k": "Pas de week-end ni d’actualité surprise : vous pouvez vous entraîner à toute heure."
@@ -38,7 +38,7 @@ module.exports = {
      "Chaque bougie résume le prix sur une période. Le corps va du prix d’ouverture au prix de clôture ; les mèches montrent le plus haut et le plus bas atteints.",
      "Une bougie verte a fini plus haut qu’elle n’a commencé ; une bougie rouge a fini plus bas."
     ],
-    "k": "Une bougie raconte ce qui vient de se passer, pas ce qui va arriver."
+    "k": "Une suite de bougies raconte l’histoire du marché : apprenez à la lire."
    },
    {
     "t": "Tendance, support et résistance",
@@ -47,7 +47,7 @@ module.exports = {
      "Une tendance haussière fait des sommets de plus en plus hauts ; une tendance baissière, des creux de plus en plus bas. Sans direction claire, le marché est « en range ».",
      "Un support est un niveau où le prix a souvent rebondi vers le haut ; une résistance, un niveau où il a souvent été repoussé vers le bas."
     ],
-    "k": "Ces repères organisent votre analyse, mais aucun niveau ne tient à chaque fois."
+    "k": "Plus un niveau a été touché souvent, plus les traders le surveillent."
    },
    {
     "t": "Les indicateurs MA, EMA et BB",
@@ -56,13 +56,13 @@ module.exports = {
      "La moyenne mobile (MA) lisse le prix pour montrer sa direction générale. L’EMA fait de même mais réagit plus vite aux derniers prix.",
      "Les bandes de Bollinger (BB) entourent le prix : des bandes larges signalent un marché agité, des bandes serrées un marché calme."
     ],
-    "k": "Un indicateur décrit le passé : utilisez-le pour comprendre, jamais comme une certitude."
+    "k": "Un indicateur aide à lire le marché : combinez plusieurs repères avant de décider."
    },
    {
     "t": "Gérer son argent",
     "s": "La règle la plus importante",
     "p": [
-     "Fixez un budget que vous acceptez de perdre et ne risquez que 1 à 2 % de ce budget par trade.",
+     "Fixez un budget à l’avance et gardez des mises régulières, adaptées à ce budget.",
      "Gardez la même mise après une perte : doubler pour « se refaire » vide un compte très vite."
     ],
     "k": "Ce qui compte n’est pas un trade, mais la régularité sur des centaines de trades."
@@ -145,8 +145,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Miser trop gros",
-    "Ne dépassez pas 1 à 2 % de votre capital par trade."
+    "Miser sans réfléchir",
+    "Choisissez votre mise à l’avance, selon votre budget."
    ],
    [
     "Vouloir « se refaire »",
@@ -172,7 +172,7 @@ module.exports = {
   "steps": [
    [
     "Apprendre les bases",
-    "Lisez les 6 leçons : quelques minutes suffisent."
+    "Lisez les leçons : quelques minutes suffisent."
    ],
    [
     "S’entraîner gratuitement",
@@ -209,7 +209,7 @@ module.exports = {
     "t": "What is a synthetic index?",
     "s": "A market open 24/7",
     "p": [
-     "A synthetic index is a computer-simulated market, open 24 hours a day, 7 days a week. Its price moves according to controlled randomness, without depending on news or companies.",
+     "A synthetic index is an online market, open 24 hours a day, 7 days a week, with its own charts and its own movements. It does not depend on news or company results.",
      "You do not own anything: you simply predict whether the price will go up or down over a chosen duration."
     ],
     "k": "No weekends and no surprise news: you can practise at any time."
@@ -221,7 +221,7 @@ module.exports = {
      "Each candlestick summarises the price over a period. The body runs from the opening price to the closing price; the wicks show the highest and lowest prices reached.",
      "A green candle closed higher than it opened; a red candle closed lower."
     ],
-    "k": "A candle tells you what just happened, not what will happen next."
+    "k": "A series of candles tells the market’s story: learn to read it."
    },
    {
     "t": "Trend, support and resistance",
@@ -230,7 +230,7 @@ module.exports = {
      "An uptrend makes higher and higher highs; a downtrend makes lower and lower lows. With no clear direction, the market is “ranging”.",
      "Support is a level where the price has often bounced up; resistance is a level where it has often been pushed back down."
     ],
-    "k": "These landmarks organise your analysis, but no level holds every time."
+    "k": "The more often a level has been touched, the more traders watch it."
    },
    {
     "t": "The MA, EMA and BB indicators",
@@ -239,13 +239,13 @@ module.exports = {
      "The moving average (MA) smooths the price to show its overall direction. The EMA does the same but reacts faster to the latest prices.",
      "Bollinger Bands (BB) surround the price: wide bands signal a busy market, tight bands a calm one."
     ],
-    "k": "An indicator describes the past: use it to understand, never as a certainty."
+    "k": "An indicator helps you read the market: combine several signals before deciding."
    },
    {
     "t": "Managing your money",
     "s": "The most important rule",
     "p": [
-     "Set a budget you accept to lose and only risk 1 to 2% of that budget per trade.",
+     "Set a budget in advance and keep regular stakes that fit that budget.",
      "Keep the same stake after a loss: doubling up to “win it back” empties an account very quickly."
     ],
     "k": "What matters is not one trade, but consistency over hundreds of trades."
@@ -328,8 +328,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Staking too much",
-    "Do not exceed 1 to 2% of your capital per trade."
+    "Staking without thinking",
+    "Choose your stake in advance, based on your budget."
    ],
    [
     "Trying to “win it back”",
@@ -355,7 +355,7 @@ module.exports = {
   "steps": [
    [
     "Learn the basics",
-    "Read the 6 lessons: a few minutes is enough."
+    "Read the lessons: a few minutes is enough."
    ],
    [
     "Practise for free",
@@ -392,7 +392,7 @@ module.exports = {
     "t": "¿Qué es un índice sintético?",
     "s": "Un mercado abierto 24/7",
     "p": [
-     "Un índice sintético es un mercado simulado por ordenador, abierto las 24 horas, los 7 días de la semana. Su precio se mueve según un azar controlado, sin depender de noticias ni de empresas.",
+     "Un índice sintético es un mercado en línea, abierto las 24 horas, los 7 días de la semana, con sus propios gráficos y movimientos. No depende de noticias ni de resultados de empresas.",
      "No posees nada: solo predices si el precio subirá o bajará durante el tiempo elegido."
     ],
     "k": "Sin fines de semana ni noticias sorpresa: puedes practicar a cualquier hora."
@@ -404,7 +404,7 @@ module.exports = {
      "Cada vela resume el precio en un periodo. El cuerpo va del precio de apertura al de cierre; las mechas muestran el máximo y el mínimo alcanzados.",
      "Una vela verde cerró más arriba de lo que abrió; una vela roja cerró más abajo."
     ],
-    "k": "Una vela cuenta lo que acaba de pasar, no lo que va a pasar."
+    "k": "Una serie de velas cuenta la historia del mercado: aprende a leerla."
    },
    {
     "t": "Tendencia, soporte y resistencia",
@@ -413,7 +413,7 @@ module.exports = {
      "Una tendencia alcista marca máximos cada vez más altos; una bajista, mínimos cada vez más bajos. Sin dirección clara, el mercado está «en rango».",
      "Un soporte es un nivel donde el precio ha rebotado a menudo hacia arriba; una resistencia, un nivel donde ha sido frenado a menudo hacia abajo."
     ],
-    "k": "Estas referencias ordenan tu análisis, pero ningún nivel se respeta siempre."
+    "k": "Cuantas más veces se ha tocado un nivel, más lo vigilan los traders."
    },
    {
     "t": "Los indicadores MA, EMA y BB",
@@ -422,13 +422,13 @@ module.exports = {
      "La media móvil (MA) suaviza el precio para mostrar su dirección general. La EMA hace lo mismo pero reacciona más rápido a los últimos precios.",
      "Las bandas de Bollinger (BB) rodean el precio: bandas anchas indican un mercado agitado; bandas estrechas, un mercado tranquilo."
     ],
-    "k": "Un indicador describe el pasado: úsalo para entender, nunca como una certeza."
+    "k": "Un indicador ayuda a leer el mercado: combina varias referencias antes de decidir."
    },
    {
     "t": "Gestionar tu dinero",
     "s": "La regla más importante",
     "p": [
-     "Fija un presupuesto que aceptes perder y arriesga solo del 1 al 2 % de ese presupuesto por operación.",
+     "Fija un presupuesto de antemano y mantén inversiones regulares, adaptadas a ese presupuesto.",
      "Mantén la misma inversión tras una pérdida: doblar para «recuperar» vacía una cuenta muy rápido."
     ],
     "k": "Lo que cuenta no es una operación, sino la constancia en cientos de operaciones."
@@ -511,8 +511,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Invertir demasiado",
-    "No superes el 1 al 2 % de tu capital por operación."
+    "Invertir sin pensar",
+    "Elige tu inversión de antemano, según tu presupuesto."
    ],
    [
     "Querer «recuperar»",
@@ -538,7 +538,7 @@ module.exports = {
   "steps": [
    [
     "Aprender lo básico",
-    "Lee las 6 lecciones: bastan unos minutos."
+    "Lee las lecciones: bastan unos minutos."
    ],
    [
     "Practicar gratis",
@@ -575,7 +575,7 @@ module.exports = {
     "t": "O que é um índice sintético?",
     "s": "Um mercado aberto 24/7",
     "p": [
-     "Um índice sintético é um mercado simulado por computador, aberto 24 horas por dia, 7 dias por semana. Seu preço varia segundo um acaso controlado, sem depender de notícias nem de empresas.",
+     "Um índice sintético é um mercado online, aberto 24 horas por dia, 7 dias por semana, com seus próprios gráficos e movimentos. Não depende de notícias nem de resultados de empresas.",
      "Você não possui nada: apenas prevê se o preço vai subir ou descer durante o tempo escolhido."
     ],
     "k": "Sem fins de semana nem notícias surpresa: você pode treinar a qualquer hora."
@@ -587,7 +587,7 @@ module.exports = {
      "Cada vela resume o preço num período. O corpo vai do preço de abertura ao de fechamento; os pavios mostram a máxima e a mínima atingidas.",
      "Uma vela verde fechou acima de onde abriu; uma vela vermelha fechou abaixo."
     ],
-    "k": "Uma vela conta o que acabou de acontecer, não o que vai acontecer."
+    "k": "Uma sequência de velas conta a história do mercado: aprenda a lê-la."
    },
    {
     "t": "Tendência, suporte e resistência",
@@ -596,7 +596,7 @@ module.exports = {
      "Uma tendência de alta faz topos cada vez mais altos; uma de baixa, fundos cada vez mais baixos. Sem direção clara, o mercado está “lateral”.",
      "Um suporte é um nível onde o preço muitas vezes voltou a subir; uma resistência, um nível onde muitas vezes foi empurrado para baixo."
     ],
-    "k": "Essas referências organizam sua análise, mas nenhum nível se mantém sempre."
+    "k": "Quanto mais vezes um nível foi tocado, mais os traders o observam."
    },
    {
     "t": "Os indicadores MA, EMA e BB",
@@ -605,13 +605,13 @@ module.exports = {
      "A média móvel (MA) suaviza o preço para mostrar a direção geral. A EMA faz o mesmo, mas reage mais rápido aos últimos preços.",
      "As bandas de Bollinger (BB) envolvem o preço: bandas largas indicam um mercado agitado; bandas estreitas, um mercado calmo."
     ],
-    "k": "Um indicador descreve o passado: use-o para entender, nunca como certeza."
+    "k": "Um indicador ajuda a ler o mercado: combine várias referências antes de decidir."
    },
    {
     "t": "Gerir o seu dinheiro",
     "s": "A regra mais importante",
     "p": [
-     "Defina um orçamento que aceita perder e arrisque só de 1 a 2% dele por operação.",
+     "Defina um orçamento antes e mantenha valores regulares, adequados a esse orçamento.",
      "Mantenha o mesmo valor após uma perda: dobrar para “recuperar” esvazia uma conta muito rápido."
     ],
     "k": "O que conta não é uma operação, mas a regularidade em centenas de operações."
@@ -694,8 +694,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Investir demais",
-    "Não passe de 1 a 2% do seu capital por operação."
+    "Apostar sem pensar",
+    "Escolha o valor antes, de acordo com seu orçamento."
    ],
    [
     "Querer “recuperar”",
@@ -721,7 +721,7 @@ module.exports = {
   "steps": [
    [
     "Aprender o básico",
-    "Leia as 6 aulas: bastam alguns minutos."
+    "Leia as aulas: bastam alguns minutos."
    ],
    [
     "Praticar grátis",
@@ -758,7 +758,7 @@ module.exports = {
     "t": "ما هو المؤشر الاصطناعي؟",
     "s": "سوق مفتوح على مدار الساعة طوال الأسبوع",
     "p": [
-     "المؤشر الاصطناعي سوق يحاكيه الحاسوب، مفتوح 24 ساعة يوميًا و7 أيام في الأسبوع. يتحرك سعره وفق عشوائية مضبوطة، دون أن يتأثر بالأخبار أو الشركات.",
+     "المؤشر الاصطناعي سوق إلكتروني مفتوح 24 ساعة يوميًا و7 أيام في الأسبوع، له رسومه البيانية وحركاته الخاصة. لا يعتمد على الأخبار ولا على نتائج الشركات.",
      "أنت لا تمتلك شيئًا: تتوقع فقط هل سيصعد السعر أم سيهبط خلال المدة التي تختارها."
     ],
     "k": "لا عطل نهاية الأسبوع ولا أخبار مفاجئة: يمكنك التدرّب في أي وقت."
@@ -770,7 +770,7 @@ module.exports = {
      "تلخّص كل شمعة السعر خلال فترة. يمتد الجسم من سعر الافتتاح إلى سعر الإغلاق، وتُظهر الفتائل أعلى وأدنى سعر تم بلوغه.",
      "الشمعة الخضراء أغلقت أعلى مما افتتحت، والحمراء أغلقت أدنى."
     ],
-    "k": "الشمعة تحكي ما حدث للتو، لا ما سيحدث."
+    "k": "تحكي سلسلة الشموع قصة السوق: تعلّم قراءتها."
    },
    {
     "t": "الاتجاه والدعم والمقاومة",
@@ -779,7 +779,7 @@ module.exports = {
      "الاتجاه الصاعد يصنع قممًا أعلى فأعلى، والهابط قيعانًا أدنى فأدنى. وعند غياب اتجاه واضح يكون السوق «عرضيًا».",
      "الدعم مستوى ارتد منه السعر صعودًا مرات عديدة، والمقاومة مستوى صُدّ عنده السعر هبوطًا مرات عديدة."
     ],
-    "k": "هذه المعالم تنظّم تحليلك، لكن لا يصمد أي مستوى في كل مرة."
+    "k": "كلما لُمس المستوى مرات أكثر، زاد اهتمام المتداولين به."
    },
    {
     "t": "مؤشرات MA وEMA وBB",
@@ -788,13 +788,13 @@ module.exports = {
      "المتوسط المتحرك (MA) يُنعّم السعر ليُظهر اتجاهه العام. ويفعل EMA الشيء نفسه لكنه يتفاعل أسرع مع الأسعار الأخيرة.",
      "نطاقات بولينجر (BB) تحيط بالسعر: النطاقات الواسعة تدل على سوق مضطرب، والضيقة على سوق هادئ."
     ],
-    "k": "المؤشر يصف الماضي: استخدمه للفهم، لا كيقين أبدًا."
+    "k": "يساعدك المؤشر على قراءة السوق: اجمع بين عدة معالم قبل أن تقرر."
    },
    {
     "t": "إدارة أموالك",
     "s": "القاعدة الأهم",
     "p": [
-     "حدّد ميزانية تقبل خسارتها، ولا تخاطر إلا بنسبة 1 إلى 2٪ منها في كل صفقة.",
+     "حدّد ميزانية مسبقًا وحافظ على مبالغ منتظمة تناسب هذه الميزانية.",
      "حافظ على المبلغ نفسه بعد الخسارة: مضاعفة المبلغ «للتعويض» تُفرغ الحساب بسرعة كبيرة."
     ],
     "k": "المهم ليس صفقة واحدة، بل الانتظام عبر مئات الصفقات."
@@ -877,8 +877,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "المخاطرة بمبلغ كبير",
-    "لا تتجاوز 1 إلى 2٪ من رأس مالك في كل صفقة."
+    "المخاطرة دون تفكير",
+    "اختر مبلغك مسبقًا حسب ميزانيتك."
    ],
    [
     "محاولة «التعويض»",
@@ -904,7 +904,7 @@ module.exports = {
   "steps": [
    [
     "تعلّم الأساسيات",
-    "اقرأ الدروس الستة: تكفي بضع دقائق."
+    "اقرأ الدروس: تكفي بضع دقائق."
    ],
    [
     "تدرّب مجانًا",
@@ -941,7 +941,7 @@ module.exports = {
     "t": "Sentetik endeks nedir?",
     "s": "7/24 açık bir piyasa",
     "p": [
-     "Sentetik endeks, bilgisayarla simüle edilen ve haftanın 7 günü 24 saat açık olan bir piyasadır. Fiyatı haberlere veya şirketlere bağlı olmadan kontrollü bir rastlantıyla hareket eder.",
+     "Sentetik endeks, haftanın 7 günü 24 saat açık, kendi grafikleri ve hareketleri olan çevrimiçi bir piyasadır. Haberlere veya şirket sonuçlarına bağlı değildir.",
      "Hiçbir şeye sahip olmazsınız: yalnızca seçtiğiniz süre içinde fiyatın yükselip düşeceğini tahmin edersiniz."
     ],
     "k": "Hafta sonu ve sürpriz haber yok: istediğiniz saatte pratik yapabilirsiniz."
@@ -953,7 +953,7 @@ module.exports = {
      "Her mum bir dönemdeki fiyatı özetler. Gövde açılış fiyatından kapanış fiyatına uzanır; fitiller ulaşılan en yüksek ve en düşük fiyatı gösterir.",
      "Yeşil mum açıldığından yüksek, kırmızı mum ise düşük kapanmıştır."
     ],
-    "k": "Bir mum az önce olanı anlatır, olacak olanı değil."
+    "k": "Bir dizi mum piyasanın hikâyesini anlatır: onu okumayı öğrenin."
    },
    {
     "t": "Trend, destek ve direnç",
@@ -962,7 +962,7 @@ module.exports = {
      "Yükseliş trendi giderek daha yüksek tepeler, düşüş trendi giderek daha düşük dipler yapar. Belirgin bir yön yoksa piyasa “yatay” seyreder.",
      "Destek, fiyatın sık sık yukarı sektiği seviyedir; direnç ise fiyatın sık sık aşağı itildiği seviyedir."
     ],
-    "k": "Bu işaretler analizinizi düzenler, ama hiçbir seviye her seferinde tutmaz."
+    "k": "Bir seviyeye ne kadar sık dokunulduysa, trader’lar onu o kadar yakından izler."
    },
    {
     "t": "MA, EMA ve BB göstergeleri",
@@ -971,13 +971,13 @@ module.exports = {
      "Hareketli ortalama (MA) genel yönü göstermek için fiyatı yumuşatır. EMA da aynısını yapar ama son fiyatlara daha hızlı tepki verir.",
      "Bollinger Bantları (BB) fiyatı çevreler: geniş bantlar hareketli, dar bantlar sakin bir piyasayı gösterir."
     ],
-    "k": "Gösterge geçmişi anlatır: anlamak için kullanın, asla kesinlik olarak değil."
+    "k": "Gösterge piyasayı okumanıza yardımcı olur: karar vermeden önce birkaç işareti birleştirin."
    },
    {
     "t": "Paranızı yönetmek",
     "s": "En önemli kural",
     "p": [
-     "Kaybetmeyi kabul ettiğiniz bir bütçe belirleyin ve işlem başına bu bütçenin yalnızca %1–2’sini riske edin.",
+     "Önceden bir bütçe belirleyin ve bu bütçeye uygun, düzenli tutarlar kullanın.",
      "Kayıptan sonra aynı tutarı koruyun: “telafi etmek” için ikiye katlamak hesabı çok hızlı boşaltır."
     ],
     "k": "Önemli olan tek bir işlem değil, yüzlerce işlemdeki istikrardır."
@@ -1060,8 +1060,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Çok büyük tutar yatırmak",
-    "İşlem başına sermayenizin %1–2’sini aşmayın."
+    "Düşünmeden yatırmak",
+    "Tutarınızı bütçenize göre önceden seçin."
    ],
    [
     "“Telafi etmeye” çalışmak",
@@ -1087,7 +1087,7 @@ module.exports = {
   "steps": [
    [
     "Temelleri öğrenin",
-    "6 dersi okuyun: birkaç dakika yeterli."
+    "Dersleri okuyun: birkaç dakika yeterli."
    ],
    [
     "Ücretsiz pratik yapın",
@@ -1124,7 +1124,7 @@ module.exports = {
     "t": "Was ist ein synthetischer Index?",
     "s": "Ein Markt, rund um die Uhr geöffnet",
     "p": [
-     "Ein synthetischer Index ist ein computersimulierter Markt, der rund um die Uhr an 7 Tagen geöffnet ist. Sein Kurs bewegt sich nach kontrolliertem Zufall, unabhängig von Nachrichten oder Unternehmen.",
+     "Ein synthetischer Index ist ein Online-Markt, rund um die Uhr an 7 Tagen geöffnet, mit eigenen Charts und eigenen Bewegungen. Er hängt weder von Nachrichten noch von Unternehmensergebnissen ab.",
      "Sie besitzen nichts: Sie sagen nur voraus, ob der Kurs in der gewählten Zeit steigt oder fällt."
     ],
     "k": "Kein Wochenende, keine Überraschungsnachrichten: Sie können jederzeit üben."
@@ -1136,7 +1136,7 @@ module.exports = {
      "Jede Kerze fasst den Kurs eines Zeitraums zusammen. Der Körper reicht vom Eröffnungs- zum Schlusskurs; die Dochte zeigen Hoch und Tief.",
      "Eine grüne Kerze schloss höher als sie eröffnete, eine rote tiefer."
     ],
-    "k": "Eine Kerze erzählt, was gerade passiert ist – nicht, was kommt."
+    "k": "Eine Folge von Kerzen erzählt die Geschichte des Marktes: Lernen Sie, sie zu lesen."
    },
    {
     "t": "Trend, Unterstützung und Widerstand",
@@ -1145,7 +1145,7 @@ module.exports = {
      "Ein Aufwärtstrend bildet immer höhere Hochs, ein Abwärtstrend immer tiefere Tiefs. Ohne klare Richtung läuft der Markt „seitwärts“.",
      "Eine Unterstützung ist ein Niveau, an dem der Kurs oft nach oben abprallte; ein Widerstand eines, an dem er oft nach unten gedrückt wurde."
     ],
-    "k": "Diese Marken ordnen Ihre Analyse, doch kein Niveau hält jedes Mal."
+    "k": "Je öfter ein Niveau berührt wurde, desto genauer beobachten Trader es."
    },
    {
     "t": "Die Indikatoren MA, EMA und BB",
@@ -1154,13 +1154,13 @@ module.exports = {
      "Der gleitende Durchschnitt (MA) glättet den Kurs und zeigt die Gesamtrichtung. Der EMA tut dasselbe, reagiert aber schneller auf die letzten Kurse.",
      "Bollinger-Bänder (BB) umschließen den Kurs: breite Bänder zeigen einen unruhigen, enge Bänder einen ruhigen Markt."
     ],
-    "k": "Ein Indikator beschreibt die Vergangenheit: zum Verstehen, nie als Gewissheit."
+    "k": "Ein Indikator hilft, den Markt zu lesen: Kombinieren Sie mehrere Signale, bevor Sie entscheiden."
    },
    {
     "t": "Geld richtig verwalten",
     "s": "Die wichtigste Regel",
     "p": [
-     "Legen Sie ein Budget fest, dessen Verlust Sie akzeptieren, und riskieren Sie pro Trade nur 1 bis 2 % davon.",
+     "Legen Sie vorab ein Budget fest und setzen Sie regelmäßige, dazu passende Beträge.",
      "Behalten Sie nach einem Verlust denselben Einsatz: Verdoppeln, um „es zurückzuholen“, leert ein Konto sehr schnell."
     ],
     "k": "Entscheidend ist nicht ein Trade, sondern Beständigkeit über Hunderte Trades."
@@ -1243,8 +1243,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Zu viel setzen",
-    "Nicht mehr als 1 bis 2 % des Kapitals pro Trade."
+    "Ohne Überlegung setzen",
+    "Wählen Sie Ihren Einsatz vorab passend zu Ihrem Budget."
    ],
    [
     "Verluste „zurückholen“ wollen",
@@ -1270,7 +1270,7 @@ module.exports = {
   "steps": [
    [
     "Grundlagen lernen",
-    "Lesen Sie die 6 Lektionen – ein paar Minuten genügen."
+    "Lesen Sie die Lektionen – ein paar Minuten genügen."
    ],
    [
     "Kostenlos üben",
@@ -1307,7 +1307,7 @@ module.exports = {
     "t": "Что такое синтетический индекс?",
     "s": "Рынок, открытый круглосуточно",
     "p": [
-     "Синтетический индекс — это рынок, смоделированный компьютером и открытый 24 часа в сутки, 7 дней в неделю. Его цена движется по контролируемой случайности и не зависит от новостей или компаний.",
+     "Синтетический индекс — это онлайн-рынок, открытый 24 часа в сутки, 7 дней в неделю, со своими графиками и движениями. Он не зависит ни от новостей, ни от результатов компаний.",
      "Вы ничем не владеете: вы лишь прогнозируете, вырастет цена или упадёт за выбранное время."
     ],
     "k": "Нет выходных и неожиданных новостей: тренироваться можно в любое время."
@@ -1319,7 +1319,7 @@ module.exports = {
      "Каждая свеча показывает цену за период. Тело идёт от цены открытия до цены закрытия, а тени показывают максимум и минимум.",
      "Зелёная свеча закрылась выше открытия, красная — ниже."
     ],
-    "k": "Свеча рассказывает, что только что произошло, а не что будет дальше."
+    "k": "Последовательность свечей рассказывает историю рынка: научитесь её читать."
    },
    {
     "t": "Тренд, поддержка и сопротивление",
@@ -1328,7 +1328,7 @@ module.exports = {
      "Восходящий тренд делает всё более высокие вершины, нисходящий — всё более низкие впадины. Без явного направления рынок идёт «в боковике».",
      "Поддержка — уровень, от которого цена часто отскакивала вверх; сопротивление — уровень, от которого её часто отталкивало вниз."
     ],
-    "k": "Эти ориентиры упорядочивают анализ, но ни один уровень не срабатывает всегда."
+    "k": "Чем чаще цена касалась уровня, тем внимательнее за ним следят трейдеры."
    },
    {
     "t": "Индикаторы MA, EMA и BB",
@@ -1337,13 +1337,13 @@ module.exports = {
      "Скользящая средняя (MA) сглаживает цену и показывает общее направление. EMA делает то же, но быстрее реагирует на последние цены.",
      "Полосы Боллинджера (BB) окружают цену: широкие полосы — рынок неспокоен, узкие — рынок спокоен."
     ],
-    "k": "Индикатор описывает прошлое: используйте его для понимания, а не как гарантию."
+    "k": "Индикатор помогает читать рынок: сочетайте несколько ориентиров, прежде чем принять решение."
    },
    {
     "t": "Управление деньгами",
     "s": "Самое важное правило",
     "p": [
-     "Определите бюджет, который готовы потерять, и рискуйте не более 1–2 % от него в одной сделке.",
+     "Заранее определите бюджет и делайте ставки регулярного размера, соответствующие ему.",
      "После убытка сохраняйте ту же сумму: удвоение, чтобы «отыграться», очень быстро опустошает счёт."
     ],
     "k": "Важна не одна сделка, а стабильность на сотнях сделок."
@@ -1426,8 +1426,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Слишком большие ставки",
-    "Не превышайте 1–2 % капитала на сделку."
+    "Ставить не думая",
+    "Выбирайте сумму заранее, исходя из бюджета."
    ],
    [
     "Желание «отыграться»",
@@ -1453,7 +1453,7 @@ module.exports = {
   "steps": [
    [
     "Изучите основы",
-    "Прочитайте 6 уроков — хватит нескольких минут."
+    "Прочитайте уроки — хватит нескольких минут."
    ],
    [
     "Тренируйтесь бесплатно",
@@ -1490,7 +1490,7 @@ module.exports = {
     "t": "Apa itu indeks sintetis?",
     "s": "Pasar yang buka 24/7",
     "p": [
-     "Indeks sintetis adalah pasar yang disimulasikan komputer, buka 24 jam sehari, 7 hari seminggu. Harganya bergerak menurut keacakan yang terkendali, tanpa bergantung pada berita atau perusahaan.",
+     "Indeks sintetis adalah pasar online yang buka 24 jam sehari, 7 hari seminggu, dengan grafik dan pergerakannya sendiri. Tidak bergantung pada berita maupun hasil perusahaan.",
      "Anda tidak memiliki apa pun: Anda hanya menebak apakah harga naik atau turun selama durasi yang dipilih."
     ],
     "k": "Tanpa akhir pekan dan tanpa berita mengejutkan: Anda bisa berlatih kapan saja."
@@ -1502,7 +1502,7 @@ module.exports = {
      "Setiap lilin merangkum harga dalam satu periode. Badan lilin dari harga pembukaan ke harga penutupan; sumbu menunjukkan harga tertinggi dan terendah.",
      "Lilin hijau ditutup lebih tinggi dari pembukaannya; lilin merah ditutup lebih rendah."
     ],
-    "k": "Lilin menceritakan apa yang baru terjadi, bukan apa yang akan terjadi."
+    "k": "Rangkaian lilin menceritakan kisah pasar: pelajari cara membacanya."
    },
    {
     "t": "Tren, support dan resistance",
@@ -1511,7 +1511,7 @@ module.exports = {
      "Tren naik membuat puncak yang makin tinggi; tren turun membuat lembah yang makin rendah. Tanpa arah jelas, pasar bergerak “sideways”.",
      "Support adalah level tempat harga sering memantul naik; resistance adalah level tempat harga sering tertahan turun."
     ],
-    "k": "Patokan ini merapikan analisis Anda, tetapi tidak ada level yang selalu bertahan."
+    "k": "Semakin sering sebuah level disentuh, semakin diperhatikan oleh para trader."
    },
    {
     "t": "Indikator MA, EMA dan BB",
@@ -1520,13 +1520,13 @@ module.exports = {
      "Moving average (MA) menghaluskan harga untuk menunjukkan arah umum. EMA melakukan hal sama tetapi lebih cepat bereaksi terhadap harga terbaru.",
      "Bollinger Bands (BB) mengapit harga: pita lebar menandakan pasar bergejolak, pita sempit pasar tenang."
     ],
-    "k": "Indikator menggambarkan masa lalu: gunakan untuk memahami, bukan sebagai kepastian."
+    "k": "Indikator membantu membaca pasar: gabungkan beberapa patokan sebelum memutuskan."
    },
    {
     "t": "Mengelola uang",
     "s": "Aturan terpenting",
     "p": [
-     "Tetapkan anggaran yang rela Anda rugikan dan pertaruhkan hanya 1–2% dari anggaran itu per transaksi.",
+     "Tetapkan anggaran di awal dan gunakan nominal yang teratur sesuai anggaran itu.",
      "Pertahankan nominal yang sama setelah rugi: menggandakan untuk “balas dendam” menguras akun dengan sangat cepat."
     ],
     "k": "Yang penting bukan satu transaksi, melainkan konsistensi di ratusan transaksi."
@@ -1609,8 +1609,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Bertaruh terlalu besar",
-    "Jangan melebihi 1–2% modal per transaksi."
+    "Bertaruh tanpa berpikir",
+    "Pilih nominal Anda di awal, sesuai anggaran."
    ],
    [
     "Ingin “balas dendam”",
@@ -1636,7 +1636,7 @@ module.exports = {
   "steps": [
    [
     "Pelajari dasar-dasarnya",
-    "Baca 6 pelajaran: cukup beberapa menit."
+    "Baca pelajarannya: cukup beberapa menit."
    ],
    [
     "Berlatih gratis",
@@ -1673,7 +1673,7 @@ module.exports = {
     "t": "Chỉ số tổng hợp là gì?",
     "s": "Thị trường mở cửa 24/7",
     "p": [
-     "Chỉ số tổng hợp là thị trường được mô phỏng bằng máy tính, mở cửa 24 giờ mỗi ngày, 7 ngày mỗi tuần. Giá biến động theo sự ngẫu nhiên có kiểm soát, không phụ thuộc vào tin tức hay doanh nghiệp.",
+     "Chỉ số tổng hợp là thị trường trực tuyến mở cửa 24 giờ mỗi ngày, 7 ngày mỗi tuần, với biểu đồ và biến động riêng. Nó không phụ thuộc vào tin tức hay kết quả kinh doanh của doanh nghiệp.",
      "Bạn không sở hữu gì cả: bạn chỉ dự đoán giá sẽ tăng hay giảm trong khoảng thời gian đã chọn."
     ],
     "k": "Không có cuối tuần, không có tin bất ngờ: bạn có thể luyện tập bất cứ lúc nào."
@@ -1685,7 +1685,7 @@ module.exports = {
      "Mỗi cây nến tóm tắt giá trong một khoảng thời gian. Thân nến đi từ giá mở cửa đến giá đóng cửa; bóng nến cho thấy giá cao nhất và thấp nhất.",
      "Nến xanh đóng cửa cao hơn giá mở; nến đỏ đóng cửa thấp hơn."
     ],
-    "k": "Cây nến kể điều vừa xảy ra, không phải điều sắp xảy ra."
+    "k": "Một chuỗi nến kể câu chuyện của thị trường: hãy học cách đọc nó."
    },
    {
     "t": "Xu hướng, hỗ trợ và kháng cự",
@@ -1694,7 +1694,7 @@ module.exports = {
      "Xu hướng tăng tạo đỉnh ngày càng cao; xu hướng giảm tạo đáy ngày càng thấp. Khi không có hướng rõ ràng, thị trường đi “ngang”.",
      "Hỗ trợ là mức giá thường bật lên; kháng cự là mức giá thường bị đẩy xuống."
     ],
-    "k": "Các mốc này giúp sắp xếp phân tích, nhưng không mức nào luôn giữ được."
+    "k": "Một mức giá càng được chạm nhiều lần thì càng được các nhà giao dịch theo dõi."
    },
    {
     "t": "Các chỉ báo MA, EMA và BB",
@@ -1703,13 +1703,13 @@ module.exports = {
      "Đường trung bình động (MA) làm mượt giá để cho thấy hướng chung. EMA cũng vậy nhưng phản ứng nhanh hơn với giá gần nhất.",
      "Dải Bollinger (BB) bao quanh giá: dải rộng cho thấy thị trường sôi động, dải hẹp cho thấy thị trường yên tĩnh."
     ],
-    "k": "Chỉ báo mô tả quá khứ: dùng để hiểu, không bao giờ là điều chắc chắn."
+    "k": "Chỉ báo giúp đọc thị trường: hãy kết hợp nhiều dấu hiệu trước khi quyết định."
    },
    {
     "t": "Quản lý tiền",
     "s": "Quy tắc quan trọng nhất",
     "p": [
-     "Đặt một ngân sách bạn chấp nhận mất và chỉ mạo hiểm 1–2% ngân sách đó cho mỗi lệnh.",
+     "Hãy đặt ngân sách trước và giữ mức đặt đều đặn, phù hợp với ngân sách đó.",
      "Giữ nguyên số tiền sau khi thua: gấp đôi để “gỡ” sẽ làm cạn tài khoản rất nhanh."
     ],
     "k": "Điều quan trọng không phải một lệnh, mà là sự đều đặn qua hàng trăm lệnh."
@@ -1792,8 +1792,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "Đặt quá nhiều",
-    "Không vượt quá 1–2% vốn cho mỗi lệnh."
+    "Đặt lệnh không suy nghĩ",
+    "Hãy chọn số tiền trước, theo ngân sách của bạn."
    ],
    [
     "Muốn “gỡ” lại",
@@ -1819,7 +1819,7 @@ module.exports = {
   "steps": [
    [
     "Học kiến thức cơ bản",
-    "Đọc 6 bài học: chỉ cần vài phút."
+    "Đọc các bài học: chỉ cần vài phút."
    ],
    [
     "Luyện tập miễn phí",
@@ -1856,7 +1856,7 @@ module.exports = {
     "t": "सिंथेटिक इंडेक्स क्या है?",
     "s": "24/7 खुला रहने वाला बाज़ार",
     "p": [
-     "सिंथेटिक इंडेक्स कंप्यूटर द्वारा बनाया गया बाज़ार है, जो हफ़्ते के सातों दिन 24 घंटे खुला रहता है। इसकी कीमत नियंत्रित संयोग से चलती है, खबरों या कंपनियों पर निर्भर नहीं करती।",
+     "सिंथेटिक इंडेक्स एक ऑनलाइन बाज़ार है, जो हफ़्ते के सातों दिन 24 घंटे खुला रहता है, जिसके अपने चार्ट और अपनी चाल होती है। यह न खबरों पर निर्भर करता है, न कंपनियों के नतीजों पर।",
      "आप कुछ भी नहीं खरीदते: आप बस अनुमान लगाते हैं कि चुने गए समय में कीमत ऊपर जाएगी या नीचे।"
     ],
     "k": "न वीकेंड, न अचानक खबरें: आप किसी भी समय अभ्यास कर सकते हैं।"
@@ -1868,7 +1868,7 @@ module.exports = {
      "हर कैंडल एक अवधि की कीमत का सार बताती है। बॉडी ओपन से क्लोज़ कीमत तक जाती है; विक सबसे ऊँची और सबसे नीची कीमत दिखाती हैं।",
      "हरी कैंडल ओपन से ऊपर बंद हुई; लाल कैंडल नीचे बंद हुई।"
     ],
-    "k": "कैंडल बताती है कि अभी क्या हुआ, यह नहीं कि आगे क्या होगा।"
+    "k": "कैंडलों की कतार बाज़ार की कहानी कहती है: उसे पढ़ना सीखें।"
    },
    {
     "t": "ट्रेंड, सपोर्ट और रेज़िस्टेंस",
@@ -1877,7 +1877,7 @@ module.exports = {
      "अपट्रेंड लगातार ऊँचे शिखर बनाता है; डाउनट्रेंड लगातार नीचे के गर्त। साफ़ दिशा न होने पर बाज़ार “साइडवेज़” चलता है।",
      "सपोर्ट वह स्तर है जहाँ से कीमत अक्सर ऊपर उछली; रेज़िस्टेंस वह स्तर जहाँ से अक्सर नीचे लौटी।"
     ],
-    "k": "ये संकेत विश्लेषण को व्यवस्थित करते हैं, पर कोई स्तर हर बार नहीं टिकता।"
+    "k": "कोई स्तर जितनी बार छुआ गया हो, ट्रेडर उस पर उतनी ही नज़र रखते हैं।"
    },
    {
     "t": "MA, EMA और BB संकेतक",
@@ -1886,13 +1886,13 @@ module.exports = {
      "मूविंग एवरेज (MA) कीमत को चिकना कर सामान्य दिशा दिखाता है। EMA भी यही करता है पर हाल की कीमतों पर तेज़ी से प्रतिक्रिया देता है।",
      "बोलिंजर बैंड्स (BB) कीमत को घेरते हैं: चौड़े बैंड हलचल वाला बाज़ार, संकरे बैंड शांत बाज़ार दिखाते हैं।"
     ],
-    "k": "संकेतक अतीत बताता है: इसे समझने के लिए इस्तेमाल करें, कभी पक्की बात की तरह नहीं।"
+    "k": "संकेतक बाज़ार पढ़ने में मदद करता है: फ़ैसले से पहले कई संकेतों को मिलाकर देखें।"
    },
    {
     "t": "पैसों का प्रबंधन",
     "s": "सबसे ज़रूरी नियम",
     "p": [
-     "एक बजट तय करें जिसे खोना आपको मंज़ूर हो, और हर ट्रेड में उसका केवल 1–2% ही जोखिम में डालें।",
+     "पहले से बजट तय करें और उसी के अनुसार नियमित राशि लगाएं।",
      "नुकसान के बाद वही राशि रखें: “वसूलने” के लिए दोगुना करना खाता बहुत जल्दी खाली कर देता है।"
     ],
     "k": "मायने एक ट्रेड का नहीं, सैकड़ों ट्रेड में नियमितता का है।"
@@ -1975,8 +1975,8 @@ module.exports = {
   ],
   "errs": [
    [
-    "बहुत बड़ा दाँव",
-    "हर ट्रेड में पूंजी के 1–2% से ज़्यादा न लगाएं।"
+    "बिना सोचे दाँव लगाना",
+    "अपने बजट के अनुसार राशि पहले से चुनें।"
    ],
    [
     "“वसूलने” की कोशिश",
@@ -2002,7 +2002,7 @@ module.exports = {
   "steps": [
    [
     "बुनियादी बातें सीखें",
-    "6 पाठ पढ़ें: कुछ मिनट काफ़ी हैं।"
+    "पाठ पढ़ें: कुछ मिनट काफ़ी हैं।"
    ],
    [
     "मुफ़्त अभ्यास करें",

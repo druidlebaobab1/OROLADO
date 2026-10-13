@@ -108,16 +108,12 @@ input[type=range]{width:100%;accent-color:#F5C542}
     <div class="card"><span>Profit if you win</span><b class="pos" id="gWin">—</b></div>
     <div class="card"><span>Amount received if you win</span><b class="gl" id="gBack">—</b></div>
     <div class="card"><span>Loss if you lose</span><b class="neg" id="gLose">—</b></div>
-    <div class="card"><span>Minimum win rate to break even</span><b id="gBe">—</b></div>
-    <p class="note">The higher the payout rate, the lower the win rate you need.</p>
   </section>
   <section class="panel" id="p-risk">
-    <h2>Risk management</h2>
+    <h2>Plan your budget</h2>
     <label class="f">Capital ($)<input id="rCap" type="number" inputmode="decimal" min="1" value="100"></label>
-    <label class="f">Risk per trade : <b id="rPctV" class="gl">2 %</b><input id="rPct" type="range" min="1" max="10" step="1" value="2"></label>
-    <div class="card"><span>Suggested stake per trade</span><b class="gl" id="rStake">—</b></div>
-    <div class="card"><span>Losses in a row before losing half your capital</span><b id="rStreak">—</b></div>
-    <p class="note">Careful traders risk 1 to 2% of their capital per trade.</p>
+    <label class="f">Planned number of trades : <b id="rPctV" class="gl">20</b><input id="rPct" type="range" min="5" max="100" step="5" value="20"></label>
+    <div class="card"><span>Stake per trade</span><b class="gl" id="rStake">—</b></div>
   </section>
   <section class="panel about" id="p-about">
     <h2>About</h2>
@@ -129,13 +125,13 @@ input[type=range]{width:100%;accent-color:#F5C542}
 <nav class="tabs" aria-label="menu">
   <button type="button" class="on" data-p="p-pred"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M16 6h4v4"/></svg>Prediction</button>
   <button type="button" data-p="p-gain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>Profit</button>
-  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Risk</button>
+  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Budget</button>
   <button type="button" data-p="p-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>About</button>
 </nav>
 </div>
 <script>
 (function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
-var T={"title":"OROLADO Tools — Price Prediction Trainer & Trading Calculators","desc":"Practise reading charts: predict whether the next candle goes up or down. Free profit and risk-management calculators, no sign-up needed.","brand":"OROLADO Tools","lang":"Language","tabPred":"Prediction","tabGain":"Profit","tabRisk":"Risk","tabAbout":"About","predHead":"Prediction trainer","predSub":"Will the next candle go up or down?","up":"Up","down":"Down","round":"Round","score":"Score","right":"Well spotted!","wrong":"Missed…","resTitle":"Your result","acc":"Accuracy","resText":"Well played! Reading charts is a skill you build with practice. Keep training, or move to a real chart on a free demo.","again":"Continue","tryReal":"Try it on a real chart (free demo)","gainHead":"Profit calculator","stake":"Stake ($)","payout":"Payout rate (%)","ifWin":"Profit if you win","ifLose":"Loss if you lose","back":"Amount received if you win","breakeven":"Minimum win rate to break even","gainNote":"The higher the payout rate, the lower the win rate you need.","riskHead":"Risk management","capital":"Capital ($)","riskPct":"Risk per trade","advised":"Suggested stake per trade","streak":"Losses in a row before losing half your capital","riskNote":"Careful traders risk 1 to 2% of their capital per trade.","aboutHead":"About","aboutText":"OROLADO Tools is a free space to practise reading charts and plan your trades: prediction trainer, profit calculator and risk management. No sign-up required.","warn":"Trading involves a risk of loss. Never stake more than you can afford to lose.","demo":"Open a free demo account on OROLADO"};
+var T={"title":"OROLADO Tools — Price Prediction Trainer & Trading Calculators","desc":"Practise reading charts: predict whether the next candle goes up or down. Free profit and risk-management calculators, no sign-up needed.","brand":"OROLADO Tools","lang":"Language","tabPred":"Prediction","tabGain":"Profit","tabRisk":"Budget","tabAbout":"About","predHead":"Prediction trainer","predSub":"Will the next candle go up or down?","up":"Up","down":"Down","round":"Round","score":"Score","right":"Well spotted!","wrong":"Missed…","resTitle":"Your result","acc":"Accuracy","resText":"Well played! Reading charts is a skill you build with practice. Keep training, or move to a real chart on a free demo.","again":"Continue","tryReal":"Try it on a real chart (free demo)","gainHead":"Profit calculator","stake":"Stake ($)","payout":"Payout rate (%)","ifWin":"Profit if you win","ifLose":"Loss if you lose","back":"Amount received if you win","riskHead":"Plan your budget","capital":"Capital ($)","riskPct":"Planned number of trades","advised":"Stake per trade","aboutHead":"About","aboutText":"OROLADO Tools is a free space to practise reading charts and plan your trades: prediction trainer, profit calculator and risk management. No sign-up required.","warn":"Trading involves a risk of loss. Never stake more than you can afford to lose.","demo":"Open a free demo account on OROLADO"};
 
 (function(){
 var L=document.documentElement.lang;
@@ -145,7 +141,7 @@ var money=function(n){return '$ '+nf(n,2)};
 // Onglets
 var tabs=document.querySelectorAll('.tabs button');
 tabs.forEach(function(b){b.addEventListener('click',function(){tabs.forEach(function(x){x.classList.toggle('on',x===b)});document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p)});if(b.dataset.p==='p-pred')draw();});});
-// --- Entraînement à la prédiction (graphique au hasard, comme un vrai marché) ---
+// --- Entraînement à la prédiction ---
 var VIS=30,STEP=10,cv=$('cv'),ctx=cv.getContext('2d'),C=[],r=0,score=0,busy=false,lo=0,hi=0;
 function gauss(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
 // Partie sans fin : les bougies sont créées au fur et à mesure ; un bilan tous les 10 coups.
@@ -168,11 +164,11 @@ $('bUp').addEventListener('click',function(){guess(true)});$('bDn').addEventList
 window.addEventListener('resize',draw);
 // --- Calculateur de gains ---
 function gain(){var s=Math.max(0,parseFloat($('gStake').value)||0),p=Math.max(0,parseFloat($('gPay').value)||0);
-$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s);$('gBe').textContent=p>0?nf(100/(1+p/100),1)+' %':'—'}
+$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s)}
 ['gStake','gPay'].forEach(function(i){$(i).addEventListener('input',gain)});
 // --- Gestion du risque ---
-function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||1;$('rPctV').textContent=q+' %';
-$('rStake').textContent=money(c*q/100);$('rStreak').textContent=String(Math.ceil(Math.log(0.5)/Math.log(1-q/100)))}
+function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||20;$('rPctV').textContent=String(q);
+$('rStake').textContent=money(c/q)}
 ['rCap','rPct'].forEach(function(i){$(i).addEventListener('input',risk)});
 newGame();gain();risk();
 })();
