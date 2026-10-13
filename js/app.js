@@ -6139,14 +6139,20 @@
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1, usdc: 1, ada: 1, avax: 1, matic: 1 };
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
+    tmoney: 1, celtiis: 1, vodafone: 1, mynita: 1,
     nequi: 1, gcash: 1, stcpay: 1, papara: 1, mercadopago: 1
   };
+  // v2619 (propriétaire) — transferts par numéro : le numéro suffit, aucun nom demandé (un nom faux ne bloque pas
+  // l'envoi). Seuls OPay et PalmPay gardent la case « Nom » : chez eux, un nom faux bloque le paiement.
+  var WD_NO_NAME = {};
+  Object.keys(WD_MOBILE).forEach(function (k) { if (k !== 'opay' && k !== 'palmpay') WD_NO_NAME[k] = 1; });
   var WD_EMAIL = { paypal: 1, skrill: 1, neteller: 1 };
   var WD_NAMES = {
     usdt: 'USDT TRC-20', trx: 'TRX', sol: 'SOL', bnb: 'Binance Pay', btc: 'BTC', eth: 'ETH',
     ltc: 'LTC', doge: 'DOGE', usdc: 'USDC', ada: 'ADA', avax: 'AVAX', matic: 'POL (MATIC)',
     opay: 'OPay', palmpay: 'PalmPay', wave: 'Wave', orange: 'Orange', mtn: 'MTN',
     mpesa: 'M-Pesa', moov: 'Moov', airtel: 'Airtel', pix: 'PIX', mercadopago: 'Mercado Pago',
+    tmoney: 'T-Money', celtiis: 'Celtiis', vodafone: 'Vodafone', mynita: 'MyNita',
     nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara',
     paypal: 'PayPal', skrill: 'Skrill', neteller: 'Neteller', payeer: 'Payeer', perfectmoney: 'Perfect Money',
     card: 'Carte bancaire', bank: 'Virement bancaire', revolut: 'Revolut'
@@ -6161,7 +6167,12 @@
     mtn: ['+234', '+233', '+225', '+256', '+250', '+27', '+241', '+242', '+243', '+227', '+229', '+237'],
     moov: ['+225', '+221', '+223', '+226', '+227', '+228'],
     airtel: ['+254', '+256', '+255', '+250', '+243', '+227'],
-    mpesa: ['+254', '+255', '+243', '+27', '+233', '+20', '+227']
+    mpesa: ['+254', '+255', '+243', '+27', '+233', '+20', '+227'],
+    // v2619 (propriétaire) : T-Money = Togo, Celtiis = Bénin, MyNita = Niger, Vodafone = Ghana / RD Congo (Vodacom).
+    tmoney: ['+228'],
+    celtiis: ['+229'],
+    mynita: ['+227'],
+    vodafone: ['+233', '+243']
   };
   /* Mercado Pago : uniquement les pays où le service existe vraiment. */
   var WD_MPAGO_COUNTRIES = [
@@ -6315,7 +6326,10 @@
         phone.setAttribute('maxlength', '20');
         phone.setAttribute('inputmode', 'tel');
       }
-      if ($('wdFullName') && u && !$('wdFullName').value) $('wdFullName').value = u.displayName || '';
+      // v2619 (propriétaire) : le Mobile Money africain ne demande que le numéro → pas de case « Nom ».
+      // OPay, PalmPay… gardent la case « Nom », vide : le joueur écrit le vrai nom du compte (avant, elle était
+      // pré-remplie avec le nom du profil et l'admin ne recevait jamais le nom du compte).
+      if ($('wdNameBox')) $('wdNameBox').classList.toggle('hidden', !!WD_NO_NAME[method]);
       return;
     }
     if (isCard) {
@@ -6594,7 +6608,7 @@
     if (k.indexOf('crypto') >= 0 || k.indexOf('btc') >= 0 || k.indexOf('eth') >= 0 || k.indexOf('sol') >= 0 || k.indexOf('trx') >= 0 || k.indexOf('bnb') >= 0 || k.indexOf('ltc') >= 0 || k.indexOf('doge') >= 0 || k.indexOf('usdc') >= 0 || k === 'ada' || k.indexOf('avax') >= 0 || k.indexOf('matic') >= 0 || k.indexOf('oxapay') >= 0 || k.indexOf('usdt') >= 0) return 'Crypto';
     if (k.indexOf('card') >= 0 || k.indexOf('visa') >= 0) return t('wdMethodCard');
     // v2518 — noms propres des moyens de retrait (avant : « opay », « palmpay », « mercadopago »… en minuscules).
-    var NAMES = { opay: 'OPay', palmpay: 'PalmPay', pix: 'PIX', mercadopago: 'Mercado Pago', nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara', payeer: 'Payeer', perfectmoney: 'Perfect Money', skrill: 'Skrill', neteller: 'Neteller', revolut: 'Revolut', bnb: 'Binance Pay' };
+    var NAMES = { tmoney: 'T-Money', celtiis: 'Celtiis', vodafone: 'Vodafone', mynita: 'MyNita', opay: 'OPay', palmpay: 'PalmPay', pix: 'PIX', mercadopago: 'Mercado Pago', nequi: 'Nequi', gcash: 'GCash', upi: 'UPI', stcpay: 'STC Pay', picpay: 'PicPay', papara: 'Papara', payeer: 'Payeer', perfectmoney: 'Perfect Money', skrill: 'Skrill', neteller: 'Neteller', revolut: 'Revolut', bnb: 'Binance Pay' };
     if (NAMES[k]) return NAMES[k];
     return String(raw);
   }
@@ -8106,8 +8120,8 @@
       var dial = WD_DIAL_LOCK[method] || '+1';
       if (isMobile) {
         destination = String(($('wdPhone') && $('wdPhone').value) || '').trim();
-        name = String(($('wdFullName') && $('wdFullName').value) || '').trim();
-        dial = String(($('wdDial') && $('wdDial').value) || WD_DIAL_LOCK[method] || '+1');
+        if (!WD_NO_NAME[method]) name = String(($('wdFullName') && $('wdFullName').value) || '').trim();
+        dial =String(($('wdDial') && $('wdDial').value) || WD_DIAL_LOCK[method] || '+1');
       } else if (method === 'upi') {
         dial = '+91';
         destination = String(($('wdDestination') && $('wdDestination').value) || '').trim();
@@ -8162,7 +8176,7 @@
         toast(t('wdDestErr'), 'err');
         return;
       }
-      if (isMobile && name.length < 2) { toast(t('wdFullName'), 'err'); return; }
+      if (isMobile && !WD_NO_NAME[method] && name.length < 2) { toast(t('wdName'), 'err'); return; }
       if (WD_EMAIL[method] && destination.indexOf('@') < 0) {
         toast(t('wdPaypalErr'), 'err');
         return;

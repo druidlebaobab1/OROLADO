@@ -570,6 +570,7 @@ function admin_method_label(string $op): string {
   $map = [
     'wave' => 'Wave', 'orange' => 'Orange', 'mtn' => 'MTN', 'moov' => 'Moov',
     'mpesa' => 'M-Pesa', 'airtel' => 'Airtel', 'opay' => 'OPay', 'palmpay' => 'PalmPay',
+    'tmoney' => 'T-Money', 'celtiis' => 'Celtiis', 'vodafone' => 'Vodafone', 'mynita' => 'MyNita',
     'paypal' => 'PayPal', 'bank' => 'Banque', 'card' => 'Carte',
     'usdt' => 'USDT', 'btc' => 'BTC', 'eth' => 'ETH', 'trx' => 'TRX',
     'sol' => 'SOL', 'bnb' => 'BNB', 'ltc' => 'LTC', 'doge' => 'DOGE',
@@ -796,7 +797,7 @@ function admin_dep_channel(string $op): string {
   if ($op === 'admin') return 'Crédit admin';
   if ($op === 'refund') return 'Remboursement';
   if ($op === '' || $op === 'maketou') return 'Mobile Money';
-  if (in_array($op, ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'opay', 'palmpay'], true)) return 'Mobile Money';
+  if (in_array($op, ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'opay', 'palmpay', 'tmoney', 'celtiis', 'vodafone', 'mynita'], true)) return 'Mobile Money';
   return 'Autre';
 }
 

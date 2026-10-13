@@ -154,5 +154,27 @@ $b = $bank(); unset($b['c'][$sb]); $setBank($b);
 $r = $call($wd(10));
 check('refusé, sans utiliser le chiffre du fichier', empty($r['ok']), (string) ($r['reason'] ?? ''));
 
+echo "6) v2619 — nouveaux moyens (T-Money…) et nom du compte (OPay)\n";
+$setBank(['c' => [$sb => 10000]]);
+with_db_lock(function ($box) use ($otp) { $otp($box->db); return ['ok' => true]; });
+$r = $call(['action' => 'withdraw', 'token' => 'tokW', 'otp' => '123456', 'amount' => 10, 'operator' => 'tmoney', 'destination' => '90000000', 'beneficiary' => 'Test Retrait', 'countryCode' => '+228']);
+check('retrait T-Money accepté', !empty($r['ok']), (string) ($r['reason'] ?? ''));
+$db = load_db();
+$last = $db['withdrawals'][0];
+check('enregistré comme T-Money (pas changé en Wave)', ($last['operator'] ?? '') === 'tmoney', (string) ($last['operator'] ?? ''));
+check('indicatif Togo gardé', ($last['countryCode'] ?? '') === '+228', (string) ($last['countryCode'] ?? ''));
+with_db_lock(function ($box) use ($otp) { $otp($box->db); return ['ok' => true]; });
+$r = $call(['action' => 'withdraw', 'token' => 'tokW', 'otp' => '123456', 'amount' => 10, 'operator' => 'opay', 'destination' => '8012345678', 'beneficiary' => 'Kouassi Jean', 'countryCode' => '+234']);
+check('retrait OPay accepté', !empty($r['ok']), (string) ($r['reason'] ?? ''));
+$db = load_db();
+$last = $db['withdrawals'][0];
+check('le nom du compte OPay arrive tel quel pour l’admin', ($last['name'] ?? '') === 'Kouassi Jean' && ($last['beneficiary'] ?? '') === 'Kouassi Jean', (string) ($last['name'] ?? ''));
+foreach (['vodafone', 'mynita', 'celtiis'] as $op) {
+  with_db_lock(function ($box) use ($otp) { $otp($box->db); return ['ok' => true]; });
+  $r = $call(['action' => 'withdraw', 'token' => 'tokW', 'otp' => '123456', 'amount' => 5, 'operator' => $op, 'destination' => '0240000000', 'beneficiary' => 'Test Retrait', 'countryCode' => '+233']);
+  $db = load_db(); $last = $db['withdrawals'][0];
+  check('retrait ' . $op . ' accepté et bien nommé', !empty($r['ok']) && ($last['operator'] ?? '') === $op, (string) ($r['reason'] ?? ($last['operator'] ?? '')));
+}
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

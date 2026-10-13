@@ -304,7 +304,7 @@ function orolado_withdraw_min_for(string $op): float {
     // v2591 : 6 cryptos de plus en retrait (demande du propriétaire).
     'ltc' => 10.0, 'doge' => 10.0, 'usdc' => 10.0, 'ada' => 10.0, 'avax' => 10.0, 'matic' => 10.0,
     'opay' => 5.0, 'palmpay' => 5.0, 'wave' => 5.0, 'orange' => 5.0, 'mtn' => 5.0, 'mpesa' => 5.0,
-    'moov' => 5.0, 'airtel' => 5.0, 'pix' => 5.0, 'mercadopago' => 5.0, 'nequi' => 5.0,
+    'moov' => 5.0, 'airtel' => 5.0, 'tmoney' => 5.0, 'celtiis' => 5.0, 'vodafone' => 5.0, 'mynita' => 5.0, 'pix' => 5.0, 'mercadopago' => 5.0, 'nequi' => 5.0,
     'gcash' => 5.0, 'upi' => 5.0, 'stcpay' => 10.0, 'picpay' => 10.0, 'papara' => 10.0,
     'paypal' => 25.0, 'skrill' => 25.0, 'neteller' => 25.0, 'card' => 25.0, 'bank' => 25.0,
     'revolut' => 30.0,

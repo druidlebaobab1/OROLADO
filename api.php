@@ -1974,7 +1974,7 @@ if ($action === 'withdraw') {
     exit;
   }
   $operator = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? 'wave')));
-  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'usdc', 'ada', 'avax', 'matic', 'paypal', 'bank', 'card', 'opay', 'palmpay', 'pix', 'mercadopago', 'nequi', 'gcash', 'upi', 'stcpay', 'picpay', 'papara', 'skrill', 'neteller', 'payeer', 'perfectmoney', 'revolut'];
+  $allowedOps = ['wave', 'orange', 'mtn', 'moov', 'mpesa', 'airtel', 'tmoney', 'celtiis', 'vodafone', 'mynita', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'usdc', 'ada', 'avax', 'matic', 'paypal', 'bank', 'card', 'opay', 'palmpay', 'pix', 'mercadopago', 'nequi', 'gcash', 'upi', 'stcpay', 'picpay', 'papara', 'skrill', 'neteller', 'payeer', 'perfectmoney', 'revolut'];
   if (!in_array($operator, $allowedOps, true)) $operator = 'wave';
   $destination = trim((string) ($req['destination'] ?? $req['phone'] ?? ''));
   $beneficiary = trim((string) ($req['beneficiary'] ?? $me['displayName'] ?? ''));

@@ -9043,3 +9043,22 @@ html body .push-ask-txt em::before{content:"✓ "}
 html body .push-ask.wait .push-ask-btns{display:none}
 html body .push-ask.wait .push-ask-txt b{font-size:16px;color:#FCD34D}
 html body .push-ask-yes{min-width:46%}
+/* v2619 — Retrait : logos redessinés (Wave, Orange, MTN MoMo, Moov, Airtel) + 4 moyens ajoutés (T-Money, Celtiis,
+   Vodafone, MyNita). Même taille de case que les autres. */
+html body .wd-tmoney .wd-mm-dot,html body .wd-celtiis .wd-mm-dot,html body .wd-vodafone .wd-mm-dot,html body .wd-mynita .wd-mm-dot{
+  width:18px!important;height:18px!important;min-width:18px;border-radius:5px!important;flex:0 0 18px!important;padding:0!important;
+  font-size:0!important;color:transparent!important;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 2px 6px rgba(0,0,0,.35)!important;
+  background:center/cover no-repeat!important;display:inline-block!important}
+html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg?v=2619")!important}
+html body .wd-orange .wd-mm-dot{background-image:url("../icons/pay/orange.svg?v=2619")!important}
+html body .wd-mtn .wd-mm-dot{background-image:url("../icons/pay/mtn.svg?v=2619")!important}
+html body .wd-moov .wd-mm-dot{background-image:url("../icons/pay/moov.svg?v=2619")!important}
+html body .wd-airtel .wd-mm-dot{background-image:url("../icons/pay/airtel.svg?v=2619")!important}
+html body .wd-tmoney .wd-mm-dot{background-image:url("../icons/pay/tmoney.svg?v=2619")!important}
+html body .wd-celtiis .wd-mm-dot{background-image:url("../icons/pay/celtiis.svg?v=2619")!important}
+html body .wd-vodafone .wd-mm-dot{background-image:url("../icons/pay/vodafone.svg?v=2619")!important}
+html body .wd-mynita .wd-mm-dot{background-image:url("../icons/pay/mynita.svg?v=2619")!important}
+html body .wd-card.wd-tmoney.on{border-color:#FFD400}
+html body .wd-card.wd-celtiis.on{border-color:#8CC63F}
+html body .wd-card.wd-vodafone.on{border-color:#E60000}
+html body .wd-card.wd-mynita.on{border-color:#F26A21}

@@ -26,6 +26,7 @@
       usdt: 10, trx: 10, sol: 10, bnb: 10, btc: 15, eth: 15,
       ltc: 10, doge: 10, usdc: 10, ada: 10, avax: 10, matic: 10,
       wave: 5, orange: 5, mtn: 5, moov: 5, airtel: 5, opay: 5, palmpay: 5, mpesa: 5,
+      tmoney: 5, celtiis: 5, vodafone: 5, mynita: 5,
       gcash: 10, nequi: 10, pix: 10, picpay: 10, papara: 10, upi: 10,
       stcpay: 15, mercadopago: 10,
       payeer: 20, perfectmoney: 15,
