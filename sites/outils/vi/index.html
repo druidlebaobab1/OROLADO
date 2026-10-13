@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  
+  <title>OROLADO Tools — Luyện dự đoán giá trong giao dịch &amp; Công cụ tính</title>
+  <meta name="description" content="Luyện đọc biểu đồ: đoán cây nến tiếp theo tăng hay giảm. Công cụ tính lợi nhuận và quản lý rủi ro miễn phí, không cần đăng ký.">
+  <link rel="canonical" href="https://orolado.org/vi/">
+  <link rel="alternate" hreflang="en" href="https://orolado.org/">
+  <link rel="alternate" hreflang="fr" href="https://orolado.org/fr/">
+  <link rel="alternate" hreflang="es" href="https://orolado.org/es/">
+  <link rel="alternate" hreflang="pt" href="https://orolado.org/pt/">
+  <link rel="alternate" hreflang="ar" href="https://orolado.org/ar/">
+  <link rel="alternate" hreflang="tr" href="https://orolado.org/tr/">
+  <link rel="alternate" hreflang="de" href="https://orolado.org/de/">
+  <link rel="alternate" hreflang="ru" href="https://orolado.org/ru/">
+  <link rel="alternate" hreflang="id" href="https://orolado.org/id/">
+  <link rel="alternate" hreflang="vi" href="https://orolado.org/vi/">
+  <link rel="alternate" hreflang="hi" href="https://orolado.org/hi/">
+  <link rel="alternate" hreflang="x-default" href="https://orolado.org/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OROLADO Tools — Luyện dự đoán giá trong giao dịch &amp; Công cụ tính">
+  <meta property="og:description" content="Luyện đọc biểu đồ: đoán cây nến tiếp theo tăng hay giảm. Công cụ tính lợi nhuận và quản lý rủi ro miễn phí, không cần đăng ký.">
+  <meta property="og:url" content="https://orolado.org/vi/">
+  <meta property="og:locale" content="vi_VN">
+  <meta name="theme-color" content="#0B1020">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"OROLADO Tools","url":"https://orolado.org/vi/","description":"Luyện đọc biểu đồ: đoán cây nến tiếp theo tăng hay giảm. Công cụ tính lợi nhuận và quản lý rủi ro miễn phí, không cần đăng ký.","inLanguage":"vi","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0B1020;color:#E8ECF5;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{overflow:hidden}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 8px}
+.brand{display:flex;align-items:center;gap:9px;font-size:17px;letter-spacing:.2px}
+.logo{width:30px;height:30px;flex-shrink:0}
+.lang select{background:#151C33;color:#E8ECF5;border:1px solid #26304F;border-radius:10px;padding:7px 8px;font:inherit;font-size:13px}
+.main{flex:1;min-height:0;position:relative}
+.panel{position:absolute;inset:0;padding:6px 16px 10px;display:none;flex-direction:column;gap:10px;overflow-y:auto}
+.panel.on{display:flex}
+h1,h2{font-size:19px;font-weight:800;color:#F5C542}
+.sub{color:#A9B3CC;font-size:14px;margin-top:-4px}
+.chartBox{position:relative;flex:1;min-height:170px;background:linear-gradient(180deg,#111832,#0D1328);border:1px solid #1E2745;border-radius:16px;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.hud{display:flex;justify-content:space-between;font-size:14px;color:#A9B3CC}
+.hud b{color:#E8ECF5}
+.msg{min-height:22px;text-align:center;font-weight:800;font-size:16px}
+.msg.ok{color:#16C784}.msg.ko{color:#EA3943}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:14px;min-height:54px;font:inherit;font-size:17px;font-weight:800;cursor:pointer;color:#fff}
+.btn:disabled{opacity:.5}
+.up{background:#16C784}.dn{background:#EA3943}
+.gold{background:#F5C542;color:#0B1020}
+.ghost{background:transparent;border:1px solid #33406A;color:#E8ECF5}
+a.btn{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;padding:0 12px}
+.res{display:none;flex-direction:column;gap:10px;align-items:stretch;text-align:center}
+.res.on{display:flex}
+.big{font-size:44px;font-weight:900;color:#F5C542}
+.res p{color:#C5CDE0;font-size:14px;line-height:1.45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#A9B3CC}
+label.f input{background:#151C33;border:1px solid #26304F;border-radius:12px;color:#fff;font:inherit;font-size:18px;font-weight:700;padding:10px 12px;width:100%}
+input[type=range]{width:100%;accent-color:#F5C542}
+.card{background:#121A33;border:1px solid #1E2745;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card span{color:#A9B3CC;font-size:13px}
+.card b{font-size:19px;white-space:nowrap}
+.pos{color:#16C784}.neg{color:#EA3943}.gl{color:#F5C542}
+.note{color:#8C97B3;font-size:12.5px;line-height:1.45}
+.about p{color:#C5CDE0;font-size:14.5px;line-height:1.55}
+.warn{border-left:3px solid #F5C542;padding-left:10px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #1E2745;background:#0D1328}
+.tabs button{background:none;border:0;color:#7F8AA8;font:inherit;font-size:11.5px;font-weight:700;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.tabs svg{width:22px;height:22px}
+.tabs button.on{color:#F5C542}
+@media (max-height:640px){.chartBox{min-height:130px}.btn{min-height:48px}h1,h2{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#F5C542"/><path d="M7 22l6-7 4 4 8-9" fill="none" stroke="#0B1020" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OROLADO Tools</b></div>
+    <label class="lang"><span class="sr">Ngôn ngữ</span><select id="langSel" aria-label="Ngôn ngữ"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option><option value="pt">Português</option><option value="ar">العربية</option><option value="tr">Türkçe</option><option value="de">Deutsch</option><option value="ru">Русский</option><option value="id">Indonesia</option><option value="vi" selected>Tiếng Việt</option><option value="hi">हिन्दी</option></select></label>
+  </header>
+<main class="main">
+  <section class="panel on" id="p-pred">
+    <h1>Luyện dự đoán</h1>
+    <p class="sub">Cây nến tiếp theo sẽ tăng hay giảm?</p>
+    <div class="hud"><span>Vòng <b id="rd">1/10</b></span><span>Điểm <b id="sc">0</b></span></div>
+    <div class="chartBox"><canvas id="cv"></canvas></div>
+    <div class="msg" id="msg" aria-live="polite"></div>
+    <div class="btns" id="play"><button class="btn up" id="bUp" type="button">▲ Tăng</button><button class="btn dn" id="bDn" type="button">▼ Giảm</button></div>
+    <div class="res" id="res">
+      <h2>Kết quả của bạn</h2>
+      <div class="big" id="acc">0 %</div>
+      <p>Các biểu đồ này diễn biến ngẫu nhiên, giống thị trường thật: không ai thắng mọi lúc. Điều tạo nên khác biệt là cách bạn quản lý tiền.</p>
+      <button class="btn gold" id="again" type="button">Chơi lại</button>
+      <a class="btn ghost" href="https://www.orolado.com/?utm_source=orolado-org&utm_medium=site" rel="noopener">Thử trên biểu đồ thật (demo miễn phí)</a>
+    </div>
+  </section>
+  <section class="panel" id="p-gain">
+    <h2>Tính lợi nhuận</h2>
+    <div class="grid">
+      <label class="f">Số tiền ($)<input id="gStake" type="number" inputmode="decimal" min="1" value="10"></label>
+      <label class="f">Tỷ lệ trả thưởng (%)<input id="gPay" type="number" inputmode="decimal" min="1" value="90"></label>
+    </div>
+    <div class="card"><span>Lãi nếu thắng</span><b class="pos" id="gWin">—</b></div>
+    <div class="card"><span>Số tiền nhận được nếu thắng</span><b class="gl" id="gBack">—</b></div>
+    <div class="card"><span>Lỗ nếu thua</span><b class="neg" id="gLose">—</b></div>
+    <div class="card"><span>Tỷ lệ thắng tối thiểu để không lỗ</span><b id="gBe">—</b></div>
+    <p class="note">Tỷ lệ trả thưởng càng cao, tỷ lệ thắng cần thiết càng thấp.</p>
+  </section>
+  <section class="panel" id="p-risk">
+    <h2>Quản lý rủi ro</h2>
+    <label class="f">Vốn ($)<input id="rCap" type="number" inputmode="decimal" min="1" value="100"></label>
+    <label class="f">Rủi ro mỗi lệnh : <b id="rPctV" class="gl">2 %</b><input id="rPct" type="range" min="1" max="10" step="1" value="2"></label>
+    <div class="card"><span>Số tiền gợi ý mỗi lệnh</span><b class="gl" id="rStake">—</b></div>
+    <div class="card"><span>Số lần thua liên tiếp trước khi mất nửa số vốn</span><b id="rStreak">—</b></div>
+    <p class="note">Người giao dịch thận trọng chỉ mạo hiểm 1–2% vốn cho mỗi lệnh.</p>
+  </section>
+  <section class="panel about" id="p-about">
+    <h2>Giới thiệu</h2>
+    <p>OROLADO Tools là không gian miễn phí để luyện đọc biểu đồ và chuẩn bị giao dịch: luyện dự đoán, tính lợi nhuận và quản lý rủi ro. Không cần đăng ký.</p>
+    <p class="warn">Giao dịch có rủi ro thua lỗ. Đừng bao giờ đặt nhiều hơn số tiền bạn có thể chấp nhận mất.</p>
+    <a class="btn gold" href="https://www.orolado.com/?utm_source=orolado-org&utm_medium=site" rel="noopener">Mở tài khoản demo miễn phí tại OROLADO</a>
+  </section>
+</main>
+<nav class="tabs" aria-label="menu">
+  <button type="button" class="on" data-p="p-pred"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M16 6h4v4"/></svg>Dự đoán</button>
+  <button type="button" data-p="p-gain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>Lợi nhuận</button>
+  <button type="button" data-p="p-risk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg>Rủi ro</button>
+  <button type="button" data-p="p-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>Giới thiệu</button>
+</nav>
+</div>
+<script>
+(function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
+var T={"title":"OROLADO Tools — Luyện dự đoán giá trong giao dịch & Công cụ tính","desc":"Luyện đọc biểu đồ: đoán cây nến tiếp theo tăng hay giảm. Công cụ tính lợi nhuận và quản lý rủi ro miễn phí, không cần đăng ký.","brand":"OROLADO Tools","lang":"Ngôn ngữ","tabPred":"Dự đoán","tabGain":"Lợi nhuận","tabRisk":"Rủi ro","tabAbout":"Giới thiệu","predHead":"Luyện dự đoán","predSub":"Cây nến tiếp theo sẽ tăng hay giảm?","up":"Tăng","down":"Giảm","round":"Vòng","score":"Điểm","right":"Chính xác!","wrong":"Trượt rồi…","resTitle":"Kết quả của bạn","acc":"Độ chính xác","resText":"Các biểu đồ này diễn biến ngẫu nhiên, giống thị trường thật: không ai thắng mọi lúc. Điều tạo nên khác biệt là cách bạn quản lý tiền.","again":"Chơi lại","tryReal":"Thử trên biểu đồ thật (demo miễn phí)","gainHead":"Tính lợi nhuận","stake":"Số tiền ($)","payout":"Tỷ lệ trả thưởng (%)","ifWin":"Lãi nếu thắng","ifLose":"Lỗ nếu thua","back":"Số tiền nhận được nếu thắng","breakeven":"Tỷ lệ thắng tối thiểu để không lỗ","gainNote":"Tỷ lệ trả thưởng càng cao, tỷ lệ thắng cần thiết càng thấp.","riskHead":"Quản lý rủi ro","capital":"Vốn ($)","riskPct":"Rủi ro mỗi lệnh","advised":"Số tiền gợi ý mỗi lệnh","streak":"Số lần thua liên tiếp trước khi mất nửa số vốn","riskNote":"Người giao dịch thận trọng chỉ mạo hiểm 1–2% vốn cho mỗi lệnh.","aboutHead":"Giới thiệu","aboutText":"OROLADO Tools là không gian miễn phí để luyện đọc biểu đồ và chuẩn bị giao dịch: luyện dự đoán, tính lợi nhuận và quản lý rủi ro. Không cần đăng ký.","warn":"Giao dịch có rủi ro thua lỗ. Đừng bao giờ đặt nhiều hơn số tiền bạn có thể chấp nhận mất.","demo":"Mở tài khoản demo miễn phí tại OROLADO"};
+
+(function(){
+var L=document.documentElement.lang;
+var $=function(i){return document.getElementById(i)};
+var nf=function(n,d){try{return new Intl.NumberFormat(L,{minimumFractionDigits:d,maximumFractionDigits:d}).format(n)}catch(e){return n.toFixed(d)}};
+var money=function(n){return '$ '+nf(n,2)};
+// Onglets
+var tabs=document.querySelectorAll('.tabs button');
+tabs.forEach(function(b){b.addEventListener('click',function(){tabs.forEach(function(x){x.classList.toggle('on',x===b)});document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.dataset.p)});if(b.dataset.p==='p-pred')draw();});});
+// --- Entraînement à la prédiction (graphique au hasard, comme un vrai marché) ---
+var VIS=30,ROUNDS=10,cv=$('cv'),ctx=cv.getContext('2d'),C=[],r=0,score=0,busy=false,lo=0,hi=0;
+function gauss(){var u=1-Math.random(),v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function newGame(){C=[];var p=1000;for(var i=0;i<VIS+ROUNDS;i++){var o=p,c=o+gauss()*3.2;var h=Math.max(o,c)+Math.abs(gauss())*1.4,l=Math.min(o,c)-Math.abs(gauss())*1.4;C.push({o:o,c:c,h:h,l:l});p=c}
+lo=Infinity;hi=-Infinity;C.forEach(function(k){if(k.l<lo)lo=k.l;if(k.h>hi)hi=k.h});var pad=(hi-lo)*0.08;lo-=pad;hi+=pad;
+r=0;score=0;busy=false;$('res').classList.remove('on');$('play').style.display='';$('msg').textContent='';$('msg').className='msg';hud();draw();}
+function hud(){$('rd').textContent=Math.min(r+1,ROUNDS)+'/'+ROUNDS;$('sc').textContent=score}
+function draw(){var w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;var d=Math.min(2,window.devicePixelRatio||1);cv.width=w*d;cv.height=h*d;ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+var shown=C.slice(r,r+VIS),n=VIS+1,slot=(w-16)/n,y=function(v){return 8+(hi-v)/(hi-lo)*(h-16)};
+ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;for(var g=1;g<5;g++){var gy=Math.round(h*g/5)+.5;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke()}
+shown.forEach(function(k,i){var x=8+slot*i+slot/2,up=k.c>=k.o,col=up?'#16C784':'#EA3943';ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(x,y(k.h));ctx.lineTo(x,y(k.l));ctx.stroke();ctx.fillStyle=col;var t=y(Math.max(k.o,k.c)),b=y(Math.min(k.o,k.c));ctx.fillRect(x-slot*0.32,t,slot*0.64,Math.max(1.5,b-t))});
+// emplacement de la prochaine bougie : « ? »
+var nx=8+slot*VIS+slot/2,last=shown[shown.length-1];ctx.strokeStyle='rgba(245,197,66,.55)';ctx.setLineDash([4,4]);ctx.strokeRect(nx-slot*0.42,y(last.c)-18,slot*0.84,36);ctx.setLineDash([]);ctx.fillStyle='#F5C542';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('?',nx,y(last.c)+5);}
+function guess(up){if(busy||r>=ROUNDS)return;busy=true;var k=C[VIS+r],win=(k.c>=k.o)===up;if(win)score++;
+var m=$('msg');m.textContent=win?T.right:T.wrong;m.className='msg '+(win?'ok':'ko');
+// révèle la bougie : on décale le graphique d'un cran
+r++;hud();draw();
+setTimeout(function(){busy=false;if(r>=ROUNDS){$('play').style.display='none';$('acc').textContent=nf(score/ROUNDS*100,0)+' %';$('res').classList.add('on')}},650);}
+$('bUp').addEventListener('click',function(){guess(true)});$('bDn').addEventListener('click',function(){guess(false)});$('again').addEventListener('click',newGame);
+window.addEventListener('resize',draw);
+// --- Calculateur de gains ---
+function gain(){var s=Math.max(0,parseFloat($('gStake').value)||0),p=Math.max(0,parseFloat($('gPay').value)||0);
+$('gWin').textContent='+ '+money(s*p/100);$('gBack').textContent=money(s+s*p/100);$('gLose').textContent='− '+money(s);$('gBe').textContent=p>0?nf(100/(1+p/100),1)+' %':'—'}
+['gStake','gPay'].forEach(function(i){$(i).addEventListener('input',gain)});
+// --- Gestion du risque ---
+function risk(){var c=Math.max(0,parseFloat($('rCap').value)||0),q=parseFloat($('rPct').value)||1;$('rPctV').textContent=q+' %';
+$('rStake').textContent=money(c*q/100);$('rStreak').textContent=String(Math.ceil(Math.log(0.5)/Math.log(1-q/100)))}
+['rCap','rPct'].forEach(function(i){$(i).addEventListener('input',risk)});
+newGame();gain();risk();
+})();
+
+</script>
+</body>
+</html>

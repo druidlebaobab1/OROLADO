@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  
+  <title>Quiz del Trader — Pon a prueba tus conocimientos de trading</title>
+  <meta name="description" content="15 preguntas para evaluar tus bases de trading: velas, riesgo y tendencias. Puntuación inmediata y explicación de cada respuesta. Gratis, sin registro.">
+  <link rel="canonical" href="https://orolad0.com/es/">
+  <link rel="alternate" hreflang="en" href="https://orolad0.com/">
+  <link rel="alternate" hreflang="fr" href="https://orolad0.com/fr/">
+  <link rel="alternate" hreflang="es" href="https://orolad0.com/es/">
+  <link rel="alternate" hreflang="pt" href="https://orolad0.com/pt/">
+  <link rel="alternate" hreflang="ar" href="https://orolad0.com/ar/">
+  <link rel="alternate" hreflang="tr" href="https://orolad0.com/tr/">
+  <link rel="alternate" hreflang="ru" href="https://orolad0.com/ru/">
+  <link rel="alternate" hreflang="id" href="https://orolad0.com/id/">
+  <link rel="alternate" hreflang="x-default" href="https://orolad0.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Quiz del Trader — Pon a prueba tus conocimientos de trading">
+  <meta property="og:description" content="15 preguntas para evaluar tus bases de trading: velas, riesgo y tendencias. Puntuación inmediata y explicación de cada respuesta. Gratis, sin registro.">
+  <meta property="og:url" content="https://orolad0.com/es/">
+  <meta property="og:locale" content="es_ES">
+  <meta name="theme-color" content="#0F766E">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Quiz del Trader","url":"https://orolad0.com/es/","description":"15 preguntas para evaluar tus bases de trading: velas, riesgo y tendencias. Puntuación inmediata y explicación de cada respuesta. Gratis, sin registro.","inLanguage":"es","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#F2F8F7;color:#123532;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{overflow:hidden}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 8px}
+.brand{display:flex;align-items:center;gap:9px;font-size:17px;color:#0F766E}
+.logo{width:30px;height:30px;flex-shrink:0}
+.lang select{background:#fff;color:#123532;border:1px solid #CFE3E0;border-radius:10px;padding:7px 8px;font:inherit;font-size:13px}
+.main{flex:1;min-height:0;position:relative}
+.screen{position:absolute;inset:0;padding:8px 16px 16px;display:none;flex-direction:column;gap:12px;overflow-y:auto}
+.screen.on{display:flex}
+h1{font-size:23px;font-weight:900;color:#0F3D39;line-height:1.25}
+h2{font-size:18px;font-weight:800;color:#0F3D39;line-height:1.35}
+.lead{color:#3E605C;font-size:15px;line-height:1.55}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;text-align:center}
+.badge{align-self:center;background:#D8F0EC;color:#0F766E;border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px}
+.btn{border:0;border-radius:14px;min-height:52px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;padding:0 14px}
+.teal{background:#0F766E;color:#fff}
+.ghost{background:#fff;border:1px solid #CFE3E0;color:#0F3D39}
+.bar{height:8px;background:#DCEBE8;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#0F766E;border-radius:99px;transition:width .3s}
+.meta{display:flex;justify-content:space-between;font-size:13px;color:#4D6E6A;font-weight:700}
+.opts{display:grid;gap:9px}
+.opt{background:#fff;border:2px solid #D3E6E3;border-radius:14px;min-height:54px;padding:10px 14px;text-align:start;font:inherit;font-size:15px;color:#123532;cursor:pointer}
+.opt.good{border-color:#16A34A;background:#ECFDF3}
+.opt.bad{border-color:#DC2626;background:#FEF2F2}
+.opt:disabled{cursor:default}
+.expl{display:none;background:#fff;border-inline-start:4px solid #0F766E;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5;color:#2E4F4B}
+.expl.on{display:block}
+.expl b{display:block;margin-bottom:3px}
+.expl b.ok{color:#16A34A}.expl b.ko{color:#DC2626}
+.score{font-size:58px;font-weight:900;color:#0F766E;line-height:1}
+.level{font-size:19px;font-weight:800;color:#0F3D39}
+.warn{color:#5C7975;font-size:12.5px;line-height:1.45}
+.spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#0F766E"/><path d="M12.5 12.5a3.5 3.5 0 1 1 5 3.2c-1 .5-1.5 1.2-1.5 2.3v.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22.5" r="1.6" fill="#fff"/></svg><b>Quiz del Trader</b></div>
+    <label class="lang"><span class="sr">Idioma</span><select id="langSel" aria-label="Idioma"><option value="en">English</option><option value="fr">Français</option><option value="es" selected>Español</option><option value="pt">Português</option><option value="ar">العربية</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="id">Indonesia</option></select></label>
+  </header>
+<main class="main">
+  <section class="screen on" id="s-start">
+    <div class="hero">
+      <span class="badge">15 preguntas · 3 minutos</span>
+      <h1>Pon a prueba tus conocimientos de trading</h1>
+      <p class="lead">Velas, tendencias, gestión del riesgo: responde 15 preguntas y descubre tu nivel. Cada respuesta se explica.</p>
+      <button class="btn teal" id="go" type="button">Empezar el quiz</button>
+    </div>
+  </section>
+  <section class="screen" id="s-q">
+    <div class="meta"><span id="qn"></span><span id="qs"></span></div>
+    <div class="bar"><i id="qb"></i></div>
+    <h2 id="qt"></h2>
+    <div class="opts" id="qo"></div>
+    <div class="expl" id="qe"><b id="qr"></b><span id="qx"></span></div>
+    <div class="spacer"></div>
+    <button class="btn teal" id="qnext" type="button" style="display:none"></button>
+  </section>
+  <section class="screen" id="s-end">
+    <div class="hero">
+      <h2>Tu puntuación</h2>
+      <div class="score" id="es">0/15</div>
+      <div class="level" id="el"></div>
+      <p class="lead" id="em"></p>
+      <button class="btn teal" id="again" type="button">Volver a empezar</button>
+      <a class="btn ghost" href="https://www.orolado.com/?utm_source=quiz-orolad0&utm_medium=site" rel="noopener">Practicar en una cuenta demo gratis</a>
+      <p class="warn">El trading implica riesgo de pérdida. Nunca inviertas más de lo que puedes permitirte perder.</p>
+    </div>
+  </section>
+</main>
+</div>
+<script>
+(function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
+var T={"title":"Quiz del Trader — Pon a prueba tus conocimientos de trading","desc":"15 preguntas para evaluar tus bases de trading: velas, riesgo y tendencias. Puntuación inmediata y explicación de cada respuesta. Gratis, sin registro.","brand":"Quiz del Trader","lang":"Idioma","badge":"15 preguntas · 3 minutos","startHead":"Pon a prueba tus conocimientos de trading","startText":"Velas, tendencias, gestión del riesgo: responde 15 preguntas y descubre tu nivel. Cada respuesta se explica.","startBtn":"Empezar el quiz","q":"Pregunta","scoreL":"Puntos","next":"Siguiente pregunta","seeResult":"Ver mi resultado","correct":"¡Correcto!","incorrect":"Respuesta incorrecta","resHead":"Tu puntuación","levels":["Nivel principiante","Nivel intermedio","Nivel avanzado"],"msgs":["¡Buen comienzo! Repasa las explicaciones y practica sin riesgo antes de operar.","¡Buenas bases! Sigue trabajando la gestión del riesgo.","¡Excelente! Dominas lo básico: mantén siempre inversiones prudentes."],"again":"Volver a empezar","demo":"Practicar en una cuenta demo gratis","warn":"El trading implica riesgo de pérdida. Nunca inviertas más de lo que puedes permitirte perder.","questions":[{"q":"¿Qué muestra una vela verde?","o":["El precio cerró más alto que la apertura","El precio cerró más bajo que la apertura","El mercado está cerrado"],"x":"Una vela verde cierra por encima de su precio de apertura."},{"q":"¿Para qué sirven las mechas de una vela?","o":["Mostrar el máximo y el mínimo alcanzados","Indicar el número de traders","Anunciar la próxima vela"],"x":"Las mechas muestran hasta dónde subió y bajó el precio en el periodo."},{"q":"Una tendencia alcista marca…","o":["Máximos cada vez más altos","Mínimos cada vez más bajos","Solo velas verdes"],"x":"Incluso en tendencia alcista hay velas rojas: lo que cuenta es la serie de máximos más altos."},{"q":"¿Qué es un soporte?","o":["Un nivel donde las caídas se han detenido a menudo","Un nivel que el precio nunca cruza","El precio de apertura del día"],"x":"Un soporte es una referencia, no un muro: puede romperse."},{"q":"¿Cuánto arriesgan por operación los traders prudentes?","o":["Del 1 al 2 % de su capital","El 25 % de su capital","La mitad de su capital"],"x":"Una inversión pequeña permite aguantar una racha de pérdidas sin vaciar la cuenta."},{"q":"¿Qué hacer después de una pérdida?","o":["Mantener la misma inversión y hacer una pausa","Doblar la inversión para recuperar","Invertir todo lo que queda"],"x":"Doblar para «recuperar» es la forma más rápida de vaciar una cuenta."},{"q":"Con una tasa de pago del 90 %, una inversión ganadora de 10 $ da…","o":["9 $ de ganancia, es decir 19 $ recibidos","90 $ de ganancia","1,90 $ de ganancia"],"x":"10 $ × 90 % = 9 $ de ganancia, más los 10 $ invertidos devueltos."},{"q":"¿Qué describe una media móvil?","o":["El pasado del precio, para ver la tendencia","El precio exacto de mañana","Una ganancia garantizada"],"x":"Un indicador resume el pasado; no predice el futuro."},{"q":"Unas bandas de Bollinger que se abren indican…","o":["Un mercado más agitado","Un mercado cerrado","Una subida segura"],"x":"Las bandas se ensanchan cuando los movimientos se vuelven más fuertes."},{"q":"Una «señal 100 % ganadora» es…","o":["Una promesa en la que no hay que creer","Un método fiable","Obligatoria para operar"],"x":"Nadie conoce el próximo movimiento: desconfía de esas promesas."},{"q":"¿Para qué sirve una cuenta demo?","o":["Practicar sin arriesgar dinero real","Ganar dinero real","Retirar ganancias más rápido"],"x":"La cuenta demo usa dinero virtual: ideal para aprender."},{"q":"¿Qué es la volatilidad?","o":["La fuerza y rapidez de los movimientos del precio","El número de personas que operan","La duración de una operación"],"x":"Cuanto más volátil es un mercado, más grandes y rápidos son sus movimientos."},{"q":"Con un pago del 90 % y una inversión fija, ¿qué tasa de acierto mínima necesitas para no perder?","o":["Alrededor del 53 %","10 %","90 %"],"x":"1 ÷ (1 + 0,9) ≈ 52,6 %: por debajo, pierdes con el tiempo."},{"q":"¿Cuál es el mejor momento para operar?","o":["Cuando estás tranquilo y descansado","Justo después de una gran pérdida","Cuando estás enfadado"],"x":"Las emociones distorsionan las decisiones: se opera mejor con la cabeza fría."},{"q":"Un índice sintético…","o":["Es un mercado simulado, abierto 24/7","Depende de los resultados de una empresa","Cierra todos los fines de semana"],"x":"Lo genera un ordenador y no depende de noticias ni de empresas."}]};
+
+(function(){
+var $=function(i){return document.getElementById(i)},Q=T.questions,N=Q.length,i=0,score=0,order=[];
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)})}
+function shuffle(a){for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),t=a[k];a[k]=a[j];a[j]=t}return a}
+function ask(){var q=Q[i];$('qn').textContent=T.q+' '+(i+1)+'/'+N;$('qs').textContent=T.scoreL+' '+score;$('qb').style.width=(i/N*100)+'%';$('qt').textContent=q.q;
+$('qe').classList.remove('on');$('qnext').style.display='none';var box=$('qo');box.innerHTML='';
+shuffle([0,1,2]).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='opt';b.textContent=q.o[k];b.addEventListener('click',function(){pick(k,b)});b.dataset.k=k;box.appendChild(b)});}
+function pick(k,btn){var ok=k===0;if(ok)score++;document.querySelectorAll('.opt').forEach(function(b){b.disabled=true;if(b.dataset.k==='0')b.classList.add('good')});if(!ok)btn.classList.add('bad');
+var r=$('qr');r.textContent=ok?T.correct:T.incorrect;r.className=ok?'ok':'ko';$('qx').textContent=Q[i].x;$('qe').classList.add('on');$('qs').textContent=T.scoreL+' '+score;
+var n=$('qnext');n.textContent=i<N-1?T.next:T.seeResult;n.style.display='flex';}
+$('qnext').addEventListener('click',function(){i++;if(i<N){ask();$('s-q').scrollTop=0}else end()});
+function end(){$('qb').style.width='100%';$('es').textContent=score+'/'+N;var lv=score>=12?2:score>=8?1:0;$('el').textContent=T.levels[lv];$('em').textContent=T.msgs[lv];show('s-end')}
+function start(){i=0;score=0;show('s-q');ask()}
+$('go').addEventListener('click',start);$('again').addEventListener('click',start);
+})();
+
+</script>
+</body>
+</html>

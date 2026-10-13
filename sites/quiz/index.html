@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>(function(){try{if(location.pathname!=='/'||/[?&]l=en/.test(location.search))return;var L=["en","fr","es","pt","ar","tr","ru","id"];var s=null;try{s=localStorage.getItem('site_lang')}catch(e){}var n=String(s||(navigator.languages&&navigator.languages[0])||navigator.language||'en').slice(0,2).toLowerCase();if(n!=='en'&&L.indexOf(n)>=0)location.replace('/'+n+'/')}catch(e){}})()</script>
+  <title>Trader Quiz — Test Your Trading Knowledge</title>
+  <meta name="description" content="15 questions to test your trading basics: candlesticks, risk and trends. Instant score and an explanation for every answer. Free, no sign-up.">
+  <link rel="canonical" href="https://orolad0.com/">
+  <link rel="alternate" hreflang="en" href="https://orolad0.com/">
+  <link rel="alternate" hreflang="fr" href="https://orolad0.com/fr/">
+  <link rel="alternate" hreflang="es" href="https://orolad0.com/es/">
+  <link rel="alternate" hreflang="pt" href="https://orolad0.com/pt/">
+  <link rel="alternate" hreflang="ar" href="https://orolad0.com/ar/">
+  <link rel="alternate" hreflang="tr" href="https://orolad0.com/tr/">
+  <link rel="alternate" hreflang="ru" href="https://orolad0.com/ru/">
+  <link rel="alternate" hreflang="id" href="https://orolad0.com/id/">
+  <link rel="alternate" hreflang="x-default" href="https://orolad0.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Trader Quiz — Test Your Trading Knowledge">
+  <meta property="og:description" content="15 questions to test your trading basics: candlesticks, risk and trends. Instant score and an explanation for every answer. Free, no sign-up.">
+  <meta property="og:url" content="https://orolad0.com/">
+  <meta property="og:locale" content="en_US">
+  <meta name="theme-color" content="#0F766E">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Trader Quiz","url":"https://orolad0.com/","description":"15 questions to test your trading basics: candlesticks, risk and trends. Instant score and an explanation for every answer. Free, no sign-up.","inLanguage":"en","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#F2F8F7;color:#123532;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{overflow:hidden}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 8px}
+.brand{display:flex;align-items:center;gap:9px;font-size:17px;color:#0F766E}
+.logo{width:30px;height:30px;flex-shrink:0}
+.lang select{background:#fff;color:#123532;border:1px solid #CFE3E0;border-radius:10px;padding:7px 8px;font:inherit;font-size:13px}
+.main{flex:1;min-height:0;position:relative}
+.screen{position:absolute;inset:0;padding:8px 16px 16px;display:none;flex-direction:column;gap:12px;overflow-y:auto}
+.screen.on{display:flex}
+h1{font-size:23px;font-weight:900;color:#0F3D39;line-height:1.25}
+h2{font-size:18px;font-weight:800;color:#0F3D39;line-height:1.35}
+.lead{color:#3E605C;font-size:15px;line-height:1.55}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;text-align:center}
+.badge{align-self:center;background:#D8F0EC;color:#0F766E;border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px}
+.btn{border:0;border-radius:14px;min-height:52px;font:inherit;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;padding:0 14px}
+.teal{background:#0F766E;color:#fff}
+.ghost{background:#fff;border:1px solid #CFE3E0;color:#0F3D39}
+.bar{height:8px;background:#DCEBE8;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#0F766E;border-radius:99px;transition:width .3s}
+.meta{display:flex;justify-content:space-between;font-size:13px;color:#4D6E6A;font-weight:700}
+.opts{display:grid;gap:9px}
+.opt{background:#fff;border:2px solid #D3E6E3;border-radius:14px;min-height:54px;padding:10px 14px;text-align:start;font:inherit;font-size:15px;color:#123532;cursor:pointer}
+.opt.good{border-color:#16A34A;background:#ECFDF3}
+.opt.bad{border-color:#DC2626;background:#FEF2F2}
+.opt:disabled{cursor:default}
+.expl{display:none;background:#fff;border-inline-start:4px solid #0F766E;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5;color:#2E4F4B}
+.expl.on{display:block}
+.expl b{display:block;margin-bottom:3px}
+.expl b.ok{color:#16A34A}.expl b.ko{color:#DC2626}
+.score{font-size:58px;font-weight:900;color:#0F766E;line-height:1}
+.level{font-size:19px;font-weight:800;color:#0F3D39}
+.warn{color:#5C7975;font-size:12.5px;line-height:1.45}
+.spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#0F766E"/><path d="M12.5 12.5a3.5 3.5 0 1 1 5 3.2c-1 .5-1.5 1.2-1.5 2.3v.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22.5" r="1.6" fill="#fff"/></svg><b>Trader Quiz</b></div>
+    <label class="lang"><span class="sr">Language</span><select id="langSel" aria-label="Language"><option value="en" selected>English</option><option value="fr">Français</option><option value="es">Español</option><option value="pt">Português</option><option value="ar">العربية</option><option value="tr">Türkçe</option><option value="ru">Русский</option><option value="id">Indonesia</option></select></label>
+  </header>
+<main class="main">
+  <section class="screen on" id="s-start">
+    <div class="hero">
+      <span class="badge">15 questions · 3 minutes</span>
+      <h1>Test your trading knowledge</h1>
+      <p class="lead">Candlesticks, trends, risk management: answer 15 questions and find out your level. Every answer is explained.</p>
+      <button class="btn teal" id="go" type="button">Start the quiz</button>
+    </div>
+  </section>
+  <section class="screen" id="s-q">
+    <div class="meta"><span id="qn"></span><span id="qs"></span></div>
+    <div class="bar"><i id="qb"></i></div>
+    <h2 id="qt"></h2>
+    <div class="opts" id="qo"></div>
+    <div class="expl" id="qe"><b id="qr"></b><span id="qx"></span></div>
+    <div class="spacer"></div>
+    <button class="btn teal" id="qnext" type="button" style="display:none"></button>
+  </section>
+  <section class="screen" id="s-end">
+    <div class="hero">
+      <h2>Your score</h2>
+      <div class="score" id="es">0/15</div>
+      <div class="level" id="el"></div>
+      <p class="lead" id="em"></p>
+      <button class="btn teal" id="again" type="button">Try again</button>
+      <a class="btn ghost" href="https://www.orolado.com/?utm_source=quiz-orolad0&utm_medium=site" rel="noopener">Practise on a free demo account</a>
+      <p class="warn">Trading involves a risk of loss. Never stake more than you can afford to lose.</p>
+    </div>
+  </section>
+</main>
+</div>
+<script>
+(function(){var s=document.getElementById('langSel');s.addEventListener('change',function(){var v=s.value;try{localStorage.setItem('site_lang',v)}catch(e){}location.href=v==='en'?'/?l=en':'/'+v+'/';});})();
+var T={"title":"Trader Quiz — Test Your Trading Knowledge","desc":"15 questions to test your trading basics: candlesticks, risk and trends. Instant score and an explanation for every answer. Free, no sign-up.","brand":"Trader Quiz","lang":"Language","badge":"15 questions · 3 minutes","startHead":"Test your trading knowledge","startText":"Candlesticks, trends, risk management: answer 15 questions and find out your level. Every answer is explained.","startBtn":"Start the quiz","q":"Question","scoreL":"Score","next":"Next question","seeResult":"See my result","correct":"Correct!","incorrect":"Wrong answer","resHead":"Your score","levels":["Beginner level","Intermediate level","Advanced level"],"msgs":["Good start! Read the explanations again and practise risk-free before trading.","Solid basics! Keep working on your risk management.","Excellent! You know the basics: always keep your stakes careful."],"again":"Try again","demo":"Practise on a free demo account","warn":"Trading involves a risk of loss. Never stake more than you can afford to lose.","questions":[{"q":"What does a green candle show?","o":["The price closed higher than it opened","The price closed lower than it opened","The market is closed"],"x":"A green candle closes above its opening price."},{"q":"What are a candle’s wicks for?","o":["Showing the highest and lowest prices reached","Showing the number of traders","Announcing the next candle"],"x":"Wicks show how high and how low the price went during the period."},{"q":"An uptrend makes…","o":["Higher and higher highs","Lower and lower lows","Only green candles"],"x":"Even in an uptrend there are red candles: what matters is the series of higher highs."},{"q":"What is a support level?","o":["A level where falls have often stopped","A level the price never crosses","The day’s opening price"],"x":"Support is a landmark, not a wall: it can be broken."},{"q":"How much do careful traders risk per trade?","o":["1 to 2% of their capital","25% of their capital","Half of their capital"],"x":"A small stake lets you survive a losing streak without emptying your account."},{"q":"What should you do after a loss?","o":["Keep the same stake and take a break","Double the stake to win it back","Stake everything left"],"x":"Doubling up to “win it back” is the fastest way to empty an account."},{"q":"With a 90% payout, a winning $10 stake earns…","o":["$9 profit, so $19 received","$90 profit","$1.90 profit"],"x":"$10 × 90% = $9 profit, plus your $10 stake back."},{"q":"What does a moving average describe?","o":["The price’s past, to see the trend","Tomorrow’s exact price","A guaranteed profit"],"x":"An indicator summarises the past; it does not predict the future."},{"q":"Bollinger Bands widening means…","o":["A busier market","A closed market","A certain rise"],"x":"The bands widen when movements get stronger."},{"q":"A “100% winning signal” is…","o":["A promise you should not believe","A reliable method","Required to trade"],"x":"Nobody knows the next move: be wary of such promises."},{"q":"What is a demo account for?","o":["Practising without risking real money","Earning real money","Withdrawing profits faster"],"x":"A demo account uses virtual money: ideal for learning."},{"q":"What is volatility?","o":["The strength and speed of price moves","The number of people trading","The length of a trade"],"x":"The more volatile a market, the bigger and faster its moves."},{"q":"With a 90% payout and a fixed stake, what minimum win rate do you need to break even?","o":["About 53%","10%","90%"],"x":"1 ÷ (1 + 0.9) ≈ 52.6%: below that, you lose over time."},{"q":"When is the best time to trade?","o":["When you are calm and rested","Right after a big loss","When you are upset"],"x":"Emotions distort decisions: you trade better with a clear head."},{"q":"A synthetic index…","o":["Is a simulated market, open 24/7","Depends on a company’s results","Closes every weekend"],"x":"It is computer-generated and depends on neither news nor companies."}]};
+
+(function(){
+var $=function(i){return document.getElementById(i)},Q=T.questions,N=Q.length,i=0,score=0,order=[];
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)})}
+function shuffle(a){for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),t=a[k];a[k]=a[j];a[j]=t}return a}
+function ask(){var q=Q[i];$('qn').textContent=T.q+' '+(i+1)+'/'+N;$('qs').textContent=T.scoreL+' '+score;$('qb').style.width=(i/N*100)+'%';$('qt').textContent=q.q;
+$('qe').classList.remove('on');$('qnext').style.display='none';var box=$('qo');box.innerHTML='';
+shuffle([0,1,2]).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='opt';b.textContent=q.o[k];b.addEventListener('click',function(){pick(k,b)});b.dataset.k=k;box.appendChild(b)});}
+function pick(k,btn){var ok=k===0;if(ok)score++;document.querySelectorAll('.opt').forEach(function(b){b.disabled=true;if(b.dataset.k==='0')b.classList.add('good')});if(!ok)btn.classList.add('bad');
+var r=$('qr');r.textContent=ok?T.correct:T.incorrect;r.className=ok?'ok':'ko';$('qx').textContent=Q[i].x;$('qe').classList.add('on');$('qs').textContent=T.scoreL+' '+score;
+var n=$('qnext');n.textContent=i<N-1?T.next:T.seeResult;n.style.display='flex';}
+$('qnext').addEventListener('click',function(){i++;if(i<N){ask();$('s-q').scrollTop=0}else end()});
+function end(){$('qb').style.width='100%';$('es').textContent=score+'/'+N;var lv=score>=12?2:score>=8?1:0;$('el').textContent=T.levels[lv];$('em').textContent=T.msgs[lv];show('s-end')}
+function start(){i=0;score=0;show('s-q');ask()}
+$('go').addEventListener('click',start);$('again').addEventListener('click',start);
+})();
+
+</script>
+</body>
+</html>
