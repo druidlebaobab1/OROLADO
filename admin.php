@@ -6,6 +6,7 @@ require_once __DIR__ . '/admin_lib.php';
 require_once __DIR__ . '/trade_lib.php';
 require_once __DIR__ . '/wipe_lib.php';
 require_once __DIR__ . '/admin_gift_lib.php';
+require_once __DIR__ . '/push_lib.php';
 orolado_load_env();
 date_default_timezone_set('Africa/Abidjan');
 
@@ -1988,6 +1989,63 @@ if ($isAjax) {
     if (!empty($res['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'nettoyage', 0, 'Nettoyage : ' . (int) ($res['deletedAccounts'] ?? 0) . ' compte(s) supprimé(s)');
     admin_json($res);
   }
+  // v2607 — Notifications : chiffres, abonnement test de l'appareil admin, envoi par paquets.
+  if ($action === 'push_stats') {
+    $v = push_vapid();
+    admin_json(['ok' => true, 'stats' => push_stats(), 'journal' => push_log_list(), 'key' => (string) ($v['pub'] ?? '')]);
+  }
+  if ($action === 'push_test_sub') {
+    $ok = push_save_sub(is_array($req['sub'] ?? null) ? $req['sub'] : [], [
+      'plat' => (string) ($req['plat'] ?? 'pc'), 'app' => !empty($req['app']), 'lang' => 'fr',
+      'uid' => (string) ($me['id'] ?? ''), 'test' => 1,
+    ]);
+    admin_json(['ok' => $ok, 'reason' => $ok ? '' : 'Abonnement refusé par le serveur']);
+  }
+  if ($action === 'push_send') {
+    $title = trim((string) ($req['title'] ?? ''));
+    $body = trim((string) ($req['body'] ?? ''));
+    $target = (string) ($req['target'] ?? 'test') === 'all' ? 'all' : 'test';
+    $lang = preg_match('/^[a-z]{2}$/', (string) ($req['lang'] ?? '')) ? (string) $req['lang'] : '';
+    $id = preg_match('/^[a-z0-9]{6,20}$/', (string) ($req['id'] ?? '')) ? (string) $req['id'] : '';
+    $after = preg_match('/^[a-f0-9]{40}$/', (string) ($req['after'] ?? '')) ? (string) $req['after'] : '';
+    if ($title === '' || push_len($title) > 80 || push_len($body) > 240) {
+      admin_json(['ok' => false, 'reason' => 'Titre obligatoire (80 lettres max), message 240 lettres max.']);
+    }
+    if ($target === 'all' && (string) ($req['confirm'] ?? '') !== 'ENVOYER') {
+      admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
+    }
+    if (!function_exists('openssl_pkey_derive') || !function_exists('curl_multi_init')) {
+      admin_json(['ok' => false, 'reason' => 'Le serveur ne peut pas envoyer (module openssl / curl absent).']);
+    }
+    @set_time_limit(50);
+    $payload = push_payload($title, $body, '/');
+    $rows = [];
+    $last = $after;
+    $more = false;
+    foreach (push_sub_files() as $f) {
+      $name = basename($f, '.json');
+      if ($after !== '' && strcmp($name, $after) <= 0) continue;
+      if (count($rows) >= 100) { $more = true; break; }
+      $last = $name;
+      $r = json_decode((string) @file_get_contents($f), true);
+      if (!is_array($r)) continue;
+      if ($target === 'test' && empty($r['test'])) continue;
+      if ($lang !== '' && (string) ($r['lang'] ?? '') !== $lang) continue;
+      $rows[] = $r;
+    }
+    $res = push_send_rows($rows, $payload);
+    if ($id === '') $id = date('ymdHis') . substr(bin2hex(random_bytes(2)), 0, 3);
+    $prev = [];
+    foreach (push_log_list() as $l) if (($l['id'] ?? '') === $id) { $prev = $l; break; }
+    push_log_add([
+      'id' => $id, 'at' => (string) ($prev['at'] ?? date('c')), 'title' => $title, 'body' => $body,
+      'target' => $target, 'lang' => $lang, 'by' => (string) ($me['email'] ?? ''),
+      'sent' => (int) ($prev['sent'] ?? 0) + $res['sent'], 'gone' => (int) ($prev['gone'] ?? 0) + $res['gone'],
+      'fail' => (int) ($prev['fail'] ?? 0) + $res['fail'], 'done' => !$more,
+      'err' => (string) ($res['err'] ?? ($prev['err'] ?? '')),
+    ]);
+    admin_json(['ok' => true, 'id' => $id, 'more' => $more, 'after' => $last, 'res' => $res]);
+  }
   admin_json(['ok' => false, 'reason' => 'Action inconnue'], 400);
 }
 
@@ -2161,6 +2219,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <h1>Super Admin Dashboard</h1>
     <div>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
+      <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
@@ -2228,6 +2287,57 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <p class="muted" id="wipeStatus"></p>
     </div>
   </div>
+
+  <div class="modal" id="notifModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeNotif">Fermer</button>
+      <h2 style="color:#FCD34D;margin:10px 0 4px">🔔 Notifications sur les téléphones</h2>
+      <div class="nt-stats" id="ntStats">Chargement…</div>
+      <div class="nt-card">
+        <b>Cet appareil (pour vos tests)</b>
+        <p class="muted" style="margin:4px 0 8px">iPhone : ouvrez l’admin depuis l’application OROLADO installée sur l’écran d’accueil (pas dans Safari).</p>
+        <button class="mini ok" type="button" id="btnNtDevice">Activer les notifications sur cet appareil</button>
+        <span class="muted" id="ntDeviceSt"></span>
+      </div>
+      <div class="nt-card">
+        <b>Nouveau message</b>
+        <label class="nt-lab">Titre <small id="ntTitleN">0/80</small></label>
+        <input id="ntTitle" maxlength="80" class="nt-in" placeholder="Ex. : VOLATILITY est en vogue 🔥">
+        <label class="nt-lab">Message <small id="ntBodyN">0/240</small></label>
+        <textarea id="ntBody" maxlength="240" rows="3" class="nt-in" placeholder="Ex. : Le marché bouge fort en ce moment. Venez trader !"></textarea>
+        <label class="nt-lab">Envoyer aux joueurs qui ont le site en</label>
+        <select id="ntLang" class="nt-in">
+          <option value="">Toutes les langues</option>
+          <option value="fr">Français</option><option value="en">Anglais</option><option value="es">Espagnol</option>
+          <option value="pt">Portugais</option><option value="ar">Arabe</option><option value="tr">Turc</option>
+          <option value="vi">Vietnamien</option><option value="id">Indonésien</option><option value="ru">Russe</option>
+          <option value="de">Allemand</option><option value="hi">Hindi</option>
+        </select>
+        <div class="nt-lab">Aperçu sur le téléphone</div>
+        <div class="nt-prev"><img src="/icons/icon-192.png" alt=""><div><small>OROLADO · maintenant</small><b id="ntPrevT">Titre</b><span id="ntPrevB">Message</span></div></div>
+        <p style="margin-top:12px">
+          <button class="mini ok" type="button" id="btnNtTest">1. Envoyer un test (mes appareils)</button>
+          <button class="mini bad" type="button" id="btnNtAll">2. Envoyer à tous les abonnés</button>
+        </p>
+        <p class="muted" id="ntSt"></p>
+      </div>
+      <div class="nt-card"><b>Derniers envois</b><div id="ntLog" class="muted" style="margin-top:6px">—</div></div>
+    </div>
+  </div>
+  <style>
+    .nt-stats{margin:8px 0 10px;font-size:.85rem;line-height:1.6}
+    .nt-stats b{color:#FCD34D}
+    .nt-card{border:1px solid var(--line);border-radius:12px;background:#0E1420;padding:12px;margin:10px 0}
+    .nt-lab{display:flex;justify-content:space-between;margin:10px 0 4px;font-size:.8rem;color:var(--muted)}
+    .nt-in{width:100%;box-sizing:border-box;min-height:38px;border-radius:10px;border:1px solid var(--line);background:#0B111C;color:var(--text);padding:8px 10px;font:inherit}
+    .nt-prev{display:flex;gap:10px;align-items:flex-start;max-width:380px;background:#F3F4F6;color:#111827;border-radius:16px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+    .nt-prev img{width:38px;height:38px;border-radius:9px;flex-shrink:0}
+    .nt-prev div{display:flex;flex-direction:column;min-width:0}
+    .nt-prev small{font-size:.7rem;color:#6B7280}
+    .nt-prev b{font-size:.9rem;margin:1px 0}
+    .nt-prev span{font-size:.85rem;color:#374151;white-space:pre-wrap;word-break:break-word}
+    .nt-log td,.nt-log th{padding:4px 6px;border-bottom:1px solid var(--line);font-size:.78rem;text-align:left;vertical-align:top}
+  </style>
 
   <div class="modal" id="userModal">
     <div class="modal-box">
@@ -2657,6 +2767,87 @@ document.getElementById('btnBack').onclick = () => {
   window.location.href = '/';
 };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
+// v2607 — Notifications : chiffres, test sur l'appareil admin, envoi à tous (par paquets de 100).
+(function () {
+  const $n = id => document.getElementById(id);
+  let pubKey = '';
+  const LANGN = {fr:'Français',en:'Anglais',es:'Espagnol',pt:'Portugais',ar:'Arabe',tr:'Turc',vi:'Vietnamien',id:'Indonésien',ru:'Russe',de:'Allemand',hi:'Hindi'};
+  const plat = () => /android/i.test(navigator.userAgent) ? 'android' : (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : 'pc');
+  const isApp = () => !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches);
+  async function loadStats() {
+    const j = await ajax({action:'push_stats'});
+    if (!j.ok) { $n('ntStats').textContent = j.reason || 'Erreur'; return; }
+    pubKey = j.key || '';
+    const s = j.stats, a7 = s.apps7, a30 = s.apps30, aa = s.appsAll;
+    const langs = Object.entries(s.langs || {}).map(([k, v]) => esc(LANGN[k] || k) + ' ' + v).join(' · ') || '—';
+    $n('ntStats').innerHTML =
+      'Abonnés aux notifications : <b>' + s.subs + '</b> (Android ' + s.android + ' · iPhone ' + s.ios + ' · Ordinateur ' + s.pc + ' · dont tests ' + s.test + ')<br>' +
+      'Application installée ouverte — 7 derniers jours : <b>Android ' + a7.android + ' · iPhone ' + a7.ios + '</b><br>' +
+      '30 derniers jours : Android ' + a30.android + ' · iPhone ' + a30.ios + ' — depuis le début : Android ' + aa.android + ' · iPhone ' + aa.ios + '<br>' +
+      'Langues des abonnés : ' + langs;
+    const log = j.journal || [];
+    $n('ntLog').innerHTML = !log.length ? 'Aucun envoi pour l’instant.' :
+      '<table class="nt-log"><tr><th>Date</th><th>Message</th><th>Pour</th><th>Reçus</th><th>Partis</th><th>Échecs</th></tr>' +
+      log.map(l => '<tr><td>' + esc(String(l.at || '').replace('T', ' ').slice(0, 16)) + '</td><td><b>' + esc(l.title) + '</b><br>' + esc(l.body) + '</td><td>' +
+        (l.target === 'all' ? 'Tous' : 'Test') + (l.lang ? ' · ' + esc(LANGN[l.lang] || l.lang) : '') + (l.done ? '' : ' (en cours)') + '</td><td>' + (l.sent | 0) + '</td><td>' + (l.gone | 0) + '</td><td>' + (l.fail | 0) + (l.fail && l.err ? '<br><small>' + esc(l.err) + '</small>' : '') + '</td></tr>').join('') + '</table>';
+  }
+  function preview() {
+    $n('ntPrevT').textContent = $n('ntTitle').value.trim() || 'Titre';
+    $n('ntPrevB').textContent = $n('ntBody').value.trim() || 'Message';
+    $n('ntTitleN').textContent = $n('ntTitle').value.length + '/80';
+    $n('ntBodyN').textContent = $n('ntBody').value.length + '/240';
+  }
+  $n('ntTitle').oninput = preview;
+  $n('ntBody').oninput = preview;
+  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; loadStats(); };
+  $n('closeNotif').onclick = () => $n('notifModal').classList.remove('on');
+  $n('btnNtDevice').onclick = async () => {
+    const st = $n('ntDeviceSt');
+    try {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        st.textContent = plat() === 'ios' ? 'Sur iPhone : ouvrez l’admin depuis l’application installée (écran d’accueil).' : 'Ce navigateur ne gère pas les notifications.';
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { st.textContent = 'Refusé : autorisez les notifications pour orolado.com dans les réglages du téléphone.'; return; }
+      if (!pubKey) await loadStats();
+      const reg = (await navigator.serviceWorker.getRegistration('/')) || (await navigator.serviceWorker.register('/sw.js?v=2000'));
+      await navigator.serviceWorker.ready;
+      const raw = atob(pubKey.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((pubKey.length + 3) % 4));
+      const key = Uint8Array.from(raw, c => c.charCodeAt(0));
+      const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: key}));
+      const j = await ajax({action:'push_test_sub', sub: sub.toJSON(), plat: plat(), app: isApp() ? 1 : 0});
+      st.textContent = j.ok ? 'Cet appareil recevra les tests ✓' : (j.reason || 'Échec');
+      loadStats();
+    } catch (e) { st.textContent = 'Échec : ' + (e && e.message ? e.message : e); }
+  };
+  async function send(target) {
+    const title = $n('ntTitle').value.trim(), body = $n('ntBody').value.trim(), lang = $n('ntLang').value;
+    if (!title) { $n('ntSt').textContent = 'Écrivez un titre.'; return; }
+    let confirmTxt = '';
+    if (target === 'all') {
+      confirmTxt = prompt('Envoyer « ' + title + ' » à TOUS les abonnés' + (lang ? ' (' + (LANGN[lang] || lang) + ')' : '') + ' ?\nTapez ENVOYER pour confirmer :') || '';
+      if (confirmTxt.trim().toUpperCase() !== 'ENVOYER') { $n('ntSt').textContent = 'Envoi annulé.'; return; }
+      confirmTxt = 'ENVOYER';
+    }
+    $n('btnNtTest').disabled = $n('btnNtAll').disabled = true;
+    let id = '', after = '', sent = 0, gone = 0, fail = 0, lastErr = '', j;
+    try {
+      do {
+        $n('ntSt').textContent = 'Envoi en cours… ' + sent + ' reçu(s)';
+        j = await ajax({action:'push_send', target, title, body, lang, id, after, confirm: confirmTxt});
+        if (!j.ok) { $n('ntSt').textContent = j.reason || 'Échec'; break; }
+        id = j.id; after = j.after; sent += j.res.sent; gone += j.res.gone; fail += j.res.fail;
+        if (j.res.err) lastErr = j.res.err;
+      } while (j.more);
+      if (j && j.ok) $n('ntSt').textContent = 'Terminé : ' + sent + ' téléphone(s) ont reçu le message' + (gone ? ', ' + gone + ' abonné(s) parti(s) retiré(s)' : '') + (fail ? ', ' + fail + ' échec(s)' + (lastErr ? ' (' + lastErr + ')' : '') : '') + '.' + (target === 'test' && !sent ? ' Aucun appareil test : appuyez d’abord sur « Activer les notifications sur cet appareil ».' : '');
+    } catch (e) { $n('ntSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
+    $n('btnNtTest').disabled = $n('btnNtAll').disabled = false;
+    loadStats();
+  }
+  $n('btnNtTest').onclick = () => send('test');
+  $n('btnNtAll').onclick = () => send('all');
+})();
 ['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });

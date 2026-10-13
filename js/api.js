@@ -20,6 +20,9 @@
           localStorage.setItem('oro_token', tok);
           sessionStorage.setItem('oro_token', tok);
           document.cookie = 'oro_token=' + encodeURIComponent(tok) + '; Max-Age=' + maxAge + '; Path=/; SameSite=Lax';
+          // v2607 : nouvelle connexion → les alertes de ce téléphone sont reliées au compte.
+          if (tok !== D6.Api._lastTok && D6.Push && D6.Push.relink) setTimeout(D6.Push.relink, 1500);
+          D6.Api._lastTok = tok;
         } else {
           localStorage.removeItem('oro_token');
           sessionStorage.removeItem('oro_token');

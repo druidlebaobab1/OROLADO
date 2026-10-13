@@ -8552,10 +8552,18 @@
     if ($('btnIosInstallOk')) { /* bound in bindModals */ }
     if ('serviceWorker' in navigator) {
       // Force une nouvelle URL SW pour que les téléphones quittent v107 / vieux caches.
+      // v2607 : seuls les ANCIENS services sont retirés (avant : tous, à chaque ouverture → l'abonnement
+      // aux notifications aurait été effacé à chaque visite). sw.js?v=2000 reste et se met à jour seul.
       navigator.serviceWorker.getRegistrations().then(function (regs) {
-        return Promise.all(regs.map(function (r) { return r.unregister(); }));
+        return Promise.all(regs.map(function (r) {
+          var w = r.active || r.waiting || r.installing;
+          var src = (w && w.scriptURL) || '';
+          return /\/sw\.js\?v=2000$/.test(src) ? null : r.unregister();
+        }));
       }).then(function () {
         return navigator.serviceWorker.register('sw.js?v=2000');
+      }).then(function (reg) {
+        if (D6.Push && D6.Push.start) D6.Push.start(reg);
       }).catch(function () { /* ignore */ });
     }
     watchNewVersion();

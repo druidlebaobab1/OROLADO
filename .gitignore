@@ -37,3 +37,4 @@ data/online/
 data/visits/
 feedcache/*.stat
 data/*.done
+data/push/

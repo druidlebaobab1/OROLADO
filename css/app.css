@@ -9015,3 +9015,22 @@ html body #withdrawModal#withdrawModal .wd-card,html body #withdrawModal#withdra
    texte doré plein, lisible, un peu plus grand. */
 html body #termsModal #termsTitle{-webkit-text-fill-color:#FCD34D!important;color:#FCD34D!important;background:none!important;
   font-size:14px!important;line-height:1.25!important;letter-spacing:.03em!important;white-space:normal!important;padding:4px 0!important;height:auto!important}
+/* v2607 — Carte « Alertes OROLADO » (notifications) : en haut, ne cache jamais ACHETER / VENDRE.
+   Seulement transform / opacity (fluidité). */
+html body .push-ask{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:100050;width:min(380px,calc(100vw - 24px));
+  display:grid;grid-template-columns:40px 1fr;gap:6px 12px;align-items:center;padding:12px 12px 10px;border-radius:16px;
+  background:linear-gradient(160deg,#16203A,#0D1426);border:1px solid rgba(252,211,77,.38);box-shadow:0 14px 34px rgba(0,0,0,.55);
+  color:#F1F5F9;font-family:inherit;opacity:0;transform:translate(-50%,-14px);transition:opacity .3s ease,transform .3s ease;pointer-events:none}
+html body .push-ask.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+html body .push-ask-ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,#FCD34D,#D97706);color:#1A1203}
+html body .push-ask-ico svg{width:22px;height:22px}
+html body .push-ask-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .push-ask-txt b{font-size:14px;font-weight:800;color:#FCD34D;line-height:1.25}
+html body .push-ask-txt span{font-size:12.5px;line-height:1.35;color:#CBD5E1}
+html body .push-ask-txt span:empty{display:none}
+html body .push-ask-btns{grid-column:1 / -1;display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+html body .push-ask-btns button{min-height:38px;padding:0 16px;border-radius:11px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+html body .push-ask-no{background:transparent;border:1px solid rgba(203,213,225,.28);color:#CBD5E1}
+html body .push-ask-yes{background:linear-gradient(145deg,#FCD34D,#F59E0B);border:0;color:#1A1203}
+html body .push-ask.done .push-ask-btns{display:none}
+html body .push-ask.done .push-ask-txt b{color:#34D399}

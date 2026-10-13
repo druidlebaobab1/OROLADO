@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v2606';
+const CACHE = 'orolado-v2607';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -27,6 +27,50 @@ self.addEventListener('activate', function (event) {
       return self.clients.claim();
     })
   );
+});
+
+// v2607 — Notifications : affichage sur le téléphone (même site fermé) et ouverture du site au toucher.
+self.addEventListener('push', function (event) {
+  var d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : '' }; }
+  var title = String(d.title || 'OROLADO');
+  event.waitUntil(self.registration.showNotification(title, {
+    body: String(d.body || ''),
+    icon: '/icons/icon-192.png',
+    badge: '/icons/badge-96.png',
+    tag: String(d.tag || 'oro'),
+    vibrate: [80, 40, 80],
+    data: { url: String(d.url || '/') }
+  }));
+});
+
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  var url = (event.notification.data && event.notification.data.url) || '/';
+  if (url.charAt(0) !== '/' || url.charAt(1) === '/') url = '/';
+  var full = new URL(url, self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (c.url && c.url.indexOf(self.location.origin) === 0 && 'focus' in c) {
+        if (url !== '/' && c.url !== full && 'navigate' in c) { try { c.navigate(full); } catch (e) { /* ignore */ } }
+        return c.focus();
+      }
+    }
+    return self.clients.openWindow ? self.clients.openWindow(full) : null;
+  }));
+});
+
+// Le navigateur renouvelle l'abonnement : on prévient le site (sinon le téléphone ne recevrait plus rien).
+self.addEventListener('pushsubscriptionchange', function (event) {
+  var opts = event.oldSubscription && event.oldSubscription.options;
+  if (!opts) return;
+  var ua = (self.navigator && self.navigator.userAgent) || '';
+  var plat = /android/i.test(ua) ? 'android' : (/iphone|ipad|ipod|macintosh/i.test(ua) && /mobile/i.test(ua) ? 'ios' : 'pc');
+  event.waitUntil(self.registration.pushManager.subscribe(opts).then(function (sub) {
+    return fetch('/push.php', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'sub', sub: sub.toJSON(), plat: plat, app: 1 }) });
+  }).catch(function () { /* ignore */ }));
 });
 
 self.addEventListener('fetch', function (event) {
