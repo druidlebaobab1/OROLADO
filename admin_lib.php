@@ -790,6 +790,62 @@ function admin_stat_keep_deposit_id(string $id): bool {
   return $id === 'oro_8297217e1d0843fe8898ac452c3841b2_d6c00b5fd577';
 }
 
+/**
+ * v2636 (propriétaire) — liste « clients » pour Facebook (Audience personnalisée > Liste de clients) : les joueurs
+ * qui ont VRAIMENT déposé (dépôts payés, hors crédit admin / remboursement / cadeau), avec e-mail, téléphone, pays et
+ * total déposé (colonne « value », utile pour une audience similaire basée sur la valeur). Comptes internes exclus.
+ * Facebook chiffre lui-même les données à l'envoi.
+ */
+function admin_fb_export_rows(array $deps, array $pmap): array {
+  $sum = [];
+  foreach ($deps as $d) {
+    if (!is_array($d)) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $op = strtolower((string) ($d['operator'] ?? ''));
+    if (in_array($op, ['admin', 'refund', 'bonus', 'gift', 'cadeau', 'manual'], true)) continue;
+    $uid = (string) ($d['userId'] ?? '');
+    $amt = (float) ($d['amount'] ?? 0);
+    if ($uid === '' || $amt <= 0) continue;
+    $sum[$uid] = ($sum[$uid] ?? 0) + $amt;
+  }
+  $rows = [];
+  $seen = [];
+  foreach ($sum as $uid => $total) {
+    $p = $pmap[$uid] ?? null;
+    if (!is_array($p)) {
+      foreach ($pmap as $q) { if (is_array($q) && ((string) ($q['publicId'] ?? '') === $uid)) { $p = $q; break; } }
+    }
+    if (!is_array($p)) continue;
+    $email = strtolower(trim((string) ($p['email'] ?? '')));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || str_ends_with($email, '.local') || str_ends_with($email, '.invalid')
+      || str_contains($email, '@orolado') || (string) ($p['role'] ?? '') === 'admin') $email = '';
+    // Pays : enregistré comme indicatif (+225…) ou code (CI…). Facebook veut le code à 2 lettres et le numéro
+    // complet avec l'indicatif.
+    $dialMap = ['225' => 'CI', '221' => 'SN', '226' => 'BF', '237' => 'CM', '234' => 'NG', '233' => 'GH', '254' => 'KE',
+      '27' => 'ZA', '228' => 'TG', '229' => 'BJ', '223' => 'ML', '227' => 'NE', '243' => 'CD', '242' => 'CG', '241' => 'GA',
+      '224' => 'GN', '255' => 'TZ', '256' => 'UG', '250' => 'RW', '260' => 'ZM', '212' => 'MA', '216' => 'TN', '33' => 'FR'];
+    $rawCc = trim((string) ($p['country'] ?? $p['countryIso'] ?? ''));
+    $dial = preg_replace('/\D/', '', $rawCc) ?? '';
+    $cc = strtoupper(preg_replace('/[^A-Za-z]/', '', $rawCc) ?? '');
+    if (strlen($cc) !== 2) $cc = $dialMap[$dial] ?? '';
+    if ($dial === '' && $cc !== '') { $flip = array_flip($dialMap); $dial = (string) ($flip[$cc] ?? ''); }
+    $phone = preg_replace('/\D/', '', (string) ($p['phone'] ?? '')) ?? '';
+    if ($phone !== '' && $dial !== '' && !str_starts_with($phone, $dial) && strlen($phone) <= 11) {
+      // Côte d'Ivoire : le 0 fait partie du numéro (10 chiffres) ; ailleurs, le 0 de tête tombe.
+      if ($dial !== '225' && str_starts_with($phone, '0')) $phone = substr($phone, 1);
+      $phone = $dial . $phone;
+    }
+    if (strlen($phone) < 8) $phone = '';
+    if ($email === '' && $phone === '') continue;
+    $key = $email !== '' ? $email : $phone;
+    if (isset($seen[$key])) continue;
+    $seen[$key] = true;
+    $rows[] = ['email' => $email, 'phone' => $phone, 'country' => $cc, 'value' => round($total, 2)];
+  }
+  return $rows;
+}
+
 /** v2632 — canal d'un dépôt : un Wave / Mobile Money payé par Flutterwave en direct n'est plus classé « Carte ». */
 function admin_dep_channel_row($d): string {
   if (!is_array($d)) return 'Autre';

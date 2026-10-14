@@ -1700,6 +1700,20 @@ $isAjax = ($_SERVER['REQUEST_METHOD'] === 'POST') && (
 
 admin_keep_restore();
 
+// v2636 — téléchargement du fichier « clients » pour Facebook (admin connecté seulement).
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && (string) ($_GET['export'] ?? '') === 'fb') {
+  if (!admin_me()) { http_response_code(403); header('Content-Type: text/plain; charset=utf-8'); echo 'Connexion admin requise.'; exit; }
+  $fbRows = admin_fb_export_rows(admin_deposits(), admin_profile_map());
+  header('Content-Type: text/csv; charset=utf-8');
+  header('Content-Disposition: attachment; filename="orolado-clients-facebook-' . date('Y-m-d') . '.csv"');
+  header('Cache-Control: no-store');
+  $out = fopen('php://output', 'w');
+  fputcsv($out, ['email', 'phone', 'country', 'value']);
+  foreach ($fbRows as $r) fputcsv($out, [$r['email'], $r['phone'], $r['country'], number_format((float) $r['value'], 2, '.', '')]);
+  fclose($out);
+  exit;
+}
+
 if ($isAjax) {
   $raw = file_get_contents('php://input') ?: '';
   $req = json_decode($raw, true);
@@ -2241,6 +2255,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="sec">F · Cadeaux (Invitation, Tournoi, Bonus, Défi)</div>
     <div class="metrics" id="gF"><?php foreach ($ADMIN_TABS['gF'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <button type="button" class="health-bar ok" id="btnHealthBar">Tous les boutons suivent</button>
+    <a class="health-bar ok" href="/admin.php?export=fb" style="display:block;text-align:center;text-decoration:none;margin-top:8px">⬇ Exporter mes clients pour Facebook (fichier CSV)</a>
     <div class="health-panel" id="healthPanel"></div>
 
     <div class="filters">
