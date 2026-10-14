@@ -4956,9 +4956,10 @@
             });
           }).then(function (remote) {
             applyDepositPaid(remote);
-            if (!depositApplied) toast(t('depositPending') || 'Paiement en cours…', 'warn');
+            // v2624 (propriétaire) : pas de message « paiement en cours » ; surveillance silencieuse.
+            if (!depositApplied) startDepositWatch(session.tx_ref || session.ref || '');
           }).catch(function () {
-            toast(t('sessionInvalid'), 'err');
+            startDepositWatch(session.tx_ref || session.ref || '');
           });
         },
         onclose: function () { markOpen(); }
@@ -5905,13 +5906,11 @@
   // propose « J'ai validé mon paiement ».
   var payFrameOpen = false;
   function openPayFrame(url, ref) {
-    var fr = $('payFrame');
-    if (!fr) { window.location.href = url; return; }
-    fr.src = url;
-    payFrameOpen = true;
-    closeModal('depositModal');
-    openModal('payFrameModal');
-    startDepositWatch(ref);
+    // v2624 — la page de paiement s'ouvre EN PLEIN (même onglet), plus dans une fenêtre intégrée : depuis une
+    // fenêtre intégrée, iPhone et Android INTERDISENT d'ouvrir l'application Wave (écran « Ouverture de
+    // l'application Wave… » bloqué). Au retour, ?deposit=success&ref=… : vérification silencieuse.
+    try { sessionStorage.setItem('oro_dep_ref', ref || ''); } catch (eS) { /* ignore */ }
+    window.location.href = url;
   }
   function closePayFrame(silent) {
     if (!payFrameOpen) return;
@@ -5919,9 +5918,6 @@
     closeModal('payFrameModal');
     var fr = $('payFrame');
     if (fr) { try { fr.src = 'about:blank'; } catch (eFr) { /* ignore */ } }
-    // v2623 (propriétaire) : plus de fenêtre « J'ai validé mon paiement ». La surveillance continue en silence :
-    // si le paiement est confirmé par Maketou, le solde monte et « Recharge réussie » s'affiche tout seul.
-    if (!silent && !depositApplied) toast(t('momoAuto'), 'info', 5000);
   }
   window.addEventListener('message', function (e) {
     var d = e && e.data;
@@ -6080,9 +6076,19 @@
       try { localStorage.setItem('oro_dep_ref', ref); } catch (e3) { /* ignore */ }
     }
     if (info.fromUrl) {
-      // Retour de paiement : validation automatique, visible et bornée.
-      openDepositVerify(ref);
-      await checkDepositNow();
+      // v2624 (propriétaire) : retour de paiement SANS fenêtre ni message. Vérification en silence ; si le paiement
+      // est confirmé, seule « Recharge réussie » s'affiche. Sinon la surveillance continue (5 min) et le serveur
+      // rattrape le dépôt toutes les 2 min pendant 48 h.
+      try {
+        var tokR = await ensureApiToken();
+        var remR = await postDepositConfirm({
+          token: tokR || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
+          ref: ref,
+          returnStatus: (depositReturn && depositReturn.state) || '',
+          returnParams: (depositReturn && depositReturn.params) || null
+        });
+        applyDepositPaid(remR);
+      } catch (eR) { /* silencieux */ }
       if (!depositApplied && ref) startDepositWatch(ref);
       return;
     }

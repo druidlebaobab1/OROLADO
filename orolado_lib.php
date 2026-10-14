@@ -4214,7 +4214,14 @@ function orolado_initiate_deposit(array $req): array {
   }
   $minUsd = orolado_min_deposit($me);
   $minFcfa = orolado_min_deposit_fcfa($me);
-  if ($amountUsd + 0.0001 < $minUsd && $amountFcfa < $minFcfa) {
+  // v2624 (propriétaire) : Maketou ajoute ses frais (2 %) au prix → 3 $ affichait 1 836 FCFA au lieu de 1 800
+  // (même taux que Flutterwave). On envoie le prix sans ces frais pour que le TOTAL payé soit le même.
+  // Réglable : .env MAKETOU_CLIENT_FEE_PCT (0 = aucune compensation).
+  $feeEnv = supabase_env('MAKETOU_CLIENT_FEE_PCT');
+  $feePct = $feeEnv !== '' && is_numeric($feeEnv) ? max(0.0, min(10.0, (float) $feeEnv)) : 2.0;
+  $fullFcfa = $amountFcfa;
+  if ($feePct > 0) $amountFcfa = (int) round($amountFcfa / (1 + $feePct / 100));
+  if ($amountUsd + 0.0001 < $minUsd && $fullFcfa < $minFcfa) {
     return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.'];
   }
   if ($amountFcfa < 1 || $amountFcfa > 5000000) {
