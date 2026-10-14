@@ -5911,8 +5911,15 @@
       depositRef = ref;
       depositApplied = false;
       if (/^https:\/\//i.test(String(r.redirect || ''))) {
+        // v2633 (propriétaire) : on RESTE sur OROLADO. Le bouton devient « OUVRIR WAVE » : touché par le joueur
+        // lui-même, le téléphone propose « Ouvrir dans Wave ? » sans quitter le site (ouvrir la page tout de suite,
+        // après l'attente du serveur, faisait parfois sortir vers pay.wave.com). Quand le joueur revient de Wave,
+        // la surveillance crédite et « Recharge réussie » s'affiche.
+        momoLink = { url: r.redirect, key: dialSel + digits, at: Date.now() };
         leaving = true;
-        window.location.href = r.redirect; // page en plein : le téléphone peut ouvrir l'application Wave
+        if (btn) { btn.disabled = false; btn.classList.remove('busy'); btn.classList.add('ready'); }
+        if (lab) lab.textContent = t('openWaveBtn');
+        startDepositWatch(ref);
         return;
       }
       // Sans lien (Orange, MTN, Moov) : le joueur valide sur son téléphone ; le crédit arrive tout seul.
@@ -5935,7 +5942,7 @@
     if (momoInflight) return;
     momoBusy = false;
     var b = $('btnMomoDeposit');
-    if (b) { b.disabled = false; b.classList.remove('busy'); var s = b.querySelector('span'); if (s) s.textContent = t('payWaveBtn'); }
+    if (b) { b.disabled = false; b.classList.remove('busy'); var s = b.querySelector('span'); if (s) s.textContent = momoLink ? t('openWaveBtn') : t('payWaveBtn'); }
     var c = $('btnConfirmDeposit');
     if (c && !depositing) { c.disabled = false; c.classList.remove('busy'); }
   }
@@ -5955,7 +5962,26 @@
     if (ph) { ph.placeholder = b.getAttribute('data-ph') || ''; ph.value = ''; }
   });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(resetPayButtons, 400); });
+  // v2633 — lien Wave prêt (10 min, même numéro) : touché → ouvert TOUT DE SUITE, dans le geste du joueur.
+  var momoLink = null;
+  function momoKeyNow() {
+    var ds = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
+    var dg = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
+    if (dg.indexOf(ds) === 0 && dg.length > 10) dg = dg.slice(ds.length);
+    return ds + dg;
+  }
+  function clearMomoLink() {
+    momoLink = null;
+    var b = $('btnMomoDeposit');
+    if (b) { b.classList.remove('ready'); var sp = b.querySelector('span'); if (sp && !momoBusy) sp.textContent = t('payWaveBtn'); }
+  }
+  document.addEventListener('input', function (e) { if (e.target && e.target.id === 'momoPhone' && momoLink) clearMomoLink(); });
   async function startMomoDeposit() {
+    if (momoLink && momoLink.key === momoKeyNow() && Date.now() - momoLink.at < 600000) {
+      window.location.href = momoLink.url;
+      return;
+    }
+    if (momoLink) clearMomoLink();
     if (momoBusy || depositing) return;
     if (true) {
       var uF = user();

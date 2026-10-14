@@ -9243,3 +9243,6 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-opay2{color:#0
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-mpesa2{color:#3B9C3B!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher{color:#F26522!important;font-weight:800!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{width:13px!important;height:13px!important;border-radius:3px!important;background:#F26522!important;color:#fff!important;font-size:9.5px!important;font-weight:900!important}
+/* v2633 — bouton « OUVRIR WAVE » prêt (le joueur reste sur OROLADO). */
+html body #depositModal#depositModal .btn-wave.ready{background:linear-gradient(135deg,#1DC8FF,#0077C8)!important;box-shadow:0 0 0 2px #fff inset,0 0 14px rgba(29,200,255,.55)!important}
+html body #depositModal#depositModal .btn-wave.ready span::before{content:"";display:inline-block;width:18px;height:18px;margin-right:8px;vertical-align:-4px;border-radius:5px;background:url("../icons/pay/wave.svg?v=2628") center/cover no-repeat}
