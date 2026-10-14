@@ -9090,3 +9090,65 @@ html body #depositModal .btn-momo.busy,html body #depositModal .btn-momo:disable
   html body #depositModal#depositModal #payMethodCard .pl-logos .pl-bank svg{width:9px!important;height:9px!important}
 }
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-bank{overflow:hidden}
+
+/* v2622 (propriétaire) — Recharger compact : tout tient sur l'écran sans défiler, les 3 moyens ont le même poids.
+   Mobile Money et Crypto = mêmes petites cases (logo + nom), mêmes titres, mêmes boutons, fenêtre plus large sur PC. */
+html body #depositModal#depositModal .deposit-box{padding:14px 14px 12px!important}
+html body #depositModal#depositModal #depositStepSelect .modal-title{font-size:21px!important;margin:0 44px 4px 0!important;line-height:1.15!important}
+html body #depositModal#depositModal #depositStepSelect .field{margin-bottom:6px!important}
+html body #depositModal#depositModal #depositStepSelect .field label{font-size:10.5px!important;margin-bottom:4px!important}
+html body #depositModal#depositModal #depositAmt{height:42px!important;min-height:42px!important;padding-top:0!important;padding-bottom:0!important;font-size:18px!important}
+html body #depositModal#depositModal #depositStepSelect .hint-min{margin:3px 0 0!important;font-size:11px!important}
+html body #depositModal#depositModal #depositStepSelect .pay-method-label{font-size:11px!important;margin:4px 0 6px!important}
+html body #depositModal#depositModal #payMethodCard,html body #depositModal#depositModal .pay-momo,html body #depositModal#depositModal #payMethodUsdt{padding:9px 10px 10px!important;border-radius:14px!important;margin:0 0 8px!important}
+html body #depositModal#depositModal .pay-method-top{margin-bottom:7px!important;min-height:0!important}
+html body #depositModal#depositModal #payMethodCard .pay-method-title,html body #depositModal#depositModal .pay-momo .pay-method-title,html body #depositModal#depositModal #payMethodUsdt .pay-method-title{font-size:15px!important;font-weight:800!important;letter-spacing:0!important;line-height:1.2!important;text-transform:none!important;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;color:#fff!important}
+html body #depositModal#depositModal #payMethodCard .pay-local{gap:8px!important}
+html body #depositModal#depositModal #payMethodCard .pl-phone{display:none!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo{height:26px!important;min-height:26px!important}
+html body #depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm,html body #depositModal#depositModal .btn-momo{min-height:40px!important;height:40px!important;padding:0 10px!important;margin:8px 0 0!important;font-size:13.5px!important;letter-spacing:.4px!important;border-radius:11px!important}
+html body #depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm{margin:-2px 0 8px!important}
+html body #depositModal#depositModal .pay-momo{border:2px solid rgba(255,138,0,.55)!important;background:rgba(255,138,0,.07)!important}
+html body #depositModal#depositModal .pay-momo-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important}
+html body #depositModal#depositModal .pm-op{height:40px!important;flex-direction:column!important;justify-content:center!important;gap:2px!important;padding:2px 1px!important;border-radius:9px!important;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03))!important;border:1px solid rgba(255,255,255,.1)!important;color:#fff!important}
+html body #depositModal#depositModal .pm-op img{width:20px!important;height:20px!important;flex:0 0 20px!important;border-radius:5px!important}
+html body #depositModal#depositModal .pm-op b{font-size:9.5px!important;font-weight:800!important;line-height:1!important;color:#fff!important;max-width:100%!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important;margin:0!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell{height:40px!important;min-height:0!important;padding:2px 1px!important;gap:2px!important;border-radius:9px!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:20px!important;height:20px!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell b{font-size:9.5px!important;line-height:1!important}
+html body #depositModal#depositModal #payMethodUsdt .pay-go-arrow.pay-go-pill{height:28px!important;padding:0 9px 0 12px!important;font-size:12.5px!important}
+html body #depositModal#depositModal .dep-learn{margin-top:2px!important}
+html body #depositModal#depositModal .dep-learn .auth-learn{min-height:0!important;padding-top:6px!important;padding-bottom:6px!important}
+@media (min-width:768px){
+  html body #depositModal#depositModal .deposit-box{width:min(560px,94vw)!important;max-width:560px!important;padding:18px 20px 16px!important}
+  html body #depositModal#depositModal .pay-momo-grid{grid-template-columns:repeat(9,minmax(0,1fr))!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important}
+}
+html body #depositModal#depositModal .pay-momo{margin:0 0 6px!important}
+html body #depositModal#depositModal .btn-momo{margin:-0px 0 8px!important}
+html body #depositModal#depositModal .pay-momo-grid{display:flex!important;flex-wrap:wrap!important;justify-content:center!important}
+html body #depositModal#depositModal .pay-momo-grid .pm-op{flex:0 0 calc((100% - 16px) / 5)!important;width:calc((100% - 16px) / 5)!important}
+@media (min-width:768px){html body #depositModal#depositModal .pay-momo-grid .pm-op{flex:0 0 calc((100% - 32px) / 9)!important;width:calc((100% - 32px) / 9)!important}}
+@media (max-height:760px){html body #depositModal#depositModal .dep-learn{display:none!important}}
+/* v2622 — fenêtre de paiement Mobile Money intégrée (plein écran sur téléphone, centrée sur PC / TV). */
+html body #payFrameModal{z-index:260!important}
+html body #payFrameModal .pay-frame-box{position:fixed;inset:0;display:flex;flex-direction:column;background:#0b1030;border:0;border-radius:0;overflow:hidden}
+html body #payFrameModal .pay-frame-head{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:48px;padding:0 8px 0 14px;padding-top:env(safe-area-inset-top);box-sizing:content-box;background:linear-gradient(90deg,#0f4a4a,#2b2466);color:#fff;border-bottom:1px solid rgba(126,231,192,.35)}
+html body #payFrameModal .pay-frame-head b{flex:1 1 auto;font-size:15px;font-weight:800}
+html body #payFrameModal .pay-frame-lock{width:18px;height:18px;color:#4ADE80;flex:0 0 18px}
+html body #payFrameModal .pay-frame-close{width:38px;height:38px;border-radius:50%;border:2px solid rgba(126,231,192,.7);background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+html body #payFrameModal .pay-frame-close svg{width:18px;height:18px;stroke:#fff;stroke-width:2.6;stroke-linecap:round;fill:none}
+html body #payFrameModal iframe{flex:1 1 auto;width:100%;border:0;background:#fff;display:block}
+@media (min-width:768px) and (min-height:600px){html body #payFrameModal .pay-frame-box{inset:auto;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,94vw);height:min(760px,92vh);border-radius:18px;border:2px solid rgba(126,231,192,.5);box-shadow:0 20px 60px rgba(0,0,0,.6)}}
+@media (max-width:419px){html body #depositModal#depositModal #payMethodCard .pl-logos .pl-bank svg{display:none!important}}
+/* v2622 : les 15 cryptos toujours visibles (avant : 10 seulement sur les écrans bas). Écrans bas : 8 par ligne. */
+html body #depositModal#depositModal .pay-crypto-wall .pay-crypto-cell:nth-child(n+11){display:flex!important}
+@media (max-height:760px){
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:3px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell{height:36px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:17px!important;height:17px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell b{font-size:8px!important;letter-spacing:-.02em!important}
+  html body #depositModal#depositModal .pm-op{height:36px!important}
+  html body #depositModal#depositModal .pm-op img{width:17px!important;height:17px!important;flex-basis:17px!important}
+}

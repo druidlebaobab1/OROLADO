@@ -5255,6 +5255,7 @@
     stopDepositWatch();
     setWaitBusy(false);
     closeModal('depositWaitModal');
+    try { closePayFrame(true); } catch (ePf) { /* ignore */ }
     try {
       if (payWindow && !payWindow.closed) {
         var blank = ((location && location.origin) || 'https://orolado.com') + '/pay-blank.html';
@@ -5888,9 +5889,8 @@
       try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
       depositRef = ref;
       depositApplied = false;
-      leaving = true;
-      // Même onglet : fiable sur téléphone (une nouvelle fenêtre ouverte après une attente est bloquée).
-      window.location.href = url;
+      // v2622 (propriétaire) : la page de paiement s'ouvre DANS OROLADO (fenêtre intégrée), comme Flutterwave.
+      openPayFrame(url, ref);
     } catch (err) {
       console.error('OROLADO maketou', err);
       toast(t('sessionInvalid'), 'err');
@@ -5900,6 +5900,38 @@
       if (lab && !leaving) lab.textContent = t('payMomoBtn');
     }
   }
+
+  // v2622 — fenêtre de paiement intégrée. Le crédit arrive par : retour de la page de paiement (message envoyé par
+  // la petite garde en tête d'index.html), surveillance toutes les 5 s, ou rattrapage serveur. Fermer la fenêtre
+  // propose « J'ai validé mon paiement ».
+  var payFrameOpen = false;
+  function openPayFrame(url, ref) {
+    var fr = $('payFrame');
+    if (!fr) { window.location.href = url; return; }
+    fr.src = url;
+    payFrameOpen = true;
+    closeModal('depositModal');
+    openModal('payFrameModal');
+    startDepositWatch(ref);
+  }
+  function closePayFrame(silent) {
+    if (!payFrameOpen) return;
+    payFrameOpen = false;
+    closeModal('payFrameModal');
+    var fr = $('payFrame');
+    if (fr) { try { fr.src = 'about:blank'; } catch (eFr) { /* ignore */ } }
+    if (!silent && !depositApplied && depositRef) openDepositWait(depositRef);
+  }
+  window.addEventListener('message', function (e) {
+    var d = e && e.data;
+    if (!d || typeof d.oroPayReturn !== 'string') return;
+    var okOrigin = false;
+    try { okOrigin = e.origin === location.origin || /^https:\/\/(www\.)?orolado\.com$/.test(e.origin); } catch (eO) { okOrigin = false; }
+    if (!okOrigin) return;
+    closePayFrame(true);
+    try { history.replaceState({}, '', location.pathname + d.oroPayReturn.slice(0, 600) + location.hash); } catch (eH) { /* ignore */ }
+    checkDepositReturn();
+  });
 
   function onConfirmDepositClick() {
     if (depositPayMethod === 'usdt') {
@@ -8070,6 +8102,13 @@
       e.stopPropagation();
       onConfirmDepositClick();
     });
+    if ($('closePayFrame')) {
+      $('closePayFrame').addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closePayFrame(false);
+      });
+    }
     if ($('btnMomoDeposit')) {
       $('btnMomoDeposit').addEventListener('click', function (e) {
         e.preventDefault();
