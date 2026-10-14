@@ -1298,6 +1298,17 @@ if ($action === 'login') {
     foreach ($matches as $candUser) {
       if (orolado_stored_password_hash($candUser) !== '') { $hasLocalHash = true; break; }
     }
+    // v2643 — Google mis de côté (propriétaire) : un compte créé par Google n'a pas de mot de passe.
+    // Message clair au lieu de « identifiants incorrects » : « Mot de passe oublié » lui en crée un.
+    $googleOnly = false;
+    foreach ($matches as $candUser) {
+      if (strtolower((string) ($candUser['authProvider'] ?? '')) === 'google') { $googleOnly = true; break; }
+    }
+    if (!$okPass && !$hasLocalHash && $googleOnly) {
+      orolado_login_fail('player', $email);
+      echo json_encode(['ok' => false, 'server' => true, 'field' => 'loginPass', 'googleOnly' => true, 'reason' => 'Ce compte a été créé avec Google. Touchez « Mot de passe oublié » pour créer votre mot de passe (code reçu par e-mail).']);
+      exit;
+    }
     if (!$okPass && !$hasLocalHash) {
       $sbAuth = null;
       foreach (array_slice($passTries, 0, 1) as $pwTry) {

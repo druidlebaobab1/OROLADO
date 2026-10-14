@@ -81,7 +81,8 @@
     // v2399 — bouton officiel Google (fenêtre « Se connecter à orolado.com »). Identifiant public.
     // GOOGLE_PUBLIC false : visible seulement avec orolado.com/?gtest=1 (essai du propriétaire).
     GOOGLE_CLIENT_ID: '549155545150-2efbga9m4me35us0a70q3tkrfbhq7sjn.apps.googleusercontent.com',
-    GOOGLE_PUBLIC: true,
+    // v2643 (propriétaire) : Google mis de côté, inscription / connexion par e-mail seulement.
+    GOOGLE_PUBLIC: false,
     // v2415 — case dorée « Cadeaux » pour les visiteurs NON inscrits (invite à créer un compte).
     // false pendant les tests : visible seulement avec orolado.com/?cadeaux=1. Mettre true à l'ouverture à tous.
     GIFTS_PUBLIC: true,
