@@ -9201,3 +9201,25 @@ html body #depositModal#depositModal #momoPhone{flex:1 1 auto;min-width:0;height
 html body #depositModal#depositModal .momo-flw .pm-op[data-net]{cursor:pointer}
 html body #depositModal#depositModal .momo-flw .pm-op.on{border:2px solid #FF8A00!important;background:rgba(255,138,0,.22)!important}
 html body #depositModal#depositModal .momo-flw .pm-op.off{display:none!important}
+
+/* v2628 (propriétaire) — case Wave (bleu Wave, logo, indicatif choisi + numéro) ; Carte & Mobile Money en 3 rangées de 4. */
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo{flex:0 0 calc((100% - 15px) / 4)!important;width:calc((100% - 15px) / 4)!important;max-width:calc((100% - 15px) / 4)!important;font-size:11px!important;letter-spacing:-.01em!important;padding:0 3px!important;gap:3px!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-op2{background:#fff!important;color:#111!important;font-weight:800!important;border:0!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-op2 img{width:15px;height:15px;border-radius:4px;flex:0 0 15px}
+html body #depositModal#depositModal .pay-wave{border:2px solid #1DC8FF!important;background:linear-gradient(160deg,rgba(29,200,255,.16),rgba(29,200,255,.05))!important}
+html body #depositModal#depositModal .pay-wave-title{display:inline-flex;align-items:center;gap:8px}
+html body #depositModal#depositModal .pay-wave-title img{width:26px;height:26px;border-radius:7px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+html body #depositModal#depositModal .pay-wave .momo-phone{display:flex!important;gap:6px;margin-top:2px;height:40px;border:0!important;background:none!important;padding:0!important}
+html body #depositModal#depositModal #momoDial{flex:0 0 auto;height:40px;border-radius:10px;border:1.5px solid rgba(29,200,255,.65);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:14px;padding:0 6px}
+html body #depositModal#depositModal #momoDial option{color:#111}
+html body #depositModal#depositModal .pay-wave #momoPhone{flex:1 1 auto;min-width:0;height:40px;border-radius:10px!important;border:1.5px solid rgba(29,200,255,.65)!important;background:rgba(0,0,0,.3)!important;color:#fff;font-size:16px;font-weight:700;padding:0 12px!important}
+html body #depositModal#depositModal .pay-wave #momoPhone:focus{border-color:#1DC8FF!important;outline:none;box-shadow:0 0 0 3px rgba(29,200,255,.2)!important}
+html body #depositModal#depositModal .btn-wave{background:linear-gradient(135deg,#3DD6FF,#0AA5E0)!important;color:#fff!important}
+@media (max-height:700px){html body #depositModal#depositModal .pay-wave .momo-phone,html body #depositModal#depositModal #momoDial,html body #depositModal#depositModal .pay-wave #momoPhone{height:36px!important}}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo:not(.pl-visa):not(.pl-mc):not(.pl-apple):not(.pl-gpay),html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-visa.pl-visa,html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-mc.pl-mc,html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-apple.pl-apple,html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-gpay.pl-gpay{flex:0 0 calc((100% - 15px) / 4)!important;width:calc((100% - 15px) / 4)!important;max-width:calc((100% - 15px) / 4)!important;font-size:11px!important}
+html body #depositModal#depositModal .pay-wave{padding:7px 8px!important;margin-bottom:6px!important}
+html body #depositModal#depositModal .pay-wave .pay-method-top{display:none!important}
+html body #depositModal#depositModal .pay-wave .momo-phone{height:36px!important;margin:0!important;align-items:center}
+html body #depositModal#depositModal .pay-wave .momo-phone::before{content:"";flex:0 0 34px;height:34px;border-radius:9px;background:url("../icons/pay/wave.svg?v=2628") center/cover no-repeat;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+html body #depositModal#depositModal #momoDial,html body #depositModal#depositModal .pay-wave #momoPhone{height:36px!important;font-size:14px!important}
+html body #depositModal#depositModal .btn-wave{height:38px!important;min-height:38px!important}

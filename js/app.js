@@ -4732,11 +4732,14 @@
     // v2590 (propriétaire) : MTN MoMo, Tigo Pesa et Zamtel retirés. Rangement : les 4 cartes sur une ligne, puis
     // Banque / USSD / OPay, puis M-PESA / Airtel / Telecel, et Orange Money seul en dessous, long et plus grand
     // (le mobile money qui marche le mieux avec Flutterwave).
+    // v2628 (propriétaire) : 3 rangées de 4 — cartes / Orange, MTN, Moov, M-PESA / Banque, USSD, OPay, Telecel.
+    '<i class="pl-logo pl-op2"><img src="icons/pay/orange.svg?v=2628" alt="">Orange</i>' +
+    '<i class="pl-logo pl-op2"><img src="icons/pay/mtn.svg?v=2628" alt="">MTN</i>' +
+    '<i class="pl-logo pl-op2"><img src="icons/pay/moov.svg?v=2628" alt="">Moov</i>' +
+    '<i class="pl-logo pl-mpesa">M-PESA</i>' +
     '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
     '<i class="pl-logo pl-ussd"><b>*#</b>USSD</i>' +
     '<i class="pl-logo pl-opay">OPay</i>' +
-    // v2621 (propriétaire) : Orange Money et Airtel passent dans la case Mobile Money (Maketou).
-    '<i class="pl-logo pl-mpesa">M-PESA</i>' +
     '<i class="pl-logo pl-telecel">telecel</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
@@ -5859,6 +5862,7 @@
   // v2626 — Mobile Money par Flutterwave EN DIRECT (Wave s'ouvre : lien ouvert en plein, pas dans l'écran Flutterwave).
   // Activé pour tous si D6.CONFIG.MOMO_VIA === 'flutterwave' ; sinon seulement le compte admin avec ?momo=flw (test).
   var momoNet = 'wave';
+  var momoInflight = false;
   // v2627 : le réglage de test est GARDÉ (avant : perdu dès que l'adresse changeait, après connexion ou retour).
   try { if (/[?&]momo=flw\b/.test(location.search)) localStorage.setItem('oro_momo_flw', '1'); if (/[?&]momo=off\b/.test(location.search)) localStorage.removeItem('oro_momo_flw'); } catch (eMf) { /* ignore */ }
   function momoViaFlw() {
@@ -5869,33 +5873,17 @@
     try { flag = localStorage.getItem('oro_momo_flw') === '1'; } catch (eF) { flag = /[?&]momo=flw\b/.test(location.search); }
     return isAdm && flag;
   }
-  function paintMomoMode() {
-    var flw = momoViaFlw();
-    var row = $('momoPhoneRow');
-    if (row) row.classList.toggle('hidden', !flw);
-    var box = $('payMomoBox');
-    if (box) box.classList.toggle('momo-flw', flw);
-    // Repère visible pour l'admin : le test Flutterwave est bien actif.
-    var ttl = box && box.querySelector('.pay-method-title');
-    if (ttl) ttl.textContent = flw && !(D6.CONFIG && D6.CONFIG.MOMO_VIA === 'flutterwave') ? 'Mobile Money · TEST Flutterwave' : 'Mobile Money';
-    document.querySelectorAll('#payMomoBox .pm-op').forEach(function (el) {
-      var net = el.getAttribute('data-net');
-      el.classList.toggle('on', flw && net === momoNet);
-      el.classList.toggle('off', flw && !net);
-    });
-  }
-  document.addEventListener('click', function (e) {
-    var op = e.target && e.target.closest ? e.target.closest('#payMomoBox .pm-op[data-net]') : null;
-    if (!op || !momoViaFlw()) return;
-    momoNet = op.getAttribute('data-net') || 'wave';
-    paintMomoMode();
-  });
+  // v2628 : case Wave toujours visible (plus de mode test, plus de cases d'opérateurs).
+  function paintMomoMode() { /* rien à repeindre */ }
   async function startFlwMomo() {
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < 3) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3')); return; }
+    // v2628 : indicatif choisi par le joueur (+225 / +221 / +226), pas de détection automatique.
+    var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
-    if (digits.indexOf('225') === 0 && digits.length === 13) digits = digits.slice(3);
-    if (digits.length !== 10) { showFieldError('momoPhone', t('wdDestErr')); if ($('momoPhone')) $('momoPhone').focus(); return; }
+    if (digits.indexOf(dialSel) === 0 && digits.length > 10) digits = digits.slice(dialSel.length);
+    if (digits.length < 8 || digits.length > 10) { showFieldError('momoPhone', t('wdDestErr')); if ($('momoPhone')) $('momoPhone').focus(); return; }
+    momoNet = 'wave';
     var btn = $('btnMomoDeposit');
     var lab = btn && btn.querySelector('span');
     momoBusy = true;
@@ -5906,7 +5894,8 @@
       var tok = await ensureApiToken();
       if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
       metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
-      var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: amt, network: momoNet, phone: '225' + digits }, 30000);
+      momoInflight = true;
+      var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: amt, network: momoNet, phone: dialSel + digits }, 30000);
       // Compte admin (test) : la raison exacte donnée par Flutterwave est ajoutée au message.
       if (!r || !r.ok) { toast(String((r && r.reason) || t('momoOff')) + (r && r.detail ? ' [Flutterwave : ' + r.detail + ']' : ''), 'err', 9000); return; }
       var ref = String(r.ref || '');
@@ -5928,13 +5917,26 @@
       toast(t('sessionInvalid'), 'err');
     } finally {
       momoBusy = false;
+      momoInflight = false;
       if (btn && !leaving) { btn.disabled = false; btn.classList.remove('busy'); }
-      if (lab && !leaving) lab.textContent = t('payMomoBtn');
+      if (lab && !leaving) lab.textContent = t('payWaveBtn');
     }
   }
+  // v2628 — bouton bloqué sur « Ouverture du paiement… » au retour de Wave (page gardée en mémoire par le
+  // navigateur) : on le remet à neuf dès que la page réapparaît.
+  function resetPayButtons() {
+    if (momoInflight) return;
+    momoBusy = false;
+    var b = $('btnMomoDeposit');
+    if (b) { b.disabled = false; b.classList.remove('busy'); var s = b.querySelector('span'); if (s) s.textContent = t('payWaveBtn'); }
+    var c = $('btnConfirmDeposit');
+    if (c && !depositing) { c.disabled = false; c.classList.remove('busy'); }
+  }
+  window.addEventListener('pageshow', resetPayButtons);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(resetPayButtons, 400); });
   async function startMomoDeposit() {
     if (momoBusy || depositing) return;
-    if (momoViaFlw()) {
+    if (true) {
       var uF = user();
       if (!uF || !requireAccount()) return;
       return startFlwMomo();
