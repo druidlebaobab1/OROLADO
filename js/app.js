@@ -5859,10 +5859,15 @@
   // v2626 — Mobile Money par Flutterwave EN DIRECT (Wave s'ouvre : lien ouvert en plein, pas dans l'écran Flutterwave).
   // Activé pour tous si D6.CONFIG.MOMO_VIA === 'flutterwave' ; sinon seulement le compte admin avec ?momo=flw (test).
   var momoNet = 'wave';
+  // v2627 : le réglage de test est GARDÉ (avant : perdu dès que l'adresse changeait, après connexion ou retour).
+  try { if (/[?&]momo=flw\b/.test(location.search)) localStorage.setItem('oro_momo_flw', '1'); if (/[?&]momo=off\b/.test(location.search)) localStorage.removeItem('oro_momo_flw'); } catch (eMf) { /* ignore */ }
   function momoViaFlw() {
     if (D6.CONFIG && D6.CONFIG.MOMO_VIA === 'flutterwave') return true;
     var u = user();
-    return !!(u && u.role === 'admin' && /[?&]momo=flw\b/.test(location.search));
+    var isAdm = !!(u && (u.role === 'admin' || u.isAdmin === true || String(u.email || '').toLowerCase() === 'admin@orolado.com'));
+    var flag = false;
+    try { flag = localStorage.getItem('oro_momo_flw') === '1'; } catch (eF) { flag = /[?&]momo=flw\b/.test(location.search); }
+    return isAdm && flag;
   }
   function paintMomoMode() {
     var flw = momoViaFlw();
@@ -5870,6 +5875,9 @@
     if (row) row.classList.toggle('hidden', !flw);
     var box = $('payMomoBox');
     if (box) box.classList.toggle('momo-flw', flw);
+    // Repère visible pour l'admin : le test Flutterwave est bien actif.
+    var ttl = box && box.querySelector('.pay-method-title');
+    if (ttl) ttl.textContent = flw && !(D6.CONFIG && D6.CONFIG.MOMO_VIA === 'flutterwave') ? 'Mobile Money · TEST Flutterwave' : 'Mobile Money';
     document.querySelectorAll('#payMomoBox .pm-op').forEach(function (el) {
       var net = el.getAttribute('data-net');
       el.classList.toggle('on', flw && net === momoNet);
@@ -5899,7 +5907,8 @@
       if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
       metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
       var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: amt, network: momoNet, phone: '225' + digits }, 30000);
-      if (!r || !r.ok) { toast(String((r && r.reason) || t('momoOff')), 'err', 6000); return; }
+      // Compte admin (test) : la raison exacte donnée par Flutterwave est ajoutée au message.
+      if (!r || !r.ok) { toast(String((r && r.reason) || t('momoOff')) + (r && r.detail ? ' [Flutterwave : ' + r.detail + ']' : ''), 'err', 9000); return; }
       var ref = String(r.ref || '');
       try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e1) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
