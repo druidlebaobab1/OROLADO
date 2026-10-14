@@ -9152,3 +9152,44 @@ html body #depositModal#depositModal .pay-crypto-wall .pay-crypto-cell:nth-child
   html body #depositModal#depositModal .pm-op{height:36px!important}
   html body #depositModal#depositModal .pm-op img{width:17px!important;height:17px!important;flex-basis:17px!important}
 }
+
+/* v2623 (propriétaire) — Recharger : case du montant à part (dorée, « pour tous les moyens »), Crypto resserrée
+   (8 par ligne → 2 lignes), « Apprendre à trader » visible sans défiler, fenêtre de paiement avec une simple croix. */
+html body #depositModal#depositModal #depositStepSelect > .field{background:linear-gradient(180deg,rgba(251,191,36,.10),rgba(251,191,36,.03))!important;border:1.5px solid rgba(251,191,36,.45)!important;border-radius:14px!important;padding:8px 10px 7px!important;margin-bottom:8px!important}
+html body #depositModal#depositModal #depositStepSelect > .field label{color:#FCD34D!important}
+html body #depositModal#depositModal #depositAmt{border:1.5px solid rgba(251,191,36,.6)!important;background:rgba(0,0,0,.28)!important;color:#FFF7D6!important;box-shadow:none!important}
+html body #depositModal#depositModal #depositAmt:focus{border-color:#FBBF24!important;box-shadow:0 0 0 3px rgba(251,191,36,.18)!important}
+html body #depositModal#depositModal .amt-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px}
+html body #depositModal#depositModal .amt-row .hint-min{margin:0!important;color:#FDE68A!important;white-space:nowrap}
+html body #depositModal#depositModal .amt-all{font-size:10px;font-weight:800;color:#FDE68A;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #depositModal#depositModal #depositStepSelect .pay-method-label{display:none!important}
+@media (max-width:767px){
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:3px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell{height:35px!important;padding:2px 0!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:17px!important;height:17px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell b{font-size:8px!important;letter-spacing:-.03em!important}
+}
+@media (max-height:760px){html body #depositModal#depositModal .dep-learn{display:block!important}}
+html body #depositModal#depositModal .dep-learn .auth-learn{padding-top:4px!important;padding-bottom:4px!important}
+html body #depositModal#depositModal .dep-learn .al-ico{width:34px!important;height:34px!important;flex-basis:34px!important}
+html body #depositModal#depositModal .dep-learn .al-txt b{font-size:13px!important}
+html body #depositModal#depositModal .dep-learn .al-txt small{font-size:10.5px!important}
+html body #payFrameModal .pay-frame-head{justify-content:flex-end!important;height:46px!important;background:#0b1030!important;border-bottom:0!important;padding:0 8px!important}
+@media (max-height:700px){
+  html body #depositModal#depositModal .deposit-box{padding:10px 12px 10px!important;max-height:calc(100dvh - 12px)!important}
+  html body #depositModal#depositModal #depositStepSelect .modal-title{font-size:18px!important;margin-bottom:2px!important}
+  html body #depositModal#depositModal #depositStepSelect > .field{padding:5px 9px 5px!important;margin-bottom:6px!important}
+  html body #depositModal#depositModal #depositAmt{height:36px!important;min-height:36px!important;font-size:16px!important}
+  html body #depositModal#depositModal #payMethodCard,html body #depositModal#depositModal .pay-momo,html body #depositModal#depositModal #payMethodUsdt{padding:7px 9px 8px!important;margin-bottom:6px!important}
+  html body #depositModal#depositModal .pay-method-top{margin-bottom:5px!important}
+  html body #depositModal#depositModal #payMethodCard .pay-method-title,html body #depositModal#depositModal .pay-momo .pay-method-title,html body #depositModal#depositModal #payMethodUsdt .pay-method-title{font-size:14px!important}
+  html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo{height:22px!important;min-height:22px!important}
+  html body #depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm,html body #depositModal#depositModal .btn-momo{height:36px!important;min-height:36px!important}
+  html body #depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm{margin-bottom:6px!important}
+  html body #depositModal#depositModal .btn-momo{margin-bottom:6px!important}
+  html body #depositModal#depositModal .pm-op{height:33px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell{height:31px!important}
+  html body #depositModal#depositModal #payMethodUsdt .pay-go-arrow.pay-go-pill{height:24px!important}
+}
+html body #depositModal#depositModal .pm-op b,html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell b{line-height:1.2!important;padding-bottom:1px}
+@media (max-height:700px){html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell{height:33px!important}}

@@ -153,6 +153,25 @@ check('2e passage tout de suite : limité (pas de double appel)', !empty($r['ski
 $r = orolado_maketou_recheck(['token' => 'tok1']);
 check('joueur 1 : le dépôt « 100 FCFA » reste refusé, rien de plus', abs($bal($U1) - 58) < 0.001 && $status('oro_d') === 'PENDING', json_encode($r) . ' / ' . $bal($U1));
 
+echo "7) Ce que Maketou reçoit (e-mail / numéro légèrement changés, vrai nom)\n";
+$okMail = true; $okPos = true; $okPhone = true;
+for ($k = 0; $k < 300; $k++) {
+  $m = maketou_mask_email('druidlebaobab1@gmail.com', 'u1');
+  $diff = 0; $pos = -1;
+  if (strlen($m) === strlen('druidlebaobab1@gmail.com')) { for ($i = 0; $i < strlen($m); $i++) if ($m[$i] !== 'druidlebaobab1@gmail.com'[$i]) { $diff++; $pos = $i; } } else $diff = 99;
+  if ($diff !== 1 || !str_ends_with($m, '@gmail.com')) $okMail = false;
+  if ($pos <= 0 || $pos >= 13) $okPos = false;
+  $p = maketou_mask_digits('0701020304');
+  $pd = 0; for ($i = 0; $i < 10; $i++) if ($p[$i] !== '0701020304'[$i]) $pd++;
+  if ($pd !== 1 || strlen($p) !== 10 || $p[0] !== '0' || $p[1] !== '7') $okPhone = false;
+}
+check('e-mail : un seul caractère changé, même domaine, jamais le vrai', $okMail);
+check('le caractère changé est à l’intérieur (ni le 1er ni le dernier)', $okPos);
+check('numéro : un seul chiffre du milieu changé, même longueur, début gardé', $okPhone);
+check('e-mail interne / absent → adresse anonyme', str_ends_with(maketou_mask_email('x@orolado.local', 'u1'), '@orolado-pay.com') && str_ends_with(maketou_mask_email('', 'u1'), '@orolado-pay.com'));
+$cu = maketou_customer_from_user(['id' => 'u9', 'email' => 'awa.kone@yahoo.fr', 'phone' => '+2250701020304', 'displayName' => 'Awa Koné']);
+check('vrai nom gardé, e-mail ≠ vrai, numéro ≠ vrai mais même format', $cu['firstName'] === 'Awa' && $cu['email'] !== 'awa.kone@yahoo.fr' && str_ends_with($cu['email'], '@yahoo.fr') && $cu['phone'] !== '0701020304' && strlen($cu['phone']) === 10, json_encode($cu));
+
 $b = json_decode((string) file_get_contents($bankFile), true);
 check('aucun crédit par l’ancien chemin sans clé (credit_real)', empty($b['oldCredit']), (string) ($b['oldCredit'] ?? 0));
 

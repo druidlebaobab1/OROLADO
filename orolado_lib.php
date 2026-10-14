@@ -3089,11 +3089,55 @@ function maketou_split_name(string $name): array {
   return [$first, $last];
 }
 
-/** Coordonnées client pour Maketou : e-mail toujours anonymisé (jamais l’e-mail Orolado réel). */
+/**
+ * v2623 (propriétaire) — e-mail envoyé à Maketou : le vrai e-mail du joueur avec UN seul caractère du milieu remplacé
+ * au hasard (lettre ou chiffre). Il ressemble à un e-mail normal mais Maketou n'a jamais le vrai.
+ * Repli (e-mail absent ou interne) : adresse anonyme comme avant.
+ */
+function maketou_mask_email(string $email, ?string $userId = null): string {
+  $email = strtolower(trim($email));
+  $at = strrpos($email, '@');
+  $bad = $at === false || !filter_var($email, FILTER_VALIDATE_EMAIL)
+    || str_ends_with($email, '.local') || str_ends_with($email, '.invalid') || str_contains($email, '@orolado');
+  if ($bad) return maketou_alias_email($userId);
+  $local = substr($email, 0, $at);
+  $domain = substr($email, $at);
+  $n = strlen($local);
+  $spots = [];
+  for ($i = 1; $i < $n - 1; $i++) { if (ctype_alnum($local[$i])) $spots[] = $i; }
+  $pool = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  if (!$spots) {
+    // Partie avant @ trop courte : on glisse un caractère au milieu.
+    $mid = max(1, intdiv($n, 2));
+    return substr($local, 0, $mid) . $pool[random_int(0, 35)] . substr($local, $mid) . $domain;
+  }
+  // On évite le tout début et la toute fin : un caractère « à l'intérieur ».
+  $inner = array_values(array_filter($spots, static fn($i) => $i >= (int) floor($n / 4) && $i <= (int) ceil($n * 3 / 4)));
+  if ($inner) $spots = $inner;
+  $i = $spots[random_int(0, count($spots) - 1)];
+  do { $c = $pool[random_int(0, 35)]; } while ($c === $local[$i]);
+  $local[$i] = $c;
+  return $local . $domain;
+}
+
+/** Même principe pour un numéro : un seul chiffre du milieu remplacé (le format ne change pas). */
+function maketou_mask_digits(string $digits): string {
+  $n = strlen($digits);
+  if ($n < 6) return $digits;
+  $i = random_int(max(2, intdiv($n, 3)), max(2, $n - 3));
+  do { $c = (string) random_int(0, 9); } while ($c === $digits[$i]);
+  $digits[$i] = $c;
+  return $digits;
+}
+
+/** Coordonnées client pour Maketou : jamais le vrai e-mail ni le vrai numéro (un caractère changé), vrai nom. */
 function maketou_customer_from_user(array $me): array {
-  $email = maketou_alias_email((string) ($me['id'] ?? ''));
+  $email = maketou_mask_email((string) ($me['email'] ?? ''), (string) ($me['id'] ?? ''));
   $cc = '225';
   $phoneRaw = maketou_alias_phone();
+  $realDigits = preg_replace('/\D/', '', (string) ($me['phone'] ?? '')) ?? '';
+  // Numéro ivoirien du joueur (225 + 10 chiffres) : gardé avec un seul chiffre du milieu changé.
+  if (strlen($realDigits) === 13 && str_starts_with($realDigits, '225')) $phoneRaw = '+225' . maketou_mask_digits(substr($realDigits, 3));
   $phone = preg_replace('/\D/', '', $phoneRaw) ?? '';
   if (str_starts_with($phone, $cc) && strlen($phone) > strlen($cc)) {
     $phone = substr($phone, strlen($cc));

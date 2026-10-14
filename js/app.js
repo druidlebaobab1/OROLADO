@@ -5228,16 +5228,15 @@
         returnParams: (depositReturn && depositReturn.params) || null
       });
       applyDepositPaid(remote);
-      if (!depositApplied) setWaitNote(t('depositPending'), 'warn');
+      if (!depositApplied) setWaitNote(t('momoAuto'), 'warn');
     } catch (e) {
-      setWaitNote(t('depositPending'), 'warn');
+      setWaitNote(t('momoAuto'), 'warn');
     } finally {
       depositChecking = false;
       setWaitBusy(false);
-      if (btn && !depositApplied) {
-        btn.disabled = false;
-        btn.textContent = t('depositCheckBtn').replace('{op}', opLabel());
-      }
+      // v2623 : pas de bouton « J'ai validé », pas de référence à envoyer au support : le crédit est automatique.
+      if (btn && !depositApplied) btn.hidden = true;
+      if ($('depositWaitRef')) $('depositWaitRef').textContent = '';
       if (!depositApplied && $('depositWaitTitle')) {
         $('depositWaitTitle').textContent = t('depositWaitTitle').replace('{op}', opLabel());
       }
@@ -5920,7 +5919,9 @@
     closeModal('payFrameModal');
     var fr = $('payFrame');
     if (fr) { try { fr.src = 'about:blank'; } catch (eFr) { /* ignore */ } }
-    if (!silent && !depositApplied && depositRef) openDepositWait(depositRef);
+    // v2623 (propriétaire) : plus de fenêtre « J'ai validé mon paiement ». La surveillance continue en silence :
+    // si le paiement est confirmé par Maketou, le solde monte et « Recharge réussie » s'affiche tout seul.
+    if (!silent && !depositApplied) toast(t('momoAuto'), 'info', 5000);
   }
   window.addEventListener('message', function (e) {
     var d = e && e.data;
