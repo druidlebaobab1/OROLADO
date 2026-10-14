@@ -9229,3 +9229,11 @@ html body #depositModal#depositModal .wcc{height:36px;display:flex;align-items:c
 html body #depositModal#depositModal .wcc svg{width:18px;height:12px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 html body #depositModal#depositModal .wcc.on{border-color:#1DC8FF;background:rgba(29,200,255,.22);color:#fff}
 @media (max-width:359px){html body #depositModal#depositModal .wcc{padding:0 4px;font-size:11px}html body #depositModal#depositModal .wcc svg{width:15px}html body #depositModal#depositModal .pay-wave .momo-phone::before{flex-basis:28px;height:28px}}
+/* v2630 — Carte & Mobile Money : 4 cartes, puis 2 lignes de 5 (Orange, MTN, Airtel, Mobi Cash, M-PESA / Banque, USSD, OPay, Telecel, 1Voucher). */
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo:not(.pl-visa):not(.pl-mc):not(.pl-apple):not(.pl-gpay){flex:0 0 calc((100% - 20px) / 5)!important;width:calc((100% - 20px) / 5)!important;max-width:calc((100% - 20px) / 5)!important;font-size:10px!important;letter-spacing:-.02em!important;padding:0 2px!important;gap:2px!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-op2 img{width:13px!important;height:13px!important;flex:0 0 13px!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-mobicash{background:#fff!important;color:#F58220!important;font-weight:900!important;font-style:italic;border:0!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-mobicash b{color:#0066B3;font-weight:900}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher{background:#fff!important;color:#1B2A6B!important;font-weight:800!important;border:0!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#E4002B;color:#fff;font-size:9px;font-weight:900;margin-right:1px}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-bank svg{display:none!important}
