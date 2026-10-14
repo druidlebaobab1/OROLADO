@@ -4600,6 +4600,42 @@ function orolado_maketou_recheck(array $req): array {
   return ['ok' => true, 'checked' => count($list), 'credited' => $credited];
 }
 
+/**
+ * v2634 — Rattrapage Flutterwave (Wave / Mobile Money / carte) : un joueur qui a payé mais n'est pas revenu sur le
+ * site, ou dont le message de Flutterwave n'est pas arrivé, est crédité quand même. Appelé avec oxapayRecheck
+ * (toutes les 2 min par le téléphone) : on redemande à Flutterwave l'état de SES dépôts en attente (48 h, 4 au plus).
+ * Crédit seulement si Flutterwave dit « successful » pour CETTE référence (orolado_flutterwave_verify), une seule fois.
+ */
+function orolado_flw_recheck(array $req): array {
+  if (!function_exists('orolado_flw_configured') || !orolado_flw_configured()) return ['ok' => true, 'skipped' => true];
+  $db = load_db(orolado_data_file());
+  $me = orolado_session_user($db, (string) ($req['token'] ?? ''));
+  if (!$me) return ['ok' => false, 'server' => true, 'code' => 'session'];
+  $uid = (string) $me['id'];
+  if (!orolado_rate_ok('flw_recheck', $uid, 1, 90)) return ['ok' => true, 'skipped' => true];
+  $cut = time() - 48 * 3600;
+  $list = [];
+  foreach (array_reverse($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
+    if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
+    $op = strtolower((string) ($d['operator'] ?? ''));
+    $id = (string) ($d['id'] ?? '');
+    if ($op !== 'flutterwave' && $op !== 'flw' && !str_starts_with(strtolower($id), 'flw_')) continue;
+    if ((strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
+    $list[] = $d;
+    if (count($list) >= 4) break;
+  }
+  $credited = 0;
+  foreach ($list as $d) {
+    $ref = (string) ($d['id'] ?? $d['ref'] ?? '');
+    $proof = orolado_flutterwave_verify($ref, '');
+    if (empty($proof['paid'])) continue;
+    orolado_flutterwave_credit($ref, (string) ($proof['extId'] ?? ''), (float) ($proof['amount_usd'] ?? 0));
+    $credited++;
+  }
+  return ['ok' => true, 'checked' => count($list), 'credited' => $credited];
+}
+
 function maketou_handle_webhook(): void {
   header('Content-Type: application/json; charset=utf-8');
   header('X-Content-Type-Options: nosniff');

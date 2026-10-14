@@ -13,7 +13,24 @@ putenv('SUPABASE_URL=https://fake.supabase.test');
 putenv('SUPABASE_SERVICE_ROLE_KEY=fake-service-key');
 putenv('FLW_SECRET_KEY=faux-secret-de-test');
 putenv('FLW_PUBLIC_KEY=faux-public-de-test');
-$GLOBALS['OROLADO_FAKE_HTTP'] = fn() => [];
+// Fausse caisse Supabase (en mémoire) : vrai crédit testé jusqu'au solde.
+$GLOBALS['BANK'] = ['aaaaaaaa-1111-2222-3333-444444444444' => 0.0];
+$GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) {
+  $b = $body ? json_decode($body, true) : [];
+  if (preg_match('#/rest/v1/vaults\?user_id=eq\.([^&]+)#', $url, $m)) {
+    $u = rawurldecode($m[1]);
+    return isset($GLOBALS['BANK'][$u]) ? [['demo' => 0, 'real' => $GLOBALS['BANK'][$u]]] : [];
+  }
+  if (str_contains($url, '/rpc/resolve_trade')) {
+    static $keys = [];
+    $u = $b['p_user'];
+    if (isset($keys[$b['p_order']])) return ['ok' => true, 'duplicate' => true, 'real' => $GLOBALS['BANK'][$u]];
+    $keys[$b['p_order']] = 1;
+    $GLOBALS['BANK'][$u] = round(($GLOBALS['BANK'][$u] ?? 0) + $b['p_amount'], 2);
+    return ['ok' => true, 'real' => $GLOBALS['BANK'][$u]];
+  }
+  return [];
+};
 $calls = [];
 $mode = 'ok';
 $GLOBALS['OROLADO_FAKE_FLW'] = function (string $method, string $path, ?array $body) use (&$calls, &$mode) {
@@ -21,6 +38,12 @@ $GLOBALS['OROLADO_FAKE_FLW'] = function (string $method, string $path, ?array $b
   if ($method === 'POST' && str_starts_with($path, '/charges?type=mobile_money_franco')) {
     if (($body['network'] ?? '') === 'WAVE') return ['status' => 'success', 'data' => ['status' => 'pending'], 'meta' => ['authorization' => ['mode' => 'redirect', 'redirect_url' => 'https://pay.wave.com/c/cos-test123']], '_http' => 200];
     return ['status' => 'success', 'data' => ['status' => 'pending'], 'meta' => ['authorization' => ['mode' => 'callback', 'redirect_url' => null]], '_http' => 200];
+  }
+  if ($method === 'GET' && str_starts_with($path, '/transactions/verify_by_reference')) {
+    parse_str((string) parse_url($path, PHP_URL_QUERY), $q);
+    $paid = $GLOBALS['FLW_PAID'][$q['tx_ref'] ?? ''] ?? null;
+    if (!$paid) return ['status' => 'success', 'data' => ['status' => 'pending', 'tx_ref' => $q['tx_ref'] ?? ''], '_http' => 200];
+    return ['status' => 'success', 'data' => ['status' => 'successful', 'tx_ref' => $q['tx_ref'], 'id' => 99001, 'currency' => 'XOF', 'amount' => $paid, 'charged_amount' => $paid], '_http' => 200];
   }
   if ($method === 'POST' && $path === '/payments') {
     if ($mode === 'ok') return ['status' => 'success', 'data' => ['link' => 'https://checkout.flutterwave.com/v3/hosted/pay/abc123'], '_http' => 200];
@@ -92,6 +115,22 @@ $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 1, 'network
 check('moins de 3 $ : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'min');
 $r = orolado_flutterwave_momo_charge(['token' => 'mauvais', 'amount' => 3, 'network' => 'wave', 'phone' => '0701020304']);
 check('sans connexion : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'session');
+
+echo "5) v2634 — rattrapage Flutterwave (joueur payé mais pas revenu sur le site)\n";
+$GLOBALS['FLW_PAID'] = [];
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '2250701020304']);
+$refW = (string) ($r['ref'] ?? '');
+$GLOBALS['FLW_PAID'][$refW] = 1800;
+$stat = function (string $ref): string { foreach (load_db()['deposits'] ?? [] as $d) if (($d['id'] ?? '') === $ref) return (string) $d['status']; return '?'; };
+@unlink(orolado_data_dir() . '/rate_flwrecheck__' . substr(hash('sha256', 'aaaaaaaa-1111-2222-3333-444444444444'), 0, 1) . '.json');
+$x = orolado_flw_recheck(['token' => 'tokF']);
+check('payé chez Flutterwave → crédité sans que le joueur revienne', in_array($stat($refW), ['COMPLETED', 'PAID'], true), json_encode($x) . ' ' . $stat($refW));
+check('solde du joueur : +3 $', abs($GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444'] - 3) < 0.001, (string) $GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444']);
+$x2 = orolado_flw_recheck(['token' => 'tokF']);
+check('2e passage tout de suite : limité, pas de double', !empty($x2['skipped']), json_encode($x2));
+@unlink(orolado_data_dir() . '/rate_flwrecheck__' . substr(hash('sha256', 'aaaaaaaa-1111-2222-3333-444444444444'), 0, 1) . '.json');
+orolado_flw_recheck(['token' => 'tokF']);
+check('repassé plus tard : toujours +3 $ (jamais crédité 2 fois)', abs($GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444'] - 3) < 0.001, (string) $GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444']);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

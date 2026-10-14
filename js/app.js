@@ -5911,15 +5911,10 @@
       depositRef = ref;
       depositApplied = false;
       if (/^https:\/\//i.test(String(r.redirect || ''))) {
-        // v2633 (propriétaire) : on RESTE sur OROLADO. Le bouton devient « OUVRIR WAVE » : touché par le joueur
-        // lui-même, le téléphone propose « Ouvrir dans Wave ? » sans quitter le site (ouvrir la page tout de suite,
-        // après l'attente du serveur, faisait parfois sortir vers pay.wave.com). Quand le joueur revient de Wave,
-        // la surveillance crédite et « Recharge réussie » s'affiche.
-        momoLink = { url: r.redirect, key: dialSel + digits, at: Date.now() };
+        // v2634 (propriétaire) : UN SEUL toucher. Le lien Wave s'ouvre tout de suite ; c'est Wave qui décide de
+        // montrer ou non sa page bleue avant « Ouvrir dans Wave ? » (v2633 « OUVRIR WAVE » retiré : ça n'y changeait rien).
         leaving = true;
-        if (btn) { btn.disabled = false; btn.classList.remove('busy'); btn.classList.add('ready'); }
-        if (lab) lab.textContent = t('openWaveBtn');
-        startDepositWatch(ref);
+        window.location.href = r.redirect;
         return;
       }
       // Sans lien (Orange, MTN, Moov) : le joueur valide sur son téléphone ; le crédit arrive tout seul.

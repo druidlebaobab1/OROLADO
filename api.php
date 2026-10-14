@@ -2400,6 +2400,10 @@ if ($action === 'oxapayRecheck') {
   if (function_exists('orolado_maketou_recheck')) {
     try { $oxaRe['maketou'] = orolado_maketou_recheck(['token' => $token] + $req); } catch (Throwable $eMk) { /* jamais bloquant */ }
   }
+  // v2634 : rattrapage des dépôts Flutterwave (Wave, Mobile Money, carte) payés mais pas encore crédités.
+  if (function_exists('orolado_flw_recheck')) {
+    try { $oxaRe['flutterwave'] = orolado_flw_recheck(['token' => $token] + $req); } catch (Throwable $eFw) { /* jamais bloquant */ }
+  }
   echo json_encode($oxaRe);
   exit;
 }
