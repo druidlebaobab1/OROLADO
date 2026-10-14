@@ -9193,3 +9193,11 @@ html body #payFrameModal .pay-frame-head{justify-content:flex-end!important;heig
 }
 html body #depositModal#depositModal .pm-op b,html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell b{line-height:1.2!important;padding-bottom:1px}
 @media (max-height:700px){html body #depositModal#depositModal #payMethodUsdt .pay-crypto-cell{height:33px!important}}
+/* v2626 — Mobile Money par Flutterwave en direct : opérateur choisi + numéro (affiché seulement si activé). */
+html body #depositModal#depositModal .momo-phone{display:flex;align-items:center;gap:6px;margin-top:6px;height:36px;border-radius:10px;border:1.5px solid rgba(255,138,0,.55);background:rgba(0,0,0,.25);padding:0 10px}
+html body #depositModal#depositModal .momo-phone.hidden{display:none!important}
+html body #depositModal#depositModal .momo-cc{font-weight:800;color:#FFD2A0;font-size:14px}
+html body #depositModal#depositModal #momoPhone{flex:1 1 auto;min-width:0;height:100%;border:0!important;background:transparent!important;color:#fff;font-size:15px;font-weight:700;outline:none;padding:0!important;box-shadow:none!important}
+html body #depositModal#depositModal .momo-flw .pm-op[data-net]{cursor:pointer}
+html body #depositModal#depositModal .momo-flw .pm-op.on{border:2px solid #FF8A00!important;background:rgba(255,138,0,.22)!important}
+html body #depositModal#depositModal .momo-flw .pm-op.off{display:none!important}

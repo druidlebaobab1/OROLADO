@@ -18,6 +18,10 @@ $calls = [];
 $mode = 'ok';
 $GLOBALS['OROLADO_FAKE_FLW'] = function (string $method, string $path, ?array $body) use (&$calls, &$mode) {
   $calls[] = [$method, $path, $body];
+  if ($method === 'POST' && str_starts_with($path, '/charges?type=mobile_money_franco')) {
+    if (($body['network'] ?? '') === 'WAVE') return ['status' => 'success', 'data' => ['status' => 'pending'], 'meta' => ['authorization' => ['mode' => 'redirect', 'redirect_url' => 'https://pay.wave.com/c/cos-test123']], '_http' => 200];
+    return ['status' => 'success', 'data' => ['status' => 'pending'], 'meta' => ['authorization' => ['mode' => 'callback', 'redirect_url' => null]], '_http' => 200];
+  }
   if ($method === 'POST' && $path === '/payments') {
     if ($mode === 'ok') return ['status' => 'success', 'data' => ['link' => 'https://checkout.flutterwave.com/v3/hosted/pay/abc123'], '_http' => 200];
     if ($mode === 'pirate') return ['status' => 'success', 'data' => ['link' => 'https://evil.example.com/pay'], '_http' => 200];
@@ -50,6 +54,22 @@ check('Flutterwave ne donne pas de lien : ancienne fenêtre gardée (inline + cl
 $mode = 'pirate';
 $r = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
 check('lien qui n’est pas flutterwave.com : refusé', ($r['link'] ?? 'x') === '', (string) ($r['link'] ?? ''));
+
+echo "3) v2626 — Mobile Money Flutterwave EN DIRECT (Wave ouvert en plein)\n";
+$calls = [];
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '2250701020304']);
+$c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
+check('Wave : lien pay.wave.com renvoyé au site', !empty($r['ok']) && $r['redirect'] === 'https://pay.wave.com/c/cos-test123', json_encode($r));
+check('demande : CI, XOF, 1 800, réseau WAVE, numéro 2250701020304, retour /api/flutterwave/callback', is_array($c) && $c['country'] === 'CI' && $c['currency'] === 'XOF' && (int) $c['amount'] === 1800 && $c['network'] === 'WAVE' && $c['phone_number'] === '2250701020304' && str_ends_with((string) $c['redirect_url'], '/api/flutterwave/callback'), json_encode($c));
+check('dépôt Flutterwave en attente avec la même référence', (function () use ($r) { foreach (load_db()['deposits'] ?? [] as $d) if (($d['id'] ?? '') === $r['ref']) return $d['status'] === 'PENDING' && $d['operator'] === 'flutterwave' && (int) $d['payAmount'] === 1800; return false; })());
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'orange', 'phone' => '0701020304']);
+check('Orange (sans lien) : OK, validation sur le téléphone, numéro 10 chiffres accepté', !empty($r['ok']) && $r['redirect'] === '' && $r['mode'] === 'callback', json_encode($r));
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '123']);
+check('numéro invalide : refusé avant Flutterwave', empty($r['ok']) && ($r['code'] ?? '') === 'phone', json_encode($r));
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 1, 'network' => 'wave', 'phone' => '0701020304']);
+check('moins de 3 $ : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'min');
+$r = orolado_flutterwave_momo_charge(['token' => 'mauvais', 'amount' => 3, 'network' => 'wave', 'phone' => '0701020304']);
+check('sans connexion : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'session');
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

@@ -4620,6 +4620,7 @@
     if (hint) hint.textContent = 'Minimum $\u00a0\u00a03';
     setDepositPayMethod('card');
     paintPayLocal();
+    try { paintMomoMode(); } catch (eMm) { /* ignore */ }
   // v2543 — mot « Banque » dans la langue du joueur (et à chaque changement de langue).
   var BANK_WORD = { fr: 'Banque', en: 'Bank', es: 'Banco', pt: 'Banco', ar: 'بنك', tr: 'Banka', vi: 'Ngân hàng', id: 'Bank', ru: 'Банк', de: 'Bank', hi: 'बैंक' };
   function paintBankWord() {
@@ -5855,8 +5856,80 @@
   // (montant en FCFA, taux fixe) et renvoie son adresse ; le joueur y paie puis revient sur ?deposit=success&ref=…
   // Le crédit n'arrive QUE si Maketou confirme le paiement (vérification serveur ou message signé).
   var momoBusy = false;
+  // v2626 — Mobile Money par Flutterwave EN DIRECT (Wave s'ouvre : lien ouvert en plein, pas dans l'écran Flutterwave).
+  // Activé pour tous si D6.CONFIG.MOMO_VIA === 'flutterwave' ; sinon seulement le compte admin avec ?momo=flw (test).
+  var momoNet = 'wave';
+  function momoViaFlw() {
+    if (D6.CONFIG && D6.CONFIG.MOMO_VIA === 'flutterwave') return true;
+    var u = user();
+    return !!(u && u.role === 'admin' && /[?&]momo=flw\b/.test(location.search));
+  }
+  function paintMomoMode() {
+    var flw = momoViaFlw();
+    var row = $('momoPhoneRow');
+    if (row) row.classList.toggle('hidden', !flw);
+    var box = $('payMomoBox');
+    if (box) box.classList.toggle('momo-flw', flw);
+    document.querySelectorAll('#payMomoBox .pm-op').forEach(function (el) {
+      var net = el.getAttribute('data-net');
+      el.classList.toggle('on', flw && net === momoNet);
+      el.classList.toggle('off', flw && !net);
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var op = e.target && e.target.closest ? e.target.closest('#payMomoBox .pm-op[data-net]') : null;
+    if (!op || !momoViaFlw()) return;
+    momoNet = op.getAttribute('data-net') || 'wave';
+    paintMomoMode();
+  });
+  async function startFlwMomo() {
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    if (amt < 3) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3')); return; }
+    var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
+    if (digits.indexOf('225') === 0 && digits.length === 13) digits = digits.slice(3);
+    if (digits.length !== 10) { showFieldError('momoPhone', t('wdDestErr')); if ($('momoPhone')) $('momoPhone').focus(); return; }
+    var btn = $('btnMomoDeposit');
+    var lab = btn && btn.querySelector('span');
+    momoBusy = true;
+    if (btn) { btn.disabled = true; btn.classList.add('busy'); }
+    if (lab) lab.textContent = t('m_openingPay');
+    var leaving = false;
+    try {
+      var tok = await ensureApiToken();
+      if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
+      metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
+      var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: amt, network: momoNet, phone: '225' + digits }, 30000);
+      if (!r || !r.ok) { toast(String((r && r.reason) || t('momoOff')), 'err', 6000); return; }
+      var ref = String(r.ref || '');
+      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e1) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
+      depositRef = ref;
+      depositApplied = false;
+      if (/^https:\/\//i.test(String(r.redirect || ''))) {
+        leaving = true;
+        window.location.href = r.redirect; // page en plein : le téléphone peut ouvrir l'application Wave
+        return;
+      }
+      // Sans lien (Orange, MTN, Moov) : le joueur valide sur son téléphone ; le crédit arrive tout seul.
+      closeModal('depositModal');
+      toast(t('momoApprove'), 'info', 7000);
+      startDepositWatch(ref);
+    } catch (err) {
+      console.error('OROLADO flw momo', err);
+      toast(t('sessionInvalid'), 'err');
+    } finally {
+      momoBusy = false;
+      if (btn && !leaving) { btn.disabled = false; btn.classList.remove('busy'); }
+      if (lab && !leaving) lab.textContent = t('payMomoBtn');
+    }
+  }
   async function startMomoDeposit() {
     if (momoBusy || depositing) return;
+    if (momoViaFlw()) {
+      var uF = user();
+      if (!uF || !requireAccount()) return;
+      return startFlwMomo();
+    }
     var u = user();
     if (!u || !requireAccount()) return;
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);

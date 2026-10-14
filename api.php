@@ -2409,6 +2409,11 @@ if ($action === 'oxapayStatus') {
   exit;
 }
 
+if ($action === 'flutterwaveMomo') {
+  echo json_encode(orolado_flutterwave_momo_charge(['token' => $token] + $req));
+  exit;
+}
+
 if ($action === 'flutterwaveCheckout' || $action === 'flutterwaveCharge') {
   echo json_encode(orolado_flutterwave_checkout(['token' => $token] + $req));
   exit;

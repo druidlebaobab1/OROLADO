@@ -6788,7 +6788,8 @@ function orolado_flw_dial_country(string $dial, string $phone = ''): string {
     '237' => 'CM', '241' => 'GA', '242' => 'CG', '240' => 'GQ', '236' => 'CF', '235' => 'TD',
   ];
   foreach ($map as $pref => $cc) {
-    if (str_starts_with($d, $pref)) return $cc;
+    // (string) : PHP range les clés '225'… comme des nombres → str_starts_with plantait (bug trouvé en v2626).
+    if (str_starts_with($d, (string) $pref)) return $cc;
   }
   return '';
 }
@@ -7060,6 +7061,89 @@ function orolado_flutterwave_checkout(array $req): array {
     'customizations' => $customizations,
     'payment_options' => orolado_flw_payment_options($cc),
     'redirect_url' => $origin . '/api/flutterwave/callback',
+  ];
+}
+
+/**
+ * v2626 (propriétaire) — Mobile Money PAR FLUTTERWAVE EN DIRECT (Wave, Orange, MTN, Moov).
+ * Pourquoi : dans l'écran de Flutterwave, Wave s'affiche dans un cadre intégré et le téléphone refuse d'ouvrir
+ * l'application Wave (Flutterwave le dit lui-même dans sa documentation). Ici, notre serveur demande le paiement
+ * directement (POST /v3/charges?type=mobile_money_franco) et renvoie le lien Wave, ouvert EN PLEIN par le site.
+ * Crédit : seulement après vérification Flutterwave (retour /api/flutterwave/callback, webhook, surveillance).
+ */
+function orolado_flw_momo_networks(): array {
+  return ['wave' => 'WAVE', 'orange' => 'ORANGEMONEY', 'mtn' => 'MTN', 'moov' => 'MOOV'];
+}
+
+function orolado_flutterwave_momo_charge(array $req): array {
+  $rlTok = trim((string) ($req['token'] ?? ''));
+  if ($rlTok !== '' && !orolado_rate_ok('pay_flutterwave', $rlTok, 30, 3600)) return ['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.'];
+  $file = orolado_data_file();
+  $db = load_db($file);
+  $me = orolado_session_user($db, (string) ($req['token'] ?? ''));
+  if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide', 'code' => 'session'];
+  if (!orolado_flw_configured()) return ['ok' => false, 'server' => true, 'reason' => 'Mobile Money indisponible pour le moment.', 'code' => 'keys'];
+  $amountUsd = orolado_money($req['amount'] ?? 0);
+  if ($amountUsd + 0.0001 < 3.0) return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.', 'code' => 'min'];
+  $nets = orolado_flw_momo_networks();
+  $netKey = strtolower(trim((string) ($req['network'] ?? 'wave')));
+  if (!isset($nets[$netKey])) $netKey = 'wave';
+  $digits = preg_replace('/\D/', '', (string) ($req['phone'] ?? '')) ?? '';
+  // Pays d'après l'indicatif (Côte d'Ivoire par défaut : 10 chiffres sans indicatif).
+  if (strlen($digits) === 10 && $digits[0] === '0') $digits = '225' . $digits;
+  $cc = orolado_flw_dial_country('', $digits);
+  if ($cc === '' || strlen($digits) < 11 || strlen($digits) > 15) {
+    return ['ok' => false, 'server' => true, 'reason' => 'Numéro Mobile Money invalide.', 'code' => 'phone'];
+  }
+  $isXaf = in_array($cc, orolado_flw_xaf_countries(), true);
+  $currency = $isXaf ? 'XAF' : 'XOF';
+  $payAmount = orolado_usd_to_cfa_int($amountUsd);
+  $cust = orolado_flw_customer($me, (string) ($req['token'] ?? ''));
+  $email = orolado_flw_email_ok((string) ($cust['email'] ?? '')) ? (string) $cust['email'] : 'admin@orolado.com';
+  $name = trim((string) ($cust['name'] ?? '')) !== '' ? (string) $cust['name'] : (string) ($me['displayName'] ?? 'Client');
+  $uid = (string) $me['id'];
+  $ref = 'flw_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . bin2hex(random_bytes(6));
+  $origin = rtrim(orolado_public_origin(), '/');
+  with_db_lock(function ($box) use ($ref, $uid, $amountUsd, $payAmount, $currency, $cc, $netKey, $email, $name, $digits) {
+    if (!isset($box->db['deposits']) || !is_array($box->db['deposits'])) $box->db['deposits'] = [];
+    $box->db['deposits'][] = [
+      'id' => $ref, 'ref' => $ref, 'userId' => $uid, 'operator' => 'flutterwave', 'status' => 'PENDING',
+      'amount' => $amountUsd, 'payAmount' => $payAmount, 'payCurrency' => $currency, 'method' => 'mobilemoney_' . $netKey,
+      'country' => $cc, 'customerEmail' => $email, 'customerName' => $name, 'customerPhone' => '+' . $digits,
+      'currency' => 'USD', 'clientIp' => orolado_request_ip(), 'userAgent' => orolado_request_ua(), 'at' => date('c'),
+    ];
+    return ['ok' => true];
+  });
+  supabase_insert_deposit(['id' => $ref, 'user_id' => orolado_balance_uuid($db, $uid), 'amount' => $amountUsd, 'status' => 'PENDING', 'reference' => $ref, 'operator' => 'flutterwave']);
+  $res = orolado_flw_http('POST', '/charges?type=mobile_money_franco', [
+    'tx_ref' => $ref,
+    'amount' => $payAmount,
+    'currency' => $currency,
+    'country' => $cc,
+    'network' => $nets[$netKey],
+    'phone_number' => $digits,
+    'email' => $email,
+    'fullname' => $name,
+    'redirect_url' => $origin . '/api/flutterwave/callback',
+    'client_ip' => orolado_request_ip(),
+  ]);
+  $ok = is_array($res) && strtolower((string) ($res['status'] ?? '')) === 'success';
+  if (!$ok) {
+    $why = is_array($res) ? (string) ($res['message'] ?? '') : '';
+    error_log('OROLADO flutterwave momo refus : ' . $why . ' (http ' . (is_array($res) ? (int) ($res['_http'] ?? 0) : 0) . ')');
+    return ['ok' => false, 'server' => true, 'reason' => 'Paiement Mobile Money refusé pour le moment. Réessayez ou choisissez un autre moyen.', 'code' => 'flw', 'detail' => substr($why, 0, 160)];
+  }
+  $auth = is_array($res['meta']['authorization'] ?? null) ? $res['meta']['authorization'] : [];
+  $redirect = (string) ($auth['redirect_url'] ?? $auth['redirect'] ?? '');
+  if ($redirect !== '' && !preg_match('#^https://#i', $redirect)) $redirect = '';
+  return [
+    'ok' => true,
+    'server' => true,
+    'ref' => $ref,
+    'tx_ref' => $ref,
+    'mode' => (string) ($auth['mode'] ?? ''),
+    'redirect' => $redirect,
+    'network' => $netKey,
   ];
 }
 
