@@ -170,6 +170,8 @@
     var reveal = function () { card.classList.add('on'); };
     requestAnimationFrame(function () { requestAnimationFrame(reveal); });
     setTimeout(reveal, 80); // si l'écran ne rafraîchit pas tout de suite
+    // v2640 : carte ignorée (partie seule après 20 s) = pas avant 24 h (avant : à chaque ouverture de l'appli).
+    ls('oro_push_shown', Date.now());
     setTimeout(function () { if (card.parentNode && !card.classList.contains('done') && !card.classList.contains('wait')) hideCard(card); }, 20000);
   }
 
@@ -177,6 +179,8 @@
     // v2608 (propriétaire) : seulement dans l'application installée (pas dans le navigateur).
     if (!supported() || !isApp() || Notification.permission !== 'default') return false;
     if ((parseInt(ls('oro_push_later_n') || '0', 10) || 0) >= 3) return false;
+    var shown = parseInt(ls('oro_push_shown') || '0', 10) || 0;
+    if (shown && Date.now() - shown < 86400000) return false;
     var later = parseInt(ls('oro_push_later') || '0', 10) || 0;
     return !later || Date.now() - later > 3 * 86400000;
   }

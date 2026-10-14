@@ -8702,6 +8702,22 @@
       try { localStorage.setItem('oro_install_dismissed', '1'); localStorage.setItem('oro_app_installed', '1'); } catch (eAi) { /* ignore */ }
       try { hideInstallBanner(); } catch (eAh) { /* ignore */ }
     });
+    // v2640 — « Installer Orolado » : au plus UNE fois toutes les 24 h (avant : à chaque nouvelle visite, pour toujours).
+    // Un nouveau visiteur le voit tout de suite ; déjà installé ou fermé 2 fois = plus jamais (règles inchangées).
+    window.__oroInstallDue = function () {
+      try {
+        if (sessionStorage.getItem('oro_install_now') === '1') return true;
+        var last = parseInt(localStorage.getItem('oro_install_last') || '0', 10) || 0;
+        return !last || Date.now() - last >= 24 * 3600 * 1000;
+      } catch (e) { return true; }
+    };
+    window.__oroInstallMark = function () {
+      try {
+        if (sessionStorage.getItem('oro_install_now') === '1') return;
+        sessionStorage.setItem('oro_install_now', '1');
+        localStorage.setItem('oro_install_last', String(Date.now()));
+      } catch (e) { /* ignore */ }
+    };
     function isMobileUi() {
       return window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
     }
@@ -8753,9 +8769,10 @@
       openModal('iosInstallModal');
     }
     function showInstallBanner() {
-      if (!isMobileUi() || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install')) return;
+      if (!isMobileUi() || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install') || !window.__oroInstallDue()) return;
       var el = $('installBanner');
       if (!el) return;
+      window.__oroInstallMark();
       el.classList.remove('hidden', 'fade-out');
       if (installHideTimer) clearTimeout(installHideTimer);
       installHideTimer = setTimeout(function () {
@@ -8950,7 +8967,8 @@
             forever = localStorage.getItem('oro_install_dismissed') === '1'
               || (parseInt(localStorage.getItem('orolado_install_dismissed_count') || '0', 10) || 0) >= 2;
           } catch (e0) { forever = false; }
-          if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner')) {
+          if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner') && (!window.__oroInstallDue || window.__oroInstallDue())) {
+            if (window.__oroInstallMark) window.__oroInstallMark();
             var ban = $('installBanner');
             ban.classList.remove('hidden', 'fade-out');
             setTimeout(function () {
