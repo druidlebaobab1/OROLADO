@@ -7027,10 +7027,27 @@ function orolado_flutterwave_checkout(array $req): array {
     'reference' => $ref,
     'operator' => 'flutterwave',
   ]);
+  // v2625 (propriétaire) — WAVE NE S'OUVRAIT PAS chez Flutterwave : leur fenêtre « inline » est une page intégrée,
+  // et iPhone / Android interdisent à une page intégrée d'ouvrir l'application Wave. On demande à Flutterwave un
+  // LIEN de paiement (page ouverte en plein) ; au retour, /api/flutterwave/callback vérifie, crédite et ramène le
+  // joueur sur le site. Si le lien n'est pas obtenu, l'ancienne fenêtre reste en secours.
+  $link = '';
+  $std = orolado_flw_http('POST', '/payments', [
+    'tx_ref' => $ref,
+    'amount' => $charge['amount'],
+    'currency' => $charge['currency'],
+    'redirect_url' => $origin . '/api/flutterwave/callback',
+    'customer' => $customer,
+    'customizations' => $customizations,
+    'payment_options' => orolado_flw_payment_options($cc),
+  ]);
+  $cand = is_array($std) ? (string) ($std['data']['link'] ?? '') : '';
+  if ($cand !== '' && preg_match('#^https://[a-z0-9.-]*flutterwave\.com/#i', $cand)) $link = $cand;
   return [
     'ok' => true,
     'server' => true,
     'inline' => true,
+    'link' => $link,
     'public_key' => orolado_flw_public(),
     'ref' => $ref,
     'tx_ref' => $ref,

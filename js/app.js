@@ -6001,7 +6001,13 @@
       }
       try { sessionStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e2) { /* ignore */ }
-      // v2542 : fenêtre « Wave en maintenance » retirée de ce parcours (le propriétaire préfère revenir au paiement d'avant).
+      // v2625 (propriétaire) : page Flutterwave ouverte EN PLEIN (lien du serveur) pour que l'application Wave
+      // puisse s'ouvrir ; la fenêtre intégrée (inline) bloquait Wave. Secours : l'ancienne fenêtre.
+      var flwLink = String(remote.link || '');
+      if (/^https:\/\/[a-z0-9.-]*flutterwave\.com\//i.test(flwLink)) {
+        window.location.href = flwLink;
+        return;
+      }
       openFlwInline(remote);
     } catch (err) {
       console.error('OROLADO deposit', err);
