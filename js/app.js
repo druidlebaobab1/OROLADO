@@ -5933,6 +5933,20 @@
     if (c && !depositing) { c.disabled = false; c.classList.remove('busy'); }
   }
   window.addEventListener('pageshow', resetPayButtons);
+  // v2629 — choix du pays Wave par 2 boutons-drapeaux ; l'exemple du numéro suit le pays.
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('#payMomoBox .wcc') : null;
+    if (!b) return;
+    e.preventDefault();
+    document.querySelectorAll('#payMomoBox .wcc').forEach(function (x) {
+      var on = x === b;
+      x.classList.toggle('on', on);
+      x.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    if ($('momoDial')) $('momoDial').value = b.getAttribute('data-dial') || '225';
+    var ph = $('momoPhone');
+    if (ph) { ph.placeholder = b.getAttribute('data-ph') || ''; ph.value = ''; }
+  });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(resetPayButtons, 400); });
   async function startMomoDeposit() {
     if (momoBusy || depositing) return;

@@ -9223,3 +9223,9 @@ html body #depositModal#depositModal .pay-wave .momo-phone{height:36px!important
 html body #depositModal#depositModal .pay-wave .momo-phone::before{content:"";flex:0 0 34px;height:34px;border-radius:9px;background:url("../icons/pay/wave.svg?v=2628") center/cover no-repeat;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 html body #depositModal#depositModal #momoDial,html body #depositModal#depositModal .pay-wave #momoPhone{height:36px!important;font-size:14px!important}
 html body #depositModal#depositModal .btn-wave{height:38px!important;min-height:38px!important}
+/* v2629 — boutons-drapeaux Wave (CI / SN) */
+html body #depositModal#depositModal .wave-cc{display:flex;gap:4px;flex:0 0 auto}
+html body #depositModal#depositModal .wcc{height:36px;display:flex;align-items:center;gap:4px;padding:0 7px;border-radius:9px;border:1.5px solid rgba(255,255,255,.18);background:rgba(0,0,0,.28);color:#cfe9f5;font-weight:800;font-size:12.5px;cursor:pointer;font-family:inherit}
+html body #depositModal#depositModal .wcc svg{width:18px;height:12px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+html body #depositModal#depositModal .wcc.on{border-color:#1DC8FF;background:rgba(29,200,255,.22);color:#fff}
+@media (max-width:359px){html body #depositModal#depositModal .wcc{padding:0 4px;font-size:11px}html body #depositModal#depositModal .wcc svg{width:15px}html body #depositModal#depositModal .pay-wave .momo-phone::before{flex-basis:28px;height:28px}}

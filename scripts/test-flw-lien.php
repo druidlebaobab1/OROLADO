@@ -64,6 +64,10 @@ check('demande : CI, XOF, 1 800, réseau WAVE, numéro 2250701020304, retour /ap
 check('dépôt Flutterwave en attente avec la même référence', (function () use ($r) { foreach (load_db()['deposits'] ?? [] as $d) if (($d['id'] ?? '') === $r['ref']) return $d['status'] === 'PENDING' && $d['operator'] === 'flutterwave' && (int) $d['payAmount'] === 1800; return false; })());
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'orange', 'phone' => '0701020304']);
 check('Orange (sans lien) : OK, validation sur le téléphone, numéro 10 chiffres accepté', !empty($r['ok']) && $r['redirect'] === '' && $r['mode'] === 'callback', json_encode($r));
+$calls = [];
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '221770000000']);
+$c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
+check('v2629 Sénégal (+221, 9 chiffres) : envoyé comme SN / XOF / WAVE, sans se mélanger avec la Côte d’Ivoire', !empty($r['ok']) && is_array($c) && $c['country'] === 'SN' && $c['currency'] === 'XOF' && $c['network'] === 'WAVE' && $c['phone_number'] === '221770000000', json_encode($c));
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '123']);
 check('numéro invalide : refusé avant Flutterwave', empty($r['ok']) && ($r['code'] ?? '') === 'phone', json_encode($r));
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 1, 'network' => 'wave', 'phone' => '0701020304']);
