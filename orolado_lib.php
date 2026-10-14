@@ -5010,10 +5010,12 @@ function brevo_send_wd_otp(string $email, string $code): array {
   $code = preg_replace('/\D/', '', $code);
   if (strlen($code) !== 6) return ['ok' => false, 'reason' => 'Code invalide'];
   $html = brevo_wd_otp_html($code);
-  $text = "Your Orolado withdrawal code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
-  $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
+  // v2646 : code dans le TITRE (visible dans la notification), vraie durée 15 min (OROLADO_WD_OTP_TTL).
+  $text = "Your OROLADO withdrawal code: $code\n\nValid for 15 minutes. Go back to OROLADO and enter this code.\nDo not share this code with anyone.\n";
+  $subj = 'Your OROLADO withdrawal code: ' . $code;
+  $sent = orolado_mail_send($email, '', $subj, $html, $text);
   if (empty($sent['ok'])) {
-    $sent = orolado_mail_send($email, '', 'Orolado withdrawal code — valid 1 minute', $html, $text);
+    $sent = orolado_mail_send($email, '', $subj, $html, $text);
   }
   $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
   @file_put_contents($log, json_encode([
