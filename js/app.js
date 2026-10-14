@@ -4738,11 +4738,13 @@
     // v2630 (propriétaire) : Moov retiré ; Airtel, Mobi Cash (Burkina) et 1Voucher (Afrique du Sud) ajoutés.
     '<i class="pl-logo pl-op2"><img src="icons/pay/airtel.svg?v=2628" alt="">Airtel</i>' +
     '<i class="pl-logo pl-mobicash"><b>mobi</b>cash</i>' +
-    '<i class="pl-logo pl-mpesa">M-PESA</i>' +
+    // v2632 (propriétaire) : mêmes logos qu'au Retrait (icons/pay) pour M-PESA, OPay et Banque.
+    '<i class="pl-logo pl-op2 pl-mpesa2"><img src="icons/pay/mpesa.svg?v=2632" alt="">M-PESA</i>' +
     '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
     '<i class="pl-logo pl-ussd"><b>*#</b>USSD</i>' +
-    '<i class="pl-logo pl-opay">OPay</i>' +
+    '<i class="pl-logo pl-op2 pl-opay2"><img src="icons/pay/opay.svg?v=2632" alt="">OPay</i>' +
     '<i class="pl-logo pl-telecel">telecel</i>' +
+    // 1Voucher : logo actuel (carré orange avec « 1 » blanc + « Voucher » orange).
     '<i class="pl-logo pl-1voucher"><b>1</b>Voucher</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');

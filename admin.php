@@ -441,7 +441,7 @@ function admin_badges(): array {
     if (admin_dep_bonus_paid($d)) $bonusN++;
     if (admin_dep_is_paid($d)) {
       $depositors[(string) ($d['userId'] ?? '')] = true;
-      $channels[admin_dep_channel((string) ($d['operator'] ?? ''))] = true;
+      $channels[admin_dep_channel_row($d)] = true;
     }
   }
   $healthWarn = 0;
@@ -852,7 +852,7 @@ function admin_list_payload(string $view, array $req): array {
           (string) ($d['publicId'] ?? ''),
           (string) ($d['email'] ?? ''),
           admin_money($d['amount']),
-          admin_dep_channel((string) ($d['operator'] ?? '')),
+          admin_dep_channel_row($d),
           (string) $d['status'],
           substr((string) ($d['createdAt'] ?? ''), 0, 16),
         ],
@@ -945,7 +945,7 @@ function admin_list_payload(string $view, array $req): array {
     $src = admin_apply_filters(array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d))), $req, 'createdAt');
     $g = [];
     foreach ($src as $d) {
-      $ch = admin_dep_channel((string) ($d['operator'] ?? ''));
+      $ch = admin_dep_channel_row($d);
       if (!isset($g[$ch])) $g[$ch] = ['n' => 0, 's' => 0.0];
       $g[$ch]['n']++;
       $g[$ch]['s'] += (float) $d['amount'];
@@ -1498,7 +1498,7 @@ function admin_profile_payload(string $uid): array {
       'amount' => $d['amount'],
       'status' => $d['status'],
       'paid' => admin_dep_is_paid($d),
-      'method' => admin_dep_channel((string) ($d['operator'] ?? '')),
+      'method' => admin_dep_channel_row($d),
       'at' => $d['createdAt'],
     ];
   }

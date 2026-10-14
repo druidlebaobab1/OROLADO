@@ -790,6 +790,14 @@ function admin_stat_keep_deposit_id(string $id): bool {
   return $id === 'oro_8297217e1d0843fe8898ac452c3841b2_d6c00b5fd577';
 }
 
+/** v2632 — canal d'un dépôt : un Wave / Mobile Money payé par Flutterwave en direct n'est plus classé « Carte ». */
+function admin_dep_channel_row($d): string {
+  if (!is_array($d)) return 'Autre';
+  $m = strtolower((string) ($d['method'] ?? ''));
+  if (str_starts_with($m, 'mobilemoney_')) return 'Mobile Money';
+  return admin_dep_channel((string) ($d['operator'] ?? ''));
+}
+
 function admin_dep_channel(string $op): string {
   $op = strtolower(trim($op));
   if (in_array($op, ['oxapay', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'usdc', 'ada', 'avax', 'matic', 'crypto'], true)) return 'Crypto';

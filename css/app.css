@@ -9237,3 +9237,9 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-mobicash b{col
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher{background:#fff!important;color:#1B2A6B!important;font-weight:800!important;border:0!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#E4002B;color:#fff;font-size:9px;font-weight:900;margin-right:1px}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-bank svg{display:none!important}
+/* v2632 — logos du dépôt identiques au retrait (Banque avec son icône, OPay, M-PESA) + 1Voucher actuel (orange). */
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-bank svg{display:inline-block!important;width:11px!important;height:11px!important;flex:0 0 11px!important;fill:currentColor}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-opay2{color:#0A9D74!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-mpesa2{color:#3B9C3B!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher{color:#F26522!important;font-weight:800!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{width:13px!important;height:13px!important;border-radius:3px!important;background:#F26522!important;color:#fff!important;font-size:9.5px!important;font-weight:900!important}
