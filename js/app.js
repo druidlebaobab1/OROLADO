@@ -7411,6 +7411,10 @@
   function openOtpModal(pending) {
     otpPending = pending || null;
     if (!$('otpModal') || !otpPending) return;
+    // v2644 : retenu 15 min. Le joueur part dans Gmail chercher le code ; souvent le navigateur de
+    // Facebook (ou le téléphone) recharge la page à son retour → avant, l'écran du code avait disparu
+    // et il devait tout recommencer (39 inscriptions commencées, jamais finies, le 14/10).
+    try { localStorage.setItem('oro_reg_otp', JSON.stringify({ email: otpPending.email || '', displayName: otpPending.displayName || '', at: otpPending.at || Date.now() })); } catch (eKeep) { /* ignore */ }
     if ($('otpEmailLabel')) $('otpEmailLabel').textContent = otpPending.email || '';
     if ($('otpCode')) $('otpCode').value = '';
     setOtpError('');
@@ -7422,6 +7426,7 @@
   }
 
   function closeOtpModal() {
+    try { localStorage.removeItem('oro_reg_otp'); } catch (eKeep) { /* ignore */ }
     closeModal('otpModal');
     if (otpResendTimer) {
       clearInterval(otpResendTimer);
@@ -7433,6 +7438,26 @@
 
   function bindOtpModal() {
     if (!$('otpModal')) return;
+    // v2644 : retour sur le site avec une inscription en attente du code (moins de 15 min) → la fenêtre
+    // du code se rouvre toute seule, une fois l'écran de chargement parti. Jamais si déjà connecté.
+    (function reopenPendingOtp(tries) {
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem('oro_reg_otp') || 'null'); } catch (eR) { saved = null; }
+      if (!saved || !saved.email || !(Date.now() - Number(saved.at || 0) < 15 * 60 * 1000)) {
+        try { localStorage.removeItem('oro_reg_otp'); } catch (eR2) { /* ignore */ }
+        return;
+      }
+      var ld = document.getElementById('oroLoader');
+      var booted = document.documentElement.classList.contains('oro-booted');
+      if ((!booted || (ld && !ld.classList.contains('off'))) && tries < 40) {
+        setTimeout(function () { reopenPendingOtp(tries + 1); }, 300);
+        return;
+      }
+      var u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null;
+      if (u && !isGuest(u)) { try { localStorage.removeItem('oro_reg_otp'); } catch (eR3) { /* ignore */ } return; }
+      if (otpPending) return;
+      openOtpModal({ email: saved.email, displayName: saved.displayName || '', resendIn: 0, at: Number(saved.at) });
+    })(0);
     if ($('closeOtp')) {
       $('closeOtp').addEventListener('click', function () { closeOtpModal(); });
     }

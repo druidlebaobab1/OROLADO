@@ -4920,10 +4920,10 @@ function brevo_otp_html(string $code): string {
     . '<tr><td align="center" style="padding:24px 12px;">'
     . '<table role="presentation" width="460" cellspacing="0" cellpadding="0" border="0" style="max-width:460px;width:100%;background-color:#121A2B;border:1px solid #334155;">'
     . '<tr><td align="center" style="padding:22px 20px 12px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:800;color:#F5C518;letter-spacing:1px;">SÉCURITÉ OROLADO</td></tr>'
-    . '<tr><td align="center" style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#E8EEF9;">Use this 6-digit code to confirm your request:</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#E8EEF9;">Voici votre code OROLADO à 6 chiffres :<br /><span style="color:#94A3B8;font-size:12px;">Your OROLADO 6-digit code:</span></td></tr>'
     . '<tr><td align="center" style="padding:0 20px 16px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>' . brevo_otp_code_cells($safe) . '</tr></table></td></tr>'
-    . '<tr><td align="center" style="padding:0 20px 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#FDE68A;">This code is valid for 1 minute.</td></tr>'
-    . '<tr><td align="center" style="padding:0 20px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#C9D2E5;">Do not share this 6-digit code with anyone.</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#FDE68A;">Valable 15 minutes. Retournez sur OROLADO et tapez ce code.</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#C9D2E5;">Ne donnez ce code à personne. · Never share this code.</td></tr>'
     . '</table></td></tr></table></body></html>';
 }
 
@@ -4942,10 +4942,13 @@ function brevo_send_otp(string $email, string $code): array {
     return ($GLOBALS['OROLADO_FAKE_MAIL'])($email, $code);
   }
   $html = brevo_otp_html($code);
-  $text = "Your Orolado security code: $code\n\nThis code is valid for 1 minute.\nDo not share this 6-digit code with anyone.\n";
-  $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
+  // v2644 : e-mail en FRANÇAIS, code dans le TITRE (visible dans la notification du téléphone sans ouvrir
+  // l'e-mail), « valable 15 minutes » (vraie durée ; avant : « valid for 1 minute » en anglais → abandons).
+  $text = "Votre code OROLADO : $code\n\nValable 15 minutes. Retournez sur OROLADO et tapez ce code.\nNe donnez ce code à personne.\n\nYour OROLADO code: $code (valid 15 minutes).\n";
+  $subj = 'Votre code OROLADO : ' . $code;
+  $sent = orolado_mail_send($email, '', $subj, $html, $text);
   if (empty($sent['ok'])) {
-    $sent = orolado_mail_send($email, '', 'Orolado security code — valid 1 minute', $html, $text);
+    $sent = orolado_mail_send($email, '', $subj, $html, $text);
   }
   $log = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'otp_mail.log';
   @file_put_contents($log, json_encode([
@@ -4991,8 +4994,8 @@ function brevo_wd_otp_html(string $code): string {
     . '<tr><td align="center" style="padding:22px 20px 12px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:800;color:#F5C518;letter-spacing:1px;">SÉCURITÉ OROLADO</td></tr>'
     . '<tr><td align="center" style="padding:0 20px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;color:#E8EEF9;">Use this 6-digit code to confirm your withdrawal:</td></tr>'
     . '<tr><td align="center" style="padding:0 20px 16px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>' . brevo_otp_code_cells($safe) . '</tr></table></td></tr>'
-    . '<tr><td align="center" style="padding:0 20px 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#FDE68A;">This code is valid for 1 minute.</td></tr>'
-    . '<tr><td align="center" style="padding:0 20px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#C9D2E5;">Do not share this 6-digit code with anyone.</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 8px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#FDE68A;">Valable 15 minutes. Retournez sur OROLADO et tapez ce code.</td></tr>'
+    . '<tr><td align="center" style="padding:0 20px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#C9D2E5;">Ne donnez ce code à personne. · Never share this code.</td></tr>'
     . '</table></td></tr></table></body></html>';
 }
 
