@@ -9254,3 +9254,11 @@ html body #depositModal#depositModal .btn-wave.ready span::before{content:"";dis
 html.g-on.g-inapp body #screenAuth .btn-google,
 html.g-on.g-inapp body #screenAuth .g-official,
 html.g-on.g-inapp body #screenAuth .auth-or{display:none!important}
+
+/* v2650 (propriétaire : le logo fait peur) — Connexion / Inscription : le logo (pièce) en haut est retiré ;
+   « OROLADO.COM » prend sa place, un peu plus grand et un peu plus haut ; « TRADING » remonte légèrement.
+   Le formulaire reste presque au même endroit. */
+html body #screenAuth .brand-lockup .logo-mark{display:none!important}
+html body #screenAuth .brand-lockup{min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:2px}
+html body #screenAuth .brand-lockup .brand-xl{font-size:clamp(27px,7.6vw,34px)!important;line-height:1.05}
+html body #screenAuth .brand-sub{margin-top:2px}
