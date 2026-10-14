@@ -226,6 +226,11 @@ function orolado_trade_place(array $me, array $req): array {
   $arrivalCents = $entryCents;
   $clickLag = 0;
   $seenTick = (isset($req['seenTick']) && is_numeric($req['seenTick'])) ? (int) $req['seenTick'] : 0;
+  // v2649 (propriétaire, 15/10 : 10 gains d'affilée, retraits « Suspect ») : un joueur marqué robot probable
+  // n'a PLUS droit au prix du clic → ses ordres prennent le prix à l'ARRIVÉE (sa triche ne marche plus).
+  // Les joueurs honnêtes (jamais marqués) ne voient aucune différence.
+  $meRow = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : $me;
+  if (orolado_click_edge_reason($meRow) !== '' || orolado_click_edge_reason($me) !== '') $seenTick = 0;
   if ($seenTick > 0 && $seenTick < $entryTick && $seenTick >= $entryTick - OROLADO_CLICK_MAX_TICKS) {
     $atSeen = orolado_feed_price_at($assetId, $seenTick);
     if ($atSeen !== null && $atSeen > 0) {

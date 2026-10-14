@@ -141,5 +141,14 @@ check('admin : joueur honnête absent', $adminH === '');
 $wdR = admin_suspect_reason($uR, [], ['amount' => 50, 'status' => 'pending'], []);
 check('retrait du robot : signalé', $wdR !== '', $wdR);
 
+echo "4) v2649 — robot repéré : il n'a PLUS droit au prix du clic ; le joueur honnête oui\n";
+$db = load_db();
+$st = orolado_feed_advance($asset);
+$r = place($db['users'][$robot], ['id' => 'after1', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 4]);
+check('robot : prix du clic REFUSÉ (prix d’arrivée)', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n'], 'entrée ' . ($r['order']['entryTick'] ?? '?') . ' / clic ' . ($st['n'] - 4));
+$st = orolado_feed_advance($asset);
+$r = place($db['users'][$honest], ['id' => 'after2', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 2]);
+check('joueur honnête : prix du clic toujours pris', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 2);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
