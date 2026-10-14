@@ -9254,8 +9254,3 @@ html body #depositModal#depositModal .btn-wave.ready span::before{content:"";dis
 html.g-on.g-inapp body #screenAuth .btn-google,
 html.g-on.g-inapp body #screenAuth .g-official,
 html.g-on.g-inapp body #screenAuth .auth-or{display:none!important}
-/* v2643 (propriétaire) — bouton Google MIS DE CÔTÉ : Connexion et Inscription par e-mail seulement.
-   (Reste visible uniquement pour l'essai du propriétaire : orolado.com/?gtest=1.) */
-html:not(.g-on) body #screenAuth .btn-google,
-html:not(.g-on) body #screenAuth .g-official,
-html:not(.g-on) body #screenAuth .auth-or{display:none!important}
