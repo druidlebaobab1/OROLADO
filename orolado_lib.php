@@ -7092,6 +7092,11 @@ function orolado_flutterwave_momo_charge(array $req): array {
   // Pays d'après l'indicatif (Côte d'Ivoire par défaut : 10 chiffres sans indicatif).
   if (strlen($digits) === 10 && $digits[0] === '0') $digits = '225' . $digits;
   $cc = orolado_flw_dial_country('', $digits);
+  // v2631 : longueur exacte par pays (CI = 225 + 10 chiffres, SN = 221 + 9) : un numéro d'un pays ne part jamais
+  // vers l'autre. Wave : seulement Côte d'Ivoire et Sénégal.
+  $lenOk = ['CI' => 13, 'SN' => 12, 'BF' => 11, 'CM' => 12];
+  if ($netKey === 'wave' && !in_array($cc, ['CI', 'SN'], true)) $cc = '';
+  if ($cc !== '' && isset($lenOk[$cc]) && strlen($digits) !== $lenOk[$cc]) $cc = '';
   if ($cc === '' || strlen($digits) < 11 || strlen($digits) > 15) {
     return ['ok' => false, 'server' => true, 'reason' => 'Numéro Mobile Money invalide.', 'code' => 'phone'];
   }

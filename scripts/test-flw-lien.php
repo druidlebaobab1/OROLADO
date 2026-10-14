@@ -68,6 +68,24 @@ $calls = [];
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '221770000000']);
 $c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
 check('v2629 Sénégal (+221, 9 chiffres) : envoyé comme SN / XOF / WAVE, sans se mélanger avec la Côte d’Ivoire', !empty($r['ok']) && is_array($c) && $c['country'] === 'SN' && $c['currency'] === 'XOF' && $c['network'] === 'WAVE' && $c['phone_number'] === '221770000000', json_encode($c));
+echo "4) v2631 — Côte d'Ivoire et Sénégal ne se mélangent jamais\n";
+$cas = [
+  ['2250701020304', true, 'CI', 'CI : 225 + 10 chiffres'],
+  ['0701020304', true, 'CI', 'CI : 10 chiffres sans indicatif'],
+  ['221770000000', true, 'SN', 'SN : 221 + 9 chiffres'],
+  ['2210701020304', false, '', 'SN choisi + numéro ivoirien (10 chiffres) : refusé'],
+  ['22577000000', false, '', 'CI choisi + numéro sénégalais (9 chiffres) : refusé'],
+  ['22670000000', false, '', 'Burkina avec Wave : refusé'],
+  ['22507010203041', false, '', 'CI avec un chiffre de trop (11) : refusé'],
+  ['2210770000000', false, '', 'SN avec un chiffre de trop (10) : refusé'],
+];
+foreach ($cas as [$ph, $ok, $want, $label]) {
+  $calls = [];
+  $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => $ph]);
+  $c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
+  $good = $ok ? (!empty($r['ok']) && is_array($c) && $c['country'] === $want) : (empty($r['ok']) && $c === null);
+  check($label, $good, $ok ? (string) ($c['country'] ?? json_encode($r)) : (string) ($r['code'] ?? ''));
+}
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '123']);
 check('numéro invalide : refusé avant Flutterwave', empty($r['ok']) && ($r['code'] ?? '') === 'phone', json_encode($r));
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 1, 'network' => 'wave', 'phone' => '0701020304']);

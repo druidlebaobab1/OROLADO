@@ -5885,7 +5885,9 @@
     var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
     if (digits.indexOf(dialSel) === 0 && digits.length > 10) digits = digits.slice(dialSel.length);
-    if (digits.length < 8 || digits.length > 10) { showFieldError('momoPhone', t('wdDestErr')); if ($('momoPhone')) $('momoPhone').focus(); return; }
+    // v2631 : longueur EXACTE selon le pays choisi (Côte d'Ivoire 10 chiffres, Sénégal 9) → jamais de mélange.
+    var wantLen = dialSel === '221' ? 9 : 10;
+    if (digits.length !== wantLen) { showFieldError('momoPhone', t('wdDestErr')); if ($('momoPhone')) $('momoPhone').focus(); return; }
     momoNet = 'wave';
     var btn = $('btnMomoDeposit');
     var lab = btn && btn.querySelector('span');
