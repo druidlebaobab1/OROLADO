@@ -9246,3 +9246,11 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{wid
 /* v2633 — bouton « OUVRIR WAVE » prêt (le joueur reste sur OROLADO). */
 html body #depositModal#depositModal .btn-wave.ready{background:linear-gradient(135deg,#1DC8FF,#0077C8)!important;box-shadow:0 0 0 2px #fff inset,0 0 14px rgba(29,200,255,.55)!important}
 html body #depositModal#depositModal .btn-wave.ready span::before{content:"";display:inline-block;width:18px;height:18px;margin-right:8px;vertical-align:-4px;border-radius:5px;background:url("../icons/pay/wave.svg?v=2628") center/cover no-repeat}
+
+/* v2642 — Pub Facebook / Instagram / TikTok (navigateur intégré) : Google y refuse sa connexion
+   (iPhone : message d'erreur ; Android : saut vers Chrome qui perd la trace de la pub).
+   Dans ces navigateurs, le bouton Google et le « ou » sont cachés : inscription par e-mail directe.
+   Dans Chrome / Safari / l'application, Google reste comme avant. */
+html.g-on.g-inapp body #screenAuth .btn-google,
+html.g-on.g-inapp body #screenAuth .g-official,
+html.g-on.g-inapp body #screenAuth .auth-or{display:none!important}
