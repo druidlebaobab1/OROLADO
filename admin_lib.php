@@ -905,6 +905,7 @@ function admin_profiles(): array {
       'traffic' => (string) ($p['traffic_source'] ?? ''),
       'ip' => '',
       'publicId' => '',
+      'via' => '',
     ];
   }
   foreach ($auth as $u) {
@@ -915,6 +916,9 @@ function admin_profiles(): array {
     $ip = (string) ($u['last_sign_in_ip'] ?? $u['ip'] ?? ($meta['ip'] ?? ''));
     $created = (string) ($u['created_at'] ?? '');
     $src = (string) ($meta['trafficSource'] ?? $meta['traffic_source'] ?? $meta['utm_source'] ?? '');
+    // v2641 : moyen d'inscription (Google / e-mail) pour le tableau.
+    $prov = strtolower((string) ((is_array($u['app_metadata'] ?? null) ? ($u['app_metadata']['provider'] ?? '') : '')));
+    $provVia = $prov === 'google' ? 'google' : ($prov !== '' ? 'email' : '');
     if (!isset($byId[$id])) {
       $byId[$id] = [
         'id' => $id,
@@ -930,8 +934,10 @@ function admin_profiles(): array {
         'traffic' => $src,
         'ip' => $ip,
         'publicId' => '',
+        'via' => $provVia,
       ];
     } else {
+      if ($provVia === 'google' || (($byId[$id]['via'] ?? '') === '' && $provVia !== '')) $byId[$id]['via'] = $provVia;
       $aphone = trim((string) ($u['phone'] ?? ($meta['phone'] ?? ($meta['destination'] ?? ''))));
       // L'adresse de CONNEXION fait foi (après un changement d'e-mail, le profil peut être en retard).
       if ($email !== '') $byId[$id]['email'] = strtolower($email);
@@ -964,7 +970,9 @@ function admin_profiles(): array {
     $sbLink = (string) ($u['sbId'] ?? '');
     if (!isset($byId[$id]) && $sbLink !== '' && isset($byId[$sbLink])) $id = $sbLink;
     $pid = (string) ($u['publicId'] ?? '');
+    $locVia = strtolower((string) ($u['authProvider'] ?? '')) === 'google' ? 'google' : ((string) ($u['passwordHash'] ?? '') !== '' ? 'email' : '');
     if (isset($byId[$id])) {
+      if ($locVia === 'google' || (($byId[$id]['via'] ?? '') === '' && $locVia !== '')) $byId[$id]['via'] = $locVia;
       if (!empty($u['emailHistory']) && (string) ($u['email'] ?? '') !== '') $byId[$id]['email'] = strtolower((string) $u['email']);
       if ($pid !== '') $byId[$id]['publicId'] = $pid;
       if ($byId[$id]['traffic'] === '') $byId[$id]['traffic'] = (string) ($u['trafficSource'] ?? '');
@@ -1010,6 +1018,7 @@ function admin_profiles(): array {
       'trafficReferrer' => (string) ($u['trafficReferrer'] ?? ''),
       'ip' => '',
       'publicId' => $pid,
+      'via' => $locVia,
     ];
   }
 
@@ -1034,6 +1043,7 @@ function admin_profiles(): array {
     foreach (['email', 'name', 'phone', 'country', 'createdAt', 'lastSeen', 'publicId', 'ip', 'traffic', 'lang'] as $f) {
       if (($keep[$f] ?? '') === '' && ($src[$f] ?? '') !== '') $keep[$f] = $src[$f];
     }
+    if (($src['via'] ?? '') === 'google' || (($keep['via'] ?? '') === '' && ($src['via'] ?? '') !== '')) $keep['via'] = $src['via'];
     if ((float) ($src['depositTotal'] ?? 0) > (float) ($keep['depositTotal'] ?? 0)) {
       $keep['depositTotal'] = (float) $src['depositTotal'];
     }

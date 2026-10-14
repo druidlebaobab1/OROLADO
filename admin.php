@@ -167,6 +167,13 @@ function admin_apply_filters(array $rows, array $req, string $dateField = 'creat
   return $out;
 }
 
+/** v2641 — date d'inscription lisible, à l'heure du tableau (avant : texte brut, fuseaux mélangés). */
+function admin_when_cell(string $iso): string {
+  $ts = $iso !== '' ? strtotime($iso) : false;
+  if (!$ts) return '—';
+  try { return (new DateTimeImmutable('@' . $ts))->setTimezone(admin_tz())->format('d/m/Y H:i'); } catch (Throwable $e) { return date('d/m/Y H:i', $ts); }
+}
+
 function admin_page(array $rows, array $req): array {
   $page = max(1, (int) ($req['page'] ?? 1));
   $per = 80;
@@ -469,6 +476,8 @@ function admin_badges(): array {
   $out = [
     'signup_today' => $signupToday,
     'signup_yesterday' => $signupYest,
+    'signup_google' => count(array_filter($people, static fn($p) => ($p['via'] ?? '') === 'google')),
+    'signup_email' => count(array_filter($people, static fn($p) => ($p['via'] ?? '') === 'email')),
     'signup_date' => $nInscrits,
     'signup_hour' => $signupToday,
     'signup_geo' => $nInscrits,
@@ -618,7 +627,7 @@ function admin_list_payload(string $view, array $req): array {
   $summary = '';
   $actions = false;
 
-  $userCols = ['ID', 'Nom', 'E-mail', 'Téléphone', 'Pays', 'Inscrit', 'Solde réel'];
+  $userCols = ['ID', 'Nom', 'E-mail', 'Téléphone', 'Pays', 'Inscrit', 'Via', 'Solde réel'];
   $asUser = static function (array $p) use ($userCols): array {
     return [
       'cells' => [
@@ -627,7 +636,8 @@ function admin_list_payload(string $view, array $req): array {
         (string) ($p['email'] ?? ''),
         admin_phone_cell($p),
         admin_country_cell($p),
-        substr((string) ($p['createdAt'] ?? ''), 0, 16),
+        admin_when_cell((string) ($p['createdAt'] ?? '')),
+        ($p['via'] ?? '') === 'google' ? 'Google' : (($p['via'] ?? '') === 'email' ? 'E-mail' : '—'),
         admin_money($p['real'] ?? 0),
       ],
       'userId' => (string) ($p['id'] ?? ''),
@@ -646,11 +656,14 @@ function admin_list_payload(string $view, array $req): array {
       'summary' => count($sus) . ' suspendu(s) · ' . count($del) . ' supprimé(s) — e-mails bloqués pour toujours', 'actions' => false];
   }
 
-  if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'no_deposit', 'online', 'inactive', 'top_balances'], true)) {
+  if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'signup_google', 'signup_email', 'no_deposit', 'online', 'inactive', 'top_balances'], true)) {
     $cols = $userCols;
     $list = $people;
     if ($view === 'signup_today') {
       $list = array_values(array_filter($people, static fn($p) => admin_in_range($p['createdAt'] ?? null, $t0, $t1)));
+    } else if ($view === 'signup_google' || $view === 'signup_email') {
+      $want = $view === 'signup_google' ? 'google' : 'email';
+      $list = array_values(array_filter($people, static fn($p) => ($p['via'] ?? '') === $want));
     } else if ($view === 'signup_yesterday') {
       $list = array_values(array_filter($people, static fn($p) => admin_in_range($p['createdAt'] ?? null, $y0, $y1)));
     } else if ($view === 'no_deposit') {
@@ -681,7 +694,8 @@ function admin_list_payload(string $view, array $req): array {
     }
     $list = admin_apply_filters($list, $req, 'createdAt');
     if ($view !== 'top_balances') {
-      usort($list, static fn($a, $b) => strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? '')));
+      // v2641 : rangé par VRAIE heure (les fiches n'écrivent pas l'heure au même format) : le plus récent en haut.
+      usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
     }
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     foreach ($slice as $p) {
@@ -2054,6 +2068,8 @@ $ADMIN_TABS = [
   'gA' => [
     ['signup_today', 'Inscriptions du Jour'],
     ['signup_yesterday', 'Inscriptions d’Hier'],
+    ['signup_google', 'Inscrits par Google'],
+    ['signup_email', 'Inscrits par E-mail'],
     ['signup_date', 'Inscriptions par Date'],
     ['signup_hour', 'Inscriptions par Heure'],
     ['signup_geo', 'Inscriptions par Pays / IP'],
