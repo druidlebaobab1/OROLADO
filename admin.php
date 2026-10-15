@@ -2029,7 +2029,9 @@ if ($isAjax) {
     $btn = trim((string) ($req['button'] ?? ''));
     $target = (string) ($req['target'] ?? 'test') === 'all' ? 'all' : 'test';
     $group = in_array((string) ($req['group'] ?? ''), ['fr', 'en'], true) ? (string) $req['group'] : 'fr';
-    $id = preg_match('/^[a-z0-9]{6,24}$/', (string) ($req['id'] ?? '')) ? (string) $req['id'] : 'm' . date('ymdHis') . bin2hex(random_bytes(2));
+    // v2667 — même message (groupe + objet + texte + bouton) = même journal : si l'admin quitte la page
+    // ou retouche « Envoyer à tous », l'envoi REPREND là où il s'était arrêté, jamais de doublon.
+    $id = preg_match('/^[a-z0-9]{6,24}$/', (string) ($req['id'] ?? '')) ? (string) $req['id'] : 'm' . substr(sha1($group . "\n" . $subject . "\n" . $msg . "\n" . $btn), 0, 16);
     if ($subject === '' || $msg === '' || mb_strlen($subject) > 120 || mb_strlen($msg) > 2000) {
       admin_json(['ok' => false, 'reason' => 'Objet (120 lettres max) et message (2000 max) obligatoires.']);
     }
@@ -2047,18 +2049,24 @@ if ($isAjax) {
     $list = admin_mail_groups()[$group];
     $logF = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'mail_' . $id . '.json';
     $done = is_file($logF) ? (json_decode((string) @file_get_contents($logF), true) ?: []) : [];
+    // 1 = reçu ; sinon heure de l'échec (réessayé au prochain « Envoyer à tous », pas dans la même minute).
+    $skip = static fn($v): bool => $v === 1 || (is_int($v) && $v > time() - 120);
+    $already = count(array_filter($done, static fn($v): bool => $v === 1));
+    // Le paquet en cours se termine même si l'admin quitte la page, et chaque e-mail est noté aussitôt.
+    @ignore_user_abort(true);
     $sent = 0; $fail = 0; $n = 0; $err = '';
     foreach ($list as $em) {
-      if (isset($done[$em])) continue;
+      if (isset($done[$em]) && $skip($done[$em])) continue;
       if ($n >= 40) break;
       $n++;
       $r = admin_mail_one($em, $subject, $msg, $btn, $id, $group);
-      $done[$em] = !empty($r['ok']) ? 1 : 0;
+      $done[$em] = !empty($r['ok']) ? 1 : time();
       if (!empty($r['ok'])) $sent++; else { $fail++; $err = (string) ($r['reason'] ?? ''); }
+      @file_put_contents($logF, json_encode($done), LOCK_EX);
     }
     @file_put_contents($logF, json_encode($done), LOCK_EX);
-    $left = count(array_diff($list, array_keys($done)));
-    admin_json(['ok' => true, 'id' => $id, 'sent' => $sent, 'fail' => $fail, 'err' => $err, 'more' => $left > 0 && $n > 0, 'left' => $left, 'total' => count($list)]);
+    $left = count(array_filter($list, static fn($em): bool => !isset($done[$em]) || !$skip($done[$em])));
+    admin_json(['ok' => true, 'id' => $id, 'sent' => $sent, 'fail' => $fail, 'err' => $err, 'already' => $already, 'more' => $left > 0 && $n > 0, 'left' => $left, 'total' => count($list)]);
   }
   // v2607 — Notifications : chiffres, abonnement test de l'appareil admin, envoi par paquets.
   if ($action === 'push_stats') {
@@ -2895,15 +2903,20 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       confirmTxt = 'ENVOYER';
     }
     $m('btnMlTest').disabled = $m('btnMlAll').disabled = true;
-    let id = '', sent = 0, fail = 0, err = '', j;
+    let id = '', sent = 0, fail = 0, err = '', already = -1, j;
     try {
       do {
-        $m('mlSt').textContent = 'Envoi en cours… ' + sent + ' e-mail(s) parti(s)';
+        $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + '. Gardez la page ouverte.';
         j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt, testTo});
         if (!j.ok) { $m('mlSt').textContent = j.reason || 'Échec'; break; }
+        if (already < 0) already = j.already || 0;
         id = j.id; sent += j.sent || 0; fail += j.fail || 0; if (j.err) err = j.err;
       } while (j.more);
-      if (j && j.ok) $m('mlSt').textContent = 'Terminé : ' + sent + ' e-mail(s) envoyé(s)' + (fail ? ', ' + fail + ' échec(s)' + (err ? ' (' + err + ')' : '') : '') + '.' + (target === 'test' ? ' Regardez la boîte ' + testTo + ' (et le dossier Spam / Promotions).' : '');
+      if (j && j.ok) $m('mlSt').textContent = target === 'test'
+        ? 'Test envoyé. Regardez la boîte ' + testTo + ' (et le dossier Spam / Promotions).'
+        : 'Terminé : ' + (already + sent) + ' joueur(s) sur ' + (j.total || 0) + ' ont reçu cet e-mail'
+          + (already > 0 ? ' (dont ' + already + ' déjà avant : pas renvoyé)' : '')
+          + (fail ? '. ' + fail + ' échec(s)' + (err ? ' (' + err + ')' : '') + ' : retouchez « Envoyer à tous » pour réessayer seulement ceux-là' : '') + '.';
     } catch (e) { $m('mlSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
     $m('btnMlTest').disabled = $m('btnMlAll').disabled = false;
   }
