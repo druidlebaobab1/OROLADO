@@ -726,6 +726,54 @@ function admin_wd_paid_at(array $w): string {
   return '';
 }
 
+/**
+ * v2664 — destinataires de « E-mail à tous » : vrais joueurs (pas admin, pas suspendus / supprimés, e-mail valide),
+ * séparés en « fr » (pays francophones ou site en français) et « en » (tous les autres).
+ */
+function admin_mail_groups(): array {
+  $frIso = array_flip(['CI', 'SN', 'CM', 'ML', 'BF', 'NE', 'TG', 'BJ', 'GA', 'CG', 'CD', 'GN', 'TD', 'MG', 'CF', 'DJ', 'KM', 'RW', 'BI', 'HT', 'FR', 'BE', 'LU', 'MC', 'CH', 'MA', 'DZ', 'TN', 'MR', 'RE', 'GP', 'MQ', 'GF', 'YT', 'NC', 'PF']);
+  $frDial = array_flip(['225', '221', '237', '223', '226', '227', '228', '229', '241', '242', '243', '224', '235', '261', '236', '253', '269', '250', '257', '509', '33', '32', '352', '377', '212', '213', '216', '222']);
+  $out = ['fr' => [], 'en' => []];
+  $seen = [];
+  foreach (admin_profiles() as $p) {
+    $em = strtolower(trim((string) ($p['email'] ?? '')));
+    if ($em === '' || isset($seen[$em]) || !filter_var($em, FILTER_VALIDATE_EMAIL)) continue;
+    if (str_ends_with($em, '.local') || str_ends_with($em, '.invalid') || str_ends_with($em, '@example.com')) continue;
+    if (function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em)) continue;
+    if (in_array(strtolower((string) ($p['role'] ?? '')), ['suspended', 'banned', 'deleted', 'admin'], true)) continue;
+    $seen[$em] = 1;
+    $cc = strtoupper(trim((string) ($p['country'] ?? '')));
+    $dial = preg_replace('/\D/', '', $cc) ?? '';
+    $lang = strtolower(substr((string) ($p['lang'] ?? ''), 0, 2));
+    $fr = $lang === 'fr' || (preg_match('/^[A-Z]{2}$/', $cc) && isset($frIso[$cc])) || ($dial !== '' && isset($frDial[$dial]));
+    $out[$fr ? 'fr' : 'en'][] = $em;
+  }
+  return $out;
+}
+
+/** v2664 — un e-mail de la campagne : sobre (peu de mots « publicitaires »), gros bouton vers le site. */
+function admin_mail_one(string $to, string $subject, string $msg, string $btn, string $id, string $group): array {
+  $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+  $url = 'https://orolado.com/?utm_source=email&utm_medium=email&utm_campaign=' . rawurlencode($id);
+  $paras = '';
+  foreach (preg_split('/\R/', $msg) as $line) {
+    $line = trim($line);
+    $paras .= $line === '' ? '<tr><td style="height:8px"></td></tr>' : '<tr><td style="padding:0 24px 6px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;color:#E8EEF9;">' . $e($line) . '</td></tr>';
+  }
+  $foot = $group === 'fr' ? 'Tu reçois cet e-mail car tu as un compte OROLADO.' : 'You receive this e-mail because you have an OROLADO account.';
+  $html = '<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>'
+    . '<body style="margin:0;padding:0;background:#0B1220;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0B1220;"><tr><td align="center" style="padding:24px 12px;">'
+    . '<table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;width:100%;background:#121A2B;border:1px solid #3B3416;border-radius:14px;">'
+    . '<tr><td align="center" style="padding:22px 24px 14px;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:800;letter-spacing:3px;color:#F5C518;">OROLADO</td></tr>'
+    . $paras
+    . '<tr><td align="center" style="padding:18px 24px 22px;"><a href="' . $e($url) . '" style="display:inline-block;background:#F5B524;color:#1F1306;font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:800;text-decoration:none;padding:14px 34px;border-radius:12px;">' . $e($btn) . '</a></td></tr>'
+    . '<tr><td align="center" style="padding:0 24px 18px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#7C86A2;">' . $e($foot) . '</td></tr>'
+    . '</table></td></tr></table></body></html>';
+  $text = $msg . "\n\n" . $btn . ' : ' . $url . "\n\n" . $foot . "\n";
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject);
+  return orolado_mail_send($to, '', $subject, $html, $text);
+}
+
 function admin_wd_is_rejected(array $w): bool {
   $st = strtolower(trim((string) ($w['status'] ?? '')));
   return in_array($st, ['rejected', 'refused', 'canceled', 'cancelled', 'failed', 'denied'], true);

@@ -2017,6 +2017,47 @@ if ($isAjax) {
     if (!empty($res['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'nettoyage', 0, 'Nettoyage : ' . (int) ($res['deletedAccounts'] ?? 0) . ' compte(s) supprimé(s)');
     admin_json($res);
   }
+  // v2664 (propriétaire) — E-mail à tous : français pour les pays francophones, anglais pour les autres.
+  // Envoi par paquets de 40 (Brevo), sans doublon (journal par envoi), test sur l'e-mail de l'admin d'abord.
+  if ($action === 'mail_stats') {
+    $g = admin_mail_groups();
+    admin_json(['ok' => true, 'fr' => count($g['fr']), 'en' => count($g['en'])]);
+  }
+  if ($action === 'mail_send') {
+    $subject = trim((string) ($req['subject'] ?? ''));
+    $msg = trim((string) ($req['message'] ?? ''));
+    $btn = trim((string) ($req['button'] ?? ''));
+    $target = (string) ($req['target'] ?? 'test') === 'all' ? 'all' : 'test';
+    $group = in_array((string) ($req['group'] ?? ''), ['fr', 'en'], true) ? (string) $req['group'] : 'fr';
+    $id = preg_match('/^[a-z0-9]{6,24}$/', (string) ($req['id'] ?? '')) ? (string) $req['id'] : 'm' . date('ymdHis') . bin2hex(random_bytes(2));
+    if ($subject === '' || $msg === '' || mb_strlen($subject) > 120 || mb_strlen($msg) > 2000) {
+      admin_json(['ok' => false, 'reason' => 'Objet (120 lettres max) et message (2000 max) obligatoires.']);
+    }
+    if ($btn === '') $btn = $group === 'fr' ? 'Ouvrir OROLADO' : 'Open OROLADO';
+    if ($target === 'all' && (string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
+    @set_time_limit(55);
+    if ($target === 'test') {
+      $to = strtolower(trim((string) ($me['email'] ?? '')));
+      if (!filter_var($to, FILTER_VALIDATE_EMAIL)) admin_json(['ok' => false, 'reason' => 'E-mail de l’admin introuvable.']);
+      $r = admin_mail_one($to, $subject, $msg, $btn, $id, $group);
+      admin_json(['ok' => !empty($r['ok']), 'id' => $id, 'sent' => !empty($r['ok']) ? 1 : 0, 'fail' => empty($r['ok']) ? 1 : 0, 'more' => false, 'reason' => (string) ($r['reason'] ?? '')]);
+    }
+    $list = admin_mail_groups()[$group];
+    $logF = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'mail_' . $id . '.json';
+    $done = is_file($logF) ? (json_decode((string) @file_get_contents($logF), true) ?: []) : [];
+    $sent = 0; $fail = 0; $n = 0; $err = '';
+    foreach ($list as $em) {
+      if (isset($done[$em])) continue;
+      if ($n >= 40) break;
+      $n++;
+      $r = admin_mail_one($em, $subject, $msg, $btn, $id, $group);
+      $done[$em] = !empty($r['ok']) ? 1 : 0;
+      if (!empty($r['ok'])) $sent++; else { $fail++; $err = (string) ($r['reason'] ?? ''); }
+    }
+    @file_put_contents($logF, json_encode($done), LOCK_EX);
+    $left = count(array_diff($list, array_keys($done)));
+    admin_json(['ok' => true, 'id' => $id, 'sent' => $sent, 'fail' => $fail, 'err' => $err, 'more' => $left > 0 && $n > 0, 'left' => $left, 'total' => count($list)]);
+  }
   // v2607 — Notifications : chiffres, abonnement test de l'appareil admin, envoi par paquets.
   if ($action === 'push_stats') {
     $v = push_vapid();
@@ -2251,6 +2292,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
+      <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
@@ -2319,6 +2361,28 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     </div>
   </div>
 
+  <div class="modal" id="mailModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeMail">Fermer</button>
+      <h2 style="color:#93C5FD;margin:10px 0 4px">✉️ E-mail à tous les joueurs</h2>
+      <p class="muted" id="mlWho" style="margin:6px 0">Chargement…</p>
+      <div class="nt-card">
+        <label class="nt-lab">Envoyer à</label>
+        <select id="mlGroup" class="nt-in"><option value="fr">Pays francophones (message en français)</option><option value="en">Autres pays (message en anglais)</option></select>
+        <label class="nt-lab">Objet</label>
+        <input id="mlSubject" maxlength="120" class="nt-in" placeholder="Ex. : Volatility est en mouvement sur OROLADO">
+        <label class="nt-lab">Message</label>
+        <textarea id="mlBody" maxlength="2000" rows="7" class="nt-in" placeholder="Bonjour,&#10;Les marchés bougent en ce moment sur OROLADO…"></textarea>
+        <label class="nt-lab">Texte du bouton (vide = « Ouvrir OROLADO »)</label>
+        <input id="mlBtn" maxlength="40" class="nt-in" placeholder="Ouvrir OROLADO">
+        <p style="margin-top:12px">
+          <button class="mini ok" type="button" id="btnMlTest">1. M’envoyer un test</button>
+          <button class="mini bad" type="button" id="btnMlAll">2. Envoyer à tous</button>
+        </p>
+        <p class="muted" id="mlSt"></p>
+      </div>
+    </div>
+  </div>
   <div class="modal" id="notifModal">
     <div class="modal-box">
       <button class="mini" type="button" id="closeNotif">Fermer</button>
@@ -2800,6 +2864,40 @@ document.getElementById('btnBack').onclick = () => {
   window.location.href = '/';
 };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
+// v2664 — E-mail à tous (français pour les pays francophones, anglais pour les autres), par paquets de 40.
+(function () {
+  const $m = id => document.getElementById(id);
+  if (!$m('btnMail')) return;
+  async function stats() {
+    try { const j = await ajax({action:'mail_stats'}); if (j.ok) $m('mlWho').textContent = 'Pays francophones : ' + j.fr + ' joueur(s) · Autres pays : ' + j.en + ' joueur(s)'; } catch (e) { /* ignore */ }
+  }
+  $m('btnMail').onclick = () => { $m('mailModal').classList.add('on'); $m('mlSt').textContent = ''; stats(); };
+  $m('closeMail').onclick = () => $m('mailModal').classList.remove('on');
+  async function send(target) {
+    const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), group = $m('mlGroup').value;
+    if (!subject || !message) { $m('mlSt').textContent = 'Écrivez l’objet et le message.'; return; }
+    let confirmTxt = '';
+    if (target === 'all') {
+      confirmTxt = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nTapez ENVOYER pour confirmer :') || '';
+      if (confirmTxt.trim().toUpperCase() !== 'ENVOYER') { $m('mlSt').textContent = 'Envoi annulé.'; return; }
+      confirmTxt = 'ENVOYER';
+    }
+    $m('btnMlTest').disabled = $m('btnMlAll').disabled = true;
+    let id = '', sent = 0, fail = 0, err = '', j;
+    try {
+      do {
+        $m('mlSt').textContent = 'Envoi en cours… ' + sent + ' e-mail(s) parti(s)';
+        j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt});
+        if (!j.ok) { $m('mlSt').textContent = j.reason || 'Échec'; break; }
+        id = j.id; sent += j.sent || 0; fail += j.fail || 0; if (j.err) err = j.err;
+      } while (j.more);
+      if (j && j.ok) $m('mlSt').textContent = 'Terminé : ' + sent + ' e-mail(s) envoyé(s)' + (fail ? ', ' + fail + ' échec(s)' + (err ? ' (' + err + ')' : '') : '') + '.' + (target === 'test' ? ' Regardez votre boîte e-mail.' : '');
+    } catch (e) { $m('mlSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
+    $m('btnMlTest').disabled = $m('btnMlAll').disabled = false;
+  }
+  $m('btnMlTest').onclick = () => send('test');
+  $m('btnMlAll').onclick = () => send('all');
+})();
 // v2607 — Notifications : chiffres, test sur l'appareil admin, envoi à tous (par paquets de 100).
 (function () {
   const $n = id => document.getElementById(id);
