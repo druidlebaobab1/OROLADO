@@ -758,8 +758,11 @@
   function requireAccount(msg) {
     if (!isGuest()) return true;
     if (!guardLiveTradeView()) return false;
-    // Pas de toast rouge : le pitch authRealPitch suffit.
-    showAuthScreen('register', { fromReal: true });
+    // v2661 (propriétaire) : d'abord le grand message « Compte réel = vrai argent » (4 étapes en images),
+    // son bouton ouvre l'inscription. Sans la fenêtre (vieux téléphone) : inscription directe comme avant.
+    if (!coachShow('real', function () { showAuthScreen('register', { fromReal: true }); }, true)) {
+      showAuthScreen('register', { fromReal: true });
+    }
     return false;
   }
 
@@ -2970,7 +2973,111 @@
     openModal('tipModal');
   }
 
-  function maybeConvertPrompt() {}
+  // v2661 (propriétaire) — messages pour les VISITEURS (pas encore inscrits), comme les grandes plateformes :
+  //  · « Compte réel = vrai argent » : quand il touche COMPTE RÉEL (requireAccount) ;
+  //  · « Bravo, tu sais trader ! » : à chaque série de 2 trades gagnés d'affilée en démo ;
+  //  · « Tu es prêt pour le réel » : après 6 trades joués (gagnés ou perdus), puis tous les 12.
+  // Jamais deux à la suite (90 s d'écart), jamais pendant un trade ouvert, jamais pour un inscrit.
+  var COACH_ICO = {
+    user: '<svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="4"/><path d="M3 20c0-4 3-6 7-6s7 2 7 6"/><path d="M19 8v6M16 11h6"/></svg>',
+    card: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h4"/></svg>',
+    chart: '<svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-8"/><path d="M15 7h5v5"/></svg>',
+    cash: '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="3"/><path d="M6 9.5v.01M18 14.5v.01"/></svg>',
+    bag: '<svg class="coach-coin" viewBox="0 0 24 24"><circle cx="12" cy="12.6" r="11" class="oc-edge"/><circle cx="12" cy="11.4" r="11" class="oc-out"/><circle cx="12" cy="11.4" r="8.6" class="oc-in"/><path d="M12 5.4 17.6 16.2H6.4z" class="oc-pyr"/><path d="M8.4 12.6h7.2M7.4 14.4h9.2" class="oc-line"/><path d="M5.5 7.2A8.2 8.2 0 0 1 9.4 3.9" class="oc-shine"/></svg>',
+    cap: '<svg class="pi" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3M8.5 20h7M10 16h4l.6 4H9.4z"/></svg>',
+    trophy: '<svg class="pi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg>',
+    pad: '<svg viewBox="0 0 24 24"><path d="M7 8h10a5 5 0 0 1 4.6 6.9l-.9 2.2a2.5 2.5 0 0 1-4.2.5L15 16H9l-1.5 1.6a2.5 2.5 0 0 1-4.2-.5l-.9-2.2A5 5 0 0 1 7 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/></svg>',
+    coin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9c-.6-.8-1.5-1.2-2.5-1.2-1.6 0-2.7.8-2.7 2s1 1.7 2.7 2 2.7.8 2.7 2-1.1 2-2.7 2c-1.1 0-2-.4-2.7-1.2M12 6.5v11"/></svg>',
+    yes: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    no: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function coachState() {
+    try { return JSON.parse(sessionStorage.getItem('oro_coach') || '{}') || {}; } catch (e) { return {}; }
+  }
+  function coachSave(s) {
+    try { sessionStorage.setItem('oro_coach', JSON.stringify(s)); } catch (e) { /* ignore */ }
+  }
+  function coachSteps(list) {
+    var h = '<div class="coach-steps">';
+    list.forEach(function (it, i) {
+      if (i) h += '<span class="coach-ar">›</span>';
+      h += '<div class="coach-st"><i>' + COACH_ICO[it[0]] + '</i><b>' + esc(t(it[1])) + '</b></div>';
+    });
+    return h + '</div>';
+  }
+  function coachHtml(kind) {
+    if (kind === 'real') {
+      return '<div class="coach-big">' + COACH_ICO.bag + '</div><h2>' + esc(t('coachRealT')) + '</h2><p>' + esc(t('coachRealS')) + '</p>' +
+        coachSteps([['user', 'coachStepJoin'], ['card', 'coachStepDep'], ['chart', 'coachStepPlay'], ['cash', 'coachStepOut']]) +
+        '<button type="button" class="coach-go">' + esc(t('coachRealBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachLater')) + '</button>';
+    }
+    if (kind === 'win') {
+      return '<div class="coach-big">' + COACH_ICO.cap + '</div><h2>' + esc(t('coachWinT')) + '</h2><p>' + esc(t('coachWinS')) + '</p>' +
+        '<div class="coach-cmp"><div class="coach-col"><i>' + COACH_ICO.pad + '</i><div class="ct">' + esc(t('coachDemo')) + '</div>' +
+        '<div class="cl no">' + COACH_ICO.no + esc(t('coachDemo1')) + '</div><div class="cl no">' + COACH_ICO.no + esc(t('coachDemo2')) + '</div></div>' +
+        '<div class="coach-col real"><i>' + COACH_ICO.coin + '</i><div class="ct">' + esc(t('coachReal')) + '</div>' +
+        '<div class="cl yes">' + COACH_ICO.yes + esc(t('coachReal1')) + '</div><div class="cl yes">' + COACH_ICO.yes + esc(t('coachReal2')) + '</div></div></div>' +
+        '<button type="button" class="coach-go">' + esc(t('coachWinBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachKeepDemo')) + '</button>';
+    }
+    return '<div class="coach-big">' + COACH_ICO.trophy + '</div><h2>' + esc(t('coachReadyT')) + '</h2><p>' + esc(t('coachReadyS')) + '</p>' +
+      '<div class="coach-prog"><i></i></div><div class="coach-pl"><span>' + esc(t('coachDemo')) + '</span><span>' + esc(t('coachReal')) + '</span></div>' +
+      coachSteps([['user', 'coachStep1min'], ['card', 'coachStepDep2'], ['cash', 'coachStepOut']]) +
+      '<button type="button" class="coach-go">' + esc(t('coachReadyBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachLater')) + '</button>';
+  }
+  function coachClose() {
+    var m = document.getElementById('coachModal');
+    if (m) m.classList.remove('on');
+  }
+  // Affiche un message. force = demandé par le joueur (COMPTE RÉEL) : sans l'écart de 90 s.
+  function coachShow(kind, onGo, force) {
+    try {
+      if (!isGuest()) return false;
+      var s = coachState();
+      if (!force && s.lastAt && Date.now() - s.lastAt < 90000) return false;
+      var m = document.getElementById('coachModal');
+      if (!m) {
+        m = document.createElement('div');
+        m.id = 'coachModal';
+        m.innerHTML = '<div class="coach-dim"></div><div class="coach-card" role="dialog" aria-modal="true"><div class="coach-rays"></div><button type="button" class="coach-x" aria-label="×">×</button><div class="coach-body"></div></div>';
+        document.body.appendChild(m);
+        m.querySelector('.coach-dim').addEventListener('click', coachClose);
+        m.querySelector('.coach-x').addEventListener('click', coachClose);
+      }
+      m.querySelector('.coach-body').innerHTML = coachHtml(kind);
+      m.querySelector('.coach-later').addEventListener('click', coachClose);
+      m.querySelector('.coach-go').addEventListener('click', function () {
+        coachClose();
+        if (typeof onGo === 'function') onGo();
+        else { try { leaveTradeFullscreen(); } catch (eF) { /* ignore */ } showAuthScreen('register', { fromReal: true }); }
+      });
+      s.lastAt = Date.now();
+      coachSave(s);
+      requestAnimationFrame(function () { m.classList.add('on'); });
+      return true;
+    } catch (e) { return false; }
+  }
+  D6.Coach = { show: function (k) { return coachShow(k); }, note: function (r) { maybeConvertPrompt(r); }, close: coachClose };
+  function maybeConvertPrompt(res) {
+    if (!res || res.voided || !isGuest()) return;
+    if ((res.trade && res.trade.mode) === 'real') return;
+    var s = coachState();
+    s.n = (s.n || 0) + 1;
+    s.streak = res.won ? (s.streak || 0) + 1 : 0;
+    var kind = '';
+    if (s.streak >= 2) { kind = 'win'; s.streak = 0; }
+    else if (s.n >= (s.nextReady || 6)) { kind = 'ready'; s.nextReady = s.n + 12; }
+    coachSave(s);
+    if (!kind) return;
+    // Laisse le temps de voir le résultat du trade ; jamais pendant un autre trade ouvert ou une fenêtre ouverte.
+    setTimeout(function () {
+      if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
+      if (document.querySelector('.modal-backdrop.active, .modal.active')) return;
+      if (!coachShow(kind) && kind === 'ready') { var s2 = coachState(); s2.nextReady = s2.n + 3; coachSave(s2); }
+    }, 1600);
+  }
 
   function profitFromResult(res) {
     if (!res) return 0;
@@ -4268,7 +4375,7 @@
         12000
       );
     }
-    maybeConvertPrompt();
+    maybeConvertPrompt(res);
     noteSettledForTip(lastSettleMode);
     maybeLossStreakTip(user(), lastSettleMode);
     patchHistorySoon();

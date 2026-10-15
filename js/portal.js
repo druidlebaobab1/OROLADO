@@ -335,7 +335,7 @@
   }
 
   // Pièce ORO (monnaie des points du site) : pièce dorée avec la pyramide OROLADO.
-  var ICO_ORO = '<svg class="oro-coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.6" r="11" class="oc-edge"/><circle cx="12" cy="11.4" r="11" class="oc-out"/><circle cx="12" cy="11.4" r="8.6" class="oc-in"/><path d="M12 5.4 17.6 16.2H6.4z" class="oc-pyr"/><path d="M12 5.4 17.6 16.2H12z" class="oc-pyr2"/><path d="M8.4 12.6h7.2M7.4 14.4h9.2" class="oc-line"/><circle cx="12" cy="10.4" r="1.2" class="oc-eye"/><path d="M5.5 7.2A8.2 8.2 0 0 1 9.4 3.9" class="oc-shine"/></svg>';
+  var ICO_ORO = '<svg class="oro-coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.6" r="11" class="oc-edge"/><circle cx="12" cy="11.4" r="11" class="oc-out"/><circle cx="12" cy="11.4" r="8.6" class="oc-in"/><path d="M12 5.4 17.6 16.2H6.4z" class="oc-pyr"/><path d="M12 5.4 17.6 16.2H12z" class="oc-pyr2"/><path d="M8.4 12.6h7.2M7.4 14.4h9.2" class="oc-line"/><path d="M5.5 7.2A8.2 8.2 0 0 1 9.4 3.9" class="oc-shine"/></svg>';
   var ICO_TARGET = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg>';
   // Ferme les Récompenses et ouvre le marché du défi (démo pour le compte admin en test, réel sinon).
   function goDefiMarket() {
