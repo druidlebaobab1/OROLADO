@@ -2043,7 +2043,8 @@ if ($isAjax) {
       $to = strtolower(trim((string) ($req['testTo'] ?? '')));
       if ($to === '') $to = strtolower(trim((string) ($me['email'] ?? '')));
       if (!filter_var($to, FILTER_VALIDATE_EMAIL)) admin_json(['ok' => false, 'reason' => 'Adresse du test incorrecte.']);
-      $r = admin_mail_one($to, $subject, $msg, $btn, $id, $group);
+      admin_mail_groups(); // charge les prénoms (si l'adresse du test est celle d'un joueur)
+      $r = admin_mail_plain($to, $subject, $msg);
       admin_json(['ok' => !empty($r['ok']), 'id' => $id, 'sent' => !empty($r['ok']) ? 1 : 0, 'fail' => empty($r['ok']) ? 1 : 0, 'more' => false, 'reason' => (string) ($r['reason'] ?? '')]);
     }
     $list = admin_mail_groups()[$group];
@@ -2057,9 +2058,11 @@ if ($isAjax) {
     $sent = 0; $fail = 0; $n = 0; $err = '';
     foreach ($list as $em) {
       if (isset($done[$em]) && $skip($done[$em])) continue;
-      if ($n >= 40) break;
+      // v2668 — envoi LENT, pas à pas (1 e-mail toutes les ~4 s, 6 par paquet) : ressemble moins à une campagne.
+      if ($n >= 6) break;
+      if ($n > 0) sleep(4);
       $n++;
-      $r = admin_mail_one($em, $subject, $msg, $btn, $id, $group);
+      $r = admin_mail_plain($em, $subject, $msg);
       $done[$em] = !empty($r['ok']) ? 1 : time();
       if (!empty($r['ok'])) $sent++; else { $fail++; $err = (string) ($r['reason'] ?? ''); }
       @file_put_contents($logF, json_encode($done), LOCK_EX);
@@ -2382,9 +2385,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <label class="nt-lab">Objet</label>
         <input id="mlSubject" maxlength="120" class="nt-in" placeholder="Ex. : Volatility est en mouvement sur OROLADO">
         <label class="nt-lab">Message</label>
-        <textarea id="mlBody" maxlength="2000" rows="7" class="nt-in" placeholder="Bonjour,&#10;Les marchés bougent en ce moment sur OROLADO…"></textarea>
-        <label class="nt-lab">Texte du bouton (vide = « Ouvrir OROLADO »)</label>
-        <input id="mlBtn" maxlength="40" class="nt-in" placeholder="Ouvrir OROLADO">
+        <textarea id="mlBody" maxlength="2000" rows="8" class="nt-in" placeholder="Bonjour {prenom},&#10;&#10;Les marchés bougent bien aujourd'hui. Passe faire quelques trades : orolado.com&#10;&#10;À bientôt,&#10;L'équipe OROLADO"></textarea>
+        <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 4 secondes.</p>
+        <input id="mlBtn" type="hidden" value="">
         <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
         <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
         <p style="margin-top:12px">
@@ -2898,15 +2901,20 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     }
     let confirmTxt = '';
     if (target === 'all') {
-      confirmTxt = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nTapez ENVOYER pour confirmer :') || '';
+      confirmTxt = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi lent (environ 1 e-mail toutes les 4 secondes) : gardez la page ouverte.\nTapez ENVOYER pour confirmer :') || '';
       if (confirmTxt.trim().toUpperCase() !== 'ENVOYER') { $m('mlSt').textContent = 'Envoi annulé.'; return; }
       confirmTxt = 'ENVOYER';
     }
     $m('btnMlTest').disabled = $m('btnMlAll').disabled = true;
     let id = '', sent = 0, fail = 0, err = '', already = -1, j;
     try {
+      // v2668 — « Envoyer à tous » : l'adresse du propriétaire (case du test) reçoit d'abord une copie, pour voir que c'est parti.
+      if (target === 'all' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) {
+        $m('mlSt').textContent = 'Copie envoyée à ' + testTo + '…';
+        try { await ajax({action:'mail_send', target:'test', group, subject, message, button, testTo}); } catch (eCopy) { /* ignore */ }
+      }
       do {
-        $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + '. Gardez la page ouverte.';
+        $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + (j && j.left ? ' · environ ' + Math.max(1, Math.round(j.left * 4.5 / 60)) + ' min restante(s)' : '') + '. Gardez la page ouverte.';
         j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt, testTo});
         if (!j.ok) { $m('mlSt').textContent = j.reason || 'Échec'; break; }
         if (already < 0) already = j.already || 0;
