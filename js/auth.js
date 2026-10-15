@@ -178,7 +178,8 @@
       if (!D6.Api || !D6.Api.post) return { ok: false, reason: 'Service indisponible' };
       var remote = await D6.Api.post('registerVerify', { email: email, code: code, ami: oroAmiCode() });
       if (!remote || !remote.ok) {
-        return { ok: false, reason: (remote && remote.reason) || 'Code incorrect ou expiré' };
+        // v2658 : on dit la vérité au joueur (code faux / code expiré / pas de réseau).
+        return { ok: false, reason: (remote && remote.reason) || 'Code incorrect ou expiré', expired: !!(remote && remote.expired), net: !remote };
       }
       if (remote.token && D6.Api.setToken) D6.Api.setToken(remote.token);
       if (remote.user) {

@@ -7484,7 +7484,8 @@
           if (btn) btn.disabled = false;
         }
         if (!res.ok) {
-          setOtpError(otpFailText());
+          // v2658 : message vrai (avant : toujours « Code expiré », même pour un code mal tapé).
+          setOtpError(res.net ? t('otpNet') : (res.expired ? t('codeExpiredOtp') : t('codeWrongOtp')));
           return;
         }
         closeOtpModal();
