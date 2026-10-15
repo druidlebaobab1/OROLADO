@@ -2037,8 +2037,10 @@ if ($isAjax) {
     if ($target === 'all' && (string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
     @set_time_limit(55);
     if ($target === 'test') {
-      $to = strtolower(trim((string) ($me['email'] ?? '')));
-      if (!filter_var($to, FILTER_VALIDATE_EMAIL)) admin_json(['ok' => false, 'reason' => 'E-mail de l’admin introuvable.']);
+      // v2665 — adresse du test choisie par l'admin (son vrai e-mail), sinon celle du compte admin.
+      $to = strtolower(trim((string) ($req['testTo'] ?? '')));
+      if ($to === '') $to = strtolower(trim((string) ($me['email'] ?? '')));
+      if (!filter_var($to, FILTER_VALIDATE_EMAIL)) admin_json(['ok' => false, 'reason' => 'Adresse du test incorrecte.']);
       $r = admin_mail_one($to, $subject, $msg, $btn, $id, $group);
       admin_json(['ok' => !empty($r['ok']), 'id' => $id, 'sent' => !empty($r['ok']) ? 1 : 0, 'fail' => empty($r['ok']) ? 1 : 0, 'more' => false, 'reason' => (string) ($r['reason'] ?? '')]);
     }
@@ -2375,6 +2377,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <textarea id="mlBody" maxlength="2000" rows="7" class="nt-in" placeholder="Bonjour,&#10;Les marchés bougent en ce moment sur OROLADO…"></textarea>
         <label class="nt-lab">Texte du bouton (vide = « Ouvrir OROLADO »)</label>
         <input id="mlBtn" maxlength="40" class="nt-in" placeholder="Ouvrir OROLADO">
+        <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
+        <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
         <p style="margin-top:12px">
           <button class="mini ok" type="button" id="btnMlTest">1. M’envoyer un test</button>
           <button class="mini bad" type="button" id="btnMlAll">2. Envoyer à tous</button>
@@ -2871,11 +2875,19 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   async function stats() {
     try { const j = await ajax({action:'mail_stats'}); if (j.ok) $m('mlWho').textContent = 'Pays francophones : ' + j.fr + ' joueur(s) · Autres pays : ' + j.en + ' joueur(s)'; } catch (e) { /* ignore */ }
   }
-  $m('btnMail').onclick = () => { $m('mailModal').classList.add('on'); $m('mlSt').textContent = ''; stats(); };
+  $m('btnMail').onclick = () => {
+    $m('mailModal').classList.add('on'); $m('mlSt').textContent = ''; stats();
+    try { if (!$m('mlTestTo').value) $m('mlTestTo').value = localStorage.getItem('oro_mail_test_to') || ''; } catch (e) { /* ignore */ }
+  };
   $m('closeMail').onclick = () => $m('mailModal').classList.remove('on');
   async function send(target) {
     const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), group = $m('mlGroup').value;
     if (!subject || !message) { $m('mlSt').textContent = 'Écrivez l’objet et le message.'; return; }
+    const testTo = $m('mlTestTo').value.trim();
+    if (target === 'test') {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) { $m('mlSt').textContent = 'Écrivez l’adresse e-mail qui reçoit le test.'; return; }
+      try { localStorage.setItem('oro_mail_test_to', testTo); } catch (e) { /* ignore */ }
+    }
     let confirmTxt = '';
     if (target === 'all') {
       confirmTxt = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nTapez ENVOYER pour confirmer :') || '';
@@ -2887,11 +2899,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     try {
       do {
         $m('mlSt').textContent = 'Envoi en cours… ' + sent + ' e-mail(s) parti(s)';
-        j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt});
+        j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt, testTo});
         if (!j.ok) { $m('mlSt').textContent = j.reason || 'Échec'; break; }
         id = j.id; sent += j.sent || 0; fail += j.fail || 0; if (j.err) err = j.err;
       } while (j.more);
-      if (j && j.ok) $m('mlSt').textContent = 'Terminé : ' + sent + ' e-mail(s) envoyé(s)' + (fail ? ', ' + fail + ' échec(s)' + (err ? ' (' + err + ')' : '') : '') + '.' + (target === 'test' ? ' Regardez votre boîte e-mail.' : '');
+      if (j && j.ok) $m('mlSt').textContent = 'Terminé : ' + sent + ' e-mail(s) envoyé(s)' + (fail ? ', ' + fail + ' échec(s)' + (err ? ' (' + err + ')' : '') : '') + '.' + (target === 'test' ? ' Regardez la boîte ' + testTo + ' (et le dossier Spam / Promotions).' : '');
     } catch (e) { $m('mlSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
     $m('btnMlTest').disabled = $m('btnMlAll').disabled = false;
   }

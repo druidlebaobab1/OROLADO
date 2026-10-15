@@ -770,7 +770,7 @@ function admin_mail_one(string $to, string $subject, string $msg, string $btn, s
     . '<tr><td align="center" style="padding:0 24px 18px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#7C86A2;">' . $e($foot) . '</td></tr>'
     . '</table></td></tr></table></body></html>';
   $text = $msg . "\n\n" . $btn . ' : ' . $url . "\n\n" . $foot . "\n";
-  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject);
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject, $html);
   return orolado_mail_send($to, '', $subject, $html, $text);
 }
 
