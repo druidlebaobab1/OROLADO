@@ -9325,3 +9325,10 @@ html body #otpModal #err-otpCode{white-space:nowrap;overflow:hidden;text-overflo
 @keyframes coachFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 #coachModal .coach-go:active{transform:scale(.97)}
 html.oro-lite #coachModal .coach-big{animation:none}
+/* v2662 — conseils du message « Garde ton calme » (une ligne chacun, icône trait doré). Plus de croix : « Plus tard » ou toucher à côté. */
+#coachModal .coach-x{display:none!important}
+#coachModal .coach-tips{display:flex;flex-direction:column;gap:8px;margin:2px 0 16px;text-align:left}
+#coachModal .coach-tip{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:rgba(242,179,61,.07);box-shadow:inset 0 0 0 1px rgba(242,179,61,.28)}
+#coachModal .coach-tip i{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(242,179,61,.1)}
+#coachModal .coach-tip svg{width:17px;height:17px;fill:none;stroke:#FFD27A;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#coachModal .coach-tip span{font-size:clamp(12px,3.5vw,13.5px);font-weight:700;color:#efeaff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

@@ -3022,6 +3022,17 @@
         '<div class="cl yes">' + COACH_ICO.yes + esc(t('coachReal1')) + '</div><div class="cl yes">' + COACH_ICO.yes + esc(t('coachReal2')) + '</div></div></div>' +
         '<button type="button" class="coach-go">' + esc(t('coachWinBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachKeepDemo')) + '</button>';
     }
+    if (kind === 'dep') {
+      return '<div class="coach-big">' + COACH_ICO.bag + '</div><h2>' + esc(t('coachDepT')) + '</h2><p>' + esc(t('coachDepS')) + '</p>' +
+        coachSteps([['card', 'coachStepDep'], ['chart', 'coachStepPlay'], ['cash', 'coachStepOut']]) +
+        '<button type="button" class="coach-go">' + esc(t('coachDepBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachLater')) + '</button>';
+    }
+    if (kind === 'calm') {
+      var tip = function (ico, key) { return '<div class="coach-tip"><i>' + COACH_ICO[ico] + '</i><span>' + esc(t(key)) + '</span></div>'; };
+      return '<div class="coach-big">' + COACH_ICO.trophy + '</div><h2>' + esc(t('coachCalmT')) + '</h2><p>' + esc(t('coachCalmS')) + '</p>' +
+        '<div class="coach-tips">' + tip('chart', 'coachCalm1') + tip('coin', 'coachCalm2') + tip('pad', 'coachCalm3') + tip('user', 'coachCalm4') + '</div>' +
+        '<button type="button" class="coach-go">' + esc(t('coachCalmBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachLater')) + '</button>';
+    }
     return '<div class="coach-big">' + COACH_ICO.trophy + '</div><h2>' + esc(t('coachReadyT')) + '</h2><p>' + esc(t('coachReadyS')) + '</p>' +
       '<div class="coach-prog"><i></i></div><div class="coach-pl"><span>' + esc(t('coachDemo')) + '</span><span>' + esc(t('coachReal')) + '</span></div>' +
       coachSteps([['user', 'coachStep1min'], ['card', 'coachStepDep2'], ['cash', 'coachStepOut']]) +
@@ -3031,54 +3042,101 @@
     var m = document.getElementById('coachModal');
     if (m) m.classList.remove('on');
   }
-  // Affiche un message. force = demandé par le joueur (COMPTE RÉEL) : sans l'écart de 90 s.
+  // v2662 (propriétaire) — règles « anti-agacement » de TOUS les messages (par compte, ou « visiteur ») :
+  // chacun au plus 1 fois / 24 h ; fermé 2 fois (« Plus tard » ou toucher à côté) → pause de 30 jours ;
+  // jamais 2 messages à moins de 90 s ; jamais pendant un trade ouvert ou une autre fenêtre.
+  var COACH_DAY = 86400000, COACH_PAUSE = 30 * COACH_DAY;
+  function coachKey() { var u = user(); return 'oro_coach2_' + (u && !isGuest(u) ? String(u.id || 'u') : 'guest'); }
+  function coachRules() { try { return JSON.parse(localStorage.getItem(coachKey()) || '{}') || {}; } catch (e) { return {}; } }
+  function coachRulesSave(r) { try { localStorage.setItem(coachKey(), JSON.stringify(r)); } catch (e) { /* ignore */ } }
+  function coachCan(kind) {
+    var r = coachRules()[kind] || {}, now = Date.now();
+    return now >= (r.pause || 0) && now - (r.last || 0) >= COACH_DAY;
+  }
+  function coachMark(kind, what) {
+    var all = coachRules(), r = all[kind] || {};
+    if (what === 'show') r.last = Date.now();
+    if (what === 'dismiss') {
+      r.no = (r.no || 0) + 1;
+      if (r.no >= 2) { r.pause = Date.now() + COACH_PAUSE; r.no = 0; }
+    }
+    all[kind] = r;
+    coachRulesSave(all);
+  }
+  function coachDeposited(u) {
+    if (!u) return false;
+    if ((Number(u.realDepositTotal) || 0) > 0 || (Number(u.depositTotal) || 0) > 0) return true;
+    try { if (D6.Store.realBalance && D6.Store.realBalance(u) > 0) return true; } catch (e) { /* ignore */ }
+    return false;
+  }
+  var coachKind = '';
+  function coachDismiss() {
+    var m = document.getElementById('coachModal');
+    if (m && m.classList.contains('on') && coachKind) coachMark(coachKind, 'dismiss');
+    coachClose();
+  }
+  // Affiche un message. force = demandé par le joueur (COMPTE RÉEL) : sans les limites.
   function coachShow(kind, onGo, force) {
     try {
-      if (!isGuest()) return false;
+      var guestKinds = { real: 1, win: 1, ready: 1 };
+      if (guestKinds[kind] && !isGuest()) return false;
+      if (kind === 'dep' && (isGuest() || coachDeposited(user()))) return false;
       var s = coachState();
-      if (!force && s.lastAt && Date.now() - s.lastAt < 90000) return false;
+      if (!force) {
+        if (s.lastAt && Date.now() - s.lastAt < 90000) return false;
+        if (!coachCan(kind)) return false;
+      }
       var m = document.getElementById('coachModal');
       if (!m) {
         m = document.createElement('div');
         m.id = 'coachModal';
-        m.innerHTML = '<div class="coach-dim"></div><div class="coach-card" role="dialog" aria-modal="true"><div class="coach-rays"></div><button type="button" class="coach-x" aria-label="×">×</button><div class="coach-body"></div></div>';
+        m.innerHTML = '<div class="coach-dim"></div><div class="coach-card" role="dialog" aria-modal="true"><div class="coach-rays"></div><div class="coach-body"></div></div>';
         document.body.appendChild(m);
-        m.querySelector('.coach-dim').addEventListener('click', coachClose);
-        m.querySelector('.coach-x').addEventListener('click', coachClose);
+        m.querySelector('.coach-dim').addEventListener('click', coachDismiss);
       }
+      coachKind = kind;
       m.querySelector('.coach-body').innerHTML = coachHtml(kind);
-      m.querySelector('.coach-later').addEventListener('click', coachClose);
+      m.querySelector('.coach-later').addEventListener('click', coachDismiss);
       m.querySelector('.coach-go').addEventListener('click', function () {
         coachClose();
-        if (typeof onGo === 'function') onGo();
-        else { try { leaveTradeFullscreen(); } catch (eF) { /* ignore */ } showAuthScreen('register', { fromReal: true }); }
+        if (typeof onGo === 'function') { onGo(); return; }
+        if (kind === 'calm') return;
+        try { leaveTradeFullscreen(); } catch (eF) { /* ignore */ }
+        if (kind === 'dep') { openDeposit(); return; }
+        showAuthScreen('register', { fromReal: true });
       });
       s.lastAt = Date.now();
       coachSave(s);
+      coachMark(kind, 'show');
       requestAnimationFrame(function () { m.classList.add('on'); });
       return true;
     } catch (e) { return false; }
   }
-  D6.Coach = { show: function (k) { return coachShow(k); }, note: function (r) { maybeConvertPrompt(r); }, close: coachClose };
+  D6.Coach = { show: function (k) { return coachShow(k); }, note: function (r) { maybeConvertPrompt(r); }, close: coachClose, reset: function () { try { localStorage.removeItem(coachKey()); sessionStorage.removeItem('oro_coach'); } catch (e) { /* ignore */ } } };
   function maybeConvertPrompt(res) {
-    if (!res || res.voided || !isGuest()) return;
-    if ((res.trade && res.trade.mode) === 'real') return;
+    if (!res || res.voided) return;
+    var u = user();
+    if (!u) return;
+    var guest = isGuest(u);
+    var mode = (res.trade && res.trade.mode) === 'real' ? 'real' : 'demo';
     var s = coachState();
-    s.n = (s.n || 0) + 1;
-    s.streak = res.won ? (s.streak || 0) + 1 : 0;
+    if (mode === 'demo') s.n = (s.n || 0) + 1;
+    s.win = res.won ? (s.win || 0) + 1 : 0;
+    s.loss = res.won ? 0 : (s.loss || 0) + 1;
     var kind = '';
-    if (s.streak >= 2) { kind = 'win'; s.streak = 0; }
-    else if (s.n >= (s.nextReady || 6)) { kind = 'ready'; s.nextReady = s.n + 12; }
+    if (s.loss >= 3) { kind = 'calm'; s.loss = 0; }
+    else if (guest && mode === 'demo' && s.win >= 3) { kind = 'win'; s.win = 0; }
+    else if (guest && mode === 'demo' && s.n >= 4 && !s.readyDone) { kind = 'ready'; s.readyDone = 1; }
+    else if (!guest && mode === 'demo' && s.win >= 3 && !coachDeposited(u)) { kind = 'dep'; s.win = 0; }
     coachSave(s);
     if (!kind) return;
-    // Laisse le temps de voir le résultat du trade ; jamais pendant un autre trade ouvert ou une fenêtre ouverte.
+    // Laisse voir le résultat du trade ; jamais pendant un autre trade ouvert ou une fenêtre ouverte.
     setTimeout(function () {
       if (D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount()) return;
       if (document.querySelector('.modal-backdrop.active, .modal.active')) return;
-      if (!coachShow(kind) && kind === 'ready') { var s2 = coachState(); s2.nextReady = s2.n + 3; coachSave(s2); }
+      coachShow(kind);
     }, 1600);
   }
-
   function profitFromResult(res) {
     if (!res) return 0;
     var stake = Number((res.trade && res.trade.stake) || (res.position && res.position.stake) || 0);
@@ -4377,7 +4435,7 @@
     }
     maybeConvertPrompt(res);
     noteSettledForTip(lastSettleMode);
-    maybeLossStreakTip(user(), lastSettleMode);
+    // v2662 : remplacé par le message « Garde ton calme » (3 pertes d'affilée, règles anti-agacement).
     patchHistorySoon();
     syncTradeButtons();
     // Le résultat vient déjà du serveur (engine.js → settleOrder). Ici on applique

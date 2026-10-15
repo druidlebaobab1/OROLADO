@@ -396,7 +396,8 @@
     var b = $('btnPortal');
     // v2660 (propriétaire) : visiteur PAS encore inscrit qui touche « Cadeaux » → belle notification
     // « Inscription gratuite », puis la page d'inscription s'ouvre (au lieu des pages cadeaux).
-    if (b) b.addEventListener('click', function () { if (guestGift()) { needAccount(); return; } openPortal(); });
+    // v2662 : Cadeaux remis pour les visiteurs (Défi, Tournoi, Bonus visibles ; Invitation demande l'inscription).
+    if (b) b.addEventListener('click', openPortal);
     if ($('closePortal')) $('closePortal').addEventListener('click', closePortal);
     var m = $('portalModal');
     if (m) m.addEventListener('click', function (e) { if (e.target === m) closePortal(); });
@@ -795,6 +796,8 @@
 
   var ICO_LOCK = '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><circle cx="12" cy="15.4" r="1.3" class="pi-fill"/></svg>';
   function setTab(name) {
+    // v2662 (propriétaire) : visiteur → Invitation réservée aux inscrits (ni lien ni explication) : notification puis inscription.
+    if (name === 'aff' && guestGift()) { needAccount(); return; }
     curTab = name;
     show($('defiCard'), name === 'defi');
     show($('affCard'), name === 'aff');
