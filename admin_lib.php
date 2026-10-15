@@ -717,6 +717,15 @@ function admin_wd_is_paid(array $w): bool {
   return in_array($st, ['approved', 'paid', 'completed', 'success', 'sent'], true);
 }
 
+/** v2655 — date de PAIEMENT d'un retrait validé (avant : date de la demande). Anciens retraits : updatedAt / createdAt. */
+function admin_wd_paid_at(array $w): string {
+  foreach (['approvedAt', 'paidAt', 'updatedAt', 'updated_at', 'createdAt', 'created_at'] as $k) {
+    $v = (string) ($w[$k] ?? '');
+    if ($v !== '') return $v;
+  }
+  return '';
+}
+
 function admin_wd_is_rejected(array $w): bool {
   $st = strtolower(trim((string) ($w['status'] ?? '')));
   return in_array($st, ['rejected', 'refused', 'canceled', 'cancelled', 'failed', 'denied'], true);

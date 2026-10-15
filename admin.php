@@ -385,7 +385,7 @@ function admin_badges(): array {
       $wdOpen++;
       $wdOpenSum += (float) $w['amount'];
     }
-    if (admin_wd_is_paid($w) && admin_in_range($w['createdAt'] ?? null, $t0, $t1)) $wdToday++;
+    if (admin_wd_is_paid($w) && admin_in_range(admin_wd_paid_at($w) ?: null, $t0, $t1)) $wdToday++;
     if (admin_wd_is_rejected($w)) $wdRej++;
   }
   $depToday = 0;
@@ -1019,7 +1019,11 @@ function admin_list_payload(string $view, array $req): array {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_open($w)));
       $actions = true;
     } else if ($view === 'wd_today') {
-      $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w) && admin_in_range($w['createdAt'] ?? null, $t0, $t1)));
+      // v2655 : TOUS les retraits payés, rangés par date de PAIEMENT (le plus récent en haut) ; la case de
+      // dates choisit le jour / la période (avant : seulement ceux DEMANDÉS aujourd'hui → liste souvent vide).
+      $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w)));
+      foreach ($list as $i => $w) $list[$i]['createdAt'] = admin_wd_paid_at($w) ?: (string) ($w['createdAt'] ?? '');
+      usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
     } else if ($view === 'wd_rejected') {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_rejected($w)));
     } else {
@@ -1069,7 +1073,7 @@ function admin_list_payload(string $view, array $req): array {
           $dest,
           $suspect ? 'Suspect' : 'Vérifié',
           (string) ($w['status'] ?? ''),
-          substr((string) ($w['createdAt'] ?? ''), 0, 16),
+          admin_when_cell((string) ($w['createdAt'] ?? '')),
         ],
         'userId' => (string) ($w['userId'] ?? ''),
         'ref' => (string) $w['id'],
@@ -1928,6 +1932,7 @@ if ($isAjax) {
         admin_json(['ok' => false, 'reason' => 'Retrait créé hors du site : aucun argent n’a été débité. Ne le payez pas.']);
       }
       $row['status'] = 'approved';
+      $row['approvedAt'] = date('c'); // v2655 : date de paiement (liste « Retraits validés »)
       $row['playerHidden'] = false;
       $row['adminHidden'] = false;
     } else if ($act === 'reject') {
