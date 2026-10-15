@@ -766,9 +766,8 @@ function admin_mail_first_name(string $em): string {
  */
 function admin_mail_plain(string $to, string $subject, string $msg): array {
   $first = admin_mail_first_name($to);
-  $fill = static fn(string $s): string => $first !== ''
-    ? str_ireplace(['{prenom}', '{prénom}'], $first, $s)
-    : preg_replace('/\s*\{pr[eé]nom\}/iu', '', $s);
+  // {prenom}, (prenom) ou [prenom], avec ou sans accent : tous remplacés.
+  $fill = static fn(string $s): string => (string) preg_replace('/(\s*)[\{\(\[]\s*pr[eé]nom\s*[\}\)\]]/iu', $first !== '' ? '$1' . $first : '', $s);
   $text = str_replace("\r\n", "\n", $fill($msg)) . "\n";
   $subject = $fill($subject);
   if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject, $text);
