@@ -1644,8 +1644,8 @@
           .catch(function () { /* ignore */ })
           .then(function () {
             try { ensureGuest(); enterApp(); } catch (eEnt) { /* ignore */ }
+            // v2666 — plus de petite notification « Session expirée » (propriétaire) : la page de connexion suffit.
             showAuthScreen('login');
-            toast(t('sessionExpiredMsg'), 'info', 6000);
           });
       }).catch(function () { /* ignore */ }).then(function () { sessionCheckBusy = false; });
     }, 1500);
