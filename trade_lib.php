@@ -135,6 +135,8 @@ function orolado_trade_exposure(array $db, string $assetId = '', string $uid = '
  */
 /** v2359 : prix du clic accepté jusqu'à 1,5 s en arrière (6 prix de 250 ms). */
 if (!defined('OROLADO_CLICK_MAX_TICKS')) define('OROLADO_CLICK_MAX_TICKS', 6);
+/** v2654 : prix du clic accordé seulement après 30 clics mesurés (démo + réel) sans comportement de robot. */
+if (!defined('OROLADO_CLICK_TRUST_AFTER')) define('OROLADO_CLICK_TRUST_AFTER', 30);
 
 /**
  * v2359 : comportement de robot. Entre le clic et l'arrivée de l'ordre, le prix a souvent déjà bougé :
@@ -230,18 +232,25 @@ function orolado_trade_place(array $me, array $req): array {
   // n'a PLUS droit au prix du clic → ses ordres prennent le prix à l'ARRIVÉE (sa triche ne marche plus).
   // Les joueurs honnêtes (jamais marqués) ne voient aucune différence.
   $meRow = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : $me;
-  if (orolado_click_edge_reason($meRow) !== '' || orolado_click_edge_reason($me) !== '') $seenTick = 0;
+  // v2654 (propriétaire : « A + B ») : B — compte NOUVEAU (moins de OROLADO_CLICK_TRUST_AFTER clics mesurés,
+  // démo + réel) : pas encore de prix du clic, prix à l'arrivée ; on MESURE quand même son clic (sinon il
+  // resterait « nouveau » pour toujours). Un robot n'a donc jamais de fenêtre pour tricher, même compte neuf.
+  $clickSeen = (int) ($meRow['clickFav'] ?? 0) + (int) ($meRow['clickUnfav'] ?? 0);
+  $clickTrusted = $clickSeen >= OROLADO_CLICK_TRUST_AFTER
+    && orolado_click_edge_reason($meRow) === '' && orolado_click_edge_reason($me) === '';
+  $clickMove = '';
   if ($seenTick > 0 && $seenTick < $entryTick && $seenTick >= $entryTick - OROLADO_CLICK_MAX_TICKS) {
     $atSeen = orolado_feed_price_at($assetId, $seenTick);
     if ($atSeen !== null && $atSeen > 0) {
-      $clickLag = $entryTick - $seenTick;
-      $entryTick = $seenTick;
-      $entryCents = (int) $atSeen;
+      if ($arrivalCents !== (int) $atSeen) {
+        $clickMove = (($side === 'call') === ($arrivalCents > (int) $atSeen)) ? 'fav' : 'unfav';
+      }
+      if ($clickTrusted) {
+        $clickLag = $entryTick - $seenTick;
+        $entryTick = $seenTick;
+        $entryCents = (int) $atSeen;
+      }
     }
-  }
-  $clickMove = '';
-  if ($clickLag > 0 && $arrivalCents !== $entryCents) {
-    $clickMove = (($side === 'call') === ($arrivalCents > $entryCents)) ? 'fav' : 'unfav';
   }
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
@@ -299,6 +308,11 @@ function orolado_trade_place(array $me, array $req): array {
       $bal = orolado_money($locked['vault'][$uid]['demo'] ?? 0);
       if ($stake > $bal + 0.009) return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
       $locked['vault'][$uid]['demo'] = orolado_money($bal - $stake);
+      // v2654 (A) : la DÉMO est surveillée aussi → un robot qui s'entraîne en démo est repéré avant le réel.
+      if ($clickMove !== '' && isset($locked['users'][$uid]) && is_array($locked['users'][$uid])) {
+        $k = $clickMove === 'fav' ? 'clickFav' : 'clickUnfav';
+        $locked['users'][$uid][$k] = (int) ($locked['users'][$uid][$k] ?? 0) + 1;
+      }
     } else {
       $locked['vault'][$uid]['real'] = $realAfter;
       if (isset($locked['users'][$uid]) && is_array($locked['users'][$uid])) {

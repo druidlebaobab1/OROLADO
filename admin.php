@@ -1050,6 +1050,14 @@ function admin_list_payload(string $view, array $req): array {
       $method = admin_method_label(admin_fill((string) ($w['operator'] ?? '')));
       $dest = admin_phone_cell(['phone' => admin_fill((string) ($w['phone'] ?? '')), 'countryCode' => (string) ($w['countryCode'] ?? '')]);
       $suspect = !empty($w['_suspect']);
+      // v2654 : le MOTIF est écrit sous « Suspect » (avant : seulement le mot, sans raison).
+      $why = '';
+      if ($suspect) {
+        $wuid = (string) ($w['userId'] ?? '');
+        $why = (string) ($suspects[$wuid]['reason'] ?? '');
+        if ($why === '') $why = admin_suspect_reason($pmap[$wuid] ?? ['id' => $wuid], $ordersByUser[$wuid] ?? [], $w);
+        if ($why === '') $why = admin_click_reason_for($wuid, (string) ($w['email'] ?? ''));
+      }
       $rows[] = [
         'cells' => [
           (string) $w['id'],
@@ -1068,6 +1076,7 @@ function admin_list_payload(string $view, array $req): array {
         'kind' => 'withdraw',
         'pending' => $open,
         'suspect' => $suspect,
+        'why' => $why,
         'flag' => $suspect ? 'suspect' : 'ok',
       ];
     }
@@ -1579,7 +1588,7 @@ function admin_profile_payload(string $uid): array {
       'net' => round($sumNet, 2),
       'trades' => $nTrades,
     ],
-    'suspect' => (string) ((admin_suspects()[$uid]['reason'] ?? '')),
+    'suspect' => (string) ((admin_suspects()[$uid]['reason'] ?? '') ?: admin_click_reason_for($uid, (string) ($p['email'] ?? ''))),
     'deposits' => $deps,
     'bonuses' => $bonuses,
     'withdrawals' => $wds,
@@ -2179,6 +2188,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .pill{display:inline-block;border-radius:999px;padding:2px 8px;font-weight:800;font-size:.68rem}
     .pill-ok{background:rgba(52,211,153,.18);color:#34D399}
     .pill-suspect{background:rgba(244,63,94,.18);color:#F43F5E}
+    .sus-why{margin-top:6px;max-width:260px;white-space:normal;font-size:12px;line-height:1.35;color:#FCA5A5;font-weight:600}
     .pill-unread{background:rgba(245,158,11,.2);color:#FBBF24}
     .pill-warn{background:rgba(245,158,11,.2);color:#FBBF24}
     .msg-full{white-space:pre-wrap;line-height:1.5;background:#0E1420;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;max-height:50vh;overflow:auto}
@@ -2513,7 +2523,7 @@ function renderList(j) {
       }
       const s = String(c ?? '');
       const wrap = r.wrap === ci || r.kind === 'message' && ci === 5;
-      if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span></td>';
+      if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span>'+(r.why ? '<div class="sus-why">'+esc(r.why)+'</div>' : '')+'</td>';
       else if (s === 'Vérifié' || s === 'OK' || s === 'Réglé') html += '<td><span class="pill pill-ok">'+s+'</span></td>';
       else if (s === 'Attention') html += '<td><span class="pill pill-warn">Attention</span></td>';
       else if (s === 'Panne') html += '<td><span class="pill pill-suspect">Panne</span></td>';

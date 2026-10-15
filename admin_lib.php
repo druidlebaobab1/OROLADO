@@ -1755,12 +1755,17 @@ function admin_collect_alerts(): array {
 }
 
 function admin_asset_name(string $id): string {
+  // v2654 : noms ACTUELS des marchés (js/config.js) ; avant, la liste était ancienne et l'admin affichait
+  // « HORIZON50 », « CRASH300 »… ou d'anciens noms. Les anciens identifiants courts pointent vers le même marché.
   $map = [
-    'v100' => 'VOLATILITY', 'v75' => 'PYTHON', 'stable' => 'ZUL',
-    'apex' => 'ORO 888', 'horizon' => 'BAAL', 'crash' => 'AZAZEL',
-    'gold' => 'OROF', 'boom' => 'VALAC', 'nexus' => 'ASMODUS', 'titan' => 'APOCALYPSE',
+    'v100' => 'VOLATILITY', 'stable' => 'COBRA', 'apex500' => 'BAAL', 'horizon50' => 'ORO 999',
+    'crash300' => 'AZAZEL', 'goldtrend' => 'OROF', 'boomspike' => 'VALAC', 'nexusprime' => 'ASMODUS',
+    'v75' => 'ZUL', 'titanpulse' => 'APOCALYPSE',
+    'apex' => 'BAAL', 'horizon' => 'ORO 999', 'crash' => 'AZAZEL', 'gold' => 'OROF', 'boom' => 'VALAC',
+    'nexus' => 'ASMODUS', 'titan' => 'APOCALYPSE',
   ];
-  return $map[$id] ?? strtoupper($id !== '' ? $id : '—');
+  $k = strtolower(trim($id));
+  return $map[$k] ?? strtoupper($id !== '' ? $id : '—');
 }
 
 function admin_bust_cache(): void {
@@ -2397,6 +2402,28 @@ function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, ar
   }
   // v2486 : seulement après 40 trades (certains joueurs aiment toujours ACHETER).
   if ($n >= 40 && max($sides) / max(1, $n) >= 0.95) return 'Toujours le même sens (CALL/PUT)';
+  return '';
+}
+
+/**
+ * v2654 — motif « robot » lu sur la fiche LOCALE du joueur (compteurs clickFav / clickUnfav), retrouvée par
+ * id, par lien Supabase (sbId) ou par e-mail : la liste des profils de l'admin ne porte pas ces compteurs.
+ */
+function admin_click_reason_for(string $uid, string $email = ''): string {
+  if (!function_exists('orolado_click_edge_reason')) return '';
+  $users = admin_local_db()['users'] ?? [];
+  $em = strtolower(trim($email));
+  if ($uid !== '' && isset($users[$uid]) && is_array($users[$uid])) {
+    $why = orolado_click_edge_reason($users[$uid]);
+    if ($why !== '') return $why;
+  }
+  foreach ($users as $id => $u) {
+    if (!is_array($u)) continue;
+    $hit = ($uid !== '' && (string) ($u['sbId'] ?? '') === $uid) || ($em !== '' && strtolower((string) ($u['email'] ?? '')) === $em);
+    if (!$hit) continue;
+    $why = orolado_click_edge_reason($u);
+    if ($why !== '') return $why;
+  }
   return '';
 }
 
