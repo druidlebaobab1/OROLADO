@@ -34,8 +34,8 @@
       <stop offset=".35" stop-color="#FFD35A" stop-opacity=".45"/>
       <stop offset="1" stop-color="#FFB300" stop-opacity="0"/>
     </radialGradient>
-    <clipPath id="clipL"><path d="M256 92 L112 392 L256 392 Z"/></clipPath>
-    <clipPath id="clipR"><path d="M256 92 L256 392 L400 392 Z"/></clipPath>
+    <clipPath id="clipL"><path d="M256 60 L114 422 L256 422 Z"/></clipPath>
+    <clipPath id="clipR"><path d="M256 60 L256 422 L398 422 Z"/></clipPath>
     <linearGradient id="banA" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFE9A8"/>
       <stop offset=".45" stop-color="#F6C94D"/>
@@ -44,9 +44,9 @@
   <linearGradient id="faceU" x1="0" y1="0" x2="1" y2="0.25"><stop offset="0" stop-color="#FFF1BF"/><stop offset=".35" stop-color="#F6C94D"/><stop offset=".7" stop-color="#D59318"/><stop offset="1" stop-color="#9A620A"/></linearGradient></defs>
   <circle cx="256" cy="262" r="248" fill="url(#bgA)"/>
   <!-- halo derrière la pierre de faîte -->
-  <circle cx="256" cy="96" r="96" fill="url(#haloA)" opacity=".85"/>
+  <circle cx="256" cy="74" r="54" fill="url(#haloA)" opacity=".55"/>
   <!-- corps de la pyramide (2 faces) -->
-  <path d="M256 92 L112 392 L400 392 Z" fill="url(#faceU)"/>
+  <path d="M256 60 L114 422 L398 422 Z" fill="url(#faceU)"/>
   
   <!-- assises de pierre (lignes fines) -->
   <g clip-path="url(#clipL)" stroke="#8A5A10" stroke-opacity=".35" stroke-width="3">
@@ -71,5 +71,5 @@
   <rect x="108" y="413" width="296" height="22" rx="11" fill="#FFF6D6" fill-opacity=".28"/>
   <text x="259" y="451" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" letter-spacing="7" fill="#3A2205" text-anchor="middle" text-rendering="geometricPrecision">OROLADO</text>
   <!-- sol -->
-  <path d="M104 398 H408" stroke="url(#ringA)" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+  
 </svg>
