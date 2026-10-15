@@ -41,13 +41,13 @@
       <stop offset=".45" stop-color="#F6C94D"/>
       <stop offset="1" stop-color="#C98A12"/>
     </linearGradient>
-  </defs>
+  <linearGradient id="faceU" x1="0" y1="0" x2="1" y2="0.25"><stop offset="0" stop-color="#FFF1BF"/><stop offset=".35" stop-color="#F6C94D"/><stop offset=".7" stop-color="#D59318"/><stop offset="1" stop-color="#9A620A"/></linearGradient></defs>
   <circle cx="256" cy="262" r="248" fill="url(#bgA)"/>
   <!-- halo derrière la pierre de faîte -->
   <circle cx="256" cy="96" r="96" fill="url(#haloA)" opacity=".85"/>
   <!-- corps de la pyramide (2 faces) -->
-  <path d="M256 92 L112 392 L256 392 Z" fill="url(#faceL)"/>
-  <path d="M256 92 L256 392 L400 392 Z" fill="url(#faceR)"/>
+  <path d="M256 92 L112 392 L400 392 Z" fill="url(#faceU)"/>
+  
   <!-- assises de pierre (lignes fines) -->
   <g clip-path="url(#clipL)" stroke="#8A5A10" stroke-opacity=".35" stroke-width="3">
     <path d="M100 224 H260 M100 280 H260 M100 336 H260"/>
