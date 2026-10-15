@@ -2058,9 +2058,9 @@ if ($isAjax) {
     $sent = 0; $fail = 0; $n = 0; $err = '';
     foreach ($list as $em) {
       if (isset($done[$em]) && $skip($done[$em])) continue;
-      // v2668 — envoi LENT, pas à pas (1 e-mail toutes les ~4 s, 6 par paquet) : ressemble moins à une campagne.
-      if ($n >= 6) break;
-      if ($n > 0) sleep(4);
+      // v2668/v2670 — envoi LENT, pas à pas (pause variable de 5 à 8 s, 5 par paquet) : ressemble moins à une campagne.
+      if ($n >= 5) break;
+      if ($n > 0) sleep(random_int(5, 8));
       $n++;
       $r = admin_mail_plain($em, $subject, $msg);
       $done[$em] = !empty($r['ok']) ? 1 : time();
@@ -2386,7 +2386,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <input id="mlSubject" maxlength="120" class="nt-in" placeholder="Ex. : Volatility est en mouvement sur OROLADO">
         <label class="nt-lab">Message</label>
         <textarea id="mlBody" maxlength="2000" rows="8" class="nt-in" placeholder="Bonjour {prenom},&#10;&#10;Les marchés bougent bien aujourd'hui. Passe faire quelques trades : orolado.com&#10;&#10;À bientôt,&#10;L'équipe OROLADO"></textarea>
-        <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 4 secondes.</p>
+        <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 5 à 8 secondes (laissez la page ouverte).</p>
         <input id="mlBtn" type="hidden" value="">
         <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
         <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
@@ -2901,7 +2901,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     }
     let confirmTxt = '';
     if (target === 'all') {
-      confirmTxt = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi lent (environ 1 e-mail toutes les 4 secondes) : gardez la page ouverte.\nTapez ENVOYER pour confirmer :') || '';
+      confirmTxt = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi lent (environ 1 e-mail toutes les 5 à 8 secondes) : gardez la page ouverte.\nTapez ENVOYER pour confirmer :') || '';
       if (confirmTxt.trim().toUpperCase() !== 'ENVOYER') { $m('mlSt').textContent = 'Envoi annulé.'; return; }
       confirmTxt = 'ENVOYER';
     }
@@ -2914,7 +2914,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
         try { await ajax({action:'mail_send', target:'test', group, subject, message, button, testTo}); } catch (eCopy) { /* ignore */ }
       }
       do {
-        $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + (j && j.left ? ' · environ ' + Math.max(1, Math.round(j.left * 4.5 / 60)) + ' min restante(s)' : '') + '. Gardez la page ouverte.';
+        $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + (j && j.left ? ' · environ ' + Math.max(1, Math.round(j.left * 7.5 / 60)) + ' min restante(s)' : '') + '. Gardez la page ouverte.';
         j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt, testTo});
         if (!j.ok) { $m('mlSt').textContent = j.reason || 'Échec'; break; }
         if (already < 0) already = j.already || 0;
