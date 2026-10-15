@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v2656';
+const CACHE = 'orolado-v2657';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -36,8 +36,8 @@ self.addEventListener('push', function (event) {
   var title = String(d.title || 'OROLADO');
   event.waitUntil(self.registration.showNotification(title, {
     body: String(d.body || ''),
-    icon: '/icons/icon-192.png',
-    badge: '/icons/badge-96.png',
+    icon: '/icons/icon-192.png?v=2657',
+    badge: '/icons/badge-96.png?v=2657',
     tag: String(d.tag || 'oro'),
     vibrate: [80, 40, 80],
     data: { url: String(d.url || '/') }
