@@ -56,7 +56,7 @@ function page({ file, title, desc, body, langs, script }) {
   <meta name="description" content="${esc(desc)}">
   <link rel="canonical" href="https://www.orolado.com/${file}/">
   <meta name="theme-color" content="#0B0A24">
-  <link rel="icon" href="/icons/favicon-blanc-48.png" sizes="48x48" type="image/png">
+  <link rel="icon" href="/icons/favicon-blanc-48.png?v=2656" sizes="48x48" type="image/png">
   <style>
     :root{--bg:#0B0A24;--card:#14123A;--line:rgba(255,255,255,.12);--txt:#EEF0FA;--mut:#B8BDD8;--gold:#FBBF24}
     *{box-sizing:border-box}
@@ -88,7 +88,7 @@ function page({ file, title, desc, body, langs, script }) {
 </head>
 <body>
 <header><div class="bar">
-  <a class="brand" href="https://www.orolado.com/"><img src="/icons/logo-ring.svg" alt="" width="34" height="34">OROLADO</a>
+  <a class="brand" href="https://www.orolado.com/"><img src="/icons/logo-ring.svg?v=2656" alt="" width="34" height="34">OROLADO</a>
   <nav class="tabs">
     <a href="/conditions/"${file === 'conditions' ? ' class="on"' : ''} data-t="terms">Terms</a>
     <a href="/confidentialite/"${file === 'confidentialite' ? ' class="on"' : ''} data-t="privacy">Privacy</a>

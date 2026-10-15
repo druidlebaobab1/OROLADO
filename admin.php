@@ -2345,7 +2345,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <option value="de">Allemand</option><option value="hi">Hindi</option>
         </select>
         <div class="nt-lab">Aperçu sur le téléphone</div>
-        <div class="nt-prev"><img src="/icons/icon-192.png" alt=""><div><small>OROLADO · maintenant</small><b id="ntPrevT">Titre</b><span id="ntPrevB">Message</span></div></div>
+        <div class="nt-prev"><img src="/icons/icon-192.png?v=2656" alt=""><div><small>OROLADO · maintenant</small><b id="ntPrevT">Titre</b><span id="ntPrevB">Message</span></div></div>
         <p class="nt-who" id="ntWho"></p>
         <p style="margin-top:12px">
           <button class="mini ok" type="button" id="btnNtTest">1. Envoyer un test (mes appareils)</button>

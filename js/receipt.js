@@ -88,7 +88,7 @@
   var logoP = null;
   function logo() {
     // Nouveau logo rond OROLADO (sans carré) ; l'ancienne icône en secours.
-    if (!logoP) logoP = loadImg('icons/logo-ring.svg?v=r4').then(function (im) { if (im) { im._ring = true; return im; } return loadImg('icons/icon-512.png?v=r4'); });
+    if (!logoP) logoP = loadImg('icons/logo-ring.svg?v=2656').then(function (im) { if (im) { im._ring = true; return im; } return loadImg('icons/icon-512.png?v=2656'); });
     return logoP;
   }
   // Logo de la simulation : le même dessin que sur les cases du site.

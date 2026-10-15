@@ -7038,7 +7038,7 @@ function orolado_flutterwave_checkout(array $req): array {
   $customizations = [
     'title' => 'OROLADO',
     'description' => 'Recharge de solde sécurisée',
-    'logo' => $origin . '/icons/icon-192.png',
+    'logo' => $origin . '/icons/icon-192.png?v=2656',
   ];
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];
   $db['deposits'][] = [
