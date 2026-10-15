@@ -9262,3 +9262,6 @@ html body #screenAuth .brand-lockup .logo-mark{display:none!important}
 html body #screenAuth .brand-lockup{min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:2px}
 html body #screenAuth .brand-lockup .brand-xl{font-size:clamp(27px,7.6vw,34px)!important;line-height:1.05}
 html body #screenAuth .brand-sub{margin-top:2px}
+/* v2660 (propriétaire : « une seule ligne, élastique ») — message sous le code d'inscription : une ligne,
+   taille qui s'adapte à la largeur du téléphone, jamais de débordement. */
+html body #otpModal #err-otpCode{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;font-size:clamp(11px,3.5vw,14px)!important;line-height:1.3}

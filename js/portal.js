@@ -394,7 +394,9 @@
       try { render(); renderAff(); renderTop(); renderBon(); } catch (eL) { /* ignore */ }
     });
     var b = $('btnPortal');
-    if (b) b.addEventListener('click', openPortal);
+    // v2660 (propriétaire) : visiteur PAS encore inscrit qui touche « Cadeaux » → belle notification
+    // « Inscription gratuite », puis la page d'inscription s'ouvre (au lieu des pages cadeaux).
+    if (b) b.addEventListener('click', function () { if (guestGift()) { needAccount(); return; } openPortal(); });
     if ($('closePortal')) $('closePortal').addEventListener('click', closePortal);
     var m = $('portalModal');
     if (m) m.addEventListener('click', function (e) { if (e.target === m) closePortal(); });
