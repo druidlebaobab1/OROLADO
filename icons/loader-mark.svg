@@ -34,8 +34,8 @@
       <stop offset=".35" stop-color="#FFD35A" stop-opacity=".45"/>
       <stop offset="1" stop-color="#FFB300" stop-opacity="0"/>
     </radialGradient>
-    <clipPath id="clipL"><path d="M256 168 L112 392 L256 392 Z"/></clipPath>
-    <clipPath id="clipR"><path d="M256 168 L256 392 L400 392 Z"/></clipPath>
+    <clipPath id="clipL"><path d="M256 92 L112 392 L256 392 Z"/></clipPath>
+    <clipPath id="clipR"><path d="M256 92 L256 392 L400 392 Z"/></clipPath>
     <linearGradient id="banA" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFE9A8"/>
       <stop offset=".45" stop-color="#F6C94D"/>
@@ -44,10 +44,10 @@
   </defs>
   <circle cx="256" cy="262" r="248" fill="url(#bgA)"/>
   <!-- halo derrière la pierre de faîte -->
-  <circle cx="256" cy="128" r="118" fill="url(#haloA)"/>
+  <circle cx="256" cy="96" r="96" fill="url(#haloA)" opacity=".85"/>
   <!-- corps de la pyramide (2 faces) -->
-  <path d="M256 168 L112 392 L256 392 Z" fill="url(#faceL)"/>
-  <path d="M256 168 L256 392 L400 392 Z" fill="url(#faceR)"/>
+  <path d="M256 92 L112 392 L256 392 Z" fill="url(#faceL)"/>
+  <path d="M256 92 L256 392 L400 392 Z" fill="url(#faceR)"/>
   <!-- assises de pierre (lignes fines) -->
   <g clip-path="url(#clipL)" stroke="#8A5A10" stroke-opacity=".35" stroke-width="3">
     <path d="M100 224 H260 M100 280 H260 M100 336 H260"/>
@@ -56,14 +56,14 @@
     <path d="M252 224 H412 M252 280 H412 M252 336 H412"/>
   </g>
   <!-- arête lumineuse -->
-  <path d="M256 168 L256 392" stroke="#FFF1BF" stroke-opacity=".55" stroke-width="2"/>
+  
   <!-- pierre de faîte flottante -->
-  <path d="M256 70 L208 146 L256 146 Z" fill="url(#capL)"/>
-  <path d="M256 70 L256 146 L304 146 Z" fill="url(#capR)"/>
+  
+  
   <!-- œil discret (fin trait doré, pupille lumineuse) -->
-  <path d="M236 122 Q256 106 276 122 Q256 138 236 122 Z" fill="#FFF8DD" fill-opacity=".55" stroke="#7A4A06" stroke-opacity=".55" stroke-width="2.2"/>
-  <circle cx="256" cy="122" r="5.5" fill="#7A4A06" fill-opacity=".8"/>
-  <circle cx="254.2" cy="120.4" r="1.8" fill="#FFFFFF"/>
+  
+  
+  
   <!-- pièce crypto crantée -->
   <circle cx="256" cy="262" r="200" fill="none" stroke="url(#ringA)" stroke-width="10" stroke-dasharray="6 9" opacity=".7"/>
   <circle cx="256" cy="262" r="186" fill="none" stroke="#E6B23A" stroke-opacity=".3" stroke-width="2.5"/>
