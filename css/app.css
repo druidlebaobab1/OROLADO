@@ -9332,3 +9332,5 @@ html.oro-lite #coachModal .coach-big{animation:none}
 #coachModal .coach-tip i{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(242,179,61,.1)}
 #coachModal .coach-tip svg{width:17px;height:17px;fill:none;stroke:#FFD27A;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #coachModal .coach-tip span{font-size:clamp(12px,3.5vw,13.5px);font-weight:700;color:#efeaff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* v2663 (propriétaire) — visiteur non inscrit : aucun compte à rebours dans Cadeaux (Bonus, Tournoi, Défi). */
+html.gift-guest-on #portalModal #bonTimer,html.gift-guest-on #portalModal #topTimer,html.gift-guest-on #portalModal #defiTimer{display:none!important}

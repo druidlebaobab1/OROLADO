@@ -2983,7 +2983,7 @@
     card: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h4"/></svg>',
     chart: '<svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-8"/><path d="M15 7h5v5"/></svg>',
     cash: '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="3"/><path d="M6 9.5v.01M18 14.5v.01"/></svg>',
-    bag: '<svg class="coach-coin" viewBox="0 0 24 24"><circle cx="12" cy="12.6" r="11" class="oc-edge"/><circle cx="12" cy="11.4" r="11" class="oc-out"/><circle cx="12" cy="11.4" r="8.6" class="oc-in"/><path d="M12 5.4 17.6 16.2H6.4z" class="oc-pyr"/><path d="M8.4 12.6h7.2M7.4 14.4h9.2" class="oc-line"/><path d="M5.5 7.2A8.2 8.2 0 0 1 9.4 3.9" class="oc-shine"/></svg>',
+    bag: '<svg class="pi" viewBox="0 0 24 24"><path d="M4 7.5h14.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2V6a1.5 1.5 0 0 1 1.5-1.5H17"/><path d="M16 13.5h2.5"/><circle cx="16.2" cy="13.5" r=".6" class="pi-fill"/></svg>',
     cap: '<svg class="pi" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3M8.5 20h7M10 16h4l.6 4H9.4z"/></svg>',
     trophy: '<svg class="pi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg>',
     pad: '<svg viewBox="0 0 24 24"><path d="M7 8h10a5 5 0 0 1 4.6 6.9l-.9 2.2a2.5 2.5 0 0 1-4.2.5L15 16H9l-1.5 1.6a2.5 2.5 0 0 1-4.2-.5l-.9-2.2A5 5 0 0 1 7 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/></svg>',

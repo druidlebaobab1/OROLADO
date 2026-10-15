@@ -207,14 +207,16 @@
     var c = canvasFor(W, H), g = c.g;
 
     var bg = g.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#FFFFFF');
-    bg.addColorStop(1, isDemo ? '#F4F6FF' : '#FFF7EC');
+    // v2663 (propriétaire) : le reçu RÉEL a un vrai fond doré (le démo reste blanc) → on voit tout de suite la différence.
+    bg.addColorStop(0, isDemo ? '#FFFFFF' : '#FFF6E2');
+    if (!isDemo) bg.addColorStop(0.55, '#FFE7B8');
+    bg.addColorStop(1, isDemo ? '#F4F6FF' : '#FFD992');
     g.fillStyle = bg; g.fillRect(0, 0, W, H);
     var bd = g.createLinearGradient(0, 0, W, H);
     bd.addColorStop(0, A.a); bd.addColorStop(1, A.b);
     g.lineWidth = 6; g.strokeStyle = bd; g.strokeRect(3, 3, W - 6, H - 6);
     var gl = g.createRadialGradient(W - 60, 30, 5, W - 60, 30, 260);
-    gl.addColorStop(0, isDemo ? 'rgba(99,102,241,0.10)' : 'rgba(247,147,26,0.14)');
+    gl.addColorStop(0, isDemo ? 'rgba(99,102,241,0.10)' : 'rgba(255,255,255,0.75)');
     gl.addColorStop(1, 'rgba(255,255,255,0)');
     g.save(); g.beginPath(); g.rect(6, 6, W - 12, H - 12); g.clip(); g.fillStyle = gl; g.fillRect(0, 0, W, H); g.restore();
 
@@ -222,14 +224,10 @@
     g.textBaseline = 'middle'; g.textAlign = 'left';
     drawLogo(g, icons.logo, 28, 26, 72);
     g.fillStyle = '#0F172A'; g.font = '800 30px ' + FONT;
-    g.fillText('OROLADO', 114, isDemo ? 62 : 56);
+    g.fillText('OROLADO', 114, 62);
     var wO = g.measureText('OROLADO').width;
     g.fillStyle = A.a; g.font = '800 20px ' + FONT;
-    g.fillText('.com', 114 + wO + 3, isDemo ? 66 : 60);
-    if (!isDemo) {
-      g.fillStyle = '#EA7A0C'; g.font = '800 13px ' + FONT;
-      g.fillText(spaced(t.trade), 115, 84);
-    }
+    g.fillText('.com', 114 + wO + 3, 66);
     g.strokeStyle = isDemo ? '#E0E7FF' : '#FDE7C8'; g.lineWidth = 1.5;
     g.beginPath(); g.moveTo(28, 122); g.lineTo(W - 28, 122); g.stroke();
 
@@ -280,7 +278,7 @@
     var cw = (W - 56 - gap) / 2;
     function cell(x, y, w, label, val, col, mono) {
       rr(g, x, y, w, cellH, 14);
-      g.fillStyle = A.soft; g.fill();
+      g.fillStyle = isDemo ? A.soft : 'rgba(255,255,255,0.86)'; g.fill();
       g.lineWidth = 1.5; g.strokeStyle = A.line; g.stroke();
       g.fillStyle = A.lab; g.font = '800 11px ' + FONT;
       g.fillText(spaced(label.toUpperCase()), x + 16, y + 22);
