@@ -70,7 +70,8 @@
         : '<path d="M70 100h20l10-18 10 36 10-18h20" fill="none" stroke="' + a[2] + '" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="100" r="7" fill="' + a[2] + '"/><circle cx="130" cy="100" r="7" fill="' + a[2] + '"/>') + '</svg>';
   }
   /* ---------- état ---------- */
-  var ORDER = ['crash', 'jet', 'rocket', 'mines', 'apple', 'tower', 'plinko', 'dice', 'limbo', 'wheel', 'roulette', 'slots', 'coin', 'keno', 'scratch', 'hilo', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'penalty', 'race', 'colors', 'darts'];
+  // v2706 (propriétaire) : ordre mélangé — les 3 jeux en tour commun (crash, jet, rocket) ne sont plus côte à côte
+  var ORDER = ['crash', 'mines', 'roulette', 'penalty', 'jet', 'plinko', 'apple', 'slots', 'wheel', 'dragon', 'rocket', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'balloon', 'keno', 'sicbo', 'race', 'scratch', 'hilo', 'chests', 'colors', 'darts'];
   // v2693 (propriétaire) : la mise de départ est toujours 0,10 $ à l'ouverture du Casino.
   var S = { mode: 'real', stake: 0.1, game: '', view: 'games', bal: { real: null, demo: null }, busy: false, timer: 0 };
   function save() { /* la mise n'est plus gardée : 0,10 $ à chaque ouverture */ }

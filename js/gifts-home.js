@@ -53,7 +53,7 @@
   function tabOk(k) { var b = document.querySelector('#portalTabs .pt-tab[data-tab="' + k + '"]'); return !!b && !b.classList.contains('hidden'); }
   function visible(k) {
     if (k === 'defi') return true;
-    if (k === 'wheel' || k === 'jauge') return guest() || !!(st && st.enabled);
+    if (k === 'wheel' || k === 'jauge') return guest() || !st || !!st.enabled; // v2706 : affiché tout de suite (plus de tuiles qui arrivent après)
     return tabOk(k);
   }
 
@@ -229,6 +229,7 @@
       if (on && !m._ghOn) { home(); refresh().then(function () { if (!sub) paintHome(); }); }
       m._ghOn = on;
     }).observe(m, { attributes: true, attributeFilter: ['class'] });
+    setTimeout(function () { if (!guest()) refresh(); }, 4000); // v2706 : état lu d'avance → Cadeaux s'affiche en entier d'un coup
     document.addEventListener('oro:livepack', function () { if (m.classList.contains('active') && !sub) paintHome(); });
     var lastLang = document.documentElement.lang;
     document.addEventListener('oro:lang', function () { if (document.documentElement.lang === lastLang) return; lastLang = document.documentElement.lang; if (!m.classList.contains('active')) return; if (!sub) paintHome(); else if (sub === 'wheel') paintWheel(); else if (sub === 'jauge') paintJauge(); else mode(false); });

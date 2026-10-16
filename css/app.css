@@ -11171,3 +11171,42 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo.p
 #casinoModal .crash-wait i{display:block;width:100%;height:8px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden}
 #casinoModal .crash-wait i b{display:block;width:100%;height:100%;border-radius:4px;background:linear-gradient(90deg,#f43f5e,#facc15);transform-origin:0 50%;transition:transform .2s linear}
 html body #casinoModal .cs-go:disabled{opacity:.75}
+
+/* v2706 (propriétaire) : plus de planète derrière les logos (jeux, cadeaux, défis, live) — le logo flotte seul dans l'univers.
+   Seuls les 10 indices de trading gardent leur planète (ils n'utilisent pas .cs-pl). */
+html body .cs-pl > i{display:none!important}
+html body .cs-pl > svg,html body #casinoModal .cs-pl > svg{left:4%!important;top:4%!important;width:92%!important;height:92%!important;
+  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--p2,#7C3AED) 70%,transparent)) drop-shadow(0 4px 5px rgba(0,0,0,.45))!important}
+html.oro-lite body .cs-pl > svg{filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))!important}
+/* v2706 : Groupes — « Ajouter des membres » (liste de mes contacts à cocher) + ligne « X a ajouté Y » */
+.lg-sys{align-self:center;margin:6px auto;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);font-size:12px;font-weight:600;text-align:center;max-width:90%}
+.lgi-top .lga-t{font-size:17px;font-weight:800;color:#fff;margin-inline-start:8px}
+.lga-q{display:block;width:calc(100% - 24px);margin:6px 12px 8px;padding:11px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:15px;outline:0}
+.lga-list{display:flex;flex-direction:column;padding:0 6px 90px}
+.lga-r{width:100%;text-align:start;background:none;border:0;color:inherit;font:inherit;cursor:pointer}
+.lga-r b small{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.5)}
+.lga-r.in{opacity:.55;cursor:default}
+.lga-ck{margin-inline-start:auto;width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.35);flex:none;display:grid;place-items:center}
+.lga-r.on .lga-ck{background:#22C55E;border-color:#22C55E}
+.lga-r.on .lga-ck::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.lga-r.in .lga-ck{background:rgba(255,255,255,.25);border-color:transparent}
+.lga-go{position:sticky;bottom:12px;display:block;width:calc(100% - 24px);margin:10px 12px;padding:14px;border:0;border-radius:16px;background:linear-gradient(135deg,#22C55E,#15803D);color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
+.lga-go:disabled{opacity:.45}
+/* v2706 (propriétaire) : la petite barre qu'on tire tout EN HAUT de la fenêtre, plus collée au contenu (roue de Cadeaux…) */
+html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 9px)!important;margin:0 auto!important}
+/* v2706 (propriétaire) : accueil du Live LIBRE — plus de carreaux : logos posés dans l'univers, centrés au-dessus du titre */
+html body #liveModal #liveHomeGrid.lh-free{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px 4px!important;padding:4px 2px 10px!important;align-items:start}
+html body #liveModal .lh-f{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:6px 2px 4px;background:none;border:0;color:#fff;font:inherit;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+html body #liveModal .lh-fi{position:relative;display:block;width:min(52px,13.5vw,7.4vh);aspect-ratio:1}
+html body #liveModal .lh-f.feat .lh-fi{width:min(60px,15.5vw,8.4vh)}
+html body #liveModal .lh-fi svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 9px color-mix(in srgb,var(--tc) 65%,transparent)) drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+html.oro-lite body #liveModal .lh-fi svg{filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+html body #liveModal .lh-f b{font-size:12.5px;font-weight:800;line-height:1.15;overflow-wrap:anywhere;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+html body #liveModal .lh-f.feat b{font-size:13.5px}
+html body #liveModal .lh-f small{font-size:10.5px;line-height:1.2;color:rgba(230,234,255,.72);font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html body #liveModal .lh-f:active .lh-fi{transform:scale(.92)}
+html body #liveModal .lh-f .lh-b{position:absolute;top:-4px;inset-inline-end:-8px;z-index:2}
+html body #liveModal .lh-f.feat{padding-bottom:8px}
+html body #liveModal #liveHomeGrid.lh-free{gap:clamp(6px,1.8vh,16px) 4px!important;padding-top:clamp(4px,1.5vh,14px)!important}
+html body #liveModal .lh-fi{width:min(64px,17vw,8.2vh)}
+html body #liveModal .lh-f.feat .lh-fi{width:min(74px,19.5vw,9.4vh)}

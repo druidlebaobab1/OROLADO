@@ -354,16 +354,21 @@
   D6.LIVE_T.home = HT;
   function H() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return HT[l] || HT.en; }
   var dmUnTiles = 0;
+  // v2706 (propriétaire) : accueil LIBRE — logos sans carreau, centrés au-dessus du titre, 3 par ligne, tout sur un écran.
+  // Petite phrase gardée seulement pour Défie ton ami, Actualités et Envoyer de l'argent (en haut).
+  var FEAT = { duel: 1, news: 1, send: 1 };
+  var ORDERH = ['duel', 'news', 'send', 'friends', 'groups', 'chat', 'myid', 'levels', 'missions', 'quiz', 'record', 'stats', 'badges', 'learn', 'gifts'];
   function paintHome() {
-    var h = H();
-    $('liveHomeGrid').innerHTML = HOME.filter(function (t) { return t.k !== 'send' || guest() || (D6.LiveSend && D6.LiveSend.enabled()); }).map(function (t) {
+    var h = H(), g = $('liveHomeGrid');
+    var list = HOME.filter(function (t) { return t.k !== 'send' || guest() || (D6.LiveSend && D6.LiveSend.enabled()); })
+      .sort(function (a, b) { return ORDERH.indexOf(a.k) - ORDERH.indexOf(b.k); });
+    g.className = 'lh-grid lh-free';
+    g.innerHTML = list.map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
       var tt = h[t.k] || (t.k === 'send' && D6.LiveSend ? [D6.LiveSend.title(), D6.LiveSend.sub()] : null) || (t.k === 'groups' && D6.LiveGroups ? [D6.LiveGroups.title(), D6.LiveGroups.sub()] : [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : '']);
-      return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' || t.k === 'gifts' || t.k === 'send' ? ' big' : '') + '" data-k="' + t.k + '" style="--tc:' + (D6.LiveColor ? D6.LiveColor(t.k) : '#7a5cff') + '"><span class="lh-ico">' + (D6.LiveIcon ? D6.LiveIcon(t.k) : t.ico) + '</span><b>' + esc(tt[0]) + '</b><small>' + esc(tt[1]) + '</small>' + badge + '</button>';
+      return '<button type="button" class="lh-f' + (FEAT[t.k] ? ' feat' : '') + '" data-k="' + t.k + '" style="--tc:' + (D6.LiveColor ? D6.LiveColor(t.k) : '#7a5cff') + '"><span class="lh-fi">' + (D6.LiveIcon ? D6.LiveIcon(t.k, 'free') : t.ico) + badge + '</span><b>' + esc(tt[0]) + '</b>' + (FEAT[t.k] ? '<small>' + esc(tt[1]) + '</small>' : '') + '</button>';
     }).join('');
-    $('liveHomeGrid').querySelectorAll('.lh-tile').forEach(function (b) {
-      b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); });
-    });
+    g.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); }); });
   }
   function tileGo(k) {
     if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }

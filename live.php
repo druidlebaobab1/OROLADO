@@ -255,7 +255,7 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
 }
 
 /* ---------- v2688 — GROUPES ---------- */
-if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 'gKick'], true)) {
+if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 'gKick', 'gAdd'], true)) {
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
   $uid = (string) $me['id'];
@@ -264,11 +264,12 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
     $o = ['id' => (string) $g['id'], 'name' => (string) $g['name'], 'emoji' => (string) ($g['emoji'] ?? '💬'), 'n' => count((array) $g['members']),
       'owner' => (string) $g['owner'] === $uid, 'at' => (int) ($g['at'] ?? 0), 'link' => 'https://orolado.com/?g=' . rawurlencode((string) $g['tok'])];
     $last = $g['msgs'] ? end($g['msgs']) : null;
-    if (is_array($last)) { $w = live_who_uid((string) $last['f']); $o['last'] = ((string) $last['f'] === $uid ? '✓ ' : (($w['name'] ?? '') . ' : ')) . ((string) ($last['t'] ?? '') !== '' ? (string) $last['t'] : '📷'); }
+    if (is_array($last) && empty($last['sys'])) { $w = live_who_uid((string) $last['f']); $o['last'] = ((string) $last['f'] === $uid ? '✓ ' : (($w['name'] ?? '') . ' : ')) . ((string) ($last['t'] ?? '') !== '' ? (string) $last['t'] : '📷'); }
     if ($withMsgs) {
       $o['msgs'] = array_map(static function ($m) use ($uid) {
         $w = live_who_uid((string) $m['f']);
         $x = ['mine' => (string) $m['f'] === $uid, 'who' => (string) ($w['name'] ?? 'Joueur'), 'wid' => (string) ($w['id'] ?? ''), 't' => (string) ($m['t'] ?? ''), 'at' => (int) ($m['at'] ?? 0)];
+        if (!empty($m['sys'])) { $ww = live_who_uid((string) ($m['w'] ?? '')); $x['sys'] = (string) $m['sys']; $x['whom'] = (string) ($ww['name'] ?? 'Joueur'); } // v2706 : « X a ajouté Y »
         if (!empty($m['img'])) $x['img'] = 'live.php?i=' . rawurlencode((string) $m['img']);
         return $x;
       }, array_slice((array) $g['msgs'], -80));
@@ -295,6 +296,21 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
   if (!$g || !in_array($uid, (array) $g['members'], true)) live_out(['ok' => false, 'reason' => 'gGone']);
   if ($action === 'gGet') live_out(['ok' => true, 'g' => $gOut($g, $uid, true)]);
   if ($action === 'gLeave') live_out(live_group_leave($uid, $gid));
+  if ($action === 'gAdd') {
+    // v2706 : ajouter ses contacts (identifiants des amis) directement dans le groupe
+    if (!live_quota_ok($uid, 'gadd', 100, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
+    $peers = [];
+    foreach (array_slice((array) ($req['ids'] ?? []), 0, 30) as $oid) { $w = live_who(live_norm_oro_id((string) $oid)); if ($w) $peers[] = (string) $w['uid']; }
+    $r = live_group_add($uid, $gid, $peers);
+    if (empty($r['ok'])) live_out($r);
+    echo json_encode(['ok' => true, 'n' => count($r['added']), 'g' => $gOut($r['g'], $uid, true)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($r['added']) {
+      if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+      $fromW = live_who_uid($uid);
+      foreach ($r['added'] as $p) $pushTo($p, '👪 ' . (string) $r['g']['name'], (string) ($fromW['name'] ?? 'Un ami') . ' t’a ajouté au groupe');
+    }
+    exit;
+  }
   if ($action === 'gKick') {
     $w = live_who(live_norm_oro_id((string) ($req['id'] ?? '')));
     if (!$w || $w['uid'] === $uid) live_out(['ok' => false]);

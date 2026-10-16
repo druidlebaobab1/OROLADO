@@ -72,7 +72,20 @@
     apple: function () {
       return '<defs>' + G.gold + '</defs><path d="M32 18c-5-5-17-5-20 6s4 28 13 28c3 0 4.5-1.5 7-1.5s4 1.5 7 1.5c9 0 16-17 13-28s-15-11-20-6z" fill="url(#IDg)"/>' +
         '<path d="M32 18c0-5 2-9 6-12" stroke="#78350F" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M35 12c5-4 11-4 13-1-4 5-9 5-13 1z" fill="#22C55E"/>' +
-        '<ellipse cx="20" cy="28" rx="3.5" ry="6" fill="#fff" opacity=".55" transform="rotate(20 20 28)"/><g transform="translate(38 28) scale(.42)">' + SYM.worm + '</g>';
+        '<ellipse cx="20" cy="28" rx="3.5" ry="6" fill="#fff" opacity=".55" transform="rotate(20 20 28)"/>';
+    },
+    // v2706 (propriétaire) : LA pomme de Golden Orchard, plus spéciale — pomme-bijou en or à facettes, cœur rubis, 2 feuilles, étincelles (plus de ver)
+    appleX: function () {
+      return '<defs><radialGradient id="IDa" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#FFF8D6"/><stop offset=".28" stop-color="#FFD54A"/><stop offset=".66" stop-color="#E9A100"/><stop offset="1" stop-color="#8A5600"/></radialGradient>' +
+        '<linearGradient id="IDl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86EFAC"/><stop offset="1" stop-color="#15803D"/></linearGradient>' +
+        '<radialGradient id="IDr" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFB4C6"/><stop offset=".5" stop-color="#E11D48"/><stop offset="1" stop-color="#7F1D1D"/></radialGradient></defs>' +
+        '<path d="M32 19c-5-5-18-5-21 7s4 29 13.5 29c3 0 5-1.6 7.5-1.6s4.5 1.6 7.5 1.6C49 55 56 38 53 26S37 14 32 19z" fill="url(#IDa)" stroke="#7A4A00" stroke-width="1.4"/>' +
+        '<g fill="none" stroke="#FFF3BF" stroke-width="1" opacity=".55"><path d="M32 21l-9 12 9 19 9-19z"/><path d="M14 30l9 3M50 30l-9 3M17 46l6-13M47 46l-6-13"/></g>' +
+        '<path d="M32 28l5 6-5 7-5-7z" fill="url(#IDr)" stroke="#FFE4E6" stroke-width=".8"/>' +
+        '<path d="M32 19c0-6 2-10 6.5-13" stroke="#5B3A12" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+        '<path d="M36 12c6-5 13-4 15-1-5 6-11 6-15 1z" fill="url(#IDl)"/><path d="M33 13c-5-4-11-4-13-1 4 5 9 5 13 1z" fill="url(#IDl)" opacity=".85"/>' +
+        '<ellipse cx="20" cy="29" rx="3.6" ry="7" fill="#fff" opacity=".7" transform="rotate(22 20 29)"/>' +
+        '<path d="M52 12l1.3 3.7L57 17l-3.7 1.3L52 22l-1.3-3.7L47 17l3.7-1.3z" fill="#FFF7D1"/><path d="M12 48l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" fill="#FFF7D1"/><circle cx="56" cy="40" r="1.4" fill="#FFF7D1"/>';
     },
     // tour de pierre, toit rouge, drapeau
     tower: function () {
@@ -267,6 +280,7 @@
       '<circle cx="32" cy="40" r="3.8" fill="#fff"/><text x="32" y="42.2" text-anchor="middle" font-size="5.4" font-weight="900" font-family="system-ui" fill="#111">' + (num || '') + '</text></svg>';
   }
   /* l'objet seul (SVG 64×64) */
+  OBJ.apple = OBJ.appleX; // v2706 : logo Golden Orchard = la pomme-bijou
   function obj(k) {
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
     return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + f().replace(/ID/g, id) + '</svg>';

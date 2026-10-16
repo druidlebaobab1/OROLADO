@@ -736,6 +736,47 @@ function live_group_leave(string $uid, string $gid, string $who = ''): array {
   return $r;
 }
 
+/**
+ * v2706 (propriétaire, comme WhatsApp) — AJOUTER des membres : un membre ajoute directement ses contacts
+ * (les joueurs avec qui il a déjà une conversation dans « Amis »). Pas de lien à partager.
+ * Refusé : pas un contact, contact qui l'a bloqué, joueur retiré par le créateur (sauf si c'est le créateur qui ajoute).
+ * Chaque ajout laisse une petite ligne dans la discussion (« X a ajouté Y »).
+ */
+function live_group_add(string $uid, string $gid, array $peers): array {
+  $contacts = live_inbox($uid);
+  $ok = [];
+  foreach (array_slice(array_values(array_unique($peers)), 0, 30) as $p) {
+    $p = (string) $p;
+    if ($p === '' || $p === $uid || !isset($contacts[$p])) continue;
+    if (live_is_blocked($p, $uid)) continue;
+    $ok[] = $p;
+  }
+  if (!$ok) return ['ok' => false, 'reason' => 'gNoneAdded'];
+  $added = [];
+  $r = live_update(live_group_file($gid), function ($g) use ($uid, $ok, &$added) {
+    if (!$g || !in_array($uid, (array) $g['members'], true)) return ['ok' => false, 'reason' => 'gGone'];
+    $isOwner = (string) $g['owner'] === $uid;
+    foreach ($ok as $p) {
+      if (in_array($p, (array) $g['members'], true)) continue;
+      if (in_array($p, (array) ($g['kicked'] ?? []), true)) {
+        if (!$isOwner) continue;
+        $g['kicked'] = array_values(array_filter((array) $g['kicked'], static fn($k) => $k !== $p));
+      }
+      if (count((array) $g['members']) >= LIVE_GROUP_MAX) break;
+      $g['members'][] = $p; $added[] = $p;
+      $g['msgs'][] = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => $uid, 'sys' => 'add', 'w' => $p, 't' => '', 'at' => time()];
+    }
+    $g['msgs'] = array_slice((array) $g['msgs'], -LIVE_THREAD_KEEP);
+    if ($added) $g['at'] = time();
+    return ['ok' => true, 'g' => $g, '__write' => $g];
+  });
+  if (empty($r['ok'])) return $r;
+  foreach ($added as $p) live_ugroups_set($p, $gid, true);
+  unset($r['__write']);
+  $r['added'] = $added;
+  return $r;
+}
+
 /** Une photo envoyée dans un groupe dont le joueur est membre. */
 function live_img_in_groups(string $uid, string $name): bool {
   foreach (live_ugroups($uid) as $gid) {

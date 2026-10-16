@@ -37,6 +37,11 @@
   function icon(k, cls) {
     var c = PAL[k] || PAL.news, g = G[k] || G.news, id = 'li' + (++n);
     var glyph = function (w, a) { return g.replace(/="W"/g, '="' + w + '"').replace(/="A"/g, '="' + a + '"'); };
+    // v2706 (propriétaire) : logo LIBRE (sans carreau) — le dessin lui-même en couleur, posé dans l'univers
+    if (cls && cls.indexOf('free') > -1) {
+      return '<svg class="li-ico ' + cls + '" viewBox="4 4 40 40" aria-hidden="true"><defs><linearGradient id="' + id + 'a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>' +
+        '<g transform="translate(0 1.2)" opacity=".28">' + glyph('#000', '#000') + '</g>' + glyph('url(#' + id + 'a)', '#fff') + '</svg>';
+    }
     return '<svg class="li-ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 48 48" aria-hidden="true"><defs>' +
       '<linearGradient id="' + id + 'a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient>' +
       '<radialGradient id="' + id + 'b" cx="28%" cy="12%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>' +
