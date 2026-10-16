@@ -144,7 +144,10 @@
     Object.keys(pack).forEach(function (k) {
       if (k === 'quiz') { if (D6.QUIZ) D6.QUIZ[l] = pack.quiz; return; }
       var t = D6.LIVE_T && D6.LIVE_T[k];
-      if (t) t[l] = Object.assign({}, t.en, pack[k]);
+      if (!t) return;
+      var m = Object.assign({}, t.en, pack[k]);
+      Object.keys(t.en).forEach(function (kk) { var a = t.en[kk]; if (a && typeof a === 'object' && !Array.isArray(a) && pack[k][kk] && typeof pack[k][kk] === 'object') m[kk] = Object.assign({}, a, pack[k][kk]); });
+      t[l] = m;
     });
     packs[l] = 2;
     try { document.dispatchEvent(new Event('oro:livepack')); } catch (e) { /* ignore */ }

@@ -5,37 +5,39 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var T = {
-    fr: { title: 'Casino', sub: '15 jeux · dès 0,10 $', real: 'Réel', demo: 'Démo', tryM: 'Essai', bal: 'Solde', stake: 'Mise', play: 'Jouer', again: 'Rejouer',
+    fr: { title: 'Casino', sub: '18 jeux · dès 0,10 $', real: 'Réel', demo: 'Démo', tryM: 'Essai', bal: 'Solde', stake: 'Mise', play: 'Jouer', again: 'Rejouer',
       win: 'Gagné ! +{w} $', lose: 'Perdu', tryNote: 'Crée ton compte et recharge pour jouer en argent réel, dès 0,10 $.', signup: 'Créer mon compte', gamesTab: 'Jeux',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée.', e_maxWin: 'Gain trop élevé pour cette mise : baisse la mise ou la cible.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_busy: 'Un instant…', e_param: 'Choix invalide.', e_login: 'Connecte-toi pour jouer.', e_suspended: 'Compte suspendu.',
       deposit: 'Recharger', hist: 'Mes dernières parties', none: 'Aucune partie pour l’instant.', rules: 'Résultat tiré par le serveur OROLADO. Jeu responsable : joue ce que tu peux te permettre de perdre.',
       g: { crash: ['Avion', 'Encaisse avant qu’il explose'], coin: ['Pile ou face', '×1,94'], dice: ['Dés', 'Choisis ta chance'], limbo: ['Limbo', 'Vise jusqu’à ×1000'], wheel: ['Roue casino', 'Jusqu’à ×50'],
         race: ['Course auto', '6 voitures · ×5,7'], roulette: ['Roulette', 'Rouge, noir, numéro ×36'], slots: ['Machine à sous', 'Jusqu’à ×50'], plinko: ['Plinko', 'Jusqu’à ×12'], keno: ['Keno', '3 numéros · ×25'],
-        scratch: ['Grattage', 'Jusqu’à ×20'], hilo: ['Hi-Lo cartes', 'Plus haut ou plus bas'], penalty: ['Penalty', 'Marque · ×1,44'], colors: ['Couleurs', 'Vert, rouge, violet'], mines: ['Mines', 'Évite les bombes'] },
+        scratch: ['Grattage', 'Jusqu’à ×20'], hilo: ['Hi-Lo cartes', 'Plus haut ou plus bas'], penalty: ['Penalty', 'Marque · ×1,44'], colors: ['Couleurs', 'Vert, rouge, violet'], mines: ['Mines', 'Évite les bombes'],
+        jet: ['Jet Man', 'Il s’envole, encaisse !'], rocket: ['Fusée', 'Jusqu’aux étoiles'], apple: ['Pomme de la fortune', '10 étages · ×9'] },
       cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
       heads: 'Pile', tails: 'Face', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
       pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
       hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris sportifs', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
-    en: { title: 'Casino', sub: '15 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
+    en: { title: 'Casino', sub: '18 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
       win: 'You win! +${w}', lose: 'Lost', tryNote: 'Create your account and top up to play for real money, from $0.10.', signup: 'Create my account', gamesTab: 'Games',
       e_min: 'Minimum stake $0.10.', e_max: 'Stake too high.', e_maxWin: 'Win too high for this stake: lower the stake or the target.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_busy: 'One moment…', e_param: 'Invalid choice.', e_login: 'Log in to play.', e_suspended: 'Account suspended.',
       deposit: 'Top up', hist: 'My last games', none: 'No game yet.', rules: 'Result drawn by the OROLADO server. Play responsibly: only stake what you can afford to lose.',
       g: { crash: ['Aviator', 'Cash out before it blows'], coin: ['Heads or tails', '×1.94'], dice: ['Dice', 'Pick your chance'], limbo: ['Limbo', 'Aim up to ×1000'], wheel: ['Casino wheel', 'Up to ×50'],
         race: ['Car race', '6 cars · ×5.7'], roulette: ['Roulette', 'Red, black, number ×36'], slots: ['Slot machine', 'Up to ×50'], plinko: ['Plinko', 'Up to ×12'], keno: ['Keno', '3 numbers · ×25'],
-        scratch: ['Scratch card', 'Up to ×20'], hilo: ['Hi-Lo cards', 'Higher or lower'], penalty: ['Penalty', 'Score · ×1.44'], colors: ['Colours', 'Green, red, violet'], mines: ['Mines', 'Avoid the bombs'] },
+        scratch: ['Scratch card', 'Up to ×20'], hilo: ['Hi-Lo cards', 'Higher or lower'], penalty: ['Penalty', 'Score · ×1.44'], colors: ['Colours', 'Green, red, violet'], mines: ['Mines', 'Avoid the bombs'],
+        jet: ['Jet Man', 'He flies, cash out!'], rocket: ['Rocket', 'To the stars'], apple: ['Apple of Fortune', '10 floors · ×9'] },
       cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
       heads: 'Heads', tails: 'Tails', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
       pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
       hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Sports bets', sportsSoon: 'Big matches are coming here soon.' }
   };
-  T.zh = Object.assign({}, T.en, { title: '娱乐场', sub: '15 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
+  T.zh = Object.assign({}, T.en, { title: '娱乐场', sub: '18 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
     win: '赢了！+{w} 美元', lose: '输了', tryNote: '创建账户并充值，即可真钱游戏，0.10 美元起。', signup: '创建账户', gamesTab: '游戏', deposit: '充值', hist: '最近的游戏', none: '还没有游戏记录。',
     rules: '结果由 OROLADO 服务器生成。请理性游戏，只投入你能承受损失的金额。',
     g: { crash: ['飞机', '爆炸前兑现'], coin: ['正反面', '×1.94'], dice: ['骰子', '自选胜率'], limbo: ['极限', '最高 ×1000'], wheel: ['娱乐场转盘', '最高 ×50'], race: ['赛车', '6 辆车 · ×5.7'],
       roulette: ['轮盘', '红、黑、号码 ×36'], slots: ['老虎机', '最高 ×50'], plinko: ['弹珠台', '最高 ×12'], keno: ['基诺', '3 个号码 · ×25'], scratch: ['刮刮卡', '最高 ×20'], hilo: ['猜大小', '更大还是更小'],
-      penalty: ['点球', '进球 · ×1.44'], colors: ['颜色', '绿、红、紫'], mines: ['扫雷', '避开炸弹'] },
+      penalty: ['点球', '进球 · ×1.44'], colors: ['颜色', '绿、红、紫'], mines: ['扫雷', '避开炸弹'], jet: ['喷气侠', '起飞，快兑现！'], rocket: ['火箭', '直冲星空'], apple: ['幸运苹果', '10 层 · ×9'] },
     cashout: '兑现', start: '起飞', heads: '正面', tails: '反面', under: '小于', over: '大于', red: '红', black: '黑', even: '双', odd: '单', number: '号码', green: '绿', violet: '紫', goal: '进球！', saved: '被扑出！', hi: '更大或相等', lo: '更小或相等', sports: '体育竞猜', sportsSoon: '重大赛事即将上线。' });
   (D6.LIVE_T = D6.LIVE_T || {}).casino = T;
   function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return T[l] || T.en; }
@@ -62,6 +64,9 @@
     hilo: ['#F87171', '#7F1D1D', '<rect x="12" y="9" width="20" height="28" rx="3.5" fill="W" transform="rotate(-8 22 23)"/><rect x="18" y="12" width="20" height="28" rx="3.5" fill="W"/><path d="M28 19l3.5 4.5h-7zM28 33l3.5-4.5h-7z" fill="A"/>'],
     penalty: ['#4ADE80', '#15803D', '<path d="M6 30V13h36v17" fill="none" stroke="W" stroke-width="2.4"/><path d="M6 17h36M6 21h36M6 25h36M12 13v17M18 13v17M24 13v17M30 13v17M36 13v17" stroke="W" stroke-width=".8" opacity=".5"/><circle cx="24" cy="34" r="6" fill="W"/><path d="M24 30l2.6 2-1 3h-3.2l-1-3z" fill="A"/>'],
     colors: ['#C084FC', '#7E22CE', '<circle cx="16" cy="20" r="8" fill="#22C55E" stroke="#fff" stroke-width="2"/><circle cx="32" cy="20" r="8" fill="#EF4444" stroke="#fff" stroke-width="2"/><circle cx="24" cy="32" r="8" fill="#8B5CF6" stroke="#fff" stroke-width="2"/>'],
+    jet: ['#C084FC', '#6D28D9', '<path d="M18 34c-2 5-1 9 2 12 1-5 2-8 2-11zM30 34c2 5 1 9-2 12-1-5-2-8-2-11z" fill="#FDE68A"/><rect x="14" y="19" width="20" height="16" rx="6" fill="W"/><circle cx="24" cy="13" r="8" fill="W"/><path d="M18 12a6 5 0 0 1 12 0v2H18z" fill="A"/><path d="M34 21l7-5" stroke="W" stroke-width="3" stroke-linecap="round"/>'],
+    rocket: ['#67E8F9', '#0E7490', '<path d="M24 6c7 5 9 13 9 21v9H15v-9c0-8 2-16 9-21z" fill="W"/><circle cx="24" cy="20" r="4" fill="A"/><path d="M15 27l-5 9h5zM33 27l5 9h-5z" fill="W" opacity=".8"/><path d="M19 36c1 5 3 8 5 10 2-2 4-5 5-10z" fill="#FDBA74"/>'],
+    apple: ['#86EFAC', '#15803D', '<path d="M24 15c-3-3-11-3-13 4s3 18 8 18c2 0 3-1 5-1s3 1 5 1c5 0 10-11 8-18s-10-7-13-4z" fill="W"/><path d="M24 15c0-3 2-6 5-8" stroke="W" stroke-width="2.4" fill="none"/><path d="M26 11c3-2 7-2 8 0-2 3-5 3-8 0z" fill="#FDE68A"/><path d="M18 22c-1 2-1 5 0 7" stroke="A" stroke-width="2" stroke-linecap="round" opacity=".5" fill="none"/>'],
     mines: ['#94A3B8', '#334155', '<circle cx="22" cy="27" r="11" fill="W"/><path d="M29 18l4-4M33 14l2.5-1M33 14l1 2.5" stroke="W" stroke-width="2.4" stroke-linecap="round"/><circle cx="35.6" cy="11.8" r="2" fill="#FFD27A"/><circle cx="18" cy="23" r="3" fill="A" opacity=".45"/>'],
     sports: ['#38BDF8', '#0369A1', '<circle cx="24" cy="24" r="14" fill="W"/><path d="M24 15l5 3.6-1.9 5.9h-6.2L19 18.6zM24 15v-5M29 18.6l5-1.5M27.1 24.5l3 4.4M20.9 24.5l-3 4.4M19 18.6l-5-1.5" fill="A" stroke="A" stroke-width="1.4" stroke-linejoin="round"/>']
   };
@@ -85,13 +90,28 @@
       (gold ? '<circle cx="100" cy="100" r="40" fill="none" stroke="' + a[2] + '" stroke-width="16"/><path d="M100 48v18M100 134v18" stroke="' + a[2] + '" stroke-width="8" stroke-linecap="round"/>'
         : '<path d="M70 100h20l10-18 10 36 10-18h20" fill="none" stroke="' + a[2] + '" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="100" r="7" fill="' + a[2] + '"/><circle cx="130" cy="100" r="7" fill="' + a[2] + '"/>') + '</svg>';
   }
-  /* avion rouge (dessiné, pas un emoji) */
+  /* v2691 — dessins des 3 jeux « ça monte » + pommes (vectoriels, légers) */
   function planeSvg() {
-    return '<svg viewBox="0 0 64 40" aria-hidden="true"><path d="M4 24c10-1 30-3 44-4 6-.4 12 1 13 3s-4 4-10 4.5L10 29c-3 .2-6-1.6-6-5z" fill="#ff2d55"/><path d="M26 21L18 6h6l14 15z" fill="#e11d48"/><path d="M30 26l-6 11h5l11-11z" fill="#be123c"/><path d="M6 25l-4-9h4l6 8z" fill="#e11d48"/><circle cx="48" cy="22.5" r="2.4" fill="#fde68a"/><circle cx="41" cy="23" r="2" fill="#fde68a"/><path d="M61 22c1.5-2 1.5-5 0-7" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".8"/></svg>';
+    return '<svg viewBox="0 0 58 36" aria-hidden="true"><defs><linearGradient id="pl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b8a"/><stop offset="1" stop-color="#c8102e"/></linearGradient></defs>' +
+      '<path d="M8 20c6-4 22-6 34-6 8 0 13 2 14 4s-5 4-13 4c-12 0-28 1-35-2z" fill="url(#pl1)"/><path d="M24 15l-9-12h7l13 12z" fill="#e11d48"/><path d="M26 22l-7 11h6l12-11z" fill="#9f1239"/>' +
+      '<path d="M9 19l-6-9h5l7 8z" fill="#e11d48"/><path d="M44 16.5c3 0 6 .8 7 1.8" stroke="#bfe3ff" stroke-width="2.4" stroke-linecap="round"/><circle cx="35" cy="18" r="1.4" fill="#fff" opacity=".8"/><circle cx="30" cy="18.3" r="1.4" fill="#fff" opacity=".8"/></svg>';
+  }
+  function jetSvg() {
+    return '<svg viewBox="0 0 44 52" aria-hidden="true"><path d="M14 34c-2 6-1 12 3 16 1-6 3-10 3-14zM26 34c2 6 1 12-3 16-1-6-3-10-3-14z" fill="#f59e0b" opacity=".9"/><path d="M15 34c-1 4 0 8 2 10 1-4 2-6 2-9zM25 34c1 4 0 8-2 10-1-4-2-6-2-9z" fill="#fde68a"/>' +
+      '<rect x="10" y="17" width="20" height="18" rx="6" fill="#7c3aed"/><rect x="8" y="22" width="5" height="12" rx="2.5" fill="#6d28d9"/><rect x="27" y="22" width="5" height="12" rx="2.5" fill="#6d28d9"/>' +
+      '<circle cx="20" cy="11" r="9" fill="#ede9fe"/><path d="M13 10a7 6 0 0 1 14 0v2H13z" fill="#38bdf8"/><path d="M30 19l9-6" stroke="#ede9fe" stroke-width="3.4" stroke-linecap="round"/><circle cx="40" cy="12.4" r="2.6" fill="#ede9fe"/></svg>';
+  }
+  function rocketSvg() {
+    return '<svg viewBox="0 0 34 58" aria-hidden="true"><path d="M17 2c8 6 11 16 11 26v12H6V28C6 18 9 8 17 2z" fill="#e2e8f0"/><path d="M17 2c8 6 11 16 11 26H17z" fill="#cbd5e1"/><circle cx="17" cy="22" r="5" fill="#0ea5e9" stroke="#334155" stroke-width="2"/>' +
+      '<path d="M6 30l-5 12h5zM28 30l5 12h-5z" fill="#ef4444"/><path d="M10 40h14l-2 4H12z" fill="#475569"/><path d="M12 44c1 6 3 10 5 13 2-3 4-7 5-13z" fill="#f97316"/><path d="M14 44c1 4 2 7 3 9 1-2 2-5 3-9z" fill="#fde68a"/></svg>';
+  }
+  function appleSvg(good) {
+    return good ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2-2-7-2-8 3s2 11 5 11c1.3 0 2-.6 3-.6s1.7.6 3 .6c3 0 6-6 5-11s-6-5-8-3z" fill="#22c55e"/><path d="M12 7c0-2 1-4 3-5" stroke="#78350f" stroke-width="1.6" fill="none"/><path d="M13 5c2-1 4-1 5 0-1 2-3 2-5 0z" fill="#86efac"/></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2-2-7-2-8 3s2 11 5 11c1.3 0 2-.6 3-.6s1.7.6 3 .6c3 0 6-6 5-11s-6-5-8-3z" fill="#7f1d1d"/><circle cx="9" cy="12" r="1.6" fill="#1c1917"/><circle cx="15" cy="15" r="1.2" fill="#1c1917"/><path d="M12 7c0-2 1-4 3-5" stroke="#44403c" stroke-width="1.6" fill="none"/></svg>';
   }
 
   /* ---------- état ---------- */
-  var ORDER = ['crash', 'coin', 'dice', 'mines', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'limbo', 'keno', 'scratch', 'hilo', 'penalty', 'colors'];
+  var ORDER = ['crash', 'jet', 'rocket', 'mines', 'apple', 'coin', 'dice', 'wheel', 'roulette', 'slots', 'plinko', 'limbo', 'keno', 'scratch', 'hilo', 'penalty', 'race', 'colors'];
   var S = { mode: 'real', stake: 1, game: '', bal: { real: null, demo: null }, busy: false, timer: 0 };
   try { var sv = JSON.parse(localStorage.getItem('oro_cs') || 'null'); if (sv) { S.stake = Math.max(0.1, +sv.stake || 1); S.mode = sv.mode === 'demo' ? 'demo' : 'real'; } } catch (e) { /* ignore */ }
   function save() { try { localStorage.setItem('oro_cs', JSON.stringify({ stake: S.stake, mode: S.mode })); } catch (e) { /* ignore */ } }
@@ -183,7 +203,7 @@
     var tiles = ORDER.map(function (k) {
       return '<button type="button" class="cs-tile" data-g="' + k + '" style="--tc:' + GI[k][1] + '"><span class="cs-ti">' + gicon(k) + '</span><span class="cs-tt"><b>' + esc(x.g[k][0]) + '</b><small>' + esc(x.g[k][1]) + '</small></span></button>';
     }).join('');
-    $('csBody').innerHTML = '<div class="cs-hero"><div class="cs-hero-t"><b>' + esc(x.title) + '</b><small>' + esc(x.sub) + '</small></div>' +
+    $('csBody').innerHTML = '<div class="cs-hero"><div class="cs-hero-t"><b>' + esc(x.title) + '</b><small>' + esc(String(x.sub).replace(/15/, ORDER.length)) + '</small></div>' +
       '<div class="cs-tabs"><button type="button" class="on" data-to="games">' + gicon('dice') + '<span>' + esc(x.gamesTab) + '</span></button><button type="button" data-to="sports">' + gicon('sports') + '<span>' + esc(x.sports) + '</span></button></div></div>' +
       (guest() ? '<div class="cs-try"><span>' + esc(x.tryNote) + '</span><button type="button" id="csSign">' + esc(x.signup) + '</button></div>' : '') +
       '<h3 class="cs-h" id="csGames">' + esc(x.gamesTab) + ' <i>' + ORDER.length + '</i></h3><div class="cs-grid">' + tiles + '</div>' +
@@ -297,19 +317,18 @@
   };
 
   // [multiplicateur, chances sur 1000] — même table que le serveur (casino_lib.php CASINO_WHEEL) ; case dessinée à la taille de sa chance
-  var WHEEL = [[0, 70], [1.2, 45], [0, 70], [1.5, 40], [0, 70], [2, 25], [1.2, 45], [0, 70], [3, 20], [1.5, 40], [0, 70], [5, 10], [1.2, 45], [0, 70], [2, 25], [10, 8], [0, 70], [1.5, 40], [3, 20], [1.2, 45], [0, 65], [2, 25], [5, 10], [50, 2]];
+  var WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], [2, 325], [0, 630], [1.2, 500], [0.5, 640], [3, 350], [0, 631], [1.2, 500], [0.5, 640], [5, 120], [1.5, 550], [0, 631], [0.5, 640], [1.2, 500], [2, 325], [10, 50], [50, 8]];
   GAMES.wheel = function (box, x) {
     var rot = 0, out = '', a0 = 0, mids = [];
-    var col = { 0: '#1e2a38', 1.2: '#2563eb', 1.5: '#0ea5e9', 2: '#16a34a', 3: '#f59e0b', 5: '#f97316', 10: '#e11d48', 50: '#facc15' };
+    var col = { 0: '#1e2a38', 0.5: '#64748b', 1.2: '#2563eb', 1.5: '#0ea5e9', 2: '#16a34a', 3: '#f59e0b', 5: '#f97316', 10: '#e11d48', 50: '#facc15' };
     var pt = function (r, a) { a = a * Math.PI / 180; return (r * Math.sin(a)).toFixed(2) + ' ' + (-r * Math.cos(a)).toFixed(2); };
     WHEEL.forEach(function (s, i) {
-      var v = s[0], sw = s[1] / 1000 * 360, a1 = a0 + sw;
+      var v = s[0], sw = s[1] / 10000 * 360, a1 = a0 + sw;
       out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + col[v] + '" stroke="#0e1621" stroke-width="1.5"/>';
-      if (sw >= 9) out += '<g transform="rotate(' + (a0 + sw / 2) + ') translate(0 -90)"><text text-anchor="middle" dominant-baseline="middle" font-size="' + (sw > 20 ? 13 : 10) + '" font-weight="800" fill="' + (v === 50 ? '#3b2a00' : '#fff') + '">' + (v ? '×' + v : '0') + '</text></g>';
       mids.push(a0 + sw / 2); a0 = a1;
     });
     out = '<circle r="124" fill="#0e1621"/>' + out + '<circle r="118" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>';
-    var legend = [50, 10, 5, 3, 2, 1.5, 1.2].map(function (v) { return '<span style="--c:' + col[v] + '">×' + v + '</span>'; }).join('');
+    var legend = [50, 10, 5, 3, 2, 1.5, 1.2, 0.5, 0].map(function (v) { return '<span style="--c:' + col[v] + '">×' + String(v).replace('.', ',') + '</span>'; }).join('');
     box.innerHTML = '<div class="cs-stage"><div class="whl2"><div class="whl2-rot" id="csWheel"><svg viewBox="-125 -125 250 250">' + out + '<circle r="22" fill="#F5B700" stroke="#0e1621" stroke-width="4"/></svg></div><i class="whl2-pin"></i></div><div class="whl-leg">' + legend + '</div></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
     $('csGo').addEventListener('click', async function () {
@@ -424,19 +443,32 @@
 
   GAMES.penalty = function (box, x) {
     var aim = 1;
-    box.innerHTML = '<div class="cs-stage pen"><div class="goal"><i class="kp" id="csKp">🧤</i><b class="z" data-a="0"></b><b class="z" data-a="1"></b><b class="z" data-a="2"></b></div><span class="ball" id="csPb">⚽</span></div><div class="cs-res"></div>' +
-      stakePanel(x.play, '<label class="cs-lbl">' + esc(x.aim) + ' · ×1,44</label><div class="cs-seg"><button type="button" data-aim="0">' + esc(x.left) + '</button><button type="button" data-aim="1" class="on">' + esc(x.center) + '</button><button type="button" data-aim="2">' + esc(x.right) + '</button></div>');
+    var net = ''; for (var i = 1; i < 14; i++) net += '<path d="M' + (60 + i * 13) + ' 34V112"/>'; for (var j = 1; j < 6; j++) net += '<path d="M60 ' + (34 + j * 13) + 'H240"/>';
+    var pitch = '<svg class="pitch" viewBox="0 0 300 300" preserveAspectRatio="none"><g stroke="rgba(255,255,255,.18)" stroke-width="1">' + net + '</g>' +
+      '<path d="M60 112V34H240V112" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><path d="M0 112H300" stroke="rgba(255,255,255,.5)" stroke-width="2"/>' +
+      '<path d="M30 300L70 112M270 300L230 112" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M85 185H215" stroke="rgba(255,255,255,.35)" stroke-width="2"/><circle cx="150" cy="250" r="3" fill="#fff"/>' +
+      [0, 1, 2].map(function (z) { return '<rect class="pz" data-z="' + z + '" x="' + (62 + z * 59) + '" y="36" width="57" height="74" fill="rgba(255,255,255,0)"/>'; }).join('') + '</svg>';
+    var keeper = '<svg viewBox="0 0 70 90"><circle cx="35" cy="14" r="10" fill="#f1c27d"/><path d="M27 10a8 6 0 0 1 16 0z" fill="#111"/><path d="M20 26h30l4 34H16z" fill="#f59e0b"/><path d="M20 28L4 16M50 28l16-12" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/><circle cx="4" cy="15" r="6" fill="#22c55e"/><circle cx="66" cy="15" r="6" fill="#22c55e"/><path d="M22 60l-4 26M48 60l4 26" stroke="#111827" stroke-width="9" stroke-linecap="round"/><text x="35" y="48" text-anchor="middle" font-size="13" font-weight="900" fill="#111">1</text></svg>';
+    var ball = '<svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M17 9l6 4.3-2.3 7.2h-7.4L11 13.3z" fill="#111"/><path d="M17 9V2M23 13.3l6.5-2M20.7 20.5l4 5.7M13.3 20.5l-4 5.7M11 13.3l-6.5-2" stroke="#111" stroke-width="1.4"/></svg>';
+    box.innerHTML = '<div class="cs-stage pen2">' + pitch + '<span class="kp2" id="csKp">' + keeper + '</span><span class="ball2" id="csPb">' + ball + '</span><b class="pen-msg" id="csPm"></b></div><div class="cs-res"></div>' +
+      stakePanel(x.play, '<label class="cs-lbl">' + esc(x.aim) + ' · ×1,44</label><div class="cs-seg"><button type="button" data-aim="0">← ' + esc(x.left) + '</button><button type="button" data-aim="1" class="on">' + esc(x.center) + '</button><button type="button" data-aim="2">' + esc(x.right) + ' →</button></div>');
     bindStake(box);
-    box.querySelectorAll('[data-aim]').forEach(function (b) { b.addEventListener('click', function () { aim = +b.getAttribute('data-aim'); box.querySelectorAll('[data-aim]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
+    var setAim = function (a) { aim = a; box.querySelectorAll('[data-aim]').forEach(function (z) { z.classList.toggle('on', +z.getAttribute('data-aim') === a); }); };
+    box.querySelectorAll('[data-aim]').forEach(function (b) { b.addEventListener('click', function () { setAim(+b.getAttribute('data-aim')); }); });
+    box.querySelectorAll('.pz').forEach(function (z) { z.addEventListener('click', function () { setAim(+z.getAttribute('data-z')); }); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('penalty', { aim: aim }); if (!r) return;
-      var pb = $('csPb'), kp = $('csKp');
-      pb.style.transition = 'none'; pb.style.transform = 'translate(-50%,0)'; kp.style.transform = 'translateX(-50%)';
-      await sleep(30);
-      pb.style.transition = 'transform .6s ease-out'; kp.style.transition = 'transform .45s ease-out';
-      pb.style.transform = 'translate(calc(-50% + ' + ((r.view.aim - 1) * 90) + 'px),-128px) scale(.7)';
-      kp.style.transform = 'translateX(calc(-50% + ' + ((r.view.keeper - 1) * 90) + 'px))';
-      await sleep(700); resultLine(box, r, r.win > 0 ? x.goal : x.saved);
+      var pb = $('csPb'), kp = $('csKp'), st = box.querySelector('.pen2'), w = st.clientWidth, h = st.clientHeight, pm = $('csPm');
+      pm.className = 'pen-msg'; pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none';
+      await sleep(40);
+      pb.style.transition = ''; kp.style.transition = '';
+      var dx = (r.view.aim - 1) * w * 0.2, dy = -(h * 0.62);
+      pb.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(.62) rotate(540deg)';
+      var kdx = (r.view.keeper - 1) * w * 0.2;
+      kp.style.transform = 'translateX(' + kdx + 'px) rotate(' + ((r.view.keeper - 1) * 52) + 'deg)';
+      await sleep(620);
+      pm.textContent = r.win > 0 ? x.goal : x.saved; pm.className = 'pen-msg on';
+      resultLine(box, r, r.win > 0 ? x.goal : x.saved);
     });
   };
 
@@ -465,57 +497,116 @@
     return true;
   }
 
-  GAMES.crash = function (box, x) {
-    var g = null, off = 0;
-    var MULT = function (s) { return Math.max(1, Math.floor(Math.exp(0.08 * Math.max(0, s)) * 100) / 100); };
-    box.innerHTML = '<div class="cs-stage crash-stage"><svg viewBox="0 0 300 170" preserveAspectRatio="none" class="crash-sky"><defs><linearGradient id="csArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e11d48" stop-opacity=".55"/><stop offset="1" stop-color="#e11d48" stop-opacity="0"/></linearGradient></defs>' +
-      '<g stroke="rgba(255,255,255,.06)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + [60, 120, 180, 240].map(function (xx) { return '<path d="M' + xx + ' 0V170"/>'; }).join('') + '</g>' +
-      '<path id="csArea" d="M10 160" fill="url(#csArea)"/><path id="csTrail" d="M10 160" fill="none" stroke="#ff2d55" stroke-width="3" stroke-linecap="round"/></svg>' +
-      '<span class="plane" id="csPlane">' + planeSvg() + '</span><b class="crash-n" id="csCm">1.00×</b><small id="csCs"></small></div><div class="cs-res"></div>' +
-      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.start, '<label class="cs-lbl">' + esc(x.auto) + '</label><div class="cs-stake"><input id="csAuto" inputmode="decimal" placeholder="—"></div>'));
+  /* --- 3 jeux « ça monte » (même calcul serveur, décor différent) : Avion, Jet, Fusée --- */
+  var CRASH_THEME = {
+    crash: { col: '#ff2d55', cls: 'th-plane', sprite: function () { return planeSvg(); }, w: 78, h: 48, rot: -12 },
+    jet: { col: '#a855f7', cls: 'th-jet', sprite: function () { return jetSvg(); }, w: 62, h: 74, rot: 0 },
+    rocket: { col: '#22d3ee', cls: 'th-rocket', sprite: function () { return rocketSvg(); }, w: 46, h: 78, rot: 28 }
+  };
+  function makeCrash(game) {
+    return function (box, x) {
+      var th = CRASH_THEME[game], g = null, off = 0;
+      var MULT = function (s) { return Math.max(1, Math.floor(Math.exp(0.08 * Math.max(0, s)) * 100) / 100); };
+      var stars = ''; for (var i = 0; i < 26; i++) stars += '<circle cx="' + ((i * 137 + 31) % 300) + '" cy="' + ((i * 71 + i * i * 13 + 7) % 165) + '" r="' + (i % 3 ? 0.8 : 1.3) + '" fill="#fff" opacity="' + (0.25 + (i % 4) * 0.12) + '"/>';
+      box.innerHTML = '<div class="cs-stage crash-stage ' + th.cls + '"><svg viewBox="0 0 300 170" preserveAspectRatio="none" class="crash-sky"><defs><linearGradient id="csArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + th.col + '" stop-opacity=".5"/><stop offset="1" stop-color="' + th.col + '" stop-opacity="0"/></linearGradient></defs>' +
+        stars + '<g stroke="rgba(255,255,255,.05)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + '</g>' +
+        '<path id="csArea" d="M10 160" fill="url(#csArea)"/><path id="csTrail" d="M10 160" fill="none" stroke="' + th.col + '" stroke-width="3.2" stroke-linecap="round"/></svg>' +
+        '<span class="plane" id="csPlane" style="width:' + th.w + 'px;height:' + th.h + 'px">' + th.sprite() + '</span><b class="crash-n" id="csCm">1.00×</b><small class="crash-hint" id="csCs"></small></div><div class="cs-res"></div>' +
+        (guest() ? '<div id="csNeed"></div>' : stakePanel(x.start, '<label class="cs-lbl">' + esc(x.auto) + '</label><div class="cs-stake"><input id="csAuto" inputmode="decimal" placeholder="—"></div>'));
+      if (guest()) { needAccount($('csNeed'), x); return; }
+      bindStake(box);
+      var btn = $('csGo'), plane = $('csPlane');
+      var draw = function (m, s) {
+        $('csCm').textContent = m.toFixed(2) + '×';
+        var px = Math.min(270, 10 + s * 18), py = Math.max(16, 160 - (m - 1) * 40);
+        var st = $('csTrail').ownerSVGElement.getBoundingClientRect(), kx = st.width / 300, ky = st.height / 170;
+        var d = 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py;
+        $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
+        plane.style.transform = 'translate(' + (px * kx - th.w * 0.55) + 'px,' + (py * ky - th.h * 0.75) + 'px) rotate(' + th.rot + 'deg)';
+      };
+      var finish = function (r) {
+        stopAll(); g = r;
+        if (!(r.out > 0)) { plane.classList.add('gone'); }
+        $('csCm').className = 'crash-n ' + (r.out > 0 ? 'w' : 'l');
+        $('csCm').textContent = (r.out > 0 ? r.out : r.c).toFixed(2) + '×';
+        resultLine(box, r, r.out > 0 ? fmt(x.cashed, { x: r.out.toFixed(2), w: m2(r.win) }) : fmt(x.boom, { x: r.c.toFixed(2) }));
+        btn.textContent = x.start; btn.classList.remove('cash'); btn.disabled = false;
+      };
+      var fly = function (r) {
+        g = r; off = r.now - Date.now() / 1000;
+        plane.classList.remove('gone');
+        $('csCm').className = 'crash-n'; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';
+        btn.classList.add('cash');
+        var tick = function () {
+          var s = Date.now() / 1000 + off - g.t0, m = MULT(s);
+          draw(m, s);
+          btn.textContent = x.cashout + ' ' + m2(g.stake * m) + ' $';
+          S.raf = requestAnimationFrame(tick);
+        };
+        tick();
+        S.timer = setInterval(async function () {
+          var st = await multi(game, 'state', null, true);
+          if (st && st.done) finish(st);
+        }, 700);
+      };
+      btn.addEventListener('click', async function () {
+        if (g && !g.done) { btn.disabled = true; var c = await multi(game, 'cash'); btn.disabled = false; if (c && c.done) finish(c); return; }
+        var auto = parseFloat(String(($('csAuto') || {}).value || '').replace(',', '.'));
+        var r = await multi(game, 'start', auto >= 1.01 ? { auto: auto } : {});
+        if (!r) return;
+        if (r.done) { finish(r); return; }
+        fly(r);
+      });
+      multi(game, 'state', null, true).then(function (r) { if (r && !r.done) fly(r); });
+    };
+  }
+  GAMES.crash = makeCrash('crash');
+  GAMES.jet = makeCrash('jet');
+  GAMES.rocket = makeCrash('rocket');
+
+  /* --- Pomme de la fortune : 10 étages, 5 pommes par étage, 1 pourrie ; on encaisse quand on veut --- */
+  GAMES.apple = function (box, x) {
+    var g = null;
+    var rows = ''; for (var r = 9; r >= 0; r--) rows += '<div class="ap-row" data-row="' + r + '"><em></em>' + [0, 1, 2, 3, 4].map(function (c) { return '<button type="button" data-c="' + c + '"></button>'; }).join('') + '</div>';
+    box.innerHTML = '<div class="cs-stage ap-stage"><div class="ap" id="csAp">' + rows + '</div></div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.play));
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
-    var draw = function (m, s) {
-      $('csCm').textContent = m.toFixed(2) + '×';
-      var px = Math.min(280, 10 + s * 18), py = Math.max(12, 160 - (m - 1) * 40);
-      var st = $('csTrail').ownerSVGElement.getBoundingClientRect(), kx = st.width / 300, ky = st.height / 170;
-      var d = 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py;
-      $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
-      $('csPlane').style.transform = 'translate(' + (px * kx - 30) + 'px,' + (py * ky - 34) + 'px) rotate(-14deg)';
-    };
-    var finish = function (r) {
-      stopAll(); g = r;
-      $('csCm').className = 'crash-n ' + (r.out > 0 ? 'w' : 'l');
-      $('csCm').textContent = (r.out > 0 ? r.out : r.c).toFixed(2) + '×';
-      resultLine(box, r, r.out > 0 ? fmt(x.cashed, { x: r.out.toFixed(2), w: m2(r.win) }) : fmt(x.boom, { x: r.c.toFixed(2) }));
-      btn.textContent = x.start; btn.classList.remove('cash'); btn.disabled = false;
-    };
-    var fly = function (r) {
-      g = r; off = r.now - Date.now() / 1000;
-      $('csCm').className = 'crash-n'; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';
-      btn.classList.add('cash');
-      var tick = function () {
-        var s = Date.now() / 1000 + off - g.t0, m = MULT(s);
-        draw(m, s);
-        btn.textContent = x.cashout + ' ' + m2(g.stake * m) + ' $';
-        S.raf = requestAnimationFrame(tick);
-      };
-      tick();
-      S.timer = setInterval(async function () {
-        var st = await multi('crash', 'state', null, true);
-        if (st && st.done) finish(st);
-      }, 700);
+    var mult = function (k) { return k < 1 ? 0 : Math.floor(0.97 / Math.pow(0.8, k) * 100) / 100; };
+    box.querySelectorAll('.ap-row').forEach(function (row) { var k = +row.getAttribute('data-row') + 1; row.querySelector('em').textContent = '×' + mult(k).toFixed(2); });
+    var paint = function (r) {
+      g = r;
+      box.querySelectorAll('.ap-row').forEach(function (row) {
+        var k = +row.getAttribute('data-row');
+        row.classList.toggle('cur', !r.done && k === r.k);
+        row.classList.toggle('past', k < r.k);
+        row.querySelectorAll('button').forEach(function (b) {
+          var c = +b.getAttribute('data-c'); b.className = ''; b.innerHTML = '';
+          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.innerHTML = appleSvg(true); }
+          if (r.done && r.bad) {
+            if (r.bad[k] === c && (k <= r.k)) { b.className = (r.boom === k) ? 'rot boom' : 'rot'; b.innerHTML = appleSvg(false); }
+          }
+        });
+      });
+      if (r.done) { resultLine(box, r, r.win > 0 ? '×' + mult(r.k).toFixed(2) : ''); btn.textContent = x.play; btn.classList.remove('cash'); }
+      else {
+        btn.classList.add('cash');
+        btn.textContent = r.k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.open;
+        box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';
+      }
     };
     btn.addEventListener('click', async function () {
-      if (g && !g.done) { btn.disabled = true; var c = await multi('crash', 'cash'); btn.disabled = false; if (c && c.done) finish(c); return; }
-      var auto = parseFloat(String(($('csAuto') || {}).value || '').replace(',', '.'));
-      var r = await multi('crash', 'start', auto >= 1.01 ? { auto: auto } : {});
-      if (!r) return;
-      if (r.done) { finish(r); return; }
-      fly(r);
+      if (g && !g.done) { if (!g.k) return; var c = await multi('apple', 'cash'); if (c) paint(c); return; }
+      var r = await multi('apple', 'start'); if (r) paint(r);
     });
-    multi('crash', 'state', null, true).then(function (r) { if (r && !r.done) fly(r); });
+    box.querySelectorAll('.ap-row button').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        if (!g || g.done) return;
+        if (+b.parentElement.getAttribute('data-row') !== g.k) return;
+        var r = await multi('apple', 'pick', { cell: +b.getAttribute('data-c') }); if (r) paint(r);
+      });
+    });
+    multi('apple', 'state', null, true).then(function (r) { if (r && !r.done) paint(r); });
   };
 
   GAMES.mines = function (box, x) {

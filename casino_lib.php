@@ -15,13 +15,20 @@ declare(strict_types=1);
 const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000.0;
 const CASINO_MAX_WIN = 10000.0;
-const CASINO_GAMES = ['crash', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines'];
-const CASINO_MULTI = ['crash', 'hilo', 'mines']; // jeux en plusieurs étapes (état gardé par le serveur)
+const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple'];
+const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple']; // jeux en plusieurs étapes (état gardé par le serveur)
+const CASINO_CRASH = ['crash', 'jet', 'rocket'];                          // v2691 : 3 jeux « ça monte » (même calcul, décor différent)
+const CASINO_APPLE_ROWS = 10;                                             // Pomme de la fortune : 10 étages, 5 pommes, 1 pourrie
+function casino_is_crash(string $g): bool { return in_array($g, CASINO_CRASH, true); }
+/** Pomme de la fortune : multiplicateur après $k étages réussis (1 pomme pourrie sur 5 → 80 % de chances par étage). */
+function casino_apple_mult(int $k): float { return $k < 1 ? 0.0 : floor(CASINO_EDGE / pow(0.8, $k) * 100) / 100; }
 
 // Tables publiques (affichées telles quelles par le navigateur).
 // v2690b — roue casino : 24 cases [multiplicateur, chances sur 1000] ; chaque case est DESSINÉE à la taille de sa chance
 // (honnête : le ×50 est une toute petite case). Retour aux joueurs 94,6 %.
-const CASINO_WHEEL = [[0, 70], [1.2, 45], [0, 70], [1.5, 40], [0, 70], [2, 25], [1.2, 45], [0, 70], [3, 20], [1.5, 40], [0, 70], [5, 10], [1.2, 45], [0, 70], [2, 25], [10, 8], [0, 70], [1.5, 40], [3, 20], [1.2, 45], [0, 65], [2, 25], [5, 10], [50, 2]];
+// v2691 (propriétaire : « trop de zéros ») : 21 cases [multiplicateur, chances sur 10 000], ×0,5 = moitié rendue.
+// Zéro 25 %, moitié rendue 32 %, gain 43 %. Retour aux joueurs 95 %.
+const CASINO_WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], [2, 325], [0, 630], [1.2, 500], [0.5, 640], [3, 350], [0, 631], [1.2, 500], [0.5, 640], [5, 120], [1.5, 550], [0, 631], [0.5, 640], [1.2, 500], [2, 325], [10, 50], [50, 8]];
 const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.4, 0.6, 1.4, 3, 12];                                      // 8 rangées, retour 95,9 %
 const CASINO_KENO = [0, 0.6, 3.5, 25];                                                               // 3 numéros choisis sur 20, 5 tirés : retour 95,6 %
 const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 %
@@ -77,7 +84,7 @@ function casino_instant(string $game, array $p, float $stake): array {
       $res = max(1.0, floor(CASINO_EDGE / casino_rand() * 100) / 100);
       return ['mult' => $res >= $t ? $t : 0.0, 'view' => ['res' => min($res, 1000000.0), 't' => $t]];
     case 'wheel':
-      $r = random_int(1, 1000); $acc = 0; $i = 0;
+      $r = random_int(1, 10000); $acc = 0; $i = 0;
       foreach (CASINO_WHEEL as $j => [$x, $w]) { $acc += $w; if ($r <= $acc) { $i = $j; break; } }
       return ['mult' => (float) CASINO_WHEEL[$i][0], 'view' => ['i' => $i]];
     case 'race':
@@ -334,8 +341,8 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
     }
     if (is_array($cur) && empty($cur['done'])) {
       // partie précédente encore ouverte : l'avion a forcément explosé depuis ; mines / hi-lo : on la reprend
-      if ($game === 'crash') {
-        $cur = casino_settle_crash($db, $uid, $file, $now);
+      if (casino_is_crash($game)) {
+        $cur = casino_settle_crash($db, $uid, $file, $now, $game);
         if (is_array($cur) && empty($cur['done'])) return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_public($game, $cur, $now);
       } else return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_public($game, $cur, $now);
     }
@@ -343,10 +350,13 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
     $deb = casino_debit($db, $uid, $mode, $stake, $ref);
     if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
     $g = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'done' => 0];
-    if ($game === 'crash') {
+    if (casino_is_crash($game)) {
       $g['c'] = casino_crash_point();
       $auto = round((float) ($p['auto'] ?? 0), 2);
       if ($auto >= 1.01) $g['auto'] = $auto;
+    } elseif ($game === 'apple') {
+      $g['bad'] = []; for ($i = 0; $i < CASINO_APPLE_ROWS; $i++) $g['bad'][] = random_int(0, 4);
+      $g['k'] = 0; $g['picks'] = [];
     } elseif ($game === 'mines') {
       $m = max(1, min(10, (int) ($p['mines'] ?? 3)));
       $cells = range(0, 24);
@@ -363,9 +373,9 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
   if (!is_array($g)) return ['ok' => false, 'reason' => 'noGame'];
   if (!empty($g['done'])) return empty($g['paid']) ? casino_finish($db, $uid, $game, $g, $now) : (['ok' => true] + casino_public($game, $g, $now));
 
-  if ($game === 'crash') {
+  if (casino_is_crash($game)) {
     if ($act === 'state') {
-      $r = casino_settle_crash($db, $uid, $file, $now);
+      $r = casino_settle_crash($db, $uid, $file, $now, $game);
       return ['ok' => true, 'now' => $now] + casino_public($game, $r ?? $g, $now);
     }
     if ($act === 'cash') {
@@ -379,6 +389,37 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         $st['g'][$game] = $g;
         return $g;
       });
+      return casino_finish($db, $uid, $game, $r, $now);
+    }
+  }
+  if ($game === 'apple') {
+    if ($act === 'pick') {
+      $cell = (int) ($p['cell'] ?? -1);
+      if ($cell < 0 || $cell > 4) return ['ok' => false, 'reason' => 'param'];
+      $r = casino_with($file, static function (array &$st) use ($game, $cell) {
+        $g = $st['g'][$game];
+        if (!empty($g['done'])) return $g;
+        $row = (int) $g['k'];
+        $g['picks'][] = $cell;
+        if ($cell === (int) $g['bad'][$row]) { $g['done'] = 1; $g['win'] = 0.0; $g['boom'] = $row; }
+        else {
+          $g['k'] = $row + 1;
+          if ($g['k'] >= CASINO_APPLE_ROWS || $g['stake'] * casino_apple_mult($g['k']) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_apple_mult($g['k']))); }
+        }
+        $st['g'][$game] = $g;
+        return $g;
+      });
+      return !empty($r['done']) ? casino_finish($db, $uid, $game, $r, $now) : (['ok' => true] + casino_public($game, $r, $now));
+    }
+    if ($act === 'cash') {
+      $r = casino_with($file, static function (array &$st) use ($game) {
+        $g = $st['g'][$game];
+        if (!empty($g['done']) || $g['k'] < 1) return $g;
+        $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_apple_mult((int) $g['k'])));
+        $st['g'][$game] = $g;
+        return $g;
+      });
+      if (empty($r['done'])) return ['ok' => false, 'reason' => 'param'];
       return casino_finish($db, $uid, $game, $r, $now);
     }
   }
@@ -448,18 +489,18 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
 }
 
 /** Avion : si l'explosion est passée (ou l'encaissement automatique atteint), la partie est réglée. */
-function casino_settle_crash(array $db, string $uid, string $file, float $now): ?array {
-  $r = casino_with($file, static function (array &$st) use ($now) {
-    $g = $st['g']['crash'] ?? null;
+function casino_settle_crash(array $db, string $uid, string $file, float $now, string $game = 'crash'): ?array {
+  $r = casino_with($file, static function (array &$st) use ($now, $game) {
+    $g = $st['g'][$game] ?? null;
     if (!is_array($g) || !empty($g['done'])) return $g;
     $m = casino_crash_mult($now - (float) $g['t0']);
     if (!empty($g['auto']) && $g['auto'] < $g['c'] && $m >= $g['auto']) { $g['done'] = 1; $g['out'] = (float) $g['auto']; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $g['auto'])); }
     elseif ($m >= (float) $g['c']) { $g['done'] = 1; $g['out'] = 0; $g['win'] = 0.0; }
     else return $g;
-    $st['g']['crash'] = $g;
+    $st['g'][$game] = $g;
     return $g;
   });
-  if (is_array($r) && !empty($r['done']) && empty($r['paid'])) casino_finish($db, $uid, 'crash', $r, $now);
+  if (is_array($r) && !empty($r['done']) && empty($r['paid'])) casino_finish($db, $uid, $game, $r, $now);
   return $r;
 }
 
@@ -489,9 +530,13 @@ function casino_finish(array $db, string $uid, string $game, array $g, float $no
 /** Ce que le navigateur a le droit de voir (jamais le point d'explosion ni les mines avant la fin). */
 function casino_public(string $game, array $g, float $now): array {
   $o = ['game' => $game, 'mode' => (string) $g['mode'], 'stake' => (float) $g['stake'], 'done' => !empty($g['done']) ? 1 : 0, 'win' => (float) ($g['win'] ?? 0)];
-  if ($game === 'crash') {
+  if (casino_is_crash($game)) {
     $o['t0'] = (float) $g['t0']; $o['auto'] = (float) ($g['auto'] ?? 0);
     if (!empty($g['done'])) { $o['c'] = (float) $g['c']; $o['out'] = (float) ($g['out'] ?? 0); }
+  } elseif ($game === 'apple') {
+    $o['k'] = (int) $g['k']; $o['picks'] = $g['picks']; $o['rows'] = CASINO_APPLE_ROWS;
+    $o['mult'] = casino_apple_mult((int) $g['k']); $o['next'] = casino_apple_mult((int) $g['k'] + 1);
+    if (!empty($g['done'])) { $o['bad'] = $g['bad']; $o['boom'] = $g['boom'] ?? null; }
   } elseif ($game === 'mines') {
     $o['m'] = (int) $g['m']; $o['open'] = array_values($g['open']); $o['next'] = casino_mines_mult((int) $g['m'], count($g['open']) + 1);
     $o['mult'] = count($g['open']) ? casino_mines_mult((int) $g['m'], count($g['open'])) : 0;
