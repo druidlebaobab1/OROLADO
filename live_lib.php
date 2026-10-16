@@ -199,3 +199,164 @@ function live_post_count(array $ids, string $field): void {
     return $hit ? ['ok' => true, '__write' => ['list' => $list]] : ['ok' => true];
   }, ['list' => []]);
 }
+
+/* =====================================================================================================
+ * v2680 — AMIS : identifiant secret (OR + 10 caractères, sans O/0, I/1, L), conversations privées entre
+ * joueurs (texte + photos), bloquer / signaler, recherche limitée (10 essais ratés / heure).
+ * Fichiers : data/live/ids.json, data/live/dm/<a>__<b>.json, data/live/inbox/<uid>.json,
+ * data/live/blocks/<uid>.json, data/live/reports.json
+ * ===================================================================================================== */
+const LIVE_ID_ALPHA = '23456789ABCDEFGHJKMNPQRSTVWXYZ'; // 30 signes : ni O/0, ni I/1, ni L, ni U
+const LIVE_DM_HOUR = 60;        // messages privés par heure
+const LIVE_NEWCONV_DAY = 20;    // nouvelles personnes contactées par jour
+const LIVE_FIND_MISS = 10;      // recherches ratées par heure avant blocage
+
+function live_ids_file(): string { return live_dir() . '/ids.json'; }
+
+function live_new_oro_id(array $taken): string {
+  do {
+    $s = 'OR';
+    for ($i = 0; $i < 10; $i++) $s .= LIVE_ID_ALPHA[random_int(0, strlen(LIVE_ID_ALPHA) - 1)];
+  } while (isset($taken[$s]));
+  return $s;
+}
+
+/** Identifiant secret du joueur (créé à la 1re demande, puis toujours le même). */
+function live_oro_id(array $user): string {
+  $uid = (string) ($user['id'] ?? '');
+  if ($uid === '') return '';
+  $r = live_update(live_ids_file(), function ($m) use ($uid, $user) {
+    $m['u'] = (array) ($m['u'] ?? []); $m['i'] = (array) ($m['i'] ?? []); $m['n'] = (array) ($m['n'] ?? []);
+    $name = trim((string) ($user['displayName'] ?? $user['name'] ?? ''));
+    if (isset($m['u'][$uid])) {
+      if ($name !== '' && ($m['n'][$uid] ?? '') !== $name) { $m['n'][$uid] = $name; return ['id' => $m['u'][$uid], '__write' => $m]; }
+      return ['id' => $m['u'][$uid]];
+    }
+    $id = live_new_oro_id($m['i']);
+    $m['u'][$uid] = $id; $m['i'][$id] = $uid; $m['n'][$uid] = $name !== '' ? $name : 'Joueur';
+    return ['id' => $id, '__write' => $m];
+  }, ['u' => [], 'i' => [], 'n' => []]);
+  return (string) ($r['id'] ?? '');
+}
+
+function live_norm_oro_id(string $s): string {
+  $s = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $s) ?? '');
+  return preg_match('/^OR[2-9A-HJKMNP-TV-Z]{10}$/', $s) ? $s : '';
+}
+
+/** Joueur derrière un identifiant : ['uid','id','name'] ou null. */
+function live_who(string $oroId): ?array {
+  $m = live_read_json(live_ids_file(), []);
+  $uid = (string) ($m['i'][$oroId] ?? '');
+  if ($uid === '') return null;
+  return ['uid' => $uid, 'id' => $oroId, 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
+}
+
+function live_who_uid(string $uid): ?array {
+  $m = live_read_json(live_ids_file(), []);
+  $id = (string) ($m['u'][$uid] ?? '');
+  return $id === '' ? null : ['uid' => $uid, 'id' => $id, 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
+}
+
+/** Recherche d'un ami : au-delà de 10 essais ratés en 1 h, plus de recherche (anti-devinette). */
+function live_find_allowed(string $uid): bool {
+  $f = live_dir('quota') . '/' . live_safe_id($uid) . '_miss.json';
+  $q = live_read_json($f, []);
+  $list = array_filter((array) ($q['t'] ?? []), static fn($t) => is_int($t) && $t > time() - 3600);
+  return count($list) < LIVE_FIND_MISS;
+}
+
+function live_find_miss(string $uid): void { live_quota_ok($uid, 'miss', 1000, 3600); }
+
+function live_pair(string $a, string $b): string {
+  $x = [live_safe_id($a), live_safe_id($b)]; sort($x);
+  return $x[0] . '__' . $x[1];
+}
+
+function live_dm_file(string $pair): string { return live_dir('dm') . '/' . live_safe_id(str_replace('__', 'XX9XX', $pair)) . '.json'; }
+
+function live_blocks(string $uid): array { return array_values((array) (live_read_json(live_dir('blocks') . '/' . live_safe_id($uid) . '.json', [])['b'] ?? [])); }
+
+function live_is_blocked(string $by, string $who): bool { return in_array($who, live_blocks($by), true); }
+
+function live_set_block(string $uid, string $other, bool $on): void {
+  live_update(live_dir('blocks') . '/' . live_safe_id($uid) . '.json', function ($q) use ($other, $on) {
+    $b = array_values(array_filter((array) ($q['b'] ?? []), static fn($x) => $x !== $other));
+    if ($on) $b[] = $other;
+    return ['ok' => true, '__write' => ['b' => array_slice($b, -500)]];
+  });
+}
+
+/** Boîte de réception : liste des conversations privées d'un joueur. */
+function live_inbox_touch(string $uid, string $peer, int $at, bool $unread): void {
+  live_update(live_dir('inbox') . '/' . live_safe_id($uid) . '.json', function ($q) use ($peer, $at, $unread) {
+    $c = (array) ($q['c'] ?? []);
+    $row = (array) ($c[$peer] ?? []);
+    $row['at'] = $at;
+    $row['un'] = $unread ? (int) ($row['un'] ?? 0) + 1 : 0;
+    $c[$peer] = $row;
+    uasort($c, static fn($x, $y) => (int) ($y['at'] ?? 0) <=> (int) ($x['at'] ?? 0));
+    return ['ok' => true, '__write' => ['c' => array_slice($c, 0, 300, true)]];
+  });
+}
+
+function live_inbox(string $uid): array { return (array) (live_read_json(live_dir('inbox') . '/' . live_safe_id($uid) . '.json', [])['c'] ?? []); }
+
+function live_inbox_read(string $uid, string $peer): void {
+  $f = live_dir('inbox') . '/' . live_safe_id($uid) . '.json';
+  if (!is_file($f)) return;
+  live_update($f, function ($q) use ($peer) {
+    if ((int) ($q['c'][$peer]['un'] ?? 0) === 0) return ['ok' => true];
+    $q['c'][$peer]['un'] = 0;
+    return ['ok' => true, '__write' => $q];
+  });
+}
+
+/** Message privé de $from vers $to. Refusé (sans le dire) si $to a bloqué $from. */
+function live_dm_send(string $from, string $to, string $text, string $img = ''): array {
+  if ($from === '' || $to === '' || $from === $to || ($text === '' && $img === '')) return ['ok' => false, 'reason' => 'empty'];
+  $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => $from, 't' => $text, 'at' => time()];
+  if ($img !== '') $msg['img'] = $img;
+  $pair = live_pair($from, $to);
+  // Bloqué par le destinataire : le message reste visible pour l'expéditeur seulement (il ne sait pas qu'il est bloqué).
+  if (live_is_blocked($to, $from)) $msg['hid'] = $to;
+  live_update(live_dm_file($pair), function ($th) use ($msg, $pair) {
+    $th['pair'] = $pair;
+    $msgs = (array) ($th['msgs'] ?? []);
+    $msgs[] = $msg;
+    $th['msgs'] = array_slice($msgs, -LIVE_THREAD_KEEP);
+    $th['at'] = $msg['at'];
+    return ['ok' => true, '__write' => $th];
+  });
+  live_inbox_touch($from, $to, $msg['at'], false);
+  $delivered = !live_is_blocked($to, $from);
+  if ($delivered) live_inbox_touch($to, $from, $msg['at'], true);
+  return ['ok' => true, 'msg' => $msg, 'delivered' => $delivered];
+}
+
+/** Messages d'une conversation vus par $a (sans ceux envoyés par quelqu'un que $a a bloqué). */
+function live_dm_thread(string $a, string $b): array {
+  $all = (array) (live_read_json(live_dm_file(live_pair($a, $b)), [])['msgs'] ?? []);
+  return array_values(array_filter($all, static fn($m) => (string) ($m['hid'] ?? '') !== $a));
+}
+
+/** Une photo appartient-elle à une conversation de ce joueur (support ou privée) ? */
+function live_img_allowed(string $uid, string $name): bool {
+  foreach ((array) (live_thread($uid)['msgs'] ?? []) as $m) if (($m['img'] ?? '') === $name) return true;
+  foreach (array_keys(live_inbox($uid)) as $peer) {
+    foreach (live_dm_thread($uid, (string) $peer) as $m) if (($m['img'] ?? '') === $name) return true;
+  }
+  return false;
+}
+
+/** Signalement d'un joueur : gardé pour l'admin avec les 20 derniers messages de la conversation. */
+function live_report(string $by, string $who, string $why): void {
+  $snap = array_slice(live_dm_thread($by, $who), -20);
+  live_update(live_dir() . '/reports.json', function ($q) use ($by, $who, $why, $snap) {
+    $l = (array) ($q['l'] ?? []);
+    array_unshift($l, ['id' => 'r' . bin2hex(random_bytes(5)), 'by' => $by, 'who' => $who, 'why' => $why, 'at' => time(), 'snap' => $snap, 'done' => 0]);
+    return ['ok' => true, '__write' => ['l' => array_slice($l, 0, 500)]];
+  }, ['l' => []]);
+}
+
+function live_reports(): array { return (array) (live_read_json(live_dir() . '/reports.json', [])['l'] ?? []); }

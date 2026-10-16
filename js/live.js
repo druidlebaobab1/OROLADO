@@ -12,7 +12,12 @@
       q3: '📈 Comment jouer ?', q3t: 'Bonjour, comment bien jouer sur OROLADO ?', q4: '🔐 Mon compte', q4t: 'Bonjour, j’ai un souci avec mon compte : ',
       guestT: 'Inscris-toi pour écrire à l’équipe', guestB: 'Avec ton compte, tu peux nous écrire et envoyer des photos. On te répond ici.', guestBtn: 'Créer mon compte', guestMail: 'Écrire par e-mail',
       sent: 'Envoyé ✓', tooMany: 'Trop de messages. Réessaie dans un moment.', tooManyImg: 'Limite de 10 photos par jour atteinte.', badImg: 'Photo refusée. Essaie une autre image.',
-      fail: 'Envoi impossible, réessaie.', team: 'OROLADO', now: 'à l’instant', min: 'min', h: 'h', d: 'j', terms: 'Conditions', privacy: 'Confidentialité', you: 'Toi' },
+      fail: 'Envoi impossible, réessaie.', team: 'OROLADO', now: 'à l’instant', min: 'min', h: 'h', d: 'j', terms: 'Conditions', privacy: 'Confidentialité', you: 'Toi',
+      friends: 'Amis', myId: 'Ton identifiant', copy: 'Copier', copied: 'Copié ✓', idHint: 'Donne-le à tes amis pour qu’ils t’écrivent.', findPh: 'Identifiant d’un ami (OR…)', findGo: 'Écrire',
+      notFound: 'Identifiant introuvable.', findLocked: 'Trop d’essais. Réessaie dans 1 heure.', self: 'C’est ton propre identifiant 😉', noConv: 'Aucune conversation pour l’instant. Partage ton identifiant !',
+      block: '🚫 Bloquer', unblock: '✅ Débloquer', report: '🚩 Signaler', reportQ: 'Pourquoi signales-tu ce joueur ? (arnaque, insultes…)', reported: 'Merci, l’équipe va regarder. Ce joueur est bloqué.',
+      youBlocked: 'Tu as bloqué ce joueur.', guestF: 'Inscris-toi pour écrire à tes amis', guestFB: 'Avec ton compte, tu reçois un identifiant secret et tu peux discuter avec tes amis.',
+      safety: '🔒 Ne donne jamais ton mot de passe ni tes codes. OROLADO ne te les demandera jamais.' },
     en: { sub: 'Online · the team answers you here', news: 'News', chat: 'Write to us', ph: 'Write your message…', views: 'views',
       welcomeNews: 'Welcome to OROLADO Live! 👋\nHere you find our news: new features, payment methods, markets on the move… And in “Write to us”, you can talk directly to the team.',
       welcomeChat: 'Hello 👋 Write to us here, we answer in this conversation.\nYou can also send a photo 📷 (for example a payment screenshot).',
@@ -20,7 +25,12 @@
       q3: '📈 How to play?', q3t: 'Hello, how do I play well on OROLADO?', q4: '🔐 My account', q4t: 'Hello, I have an issue with my account: ',
       guestT: 'Sign up to write to the team', guestB: 'With your account, you can write to us and send photos. We answer you here.', guestBtn: 'Create my account', guestMail: 'Write by e-mail',
       sent: 'Sent ✓', tooMany: 'Too many messages. Try again in a moment.', tooManyImg: 'Limit of 10 photos per day reached.', badImg: 'Photo refused. Try another image.',
-      fail: 'Could not send, try again.', team: 'OROLADO', now: 'just now', min: 'min', h: 'h', d: 'd', terms: 'Terms', privacy: 'Privacy', you: 'You' }
+      fail: 'Could not send, try again.', team: 'OROLADO', now: 'just now', min: 'min', h: 'h', d: 'd', terms: 'Terms', privacy: 'Privacy', you: 'You',
+      friends: 'Friends', myId: 'Your ID', copy: 'Copy', copied: 'Copied ✓', idHint: 'Give it to your friends so they can write to you.', findPh: 'A friend’s ID (OR…)', findGo: 'Write',
+      notFound: 'ID not found.', findLocked: 'Too many tries. Try again in 1 hour.', self: 'That’s your own ID 😉', noConv: 'No conversation yet. Share your ID!',
+      block: '🚫 Block', unblock: '✅ Unblock', report: '🚩 Report', reportQ: 'Why are you reporting this player? (scam, insults…)', reported: 'Thanks, the team will check. This player is blocked.',
+      youBlocked: 'You blocked this player.', guestF: 'Sign up to write to your friends', guestFB: 'With your account, you get a secret ID and can chat with your friends.',
+      safety: '🔒 Never give your password or codes. OROLADO will never ask for them.' }
   };
   function L() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return TXT[l === 'fr' ? 'fr' : 'en']; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -94,9 +104,10 @@
     } else { $('liveQuick').innerHTML = ''; }
   }
 
+  var dmUn = 0;
   function setBadge(n) {
     var b = $('liveBadge'); if (b) b.textContent = n > 0 ? String(n) : '';
-    var btn = $('btnHelp'); if (btn) btn.classList.toggle('lv-has', n > 0);
+    var btn = $('btnHelp'); if (btn) btn.classList.toggle('lv-has', n > 0 || dmUn > 0);
   }
 
   async function load(read) {
@@ -104,14 +115,124 @@
     if (!j || !j.ok) return;
     if (tab === 'news') paintNews(j.posts || []);
     paintChat(j.me);
+    if (j.me) { dmUn = j.me.dmUnread || 0; var bf = $('liveBadgeF'); if (bf) bf.textContent = dmUn > 0 ? String(dmUn) : ''; }
     setBadge(read ? 0 : ((j.me && j.me.unread) || 0));
+  }
+
+  /* ---------- v2680 — AMIS ---------- */
+  var peer = null, fImg = '', fBusy = false;
+  function initial(n) { n = String(n || '?').trim(); return esc((n.charAt(0) || '?').toUpperCase()); }
+  function setFriendBadge(n) { var b = $('liveBadgeF'); if (b) b.textContent = n > 0 ? String(n) : ''; }
+  async function friendsList() {
+    var x = L();
+    if (guest()) {
+      $('lfList').hidden = true; $('lfConv').hidden = true; $('lfGuest').hidden = false;
+      $('lfGuest').innerHTML = '<b>' + x.guestF + '</b><p>' + x.guestFB + '</p><button type="button" class="lv-btn" id="lfSignup">' + x.guestBtn + '</button>';
+      $('lfSignup').addEventListener('click', function () { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
+      return;
+    }
+    $('lfGuest').hidden = true; $('lfConv').hidden = true; $('lfList').hidden = false; peer = null;
+    $('lfFindIn').placeholder = x.findPh; $('lfFindGo').textContent = x.findGo;
+    var j = await call('friends', {});
+    if (!j || !j.ok) return;
+    $('lfMe').innerHTML = '<div><small>' + x.myId + '</small><b class="lf-myid">' + esc(j.me) + '</b><small>' + x.idHint + '</small></div><button type="button" id="lfCopy">' + x.copy + '</button>';
+    $('lfCopy').addEventListener('click', function () {
+      var b = this;
+      try { navigator.clipboard.writeText(j.me); } catch (e) { /* ignore */ }
+      b.textContent = x.copied; setTimeout(function () { b.textContent = x.copy; }, 1600);
+    });
+    var un = 0;
+    $('lfConvs').innerHTML = j.list.length ? j.list.map(function (c) {
+      if (c.un) un++;
+      return '<button type="button" class="lf-c' + (c.un ? ' un' : '') + '" data-id="' + esc(c.id) + '"><span class="lf-av">' + initial(c.name) + '</span><span class="lf-ct"><b>' + esc(c.name) + (c.blocked ? ' 🚫' : '') + '</b><small>' + esc(c.last) + '</small></span><span class="lf-t">' + ago(c.at) + (c.un ? '<i>' + c.un + '</i>' : '') + '</span></button>';
+    }).join('') : '<p class="lf-empty">' + x.noConv + '</p>';
+    setFriendBadge(un);
+    $('lfConvs').querySelectorAll('.lf-c').forEach(function (b) { b.addEventListener('click', function () { openDm(b.getAttribute('data-id')); }); });
+  }
+  async function openDm(id) {
+    var x = L();
+    var j = await call('dm', { id: id });
+    if (!j || !j.ok) { $('lfFindMsg').textContent = x[(j && j.reason) || 'notFound'] || x.notFound; return; }
+    peer = j.peer;
+    $('lfList').hidden = true; $('lfConv').hidden = false; $('lfMenu').hidden = true;
+    $('lfAv').innerHTML = initial(peer.name); $('lfName').textContent = peer.name; $('lfId').textContent = peer.id;
+    $('lfBlock').textContent = j.blocked ? x.unblock : x.block; $('lfBlock').setAttribute('data-on', j.blocked ? '0' : '1');
+    $('lfReport').textContent = x.report;
+    $('lfText').placeholder = x.ph;
+    paintDm(j.msgs, j.blocked);
+  }
+  function paintDm(msgs, blocked) {
+    var x = L();
+    var html = '<div class="lv-m a lf-safe">' + esc(x.safety) + '</div>';
+    msgs.forEach(function (m) {
+      html += '<div class="lv-m ' + (m.mine ? 'u' : 'a') + '">' + (m.img ? '<img src="' + esc(m.img) + '" alt="" loading="lazy">' : '') + (m.t ? linkify(m.t) : '') + '<small>' + ago(m.at) + '</small></div>';
+    });
+    if (blocked) html += '<div class="lf-blocked">' + esc(x.youBlocked) + '</div>';
+    $('lfMsgs').innerHTML = html; $('lfMsgs').scrollTop = 1e9;
+    $('lfForm').hidden = !!blocked;
+  }
+  async function refreshDm() { if (!peer) return; var j = await call('dm', { id: peer.id }); if (j && j.ok) paintDm(j.msgs, j.blocked); }
+  async function sendDm(e) {
+    if (e) e.preventDefault();
+    if (fBusy || !peer) return;
+    var x = L(), t = $('lfText'), text = t.value.trim();
+    if (!text && !fImg) return;
+    fBusy = true; $('lfGo').disabled = true;
+    var j = await call('dmSend', { id: peer.id, text: text, img: fImg });
+    fBusy = false; $('lfGo').disabled = false;
+    if (j && j.ok) { t.value = ''; t.style.height = 'auto'; fImg = ''; $('lfPrev').hidden = true; $('lfPrev').innerHTML = ''; refreshDm(); }
+    else if (D6.App && D6.App.toast) D6.App.toast(x[(j && j.reason) || 'fail'] || x.fail, 'err');
+  }
+  function bootFriends() {
+    $('lfFind').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var x = L(), v = $('lfFindIn').value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      $('lfFindMsg').textContent = '';
+      if (v.length < 12) { $('lfFindMsg').textContent = x.notFound; return; }
+      var j = await call('find', { id: v });
+      if (j && j.ok) { $('lfFindIn').value = ''; openDm(j.peer.id); }
+      else $('lfFindMsg').textContent = x[(j && j.reason) || 'notFound'] || x.notFound;
+    });
+    $('lfBack').addEventListener('click', friendsList);
+    $('lfMore').addEventListener('click', function () { $('lfMenu').hidden = !$('lfMenu').hidden; });
+    $('lfBlock').addEventListener('click', async function () {
+      if (!peer) return;
+      var on = this.getAttribute('data-on') === '1';
+      await call('block', { id: peer.id, on: on ? 1 : 0 });
+      openDm(peer.id);
+    });
+    $('lfReport').addEventListener('click', async function () {
+      if (!peer) return;
+      var x = L(), why = window.prompt(x.reportQ, '');
+      if (why === null) return;
+      await call('report', { id: peer.id, why: why });
+      if (D6.App && D6.App.toast) D6.App.toast(x.reported, 'ok');
+      openDm(peer.id);
+    });
+    $('lfForm').addEventListener('submit', sendDm);
+    $('lfText').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(110, this.scrollHeight) + 'px'; });
+    $('lfFile').addEventListener('change', async function () {
+      var f = this.files && this.files[0]; this.value = '';
+      if (!f) return;
+      try {
+        fImg = await shrink(f);
+        $('lfPrev').innerHTML = '<img src="' + fImg + '" alt=""><button type="button" aria-label="x">✕</button>';
+        $('lfPrev').hidden = false;
+        $('lfPrev').querySelector('button').addEventListener('click', function () { fImg = ''; $('lfPrev').hidden = true; $('lfPrev').innerHTML = ''; });
+      } catch (err) { if (D6.App && D6.App.toast) D6.App.toast(L().badImg, 'err'); }
+    });
   }
 
   function show(w) {
     tab = w;
-    $('liveTabNews').classList.toggle('on', w === 'news'); $('liveTabChat').classList.toggle('on', w === 'chat');
-    $('livePaneNews').hidden = w !== 'news'; $('livePaneChat').hidden = w !== 'chat';
+    $('liveTabNews').classList.toggle('on', w === 'news'); $('liveTabChat').classList.toggle('on', w === 'chat'); $('liveTabFriends').classList.toggle('on', w === 'friends');
+    $('livePaneNews').hidden = w !== 'news'; $('livePaneChat').hidden = w !== 'chat'; $('livePaneFriends').hidden = w !== 'friends';
     clearInterval(timer);
+    if (w === 'friends') {
+      friendsList();
+      if (!guest()) timer = setInterval(function () { if (!document.hidden) { if (peer) refreshDm(); else friendsList(); } }, 15000);
+      return;
+    }
     load(w === 'chat');
     if (w === 'chat' && !guest()) timer = setInterval(function () { if (!document.hidden) load(true); }, 15000);
   }
@@ -119,8 +240,9 @@
   function open(w) {
     var x = L();
     $('liveSub').textContent = x.sub; $('liveTabNewsT').textContent = x.news; $('liveTabChatT').textContent = x.chat; $('liveText').placeholder = x.ph;
+    if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
-    show(w || (($('liveBadge') && $('liveBadge').textContent) ? 'chat' : 'news'));
+    show(w || (($('liveBadge') && $('liveBadge').textContent) ? 'chat' : (dmUn > 0 ? 'friends' : 'news')));
   }
   function close() { clearInterval(timer); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
@@ -166,6 +288,7 @@
     $('liveModal').addEventListener('click', function (e) { if (e.target === $('liveModal')) close(); });
     $('liveTabNews').addEventListener('click', function () { show('news'); });
     $('liveTabChat').addEventListener('click', function () { show('chat'); });
+    if ($('liveTabFriends')) { $('liveTabFriends').addEventListener('click', function () { show('friends'); }); bootFriends(); }
     $('liveForm').addEventListener('submit', send);
     $('liveText').addEventListener('input', grow);
     $('liveFile').addEventListener('change', async function () {
@@ -179,12 +302,12 @@
       } catch (err) { if (D6.App && D6.App.toast) D6.App.toast(L().badImg, 'err'); }
     });
     // Réponse de l'équipe reçue en notification (lien /?live=1) → la conversation s'ouvre.
-    try { if (/[?&]live=1/.test(location.search)) setTimeout(function () { open('chat'); }, 1500); } catch (e) { /* ignore */ }
+    try { if (/[?&]live=1/.test(location.search)) setTimeout(function () { open('chat'); }, 1500); else if (/[?&]live=amis/.test(location.search)) setTimeout(function () { open('friends'); }, 1500); } catch (e) { /* ignore */ }
     // Pastille « réponse non lue » sur le bouton Live : une seule lecture, 6 s après l'ouverture du site.
     setTimeout(async function () {
       if (guest()) return;
       var j = await call('feed', {});
-      if (j && j.ok && j.me) setBadge(j.me.unread || 0);
+      if (j && j.ok && j.me) { dmUn = j.me.dmUnread || 0; var bf = $('liveBadgeF'); if (bf) bf.textContent = dmUn > 0 ? String(dmUn) : ''; setBadge(j.me.unread || 0); }
     }, 6000);
   }
 

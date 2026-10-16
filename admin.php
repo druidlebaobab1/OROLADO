@@ -2074,6 +2074,15 @@ if ($isAjax) {
       admin_json(['ok' => !empty($r['ok'])]);
     }
     if ($action === 'live_post_del') admin_json(['ok' => live_del_post((string) ($req['id'] ?? ''))]);
+    // v2680 — signalements entre joueurs (avec les derniers messages de la conversation).
+    if ($action === 'live_reports') {
+      $name = static fn(string $u): string => (string) ((live_who_uid($u)['id'] ?? '') . ' ' . (live_who_uid($u)['name'] ?? $u));
+      admin_json(['ok' => true, 'reports' => array_map(static fn($r) => [
+        'id' => (string) $r['id'], 'by' => $name((string) $r['by']), 'who' => $name((string) $r['who']), 'whoUid' => (string) $r['who'],
+        'why' => (string) ($r['why'] ?? ''), 'at' => (int) ($r['at'] ?? 0),
+        'snap' => array_map(static fn($m) => ['f' => ((string) ($m['f'] ?? '') === (string) $r['who']) ? 'signalé' : 'signaleur', 't' => (string) ($m['t'] ?? '') !== '' ? (string) $m['t'] : '📷 Photo'], (array) ($r['snap'] ?? [])),
+      ], array_slice(live_reports(), 0, 100))]);
+    }
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
   }
   // v2664 (propriétaire) — E-mail à tous : français pour les pays francophones, anglais pour les autres.
@@ -2466,7 +2475,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="modal-box lvA-box">
       <button class="mini" type="button" id="closeLiveA">Fermer</button>
       <h2 style="color:#FF7AA8;margin:10px 0 4px">📡 Live — messages des joueurs et actualités</h2>
-      <div class="lvA-tabs"><button class="mini ok" type="button" id="lvTabMsg">💬 Conversations <b id="lvUnread"></b></button><button class="mini" type="button" id="lvTabPost">📢 Publier une actualité</button></div>
+      <div class="lvA-tabs"><button class="mini ok" type="button" id="lvTabMsg">💬 Conversations <b id="lvUnread"></b></button><button class="mini" type="button" id="lvTabPost">📢 Publier une actualité</button><button class="mini" type="button" id="lvTabRep">🚩 Signalements</button></div>
+      <div id="lvPaneRep" hidden><div class="nt-card"><b>Joueurs signalés par d'autres joueurs</b><p class="muted" style="margin:4px 0 8px">Celui qui signale bloque aussitôt l'autre. Regardez les messages ; en cas d'arnaque, suspendez le compte depuis sa fiche.</p><div id="lvReps">Chargement…</div></div></div>
       <div id="lvPaneMsg">
         <div class="lvA-grid">
           <div class="lvA-list" id="lvList"><p class="muted">Chargement…</p></div>
@@ -3064,10 +3074,14 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     } catch (e) { $l('lvPostSt').textContent = 'Échec : ' + (e.message || e); }
     $l('lvPostBtn').disabled = false;
   }
-  const tab = w => { $l('lvPaneMsg').hidden = w !== 'msg'; $l('lvPanePost').hidden = w !== 'post'; $l('lvTabMsg').classList.toggle('ok', w === 'msg'); $l('lvTabPost').classList.toggle('ok', w === 'post'); if (w === 'post') posts(); };
+  async function reps() {
+    const j = await ajax({action:'live_reports'}); if (!j.ok) return;
+    $l('lvReps').innerHTML = j.reports.length ? j.reports.map(r => '<div class="lvA-post"><b>'+esc(r.by)+'</b> a signalé <b style="color:#FCA5A5">'+esc(r.who)+'</b> · <small class="muted">'+when(r.at)+'</small>'+(r.why?'<br>Motif : '+esc(r.why):'')+'<div class="muted" style="margin-top:4px;font-size:.8rem">'+r.snap.map(m => (m.f==='signalé'?'🚩 ':'• ')+esc(m.t)).join('<br>')+'</div></div>').join('') : '<p class="muted">Aucun signalement.</p>';
+  }
+  const tab = w => { $l('lvPaneMsg').hidden = w !== 'msg'; $l('lvPanePost').hidden = w !== 'post'; $l('lvPaneRep').hidden = w !== 'rep'; $l('lvTabMsg').classList.toggle('ok', w === 'msg'); $l('lvTabPost').classList.toggle('ok', w === 'post'); $l('lvTabRep').classList.toggle('ok', w === 'rep'); if (w === 'post') posts(); if (w === 'rep') reps(); };
   $l('btnLiveA').onclick = () => { $l('liveModal').classList.add('on'); tab('msg'); list(); clearInterval(timer); timer = setInterval(() => { list(); if (cur) open(cur); }, 20000); };
   $l('closeLiveA').onclick = () => { $l('liveModal').classList.remove('on'); clearInterval(timer); };
-  $l('lvTabMsg').onclick = () => tab('msg'); $l('lvTabPost').onclick = () => tab('post');
+  $l('lvTabMsg').onclick = () => tab('msg'); $l('lvTabPost').onclick = () => tab('post'); $l('lvTabRep').onclick = () => tab('rep');
   $l('lvSend').onclick = send; $l('lvPostBtn').onclick = publish;
   $l('lvText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) send(); });
   badge(); setInterval(badge, 60000);
