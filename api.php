@@ -461,6 +461,11 @@ if ($action === 'registerStart') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.', 'field' => 'regEmail']);
     exit;
   }
+  // v2673 : appareil d'un compte suspendu → plus de nouveau compte (message neutre).
+  if (orolado_trace_block($db, orolado_req_dev($req), '', '')) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription impossible pour le moment.', 'field' => 'regEmail']);
+    exit;
+  }
   if (strlen($displayName) < 2 || strlen($displayName) > 32) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez votre nom ou pseudo (2 caractères min.)', 'field' => 'regName']);
     exit;
@@ -615,9 +620,10 @@ if ($action === 'registerVerify') {
     exit;
   }
   $phoneRow = (string) ($row['phone'] ?? '');
-  $created = with_db_lock(function ($box) use ($email, $row, $SECRET, $phoneRow) {
+  $devReg = orolado_req_dev($req);
+  $created = with_db_lock(function ($box) use ($email, $row, $SECRET, $phoneRow, $devReg) {
     $locked =& $box->db;
-    if (find_user($locked, $email) || orolado_identity_block($locked, $email, $phoneRow)) {
+    if (find_user($locked, $email) || orolado_identity_block($locked, $email, $phoneRow) || orolado_trace_block($locked, $devReg, '', '')) {
       unset($locked['pendingRegistrations'][$email]);
       return ['ok' => false, 'reason' => 'Cet e-mail ne peut plus être utilisé pour une inscription.'];
     }
@@ -648,6 +654,7 @@ if ($action === 'registerVerify') {
       'transactions' => [],
       'positions' => []
     ];
+    if ($devReg !== '') $user['devices'] = [$devReg];
     $vault = ['demo' => 1000000, 'real' => 0];
     $locked['users'][$uid] = $user;
     $locked['vault'][$uid] = $vault;
@@ -1102,6 +1109,12 @@ if ($action === 'googleLogin') {
     exit;
   }
   $isNew = false;
+  $devG = orolado_req_dev($req);
+  // v2673 : nouveau compte Google depuis l'appareil d'un compte suspendu → refusé (message neutre).
+  if (!$user && orolado_trace_block($db, $devG, '', '')) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Inscription impossible pour le moment.']);
+    exit;
+  }
   if (!$user) {
     $meta = is_array($sb['user_metadata'] ?? null) ? $sb['user_metadata'] : [];
     $name = trim((string) ($meta['full_name'] ?? $meta['name'] ?? $gName));
@@ -1113,7 +1126,7 @@ if ($action === 'googleLogin') {
     if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($req['countryIso'] ?? '')) ?? '');
     if (strlen($countryIso) !== 2 || in_array($countryIso, ['XX', 'T1'], true)) $countryIso = '';
     $trafficSource = strtolower(trim((string) ($req['trafficSource'] ?? 'direct')));
-    $made = with_db_lock(function ($box) use ($newId, $email, $name, $countryIso, $trafficSource, $req) {
+    $made = with_db_lock(function ($box) use ($newId, $email, $name, $countryIso, $trafficSource, $req, $devG) {
       $locked =& $box->db;
       if (find_user($locked, $email) || isset($locked['users'][$newId])) return ['ok' => true, 'user' => find_user($locked, $email) ?? $locked['users'][$newId], 'skip_write' => true];
       $user = [
@@ -1143,6 +1156,7 @@ if ($action === 'googleLogin') {
         'transactions' => [],
         'positions' => []
       ];
+      if ($devG !== '') $user['devices'] = [$devG];
       $locked['users'][$newId] = $user;
       if (!isset($locked['vault'][$newId])) $locked['vault'][$newId] = ['demo' => 1000000, 'real' => 0];
       return ['ok' => true, 'user' => $user, 'new' => true];
@@ -1206,6 +1220,7 @@ if ($action === 'googleLogin') {
   orolado_login_ok('player', $email);
   $tok = make_token($uid, $SECRET);
   $db['sessions'][$tok] = orolado_new_session($uid);
+  orolado_note_device($db, $uid, orolado_req_dev($req)); // v2673 : appareil retenu (bloqué si le compte est suspendu)
   $jsonReal = orolado_money($db['vault'][$uid]['real'] ?? 0);
   $official = orolado_sync_official_real($uid, $jsonReal);
   if (!isset($db['vault'][$uid]) || !is_array($db['vault'][$uid])) {
@@ -1400,6 +1415,7 @@ if ($action === 'login') {
   // Révocation uniquement au changement de mot de passe / ban (orolado_revoke_user_sessions ailleurs).
   $tok = make_token($user['id'], $SECRET);
   $db['sessions'][$tok] = orolado_new_session((string) $user['id']);
+  orolado_note_device($db, (string) $user['id'], orolado_req_dev($req)); // v2673
   $uid = (string) $user['id'];
   // Joueur sans coffre Supabase (inscription miroir ratée) : créé ici avec SON mot de passe,
   // pour qu'il puisse jouer en réel et recevoir des crédits admin.
@@ -1999,6 +2015,23 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Nom du bénéficiaire requis']);
     exit;
   }
+  // v2673 (propriétaire) : retrait vers le numéro d'un compte SUSPENDU, ou depuis son appareil → ce compte est
+  // suspendu aussitôt (le tricheur revenu avec un autre compte), rien n'est débité, aucun retrait créé.
+  $devWd = orolado_req_dev($req);
+  $trace = orolado_trace_block($db, $devWd, $destination, (string) ($me['id'] ?? ''));
+  if ($trace && !orolado_is_admin_user($me)) {
+    $banUid = (string) ($me['id'] ?? '');
+    $banMail = strtolower(trim((string) ($me['email'] ?? '')));
+    $banWhy = 'Auto : ' . (string) ($trace['by'] ?? 'trace') . ' d’un compte suspendu (' . (string) ($db['users'][(string) ($trace['uid'] ?? '')]['publicId'] ?? ($trace['uid'] ?? '')) . ')';
+    with_db_lock(function ($box) use ($banUid, $banMail, $devWd, $banWhy) {
+      orolado_note_device($box->db, $banUid, $devWd);
+      if (isset($box->db['users'][$banUid]) && is_array($box->db['users'][$banUid])) $box->db['users'][$banUid]['banReason'] = $banWhy;
+      orolado_force_suspend($box->db, $banUid, 'suspended', $banMail);
+      return ['ok' => true];
+    });
+    echo json_encode(orolado_block_payload('suspended'));
+    exit;
+  }
   // v2486 (accord du propriétaire) : on ne signale plus un simple GAGNANT (retrait plus grand que le total misé :
   // normal quand on gagne). Reste signalé : aucun trade réel du tout, SAUF si le retrait est couvert par l'argent
   // d'invitation (libre, retirable sans jouer). La règle « jouer ×2 les dépôts » ne change pas.
@@ -2061,7 +2094,8 @@ if ($action === 'withdraw') {
   foreach ($db['withdrawals'] as $wdTmp) { if (is_array($wdTmp) && ($wdTmp['id'] ?? '') === $wdId) { $wdRow = $wdTmp; break; } }
   $wdVault = $db['vault'][$me['id']] ?? null;
   $wdMeId = (string) $me['id'];
-  with_db_lock(function ($box) use ($wdRow, $wdVault, $wdMeId) {
+  with_db_lock(function ($box) use ($wdRow, $wdVault, $wdMeId, $devWd) {
+    orolado_note_device($box->db, $wdMeId, $devWd); // v2673
     if (!isset($box->db['withdrawals']) || !is_array($box->db['withdrawals'])) $box->db['withdrawals'] = [];
     $have = false;
     foreach ($box->db['withdrawals'] as $x) { if (is_array($x) && ($x['id'] ?? '') === ($wdRow['id'] ?? '')) { $have = true; break; } }

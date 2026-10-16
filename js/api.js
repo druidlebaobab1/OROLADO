@@ -31,6 +31,26 @@
       } catch (e) { /* ignore */ }
     },
 
+    // v2673 — identifiant de cet appareil (gardé 5 ans, stockage + cookie) : un compte suspendu ne peut plus
+    // revenir depuis le même téléphone / PC avec un autre compte.
+    dev: function () {
+      if (D6.Api._dev) return D6.Api._dev;
+      var d = '';
+      try {
+        d = localStorage.getItem('oro_dev') || '';
+        if (!d) { var m = document.cookie.match(/(?:^|;\s*)oro_dev=([^;]+)/); d = m ? decodeURIComponent(m[1]) : ''; }
+        if (!/^d[a-f0-9]{16,40}$/.test(d)) {
+          var a = new Uint8Array(12);
+          (window.crypto || window.msCrypto).getRandomValues(a);
+          d = 'd' + Array.prototype.map.call(a, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+        }
+        localStorage.setItem('oro_dev', d);
+        document.cookie = 'oro_dev=' + d + '; Max-Age=157680000; Path=/; SameSite=Lax';
+      } catch (e) { /* ignore */ }
+      D6.Api._dev = d;
+      return d;
+    },
+
     post: async function (action, data, timeoutMs) {
       try {
         var ctrl = new AbortController();
@@ -40,7 +60,7 @@
           action === 'withdrawOtp' || action === 'me' || action === 'upsert';
         var ms = timeoutMs || (mail || money ? 25000 : 8000);
         var timer = setTimeout(function () { ctrl.abort(); }, ms);
-        var body = Object.assign({ action: action, token: D6.Api.token() }, data || {});
+        var body = Object.assign({ action: action, token: D6.Api.token(), dev: D6.Api.dev() }, data || {});
         if (action === 'login') body.token = '';
         var r = await fetch('api.php', {
           method: 'POST',

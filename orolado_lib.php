@@ -48,7 +48,7 @@ function orolado_server_user_fields(): array {
   // s'affichait dans le tableau admin comme une vraie.
   // v2671 : 'clickFav' / 'clickUnfav' (compteurs anti-robot, trade_lib.php) — avant, chaque envoi du profil par le
   // téléphone les EFFAÇAIT (robot jamais repéré) et un tricheur pouvait y écrire de faux chiffres.
-  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav'];
+  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'devices'];
 }
 
 /** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */
@@ -760,6 +760,68 @@ function orolado_remember_blocked_identity(array &$db, array $user, string $kind
   $row = ['uid' => $uid, 'kind' => $kind, 'email' => $email, 'phone' => $phone, 'at' => date('c')];
   if ($email !== '') $db['blocked_identities']['email:' . $email] = $row;
   if ($phone !== '' && strlen($phone) >= 8) $db['blocked_identities']['phone:' . $phone] = $row;
+  // v2673 (propriétaire) : aussi ses APPAREILS et ses NUMÉROS DE RETRAIT → il ne peut plus revenir avec un autre compte.
+  foreach ((array) ($user['devices'] ?? []) as $dv) {
+    if (is_string($dv) && orolado_dev_ok($dv)) $db['blocked_identities']['dev:' . $dv] = $row;
+  }
+  foreach ((array) ($db['withdrawals'] ?? []) as $w) {
+    if (!is_array($w) || (string) ($w['userId'] ?? '') !== $uid) continue;
+    $k = orolado_dest_key((string) ($w['destination'] ?? $w['phone'] ?? ''));
+    if ($k !== '') $db['blocked_identities']['dest:' . $k] = $row;
+  }
+}
+
+/** v2673 — identifiant d'appareil envoyé par le site (js/api.js, « oro_dev ») : d + 16 à 40 chiffres hexa. */
+function orolado_dev_ok(string $d): bool {
+  return (bool) preg_match('/^d[a-f0-9]{16,40}$/', $d);
+}
+
+function orolado_req_dev(array $req): string {
+  $d = strtolower(trim((string) ($req['dev'] ?? '')));
+  return orolado_dev_ok($d) ? $d : '';
+}
+
+/** Numéro de retrait normalisé : 8 derniers chiffres (téléphone) ou adresse en minuscules (crypto…). */
+function orolado_dest_key(string $d): string {
+  $d = strtolower(trim($d));
+  if ($d === '' || $d === '—') return '';
+  if (preg_match('/^[+\d\s().-]{8,}$/', $d)) {
+    $dig = preg_replace('/\D/', '', $d) ?? '';
+    return strlen($dig) >= 8 ? 't' . substr($dig, -8) : '';
+  }
+  return strlen($d) >= 6 ? 'a' . $d : '';
+}
+
+/** Retient l'appareil sur la fiche du joueur (8 derniers), pour pouvoir le bloquer s'il est suspendu. */
+function orolado_note_device(array &$db, string $uid, string $dev): bool {
+  if ($uid === '' || $dev === '' || !isset($db['users'][$uid]) || !is_array($db['users'][$uid])) return false;
+  $list = array_values(array_filter((array) ($db['users'][$uid]['devices'] ?? []), 'is_string'));
+  if (in_array($dev, $list, true)) return false;
+  $list[] = $dev;
+  $db['users'][$uid]['devices'] = array_slice($list, -8);
+  return true;
+}
+
+/**
+ * v2673 — l'appareil ou le numéro de retrait appartient-il à un compte SUSPENDU (autre que $selfUid) ?
+ * Liste des bannis + retraits des comptes déjà suspendus avant cette version.
+ */
+function orolado_trace_block(array $db, string $dev = '', string $dest = '', string $selfUid = ''): ?array {
+  $ids = is_array($db['blocked_identities'] ?? null) ? $db['blocked_identities'] : [];
+  $other = static fn($row): bool => is_array($row) && (string) ($row['uid'] ?? '') !== $selfUid;
+  if ($dev !== '' && isset($ids['dev:' . $dev]) && $other($ids['dev:' . $dev])) return $ids['dev:' . $dev] + ['by' => 'appareil'];
+  $k = orolado_dest_key($dest);
+  if ($k === '') return null;
+  if (isset($ids['dest:' . $k]) && $other($ids['dest:' . $k])) return $ids['dest:' . $k] + ['by' => 'numéro de retrait'];
+  foreach ((array) ($db['withdrawals'] ?? []) as $w) {
+    if (!is_array($w)) continue;
+    $wu = (string) ($w['userId'] ?? '');
+    if ($wu === '' || $wu === $selfUid) continue;
+    if (orolado_dest_key((string) ($w['destination'] ?? $w['phone'] ?? '')) !== $k) continue;
+    $kind = orolado_user_block_kind($db, $wu);
+    if ($kind !== '') return ['uid' => $wu, 'kind' => $kind, 'by' => 'numéro de retrait'];
+  }
+  return null;
 }
 
 function orolado_identity_block(array $db, string $email = '', string $phone = ''): ?array {
