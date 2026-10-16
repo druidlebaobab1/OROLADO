@@ -46,7 +46,9 @@ function orolado_server_user_fields(): array {
   // « transactions » : la liste des opérations (dépôts, retraits, crédits) est écrite par le
   // serveur seul. Avant, le téléphone pouvait y glisser une FAUSSE demande de retrait, qui
   // s'affichait dans le tableau admin comme une vraie.
-  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator'];
+  // v2671 : 'clickFav' / 'clickUnfav' (compteurs anti-robot, trade_lib.php) — avant, chaque envoi du profil par le
+  // téléphone les EFFAÇAIT (robot jamais repéré) et un tricheur pouvait y écrire de faux chiffres.
+  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav'];
 }
 
 /** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */

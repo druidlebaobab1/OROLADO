@@ -40,7 +40,7 @@ function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail;
 
 $victim = 'dddddddd-1111-2222-3333-444444444444';
 $db = blank_db();
-$db['users']['u_me'] = ['id' => 'u_me', 'email' => 'moi@test.com', 'role' => 'user', 'sbId' => 'eeeeeeee-1111-2222-3333-444444444444', 'realStakeVolume' => 10, 'realTrades' => 1, 'realDepositTotal' => 50, 'displayName' => 'Moi'];
+$db['users']['u_me'] = ['id' => 'u_me', 'email' => 'moi@test.com', 'role' => 'user', 'sbId' => 'eeeeeeee-1111-2222-3333-444444444444', 'realStakeVolume' => 10, 'realTrades' => 1, 'realDepositTotal' => 50, 'displayName' => 'Moi', 'clickFav' => 20, 'clickUnfav' => 2];
 $db['sessions']['tokMe'] = ['userId' => 'u_me', 'createdAt' => date('c')];
 save_db(orolado_data_file(), $db);
 
@@ -59,6 +59,11 @@ check('nombre de trades inchangé (1)', (int) ($u['realTrades'] ?? 0) === 1);
 check('total déposé inchangé (50 $)', (float) ($u['realDepositTotal'] ?? 0) === 50.0);
 check('lien de caisse inchangé (pas celui de la victime)', ($u['sbId'] ?? '') !== $victim);
 check('rôle inchangé (pas admin)', ($u['role'] ?? '') === 'user');
+// v2671 : compteurs anti-robot gardés (avant : effacés à chaque envoi du profil → robot jamais repéré).
+check('compteurs anti-robot gardés (20 / 2)', (int) ($u['clickFav'] ?? 0) === 20 && (int) ($u['clickUnfav'] ?? 0) === 2, json_encode([$u['clickFav'] ?? null, $u['clickUnfav'] ?? null]));
+$r = $call(['action' => 'upsert', 'token' => 'tokMe', 'user' => ['id' => 'u_me', 'email' => 'moi@test.com', 'displayName' => 'Nouveau nom', 'clickFav' => 0, 'clickUnfav' => 500]]);
+$u = load_db()['users']['u_me'];
+check('le téléphone ne peut pas effacer / truquer les compteurs anti-robot', (int) ($u['clickFav'] ?? 0) === 20 && (int) ($u['clickUnfav'] ?? 0) === 2, json_encode([$u['clickFav'] ?? null, $u['clickUnfav'] ?? null]));
 $fakeWd = ['id' => 'wd_faux', 'type' => 'withdraw', 'amount' => 5000, 'status' => 'pending', 'mode' => 'real', 'phone' => 'TPirateAddr', 'operator' => 'usdt'];
 $fakeCr = ['id' => 'cr_faux', 'type' => 'credit', 'amount' => 99999, 'mode' => 'real'];
 $r = $call(['action' => 'upsert', 'token' => 'tokMe', 'user' => ['id' => 'u_me', 'email' => 'moi@test.com', 'displayName' => 'Nouveau nom', 'transactions' => [$fakeWd, $fakeCr]]]);
