@@ -137,13 +137,12 @@
     },
     // dragon (rouge) contre tigre (orange)
     dragon: function () {
-      var dragon = '<g transform="translate(4 14)"><path d="M6 6l-4-6 7 3zM22 6l4-6-7 3z" fill="#FDE047"/><path d="M14 2c7 0 12 5 12 12 0 6-3 10-6 12h-12C5 24 2 20 2 14 2 7 7 2 14 2z" fill="#2563EB"/>' +
-        '<path d="M6 18c2 6 14 6 16 0v5c-2 4-14 4-16 0z" fill="#93C5FD"/><circle cx="9" cy="12" r="2.6" fill="#FDE047"/><circle cx="19" cy="12" r="2.6" fill="#FDE047"/><circle cx="9" cy="12" r="1" fill="#111"/><circle cx="19" cy="12" r="1" fill="#111"/>' +
-        '<path d="M2 18c-3 1-4 4-2 6M26 18c3 1 4 4 2 6" stroke="#7DD3FC" stroke-width="1.6" fill="none"/><path d="M10 21l1.5 2 1.5-2 1.5 2 1.5-2 1.5 2" stroke="#fff" stroke-width="1" fill="none"/></g>';
-      var tiger = '<g transform="translate(34 14)"><circle cx="4" cy="4" r="4" fill="#EA580C"/><circle cx="22" cy="4" r="4" fill="#EA580C"/><circle cx="13" cy="14" r="12" fill="#F97316"/>' +
-        '<path d="M13 3v5M7 5l2 4M19 5l-2 4M2 13h4M24 13h-4M3 18h4M23 18h-4" stroke="#111" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="13" cy="19" rx="7" ry="5" fill="#FFF7ED"/>' +
-        '<circle cx="8.5" cy="12" r="2" fill="#FDE047"/><circle cx="17.5" cy="12" r="2" fill="#FDE047"/><circle cx="8.5" cy="12" r=".9" fill="#111"/><circle cx="17.5" cy="12" r=".9" fill="#111"/><path d="M11 16.5h4l-2 2z" fill="#111"/></g>';
-      return dragon + tiger + '<text x="32" y="56" text-anchor="middle" font-size="9" font-weight="900" font-family="system-ui" fill="#FDE047">VS</text>';
+      return '<radialGradient id="IDp" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#7DD3FC"/><stop offset="1" stop-color="#1D4ED8"/></radialGradient>' +
+        '<g transform="rotate(-12 18 32)"><rect x="5" y="12" width="27" height="38" rx="5" fill="#1E40AF" stroke="#93C5FD" stroke-width="2"/>' +
+        '<path d="M18.5 22c4 0 7 3 7 7 0 3-2 5.5-4.5 6.5 1.5-3-2-5-3-2-1 4-6 3-6-1 0-6 3-10.5 6.5-10.5z" fill="#FACC15" opacity=".55"/><circle cx="18.5" cy="31" r="6.5" fill="url(#IDp)"/><circle cx="16.5" cy="28.8" r="1.8" fill="#fff" opacity=".9"/></g>' +
+        '<g transform="rotate(12 46 32)"><rect x="32" y="12" width="27" height="38" rx="5" fill="#EA580C" stroke="#FED7AA" stroke-width="2"/>' +
+        '<path d="M38 22c3 5 4 10 3 17M44.5 20c3 6 4 12 3 20M51 22c3 5 4 10 3 17" stroke="#7C2D12" stroke-width="3.2" stroke-linecap="round" fill="none"/><path d="M38.6 22.4c2.4 4.4 3.2 8.6 2.6 13M45.1 20.6c2.4 5 3.2 10 2.6 15" stroke="#FFF7ED" stroke-width="1" stroke-linecap="round" fill="none" opacity=".7"/></g>' +
+        '<circle cx="32" cy="50" r="8" fill="#111827" stroke="#FACC15" stroke-width="1.8"/><text x="32" y="53.4" text-anchor="middle" font-size="8.5" font-weight="900" font-family="system-ui" fill="#FACC15">VS</text>';
     },
     // baccara : 9 + K et jeton
     baccarat: function () {
@@ -164,9 +163,11 @@
     },
     // ballon rouge brillant
     balloon: function () {
-      return '<radialGradient id="IDb" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FED7AA"/><stop offset=".45" stop-color="#F97316"/><stop offset="1" stop-color="#9A3412"/></radialGradient>' +
-        '<path d="M32 4c11 0 19 8.5 19 19.5C51 37 40 46 32 48 24 46 13 37 13 23.5 13 12.5 21 4 32 4z" fill="url(#IDb)"/><path d="M22 14c2-4 6-6 9-6" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7" fill="none"/><ellipse cx="24" cy="21" rx="2.4" ry="4" fill="#fff" opacity=".35"/>' +
-        '<path d="M29.5 48l2.5 3.5 2.5-3.5z" fill="#9A3412"/><path d="M32 51.5c-3 3 3 5 0 8s2 4 1 5" stroke="#fff" stroke-width="1.4" fill="none"/>';
+      return '<radialGradient id="IDb" cx="34%" cy="28%" r="78%"><stop offset="0" stop-color="#FFEDD5"/><stop offset=".35" stop-color="#FB923C"/><stop offset=".8" stop-color="#EA580C"/><stop offset="1" stop-color="#9A3412"/></radialGradient>' +
+        '<path d="M32 4c11 0 19 8.5 19 19.5C51 37 40 46 32 48 24 46 13 37 13 23.5 13 12.5 21 4 32 4z" fill="url(#IDb)"/>' +
+        '<path d="M32 4c-5 6-6 30 0 44M32 4c5 6 6 30 0 44" stroke="#9A3412" stroke-width=".8" opacity=".35" fill="none"/>' +
+        '<path d="M20 15c2.5-5 7-8 11-8" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".8" fill="none"/><ellipse cx="21" cy="23" rx="2.2" ry="4.4" fill="#fff" opacity=".45"/>' +
+        '<path d="M29 48.5l3 4 3-4z" fill="#C2410C"/><path d="M32 52.5c-3 3 3 5 0 8s2 3 1 4" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
     },
     // but avec filet + ballon
     penalty: function () {
@@ -194,8 +195,11 @@
     },
     // Cadeaux : défi (cible + flamme)
     g_defi: function () {
-      return '<path d="M44 6c4 6-2 9 2 14 3-3 4-6 3-9 6 5 7 14 1 19-5 4-13 2-14-5-1-6 6-9 8-19z" fill="#F97316"/><path d="M45 18c2 3-1 5 1 7 2-1 2-3 2-4 2 3 2 6-1 8-3 1-6-1-5-4 0-3 3-4 3-7z" fill="#FDE047"/>' +
-        '<circle cx="28" cy="38" r="22" fill="#fff"/><circle cx="28" cy="38" r="17" fill="#E11D48"/><circle cx="28" cy="38" r="12" fill="#fff"/><circle cx="28" cy="38" r="7" fill="#E11D48"/><circle cx="28" cy="38" r="2.6" fill="#fff"/>';
+      return '<rect x="8" y="12" width="48" height="44" rx="7" fill="#fff"/><rect x="8" y="12" width="48" height="14" rx="7" fill="#E11D48"/><rect x="8" y="20" width="48" height="6" fill="#E11D48"/>' +
+        '<rect x="18" y="6" width="5" height="12" rx="2.5" fill="#9F1239"/><rect x="41" y="6" width="5" height="12" rx="2.5" fill="#9F1239"/>' +
+        '<text x="32" y="23.5" text-anchor="middle" font-size="8" font-weight="900" font-family="system-ui" fill="#FDE047">★</text>' +
+        '<g fill="#22C55E"><circle cx="16" cy="40" r="4"/><circle cx="24" cy="40" r="4"/><circle cx="32" cy="40" r="4"/><circle cx="40" cy="40" r="4"/></g><circle cx="48" cy="40" r="4" fill="none" stroke="#CBD5E1" stroke-width="2"/>' +
+        '<path d="M14 40l1.6 1.6 3-3M22 40l1.6 1.6 3-3M30 40l1.6 1.6 3-3M38 40l1.6 1.6 3-3" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><text x="32" y="53" text-anchor="middle" font-size="6.5" font-weight="900" font-family="system-ui" fill="#9F1239">5 ×</text>';
     },
     // Cadeaux : tournoi (coupe d'or)
     g_top: function () {

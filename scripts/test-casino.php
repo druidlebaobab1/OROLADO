@@ -217,6 +217,13 @@ casino_multi(load_db(), $me, 'mines', 'state', 'real', 0, []);
 casino_multi(load_db(), $me, 'mines', 'state', 'real', 0, []);
 check('base revenue : gain versé une seule fois', abs($bal[$U] - (48 + $c['win'])) < 0.001, $bal[$U] . ' vs ' . (48 + $c['win']));
 
+echo "7) Penalty en série (v2695)\n";
+for ($stop = 1; $stop <= 8; $stop++) {
+  $N = 200000; $sum = 0.0;
+  for ($i = 0; $i < $N; $i++) { $k = 0; while ($k < $stop) { if (random_int(0, 2) === random_int(0, 2)) { $k = -1; break; } $k++; } $sum += $k > 0 ? casino_pen_mult($k) : 0; }
+  check(sprintf('penalty encaissé après %d but(s) : retour %.1f %%', $stop, $sum / $N * 100), $sum / $N < 0.985 && $sum / $N > 0.93);
+}
+check('penalty : échelle ×1,44 → ×24,60', abs(casino_pen_mult(1) - 1.44) < 0.001 && abs(casino_pen_mult(8) - 24.6) < 0.001, casino_pen_mult(8) . '');
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
 

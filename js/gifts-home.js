@@ -166,6 +166,9 @@
     rot = rot - (rot % 360) + 360 * 6 + (360 - c);
     var el = $('ghRot');
     if (el) { el.style.transition = 'transform 5.2s cubic-bezier(.12,.72,.12,1)'; el.style.transform = 'rotate(' + rot + 'deg)'; }
+    // v2695 : la flèche « pique » sur les cases pendant que la roue tourne, puis ralentit avec elle
+    var pin = document.querySelector('#ghWheel .whl-pin');
+    if (pin) { pin.classList.add('tick'); setTimeout(function () { pin.classList.add('slow'); }, 3000); setTimeout(function () { pin.classList.remove('tick', 'slow'); }, 5100); }
     setTimeout(function () {
       spinning = false;
       paintWheel(r.won);

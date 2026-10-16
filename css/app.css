@@ -10911,3 +10911,111 @@ html.oro-lite .ls2-conf{display:none}
 #liveModal .lgi-kick{border:0;border-radius:10px;padding:6px 10px;font:800 12px system-ui;color:#fecaca;background:rgba(239,68,68,.15)}
 #liveModal .lgi-exit{display:flex;align-items:center;gap:12px;width:100%;padding:14px 14px;border:0;border-radius:18px;color:#F87171;font:900 15px system-ui;background:rgba(239,68,68,.1)}
 #liveModal .lgi-exit svg{stroke:#F87171}
+
+/* ===== v2695 (propriétaire) — Casino : accueil 5 × 5 SANS défilement dans un univers orangé (comme le Défi du jour), plus de grosse planète,
+   bouton Miser transparent qui devient vert au toucher, flèche de roue qui « pique », Penalty en série avec la ligne des gains en haut ===== */
+html:root body #casinoModal#casinoModal:not(.in-game) > .modal-box{background:
+  radial-gradient(1.2px 1.2px at 12% 14%,rgba(255,255,255,.9),transparent 60%),radial-gradient(1px 1px at 82% 10%,rgba(255,255,255,.8),transparent 60%),radial-gradient(1.3px 1.3px at 64% 46%,rgba(255,240,210,.85),transparent 60%),radial-gradient(1px 1px at 30% 62%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1.2px 1.2px at 90% 70%,rgba(255,255,255,.75),transparent 60%),radial-gradient(1px 1px at 8% 86%,rgba(255,255,255,.6),transparent 60%),radial-gradient(1px 1px at 46% 92%,rgba(255,255,255,.6),transparent 60%),radial-gradient(1.1px 1.1px at 72% 28%,rgba(255,255,255,.7),transparent 60%),
+  radial-gradient(70% 38% at 95% 6%,rgba(251,146,60,.55),transparent 70%),radial-gradient(60% 34% at 0% 45%,rgba(234,88,12,.4),transparent 70%),radial-gradient(70% 40% at 70% 100%,rgba(245,158,11,.38),transparent 70%),radial-gradient(50% 30% at 20% 90%,rgba(168,85,247,.35),transparent 70%),
+  linear-gradient(180deg,#1c0f2c 0%,#2a1124 55%,#1a0b1c 100%)!important}
+/* les 25 jeux tiennent sur un seul écran : 5 colonnes × 5 lignes */
+html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:min(10px,1.2vh) 4px!important;padding:2px 0 6px}
+@media (min-width:600px){html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
+@media (min-width:900px){html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;max-width:760px;margin:0 auto}}
+html body #casinoModal #csView.cs-grid > .cs-g:last-child{grid-column:auto!important}
+#casinoModal .cs-g .cs-pl{width:min(68px,17.5vw,9.4vh)}
+#casinoModal .cs-g b{font:900 10.5px/1.15 "Plus Jakarta Sans",system-ui,sans-serif;min-height:24px;display:flex;align-items:flex-start;justify-content:center}
+@media (min-width:600px){#casinoModal .cs-g .cs-pl{width:min(96px,10vh)}#casinoModal .cs-g b{font-size:13px}}
+html body #casinoModal .cs-tabs2{margin-bottom:10px}
+/* écran de jeu : univers léger de la couleur du jeu, plus de grosse planète */
+html body #casinoModal .cs-game::after{display:none!important}
+/* bouton Miser : transparent et léger, devient vert plein quand on le touche */
+html body #casinoModal .cs-go{color:#dcfce7;background:rgba(34,197,94,.2)!important;box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.75),0 8px 22px -14px rgba(34,197,94,.9)!important;transition:background .12s,transform .08s}
+html body #casinoModal .cs-go:active{color:#04261b;background:linear-gradient(180deg,#4ade80,#16a34a)!important;transform:scale(.985)}
+html body #casinoModal .cs-go.cash{color:#2a1a00;background:linear-gradient(180deg,#FFE07A,#F5B700)!important;box-shadow:0 8px 22px -12px rgba(245,183,0,.9)!important}
+html body #casinoModal .cs-sheet-in .cs-go{color:#04261b;background:linear-gradient(180deg,#4ade80,#16a34a)!important}
+/* « ? » = petit livre (comment jouer) */
+#casinoModal .cs-help svg{width:22px;height:22px;fill:rgba(255,255,255,.12);stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* Mines : le titre n'est plus coupé */
+#casinoModal .mn-info{flex-wrap:wrap;gap:4px 12px;font-size:13.5px}
+#casinoModal .mn-info > span{white-space:nowrap}
+/* roue : flèche dorée avec tête ronde qui « pique » sur les cases */
+#casinoModal .whl2-pin,#portalModal .whl-pin{transform-origin:50% 0}
+#casinoModal .whl2-pin::after,#portalModal .whl-pin::after{content:"";position:absolute;left:50%;top:-2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#F5B700 60%,#92400E)}
+#casinoModal .whl2-pin.tick,#portalModal .whl-pin.tick{animation:pinTick .085s ease-in-out infinite alternate}
+#casinoModal .whl2-pin.tick.slow,#portalModal .whl-pin.tick.slow{animation-duration:.22s}
+@keyframes pinTick{from{transform:rotate(-14deg)}to{transform:rotate(6deg)}}
+html.oro-lite #casinoModal .whl2-pin.tick,html.oro-lite #portalModal .whl-pin.tick{animation:none}
+/* Penalty : ligne des gains en haut + 6 zones dans le but */
+#casinoModal .pen-lad{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin:0 0 2px}
+#casinoModal .pen-lad span{display:grid;place-items:center;height:26px;border-radius:8px;font:800 10.5px system-ui;color:#cbd5e1;background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#casinoModal .pen-lad span.cur{color:#1a1200;background:linear-gradient(180deg,#FFE07A,#F5B700);box-shadow:0 0 12px rgba(245,183,0,.6)}
+#casinoModal .pen-lad span.ok{color:#fff;background:linear-gradient(180deg,#4ade80,#16a34a)}
+#casinoModal .pen-lad span.miss{color:#fff;background:#dc2626}
+#casinoModal .pen-z{position:absolute;z-index:3;width:23.33%;height:14.5%;border:0;padding:0;background:none;display:grid;place-items:center;cursor:pointer}
+#casinoModal .pen-z i{width:30px;height:30px;border-radius:50%;border:2px dashed rgba(255,255,255,.28);transition:transform .12s,border-color .12s}
+#casinoModal .pen3.live .pen-z i{border-color:rgba(250,204,21,.75);animation:penPulse 1.4s ease-in-out infinite}
+#casinoModal .pen-z:active i{transform:scale(1.25);border-style:solid;background:rgba(250,204,21,.35)}
+@keyframes penPulse{50%{transform:scale(1.12)}}
+html.oro-lite #casinoModal .pen3.live .pen-z i{animation:none}
+#casinoModal .pen-tip{position:absolute;left:50%;bottom:24%;transform:translateX(-50%);z-index:3;font:800 13px system-ui;color:#fff;padding:4px 12px;border-radius:12px;background:rgba(0,0,0,.35);white-space:nowrap;pointer-events:none}
+#casinoModal .pen-tip:empty{display:none}
+html body #casinoModal .pen-t{display:none!important}
+/* v2695 (propriétaire) — pages Cadeaux : sans cadre, sans défilement ; l'image de la planète passe DERRIÈRE (décor d'univers) ; plus de titre en double */
+html:root body #portalModal .defi-card,html:root body #portalModal .bon-card,html:root body #portalModal .top-card,html:root body #portalModal .aff-card{border:0!important;background:transparent!important;box-shadow:none!important;padding:2px 2px 8px!important;overflow:visible!important;position:relative;isolation:isolate}
+html:root body #portalModal .defi-card > .gift-scene,html:root body #portalModal .bon-card > .gift-scene,html:root body #portalModal .aff-card > .gift-scene,html:root body #portalModal .top-card > .gift-scene{position:absolute!important;left:-14px;right:-14px;bottom:-14px;height:44%;margin:0!important;z-index:-1;opacity:.6;border:0!important;box-shadow:none!important;pointer-events:none;border-radius:0!important;-webkit-mask:linear-gradient(180deg,transparent,#000 45%);mask:linear-gradient(180deg,transparent,#000 45%)}
+html:root body #portalModal.gh-sub .defi-top{display:none!important}
+html:root body #portalModal#portalModal #defiCard#defiCard,html:root body #portalModal#portalModal #bonCard#bonCard,html:root body #portalModal#portalModal #topCard#topCard,html:root body #portalModal#portalModal #affCard#affCard{border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+html:root body #portalModal#portalModal #defiCard#defiCard::before,html:root body #portalModal#portalModal #bonCard#bonCard::before,html:root body #portalModal#portalModal #topCard#topCard::before,html:root body #portalModal#portalModal #affCard#affCard::before{display:none!important}
+#portalModal .gh-imm .gh-p.wide .cs-pl{width:min(150px,40vw)}
+#portalModal .gh-imm .gh-p.wide b{font-size:18px}
+#casinoModal .pen-z{height:9.67%}
+#casinoModal .pen-z i{width:24px;height:24px}
+
+/* v2695b (propriétaire) — vrai fond « UNIVERS » : nébuleuses colorées + champ d'étoiles sur tout l'écran, transparent, sans grosses planètes.
+   Les étoiles sont un calque fixe (aucune animation) placé SOUS le contenu. */
+html:root body #casinoModal#casinoModal > .modal-box{isolation:isolate}
+html:root body #casinoModal#casinoModal > .modal-box::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(1px 1px at 18px 26px,rgba(255,255,255,.95) 50%,transparent 52%) 0 0/120px 130px,
+    radial-gradient(1px 1px at 84px 70px,rgba(255,255,255,.7) 50%,transparent 52%) 0 0/120px 130px,
+    radial-gradient(1.4px 1.4px at 46px 104px,rgba(255,236,210,.9) 50%,transparent 52%) 0 0/120px 130px,
+    radial-gradient(1px 1px at 140px 30px,rgba(255,255,255,.55) 50%,transparent 52%) 0 0/190px 170px,
+    radial-gradient(1.6px 1.6px at 30px 150px,rgba(200,220,255,.85) 50%,transparent 52%) 0 0/190px 170px,
+    radial-gradient(1px 1px at 110px 120px,rgba(255,255,255,.5) 50%,transparent 52%) 0 0/190px 170px}
+/* accueil : univers orangé OROLADO (nébuleuses orange, rose, violet), sans planète */
+html:root body #casinoModal#casinoModal:not(.in-game) > .modal-box{background:
+  radial-gradient(55% 30% at 88% 8%,rgba(251,146,60,.55),transparent 72%),
+  radial-gradient(45% 26% at 8% 30%,rgba(236,72,153,.38),transparent 72%),
+  radial-gradient(60% 32% at 62% 52%,rgba(124,58,237,.34),transparent 72%),
+  radial-gradient(55% 28% at 18% 82%,rgba(245,158,11,.36),transparent 72%),
+  radial-gradient(60% 30% at 90% 96%,rgba(219,39,119,.32),transparent 72%),
+  linear-gradient(170deg,#1d0d2e 0%,#250f2a 45%,#1a0a22 100%)!important}
+/* jeux : une nébuleuse douce de la couleur du jeu en bas, sous la mise (plus de planète) */
+html body #casinoModal .cs-game::before{content:"";position:absolute;z-index:-1;left:-20%;right:-20%;bottom:-8%;height:46%;pointer-events:none;border-radius:50%;
+  background:radial-gradient(50% 50% at 50% 60%,color-mix(in srgb,var(--p2) 55%,transparent),transparent 72%),radial-gradient(30% 40% at 22% 40%,color-mix(in srgb,var(--p1) 22%,transparent),transparent 70%),radial-gradient(30% 40% at 80% 50%,color-mix(in srgb,var(--p2) 35%,transparent),transparent 70%)}
+/* v2695c (propriétaire) — Cadeaux : flèche de retour en haut, sans titre à côté ; roue plus légère et plus haute ; moins de textes */
+html:root body #portalModal .gh-bar{margin:-4px 0 2px;min-height:30px}
+html:root body #portalModal #ghTitle{display:none!important}
+html:root body #portalModal .gh-back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);box-shadow:none}
+html:root body #portalModal .gh-hero-w{width:min(190px,50vw)}
+html:root body #portalModal .gh-imm .gh-hero b{font-size:18px}
+html:root body #portalModal .gh-grid.gh-imm{gap:16px 10px;margin-top:-6px}
+html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(132px,36vw)}
+html:root body #portalModal .defi-how .defi-ex,html:root body #portalModal .defi-how .defi-rl,html:root body #portalModal .bon-card .defi-rl,html:root body #portalModal .bon-ex{display:none!important}
+html:root body #portalModal .gh-hero-w{width:min(180px,48vw,23vh)}
+html:root body #portalModal .gh-imm .gh-p .cs-pl{width:min(100px,27vw,12.5vh)}
+html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(116px,31vw,14vh)}
+html:root body #portalModal .gh-grid.gh-imm{gap:min(14px,1.6vh) 10px}
+/* v2695 (propriétaire) — Recharger : drapeaux en GROS sur une ligne, numéro sur toute la largeur et bien lisible ; plus de bandeau qui fait défiler ; flèche ↓ au lieu de la croix */
+html body #depositModal#depositModal .pay-wave .momo-phone{flex-wrap:wrap!important;height:auto!important;row-gap:8px!important;column-gap:8px!important}
+html body #depositModal#depositModal .pay-wave .momo-phone::before{flex:0 0 46px!important;height:46px!important;border-radius:12px!important}
+html body #depositModal#depositModal .wave-cc{flex:1 1 0!important;gap:8px!important}
+html body #depositModal#depositModal .wcc{flex:1 1 0!important;height:46px!important;padding:0 8px!important;gap:8px!important;font-size:17px!important;font-weight:900!important;justify-content:center!important;border-radius:12px!important}
+html body #depositModal#depositModal .wcc svg{width:30px!important;height:20px!important;border-radius:3px}
+html body #depositModal#depositModal .pay-wave #momoPhone{flex:1 1 100%!important;width:100%!important;height:52px!important;font-size:21px!important;font-weight:800!important;letter-spacing:1.5px!important;padding:0 16px!important;border-radius:14px!important;text-align:center}
+html body #depositModal#depositModal .dep-learn{display:none!important}
+html body #depositModal#depositModal #closeDeposit{background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/22px no-repeat!important;box-shadow:none!important;border:0!important}
+html body #depositModal#depositModal #closeDeposit::before,html body #depositModal#depositModal #closeDeposit::after{display:none!important}
+html body #depositModal#depositModal .pay-crypto-wall > *:nth-child(n+9){display:none!important}
+html:root body #depositModal#depositModal .pay-crypto-wall > .pay-crypto-cell:nth-child(n+9){display:none!important}

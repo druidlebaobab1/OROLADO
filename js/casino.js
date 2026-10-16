@@ -8,7 +8,7 @@
     fr: { title: 'Casino', sub: '18 jeux · dès 0,10 $', real: 'Réel', demo: 'Démo', tryM: 'Essai', bal: 'Solde', stake: 'Mise', play: 'Jouer', again: 'Rejouer',
       win: 'Gagné ! +{w} $', lose: 'Perdu', tryNote: 'Crée ton compte et recharge pour jouer en argent réel, dès 0,10 $.', signup: 'Créer mon compte', gamesTab: 'Jeux', realAcc: 'Compte réel', bet: 'Miser', gotIt: 'J’ai compris', revealAll: 'Tout découvrir', dragonN: 'Dragon', tigerN: 'Tigre', tie: 'Égalité', player: 'Joueur', banker: 'Banque', small: 'Petit', big: 'Grand', triple: 'triple', pickChest: 'Choisis un coffre', pump: 'Gonfler', pumpFirst: 'Gonfle le ballon', level: 'Pommes pourries',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée.', e_maxWin: 'Gain trop élevé pour cette mise : baisse la mise ou la cible.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_busy: 'Un instant…', e_param: 'Choix invalide.', e_login: 'Connecte-toi pour jouer.', e_suspended: 'Compte suspendu.',
-      deposit: 'Recharger', hist: 'Mes dernières parties', none: 'Aucune partie pour l’instant.', rules: 'Résultat tiré par le serveur OROLADO. Jeu responsable : joue ce que tu peux te permettre de perdre.',
+      deposit: 'Recharger', hist: 'Mes dernières parties', none: 'Aucune partie pour l’instant.', rules: 'Jeu responsable : joue seulement ce que tu peux te permettre de perdre.',
       g: { crash: ['Avion', 'Encaisse avant qu’il explose'], coin: ['Pile ou face', '×1,94'], dice: ['Dés', 'Choisis ta chance'], limbo: ['Cible', 'Vise jusqu’à ×1000'], wheel: ['Roue casino', 'Jusqu’à ×50'],
         race: ['Course auto', '6 voitures · ×5,7'], roulette: ['Roulette', 'Rouge, noir, numéro ×36'], slots: ['Machine à sous', 'Jusqu’à ×50'], plinko: ['Cascade', 'Jusqu’à ×12'], keno: ['Keno', '3 numéros · ×25'],
         scratch: ['Grattage', 'Jusqu’à ×20'], hilo: ['Hi-Lo cartes', 'Plus haut ou plus bas'], penalty: ['Penalty', 'Marque · ×1,44'], colors: ['Couleurs', 'Vert, rouge, violet'], mines: ['Mines', 'Évite les bombes'],
@@ -18,11 +18,11 @@
       heads: 'Pile', tails: 'Face', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
       pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
-      hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris sportifs', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
+      shoot: 'Touche le but pour tirer', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris sportifs', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
     en: { title: 'Casino', sub: '18 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
       win: 'You win! +${w}', lose: 'Lost', tryNote: 'Create your account and top up to play for real money, from $0.10.', signup: 'Create my account', gamesTab: 'Games', realAcc: 'Real account', bet: 'Bet', gotIt: 'Got it', revealAll: 'Reveal all', dragonN: 'Dragon', tigerN: 'Tiger', tie: 'Tie', player: 'Player', banker: 'Banker', small: 'Small', big: 'Big', triple: 'triple', pickChest: 'Pick a chest', pump: 'Pump', pumpFirst: 'Pump the balloon', level: 'Rotten apples',
       e_min: 'Minimum stake $0.10.', e_max: 'Stake too high.', e_maxWin: 'Win too high for this stake: lower the stake or the target.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_busy: 'One moment…', e_param: 'Invalid choice.', e_login: 'Log in to play.', e_suspended: 'Account suspended.',
-      deposit: 'Top up', hist: 'My last games', none: 'No game yet.', rules: 'Result drawn by the OROLADO server. Play responsibly: only stake what you can afford to lose.',
+      deposit: 'Top up', hist: 'My last games', none: 'No game yet.', rules: 'Play responsibly: only stake what you can afford to lose.',
       g: { crash: ['Aviator', 'Cash out before it blows'], coin: ['Heads or tails', '×1.94'], dice: ['Dice', 'Pick your chance'], limbo: ['Target', 'Aim up to ×1000'], wheel: ['Casino wheel', 'Up to ×50'],
         race: ['Car race', '6 cars · ×5.7'], roulette: ['Roulette', 'Red, black, number ×36'], slots: ['Slot machine', 'Up to ×50'], plinko: ['Cascade', 'Up to ×12'], keno: ['Keno', '3 numbers · ×25'],
         scratch: ['Scratch card', 'Up to ×20'], hilo: ['Hi-Lo cards', 'Higher or lower'], penalty: ['Penalty', 'Score · ×1.44'], colors: ['Colours', 'Green, red, violet'], mines: ['Mines', 'Avoid the bombs'],
@@ -32,15 +32,15 @@
       heads: 'Heads', tails: 'Tails', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
       pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
-      hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Sports bets', sportsSoon: 'Big matches are coming here soon.' }
+      shoot: 'Tap the goal to shoot', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Sports bets', sportsSoon: 'Big matches are coming here soon.' }
   };
   T.zh = Object.assign({}, T.en, { title: '娱乐场', sub: '18 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
     win: '赢了！+{w} 美元', lose: '输了', tryNote: '创建账户并充值，即可真钱游戏，0.10 美元起。', signup: '创建账户', gamesTab: '游戏', realAcc: '真实账户', bet: '投注', gotIt: '知道了', revealAll: '全部刮开', dragonN: '龙', tigerN: '虎', tie: '和', player: '闲', banker: '庄', small: '小', big: '大', triple: '围骰', pickChest: '选一个宝箱', pump: '充气', pumpFirst: '给气球充气', level: '坏苹果', deposit: '充值', hist: '最近的游戏', none: '还没有游戏记录。',
-    rules: '结果由 OROLADO 服务器生成。请理性游戏，只投入你能承受损失的金额。',
+    rules: '请理性游戏，只投入你能承受损失的金额。',
     g: { crash: ['飞机', '爆炸前兑现'], coin: ['正反面', '×1.94'], dice: ['骰子', '自选胜率'], limbo: ['极限', '最高 ×1000'], wheel: ['娱乐场转盘', '最高 ×50'], race: ['赛车', '6 辆车 · ×5.7'],
       roulette: ['轮盘', '红、黑、号码 ×36'], slots: ['老虎机', '最高 ×50'], plinko: ['弹珠台', '最高 ×12'], keno: ['基诺', '3 个号码 · ×25'], scratch: ['刮刮卡', '最高 ×20'], hilo: ['猜大小', '更大还是更小'],
       penalty: ['点球', '进球 · ×1.44'], colors: ['颜色', '绿、红、紫'], mines: ['扫雷', '避开炸弹'], jet: ['喷气侠', '起飞，快兑现！'], rocket: ['火箭', '直冲星空'], apple: ['金色果园', '10 层'], tower: ['高塔', '3 扇门 1 个陷阱'], dragon: ['龙虎', '比大小'], baccarat: ['百家乐', '闲或庄'], sicbo: ['骰宝', '大或小'], chests: ['宝箱', '3 选 1'], balloon: ['气球', '充气再兑现'] },
-    cashout: '兑现', start: '起飞', heads: '正面', tails: '反面', under: '小于', over: '大于', red: '红', black: '黑', even: '双', odd: '单', number: '号码', green: '绿', violet: '紫', goal: '进球！', saved: '被扑出！', hi: '更大或相等', lo: '更小或相等', sports: '体育竞猜', sportsSoon: '重大赛事即将上线。' });
+    cashout: '兑现', start: '起飞', heads: '正面', tails: '反面', under: '小于', over: '大于', red: '红', black: '黑', even: '双', odd: '单', number: '号码', green: '绿', violet: '紫', goal: '进球！', saved: '被扑出！', shoot: '点击球门射门', hi: '更大或相等', lo: '更小或相等', sports: '体育竞猜', sportsSoon: '重大赛事即将上线。' });
   (D6.LIVE_T = D6.LIVE_T || {}).casino = T;
   function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return T[l] || T.en; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -134,7 +134,7 @@
     m.className = 'modal-backdrop'; m.id = 'casinoModal';
     m.innerHTML = '<div class="modal-box glass cs-box" role="dialog" aria-modal="true"><button type="button" class="btn-close" id="closeCasino" aria-label="Close"></button>' +
       '<div class="cs-top"><button type="button" class="cs-back" id="csBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      '<button type="button" class="cs-wallet" id="csBal"></button><button type="button" class="cs-help" id="csHelp" aria-label="?">?</button></div>' +
+      '<button type="button" class="cs-wallet" id="csBal"></button><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/><path d="M6.5 8h2.5M6.5 11h2.5M15 8h2.5M15 11h2.5"/></svg></button></div>' +
       '<div id="csBody"></div><div class="cs-sheet" id="csSheet" hidden></div></div>';
     document.body.appendChild(m);
     $('closeCasino').style.setProperty('display', 'none', 'important');
@@ -145,7 +145,7 @@
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
   }
-  function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) home(); else close(); }
+  function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   function open(game) {
     ensure(); readBal();
     S.stake = 0.1;
@@ -177,7 +177,7 @@
       v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).map(function (k) {
         return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b></button>';
       }).join('');
-      v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-g')); }); });
+      v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
   }
@@ -247,7 +247,7 @@
       sicbo: '3 dés sont lancés. Mise sur Petit (4 à 10) ou Grand (11 à 17) : ×2. Un triple fait perdre ces deux mises.',
       chests: '3 coffres : un seul contient le trésor. Choisis le bon coffre et tu gagnes ×2,85.',
       balloon: 'Gonfle le ballon : chaque souffle fait monter le gain. Encaisse avant qu’il éclate !',
-      penalty: 'Vise à gauche, au centre ou à droite. Si le gardien plonge ailleurs, c’est but : ×1,44.',
+      penalty: 'Mise, puis touche le but là où tu veux tirer. Chaque but fait monter ton gain (ligne du haut : ×1,44 → ×24,60). Encaisse quand tu veux. Si le gardien arrête le tir, la mise est perdue.',
       race: 'Choisis ta voiture parmi 6. Si elle gagne la course : ×5,7.',
       colors: 'Un numéro de 0 à 9 sort. Vert ou Rouge : ×2 · Violet : ×4,5 · un numéro exact : ×9.',
       darts: 'Touche « Miser » : la fléchette part vers la cible. Centre doré ×20 · anneau rouge ×5 · anneau vert ×2 · anneau clair ×1 · bord noir ×0.'
@@ -274,7 +274,7 @@
       sicbo: '3 dice are rolled. Bet Small (4–10) or Big (11–17): ×2. A triple loses both bets.',
       chests: '3 chests: only one holds the treasure. Pick it and win ×2.85.',
       balloon: 'Pump the balloon: each pump raises the win. Cash out before it pops!',
-      penalty: 'Aim left, centre or right. If the keeper dives elsewhere, it’s a goal: ×1.44.',
+      penalty: 'Bet, then tap the goal where you want to shoot. Each goal raises your win (top line: ×1.44 → ×24.60). Cash out anytime. If the keeper saves it, the stake is lost.',
       race: 'Pick your car out of 6. If it wins the race: ×5.7.',
       colors: 'A number from 0 to 9 is drawn. Green or Red: ×2 · Violet: ×4.5 · exact number: ×9.',
       darts: 'Tap “Bet”: the dart flies to the board. Gold centre ×20 · red ring ×5 · green ring ×2 · light ring ×1 · black edge ×0.'
@@ -355,14 +355,15 @@
     var bulbs = ''; for (var i = 0; i < 24; i++) bulbs += '<circle cx="' + (119 * Math.sin(i * 15 * Math.PI / 180)).toFixed(1) + '" cy="' + (-119 * Math.cos(i * 15 * Math.PI / 180)).toFixed(1) + '" r="3" fill="#FFF7D6"/>';
     out = '<defs><radialGradient id="whG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".5" stop-color="#F5B700"/><stop offset="1" stop-color="#9A6A00"/></radialGradient></defs><circle r="125" fill="url(#whG)"/>' + bulbs + out + '<circle r="112" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>';
     var legend = [50, 10, 5, 3, 2, 1.5, 1.2, 0.5, 0].map(function (v) { return '<span style="--c:' + col[v] + '">' + String(v).replace('.', ',') + '</span>'; }).join('');
-    box.innerHTML = '<div class="cs-stage"><div class="whl2"><div class="whl2-rot" id="csWheel"><svg viewBox="-126 -126 252 252">' + out + '<circle r="20" fill="url(#whG)" stroke="#9A6A00" stroke-width="3"/></svg></div><i class="whl2-pin"></i></div><div class="whl-leg">×' + legend + '</div></div><div class="cs-res"></div>' + stakePanel();
+    box.innerHTML = '<div class="cs-stage"><div class="whl2"><div class="whl2-rot" id="csWheel"><svg viewBox="-126 -126 252 252">' + out + '<circle r="20" fill="url(#whG)" stroke="#9A6A00" stroke-width="3"/></svg></div><i class="whl2-pin" id="csWPin"></i></div><div class="whl-leg">' + legend + '</div></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
     $('csGo').addEventListener('click', async function () {
       var r = await play('wheel', {}); if (!r) return;
       var c = mids[r.view.i];
       rot = rot - (rot % 360) + 360 * 5 + (360 - c);
       var w = $('csWheel'); w.style.transition = 'transform 3.6s cubic-bezier(.12,.72,.12,1)'; w.style.transform = 'rotate(' + rot + 'deg)';
-      await sleep(3700); resultLine(box, r, '×' + r.mult);
+      var pin = $('csWPin'); pin.classList.add('tick'); setTimeout(function () { pin.classList.add('slow'); }, 2200);
+      await sleep(3700); pin.classList.remove('tick', 'slow'); resultLine(box, r, '×' + r.mult);
     });
   };
 
@@ -497,13 +498,15 @@
     });
   };
 
-  /* penalty : vu de derrière le ballon (comme les grands) — but, gardien, 3 cibles ; arrêté = le ballon finit dans les gants */
+  /* penalty (v2695, comme Evoplay) : série de 8 tirs, la ligne du haut montre les gains (×1,44 → ×24,60) ;
+     on touche l'endroit du but où l'on veut tirer (6 zones) ; chaque but fait monter le gain ; on encaisse quand on veut. */
+  var PEN_LADDER = [1.44, 2.16, 3.24, 4.86, 7.29, 10.93, 16.4, 24.6];
   GAMES.penalty = function (box, x) {
-    var aim = 1;
+    var g = null, busy = false;
     var net = ''; for (var i = 1; i < 16; i++) net += '<path d="M' + (45 + i * 13.1) + ' 62V150"/>'; for (var j = 1; j < 7; j++) net += '<path d="M45 ' + (62 + j * 12.6) + 'H255"/>';
     var scene = '<svg class="pen-scene" viewBox="0 0 300 300" preserveAspectRatio="none">' +
       '<defs><linearGradient id="penSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1F4D"/><stop offset="1" stop-color="#1E4FA8"/></linearGradient><linearGradient id="penGr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16A34A"/><stop offset="1" stop-color="#14532D"/></linearGradient></defs>' +
-      '<rect width="300" height="160" fill="url(#penSky)"/><g fill="#fff" opacity=".9"><circle cx="30" cy="16" r="5"/><circle cx="270" cy="16" r="5"/></g><g fill="#fff" opacity=".18"><path d="M30 16l-30 60h60zM270 16l-30 60h60z"/></g>' +
+      '<rect width="300" height="160" fill="url(#penSky)"/><g fill="#fff" opacity=".9"><circle cx="30" cy="16" r="5"/><circle cx="270" cy="16" r="5"/></g><g fill="#fff" opacity=".16"><path d="M30 16l-30 60h60zM270 16l-30 60h60z"/></g>' +
       '<rect y="96" width="300" height="56" fill="#1E293B"/><g fill="#475569">' + Array.from({ length: 30 }, function (_, k) { return '<circle cx="' + (k * 10 + 5) + '" cy="' + (104 + (k % 3) * 7) + '" r="3.2"/>'; }).join('') + '</g>' +
       '<rect y="150" width="300" height="150" fill="url(#penGr)"/><g fill="#fff" opacity=".06"><rect y="170" width="300" height="20"/><rect y="210" width="300" height="24"/><rect y="256" width="300" height="28"/></g>' +
       '<path d="M20 300L60 150H240L280 300" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/><path d="M90 195H210" stroke="rgba(255,255,255,.45)" stroke-width="2"/>' +
@@ -511,37 +514,55 @@
       '<path d="M45 151V60H255V151" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/></svg>';
     var keeper = '<svg viewBox="0 0 70 90"><circle cx="35" cy="14" r="10" fill="#f1c27d"/><path d="M27 10a8 6 0 0 1 16 0z" fill="#111"/><path d="M20 26h30l4 34H16z" fill="#f59e0b"/><path d="M20 28L4 16M50 28l16-12" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/><circle cx="4" cy="15" r="6" fill="#22c55e"/><circle cx="66" cy="15" r="6" fill="#22c55e"/><path d="M22 60l-4 26M48 60l4 26" stroke="#111827" stroke-width="9" stroke-linecap="round"/><text x="35" y="48" text-anchor="middle" font-size="13" font-weight="900" fill="#111">1</text></svg>';
     var ball = '<svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M17 9l6 4.3-2.3 7.2h-7.4L11 13.3z" fill="#111"/><path d="M17 9V2M23 13.3l6.5-2M20.7 20.5l4 5.7M13.3 20.5l-4 5.7M11 13.3l-6.5-2" stroke="#111" stroke-width="1.4"/><ellipse cx="12" cy="9" rx="4" ry="2.4" fill="#fff" opacity=".8"/></svg>';
-    var dots = (S.pen || []).slice(-5);
-    box.innerHTML = '<div class="cs-stage pen3">' + scene +
-      '<div class="pen-dots" id="csPd">' + [0, 1, 2, 3, 4].map(function (k) { return '<i class="' + (dots[k] == null ? '' : dots[k] ? 'g' : 'm') + '"></i>'; }).join('') + '</div>' +
-      [0, 1, 2].map(function (z) { return '<button type="button" class="pen-t' + (z === 1 ? ' on' : '') + '" data-z="' + z + '" style="left:' + (28 + z * 22) + '%"></button>'; }).join('') +
-      '<span class="kp3" id="csKp">' + keeper + '</span><span class="ball3" id="csPb">' + ball + '</span></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.aim) + ' · ×1,44</label><div class="cs-seg"><button type="button" data-aim="0">← ' + esc(x.left) + '</button><button type="button" data-aim="1" class="on">' + esc(x.center) + '</button><button type="button" data-aim="2">' + esc(x.right) + ' →</button></div>');
+    // 9 zones : 3 colonnes (gauche, centre, droite) × 3 hauteurs (haut, milieu, bas)
+    var zones = ''; for (var h = 0; h < 3; h++) for (var c = 0; c < 3; c++) zones += '<button type="button" class="pen-z" data-c="' + c + '" data-h="' + h + '" style="left:' + (15 + c * 23.33) + '%;top:' + (20.5 + h * 9.67) + '%" aria-label="' + (c + 1) + '"><i></i></button>';
+    box.innerHTML = '<div class="pen-lad" id="csPl">' + PEN_LADDER.map(function (m, k) { return '<span data-k="' + k + '">×' + String(m).replace('.', ',') + '</span>'; }).join('') + '</div>' +
+      '<div class="cs-stage pen3">' + scene + zones + '<span class="kp3" id="csKp">' + keeper + '</span><span class="ball3" id="csPb">' + ball + '</span><b class="pen-tip" id="csPt"></b></div><div class="cs-res"></div>' +
+      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
+    if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
-    var setAim = function (a) { aim = a; box.querySelectorAll('[data-aim]').forEach(function (z) { z.classList.toggle('on', +z.getAttribute('data-aim') === a); }); box.querySelectorAll('.pen-t').forEach(function (z) { z.classList.toggle('on', +z.getAttribute('data-z') === a); }); };
-    box.querySelectorAll('[data-aim]').forEach(function (b) { b.addEventListener('click', function () { setAim(+b.getAttribute('data-aim')); }); });
-    box.querySelectorAll('.pen-t').forEach(function (z) { z.addEventListener('click', function () { setAim(+z.getAttribute('data-z')); }); });
-    $('csGo').addEventListener('click', async function () {
-      var r = await play('penalty', { aim: aim }); if (!r) return;
-      var pb = $('csPb'), kp = $('csKp'), st = box.querySelector('.pen3'), w = st.clientWidth, h = st.clientHeight;
-      pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none';
-      await sleep(40);
-      pb.style.transition = ''; kp.style.transition = '';
-      var goal = r.win > 0;
-      // centre de la cible visée (en px) par rapport à la position de départ du ballon (bas, milieu)
-      var tx = (0.28 + r.view.aim * 0.22 - 0.5) * w;
-      var ty = -(h * 0.84 - h * (goal ? 0.36 : 0.43));
-      var kdx = (r.view.keeper - 1) * w * 0.22;
-      kp.style.transform = 'translateX(' + kdx + 'px) rotate(' + ((r.view.keeper - 1) * 58) + 'deg)';
-      pb.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(.42) rotate(540deg)';
+    var btn = $('csGo'), st = box.querySelector('.pen3'), pb = $('csPb'), kp = $('csKp');
+    var reset = function () { pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none'; pb.offsetHeight; pb.style.transition = ''; kp.style.transition = ''; };
+    var paint = function (r) {
+      g = r;
+      var k = r.k || 0;
+      box.querySelectorAll('#csPl span').forEach(function (s, i) { s.className = i < k ? 'ok' : (i === k && !r.done ? 'cur' : ''); });
+      if (r.done && !(r.win > 0) && r.boom != null) { var b = box.querySelector('#csPl span[data-k="' + r.boom + '"]'); if (b) b.className = 'miss'; }
+      st.classList.toggle('live', !r.done);
+      $('csPt').textContent = !r.done ? x.shoot : '';
+      if (r.done) { btn.textContent = x.bet; btn.classList.remove('cash'); }
+      else { btn.classList.toggle('cash', k > 0); btn.textContent = k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.shoot; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = ''; }
+    };
+    var shoot = async function (col, hgt) {
+      if (!g || g.done || busy) return;
+      busy = true;
+      var r = await multi('penalty', 'shoot', { aim: col, h: hgt });
+      if (!r) { busy = false; return; }
+      var last = (r.shots || [])[r.shots.length - 1] || [col, hgt, 1, 1], goal = !!last[3], keeperCol = last[2];
+      var w = st.clientWidth, H = st.clientHeight;
+      reset(); await sleep(30);
+      var tx = (0.5 - 0.5 + (col - 1) * 0.2333) * w, ty = -(H * 0.86 - H * (0.205 + (hgt + 0.5) * 0.0967) - H * 0.04);
+      kp.style.transform = 'translateX(' + ((keeperCol - 1) * w * 0.22) + 'px) rotate(' + ((keeperCol - 1) * 58) + 'deg)';
+      pb.style.transform = 'translate(' + tx + 'px,' + (goal ? ty : ty + H * 0.06) + 'px) scale(.42) rotate(540deg)';
       await sleep(640);
-      if (!goal) { pb.style.transition = 'transform .45s ease-in'; pb.style.transform = 'translate(' + (tx * 1.1) + 'px,' + (ty + h * 0.16) + 'px) scale(.46) rotate(620deg)'; }
-      else st.classList.add('net-hit');
-      setTimeout(function () { st.classList.remove('net-hit'); }, 700);
-      S.pen = (S.pen || []).concat([goal ? 1 : 0]).slice(-5);
-      $('csPd').innerHTML = [0, 1, 2, 3, 4].map(function (k) { return '<i class="' + (S.pen[k] == null ? '' : S.pen[k] ? 'g' : 'm') + '"></i>'; }).join('');
-      resultLine(box, r, goal ? x.goal : x.saved);
+      if (!goal) { pb.style.transition = 'transform .45s ease-in'; pb.style.transform = 'translate(' + (tx * 1.1) + 'px,' + (ty + H * 0.22) + 'px) scale(.46) rotate(620deg)'; }
+      else { st.classList.add('net-hit'); setTimeout(function () { st.classList.remove('net-hit'); }, 500); }
+      await sleep(goal ? 300 : 500);
+      busy = false;
+      paint(r);
+      if (r.done) resultLine(box, r, r.win > 0 ? '×' + m2(r.mult || (r.win / r.stake)) : x.saved);
+      else { setTimeout(function () { if (g && !g.done && !busy) reset(); }, 500); }
+    };
+    box.querySelectorAll('.pen-z').forEach(function (z) { z.addEventListener('click', function () { shoot(+z.getAttribute('data-c'), +z.getAttribute('data-h')); }); });
+    btn.addEventListener('click', async function () {
+      if (g && !g.done) {
+        if (!g.k) { toast(x.shoot, 'ok'); return; }
+        var c = await multi('penalty', 'cash'); if (c) { paint(c); resultLine(box, c, '×' + m2(c.mult)); } return;
+      }
+      reset();
+      var r = await multi('penalty', 'start'); if (r) paint(r);
     });
+    multi('penalty', 'state', null, true).then(function (r) { if (r && !r.done) paint(r); });
   };
 
   GAMES.colors = function (box, x) {
@@ -583,7 +604,7 @@
       S.hist = S.hist || {}; var hist = S.hist[game] = S.hist[game] || [];
       var MULT = function (s) { return Math.max(1, Math.floor(Math.exp(0.08 * Math.max(0, s)) * 100) / 100); };
       var stars = ''; for (var i = 0; i < 26; i++) stars += '<circle cx="' + ((i * 137 + 31) % 300) + '" cy="' + ((i * 71 + i * i * 13 + 7) % 165) + '" r="' + (i % 3 ? 0.8 : 1.3) + '" fill="#fff" opacity="' + (0.25 + (i % 4) * 0.12) + '"/>';
-      box.innerHTML = '<div class="cs-stage crash-stage ' + th.cls + '"><i class="crash-rays"></i><div class="crash-hist" id="csHist">' + hist.map(histChip).join('') + '</div>' +
+      box.innerHTML = '<div class="cs-stage crash-stage ' + th.cls + '"><i class="crash-rays"></i>' +
         '<svg viewBox="0 0 300 170" preserveAspectRatio="none" class="crash-sky"><defs><linearGradient id="csAreaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + th.col + '" stop-opacity=".55"/><stop offset="1" stop-color="' + th.col + '" stop-opacity="0"/></linearGradient></defs>' +
         stars + '<g stroke="rgba(255,255,255,.07)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + '</g>' +
         '<path id="csArea" d="M10 160" fill="url(#csAreaG)"/><path id="csTrail" d="M10 160" fill="none" stroke="' + th.col + '" stroke-width="3.6" stroke-linecap="round"/></svg>' +
@@ -598,7 +619,9 @@
         var st = $('csTrail').ownerSVGElement.getBoundingClientRect(), kx = st.width / 300, ky = st.height / 170;
         var d = 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py;
         $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
-        plane.style.transform = 'translate(' + (px * kx - th.w * 0.22) + 'px,' + (py * ky - th.h * 0.72) + 'px)';
+        // v2695 : l'avion reste toujours entier dans l'écran (jamais coupé au bord)
+        var X0 = Math.max(4, Math.min(st.width - th.w - 4, px * kx - th.w * 0.22)), Y0 = Math.max(30, Math.min(st.height - th.h - 2, py * ky - th.h * 0.72));
+        plane.style.transform = 'translate(' + X0 + 'px,' + Y0 + 'px)';
       };
       var finish = function (r) {
         stopAll(); g = r;
@@ -606,7 +629,6 @@
         if (!(r.out > 0)) { plane.classList.add('gone'); }
         $('csCm').className = 'crash-n ' + (r.out > 0 ? 'w' : 'l');
         $('csCm').textContent = (r.out > 0 ? r.out : r.c).toFixed(2) + '×';
-        if (r.c) { hist.unshift(+r.c); if (hist.length > 12) hist.length = 12; $('csHist').innerHTML = hist.map(histChip).join(''); }
         resultLine(box, r, r.out > 0 ? fmt(x.cashed, { x: r.out.toFixed(2), w: m2(r.win) }) : fmt(x.boom, { x: r.c.toFixed(2) }));
         btn.textContent = x.bet; btn.classList.remove('cash'); btn.disabled = false;
       };
@@ -696,7 +718,7 @@
   GAMES.mines = function (box, x) {
     var g = null, mines = 3;
     box.innerHTML = '<div class="cs-stage mn-stage"><div class="mn-info"><span>' + esc(x.minesN) + ' <b id="csMnN">3</b></span><span id="csMnInfo"></span></div><div class="mn" id="csMn">' + Array.from({ length: 25 }, function (_, i) { return '<button type="button" data-c="' + i + '"></button>'; }).join('') + '</div></div><div class="cs-res"></div>' +
-      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<div class="cs-seg">' + [1, 3, 5, 10].map(function (n) { return '<button type="button" data-m="' + n + '" class="' + (n === 3 ? 'on' : '') + '">' + n + ' 💣</button>'; }).join('') + '</div>'));
+      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<div class="cs-seg">' + [1, 3, 5, 10].map(function (n) { return '<button type="button" data-m="' + n + '" class="' + (n === 3 ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>'));
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
@@ -877,7 +899,7 @@
   /* Ballon : ciel bleu, nuages, gros ballon, gros bouton rond pour gonfler */
   GAMES.balloon = function (box, x) {
     var g = null;
-    box.innerHTML = '<div class="cs-stage bl-stage"><i class="bl-cloud c1"></i><i class="bl-cloud c2"></i><i class="bl-cloud c3"></i><b class="crash-n" id="csBlM">1.00×</b><div class="bl" id="csBl"><svg viewBox="0 0 100 130"><defs><radialGradient id="blG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fdba74"/><stop offset=".6" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></radialGradient></defs><path d="M50 4c22 0 38 17 38 40 0 28-22 47-38 51-16-4-38-23-38-51C12 21 28 4 50 4z" fill="url(#blG)"/><path d="M30 26c4-9 12-13 19-13" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".6" fill="none"/><ellipse cx="32" cy="42" rx="5" ry="9" fill="#fff" opacity=".3"/><path d="M45 95l5 8 5-8z" fill="#9a3412"/><path d="M50 103c-5 7 5 12 0 19s3 6 1 8" stroke="#fff" stroke-width="1.6" fill="none"/></svg></div>' +
+    box.innerHTML = '<div class="cs-stage bl-stage"><i class="bl-cloud c1"></i><i class="bl-cloud c2"></i><i class="bl-cloud c3"></i><b class="crash-n" id="csBlM">1.00×</b><div class="bl" id="csBl"><svg viewBox="0 0 100 130"><defs><radialGradient id="blG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fdba74"/><stop offset=".6" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></radialGradient></defs><path d="M50 4c22 0 38 17 38 40 0 28-22 47-38 51-16-4-38-23-38-51C12 21 28 4 50 4z" fill="url(#blG)"/><path d="M50 4c-9 10-10 70 0 91M50 4c9 10 10 70 0 91" stroke="#9a3412" stroke-width="1.4" opacity=".3" fill="none"/><path d="M30 26c4-9 12-13 19-13" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".75" fill="none"/><ellipse cx="32" cy="42" rx="5" ry="9" fill="#fff" opacity=".3"/><path d="M45 95l5 8 5-8z" fill="#9a3412"/><path d="M50 103c-5 7 5 12 0 19s3 6 1 8" stroke="#fff" stroke-width="1.6" fill="none"/></svg></div>' +
       (guest() ? '' : '<button type="button" class="cs-pump" id="csPump" disabled aria-label="' + esc(x.pump) + '"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5c0 3.6-2.5 6.5-6 6.5h-1c-2 0-3.4-.9-4.4-2.4L4 14.6a1.5 1.5 0 0 1 2.4-1.8L9 15" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>') +
       '</div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
     if (guest()) { needAccount($('csNeed'), x); return; }
