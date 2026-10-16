@@ -2591,6 +2591,7 @@
     if (code.indexOf('id') === 0) return 'id';
     if (code.indexOf('de') === 0) return 'de';
     if (code.indexOf('hi') === 0) return 'hi';
+    if (code.indexOf('zh') === 0) return 'zh';
     if (code.indexOf('en') === 0) return 'en';
     return '';
   }
@@ -2608,6 +2609,7 @@
     if (/Moscow|Volgograd|Kirov|Samara|Saratov|Ulyanovsk|Astrakhan|Yekaterinburg|Omsk|Novosibirsk|Barnaul|Tomsk|Novokuznetsk|Krasnoyarsk|Irkutsk|Chita|Yakutsk|Vladivostok|Magadan|Kamchatka|Kaliningrad|Minsk/.test(tz)) return 'ru';
     if (/Berlin|Busingen|Vienna|Zurich|Vaduz/.test(tz)) return 'de';
     if (tz.indexOf('Kolkata') >= 0 || tz.indexOf('Calcutta') >= 0) return 'hi';
+    if (/Shanghai|Chongqing|Harbin|Urumqi|Hong_Kong|Macau|Taipei/.test(tz)) return 'zh';
     return '';
   }
 
@@ -2624,6 +2626,7 @@
     if (cc === 'RU') return 'ru';
     if (cc === 'DE' || cc === 'AT') return 'de';
     if (cc === 'IN') return 'hi';
+    if ({ CN:1, TW:1, HK:1, MO:1 }[cc]) return 'zh';
     return '';
   }
 
@@ -3945,6 +3948,8 @@
     id: [' dan ', 'kebijakan privasi'], vi: [' và ', 'quyền riêng tư'], hi: [' और ', 'गोपनीयता नीति']
   };
   Object.keys(PRIV_AND).forEach(function (l) { if (DICT[l]) { DICT[l].ageAnd = PRIV_AND[l][0]; DICT[l].privacyLink2 = PRIV_AND[l][1]; } });
+  // v2682 — chinois : réappliqué en dernier (des blocs plus haut recopient l'anglais dans toutes les langues).
+  if (D6.I18N_PACKS && D6.I18N_PACKS.zh && DICT.zh) Object.assign(DICT.zh, D6.I18N_PACKS.zh);
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {
@@ -3956,6 +3961,7 @@
   });
   D6.I18N = {
     t: t, short: shortMsg,
+    keys: function () { var s = {}; Object.keys(DICT).forEach(function (l) { Object.keys(DICT[l] || {}).forEach(function (k) { s[k] = 1; }); }); return Object.keys(s); },
     msg: msg,
     depositLabel: depositLabel,
     apply: apply,

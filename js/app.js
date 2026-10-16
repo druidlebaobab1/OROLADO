@@ -510,7 +510,7 @@
             type: 'standard', theme: 'outline', size: 'large', text: 'continue_with',
             shape: 'rectangular', logo_alignment: 'center', width: w,
             click_listener: function () { gClicked = Date.now(); gGotCred = false; },
-            locale: (D6.I18N && D6.I18N.lang) || 'fr'
+            locale: ({ zh: 'zh_CN' })[(D6.I18N && D6.I18N.lang) || ''] || (D6.I18N && D6.I18N.lang) || 'fr'
           });
         });
       });
@@ -2222,7 +2222,8 @@
       id: h(bands('h', ['#CE1126', '#fff'])),
       ru: h(bands('h', ['#fff', '#0039A6', '#D52B1E'])),
       de: h(bands('h', ['#000', '#DD0000', '#FFCE00'])),
-      hi: h(bands('h', ['#FF9933', '#fff', '#138808']) + '<circle cx="15" cy="10" r="2.6" fill="none" stroke="#000080" stroke-width=".7"/><circle cx="15" cy="10" r=".6" fill="#000080"/>')
+      hi: h(bands('h', ['#FF9933', '#fff', '#138808']) + '<circle cx="15" cy="10" r="2.6" fill="none" stroke="#000080" stroke-width=".7"/><circle cx="15" cy="10" r=".6" fill="#000080"/>'),
+      zh: h('<rect width="30" height="20" fill="#DE2910"/>' + star(6, 5.5, 3.2, '#FFDE00') + star(11.2, 2.4, 1, '#FFDE00') + star(13.2, 4.6, 1, '#FFDE00') + star(13.2, 7.6, 1, '#FFDE00') + star(11.2, 9.8, 1, '#FFDE00'))
     };
   })();
   function flagOf(l) { return (l && FLAG_SVG[l.code]) || (l && l.flag) || ''; }
@@ -4790,7 +4791,7 @@
     paintPayLocal();
     try { paintMomoMode(); } catch (eMm) { /* ignore */ }
   // v2543 — mot « Banque » dans la langue du joueur (et à chaque changement de langue).
-  var BANK_WORD = { fr: 'Banque', en: 'Bank', es: 'Banco', pt: 'Banco', ar: 'بنك', tr: 'Banka', vi: 'Ngân hàng', id: 'Bank', ru: 'Банк', de: 'Bank', hi: 'बैंक' };
+  var BANK_WORD = { fr: 'Banque', en: 'Bank', es: 'Banco', pt: 'Banco', ar: 'بنك', tr: 'Banka', vi: 'Ngân hàng', id: 'Bank', ru: 'Банк', de: 'Bank', hi: 'बैंक', zh: '银行' };
   function paintBankWord() {
     var lg = String(document.documentElement.getAttribute('data-lang') || 'fr').slice(0, 2);
     document.querySelectorAll('.pl-bank-t').forEach(function (el) { el.textContent = BANK_WORD[lg] || BANK_WORD.en; });

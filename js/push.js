@@ -20,6 +20,7 @@
     id: ['Aktifkan notifikasi OROLADO', 'Dapatkan kabar begitu sebuah pasar melonjak, serta bonus dan pengumuman penting secara langsung. Jangan lewatkan momen terbaik.', '', 'Aktifkan', 'Nanti', 'Notifikasi aktif ✓', 'Ketuk “Izinkan” untuk menerima notifikasi.', 'Tidak, terima kasih'],
     ru: ['Включите уведомления OROLADO', 'Узнавайте сразу, когда рынок резко движется, и мгновенно получайте бонусы и важные объявления. Не упускайте удачных моментов.', '', 'Включить', 'Позже', 'Уведомления включены ✓', 'Нажмите «Разрешить», чтобы получать уведомления.', 'Нет, спасибо'],
     de: ['OROLADO-Benachrichtigungen aktivieren', 'Erfahre sofort, wenn ein Markt durchstartet, und erhalte deine Boni und wichtige Ankündigungen direkt. Verpasse keinen guten Moment mehr.', '', 'Aktivieren', 'Später', 'Benachrichtigungen an ✓', 'Tippe auf „Erlauben“, um deine Benachrichtigungen zu erhalten.', 'Nein, danke'],
+    zh: ['开启 OROLADO 提醒', '市场一有大动静就第一时间通知你，奖励和重要公告也能即时收到。不再错过任何好时机。', '', '开启', '稍后', '提醒已开启 ✓', '点击「允许」即可接收提醒。', '不用了，谢谢'],
     hi: ['OROLADO अलर्ट चालू करें', 'जैसे ही कोई मार्केट तेज़ी पकड़े, तुरंत जानें, और अपने बोनस व ज़रूरी घोषणाएं तुरंत पाएं। कोई भी अच्छा मौका न चूकें।', '', 'चालू करें', 'बाद में', 'अलर्ट चालू ✓', 'अलर्ट पाने के लिए “अनुमति दें” पर टैप करें।', 'नहीं, धन्यवाद']
   };
   var reg = null;

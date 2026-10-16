@@ -32,7 +32,20 @@
       youBlocked: 'You blocked this player.', guestF: 'Sign up to write to your friends', guestFB: 'With your account, you get a secret ID and can chat with your friends.',
       safety: '🔒 Never give your password or codes. OROLADO will never ask for them.' }
   };
-  function L() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return TXT[l === 'fr' ? 'fr' : 'en']; }
+  // v2682 — chinois
+  TXT.zh = Object.assign({}, TXT.en, { sub: '在线 · 团队在这里回复你', news: '动态', chat: '联系我们', ph: '输入消息…', views: '次浏览',
+    welcomeNews: '欢迎来到 OROLADO Live！👋\n这里有我们的最新消息：新功能、支付方式、正在波动的市场…… 在「联系我们」里，你可以直接和团队对话。',
+    welcomeChat: '你好 👋 在这里给我们留言，我们会在此对话中回复你。\n你也可以发送照片 📷（例如付款截图）。',
+    q1: '💳 我的充值', q1t: '你好，我的充值有问题：', q2: '💸 我的提现', q2t: '你好，我想咨询提现：', q3: '📈 怎么交易？', q3t: '你好，在 OROLADO 上怎么交易更好？', q4: '🔐 我的账户', q4t: '你好，我的账户有问题：',
+    guestT: '注册后即可联系团队', guestB: '有了账户，你就能给我们留言并发送照片，我们会在这里回复你。', guestBtn: '创建账户', guestMail: '通过邮件联系',
+    sent: '已发送 ✓', tooMany: '消息太多，请稍后再试。', tooManyImg: '今天的照片已达上限。', badImg: '照片无法发送，请换一张。', fail: '发送失败，请重试。',
+    now: '刚刚', min: '分钟', h: '小时', d: '天', terms: '条款', privacy: '隐私', you: '你',
+    friends: '好友', myId: '你的 ID', copy: '复制', copied: '已复制 ✓', idHint: '把它发给好友，他们就能联系你。', findPh: '好友 ID（OR…）', findGo: '发消息',
+    notFound: '找不到这个 ID。', findLocked: '尝试次数过多，请 1 小时后再试。', self: '这是你自己的 ID 😉', noConv: '还没有对话。分享你的 ID 吧！',
+    block: '🚫 屏蔽', unblock: '✅ 取消屏蔽', report: '🚩 举报', reportQ: '为什么举报这位玩家？（诈骗、辱骂……）', reported: '谢谢，团队会查看。该玩家已被屏蔽。',
+    youBlocked: '你已屏蔽该玩家。', guestF: '注册后即可和好友聊天', guestFB: '有了账户，你会获得专属 ID，可以和好友聊天。',
+    safety: '🔒 永远不要透露你的密码或验证码。OROLADO 绝不会向你索要。' });
+  function L() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return TXT[l] || TXT.en; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function linkify(s) { return esc(s).replace(/(https:\/\/[^\s<]+|orolado\.com)/g, function (u) { var h = u.indexOf('http') === 0 ? u : 'https://' + u; return '<a href="' + h + '" target="_blank" rel="noopener">' + u + '</a>'; }); }
   function ago(t) {

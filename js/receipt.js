@@ -19,6 +19,7 @@
     id: { trade: 'STRUK TRADING', demo: 'STRUK DEMO', won: 'TRADING MENANG', lost: 'TRADING KALAH', tie: 'SERI · DANA DIKEMBALIKAN', stake: 'Jumlah', side: 'Arah', dur: 'Durasi', entry: 'Masuk', exit: 'Keluar', date: 'Tanggal', buy: 'BELI ↗', sell: 'JUAL ↘', no: 'Struk no.', demoNote: 'Akun demo · uang virtual', dep: 'DEPOSIT DITERIMA', wd: 'PENARIKAN', bonus: 'BONUS DITERIMA', wa: 'WhatsApp', share: 'Bagikan', dl: 'Unduh', close: 'Tutup', shareText: 'Trading saya di orolado.com' },
     ru: { trade: 'ЧЕК СДЕЛКИ', demo: 'ДЕМО-ЧЕК', won: 'СДЕЛКА ВЫИГРАНА', lost: 'СДЕЛКА ПРОИГРАНА', tie: 'НИЧЬЯ · СТАВКА ВОЗВРАЩЕНА', stake: 'Сумма', side: 'Направление', dur: 'Длительность', entry: 'Вход', exit: 'Выход', date: 'Дата', buy: 'ПОКУПКА ↗', sell: 'ПРОДАЖА ↘', no: 'Чек №', demoNote: 'Демо-счёт · виртуальные деньги', dep: 'ДЕПОЗИТ ПОЛУЧЕН', wd: 'ВЫВОД', bonus: 'БОНУС ПОЛУЧЕН', wa: 'WhatsApp', share: 'Поделиться', dl: 'Скачать', close: 'Закрыть', shareText: 'Моя сделка на orolado.com' },
     de: { trade: 'HANDELSBELEG', demo: 'DEMO-BELEG', won: 'TRADE GEWONNEN', lost: 'TRADE VERLOREN', tie: 'UNENTSCHIEDEN · EINSATZ ZURÜCK', stake: 'Einsatz', side: 'Richtung', dur: 'Dauer', entry: 'Einstieg', exit: 'Ausstieg', date: 'Datum', buy: 'KAUF ↗', sell: 'VERKAUF ↘', no: 'Beleg-Nr.', demoNote: 'Demokonto · Spielgeld', dep: 'EINZAHLUNG ERHALTEN', wd: 'AUSZAHLUNG', bonus: 'BONUS ERHALTEN', wa: 'WhatsApp', share: 'Teilen', dl: 'Herunterladen', close: 'Schließen', shareText: 'Mein Trade auf orolado.com' },
+    zh: { trade: '交易凭证', demo: '模拟凭证', won: '交易盈利', lost: '交易亏损', tie: '平局 · 退还金额', stake: '金额', side: '方向', dur: '时长', entry: '入场', exit: '出场', date: '日期', buy: '买入 ↗', sell: '卖出 ↘', no: '凭证编号', demoNote: '模拟账户 · 虚拟资金', dep: '已收到充值', wd: '提现', bonus: '已收到奖励', wa: 'WhatsApp', share: '分享', dl: '下载', close: '关闭', shareText: '我在 orolado.com 的交易' },
     hi: { trade: 'ट्रेड रसीद', demo: 'डेमो रसीद', won: 'ट्रेड जीता', lost: 'ट्रेड हारा', tie: 'बराबरी · राशि वापस', stake: 'राशि', side: 'दिशा', dur: 'अवधि', entry: 'प्रवेश', exit: 'निकास', date: 'तारीख', buy: 'खरीद ↗', sell: 'बिक्री ↘', no: 'रसीद सं.', demoNote: 'डेमो खाता · वर्चुअल पैसा', dep: 'जमा प्राप्त', wd: 'निकासी', bonus: 'बोनस प्राप्त', wa: 'WhatsApp', share: 'शेयर करें', dl: 'डाउनलोड', close: 'बंद करें', shareText: 'orolado.com पर मेरा ट्रेड' }
   };
   function L() {
@@ -528,7 +529,7 @@
     m.querySelector('.t-wa').textContent = t.wa;
     m.querySelector('.t-sh').textContent = t.share;
     m.querySelector('.t-dl').textContent = t.dl;
-    var BACK = { fr: 'Retour', en: 'Back', es: 'Volver', pt: 'Voltar', ar: 'رجوع', tr: 'Geri', vi: 'Quay lại', id: 'Kembali', ru: 'Назад', de: 'Zurück', hi: 'वापस' };
+    var BACK = { fr: 'Retour', en: 'Back', es: 'Volver', pt: 'Voltar', ar: 'رجوع', tr: 'Geri', vi: 'Quay lại', id: 'Kembali', ru: 'Назад', de: 'Zurück', hi: 'वापस', zh: '返回' };
     var lg = (D6.I18N && D6.I18N.lang) || 'en';
     m.querySelector('.t-back').textContent = BACK[lg] || BACK.en;
     m.querySelector('.rc-back').setAttribute('aria-label', BACK[lg] || BACK.en);
