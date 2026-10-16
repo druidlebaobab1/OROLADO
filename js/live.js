@@ -64,7 +64,8 @@
     } catch (e) { return null; }
   }
 
-  var LOGO = '<span class="lv-av"><img src="icons/icon-192.png?v=2657" alt=""></span>';
+  // v2683 (propriétaire) : plus de logo (la pièce) dans Live → simple icône « en direct ».
+  var LOGO = '<span class="lv-av lv-av2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><path d="M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2"/></svg></span>';
   function paintNews(posts) {
     var x = L(), html = '';
     var seen = store('oro_live_seen') || [], liked = store('oro_live_liked') || [], fresh = [];

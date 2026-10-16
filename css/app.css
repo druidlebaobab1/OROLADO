@@ -9539,3 +9539,19 @@ html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn:hover{backgroun
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn.on{background:rgba(245,197,24,.1)!important;color:#FFD27A!important}
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn *{box-shadow:none!important}
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn svg,html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn img{box-shadow:0 0 0 1px rgba(255,255,255,.18)!important}
+/* ===== v2683 — retouches (propriétaire) ===== */
+/* Live : plus de titre « OROLADO Live » (amateur) ; juste l'icône et « En ligne · … » */
+#liveModal .live-title{display:none!important}
+#liveModal .live-sub{margin-top:0!important;font-size:13px!important;color:#DDE3F5!important;font-weight:600}
+#liveModal .live-logo{width:36px!important;height:36px!important;flex-basis:36px!important;border-radius:11px!important}
+#liveModal .live-logo svg{width:22px!important;height:22px!important}
+/* Menu des langues : drapeaux un peu plus doux */
+html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn svg,html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn img,html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn .flag-svg{opacity:.82!important;filter:saturate(.8)!important}
+html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn.on svg,html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn.on .flag-svg{opacity:1!important;filter:none!important}
+/* Connexion : petite icône « personne » devant le mot (sobre, comme les grandes plateformes) */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #btnGoLogin#btnGoLogin.btn-auth-link{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E8ECF8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 20c.8-3.6 3.8-5.5 7.5-5.5s6.7 1.9 7.5 5.5'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-size:14px 14px!important;background-position:left 10px center!important;padding-left:28px!important}
+@media (max-width:340px){html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #btnGoLogin#btnGoLogin.btn-auth-link{background-image:none!important;padding-left:revert!important}}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #btnGoLogin#btnGoLogin.btn-auth-link{background-size:12px 12px!important;background-position:left 8px center!important;padding-left:23px!important}
+/* mots longs (espagnol, arabe, vietnamien, français) : pas d'icône, le mot passe en entier */
+html:root[lang="es"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #btnGoLogin#btnGoLogin.btn-auth-link,html:root[lang="ar"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #btnGoLogin#btnGoLogin.btn-auth-link,html:root[lang="vi"] body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #btnGoLogin#btnGoLogin.btn-auth-link{background-image:none!important;padding-left:revert!important}
+#liveModal .lv-av.lv-av2{display:grid;place-items:center;background:linear-gradient(145deg,#FF7AA8,#E11D5A);box-shadow:none!important}#liveModal .lv-av.lv-av2 svg{width:20px;height:20px}#liveModal .lv-av.lv-av2 circle{fill:#fff}#liveModal .lv-av.lv-av2 path{fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round}
