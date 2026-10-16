@@ -11019,3 +11019,30 @@ html body #depositModal#depositModal #closeDeposit{background:rgba(255,255,255,.
 html body #depositModal#depositModal #closeDeposit::before,html body #depositModal#depositModal #closeDeposit::after{display:none!important}
 html body #depositModal#depositModal .pay-crypto-wall > *:nth-child(n+9){display:none!important}
 html:root body #depositModal#depositModal .pay-crypto-wall > .pay-crypto-cell:nth-child(n+9){display:none!important}
+/* ===== v2696 — PARIS SPORTIFS comme les bookmakers : pastilles de sport, cartes de match (2 équipes + écussons), cotes 1 / N / 2 en gros ===== */
+#casinoModal .sp-ico{width:18px;height:18px;flex:0 0 18px}
+#casinoModal .sp-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+#casinoModal .sp-chips::-webkit-scrollbar{display:none}
+#casinoModal .sp-chips button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:0;border-radius:18px;color:#E2E8F0;font:800 13px system-ui;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#casinoModal .sp-chips button.on{color:#04261b;background:linear-gradient(180deg,#4ade80,#16a34a);box-shadow:none}
+html body #casinoModal .sp-ev{padding:12px 12px 10px!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important}
+html body #casinoModal .sp-top{align-items:center;color:#A7B4C8;font-size:11.5px;margin-bottom:8px}
+html body #casinoModal .sp-top span{display:inline-flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #casinoModal .sp-top em{font-style:normal;flex:0 0 auto;color:#FDE68A;font-weight:800}
+#casinoModal .sp-teams{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+#casinoModal .sp-teams p{display:flex;align-items:center;gap:10px;margin:0;font:800 15px "Plus Jakarta Sans",system-ui,sans-serif;color:#fff;min-width:0}
+#casinoModal .sp-teams p span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#casinoModal .sp-crest{width:28px;height:28px;flex:0 0 28px;border-radius:50% 50% 45% 45%/40% 40% 60% 60%;display:grid;place-items:center;font:900 13px system-ui;font-style:normal;color:#fff;background:linear-gradient(180deg,color-mix(in srgb,var(--cc) 75%,#fff),var(--cc));box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+html body #casinoModal .sp-o{flex-direction:column!important;justify-content:center!important;gap:1px!important;min-height:52px!important;border-radius:12px!important;background:rgba(0,0,0,.28)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important}
+html body #casinoModal .sp-o small{font:800 11px system-ui;color:#A7B4C8}
+html body #casinoModal .sp-o b{font:900 17px "Plus Jakarta Sans",system-ui,sans-serif;color:#FDE68A}
+html body #casinoModal .sp-o.on{background:linear-gradient(180deg,#4ade80,#16a34a)!important;box-shadow:none!important}
+html body #casinoModal .sp-o.on small,html body #casinoModal .sp-o.on b{color:#04261b}
+html body #casinoModal .sp-o.res{box-shadow:inset 0 0 0 2px #FACC15!important}
+html body #casinoModal .sp-mine{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.08)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)!important}
+html body #casinoModal .sp-mine svg{width:20px;height:20px;fill:none;stroke:#FDE68A;stroke-width:1.8;stroke-linejoin:round}
+#casinoModal .sp-empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 16px;text-align:center}
+#casinoModal .sp-empty-ball{width:110px;height:110px;filter:drop-shadow(0 14px 22px rgba(0,0,0,.45))}
+#casinoModal .sp-empty-ball svg{width:100%;height:100%}
+#casinoModal .sp-empty b{font:800 15px system-ui;color:#E2E8F0;max-width:300px}
+html body #casinoModal .sp-slip{background:linear-gradient(180deg,#22164a,#160f33)!important;box-shadow:0 -12px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.14)!important}

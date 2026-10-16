@@ -226,9 +226,18 @@
       return '<rect x="8" y="18" width="40" height="26" rx="5" fill="#10B981"/><rect x="12" y="22" width="32" height="18" rx="3" fill="none" stroke="#D1FAE5" stroke-width="1.6"/><circle cx="28" cy="31" r="6" fill="#D1FAE5"/><text x="28" y="34.4" text-anchor="middle" font-size="9" font-weight="900" font-family="system-ui" fill="#047857">$</text>' +
         '<circle cx="46" cy="44" r="13" fill="#fff"/><path d="M40 41h11l-3-3M52 47H41l3 3" fill="none" stroke="#0D9488" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
     },
-    // ballon de foot (onglet Paris sportifs)
+    // v2696 — vrai ballon de foot (onglet Paris sportifs) : sphère brillante, pentagone central, pentagones coupés au bord, coutures
     sports: function () {
-      return '<circle cx="32" cy="32" r="22" fill="#fff"/><path d="M32 19l9 6.5-3.4 10.6H26.4L23 25.5z" fill="#111827"/><path d="M32 19v-8M41 25.5l8-2.6M37.6 36.1l5 6.6M26.4 36.1l-5 6.6M23 25.5l-8-2.6" stroke="#111827" stroke-width="2"/><circle cx="32" cy="32" r="22" fill="none" stroke="#CBD5E1" stroke-width="1.5"/><ellipse cx="25" cy="21" rx="5" ry="3" fill="#fff" opacity=".9" transform="rotate(-30 25 21)"/>';
+      var pent = function (cx, cy, r, rot) { var p = ''; for (var i = 0; i < 5; i++) { var an = (rot + i * 72) * Math.PI / 180; p += (i ? 'L' : 'M') + (cx + r * Math.sin(an)).toFixed(2) + ' ' + (cy - r * Math.cos(an)).toFixed(2); } return p + 'Z'; };
+      var outer = '', seams = '';
+      for (var i = 0; i < 5; i++) {
+        var an = (i * 72) * Math.PI / 180;
+        outer += '<path d="' + pent(32 + 19.5 * Math.sin(an), 32 - 19.5 * Math.cos(an), 6.6, i * 72 + 36) + '" fill="#111827"/>';
+        seams += '<path d="M' + (32 + 7.8 * Math.sin(an)).toFixed(2) + ' ' + (32 - 7.8 * Math.cos(an)).toFixed(2) + 'L' + (32 + 13.4 * Math.sin(an)).toFixed(2) + ' ' + (32 - 13.4 * Math.cos(an)).toFixed(2) + '" stroke="#334155" stroke-width="1.3"/>';
+      }
+      return '<radialGradient id="IDf" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#E2E8F0"/><stop offset="1" stop-color="#94A3B8"/></radialGradient><clipPath id="IDc"><circle cx="32" cy="32" r="24"/></clipPath>' +
+        '<circle cx="32" cy="34" r="24" fill="#000" opacity=".25"/><circle cx="32" cy="32" r="24" fill="url(#IDf)"/><g clip-path="url(#IDc)">' + outer + '</g>' + seams +
+        '<path d="' + pent(32, 32, 8, 0) + '" fill="#111827"/><circle cx="32" cy="32" r="24" fill="none" stroke="#64748B" stroke-width="1.2"/><ellipse cx="23" cy="20" rx="6" ry="3.2" fill="#fff" opacity=".85" transform="rotate(-32 23 20)"/>';
     }
   };
   /* symboles des rouleaux, du grattage, des mines, du verger (dessinés, pas d'émojis) */
