@@ -55,7 +55,7 @@
       return '<path d="M24 44c-3 7-2 13 2 17 1-6 3-10 3-15zM36 44c3 7 2 13-2 17-1-6-3-10-3-15z" fill="#F59E0B"/><path d="M25 44c-1.5 4 0 8 2 10 1-4 2-6 2-9zM35 44c1.5 4 0 8-2 10-1-4-2-6-2-9z" fill="#FDE68A"/>' +
         '<rect x="19" y="26" width="22" height="20" rx="7" fill="#7C3AED"/><rect x="21" y="27" width="18" height="6" rx="3" fill="#fff" opacity=".2"/><rect x="16" y="31" width="6" height="14" rx="3" fill="#5B21B6"/><rect x="38" y="31" width="6" height="14" rx="3" fill="#5B21B6"/>' +
         '<circle cx="30" cy="18" r="10" fill="#EDE9FE"/><path d="M22 17a8 7 0 0 1 16 0v3H22z" fill="#38BDF8"/><path d="M24 15c2-3 6-4 9-3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".8"/>' +
-        '<path d="M41 29l9-8" stroke="#EDE9FE" stroke-width="4" stroke-linecap="round"/><circle cx="51" cy="20" r="3" fill="#EDE9FE"/>';
+        '';
     },
     // fusée blanche, hublot, ailerons rouges, flamme
     rocket: function () {
@@ -99,7 +99,7 @@
     },
     // roulette : cylindre bois, cases rouges / noires, centre doré, bille
     roulette: function () {
-      var s = ''; for (var i = 0; i < 18; i++) { var a0 = i * 20 * Math.PI / 180, a1 = (i + 1) * 20 * Math.PI / 180; s += '<path d="M32 32L' + (32 + 22 * Math.sin(a0)).toFixed(2) + ' ' + (32 - 22 * Math.cos(a0)).toFixed(2) + 'A22 22 0 0 1 ' + (32 + 22 * Math.sin(a1)).toFixed(2) + ' ' + (32 - 22 * Math.cos(a1)).toFixed(2) + 'Z" fill="' + (i === 0 ? '#16A34A' : i % 2 ? '#DC2626' : '#111827') + '"/>'; }
+      var s = ''; for (var i = 0; i < 18; i++) { var a0 = i * 20 * Math.PI / 180, a1 = (i + 1) * 20 * Math.PI / 180; s += '<path d="M32 32L' + (32 + 22 * Math.sin(a0)).toFixed(2) + ' ' + (32 - 22 * Math.cos(a0)).toFixed(2) + 'A22 22 0 0 1 ' + (32 + 22 * Math.sin(a1)).toFixed(2) + ' ' + (32 - 22 * Math.cos(a1)).toFixed(2) + 'Z" fill="' + (i % 2 ? '#DC2626' : '#111827') + '"/>'; }
       return '<defs>' + G.gold + '</defs><circle cx="32" cy="32" r="29" fill="#7C2D12"/><circle cx="32" cy="32" r="26" fill="#B45309"/>' + s + '<circle cx="32" cy="32" r="13" fill="#78350F"/><circle cx="32" cy="32" r="9" fill="url(#IDg)"/>' +
         '<path d="M32 22v20M22 32h20" stroke="#9A6A00" stroke-width="2.4" stroke-linecap="round"/><circle cx="32" cy="32" r="3" fill="#FFF6C8"/><circle cx="47" cy="17" r="3.4" fill="#fff"/><circle cx="46" cy="16" r="1.2" fill="#fff" opacity=".9"/>';
     },
@@ -173,7 +173,7 @@
     penalty: function () {
       var net = ''; for (var i = 1; i < 8; i++) net += '<path d="M' + (6 + i * 6.5) + ' 12V36"/>'; for (var j = 1; j < 4; j++) net += '<path d="M6 ' + (12 + j * 6) + 'H58"/>';
       return '<g stroke="#fff" stroke-width=".8" opacity=".55">' + net + '</g><path d="M6 38V12h52v26" fill="none" stroke="#fff" stroke-width="3.4" stroke-linejoin="round"/>' +
-        '<circle cx="34" cy="44" r="14" fill="#fff"/><path d="M34 35l6 4.4-2.3 7.1h-7.4L28 39.4z" fill="#111827"/><path d="M34 35v-5M40 39.4l5-1.7M37.7 46.5l3 4.2M30.3 46.5l-3 4.2M28 39.4l-5-1.7" stroke="#111827" stroke-width="1.6"/><circle cx="34" cy="44" r="14" fill="none" stroke="#CBD5E1" stroke-width="1.2"/><ellipse cx="29" cy="37" rx="4" ry="2.4" fill="#fff" opacity=".8" transform="rotate(-30 29 37)"/>';
+        '<g transform="translate(18 28) scale(.5)">' + OBJ.sports() + '</g>';
     },
     // voiture de course rouge (vue de 3/4), traits de vitesse
     race: function () {
@@ -197,7 +197,7 @@
     g_defi: function () {
       return '<rect x="8" y="12" width="48" height="44" rx="7" fill="#fff"/><rect x="8" y="12" width="48" height="14" rx="7" fill="#E11D48"/><rect x="8" y="20" width="48" height="6" fill="#E11D48"/>' +
         '<rect x="18" y="6" width="5" height="12" rx="2.5" fill="#9F1239"/><rect x="41" y="6" width="5" height="12" rx="2.5" fill="#9F1239"/>' +
-        '<text x="32" y="23.5" text-anchor="middle" font-size="8" font-weight="900" font-family="system-ui" fill="#FDE047">★</text>' +
+        '' +
         '<g fill="#22C55E"><circle cx="16" cy="40" r="4"/><circle cx="24" cy="40" r="4"/><circle cx="32" cy="40" r="4"/><circle cx="40" cy="40" r="4"/></g><circle cx="48" cy="40" r="4" fill="none" stroke="#CBD5E1" stroke-width="2"/>' +
         '<path d="M14 40l1.6 1.6 3-3M22 40l1.6 1.6 3-3M30 40l1.6 1.6 3-3M38 40l1.6 1.6 3-3" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><text x="32" y="53" text-anchor="middle" font-size="6.5" font-weight="900" font-family="system-ui" fill="#9F1239">5 ×</text>';
     },

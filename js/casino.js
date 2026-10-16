@@ -58,6 +58,7 @@
   function pal(k) { return ART.PAL[k] || ART.PAL.coin || ['#ffffff', '#7c3aed']; }
   function gicon(k, cls) { return ART.planet(k, cls); }
   D6.CasinoIcon = gicon;
+  var gn = 0; // compteur des dessins de la pièce (v2696b : avait disparu en v2694 → Coin Flip ne s'ouvrait plus)
   /* pièce « crypto » OROLADO (face : or, logo O ; pile : argent, circuit) */
   function coinFace(gold) {
     var a = gold ? ['#FFF3C4', '#F5B700', '#9A6A00'] : ['#F1F5F9', '#94A3B8', '#334155'];
@@ -134,7 +135,7 @@
     m.className = 'modal-backdrop'; m.id = 'casinoModal';
     m.innerHTML = '<div class="modal-box glass cs-box" role="dialog" aria-modal="true"><button type="button" class="btn-close" id="closeCasino" aria-label="Close"></button>' +
       '<div class="cs-top"><button type="button" class="cs-back" id="csBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      '<button type="button" class="cs-wallet" id="csBal"></button><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5A1.5 1.5 0 0 1 4 17.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/><path d="M6.5 8h2.5M6.5 11h2.5M15 8h2.5M15 11h2.5"/></svg></button></div>' +
+      '<button type="button" class="cs-wallet" id="csBal"></button><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7C9.8 5.4 6.6 4.9 3 5.4v13c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6v-13C17.4 4.9 14.2 5.4 12 7z" fill="#FFF7E0"/><path d="M12 7v13" stroke="#B45309" stroke-width="1.5"/><path d="M5.3 9c1.9-.2 3.6 0 4.8.7M5.3 12c1.9-.2 3.6 0 4.8.7M5.3 15c1.9-.2 3.6 0 4.8.7M13.9 9.7c1.2-.7 2.9-.9 4.8-.7M13.9 12.7c1.2-.7 2.9-.9 4.8-.7M13.9 15.7c1.2-.7 2.9-.9 4.8-.7" stroke="#94A3B8" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M3 18.4c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6" stroke="#B45309" stroke-width="1.5" fill="none"/></svg></button></div>' +
       '<div id="csBody"></div><div class="cs-sheet" id="csSheet" hidden></div></div>';
     document.body.appendChild(m);
     $('closeCasino').style.setProperty('display', 'none', 'important');
@@ -223,6 +224,7 @@
     sh.innerHTML = '<div class="cs-sheet-in">' + gicon(k, 'big') + '<b>' + esc(name(k)) + '</b><p>' + esc(r).replace(/\n/g, '<br>') + '</p><small>' + esc(x.rules) + '</small><button type="button" class="cs-go" id="csSheetOk">' + esc(x.gotIt) + '</button></div>';
     sh.hidden = false;
     $('csSheetOk').addEventListener('click', function () { sh.hidden = true; });
+    sh.onclick = function (e) { if (e.target === sh) sh.hidden = true; }; // toucher à côté = « J'ai compris »
   }
   var RULES = {
     fr: {
@@ -314,8 +316,10 @@
     paint();
     $('csGo').addEventListener('click', async function () {
       var r = await play('dice', { chance: chance, over: over ? 1 : 0 }); if (!r) return;
-      var el = $('csRoll'), t0 = performance.now();
-      await new Promise(function (res) { (function f(t) { var k = Math.min(1, (t - t0) / 600); el.textContent = (k < 1 ? Math.random() * 100 : r.view.roll).toFixed(2); if (k < 1) S.raf = requestAnimationFrame(f); else res(); })(t0); });
+      var el = $('csRoll'), t0 = performance.now(), hero = box.querySelector('.dice-hero');
+      if (hero) hero.classList.add('rolling');
+      await new Promise(function (res) { (function f(t) { var k = Math.min(1, (t - t0) / 900); el.textContent = (k < 1 ? Math.random() * 100 : r.view.roll).toFixed(2); if (k < 1) S.raf = requestAnimationFrame(f); else res(); })(t0); });
+      if (hero) hero.classList.remove('rolling');
       $('csDiceMark').style.left = r.view.roll + '%'; $('csDiceMark').className = r.win > 0 ? 'w' : 'l';
       el.className = 'dice-roll ' + (r.win > 0 ? 'w' : 'l');
       resultLine(box, r, fmt(x.roll, { x: r.view.roll.toFixed(2) }));
@@ -387,7 +391,7 @@
   GAMES.roulette = function (box, x) {
     var bet = 'red', wr = 0;
     var opts = [['red', x.red, '×2'], ['black', x.black, '×2'], ['even', x.even, '×2'], ['odd', x.odd, '×2'], ['d1', '1-12', '×3'], ['d2', '13-24', '×3'], ['d3', '25-36', '×3']];
-    box.innerHTML = '<div class="cs-stage rl-stage"><div class="rl-wheel" id="csRlW">' + ART.obj('roulette') + '</div><div class="rl-ball" id="csRl">?</div></div><div class="cs-res"></div>' +
+    box.innerHTML = '<div class="cs-stage rl-stage"><div class="rl-big"><div class="rl-wheel" id="csRlW">' + rouletteSvg() + '</div><div class="rl-orbit" id="csRlO"><i class="rl-pearl"></i></div><div class="rl-ball" id="csRl">?</div></div></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<div class="cs-opts">' + opts.map(function (o, i) { return '<button type="button" data-b="' + o[0] + '" class="' + (i ? '' : 'on') + ' b-' + o[0] + '">' + esc(o[1]) + '<small>' + o[2] + '</small></button>'; }).join('') + '</div>' +
         '<label class="cs-lbl">' + esc(x.number) + ' (0-36) · ×36</label><div class="cs-stake"><input id="csRlNum" inputmode="numeric" placeholder="—"></div>');
     bindStake(box);
@@ -396,14 +400,32 @@
     $('csRlNum').addEventListener('input', function () { var v = parseInt(this.value, 10); if (v >= 0 && v <= 36) pick('n' + v); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('roulette', { bet: bet }); if (!r) return;
-      var el = $('csRl'), w = $('csRlW'); el.className = 'rl-ball spin';
+      var el = $('csRl'), w = $('csRlW'), orb = $('csRlO'); el.className = 'rl-ball spin';
       wr += 1080 + Math.floor(Math.random() * 360); w.style.transform = 'rotate(' + wr + 'deg)';
+      // la bille tourne dans l'autre sens puis se pose sur la case du numéro tiré (dans la roue qui a tourné)
+      var idx = RL_ORDER.indexOf(r.view.n), target = ((idx * 360 / 37 + wr) % 360 + 360) % 360;
+      orb.style.transition = 'none'; orb.style.transform = 'rotate(0deg)'; orb.getBoundingClientRect();
+      orb.style.transition = 'transform 2.6s cubic-bezier(.15,.7,.2,1)'; orb.style.transform = 'rotate(' + (target - 360 * 4) + 'deg)';
       for (var i = 0; i < 16; i++) { el.textContent = Math.floor(Math.random() * 37); await sleep(60 + i * 12); }
       el.textContent = r.view.n; el.className = 'rl-ball ' + (r.view.n === 0 ? 'z' : r.view.red ? 'r' : 'k');
       resultLine(box, r);
     });
   };
 
+  // vraie roue européenne : 37 cases (0 vert), numéros écrits dans chaque case
+  var RL_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+  var RL_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+  function rouletteSvg() {
+    var s = '', st = 360 / 37, pt = function (r, a) { a = a * Math.PI / 180; return (r * Math.sin(a)).toFixed(2) + ' ' + (-r * Math.cos(a)).toFixed(2); };
+    RL_ORDER.forEach(function (n, i) {
+      var a0 = i * st - st / 2, a1 = a0 + st, c = n === 0 ? '#16A34A' : RL_RED.indexOf(n) >= 0 ? '#DC2626' : '#111827';
+      s += '<path d="M' + pt(70, a0) + ' L' + pt(112, a0) + ' A112 112 0 0 1 ' + pt(112, a1) + ' L' + pt(70, a1) + ' A70 70 0 0 0 ' + pt(70, a0) + 'Z" fill="' + c + '" stroke="#D4AF37" stroke-width=".8"/>';
+      s += '<text transform="rotate(' + (i * st).toFixed(2) + ') translate(0 -99)" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="900" font-family="system-ui" fill="#fff">' + n + '</text>';
+    });
+    var spokes = ''; for (var k = 0; k < 8; k++) spokes += '<path d="M0 0L' + pt(56, k * 45) + '" stroke="#F5D06F" stroke-width="3" stroke-linecap="round"/>';
+    return '<svg viewBox="-126 -126 252 252"><defs><radialGradient id="rlWood" cx="50%" cy="50%" r="50%"><stop offset=".85" stop-color="#7C2D12"/><stop offset="1" stop-color="#431407"/></radialGradient><radialGradient id="rlCone" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#A16207"/><stop offset="1" stop-color="#422006"/></radialGradient><radialGradient id="rlHub" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".55" stop-color="#F5B700"/><stop offset="1" stop-color="#9A6A00"/></radialGradient></defs>' +
+      '<circle r="125" fill="url(#rlWood)"/><circle r="116" fill="none" stroke="#D4AF37" stroke-width="2"/>' + s + '<circle r="70" fill="url(#rlCone)" stroke="#D4AF37" stroke-width="1.5"/>' + spokes + '<circle r="24" fill="url(#rlHub)"/></svg>';
+  }
   var SLOT_PAY = [['gem', '×50'], ['seven', '×20'], ['bell', '×10'], ['lemon', '×5'], ['cherry', '×3'], ['cherry2', '×1,5']];
   GAMES.slots = function (box, x) {
     var pay = SLOT_PAY.map(function (p) { var two = p[0] === 'cherry2'; return '<span><em>' + ART.sym(two ? 'cherry' : p[0]) + '</em><small>' + (two ? '×2' : '×3') + '</small><b>' + p[1] + '</b></span>'; }).join('');
@@ -431,10 +453,11 @@
     $('csGo').addEventListener('click', async function () {
       var r = await play('plinko', {}); if (!r) return;
       var ball = $('csBall'), pos = 0;
-      ball.setAttribute('cx', 150); ball.setAttribute('cy', 10);
+      ball.style.transition = 'none'; ball.setAttribute('cx', 150); ball.setAttribute('cy', 10); ball.getBoundingClientRect(); ball.style.transition = '';
       for (var row = 0; row < 8; row++) { pos += r.view.path[row]; await sleep(140); ball.setAttribute('cx', 150 + (pos - (row + 1) / 2) * 30); ball.setAttribute('cy', 30 + row * 28 + 14); }
       await sleep(160); ball.setAttribute('cy', 268);
       resultLine(box, r, '×' + r.mult);
+      setTimeout(function () { if (!$('csBall')) return; ball.style.transition = 'none'; ball.setAttribute('cx', 150); ball.setAttribute('cy', 10); ball.getBoundingClientRect(); ball.style.transition = ''; }, 1400);
     });
   };
 
@@ -513,7 +536,7 @@
       '<rect x="45" y="62" width="210" height="88" fill="rgba(255,255,255,.06)"/><g stroke="rgba(255,255,255,.35)" stroke-width="1">' + net + '</g>' +
       '<path d="M45 151V60H255V151" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/></svg>';
     var keeper = '<svg viewBox="0 0 70 90"><circle cx="35" cy="14" r="10" fill="#f1c27d"/><path d="M27 10a8 6 0 0 1 16 0z" fill="#111"/><path d="M20 26h30l4 34H16z" fill="#f59e0b"/><path d="M20 28L4 16M50 28l16-12" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/><circle cx="4" cy="15" r="6" fill="#22c55e"/><circle cx="66" cy="15" r="6" fill="#22c55e"/><path d="M22 60l-4 26M48 60l4 26" stroke="#111827" stroke-width="9" stroke-linecap="round"/><text x="35" y="48" text-anchor="middle" font-size="13" font-weight="900" fill="#111">1</text></svg>';
-    var ball = '<svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M17 9l6 4.3-2.3 7.2h-7.4L11 13.3z" fill="#111"/><path d="M17 9V2M23 13.3l6.5-2M20.7 20.5l4 5.7M13.3 20.5l-4 5.7M11 13.3l-6.5-2" stroke="#111" stroke-width="1.4"/><ellipse cx="12" cy="9" rx="4" ry="2.4" fill="#fff" opacity=".8"/></svg>';
+    var ball = ART.obj('sports').replace('viewBox="0 0 64 64"', 'viewBox="8 8 48 48"'); // v2697 : le même beau ballon que les Paris sportifs
     // 9 zones : 3 colonnes (gauche, centre, droite) × 3 hauteurs (haut, milieu, bas)
     var zones = ''; for (var h = 0; h < 3; h++) for (var c = 0; c < 3; c++) zones += '<button type="button" class="pen-z" data-c="' + c + '" data-h="' + h + '" style="left:' + (15 + c * 23.33) + '%;top:' + (20.5 + h * 9.67) + '%" aria-label="' + (c + 1) + '"><i></i></button>';
     box.innerHTML = '<div class="pen-lad" id="csPl">' + PEN_LADDER.map(function (m, k) { return '<span data-k="' + k + '">×' + String(m).replace('.', ',') + '</span>'; }).join('') + '</div>' +
@@ -942,11 +965,12 @@
       var r = await play('darts', {}); if (!r) return;
       var z = DARTS[r.view.z] || DARTS[4], a = (r.view.a || 0) * Math.PI / 180, rad = z[2] + (z[3] - z[2]) * 0.5;
       var d = $('csDart'), board = d.parentElement, s = board.clientWidth / 248;
-      d.style.transition = 'none'; d.style.transform = 'translate(-50%,0) translate(0,' + (board.clientHeight * 0.6) + 'px) scale(1.8)'; d.style.opacity = '1';
+      d.style.transition = 'none'; d.style.transform = 'translate(-50%,0) translate(' + (board.clientWidth * 0.25) + 'px,' + (board.clientHeight * 0.7) + 'px) scale(2.2) rotate(25deg)'; d.style.opacity = '1';
       await sleep(40);
-      d.style.transition = 'transform .5s cubic-bezier(.2,.7,.3,1)';
-      d.style.transform = 'translate(-50%,0) translate(' + (rad * Math.sin(a) * s).toFixed(1) + 'px,' + (-rad * Math.cos(a) * s).toFixed(1) + 'px) scale(1)';
+      d.style.transition = 'transform .55s cubic-bezier(.15,.75,.25,1)';
+      d.style.transform = 'translate(-50%,0) translate(' + (rad * Math.sin(a) * s).toFixed(1) + 'px,' + (-rad * Math.cos(a) * s).toFixed(1) + 'px) scale(1) rotate(-8deg)';
       await sleep(560);
+      board.classList.remove('hit'); board.getBoundingClientRect(); board.classList.add('hit');
       resultLine(box, r, '×' + r.mult);
     });
   };
