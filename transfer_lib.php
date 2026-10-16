@@ -88,7 +88,9 @@ function orolado_xfer_status(array $db, array $user, ?float $balance = null): ar
     orolado_xfer_absorb($db, $uid, $st);
     // Le compteur ne dépasse jamais le solde (si le joueur a perdu, il baisse avec).
     if ($st['cap'] > $balance) $st['cap'] = orolado_money(max(0.0, $balance));
-    return ['can' => orolado_money($st['cap']), 'log' => array_slice(array_reverse((array) ($st['log'] ?? [])), 0, 30)];
+    // v2694 (propriétaire) : tout l'historique reste gardé ; on en montre jusqu'à 300 (sans les numéros internes des comptes)
+    $log = array_map(static function ($l) { unset($l['to'], $l['from']); return $l; }, array_slice(array_reverse((array) ($st['log'] ?? [])), 0, 300));
+    return ['can' => orolado_money($st['cap']), 'log' => $log];
   });
   if (!is_array($res)) return ['ok' => false, 'reason' => 'busy'];
   return ['ok' => true, 'enabled' => true, 'can' => $res['can'], 'min' => OROLADO_XFER_MIN, 'log' => $res['log']];

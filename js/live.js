@@ -367,8 +367,8 @@
   }
   function tileGo(k) {
     if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }
-    if (k === 'gifts') { close(); if (D6.Portal && D6.Portal.open) D6.Portal.open(); return; }
-    if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); return; }
+    if (k === 'gifts') { close(); if (D6.Portal && D6.Portal.open) D6.Portal.open(); backToLive('portalModal', 'active'); return; }
+    if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); backToLive('learnModal', 'on'); return; }
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
     if (k === 'quiz' || k === 'stats' || k === 'badges' || k === 'levels' || k === 'missions') { show('fun', k); return; }
     if (k === 'groups') { show('groups'); return; }
@@ -377,6 +377,23 @@
     show('friends', k);
   }
 
+  /* v2694 : Cadeaux / Apprendre ouverts DEPUIS Live → en les fermant on revient dans Live (pas sur la page de trading) */
+  function backToLive(id, cls) {
+    var m = document.getElementById(id); if (!m || m._oroBack) return;
+    var seen = m.classList.contains(cls);
+    var ob = new MutationObserver(function () {
+      var on = m.classList.contains(cls);
+      if (on) { seen = true; return; }
+      if (seen) {
+        ob.disconnect(); m._oroBack = null;
+        // si une autre fenêtre s'ouvre (ex. Recharger), on ne remet pas Live par-dessus
+        setTimeout(function () { if (!document.querySelector('.modal-backdrop.active') && !document.querySelector('#learnModal.on')) open(); }, 120);
+      }
+    });
+    m._oroBack = ob;
+    ob.observe(m, { attributes: true, attributeFilter: ['class'] });
+    setTimeout(function () { if (!seen && m._oroBack === ob) { ob.disconnect(); m._oroBack = null; } }, 4000);
+  }
   function show(w, sub) {
     tab = w;
     var h = H(), home = w === 'home';
@@ -465,9 +482,11 @@
     busy = false; $('liveGo').disabled = false;
     if (j && j.ok) {
       t.value = ''; grow(); pendingImg = ''; $('livePrev').hidden = true; $('livePrev').innerHTML = '';
-      lastMsgs.push(j.msg); paintChat({ msgs: lastMsgs });
+      // v2694 : jamais deux fois le même message (la lecture automatique peut l'avoir déjà apporté)
+      var add = function (m) { if (m && !lastMsgs.some(function (z) { return z.id && z.id === m.id; })) lastMsgs.push(m); paintChat({ msgs: lastMsgs }); };
+      add(j.msg);
       // v2689 : réponse automatique « bien reçu, merci de patienter » (affichée un instant après)
-      if (j.auto) setTimeout(function () { lastMsgs.push(j.auto); paintChat({ msgs: lastMsgs }); }, 900);
+      if (j.auto) setTimeout(function () { add(j.auto); }, 900);
     } else if (j && j.login) { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('login'); }
     else if (D6.App && D6.App.toast) D6.App.toast(x[(j && j.reason) || 'fail'] || x.fail, 'err');
   }

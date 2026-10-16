@@ -2,6 +2,8 @@
    Tout est vérifié par le serveur (live.php : fun / quiz / mystats). Récompense = points de niveau (aucun argent :
    l'argent démo faussait le tournoi démo). Léger : rien ne tourne quand la page est fermée. */
 (function (D6) {
+  // v2694 : nom du marché (VOLATILITY, ZUL…) au lieu de son code interne (v100)
+  function favName(id) { var a = D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[id]; return String((a && (a.short || a.name)) || id).toUpperCase(); }
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var T = {
@@ -157,7 +159,7 @@
     var x = X();
     var card = function (k, v, l) { return '<div class="lfun-stat"><span class="st-i">' + ico(k) + '</span><b>' + esc(v) + '</b><small>' + esc(l) + '</small></div>'; };
     box.innerHTML = levelCard(s.lv, false) + '<div class="lfun-stats">' + card('stats', nf(s.n), x.sTrades) + card('target', s.rate + ' %', x.sRate) + card('jauge', s.best, x.sBest) +
-      card('news', s.fav ? s.fav.toUpperCase() : x.none, x.sFav) + card('duel', s.duel.w, x.sDuels) + card('quiz', s.quizOk || 0, x.sQuiz) + '</div><p class="lfun-note">' + esc(x.sNote) + '</p>';
+      card('news', s.fav ? favName(s.fav) : x.none, x.sFav) + card('duel', s.duel.w, x.sDuels) + card('quiz', s.quizOk || 0, x.sQuiz) + '</div><p class="lfun-note">' + esc(x.sNote) + '</p>';
   }
 
   /* ---------- BADGES ---------- */

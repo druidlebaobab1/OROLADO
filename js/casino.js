@@ -50,43 +50,13 @@
   function toast(m, k) { if (D6.App && D6.App.toast) D6.App.toast(m, k || 'err'); }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-  /* ---------- logos des jeux (même style que Live / Cadeaux) ---------- */
-  var GI = {
-    crash: ['#FF8A65', '#E5334B', '<path d="M8 36c8-2 16-9 22-20" fill="none" stroke="W" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="3 3" opacity=".7"/><path d="M27 13l12-3-3 12-3.3-3.3-6.2 6.2-2.4-2.4 6.2-6.2z" fill="W"/><path d="M15 31l4-1.5 1.5 4z" fill="W"/>'],
-    coin: ['#FFE07A', '#E39417', '<circle cx="24" cy="24" r="14" fill="W"/><circle cx="24" cy="24" r="10.5" fill="none" stroke="A" stroke-width="1.6" opacity=".5"/><path d="M27.6 19.4c-.9-1-2.2-1.5-3.6-1.5-2 0-3.4 1-3.4 2.4 0 3.3 7.2 1.7 7.2 5.3 0 1.5-1.5 2.7-3.8 2.7-1.5 0-3-.6-3.8-1.6M24 15.5v2.4M24 28.5v2.6" fill="none" stroke="A" stroke-width="2.2" stroke-linecap="round"/>'],
-    dice: ['#9B8CFF', '#5B3FD0', '<rect x="8" y="12" width="19" height="19" rx="4" fill="W" transform="rotate(-12 17.5 21.5)"/><rect x="22" y="18" width="18" height="18" rx="4" fill="W" opacity=".9"/><g fill="A"><circle cx="13.5" cy="17.5" r="1.8"/><circle cx="21" cy="25" r="1.8"/><circle cx="17.3" cy="21.3" r="1.8"/><circle cx="26.5" cy="22.5" r="1.7"/><circle cx="35.5" cy="22.5" r="1.7"/><circle cx="26.5" cy="31.5" r="1.7"/><circle cx="35.5" cy="31.5" r="1.7"/></g>'],
-    limbo: ['#7CF2E0', '#2E8CF0', '<circle cx="22" cy="26" r="14" fill="W"/><circle cx="22" cy="26" r="9.5" fill="A" opacity=".55"/><circle cx="22" cy="26" r="5" fill="W"/><circle cx="22" cy="26" r="2" fill="A"/><path d="M23 25l15-15" stroke="#FFD27A" stroke-width="2.6" stroke-linecap="round"/><path d="M34 8l5 1-1 5z" fill="#FFD27A"/>'],
-    wheel: ['#FFD86B', '#FF5E7E', '<circle cx="24" cy="26" r="12.8" fill="W"/><g fill="A" opacity=".55"><path d="M24 26V13.2a12.8 12.8 0 0 1 11.1 6.4z"/><path d="M24 26l-11.1 6.4a12.8 12.8 0 0 1 0-12.8z"/><path d="M24 26v12.8a12.8 12.8 0 0 0 11.1-6.4z"/></g><circle cx="24" cy="26" r="3.2" fill="A"/><path d="M24 16.8l-3.6-7h7.2z" fill="W"/>'],
-    race: ['#FF6B6B', '#B91C1C', '<path d="M7 29l3-7c.6-1.4 2-2.3 3.5-2.3h15c1.3 0 2.5.7 3.2 1.8L35 26h4.5a2.5 2.5 0 0 1 2.5 2.5V31a1.5 1.5 0 0 1-1.5 1.5H8.5A1.5 1.5 0 0 1 7 31z" fill="W"/><path d="M15 22h13l2.5 4H13z" fill="A" opacity=".55"/><circle cx="15" cy="32.5" r="3.6" fill="A"/><circle cx="33" cy="32.5" r="3.6" fill="A"/><path d="M5 18h8M3 22h6" stroke="W" stroke-width="2" stroke-linecap="round" opacity=".7"/>'],
-    roulette: ['#34D399', '#047857', '<circle cx="24" cy="24" r="15" fill="W"/><circle cx="24" cy="24" r="11" fill="A" opacity=".55"/><g stroke="W" stroke-width="2.2"><path d="M24 13v22M13 24h22M16.2 16.2l15.6 15.6M31.8 16.2L16.2 31.8"/></g><circle cx="24" cy="24" r="4.5" fill="W"/><circle cx="32" cy="16.5" r="2.4" fill="#FFD27A"/>'],
-    slots: ['#F472B6', '#9D174D', '<rect x="7" y="11" width="34" height="27" rx="5" fill="W"/><rect x="10.5" y="16" width="8" height="15" rx="2" fill="A" opacity=".2"/><rect x="20" y="16" width="8" height="15" rx="2" fill="A" opacity=".2"/><rect x="29.5" y="16" width="8" height="15" rx="2" fill="A" opacity=".2"/><path d="M12 20h5l-3 8M21.5 20h5l-3 8M31 20h5l-3 8" fill="none" stroke="A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="43" cy="14" r="2.5" fill="W"/><path d="M43 16v8" stroke="W" stroke-width="2"/>'],
-    plinko: ['#60A5FA', '#1D4ED8', '<g fill="W"><circle cx="24" cy="12" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="29" cy="18" r="2"/><circle cx="14" cy="24" r="2"/><circle cx="24" cy="24" r="2"/><circle cx="34" cy="24" r="2"/><circle cx="9" cy="30" r="2"/><circle cx="19" cy="30" r="2"/><circle cx="29" cy="30" r="2"/><circle cx="39" cy="30" r="2"/></g><circle cx="21.5" cy="21" r="3" fill="#FFD27A"/><rect x="6" y="35" width="36" height="5" rx="2" fill="W" opacity=".6"/>'],
-    keno: ['#FBBF24', '#B45309', '<rect x="8" y="9" width="32" height="30" rx="5" fill="W"/><g fill="A" opacity=".3"><circle cx="15" cy="16" r="3"/><circle cx="24" cy="16" r="3"/><circle cx="33" cy="16" r="3"/><circle cx="15" cy="24" r="3"/><circle cx="33" cy="24" r="3"/><circle cx="15" cy="32" r="3"/><circle cx="24" cy="32" r="3"/></g><circle cx="24" cy="24" r="3.6" fill="A"/><circle cx="33" cy="32" r="3.6" fill="A"/>'],
-    scratch: ['#A78BFA', '#6D28D9', '<rect x="6" y="11" width="36" height="26" rx="4" fill="W"/><path d="M11 26c4-6 8 3 12-3s8 3 12-3" fill="none" stroke="A" stroke-width="5" stroke-linecap="round" opacity=".4"/><path d="M33 13l3 8 8-3-3 8" fill="none" stroke="#FFD27A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'],
-    hilo: ['#F87171', '#7F1D1D', '<rect x="12" y="9" width="20" height="28" rx="3.5" fill="W" transform="rotate(-8 22 23)"/><rect x="18" y="12" width="20" height="28" rx="3.5" fill="W"/><path d="M28 19l3.5 4.5h-7zM28 33l3.5-4.5h-7z" fill="A"/>'],
-    penalty: ['#4ADE80', '#15803D', '<path d="M6 30V13h36v17" fill="none" stroke="W" stroke-width="2.4"/><path d="M6 17h36M6 21h36M6 25h36M12 13v17M18 13v17M24 13v17M30 13v17M36 13v17" stroke="W" stroke-width=".8" opacity=".5"/><circle cx="24" cy="34" r="6" fill="W"/><path d="M24 30l2.6 2-1 3h-3.2l-1-3z" fill="A"/>'],
-    colors: ['#C084FC', '#7E22CE', '<circle cx="16" cy="20" r="8" fill="#22C55E" stroke="#fff" stroke-width="2"/><circle cx="32" cy="20" r="8" fill="#EF4444" stroke="#fff" stroke-width="2"/><circle cx="24" cy="32" r="8" fill="#8B5CF6" stroke="#fff" stroke-width="2"/>'],
-    jet: ['#C084FC', '#6D28D9', '<path d="M18 34c-2 5-1 9 2 12 1-5 2-8 2-11zM30 34c2 5 1 9-2 12-1-5-2-8-2-11z" fill="#FDE68A"/><rect x="14" y="19" width="20" height="16" rx="6" fill="W"/><circle cx="24" cy="13" r="8" fill="W"/><path d="M18 12a6 5 0 0 1 12 0v2H18z" fill="A"/><path d="M34 21l7-5" stroke="W" stroke-width="3" stroke-linecap="round"/>'],
-    rocket: ['#67E8F9', '#0E7490', '<path d="M24 6c7 5 9 13 9 21v9H15v-9c0-8 2-16 9-21z" fill="W"/><circle cx="24" cy="20" r="4" fill="A"/><path d="M15 27l-5 9h5zM33 27l5 9h-5z" fill="W" opacity=".8"/><path d="M19 36c1 5 3 8 5 10 2-2 4-5 5-10z" fill="#FDBA74"/>'],
-    apple: ['#86EFAC', '#15803D', '<path d="M24 15c-3-3-11-3-13 4s3 18 8 18c2 0 3-1 5-1s3 1 5 1c5 0 10-11 8-18s-10-7-13-4z" fill="W"/><path d="M24 15c0-3 2-6 5-8" stroke="W" stroke-width="2.4" fill="none"/><path d="M26 11c3-2 7-2 8 0-2 3-5 3-8 0z" fill="#FDE68A"/><path d="M18 22c-1 2-1 5 0 7" stroke="A" stroke-width="2" stroke-linecap="round" opacity=".5" fill="none"/>'],
-    tower: ['#FDBA74', '#9A3412', '<path d="M16 40V18h16v22z" fill="W"/><path d="M14 18h20l-2-6H16z" fill="W" opacity=".85"/><path d="M14 12h3v-3h3v3h3v-3h2v3h3v-3h3v3h3" fill="none" stroke="W" stroke-width="2"/><rect x="21" y="30" width="6" height="10" rx="3" fill="A"/><rect x="19" y="21" width="4" height="5" rx="1" fill="A" opacity=".6"/><rect x="25" y="21" width="4" height="5" rx="1" fill="A" opacity=".6"/>'],
-    dragon: ['#F87171', '#7C2D12', '<rect x="7" y="12" width="15" height="22" rx="3" fill="W" transform="rotate(-10 14.5 23)"/><rect x="26" y="12" width="15" height="22" rx="3" fill="W" transform="rotate(10 33.5 23)"/><path d="M11 20c3-3 6 0 4 3s2 5 4 3" fill="none" stroke="A" stroke-width="2" stroke-linecap="round" transform="rotate(-10 14.5 23)"/><path d="M30 18l3 3 3-3M30 26l3 3 3-3" fill="none" stroke="A" stroke-width="2" stroke-linecap="round" transform="rotate(10 33.5 23)"/><text x="24" y="44" text-anchor="middle" font-size="7" font-weight="900" fill="W">VS</text>'],
-    baccarat: ['#FCD34D', '#92400E', '<rect x="9" y="10" width="17" height="24" rx="3" fill="W" transform="rotate(-12 17.5 22)"/><rect x="22" y="12" width="17" height="24" rx="3" fill="W"/><text x="30.5" y="27" text-anchor="middle" font-size="11" font-weight="900" fill="A">9</text><path d="M14 18l2 3-2 3-2-3z" fill="#e11d48" transform="rotate(-12 17.5 22)"/>'],
-    sicbo: ['#A5B4FC', '#3730A3', '<rect x="6" y="17" width="15" height="15" rx="3.5" fill="W" transform="rotate(-12 13.5 24.5)"/><rect x="26" y="17" width="15" height="15" rx="3.5" fill="W" transform="rotate(10 33.5 24.5)"/><rect x="16.5" y="8" width="15" height="15" rx="3.5" fill="W"/><g fill="A"><circle cx="24" cy="15.5" r="1.8"/><circle cx="10" cy="21" r="1.6"/><circle cx="16" cy="28" r="1.6"/><circle cx="30" cy="21" r="1.6"/><circle cx="37" cy="28" r="1.6"/><circle cx="33.5" cy="24.5" r="1.6"/></g>'],
-    chests: ['#FDE047', '#A16207', '<path d="M8 24h32v14a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3z" fill="W"/><path d="M8 24c0-7 4-11 10-11h12c6 0 10 4 10 11z" fill="W" opacity=".85"/><path d="M8 24h32" stroke="A" stroke-width="2.4"/><rect x="21" y="25" width="6" height="7" rx="1.5" fill="A"/><circle cx="36" cy="10" r="2" fill="#fff"/><circle cx="12" cy="9" r="1.4" fill="#fff"/>'],
-    balloon: ['#FDA4AF', '#BE123C', '<ellipse cx="24" cy="20" rx="11" ry="13" fill="W"/><ellipse cx="20" cy="15" rx="3" ry="4.5" fill="A" opacity=".25"/><path d="M22 33l2 3 2-3z" fill="W"/><path d="M24 36c-3 4 3 6 0 9" stroke="W" stroke-width="1.6" fill="none"/>'],
-    mines: ['#94A3B8', '#334155', '<circle cx="22" cy="27" r="11" fill="W"/><path d="M29 18l4-4M33 14l2.5-1M33 14l1 2.5" stroke="W" stroke-width="2.4" stroke-linecap="round"/><circle cx="35.6" cy="11.8" r="2" fill="#FFD27A"/><circle cx="18" cy="23" r="3" fill="A" opacity=".45"/>'],
-    sports: ['#38BDF8', '#0369A1', '<circle cx="24" cy="24" r="14" fill="W"/><path d="M24 15l5 3.6-1.9 5.9h-6.2L19 18.6zM24 15v-5M29 18.6l5-1.5M27.1 24.5l3 4.4M20.9 24.5l-3 4.4M19 18.6l-5-1.5" fill="A" stroke="A" stroke-width="1.4" stroke-linejoin="round"/>']
-  };
-  var gn = 0;
-  function gicon(k) {
-    var c = GI[k] || GI.coin, id = 'cg' + (++gn);
-    var glyph = function (w, a) { return c[2].replace(/="W"/g, '="' + w + '"').replace(/="A"/g, '="' + a + '"'); };
-    return '<svg class="cs-ico" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="' + id + 'a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient>' +
-      '<radialGradient id="' + id + 'b" cx="28%" cy="12%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>' +
-      '<rect x="1" y="1" width="46" height="46" rx="14" fill="url(#' + id + 'a)"/><rect x="1" y="1" width="46" height="46" rx="14" fill="url(#' + id + 'b)"/><rect x="1.5" y="1.5" width="45" height="45" rx="13.5" fill="none" stroke="#fff" stroke-opacity=".3"/>' +
-      '<g transform="translate(0 1.3)" opacity=".2">' + glyph('#000', '#000') + '</g>' + glyph('#fff', c[1]) + '</svg>';
-  }
+  /* ---------- v2694 : noms en anglais (les mêmes dans toutes les langues, à nous) + logos « planète » (js/casino-art.js) ---------- */
+  var NAMES = { crash: 'Sky Rush', jet: 'Jet Man', rocket: 'Rocket', mines: 'Mines', apple: 'Golden Orchard', tower: 'Tower', plinko: 'Cascade', dice: 'Dice', limbo: 'Target',
+    wheel: 'Lucky Wheel', roulette: 'Roulette', slots: 'Lucky 777', coin: 'Coin Flip', keno: 'Keno', scratch: 'Scratch Card', hilo: 'Hi-Lo', dragon: 'Dragon Tiger', baccarat: 'Baccarat',
+    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts' };
+  var ART = D6.CasinoArt || { planet: function () { return ''; }, obj: function () { return ''; }, sym: function () { return ''; }, car: function () { return ''; }, PAL: {} };
+  function pal(k) { return ART.PAL[k] || ART.PAL.coin || ['#ffffff', '#7c3aed']; }
+  function gicon(k, cls) { return ART.planet(k, cls); }
   D6.CasinoIcon = gicon;
   /* pièce « crypto » OROLADO (face : or, logo O ; pile : argent, circuit) */
   function coinFace(gold) {
@@ -98,28 +68,8 @@
       (gold ? '<circle cx="100" cy="100" r="40" fill="none" stroke="' + a[2] + '" stroke-width="16"/><path d="M100 48v18M100 134v18" stroke="' + a[2] + '" stroke-width="8" stroke-linecap="round"/>'
         : '<path d="M70 100h20l10-18 10 36 10-18h20" fill="none" stroke="' + a[2] + '" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="100" r="7" fill="' + a[2] + '"/><circle cx="130" cy="100" r="7" fill="' + a[2] + '"/>') + '</svg>';
   }
-  /* v2691 — dessins des 3 jeux « ça monte » + pommes (vectoriels, légers) */
-  function planeSvg() {
-    return '<svg viewBox="0 0 58 36" aria-hidden="true"><defs><linearGradient id="pl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b8a"/><stop offset="1" stop-color="#c8102e"/></linearGradient></defs>' +
-      '<path d="M8 20c6-4 22-6 34-6 8 0 13 2 14 4s-5 4-13 4c-12 0-28 1-35-2z" fill="url(#pl1)"/><path d="M24 15l-9-12h7l13 12z" fill="#e11d48"/><path d="M26 22l-7 11h6l12-11z" fill="#9f1239"/>' +
-      '<path d="M9 19l-6-9h5l7 8z" fill="#e11d48"/><path d="M44 16.5c3 0 6 .8 7 1.8" stroke="#bfe3ff" stroke-width="2.4" stroke-linecap="round"/><circle cx="35" cy="18" r="1.4" fill="#fff" opacity=".8"/><circle cx="30" cy="18.3" r="1.4" fill="#fff" opacity=".8"/></svg>';
-  }
-  function jetSvg() {
-    return '<svg viewBox="0 0 44 52" aria-hidden="true"><path d="M14 34c-2 6-1 12 3 16 1-6 3-10 3-14zM26 34c2 6 1 12-3 16-1-6-3-10-3-14z" fill="#f59e0b" opacity=".9"/><path d="M15 34c-1 4 0 8 2 10 1-4 2-6 2-9zM25 34c1 4 0 8-2 10-1-4-2-6-2-9z" fill="#fde68a"/>' +
-      '<rect x="10" y="17" width="20" height="18" rx="6" fill="#7c3aed"/><rect x="8" y="22" width="5" height="12" rx="2.5" fill="#6d28d9"/><rect x="27" y="22" width="5" height="12" rx="2.5" fill="#6d28d9"/>' +
-      '<circle cx="20" cy="11" r="9" fill="#ede9fe"/><path d="M13 10a7 6 0 0 1 14 0v2H13z" fill="#38bdf8"/><path d="M30 19l9-6" stroke="#ede9fe" stroke-width="3.4" stroke-linecap="round"/><circle cx="40" cy="12.4" r="2.6" fill="#ede9fe"/></svg>';
-  }
-  function rocketSvg() {
-    return '<svg viewBox="0 0 34 58" aria-hidden="true"><path d="M17 2c8 6 11 16 11 26v12H6V28C6 18 9 8 17 2z" fill="#e2e8f0"/><path d="M17 2c8 6 11 16 11 26H17z" fill="#cbd5e1"/><circle cx="17" cy="22" r="5" fill="#0ea5e9" stroke="#334155" stroke-width="2"/>' +
-      '<path d="M6 30l-5 12h5zM28 30l5 12h-5z" fill="#ef4444"/><path d="M10 40h14l-2 4H12z" fill="#475569"/><path d="M12 44c1 6 3 10 5 13 2-3 4-7 5-13z" fill="#f97316"/><path d="M14 44c1 4 2 7 3 9 1-2 2-5 3-9z" fill="#fde68a"/></svg>';
-  }
-  function appleSvg(good) {
-    return good ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2-2-7-2-8 3s2 11 5 11c1.3 0 2-.6 3-.6s1.7.6 3 .6c3 0 6-6 5-11s-6-5-8-3z" fill="#22c55e"/><path d="M12 7c0-2 1-4 3-5" stroke="#78350f" stroke-width="1.6" fill="none"/><path d="M13 5c2-1 4-1 5 0-1 2-3 2-5 0z" fill="#86efac"/></svg>'
-      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2-2-7-2-8 3s2 11 5 11c1.3 0 2-.6 3-.6s1.7.6 3 .6c3 0 6-6 5-11s-6-5-8-3z" fill="#7f1d1d"/><circle cx="9" cy="12" r="1.6" fill="#1c1917"/><circle cx="15" cy="15" r="1.2" fill="#1c1917"/><path d="M12 7c0-2 1-4 3-5" stroke="#44403c" stroke-width="1.6" fill="none"/></svg>';
-  }
-
   /* ---------- état ---------- */
-  var ORDER = ['crash', 'jet', 'rocket', 'mines', 'apple', 'tower', 'coin', 'dice', 'wheel', 'roulette', 'slots', 'plinko', 'limbo', 'keno', 'scratch', 'hilo', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'penalty', 'race', 'colors'];
+  var ORDER = ['crash', 'jet', 'rocket', 'mines', 'apple', 'tower', 'plinko', 'dice', 'limbo', 'wheel', 'roulette', 'slots', 'coin', 'keno', 'scratch', 'hilo', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'penalty', 'race', 'colors', 'darts'];
   // v2693 (propriétaire) : la mise de départ est toujours 0,10 $ à l'ouverture du Casino.
   var S = { mode: 'real', stake: 0.1, game: '', view: 'games', bal: { real: null, demo: null }, busy: false, timer: 0 };
   function save() { /* la mise n'est plus gardée : 0,10 $ à chaque ouverture */ }
@@ -188,18 +138,19 @@
       '<div id="csBody"></div><div class="cs-sheet" id="csSheet" hidden></div></div>';
     document.body.appendChild(m);
     $('closeCasino').style.setProperty('display', 'none', 'important');
-    $('closeCasino').addEventListener('click', close);
-    $('csBack').addEventListener('click', function () { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) home(); else close(); });
+    $('closeCasino').addEventListener('click', backStep);
+    $('csBack').addEventListener('click', backStep);
     $('csBal').addEventListener('click', function () { if (!guest()) deposit(); });
     $('csHelp').addEventListener('click', function () { if (S.game) help(S.game); });
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
   }
+  function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) home(); else close(); }
   function open(game) {
     ensure(); readBal();
     S.stake = 0.1;
     if (D6.App && D6.App.openModal) D6.App.openModal('casinoModal');
-    if (game && GI[game]) go(game); else home();
+    if (game && NAMES[game]) go(game); else home();
   }
   function close() {
     stopAll();
@@ -212,10 +163,10 @@
     stopAll();
     S.game = ''; S.view = view || S.view || 'games';
     var x = X(), m = $('casinoModal');
-    m.classList.remove('in-game'); $('csSheet').hidden = true; $('csHelp').hidden = true;
+    m.classList.remove('in-game'); m.removeAttribute('data-g'); $('csSheet').hidden = true; $('csHelp').hidden = true;
     paintBal();
-    $('csBody').innerHTML = '<div class="cs-tabs2"><button type="button" data-v="games" class="' + (S.view === 'games' ? 'on' : '') + '">' + gicon('dice') + '<span>' + esc(x.gamesTab) + '</span></button>' +
-      '<button type="button" data-v="sports" class="' + (S.view === 'sports' ? 'on' : '') + '">' + gicon('sports') + '<span>' + esc(x.sports) + '</span></button></div><div id="csView"></div>';
+    $('csBody').innerHTML = '<div class="cs-tabs2"><button type="button" data-v="games" class="' + (S.view === 'games' ? 'on' : '') + '">' + gicon('slots', 'sm') + '<span>' + esc(x.gamesTab) + '</span></button>' +
+      '<button type="button" data-v="sports" class="' + (S.view === 'sports' ? 'on' : '') + '">' + gicon('sports', 'sm') + '<span>' + esc(x.sports) + '</span></button></div><div id="csView"></div>';
     $('csBody').querySelectorAll('[data-v]').forEach(function (b) { b.addEventListener('click', function () { home(b.getAttribute('data-v')); }); });
     var v = $('csView');
     if (S.view === 'sports') {
@@ -223,14 +174,14 @@
       if (D6.Sports && D6.Sports.paint) D6.Sports.paint(v, { guest: guest(), signup: signup, toast: toast, afterPlay: afterPlay, stake: function () { return S.stake; } });
     } else {
       v.className = 'cs-grid';
-      v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && GI[k]; }).map(function (k) {
-        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + GI[k][1] + '"><span class="cs-orb">' + gicon(k) + '</span><b>' + esc(name(k)) + '</b></button>';
+      v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).map(function (k) {
+        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b></button>';
       }).join('');
       v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-g')); }); });
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
   }
-  function name(k) { var x = X(); return (x.g[k] || T.en.g[k] || [k])[0]; }
+  function name(k) { return NAMES[k] || k; }
   function modeSwitch() { return ''; }
   function bindMode() { /* plus de choix réel / démo */ }
   /* panneau de mise compact, en bas de l'écran */
@@ -252,26 +203,24 @@
     stopAll();
     S.game = k;
     var x = X(), m = $('casinoModal');
-    m.classList.add('in-game'); $('csSheet').hidden = true; $('csHelp').hidden = false;
+    m.classList.add('in-game'); m.setAttribute('data-g', k); $('csSheet').hidden = true; $('csHelp').hidden = false;
+    var p = pal(k);
+    m.style.setProperty('--tc', p[1]); m.style.setProperty('--p1', p[0]); m.style.setProperty('--p2', p[1]);
     paintBal();
     var body = $('csBody');
-    body.innerHTML = '<div class="cs-game cs-' + k + (guest() ? ' is-guest' : '') + '" style="--tc:' + (GI[k] || GI.coin)[1] + '"></div>';
+    body.innerHTML = '<div class="cs-game cs-' + k + (guest() ? ' is-guest' : '') + '"></div>';
     var box = body.firstChild;
     (GAMES[k] || GAMES.coin)(box, x);
-    // nom du jeu : petite étiquette dans l'écran du jeu ; résultat : bannière dans l'écran
-    var st = box.querySelector('.cs-stage');
-    if (st) {
-      var tag = document.createElement('span'); tag.className = 'cs-gname'; tag.innerHTML = gicon(k) + '<b>' + esc(name(k)) + '</b>';
-      st.insertBefore(tag, st.firstChild);
-      // v2693b (propriétaire) : le résultat reste EN BAS, entre l'écran du jeu et la mise (devant le joueur)
-    }
+    // v2694 : nom du jeu sur sa propre ligne, au-dessus de la scène (ne recouvre plus rien) ; résultat en bas
+    var tag = document.createElement('div'); tag.className = 'cs-gname'; tag.innerHTML = gicon(k, 'mini') + '<b>' + esc(name(k)) + '</b>';
+    box.insertBefore(tag, box.firstChild);
     var mb = m.querySelector('.modal-box'); if (mb) mb.scrollTop = 0;
   }
   /* « ? » : comment on joue (une page, sans défiler) */
   function help(k) {
     var x = X(), r = (RULES[(document.documentElement.lang || 'fr').slice(0, 2)] || RULES.en)[k] || RULES.en[k] || '';
     var sh = $('csSheet');
-    sh.innerHTML = '<div class="cs-sheet-in"><span class="cs-orb">' + gicon(k) + '</span><b>' + esc(name(k)) + '</b><p>' + esc(r).replace(/\n/g, '<br>') + '</p><small>' + esc(x.rules) + '</small><button type="button" class="cs-go" id="csSheetOk">' + esc(x.gotIt) + '</button></div>';
+    sh.innerHTML = '<div class="cs-sheet-in">' + gicon(k, 'big') + '<b>' + esc(name(k)) + '</b><p>' + esc(r).replace(/\n/g, '<br>') + '</p><small>' + esc(x.rules) + '</small><button type="button" class="cs-go" id="csSheetOk">' + esc(x.gotIt) + '</button></div>';
     sh.hidden = false;
     $('csSheetOk').addEventListener('click', function () { sh.hidden = true; });
   }
@@ -300,7 +249,8 @@
       balloon: 'Gonfle le ballon : chaque souffle fait monter le gain. Encaisse avant qu’il éclate !',
       penalty: 'Vise à gauche, au centre ou à droite. Si le gardien plonge ailleurs, c’est but : ×1,44.',
       race: 'Choisis ta voiture parmi 6. Si elle gagne la course : ×5,7.',
-      colors: 'Un numéro de 0 à 9 sort. Vert ou Rouge : ×2 · Violet : ×4,5 · un numéro exact : ×9.'
+      colors: 'Un numéro de 0 à 9 sort. Vert ou Rouge : ×2 · Violet : ×4,5 · un numéro exact : ×9.',
+      darts: 'Touche « Miser » : la fléchette part vers la cible. Centre doré ×20 · anneau rouge ×5 · anneau vert ×2 · anneau clair ×1 · bord noir ×0.'
     },
     en: {
       crash: 'Tap “Take off”. The multiplier rises with the plane. Tap “Cash out” before it flies away: you win stake × multiplier. If it flies away first, the stake is lost.\nTip: auto cash-out cashes out at your chosen multiplier.',
@@ -326,17 +276,18 @@
       balloon: 'Pump the balloon: each pump raises the win. Cash out before it pops!',
       penalty: 'Aim left, centre or right. If the keeper dives elsewhere, it’s a goal: ×1.44.',
       race: 'Pick your car out of 6. If it wins the race: ×5.7.',
-      colors: 'A number from 0 to 9 is drawn. Green or Red: ×2 · Violet: ×4.5 · exact number: ×9.'
+      colors: 'A number from 0 to 9 is drawn. Green or Red: ×2 · Violet: ×4.5 · exact number: ×9.',
+      darts: 'Tap “Bet”: the dart flies to the board. Gold centre ×20 · red ring ×5 · green ring ×2 · light ring ×1 · black edge ×0.'
     }
   };
 
-  /* ---------- les 15 jeux ---------- */
+  /* ---------- les 25 jeux (v2694 : chaque écran copie les grands : scène plein écran, sans cadre) ---------- */
   var GAMES = {};
 
   GAMES.coin = function (box, x) {
     var side = 0;
     box.innerHTML = '<div class="cs-stage"><div class="coin3d" id="csCoin"><i class="f">' + coinFace(true) + '</i><i class="b">' + coinFace(false) + '</i></div><div class="coin-lbl"><span>' + esc(x.heads) + '</span><span>' + esc(x.tails) + '</span></div></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-seg"><button type="button" class="on" data-side="0">' + esc(x.heads) + '</button><button type="button" data-side="1">' + esc(x.tails) + '</button></div>');
+      stakePanel(x.bet, '<div class="cs-seg"><button type="button" class="on" data-side="0">' + esc(x.heads) + ' ×1,94</button><button type="button" data-side="1">' + esc(x.tails) + ' ×1,94</button></div>');
     bindStake(box);
     box.querySelectorAll('[data-side]').forEach(function (b) { b.addEventListener('click', function () { side = +b.getAttribute('data-side'); box.querySelectorAll('[data-side]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     var turns = 0;
@@ -350,7 +301,7 @@
 
   GAMES.dice = function (box, x) {
     var chance = 50, over = false;
-    box.innerHTML = '<div class="cs-stage dice-stage"><b class="dice-roll" id="csRoll">50.00</b><div class="dice-bar"><i id="csDiceWin"></i><em id="csDiceMark"></em></div></div><div class="cs-res"></div>' +
+    box.innerHTML = '<div class="cs-stage dice-stage"><div class="dice-hero">' + ART.obj('dice') + '</div><b class="dice-roll" id="csRoll">50.00</b><div class="dice-bar"><i id="csDiceWin"></i><em id="csDiceMark"></em></div><div class="dice-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<div class="cs-seg"><button type="button" class="on" data-o="0">' + esc(x.under) + '</button><button type="button" data-o="1">' + esc(x.over) + '</button></div>' +
         '<label class="cs-lbl">' + esc(x.chance) + ' : <b id="csCh">50 %</b> · <b id="csMul"></b></label><input type="range" min="2" max="95" value="50" id="csChance" class="cs-range">');
     bindStake(box);
@@ -366,13 +317,14 @@
       var el = $('csRoll'), t0 = performance.now();
       await new Promise(function (res) { (function f(t) { var k = Math.min(1, (t - t0) / 600); el.textContent = (k < 1 ? Math.random() * 100 : r.view.roll).toFixed(2); if (k < 1) S.raf = requestAnimationFrame(f); else res(); })(t0); });
       $('csDiceMark').style.left = r.view.roll + '%'; $('csDiceMark').className = r.win > 0 ? 'w' : 'l';
+      el.className = 'dice-roll ' + (r.win > 0 ? 'w' : 'l');
       resultLine(box, r, fmt(x.roll, { x: r.view.roll.toFixed(2) }));
     });
   };
 
   GAMES.limbo = function (box, x) {
     var target = 2;
-    box.innerHTML = '<div class="cs-stage limbo-stage"><b class="limbo-n" id="csLimbo">1.00×</b><small id="csLimboT"></small></div><div class="cs-res"></div>' +
+    box.innerHTML = '<div class="cs-stage limbo-stage"><div class="lb-target">' + ART.obj('limbo') + '</div><b class="limbo-n" id="csLimbo">1.00×</b><small id="csLimboT" class="lb-t"></small></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.target) + '</label><div class="cs-stake"><input id="csTarget" inputmode="decimal" value="2.00"></div><div class="cs-chips">' + [1.5, 2, 5, 10, 100].map(function (v) { return '<button type="button" data-t="' + v + '">×' + v + '</button>'; }).join('') + '</div>');
     bindStake(box);
     var setT = function (v) { target = Math.max(1.01, Math.min(1000, Math.round((+v || 2) * 100) / 100)); $('csTarget').value = target.toFixed(2); $('csLimboT').textContent = x.target + target.toFixed(2); };
@@ -382,26 +334,28 @@
     $('csGo').addEventListener('click', async function () {
       var r = await play('limbo', { target: target }); if (!r) return;
       var el = $('csLimbo'), t0 = performance.now(), end = Math.min(r.view.res, 100000);
+      el.className = 'limbo-n';
       await new Promise(function (res) { (function f(t) { var k = Math.min(1, (t - t0) / 700); el.textContent = (1 + (end - 1) * (1 - Math.pow(1 - k, 3))).toFixed(2) + '×'; if (k < 1) S.raf = requestAnimationFrame(f); else res(); })(t0); });
       el.className = 'limbo-n ' + (r.win > 0 ? 'w' : 'l');
       resultLine(box, r, fmt(x.result, { x: r.view.res.toFixed(2) }));
     });
   };
 
-  // [multiplicateur, chances sur 1000] — même table que le serveur (casino_lib.php CASINO_WHEEL) ; case dessinée à la taille de sa chance
+  // [multiplicateur, chances sur 10 000] — même table que le serveur (casino_lib.php CASINO_WHEEL) ; case dessinée à la taille de sa chance
   var WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], [2, 325], [0, 630], [1.2, 500], [0.5, 640], [3, 350], [0, 631], [1.2, 500], [0.5, 640], [5, 120], [1.5, 550], [0, 631], [0.5, 640], [1.2, 500], [2, 325], [10, 50], [50, 8]];
   GAMES.wheel = function (box, x) {
     var rot = 0, out = '', a0 = 0, mids = [];
-    var col = { 0: '#1e2a38', 0.5: '#64748b', 1.2: '#2563eb', 1.5: '#0ea5e9', 2: '#16a34a', 3: '#f59e0b', 5: '#f97316', 10: '#e11d48', 50: '#facc15' };
+    var col = { 0: '#1e293b', 0.5: '#94a3b8', 1.2: '#3b82f6', 1.5: '#06b6d4', 2: '#22c55e', 3: '#f59e0b', 5: '#f97316', 10: '#e11d48', 50: '#facc15' };
     var pt = function (r, a) { a = a * Math.PI / 180; return (r * Math.sin(a)).toFixed(2) + ' ' + (-r * Math.cos(a)).toFixed(2); };
-    WHEEL.forEach(function (s, i) {
+    WHEEL.forEach(function (s) {
       var v = s[0], sw = s[1] / 10000 * 360, a1 = a0 + sw;
-      out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + col[v] + '" stroke="#0e1621" stroke-width="1.5"/>';
+      out += '<path d="M0 0 L' + pt(112, a0) + ' A112 112 0 0 1 ' + pt(112, a1) + 'Z" fill="' + col[v] + '" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>';
       mids.push(a0 + sw / 2); a0 = a1;
     });
-    out = '<circle r="124" fill="#0e1621"/>' + out + '<circle r="118" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>';
-    var legend = [50, 10, 5, 3, 2, 1.5, 1.2, 0.5, 0].map(function (v) { return '<span style="--c:' + col[v] + '">×' + String(v).replace('.', ',') + '</span>'; }).join('');
-    box.innerHTML = '<div class="cs-stage"><div class="whl2"><div class="whl2-rot" id="csWheel"><svg viewBox="-125 -125 250 250">' + out + '<circle r="22" fill="#F5B700" stroke="#0e1621" stroke-width="4"/></svg></div><i class="whl2-pin"></i></div><div class="whl-leg">' + legend + '</div></div><div class="cs-res"></div>' + stakePanel();
+    var bulbs = ''; for (var i = 0; i < 24; i++) bulbs += '<circle cx="' + (119 * Math.sin(i * 15 * Math.PI / 180)).toFixed(1) + '" cy="' + (-119 * Math.cos(i * 15 * Math.PI / 180)).toFixed(1) + '" r="3" fill="#FFF7D6"/>';
+    out = '<defs><radialGradient id="whG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".5" stop-color="#F5B700"/><stop offset="1" stop-color="#9A6A00"/></radialGradient></defs><circle r="125" fill="url(#whG)"/>' + bulbs + out + '<circle r="112" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>';
+    var legend = [50, 10, 5, 3, 2, 1.5, 1.2, 0.5, 0].map(function (v) { return '<span style="--c:' + col[v] + '">' + String(v).replace('.', ',') + '</span>'; }).join('');
+    box.innerHTML = '<div class="cs-stage"><div class="whl2"><div class="whl2-rot" id="csWheel"><svg viewBox="-126 -126 252 252">' + out + '<circle r="20" fill="url(#whG)" stroke="#9A6A00" stroke-width="3"/></svg></div><i class="whl2-pin"></i></div><div class="whl-leg">×' + legend + '</div></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
     $('csGo').addEventListener('click', async function () {
       var r = await play('wheel', {}); if (!r) return;
@@ -414,8 +368,8 @@
 
   GAMES.race = function (box, x) {
     var car = 0, cols = ['#EF4444', '#3B82F6', '#22C55E', '#F59E0B', '#A855F7', '#EC4899'];
-    var lanes = cols.map(function (c, i) { return '<div class="lane"><em>' + (i + 1) + '</em><span class="car" id="csCar' + i + '" style="--cc:' + c + '">' + carSvg(c, i + 1) + '</span></div>'; }).join('');
-    box.innerHTML = '<div class="cs-stage race-stage"><div class="road">' + lanes + '<i class="finish"></i><i class="start"></i></div></div><div class="cs-res"></div>' +
+    var lanes = cols.map(function (c, i) { return '<div class="lane"><span class="car" id="csCar' + i + '">' + ART.car(c, i + 1) + '</span></div>'; }).join('');
+    box.innerHTML = '<div class="cs-stage race-stage"><div class="race-sky"></div><div class="road">' + lanes + '<i class="finish"></i><i class="start"></i></div><div class="race-grass"></div></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.pickCar) + ' · ×5,7</label><div class="cs-cars">' + cols.map(function (c, i) { return '<button type="button" data-car="' + i + '" class="' + (i ? '' : 'on') + '" style="--cc:' + c + '">' + (i + 1) + '</button>'; }).join('') + '</div>');
     bindStake(box);
     box.querySelectorAll('[data-car]').forEach(function (b) { b.addEventListener('click', function () { car = +b.getAttribute('data-car'); box.querySelectorAll('[data-car]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
@@ -423,23 +377,16 @@
       var r = await play('race', { car: car }); if (!r) return;
       for (var i = 0; i < 6; i++) { var c = $('csCar' + i); c.style.transition = 'none'; c.style.transform = 'translateX(0)'; }
       await sleep(40);
-      r.view.order.forEach(function (id, pos) { var c = $('csCar' + id); c.style.transition = 'transform ' + (2.6 + pos * 0.32).toFixed(2) + 's cubic-bezier(.3,.1,.3,1)'; var dist = c.parentElement.clientWidth - c.offsetWidth - 26; c.style.transform = 'translateX(' + dist + 'px)'; });
+      r.view.order.forEach(function (id, pos) { var c = $('csCar' + id); c.style.transition = 'transform ' + (2.6 + pos * 0.32).toFixed(2) + 's cubic-bezier(.3,.1,.3,1)'; var dist = c.parentElement.clientWidth - c.offsetWidth - 22; c.style.transform = 'translateX(' + dist + 'px)'; });
       await sleep(2700 + 5 * 320);
       resultLine(box, r, '🏁 ' + (r.view.order[0] + 1));
     });
   };
-  /* voiture de course vue de dessus (aileron, cockpit, numéro) */
-  function carSvg(c, n) {
-    return '<svg viewBox="0 0 64 30"><rect x="6" y="2" width="9" height="6" rx="2" fill="#111"/><rect x="6" y="22" width="9" height="6" rx="2" fill="#111"/><rect x="42" y="2" width="9" height="6" rx="2" fill="#111"/><rect x="42" y="22" width="9" height="6" rx="2" fill="#111"/>' +
-      '<path d="M4 9c0-2 1.5-3 3.5-3H44c7 0 13 4 16 9-3 5-9 9-16 9H7.5C5.5 24 4 23 4 21z" fill="' + c + '"/><rect x="1" y="5" width="5" height="20" rx="1.5" fill="' + c + '" opacity=".85"/>' +
-      '<path d="M30 10h8c3 0 5 2.2 5 5s-2 5-5 5h-8z" fill="#0f172a"/><path d="M32 12h5c1.6 0 2.8 1.3 2.8 3s-1.2 3-2.8 3h-5z" fill="#7dd3fc" opacity=".7"/>' +
-      '<path d="M44 7l10 6" stroke="#fff" stroke-width="1.2" opacity=".5"/><circle cx="20" cy="15" r="6" fill="#fff"/><text x="20" y="18.5" text-anchor="middle" font-size="9" font-weight="900" fill="#111">' + (n || '') + '</text></svg>';
-  }
 
   GAMES.roulette = function (box, x) {
-    var bet = 'red';
+    var bet = 'red', wr = 0;
     var opts = [['red', x.red, '×2'], ['black', x.black, '×2'], ['even', x.even, '×2'], ['odd', x.odd, '×2'], ['d1', '1-12', '×3'], ['d2', '13-24', '×3'], ['d3', '25-36', '×3']];
-    box.innerHTML = '<div class="cs-stage"><div class="rl-ball" id="csRl">?</div></div><div class="cs-res"></div>' +
+    box.innerHTML = '<div class="cs-stage rl-stage"><div class="rl-wheel" id="csRlW">' + ART.obj('roulette') + '</div><div class="rl-ball" id="csRl">?</div></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<div class="cs-opts">' + opts.map(function (o, i) { return '<button type="button" data-b="' + o[0] + '" class="' + (i ? '' : 'on') + ' b-' + o[0] + '">' + esc(o[1]) + '<small>' + o[2] + '</small></button>'; }).join('') + '</div>' +
         '<label class="cs-lbl">' + esc(x.number) + ' (0-36) · ×36</label><div class="cs-stake"><input id="csRlNum" inputmode="numeric" placeholder="—"></div>');
     bindStake(box);
@@ -448,33 +395,37 @@
     $('csRlNum').addEventListener('input', function () { var v = parseInt(this.value, 10); if (v >= 0 && v <= 36) pick('n' + v); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('roulette', { bet: bet }); if (!r) return;
-      var el = $('csRl'); el.className = 'rl-ball spin';
-      for (var i = 0; i < 14; i++) { el.textContent = Math.floor(Math.random() * 37); await sleep(60 + i * 12); }
+      var el = $('csRl'), w = $('csRlW'); el.className = 'rl-ball spin';
+      wr += 1080 + Math.floor(Math.random() * 360); w.style.transform = 'rotate(' + wr + 'deg)';
+      for (var i = 0; i < 16; i++) { el.textContent = Math.floor(Math.random() * 37); await sleep(60 + i * 12); }
       el.textContent = r.view.n; el.className = 'rl-ball ' + (r.view.n === 0 ? 'z' : r.view.red ? 'r' : 'k');
       resultLine(box, r);
     });
   };
 
-  var SYM = { gem: '💎', seven: '7️⃣', bell: '🔔', lemon: '🍋', cherry: '🍒', star: '⭐' };
+  var SLOT_PAY = [['gem', '×50'], ['seven', '×20'], ['bell', '×10'], ['lemon', '×5'], ['cherry', '×3'], ['cherry2', '×1,5']];
   GAMES.slots = function (box, x) {
-    box.innerHTML = '<div class="cs-stage"><div class="slot"><span id="csR0">🍒</span><span id="csR1">💎</span><span id="csR2">7️⃣</span></div>' +
-      '<div class="pay">💎💎💎 ×50 · 7️⃣7️⃣7️⃣ ×20 · 🔔🔔🔔 ×10 · 🍋🍋🍋 ×5 · 🍒🍒🍒 ×3 · 🍒🍒 ×1,5</div></div><div class="cs-res"></div>' + stakePanel();
+    var pay = SLOT_PAY.map(function (p) { var two = p[0] === 'cherry2'; return '<span><em>' + ART.sym(two ? 'cherry' : p[0]) + '</em><small>' + (two ? '×2' : '×3') + '</small><b>' + p[1] + '</b></span>'; }).join('');
+    box.innerHTML = '<div class="cs-stage slot-stage"><div class="slot2"><div class="slot2-top">LUCKY 777</div><div class="slot2-win"><span id="csR0">' + ART.sym('cherry') + '</span><span id="csR1">' + ART.sym('gem') + '</span><span id="csR2">' + ART.sym('seven') + '</span></div><i class="slot2-line"></i></div>' +
+      '<div class="pay2">' + pay + '</div></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
-    var keys = Object.keys(SYM);
+    var keys = ['gem', 'seven', 'bell', 'lemon', 'cherry', 'star'];
     $('csGo').addEventListener('click', async function () {
       var r = await play('slots', {}); if (!r) return;
-      for (var t = 0; t < 12; t++) { for (var i = 0; i < 3; i++) if (t < 6 + i * 3) $('csR' + i).textContent = SYM[keys[Math.floor(Math.random() * 6)]]; else $('csR' + i).textContent = SYM[r.view.reels[i]]; await sleep(80); }
-      for (var j = 0; j < 3; j++) $('csR' + j).textContent = SYM[r.view.reels[j]];
+      for (var t = 0; t < 12; t++) { for (var i = 0; i < 3; i++) $('csR' + i).innerHTML = ART.sym(t < 6 + i * 3 ? keys[Math.floor(Math.random() * 6)] : r.view.reels[i]); await sleep(80); }
+      for (var j = 0; j < 3; j++) $('csR' + j).innerHTML = ART.sym(r.view.reels[j]);
+      box.querySelector('.slot2').classList.toggle('won', r.win > 0);
       resultLine(box, r, r.mult ? '×' + r.mult : '');
     });
   };
 
   var PLINKO = [12, 3, 1.4, 0.6, 0.4, 0.6, 1.4, 3, 12];
+  var PLK_COL = ['#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#EAB308', '#F59E0B', '#F97316', '#EF4444'];
   GAMES.plinko = function (box, x) {
     var pegs = '';
-    for (var row = 0; row < 8; row++) for (var c = 0; c <= row + 1; c++) pegs += '<circle cx="' + (150 + (c - (row + 1) / 2) * 30) + '" cy="' + (30 + row * 28) + '" r="3.2" fill="#c7d2fe"/>';
-    var bins = PLINKO.map(function (m, i) { return '<g><rect x="' + (150 + (i - 4) * 30 - 14) + '" y="262" width="28" height="22" rx="5" fill="' + (m >= 3 ? '#EC4899' : m >= 1 ? '#F59E0B' : '#334155') + '"/><text x="' + (150 + (i - 4) * 30) + '" y="277" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">' + m + '</text></g>'; }).join('');
-    box.innerHTML = '<div class="cs-stage"><svg viewBox="0 0 300 290" class="plk">' + pegs + bins + '<circle id="csBall" cx="150" cy="10" r="7" fill="#FFD27A" stroke="#fff" stroke-width="2"/></svg></div><div class="cs-res"></div>' + stakePanel();
+    for (var row = 0; row < 8; row++) for (var c = 0; c <= row + 1; c++) pegs += '<circle cx="' + (150 + (c - (row + 1) / 2) * 30) + '" cy="' + (30 + row * 28) + '" r="3.4" fill="#fff"/>';
+    var bins = PLINKO.map(function (m, i) { return '<g><rect x="' + (150 + (i - 4) * 30 - 14) + '" y="262" width="28" height="22" rx="5" fill="' + PLK_COL[i] + '"/><text x="' + (150 + (i - 4) * 30) + '" y="277" text-anchor="middle" font-size="9" font-weight="900" fill="#fff">' + m + '</text></g>'; }).join('');
+    box.innerHTML = '<div class="cs-stage plk-stage"><svg viewBox="0 0 300 290" class="plk"><defs><radialGradient id="plkB" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#FF7AB6"/><stop offset="1" stop-color="#BE185D"/></radialGradient></defs>' + pegs + bins + '<circle id="csBall" cx="150" cy="10" r="8" fill="url(#plkB)"/></svg></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
     $('csGo').addEventListener('click', async function () {
       var r = await play('plinko', {}); if (!r) return;
@@ -488,8 +439,8 @@
 
   GAMES.keno = function (box, x) {
     var picks = [];
-    box.innerHTML = '<div class="cs-stage"><div class="keno" id="csKeno">' + Array.from({ length: 20 }, function (_, i) { return '<button type="button" data-k="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
-      '<div class="pay">1 ×0,6 · 2 ×3,5 · 3 ×25</div><small class="cs-lbl" id="csKn"></small></div><div class="cs-res"></div>' + stakePanel();
+    box.innerHTML = '<div class="cs-stage keno-stage"><div class="keno" id="csKeno">' + Array.from({ length: 20 }, function (_, i) { return '<button type="button" data-k="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div>' +
+      '<div class="pay2 kn"><span><small>1</small><b>×0,6</b></span><span><small>2</small><b>×3,5</b></span><span><small>3</small><b>×25</b></span></div><small class="cs-lbl" id="csKn"></small></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
     var paint = function () { $('csKn').textContent = fmt(x.picked, { n: picks.length }); box.querySelectorAll('[data-k]').forEach(function (b) { b.className = picks.indexOf(+b.getAttribute('data-k')) >= 0 ? 'pk' : ''; }); };
     box.querySelectorAll('[data-k]').forEach(function (b) {
@@ -505,18 +456,18 @@
     });
   };
 
-  var SCR = { crown: '👑', diamond: '💎', star: '⭐', clover: '🍀', coin: '🪙', heart: '❤️' };
   /* grattage : le joueur gratte avec son doigt (ou la souris) ; tout se découvre seul après quelques secondes */
   GAMES.scratch = function (box, x) {
-    box.innerHTML = '<div class="cs-stage"><div class="scr-w"><div class="scr" id="csScr">' + Array.from({ length: 9 }, function () { return '<span></span>'; }).join('') + '</div><canvas class="scr-cv" id="csScrCv"></canvas></div>' +
-      '<div class="pay">👑 ×20 · 💎 ×5 · ⭐ ×2 · 🍀 ×1</div></div><div class="cs-res"></div>' + stakePanel(x.bet);
+    var pay = [['crown', '×20'], ['diamond', '×5'], ['star', '×2'], ['clover', '×1']].map(function (p) { return '<span><em>' + ART.sym(p[0]) + '</em><small>×3</small><b>' + p[1] + '</b></span>'; }).join('');
+    box.innerHTML = '<div class="cs-stage scr-stage"><div class="scr-ticket"><div class="scr-head">SCRATCH · OROLADO</div><div class="scr-w"><div class="scr" id="csScr">' + Array.from({ length: 9 }, function () { return '<span></span>'; }).join('') + '</div><canvas class="scr-cv" id="csScrCv"></canvas></div></div>' +
+      '<div class="pay2">' + pay + '</div></div><div class="cs-res"></div>' + stakePanel(x.bet);
     bindStake(box);
     var cv = $('csScrCv'), ctx = cv.getContext('2d'), cur = null, done = true, autoT = 0;
     var cover = function () {
       var w = cv.clientWidth, h = cv.clientHeight; cv.width = w; cv.height = h;
-      var gr = ctx.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#d4d4d8'); gr.addColorStop(.5, '#a1a1aa'); gr.addColorStop(1, '#e4e4e7');
+      var gr = ctx.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#e5e7eb'); gr.addColorStop(.5, '#9ca3af'); gr.addColorStop(1, '#f3f4f6');
       ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = gr; ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.font = '900 ' + Math.round(w / 9) + 'px system-ui'; ctx.textAlign = 'center'; ctx.fillText('OROLADO', w / 2, h / 2 + w / 30);
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.font = '900 ' + Math.round(w / 10) + 'px system-ui'; ctx.textAlign = 'center'; ctx.fillText('SCRATCH', w / 2, h / 2 + w / 32);
       cv.style.opacity = '1';
     };
     var reveal = function () {
@@ -538,63 +489,80 @@
       if (!done) { reveal(); return; }
       var r = await play('scratch', {}); if (!r) return;
       cur = r; done = false;
-      box.querySelectorAll('.scr span').forEach(function (c, i) { c.textContent = SCR[r.view.grid[i]]; });
+      box.querySelectorAll('.scr span').forEach(function (c, i) { c.innerHTML = ART.sym(r.view.grid[i]); });
       cover();
       $('csGo').textContent = x.revealAll;
       clearTimeout(autoT); autoT = setTimeout(reveal, 7000); // découvert tout seul après 7 s
-      var wait = setInterval(function () { if (done) { clearInterval(wait); $('csGo').textContent = x.bet; } }, 300);
+      var wait = setInterval(function () { if (done) { clearInterval(wait); var g = $('csGo'); if (g) g.textContent = x.bet; } }, 300);
     });
   };
 
+  /* penalty : vu de derrière le ballon (comme les grands) — but, gardien, 3 cibles ; arrêté = le ballon finit dans les gants */
   GAMES.penalty = function (box, x) {
     var aim = 1;
-    var net = ''; for (var i = 1; i < 14; i++) net += '<path d="M' + (60 + i * 13) + ' 34V112"/>'; for (var j = 1; j < 6; j++) net += '<path d="M60 ' + (34 + j * 13) + 'H240"/>';
-    var pitch = '<svg class="pitch" viewBox="0 0 300 300" preserveAspectRatio="none"><g stroke="rgba(255,255,255,.18)" stroke-width="1">' + net + '</g>' +
-      '<path d="M60 112V34H240V112" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><path d="M0 112H300" stroke="rgba(255,255,255,.5)" stroke-width="2"/>' +
-      '<path d="M30 300L70 112M270 300L230 112" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M85 185H215" stroke="rgba(255,255,255,.35)" stroke-width="2"/><circle cx="150" cy="250" r="3" fill="#fff"/>' +
-      [0, 1, 2].map(function (z) { return '<rect class="pz" data-z="' + z + '" x="' + (62 + z * 59) + '" y="36" width="57" height="74" fill="rgba(255,255,255,0)"/>'; }).join('') + '</svg>';
+    var net = ''; for (var i = 1; i < 16; i++) net += '<path d="M' + (45 + i * 13.1) + ' 62V150"/>'; for (var j = 1; j < 7; j++) net += '<path d="M45 ' + (62 + j * 12.6) + 'H255"/>';
+    var scene = '<svg class="pen-scene" viewBox="0 0 300 300" preserveAspectRatio="none">' +
+      '<defs><linearGradient id="penSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1F4D"/><stop offset="1" stop-color="#1E4FA8"/></linearGradient><linearGradient id="penGr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16A34A"/><stop offset="1" stop-color="#14532D"/></linearGradient></defs>' +
+      '<rect width="300" height="160" fill="url(#penSky)"/><g fill="#fff" opacity=".9"><circle cx="30" cy="16" r="5"/><circle cx="270" cy="16" r="5"/></g><g fill="#fff" opacity=".18"><path d="M30 16l-30 60h60zM270 16l-30 60h60z"/></g>' +
+      '<rect y="96" width="300" height="56" fill="#1E293B"/><g fill="#475569">' + Array.from({ length: 30 }, function (_, k) { return '<circle cx="' + (k * 10 + 5) + '" cy="' + (104 + (k % 3) * 7) + '" r="3.2"/>'; }).join('') + '</g>' +
+      '<rect y="150" width="300" height="150" fill="url(#penGr)"/><g fill="#fff" opacity=".06"><rect y="170" width="300" height="20"/><rect y="210" width="300" height="24"/><rect y="256" width="300" height="28"/></g>' +
+      '<path d="M20 300L60 150H240L280 300" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/><path d="M90 195H210" stroke="rgba(255,255,255,.45)" stroke-width="2"/>' +
+      '<rect x="45" y="62" width="210" height="88" fill="rgba(255,255,255,.06)"/><g stroke="rgba(255,255,255,.35)" stroke-width="1">' + net + '</g>' +
+      '<path d="M45 151V60H255V151" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/></svg>';
     var keeper = '<svg viewBox="0 0 70 90"><circle cx="35" cy="14" r="10" fill="#f1c27d"/><path d="M27 10a8 6 0 0 1 16 0z" fill="#111"/><path d="M20 26h30l4 34H16z" fill="#f59e0b"/><path d="M20 28L4 16M50 28l16-12" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/><circle cx="4" cy="15" r="6" fill="#22c55e"/><circle cx="66" cy="15" r="6" fill="#22c55e"/><path d="M22 60l-4 26M48 60l4 26" stroke="#111827" stroke-width="9" stroke-linecap="round"/><text x="35" y="48" text-anchor="middle" font-size="13" font-weight="900" fill="#111">1</text></svg>';
-    var ball = '<svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M17 9l6 4.3-2.3 7.2h-7.4L11 13.3z" fill="#111"/><path d="M17 9V2M23 13.3l6.5-2M20.7 20.5l4 5.7M13.3 20.5l-4 5.7M11 13.3l-6.5-2" stroke="#111" stroke-width="1.4"/></svg>';
-    box.innerHTML = '<div class="cs-stage pen2">' + pitch + '<span class="kp2" id="csKp">' + keeper + '</span><span class="ball2" id="csPb">' + ball + '</span><b class="pen-msg" id="csPm"></b></div><div class="cs-res"></div>' +
+    var ball = '<svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="16" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M17 9l6 4.3-2.3 7.2h-7.4L11 13.3z" fill="#111"/><path d="M17 9V2M23 13.3l6.5-2M20.7 20.5l4 5.7M13.3 20.5l-4 5.7M11 13.3l-6.5-2" stroke="#111" stroke-width="1.4"/><ellipse cx="12" cy="9" rx="4" ry="2.4" fill="#fff" opacity=".8"/></svg>';
+    var dots = (S.pen || []).slice(-5);
+    box.innerHTML = '<div class="cs-stage pen3">' + scene +
+      '<div class="pen-dots" id="csPd">' + [0, 1, 2, 3, 4].map(function (k) { return '<i class="' + (dots[k] == null ? '' : dots[k] ? 'g' : 'm') + '"></i>'; }).join('') + '</div>' +
+      [0, 1, 2].map(function (z) { return '<button type="button" class="pen-t' + (z === 1 ? ' on' : '') + '" data-z="' + z + '" style="left:' + (28 + z * 22) + '%"></button>'; }).join('') +
+      '<span class="kp3" id="csKp">' + keeper + '</span><span class="ball3" id="csPb">' + ball + '</span></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.aim) + ' · ×1,44</label><div class="cs-seg"><button type="button" data-aim="0">← ' + esc(x.left) + '</button><button type="button" data-aim="1" class="on">' + esc(x.center) + '</button><button type="button" data-aim="2">' + esc(x.right) + ' →</button></div>');
     bindStake(box);
-    var setAim = function (a) { aim = a; box.querySelectorAll('[data-aim]').forEach(function (z) { z.classList.toggle('on', +z.getAttribute('data-aim') === a); }); };
+    var setAim = function (a) { aim = a; box.querySelectorAll('[data-aim]').forEach(function (z) { z.classList.toggle('on', +z.getAttribute('data-aim') === a); }); box.querySelectorAll('.pen-t').forEach(function (z) { z.classList.toggle('on', +z.getAttribute('data-z') === a); }); };
     box.querySelectorAll('[data-aim]').forEach(function (b) { b.addEventListener('click', function () { setAim(+b.getAttribute('data-aim')); }); });
-    box.querySelectorAll('.pz').forEach(function (z) { z.addEventListener('click', function () { setAim(+z.getAttribute('data-z')); }); });
+    box.querySelectorAll('.pen-t').forEach(function (z) { z.addEventListener('click', function () { setAim(+z.getAttribute('data-z')); }); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('penalty', { aim: aim }); if (!r) return;
-      var pb = $('csPb'), kp = $('csKp'), st = box.querySelector('.pen2'), w = st.clientWidth, h = st.clientHeight, pm = $('csPm');
-      pm.className = 'pen-msg'; pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none';
+      var pb = $('csPb'), kp = $('csKp'), st = box.querySelector('.pen3'), w = st.clientWidth, h = st.clientHeight;
+      pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none';
       await sleep(40);
       pb.style.transition = ''; kp.style.transition = '';
-      var dx = (r.view.aim - 1) * w * 0.2, dy = -(h * 0.62);
-      pb.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(.62) rotate(540deg)';
-      var kdx = (r.view.keeper - 1) * w * 0.2;
-      kp.style.transform = 'translateX(' + kdx + 'px) rotate(' + ((r.view.keeper - 1) * 52) + 'deg)';
-      await sleep(620);
-      pm.textContent = r.win > 0 ? x.goal : x.saved; pm.className = 'pen-msg on';
-      resultLine(box, r, r.win > 0 ? x.goal : x.saved);
+      var goal = r.win > 0;
+      // centre de la cible visée (en px) par rapport à la position de départ du ballon (bas, milieu)
+      var tx = (0.28 + r.view.aim * 0.22 - 0.5) * w;
+      var ty = -(h * 0.84 - h * (goal ? 0.36 : 0.43));
+      var kdx = (r.view.keeper - 1) * w * 0.22;
+      kp.style.transform = 'translateX(' + kdx + 'px) rotate(' + ((r.view.keeper - 1) * 58) + 'deg)';
+      pb.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(.42) rotate(540deg)';
+      await sleep(640);
+      if (!goal) { pb.style.transition = 'transform .45s ease-in'; pb.style.transform = 'translate(' + (tx * 1.1) + 'px,' + (ty + h * 0.16) + 'px) scale(.46) rotate(620deg)'; }
+      else st.classList.add('net-hit');
+      setTimeout(function () { st.classList.remove('net-hit'); }, 700);
+      S.pen = (S.pen || []).concat([goal ? 1 : 0]).slice(-5);
+      $('csPd').innerHTML = [0, 1, 2, 3, 4].map(function (k) { return '<i class="' + (S.pen[k] == null ? '' : S.pen[k] ? 'g' : 'm') + '"></i>'; }).join('');
+      resultLine(box, r, goal ? x.goal : x.saved);
     });
   };
 
   GAMES.colors = function (box, x) {
     var bet = 'green';
-    var nums = Array.from({ length: 10 }, function (_, i) { var c = [1, 3, 7, 9].indexOf(i) >= 0 ? 'g' : [2, 4, 6, 8].indexOf(i) >= 0 ? 'r' : (i === 0 ? 'rv' : 'gv'); return '<button type="button" data-b="n' + i + '" class="cn ' + c + '">' + i + '</button>'; }).join('');
-    box.innerHTML = '<div class="cs-stage"><div class="clr-ball" id="csClr">?</div></div><div class="cs-res"></div>' +
+    var cls = function (i) { return [1, 3, 7, 9].indexOf(i) >= 0 ? 'g' : [2, 4, 6, 8].indexOf(i) >= 0 ? 'r' : (i === 0 ? 'rv' : 'gv'); };
+    var nums = Array.from({ length: 10 }, function (_, i) { return '<button type="button" data-b="n' + i + '" class="cn ' + cls(i) + '">' + i + '</button>'; }).join('');
+    box.innerHTML = '<div class="cs-stage clr-stage"><div class="clr-ball" id="csClr">?</div></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<div class="cs-opts three"><button type="button" data-b="green" class="on b-green">' + esc(x.green) + '<small>×2</small></button><button type="button" data-b="violet" class="b-violet">' + esc(x.violet) + '<small>×4,5</small></button><button type="button" data-b="red" class="b-red">' + esc(x.red) + '<small>×2</small></button></div><div class="cs-nums">' + nums + '</div><small class="cs-lbl">' + esc(x.number) + ' ×9</small>');
     bindStake(box);
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { bet = b.getAttribute('data-b'); box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('colors', { bet: bet }); if (!r) return;
       var el = $('csClr');
-      for (var i = 0; i < 10; i++) { el.textContent = i; await sleep(70); }
+      for (var i = 0; i < 10; i++) { el.textContent = i; el.className = 'clr-ball ' + cls(i); await sleep(70); }
       var n = r.view.n; el.textContent = n;
-      el.className = 'clr-ball ' + ([1, 3, 7, 9].indexOf(n) >= 0 ? 'g' : [2, 4, 6, 8].indexOf(n) >= 0 ? 'r' : (n === 0 ? 'rv' : 'gv'));
+      el.className = 'clr-ball ' + cls(n);
       resultLine(box, r);
     });
   };
 
-  /* --- jeux en plusieurs étapes : avion, mines, hi-lo (réel ou démo ; visiteur → inscription) --- */
+  /* --- jeux en plusieurs étapes (visiteur → inscription) --- */
   function needAccount(box, x) {
     if (!guest()) return false;
     box.innerHTML = '<div class="cs-try big"><span>' + esc(x.tryNote) + '</span><button type="button" id="csSign2">' + esc(x.signup) + '</button></div>';
@@ -602,44 +570,50 @@
     return true;
   }
 
-  /* --- 3 jeux « ça monte » (même calcul serveur, décor différent) : Avion, Jet, Fusée --- */
+  /* --- 3 jeux « ça monte » (même calcul serveur, décor différent) : le personnage du jeu = celui du logo --- */
   var CRASH_THEME = {
-    crash: { col: '#ff2d55', cls: 'th-plane', sprite: function () { return planeSvg(); }, w: 78, h: 48, rot: -12 },
-    jet: { col: '#a855f7', cls: 'th-jet', sprite: function () { return jetSvg(); }, w: 62, h: 74, rot: 0 },
-    rocket: { col: '#22d3ee', cls: 'th-rocket', sprite: function () { return rocketSvg(); }, w: 46, h: 78, rot: 28 }
+    crash: { col: '#ff2d55', cls: 'th-plane', w: 78, h: 78 },
+    jet: { col: '#a855f7', cls: 'th-jet', w: 70, h: 70 },
+    rocket: { col: '#22d3ee', cls: 'th-rocket', w: 70, h: 70 }
   };
+  function histChip(v) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + '">' + v.toFixed(2) + '×</i>'; }
   function makeCrash(game) {
     return function (box, x) {
       var th = CRASH_THEME[game], g = null, off = 0;
+      S.hist = S.hist || {}; var hist = S.hist[game] = S.hist[game] || [];
       var MULT = function (s) { return Math.max(1, Math.floor(Math.exp(0.08 * Math.max(0, s)) * 100) / 100); };
       var stars = ''; for (var i = 0; i < 26; i++) stars += '<circle cx="' + ((i * 137 + 31) % 300) + '" cy="' + ((i * 71 + i * i * 13 + 7) % 165) + '" r="' + (i % 3 ? 0.8 : 1.3) + '" fill="#fff" opacity="' + (0.25 + (i % 4) * 0.12) + '"/>';
-      box.innerHTML = '<div class="cs-stage crash-stage ' + th.cls + '"><svg viewBox="0 0 300 170" preserveAspectRatio="none" class="crash-sky"><defs><linearGradient id="csArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + th.col + '" stop-opacity=".5"/><stop offset="1" stop-color="' + th.col + '" stop-opacity="0"/></linearGradient></defs>' +
-        stars + '<g stroke="rgba(255,255,255,.05)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + '</g>' +
-        '<path id="csArea" d="M10 160" fill="url(#csArea)"/><path id="csTrail" d="M10 160" fill="none" stroke="' + th.col + '" stroke-width="3.2" stroke-linecap="round"/></svg>' +
-        '<span class="plane" id="csPlane" style="width:' + th.w + 'px;height:' + th.h + 'px">' + th.sprite() + '</span><b class="crash-n" id="csCm">1.00×</b><small class="crash-hint" id="csCs"></small></div><div class="cs-res"></div>' +
+      box.innerHTML = '<div class="cs-stage crash-stage ' + th.cls + '"><i class="crash-rays"></i><div class="crash-hist" id="csHist">' + hist.map(histChip).join('') + '</div>' +
+        '<svg viewBox="0 0 300 170" preserveAspectRatio="none" class="crash-sky"><defs><linearGradient id="csAreaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + th.col + '" stop-opacity=".55"/><stop offset="1" stop-color="' + th.col + '" stop-opacity="0"/></linearGradient></defs>' +
+        stars + '<g stroke="rgba(255,255,255,.07)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + '</g>' +
+        '<path id="csArea" d="M10 160" fill="url(#csAreaG)"/><path id="csTrail" d="M10 160" fill="none" stroke="' + th.col + '" stroke-width="3.6" stroke-linecap="round"/></svg>' +
+        '<span class="plane" id="csPlane" style="width:' + th.w + 'px;height:' + th.h + 'px">' + ART.obj(game) + '</span><b class="crash-n" id="csCm">1.00×</b><small class="crash-hint" id="csCs"></small></div><div class="cs-res"></div>' +
         (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.auto) + '</label><div class="cs-stake"><input id="csAuto" inputmode="decimal" placeholder="—"></div>'));
       if (guest()) { needAccount($('csNeed'), x); return; }
       bindStake(box);
       var btn = $('csGo'), plane = $('csPlane');
       var draw = function (m, s) {
         $('csCm').textContent = m.toFixed(2) + '×';
-        var px = Math.min(270, 10 + s * 18), py = Math.max(16, 160 - (m - 1) * 40);
+        var px = Math.min(262, 10 + s * 18), py = Math.max(22, 160 - (m - 1) * 40);
         var st = $('csTrail').ownerSVGElement.getBoundingClientRect(), kx = st.width / 300, ky = st.height / 170;
         var d = 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py;
         $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
-        plane.style.transform = 'translate(' + (px * kx - th.w * 0.55) + 'px,' + (py * ky - th.h * 0.75) + 'px) rotate(' + th.rot + 'deg)';
+        plane.style.transform = 'translate(' + (px * kx - th.w * 0.22) + 'px,' + (py * ky - th.h * 0.72) + 'px)';
       };
       var finish = function (r) {
         stopAll(); g = r;
+        box.querySelector('.crash-stage').classList.remove('flying');
         if (!(r.out > 0)) { plane.classList.add('gone'); }
         $('csCm').className = 'crash-n ' + (r.out > 0 ? 'w' : 'l');
         $('csCm').textContent = (r.out > 0 ? r.out : r.c).toFixed(2) + '×';
+        if (r.c) { hist.unshift(+r.c); if (hist.length > 12) hist.length = 12; $('csHist').innerHTML = hist.map(histChip).join(''); }
         resultLine(box, r, r.out > 0 ? fmt(x.cashed, { x: r.out.toFixed(2), w: m2(r.win) }) : fmt(x.boom, { x: r.c.toFixed(2) }));
         btn.textContent = x.bet; btn.classList.remove('cash'); btn.disabled = false;
       };
       var fly = function (r) {
         g = r; off = r.now - Date.now() / 1000;
         plane.classList.remove('gone');
+        box.querySelector('.crash-stage').classList.add('flying');
         $('csCm').className = 'crash-n'; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';
         btn.classList.add('cash');
         var tick = function () {
@@ -670,7 +644,7 @@
   GAMES.jet = makeCrash('jet');
   GAMES.rocket = makeCrash('rocket');
 
-  /* --- Pomme de la fortune : 10 étages, 5 pommes par étage, 1 pourrie ; on encaisse quand on veut --- */
+  /* --- Verger d'or : 10 étages, pommes d'or ; le ver = perdu ; on encaisse quand on veut --- */
   GAMES.apple = function (box, x) {
     var g = null;
     var rows = ''; for (var r = 9; r >= 0; r--) rows += '<div class="ap-row" data-row="' + r + '"><em></em>' + [0, 1, 2, 3, 4].map(function (c) { return '<button type="button" data-c="' + c + '"></button>'; }).join('') + '</div>';
@@ -691,10 +665,10 @@
         row.classList.toggle('past', k < r.k);
         row.querySelectorAll('button').forEach(function (b) {
           var c = +b.getAttribute('data-c'); b.className = ''; b.innerHTML = '';
-          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.innerHTML = appleSvg(true); }
+          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.innerHTML = ART.sym('goldapple'); }
           if (r.done && r.bad) {
             var bk = [].concat(r.bad[k]);
-            if (bk.indexOf(c) >= 0 && (k <= r.k)) { b.className = (r.boom === k) ? 'rot boom' : 'rot'; b.innerHTML = appleSvg(false); }
+            if (bk.indexOf(c) >= 0 && (k <= r.k)) { b.className = (r.boom === k) ? 'rot boom' : 'rot'; b.innerHTML = ART.sym('worm'); }
           }
         });
       });
@@ -721,18 +695,18 @@
 
   GAMES.mines = function (box, x) {
     var g = null, mines = 3;
-    box.innerHTML = '<div class="cs-stage"><div class="mn" id="csMn">' + Array.from({ length: 25 }, function (_, i) { return '<button type="button" data-c="' + i + '"></button>'; }).join('') + '</div><small class="cs-lbl" id="csMnInfo"></small></div><div class="cs-res"></div>' +
-      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.minesN) + '</label><div class="cs-seg">' + [1, 3, 5, 10].map(function (n) { return '<button type="button" data-m="' + n + '" class="' + (n === 3 ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>'));
+    box.innerHTML = '<div class="cs-stage mn-stage"><div class="mn-info"><span>' + esc(x.minesN) + ' <b id="csMnN">3</b></span><span id="csMnInfo"></span></div><div class="mn" id="csMn">' + Array.from({ length: 25 }, function (_, i) { return '<button type="button" data-c="' + i + '"></button>'; }).join('') + '</div></div><div class="cs-res"></div>' +
+      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<div class="cs-seg">' + [1, 3, 5, 10].map(function (n) { return '<button type="button" data-m="' + n + '" class="' + (n === 3 ? 'on' : '') + '">' + n + ' 💣</button>'; }).join('') + '</div>'));
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
-    box.querySelectorAll('.cs-seg [data-m]').forEach(function (b) { b.addEventListener('click', function () { if (g && !g.done) return; mines = +b.getAttribute('data-m'); box.querySelectorAll('.cs-seg [data-m]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
+    box.querySelectorAll('.cs-seg [data-m]').forEach(function (b) { b.addEventListener('click', function () { if (g && !g.done) return; mines = +b.getAttribute('data-m'); $('csMnN').textContent = mines; box.querySelectorAll('.cs-seg [data-m]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     var paint = function (r) {
       g = r;
       box.querySelectorAll('#csMn button').forEach(function (b) {
-        var c = +b.getAttribute('data-c'); b.className = ''; b.textContent = '';
-        if (r.open && r.open.indexOf(c) >= 0) { b.className = 'ok'; b.textContent = '💎'; }
-        if (r.done && r.mines && r.mines.indexOf(c) >= 0) { b.className = c === r.boom ? 'boom' : 'mine'; b.textContent = '💣'; }
+        var c = +b.getAttribute('data-c'); b.className = ''; b.innerHTML = '';
+        if (r.open && r.open.indexOf(c) >= 0) { b.className = 'ok'; b.innerHTML = ART.sym('gem'); }
+        if (r.done && r.mines && r.mines.indexOf(c) >= 0) { b.className = c === r.boom ? 'boom' : 'mine'; b.innerHTML = ART.sym('bomb'); }
       });
       if (r.done) { resultLine(box, r, r.mult ? '×' + r.mult : ''); btn.textContent = x.bet; btn.classList.remove('cash'); $('csMnInfo').textContent = ''; }
       else {
@@ -752,18 +726,26 @@
     multi('mines', 'state', null, true).then(function (r) { if (r && !r.done) paint(r); });
   };
 
-  var CARD = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  var SUITS = ['♠', '♥', '♦', '♣'];
+  function cardHtml(v, red, big) {
+    var r = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][v] || '?';
+    var s = SUITS[(v + (red ? 1 : 0)) % 4];
+    return '<span class="pc' + (big ? ' big' : '') + (s === '♥' || s === '♦' ? ' rd' : '') + '"><b>' + r + '</b><i>' + s + '</i></span>';
+  }
+  function cardBack() { return '<span class="pc back"></span>'; }
+  /* Hi-Lo : table orange, grosse carte + paquet, ligne des cartes déjà sorties */
   GAMES.hilo = function (box, x) {
     var g = null;
-    box.innerHTML = '<div class="cs-stage"><div class="hl"><span class="card" id="csCard">?</span></div><small class="cs-lbl" id="csHlInfo"></small><div class="hl-row" id="csHlRow"></div></div><div class="cs-res"></div>' +
-      (guest() ? '<div id="csNeed"></div>' : '<div class="cs-opts two" id="csHlBtns" hidden><button type="button" id="csHi"></button><button type="button" id="csLo"></button></div>' + stakePanel());
+    box.innerHTML = '<div class="cs-stage hl-stage"><div class="hl-row" id="csHlRow"></div><div class="hl"><span class="hl-deck">' + cardBack() + '</span><span id="csCard">' + cardHtml(1, false, true) + '</span></div><small class="cs-lbl" id="csHlInfo"></small></div><div class="cs-res"></div>' +
+      (guest() ? '<div id="csNeed"></div>' : '<div class="cs-opts two hl-btns" id="csHlBtns" hidden><button type="button" id="csHi"></button><button type="button" id="csLo"></button></div>' + stakePanel());
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
     var paint = function (r) {
       g = r;
-      $('csCard').textContent = CARD[r.card] || '?';
-      $('csHlRow').innerHTML = (r.cards || []).slice(0, -1).map(function (c) { return '<span>' + CARD[c] + '</span>'; }).join('');
+      var cs = r.cards || [];
+      $('csCard').innerHTML = cardHtml(r.card || 1, cs.length % 2 === 1, true);
+      $('csHlRow').innerHTML = cs.slice(0, -1).slice(-7).map(function (c, i) { return cardHtml(c, i % 2 === 1, false); }).join('');
       if (r.done) {
         $('csHlBtns').hidden = true; btn.textContent = x.again; btn.classList.remove('cash');
         resultLine(box, r, r.mult > 1 ? '×' + r.mult : ''); $('csHlInfo').textContent = '';
@@ -784,32 +766,27 @@
     multi('hilo', 'state', null, true).then(function (r) { if (r && !r.done) paint(r); });
   };
 
-  /* ===== v2693 — 6 nouveaux jeux ===== */
-  var SUITS = ['♠', '♥', '♦', '♣'];
-  function cardHtml(v, red, big) {
-    var r = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][v] || '?';
-    var s = SUITS[(v + (red ? 1 : 0)) % 4];
-    return '<span class="pc' + (big ? ' big' : '') + (s === '♥' || s === '♦' ? ' rd' : '') + '"><b>' + r + '</b><i>' + s + '</i></span>';
-  }
+  /* Dragon Tigre : tapis de table, côté Dragon bleu, côté Tigre orange */
   GAMES.dragon = function (box, x) {
     var bet = 'dragon';
-    box.innerHTML = '<div class="cs-stage dt-stage"><div class="dt"><div class="dt-side d"><em>🐉</em><b>' + esc(x.dragonN) + '</b><div id="csDtD" class="dt-card">' + cardBack() + '</div></div><span class="dt-vs">VS</span><div class="dt-side t"><em>🐯</em><b>' + esc(x.tigerN) + '</b><div id="csDtT" class="dt-card">' + cardBack() + '</div></div></div></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-opts three"><button type="button" data-b="dragon" class="on">🐉 ' + esc(x.dragonN) + '<small>×2</small></button><button type="button" data-b="tie">' + esc(x.tie) + '<small>×12</small></button><button type="button" data-b="tiger">🐯 ' + esc(x.tigerN) + '<small>×2</small></button></div>');
+    box.innerHTML = '<div class="cs-stage dt-stage"><div class="dt"><div class="dt-side d"><b>' + esc(x.dragonN) + '</b><div id="csDtD" class="dt-card">' + cardBack() + '</div></div><span class="dt-vs">VS</span><div class="dt-side t"><b>' + esc(x.tigerN) + '</b><div id="csDtT" class="dt-card">' + cardBack() + '</div></div></div><div class="dt-tie">' + esc(x.tie) + ' ×12</div></div><div class="cs-res"></div>' +
+      stakePanel(x.bet, '<div class="cs-opts three"><button type="button" data-b="dragon" class="on b-dragon">' + esc(x.dragonN) + '<small>×2</small></button><button type="button" data-b="tie" class="b-tie">' + esc(x.tie) + '<small>×12</small></button><button type="button" data-b="tiger" class="b-tiger">' + esc(x.tigerN) + '<small>×2</small></button></div>');
     bindStake(box);
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { bet = b.getAttribute('data-b'); box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('dragon', { bet: bet }); if (!r) return;
-      $('csDtD').innerHTML = cardBack(); $('csDtT').innerHTML = cardBack();
-      await sleep(250); $('csDtD').innerHTML = cardHtml(r.view.d, false, true);
-      await sleep(450); $('csDtT').innerHTML = cardHtml(r.view.t, true, true);
+      var D = $('csDtD'), Tg = $('csDtT'); D.innerHTML = cardBack(); Tg.innerHTML = cardBack(); D.parentElement.classList.remove('won'); Tg.parentElement.classList.remove('won');
+      await sleep(250); D.innerHTML = cardHtml(r.view.d, false, true);
+      await sleep(450); Tg.innerHTML = cardHtml(r.view.t, true, true);
+      if (r.view.d > r.view.t) D.parentElement.classList.add('won'); else if (r.view.t > r.view.d) Tg.parentElement.classList.add('won');
       resultLine(box, r, r.view.d === r.view.t ? x.tie : '');
     });
   };
-  function cardBack() { return '<span class="pc back"></span>'; }
+  /* Baccara : tapis bleu nuit, Joueur (bleu) / Banque (rouge) */
   GAMES.baccarat = function (box, x) {
     var bet = 'player';
-    box.innerHTML = '<div class="cs-stage bc-stage"><div class="bc"><div class="bc-h"><b>' + esc(x.player) + ' <i id="csBcTp"></i></b><div id="csBcP" class="bc-cards"></div></div><div class="bc-h"><b>' + esc(x.banker) + ' <i id="csBcTb"></i></b><div id="csBcB" class="bc-cards"></div></div></div></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-opts three"><button type="button" data-b="player" class="on">' + esc(x.player) + '<small>×1,96</small></button><button type="button" data-b="tie">' + esc(x.tie) + '<small>×9</small></button><button type="button" data-b="banker">' + esc(x.banker) + '<small>×1,92</small></button></div>');
+    box.innerHTML = '<div class="cs-stage bc-stage"><div class="bc"><div class="bc-h p"><b>' + esc(x.player) + ' <i id="csBcTp"></i></b><div id="csBcP" class="bc-cards"></div></div><div class="bc-h b"><b>' + esc(x.banker) + ' <i id="csBcTb"></i></b><div id="csBcB" class="bc-cards"></div></div></div></div><div class="cs-res"></div>' +
+      stakePanel(x.bet, '<div class="cs-opts three"><button type="button" data-b="player" class="on b-player">' + esc(x.player) + '<small>×1,96</small></button><button type="button" data-b="tie" class="b-tie">' + esc(x.tie) + '<small>×9</small></button><button type="button" data-b="banker" class="b-banker">' + esc(x.banker) + '<small>×1,92</small></button></div>');
     bindStake(box);
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { bet = b.getAttribute('data-b'); box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
@@ -824,19 +801,23 @@
   };
   function dieSvg(n) {
     var P = { 1: [[12, 12]], 2: [[7, 7], [17, 17]], 3: [[6, 6], [12, 12], [18, 18]], 4: [[7, 7], [17, 7], [7, 17], [17, 17]], 5: [[6, 6], [18, 6], [12, 12], [6, 18], [18, 18]], 6: [[7, 6], [17, 6], [7, 12], [17, 12], [7, 18], [17, 18]] }[n] || [];
-    return '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/>' + P.map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.2" fill="' + (n === 1 ? '#e11d48' : '#1f2937') + '"/>'; }).join('') + '</svg>';
+    return '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/><rect x="2" y="2" width="20" height="8" rx="4" fill="#fff" opacity=".5"/>' + P.map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.2" fill="' + (n === 1 || n === 4 ? '#e11d48' : '#1f2937') + '"/>'; }).join('') + '</svg>';
   }
+  /* Sic Bo : gobelet doré, dôme en verre qui se soulève, 3 dés */
   GAMES.sicbo = function (box, x) {
     var bet = 'small';
-    box.innerHTML = '<div class="cs-stage"><div class="sb" id="csSb">' + [1, 2, 3].map(function (n) { return '<span class="die">' + dieSvg(n * 2) + '</span>'; }).join('') + '</div><b class="sb-sum" id="csSbS"></b></div><div class="cs-res"></div>' +
+    box.innerHTML = '<div class="cs-stage sb-stage"><div class="sb-shaker" id="csSbSh"><i class="sb-dome"></i><div class="sb" id="csSb">' + [1, 2, 3].map(function (n) { return '<span class="die">' + dieSvg(n * 2) + '</span>'; }).join('') + '</div><i class="sb-base"></i></div><b class="sb-sum" id="csSbS"></b></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<div class="cs-opts two"><button type="button" data-b="small" class="on">' + esc(x.small) + ' (4–10)<small>×2</small></button><button type="button" data-b="big">' + esc(x.big) + ' (11–17)<small>×2</small></button></div>');
     bindStake(box);
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { bet = b.getAttribute('data-b'); box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
       var r = await play('sicbo', { bet: bet }); if (!r) return;
-      var d = box.querySelectorAll('#csSb .die');
-      for (var t = 0; t < 9; t++) { d.forEach(function (e) { e.innerHTML = dieSvg(1 + Math.floor(Math.random() * 6)); e.classList.toggle('roll'); }); await sleep(70); }
-      d.forEach(function (e, i) { e.innerHTML = dieSvg(r.view.dice[i]); e.classList.remove('roll'); });
+      var sh = $('csSbSh'), d = box.querySelectorAll('#csSb .die');
+      sh.classList.remove('open'); sh.classList.add('shake'); $('csSbS').textContent = '';
+      for (var t = 0; t < 9; t++) { d.forEach(function (e) { e.innerHTML = dieSvg(1 + Math.floor(Math.random() * 6)); }); await sleep(80); }
+      d.forEach(function (e, i) { e.innerHTML = dieSvg(r.view.dice[i]); });
+      sh.classList.remove('shake'); sh.classList.add('open');
+      await sleep(350);
       $('csSbS').textContent = r.view.sum + (r.view.triple ? ' · ' + x.triple : '');
       resultLine(box, r);
     });
@@ -847,9 +828,10 @@
         : '<path d="M6 24c0-10 6-16 14-16h24c8 0 14 6 14 16z" fill="#b45309"/>') +
       '<path d="M6 24h52" stroke="#facc15" stroke-width="3"/><path d="M32 8v46" stroke="#facc15" stroke-width="3" opacity=".7"/><rect x="27" y="26" width="10" height="10" rx="2" fill="#facc15"/></svg>';
   }
+  /* Trésor : 3 coffres sur une plage */
   GAMES.chests = function (box, x) {
     var pick = 1;
-    box.innerHTML = '<div class="cs-stage"><div class="ch" id="csCh">' + [0, 1, 2].map(function (i) { return '<button type="button" data-c="' + i + '" class="' + (i === 1 ? 'on' : '') + '">' + chestSvg(false) + '</button>'; }).join('') + '</div><small class="cs-lbl">' + esc(x.pickChest) + ' · ×2,85</small></div><div class="cs-res"></div>' + stakePanel(x.bet);
+    box.innerHTML = '<div class="cs-stage ch-stage"><div class="ch" id="csCh">' + [0, 1, 2].map(function (i) { return '<button type="button" data-c="' + i + '" class="' + (i === 1 ? 'on' : '') + '">' + chestSvg(false) + '</button>'; }).join('') + '</div><small class="cs-lbl">' + esc(x.pickChest) + ' · ×2,85</small></div><div class="cs-res"></div>' + stakePanel(x.bet);
     bindStake(box);
     box.querySelectorAll('#csCh button').forEach(function (b) { b.addEventListener('click', function () { pick = +b.getAttribute('data-c'); box.querySelectorAll('#csCh button').forEach(function (z) { z.classList.toggle('on', z === b); z.innerHTML = chestSvg(false); }); }); });
     $('csGo').addEventListener('click', async function () {
@@ -860,11 +842,12 @@
       resultLine(box, r);
     });
   };
+  /* La Tour : immeuble dans la ville, on monte étage par étage (3 fenêtres, 1 piège) */
   GAMES.tower = function (box, x) {
     var g = null, rows = '';
     var mult = function (k) { return k < 1 ? 0 : Math.floor(0.97 / Math.pow(2 / 3, k) * 100) / 100; };
     for (var r = 7; r >= 0; r--) rows += '<div class="tw-row" data-row="' + r + '"><em>×' + mult(r + 1).toFixed(2) + '</em>' + [0, 1, 2].map(function (c) { return '<button type="button" data-c="' + c + '"></button>'; }).join('') + '</div>';
-    box.innerHTML = '<div class="cs-stage tw-stage"><div class="tw" id="csTw">' + rows + '</div></div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
+    box.innerHTML = '<div class="cs-stage tw-stage"><i class="tw-city"></i><div class="tw" id="csTw"><i class="tw-roof"></i>' + rows + '<i class="tw-door"></i></div></div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
@@ -874,13 +857,13 @@
         var k = +row.getAttribute('data-row');
         row.classList.toggle('cur', !r.done && k === r.k); row.classList.toggle('past', k < r.k);
         row.querySelectorAll('button').forEach(function (b) {
-          var c = +b.getAttribute('data-c'); b.className = ''; b.textContent = '';
-          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.textContent = '💎'; }
-          if (r.done && r.traps && r.traps[k] === c && k <= r.k) { b.className = (r.boom === k) ? 'trap boom' : 'trap'; b.textContent = '💀'; }
+          var c = +b.getAttribute('data-c'); b.className = ''; b.innerHTML = '';
+          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.innerHTML = ART.sym('gem'); }
+          if (r.done && r.traps && r.traps[k] === c && k <= r.k) { b.className = (r.boom === k) ? 'trap boom' : 'trap'; b.innerHTML = ART.sym('skull'); }
         });
       });
       if (r.done) { resultLine(box, r, r.win > 0 ? '×' + mult(r.k).toFixed(2) : ''); btn.textContent = x.bet; btn.classList.remove('cash'); }
-      else { btn.classList.add('cash'); btn.textContent = r.k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.open; }
+      else { btn.classList.add('cash'); btn.textContent = r.k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.open; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = ''; }
     };
     btn.addEventListener('click', async function () {
       if (g && !g.done) { if (!g.k) return; var c = await multi('tower', 'cash'); if (c) paint(c); return; }
@@ -891,16 +874,18 @@
     });
     multi('tower', 'state', null, true).then(function (r) { if (r && !r.done) paint(r); });
   };
+  /* Ballon : ciel bleu, nuages, gros ballon, gros bouton rond pour gonfler */
   GAMES.balloon = function (box, x) {
     var g = null;
-    box.innerHTML = '<div class="cs-stage bl-stage"><div class="bl" id="csBl"><svg viewBox="0 0 100 130"><defs><radialGradient id="blG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fda4af"/><stop offset=".6" stop-color="#e11d48"/><stop offset="1" stop-color="#881337"/></radialGradient></defs><ellipse cx="50" cy="52" rx="40" ry="48" fill="url(#blG)"/><ellipse cx="36" cy="32" rx="9" ry="14" fill="#fff" opacity=".35"/><path d="M46 99l4 6 4-6z" fill="#881337"/><path d="M50 105c-4 8 6 14 0 24" stroke="#e2e8f0" stroke-width="1.5" fill="none"/></svg></div><b class="crash-n" id="csBlM">1.00×</b></div><div class="cs-res"></div>' +
-      (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<button type="button" class="cs-pump" id="csPump" disabled>💨 ' + esc(x.pump) + '</button>'));
+    box.innerHTML = '<div class="cs-stage bl-stage"><i class="bl-cloud c1"></i><i class="bl-cloud c2"></i><i class="bl-cloud c3"></i><b class="crash-n" id="csBlM">1.00×</b><div class="bl" id="csBl"><svg viewBox="0 0 100 130"><defs><radialGradient id="blG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fdba74"/><stop offset=".6" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></radialGradient></defs><path d="M50 4c22 0 38 17 38 40 0 28-22 47-38 51-16-4-38-23-38-51C12 21 28 4 50 4z" fill="url(#blG)"/><path d="M30 26c4-9 12-13 19-13" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".6" fill="none"/><ellipse cx="32" cy="42" rx="5" ry="9" fill="#fff" opacity=".3"/><path d="M45 95l5 8 5-8z" fill="#9a3412"/><path d="M50 103c-5 7 5 12 0 19s3 6 1 8" stroke="#fff" stroke-width="1.6" fill="none"/></svg></div>' +
+      (guest() ? '' : '<button type="button" class="cs-pump" id="csPump" disabled aria-label="' + esc(x.pump) + '"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5c0 3.6-2.5 6.5-6 6.5h-1c-2 0-3.4-.9-4.4-2.4L4 14.6a1.5 1.5 0 0 1 2.4-1.8L9 15" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>') +
+      '</div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo'), pump = $('csPump'), bl = $('csBl');
     var paint = function (r) {
       g = r;
-      var sc = 1 + Math.min(1.2, r.k * 0.07);
+      var sc = 1 + Math.min(1.1, r.k * 0.07);
       bl.style.transform = 'scale(' + sc + ')';
       $('csBlM').textContent = (r.k ? r.mult : 1).toFixed(2) + '×';
       if (r.done) {
@@ -911,6 +896,7 @@
         bl.classList.remove('pop'); $('csBlM').className = 'crash-n';
         pump.disabled = false; btn.classList.toggle('cash', r.k > 0);
         btn.textContent = r.k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.pumpFirst;
+        box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';
       }
     };
     pump.addEventListener('click', async function () { if (!g || g.done) return; pump.disabled = true; var r = await multi('balloon', 'pump'); if (r) paint(r); else pump.disabled = false; });
@@ -920,6 +906,27 @@
       var r = await multi('balloon', 'start'); if (r) paint(r);
     });
     multi('balloon', 'state', null, true).then(function (r) { if (r && !r.done) paint(r); });
+  };
+  /* Darts (25e jeu) : cible de fléchettes ; centre ×20, rouge ×5, vert ×2, clair ×1, bord ×0 — tiré par le serveur */
+  var DARTS = [[20, '#FACC15', 0, 11], [5, '#DC2626', 15, 33], [2, '#16A34A', 37, 63], [1, '#F5F5DC', 67, 95], [0, '#1F2937', 99, 116]];
+  GAMES.darts = function (box, x) {
+    var rings = '';
+    [[120, '#111827'], [96, '#F5F5DC'], [65, '#16A34A'], [35, '#DC2626'], [13, '#FACC15']].forEach(function (rg) { rings += '<circle r="' + rg[0] + '" fill="' + rg[1] + '"/>'; });
+    var spokes = ''; for (var i = 0; i < 20; i++) spokes += '<path d="M0 0L' + (96 * Math.sin(i * 18 * Math.PI / 180)).toFixed(1) + ' ' + (-96 * Math.cos(i * 18 * Math.PI / 180)).toFixed(1) + '" stroke="rgba(0,0,0,.25)" stroke-width="1"/>';
+    var lbl = '<g font-family="system-ui" font-weight="900" text-anchor="middle"><text y="5" font-size="11" fill="#111">×20</text><text y="-20" font-size="10" fill="#fff">×5</text><text y="-46" font-size="11" fill="#fff">×2</text><text y="-76" font-size="11" fill="#111">×1</text><text y="-103" font-size="10" fill="#94A3B8">×0</text></g>';
+    box.innerHTML = '<div class="cs-stage dr-stage"><div class="dr-board"><svg viewBox="-124 -124 248 248"><circle r="124" fill="#7C2D12"/>' + rings + spokes + lbl + '</svg><span class="dr-dart" id="csDart"><svg viewBox="0 0 20 60"><path d="M10 0l2 18h-4z" fill="#CBD5E1"/><rect x="7" y="18" width="6" height="22" rx="2" fill="#334155"/><path d="M10 40l9 18-9-6-9 6z" fill="#F59E0B"/></svg></span></div></div><div class="cs-res"></div>' + stakePanel(x.bet);
+    bindStake(box);
+    $('csGo').addEventListener('click', async function () {
+      var r = await play('darts', {}); if (!r) return;
+      var z = DARTS[r.view.z] || DARTS[4], a = (r.view.a || 0) * Math.PI / 180, rad = z[2] + (z[3] - z[2]) * 0.5;
+      var d = $('csDart'), board = d.parentElement, s = board.clientWidth / 248;
+      d.style.transition = 'none'; d.style.transform = 'translate(-50%,0) translate(0,' + (board.clientHeight * 0.6) + 'px) scale(1.8)'; d.style.opacity = '1';
+      await sleep(40);
+      d.style.transition = 'transform .5s cubic-bezier(.2,.7,.3,1)';
+      d.style.transform = 'translate(-50%,0) translate(' + (rad * Math.sin(a) * s).toFixed(1) + 'px,' + (-rad * Math.cos(a) * s).toFixed(1) + 'px) scale(1)';
+      await sleep(560);
+      resultLine(box, r, '×' + r.mult);
+    });
   };
 
   /* ---------- bouton « Casino » de la barre du haut ---------- */

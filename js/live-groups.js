@@ -8,18 +8,21 @@
     fr: { title: 'Mes groupes', sub: 'Discute à plusieurs', create: 'Créer un groupe', namePh: 'Nom du groupe (ex. Les traders d’Abidjan)', go: 'Créer', none: 'Tu n’as pas encore de groupe. Crée le tien et invite tes amis avec un lien !',
       invite: 'Inviter', members: 'Membres', leave: 'Quitter', leaveQ: 'Quitter ce groupe ?', copied: 'Lien copié ✓ Envoie-le à tes amis (WhatsApp, Telegram…)', shareText: 'Rejoins mon groupe sur OROLADO : ',
       n: '{n} membres', n1: '1 membre', owner: 'créateur', kick: 'Retirer', kickQ: 'Retirer {n} du groupe ?', ph: 'Écris au groupe…', joined: 'Bienvenue dans le groupe {n} !', login: 'Inscris-toi pour rejoindre ce groupe',
-      gName: 'Donne un nom à ton groupe (2 lettres minimum).', gGone: 'Ce groupe n’est plus disponible.', gFull: 'Ce groupe est complet.', tooMany: 'Limite atteinte, réessaie plus tard.', badImg: 'Photo refusée.', fail: 'Échec, réessaie.', back: 'Mes groupes' },
+      gName: 'Donne un nom à ton groupe (2 lettres minimum).', gGone: 'Ce groupe n’est plus disponible.', gFull: 'Ce groupe est complet.', tooMany: 'Limite atteinte, réessaie plus tard.', badImg: 'Photo refusée.', fail: 'Échec, réessaie.', back: 'Mes groupes',
+      tapInfo: 'Touche ici pour les infos du groupe', group: 'Groupe', addMem: 'Ajouter des membres', copyLink: 'Copier le lien', share: 'Partager', admin: 'Admin', exit: 'Quitter le groupe', you: 'Toi', chat: 'Discussion' },
     en: { title: 'My groups', sub: 'Chat with many friends', create: 'Create a group', namePh: 'Group name (e.g. Lagos traders)', go: 'Create', none: 'You have no group yet. Create yours and invite your friends with a link!',
       invite: 'Invite', members: 'Members', leave: 'Leave', leaveQ: 'Leave this group?', copied: 'Link copied ✓ Send it to your friends (WhatsApp, Telegram…)', shareText: 'Join my group on OROLADO: ',
       n: '{n} members', n1: '1 member', owner: 'creator', kick: 'Remove', kickQ: 'Remove {n} from the group?', ph: 'Write to the group…', joined: 'Welcome to the group {n}!', login: 'Sign up to join this group',
-      gName: 'Give your group a name (at least 2 letters).', gGone: 'This group is no longer available.', gFull: 'This group is full.', tooMany: 'Limit reached, try again later.', badImg: 'Photo refused.', fail: 'Failed, try again.', back: 'My groups' },
+      gName: 'Give your group a name (at least 2 letters).', gGone: 'This group is no longer available.', gFull: 'This group is full.', tooMany: 'Limit reached, try again later.', badImg: 'Photo refused.', fail: 'Failed, try again.', back: 'My groups',
+      tapInfo: 'Tap here for group info', group: 'Group', addMem: 'Add members', copyLink: 'Copy link', share: 'Share', admin: 'Admin', exit: 'Exit group', you: 'You', chat: 'Chat' },
     zh: { title: '我的群组', sub: '多人聊天', create: '创建群组', namePh: '群组名称（例如：交易达人群）', go: '创建', none: '你还没有群组。创建一个，用链接邀请好友吧！',
       invite: '邀请', members: '成员', leave: '退出', leaveQ: '退出这个群组？', copied: '链接已复制 ✓ 发给你的好友（WhatsApp、Telegram…）', shareText: '加入我在 OROLADO 的群组：',
       n: '{n} 位成员', n1: '1 位成员', owner: '创建者', kick: '移除', kickQ: '将 {n} 移出群组？', ph: '给群组发消息…', joined: '欢迎加入群组 {n}！', login: '注册即可加入该群组',
-      gName: '请给群组起个名字（至少 2 个字）。', gGone: '该群组已失效。', gFull: '该群组已满。', tooMany: '已达上限，请稍后再试。', badImg: '照片无法发送。', fail: '失败，请重试。', back: '我的群组' }
+      gName: '请给群组起个名字（至少 2 个字）。', gGone: '该群组已失效。', gFull: '该群组已满。', tooMany: '已达上限，请稍后再试。', badImg: '照片无法发送。', fail: '失败，请重试。', back: '我的群组',
+      tapInfo: '点击查看群组信息', group: '群组', addMem: '添加成员', copyLink: '复制链接', share: '分享', admin: '管理员', exit: '退出群组', you: '你', chat: '聊天' }
   };
   (D6.LIVE_T = D6.LIVE_T || {}).groups = T;
-  function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return T[l] || T.en; }
+  function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, T.en, T[l] || {}); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function guest() { return document.documentElement.classList.contains('oro-guest') || !(D6.Api && D6.Api.token && D6.Api.token()); }
   function toast(m, k) { if (D6.App && D6.App.toast) D6.App.toast(m, k || 'ok'); }
@@ -83,33 +86,13 @@
     var j = await call('gGet', { gid: gid });
     if (!j || !j.ok) { toast(x.gGone, 'err'); list(); return; }
     cur = j.g;
-    box.innerHTML = '<div class="lf-top"><button type="button" class="lf-back" id="lgBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="lf-av lg-emo">' + esc(cur.emoji) + '</span><div class="lf-who"><b>' + esc(cur.name) + '</b><small>' + esc(cur.n === 1 ? x.n1 : x.n.replace('{n}', cur.n)) + '</small></div></div>' +
-      '<div class="lg-acts"><button type="button" id="lgInv">🔗 ' + esc(x.invite) + '</button><button type="button" id="lgMem">👥 ' + esc(x.members) + '</button><button type="button" id="lgLeave">🚪 ' + esc(x.leave) + '</button></div>' +
-      '<div class="lg-mem" id="lgMemBox" hidden></div><div class="live-msgs" id="lgMsgs"></div>' +
+    box.innerHTML = '<div class="lf-top"><button type="button" class="lf-back" id="lgBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="lg-head" id="lgHead"><span class="lf-av lg-emo">' + esc(cur.emoji) + '</span><span class="lf-who"><b>' + esc(cur.name) + '</b><small>' + esc(x.tapInfo) + '</small></span></button></div>' +
+      '<div class="lg-info" id="lgInfo" hidden></div><div class="live-msgs" id="lgMsgs"></div>' +
       '<form class="live-send" id="lgSend" autocomplete="off"><label class="live-cam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg><input type="file" id="lgFile" accept="image/*" hidden></label>' +
       '<div class="live-in-wrap"><div class="live-prev" id="lgPrev" hidden></div><textarea id="lgText" rows="1" maxlength="1000" placeholder="' + esc(x.ph) + '"></textarea></div><button type="submit" class="live-go" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg></button></form>';
     paintMsgs(cur.msgs);
     $('lgBack').addEventListener('click', list);
-    $('lgInv').addEventListener('click', async function () {
-      var link = cur.link;
-      try { if (navigator.share) { await navigator.share({ text: x.shareText + cur.name, url: link }); return; } } catch (e) { /* ignore */ }
-      try { await navigator.clipboard.writeText(x.shareText + cur.name + ' ' + link); } catch (e) { /* ignore */ }
-      toast(x.copied);
-    });
-    $('lgMem').addEventListener('click', function () {
-      var mb = $('lgMemBox'); mb.hidden = !mb.hidden;
-      mb.innerHTML = cur.members.map(function (m) {
-        return '<div class="lg-m"><span class="lf-av">' + esc((m.name || '?').charAt(0).toUpperCase()) + '</span><b>' + esc(m.name) + (m.owner ? ' · <i>' + esc(x.owner) + '</i>' : '') + '</b>' +
-          (cur.owner && !m.owner ? '<button type="button" data-k="' + esc(m.id) + '" data-n="' + esc(m.name) + '">' + esc(x.kick) + '</button>' : '') + '</div>';
-      }).join('');
-      mb.querySelectorAll('[data-k]').forEach(function (b) {
-        b.addEventListener('click', async function () {
-          if (!window.confirm(x.kickQ.replace('{n}', b.getAttribute('data-n')))) return;
-          await call('gKick', { gid: cur.id, id: b.getAttribute('data-k') }); openGroup(cur.id);
-        });
-      });
-    });
-    $('lgLeave').addEventListener('click', async function () { if (!window.confirm(x.leaveQ)) return; await call('gLeave', { gid: cur.id }); list(); });
+    $('lgHead').addEventListener('click', info);
     $('lgText').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(110, this.scrollHeight) + 'px'; });
     $('lgFile').addEventListener('change', async function () {
       var f = this.files && this.files[0]; this.value = ''; if (!f) return;
@@ -126,6 +109,43 @@
     stop();
     // gros groupe = lecture moins fréquente (protège le serveur)
     poll = setInterval(function () { if (!document.hidden) refresh(); }, cur && cur.n > 200 ? 12000 : 6000);
+  }
+  /* page d'infos du groupe (comme WhatsApp) : grande photo, nom, nombre de membres, boutons ronds, liste des membres, Quitter en rouge */
+  var AVC = ['#F97316', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#14B8A6', '#EAB308', '#EF4444'];
+  function avc(n) { var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return AVC[h % AVC.length]; }
+  async function shareLink(copyOnly) {
+    var x = X(), link = cur.link;
+    if (!copyOnly) { try { if (navigator.share) { await navigator.share({ text: x.shareText + cur.name, url: link }); return; } } catch (e) { return; } }
+    try { await navigator.clipboard.writeText(x.shareText + cur.name + ' ' + link); } catch (e) { /* ignore */ }
+    toast(x.copied);
+  }
+  function info() {
+    var x = X(), el = $('lgInfo'); if (!el || !cur) return;
+    var ico = function (d) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
+    el.innerHTML = '<div class="lgi-top"><button type="button" class="lf-back" id="lgiBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></div>' +
+      '<div class="lgi-hero"><span class="lgi-av">' + esc(cur.emoji) + '</span><b>' + esc(cur.name) + '</b><small>' + esc(x.group) + ' · ' + esc(cur.n === 1 ? x.n1 : x.n.replace('{n}', cur.n)) + '</small></div>' +
+      '<div class="lgi-acts"><button type="button" id="lgiAdd">' + ico('<path d="M15 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 3 17.5V19M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 8v6M22 11h-6"/>') + '<span>' + esc(x.invite) + '</span></button>' +
+      '<button type="button" id="lgiCopy">' + ico('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>') + '<span>' + esc(x.copyLink) + '</span></button>' +
+      '<button type="button" id="lgiChat">' + ico('<path d="M4 5h16v11H8l-4 4z"/>') + '<span>' + esc(x.chat) + '</span></button></div>' +
+      '<div class="lgi-sec"><p class="lgi-h">' + esc(cur.n === 1 ? x.n1 : x.n.replace('{n}', cur.n)) + '</p>' +
+      '<button type="button" class="lgi-row add" id="lgiAdd2"><i>' + ico('<path d="M12 5v14M5 12h14"/>') + '</i><b>' + esc(x.addMem) + '</b></button>' +
+      cur.members.map(function (m) {
+        return '<div class="lgi-row"><i style="--av:' + avc(m.name) + '">' + esc((m.name || '?').charAt(0).toUpperCase()) + '</i><b>' + esc(m.name) + '</b>' +
+          (m.owner ? '<em>' + esc(x.admin) + '</em>' : '') + (cur.owner && !m.owner ? '<button type="button" class="lgi-kick" data-k="' + esc(m.id) + '" data-n="' + esc(m.name) + '">' + esc(x.kick) + '</button>' : '') + '</div>';
+      }).join('') + '</div>' +
+      '<button type="button" class="lgi-exit" id="lgiExit">' + ico('<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/>') + '<span>' + esc(x.exit) + '</span></button>';
+    el.hidden = false;
+    var close = function () { el.hidden = true; };
+    $('lgiBack').addEventListener('click', close); $('lgiChat').addEventListener('click', close);
+    $('lgiAdd').addEventListener('click', function () { shareLink(false); }); $('lgiAdd2').addEventListener('click', function () { shareLink(false); });
+    $('lgiCopy').addEventListener('click', function () { shareLink(true); });
+    el.querySelectorAll('[data-k]').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        if (!window.confirm(x.kickQ.replace('{n}', b.getAttribute('data-n')))) return;
+        await call('gKick', { gid: cur.id, id: b.getAttribute('data-k') }); await refresh(); info();
+      });
+    });
+    $('lgiExit').addEventListener('click', async function () { if (!window.confirm(x.leaveQ)) return; await call('gLeave', { gid: cur.id }); list(); });
   }
   async function refresh() { if (!cur) return; var j = await call('gGet', { gid: cur.id }); if (j && j.ok) { cur = j.g; paintMsgs(cur.msgs); } }
   function paintMsgs(msgs) {

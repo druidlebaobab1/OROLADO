@@ -57,22 +57,25 @@
     return tabOk(k);
   }
 
+  /* v2694 (propriétaire) : « immergé » comme le Défi du jour — la roue entière en haut, puis des planètes centrées
+     au-dessus de leur titre ; plus de petites phrases sous les titres, plus de cadres. */
+  function planet(k) { return D6.CasinoArt ? D6.CasinoArt.planet('g_' + k) : icon(k); }
   function paintHome() {
     var x = X(), grid = $('ghGrid');
     if (!grid) return;
+    grid.className = 'gh-grid gh-imm';
     var list = TILES.filter(function (t) { return visible(t.k); });
-    var small = list.filter(function (t) { return !t.big; });
+    var mids = list.filter(function (t) { return !t.big; });
     grid.innerHTML = list.map(function (t) {
-      var wide = !t.big && small.length % 2 && t === small[small.length - 1];
-      var extra = '';
-      if (t.k === 'wheel' && st && st.enabled && st.tickets > 0 && !st.spunToday) extra = '<i class="gh-pill">' + esc(st.tickets) + '</i>';
-      if (t.k === 'jauge' && st && st.enabled) extra = '<span class="gh-mini"><i style="width:' + (st.jauge || 0) + '%"></i></span>';
-      return '<button type="button" class="gh-tile' + (t.big ? ' big b' + t.big : '') + (wide ? ' wide' : '') + '" data-k="' + t.k + '" style="--tc:' + color(t.ico) + '">' +
-        '<span class="gh-ico">' + icon(t.ico) + '</span><span class="gh-txt"><b>' + esc(x[t.k][0]) + '</b><small>' + esc(x[t.k][1]) + '</small>' + extra + '</span>' +
-        (t.big === 1 ? '<span class="gh-deco gh-wheeldeco" aria-hidden="true">' + wheelSvg(true) + '</span>' : '') +
-        (t.big === 2 ? '<span class="gh-deco gh-coins" aria-hidden="true"><i></i><i></i><i></i></span>' : '') + '</button>';
+      if (t.k === 'wheel') {
+        var pill = st && st.enabled && st.tickets > 0 ? '<i class="gh-pill">' + esc(st.tickets) + '</i>' : '';
+        return '<button type="button" class="gh-hero" data-k="wheel"><span class="gh-hero-w"><i class="gh-hero-glow"></i>' + wheelSvg(true) + '<i class="gh-hero-pin"></i></span><b>' + esc(x.wheel[0]) + pill + '</b></button>';
+      }
+      var last = !t.big && mids.length % 2 && t === mids[mids.length - 1];
+      var extra = t.k === 'jauge' && st && st.enabled ? '<span class="gh-mini"><i style="width:' + (st.jauge || 0) + '%"></i></span>' : '';
+      return '<button type="button" class="gh-p' + (t.big ? ' wide' : '') + (last ? ' wide' : '') + '" data-k="' + t.k + '">' + planet(t.k) + '<b>' + esc(x[t.k][0]) + '</b>' + extra + '</button>';
     }).join('');
-    grid.querySelectorAll('.gh-tile').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-k')); }); });
+    grid.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-k')); }); });
   }
 
   function mode(home) {
@@ -110,13 +113,13 @@
       var a0 = i * step, a1 = (i + 1) * step;
       out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + c[0] + '" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
       if (!mini) {
-        var lab = (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : (v >= 10000 ? '10K' : v >= 1000 ? '1000' : String(v))) + ' $';
-        out += '<g transform="rotate(' + (a0 + step / 2) + ') translate(0 -78)"><text text-anchor="middle" dominant-baseline="middle" transform="rotate(90)" font-size="' + (v >= 100 ? 17 : 15) + '" font-weight="800" fill="' + (v === 100 ? '#5a3500' : v === 10000 ? '#FFD27A' : '#fff') + '" font-family="Plus Jakarta Sans,system-ui,sans-serif">' + lab + '</text></g>';
+        var lab = (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : (v >= 10000 ? '10 000' : v >= 1000 ? '1 000' : String(v))) + ' $';
+        out += '<g transform="rotate(' + (a0 + step / 2) + ') translate(0 -78)"><text text-anchor="middle" dominant-baseline="middle" transform="rotate(90)" font-size="' + (v >= 10000 ? 13 : v >= 100 ? 16 : 15) + '" font-weight="800" fill="' + (v === 100 ? '#5a3500' : v === 10000 ? '#FFD27A' : '#fff') + '" font-family="Plus Jakarta Sans,system-ui,sans-serif">' + lab + '</text></g>';
       }
     }
     var dots = '';
-    for (var d = 0; d < 24; d++) dots += '<circle cx="' + pt(126, d * 15).split(' ')[0] + '" cy="' + pt(126, d * 15).split(' ')[1] + '" r="2.6" fill="' + (d % 2 ? '#FFE07A' : '#fff') + '" opacity=".9"/>';
-    return '<svg viewBox="-134 -134 268 268" class="whl-svg"><defs><radialGradient id="whlRim' + (mini ? 'm' : '') + '" r="1"><stop offset=".86" stop-color="#5b3fb8"/><stop offset="1" stop-color="#2a1a66"/></radialGradient>' +
+    for (var d = 0; d < 24; d++) dots += '<circle cx="' + pt(125, d * 15).split(' ')[0] + '" cy="' + pt(125, d * 15).split(' ')[1] + '" r="3.4" fill="' + (d % 2 ? '#FFE07A' : '#fff') + '" stroke="#9A6A00" stroke-width=".8"/>';
+    return '<svg viewBox="-134 -134 268 268" class="whl-svg"><defs><radialGradient id="whlRim' + (mini ? 'm' : '') + '" r="1"><stop offset=".86" stop-color="#F5B700"/><stop offset=".93" stop-color="#FFE9A0"/><stop offset="1" stop-color="#9A6A00"/></radialGradient>' +
       '<radialGradient id="whlHub' + (mini ? 'm' : '') + '" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFF4C8"/><stop offset=".6" stop-color="#F2B33D"/><stop offset="1" stop-color="#A8650A"/></radialGradient></defs>' +
       '<circle r="132" fill="url(#whlRim' + (mini ? 'm' : '') + ')"/>' + dots + '<g class="whl-segs">' + out + '</g>' +
       '<circle r="118" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2"/><circle r="24" fill="url(#whlHub' + (mini ? 'm' : '') + ')" stroke="#fff" stroke-opacity=".6" stroke-width="2"/></svg>';

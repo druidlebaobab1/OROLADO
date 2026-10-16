@@ -16,7 +16,7 @@ const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000.0;
 const CASINO_MAX_WIN = 10000.0;
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
-  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon'];
+  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts'];
 const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon']; // jeux en plusieurs étapes (état gardé par le serveur)
 const CASINO_TOWER_ROWS = 8;  // La Tour : 8 étages, 3 portes, 1 piège → ×1,45 par étage environ
 const CASINO_BALLOON_POP = 0.10; // Ballon : 10 % de risque d'éclater à chaque souffle
@@ -71,6 +71,8 @@ const CASINO_EDGE = 0.97;                                                       
 const CASINO_SLOTS = [['gem', 50, 1], ['seven', 20, 4], ['bell', 10, 10], ['lemon', 5, 30], ['cherry3', 3, 60], ['cherry2', 1.5, 260]];
 // Grattage : [multiplicateur, chances sur 1000] — retour 96 %
 const CASINO_SCRATCH = [[20, 10], [5, 40], [2, 120], [1, 320]];
+// v2694 — Fléchettes : [multiplicateur, chances sur 10 000] — centre ×20, anneaux ×5 / ×2 / ×1, bord ×0 : retour 95 %
+const CASINO_DARTS = [[20, 100], [5, 400], [2, 1500], [1, 2500], [0, 5500]];
 
 function casino_money(float $v): float { return round($v + 1e-9, 2); }
 function casino_rand(): float { return random_int(1, 1000000) / 1000000; } // ]0 ; 1]
@@ -201,6 +203,10 @@ function casino_instant(string $game, array $p, float $stake): array {
       $pick = max(0, min(2, (int) ($p['pick'] ?? 0)));
       $gold = random_int(0, 2);
       return ['mult' => $gold === $pick ? 2.85 : 0.0, 'view' => ['gold' => $gold, 'pick' => $pick]];
+    case 'darts':
+      $r = random_int(1, 10000); $acc = 0; $z = 4;
+      foreach (CASINO_DARTS as $j => [$x, $w]) { $acc += $w; if ($r <= $acc) { $z = $j; break; } }
+      return ['mult' => (float) CASINO_DARTS[$z][0], 'view' => ['z' => $z, 'a' => random_int(0, 359)]];
   }
   return ['err' => 'game'];
 }

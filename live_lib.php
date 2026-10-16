@@ -128,6 +128,15 @@ function live_auto_reply(string $uid, string $lang): ?array {
     'fr' => 'Merci pour ton message 🙏 Il est bien reçu. Notre équipe te répondra ici dès que possible : merci de patienter un peu.',
     'en' => 'Thanks for your message 🙏 We received it. Our team will answer you here as soon as possible: please be patient.',
     'zh' => '感谢你的留言 🙏 我们已收到。团队会尽快在这里回复你，请耐心等待。',
+    'es' => 'Gracias por tu mensaje 🙏 Lo hemos recibido. Nuestro equipo te responderá aquí lo antes posible: ten un poco de paciencia.',
+    'pt' => 'Obrigado pela tua mensagem 🙏 Recebemos. A nossa equipa vai responder-te aqui o mais rápido possível: tem um pouco de paciência.',
+    'ar' => 'شكرًا على رسالتك 🙏 لقد استلمناها. سيرد عليك فريقنا هنا في أقرب وقت: يرجى الانتظار قليلًا.',
+    'tr' => 'Mesajın için teşekkürler 🙏 Aldık. Ekibimiz en kısa sürede burada yanıt verecek: lütfen biraz bekle.',
+    'vi' => 'Cảm ơn tin nhắn của bạn 🙏 Chúng tôi đã nhận được. Đội ngũ sẽ trả lời bạn tại đây sớm nhất: vui lòng chờ một chút.',
+    'id' => 'Terima kasih atas pesanmu 🙏 Sudah kami terima. Tim kami akan membalas di sini secepatnya: mohon tunggu sebentar.',
+    'ru' => 'Спасибо за сообщение 🙏 Мы его получили. Наша команда ответит здесь как можно скорее: пожалуйста, подождите.',
+    'de' => 'Danke für deine Nachricht 🙏 Sie ist angekommen. Unser Team antwortet dir hier so schnell wie möglich: bitte hab etwas Geduld.',
+    'hi' => 'आपके संदेश के लिए धन्यवाद 🙏 हमें मिल गया है। हमारी टीम जल्द से जल्द यहाँ जवाब देगी: कृपया थोड़ा इंतज़ार करें।',
   ];
   $t = $txt[$lang] ?? $txt['en'];
   return live_update(live_thread_file($uid), function ($th) use ($t) {
