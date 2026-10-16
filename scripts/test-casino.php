@@ -42,6 +42,8 @@ $params = [
   'roulette' => fn() => ['bet' => ['red', 'black', 'even', 'odd', 'd2', 'n17', 'n0'][random_int(0, 6)]], 'slots' => fn() => [], 'plinko' => fn() => [],
   'keno' => fn() => ['picks' => [3, 9, 15]], 'scratch' => fn() => [], 'penalty' => fn() => ['aim' => random_int(0, 2)],
   'colors' => fn() => ['bet' => ['green', 'red', 'violet', 'n3'][random_int(0, 3)]],
+  'dragon' => fn() => ['bet' => ['dragon', 'tiger', 'tie'][random_int(0, 2)]], 'baccarat' => fn() => ['bet' => ['player', 'banker', 'tie'][random_int(0, 2)]],
+  'sicbo' => fn() => ['bet' => ['small', 'big'][random_int(0, 1)]], 'chests' => fn() => ['pick' => random_int(0, 2)],
 ];
 foreach ($params as $g => $pf) {
   $N = 300000; $sum = 0.0; $bad = 0;
@@ -157,8 +159,8 @@ $bal[$U] = 50.0; syncv();
 $s = casino_multi(load_db(), $me, 'apple', 'start', 'real', 1, []);
 check('pomme : départ, pommes pourries CACHÉES', $s['ok'] && !isset($s['bad']) && $s['k'] === 0);
 $bad = casino_with(casino_user_file('u_cs'), fn(array &$st) => $st['g']['apple']['bad']);
-$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => ($bad[0] + 1) % 5]);
-$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => ($bad[1] + 1) % 5]);
+$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => array_values(array_diff([0, 1, 2, 3, 4], (array) $bad[0]))[0]]);
+$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => array_values(array_diff([0, 1, 2, 3, 4], (array) $bad[1]))[0]]);
 check('pomme : 2 bons étages', $o['k'] === 2);
 $b0 = $bal[$U];
 $c = casino_multi(load_db(), $me, 'apple', 'cash', 'real', 0, []);
@@ -166,11 +168,37 @@ check('pomme : encaisser après 2 étages = mise × ' . casino_apple_mult(2), ab
 casino_multi(load_db(), $me, 'apple', 'start', 'real', 1, []);
 $bad = casino_with(casino_user_file('u_cs'), fn(array &$st) => $st['g']['apple']['bad']);
 $b0 = $bal[$U];
-$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => $bad[0]]);
+$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => ((array) $bad[0])[0]]);
 check('pomme pourrie : perdu, rien de payé', $o['done'] && $o['win'] == 0.0 && $bal[$U] == $b0 && isset($o['bad']));
 $s0 = 0.0; $N = 200000;
 for ($i = 0; $i < $N; $i++) { $r = casino_instant('wheel', [], 1.0); $s0 += $r['mult']; }
 check('roue casino (nouvelle) : retour ' . round($s0 / $N * 100, 2) . ' %', $s0 / $N < 0.975 && $s0 / $N > 0.92);
+
+echo "5c) v2693 : La Tour, Ballon, Verger (niveaux)
+";
+foreach ([1, 4, 8] as $k) { $ev = pow(2 / 3, $k) * casino_tower_mult($k); check("tour : $k étage(s) : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
+foreach ([1, 5, 15] as $k) { $ev = pow(0.9, $k) * casino_balloon_mult($k); check("ballon : $k souffle(s) : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
+foreach ([1, 2, 3, 4] as $lv) { $k = 3; $ev = pow((5 - $lv) / 5, $k) * casino_apple_mult($k, $lv); check("verger niveau $lv, 3 étages : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
+$bal[$U] = 50.0; syncv();
+$s = casino_multi(load_db(), $me, 'tower', 'start', 'real', 1, []);
+$traps = casino_with(casino_user_file('u_cs'), fn(array &$st) => $st['g']['tower']['traps']);
+check('tour : pièges cachés', $s['ok'] && !isset($s['traps']));
+$o = casino_multi(load_db(), $me, 'tower', 'pick', 'real', 0, ['door' => ($traps[0] + 1) % 3]);
+$b0 = $bal[$U]; $c = casino_multi(load_db(), $me, 'tower', 'cash', 'real', 0, []);
+check('tour : 1 étage puis encaisser', abs($c['win'] - casino_tower_mult(1)) < 0.001 && abs($bal[$U] - ($b0 + $c['win'])) < 0.001);
+$s = casino_multi(load_db(), $me, 'balloon', 'start', 'real', 1, []);
+check('ballon : point d\'éclatement caché', $s['ok'] && !isset($s['pop']));
+casino_with(casino_user_file('u_cs'), function (array &$st) { $st['g']['balloon']['pop'] = 2; return true; });
+casino_multi(load_db(), $me, 'balloon', 'pump', 'real', 0, []); casino_multi(load_db(), $me, 'balloon', 'pump', 'real', 0, []);
+$b0 = $bal[$U]; $o = casino_multi(load_db(), $me, 'balloon', 'pump', 'real', 0, []);
+check('ballon : 3e souffle éclate (point 2) → perdu', $o['done'] && $o['win'] == 0.0 && $bal[$U] == $b0);
+$s = casino_multi(load_db(), $me, 'apple', 'start', 'real', 1, ['level' => 4]);
+$bad = casino_with(casino_user_file('u_cs'), fn(array &$st) => $st['g']['apple']['bad']);
+check('verger niveau 4 : 4 pommes pourries par étage', count($bad[0]) === 4 && $s['lv'] === 4);
+$good = array_values(array_diff([0, 1, 2, 3, 4], $bad[0]))[0];
+$o = casino_multi(load_db(), $me, 'apple', 'pick', 'real', 0, ['cell' => $good]);
+check('verger niveau 4 : 1 étage = ×' . casino_apple_mult(1, 4), $o['k'] === 1 && abs($o['mult'] - casino_apple_mult(1, 4)) < 0.001);
+casino_multi(load_db(), $me, 'apple', 'cash', 'real', 0, []);
 
 echo "6) Panne de la base pendant le gain : versé plus tard, une seule fois\n";
 $bal[$U] = 50.0; syncv();

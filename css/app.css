@@ -10333,3 +10333,176 @@ html:root body .topbar-row #btnCasino#btnCasino .cb-ico svg{width:100%!important
 html:root body .topbar-row #btnCasino#btnCasino .cb-lbl{display:block!important;line-height:1!important}
 html:root body .topbar-row #btnCasino#btnCasino .cb-lbl b{display:block!important;font:800 9px "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.1px!important;color:#E9ECF7!important;text-transform:none!important}
 html:root body .topbar-row #btnCasino#btnCasino .cb-lbl small{display:none!important}
+
+/* ===== v2693 — CASINO : barre (retour · solde au milieu + « + » · ?), icônes sans cadre, écran de jeu SANS défilement ===== */
+html:root body #casinoModal#casinoModal > .modal-box{background:
+  radial-gradient(1.2px 1.2px at 12% 14%,rgba(255,255,255,.85),transparent 60%),radial-gradient(1px 1px at 82% 10%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1.3px 1.3px at 64% 46%,rgba(255,240,210,.8),transparent 60%),
+  radial-gradient(1px 1px at 22% 70%,rgba(255,255,255,.6),transparent 60%),radial-gradient(1.2px 1.2px at 90% 84%,rgba(255,255,255,.7),transparent 60%),
+  radial-gradient(70% 35% at 100% 0%,rgba(168,85,247,.35),transparent 70%),radial-gradient(60% 40% at 0% 50%,rgba(236,72,153,.18),transparent 70%),radial-gradient(70% 40% at 50% 100%,rgba(37,99,235,.28),transparent 70%),
+  linear-gradient(180deg,#160b33 0%,#0f0a26 55%,#0b0719 100%)!important;color:#fff;padding-top:calc(env(safe-area-inset-top,0px) + 6px)!important}
+#casinoModal .modal-box > .bp-grip{display:none!important}
+html body #casinoModal .cs-bar{display:none!important}
+#casinoModal .cs-top{position:sticky;top:-8px;z-index:8;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px;margin:-6px -14px 10px;padding:6px 14px 8px;background:linear-gradient(180deg,rgba(18,10,44,.97) 70%,rgba(18,10,44,0))}
+#casinoModal .cs-back,#casinoModal .cs-help{width:40px;height:40px;border:0;border-radius:14px;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+#casinoModal .cs-back svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+html[dir="rtl"] #casinoModal .cs-back svg{transform:scaleX(-1)}
+#casinoModal .cs-help{font:900 18px system-ui}
+#casinoModal .cs-help[hidden]{visibility:hidden;display:grid!important}
+#casinoModal .cs-wallet{justify-self:center;display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:4px 6px 4px 16px;border:0;border-radius:16px;color:#fff;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.05));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 8px 22px -12px rgba(0,0,0,.8)}
+#casinoModal .cw-t{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+#casinoModal .cw-t small{font:800 10px system-ui;letter-spacing:.4px;text-transform:uppercase;color:#C9CFE6}
+#casinoModal .cw-t b{font:900 18px "Plus Jakarta Sans",system-ui,sans-serif;color:#2BEA7B}
+#casinoModal .cs-wallet.demo .cw-t b{color:#7FD8FF}
+#casinoModal .cw-plus{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font:900 20px system-ui;font-style:normal;color:#2a1a00;background:linear-gradient(180deg,#FFD24A,#F5A700)}
+#casinoModal .cs-wallet .cs-join{border:0;border-radius:12px;padding:8px 14px;font:800 13px system-ui;color:#2a1a00;background:linear-gradient(180deg,#FFD24A,#F5A700)}
+/* onglets Jeux / Paris en haut */
+#casinoModal .cs-tabs2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+#casinoModal .cs-tabs2 button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;border-radius:14px;color:#C9CFE6;font:800 15px "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#casinoModal .cs-tabs2 button .cs-ico{width:28px;height:28px}
+#casinoModal .cs-tabs2 button.on{color:#fff;background:linear-gradient(135deg,rgba(168,85,247,.45),rgba(236,72,153,.3));box-shadow:inset 0 0 0 1px rgba(255,210,122,.55)}
+/* grille : icônes « flottantes » (sans cadre), nom dessous */
+html body #casinoModal #csView.cs-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px 10px!important;padding:4px 0 10px}
+@media (min-width:600px){html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media (min-width:900px){html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+#casinoModal .cs-g{display:flex;flex-direction:column;align-items:center;gap:7px;border:0;background:none;padding:0;color:#fff;min-width:0}
+#casinoModal .cs-orb{position:relative;width:min(92px,26vw);aspect-ratio:1;display:grid;place-items:center}
+#casinoModal .cs-orb::before{content:"";position:absolute;inset:6%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--tc) 55%,transparent),transparent 70%);filter:blur(2px)}
+#casinoModal .cs-orb .cs-ico{position:relative;width:78%;height:78%;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55))}
+#casinoModal .cs-g b{font:800 13px/1.15 "Plus Jakarta Sans",system-ui,sans-serif;text-align:center;overflow-wrap:anywhere}
+#casinoModal .cs-g:active .cs-orb{transform:scale(.94)}
+/* écran de jeu : toute la hauteur, sans défilement */
+@media (max-width:859px){
+  html:root body #casinoModal#casinoModal.in-game > .modal-box{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important}
+}
+@media (min-width:860px){html:root body #casinoModal#casinoModal.in-game > .modal-box{display:flex!important;flex-direction:column!important;height:min(860px,92vh)!important;overflow:hidden!important}}
+#casinoModal.in-game #csBody{flex:1;min-height:0;display:flex;flex-direction:column}
+#casinoModal.in-game .cs-top{margin-bottom:6px;position:relative;top:0}
+html body #casinoModal .cs-game{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+html body #casinoModal .cs-game > .cs-stage{flex:1 1 auto;min-height:150px;position:relative;overflow:hidden;border-radius:20px;
+  background:radial-gradient(1px 1px at 20% 20%,rgba(255,255,255,.8),transparent 60%),radial-gradient(1.2px 1.2px at 80% 30%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1px 1px at 60% 80%,rgba(255,255,255,.6),transparent 60%),
+    radial-gradient(80% 70% at 50% 30%,color-mix(in srgb,var(--tc) 45%,transparent),transparent 72%),linear-gradient(170deg,color-mix(in srgb,var(--tc) 30%,#120a2c),#0c0820)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important}
+#casinoModal .cs-gname{position:absolute;left:10px;top:10px;z-index:4;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:12px;background:rgba(0,0,0,.28);backdrop-filter:none}
+#casinoModal .cs-gname .cs-ico{width:22px;height:22px}
+#casinoModal .cs-gname b{font:800 12px "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html[dir="rtl"] #casinoModal .cs-gname{left:auto;right:10px}
+/* résultat : bannière au-dessus de l'écran du jeu (ne prend pas de place) */
+html body #casinoModal .cs-stage > .cs-res{position:absolute;left:50%;top:44px;z-index:6;min-height:0;min-width:150px;padding:10px 18px;border-radius:16px;transform:translate(-50%,-10px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  display:flex;flex-direction:column;align-items:center;background:rgba(10,8,24,.82)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)!important;animation:none!important}
+html body #casinoModal .cs-stage > .cs-res.win,html body #casinoModal .cs-stage > .cs-res.lose{opacity:1;transform:translate(-50%,0)}
+html body #casinoModal .cs-stage > .cs-res.win{background:linear-gradient(135deg,rgba(22,163,74,.92),rgba(5,95,70,.92))!important;box-shadow:0 0 0 2px #FFD24A,0 12px 30px -8px rgba(34,197,94,.8)!important}
+html body #casinoModal .cs-stage > .cs-res.win b{color:#fff;font:900 24px "Plus Jakarta Sans",system-ui,sans-serif;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+html body #casinoModal .cs-stage > .cs-res.lose{background:rgba(127,29,29,.85)!important}
+html body #casinoModal .cs-stage > .cs-res.lose b{color:#fff;font:800 17px system-ui}
+html body #casinoModal .cs-stage > .cs-res small{color:#E9ECF7;font-size:12px}
+/* panneau de mise compact */
+html body #casinoModal .cs-panel{flex:0 0 auto;gap:7px;padding:10px;border-radius:20px;background:rgba(255,255,255,.07)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important}
+#casinoModal .cs-extra{display:flex;flex-direction:column;gap:6px}
+html body #casinoModal .cs-stake input{height:42px;background:rgba(0,0,0,.28)!important}
+html body #casinoModal .cs-stake button{width:46px;height:42px;flex:0 0 46px;background:rgba(255,255,255,.12)!important}
+html body #casinoModal .cs-chips button{height:30px;background:rgba(0,0,0,.25)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)!important;color:#FFE9C2}
+html body #casinoModal .cs-go{min-height:52px;border-radius:16px}
+@media (max-height:700px){html body #casinoModal .cs-chips{display:none!important}#casinoModal .cs-gname b{display:none}}
+@media (max-height:600px){html body #casinoModal .cs-go{min-height:44px}html body #casinoModal .cs-stake input,html body #casinoModal .cs-stake button{height:36px}}
+/* contenu des jeux : s'adapte à l'écran restant */
+html body #casinoModal .cs-stage .whl2{width:min(300px,78vw,46vh)}
+html body #casinoModal .cs-stage .coin3d{width:min(180px,44vw,30vh);height:min(180px,44vw,30vh)}
+html body #casinoModal .cs-stage .slot span{width:min(76px,20vw);height:min(86px,12vh)}
+html body #casinoModal .cs-stage .plk{max-height:100%}
+html body #casinoModal .cs-stage .mn{max-width:min(330px,44vh)}
+html body #casinoModal .cs-stage .keno{max-width:min(340px,50vh)}
+html body #casinoModal .cs-stage .scr{max-width:min(280px,40vh)}
+html body #casinoModal .ap-stage .ap-row button{height:min(34px,3.6vh)}
+html body #casinoModal .whl-leg{gap:4px}
+html body #casinoModal .whl-leg span{font-size:10px;padding:2px 6px}
+/* page « ? » comment jouer */
+#casinoModal .cs-sheet{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;background:rgba(5,3,15,.6)}
+#casinoModal .cs-sheet[hidden]{display:none}
+#casinoModal .cs-sheet-in{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 18px);border-radius:24px 24px 0 0;background:linear-gradient(180deg,#24124f,#140b30);box-shadow:0 -10px 40px rgba(0,0,0,.6)}
+#casinoModal .cs-sheet-in .cs-orb{width:84px}
+#casinoModal .cs-sheet-in b{font:900 22px "Plus Jakarta Sans",system-ui,sans-serif}
+#casinoModal .cs-sheet-in p{margin:0;color:#E4E7F5;font-size:15px;line-height:1.5;max-width:420px}
+#casinoModal .cs-sheet-in small{color:#9AA3C4;font-size:11.5px}
+#casinoModal .cs-sheet-in .cs-go{width:100%;max-width:360px}
+/* paris : page à part (onglet) */
+html body #casinoModal #csView.cs-sports{display:flex!important;flex-direction:column;gap:10px}
+html body #casinoModal .sp-ev{background:rgba(255,255,255,.07)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important}
+html body #casinoModal .sp-none{background:rgba(255,255,255,.06)!important;padding:22px 16px!important;font-size:15px}
+/* ===== v2693 — 6 nouveaux jeux ===== */
+#casinoModal .pc{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:62px;border-radius:8px;background:#fff;color:#111827;box-shadow:0 6px 14px rgba(0,0,0,.45);font-family:"Plus Jakarta Sans",system-ui,sans-serif;animation:ghPop .3s ease-out}
+#casinoModal .pc.big{width:min(86px,22vw);height:min(120px,16vh);border-radius:12px}
+#casinoModal .pc b{font-weight:900;font-size:20px;line-height:1}
+#casinoModal .pc.big b{font-size:34px}
+#casinoModal .pc i{font-style:normal;font-size:16px}
+#casinoModal .pc.big i{font-size:28px}
+#casinoModal .pc.rd{color:#dc2626}
+#casinoModal .pc.back{background:repeating-linear-gradient(45deg,#7c3aed 0 6px,#5b21b6 6px 12px);box-shadow:inset 0 0 0 3px #fff,0 6px 14px rgba(0,0,0,.45);animation:none}
+#casinoModal .dt{display:flex;align-items:center;justify-content:center;gap:14px;width:100%}
+#casinoModal .dt-side{display:flex;flex-direction:column;align-items:center;gap:6px}
+#casinoModal .dt-side em{font-style:normal;font-size:30px}
+#casinoModal .dt-side b{font:900 15px "Plus Jakarta Sans",system-ui,sans-serif}
+#casinoModal .dt-vs{font:900 22px "Plus Jakarta Sans",system-ui,sans-serif;color:#FFD27A}
+#casinoModal .bc{display:flex;flex-direction:column;gap:14px;width:100%;max-width:340px}
+#casinoModal .bc-h b{display:block;font:800 14px system-ui;margin-bottom:6px}
+#casinoModal .bc-h b i{font-style:normal;color:#FFD27A;font-size:18px;margin-inline-start:6px}
+#casinoModal .bc-cards{display:flex;gap:8px;min-height:62px}
+#casinoModal .sb{display:flex;gap:12px}
+#casinoModal .sb .die{width:min(70px,18vw);height:min(70px,18vw);display:block;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));transition:transform .07s}
+#casinoModal .sb .die.roll{transform:rotate(18deg) translateY(-6px)}
+#casinoModal .sb .die svg{width:100%;height:100%}
+#casinoModal .sb-sum{font:900 28px "Plus Jakarta Sans",system-ui,sans-serif;color:#FFD27A;min-height:34px}
+#casinoModal .ch{display:flex;gap:10px}
+#casinoModal .ch button{width:min(96px,26vw);aspect-ratio:64/56;border:0;border-radius:14px;padding:6px;background:rgba(0,0,0,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#casinoModal .ch button.on{box-shadow:inset 0 0 0 3px #FFD27A;background:rgba(255,210,122,.12)}
+#casinoModal .ch button svg{width:100%;height:100%;display:block}
+html body #casinoModal .tw-stage,html body #casinoModal .ap-stage{padding:44px 10px 10px!important}
+#casinoModal .tw{display:flex;flex-direction:column;gap:5px;width:100%;max-width:340px}
+#casinoModal .tw-row{display:grid;grid-template-columns:54px repeat(3,1fr);gap:6px;align-items:center;opacity:.55}
+#casinoModal .tw-row em{font-style:normal;font:800 11.5px system-ui;color:#FDBA74;text-align:center}
+#casinoModal .tw-row button{height:min(34px,3.8vh);border:0;border-radius:10px;background:rgba(0,0,0,.25);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);font-size:16px}
+#casinoModal .tw-row.cur{opacity:1}
+#casinoModal .tw-row.cur button{background:rgba(253,186,116,.2);box-shadow:inset 0 0 0 2px #FDBA74}
+#casinoModal .tw-row.past{opacity:.9}
+#casinoModal .tw-row button.good{background:#14532d}
+#casinoModal .tw-row button.trap{background:#3f1d1d}
+#casinoModal .tw-row button.boom{background:#991b1b;animation:ghPop .3s ease-out}
+#casinoModal .bl{width:min(150px,38vw);transition:transform .25s cubic-bezier(.3,1.6,.5,1);transform-origin:50% 80%}
+#casinoModal .bl svg{width:100%;display:block;filter:drop-shadow(0 12px 22px rgba(225,29,72,.45))}
+#casinoModal .bl.pop{opacity:0;transform:scale(1.8)!important;transition:transform .2s,opacity .2s}
+#casinoModal .bl-stage .crash-n{font-size:40px}
+#casinoModal .cs-pump{min-height:46px;border:0;border-radius:14px;color:#fff;font:900 16px "Plus Jakarta Sans",system-ui,sans-serif;background:linear-gradient(135deg,#fb7185,#be123c)}
+#casinoModal .cs-pump:disabled{opacity:.45}
+/* v2693 — course : route, ligne d'arrivée ; personnages qui flottent ; grattage au doigt */
+html body #casinoModal .race-stage{padding:44px 8px 10px!important;justify-content:center}
+#casinoModal .road{position:relative;width:100%;border-radius:12px;padding:6px 0;background:linear-gradient(180deg,#2b2f36,#1f2329);box-shadow:inset 0 0 0 2px #e5e7eb}
+html body #casinoModal .road .lane{height:min(38px,5vh);border-radius:0;background:none;border-bottom:2px dashed rgba(255,255,255,.35)}
+html body #casinoModal .road .lane:last-of-type{border-bottom:0}
+html body #casinoModal .road .lane em{left:4px;color:#9ca3af}
+html body #casinoModal .road .lane .car{left:16px;width:min(64px,16vw);height:min(30px,4vh)}
+#casinoModal .road .finish{position:absolute;right:10px;top:0;bottom:0;width:12px;background:conic-gradient(#fff 25%,#111 0 50%,#fff 0 75%,#111 0) 0 0/12px 12px}
+#casinoModal .road .start{position:absolute;left:14px;top:0;bottom:0;width:2px;background:rgba(255,255,255,.6)}
+#casinoModal .plane svg{animation:csBob 1.4s ease-in-out infinite}
+@keyframes csBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+html.oro-lite #casinoModal .plane svg{animation:none}
+#casinoModal .scr-w{position:relative;width:100%;max-width:min(300px,42vh)}
+html body #casinoModal .scr-w .scr{max-width:none}
+html body #casinoModal .scr-w .scr span{height:auto;aspect-ratio:1;font-size:min(36px,5vh);background:#fff7ed}
+#casinoModal .scr-cv{position:absolute;inset:0;width:100%;height:100%;border-radius:14px;touch-action:none;cursor:grab;transition:opacity .45s}
+/* v2693b — résultat en bas (ligne fine, devant le joueur) + Casino en couleurs vives (plus de fond noir) */
+html body #casinoModal .cs-game > .cs-res{flex:0 0 auto;min-height:40px;margin:0;padding:6px 12px;border-radius:14px;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.08)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important;animation:none!important}
+html body #casinoModal .cs-game > .cs-res:empty::before{content:"";}
+html body #casinoModal .cs-game > .cs-res.win{background:linear-gradient(90deg,rgba(34,197,94,.35),rgba(250,204,21,.25))!important;box-shadow:inset 0 0 0 1.5px #FFD24A!important;animation:ghPop .35s ease-out!important}
+html body #casinoModal .cs-game > .cs-res.win b{color:#fff;font:900 20px "Plus Jakarta Sans",system-ui,sans-serif;text-shadow:0 2px 8px rgba(0,0,0,.35)}
+html body #casinoModal .cs-game > .cs-res.lose{background:rgba(244,63,94,.18)!important;box-shadow:inset 0 0 0 1px rgba(244,63,94,.5)!important}
+html body #casinoModal .cs-game > .cs-res.lose b{color:#fecdd3;font:800 16px system-ui}
+html body #casinoModal .cs-game > .cs-res small{color:#fff;opacity:.85;font-size:12.5px}
+html:root body #casinoModal#casinoModal > .modal-box{background:
+  radial-gradient(1.2px 1.2px at 12% 14%,rgba(255,255,255,.9),transparent 60%),radial-gradient(1px 1px at 82% 10%,rgba(255,255,255,.8),transparent 60%),radial-gradient(1.3px 1.3px at 64% 46%,rgba(255,240,210,.85),transparent 60%),
+  radial-gradient(1px 1px at 22% 70%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1.2px 1.2px at 90% 84%,rgba(255,255,255,.75),transparent 60%),
+  radial-gradient(80% 45% at 100% 0%,rgba(236,72,153,.55),transparent 70%),radial-gradient(70% 45% at 0% 40%,rgba(124,58,237,.6),transparent 70%),radial-gradient(80% 45% at 50% 100%,rgba(59,130,246,.45),transparent 70%),
+  linear-gradient(180deg,#3b1477 0%,#2a0f5c 50%,#1d0b45 100%)!important}
+#casinoModal .cs-top{background:linear-gradient(180deg,rgba(59,20,119,.97) 70%,rgba(59,20,119,0))!important}
+html body #casinoModal .cs-game > .cs-stage{background:radial-gradient(1px 1px at 20% 20%,rgba(255,255,255,.85),transparent 60%),radial-gradient(1.2px 1.2px at 80% 30%,rgba(255,255,255,.75),transparent 60%),radial-gradient(1px 1px at 60% 80%,rgba(255,255,255,.65),transparent 60%),
+  radial-gradient(90% 80% at 50% 25%,color-mix(in srgb,var(--tc) 65%,transparent),transparent 75%),linear-gradient(170deg,color-mix(in srgb,var(--tc) 45%,#3b1477),color-mix(in srgb,var(--tc) 20%,#22104f))!important}
+html body #casinoModal .cs-panel{background:rgba(255,255,255,.1)!important}

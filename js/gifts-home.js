@@ -6,20 +6,20 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var T = {
-    fr: { home: 'Cadeaux', wheel: ['Roue de la chance', '1 tour offert à chaque dépôt de 10 $'], aff: ['Invite tes amis', 'Gagne de l’argent sur leurs dépôts'],
+    fr: { home: 'Cadeaux', wheel: ['Roue de la chance', '1 tour gratuit par 10 $ déposés'], aff: ['Invite tes amis', 'Gagne de l’argent sur leurs dépôts'],
       defi: ['Défi du jour', 'Gagne 5 fois de suite'], top: ['Tournoi démo', 'Les meilleurs de la semaine'], bon: ['Bonus dépôt', '+10 % sur ton dépôt'],
       jauge: ['Grande jauge', 'Remplis-la, gros cadeau à la clé'],
-      wRule: 'Chaque dépôt de 10 $ ou plus te donne 1 tour gratuit.', spin: 'Tourner la roue', tickets: 'Tu as {n} tour(s) à jouer', ticket1: 'Tu as 1 tour à jouer',
+      wRule: '1 tour gratuit pour chaque tranche de 10 $ déposés. Exemple : 100 $ déposés = 10 tours.', spin: 'Tourner la roue', tickets: 'Tu as {n} tour(s) à jouer', ticket1: 'Tu as 1 tour à jouer',
       noTicket: 'Fais un dépôt de 10 $ ou plus pour gagner un tour', deposit: 'Recharger', today: 'Tu as déjà tourné aujourd’hui. Reviens demain !',
       win: '🎉 Bravo ! Tu gagnes {p} $', winS: 'Ajouté à ton solde en bonus (à miser 2 fois avant retrait).', lose: 'Pas de chance cette fois…', loseS: 'Recharge 10 $ ou plus pour un nouveau tour !',
       bonusNote: 'Les gains de la roue sont des bonus : à miser 2 fois avant retrait.', test: 'Mode test (admin) : gains sur la démo.', testDep: '+ dépôt test 10 $',
       jT: 'Ta grande jauge', jS: 'Chaque vrai dépôt remplit ta jauge. Quand elle est pleine, tu reçois un gros cadeau surprise 🎁', jDone: 'Jauges déjà remplies : {n}',
       jNew: '🎉 Jauge pleine ! Ton cadeau est sur ton solde.', jFill: 'Recharger pour la remplir', jNote: 'Le cadeau est un bonus : à miser 2 fois avant retrait.',
       guestT: 'Crée ton compte pour jouer', guestBtn: 'Créer mon compte gratuit', guestHave: 'J’ai déjà un compte', busy: 'Un instant, réessaie.' },
-    en: { home: 'Gifts', wheel: ['Lucky wheel', '1 free spin for every $10 deposit'], aff: ['Invite your friends', 'Earn money on their deposits'],
+    en: { home: 'Gifts', wheel: ['Lucky wheel', '1 free spin per $10 deposited'], aff: ['Invite your friends', 'Earn money on their deposits'],
       defi: ['Daily challenge', 'Win 5 times in a row'], top: ['Demo tournament', 'The best of the week'], bon: ['Deposit bonus', '+10% on your deposit'],
       jauge: ['Big gauge', 'Fill it up, win a big gift'],
-      wRule: 'Every deposit of $10 or more gives you 1 free spin.', spin: 'Spin the wheel', tickets: 'You have {n} spin(s) to play', ticket1: 'You have 1 spin to play',
+      wRule: '1 free spin for every $10 deposited. Example: $100 deposited = 10 spins.', spin: 'Spin the wheel', tickets: 'You have {n} spin(s) to play', ticket1: 'You have 1 spin to play',
       noTicket: 'Make a deposit of $10 or more to win a spin', deposit: 'Top up', today: 'You already spun today. Come back tomorrow!',
       win: '🎉 Well done! You win ${p}', winS: 'Added to your balance as a bonus (wager 2 times before withdrawal).', lose: 'No luck this time…', loseS: 'Top up $10 or more for a new spin!',
       bonusNote: 'Wheel wins are bonuses: wager 2 times before withdrawal.', test: 'Test mode (admin): wins go to demo.', testDep: '+ test deposit $10',
@@ -29,7 +29,7 @@
   };
   T.zh = Object.assign({}, T.en, { home: '礼物', wheel: ['幸运转盘', '每充值 10 美元送 1 次'], aff: ['邀请好友', '好友充值，你赚钱'],
     defi: ['每日挑战', '连赢 5 次'], top: ['模拟锦标赛', '本周最佳'], bon: ['充值奖励', '充值加送 10%'], jauge: ['大能量条', '充满即得大礼'],
-    wRule: '每次充值 10 美元或以上可获得 1 次免费转盘机会。', spin: '转动转盘', tickets: '你有 {n} 次机会', ticket1: '你有 1 次机会',
+    wRule: '每充值 10 美元送 1 次免费转盘。例如：充值 100 美元 = 10 次。', spin: '转动转盘', tickets: '你有 {n} 次机会', ticket1: '你有 1 次机会',
     noTicket: '充值 10 美元或以上即可获得一次机会', deposit: '充值', today: '今天已经转过了，明天再来！',
     win: '🎉 恭喜！你赢得 {p} 美元', winS: '已作为奖励金加入余额（提现前需投注 2 倍）。', lose: '这次没中…', loseS: '充值 10 美元或以上，再转一次！',
     bonusNote: '转盘奖金为奖励金：提现前需投注 2 倍。', jT: '你的大能量条', jS: '每次真实充值都会充满能量条。充满后，你将获得一份惊喜大礼 🎁', jDone: '已充满次数：{n}',

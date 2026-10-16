@@ -82,22 +82,23 @@ check('dépôt de 9 $, bonus admin 50 $, ancien dépôt avant la roue : toujours
 dep('u_jo', 10, $now - 400);
 dep('u_jo', 30, $now - 300);
 $r = orolado_gifts_status(load_db(), $jo, false, $now);
-check('2 vrais dépôts de 10 $ et 30 $ : 2 tours', $r['tickets'] === 2);
+check('vrais dépôts de 10 $ et 30 $ : 1 + 3 = 4 tours (1 par tranche de 10 $)', $r['tickets'] === 4, (string) $r['tickets']);
 
 echo "4) Chaque tour payé une seule fois (pas de limite par jour)\n";
 $r = orolado_gifts_status(load_db(), $jo, true, $now);
 check('1er tour accepté, gain tiré par le serveur', $r['ok'] === true && is_array($r['won']), json_encode($r['won']));
 $prize1 = (float) $r['won']['prize'];
 check('gain versé (bonus) = gain tiré', abs(paid($credits, $A, 'whl_') - $prize1) < 0.001, paid($credits, $A, 'whl_') . ' / ' . $prize1);
-check('il reste 1 tour', orolado_gifts_status(load_db(), $jo, false, $now + 60)['tickets'] === 1);
+check('il reste 3 tours', orolado_gifts_status(load_db(), $jo, false, $now + 60)['tickets'] === 3);
 for ($i = 0; $i < 3; $i++) orolado_gifts_status(load_db(), $jo, false, $now + 70 + $i);
 check('relire l\'état ne repaie jamais', abs(paid($credits, $A, 'whl_') - $prize1) < 0.001);
 $r3 = orolado_gifts_status(load_db(), $jo, true, $now + 90);
 check('2e tour le même jour (2e dépôt, pas de limite par jour) : accepté', $r3['ok'] === true);
-$r4 = orolado_gifts_status(load_db(), $jo, true, $now + 120);
-check('plus de tour : refusé', $r4['ok'] === false && $r4['reason'] === 'noTicket');
 $prizes = $prize1 + (float) $r3['won']['prize'];
-check('total versé = somme des 2 gains', abs(paid($credits, $A, 'whl_') - $prizes) < 0.001);
+for ($i = 0; $i < 2; $i++) { $rx = orolado_gifts_status(load_db(), $jo, true, $now + 100 + $i); $prizes += (float) ($rx['won']['prize'] ?? 0); }
+$r4 = orolado_gifts_status(load_db(), $jo, true, $now + 120);
+check('après les 4 tours : plus de tour, refusé', $r4['ok'] === false && $r4['reason'] === 'noTicket');
+check('total versé = somme des 4 gains', abs(paid($credits, $A, 'whl_') - $prizes) < 0.001);
 $dbx = load_db();
 $bon = 0.0;
 foreach ($dbx['deposits'] as $d) if (str_starts_with((string) $d['id'], 'whl_')) { $bon += (float) $d['amount']; if (($d['operator'] ?? '') !== 'admin') $bon = -999; }

@@ -4,7 +4,7 @@ declare(strict_types=1);
  * v2689 — Cadeaux : ROUE et GRANDE JAUGE (règles validées par le propriétaire le 2026-10-16).
  *
  * ROUE
- *  - 1 tour gagné par VRAI dépôt de 10 $ ou plus (pas les bonus / cadeaux / ajouts admin), fait après l'ouverture de la roue ;
+ *  - 1 tour par TRANCHE de 10 $ de vrais dépôts (100 $ = 10 tours ; pas les bonus / cadeaux / ajouts admin), depuis l'ouverture ;
  *  - PAS de limite par jour (propriétaire, 2026-10-16 : « la roue est illimitée ») : chaque dépôt de 10 $+ = 1 tour ;
  *  - PAS DE ZÉRO (propriétaire) : chaque tour gagne au moins 0,25 $. Gain tiré par le SERVEUR (random_int) — chances :
  *    0,25 $ 85 %, 0,50 $ 9 %, 1 $ 3,5 %, 2 $ 1,5 %, 5 $ 0,6 %, 10 $ 0,35 %, 100 $ 0,05 % → coût moyen 0,4375 $ par tour,
@@ -147,7 +147,8 @@ function orolado_gifts_status(array $db, array $user, bool $spin = false, int $n
   $result = orolado_gifts_with($uid, static function (array &$st) use ($db, $uid, $tester, $spin, $day, $now) {
     $deps = orolado_gifts_deposits($db, $uid, $st, $tester);
     $earned = 0; $sum = 0.0;
-    foreach ($deps as $d) { if ($d['amount'] + 0.001 >= OROLADO_WHEEL_MIN_DEPOSIT) $earned++; $sum += $d['amount']; }
+    // v2693 (propriétaire) : 1 tour par TRANCHE de 10 $ déposés (100 $ = 10 tours, 1 000 $ = 100 tours)
+    foreach ($deps as $d) { $earned += (int) floor(($d['amount'] + 0.001) / OROLADO_WHEEL_MIN_DEPOSIT); $sum += $d['amount']; }
     $used = count((array) ($st['spins'] ?? []));
     $todayDone = false;
     foreach ((array) ($st['spins'] ?? []) as $s) if (($s['day'] ?? '') === $day) $todayDone = true;
