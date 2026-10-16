@@ -18,7 +18,7 @@
       block: '🚫 Bloquer', unblock: '✅ Débloquer', report: '🚩 Signaler', reportQ: 'Pourquoi signales-tu ce joueur ? (arnaque, insultes…)', reported: 'Merci, l’équipe va regarder. Ce joueur est bloqué.',
       youBlocked: 'Tu as bloqué ce joueur.', guestF: 'Inscris-toi pour écrire à tes amis', guestFB: 'Avec ton compte, tu reçois un identifiant secret et tu peux discuter avec tes amis.',
       safety: '🔒 Ne donne jamais ton mot de passe ni tes codes. OROLADO ne te les demandera jamais.',
-      duelBtn: 'Défier', duelPick: 'Défie ton ami en démo', duelPickS: 'Choisis la durée. Celui qui gagne le plus en démo remporte le défi.', duelSent: 'Défi envoyé · {m} min · en attente de {n}…', duelInvite: '{n} te défie !', duelInviteS: '{m} minutes en démo : celui qui gagne le plus remporte le défi.', accept: 'Accepter', refuse: 'Refuser', duelStartIn: 'Le défi commence dans {s} s', duelLive: 'Défi en cours', duelLeft: 'reste {t}', duelPlay: 'Jouer en démo', duelWin: '🏆 Tu as gagné le défi !', duelLose: '{n} a gagné le défi', duelTie: 'Égalité !', duelAgain: 'Revanche', duelRefused: '{n} a refusé le défi.', duelExpired: 'Le défi n’a pas été accepté à temps.', duelBusy: 'Un défi est déjà en cours avec cet ami.', duelGone: 'Ce défi n’est plus disponible.', duelRecord: 'Tes défis : {w} gagnés · {l} perdus', duelTrades: '{n} trades', duelWait: 'Résultat dans un instant…', duelPromoT: 'Défie ton ami en démo', duelPromoS: 'Envoie un défi à un ami : 3, 5 ou 10 minutes en démo. Celui qui gagne le plus remporte le défi !', duelPromoBtn: 'Défier un ami', inviteBadge: 'défi' },
+      duelBtn: 'Défier', duelPick: 'Défie ton ami en démo', duelPickS: 'Choisis la durée. Celui qui gagne le plus en démo remporte le défi.', duelSent: 'Défi envoyé · {m} min · en attente de {n}…', duelInvite: '{n} te défie !', duelInviteS: '{m} minutes en démo : celui qui gagne le plus remporte le défi.', accept: 'Accepter', refuse: 'Refuser', duelStartIn: 'Le défi commence dans {s} s', duelLive: 'Défi en cours', duelLeft: 'reste {t}', duelPlay: 'Jouer en démo', duelWin: '🏆 Tu as gagné le défi !', duelLose: '{n} a gagné le défi', duelTie: 'Égalité !', duelAgain: 'Revanche', duelRefused: '{n} a refusé le défi.', duelExpired: 'Le défi n’a pas été accepté à temps.', duelBusy: 'Un défi est déjà en cours avec cet ami.', duelGone: 'Ce défi n’est plus disponible.', duelRecord: 'Tes défis : {w} gagnés · {l} perdus', duelTrades: '{n} trades', duelWait: 'Résultat dans un instant…', duelPromoT: 'Défie ton ami en démo', duelPromoS: 'Invite ton ami : vous tradez en même temps en démo (3, 5 ou 10 min) et on voit qui est le plus fort. Montre-lui qui est le boss !', duelPromoBtn: 'Défier un ami', inviteBadge: 'défi', emptyT: 'Ajoute ton premier ami', emptyS: 'Envoie-lui ton identifiant, ou colle le sien juste au-dessus.', share: 'Envoyer mon identifiant', shareTxt: 'Ajoute-moi sur OROLADO Live ! Mon identifiant : {id}' },
     en: { sub: 'Online · the team answers you here', news: 'News', chat: 'Write to us', ph: 'Write your message…', views: 'views',
       welcomeNews: 'Welcome to OROLADO Live! 👋\nHere you find our news: new features, payment methods, markets on the move… And in “Write to us”, you can talk directly to the team.',
       welcomeChat: 'Hello 👋 Write to us here, we answer in this conversation.\nYou can also send a photo 📷 (for example a payment screenshot).',
@@ -32,7 +32,7 @@
       block: '🚫 Block', unblock: '✅ Unblock', report: '🚩 Report', reportQ: 'Why are you reporting this player? (scam, insults…)', reported: 'Thanks, the team will check. This player is blocked.',
       youBlocked: 'You blocked this player.', guestF: 'Sign up to write to your friends', guestFB: 'With your account, you get a secret ID and can chat with your friends.',
       safety: '🔒 Never give your password or codes. OROLADO will never ask for them.',
-      duelBtn: 'Challenge', duelPick: 'Challenge your friend in demo', duelPickS: 'Pick the duration. Whoever wins the most in demo wins the challenge.', duelSent: 'Challenge sent · {m} min · waiting for {n}…', duelInvite: '{n} challenges you!', duelInviteS: '{m} minutes in demo: whoever wins the most wins the challenge.', accept: 'Accept', refuse: 'Decline', duelStartIn: 'The challenge starts in {s} s', duelLive: 'Challenge in progress', duelLeft: '{t} left', duelPlay: 'Play in demo', duelWin: '🏆 You won the challenge!', duelLose: '{n} won the challenge', duelTie: 'It’s a tie!', duelAgain: 'Rematch', duelRefused: '{n} declined the challenge.', duelExpired: 'The challenge was not accepted in time.', duelBusy: 'A challenge is already running with this friend.', duelGone: 'This challenge is no longer available.', duelRecord: 'Your challenges: {w} won · {l} lost', duelTrades: '{n} trades', duelWait: 'Result in a moment…', duelPromoT: 'Challenge your friend in demo', duelPromoS: 'Send a challenge to a friend: 3, 5 or 10 minutes in demo. Whoever wins the most wins!', duelPromoBtn: 'Challenge a friend', inviteBadge: 'challenge' }
+      duelBtn: 'Challenge', duelPick: 'Challenge your friend in demo', duelPickS: 'Pick the duration. Whoever wins the most in demo wins the challenge.', duelSent: 'Challenge sent · {m} min · waiting for {n}…', duelInvite: '{n} challenges you!', duelInviteS: '{m} minutes in demo: whoever wins the most wins the challenge.', accept: 'Accept', refuse: 'Decline', duelStartIn: 'The challenge starts in {s} s', duelLive: 'Challenge in progress', duelLeft: '{t} left', duelPlay: 'Play in demo', duelWin: '🏆 You won the challenge!', duelLose: '{n} won the challenge', duelTie: 'It’s a tie!', duelAgain: 'Rematch', duelRefused: '{n} declined the challenge.', duelExpired: 'The challenge was not accepted in time.', duelBusy: 'A challenge is already running with this friend.', duelGone: 'This challenge is no longer available.', duelRecord: 'Your challenges: {w} won · {l} lost', duelTrades: '{n} trades', duelWait: 'Result in a moment…', duelPromoT: 'Challenge your friend in demo', duelPromoS: 'Invite your friend: you both trade at the same time in demo (3, 5 or 10 min) and we see who is the strongest. Show them who is the boss!', duelPromoBtn: 'Challenge a friend', inviteBadge: 'challenge', emptyT: 'Add your first friend', emptyS: 'Send them your ID, or paste theirs just above.', share: 'Send my ID', shareTxt: 'Add me on OROLADO Live! My ID: {id}' }
   };
   // v2682 — chinois
   TXT.zh = Object.assign({}, TXT.en, { sub: '在线 · 团队在这里回复你', news: '动态', chat: '联系我们', ph: '输入消息…', views: '次浏览',
@@ -47,7 +47,8 @@
     block: '🚫 屏蔽', unblock: '✅ 取消屏蔽', report: '🚩 举报', reportQ: '为什么举报这位玩家？（诈骗、辱骂……）', reported: '谢谢，团队会查看。该玩家已被屏蔽。',
     youBlocked: '你已屏蔽该玩家。', guestF: '注册后即可和好友聊天', guestFB: '有了账户，你会获得专属 ID，可以和好友聊天。',
     safety: '🔒 永远不要透露你的密码或验证码。OROLADO 绝不会向你索要。',
-    duelBtn: '挑战', duelPick: '在模拟账户挑战好友', duelPickS: '选择时长。模拟盈利最多的一方赢得挑战。', duelSent: '挑战已发送 · {m} 分钟 · 等待 {n}…', duelInvite: '{n} 向你发起挑战！', duelInviteS: '模拟 {m} 分钟：盈利最多的一方获胜。', accept: '接受', refuse: '拒绝', duelStartIn: '挑战将在 {s} 秒后开始', duelLive: '挑战进行中', duelLeft: '剩余 {t}', duelPlay: '去模拟交易', duelWin: '🏆 你赢得了挑战！', duelLose: '{n} 赢得了挑战', duelTie: '平局！', duelAgain: '再战一局', duelRefused: '{n} 拒绝了挑战。', duelExpired: '挑战未在规定时间内被接受。', duelBusy: '你和这位好友已有进行中的挑战。', duelGone: '该挑战已失效。', duelRecord: '你的挑战：{w} 胜 · {l} 负', duelTrades: '{n} 笔交易', duelWait: '马上公布结果…', duelPromoT: '在模拟账户挑战好友', duelPromoS: '向好友发起挑战：模拟 3、5 或 10 分钟，盈利最多的一方获胜！', duelPromoBtn: '挑战好友', inviteBadge: '挑战' });
+    duelBtn: '挑战', duelPick: '在模拟账户挑战好友', duelPickS: '选择时长。模拟盈利最多的一方赢得挑战。', duelSent: '挑战已发送 · {m} 分钟 · 等待 {n}…', duelInvite: '{n} 向你发起挑战！', duelInviteS: '模拟 {m} 分钟：盈利最多的一方获胜。', accept: '接受', refuse: '拒绝', duelStartIn: '挑战将在 {s} 秒后开始', duelLive: '挑战进行中', duelLeft: '剩余 {t}', duelPlay: '去模拟交易', duelWin: '🏆 你赢得了挑战！', duelLose: '{n} 赢得了挑战', duelTie: '平局！', duelAgain: '再战一局', duelRefused: '{n} 拒绝了挑战。', duelExpired: '挑战未在规定时间内被接受。', duelBusy: '你和这位好友已有进行中的挑战。', duelGone: '该挑战已失效。', duelRecord: '你的挑战：{w} 胜 · {l} 负', duelTrades: '{n} 笔交易', duelWait: '马上公布结果…', duelPromoT: '在模拟账户挑战好友', duelPromoS: '向好友发起挑战：模拟 3、5 或 10 分钟，盈利最多的一方获胜！', duelPromoBtn: '挑战好友', inviteBadge: '挑战', emptyT: '添加你的第一位好友', emptyS: '把你的 ID 发给好友，或在上方粘贴对方的 ID。', share: '发送我的 ID', shareTxt: '在 OROLADO Live 加我！我的 ID：{id}' });
+  (D6.LIVE_T = D6.LIVE_T || {}).live = TXT; // v2689 : packs de langues (js/live-i18n/xx.js)
   function L() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return TXT[l] || TXT.en; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function linkify(s) { return esc(s).replace(/(https:\/\/[^\s<]+|orolado\.com)/g, function (u) { var h = u.indexOf('http') === 0 ? u : 'https://' + u; return '<a href="' + h + '" target="_blank" rel="noopener">' + u + '</a>'; }); }
@@ -156,7 +157,7 @@
     var j = await call('friends', {});
     if (!j || !j.ok) return;
     myStats = j.stats || null;
-    $('lfMe').innerHTML = '<div><small>' + x.myId + '</small><b class="lf-myid">' + esc(j.me) + '</b><small>' + x.idHint + '</small></div><button type="button" id="lfCopy">' + x.copy + '</button>';
+    $('lfMe').innerHTML = (D6.LiveIcon ? '<span class="lf-meico">' + D6.LiveIcon('myid') + '</span>' : '') + '<div><small>' + x.myId + '</small><b class="lf-myid">' + esc(j.me) + '</b><small>' + x.idHint + '</small></div><button type="button" id="lfCopy">' + x.copy + '</button>';
     $('lfCopy').addEventListener('click', function () {
       var b = this;
       try { navigator.clipboard.writeText(j.me); } catch (e) { /* ignore */ }
@@ -166,7 +167,13 @@
     $('lfConvs').innerHTML = j.list.length ? j.list.map(function (c) {
       if (c.un) un++;
       return '<button type="button" class="lf-c' + (c.un ? ' un' : '') + '" data-id="' + esc(c.id) + '"><span class="lf-av">' + initial(c.name) + '</span><span class="lf-ct"><b>' + esc(c.name) + (c.blocked ? ' 🚫' : '') + '</b><small>' + esc(c.last) + '</small></span><span class="lf-t">' + ago(c.at) + (c.duel ? '<em class="lf-inv">⚔️</em>' : '') + (c.un ? '<i>' + c.un + '</i>' : '') + '</span></button>';
-    }).join('') : '<p class="lf-empty">' + x.noConv + '</p>';
+    }).join('') : '<div class="lf-emptybox">' + (D6.LiveIcon ? '<span class="lf-eico">' + D6.LiveIcon('friends') + '</span>' : '') + '<b>' + esc(x.emptyT) + '</b><p>' + esc(x.emptyS) + '</p><button type="button" class="lgu-go" id="lfShare" style="--tc:#E0306F">' + esc(x.share) + '</button></div>';
+    if ($('lfShare')) $('lfShare').addEventListener('click', function () {
+      var txt = fmt(x.shareTxt, { id: j.me });
+      if (navigator.share) { navigator.share({ text: txt + ' https://orolado.com' }).catch(function () {}); return; }
+      try { navigator.clipboard.writeText(txt + ' https://orolado.com'); } catch (e) { /* ignore */ }
+      this.textContent = x.copied;
+    });
     setFriendBadge(un);
     $('lfConvs').querySelectorAll('.lf-c').forEach(function (b) { b.addEventListener('click', function () { openDm(b.getAttribute('data-id')); }); });
   }
@@ -328,38 +335,44 @@
 
   /* ---------- v2686 — ACCUEIL EN GRANDES TUILES (propriétaire) ---------- */
   var HOME = [
-    { k: 'news', ico: '📰', c: 'c1' }, { k: 'friends', ico: '👥', c: 'c2' }, { k: 'groups', ico: '👪', c: 'c13' }, { k: 'duel', ico: '⚔️', c: 'c3' }, { k: 'chat', ico: '💬', c: 'c4' },
-    { k: 'wheel', ico: '🎡', c: 'c9' }, { k: 'quiz', ico: '🧠', c: 'c10' },
-    { k: 'myid', ico: '🆔', c: 'c5' }, { k: 'record', ico: '🏆', c: 'c6' }, { k: 'stats', ico: '📊', c: 'c11' }, { k: 'badges', ico: '🏅', c: 'c12' },
-    { k: 'gifts', ico: '🎁', c: 'c7' }, { k: 'learn', ico: '📚', c: 'c8' }
+    // v2689 : 2 grandes tuiles (Défie ton ami en haut, Cadeaux en bas) et un nombre pair de petites → aucun trou
+    { k: 'duel', ico: '⚔️', c: 'c3' }, { k: 'send', ico: '💸', c: 'c14' },
+    { k: 'news', ico: '📰', c: 'c1' }, { k: 'friends', ico: '👥', c: 'c2' }, { k: 'groups', ico: '👪', c: 'c13' }, { k: 'chat', ico: '💬', c: 'c4' },
+    { k: 'levels', ico: '⭐', c: 'c15' }, { k: 'missions', ico: '🎯', c: 'c16' },
+    { k: 'quiz', ico: '🧠', c: 'c10' }, { k: 'myid', ico: '🆔', c: 'c5' }, { k: 'record', ico: '🏆', c: 'c6' }, { k: 'stats', ico: '📊', c: 'c11' },
+    { k: 'badges', ico: '🏅', c: 'c12' }, { k: 'learn', ico: '📚', c: 'c8' },
+    { k: 'gifts', ico: '🎁', c: 'c7' }
   ];
   var HT = {
-    fr: { news: ['Actualités', 'Les nouvelles d’OROLADO'], friends: ['Mes amis', 'Discute et partage des photos'], duel: ['Défie ton ami', 'En démo · 3, 5 ou 10 min'], chat: ['Écrire à l’équipe', 'Une question ? On te répond'],
+    fr: { news: ['Actualités', 'Les nouvelles d’OROLADO'], friends: ['Mes amis', 'Discute et partage des photos'], duel: ['Défie ton ami', 'Montre-lui que tu es le plus fort en trading'], chat: ['Écrire à l’équipe', 'Une question ? On te répond'],
       myid: ['Mon identifiant', 'Partage-le à tes amis'], record: ['Mes défis', 'Victoires et défaites'], gifts: ['Cadeaux', 'Défis, bonus, tournoi'], learn: ['Apprendre', 'Le guide pas à pas'], home: 'Live', duelHint: 'Choisis un ami, puis touche « ⚔️ Défier ».' },
-    en: { news: ['News', 'OROLADO updates'], friends: ['My friends', 'Chat and share photos'], duel: ['Challenge a friend', 'In demo · 3, 5 or 10 min'], chat: ['Write to the team', 'A question? We answer'],
+    en: { news: ['News', 'OROLADO updates'], friends: ['My friends', 'Chat and share photos'], duel: ['Challenge a friend', 'Show them you are the best trader'], chat: ['Write to the team', 'A question? We answer'],
       myid: ['My ID', 'Share it with your friends'], record: ['My challenges', 'Wins and losses'], gifts: ['Gifts', 'Challenges, bonus, tournament'], learn: ['Learn', 'Step-by-step guide'], home: 'Live', duelHint: 'Pick a friend, then tap “⚔️ Challenge”.' },
-    zh: { news: ['动态', 'OROLADO 最新消息'], friends: ['我的好友', '聊天、分享照片'], duel: ['挑战好友', '模拟 · 3、5 或 10 分钟'], chat: ['联系团队', '有问题？我们来回复'],
+    zh: { news: ['动态', 'OROLADO 最新消息'], friends: ['我的好友', '聊天、分享照片'], duel: ['挑战好友', '证明你才是交易高手'], chat: ['联系团队', '有问题？我们来回复'],
       myid: ['我的 ID', '分享给好友'], record: ['我的挑战', '胜负记录'], gifts: ['礼物', '挑战、奖励、锦标赛'], learn: ['学习', '分步指南'], home: 'Live', duelHint: '选择一位好友，然后点「⚔️ 挑战」。' }
   };
+  D6.LIVE_T.home = HT;
   function H() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return HT[l] || HT.en; }
   var dmUnTiles = 0;
   function paintHome() {
     var h = H();
-    $('liveHomeGrid').innerHTML = HOME.map(function (t) {
+    $('liveHomeGrid').innerHTML = HOME.filter(function (t) { return t.k !== 'send' || guest() || (D6.LiveSend && D6.LiveSend.enabled()); }).map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
-      var tt = h[t.k] || (t.k === 'groups' && D6.LiveGroups ? [D6.LiveGroups.title(), D6.LiveGroups.sub()] : [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : '']);
-      return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' ? ' big' : '') + '" data-k="' + t.k + '"><span class="lh-ico">' + t.ico + '</span><b>' + esc(tt[0]) + '</b><small>' + esc(tt[1]) + '</small>' + badge + '</button>';
+      var tt = h[t.k] || (t.k === 'send' && D6.LiveSend ? [D6.LiveSend.title(), D6.LiveSend.sub()] : null) || (t.k === 'groups' && D6.LiveGroups ? [D6.LiveGroups.title(), D6.LiveGroups.sub()] : [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : '']);
+      return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' || t.k === 'gifts' || t.k === 'send' ? ' big' : '') + '" data-k="' + t.k + '" style="--tc:' + (D6.LiveColor ? D6.LiveColor(t.k) : '#7a5cff') + '"><span class="lh-ico">' + (D6.LiveIcon ? D6.LiveIcon(t.k) : t.ico) + '</span><b>' + esc(tt[0]) + '</b><small>' + esc(tt[1]) + '</small>' + badge + '</button>';
     }).join('');
     $('liveHomeGrid').querySelectorAll('.lh-tile').forEach(function (b) {
       b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); });
     });
   }
   function tileGo(k) {
+    if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }
     if (k === 'gifts') { close(); if (D6.Portal && D6.Portal.open) D6.Portal.open(); return; }
     if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); return; }
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
-    if (k === 'wheel' || k === 'quiz' || k === 'stats' || k === 'badges') { show('fun', k); return; }
+    if (k === 'quiz' || k === 'stats' || k === 'badges' || k === 'levels' || k === 'missions') { show('fun', k); return; }
     if (k === 'groups') { show('groups'); return; }
+    if (k === 'send') { show('send'); return; }
     // Défier / mon identifiant / mes défis : la page Amis, avec un mot d'aide en haut
     show('friends', k);
   }
@@ -368,9 +381,11 @@
     tab = w;
     var h = H(), home = w === 'home';
     $('livePaneHome').hidden = !home;
-    $('liveBar').hidden = home;
-    $('liveBarT').textContent = home ? '' : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
-    if ($('livePaneFun')) $('livePaneFun').hidden = w !== 'fun';
+    $('liveBar').hidden = false;
+    $('liveModal').classList.toggle('lv-at-home', home);
+    $('liveBarT').textContent = home ? 'Live' : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
+    if ($('livePaneFun')) $('livePaneFun').hidden = w !== 'fun' && w !== 'send';
+    if ($('livePaneGuest')) $('livePaneGuest').hidden = w !== 'guest';
     if ($('livePaneGroups')) $('livePaneGroups').hidden = w !== 'groups';
     if (w !== 'groups' && D6.LiveGroups) D6.LiveGroups.stop();
     if (w === 'groups' && D6.LiveGroups) $('liveBarT').textContent = D6.LiveGroups.title();
@@ -378,7 +393,15 @@
     $('livePaneNews').hidden = w !== 'news'; $('livePaneChat').hidden = w !== 'chat'; $('livePaneFriends').hidden = w !== 'friends';
     clearInterval(timer);
     if (home) { paintHome(); return; }
+    if (w === 'guest') {
+      $('livePaneNews').hidden = true;
+      $('liveBarT').textContent = (sub === 'send' && D6.LiveSend ? D6.LiveSend.title() : h[sub] ? h[sub][0] : (sub === 'groups' && D6.LiveGroups ? D6.LiveGroups.title() : (D6.LiveFun ? D6.LiveFun.title(sub) : '')));
+      if (D6.LiveGuest) D6.LiveGuest($('liveGuestBox'), sub, sub === 'chat' ? '<button type="button" class="lgu-have" id="lguMail">✉️ ' + esc(L().guestMail) + '</button>' : '');
+      if ($('lguMail')) $('lguMail').addEventListener('click', function () { close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
+      return;
+    }
     if (w === 'fun') { $('livePaneNews').hidden = true; if (D6.LiveFun) D6.LiveFun.open(sub); return; }
+    if (w === 'send') { $('livePaneNews').hidden = true; $('liveBarT').textContent = D6.LiveSend ? D6.LiveSend.title() : ''; if (D6.LiveSend) D6.LiveSend.open($('liveFun'), sub); return; }
     if (w === 'groups') { $('livePaneNews').hidden = true; if (D6.LiveGroups) D6.LiveGroups.open(sub); return; }
     if (w === 'friends') {
       friendsList().then(function () {
@@ -406,6 +429,8 @@
     if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     show(w || 'home');
+    // v2689 : la tuile « Envoyer de l'argent » apparaît dès que le serveur dit que c'est ouvert pour ce joueur
+    if (!guest() && D6.LiveSend) D6.LiveSend.status().then(function () { if (tab === 'home') paintHome(); });
   }
   function close() { clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.LiveGroups) D6.LiveGroups.stop(); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
@@ -436,11 +461,13 @@
     var x = L(), t = $('liveText'), text = t.value.trim();
     if (!text && !pendingImg) return;
     busy = true; $('liveGo').disabled = true;
-    var j = await call('send', { text: text, img: pendingImg });
+    var j = await call('send', { text: text, img: pendingImg, lang: (document.documentElement.lang || 'fr').slice(0, 2) });
     busy = false; $('liveGo').disabled = false;
     if (j && j.ok) {
       t.value = ''; grow(); pendingImg = ''; $('livePrev').hidden = true; $('livePrev').innerHTML = '';
       lastMsgs.push(j.msg); paintChat({ msgs: lastMsgs });
+      // v2689 : réponse automatique « bien reçu, merci de patienter » (affichée un instant après)
+      if (j.auto) setTimeout(function () { lastMsgs.push(j.auto); paintChat({ msgs: lastMsgs }); }, 900);
     } else if (j && j.login) { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('login'); }
     else if (D6.App && D6.App.toast) D6.App.toast(x[(j && j.reason) || 'fail'] || x.fail, 'err');
   }
@@ -448,6 +475,7 @@
   function boot() {
     if (!$('liveModal')) return;
     $('closeLive').addEventListener('click', close);
+    $('closeLive').style.setProperty('display', 'none', 'important'); // v2689 : plus de croix, la flèche retour suffit
     $('liveModal').addEventListener('click', function (e) { if (e.target === $('liveModal')) close(); });
     $('liveTabNews').addEventListener('click', function () { show('news'); });
     $('liveTabChat').addEventListener('click', function () { show('chat'); });
@@ -457,8 +485,13 @@
       clearInterval(duelTick); clearInterval(duelPoll);
       if (tab === 'friends' && peer) { peer = null; friendsList(); return; }
       if (tab === 'groups' && D6.LiveGroups && D6.LiveGroups.inGroup()) { D6.LiveGroups.back(); return; }
-      peer = null; show('home');
+      peer = null;
+      if (tab === 'home') { close(); return; }
+      show('home');
     });
+    // v2689 : le pack de la langue vient d'arriver → l'accueil Live est redessiné dans la bonne langue
+    document.addEventListener('oro:livepack', function () { if ($('liveModal').classList.contains('active') && tab === 'home') paintHome(); });
+    document.addEventListener('oro:lang', function () { if ($('liveModal').classList.contains('active') && tab === 'home') paintHome(); });
     $('liveForm').addEventListener('submit', send);
     $('liveText').addEventListener('input', grow);
     $('liveFile').addEventListener('change', async function () {

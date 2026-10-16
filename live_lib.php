@@ -118,6 +118,32 @@ function live_add_msg(array $user, string $from, string $text, string $img = '')
   });
 }
 
+/**
+ * v2689 (propriétaire) — réponse automatique : après le message d'un joueur, si l'équipe ne lui a rien écrit
+ * depuis 12 h (ni réponse automatique), on ajoute « bien reçu, merci de patienter ». Ne touche pas au compteur
+ * « non lu » de l'admin (le message du joueur reste à traiter).
+ */
+function live_auto_reply(string $uid, string $lang): ?array {
+  $txt = [
+    'fr' => 'Merci pour ton message 🙏 Il est bien reçu. Notre équipe te répondra ici dès que possible : merci de patienter un peu.',
+    'en' => 'Thanks for your message 🙏 We received it. Our team will answer you here as soon as possible: please be patient.',
+    'zh' => '感谢你的留言 🙏 我们已收到。团队会尽快在这里回复你，请耐心等待。',
+  ];
+  $t = $txt[$lang] ?? $txt['en'];
+  return live_update(live_thread_file($uid), function ($th) use ($t) {
+    $now = time();
+    foreach (array_reverse((array) ($th['msgs'] ?? [])) as $m) {
+      if (($m['f'] ?? '') === 'a') {
+        if ((int) ($m['at'] ?? 0) > $now - 12 * 3600) return ['ok' => false];
+        break;
+      }
+    }
+    $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => 'a', 't' => $t, 'at' => $now, 'auto' => 1];
+    $th['msgs'] = array_slice(array_merge((array) ($th['msgs'] ?? []), [$msg]), -LIVE_THREAD_KEEP);
+    return ['ok' => true, 'msg' => $msg, '__write' => $th];
+  });
+}
+
 function live_thread(string $uid): array {
   return live_read_json(live_thread_file($uid), ['uid' => $uid, 'msgs' => []]);
 }
@@ -463,12 +489,9 @@ function live_duel_stats(string $uid): array {
  * Une roue et un quiz par jour et par joueur (contrôlé par le serveur). Le gain va sur le solde DÉMO.
  * ===================================================================================================== */
 const LIVE_WHEEL = [1000, 1000, 2000, 2000, 3000, 5000, 5000, 10000, 20000, 50000];
-// Réponse juste de chaque question du quiz (les textes sont dans js/live.js, dans le même ordre).
-const LIVE_QUIZ_OK = [1, 0, 2, 1, 2, 0, 1, 2, 0, 1, 2, 1];
 
 function live_fun_file(string $uid): string { return live_dir('fun') . '/' . live_safe_id($uid) . '.json'; }
 function live_day(): string { return gmdate('Y-m-d'); }
-function live_quiz_today(): int { return (int) (floor(time() / 86400) % count(LIVE_QUIZ_OK)); }
 
 /** Crédite le solde DÉMO du joueur (sans toucher au réel). */
 function live_demo_credit(string $uid, float $amount): float {
@@ -480,11 +503,6 @@ function live_demo_credit(string $uid, float $amount): float {
   return (float) ($r['demo'] ?? 0);
 }
 
-function live_fun_state(string $uid): array {
-  $f = live_read_json(live_fun_file($uid), []);
-  return ['wheel' => ($f['wheelDay'] ?? '') !== live_day(), 'quiz' => ($f['quizDay'] ?? '') !== live_day(), 'q' => live_quiz_today(),
-    'wheels' => (int) ($f['wheels'] ?? 0), 'quizOk' => (int) ($f['quizOk'] ?? 0)];
-}
 
 function live_wheel_spin(string $uid): array {
   $r = live_update(live_fun_file($uid), function ($f) {
@@ -497,40 +515,124 @@ function live_wheel_spin(string $uid): array {
   return $r;
 }
 
-function live_quiz_answer(string $uid, int $pick): array {
-  $q = live_quiz_today();
-  $ok = $pick === LIVE_QUIZ_OK[$q];
-  $r = live_update(live_fun_file($uid), function ($f) use ($ok) {
-    if (($f['quizDay'] ?? '') === live_day()) return ['ok' => false, 'reason' => 'quizDone'];
-    $f['quizDay'] = live_day();
-    if ($ok) $f['quizOk'] = (int) ($f['quizOk'] ?? 0) + 1;
+/* v2689 (propriétaire) — QUIZ : 50 questions, 5 par jour et par joueur (choisies par le serveur), bonne réponse gardée
+ * par le serveur, récompense = POINTS DE NIVEAU (plus d'argent démo : il faussait le tournoi démo).
+ * Les textes sont dans js/live-quiz-data.js : la 1re réponse est la bonne ; l'ordre affiché suit live_quiz_perm. */
+const LIVE_QUIZ_N = 50;
+const LIVE_QUIZ_DAY = 5;
+const LIVE_QUIZ_PERMS = [[0, 1, 2], [1, 0, 2], [1, 2, 0], [2, 0, 1], [0, 2, 1], [2, 1, 0]];
+function live_quiz_perm(int $i): array { return LIVE_QUIZ_PERMS[($i * 7 + 3) % 6]; }
+/** Les 5 questions du jour de ce joueur (toujours les mêmes pour lui ce jour-là). */
+function live_quiz_set(string $uid, string $day): array {
+  $h = hash('sha256', 'quiz|' . $uid . '|' . $day, true);
+  $set = []; $k = 0;
+  while (count($set) < LIVE_QUIZ_DAY && $k < 200) {
+    $i = (ord($h[$k % 32]) * 256 + ord($h[($k + 7) % 32]) + $k * 13) % LIVE_QUIZ_N;
+    if (!in_array($i, $set, true)) $set[] = $i;
+    $k++;
+  }
+  return $set;
+}
+function live_quiz_answer(string $uid, int $q, int $pick): array {
+  $day = live_day();
+  if (!in_array($q, live_quiz_set($uid, $day), true) || $pick < 0 || $pick > 2) return ['ok' => false, 'reason' => 'quizDone'];
+  $right = (int) array_search(0, live_quiz_perm($q), true);
+  $good = $pick === $right;
+  $r = live_update(live_fun_file($uid), function ($f) use ($q, $good, $day) {
+    if (($f['qDay'] ?? '') !== $day) { $f['qDay'] = $day; $f['qDone'] = []; }
+    if (isset($f['qDone'][(string) $q])) return ['ok' => false, 'reason' => 'quizDone'];
+    $f['qDone'][(string) $q] = $good ? 1 : 0;
+    $f['quizN'] = (int) ($f['quizN'] ?? 0) + 1;
+    if ($good) $f['quizOk'] = (int) ($f['quizOk'] ?? 0) + 1;
+    $wk = gmdate('o-W');
+    if (($f['wk'] ?? '') !== $wk) { $f['wk'] = $wk; $f['wkQuiz'] = 0; }
+    $f['wkQuiz'] = (int) ($f['wkQuiz'] ?? 0) + 1;
     return ['ok' => true, '__write' => $f];
   });
   if (empty($r['ok'])) return $r;
-  $out = ['ok' => true, 'good' => $ok, 'right' => LIVE_QUIZ_OK[$q]];
-  if ($ok) $out['demo'] = live_demo_credit($uid, 5000);
-  return $out;
+  return ['ok' => true, 'good' => $good, 'right' => $right, 'xp' => $good ? LIVE_XP_QUIZ_OK : LIVE_XP_QUIZ];
 }
 
-/** Statistiques (trades gardés par le serveur) + badges. */
+/* v2689 — NIVEAUX (points d'expérience, aucune valeur en argent) et MISSIONS DE LA SEMAINE. */
+const LIVE_XP_QUIZ = 5;
+const LIVE_XP_QUIZ_OK = 20;
+const LIVE_XP_LEVELS = [0, 60, 150, 300, 500, 800, 1200, 1800, 2600, 3600, 5000, 7000];
+const LIVE_MISSION_XP = 50;
+
+function live_fun_state(string $uid): array {
+  $f = live_read_json(live_fun_file($uid), []);
+  $day = live_day();
+  $done = (($f['qDay'] ?? '') === $day) ? (array) ($f['qDone'] ?? []) : [];
+  return ['quizSet' => live_quiz_set($uid, $day), 'quizDone' => (object) $done, 'quizOk' => (int) ($f['quizOk'] ?? 0), 'quizN' => (int) ($f['quizN'] ?? 0),
+    'wheels' => (int) ($f['wheels'] ?? 0)];
+}
+
+function live_level(int $xp): array {
+  $lv = 1;
+  foreach (LIVE_XP_LEVELS as $i => $need) if ($xp >= $need) $lv = $i + 1;
+  $cur = LIVE_XP_LEVELS[$lv - 1];
+  $next = LIVE_XP_LEVELS[$lv] ?? null;
+  return ['level' => $lv, 'xp' => $xp, 'from' => $cur, 'to' => $next, 'pct' => $next ? (int) floor(($xp - $cur) * 100 / max(1, $next - $cur)) : 100];
+}
+
+/** Statistiques (trades gardés par le serveur), niveau, missions de la semaine, badges. */
 function live_my_stats(string $uid): array {
   $db = load_db();
   $n = 0; $w = 0; $best = 0; $cur = 0; $mk = []; $real = 0;
+  $wkStart = (int) strtotime('monday this week 00:00:00 UTC'); if ($wkStart > time()) $wkStart -= 7 * 86400;
+  $wkN = 0; $wkMk = []; $wkBest = 0; $wkCur = 0;
   $rows = array_values(array_filter((array) ($db['orders'] ?? []), static fn($o) => is_array($o) && (string) ($o['userId'] ?? '') === $uid && isset($o['net'])));
   usort($rows, static fn($a, $b) => ((float) ($a['at'] ?? 0)) <=> ((float) ($b['at'] ?? 0)));
   foreach ($rows as $o) {
     $n++; if (($o['mode'] ?? '') === 'real') $real++;
-    if (!empty($o['won'])) { $w++; $cur++; $best = max($best, $cur); } elseif (empty($o['voided'])) { $cur = 0; }
+    $won = !empty($o['won']);
+    if ($won) { $w++; $cur++; $best = max($best, $cur); } elseif (empty($o['voided'])) { $cur = 0; }
     $a = (string) ($o['assetId'] ?? ''); if ($a !== '') $mk[$a] = ($mk[$a] ?? 0) + 1;
+    if ((float) ($o['at'] ?? 0) >= $wkStart) {
+      $wkN++; if ($a !== '') $wkMk[$a] = 1;
+      if ($won) { $wkCur++; $wkBest = max($wkBest, $wkCur); } elseif (empty($o['voided'])) { $wkCur = 0; }
+    }
   }
   arsort($mk);
-  $d = live_duel_stats($uid); $fun = live_fun_state($uid);
+  $d = live_duel_stats($uid);
+  $f = live_read_json(live_fun_file($uid), []);
+  $quizOk = (int) ($f['quizOk'] ?? 0); $quizN = (int) ($f['quizN'] ?? 0);
+  $wkQuiz = (($f['wk'] ?? '') === gmdate('o-W')) ? (int) ($f['wkQuiz'] ?? 0) : 0;
   $friends = count(live_inbox($uid));
+  // Missions de la semaine (calculées par le serveur ; chaque mission réussie est gardée pour toujours).
+  $missions = [
+    'trades' => ['have' => min(20, $wkN), 'need' => 20],
+    'quiz' => ['have' => min(10, $wkQuiz), 'need' => 10],
+    'markets' => ['have' => min(3, count($wkMk)), 'need' => 3],
+    'streak' => ['have' => min(3, $wkBest), 'need' => 3],
+  ];
+  $wk = gmdate('o-W');
+  $newDone = [];
+  foreach ($missions as $k => $m) if ($m['have'] >= $m['need'] && empty($f['missions'][$wk][$k])) $newDone[] = $k;
+  if ($newDone) {
+    live_update(live_fun_file($uid), function ($ff) use ($wk, $newDone) {
+      foreach ($newDone as $k) $ff['missions'][$wk][$k] = 1;
+      // on ne garde que les 12 dernières semaines en détail, le total reste compté
+      $ff['missionsTotal'] = (int) ($ff['missionsTotal'] ?? 0) + count($newDone);
+      if (count($ff['missions']) > 12) $ff['missions'] = array_slice($ff['missions'], -12, null, true);
+      return ['ok' => true, '__write' => $ff];
+    });
+    $f = live_read_json(live_fun_file($uid), []);
+  }
+  foreach ($missions as $k => &$m) $m['done'] = !empty($f['missions'][$wk][$k]);
+  unset($m);
+  $missionsTotal = (int) ($f['missionsTotal'] ?? 0);
+  // Points de niveau : on joue, on apprend, on défie, on se fait des amis.
+  $xp = ($n - $real) + $real * 3 + $w + $quizN * LIVE_XP_QUIZ + ($quizOk * (LIVE_XP_QUIZ_OK - LIVE_XP_QUIZ)) + (int) $d['w'] * 30 + ((int) $d['w'] + (int) $d['l']) * 10
+    + min(20, $friends) * 10 + $missionsTotal * LIVE_MISSION_XP;
+  $lv = live_level($xp);
   $badges = [
     'first' => $n >= 1, 't10' => $n >= 10, 't100' => $n >= 100, 'streak5' => $best >= 5, 'sharp' => $n >= 20 && $w / max(1, $n) >= 0.55,
-    'duel' => (int) $d['w'] >= 1, 'friend' => $friends >= 1, 'wheel' => $fun['wheels'] >= 1, 'quiz' => $fun['quizOk'] >= 1, 'real' => $real >= 1,
+    'duel' => (int) $d['w'] >= 1, 'friend' => $friends >= 1, 'quiz' => $quizOk >= 1, 'quiz50' => $quizOk >= 50, 'mission' => $missionsTotal >= 1,
+    'level5' => $lv['level'] >= 5, 'real' => $real >= 1,
   ];
-  return ['n' => $n, 'w' => $w, 'rate' => $n ? round($w * 100 / $n) : 0, 'best' => $best, 'fav' => (string) (array_key_first($mk) ?? ''), 'duel' => $d, 'badges' => $badges];
+  return ['n' => $n, 'w' => $w, 'rate' => $n ? round($w * 100 / $n) : 0, 'best' => $best, 'fav' => (string) (array_key_first($mk) ?? ''), 'duel' => $d,
+    'quizOk' => $quizOk, 'friends' => $friends, 'badges' => $badges, 'lv' => $lv, 'missions' => $missions, 'missionXp' => LIVE_MISSION_XP];
 }
 
 /* =====================================================================================================
@@ -539,7 +641,7 @@ function live_my_stats(string $uid): array {
  * Fichiers : data/live/groups/<id>.json, data/live/ugroups/<uid>.json, data/live/gtok/<jeton>.json
  * ===================================================================================================== */
 const LIVE_GROUP_OWN = 5;       // groupes créés par joueur
-const LIVE_GROUP_MAX = 300;     // membres par groupe
+const LIVE_GROUP_MAX = 5000;    // membres par groupe (v2689 : protection du serveur seulement, jamais affichée aux joueurs)
 const LIVE_GROUP_HOUR = 60;     // messages de groupe par heure
 
 function live_group_file(string $gid): string { return live_dir('groups') . '/' . live_safe_id($gid) . '.json'; }
@@ -621,6 +723,7 @@ function live_group_leave(string $uid, string $gid, string $who = ''): array {
     return ['ok' => true, '__write' => $g];
   });
   if (!empty($r['ok'])) live_ugroups_set($target, $gid, false);
+  unset($r['__write']);
   return $r;
 }
 

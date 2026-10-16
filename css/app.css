@@ -9707,3 +9707,271 @@ html.oro-lite #liveModal .wheel{transition-duration:1.2s}
 html body #liveModal #liveGroups textarea,html body #liveModal #liveGroups .lf-who small{font-family:inherit!important;letter-spacing:0!important}
 html body #liveModal #liveGroups textarea{color:#fff;background:transparent}
 #liveModal #lgText{width:100%;border:0;background:none;color:#fff;font:15px/1.35 system-ui!important;resize:none;outline:none;padding:7px 0;max-height:110px;box-sizing:border-box}
+
+/* ===== v2689 — Live : un seul bouton retour (plus de croix), vrais logos, tuiles vivantes, pages « inscris-toi » ===== */
+html body #liveModal #closeLive{display:none!important}
+html body #liveModal .live-bar{position:sticky;top:-2px;z-index:5;margin:0 0 12px!important;padding:6px 0 8px;background:linear-gradient(180deg,#140d33 75%,rgba(20,13,51,0))}
+html body #liveModal .live-bar[hidden]{display:flex!important}
+html body #liveModal .live-back{width:40px;height:40px;flex:0 0 40px;border-radius:13px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+html body #liveModal .live-bar b{font-size:20px;letter-spacing:-.2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #liveModal .lh-grid{padding-top:2px!important}
+/* tuiles : teinte de la couleur du logo, coin lumineux fixe (aucune animation) */
+html body #liveModal .lh-tile{min-width:0;background:linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.03))!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)!important}
+@supports (background:color-mix(in srgb,red 10%,blue)){
+  html body #liveModal .lh-tile{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc) 30%,transparent),transparent 62%),linear-gradient(160deg,color-mix(in srgb,var(--tc) 14%,#1b1636),#15112b)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 38%,transparent)!important}
+}
+html body #liveModal .lh-tile .lh-ico,html body #liveModal .lh-tile[class*=" c"] .lh-ico{width:50px!important;height:50px!important;flex:0 0 50px;background:none!important;border-radius:15px;margin-bottom:8px;box-shadow:0 6px 14px -6px rgba(0,0,0,.6)}
+html body #liveModal .lh-tile.big .lh-ico{width:58px!important;height:58px!important;flex:0 0 58px}
+html body #liveModal .lh-tile.big{grid-template-columns:58px 1fr!important}
+html body #liveModal .li-ico{width:100%;height:100%;display:block}
+html body #liveModal .lh-tile b{overflow-wrap:anywhere;hyphens:auto}
+html body #liveModal .lh-tile small{color:#C9CFE6;overflow-wrap:anywhere}
+html body #liveModal .lh-tile .lh-b{z-index:2}
+/* page « inscris-toi » */
+#liveModal .lgu{display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 6px 4px;max-width:420px;margin:0 auto}
+#liveModal .lgu-ico{width:92px;height:92px;margin:6px 0 16px;filter:drop-shadow(0 12px 22px rgba(0,0,0,.45))}
+#liveModal .lgu-ico .li-ico{width:100%;height:100%}
+#liveModal .lgu-t{font:800 23px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff;overflow-wrap:anywhere}
+#liveModal .lgu-s{margin:8px 0 16px;color:#C9CFE6;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+#liveModal .lgu-l{list-style:none;margin:0 0 20px;padding:0;width:100%;display:grid;gap:8px}
+#liveModal .lgu-l li{padding:12px 14px;border-radius:14px;text-align:left;color:#fff;font-size:15px;font-weight:600;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);overflow-wrap:anywhere}
+#liveModal .lgu-go{width:100%;min-height:52px;border:0;border-radius:16px;color:#fff;font:800 16px "Plus Jakarta Sans",system-ui,sans-serif;background:linear-gradient(135deg,var(--tc),#7b3be6);box-shadow:0 10px 24px -10px var(--tc)}
+#liveModal .lgu-have{width:100%;min-height:46px;margin-top:10px;border:0;border-radius:14px;color:#fff;font:700 15px "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.08)}
+#liveModal .lgu-free{margin-top:14px;color:#9AA3C4;font-size:12.5px}
+#liveModal .lgu-go:active,#liveModal .lgu-have:active{transform:scale(.98)}
+/* grandes pages (téléphone) : poignée en haut + la croix devient « descendre » (on peut aussi glisser vers le bas) */
+.bp-grip{display:none}
+@media (max-width:859px){
+  html body .modal-backdrop > .modal-box > .bp-grip,html body .modal-backdrop > .modal-box > i.bp-grip{display:block;position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;width:42px;height:5px;margin-left:-21px;border-radius:3px;background:rgba(255,255,255,.24);z-index:6;pointer-events:none}
+  html body #portalModal .btn-close .x-ico,html body #financeModal .btn-close .x-ico,html body #withdrawModal .btn-close .x-ico,html body #depositModal .btn-close .x-ico,html body #termsModal .btn-close .x-ico,html body #historySheet .btn-close .x-ico,html body #passModal .btn-close .x-ico,html body #emailModal .btn-close .x-ico,html body #helpModal .btn-close .x-ico{display:none!important}
+  html body #portalModal .btn-close::before,html body #financeModal .btn-close::before,html body #withdrawModal .btn-close::before,html body #depositModal .btn-close::before,html body #termsModal .btn-close::before,html body #historySheet .btn-close::before,html body #passModal .btn-close::before,html body #emailModal .btn-close::before,html body #helpModal .btn-close::before{content:"";display:block;width:10px;height:10px;margin:-5px auto 0;border-right:2.6px solid #fff;border-bottom:2.6px solid #fff;transform:rotate(45deg);border-radius:1px}
+  html body #liveModal.active > .modal-box,html body #portalModal.active > .modal-box,html body #financeModal.active > .modal-box,html body #withdrawModal.active > .modal-box,html body #depositModal.active > .modal-box,html body #termsModal.active > .modal-box,html body #historySheet.active > .modal-box,html body #passModal.active > .modal-box,html body #emailModal.active > .modal-box,html body #helpModal.active > .modal-box{animation:bpIn .26s ease-out}
+}
+@keyframes bpIn{from{translate:0 28px;opacity:.4}to{translate:0 0;opacity:1}}
+/* v2689 — Live en arabe (droite à gauche) : texte aligné à droite, flèche retour tournée */
+html[dir="rtl"] body #liveModal .lh-tile{text-align:right!important}
+html[dir="rtl"] body #liveModal .live-back svg{transform:scaleX(-1)}
+html[dir="rtl"] body #liveModal .lgu-l li{text-align:right}
+/* v2689 — Amis : carte identifiant avec logo, page vide qui invite à ajouter un ami */
+#liveModal .lf-meico{width:44px;height:44px;flex:0 0 44px}
+#liveModal .lf-meico .li-ico,#liveModal .lf-eico .li-ico{width:100%;height:100%;display:block}
+#liveModal .lf-emptybox{display:flex;flex-direction:column;align-items:center;text-align:center;padding:26px 10px 6px}
+#liveModal .lf-eico{width:84px;height:84px;margin-bottom:14px;filter:drop-shadow(0 12px 22px rgba(0,0,0,.45))}
+#liveModal .lf-emptybox b{color:#fff;font:800 19px/1.25 "Plus Jakarta Sans",system-ui,sans-serif}
+#liveModal .lf-emptybox p{color:#C9CFE6;font-size:14.5px;line-height:1.45;margin:8px 0 18px;max-width:300px}
+#liveModal .lf-emptybox .lgu-go{max-width:320px}
+
+/* ===== v2689 — UNIVERS : Live et Cadeaux dans le même ciel (étoiles + nébuleuses FIXES, aucune animation) ===== */
+html:root body #liveModal#liveModal > .modal-box{background:
+  radial-gradient(1.2px 1.2px at 12% 18%,rgba(255,255,255,.9),transparent 60%),radial-gradient(1px 1px at 78% 9%,rgba(255,255,255,.8),transparent 60%),
+  radial-gradient(1.4px 1.4px at 64% 31%,rgba(255,236,190,.9),transparent 60%),radial-gradient(1px 1px at 30% 44%,rgba(255,255,255,.7),transparent 60%),
+  radial-gradient(1.3px 1.3px at 90% 52%,rgba(190,220,255,.9),transparent 60%),radial-gradient(1px 1px at 8% 66%,rgba(255,255,255,.7),transparent 60%),
+  radial-gradient(1.5px 1.5px at 52% 74%,rgba(255,255,255,.85),transparent 60%),radial-gradient(1px 1px at 84% 86%,rgba(255,220,240,.8),transparent 60%),
+  radial-gradient(1px 1px at 22% 92%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1.2px 1.2px at 44% 6%,rgba(255,255,255,.75),transparent 60%),
+  radial-gradient(60% 40% at 100% 0%,rgba(123,59,230,.38),transparent 70%),radial-gradient(55% 35% at 0% 45%,rgba(224,48,111,.2),transparent 70%),
+  radial-gradient(70% 45% at 70% 100%,rgba(36,87,230,.3),transparent 70%),linear-gradient(180deg,#120a30 0%,#0c0824 55%,#090619 100%)!important;background-attachment:local!important}
+/* barre du haut plus légère */
+html body #liveModal .live-bar{padding:2px 0 6px!important;margin-bottom:8px!important;background:linear-gradient(180deg,rgba(18,10,48,.96) 70%,rgba(18,10,48,0))!important}
+html body #liveModal .live-back{width:34px!important;height:34px!important;flex:0 0 34px!important;border-radius:11px!important}
+html body #liveModal .live-back svg{width:18px!important;height:18px!important}
+html body #liveModal .live-bar b{font-size:17px!important;font-weight:800}
+/* tuiles Live : verre + lueur de couleur + petite planète dans le coin */
+html body #liveModal .lh-tile{border-radius:20px!important}
+html body #liveModal .lh-tile::after{content:"";position:absolute;right:-18px;top:-18px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.35),var(--tc) 45%,transparent 72%);opacity:.32;pointer-events:none}
+html body #liveModal .lh-tile.big::after{width:110px;height:110px;right:-26px;top:-34px;opacity:.38}
+html body #liveModal .lh-tile.big{min-height:92px!important}
+
+/* ===== v2689 — CADEAUX en grandes tuiles ===== */
+#portalModal .gh-bar{display:flex;align-items:center;gap:10px;position:relative;z-index:3;margin:0 0 6px;min-height:34px}
+#portalModal .gh-back{width:34px;height:34px;flex:0 0 34px;border:0;border-radius:11px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);display:grid;place-items:center}
+#portalModal .gh-back svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+#portalModal .gh-bar b{color:#fff;font:800 17px "Plus Jakarta Sans",system-ui,sans-serif;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[dir="rtl"] #portalModal .gh-back svg{transform:scaleX(-1)}
+html body #portalModal #portalTabs{display:none!important}
+#portalModal.gh-home .portal-box > section{display:none!important}
+#portalModal.gh-sub .portal-head,#portalModal.gh-sub .gh-grid{display:none!important}
+#portalModal.gh-sub .portal-box > section.gh-page[hidden]{display:none!important}
+#portalModal .gh-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:6px}
+#portalModal .gh-tile{position:relative;overflow:hidden;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:start;border:0;border-radius:22px;padding:14px 13px;min-height:128px;color:#fff;
+  background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+@supports (background:color-mix(in srgb,red 10%,blue)){
+  #portalModal .gh-tile{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc) 34%,transparent),transparent 62%),linear-gradient(160deg,color-mix(in srgb,var(--tc) 18%,rgba(27,22,54,.92)),rgba(17,13,40,.92));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 45%,transparent),0 10px 26px -14px var(--tc)}
+}
+#portalModal .gh-tile.big{grid-column:1/-1;min-height:118px;flex-direction:row;align-items:center;gap:14px;padding:16px}
+#portalModal .gh-tile.wide{grid-column:1/-1;min-height:96px;flex-direction:row;align-items:center}
+#portalModal .gh-ico{width:52px;height:52px;flex:0 0 52px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45));position:relative;z-index:2}
+#portalModal .gh-tile.big .gh-ico{width:62px;height:62px;flex:0 0 62px}
+#portalModal .gh-ico .li-ico{width:100%;height:100%;display:block}
+#portalModal .gh-txt{display:flex;flex-direction:column;gap:3px;min-width:0;position:relative;z-index:2;max-width:100%}
+#portalModal .gh-tile.big .gh-txt{max-width:calc(100% - 150px)}
+#portalModal .gh-txt b{font:800 16px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;overflow-wrap:anywhere}
+#portalModal .gh-tile.big .gh-txt b{font-size:19px}
+#portalModal .gh-txt small{color:#D3D8EE;font-size:12.5px;line-height:1.35;overflow-wrap:anywhere}
+#portalModal .gh-tile:active{transform:scale(.98)}
+#portalModal .gh-pill{align-self:flex-start;margin-top:4px;font:800 12px system-ui;font-style:normal;color:#3b2200;background:linear-gradient(135deg,#FFE9A8,#F2B33D);border-radius:20px;padding:3px 9px}
+#portalModal .gh-mini{display:block;width:100%;max-width:120px;height:7px;margin-top:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
+#portalModal .gh-mini i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#7CE7FF,#9B6BFF,#FF7BD9)}
+#portalModal .gh-deco{position:absolute;pointer-events:none;z-index:1}
+#portalModal .gh-wheeldeco{right:-34px;top:50%;width:150px;height:150px;margin-top:-75px;opacity:.95;filter:drop-shadow(0 0 18px rgba(255,180,90,.35))}
+#portalModal .gh-wheeldeco svg{width:100%;height:100%;transform:rotate(-12deg)}
+#portalModal .gh-coins{right:10px;top:0;bottom:0;width:120px}
+#portalModal .gh-coins i{position:absolute;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF6D0,#F2B33D 55%,#A8650A);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),0 6px 14px rgba(0,0,0,.4)}
+#portalModal .gh-coins i::after{content:"$";position:absolute;inset:0;display:grid;place-items:center;color:#7a4300;font:900 19px system-ui}
+#portalModal .gh-coins i:nth-child(1){right:62px;top:18px;transform:rotate(-14deg)}
+#portalModal .gh-coins i:nth-child(2){right:22px;top:40px;width:46px;height:46px}
+#portalModal .gh-coins i:nth-child(3){right:70px;bottom:14px;width:30px;height:30px;transform:rotate(18deg)}
+html[dir="rtl"] #portalModal .gh-wheeldeco{right:auto;left:-34px}
+html[dir="rtl"] #portalModal .gh-coins{right:auto;left:10px}
+/* pages roue / jauge */
+#portalModal .gh-page{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 4px 10px}
+#portalModal .gh-lead{color:#D3D8EE;font-size:14.5px;line-height:1.45;margin:2px 0 14px;max-width:360px}
+#portalModal .whl-wrap{position:relative;width:min(300px,78vw);aspect-ratio:1;margin:4px auto 16px}
+#portalModal .whl-glow{position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(circle,rgba(255,190,90,.32),rgba(155,107,255,.18) 45%,transparent 68%)}
+#portalModal .whl-rot{position:absolute;inset:0;will-change:transform}
+#portalModal .whl-rot svg{width:100%;height:100%;display:block}
+#portalModal .whl-pin{position:absolute;left:50%;top:-6px;width:30px;height:38px;margin-left:-15px;background:linear-gradient(180deg,#FFF1C2,#F2B33D 60%,#A8650A);clip-path:polygon(50% 100%,0 0,100% 0);filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));z-index:3}
+#portalModal .whl-o{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#6b3d00;font:900 18px "Plus Jakarta Sans",system-ui,sans-serif;z-index:3;pointer-events:none}
+#portalModal .gh-line{color:#fff;font-weight:700;font-size:15px;margin:2px 0 12px;max-width:340px}
+#portalModal .gh-go{width:100%;max-width:360px;min-height:54px;border:0;border-radius:17px;color:#3b2200;font:900 17px "Plus Jakarta Sans",system-ui,sans-serif;background:linear-gradient(135deg,#FFE9A8,#F2B33D 55%,#E0901A);box-shadow:0 12px 26px -12px rgba(242,179,61,.9)}
+#portalModal .gh-go:disabled{opacity:.55}
+#portalModal .gh-alt{width:100%;max-width:360px;min-height:46px;margin-top:10px;border:0;border-radius:14px;color:#fff;font:700 15px "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.1)}
+#portalModal .gh-go:active,#portalModal .gh-alt:active{transform:scale(.98)}
+#portalModal .gh-note{color:#9AA3C4;font-size:12.5px;margin:12px 0 0;max-width:340px}
+#portalModal .gh-link{border:0;background:none;color:#FFD27A;font-weight:700;text-decoration:underline;padding:0}
+#portalModal .gh-res{width:100%;max-width:360px;border-radius:16px;padding:12px 14px;margin:0 0 12px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);display:flex;flex-direction:column;gap:4px;animation:ghPop .45s ease-out}
+#portalModal .gh-res.win{background:linear-gradient(135deg,rgba(255,210,122,.25),rgba(255,123,217,.15));box-shadow:inset 0 0 0 1px rgba(255,210,122,.6)}
+#portalModal .gh-res b{color:#fff;font:800 18px "Plus Jakarta Sans",system-ui,sans-serif}
+#portalModal .gh-res small{color:#D3D8EE;font-size:13px}
+@keyframes ghPop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+#portalModal .jg-wrap{position:relative;width:min(240px,64vw);aspect-ratio:1;margin:4px auto 16px}
+#portalModal .jg-svg{width:100%;height:100%;display:block}
+#portalModal .jg-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+#portalModal .jg-gift{width:62px;height:62px}
+#portalModal .jg-gift .li-ico{width:100%;height:100%}
+#portalModal .jg-mid b{color:#fff;font:900 30px "Plus Jakarta Sans",system-ui,sans-serif}
+html:root body #portalModal#portalModal.gh-home .portal-box > section:not(#c1),html:root body #portalModal#portalModal.gh-sub .portal-box > section.gh-page[hidden]:not(#c1){display:none!important}
+html:root body #portalModal#portalModal.gh-sub .portal-head:not(#c1),html:root body #portalModal#portalModal.gh-sub .gh-grid:not(#c1){display:none!important}
+html:root body #liveModal .live-bar.live-bar{background:transparent!important;position:relative!important}
+
+/* ===== v2689 — Live : Envoyer de l'argent à un ami ===== */
+#liveModal .ls-card{border-radius:22px;padding:16px 14px;background:linear-gradient(160deg,rgba(22,163,122,.2),rgba(17,13,40,.85));box-shadow:inset 0 0 0 1px rgba(107,239,166,.35)}
+#liveModal .ls-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+#liveModal .ls-ico{width:56px;height:56px;flex:0 0 56px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+#liveModal .ls-ico .li-ico{width:100%;height:100%;display:block}
+#liveModal .ls-top small{display:block;color:#C9CFE6;font-size:13px}
+#liveModal .ls-top b{display:block;color:#fff;font:900 28px "Plus Jakarta Sans",system-ui,sans-serif;line-height:1.1}
+#liveModal .ls-l{display:block;color:#D3D8EE;font-size:13px;font-weight:700;margin:10px 0 6px}
+#liveModal .ls-in{width:100%;box-sizing:border-box;min-height:50px;border:0;border-radius:14px;padding:0 14px;color:#fff;font:700 16px "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);outline:none}
+#liveModal .ls-in:focus{box-shadow:inset 0 0 0 2px #6BEFA6}
+#liveModal .ls-amt{font-size:22px}
+#liveModal .ls-fr{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+#liveModal .ls-fr::-webkit-scrollbar{display:none}
+#liveModal .ls-fr button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;width:64px;border:0;background:none;color:#fff;font-size:11.5px;padding:0}
+#liveModal .ls-fr i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:800 18px system-ui;font-style:normal;background:linear-gradient(135deg,#FF86BE,#7B3BE6);box-shadow:0 0 0 2px rgba(255,255,255,.15)}
+#liveModal .ls-fr button.on i{box-shadow:0 0 0 3px #6BEFA6}
+#liveModal .ls-fr span{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveModal .ls-card .lgu-go{margin-top:14px}
+#liveModal .ls-nodep{color:#fff;font-weight:600;margin:4px 0 4px}
+#liveModal .ls-confirm{margin-top:14px;border-radius:16px;padding:14px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(107,239,166,.5);display:flex;flex-direction:column;gap:8px;animation:ghPop .3s ease-out}
+#liveModal .ls-confirm b{color:#fff;font:800 18px "Plus Jakarta Sans",system-ui,sans-serif;overflow-wrap:anywhere}
+#liveModal .ls-confirm small{color:#C9CFE6;font-size:12.5px}
+#liveModal .ls-confirm div{display:flex;gap:8px;margin-top:4px}
+#liveModal .ls-confirm button{flex:1;min-height:48px;border:0;border-radius:14px;font:800 15px "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+#liveModal .ls-no{background:rgba(255,255,255,.1)}
+#liveModal .ls-yes{background:linear-gradient(135deg,#6BEFA6,#0F9F63);color:#05321f!important}
+#liveModal .ls-rules{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:6px}
+#liveModal .ls-rules li{color:#D3D8EE;font-size:13px;line-height:1.4}
+#liveModal .ls-h{display:block;color:#fff;font:800 16px "Plus Jakarta Sans",system-ui,sans-serif;margin:18px 2px 8px}
+#liveModal .ls-hist{display:grid;gap:8px}
+#liveModal .ls-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+#liveModal .ls-row span{width:32px;height:32px;flex:0 0 32px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;background:rgba(255,122,168,.25)}
+#liveModal .ls-row.in span{background:rgba(107,239,166,.25)}
+#liveModal .ls-row div{flex:1;min-width:0}
+#liveModal .ls-row b{display:block;color:#fff;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveModal .ls-row small{color:#9AA3C4;font-size:11.5px}
+#liveModal .ls-row em{font-style:normal;font-weight:900;color:#FF9CC2}
+#liveModal .ls-row.in em{color:#6BEFA6}
+#liveModal .ls-load{text-align:center;color:#9AA3C4}
+
+/* ===== v2689 — Live : Quiz (5/jour), Mon niveau, Missions, Statistiques, Badges ===== */
+#liveModal .qz{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+#liveModal .qz-dots{display:flex;justify-content:center;gap:8px}
+#liveModal .qz-dots i{width:30px;height:7px;border-radius:4px;background:rgba(255,255,255,.14)}
+#liveModal .qz-dots i.cur{background:#C79BFF}
+#liveModal .qz-dots i.ok{background:#22C55E}
+#liveModal .qz-dots i.ko{background:#F43F5E}
+#liveModal .qz-of{text-align:center;color:#9AA3C4;font-size:12.5px}
+#liveModal .qz-card{display:flex;align-items:center;gap:12px;padding:16px 14px;border-radius:20px;background:linear-gradient(150deg,rgba(123,59,230,.35),rgba(17,13,40,.85));box-shadow:inset 0 0 0 1px rgba(199,155,255,.4)}
+#liveModal .qz-ico{width:48px;height:48px;flex:0 0 48px}
+#liveModal .qz-ico .li-ico,#liveModal .qz-big .li-ico,#liveModal .st-i .li-ico,#liveModal .bd-i .li-ico,#liveModal .ms-i .li-ico,#liveModal .ms-ico .li-ico{width:100%;height:100%;display:block}
+#liveModal .qz-q{color:#fff;font:800 18px/1.3 "Plus Jakarta Sans",system-ui,sans-serif;overflow-wrap:anywhere}
+#liveModal .qz-opts{display:grid;gap:9px}
+#liveModal .qz-opts button{display:flex;align-items:center;gap:12px;text-align:start;min-height:54px;padding:10px 14px;border:0;border-radius:16px;color:#fff;font:700 15px/1.3 "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#liveModal .qz-opts button em{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900;background:rgba(199,155,255,.25)}
+#liveModal .qz-opts button span{overflow-wrap:anywhere}
+#liveModal .qz-opts button.ok{background:rgba(34,197,94,.25);box-shadow:inset 0 0 0 2px #22C55E}
+#liveModal .qz-opts button.ko{background:rgba(244,63,94,.22);box-shadow:inset 0 0 0 2px #F43F5E}
+#liveModal .qz-opts button:disabled{opacity:1}
+#liveModal .qz-res{min-height:20px;text-align:center;font-weight:800;color:#fff;margin:0}
+#liveModal .qz-res.win{color:#6BEFA6}
+#liveModal .qz-res.lose{color:#FF9CB0}
+#liveModal .qz-sum{align-items:center;text-align:center;padding-top:6px}
+#liveModal .qz-big{width:84px;height:84px;filter:drop-shadow(0 12px 22px rgba(0,0,0,.45))}
+#liveModal .qz-t{color:#fff;font:800 21px "Plus Jakarta Sans",system-ui,sans-serif}
+#liveModal .qz-pts{color:#FFD27A;font-weight:900;font-size:18px;margin:0}
+#liveModal .qz-s{color:#C9CFE6;margin:0 0 6px}
+#liveModal .qz-sum .lgu-go{max-width:340px}
+/* carte niveau */
+#liveModal .lv-card{display:flex;align-items:center;gap:14px;padding:14px;border-radius:22px;background:linear-gradient(150deg,rgba(242,179,61,.22),rgba(46,140,240,.12) 60%,rgba(17,13,40,.85));box-shadow:inset 0 0 0 1px rgba(255,210,122,.45);margin-bottom:14px}
+#liveModal .lv-medal{position:relative;width:74px;height:74px;flex:0 0 74px;filter:drop-shadow(0 8px 16px rgba(242,179,61,.35))}
+#liveModal .lv-card.big .lv-medal{width:96px;height:96px;flex:0 0 96px}
+#liveModal .lv-medal svg{width:100%;height:100%;display:block}
+#liveModal .lv-medal b{position:absolute;inset:0;display:grid;place-items:center;color:#FFE9A8;font:900 28px "Plus Jakarta Sans",system-ui,sans-serif}
+#liveModal .lv-card.big .lv-medal b{font-size:36px}
+#liveModal .lv-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+#liveModal .lv-txt small{color:#C9CFE6;font-size:12.5px}
+#liveModal .lv-txt b{color:#fff;font:900 21px "Plus Jakarta Sans",system-ui,sans-serif;overflow-wrap:anywhere}
+#liveModal .lv-bar{height:9px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden}
+#liveModal .lv-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#FFE9A8,#F2B33D,#FF7BD9)}
+#liveModal .lv-h{display:block;color:#fff;font:800 16px "Plus Jakarta Sans",system-ui,sans-serif;margin:6px 2px 8px}
+#liveModal .lv-how{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px}
+#liveModal .lv-how li{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);color:#D3D8EE;font-size:14px}
+#liveModal .lv-how li b{color:#6BEFA6;white-space:nowrap}
+#liveModal .lv-ladder{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#liveModal .lv-ladder li{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.04);color:#9AA3C4;font-weight:700}
+#liveModal .lv-ladder li em{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:rgba(255,255,255,.08);color:#fff}
+#liveModal .lv-ladder li.past{color:#D3D8EE}
+#liveModal .lv-ladder li.past em{background:rgba(242,179,61,.35)}
+#liveModal .lv-ladder li.cur{color:#fff;background:linear-gradient(90deg,rgba(242,179,61,.3),rgba(255,123,217,.15));box-shadow:inset 0 0 0 1px rgba(255,210,122,.6)}
+#liveModal .lv-ladder li.cur em{background:linear-gradient(135deg,#FFE9A8,#F2B33D);color:#5a3500}
+#liveModal .lv-ladder li i{margin-inline-start:auto;font-style:normal;font-size:11px;font-weight:900;color:#3b2200;background:#FFD27A;border-radius:10px;padding:2px 8px}
+/* missions */
+#liveModal .ms-head{display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;margin-bottom:12px;background:linear-gradient(150deg,rgba(255,123,217,.25),rgba(17,13,40,.85));box-shadow:inset 0 0 0 1px rgba(255,123,217,.4)}
+#liveModal .ms-ico{width:52px;height:52px;flex:0 0 52px}
+#liveModal .ms-head b{display:block;color:#fff;font:800 18px "Plus Jakarta Sans",system-ui,sans-serif}
+#liveModal .ms-head small{color:#D3D8EE;font-size:12.5px}
+#liveModal .ms-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;margin-bottom:8px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#liveModal .ms-row.done{box-shadow:inset 0 0 0 1px rgba(34,197,94,.6);background:rgba(34,197,94,.1)}
+#liveModal .ms-i{width:40px;height:40px;flex:0 0 40px}
+#liveModal .ms-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+#liveModal .ms-t b{color:#fff;font-size:14.5px;overflow-wrap:anywhere}
+#liveModal .ms-row em{font-style:normal;font-weight:900;color:#FFD27A;white-space:nowrap;font-size:13px}
+#liveModal .ms-row.done em{color:#6BEFA6}
+/* statistiques + badges */
+html body #liveModal .lfun-stats{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+html body #liveModal .lfun-stat{display:flex!important;flex-direction:column;align-items:flex-start!important;gap:4px;padding:12px!important;border-radius:16px!important;background:rgba(255,255,255,.06)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)!important;min-width:0}
+#liveModal .st-i{width:36px;height:36px;margin-bottom:4px}
+html body #liveModal .lfun-stat b{color:#fff!important;font:900 20px "Plus Jakarta Sans",system-ui,sans-serif!important;overflow-wrap:anywhere}
+html body #liveModal .lfun-stat small{color:#C9CFE6!important}
+#liveModal .bd-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+#liveModal .bd-head b{color:#FFD27A;font:900 20px "Plus Jakarta Sans",system-ui,sans-serif;white-space:nowrap}
+#liveModal .bd-head .lv-bar{flex:1}
+html body #liveModal .lfun-badges{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+html body #liveModal .lfun-badge{display:flex!important;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:12px 6px!important;border-radius:16px!important;background:rgba(255,255,255,.04)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)!important;min-width:0}
+#liveModal .bd-i{width:46px;height:46px;filter:grayscale(1) brightness(.6);opacity:.55}
+html body #liveModal .lfun-badge.on{background:linear-gradient(160deg,rgba(242,179,61,.2),rgba(255,255,255,.04))!important;box-shadow:inset 0 0 0 1px rgba(255,210,122,.55)!important}
+#liveModal .lfun-badge.on .bd-i{filter:none;opacity:1}
+html body #liveModal .lfun-badge b{color:#fff!important;font-size:12.5px!important;overflow-wrap:anywhere}
+html body #liveModal .lfun-badge small{color:#9AA3C4!important;font-size:10.5px!important;line-height:1.25;overflow-wrap:anywhere}
+html body #liveModal .lfun-badge:not(.on) b{color:#9AA3C4!important}
+html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip{left:0!important;right:0!important;margin:0 auto!important}

@@ -18,6 +18,7 @@
       n: '{n} 位成员', n1: '1 位成员', owner: '创建者', kick: '移除', kickQ: '将 {n} 移出群组？', ph: '给群组发消息…', joined: '欢迎加入群组 {n}！', login: '注册即可加入该群组',
       gName: '请给群组起个名字（至少 2 个字）。', gGone: '该群组已失效。', gFull: '该群组已满。', tooMany: '已达上限，请稍后再试。', badImg: '照片无法发送。', fail: '失败，请重试。', back: '我的群组' }
   };
+  (D6.LIVE_T = D6.LIVE_T || {}).groups = T;
   function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return T[l] || T.en; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function guest() { return document.documentElement.classList.contains('oro-guest') || !(D6.Api && D6.Api.token && D6.Api.token()); }
@@ -123,7 +124,8 @@
       else toast(x[(r && r.reason) || 'fail'] || x.fail, 'err');
     });
     stop();
-    poll = setInterval(function () { if (!document.hidden) refresh(); }, 6000);
+    // gros groupe = lecture moins fréquente (protège le serveur)
+    poll = setInterval(function () { if (!document.hidden) refresh(); }, cur && cur.n > 200 ? 12000 : 6000);
   }
   async function refresh() { if (!cur) return; var j = await call('gGet', { gid: cur.id }); if (j && j.ok) { cur = j.g; paintMsgs(cur.msgs); } }
   function paintMsgs(msgs) {

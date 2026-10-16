@@ -28,6 +28,8 @@ if (is_file(__DIR__ . '/defi_lib.php')) require_once __DIR__ . '/defi_lib.php';
 if (is_file(__DIR__ . '/aff_lib.php')) require_once __DIR__ . '/aff_lib.php';
 if (is_file(__DIR__ . '/top_lib.php')) require_once __DIR__ . '/top_lib.php';
 if (is_file(__DIR__ . '/bonus_lib.php')) require_once __DIR__ . '/bonus_lib.php';
+if (is_file(__DIR__ . '/gifts_lib.php')) require_once __DIR__ . '/gifts_lib.php';
+if (is_file(__DIR__ . '/transfer_lib.php')) require_once __DIR__ . '/transfer_lib.php';
 orolado_load_env();
 
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
@@ -274,6 +276,11 @@ $OROLADO_RATE_RULES = [
   'bonusStatus'       => [['t', 60, 60]],
   'bonusActivate'     => [['t', 10, 60]],
   'bonusTestDeposit'  => [['t', 10, 60]],
+  'giftsStatus'       => [['t', 60, 60]],
+  'wheelSpin'         => [['t', 10, 60]],
+  'giftsTestDeposit'  => [['t', 10, 60]],
+  'xferStatus'        => [['t', 60, 60]],
+  'xferSend'          => [['t', 10, 600]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
   'withdraw'          => [['t', 30, 3600]],
@@ -382,6 +389,65 @@ if ($action === 'affClick') {
     try { $okC = orolado_aff_click((string) ($req['ami'] ?? ''), (string) ($req['device'] ?? '')); } catch (Throwable $eC) { $okC = false; }
   }
   echo json_encode(['ok' => true, 'server' => true, 'counted' => $okC]);
+  exit;
+}
+
+// v2689 — Envoyer de l'argent à un ami (transfer_lib.php) : seulement l'argent de ses VRAIS dépôts ; l'ami mise ×2.
+if ($action === 'xferStatus' || $action === 'xferSend') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'login']);
+    exit;
+  }
+  if (!function_exists('orolado_xfer_status')) {
+    echo json_encode(['ok' => true, 'server' => true, 'enabled' => false]);
+    exit;
+  }
+  try {
+    require_once __DIR__ . '/live_lib.php';
+    if ($action === 'xferSend') {
+      $oid = function_exists('live_norm_oro_id') ? live_norm_oro_id((string) ($req['to'] ?? '')) : '';
+      $to = $oid !== '' ? live_who($oid) : null;
+      if (!$to) {
+        $res = ['ok' => false, 'reason' => 'notFound'];
+      } else {
+        $res = orolado_xfer_send($db, $me, $to, (float) ($req['amount'] ?? 0));
+        if (!empty($res['ok'])) {
+          // Message automatique dans leur conversation Live (l'ami voit tout de suite qui lui a envoyé).
+          try { live_dm_send((string) $me['id'], (string) $to['uid'], '💸 +' . number_format((float) $res['amount'], 2, ',', ' ') . ' $'); } catch (Throwable $eDm) { /* jamais bloquant */ }
+          $res += orolado_xfer_status(load_db(), $me);
+        }
+      }
+    } else {
+      $res = orolado_xfer_status($db, $me);
+    }
+  } catch (Throwable $eX) {
+    error_log('OROLADO xfer ' . $eX->getMessage());
+    $res = ['ok' => false, 'reason' => 'busy'];
+  }
+  echo json_encode(['server' => true] + $res);
+  exit;
+}
+
+// v2689 — Cadeaux : roue (1 tour par vrai dépôt de 10 $+, 1 par jour) et grande jauge (gifts_lib.php).
+if ($action === 'giftsStatus' || $action === 'wheelSpin' || $action === 'giftsTestDeposit') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'login']);
+    exit;
+  }
+  if (!function_exists('orolado_gifts_status')) {
+    echo json_encode(['ok' => true, 'server' => true, 'enabled' => false]);
+    exit;
+  }
+  try {
+    if ($action === 'giftsTestDeposit') orolado_gifts_test_deposit($me, (float) ($req['amount'] ?? 0));
+    $res = orolado_gifts_status($db, $me, $action === 'wheelSpin');
+  } catch (Throwable $eGift) {
+    error_log('OROLADO gifts ' . $eGift->getMessage());
+    $res = ['ok' => false, 'reason' => 'busy'];
+  }
+  echo json_encode(['server' => true] + $res);
   exit;
 }
 

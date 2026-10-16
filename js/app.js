@@ -9567,6 +9567,7 @@
     closeModal: function (id) { closeModal(id); },
     toast: function (m, k, ms) { toast(m, k, ms); },
     showAuth: function (w) { try { showAuthScreen(w || 'register'); } catch (e) { /* ignore */ } },
+    openDeposit: function () { try { openDeposit(); } catch (e) { /* ignore */ } }, // v2689 — roue / jauge (js/gifts-home.js)
     onRemoteAccount: function () {
       updateBalance(false);
       fillProfile();

@@ -11,6 +11,7 @@ date_default_timezone_set('Africa/Abidjan');
 header('X-Robots-Tag: noindex, nofollow');
 
 function live_out(array $j, int $code = 200): void {
+  unset($j['__write']); // v2689 : jamais le contenu interne d'un fichier (membres, jeton du groupe…) vers le navigateur
   http_response_code($code);
   header('Content-Type: application/json; charset=utf-8');
   header('Cache-Control: no-store');
@@ -116,7 +117,12 @@ if ($action === 'send') {
   $m = $r['msg'];
   $o = ['id' => $m['id'], 'f' => 'u', 't' => $m['t'], 'at' => $m['at']];
   if ($img !== '') $o['img'] = 'live.php?i=' . rawurlencode($img);
-  echo json_encode(['ok' => true, 'msg' => $o], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  $auto = null;
+  try {
+    $ar = live_auto_reply($uid, substr(preg_replace('/[^a-z]/', '', strtolower((string) ($req['lang'] ?? 'fr'))), 0, 2));
+    if (is_array($ar) && !empty($ar['ok'])) $auto = ['id' => $ar['msg']['id'], 'f' => 'a', 't' => $ar['msg']['t'], 'at' => $ar['msg']['at']];
+  } catch (Throwable $e) { $auto = null; }
+  echo json_encode(['ok' => true, 'msg' => $o, 'auto' => $auto], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   // Prévenir le téléphone ADMIN (après la réponse : le joueur n'attend pas).
   if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
   if (is_file(__DIR__ . '/push_lib.php')) {
@@ -316,8 +322,9 @@ if (in_array($action, ['fun', 'wheel', 'quiz', 'mystats'], true)) {
   if (!$me) live_out(['ok' => false, 'login' => true]);
   $uid = (string) $me['id'];
   if ($action === 'fun') live_out(['ok' => true] + live_fun_state($uid));
-  if ($action === 'wheel') live_out(live_wheel_spin($uid));
-  if ($action === 'quiz') live_out(live_quiz_answer($uid, (int) ($req['pick'] ?? -1)));
+  // v2689 (propriétaire) : la roue démo est retirée de Live (elle faussait le tournoi démo) ; une roue réelle ira dans Cadeaux.
+  if ($action === 'wheel') live_out(['ok' => false, 'reason' => 'off']);
+  if ($action === 'quiz') live_out(live_quiz_answer($uid, (int) ($req['q'] ?? -1), (int) ($req['pick'] ?? -1)));
   if ($action === 'mystats') live_out(['ok' => true] + live_my_stats($uid));
 }
 

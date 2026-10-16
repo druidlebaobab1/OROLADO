@@ -1,85 +1,63 @@
-/* v2687 — Live : JEUX DU JOUR (démo uniquement) — Roue du jour, Quiz du jour, Mes statistiques, Mes badges.
-   Tout est vérifié par le serveur (live.php : fun / wheel / quiz / mystats) : une roue et un quiz par jour,
-   gains sur le solde DÉMO seulement (aucune valeur réelle). Léger : rien ne tourne quand la page est fermée. */
+/* v2689 — Live : QUIZ (5 questions par jour, 50 au total), MON NIVEAU, MISSIONS DE LA SEMAINE, MES STATISTIQUES, MES BADGES.
+   Tout est vérifié par le serveur (live.php : fun / quiz / mystats). Récompense = points de niveau (aucun argent :
+   l'argent démo faussait le tournoi démo). Léger : rien ne tourne quand la page est fermée. */
 (function (D6) {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var WHEEL = [1000, 1000, 2000, 2000, 3000, 5000, 5000, 10000, 20000, 50000];
   var T = {
     fr: {
-      wheel: ['Roue du jour', 'Un tour gratuit par jour'], quiz: ['Quiz du jour', 'Une question, 5 000 $ démo'], stats: ['Mes statistiques', 'Ta réussite en chiffres'], badges: ['Mes badges', 'Débloque-les tous'],
-      spin: 'Tourner la roue', spun: 'Reviens demain pour un nouveau tour !', won: 'Bravo ! +{p} $ sur ton compte démo 🎉', wheelS: 'Gagne entre 1 000 $ et 50 000 $ de démo. Un tour par jour.',
-      quizS: 'Bonne réponse = +5 000 $ sur ton compte démo.', good: 'Bonne réponse ! +5 000 $ démo 🎉', bad: 'Raté ! La bonne réponse est en vert. Reviens demain.', quizDone: 'Quiz fait aujourd’hui. Reviens demain !',
-      sTrades: 'Trades', sRate: 'Réussite', sBest: 'Meilleure série', sFav: 'Marché préféré', sDuels: 'Défis gagnés', sNote: 'Calculé sur tes trades récents (démo et réel).', none: '—',
-      login: 'Inscris-toi pour jouer', loginB: 'Crée ton compte gratuit pour tourner la roue, faire le quiz et gagner des badges.', loginBtn: 'Créer mon compte',
+      quiz: ['Quiz du jour', '5 questions, des points de niveau'], stats: ['Mes statistiques', 'Ta réussite en chiffres'], badges: ['Mes badges', 'Débloque-les tous'],
+      levels: ['Mon niveau', 'Monte jusqu’au sommet'], missions: ['Missions', 'De nouveaux défis chaque semaine'],
+      qOf: 'Question {i} sur {n}', good: 'Bonne réponse ! +{x} points', bad: 'Raté ! La bonne réponse est en vert. +{x} points', next: 'Question suivante', finish: 'Voir mon résultat',
+      qSum: '{g} bonne(s) réponse(s) sur {n}', qSumS: 'Reviens demain pour 5 nouvelles questions !', qPts: '+{x} points de niveau',
+      lvl: 'Niveau {n}', xpTo: '{x} / {t} points', xpMax: 'Niveau maximum atteint 👑', how: 'Comment gagner des points',
+      h1: ['Un trade démo', '+1'], h2: ['Un trade réel', '+3'], h3: ['Une bonne réponse au quiz', '+20'], h4: ['Un défi joué / gagné', '+10 / +30'], h5: ['Un ami', '+10'], h6: ['Une mission réussie', '+50'],
+      ladder: 'Tous les niveaux', you: 'toi',
+      names: ['Débutant', 'Apprenti', 'Trader', 'Confirmé', 'Expert', 'Pro', 'Élite', 'Maître', 'Grand Maître', 'Légende', 'Mythique', 'Roi d’OROLADO'],
+      mTitle: 'Missions de la semaine', mSub: 'Nouvelles missions chaque lundi · +{x} points chacune', mDone: 'Réussie ✓',
+      m: { trades: 'Fais 20 trades', quiz: 'Réponds à 10 questions du quiz', markets: 'Joue sur 3 marchés différents', streak: 'Gagne 3 trades d’affilée' },
+      sTrades: 'Trades', sRate: 'Réussite', sBest: 'Meilleure série', sFav: 'Marché préféré', sDuels: 'Défis gagnés', sQuiz: 'Bonnes réponses', sNote: 'Calculé sur tes trades récents (démo et réel).', none: '—',
       b: { first: ['Premier pas', '1er trade'], t10: ['Lancé', '10 trades'], t100: ['Habitué', '100 trades'], streak5: ['En feu', '5 gains d’affilée'], sharp: ['Précis', '55 % de réussite (20 trades)'],
-        duel: ['Champion', '1er défi gagné'], friend: ['Sociable', '1er ami'], wheel: ['Chanceux', 'Roue tournée'], quiz: ['Malin', 'Quiz réussi'], real: ['Pro', '1er trade réel'] },
-      q: [
-        ['Que se passe-t-il si tu touches ACHETER ?', ['Tu gagnes si le prix baisse', 'Tu gagnes si le prix finit au-dessus de la ligne', 'Tu gagnes toujours']],
-        ['Quelle mise est la plus prudente ?', ['2 à 5 % de ton solde', 'Tout ton solde d’un coup', 'Le double après chaque perte']],
-        ['À quoi sert le compte DÉMO ?', ['Gagner de l’argent réel', 'Retirer des gains', 'S’entraîner sans risque']],
-        ['Si le prix finit exactement sur la ligne ?', ['Tu perds', 'Ta mise est rendue', 'Tu gagnes le double']],
-        ['Que montrent les indicateurs MA, BB et EMA ?', ['Le solde des autres joueurs', 'L’heure', 'La tendance du marché']],
-        ['Après 3 pertes d’affilée, le mieux est de…', ['Faire une pause et analyser', 'Doubler la mise', 'Tout miser']],
-        ['VENDRE (PUT) gagne si le prix final est…', ['Au-dessus de la ligne', 'En dessous de la ligne', 'Égal à la ligne']],
-        ['Combien de marchés propose OROLADO ?', ['3', '5', '10']],
-        ['Avant de retirer, il faut avoir misé…', ['2 fois tes dépôts', '10 fois tes dépôts', 'Rien du tout']],
-        ['Avec un payout de 90 %, une mise de 10 $ gagnante te rend…', ['9 $ en tout', '19 $ (10 $ + 9 $)', '90 $']],
-        ['Qui peut connaître ton mot de passe ?', ['L’équipe OROLADO', 'Tes amis', 'Personne : ne le donne jamais']],
-        ['Le « Défie ton ami » se joue avec…', ['De l’argent réel', 'L’argent démo', 'Des cadeaux']]
-      ]
+        duel: ['Champion', '1er défi gagné'], friend: ['Sociable', '1er ami'], quiz: ['Malin', '1re bonne réponse'], quiz50: ['Savant', '50 bonnes réponses'], mission: ['Missionnaire', '1re mission réussie'],
+        level5: ['Expert', 'Niveau 5 atteint'], real: ['Pro', '1er trade réel'] }
     },
     en: {
-      wheel: ['Daily wheel', 'One free spin a day'], quiz: ['Daily quiz', 'One question, $5,000 demo'], stats: ['My stats', 'Your success in numbers'], badges: ['My badges', 'Unlock them all'],
-      spin: 'Spin the wheel', spun: 'Come back tomorrow for a new spin!', won: 'Well done! +${p} on your demo account 🎉', wheelS: 'Win between $1,000 and $50,000 demo. One spin a day.',
-      quizS: 'Right answer = +$5,000 on your demo account.', good: 'Right answer! +$5,000 demo 🎉', bad: 'Missed! The right answer is in green. Come back tomorrow.', quizDone: 'Quiz done today. Come back tomorrow!',
-      sTrades: 'Trades', sRate: 'Success', sBest: 'Best streak', sFav: 'Favourite market', sDuels: 'Challenges won', sNote: 'Based on your recent trades (demo and real).', none: '—',
-      login: 'Sign up to play', loginB: 'Create your free account to spin the wheel, take the quiz and earn badges.', loginBtn: 'Create my account',
+      quiz: ['Daily quiz', '5 questions, level points'], stats: ['My stats', 'Your success in numbers'], badges: ['My badges', 'Unlock them all'],
+      levels: ['My level', 'Climb to the top'], missions: ['Missions', 'New challenges every week'],
+      qOf: 'Question {i} of {n}', good: 'Right answer! +{x} points', bad: 'Missed! The right answer is in green. +{x} points', next: 'Next question', finish: 'See my result',
+      qSum: '{g} right answer(s) out of {n}', qSumS: 'Come back tomorrow for 5 new questions!', qPts: '+{x} level points',
+      lvl: 'Level {n}', xpTo: '{x} / {t} points', xpMax: 'Maximum level reached 👑', how: 'How to earn points',
+      h1: ['A demo trade', '+1'], h2: ['A real trade', '+3'], h3: ['A right quiz answer', '+20'], h4: ['A challenge played / won', '+10 / +30'], h5: ['A friend', '+10'], h6: ['A mission completed', '+50'],
+      ladder: 'All levels', you: 'you',
+      names: ['Beginner', 'Apprentice', 'Trader', 'Skilled', 'Expert', 'Pro', 'Elite', 'Master', 'Grand Master', 'Legend', 'Mythic', 'King of OROLADO'],
+      mTitle: 'Weekly missions', mSub: 'New missions every Monday · +{x} points each', mDone: 'Done ✓',
+      m: { trades: 'Make 20 trades', quiz: 'Answer 10 quiz questions', markets: 'Play on 3 different markets', streak: 'Win 3 trades in a row' },
+      sTrades: 'Trades', sRate: 'Success', sBest: 'Best streak', sFav: 'Favourite market', sDuels: 'Challenges won', sQuiz: 'Right answers', sNote: 'Based on your recent trades (demo and real).', none: '—',
       b: { first: ['First step', '1st trade'], t10: ['On a roll', '10 trades'], t100: ['Regular', '100 trades'], streak5: ['On fire', '5 wins in a row'], sharp: ['Sharp', '55% success (20 trades)'],
-        duel: ['Champion', '1st challenge won'], friend: ['Social', '1st friend'], wheel: ['Lucky', 'Wheel spun'], quiz: ['Smart', 'Quiz passed'], real: ['Pro', '1st real trade'] },
-      q: [
-        ['What happens if you tap BUY?', ['You win if the price falls', 'You win if the price ends above the line', 'You always win']],
-        ['Which stake is the most careful?', ['2 to 5% of your balance', 'Your whole balance at once', 'Double after every loss']],
-        ['What is the DEMO account for?', ['Winning real money', 'Withdrawing gains', 'Practising with no risk']],
-        ['If the price ends exactly on the line?', ['You lose', 'Your stake is returned', 'You win double']],
-        ['What do the MA, BB and EMA indicators show?', ['Other players’ balances', 'The time', 'The market trend']],
-        ['After 3 losses in a row, the best is to…', ['Take a break and analyse', 'Double your stake', 'Bet everything']],
-        ['SELL (PUT) wins if the final price is…', ['Above the line', 'Below the line', 'Equal to the line']],
-        ['How many markets does OROLADO offer?', ['3', '5', '10']],
-        ['Before withdrawing, you must have wagered…', ['2 times your deposits', '10 times your deposits', 'Nothing at all']],
-        ['With a 90% payout, a winning $10 stake gives you back…', ['$9 in total', '$19 ($10 + $9)', '$90']],
-        ['Who can know your password?', ['The OROLADO team', 'Your friends', 'Nobody: never give it']],
-        ['“Challenge a friend” is played with…', ['Real money', 'Demo money', 'Gifts']]
-      ]
-    },
-    zh: {
-      wheel: ['每日转盘', '每天免费转一次'], quiz: ['每日问答', '答对得 5000 美元模拟金'], stats: ['我的统计', '用数字看你的表现'], badges: ['我的徽章', '全部解锁'],
-      spin: '转动转盘', spun: '明天再来转一次！', won: '恭喜！模拟账户 +{p} 美元 🎉', wheelS: '赢取 1000 至 50000 美元模拟金。每天一次。',
-      quizS: '答对 = 模拟账户 +5000 美元。', good: '答对了！+5000 美元模拟金 🎉', bad: '答错了！正确答案显示为绿色。明天再来。', quizDone: '今天已答题，明天再来！',
-      sTrades: '交易数', sRate: '成功率', sBest: '最长连胜', sFav: '最爱市场', sDuels: '挑战胜场', sNote: '根据你最近的交易计算（模拟与真实）。', none: '—',
-      login: '注册即可参与', loginB: '免费创建账户，即可转转盘、答问答、赢取徽章。', loginBtn: '创建账户',
-      b: { first: ['第一步', '首笔交易'], t10: ['起步', '10 笔交易'], t100: ['老手', '100 笔交易'], streak5: ['火力全开', '连赢 5 笔'], sharp: ['精准', '成功率 55%（20 笔）'],
-        duel: ['冠军', '首次赢得挑战'], friend: ['社交达人', '第一位好友'], wheel: ['幸运儿', '转过转盘'], quiz: ['聪明', '答对问答'], real: ['专业', '首笔真实交易'] },
-      q: [
-        ['点击「买入」会怎样？', ['价格下跌你就赢', '价格收在线上方你就赢', '你总是赢']],
-        ['哪种投注最稳妥？', ['余额的 2% 到 5%', '一次投入全部余额', '每次亏损后加倍']],
-        ['模拟账户有什么用？', ['赚真钱', '提取收益', '零风险练习']],
-        ['如果价格正好收在线上？', ['你输了', '退还投注额', '你赢双倍']],
-        ['MA、BB、EMA 指标显示什么？', ['其他玩家的余额', '时间', '市场趋势']],
-        ['连输 3 次后，最好…', ['休息一下并分析', '加倍投注', '全部押上']],
-        ['「卖出」（PUT）在最终价格…时获胜', ['高于线', '低于线', '等于线']],
-        ['OROLADO 提供多少个市场？', ['3', '5', '10']],
-        ['提现前，你需要累计投注…', ['充值额的 2 倍', '充值额的 10 倍', '无需投注']],
-        ['收益率 90% 时，10 美元投注获胜后返还…', ['共 9 美元', '19 美元（10 + 9）', '90 美元']],
-        ['谁可以知道你的密码？', ['OROLADO 团队', '你的好友', '没有人：永远不要透露']],
-        ['「挑战好友」使用…进行', ['真钱', '模拟资金', '礼物']]
-      ]
+        duel: ['Champion', '1st challenge won'], friend: ['Social', '1st friend'], quiz: ['Smart', '1st right answer'], quiz50: ['Scholar', '50 right answers'], mission: ['On a mission', '1st mission done'],
+        level5: ['Expert', 'Level 5 reached'], real: ['Pro', '1st real trade'] }
     }
   };
-  var BADGE_ICO = { first: '👣', t10: '🚀', t100: '🎖️', streak5: '🔥', sharp: '🎯', duel: '🏆', friend: '🤝', wheel: '🍀', quiz: '🧠', real: '💎' };
+  T.zh = Object.assign({}, T.en, {
+    quiz: ['每日问答', '5 道题，赢等级积分'], stats: ['我的统计', '用数字看你的表现'], badges: ['我的徽章', '全部解锁'], levels: ['我的等级', '登上巅峰'], missions: ['任务', '每周新挑战'],
+    qOf: '第 {i} 题，共 {n} 题', good: '答对了！+{x} 积分', bad: '答错了！正确答案显示为绿色。+{x} 积分', next: '下一题', finish: '查看结果',
+    qSum: '答对 {g} 题，共 {n} 题', qSumS: '明天再来答 5 道新题！', qPts: '+{x} 等级积分', lvl: '等级 {n}', xpTo: '{x} / {t} 积分', xpMax: '已达最高等级 👑', how: '如何获得积分',
+    h1: ['一笔模拟交易', '+1'], h2: ['一笔真实交易', '+3'], h3: ['答对一道题', '+20'], h4: ['参加 / 赢得一次挑战', '+10 / +30'], h5: ['一位好友', '+10'], h6: ['完成一个任务', '+50'],
+    ladder: '全部等级', you: '你', names: ['新手', '学徒', '交易员', '熟练', '专家', '职业', '精英', '大师', '宗师', '传奇', '神话', 'OROLADO 之王'],
+    mTitle: '本周任务', mSub: '每周一更新 · 每个任务 +{x} 积分', mDone: '已完成 ✓',
+    m: { trades: '完成 20 笔交易', quiz: '回答 10 道问答题', markets: '在 3 个不同市场交易', streak: '连赢 3 笔交易' },
+    sTrades: '交易数', sRate: '成功率', sBest: '最长连胜', sFav: '最爱市场', sDuels: '挑战胜场', sQuiz: '答对题数', sNote: '根据你最近的交易计算（模拟与真实）。',
+    b: { first: ['第一步', '首笔交易'], t10: ['起步', '10 笔交易'], t100: ['老手', '100 笔交易'], streak5: ['火力全开', '连赢 5 笔'], sharp: ['精准', '成功率 55%（20 笔）'],
+      duel: ['冠军', '首次赢得挑战'], friend: ['社交达人', '第一位好友'], quiz: ['聪明', '首次答对'], quiz50: ['学霸', '答对 50 题'], mission: ['任务达人', '首次完成任务'], level5: ['专家', '达到 5 级'], real: ['专业', '首笔真实交易'] }
+  });
+  (D6.LIVE_T = D6.LIVE_T || {}).fun = T;
+  var BADGE_ICO = { first: 'learn', t10: 'stats', t100: 'record', streak5: 'jauge', sharp: 'target', duel: 'duel', friend: 'friends', quiz: 'quiz', quiz50: 'levels', mission: 'gifts', level5: 'badges', real: 'invite' };
   function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return T[l] || T.en; }
+  function Q() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return (D6.QUIZ && (D6.QUIZ[l] || D6.QUIZ.en)) || []; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-  function nf(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
+  function nf(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function ico(k) { return D6.LiveIcon ? D6.LiveIcon(k) : ''; }
   function guest() { return document.documentElement.classList.contains('oro-guest') || !(D6.Api && D6.Api.token && D6.Api.token()); }
   async function call(action, data) {
     try {
@@ -88,69 +66,107 @@
       return await r.json();
     } catch (e) { return null; }
   }
-  function refreshBalance() { try { if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount(); } catch (e) { /* ignore */ } }
-  function loginCard(box) {
-    var x = X();
-    box.innerHTML = '<div class="lfun-card center"><div class="lfun-big">🎮</div><b>' + esc(x.login) + '</b><p>' + esc(x.loginB) + '</p><button type="button" class="lfun-go" id="lfunSign">' + esc(x.loginBtn) + '</button></div>';
-    $('lfunSign').addEventListener('click', function () { if (D6.Live && D6.Live.close) D6.Live.close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
-  }
 
-  async function wheel(box) {
-    var x = X();
-    var segs = WHEEL.map(function (p, i) { return '<span class="wseg" style="transform:rotate(' + (i * 36) + 'deg)"><em>' + (p >= 1000 ? (p / 1000) + 'K' : p) + '</em></span>'; }).join('');
-    box.innerHTML = '<div class="lfun-card center"><p>' + esc(x.wheelS) + '</p><div class="wheel-wrap"><div class="wheel-pin"></div><div class="wheel" id="lfunWheel">' + segs + '</div><div class="wheel-hub">🎡</div></div>' +
-      '<button type="button" class="lfun-go" id="lfunSpin">' + esc(x.spin) + '</button><p class="lfun-res" id="lfunRes"></p></div>';
-    var st = await call('fun', {});
-    if (st && st.ok && !st.wheel) { $('lfunSpin').disabled = true; $('lfunRes').textContent = x.spun; }
-    $('lfunSpin').addEventListener('click', async function () {
-      var b = this; b.disabled = true;
-      var r = await call('wheel', {});
-      if (!r || !r.ok) { $('lfunRes').textContent = x.spun; return; }
-      var w = $('lfunWheel');
-      // L'aiguille est en haut : on amène le segment gagnant sous l'aiguille (5 tours + angle du segment).
-      w.style.transform = 'rotate(' + (5 * 360 + (360 - r.i * 36)) + 'deg)';
-      setTimeout(function () { $('lfunRes').textContent = x.won.replace('{p}', nf(r.prize)); $('lfunRes').classList.add('win'); refreshBalance(); }, 4300);
-    });
-  }
-
+  /* ---------- QUIZ ---------- */
+  var qs = null, qPos = 0, qGained = 0, qGood = 0;
   async function quiz(box) {
-    var x = X();
-    var st = await call('fun', {});
-    if (!st || !st.ok) return;
-    var q = x.q[st.q % x.q.length];
-    box.innerHTML = '<div class="lfun-card"><p class="lfun-sub">' + esc(x.quizS) + '</p><b class="lfun-q">' + esc(q[0]) + '</b><div class="lfun-opts">' +
-      q[1].map(function (o, i) { return '<button type="button" data-i="' + i + '">' + esc(o) + '</button>'; }).join('') + '</div><p class="lfun-res" id="lfunRes"></p></div>';
-    if (!st.quiz) { box.querySelectorAll('.lfun-opts button').forEach(function (b) { b.disabled = true; }); $('lfunRes').textContent = x.quizDone; return; }
-    box.querySelectorAll('.lfun-opts button').forEach(function (b) {
+    var my = box._seq, st = await call('fun', {});
+    if (!st || !st.ok || box._seq !== my) return;
+    qs = st; qGained = 0; qGood = 0;
+    var done = st.quizDone || {};
+    qPos = st.quizSet.findIndex(function (q) { return done[q] === undefined; });
+    if (qPos < 0) { quizSummary(box, true); return; }
+    st.quizSet.forEach(function (q) { if (done[q] !== undefined && done[q]) qGood++; });
+    quizShow(box);
+  }
+  function dots() {
+    var done = qs.quizDone || {};
+    return '<div class="qz-dots">' + qs.quizSet.map(function (q, i) {
+      var d = done[q]; return '<i class="' + (d === 1 ? 'ok' : d === 0 ? 'ko' : (i === qPos ? 'cur' : '')) + '"></i>';
+    }).join('') + '</div>';
+  }
+  function quizShow(box) {
+    var x = X(), qi = qs.quizSet[qPos], q = Q()[qi] || ['?', ['', '', '']], p = D6.QUIZ.perm(qi);
+    box.innerHTML = '<div class="qz">' + dots() + '<small class="qz-of">' + esc(fmt(x.qOf, { i: qPos + 1, n: qs.quizSet.length })) + '</small>' +
+      '<div class="qz-card"><span class="qz-ico">' + ico('quiz') + '</span><b class="qz-q">' + esc(q[0]) + '</b></div>' +
+      '<div class="qz-opts">' + p.map(function (o, j) { return '<button type="button" data-i="' + j + '"><em>' + 'ABC'.charAt(j) + '</em><span>' + esc(q[1][o]) + '</span></button>'; }).join('') + '</div>' +
+      '<p class="qz-res" id="qzRes"></p><button type="button" class="lgu-go qz-next" id="qzNext" hidden style="--tc:#7B3BE6"></button></div>';
+    box.querySelectorAll('.qz-opts button').forEach(function (b) {
       b.addEventListener('click', async function () {
-        box.querySelectorAll('.lfun-opts button').forEach(function (z) { z.disabled = true; });
-        var r = await call('quiz', { pick: +b.getAttribute('data-i') });
-        if (!r || !r.ok) { $('lfunRes').textContent = x.quizDone; return; }
-        var all = box.querySelectorAll('.lfun-opts button');
+        box.querySelectorAll('.qz-opts button').forEach(function (z) { z.disabled = true; });
+        var r = await call('quiz', { q: qi, pick: +b.getAttribute('data-i') });
+        if (!r || !r.ok) { quiz(box); return; }
+        var all = box.querySelectorAll('.qz-opts button');
         if (all[r.right]) all[r.right].classList.add('ok');
         if (!r.good) b.classList.add('ko');
-        $('lfunRes').textContent = r.good ? x.good : x.bad;
-        $('lfunRes').classList.toggle('win', !!r.good);
-        if (r.good) refreshBalance();
+        qs.quizDone[qi] = r.good ? 1 : 0;
+        qGained += r.xp; if (r.good) qGood++;
+        var res = $('qzRes'); res.textContent = fmt(r.good ? x.good : x.bad, { x: r.xp }); res.className = 'qz-res ' + (r.good ? 'win' : 'lose');
+        box.querySelector('.qz-dots').outerHTML = dots();
+        var nx = qs.quizSet.findIndex(function (q) { return qs.quizDone[q] === undefined; });
+        var btn = $('qzNext'); btn.hidden = false; btn.textContent = nx < 0 ? x.finish : x.next;
+        btn.onclick = function () { if (nx < 0) quizSummary(box, false); else { qPos = nx; quizShow(box); } };
       });
     });
   }
-
-  async function stats(box) {
-    var x = X();
-    var s = await call('mystats', {});
-    if (!s || !s.ok) return;
-    var card = function (v, l) { return '<div class="lfun-stat"><b>' + esc(v) + '</b><small>' + esc(l) + '</small></div>'; };
-    box.innerHTML = '<div class="lfun-stats">' + card(nf(s.n), x.sTrades) + card(s.rate + ' %', x.sRate) + card(s.best, x.sBest) + card(s.fav ? s.fav.toUpperCase() : x.none, x.sFav) + card(s.duel.w, x.sDuels) + '</div><p class="lfun-note">' + esc(x.sNote) + '</p>';
+  function quizSummary(box, already) {
+    var x = X(), n = qs.quizSet.length, g = 0;
+    qs.quizSet.forEach(function (q) { if (qs.quizDone[q]) g++; });
+    box.innerHTML = '<div class="qz qz-sum">' + dots() + '<span class="qz-big">' + ico('quiz') + '</span><b class="qz-t">' + esc(fmt(x.qSum, { g: g, n: n })) + '</b>' +
+      (!already && qGained ? '<p class="qz-pts">' + esc(fmt(x.qPts, { x: qGained })) + '</p>' : '') + '<p class="qz-s">' + esc(x.qSumS) + '</p>' +
+      '<button type="button" class="lgu-go" id="qzLvl" style="--tc:#2E8CF0">' + esc(x.levels[0]) + '</button></div>';
+    $('qzLvl').addEventListener('click', function () { open('levels'); if ($('liveBarT')) $('liveBarT').textContent = x.levels[0]; });
   }
 
-  async function badges(box) {
+  /* ---------- NIVEAU ---------- */
+  function levelCard(lv, big) {
+    var x = X(), name = x.names[lv.level - 1] || '';
+    return '<div class="lv-card' + (big ? ' big' : '') + '"><div class="lv-medal"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="lvG' + (big ? 1 : 0) + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE9A8"/><stop offset=".55" stop-color="#F2B33D"/><stop offset="1" stop-color="#A8650A"/></linearGradient></defs>' +
+      '<path d="M50 4l11 8 13-1 6 12 12 6-1 13 8 11-8 11 1 13-12 6-6 12-13-1-11 8-11-8-13 1-6-12-12-6 1-13-8-11 8-11-1-13 12-6 6-12 13 1z" fill="url(#lvG' + (big ? 1 : 0) + ')"/><circle cx="50" cy="50" r="31" fill="#1b1240" stroke="rgba(255,255,255,.35)" stroke-width="2"/></svg><b>' + lv.level + '</b></div>' +
+      '<div class="lv-txt"><small>' + esc(fmt(x.lvl, { n: lv.level })) + '</small><b>' + esc(name) + '</b><div class="lv-bar"><i style="width:' + lv.pct + '%"></i></div><small>' + esc(lv.to ? fmt(x.xpTo, { x: nf(lv.xp), t: nf(lv.to) }) : x.xpMax) + '</small></div></div>';
+  }
+  async function levels(box) {
+    var my = box._seq, s = await call('mystats', {});
+    if (!s || !s.ok || box._seq !== my) return;
+    var x = X(), lv = s.lv;
+    var hows = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map(function (k) { return '<li><span>' + esc(x[k][0]) + '</span><b>' + esc(x[k][1]) + '</b></li>'; }).join('');
+    var ladder = x.names.map(function (n, i) {
+      var cls = i + 1 < lv.level ? 'past' : (i + 1 === lv.level ? 'cur' : '');
+      return '<li class="' + cls + '"><em>' + (i + 1) + '</em><span>' + esc(n) + '</span>' + (cls === 'cur' ? '<i>' + esc(x.you) + '</i>' : '') + '</li>';
+    }).join('');
+    box.innerHTML = levelCard(lv, true) + '<b class="lv-h">' + esc(x.how) + '</b><ul class="lv-how">' + hows + '</ul><b class="lv-h">' + esc(x.ladder) + '</b><ol class="lv-ladder">' + ladder + '</ol>';
+  }
+
+  /* ---------- MISSIONS ---------- */
+  async function missions(box) {
+    var my = box._seq, s = await call('mystats', {});
+    if (!s || !s.ok || box._seq !== my) return;
+    var x = X(), MI = { trades: 'stats', quiz: 'quiz', markets: 'target', streak: 'jauge' };
+    box.innerHTML = '<div class="ms-head"><span class="ms-ico">' + ico('gifts') + '</span><div><b>' + esc(x.mTitle) + '</b><small>' + esc(fmt(x.mSub, { x: s.missionXp })) + '</small></div></div>' +
+      Object.keys(s.missions).map(function (k) {
+        var m = s.missions[k], pct = Math.min(100, Math.round(m.have * 100 / m.need));
+        return '<div class="ms-row' + (m.done ? ' done' : '') + '"><span class="ms-i">' + ico(MI[k] || 'target') + '</span><div class="ms-t"><b>' + esc(x.m[k] || k) + '</b><div class="lv-bar"><i style="width:' + pct + '%"></i></div></div>' +
+          '<em>' + (m.done ? esc(x.mDone) : m.have + '/' + m.need) + '</em></div>';
+      }).join('');
+  }
+
+  /* ---------- STATISTIQUES ---------- */
+  async function stats(box) {
+    var my = box._seq, s = await call('mystats', {});
+    if (!s || !s.ok || box._seq !== my) return;
     var x = X();
-    var s = await call('mystats', {});
-    if (!s || !s.ok) return;
-    var keys = Object.keys(x.b), got = keys.filter(function (k) { return s.badges[k]; }).length;
-    box.innerHTML = '<p class="lfun-note">🏅 ' + got + ' / ' + keys.length + '</p><div class="lfun-badges">' + keys.map(function (k) {
-      return '<div class="lfun-badge' + (s.badges[k] ? ' on' : '') + '"><span>' + BADGE_ICO[k] + '</span><b>' + esc(x.b[k][0]) + '</b><small>' + esc(x.b[k][1]) + '</small></div>';
+    var card = function (k, v, l) { return '<div class="lfun-stat"><span class="st-i">' + ico(k) + '</span><b>' + esc(v) + '</b><small>' + esc(l) + '</small></div>'; };
+    box.innerHTML = levelCard(s.lv, false) + '<div class="lfun-stats">' + card('stats', nf(s.n), x.sTrades) + card('target', s.rate + ' %', x.sRate) + card('jauge', s.best, x.sBest) +
+      card('news', s.fav ? s.fav.toUpperCase() : x.none, x.sFav) + card('duel', s.duel.w, x.sDuels) + card('quiz', s.quizOk || 0, x.sQuiz) + '</div><p class="lfun-note">' + esc(x.sNote) + '</p>';
+  }
+
+  /* ---------- BADGES ---------- */
+  async function badges(box) {
+    var my = box._seq, s = await call('mystats', {});
+    if (!s || !s.ok || box._seq !== my) return;
+    var x = X(), keys = Object.keys(x.b), got = keys.filter(function (k) { return s.badges[k]; }).length;
+    box.innerHTML = '<div class="bd-head"><b>' + got + ' / ' + keys.length + '</b><div class="lv-bar"><i style="width:' + Math.round(got * 100 / keys.length) + '%"></i></div></div><div class="lfun-badges">' + keys.map(function (k) {
+      return '<div class="lfun-badge' + (s.badges[k] ? ' on' : '') + '"><span class="bd-i">' + ico(BADGE_ICO[k] || 'badges') + '</span><b>' + esc(x.b[k][0]) + '</b><small>' + esc(x.b[k][1]) + '</small></div>';
     }).join('') + '</div>';
   }
 
@@ -158,8 +174,9 @@
     var box = $('liveFun');
     if (!box) return;
     box.innerHTML = '';
-    if (guest()) { loginCard(box); return; }
-    if (kind === 'wheel') wheel(box); else if (kind === 'quiz') quiz(box); else if (kind === 'stats') stats(box); else badges(box);
+    box._seq = (box._seq || 0) + 1; // (partagé avec live-send.js) une page plus récente remplace toujours une réponse en retard
+    if (guest()) { if (D6.LiveGuest) D6.LiveGuest(box, kind === 'levels' || kind === 'missions' ? 'stats' : kind); return; }
+    if (kind === 'quiz') quiz(box); else if (kind === 'stats') stats(box); else if (kind === 'levels') levels(box); else if (kind === 'missions') missions(box); else badges(box);
   }
   D6.LiveFun = { open: open, title: function (k) { var x = X(); return x[k] ? x[k][0] : ''; }, sub: function (k) { var x = X(); return x[k] ? x[k][1] : ''; } };
 })(window.D6 = window.D6 || {});
