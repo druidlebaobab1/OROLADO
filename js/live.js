@@ -329,7 +329,9 @@
   /* ---------- v2686 — ACCUEIL EN GRANDES TUILES (propriétaire) ---------- */
   var HOME = [
     { k: 'news', ico: '📰', c: 'c1' }, { k: 'friends', ico: '👥', c: 'c2' }, { k: 'duel', ico: '⚔️', c: 'c3' }, { k: 'chat', ico: '💬', c: 'c4' },
-    { k: 'myid', ico: '🆔', c: 'c5' }, { k: 'record', ico: '🏆', c: 'c6' }, { k: 'gifts', ico: '🎁', c: 'c7' }, { k: 'learn', ico: '📚', c: 'c8' }
+    { k: 'wheel', ico: '🎡', c: 'c9' }, { k: 'quiz', ico: '🧠', c: 'c10' },
+    { k: 'myid', ico: '🆔', c: 'c5' }, { k: 'record', ico: '🏆', c: 'c6' }, { k: 'stats', ico: '📊', c: 'c11' }, { k: 'badges', ico: '🏅', c: 'c12' },
+    { k: 'gifts', ico: '🎁', c: 'c7' }, { k: 'learn', ico: '📚', c: 'c8' }
   ];
   var HT = {
     fr: { news: ['Actualités', 'Les nouvelles d’OROLADO'], friends: ['Mes amis', 'Discute et partage des photos'], duel: ['Défie ton ami', 'En démo · 3, 5 ou 10 min'], chat: ['Écrire à l’équipe', 'Une question ? On te répond'],
@@ -345,7 +347,8 @@
     var h = H();
     $('liveHomeGrid').innerHTML = HOME.map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
-      return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' ? ' big' : '') + '" data-k="' + t.k + '"><span class="lh-ico">' + t.ico + '</span><b>' + esc(h[t.k][0]) + '</b><small>' + esc(h[t.k][1]) + '</small>' + badge + '</button>';
+      var tt = h[t.k] || [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : ''];
+      return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' ? ' big' : '') + '" data-k="' + t.k + '"><span class="lh-ico">' + t.ico + '</span><b>' + esc(tt[0]) + '</b><small>' + esc(tt[1]) + '</small>' + badge + '</button>';
     }).join('');
     $('liveHomeGrid').querySelectorAll('.lh-tile').forEach(function (b) {
       b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); });
@@ -355,6 +358,7 @@
     if (k === 'gifts') { close(); if (D6.Portal && D6.Portal.open) D6.Portal.open(); return; }
     if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); return; }
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
+    if (k === 'wheel' || k === 'quiz' || k === 'stats' || k === 'badges') { show('fun', k); return; }
     // Défier / mon identifiant / mes défis : la page Amis, avec un mot d'aide en haut
     show('friends', k);
   }
@@ -364,11 +368,13 @@
     var h = H(), home = w === 'home';
     $('livePaneHome').hidden = !home;
     $('liveBar').hidden = home;
-    $('liveBarT').textContent = home ? '' : (sub && h[sub] ? h[sub][0] : (h[w] ? h[w][0] : ''));
+    $('liveBarT').textContent = home ? '' : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
+    if ($('livePaneFun')) $('livePaneFun').hidden = w !== 'fun';
     $('liveTabNews').classList.toggle('on', w === 'news'); $('liveTabChat').classList.toggle('on', w === 'chat'); $('liveTabFriends').classList.toggle('on', w === 'friends');
     $('livePaneNews').hidden = w !== 'news'; $('livePaneChat').hidden = w !== 'chat'; $('livePaneFriends').hidden = w !== 'friends';
     clearInterval(timer);
     if (home) { paintHome(); return; }
+    if (w === 'fun') { $('livePaneNews').hidden = true; if (D6.LiveFun) D6.LiveFun.open(sub); return; }
     if (w === 'friends') {
       friendsList().then(function () {
         var m = $('lfFindMsg');

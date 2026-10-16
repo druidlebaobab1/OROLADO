@@ -248,6 +248,17 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
   }
 }
 
+/* ---------- v2687 — jeux du jour (démo) ---------- */
+if (in_array($action, ['fun', 'wheel', 'quiz', 'mystats'], true)) {
+  $me = live_me($tok);
+  if (!$me) live_out(['ok' => false, 'login' => true]);
+  $uid = (string) $me['id'];
+  if ($action === 'fun') live_out(['ok' => true] + live_fun_state($uid));
+  if ($action === 'wheel') live_out(live_wheel_spin($uid));
+  if ($action === 'quiz') live_out(live_quiz_answer($uid, (int) ($req['pick'] ?? -1)));
+  if ($action === 'mystats') live_out(['ok' => true] + live_my_stats($uid));
+}
+
 // Publications vues / aimées pour la 1re fois sur ce téléphone (le téléphone retient lesquelles).
 if ($action === 'seen' || $action === 'like') {
   if (!orolado_rate_ok('live_' . $action, 'ip:' . orolado_client_ip(), 60, 3600)) live_out(['ok' => true]);

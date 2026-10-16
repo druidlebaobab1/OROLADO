@@ -457,3 +457,78 @@ function live_duel_stats(string $uid): array {
   $s = live_read_json(live_dir() . '/duelstats.json', []);
   return (array) ($s[$uid] ?? ['w' => 0, 'l' => 0, 't' => 0]);
 }
+
+/* =====================================================================================================
+ * v2687 — JEUX DU JOUR (démo uniquement, aucune valeur réelle) : Roue du jour, Quiz du jour, statistiques, badges.
+ * Une roue et un quiz par jour et par joueur (contrôlé par le serveur). Le gain va sur le solde DÉMO.
+ * ===================================================================================================== */
+const LIVE_WHEEL = [1000, 1000, 2000, 2000, 3000, 5000, 5000, 10000, 20000, 50000];
+// Réponse juste de chaque question du quiz (les textes sont dans js/live.js, dans le même ordre).
+const LIVE_QUIZ_OK = [1, 0, 2, 1, 2, 0, 1, 2, 0, 1, 2, 1];
+
+function live_fun_file(string $uid): string { return live_dir('fun') . '/' . live_safe_id($uid) . '.json'; }
+function live_day(): string { return gmdate('Y-m-d'); }
+function live_quiz_today(): int { return (int) (floor(time() / 86400) % count(LIVE_QUIZ_OK)); }
+
+/** Crédite le solde DÉMO du joueur (sans toucher au réel). */
+function live_demo_credit(string $uid, float $amount): float {
+  $r = with_db_lock(function ($box) use ($uid, $amount) {
+    if (!isset($box->db['vault'][$uid]) || !is_array($box->db['vault'][$uid])) $box->db['vault'][$uid] = ['demo' => 0, 'real' => 0];
+    $box->db['vault'][$uid]['demo'] = orolado_money((float) ($box->db['vault'][$uid]['demo'] ?? 0) + $amount);
+    return ['ok' => true, 'demo' => $box->db['vault'][$uid]['demo']];
+  });
+  return (float) ($r['demo'] ?? 0);
+}
+
+function live_fun_state(string $uid): array {
+  $f = live_read_json(live_fun_file($uid), []);
+  return ['wheel' => ($f['wheelDay'] ?? '') !== live_day(), 'quiz' => ($f['quizDay'] ?? '') !== live_day(), 'q' => live_quiz_today(),
+    'wheels' => (int) ($f['wheels'] ?? 0), 'quizOk' => (int) ($f['quizOk'] ?? 0)];
+}
+
+function live_wheel_spin(string $uid): array {
+  $r = live_update(live_fun_file($uid), function ($f) {
+    if (($f['wheelDay'] ?? '') === live_day()) return ['ok' => false, 'reason' => 'wheelDone'];
+    $i = random_int(0, count(LIVE_WHEEL) - 1);
+    $f['wheelDay'] = live_day(); $f['wheels'] = (int) ($f['wheels'] ?? 0) + 1;
+    return ['ok' => true, 'i' => $i, 'prize' => LIVE_WHEEL[$i], '__write' => $f];
+  });
+  if (!empty($r['ok'])) $r['demo'] = live_demo_credit($uid, (float) $r['prize']);
+  return $r;
+}
+
+function live_quiz_answer(string $uid, int $pick): array {
+  $q = live_quiz_today();
+  $ok = $pick === LIVE_QUIZ_OK[$q];
+  $r = live_update(live_fun_file($uid), function ($f) use ($ok) {
+    if (($f['quizDay'] ?? '') === live_day()) return ['ok' => false, 'reason' => 'quizDone'];
+    $f['quizDay'] = live_day();
+    if ($ok) $f['quizOk'] = (int) ($f['quizOk'] ?? 0) + 1;
+    return ['ok' => true, '__write' => $f];
+  });
+  if (empty($r['ok'])) return $r;
+  $out = ['ok' => true, 'good' => $ok, 'right' => LIVE_QUIZ_OK[$q]];
+  if ($ok) $out['demo'] = live_demo_credit($uid, 5000);
+  return $out;
+}
+
+/** Statistiques (trades gardés par le serveur) + badges. */
+function live_my_stats(string $uid): array {
+  $db = load_db();
+  $n = 0; $w = 0; $best = 0; $cur = 0; $mk = []; $real = 0;
+  $rows = array_values(array_filter((array) ($db['orders'] ?? []), static fn($o) => is_array($o) && (string) ($o['userId'] ?? '') === $uid && isset($o['net'])));
+  usort($rows, static fn($a, $b) => ((float) ($a['at'] ?? 0)) <=> ((float) ($b['at'] ?? 0)));
+  foreach ($rows as $o) {
+    $n++; if (($o['mode'] ?? '') === 'real') $real++;
+    if (!empty($o['won'])) { $w++; $cur++; $best = max($best, $cur); } elseif (empty($o['voided'])) { $cur = 0; }
+    $a = (string) ($o['assetId'] ?? ''); if ($a !== '') $mk[$a] = ($mk[$a] ?? 0) + 1;
+  }
+  arsort($mk);
+  $d = live_duel_stats($uid); $fun = live_fun_state($uid);
+  $friends = count(live_inbox($uid));
+  $badges = [
+    'first' => $n >= 1, 't10' => $n >= 10, 't100' => $n >= 100, 'streak5' => $best >= 5, 'sharp' => $n >= 20 && $w / max(1, $n) >= 0.55,
+    'duel' => (int) $d['w'] >= 1, 'friend' => $friends >= 1, 'wheel' => $fun['wheels'] >= 1, 'quiz' => $fun['quizOk'] >= 1, 'real' => $real >= 1,
+  ];
+  return ['n' => $n, 'w' => $w, 'rate' => $n ? round($w * 100 / $n) : 0, 'best' => $best, 'fav' => (string) (array_key_first($mk) ?? ''), 'duel' => $d, 'badges' => $badges];
+}
