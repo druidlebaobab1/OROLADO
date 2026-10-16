@@ -2390,6 +2390,25 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .health-panel p{margin:0 0 8px;color:var(--muted)}
     .health-panel li{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
     .health-panel .mini{margin:0;flex-shrink:0}
+    /* v2713 (propriétaire) : admin rangé — menu du haut en grille droite, grands boutons, chaque bouton ouvre SA page (« ← Menu »), grands tableaux */
+    .head{flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+    .head h1{font-size:1.15rem!important;text-align:center}
+    .head > div{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    @media (min-width:760px){.head > div{grid-template-columns:repeat(6,minmax(0,1fr))}}
+    .head > div > .mini{width:100%;min-height:48px;margin:0!important;font-size:.92rem;font-weight:800;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px}
+    #btnBack{grid-column:1/-1}
+    @media (min-width:760px){.head > div{grid-template-columns:repeat(7,minmax(0,1fr))}#btnBack{grid-column:auto}}
+    #inscritsHead{grid-column:1/-1;text-align:center;font-size:.95rem;font-weight:800;color:var(--text)}
+    .metric-btn{padding:14px 12px!important;min-height:58px}
+    .metric-btn .k{font-size:.74rem!important;line-height:1.25}
+    .metric-btn .badge{font-size:.9rem;min-width:34px;text-align:center}
+    .adm-back{display:none;position:sticky;top:0;z-index:30;width:100%;margin:0 0 10px;min-height:50px;border:1px solid var(--gold);border-radius:12px;background:#0E1420;color:var(--gold);font:inherit;font-size:1rem;font-weight:900;cursor:pointer}
+    body.adm-page .adm-back{display:block}
+    body.adm-page .online-bar,body.adm-page .wrap > .sec,body.adm-page .wrap > .metrics,body.adm-page .sum-bar,body.adm-page .health-bar,body.adm-page .health-panel{display:none!important}
+    body.adm-page .panel-title{font-size:1.25rem;font-weight:900}
+    body:not(.adm-page) .wrap > .filters,body:not(.adm-page) #viewTitle,body:not(.adm-page) #viewSum,body:not(.adm-page) #panel,body:not(.adm-page) #pager{display:none!important}
+    .table-wrap table{font-size:14px}
+    .table-wrap td,.table-wrap th{padding:10px 8px!important}
   </style>
 </head>
 <body>
@@ -2420,6 +2439,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">📡 Live <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
       <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎰 Casino &amp; Paris</button>
+      <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
@@ -2443,6 +2463,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <button type="button" class="health-bar ok" id="btnHealthBar">Tous les boutons suivent</button>
     <div class="health-panel" id="healthPanel"></div>
 
+    <button type="button" class="adm-back" id="admBack">← Menu</button>
     <div class="filters">
       <input id="q" type="search" placeholder="Rechercher ID, e-mail, téléphone">
       <select id="preset">
@@ -2582,7 +2603,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div id="csPaneSp">
         <div class="nt-card">
           <b>Créer un match ou un ÉVÉNEMENT</b>
-          <p class="muted" style="margin:4px 0 8px">Vous écrivez la question (match, élection, Bitcoin, boxe…), la date de fin des paris et VOS cotes (serrées = la maison gagne). Exemple : « Le Bitcoin sera-t-il au-dessus de 100 000 $ demain à 18 h ? » → Oui 1,60 / Non 2,20. Tout est mélangé chez les joueurs. Quand c'est fini : cliquez le résultat → les gagnants sont payés tout de suite.</p>
+          <p class="muted" style="margin:4px 0 8px">Vous écrivez la question (match, élection, Bitcoin, boxe…), la date de fin des paris et VOS cotes (serrées = la maison gagne). Exemple : « Le Bitcoin sera-t-il au-dessus de 100 000 $ demain à 18 h ? » → Oui 1,60 / Non 2,20. Tout est mélangé chez les joueurs. Quand c'est fini : cliquez le résultat → les gagnants sont payés tout de suite.<br>🛡️ Logos automatiques : écrivez « Équipe A - Équipe B » avec le nom COMPLET (ex. « Los Angeles Lakers - Boston Celtics », « Barcelona - Real Madrid ») ; si le logo n'est pas trouvé, une pastille avec la lettre s'affiche.</p>
           <div style="display:grid;gap:6px">
             <input id="spTitle" placeholder="Match (ex. Real Madrid – FC Barcelone) ou question (ex. Qui gagnera l'élection ?)" maxlength="80">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -2706,7 +2727,15 @@ function renderButtons(badges) {
   });
 }
 document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
-  btn.addEventListener('click', () => { view = btn.getAttribute('data-view'); page = 1; loadList(); });
+  btn.addEventListener('click', () => { view = btn.getAttribute('data-view'); page = 1; loadList(); admOpenPage(btn); });
+});
+// v2713 : chaque bouton ouvre SA page (le menu se cache, « ← Menu » pour revenir à l'endroit exact)
+let admFrom = null;
+function admOpenPage(btn) { admFrom = btn; document.body.classList.add('adm-page'); window.scrollTo(0, 0); }
+document.getElementById('btnTopG').addEventListener('click', () => { document.getElementById('btnCasA').click(); setTimeout(() => { const t = document.getElementById('csTabSt'); if (t) t.click(); }, 60); });
+document.getElementById('admBack').addEventListener('click', () => {
+  document.body.classList.remove('adm-page');
+  if (admFrom) admFrom.scrollIntoView({block: 'center'});
 });
 function filters() {
   const preset = document.getElementById('preset').value;
@@ -3366,7 +3395,17 @@ setInterval(() => {
       '</div><button class="mini ok" type="button" id="csLimSave" style="margin-top:10px">Enregistrer les mises maximales</button> <span id="csLimSt" class="muted"></span></div>';
     const plCard = '<div class="nt-card" style="margin-bottom:10px"><b>Joueurs du casino (argent réel)</b><p class="muted" style="margin:4px 0 8px">Touche un joueur pour voir ses dernières parties et ses paris. Ou cherche par e-mail / ID.</p>' +
       '<div style="display:flex;gap:6px;margin-bottom:8px"><input id="csPlQ" placeholder="e-mail ou ID OR…" style="flex:1"><button class="mini ok" type="button" id="csPlGo">Voir</button></div><div id="csPlList"><p class="muted">Chargement…</p></div><div id="csPlOne"></div></div>';
-    $c('csStats').innerHTML = table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + plCard + limCard + '<p class="muted">Sur 100 $ misés par les joueurs, la maison garde en moyenne 3 à 8 $ (chaque jeu rend 92 à 97 %). Un jour peut être négatif à cause d\'un gros gain : c\'est normal, sur la durée la maison gagne.</p>';
+    // v2713 (propriétaire) : JEUX LES PLUS JOUÉS — classement par nombre de parties (argent réel), avec une barre
+    const top = Object.entries(((j.all || {}).real) || {}).map(([g, v]) => ({g, n:v.n, i:v.in})).sort((a, b) => b.n - a.n || b.i - a.i);
+    const topMax = top.length ? top[0].n : 1;
+    const today = ((j.today || {}).real) || {};
+    const topCard = '<div class="nt-card" style="margin-bottom:10px"><b style="font-size:1.05rem">🏆 Jeux les plus joués (argent réel)</b>' +
+      (top.length ? top.map((r, k) => '<div style="display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;margin-top:8px"><b style="color:' + (k < 3 ? '#FCD34D' : 'var(--muted)') + '">' + (k + 1) + '</b>' +
+        '<div><div style="display:flex;justify-content:space-between;gap:6px"><span>' + esc(GN[r.g] || r.g) + '</span><span class="muted">' + m2(r.i) + ' $ misés</span></div>' +
+        '<i style="display:block;height:7px;border-radius:4px;margin-top:4px;background:linear-gradient(90deg,#22C55E,#5CF59A);width:' + Math.max(4, Math.round(r.n / topMax * 100)) + '%"></i></div>' +
+        '<b>' + r.n + '<small class="muted"> parties' + (today[r.g] ? ' · ' + today[r.g].n + " aujourd'hui" : '') + '</small></b></div>').join('')
+        : '<p class="muted">Aucune partie en argent réel pour le moment.</p>') + '</div>';
+    $c('csStats').innerHTML = topCard + table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + plCard + limCard + '<p class="muted">Sur 100 $ misés par les joueurs, la maison garde en moyenne 3 à 8 $ (chaque jeu rend 92 à 97 %). Un jour peut être négatif à cause d\'un gros gain : c\'est normal, sur la durée la maison gagne.</p>';
     const showOne = async q => {
       const r = await ajax({action:'cs_player', q}); const box = $c('csPlOne');
       if (!r.ok) { box.innerHTML = '<p class="muted">' + esc(r.reason || 'Introuvable') + '</p>'; return; }

@@ -39,7 +39,9 @@
   var EVK = { event: 1, crypto: 1, politique: 1 }; // questions (pas d'équipes) : on montre le texte de chaque réponse
   function sico(k) { return '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true">' + (SICO[k] || SICO.autre) + '</svg>'; }
   var CREST = ['#2563EB', '#DC2626', '#16A34A', '#F59E0B', '#7C3AED', '#0891B2', '#DB2777', '#EA580C'];
-  function crest(n) { var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return '<i class="sp-crest" style="--cc:' + CREST[h % CREST.length] + '">' + esc(String(n || '?').trim().charAt(0).toUpperCase()) + '</i>'; }
+  function crest(n, lg) {
+    if (lg && /^[a-f0-9]{16}$/.test(lg)) return '<img class="sp-crest sp-logo" src="sp-logo.php?k=' + lg + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'; // v2713 : vrai logo
+    var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return '<i class="sp-crest" style="--cc:' + CREST[h % CREST.length] + '">' + esc(String(n || '?').trim().charAt(0).toUpperCase()) + '</i>'; }
   // « Équipe A - Équipe B » / « A vs B » → deux lignes ; sinon le titre tel quel
   function teams(t) { var m = String(t || '').split(/\s+(?:-|–|—|vs\.?|VS|contre)\s+/); return m.length === 2 ? m : null; }
   var flt = 'all';
@@ -82,7 +84,7 @@
         return '<button type="button" class="sp-o' + (on ? ' on' : '') + (res ? ' res' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '"' + (e.open ? '' : ' disabled') + '><small>' + esc(code || o.label) + '</small><b>' + o.odd.toFixed(2) + '</b></button>';
       }).join('');
       var tm = EVK[e.sport] ? null : teams(e.title);
-      var head = tm ? '<div class="sp-teams"><p>' + crest(tm[0]) + '<span>' + esc(tm[0]) + '</span></p><p>' + crest(tm[1]) + '<span>' + esc(tm[1]) + '</span></p></div>' : '<b class="sp-t">' + esc(e.title) + '</b>';
+      var head = tm ? '<div class="sp-teams"><p>' + crest(tm[0], (e.logos || [])[0]) + '<span>' + esc(tm[0]) + '</span></p><p>' + crest(tm[1], (e.logos || [])[1]) + '<span>' + esc(tm[1]) + '</span></p></div>' : '<b class="sp-t">' + esc(e.title) + '</b>';
       return '<div class="sp-ev' + (e.open ? '' : ' shut') + '"><div class="sp-top"><span>' + sico(e.sport) + esc((x.sport[e.sport] || x.sport.autre) + (e.league ? ' · ' + e.league : '')) + '</span><em>' + esc(e.open ? when(e.start) : (e.status === 'settled' ? x.result : x.closed)) + '</em></div>' +
         head + '<div class="sp-os n' + e.opts.length + (EVK[e.sport] ? ' q' : '') + '">' + opts + '</div></div>';
     }).join('') + mineBtn() + slipBar();

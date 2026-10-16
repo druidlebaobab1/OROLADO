@@ -38,7 +38,7 @@ function sp_public_events(int $now = 0): array {
     $open = $e['status'] === 'open' && $now < (int) $e['start'];
     if (!$open && !($e['status'] === 'settled' && (int) ($e['settledAt'] ?? 0) > $now - 3 * 86400)) continue;
     $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => (int) $e['start'], 'open' => $open,
-      'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status']];
+      'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? [])))];
   }
   usort($out, static fn($a, $b) => [$b['open'], $a['start']] <=> [$a['open'], $b['start']]);
   return $out;
@@ -61,23 +61,74 @@ function sp_admin_save(array $in): array {
   if (count($opts) < 2 || count($opts) > 6) return ['ok' => false, 'reason' => 'Il faut 2 à 6 choix'];
   $maxStake = max(1.0, min(1000.0, (float) ($in['maxStake'] ?? SP_DEFAULT_MAX_STAKE)));
   $id = preg_replace('/[^a-z0-9]/', '', (string) ($in['id'] ?? '')) ?: ('e' . bin2hex(random_bytes(5)));
-  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake) {
+  // v2713 : logos des 2 équipes (sports d'équipe seulement ; jamais bloquant)
+  $logos = [];
+  $sportK = sp_clean((string) ($in['sport'] ?? 'foot'), 12);
+  if (!in_array($sportK, ['event', 'crypto', 'politique'], true) && ($tm = sp_title_teams($title))) {
+    try { $logos = [sp_team_logo($tm[0]), sp_team_logo($tm[1])]; } catch (Throwable $e) { $logos = []; }
+  }
+  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos) {
     foreach ((array) ($s['e'] ?? []) as $i => $e) {
       if ($e['id'] === $id) {
         if ($e['status'] !== 'open') return ['ok' => false, 'reason' => 'Match déjà fermé ou réglé'];
         // cotes modifiables tant qu'aucun pari n'est pris sur l'ancienne cote (les paris gardent LEUR cote de toute façon)
-        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake]);
+        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos]);
         return ['ok' => true, 'id' => $id];
       }
     }
     $s['e'][] = ['id' => $id, 'title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start,
-      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time()];
+      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos];
     // on garde au plus 300 matchs (les plus anciens réglés partent)
     if (count($s['e']) > 300) $s['e'] = array_slice($s['e'], -300);
     return ['ok' => true, 'id' => $id];
   });
 }
 function mb_strlen_safe(string $s): int { return (int) preg_match_all('/./us', $s); }
+
+/*
+ * v2713 (propriétaire) — LOGOS DES ÉQUIPES automatiques : à la publication d'un match, le serveur cherche une seule fois
+ * le logo de chaque équipe (service gratuit TheSportsDB) et en garde une COPIE chez nous (data/sports/logos/).
+ * Les téléphones des joueurs le lisent via sp-logo.php (jamais le service extérieur). Pas trouvé = pastille avec la lettre.
+ */
+function sp_logo_dir(): string { $d = sp_dir() . DIRECTORY_SEPARATOR . 'logos'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
+function sp_logo_key(string $name): string { return substr(hash('sha256', mb_strtolower(trim($name), 'UTF-8')), 0, 16); }
+function sp_http_get(string $url, int $max): string {
+  $ctx = stream_context_create(['http' => ['timeout' => 4, 'ignore_errors' => true, 'header' => "User-Agent: OROLADO
+"], 'ssl' => ['verify_peer' => true]]);
+  $raw = @file_get_contents($url, false, $ctx, 0, $max + 1);
+  return is_string($raw) && strlen($raw) <= $max ? $raw : '';
+}
+function sp_team_logo(string $name): string {
+  $name = trim($name);
+  if (mb_strlen_safe($name) < 2) return '';
+  $k = sp_logo_key($name);
+  $f = sp_logo_dir() . DIRECTORY_SEPARATOR . $k . '.png';
+  if (is_file($f)) return $k;
+  $miss = sp_logo_dir() . DIRECTORY_SEPARATOR . $k . '.miss';
+  if (is_file($miss) && filemtime($miss) > time() - 7 * 86400) return ''; // pas trouvé récemment : on ne redemande pas
+  // 2 essais au plus : le nom tel quel, puis sans « FC / AS / AC… » et avec quelques noms français → anglais
+  $alt = trim(preg_replace('/\b(FC|AS|AC|CF|SC|SS|US|RC|OGC|CA)\b\.?/u', '', strtr($name, ['Barcelone' => 'Barcelona', 'Munich' => 'Munich', 'Séville' => 'Sevilla', 'Naples' => 'Napoli', 'Milan AC' => 'AC Milan', 'Inter Milan' => 'Inter', 'Atlético Madrid' => 'Atletico Madrid', 'Tottenham' => 'Tottenham', 'PSG' => 'Paris SG', 'Paris Saint-Germain' => 'Paris SG'])) ?? $name);
+  $u = '';
+  foreach (array_values(array_unique([$name, $alt])) as $q) {
+    if ($q === '') continue;
+    $raw = sp_http_get('https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=' . rawurlencode($q), 200000);
+    $j = json_decode($raw, true);
+    if (!is_array($j)) return ''; // service occupé / limite de la clé gratuite : on réessaiera plus tard (rien de noté)
+    $t = !empty($j['teams'][0]) ? $j['teams'][0] : null;
+    $u = is_array($t) ? (string) ($t['strBadge'] ?? $t['strTeamBadge'] ?? '') : '';
+    if ($u !== '') break;
+  }
+  if (!preg_match('#^https://r2\.thesportsdb\.com/images/media/team/badge/[a-z0-9]+\.png$#i', $u)) { @touch($miss); return ''; } // vraiment pas trouvé
+  $img = sp_http_get($u . '/tiny', 400000);
+  if ($img === '' || substr($img, 0, 4) !== "\x89PNG") return '';
+  @file_put_contents($f, $img);
+  return is_file($f) ? $k : '';
+}
+/** Les deux équipes d'un titre « A - B » / « A vs B » (comme l'affichage du joueur). */
+function sp_title_teams(string $t): array {
+  $m = preg_split('/\s+(?:-|–|—|vs\.?|VS|contre)\s+/u', $t);
+  return is_array($m) && count($m) === 2 ? $m : [];
+}
 
 /** Le joueur parie (coupon). $sel = [[ev, k], …]. */
 function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, int $now = 0): array {

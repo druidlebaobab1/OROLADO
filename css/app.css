@@ -11215,3 +11215,5 @@ html body .sp-os.q{display:grid;grid-template-columns:repeat(auto-fit,minmax(96p
 html body .sp-os.q .sp-o{min-height:52px;height:auto;padding:6px 8px}
 html body .sp-os.q .sp-o small{white-space:normal;line-height:1.15;font-size:12px;font-weight:700;overflow-wrap:anywhere}
 html body .sp-ev .sp-t{display:block;font-size:15px;line-height:1.3;margin:6px 0 8px}
+/* v2713 : vrai logo d'équipe (à la place de la pastille avec la lettre) */
+html body #casinoModal .sp-teams img.sp-crest.sp-logo{background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
