@@ -14,7 +14,7 @@
         scratch: ['Grattage', 'Jusqu’à ×20'], hilo: ['Hi-Lo cartes', 'Plus haut ou plus bas'], penalty: ['Penalty', 'Marque · ×1,44'], colors: ['Couleurs', 'Vert, rouge, violet'], mines: ['Mines', 'Évite les bombes'],
         jet: ['Jet Man', 'Il s’envole, encaisse !'], rocket: ['Fusée', 'Jusqu’aux étoiles'], apple: ['Verger d’or', '10 étages'],
         tower: ['La Tour', '3 portes, 1 piège'], dragon: ['Dragon Tigre', 'La plus forte carte'], baccarat: ['Baccara', 'Joueur ou Banque'], sicbo: ['Sic Bo', 'Petit ou Grand'], chests: ['Coffres', '1 trésor sur 3'], balloon: ['Ballon', 'Gonfle et encaisse'] },
-      cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
+      takeoff: 'Départ dans {s} s — mise maintenant', placed: 'Pari placé ✓ attends le départ', betNext: 'Miser (prochain tour)', cancel: 'Pari annulé : mise rendue', cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
       heads: 'Pile', tails: 'Face', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
       pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
@@ -28,7 +28,7 @@
         scratch: ['Scratch card', 'Up to ×20'], hilo: ['Hi-Lo cards', 'Higher or lower'], penalty: ['Penalty', 'Score · ×1.44'], colors: ['Colours', 'Green, red, violet'], mines: ['Mines', 'Avoid the bombs'],
         jet: ['Jet Man', 'He flies, cash out!'], rocket: ['Rocket', 'To the stars'], apple: ['Golden Orchard', '10 floors'],
         tower: ['The Tower', '3 doors, 1 trap'], dragon: ['Dragon Tiger', 'Highest card'], baccarat: ['Baccarat', 'Player or Banker'], sicbo: ['Sic Bo', 'Small or Big'], chests: ['Chests', '1 treasure in 3'], balloon: ['Balloon', 'Pump and cash out'] },
-      cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
+      takeoff: 'Take-off in {s} s — bet now', placed: 'Bet placed ✓ wait for take-off', betNext: 'Bet (next round)', cancel: 'Bet cancelled: stake returned', cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
       heads: 'Heads', tails: 'Tails', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
       pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
@@ -621,75 +621,90 @@
     rocket: { col: '#22d3ee', cls: 'th-rocket', w: 70, h: 70 }
   };
   function histChip(v) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + '">' + v.toFixed(2) + '×</i>'; }
+  /* v2701 (propriétaire, comme Aviator) — TOUR COMMUN : tout le monde voit le même vol. Le serveur tient le tour
+     (casino_lib.php casino_round_*) : ~7 s pour miser (barre de décompte), puis le vol, puis l'explosion pour tous. */
   function makeCrash(game) {
     return function (box, x) {
-      var th = CRASH_THEME[game], g = null, off = 0;
-      S.hist = S.hist || {}; var hist = S.hist[game] = S.hist[game] || [];
+      var th = CRASH_THEME[game];
+      var tx = function (k) { return x[k] || T.en[k] || ''; };
       var MULT = function (s) { return Math.max(1, Math.floor(Math.exp(0.08 * Math.max(0, s)) * 100) / 100); };
       var stars = ''; for (var i = 0; i < 26; i++) stars += '<circle cx="' + ((i * 137 + 31) % 300) + '" cy="' + ((i * 71 + i * i * 13 + 7) % 165) + '" r="' + (i % 3 ? 0.8 : 1.3) + '" fill="#fff" opacity="' + (0.25 + (i % 4) * 0.12) + '"/>';
       box.innerHTML = '<div class="cs-stage crash-stage ' + th.cls + '"><i class="crash-rays"></i>' +
         '<svg viewBox="0 0 300 170" preserveAspectRatio="none" class="crash-sky"><defs><linearGradient id="csAreaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + th.col + '" stop-opacity=".55"/><stop offset="1" stop-color="' + th.col + '" stop-opacity="0"/></linearGradient></defs>' +
         stars + '<g stroke="rgba(255,255,255,.07)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + '</g>' +
         '<path id="csArea" d="M10 160" fill="url(#csAreaG)"/><path id="csTrail" d="M10 160" fill="none" stroke="' + th.col + '" stroke-width="3.6" stroke-linecap="round"/></svg>' +
-        '<span class="plane" id="csPlane" style="width:' + th.w + 'px;height:' + th.h + 'px">' + ART.obj(game) + '</span><b class="crash-n" id="csCm">1.00×</b><small class="crash-hint" id="csCs"></small></div><div class="cs-res"></div>' +
-        (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet)); // v2698 : plus de case « Encaissement auto » (incomprise, prenait la place)
-      if (guest()) {
-        needAccount($('csNeed'), x);
-        // visiteur : le personnage attend en bas à gauche (pas coincé dans le coin du haut)
-        var cst = box.querySelector('.crash-stage'), pl = $('csPlane');
-        if (cst && pl) pl.style.transform = 'translate(22px,' + Math.max(40, cst.clientHeight * 0.5 - th.h * 0.5) + 'px)';
-        return;
-      }
-      bindStake(box);
-      var btn = $('csGo'), plane = $('csPlane');
+        '<span class="plane" id="csPlane" style="width:' + th.w + 'px;height:' + th.h + 'px">' + ART.obj(game) + '</span><b class="crash-n" id="csCm">1.00×</b>' +
+        '<div class="crash-wait" id="csWait" hidden><small id="csWaitT"></small><i><b id="csWaitBar"></b></i></div></div><div class="cs-res"></div>' +
+        (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
+      var stage = box.querySelector('.crash-stage'), plane = $('csPlane');
       var draw = function (m, s) {
         $('csCm').textContent = m.toFixed(2) + '×';
         var px = Math.min(262, 10 + s * 18), py = Math.max(22, 160 - (m - 1) * 40);
         var st = $('csTrail').ownerSVGElement.getBoundingClientRect(), kx = st.width / 300, ky = st.height / 170;
-        var d = 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py;
-        $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
-        // v2695 : l'avion reste toujours entier dans l'écran (jamais coupé au bord)
+        var d = s > 0 ? 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py : 'M10 160';
+        $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', s > 0 ? d + ' L' + px + ' 170 L10 170 Z' : 'M10 160');
+        // l'avion reste toujours entier dans l'écran ; avant le départ il attend au milieu à gauche
         var X0 = Math.max(22, Math.min(st.width - th.w - 10, px * kx - th.w * 0.22)), Y0 = Math.max(34, Math.min(st.height - th.h - 10, py * ky - th.h * 0.72));
-        if (s <= 0) { X0 = Math.max(22, st.width * 0.1); Y0 = Math.max(40, st.height * 0.5 - th.h * 0.5); } // v2700 : avant le départ, l'avion attend bien en vue, au milieu à gauche
+        if (s <= 0) { X0 = Math.max(22, st.width * 0.1); Y0 = Math.max(40, st.height * 0.5 - th.h * 0.5); }
         plane.style.transform = 'translate(' + X0 + 'px,' + Y0 + 'px)';
       };
-      var finish = function (r) {
-        stopAll(); g = r;
-        box.querySelector('.crash-stage').classList.remove('flying');
-        if (!(r.out > 0)) { plane.classList.add('gone'); }
-        $('csCm').className = 'crash-n ' + (r.out > 0 ? 'w' : 'l');
-        $('csCm').textContent = (r.out > 0 ? r.out : r.c).toFixed(2) + '×';
-        resultLine(box, r, r.out > 0 ? fmt(x.cashed, { x: r.out.toFixed(2), w: m2(r.win) }) : fmt(x.boom, { x: r.c.toFixed(2) }));
-        btn.textContent = x.bet; btn.classList.remove('cash'); btn.disabled = false;
+      draw(1, 0);
+      if (guest()) { needAccount($('csNeed'), x); return; }
+      bindStake(box);
+      var btn = $('csGo'), R = null, me = null, off = 0, shown = null, first = true;
+      var nowS = function () { return Date.now() / 1000 + off; };
+      var showMine = function (r) {
+        if (!r || !r.done || !r.ref || shown === r.ref) return;
+        shown = r.ref;
+        var msg = r.out > 0 ? (r.out <= 1.0001 && r.t0 > (r.now || nowS()) - 0.5 ? tx('cancel') : fmt(x.cashed, { x: Number(r.out).toFixed(2), w: m2(r.win) })) : fmt(x.boom, { x: Number(r.c || 1).toFixed(2) });
+        resultLine(box, r, msg);
       };
-      var fly = function (r) {
-        g = r; off = r.now - Date.now() / 1000;
-        plane.classList.remove('gone');
-        box.querySelector('.crash-stage').classList.add('flying');
-        $('csCm').className = 'crash-n'; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';
-        btn.classList.add('cash');
-        var tick = function () {
-          var s = Date.now() / 1000 + off - g.t0, m = MULT(s);
-          draw(m, s);
-          btn.textContent = x.cashout + ' ' + m2(g.stake * m) + ' $';
-          S.raf = requestAnimationFrame(tick);
-        };
-        tick();
-        S.timer = setInterval(async function () {
-          var st = await multi(game, 'state', null, true);
-          if (st && st.done) finish(st);
-        }, 700);
+      var sync = async function () {
+        if (!box.isConnected || S.game !== game) return; // jeu fermé : on arrête
+        var r = null;
+        try { r = await multi(game, 'round', null, true); } catch (e) { r = null; }
+        if (!box.isConnected || S.game !== game) return;
+        S.timer = setTimeout(sync, 1000); // toujours relancé (même après une coupure réseau)
+        if (r && r.round && r.round.i) {
+          // nouveau tour (mise) : on efface le résultat du tour d'avant, sauf si j'ai un pari en cours
+          if (R && r.round.i !== R.i && r.round.phase === 'bet' && !(r.has && !r.done)) { var rs = box.querySelector('.cs-res'); if (rs) { rs.className = 'cs-res'; rs.innerHTML = ''; } }
+          off = r.now - Date.now() / 1000; R = r.round; me = r.has ? r : null;
+          if (first) { first = false; if (me && me.done) shown = me.ref; } // ancienne partie déjà vue : on ne la remontre pas
+          showMine(me);
+        }
+        if (R && nowS() >= R.t0 && R.c == null) { clearTimeout(S.timer); S.timer = setTimeout(sync, 450); } // en vol : plus souvent
+      };
+      var tick = function () {
+        if (!box.isConnected || S.game !== game) return;
+        if (R) {
+          var t = nowS(), s = t - R.t0, w = $('csWait');
+          if (t < R.t0) { // on mise : barre de décompte
+            stage.classList.remove('flying'); plane.classList.remove('gone'); $('csCm').className = 'crash-n'; draw(1, 0);
+            w.hidden = false; $('csWaitT').textContent = fmt(tx('takeoff'), { s: Math.ceil(R.t0 - t) }); $('csWaitBar').style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 7))) + ')';
+          } else if (R.c != null) { // explosé pour tout le monde
+            w.hidden = true; stage.classList.remove('flying'); plane.classList.add('gone');
+            $('csCm').className = 'crash-n l'; $('csCm').textContent = Number(R.c).toFixed(2) + '×';
+          } else { // en vol
+            w.hidden = true; stage.classList.add('flying'); plane.classList.remove('gone'); $('csCm').className = 'crash-n'; draw(MULT(s), s);
+          }
+          var open = me && !me.done, inFlight = t >= R.t0 && R.c == null;
+          if (open && me.rid === R.i && inFlight) { btn.textContent = x.cashout + ' ' + m2(me.stake * MULT(s)) + ' $'; btn.classList.add('cash'); btn.disabled = false; }
+          else if (open) { btn.textContent = tx('placed'); btn.classList.remove('cash'); btn.disabled = true; }
+          else { btn.textContent = inFlight ? tx('betNext') : x.bet; btn.classList.remove('cash'); btn.disabled = false; }
+        }
+        S.raf = requestAnimationFrame(tick);
       };
       btn.addEventListener('click', async function () {
-        if (g && !g.done) { btn.disabled = true; var c = await multi(game, 'cash'); btn.disabled = false; if (c && c.done) finish(c); return; }
-        var auto = parseFloat(String(($('csAuto') || {}).value || '').replace(',', '.'));
-        var r = await multi(game, 'start', auto >= 1.01 ? { auto: auto } : {});
-        if (!r) return;
-        if (r.done) { finish(r); return; }
-        fly(r);
+        if (S.busy) return;
+        S.busy = true; btn.disabled = true;
+        if (me && !me.done) { var c = await multi(game, 'cash'); if (c) { me = c; showMine(c); } }
+        else {
+          var r = await multi(game, 'start', {});
+          if (r) { me = r; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = ''; if (r.done) showMine(r); }
+        }
+        S.busy = false; btn.disabled = false;
       });
-      draw(1, 0);
-      multi(game, 'state', null, true).then(function (r) { if (r && !r.done) fly(r); });
+      sync(); tick();
     };
   }
   GAMES.crash = makeCrash('crash');

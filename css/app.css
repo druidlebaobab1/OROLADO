@@ -11164,3 +11164,10 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{f
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo img{width:13px!important;height:13px!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo:not(.pl-visa):not(.pl-mc):not(.pl-apple):not(.pl-gpay){font-size:9px!important;padding:0 2px!important;gap:2px!important;letter-spacing:-.02em!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-mpesa2:not(.pl-visa):not(.pl-mc):not(.pl-apple):not(.pl-gpay){font-size:8.3px!important;letter-spacing:-.04em!important}
+/* v2701 — tour commun : barre de décompte « Départ dans X s » sous le multiplicateur */
+#casinoModal .crash-wait{position:absolute;left:50%;top:62%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:6px;width:min(260px,72%);pointer-events:none}
+#casinoModal .crash-wait[hidden]{display:none}
+#casinoModal .crash-wait small{font:800 13px system-ui;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5);text-align:center}
+#casinoModal .crash-wait i{display:block;width:100%;height:8px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden}
+#casinoModal .crash-wait i b{display:block;width:100%;height:100%;border-radius:4px;background:linear-gradient(90deg,#f43f5e,#facc15);transform-origin:0 50%;transition:transform .2s linear}
+html body #casinoModal .cs-go:disabled{opacity:.75}

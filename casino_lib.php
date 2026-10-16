@@ -53,6 +53,47 @@ function casino_baccarat_deal(): array {
 const CASINO_CRASH = ['crash', 'jet', 'rocket'];                          // v2691 : 3 jeux « ça monte » (même calcul, décor différent)
 const CASINO_APPLE_ROWS = 10;                                             // Pomme de la fortune : 10 étages, 5 pommes, 1 pourrie
 function casino_is_crash(string $g): bool { return in_array($g, CASINO_CRASH, true); }
+/*
+ * v2701 (propriétaire, comme Aviator) — TOUR COMMUN pour Sky Rush / Jet Man / Rocket : tout le monde voit le même vol.
+ * Un fichier par jeu (data/casino/round-<jeu>.json) : n° du tour, départ (t0), point d'explosion (secret jusqu'à l'explosion),
+ * fin du tour, et le point du tour SUIVANT (secret). ~7 s pour miser, puis le vol, puis 3 s d'affichage du résultat.
+ * Le point d'explosion suit la même loi qu'avant (casino_crash_point) : retour joueurs 97 %, rien ne change pour l'argent.
+ */
+const CASINO_ROUND_BET = 7.0;   // secondes pour miser avant le départ
+const CASINO_ROUND_SHOW = 3.0;  // secondes d'affichage après l'explosion
+function casino_crash_secs(float $c): float { return $c <= 1.0 ? 0.0 : log($c) / 0.08 + 0.05; }
+function casino_round_file(string $game): string { return casino_dir() . DIRECTORY_SEPARATOR . 'round-' . preg_replace('/[^a-z]/', '', $game) . '.json'; }
+/** Fait avancer le tour commun jusqu'à maintenant (dans le fichier verrouillé). */
+function casino_round_advance(array &$r, float $now): void {
+  if (empty($r['i']) || $now - (float) ($r['end'] ?? 0) > 3600) {
+    $r = ['i' => (int) ($r['i'] ?? 0) + 1, 't0' => $now + CASINO_ROUND_BET, 'c' => casino_crash_point(), 'nc' => casino_crash_point()];
+    $r['end'] = $r['t0'] + casino_crash_secs((float) $r['c']) + CASINO_ROUND_SHOW;
+    return;
+  }
+  while ($now >= (float) $r['end']) {
+    $t0 = (float) $r['end'] + CASINO_ROUND_BET;
+    $r = ['i' => (int) $r['i'] + 1, 't0' => $t0, 'c' => (float) $r['nc'], 'nc' => casino_crash_point()];
+    $r['end'] = $t0 + casino_crash_secs((float) $r['c']) + CASINO_ROUND_SHOW;
+  }
+}
+/** Le tour sur lequel une mise posée MAINTENANT va jouer : ce tour s'il n'a pas décollé, sinon le suivant. */
+function casino_round_slot(string $game, float $now): array {
+  return casino_with(casino_round_file($game), static function (array &$r) use ($now) {
+    casino_round_advance($r, $now);
+    if ($now < (float) $r['t0']) return ['i' => (int) $r['i'], 't0' => (float) $r['t0'], 'c' => (float) $r['c']];
+    return ['i' => (int) $r['i'] + 1, 't0' => (float) $r['end'] + CASINO_ROUND_BET, 'c' => (float) $r['nc']];
+  }) ?: [];
+}
+/** Ce que tout le monde voit du tour commun (le point d'explosion n'apparaît QU'APRÈS l'explosion). */
+function casino_round_public(string $game, float $now): array {
+  $r = casino_with(casino_round_file($game), static function (array &$r) use ($now) { casino_round_advance($r, $now); return $r; }) ?: [];
+  if (!$r) return [];
+  $crashAt = (float) $r['t0'] + casino_crash_secs((float) $r['c']);
+  $phase = $now < (float) $r['t0'] ? 'bet' : ($now < $crashAt ? 'fly' : 'end');
+  $o = ['i' => (int) $r['i'], 't0' => (float) $r['t0'], 'phase' => $phase, 'next' => (float) $r['end'] + CASINO_ROUND_BET, 'bet' => CASINO_ROUND_BET];
+  if ($phase === 'end') $o['c'] = (float) $r['c'];
+  return $o;
+}
 /** Pomme de la fortune : multiplicateur après $k étages réussis (1 pomme pourrie sur 5 → 80 % de chances par étage). */
 function casino_apple_mult(int $k, int $lv = 1): float { $p = (5 - max(1, min(4, $lv))) / 5; return $k < 1 ? 0.0 : floor(CASINO_EDGE / pow($p, $k) * 100) / 100; }
 /** Verger : pommes pourries d'un étage (liste ; ancien format = un seul nombre). */
@@ -451,6 +492,12 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
   $file = casino_user_file($uid);
   $now = microtime(true);
 
+  if ($act === 'round' && casino_is_crash($game)) {
+    $mine = casino_settle_crash($db, $uid, $file, $now, $game);
+    $out = ['ok' => true, 'now' => $now, 'round' => casino_round_public($game, $now)];
+    if (is_array($mine)) $out += casino_public($game, $mine, $now) + ['has' => 1];
+    return $out;
+  }
   if ($act === 'start') {
     $stake = floor($stake * 100 + 1e-6) / 100;
     if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
@@ -472,7 +519,10 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
     if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
     $g = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'done' => 0];
     if (casino_is_crash($game)) {
-      $g['c'] = casino_crash_point();
+      // v2701 : tour commun — même départ et même point d'explosion que tous les joueurs de ce tour
+      $slot = casino_round_slot($game, $now);
+      if (!$slot) { casino_credit($db, $uid, $mode, $stake, $ref); return ['ok' => false, 'reason' => 'busy']; }
+      $g['round'] = (int) $slot['i']; $g['t0'] = (float) $slot['t0']; $g['c'] = (float) $slot['c'];
       $auto = round((float) ($p['auto'] ?? 0), 2);
       if ($auto >= 1.01) $g['auto'] = $auto;
     } elseif ($game === 'apple') {
@@ -515,6 +565,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $r = casino_with($file, static function (array &$st) use ($game, $now) {
         $g = $st['g'][$game];
         if (!empty($g['done'])) return $g;
+        if ($now < (float) $g['t0']) { $g['done'] = 1; $g['out'] = 1.0; $g['win'] = casino_money((float) $g['stake']); $st['g'][$game] = $g; return $g; } // v2701 : avant le départ = pari annulé
         $m = casino_crash_mult($now - (float) $g['t0']);
         if (!empty($g['auto']) && $g['auto'] <= $m && $g['auto'] < $g['c']) $m = (float) $g['auto'];
         if ($m >= (float) $g['c']) { $g['done'] = 1; $g['out'] = 0; $g['win'] = 0.0; }
@@ -693,6 +744,7 @@ function casino_settle_crash(array $db, string $uid, string $file, float $now, s
   $r = casino_with($file, static function (array &$st) use ($now, $game) {
     $g = $st['g'][$game] ?? null;
     if (!is_array($g) || !empty($g['done'])) return $g;
+    if ($now < (float) $g['t0']) return $g; // v2701 : rien n'est réglé avant le départ du tour
     $m = casino_crash_mult($now - (float) $g['t0']);
     if (!empty($g['auto']) && $g['auto'] < $g['c'] && $m >= $g['auto']) { $g['done'] = 1; $g['out'] = (float) $g['auto']; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $g['auto'])); }
     elseif ($m >= (float) $g['c']) { $g['done'] = 1; $g['out'] = 0; $g['win'] = 0.0; }
@@ -731,7 +783,7 @@ function casino_finish(array $db, string $uid, string $game, array $g, float $no
 function casino_public(string $game, array $g, float $now): array {
   $o = ['game' => $game, 'mode' => (string) $g['mode'], 'stake' => (float) $g['stake'], 'done' => !empty($g['done']) ? 1 : 0, 'win' => (float) ($g['win'] ?? 0)];
   if (casino_is_crash($game)) {
-    $o['t0'] = (float) $g['t0']; $o['auto'] = (float) ($g['auto'] ?? 0);
+    $o['t0'] = (float) $g['t0']; $o['auto'] = (float) ($g['auto'] ?? 0); $o['rid'] = (int) ($g['round'] ?? 0); $o['ref'] = substr(hash('sha256', (string) $g['ref']), 0, 10);
     if (!empty($g['done'])) { $o['c'] = (float) $g['c']; $o['out'] = (float) ($g['out'] ?? 0); }
   } elseif ($game === 'apple') {
     $lv = (int) ($g['lv'] ?? 1);

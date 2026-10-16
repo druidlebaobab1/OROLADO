@@ -232,6 +232,28 @@ for ($stop = 1; $stop <= 8; $stop++) {
   check(sprintf('penalty encaissé après %d but(s) : retour %.1f %%', $stop, $sum / $N * 100), $sum / $N < 0.985 && $sum / $N > 0.93);
 }
 check('penalty : échelle ×1,44 → ×24,60', abs(casino_pen_mult(1) - 1.44) < 0.001 && abs(casino_pen_mult(8) - 24.6) < 0.001, casino_pen_mult(8) . '');
+echo "10) Tour commun Sky Rush (v2701)\n";
+@unlink(casino_round_file('crash'));
+$t = microtime(true);
+$pub = casino_round_public('crash', $t);
+check('tour commun créé : on mise d\'abord (barre de décompte), point d\'explosion CACHÉ', $pub['phase'] === 'bet' && !isset($pub['c']) && $pub['t0'] > $t, json_encode($pub));
+$s1 = casino_round_slot('crash', $t); $s2 = casino_round_slot('crash', $t + 1);
+check('deux joueurs pendant la mise : même tour, même départ, même point d\'explosion', $s1['i'] === $s2['i'] && $s1['t0'] === $s2['t0'] && $s1['c'] === $s2['c']);
+$fly = $s1['t0'] + 0.01;
+$s3 = casino_round_slot('crash', $fly);
+check('miser pendant le vol : placé sur le tour SUIVANT', $s3['i'] === $s1['i'] + 1 && $s3['t0'] > $s1['t0']);
+$pubF = casino_round_public('crash', $fly);
+check('pendant le vol : point d\'explosion toujours caché', $pubF['phase'] === 'fly' || ($pubF['phase'] === 'end' && $s1['c'] <= 1.0), json_encode($pubF));
+$after = $s1['t0'] + casino_crash_secs($s1['c']) + 0.5;
+$pubE = casino_round_public('crash', $after);
+check('après l\'explosion : le point est montré à tous, c\'est le même', $pubE['phase'] === 'end' && abs($pubE['c'] - $s1['c']) < 1e-9);
+$pubN = casino_round_public('crash', $after + CASINO_ROUND_SHOW + 1);
+check('puis un nouveau tour commence tout seul (nouvelle mise)', $pubN['i'] === $s1['i'] + 1 && $pubN['phase'] === 'bet');
+$N = 20000; $w = 0; $rr = []; casino_round_advance($rr, 1000.0);
+for ($k = 0; $k < $N; $k++) { if ($rr['c'] >= 2) $w++; casino_round_advance($rr, (float) $rr['end'] + 0.001); }
+check('les points d\'explosion des tours suivent la même loi (≥ ×2 : ~48,5 %)', abs($w / $N - 0.485) < 0.02, (string) round($w / $N, 3));
+@unlink(casino_round_file('crash'));
+
 echo "9) Admin : joueurs du casino (v2698)\n";
 casino_hist_add('u_admin_t', ['g' => 'coin', 'm' => 'real', 's' => 2.0, 'w' => 3.88, 'at' => time()]);
 casino_hist_add('u_admin_t', ['g' => 'dice', 'm' => 'real', 's' => 5.0, 'w' => 0.0, 'at' => time()]);
