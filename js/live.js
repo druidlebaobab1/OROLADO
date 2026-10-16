@@ -139,7 +139,8 @@
   }
 
   /* ---------- v2680 — AMIS ---------- */
-  var peer = null, fImg = '', fBusy = false;
+  var peer = null, fImg = '', fBusy = false, myStats = null;
+  function showRecord() { var m = $('lfFindMsg'); if (!m) return; m.classList.add('hint'); m.textContent = '🏆 ' + fmt(L().duelRecord, myStats || { w: 0, l: 0 }); }
   function initial(n) { n = String(n || '?').trim(); return esc((n.charAt(0) || '?').toUpperCase()); }
   function setFriendBadge(n) { var b = $('liveBadgeF'); if (b) b.textContent = n > 0 ? String(n) : ''; }
   async function friendsList() {
@@ -154,6 +155,7 @@
     $('lfFindIn').placeholder = x.findPh; $('lfFindGo').textContent = x.findGo;
     var j = await call('friends', {});
     if (!j || !j.ok) return;
+    myStats = j.stats || null;
     $('lfMe').innerHTML = '<div><small>' + x.myId + '</small><b class="lf-myid">' + esc(j.me) + '</b><small>' + x.idHint + '</small></div><button type="button" id="lfCopy">' + x.copy + '</button>';
     $('lfCopy').addEventListener('click', function () {
       var b = this;
@@ -324,11 +326,60 @@
     });
   }
 
-  function show(w) {
+  /* ---------- v2686 — ACCUEIL EN GRANDES TUILES (propriétaire) ---------- */
+  var HOME = [
+    { k: 'news', ico: '📰', c: 'c1' }, { k: 'friends', ico: '👥', c: 'c2' }, { k: 'duel', ico: '⚔️', c: 'c3' }, { k: 'chat', ico: '💬', c: 'c4' },
+    { k: 'myid', ico: '🆔', c: 'c5' }, { k: 'record', ico: '🏆', c: 'c6' }, { k: 'gifts', ico: '🎁', c: 'c7' }, { k: 'learn', ico: '📚', c: 'c8' }
+  ];
+  var HT = {
+    fr: { news: ['Actualités', 'Les nouvelles d’OROLADO'], friends: ['Mes amis', 'Discute et partage des photos'], duel: ['Défie ton ami', 'En démo · 3, 5 ou 10 min'], chat: ['Écrire à l’équipe', 'Une question ? On te répond'],
+      myid: ['Mon identifiant', 'Partage-le à tes amis'], record: ['Mes défis', 'Victoires et défaites'], gifts: ['Cadeaux', 'Défis, bonus, tournoi'], learn: ['Apprendre', 'Le guide pas à pas'], home: 'Live', duelHint: 'Choisis un ami, puis touche « ⚔️ Défier ».' },
+    en: { news: ['News', 'OROLADO updates'], friends: ['My friends', 'Chat and share photos'], duel: ['Challenge a friend', 'In demo · 3, 5 or 10 min'], chat: ['Write to the team', 'A question? We answer'],
+      myid: ['My ID', 'Share it with your friends'], record: ['My challenges', 'Wins and losses'], gifts: ['Gifts', 'Challenges, bonus, tournament'], learn: ['Learn', 'Step-by-step guide'], home: 'Live', duelHint: 'Pick a friend, then tap “⚔️ Challenge”.' },
+    zh: { news: ['动态', 'OROLADO 最新消息'], friends: ['我的好友', '聊天、分享照片'], duel: ['挑战好友', '模拟 · 3、5 或 10 分钟'], chat: ['联系团队', '有问题？我们来回复'],
+      myid: ['我的 ID', '分享给好友'], record: ['我的挑战', '胜负记录'], gifts: ['礼物', '挑战、奖励、锦标赛'], learn: ['学习', '分步指南'], home: 'Live', duelHint: '选择一位好友，然后点「⚔️ 挑战」。' }
+  };
+  function H() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return HT[l] || HT.en; }
+  var dmUnTiles = 0;
+  function paintHome() {
+    var h = H();
+    $('liveHomeGrid').innerHTML = HOME.map(function (t) {
+      var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
+      return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' ? ' big' : '') + '" data-k="' + t.k + '"><span class="lh-ico">' + t.ico + '</span><b>' + esc(h[t.k][0]) + '</b><small>' + esc(h[t.k][1]) + '</small>' + badge + '</button>';
+    }).join('');
+    $('liveHomeGrid').querySelectorAll('.lh-tile').forEach(function (b) {
+      b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); });
+    });
+  }
+  function tileGo(k) {
+    if (k === 'gifts') { close(); if (D6.Portal && D6.Portal.open) D6.Portal.open(); return; }
+    if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); return; }
+    if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
+    // Défier / mon identifiant / mes défis : la page Amis, avec un mot d'aide en haut
+    show('friends', k);
+  }
+
+  function show(w, sub) {
     tab = w;
+    var h = H(), home = w === 'home';
+    $('livePaneHome').hidden = !home;
+    $('liveBar').hidden = home;
+    $('liveBarT').textContent = home ? '' : (sub && h[sub] ? h[sub][0] : (h[w] ? h[w][0] : ''));
     $('liveTabNews').classList.toggle('on', w === 'news'); $('liveTabChat').classList.toggle('on', w === 'chat'); $('liveTabFriends').classList.toggle('on', w === 'friends');
     $('livePaneNews').hidden = w !== 'news'; $('livePaneChat').hidden = w !== 'chat'; $('livePaneFriends').hidden = w !== 'friends';
     clearInterval(timer);
+    if (home) { paintHome(); return; }
+    if (w === 'friends') {
+      friendsList().then(function () {
+        var m = $('lfFindMsg');
+        if (sub === 'duel' && m) { m.textContent = h.duelHint; m.classList.add('hint'); }
+        else if (m) m.classList.remove('hint');
+        if (sub === 'myid' && $('lfMe')) $('lfMe').scrollIntoView({ block: 'start' });
+        if (sub === 'record') showRecord();
+      });
+      if (!guest()) timer = setInterval(function () { if (!document.hidden) { if (peer) refreshDm(); else friendsList(); } }, 15000);
+      return;
+    }
     if (w === 'friends') {
       friendsList();
       if (!guest()) timer = setInterval(function () { if (!document.hidden) { if (peer) refreshDm(); else friendsList(); } }, 15000);
@@ -343,7 +394,7 @@
     $('liveSub').textContent = x.sub; $('liveTabNewsT').textContent = x.news; $('liveTabChatT').textContent = x.chat; $('liveText').placeholder = x.ph;
     if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
-    show(w || (($('liveBadge') && $('liveBadge').textContent) ? 'chat' : (dmUn > 0 ? 'friends' : 'news')));
+    show(w || 'home');
   }
   function close() { clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
@@ -390,6 +441,7 @@
     $('liveTabNews').addEventListener('click', function () { show('news'); });
     $('liveTabChat').addEventListener('click', function () { show('chat'); });
     if ($('liveTabFriends')) { $('liveTabFriends').addEventListener('click', function () { show('friends'); }); bootFriends(); }
+    if ($('liveBack')) $('liveBack').addEventListener('click', function () { clearInterval(duelTick); clearInterval(duelPoll); peer = null; show('home'); });
     $('liveForm').addEventListener('submit', send);
     $('liveText').addEventListener('input', grow);
     $('liveFile').addEventListener('change', async function () {
