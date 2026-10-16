@@ -971,16 +971,18 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if ($view === 'wd_suspect') {
-    $cols = ['Joueur', 'Nom', 'E-mail', 'Motif', 'Retrait ouvert', 'Trades (30 j)', 'Solde'];
+    $cols = ['Joueur', 'Nom', 'E-mail', 'Niveau', 'Alertes', 'Retrait ouvert', 'Trades (30 j)', 'Solde'];
     $list = [];
     foreach (admin_suspects() as $uid => $s) {
       $p = $pmap[$uid] ?? admin_enrich_user_row(['id' => $uid], $vaults);
       $p['_reason'] = $s['reason'];
+      $p['_level'] = (string) ($s['level'] ?? 'red');
       $p['_openAmt'] = $s['openAmt'];
       $p['_trades'] = $s['trades'];
       $list[] = $p;
     }
-    usort($list, static fn($a, $b) => ((float) ($b['_openAmt'] ?? 0) <=> (float) ($a['_openAmt'] ?? 0)));
+    // v2672 — rouges d'abord, puis le plus gros retrait ouvert.
+    usort($list, static fn($a, $b) => [($a['_level'] === 'red' ? 0 : 1), -(float) ($a['_openAmt'] ?? 0)] <=> [($b['_level'] === 'red' ? 0 : 1), -(float) ($b['_openAmt'] ?? 0)]);
     $q = strtolower(trim((string) ($req['q'] ?? '')));
     if ($q !== '') {
       $list = array_values(array_filter($list, static fn($p) => admin_match_q($p, $q) || str_contains(strtolower((string) ($p['_reason'] ?? '')), $q)));
@@ -992,18 +994,20 @@ function admin_list_payload(string $view, array $req): array {
           (string) ($p['publicId'] ?? ''),
           (string) ($p['name'] ?? '—'),
           (string) ($p['email'] ?? ''),
+          $p['_level'] === 'red' ? 'Ne pas payer' : 'À suivre',
           (string) ($p['_reason'] ?? ''),
           ((float) ($p['_openAmt'] ?? 0) > 0) ? admin_money($p['_openAmt']) : '—',
           (string) ($p['_trades'] ?? 0),
           admin_money($p['real'] ?? 0),
         ],
         'userId' => (string) ($p['id'] ?? ''),
-        'flag' => 'suspect',
+        'flag' => $p['_level'] === 'red' ? 'suspect' : 'watch',
         'kind' => 'suspect',
-        'wrap' => 3,
+        'wrap' => 4,
       ];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' compte(s) à vérifier avant de payer · cliquez une ligne pour voir la fiche', 'actions' => false];
+    $nRed = count(array_filter($list, static fn($p) => $p['_level'] === 'red'));
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => '🔴 ' . $nRed . ' à ne pas payer · 🟠 ' . ($total - $nRed) . ' à suivre · cliquez une ligne pour voir la fiche', 'actions' => false];
   }
 
   if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
@@ -1039,7 +1043,10 @@ function admin_list_payload(string $view, array $req): array {
       $w = admin_enrich_wd($w, $pmap);
       $uid = (string) ($w['userId'] ?? '');
       $p = $pmap[$uid] ?? ['id' => $uid];
-      $w['_suspect'] = (admin_wd_is_open($w) && isset($suspects[$uid])) || admin_is_suspect($p, $ordersByUser[$uid] ?? [], $w);
+      // v2672 — alertes ROUGES (ne pas payer) / ORANGE (à suivre).
+      $al = (admin_wd_is_open($w) && isset($suspects[$uid])) ? (array) ($suspects[$uid]['alerts'] ?? []) : admin_alerts($p, $ordersByUser[$uid] ?? [], $w);
+      $w['_alerts'] = $al;
+      $w['_suspect'] = $al !== [];
       if ($q !== '' && !admin_match_q($w, $q) && !str_contains(strtolower((string) ($w['name'] ?? '')), $q)) continue;
       if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '') {
         $tmp = admin_apply_filters([$w], $req, 'createdAt');
@@ -1056,11 +1063,10 @@ function admin_list_payload(string $view, array $req): array {
       $suspect = !empty($w['_suspect']);
       // v2654 : le MOTIF est écrit sous « Suspect » (avant : seulement le mot, sans raison).
       $why = '';
+      $lvl = '';
       if ($suspect) {
-        $wuid = (string) ($w['userId'] ?? '');
-        $why = (string) ($suspects[$wuid]['reason'] ?? '');
-        if ($why === '') $why = admin_suspect_reason($pmap[$wuid] ?? ['id' => $wuid], $ordersByUser[$wuid] ?? [], $w);
-        if ($why === '') $why = admin_click_reason_for($wuid, (string) ($w['email'] ?? ''));
+        $why = admin_alerts_text((array) $w['_alerts']);
+        $lvl = admin_alerts_level((array) $w['_alerts']);
       }
       $rows[] = [
         'cells' => [
@@ -1071,7 +1077,7 @@ function admin_list_payload(string $view, array $req): array {
           admin_money($w['amount']),
           $method !== '' ? $method : '—',
           $dest,
-          $suspect ? 'Suspect' : 'Vérifié',
+          $suspect ? ($lvl === 'red' ? 'Ne pas payer' : 'À suivre') : 'Vérifié',
           (string) ($w['status'] ?? ''),
           admin_when_cell((string) ($w['createdAt'] ?? '')),
         ],
@@ -1081,7 +1087,7 @@ function admin_list_payload(string $view, array $req): array {
         'pending' => $open,
         'suspect' => $suspect,
         'why' => $why,
-        'flag' => $suspect ? 'suspect' : 'ok',
+        'flag' => $suspect ? ($lvl === 'red' ? 'suspect' : 'watch') : 'ok',
       ];
     }
     $summary = $total . ' retrait(s) · ' . admin_money($sum);
@@ -1593,6 +1599,7 @@ function admin_profile_payload(string $uid): array {
       'trades' => $nTrades,
     ],
     'suspect' => (string) ((admin_suspects()[$uid]['reason'] ?? '') ?: admin_click_reason_for($uid, (string) ($p['email'] ?? ''))),
+    'suspectLevel' => (string) (admin_suspects()[$uid]['level'] ?? 'red'),
     'deposits' => $deps,
     'bonuses' => $bonuses,
     'withdrawals' => $wds,
@@ -2250,6 +2257,10 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .sus-why{margin-top:6px;max-width:260px;white-space:normal;font-size:12px;line-height:1.35;color:#FCA5A5;font-weight:600}
     .pill-unread{background:rgba(245,158,11,.2);color:#FBBF24}
     .pill-warn{background:rgba(245,158,11,.2);color:#FBBF24}
+    /* v2672 — alerte ORANGE « À suivre » (couleur OROLADO) */
+    .pill-watch{background:rgba(245,165,36,.18);color:#F5A524;font-weight:800}
+    .sus-why.watch{color:#F5C46B}
+    .sus-box.watch{background:rgba(245,165,36,.12);border-color:rgba(245,165,36,.5);color:#FDE3B0}
     .msg-full{white-space:pre-wrap;line-height:1.5;background:#0E1420;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px;max-height:50vh;overflow:auto}
     .mini{border:1px solid var(--line);background:#1A2230;color:var(--text);border-radius:6px;padding:4px 8px;font:inherit;font-weight:800;cursor:pointer;margin-right:4px;margin-bottom:3px}
     .mini.ok{border-color:var(--green);color:var(--green)} .mini.bad{border-color:var(--red);color:var(--red)}
@@ -2607,7 +2618,8 @@ function renderList(j) {
       }
       const s = String(c ?? '');
       const wrap = r.wrap === ci || r.kind === 'message' && ci === 5;
-      if (s === 'Suspect') html += '<td><span class="pill pill-suspect">Suspect</span>'+(r.why ? '<div class="sus-why">'+esc(r.why)+'</div>' : '')+'</td>';
+      if (s === 'Suspect' || s === 'Ne pas payer') html += '<td><span class="pill pill-suspect">🔴 '+s+'</span>'+(r.why ? '<div class="sus-why">'+esc(r.why)+'</div>' : '')+'</td>';
+      else if (s === 'À suivre') html += '<td><span class="pill pill-watch">🟠 À suivre</span>'+(r.why ? '<div class="sus-why watch">'+esc(r.why)+'</div>' : '')+'</td>';
       else if (s === 'Vérifié' || s === 'OK' || s === 'Réglé') html += '<td><span class="pill pill-ok">'+s+'</span></td>';
       else if (s === 'Attention') html += '<td><span class="pill pill-warn">Attention</span></td>';
       else if (s === 'Panne') html += '<td><span class="pill pill-suspect">Panne</span></td>';
@@ -2733,7 +2745,7 @@ async function openUser(uid) {
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
     '<p>Solde réel : <strong>$ '+esc(u.real)+'</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
-    (j.suspect ? '<div class="sus-box">À vérifier : '+esc(j.suspect)+'</div>' : '')+
+    (j.suspect ? '<div class="sus-box'+(j.suspectLevel === 'orange' ? ' watch' : '')+'">'+(j.suspectLevel === 'orange' ? 'À suivre : ' : 'Ne pas payer sans vérifier : ')+esc(j.suspect)+'</div>' : '')+
     (j.totals ? '<div class="totals">'+
       '<div style="background:linear-gradient(180deg,rgba(34,197,94,.28),rgba(22,163,74,.12));border:1px solid rgba(74,222,128,.75);box-shadow:0 0 12px rgba(34,197,94,.35)"><span style="color:#BBF7D0">Solde réel actuel</span><b style="color:#4ADE80;font-size:1.25em">'+money(u.real)+'</b></div>'+
       '<div><span>Argent déposé</span><b>'+money(j.totals.deposits)+'</b></div>'+

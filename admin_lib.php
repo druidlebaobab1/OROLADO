@@ -2411,7 +2411,8 @@ function admin_aff_earned(string $uid): float {
   return (float) ($own['earned'] ?? 0);
 }
 
-function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, array $ctx = []): string {
+/** v2672 — ancien motif unique (le premier trouvé) ; admin_alerts() le reprend et ajoute toutes les autres alertes. */
+function admin_legacy_reason(array $p, array $realOrders, ?array $wd = null, array $ctx = []): string {
   $role = strtolower((string) ($p['role'] ?? ''));
   if (in_array($role, ['suspended', 'banned'], true)) return 'Compte déjà suspendu';
   // v2359 : prix du clic accepté → un robot gagnerait presque toujours grâce à lui (voir trade_lib.php).
@@ -2517,6 +2518,122 @@ function admin_is_suspect(array $p, array $realOrders, ?array $wd = null, array 
   return admin_suspect_reason($p, $realOrders, $wd, $ctx) !== '';
 }
 
+/** v2672 — fiche LOCALE du joueur (compteurs serveur : trades réels, clics), retrouvée par id, sbId ou e-mail. */
+function admin_local_user_for(string $uid, string $email = ''): array {
+  static $idx = null;
+  if ($idx === null) {
+    $idx = ['id' => [], 'sb' => [], 'em' => []];
+    foreach ((admin_local_db()['users'] ?? []) as $id => $u) {
+      if (!is_array($u)) continue;
+      $idx['id'][(string) $id] = $u;
+      if (($u['sbId'] ?? '') !== '') $idx['sb'][(string) $u['sbId']] = $u;
+      $em = strtolower(trim((string) ($u['email'] ?? '')));
+      if ($em !== '') $idx['em'][$em] = $u;
+    }
+  }
+  $em = strtolower(trim($email));
+  return $idx['id'][$uid] ?? $idx['sb'][$uid] ?? ($em !== '' ? ($idx['em'][$em] ?? []) : []);
+}
+
+/** v2672 — niveau d'un ancien motif : ROUGE = ne pas payer, ORANGE = à suivre. */
+function admin_reason_level(string $txt): string {
+  foreach (['suspendu', 'robot', 'Robot', 'signalé', 'sans dépôt payé', 'sans aucun dépôt', 'Solde plus élevé', 'Même destination', 'en moins de 5 s', '3 min après inscription'] as $k) {
+    if (str_contains($txt, $k)) return 'red';
+  }
+  return 'orange';
+}
+
+/**
+ * v2672 (propriétaire) — TOUTES les alertes d'un joueur, chacune ROUGE (ne pas payer, attention forte)
+ * ou ORANGE (à suivre, pas forcément un tricheur). Rouges d'abord.
+ * Retour : [['lvl' => 'red'|'orange', 'txt' => '…'], …]
+ */
+function admin_alerts(array $p, array $realOrders, ?array $wd = null, array $ctx = []): array {
+  $uid = (string) ($p['id'] ?? '');
+  $loc = $ctx['localUser'] ?? admin_local_user_for($uid, (string) ($p['email'] ?? ''));
+  // Le nombre de trades réels vient du serveur (fiche locale) : avant, « sans aucun trade réel » sortait à tort.
+  if ((int) ($p['realTrades'] ?? 0) <= 0 && (int) ($loc['realTrades'] ?? 0) > 0) {
+    $p['realTrades'] = (int) $loc['realTrades'];
+    $p['realStakeVolume'] = max((float) ($p['realStakeVolume'] ?? 0), (float) ($loc['realStakeVolume'] ?? 0));
+  }
+  if (!isset($p['clickFav']) && isset($loc['clickFav'])) { $p['clickFav'] = $loc['clickFav']; $p['clickUnfav'] = $loc['clickUnfav'] ?? 0; }
+  $out = [];
+  $add = static function (string $lvl, string $txt) use (&$out): void {
+    foreach ($out as $a) if ($a['txt'] === $txt) return;
+    $out[] = ['lvl' => $lvl, 'txt' => $txt];
+  };
+  $legacy = admin_legacy_reason($p, $realOrders, $wd, $ctx);
+  if ($legacy !== '') $add(admin_reason_level($legacy), $legacy);
+  if (!empty($ctx['bannedHit'])) $add('red', (string) $ctx['bannedHit']);
+  if (!empty($ctx['sameIp']) && $legacy === '' && empty($ctx['bannedHit'])) $add('orange', 'Même IP que ' . implode(', ', array_slice((array) $ctx['sameIp'], 0, 3)));
+  if (!empty($ctx['excess']) && (float) $ctx['excess'] >= 1) $add('red', 'Solde plus élevé que dépôts + bonus + gains (+' . admin_money($ctx['excess']) . ')');
+
+  // Résultats des trades réels (30 derniers jours).
+  $rows = [];
+  foreach ($realOrders as $o) {
+    if (!array_key_exists('won', $o) || $o['won'] === null || $o['won'] === '') continue;
+    $rows[] = $o;
+  }
+  usort($rows, static fn($a, $b) => strcmp((string) ($a['created_at'] ?? ''), (string) ($b['created_at'] ?? '')));
+  $n = count($rows);
+  $w = 0; $assets = []; $stake = 0.0; $net = 0.0;
+  foreach ($rows as $o) {
+    $won = $o['won'] === true || $o['won'] === 1 || $o['won'] === '1' || $o['won'] === 't' || $o['won'] === 'true';
+    if ($won) $w++;
+    $assets[(string) ($o['asset_id'] ?? $o['assetId'] ?? '?')] = 1;
+    $stake += (float) ($o['stake'] ?? 0);
+    $net += (float) ($o['net'] ?? 0);
+  }
+  $rate = $n > 0 ? $w / $n : 0.0;
+  if ($n >= 15 && $rate >= 0.8) $add('red', 'Gagne ' . round($rate * 100) . ' % de ses trades (' . $w . '/' . $n . ') : presque impossible sans tricher');
+  elseif ($n >= 12 && $rate >= 0.65) $add('orange', 'Gagne ' . round($rate * 100) . ' % de ses trades (' . $w . '/' . $n . ') : très chanceux, à suivre');
+  if ($n >= 12 && $rate >= 0.6 && count($assets) === 1) $add('orange', 'Gagne surtout sur un seul marché (' . array_key_first($assets) . ')');
+  // Martingale : grosse hausse de mise juste après une perte (≥ ×2,5), au moins 3 fois.
+  $mart = 0;
+  for ($i = 1; $i < $n; $i++) {
+    $prev = $rows[$i - 1];
+    $prevWon = $prev['won'] === true || $prev['won'] === 1 || $prev['won'] === '1' || $prev['won'] === 't' || $prev['won'] === 'true';
+    $s0 = (float) ($prev['stake'] ?? 0); $s1 = (float) ($rows[$i]['stake'] ?? 0);
+    if (!$prevWon && $s0 > 0 && $s1 >= $s0 * 2.5) $mart++;
+  }
+  if ($mart >= 3) $add('orange', 'Martingale : grosse mise juste après une perte (' . $mart . ' fois)');
+  // Compteurs de clic : en route vers « robot » (rouge plus tard), déjà à surveiller.
+  $fav = (int) ($p['clickFav'] ?? 0); $unf = (int) ($p['clickUnfav'] ?? 0);
+  if ($fav >= 8 && $fav >= 2.5 * max(1, $unf) && !str_contains($legacy, 'obot')) $add('orange', 'Clic souvent « en avance » sur la courbe (' . $fav . ' contre ' . $unf . ')');
+
+  $dep = (float) ($p['depositTotal'] ?? 0);
+  $created = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  if ($dep > 0 && $net > 2 * $dep && $net >= 20) $add('orange', 'Gains de jeu (+' . admin_money($net) . ') plus de 2× ses dépôts');
+  if ($dep > 0 && (float) ($ctx['wdPaid'] ?? 0) > 3 * $dep && (float) ($ctx['wdPaid'] ?? 0) >= 30) $add('orange', 'A déjà retiré plus de 3× ses dépôts (' . admin_money($ctx['wdPaid']) . ')');
+  if ($wd) {
+    $wAt = strtotime((string) ($wd['createdAt'] ?? '')) ?: time();
+    if ($created > 0 && $wAt - $created < 86400) $add('orange', 'Compte créé il y a moins de 24 h');
+    $lastDep = (int) ($ctx['lastDepAt'] ?? 0);
+    if ($lastDep > 0 && $wAt >= $lastDep && $wAt - $lastDep < 3600) $add('orange', 'Retrait moins d’1 h après son dépôt');
+    if ((int) ($ctx['wd24'] ?? 0) >= 3) $add('orange', (int) $ctx['wd24'] . ' demandes de retrait en 24 h');
+  }
+  usort($out, static fn($a, $b) => ($a['lvl'] === 'red' ? 0 : 1) <=> ($b['lvl'] === 'red' ? 0 : 1));
+  return $out;
+}
+
+/** Premier motif (rouge d'abord) — gardé pour les anciens appels. */
+function admin_suspect_reason(array $p, array $realOrders, ?array $wd = null, array $ctx = []): string {
+  $a = admin_alerts($p, $realOrders, $wd, $ctx);
+  return $a ? (string) $a[0]['txt'] : '';
+}
+
+/** Texte court pour l'admin : « 🔴 … · 🟠 … ». */
+function admin_alerts_text(array $alerts): string {
+  $t = [];
+  foreach ($alerts as $a) $t[] = ($a['lvl'] === 'red' ? '🔴 ' : '🟠 ') . $a['txt'];
+  return implode(' · ', $t);
+}
+
+function admin_alerts_level(array $alerts): string {
+  foreach ($alerts as $a) if ($a['lvl'] === 'red') return 'red';
+  return $alerts ? 'orange' : '';
+}
+
 function admin_norm_dest(string $d): string {
   $d = strtolower(trim($d));
   if ($d === '' || $d === '—') return '';
@@ -2564,12 +2681,51 @@ function admin_suspects(): array {
     if ($ip !== '' && $ip !== '—') $ipBy[$ip][(string) $p['id']] = true;
   }
   $pidOf = static fn(string $uid): string => (string) (($pmap[$uid]['publicId'] ?? '') ?: $uid);
+  // v2672 — traces des comptes SUSPENDUS / bannis (IP, téléphone, numéro de retrait) : un nouveau compte qui
+  // les réutilise = alerte ROUGE (le tricheur revient).
+  $isBanned = static fn(array $p): bool => in_array(strtolower((string) ($p['role'] ?? '')), ['suspended', 'banned'], true);
+  $tel8 = static function (string $s): string { $d = preg_replace('/\D/', '', $s) ?? ''; return strlen($d) >= 8 ? substr($d, -8) : ''; };
+  $banIp = []; $banTel = []; $banDest = [];
+  foreach ($pmap as $bid => $bp) {
+    if (!$isBanned($bp)) continue;
+    $ip = trim((string) ($bp['ip'] ?? ''));
+    if ($ip !== '' && $ip !== '—' && count($ipBy[$ip] ?? []) <= 4) $banIp[$ip] = $pidOf((string) $bid);
+    $t = $tel8((string) ($bp['phone'] ?? ''));
+    if ($t !== '') $banTel[$t] = $pidOf((string) $bid);
+  }
+  foreach ($destBy as $k => $owners) {
+    foreach (array_keys($owners) as $o) if ($isBanned($pmap[$o] ?? [])) $banDest[$k] = $pidOf((string) $o);
+  }
+  $wd24By = [];
+  foreach ($wds as $w) {
+    $t = strtotime((string) ($w['createdAt'] ?? '')) ?: 0;
+    if ($t >= time() - 86400 && !admin_wd_is_silenced($w)) $wd24By[(string) ($w['userId'] ?? '')] = ($wd24By[(string) ($w['userId'] ?? '')] ?? 0) + 1;
+  }
+  $lastDepBy = [];
+  foreach (admin_deposits() as $d) {
+    if (!admin_dep_is_paid($d)) continue;
+    $t = strtotime((string) ($d['createdAt'] ?? '')) ?: 0;
+    $u = (string) ($d['userId'] ?? '');
+    if ($t > ($lastDepBy[$u] ?? 0)) $lastDepBy[$u] = $t;
+  }
   $dayAgo = time() - 86400;
   $out = [];
   foreach ($pmap as $uid => $p) {
     if ($uid === '' || admin_is_protected_account($p, (string) $uid)) continue; // jamais le compte admin parmi les suspects
     $open = $openBy[$uid] ?? [];
-    $ctx = [];
+    $ctx = ['wdPaid' => $wdPaidBy[$uid] ?? 0.0, 'lastDepAt' => $lastDepBy[$uid] ?? 0, 'wd24' => $wd24By[$uid] ?? 0];
+    if (!$isBanned($p)) {
+      $ip = trim((string) ($p['ip'] ?? ''));
+      $t = $tel8((string) ($p['phone'] ?? ''));
+      if ($ip !== '' && isset($banIp[$ip])) $ctx['bannedHit'] = 'Même IP qu’un compte suspendu (' . $banIp[$ip] . ')';
+      elseif ($t !== '' && isset($banTel[$t])) $ctx['bannedHit'] = 'Même téléphone qu’un compte suspendu (' . $banTel[$t] . ')';
+      else {
+        foreach ($open as $w) {
+          $k = admin_norm_dest(admin_fill((string) ($w['phone'] ?? ''), (string) ($w['destination'] ?? '')));
+          if ($k !== '' && isset($banDest[$k]) && $banDest[$k] !== $pidOf((string) $uid)) { $ctx['bannedHit'] = 'Retrait vers le numéro d’un compte suspendu (' . $banDest[$k] . ')'; break; }
+        }
+      }
+    }
     if ($open) {
       $mine = [];
       foreach ($open as $w) {
@@ -2605,17 +2761,20 @@ function admin_suspects(): array {
       foreach (array_keys($ipBy[$ip]) as $other) if ($other !== $uid) $others[] = $pidOf($other);
       $ctx['sameIp'] = $others;
     }
-    $reason = admin_suspect_reason($p, $ordersBy[$uid] ?? [], $open[0] ?? null, $ctx);
-    if ($reason === '') {
-      foreach (array_slice($open, 1) as $w) {
-        $reason = admin_suspect_reason($p, $ordersBy[$uid] ?? [], $w, $ctx);
-        if ($reason !== '') break;
+    // v2672 — toutes les alertes (rouges d'abord), sur chaque retrait ouvert.
+    $alerts = [];
+    foreach ($open ?: [null] as $w) {
+      foreach (admin_alerts($p, $ordersBy[$uid] ?? [], $w, $ctx) as $a) {
+        $dup = false;
+        foreach ($alerts as $b) if ($b['txt'] === $a['txt']) $dup = true;
+        if (!$dup) $alerts[] = $a;
       }
     }
-    if ($reason === '') continue;
+    if (!$alerts) continue;
+    usort($alerts, static fn($a, $b) => ($a['lvl'] === 'red' ? 0 : 1) <=> ($b['lvl'] === 'red' ? 0 : 1));
     $openAmt = 0.0;
     foreach ($open as $w) $openAmt += (float) ($w['amount'] ?? 0);
-    $out[$uid] = ['reason' => $reason, 'openAmt' => round($openAmt, 2), 'trades' => count($ordersBy[$uid] ?? [])];
+    $out[$uid] = ['reason' => admin_alerts_text($alerts), 'level' => admin_alerts_level($alerts), 'alerts' => $alerts, 'openAmt' => round($openAmt, 2), 'trades' => count($ordersBy[$uid] ?? [])];
   }
   admin_cache_set('suspects', $out);
   return $out;
