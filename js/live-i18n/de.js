@@ -874,6 +874,180 @@
           'Die Sprache zu wechseln'
         ]
       ]
-    ]
+    ],
+  casino: {
+    "title": "Casino",
+    "sub": "15 Spiele · ab $0.10",
+    "real": "Echt",
+    "demo": "Demo",
+    "tryM": "Test",
+    "bal": "Guthaben",
+    "stake": "Einsatz",
+    "play": "Spielen",
+    "again": "Nochmal",
+    "win": "Gewonnen! +${w}",
+    "lose": "Verloren",
+    "tryNote": "Erstelle dein Konto und lade auf, um ab $0.10 um echtes Geld zu spielen.",
+    "signup": "Konto erstellen",
+    "gamesTab": "Spiele",
+    "e_min": "Mindesteinsatz $0.10.",
+    "e_max": "Einsatz zu hoch.",
+    "e_maxWin": "Gewinn zu hoch für diesen Einsatz: senke Einsatz oder Ziel.",
+    "e_insufficient": "Guthaben reicht nicht.",
+    "e_unavailable": "Nicht verfügbar, versuch es nochmal.",
+    "e_busy": "Einen Moment…",
+    "e_param": "Ungültige Auswahl.",
+    "e_login": "Melde dich an, um zu spielen.",
+    "e_suspended": "Konto gesperrt.",
+    "deposit": "Aufladen",
+    "hist": "Meine letzten Spiele",
+    "none": "Noch kein Spiel.",
+    "rules": "Das Ergebnis wird vom OROLADO-Server ermittelt. Spiel verantwortungsvoll: Setze nur, was du verlieren kannst.",
+    "g": {
+      "crash": [
+        "Aviator",
+        "Auszahlen vor dem Knall"
+      ],
+      "coin": [
+        "Kopf oder Zahl",
+        "×1.94"
+      ],
+      "dice": [
+        "Würfel",
+        "Wähle deine Chance"
+      ],
+      "limbo": [
+        "Limbo",
+        "Ziel bis ×1000"
+      ],
+      "wheel": [
+        "Casino-Rad",
+        "Bis ×50"
+      ],
+      "race": [
+        "Autorennen",
+        "6 Autos · ×5.7"
+      ],
+      "roulette": [
+        "Roulette",
+        "Rot, Schwarz, Zahl ×36"
+      ],
+      "slots": [
+        "Spielautomat",
+        "Bis ×50"
+      ],
+      "plinko": [
+        "Plinko",
+        "Bis ×12"
+      ],
+      "keno": [
+        "Keno",
+        "3 Zahlen · ×25"
+      ],
+      "scratch": [
+        "Rubbellos",
+        "Bis ×20"
+      ],
+      "hilo": [
+        "Hi-Lo-Karten",
+        "Höher oder tiefer"
+      ],
+      "penalty": [
+        "Elfmeter",
+        "Tor · ×1.44"
+      ],
+      "colors": [
+        "Farben",
+        "Grün, Rot, Violett"
+      ],
+      "mines": [
+        "Minen",
+        "Weich den Bomben aus"
+      ]
+    },
+    "cashout": "Auszahlen",
+    "auto": "Auto-Auszahlung (×)",
+    "flying": "Im Flug…",
+    "boom": "Explodiert bei ×{x}",
+    "cashed": "Ausgezahlt bei ×{x}: +${w}",
+    "start": "Abheben",
+    "heads": "Kopf",
+    "tails": "Zahl",
+    "chance": "Gewinnchance",
+    "under": "Unter",
+    "over": "Über",
+    "mult": "Gewinn ×{x}",
+    "target": "Ziel ×",
+    "result": "Ergebnis ×{x}",
+    "roll": "Wurf {x}",
+    "pickCar": "Wähle dein Auto",
+    "red": "Rot",
+    "black": "Schwarz",
+    "even": "Gerade",
+    "odd": "Ungerade",
+    "number": "Zahl",
+    "dozen": "Dutzend",
+    "green": "Grün",
+    "violet": "Violett",
+    "pick3": "Wähle 3 Zahlen",
+    "picked": "{n}/3 gewählt",
+    "hits": "{n} Treffer",
+    "scratchGo": "Rubbeln",
+    "aim": "Ziel auf eine Ecke",
+    "left": "Links",
+    "center": "Mitte",
+    "right": "Rechts",
+    "goal": "TOR!",
+    "saved": "Gehalten!",
+    "hi": "Höher oder gleich",
+    "lo": "Tiefer oder gleich",
+    "minesN": "Anzahl Minen",
+    "next": "Nächstes Feld ×{x}",
+    "open": "Felder öffnen…",
+    "sports": "Sportwetten",
+    "sportsSoon": "Große Spiele kommen bald hierher."
+  },
+  sports: {
+    "none": "Gerade kein Spiel. Große Spiele kommen bald hierher.",
+    "coupon": "Wettschein",
+    "sel": "{n} Auswahl(en)",
+    "odd": "Quote",
+    "stake": "Einsatz",
+    "pot": "Möglicher Gewinn",
+    "bet": "Wette platzieren",
+    "clear": "Leeren",
+    "placed": "✅ Wette platziert! Möglicher Gewinn: ${p}",
+    "mine": "Meine Wetten",
+    "noBets": "Noch keine Wette.",
+    "open": "Offen",
+    "won": "Gewonnen",
+    "lost": "Verloren",
+    "void": "Storniert",
+    "closed": "Wetten geschlossen",
+    "result": "Ergebnis",
+    "starts": "Beginn",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "draw": "Unentschieden",
+    "max10": "Maximal 10 Spiele pro Schein.",
+    "e_min": "Mindesteinsatz $0.10.",
+    "e_max": "Einsatz zu hoch für dieses Spiel.",
+    "e_maxWin": "Gewinn zu hoch: senke den Einsatz.",
+    "e_closed": "Dieses Spiel hat schon begonnen.",
+    "e_insufficient": "Guthaben reicht nicht.",
+    "e_unavailable": "Nicht verfügbar, versuch es nochmal.",
+    "e_param": "Ungültiger Schein.",
+    "e_login": "Melde dich an, um zu wetten.",
+    "e_busy": "Einen Moment…",
+    "e_suspended": "Konto gesperrt.",
+    "sport": {
+      "foot": "Fußball",
+      "basket": "Basketball",
+      "boxe": "Boxen",
+      "tennis": "Tennis",
+      "mma": "MMA",
+      "autre": "Sport"
+    }
+  }
   });
 })(window.D6 = window.D6 || {});

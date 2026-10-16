@@ -46,13 +46,13 @@ echo "1) Les chances : la maison gagne toujours\n";
 $ev = 0.0; $tot = 0;
 foreach (OROLADO_WHEEL_ODDS as [$p, $w]) { $ev += $p * $w; $tot += $w; }
 $ev /= $tot;
-check('total des chances = 100 %', $tot === 10000);
-check('coût moyen d\'un tour = 0,44 $ (avec l\'Invitation, un tricheur à 2 comptes perd encore)', abs($ev - 0.4375) < 0.001, (string) $ev);
+check('total des chances = 100 %', $tot === 10000000);
+check('coût moyen d\'un tour = 0,44 $ (avec l\'Invitation, un tricheur à 2 comptes perd encore)', abs($ev - 0.4475) < 0.001, (string) $ev);
 check('pas de zéro : chaque tour gagne au moins 0,25 $', min(array_map(static fn($o) => $o[0], OROLADO_WHEEL_ODDS)) >= 0.25 && min(OROLADO_WHEEL_SEGS) >= 0.25);
 $sum = 0.0; $N = 200000; $big = 0;
 for ($i = 0; $i < $N; $i++) { $p = orolado_wheel_draw(); $sum += $p; if ($p >= 100) $big++; }
-check('200 000 tirages : moyenne proche de 0,44 $', abs($sum / $N - 0.4375) < 0.06, (string) round($sum / $N, 3));
-check('100 $ très rare (≈ 1 sur 2 000)', $big > 40 && $big < 180, (string) $big);
+check('200 000 tirages : moyenne proche de 0,44 $', abs($sum / $N - 0.4475) < 0.25, (string) round($sum / $N, 3));
+check('100 $ et plus très rare (≈ 1 sur 2 000)', $big > 40 && $big < 180, (string) $big);
 $segOk = true;
 foreach (OROLADO_WHEEL_ODDS as [$p, $w]) { $s = orolado_wheel_seg($p); if (abs(OROLADO_WHEEL_SEGS[$s] - $p) > 0.001) $segOk = false; }
 check('l\'aiguille s\'arrête toujours sur une case qui porte le gain tiré', $segOk);

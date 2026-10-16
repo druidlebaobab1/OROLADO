@@ -874,6 +874,180 @@
           'Mengganti bahasa'
         ]
       ]
-    ]
+    ],
+    casino: {
+    "title": "Kasino",
+    "sub": "15 game · mulai $0,10",
+    "real": "Nyata",
+    "demo": "Demo",
+    "tryM": "Coba",
+    "bal": "Saldo",
+    "stake": "Taruhan",
+    "play": "Main",
+    "again": "Main lagi",
+    "win": "Kamu menang! +${w}",
+    "lose": "Kalah",
+    "tryNote": "Buat akunmu dan isi saldo untuk main uang sungguhan, mulai $0,10.",
+    "signup": "Buat akunku",
+    "gamesTab": "Game",
+    "e_min": "Taruhan minimum $0,10.",
+    "e_max": "Taruhan terlalu tinggi.",
+    "e_maxWin": "Kemenangan terlalu besar untuk taruhan ini: turunkan taruhan atau target.",
+    "e_insufficient": "Saldo tidak cukup.",
+    "e_unavailable": "Tidak tersedia, coba lagi.",
+    "e_busy": "Sebentar…",
+    "e_param": "Pilihan tidak valid.",
+    "e_login": "Masuk untuk bermain.",
+    "e_suspended": "Akun ditangguhkan.",
+    "deposit": "Isi saldo",
+    "hist": "Game terakhirku",
+    "none": "Belum ada game.",
+    "rules": "Hasil diundi oleh server OROLADO. Bermainlah dengan bijak: bertaruhlah hanya dengan uang yang siap kamu relakan.",
+    "g": {
+      "crash": [
+        "Aviator",
+        "Tarik sebelum meledak"
+      ],
+      "coin": [
+        "Koin",
+        "×1,94"
+      ],
+      "dice": [
+        "Dadu",
+        "Pilih peluangmu"
+      ],
+      "limbo": [
+        "Limbo",
+        "Bidik hingga ×1000"
+      ],
+      "wheel": [
+        "Roda kasino",
+        "Hingga ×50"
+      ],
+      "race": [
+        "Balap mobil",
+        "6 mobil · ×5,7"
+      ],
+      "roulette": [
+        "Roulette",
+        "Merah, hitam, angka ×36"
+      ],
+      "slots": [
+        "Mesin slot",
+        "Hingga ×50"
+      ],
+      "plinko": [
+        "Plinko",
+        "Hingga ×12"
+      ],
+      "keno": [
+        "Keno",
+        "3 angka · ×25"
+      ],
+      "scratch": [
+        "Kartu gosok",
+        "Hingga ×20"
+      ],
+      "hilo": [
+        "Kartu Hi-Lo",
+        "Lebih tinggi atau rendah"
+      ],
+      "penalty": [
+        "Penalti",
+        "Cetak gol · ×1,44"
+      ],
+      "colors": [
+        "Warna",
+        "Hijau, merah, ungu"
+      ],
+      "mines": [
+        "Ranjau",
+        "Hindari bom"
+      ]
+    },
+    "cashout": "Tarik",
+    "auto": "Tarik otomatis (×)",
+    "flying": "Terbang…",
+    "boom": "Meledak di ×{x}",
+    "cashed": "Ditarik di ×{x}: +${w}",
+    "start": "Lepas landas",
+    "heads": "Gambar",
+    "tails": "Angka",
+    "chance": "Peluang menang",
+    "under": "Di bawah",
+    "over": "Di atas",
+    "mult": "Menang ×{x}",
+    "target": "Target ×",
+    "result": "Hasil ×{x}",
+    "roll": "Lempar {x}",
+    "pickCar": "Pilih mobilmu",
+    "red": "Merah",
+    "black": "Hitam",
+    "even": "Genap",
+    "odd": "Ganjil",
+    "number": "Angka",
+    "dozen": "Lusin",
+    "green": "Hijau",
+    "violet": "Ungu",
+    "pick3": "Pilih 3 angka",
+    "picked": "{n}/3 dipilih",
+    "hits": "{n} angka tepat",
+    "scratchGo": "Gosok",
+    "aim": "Bidik satu sudut",
+    "left": "Kiri",
+    "center": "Tengah",
+    "right": "Kanan",
+    "goal": "GOL!",
+    "saved": "Ditepis!",
+    "hi": "Lebih tinggi atau sama",
+    "lo": "Lebih rendah atau sama",
+    "minesN": "Jumlah ranjau",
+    "next": "Kotak berikut ×{x}",
+    "open": "Buka kotak…",
+    "sports": "Taruhan olahraga",
+    "sportsSoon": "Pertandingan besar segera hadir di sini."
+  },
+    sports: {
+    "none": "Belum ada pertandingan. Pertandingan besar segera hadir di sini.",
+    "coupon": "Kupon",
+    "sel": "{n} pilihan",
+    "odd": "Odds",
+    "stake": "Taruhan",
+    "pot": "Potensi menang",
+    "bet": "Pasang taruhan",
+    "clear": "Hapus",
+    "placed": "✅ Taruhan dipasang! Potensi menang: ${p}",
+    "mine": "Taruhanku",
+    "noBets": "Belum ada taruhan.",
+    "open": "Berjalan",
+    "won": "Menang",
+    "lost": "Kalah",
+    "void": "Batal",
+    "closed": "Taruhan ditutup",
+    "result": "Hasil",
+    "starts": "Mulai",
+    "today": "Hari ini",
+    "tomorrow": "Besok",
+    "draw": "Seri",
+    "max10": "Maksimal 10 pertandingan dalam satu kupon.",
+    "e_min": "Taruhan minimum $0,10.",
+    "e_max": "Taruhan terlalu tinggi untuk pertandingan ini.",
+    "e_maxWin": "Kemenangan terlalu besar: turunkan taruhan.",
+    "e_closed": "Pertandingan ini sudah dimulai.",
+    "e_insufficient": "Saldo tidak cukup.",
+    "e_unavailable": "Tidak tersedia, coba lagi.",
+    "e_param": "Kupon tidak valid.",
+    "e_login": "Masuk untuk memasang taruhan.",
+    "e_busy": "Sebentar…",
+    "e_suspended": "Akun ditangguhkan.",
+    "sport": {
+      "foot": "Sepak bola",
+      "basket": "Bola basket",
+      "boxe": "Tinju",
+      "tennis": "Tenis",
+      "mma": "MMA",
+      "autre": "Olahraga"
+    }
+  }
   });
 })(window.D6 = window.D6 || {});

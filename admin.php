@@ -2037,6 +2037,21 @@ if ($isAjax) {
     admin_json($res);
   }
   // v2676 — « Live » : conversations avec les joueurs + Actualités (fichiers à part, data/live/).
+  // v2690 — CASINO (statistiques) et PARIS SPORTIFS (créer un match, fermer, donner le résultat → paiement).
+  if (str_starts_with($action, 'sp_') || $action === 'cs_stats') {
+    require_once __DIR__ . '/casino_lib.php';
+    require_once __DIR__ . '/sports_lib.php';
+    if ($action === 'cs_stats') {
+      $st = casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static fn(array &$s) => $s) ?: [];
+      admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? []]);
+    }
+    if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
+    if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
+    if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
+    if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
+    admin_json(['ok' => false, 'reason' => 'Action inconnue']);
+  }
+
   if (str_starts_with($action, 'live_')) {
     require_once __DIR__ . '/live_lib.php';
     $imgOut = static fn(array $m): array => array_merge(
@@ -2379,6 +2394,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">📡 Live <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
+      <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎰 Casino &amp; Paris</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
@@ -2532,6 +2548,37 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvA-post{border-bottom:1px solid var(--line);padding:8px 0;font-size:.86rem;white-space:pre-wrap}
     .lvA-post img{max-width:200px;border-radius:9px;display:block;margin:4px 0}
   </style>
+  <!-- v2690 — CASINO & PARIS : gérer les matchs (cotes, fermer, résultat → paiement) et voir le bénéfice de la maison -->
+  <div class="modal" id="casModal">
+    <div class="modal-box lvA-box">
+      <button class="mini" type="button" id="closeCasA">Fermer</button>
+      <h2 style="color:#5CF59A;margin:10px 0 4px">🎰 Casino &amp; Paris sportifs</h2>
+      <div class="lvA-tabs"><button class="mini ok" type="button" id="csTabSp">⚽ Paris sportifs</button><button class="mini" type="button" id="csTabSt">📊 Casino : gains / pertes</button></div>
+      <div id="csPaneSp">
+        <div class="nt-card">
+          <b>Créer un match</b>
+          <p class="muted" style="margin:4px 0 8px">Vous écrivez le match, la date et VOS cotes (serrées = la maison gagne). Les joueurs peuvent mettre plusieurs matchs dans un coupon. Quand le match est fini : cliquez le résultat → les gagnants sont payés tout de suite.</p>
+          <div style="display:grid;gap:6px">
+            <input id="spTitle" placeholder="Match (ex. Real Madrid – FC Barcelone)" maxlength="80">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <select id="spSport"><option value="foot">⚽ Football</option><option value="basket">🏀 Basket</option><option value="boxe">🥊 Boxe</option><option value="tennis">🎾 Tennis</option><option value="mma">🥋 MMA</option><option value="autre">🏆 Autre</option></select>
+              <input id="spLeague" placeholder="Compétition (ex. Liga)" maxlength="40" style="flex:1">
+              <input id="spStart" type="datetime-local">
+            </div>
+            <div id="spOpts"></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <button class="mini" type="button" id="spAddOpt">+ un choix</button>
+              <label class="muted">Mise max par coupon ($) <input id="spMax" type="number" value="50" min="1" max="1000" style="width:80px"></label>
+              <button class="mini ok" type="button" id="spSave">Publier le match</button>
+              <span id="spSt" class="muted"></span>
+            </div>
+          </div>
+        </div>
+        <div id="spList" style="margin-top:10px"><p class="muted">Chargement…</p></div>
+      </div>
+      <div id="csPaneSt" hidden><div id="csStats"><p class="muted">Chargement…</p></div></div>
+    </div>
+  </div>
   <div class="modal" id="notifModal">
     <div class="modal-box">
       <button class="mini" type="button" id="closeNotif">Fermer</button>
@@ -3244,6 +3291,67 @@ setInterval(() => {
   loadBadges();
   if (view === 'online') loadList(true);
 }, 8000);
+// v2690 — Casino & Paris (admin)
+(function () {
+  const $c = id => document.getElementById(id);
+  if (!$c('btnCasA')) return;
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const m2 = v => (Number(v) || 0).toFixed(2) + ' $';
+  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', autre:'🏆'};
+  const GN = {crash:'Avion', coin:'Pile ou face', dice:'Dés', limbo:'Limbo', wheel:'Roue casino', race:'Course auto', roulette:'Roulette', slots:'Machine à sous', plinko:'Plinko', keno:'Keno', scratch:'Grattage', hilo:'Hi-Lo', penalty:'Penalty', colors:'Couleurs', mines:'Mines', sports:'Paris sportifs'};
+  function optRow(label, odd) {
+    const d = document.createElement('div');
+    d.style.cssText = 'display:flex;gap:6px;margin-bottom:4px';
+    d.innerHTML = '<input class="spL" placeholder="Choix (ex. Real / Nul / Barça)" maxlength="40" style="flex:1" value="' + esc(label || '') + '"><input class="spO" type="number" step="0.01" min="1.01" placeholder="Cote" style="width:90px" value="' + esc(odd || '') + '"><button class="mini" type="button">✕</button>';
+    d.querySelector('button').onclick = () => d.remove();
+    $c('spOpts').appendChild(d);
+  }
+  function resetForm() { $c('spOpts').innerHTML = ''; optRow('', ''); optRow('Nul', ''); optRow('', ''); $c('spTitle').value = ''; }
+  async function list() {
+    const j = await ajax({action:'sp_list'}); if (!j.ok) { $c('spList').innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
+    $c('spList').innerHTML = j.events.length ? j.events.map(e => {
+      const st = {open:'🟢 Ouvert', closed:'🟠 Paris fermés', settled:'✅ Réglé'}[e.status] || e.status;
+      const opts = e.opts.map(o => { const x = (e.exp && e.exp[o.k]) || {}; return '<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)"><span>' + esc(o.label) + ' <b style="color:#FFD27A">' + Number(o.odd).toFixed(2) + '</b>' + (e.result === o.k ? ' 🏆' : '') + '</span><span class="muted">' + (x.n || 0) + ' coupon(s) · misé ' + m2(x.in) + (x.risk ? ' · à payer si gagne ' + m2(x.risk) : '') + '</span>' + (e.status !== 'settled' ? '<button class="mini ok" type="button" data-set="' + esc(e.id) + '" data-k="' + esc(o.k) + '">Résultat : ' + esc(o.label) + '</button>' : '') + '</div>'; }).join('');
+      return '<div class="nt-card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span>' + st + '</span></div><div class="muted">' + esc(e.league || '') + ' · début ' + new Date(e.start * 1000).toLocaleString() + ' · mise max ' + m2(e.maxStake) + '</div>' + opts +
+        (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris</button> ' : '') + (e.status !== 'settled' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">Match annulé (mises rendues)</button>' : '') + '</div>';
+    }).join('') : '<p class="muted">Aucun match. Créez le premier ci-dessus.</p>';
+    $c('spList').querySelectorAll('[data-close]').forEach(b => b.onclick = async () => { if (!confirm('Fermer les paris de ce match ?')) return; await ajax({action:'sp_close', id:b.dataset.close}); list(); });
+    $c('spList').querySelectorAll('[data-set]').forEach(b => b.onclick = async () => {
+      const lbl = b.dataset.k === 'void' ? 'ANNULER ce match (toutes les mises de ce match comptent ×1)' : 'Confirmer le résultat : ' + b.textContent.replace('Résultat : ', '') + ' ? Les gagnants seront payés tout de suite.';
+      if (!confirm(lbl)) return;
+      b.disabled = true;
+      const r = await ajax({action:'sp_settle', id:b.dataset.set, k:b.dataset.k});
+      alert(r.ok ? ('Réglé ✓ — coupons gagnés : ' + r.won + ' · perdus : ' + r.lost + (r.retry ? ' · ' + r.retry + ' paiement(s) à refaire (base injoignable) : recliquez plus tard' : '')) : (r.reason || 'Échec'));
+      list();
+    });
+  }
+  async function stats() {
+    const j = await ajax({action:'cs_stats'}); if (!j.ok) return;
+    const table = (o, title) => {
+      const rows = Object.entries((o && o.real) || {}).map(([g, v]) => ({g, n:v.n, i:v.in, o:v.out, p:(v.in - v.out)})).sort((a, b) => b.i - a.i);
+      const t = rows.reduce((a, r) => ({n:a.n + r.n, i:a.i + r.i, o:a.o + r.o, p:a.p + r.p}), {n:0, i:0, o:0, p:0});
+      return '<div class="nt-card" style="margin-bottom:10px"><b>' + title + '</b><table style="width:100%;margin-top:6px;font-size:13px"><tr class="muted"><td>Jeu</td><td>Parties</td><td>Misé</td><td>Payé</td><td>Bénéfice maison</td></tr>' +
+        rows.map(r => '<tr><td>' + esc(GN[r.g] || r.g) + '</td><td>' + r.n + '</td><td>' + m2(r.i) + '</td><td>' + m2(r.o) + '</td><td style="color:' + (r.p >= 0 ? '#5CF59A' : '#FF7A90') + '">' + m2(r.p) + '</td></tr>').join('') +
+        '<tr style="font-weight:800"><td>Total</td><td>' + t.n + '</td><td>' + m2(t.i) + '</td><td>' + m2(t.o) + '</td><td style="color:' + (t.p >= 0 ? '#5CF59A' : '#FF7A90') + '">' + m2(t.p) + '</td></tr></table></div>';
+    };
+    $c('csStats').innerHTML = table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + '<p class="muted">Sur la durée, chaque jeu rend 92 à 97 % aux joueurs : la maison garde le reste. Un jour peut être négatif (un gros gain), c\'est normal.</p>';
+  }
+  const tab = w => { $c('csPaneSp').hidden = w !== 'sp'; $c('csPaneSt').hidden = w !== 'st'; $c('csTabSp').classList.toggle('ok', w === 'sp'); $c('csTabSt').classList.toggle('ok', w === 'st'); if (w === 'sp') list(); else stats(); };
+  $c('csTabSp').onclick = () => tab('sp');
+  $c('csTabSt').onclick = () => tab('st');
+  $c('spAddOpt').onclick = () => { if ($c('spOpts').children.length < 6) optRow('', ''); };
+  $c('spSave').onclick = async () => {
+    const opts = [...$c('spOpts').children].map(d => ({label: d.querySelector('.spL').value.trim(), odd: parseFloat(d.querySelector('.spO').value)})).filter(o => o.label);
+    const start = Math.floor(new Date($c('spStart').value).getTime() / 1000);
+    $c('spSave').disabled = true;
+    const r = await ajax({action:'sp_save', ev:{title:$c('spTitle').value, league:$c('spLeague').value, sport:$c('spSport').value, start, opts, maxStake:parseFloat($c('spMax').value)}});
+    $c('spSave').disabled = false;
+    $c('spSt').textContent = r.ok ? 'Publié ✓' : (r.reason || 'Échec');
+    if (r.ok) { resetForm(); list(); }
+  };
+  $c('btnCasA').onclick = () => { $c('casModal').classList.add('on'); resetForm(); tab('sp'); };
+  $c('closeCasA').onclick = () => $c('casModal').classList.remove('on');
+})();
 </script>
 <?php endif; ?>
 </body>

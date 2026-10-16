@@ -491,7 +491,8 @@
     });
     // v2689 : le pack de la langue vient d'arriver → l'accueil Live est redessiné dans la bonne langue
     document.addEventListener('oro:livepack', function () { if ($('liveModal').classList.contains('active') && tab === 'home') paintHome(); });
-    document.addEventListener('oro:lang', function () { if ($('liveModal').classList.contains('active') && tab === 'home') paintHome(); });
+    var lastLang = document.documentElement.lang;
+    document.addEventListener('oro:lang', function () { if (document.documentElement.lang === lastLang) return; lastLang = document.documentElement.lang; if ($('liveModal').classList.contains('active') && tab === 'home') paintHome(); });
     $('liveForm').addEventListener('submit', send);
     $('liveText').addEventListener('input', grow);
     $('liveFile').addEventListener('change', async function () {

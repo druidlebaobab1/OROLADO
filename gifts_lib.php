@@ -23,9 +23,11 @@ const OROLADO_WHEEL_MIN_DEPOSIT = 10.0;
 const OROLADO_JAUGE_GOAL = 1000.0;
 const OROLADO_JAUGE_GIFT = 30.0;
 // [gain $, chances sur 10 000]
-const OROLADO_WHEEL_ODDS = [[0.25, 8500], [0.5, 900], [1.0, 350], [2.0, 150], [5.0, 60], [10.0, 35], [100.0, 5]];
+// v2690 (propriétaire) : gros lots 1 000 $ (1 sur 200 000) et 10 000 $ (1 sur 2 000 000) — chances sur 10 000 000.
+// Coût moyen d'un tour : 0,4475 $ (0,4375 $ + 0,005 $ + 0,005 $).
+const OROLADO_WHEEL_ODDS = [[0.25, 8499945], [0.5, 900000], [1.0, 350000], [2.0, 150000], [5.0, 60000], [10.0, 35000], [100.0, 5000], [1000.0, 50], [10000.0, 5]];
 // Cases dessinées sur la roue (pas de zéro ; la plus petite case 0,25 $ revient souvent) : 12 cases.
-const OROLADO_WHEEL_SEGS = [0.25, 0.5, 0.25, 5.0, 0.25, 1.0, 0.25, 100.0, 0.25, 2.0, 0.25, 10.0];
+const OROLADO_WHEEL_SEGS = [0.25, 0.5, 0.25, 5.0, 0.25, 1.0, 0.25, 10000.0, 0.25, 2.0, 0.25, 10.0, 0.25, 100.0, 0.25, 1000.0];
 
 function orolado_gifts_public(): bool {
   $v = getenv('OROLADO_GIFTS_PUBLIC');
@@ -87,7 +89,7 @@ function orolado_gifts_deposits(array $db, string $uid, array $st, bool $tester)
 
 /** Tire le gain (serveur seulement). */
 function orolado_wheel_draw(): float {
-  $r = random_int(1, 10000);
+  $r = random_int(1, 10000000);
   $acc = 0;
   foreach (OROLADO_WHEEL_ODDS as [$p, $w]) { $acc += $w; if ($r <= $acc) return (float) $p; }
   return 0.0;

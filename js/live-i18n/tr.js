@@ -874,6 +874,180 @@
           'Dil değiştirmek'
         ]
       ]
-    ]
+    ],
+    casino: {
+    "title": "Casino",
+    "sub": "15 oyun · 0,10 $'dan",
+    "real": "Gerçek",
+    "demo": "Demo",
+    "tryM": "Dene",
+    "bal": "Bakiye",
+    "stake": "Bahis",
+    "play": "Oyna",
+    "again": "Tekrar oyna",
+    "win": "Kazandın! +${w}",
+    "lose": "Kaybettin",
+    "tryNote": "Hesabını oluştur ve bakiye yükle: gerçek parayla 0,10 $'dan oynamaya başla.",
+    "signup": "Hesabımı oluştur",
+    "gamesTab": "Oyunlar",
+    "e_min": "Minimum bahis 0,10 $.",
+    "e_max": "Bahis çok yüksek.",
+    "e_maxWin": "Bu bahis için kazanç çok yüksek: bahsi veya hedefi düşür.",
+    "e_insufficient": "Yetersiz bakiye.",
+    "e_unavailable": "Kullanılamıyor, tekrar dene.",
+    "e_busy": "Bir saniye…",
+    "e_param": "Geçersiz seçim.",
+    "e_login": "Oynamak için giriş yap.",
+    "e_suspended": "Hesap askıya alındı.",
+    "deposit": "Bakiye yükle",
+    "hist": "Son oyunlarım",
+    "none": "Henüz oyun yok.",
+    "rules": "Sonuç OROLADO sunucusu tarafından çekilir. Sorumlu oyna: yalnızca kaybetmeyi göze alabileceğin kadarını yatır.",
+    "g": {
+      "crash": [
+        "Aviator",
+        "Patlamadan önce çek"
+      ],
+      "coin": [
+        "Yazı tura",
+        "×1,94"
+      ],
+      "dice": [
+        "Zar",
+        "Şansını seç"
+      ],
+      "limbo": [
+        "Limbo",
+        "×1000'e kadar hedefle"
+      ],
+      "wheel": [
+        "Casino çarkı",
+        "×50'ye kadar"
+      ],
+      "race": [
+        "Araba yarışı",
+        "6 araba · ×5,7"
+      ],
+      "roulette": [
+        "Rulet",
+        "Kırmızı, siyah, sayı ×36"
+      ],
+      "slots": [
+        "Slot makinesi",
+        "×50'ye kadar"
+      ],
+      "plinko": [
+        "Plinko",
+        "×12'ye kadar"
+      ],
+      "keno": [
+        "Keno",
+        "3 sayı · ×25"
+      ],
+      "scratch": [
+        "Kazı kazan",
+        "×20'ye kadar"
+      ],
+      "hilo": [
+        "Hi-Lo kartlar",
+        "Yüksek mi düşük mü"
+      ],
+      "penalty": [
+        "Penaltı",
+        "Gol at · ×1,44"
+      ],
+      "colors": [
+        "Renkler",
+        "Yeşil, kırmızı, mor"
+      ],
+      "mines": [
+        "Mayınlar",
+        "Bombalardan kaç"
+      ]
+    },
+    "cashout": "Çek",
+    "auto": "Otomatik çekim (×)",
+    "flying": "Uçuyor…",
+    "boom": "×{x}'te patladı",
+    "cashed": "×{x}'te çekildi: +${w}",
+    "start": "Kalk",
+    "heads": "Yazı",
+    "tails": "Tura",
+    "chance": "Kazanma şansı",
+    "under": "Altı",
+    "over": "Üstü",
+    "mult": "×{x} kazan",
+    "target": "Hedef ×",
+    "result": "Sonuç ×{x}",
+    "roll": "Atış {x}",
+    "pickCar": "Arabanı seç",
+    "red": "Kırmızı",
+    "black": "Siyah",
+    "even": "Çift",
+    "odd": "Tek",
+    "number": "Sayı",
+    "dozen": "Düzine",
+    "green": "Yeşil",
+    "violet": "Mor",
+    "pick3": "3 sayı seç",
+    "picked": "{n}/3 seçildi",
+    "hits": "{n} sayı tuttu",
+    "scratchGo": "Kazı",
+    "aim": "Bir köşeyi hedefle",
+    "left": "Sol",
+    "center": "Orta",
+    "right": "Sağ",
+    "goal": "GOL!",
+    "saved": "Kurtardı!",
+    "hi": "Büyük veya eşit",
+    "lo": "Küçük veya eşit",
+    "minesN": "Mayın sayısı",
+    "next": "Sonraki kare ×{x}",
+    "open": "Kareleri aç…",
+    "sports": "Spor bahisleri",
+    "sportsSoon": "Büyük maçlar çok yakında burada."
+  },
+    sports: {
+    "none": "Şu an maç yok. Büyük maçlar çok yakında burada.",
+    "coupon": "Kupon",
+    "sel": "{n} seçim",
+    "odd": "Oran",
+    "stake": "Bahis",
+    "pot": "Olası kazanç",
+    "bet": "Bahis yap",
+    "clear": "Temizle",
+    "placed": "✅ Bahis yapıldı! Olası kazanç: ${p}",
+    "mine": "Bahislerim",
+    "noBets": "Henüz bahis yok.",
+    "open": "Açık",
+    "won": "Kazandı",
+    "lost": "Kaybetti",
+    "void": "İptal",
+    "closed": "Bahisler kapandı",
+    "result": "Sonuç",
+    "starts": "Başlangıç",
+    "today": "Bugün",
+    "tomorrow": "Yarın",
+    "draw": "Beraberlik",
+    "max10": "Bir kuponda en fazla 10 maç.",
+    "e_min": "Minimum bahis 0,10 $.",
+    "e_max": "Bu maç için bahis çok yüksek.",
+    "e_maxWin": "Kazanç çok yüksek: bahsi düşür.",
+    "e_closed": "Bu maç zaten başladı.",
+    "e_insufficient": "Yetersiz bakiye.",
+    "e_unavailable": "Kullanılamıyor, tekrar dene.",
+    "e_param": "Geçersiz kupon.",
+    "e_login": "Bahis için giriş yap.",
+    "e_busy": "Bir saniye…",
+    "e_suspended": "Hesap askıya alındı.",
+    "sport": {
+      "foot": "Futbol",
+      "basket": "Basketbol",
+      "boxe": "Boks",
+      "tennis": "Tenis",
+      "mma": "MMA",
+      "autre": "Spor"
+    }
+  }
   });
 })(window.D6 = window.D6 || {});

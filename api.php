@@ -30,6 +30,8 @@ if (is_file(__DIR__ . '/top_lib.php')) require_once __DIR__ . '/top_lib.php';
 if (is_file(__DIR__ . '/bonus_lib.php')) require_once __DIR__ . '/bonus_lib.php';
 if (is_file(__DIR__ . '/gifts_lib.php')) require_once __DIR__ . '/gifts_lib.php';
 if (is_file(__DIR__ . '/transfer_lib.php')) require_once __DIR__ . '/transfer_lib.php';
+if (is_file(__DIR__ . '/casino_lib.php')) require_once __DIR__ . '/casino_lib.php';
+if (is_file(__DIR__ . '/sports_lib.php')) require_once __DIR__ . '/sports_lib.php';
 orolado_load_env();
 
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
@@ -280,6 +282,13 @@ $OROLADO_RATE_RULES = [
   'wheelSpin'         => [['t', 10, 60]],
   'giftsTestDeposit'  => [['t', 10, 60]],
   'xferStatus'        => [['t', 60, 60]],
+  'csPlay'            => [['t', 300, 60]],
+  'csMulti'           => [['t', 600, 60]],
+  'csTry'             => [['i', 300, 60]],
+  'csHist'            => [['t', 30, 60]],
+  'spList'            => [['i', 120, 60]],
+  'spBet'             => [['t', 30, 60]],
+  'spMine'            => [['t', 30, 60]],
   'xferSend'          => [['t', 10, 600]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
@@ -389,6 +398,44 @@ if ($action === 'affClick') {
     try { $okC = orolado_aff_click((string) ($req['ami'] ?? ''), (string) ($req['device'] ?? '')); } catch (Throwable $eC) { $okC = false; }
   }
   echo json_encode(['ok' => true, 'server' => true, 'counted' => $okC]);
+  exit;
+}
+
+// v2690 — CASINO (casino_lib.php) : jeux tirés et payés par le serveur. Visiteur : « essai » sans argent (csTry).
+// v2690 — PARIS SPORTIFS manuels (sports_lib.php) : liste publique, coupon (connecté), mes paris.
+if ($action === 'spList' || $action === 'spBet' || $action === 'spMine') {
+  if (!function_exists('sp_bet')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  if ($action === 'spList') { echo json_encode(['ok' => true, 'server' => true, 'events' => sp_public_events()]); exit; }
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'login']); exit; }
+  if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned', 'deleted'], true)) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'suspended']); exit; }
+  try {
+    if ($action === 'spMine') $res = ['ok' => true, 'bets' => sp_my_bets((string) $me['id'])];
+    else $res = sp_bet($db, $me, (string) ($req['mode'] ?? 'real'), (float) ($req['stake'] ?? 0), is_array($req['sel'] ?? null) ? $req['sel'] : []);
+  } catch (Throwable $eSp) {
+    error_log('OROLADO sports ' . $eSp->getMessage());
+    $res = ['ok' => false, 'reason' => 'busy'];
+  }
+  echo json_encode(['server' => true] + $res);
+  exit;
+}
+
+if ($action === 'csPlay' || $action === 'csMulti' || $action === 'csTry' || $action === 'csHist') {
+  if (!function_exists('casino_play')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $action === 'csTry' ? null : session_user($db, $token);
+  if ($action !== 'csTry' && (!$me || empty($me['id']))) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'login']); exit; }
+  if ($me && in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned', 'deleted'], true)) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'suspended']); exit; }
+  try {
+    $game = (string) ($req['game'] ?? '');
+    $p = is_array($req['p'] ?? null) ? $req['p'] : [];
+    if ($action === 'csHist') $res = ['ok' => true, 'h' => casino_history((string) $me['id'])];
+    elseif ($action === 'csMulti') $res = casino_multi($db, $me, $game, (string) ($req['act'] ?? ''), (string) ($req['mode'] ?? 'real'), (float) ($req['stake'] ?? 0), $p);
+    else $res = casino_play($db, $me, $game, (string) ($req['mode'] ?? 'real'), (float) ($req['stake'] ?? 0), $p);
+  } catch (Throwable $eCs) {
+    error_log('OROLADO casino ' . $eCs->getMessage());
+    $res = ['ok' => false, 'reason' => 'busy'];
+  }
+  echo json_encode(['server' => true] + $res);
   exit;
 }
 

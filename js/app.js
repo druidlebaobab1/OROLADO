@@ -2247,7 +2247,7 @@
     document.querySelectorAll('[data-lang-toggle]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
-        closeDrawer();
+        if (!btn.closest('#drawerProfile')) closeDrawer(); // v2690 : la langue est dans le profil
         var box = btn.parentElement;
         var menu = findLangMenu(box);
         var open = menu && !menu.classList.contains('hidden');
@@ -9568,6 +9568,7 @@
     toast: function (m, k, ms) { toast(m, k, ms); },
     showAuth: function (w) { try { showAuthScreen(w || 'register'); } catch (e) { /* ignore */ } },
     openDeposit: function () { try { openDeposit(); } catch (e) { /* ignore */ } }, // v2689 — roue / jauge (js/gifts-home.js)
+    refreshVault: function () { try { return refreshRemoteVault(); } catch (e) { /* ignore */ } }, // v2690 — casino (js/casino.js)
     onRemoteAccount: function () {
       updateBalance(false);
       fillProfile();

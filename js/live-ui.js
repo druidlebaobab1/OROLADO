@@ -161,6 +161,7 @@
   }
   setTimeout(loadPack, 1200);
   document.addEventListener('oro:lang', function () { setTimeout(loadPack, 50); });
+  D6.BigPageSwipe = bindSwipe; // v2690 : aussi pour la page Casino (créée plus tard)
   D6.LiveIcon = icon;
   D6.LiveColor = color;
   D6.LiveGuest = guestPage;

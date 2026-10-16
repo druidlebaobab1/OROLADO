@@ -874,6 +874,180 @@
           'Đổi ngôn ngữ'
         ]
       ]
-    ]
+    ],
+    casino: {
+    "title": "Casino",
+    "sub": "15 trò · từ $0,10",
+    "real": "Thật",
+    "demo": "Demo",
+    "tryM": "Chơi thử",
+    "bal": "Số dư",
+    "stake": "Tiền cược",
+    "play": "Chơi",
+    "again": "Chơi lại",
+    "win": "Bạn thắng! +${w}",
+    "lose": "Thua",
+    "tryNote": "Tạo tài khoản và nạp tiền để chơi tiền thật, từ $0,10.",
+    "signup": "Tạo tài khoản",
+    "gamesTab": "Trò chơi",
+    "e_min": "Cược tối thiểu $0,10.",
+    "e_max": "Tiền cược quá cao.",
+    "e_maxWin": "Tiền thắng quá cao với mức cược này: hãy giảm cược hoặc mục tiêu.",
+    "e_insufficient": "Số dư không đủ.",
+    "e_unavailable": "Không khả dụng, hãy thử lại.",
+    "e_busy": "Chờ một chút…",
+    "e_param": "Lựa chọn không hợp lệ.",
+    "e_login": "Đăng nhập để chơi.",
+    "e_suspended": "Tài khoản bị tạm khóa.",
+    "deposit": "Nạp tiền",
+    "hist": "Ván gần đây",
+    "none": "Chưa có ván nào.",
+    "rules": "Kết quả do máy chủ OROLADO quay. Chơi có trách nhiệm: chỉ đặt số tiền bạn có thể chấp nhận mất.",
+    "g": {
+      "crash": [
+        "Aviator",
+        "Rút tiền trước khi nổ"
+      ],
+      "coin": [
+        "Sấp hay ngửa",
+        "×1,94"
+      ],
+      "dice": [
+        "Xúc xắc",
+        "Chọn tỷ lệ thắng"
+      ],
+      "limbo": [
+        "Limbo",
+        "Nhắm tới ×1000"
+      ],
+      "wheel": [
+        "Vòng quay",
+        "Tới ×50"
+      ],
+      "race": [
+        "Đua xe",
+        "6 xe · ×5,7"
+      ],
+      "roulette": [
+        "Roulette",
+        "Đỏ, đen, số ×36"
+      ],
+      "slots": [
+        "Máy slot",
+        "Tới ×50"
+      ],
+      "plinko": [
+        "Plinko",
+        "Tới ×12"
+      ],
+      "keno": [
+        "Keno",
+        "3 số · ×25"
+      ],
+      "scratch": [
+        "Thẻ cào",
+        "Tới ×20"
+      ],
+      "hilo": [
+        "Bài Hi-Lo",
+        "Cao hơn hay thấp hơn"
+      ],
+      "penalty": [
+        "Penalty",
+        "Ghi bàn · ×1,44"
+      ],
+      "colors": [
+        "Màu sắc",
+        "Xanh, đỏ, tím"
+      ],
+      "mines": [
+        "Mìn",
+        "Tránh các quả bom"
+      ]
+    },
+    "cashout": "Rút tiền",
+    "auto": "Tự rút (×)",
+    "flying": "Đang bay…",
+    "boom": "Nổ ở ×{x}",
+    "cashed": "Rút ở ×{x}: +${w}",
+    "start": "Cất cánh",
+    "heads": "Sấp",
+    "tails": "Ngửa",
+    "chance": "Tỷ lệ thắng",
+    "under": "Dưới",
+    "over": "Trên",
+    "mult": "Thắng ×{x}",
+    "target": "Mục tiêu ×",
+    "result": "Kết quả ×{x}",
+    "roll": "Gieo {x}",
+    "pickCar": "Chọn xe của bạn",
+    "red": "Đỏ",
+    "black": "Đen",
+    "even": "Chẵn",
+    "odd": "Lẻ",
+    "number": "Số",
+    "dozen": "Tá",
+    "green": "Xanh lá",
+    "violet": "Tím",
+    "pick3": "Chọn 3 số",
+    "picked": "Đã chọn {n}/3",
+    "hits": "Trúng {n} số",
+    "scratchGo": "Cào",
+    "aim": "Nhắm một góc",
+    "left": "Trái",
+    "center": "Giữa",
+    "right": "Phải",
+    "goal": "VÀO!",
+    "saved": "Cản phá!",
+    "hi": "Cao hơn hoặc bằng",
+    "lo": "Thấp hơn hoặc bằng",
+    "minesN": "Số lượng mìn",
+    "next": "Ô tiếp theo ×{x}",
+    "open": "Mở các ô…",
+    "sports": "Cược thể thao",
+    "sportsSoon": "Các trận đấu lớn sắp có ở đây."
+  },
+    sports: {
+    "none": "Hiện chưa có trận nào. Các trận đấu lớn sắp có ở đây.",
+    "coupon": "Phiếu cược",
+    "sel": "{n} lựa chọn",
+    "odd": "Tỷ lệ cược",
+    "stake": "Tiền cược",
+    "pot": "Tiền thắng dự kiến",
+    "bet": "Đặt cược",
+    "clear": "Xóa",
+    "placed": "✅ Đã đặt cược! Tiền thắng dự kiến: ${p}",
+    "mine": "Cược của tôi",
+    "noBets": "Chưa có cược nào.",
+    "open": "Đang mở",
+    "won": "Thắng",
+    "lost": "Thua",
+    "void": "Hủy",
+    "closed": "Đã đóng cược",
+    "result": "Kết quả",
+    "starts": "Bắt đầu",
+    "today": "Hôm nay",
+    "tomorrow": "Ngày mai",
+    "draw": "Hòa",
+    "max10": "Tối đa 10 trận trong một phiếu.",
+    "e_min": "Cược tối thiểu $0,10.",
+    "e_max": "Tiền cược quá cao cho trận này.",
+    "e_maxWin": "Tiền thắng quá cao: hãy giảm cược.",
+    "e_closed": "Trận này đã bắt đầu.",
+    "e_insufficient": "Số dư không đủ.",
+    "e_unavailable": "Không khả dụng, hãy thử lại.",
+    "e_param": "Phiếu không hợp lệ.",
+    "e_login": "Đăng nhập để đặt cược.",
+    "e_busy": "Chờ một chút…",
+    "e_suspended": "Tài khoản bị tạm khóa.",
+    "sport": {
+      "foot": "Bóng đá",
+      "basket": "Bóng rổ",
+      "boxe": "Quyền anh",
+      "tennis": "Quần vợt",
+      "mma": "MMA",
+      "autre": "Thể thao"
+    }
+  }
   });
 })(window.D6 = window.D6 || {});

@@ -99,8 +99,8 @@
   }
 
   /* ---------- La roue ---------- */
-  var SEGC = { 0: ['#2a1f57', '#3a2a78'], 0.5: ['#3BA7FF', '#2563eb'], 1: ['#22C55E', '#15803d'], 2: ['#14B8A6', '#0f766e'], 3: ['#F59E0B', '#b45309'], 5: ['#F97316', '#c2410c'], 10: ['#EC4899', '#be185d'], 100: ['#FFE07A', '#E39417'] };
-  function segs() { return (st && st.segs) || [0.25, 0.5, 0.25, 5, 0.25, 1, 0.25, 100, 0.25, 2, 0.25, 10]; }
+  var SEGC = { 0: ['#2a1f57', '#3a2a78'], 0.5: ['#3BA7FF', '#2563eb'], 1: ['#22C55E', '#15803d'], 2: ['#14B8A6', '#0f766e'], 3: ['#F59E0B', '#b45309'], 5: ['#F97316', '#c2410c'], 10: ['#EC4899', '#be185d'], 100: ['#FFE07A', '#E39417'], 1000: ['#ff3d6e', '#b0103a'], 10000: ['#111827', '#000'] };
+  function segs() { return (st && st.segs) || [0.25, 0.5, 0.25, 5, 0.25, 1, 0.25, 10000, 0.25, 2, 0.25, 10, 0.25, 100, 0.25, 1000]; }
   function pt(r, a) { a = a * Math.PI / 180; return (r * Math.sin(a)).toFixed(2) + ' ' + (-r * Math.cos(a)).toFixed(2); }
   function wheelSvg(mini) {
     var s = segs(), n = s.length, step = 360 / n, out = '', zi = 0;
@@ -110,8 +110,8 @@
       var a0 = i * step, a1 = (i + 1) * step;
       out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + c[0] + '" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
       if (!mini) {
-        var lab = (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : String(v)) + ' $';
-        out += '<g transform="rotate(' + (a0 + step / 2) + ') translate(0 -78)"><text text-anchor="middle" dominant-baseline="middle" transform="rotate(90)" font-size="' + (v >= 100 ? 19 : 16) + '" font-weight="800" fill="' + (v === 100 ? '#5a3500' : '#fff') + '" font-family="Plus Jakarta Sans,system-ui,sans-serif">' + lab + '</text></g>';
+        var lab = (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : (v >= 10000 ? '10K' : v >= 1000 ? '1000' : String(v))) + ' $';
+        out += '<g transform="rotate(' + (a0 + step / 2) + ') translate(0 -78)"><text text-anchor="middle" dominant-baseline="middle" transform="rotate(90)" font-size="' + (v >= 100 ? 17 : 15) + '" font-weight="800" fill="' + (v === 100 ? '#5a3500' : v === 10000 ? '#FFD27A' : '#fff') + '" font-family="Plus Jakarta Sans,system-ui,sans-serif">' + lab + '</text></g>';
       }
     }
     var dots = '';
@@ -224,7 +224,8 @@
       m._ghOn = on;
     }).observe(m, { attributes: true, attributeFilter: ['class'] });
     document.addEventListener('oro:livepack', function () { if (m.classList.contains('active') && !sub) paintHome(); });
-    document.addEventListener('oro:lang', function () { if (!m.classList.contains('active')) return; if (!sub) paintHome(); else if (sub === 'wheel') paintWheel(); else if (sub === 'jauge') paintJauge(); else mode(false); });
+    var lastLang = document.documentElement.lang;
+    document.addEventListener('oro:lang', function () { if (document.documentElement.lang === lastLang) return; lastLang = document.documentElement.lang; if (!m.classList.contains('active')) return; if (!sub) paintHome(); else if (sub === 'wheel') paintWheel(); else if (sub === 'jauge') paintJauge(); else mode(false); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   D6.GiftsHome = { home: home, go: go };

@@ -234,15 +234,18 @@
   // Barre du haut équilibrée quand la Maison est là : [Maison][Aide] · Recharger au centre · [Langue][Profil].
   function layoutTopbar(on) {
     var row = document.querySelector('.topbar .topbar-row');
-    var portal = $('btnPortal'), help = $('btnHelp');
+    var portal = $('btnPortal'), help = $('btnHelp'), casino = $('btnCasino');
     var actions = row && row.querySelector('.topbar-actions');
     if (!row || !portal || !help || !actions) return;
     var left = row.querySelector('.tb-left');
     if (on) {
       if (!left) { left = document.createElement('div'); left.className = 'tb-left'; row.insertBefore(left, row.firstChild); }
       if (portal.parentNode !== left) left.appendChild(portal);
-      if (help.parentNode !== left) left.appendChild(help);
+      // v2690 (propriétaire) : à gauche Cadeaux + Casino ; Live reste à droite, à côté du profil.
+      if (casino && casino.parentNode !== left) left.appendChild(casino);
+      if (help.parentNode !== actions) actions.insertBefore(help, actions.firstChild);
     } else if (left) {
+      if (casino && casino.parentNode === left) row.insertBefore(casino, left);
       if (help.parentNode === left) actions.insertBefore(help, actions.firstChild);
       if (portal.parentNode === left) row.insertBefore(portal, left);
       left.parentNode.removeChild(left);
