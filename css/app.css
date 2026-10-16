@@ -9334,3 +9334,28 @@ html.oro-lite #coachModal .coach-big{animation:none}
 #coachModal .coach-tip span{font-size:clamp(12px,3.5vw,13.5px);font-weight:700;color:#efeaff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* v2663 (propriétaire) — visiteur non inscrit : aucun compte à rebours dans Cadeaux (Bonus, Tournoi, Défi). */
 html.gift-guest-on #portalModal #bonTimer,html.gift-guest-on #portalModal #topTimer,html.gift-guest-on #portalModal #defiTimer{display:none!important}
+/* ===== v2675 — bouton « Live » (ancien « Aide ») choisi par le propriétaire : carré ROSE + ondes « en direct »
+   blanches, petit point vert « en ligne » qui pulse (transform/opacity ; arrêté en mode léger). ===== */
+html body #btnHelp{position:relative!important;overflow:visible!important}
+html body #btnHelp > svg.live-ico,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp > svg.live-ico{
+  background:linear-gradient(145deg,#FF7AA8 0%,#F43F6E 45%,#C8174C 100%)!important;color:#fff!important;border-radius:11px!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),0 2px 10px rgba(244,63,110,.45)!important}
+html body #btnHelp > svg.live-ico .lv-c,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp > svg.live-ico .lv-c{fill:#fff!important;stroke:none!important}
+html body #btnHelp > svg.live-ico .lv-w,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp > svg.live-ico .lv-w{fill:none!important;stroke:#fff!important;stroke-width:1.9!important;stroke-linecap:round!important}
+html body #btnHelp .hb-txt,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp .hb-txt{color:#FFB3C8!important}
+html body #btnHelp .live-dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#22C55E;
+  box-shadow:0 0 0 2px #1a1240;z-index:2;pointer-events:none}
+html body #btnHelp .live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:#22C55E;animation:oroLivePulse 1.8s ease-out infinite}
+@keyframes oroLivePulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(2.4);opacity:0}}
+html.oro-lite body #btnHelp .live-dot::after{animation:none!important;display:none}
+@media (max-width:859px){html.portal-on body #btnHelp .live-dot{top:-1px;right:calc(50% - 21px)}}
+html[dir="rtl"] body #btnHelp .live-dot{right:auto;left:-2px}
+@media (max-width:859px){html.portal-on[dir="rtl"] body #btnHelp .live-dot{left:calc(50% - 21px);right:auto}}/* v2675 — PC : carré « Live » de la même taille que le carré doré « Cadeaux » (30 px, marge intérieure). */
+@media (min-width:860px){
+  html body #btnHelp > svg.live-ico,
+  html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp > svg.live-ico{width:30px!important;height:30px!important;min-width:30px!important;padding:5px!important;box-sizing:border-box!important;border-radius:10px!important}
+}
