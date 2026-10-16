@@ -145,7 +145,19 @@ $pushTo = static function (string $uid, string $title, string $body): void {
   } catch (Throwable $e) { /* jamais bloquant */ }
 };
 
-if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report'], true)) {
+// v2685 — défi vu par le joueur $me (moi / mon ami), sans jamais donner les identifiants internes.
+$duelOut = static function (?array $d, string $me): ?array {
+  if (!$d) return null;
+  $d = live_duel_state($d);
+  $iAmA = (string) ($d['a'] ?? '') === $me;
+  $o = ['id' => (string) $d['id'], 'st' => (string) $d['st'], 'min' => (int) $d['min'], 'mine' => $iAmA, 'now' => time()];
+  if (isset($d['start'])) { $o['start'] = (int) $d['start']; $o['end'] = (int) $d['end']; }
+  if (isset($d['sa'])) { $o['me'] = $iAmA ? $d['sa'] : $d['sb']; $o['him'] = $iAmA ? $d['sb'] : $d['sa']; }
+  if (($d['st'] ?? '') === 'done') $o['res'] = ($d['win'] ?? '') === '' ? 'tie' : (((string) $d['win'] === $me) ? 'win' : 'lose');
+  return $o;
+};
+
+if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'duelCreate', 'duelAnswer'], true)) {
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
   $uid = (string) $me['id'];
@@ -161,14 +173,15 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report'], tr
       $l = $last ? end($last) : null;
       $list[] = ['id' => $w['id'], 'name' => $w['name'], 'at' => (int) ($row['at'] ?? 0), 'un' => (int) ($row['un'] ?? 0),
         'last' => is_array($l) ? (((string) ($l['f'] ?? '') === $uid ? '✓ ' : '') . ((string) ($l['t'] ?? '') !== '' ? (string) $l['t'] : '📷')) : '',
-        'blocked' => in_array((string) $peer, $blocked, true)];
+        'blocked' => in_array((string) $peer, $blocked, true),
+        'duel' => (static function () use ($uid, $peer) { $d = live_duel_last($uid, (string) $peer); if (!$d) return ''; if (($d['st'] ?? '') === 'pending' && !live_duel_expired($d) && (string) $d['b'] === $uid) return 'invite'; return ($d['st'] ?? '') === 'active' && time() < (int) ($d['end'] ?? 0) ? 'live' : ''; })()];
     }
     live_out(['ok' => true, 'me' => $myId, 'name' => (string) ($me['displayName'] ?? ''), 'list' => $list]);
   }
 
   // Trouver un ami par son identifiant (au-delà de 10 essais ratés en 1 h : bloqué).
   $peerId = live_norm_oro_id((string) ($req['id'] ?? ''));
-  if ($action === 'find' || $action === 'dm' || $action === 'dmSend' || $action === 'block' || $action === 'report') {
+  if ($action === 'find' || $action === 'dm' || $action === 'dmSend' || $action === 'block' || $action === 'report' || $action === 'duelCreate' || $action === 'duelAnswer') {
     if ($action === 'find' && !live_find_allowed($uid)) live_out(['ok' => false, 'reason' => 'findLocked']);
     $peer = $peerId !== '' ? live_who($peerId) : null;
     if (!$peer || $peer['uid'] === $uid) {
@@ -180,7 +193,24 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report'], tr
     if ($action === 'dm') {
       live_inbox_read($uid, $p);
       live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name']], 'blocked' => live_is_blocked($uid, $p),
-        'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice(live_dm_thread($uid, $p), -80))]);
+        'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice(live_dm_thread($uid, $p), -80)),
+        'duel' => $duelOut(live_duel_last($uid, $p), $uid), 'stats' => live_duel_stats($uid), 'hisStats' => live_duel_stats($p)]);
+    }
+    if ($action === 'duelCreate') {
+      if (live_is_blocked($p, $uid) || live_is_blocked($uid, $p)) live_out(['ok' => false, 'reason' => 'duelGone']);
+      $r = live_duel_create($uid, $p, (int) ($req['min'] ?? 5));
+      if (empty($r['ok'])) live_out(['ok' => false, 'reason' => (string) ($r['reason'] ?? 'fail'), 'duel' => isset($r['duel']) ? $duelOut($r['duel'], $uid) : null]);
+      echo json_encode(['ok' => true, 'duel' => $duelOut($r['duel'], $uid)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+      if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+      $fromW = live_who_uid($uid);
+      $pushTo($p, '⚔️ ' . (string) ($fromW['name'] ?? 'Un ami'), 'Défi en démo : ' . (int) $r['duel']['min'] . ' min · touche pour accepter');
+      exit;
+    }
+    if ($action === 'duelAnswer') {
+      $cur = live_duel_last($uid, $p);
+      if (!$cur) live_out(['ok' => false, 'reason' => 'duelGone']);
+      $r = live_duel_answer((string) $cur['id'], $uid, !empty($req['accept']));
+      live_out(['ok' => !empty($r['ok']), 'reason' => (string) ($r['reason'] ?? ''), 'duel' => isset($r['duel']) ? $duelOut($r['duel'], $uid) : null]);
     }
     if ($action === 'block') { live_set_block($uid, $p, !empty($req['on'])); live_out(['ok' => true]); }
     if ($action === 'report') {

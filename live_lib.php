@@ -360,3 +360,100 @@ function live_report(string $by, string $who, string $why): void {
 }
 
 function live_reports(): array { return (array) (live_read_json(live_dir() . '/reports.json', [])['l'] ?? []); }
+
+/* =====================================================================================================
+ * v2685 — DÉFIE TON AMI (en DÉMO, aucun argent réel) : invitation → accepte → compte à rebours 10 s →
+ * chacun joue en démo pendant 3, 5 ou 10 min → le plus gros gain démo gagne. Score = somme des gains nets
+ * des trades DÉMO ouverts pendant le défi (lus dans les ordres du serveur, impossible à truquer côté téléphone).
+ * Fichiers : data/live/duels/<id>.json, data/live/duelpair/<paire>.json, data/live/duelstats.json
+ * ===================================================================================================== */
+const LIVE_DUEL_DAY = 30;          // défis lancés par joueur et par jour
+const LIVE_DUEL_PENDING = 600;     // une invitation expire après 10 min
+
+function live_duel_file(string $id): string { return live_dir('duels') . '/' . live_safe_id($id) . '.json'; }
+function live_duel_pair_file(string $a, string $b): string { return live_dir('duelpair') . '/' . live_safe_id(str_replace('__', 'X9X', live_pair($a, $b))) . '.json'; }
+
+function live_duel_last(string $a, string $b): ?array {
+  $p = live_read_json(live_duel_pair_file($a, $b), []);
+  $id = (string) ($p['id'] ?? '');
+  if ($id === '') return null;
+  $d = live_read_json(live_duel_file($id), []);
+  return $d ?: null;
+}
+
+function live_duel_create(string $from, string $to, int $minutes): array {
+  if (!in_array($minutes, [3, 5, 10], true)) $minutes = 5;
+  $cur = live_duel_last($from, $to);
+  if ($cur && in_array($cur['st'] ?? '', ['pending', 'active'], true) && !live_duel_expired($cur)) return ['ok' => false, 'reason' => 'duelBusy', 'duel' => $cur];
+  if (!live_quota_ok($from, 'duel', LIVE_DUEL_DAY, 86400)) return ['ok' => false, 'reason' => 'tooMany'];
+  $d = ['id' => 'd' . bin2hex(random_bytes(6)), 'a' => $from, 'b' => $to, 'min' => $minutes, 'st' => 'pending', 'at' => time()];
+  live_write_json(live_duel_file($d['id']), $d);
+  live_write_json(live_duel_pair_file($from, $to), ['id' => $d['id']]);
+  return ['ok' => true, 'duel' => $d];
+}
+
+function live_duel_expired(array $d): bool {
+  return ($d['st'] ?? '') === 'pending' && time() - (int) ($d['at'] ?? 0) > LIVE_DUEL_PENDING;
+}
+
+function live_duel_answer(string $id, string $uid, bool $accept): array {
+  $r = live_update(live_duel_file($id), function ($d) use ($uid, $accept) {
+    if (!$d || ($d['b'] ?? '') !== $uid || ($d['st'] ?? '') !== 'pending' || live_duel_expired($d)) return ['ok' => false, 'reason' => 'duelGone'];
+    if (!$accept) { $d['st'] = 'refused'; return ['ok' => true, 'duel' => $d, '__write' => $d]; }
+    $d['st'] = 'active';
+    $d['start'] = time() + 10;
+    $d['end'] = $d['start'] + (int) $d['min'] * 60;
+    return ['ok' => true, 'duel' => $d, '__write' => $d];
+  });
+  return is_array($r) ? $r : ['ok' => false];
+}
+
+/** Gain net DÉMO de $uid sur les trades ouverts entre start et end (réglés). */
+function live_duel_score(array $db, string $uid, int $start, int $end): array {
+  $net = 0.0; $n = 0; $w = 0;
+  foreach ((array) ($db['orders'] ?? []) as $o) {
+    if (!is_array($o) || (string) ($o['userId'] ?? '') !== $uid || ($o['mode'] ?? '') !== 'demo') continue;
+    $at = (float) ($o['at'] ?? $o['openedAt'] ?? 0);
+    if ($at < $start || $at > $end) continue;
+    if (!isset($o['net']) || ($o['status'] ?? '') === 'open') continue;
+    $net += (float) $o['net']; $n++;
+    if (!empty($o['won'])) $w++;
+  }
+  return ['net' => round($net, 2), 'n' => $n, 'w' => $w];
+}
+
+/** État du défi (scores en direct ; à la fin : gagnant, statistiques, message dans la conversation). */
+function live_duel_state(array $d, ?array $db = null): array {
+  if (($d['st'] ?? '') === 'pending' && live_duel_expired($d)) $d['st'] = 'expired';
+  if (in_array($d['st'] ?? '', ['active', 'done'], true) && ($d['st'] === 'active' || !isset($d['sa']))) {
+    $db = $db ?? load_db();
+    $d['sa'] = live_duel_score($db, (string) $d['a'], (int) $d['start'], (int) $d['end']);
+    $d['sb'] = live_duel_score($db, (string) $d['b'], (int) $d['start'], (int) $d['end']);
+    // Fini (20 s après la fin, le temps que les derniers trades se règlent) : on fige le résultat une seule fois.
+    if ($d['st'] === 'active' && time() > (int) $d['end'] + 20) {
+      $fin = live_update(live_duel_file((string) $d['id']), function ($x) use ($d) {
+        if (($x['st'] ?? '') !== 'active') return ['ok' => true, 'duel' => $x];
+        $x['st'] = 'done'; $x['sa'] = $d['sa']; $x['sb'] = $d['sb'];
+        $x['win'] = $d['sa']['net'] > $d['sb']['net'] ? $x['a'] : ($d['sb']['net'] > $d['sa']['net'] ? $x['b'] : '');
+        return ['ok' => true, 'duel' => $x, 'fresh' => true, '__write' => $x];
+      });
+      if (is_array($fin) && !empty($fin['fresh'])) {
+        $x = $fin['duel'];
+        live_update(live_dir() . '/duelstats.json', function ($s) use ($x) {
+          foreach ([(string) $x['a'], (string) $x['b']] as $u) {
+            $s[$u] = (array) ($s[$u] ?? ['w' => 0, 'l' => 0, 't' => 0]);
+            if ($x['win'] === '') $s[$u]['t']++; elseif ($x['win'] === $u) $s[$u]['w']++; else $s[$u]['l']++;
+          }
+          return ['ok' => true, '__write' => $s];
+        });
+      }
+      if (is_array($fin) && isset($fin['duel'])) $d = $fin['duel'];
+    }
+  }
+  return $d;
+}
+
+function live_duel_stats(string $uid): array {
+  $s = live_read_json(live_dir() . '/duelstats.json', []);
+  return (array) ($s[$uid] ?? ['w' => 0, 'l' => 0, 't' => 0]);
+}

@@ -9580,3 +9580,30 @@ html:root[lang="es"] body #screenTrade#screenTrade#screenTrade#screenTrade#scree
   html:root body #depositModal#depositModal > .modal-box > :not(.btn-close),html:root body #withdrawModal#withdrawModal > .modal-box > :not(.btn-close),
   html:root body #passModal#passModal > .modal-box > :not(.btn-close),html:root body #emailModal#emailModal > .modal-box > :not(.btn-close){zoom:1.04}
 }
+/* ===== v2685 — « Défie ton ami » (démo) ===== */
+#liveModal .lf-duelbtn{display:flex;align-items:center;gap:5px;border:0;border-radius:10px;height:34px;padding:0 11px;background:linear-gradient(145deg,rgba(255,196,90,.22),rgba(255,140,60,.14));box-shadow:inset 0 0 0 1px rgba(255,196,90,.45);color:#FFE2B0;font:800 12px system-ui}
+#liveModal .lf-duelbtn span{font-size:15px}
+#liveModal .lf-duelcard{margin:8px 0 2px;padding:12px;border-radius:14px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);text-align:center;color:#E8ECF8}
+#liveModal .lf-duelcard[hidden]{display:none}
+#liveModal .lf-duelcard>b{display:block;font-size:14px;color:#fff}
+#liveModal .lf-duelcard p{margin:6px 0 0;font-size:12.5px;color:#B9C2DE}
+#liveModal .lf-duelcard small{display:block;margin-top:8px;color:#9AA3C2;font-size:11.5px}
+#liveModal .lf-duelcard.pick,#liveModal .lf-duelcard.wait{background:linear-gradient(150deg,rgba(255,196,90,.12),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(255,196,90,.35)}
+#liveModal .lf-duelcard.live{background:linear-gradient(150deg,rgba(255,122,168,.14),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(255,122,168,.4)}
+#liveModal .lf-duelcard.done.win{background:linear-gradient(150deg,rgba(34,197,94,.16),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(34,197,94,.45)}
+#liveModal .lf-dmins{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+#liveModal .lf-dmins button{flex:1;min-width:76px;border:0;border-radius:11px;padding:10px 8px;background:rgba(255,255,255,.08);color:#fff;font:800 13px system-ui}
+#liveModal .lf-dmins button.ok,#liveModal .lf-duelcard.pick .lf-dmins button{background:linear-gradient(145deg,#FFB547,#F08A2E);color:#2A1404}
+#liveModal .lf-score{display:flex;align-items:center;gap:8px;margin-top:10px}
+#liveModal .lf-score>div{flex:1;border-radius:12px;padding:8px 6px;background:rgba(0,0,0,.18);display:flex;flex-direction:column;gap:2px;min-width:0}
+#liveModal .lf-score>div.lead{box-shadow:inset 0 0 0 1px rgba(255,210,122,.55)}
+#liveModal .lf-score small{margin:0!important;font-size:11px!important;color:#B9C2DE!important;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#liveModal .lf-score b{font-size:18px;color:#fff}
+#liveModal .lf-score i{font-style:normal;font-size:10.5px;color:#8F99B8}
+#liveModal .lf-score>span{font:900 12px system-ui;color:#FFD27A}
+#liveModal .lf-inv{font-style:normal;font-size:13px}
+#liveModal .lv-duelpromo{text-align:center;background:linear-gradient(155deg,rgba(255,196,90,.14),rgba(255,122,168,.08) 60%,rgba(255,255,255,.03))!important;border-color:rgba(255,196,90,.35)!important}
+#liveModal .lv-duelpromo .lv-dp-ico{font-size:30px;line-height:1;margin-bottom:6px}
+#liveModal .lv-duelpromo b{display:block;color:#fff;font-size:16px}
+#liveModal .lv-duelpromo p{margin:6px 0 10px!important;color:#C9D0EA!important;font-size:13px!important}
+#liveModal .lv-duelpromo .lv-btn{background:linear-gradient(145deg,#FFB547,#F08A2E);color:#2A1404}

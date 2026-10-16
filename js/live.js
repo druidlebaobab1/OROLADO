@@ -17,7 +17,8 @@
       notFound: 'Identifiant introuvable.', findLocked: 'Trop d’essais. Réessaie dans 1 heure.', self: 'C’est ton propre identifiant 😉', noConv: 'Aucune conversation pour l’instant. Partage ton identifiant !',
       block: '🚫 Bloquer', unblock: '✅ Débloquer', report: '🚩 Signaler', reportQ: 'Pourquoi signales-tu ce joueur ? (arnaque, insultes…)', reported: 'Merci, l’équipe va regarder. Ce joueur est bloqué.',
       youBlocked: 'Tu as bloqué ce joueur.', guestF: 'Inscris-toi pour écrire à tes amis', guestFB: 'Avec ton compte, tu reçois un identifiant secret et tu peux discuter avec tes amis.',
-      safety: '🔒 Ne donne jamais ton mot de passe ni tes codes. OROLADO ne te les demandera jamais.' },
+      safety: '🔒 Ne donne jamais ton mot de passe ni tes codes. OROLADO ne te les demandera jamais.',
+      duelBtn: 'Défier', duelPick: 'Défie ton ami en démo', duelPickS: 'Choisis la durée. Celui qui gagne le plus en démo remporte le défi.', duelSent: 'Défi envoyé · {m} min · en attente de {n}…', duelInvite: '{n} te défie !', duelInviteS: '{m} minutes en démo : celui qui gagne le plus remporte le défi.', accept: 'Accepter', refuse: 'Refuser', duelStartIn: 'Le défi commence dans {s} s', duelLive: 'Défi en cours', duelLeft: 'reste {t}', duelPlay: 'Jouer en démo', duelWin: '🏆 Tu as gagné le défi !', duelLose: '{n} a gagné le défi', duelTie: 'Égalité !', duelAgain: 'Revanche', duelRefused: '{n} a refusé le défi.', duelExpired: 'Le défi n’a pas été accepté à temps.', duelBusy: 'Un défi est déjà en cours avec cet ami.', duelGone: 'Ce défi n’est plus disponible.', duelRecord: 'Tes défis : {w} gagnés · {l} perdus', duelTrades: '{n} trades', duelWait: 'Résultat dans un instant…', duelPromoT: 'Défie ton ami en démo', duelPromoS: 'Envoie un défi à un ami : 3, 5 ou 10 minutes en démo. Celui qui gagne le plus remporte le défi !', duelPromoBtn: 'Défier un ami', inviteBadge: 'défi' },
     en: { sub: 'Online · the team answers you here', news: 'News', chat: 'Write to us', ph: 'Write your message…', views: 'views',
       welcomeNews: 'Welcome to OROLADO Live! 👋\nHere you find our news: new features, payment methods, markets on the move… And in “Write to us”, you can talk directly to the team.',
       welcomeChat: 'Hello 👋 Write to us here, we answer in this conversation.\nYou can also send a photo 📷 (for example a payment screenshot).',
@@ -30,7 +31,8 @@
       notFound: 'ID not found.', findLocked: 'Too many tries. Try again in 1 hour.', self: 'That’s your own ID 😉', noConv: 'No conversation yet. Share your ID!',
       block: '🚫 Block', unblock: '✅ Unblock', report: '🚩 Report', reportQ: 'Why are you reporting this player? (scam, insults…)', reported: 'Thanks, the team will check. This player is blocked.',
       youBlocked: 'You blocked this player.', guestF: 'Sign up to write to your friends', guestFB: 'With your account, you get a secret ID and can chat with your friends.',
-      safety: '🔒 Never give your password or codes. OROLADO will never ask for them.' }
+      safety: '🔒 Never give your password or codes. OROLADO will never ask for them.',
+      duelBtn: 'Challenge', duelPick: 'Challenge your friend in demo', duelPickS: 'Pick the duration. Whoever wins the most in demo wins the challenge.', duelSent: 'Challenge sent · {m} min · waiting for {n}…', duelInvite: '{n} challenges you!', duelInviteS: '{m} minutes in demo: whoever wins the most wins the challenge.', accept: 'Accept', refuse: 'Decline', duelStartIn: 'The challenge starts in {s} s', duelLive: 'Challenge in progress', duelLeft: '{t} left', duelPlay: 'Play in demo', duelWin: '🏆 You won the challenge!', duelLose: '{n} won the challenge', duelTie: 'It’s a tie!', duelAgain: 'Rematch', duelRefused: '{n} declined the challenge.', duelExpired: 'The challenge was not accepted in time.', duelBusy: 'A challenge is already running with this friend.', duelGone: 'This challenge is no longer available.', duelRecord: 'Your challenges: {w} won · {l} lost', duelTrades: '{n} trades', duelWait: 'Result in a moment…', duelPromoT: 'Challenge your friend in demo', duelPromoS: 'Send a challenge to a friend: 3, 5 or 10 minutes in demo. Whoever wins the most wins!', duelPromoBtn: 'Challenge a friend', inviteBadge: 'challenge' }
   };
   // v2682 — chinois
   TXT.zh = Object.assign({}, TXT.en, { sub: '在线 · 团队在这里回复你', news: '动态', chat: '联系我们', ph: '输入消息…', views: '次浏览',
@@ -44,7 +46,8 @@
     notFound: '找不到这个 ID。', findLocked: '尝试次数过多，请 1 小时后再试。', self: '这是你自己的 ID 😉', noConv: '还没有对话。分享你的 ID 吧！',
     block: '🚫 屏蔽', unblock: '✅ 取消屏蔽', report: '🚩 举报', reportQ: '为什么举报这位玩家？（诈骗、辱骂……）', reported: '谢谢，团队会查看。该玩家已被屏蔽。',
     youBlocked: '你已屏蔽该玩家。', guestF: '注册后即可和好友聊天', guestFB: '有了账户，你会获得专属 ID，可以和好友聊天。',
-    safety: '🔒 永远不要透露你的密码或验证码。OROLADO 绝不会向你索要。' });
+    safety: '🔒 永远不要透露你的密码或验证码。OROLADO 绝不会向你索要。',
+    duelBtn: '挑战', duelPick: '在模拟账户挑战好友', duelPickS: '选择时长。模拟盈利最多的一方赢得挑战。', duelSent: '挑战已发送 · {m} 分钟 · 等待 {n}…', duelInvite: '{n} 向你发起挑战！', duelInviteS: '模拟 {m} 分钟：盈利最多的一方获胜。', accept: '接受', refuse: '拒绝', duelStartIn: '挑战将在 {s} 秒后开始', duelLive: '挑战进行中', duelLeft: '剩余 {t}', duelPlay: '去模拟交易', duelWin: '🏆 你赢得了挑战！', duelLose: '{n} 赢得了挑战', duelTie: '平局！', duelAgain: '再战一局', duelRefused: '{n} 拒绝了挑战。', duelExpired: '挑战未在规定时间内被接受。', duelBusy: '你和这位好友已有进行中的挑战。', duelGone: '该挑战已失效。', duelRecord: '你的挑战：{w} 胜 · {l} 负', duelTrades: '{n} 笔交易', duelWait: '马上公布结果…', duelPromoT: '在模拟账户挑战好友', duelPromoS: '向好友发起挑战：模拟 3、5 或 10 分钟，盈利最多的一方获胜！', duelPromoBtn: '挑战好友', inviteBadge: '挑战' });
   function L() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return TXT[l] || TXT.en; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function linkify(s) { return esc(s).replace(/(https:\/\/[^\s<]+|orolado\.com)/g, function (u) { var h = u.indexOf('http') === 0 ? u : 'https://' + u; return '<a href="' + h + '" target="_blank" rel="noopener">' + u + '</a>'; }); }
@@ -77,6 +80,7 @@
         (p.link ? '<a class="lv-link" href="' + esc(p.link) + '" target="_blank" rel="noopener">▶ ' + esc(p.link.replace(/^https:\/\/(www\.)?/, '').slice(0, 42)) + '</a>' : '') +
         '<footer><button type="button" class="lv-like' + (on ? ' on' : '') + '" data-id="' + esc(p.id) + '">' + (on ? '❤️' : '🤍') + ' <span>' + (p.likes + (on && fresh.indexOf(p.id) < 0 ? 0 : 0)) + '</span></button><span class="lv-views">👁 ' + p.views + ' ' + x.views + '</span></footer></article>';
     });
+    html += '<article class="lv-post lv-duelpromo"><div class="lv-dp-ico">⚔️</div><b>' + esc(x.duelPromoT) + '</b><p>' + esc(x.duelPromoS) + '</p><button type="button" class="lv-btn" id="lvDuelGo">' + esc(x.duelPromoBtn) + '</button></article>';
     html += '<article class="lv-post lv-welcome"><header>' + LOGO + '<div><b>' + x.team + ' <i class="lv-tick" aria-hidden="true"></i></b><small>OROLADO Live</small></div></header><p>' + linkify(x.welcomeNews) + '</p></article>';
     html += '<div class="lv-legal"><button type="button" id="lvTerms">' + x.terms + '</button> · <button type="button" id="lvPriv">' + x.privacy + '</button></div>';
     $('liveFeed').innerHTML = html;
@@ -90,6 +94,7 @@
         call('like', { ids: [id] });
       });
     });
+    if ($('lvDuelGo')) $('lvDuelGo').addEventListener('click', function () { show('friends'); });
     var tr = $('btnHelpTerms'), pv = $('btnHelpPrivacy');
     if ($('lvTerms') && tr) $('lvTerms').addEventListener('click', function () { tr.click(); });
     if ($('lvPriv') && pv) $('lvPriv').addEventListener('click', function () { pv.click(); });
@@ -158,7 +163,7 @@
     var un = 0;
     $('lfConvs').innerHTML = j.list.length ? j.list.map(function (c) {
       if (c.un) un++;
-      return '<button type="button" class="lf-c' + (c.un ? ' un' : '') + '" data-id="' + esc(c.id) + '"><span class="lf-av">' + initial(c.name) + '</span><span class="lf-ct"><b>' + esc(c.name) + (c.blocked ? ' 🚫' : '') + '</b><small>' + esc(c.last) + '</small></span><span class="lf-t">' + ago(c.at) + (c.un ? '<i>' + c.un + '</i>' : '') + '</span></button>';
+      return '<button type="button" class="lf-c' + (c.un ? ' un' : '') + '" data-id="' + esc(c.id) + '"><span class="lf-av">' + initial(c.name) + '</span><span class="lf-ct"><b>' + esc(c.name) + (c.blocked ? ' 🚫' : '') + '</b><small>' + esc(c.last) + '</small></span><span class="lf-t">' + ago(c.at) + (c.duel ? '<em class="lf-inv">⚔️</em>' : '') + (c.un ? '<i>' + c.un + '</i>' : '') + '</span></button>';
     }).join('') : '<p class="lf-empty">' + x.noConv + '</p>';
     setFriendBadge(un);
     $('lfConvs').querySelectorAll('.lf-c').forEach(function (b) { b.addEventListener('click', function () { openDm(b.getAttribute('data-id')); }); });
@@ -173,7 +178,9 @@
     $('lfBlock').textContent = j.blocked ? x.unblock : x.block; $('lfBlock').setAttribute('data-on', j.blocked ? '0' : '1');
     $('lfReport').textContent = x.report;
     $('lfText').placeholder = x.ph;
+    duelPicking = false;
     paintDm(j.msgs, j.blocked);
+    renderDuel(j);
   }
   function paintDm(msgs, blocked) {
     var x = L();
@@ -185,7 +192,82 @@
     $('lfMsgs').innerHTML = html; $('lfMsgs').scrollTop = 1e9;
     $('lfForm').hidden = !!blocked;
   }
-  async function refreshDm() { if (!peer) return; var j = await call('dm', { id: peer.id }); if (j && j.ok) paintDm(j.msgs, j.blocked); }
+  async function refreshDm() { if (!peer) return; var j = await call('dm', { id: peer.id }); if (j && j.ok) { paintDm(j.msgs, j.blocked); renderDuel(j); } }
+
+  /* ---------- v2685 — DÉFIE TON AMI (démo) ---------- */
+  var duel = null, duelOff = 0, duelTick = 0, duelPoll = 0, duelStats = null, duelPicking = false;
+  function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
+  function money(v) { v = Number(v) || 0; return (v >= 0 ? '+' : '−') + '$' + Math.abs(v).toFixed(2); }
+  function mmss(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+  function renderDuel(j) {
+    if (j) { duel = j.duel || null; duelStats = j.stats || null; if (duel) duelOff = duel.now - Date.now() / 1000; }
+    var x = L(), card = $('lfDuelCard'), name = peer ? esc(peer.name) : '';
+    clearInterval(duelTick); clearInterval(duelPoll);
+    $('lfDuelT').textContent = x.duelBtn;
+    if (duelPicking) {
+      card.hidden = false;
+      card.className = 'lf-duelcard pick';
+      card.innerHTML = '<b>⚔️ ' + esc(x.duelPick) + '</b><p>' + esc(x.duelPickS) + '</p><div class="lf-dmins">' +
+        [3, 5, 10].map(function (m) { return '<button type="button" data-m="' + m + '">' + m + ' min</button>'; }).join('') + '</div>' +
+        (duelStats ? '<small>' + esc(fmt(x.duelRecord, duelStats)) + '</small>' : '');
+      card.querySelectorAll('[data-m]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          duelPicking = false;
+          var r = await call('duelCreate', { id: peer.id, min: +b.getAttribute('data-m') });
+          if (r && !r.ok && D6.App && D6.App.toast) D6.App.toast(x[r.reason] || x.fail, 'err');
+          refreshDm();
+        });
+      });
+      return;
+    }
+    if (!duel || ['refused', 'expired'].indexOf(duel.st) >= 0 && Date.now() / 1000 + duelOff - (duel.end || duel.now) > 600) { card.hidden = true; card.innerHTML = ''; return; }
+    card.hidden = false;
+    var now = function () { return Date.now() / 1000 + duelOff; };
+    if (duel.st === 'pending') {
+      card.className = 'lf-duelcard wait';
+      card.innerHTML = duel.mine
+        ? '<b>⚔️ ' + esc(fmt(x.duelSent, { m: duel.min, n: name })) + '</b>'
+        : '<b>⚔️ ' + esc(fmt(x.duelInvite, { n: name })) + '</b><p>' + esc(fmt(x.duelInviteS, { m: duel.min })) + '</p><div class="lf-dmins"><button type="button" class="ok" id="lfDuelYes">' + esc(x.accept) + '</button><button type="button" id="lfDuelNo">' + esc(x.refuse) + '</button></div>';
+      if (!duel.mine) {
+        $('lfDuelYes').addEventListener('click', async function () { await call('duelAnswer', { id: peer.id, accept: 1 }); refreshDm(); });
+        $('lfDuelNo').addEventListener('click', async function () { await call('duelAnswer', { id: peer.id, accept: 0 }); refreshDm(); });
+      }
+      duelPoll = setInterval(refreshDm, 4000);
+      return;
+    }
+    if (duel.st === 'refused' || duel.st === 'expired') {
+      card.className = 'lf-duelcard';
+      card.innerHTML = '<b>' + esc(duel.st === 'refused' ? fmt(x.duelRefused, { n: name }) : x.duelExpired) + '</b><div class="lf-dmins"><button type="button" class="ok" id="lfDuelRe">' + esc(x.duelAgain) + '</button></div>';
+      $('lfDuelRe').addEventListener('click', function () { duelPicking = true; renderDuel(); });
+      return;
+    }
+    var me = duel.me || { net: 0, n: 0 }, him = duel.him || { net: 0, n: 0 };
+    var score = '<div class="lf-score"><div class="' + (me.net >= him.net ? 'lead' : '') + '"><small>' + esc(x.you) + '</small><b>' + money(me.net) + '</b><i>' + esc(fmt(x.duelTrades, { n: me.n })) + '</i></div><span>VS</span><div class="' + (him.net > me.net ? 'lead' : '') + '"><small>' + name + '</small><b>' + money(him.net) + '</b><i>' + esc(fmt(x.duelTrades, { n: him.n })) + '</i></div></div>';
+    if (duel.st === 'done') {
+      card.className = 'lf-duelcard done ' + duel.res;
+      card.innerHTML = '<b>' + esc(duel.res === 'win' ? x.duelWin : duel.res === 'lose' ? fmt(x.duelLose, { n: name }) : x.duelTie) + '</b>' + score +
+        '<div class="lf-dmins"><button type="button" class="ok" id="lfDuelRe">⚔️ ' + esc(x.duelAgain) + '</button></div>';
+      $('lfDuelRe').addEventListener('click', function () { duelPicking = true; renderDuel(); });
+      return;
+    }
+    // Défi en cours (ou compte à rebours avant le départ)
+    card.className = 'lf-duelcard live';
+    var paint = function () {
+      var t = now(), head;
+      if (t < duel.start) head = esc(fmt(x.duelStartIn, { s: Math.ceil(duel.start - t) }));
+      else if (t < duel.end) head = '⚔️ ' + esc(x.duelLive) + ' · ' + esc(fmt(x.duelLeft, { t: mmss(duel.end - t) }));
+      else head = esc(x.duelWait);
+      card.innerHTML = '<b>' + head + '</b>' + score + '<div class="lf-dmins"><button type="button" class="ok" id="lfDuelPlay">' + esc(x.duelPlay) + '</button></div>';
+      $('lfDuelPlay').addEventListener('click', function () {
+        close();
+        var demo = document.getElementById('modeDemo');
+        if (demo && !demo.classList.contains('on')) demo.click();
+      });
+    };
+    paint();
+    duelTick = setInterval(paint, 1000);
+    duelPoll = setInterval(refreshDm, 5000);
+  }
   async function sendDm(e) {
     if (e) e.preventDefault();
     if (fBusy || !peer) return;
@@ -207,7 +289,12 @@
       if (j && j.ok) { $('lfFindIn').value = ''; openDm(j.peer.id); }
       else $('lfFindMsg').textContent = x[(j && j.reason) || 'notFound'] || x.notFound;
     });
-    $('lfBack').addEventListener('click', friendsList);
+    $('lfBack').addEventListener('click', function () { clearInterval(duelTick); clearInterval(duelPoll); friendsList(); });
+    $('lfDuel').addEventListener('click', function () {
+      if (!peer) return;
+      if (duel && (duel.st === 'pending' || duel.st === 'active')) { renderDuel(); return; }
+      duelPicking = !duelPicking; renderDuel();
+    });
     $('lfMore').addEventListener('click', function () { $('lfMenu').hidden = !$('lfMenu').hidden; });
     $('lfBlock').addEventListener('click', async function () {
       if (!peer) return;
@@ -258,7 +345,7 @@
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     show(w || (($('liveBadge') && $('liveBadge').textContent) ? 'chat' : (dmUn > 0 ? 'friends' : 'news')));
   }
-  function close() { clearInterval(timer); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
+  function close() { clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
   function grow() { var t = $('liveText'); t.style.height = 'auto'; t.style.height = Math.min(110, t.scrollHeight) + 'px'; }
 
