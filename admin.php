@@ -2038,12 +2038,18 @@ if ($isAjax) {
   }
   // v2676 — « Live » : conversations avec les joueurs + Actualités (fichiers à part, data/live/).
   // v2690 — CASINO (statistiques) et PARIS SPORTIFS (créer un match, fermer, donner le résultat → paiement).
-  if (str_starts_with($action, 'sp_') || $action === 'cs_stats') {
+  if (str_starts_with($action, 'sp_') || $action === 'cs_stats' || $action === 'cs_limits_save') {
     require_once __DIR__ . '/casino_lib.php';
     require_once __DIR__ . '/sports_lib.php';
     if ($action === 'cs_stats') {
       $st = casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static fn(array &$s) => $s) ?: [];
-      admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? []]);
+      admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => CASINO_GAMES]);
+    }
+    // v2698 — mise maximale jeu par jeu (vide = mise maximale normale)
+    if ($action === 'cs_limits_save') {
+      $res = casino_save_limits((array) ($req['limits'] ?? []));
+      admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'casino', 0, 'Mises maximales du casino : ' . json_encode($res['limits']));
+      admin_json($res);
     }
     if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
     if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
@@ -3298,7 +3304,7 @@ setInterval(() => {
   const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   const m2 = v => (Number(v) || 0).toFixed(2) + ' $';
   const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', autre:'🏆'};
-  const GN = {crash:'Avion', coin:'Pile ou face', dice:'Dés', limbo:'Limbo', wheel:'Roue casino', race:'Course auto', roulette:'Roulette', slots:'Machine à sous', plinko:'Plinko', keno:'Keno', scratch:'Grattage', hilo:'Hi-Lo', penalty:'Penalty', colors:'Couleurs', mines:'Mines', sports:'Paris sportifs'};
+  const GN = {crash:'Sky Rush (avion)', jet:'Jet Man', rocket:'Rocket (fusée)', coin:'Coin Flip (pile ou face)', dice:'Dice (dés)', limbo:'Target (cible)', wheel:'Lucky Wheel (roue)', race:'Racing (course)', roulette:'Roulette', slots:'Lucky 777 (machine à sous)', plinko:'Cascade', keno:'Keno', scratch:'Scratch Card (grattage)', hilo:'Hi-Lo', penalty:'Penalty', colors:'Colors (couleurs)', mines:'Mines', apple:'Golden Orchard (pommes)', tower:'Tower (tour)', dragon:'Dragon Tiger', baccarat:'Baccarat', sicbo:'Sic Bo', chests:'Treasure (coffres)', balloon:'Balloon (ballon)', darts:'Darts (fléchettes)', sports:'Paris sportifs'};
   function optRow(label, odd) {
     const d = document.createElement('div');
     d.style.cssText = 'display:flex;gap:6px;margin-bottom:4px';
@@ -3334,7 +3340,16 @@ setInterval(() => {
         rows.map(r => '<tr><td>' + esc(GN[r.g] || r.g) + '</td><td>' + r.n + '</td><td>' + m2(r.i) + '</td><td>' + m2(r.o) + '</td><td style="color:' + (r.p >= 0 ? '#5CF59A' : '#FF7A90') + '">' + m2(r.p) + '</td></tr>').join('') +
         '<tr style="font-weight:800"><td>Total</td><td>' + t.n + '</td><td>' + m2(t.i) + '</td><td>' + m2(t.o) + '</td><td style="color:' + (t.p >= 0 ? '#5CF59A' : '#FF7A90') + '">' + m2(t.p) + '</td></tr></table></div>';
     };
-    $c('csStats').innerHTML = table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + '<p class="muted">Sur la durée, chaque jeu rend 92 à 97 % aux joueurs : la maison garde le reste. Un jour peut être négatif (un gros gain), c\'est normal.</p>';
+    const lim = j.limits || {}, max = j.max || 1000;
+    const limCard = '<div class="nt-card" style="margin-bottom:10px"><b>Mise maximale par jeu ($)</b><p class="muted" style="margin:4px 0 8px">Vide = ' + max + ' $ (normal). Exemple : mettre 200 sur les jeux à 1 chance sur 2 (Coin Flip, Dice, Roulette…).</p>' +
+      '<div style="display:grid;grid-template-columns:1fr 90px;gap:6px 8px;align-items:center;font-size:13px">' +
+      (j.games || []).map(g => '<span>' + esc(GN[g] || g) + '</span><input class="csLim" data-g="' + g + '" inputmode="decimal" placeholder="' + max + '" value="' + (lim[g] != null ? lim[g] : '') + '" style="width:90px">').join('') +
+      '</div><button class="mini ok" type="button" id="csLimSave" style="margin-top:10px">Enregistrer les mises maximales</button> <span id="csLimSt" class="muted"></span></div>';
+    $c('csStats').innerHTML = table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + limCard + '<p class="muted">Sur 100 $ misés par les joueurs, la maison garde en moyenne 3 à 8 $ (chaque jeu rend 92 à 97 %). Un jour peut être négatif à cause d\'un gros gain : c\'est normal, sur la durée la maison gagne.</p>';
+    $c('csLimSave').onclick = async () => {
+      const limits = {}; document.querySelectorAll('.csLim').forEach(i => { const v = parseFloat(String(i.value).replace(',', '.')); if (v > 0) limits[i.dataset.g] = v; });
+      const r = await ajax({action:'cs_limits_save', limits}); $c('csLimSt').textContent = r.ok ? 'Enregistré ✓' : (r.reason || 'Échec');
+    };
   }
   const tab = w => { $c('csPaneSp').hidden = w !== 'sp'; $c('csPaneSt').hidden = w !== 'st'; $c('csTabSp').classList.toggle('ok', w === 'sp'); $c('csTabSt').classList.toggle('ok', w === 'st'); if (w === 'sp') list(); else stats(); };
   $c('csTabSp').onclick = () => tab('sp');

@@ -217,6 +217,14 @@ casino_multi(load_db(), $me, 'mines', 'state', 'real', 0, []);
 casino_multi(load_db(), $me, 'mines', 'state', 'real', 0, []);
 check('base revenue : gain versé une seule fois', abs($bal[$U] - (48 + $c['win'])) < 0.001, $bal[$U] . ' vs ' . (48 + $c['win']));
 
+echo "8) Mise maximale réglée par l'admin, jeu par jeu (v2698)\n";
+casino_save_limits(['coin' => 200, 'dice' => 'abc', 'inconnu' => 5]);
+check('limite Coin Flip 200 $ : 300 $ refusé', casino_check_stake(300, 'coin') === 'max');
+check('limite Coin Flip 200 $ : 150 $ accepté', casino_check_stake(150, 'coin') === null);
+check('autre jeu sans limite : 900 $ accepté', casino_check_stake(900, 'mines') === null);
+check('jamais au-dessus du maximum général', casino_check_stake(CASINO_MAX_STAKE + 1, 'mines') === 'max');
+check('valeur fausse ou jeu inconnu ignorés', !isset(casino_limits()['dice']) && !isset(casino_limits()['inconnu']));
+casino_save_limits([]);
 echo "7) Penalty en série (v2695)\n";
 for ($stop = 1; $stop <= 8; $stop++) {
   $N = 200000; $sum = 0.0;

@@ -357,9 +357,31 @@ function casino_hist_add(string $uid, array $row): void {
 
 /* ---------------------------------------------------------------- parties */
 
-function casino_check_stake(float $stake): ?string {
+/** v2698 — mise maximale réglée par l'admin jeu par jeu (data/casino/limits.json) ; jamais au-dessus de CASINO_MAX_STAKE. */
+function casino_limits(): array {
+  $f = casino_dir() . DIRECTORY_SEPARATOR . 'limits.json';
+  $l = is_file($f) ? json_decode((string) @file_get_contents($f), true) : [];
+  return is_array($l) ? $l : [];
+}
+function casino_max_stake(string $game): float {
+  $l = casino_limits();
+  $v = isset($l[$game]) ? (float) $l[$game] : CASINO_MAX_STAKE;
+  return max(CASINO_MIN, min(CASINO_MAX_STAKE, $v));
+}
+function casino_save_limits(array $in): array {
+  $out = [];
+  foreach ($in as $g => $v) {
+    if (!in_array((string) $g, CASINO_GAMES, true)) continue;
+    $v = round((float) $v, 2);
+    if ($v >= CASINO_MIN && $v < CASINO_MAX_STAKE) $out[(string) $g] = $v; // vide ou ≥ max = mise maximale normale
+  }
+  $f = casino_dir() . DIRECTORY_SEPARATOR . 'limits.json';
+  @file_put_contents($f, json_encode($out, JSON_PRETTY_PRINT), LOCK_EX);
+  return ['ok' => true, 'limits' => $out, 'max' => CASINO_MAX_STAKE];
+}
+function casino_check_stake(float $stake, string $game = ''): ?string {
   if (!is_finite($stake) || $stake + 1e-9 < CASINO_MIN) return 'min';
-  if ($stake > CASINO_MAX_STAKE + 1e-9) return 'max';
+  if ($stake > ($game !== '' ? casino_max_stake($game) : CASINO_MAX_STAKE) + 1e-9) return 'max';
   return null;
 }
 function casino_mode(string $m, bool $guest, ?array $user = null): string {
@@ -372,7 +394,7 @@ function casino_mode(string $m, bool $guest, ?array $user = null): string {
 function casino_play(array $db, ?array $user, string $game, string $mode, float $stake, array $p): array {
   if (!in_array($game, CASINO_GAMES, true) || in_array($game, CASINO_MULTI, true)) return ['ok' => false, 'reason' => 'game'];
   $stake = floor($stake * 100 + 1e-6) / 100;
-  if ($e = casino_check_stake($stake)) return ['ok' => false, 'reason' => $e];
+  if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
   // Limbo : on refuse une cible dont le gain dépasserait le gain maximal.
   if ($game === 'limbo' && $stake * (float) ($p['target'] ?? 2) > CASINO_MAX_WIN) return ['ok' => false, 'reason' => 'maxWin'];
   $uid = (string) ($user['id'] ?? '');
@@ -403,7 +425,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
 
   if ($act === 'start') {
     $stake = floor($stake * 100 + 1e-6) / 100;
-    if ($e = casino_check_stake($stake)) return ['ok' => false, 'reason' => $e];
+    if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
     $mode = casino_mode($mode, false, $user);
     $cur = casino_with($file, static fn(array &$st) => $st['g'][$game] ?? null);
     if (is_array($cur) && !empty($cur['done']) && empty($cur['paid'])) {

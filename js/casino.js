@@ -349,11 +349,11 @@
   var WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], [2, 325], [0, 630], [1.2, 500], [0.5, 640], [3, 350], [0, 631], [1.2, 500], [0.5, 640], [5, 120], [1.5, 550], [0, 631], [0.5, 640], [1.2, 500], [2, 325], [10, 50], [50, 8]];
   GAMES.wheel = function (box, x) {
     var rot = 0, out = '', a0 = 0, mids = [];
-    var col = { 0: '#1e293b', 0.5: '#94a3b8', 1.2: '#3b82f6', 1.5: '#06b6d4', 2: '#22c55e', 3: '#f59e0b', 5: '#f97316', 10: '#e11d48', 50: '#facc15' };
+    var col = { 0: '#312e81', 0.5: '#8b5cf6', 1.2: '#2563eb', 1.5: '#06b6d4', 2: '#22c55e', 3: '#f59e0b', 5: '#f97316', 10: '#e11d48', 50: '#facc15' };
     var pt = function (r, a) { a = a * Math.PI / 180; return (r * Math.sin(a)).toFixed(2) + ' ' + (-r * Math.cos(a)).toFixed(2); };
     WHEEL.forEach(function (s) {
       var v = s[0], sw = s[1] / 10000 * 360, a1 = a0 + sw;
-      out += '<path d="M0 0 L' + pt(112, a0) + ' A112 112 0 0 1 ' + pt(112, a1) + 'Z" fill="' + col[v] + '" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>';
+      out += '<path d="M0 0 L' + pt(112, a0) + ' A112 112 0 0 1 ' + pt(112, a1) + 'Z" fill="' + col[v] + '" stroke="#FDE68A" stroke-opacity=".9" stroke-width="1.6"/>';
       mids.push(a0 + sw / 2); a0 = a1;
     });
     var bulbs = ''; for (var i = 0; i < 24; i++) bulbs += '<circle cx="' + (119 * Math.sin(i * 15 * Math.PI / 180)).toFixed(1) + '" cy="' + (-119 * Math.cos(i * 15 * Math.PI / 180)).toFixed(1) + '" r="3" fill="#FFF7D6"/>';
@@ -392,8 +392,8 @@
     var bet = 'red', wr = 0;
     var opts = [['red', x.red, '×2'], ['black', x.black, '×2'], ['even', x.even, '×2'], ['odd', x.odd, '×2'], ['d1', '1-12', '×3'], ['d2', '13-24', '×3'], ['d3', '25-36', '×3']];
     box.innerHTML = '<div class="cs-stage rl-stage"><div class="rl-big"><div class="rl-wheel" id="csRlW">' + rouletteSvg() + '</div><div class="rl-orbit" id="csRlO"><i class="rl-pearl"></i></div><div class="rl-ball" id="csRl">?</div></div></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-opts">' + opts.map(function (o, i) { return '<button type="button" data-b="' + o[0] + '" class="' + (i ? '' : 'on') + ' b-' + o[0] + '">' + esc(o[1]) + '<small>' + o[2] + '</small></button>'; }).join('') + '</div>' +
-        '<label class="cs-lbl">' + esc(x.number) + ' (0-36) · ×36</label><div class="cs-stake"><input id="csRlNum" inputmode="numeric" placeholder="—"></div>');
+      stakePanel(x.bet, '<div class="cs-opts rl-opts">' + opts.map(function (o, i) { return '<button type="button" data-b="' + o[0] + '" class="' + (i ? '' : 'on') + ' b-' + o[0] + '">' + esc(o[1]) + '<small>' + o[2] + '</small></button>'; }).join('') +
+        '<label class="rl-num"><input id="csRlNum" inputmode="numeric" maxlength="2" placeholder="0-36"><small>×36</small></label></div>');
     bindStake(box);
     var pick = function (b) { bet = b; box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z.getAttribute('data-b') === b); }); };
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { $('csRlNum').value = ''; pick(b.getAttribute('data-b')); }); });
@@ -632,8 +632,14 @@
         stars + '<g stroke="rgba(255,255,255,.07)">' + [34, 68, 102, 136].map(function (y) { return '<path d="M0 ' + y + 'H300"/>'; }).join('') + '</g>' +
         '<path id="csArea" d="M10 160" fill="url(#csAreaG)"/><path id="csTrail" d="M10 160" fill="none" stroke="' + th.col + '" stroke-width="3.6" stroke-linecap="round"/></svg>' +
         '<span class="plane" id="csPlane" style="width:' + th.w + 'px;height:' + th.h + 'px">' + ART.obj(game) + '</span><b class="crash-n" id="csCm">1.00×</b><small class="crash-hint" id="csCs"></small></div><div class="cs-res"></div>' +
-        (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.auto) + '</label><div class="cs-stake"><input id="csAuto" inputmode="decimal" placeholder="—"></div>'));
-      if (guest()) { needAccount($('csNeed'), x); return; }
+        (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet)); // v2698 : plus de case « Encaissement auto » (incomprise, prenait la place)
+      if (guest()) {
+        needAccount($('csNeed'), x);
+        // visiteur : le personnage attend en bas à gauche (pas coincé dans le coin du haut)
+        var cst = box.querySelector('.crash-stage'), pl = $('csPlane');
+        if (cst && pl) pl.style.transform = 'translate(22px,' + Math.max(40, cst.clientHeight * 0.66 - th.h * 0.5) + 'px)';
+        return;
+      }
       bindStake(box);
       var btn = $('csGo'), plane = $('csPlane');
       var draw = function (m, s) {
@@ -643,7 +649,7 @@
         var d = 'M10 160 Q ' + ((10 + px) / 2) + ' 160 ' + px + ' ' + py;
         $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
         // v2695 : l'avion reste toujours entier dans l'écran (jamais coupé au bord)
-        var X0 = Math.max(4, Math.min(st.width - th.w - 4, px * kx - th.w * 0.22)), Y0 = Math.max(30, Math.min(st.height - th.h - 2, py * ky - th.h * 0.72));
+        var X0 = Math.max(22, Math.min(st.width - th.w - 10, px * kx - th.w * 0.22)), Y0 = Math.max(34, Math.min(st.height - th.h - 10, py * ky - th.h * 0.72));
         plane.style.transform = 'translate(' + X0 + 'px,' + Y0 + 'px)';
       };
       var finish = function (r) {
@@ -830,7 +836,7 @@
   /* Baccara : tapis bleu nuit, Joueur (bleu) / Banque (rouge) */
   GAMES.baccarat = function (box, x) {
     var bet = 'player';
-    box.innerHTML = '<div class="cs-stage bc-stage"><div class="bc"><div class="bc-h p"><b>' + esc(x.player) + ' <i id="csBcTp"></i></b><div id="csBcP" class="bc-cards"></div></div><div class="bc-h b"><b>' + esc(x.banker) + ' <i id="csBcTb"></i></b><div id="csBcB" class="bc-cards"></div></div></div></div><div class="cs-res"></div>' +
+    box.innerHTML = '<div class="cs-stage bc-stage"><div class="bc"><div class="bc-h p"><b>' + esc(x.player) + ' <i id="csBcTp"></i></b><div id="csBcP" class="bc-cards">' + cardBack() + cardBack() + '</div></div><div class="bc-h b"><b>' + esc(x.banker) + ' <i id="csBcTb"></i></b><div id="csBcB" class="bc-cards">' + cardBack() + cardBack() + '</div></div></div></div><div class="cs-res"></div>' +
       stakePanel(x.bet, '<div class="cs-opts three"><button type="button" data-b="player" class="on b-player">' + esc(x.player) + '<small>×1,96</small></button><button type="button" data-b="tie" class="b-tie">' + esc(x.tie) + '<small>×9</small></button><button type="button" data-b="banker" class="b-banker">' + esc(x.banker) + '<small>×1,92</small></button></div>');
     bindStake(box);
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { bet = b.getAttribute('data-b'); box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
