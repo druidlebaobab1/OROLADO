@@ -662,16 +662,28 @@
       };
       var sync = async function () {
         if (!box.isConnected || S.game !== game) return; // jeu fermé : on arrête
+        // v2712 : l'état PUBLIC du tour vient de casino-tour.php (très léger, sans compte) ; api.php n'est appelé
+        // qu'à l'ouverture et quand MA mise attend son résultat (explosion / tour suivant).
         var r = null;
-        try { r = await multi(game, 'round', null, true); } catch (e) { r = null; }
+        try { var rq = await fetch('casino-tour.php?g=' + game, { cache: 'no-store' }); r = await rq.json(); } catch (e) { r = null; }
+        if (!r || !r.ok) { try { r = await multi(game, 'round', null, true); if (r) r.mine = 1; } catch (e) { r = null; } } // secours
         if (!box.isConnected || S.game !== game) return;
         S.timer = setTimeout(sync, 1000); // toujours relancé (même après une coupure réseau)
         if (r && r.round && r.round.i) {
+          var open0 = me && !me.done;
           // nouveau tour (mise) : on efface le résultat du tour d'avant, sauf si j'ai un pari en cours
-          if (R && r.round.i !== R.i && r.round.phase === 'bet' && !(r.has && !r.done)) { var rs = box.querySelector('.cs-res'); if (rs) { rs.className = 'cs-res'; rs.innerHTML = ''; } }
-          off = r.now - Date.now() / 1000; R = r.round; me = r.has ? r : null;
-          if (first) { first = false; if (me && me.done) shown = me.ref; } // ancienne partie déjà vue : on ne la remontre pas
-          showMine(me);
+          if (R && r.round.i !== R.i && r.round.phase === 'bet' && !open0) { var rs = box.querySelector('.cs-res'); if (rs) { rs.className = 'cs-res'; rs.innerHTML = ''; } }
+          off = r.now - Date.now() / 1000; R = r.round;
+          var mine = r.mine ? r : null;
+          if (!mine && (first || (open0 && (R.i > (me.rid || 0) || (R.c != null && R.i >= (me.rid || 0)))))) {
+            try { mine = await multi(game, 'round', null, true); } catch (e) { mine = null; }
+            if (!box.isConnected || S.game !== game) return;
+          }
+          if (mine && mine.round) {
+            me = mine.has ? mine : null;
+            if (first) { first = false; if (me && me.done) shown = me.ref; } // ancienne partie déjà vue : on ne la remontre pas
+            showMine(me);
+          }
         }
         if (R && nowS() >= R.t0 && R.c == null) { clearTimeout(S.timer); S.timer = setTimeout(sync, 450); } // en vol : plus souvent
       };
