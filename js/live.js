@@ -328,7 +328,7 @@
 
   /* ---------- v2686 — ACCUEIL EN GRANDES TUILES (propriétaire) ---------- */
   var HOME = [
-    { k: 'news', ico: '📰', c: 'c1' }, { k: 'friends', ico: '👥', c: 'c2' }, { k: 'duel', ico: '⚔️', c: 'c3' }, { k: 'chat', ico: '💬', c: 'c4' },
+    { k: 'news', ico: '📰', c: 'c1' }, { k: 'friends', ico: '👥', c: 'c2' }, { k: 'groups', ico: '👪', c: 'c13' }, { k: 'duel', ico: '⚔️', c: 'c3' }, { k: 'chat', ico: '💬', c: 'c4' },
     { k: 'wheel', ico: '🎡', c: 'c9' }, { k: 'quiz', ico: '🧠', c: 'c10' },
     { k: 'myid', ico: '🆔', c: 'c5' }, { k: 'record', ico: '🏆', c: 'c6' }, { k: 'stats', ico: '📊', c: 'c11' }, { k: 'badges', ico: '🏅', c: 'c12' },
     { k: 'gifts', ico: '🎁', c: 'c7' }, { k: 'learn', ico: '📚', c: 'c8' }
@@ -347,7 +347,7 @@
     var h = H();
     $('liveHomeGrid').innerHTML = HOME.map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
-      var tt = h[t.k] || [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : ''];
+      var tt = h[t.k] || (t.k === 'groups' && D6.LiveGroups ? [D6.LiveGroups.title(), D6.LiveGroups.sub()] : [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : '']);
       return '<button type="button" class="lh-tile ' + t.c + (t.k === 'duel' ? ' big' : '') + '" data-k="' + t.k + '"><span class="lh-ico">' + t.ico + '</span><b>' + esc(tt[0]) + '</b><small>' + esc(tt[1]) + '</small>' + badge + '</button>';
     }).join('');
     $('liveHomeGrid').querySelectorAll('.lh-tile').forEach(function (b) {
@@ -359,6 +359,7 @@
     if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); return; }
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
     if (k === 'wheel' || k === 'quiz' || k === 'stats' || k === 'badges') { show('fun', k); return; }
+    if (k === 'groups') { show('groups'); return; }
     // Défier / mon identifiant / mes défis : la page Amis, avec un mot d'aide en haut
     show('friends', k);
   }
@@ -370,11 +371,15 @@
     $('liveBar').hidden = home;
     $('liveBarT').textContent = home ? '' : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
     if ($('livePaneFun')) $('livePaneFun').hidden = w !== 'fun';
+    if ($('livePaneGroups')) $('livePaneGroups').hidden = w !== 'groups';
+    if (w !== 'groups' && D6.LiveGroups) D6.LiveGroups.stop();
+    if (w === 'groups' && D6.LiveGroups) $('liveBarT').textContent = D6.LiveGroups.title();
     $('liveTabNews').classList.toggle('on', w === 'news'); $('liveTabChat').classList.toggle('on', w === 'chat'); $('liveTabFriends').classList.toggle('on', w === 'friends');
     $('livePaneNews').hidden = w !== 'news'; $('livePaneChat').hidden = w !== 'chat'; $('livePaneFriends').hidden = w !== 'friends';
     clearInterval(timer);
     if (home) { paintHome(); return; }
     if (w === 'fun') { $('livePaneNews').hidden = true; if (D6.LiveFun) D6.LiveFun.open(sub); return; }
+    if (w === 'groups') { $('livePaneNews').hidden = true; if (D6.LiveGroups) D6.LiveGroups.open(sub); return; }
     if (w === 'friends') {
       friendsList().then(function () {
         var m = $('lfFindMsg');
@@ -402,7 +407,7 @@
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     show(w || 'home');
   }
-  function close() { clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
+  function close() { clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.LiveGroups) D6.LiveGroups.stop(); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
   function grow() { var t = $('liveText'); t.style.height = 'auto'; t.style.height = Math.min(110, t.scrollHeight) + 'px'; }
 
@@ -447,7 +452,13 @@
     $('liveTabNews').addEventListener('click', function () { show('news'); });
     $('liveTabChat').addEventListener('click', function () { show('chat'); });
     if ($('liveTabFriends')) { $('liveTabFriends').addEventListener('click', function () { show('friends'); }); bootFriends(); }
-    if ($('liveBack')) $('liveBack').addEventListener('click', function () { clearInterval(duelTick); clearInterval(duelPoll); peer = null; show('home'); });
+    // Un seul bouton retour : d'une conversation → la liste ; de la liste → l'accueil.
+    if ($('liveBack')) $('liveBack').addEventListener('click', function () {
+      clearInterval(duelTick); clearInterval(duelPoll);
+      if (tab === 'friends' && peer) { peer = null; friendsList(); return; }
+      if (tab === 'groups' && D6.LiveGroups && D6.LiveGroups.inGroup()) { D6.LiveGroups.back(); return; }
+      peer = null; show('home');
+    });
     $('liveForm').addEventListener('submit', send);
     $('liveText').addEventListener('input', grow);
     $('liveFile').addEventListener('change', async function () {

@@ -9681,3 +9681,29 @@ html:root[lang="es"] body #screenTrade#screenTrade#screenTrade#screenTrade#scree
 #liveModal .lfun-badge b{display:block;color:#fff;font-size:13.5px;margin-top:6px}
 #liveModal .lfun-badge small{color:#B9C2DE;font-size:11px}
 html.oro-lite #liveModal .wheel{transition-duration:1.2s}
+/* ===== v2688 — Live : GROUPES ===== */
+#liveModal .live-groups[hidden]{display:none}
+#liveModal .lg-box{flex:1;min-height:0;display:flex;flex-direction:column}
+#liveModal .lh-tile.c13 .lh-ico{background:linear-gradient(145deg,rgba(244,114,182,.38),rgba(244,114,182,.12))}
+#liveModal .lg-new{padding:12px;border-radius:16px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);margin-bottom:10px}
+#liveModal .lg-new>b{color:#fff;font-size:15px}
+#liveModal .lg-emos{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+#liveModal .lg-emos button{width:38px;height:38px;border:0;border-radius:11px;background:rgba(255,255,255,.07);font-size:19px}
+#liveModal .lg-emos button.on{background:rgba(255,196,90,.25);box-shadow:inset 0 0 0 1.5px rgba(255,196,90,.7)}
+#liveModal .lf-av.lg-emo{background:linear-gradient(145deg,rgba(255,196,90,.3),rgba(255,122,168,.2));font-size:19px}
+#liveModal .lg-acts{display:flex;gap:6px;margin:8px 0}
+#liveModal .lg-acts button{flex:1;border:0;border-radius:11px;padding:9px 4px;background:rgba(255,255,255,.07);color:#fff;font:700 12.5px system-ui}
+#liveModal .lg-mem{max-height:40%;overflow:auto;border-radius:12px;background:rgba(0,0,0,.2);padding:6px;margin-bottom:6px}
+#liveModal .lg-mem[hidden]{display:none}
+#liveModal .lg-m{display:flex;align-items:center;gap:9px;padding:5px}
+#liveModal .lg-m .lf-av{width:30px;height:30px;flex-basis:30px;font-size:13px}
+#liveModal .lg-m b{flex:1;color:#fff;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveModal .lg-m b i{color:#FFD27A;font-style:normal;font-weight:600}
+#liveModal .lg-m button{border:0;border-radius:9px;padding:5px 10px;background:rgba(244,63,94,.18);color:#FDA4AF;font:700 12px system-ui}
+#liveModal .lg-who{display:block;font-style:normal;font-size:11px;font-weight:800;color:#FFD27A;margin-bottom:2px}
+#liveModal #lfBack,#liveModal #lgBack{display:none!important}
+
+/* v2688 groupes : police normale (pas de machine à écrire) */
+html body #liveModal #liveGroups textarea,html body #liveModal #liveGroups .lf-who small{font-family:inherit!important;letter-spacing:0!important}
+html body #liveModal #liveGroups textarea{color:#fff;background:transparent}
+#liveModal #lgText{width:100%;border:0;background:none;color:#fff;font:15px/1.35 system-ui!important;resize:none;outline:none;padding:7px 0;max-height:110px;box-sizing:border-box}

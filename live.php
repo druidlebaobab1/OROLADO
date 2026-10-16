@@ -54,7 +54,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     $f = live_img_path($name, 'img');
     $me = live_me((string) ($_COOKIE['oro_token'] ?? ''));
     // v2680 : photo d'une conversation du joueur (équipe ou ami), jamais celle des autres.
-    $mine = $f !== '' && $me && live_img_allowed((string) $me['id'], $name);
+    $mine = $f !== '' && $me && (live_img_allowed((string) $me['id'], $name) || live_img_in_groups((string) $me['id'], $name));
     if (!$mine) { http_response_code(404); exit; }
     header('Cache-Control: private, max-age=86400');
     live_send_image_file($f);
@@ -245,6 +245,68 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
       }
       exit;
     }
+  }
+}
+
+/* ---------- v2688 — GROUPES ---------- */
+if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 'gKick'], true)) {
+  $me = live_me($tok);
+  if (!$me) live_out(['ok' => false, 'login' => true]);
+  $uid = (string) $me['id'];
+  live_oro_id($me); // le joueur a un identifiant (nom visible dans les groupes)
+  $gOut = static function (array $g, string $uid, bool $withMsgs) {
+    $o = ['id' => (string) $g['id'], 'name' => (string) $g['name'], 'emoji' => (string) ($g['emoji'] ?? '💬'), 'n' => count((array) $g['members']),
+      'owner' => (string) $g['owner'] === $uid, 'at' => (int) ($g['at'] ?? 0), 'link' => 'https://orolado.com/?g=' . rawurlencode((string) $g['tok'])];
+    $last = $g['msgs'] ? end($g['msgs']) : null;
+    if (is_array($last)) { $w = live_who_uid((string) $last['f']); $o['last'] = ((string) $last['f'] === $uid ? '✓ ' : (($w['name'] ?? '') . ' : ')) . ((string) ($last['t'] ?? '') !== '' ? (string) $last['t'] : '📷'); }
+    if ($withMsgs) {
+      $o['msgs'] = array_map(static function ($m) use ($uid) {
+        $w = live_who_uid((string) $m['f']);
+        $x = ['mine' => (string) $m['f'] === $uid, 'who' => (string) ($w['name'] ?? 'Joueur'), 'wid' => (string) ($w['id'] ?? ''), 't' => (string) ($m['t'] ?? ''), 'at' => (int) ($m['at'] ?? 0)];
+        if (!empty($m['img'])) $x['img'] = 'live.php?i=' . rawurlencode((string) $m['img']);
+        return $x;
+      }, array_slice((array) $g['msgs'], -80));
+      $o['members'] = array_map(static function ($m) use ($g) { $w = live_who_uid((string) $m); return ['name' => (string) ($w['name'] ?? 'Joueur'), 'id' => (string) ($w['id'] ?? ''), 'owner' => (string) $m === (string) $g['owner']]; }, array_slice((array) $g['members'], 0, 300));
+    }
+    return $o;
+  };
+  if ($action === 'groups') {
+    $list = [];
+    foreach (live_ugroups($uid) as $gid) { $g = live_group_get((string) $gid); if ($g && in_array($uid, (array) $g['members'], true)) $list[] = $gOut($g, $uid, false); }
+    usort($list, static fn($a, $b) => $b['at'] <=> $a['at']);
+    live_out(['ok' => true, 'list' => $list]);
+  }
+  if ($action === 'gCreate') {
+    $r = live_group_create($uid, (string) ($req['name'] ?? ''), (string) ($req['emoji'] ?? ''));
+    live_out(empty($r['ok']) ? $r : ['ok' => true, 'g' => $gOut($r['g'], $uid, true)]);
+  }
+  if ($action === 'gJoin') {
+    $r = live_group_join($uid, (string) ($req['tok'] ?? ''));
+    live_out(empty($r['ok']) ? $r : ['ok' => true, 'g' => $gOut($r['g'], $uid, false)]);
+  }
+  $gid = live_safe_id((string) ($req['gid'] ?? ''));
+  $g = $gid !== '' ? live_group_get($gid) : null;
+  if (!$g || !in_array($uid, (array) $g['members'], true)) live_out(['ok' => false, 'reason' => 'gGone']);
+  if ($action === 'gGet') live_out(['ok' => true, 'g' => $gOut($g, $uid, true)]);
+  if ($action === 'gLeave') live_out(live_group_leave($uid, $gid));
+  if ($action === 'gKick') {
+    $w = live_who(live_norm_oro_id((string) ($req['id'] ?? '')));
+    if (!$w || $w['uid'] === $uid) live_out(['ok' => false]);
+    live_out(live_group_leave($uid, $gid, $w['uid']));
+  }
+  if ($action === 'gSend') {
+    $text = live_clean_text((string) ($req['text'] ?? ''));
+    $imgData = (string) ($req['img'] ?? '');
+    if ($text === '' && $imgData === '') live_out(['ok' => false, 'reason' => 'empty']);
+    if (!live_quota_ok($uid, 'gmsg', LIVE_GROUP_HOUR, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
+    $img = '';
+    if ($imgData !== '') {
+      if (!live_quota_ok($uid, 'img', LIVE_IMG_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyImg']);
+      $img = live_save_image($imgData, 'img');
+      if ($img === '') live_out(['ok' => false, 'reason' => 'badImg']);
+    }
+    $r = live_group_send($uid, $gid, $text, $img);
+    live_out(empty($r['ok']) ? $r : ['ok' => true]);
   }
 }
 
