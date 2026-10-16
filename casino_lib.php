@@ -347,12 +347,40 @@ function casino_stat(string $game, string $mode, float $stake, float $win): void
 }
 
 function casino_hist_add(string $uid, array $row): void {
-  casino_with(casino_user_file($uid), static function (array &$st) use ($row) {
+  casino_with(casino_user_file($uid), static function (array &$st) use ($row, $uid) {
     $h = (array) ($st['h'] ?? []);
     array_unshift($h, $row);
     $st['h'] = array_slice($h, 0, 40);
+    // v2698 — totaux du joueur pour l'admin (argent réel seulement) : parties, misé, payé, dernière partie
+    $st['uid'] = $uid;
+    if (($row['m'] ?? '') === 'real') {
+      $t = (array) ($st['tot'] ?? []);
+      $t['n'] = (int) ($t['n'] ?? 0) + 1;
+      $t['in'] = casino_money((float) ($t['in'] ?? 0) + (float) ($row['s'] ?? 0));
+      $t['out'] = casino_money((float) ($t['out'] ?? 0) + (float) ($row['w'] ?? 0));
+      $t['last'] = (int) ($row['at'] ?? time());
+      $st['tot'] = $t;
+    }
     return true;
   });
+}
+/** Admin : les joueurs du casino (argent réel), triés par montant misé. */
+function casino_admin_players(int $limit = 60): array {
+  $rows = [];
+  foreach (glob(casino_dir('u') . DIRECTORY_SEPARATOR . '*.json') ?: [] as $f) {
+    $st = json_decode((string) @file_get_contents($f), true);
+    if (!is_array($st) || empty($st['uid']) || empty($st['tot']['n'])) continue;
+    $t = $st['tot'];
+    $rows[] = ['uid' => (string) $st['uid'], 'n' => (int) $t['n'], 'in' => (float) $t['in'], 'out' => (float) $t['out'], 'last' => (int) ($t['last'] ?? 0)];
+  }
+  usort($rows, static fn($a, $b) => $b['in'] <=> $a['in']);
+  return array_slice($rows, 0, $limit);
+}
+/** Admin : détail d'un joueur (40 dernières parties, totaux, partie en cours). */
+function casino_admin_player(string $uid): array {
+  $st = json_decode((string) @file_get_contents(casino_user_file($uid)), true);
+  if (!is_array($st)) $st = [];
+  return ['h' => array_values((array) ($st['h'] ?? [])), 'tot' => (array) ($st['tot'] ?? [])];
 }
 
 /* ---------------------------------------------------------------- parties */

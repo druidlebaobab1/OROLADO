@@ -232,6 +232,16 @@ for ($stop = 1; $stop <= 8; $stop++) {
   check(sprintf('penalty encaissé après %d but(s) : retour %.1f %%', $stop, $sum / $N * 100), $sum / $N < 0.985 && $sum / $N > 0.93);
 }
 check('penalty : échelle ×1,44 → ×24,60', abs(casino_pen_mult(1) - 1.44) < 0.001 && abs(casino_pen_mult(8) - 24.6) < 0.001, casino_pen_mult(8) . '');
+echo "9) Admin : joueurs du casino (v2698)\n";
+casino_hist_add('u_admin_t', ['g' => 'coin', 'm' => 'real', 's' => 2.0, 'w' => 3.88, 'at' => time()]);
+casino_hist_add('u_admin_t', ['g' => 'dice', 'm' => 'real', 's' => 5.0, 'w' => 0.0, 'at' => time()]);
+casino_hist_add('u_admin_t', ['g' => 'coin', 'm' => 'demo', 's' => 100.0, 'w' => 0.0, 'at' => time()]);
+$pl = array_values(array_filter(casino_admin_players(500), static fn($r) => $r['uid'] === 'u_admin_t'));
+check('le joueur apparaît dans la liste de l\'admin', count($pl) === 1);
+check('totaux en argent réel seulement (2 parties, 7 $ misés, 3,88 $ payés)', $pl && $pl[0]['n'] === 2 && abs($pl[0]['in'] - 7) < 0.001 && abs($pl[0]['out'] - 3.88) < 0.001, json_encode($pl[0] ?? []));
+$one = casino_admin_player('u_admin_t');
+check('détail : 3 dernières parties visibles (test compris)', count($one['h']) === 3);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
 

@@ -100,7 +100,7 @@
   function deposit() { close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); }
   function signup() { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); }
   async function play(game, p) {
-    if (guest()) { toast(X().tryNote); signup(); return null; }
+    if (guest()) { signup(); return null; } // v2698 : une seule fenêtre (plus de message superposé à l'inscription)
     if (S.busy) return null;
     S.busy = true;
     var md = mode();
@@ -112,7 +112,7 @@
     return r;
   }
   async function multi(game, act, p, quiet) {
-    if (guest()) { if (!quiet) { toast(X().tryNote); signup(); } return null; }
+    if (guest()) { if (!quiet) signup(); return null; }
     var r = await api('csMulti', { game: game, act: act, mode: 'real', stake: S.stake, p: p || {} });
     if (!r || !r.ok) { if (!quiet) err(r); return null; }
     if (r.mode === 'demo' && !S.adminTest) { S.adminTest = true; paintBal(); }

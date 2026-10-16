@@ -11130,3 +11130,26 @@ html.oro-lite #casinoModal .dice-hero.rolling svg,html.oro-lite #casinoModal .sb
 html body #casinoModal .dice-hero.rolling svg,html body #casinoModal .sb-shaker.shake .sb .die{animation:none!important;transform:none!important}
 /* v2698 (propriétaire) — page de connexion / inscription : plus le mot « TRADING » sous OROLADO.COM (l'espace reste) */
 html body #screenAuth .brand-sub{font-size:0!important;letter-spacing:0!important;margin:0 0 12px!important;min-height:0!important}
+/* v2698 — téléphone COUCHÉ : les 25 jeux sur 3 lignes de 9, sans défilement */
+@media (orientation:landscape) and (max-height:500px){
+  html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(9,minmax(0,1fr))!important;gap:4px 4px!important;max-width:none!important}
+  #casinoModal .cs-g .cs-pl{width:min(58px,15vh)!important}
+  #casinoModal .cs-g b{font-size:9.5px!important;min-height:22px!important}
+  html body #casinoModal .cs-tabs2{margin-bottom:4px!important}
+  html body #casinoModal .cs-tabs2 button{min-height:36px!important}
+  #casinoModal .cs-top{margin-bottom:2px!important;padding-top:2px!important;padding-bottom:4px!important}
+}
+/* v2698 — téléphone COUCHÉ, écran de jeu : le jeu à GAUCHE, la mise à DROITE (comme les grands sites), rien ne sort de l'écran */
+@media (orientation:landscape) and (max-height:500px){
+  html body #casinoModal.in-game .cs-game{display:grid!important;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);column-gap:12px;row-gap:4px;align-content:start}
+  html body #casinoModal.in-game .cs-game > *{grid-column:1;min-width:0}
+  html body #casinoModal.in-game .cs-game > .cs-stage{min-height:0!important;height:calc(100dvh - 150px)!important;margin:0!important;padding:4px 8px!important}
+  html body #casinoModal.in-game .cs-game > .pen-lad + .cs-stage{height:calc(100dvh - 180px)!important}
+  html body #casinoModal.in-game .cs-game > .cs-panel,html body #casinoModal.in-game .cs-game > #csNeed{grid-column:2;grid-row:1 / span 8;align-self:start;max-height:calc(100dvh - 64px);overflow-y:auto;overscroll-behavior:contain}
+  html body #casinoModal.in-game .cs-game > .cs-gname{min-height:24px}
+  html body #casinoModal.in-game .cs-game > .cs-gname b{font-size:15px}
+  html body #casinoModal.in-game .cs-game > .cs-res{min-height:32px}
+  html body #casinoModal.in-game .cs-chips{display:none!important}
+  html body #casinoModal.in-game .cs-go{min-height:44px!important}
+  #casinoModal .rl-big{width:min(300px,94cqh)!important}
+}

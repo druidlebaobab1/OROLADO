@@ -1,0 +1,42 @@
+RAPPORT DE RENTABILITÉ DU CASINO OROLADO — 2026-10-16 13:45 UTC
+(simulation avec les vrais tirages du serveur ; aucun argent réel)
+
+1) SUR 100 $ MISÉS, COMBIEN LA MAISON GARDE (jeu par jeu)
+   Coin Flip            la maison garde  3.11 $   (joueurs : 96.89 $)
+   Dice (50 %)          la maison garde  3.60 $   (joueurs : 96.40 $)
+   Target ×2           la maison garde  3.09 $   (joueurs : 96.91 $)
+   Lucky Wheel          la maison garde  4.81 $   (joueurs : 95.19 $)
+   Racing               la maison garde  5.07 $   (joueurs : 94.93 $)
+   Roulette (rouge)     la maison garde  2.97 $   (joueurs : 97.03 $)
+   Roulette (numéro)   la maison garde  2.76 $   (joueurs : 97.24 $)
+   Lucky 777            la maison garde  4.91 $   (joueurs : 95.09 $)
+   Cascade              la maison garde  4.26 $   (joueurs : 95.74 $)
+   Keno                 la maison garde  4.48 $   (joueurs : 95.52 $)
+   Scratch Card         la maison garde  3.98 $   (joueurs : 96.02 $)
+   Colors (vert)        la maison garde  5.17 $   (joueurs : 94.83 $)
+   Dragon Tiger         la maison garde  3.79 $   (joueurs : 96.21 $)
+   Baccarat (joueur)    la maison garde  3.13 $   (joueurs : 96.87 $)
+   Sic Bo               la maison garde  2.65 $   (joueurs : 97.35 $)
+   Treasure             la maison garde  4.95 $   (joueurs : 95.05 $)
+   Darts                la maison garde  4.61 $   (joueurs : 95.39 $)
+   Sky Rush / Jet Man / Rocket, Mines, Tower, Hi-Lo : la maison garde 3,00 $ (formule : 97 % rendus)
+   Penalty : 4,00 $ · Golden Orchard : 3,00 $ · Balloon : ~4 $
+
+2) 5 000 JOUEURS NORMAUX : chacun joue 300 parties de 1 $ (jeux au hasard)
+   Total misé : 1 500 000,00 $   →   bénéfice de la maison : 58 084,48 $  (3.9 % des mises)
+   Joueurs qui finissent gagnants : 1717 sur 5 000 (34 %) — c'est normal et ça les fait revenir.
+   Plus gros gain d'un joueur : 176,80 $
+
+3) MARTINGALE : 2 000 tricheurs, départ 0,10 $, doublent à chaque perte, 500 $ en poche, 500 parties
+   Coin Flip       mise max 1000 $ : la maison gagne 22 474,72 $ · tricheurs ruinés 126 · en petit bénéfice 1843
+   Coin Flip       mise max  200 $ : la maison gagne 14 731,76 $ · tricheurs ruinés 110 · en petit bénéfice 1824
+   Roulette rouge  mise max 1000 $ : la maison gagne 30 830,40 $ · tricheurs ruinés 185 · en petit bénéfice 1804
+   Roulette rouge  mise max  200 $ : la maison gagne 20 437,40 $ · tricheurs ruinés 162 · en petit bénéfice 1832
+   Dragon Tiger    mise max 1000 $ : la maison gagne 33 429,25 $ · tricheurs ruinés 257 · en petit bénéfice 1739
+   Dragon Tiger    mise max  200 $ : la maison gagne 35 829,95 $ · tricheurs ruinés 247 · en petit bénéfice 1734
+   → La martingale fait gagner un peu, souvent… puis perdre beaucoup d'un coup. Au total, la maison gagne toujours.
+
+4) LE PIRE CAS POUR LA MAISON (une seule partie)
+   Gain maximum d'une partie : 10 000,00 $ (plafond caché) · mise maximum : 1 000,00 $ (réglable par jeu dans l'admin)
+   Exemple : Darts centre ×20 avec 500 $ misés = 10 000 $ ; chance : 1 sur 100 par lancer.
+   Pour limiter ce risque au lancement : mettre 100 à 200 $ de mise max sur les jeux à gros multiplicateur (Darts, Target, Lucky Wheel, Scratch, Roulette numéro).

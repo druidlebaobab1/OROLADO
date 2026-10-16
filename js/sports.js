@@ -128,7 +128,7 @@
       $('spGo').textContent = x.bet + ' · ' + x.pot + ' ' + m2(stake * totalOdd()) + ' $';
     });
     $('spGo').addEventListener('click', async function () {
-      if (ctx.guest) { if (ctx.toast) ctx.toast(X().e_login); if (ctx.signup) ctx.signup(); return; }
+      if (ctx.guest) { if (ctx.signup) ctx.signup(); return; } // v2698 : une seule fenêtre
       var b = this; b.disabled = true;
       var r = null; try { r = await D6.Api.post('spBet', { mode: 'real', stake: stake, sel: slip.map(function (s) { return { ev: s.ev, k: s.k }; }) }, 15000); } catch (e) { r = null; }
       b.disabled = false;

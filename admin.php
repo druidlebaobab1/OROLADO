@@ -2038,12 +2038,31 @@ if ($isAjax) {
   }
   // v2676 — « Live » : conversations avec les joueurs + Actualités (fichiers à part, data/live/).
   // v2690 — CASINO (statistiques) et PARIS SPORTIFS (créer un match, fermer, donner le résultat → paiement).
-  if (str_starts_with($action, 'sp_') || $action === 'cs_stats' || $action === 'cs_limits_save') {
+  if (str_starts_with($action, 'sp_') || $action === 'cs_stats' || $action === 'cs_limits_save' || $action === 'cs_players' || $action === 'cs_player') {
     require_once __DIR__ . '/casino_lib.php';
     require_once __DIR__ . '/sports_lib.php';
     if ($action === 'cs_stats') {
       $st = casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static fn(array &$s) => $s) ?: [];
       admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => CASINO_GAMES]);
+    }
+    // v2698 — joueurs du casino : liste (nom, e-mail, ID public) et détail d'un joueur (parties + paris sportifs)
+    if ($action === 'cs_players' || $action === 'cs_player') {
+      $ldb = admin_local_db();
+      $who = static function (string $uid) use ($ldb): array {
+        $u = (array) ($ldb['users'][$uid] ?? []);
+        return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? '')];
+      };
+      if ($action === 'cs_players') {
+        $list = array_map(static fn($r) => $r + $who($r['uid']), casino_admin_players(60));
+        admin_json(['ok' => true, 'players' => $list]);
+      }
+      $q = strtolower(trim((string) ($req['q'] ?? '')));
+      $uid = '';
+      foreach ((array) ($ldb['users'] ?? []) as $id => $u) {
+        if ($q !== '' && ($q === strtolower((string) $id) || $q === strtolower((string) ($u['email'] ?? '')) || $q === strtolower((string) ($u['publicId'] ?? '')))) { $uid = (string) $id; break; }
+      }
+      if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur introuvable (e-mail ou ID OR…)']);
+      admin_json(['ok' => true, 'uid' => $uid] + $who($uid) + casino_admin_player($uid) + ['bets' => sp_my_bets($uid)]);
     }
     // v2698 — mise maximale jeu par jeu (vide = mise maximale normale)
     if ($action === 'cs_limits_save') {
@@ -3345,7 +3364,28 @@ setInterval(() => {
       '<div style="display:grid;grid-template-columns:1fr 90px;gap:6px 8px;align-items:center;font-size:13px">' +
       (j.games || []).map(g => '<span>' + esc(GN[g] || g) + '</span><input class="csLim" data-g="' + g + '" inputmode="decimal" placeholder="' + max + '" value="' + (lim[g] != null ? lim[g] : '') + '" style="width:90px">').join('') +
       '</div><button class="mini ok" type="button" id="csLimSave" style="margin-top:10px">Enregistrer les mises maximales</button> <span id="csLimSt" class="muted"></span></div>';
-    $c('csStats').innerHTML = table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + limCard + '<p class="muted">Sur 100 $ misés par les joueurs, la maison garde en moyenne 3 à 8 $ (chaque jeu rend 92 à 97 %). Un jour peut être négatif à cause d\'un gros gain : c\'est normal, sur la durée la maison gagne.</p>';
+    const plCard = '<div class="nt-card" style="margin-bottom:10px"><b>Joueurs du casino (argent réel)</b><p class="muted" style="margin:4px 0 8px">Touche un joueur pour voir ses dernières parties et ses paris. Ou cherche par e-mail / ID.</p>' +
+      '<div style="display:flex;gap:6px;margin-bottom:8px"><input id="csPlQ" placeholder="e-mail ou ID OR…" style="flex:1"><button class="mini ok" type="button" id="csPlGo">Voir</button></div><div id="csPlList"><p class="muted">Chargement…</p></div><div id="csPlOne"></div></div>';
+    $c('csStats').innerHTML = table(j.today, "Aujourd'hui (argent réel)") + table(j.all, 'Depuis le début (argent réel)') + plCard + limCard + '<p class="muted">Sur 100 $ misés par les joueurs, la maison garde en moyenne 3 à 8 $ (chaque jeu rend 92 à 97 %). Un jour peut être négatif à cause d\'un gros gain : c\'est normal, sur la durée la maison gagne.</p>';
+    const showOne = async q => {
+      const r = await ajax({action:'cs_player', q}); const box = $c('csPlOne');
+      if (!r.ok) { box.innerHTML = '<p class="muted">' + esc(r.reason || 'Introuvable') + '</p>'; return; }
+      const t = r.tot || {}, res = (t.out || 0) - (t.in || 0);
+      box.innerHTML = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)"><b>' + esc(r.name || r.email || r.uid) + '</b> <span class="muted">' + esc(r.email) + ' ' + esc(r.publicId) + '</span>' +
+        '<p style="margin:6px 0">Parties : <b>' + (t.n || 0) + '</b> · Misé : <b>' + m2(t.in || 0) + ' $</b> · Payé : <b>' + m2(t.out || 0) + ' $</b> · Résultat du joueur : <b style="color:' + (res > 0 ? '#FF7A90' : '#5CF59A') + '">' + (res > 0 ? '+' : '') + m2(res) + ' $</b></p>' +
+        '<table style="width:100%;font-size:12.5px"><tr class="muted"><td>Quand</td><td>Jeu</td><td>Mise</td><td>Gain</td></tr>' +
+        (r.h || []).map(p => '<tr><td>' + new Date(p.at * 1000).toLocaleString('fr-FR') + '</td><td>' + esc(GN[p.g] || p.g) + (p.m === 'demo' ? ' (test)' : '') + '</td><td>' + m2(p.s) + '</td><td style="color:' + (p.w > 0 ? '#5CF59A' : '#94A3B8') + '">' + m2(p.w) + '</td></tr>').join('') + '</table>' +
+        ((r.bets || []).length ? '<p style="margin:10px 0 4px"><b>Paris sportifs</b></p>' + r.bets.map(b => '<div class="muted" style="font-size:12.5px">' + esc(b.status) + ' · ' + m2(b.stake) + ' $ × ' + Number(b.odd).toFixed(2) + ' → ' + m2(b.status === 'won' ? b.win : b.pot) + ' $ · ' + b.sel.map(s => esc(s.t) + ' (' + esc(s.l) + ')').join(' + ') + '</div>').join('') : '') + '</div>';
+    };
+    (async () => {
+      const r = await ajax({action:'cs_players'}); const box = $c('csPlList'); if (!box) return;
+      const list = (r && r.players) || [];
+      box.innerHTML = list.length ? '<table style="width:100%;font-size:12.5px"><tr class="muted"><td>Joueur</td><td>Parties</td><td>Misé</td><td>Maison</td></tr>' +
+        list.map(p => { const h = p.in - p.out; return '<tr class="csPlRow" data-q="' + esc(p.email || p.uid) + '" style="cursor:pointer"><td>' + esc(p.name || p.email || p.uid) + '</td><td>' + p.n + '</td><td>' + m2(p.in) + '</td><td style="color:' + (h >= 0 ? '#5CF59A' : '#FF7A90') + '">' + (h >= 0 ? '+' : '') + m2(h) + '</td></tr>'; }).join('') + '</table>'
+        : '<p class="muted">Aucun joueur en argent réel pour l\'instant.</p>';
+      box.querySelectorAll('.csPlRow').forEach(tr => tr.onclick = () => showOne(tr.dataset.q));
+    })();
+    $c('csPlGo').onclick = () => showOne($c('csPlQ').value);
     $c('csLimSave').onclick = async () => {
       const limits = {}; document.querySelectorAll('.csLim').forEach(i => { const v = parseFloat(String(i.value).replace(',', '.')); if (v > 0) limits[i.dataset.g] = v; });
       const r = await ajax({action:'cs_limits_save', limits}); $c('csLimSt').textContent = r.ok ? 'Enregistré ✓' : (r.reason || 'Échec');
