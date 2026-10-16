@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v2673';
+const CACHE = 'orolado-v2674';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',

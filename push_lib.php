@@ -320,6 +320,20 @@ function push_payload(string $title, string $body, string $url = '/'): string {
   return json_encode(['title' => $title, 'body' => $body, 'url' => $url, 'tag' => 'oro-' . time()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 
+/**
+ * v2674 (propriétaire) — notification sur le(s) téléphone(s) ADMIN seulement (abonnés « test », bouton Test de
+ * l'admin) : par ex. « nouvelle demande de retrait » pour payer vite. Jamais envoyée aux joueurs.
+ */
+function push_notify_admin(string $title, string $body, string $url = '/admin.php'): array {
+  $rows = [];
+  foreach (push_sub_files() as $f) {
+    $r = json_decode((string) @file_get_contents($f), true);
+    if (is_array($r) && !empty($r['test'])) $rows[] = $r;
+  }
+  if (!$rows) return ['sent' => 0, 'gone' => 0, 'fail' => 0, 'codes' => []];
+  return push_send_rows($rows, push_payload($title, $body, $url));
+}
+
 /** Journal des envois (pour l'admin). */
 function push_log_add(array $row): void {
   $f = push_dir() . '/journal.json';

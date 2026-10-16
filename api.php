@@ -2112,6 +2112,21 @@ if ($action === 'withdraw') {
     ], JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION), 'POST');
   }
   echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect, 'vault' => $db['vault'][$me['id']], 'id' => $wdId, 'amount' => $amount]);
+  // v2674 (propriétaire) : notification sur le téléphone ADMIN pour payer vite (après la réponse au joueur :
+  // son retrait n'attend jamais l'envoi).
+  if (is_file(__DIR__ . '/push_lib.php')) {
+    if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+    try {
+      require_once __DIR__ . '/push_lib.php';
+      $pidWd = (string) ($db['users'][(string) $me['id']]['publicId'] ?? $me['publicId'] ?? '');
+      $opWd = ucfirst($operator);
+      push_notify_admin(
+        ($suspect ? '⚠️ ' : '💸 ') . 'Retrait ' . number_format($amount, 2, ',', ' ') . ' $ à payer',
+        trim($pidWd . ' · ' . $opWd . ' ' . $destination . ' · ' . number_format($amount * 580, 0, ',', ' ') . ' F'),
+        '/admin.php'
+      );
+    } catch (Throwable $e) { /* jamais bloquant */ }
+  }
   exit;
 }
 
