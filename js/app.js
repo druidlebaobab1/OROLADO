@@ -8341,7 +8341,8 @@
     if ($('btnDepositWaitClose')) {
       bindAndroidTap($('btnDepositWaitClose'), function () { closeModal('depositWaitModal'); });
     }
-    if ($('btnHelp')) $('btnHelp').addEventListener('click', function () { openModal('helpModal'); });
+    // v2676 : « Live » ouvre la page Live (actualités + conversation) ; l'ancien formulaire reste pour l'e-mail.
+    if ($('btnHelp')) $('btnHelp').addEventListener('click', function () { if (D6.Live && D6.Live.open) D6.Live.open(); else openModal('helpModal'); });
     if ($('closeHelp')) bindAndroidTap($('closeHelp'), function () { closeModal('helpModal'); });
     if ($('formHelp')) {
       $('formHelp').addEventListener('submit', async function (e) {
@@ -9557,6 +9558,11 @@
   }
 
   D6.App = {
+    // v2676 — pour js/live.js
+    openModal: function (id) { openModal(id); },
+    closeModal: function (id) { closeModal(id); },
+    toast: function (m, k, ms) { toast(m, k, ms); },
+    showAuth: function (w) { try { showAuthScreen(w || 'register'); } catch (e) { /* ignore */ } },
     onRemoteAccount: function () {
       updateBalance(false);
       fillProfile();

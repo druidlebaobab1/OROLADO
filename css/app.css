@@ -9359,3 +9359,75 @@ html[dir="rtl"] body #btnHelp .live-dot{right:auto;left:-2px}
   html body #btnHelp > svg.live-ico,
   html.portal-on:root body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp > svg.live-ico{width:30px!important;height:30px!important;min-width:30px!important;padding:5px!important;box-sizing:border-box!important;border-radius:10px!important}
 }
+/* ===== v2676 — page « Live » : Actualités + conversation (style messagerie). Rien d'animé sauf le point « en ligne ». ===== */
+#liveModal .live-box{width:min(460px,94vw)!important;max-width:460px!important;height:min(86vh,720px);max-height:calc(100dvh - 24px);display:flex!important;flex-direction:column;padding:14px 14px 10px!important;box-sizing:border-box;overflow:hidden}
+#liveModal .live-head{display:flex;align-items:center;gap:11px;padding:2px 34px 10px 2px}
+#liveModal .live-logo{width:42px;height:42px;flex:0 0 42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#FF7AA8 0%,#F43F6E 45%,#C8174C 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),0 4px 16px rgba(244,63,110,.45)}
+#liveModal .live-logo svg{width:26px;height:26px}
+#liveModal .live-logo circle{fill:#fff}
+#liveModal .live-logo path{fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round}
+#liveModal .live-title{font:800 19px/1.1 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff;letter-spacing:.02em}
+#liveModal .live-title b{color:#FF7AA8}
+#liveModal .live-sub{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;color:#B9C2DE}
+#liveModal .live-on{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.2);display:inline-block}
+#liveModal .live-tabs{display:flex;gap:6px;background:rgba(255,255,255,.05);border-radius:12px;padding:4px;margin-bottom:10px}
+#liveModal .live-tab{flex:1;border:0;border-radius:9px;padding:9px 6px;background:none;color:#C9D0EA;font:700 13px "Plus Jakarta Sans",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;gap:6px}
+#liveModal .live-tab.on{background:linear-gradient(145deg,#FF7AA8,#E11D5A);color:#fff;box-shadow:0 2px 10px rgba(244,63,110,.35)}
+#liveModal .live-badge{background:#22C55E;color:#04130a;border-radius:9px;padding:0 6px;font-size:11px;line-height:17px}
+#liveModal .live-badge:empty{display:none}
+#liveModal .live-pane{flex:1;min-height:0;display:flex;flex-direction:column}
+#liveModal .live-pane[hidden]{display:none}
+#liveModal .live-feed{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+#liveModal .lv-post{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:11px 12px;margin-bottom:10px}
+#liveModal .lv-post header{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+#liveModal .lv-av{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 34px;box-shadow:0 0 0 2px rgba(245,197,24,.6)}
+#liveModal .lv-av img{width:100%;height:100%;display:block}
+#liveModal .lv-post header b{color:#fff;font-size:14px;display:flex;align-items:center;gap:5px}
+#liveModal .lv-post header small{color:#8F99B8;font-size:11px}
+#liveModal .lv-tick{width:13px;height:13px;border-radius:50%;background:#38BDF8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/9px no-repeat;display:inline-block}
+#liveModal .lv-post p{margin:0;color:#E8ECF8;font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+#liveModal .lv-post p a{color:#FF9DBC}
+#liveModal .lv-pimg{display:block;width:100%;max-height:340px;object-fit:cover;border-radius:11px;margin-top:9px}
+#liveModal .lv-link{display:block;margin-top:9px;padding:9px 11px;border-radius:10px;background:rgba(244,63,110,.14);color:#FFB3C8;font-weight:700;font-size:13px;text-decoration:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#liveModal .lv-post footer{display:flex;align-items:center;justify-content:space-between;margin-top:9px;color:#8F99B8;font-size:12px}
+#liveModal .lv-like{border:0;background:rgba(255,255,255,.07);color:#E8ECF8;border-radius:999px;padding:5px 11px;font:700 12px system-ui}
+#liveModal .lv-like.on{background:rgba(244,63,110,.2)}
+#liveModal .lv-welcome{border-color:rgba(245,197,24,.3);background:linear-gradient(160deg,rgba(245,197,24,.09),rgba(255,255,255,.03))}
+#liveModal .lv-legal{text-align:center;font-size:11px;color:#6F7896;padding:4px 0 2px}
+#liveModal .lv-legal button{border:0;background:none;color:#8F99B8;text-decoration:underline;font-size:11px;padding:2px}
+#liveModal .live-msgs{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:7px;padding:4px 2px 8px}
+#liveModal .lv-m{max-width:82%;padding:8px 11px;border-radius:15px;font-size:14px;line-height:1.4;white-space:pre-wrap;word-break:break-word}
+#liveModal .lv-m.a{align-self:flex-start;background:rgba(255,255,255,.08);color:#E8ECF8;border-bottom-left-radius:5px}
+#liveModal .lv-m.u{align-self:flex-end;background:linear-gradient(145deg,#FF7AA8,#E11D5A);color:#fff;border-bottom-right-radius:5px}
+#liveModal .lv-m a{color:inherit;text-decoration:underline}
+#liveModal .lv-m img{display:block;max-width:100%;max-height:260px;border-radius:10px;margin-bottom:5px}
+#liveModal .lv-m small{display:block;font-size:10px;opacity:.65;margin-top:3px}
+#liveModal .lv-hello{border:1px solid rgba(245,197,24,.28)}
+#liveModal .live-quick{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px}
+#liveModal .live-quick:empty,#liveModal .live-quick[hidden]{display:none}
+#liveModal .live-quick button{border:1px solid rgba(255,122,168,.45);background:rgba(244,63,110,.1);color:#FFC2D4;border-radius:999px;padding:6px 11px;font:700 12px system-ui}
+#liveModal .live-guest{text-align:center;padding:12px 10px;border-radius:14px;background:rgba(255,255,255,.05);margin-top:6px}
+#liveModal .live-guest[hidden]{display:none}
+#liveModal .live-guest b{color:#fff;font-size:15px}
+#liveModal .live-guest p{color:#B9C2DE;font-size:13px;margin:6px 0 10px}
+#liveModal .lv-btn{border:0;border-radius:12px;padding:11px 18px;background:linear-gradient(145deg,#FF7AA8,#E11D5A);color:#fff;font:800 14px "Plus Jakarta Sans",system-ui;width:100%}
+#liveModal .lv-link2{border:0;background:none;color:#8F99B8;text-decoration:underline;font-size:12px;margin-top:8px}
+#liveModal .live-send{display:flex;align-items:flex-end;gap:7px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07)}
+#liveModal .live-send[hidden]{display:none}
+#liveModal .live-cam{width:40px;height:40px;flex:0 0 40px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.07);cursor:pointer}
+#liveModal .live-cam svg{width:22px;height:22px;fill:none;stroke:#FFB3C8;stroke-width:1.8;stroke-linejoin:round}
+#liveModal .live-in-wrap{flex:1;min-width:0;background:rgba(255,255,255,.07);border-radius:14px;padding:4px 10px}
+#liveModal #liveText{width:100%;border:0;background:none;color:#fff;font:15px/1.35 system-ui;resize:none;outline:none;padding:7px 0;max-height:110px;box-sizing:border-box}
+#liveModal .live-prev{position:relative;padding-top:6px}
+#liveModal .live-prev[hidden]{display:none}
+#liveModal .live-prev img{max-height:90px;max-width:140px;border-radius:9px;display:block}
+#liveModal .live-prev button{position:absolute;top:0;left:124px;border:0;border-radius:50%;width:22px;height:22px;background:#111827;color:#fff;font-size:11px}
+#liveModal .live-go{width:42px;height:42px;flex:0 0 42px;border:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#FF7AA8,#E11D5A);box-shadow:0 3px 12px rgba(244,63,110,.45)}
+#liveModal .live-go svg{width:20px;height:20px;fill:#fff}
+#liveModal .live-go:disabled{opacity:.5}
+/* réponse non lue : le point du bouton Live devient rouge */
+html body #btnHelp.lv-has .live-dot,html body #btnHelp.lv-has .live-dot::after{background:#F43F5E}
+html[dir="rtl"] #liveModal .live-head{padding:2px 2px 10px 34px}
+html[dir="rtl"] #liveModal .lv-m.a{align-self:flex-end;border-bottom-left-radius:15px;border-bottom-right-radius:5px}
+html[dir="rtl"] #liveModal .lv-m.u{align-self:flex-start;border-bottom-right-radius:15px;border-bottom-left-radius:5px}
+@media (orientation:landscape) and (max-height:500px){#liveModal .live-box{height:calc(100dvh - 16px)}#liveModal .live-head{padding-bottom:6px}#liveModal .live-logo{width:34px;height:34px;flex-basis:34px}}
