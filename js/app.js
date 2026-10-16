@@ -6124,7 +6124,7 @@
     if ($('momoDial')) $('momoDial').value = b.getAttribute('data-dial') || '225';
     var ph = $('momoPhone');
     if (ph) { ph.placeholder = b.getAttribute('data-ph') || ''; ph.value = ''; }
-  });
+  }, true); // v2700 (URGENT) : écoute en premier — la fenêtre Recharger bloque les touches (stopPropagation), le +221 ne passait jamais
   document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(resetPayButtons, 400); });
   // v2633 — lien Wave prêt (10 min, même numéro) : touché → ouvert TOUT DE SUITE, dans le geste du joueur.
   var momoLink = null;

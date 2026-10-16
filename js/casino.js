@@ -637,7 +637,7 @@
         needAccount($('csNeed'), x);
         // visiteur : le personnage attend en bas à gauche (pas coincé dans le coin du haut)
         var cst = box.querySelector('.crash-stage'), pl = $('csPlane');
-        if (cst && pl) pl.style.transform = 'translate(22px,' + Math.max(40, cst.clientHeight * 0.66 - th.h * 0.5) + 'px)';
+        if (cst && pl) pl.style.transform = 'translate(22px,' + Math.max(40, cst.clientHeight * 0.5 - th.h * 0.5) + 'px)';
         return;
       }
       bindStake(box);
@@ -650,6 +650,7 @@
         $('csTrail').setAttribute('d', d); $('csArea').setAttribute('d', d + ' L' + px + ' 170 L10 170 Z');
         // v2695 : l'avion reste toujours entier dans l'écran (jamais coupé au bord)
         var X0 = Math.max(22, Math.min(st.width - th.w - 10, px * kx - th.w * 0.22)), Y0 = Math.max(34, Math.min(st.height - th.h - 10, py * ky - th.h * 0.72));
+        if (s <= 0) { X0 = Math.max(22, st.width * 0.1); Y0 = Math.max(40, st.height * 0.5 - th.h * 0.5); } // v2700 : avant le départ, l'avion attend bien en vue, au milieu à gauche
         plane.style.transform = 'translate(' + X0 + 'px,' + Y0 + 'px)';
       };
       var finish = function (r) {

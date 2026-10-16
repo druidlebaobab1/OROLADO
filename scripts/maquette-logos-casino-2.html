@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logos du bouton Casino</title>
+<style>
+body{margin:0;padding:18px 14px;background:radial-gradient(70% 40% at 80% 0%,rgba(124,77,255,.35),transparent 70%),linear-gradient(180deg,#0a0b22,#05061a);color:#fff;font:600 14px system-ui,sans-serif}
+h1{font-size:18px;margin:0 0 4px}p{margin:0 0 16px;color:#C9CFE6;font-size:13px}
+.opt{display:flex;align-items:center;gap:16px;padding:14px;margin-bottom:12px;border-radius:18px;background:rgba(255,255,255,.06)}
+.big{width:96px;height:96px;flex:0 0 96px}
+.bar{display:flex;flex-direction:column;align-items:center;gap:3px}
+.btn{width:44px;height:34px;border-radius:12px;display:grid;place-items:center;padding:3px;box-sizing:border-box}
+.btn svg{width:100%;height:100%}
+.bar b{font:800 9px system-ui;color:#E9ECF7}
+.num{font:900 26px system-ui;color:#FDE68A;width:30px}
+.t b{display:block;font-size:15px}.t small{color:#A7B0D0;font-size:12px}
+</style></head><body>
+<h1>5 propositions pour le bouton « Casino »</h1>
+<p>À gauche, le grand dessin ; à droite, le vrai bouton à sa taille dans la barre du haut.</p>
+<div id="list"></div>
+<script>
+// mallette (valise) + ballon de foot, 5 styles de couleur (aucun vert « Acheter »)
+function ball(cx, cy, r) {
+  var p = function (x, y, rr, rot) { var d = ''; for (var i = 0; i < 5; i++) { var a = (rot + i * 72) * Math.PI / 180; d += (i ? 'L' : 'M') + (x + rr * Math.sin(a)).toFixed(2) + ' ' + (y - rr * Math.cos(a)).toFixed(2); } return d + 'Z'; };
+  var o = ''; for (var i = 0; i < 5; i++) { var a = i * 72 * Math.PI / 180; o += '<path d="' + p(cx + r * .8 * Math.sin(a), cy - r * .8 * Math.cos(a), r * .27, i * 72 + 36) + '" fill="#111827"/>'; }
+  return '<circle cx="' + cx + '" cy="' + (cy + 1) + '" r="' + r + '" fill="#000" opacity=".3"/><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff"/><clipPath id="c' + cx + cy + '"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '"/></clipPath><g clip-path="url(#c' + cx + cy + ')">' + o + '</g><path d="' + p(cx, cy, r * .33, 0) + '" fill="#111827"/><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#64748B" stroke-width=".8"/><ellipse cx="' + (cx - r * .35) + '" cy="' + (cy - r * .45) + '" rx="' + r * .28 + '" ry="' + r * .16 + '" fill="#fff" opacity=".8" transform="rotate(-30 ' + (cx - r * .35) + ' ' + (cy - r * .45) + ')"/>';
+}
+function case_(body, dark, lock, handle, extra) {
+  return '<svg viewBox="0 0 64 48"><path d="M23 10V6c0-2 1.5-3 3-3h12c1.5 0 3 1 3 3v4" fill="none" stroke="' + handle + '" stroke-width="3.2"/>' +
+    '<rect x="5" y="10" width="54" height="34" rx="7" fill="' + body + '"/><rect x="5" y="10" width="54" height="10" rx="7" fill="#fff" opacity=".18"/><rect x="5" y="25" width="54" height="3" fill="' + dark + '" opacity=".6"/>' +
+    '<rect x="28" y="22" width="8" height="9" rx="2" fill="' + lock + '"/>' + (extra || '') + ball(48, 34, 10) + '</svg>';
+}
+var O = [
+  ['Mallette d’or', 'Or + ballon, fond violet OROLADO', 'linear-gradient(145deg,#7C3AED,#4C1D95)', case_('#F5B700', '#9A6A00', '#7C2D12', '#FDE68A')],
+  ['Mallette rubis', 'Rouge rubis + jeton + ballon', 'linear-gradient(145deg,#E11D48,#881337)', case_('#E11D48', '#881337', '#FDE68A', '#FDA4AF', '<circle cx="15" cy="34" r="7" fill="#FACC15"/><circle cx="15" cy="34" r="7" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 3"/>')],
+  ['Mallette néon bleue', 'Bleu néon + étoile + ballon', 'linear-gradient(145deg,#2563EB,#1E1B4B)', case_('#3B82F6', '#1E3A8A', '#FDE68A', '#93C5FD', '<path d="M15 28l2 4 4.4.6-3.2 3 .8 4.4-4-2.1-4 2.1.8-4.4-3.2-3 4.4-.6z" fill="#FDE68A"/>')],
+  ['Mallette orange OROLADO', 'Orange de la marque + ballon', 'linear-gradient(145deg,#F97316,#9A3412)', case_('#FB923C', '#9A3412', '#1F2937', '#FED7AA')],
+  ['Mallette noire & or (luxe)', 'Noir + bordures dorées + ballon', 'linear-gradient(145deg,#1F2937,#0B0F19)', case_('#111827', '#000', '#F5B700', '#F5B700', '<rect x="5" y="10" width="54" height="34" rx="7" fill="none" stroke="#F5B700" stroke-width="1.6"/>')]
+];
+document.getElementById('list').innerHTML = O.map(function (o, i) {
+  return '<div class="opt"><span class="num">' + (i + 1) + '</span><span class="big">' + o[3] + '</span><span class="t"><b>' + o[0] + '</b><small>' + o[1] + '</small></span>' +
+    '<span class="bar" style="margin-left:auto"><span class="btn" style="background:' + o[2] + ';box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)">' + o[3] + '</span><b>Casino</b></span></div>';
+}).join('');
+</script>
+</body></html>

@@ -11153,3 +11153,14 @@ html body #screenAuth .brand-sub{font-size:0!important;letter-spacing:0!importan
   html body #casinoModal.in-game .cs-go{min-height:44px!important}
   #casinoModal .rl-big{width:min(300px,94cqh)!important}
 }
+/* v2700 (propriétaire) — bouton Casino un peu plus large (forme horizontale), même hauteur */
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico{width:44px!important;height:34px!important;border-radius:12px!important}
+/* v2700 — Recharger : les noms des moyens de paiement (Orange, M-PESA, Banque…) ne dépassent plus de leur case sur petit Android */
+html body #depositModal#depositModal .pl-logos > *{padding-left:2px!important;padding-right:2px!important;letter-spacing:-.2px!important;overflow:hidden!important;min-width:0!important}
+html body #depositModal#depositModal .pl-logos > * svg,html body #depositModal#depositModal .pl-logos > * img{flex-shrink:0;max-width:16px!important}
+html body #depositModal#depositModal .pl-logos > .pl-logo{font-size:9.2px!important;gap:2px!important}
+html body #depositModal#depositModal .pl-logos > .pl-logo img{width:13px!important;max-width:13px!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{font-size:9.2px!important;padding:0 2px!important;gap:2px!important;letter-spacing:-.02em!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo img{width:13px!important;height:13px!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo:not(.pl-visa):not(.pl-mc):not(.pl-apple):not(.pl-gpay){font-size:9px!important;padding:0 2px!important;gap:2px!important;letter-spacing:-.02em!important}
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-logo.pl-mpesa2:not(.pl-visa):not(.pl-mc):not(.pl-apple):not(.pl-gpay){font-size:8.3px!important;letter-spacing:-.04em!important}
