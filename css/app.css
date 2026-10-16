@@ -9458,3 +9458,9 @@ html body #screenTrade #btnGoRegister.btn-auth-link{background:linear-gradient(1
 html.portal-on:root body #screenTrade#screenTrade#screenTrade #topbarCta#topbarCta#topbarCta,html:root body #screenTrade#screenTrade#screenTrade #topbarCta#topbarCta#topbarCta{background:linear-gradient(90deg,#EE9450 0%,#E7755E 100%)!important;box-shadow:0 3px 12px rgba(231,117,94,.25)!important}
 html:root body #screenTrade#screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposit .dep-bolt::before{color:#E7755E!important;-webkit-text-fill-color:#E7755E!important}
 html body #screenTrade #topbarCta.topbar-cta::after{opacity:.55}
+/* v2678 — message « analyse et calcul » : 6 conseils, le texte va à la ligne (plus jamais coupé « … »), cases plus compactes */
+#coachModal .coach-tips{gap:6px!important;margin-bottom:12px!important}
+#coachModal .coach-tip{padding:6px 10px!important}
+#coachModal .coach-tip i{width:26px!important;height:26px!important}
+#coachModal .coach-tip svg{width:15px!important;height:15px!important}
+#coachModal .coach-tip span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important;font-size:clamp(12px,3.4vw,13px)!important}

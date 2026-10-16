@@ -2989,7 +2989,9 @@
     pad: '<svg viewBox="0 0 24 24"><path d="M7 8h10a5 5 0 0 1 4.6 6.9l-.9 2.2a2.5 2.5 0 0 1-4.2.5L15 16H9l-1.5 1.6a2.5 2.5 0 0 1-4.2-.5l-.9-2.2A5 5 0 0 1 7 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/></svg>',
     coin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9c-.6-.8-1.5-1.2-2.5-1.2-1.6 0-2.7.8-2.7 2s1 1.7 2.7 2 2.7.8 2.7 2-1.1 2-2.7 2c-1.1 0-2-.4-2.7-1.2M12 6.5v11"/></svg>',
     yes: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-    no: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+    no: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    eye: '<svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+    shield: '<svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/></svg>'
   };
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
@@ -3030,7 +3032,8 @@
     if (kind === 'calm') {
       var tip = function (ico, key) { return '<div class="coach-tip"><i>' + COACH_ICO[ico] + '</i><span>' + esc(t(key)) + '</span></div>'; };
       return '<div class="coach-big">' + COACH_ICO.trophy + '</div><h2>' + esc(t('coachCalmT')) + '</h2><p>' + esc(t('coachCalmS')) + '</p>' +
-        '<div class="coach-tips">' + tip('chart', 'coachCalm1') + tip('coin', 'coachCalm2') + tip('pad', 'coachCalm3') + tip('user', 'coachCalm4') + '</div>' +
+        // v2678 (propriétaire) : plus de titre « Garde ton calme » ; 6 conseils utiles ; bouton « J'ai compris ».
+        '<div class="coach-tips">' + tip('chart', 'coachCalm1') + tip('coin', 'coachCalm2') + tip('pad', 'coachCalm3') + tip('eye', 'coachCalm5') + tip('shield', 'coachCalm6') + tip('cap', 'coachCalm4') + '</div>' +
         '<button type="button" class="coach-go">' + esc(t('coachCalmBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachLater')) + '</button>';
     }
     return '<div class="coach-big">' + COACH_ICO.trophy + '</div><h2>' + esc(t('coachReadyT')) + '</h2><p>' + esc(t('coachReadyS')) + '</p>' +
