@@ -10324,3 +10324,12 @@ html body #casinoModal .pen2{min-height:min(52vh,420px);padding:0;background:lin
 #casinoModal .pen2 .kp2 svg,#casinoModal .pen2 .ball2 svg{width:100%;height:100%;display:block}
 #casinoModal .pen2 .pen-msg{position:absolute;left:0;right:0;top:8%;text-align:center;font:900 30px "Plus Jakarta Sans",system-ui,sans-serif;color:#fff;text-shadow:0 4px 16px rgba(0,0,0,.6);opacity:0;transition:opacity .3s}
 #casinoModal .pen2 .pen-msg.on{opacity:1}
+/* v2692 (URGENT, propriétaire) — bouton Casino COMPACT comme Cadeaux (icône + mot dessous) : la barre ne serre plus Recharger / Connexion */
+html:root body #screenTrade .topbar-row #btnCasino#btnCasino,html:root body .topbar-row #btnCasino#btnCasino{display:inline-flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;
+  width:auto!important;min-width:40px!important;height:auto!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;flex:0 0 auto!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico{width:34px!important;height:34px!important;border-radius:11px!important;display:grid!important;place-items:center!important;padding:3px!important;box-sizing:border-box!important;
+  background:linear-gradient(145deg,#2BEA7B,#0f7a3e)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 4px 12px -4px rgba(31,216,107,.8)!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico svg{width:100%!important;height:100%!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-lbl{display:block!important;line-height:1!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-lbl b{display:block!important;font:800 9px "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.1px!important;color:#E9ECF7!important;text-transform:none!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-lbl small{display:none!important}
