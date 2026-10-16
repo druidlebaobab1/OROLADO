@@ -2581,12 +2581,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div class="lvA-tabs"><button class="mini ok" type="button" id="csTabSp">⚽ Paris sportifs</button><button class="mini" type="button" id="csTabSt">📊 Casino : gains / pertes</button></div>
       <div id="csPaneSp">
         <div class="nt-card">
-          <b>Créer un match</b>
-          <p class="muted" style="margin:4px 0 8px">Vous écrivez le match, la date et VOS cotes (serrées = la maison gagne). Les joueurs peuvent mettre plusieurs matchs dans un coupon. Quand le match est fini : cliquez le résultat → les gagnants sont payés tout de suite.</p>
+          <b>Créer un match ou un ÉVÉNEMENT</b>
+          <p class="muted" style="margin:4px 0 8px">Vous écrivez la question (match, élection, Bitcoin, boxe…), la date de fin des paris et VOS cotes (serrées = la maison gagne). Exemple : « Le Bitcoin sera-t-il au-dessus de 100 000 $ demain à 18 h ? » → Oui 1,60 / Non 2,20. Tout est mélangé chez les joueurs. Quand c'est fini : cliquez le résultat → les gagnants sont payés tout de suite.</p>
           <div style="display:grid;gap:6px">
-            <input id="spTitle" placeholder="Match (ex. Real Madrid – FC Barcelone)" maxlength="80">
+            <input id="spTitle" placeholder="Match (ex. Real Madrid – FC Barcelone) ou question (ex. Qui gagnera l'élection ?)" maxlength="80">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <select id="spSport"><option value="foot">⚽ Football</option><option value="basket">🏀 Basket</option><option value="boxe">🥊 Boxe</option><option value="tennis">🎾 Tennis</option><option value="mma">🥋 MMA</option><option value="autre">🏆 Autre</option></select>
+              <select id="spSport"><option value="foot">⚽ Football</option><option value="basket">🏀 Basket</option><option value="boxe">🥊 Boxe</option><option value="tennis">🎾 Tennis</option><option value="mma">🥋 MMA</option><option value="event">📅 Événement</option><option value="crypto">₿ Crypto (Bitcoin…)</option><option value="politique">🗳️ Politique / élections</option><option value="autre">🏆 Autre</option></select>
               <input id="spLeague" placeholder="Compétition (ex. Liga)" maxlength="40" style="flex:1">
               <input id="spStart" type="datetime-local">
             </div>
@@ -3322,7 +3322,7 @@ setInterval(() => {
   if (!$c('btnCasA')) return;
   const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   const m2 = v => (Number(v) || 0).toFixed(2) + ' $';
-  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', autre:'🏆'};
+  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', event:'📅', crypto:'₿', politique:'🗳️', autre:'🏆'};
   const GN = {crash:'Sky Rush (avion)', jet:'Jet Man', rocket:'Rocket (fusée)', coin:'Coin Flip (pile ou face)', dice:'Dice (dés)', limbo:'Target (cible)', wheel:'Lucky Wheel (roue)', race:'Racing (course)', roulette:'Roulette', slots:'Lucky 777 (machine à sous)', plinko:'Cascade', keno:'Keno', scratch:'Scratch Card (grattage)', hilo:'Hi-Lo', penalty:'Penalty', colors:'Colors (couleurs)', mines:'Mines', apple:'Golden Orchard (pommes)', tower:'Tower (tour)', dragon:'Dragon Tiger', baccarat:'Baccarat', sicbo:'Sic Bo', chests:'Treasure (coffres)', balloon:'Balloon (ballon)', darts:'Darts (fléchettes)', sports:'Paris sportifs'};
   function optRow(label, odd) {
     const d = document.createElement('div');
@@ -3395,6 +3395,14 @@ setInterval(() => {
   $c('csTabSp').onclick = () => tab('sp');
   $c('csTabSt').onclick = () => tab('st');
   $c('spAddOpt').onclick = () => { if ($c('spOpts').children.length < 6) optRow('', ''); };
+  // v2706 : événement / crypto / politique → 2 choix Oui / Non prêts (modifiables) au lieu de Équipe / Nul / Équipe
+  $c('spSport').onchange = () => {
+    const ev = ['event', 'crypto', 'politique'].includes($c('spSport').value);
+    const empty = [...$c('spOpts').children].every(d => !d.querySelector('.spO').value);
+    if (!empty) return;
+    $c('spOpts').innerHTML = '';
+    if (ev) { optRow('Oui', ''); optRow('Non', ''); } else { optRow('', ''); optRow('Nul', ''); optRow('', ''); }
+  };
   $c('spSave').onclick = async () => {
     const opts = [...$c('spOpts').children].map(d => ({label: d.querySelector('.spL').value.trim(), odd: parseFloat(d.querySelector('.spO').value)})).filter(o => o.label);
     const start = Math.floor(new Date($c('spStart').value).getTime() / 1000);

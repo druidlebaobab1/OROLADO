@@ -18,7 +18,7 @@
       heads: 'Pile', tails: 'Face', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
       pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
-      shoot: 'Touche le but pour tirer', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris sportifs', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
+      shoot: 'Touche le but pour tirer', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
     en: { title: 'Casino', sub: '18 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
       win: 'You win! +${w}', lose: 'Lost', tryNote: 'Create your account and top up to play for real money, from $0.10.', signup: 'Create my account', gamesTab: 'Games', realAcc: 'Real account', bet: 'Bet', gotIt: 'Got it', revealAll: 'Reveal all', dragonN: 'Dragon', tigerN: 'Tiger', tie: 'Tie', player: 'Player', banker: 'Banker', small: 'Small', big: 'Big', triple: 'triple', pickChest: 'Pick a chest', pump: 'Pump', pumpFirst: 'Pump the balloon', level: 'Rotten apples',
       e_min: 'Minimum stake $0.10.', e_max: 'Stake too high.', e_maxWin: 'Win too high for this stake: lower the stake or the target.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_busy: 'One moment…', e_param: 'Invalid choice.', e_login: 'Log in to play.', e_suspended: 'Account suspended.',
@@ -32,7 +32,7 @@
       heads: 'Heads', tails: 'Tails', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
       pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
-      shoot: 'Tap the goal to shoot', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Sports bets', sportsSoon: 'Big matches are coming here soon.' }
+      shoot: 'Tap the goal to shoot', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Bets', sportsSoon: 'Big matches are coming here soon.' }
   };
   T.zh = Object.assign({}, T.en, { title: '娱乐场', sub: '18 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
     win: '赢了！+{w} 美元', lose: '输了', tryNote: '创建账户并充值，即可真钱游戏，0.10 美元起。', signup: '创建账户', gamesTab: '游戏', realAcc: '真实账户', bet: '投注', gotIt: '知道了', revealAll: '全部刮开', dragonN: '龙', tigerN: '虎', tie: '和', player: '闲', banker: '庄', small: '小', big: '大', triple: '围骰', pickChest: '选一个宝箱', pump: '充气', pumpFirst: '给气球充气', level: '坏苹果', deposit: '充值', hist: '最近的游戏', none: '还没有游戏记录。',
@@ -40,7 +40,7 @@
     g: { crash: ['飞机', '爆炸前兑现'], coin: ['正反面', '×1.94'], dice: ['骰子', '自选胜率'], limbo: ['极限', '最高 ×1000'], wheel: ['娱乐场转盘', '最高 ×50'], race: ['赛车', '6 辆车 · ×5.7'],
       roulette: ['轮盘', '红、黑、号码 ×36'], slots: ['老虎机', '最高 ×50'], plinko: ['弹珠台', '最高 ×12'], keno: ['基诺', '3 个号码 · ×25'], scratch: ['刮刮卡', '最高 ×20'], hilo: ['猜大小', '更大还是更小'],
       penalty: ['点球', '进球 · ×1.44'], colors: ['颜色', '绿、红、紫'], mines: ['扫雷', '避开炸弹'], jet: ['喷气侠', '起飞，快兑现！'], rocket: ['火箭', '直冲星空'], apple: ['金色果园', '10 层'], tower: ['高塔', '3 扇门 1 个陷阱'], dragon: ['龙虎', '比大小'], baccarat: ['百家乐', '闲或庄'], sicbo: ['骰宝', '大或小'], chests: ['宝箱', '3 选 1'], balloon: ['气球', '充气再兑现'] },
-    cashout: '兑现', start: '起飞', heads: '正面', tails: '反面', under: '小于', over: '大于', red: '红', black: '黑', even: '双', odd: '单', number: '号码', green: '绿', violet: '紫', goal: '进球！', saved: '被扑出！', shoot: '点击球门射门', hi: '更大或相等', lo: '更小或相等', sports: '体育竞猜', sportsSoon: '重大赛事即将上线。' });
+    cashout: '兑现', start: '起飞', heads: '正面', tails: '反面', under: '小于', over: '大于', red: '红', black: '黑', even: '双', odd: '单', number: '号码', green: '绿', violet: '紫', goal: '进球！', saved: '被扑出！', shoot: '点击球门射门', hi: '更大或相等', lo: '更小或相等', sports: '竞猜', sportsSoon: '重大赛事即将上线。' });
   (D6.LIVE_T = D6.LIVE_T || {}).casino = T;
   function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return T[l] || T.en; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
