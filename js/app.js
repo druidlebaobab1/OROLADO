@@ -8297,7 +8297,7 @@
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
-    if ($('btnExpressCrypto')) bindAndroidTap($('btnExpressCrypto'), function () { openDeposit(null, 'crypto'); });
+    if ($('btnExpressCrypto')) bindAndroidTap($('btnExpressCrypto'), function () { openDeposit(); }); // v2758 : « Recharger » ouvre la page de recharge (Wave, cartes, crypto…)
     if ($('oxaCoinBtn')) {
       bindAndroidTap($('oxaCoinBtn'), function () {
         var menu = $('oxaCoinMenu');
@@ -8310,6 +8310,20 @@
         } else closeOxaMenus();
       });
     }
+    // v2758 (propriétaire) : une croix « × » bien visible pour vider les champs de recherche
+    ['oxaCoinSearch', 'affSearch'].forEach(function (id) {
+      var inp = $(id);
+      if (!inp || inp.getAttribute('data-clear')) return;
+      inp.setAttribute('data-clear', '1');
+      var w = document.createElement('span'); w.className = 'srch-wrap';
+      inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'srch-x'; x.setAttribute('aria-label', '×'); x.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+      w.appendChild(x);
+      var sync = function () { w.classList.toggle('has-v', !!inp.value); };
+      inp.addEventListener('input', sync);
+      x.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); inp.value = ''; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.focus(); });
+      sync();
+    });
     if ($('oxaCoinSearch')) {
       $('oxaCoinSearch').addEventListener('input', function () { fillOxaCoinList(this.value); });
     }
