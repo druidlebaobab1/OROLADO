@@ -1008,6 +1008,7 @@
     "sportsSoon": "Các trận đấu lớn sắp có ở đây."
   },
     sports: {
+      "guestBet": "🔒 Đăng ký để cược (miễn phí)",
       "betsTab": "Cược",
       "guestMine": "Tạo tài khoản để cược: mọi vé cược và kết quả sẽ hiện ở đây.",
       "guestBtn": "Tạo tài khoản",

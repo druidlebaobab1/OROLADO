@@ -8,6 +8,7 @@
       placed: '✅ Pari enregistré · gain possible {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
       e_min: 'Mise minimum 1 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
+      guestBet: '🔒 Inscris-toi pour parier (c’est gratuit)',
       myCoupon: 'Mon coupon', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 1 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
       betsTab: 'Paris', guestMine: 'Crée ton compte pour parier : tous tes paris s’afficheront ici, avec leur résultat.', guestBtn: 'Créer mon compte', seeBets: 'Voir les paris', stakeL: 'Mise', oddL: 'Cote', potL: 'Gain possible', wonL: 'Gagné', lostL: 'Perdu', voidL: 'Remboursé', loading: 'Un instant…',
       all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
@@ -15,11 +16,13 @@
       placed: '✅ Bet placed! Potential win: ${p}', mine: 'My bets', noBets: 'No bet yet.', open: 'Open', won: 'Won', lost: 'Lost', void: 'Void',
       closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 10 matches in a slip.',
       e_min: 'Minimum stake $1.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
+      guestBet: '🔒 Sign up to bet (it’s free)',
       myCoupon: 'My bet slip', clearAll: 'Remove all', confirmClear: 'Sure? Tap again', comboT: 'Multiple:', combo: 'all your picks must win. The odds multiply.', singleT: 'Single:', single: 'one pick.', totalOdd: 'Total odds', see: 'Open', minNote: 'Minimum stake $1', done: 'Bet placed!', cont: 'Continue', emptySlip: 'Your bet slip is empty. Tap an odd to start.',
       betsTab: 'Bets', guestMine: 'Create your account to bet: all your bets will show here, with their result.', guestBtn: 'Create my account', seeBets: 'See the bets', stakeL: 'Stake', oddL: 'Odds', potL: 'Potential win', wonL: 'Won', lostL: 'Lost', voidL: 'Refunded', loading: 'One moment…',
       all: 'All', drawCode: 'X', sport: { foot: 'Football', basket: 'Basketball', boxe: 'Boxing', tennis: 'Tennis', mma: 'MMA', event: 'Predictions', crypto: 'Crypto', politique: 'Politics', autre: 'Sport' } }
   };
   T.zh = Object.assign({}, T.en, { none: '暂无比赛，重大赛事即将上线。', coupon: '投注单', sel: '已选 {n} 场', odd: '赔率', stake: '投注', pot: '可赢', bet: '确认投注', clear: '清空',
+    guestBet: '🔒 注册后即可投注（免费）',
     myCoupon: '我的投注单', clearAll: '全部删除', confirmClear: '确定？再点一次', comboT: '串关：', combo: '所有选择都必须赢，赔率相乘。', singleT: '单关：', single: '只有一个选择。', totalOdd: '总赔率', see: '查看', minNote: '最低投注 1 美元', done: '投注成功！', cont: '继续', emptySlip: '投注单是空的，点击赔率开始。',
     betsTab: '投注', guestMine: '注册后即可投注：你的所有投注和结果都会显示在这里。', guestBtn: '创建账户', seeBets: '查看投注', stakeL: '投注', oddL: '赔率', potL: '可赢', wonL: '已赢', lostL: '输', voidL: '已退款', loading: '请稍候…',
     placed: '✅ 投注成功！可赢：{p} 美元', mine: '我的投注', noBets: '暂无投注。', open: '进行中', won: '赢', lost: '输', void: '取消', closed: '已停止投注', result: '结果', starts: '开始', today: '今天', tomorrow: '明天', draw: '平局',
@@ -139,6 +142,8 @@
       '<button type="button" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '">' + esc(x.mine) + '</button></div>';
   }
   function bindTabs() {
+    // v2768 : les onglets restent collés juste sous l'en-tête fixe (sa hauteur change : visiteur / connecté)
+    try { var tp = document.querySelector('#casinoModal .cs-top'); if (tp && box) box.style.setProperty('--sp-top', Math.max(40, tp.offsetHeight - 6) + 'px'); } catch (e) { /* ignore */ }
     box.querySelectorAll('.sp-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); if (v === view) return; view = v; render(); }); });
   }
   function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
@@ -213,6 +218,7 @@
      en GRANDE PAGE : chaque choix avec sa croix, « Tout supprimer » (avec confirmation), simple / combiné expliqué,
      mises rapides, gain possible en grand, puis un REÇU après le pari. Mise minimum 1 $ (vérifiée aussi par le serveur). */
   var lastBet = null, clearArm = 0;
+  function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
   function slipBar() {
     if (!slip.length || view !== 'list') return '';
     var x = X();
@@ -271,7 +277,8 @@
     });
     box.querySelectorAll('.sp-cp-chips [data-v]').forEach(function (c) { c.addEventListener('click', function () { stake = +c.getAttribute('data-v'); $('spStake').value = m2(stake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } upd(); }); });
     $('spGo').addEventListener('click', async function () {
-      if (ctx.guest) { if (ctx.signup) ctx.signup(); return; }
+      // v2768 (propriétaire) : le visiteur reçoit un petit message (pas d'envoi direct vers l'inscription)
+      if (ctx.guest) { guestNote(); return; }
       if (stake < 1) { if (ctx.toast) ctx.toast(x.e_min); return; }
       var bt = this; if (bt.disabled) return; bt.disabled = true;
       var r = null; try { r = await D6.Api.post('spBet', { mode: 'real', stake: stake, sel: slip.map(function (z) { return { ev: z.ev, k: z.k }; }) }, 15000); } catch (e) { r = null; }

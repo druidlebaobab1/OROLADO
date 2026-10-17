@@ -1008,6 +1008,7 @@
     "sportsSoon": "Büyük maçlar çok yakında burada."
   },
     sports: {
+      "guestBet": "🔒 Bahis için kayıt ol (ücretsiz)",
       "betsTab": "Bahisler",
       "guestMine": "Bahis yapmak için hesabını oluştur: tüm bahislerin sonuçlarıyla burada görünür.",
       "guestBtn": "Hesabımı oluştur",

@@ -6650,7 +6650,7 @@ html body .wd-payeer .wd-brand-pr,html body .wd-pmoney .wd-brand-pm,html body .w
   background:center/cover no-repeat!important;display:inline-block!important}
 html body .wd-orange .wd-mm-dot{background-image:url("../icons/pay/orange.svg?v=2445")!important}
 html body .wd-mtn .wd-mm-dot{background-image:url("../icons/pay/mtn.svg")!important}
-html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg")!important}
+html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg?v=2768")!important}
 html body .wd-mpesa .wd-mm-dot{background-image:url("../icons/pay/mpesa.svg")!important}
 html body .wd-moov .wd-mm-dot{background-image:url("../icons/pay/moov.svg")!important}
 html body .wd-airtel .wd-mm-dot{background-image:url("../icons/pay/airtel.svg")!important}
@@ -9049,7 +9049,7 @@ html body .wd-tmoney .wd-mm-dot,html body .wd-celtiis .wd-mm-dot,html body .wd-v
   width:18px!important;height:18px!important;min-width:18px;border-radius:5px!important;flex:0 0 18px!important;padding:0!important;
   font-size:0!important;color:transparent!important;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 2px 6px rgba(0,0,0,.35)!important;
   background:center/cover no-repeat!important;display:inline-block!important}
-html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg?v=2619")!important}
+html body .wd-wave .wd-mm-dot{background-image:url("../icons/pay/wave.svg?v=2768")!important}
 html body .wd-orange .wd-mm-dot{background-image:url("../icons/pay/orange.svg?v=2619")!important}
 html body .wd-mtn .wd-mm-dot{background-image:url("../icons/pay/mtn.svg?v=2619")!important}
 html body .wd-moov .wd-mm-dot{background-image:url("../icons/pay/moov.svg?v=2619")!important}
@@ -9220,7 +9220,7 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo:not(.pl-v
 html body #depositModal#depositModal .pay-wave{padding:7px 8px!important;margin-bottom:6px!important}
 html body #depositModal#depositModal .pay-wave .pay-method-top{display:none!important}
 html body #depositModal#depositModal .pay-wave .momo-phone{height:36px!important;margin:0!important;align-items:center}
-html body #depositModal#depositModal .pay-wave .momo-phone::before{content:"";flex:0 0 34px;height:34px;border-radius:9px;background:url("../icons/pay/wave.svg?v=2628") center/cover no-repeat;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+html body #depositModal#depositModal .pay-wave .momo-phone::before{content:"";flex:0 0 34px;height:34px;border-radius:9px;background:url("../icons/pay/wave.svg?v=2768") center/cover no-repeat;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 html body #depositModal#depositModal #momoDial,html body #depositModal#depositModal .pay-wave #momoPhone{height:36px!important;font-size:14px!important}
 html body #depositModal#depositModal .btn-wave{height:38px!important;min-height:38px!important}
 /* v2629 — boutons-drapeaux Wave (CI / SN) */
@@ -9245,7 +9245,7 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher{color
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{width:13px!important;height:13px!important;border-radius:3px!important;background:#F26522!important;color:#fff!important;font-size:9.5px!important;font-weight:900!important}
 /* v2633 — bouton « OUVRIR WAVE » prêt (le joueur reste sur OROLADO). */
 html body #depositModal#depositModal .btn-wave.ready{background:linear-gradient(135deg,#1DC8FF,#0077C8)!important;box-shadow:0 0 0 2px #fff inset,0 0 14px rgba(29,200,255,.55)!important}
-html body #depositModal#depositModal .btn-wave.ready span::before{content:"";display:inline-block;width:18px;height:18px;margin-right:8px;vertical-align:-4px;border-radius:5px;background:url("../icons/pay/wave.svg?v=2628") center/cover no-repeat}
+html body #depositModal#depositModal .btn-wave.ready span::before{content:"";display:inline-block;width:18px;height:18px;margin-right:8px;vertical-align:-4px;border-radius:5px;background:url("../icons/pay/wave.svg?v=2768") center/cover no-repeat}
 
 /* v2642 — Pub Facebook / Instagram / TikTok (navigateur intégré) : Google y refuse sa connexion
    (iPhone : message d'erreur ; Android : saut vers Chrome qui perd la trace de la pub).
@@ -12316,3 +12316,17 @@ html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lan
 html body #casinoModal.modal-backdrop.active,html body #liveModal.modal-backdrop.active,html body #portalModal.modal-backdrop.active{background:#120F2A!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 html body #casinoModal .modal-box,html body #liveModal .modal-box,html body #portalModal .modal-box,html body #liveModal .live-box{overscroll-behavior:contain!important}
 html.oro-modal-lock,html.oro-modal-lock body{overflow:hidden!important;overscroll-behavior:none!important}
+/* v2768 (propriétaire) : case du logo Wave plus petite dans Recharger */
+html:root body #depositModal#depositModal #payMomoBox #momoPhoneRow::before{width:38px!important;height:38px!important;min-width:38px!important;border-radius:10px!important;background-size:cover!important}
+/* v2768 (propriétaire) : PARIS — en-tête DROIT et FIXE comme les grands sites (pleine largeur, sans arrondi), onglets fixés dessous :
+   rien ne bouge quand on fait défiler les matchs */
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-top{position:sticky!important;top:-6px!important;z-index:20!important;margin:-6px -14px 0!important;padding:8px 14px 8px!important;border-radius:0!important;
+  background:#1E1946!important;box-shadow:0 1px 0 rgba(255,255,255,.06),0 6px 14px -10px rgba(20,21,48,.6)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{position:sticky;top:46px;z-index:19;margin:0 -14px 10px;padding:8px 14px;border-radius:0;background:#F4F3FA;box-shadow:0 1px 0 rgba(20,21,48,.06)}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs button{background:transparent}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs button.on{background:#fff}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{gap:4px}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{background:linear-gradient(#F4F3FA,#F4F3FA) padding-box,#E9E8F3}
+html:root body #casinoModal .sp-tabs button{position:relative}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{top:54px!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{top:var(--sp-top,54px)!important}

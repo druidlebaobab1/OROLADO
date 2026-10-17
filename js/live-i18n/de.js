@@ -1008,6 +1008,7 @@
     "sportsSoon": "Große Spiele kommen bald hierher."
   },
   sports: {
+    "guestBet": "🔒 Registriere dich zum Wetten (kostenlos)",
     "betsTab": "Wetten",
     "guestMine": "Erstelle dein Konto zum Wetten: alle deine Wetten erscheinen hier mit Ergebnis.",
     "guestBtn": "Konto erstellen",

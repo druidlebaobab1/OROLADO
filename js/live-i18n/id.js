@@ -1008,6 +1008,7 @@
     "sportsSoon": "Pertandingan besar segera hadir di sini."
   },
     sports: {
+      "guestBet": "🔒 Daftar untuk bertaruh (gratis)",
       "betsTab": "Taruhan",
       "guestMine": "Buat akunmu untuk bertaruh: semua taruhanmu tampil di sini beserta hasilnya.",
       "guestBtn": "Buat akun saya",

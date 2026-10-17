@@ -963,6 +963,7 @@
       sportsSoon: 'Los grandes partidos llegarán aquí pronto.'
     },
     sports: {
+      "guestBet": "🔒 Regístrate para apostar (es gratis)",
       "betsTab": "Apuestas",
       "guestMine": "Crea tu cuenta para apostar: todas tus apuestas aparecerán aquí, con su resultado.",
       "guestBtn": "Crear mi cuenta",

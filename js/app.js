@@ -5089,7 +5089,7 @@
       var logos = ops.map(function (o) {
         return '<span class="wn-op"><img src="icons/pay/' + o + '.svg" alt=""><b>' + WAVE_NAMES[o] + '</b></span>';
       }).join('');
-      bd.innerHTML = '<div class="wn-box"><div class="wn-wave"><img src="icons/pay/wave.svg" alt=""><i>✕</i></div>' +
+      bd.innerHTML = '<div class="wn-box"><div class="wn-wave"><img src="icons/pay/wave.svg?v=2768" alt=""><i>✕</i></div>' +
         '<h3>' + txt.t + '</h3><p>' + txt.p + '</p><div class="wn-ops">' + logos + '</div>' +
         '<button type="button" class="wn-go">' + txt.go + '</button><button type="button" class="wn-no">' + txt.no + '</button></div>';
       document.body.appendChild(bd);
@@ -6996,7 +6996,23 @@
     lockBehind();
   }
   // v2767 (propriétaire) : tant qu'une fenêtre est ouverte, la page de trading derrière ne bouge pas (on ne voit plus ACHETER / Recharger)
-  function lockBehind() { try { document.documentElement.classList.toggle('oro-modal-lock', !!document.querySelector('.modal-backdrop.active')); } catch (e) { /* ignore */ } }
+  // v2767 (propriétaire) : Recharger / Retirer tiennent dans l'écran SANS défiler sur tous les téléphones (petits Android compris) :
+  // on part du zoom habituel (1,12) et on le réduit juste assez pour que tout rentre.
+  function fitSheet(id) {
+    var m = $(id), box = m && m.querySelector('.modal-box');
+    if (!box || !m.classList.contains('active') || window.innerWidth >= 860) return;
+    var kids = [].slice.call(box.children).filter(function (k) { return !k.classList.contains('btn-close'); });
+    kids.forEach(function (k) { k.style.removeProperty('zoom'); });
+    var z = parseFloat(getComputedStyle(kids[0] || box).zoom) || 1, n = 0;
+    while (box.scrollHeight > box.clientHeight + 1 && z > 0.8 && n < 20) {
+      z = Math.round((z - 0.02) * 100) / 100; n++;
+      kids.forEach(function (k) { k.style.setProperty('zoom', String(z), 'important'); });
+    }
+  }
+  function fitSheets() { ['depositModal', 'withdrawModal'].forEach(fitSheet); }
+  window.addEventListener('resize', function () { clearTimeout(fitSheets._t); fitSheets._t = setTimeout(fitSheets, 200); });
+  function lockBehind() {
+    if (document.querySelector('#depositModal.active, #withdrawModal.active')) { setTimeout(fitSheets, 60); setTimeout(fitSheets, 400); } try { document.documentElement.classList.toggle('oro-modal-lock', !!document.querySelector('.modal-backdrop.active')); } catch (e) { /* ignore */ } }
   function closeModal(id) {
     var el = $(id);
     if (el) {
