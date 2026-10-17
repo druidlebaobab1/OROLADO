@@ -54,6 +54,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['live_img'])) {
   exit;
 }
 
+// v2777 (propriétaire) — identifiant unique R… des joueurs : table « numéro interne ORO-… → R… » pour l'affichage admin.
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['rid_map'])) {
+  header('Content-Type: application/json; charset=utf-8');
+  header('Cache-Control: private, no-store');
+  if (!admin_me()) { http_response_code(401); echo '{}'; exit; }
+  require_once __DIR__ . '/live_lib.php';
+  $db = load_db(); $pids = [];
+  foreach ($db['users'] as $id => $u) { $p = is_array($u) ? trim((string) ($u['publicId'] ?? '')) : ''; if ($p !== '') $pids[(string) $id] = $p; }
+  $out = [];
+  foreach (live_rids_for(array_keys($pids)) as $uid => $c) $out[$pids[$uid]] = $c;
+  echo json_encode($out, JSON_UNESCAPED_SLASHES);
+  exit;
+}
+
 function admin_login_check(string $email, string $password): ?array {
   $email = strtolower(trim($email));
   if (!orolado_is_reserved_admin_email($email)) return null;
@@ -3537,26 +3551,32 @@ setInterval(() => {
 </script>
 <?php endif; ?>
 <script>
-/* v2773 (propriétaire) — AFFICHAGE seulement : l'identifiant d'un joueur se montre « ORO159978 » (sans tiret), comme sur
-   tout le site. Les données ne changent pas (les clés internes gardent leur forme). */
+/* v2777 (propriétaire) — AFFICHAGE seulement : l'identifiant d'un joueur se montre « R7KQ4M9XT » (R + 8 signes au hasard),
+   le même que sur tout le site. Les données ne changent pas (les clés internes gardent leur forme ORO-…). La recherche
+   comprend aussi un identifiant R… tapé (il est traduit vers la clé interne). */
 (function () {
-  var RX = /\bORO-(\d{4,9})\b/g;
+  var RX = /\bORO-(\d{4,9})\b/g, MAP = {}, REV = {};
   function fix(root) {
     try {
       var w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, null), n;
-      while ((n = w.nextNode())) { if (n.nodeValue.indexOf('ORO-') >= 0) n.nodeValue = n.nodeValue.replace(RX, 'ORO$1'); }
+      while ((n = w.nextNode())) { if (n.nodeValue.indexOf('ORO-') >= 0) n.nodeValue = n.nodeValue.replace(RX, function (a) { return MAP[a] || a; }); }
     } catch (e) { /* ignore */ }
   }
   var t = 0;
   function later() { clearTimeout(t); t = setTimeout(function () { fix(document.body); }, 120); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { fix(document.body); }); else fix(document.body);
-  try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) { /* ignore */ }
-  // la recherche trouve aussi « ORO159978 » tapé sans tiret
+  fetch('admin.php?rid_map=1', { credentials: 'same-origin', cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j || typeof j !== 'object') return;
+    MAP = j; REV = {};
+    Object.keys(j).forEach(function (k) { REV[j[k]] = k; });
+    fix(document.body);
+    try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) { /* ignore */ }
+  }).catch(function () { /* ignore */ });
+  // la recherche trouve aussi un identifiant « R7KQ4M9XT » tapé (en minuscules ou avec des espaces)
   document.addEventListener('input', function (e) {
     var el = e.target;
     if (!el || el.tagName !== 'INPUT' || !/search/i.test((el.id || '') + ' ' + (el.type || ''))) return;
-    var v = el.value, m = /^\s*[oO0][rR][oO0]\s*(\d{4,9})\s*$/.exec(v);
-    if (m && v !== 'ORO-' + m[1]) { el.value = 'ORO-' + m[1]; }
+    var v = el.value.replace(/\s+/g, '').toUpperCase();
+    if (/^R[2-9A-Z]{8}$/.test(v) && REV[v] && el.value !== REV[v]) { el.value = REV[v]; }
   }, true);
 })();
 </script>

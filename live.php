@@ -163,7 +163,7 @@ $duelOut = static function (?array $d, string $me): ?array {
   return $o;
 };
 
-// v2772 (propriétaire) : le code unique du joueur (ORO-XXXX-XXXX) pour le profil
+// v2777 (propriétaire) : l'identifiant unique du joueur (R + 8 signes au hasard) pour le profil
 if ($action === 'myid') {
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
@@ -233,7 +233,7 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
       live_set_block($uid, $p, true); // signaler = ne plus recevoir ses messages
       echo json_encode(['ok' => true]);
       if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
-      try { require_once __DIR__ . '/push_lib.php'; push_notify_admin('🚩 Signalement Live', $myId . ' a signalé ' . $peer['id'] . ($why !== '' ? ' : ' . $why : ''), '/admin.php'); } catch (Throwable $e) { /* ignore */ }
+      try { require_once __DIR__ . '/push_lib.php'; push_notify_admin('🚩 Signalement Live', live_code_of($uid) . ' a signalé ' . $peer['id'] . ($why !== '' ? ' : ' . $why : ''), '/admin.php'); } catch (Throwable $e) { /* ignore */ }
       exit;
     }
     if ($action === 'dmSend') {

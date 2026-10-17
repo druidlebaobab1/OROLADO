@@ -3313,8 +3313,8 @@
     loadRecvCache(u);
     $('profName').textContent = isGuest(u) ? t('m_guest') : (u.displayName || 'Trader');
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
-    // v2773 (propriétaire) : UN SEUL identifiant partout — « ORO159978 » (le numéro du profil, sans tiret)
-    if ($('profPublicId')) $('profPublicId').textContent = oroIdShow(u.publicId) || '—';
+    // v2777 (propriétaire) : UN SEUL identifiant partout — « R » + 8 signes au hasard (ex. R7KQ4M9XT), donné par le serveur
+    if ($('profPublicId')) showMyRid(u);
     $('profEmail').textContent = u.email;
     if ($('profSince')) $('profSince').textContent = fmtMemberSince(u.createdAt || u.created_at);
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
@@ -3766,6 +3766,24 @@
     }
   }
 
+  // v2777 : identifiant R… du joueur (gardé en mémoire du téléphone, redemandé au serveur à chaque ouverture du profil)
+  function showMyRid(u) {
+    var el = $('profPublicId'), key = 'oro_rid_' + (u.id || '');
+    if (isGuest(u) || !u.id) { el.textContent = '—'; return; }
+    var have = '';
+    try { have = localStorage.getItem(key) || ''; } catch (e) { /* ignore */ }
+    el.textContent = /^R[2-9A-Z]{8}$/.test(have) ? have : '…';
+    fetch('live.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', cache: 'no-store',
+      body: JSON.stringify({ action: 'myid', token: (D6.Api && D6.Api.token) ? D6.Api.token() : '' }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok || !/^R[2-9A-Z]{8}$/.test(String(j.id || ''))) { if (el.textContent === '…') el.textContent = '—'; return; }
+        el.textContent = j.id;
+        try { localStorage.setItem(key, j.id); } catch (e) { /* ignore */ }
+      })
+      .catch(function () { if (el.textContent === '…') el.textContent = '—'; });
+  }
+
   function bindCopyPublicId() {
     var btn = $('btnCopyPublicId');
     if (!btn || btn._oroBound) return;
@@ -3922,7 +3940,17 @@
   }
 
   // v2773 (propriétaire) : l'identifiant s'affiche partout « ORO159978 » (sans tiret) ; la recherche marche avec ou sans tiret
-  function oroIdShow(s) { return String(s || '').replace(/^ORO-(\d+)$/, 'ORO$1'); }
+  // v2777 : écrans admin de l'appli — le numéro interne ORO-… s'affiche sous l'identifiant unique R… (table donnée par admin.php)
+  var ridMap = null, ridAsked = false;
+  function oroIdShow(s) {
+    s = String(s || '');
+    if (!ridAsked && /^ORO-\d+$/.test(s)) {
+      ridAsked = true;
+      fetch('admin.php?rid_map=1', { credentials: 'same-origin', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { if (j && typeof j === 'object') ridMap = j; }).catch(function () { /* ignore */ });
+    }
+    return (ridMap && ridMap[s]) || s;
+  }
   D6.oroIdShow = oroIdShow;
   function adminMatchQ(blob, q) {
     if (!q) return true;

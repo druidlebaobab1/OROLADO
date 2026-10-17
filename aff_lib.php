@@ -385,7 +385,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       $fixN[(string) $f['uid']] = $nDep;
     }
     $list[] = [
-      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'),
+      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => (string) ($f['uid'] ?? ''),
       'at' => $t,
       'until' => $t > 0 ? $t + OROLADO_AFF_DAYS * 86400 : 0,
       'deposit' => orolado_money($f['deposit'] ?? 0),
@@ -396,6 +396,11 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
     $depCount += $nDep;
   }
   usort($list, static fn($x, $y) => $y['at'] <=> $x['at']);
+  // v2777 (propriétaire) : AFFICHAGE seulement — l'ami se montre avec son identifiant unique R… (comme partout)
+  $rid = [];
+  if (is_file(__DIR__ . '/live_lib.php')) { require_once __DIR__ . '/live_lib.php'; try { $rid = live_rids_for(array_column($list, 'uid')); } catch (Throwable $e) { $rid = []; } }
+  foreach ($list as &$row) { if (!empty($rid[$row['uid']])) $row['id'] = (string) $rid[$row['uid']]; unset($row['uid']); }
+  unset($row);
   $out['played'] = $played;
   $out['total'] = orolado_money($total);
   $out['earned'] = orolado_money($own['earned'] ?? 0);

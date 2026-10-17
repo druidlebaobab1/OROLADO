@@ -262,57 +262,68 @@ function live_oro_id(array $user): string {
   if ($uid === '') return '';
   $r = live_update(live_ids_file(), function ($m) use ($uid, $user) {
     $m['u'] = (array) ($m['u'] ?? []); $m['i'] = (array) ($m['i'] ?? []); $m['n'] = (array) ($m['n'] ?? []);
+    $m['r'] = (array) ($m['r'] ?? []); $m['ri'] = (array) ($m['ri'] ?? []);
     $name = trim((string) ($user['displayName'] ?? $user['name'] ?? ''));
+    $write = false;
+    if (!isset($m['r'][$uid])) { $c = live_new_rid($m['ri']); $m['r'][$uid] = $c; $m['ri'][$c] = $uid; $write = true; } // v2777 : identifiant R…
     if (isset($m['u'][$uid])) {
-      if ($name !== '' && ($m['n'][$uid] ?? '') !== $name) { $m['n'][$uid] = $name; return ['id' => $m['u'][$uid], '__write' => $m]; }
-      return ['id' => $m['u'][$uid]];
+      if ($name !== '' && ($m['n'][$uid] ?? '') !== $name) { $m['n'][$uid] = $name; $write = true; }
+      return $write ? ['id' => $m['u'][$uid], '__write' => $m] : ['id' => $m['u'][$uid]];
     }
     $id = live_new_oro_id($m['i']);
     $m['u'][$uid] = $id; $m['i'][$id] = $uid; $m['n'][$uid] = $name !== '' ? $name : 'Joueur';
     return ['id' => $id, '__write' => $m];
-  }, ['u' => [], 'i' => [], 'n' => []]);
+  }, ['u' => [], 'i' => [], 'n' => [], 'r' => [], 'ri' => []]);
   return (string) ($r['id'] ?? '');
 }
 
-/* v2773 (propriétaire) — UN SEUL IDENTIFIANT sur tout le site, comme les grands sites : « ORO » + des chiffres, COLLÉS,
-   sans tiret et sans mélange (ex. ORO159978) — c'est le numéro du profil. Compris même tapé « 0R0… », « oro », avec des
-   espaces ou un tiret, ou seulement les chiffres. L'ancien code de Social (OR + 10 signes) reste compris en coulisses. */
+/* v2777 (propriétaire) — UN SEUL IDENTIFIANT sur tout le site : « R » + 8 signes AU HASARD, collés, sans tiret
+   (ex. R7KQ4M9XT). Les signes n'ont jamais 0, O, 1, I, L ni U. 30^8 = 656 milliards de possibilités : impossible à
+   deviner, jamais épuisé. Créé tout seul pour chaque joueur, gardé pour toujours. Le numéro du profil (ORO-123456)
+   n'est PLUS accepté (il se devinait). L'ancien code de Social (OR + 10 signes, lui aussi au hasard) reste compris. */
+function live_new_rid(array $taken): string {
+  do {
+    $s = 'R';
+    for ($i = 0; $i < 8; $i++) $s .= LIVE_ID_ALPHA[random_int(0, strlen(LIVE_ID_ALPHA) - 1)];
+  } while (isset($taken[$s]));
+  return $s;
+}
 function live_norm_oro_id(string $s): string {
   $s = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $s) ?? '');
-  if (preg_match('/^(?:[O0]R[O0])?(\d{4,9})$/', $s, $mm)) return 'ORO-' . $mm[1]; // numéro du profil (forme interne)
+  if (preg_match('/^R[2-9A-HJKMNP-TV-Z]{8}$/', $s)) return $s;
   if (preg_match('/^[O0]R([2-9A-HJKMNP-TV-Z]{10})$/', $s, $mm)) return 'OR' . $mm[1]; // ancien code de Social
   return '';
 }
-/** Forme AFFICHÉE d'un numéro (sans tiret). */
-function live_id_show(string $pid): string { return str_replace('-', '', $pid); }
+/** Identifiants R… de plusieurs joueurs d'un coup (créés s'il le faut) : [uid => R…]. Pour l'admin. */
+function live_rids_for(array $uids): array {
+  $uids = array_values(array_filter(array_map('strval', $uids), static fn($x) => $x !== ''));
+  $r = live_update(live_ids_file(), function ($m) use ($uids) {
+    $m['r'] = (array) ($m['r'] ?? []); $m['ri'] = (array) ($m['ri'] ?? []);
+    $write = false;
+    foreach ($uids as $uid) if (!isset($m['r'][$uid])) { $c = live_new_rid($m['ri']); $m['r'][$uid] = $c; $m['ri'][$c] = $uid; $write = true; }
+    $out = array_intersect_key($m['r'], array_flip($uids));
+    return $write ? ['map' => $out, '__write' => $m] : ['map' => $out];
+  }, ['u' => [], 'i' => [], 'n' => [], 'r' => [], 'ri' => []]);
+  return (array) ($r['map'] ?? []);
+}
 /** La base des comptes (lue une seule fois par demande). */
 function live_users_db() { static $db = null; if ($db === null) $db = load_db(); return $db; }
-/** Joueur derrière un ancien numéro de profil (ORO-123456). */
-function live_uid_of_pub(string $pid): string {
-  $db = live_users_db();
-  $ids = function_exists('orolado_store_idx_get') && function_exists('orolado_store_dir') ? orolado_store_idx_get($db['_store'] ?? orolado_store_dir(), 'p:' . $pid) : [];
-  foreach ($ids as $id) { $u = $db['users'][$id] ?? null; if (is_array($u) && (string) ($u['publicId'] ?? '') === $pid) return (string) $id; }
-  if (!$ids) foreach ($db['users'] as $id => $u) if (is_array($u) && (string) ($u['publicId'] ?? '') === $pid) return (string) $id;
-  return '';
-}
-/** L'identifiant AFFICHÉ d'un joueur : son numéro du profil sans tiret (ORO159978). */
+/** L'identifiant AFFICHÉ d'un joueur : R + 8 signes au hasard (créé s'il n'existe pas encore). */
 function live_code_of(string $uid): string {
+  static $mem = null;
+  if ($mem === null) $mem = (array) (live_read_json(live_ids_file(), [])['r'] ?? []); // lu une seule fois par demande
+  if (isset($mem[$uid])) return (string) $mem[$uid];
   $u = live_users_db()['users'][$uid] ?? null;
-  $pid = is_array($u) ? trim((string) ($u['publicId'] ?? '')) : '';
-  if ($pid !== '') return live_id_show($pid);
-  return live_oro_id(['id' => $uid] + (is_array($u) ? $u : [])); // compte sans numéro (très rare) : ancien code
+  live_oro_id(['id' => $uid] + (is_array($u) ? $u : []));
+  $c = (string) (live_read_json(live_ids_file(), [])['r'][$uid] ?? '');
+  if ($c !== '') $mem[$uid] = $c;
+  return $c;
 }
 
-/** Joueur derrière un identifiant (OR… ou ancien numéro) : ['uid','id' (OR…),'name'] ou null. */
+/** Joueur derrière un identifiant (R… ou ancien code OR…) : ['uid','id' (R…),'name'] ou null. */
 function live_who(string $oroId): ?array {
   $m = live_read_json(live_ids_file(), []);
-  if (preg_match('/^ORO-\d+$/', $oroId)) {
-    $uid = live_uid_of_pub($oroId);
-    if ($uid === '') return null;
-    $u0 = live_users_db()['users'][$uid] ?? [];
-    live_oro_id(['id' => $uid] + (is_array($u0) ? $u0 : [])); // le joueur existe aussi dans Social (nom, messages)
-    $m = live_read_json(live_ids_file(), []);
-  } else { $uid = (string) ($m['i'][$oroId] ?? ''); }
+  $uid = (string) (str_starts_with($oroId, 'R') ? ($m['ri'][$oroId] ?? '') : ($m['i'][$oroId] ?? ''));
   $id = $uid !== '' ? live_code_of($uid) : '';
   if ($uid === '') return null;
   $u = live_users_db()['users'][$uid] ?? [];
