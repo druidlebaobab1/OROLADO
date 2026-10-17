@@ -407,13 +407,34 @@
       stakePanel(x.bet, '<label class="cs-lbl">' + esc(x.pickCar) + ' · ×5,7</label><div class="cs-cars">' + cols.map(function (c, i) { return '<button type="button" data-car="' + i + '" class="' + (i ? '' : 'on') + '" style="--cc:' + c + '">' + (i + 1) + '</button>'; }).join('') + '</div>');
     bindStake(box);
     box.querySelectorAll('[data-car]').forEach(function (b) { b.addEventListener('click', function () { car = +b.getAttribute('data-car'); box.querySelectorAll('[data-car]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
+    // v2730 (propriétaire) : course plus calme et fluide (~5 s), les voitures se doublent (suspense), arrivée dans l'ordre du serveur ;
+    // retour au départ en douceur ; bouton bloqué pendant la course.
     $('csGo').addEventListener('click', async function () {
-      var r = await play('race', { car: car }); if (!r) return;
-      for (var i = 0; i < 6; i++) { var c = $('csCar' + i); c.style.transition = 'none'; c.style.transform = 'translateX(0)'; }
-      await sleep(40);
-      r.view.order.forEach(function (id, pos) { var c = $('csCar' + id); c.style.transition = 'transform ' + (2.6 + pos * 0.32).toFixed(2) + 's cubic-bezier(.3,.1,.3,1)'; var dist = c.parentElement.clientWidth - c.offsetWidth - 22; c.style.transform = 'translateX(' + dist + 'px)'; });
-      await sleep(2700 + 5 * 320);
+      var g = this; if (g.disabled) return;
+      g.disabled = true;
+      var r = await play('race', { car: car });
+      if (!r) { g.disabled = false; return; }
+      var i, cs = [];
+      for (i = 0; i < 6; i++) { cs[i] = $('csCar' + i); cs[i].style.transition = 'transform .3s ease'; cs[i].style.transform = 'translateX(0)'; }
+      await sleep(320);
+      for (i = 0; i < 6; i++) cs[i].style.transition = 'none';
+      var w = Math.max(40, cs[0].parentElement.clientWidth - cs[0].offsetWidth - 22), D = 5200, t0 = performance.now(), ph = [];
+      for (i = 0; i < 6; i++) ph[i] = [Math.random() * 6.28, 0.6 + Math.random() * 0.8];
+      await new Promise(function (res) {
+        (function f(t) {
+          if (!box.isConnected) { res(); return; }
+          var k = Math.min(1, (t - t0) / D);
+          for (var id = 0; id < 6; id++) {
+            var rank = r.view.order.indexOf(id), fin = 1 - rank * 0.055;
+            var wob = Math.sin(ph[id][0] + k * 7 * ph[id][1]) * 0.07 * Math.sin(Math.PI * k);
+            var p = k >= 1 ? fin : Math.max(0, fin * (0.45 * k + 0.55 * k * k) + wob);
+            cs[id].style.transform = 'translateX(' + Math.round(p * w) + 'px)';
+          }
+          if (k < 1) S.raf = requestAnimationFrame(f); else res();
+        })(t0);
+      });
       resultLine(box, r, '🏁 ' + (r.view.order[0] + 1));
+      g.disabled = false;
     });
   };
 
@@ -738,7 +759,7 @@
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo'), st = box.querySelector('.pen3'), pb = $('csPb'), kp = $('csKp');
-    var reset = function () { pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none'; pb.offsetHeight; pb.style.transition = ''; kp.style.transition = ''; };
+    var reset = function () { pb.style.opacity = '1'; pb.style.transition = 'none'; kp.style.transition = 'none'; pb.style.transform = 'none'; kp.style.transform = 'none'; pb.offsetHeight; pb.style.transition = ''; kp.style.transition = ''; };
     var paint = function (r) {
       g = r;
       var k = r.k || 0;
@@ -749,25 +770,37 @@
       if (r.done) { btn.textContent = x.bet; btn.classList.remove('cash'); }
       else { btn.classList.toggle('cash', k > 0); btn.textContent = k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.shoot; box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = ''; }
     };
+    // v2730 (propriétaire) : le ballon PART TOUT DE SUITE au toucher (plus d'attente du serveur) ; le gardien plonge dès la réponse ;
+    // ensuite le ballon revient en douceur (fondu) au point de penalty, sans à-coup.
+    var softReset = function () {
+      pb.style.transition = 'opacity .14s'; pb.style.opacity = '0';
+      kp.style.transition = 'transform .3s ease'; kp.style.transform = 'none';
+      setTimeout(function () {
+        pb.style.transition = 'none'; pb.style.transform = 'none';
+        requestAnimationFrame(function () { requestAnimationFrame(function () { pb.style.transition = 'opacity .2s'; pb.style.opacity = '1'; }); });
+      }, 160);
+    };
     var shoot = async function (col, hgt) {
       if (!g || g.done || busy) return;
       busy = true;
-      var r = await multi('penalty', 'shoot', { aim: col, h: hgt });
-      if (!r) { busy = false; return; }
-      var last = (r.shots || [])[r.shots.length - 1] || [col, hgt, 1, 1], goal = !!last[3], keeperCol = last[2];
       var w = st.clientWidth, H = st.clientHeight;
-      reset(); await sleep(30);
-      var tx = (0.5 - 0.5 + (col - 1) * 0.2333) * w, ty = -(H * 0.86 - H * (0.205 + (hgt + 0.5) * 0.0967) - H * 0.04);
+      var tx = (col - 1) * 0.2333 * w, ty = -(H * 0.86 - H * (0.205 + (hgt + 0.5) * 0.0967) - H * 0.04);
+      pb.style.opacity = '1';
+      pb.style.transition = 'transform .5s cubic-bezier(.2,.7,.3,1)';
+      pb.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(.42) rotate(540deg)';
+      var t0 = Date.now();
+      var r = await multi('penalty', 'shoot', { aim: col, h: hgt });
+      if (!r) { softReset(); busy = false; return; }
+      var last = (r.shots || [])[r.shots.length - 1] || [col, hgt, 1, 1], goal = !!last[3], keeperCol = last[2];
+      kp.style.transition = 'transform .32s cubic-bezier(.2,.8,.3,1)';
       kp.style.transform = 'translateX(' + ((keeperCol - 1) * w * 0.22) + 'px) rotate(' + ((keeperCol - 1) * 58) + 'deg)';
-      pb.style.transform = 'translate(' + tx + 'px,' + (goal ? ty : ty + H * 0.06) + 'px) scale(.42) rotate(540deg)';
-      await sleep(640);
-      if (!goal) { pb.style.transition = 'transform .45s ease-in'; pb.style.transform = 'translate(' + (tx * 1.1) + 'px,' + (ty + H * 0.22) + 'px) scale(.46) rotate(620deg)'; }
-      else { st.classList.add('net-hit'); setTimeout(function () { st.classList.remove('net-hit'); }, 500); }
-      await sleep(goal ? 300 : 500);
+      await sleep(Math.max(0, 500 - (Date.now() - t0)));
+      if (!goal) { pb.style.transition = 'transform .38s ease-in'; pb.style.transform = 'translate(' + (tx * 1.1) + 'px,' + (ty + H * 0.22) + 'px) scale(.46) rotate(620deg)'; await sleep(380); }
+      else { st.classList.add('net-hit'); setTimeout(function () { st.classList.remove('net-hit'); }, 450); await sleep(220); }
       busy = false;
       paint(r);
       if (r.done) resultLine(box, r, r.win > 0 ? '×' + m2(r.mult || (r.win / r.stake)) : x.saved);
-      else { setTimeout(function () { if (g && !g.done && !busy) reset(); }, 500); }
+      else setTimeout(function () { if (g && !g.done && !busy) softReset(); }, 420);
     };
     box.querySelectorAll('.pen-z').forEach(function (z) { z.addEventListener('click', function () { shoot(+z.getAttribute('data-c'), +z.getAttribute('data-h')); }); });
     btn.addEventListener('click', async function () {
@@ -937,7 +970,7 @@
         row.classList.toggle('past', k < r.k);
         row.querySelectorAll('button').forEach(function (b) {
           var c = +b.getAttribute('data-c'); b.className = ''; b.innerHTML = '';
-          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.innerHTML = ART.sym('goldapple'); }
+          if (k < r.k && r.picks[k] === c) { b.className = 'good'; b.innerHTML = ART.obj('apple'); }
           if (r.done && r.bad) {
             var bk = [].concat(r.bad[k]);
             if (bk.indexOf(c) >= 0 && (k <= r.k)) { b.className = (r.boom === k) ? 'rot boom' : 'rot'; b.innerHTML = ART.sym('worm'); }

@@ -11402,3 +11402,7 @@ html body #casinoModal .pay2 .pay3 b{font-size:16px}
 html body #casinoModal .pay2 .pay3 u{font-size:13px}
 html:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;z-index:8!important;font-size:22px!important;line-height:1.1!important;padding:4px 10px!important;border-radius:12px!important;background:rgba(6,3,20,.5)!important;width:auto!important}
 html[dir="rtl"]:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{left:auto!important;right:10px!important}
+/* v2730 : Golden Orchard — la pomme-bijou du logo dans les cases gagnées */
+html body #casinoModal .ap-stage .ap-row button.good .cs-obj{width:auto;height:92%;max-height:100%;display:block;margin:auto;filter:drop-shadow(0 0 6px rgba(253,224,71,.6))}
+html body #casinoModal .ap-stage .ap-row button{height:min(40px,4.7vh)!important}
+html body #casinoModal .ap-stage .ap{gap:min(6px,.8vh)}
