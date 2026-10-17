@@ -60,7 +60,7 @@
   /* v2694 (propriétaire) : « immergé » comme le Défi du jour — la roue entière en haut, puis des planètes centrées
      au-dessus de leur titre ; plus de petites phrases sous les titres, plus de cadres. */
   // v2782 (propriétaire) : logos « verre » transparents et légers, les mêmes que dans Social
-  var GLASS = { defi: 'target', top: 'record', bon: 'bonus', jauge: 'jauge', aff: 'invite' };
+  var GLASS = { defi: 'target', top: 'record', bon: 'bonus2', jauge: 'jauge', aff: 'invite' };
   function planet(k) {
     if (D6.LiveIcon && GLASS[k]) return '<span class="cs-pl gh-glass">' + D6.LiveIcon(GLASS[k], 'free verre') + '</span>';
     return D6.CasinoArt ? D6.CasinoArt.planet('g_' + k) : icon(k);
@@ -116,7 +116,8 @@
       var v = s[i], c = SEGC[v] || SEGC[0];
       if (v === 0.25) { c = zi % 2 ? ['#5b3fd0', '#4a2fb8'] : ['#2f7bf0', '#2563eb']; zi++; }
       var a0 = i * step, a1 = (i + 1) * step;
-      out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + c[0] + '" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>';
+      // v2783 (propriétaire) : sur l'accueil Cadeaux, roue « verre » — cases de couleur transparentes, traits clairs
+      out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + c[0] + '"' + (mini ? ' fill-opacity=".62" stroke="rgba(255,255,255,.7)" stroke-width="1.6"' : ' stroke="rgba(255,255,255,.18)" stroke-width="1.2"') + '/>';
       if (!mini) {
         var lab = (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : (v >= 10000 ? '10 000' : v >= 1000 ? '1 000' : String(v))) + ' $';
         out += '<g transform="rotate(' + (a0 + step / 2) + ') translate(0 -78)"><text text-anchor="middle" dominant-baseline="middle" transform="rotate(90)" font-size="' + (v >= 10000 ? 13 : v >= 100 ? 16 : 15) + '" font-weight="800" fill="' + (v === 100 ? '#5a3500' : v === 10000 ? '#FFD27A' : '#fff') + '" font-family="Plus Jakarta Sans,system-ui,sans-serif">' + lab + '</text></g>';
@@ -126,7 +127,7 @@
     for (var d = 0; d < 24; d++) dots += '<circle cx="' + pt(125, d * 15).split(' ')[0] + '" cy="' + pt(125, d * 15).split(' ')[1] + '" r="3.4" fill="' + (d % 2 ? '#FFE07A' : '#fff') + '" stroke="#9A6A00" stroke-width=".8"/>';
     return '<svg viewBox="-134 -134 268 268" class="whl-svg"><defs><radialGradient id="whlRim' + (mini ? 'm' : '') + '" r="1"><stop offset=".86" stop-color="#F5B700"/><stop offset=".93" stop-color="#FFE9A0"/><stop offset="1" stop-color="#9A6A00"/></radialGradient>' +
       '<radialGradient id="whlHub' + (mini ? 'm' : '') + '" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFF4C8"/><stop offset=".6" stop-color="#F2B33D"/><stop offset="1" stop-color="#A8650A"/></radialGradient></defs>' +
-      '<circle r="132" fill="url(#whlRim' + (mini ? 'm' : '') + ')"/>' + dots + '<g class="whl-segs">' + out + '</g>' +
+      (mini ? '<circle r="119" fill="rgba(255,255,255,.05)"/><circle r="126" fill="none" stroke="url(#whlRimm)" stroke-width="13" opacity=".9"/>' : '<circle r="132" fill="url(#whlRim)"/>') + dots + '<g class="whl-segs">' + out + '</g>' +
       '<circle r="118" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2"/><circle r="24" fill="url(#whlHub' + (mini ? 'm' : '') + ')" stroke="#fff" stroke-opacity=".6" stroke-width="2"/></svg>';
   }
   async function refresh() {

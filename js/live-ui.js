@@ -33,6 +33,11 @@
   G.invite = '<circle cx="28.5" cy="15.5" r="4.6" fill="W" opacity=".72"/><path d="M20.5 31c.4-5.2 3.6-8.3 8-8.3s7.6 3.1 8 8.3z" fill="W" opacity=".72"/><circle cx="18" cy="18" r="5.6" fill="W"/><path d="M8 35c0-6.2 4.4-10.2 10-10.2S28 28.8 28 35z" fill="W"/><circle cx="35" cy="33" r="8" fill="#FFD95A" stroke="#fff" stroke-width="2"/><path d="M37.2 30.3c-.6-.7-1.4-1-2.3-1-1.2 0-2.2.7-2.2 1.5 0 2.1 4.7 1 4.7 3.4 0 1-1 1.7-2.5 1.7-1 0-1.9-.4-2.5-1M34.9 27.6v1.6M34.9 36.4v1.6" fill="none" stroke="#9a5e06" stroke-width="1.5" stroke-linecap="round"/>';
   G.bonus = '<ellipse cx="19" cy="33.5" rx="11" ry="4" fill="W" opacity=".7"/><rect x="8" y="28" width="22" height="5.5" fill="W" opacity=".7"/><ellipse cx="19" cy="28" rx="11" ry="4" fill="W" opacity=".88"/><rect x="8" y="22.5" width="22" height="5.5" fill="W" opacity=".88"/><ellipse cx="19" cy="22.5" rx="11" ry="4" fill="W"/><path d="M19 20.6v3.8M17.1 22.5h3.8" stroke="A" stroke-width="1.5" stroke-linecap="round"/><circle cx="35.5" cy="15" r="7" fill="W"/><path d="M35.5 11.3v7.4M31.8 15h7.4" stroke="A" stroke-width="2.6" stroke-linecap="round"/>';
   G.jauge = '<path d="M9 31a15 15 0 0 1 30 0" fill="none" stroke="W" stroke-width="5" stroke-linecap="round" opacity=".42"/><path d="M9 31a15 15 0 0 1 22.5-13" fill="none" stroke="W" stroke-width="5" stroke-linecap="round"/><path d="M24 31l8-10" stroke="W" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="31" r="3.6" fill="W"/><rect x="13" y="35.5" width="22" height="3.6" rx="1.8" fill="W" opacity=".6"/>';
+  // v2783 (propriétaire) : « Bonus dépôt » en verre = un paquet cadeau avec un badge %
+  G.bonus2 = '<rect x="10" y="22.5" width="26" height="16.5" rx="2.6" fill="W"/><rect x="8" y="16.5" width="30" height="6.5" rx="2.2" fill="W"/><rect x="21" y="16.5" width="4" height="22.5" fill="A"/>' +
+    '<path d="M23 16.5c-2-4.6-8-6.2-9.1-3.1-.9 2.7 4.1 3.4 9.1 3.1zm0 0c2-4.6 8-6.2 9.1-3.1.9 2.7-4.1 3.4-9.1 3.1z" fill="W"/>' +
+    '<circle cx="37" cy="33" r="7.6" fill="W"/><circle cx="34.6" cy="30.6" r="1.5" fill="A"/><circle cx="39.4" cy="35.4" r="1.5" fill="A"/><path d="M39.6 29.8l-5.2 6.4" stroke="A" stroke-width="1.7" stroke-linecap="round"/>';
+  PAL.bonus2 = ['#FFE08A', '#F59E0B', '#a8560c'];
   var n = 0;
   PAL.missions = PAL.gifts; G.missions = G.target;
   function icon(k, cls) {
