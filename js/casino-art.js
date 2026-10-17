@@ -101,7 +101,7 @@
     },
     // 2 dés : rouge et blanc
     dice: function () {
-      return die(8, 20, 26, -16, 5, ['#FF6B81', '#C9184A'], '#fff') + die(30, 26, 26, 12, 3, ['#FFFFFF', '#CBD5E1'], '#1F2937');
+      return die(8, 20, 26, -16, 5, ['#FF6B81', '#C9184A'], '#fff') + die(30, 26, 26, 12, 3, ['#6B7280', '#111827'], '#fff'); // v2724 : dé rouge + dé noir (le Dice en duel)
     },
     // roue de la chance colorée avec ampoules et flèche
     wheel: function () {

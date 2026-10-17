@@ -15,7 +15,7 @@
         jet: ['Jet Man', 'Il s’envole, encaisse !'], rocket: ['Fusée', 'Jusqu’aux étoiles'], apple: ['Verger d’or', '10 étages'],
         tower: ['La Tour', '3 portes, 1 piège'], dragon: ['Dragon Tigre', 'La plus forte carte'], baccarat: ['Baccara', 'Joueur ou Banque'], sicbo: ['Sic Bo', 'Petit ou Grand'], chests: ['Coffres', '1 trésor sur 3'], balloon: ['Ballon', 'Gonfle et encaisse'] },
       takeoff: 'Départ dans {s} s — mise maintenant', placed: 'Pari placé ✓ attends le départ', betNext: 'Miser (prochain tour)', cancel: 'Pari annulé : mise rendue', cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
-      heads: 'Pile', tails: 'Face', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
+      heads: 'Pile', tails: 'Face', ddRule: 'Le plus grand dé gagne ×1,92 · égalité = mise rendue', tieBack: 'égalité, mise rendue', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
       pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
       shoot: 'Touche le but pour tirer', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
@@ -29,7 +29,7 @@
         jet: ['Jet Man', 'He flies, cash out!'], rocket: ['Rocket', 'To the stars'], apple: ['Golden Orchard', '10 floors'],
         tower: ['The Tower', '3 doors, 1 trap'], dragon: ['Dragon Tiger', 'Highest card'], baccarat: ['Baccarat', 'Player or Banker'], sicbo: ['Sic Bo', 'Small or Big'], chests: ['Chests', '1 treasure in 3'], balloon: ['Balloon', 'Pump and cash out'] },
       takeoff: 'Take-off in {s} s — bet now', placed: 'Bet placed ✓ wait for take-off', betNext: 'Bet (next round)', cancel: 'Bet cancelled: stake returned', cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
-      heads: 'Heads', tails: 'Tails', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
+      heads: 'Heads', tails: 'Tails', ddRule: 'Higher die wins ×1.92 · tie = stake back', tieBack: 'tie, stake back', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
       pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
       shoot: 'Tap the goal to shoot', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Bets', sportsSoon: 'Big matches are coming here soon.' }
@@ -297,43 +297,61 @@
   /* ---------- les 25 jeux (v2694 : chaque écran copie les grands : scène plein écran, sans cadre) ---------- */
   var GAMES = {};
 
+  /* v2724 (propriétaire) : COIN FLIP = pièce DOLLAR contre pièce EURO (même calcul : 1 chance sur 2, ×1,94) */
+  function moneyFace(usd) {
+    var id = 'mf' + (++gn), a = usd ? ['#FFF3C4', '#F5B700', '#8A5A00'] : ['#E0F2FE', '#3B82F6', '#1E3A8A'];
+    var ring = ''; if (!usd) for (var i = 0; i < 12; i++) { var an = i * 30 * Math.PI / 180; ring += '<path transform="translate(' + (100 + 62 * Math.sin(an)).toFixed(1) + ' ' + (100 - 62 * Math.cos(an)).toFixed(1) + ')" d="M0-6l1.8 3.7 4 .6-2.9 2.8.7 4L0 3.2-3.6 5.1l.7-4-2.9-2.8 4-.6z" fill="#FDE047"/>'; }
+    var ticks = ''; for (var j = 0; j < 40; j++) ticks += '<rect x="99" y="5" width="2" height="8" rx="1" fill="' + a[2] + '" opacity=".5" transform="rotate(' + (j * 9) + ' 100 100)"/>';
+    return '<svg viewBox="0 0 200 200"><defs><radialGradient id="' + id + '" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="' + a[0] + '"/><stop offset=".55" stop-color="' + a[1] + '"/><stop offset="1" stop-color="' + a[2] + '"/></radialGradient></defs>' +
+      '<circle cx="100" cy="100" r="98" fill="url(#' + id + ')"/>' + ticks + '<circle cx="100" cy="100" r="78" fill="none" stroke="' + a[2] + '" stroke-width="4" opacity=".55"/>' + ring +
+      '<text x="100" y="' + (usd ? 132 : 128) + '" text-anchor="middle" font-size="' + (usd ? 104 : 92) + '" font-weight="900" font-family="system-ui,Arial" fill="' + (usd ? '#7A4A00' : '#FFFFFF') + '" opacity=".92">' + (usd ? '$' : '€') + '</text>' +
+      '<text x="100" y="172" text-anchor="middle" font-size="17" font-weight="900" letter-spacing="3" font-family="system-ui,Arial" fill="' + (usd ? '#7A4A00' : '#DBEAFE') + '">' + (usd ? 'DOLLAR' : 'EURO') + '</text></svg>';
+  }
   GAMES.coin = function (box, x) {
     var side = 0;
-    box.innerHTML = '<div class="cs-stage"><div class="coin3d" id="csCoin"><i class="f">' + coinFace(true) + '</i><i class="b">' + coinFace(false) + '</i></div><div class="coin-lbl"><span>' + esc(x.heads) + '</span><span>' + esc(x.tails) + '</span></div></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-seg"><button type="button" class="on" data-side="0">' + esc(x.heads) + ' ×1,94</button><button type="button" data-side="1">' + esc(x.tails) + ' ×1,94</button></div>');
+    box.innerHTML = '<div class="cs-stage coin-stage"><div class="coin3d" id="csCoin"><i class="f">' + moneyFace(true) + '</i><i class="b">' + moneyFace(false) + '</i></div><div class="coin-lbl"><span>Dollar</span><span>Euro</span></div></div><div class="cs-res"></div>' +
+      stakePanel(x.bet, '<div class="cs-seg"><button type="button" class="on" data-side="0">$ Dollar ×1,94</button><button type="button" data-side="1">€ Euro ×1,94</button></div>');
     bindStake(box);
     box.querySelectorAll('[data-side]').forEach(function (b) { b.addEventListener('click', function () { side = +b.getAttribute('data-side'); box.querySelectorAll('[data-side]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     var turns = 0;
     $('csGo').addEventListener('click', async function () {
-      var r = await play('coin', { side: side }); if (!r) return;
+      var g = this; if (g.disabled) return;
+      g.disabled = true;
+      var r = await play('coin', { side: side });
+      if (!r) { g.disabled = false; return; }
       turns += 5; var c = $('csCoin');
       c.style.transform = 'rotateY(' + (turns * 360 + (r.view.r ? 180 : 0)) + 'deg)';
-      await sleep(1300); resultLine(box, r);
+      await sleep(1300); resultLine(box, r, r.view.r ? '€ Euro' : '$ Dollar'); g.disabled = false;
     });
   };
 
+  /* v2724 (propriétaire) : DICE = DUEL de dés. Dé ROUGE contre dé NOIR, le plus grand gagne ×1,92 ; égalité = mise rendue. */
+  function duelDie(n, red) {
+    var P = { 1: [[12, 12]], 2: [[7, 7], [17, 17]], 3: [[6, 6], [12, 12], [18, 18]], 4: [[7, 7], [17, 7], [7, 17], [17, 17]], 5: [[6, 6], [18, 6], [12, 12], [6, 18], [18, 18]], 6: [[7, 6], [17, 6], [7, 12], [17, 12], [7, 18], [17, 18]] }[n] || [];
+    var c = red ? ['#FF7A8E', '#DC2626', '#991B1B'] : ['#6B7280', '#1F2937', '#030712'], id = 'dd' + (++gn);
+    return '<svg viewBox="0 0 24 24"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset=".5" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[2] + '"/></linearGradient></defs>' +
+      '<rect x="1" y="1" width="22" height="22" rx="5" fill="url(#' + id + ')"/><rect x="2.2" y="2.2" width="19.6" height="19.6" rx="4.2" fill="none" stroke="#fff" stroke-opacity=".28"/>' +
+      P.map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.3" fill="#fff"/>'; }).join('') + '</svg>';
+  }
   GAMES.dice = function (box, x) {
-    var chance = 50, over = false;
-    box.innerHTML = '<div class="cs-stage dice-stage"><div class="dice-hero">' + ART.obj('dice') + '</div><b class="dice-roll" id="csRoll">50.00</b><div class="dice-bar"><i id="csDiceWin"></i><em id="csDiceMark"></em></div><div class="dice-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-seg"><button type="button" class="on" data-o="0">' + esc(x.under) + '</button><button type="button" data-o="1">' + esc(x.over) + '</button></div>' +
-        '<label class="cs-lbl">' + esc(x.chance) + ' : <b id="csCh">50 %</b> · <b id="csMul"></b></label><input type="range" min="2" max="95" value="50" id="csChance" class="cs-range">');
+    var side = 'red';
+    box.innerHTML = '<div class="cs-stage dd-stage"><div class="dd-row"><div class="dd-col r"><span class="dd-die" id="csDdR">' + duelDie(6, true) + '</span><b>' + esc(x.red || 'Rouge') + '</b></div><em class="dd-vs">VS</em>' +
+      '<div class="dd-col k"><span class="dd-die" id="csDdB">' + duelDie(6, false) + '</span><b>' + esc(x.black || 'Noir') + '</b></div></div><small class="cs-lbl dd-rule">' + esc(x.ddRule || 'Le plus grand dé gagne ×1,92 · égalité = mise rendue') + '</small></div><div class="cs-res"></div>' +
+      stakePanel(x.bet, '<div class="cs-opts two dd-pick"><button type="button" data-d="red" class="on b-red">' + esc(x.red || 'Rouge') + '<small>×1,92</small></button><button type="button" data-d="black" class="b-black">' + esc(x.black || 'Noir') + '<small>×1,92</small></button></div>');
     bindStake(box);
-    var paint = function () {
-      $('csCh').textContent = chance + ' %'; $('csMul').textContent = fmt(x.mult, { x: (Math.floor(97 / chance * 10000) / 10000).toFixed(2) });
-      var w = $('csDiceWin'); w.style.left = over ? (100 - chance) + '%' : '0'; w.style.width = chance + '%';
-    };
-    $('csChance').addEventListener('input', function () { chance = +this.value; paint(); });
-    box.querySelectorAll('[data-o]').forEach(function (b) { b.addEventListener('click', function () { over = b.getAttribute('data-o') === '1'; box.querySelectorAll('[data-o]').forEach(function (z) { z.classList.toggle('on', z === b); }); paint(); }); });
-    paint();
+    box.querySelectorAll('[data-d]').forEach(function (b) { b.addEventListener('click', function () { side = b.getAttribute('data-d'); box.querySelectorAll('[data-d]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
-      var r = await play('dice', { chance: chance, over: over ? 1 : 0 }); if (!r) return;
-      var el = $('csRoll'), t0 = performance.now(), hero = box.querySelector('.dice-hero');
-      if (hero) hero.classList.add('rolling');
-      await new Promise(function (res) { (function f(t) { var k = Math.min(1, (t - t0) / 900); el.textContent = (k < 1 ? Math.random() * 100 : r.view.roll).toFixed(2); if (k < 1) S.raf = requestAnimationFrame(f); else res(); })(t0); });
-      if (hero) hero.classList.remove('rolling');
-      $('csDiceMark').style.left = r.view.roll + '%'; $('csDiceMark').className = r.win > 0 ? 'w' : 'l';
-      el.className = 'dice-roll ' + (r.win > 0 ? 'w' : 'l');
-      resultLine(box, r, fmt(x.roll, { x: r.view.roll.toFixed(2) }));
+      var g = this; if (g.disabled) return;
+      g.disabled = true;
+      var r = await play('dice', { duel: side });
+      if (!r) { g.disabled = false; return; }
+      var R = $('csDdR'), B = $('csDdB');
+      R.className = 'dd-die roll'; B.className = 'dd-die roll';
+      for (var t = 0; t < 10; t++) { R.innerHTML = duelDie(1 + Math.floor(Math.random() * 6), true); B.innerHTML = duelDie(1 + Math.floor(Math.random() * 6), false); await sleep(75); }
+      R.innerHTML = duelDie(r.view.r, true); B.innerHTML = duelDie(r.view.b, false);
+      R.className = 'dd-die' + (r.view.r > r.view.b ? ' top' : ''); B.className = 'dd-die' + (r.view.b > r.view.r ? ' top' : '');
+      resultLine(box, r, r.view.r + ' — ' + r.view.b + (r.view.r === r.view.b ? ' · ' + (x.tieBack || 'égalité, mise rendue') : ''));
+      g.disabled = false;
     });
   };
 

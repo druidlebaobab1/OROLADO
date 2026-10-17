@@ -121,6 +121,7 @@ const CASINO_WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], 
 const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.4, 0.6, 1.4, 3, 12];                                      // 8 rangées, retour 95,9 %
 const CASINO_KENO = [0, 0.6, 3.5, 25];                                                               // 3 numéros choisis sur 20, 5 tirés : retour 95,6 %
 const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 %
+const CASINO_DICE_DUEL = 1.92;                                                                         // v2724 : dé rouge contre dé noir
 const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 %
 const CASINO_PENALTY_MULT = 1.44;                                                                     // 3 zones, le gardien en couvre 1 : retour 96 %
 const CASINO_EDGE = 0.97;                                                                             // dés, limbo, avion, mines, hi-lo
@@ -210,6 +211,13 @@ function casino_instant(string $game, array $p, float $stake): array {
       $r = random_int(0, 1);
       return ['mult' => $r === $side ? CASINO_COIN_MULT : 0.0, 'view' => ['r' => $r]];
     case 'dice':
+      // v2724 (propriétaire) : DUEL de dés — dé rouge contre dé noir, le plus grand gagne ×1,92 ; égalité = mise rendue (retour 96,7 %)
+      if ((string) ($p['duel'] ?? '') !== '') {
+        $side = $p['duel'] === 'black' ? 'black' : 'red';
+        $dr = random_int(1, 6); $db2 = random_int(1, 6);
+        $m = $dr === $db2 ? 1.0 : (($side === 'red') === ($dr > $db2) ? CASINO_DICE_DUEL : 0.0);
+        return ['mult' => $m, 'view' => ['r' => $dr, 'b' => $db2, 'side' => $side]];
+      }
       $c = max(2, min(95, (int) ($p['chance'] ?? 50)));
       $over = !empty($p['over']);
       $roll = random_int(0, 9999) / 100; // 0,00 à 99,99
