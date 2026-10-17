@@ -10,7 +10,7 @@ declare(strict_types=1);
  * Fichiers : data/sports/events.json, data/sports/bets.json (verrou de fichier).
  */
 
-const SP_MIN = 0.10;
+const SP_MIN = 1.00; // v2766 (propriétaire) : mise minimum 1 $ sur les paris (évite les montantes / martingales)
 const SP_MAX_SEL = 10;
 const SP_MAX_WIN = 5000.0;        // gain maximal caché par coupon
 const SP_DEFAULT_MAX_STAKE = 50.0; // mise maximale cachée par coupon (modifiable par match dans l'admin)

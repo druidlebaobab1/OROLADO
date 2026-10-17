@@ -7,17 +7,20 @@
     fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Coupon', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
       placed: '✅ Pari enregistré · gain possible {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
-      e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
+      e_min: 'Mise minimum 1 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
+      myCoupon: 'Mon coupon', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 1 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
       betsTab: 'Paris', guestMine: 'Crée ton compte pour parier : tous tes paris s’afficheront ici, avec leur résultat.', guestBtn: 'Créer mon compte', seeBets: 'Voir les paris', stakeL: 'Mise', oddL: 'Cote', potL: 'Gain possible', wonL: 'Gagné', lostL: 'Perdu', voidL: 'Remboursé', loading: 'Un instant…',
       all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
     en: { none: 'No match right now. Big matches are coming here soon.', coupon: 'Bet slip', sel: '{n} selection(s)', odd: 'Odds', stake: 'Stake', pot: 'Potential win', bet: 'Place bet', clear: 'Clear',
       placed: '✅ Bet placed! Potential win: ${p}', mine: 'My bets', noBets: 'No bet yet.', open: 'Open', won: 'Won', lost: 'Lost', void: 'Void',
       closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 10 matches in a slip.',
-      e_min: 'Minimum stake $0.10.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
+      e_min: 'Minimum stake $1.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
+      myCoupon: 'My bet slip', clearAll: 'Remove all', confirmClear: 'Sure? Tap again', comboT: 'Multiple:', combo: 'all your picks must win. The odds multiply.', singleT: 'Single:', single: 'one pick.', totalOdd: 'Total odds', see: 'Open', minNote: 'Minimum stake $1', done: 'Bet placed!', cont: 'Continue', emptySlip: 'Your bet slip is empty. Tap an odd to start.',
       betsTab: 'Bets', guestMine: 'Create your account to bet: all your bets will show here, with their result.', guestBtn: 'Create my account', seeBets: 'See the bets', stakeL: 'Stake', oddL: 'Odds', potL: 'Potential win', wonL: 'Won', lostL: 'Lost', voidL: 'Refunded', loading: 'One moment…',
       all: 'All', drawCode: 'X', sport: { foot: 'Football', basket: 'Basketball', boxe: 'Boxing', tennis: 'Tennis', mma: 'MMA', event: 'Predictions', crypto: 'Crypto', politique: 'Politics', autre: 'Sport' } }
   };
   T.zh = Object.assign({}, T.en, { none: '暂无比赛，重大赛事即将上线。', coupon: '投注单', sel: '已选 {n} 场', odd: '赔率', stake: '投注', pot: '可赢', bet: '确认投注', clear: '清空',
+    myCoupon: '我的投注单', clearAll: '全部删除', confirmClear: '确定？再点一次', comboT: '串关：', combo: '所有选择都必须赢，赔率相乘。', singleT: '单关：', single: '只有一个选择。', totalOdd: '总赔率', see: '查看', minNote: '最低投注 1 美元', done: '投注成功！', cont: '继续', emptySlip: '投注单是空的，点击赔率开始。',
     betsTab: '投注', guestMine: '注册后即可投注：你的所有投注和结果都会显示在这里。', guestBtn: '创建账户', seeBets: '查看投注', stakeL: '投注', oddL: '赔率', potL: '可赢', wonL: '已赢', lostL: '输', voidL: '已退款', loading: '请稍候…',
     placed: '✅ 投注成功！可赢：{p} 美元', mine: '我的投注', noBets: '暂无投注。', open: '进行中', won: '赢', lost: '输', void: '取消', closed: '已停止投注', result: '结果', starts: '开始', today: '今天', tomorrow: '明天', draw: '平局',
     sport: { foot: '足球', basket: '篮球', boxe: '拳击', tennis: '网球', mma: '综合格斗', event: '预测', crypto: '加密货币', politique: '政治', autre: '体育' } });
@@ -91,7 +94,7 @@
   function teams(t) { var m = String(t || '').split(/\s+(?:-|–|—|vs\.?|VS|contre)\s+/); return m.length === 2 ? m : null; }
   var flt = 'all';
   var ctx = null, events = [], slip = [], stake = 1, box = null;
-  try { stake = Math.max(0.1, +(localStorage.getItem('oro_sp_stake') || 1)); } catch (e) { /* ignore */ }
+  try { stake = Math.max(1, +(localStorage.getItem('oro_sp_stake') || 1)); } catch (e) { /* ignore */ }
 
   function when(t) {
     var x = X(), d = new Date(t * 1000), now = new Date(), tm = new Date(now.getTime() + 86400000);
@@ -171,6 +174,7 @@
     if (!box) return;
     var x = X();
     if (view === 'mine') { renderMine(); return; }
+    if (view === 'slip') { renderSlip(); return; }
     if (!events.length) {
       box.innerHTML = tabs() + '<div class="sp-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.none) + '</b></div>'; bindTabs(); return;
     }
@@ -205,47 +209,76 @@
     });
     bindTabs(); bindSlip();
   }
-  function mineBtn() { return '<button type="button" class="sp-mine" id="spMineBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>' + esc(X().mine) + '</button><div id="spMine"></div>'; }
-  function bindMine() {
-    var b = $('spMineBtn'); if (!b) return;
-    b.addEventListener('click', async function () {
-      var x = X(), out = $('spMine');
-      if (ctx.guest) { if (ctx.signup) ctx.signup(); return; }
-      if (out.innerHTML) { out.innerHTML = ''; return; }
-      var r = null; try { r = await D6.Api.post('spMine', {}, 15000); } catch (e) { r = null; }
-      var bets = (r && r.ok && r.bets) || [];
-      out.innerHTML = bets.length ? bets.map(function (bt) {
-        return '<div class="sp-bt ' + bt.status + '"><div class="sp-bt-h"><b>' + esc(x[bt.status] || bt.status) + '</b><span>' + m2(bt.stake) + ' $ × ' + bt.odd.toFixed(2) + ' = <i>' + m2(bt.status === 'won' ? bt.win : bt.pot) + ' $</i></span></div>' +
-          bt.sel.map(function (s) { return '<div class="sp-bt-s ' + (s.r || '') + '"><span>' + esc(s.t) + '</span><em>' + esc(s.l) + ' · ' + s.odd.toFixed(2) + '</em></div>'; }).join('') + '</div>';
-      }).join('') : '<p class="sp-none">' + esc(x.noBets) + '</p>';
-    });
-  }
+  /* v2766 (propriétaire) — COUPON comme les grands sites : une barre en bas « Coupon · n choix · cote », qui s'ouvre
+     en GRANDE PAGE : chaque choix avec sa croix, « Tout supprimer » (avec confirmation), simple / combiné expliqué,
+     mises rapides, gain possible en grand, puis un REÇU après le pari. Mise minimum 1 $ (vérifiée aussi par le serveur). */
+  var lastBet = null, clearArm = 0;
   function slipBar() {
-    if (!slip.length) return '';
-    var x = X(), odd = totalOdd();
-    return '<div class="sp-slip" id="spSlip"><div class="sp-slip-h"><b>' + esc(x.coupon) + '</b><span>' + esc(fmt(x.sel, { n: slip.length })) + '</span><button type="button" id="spClear">' + esc(x.clear) + '</button></div>' +
-      slip.map(function (s) { return '<div class="sp-sl"><span>' + esc(s.t) + '</span><em>' + esc(s.l) + ' · ' + s.odd.toFixed(2) + '</em></div>'; }).join('') +
-      '<div class="sp-slip-r"><span>' + esc(x.odd) + ' <b>' + odd.toFixed(2) + '</b></span><label>' + esc(x.stake) + ' <input id="spStake" inputmode="decimal" value="' + m2(stake) + '"></label></div>' +
-      '<button type="button" class="cs-go sp-go" id="spGo">' + esc(x.bet) + ' · ' + esc(x.pot) + ' ' + m2(stake * odd) + ' $</button></div>';
+    if (!slip.length || view !== 'list') return '';
+    var x = X();
+    return '<button type="button" class="sp-sbar" id="spSbar"><span class="sp-sbar-n">' + slip.length + '</span><span class="sp-sbar-t"><b>' + esc(x.coupon) + '</b><small>' + esc(fmt(x.sel, { n: slip.length })) + '</small></span>' +
+      '<span class="sp-sbar-o"><small>' + esc(x.totalOdd) + '</small><b>' + totalOdd().toFixed(2) + '</b></span><em>' + esc(x.see) + ' ›</em></button>';
   }
   function bindSlip() {
-    if (!$('spSlip')) return;
+    var b = $('spSbar'); if (b) b.addEventListener('click', function () { view = 'slip'; render(); });
+  }
+  function renderSlip() {
     var x = X();
-    $('spClear').addEventListener('click', function () { slip = []; render(); });
+    var head = '<div class="sp-cp-h"><button type="button" class="sp-cp-back" id="spCpBack" aria-label="‹">‹</button><b>' + esc(x.myCoupon) + (slip.length ? ' <i>' + slip.length + '</i>' : '') + '</b>' +
+      (slip.length ? '<button type="button" class="sp-cp-clear" id="spCpClear">' + esc(x.clearAll) + '</button>' : '<span></span>') + '</div>';
+    if (lastBet) {
+      var lb = lastBet;
+      box.innerHTML = head + '<div class="sp-done"><span class="sp-done-ok">✓</span><b>' + esc(x.done) + '</b><div class="sp-done-r"><span>' + esc(x.stakeL) + ' <b>' + m2(lb.stake) + ' $</b></span><span>' + esc(x.oddL) + ' <b>' + Number(lb.odd).toFixed(2) + '</b></span><span>' + esc(x.potL) + ' <b>' + m2(lb.pot) + ' $</b></span></div>' +
+        '<small class="sp-done-id">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small><button type="button" class="sp-cta" id="spSeeMine">' + esc(x.mine) + '</button><button type="button" class="sp-cta2" id="spCont">' + esc(x.cont) + '</button></div>';
+      $('spCpBack').addEventListener('click', function () { lastBet = null; view = 'list'; render(); });
+      $('spSeeMine').addEventListener('click', function () { lastBet = null; view = 'mine'; render(); });
+      $('spCont').addEventListener('click', function () { lastBet = null; view = 'list'; render(); });
+      return;
+    }
+    if (!slip.length) {
+      box.innerHTML = head + '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.emptySlip) + '</b><button type="button" class="sp-cta" id="spCont">' + esc(x.seeBets) + '</button></div>';
+      $('spCpBack').addEventListener('click', function () { view = 'list'; render(); });
+      $('spCont').addEventListener('click', function () { view = 'list'; render(); });
+      return;
+    }
+    var odd = totalOdd();
+    box.innerHTML = head +
+      '<p class="sp-cp-type ' + (slip.length > 1 ? 'combo' : 'single') + '"><b>' + esc(slip.length > 1 ? x.comboT : x.singleT) + '</b> ' + esc(slip.length > 1 ? x.combo : x.single) + '</p>' +
+      '<div class="sp-cp-list">' + slip.map(function (z, i) {
+        return '<div class="sp-cp-s"><div><small>' + esc(z.t) + '</small><b>' + esc(z.l) + '</b></div><em>' + Number(z.odd).toFixed(2) + '</em><button type="button" class="sp-cp-x" data-i="' + i + '" aria-label="×">×</button></div>';
+      }).join('') + '</div>' +
+      '<div class="sp-cp-tot"><span>' + esc(x.totalOdd) + '</span><b>' + odd.toFixed(2) + '</b></div>' +
+      '<div class="sp-cp-stake"><label>' + esc(x.stakeL) + '</label><div class="sp-cp-in"><input id="spStake" inputmode="decimal" value="' + m2(stake) + '"><span>$</span></div>' +
+      '<div class="sp-cp-chips">' + [1, 5, 10, 25].map(function (v) { return '<button type="button" data-v="' + v + '" class="' + (stake === v ? 'on' : '') + '">' + v + ' $</button>'; }).join('') + '</div>' +
+      '<small class="sp-cp-min">' + esc(x.minNote) + '</small></div>' +
+      '<div class="sp-cp-pot"><span>' + esc(x.potL) + '</span><b id="spPot">' + m2(stake * odd) + ' $</b></div>' +
+      '<button type="button" class="sp-cp-go" id="spGo">' + esc(x.bet) + ' · <span id="spGoAmt">' + m2(stake) + ' $</span></button>';
+    $('spCpBack').addEventListener('click', function () { view = 'list'; render(); });
+    $('spCpClear').addEventListener('click', function () {
+      var bt = this;
+      if (Date.now() - clearArm > 3000) { clearArm = Date.now(); bt.textContent = x.confirmClear; bt.classList.add('arm'); return; }
+      clearArm = 0; slip = []; view = 'list'; render();
+    });
+    box.querySelectorAll('.sp-cp-x').forEach(function (bt) { bt.addEventListener('click', function () { slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
+    var upd = function () {
+      $('spPot').textContent = m2(stake * totalOdd()) + ' $'; $('spGoAmt').textContent = m2(stake) + ' $';
+      box.querySelectorAll('.sp-cp-chips [data-v]').forEach(function (c) { c.classList.toggle('on', +c.getAttribute('data-v') === stake); });
+    };
     $('spStake').addEventListener('input', function () {
       var v = parseFloat(String(this.value).replace(',', '.')); if (!(v > 0)) return;
       stake = Math.round(v * 100) / 100; try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ }
-      $('spGo').textContent = x.bet + ' · ' + x.pot + ' ' + m2(stake * totalOdd()) + ' $';
+      upd();
     });
+    box.querySelectorAll('.sp-cp-chips [data-v]').forEach(function (c) { c.addEventListener('click', function () { stake = +c.getAttribute('data-v'); $('spStake').value = m2(stake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } upd(); }); });
     $('spGo').addEventListener('click', async function () {
-      if (ctx.guest) { if (ctx.signup) ctx.signup(); return; } // v2698 : une seule fenêtre
-      var b = this; b.disabled = true;
-      var r = null; try { r = await D6.Api.post('spBet', { mode: 'real', stake: stake, sel: slip.map(function (s) { return { ev: s.ev, k: s.k }; }) }, 15000); } catch (e) { r = null; }
-      b.disabled = false;
+      if (ctx.guest) { if (ctx.signup) ctx.signup(); return; }
+      if (stake < 1) { if (ctx.toast) ctx.toast(x.e_min); return; }
+      var bt = this; if (bt.disabled) return; bt.disabled = true;
+      var r = null; try { r = await D6.Api.post('spBet', { mode: 'real', stake: stake, sel: slip.map(function (z) { return { ev: z.ev, k: z.k }; }) }, 15000); } catch (e) { r = null; }
+      bt.disabled = false;
       if (!r || !r.ok) { if (ctx.toast) ctx.toast(x['e_' + ((r && r.reason) || 'unavailable')] || x.e_unavailable); return; }
-      if (ctx.toast) ctx.toast(fmt(x.placed, { p: m2(r.bet.pot) }), 'ok');
-      if (ctx.afterPlay) ctx.afterPlay({ mode: 'real', bal: r.bal, win: 0, stake: r.bet.stake });
-      slip = []; mineCache = null; render();
+      if (ctx.afterPlay) ctx.afterPlay({ mode: (r.bet && r.bet.mode) || 'real', bal: r.bal, win: 0, stake: r.bet.stake });
+      slip = []; mineCache = null; lastBet = r.bet; render();
     });
   }
   D6.Sports = { paint: paint };
