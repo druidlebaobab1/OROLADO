@@ -54,7 +54,7 @@
   function ini(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase() || '?'); }
   var AVC = ['#F97316', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#14B8A6', '#EAB308', '#EF4444'];
   function avc(n) { var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return AVC[h % AVC.length]; }
-  function logo() { return D6.CasinoArt ? D6.CasinoArt.planet('g_send') : (D6.LiveIcon ? D6.LiveIcon('send') : ''); }
+  function logo() { return D6.OroSendLogo ? D6.OroSendLogo('ls-logo') : (D6.LiveIcon ? D6.LiveIcon('send') : ''); } // v2786 : le hibou OROLADO
   async function api(a, d) { try { return await D6.Api.post(a, d || {}, 20000); } catch (e) { return null; } }
   async function live(a, d) {
     try {
@@ -78,14 +78,15 @@
     var friends = (fr && fr.ok && fr.list) ? fr.list.slice(0, 20) : [];
     var noDep = st.can < (st.min || 1);
     box.innerHTML = '<div class="ls2">' +
-      '<div class="ls2-hero">' + logo() + '<small>' + esc(x.can) + '</small><b>' + m2(st.can) + ' <i>$</i></b></div>' +
+      // v2786 (propriétaire) : carte de solde comme les grandes applis d'envoi (petit hibou, disponible, 0 % de frais)
+      '<div class="ls2-card"><span class="ls2-cl">' + logo() + '</span><div class="ls2-cv"><small>' + esc(x.can) + '</small><b>' + m2(st.can) + ' <i>$</i></b></div><em class="ls2-cf">' + esc(x.fee0) + '</em></div>' +
       (noDep ? '<p class="ls2-nodep">' + esc(x.noDep) + '</p><button type="button" class="ls2-go" id="lsDep">' + esc(x.deposit) + '</button>' :
         '<div class="ls2-sec"><label>' + esc(x.to) + '</label>' +
         (friends.length ? '<div class="ls2-fr">' + friends.map(function (f) { return '<button type="button" data-id="' + esc(f.id) + '"><i style="--av:' + avc(f.name) + '">' + ini(f.name) + '</i><span>' + esc(f.name) + '</span></button>'; }).join('') + '</div>' : '') +
-        '<input class="ls2-in" id="lsTo" maxlength="16" spellcheck="false" autocapitalize="characters" placeholder="' + esc(x.toPh) + '" value="' + esc(preId || '') + '"></div>' +
+        '<input class="ls2-in" id="lsTo" maxlength="80" spellcheck="false" autocapitalize="off" autocomplete="off" inputmode="email" placeholder="' + esc(x.toPh) + '" value="' + esc(preId || '') + '"></div>' +
         '<div class="ls2-sec ls2-amt"><label>' + esc(x.amount) + '</label><div class="ls2-big"><input id="lsAmt" inputmode="decimal" placeholder="0"><i>$</i></div>' +
         '<div class="ls2-chips">' + [5, 10, 20, 50].map(function (v) { return '<button type="button" data-v="' + v + '">' + v + ' $</button>'; }).join('') + '<button type="button" data-v="max">MAX</button></div></div>' +
-        '<button type="button" class="ls2-go" id="lsGo">' + esc(x.go) + '</button><p class="ls2-fee">' + esc(x.fee0) + '</p>') +
+        '<button type="button" class="ls2-go" id="lsGo">' + esc(x.go) + ' <span aria-hidden="true">→</span></button>') +
       '</div><b class="ls2-h">' + esc(x.hist) + '</b><div class="ls2-hist" id="lsHist">' + hist() + '</div>' +
       '<div class="ls2-sheet" id="lsSheet" hidden></div>';
     if ($('lsDep')) $('lsDep').addEventListener('click', function () { if (D6.Live) D6.Live.close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); });

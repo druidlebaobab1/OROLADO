@@ -4981,7 +4981,29 @@
             if (pd > 4) { e.style.setProperty('padding-left', (pd - 1) + 'px', 'important'); e.style.setProperty('padding-right', (pd - 1) + 'px', 'important'); }
           });
         }
+        equal(row);
       } catch (e) { /* jamais bloquant */ } finally { busy = false; }
+    }
+    // v2786 (propriétaire) : joueur connecté — le MÊME écart entre Cadeaux · Paris · Jeux · Social · Profil, sur tous les
+    // téléphones et dans toutes les langues (on décale seulement Paris, Jeux et Social, sans toucher à la mise en page)
+    function equal(row) {
+      var ids = ['btnPortal', 'btnCasino', 'btnGames', 'btnHelp', 'btnProfile'];
+      var els = ids.map($);
+      els.forEach(function (e) { if (e) e.style.removeProperty('translate'); });
+      var guest = document.documentElement.classList.contains('oro-guest') || document.body.classList.contains('oro-guest');
+      if (guest || window.innerWidth > window.innerHeight || els.some(function (e) { return !e || !e.offsetWidth; })) return;
+      var pairs = els.map(function (e) { return [e, e.getBoundingClientRect()]; }).sort(function (a, b) { return a[1].left - b[1].left; }); // marche aussi en arabe (de droite à gauche)
+      els = pairs.map(function (p) { return p[0]; });
+      var r = pairs.map(function (p) { return p[1]; });
+      var sum = r.reduce(function (s, b) { return s + b.width; }, 0);
+      var gap = (r[4].right - r[0].left - sum) / 4;
+      if (!(gap > 0)) return;
+      var x = r[0].right;
+      for (var i = 1; i < 4; i++) {
+        var want = x + gap, dx = Math.round((want - r[i].left) * 10) / 10;
+        if (Math.abs(dx) > .5) els[i].style.setProperty('translate', dx + 'px 0');
+        x = want + r[i].width;
+      }
     }
     function later(ms) { clearTimeout(t); t = setTimeout(fit, ms || 120); }
     window.addEventListener('resize', function () { later(200); });

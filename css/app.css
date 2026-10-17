@@ -12451,3 +12451,35 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 /* v2785 : Jeux / Paris — « + » À LA FIN, après le montant : [portefeuille] COMPTE RÉEL $ … [+] */
 html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 5px 4px 10px!important;gap:8px!important}
 html[dir=rtl]:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 10px 4px 5px!important}
+
+/* ===== v2786 (propriétaire) — ENVOYER DE L'ARGENT : page comme les grandes applis d'envoi, avec le hibou OROLADO ===== */
+html body #liveModal .ls2{display:flex;flex-direction:column;gap:14px;padding:4px 2px 8px}
+html body #liveModal .ls2-card{position:relative;display:flex;align-items:center;gap:12px;padding:16px 14px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(135deg,#FF9A3C 0%,#F26A0F 48%,#C2410C 100%);box-shadow:0 14px 30px -16px rgba(242,106,15,.9),inset 0 1px 0 rgba(255,255,255,.35)}
+html body #liveModal .ls2-card::after{content:'';position:absolute;right:-40px;top:-50px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.12)}
+html body #liveModal .ls2-cl{flex:0 0 auto;width:54px;height:54px;border-radius:16px;background:rgba(20,16,50,.92);display:grid;place-items:center;position:relative;z-index:1}
+html body #liveModal .ls2-cl .oro-send-logo{width:46px;height:46px}
+html body #liveModal .ls2-cv{flex:1;min-width:0;position:relative;z-index:1}
+html body #liveModal .ls2-cv small{display:block;font-size:12px;font-weight:700;color:rgba(255,255,255,.88)}
+html body #liveModal .ls2-cv b{display:block;font-size:28px;font-weight:900;color:#fff;letter-spacing:-.01em;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body #liveModal .ls2-cv b i{font-style:normal;font-size:18px;opacity:.9}
+html body #liveModal .ls2-cf{position:relative;z-index:1;align-self:flex-start;font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:rgba(20,16,50,.35);border:1px solid rgba(255,255,255,.35);padding:4px 8px;border-radius:99px;white-space:nowrap}
+html body #liveModal .ls2-sec{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:12px}
+html body #liveModal .ls2-sec > label{display:block;font-size:12.5px;font-weight:800;color:#E2E8F0;margin:0 0 8px}
+html body #liveModal .ls2-in{width:100%;height:48px;border-radius:14px;border:1.5px solid rgba(255,255,255,.16);background:rgba(10,8,30,.55);color:#fff;font:600 15px/1 inherit;padding:0 14px}
+html body #liveModal .ls2-in:focus{outline:none;border-color:#FF9A3C;box-shadow:0 0 0 3px rgba(255,154,60,.25)}
+html body #liveModal .ls2-big{display:flex;align-items:baseline;justify-content:center;gap:6px;padding:4px 0 2px}
+html body #liveModal .ls2-big input{width:100%;max-width:220px;text-align:center;background:none;border:0;border-bottom:2px solid rgba(255,154,60,.6);color:#fff;font:900 40px/1.1 inherit;padding:2px 0}
+html body #liveModal .ls2-big input:focus{outline:none;border-bottom-color:#FF9A3C}
+html body #liveModal .ls2-big i{font-style:normal;font-size:24px;font-weight:900;color:#FF9A3C}
+html body #liveModal .ls2-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+html body #liveModal .ls2-chips button{height:34px;padding:0 12px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;font:800 13px/1 inherit}
+html body #liveModal .ls2-chips button[data-v="max"]{border-color:rgba(255,154,60,.7);color:#FFB067}
+html body #liveModal .ls2 > .ls2-go,html body #liveModal .ls2-go{height:54px;border:0;border-radius:16px;background:linear-gradient(135deg,#FF9A3C,#F26A0F);color:#fff;font:900 17px/1 inherit;box-shadow:0 12px 24px -12px rgba(242,106,15,.95)}
+html body #liveModal .ls2-fr button.on i{box-shadow:0 0 0 3px #FF9A3C}
+html body #liveModal .ls2-hero{display:none}
+.lgu-ico .oro-send-logo{width:100%;height:100%}
+/* v2786 (propriétaire) : Social — le bouton Retour reste tout au bord, le titre est centré (plus jamais collé au Retour) */
+html body #liveModal .live-bar{position:relative!important;justify-content:flex-start!important;min-height:44px}
+html body #liveModal .live-bar #liveBarT{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;max-width:calc(100% - 128px)!important;
+  margin:0!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:17px!important;font-weight:900!important}

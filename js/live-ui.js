@@ -102,7 +102,7 @@
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function guestPage(box, k, extra) {
     var x = GX(), p = x[k] || x.friends;
-    box.innerHTML = '<div class="lgu" style="--tc:' + color(k) + '"><div class="lgu-ico">' + icon(k) + '</div><b class="lgu-t">' + esc(p[0]) + '</b><p class="lgu-s">' + esc(p[1]) + '</p>' +
+    box.innerHTML = '<div class="lgu" style="--tc:' + color(k) + '"><div class="lgu-ico">' + (k === 'send' ? sendLogo('lgu-owl') : icon(k)) + '</div><b class="lgu-t">' + esc(p[0]) + '</b><p class="lgu-s">' + esc(p[1]) + '</p>' +
       '<ul class="lgu-l">' + p[2].map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>' +
       '<button type="button" class="lgu-go" data-a="register">' + esc(x.btn) + '</button><button type="button" class="lgu-have" data-a="login">' + esc(x.have) + '</button>' +
       (extra || '') + '<small class="lgu-free">' + esc(x.free) + '</small></div>';
@@ -187,7 +187,28 @@
   setTimeout(loadPack, 1200);
   document.addEventListener('oro:lang', function () { setTimeout(loadPack, 50); });
   D6.BigPageSwipe = bindSwipe; // v2690 : aussi pour la page Casino (créée plus tard)
-  D6.LiveIcon = icon;
+  /* v2786 (propriétaire) — LOGO DU TRANSFERT OROLADO : le hibou (tête carrée, perché sur sa branche) dans un rond orange
+     ouvert ; dans l'ouverture, un grand « bec » d'envoi bien droit (comme un avion en papier), avec un petit espace. */
+  var oroN = 0;
+  function sendLogo(cls) {
+    var id = 'osl' + (++oroN), c = 24, r = 18, rad = Math.PI / 180;
+    var P = function (a, rr) { return [c + (rr || r) * Math.cos(a * rad), c + (rr || r) * Math.sin(a * rad)]; };
+    var p1 = P(-67), p2 = P(-23), ap = P(-45, 28.2), d = [.7071, .7071], s = 1.7;
+    var b1 = [p1[0] + d[0] * s, p1[1] + d[1] * s], b2 = [p2[0] - d[0] * s, p2[1] - d[1] * s];
+    var mid = [(b1[0] + b2[0]) / 2, (b1[1] + b2[1]) / 2], f = function (p) { return p[0].toFixed(2) + ' ' + p[1].toFixed(2); };
+    // sur le fond sombre du site : hibou BLANC (yeux bleu nuit) ; sur fond clair (classe « light ») : hibou bleu nuit
+    var light = !!(cls && cls.indexOf('light') > -1), N = light ? '#1E1B4B' : '#FFFFFF', EY = light ? '#fff' : '#1E1B4B', PU = light ? '#1E1B4B' : '#fff';
+    return '<svg class="oro-send-logo' + (cls ? ' ' + cls : '') + '" viewBox="-1 -4 53 53" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFA23A"/><stop offset="1" stop-color="#F0590B"/></linearGradient></defs>' +
+      '<path d="M' + f(p1) + 'A18 18 0 1 0 ' + f(p2) + '" fill="none" stroke="url(#' + id + ')" stroke-width="4.2"/>' +
+      '<path d="M' + f(b1) + 'L' + f(ap) + 'L' + f(b2) + 'Z" fill="#F57A1F" stroke="#F57A1F" stroke-width="1" stroke-linejoin="round"/>' +
+      '<path d="M' + f(ap) + 'L' + f(mid) + '" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".85"/>' +
+      '<rect x="15" y="13.5" width="18" height="19.5" rx="7.2" fill="' + N + '"/><path d="M15.6 17l.4-5.8 4.6 3.2zM32.4 17l-.4-5.8-4.6 3.2z" fill="' + N + '"/>' +
+      '<circle cx="20.2" cy="21.2" r="3.6" fill="' + EY + '"/><circle cx="27.8" cy="21.2" r="3.6" fill="' + EY + '"/><circle cx="20.2" cy="21.2" r="1.7" fill="' + PU + '"/><circle cx="27.8" cy="21.2" r="1.7" fill="' + PU + '"/>' +
+      '<path d="M24 24.4l-1.6 2.2h3.2z" fill="#F0590B"/><path d="M21.4 33v2.1M26.6 33v2.1" stroke="#F0590B" stroke-width="1.1" stroke-linecap="round"/>' +
+      '<path d="M14.5 35.6h19" stroke="#F0590B" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  }
+  D6.OroSendLogo = sendLogo;
+  D6.LiveIcon = function (k, cls) { return k === 'send' ? sendLogo(cls) : icon(k, cls); };
   D6.LiveColor = color;
   D6.LiveGuest = guestPage;
 })(window.D6 = window.D6 || {});
