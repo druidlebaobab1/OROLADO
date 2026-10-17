@@ -542,16 +542,43 @@
   function LX() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, LT.en, LT[l] || {}); }
   var CRYPTOS = [['BTC', '#F7931A', '₿'], ['ETH', '#627EEA', 'Ξ'], ['USDT', '#26A17B', '₮'], ['BNB', '#F3BA2F', 'B'], ['SOL', '#9945FF', 'S'], ['XRP', '#2B3440', 'X'], ['DOGE', '#C2A633', 'Ð'], ['TON', '#0098EA', 'T'],
     ['ADA', '#0033AD', 'A'], ['TRX', '#EB0029', 'T'], ['LTC', '#345D9D', 'Ł'], ['DOT', '#E6007A', 'D'], ['AVAX', '#E84142', 'A'], ['SHIB', '#FFA409', 'S'], ['LINK', '#2A5ADA', 'L']];
-  function cCoin(i, cls) { var c = CRYPTOS[i] || CRYPTOS[0]; return '<i class="lv-coin' + (cls ? ' ' + cls : '') + '" style="--cc:' + c[1] + '"><b>' + c[2] + '</b></i>'; }
+  // v2749 (propriétaire) : les VRAIS logos des 15 cryptos, dessinés (on reconnaît tout de suite BTC, ETH, USDT…)
+  var CRYPTO_ART = [
+    '<circle cx="16" cy="16" r="16" fill="#F7931A"/><g transform="rotate(14 16 16)"><path d="M12.2 9.4h5.2c2.1 0 3.6 1.1 3.6 2.9 0 1.3-.8 2.2-1.9 2.5 1.5.3 2.5 1.3 2.5 2.9 0 2.1-1.7 3.3-4 3.3h-5.4zm2.5 2v3.2h2.5c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6zm0 5.2v3.4h2.8c1.1 0 1.8-.6 1.8-1.7s-.7-1.7-1.8-1.7z" fill="#fff"/><path d="M14 7.6v2M16.4 7.6v2M14 21v2M16.4 21v2" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></g>',
+    '<circle cx="16" cy="16" r="16" fill="#627EEA"/><path d="M16 5l-6.4 10.8L16 19.5l6.4-3.7z" fill="#fff"/><path d="M16 5v14.5l6.4-3.7z" fill="#C0CBF6"/><path d="M16 20.8l-6.4-3.7L16 27l6.4-9.9z" fill="#fff"/><path d="M16 20.8V27l6.4-9.9z" fill="#C0CBF6"/>',
+    '<circle cx="16" cy="16" r="16" fill="#26A17B"/><path d="M9 8.5h14v3.4h-5.2v3c3.4.2 5.9.9 5.9 1.8s-2.5 1.6-5.9 1.8v6.3h-3.6v-6.3c-3.4-.2-5.9-.9-5.9-1.8s2.5-1.6 5.9-1.8v-3H9z" fill="#fff"/><ellipse cx="16" cy="16.7" rx="5.6" ry="1.1" fill="#26A17B"/>',
+    '<circle cx="16" cy="16" r="16" fill="#F3BA2F"/><g fill="#fff"><path d="M16 7.5l2.8 2.8-2.8 2.8-2.8-2.8z"/><path d="M16 18.9l2.8 2.8-2.8 2.8-2.8-2.8z"/><path d="M10.3 13.2l2.8 2.8-2.8 2.8-2.8-2.8z"/><path d="M21.7 13.2l2.8 2.8-2.8 2.8-2.8-2.8z"/><path d="M16 13.6l2.4 2.4-2.4 2.4-2.4-2.4z"/></g>',
+    '<circle cx="16" cy="16" r="16" fill="#111827"/><defs><linearGradient id="solG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9945FF"/><stop offset="1" stop-color="#14F195"/></linearGradient></defs><g fill="url(#solG)"><path d="M10.5 10h12.5l-2 2.4H8.5z"/><path d="M8.5 14.8H21l2 2.4H10.5z"/><path d="M10.5 19.6h12.5l-2 2.4H8.5z"/></g>',
+    '<circle cx="16" cy="16" r="16" fill="#23292F"/><path d="M9 9h2.6l3.1 3.1c.7.7 1.9.7 2.6 0L20.4 9H23l-4.5 4.4a3.6 3.6 0 0 1-5 0zM9 23h2.6l3.1-3.1c.7-.7 1.9-.7 2.6 0l3.1 3.1H23l-4.5-4.4a3.6 3.6 0 0 0-5 0z" fill="#fff"/>',
+    '<circle cx="16" cy="16" r="16" fill="#C2A633"/><path d="M11.5 9.5h4.6c4 0 6.4 2.6 6.4 6.5s-2.4 6.5-6.4 6.5h-4.6zm2.6 2.3v8.4h1.9c2.5 0 3.8-1.6 3.8-4.2s-1.3-4.2-3.8-4.2z" fill="#fff"/><path d="M9.6 15.2h7v1.8h-7z" fill="#fff"/>',
+    '<circle cx="16" cy="16" r="16" fill="#0098EA"/><path d="M9.6 10h12.8c.9 0 1.4 1 1 1.7L16 24.4 8.6 11.7c-.4-.7.1-1.7 1-1.7z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M16 10v14" stroke="#fff" stroke-width="2"/>',
+    '<circle cx="16" cy="16" r="16" fill="#0033AD"/><g fill="#fff"><circle cx="16" cy="16" r="2.2"/><circle cx="16" cy="9.2" r="1.4"/><circle cx="16" cy="22.8" r="1.4"/><circle cx="10.1" cy="12.6" r="1.4"/><circle cx="21.9" cy="12.6" r="1.4"/><circle cx="10.1" cy="19.4" r="1.4"/><circle cx="21.9" cy="19.4" r="1.4"/><circle cx="16" cy="5.6" r=".9"/><circle cx="16" cy="26.4" r=".9"/><circle cx="7" cy="10.8" r=".9"/><circle cx="25" cy="10.8" r=".9"/><circle cx="7" cy="21.2" r=".9"/><circle cx="25" cy="21.2" r=".9"/></g>',
+    '<circle cx="16" cy="16" r="16" fill="#EB0029"/><path d="M8 8.5l17 3.6-9.4 12.4z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 8.5l7.6 16 1.4-8.9 8-3.5M17 15.6L8 8.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>',
+    '<circle cx="16" cy="16" r="16" fill="#345D9D"/><path d="M14.2 8h3l-1.7 7 2.6-1-.6 2.3-2.6 1-1.2 4.6h8l-.7 2.6H10.2l1.6-6.2-2.4.9.6-2.2 2.4-.9z" fill="#fff"/>',
+    '<circle cx="16" cy="16" r="16" fill="#E6007A"/><g fill="#fff"><ellipse cx="16" cy="7.8" rx="3.6" ry="2.1"/><ellipse cx="16" cy="24.2" rx="3.6" ry="2.1"/><ellipse cx="8.9" cy="11.9" rx="3.6" ry="2.1" transform="rotate(-60 8.9 11.9)"/><ellipse cx="23.1" cy="11.9" rx="3.6" ry="2.1" transform="rotate(60 23.1 11.9)"/><ellipse cx="8.9" cy="20.1" rx="3.6" ry="2.1" transform="rotate(60 8.9 20.1)"/><ellipse cx="23.1" cy="20.1" rx="3.6" ry="2.1" transform="rotate(-60 23.1 20.1)"/></g>',
+    '<circle cx="16" cy="16" r="16" fill="#E84142"/><path d="M15 8.3c.4-.8 1.6-.8 2 0l2.1 3.8-6.2 10.8H8.6c-.9 0-1.4-1-1-1.7zM19.6 15.6c.4-.8 1.6-.8 2 0l3.2 5.6c.4.7-.1 1.7-1 1.7h-6.4c-.9 0-1.4-1-1-1.7z" fill="#fff"/>',
+    '<circle cx="16" cy="16" r="16" fill="#FFA409"/><path d="M9 8l4.2 4.2h5.6L23 8l.6 8.4c0 4-3.4 7.6-7.6 7.6s-7.6-3.6-7.6-7.6z" fill="#fff"/><circle cx="13.2" cy="16" r="1.4" fill="#B45309"/><circle cx="18.8" cy="16" r="1.4" fill="#B45309"/><path d="M14.6 19.4h2.8L16 21z" fill="#B45309"/>',
+    '<circle cx="16" cy="16" r="16" fill="#2A5ADA"/><path d="M16 7l7.8 4.5v9L16 25l-7.8-4.5v-9z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/>'
+  ];
+  function cryptoSvg(i) { return '<svg viewBox="0 0 32 32" aria-hidden="true">' + (CRYPTO_ART[i] || CRYPTO_ART[0]) + '</svg>'; }
+  function cCoin(i, cls) { var c = CRYPTOS[i] || CRYPTOS[0]; return '<i class="lv-coin lv-logo' + (cls ? ' ' + cls : '') + '" style="--cc:' + c[1] + '">' + cryptoSvg(i) + '</i>'; }
   var HORSE_C = ['#EF4444', '#3B82F6', '#22C55E', '#F59E0B', '#A855F7', '#EC4899', '#14B8A6', '#F97316', '#FACC15', '#E5E7EB'];
-  function silk(i) { return '<i class="lv-silk" style="--hc:' + HORSE_C[i] + '">' + (i + 1) + '</i>'; }
+  // v2749 (propriétaire) : chaque cheval a SA robe (blanc, noir, marron, gris…) + jockey de couleur avec son numéro
+  var COATS = [['#F8FAFC', '#CBD5E1', 'Blanc'], ['#1F2937', '#0B0F19', 'Noir'], ['#8B5A2B', '#5B3A1E', 'Marron'], ['#9CA3AF', '#6B7280', 'Gris'], ['#C2410C', '#7C2D12', 'Alezan'],
+    ['#E9C46A', '#B7791F', 'Doré'], ['#4A2C16', '#2A170A', 'Bai foncé'], ['#E5E7EB', '#A8A29E', 'Gris clair'], ['#A16207', '#713F12', 'Bai'], ['#F5E1C8', '#C8A97E', 'Crème']];
+  function silk(i) { var c = COATS[i] || COATS[0]; return '<i class="lv-silk" style="--hc:' + HORSE_C[i] + ';--coat:' + c[0] + '">' + (i + 1) + '</i>'; }
   function horseSvg(i) {
-    return '<svg viewBox="0 0 64 40" aria-hidden="true"><path d="M15 17Q6 17 3 27" stroke="#3B2412" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
-      '<g stroke="#4A2C16" stroke-width="3.2" stroke-linecap="round"><path d="M20 24l-5 12M24 25l2 12M38 24l5 11M42 23l7 9"/></g>' +
-      '<ellipse cx="30" cy="20" rx="15" ry="7.5" fill="#7A4A24"/><path d="M40 16l8-11 4 2-4 13z" fill="#7A4A24"/><path d="M47 4l11 4-1.5 4.5L46 10z" fill="#6B3F1E"/>' +
-      '<path d="M44 6l-4 9" stroke="#2A170A" stroke-width="2.4" stroke-linecap="round"/>' +
-      '<path d="M27 15h8l-2-7h-5z" fill="' + HORSE_C[i] + '"/><circle cx="31" cy="5.5" r="3.4" fill="' + HORSE_C[i] + '" stroke="#fff" stroke-width=".8"/>' +
-      '<text x="31" y="14.2" text-anchor="middle" font-size="5.5" font-weight="900" font-family="system-ui" fill="' + (i === 9 || i === 8 ? '#111' : '#fff') + '">' + (i + 1) + '</text></svg>';
+    var c = COATS[i] || COATS[0], body = c[0], dark = c[1], j = HORSE_C[i];
+    return '<svg viewBox="0 0 64 42" aria-hidden="true">' +
+      '<path d="M15 19C8 18 4 22 2 30c3-2 6-4 9-4" fill="' + dark + '"/>' +
+      '<g class="lg-b" stroke="' + dark + '" stroke-width="3.4" stroke-linecap="round"><path d="M20 26l-6 12"/><path d="M41 25l7 11"/></g>' +
+      '<g class="lg-f" stroke="' + dark + '" stroke-width="3.4" stroke-linecap="round"><path d="M25 27l3 12"/><path d="M37 26l1 12"/></g>' +
+      '<path d="M14 20c0-5 6-8 16-8s14 3 15 7c1 6-4 10-15 10S14 26 14 20z" fill="' + body + '" stroke="' + dark + '" stroke-width="1"/>' +
+      '<path d="M40 15c2-4 5-8 9-11l6 3c1 1 1 3 0 4l-3 3c-1 1-1 2-2 4l-4 4z" fill="' + body + '" stroke="' + dark + '" stroke-width="1"/>' +
+      '<path d="M46 5c-3 2-6 6-7 10" stroke="' + dark + '" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="52.5" cy="7.5" r="1" fill="#111"/>' +
+      '<path d="M26 16h9l-1.5-6.5h-6z" fill="' + j + '" stroke="#fff" stroke-width=".7"/><circle cx="30.5" cy="6.4" r="3.4" fill="' + j + '" stroke="#fff" stroke-width=".8"/>' +
+      '<rect x="22" y="15.6" width="17" height="6.4" rx="2" fill="#fff" stroke="' + j + '" stroke-width="1.2"/>' +
+      '<text x="30.5" y="21" text-anchor="middle" font-size="5.6" font-weight="900" font-family="system-ui" fill="#111">' + (i + 1) + '</text></svg>';
   }
   function rlChip(n) { return '<i class="lv-rn ' + (n === 0 ? 'z' : RL_RED.indexOf(n) >= 0 ? 'r' : 'k') + '">' + n + '</i>'; }
   // pseudo-hasard fixe par tour (même animation pour tout le monde)
@@ -578,10 +605,10 @@
       } },
     horses: { reveal: 22, mult: '×9,6',
       stage: function () { var l = ''; for (var i = 0; i < 10; i++) l += '<div class="lv-lane"><span class="lv-no">' + (i + 1) + '</span><span class="lv-horse" id="lvH' + i + '">' + horseSvg(i) + '</span></div>'; return '<div class="lv-track"><i class="lv-finish"></i>' + l + '</div>'; },
-      picks: function () { var b = ''; for (var i = 0; i < 10; i++) b += '<button type="button" data-s="' + i + '">' + silk(i) + '</button>'; return '<div class="lv-grid g5">' + b + '</div>'; },
-      label: function (s) { return 'N° ' + (+s + 1); },
+      picks: function () { var b = ''; for (var i = 0; i < 10; i++) b += '<button type="button" data-s="' + i + '">' + silk(i) + '<small>' + COATS[i][2] + '</small></button>'; return '<div class="lv-grid g5">' + b + '</div>'; },
+      label: function (s) { return 'N° ' + (+s + 1) + ' · ' + COATS[+s][2]; },
       lastChip: function (v) { return silk(v); },
-      winName: function (res) { return 'N° ' + (res.order[0] + 1); },
+      winName: function (res) { return 'N° ' + (res.order[0] + 1) + ' (' + COATS[res.order[0]][2] + ')'; },
       paint: function (st, R, t) {
         var tr = st.box.querySelector('.lv-track'); if (!tr) return;
         if (!st.w || st.w < 60 || (st.wAt || 0) < Date.now() - 2000) { st.w = Math.max(0, tr.clientWidth - 58); st.wAt = Date.now(); } // largeur relue (piste affichée, téléphone tourné)
@@ -1267,7 +1294,7 @@
     var btn = $('csGo'), pump = $('csPump'), bl = $('csBl');
     var paint = function (r) {
       g = r;
-      var sc = 1 + Math.min(1.1, r.k * 0.07);
+      var sc = 1 + Math.min(0.38, r.k * 0.04); // v2751 : le ballon grandit mais reste toujours dans la scène (ne cache plus la main)
       bl.style.transform = 'scale(' + sc + ')';
       $('csBlM').textContent = (r.k ? r.mult : 1).toFixed(2) + '×';
       if (r.done) {

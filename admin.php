@@ -2409,6 +2409,32 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     body:not(.adm-page) .wrap > .filters,body:not(.adm-page) #viewTitle,body:not(.adm-page) #viewSum,body:not(.adm-page) #panel,body:not(.adm-page) #pager{display:none!important}
     .table-wrap table{font-size:14px}
     .table-wrap td,.table-wrap th{padding:10px 8px!important}
+    /* v2749 (propriétaire, « je suis le patron ») : TOUTES les fenêtres de l'admin = vraies pages propres
+       (plein écran, « ← Retour » collé en haut, champs larges qui ne débordent jamais, cartes, onglets égaux, tableaux qui défilent) */
+    .modal.on{position:fixed!important;inset:0!important;z-index:200;overflow-y:auto!important;background:radial-gradient(120% 60% at 50% 0%,#1b1240,#0a0f1a 70%)!important;padding:0!important;display:block!important}
+    .modal.on > .modal-box{width:100%!important;max-width:820px!important;min-height:100%;margin:0 auto!important;border-radius:0!important;border:0!important;box-shadow:none!important;background:transparent!important;padding:0 14px 40px!important;box-sizing:border-box!important;overflow-x:hidden}
+    .modal.on > .modal-box > button.mini:first-child{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;width:calc(100% + 28px);margin:0 -14px 10px!important;padding:14px 16px!important;border:0!important;border-radius:0!important;background:rgba(10,15,26,.92)!important;backdrop-filter:blur(8px);color:var(--gold)!important;font-size:1rem!important;font-weight:900!important;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)!important}
+    .modal.on > .modal-box > button.mini:first-child::before{content:"←";font-size:1.15rem}
+    .modal.on h2{font-size:1.25rem!important;line-height:1.25;margin:6px 0 8px!important}
+    .modal.on .muted{font-size:.82rem;line-height:1.5}
+    .modal.on input:not([type=checkbox]):not([type=radio]):not([type=file]),.modal.on select,.modal.on textarea{box-sizing:border-box!important;max-width:100%!important;min-height:44px;border-radius:12px!important;border:1px solid rgba(255,255,255,.14)!important;background:#0E1420!important;color:#fff!important;padding:8px 12px!important;font:inherit;font-size:15px!important}
+    .modal.on textarea{min-height:90px}
+    .modal.on #spTitle,.modal.on #spLeague,.modal.on #spSport,.modal.on #spStart,.modal.on .spL{width:100%!important;flex:1 1 100%!important}
+    .modal.on .spO{width:96px!important;flex:0 0 96px!important}
+    .modal.on div[style*="display:flex"]{flex-wrap:wrap!important;max-width:100%}
+    .modal.on div[style*="display:grid"]{max-width:100%}
+    .modal.on label{max-width:100%;box-sizing:border-box}
+    .modal.on input[type=file]{max-width:100%;font-size:13px;color:#C9CFE6}
+    .modal.on input[type=file]::file-selector-button{margin-right:10px;padding:9px 14px;border:0;border-radius:10px;background:linear-gradient(135deg,#8B5CF6,#EC4899);color:#fff;font-weight:800;cursor:pointer}
+    .modal.on .nt-card{padding:14px!important;border-radius:16px!important;background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.09)!important;box-sizing:border-box;max-width:100%;overflow-x:auto}
+    .modal.on .lvA-tabs{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px;margin:6px 0 12px}
+    .modal.on .lvA-tabs .mini{font-size:.82rem;padding:6px 4px!important;width:100%;min-height:48px;margin:0!important;border-radius:12px!important;font-weight:800;white-space:normal;line-height:1.2}
+    .modal.on .mini.ok{box-shadow:inset 0 0 0 2px currentColor}
+    .modal.on table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
+    .modal.on table td,.modal.on table th{padding:8px 8px!important;white-space:nowrap}
+    .modal.on table tr + tr td{border-top:1px solid rgba(255,255,255,.06)}
+    .modal.on .mini:not(:first-child){min-height:40px;border-radius:11px!important}
+    @media (min-width:760px){.modal.on > .modal-box{padding:0 24px 48px!important}.modal.on > .modal-box > button.mini:first-child{width:calc(100% + 48px);margin:0 -24px 14px!important}}
   </style>
 </head>
 <body>
@@ -2437,8 +2463,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
-      <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">📡 Live <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
-      <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎰 Casino &amp; Paris</button>
+      <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
+      <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux &amp; Prédictions</button>
       <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
@@ -2486,7 +2512,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
 
   <div class="modal" id="wipeModal">
     <div class="modal-box">
-      <button class="mini" type="button" id="closeWipe">Fermer</button>
+      <button class="mini" type="button" id="closeWipe">Retour</button>
       <h2 style="color:var(--red);margin:10px 0 4px">Nettoyer : suppression définitive</h2>
       <p class="muted">Les comptes supprimés et toutes leurs données (soldes, dépôts, retraits, trades, historiques, messages) sont effacés pour de bon, dans la base et sur le serveur. Rien ne reviendra. Le compte admin est toujours gardé.</p>
       <p><label><input type="checkbox" id="wipeKeepGmail" checked> Ne pas cocher d’office les comptes <strong>@gmail.com</strong></label></p>
@@ -2511,7 +2537,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
 
   <div class="modal" id="mailModal">
     <div class="modal-box">
-      <button class="mini" type="button" id="closeMail">Fermer</button>
+      <button class="mini" type="button" id="closeMail">Retour</button>
       <h2 style="color:#93C5FD;margin:10px 0 4px">✉️ E-mail à tous les joueurs</h2>
       <p class="muted" id="mlWho" style="margin:6px 0">Chargement…</p>
       <div class="nt-card">
@@ -2535,8 +2561,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   </div>
   <div class="modal" id="liveModal">
     <div class="modal-box lvA-box">
-      <button class="mini" type="button" id="closeLiveA">Fermer</button>
-      <h2 style="color:#FF7AA8;margin:10px 0 4px">📡 Live — messages des joueurs et actualités</h2>
+      <button class="mini" type="button" id="closeLiveA">Retour</button>
+      <h2 style="color:#FF7AA8;margin:10px 0 4px">💬 Social — messages des joueurs et actualités</h2>
       <div class="lvA-tabs"><button class="mini ok" type="button" id="lvTabMsg">💬 Conversations <b id="lvUnread"></b></button><button class="mini" type="button" id="lvTabPost">📢 Publier une actualité</button><button class="mini" type="button" id="lvTabRep">🚩 Signalements</button></div>
       <div id="lvPaneRep" hidden><div class="nt-card"><b>Joueurs signalés par d'autres joueurs</b><p class="muted" style="margin:4px 0 8px">Celui qui signale bloque aussitôt l'autre. Regardez les messages ; en cas d'arnaque, suspendez le compte depuis sa fiche.</p><div id="lvReps">Chargement…</div></div></div>
       <div id="lvPaneMsg">
@@ -2597,9 +2623,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <!-- v2690 — CASINO & PARIS : gérer les matchs (cotes, fermer, résultat → paiement) et voir le bénéfice de la maison -->
   <div class="modal" id="casModal">
     <div class="modal-box lvA-box">
-      <button class="mini" type="button" id="closeCasA">Fermer</button>
-      <h2 style="color:#5CF59A;margin:10px 0 4px">🎰 Casino &amp; Paris sportifs</h2>
-      <div class="lvA-tabs"><button class="mini ok" type="button" id="csTabSp">⚽ Paris sportifs</button><button class="mini" type="button" id="csTabSt">📊 Casino : gains / pertes</button></div>
+      <button class="mini" type="button" id="closeCasA">Retour</button>
+      <h2 style="color:#5CF59A;margin:10px 0 4px">🎮 Jeux &amp; Prédictions</h2>
+      <div class="lvA-tabs"><button class="mini ok" type="button" id="csTabSp">🔮 Prédictions</button><button class="mini" type="button" id="csTabSt">📊 Jeux : gains / pertes</button></div>
       <div id="csPaneSp">
         <div class="nt-card">
           <b>Créer un match ou un ÉVÉNEMENT</b>
@@ -2632,7 +2658,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   </div>
   <div class="modal" id="notifModal">
     <div class="modal-box">
-      <button class="mini" type="button" id="closeNotif">Fermer</button>
+      <button class="mini" type="button" id="closeNotif">Retour</button>
       <h2 style="color:#FCD34D;margin:10px 0 4px">🔔 Notifications sur les téléphones</h2>
       <div class="nt-stats" id="ntStats">Chargement…</div>
       <div class="nt-card">
@@ -2685,7 +2711,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
 
   <div class="modal" id="userModal">
     <div class="modal-box">
-      <button class="mini" type="button" id="closeModal">Fermer</button>
+      <button class="mini" type="button" id="closeModal">Retour</button>
       <div id="userDetail"></div>
     </div>
   </div>
@@ -3366,7 +3392,7 @@ setInterval(() => {
       fr.onerror = () => res(''); fr.readAsDataURL(f);
     });
   }
-  const GN = {crash:'Sky Rush (avion)', jet:'Jet Man', rocket:'Rocket (fusée)', coin:'Coin Flip (pile ou face)', dice:'Dice (dés)', limbo:'Target (cible)', wheel:'Lucky Wheel (roue)', race:'Racing (course)', roulette:'Roulette', slots:'Lucky 777 (machine à sous)', plinko:'Cascade', keno:'Keno', scratch:'Scratch Card (grattage)', hilo:'Hi-Lo', penalty:'Penalty', colors:'Colors (couleurs)', mines:'Mines', apple:'Golden Orchard (pommes)', tower:'Tower (tour)', dragon:'Dragon Tiger', baccarat:'Baccarat', sicbo:'Sic Bo', chests:'Treasure (coffres)', balloon:'Balloon (ballon)', darts:'Darts (fléchettes)', sports:'Paris sportifs'};
+  const GN = {crash:'Sky Rush (avion)', jet:'Jet Man', rocket:'Rocket (fusée)', coin:'Coin Flip (pile ou face)', dice:'Dice (dés)', limbo:'Target (cible)', wheel:'Lucky Wheel (roue)', race:'Racing (course)', roulette:'Roulette', slots:'Lucky 777 (machine à sous)', plinko:'Cascade', keno:'Keno', scratch:'Scratch Card (grattage)', hilo:'Hi-Lo', penalty:'Penalty', colors:'Colors (couleurs)', mines:'Mines', apple:'Golden Orchard (pommes)', tower:'Tower (tour)', dragon:'Dragon Tiger', baccarat:'Baccarat', sicbo:'Sic Bo', chests:'Treasure (coffres)', balloon:'Balloon (ballon)', darts:'Darts (fléchettes)', sports:'Prédictions', cryptox:'Crypto Live', horses:'Horse Race', rps:'Rock Paper Scissors'};
   function optRow(label, odd) {
     const d = document.createElement('div');
     d.style.cssText = 'display:flex;gap:6px;margin-bottom:4px';
@@ -3428,7 +3454,7 @@ setInterval(() => {
         '<p style="margin:6px 0">Parties : <b>' + (t.n || 0) + '</b> · Misé : <b>' + m2(t.in || 0) + ' $</b> · Payé : <b>' + m2(t.out || 0) + ' $</b> · Résultat du joueur : <b style="color:' + (res > 0 ? '#FF7A90' : '#5CF59A') + '">' + (res > 0 ? '+' : '') + m2(res) + ' $</b></p>' +
         '<table style="width:100%;font-size:12.5px"><tr class="muted"><td>Quand</td><td>Jeu</td><td>Mise</td><td>Gain</td></tr>' +
         (r.h || []).map(p => '<tr><td>' + new Date(p.at * 1000).toLocaleString('fr-FR') + '</td><td>' + esc(GN[p.g] || p.g) + (p.m === 'demo' ? ' (test)' : '') + '</td><td>' + m2(p.s) + '</td><td style="color:' + (p.w > 0 ? '#5CF59A' : '#94A3B8') + '">' + m2(p.w) + '</td></tr>').join('') + '</table>' +
-        ((r.bets || []).length ? '<p style="margin:10px 0 4px"><b>Paris sportifs</b></p>' + r.bets.map(b => '<div class="muted" style="font-size:12.5px">' + esc(b.status) + ' · ' + m2(b.stake) + ' $ × ' + Number(b.odd).toFixed(2) + ' → ' + m2(b.status === 'won' ? b.win : b.pot) + ' $ · ' + b.sel.map(s => esc(s.t) + ' (' + esc(s.l) + ')').join(' + ') + '</div>').join('') : '') + '</div>';
+        ((r.bets || []).length ? '<p style="margin:10px 0 4px"><b>Prédictions</b></p>' + r.bets.map(b => '<div class="muted" style="font-size:12.5px">' + esc(b.status) + ' · ' + m2(b.stake) + ' $ × ' + Number(b.odd).toFixed(2) + ' → ' + m2(b.status === 'won' ? b.win : b.pot) + ' $ · ' + b.sel.map(s => esc(s.t) + ' (' + esc(s.l) + ')').join(' + ') + '</div>').join('') : '') + '</div>';
     };
     (async () => {
       const r = await ajax({action:'cs_players'}); const box = $c('csPlList'); if (!box) return;

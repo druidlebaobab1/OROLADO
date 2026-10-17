@@ -11504,3 +11504,40 @@ html:root body #casinoModal .cs-g .cs-live::after{animation-delay:.9s}
 @keyframes csLiveWave{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.6);opacity:0}}
 html.oro-lite body #casinoModal .cs-g .cs-live::before,html.oro-lite body #casinoModal .cs-g .cs-live::after{animation:none;opacity:0}
 html:root body #casinoModal .cs-g .cs-livetag{display:none!important}
+
+/* v2749 (propriétaire) : notification de résultat PETITE et élégante (une pilule fine en haut, ne cache plus le jeu) */
+html:root body #casinoModal .cs-toast{top:6px!important;min-width:0!important;max-width:78%!important;gap:7px!important;padding:5px 12px 5px 5px!important;border-radius:999px!important;backdrop-filter:none!important}
+html:root body #casinoModal .cs-toast .ct-ico{width:22px!important;height:22px!important;font-size:11px!important}
+html:root body #casinoModal .cs-toast span{flex-direction:row!important;align-items:baseline;gap:7px}
+html:root body #casinoModal .cs-toast b{font-size:14.5px!important}
+html:root body #casinoModal .cs-toast small{font-size:11px!important;opacity:.8}
+html:root body #casinoModal .cs-toast.win{background:linear-gradient(135deg,#10B981,#059669)!important;box-shadow:0 6px 16px -6px rgba(16,185,129,.75),inset 0 0 0 1px rgba(255,255,255,.3)!important}
+html:root body #casinoModal .cs-toast.lose{background:rgba(24,16,42,.94)!important;color:#FFC2CF!important;box-shadow:0 6px 16px -8px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,120,150,.3)!important}
+/* « + » de recharge : carré arrondi orange, « + » net (plus de rond) */
+html:root body #casinoModal .cs-wallet .cw-plus{width:30px!important;height:30px!important;border-radius:9px!important;font:800 22px/1 system-ui!important;padding-bottom:2px;box-sizing:border-box;display:grid!important;place-items:center;background:linear-gradient(180deg,#FDBA4D,#F97316)!important;color:#fff!important;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18),0 3px 8px -3px rgba(249,115,22,.8)!important}
+/* Tower : immeuble plus grand (cases plus hautes et plus larges) */
+html:root body #casinoModal .tw-stage .tw{max-width:330px!important;width:100%;gap:5px!important}
+html:root body #casinoModal .tw-stage .tw-row button{height:min(44px,5.2vh)!important}
+html:root body #casinoModal .tw-stage .tw-row em{font-size:12px!important}
+/* signal « en direct » : plus fin et discret (petit point rouge, une seule onde légère) */
+html:root body #casinoModal .cs-g .cs-live{width:8px!important;height:8px!important;top:4px!important;box-shadow:0 0 0 1.5px rgba(255,255,255,.85),0 0 6px rgba(225,29,72,.8)!important}
+html:root body #casinoModal .cs-g .cs-live::before{border-width:1.5px!important;inset:-1px!important;animation-duration:2.2s!important}
+html:root body #casinoModal .cs-g .cs-live::after{display:none!important}
+/* v2749 : vrais logos des cryptos */
+html:root body #casinoModal .lv-coin.lv-logo{background:none!important;box-shadow:0 3px 8px rgba(0,0,0,.4)!important;border-radius:50%;overflow:hidden}
+html:root body #casinoModal .lv-coin.lv-logo svg{width:100%;height:100%;display:block}
+/* v2749 : chevaux — galop des jambes (transform seulement), pastille de choix avec la robe */
+html:root body #casinoModal .lv-horse{width:50px!important;height:33px!important;margin-top:-17px!important}
+html:root body #casinoModal .lv-horse.run svg{animation:lvGallop .42s ease-in-out infinite alternate!important}
+html:root body #casinoModal .lv-horse.run .lg-f{transform-origin:31px 27px;animation:lvLeg .42s ease-in-out infinite alternate}
+html:root body #casinoModal .lv-horse.run .lg-b{transform-origin:31px 26px;animation:lvLeg .42s ease-in-out infinite alternate-reverse}
+@keyframes lvLeg{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+html.oro-lite body #casinoModal .lv-horse.run .lg-f,html.oro-lite body #casinoModal .lv-horse.run .lg-b{animation:none}
+html:root body #casinoModal .lv-silk{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),0 0 0 3px var(--coat)!important}
+html:root body #casinoModal .lv-horses .lv-grid button small{font-size:8.5px;opacity:.85;white-space:nowrap}
+html:root body #casinoModal .cs-horses .lv-grid button small{font-size:8.5px;opacity:.85;white-space:nowrap}
+html:root body #casinoModal .lv-coin.lv-logo{display:inline-block!important;flex:none}
+html:root body #casinoModal .cs-toast small{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;max-width:150px;display:block}
+html:root body #casinoModal .cs-toast span{min-width:0;flex-wrap:nowrap!important}
+html:root body #casinoModal .cs-toast b{white-space:nowrap}
+html:root body #casinoModal .bl-stage .bl{transform-origin:50% 96%!important}
