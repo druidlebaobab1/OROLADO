@@ -67,6 +67,9 @@ function sp_admin_save(array $in): array {
   if (!in_array($sportK, ['event', 'crypto', 'politique'], true) && ($tm = sp_title_teams($title))) {
     try { $logos = [sp_team_logo($tm[0]), sp_team_logo($tm[1])]; } catch (Throwable $e) { $logos = []; }
   }
+  // v2734 : images mises par l'admin (prioritaires sur les logos trouvés tout seuls)
+  $i1 = sp_admin_img((string) ($in['img1'] ?? '')); $i2 = sp_admin_img((string) ($in['img2'] ?? ''));
+  if ($i1 !== '' || $i2 !== '') { $logos = [$i1 !== '' ? $i1 : ($logos[0] ?? ''), $i2 !== '' ? $i2 : ($logos[1] ?? '')]; }
   return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos) {
     foreach ((array) ($s['e'] ?? []) as $i => $e) {
       if ($e['id'] === $id) {
@@ -122,6 +125,16 @@ function sp_team_logo(string $name): string {
   $img = sp_http_get($u . '/tiny', 400000);
   if ($img === '' || substr($img, 0, 4) !== "\x89PNG") return '';
   @file_put_contents($f, $img);
+  return is_file($f) ? $k : '';
+}
+/** v2734 — image envoyée par l'admin (PNG 128 px fait par le navigateur) : gardée chez nous, renvoie sa clé (ou ''). */
+function sp_admin_img(string $dataUrl): string {
+  if (!preg_match('#^data:image/png;base64,([A-Za-z0-9+/=]+)$#', $dataUrl, $m)) return '';
+  $bin = base64_decode($m[1], true);
+  if (!is_string($bin) || strlen($bin) < 60 || strlen($bin) > 300000 || substr($bin, 0, 4) !== "\x89PNG") return '';
+  $k = substr(hash('sha256', $bin), 0, 16);
+  $f = sp_logo_dir() . DIRECTORY_SEPARATOR . $k . '.png';
+  if (!is_file($f)) @file_put_contents($f, $bin);
   return is_file($f) ? $k : '';
 }
 /** Les deux équipes d'un titre « A - B » / « A vs B » (comme l'affichage du joueur). */

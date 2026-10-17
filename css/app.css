@@ -11406,3 +11406,16 @@ html[dir="rtl"]:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{left:
 html body #casinoModal .ap-stage .ap-row button.good .cs-obj{width:auto;height:92%;max-height:100%;display:block;margin:auto;filter:drop-shadow(0 0 6px rgba(253,224,71,.6))}
 html body #casinoModal .ap-stage .ap-row button{height:min(40px,4.7vh)!important}
 html body #casinoModal .ap-stage .ap{gap:min(6px,.8vh)}
+
+/* v2734 (propriétaire) : le solde du Casino = la MÊME carte verte « Compte réel » que le trading (même argent partout) */
+html:root body #casinoModal .cs-wallet.real,html:root body #casinoModal.in-game .cs-wallet.real{border:1px solid rgba(60,245,166,.70)!important;
+  background:linear-gradient(180deg,rgba(34,212,127,.16),rgba(70,90,200,.10))!important;
+  box-shadow:inset 0 0 14px rgba(34,212,127,.14),0 0 18px rgba(34,212,127,.32)!important;padding:4px 5px 4px 14px!important}
+html:root body #casinoModal .cs-wallet.real .cw-t small{color:#A7F3D0!important}
+html:root body #casinoModal .cs-wallet.real .cw-t b{color:#fff!important}
+html:root body #casinoModal .cs-wallet .cw-plus{width:32px;height:32px;border-radius:50%;color:#fff;background:linear-gradient(180deg,#34D399,#059669);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35),0 4px 10px -4px rgba(5,150,105,.9)}
+/* v2734 : flèches retour plus petites et légères (casino, cadeaux, social) */
+html:root body #casinoModal .cs-back,html:root body #portalModal .gh-back,html:root body #liveModal .lf-back{width:32px!important;height:32px!important;flex:0 0 32px!important;border-radius:50%!important;background:rgba(255,255,255,.06)!important;box-shadow:none!important;border:0!important}
+html:root body #casinoModal .cs-back svg,html:root body #portalModal .gh-back svg,html:root body #liveModal .lf-back svg{width:18px!important;height:18px!important;stroke-width:2!important;opacity:.9}
+html body #casinoModal .sp-t .sp-qimg{width:34px;height:34px;object-fit:contain;border-radius:8px;vertical-align:middle;margin-inline-end:8px;float:left}
+html body #casinoModal .cs-sheet-in p{text-align:start!important;font-size:15.5px!important;line-height:1.6!important}

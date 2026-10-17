@@ -345,11 +345,11 @@
   ];
   var HT = {
     fr: { news: ['Actualités', 'Les nouvelles d’OROLADO'], friends: ['Mes amis', 'Discute et partage des photos'], duel: ['Défie ton ami', 'Montre-lui que tu es le plus fort en trading'], chat: ['Écrire à l’équipe', 'Une question ? On te répond'],
-      myid: ['Mon identifiant', 'Partage-le à tes amis'], record: ['Mes défis', 'Victoires et défaites'], gifts: ['Cadeaux', 'Défis, bonus, tournoi'], learn: ['Apprendre', 'Le guide pas à pas'], home: 'Live', duelHint: 'Choisis un ami, puis touche « ⚔️ Défier ».' },
+      myid: ['Mon identifiant', 'Partage-le à tes amis'], record: ['Mes défis', 'Victoires et défaites'], gifts: ['Cadeaux', 'Défis, bonus, tournoi'], learn: ['Apprendre', 'Le guide pas à pas'], home: 'Social', duelHint: 'Choisis un ami, puis touche « ⚔️ Défier ».' },
     en: { news: ['News', 'OROLADO updates'], friends: ['My friends', 'Chat and share photos'], duel: ['Challenge a friend', 'Show them you are the best trader'], chat: ['Write to the team', 'A question? We answer'],
-      myid: ['My ID', 'Share it with your friends'], record: ['My challenges', 'Wins and losses'], gifts: ['Gifts', 'Challenges, bonus, tournament'], learn: ['Learn', 'Step-by-step guide'], home: 'Live', duelHint: 'Pick a friend, then tap “⚔️ Challenge”.' },
+      myid: ['My ID', 'Share it with your friends'], record: ['My challenges', 'Wins and losses'], gifts: ['Gifts', 'Challenges, bonus, tournament'], learn: ['Learn', 'Step-by-step guide'], home: 'Social', duelHint: 'Pick a friend, then tap “⚔️ Challenge”.' },
     zh: { news: ['动态', 'OROLADO 最新消息'], friends: ['我的好友', '聊天、分享照片'], duel: ['挑战好友', '证明你才是交易高手'], chat: ['联系团队', '有问题？我们来回复'],
-      myid: ['我的 ID', '分享给好友'], record: ['我的挑战', '胜负记录'], gifts: ['礼物', '挑战、奖励、锦标赛'], learn: ['学习', '分步指南'], home: 'Live', duelHint: '选择一位好友，然后点「⚔️ 挑战」。' }
+      myid: ['我的 ID', '分享给好友'], record: ['我的挑战', '胜负记录'], gifts: ['礼物', '挑战、奖励、锦标赛'], learn: ['学习', '分步指南'], home: 'Social', duelHint: '选择一位好友，然后点「⚔️ 挑战」。' }
   };
   D6.LIVE_T.home = HT;
   function H() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return HT[l] || HT.en; }
@@ -405,7 +405,7 @@
     $('livePaneHome').hidden = !home;
     $('liveBar').hidden = false;
     $('liveModal').classList.toggle('lv-at-home', home);
-    $('liveBarT').textContent = home ? 'Live' : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
+    $('liveBarT').textContent = home ? (H().home || 'Social') : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
     if ($('livePaneFun')) $('livePaneFun').hidden = w !== 'fun' && w !== 'send';
     if ($('livePaneGuest')) $('livePaneGuest').hidden = w !== 'guest';
     if ($('livePaneGroups')) $('livePaneGroups').hidden = w !== 'groups';

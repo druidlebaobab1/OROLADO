@@ -2607,9 +2607,14 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <div style="display:grid;gap:6px">
             <input id="spTitle" placeholder="Match (ex. Real Madrid – FC Barcelone) ou question (ex. Qui gagnera l'élection ?)" maxlength="80">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <select id="spSport"><option value="foot">⚽ Football</option><option value="basket">🏀 Basket</option><option value="boxe">🥊 Boxe</option><option value="tennis">🎾 Tennis</option><option value="mma">🥋 MMA</option><option value="event">📅 Événement</option><option value="crypto">₿ Crypto (Bitcoin…)</option><option value="politique">🗳️ Politique / élections</option><option value="autre">🏆 Autre</option></select>
+              <select id="spSport"><option value="foot">⚽ Football</option><option value="basket">🏀 Basket</option><option value="boxe">🥊 Boxe</option><option value="tennis">🎾 Tennis</option><option value="mma">🥋 MMA</option><option value="event">🔮 Prédictions (Bitcoin, élections, nombre de buts… toutes les questions)</option><option value="autre">🏆 Autre sport</option></select>
               <input id="spLeague" placeholder="Compétition (ex. Liga)" maxlength="40" style="flex:1">
               <input id="spStart" type="datetime-local">
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <label class="muted" style="display:flex;align-items:center;gap:6px">🖼️ Mettre mon image (question ou équipe 1) <input type="file" id="spImg1" accept="image/*" style="max-width:190px"></label>
+              <label class="muted" style="display:flex;align-items:center;gap:6px">Équipe 2 <input type="file" id="spImg2" accept="image/*" style="max-width:190px"></label>
+              <span class="muted">(facultatif : sinon le logo vient tout seul pour les équipes connues)</span>
             </div>
             <div id="spOpts"></div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -3351,7 +3356,16 @@ setInterval(() => {
   if (!$c('btnCasA')) return;
   const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   const m2 = v => (Number(v) || 0).toFixed(2) + ' $';
-  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', event:'📅', crypto:'₿', politique:'🗳️', autre:'🏆'};
+  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', event:'🔮', crypto:'🔮', politique:'🔮', autre:'🏆'};
+  // v2734 : image choisie par l'admin → réduite à 128 px (PNG) dans le navigateur avant l'envoi
+  function spImg(input) {
+    return new Promise(res => {
+      const f = input && input.files && input.files[0]; if (!f) { res(''); return; }
+      const fr = new FileReader();
+      fr.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 128 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL('image/png')); }; im.onerror = () => res(''); im.src = fr.result; };
+      fr.onerror = () => res(''); fr.readAsDataURL(f);
+    });
+  }
   const GN = {crash:'Sky Rush (avion)', jet:'Jet Man', rocket:'Rocket (fusée)', coin:'Coin Flip (pile ou face)', dice:'Dice (dés)', limbo:'Target (cible)', wheel:'Lucky Wheel (roue)', race:'Racing (course)', roulette:'Roulette', slots:'Lucky 777 (machine à sous)', plinko:'Cascade', keno:'Keno', scratch:'Scratch Card (grattage)', hilo:'Hi-Lo', penalty:'Penalty', colors:'Colors (couleurs)', mines:'Mines', apple:'Golden Orchard (pommes)', tower:'Tower (tour)', dragon:'Dragon Tiger', baccarat:'Baccarat', sicbo:'Sic Bo', chests:'Treasure (coffres)', balloon:'Balloon (ballon)', darts:'Darts (fléchettes)', sports:'Paris sportifs'};
   function optRow(label, odd) {
     const d = document.createElement('div');
@@ -3446,7 +3460,9 @@ setInterval(() => {
     const opts = [...$c('spOpts').children].map(d => ({label: d.querySelector('.spL').value.trim(), odd: parseFloat(d.querySelector('.spO').value)})).filter(o => o.label);
     const start = Math.floor(new Date($c('spStart').value).getTime() / 1000);
     $c('spSave').disabled = true;
-    const r = await ajax({action:'sp_save', ev:{title:$c('spTitle').value, league:$c('spLeague').value, sport:$c('spSport').value, start, opts, maxStake:parseFloat($c('spMax').value)}});
+    const img1 = await spImg($c('spImg1')), img2 = await spImg($c('spImg2'));
+    const r = await ajax({action:'sp_save', ev:{title:$c('spTitle').value, league:$c('spLeague').value, sport:$c('spSport').value, start, opts, maxStake:parseFloat($c('spMax').value), img1, img2}});
+    if (r.ok) { $c('spImg1').value = ''; $c('spImg2').value = ''; }
     $c('spSave').disabled = false;
     $c('spSt').textContent = r.ok ? 'Publié ✓' : (r.reason || 'Échec');
     if (r.ok) { resetForm(); list(); }

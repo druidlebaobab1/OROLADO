@@ -8,16 +8,16 @@
       placed: '✅ Pari enregistré ! Gain possible : {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
-      all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Événement', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
+      all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Prédictions', politique: 'Prédictions', autre: 'Sport' } },
     en: { none: 'No match right now. Big matches are coming here soon.', coupon: 'Bet slip', sel: '{n} selection(s)', odd: 'Odds', stake: 'Stake', pot: 'Potential win', bet: 'Place bet', clear: 'Clear',
       placed: '✅ Bet placed! Potential win: ${p}', mine: 'My bets', noBets: 'No bet yet.', open: 'Open', won: 'Won', lost: 'Lost', void: 'Void',
       closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 10 matches in a slip.',
       e_min: 'Minimum stake $0.10.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
-      all: 'All', drawCode: 'X', sport: { foot: 'Football', basket: 'Basketball', boxe: 'Boxing', tennis: 'Tennis', mma: 'MMA', event: 'Event', crypto: 'Crypto', politique: 'Politics', autre: 'Sport' } }
+      all: 'All', drawCode: 'X', sport: { foot: 'Football', basket: 'Basketball', boxe: 'Boxing', tennis: 'Tennis', mma: 'MMA', event: 'Predictions', crypto: 'Predictions', politique: 'Predictions', autre: 'Sport' } }
   };
   T.zh = Object.assign({}, T.en, { none: '暂无比赛，重大赛事即将上线。', coupon: '投注单', sel: '已选 {n} 场', odd: '赔率', stake: '投注', pot: '可赢', bet: '确认投注', clear: '清空',
     placed: '✅ 投注成功！可赢：{p} 美元', mine: '我的投注', noBets: '暂无投注。', open: '进行中', won: '赢', lost: '输', void: '取消', closed: '已停止投注', result: '结果', starts: '开始', today: '今天', tomorrow: '明天', draw: '平局',
-    sport: { foot: '足球', basket: '篮球', boxe: '拳击', tennis: '网球', mma: '综合格斗', event: '事件', crypto: '加密货币', politique: '政治', autre: '体育' } });
+    sport: { foot: '足球', basket: '篮球', boxe: '拳击', tennis: '网球', mma: '综合格斗', event: '预测', crypto: '预测', politique: '预测', autre: '体育' } });
   (D6.LIVE_T = D6.LIVE_T || {}).sports = T;
   function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, T.en, T[l] || {}); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -37,6 +37,8 @@
     politique: '<path d="M4 11h16v9.5H4z" fill="#3B82F6"/><path d="M4 11h16v2.5H4z" fill="#1D4ED8"/><rect x="8" y="3.5" width="8" height="9.5" rx="1" fill="#fff" transform="rotate(-8 12 8)"/><path d="M9.6 8.3l1.6 1.6 3.2-3.4" stroke="#16A34A" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="11" width="6" height="1.4" rx=".7" fill="#0F172A"/>'
   };
   var EVK = { event: 1, crypto: 1, politique: 1 }; // questions (pas d'équipes) : on montre le texte de chaque réponse
+  // v2734 : une seule catégorie « Prédictions » (boule de cristal) pour toutes les questions
+  SICO.event = SICO.crypto = SICO.politique = '<circle cx="12" cy="10.5" r="7.5" fill="#8B5CF6"/><circle cx="9.5" cy="8" r="2.4" fill="#fff" opacity=".55"/><path d="M14 13l.8 1.6 1.7.2-1.3 1.2.3 1.7-1.5-.8-1.5.8.3-1.7-1.3-1.2 1.7-.2z" fill="#FDE68A"/><path d="M6 19h12l-1.5-2.4h-9z" fill="#B45309"/><rect x="5" y="19" width="14" height="2.6" rx="1" fill="#92400E"/>';
   function sico(k) { return '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true">' + (SICO[k] || SICO.autre) + '</svg>'; }
   var CREST = ['#2563EB', '#DC2626', '#16A34A', '#F59E0B', '#7C3AED', '#0891B2', '#DB2777', '#EA580C'];
   function crest(n, lg) {
@@ -73,10 +75,10 @@
       box.innerHTML = '<div class="sp-empty"><span class="sp-empty-ball">' + (D6.CasinoArt ? D6.CasinoArt.obj('sports') : '') + '</span><b>' + esc(x.none) + '</b></div>' + mineBtn(); bindMine(); return;
     }
     // pastilles de sport (seulement les sports qui ont des matchs)
-    var kinds = []; events.forEach(function (e) { var k = e.sport || 'autre'; if (kinds.indexOf(k) < 0) kinds.push(k); });
+    var kinds = []; events.forEach(function (e) { var k = EVK[e.sport] ? 'event' : (e.sport || 'autre'); if (kinds.indexOf(k) < 0) kinds.push(k); });
     if (flt !== 'all' && kinds.indexOf(flt) < 0) flt = 'all';
     var chips = kinds.length > 1 ? '<div class="sp-chips"><button type="button" data-f="all" class="' + (flt === 'all' ? 'on' : '') + '">' + esc(x.all || 'Tous') + '</button>' + kinds.map(function (k) { return '<button type="button" data-f="' + k + '" class="' + (flt === k ? 'on' : '') + '">' + sico(k) + esc(x.sport[k] || x.sport.autre) + '</button>'; }).join('') + '</div>' : '';
-    box.innerHTML = chips + events.filter(function (e) { return flt === 'all' || (e.sport || 'autre') === flt; }).map(function (e) {
+    box.innerHTML = chips + events.filter(function (e) { return flt === 'all' || (EVK[e.sport] ? 'event' : (e.sport || 'autre')) === flt; }).map(function (e) {
       var three = e.opts.length === 3;
       var opts = e.opts.map(function (o, i) {
         var on = inSlip(e.id, o.k), res = e.status === 'settled' && e.result === o.k;
@@ -84,7 +86,8 @@
         return '<button type="button" class="sp-o' + (on ? ' on' : '') + (res ? ' res' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '"' + (e.open ? '' : ' disabled') + '><small>' + esc(code || o.label) + '</small><b>' + o.odd.toFixed(2) + '</b></button>';
       }).join('');
       var tm = EVK[e.sport] ? null : teams(e.title);
-      var head = tm ? '<div class="sp-teams"><p>' + crest(tm[0], (e.logos || [])[0]) + '<span>' + esc(tm[0]) + '</span></p><p>' + crest(tm[1], (e.logos || [])[1]) + '<span>' + esc(tm[1]) + '</span></p></div>' : '<b class="sp-t">' + esc(e.title) + '</b>';
+      var qImg = EVK[e.sport] && e.logos && /^[a-f0-9]{16}$/.test(e.logos[0] || '') ? '<img class="sp-qimg" src="sp-logo.php?k=' + e.logos[0] + '" alt="" loading="lazy">' : '';
+      var head = tm ? '<div class="sp-teams"><p>' + crest(tm[0], (e.logos || [])[0]) + '<span>' + esc(tm[0]) + '</span></p><p>' + crest(tm[1], (e.logos || [])[1]) + '<span>' + esc(tm[1]) + '</span></p></div>' : '<b class="sp-t">' + qImg + esc(e.title) + '</b>';
       return '<div class="sp-ev' + (e.open ? '' : ' shut') + '"><div class="sp-top"><span>' + sico(e.sport) + esc((x.sport[e.sport] || x.sport.autre) + (e.league ? ' · ' + e.league : '')) + '</span><em>' + esc(e.open ? when(e.start) : (e.status === 'settled' ? x.result : x.closed)) + '</em></div>' +
         head + '<div class="sp-os n' + e.opts.length + (EVK[e.sport] ? ' q' : '') + '">' + opts + '</div></div>';
     }).join('') + mineBtn() + slipBar();
