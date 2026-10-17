@@ -1402,11 +1402,13 @@
       var place = function () {
         var r = $('modeReal'), d = $('modeDemo');
         if (!r || !d || !r.offsetWidth) return;
-        var x = r.offsetLeft < d.offsetLeft ? r.offsetLeft + r.offsetWidth - 34 : r.offsetLeft + 6;
+        // v2784 (propriétaire) : « + » plus grand (presque toute la hauteur de la carte) ; le texte garde sa place → jamais collé
+        var pw = p.offsetWidth || 36;
+        var x = r.offsetLeft < d.offsetLeft ? r.offsetLeft + r.offsetWidth - pw - 5 : r.offsetLeft + 5;
         p.style.left = x + 'px';
         var ltr = r.offsetLeft < d.offsetLeft;
         r.style.removeProperty(ltr ? 'padding-left' : 'padding-right');
-        r.style.setProperty(ltr ? 'padding-right' : 'padding-left', '38px', 'important');
+        r.style.setProperty(ltr ? 'padding-right' : 'padding-left', (pw + 12) + 'px', 'important');
       };
       // v2759 (propriétaire) : « Connexion » / « Inscription » restent dans la barre du haut (la carte Compte réel / Démo ne change pas)
       place();

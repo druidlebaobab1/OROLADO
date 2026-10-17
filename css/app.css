@@ -12428,3 +12428,20 @@ html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lan
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-chev{order:3!important;margin:0 0 0 -1px!important}
 html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after,
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{order:4!important}
+/* ===== v2784 (propriétaire) — le « + » Recharger de la carte Compte réel / Démo : plus grand, bien ajusté à la hauteur,
+   le texte du compte réel recentré entre le portefeuille et le « + » (les montants ne le touchent jamais) ===== */
+html:root body #modeSwitcher#modeSwitcher#modeSwitcher .ms-plus{width:36px!important;height:auto!important;top:5px!important;bottom:5px!important;margin:0!important;border-radius:12px!important;
+  background:linear-gradient(180deg,#FFC24B 0%,#F59E0B 45%,#EA580C 100%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 0 rgba(124,45,18,.35),0 4px 12px -4px rgba(249,115,22,.85)!important;color:#fff!important}
+html:root body #modeSwitcher#modeSwitcher#modeSwitcher .ms-plus span{font:900 26px/1 system-ui!important;margin:-1px 0 0!important;text-shadow:0 1px 2px rgba(124,45,18,.55)}
+html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeReal{align-items:center!important;text-align:center!important}
+html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeReal .mb-lbl,html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeReal .mb-amt{max-width:100%!important;overflow:hidden!important;text-overflow:clip!important;white-space:nowrap!important}
+/* v2784 (propriétaire) : Jeux / Paris — le même grand « + » doré, toujours DEVANT « Compte réel » */
+html:root body #casinoModal#casinoModal .cs-wallet .cw-plus{order:-9!important;width:34px!important;height:34px!important;min-width:34px!important;border-radius:11px!important;display:grid!important;place-items:center!important;
+  background:linear-gradient(180deg,#FFC24B 0%,#F59E0B 45%,#EA580C 100%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 0 rgba(124,45,18,.35),0 4px 12px -4px rgba(249,115,22,.85)!important;
+  color:#fff!important;font:900 25px/1 system-ui!important;font-style:normal!important;text-shadow:0 1px 2px rgba(124,45,18,.55);margin:0!important}
+html:root body #casinoModal#casinoModal .cs-wallet .cw-wal{order:-8!important}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-plus,html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet .cw-plus{order:-9!important}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-wal,html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet .cw-wal{order:-8!important}
+/* v2784 (propriétaire) : le titre « Profil » doit ressembler à un vrai titre (plus grand que la langue) */
+html:root body #drawerProfile#drawerProfile#drawerProfile #profTitle#profTitle{font:900 21px/1.1 "Plus Jakarta Sans",system-ui,sans-serif!important;text-transform:none!important;letter-spacing:-.01em!important;color:#fff!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile #profTitle#profTitle::first-letter{color:#FBBF24}
