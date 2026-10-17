@@ -1390,12 +1390,8 @@
         var ltr = r.offsetLeft < d.offsetLeft;
         r.style.removeProperty(ltr ? 'padding-left' : 'padding-right');
         r.style.setProperty(ltr ? 'padding-right' : 'padding-left', '38px', 'important');
-        // visiteur : « Connexion » + « Inscription » à la place de « Compte réel » (rien l'un sur l'autre)
-        var aq = $('authQuick');
-        if (aq) { aq.style.left = (r.offsetLeft + (ltr ? 0 : 36)) + 'px'; aq.style.width = (r.offsetWidth - 36) + 'px'; }
       };
-      var aq0 = $('authQuick');
-      if (aq0 && aq0.parentNode !== ms) ms.appendChild(aq0);
+      // v2759 (propriétaire) : « Connexion » / « Inscription » restent dans la barre du haut (la carte Compte réel / Démo ne change pas)
       place();
       if (window.ResizeObserver) new ResizeObserver(place).observe(ms); else window.addEventListener('resize', place);
       document.addEventListener('oro:lang', function () { setTimeout(place, 60); setTimeout(place, 400); });

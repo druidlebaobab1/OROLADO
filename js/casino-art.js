@@ -211,8 +211,8 @@
       return '<rect x="8" y="12" width="48" height="44" rx="7" fill="#fff"/><rect x="8" y="12" width="48" height="14" rx="7" fill="#E11D48"/><rect x="8" y="20" width="48" height="6" fill="#E11D48"/>' +
         '<rect x="18" y="6" width="5" height="12" rx="2.5" fill="#9F1239"/><rect x="41" y="6" width="5" height="12" rx="2.5" fill="#9F1239"/>' +
         '' +
-        '<g fill="#22C55E"><circle cx="16" cy="40" r="4"/><circle cx="24" cy="40" r="4"/><circle cx="32" cy="40" r="4"/><circle cx="40" cy="40" r="4"/></g><circle cx="48" cy="40" r="4" fill="none" stroke="#CBD5E1" stroke-width="2"/>' +
-        '<path d="M14 40l1.6 1.6 3-3M22 40l1.6 1.6 3-3M30 40l1.6 1.6 3-3M38 40l1.6 1.6 3-3" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><text x="32" y="53" text-anchor="middle" font-size="6.5" font-weight="900" font-family="system-ui" fill="#9F1239">5 ×</text>';
+        '<g fill="#22C55E"><circle cx="16" cy="40" r="4"/><circle cx="24" cy="40" r="4"/><circle cx="32" cy="40" r="4"/><circle cx="40" cy="40" r="4"/><circle cx="48" cy="40" r="4"/></g>' +
+        '<path d="M14 40l1.6 1.6 3-3M22 40l1.6 1.6 3-3M30 40l1.6 1.6 3-3M38 40l1.6 1.6 3-3M46 40l1.6 1.6 3-3" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><text x="32" y="53" text-anchor="middle" font-size="6.5" font-weight="900" font-family="system-ui" fill="#9F1239">5 ×</text>';
     },
     // Cadeaux : tournoi (coupe d'or)
     g_top: function () {
@@ -230,10 +230,14 @@
         '<path d="M32 44L47 27" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/><circle cx="32" cy="44" r="5" fill="#fff"/><rect x="18" y="50" width="28" height="9" rx="4.5" fill="#2563EB"/><path d="M30 53.5h4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
     },
     // Cadeaux : invitation (enveloppe + pièces)
-    g_aff: function () {
-      return '<defs>' + G.gold + '</defs><rect x="6" y="22" width="40" height="28" rx="4" fill="#A855F7"/><path d="M6 25l20 14 20-14" fill="none" stroke="#fff" stroke-width="2.6"/><rect x="9" y="24" width="12" height="3" rx="1.5" fill="#fff" opacity=".35"/>' +
-        '<circle cx="48" cy="44" r="10" fill="url(#IDg)"/><circle cx="52" cy="28" r="8" fill="url(#IDg)"/><text x="48" y="47.6" text-anchor="middle" font-size="10" font-weight="900" font-family="system-ui" fill="#9A6A00">$</text><text x="52" y="31" text-anchor="middle" font-size="8" font-weight="900" font-family="system-ui" fill="#9A6A00">$</text>';
+    g_aff: function () { // v2759 (propriétaire) : deux amis + un « + » (plus de pièces ni de dollars)
+      return '<defs><linearGradient id="IDp1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient><linearGradient id="IDp2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9A8D4"/><stop offset="1" stop-color="#DB2777"/></linearGradient></defs>' +
+        '<circle cx="41" cy="20" r="7.5" fill="url(#IDp2)"/><path d="M27 48c0-8.6 6.3-15 14-15s14 6.4 14 15z" fill="url(#IDp2)"/>' +
+        '<circle cx="25" cy="25" r="9" fill="url(#IDp1)" stroke="#1E1B3A" stroke-opacity=".25" stroke-width="1.5"/><path d="M8 56c0-10 7.6-17.5 17-17.5S42 46 42 56z" fill="url(#IDp1)" stroke="#1E1B3A" stroke-opacity=".25" stroke-width="1.5"/>' +
+        '<circle cx="21.5" cy="21.5" r="2.6" fill="#fff" opacity=".4"/>' +
+        '<circle cx="50" cy="46" r="10" fill="#22C55E" stroke="#fff" stroke-width="2.4"/><path d="M50 41v10M45 46h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>';
     },
+
     // Envoyer de l'argent (logo du transfert : deux flèches qui s'échangent + billet)
     g_send: function () {
       return '<rect x="8" y="18" width="40" height="26" rx="5" fill="#10B981"/><rect x="12" y="22" width="32" height="18" rx="3" fill="none" stroke="#D1FAE5" stroke-width="1.6"/><circle cx="28" cy="31" r="6" fill="#D1FAE5"/><text x="28" y="34.4" text-anchor="middle" font-size="9" font-weight="900" font-family="system-ui" fill="#047857">$</text>' +

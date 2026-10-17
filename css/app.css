@@ -11749,3 +11749,111 @@ html:root body #casinoModal .cs-toast.cs-toast.lose .ct-ico{background:rgba(255,
 html:root body #casinoModal .cs-toast.cs-toast.win b{color:#34D399!important;font-weight:800!important}
 html:root body #casinoModal .cs-toast.cs-toast.lose b{color:#FDA4AF!important;font-weight:800!important}
 html:root body #casinoModal .cs-toast.cs-toast small{color:rgba(237,235,255,.7)!important;font-weight:700!important;opacity:1!important}
+
+/* ================= v2759 (propriétaire) : VISITEUR — tout aligné en HAUT sur une ligne :
+   [Cadeaux][Paris] [Jeux] [Connexion][Inscription] [Social] ; la carte Compte réel / Démo revient normale. ================= */
+html.oro-guest body #modeSwitcher#modeSwitcher > #modeReal{visibility:visible!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row.topbar-row{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:space-between!important;gap:3px!important;grid-template-columns:none!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .tb-left{flex:none!important;gap:0!important;order:1}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #btnGames{flex:none!important;order:2;margin:0!important;padding:0 2px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick#authQuick#authQuick{order:3;flex:none!important;position:static!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:4px!important;margin:0!important;padding:0!important;width:auto!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .topbar-actions{order:4;flex:none!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal{width:auto!important;min-width:44px!important;padding:0 2px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:58px!important;height:36px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames b{font-size:11.5px!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:30px!important;min-height:0!important;min-width:0!important;width:auto!important;margin:0!important;padding:0 9px!important;border-radius:10px!important;font:800 11.5px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:0!important;white-space:nowrap!important;background-image:none!important;box-shadow:none!important;text-shadow:none!important;opacity:1!important;filter:none!important;animation:none!important;-webkit-text-fill-color:#fff!important;color:#fff!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.4)!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{background:linear-gradient(180deg,#FDBA4D,#F97316)!important;border:0!important;box-shadow:0 3px 10px -4px rgba(249,115,22,.8)!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick .btn-auth-link::before,html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick .btn-auth-link::after{display:none!important;content:none!important}
+@media (max-width:374px){
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row.topbar-row{gap:1px!important;padding-left:3px!important;padding-right:3px!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{padding:0 6px!important;font-size:10.5px!important;height:28px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:48px!important;height:30px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal{min-width:38px!important}}
+@media (max-width:340px){
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{padding:0 4px!important;font-size:9.5px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:42px!important;height:27px!important}}
+
+/* ================= v2759 : boule « Paris » plus petite, simple et transparente (même taille que Cadeaux) ================= */
+html:root body .topbar-row #btnCasino#btnCasino#btnCasino .cb-ico.cb-ball{width:24px!important;height:26px!important;margin:2px 0 1px!important}
+@media (orientation:landscape) and (max-height:500px){html:root body .topbar-row #btnCasino#btnCasino#btnCasino .cb-ico.cb-ball{width:20px!important;height:22px!important}}
+/* v2759 (propriétaire) : langue = drapeau (sans rond autour) + abréviation juste à côté (FR, EN, 中文…) */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{flex-direction:row!important;gap:6px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:none!important;display:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:26px!important;height:18px!important;border-radius:3px!important;box-shadow:none!important;order:1!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-code{display:inline!important;order:2!important;font:800 13px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:#fff!important;background:none!important;padding:0!important}
+/* v2759 (propriétaire) : le profil reprend sa taille d'avant — « Recharger » plus fin, la place est prise sur les cases USDT / BTC / ETH / TRX */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge{height:32px!important;margin:6px 0 6px!important;font-size:14px!important;position:relative!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-go{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:900 20px/1 system-ui;opacity:.9}
+html[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-go{right:auto;left:12px;transform:translateY(-50%) scaleX(-1)}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-tabs{gap:5px!important;margin-bottom:6px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-tab{min-height:0!important;height:38px!important;padding:3px 2px!important;gap:1px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-tab .wallet-tab-ico{width:14px!important;height:14px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-tab .wallet-tab-stack > span{font-size:10px!important;line-height:1.1!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-tab .wallet-tab-stack > small{font-size:6.5px!important;line-height:1.05!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge > .wx-go{position:absolute!important;right:12px!important;left:auto!important;top:50%!important;bottom:auto!important;transform:translateY(-52%)!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;color:#fff!important;font:900 20px/1 system-ui!important;display:block!important}
+html[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge > .wx-go{right:auto!important;left:12px!important;transform:translateY(-52%) scaleX(-1)!important}
+/* v2759 (propriétaire) : dans les jeux, la carte du joueur connecté a EXACTEMENT la lueur verte de « Compte réel » du trading (aussi la carte TEST de l'admin) */
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same,html:root body #casinoModal#casinoModal.in-game .cs-top #csBal.cs-wallet.cw-same{
+  border:1px solid rgba(60,245,166,.7)!important;border-radius:14px!important;
+  background:linear-gradient(135deg,rgba(14,159,94,.62),rgba(34,212,127,.38) 60%,rgba(60,245,166,.22))!important;
+  box-shadow:inset 0 -3px 0 #22D47F,inset 0 0 14px rgba(34,212,127,.14),0 0 18px rgba(34,212,127,.38)!important}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-t b{color:#fff!important}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-t small{color:#A7F3D0!important}
+/* ================= v2759 (propriétaire) : JEUX — univers simple, plus clair et léger : AUCUNE planète, peu d'étoiles ================= */
+html:root body #casinoModal#casinoModal#casinoModal > .modal-box::before,html:root body #casinoModal#casinoModal#casinoModal > .modal-box::after{display:none!important}
+html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) > .modal-box{background:
+  radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.75),transparent 60%) 0 0/190px 210px,
+  radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.55),transparent 60%) 0 0/260px 240px,
+  radial-gradient(1.4px 1.4px at 70px 90px,rgba(200,210,255,.6),transparent 60%) 0 0/330px 370px,
+  radial-gradient(70% 45% at 15% 0%,rgba(167,139,250,.32),transparent 70%),
+  radial-gradient(60% 40% at 100% 35%,rgba(236,72,153,.16),transparent 70%),
+  radial-gradient(80% 50% at 40% 100%,rgba(56,189,248,.16),transparent 70%),
+  linear-gradient(180deg,#2B1E5E 0%,#211A4C 55%,#1A1640 100%)!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game[data-g] > .modal-box{background:
+  radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.7),transparent 60%) 0 0/190px 210px,
+  radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.5),transparent 60%) 0 0/260px 240px,
+  radial-gradient(75% 45% at 50% 28%,color-mix(in srgb,var(--p2) 40%,transparent),transparent 72%),
+  radial-gradient(70% 45% at 15% 0%,rgba(167,139,250,.26),transparent 70%),
+  linear-gradient(180deg,color-mix(in srgb,var(--p2) 26%,#2B1E5E) 0%,#211A4C 60%,#1A1640 100%)!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top{background:linear-gradient(#2B1E5E 70%,rgba(43,30,94,0))!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game[data-g] .cs-top{background:linear-gradient(color-mix(in srgb,var(--p2) 26%,#2B1E5E) 70%,transparent)!important}
+
+/* ================= v2759 (propriétaire) : page PARIS = fond CLAIR, sans planète, léger (comme les grandes plateformes) ================= */
+html:root body #casinoModal#casinoModal#casinoModal.pred-only > .modal-box{background:radial-gradient(90% 40% at 50% 0%,rgba(167,139,250,.16),transparent 70%),linear-gradient(180deg,#F7F6FD 0%,#F1F2F8 100%)!important;color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-top{background:linear-gradient(#F7F6FD 75%,rgba(247,246,253,0))!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-back{background:#fff!important;color:#141530!important;box-shadow:0 1px 4px rgba(20,21,48,.12),inset 0 0 0 1px rgba(20,21,48,.08)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-back svg{stroke:#141530!important;color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-guestw .cs-in{background:#fff!important;color:#141530!important;-webkit-text-fill-color:#141530!important;border:1px solid rgba(20,21,48,.18)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-ev{background:#fff!important;border:0!important;box-shadow:0 2px 10px -4px rgba(20,21,48,.16),inset 0 0 0 1px rgba(20,21,48,.06)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-top span{color:#6B6F86!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-top em{color:#EA580C!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-teams p,html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-teams span,html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-t{color:#141530!important;text-shadow:none!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-o{background:#F3F3F9!important;box-shadow:inset 0 0 0 1px rgba(20,21,48,.08)!important;color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-o small{color:#6B6F86!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-o b{color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-o.on{background:#FFF1E6!important;box-shadow:inset 0 0 0 2px #F97316!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-o.on b{color:#C2410C!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-empty b{color:#141530!important;text-shadow:none!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-empty-ball svg{width:96px;height:90px;display:block;margin:0 auto}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-mine{background:#fff!important;color:#141530!important;border:0!important;box-shadow:0 2px 10px -4px rgba(20,21,48,.16),inset 0 0 0 1px rgba(20,21,48,.08)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-bt{background:#fff!important;box-shadow:0 2px 10px -4px rgba(20,21,48,.16),inset 0 0 0 1px rgba(20,21,48,.08)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-bt-h b{color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-bt-s,html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-sl{color:#3F4259!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-bt-s em,html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-sl em{color:#6B6F86!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip{background:#fff!important;box-shadow:0 -8px 24px rgba(20,21,48,.14),inset 0 0 0 1px rgba(20,21,48,.08)!important;color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-h b{color:#141530!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-h span,html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-r{color:#6B6F86!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-r b{color:#EA580C!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip input{background:#F3F3F9!important;color:#141530!important;border:1px solid rgba(20,21,48,.12)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-crest:not(img){color:#fff!important}
+/* v2759 (propriétaire) : les noms des tuiles Cadeaux (« Invite tes amis »…) ne débordent jamais, même si Android grossit les textes */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html:root body .gh-p > b{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:min(18px,4.8vw)!important;text-align:center}
+@media (max-width:374px){
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp{width:42px!important;flex:0 0 42px!important;min-width:0!important;max-width:none!important;padding:0!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnCasino#btnCasino{width:36px!important;flex:0 0 36px!important;min-width:0!important;padding:0!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal .pw-lbl,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp .hb-txt,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnCasino .cb-lbl b{font-size:9px!important}}

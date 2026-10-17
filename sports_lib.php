@@ -91,6 +91,7 @@ function sp_admin_save(array $in): array {
   });
 }
 function mb_strlen_safe(string $s): int { return (int) preg_match_all('/./us', $s); }
+function sp_lower(string $s): string { return function_exists('mb_strtolower') ? mb_strtolower($s, 'UTF-8') : strtolower($s); }
 
 /*
  * v2713 (propriétaire) — LOGOS DES ÉQUIPES automatiques : à la publication d'un match, le serveur cherche une seule fois
@@ -98,7 +99,7 @@ function mb_strlen_safe(string $s): int { return (int) preg_match_all('/./us', $
  * Les téléphones des joueurs le lisent via sp-logo.php (jamais le service extérieur). Pas trouvé = pastille avec la lettre.
  */
 function sp_logo_dir(): string { $d = sp_dir() . DIRECTORY_SEPARATOR . 'logos'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
-function sp_logo_key(string $name): string { return substr(hash('sha256', mb_strtolower(trim($name), 'UTF-8')), 0, 16); }
+function sp_logo_key(string $name): string { return substr(hash('sha256', sp_lower(trim($name))), 0, 16); }
 function sp_http_get(string $url, int $max): string {
   $ctx = stream_context_create(['http' => ['timeout' => 4, 'ignore_errors' => true, 'header' => "User-Agent: OROLADO
 "], 'ssl' => ['verify_peer' => true]]);
@@ -167,7 +168,7 @@ function sp_autoseed_once(): void {
   $flag = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10.done';
   if (is_file($flag)) return;
   @file_put_contents($flag, (string) time()); // posé AVANT : jamais deux fois, même si deux joueurs ouvrent en même temps
-  try { sp_admin_seed(); } catch (Throwable $e) { /* jamais bloquant */ }
+  try { sp_admin_seed(); } catch (Throwable $e) { @unlink($flag); } // v2759 : en cas d'échec, on réessaiera à la prochaine ouverture
 }
 /** v2755 : notification sur le téléphone de l'admin quand un événement est fini et attend son résultat
  *  (match : 2 h 15 après le coup d'envoi ; question : à l'heure de fin). Une seule fois par événement. */
@@ -193,10 +194,10 @@ function sp_remind_admin(int $now): void {
 /** Admin : publie les suggestions qui ne sont pas encore en ligne (et pas encore commencées). */
 function sp_admin_seed(): array {
   $have = [];
-  foreach (sp_events() as $e) $have[mb_strtolower((string) $e['title'])] = 1;
+  foreach (sp_events() as $e) $have[sp_lower((string) $e['title'])] = 1;
   $added = 0; $skipped = 0;
   foreach (sp_suggestions() as [$title, $league, $sport, $start, $opts, $logos]) {
-    if (isset($have[mb_strtolower($title)]) || $start < time() + 120) { $skipped++; continue; }
+    if (isset($have[sp_lower($title)]) || $start < time() + 120) { $skipped++; continue; }
     $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 20, 'logos' => $logos,
       'opts' => array_map(static fn($o) => ['label' => $o[0], 'odd' => $o[1]], $opts)]);
     if (!empty($r['ok'])) $added++; else $skipped++;
