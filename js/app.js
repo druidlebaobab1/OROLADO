@@ -4912,6 +4912,19 @@
   }
 
   fetchPayCountryIp();
+  // v2762 (propriétaire) : un double-clic (ou un clic répété) sur « Retour » / « Fermer » ne fait sortir qu'UNE fois
+  // (avant : deux fenêtres se fermaient d'un coup et le joueur se retrouvait tout dehors). Seulement les vrais clics.
+  (function () {
+    var BACK = '.btn-close,.aff-back,.auth-back,.crypto-back,.lf-back,.live-back,.cs-back,.gh-back,.rc-back,.t-back,.fs-trade-close,#btnAuthBack,.lgu-back';
+    var last = 0;
+    document.addEventListener('click', function (e) {
+      if (!e.isTrusted || !e.target || !e.target.closest) return;
+      if (!e.target.closest(BACK)) return;
+      var now = Date.now();
+      if (now - last < 550) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+      last = now;
+    }, true);
+  })();
   // v2509 — case « Carte & paiement instantané » : un téléphone simple et les logos des moyens de paiement
   // (les mêmes pour tout le monde). Affichage seulement.
   // v2509 → v2544 : ordre = cartes, banque / USSD / OPay, puis mobile money (Orange, MTN, M-Pesa, Airtel, Telecel, Tigo Pesa, Zamtel).
@@ -6928,6 +6941,8 @@
   function openModal(id) {
     var el = $(id);
     if (!el) return;
+    if (el._oroOutT) { clearTimeout(el._oroOutT); el._oroOutT = 0; }
+    el.classList.remove('oro-out');
     el.classList.add('active');
     el.style.removeProperty('visibility');
     el.style.setProperty('display', 'block', 'important');
@@ -6936,10 +6951,19 @@
   function closeModal(id) {
     var el = $(id);
     if (el) {
+      // v2762 (propriétaire) : la fenêtre s'en va DOUCEMENT (fondu de 0,18 s, comme les grandes plateformes) ;
+      // elle est tout de suite « fermée » pour le reste du site (plus « active », plus cliquable).
+      var wasOn = el.classList.contains('active') && !document.documentElement.classList.contains('oro-lite');
       el.classList.remove('active');
-      el.style.setProperty('display', 'none', 'important');
       el.style.setProperty('pointer-events', 'none', 'important');
-      el.style.setProperty('visibility', 'hidden', 'important');
+      var hide = function () {
+        el._oroOutT = 0; el.classList.remove('oro-out');
+        if (el.classList.contains('active')) return;
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+      };
+      if (el._oroOutT) clearTimeout(el._oroOutT);
+      if (wasOn) { el.classList.add('oro-out'); el._oroOutT = setTimeout(hide, 180); } else hide();
     }
     if (returnToProfile && PROFILE_SUBVIEWS[id]) {
       if ($('drawerProfile') && !$('drawerProfile').classList.contains('on')) {

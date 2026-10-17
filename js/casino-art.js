@@ -236,7 +236,7 @@
         '<circle cx="25" cy="25" r="9" fill="url(#IDp1)" stroke="#1E1B3A" stroke-opacity=".25" stroke-width="1.5"/><path d="M8 56c0-10 7.6-17.5 17-17.5S42 46 42 56z" fill="url(#IDp1)" stroke="#1E1B3A" stroke-opacity=".25" stroke-width="1.5"/>' +
         '<circle cx="21.5" cy="21.5" r="2.6" fill="#fff" opacity=".4"/>' +
         '<circle cx="49" cy="47" r="11.5" fill="#9A6A00"/><circle cx="49" cy="45.5" r="11.5" fill="url(#IDg)" stroke="#fff" stroke-width="1.6"/><circle cx="49" cy="45.5" r="8" fill="none" stroke="#9A6A00" stroke-width="1.2" opacity=".6"/><text x="49" y="50" text-anchor="middle" font-size="12" font-weight="900" font-family="system-ui" fill="#7C4A00">$</text>' +
-        '<circle cx="58.5" cy="34.5" r="5.5" fill="#22C55E" stroke="#fff" stroke-width="1.6"/><path d="M58.5 31.8v5.4M55.8 34.5h5.4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
+        '<circle cx="56" cy="33.5" r="5.6" fill="#22C55E" stroke="#fff" stroke-width="1.6"/><path d="M56 30.8v5.4M53.3 33.5h5.4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
     },
 
     // Envoyer de l'argent (logo du transfert : deux flèches qui s'échangent + billet)

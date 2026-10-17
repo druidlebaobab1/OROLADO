@@ -98,7 +98,7 @@
       b.innerHTML = '<span class="cs-auth"><span role="button" tabindex="0" class="cs-in" id="csLogin">' + esc(tl) + '</span><span role="button" tabindex="0" class="cs-join" id="csJoin">' + esc(tr) + '</span></span>';
       b.className = 'cs-wallet cs-guestw';
       $('csJoin').addEventListener('click', function (e) { e.stopPropagation(); signup(); });
-      $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('login'); });
+      $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); toAuth('login'); });
       return;
     }
     var md = S.adminTest ? 'demo' : 'real';
@@ -118,7 +118,18 @@
   async function api(a, d) { try { return await D6.Api.post(a, d, 15000); } catch (e) { return null; } }
   function err(r) { var x = X(); toast(x['e_' + ((r && r.reason) || 'unavailable')] || x.e_unavailable); if (r && r.reason === 'insufficient') deposit(); }
   function deposit() { close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); }
-  function signup() { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); }
+  // v2762 (propriétaire) : le visiteur qui part s'inscrire depuis un jeu y REVIENT s'il touche « Retour »
+  var resumeTo = null;
+  function toAuth(tab) {
+    resumeTo = { game: S.game || '', view: S.view || 'games', pred: !!($('casinoModal') && $('casinoModal').classList.contains('pred-only')) };
+    close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(tab || 'register');
+  }
+  function signup() { toAuth('register'); }
+  function resumeAfterAuth() {
+    var r = resumeTo; resumeTo = null;
+    if (!r) return;
+    setTimeout(function () { if (r.pred) openPred(); else open(r.game || null, r.game ? undefined : 'games'); }, 180);
+  }
   async function play(game, p) {
     if (guest()) { signup(); return null; } // v2698 : une seule fenêtre (plus de message superposé à l'inscription)
     if (S.busy) return null;
@@ -176,6 +187,7 @@
   function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
   function open(game, view) {
+    resumeTo = null;
     ensure(); readBal();
     S.stake = 0.1;
     var pm = view === 'pred';
@@ -951,7 +963,7 @@
   function needAccount(box, x) {
     if (!guest()) return false;
     box.innerHTML = '<div class="cs-try big"><span>' + esc(x.tryNote) + '</span><button type="button" id="csSign2">' + esc(x.signup) + '</button></div>';
-    $('csSign2').addEventListener('click', function () { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
+    $('csSign2').addEventListener('click', function () { toAuth('register'); });
     return true;
   }
 
@@ -990,9 +1002,10 @@
         plane.style.transform = 'translate(' + X0 + 'px,' + Y0 + 'px)';
       };
       draw(1, 0);
-      if (guest()) { needAccount($('csNeed'), x); return; }
-      bindStake(box);
-      var btn = $('csGo'), R = null, me = null, off = 0, shown = null, first = true;
+      // v2762 (propriétaire) : le VISITEUR voit le vrai vol en direct (il ne peut pas miser : inscription d'abord)
+      var watch = guest();
+      if (watch) needAccount($('csNeed'), x); else bindStake(box);
+      var btn = watch ? null : $('csGo'), R = null, me = null, off = 0, shown = null, first = true;
       var nowS = function () { return Date.now() / 1000 + off; };
       var showMine = function (r) {
         if (!r || !r.done || !r.ref || shown === r.ref) return;
@@ -1006,7 +1019,7 @@
         // qu'à l'ouverture et quand MA mise attend son résultat (explosion / tour suivant).
         var r = null;
         try { var rq = await fetch('casino-tour.php?g=' + game, { cache: 'no-store' }); r = await rq.json(); } catch (e) { r = null; }
-        if (!r || !r.ok) { try { r = await multi(game, 'round', null, true); if (r) r.mine = 1; } catch (e) { r = null; } } // secours
+        if ((!r || !r.ok) && !watch) { try { r = await multi(game, 'round', null, true); if (r) r.mine = 1; } catch (e) { r = null; } } // secours
         if (!box.isConnected || S.game !== game) return;
         S.timer = setTimeout(sync, 1000); // toujours relancé (même après une coupure réseau)
         if (r && r.round && r.round.i) {
@@ -1015,7 +1028,7 @@
           if (R && r.round.i !== R.i && r.round.phase === 'bet' && !open0) { var rs = box.querySelector('.cs-res'); if (rs) { rs.className = 'cs-res'; rs.innerHTML = ''; } }
           off = r.now - Date.now() / 1000; R = r.round;
           var mine = r.mine ? r : null;
-          if (!mine && (first || (open0 && (R.i > (me.rid || 0) || (R.c != null && R.i >= (me.rid || 0)))))) {
+          if (!watch && !mine && (first || (open0 && (R.i > (me.rid || 0) || (R.c != null && R.i >= (me.rid || 0)))))) {
             try { mine = await multi(game, 'round', null, true); } catch (e) { mine = null; }
             if (!box.isConnected || S.game !== game) return;
           }
@@ -1041,13 +1054,14 @@
             w.hidden = true; stage.classList.add('flying'); plane.classList.remove('gone'); $('csCm').className = 'crash-n'; draw(MULT(s), s);
           }
           var open = me && !me.done, inFlight = t >= R.t0 && R.c == null;
-          if (open && me.rid === R.i && inFlight) { btn.textContent = x.cashout + ' ' + m2(me.stake * MULT(s)) + ' $'; btn.classList.add('cash'); btn.disabled = false; }
+          if (!btn) { /* visiteur : il regarde seulement */ }
+          else if (open && me.rid === R.i && inFlight) { btn.textContent = x.cashout + ' ' + m2(me.stake * MULT(s)) + ' $'; btn.classList.add('cash'); btn.disabled = false; }
           else if (open) { btn.textContent = tx('placed'); btn.classList.remove('cash'); btn.disabled = true; }
           else { btn.textContent = inFlight ? tx('betNext') : x.bet; btn.classList.remove('cash'); btn.disabled = false; }
         }
         S.raf = requestAnimationFrame(tick);
       };
-      btn.addEventListener('click', async function () {
+      if (btn) btn.addEventListener('click', async function () {
         if (S.busy) return;
         S.busy = true; btn.disabled = true;
         if (me && !me.done) { var c = await multi(game, 'cash'); if (c) { me = c; showMine(c); } }
@@ -1376,6 +1390,8 @@
   function boot() {
     var b = $('btnCasino');
     if (b) b.addEventListener('click', function () { openPred(); });
+    var ab = $('btnAuthBack');
+    if (ab) ab.addEventListener('click', function () { resumeAfterAuth(); });
     var gb = $('btnGames');
     if (gb) gb.addEventListener('click', function () { open(null, 'games'); });
     // « + » au milieu de la carte Compte réel / Démo → page Recharger

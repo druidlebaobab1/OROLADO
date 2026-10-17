@@ -11958,3 +11958,32 @@ html:root body #lfHero .lfh-btns button.on{background:linear-gradient(180deg,#60
 html:root body #lfHero.lfh-id ol li{background:rgba(59,130,246,.14);box-shadow:inset 0 0 0 1px rgba(96,165,250,.25)}
 html:root body #lfHero.lfh-id ol li em{background:#60A5FA;color:#fff}
 html:root body #lfHero.lfh-id > p{color:rgba(237,235,255,.8)}
+/* v2762 (propriétaire) : « Dépôt crypto » montre 16 cryptos acceptées sur 2 lignes de 8 (plus ADA / AVAX / LINK, non acceptées) */
+html:root body #payMethodUsdt#payMethodUsdt .pay-crypto-wall .pay-crypto-cell{display:flex!important}
+html:root body #payMethodUsdt#payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(8,minmax(0,1fr))!important;row-gap:6px!important}
+/* v2762 (propriétaire) : sortie douce des fenêtres (fondu court) */
+html body .modal-backdrop.oro-out{display:block!important;visibility:visible!important;pointer-events:none!important;animation:oroOut .18s ease forwards!important}
+@keyframes oroOut{from{opacity:1}to{opacity:0}}
+/* v2762 (propriétaire) : page Recharger — la croix « × » bien visible, Wave un peu plus serré, 2 lignes de cryptos */
+html:root body #depositModal#depositModal .btn-close#closeDeposit{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.25)!important;box-shadow:none!important}
+html:root body #depositModal#depositModal .btn-close#closeDeposit::before,html:root body #depositModal#depositModal .btn-close#closeDeposit::after{display:none!important}
+html:root body #depositModal#depositModal .btn-close#closeDeposit .x-ico{display:block!important;width:16px!important;height:16px!important;fill:none!important;stroke:#fff!important;stroke-width:2.6!important;stroke-linecap:round}
+html:root body #depositModal#depositModal .btn-close#closeDeposit .x-ico path{stroke:#fff!important;stroke-width:2.6!important}
+html:root body #depositModal#depositModal #payMethodUsdt .pay-crypto-wall > .pay-crypto-cell:nth-child(n){display:flex!important}
+html:root body #depositModal#depositModal #payMomoBox .wave-cc .wcc{height:42px!important;min-height:0!important}
+html:root body #depositModal#depositModal #payMomoBox #momoPhone{height:46px!important;min-height:0!important}
+html:root body #depositModal#depositModal #payMomoBox #momoPhoneRow{gap:8px!important}
+html:root body #depositModal#depositModal#depositModal #payMomoBox .wave-cc .wcc{height:40px!important;min-height:0!important;padding-top:0!important;padding-bottom:0!important}
+html:root body #depositModal#depositModal#depositModal #payMomoBox #momoPhone{height:42px!important;min-height:0!important;padding-top:0!important;padding-bottom:0!important;font-size:20px!important}
+html:root body #depositModal#depositModal#depositModal #depositAmt{height:44px!important;min-height:0!important;padding-top:0!important;padding-bottom:0!important}
+/* v2762 (propriétaire) : connexion / inscription — plus large et plus haute, on utilise la place libre (téléphone debout) */
+@media (orientation:portrait),(min-height:560px){
+html:root body #screenAuth#screenAuth .auth-wrap{width:min(calc(100% - 14px),480px)!important;max-width:480px!important}
+html:root body #screenAuth#screenAuth .auth-card{padding-left:clamp(12px,3.4vw,20px)!important;padding-right:clamp(12px,3.4vw,20px)!important;padding-top:clamp(12px,1.8vh,20px)!important;padding-bottom:clamp(12px,1.8vh,20px)!important}
+html:root body #screenAuth#screenAuth .auth-tabs .auth-tab{height:clamp(44px,5.8vh,54px)!important;font-size:clamp(14px,1.9vh,16px)!important}
+html:root body #screenAuth#screenAuth form .field{margin-bottom:clamp(8px,1.7vh,16px)!important}
+html:root body #screenAuth#screenAuth form .field input,html:root body #screenAuth#screenAuth form .pass-wrap{height:clamp(44px,6.1vh,56px)!important;min-height:0!important}
+html:root body #screenAuth#screenAuth form .pass-wrap input{height:100%!important}
+html:root body #screenAuth#screenAuth form .field input{font-size:16px!important}
+html:root body #screenAuth#screenAuth form .btn-gold{height:clamp(52px,7.2vh,64px)!important;font-size:clamp(16px,2.2vh,19px)!important;margin-top:clamp(6px,1.4vh,14px)!important}
+html:root body #screenAuth#screenAuth .brand-lockup{margin-bottom:clamp(4px,1.4vh,14px)!important}}
