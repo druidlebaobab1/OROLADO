@@ -274,23 +274,54 @@ function live_oro_id(array $user): string {
   return (string) ($r['id'] ?? '');
 }
 
+/* v2771 (propriétaire) — UN SEUL IDENTIFIANT sur tout le site : le numéro du profil « ORO-123456 ».
+   On l'accepte écrit n'importe comment (oro, 0R0, sans tiret, avec espaces, seulement les chiffres) : pas d'erreur 0 / O.
+   L'ancien code secret (OR + 10 signes) reste compris en coulisses (anciens messages, anciens liens), mais n'est plus affiché. */
 function live_norm_oro_id(string $s): string {
   $s = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $s) ?? '');
+  if (preg_match('/^(?:[O0]R[O0])?(\d{4,8})$/', $s, $mm)) return 'ORO-' . $mm[1];
   return preg_match('/^OR[2-9A-HJKMNP-TV-Z]{10}$/', $s) ? $s : '';
 }
+/** La base des comptes (lue une seule fois par demande). */
+function live_users_db() { static $db = null; if ($db === null) $db = load_db(); return $db; }
+/** Numéro public (ORO-…) d'un joueur. */
+function live_pub_of(string $uid): string {
+  $db = live_users_db();
+  $u = $db['users'][$uid] ?? null;
+  return is_array($u) ? trim((string) ($u['publicId'] ?? '')) : '';
+}
+/** Joueur derrière un numéro public. */
+function live_uid_of_pub(string $pid): string {
+  $db = live_users_db();
+  $ids = function_exists('orolado_store_idx_get') && function_exists('orolado_store_dir') ? orolado_store_idx_get($db['_store'] ?? orolado_store_dir(), 'p:' . $pid) : [];
+  foreach ($ids as $id) { $u = $db['users'][$id] ?? null; if (is_array($u) && (string) ($u['publicId'] ?? '') === $pid) return (string) $id; }
+  if (!$ids) foreach ($db['users'] as $id => $u) if (is_array($u) && (string) ($u['publicId'] ?? '') === $pid) return (string) $id; // secours (index absent)
+  return '';
+}
 
-/** Joueur derrière un identifiant : ['uid','id','name'] ou null. */
+/** Joueur derrière un identifiant (ORO-… ou ancien code) : ['uid','id' (ORO-…),'name'] ou null. */
 function live_who(string $oroId): ?array {
+  if (strpos($oroId, 'ORO-') === 0) {
+    $uid = live_uid_of_pub($oroId);
+    if ($uid === '') return null;
+    $u = live_users_db()['users'][$uid] ?? [];
+    live_oro_id(['id' => $uid] + (is_array($u) ? $u : [])); // le joueur existe aussi dans Social (nom, messages)
+    $m = live_read_json(live_ids_file(), []);
+    return ['uid' => $uid, 'id' => $oroId, 'name' => (string) ($m['n'][$uid] ?? (is_array($u) ? ($u['displayName'] ?? 'Joueur') : 'Joueur'))];
+  }
   $m = live_read_json(live_ids_file(), []);
   $uid = (string) ($m['i'][$oroId] ?? '');
   if ($uid === '') return null;
-  return ['uid' => $uid, 'id' => $oroId, 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
+  $pub = live_pub_of($uid);
+  return ['uid' => $uid, 'id' => $pub !== '' ? $pub : $oroId, 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
 }
 
 function live_who_uid(string $uid): ?array {
   $m = live_read_json(live_ids_file(), []);
   $id = (string) ($m['u'][$uid] ?? '');
-  return $id === '' ? null : ['uid' => $uid, 'id' => $id, 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
+  if ($id === '') return null;
+  $pub = live_pub_of($uid);
+  return ['uid' => $uid, 'id' => $pub !== '' ? $pub : $id, 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
 }
 
 /** Recherche d'un ami : au-delà de 10 essais ratés en 1 h, plus de recherche (anti-devinette). */

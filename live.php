@@ -182,7 +182,7 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
         'blocked' => in_array((string) $peer, $blocked, true),
         'duel' => (static function () use ($uid, $peer) { $d = live_duel_last($uid, (string) $peer); if (!$d) return ''; if (($d['st'] ?? '') === 'pending' && !live_duel_expired($d) && (string) $d['b'] === $uid) return 'invite'; return ($d['st'] ?? '') === 'active' && time() < (int) ($d['end'] ?? 0) ? 'live' : ''; })()];
     }
-    live_out(['ok' => true, 'me' => $myId, 'name' => (string) ($me['displayName'] ?? ''), 'list' => $list, 'stats' => live_duel_stats($uid)]);
+    live_out(['ok' => true, 'me' => (trim((string) ($me['publicId'] ?? '')) ?: $myId), 'name' => (string) ($me['displayName'] ?? ''), 'list' => $list, 'stats' => live_duel_stats($uid)]);
   }
 
   // Trouver un ami par son identifiant (au-delà de 10 essais ratés en 1 h : bloqué).
