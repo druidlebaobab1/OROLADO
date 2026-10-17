@@ -17,7 +17,7 @@
       ladder: 'Tous les niveaux', you: 'toi',
       names: ['Débutant', 'Apprenti', 'Trader', 'Confirmé', 'Expert', 'Pro', 'Élite', 'Maître', 'Grand Maître', 'Légende', 'Mythique', 'Roi d’OROLADO'],
       mTitle: 'Missions de la semaine', mSub: 'Nouvelles missions chaque lundi · +{x} points chacune', mDone: 'Réussie ✓',
-      m: { trades: 'Fais 20 trades', quiz: 'Réponds à 10 questions du quiz', markets: 'Joue sur 3 marchés différents', streak: 'Gagne 3 trades d’affilée' },
+      m: { trades: 'Fais 50 trades', real: 'Fais 10 trades en réel', markets: 'Joue sur 5 marchés différents', streak: 'Gagne 5 trades d’affilée', quiz: 'Réponds à 20 questions du quiz' }, mLeft: 'Nouvelles missions dans {d} j',
       sTrades: 'Trades', sRate: 'Réussite', sBest: 'Meilleure série', sFav: 'Marché préféré', sDuels: 'Défis gagnés', sQuiz: 'Bonnes réponses', sNote: 'Calculé sur tes trades récents (démo et réel).', none: '—',
       b: { first: ['Premier pas', '1er trade'], t10: ['Lancé', '10 trades'], t100: ['Habitué', '100 trades'], streak5: ['En feu', '5 gains d’affilée'], sharp: ['Précis', '55 % de réussite (20 trades)'],
         duel: ['Champion', '1er défi gagné'], friend: ['Sociable', '1er ami'], quiz: ['Malin', '1re bonne réponse'], quiz50: ['Savant', '50 bonnes réponses'], mission: ['Missionnaire', '1re mission réussie'],
@@ -33,7 +33,7 @@
       ladder: 'All levels', you: 'you',
       names: ['Beginner', 'Apprentice', 'Trader', 'Skilled', 'Expert', 'Pro', 'Elite', 'Master', 'Grand Master', 'Legend', 'Mythic', 'King of OROLADO'],
       mTitle: 'Weekly missions', mSub: 'New missions every Monday · +{x} points each', mDone: 'Done ✓',
-      m: { trades: 'Make 20 trades', quiz: 'Answer 10 quiz questions', markets: 'Play on 3 different markets', streak: 'Win 3 trades in a row' },
+      m: { trades: 'Make 50 trades', real: 'Make 10 real trades', markets: 'Play on 5 different markets', streak: 'Win 5 trades in a row', quiz: 'Answer 20 quiz questions' }, mLeft: 'New missions in {d} d',
       sTrades: 'Trades', sRate: 'Success', sBest: 'Best streak', sFav: 'Favourite market', sDuels: 'Challenges won', sQuiz: 'Right answers', sNote: 'Based on your recent trades (demo and real).', none: '—',
       b: { first: ['First step', '1st trade'], t10: ['On a roll', '10 trades'], t100: ['Regular', '100 trades'], streak5: ['On fire', '5 wins in a row'], sharp: ['Sharp', '55% success (20 trades)'],
         duel: ['Champion', '1st challenge won'], friend: ['Social', '1st friend'], quiz: ['Smart', '1st right answer'], quiz50: ['Scholar', '50 right answers'], mission: ['On a mission', '1st mission done'],
@@ -47,7 +47,7 @@
     h1: ['一笔模拟交易', '+1'], h2: ['一笔真实交易', '+3'], h3: ['答对一道题', '+20'], h4: ['参加 / 赢得一次挑战', '+10 / +30'], h5: ['一位好友', '+10'], h6: ['完成一个任务', '+50'],
     ladder: '全部等级', you: '你', names: ['新手', '学徒', '交易员', '熟练', '专家', '职业', '精英', '大师', '宗师', '传奇', '神话', 'OROLADO 之王'],
     mTitle: '本周任务', mSub: '每周一更新 · 每个任务 +{x} 积分', mDone: '已完成 ✓',
-    m: { trades: '完成 20 笔交易', quiz: '回答 10 道问答题', markets: '在 3 个不同市场交易', streak: '连赢 3 笔交易' },
+    m: { trades: '完成 50 笔交易', real: '完成 10 笔真实交易', markets: '在 5 个不同市场交易', streak: '连赢 5 笔交易', quiz: '回答 20 道问答题' }, mLeft: '{d} 天后更新任务',
     sTrades: '交易数', sRate: '成功率', sBest: '最长连胜', sFav: '最爱市场', sDuels: '挑战胜场', sQuiz: '答对题数', sNote: '根据你最近的交易计算（模拟与真实）。',
     b: { first: ['第一步', '首笔交易'], t10: ['起步', '10 笔交易'], t100: ['老手', '100 笔交易'], streak5: ['火力全开', '连赢 5 笔'], sharp: ['精准', '成功率 55%（20 笔）'],
       duel: ['冠军', '首次赢得挑战'], friend: ['社交达人', '第一位好友'], quiz: ['聪明', '首次答对'], quiz50: ['学霸', '答对 50 题'], mission: ['任务达人', '首次完成任务'], level5: ['专家', '达到 5 级'], real: ['专业', '首笔真实交易'] }
@@ -127,29 +127,49 @@
       '<path d="M50 4l11 8 13-1 6 12 12 6-1 13 8 11-8 11 1 13-12 6-6 12-13-1-11 8-11-8-13 1-6-12-12-6 1-13-8-11 8-11-1-13 12-6 6-12 13 1z" fill="url(#lvG' + (big ? 1 : 0) + ')"/><circle cx="50" cy="50" r="31" fill="#1b1240" stroke="rgba(255,255,255,.35)" stroke-width="2"/></svg><b>' + lv.level + '</b></div>' +
       '<div class="lv-txt"><small>' + esc(fmt(x.lvl, { n: lv.level })) + '</small><b>' + esc(name) + '</b><div class="lv-bar"><i style="width:' + lv.pct + '%"></i></div><small>' + esc(lv.to ? fmt(x.xpTo, { x: nf(lv.xp), t: nf(lv.to) }) : x.xpMax) + '</small></div></div>';
   }
+  // v2760 (propriétaire) : 12 médailles de couleurs différentes (pierre, bronze, cuivre, argent, or, émeraude, saphir,
+  // améthyste, rubis, diamant, mythique, couronne) — la page ne défile pas, le joueur voit tout de suite où il est.
+  var TIER = [['#CBD5E1', '#64748B'], ['#F4C095', '#B4693A'], ['#FDBA74', '#C2410C'], ['#F1F5F9', '#94A3B8'], ['#FDE68A', '#D97706'], ['#6EE7B7', '#047857'],
+    ['#93C5FD', '#1D4ED8'], ['#D8B4FE', '#7E22CE'], ['#FDA4AF', '#BE123C'], ['#A5F3FC', '#0891B2'], ['#F9A8D4', '#7C3AED'], ['#FEF08A', '#B45309']];
+  var mdN = 0;
+  function medal(i) {
+    var c = TIER[i] || TIER[0], id = 'lvm' + (++mdN), stars = i < 3 ? 1 : i < 6 ? 2 : i < 9 ? 3 : 0, st = '';
+    for (var k = 0; k < stars; k++) { var sx = 32 + (k - (stars - 1) / 2) * 9; st += '<path transform="translate(' + sx + ' 7)" d="M0-4l1.2 2.5 2.7.4-2 1.9.5 2.7L0 2.2-2.4 3.5l.5-2.7-2-1.9 2.7-.4z" fill="#fff" stroke="' + c[1] + '" stroke-width=".8"/>'; }
+    if (i === 11) st = '<path d="M20 11l4-7 4 5 4-7 4 7 4-5 4 7z" fill="#FDE047" stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"/>';
+    if (i === 9 || i === 10) st = '<path d="M26 3h12l4 5-10 8-10-8z" fill="#fff" stroke="' + c[1] + '" stroke-width="1.2" stroke-linejoin="round"/>';
+    return '<svg class="lv-md" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>' +
+      '<path d="M32 10l19 11v22L32 54 13 43V21z" fill="url(#' + id + ')" stroke="rgba(255,255,255,.7)" stroke-width="1.6"/>' +
+      '<path d="M32 17l13 7.5v15L32 47l-13-7.5v-15z" fill="rgba(15,12,40,.55)"/>' +
+      '<text x="32" y="38.5" text-anchor="middle" font-size="15" font-weight="900" font-family="system-ui,sans-serif" fill="#fff">' + (i + 1) + '</text>' + st + '</svg>';
+  }
   async function levels(box) {
     var my = box._seq, s = await call('mystats', {});
     if (!s || !s.ok || box._seq !== my) return;
-    var x = X(), lv = s.lv;
-    var hows = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map(function (k) { return '<li><span>' + esc(x[k][0]) + '</span><b>' + esc(x[k][1]) + '</b></li>'; }).join('');
-    var ladder = x.names.map(function (n, i) {
-      var cls = i + 1 < lv.level ? 'past' : (i + 1 === lv.level ? 'cur' : '');
-      return '<li class="' + cls + '"><em>' + (i + 1) + '</em><span>' + esc(n) + '</span>' + (cls === 'cur' ? '<i>' + esc(x.you) + '</i>' : '') + '</li>';
+    var x = X(), lv = s.lv, cur = lv.level - 1;
+    var head = '<div class="lv2-head" style="--lc1:' + TIER[cur][0] + ';--lc2:' + TIER[cur][1] + '">' + medal(cur) + '<div class="lv2-t"><small>' + esc(fmt(x.lvl, { n: lv.level })) + '</small><b>' + esc(x.names[cur] || '') + '</b>' +
+      '<div class="lv-bar"><i style="width:' + lv.pct + '%"></i></div><small>' + esc(lv.to ? fmt(x.xpTo, { x: nf(lv.xp), t: nf(lv.to) }) : x.xpMax) + '</small></div></div>';
+    var grid = x.names.map(function (n, i) {
+      var cls = i < cur ? 'past' : (i === cur ? 'cur' : 'next');
+      return '<div class="lv2-c ' + cls + '" style="--lc1:' + TIER[i][0] + ';--lc2:' + TIER[i][1] + '">' + medal(i) + '<span><b>' + esc(n) + '</b><small>' + (i === cur ? esc(x.you) : esc(fmt(x.lvl, { n: i + 1 }))) + '</small></span></div>';
     }).join('');
-    box.innerHTML = levelCard(lv, true) + '<b class="lv-h">' + esc(x.how) + '</b><ul class="lv-how">' + hows + '</ul><b class="lv-h">' + esc(x.ladder) + '</b><ol class="lv-ladder">' + ladder + '</ol>';
+    box.innerHTML = '<div class="lv2">' + head + '<div class="lv2-grid">' + grid + '</div></div>';
   }
 
   /* ---------- MISSIONS ---------- */
   async function missions(box) {
     var my = box._seq, s = await call('mystats', {});
     if (!s || !s.ok || box._seq !== my) return;
-    var x = X(), MI = { trades: 'stats', quiz: 'quiz', markets: 'target', streak: 'jauge' };
-    box.innerHTML = '<div class="ms-head"><span class="ms-ico">' + ico('gifts') + '</span><div><b>' + esc(x.mTitle) + '</b><small>' + esc(fmt(x.mSub, { x: s.missionXp })) + '</small></div></div>' +
+    // v2760 (propriétaire) : missions plus dures et une page qui ne ressemble pas aux autres — chaque mission a SA couleur
+    var x = X(), MI = { trades: 'stats', real: 'bonus', quiz: 'quiz', markets: 'target', streak: 'jauge' };
+    var MC = { trades: '#38BDF8', real: '#22C55E', markets: '#A78BFA', streak: '#F97316', quiz: '#F472B6' };
+    var now = new Date(), left = (8 - (now.getUTCDay() || 7)) % 7 || 7;
+    var done = Object.keys(s.missions).filter(function (k) { return s.missions[k].done; }).length, all = Object.keys(s.missions).length;
+    box.innerHTML = '<div class="ms2"><div class="ms2-head"><div class="ms2-ring" style="--p:' + Math.round(done * 100 / all) + '"><b>' + done + '/' + all + '</b></div><div><b>' + esc(x.mTitle) + '</b><small>' + esc(fmt(x.mSub, { x: s.missionXp })) + '</small><em>' + esc(fmt(x.mLeft || '', { d: left })) + '</em></div></div>' +
       Object.keys(s.missions).map(function (k) {
         var m = s.missions[k], pct = Math.min(100, Math.round(m.have * 100 / m.need));
-        return '<div class="ms-row' + (m.done ? ' done' : '') + '"><span class="ms-i">' + ico(MI[k] || 'target') + '</span><div class="ms-t"><b>' + esc(x.m[k] || k) + '</b><div class="lv-bar"><i style="width:' + pct + '%"></i></div></div>' +
-          '<em>' + (m.done ? esc(x.mDone) : m.have + '/' + m.need) + '</em></div>';
-      }).join('');
+        return '<div class="ms2-row' + (m.done ? ' done' : '') + '" style="--mc:' + (MC[k] || '#A78BFA') + '"><span class="ms2-i">' + ico(MI[k] || 'target') + '</span><div class="ms2-t"><b>' + esc(x.m[k] || k) + '</b><div class="ms2-bar"><i style="width:' + pct + '%"></i></div></div>' +
+          '<em>' + (m.done ? '✓' : m.have + '/' + m.need) + '</em></div>';
+      }).join('') + '</div>';
   }
 
   /* ---------- STATISTIQUES ---------- */

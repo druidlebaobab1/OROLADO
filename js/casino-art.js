@@ -231,11 +231,12 @@
     },
     // Cadeaux : invitation (enveloppe + pièces)
     g_aff: function () { // v2759 (propriétaire) : deux amis + un « + » (plus de pièces ni de dollars)
-      return '<defs><linearGradient id="IDp1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient><linearGradient id="IDp2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9A8D4"/><stop offset="1" stop-color="#DB2777"/></linearGradient></defs>' +
+      return '<defs>' + G.gold + '<linearGradient id="IDp1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient><linearGradient id="IDp2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9A8D4"/><stop offset="1" stop-color="#DB2777"/></linearGradient></defs>' +
         '<circle cx="41" cy="20" r="7.5" fill="url(#IDp2)"/><path d="M27 48c0-8.6 6.3-15 14-15s14 6.4 14 15z" fill="url(#IDp2)"/>' +
         '<circle cx="25" cy="25" r="9" fill="url(#IDp1)" stroke="#1E1B3A" stroke-opacity=".25" stroke-width="1.5"/><path d="M8 56c0-10 7.6-17.5 17-17.5S42 46 42 56z" fill="url(#IDp1)" stroke="#1E1B3A" stroke-opacity=".25" stroke-width="1.5"/>' +
         '<circle cx="21.5" cy="21.5" r="2.6" fill="#fff" opacity=".4"/>' +
-        '<circle cx="50" cy="46" r="10" fill="#22C55E" stroke="#fff" stroke-width="2.4"/><path d="M50 41v10M45 46h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>';
+        '<circle cx="49" cy="47" r="11.5" fill="#9A6A00"/><circle cx="49" cy="45.5" r="11.5" fill="url(#IDg)" stroke="#fff" stroke-width="1.6"/><circle cx="49" cy="45.5" r="8" fill="none" stroke="#9A6A00" stroke-width="1.2" opacity=".6"/><text x="49" y="50" text-anchor="middle" font-size="12" font-weight="900" font-family="system-ui" fill="#7C4A00">$</text>' +
+        '<circle cx="58.5" cy="34.5" r="5.5" fill="#22C55E" stroke="#fff" stroke-width="1.6"/><path d="M58.5 31.8v5.4M55.8 34.5h5.4" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
     },
 
     // Envoyer de l'argent (logo du transfert : deux flèches qui s'échangent + billet)

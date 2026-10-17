@@ -563,10 +563,12 @@ function live_quiz_answer(string $uid, int $q, int $pick): array {
 }
 
 /* v2689 — NIVEAUX (points d'expérience, aucune valeur en argent) et MISSIONS DE LA SEMAINE. */
-const LIVE_XP_QUIZ = 5;
-const LIVE_XP_QUIZ_OK = 20;
-const LIVE_XP_LEVELS = [0, 60, 150, 300, 500, 800, 1200, 1800, 2600, 3600, 5000, 7000];
-const LIVE_MISSION_XP = 50;
+const LIVE_XP_QUIZ = 1;
+const LIVE_XP_QUIZ_OK = 3;
+// v2760 (propriétaire) : monter est DUR — la plupart des joueurs restent niveau 1 ou 2 ; ceux qui montent jouent beaucoup
+// (surtout en réel), déposent, invitent des amis qui déposent, créent des groupes, réussissent les missions.
+const LIVE_XP_LEVELS = [0, 150, 500, 1200, 2500, 5000, 9000, 15000, 25000, 40000, 65000, 100000];
+const LIVE_MISSION_XP = 40;
 
 function live_fun_state(string $uid): array {
   $f = live_read_json(live_fun_file($uid), []);
@@ -587,18 +589,19 @@ function live_level(int $xp): array {
 /** Statistiques (trades gardés par le serveur), niveau, missions de la semaine, badges. */
 function live_my_stats(string $uid): array {
   $db = load_db();
-  $n = 0; $w = 0; $best = 0; $cur = 0; $mk = []; $real = 0;
+  $n = 0; $w = 0; $best = 0; $cur = 0; $mk = []; $real = 0; $realVol = 0.0; $wkReal = 0;
   $wkStart = (int) strtotime('monday this week 00:00:00 UTC'); if ($wkStart > time()) $wkStart -= 7 * 86400;
   $wkN = 0; $wkMk = []; $wkBest = 0; $wkCur = 0;
   $rows = array_values(array_filter((array) ($db['orders'] ?? []), static fn($o) => is_array($o) && (string) ($o['userId'] ?? '') === $uid && isset($o['net'])));
   usort($rows, static fn($a, $b) => ((float) ($a['at'] ?? 0)) <=> ((float) ($b['at'] ?? 0)));
   foreach ($rows as $o) {
-    $n++; if (($o['mode'] ?? '') === 'real') $real++;
+    $n++; $isReal = ($o['mode'] ?? '') === 'real';
+    if ($isReal) { $real++; $realVol += max(0.0, (float) ($o['stake'] ?? 0)); }
     $won = !empty($o['won']);
     if ($won) { $w++; $cur++; $best = max($best, $cur); } elseif (empty($o['voided'])) { $cur = 0; }
     $a = (string) ($o['assetId'] ?? ''); if ($a !== '') $mk[$a] = ($mk[$a] ?? 0) + 1;
     if ((float) ($o['at'] ?? 0) >= $wkStart) {
-      $wkN++; if ($a !== '') $wkMk[$a] = 1;
+      $wkN++; if ($a !== '') $wkMk[$a] = 1; if ($isReal) $wkReal++;
       if ($won) { $wkCur++; $wkBest = max($wkBest, $wkCur); } elseif (empty($o['voided'])) { $wkCur = 0; }
     }
   }
@@ -609,11 +612,13 @@ function live_my_stats(string $uid): array {
   $wkQuiz = (($f['wk'] ?? '') === gmdate('o-W')) ? (int) ($f['wkQuiz'] ?? 0) : 0;
   $friends = count(live_inbox($uid));
   // Missions de la semaine (calculées par le serveur ; chaque mission réussie est gardée pour toujours).
+  // v2760 (propriétaire) : missions plus difficiles (5 par semaine)
   $missions = [
-    'trades' => ['have' => min(20, $wkN), 'need' => 20],
-    'quiz' => ['have' => min(10, $wkQuiz), 'need' => 10],
-    'markets' => ['have' => min(3, count($wkMk)), 'need' => 3],
-    'streak' => ['have' => min(3, $wkBest), 'need' => 3],
+    'trades' => ['have' => min(50, $wkN), 'need' => 50],
+    'real' => ['have' => min(10, $wkReal), 'need' => 10],
+    'markets' => ['have' => min(5, count($wkMk)), 'need' => 5],
+    'streak' => ['have' => min(5, $wkBest), 'need' => 5],
+    'quiz' => ['have' => min(20, $wkQuiz), 'need' => 20],
   ];
   $wk = gmdate('o-W');
   $newDone = [];
@@ -632,8 +637,24 @@ function live_my_stats(string $uid): array {
   unset($m);
   $missionsTotal = (int) ($f['missionsTotal'] ?? 0);
   // Points de niveau : on joue, on apprend, on défie, on se fait des amis.
-  $xp = ($n - $real) + $real * 3 + $w + $quizN * LIVE_XP_QUIZ + ($quizOk * (LIVE_XP_QUIZ_OK - LIVE_XP_QUIZ)) + (int) $d['w'] * 30 + ((int) $d['w'] + (int) $d['l']) * 10
-    + min(20, $friends) * 10 + $missionsTotal * LIVE_MISSION_XP;
+  // v2760 : vrais dépôts du joueur (les cadeaux du Défi / de l'invitation ne comptent pas), amis invités qui ont déposé, groupes créés
+  $dep = 0.0;
+  foreach ((array) (($db['users'][$uid] ?? [])['transactions'] ?? []) as $tx) {
+    if (!is_array($tx) || ($tx['type'] ?? '') !== 'deposit' || (($tx['mode'] ?? 'real') !== 'real')) continue;
+    $tid = (string) ($tx['id'] ?? ''); $note = (string) ($tx['note'] ?? '');
+    if (strpos($tid, 'aff_') === 0 || stripos($note, 'Défi') !== false || stripos($note, 'bonus') !== false || stripos($note, 'cadeau') !== false) continue;
+    $dep += max(0.0, (float) ($tx['amount'] ?? 0));
+  }
+  $invPaid = 0; $invAll = 0;
+  if (function_exists('orolado_aff_read') && function_exists('orolado_aff_owner_name')) {
+    try { $own = orolado_aff_read(orolado_aff_owner_name($uid)); $fr = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+      $invAll = count($fr); $invPaid = count(array_filter($fr, static fn($x) => !empty($x['paid']))); } catch (Throwable $e) { /* jamais bloquant */ }
+  }
+  $groupsOwned = 0;
+  foreach (live_ugroups($uid) as $gid) { $g = live_group_get((string) $gid); if ($g && (string) ($g['owner'] ?? '') === $uid && count((array) ($g['members'] ?? [])) >= 3) $groupsOwned++; }
+  $xp = intdiv(max(0, $n - $real), 5) + $real * 2 + (int) floor($realVol) + (int) floor($dep * 2)
+    + $quizN + $quizOk * 2 + (int) $d['w'] * 10 + ((int) $d['w'] + (int) $d['l']) * 3
+    + min(20, $friends) * 3 + min(50, $invAll) * 20 + $invPaid * 100 + min(5, $groupsOwned) * 30 + $missionsTotal * LIVE_MISSION_XP;
   $lv = live_level($xp);
   $badges = [
     'first' => $n >= 1, 't10' => $n >= 10, 't100' => $n >= 100, 'streak5' => $best >= 5, 'sharp' => $n >= 20 && $w / max(1, $n) >= 0.55,

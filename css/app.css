@@ -11857,3 +11857,104 @@ html:root body .gh-p > b{max-width:100%;white-space:nowrap;overflow:hidden;text-
 html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp{width:42px!important;flex:0 0 42px!important;min-width:0!important;max-width:none!important;padding:0!important}
 html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnCasino#btnCasino{width:36px!important;flex:0 0 36px!important;min-width:0!important;padding:0!important}
 html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal .pw-lbl,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp .hb-txt,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnCasino .cb-lbl b{font-size:9px!important}}
+
+/* ================= v2760 (propriétaire) : MON NIVEAU — 12 médailles, page qui ne défile pas ================= */
+html:root body #liveFun .lv2{display:flex;flex-direction:column;gap:10px}
+html:root body #liveFun .lv2-head{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:18px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--lc2) 55%,transparent),color-mix(in srgb,var(--lc1) 18%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--lc1) 60%,transparent),0 6px 18px -8px var(--lc2)}
+html:root body #liveFun .lv2-head .lv-md{width:62px;height:62px;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+html:root body #liveFun .lv2-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+html:root body #liveFun .lv2-t small{font:700 11px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:rgba(255,255,255,.8)}
+html:root body #liveFun .lv2-t b{font:900 20px/1.1 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html:root body #liveFun .lv2-t .lv-bar{height:7px;border-radius:9px;background:rgba(0,0,0,.3);overflow:hidden}
+html:root body #liveFun .lv2-t .lv-bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--lc1),#fff)}
+html:root body #liveFun .lv2-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+html:root body #liveFun .lv2-c{display:flex;align-items:center;gap:8px;min-width:0;padding:5px 8px;border-radius:13px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+html:root body #liveFun .lv2-c .lv-md{width:min(40px,6vh);height:min(40px,6vh);flex:none}
+html:root body #liveFun .lv2-c span{display:flex;flex-direction:column;min-width:0}
+html:root body #liveFun .lv2-c b{font:800 12.5px/1.15 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:root body #liveFun .lv2-c small{font:700 10px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:rgba(237,235,255,.6)}
+html:root body #liveFun .lv2-c.next{opacity:.5}
+html:root body #liveFun .lv2-c.next .lv-md{filter:grayscale(.7)}
+html:root body #liveFun .lv2-c.cur{background:linear-gradient(135deg,color-mix(in srgb,var(--lc2) 45%,transparent),rgba(255,255,255,.06));box-shadow:inset 0 0 0 1.5px var(--lc1),0 0 14px -4px var(--lc1)}
+html:root body #liveFun .lv2-c.cur small{color:var(--lc1);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+@media (orientation:landscape) and (max-height:500px){html:root body #liveFun .lv2-grid{grid-template-columns:repeat(4,1fr)}html:root body #liveFun .lv2-head .lv-md{width:44px;height:44px}}
+
+/* ================= v2760 : MISSIONS — chaque mission a sa couleur, anneau de progression ================= */
+html:root body #liveFun .ms2{display:flex;flex-direction:column;gap:8px}
+html:root body #liveFun .ms2-head{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:linear-gradient(135deg,rgba(249,115,22,.22),rgba(236,72,153,.16));box-shadow:inset 0 0 0 1px rgba(251,146,60,.35)}
+html:root body #liveFun .ms2-head > div:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+html:root body #liveFun .ms2-head b{font:900 16px/1.15 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html:root body #liveFun .ms2-head small{font:700 11px/1.25 "Plus Jakarta Sans",system-ui,sans-serif;color:rgba(255,255,255,.75)}
+html:root body #liveFun .ms2-head em{font:800 11px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;font-style:normal;color:#FDBA74}
+html:root body #liveFun .ms2-ring{--p:0;width:58px;height:58px;flex:none;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#FB923C calc(var(--p)*1%),rgba(255,255,255,.12) 0)}
+html:root body #liveFun .ms2-ring b{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#211A4C;font:900 14px/1 "Plus Jakarta Sans",system-ui,sans-serif!important}
+html:root body #liveFun .ms2-row{display:flex;align-items:center;gap:10px;padding:9px 12px 9px 9px;border-radius:14px;background:rgba(255,255,255,.05);box-shadow:inset 3px 0 0 var(--mc),inset 0 0 0 1px rgba(255,255,255,.07)}
+html:root body #liveFun .ms2-i{width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--mc) 22%,transparent);color:var(--mc)}
+html:root body #liveFun .ms2-i svg{width:22px;height:22px}
+html:root body #liveFun .ms2-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+html:root body #liveFun .ms2-t b{font:800 13px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html:root body #liveFun .ms2-bar{height:6px;border-radius:9px;background:rgba(255,255,255,.1);overflow:hidden}
+html:root body #liveFun .ms2-bar i{display:block;height:100%;border-radius:9px;background:var(--mc)}
+html:root body #liveFun .ms2-row em{font:900 13px/1 "Plus Jakarta Sans",system-ui,sans-serif;font-style:normal;color:var(--mc);min-width:38px;text-align:end}
+html:root body #liveFun .ms2-row.done{background:color-mix(in srgb,var(--mc) 14%,transparent)}
+html:root body #liveFun .ms2-row.done em{font-size:18px}
+html[dir=rtl]:root body #liveFun .ms2-row{box-shadow:inset -3px 0 0 var(--mc),inset 0 0 0 1px rgba(255,255,255,.07);padding:9px 9px 9px 12px}
+html:root body #liveFun .lv2-c.next{opacity:.78}
+html:root body #liveFun .lv2-c.next .lv-md{filter:grayscale(.25)}
+html:root body #liveFun .lv2-grid{gap:8px}
+html:root body #liveFun .lv2-c{padding:8px 10px}
+html:root body #liveFun .lv2-c .lv-md{width:min(46px,6.4vh)!important;height:min(46px,6.4vh)!important}
+html:root body #liveFun .lv2-c b{font-size:13.5px}
+/* v2760 : Social — même univers simple que les jeux (aucune planète, peu d'étoiles) */
+html:root body #liveModal#liveModal#liveModal .live-box{background:
+  radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.75),transparent 60%) 0 0/190px 210px,
+  radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.55),transparent 60%) 0 0/260px 240px,
+  radial-gradient(70% 45% at 15% 0%,rgba(167,139,250,.32),transparent 70%),
+  radial-gradient(60% 40% at 100% 35%,rgba(236,72,153,.16),transparent 70%),
+  radial-gradient(80% 50% at 40% 100%,rgba(56,189,248,.16),transparent 70%),
+  linear-gradient(180deg,#2B1E5E 0%,#211A4C 55%,#1A1640 100%)!important}
+html:root body #liveModal#liveModal#liveModal .live-box::before,html:root body #liveModal#liveModal#liveModal .live-box::after{display:none!important}
+
+/* ================= v2760 (propriétaire) : Social — chaque page a SON visage ================= */
+html:root body #livePaneFriends[data-v="duel"] #lfMe,html:root body #livePaneFriends[data-v="record"] #lfMe,html:root body #livePaneFriends[data-v="myid"] #lfMe{display:none!important}
+html:root body #livePaneFriends[data-v="myid"] #lfFind,html:root body #livePaneFriends[data-v="myid"] #lfFindMsg,html:root body #livePaneFriends[data-v="myid"] #lfConvs,
+html:root body #livePaneFriends[data-v="record"] #lfFind,html:root body #livePaneFriends[data-v="record"] #lfFindMsg{display:none!important}
+html:root body #livePaneFriends[data-v="friends"] #lfHero{display:none!important}
+html:root body #livePaneFriends[data-v="duel"] #lfFindMsg{display:none!important}
+html:root body #lfHero.lfh{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:14px 14px 12px;margin-bottom:10px;border-radius:20px}
+html:root body #lfHero.lfh > b{font:900 19px/1.15 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html:root body #lfHero.lfh > p{margin:0;font:600 12.5px/1.35 "Plus Jakarta Sans",system-ui,sans-serif;color:rgba(255,255,255,.8)}
+html:root body #lfHero .lfh-ico svg{width:64px;height:64px;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+html:root body #lfHero ol{list-style:none;margin:4px 0 0;padding:0;display:flex;gap:6px;width:100%}
+html:root body #lfHero ol li{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:12px;background:rgba(0,0,0,.18);font:700 10.5px/1.25 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html:root body #lfHero ol li em{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:900 12px/1 system-ui;font-style:normal;background:#fff;color:#1E1B3A}
+/* l'arène (rouge / orange) */
+html:root body #lfHero.lfh-duel{background:radial-gradient(80% 60% at 50% 0%,rgba(251,146,60,.45),transparent 70%),linear-gradient(160deg,#9F1239,#7C2D12);box-shadow:inset 0 0 0 1px rgba(253,186,116,.45),0 10px 24px -12px rgba(225,29,72,.8)}
+html:root body #lfHero.lfh-duel ol li em{background:#FDBA74;color:#7C2D12}
+/* le tableau des scores (or) */
+html:root body #lfHero.lfh-rec{background:radial-gradient(80% 60% at 50% 0%,rgba(253,224,71,.32),transparent 70%),linear-gradient(160deg,#713F12,#3B2A12);box-shadow:inset 0 0 0 1px rgba(253,224,71,.45),0 10px 24px -12px rgba(234,179,8,.7)}
+html:root body #lfHero .lfh-score{display:flex;gap:8px;width:100%}
+html:root body #lfHero .lfh-score > div{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:rgba(0,0,0,.25)}
+html:root body #lfHero .lfh-score b{font:900 26px/1 "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
+html:root body #lfHero .lfh-score small{font:800 10.5px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.7)}
+html:root body #lfHero .lfh-score .w b{color:#4ADE80}
+html:root body #lfHero .lfh-score .l b{color:#FB7185}
+html:root body #lfHero .lfh-score .r b{color:#FDE047}
+html:root body #lfHero .lfh-go{margin-top:4px;height:40px;padding:0 22px;border:0;border-radius:12px;background:linear-gradient(180deg,#FDE047,#EAB308);color:#422006;font:900 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}
+/* la carte d'identité (bleue) */
+html:root body #lfHero.lfh-id{background:transparent;padding:4px 2px 10px}
+html:root body #lfHero .lfh-card{position:relative;width:100%;aspect-ratio:1.6;max-height:200px;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:6px;text-align:start;overflow:hidden;
+  background:radial-gradient(70% 90% at 100% 0%,rgba(125,211,252,.55),transparent 60%),linear-gradient(135deg,#1E40AF,#4C1D95);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 14px 30px -14px rgba(37,99,235,.9)}
+html:root body #lfHero .lfh-card::after{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;border:24px solid rgba(255,255,255,.06)}
+html:root body #lfHero .lfh-chip{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#FDE68A,#D97706);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+html:root body #lfHero .lfh-card small{font:800 11px/1 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+html:root body #lfHero .lfh-num{font:800 clamp(20px,7vw,28px)/1.1 ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;letter-spacing:.08em;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+html:root body #lfHero .lfh-brand{position:absolute;right:16px;bottom:12px;font:900 13px/1 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.12em;color:rgba(255,255,255,.55)}
+html[dir=rtl]:root body #lfHero .lfh-brand{right:auto;left:16px}
+html:root body #lfHero .lfh-btns{display:flex;gap:8px;width:100%}
+html:root body #lfHero .lfh-btns button{flex:1;height:42px;border:0;border-radius:12px;font:900 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer;background:rgba(255,255,255,.1);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+html:root body #lfHero .lfh-btns button.on{background:linear-gradient(180deg,#60A5FA,#2563EB);box-shadow:none}
+html:root body #lfHero.lfh-id ol li{background:rgba(59,130,246,.14);box-shadow:inset 0 0 0 1px rgba(96,165,250,.25)}
+html:root body #lfHero.lfh-id ol li em{background:#60A5FA;color:#fff}
+html:root body #lfHero.lfh-id > p{color:rgba(237,235,255,.8)}

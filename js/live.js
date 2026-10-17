@@ -203,6 +203,44 @@
   }
   async function refreshDm() { if (!peer) return; var j = await call('dm', { id: peer.id }); if (j && j.ok) { paintDm(j.msgs, j.blocked); renderDuel(j); } }
 
+  /* ---------- v2760 (propriétaire) : « Défie ton ami », « Mes défis », « Mon identifiant » ont chacun LEUR page ---------- */
+  var HERO = {
+    fr: { duelT: 'L’arène des défis', duelS: 'Affronte un ami en démo : le meilleur trader gagne.', d1: 'Choisis un ami ci-dessous', d2: 'Choisis la durée : 3, 5 ou 10 min', d3: 'Celui qui gagne le plus en démo remporte le défi',
+      recT: 'Mes défis', w: 'Victoires', l: 'Défaites', r: 'Réussite', recS: 'Défie tes amis pour monter au classement.', recGo: 'Lancer un défi',
+      idT: 'Ma carte OROLADO', idS: 'Donne cet identifiant à tes amis : ils te retrouvent en un instant.', i1: 'Ton ami ouvre « Mes amis »', i2: 'Il colle ton identifiant', i3: 'Vous discutez et vous vous défiez', share: 'Partager', copy: 'Copier', copied: 'Copié ✓' },
+    en: { duelT: 'Challenge arena', duelS: 'Face a friend in demo: the best trader wins.', d1: 'Pick a friend below', d2: 'Pick 3, 5 or 10 min', d3: 'Whoever earns the most in demo wins',
+      recT: 'My challenges', w: 'Wins', l: 'Losses', r: 'Success', recS: 'Challenge your friends to climb the ranking.', recGo: 'Start a challenge',
+      idT: 'My OROLADO card', idS: 'Give this ID to your friends: they find you instantly.', i1: 'Your friend opens “My friends”', i2: 'They paste your ID', i3: 'You chat and challenge each other', share: 'Share', copy: 'Copy', copied: 'Copied ✓' },
+    zh: { duelT: '挑战竞技场', duelS: '用模拟账户和好友对决：交易最好的人获胜。', d1: '在下方选择一位好友', d2: '选择挑战时长', d3: '模拟账户赚得最多的人获胜',
+      recT: '我的挑战', w: '胜', l: '负', r: '胜率', recS: '挑战好友，提升排名。', recGo: '发起挑战',
+      idT: '我的 OROLADO 卡', idS: '把这个 ID 发给好友，他们马上就能找到你。', i1: '好友打开“我的好友”', i2: '粘贴你的 ID', i3: '你们聊天并互相挑战', share: '分享', copy: '复制', copied: '已复制 ✓' }
+  };
+  var SWORDS = '<svg viewBox="0 0 64 64" aria-hidden="true"><g stroke-linecap="round" stroke-linejoin="round"><path d="M12 8l26 26" stroke="#E2E8F0" stroke-width="5"/><path d="M52 8L26 34" stroke="#E2E8F0" stroke-width="5"/><path d="M12 8l26 26M52 8L26 34" stroke="#fff" stroke-width="1.6"/>' +
+    '<path d="M33 40l-9 9M31 46l-5 5M17 40l9 9M19 46l5 5" stroke="#F59E0B" stroke-width="5"/><circle cx="21" cy="55" r="4" fill="#B45309"/><circle cx="43" cy="55" r="4" fill="#B45309"/><path d="M47 40l-9 9M45 46l-5 5" stroke="#F59E0B" stroke-width="5"/></g></svg>';
+  var TROPHY = '<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lfhTg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FEF08A"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs><path d="M14 12h-8v6c0 8 6 13 12 13M50 12h8v6c0 8-6 13-12 13" fill="none" stroke="#D97706" stroke-width="4"/><path d="M16 8h32v12c0 10-7 18-16 18S16 30 16 20z" fill="url(#lfhTg)"/><rect x="28" y="38" width="8" height="8" fill="#D97706"/><rect x="18" y="46" width="28" height="9" rx="2" fill="url(#lfhTg)"/><path d="M32 14l2.4 5 5.4.6-4 3.6 1.1 5.3L32 25.8l-4.9 2.7 1.1-5.3-4-3.6 5.4-.6z" fill="#fff" opacity=".9"/></svg>';
+  function paintHero(sub) {
+    var lst = $('lfList'); if (!lst) return;
+    var hero = $('lfHero');
+    if (!hero) { hero = document.createElement('div'); hero.id = 'lfHero'; lst.insertBefore(hero, lst.firstChild); }
+    var l = (document.documentElement.lang || 'fr').slice(0, 2), t = HERO[l] || HERO.en;
+    var me = ((($('lfMe') || {}).querySelector || function () { return null; }).call($('lfMe'), '.lf-myid') || {}).textContent || '';
+    if (sub === 'duel') {
+      hero.className = 'lfh lfh-duel';
+      hero.innerHTML = '<div class="lfh-ico">' + SWORDS + '</div><b>' + esc(t.duelT) + '</b><p>' + esc(t.duelS) + '</p><ol><li><em>1</em>' + esc(t.d1) + '</li><li><em>2</em>' + esc(t.d2) + '</li><li><em>3</em>' + esc(t.d3) + '</li></ol>';
+    } else if (sub === 'record') {
+      var w = (myStats && myStats.w) || 0, ls = (myStats && myStats.l) || 0, pct = w + ls ? Math.round(w * 100 / (w + ls)) : 0;
+      hero.className = 'lfh lfh-rec';
+      hero.innerHTML = '<div class="lfh-ico">' + TROPHY + '</div><b>' + esc(t.recT) + '</b><div class="lfh-score"><div class="w"><b>' + w + '</b><small>' + esc(t.w) + '</small></div><div class="l"><b>' + ls + '</b><small>' + esc(t.l) + '</small></div><div class="r" style="--p:' + pct + '"><b>' + pct + '%</b><small>' + esc(t.r) + '</small></div></div><p>' + esc(t.recS) + '</p><button type="button" class="lfh-go" id="lfhGo">' + esc(t.recGo) + '</button>';
+      $('lfhGo').addEventListener('click', function () { show('friends', 'duel'); });
+    } else if (sub === 'myid') {
+      hero.className = 'lfh lfh-id';
+      hero.innerHTML = '<div class="lfh-card"><span class="lfh-chip"></span><small>' + esc(t.idT) + '</small><b class="lfh-num">' + esc(me) + '</b><span class="lfh-brand">OROLADO</span></div><p>' + esc(t.idS) + '</p>' +
+        '<div class="lfh-btns"><button type="button" id="lfhCopy">' + esc(t.copy) + '</button><button type="button" id="lfhShare" class="on">' + esc(t.share) + '</button></div><ol><li><em>1</em>' + esc(t.i1) + '</li><li><em>2</em>' + esc(t.i2) + '</li><li><em>3</em>' + esc(t.i3) + '</li></ol>';
+      $('lfhCopy').addEventListener('click', function () { var b = this; try { navigator.clipboard.writeText(me); } catch (e) { /* ignore */ } b.textContent = t.copied; setTimeout(function () { b.textContent = t.copy; }, 1600); });
+      $('lfhShare').addEventListener('click', function () { var txt = fmt(L().shareTxt, { id: me }) + ' https://orolado.com'; if (navigator.share) { navigator.share({ text: txt }).catch(function () {}); return; } try { navigator.clipboard.writeText(txt); } catch (e) { /* ignore */ } this.textContent = t.copied; });
+    } else { hero.className = 'lfh'; hero.innerHTML = ''; }
+  }
+
   /* ---------- v2685 — DÉFIE TON AMI (démo) ---------- */
   var duel = null, duelOff = 0, duelTick = 0, duelPoll = 0, duelStats = null, duelPicking = false;
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
@@ -372,7 +410,8 @@
   }
   function tileGo(k) {
     if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }
-    if (k === 'gifts') { close(); if (D6.Portal && D6.Portal.open) D6.Portal.open(); backToLive('portalModal', 'active'); return; }
+    // v2760 (propriétaire) : Cadeaux s'ouvre PAR-DESSUS Social (on ne voit plus l'écran de trading entre les deux)
+    if (k === 'gifts') { if (D6.Portal && D6.Portal.open) D6.Portal.open(); setTimeout(function () { close(); backToLive('portalModal', 'active'); }, 350); return; }
     if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); backToLive('learnModal', 'on'); return; }
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
     if (k === 'quiz' || k === 'stats' || k === 'badges' || k === 'levels' || k === 'missions') { show('fun', k); return; }
@@ -426,7 +465,9 @@
     if (w === 'send') { $('livePaneNews').hidden = true; $('liveBarT').textContent = D6.LiveSend ? D6.LiveSend.title() : ''; if (D6.LiveSend) D6.LiveSend.open($('liveFun'), sub); return; }
     if (w === 'groups') { $('livePaneNews').hidden = true; if (D6.LiveGroups) D6.LiveGroups.open(sub); return; }
     if (w === 'friends') {
+      $('livePaneFriends').setAttribute('data-v', sub === 'duel' || sub === 'myid' || sub === 'record' ? sub : 'friends');
       friendsList().then(function () {
+        paintHero(sub);
         var m = $('lfFindMsg');
         if (sub === 'duel' && m) { m.textContent = h.duelHint; m.classList.add('hint'); }
         else if (m) m.classList.remove('hint');
