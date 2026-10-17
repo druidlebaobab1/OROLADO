@@ -12337,3 +12337,66 @@ html[dir=rtl]:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-sam
 /* v2769b (propriétaire) : profil — le « + » DEVANT « Recharger », bien visible (plus de flèche au bout) */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-plus{display:block!important;width:18px!important;height:18px!important;flex:none!important;order:-1!important;color:#fff!important;stroke:#fff!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-plus path{stroke:#fff!important;stroke-width:3.4!important}
+
+/* ===== v2779 (propriétaire) — REÇU D'UN PARI : un vrai ticket chic OROLADO.com ===== */
+.sp-rc[data-rc] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sp-rc-id em { float: right; font-style: normal; font-weight: 800; color: #6D28D9; letter-spacing: .02em; }
+.sp-rcpt { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(8, 6, 24, .72); opacity: 0; transition: opacity .2s ease; }
+.sp-rcpt.on { opacity: 1; }
+.sp-rcpt-card { width: min(380px, 100%); max-height: calc(100dvh - 32px); overflow: auto; background: #fff; color: #0F172A; border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .45); transform: translateY(14px) scale(.98); transition: transform .22s ease; font-family: inherit; }
+.sp-rcpt.on .sp-rcpt-card { transform: none; }
+.sp-rcpt-top { display: flex; align-items: center; gap: 10px; padding: 16px 18px; color: #fff; border-radius: 20px 20px 0 0;
+  background: linear-gradient(135deg, #1E1B4B 0%, #4C1D95 60%, #7C3AED 100%); }
+.sp-rcpt-top img { width: 34px; height: 34px; }
+.sp-rcpt-top div { display: flex; flex-direction: column; line-height: 1.1; }
+.sp-rcpt-top b { font-size: 16px; letter-spacing: .14em; }
+.sp-rcpt-top small { font-size: 11px; opacity: .75; }
+.sp-rcpt-top span { margin-inline-start: auto; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 5px 9px; border-radius: 99px; background: rgba(255, 255, 255, .14); }
+.sp-rcpt-st { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 16px 14px; }
+.sp-rcpt-st em { font-style: normal; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; padding: 5px 12px; border-radius: 99px; background: #EDE9FE; color: #5B21B6; }
+.sp-rcpt-st em.won { background: #DCFCE7; color: #15803D; }
+.sp-rcpt-st em.lost { background: #FEE2E2; color: #B91C1C; }
+.sp-rcpt-st em.void { background: #E0F2FE; color: #0369A1; }
+.sp-rcpt-st small { font-size: 12px; color: #64748B; margin-top: 4px; }
+.sp-rcpt-st strong { font-size: 34px; font-weight: 900; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.sp-rcpt-card.won .sp-rcpt-st strong { color: #16A34A; }
+.sp-rcpt-card.lost .sp-rcpt-st strong { color: #94A3B8; }
+.sp-rcpt-cut { position: relative; height: 0; border-top: 2px dashed #E2E8F0; margin: 2px 18px; }
+.sp-rcpt-cut::before, .sp-rcpt-cut::after { content: ''; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: rgba(8, 6, 24, .72); }
+.sp-rcpt-cut::before { left: -29px; } .sp-rcpt-cut::after { right: -29px; }
+.sp-rcpt-sels { padding: 12px 18px 4px; }
+.sp-rcpt-k { margin: 0 0 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #64748B; }
+.sp-rcpt-s { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F1F5F9; }
+.sp-rcpt-s:last-child { border-bottom: 0; }
+.sp-rcpt-s i { flex: 0 0 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 900; color: #fff; background: #A78BFA; }
+.sp-rcpt-s i.ok { background: #22C55E; } .sp-rcpt-s i.ko { background: #EF4444; } .sp-rcpt-s i.vd { background: #0EA5E9; }
+.sp-rcpt-s span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sp-rcpt-s small { font-size: 11.5px; color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-rcpt-s b { font-size: 14px; }
+.sp-rcpt-s em { font-style: normal; font-weight: 800; font-size: 14px; color: #4C1D95; }
+.sp-rcpt-rows { margin: 8px 18px 0; padding: 10px 12px; border-radius: 14px; background: #F8FAFC; }
+.sp-rcpt-rows p { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 5px 0; font-size: 13px; }
+.sp-rcpt-rows span { color: #64748B; }
+.sp-rcpt-rows b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.sp-rcpt-rows b.mono { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: .04em; }
+.sp-rcpt-bars { display: flex; justify-content: center; align-items: stretch; gap: 2px; height: 30px; margin: 14px 18px 2px; }
+.sp-rcpt-bars b { display: block; background: #1E1B4B; border-radius: 1px; }
+.sp-rcpt-foot { margin: 0; text-align: center; font-size: 11px; letter-spacing: .2em; color: #94A3B8; }
+.sp-rcpt-btns { display: flex; gap: 10px; padding: 14px 18px 18px; }
+.sp-rcpt-btns button { flex: 1; height: 46px; border-radius: 14px; border: 0; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; }
+.sp-rcpt-share { background: linear-gradient(135deg, #7C3AED, #4F46E5); color: #fff; }
+.sp-rcpt-close { background: #F1F5F9; color: #0F172A; }
+html[dir="rtl"] .sp-rcpt-rows p, html[dir="rtl"] .sp-rcpt-s { direction: rtl; }
+.sp-rcpt-card { overflow-x: hidden; scrollbar-width: none; }
+.sp-rcpt-card::-webkit-scrollbar { display: none; }
+.sp-rcpt-cut { margin: 2px 0; } .sp-rcpt-cut::before { left: -10px; } .sp-rcpt-cut::after { right: -10px; }
+.sp-rcpt-top span { white-space: nowrap; font-size: 10px; }
+.sp-rcpt-top b { font-size: 15px; }
+.sp-rcpt-st { padding: 14px 16px 10px; }
+.sp-rcpt-st strong { font-size: 30px; }
+.sp-rcpt-s { padding: 7px 0; }
+.sp-rcpt-rows p { padding: 3px 0; }
+.sp-rcpt-bars { height: 24px; margin-top: 10px; }
+.sp-rcpt-btns { padding: 12px 18px 16px; }

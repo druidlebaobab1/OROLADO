@@ -2677,7 +2677,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
             <div id="spOpts"></div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
               <button class="mini" type="button" id="spAddOpt">+ un choix</button>
-              <label class="muted">Mise max par coupon ($) <input id="spMax" type="number" value="50" min="1" max="1000" style="width:80px"></label>
+              <label class="muted" hidden>Mise max par coupon ($) <input id="spMax" type="number" value="50" min="1" max="1000" style="width:80px"></label>
               <button class="mini ok" type="button" id="spSave">Publier le match</button>
               <span id="spSt" class="muted"></span>
             </div>
@@ -3451,7 +3451,7 @@ setInterval(() => {
     $c('spList').innerHTML = j.events.length ? j.events.map(e => {
       const st = {open:'🟢 Ouvert', closed:'🟠 Paris fermés', settled:'✅ Réglé'}[e.status] || e.status;
       const opts = e.opts.map(o => { const x = (e.exp && e.exp[o.k]) || {}; return '<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)"><span>' + esc(o.label) + ' <b style="color:#FFD27A">' + Number(o.odd).toFixed(2) + '</b>' + (e.result === o.k ? ' 🏆' : '') + '</span><span class="muted">' + (x.n || 0) + ' coupon(s) · misé ' + m2(x.in) + (x.risk ? ' · à payer si gagne ' + m2(x.risk) : '') + '</span>' + (e.status !== 'settled' ? '<button class="mini ok" type="button" data-set="' + esc(e.id) + '" data-k="' + esc(o.k) + '">Résultat : ' + esc(o.label) + '</button>' : '') + '</div>'; }).join('');
-      return '<div class="nt-card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span>' + st + '</span></div><div class="muted">' + esc(e.league || '') + ' · début ' + new Date(e.start * 1000).toLocaleString() + ' · mise max ' + m2(e.maxStake) + '</div>' + opts +
+      return '<div class="nt-card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span>' + st + '</span></div><div class="muted">' + esc(e.league || '') + ' · début ' + new Date(e.start * 1000).toLocaleString() + '</div>' + opts +
         (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris</button> ' : '') + (e.status !== 'settled' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">Match annulé (mises rendues)</button>' : '') + '</div>';
     }).join('') : '<p class="muted">Aucun match. Créez le premier ci-dessus.</p>';
     $c('spList').querySelectorAll('[data-close]').forEach(b => b.onclick = async () => { if (!confirm('Fermer les paris de ce match ?')) return; await ajax({action:'sp_close', id:b.dataset.close}); list(); });

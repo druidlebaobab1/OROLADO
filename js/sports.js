@@ -7,17 +7,17 @@
     fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Coupon', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
       placed: '✅ Pari enregistré · gain possible {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
-      e_min: 'Mise minimum 1 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
+      e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
       guestBet: '🔒 Inscris-toi pour parier (c’est gratuit)',
-      myCoupon: 'Mon coupon', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 1 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
+      myCoupon: 'Mon coupon', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 0,10 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
       betsTab: 'Paris', guestMine: 'Crée ton compte pour parier : tous tes paris s’afficheront ici, avec leur résultat.', guestBtn: 'Créer mon compte', seeBets: 'Voir les paris', stakeL: 'Mise', oddL: 'Cote', potL: 'Gain possible', wonL: 'Gagné', lostL: 'Perdu', voidL: 'Remboursé', loading: 'Un instant…',
       all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
     en: { none: 'No match right now. Big matches are coming here soon.', coupon: 'Bet slip', sel: '{n} selection(s)', odd: 'Odds', stake: 'Stake', pot: 'Potential win', bet: 'Place bet', clear: 'Clear',
       placed: '✅ Bet placed! Potential win: ${p}', mine: 'My bets', noBets: 'No bet yet.', open: 'Open', won: 'Won', lost: 'Lost', void: 'Void',
       closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 10 matches in a slip.',
-      e_min: 'Minimum stake $1.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
+      e_min: 'Minimum stake $0.10.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
       guestBet: '🔒 Sign up to bet (it’s free)',
-      myCoupon: 'My bet slip', clearAll: 'Remove all', confirmClear: 'Sure? Tap again', comboT: 'Multiple:', combo: 'all your picks must win. The odds multiply.', singleT: 'Single:', single: 'one pick.', totalOdd: 'Total odds', see: 'Open', minNote: 'Minimum stake $1', done: 'Bet placed!', cont: 'Continue', emptySlip: 'Your bet slip is empty. Tap an odd to start.',
+      myCoupon: 'My bet slip', clearAll: 'Remove all', confirmClear: 'Sure? Tap again', comboT: 'Multiple:', combo: 'all your picks must win. The odds multiply.', singleT: 'Single:', single: 'one pick.', totalOdd: 'Total odds', see: 'Open', minNote: 'Minimum stake $0.10', done: 'Bet placed!', cont: 'Continue', emptySlip: 'Your bet slip is empty. Tap an odd to start.',
       betsTab: 'Bets', guestMine: 'Create your account to bet: all your bets will show here, with their result.', guestBtn: 'Create my account', seeBets: 'See the bets', stakeL: 'Stake', oddL: 'Odds', potL: 'Potential win', wonL: 'Won', lostL: 'Lost', voidL: 'Refunded', loading: 'One moment…',
       all: 'All', drawCode: 'X', sport: { foot: 'Football', basket: 'Basketball', boxe: 'Boxing', tennis: 'Tennis', mma: 'MMA', event: 'Predictions', crypto: 'Crypto', politique: 'Politics', autre: 'Sport' } }
   };
@@ -28,7 +28,22 @@
     placed: '✅ 投注成功！可赢：{p} 美元', mine: '我的投注', noBets: '暂无投注。', open: '进行中', won: '赢', lost: '输', void: '取消', closed: '已停止投注', result: '结果', starts: '开始', today: '今天', tomorrow: '明天', draw: '平局',
     sport: { foot: '足球', basket: '篮球', boxe: '拳击', tennis: '网球', mma: '综合格斗', event: '预测', crypto: '加密货币', politique: '政治', autre: '体育' } });
   (D6.LIVE_T = D6.LIVE_T || {}).sports = T;
-  function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, T.en, T[l] || {}); }
+  // v2779 : textes du reçu de pari (12 langues)
+  var RC = {
+    fr: { rcTitle: 'Reçu de pari', rcPaid: 'Gain payé', rcLostTxt: 'Pari perdu', rcBack: 'Mise remboursée', rcSingle: 'Pari simple', rcCombo: 'Pari combiné', rcDate: 'Date', rcNo: 'Reçu n°', rcShare: 'Partager', rcClose: 'Fermer', rcOpen: 'Reçu', rcSee: 'Voir le reçu' },
+    en: { rcTitle: 'Bet receipt', rcPaid: 'Paid out', rcLostTxt: 'Bet lost', rcBack: 'Stake refunded', rcSingle: 'Single bet', rcCombo: 'Multiple bet', rcDate: 'Date', rcNo: 'Receipt no.', rcShare: 'Share', rcClose: 'Close', rcOpen: 'Receipt', rcSee: 'See receipt' },
+    es: { rcTitle: 'Recibo de apuesta', rcPaid: 'Ganancia pagada', rcLostTxt: 'Apuesta perdida', rcBack: 'Apuesta reembolsada', rcSingle: 'Apuesta simple', rcCombo: 'Apuesta combinada', rcDate: 'Fecha', rcNo: 'Recibo n.º', rcShare: 'Compartir', rcClose: 'Cerrar', rcOpen: 'Recibo', rcSee: 'Ver recibo' },
+    pt: { rcTitle: 'Recibo da aposta', rcPaid: 'Ganho pago', rcLostTxt: 'Aposta perdida', rcBack: 'Aposta reembolsada', rcSingle: 'Aposta simples', rcCombo: 'Aposta múltipla', rcDate: 'Data', rcNo: 'Recibo nº', rcShare: 'Compartilhar', rcClose: 'Fechar', rcOpen: 'Recibo', rcSee: 'Ver recibo' },
+    ar: { rcTitle: 'إيصال الرهان', rcPaid: 'تم دفع الربح', rcLostTxt: 'رهان خاسر', rcBack: 'تم رد المبلغ', rcSingle: 'رهان فردي', rcCombo: 'رهان مركّب', rcDate: 'التاريخ', rcNo: 'رقم الإيصال', rcShare: 'مشاركة', rcClose: 'إغلاق', rcOpen: 'الإيصال', rcSee: 'عرض الإيصال' },
+    tr: { rcTitle: 'Bahis makbuzu', rcPaid: 'Ödenen kazanç', rcLostTxt: 'Bahis kaybedildi', rcBack: 'Bahis iade edildi', rcSingle: 'Tekli bahis', rcCombo: 'Kombine bahis', rcDate: 'Tarih', rcNo: 'Makbuz no', rcShare: 'Paylaş', rcClose: 'Kapat', rcOpen: 'Makbuz', rcSee: 'Makbuzu gör' },
+    vi: { rcTitle: 'Biên nhận cược', rcPaid: 'Đã trả thưởng', rcLostTxt: 'Cược thua', rcBack: 'Đã hoàn tiền cược', rcSingle: 'Cược đơn', rcCombo: 'Cược xiên', rcDate: 'Ngày', rcNo: 'Biên nhận số', rcShare: 'Chia sẻ', rcClose: 'Đóng', rcOpen: 'Biên nhận', rcSee: 'Xem biên nhận' },
+    id: { rcTitle: 'Struk taruhan', rcPaid: 'Kemenangan dibayar', rcLostTxt: 'Taruhan kalah', rcBack: 'Taruhan dikembalikan', rcSingle: 'Taruhan tunggal', rcCombo: 'Taruhan kombinasi', rcDate: 'Tanggal', rcNo: 'Struk no.', rcShare: 'Bagikan', rcClose: 'Tutup', rcOpen: 'Struk', rcSee: 'Lihat struk' },
+    ru: { rcTitle: 'Чек ставки', rcPaid: 'Выигрыш выплачен', rcLostTxt: 'Ставка проиграна', rcBack: 'Ставка возвращена', rcSingle: 'Одиночная ставка', rcCombo: 'Экспресс', rcDate: 'Дата', rcNo: 'Чек №', rcShare: 'Поделиться', rcClose: 'Закрыть', rcOpen: 'Чек', rcSee: 'Открыть чек' },
+    de: { rcTitle: 'Wettbeleg', rcPaid: 'Gewinn ausgezahlt', rcLostTxt: 'Wette verloren', rcBack: 'Einsatz erstattet', rcSingle: 'Einzelwette', rcCombo: 'Kombiwette', rcDate: 'Datum', rcNo: 'Beleg-Nr.', rcShare: 'Teilen', rcClose: 'Schließen', rcOpen: 'Beleg', rcSee: 'Beleg ansehen' },
+    zh: { rcTitle: '投注凭证', rcPaid: '已派彩', rcLostTxt: '投注未中', rcBack: '投注已退还', rcSingle: '单关', rcCombo: '串关', rcDate: '日期', rcNo: '凭证编号', rcShare: '分享', rcClose: '关闭', rcOpen: '凭证', rcSee: '查看凭证' },
+    hi: { rcTitle: 'दांव रसीद', rcPaid: 'जीत का भुगतान', rcLostTxt: 'दांव हारा', rcBack: 'दांव वापस', rcSingle: 'एकल दांव', rcCombo: 'संयुक्त दांव', rcDate: 'तारीख', rcNo: 'रसीद सं.', rcShare: 'शेयर करें', rcClose: 'बंद करें', rcOpen: 'रसीद', rcSee: 'रसीद देखें' }
+  };
+  function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, T.en, RC.en, T[l] || {}, RC[l] || {}); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
   function m2(v) { return (Number(v) || 0).toFixed(2); }
@@ -97,7 +112,7 @@
   function teams(t) { var m = String(t || '').split(/\s+(?:-|–|—|vs\.?|VS|contre)\s+/); return m.length === 2 ? m : null; }
   var flt = 'all';
   var ctx = null, events = [], slip = [], stake = 1, box = null;
-  try { stake = Math.max(1, +(localStorage.getItem('oro_sp_stake') || 1)); } catch (e) { /* ignore */ }
+  try { stake = Math.max(0.1, +(localStorage.getItem('oro_sp_stake') || 1)); } catch (e) { /* ignore */ }
 
   function when(t) {
     var x = X(), d = new Date(t * 1000), now = new Date(), tm = new Date(now.getTime() + 86400000);
@@ -151,13 +166,13 @@
     var x = X();
     if (!bets.length) return '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.noBets) + '</b><button type="button" class="sp-cta" data-sv="list">' + esc(x.seeBets) + '</button></div>';
     var ST = { open: x.open, won: x.won, lost: x.lost, void: x.voidL };
-    return bets.map(function (bt) {
+    return bets.map(function (bt, bi) {
       var big = bt.status === 'won' ? '+' + m2(bt.win) + ' $' : bt.status === 'lost' ? '−' + m2(bt.stake) + ' $' : m2(bt.status === 'void' ? bt.stake : bt.pot) + ' $';
       var lab = bt.status === 'won' ? x.wonL : bt.status === 'lost' ? x.lostL : bt.status === 'void' ? x.voidL : x.potL;
-      return '<div class="sp-rc ' + esc(bt.status) + '"><div class="sp-rc-h"><i>' + esc(ST[bt.status] || bt.status) + '</i><small>' + esc(bt.at ? when2(bt.at) : '') + '</small></div>' +
+      return '<div class="sp-rc ' + esc(bt.status) + '" data-rc="' + bi + '" role="button" tabindex="0"><div class="sp-rc-h"><i>' + esc(ST[bt.status] || bt.status) + '</i><small>' + esc(bt.at ? when2(bt.at) : '') + '</small></div>' +
         bt.sel.map(function (s) { return '<div class="sp-rc-s ' + (s.r || '') + '"><span>' + esc(s.t) + '</span><em>' + esc(s.l) + ' · ' + Number(s.odd).toFixed(2) + '</em></div>'; }).join('') +
         '<div class="sp-rc-f"><span>' + esc(x.stakeL) + ' <b>' + m2(bt.stake) + ' $</b></span><span>' + esc(x.oddL) + ' <b>' + Number(bt.odd).toFixed(2) + '</b></span><span class="sp-rc-big"><small>' + esc(lab) + '</small><b>' + big + '</b></span></div>' +
-        '<div class="sp-rc-id">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '</div></div>';
+        '<div class="sp-rc-id">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '<em>' + esc(x.rcOpen) + ' ›</em></div></div>';
     }).join('');
   }
   async function renderMine() {
@@ -174,7 +189,48 @@
     if (r && r.ok) { mineCache = r.bets || []; $('spRcs').innerHTML = receipts(mineCache); bindRc(); }
     else if (!mineCache) $('spRcs').innerHTML = '<p class="sp-none">' + esc(x.e_unavailable) + '</p>';
   }
-  function bindRc() { box.querySelectorAll('.sp-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); }); }
+  function bindRc() {
+    box.querySelectorAll('.sp-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); });
+    box.querySelectorAll('.sp-rc[data-rc]').forEach(function (c) { c.addEventListener('click', function () { var bt = (mineCache || [])[+c.getAttribute('data-rc')]; if (bt) showReceipt(bt); }); });
+  }
+  /* v2779 (propriétaire) — LE REÇU D'UN PARI, comme un vrai ticket : en-tête OROLADO.com, état (en cours / gagné / perdu /
+     remboursé), le montant en grand, chaque match avec son résultat, mise, cote, gain, date et numéro du reçu. */
+  function showReceipt(bt) {
+    var x = X(), old = document.getElementById('spRcpt'); if (old) old.remove();
+    var st = bt.status || 'open';
+    var stTxt = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st;
+    var big = st === 'won' ? m2(bt.win) : st === 'lost' ? m2(0) : st === 'void' ? m2(bt.stake) : m2(bt.pot);
+    var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
+    var ICO = { won: '<i class="ok">✓</i>', lost: '<i class="ko">✕</i>', void: '<i class="vd">↺</i>' };
+    var no = String(bt.id || '').slice(-10).toUpperCase();
+    var d = new Date((bt.at || 0) * 1000), pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    var bars = ''; for (var i = 0; i < 34; i++) { var c = no.charCodeAt(i % (no.length || 1)) || 7; bars += '<b style="width:' + (1 + (c + i) % 3) + 'px"></b>'; }
+    var el = document.createElement('div');
+    el.id = 'spRcpt'; el.className = 'sp-rcpt';
+    el.innerHTML = '<div class="sp-rcpt-card ' + esc(st) + '" role="dialog" aria-modal="true">' +
+      '<div class="sp-rcpt-top"><img src="icons/logo-ring.svg" alt=""><div><b>OROLADO</b><small>orolado.com</small></div><span>' + esc(x.rcTitle) + '</span></div>' +
+      '<div class="sp-rcpt-st"><em class="' + esc(st) + '">' + esc(stTxt) + '</em><small>' + esc(bigLab) + '</small><strong>' + big + ' $</strong></div>' +
+      '<div class="sp-rcpt-cut"></div>' +
+      '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + ' · ' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.l) + '</b></span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+      }).join('') + '</div>' +
+      '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>' + m2(bt.stake) + ' $</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
+      '<p><span>' + esc(x.potL) + '</span><b>' + m2(bt.pot) + ' $</b></p><p><span>' + esc(x.rcDate) + '</span><b>' + dt + '</b></p><p><span>' + esc(x.rcNo) + '</span><b class="mono">' + esc(no) + '</b></p></div>' +
+      '<div class="sp-rcpt-bars" aria-hidden="true">' + bars + '</div><p class="sp-rcpt-foot">orolado.com</p>' +
+      '<div class="sp-rcpt-btns"><button type="button" class="sp-rcpt-share">' + esc(x.rcShare) + '</button><button type="button" class="sp-rcpt-close">' + esc(x.rcClose) + '</button></div></div>';
+    document.body.appendChild(el);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
+    var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
+    el.addEventListener('click', function (e) { if (e.target === el) close(); });
+    el.querySelector('.sp-rcpt-close').addEventListener('click', close);
+    el.querySelector('.sp-rcpt-share').addEventListener('click', function () {
+      var txt = 'OROLADO · ' + x.rcTitle + ' ' + no + '\n' + bt.sel.map(function (s) { return '• ' + s.t + ' — ' + s.l + ' (' + Number(s.odd).toFixed(2) + ')'; }).join('\n') +
+        '\n' + x.stakeL + ' ' + m2(bt.stake) + ' $ · ' + x.totalOdd + ' ' + Number(bt.odd).toFixed(2) + ' · ' + stTxt + '\nhttps://orolado.com';
+      try { if (navigator.share) { navigator.share({ text: txt }).catch(function () { /* ignore */ }); return; } } catch (e) { /* ignore */ }
+      try { navigator.clipboard.writeText(txt); if (ctx && ctx.toast) ctx.toast('✓'); } catch (e) { /* ignore */ }
+    });
+  }
   function render() {
     if (!box) return;
     var x = X();
@@ -235,7 +291,8 @@
     if (lastBet) {
       var lb = lastBet;
       box.innerHTML = head + '<div class="sp-done"><span class="sp-done-ok">✓</span><b>' + esc(x.done) + '</b><div class="sp-done-r"><span>' + esc(x.stakeL) + ' <b>' + m2(lb.stake) + ' $</b></span><span>' + esc(x.oddL) + ' <b>' + Number(lb.odd).toFixed(2) + '</b></span><span>' + esc(x.potL) + ' <b>' + m2(lb.pot) + ' $</b></span></div>' +
-        '<small class="sp-done-id">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small><button type="button" class="sp-cta" id="spSeeMine">' + esc(x.mine) + '</button><button type="button" class="sp-cta2" id="spCont">' + esc(x.cont) + '</button></div>';
+        '<small class="sp-done-id">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small><button type="button" class="sp-cta" id="spSeeRc">' + esc(x.rcSee) + '</button><button type="button" class="sp-cta2" id="spSeeMine">' + esc(x.mine) + '</button><button type="button" class="sp-cta2" id="spCont">' + esc(x.cont) + '</button></div>';
+      $('spSeeRc').addEventListener('click', function () { showReceipt(lb); });
       $('spCpBack').addEventListener('click', function () { lastBet = null; view = 'list'; render(); });
       $('spSeeMine').addEventListener('click', function () { lastBet = null; view = 'mine'; render(); });
       $('spCont').addEventListener('click', function () { lastBet = null; view = 'list'; render(); });
@@ -256,7 +313,8 @@
       '<div class="sp-cp-tot"><span>' + esc(x.totalOdd) + '</span><b>' + odd.toFixed(2) + '</b></div>' +
       '<div class="sp-cp-stake"><label>' + esc(x.stakeL) + '</label><div class="sp-cp-in"><input id="spStake" inputmode="decimal" value="' + m2(stake) + '"><span>$</span></div>' +
       '<div class="sp-cp-chips">' + [1, 5, 10, 25].map(function (v) { return '<button type="button" data-v="' + v + '" class="' + (stake === v ? 'on' : '') + '">' + v + ' $</button>'; }).join('') + '</div>' +
-      '<small class="sp-cp-min">' + esc(x.minNote) + '</small></div>' +
+      '</div>' + // v2779 (propriétaire) : aucune limite affichée à l'avance
+
       '<div class="sp-cp-pot"><span>' + esc(x.potL) + '</span><b id="spPot">' + m2(stake * odd) + ' $</b></div>' +
       '<button type="button" class="sp-cp-go" id="spGo">' + esc(x.bet) + ' · <span id="spGoAmt">' + m2(stake) + ' $</span></button>';
     $('spCpBack').addEventListener('click', function () { view = 'list'; render(); });
@@ -279,7 +337,7 @@
     $('spGo').addEventListener('click', async function () {
       // v2768 (propriétaire) : le visiteur reçoit un petit message (pas d'envoi direct vers l'inscription)
       if (ctx.guest) { guestNote(); return; }
-      if (stake < 1) { if (ctx.toast) ctx.toast(x.e_min); return; }
+      if (stake < 0.1) { if (ctx.toast) ctx.toast(x.e_min); return; }
       var bt = this; if (bt.disabled) return; bt.disabled = true;
       var r = null; try { r = await D6.Api.post('spBet', { mode: 'real', stake: stake, sel: slip.map(function (z) { return { ev: z.ev, k: z.k }; }) }, 15000); } catch (e) { r = null; }
       bt.disabled = false;
@@ -288,5 +346,5 @@
       slip = []; mineCache = null; lastBet = r.bet; render();
     });
   }
-  D6.Sports = { paint: paint };
+  D6.Sports = { paint: paint, receipt: showReceipt };
 })(window.D6 = window.D6 || {});

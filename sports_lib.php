@@ -10,10 +10,11 @@ declare(strict_types=1);
  * Fichiers : data/sports/events.json, data/sports/bets.json (verrou de fichier).
  */
 
-const SP_MIN = 1.00; // v2766 (propriétaire) : mise minimum 1 $ sur les paris (évite les montantes / martingales)
+const SP_MIN = 0.10; // v2779 (propriétaire) : mise minimum 0,10 $ (retour comme avant)
 const SP_MAX_SEL = 10;
-const SP_MAX_WIN = 5000.0;        // gain maximal caché par coupon
-const SP_DEFAULT_MAX_STAKE = 50.0; // mise maximale cachée par coupon (modifiable par match dans l'admin)
+const SP_MAX_WIN = 6000.0;        // v2779 (propriétaire) : gain maximal caché par coupon = 6 000 $ ; AUCUNE mise maximale
+const SP_DEFAULT_MAX_STAKE = 50.0; // (plus utilisé depuis v2779 : pas de mise maximale ; gardé pour les anciens matchs)
+const SP_MY_BETS = 300;            // v2779 : « Mes paris » montre les 300 derniers coupons
 
 function sp_dir(): string { $d = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sports'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
 function sp_with(string $name, callable $fn) {
@@ -221,7 +222,7 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $sel = array_slice(array_values($sel), 0, SP_MAX_SEL + 1);
   if (!$sel || count($sel) > SP_MAX_SEL) return ['ok' => false, 'reason' => 'param'];
   $ev = []; foreach (sp_events() as $e) $ev[$e['id']] = $e;
-  $picked = []; $odd = 1.0; $maxStake = 1000.0; $seen = [];
+  $picked = []; $odd = 1.0; $seen = [];
   foreach ($sel as $s) {
     $eid = (string) ($s['ev'] ?? $s[0] ?? ''); $k = (string) ($s['k'] ?? $s[1] ?? '');
     $e = $ev[$eid] ?? null;
@@ -232,11 +233,10 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     $seen[$eid] = 1;
     $picked[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd'], 't' => $e['title'], 'l' => $o['label']];
     $odd *= (float) $o['odd'];
-    $maxStake = min($maxStake, (float) ($e['maxStake'] ?? SP_DEFAULT_MAX_STAKE));
   }
   $odd = floor($odd * 100 + 1e-6) / 100; // v2765 : 2,30 reste 2,30 (avant : 2,29 à cause de l arrondi)
-  if ($mode === 'real' && $stake > $maxStake + 1e-9) return ['ok' => false, 'reason' => 'max', 'maxStake' => $maxStake];
-  if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin'];
+  // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
+  if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin', 'maxStake' => floor(SP_MAX_WIN / $odd * 100) / 100];
   $ref = 'sp_' . bin2hex(random_bytes(9));
   $deb = casino_debit($db, $uid, $mode, $stake, $ref);
   if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
@@ -246,13 +246,13 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
 }
 
 function sp_bet_public(array $b): array {
-  return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'],
+  return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'], 'done' => (int) ($b['done'] ?? 0),
     'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null], $b['sel'])];
 }
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
   $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid));
-  return array_map('sp_bet_public', array_slice(array_reverse($mine), 0, 40));
+  return array_map('sp_bet_public', array_slice(array_reverse($mine), 0, SP_MY_BETS));
 }
 
 /** Admin : ferme les paris d'un match (plus personne ne peut parier dessus). */
@@ -290,18 +290,20 @@ function sp_resolve(array $db): array {
     $pay = [];
     foreach ((array) ($s['b'] ?? []) as $i => $b) {
       if ($b['status'] !== 'open') continue;
-      $lost = false; $ready = true; $odd = 1.0;
+      $lost = false; $ready = true; $odd = 1.0; $live = 0;
       foreach ($b['sel'] as $j => $sel) {
         if (!isset($res[$sel['ev']])) { $ready = false; continue; }
         $rk = $res[$sel['ev']];
         $s['b'][$i]['sel'][$j]['r'] = $rk === 'void' ? 'void' : ($rk === $sel['k'] ? 'won' : 'lost');
         if ($rk === 'void') continue;
+        $live++;
         if ($rk !== $sel['k']) $lost = true; else $odd *= (float) $sel['odd'];
       }
-      if ($lost) { $s['b'][$i]['status'] = 'lost'; $s['b'][$i]['win'] = 0.0; $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => 0.0, 's' => $b['stake']]; continue; }
+      if ($lost) { $s['b'][$i]['status'] = 'lost'; $s['b'][$i]['win'] = 0.0; $s['b'][$i]['done'] = time(); $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => 0.0, 's' => $b['stake']]; continue; }
       if (!$ready) continue;
       $win = casino_money(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100 + 1e-6) / 100)));
-      $s['b'][$i]['status'] = 'won'; $s['b'][$i]['win'] = $win;
+      // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
+      $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
       $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake']];
     }
     return $pay;
