@@ -73,7 +73,7 @@
       }
       var last = !t.big && mids.length % 2 && t === mids[mids.length - 1];
       var extra = t.k === 'jauge' && st && st.enabled ? '<span class="gh-mini"><i style="width:' + (st.jauge || 0) + '%"></i></span>' : '';
-      return '<button type="button" class="gh-p' + (t.big ? ' wide' : '') + (last ? ' wide' : '') + '" data-k="' + t.k + '">' + planet(t.k) + '<b>' + esc(x[t.k][0]) + '</b>' + extra + '</button>';
+      return '<button type="button" class="gh-p' + (t.big ? ' wide' : '') + (last ? ' wide' : '') + '" data-k="' + t.k + '">' + planet(t.k) + '<b>' + esc(x[t.k][0]) + '</b><small class="gh-sub">' + esc(x[t.k][1] || '') + '</small>' + extra + '</button>'; // v2764 : une petite phrase explique chaque tuile
     }).join('');
     grid.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-k')); }); });
   }

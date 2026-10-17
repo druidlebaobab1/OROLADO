@@ -742,7 +742,13 @@
   }
   async function refreshTop() {
     clearTimeout(topT);
-    if (!loggedIn()) { if (!guestGift()) top = null; renderTop(); return; }
+    // v2764 (propriétaire) : le VISITEUR voit aussi le Top 50 de la semaine (lecture seule, top-public.php)
+    if (!loggedIn()) {
+      var g = null;
+      try { var rq = await fetch('top-public.php' + (topPrev ? '?prev=1' : ''), { cache: 'no-store' }); g = await rq.json(); } catch (eG) { g = null; }
+      if (g && g.ok && g.enabled) { if (g.now) skew = g.now - Date.now() / 1000; top = g; } else if (!guestGift()) top = null;
+      renderTop(); return;
+    }
     var r = null;
     try { r = await D6.Api.post('topStatus', topPrev ? { prev: 1 } : {}, 15000); } catch (e) { r = null; }
     if (r && r.ok !== false) {
