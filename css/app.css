@@ -12256,3 +12256,63 @@ html:root body #casinoModal .sp-cp-go{position:sticky;bottom:calc(env(safe-area-
 html[dir=rtl] body #casinoModal .sp-cp-back{transform:scaleX(-1)}
 html[dir=rtl] body #casinoModal .sp-cp-type{box-shadow:inset -3px 0 0 #6366F1}
 html[dir=rtl] body #casinoModal .sp-cp-type.combo{box-shadow:inset -3px 0 0 #F97316}
+/* v2767 (propriétaire) : profil — drapeau + abréviation, et le petit mot « Langue » juste en dessous (traduit) */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{flex-wrap:wrap!important;justify-content:center!important;row-gap:2px!important;column-gap:6px!important;max-width:110px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Language"!important;display:block!important;flex:0 0 100%!important;order:3!important;text-align:center!important;font:700 9.5px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:rgba(237,235,255,.7)!important}
+html[lang=fr]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Langue"!important}
+html[lang=es]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after,html[lang=pt]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Idioma"!important}
+html[lang=ar]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"اللغة"!important}
+html[lang=tr]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Dil"!important}
+html[lang=vi]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Ngôn ngữ"!important}
+html[lang=id]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Bahasa"!important}
+html[lang=ru]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Язык"!important}
+html[lang=de]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"Sprache"!important}
+html[lang=hi]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"भाषा"!important}
+html[lang^=zh]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn::after{content:"语言"!important}
+/* v2767 (propriétaire) : connecté — Paris et Social se rapprochent de la manette (Cadeaux et Profil restent aux bords) */
+@media (orientation:portrait),(min-height:561px){
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row > .tb-left{justify-self:stretch!important;justify-content:space-between!important;padding-inline-end:clamp(4px,2vw,12px)!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row > .topbar-actions{justify-self:stretch!important;justify-content:space-between!important;padding-inline-start:clamp(4px,2vw,12px)!important}}
+/* les mots de la ligne du haut ne débordent jamais de leur case (le site les rétrécit si besoin) */
+html:root body #screenTrade .topbar-row :is(#btnPortal .pw-lbl,#btnHelp .hb-txt,#btnProfile .pf-txt,#btnCasino .cb-lbl){max-width:100%!important;overflow:hidden!important}
+/* v2767 : alignement au pixel — l'icône en haut, le mot dans une ligne de hauteur fixe (même ligne pour tous, même rétréci) */
+@media (orientation:portrait),(min-height:561px){
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row :is(#btnPortal,#btnCasino,#btnHelp,#btnProfile){justify-content:flex-start!important;padding-top:3px!important;gap:3px!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row :is(#btnPortal .pw-lbl,#btnHelp .hb-txt,#btnProfile .pf-txt,#btnCasino .cb-lbl){height:12px!important;line-height:12px!important;margin-top:0!important;display:flex!important;align-items:center!important;justify-content:center!important}}
+@media (orientation:portrait),(min-height:561px){
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row :is(#btnPortal,#btnHelp,#btnProfile) > svg{box-sizing:border-box!important;width:30px!important;height:30px!important}}
+@media (orientation:portrait),(min-height:561px){
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row :is(#btnPortal,#btnHelp,#btnProfile) > svg{min-width:30px!important;min-height:30px!important;max-width:30px!important;max-height:30px!important}}
+
+/* v2767 (propriétaire) : page Connexion / Inscription — la langue tout en haut à DROITE (drapeau + abréviation + « Langue »), comme dans le profil */
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth{display:block!important;position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:12px!important;left:auto!important;z-index:30!important;margin:0!important}
+html[dir=rtl]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth{right:auto!important;left:12px!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn{display:flex!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;column-gap:6px!important;row-gap:2px!important;max-width:110px!important;padding:2px 4px!important;height:auto!important;min-height:0!important;background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-chev{display:none!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-flag{order:1!important;width:26px!important;height:18px!important;border-radius:3px!important;overflow:hidden!important;display:block!important;box-shadow:none!important;background:none!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-flag svg,html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-flag img{width:100%!important;height:100%!important;display:block;object-fit:cover}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-code{display:inline!important;order:2!important;font:800 13px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:#fff!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Language";display:block;flex:0 0 100%;order:3;text-align:center;font:700 9.5px/1 "Plus Jakarta Sans",system-ui,sans-serif;color:rgba(237,235,255,.7)}
+html[lang=fr]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Langue"}
+html[lang=es]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Idioma"}
+html[lang=pt]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Idioma"}
+html[lang=ar]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"اللغة"}
+html[lang=tr]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Dil"}
+html[lang=vi]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Ngôn ngữ"}
+html[lang=id]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Bahasa"}
+html[lang=ru]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Язык"}
+html[lang=de]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"Sprache"}
+html[lang=hi]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"भाषा"}
+html[lang^=zh]:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn::after{content:"语言"}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-menu{right:0!important;left:auto!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth{width:auto!important;min-width:64px!important;max-width:none!important;height:auto!important;overflow:visible!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn{width:auto!important;min-width:64px!important;overflow:visible!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;min-width:84px!important;backdrop-filter:none!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn{min-width:84px!important;flex-wrap:wrap!important}
+/* v2767b : langue de l'inscription IDENTIQUE au profil — drapeau puis « FR » sur la même ligne, « Langue » dessous */
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn{flex-direction:row!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important}
+html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-code{display:inline-block!important}
+/* Jeux / Paris / Social / Cadeaux : derrière la feuille, un fond PLEIN (on ne voit plus ACHETER / Recharger en faisant défiler) */
+html body #casinoModal.modal-backdrop.active,html body #liveModal.modal-backdrop.active,html body #portalModal.modal-backdrop.active{background:#120F2A!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #casinoModal .modal-box,html body #liveModal .modal-box,html body #portalModal .modal-box,html body #liveModal .live-box{overscroll-behavior:contain!important}
+html.oro-modal-lock,html.oro-modal-lock body{overflow:hidden!important;overscroll-behavior:none!important}

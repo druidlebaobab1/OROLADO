@@ -4917,6 +4917,47 @@
   }
 
   fetchPayCountryIp();
+  // v2767 (propriétaire) : la ligne du haut s'ADAPTE dans toutes les langues — chaque mot rétrécit juste assez pour tenir
+  // dans sa case, puis Connexion / Inscription rétrécissent si la ligne est trop pleine (jamais de débordement).
+  (function () {
+    var busy = false, t = 0;
+    function fit() {
+      if (busy) return; busy = true;
+      try {
+        var row = document.querySelector('#screenTrade .topbar-row');
+        if (!row || !row.offsetWidth) return;
+        ['btnPortal', 'btnCasino', 'btnHelp', 'btnProfile', 'btnGames'].forEach(function (id) {
+          var b = $(id); if (!b || !b.offsetWidth) return;
+          var lb = b.querySelector('.pw-lbl, .cb-lbl, .hb-txt, .pf-txt') || (id === 'btnGames' ? b.querySelector('b') : null);
+          if (!lb) return;
+          lb.style.removeProperty('font-size');
+          var w = b.clientWidth - 2, sw = lb.scrollWidth;
+          if (sw > w && w > 10) {
+            var fs = parseFloat(getComputedStyle(lb).fontSize) || 10.5;
+            lb.style.setProperty('font-size', Math.max(7, Math.floor(fs * w / sw * 10) / 10) + 'px', 'important');
+          }
+        });
+        var auth = ['btnGoLogin', 'btnGoRegister'].map($).filter(function (e) { return e && e.offsetWidth; });
+        auth.forEach(function (e) { e.style.removeProperty('font-size'); e.style.removeProperty('padding-left'); e.style.removeProperty('padding-right'); });
+        var n = 0;
+        while (auth.length && row.scrollWidth > row.clientWidth + 1 && n < 14) {
+          n++;
+          auth.forEach(function (e) {
+            var fs = parseFloat(getComputedStyle(e).fontSize) || 12;
+            var pd = parseFloat(getComputedStyle(e).paddingLeft) || 8;
+            e.style.setProperty('font-size', Math.max(8.5, fs - 0.5) + 'px', 'important');
+            if (pd > 4) { e.style.setProperty('padding-left', (pd - 1) + 'px', 'important'); e.style.setProperty('padding-right', (pd - 1) + 'px', 'important'); }
+          });
+        }
+      } catch (e) { /* jamais bloquant */ } finally { busy = false; }
+    }
+    function later(ms) { clearTimeout(t); t = setTimeout(fit, ms || 120); }
+    window.addEventListener('resize', function () { later(200); });
+    document.addEventListener('oro:lang', function () { later(250); setTimeout(fit, 900); });
+    try { new MutationObserver(function () { later(150); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'lang'] }); } catch (eMo) { /* ignore */ }
+    setTimeout(fit, 800); setTimeout(fit, 2500);
+    D6.fitTopBar = fit;
+  })();
   // v2762 (propriétaire) : un double-clic (ou un clic répété) sur « Retour » / « Fermer » ne fait sortir qu'UNE fois
   // (avant : deux fenêtres se fermaient d'un coup et le joueur se retrouvait tout dehors). Seulement les vrais clics.
   (function () {
@@ -6952,7 +6993,10 @@
     el.style.removeProperty('visibility');
     el.style.setProperty('display', 'block', 'important');
     el.style.setProperty('pointer-events', 'auto', 'important');
+    lockBehind();
   }
+  // v2767 (propriétaire) : tant qu'une fenêtre est ouverte, la page de trading derrière ne bouge pas (on ne voit plus ACHETER / Recharger)
+  function lockBehind() { try { document.documentElement.classList.toggle('oro-modal-lock', !!document.querySelector('.modal-backdrop.active')); } catch (e) { /* ignore */ } }
   function closeModal(id) {
     var el = $(id);
     if (el) {
@@ -6970,6 +7014,7 @@
       if (el._oroOutT) clearTimeout(el._oroOutT);
       if (wasOn) { el.classList.add('oro-out'); el._oroOutT = setTimeout(hide, 180); } else hide();
     }
+    lockBehind();
     if (returnToProfile && PROFILE_SUBVIEWS[id]) {
       if ($('drawerProfile') && !$('drawerProfile').classList.contains('on')) {
         setTimeout(function () { openDrawer(); }, 80);
@@ -9797,10 +9842,12 @@
         var pitch = $('authRealPitch');
         if (pitch) pitch.classList.add('hidden');
         try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
+        // v2767 (propriétaire) : on rouvre la page d'avant (jeu, Paris, Social, Cadeaux) EN PREMIER, avant d'enlever
+        // l'inscription : le joueur ne voit plus l'écran de trading passer entre les deux.
+        var back = authReturnArmed; authReturnArmed = null;
+        if (back) { try { back(); } catch (eBk) { /* ignore */ } }
         ensureGuest();
         enterApp();
-        var back = authReturnArmed; authReturnArmed = null;
-        if (back) setTimeout(function () { try { back(); } catch (eBk) { /* ignore */ } }, 160);
       });
       function onBalancePlusClick() {
         var u = user();
