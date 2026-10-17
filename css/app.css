@@ -11419,3 +11419,4 @@ html:root body #casinoModal .cs-back,html:root body #portalModal .gh-back,html:r
 html:root body #casinoModal .cs-back svg,html:root body #portalModal .gh-back svg,html:root body #liveModal .lf-back svg{width:18px!important;height:18px!important;stroke-width:2!important;opacity:.9}
 html body #casinoModal .sp-t .sp-qimg{width:34px;height:34px;object-fit:contain;border-radius:8px;vertical-align:middle;margin-inline-end:8px;float:left}
 html body #casinoModal .cs-sheet-in p{text-align:start!important;font-size:15.5px!important;line-height:1.6!important}
+html body #casinoModal .ch-stage{overflow-x:clip}
