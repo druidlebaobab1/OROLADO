@@ -137,6 +137,40 @@ function sp_admin_img(string $dataUrl): string {
   if (!is_file($f)) @file_put_contents($f, $bin);
   return is_file($f) ? $k : '';
 }
+/*
+ * v2754 (propriétaire) — SUGGESTIONS prêtes à publier d'un clic depuis l'admin (vrais événements vérifiés le 17/10/2026 :
+ * Ligue des champions J3 des 20-21/10, Premier League J8 du 24/10, Bitcoin ~81-83 k$, élections américaines du 3/11).
+ * Cotes SERRÉES : la maison garde 7 à 9 % sur chaque question ; mise maximale 20 $ par coupon. Heures en UTC.
+ * Rien n'est ajouté deux fois (même titre) ; un événement déjà commencé n'est pas ajouté. L'admin donne ensuite le résultat.
+ */
+function sp_suggestions(): array {
+  $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
+  return [
+    ['PSG - FC Barcelona', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['PSG', 2.30], ['Nul', 3.40], ['Barcelona', 2.75]]],
+    ['Liverpool - Villarreal', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['Liverpool', 1.45], ['Nul', 4.30], ['Villarreal', 6.00]]],
+    ['Bayern Munich - Arsenal', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Bayern', 2.25], ['Nul', 3.50], ['Arsenal', 2.80]]],
+    ['Real Madrid - RB Leipzig', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Real Madrid', 1.50], ['Nul', 4.20], ['Leipzig', 5.50]]],
+    ['Aston Villa - Manchester City', 'Premier League', 'foot', $t('2026-10-24 11:30'), [['Aston Villa', 3.00], ['Nul', 3.50], ['Man City', 2.20]]],
+    ['Chelsea - Tottenham', 'Premier League', 'foot', $t('2026-10-24 16:30'), [['Chelsea', 2.05], ['Nul', 3.50], ['Tottenham', 3.30]]],
+    ['Combien de buts dans PSG – Barcelone ?', 'Ligue des champions', 'event', $t('2026-10-20 19:00'), [['0 à 2 buts', 2.00], ['3 buts ou plus', 1.75]]],
+    ['Le Bitcoin sera-t-il au-dessus de 85 000 $ le dimanche 25 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-24 20:00'), [['Oui', 2.90], ['Non', 1.38]]],
+    ['Le Bitcoin sera-t-il au-dessus de 80 000 $ le samedi 31 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-29 20:00'), [['Oui', 1.70], ['Non', 2.00]]],
+    ['Élections américaines (3 nov.) : qui gagnera la Chambre ?', 'Élections américaines', 'event', $t('2026-11-03 12:00'), [['Démocrates', 1.05], ['Républicains', 7.00]]],
+  ];
+}
+/** Admin : publie les suggestions qui ne sont pas encore en ligne (et pas encore commencées). */
+function sp_admin_seed(): array {
+  $have = [];
+  foreach (sp_events() as $e) $have[mb_strtolower((string) $e['title'])] = 1;
+  $added = 0; $skipped = 0;
+  foreach (sp_suggestions() as [$title, $league, $sport, $start, $opts]) {
+    if (isset($have[mb_strtolower($title)]) || $start < time() + 120) { $skipped++; continue; }
+    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 20,
+      'opts' => array_map(static fn($o) => ['label' => $o[0], 'odd' => $o[1]], $opts)]);
+    if (!empty($r['ok'])) $added++; else $skipped++;
+  }
+  return ['ok' => true, 'added' => $added, 'skipped' => $skipped];
+}
 /** Les deux équipes d'un titre « A - B » / « A vs B » (comme l'affichage du joueur). */
 function sp_title_teams(string $t): array {
   $m = preg_split('/\s+(?:-|–|—|vs\.?|VS|contre)\s+/u', $t);

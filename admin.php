@@ -2072,6 +2072,7 @@ if ($isAjax) {
     }
     if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
     if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
+    if ($action === 'sp_seed') admin_json(sp_admin_seed()); // v2754 : 10 prédictions prêtes, d'un clic
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
@@ -2654,6 +2655,10 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
               <label class="muted" style="display:flex;align-items:center;gap:6px">🖼️ Mettre mon image (question ou équipe 1) <input type="file" id="spImg1" accept="image/*" style="max-width:190px"></label>
               <label class="muted" style="display:flex;align-items:center;gap:6px">Équipe 2 <input type="file" id="spImg2" accept="image/*" style="max-width:190px"></label>
               <span class="muted">(facultatif : sinon le logo vient tout seul pour les équipes connues)</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(139,92,246,.12);border:1px solid rgba(167,139,250,.35)">
+              <span class="muted" style="flex:1 1 200px">✨ 10 prédictions prêtes (Ligue des champions, Premier League, Bitcoin, élections américaines), cotes serrées, mise max 20 $.</span>
+              <button class="mini ok" type="button" id="spSeed">➕ Ajouter les 10 suggestions</button>
             </div>
             <div id="spOpts"></div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -3499,6 +3504,13 @@ setInterval(() => {
   const tab = w => { $c('csPaneSp').hidden = w !== 'sp'; $c('csPaneSt').hidden = w !== 'st'; $c('csTabSp').classList.toggle('ok', w === 'sp'); $c('csTabSt').classList.toggle('ok', w === 'st'); if (w === 'sp') list(); else stats(); };
   $c('csTabSp').onclick = () => tab('sp');
   $c('csTabSt').onclick = () => tab('st');
+  $c('spSeed').onclick = async () => {
+    $c('spSeed').disabled = true; $c('spSt').textContent = 'Ajout en cours… (logos des équipes : quelques secondes)';
+    const r = await ajax({action:'sp_seed'});
+    $c('spSeed').disabled = false;
+    $c('spSt').textContent = r.ok ? ('✓ ' + r.added + ' ajoutée(s)' + (r.skipped ? ' · ' + r.skipped + ' déjà là ou passée(s)' : '')) : (r.reason || 'Échec');
+    if (r.ok) list();
+  };
   $c('spAddOpt').onclick = () => { if ($c('spOpts').children.length < 6) optRow('', ''); };
   // v2706 : événement / crypto / politique → 2 choix Oui / Non prêts (modifiables) au lieu de Équipe / Nul / Équipe
   $c('spSport').onchange = () => {
