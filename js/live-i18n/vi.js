@@ -910,7 +910,7 @@
       ],
       "coin": [
         "Sấp hay ngửa",
-        "×1,88"
+        "×1,94"
       ],
       "dice": [
         "Xúc xắc",
@@ -926,11 +926,11 @@
       ],
       "race": [
         "Đua xe",
-        "6 xe · ×5,64"
+        "6 xe · ×5,7"
       ],
       "roulette": [
         "Roulette",
-        "Đỏ, đen, số ×34.8"
+        "Đỏ, đen, số ×36"
       ],
       "slots": [
         "Máy slot",
@@ -954,7 +954,7 @@
       ],
       "penalty": [
         "Penalty",
-        "Ghi bàn · ×1,41"
+        "Ghi bàn · ×1,44"
       ],
       "colors": [
         "Màu sắc",
