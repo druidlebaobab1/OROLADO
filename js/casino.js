@@ -620,7 +620,8 @@
 
   var SLOT_PAY = [['gem', '×50'], ['seven', '×20'], ['bell', '×10'], ['lemon', '×5'], ['cherry', '×3'], ['cherry2', '×1,5']];
   GAMES.slots = function (box, x) {
-    var pay = SLOT_PAY.map(function (p) { var two = p[0] === 'cherry2'; return '<span><em>' + ART.sym(two ? 'cherry' : p[0]) + '</em><small>' + (two ? '×2' : '×3') + '</small><b>' + p[1] + '</b></span>'; }).join('');
+    // v2726 (propriétaire) : tableau clair — on VOIT les 3 symboles (ou 2 cerises) puis le gain : « 🔔🔔🔔 = ×10 »
+    var pay = SLOT_PAY.map(function (p) { var two = p[0] === 'cherry2', k = two ? 'cherry' : p[0], n = two ? 2 : 3, sy = ''; for (var i = 0; i < n; i++) sy += '<em>' + ART.sym(k) + '</em>'; return '<span class="pay3"><i>' + sy + '</i><u>=</u><b>' + p[1] + '</b></span>'; }).join('');
     box.innerHTML = '<div class="cs-stage slot-stage"><div class="slot2"><div class="slot2-top">LUCKY 777</div><div class="slot2-win"><span id="csR0">' + ART.sym('cherry') + '</span><span id="csR1">' + ART.sym('gem') + '</span><span id="csR2">' + ART.sym('seven') + '</span></div><i class="slot2-line"></i></div>' +
       '<div class="pay2">' + pay + '</div></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
@@ -971,7 +972,12 @@
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
-    box.querySelectorAll('.cs-seg [data-m]').forEach(function (b) { b.addEventListener('click', function () { if (g && !g.done) return; mines = +b.getAttribute('data-m'); $('csMnN').textContent = mines; box.querySelectorAll('.cs-seg [data-m]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
+    // v2726 (propriétaire) : on voit ce que rapporte chaque case trouvée (même calcul que le serveur)
+    var mm = function (m, k) { var v = 0.97; for (var j = 0; j < k; j++) v *= (25 - j) / (25 - m - j); return Math.floor(v * 100) / 100; };
+    var ladder = function (k0) { var s = ''; for (var k = k0 + 1; k <= k0 + 5 && k <= 25 - mines; k++) s += '<span class="' + (k === k0 + 1 ? 'nx' : '') + '"><small>' + k + '</small>×' + mm(mines, k).toFixed(2) + '</span>'; $('csMnL').innerHTML = s; };
+    box.querySelector('.mn-info').insertAdjacentHTML('afterend', '<div class="mn-lad" id="csMnL"></div>');
+    ladder(0);
+    box.querySelectorAll('.cs-seg [data-m]').forEach(function (b) { b.addEventListener('click', function () { if (g && !g.done) return; mines = +b.getAttribute('data-m'); $('csMnN').textContent = mines; box.querySelectorAll('.cs-seg [data-m]').forEach(function (z) { z.classList.toggle('on', z === b); }); ladder(0); }); });
     var paint = function (r) {
       g = r;
       box.querySelectorAll('#csMn button').forEach(function (b) {
@@ -979,8 +985,9 @@
         if (r.open && r.open.indexOf(c) >= 0) { b.className = 'ok'; b.innerHTML = ART.sym('gem'); }
         if (r.done && r.mines && r.mines.indexOf(c) >= 0) { b.className = c === r.boom ? 'boom' : 'mine'; b.innerHTML = ART.sym('bomb'); }
       });
-      if (r.done) { resultLine(box, r, r.mult ? '×' + r.mult : ''); btn.textContent = x.bet; btn.classList.remove('cash'); $('csMnInfo').textContent = ''; }
+      if (r.done) { resultLine(box, r, r.mult ? '×' + r.mult : ''); btn.textContent = x.bet; btn.classList.remove('cash'); $('csMnInfo').textContent = ''; mines = r.m || mines; ladder(0); }
       else {
+        mines = r.m || mines; ladder(r.open.length);
         btn.classList.add('cash');
         btn.textContent = r.open.length ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.open;
         $('csMnInfo').textContent = fmt(x.next, { x: r.next.toFixed(2) });
@@ -1163,7 +1170,7 @@
   /* Ballon : ciel bleu, nuages, gros ballon, gros bouton rond pour gonfler */
   GAMES.balloon = function (box, x) {
     var g = null;
-    box.innerHTML = '<div class="cs-stage bl-stage"><i class="bl-cloud c1"></i><i class="bl-cloud c2"></i><i class="bl-cloud c3"></i><b class="crash-n" id="csBlM">1.00×</b><div class="bl" id="csBl"><svg viewBox="0 0 100 130"><defs><radialGradient id="blG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fdba74"/><stop offset=".6" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></radialGradient></defs><path d="M50 4c22 0 38 17 38 40 0 28-22 47-38 51-16-4-38-23-38-51C12 21 28 4 50 4z" fill="url(#blG)"/><path d="M50 4c-9 10-10 70 0 91M50 4c9 10 10 70 0 91" stroke="#9a3412" stroke-width="1.4" opacity=".3" fill="none"/><path d="M30 26c4-9 12-13 19-13" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".75" fill="none"/><ellipse cx="32" cy="42" rx="5" ry="9" fill="#fff" opacity=".3"/><path d="M45 95l5 8 5-8z" fill="#9a3412"/><path d="M50 103c-5 7 5 12 0 19s3 6 1 8" stroke="#fff" stroke-width="1.6" fill="none"/></svg></div>' +
+    box.innerHTML = '<div class="cs-stage bl-stage"><b class="crash-n bl-m" id="csBlM">1.00×</b><div class="bl" id="csBl"><svg viewBox="0 0 100 130"><defs><radialGradient id="blG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fdba74"/><stop offset=".6" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></radialGradient></defs><path d="M50 4c22 0 38 17 38 40 0 28-22 47-38 51-16-4-38-23-38-51C12 21 28 4 50 4z" fill="url(#blG)"/><path d="M50 4c-9 10-10 70 0 91M50 4c9 10 10 70 0 91" stroke="#9a3412" stroke-width="1.4" opacity=".3" fill="none"/><path d="M30 26c4-9 12-13 19-13" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".75" fill="none"/><ellipse cx="32" cy="42" rx="5" ry="9" fill="#fff" opacity=".3"/><path d="M45 95l5 8 5-8z" fill="#9a3412"/><path d="M50 103c-5 7 5 12 0 19s3 6 1 8" stroke="#fff" stroke-width="1.6" fill="none"/></svg></div>' +
       (guest() ? '' : '<button type="button" class="cs-pump" id="csPump" disabled aria-label="' + esc(x.pump) + '"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5c0 3.6-2.5 6.5-6 6.5h-1c-2 0-3.4-.9-4.4-2.4L4 14.6a1.5 1.5 0 0 1 2.4-1.8L9 15" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>') +
       '</div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
     if (guest()) { needAccount($('csNeed'), x); return; }
@@ -1175,11 +1182,11 @@
       bl.style.transform = 'scale(' + sc + ')';
       $('csBlM').textContent = (r.k ? r.mult : 1).toFixed(2) + '×';
       if (r.done) {
-        if (r.win > 0) $('csBlM').className = 'crash-n w'; else { bl.classList.add('pop'); $('csBlM').className = 'crash-n l'; }
+        if (r.win > 0) $('csBlM').className = 'crash-n bl-m w'; else { bl.classList.add('pop'); $('csBlM').className = 'crash-n bl-m l'; }
         resultLine(box, r, r.win > 0 ? '×' + r.mult.toFixed(2) : '💥');
         pump.disabled = true; btn.textContent = x.bet; btn.classList.remove('cash');
       } else {
-        bl.classList.remove('pop'); $('csBlM').className = 'crash-n';
+        bl.classList.remove('pop'); $('csBlM').className = 'crash-n bl-m';
         pump.disabled = false; btn.classList.toggle('cash', r.k > 0);
         btn.textContent = r.k ? x.cashout + ' ' + m2(r.stake * r.mult) + ' $' : x.pumpFirst;
         box.querySelector('.cs-res').className = 'cs-res'; box.querySelector('.cs-res').innerHTML = '';

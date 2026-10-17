@@ -11375,3 +11375,30 @@ html.oro-lite body #casinoModal .ch button.gold .tch-glow{animation:none}
 html body #casinoModal .ch button.shake{animation:tchShake .12s linear infinite}
 @keyframes tchShake{0%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}100%{transform:rotate(0)}}
 html body #casinoModal .ch button.dim:not(.gold){opacity:.55}
+
+/* v2726 (propriétaire) : Lucky 777 — tableau des gains clair (3 symboles = gain) */
+html body #casinoModal .pay2 .pay3{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:4px;padding:4px 6px!important}
+html body #casinoModal .pay2 .pay3 i{display:flex;gap:1px;font-style:normal}
+html body #casinoModal .pay2 .pay3 em{width:17px;height:17px;display:block}
+html body #casinoModal .pay2 .pay3 em svg{width:100%;height:100%;display:block}
+html body #casinoModal .pay2 .pay3 u{text-decoration:none;color:rgba(255,255,255,.6);font-weight:800;font-size:11px}
+html body #casinoModal .pay2 .pay3 b{font-size:13px;color:#FDE68A}
+/* v2726 : Mines — gains case par case */
+html body #casinoModal .mn-lad{display:flex;gap:5px;width:100%;max-width:min(340px,44vh);justify-content:space-between}
+html body #casinoModal .mn-lad span{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;padding:3px 0;border-radius:9px;background:rgba(255,255,255,.07);font:800 12px/1.15 system-ui;color:#E0F2FE}
+html body #casinoModal .mn-lad span small{font-size:9px;color:rgba(255,255,255,.55);font-weight:700}
+html body #casinoModal .mn-lad span.nx{background:rgba(250,204,21,.18);box-shadow:inset 0 0 0 1px #FACC15;color:#FDE68A}
+html body #casinoModal .mn-info{max-width:min(340px,44vh)!important;font-size:12.5px!important;flex-wrap:nowrap!important;white-space:nowrap}
+html body #casinoModal .mn-info span{overflow:hidden;text-overflow:ellipsis}
+/* v2726 : Balloon — plus de nuages ; cote petite, en haut à gauche (le ballon ne la cache plus) */
+html body #casinoModal .bl-stage .bl-cloud{display:none!important}
+html body #casinoModal .bl-stage .bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;transform:none!important;margin:0!important;z-index:5;font-size:22px!important;padding:4px 10px;border-radius:12px;background:rgba(6,3,20,.45)}
+html[dir="rtl"] body #casinoModal .bl-stage .bl-m{left:auto!important;right:10px!important}
+html body #casinoModal .bl-stage .bl{transition:transform .14s ease-out!important}
+html body #casinoModal .slot-stage .pay2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;width:100%;max-width:360px}
+html body #casinoModal .pay2 .pay3{padding:7px 6px!important;border-radius:12px!important}
+html body #casinoModal .pay2 .pay3 em{width:24px;height:24px}
+html body #casinoModal .pay2 .pay3 b{font-size:16px}
+html body #casinoModal .pay2 .pay3 u{font-size:13px}
+html:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;z-index:8!important;font-size:22px!important;line-height:1.1!important;padding:4px 10px!important;border-radius:12px!important;background:rgba(6,3,20,.5)!important;width:auto!important}
+html[dir="rtl"]:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{left:auto!important;right:10px!important}
