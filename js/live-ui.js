@@ -13,7 +13,7 @@
   };
   var G = {
     news: '<rect x="10" y="13" width="23" height="23" rx="3.5" fill="W"/><path d="M33 18h2.6a2.2 2.2 0 0 1 2.2 2.2v12.3a3.5 3.5 0 0 1-3.5 3.5H31" fill="none" stroke="W" stroke-width="2.6"/><rect x="13.5" y="17" width="16" height="3.4" rx="1.2" fill="A"/><rect x="13.5" y="23" width="7" height="7" rx="1.4" fill="A" opacity=".55"/><rect x="22.6" y="23.2" width="7" height="2" rx="1" fill="A" opacity=".6"/><rect x="22.6" y="27.4" width="7" height="2" rx="1" fill="A" opacity=".6"/><rect x="13.5" y="32" width="16" height="2" rx="1" fill="A" opacity=".45"/>',
-    friends: '<circle cx="30" cy="18.5" r="5" fill="W" opacity=".72"/><path d="M22.5 34.5c.4-5.4 3.6-8.6 7.5-8.6s7.6 3.2 8 8.6z" fill="W" opacity=".72"/><circle cx="19.5" cy="19.5" r="6" fill="W"/><path d="M9 36.5c0-6.4 4.6-10.4 10.5-10.4S30 30.1 30 36.5z" fill="W"/><path d="M37 9.6c1-1.6 3.6-1.2 3.6.9 0 1.7-2.1 3-3.6 4.2-1.5-1.2-3.6-2.5-3.6-4.2 0-2.1 2.6-2.5 3.6-.9z" fill="W"/>',
+    friends: '<circle cx="30" cy="18.5" r="5" fill="W" opacity=".72"/><path d="M22.5 34.5c.4-5.4 3.6-8.6 7.5-8.6s7.6 3.2 8 8.6z" fill="W" opacity=".72"/><circle cx="19.5" cy="19.5" r="6" fill="W"/><path d="M9 36.5c0-6.4 4.6-10.4 10.5-10.4S30 30.1 30 36.5z" fill="W"/>',
     groups: '<circle cx="13.5" cy="20" r="4.3" fill="W" opacity=".66"/><path d="M5.8 34.5c0-4.9 3.3-8 7.7-8s7.7 3.1 7.7 8z" fill="W" opacity=".66"/><circle cx="34.5" cy="20" r="4.3" fill="W" opacity=".66"/><path d="M26.8 34.5c0-4.9 3.3-8 7.7-8s7.7 3.1 7.7 8z" fill="W" opacity=".66"/><circle cx="24" cy="17.5" r="5.6" fill="W"/><path d="M14 37c0-6.1 4.4-9.8 10-9.8S34 30.9 34 37z" fill="W"/>',
     duel: '<g stroke="W" stroke-linecap="round" fill="none"><path d="M12.5 11.5l17.5 17.5" stroke-width="3.4"/><path d="M35.5 11.5L18 29" stroke-width="3.4"/><path d="M27.5 33.5l6-6M14.5 27.5l6 6" stroke-width="3"/><path d="M32.5 32.5l3.4 3.4M15.5 32.5l-3.4 3.4" stroke-width="3.2"/></g><circle cx="37.3" cy="37.3" r="2.3" fill="W"/><circle cx="10.7" cy="37.3" r="2.3" fill="W"/>',
     chat: '<path d="M12 13.5h24a3.5 3.5 0 0 1 3.5 3.5v12.5a3.5 3.5 0 0 1-3.5 3.5H22.5l-7 5.5V33H12a3.5 3.5 0 0 1-3.5-3.5V17a3.5 3.5 0 0 1 3.5-3.5z" fill="W"/><circle cx="17" cy="23.3" r="2.3" fill="A"/><circle cx="24" cy="23.3" r="2.3" fill="A"/><circle cx="31" cy="23.3" r="2.3" fill="A"/>',
@@ -127,7 +127,9 @@
       if (!phone() || e.touches.length !== 1) return;
       var r = box.getBoundingClientRect(), ty = e.touches[0].clientY - r.top;
       // Seulement depuis le haut de la page (zone du titre / poignée), et si la page est tout en haut.
-      if (ty > 86 || box.scrollTop > 2) return;
+      // v2787 (propriétaire) : la page reste BLOQUÉE comme une vraie appli — on ne la tire vers le bas que depuis le petit
+      // trait tout en haut (avant : les 86 premiers pixels → en défilant Paris, toute la page descendait et on voyait le trading dessous)
+      if (ty > 30 || box.scrollTop > 2) return;
       if (e.target.closest && e.target.closest('input,textarea,select,.lf-duelcard')) return;
       on = true; y0 = e.touches[0].clientY; dy = 0; box.style.transition = 'none';
     }, { passive: true });

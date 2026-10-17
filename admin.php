@@ -2086,7 +2086,7 @@ if ($isAjax) {
     }
     if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
     if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
-    if ($action === 'sp_seed') admin_json(sp_admin_seed()); // v2754 : 10 prédictions prêtes, d'un clic
+    if ($action === 'sp_seed') admin_json(sp_admin_seed(sp_suggestions2())); // v2787 : les événements serrés de la semaine (ceux qui manquent)
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
@@ -2671,8 +2671,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
               <span class="muted">(facultatif : sinon le logo vient tout seul pour les équipes connues)</span>
             </div>
             <div style="display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(139,92,246,.12);border:1px solid rgba(167,139,250,.35)">
-              <span class="muted" style="flex:1 1 200px">✨ 10 prédictions prêtes (Ligue des champions, Premier League, Bitcoin, élections américaines), cotes serrées, mise max 20 $.</span>
-              <button class="mini ok" type="button" id="spSeed">➕ Ajouter les 10 suggestions</button>
+              <span class="muted" style="flex:1 1 200px">✨ Les événements serrés de la semaine se publient tout seuls. Ce bouton ajoute seulement ceux qui manqueraient.</span>
+              <button class="mini ok" type="button" id="spSeed">➕ Ajouter les suggestions</button>
             </div>
             <div id="spOpts"></div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -3447,6 +3447,42 @@ setInterval(() => {
   }
   function resetForm() { $c('spOpts').innerHTML = ''; optRow('', ''); optRow('Nul', ''); optRow('', ''); $c('spTitle').value = ''; }
   async function list() {
+    const j = await ajax({action:'sp_list'}); if (!j.ok) { $c('spList').innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
+    // v2787 (propriétaire) : tableau SIMPLE en 3 parties — 🔔 À VALIDER (fini, il faut donner le résultat) · 🟢 À VENIR / EN COURS · ✅ HISTORIQUE
+    const now = Date.now() / 1000;
+    const isQ = e => ['event', 'crypto', 'politique'].includes(e.sport);
+    const endOf = e => e.endAt ? e.endAt : e.start + (isQ(e) ? 0 : 8100);
+    const todo = j.events.filter(e => e.status !== 'settled' && now >= endOf(e)).sort((a, b) => endOf(a) - endOf(b));
+    const live = j.events.filter(e => e.status !== 'settled' && now < endOf(e)).sort((a, b) => a.start - b.start);
+    const done = j.events.filter(e => e.status === 'settled').sort((a, b) => (b.settledAt || 0) - (a.settledAt || 0)).slice(0, 40);
+    const when = t => new Date(t * 1000).toLocaleString([], {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+    const card = (e, mode) => {
+      const nb = Object.values(e.exp || {}).reduce((s, x) => s + (x.n || 0), 0);
+      const head = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span class="muted" style="white-space:nowrap">' + nb + ' coupon(s)</span></div>' +
+        '<div class="muted" style="margin:2px 0 6px">' + esc(e.league || '') + ' · paris fermés ' + when(e.start) + (e.endAt ? ' · fin ' + when(e.endAt) : '') + '</div>';
+      if (mode === 'done') {
+        const w = e.result === 'void' ? 'Annulé / nul (mises rendues)' : ((e.opts.find(o => o.k === e.result) || {}).label || '?');
+        return '<div class="nt-card" style="margin-bottom:6px;opacity:.85">' + head + '<div>Résultat : <b>' + esc(w) + '</b></div></div>';
+      }
+      const opts = e.opts.map(o => { const x = (e.exp && e.exp[o.k]) || {}; return '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.06);align-items:center"><span>' + esc(o.label) + ' <b style="color:#FFD27A">' + Number(o.odd).toFixed(2) + '</b></span><span class="muted">' + (x.n || 0) + ' · misé ' + m2(x.in) + (x.risk ? ' · à payer ' + m2(x.risk) : '') + '</span>' + (mode === 'todo' ? '<button class="mini ok" type="button" data-set="' + esc(e.id) + '" data-k="' + esc(o.k) + '">✅ ' + esc(o.label) + ' a gagné</button>' : '') + '</div>'; }).join('');
+      return '<div class="nt-card" style="margin-bottom:8px' + (mode === 'todo' ? ';border-color:rgba(251,191,36,.7)' : '') + '">' + head + opts +
+        (mode === 'todo' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">↺ Match nul / annulé → mises rendues</button>' : (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris maintenant</button>' : '<span class="muted">Paris fermés</span>')) + '</div>';
+    };
+    $c('spList').innerHTML =
+      '<h4 style="margin:6px 0">🔔 À valider (' + todo.length + ')</h4>' + (todo.length ? '<p class="muted" style="margin:0 0 6px">Ces événements sont finis : vérifiez le vrai résultat, puis touchez le gagnant. Les gagnants sont payés une seule fois.</p>' + todo.map(e => card(e, 'todo')).join('') : '<p class="muted">Rien à valider pour l’instant. Vous recevrez une notification quand un événement sera fini.</p>') +
+      '<h4 style="margin:14px 0 6px">🟢 À venir / en cours (' + live.length + ')</h4>' + (live.length ? live.map(e => card(e, 'live')).join('') : '<p class="muted">Aucun.</p>') +
+      '<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">✅ Historique (' + done.length + ')</summary>' + done.map(e => card(e, 'done')).join('') + '</details>';
+    $c('spList').querySelectorAll('[data-close]').forEach(b => b.onclick = async () => { if (!confirm('Fermer les paris de ce match ?')) return; await ajax({action:'sp_close', id:b.dataset.close}); list(); });
+    $c('spList').querySelectorAll('[data-set]').forEach(b => b.onclick = async () => {
+      const lbl = b.dataset.k === 'void' ? 'Match NUL ou ANNULÉ : toutes les mises sur ce match sont rendues (×1). Confirmer ?' : 'Confirmer : ' + b.textContent.replace('✅ ', '') + ' ? Les gagnants seront payés tout de suite.';
+      if (!confirm(lbl)) return;
+      b.disabled = true;
+      const r = await ajax({action:'sp_settle', id:b.dataset.set, k:b.dataset.k});
+      alert(r.ok ? ('Réglé ✓ — coupons gagnés : ' + r.won + ' · perdus : ' + r.lost + (r.retry ? ' · ' + r.retry + ' paiement(s) à refaire (base injoignable) : recliquez plus tard' : '')) : (r.reason || 'Échec'));
+      list();
+    });
+  }
+  async function listOld() {
     const j = await ajax({action:'sp_list'}); if (!j.ok) { $c('spList').innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
     $c('spList').innerHTML = j.events.length ? j.events.map(e => {
       const st = {open:'🟢 Ouvert', closed:'🟠 Paris fermés', settled:'✅ Réglé'}[e.status] || e.status;

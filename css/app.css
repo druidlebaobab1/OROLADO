@@ -12483,3 +12483,23 @@ html body #liveModal .ls2-hero{display:none}
 html body #liveModal .live-bar{position:relative!important;justify-content:flex-start!important;min-height:44px}
 html body #liveModal .live-bar #liveBarT{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;max-width:calc(100% - 128px)!important;
   margin:0!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:17px!important;font-weight:900!important}
+/* v2787 (propriétaire) : Social — le bouton Retour monte en haut, sur la ligne du petit trait (jamais sur la ligne du titre) */
+html body #liveModal .live-bar{margin-top:22px!important}
+html body #liveModal .live-bar #liveBack{position:absolute!important;left:0!important;top:-37px!important;width:32px!important;height:32px!important;margin:0!important;z-index:2}
+/* v2787 (propriétaire) : Profil — « Recharger + » avec un GRAND « + » bien formé (petite case foncée, + blanc épais) */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge .wx-plus{width:26px!important;height:26px!important;padding:4px!important;box-sizing:border-box!important;border-radius:8px!important;background:rgba(124,45,18,.28)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)!important;margin:0 0 0 8px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge .wx-plus path{stroke-width:3.6!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge > span{font-size:17px!important;font-weight:900!important;letter-spacing:.01em}
+/* v2787 (propriétaire) : visiteur (téléphone) — Connexion / Inscription un tout petit peu plus près de Social */
+@media (orientation:portrait),(min-height:561px){
+html.oro-guest:not(.fs-trade) body #screenTrade #authQuick{translate:3px 0}
+html.oro-guest[dir=rtl]:not(.fs-trade) body #screenTrade #authQuick{translate:-3px 0}}
+html:root body #casinoModal#casinoModal .sp-cp-chips{grid-template-columns:repeat(6,1fr)!important;gap:5px!important}
+html:root body #casinoModal#casinoModal .sp-cp-chips button{padding:0 2px!important;font-size:12.5px!important;white-space:nowrap}
+html:root body #casinoModal .sp-cp-guest{margin:8px 0 0;padding:9px 12px;border-radius:12px;background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;font-size:12.5px;font-weight:700;text-align:center}
+/* v2787 (propriétaire) : partout, le petit mot (COMPTE RÉEL, DÉMO…) est CENTRÉ au-dessus de son montant, comme « Compte réel » */
+html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeDemo{align-items:center!important;text-align:center!important}
+html:root body #fsTradeOverlay .fs-mode-btn, html:root body .fs-mode-switch .fs-mode-btn{align-items:center!important;text-align:center!important;justify-content:center!important}
+html:root body #fsTradeOverlay .fs-mode-btn .mb-lbl, html:root body .fs-mode-switch .fs-mode-btn .mb-lbl{text-align:center!important;width:100%}
+html:root body #casinoModal#casinoModal .cs-wallet .cw-t{align-items:center!important;text-align:center!important}
+html:root body #casinoModal#casinoModal .cs-wallet .cw-t small{text-align:center!important;width:100%}

@@ -36,6 +36,9 @@ function sp_public_events(int $now = 0): array {
   $now = $now ?: time();
   sp_autoseed_once();
   sp_remind_admin($now);
+  // v2787 : un logo d'équipe cherché APRÈS la réponse au joueur (il n'attend jamais)
+  static $filled = false;
+  if (!$filled && PHP_SAPI !== 'cli') { $filled = true; register_shutdown_function(static function () { if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } } try { sp_logo_fill_one(); } catch (Throwable $e) { /* jamais bloquant */ } }); }
   $out = [];
   foreach (sp_events() as $e) {
     $open = $e['status'] === 'open' && $now < (int) $e['start'];
@@ -69,23 +72,25 @@ function sp_admin_save(array $in): array {
   $sportK = sp_clean((string) ($in['sport'] ?? 'foot'), 12);
   $given = array_values(array_filter(array_map('strval', (array) ($in['logos'] ?? [])), static fn($l) => (bool) preg_match('#^(img/teams/[a-z0-9-]{2,30}\.png|q:(btc|us|ball|vote|fire|star))$#', $l)));
   if ($given) $logos = $given; // v2755 : logos fournis (suggestions) — pas de recherche sur internet
+  elseif (!empty($in['noFetch'])) $logos = []; // v2787 : publication automatique — les logos seront cherchés plus tard, un par un (jamais d'attente)
   elseif (!in_array($sportK, ['event', 'crypto', 'politique'], true) && ($tm = sp_title_teams($title))) {
     try { $logos = [sp_team_logo($tm[0]), sp_team_logo($tm[1])]; } catch (Throwable $e) { $logos = []; }
   }
   // v2734 : images mises par l'admin (prioritaires sur les logos trouvés tout seuls)
   $i1 = sp_admin_img((string) ($in['img1'] ?? '')); $i2 = sp_admin_img((string) ($in['img2'] ?? ''));
   if ($i1 !== '' || $i2 !== '') { $logos = [$i1 !== '' ? $i1 : ($logos[0] ?? ''), $i2 !== '' ? $i2 : ($logos[1] ?? '')]; }
-  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos) {
+  $endAt = (int) ($in['endAt'] ?? 0); if ($endAt && $endAt < $start) $endAt = 0; // v2787 : heure de fin réelle (pour prévenir l'admin au bon moment)
+  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos, $endAt) {
     foreach ((array) ($s['e'] ?? []) as $i => $e) {
       if ($e['id'] === $id) {
         if ($e['status'] !== 'open') return ['ok' => false, 'reason' => 'Match déjà fermé ou réglé'];
         // cotes modifiables tant qu'aucun pari n'est pris sur l'ancienne cote (les paris gardent LEUR cote de toute façon)
-        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos]);
+        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []));
         return ['ok' => true, 'id' => $id];
       }
     }
     $s['e'][] = ['id' => $id, 'title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start,
-      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos];
+      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []);
     // on garde au plus 300 matchs (les plus anciens réglés partent)
     if (count($s['e']) > 300) $s['e'] = array_slice($s['e'], -300);
     return ['ok' => true, 'id' => $id];
@@ -152,24 +157,116 @@ function sp_admin_img(string $dataUrl): string {
 function sp_suggestions(): array {
   $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
   return [
-    ['PSG - FC Barcelona', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['PSG', 2.30], ['Nul', 3.40], ['Barcelona', 2.75]], ['img/teams/psg.png', 'img/teams/barcelona.png']],
+    ['PSG - FC Barcelona', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['PSG', 2.30], ['Nul', 3.40], ['Barcelona', 2.75]], ['img/teams/psg.png', 'img/teams/barcelona.png'], $t('2026-10-20 21:00')],
     ['Liverpool - Villarreal', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['Liverpool', 1.45], ['Nul', 4.30], ['Villarreal', 6.00]], ['img/teams/liverpool.png', 'img/teams/villarreal.png']],
-    ['Bayern Munich - Arsenal', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Bayern', 2.25], ['Nul', 3.50], ['Arsenal', 2.80]], ['img/teams/bayern.png', 'img/teams/arsenal.png']],
+    ['Bayern Munich - Arsenal', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Bayern', 2.25], ['Nul', 3.50], ['Arsenal', 2.80]], ['img/teams/bayern.png', 'img/teams/arsenal.png'], $t('2026-10-21 21:00')],
     ['Real Madrid - RB Leipzig', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Real Madrid', 1.50], ['Nul', 4.20], ['Leipzig', 5.50]], ['img/teams/real-madrid.png', 'img/teams/leipzig.png']],
-    ['Aston Villa - Manchester City', 'Premier League', 'foot', $t('2026-10-24 11:30'), [['Aston Villa', 3.00], ['Nul', 3.50], ['Man City', 2.20]], ['img/teams/aston-villa.png', 'img/teams/man-city.png']],
-    ['Chelsea - Tottenham', 'Premier League', 'foot', $t('2026-10-24 16:30'), [['Chelsea', 2.05], ['Nul', 3.50], ['Tottenham', 3.30]], ['img/teams/chelsea.png', 'img/teams/tottenham.png']],
+    ['Aston Villa - Manchester City', 'Premier League', 'foot', $t('2026-10-24 11:30'), [['Aston Villa', 3.00], ['Nul', 3.50], ['Man City', 2.20]], ['img/teams/aston-villa.png', 'img/teams/man-city.png'], $t('2026-10-24 21:30')],
+    ['Chelsea - Tottenham', 'Premier League', 'foot', $t('2026-10-24 16:30'), [['Chelsea', 2.05], ['Nul', 3.50], ['Tottenham', 3.30]], ['img/teams/chelsea.png', 'img/teams/tottenham.png'], $t('2026-10-24 19:00')],
     ['Combien de buts dans PSG – Barcelone ?', 'Ligue des champions', 'event', $t('2026-10-20 19:00'), [['0 à 2 buts', 2.00], ['3 buts ou plus', 1.75]], ['q:ball']],
     ['Le Bitcoin sera-t-il au-dessus de 85 000 $ le dimanche 25 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-24 20:00'), [['Oui', 2.90], ['Non', 1.38]], ['q:btc']],
     ['Le Bitcoin sera-t-il au-dessus de 80 000 $ le samedi 31 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-29 20:00'), [['Oui', 1.70], ['Non', 2.00]], ['q:btc']],
     ['Élections américaines (3 nov.) : qui gagnera la Chambre ?', 'Élections américaines', 'event', $t('2026-11-03 12:00'), [['Démocrates', 1.05], ['Républicains', 7.00]], ['q:us']],
   ];
 }
-/** v2755 : les suggestions se publient toutes seules la 1re fois que la page des prédictions est ouverte (une seule fois). */
+/*
+ * v2787 (propriétaire) — PARIS REMPLIS avec des événements SERRÉS seulement (2 choix, cotes 1,62 à 2,10, presque pile ou face).
+ * Vrais événements vérifiés le 17/10/2026 (calendriers officiels Premier League, Liga, Serie A, Ligue 1, Ligue des champions J3,
+ * ouverture NBA du 20/10, UFC 333 et Fight Night du 7/11, Bitcoin ≈ 81 500 $). Football : « Qui gagne ? » — MATCH NUL = MISE
+ * REMBOURSÉE (l'admin choisit « Annulé » si le match finit nul). Les cotes sont celles des grands sites, BAISSÉES (la maison garde
+ * sa marge). Heures de fermeture en UTC, toujours AVANT le début réel (quand l'heure exacte n'est pas sûre : la plus tôt possible).
+ */
+function sp_suggestions2(): array {
+  $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
+  $nul = ' · nul = remboursé';
+  return [
+    ['Paris FC - Stade Rennais', 'Ligue 1' . $nul, 'foot', $t('2026-10-18 10:30'), [['Paris FC', 1.95], ['Rennes', 1.75]], [], $t('2026-10-18 22:30')],
+    ['Le Havre - AJ Auxerre', 'Ligue 1' . $nul, 'foot', $t('2026-10-18 10:30'), [['Le Havre', 1.80], ['Auxerre', 1.88]], [], $t('2026-10-18 22:30')],
+    ['Osasuna - Racing Santander', 'LaLiga' . $nul, 'foot', $t('2026-10-18 10:30'), [['Osasuna', 1.70], ['Racing', 2.00]], [], $t('2026-10-18 22:30')],
+    ['Celta Vigo - Alavés', 'LaLiga' . $nul, 'foot', $t('2026-10-18 10:30'), [['Celta', 1.72], ['Alavés', 1.98]], [], $t('2026-10-18 22:30')],
+    ['Málaga - Real Sociedad', 'LaLiga' . $nul, 'foot', $t('2026-10-18 10:30'), [['Málaga', 1.95], ['Real Sociedad', 1.75]], [], $t('2026-10-18 22:30')],
+    ['Leeds United - Manchester United', 'Premier League' . $nul, 'foot', $t('2026-10-18 12:30'), [['Leeds', 1.68], ['Man United', 2.02]], [], $t('2026-10-18 16:00')],
+    ['PSG - FC Barcelona', 'Ligue des champions' . $nul, 'foot', $t('2026-10-20 16:45'), [['PSG', 1.65], ['Barcelona', 1.95]], ['img/teams/psg.png', 'img/teams/barcelona.png'], $t('2026-10-20 21:00')],
+    ['VfB Stuttgart - Atlético Madrid', 'Ligue des champions' . $nul, 'foot', $t('2026-10-20 16:45'), [['Stuttgart', 1.88], ['Atlético', 1.80]], [], $t('2026-10-20 21:00')],
+    ['FC Porto - PSV Eindhoven', 'Ligue des champions' . $nul, 'foot', $t('2026-10-20 16:45'), [['Porto', 1.75], ['PSV', 1.95]], [], $t('2026-10-20 21:00')],
+    ['Detroit Pistons - Boston Celtics', 'NBA · match d’ouverture', 'basket', $t('2026-10-20 18:30'), [['Pistons', 1.80], ['Celtics', 1.88]], [], $t('2026-10-20 22:00')],
+    ['New York Knicks - Philadelphia 76ers', 'NBA · match d’ouverture', 'basket', $t('2026-10-20 22:30'), [['Knicks', 1.70], ['76ers', 2.00]], [], $t('2026-10-21 02:00')],
+    ['San Antonio Spurs - Oklahoma City Thunder', 'NBA · match d’ouverture', 'basket', $t('2026-10-21 01:00'), [['Spurs', 1.88], ['Thunder', 1.80]], [], $t('2026-10-21 04:30')],
+    ['Como - Manchester United', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Como', 1.85], ['Man United', 1.85]], [], $t('2026-10-21 21:00')],
+    ['Lille - Galatasaray', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Lille', 1.75], ['Galatasaray', 1.95]], [], $t('2026-10-21 21:00')],
+    ['Bayern Munich - Arsenal', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Bayern', 1.62], ['Arsenal', 2.10]], ['img/teams/bayern.png', 'img/teams/arsenal.png'], $t('2026-10-21 21:00')],
+    ['Club Brugge - RC Lens', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Club Brugge', 1.85], ['Lens', 1.85]], [], $t('2026-10-21 21:00')],
+    ['Real Betis - Feyenoord', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Betis', 1.72], ['Feyenoord', 1.98]], [], $t('2026-10-21 21:00')],
+    ['Bitcoin au-dessus de 82 000 $ le vendredi 23 octobre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-10-21 12:00'), [['Oui', 1.85], ['Non', 1.80]], ['q:btc'], $t('2026-10-23 12:05')],
+    ['Chelsea - Tottenham', 'Premier League' . $nul, 'foot', $t('2026-10-24 11:00'), [['Chelsea', 1.70], ['Tottenham', 2.00]], ['img/teams/chelsea.png', 'img/teams/tottenham.png'], $t('2026-10-24 19:00')],
+    ['Coventry City - Fulham', 'Premier League' . $nul, 'foot', $t('2026-10-24 11:00'), [['Coventry', 1.92], ['Fulham', 1.78]], [], $t('2026-10-24 19:00')],
+    ['Aston Villa - Manchester City', 'Premier League' . $nul, 'foot', $t('2026-10-24 11:00'), [['Aston Villa', 1.98], ['Man City', 1.72]], ['img/teams/aston-villa.png', 'img/teams/man-city.png'], $t('2026-10-24 21:30')],
+    ['Volkanovski - Evloev', 'UFC 333 · titre poids plumes', 'mma', $t('2026-10-24 14:00'), [['Volkanovski', 1.85], ['Evloev', 1.85]], [], $t('2026-10-25 00:30')],
+    ['Crystal Palace - Newcastle', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Crystal Palace', 1.85], ['Newcastle', 1.85]], [], $t('2026-10-25 19:00')],
+    ['Hull City - Brentford', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Hull City', 1.95], ['Brentford', 1.75]], [], $t('2026-10-25 19:00')],
+    ['Sunderland - Leeds United', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Sunderland', 1.80], ['Leeds', 1.90]], [], $t('2026-10-25 19:00')],
+    ['Manchester United - Bournemouth', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Man United', 1.68], ['Bournemouth', 2.02]], [], $t('2026-10-25 19:00')],
+    ['Bitcoin au-dessus de 80 000 $ le samedi 31 octobre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-10-29 12:00'), [['Oui', 1.72], ['Non', 1.98]], ['q:btc'], $t('2026-10-31 12:05')],
+    ['Bonfim - Brady', 'UFC Fight Night · Las Vegas', 'mma', $t('2026-11-07 20:00'), [['Bonfim', 1.88], ['Brady', 1.80]], [], $t('2026-11-08 07:00')],
+    ['Bitcoin au-dessus de 83 000 $ le dimanche 15 novembre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-11-13 12:00'), [['Oui', 1.90], ['Non', 1.80]], ['q:btc'], $t('2026-11-15 12:05')],
+  ];
+}
+/** v2787 : un événement est « serré » si chaque cote est entre 1,55 et 2,30 (pas de petite cote contre grosse cote). */
+function sp_is_tight(array $e): bool {
+  foreach ((array) ($e['opts'] ?? []) as $o) { $v = (float) ($o['odd'] ?? 0); if ($v < 1.55 || $v > 2.30) return false; }
+  return count((array) ($e['opts'] ?? [])) >= 2;
+}
+/** v2787 : retire les événements ouverts PAS serrés sur lesquels personne n'a parié (ceux qui ont des paris restent, par honnêteté). */
+function sp_remove_loose(): int {
+  $bets = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+  $used = [];
+  foreach ($bets as $b) foreach ((array) ($b['sel'] ?? []) as $sel) $used[(string) ($sel['ev'] ?? '')] = 1;
+  return (int) sp_with('events.json', static function (array &$s) use ($used) {
+    $n = 0; $keep = [];
+    foreach ((array) ($s['e'] ?? []) as $e) {
+      if (($e['status'] ?? '') === 'open' && !isset($used[(string) $e['id']]) && !sp_is_tight($e)) { $n++; continue; }
+      $keep[] = $e;
+    }
+    if ($n) $s['e'] = $keep;
+    return $n;
+  });
+}
+/** v2755 : les suggestions se publient toutes seules la 1re fois que la page des prédictions est ouverte (une seule fois).
+ *  v2787 : 2e série (événements serrés) + nettoyage des événements pas serrés, une seule fois aussi. */
 function sp_autoseed_once(): void {
   $flag = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10.done';
-  if (is_file($flag)) return;
-  @file_put_contents($flag, (string) time()); // posé AVANT : jamais deux fois, même si deux joueurs ouvrent en même temps
-  try { sp_admin_seed(); } catch (Throwable $e) { @unlink($flag); } // v2759 : en cas d'échec, on réessaiera à la prochaine ouverture
+  if (!is_file($flag)) {
+    @file_put_contents($flag, (string) time()); // posé AVANT : jamais deux fois, même si deux joueurs ouvrent en même temps
+    try { sp_admin_seed(); } catch (Throwable $e) { @unlink($flag); } // v2759 : en cas d'échec, on réessaiera à la prochaine ouverture
+  }
+  $flag2 = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10b.done';
+  if (!is_file($flag2)) {
+    @file_put_contents($flag2, (string) time());
+    try { sp_remove_loose(); sp_admin_seed(sp_suggestions2()); } catch (Throwable $e) { @unlink($flag2); }
+  }
+}
+/** v2787 : logos des équipes cherchés PETIT À PETIT (au plus 1 équipe par ouverture de page, jamais d'attente pour personne). */
+function sp_logo_fill_one(): void {
+  $lock = sp_dir() . DIRECTORY_SEPARATOR . 'logo-fill.at';
+  if (is_file($lock) && filemtime($lock) > time() - 20) return; // une recherche toutes les 20 s au plus
+  @touch($lock);
+  $todo = null;
+  foreach (sp_events() as $e) {
+    if (($e['status'] ?? '') !== 'open' || in_array((string) ($e['sport'] ?? ''), ['event', 'crypto', 'politique'], true)) continue;
+    $lg = array_values((array) ($e['logos'] ?? []));
+    if (count(array_filter($lg)) === 2) continue;
+    $tm = sp_title_teams((string) $e['title']); if (!$tm) continue;
+    $todo = [$e['id'], $tm, $lg]; break;
+  }
+  if (!$todo) return;
+  [$id, $tm, $lg] = $todo;
+  $i = empty($lg[0]) ? 0 : 1;
+  $k = '';
+  try { $k = sp_team_logo((string) $tm[$i]); } catch (Throwable $e) { $k = ''; }
+  sp_with('events.json', static function (array &$s) use ($id, $i, $k) {
+    foreach ((array) ($s['e'] ?? []) as $j => $e) if ($e['id'] === $id) { $l = array_values((array) ($e['logos'] ?? [])); $l += ['', '']; $l[$i] = $k !== '' ? $k : 'none'; $s['e'][$j]['logos'] = $l; }
+    return true;
+  });
 }
 /** v2755 : notification sur le téléphone de l'admin quand un événement est fini et attend son résultat
  *  (match : 2 h 15 après le coup d'envoi ; question : à l'heure de fin). Une seule fois par événement. */
@@ -180,7 +277,7 @@ function sp_remind_admin(int $now): void {
       if (($e['status'] ?? '') !== 'open' && ($e['status'] ?? '') !== 'closed') continue;
       if (!empty($e['askedAt'])) continue;
       $wait = in_array((string) ($e['sport'] ?? ''), ['event', 'crypto', 'politique'], true) ? 0 : 8100;
-      if ($now < (int) $e['start'] + $wait) continue;
+      if ($now < (!empty($e['endAt']) ? (int) $e['endAt'] : (int) $e['start'] + $wait)) continue; // v2787 : après la VRAIE fin
       $s['e'][$i]['askedAt'] = $now;
       $list[] = (string) $e['title'];
     }
@@ -193,13 +290,14 @@ function sp_remind_admin(int $now): void {
   } catch (Throwable $e) { /* jamais bloquant */ }
 }
 /** Admin : publie les suggestions qui ne sont pas encore en ligne (et pas encore commencées). */
-function sp_admin_seed(): array {
+function sp_admin_seed(?array $list = null): array {
   $have = [];
-  foreach (sp_events() as $e) $have[sp_lower((string) $e['title'])] = 1;
+  foreach (sp_events() as $e) if (($e['status'] ?? '') === 'open') $have[sp_lower((string) $e['title'])] = 1;
   $added = 0; $skipped = 0;
-  foreach (sp_suggestions() as [$title, $league, $sport, $start, $opts, $logos]) {
+  foreach (($list ?? sp_suggestions()) as $row) {
+    [$title, $league, $sport, $start, $opts, $logos] = $row; $endAt = (int) ($row[6] ?? 0);
     if (isset($have[sp_lower($title)]) || $start < time() + 120) { $skipped++; continue; }
-    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 20, 'logos' => $logos,
+    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 1000, 'logos' => $logos, 'noFetch' => true, 'endAt' => $endAt,
       'opts' => array_map(static fn($o) => ['label' => $o[0], 'odd' => $o[1]], $opts)]);
     if (!empty($r['ok'])) $added++; else $skipped++;
   }

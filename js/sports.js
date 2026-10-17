@@ -4,12 +4,12 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var T = {
-    fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Coupon', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
+    fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Ticket de paris', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
       placed: '✅ Pari enregistré · gain possible {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
       guestBet: '🔒 Inscris-toi pour parier (c’est gratuit)',
-      myCoupon: 'Mon coupon', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 0,10 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
+      myCoupon: 'Ticket de paris', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 0,10 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
       betsTab: 'Paris', guestMine: 'Crée ton compte pour parier : tous tes paris s’afficheront ici, avec leur résultat.', guestBtn: 'Créer mon compte', seeBets: 'Voir les paris', stakeL: 'Mise', oddL: 'Cote', potL: 'Gain possible', wonL: 'Gagné', lostL: 'Perdu', voidL: 'Remboursé', loading: 'Un instant…',
       all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
     en: { none: 'No match right now. Big matches are coming here soon.', coupon: 'Bet slip', sel: '{n} selection(s)', odd: 'Odds', stake: 'Stake', pot: 'Potential win', bet: 'Place bet', clear: 'Clear',
@@ -247,7 +247,7 @@
       var three = e.opts.length === 3;
       var opts = e.opts.map(function (o, i) {
         var on = inSlip(e.id, o.k), res = e.status === 'settled' && e.result === o.k;
-        var code = EVK[e.sport] ? '' : (three ? ['1', x.drawCode || 'N', '2'][i] : (e.opts.length === 2 ? String(i + 1) : ''));
+        var code = EVK[e.sport] ? '' : (three ? ['1', x.drawCode || 'N', '2'][i] : ''); // v2787 : à 2 choix, le NOM de l'équipe est écrit sur le bouton
         return '<button type="button" class="sp-o' + (on ? ' on' : '') + (res ? ' res' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '"' + (e.open ? '' : ' disabled') + '><small>' + esc(code || o.label) + '</small><b>' + o.odd.toFixed(2) + '</b></button>';
       }).join('');
       var tm = EVK[e.sport] ? null : teams(e.title);
@@ -307,12 +307,13 @@
     var odd = totalOdd();
     box.innerHTML = head +
       '<p class="sp-cp-type ' + (slip.length > 1 ? 'combo' : 'single') + '"><b>' + esc(slip.length > 1 ? x.comboT : x.singleT) + '</b> ' + esc(slip.length > 1 ? x.combo : x.single) + '</p>' +
+      (ctx.guest ? '<p class="sp-cp-guest">' + esc(x.guestBet) + '</p>' : '') + // v2787 : le visiteur comprend tout de suite qu'il doit s'inscrire pour valider
       '<div class="sp-cp-list">' + slip.map(function (z, i) {
         return '<div class="sp-cp-s"><div><small>' + esc(z.t) + '</small><b>' + esc(z.l) + '</b></div><em>' + Number(z.odd).toFixed(2) + '</em><button type="button" class="sp-cp-x" data-i="' + i + '" aria-label="×">×</button></div>';
       }).join('') + '</div>' +
       '<div class="sp-cp-tot"><span>' + esc(x.totalOdd) + '</span><b>' + odd.toFixed(2) + '</b></div>' +
       '<div class="sp-cp-stake"><label>' + esc(x.stakeL) + '</label><div class="sp-cp-in"><input id="spStake" inputmode="decimal" value="' + m2(stake) + '"><span>$</span></div>' +
-      '<div class="sp-cp-chips">' + [1, 5, 10, 25].map(function (v) { return '<button type="button" data-v="' + v + '" class="' + (stake === v ? 'on' : '') + '">' + v + ' $</button>'; }).join('') + '</div>' +
+      '<div class="sp-cp-chips">' + [1, 5, 10, 25, 50, 100].map(function (v) { return '<button type="button" data-v="' + v + '" class="' + (stake === v ? 'on' : '') + '">' + v + ' $</button>'; }).join('') + '</div>' +
       '</div>' + // v2779 (propriétaire) : aucune limite affichée à l'avance
 
       '<div class="sp-cp-pot"><span>' + esc(x.potL) + '</span><b id="spPot">' + m2(stake * odd) + ' $</b></div>' +
