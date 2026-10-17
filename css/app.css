@@ -12330,3 +12330,7 @@ html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{backgroun
 html:root body #casinoModal .sp-tabs button{position:relative}
 html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{top:54px!important}
 html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{top:var(--sp-top,54px)!important}
+/* v2768 (propriétaire) : dans les Jeux / Paris, le « + » de Recharger est DEVANT (à gauche) sur la carte du joueur connecté */
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-plus{order:-1!important}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 12px 4px 5px!important}
+html[dir=rtl]:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 5px 4px 12px!important}
