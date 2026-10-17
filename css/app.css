@@ -11987,3 +11987,19 @@ html:root body #screenAuth#screenAuth form .pass-wrap input{height:100%!importan
 html:root body #screenAuth#screenAuth form .field input{font-size:16px!important}
 html:root body #screenAuth#screenAuth form .btn-gold{height:clamp(52px,7.2vh,64px)!important;font-size:clamp(16px,2.2vh,19px)!important;margin-top:clamp(6px,1.4vh,14px)!important}
 html:root body #screenAuth#screenAuth .brand-lockup{margin-bottom:clamp(4px,1.4vh,14px)!important}}
+/* v2763 (propriétaire) : visiteur — dans les jeux en 1 étape, la mise et « Miser » laissent la place à « Créer mon compte » */
+html:root body #casinoModal .cs-panel.cs-guestpanel > .cs-stake,html:root body #casinoModal .cs-panel.cs-guestpanel > .cs-chips,html:root body #casinoModal .cs-panel.cs-guestpanel > #csGo{display:none!important}
+html:root body #casinoModal .cs-panel.cs-guestpanel > #csNeed{margin-top:8px}
+/* v2763 (propriétaire) : Connexion / Inscription de la barre du haut — plus grands et un peu plus espacés dès qu'il y a de la place (≥ 375 px) */
+@media (min-width:375px){
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{
+  height:min(35px,calc(30px + (100vw - 360px) * .1))!important;padding:0 min(11px,calc(9px + (100vw - 360px) * .05))!important;font-size:min(12.8px,calc(11.5px + (100vw - 360px) * .03))!important;border-radius:11px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick#authQuick#authQuick{gap:min(7px,calc(4px + (100vw - 360px) * .05))!important}}
+@media (min-width:375px) and (max-width:400px){
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp{width:44px!important;flex:0 0 44px!important;min-width:0!important;max-width:none!important;padding:0!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnCasino#btnCasino{width:38px!important;flex:0 0 38px!important;min-width:0!important;padding:0!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:54px!important;height:34px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row.topbar-row{gap:2px!important;padding-left:4px!important;padding-right:4px!important}}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{flex:0 0 auto!important;overflow:visible!important}

@@ -198,7 +198,7 @@
 
   function bindCommon(box) {
     box.querySelectorAll('[data-a]').forEach(function (b) {
-      b.addEventListener('click', function () { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(b.getAttribute('data-a')); });
+      b.addEventListener('click', function () { if (D6.Portal && D6.Portal.armReturn) D6.Portal.armReturn(); close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(b.getAttribute('data-a')); });
     });
     if ($('ghDep')) $('ghDep').addEventListener('click', function () { close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); });
     if ($('ghTestDep')) $('ghTestDep').addEventListener('click', async function () {
@@ -235,5 +235,5 @@
     document.addEventListener('oro:lang', function () { if (document.documentElement.lang === lastLang) return; lastLang = document.documentElement.lang; if (!m.classList.contains('active')) return; if (!sub) paintHome(); else if (sub === 'wheel') paintWheel(); else if (sub === 'jauge') paintJauge(); else mode(false); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  D6.GiftsHome = { home: home, go: go };
+  D6.GiftsHome = { home: home, go: go, sub: function () { return sub; } };
 })(window.D6 = window.D6 || {});

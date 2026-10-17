@@ -73,12 +73,22 @@
   // v2423 — le visiteur voit les 4 pages ; quand il appuie sur une action : belle notification « Inscription gratuite »,
   // puis la page d'inscription s'ouvre.
   var needT = 0;
+  // v2763 (propriétaire) : le visiteur qui part s'inscrire depuis Cadeaux revient sur la MÊME page s'il touche « Retour »
+  function armReturn() {
+    var m = document.getElementById('portalModal'), atHome = !!(m && m.classList.contains('gh-home')), tb = curTab;
+    var gs = D6.GiftsHome && D6.GiftsHome.sub ? D6.GiftsHome.sub() : '';
+    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () {
+      openPortal();
+      setTimeout(function () { if (!D6.GiftsHome) return; if (atHome) D6.GiftsHome.home(); else D6.GiftsHome.go(gs || tb); }, 60);
+    });
+  }
   function needAccount() {
     if (!guestGift()) return false;
     if (needT) return true;
     bigToast(ICO_LOCK, t('guestJoin'), '', 'dw-start dw-lock dw-one');
     needT = setTimeout(function () {
       needT = 0;
+      armReturn();
       closePortal();
       var b = document.getElementById('btnGoRegister');
       if (b) b.click();
@@ -899,6 +909,7 @@
       bigToast(ICO_TROPHY, t('topGoT'), t('topGoS'), 'dw-start');
     });
     var goAuth = function (which) {
+      armReturn();
       closePortal();
       var b = $(which === 'login' ? 'btnGoLogin' : 'btnGoRegister');
       if (b) b.click();
@@ -1003,7 +1014,7 @@
   document.addEventListener('click', function (e) { if (e.target && e.target.closest && e.target.closest('#portalModal')) fitPortal(); }, true);
   setInterval(function () { var m = $('portalModal'); if (m && m.classList.contains('active')) fitPortal(); }, 2000);
 
-  D6.Portal = { refresh: refresh, open: openPortal, refreshAff: refreshAff, refreshTop: refreshTop, refreshBon: refreshBon, tab: setTab, fit: fitPortal };
+  D6.Portal = { armReturn: armReturn, refresh: refresh, open: openPortal, refreshAff: refreshAff, refreshTop: refreshTop, refreshBon: refreshBon, tab: setTab, fit: fitPortal };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })(window.D6 = window.D6 || {});

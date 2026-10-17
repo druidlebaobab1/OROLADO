@@ -59,6 +59,7 @@
   function guest() { return document.documentElement.classList.contains('oro-guest') || !(D6.Api && D6.Api.token && D6.Api.token()); }
   function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } return v; }
 
+  var curSub = '';
   var tab = 'news', timer = 0, pendingImg = '', busy = false, lastMsgs = [];
   async function call(action, data) {
     try {
@@ -114,7 +115,7 @@
     $('liveMsgs').scrollTop = 1e9;
     if (g) {
       $('liveGuest').innerHTML = '<b>' + x.guestT + '</b><p>' + x.guestB + '</p><button type="button" class="lv-btn" id="lvSignup">' + x.guestBtn + '</button><button type="button" class="lv-link2" id="lvMail">' + x.guestMail + '</button>';
-      $('lvSignup').addEventListener('click', function () { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
+      $('lvSignup').addEventListener('click', function () { toAuth('register'); });
       $('lvMail').addEventListener('click', function () { close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
     } else if (!lastMsgs.length) {
       $('liveQuick').innerHTML = ['q1', 'q2', 'q3', 'q4'].map(function (k) { return '<button type="button" data-q="' + k + '">' + x[k] + '</button>'; }).join('');
@@ -149,7 +150,7 @@
     if (guest()) {
       $('lfList').hidden = true; $('lfConv').hidden = true; $('lfGuest').hidden = false;
       $('lfGuest').innerHTML = '<b>' + x.guestF + '</b><p>' + x.guestFB + '</p><button type="button" class="lv-btn" id="lfSignup">' + x.guestBtn + '</button>';
-      $('lfSignup').addEventListener('click', function () { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
+      $('lfSignup').addEventListener('click', function () { toAuth('register'); });
       return;
     }
     $('lfGuest').hidden = true; $('lfConv').hidden = true; $('lfList').hidden = false; peer = null;
@@ -439,7 +440,7 @@
     setTimeout(function () { if (!seen && m._oroBack === ob) { ob.disconnect(); m._oroBack = null; } }, 4000);
   }
   function show(w, sub) {
-    tab = w;
+    tab = w; curSub = sub || '';
     var h = H(), home = w === 'home';
     $('livePaneHome').hidden = !home;
     $('liveBar').hidden = false;
@@ -533,7 +534,7 @@
       add(j.msg);
       // v2689 : réponse automatique « bien reçu, merci de patienter » (affichée un instant après)
       if (j.auto) setTimeout(function () { add(j.auto); }, 900);
-    } else if (j && j.login) { close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('login'); }
+    } else if (j && j.login) { toAuth('login'); }
     else if (D6.App && D6.App.toast) D6.App.toast(x[(j && j.reason) || 'fail'] || x.fail, 'err');
   }
 
@@ -580,6 +581,12 @@
     }, 6000);
   }
 
-  D6.Live = { open: open, close: close };
+  // v2763 (propriétaire) : le visiteur qui part s'inscrire depuis Social revient sur la même page s'il touche « Retour »
+  function toAuth(a) {
+    var t = tab, s2 = curSub;
+    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { open('home'); if (t !== 'home') show(t, s2 || undefined); });
+    close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(a || 'register');
+  }
+  D6.Live = { open: open, close: close, toAuth: toAuth };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(window.D6 = window.D6 || {});

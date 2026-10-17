@@ -84,8 +84,7 @@
         '<path d="M32 28l5 6-5 7-5-7z" fill="url(#IDr)" stroke="#FFE4E6" stroke-width=".8"/>' +
         '<path d="M32 19c0-6 2-10 6.5-13" stroke="#5B3A12" stroke-width="3" fill="none" stroke-linecap="round"/>' +
         '<path d="M36 12c6-5 13-4 15-1-5 6-11 6-15 1z" fill="url(#IDl)"/><path d="M33 13c-5-4-11-4-13-1 4 5 9 5 13 1z" fill="url(#IDl)" opacity=".85"/>' +
-        '<ellipse cx="20" cy="29" rx="3.6" ry="7" fill="#fff" opacity=".7" transform="rotate(22 20 29)"/>' +
-        '<path d="M52 12l1.3 3.7L57 17l-3.7 1.3L52 22l-1.3-3.7L47 17l3.7-1.3z" fill="#FFF7D1"/><path d="M12 48l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" fill="#FFF7D1"/><circle cx="56" cy="40" r="1.4" fill="#FFF7D1"/>';
+        '<ellipse cx="20" cy="29" rx="3.6" ry="7" fill="#fff" opacity=".7" transform="rotate(22 20 29)"/>';
     },
     // tour de pierre, toit rouge, drapeau
     tower: function () {
@@ -306,8 +305,7 @@
   OBJ.horses = function () {
     return '<defs>' + G.gold + '</defs><path d="M17 50C10 40 10 22 20 13c8-7 16-7 24 0 10 9 10 27 3 37l-7-3c5-7 6-20-1-27-5-5-12-5-17 0-7 7-6 20-1 27z" fill="url(#IDg)" stroke="#7A4A00" stroke-width="1.4"/>' +
       '<g fill="#7A4A00"><circle cx="17" cy="38" r="1.7"/><circle cx="16.5" cy="29" r="1.7"/><circle cx="20" cy="20.5" r="1.7"/><circle cx="47" cy="38" r="1.7"/><circle cx="47.5" cy="29" r="1.7"/><circle cx="44" cy="20.5" r="1.7"/></g>' +
-      '<path d="M12 50h9v4h-9zM43 50h9v4h-9z" fill="#B7791F"/><path d="M32 30l1.6 3.4 3.7.5-2.7 2.6.7 3.7-3.3-1.8-3.3 1.8.7-3.7-2.7-2.6 3.7-.5z" fill="#FFF7D1"/>' +
-      '<path d="M54 10l1 2.8 2.8 1-2.8 1-1 2.8-1-2.8-2.8-1 2.8-1z" fill="#FFF7D1"/>';
+      '<path d="M12 50h9v4h-9zM43 50h9v4h-9z" fill="#B7791F"/><path d="M32 30l1.6 3.4 3.7.5-2.7 2.6.7 3.7-3.3-1.8-3.3 1.8.7-3.7-2.7-2.6 3.7-.5z" fill="#FFF7D1"/>';
   };
   function obj(k) {
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);

@@ -63,7 +63,7 @@
     var x = X();
     if (guest()) {
       box.innerHTML = '<div class="lfun-card center"><div class="lfun-big">👪</div><b>' + esc(x.login) + '</b><button type="button" class="lfun-go" id="lgSign">' + esc(x.create) + '</button></div>';
-      $('lgSign').addEventListener('click', function () { if (D6.Live) D6.Live.close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
+      $('lgSign').addEventListener('click', function () { if (D6.Live && D6.Live.toAuth) { D6.Live.toAuth('register'); return; } if (D6.Live) D6.Live.close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
       return;
     }
     // Invité par un lien avant de s'inscrire : on rejoint le groupe maintenant.

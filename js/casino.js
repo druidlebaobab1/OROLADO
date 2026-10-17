@@ -119,17 +119,12 @@
   function err(r) { var x = X(); toast(x['e_' + ((r && r.reason) || 'unavailable')] || x.e_unavailable); if (r && r.reason === 'insufficient') deposit(); }
   function deposit() { close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); }
   // v2762 (propriétaire) : le visiteur qui part s'inscrire depuis un jeu y REVIENT s'il touche « Retour »
-  var resumeTo = null;
   function toAuth(tab) {
-    resumeTo = { game: S.game || '', view: S.view || 'games', pred: !!($('casinoModal') && $('casinoModal').classList.contains('pred-only')) };
+    var r = { game: S.game || '', pred: !!($('casinoModal') && $('casinoModal').classList.contains('pred-only')) };
+    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { if (r.pred) openPred(); else open(r.game || null, r.game ? undefined : 'games'); });
     close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(tab || 'register');
   }
   function signup() { toAuth('register'); }
-  function resumeAfterAuth() {
-    var r = resumeTo; resumeTo = null;
-    if (!r) return;
-    setTimeout(function () { if (r.pred) openPred(); else open(r.game || null, r.game ? undefined : 'games'); }, 180);
-  }
   async function play(game, p) {
     if (guest()) { signup(); return null; } // v2698 : une seule fenêtre (plus de message superposé à l'inscription)
     if (S.busy) return null;
@@ -187,7 +182,6 @@
   function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
   function open(game, view) {
-    resumeTo = null;
     ensure(); readBal();
     S.stake = 0.1;
     var pm = view === 'pred';
@@ -289,6 +283,12 @@
     body.innerHTML = '<div class="cs-game cs-' + k + (guest() ? ' is-guest' : '') + '"></div>';
     var box = body.firstChild;
     (GAMES[k] || GAMES.coin)(box, x);
+    // v2763 (propriétaire) : le VISITEUR voit « Créer mon compte » dans TOUS les jeux (les choix restent visibles,
+    // la mise et « Miser » sont remplacés par l'invitation à s'inscrire)
+    if (guest() && !box.querySelector('.cs-try')) {
+      var pn = box.querySelector('.cs-panel');
+      if (pn) { pn.classList.add('cs-guestpanel'); var nb = document.createElement('div'); nb.id = 'csNeed'; pn.appendChild(nb); needAccount(nb, x); }
+    }
     // v2694 : nom du jeu sur sa propre ligne, au-dessus de la scène (ne recouvre plus rien) ; résultat en bas
     var tag = document.createElement('div'); tag.className = 'cs-gname'; tag.innerHTML = gicon(k, 'mini') + '<b>' + esc(name(k)) + '</b>';
     box.insertBefore(tag, box.firstChild);
@@ -1390,8 +1390,6 @@
   function boot() {
     var b = $('btnCasino');
     if (b) b.addEventListener('click', function () { openPred(); });
-    var ab = $('btnAuthBack');
-    if (ab) ab.addEventListener('click', function () { resumeAfterAuth(); });
     var gb = $('btnGames');
     if (gb) gb.addEventListener('click', function () { open(null, 'games'); });
     // « + » au milieu de la carte Compte réel / Démo → page Recharger

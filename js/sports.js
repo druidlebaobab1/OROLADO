@@ -103,11 +103,28 @@
   async function paint(container, c) {
     box = container; ctx = c || {};
     if (!box) return;
-    var r = null;
-    try { r = await D6.Api.post('spList', {}, 15000); } catch (e) { r = null; }
-    events = (r && r.ok && r.events) || [];
-    render();
+    // v2763 (propriétaire) : Paris s'affiche TOUT DE SUITE (dernière liste gardée en mémoire), puis se met à jour en silence
+    if (lastList) { events = lastList; render(); }
+    var r = await fetchList();
+    if (!r) { if (!lastList) { events = []; render(); } return; }
+    var same = lastJson === JSON.stringify(r);
+    lastList = r; lastJson = JSON.stringify(r);
+    if (box !== container || !box.isConnected) return;
+    if (!same || !events.length) { events = r; render(); }
   }
+  var lastList = null, lastJson = '', fetching = null;
+  function fetchList() {
+    if (fetching) return fetching;
+    fetching = (async function () {
+      var r = null;
+      try { r = await D6.Api.post('spList', {}, 15000); } catch (e) { r = null; }
+      fetching = null;
+      return r && r.ok ? (r.events || []) : null;
+    })();
+    return fetching;
+  }
+  // pré-chargement discret, 4 s après l'ouverture du site (une seule petite lecture)
+  setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); } }); }, 4000);
   function render() {
     if (!box) return;
     var x = X();

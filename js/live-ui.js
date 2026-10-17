@@ -94,6 +94,7 @@
     box.querySelectorAll('[data-a]').forEach(function (b) {
       b.addEventListener('click', function () {
         var a = b.getAttribute('data-a');
+        if (D6.Live && D6.Live.toAuth) { D6.Live.toAuth(a); return; }
         if (D6.Live && D6.Live.close) D6.Live.close();
         if (D6.App && D6.App.showAuth) D6.App.showAuth(a);
       });

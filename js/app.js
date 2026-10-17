@@ -766,8 +766,13 @@
     return false;
   }
 
+  // v2763 (propriétaire) : « Retour » sur la page d'inscription ramène le visiteur EXACTEMENT où il était
+  // (Social / Défie ton ami, Cadeaux, Paris, un jeu…). Chaque monde dit où revenir juste avant d'ouvrir l'inscription.
+  var authReturnFn = null, authReturnAt = 0, authReturnArmed = null;
   function showAuthScreen(tab, opts) {
     opts = opts || {};
+    authReturnArmed = (authReturnFn && Date.now() - authReturnAt < 2500) ? authReturnFn : null;
+    authReturnFn = null;
     try { sessionStorage.setItem('oro_auth_tab', tab === 'login' ? 'login' : 'register'); } catch (eTab) { /* ignore */ }
     showScreen('screenAuth');
     markBootReady();
@@ -9627,6 +9632,7 @@
     closeModal: function (id) { closeModal(id); },
     toast: function (m, k, ms) { toast(m, k, ms); },
     showAuth: function (w) { try { showAuthScreen(w || 'register'); } catch (e) { /* ignore */ } },
+    authReturn: function (fn) { authReturnFn = typeof fn === 'function' ? fn : null; authReturnAt = Date.now(); },
     openDeposit: function () { try { openDeposit(); } catch (e) { /* ignore */ } }, // v2689 — roue / jauge (js/gifts-home.js)
     refreshVault: function () { try { return refreshRemoteVault(); } catch (e) { /* ignore */ } }, // v2690 — casino (js/casino.js)
     onRemoteAccount: function () {
@@ -9793,6 +9799,8 @@
         try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
         ensureGuest();
         enterApp();
+        var back = authReturnArmed; authReturnArmed = null;
+        if (back) setTimeout(function () { try { back(); } catch (eBk) { /* ignore */ } }, 160);
       });
       function onBalancePlusClick() {
         var u = user();
