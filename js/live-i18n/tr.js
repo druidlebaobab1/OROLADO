@@ -910,7 +910,7 @@
       ],
       "coin": [
         "Yazı tura",
-        "×1,94"
+        "×1,88"
       ],
       "dice": [
         "Zar",
@@ -926,11 +926,11 @@
       ],
       "race": [
         "Araba yarışı",
-        "6 araba · ×5,7"
+        "6 araba · ×5,64"
       ],
       "roulette": [
         "Rulet",
-        "Kırmızı, siyah, sayı ×36"
+        "Kırmızı, siyah, sayı ×34.8"
       ],
       "slots": [
         "Slot makinesi",
@@ -954,7 +954,7 @@
       ],
       "penalty": [
         "Penaltı",
-        "Gol at · ×1,44"
+        "Gol at · ×1,41"
       ],
       "colors": [
         "Renkler",

@@ -152,7 +152,7 @@ $c = casino_multi(load_db(), $me, 'hilo', 'cash', 'real', 0, []);
 check('encaisser sans avoir joué : refusé', $c['ok'] === false);
 
 echo "5b) v2691 : Jet, Fusée (même calcul que l'avion) et Pomme de la fortune\n";
-foreach ([1, 3, 6, 10] as $k) { $ev = pow(0.8, $k) * casino_apple_mult($k); check("pomme : $k étage(s) puis encaisser : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
+foreach ([1, 3, 6, 10] as $k) { $ev = pow(0.8, $k) * casino_apple_mult($k); check("pomme : $k étage(s) puis encaisser : retour " . round($ev * 100, 1) . ' %', $ev <= 0.9405 && $ev > 0.92); }
 foreach (['jet', 'rocket'] as $cg) {
   $bal[$U] = 50.0; syncv();
   $s = casino_multi(load_db(), $me, $cg, 'start', 'real', 2, []);
@@ -182,9 +182,9 @@ check('roue casino (nouvelle) : retour ' . round($s0 / $N * 100, 2) . ' %', $s0 
 
 echo "5c) v2693 : La Tour, Ballon, Verger (niveaux)
 ";
-foreach ([1, 4, 8] as $k) { $ev = pow(2 / 3, $k) * casino_tower_mult($k); check("tour : $k étage(s) : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
-foreach ([1, 5, 15] as $k) { $ev = pow(0.9, $k) * casino_balloon_mult($k); check("ballon : $k souffle(s) : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
-foreach ([1, 2, 3, 4] as $lv) { $k = 3; $ev = pow((5 - $lv) / 5, $k) * casino_apple_mult($k, $lv); check("verger niveau $lv, 3 étages : retour " . round($ev * 100, 1) . ' %', $ev < 0.971 && $ev > 0.95); }
+foreach ([1, 4, 8] as $k) { $ev = pow(2 / 3, $k) * casino_tower_mult($k); check("tour : $k étage(s) : retour " . round($ev * 100, 1) . ' %', $ev <= 0.9405 && $ev > 0.92); }
+foreach ([1, 5, 15] as $k) { $ev = pow(0.9, $k) * casino_balloon_mult($k); check("ballon : $k souffle(s) : retour " . round($ev * 100, 1) . ' %', $ev <= 0.9405 && $ev > 0.92); }
+foreach ([1, 2, 3, 4] as $lv) { $k = 3; $ev = pow((5 - $lv) / 5, $k) * casino_apple_mult($k, $lv); check("verger niveau $lv, 3 étages : retour " . round($ev * 100, 1) . ' %', $ev <= 0.9405 && $ev > 0.92); }
 $bal[$U] = 50.0; syncv();
 $s = casino_multi(load_db(), $me, 'tower', 'start', 'real', 1, []);
 $traps = casino_with(casino_user_file('u_cs'), fn(array &$st) => $st['g']['tower']['traps']);
@@ -235,7 +235,7 @@ for ($stop = 1; $stop <= 8; $stop++) {
   for ($i = 0; $i < $N; $i++) { $k = 0; while ($k < $stop) { if (random_int(0, 2) === random_int(0, 2)) { $k = -1; break; } $k++; } $sum += $k > 0 ? casino_pen_mult($k) : 0; }
   check(sprintf('penalty encaissé après %d but(s) : retour %.1f %%', $stop, $sum / $N * 100), $sum / $N < 0.985 && $sum / $N > 0.93);
 }
-check('penalty : échelle ×1,44 → ×24,60', abs(casino_pen_mult(1) - 1.44) < 0.001 && abs(casino_pen_mult(8) - 24.6) < 0.001, casino_pen_mult(8) . '');
+check('penalty : échelle ×1,41 → ×24,09 (v2780 : retour 94 %)', abs(casino_pen_mult(1) - 1.41) < 0.001 && abs(casino_pen_mult(8) - 24.09) < 0.001, casino_pen_mult(8) . '');
 echo "10) Tour commun Sky Rush (v2701)\n";
 @unlink(casino_round_file('crash'));
 $t = microtime(true);
@@ -255,12 +255,12 @@ $pubN = casino_round_public('crash', $after + CASINO_ROUND_SHOW + 1);
 check('puis un nouveau tour commence tout seul (nouvelle mise)', $pubN['i'] === $s1['i'] + 1 && $pubN['phase'] === 'bet');
 $N = 20000; $w = 0; $rr = []; casino_round_advance($rr, 1000.0);
 for ($k = 0; $k < $N; $k++) { if ($rr['c'] >= 2) $w++; casino_round_advance($rr, (float) $rr['end'] + 0.001); }
-check('les points d\'explosion des tours suivent la même loi (≥ ×2 : ~48,5 %)', abs($w / $N - 0.485) < 0.02, (string) round($w / $N, 3));
+check('les points d\'explosion des tours suivent la même loi (≥ ×2 : ~47 %, v2780)', abs($w / $N - 0.47) < 0.02, (string) round($w / $N, 3));
 @unlink(casino_round_file('crash'));
 
 echo "11) Tirages en direct : Crypto Live, Chevaux Live, Roulette Live (v2718)\n";
-check('Crypto Live : retour ' . round(CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N * 100, 1) . ' %', CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N < 0.97 && CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N > 0.94);
-check('Chevaux Live : retour ' . round(CASINO_HORSES_MULT / CASINO_HORSES_N * 100, 1) . ' %', CASINO_HORSES_MULT / CASINO_HORSES_N < 0.97 && CASINO_HORSES_MULT / CASINO_HORSES_N > 0.94);
+check('Crypto Live : retour ' . round(CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N * 100, 1) . ' %', CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N <= 0.9405 && CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N > 0.92);
+check('Chevaux Live : retour ' . round(CASINO_HORSES_MULT / CASINO_HORSES_N * 100, 1) . ' %', CASINO_HORSES_MULT / CASINO_HORSES_N <= 0.9405 && CASINO_HORSES_MULT / CASINO_HORSES_N > 0.92);
 $cnt = array_fill(0, 15, 0); for ($k = 0; $k < 3000; $k++) $cnt[casino_draw_outcome('cryptox', 900000 + $k)['n']]++;
 check('Crypto Live : les 15 cryptos sortent à peu près autant (hasard juste)', min($cnt) > 140 && max($cnt) < 270, json_encode($cnt));
 $file = casino_user_file('u_cs');
@@ -291,7 +291,7 @@ foreach (['cryptox' => '7', 'horses' => '3', 'roulette' => 'red'] as $dg => $sel
   check("$dg : tour suivant, nouveau pari accepté", $nx['ok'] === true, json_encode($nx));
   casino_with($file, static function (array &$st) use ($dg) { unset($st['g'][$dg]); return true; });
 }
-check('roulette : le calcul commun donne les mêmes gains qu\'avant (rouge, n°17, douzaine)', casino_roulette_mult('red', 1) == 2.0 && casino_roulette_mult('red', 0) == 0.0 && casino_roulette_mult('n17', 17) == 36.0 && casino_roulette_mult('d2', 13) == 3.0 && casino_roulette_mult('xx', 3) === null);
+check('roulette (v2780) : rouge ×1,93, zéro perdu, n°17 ×34,8, douzaine ×2,9', casino_roulette_mult('red', 1) == 1.93 && casino_roulette_mult('red', 0) == 0.0 && casino_roulette_mult('n17', 17) == 34.8 && casino_roulette_mult('d2', 13) == 2.9 && casino_roulette_mult('xx', 3) === null);
 check('roulette : plus jouable en instantané (seulement en direct)', casino_play(load_db(), $me, 'roulette', 'real', 1, ['bet' => 'red'])['ok'] === false);
 
 echo "9) Admin : joueurs du casino (v2698)\n";

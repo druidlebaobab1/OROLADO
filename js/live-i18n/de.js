@@ -910,7 +910,7 @@
       ],
       "coin": [
         "Kopf oder Zahl",
-        "×1.94"
+        "×1.88"
       ],
       "dice": [
         "Würfel",
@@ -926,11 +926,11 @@
       ],
       "race": [
         "Autorennen",
-        "6 Autos · ×5.7"
+        "6 Autos · ×5.64"
       ],
       "roulette": [
         "Roulette",
-        "Rot, Schwarz, Zahl ×36"
+        "Rot, Schwarz, Zahl ×34.8"
       ],
       "slots": [
         "Spielautomat",
@@ -954,7 +954,7 @@
       ],
       "penalty": [
         "Elfmeter",
-        "Tor · ×1.44"
+        "Tor · ×1.41"
       ],
       "colors": [
         "Farben",

@@ -910,7 +910,7 @@
       ],
       "coin": [
         "Koin",
-        "×1,94"
+        "×1,88"
       ],
       "dice": [
         "Dadu",
@@ -926,11 +926,11 @@
       ],
       "race": [
         "Balap mobil",
-        "6 mobil · ×5,7"
+        "6 mobil · ×5,64"
       ],
       "roulette": [
         "Roulette",
-        "Merah, hitam, angka ×36"
+        "Merah, hitam, angka ×34.8"
       ],
       "slots": [
         "Mesin slot",
@@ -954,7 +954,7 @@
       ],
       "penalty": [
         "Penalti",
-        "Cetak gol · ×1,44"
+        "Cetak gol · ×1,41"
       ],
       "colors": [
         "Warna",

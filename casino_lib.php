@@ -28,9 +28,9 @@ const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower
  */
 const CASINO_DRAW = ['cryptox' => [60, 45], 'horses' => [60, 33], 'roulette' => [40, 28]]; // [période P, mises ouvertes B]
 const CASINO_CRYPTOX_N = 15;
-const CASINO_CRYPTOX_MULT = 14.4;
+const CASINO_CRYPTOX_MULT = 14.1; // v2780 : retour 94 %
 const CASINO_HORSES_N = 10;
-const CASINO_HORSES_MULT = 9.6;
+const CASINO_HORSES_MULT = 9.4;   // v2780 : retour 94 %
 // v2695 (propriétaire, comme Evoplay) : Penalty en série de 8 tirs ; chaque but ×1,5 (×1,44 → ×24,60), on encaisse quand on veut.
 // Le gardien couvre 1 zone sur 3 à chaque tir (tiré par le serveur) : retour aux joueurs 96 % quel que soit le moment où l'on encaisse.
 const CASINO_PEN_ROWS = 8;
@@ -117,33 +117,35 @@ function casino_apple_bad(array $g, int $row): array { $b = $g['bad'][$row] ?? [
 // (honnête : le ×50 est une toute petite case). Retour aux joueurs 94,6 %.
 // v2691 (propriétaire : « trop de zéros ») : 21 cases [multiplicateur, chances sur 10 000], ×0,5 = moitié rendue.
 // Zéro 25 %, moitié rendue 32 %, gain 43 %. Retour aux joueurs 95 %.
-const CASINO_WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], [2, 325], [0, 630], [1.2, 500], [0.5, 640], [3, 350], [0, 631], [1.2, 500], [0.5, 640], [5, 120], [1.5, 550], [0, 631], [0.5, 640], [1.2, 500], [2, 325], [10, 50], [50, 8]];
-const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.4, 0.6, 1.4, 3, 12];                                      // 8 rangées, retour 95,9 %
-const CASINO_KENO = [0, 0.6, 3.5, 25];                                                               // 3 numéros choisis sur 20, 5 tirés : retour 95,6 %
-const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 %
-const CASINO_RPS_MULT = 1.91;                                                                         // v2738 : Pierre-Feuille-Ciseaux (égalité = mise rendue) : retour 97 %
-const CASINO_DICE_DUEL = 1.92;                                                                         // v2724 : dé rouge contre dé noir
-const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 %
-const CASINO_PENALTY_MULT = 1.44;                                                                     // 3 zones, le gardien en couvre 1 : retour 96 %
-const CASINO_EDGE = 0.97;                                                                             // dés, limbo, avion, mines, hi-lo
-// Machine à sous : [catégorie, multiplicateur, chances sur 1000] — retour 96 %
-const CASINO_SLOTS = [['gem', 50, 1], ['seven', 20, 4], ['bell', 10, 10], ['lemon', 5, 30], ['cherry3', 3, 60], ['cherry2', 1.5, 260]];
-// Grattage : [multiplicateur, chances sur 1000] — retour 96 %
-const CASINO_SCRATCH = [[20, 10], [5, 40], [2, 120], [1, 320]];
+// v2780 (propriétaire, marge 6 %) : cases ×0,5 un peu plus petites, cases ×0 un peu plus grandes → retour 94 %.
+const CASINO_WHEEL = [[0.5, 600], [1.2, 500], [0, 680], [1.5, 550], [0.5, 600], [2, 325], [0, 680], [1.2, 500], [0.5, 600], [3, 350], [0, 681], [1.2, 500], [0.5, 600], [5, 120], [1.5, 550], [0, 681], [0.5, 600], [1.2, 500], [2, 325], [10, 50], [50, 8]];
+const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.33, 0.6, 1.4, 3, 12];                                     // 8 rangées, retour 94 % (v2780)
+const CASINO_KENO = [0, 0.6, 3.37, 25];                                                              // 3 numéros choisis sur 20, 5 tirés : retour 94 % (v2780)
+const CASINO_RACE_MULT = 5.64;                                                                        // 6 voitures : retour 94 % (v2780)
+const CASINO_RPS_MULT = 1.82;                                                                         // Pierre-Feuille-Ciseaux (égalité = mise rendue) : retour 94 % (v2780)
+const CASINO_DICE_DUEL = 1.85;                                                                         // dé rouge contre dé noir (égalité = mise rendue) : retour 93,8 % (v2780)
+const CASINO_COIN_MULT = 1.88;                                                                        // retour 94 % (v2780)
+const CASINO_PENALTY_MULT = 1.41;                                                                     // 3 zones, le gardien en couvre 1 : retour 94 % (v2780)
+const CASINO_EDGE = 0.94;                                                                             // v2780 (propriétaire) : marge 6 % — limbo, avion, jet, fusée, mines, hi-lo, tour, ballon, verger
+// Machine à sous : [catégorie, multiplicateur, chances sur 1000] — retour 94 % (v2780)
+const CASINO_SLOTS = [['gem', 50, 1], ['seven', 20, 4], ['bell', 10, 10], ['lemon', 5, 30], ['cherry3', 3, 60], ['cherry2', 1.5, 253]];
+// Grattage : [multiplicateur, chances sur 1000] — retour 94 % (v2780)
+const CASINO_SCRATCH = [[20, 10], [5, 40], [2, 120], [1, 300]];
 // v2694 — Fléchettes : [multiplicateur, chances sur 10 000] — centre ×20, anneaux ×5 / ×2 / ×1, bord ×0 : retour 95 %
-const CASINO_DARTS = [[20, 100], [5, 400], [2, 1500], [1, 2500], [0, 5500]];
+const CASINO_DARTS = [[20, 100], [5, 400], [2, 1500], [1, 2400], [0, 5600]]; // v2780 : retour 94 %
 
 function casino_money(float $v): float { return round($v + 1e-9, 2); }
 const CASINO_ROULETTE_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
-/** Roulette européenne : gain ÷ mise pour la mise $bet si la bille tombe sur $n ; null = mise invalide. */
+/** Roulette européenne (37 cases) : gain ÷ mise pour la mise $bet si la bille tombe sur $n ; null = mise invalide.
+ *  v2780 (propriétaire, marge 6 %) : rouge / noir / pair / impair ×1,93 · douzaine ×2,9 · numéro ×34,8 (retour 94 %). */
 function casino_roulette_mult(string $bet, int $n): ?float {
   $red = in_array($n, CASINO_ROULETTE_RED, true);
-  if ($bet === 'red') return ($n > 0 && $red) ? 2.0 : 0.0;
-  if ($bet === 'black') return ($n > 0 && !$red) ? 2.0 : 0.0;
-  if ($bet === 'even') return ($n > 0 && $n % 2 === 0) ? 2.0 : 0.0;
-  if ($bet === 'odd') return ($n % 2 === 1) ? 2.0 : 0.0;
-  if (preg_match('/^d([123])$/', $bet, $mm)) { $d = (int) $mm[1]; return ($n >= ($d - 1) * 12 + 1 && $n <= $d * 12) ? 3.0 : 0.0; }
-  if (preg_match('/^n(\d{1,2})$/', $bet, $mm) && (int) $mm[1] <= 36) return $n === (int) $mm[1] ? 36.0 : 0.0;
+  if ($bet === 'red') return ($n > 0 && $red) ? 1.93 : 0.0;
+  if ($bet === 'black') return ($n > 0 && !$red) ? 1.93 : 0.0;
+  if ($bet === 'even') return ($n > 0 && $n % 2 === 0) ? 1.93 : 0.0;
+  if ($bet === 'odd') return ($n % 2 === 1) ? 1.93 : 0.0;
+  if (preg_match('/^d([123])$/', $bet, $mm)) { $d = (int) $mm[1]; return ($n >= ($d - 1) * 12 + 1 && $n <= $d * 12) ? 2.9 : 0.0; }
+  if (preg_match('/^n(\d{1,2})$/', $bet, $mm) && (int) $mm[1] <= 36) return $n === (int) $mm[1] ? 34.8 : 0.0;
   return null;
 }
 
@@ -273,27 +275,30 @@ function casino_instant(string $game, array $p, float $stake): array {
       $bet = (string) ($p['bet'] ?? 'green');
       $n = random_int(0, 9);
       $m = 0.0;
-      if ($bet === 'green') $m = in_array($n, [1, 3, 7, 9], true) ? 2 : ($n === 5 ? 1.5 : 0);
-      elseif ($bet === 'red') $m = in_array($n, [2, 4, 6, 8], true) ? 2 : ($n === 0 ? 1.5 : 0);
-      elseif ($bet === 'violet') $m = in_array($n, [0, 5], true) ? 4.5 : 0;
-      elseif (preg_match('/^n(\d)$/', $bet, $mm)) $m = $n === (int) $mm[1] ? 9 : 0;
+      // v2780 : retour 94 % (vert / rouge ×1,97 · violet ×4,7 · numéro ×9,4)
+      if ($bet === 'green') $m = in_array($n, [1, 3, 7, 9], true) ? 1.97 : ($n === 5 ? 1.5 : 0);
+      elseif ($bet === 'red') $m = in_array($n, [2, 4, 6, 8], true) ? 1.97 : ($n === 0 ? 1.5 : 0);
+      elseif ($bet === 'violet') $m = in_array($n, [0, 5], true) ? 4.7 : 0;
+      elseif (preg_match('/^n(\d)$/', $bet, $mm)) $m = $n === (int) $mm[1] ? 9.4 : 0;
       else return ['err' => 'param'];
       return ['mult' => (float) $m, 'view' => ['n' => $n]];
     case 'dragon':
       $bet = (string) ($p['bet'] ?? 'dragon');
       if (!in_array($bet, ['dragon', 'tiger', 'tie'], true)) return ['err' => 'param'];
       $dr = random_int(1, 13); $ti = random_int(1, 13);
-      if ($bet === 'tie') $m = $dr === $ti ? 12.0 : 0.0;
+      // v2780 : retour 94 % (Dragon / Tigre ×1,95 · Égalité ×12,2)
+      if ($bet === 'tie') $m = $dr === $ti ? 12.2 : 0.0;
       elseif ($dr === $ti) $m = 0.5; // égalité : la moitié de la mise est rendue
-      else $m = (($bet === 'dragon') === ($dr > $ti)) ? 2.0 : 0.0;
+      else $m = (($bet === 'dragon') === ($dr > $ti)) ? 1.95 : 0.0;
       return ['mult' => $m, 'view' => ['d' => $dr, 't' => $ti]];
     case 'baccarat':
       $bet = (string) ($p['bet'] ?? 'player');
       if (!in_array($bet, ['player', 'banker', 'tie'], true)) return ['err' => 'param'];
       [$pc, $bc, $tp, $tb] = casino_baccarat_deal();
-      if ($tp === $tb) $m = $bet === 'tie' ? 9.0 : 1.0; // égalité : Joueur / Banque remboursés
-      elseif ($bet === 'player') $m = $tp > $tb ? 1.96 : 0.0;
-      elseif ($bet === 'banker') $m = $tb > $tp ? 1.92 : 0.0;
+      // v2780 : retour 94 % (Joueur ×1,89 · Banque ×1,84 · Égalité ×9,9)
+      if ($tp === $tb) $m = $bet === 'tie' ? 9.9 : 1.0; // égalité : Joueur / Banque remboursés
+      elseif ($bet === 'player') $m = $tp > $tb ? 1.89 : 0.0;
+      elseif ($bet === 'banker') $m = $tb > $tp ? 1.84 : 0.0;
       else $m = 0.0;
       return ['mult' => $m, 'view' => ['p' => $pc, 'b' => $bc, 'tp' => $tp, 'tb' => $tb]];
     case 'sicbo':
@@ -302,11 +307,11 @@ function casino_instant(string $game, array $p, float $stake): array {
       $dice = [random_int(1, 6), random_int(1, 6), random_int(1, 6)];
       $sum = array_sum($dice); $triple = $dice[0] === $dice[1] && $dice[1] === $dice[2];
       $win = !$triple && ($bet === 'small' ? ($sum >= 4 && $sum <= 10) : ($sum >= 11 && $sum <= 17));
-      return ['mult' => $win ? 2.0 : 0.0, 'view' => ['dice' => $dice, 'sum' => $sum, 'triple' => $triple]];
+      return ['mult' => $win ? 1.93 : 0.0, 'view' => ['dice' => $dice, 'sum' => $sum, 'triple' => $triple]]; // v2780 : ×1,93 (retour 94 %)
     case 'chests':
       $pick = max(0, min(2, (int) ($p['pick'] ?? 0)));
       $gold = random_int(0, 2);
-      return ['mult' => $gold === $pick ? 2.85 : 0.0, 'view' => ['gold' => $gold, 'pick' => $pick]];
+      return ['mult' => $gold === $pick ? 2.82 : 0.0, 'view' => ['gold' => $gold, 'pick' => $pick]]; // v2780 : ×2,82 (retour 94 %)
     case 'rps':
       // v2738 (propriétaire) : PIERRE-FEUILLE-CISEAUX contre le robot. 0 = pierre, 1 = feuille, 2 = ciseaux.
       // Feuille bat pierre, ciseaux bat feuille, pierre bat ciseaux. Gagné ×1,91 · égalité = mise rendue · perdu = 0.
@@ -367,7 +372,7 @@ function casino_mines_mult(int $m, int $k): float {
   return floor($x * 100) / 100;
 }
 /** Penalty : multiplicateur après $k buts. */
-function casino_pen_mult(int $k): float { return $k < 1 ? 0.0 : floor(0.96 * pow(1.5, $k) * 100 + 1e-6) / 100; }
+function casino_pen_mult(int $k): float { return $k < 1 ? 0.0 : floor(0.94 * pow(1.5, $k) * 100 + 1e-6) / 100; } // v2780 : retour 94 %
 /** Hi-Lo : multiplicateur pour « plus haut ou égal » / « plus bas ou égal » à la carte $a (1 à 13). */
 function casino_hilo_mult(int $a, bool $hi): float {
   $p = $hi ? (14 - $a) / 13 : $a / 13;
