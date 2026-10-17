@@ -293,6 +293,16 @@
     var tag = document.createElement('div'); tag.className = 'cs-gname'; tag.innerHTML = gicon(k, 'mini') + '<b>' + esc(name(k)) + '</b>';
     box.insertBefore(tag, box.firstChild);
     var mb = m.querySelector('.modal-box'); if (mb) mb.scrollTop = 0;
+    decFix(box);
+  }
+  // v2789 (propriétaire) : en anglais, chinois, hindi, arabe, on écrit les gains « ×2.85 » (point), pas « ×2,85 »
+  function decFix(root) {
+    var l = (document.documentElement.lang || 'fr').slice(0, 2);
+    if (['en', 'zh', 'hi', 'ar'].indexOf(l) < 0 || !root) return;
+    try {
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
+      while ((n = w.nextNode())) if (n.nodeValue.indexOf('×') >= 0) n.nodeValue = n.nodeValue.replace(/×(\d+),(\d+)/g, '×$1.$2');
+    } catch (e) { /* ignore */ }
   }
   /* « ? » : comment on joue (une page, sans défiler) */
   function help(k) {
@@ -300,6 +310,7 @@
     var sh = $('csSheet');
     sh.innerHTML = '<div class="cs-sheet-in">' + gicon(k, 'big') + '<b>' + esc(name(k)) + '</b><p>' + esc(r).replace(/\n/g, '<br>') + '</p><small>' + esc(x.rules) + '</small><button type="button" class="cs-go" id="csSheetOk">' + esc(x.gotIt) + '</button></div>';
     sh.hidden = false;
+    decFix(sh);
     $('csSheetOk').addEventListener('click', function () { sh.hidden = true; });
     sh.onclick = function (e) { if (e.target === sh) sh.hidden = true; }; // toucher à côté = « J'ai compris »
   }

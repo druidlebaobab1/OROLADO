@@ -44,6 +44,8 @@ $loose = array_filter($new, static fn($e) => !sp_is_tight($e));
 check('tous les nouveaux sont SERRÉS (cotes entre 1,55 et 2,30)', !$loose, implode(' | ', array_column($loose, 'title')));
 $two = array_filter($new, static fn($e) => count($e['opts']) !== 2);
 check('tous les nouveaux ont 2 choix', !$two);
+$btc = array_values(array_filter(sp_public_events(), static fn($e) => str_starts_with((string) $e['title'], 'Bitcoin')));
+check('questions Bitcoin traduites (anglais, chinois…)', $btc && isset(((array) $btc[0]['i18n'])['en'], ((array) $btc[0]['i18n'])['zh']), $btc ? json_encode($btc[0]['i18n'], JSON_UNESCAPED_UNICODE) : '');
 $badEnd = array_filter($new, static fn($e) => (int) $e['endAt'] <= (int) $e['start']);
 check('heure de fin toujours APRÈS la fermeture des paris', !$badEnd);
 $far = array_filter($new, static fn($e) => (int) $e['start'] > time() + 32 * 86400);

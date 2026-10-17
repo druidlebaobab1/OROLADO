@@ -483,6 +483,11 @@
         renderLater();
       }
       var gLabel = t('googleBtn');
+      // v2789 : la copie du bouton suit la langue choisie (avant : restait en français)
+      if (!window.__oroGphLang) {
+        window.__oroGphLang = true;
+        document.addEventListener('oro:lang', function () { document.querySelectorAll('.g-ph-txt').forEach(function (s) { s.textContent = t('googleBtn'); }); });
+      }
       initOnce().then(function () {
         document.querySelectorAll('[data-g-official]').forEach(function (box) {
           // v2587 — copie fixe du bouton (blanc, logo G, « Continuer avec Google ») affichée tout de suite, sous

@@ -12503,3 +12503,8 @@ html:root body #fsTradeOverlay .fs-mode-btn, html:root body .fs-mode-switch .fs-
 html:root body #fsTradeOverlay .fs-mode-btn .mb-lbl, html:root body .fs-mode-switch .fs-mode-btn .mb-lbl{text-align:center!important;width:100%}
 html:root body #casinoModal#casinoModal .cs-wallet .cw-t{align-items:center!important;text-align:center!important}
 html:root body #casinoModal#casinoModal .cs-wallet .cw-t small{text-align:center!important;width:100%}
+/* ===== v2789 (propriétaire) — sensation d'APPLI : chaque bouton réagit tout de suite (pas de délai, pas de zoom au double tap),
+   pas de surbrillance grise au toucher, la page entière ne rebondit jamais ===== */
+html, body { overscroll-behavior: none; }
+button, a, [role="button"], .mode-btn, .sp-o, .gh-p, .lh-f { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+button, [role="button"] { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }

@@ -44,7 +44,7 @@ function sp_public_events(int $now = 0): array {
     $open = $e['status'] === 'open' && $now < (int) $e['start'];
     if (!$open && !($e['status'] === 'settled' && (int) ($e['settledAt'] ?? 0) > $now - 3 * 86400)) continue;
     $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => (int) $e['start'], 'open' => $open,
-      'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? [])))];
+      'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? []))), 'i18n' => !empty($e['i18n']) ? (object) $e['i18n'] : null];
   }
   usort($out, static fn($a, $b) => [$b['open'], $a['start']] <=> [$a['open'], $b['start']]);
   return $out;
@@ -79,18 +79,19 @@ function sp_admin_save(array $in): array {
   // v2734 : images mises par l'admin (prioritaires sur les logos trouvés tout seuls)
   $i1 = sp_admin_img((string) ($in['img1'] ?? '')); $i2 = sp_admin_img((string) ($in['img2'] ?? ''));
   if ($i1 !== '' || $i2 !== '') { $logos = [$i1 !== '' ? $i1 : ($logos[0] ?? ''), $i2 !== '' ? $i2 : ($logos[1] ?? '')]; }
-  $endAt = (int) ($in['endAt'] ?? 0); if ($endAt && $endAt < $start) $endAt = 0; // v2787 : heure de fin réelle (pour prévenir l'admin au bon moment)
-  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos, $endAt) {
+  $endAt = (int) ($in['endAt'] ?? 0); if ($endAt && $endAt < $start) $endAt = 0;
+  $tr = []; foreach ((array) ($in['i18n'] ?? []) as $lg => $tx) if (preg_match('/^[a-z]{2}$/', (string) $lg) && is_string($tx) && $tx !== '') $tr[(string) $lg] = sp_clean($tx, 120); // v2789 : titre traduit // v2787 : heure de fin réelle (pour prévenir l'admin au bon moment)
+  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos, $endAt, $tr) {
     foreach ((array) ($s['e'] ?? []) as $i => $e) {
       if ($e['id'] === $id) {
         if ($e['status'] !== 'open') return ['ok' => false, 'reason' => 'Match déjà fermé ou réglé'];
         // cotes modifiables tant qu'aucun pari n'est pris sur l'ancienne cote (les paris gardent LEUR cote de toute façon)
-        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []));
+        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []));
         return ['ok' => true, 'id' => $id];
       }
     }
     $s['e'][] = ['id' => $id, 'title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start,
-      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []);
+      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []);
     // on garde au plus 300 matchs (les plus anciens réglés partent)
     if (count($s['e']) > 300) $s['e'] = array_slice($s['e'], -300);
     return ['ok' => true, 'id' => $id];
@@ -176,6 +177,14 @@ function sp_suggestions(): array {
  * REMBOURSÉE (l'admin choisit « Annulé » si le match finit nul). Les cotes sont celles des grands sites, BAISSÉES (la maison garde
  * sa marge). Heures de fermeture en UTC, toujours AVANT le début réel (quand l'heure exacte n'est pas sûre : la plus tôt possible).
  */
+/** v2789 : une question Bitcoin dans les 12 langues du site (le titre français reste le principal). */
+function sp_btc_q(int $p, string $d, string $h): array {
+  $fr = number_format($p, 0, ',', ' '); $en = number_format($p, 0, '.', ',');
+  return ['en' => "Bitcoin above $$en on $d at $h UTC?", 'es' => "¿Bitcoin por encima de $fr $ el $d a las $h UTC?", 'pt' => "Bitcoin acima de $fr $ em $d às $h UTC?",
+    'ar' => "هل سيكون البيتكوين فوق $en $ يوم $d الساعة $h UTC؟", 'tr' => "Bitcoin $d saat $h UTC'de $en $ üzerinde mi?", 'vi' => "Bitcoin trên $fr $ vào $d lúc $h UTC?",
+    'id' => "Bitcoin di atas $fr $ pada $d pukul $h UTC?", 'ru' => "Биткоин выше $fr $ $d в $h UTC?", 'de' => "Bitcoin über $fr $ am $d um $h UTC?",
+    'hi' => "क्या $d को $h UTC पर बिटकॉइन $en $ से ऊपर होगा?", 'zh' => "比特币在 $d $h UTC 是否高于 $en 美元？"];
+}
 function sp_suggestions2(): array {
   $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
   $nul = ' · nul = remboursé';
@@ -197,7 +206,7 @@ function sp_suggestions2(): array {
     ['Bayern Munich - Arsenal', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Bayern', 1.62], ['Arsenal', 2.10]], ['img/teams/bayern.png', 'img/teams/arsenal.png'], $t('2026-10-21 21:00')],
     ['Club Brugge - RC Lens', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Club Brugge', 1.85], ['Lens', 1.85]], [], $t('2026-10-21 21:00')],
     ['Real Betis - Feyenoord', 'Ligue des champions' . $nul, 'foot', $t('2026-10-21 16:45'), [['Betis', 1.72], ['Feyenoord', 1.98]], [], $t('2026-10-21 21:00')],
-    ['Bitcoin au-dessus de 82 000 $ le vendredi 23 octobre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-10-21 12:00'), [['Oui', 1.85], ['Non', 1.80]], ['q:btc'], $t('2026-10-23 12:05')],
+    ['Bitcoin au-dessus de 82 000 $ le vendredi 23 octobre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-10-21 12:00'), [['Oui', 1.85], ['Non', 1.80]], ['q:btc'], $t('2026-10-23 12:05'), sp_btc_q(82000, '23/10', '12:00')],
     ['Chelsea - Tottenham', 'Premier League' . $nul, 'foot', $t('2026-10-24 11:00'), [['Chelsea', 1.70], ['Tottenham', 2.00]], ['img/teams/chelsea.png', 'img/teams/tottenham.png'], $t('2026-10-24 19:00')],
     ['Coventry City - Fulham', 'Premier League' . $nul, 'foot', $t('2026-10-24 11:00'), [['Coventry', 1.92], ['Fulham', 1.78]], [], $t('2026-10-24 19:00')],
     ['Aston Villa - Manchester City', 'Premier League' . $nul, 'foot', $t('2026-10-24 11:00'), [['Aston Villa', 1.98], ['Man City', 1.72]], ['img/teams/aston-villa.png', 'img/teams/man-city.png'], $t('2026-10-24 21:30')],
@@ -206,9 +215,9 @@ function sp_suggestions2(): array {
     ['Hull City - Brentford', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Hull City', 1.95], ['Brentford', 1.75]], [], $t('2026-10-25 19:00')],
     ['Sunderland - Leeds United', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Sunderland', 1.80], ['Leeds', 1.90]], [], $t('2026-10-25 19:00')],
     ['Manchester United - Bournemouth', 'Premier League' . $nul, 'foot', $t('2026-10-25 12:00'), [['Man United', 1.68], ['Bournemouth', 2.02]], [], $t('2026-10-25 19:00')],
-    ['Bitcoin au-dessus de 80 000 $ le samedi 31 octobre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-10-29 12:00'), [['Oui', 1.72], ['Non', 1.98]], ['q:btc'], $t('2026-10-31 12:05')],
+    ['Bitcoin au-dessus de 80 000 $ le samedi 31 octobre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-10-29 12:00'), [['Oui', 1.72], ['Non', 1.98]], ['q:btc'], $t('2026-10-31 12:05'), sp_btc_q(80000, '31/10', '12:00')],
     ['Bonfim - Brady', 'UFC Fight Night · Las Vegas', 'mma', $t('2026-11-07 20:00'), [['Bonfim', 1.88], ['Brady', 1.80]], [], $t('2026-11-08 07:00')],
-    ['Bitcoin au-dessus de 83 000 $ le dimanche 15 novembre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-11-13 12:00'), [['Oui', 1.90], ['Non', 1.80]], ['q:btc'], $t('2026-11-15 12:05')],
+    ['Bitcoin au-dessus de 83 000 $ le dimanche 15 novembre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-11-13 12:00'), [['Oui', 1.90], ['Non', 1.80]], ['q:btc'], $t('2026-11-15 12:05'), sp_btc_q(83000, '15/11', '12:00')],
   ];
 }
 /** v2787 : un événement est « serré » si chaque cote est entre 1,55 et 2,30 (pas de petite cote contre grosse cote). */
@@ -295,9 +304,9 @@ function sp_admin_seed(?array $list = null): array {
   foreach (sp_events() as $e) if (($e['status'] ?? '') === 'open') $have[sp_lower((string) $e['title'])] = 1;
   $added = 0; $skipped = 0;
   foreach (($list ?? sp_suggestions()) as $row) {
-    [$title, $league, $sport, $start, $opts, $logos] = $row; $endAt = (int) ($row[6] ?? 0);
+    [$title, $league, $sport, $start, $opts, $logos] = $row; $endAt = (int) ($row[6] ?? 0); $tr = (array) ($row[7] ?? []);
     if (isset($have[sp_lower($title)]) || $start < time() + 120) { $skipped++; continue; }
-    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 1000, 'logos' => $logos, 'noFetch' => true, 'endAt' => $endAt,
+    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 1000, 'logos' => $logos, 'noFetch' => true, 'endAt' => $endAt, 'i18n' => $tr,
       'opts' => array_map(static fn($o) => ['label' => $o[0], 'odd' => $o[1]], $opts)]);
     if (!empty($r['ok'])) $added++; else $skipped++;
   }
