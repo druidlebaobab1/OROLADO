@@ -12334,3 +12334,6 @@ html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-tabs{top:var(-
 html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-plus{order:-1!important}
 html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 12px 4px 5px!important}
 html[dir=rtl]:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 5px 4px 12px!important}
+/* v2769b (propriétaire) : profil — le « + » DEVANT « Recharger », bien visible (plus de flèche au bout) */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-plus{display:block!important;width:18px!important;height:18px!important;flex:none!important;order:-1!important;color:#fff!important;stroke:#fff!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-plus path{stroke:#fff!important;stroke-width:3.4!important}
