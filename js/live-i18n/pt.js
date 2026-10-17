@@ -627,11 +627,11 @@
         ]
       ],
       [
-        'Dobrar a aposta depois de cada perda (martingale) é…',
+        'Antes de jogar com dinheiro real, é melhor…',
         [
-          'Muito arriscado',
-          'Sem risco',
-          'Obrigatório'
+          'Treinar na demo',
+          'Apostar todo o saldo',
+          'Jogar sem olhar o gráfico'
         ]
       ],
       [

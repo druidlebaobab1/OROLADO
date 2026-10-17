@@ -627,11 +627,11 @@
         ]
       ],
       [
-        'Den Einsatz nach jedem Verlust zu verdoppeln (Martingale) ist…',
+        'Bevor man mit echtem Geld spielt, ist es besser…',
         [
-          'Sehr riskant',
-          'Risikofrei',
-          'Pflicht'
+          'Im Demokonto zu üben',
+          'Das ganze Guthaben zu setzen',
+          'Ohne Blick auf den Chart zu spielen'
         ]
       ],
       [

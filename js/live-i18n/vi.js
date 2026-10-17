@@ -627,11 +627,11 @@
         ]
       ],
       [
-        'Gấp đôi tiền cược sau mỗi lần thua (martingale) là…',
+        'Trước khi chơi bằng tiền thật, tốt nhất là…',
         [
-          'Rất rủi ro',
-          'Không rủi ro',
-          'Bắt buộc'
+          'Luyện tập với tài khoản demo',
+          'Cược toàn bộ số dư',
+          'Chơi mà không nhìn biểu đồ'
         ]
       ],
       [

@@ -630,12 +630,15 @@ function live_quiz_answer(string $uid, int $q, int $pick): array {
 }
 
 /* v2689 — NIVEAUX (points d'expérience, aucune valeur en argent) et MISSIONS DE LA SEMAINE. */
-const LIVE_XP_QUIZ = 1;
-const LIVE_XP_QUIZ_OK = 3;
+const LIVE_XP_QUIZ = 0;   // v2785 : une mauvaise réponse ne rapporte rien
+const LIVE_XP_QUIZ_OK = 1; // v2785 : bonne réponse = 1 point
 // v2760 (propriétaire) : monter est DUR — la plupart des joueurs restent niveau 1 ou 2 ; ceux qui montent jouent beaucoup
 // (surtout en réel), déposent, invitent des amis qui déposent, créent des groupes, réussissent les missions.
-const LIVE_XP_LEVELS = [0, 150, 500, 1200, 2500, 5000, 9000, 15000, 25000, 40000, 65000, 100000];
-const LIVE_MISSION_XP = 40;
+// v2785 (propriétaire) : encore BEAUCOUP plus dur et honnête — on monte par la vraie activité (jours joués, trades réels,
+// vrais dépôts, amis qui déposent, groupes actifs, quiz, défis, missions). Les gros montants ne font plus sauter des niveaux
+// (racine carrée), l'argent ajouté par l'admin ne compte pas, le compte admin ne gagne rien en « réel ».
+const LIVE_XP_LEVELS = [0, 300, 1000, 2500, 5000, 9000, 15000, 25000, 40000, 65000, 100000, 160000];
+const LIVE_MISSION_XP = 15;
 
 function live_fun_state(string $uid): array {
   $f = live_read_json(live_fun_file($uid), []);
@@ -661,8 +664,12 @@ function live_my_stats(string $uid): array {
   $wkN = 0; $wkMk = []; $wkBest = 0; $wkCur = 0;
   $rows = array_values(array_filter((array) ($db['orders'] ?? []), static fn($o) => is_array($o) && (string) ($o['userId'] ?? '') === $uid && isset($o['net'])));
   usort($rows, static fn($a, $b) => ((float) ($a['at'] ?? 0)) <=> ((float) ($b['at'] ?? 0)));
+  $uRow = $db['users'][$uid] ?? [];
+  $isAdm = function_exists('orolado_is_admin_user') && is_array($uRow) && orolado_is_admin_user($uRow + ['id' => $uid]);
+  $days = [];
   foreach ($rows as $o) {
-    $n++; $isReal = ($o['mode'] ?? '') === 'real';
+    $n++; $isReal = !$isAdm && ($o['mode'] ?? '') === 'real';
+    $t = (float) ($o['at'] ?? 0); if ($t > 1e12) $t /= 1000; if ($t > 0) $days[gmdate('Y-m-d', (int) $t)] = 1;
     if ($isReal) { $real++; $realVol += max(0.0, (float) ($o['stake'] ?? 0)); }
     $won = !empty($o['won']);
     if ($won) { $w++; $cur++; $best = max($best, $cur); } elseif (empty($o['voided'])) { $cur = 0; }
@@ -710,6 +717,7 @@ function live_my_stats(string $uid): array {
     if (!is_array($tx) || ($tx['type'] ?? '') !== 'deposit' || (($tx['mode'] ?? 'real') !== 'real')) continue;
     $tid = (string) ($tx['id'] ?? ''); $note = (string) ($tx['note'] ?? '');
     if (strpos($tid, 'aff_') === 0 || stripos($note, 'Défi') !== false || stripos($note, 'bonus') !== false || stripos($note, 'cadeau') !== false) continue;
+    if ($isAdm || stripos($note, 'Recharge') !== 0) continue; // v2785 : seulement les VRAIS dépôts (Flutterwave, Crypto, Maketou)
     $dep += max(0.0, (float) ($tx['amount'] ?? 0));
   }
   $invPaid = 0; $invAll = 0;
@@ -719,9 +727,11 @@ function live_my_stats(string $uid): array {
   }
   $groupsOwned = 0;
   foreach (live_ugroups($uid) as $gid) { $g = live_group_get((string) $gid); if ($g && (string) ($g['owner'] ?? '') === $uid && count((array) ($g['members'] ?? [])) >= 3) $groupsOwned++; }
-  $xp = intdiv(max(0, $n - $real), 5) + $real * 2 + (int) floor($realVol) + (int) floor($dep * 2)
-    + $quizN + $quizOk * 2 + (int) $d['w'] * 10 + ((int) $d['w'] + (int) $d['l']) * 3
-    + min(20, $friends) * 3 + min(50, $invAll) * 20 + $invPaid * 100 + min(5, $groupsOwned) * 30 + $missionsTotal * LIVE_MISSION_XP;
+  // v2785 : jours actifs ×6 · trades démo ÷20 · trade réel ×1 · volume réel √×3 · vrais dépôts √×10 · quiz réussi ×1 ·
+  // défi gagné ×5 (joué ×1) · amis ×2 (20 max) · invités ×5 (50 max), invités qui ont déposé ×60 · groupe actif ×25 (5 max) · mission ×15
+  $xp = count($days) * 6 + intdiv(max(0, $n - $real), 20) + $real + (int) floor(sqrt($realVol) * 3) + (int) floor(sqrt($dep) * 10)
+    + $quizOk + (int) $d['w'] * 5 + ((int) $d['w'] + (int) $d['l'])
+    + min(20, $friends) * 2 + min(50, $invAll) * 5 + $invPaid * 60 + min(5, $groupsOwned) * 25 + $missionsTotal * LIVE_MISSION_XP;
   $lv = live_level($xp);
   $badges = [
     'first' => $n >= 1, 't10' => $n >= 10, 't100' => $n >= 100, 'streak5' => $best >= 5, 'sharp' => $n >= 20 && $w / max(1, $n) >= 0.55,

@@ -12436,12 +12436,18 @@ html:root body #modeSwitcher#modeSwitcher#modeSwitcher .ms-plus span{font:900 26
 html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeReal{align-items:center!important;text-align:center!important}
 html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeReal .mb-lbl,html:root body #modeSwitcher#modeSwitcher#modeSwitcher #modeReal .mb-amt{max-width:100%!important;overflow:hidden!important;text-overflow:clip!important;white-space:nowrap!important}
 /* v2784 (propriétaire) : Jeux / Paris — le même grand « + » doré, toujours DEVANT « Compte réel » */
-html:root body #casinoModal#casinoModal .cs-wallet .cw-plus{order:-9!important;width:34px!important;height:34px!important;min-width:34px!important;border-radius:11px!important;display:grid!important;place-items:center!important;
+html:root body #casinoModal#casinoModal .cs-wallet .cw-plus{order:9!important;width:34px!important;height:34px!important;min-width:34px!important;border-radius:11px!important;display:grid!important;place-items:center!important;
   background:linear-gradient(180deg,#FFC24B 0%,#F59E0B 45%,#EA580C 100%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 0 rgba(124,45,18,.35),0 4px 12px -4px rgba(249,115,22,.85)!important;
   color:#fff!important;font:900 25px/1 system-ui!important;font-style:normal!important;text-shadow:0 1px 2px rgba(124,45,18,.55);margin:0!important}
 html:root body #casinoModal#casinoModal .cs-wallet .cw-wal{order:-8!important}
-html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-plus,html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet .cw-plus{order:-9!important}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-plus,html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet .cw-plus{order:9!important}
 html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same .cw-wal,html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet .cw-wal{order:-8!important}
 /* v2784 (propriétaire) : le titre « Profil » doit ressembler à un vrai titre (plus grand que la langue) */
 html:root body #drawerProfile#drawerProfile#drawerProfile #profTitle#profTitle{font:900 21px/1.1 "Plus Jakarta Sans",system-ui,sans-serif!important;text-transform:none!important;letter-spacing:-.01em!important;color:#fff!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile #profTitle#profTitle::first-letter{color:#FBBF24}
+/* v2785 (propriétaire) : « devant » pour le propriétaire = À LA FIN → Profil : « Recharger + » (le + après le mot) */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge .wx-plus{order:5!important;margin:0 0 0 2px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge > span{order:1!important}
+/* v2785 : Jeux / Paris — « + » À LA FIN, après le montant : [portefeuille] COMPTE RÉEL $ … [+] */
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 5px 4px 10px!important;gap:8px!important}
+html[dir=rtl]:root body #casinoModal#casinoModal .cs-top #csBal.cs-wallet.cw-same{padding:4px 10px 4px 5px!important}

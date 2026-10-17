@@ -627,11 +627,11 @@
         ]
       ],
       [
-        'Her kayıptan sonra bahsi ikiye katlamak (martingale)…',
+        'Gerçek parayla oynamadan önce en iyisi…',
         [
-          'Çok risklidir',
-          'Risksizdir',
-          'Zorunludur'
+          'Demoda pratik yapmak',
+          'Tüm bakiyeyi yatırmak',
+          'Grafiğe bakmadan oynamak'
         ]
       ],
       [

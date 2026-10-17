@@ -627,11 +627,11 @@
         ]
       ],
       [
-        'Menggandakan taruhan setelah setiap kekalahan (martingale) itu…',
+        'Sebelum bermain dengan uang asli, sebaiknya…',
         [
-          'Sangat berisiko',
-          'Bebas risiko',
-          'Wajib'
+          'Berlatih di akun demo',
+          'Mempertaruhkan seluruh saldo',
+          'Bermain tanpa melihat grafik'
         ]
       ],
       [
