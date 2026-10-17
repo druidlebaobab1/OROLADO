@@ -9,7 +9,7 @@
     wheel: ['#FFE6EC', '#E11D74'], roulette: ['#D1FAE5', '#047857'], slots: ['#FFD9EC', '#BE185D'], plinko: ['#CCFBF1', '#0D9488'],
     limbo: ['#FFE4E6', '#BE123C'], keno: ['#E0E7FF', '#4338CA'], scratch: ['#EDE9FE', '#6D28D9'], hilo: ['#FFEDD5', '#EA580C'],
     dragon: ['#DBEAFE', '#1E40AF'], baccarat: ['#DBEAFE', '#1E3A8A'], sicbo: ['#FEE2E2', '#9F1239'], chests: ['#CFFAFE', '#0E7490'],
-    balloon: ['#E0F2FE', '#0EA5E9'], penalty: ['#DCFCE7', '#15803D'], race: ['#FEE2E2', '#DC2626'], colors: ['#F3E8FF', '#9333EA'],
+    balloon: ['#E0F2FE', '#0EA5E9'], penalty: ['#DCFCE7', '#15803D'], race: ['#FEE2E2', '#DC2626'], colors: ['#F3E8FF', '#9333EA'], cryptox: ['#FFEDD5', '#F7931A'], horses: ['#FEF3C7', '#B45309'],
     darts: ['#FEF3C7', '#B45309'], sports: ['#E0F2FE', '#0284C7'],
     g_defi: ['#FFE4E6', '#E11D48'], g_top: ['#FEF3C7', '#CA8A04'], g_bon: ['#DCFCE7', '#16A34A'], g_jauge: ['#E0F2FE', '#2563EB'], g_aff: ['#F3E8FF', '#9333EA'], g_send: ['#CCFBF1', '#0D9488']
   };
@@ -281,6 +281,17 @@
   }
   /* l'objet seul (SVG 64×64) */
   OBJ.apple = OBJ.appleX; // v2706 : logo Golden Orchard = la pomme-bijou
+  // v2718 : Crypto Live (3 pièces BTC / ETH / USDT) et Horse Race (fer à cheval doré + étoiles)
+  OBJ.cryptox = function () {
+    var coin = function (cx, cy, r, c, t, fs) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + c + '" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/><circle cx="' + (cx - r * .3) + '" cy="' + (cy - r * .35) + '" r="' + r * .35 + '" fill="#fff" opacity=".22"/><text x="' + cx + '" y="' + (cy + fs * .36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="900" font-family="system-ui" fill="#fff">' + t + '</text>'; };
+    return coin(20, 40, 13, '#26A17B', '₮', 15) + coin(44, 40, 13, '#627EEA', 'Ξ', 15) + coin(32, 24, 17, '#F7931A', '₿', 20);
+  };
+  OBJ.horses = function () {
+    return '<defs>' + G.gold + '</defs><path d="M17 50C10 40 10 22 20 13c8-7 16-7 24 0 10 9 10 27 3 37l-7-3c5-7 6-20-1-27-5-5-12-5-17 0-7 7-6 20-1 27z" fill="url(#IDg)" stroke="#7A4A00" stroke-width="1.4"/>' +
+      '<g fill="#7A4A00"><circle cx="17" cy="38" r="1.7"/><circle cx="16.5" cy="29" r="1.7"/><circle cx="20" cy="20.5" r="1.7"/><circle cx="47" cy="38" r="1.7"/><circle cx="47.5" cy="29" r="1.7"/><circle cx="44" cy="20.5" r="1.7"/></g>' +
+      '<path d="M12 50h9v4h-9zM43 50h9v4h-9z" fill="#B7791F"/><path d="M32 30l1.6 3.4 3.7.5-2.7 2.6.7 3.7-3.3-1.8-3.3 1.8.7-3.7-2.7-2.6 3.7-.5z" fill="#FFF7D1"/>' +
+      '<path d="M54 10l1 2.8 2.8 1-2.8 1-1 2.8-1-2.8-2.8-1 2.8-1z" fill="#FFF7D1"/>';
+  };
   function obj(k) {
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
     return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + f().replace(/ID/g, id) + '</svg>';

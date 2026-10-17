@@ -7,7 +7,7 @@
   var T = {
     fr: { title: 'Casino', sub: '18 jeux · dès 0,10 $', real: 'Réel', demo: 'Démo', tryM: 'Essai', bal: 'Solde', stake: 'Mise', play: 'Jouer', again: 'Rejouer',
       win: 'Gagné ! +{w} $', lose: 'Perdu', tryNote: 'Crée ton compte et recharge pour jouer en argent réel, dès 0,10 $.', signup: 'Créer mon compte', gamesTab: 'Jeux', realAcc: 'Compte réel', bet: 'Miser', gotIt: 'J’ai compris', revealAll: 'Tout découvrir', dragonN: 'Dragon', tigerN: 'Tigre', tie: 'Égalité', player: 'Joueur', banker: 'Banque', small: 'Petit', big: 'Grand', triple: 'triple', pickChest: 'Choisis un coffre', pump: 'Gonfler', pumpFirst: 'Gonfle le ballon', level: 'Pommes pourries',
-      e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée.', e_maxWin: 'Gain trop élevé pour cette mise : baisse la mise ou la cible.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_busy: 'Un instant…', e_param: 'Choix invalide.', e_login: 'Connecte-toi pour jouer.', e_suspended: 'Compte suspendu.',
+      e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée.', e_maxWin: 'Gain trop élevé pour cette mise : baisse la mise ou la cible.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_busy: 'Un instant…', e_param: 'Choix invalide.', e_login: 'Connecte-toi pour jouer.', e_suspended: 'Compte suspendu.', e_closed: 'Mises fermées : attends le prochain tour.', e_already: 'Tu as déjà un pari sur ce tour.',
       deposit: 'Recharger', hist: 'Mes dernières parties', none: 'Aucune partie pour l’instant.', rules: 'Jeu responsable : joue seulement ce que tu peux te permettre de perdre.',
       g: { crash: ['Avion', 'Encaisse avant qu’il explose'], coin: ['Pile ou face', '×1,94'], dice: ['Dés', 'Choisis ta chance'], limbo: ['Cible', 'Vise jusqu’à ×1000'], wheel: ['Roue casino', 'Jusqu’à ×50'],
         race: ['Course auto', '6 voitures · ×5,7'], roulette: ['Roulette', 'Rouge, noir, numéro ×36'], slots: ['Machine à sous', 'Jusqu’à ×50'], plinko: ['Cascade', 'Jusqu’à ×12'], keno: ['Keno', '3 numéros · ×25'],
@@ -21,7 +21,7 @@
       shoot: 'Touche le but pour tirer', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
     en: { title: 'Casino', sub: '18 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
       win: 'You win! +${w}', lose: 'Lost', tryNote: 'Create your account and top up to play for real money, from $0.10.', signup: 'Create my account', gamesTab: 'Games', realAcc: 'Real account', bet: 'Bet', gotIt: 'Got it', revealAll: 'Reveal all', dragonN: 'Dragon', tigerN: 'Tiger', tie: 'Tie', player: 'Player', banker: 'Banker', small: 'Small', big: 'Big', triple: 'triple', pickChest: 'Pick a chest', pump: 'Pump', pumpFirst: 'Pump the balloon', level: 'Rotten apples',
-      e_min: 'Minimum stake $0.10.', e_max: 'Stake too high.', e_maxWin: 'Win too high for this stake: lower the stake or the target.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_busy: 'One moment…', e_param: 'Invalid choice.', e_login: 'Log in to play.', e_suspended: 'Account suspended.',
+      e_min: 'Minimum stake $0.10.', e_max: 'Stake too high.', e_maxWin: 'Win too high for this stake: lower the stake or the target.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_busy: 'One moment…', e_param: 'Invalid choice.', e_login: 'Log in to play.', e_suspended: 'Account suspended.', e_closed: 'Bets closed: wait for the next round.', e_already: 'You already have a bet on this round.',
       deposit: 'Top up', hist: 'My last games', none: 'No game yet.', rules: 'Play responsibly: only stake what you can afford to lose.',
       g: { crash: ['Aviator', 'Cash out before it blows'], coin: ['Heads or tails', '×1.94'], dice: ['Dice', 'Pick your chance'], limbo: ['Target', 'Aim up to ×1000'], wheel: ['Casino wheel', 'Up to ×50'],
         race: ['Car race', '6 cars · ×5.7'], roulette: ['Roulette', 'Red, black, number ×36'], slots: ['Slot machine', 'Up to ×50'], plinko: ['Cascade', 'Up to ×12'], keno: ['Keno', '3 numbers · ×25'],
@@ -53,7 +53,9 @@
   /* ---------- v2694 : noms en anglais (les mêmes dans toutes les langues, à nous) + logos « planète » (js/casino-art.js) ---------- */
   var NAMES = { crash: 'Sky Rush', jet: 'Jet Man', rocket: 'Rocket', mines: 'Mines', apple: 'Golden Orchard', tower: 'Tower', plinko: 'Cascade', dice: 'Dice', limbo: 'Target',
     wheel: 'Lucky Wheel', roulette: 'Roulette', slots: 'Lucky 777', coin: 'Coin Flip', keno: 'Keno', scratch: 'Scratch Card', hilo: 'Hi-Lo', dragon: 'Dragon Tiger', baccarat: 'Baccarat',
-    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts' };
+    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts', cryptox: 'Crypto Live', horses: 'Horse Race' };
+  // v2718 : jeux EN DIRECT (même tour / même tirage pour tout le monde) → pastille « LIVE » qui clignote sous le nom
+  var LIVE_GAMES = { crash: 1, jet: 1, rocket: 1, cryptox: 1, horses: 1, roulette: 1 };
   var ART = D6.CasinoArt || { planet: function () { return ''; }, obj: function () { return ''; }, sym: function () { return ''; }, car: function () { return ''; }, PAL: {} };
   function pal(k) { return ART.PAL[k] || ART.PAL.coin || ['#ffffff', '#7c3aed']; }
   function gicon(k, cls) { return ART.planet(k, cls); }
@@ -71,7 +73,8 @@
   }
   /* ---------- état ---------- */
   // v2706 (propriétaire) : ordre mélangé — les 3 jeux en tour commun (crash, jet, rocket) ne sont plus côte à côte
-  var ORDER = ['crash', 'mines', 'roulette', 'penalty', 'jet', 'plinko', 'apple', 'slots', 'wheel', 'dragon', 'rocket', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'balloon', 'keno', 'sicbo', 'race', 'scratch', 'hilo', 'chests', 'colors', 'darts'];
+  // v2718 (propriétaire) : Keno, Cascade, Darts et Colors retirés ; Crypto Live et Horse Race ajoutés ; jeux en direct séparés
+  var ORDER = ['crash', 'cryptox', 'mines', 'roulette', 'penalty', 'jet', 'horses', 'apple', 'slots', 'wheel', 'dragon', 'rocket', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'chests'];
   // v2693 (propriétaire) : la mise de départ est toujours 0,10 $ à l'ouverture du Casino.
   var S = { mode: 'real', stake: 0.1, game: '', view: 'games', bal: { real: null, demo: null }, busy: false, timer: 0 };
   function save() { /* la mise n'est plus gardée : 0,10 $ à chaque ouverture */ }
@@ -121,11 +124,18 @@
     return r;
   }
   /* résultat : petite bannière DANS l'écran du jeu (ne prend plus de place) */
+  // v2718 (propriétaire) : le résultat arrive en NOTIFICATION dans le jeu (gain : vert « +2,50 $ » ; perte : discrète « −1,00 $ »),
+  // elle reste ~2,8 s puis s'en va ; plus de ligne en bas → toute la place va au jeu.
   function resultLine(box, r, extra) {
-    var x = X(), el = box.querySelector('.cs-res');
-    if (!el) return;
-    el.className = 'cs-res ' + (r.win > 0 ? 'win' : 'lose');
-    el.innerHTML = r.win > 0 ? '<b>+' + m2(r.win) + ' $</b>' + (extra ? '<small>' + esc(extra) + '</small>' : '') : '<b>' + esc(x.lose) + '</b>' + (extra ? '<small>' + esc(extra) + '</small>' : '');
+    var x = X(), host = box.querySelector('.cs-stage') || box;
+    var old = host.querySelectorAll('.cs-toast'); for (var i = 0; i < old.length; i++) old[i].remove();
+    var win = (Number(r.win) || 0) > 0, t = document.createElement('div');
+    t.className = 'cs-toast ' + (win ? 'win' : 'lose');
+    t.innerHTML = '<i class="ct-ico">' + (win ? '★' : '✕') + '</i><span><b>' + (win ? '+' + m2(r.win) + ' $' : '−' + m2(r.stake) + ' $') + '</b><small>' + esc(extra || (win ? String(x.win || '').split('+')[0].trim() : x.lose)) + '</small></span>';
+    host.appendChild(t);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
+    setTimeout(function () { t.classList.remove('in'); t.classList.add('out'); }, 2800);
+    setTimeout(function () { if (t.parentNode) t.remove(); }, 3300);
     afterPlay(r);
   }
 
@@ -177,7 +187,7 @@
     } else {
       v.className = 'cs-grid';
       v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).map(function (k) {
-        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b></button>';
+        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b>' + (LIVE_GAMES[k] ? '<i class="cs-livetag"><i></i>LIVE</i>' : '') + '</button>';
       }).join('');
       v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
     }
@@ -427,6 +437,169 @@
     return '<svg viewBox="-126 -126 252 252"><defs><radialGradient id="rlWood" cx="50%" cy="50%" r="50%"><stop offset=".85" stop-color="#7C2D12"/><stop offset="1" stop-color="#431407"/></radialGradient><radialGradient id="rlCone" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#A16207"/><stop offset="1" stop-color="#422006"/></radialGradient><radialGradient id="rlHub" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".55" stop-color="#F5B700"/><stop offset="1" stop-color="#9A6A00"/></radialGradient></defs>' +
       '<circle r="125" fill="url(#rlWood)"/><circle r="116" fill="none" stroke="#D4AF37" stroke-width="2"/>' + s + '<circle r="70" fill="url(#rlCone)" stroke="#D4AF37" stroke-width="1.5"/>' + spokes + '<circle r="24" fill="url(#rlHub)"/></svg>';
   }
+
+  /* ---------- v2718 (propriétaire) : JEUX EN DIRECT À TIRAGE — Crypto Live, Chevaux Live, Roulette Live ----------
+     Le serveur tire à heure fixe (casino_lib.php casino_draw_*) : tout le monde voit le même tirage. L'animation dépend
+     seulement de l'heure : arriver en plein tirage montre le bon moment. Un pari par tour ; une fois placé, c'est fini. */
+  var LT = {
+    fr: { open: 'Mises ouvertes', draw: 'Tirage en cours…', next: 'Prochain tour dans {s} s', placed: 'Pari placé ✓', closed: 'Mises fermées', betOn: 'Parier', pickFirst: 'Choisis d’abord', last: 'Derniers', winner: 'Gagnant : {s}', live: 'LIVE', yours: 'Ton choix : {s}' },
+    en: { open: 'Bets open', draw: 'Drawing…', next: 'Next round in {s} s', placed: 'Bet placed ✓', closed: 'Bets closed', betOn: 'Place bet', pickFirst: 'Pick first', last: 'Last', winner: 'Winner: {s}', live: 'LIVE', yours: 'Your pick: {s}' }
+  };
+  function LX() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, LT.en, LT[l] || {}); }
+  var CRYPTOS = [['BTC', '#F7931A', '₿'], ['ETH', '#627EEA', 'Ξ'], ['USDT', '#26A17B', '₮'], ['BNB', '#F3BA2F', 'B'], ['SOL', '#9945FF', 'S'], ['XRP', '#2B3440', 'X'], ['DOGE', '#C2A633', 'Ð'], ['TON', '#0098EA', 'T'],
+    ['ADA', '#0033AD', 'A'], ['TRX', '#EB0029', 'T'], ['LTC', '#345D9D', 'Ł'], ['DOT', '#E6007A', 'D'], ['AVAX', '#E84142', 'A'], ['SHIB', '#FFA409', 'S'], ['LINK', '#2A5ADA', 'L']];
+  function cCoin(i, cls) { var c = CRYPTOS[i] || CRYPTOS[0]; return '<i class="lv-coin' + (cls ? ' ' + cls : '') + '" style="--cc:' + c[1] + '"><b>' + c[2] + '</b></i>'; }
+  var HORSE_C = ['#EF4444', '#3B82F6', '#22C55E', '#F59E0B', '#A855F7', '#EC4899', '#14B8A6', '#F97316', '#FACC15', '#E5E7EB'];
+  function silk(i) { return '<i class="lv-silk" style="--hc:' + HORSE_C[i] + '">' + (i + 1) + '</i>'; }
+  function horseSvg(i) {
+    return '<svg viewBox="0 0 64 40" aria-hidden="true"><path d="M15 17Q6 17 3 27" stroke="#3B2412" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
+      '<g stroke="#4A2C16" stroke-width="3.2" stroke-linecap="round"><path d="M20 24l-5 12M24 25l2 12M38 24l5 11M42 23l7 9"/></g>' +
+      '<ellipse cx="30" cy="20" rx="15" ry="7.5" fill="#7A4A24"/><path d="M40 16l8-11 4 2-4 13z" fill="#7A4A24"/><path d="M47 4l11 4-1.5 4.5L46 10z" fill="#6B3F1E"/>' +
+      '<path d="M44 6l-4 9" stroke="#2A170A" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M27 15h8l-2-7h-5z" fill="' + HORSE_C[i] + '"/><circle cx="31" cy="5.5" r="3.4" fill="' + HORSE_C[i] + '" stroke="#fff" stroke-width=".8"/>' +
+      '<text x="31" y="14.2" text-anchor="middle" font-size="5.5" font-weight="900" font-family="system-ui" fill="' + (i === 9 || i === 8 ? '#111' : '#fff') + '">' + (i + 1) + '</text></svg>';
+  }
+  function rlChip(n) { return '<i class="lv-rn ' + (n === 0 ? 'z' : RL_RED.indexOf(n) >= 0 ? 'r' : 'k') + '">' + n + '</i>'; }
+  // pseudo-hasard fixe par tour (même animation pour tout le monde)
+  function seeded(a, b) { var x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return x - Math.floor(x); }
+  function easeOut(k) { return 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3); }
+
+  var DRAW_CFG = {
+    cryptox: { reveal: 8, mult: '×14,4',
+      stage: function () { return '<div class="lv-reel"><div class="lv-reel-win" id="lvReel">' + cCoin(0, 'big') + '</div><b class="lv-reel-t" id="lvReelT">BTC</b></div>'; },
+      picks: function () { return '<div class="lv-grid g5">' + CRYPTOS.map(function (c, i) { return '<button type="button" data-s="' + i + '">' + cCoin(i) + '<small>' + c[0] + '</small></button>'; }).join('') + '</div>'; },
+      label: function (s) { return (CRYPTOS[+s] || CRYPTOS[0])[0]; },
+      lastChip: function (v) { return cCoin(v, 'mini'); },
+      winName: function (res) { return CRYPTOS[res.n][0]; },
+      paint: function (st, R, t) {
+        var reel = $('lvReel'), lab = $('lvReelT'); if (!reel) return;
+        var show = R.res, e = t - R.close, idx;
+        if (!show) { idx = Math.floor(t * 2.2) % 15; reel.className = 'lv-reel-win idle'; }
+        else {
+          var S0 = 46, k = easeOut(e / 8), steps = Math.floor(S0 * k);
+          idx = ((show.n - S0 + steps) % 15 + 15) % 15;
+          reel.className = 'lv-reel-win' + (e >= 8 ? ' won' : ' spin');
+        }
+        if (st.lastIdx !== idx) { st.lastIdx = idx; reel.innerHTML = cCoin(idx, 'big'); lab.textContent = CRYPTOS[idx][0]; }
+      } },
+    horses: { reveal: 22, mult: '×9,6',
+      stage: function () { var l = ''; for (var i = 0; i < 10; i++) l += '<div class="lv-lane"><span class="lv-no">' + (i + 1) + '</span><span class="lv-horse" id="lvH' + i + '">' + horseSvg(i) + '</span></div>'; return '<div class="lv-track"><i class="lv-finish"></i>' + l + '</div>'; },
+      picks: function () { var b = ''; for (var i = 0; i < 10; i++) b += '<button type="button" data-s="' + i + '">' + silk(i) + '</button>'; return '<div class="lv-grid g5">' + b + '</div>'; },
+      label: function (s) { return 'N° ' + (+s + 1); },
+      lastChip: function (v) { return silk(v); },
+      winName: function (res) { return 'N° ' + (res.order[0] + 1); },
+      paint: function (st, R, t) {
+        var tr = st.box.querySelector('.lv-track'); if (!tr) return;
+        if (!st.w || st.w < 60 || (st.wAt || 0) < Date.now() - 2000) { st.w = Math.max(0, tr.clientWidth - 58); st.wAt = Date.now(); } // largeur relue (piste affichée, téléphone tourné)
+        var res = R.res, e = res ? t - R.close : 0, D = 22, k = Math.max(0, Math.min(1, e / D));
+        for (var h = 0; h < 10; h++) {
+          var p = 0;
+          if (res) {
+            var rank = res.order.indexOf(h), fin = 1 - rank * 0.028;
+            var wob = (seeded(R.i, h) - 0.5) * 0.16 * Math.sin(Math.PI * k) + (seeded(R.i + 7, h) - 0.5) * 0.07 * Math.sin(Math.PI * 3 * k);
+            p = Math.max(0, fin * (0.5 * k + 0.5 * k * k) + wob * (1 - k * k));
+            if (e >= D) p = fin;
+          }
+          var el = $('lvH' + h); if (el) { el.style.transform = 'translateX(' + Math.round(p * st.w) + 'px)'; el.classList.toggle('run', !!res && e < D); el.classList.toggle('win', !!res && e >= D && res.order[0] === h); }
+        }
+      } },
+    roulette: { reveal: 8, mult: '',
+      stage: function () { return '<div class="rl-big"><div class="rl-wheel" id="csRlW">' + rouletteSvg() + '</div><div class="rl-orbit" id="csRlO"><i class="rl-pearl"></i></div><div class="rl-ball" id="csRl">?</div></div>'; },
+      picks: function (x) {
+        var opts = [['red', x.red, '×2'], ['black', x.black, '×2'], ['even', x.even, '×2'], ['odd', x.odd, '×2'], ['d1', '1-12', '×3'], ['d2', '13-24', '×3'], ['d3', '25-36', '×3']];
+        return '<div class="cs-opts rl-opts">' + opts.map(function (o) { return '<button type="button" data-s="' + o[0] + '" class="b-' + o[0] + '">' + esc(o[1]) + '<small>' + o[2] + '</small></button>'; }).join('') +
+          '<label class="rl-num"><input id="csRlNum" inputmode="numeric" maxlength="2" placeholder="0-36"><small>×36</small></label></div>';
+      },
+      label: function (s, x) { var m = { red: x.red, black: x.black, even: x.even, odd: x.odd, d1: '1-12', d2: '13-24', d3: '25-36' }; return m[s] || ('N° ' + String(s).slice(1)); },
+      lastChip: function (v) { return rlChip(v); },
+      winName: function (res) { return String(res.n); },
+      paint: function (st, R, t) {
+        var w = $('csRlW'), orb = $('csRlO'), ball = $('csRl'); if (!w) return;
+        var res = R.res, e = res ? t - R.close : 0;
+        if (!res) { w.style.transform = 'rotate(' + ((t * 12) % 360) + 'deg)'; orb.style.transform = 'rotate(0deg)'; ball.className = 'rl-ball'; ball.textContent = '?'; return; }
+        var k = easeOut(e / 8), wr = (R.close * 12) % 360 + 1080 * k;
+        var idx = RL_ORDER.indexOf(res.n), target = idx * 360 / 37 + (R.close * 12) % 360 + 1080;
+        w.style.transform = 'rotate(' + wr + 'deg)';
+        orb.style.transform = 'rotate(' + (target - 1440 * (1 - k)) + 'deg)';
+        if (e < 8) { ball.className = 'rl-ball spin'; ball.textContent = Math.floor(seeded(R.i, Math.floor(e * 8)) * 37); }
+        else { ball.className = 'rl-ball ' + (res.n === 0 ? 'z' : RL_RED.indexOf(res.n) >= 0 ? 'r' : 'k'); ball.textContent = res.n; }
+      } }
+  };
+
+  function makeDraw(game) {
+    return function (box, x) {
+      var cfg = DRAW_CFG[game], lx = LX();
+      box.innerHTML = '<div class="cs-stage lv-stage lv-' + game + (game === 'roulette' ? ' rl-stage' : '') + '"><div class="lv-head"><span class="lv-live"><i></i>' + esc(lx.live) + '</span><b id="lvPhase"></b><em id="lvTime"></em></div>' +
+        '<i class="lv-bar"><b id="lvBar"></b></i><div class="lv-scene">' + cfg.stage() + '</div><div class="lv-last" id="lvLast"></div></div><div class="cs-res"></div>' +
+        (guest() ? '<div id="csNeed"></div>' : stakePanel(lx.betOn, cfg.picks(x)));
+      if (guest()) { needAccount($('csNeed'), x); }
+      var st = { box: box }, R = null, me = null, off = 0, sel = null, first = true, shown = null, lastKey = '';
+      var nowS = function () { return Date.now() / 1000 + off; };
+      if (!guest()) {
+        bindStake(box);
+        var mark = function () { box.querySelectorAll('[data-s]').forEach(function (z) { z.classList.toggle('on', z.getAttribute('data-s') === sel); }); };
+        box.querySelectorAll('[data-s]').forEach(function (b) { b.addEventListener('click', function () { if (me && !me.done && R && me.rid === R.i) return; sel = b.getAttribute('data-s'); if ($('csRlNum')) $('csRlNum').value = ''; mark(); }); });
+        if ($('csRlNum')) $('csRlNum').addEventListener('input', function () { var v = parseInt(this.value, 10); if (v >= 0 && v <= 36) { sel = 'n' + v; mark(); } });
+        $('csGo').addEventListener('click', async function () {
+          if (S.busy || !R) return;
+          if (sel == null) { toast(lx.pickFirst); return; }
+          S.busy = true; this.disabled = true;
+          var r = await multi(game, 'bet', { sel: sel });
+          S.busy = false;
+          if (r) { me = r; if (r.round) R = r.round; }
+        });
+      }
+      var showMine = function () {
+        if (!me || !me.done || !me.ref || shown === me.ref || !R) return;
+        // le résultat s'affiche quand l'animation du tirage est finie (pas avant)
+        if (me.rid === R.i && nowS() < R.close + cfg.reveal) return;
+        shown = me.ref;
+        resultLine(box, me, fmt(lx.winner, { s: me.res ? cfg.winName(me.res) : '' }));
+      };
+      var sync = async function () {
+        if (!box.isConnected || S.game !== game) return;
+        var r = null;
+        try { var rq = await fetch('casino-tour.php?g=' + game, { cache: 'no-store' }); r = await rq.json(); } catch (e) { r = null; }
+        if (!r || !r.ok) { r = await multi(game, 'dround', null, true); if (r) r.mine = 1; }
+        if (!box.isConnected || S.game !== game) return;
+        S.timer = setTimeout(sync, 1000);
+        if (!r || !r.round) return;
+        off = r.now - Date.now() / 1000; R = r.round;
+        var mine = r.mine ? r : null, open0 = me && !me.done;
+        if (!guest() && !mine && (first || (open0 && R.res && R.i >= (me.rid || 0)))) {
+          mine = await multi(game, 'dround', null, true);
+          if (!box.isConnected || S.game !== game) return;
+        }
+        if (mine && mine.round) { me = mine.has ? mine : null; if (first) { first = false; if (me && me.done) shown = me.ref; } }
+        var lk = (R.last || []).join(',');
+        if (lk !== lastKey) { lastKey = lk; $('lvLast').innerHTML = '<small>' + esc(lx.last) + '</small>' + (R.last || []).map(function (v) { return cfg.lastChip(v); }).join(''); }
+      };
+      var tick = function () {
+        if (!box.isConnected || S.game !== game) return;
+        if (R) {
+          var t = nowS(), bet = t < R.close, left;
+          if (bet) { left = Math.max(0, Math.ceil(R.close - t)); $('lvPhase').textContent = lx.open; $('lvTime').textContent = left + ' s'; $('lvBar').style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.close - t) / R.B)) + ')'; }
+          else { left = Math.max(0, Math.ceil(R.end - t)); $('lvPhase').textContent = t < R.close + cfg.reveal ? lx.draw : fmt(lx.winner, { s: R.res ? cfg.winName(R.res) : '…' }); $('lvTime').textContent = fmt(lx.next, { s: left }); $('lvBar').style.transform = 'scaleX(0)'; }
+          if (!bet && !R.res) { /* le résultat arrive à la prochaine lecture */ }
+          cfg.paint(st, R, t);
+          var b = $('csGo');
+          if (b) {
+            var mineNow = me && me.rid === R.i;
+            if (mineNow) { b.textContent = lx.placed + ' · ' + cfg.label(me.sel, x); b.disabled = true; b.classList.add('placed'); }
+            else if (!bet) { b.textContent = lx.closed; b.disabled = true; b.classList.remove('placed'); }
+            else { b.textContent = lx.betOn + (cfg.mult && sel != null ? ' · ' + cfg.mult : ''); b.disabled = S.busy; b.classList.remove('placed'); }
+          }
+          showMine();
+        }
+        S.raf = requestAnimationFrame(tick);
+      };
+      sync(); tick();
+    };
+  }
+  GAMES.cryptox = makeDraw('cryptox');
+  GAMES.horses = makeDraw('horses');
+  GAMES.roulette = makeDraw('roulette');
+
   var SLOT_PAY = [['gem', '×50'], ['seven', '×20'], ['bell', '×10'], ['lemon', '×5'], ['cherry', '×3'], ['cherry2', '×1,5']];
   GAMES.slots = function (box, x) {
     var pay = SLOT_PAY.map(function (p) { var two = p[0] === 'cherry2'; return '<span><em>' + ART.sym(two ? 'cherry' : p[0]) + '</em><small>' + (two ? '×2' : '×3') + '</small><b>' + p[1] + '</b></span>'; }).join('');

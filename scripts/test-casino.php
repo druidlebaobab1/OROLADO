@@ -254,6 +254,42 @@ for ($k = 0; $k < $N; $k++) { if ($rr['c'] >= 2) $w++; casino_round_advance($rr,
 check('les points d\'explosion des tours suivent la même loi (≥ ×2 : ~48,5 %)', abs($w / $N - 0.485) < 0.02, (string) round($w / $N, 3));
 @unlink(casino_round_file('crash'));
 
+echo "11) Tirages en direct : Crypto Live, Chevaux Live, Roulette Live (v2718)\n";
+check('Crypto Live : retour ' . round(CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N * 100, 1) . ' %', CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N < 0.97 && CASINO_CRYPTOX_MULT / CASINO_CRYPTOX_N > 0.94);
+check('Chevaux Live : retour ' . round(CASINO_HORSES_MULT / CASINO_HORSES_N * 100, 1) . ' %', CASINO_HORSES_MULT / CASINO_HORSES_N < 0.97 && CASINO_HORSES_MULT / CASINO_HORSES_N > 0.94);
+$cnt = array_fill(0, 15, 0); for ($k = 0; $k < 3000; $k++) $cnt[casino_draw_outcome('cryptox', 900000 + $k)['n']]++;
+check('Crypto Live : les 15 cryptos sortent à peu près autant (hasard juste)', min($cnt) > 140 && max($cnt) < 270, json_encode($cnt));
+$file = casino_user_file('u_cs');
+foreach (['cryptox' => '7', 'horses' => '3', 'roulette' => 'red'] as $dg => $sel) {
+  [$P, $B] = CASINO_DRAW[$dg];
+  $i0 = (int) floor(time() / $P) + 50; $t = $i0 * $P + 2.0; // un tour futur, 2 s après son ouverture
+  casino_with($file, static function (array &$st) use ($dg) { unset($st['g'][$dg]); return true; });
+  $bal[$U] = 50.0; syncv();
+  $pub = casino_draw_public($dg, $t);
+  check("$dg : pendant les mises, le résultat est CACHÉ", $pub['phase'] === 'bet' && !isset($pub['res']));
+  $r = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => 'zz'], $t);
+  check("$dg : sélection invalide refusée, rien de retiré", $r['ok'] === false && $r['reason'] === 'param' && $bal[$U] == 50.0);
+  $r = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => $sel], $t);
+  check("$dg : pari accepté, 2 $ retirés", $r['ok'] && $bal[$U] == 48.0 && !isset($r['res']), json_encode($r));
+  $r2 = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => $sel], $t + 1);
+  check("$dg : 2e pari sur le même tour refusé", $r2['ok'] === false && $r2['reason'] === 'already' && $bal[$U] == 48.0);
+  $tShow = $i0 * $P + $B + 0.5;
+  $d = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'dround', 'real', 0, [], $tShow);
+  $out = casino_draw_outcome($dg, $i0);
+  $want = casino_money(2 * (float) casino_draw_mult($dg, $sel, $out));
+  check("$dg : après la fermeture, réglé selon le tirage commun (gain $want $)", !empty($d['done']) && abs($d['win'] - $want) < 0.001 && abs($bal[$U] - (48.0 + $want)) < 0.001, json_encode([$d['win'] ?? null, $bal[$U]]));
+  casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'dround', 'real', 0, [], $tShow + 2);
+  check("$dg : gain versé UNE seule fois", abs($bal[$U] - (48.0 + $want)) < 0.001);
+  check("$dg : le résultat public est le même pour tous", (casino_draw_public($dg, $tShow)['res'] ?? null) === $out);
+  $late = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => $sel], $i0 * $P + $B - 0.3);
+  check("$dg : pari après la fermeture des mises refusé", $late['ok'] === false);
+  $nx = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 1, ['sel' => $sel], ($i0 + 1) * $P + 1);
+  check("$dg : tour suivant, nouveau pari accepté", $nx['ok'] === true, json_encode($nx));
+  casino_with($file, static function (array &$st) use ($dg) { unset($st['g'][$dg]); return true; });
+}
+check('roulette : le calcul commun donne les mêmes gains qu\'avant (rouge, n°17, douzaine)', casino_roulette_mult('red', 1) == 2.0 && casino_roulette_mult('red', 0) == 0.0 && casino_roulette_mult('n17', 17) == 36.0 && casino_roulette_mult('d2', 13) == 3.0 && casino_roulette_mult('xx', 3) === null);
+check('roulette : plus jouable en instantané (seulement en direct)', casino_play(load_db(), $me, 'roulette', 'real', 1, ['bet' => 'red'])['ok'] === false);
+
 echo "9) Admin : joueurs du casino (v2698)\n";
 casino_hist_add('u_admin_t', ['g' => 'coin', 'm' => 'real', 's' => 2.0, 'w' => 3.88, 'at' => time()]);
 casino_hist_add('u_admin_t', ['g' => 'dice', 'm' => 'real', 's' => 5.0, 'w' => 0.0, 'at' => time()]);

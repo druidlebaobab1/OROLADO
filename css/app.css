@@ -11237,3 +11237,90 @@ html:root body #drawerProfile #langBarTrade.lang-in-profile > .lang-dd-btn.lang-
 #oddsRow .odds-chip[data-odds="5"],.odds-row .odds-chip[data-odds="5"]{scale:.96}
 #oddsRow .odds-chip[data-odds="10"],.odds-row .odds-chip[data-odds="10"]{scale:1.1}
 #oddsRow .odds-chip[data-odds="50"],.odds-row .odds-chip[data-odds="50"]{scale:1.26}
+
+/* ================= v2718 (propriétaire) : NOTIFICATIONS de résultat + JEUX EN DIRECT ================= */
+/* plus de ligne « Perdu / Gagné » en bas : la place va au jeu */
+html body #casinoModal .cs-game > .cs-res,html body #casinoModal .cs-stage > .cs-res{display:none!important}
+html body #casinoModal .cs-stage{position:relative}
+/* la notification (dans le jeu, en haut, ~2,8 s) */
+html body #casinoModal .cs-toast{position:absolute;left:50%;top:10px;z-index:30;display:flex;align-items:center;gap:10px;min-width:150px;max-width:calc(100% - 24px);padding:9px 16px 9px 10px;border-radius:999px;
+  transform:translate(-50%,-14px) scale(.92);opacity:0;transition:transform .32s cubic-bezier(.2,.9,.3,1.3),opacity .25s;pointer-events:none;white-space:nowrap}
+html body #casinoModal .cs-toast.in{transform:translate(-50%,0) scale(1);opacity:1}
+html body #casinoModal .cs-toast.out{transform:translate(-50%,-10px) scale(.96);opacity:0}
+html body #casinoModal .cs-toast .ct-ico{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:15px}
+html body #casinoModal .cs-toast span{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+html body #casinoModal .cs-toast b{font-size:19px;font-weight:900;letter-spacing:.01em}
+html body #casinoModal .cs-toast small{font-size:11.5px;font-weight:700;opacity:.85;overflow:hidden;text-overflow:ellipsis}
+html body #casinoModal .cs-toast.win{background:linear-gradient(135deg,rgba(16,185,129,.96),rgba(5,150,105,.96));color:#fff;box-shadow:0 10px 28px -8px rgba(16,185,129,.8),inset 0 0 0 1px rgba(255,255,255,.35)}
+html body #casinoModal .cs-toast.win .ct-ico{background:#FDE68A;color:#92400E}
+html body #casinoModal .cs-toast.lose{background:rgba(30,20,52,.92);color:#FFD1DA;box-shadow:0 10px 24px -10px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,120,150,.35)}
+html body #casinoModal .cs-toast.lose .ct-ico{background:rgba(255,90,120,.2);color:#FF7A95}
+/* pastille LIVE sous le nom des jeux en direct (le point clignote : opacité seulement) */
+html body #casinoModal .cs-g .cs-livetag{display:inline-flex;align-items:center;gap:3px;margin-top:2px;padding:1px 6px;border-radius:999px;background:#E11D48;color:#fff;font:900 8.5px/1.4 system-ui;letter-spacing:.06em;font-style:normal}
+html body #casinoModal .cs-livetag > i,html body #casinoModal .lv-live > i{width:5px;height:5px;border-radius:50%;background:#fff;animation:lvBlink 1s steps(2,start) infinite}
+@keyframes lvBlink{to{opacity:.15}}
+html.oro-lite body #casinoModal .cs-livetag > i,html.oro-lite body #casinoModal .lv-live > i{animation:none}
+/* écran d'un jeu en direct */
+html body #casinoModal .lv-stage{display:flex;flex-direction:column;gap:6px;padding:8px 10px 6px}
+html body #casinoModal .lv-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#fff}
+html body #casinoModal .lv-live{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:#E11D48;font:900 10px/1.5 system-ui;letter-spacing:.08em;color:#fff}
+html body #casinoModal .lv-head b{flex:1;min-width:0;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #casinoModal .lv-head em{font-style:normal;font-weight:800;color:#FDE68A;white-space:nowrap}
+html body #casinoModal .lv-bar{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+html body #casinoModal .lv-bar b{display:block;height:100%;background:linear-gradient(90deg,#22C55E,#FACC15);transform-origin:left;transform:scaleX(0)}
+html body #casinoModal .lv-scene{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+html body #casinoModal .lv-last{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.7);overflow:hidden}
+html body #casinoModal .lv-last small{margin-inline-end:2px;font-weight:700}
+/* pièces crypto */
+html body #casinoModal .lv-coin{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;font-style:normal;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--cc) 55%,#fff),var(--cc) 62%,color-mix(in srgb,var(--cc) 70%,#000));box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),0 3px 6px rgba(0,0,0,.35)}
+html body #casinoModal .lv-coin b{color:#fff;font:900 15px/1 system-ui;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+html body #casinoModal .lv-coin.mini{width:20px;height:20px}
+html body #casinoModal .lv-coin.mini b{font-size:10px}
+html body #casinoModal .lv-coin.big{width:min(118px,30vw);height:min(118px,30vw)}
+html body #casinoModal .lv-coin.big b{font-size:min(56px,14vw)}
+html body #casinoModal .lv-reel{display:flex;flex-direction:column;align-items:center;gap:6px}
+html body #casinoModal .lv-reel-win{padding:10px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)}
+html body #casinoModal .lv-reel-win.idle{opacity:.55}
+html body #casinoModal .lv-reel-win.won .lv-coin{box-shadow:inset 0 0 0 3px #FDE68A,0 0 0 6px rgba(253,230,138,.25),0 8px 22px rgba(0,0,0,.5)}
+html body #casinoModal .lv-reel-t{font:900 20px/1 system-ui;color:#fff;letter-spacing:.06em}
+html body #casinoModal .lv-grid{display:grid;gap:5px;margin-bottom:2px}
+html body #casinoModal .lv-grid.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+html body #casinoModal .lv-grid button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font:inherit;cursor:pointer}
+html body #casinoModal .lv-grid button small{font-size:9.5px;font-weight:800;letter-spacing:.02em}
+html body #casinoModal .lv-grid button.on{border-color:#FACC15;background:rgba(250,204,21,.18);box-shadow:0 0 0 1px #FACC15}
+/* chevaux */
+html body #casinoModal .lv-track{position:relative;width:100%;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:1px;padding:4px 0;border-radius:12px;background:linear-gradient(180deg,#14532D,#166534 50%,#14532D);box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}
+html body #casinoModal .lv-lane{position:relative;flex:1;min-height:17px;max-height:26px;display:flex;align-items:center;border-bottom:1px dashed rgba(255,255,255,.12)}
+html body #casinoModal .lv-lane:last-child{border-bottom:0}
+html body #casinoModal .lv-no{position:absolute;left:3px;font:900 9px/1 system-ui;color:rgba(255,255,255,.55)}
+html body #casinoModal .lv-horse{position:absolute;left:12px;top:50%;width:36px;height:22px;margin-top:-11px;will-change:transform}
+html body #casinoModal .lv-horse svg{width:100%;height:100%;display:block}
+html body #casinoModal .lv-horse.run svg{animation:lvGallop .32s ease-in-out infinite alternate}
+html body #casinoModal .lv-horse.win svg{filter:drop-shadow(0 0 6px #FDE68A)}
+@keyframes lvGallop{from{transform:translateY(-1.5px) rotate(-3deg)}to{transform:translateY(1.5px) rotate(2deg)}}
+html.oro-lite body #casinoModal .lv-horse.run svg{animation:none}
+html body #casinoModal .lv-finish{position:absolute;right:8px;top:0;bottom:0;width:4px;background:repeating-linear-gradient(180deg,#fff 0 5px,#111 5px 10px);opacity:.85}
+html body #casinoModal .lv-silk{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;font:900 13px/1 system-ui;font-style:normal;color:#fff;background:var(--hc);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+html body #casinoModal .lv-last .lv-silk{width:20px;height:20px;font-size:10px;border-radius:6px}
+html body #casinoModal .lv-silk[style*="#E5E7EB"],html body #casinoModal .lv-silk[style*="#FACC15"]{color:#111}
+/* roulette en direct : petits numéros de l'historique */
+html body #casinoModal .lv-rn{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 3px;border-radius:6px;font:900 10px/1 system-ui;font-style:normal;color:#fff}
+html body #casinoModal .lv-rn.r{background:#DC2626}
+html body #casinoModal .lv-rn.k{background:#111827;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+html body #casinoModal .lv-rn.z{background:#16A34A}
+html body #casinoModal .lv-roulette .rl-wheel,html body #casinoModal .lv-roulette .rl-orbit{transition:none!important}
+/* bouton : pari placé (pas cliquable) */
+html body #casinoModal .cs-go.placed{background:linear-gradient(135deg,#334155,#1E293B)!important;color:#A7F3D0!important;opacity:1!important}
+html body #casinoModal .lv-stage > *{align-self:stretch;width:auto}
+html body #casinoModal .lv-scene{width:100%}
+/* v2720 : Roulette en direct — roue et bille centrées dans la scène (pas dans tout l écran du jeu) */
+html body #casinoModal .lv-roulette.rl-stage{container-type:normal}
+html body #casinoModal .lv-roulette .lv-scene{container-type:size}
+html body #casinoModal .lv-roulette .rl-big{position:relative;width:min(330px,86vw,96cqh)!important}
+html body #casinoModal .lv-roulette .rl-orbit{position:absolute;inset:0}
+/* v2721 : la 8e case de la roulette (0-36 ×36) a son cadre, comme les autres */
+html:root body #casinoModal .rl-opts .rl-num{min-height:50px;border-radius:13px;background:#0f1923;box-shadow:inset 0 0 0 1px #2b4256;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px}
+html:root body #casinoModal .rl-opts .rl-num:focus-within{box-shadow:inset 0 0 0 2px #FACC15}
+html:root body #casinoModal .rl-opts .rl-num input{width:100%!important;text-align:center;font:800 13px system-ui!important}
+html body #casinoModal .lv-horse{width:44px;height:27px;margin-top:-14px}
+html body #casinoModal .lv-lane{max-height:30px}
