@@ -3313,7 +3313,7 @@
     loadRecvCache(u);
     $('profName').textContent = isGuest(u) ? t('m_guest') : (u.displayName || 'Trader');
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
-    // v2777 (propriétaire) : UN SEUL identifiant partout — « R » + 8 signes au hasard (ex. R7KQ4M9XT), donné par le serveur
+    // v2777 (propriétaire) : UN SEUL identifiant partout — « R » + 3 lettres + 3 chiffres au hasard (ex. RKBT482), donné par le serveur
     if ($('profPublicId')) showMyRid(u);
     $('profEmail').textContent = u.email;
     if ($('profSince')) $('profSince').textContent = fmtMemberSince(u.createdAt || u.created_at);
@@ -3772,12 +3772,12 @@
     if (isGuest(u) || !u.id) { el.textContent = '—'; return; }
     var have = '';
     try { have = localStorage.getItem(key) || ''; } catch (e) { /* ignore */ }
-    el.textContent = /^R[2-9A-Z]{8}$/.test(have) ? have : '…';
+    el.textContent = /^R[0-9A-Z]{6,9}$/.test(have) ? have : '…';
     fetch('live.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', cache: 'no-store',
       body: JSON.stringify({ action: 'myid', token: (D6.Api && D6.Api.token) ? D6.Api.token() : '' }) })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        if (!j || !j.ok || !/^R[2-9A-Z]{8}$/.test(String(j.id || ''))) { if (el.textContent === '…') el.textContent = '—'; return; }
+        if (!j || !j.ok || !/^R[0-9A-Z]{6,9}$/.test(String(j.id || ''))) { if (el.textContent === '…') el.textContent = '—'; return; }
         el.textContent = j.id;
         try { localStorage.setItem(key, j.id); } catch (e) { /* ignore */ }
       })

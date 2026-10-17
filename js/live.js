@@ -13,7 +13,7 @@
       guestT: 'Inscris-toi pour écrire à l’équipe', guestB: 'Avec ton compte, tu peux nous écrire et envoyer des photos. On te répond ici.', guestBtn: 'Créer mon compte', guestMail: 'Écrire par e-mail',
       sent: 'Envoyé ✓', tooMany: 'Trop de messages. Réessaie dans un moment.', tooManyImg: 'Limite de 10 photos par jour atteinte.', badImg: 'Photo refusée. Essaie une autre image.',
       fail: 'Envoi impossible, réessaie.', team: 'OROLADO', now: 'à l’instant', min: 'min', h: 'h', d: 'j', terms: 'Conditions', privacy: 'Confidentialité', you: 'Toi',
-      friends: 'Amis', myId: 'Ton identifiant', copy: 'Copier', copied: 'Copié ✓', idHint: 'Donne-le à tes amis pour qu’ils t’écrivent.', findPh: 'Identifiant d’un ami (R…)', findGo: 'Écrire',
+      friends: 'Amis', myId: 'Ton identifiant', copy: 'Copier', copied: 'Copié ✓', idHint: 'Donne-le à tes amis pour qu’ils t’écrivent.', findPh: 'Identifiant (R…) ou e-mail d’un ami', findGo: 'Écrire',
       notFound: 'Identifiant introuvable.', findLocked: 'Trop d’essais. Réessaie dans 1 heure.', self: 'C’est ton propre identifiant 😉', noConv: 'Aucune conversation pour l’instant. Partage ton identifiant !',
       block: '🚫 Bloquer', unblock: '✅ Débloquer', report: '🚩 Signaler', reportQ: 'Pourquoi signales-tu ce joueur ? (arnaque, insultes…)', reported: 'Merci, l’équipe va regarder. Ce joueur est bloqué.',
       youBlocked: 'Tu as bloqué ce joueur.', guestF: 'Inscris-toi pour écrire à tes amis', guestFB: 'Avec ton compte, tu reçois un identifiant secret et tu peux discuter avec tes amis.',
@@ -27,7 +27,7 @@
       guestT: 'Sign up to write to the team', guestB: 'With your account, you can write to us and send photos. We answer you here.', guestBtn: 'Create my account', guestMail: 'Write by e-mail',
       sent: 'Sent ✓', tooMany: 'Too many messages. Try again in a moment.', tooManyImg: 'Limit of 10 photos per day reached.', badImg: 'Photo refused. Try another image.',
       fail: 'Could not send, try again.', team: 'OROLADO', now: 'just now', min: 'min', h: 'h', d: 'd', terms: 'Terms', privacy: 'Privacy', you: 'You',
-      friends: 'Friends', myId: 'Your ID', copy: 'Copy', copied: 'Copied ✓', idHint: 'Give it to your friends so they can write to you.', findPh: 'A friend’s ID (R…)', findGo: 'Write',
+      friends: 'Friends', myId: 'Your ID', copy: 'Copy', copied: 'Copied ✓', idHint: 'Give it to your friends so they can write to you.', findPh: 'A friend’s ID (R…) or email', findGo: 'Write',
       notFound: 'ID not found.', findLocked: 'Too many tries. Try again in 1 hour.', self: 'That’s your own ID 😉', noConv: 'No conversation yet. Share your ID!',
       block: '🚫 Block', unblock: '✅ Unblock', report: '🚩 Report', reportQ: 'Why are you reporting this player? (scam, insults…)', reported: 'Thanks, the team will check. This player is blocked.',
       youBlocked: 'You blocked this player.', guestF: 'Sign up to write to your friends', guestFB: 'With your account, you get a secret ID and can chat with your friends.',
@@ -42,7 +42,7 @@
     guestT: '注册后即可联系团队', guestB: '有了账户，你就能给我们留言并发送照片，我们会在这里回复你。', guestBtn: '创建账户', guestMail: '通过邮件联系',
     sent: '已发送 ✓', tooMany: '消息太多，请稍后再试。', tooManyImg: '今天的照片已达上限。', badImg: '照片无法发送，请换一张。', fail: '发送失败，请重试。',
     now: '刚刚', min: '分钟', h: '小时', d: '天', terms: '条款', privacy: '隐私', you: '你',
-    friends: '好友', myId: '你的 ID', copy: '复制', copied: '已复制 ✓', idHint: '把它发给好友，他们就能联系你。', findPh: '好友 ID（R…）', findGo: '发消息',
+    friends: '好友', myId: '你的 ID', copy: '复制', copied: '已复制 ✓', idHint: '把它发给好友，他们就能联系你。', findPh: '好友 ID（R…）或邮箱', findGo: '发消息',
     notFound: '找不到这个 ID。', findLocked: '尝试次数过多，请 1 小时后再试。', self: '这是你自己的 ID 😉', noConv: '还没有对话。分享你的 ID 吧！',
     block: '🚫 屏蔽', unblock: '✅ 取消屏蔽', report: '🚩 举报', reportQ: '为什么举报这位玩家？（诈骗、辱骂……）', reported: '谢谢，团队会查看。该玩家已被屏蔽。',
     youBlocked: '你已屏蔽该玩家。', guestF: '注册后即可和好友聊天', guestFB: '有了账户，你会获得专属 ID，可以和好友聊天。',
@@ -330,9 +330,10 @@
   function bootFriends() {
     $('lfFind').addEventListener('submit', async function (e) {
       e.preventDefault();
-      var x = L(), v = $('lfFindIn').value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      var x = L(), raw = $('lfFindIn').value.trim();
+      var v = raw.indexOf('@') >= 0 ? raw.replace(/\s+/g, '').toLowerCase() : raw.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); // v2778 : identifiant OU e-mail
       $('lfFindMsg').textContent = '';
-      if (v.length < 9) { $('lfFindMsg').textContent = x.notFound; return; }
+      if (v.length < 7) { $('lfFindMsg').textContent = x.notFound; return; }
       var j = await call('find', { id: v });
       if (j && j.ok) { $('lfFindIn').value = ''; openDm(j.peer.id); }
       else $('lfFindMsg').textContent = x[(j && j.reason) || 'notFound'] || x.notFound;

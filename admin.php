@@ -3551,7 +3551,7 @@ setInterval(() => {
 </script>
 <?php endif; ?>
 <script>
-/* v2777 (propriétaire) — AFFICHAGE seulement : l'identifiant d'un joueur se montre « R7KQ4M9XT » (R + 8 signes au hasard),
+/* v2777 (propriétaire) — AFFICHAGE seulement : l'identifiant d'un joueur se montre « RKBT482 » (R + 3 lettres + 3 chiffres au hasard),
    le même que sur tout le site. Les données ne changent pas (les clés internes gardent leur forme ORO-…). La recherche
    comprend aussi un identifiant R… tapé (il est traduit vers la clé interne). */
 (function () {
@@ -3571,12 +3571,12 @@ setInterval(() => {
     fix(document.body);
     try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) { /* ignore */ }
   }).catch(function () { /* ignore */ });
-  // la recherche trouve aussi un identifiant « R7KQ4M9XT » tapé (en minuscules ou avec des espaces)
+  // la recherche trouve aussi un identifiant « RKBT482 » tapé (en minuscules ou avec des espaces)
   document.addEventListener('input', function (e) {
     var el = e.target;
     if (!el || el.tagName !== 'INPUT' || !/search/i.test((el.id || '') + ' ' + (el.type || ''))) return;
     var v = el.value.replace(/\s+/g, '').toUpperCase();
-    if (/^R[2-9A-Z]{8}$/.test(v) && REV[v] && el.value !== REV[v]) { el.value = REV[v]; }
+    if (/^R[0-9A-Z]{6,9}$/.test(v) && REV[v] && el.value !== REV[v]) { el.value = REV[v]; }
   }, true);
 })();
 </script>

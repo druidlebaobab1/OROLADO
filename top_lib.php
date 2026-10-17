@@ -134,13 +134,13 @@ function orolado_top_rank(array $db, array $st): array {
     ];
   }
   usort($rows, static fn($x, $y) => [$y['points'], $y['trades']] <=> [$x['points'], $x['trades']]);
-  // v2777 (propriétaire) : identifiant unique R… — montré À MOITIÉ caché dans le classement public (R7KQ•••••),
+  // v2777 (propriétaire) : identifiant unique R… — montré presque caché dans le classement public (RK•••••),
   // pour que personne ne puisse contacter un joueur juste parce qu'il est dans le Top.
   $rid = [];
   if (is_file(__DIR__ . '/live_lib.php')) { require_once __DIR__ . '/live_lib.php'; try { $rid = live_rids_for(array_column($rows, 'uid')); } catch (Throwable $e) { $rid = []; } }
   foreach ($rows as $i => &$r) {
     $r['rank'] = $i + 1;
-    if (!empty($rid[$r['uid']])) $r['id'] = substr((string) $rid[$r['uid']], 0, 4) . '•••••';
+    if (!empty($rid[$r['uid']])) $r['id'] = substr((string) $rid[$r['uid']], 0, 2) . '•••••'; // v2778 : RK••••• (le reste ne se devine pas)
   }
   unset($r);
   return $rows;

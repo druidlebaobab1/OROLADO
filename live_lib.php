@@ -277,21 +277,43 @@ function live_oro_id(array $user): string {
   return (string) ($r['id'] ?? '');
 }
 
-/* v2777 (propriétaire) — UN SEUL IDENTIFIANT sur tout le site : « R » + 8 signes AU HASARD, collés, sans tiret
-   (ex. R7KQ4M9XT). Les signes n'ont jamais 0, O, 1, I, L ni U. 30^8 = 656 milliards de possibilités : impossible à
-   deviner, jamais épuisé. Créé tout seul pour chaque joueur, gardé pour toujours. Le numéro du profil (ORO-123456)
-   n'est PLUS accepté (il se devinait). L'ancien code de Social (OR + 10 signes, lui aussi au hasard) reste compris. */
+/* v2778 (propriétaire) — UN SEUL IDENTIFIANT sur tout le site, FACILE À RETENIR comme une plaque :
+   « R » + 3 lettres + 3 chiffres, collés (ex. RKBT482). Tiré au hasard. Les lettres n'ont jamais I, L, O ni U (donc
+   0 et 1 ne se confondent avec rien). 22³ × 1000 = 10,6 millions d'identifiants ; quand 30 % sont pris, le site passe
+   TOUT SEUL à 4 lettres (234 millions), puis 5, etc. — jamais épuisé. Les robots qui devinent sont bloqués après
+   10 recherches ratées par heure. Un ami peut aussi être retrouvé par son E-MAIL (jamais montré à personne).
+   Le numéro du profil (ORO-123456) n'est pas accepté (il se devinait). L'ancien code de Social (OR…) reste compris. */
+const LIVE_RID_LETTERS = 'ABCDEFGHJKMNPQRSTVWXYZ'; // 22 lettres : ni I, ni L, ni O, ni U
 function live_new_rid(array $taken): string {
+  $n = count($taken); $len = 3;
+  while ($n > 0.3 * (22 ** $len) * 1000) $len++; // ça se remplit → une lettre de plus, tout seul
   do {
     $s = 'R';
-    for ($i = 0; $i < 8; $i++) $s .= LIVE_ID_ALPHA[random_int(0, strlen(LIVE_ID_ALPHA) - 1)];
+    for ($i = 0; $i < $len; $i++) $s .= LIVE_RID_LETTERS[random_int(0, 21)];
+    $s .= str_pad((string) random_int(0, 999), 3, '0', STR_PAD_LEFT);
   } while (isset($taken[$s]));
   return $s;
 }
 function live_norm_oro_id(string $s): string {
+  $s = trim($s);
+  if (strpos($s, '@') !== false) { // retrouver un ami par son e-mail
+    $e = strtolower(preg_replace('/\s+/', '', $s) ?? '');
+    return filter_var($e, FILTER_VALIDATE_EMAIL) ? 'E:' . $e : '';
+  }
   $s = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $s) ?? '');
-  if (preg_match('/^R[2-9A-HJKMNP-TV-Z]{8}$/', $s)) return $s;
+  if (preg_match('/^R([A-HJKMNP-TV-Z]{3,8})([0-9OIL]{3})$/', $s, $mm)) return 'R' . $mm[1] . strtr($mm[2], 'OIL', '011'); // O tapé à la place de 0…
+  if (preg_match('/^R[2-9A-HJKMNP-TV-Z]{8}$/', $s)) return $s; // identifiants d'essai v2777
   if (preg_match('/^[O0]R([2-9A-HJKMNP-TV-Z]{10})$/', $s, $mm)) return 'OR' . $mm[1]; // ancien code de Social
+  return '';
+}
+/** Joueur derrière un e-mail (adresse ACTUELLE du compte seulement ; comptes supprimés ou invités exclus). */
+function live_uid_of_email(string $email): string {
+  if (!function_exists('orolado_users_by_email') || str_ends_with($email, '@orolado.local')) return '';
+  foreach (orolado_users_by_email(live_users_db(), $email) as $id => $u) {
+    if (!is_array($u) || strtolower(trim((string) ($u['email'] ?? ''))) !== $email) continue;
+    if (!empty($u['deletedAt']) || (string) ($u['role'] ?? '') === 'guest' || !empty($u['guest'])) continue;
+    return (string) $id;
+  }
   return '';
 }
 /** Identifiants R… de plusieurs joueurs d'un coup (créés s'il le faut) : [uid => R…]. Pour l'admin. */
@@ -320,10 +342,11 @@ function live_code_of(string $uid): string {
   return $c;
 }
 
-/** Joueur derrière un identifiant (R… ou ancien code OR…) : ['uid','id' (R…),'name'] ou null. */
+/** Joueur derrière un identifiant (R…, e-mail « E:… » ou ancien code OR…) : ['uid','id' (R…),'name'] ou null. */
 function live_who(string $oroId): ?array {
   $m = live_read_json(live_ids_file(), []);
-  $uid = (string) (str_starts_with($oroId, 'R') ? ($m['ri'][$oroId] ?? '') : ($m['i'][$oroId] ?? ''));
+  if (str_starts_with($oroId, 'E:')) $uid = live_uid_of_email(substr($oroId, 2));
+  else $uid = (string) (str_starts_with($oroId, 'R') ? ($m['ri'][$oroId] ?? '') : ($m['i'][$oroId] ?? ''));
   $id = $uid !== '' ? live_code_of($uid) : '';
   if ($uid === '') return null;
   $u = live_users_db()['users'][$uid] ?? [];
