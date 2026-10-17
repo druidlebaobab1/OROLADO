@@ -178,7 +178,7 @@
     var x = X(), m = $('casinoModal');
     m.classList.remove('in-game'); m.removeAttribute('data-g'); $('csSheet').hidden = true; $('csHelp').hidden = true;
     paintBal();
-    $('csBody').innerHTML = '<div class="cs-tabs2"><button type="button" data-v="games" class="' + (S.view === 'games' ? 'on' : '') + '">' + gicon('slots', 'sm') + '<span>' + esc(x.gamesTab) + '</span></button>' +
+    $('csBody').innerHTML = '<div class="cs-tabs2"><button type="button" data-v="games" class="' + (S.view === 'games' ? 'on' : '') + '">' + padIcon() + '<span>' + esc(x.gamesTab) + '</span></button>' +
       '<button type="button" data-v="sports" class="' + (S.view === 'sports' ? 'on' : '') + '">' + gicon('sports', 'sm') + '<span>' + esc(x.sports) + '</span></button></div><div id="csView"></div>';
     $('csBody').querySelectorAll('[data-v]').forEach(function (b) { b.addEventListener('click', function () { home(b.getAttribute('data-v')); }); });
     var v = $('csView');
@@ -195,6 +195,14 @@
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
   }
   function name(k) { return NAMES[k] || k; }
+  // v2742 (propriétaire) : la manette transparente violet-rose (le logo « Jeux » du bouton du haut)
+  function padIcon() {
+    var id = 'pd' + (++gn);
+    return '<svg class="cs-padico" viewBox="0 6 64 52" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#F472B6"/></linearGradient></defs>' +
+      '<path d="M17 18h30c8 0 12 6 13.5 14l2 11c1.2 7-5 11-10 7l-8-7H19.5l-8 7c-5 4-11.2 0-10-7l2-11C5 24 9 18 17 18z" fill="rgba(167,139,250,.14)" stroke="url(#' + id + ')" stroke-width="3"/>' +
+      '<g transform="translate(18 31)" fill="url(#' + id + ')"><rect x="-2.6" y="-7.5" width="5.2" height="15" rx="1.4"/><rect x="-7.5" y="-2.6" width="15" height="5.2" rx="1.4"/></g>' +
+      '<g transform="translate(46 31)"><circle cy="-5.2" r="2.5" fill="#22C55E"/><circle cx="5.2" r="2.5" fill="#EF4444"/><circle cx="-5.2" r="2.5" fill="#3B82F6"/><circle cy="5.2" r="2.5" fill="#FACC15"/></g></svg>';
+  }
   function modeSwitch() { return ''; }
   function bindMode() { /* plus de choix réel / démo */ }
   /* panneau de mise compact, en bas de l'écran */
@@ -422,7 +430,7 @@
     });
     var bulbs = ''; for (var i = 0; i < 24; i++) bulbs += '<circle cx="' + (119 * Math.sin(i * 15 * Math.PI / 180)).toFixed(1) + '" cy="' + (-119 * Math.cos(i * 15 * Math.PI / 180)).toFixed(1) + '" r="3" fill="#FFF7D6"/>';
     out = '<defs><radialGradient id="whG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".5" stop-color="#F5B700"/><stop offset="1" stop-color="#9A6A00"/></radialGradient></defs><circle r="125" fill="url(#whG)"/>' + bulbs + out + '<circle r="112" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/>';
-    var legend = [50, 10, 5, 3, 2, 1.5, 1.2, 0.5, 0].map(function (v) { return '<span style="--c:' + col[v] + '">' + String(v).replace('.', ',') + '</span>'; }).join('');
+    var legend = [50, 10, 5, 3, 2, 1.5, 1.2, 0.5, 0].map(function (v) { return '<span style="--c:' + col[v] + '"><b>×' + String(v).replace('.', ',') + '</b></span>'; }).join('');
     box.innerHTML = '<div class="cs-stage"><div class="whl2"><div class="whl2-rot" id="csWheel"><svg viewBox="-126 -126 252 252">' + out + '<circle r="20" fill="url(#whG)" stroke="#9A6A00" stroke-width="3"/></svg></div><i class="whl2-pin" id="csWPin"></i></div><div class="whl-leg">' + legend + '</div></div><div class="cs-res"></div>' + stakePanel();
     bindStake(box);
     $('csGo').addEventListener('click', async function () {
@@ -1180,6 +1188,7 @@
   function chestHtml() {
     return '<span class="tch"><i class="tch-glow"></i><svg class="tch-gold" viewBox="0 0 64 30"><circle cx="20" cy="20" r="7" fill="#FACC15" stroke="#B45309"/><circle cx="32" cy="15" r="8" fill="#FDE047" stroke="#B45309"/><circle cx="44" cy="20" r="7" fill="#FACC15" stroke="#B45309"/><path d="M32 2l1.5 3.4 3.7.4-2.8 2.5.8 3.6L32 10l-3.2 1.9.8-3.6-2.8-2.5 3.7-.4z" fill="#fff"/><text x="32" y="19" text-anchor="middle" font-size="8" font-weight="900" font-family="system-ui" fill="#92400E">$</text></svg>' +
       '<svg class="tch-body" viewBox="0 0 64 34"><path d="M4 2h56v26a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="#92400E"/><path d="M4 2h56v5H4z" fill="#3B1D0A" class="tch-in"/><path d="M4 9h56" stroke="#FACC15" stroke-width="3"/><path d="M32 7v25" stroke="#FACC15" stroke-width="3" opacity=".7"/><rect x="27" y="12" width="10" height="11" rx="2" fill="#FACC15"/><circle cx="32" cy="17" r="1.8" fill="#78350F"/></svg>' +
+      '<i class="tch-burst"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><i class="tch-star">✦</i>' +
       '<svg class="tch-lid" viewBox="0 0 64 24"><path d="M4 24c0-12 7-20 16-20h24c9 0 16 8 16 20z" fill="#B45309"/><path d="M4 24h56" stroke="#FACC15" stroke-width="3"/><path d="M32 4v20" stroke="#FACC15" stroke-width="3" opacity=".7"/><path d="M12 14c4-5 10-7 16-7" stroke="#fff" stroke-width="2" opacity=".35" fill="none" stroke-linecap="round"/></svg></span>';
   }
   GAMES.chests = function (box, x) {
