@@ -406,7 +406,7 @@
     g.innerHTML = list.map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
       var tt = h[t.k] || (t.k === 'send' && D6.LiveSend ? [D6.LiveSend.title(), D6.LiveSend.sub()] : null) || (t.k === 'groups' && D6.LiveGroups ? [D6.LiveGroups.title(), D6.LiveGroups.sub()] : [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : '']);
-      return '<button type="button" class="lh-f' + (FEAT[t.k] ? ' feat' : '') + '" data-k="' + t.k + '" style="--tc:' + (D6.LiveColor ? D6.LiveColor(t.k) : '#7a5cff') + '"><span class="lh-fi">' + (D6.LiveIcon ? D6.LiveIcon(t.k, 'free') : t.ico) + badge + '</span><b>' + esc(tt[0]) + '</b>' + (FEAT[t.k] ? '<small>' + esc(tt[1]) + '</small>' : '') + '</button>';
+      return '<button type="button" class="lh-f' + (FEAT[t.k] ? ' feat' : '') + '" data-k="' + t.k + '" style="--tc:' + (D6.LiveColor ? D6.LiveColor(t.k) : '#7a5cff') + '"><span class="lh-fi">' + (D6.LiveIcon ? D6.LiveIcon(t.k, 'free verre') : t.ico) + badge + '</span><b>' + esc(tt[0]) + '</b>' + (FEAT[t.k] ? '<small>' + esc(tt[1]) + '</small>' : '') + '</button>';
     }).join('');
     g.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); }); });
   }

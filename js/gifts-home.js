@@ -59,7 +59,12 @@
 
   /* v2694 (propriétaire) : « immergé » comme le Défi du jour — la roue entière en haut, puis des planètes centrées
      au-dessus de leur titre ; plus de petites phrases sous les titres, plus de cadres. */
-  function planet(k) { return D6.CasinoArt ? D6.CasinoArt.planet('g_' + k) : icon(k); }
+  // v2782 (propriétaire) : logos « verre » transparents et légers, les mêmes que dans Social
+  var GLASS = { defi: 'target', top: 'record', bon: 'bonus', jauge: 'jauge', aff: 'invite' };
+  function planet(k) {
+    if (D6.LiveIcon && GLASS[k]) return '<span class="cs-pl gh-glass">' + D6.LiveIcon(GLASS[k], 'free verre') + '</span>';
+    return D6.CasinoArt ? D6.CasinoArt.planet('g_' + k) : icon(k);
+  }
   function paintHome() {
     var x = X(), grid = $('ghGrid');
     if (!grid) return;

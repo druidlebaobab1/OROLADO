@@ -38,6 +38,16 @@
   function icon(k, cls) {
     var c = PAL[k] || PAL.news, g = G[k] || G.news, id = 'li' + (++n);
     var glyph = function (w, a) { return g.replace(/="W"/g, '="' + w + '"').replace(/="A"/g, '="' + a + '"'); };
+    // v2782 (propriétaire) : logo « VERRE » — transparent et léger, avec un contour lumineux et des couleurs douces
+    // (même esprit que la manette et le cadeau du haut). Utilisé dans Social et Cadeaux.
+    if (cls && cls.indexOf('verre') > -1) {
+      var u = 'url(#' + id + 'a)';
+      var body = g.replace(/fill="W"/g, 'fill="' + u + '"').replace(/stroke="W"/g, 'stroke="' + u + '"').replace(/="A"/g, '="' + c[0] + '"');
+      var edge = g.replace(/fill="W"/g, 'fill="none" stroke="' + u + '" stroke-width="1.6" stroke-linejoin="round"').replace(/stroke="W"/g, 'stroke="' + u + '"').replace(/fill="A"/g, 'fill="#fff"').replace(/stroke="A"/g, 'stroke="#fff"');
+      return '<svg class="li-ico li-glass ' + cls + '" viewBox="4 4 40 40" aria-hidden="true"><defs><linearGradient id="' + id + 'a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient>' +
+        '<radialGradient id="' + id + 'h" cx="30%" cy="20%" r="60%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>' +
+        '<g opacity=".3">' + body + '</g><g opacity=".22">' + g.replace(/fill="W"/g, 'fill="url(#' + id + 'h)"').replace(/stroke="W"/g, 'stroke="none"').replace(/="A"/g, '="none"') + '</g><g>' + edge + '</g></svg>';
+    }
     // v2706 (propriétaire) : logo LIBRE (sans carreau) — le dessin lui-même en couleur, posé dans l'univers
     if (cls && cls.indexOf('free') > -1) {
       return '<svg class="li-ico ' + cls + '" viewBox="4 4 40 40" aria-hidden="true"><defs><linearGradient id="' + id + 'a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>' +
