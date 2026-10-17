@@ -163,6 +163,13 @@ $duelOut = static function (?array $d, string $me): ?array {
   return $o;
 };
 
+// v2772 (propriétaire) : le code unique du joueur (ORO-XXXX-XXXX) pour le profil
+if ($action === 'myid') {
+  $me = live_me($tok);
+  if (!$me) live_out(['ok' => false, 'login' => true]);
+  live_oro_id($me);
+  live_out(['ok' => true, 'id' => live_code_of((string) $me['id'])]);
+}
 if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'duelCreate', 'duelAnswer'], true)) {
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
@@ -182,7 +189,7 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
         'blocked' => in_array((string) $peer, $blocked, true),
         'duel' => (static function () use ($uid, $peer) { $d = live_duel_last($uid, (string) $peer); if (!$d) return ''; if (($d['st'] ?? '') === 'pending' && !live_duel_expired($d) && (string) $d['b'] === $uid) return 'invite'; return ($d['st'] ?? '') === 'active' && time() < (int) ($d['end'] ?? 0) ? 'live' : ''; })()];
     }
-    live_out(['ok' => true, 'me' => (trim((string) ($me['publicId'] ?? '')) ?: $myId), 'name' => (string) ($me['displayName'] ?? ''), 'list' => $list, 'stats' => live_duel_stats($uid)]);
+    live_out(['ok' => true, 'me' => live_code_of($uid), 'name' => (string) ($me['displayName'] ?? ''), 'list' => $list, 'stats' => live_duel_stats($uid)]);
   }
 
   // Trouver un ami par son identifiant (au-delà de 10 essais ratés en 1 h : bloqué).

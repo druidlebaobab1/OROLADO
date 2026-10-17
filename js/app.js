@@ -3313,7 +3313,22 @@
     loadRecvCache(u);
     $('profName').textContent = isGuest(u) ? t('m_guest') : (u.displayName || 'Trader');
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
-    if ($('profPublicId')) $('profPublicId').textContent = u.publicId || '—';
+    // v2772 (propriétaire) : UN SEUL identifiant, unique à OROLADO — « ORO-XXXX-XXXX » (le même que dans Social, défis, envois)
+    if ($('profPublicId')) {
+      var pidEl = $('profPublicId');
+      if (isGuest(u)) pidEl.textContent = '—';
+      else {
+        if (!pidEl.getAttribute('data-code')) pidEl.textContent = '…';
+        else pidEl.textContent = pidEl.getAttribute('data-code');
+        try {
+          var tk = D6.Api && D6.Api.token ? D6.Api.token() : '';
+          fetch('live.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'myid', token: tk }) })
+            .then(function (r) { return r.json(); })
+            .then(function (j) { if (j && j.ok && j.id) { pidEl.textContent = j.id; pidEl.setAttribute('data-code', j.id); } else if (!pidEl.getAttribute('data-code')) pidEl.textContent = '—'; })
+            .catch(function () { if (!pidEl.getAttribute('data-code')) pidEl.textContent = '—'; });
+        } catch (eId) { pidEl.textContent = '—'; }
+      }
+    }
     $('profEmail').textContent = u.email;
     if ($('profSince')) $('profSince').textContent = fmtMemberSince(u.createdAt || u.created_at);
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
