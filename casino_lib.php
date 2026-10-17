@@ -16,7 +16,7 @@ const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000.0;
 const CASINO_MAX_WIN = 10000.0;
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
-  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses'];
+  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps'];
 const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette']; // jeux en plusieurs étapes (état gardé par le serveur)
 /*
  * v2718 (propriétaire) — JEUX EN DIRECT À TIRAGE : le serveur fait un tirage commun à heure fixe, tout le monde voit le même.
@@ -121,6 +121,7 @@ const CASINO_WHEEL = [[0.5, 640], [1.2, 500], [0, 630], [1.5, 550], [0.5, 640], 
 const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.4, 0.6, 1.4, 3, 12];                                      // 8 rangées, retour 95,9 %
 const CASINO_KENO = [0, 0.6, 3.5, 25];                                                               // 3 numéros choisis sur 20, 5 tirés : retour 95,6 %
 const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 %
+const CASINO_RPS_MULT = 1.91;                                                                         // v2738 : Pierre-Feuille-Ciseaux (égalité = mise rendue) : retour 97 %
 const CASINO_DICE_DUEL = 1.92;                                                                         // v2724 : dé rouge contre dé noir
 const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 %
 const CASINO_PENALTY_MULT = 1.44;                                                                     // 3 zones, le gardien en couvre 1 : retour 96 %
@@ -306,6 +307,13 @@ function casino_instant(string $game, array $p, float $stake): array {
       $pick = max(0, min(2, (int) ($p['pick'] ?? 0)));
       $gold = random_int(0, 2);
       return ['mult' => $gold === $pick ? 2.85 : 0.0, 'view' => ['gold' => $gold, 'pick' => $pick]];
+    case 'rps':
+      // v2738 (propriétaire) : PIERRE-FEUILLE-CISEAUX contre le robot. 0 = pierre, 1 = feuille, 2 = ciseaux.
+      // Feuille bat pierre, ciseaux bat feuille, pierre bat ciseaux. Gagné ×1,91 · égalité = mise rendue · perdu = 0.
+      $me = max(0, min(2, (int) ($p['pick'] ?? 0)));
+      $bot = random_int(0, 2);
+      $m = $me === $bot ? 1.0 : (($me - $bot + 3) % 3 === 1 ? CASINO_RPS_MULT : 0.0);
+      return ['mult' => $m, 'view' => ['me' => $me, 'bot' => $bot]];
     case 'darts':
       $r = random_int(1, 10000); $acc = 0; $z = 4;
       foreach (CASINO_DARTS as $j => [$x, $w]) { $acc += $w; if ($r <= $acc) { $z = $j; break; } }

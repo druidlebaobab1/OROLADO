@@ -9,7 +9,7 @@
     wheel: ['#FFE6EC', '#E11D74'], roulette: ['#D1FAE5', '#047857'], slots: ['#FFD9EC', '#BE185D'], plinko: ['#CCFBF1', '#0D9488'],
     limbo: ['#FFE4E6', '#BE123C'], keno: ['#E0E7FF', '#4338CA'], scratch: ['#EDE9FE', '#6D28D9'], hilo: ['#FFEDD5', '#EA580C'],
     dragon: ['#DBEAFE', '#1E40AF'], baccarat: ['#DBEAFE', '#1E3A8A'], sicbo: ['#FEE2E2', '#9F1239'], chests: ['#CFFAFE', '#0E7490'],
-    balloon: ['#E0F2FE', '#0EA5E9'], penalty: ['#DCFCE7', '#15803D'], race: ['#FEE2E2', '#DC2626'], colors: ['#F3E8FF', '#9333EA'], cryptox: ['#FFEDD5', '#F7931A'], horses: ['#FEF3C7', '#B45309'],
+    balloon: ['#E0F2FE', '#0EA5E9'], penalty: ['#DCFCE7', '#15803D'], race: ['#FEE2E2', '#DC2626'], colors: ['#F3E8FF', '#9333EA'], cryptox: ['#FFEDD5', '#F7931A'], horses: ['#FEF3C7', '#B45309'], rps: ['#E0E7FF', '#6366F1'],
     darts: ['#FEF3C7', '#B45309'], sports: ['#E0F2FE', '#0284C7'],
     g_defi: ['#FFE4E6', '#E11D48'], g_top: ['#FEF3C7', '#CA8A04'], g_bon: ['#DCFCE7', '#16A34A'], g_jauge: ['#E0F2FE', '#2563EB'], g_aff: ['#F3E8FF', '#9333EA'], g_send: ['#CCFBF1', '#0D9488']
   };
@@ -282,6 +282,18 @@
   /* l'objet seul (SVG 64×64) */
   OBJ.apple = OBJ.appleX; // v2706 : logo Golden Orchard = la pomme-bijou
   // v2718 : Crypto Live (3 pièces BTC / ETH / USDT) et Horse Race (fer à cheval doré + étoiles)
+  // v2738 : Pierre-Feuille-Ciseaux — les 3 dessins (aussi utilisés en grand dans le jeu : D6.CasinoArt.rps(i))
+  function rpsSvg(i, vb) {
+    var d = [
+      '<path d="M14 40c-3-9 2-19 11-22 6-6 17-5 22 1 8 2 12 11 9 19-1 9-9 14-18 14H24c-6 0-9-5-10-12z" fill="#94A3B8"/><path d="M18 38c0-7 4-13 11-15M33 22c6-2 12 0 15 5" stroke="#E2E8F0" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/><path d="M22 47c6 3 18 3 26-2" stroke="#475569" stroke-width="2" fill="none" opacity=".55"/><circle cx="40" cy="36" r="2" fill="#64748B"/><circle cx="27" cy="33" r="1.5" fill="#64748B"/>',
+      '<path d="M15 10h26l9 9v35H15z" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.6"/><path d="M41 10v9h9" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1.6"/><path d="M21 26h22M21 32h22M21 38h22M21 44h15" stroke="#93C5FD" stroke-width="2.2" stroke-linecap="round"/>',
+      '<path d="M30 33L49 9" stroke="#CBD5E1" stroke-width="5" stroke-linecap="round"/><path d="M34 33L15 9" stroke="#E2E8F0" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="33" r="2.6" fill="#475569"/><circle cx="22" cy="46" r="8" fill="none" stroke="#EF4444" stroke-width="5"/><circle cx="42" cy="46" r="8" fill="none" stroke="#EF4444" stroke-width="5"/>'
+    ][i] || '';
+    return vb ? '<svg viewBox="4 4 56 56" aria-hidden="true">' + d + '</svg>' : d;
+  }
+  OBJ.rps = function () {
+    return '<g transform="translate(-2 20) scale(.52)">' + rpsSvg(0) + '</g><g transform="translate(17 -2) scale(.52)">' + rpsSvg(1) + '</g><g transform="translate(34 22) scale(.52)">' + rpsSvg(2) + '</g>';
+  };
   OBJ.cryptox = function () {
     var coin = function (cx, cy, r, c, t, fs) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + c + '" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/><circle cx="' + (cx - r * .3) + '" cy="' + (cy - r * .35) + '" r="' + r * .35 + '" fill="#fff" opacity=".22"/><text x="' + cx + '" y="' + (cy + fs * .36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="900" font-family="system-ui" fill="#fff">' + t + '</text>'; };
     return coin(20, 40, 13, '#26A17B', '₮', 15) + coin(44, 40, 13, '#627EEA', 'Ξ', 15) + coin(32, 24, 17, '#F7931A', '₿', 20);
@@ -301,5 +313,5 @@
     var p = PAL[k] || PAL.coin;
     return '<span class="cs-pl' + (cls ? ' ' + cls : '') + '" style="--p1:' + p[0] + ';--p2:' + p[1] + '"><i></i>' + obj(k) + '</span>';
   }
-  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car };
+  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car, rps: function (i) { return rpsSvg(i, true); } };
 })(window.D6 = window.D6 || {});

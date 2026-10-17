@@ -46,6 +46,7 @@ $params = [
   'sicbo' => fn() => ['bet' => ['small', 'big'][random_int(0, 1)]], 'chests' => fn() => ['pick' => random_int(0, 2)],
   'darts' => fn() => [],
   'dice#duel' => fn() => ['duel' => ['red', 'black'][random_int(0, 1)]],
+  'rps' => fn() => ['pick' => random_int(0, 2)],
 ];
 foreach ($params as $g => $pf) {
   $N = 300000; $sum = 0.0; $bad = 0;
@@ -57,6 +58,7 @@ foreach ($params as $g => $pf) {
       if (($r['mult'] > 0) !== ($same || $ch >= 2)) $bad++; }
     if ($g === 'scratch') { $c = array_count_values($r['view']['grid']); $three = max($c) >= 3; if (($r['mult'] > 0) !== $three || max($c) > 3 || count($r['view']['grid']) !== 9) $bad++; }
     if ($g === 'dice#duel' && ($r['view']['r'] === $r['view']['b'] ? $r['mult'] != 1.0 : (($r['view']['side'] === 'red') === ($r['view']['r'] > $r['view']['b'])) !== ($r['mult'] > 1))) $bad++;
+    if ($g === 'rps' && ($r['view']['me'] === $r['view']['bot'] ? $r['mult'] != 1.0 : (((($r['view']['me'] - $r['view']['bot'] + 3) % 3) === 1) !== ($r['mult'] > 1)))) $bad++;
     if ($g === 'darts' && CASINO_DARTS[$r['view']['z']][0] != $r['mult']) $bad++;
     if ($g === 'plinko' && CASINO_PLINKO[array_sum($r['view']['path'])] != $r['mult']) $bad++;
     if ($g === 'keno' && CASINO_KENO[count(array_intersect([3, 9, 15], $r['view']['draw']))] != $r['mult']) $bad++;

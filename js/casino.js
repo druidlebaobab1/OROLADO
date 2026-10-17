@@ -15,7 +15,7 @@
         jet: ['Jet Man', 'Il s’envole, encaisse !'], rocket: ['Fusée', 'Jusqu’aux étoiles'], apple: ['Verger d’or', '10 étages'],
         tower: ['La Tour', '3 portes, 1 piège'], dragon: ['Dragon Tigre', 'La plus forte carte'], baccarat: ['Baccara', 'Joueur ou Banque'], sicbo: ['Sic Bo', 'Petit ou Grand'], chests: ['Coffres', '1 trésor sur 3'], balloon: ['Ballon', 'Gonfle et encaisse'] },
       takeoff: 'Départ dans {s} s — mise maintenant', placed: 'Pari placé ✓ attends le départ', betNext: 'Miser (prochain tour)', cancel: 'Pari annulé : mise rendue', cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
-      heads: 'Pile', tails: 'Face', ddRule: 'Le plus grand dé gagne ×1,92 · égalité = mise rendue', tieBack: 'égalité, mise rendue', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
+      heads: 'Pile', tails: 'Face', rock: 'Pierre', paper: 'Feuille', scissors: 'Ciseaux', you: 'Toi', rpsRule: 'Gagné ×1,91 · égalité = mise rendue', ddRule: 'Le plus grand dé gagne ×1,92 · égalité = mise rendue', tieBack: 'égalité, mise rendue', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
       pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
       shoot: 'Touche le but pour tirer', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
@@ -29,7 +29,7 @@
         jet: ['Jet Man', 'He flies, cash out!'], rocket: ['Rocket', 'To the stars'], apple: ['Golden Orchard', '10 floors'],
         tower: ['The Tower', '3 doors, 1 trap'], dragon: ['Dragon Tiger', 'Highest card'], baccarat: ['Baccarat', 'Player or Banker'], sicbo: ['Sic Bo', 'Small or Big'], chests: ['Chests', '1 treasure in 3'], balloon: ['Balloon', 'Pump and cash out'] },
       takeoff: 'Take-off in {s} s — bet now', placed: 'Bet placed ✓ wait for take-off', betNext: 'Bet (next round)', cancel: 'Bet cancelled: stake returned', cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
-      heads: 'Heads', tails: 'Tails', ddRule: 'Higher die wins ×1.92 · tie = stake back', tieBack: 'tie, stake back', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
+      heads: 'Heads', tails: 'Tails', rock: 'Rock', paper: 'Paper', scissors: 'Scissors', you: 'You', rpsRule: 'Win ×1.91 · tie = stake back', ddRule: 'Higher die wins ×1.92 · tie = stake back', tieBack: 'tie, stake back', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
       pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
       shoot: 'Tap the goal to shoot', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Bets', sportsSoon: 'Big matches are coming here soon.' }
@@ -53,7 +53,7 @@
   /* ---------- v2694 : noms en anglais (les mêmes dans toutes les langues, à nous) + logos « planète » (js/casino-art.js) ---------- */
   var NAMES = { crash: 'Sky Rush', jet: 'Jet Man', rocket: 'Rocket', mines: 'Mines', apple: 'Golden Orchard', tower: 'Tower', plinko: 'Cascade', dice: 'Dice', limbo: 'Target',
     wheel: 'Lucky Wheel', roulette: 'Roulette', slots: 'Lucky 777', coin: 'Coin Flip', keno: 'Keno', scratch: 'Scratch Card', hilo: 'Hi-Lo', dragon: 'Dragon Tiger', baccarat: 'Baccarat',
-    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts', cryptox: 'Crypto Live', horses: 'Horse Race' };
+    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts', cryptox: 'Crypto Live', horses: 'Horse Race', rps: 'Rock Paper Scissors' };
   // v2718 : jeux EN DIRECT (même tour / même tirage pour tout le monde) → pastille « LIVE » qui clignote sous le nom
   var LIVE_GAMES = { crash: 1, jet: 1, rocket: 1, cryptox: 1, horses: 1, roulette: 1 };
   var ART = D6.CasinoArt || { planet: function () { return ''; }, obj: function () { return ''; }, sym: function () { return ''; }, car: function () { return ''; }, PAL: {} };
@@ -74,7 +74,8 @@
   /* ---------- état ---------- */
   // v2706 (propriétaire) : ordre mélangé — les 3 jeux en tour commun (crash, jet, rocket) ne sont plus côte à côte
   // v2718 (propriétaire) : Keno, Cascade, Darts et Colors retirés ; Crypto Live et Horse Race ajoutés ; jeux en direct séparés
-  var ORDER = ['crash', 'cryptox', 'mines', 'roulette', 'penalty', 'jet', 'horses', 'apple', 'slots', 'wheel', 'dragon', 'rocket', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'chests'];
+  // v2738 (propriétaire) : 24 jeux = 6 lignes de 4, bien droites ; nouveau : Rock Paper Scissors
+  var ORDER = ['crash', 'cryptox', 'mines', 'roulette', 'penalty', 'jet', 'rps', 'horses', 'apple', 'slots', 'wheel', 'dragon', 'rocket', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'chests'];
   // v2693 (propriétaire) : la mise de départ est toujours 0,10 $ à l'ouverture du Casino.
   var S = { mode: 'real', stake: 0.1, game: '', view: 'games', bal: { real: null, demo: null }, busy: false, timer: 0 };
   function save() { /* la mise n'est plus gardée : 0,10 $ à chaque ouverture */ }
@@ -262,6 +263,7 @@
       chests: '1. Touche un des 3 coffres.\n2. Touche « Miser » : ton coffre s’ouvre.\n3. S’il contient l’or : ×2,85. Les autres s’ouvrent ensuite pour montrer où il était.',
       balloon: '1. Touche « Miser ».\n2. Appuie sur la main pour gonfler : chaque souffle fait monter le gain (en haut à gauche).\n3. Encaisse avant qu’il éclate ! S’il éclate, la mise est perdue.',
       penalty: '1. Touche « Miser ».\n2. Touche le but là où tu veux tirer : le gardien plonge.\n3. Chaque but fait monter le gain (ligne du haut : ×1,44 → ×24,60). Encaisse quand tu veux ; un arrêt = mise perdue.',
+      rps: '1. Choisis : Pierre, Feuille ou Ciseaux.\n2. Touche « Miser » : le robot OROLADO joue en même temps.\n3. Feuille bat pierre, ciseaux bat feuille, pierre bat ciseaux. Tu gagnes ×1,91 ; égalité = mise rendue.',
       race: '1. Choisis ta voiture (1 à 6).\n2. Touche « Miser » : la course démarre.\n3. Si ta voiture gagne : ×5,7.',
       plinko: 'La bille tombe et rebondit jusqu’à une case : les cases du bord paient le plus (×12).',
       keno: 'Choisis 3 numéros sur 20. 5 numéros sont tirés. 1 bon = ×0,6 · 2 bons = ×3,5 · 3 bons = ×25.',
@@ -291,6 +293,7 @@
       chests: '1. Tap one of the 3 chests.\n2. Tap “Bet”: your chest opens.\n3. If it holds the gold: ×2.85. The others then open to show where it was.',
       balloon: '1. Tap “Bet”.\n2. Press the hand to pump: each pump raises the win (top left).\n3. Cash out before it pops! If it pops, the stake is lost.',
       penalty: '1. Tap “Bet”.\n2. Tap the goal where you want to shoot: the keeper dives.\n3. Each goal raises the win (top line: ×1.44 → ×24.60). Cash out anytime; a save = stake lost.',
+      rps: '1. Pick: Rock, Paper or Scissors.\n2. Tap “Bet”: the OROLADO robot plays at the same time.\n3. Paper beats rock, scissors beats paper, rock beats scissors. You win ×1.91; tie = stake back.',
       race: '1. Pick your car (1 to 6).\n2. Tap “Bet”: the race starts.\n3. If your car wins: ×5.7.',
       plinko: 'The ball drops and bounces into a slot: the edge slots pay the most (×12).',
       keno: 'Pick 3 numbers out of 20. 5 are drawn. 1 hit = ×0.6 · 2 hits = ×3.5 · 3 hits = ×25.',
@@ -356,6 +359,33 @@
       R.innerHTML = duelDie(r.view.r, true); B.innerHTML = duelDie(r.view.b, false);
       R.className = 'dd-die' + (r.view.r > r.view.b ? ' top' : ''); B.className = 'dd-die' + (r.view.b > r.view.r ? ' top' : '');
       resultLine(box, r, r.view.r + ' — ' + r.view.b + (r.view.r === r.view.b ? ' · ' + (x.tieBack || 'égalité, mise rendue') : ''));
+      g.disabled = false;
+    });
+  };
+
+  /* v2738 (propriétaire) : ROCK PAPER SCISSORS contre le robot OROLADO — le plus simple du monde.
+     Feuille bat pierre, ciseaux bat feuille, pierre bat ciseaux. Gagné ×1,91 · égalité = mise rendue. */
+  GAMES.rps = function (box, x) {
+    var pick = 0, nm = [x.rock || 'Pierre', x.paper || 'Feuille', x.scissors || 'Ciseaux'];
+    var hand = function (i) { return ART.rps ? ART.rps(i) : ''; };
+    box.innerHTML = '<div class="cs-stage rps-stage"><div class="rps-row"><div class="rps-side"><span class="rps-h" id="csRpsMe">' + hand(0) + '</span><b>' + esc(x.you || 'Toi') + '</b></div><em class="dd-vs">VS</em>' +
+      '<div class="rps-side bot"><span class="rps-h" id="csRpsBot">' + hand(0) + '</span><b>🤖 OROLADO</b></div></div><small class="cs-lbl dd-rule">' + esc(x.rpsRule || 'Gagné ×1,91 · égalité = mise rendue') + '</small></div><div class="cs-res"></div>' +
+      stakePanel(x.bet, '<div class="cs-opts rps-pick">' + [0, 1, 2].map(function (i) { return '<button type="button" data-p="' + i + '" class="' + (i ? '' : 'on') + '">' + hand(i) + '<small>' + esc(nm[i]) + '</small></button>'; }).join('') + '</div>');
+    bindStake(box);
+    box.querySelectorAll('[data-p]').forEach(function (b) { b.addEventListener('click', function () { pick = +b.getAttribute('data-p'); $('csRpsMe').innerHTML = hand(pick); box.querySelectorAll('[data-p]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
+    $('csGo').addEventListener('click', async function () {
+      var g = this; if (g.disabled) return;
+      g.disabled = true;
+      var me = $('csRpsMe'), bot = $('csRpsBot');
+      me.innerHTML = hand(0); bot.innerHTML = hand(0); me.className = 'rps-h shake'; bot.className = 'rps-h shake';
+      var r = await play('rps', { pick: pick });
+      if (!r) { me.className = 'rps-h'; bot.className = 'rps-h'; me.innerHTML = hand(pick); g.disabled = false; return; }
+      await sleep(900);
+      me.className = 'rps-h'; bot.className = 'rps-h';
+      me.innerHTML = hand(r.view.me); bot.innerHTML = hand(r.view.bot);
+      var win = r.mult > 1, tie = r.view.me === r.view.bot;
+      me.classList.toggle('top', win); bot.classList.toggle('top', !win && !tie);
+      resultLine(box, r, nm[r.view.me] + ' — ' + nm[r.view.bot] + (tie ? ' · ' + (x.tieBack || 'égalité, mise rendue') : ''));
       g.disabled = false;
     });
   };
