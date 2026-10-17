@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manettes Casino</title>
+<style>
+body{margin:0;background:radial-gradient(120% 60% at 50% 0%,#2a1460,#0d0826 70%);color:#fff;font:600 13px system-ui;padding:12px}
+h1{font-size:17px;margin:0 0 2px}
+p.s{margin:0 0 10px;color:#c7c2e8;font-weight:500}
+h2{font-size:14px;color:#FDE68A;margin:16px 0 8px}
+.g{display:grid;grid-template-columns:1fr;gap:8px}
+.c{background:rgba(255,255,255,.06);border-radius:16px;padding:8px;display:grid;grid-template-columns:96px 1fr;column-gap:8px;align-items:center;position:relative}.c .bar{grid-column:2;grid-row:1}.c small{grid-column:2;grid-row:2;text-align:left;margin-top:4px}.c .big{grid-row:1/3}
+.n{position:absolute;left:9px;top:6px;font-size:17px;font-weight:900;color:#FDE68A}
+.big{width:84px;height:84px;margin:0 auto;display:block}
+.bar{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:14px;background:linear-gradient(180deg,#1b1240,#120b2c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.tb{display:flex;flex-direction:column;align-items:center;gap:1px;width:46px}
+.tb svg{width:40px;height:30px}
+.tb i{font-style:normal;font-size:9px;font-weight:800;color:#fff}
+.bal{margin-left:auto;padding:3px 7px;border-radius:9px;border:1px solid rgba(60,245,166,.7);font-size:9px;color:#A7F3D0;line-height:1.2;text-align:left}
+.bal b{display:block;color:#fff;font-size:11px}
+small{display:block;color:#d6d1f2;margin-top:6px;font-weight:600;font-size:11.5px}
+</style></head><body>
+<h1>Bouton Casino — manettes de jeu + autres idées</h1>
+<p class="s">En grand, puis directement dans la barre du haut (à côté de Cadeaux). Dis-moi le numéro.</p>
+<svg width="0" height="0" style="position:absolute"><defs>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFEDA8"/><stop offset=".55" stop-color="#F5B700"/><stop offset="1" stop-color="#A86B00"/></linearGradient>
+<linearGradient id="blk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4B5563"/><stop offset="1" stop-color="#0B0F19"/></linearGradient>
+<linearGradient id="wht" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient>
+<linearGradient id="vio" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C084FC"/><stop offset="1" stop-color="#6D28D9"/></linearGradient>
+<linearGradient id="neo" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#E879F9"/></linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8A9B"/><stop offset="1" stop-color="#BE123C"/></linearGradient>
+<linearGradient id="grn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6EE7B7"/><stop offset="1" stop-color="#059669"/></linearGradient>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FDE68A" stop-opacity=".85"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0"/></radialGradient>
+<!-- forme de la manette (64×64) -->
+<path id="pad" d="M17 18h30c8 0 12 6 13.5 14l2 11c1.2 7-5 11-10 7l-8-7H19.5l-8 7c-5 4-11.2 0-10-7l2-11C5 24 9 18 17 18z"/>
+<clipPath id="padClip"><use href="#pad"/></clipPath>
+<g id="dpad"><rect x="-2.6" y="-7.5" width="5.2" height="15" rx="1.4"/><rect x="-7.5" y="-2.6" width="15" height="5.2" rx="1.4"/></g>
+<g id="abxy"><circle cx="0" cy="-5.2" r="2.7" fill="#22C55E"/><circle cx="5.2" cy="0" r="2.7" fill="#EF4444"/><circle cx="-5.2" cy="0" r="2.7" fill="#3B82F6"/><circle cx="0" cy="5.2" r="2.7" fill="#FACC15"/></g>
+<g id="chip"><circle r="6" fill="#E11D48"/><circle r="6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="2.2 2.5"/><circle r="3" fill="#FDE68A"/></g>
+<g id="die"><rect x="-5" y="-5" width="10" height="10" rx="2.4" fill="#fff"/><circle cx="-2.2" cy="-2.2" r="1.1" fill="#E11D48"/><circle cx="2.2" cy="2.2" r="1.1" fill="#E11D48"/><circle r="1.1" fill="#E11D48"/></g>
+<g id="card"><rect x="-5" y="-7" width="10" height="14" rx="1.8" fill="#fff" stroke="#CBD5E1" stroke-width=".6"/><text y="2.5" text-anchor="middle" font-size="8" font-weight="900" fill="#DC2626" font-family="system-ui">A</text></g>
+<g id="ball"><circle r="5.5" fill="#fff"/><path d="M0-2.2l2.1 1.5-.8 2.5h-2.6l-.8-2.5z" fill="#111"/></g>
+<g id="gift"><rect x="10" y="26" width="44" height="28" rx="4" fill="#EC4899"/><rect x="7" y="18" width="50" height="10" rx="3" fill="#F472B6"/><rect x="29" y="18" width="6" height="36" fill="#FDE68A"/><path d="M32 18c-6-9-16-9-15-3 1 4 9 4 15 3zm0 0c6-9 16-9 15-3-1 4-9 4-15 3z" fill="#FDE68A"/></g>
+<!-- les 15 logos -->
+<g id="L1"><use href="#pad" fill="url(#blk)"/><path d="M17 18h30c6 0 10 3 12 8H5c2-5 6-8 12-8z" fill="#fff" opacity=".12"/><g fill="#E5E7EB" transform="translate(18 31)"><use href="#dpad"/></g><g transform="translate(46 31)"><use href="#abxy"/></g><circle cx="27" cy="40" r="3.6" fill="#1F2937" stroke="#6B7280"/><circle cx="37" cy="40" r="3.6" fill="#1F2937" stroke="#6B7280"/></g>
+<g id="L2"><use href="#pad" fill="rgba(34,211,238,.08)" stroke="url(#neo)" stroke-width="3"/><g fill="url(#neo)" transform="translate(18 31)"><use href="#dpad"/></g><g fill="none" stroke="url(#neo)" stroke-width="2" transform="translate(46 31)"><circle cy="-5.2" r="2.4"/><circle cx="5.2" r="2.4"/><circle cx="-5.2" r="2.4"/><circle cy="5.2" r="2.4"/></g></g>
+<g id="L3"><use href="#pad" fill="url(#gold)" stroke="#8A5A00" stroke-width="1.5"/><path d="M17 20h30c6 0 9 2 11 6H6c2-4 5-6 11-6z" fill="#fff" opacity=".35"/><g fill="#7A4A00" transform="translate(18 31)"><use href="#dpad"/></g><g transform="translate(46 31)"><circle cy="-5.2" r="2.7" fill="#DC2626"/><circle cx="5.2" r="2.7" fill="#DC2626"/><circle cx="-5.2" r="2.7" fill="#16A34A"/><circle cy="5.2" r="2.7" fill="#16A34A"/></g><text x="32" y="44" text-anchor="middle" font-size="7" font-weight="900" fill="#7A4A00" font-family="system-ui">777</text></g>
+<g id="L4"><use href="#pad" fill="url(#vio)"/><path d="M17 18h30c6 0 10 3 12 8H5c2-5 6-8 12-8z" fill="#fff" opacity=".18"/><g fill="#fff" transform="translate(18 31)"><use href="#dpad"/></g><g transform="translate(46 31)"><use href="#abxy"/></g><rect x="38" y="4" width="24" height="11" rx="5.5" fill="#E11D48"/><circle cx="43.5" cy="9.5" r="2" fill="#fff"/><text x="53" y="12.5" text-anchor="middle" font-size="7" font-weight="900" fill="#fff" font-family="system-ui">LIVE</text></g>
+<g id="L5"><use href="#pad" fill="#1E1B4B"/><g clip-path="url(#padClip)"><rect x="0" y="16" width="64" height="40" fill="url(#vio)" opacity=".35"/><use href="#card" x="16" y="30" transform="rotate(-12 16 30)"/><use href="#die" x="28" y="36"/><use href="#chip" x="40" y="29"/><use href="#ball" x="50" y="40"/></g><use href="#pad" fill="none" stroke="url(#gold)" stroke-width="2.5"/></g>
+<g id="L6"><circle cx="32" cy="32" r="22" fill="url(#glow)" opacity=".5"/><use href="#die" transform="translate(23 36) rotate(-14) scale(2.2)"/><use href="#die" transform="translate(42 28) rotate(12) scale(2)" /></g>
+<g id="L7"><g transform="translate(25 34) rotate(-14)"><rect x="-11" y="-16" width="22" height="32" rx="3" fill="#fff" stroke="#CBD5E1"/><text y="5" text-anchor="middle" font-size="16" font-weight="900" fill="#111" font-family="system-ui">A</text><text x="-6" y="-8" font-size="7" fill="#111">♠</text></g><g transform="translate(39 32) rotate(12)"><rect x="-11" y="-16" width="22" height="32" rx="3" fill="#fff" stroke="#CBD5E1"/><text y="5" text-anchor="middle" font-size="16" font-weight="900" fill="#DC2626" font-family="system-ui">K</text><text x="-6" y="-8" font-size="7" fill="#DC2626">♥</text></g></g>
+<g id="L8"><g transform="translate(32 48)"><ellipse rx="18" ry="6" fill="#991B1B"/><rect x="-18" y="-6" width="36" height="6" fill="#DC2626"/><ellipse cy="-6" rx="18" ry="6" fill="#EF4444"/></g><g transform="translate(32 38)"><rect x="-18" y="-6" width="36" height="6" fill="#1D4ED8"/><ellipse cy="-6" rx="18" ry="6" fill="#3B82F6"/></g><g transform="translate(32 28)"><rect x="-18" y="-6" width="36" height="6" fill="#B45309"/><ellipse cy="-6" rx="18" ry="6" fill="url(#gold)"/><ellipse cy="-6" rx="11" ry="3.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="3 3"/></g></g>
+<g id="L9"><rect x="8" y="12" width="48" height="40" rx="8" fill="url(#red)" stroke="#FDE68A" stroke-width="2"/><rect x="13" y="20" width="12" height="22" rx="3" fill="#fff"/><rect x="26" y="20" width="12" height="22" rx="3" fill="#fff"/><rect x="39" y="20" width="12" height="22" rx="3" fill="#fff"/><g font-family="system-ui" font-weight="900" font-size="15" fill="#DC2626" text-anchor="middle"><text x="19" y="36">7</text><text x="32" y="36">7</text><text x="45" y="36">7</text></g><path d="M58 18v18" stroke="#D1D5DB" stroke-width="3" stroke-linecap="round"/><circle cx="58" cy="16" r="4" fill="#DC2626"/></g>
+<g id="L10"><circle cx="32" cy="32" r="26" fill="#7C2D12"/><circle cx="32" cy="32" r="22" fill="#111827" stroke="#D4AF37" stroke-width="2"/><g stroke="#D4AF37" stroke-width="1"><path d="M32 10v44M10 32h44M16.4 16.4l31.2 31.2M47.6 16.4L16.4 47.6"/></g><path d="M32 10a22 22 0 0 1 15.6 6.4L32 32z" fill="#DC2626"/><path d="M54 32a22 22 0 0 1-6.4 15.6L32 32z" fill="#DC2626"/><path d="M32 54a22 22 0 0 1-15.6-6.4L32 32z" fill="#DC2626"/><path d="M10 32a22 22 0 0 1 6.4-15.6L32 32z" fill="#DC2626"/><circle cx="32" cy="32" r="8" fill="url(#gold)" stroke="#fff"/><circle cx="44" cy="15" r="3.4" fill="#fff"/></g>
+<g id="L11"><rect x="16" y="44" width="32" height="10" rx="4" fill="#DC2626"/><rect x="12" y="52" width="40" height="6" rx="3" fill="#7F1D1D"/><path d="M30 44V22h4v22z" fill="#9CA3AF"/><circle cx="32" cy="17" r="10" fill="url(#red)"/><circle cx="28.5" cy="13.5" r="3" fill="#fff" opacity=".6"/><circle cx="44" cy="46" r="3.6" fill="#FACC15"/><circle cx="20" cy="46" r="3.6" fill="#3B82F6"/></g>
+<g id="L12"><path d="M20 10h24v8c0 9-5 15-12 15s-12-6-12-15z" fill="url(#gold)" stroke="#8A5A00"/><path d="M20 13h-6v3c0 5 3 8 7 9M44 13h6v3c0 5-3 8-7 9" fill="none" stroke="#F5B700" stroke-width="3"/><rect x="29" y="33" width="6" height="7" fill="#B7791F"/><rect x="22" y="40" width="20" height="5" rx="2" fill="#92400E"/><g transform="translate(46 47)"><use href="#ball" transform="scale(1.7)"/></g></g>
+<g id="L13"><g fill="url(#grn)"><circle cx="24" cy="22" r="10"/><circle cx="40" cy="22" r="10"/><circle cx="24" cy="38" r="10"/><circle cx="40" cy="38" r="10"/></g><path d="M32 30c3 10 8 18 14 24" stroke="#065F46" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="32" cy="30" r="7" fill="url(#gold)" stroke="#fff"/><text x="32" y="33.5" text-anchor="middle" font-size="9" font-weight="900" fill="#7A4A00" font-family="system-ui">$</text></g>
+<g id="L14"><path d="M8 50Q30 44 54 14" stroke="#EF4444" stroke-width="3" fill="none" stroke-dasharray="1 4" stroke-linecap="round" opacity=".7"/><g transform="translate(40 26) rotate(-38)"><path d="M-16 0c0-3 3-5 7-5h16l9 5-9 5H-9c-4 0-7-2-7-5z" fill="url(#red)"/><path d="M-2-5l-6-9h5l9 9zM-2 5l-6 9h5l9-9z" fill="#BE123C"/><circle cx="6" cy="0" r="2.2" fill="#BFDBFE"/></g><text x="16" y="56" font-size="10" font-weight="900" fill="#FACC15" font-family="system-ui">×12</text></g>
+<g id="L15"><path d="M32 6c4 9 14 13 14 26a14 14 0 0 1-28 0c0-6 3-10 6-13 0 5 3 7 5 7-2-8 1-15 3-20z" fill="#F97316"/><path d="M32 22c2 6 8 8 8 15a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 2 4 3 4-1-4 0-8 1-11z" fill="#FACC15"/><rect x="14" y="48" width="36" height="12" rx="6" fill="#DC2626"/><text x="32" y="57" text-anchor="middle" font-size="8" font-weight="900" fill="#fff" font-family="system-ui">HOT</text></g>
+</defs></svg>
+
+<h2>A. La manette de jeu — 5 versions</h2>
+<div class="g" id="ga"></div>
+<h2>B. 10 autres idées que tout le monde reconnaît</h2>
+<div class="g" id="gb"></div>
+<script>
+var A = [['L1','Manette noire classique (couleurs vives)'],['L2','Manette néon légère et transparente'],['L3','Manette dorée « 777 »'],['L4','Manette violette + badge LIVE'],['L5','Manette avec les jeux À L’INTÉRIEUR (carte, dé, jeton, ballon)']];
+var B = [['L6','2 dés rouges'],['L7','Cartes As et Roi'],['L8','Pile de jetons'],['L9','Machine à sous 777'],['L10','Roulette'],['L11','Joystick d’arcade'],['L12','Trophée + ballon (Paris)'],['L13','Trèfle de la chance $'],['L14','Avion qui monte ×12'],['L15','Flamme « HOT »']];
+function card(n, id, t) {
+  return '<div class="c"><span class="n">' + n + '</span><svg class="big" viewBox="0 0 64 64"><use href="#' + id + '"/></svg>' +
+    '<div class="bar"><span class="tb"><svg viewBox="0 0 64 64"><use href="#gift"/></svg><i>Cadeaux</i></span><span class="tb"><svg viewBox="0 2 64 60"><use href="#' + id + '"/></svg><i>Casino</i></span><span class="bal">COMPTE RÉEL<b>$ 25.00</b></span></div><small>' + t + '</small></div>';
+}
+document.getElementById('ga').innerHTML = A.map(function (a, i) { return card(i + 1, a[0], a[1]); }).join('');
+document.getElementById('gb').innerHTML = B.map(function (a, i) { return card(i + 6, a[0], a[1]); }).join('');
+</script>
+</body></html>
