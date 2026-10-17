@@ -2435,6 +2435,19 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .modal.on table tr + tr td{border-top:1px solid rgba(255,255,255,.06)}
     .modal.on .mini:not(:first-child){min-height:40px;border-radius:11px!important}
     @media (min-width:760px){.modal.on > .modal-box{padding:0 24px 48px!important}.modal.on > .modal-box > button.mini:first-child{width:calc(100% + 48px);margin:0 -24px 14px!important}}
+    /* v2753 (propriétaire, sur ORDINATEUR) : admin centré, textes plus grands, icône dessinée de couleur pour chaque section */
+    .sec{display:flex!important;align-items:center;gap:10px;font-size:.95rem!important;font-weight:900!important;letter-spacing:.02em;margin:22px 0 10px!important;color:#E6E9F5!important}
+    .sec-ico{width:32px;height:32px;flex:none;border-radius:10px;display:grid;place-items:center;background:var(--ic,#334155);box-shadow:0 6px 14px -6px var(--ic,#000)}
+    .sec-ico svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    @media (min-width:900px){
+      .wrap,.online-bar{max-width:1180px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+      .head{max-width:1180px;margin:0 auto}
+      .metric-btn{min-height:64px!important;padding:16px 16px!important;border-radius:14px!important}
+      .metric-btn .k{font-size:.86rem!important}
+      .metric-btn .badge{font-size:1rem!important;min-width:40px}
+      .metrics{gap:12px!important}
+      .sum-bar{max-width:1180px;margin-left:auto;margin-right:auto}
+    }
   </style>
 </head>
 <body>
@@ -2763,6 +2776,19 @@ document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
 // v2713 : chaque bouton ouvre SA page (le menu se cache, « ← Menu » pour revenir à l'endroit exact)
 let admFrom = null;
 function admOpenPage(btn) { admFrom = btn; document.body.classList.add('adm-page'); window.scrollTo(0, 0); }
+// v2753 : une icône dessinée de couleur devant chaque section (A Inscriptions … F Cadeaux)
+(function () {
+  var IC = [['#3B82F6', '<path d="M15 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 3 17.5V19"/><circle cx="9" cy="8" r="3.2"/><path d="M19 8v6M22 11h-6"/>'],
+    ['#10B981', '<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M12 2v8M9 7l3 3 3-3"/>'],
+    ['#F97316', '<rect x="3" y="9" width="18" height="12" rx="2.5"/><path d="M12 16V5M9 8l3-3 3 3"/>'],
+    ['#8B5CF6', '<path d="M7 9h10c3 0 4 2 4.5 5l.5 3c.3 2-1.6 3-3 2l-2.5-2H7.5L5 19c-1.4 1-3.3 0-3-2l.5-3C3 11 4 9 7 9z"/><path d="M7 12v3M5.5 13.5h3"/><circle cx="16.5" cy="12.5" r=".8" fill="#fff"/><circle cx="18" cy="14.5" r=".8" fill="#fff"/>'],
+    ['#06B6D4', '<path d="M3 20h18"/><rect x="5" y="12" width="3" height="6"/><rect x="10.5" y="8" width="3" height="10"/><rect x="16" y="4" width="3" height="14"/>'],
+    ['#EC4899', '<rect x="3" y="10" width="18" height="11" rx="2"/><path d="M2 7h20v3H2zM12 7v14M12 7c-2-4-7-4-6-1 1 2 4 1 6 1zm0 0c2-4 7-4 6-1-1 2-4 1-6 1z"/>']];
+  document.querySelectorAll('.wrap > .sec').forEach(function (el, i) {
+    var c = IC[i]; if (!c || el.querySelector('.sec-ico')) return;
+    el.insertAdjacentHTML('afterbegin', '<i class="sec-ico" style="--ic:' + c[0] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + c[1] + '</svg></i>');
+  });
+})();
 document.getElementById('btnTopG').addEventListener('click', () => { document.getElementById('btnCasA').click(); setTimeout(() => { const t = document.getElementById('csTabSt'); if (t) t.click(); }, 60); });
 document.getElementById('admBack').addEventListener('click', () => {
   document.body.classList.remove('adm-page');
