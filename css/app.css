@@ -11477,3 +11477,8 @@ html body #casinoModal .ch button.gold .tch-star{animation:tchStar .9s .15s cubi
 @keyframes tchStar{0%{transform:translateX(-50%) scale(0) rotate(0);opacity:0}60%{transform:translateX(-50%) scale(1.5) rotate(90deg);opacity:1}100%{transform:translateX(-50%) scale(1.15) rotate(120deg);opacity:1}}
 html body #casinoModal .ch button.gold{transform:translateY(-6px) scale(1.08)!important;filter:drop-shadow(0 0 18px rgba(253,224,71,.85))!important}
 html.oro-lite body #casinoModal .ch button.gold .tch-burst b{animation-duration:.6s}
+/* v2743 (propriétaire) : 9 gains = 3 lignes de 3, bien droites (plus de case vide) */
+html:root body #casinoModal .whl-leg{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:300px!important}
+html:root body #casinoModal .whl2{width:min(250px,66vw,38vh)!important;height:auto!important;aspect-ratio:1}
+html:root body #casinoModal .whl-leg{margin-bottom:6px!important}
+html:root body #casinoModal .whl-leg span{min-height:28px}
