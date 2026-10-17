@@ -12113,3 +12113,88 @@ html:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screen
 @media (min-width:700px){
 html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3) .topbar-row.topbar-row,
 html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3) .topbar-row.topbar-row{justify-content:center!important;gap:clamp(14px,2.4vw,30px)!important}}
+
+/* ================= v2765 (propriétaire) : NOTIFICATIONS nettes partout — pastille sombre PLEINE (plus de flou ni de transparence),
+   texte court et blanc, une petite pastille de couleur selon le message (rouge = erreur, vert = réussi, violet = info) ================= */
+html body #toast#toast.toast.lux-msg:not(.micro){backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#1A1533!important;background-image:none!important;color:#fff!important;
+  box-shadow:0 10px 26px -10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.14)!important;max-width:min(92vw,420px)!important;font:700 13px/1.25 "Plus Jakarta Sans",system-ui,sans-serif!important;text-shadow:none!important}
+html body #toast#toast.toast.lux-msg:not(.micro) .lux-msg-txt{color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;filter:none!important}
+html body #toast#toast.toast.lux-msg:not(.micro).err{box-shadow:0 10px 26px -10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(251,113,133,.55)!important}
+html body #toast#toast.toast.lux-msg:not(.micro).ok{box-shadow:0 10px 26px -10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(52,211,153,.55)!important}
+html body #toast#toast.toast.lux-msg:not(.micro) .lux-msg-ico{filter:none!important;opacity:1!important}
+html body #casinoModal .cs-toast.cs-toast{background:#1A1533!important}
+
+/* ================= v2765 : PARIS (fond clair) — bandeau du haut sombre : la carte « Compte réel » garde EXACTEMENT son aspect ================= */
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-top{background:linear-gradient(180deg,#2B1E5E,#211A4C)!important;margin:0 -16px 10px!important;padding-left:16px!important;padding-right:16px!important;padding-bottom:8px!important;border-radius:0 0 18px 18px!important;box-shadow:0 6px 18px -10px rgba(20,21,48,.5)!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-back{background:rgba(255,255,255,.1)!important;color:#fff!important;box-shadow:none!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-back svg{stroke:#fff!important;color:#fff!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .cs-guestw .cs-in{background:rgba(255,255,255,.06)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid rgba(255,255,255,.35)!important}
+/* onglets « Paris » | « Mes paris » */
+html:root body #casinoModal .sp-tabs{display:flex;gap:4px;padding:4px;margin:2px 0 12px;border-radius:14px;background:#E9E8F3;box-shadow:inset 0 0 0 1px rgba(20,21,48,.06)}
+html:root body #casinoModal .sp-tabs button{flex:1;height:38px;border:0;border-radius:11px;background:transparent;color:#5B5E78;font:800 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+html:root body #casinoModal .sp-tabs button.on{background:#fff;color:#141530;box-shadow:0 2px 8px -3px rgba(20,21,48,.25)}
+/* bouton « Parier » bien net */
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-go,html:root body #casinoModal#casinoModal#casinoModal.pred-only #spGo{background:linear-gradient(180deg,#22C55E,#16A34A)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;filter:none!important;border:0!important;box-shadow:0 6px 16px -8px rgba(22,163,74,.8)!important;font:900 15px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;text-shadow:none!important;height:50px!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-r label{color:#5B5E78!important;font-weight:700}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-r span{color:#5B5E78!important}
+html:root body #casinoModal#casinoModal#casinoModal.pred-only .sp-slip-h button{color:#E11D48!important}
+/* « Mes paris » : vrais reçus */
+html:root body #casinoModal .sp-rcs{display:flex;flex-direction:column;gap:10px}
+html:root body #casinoModal .sp-rc{position:relative;padding:12px 14px 10px;border-radius:16px;background:#fff;box-shadow:0 2px 10px -4px rgba(20,21,48,.16),inset 0 0 0 1px rgba(20,21,48,.06);color:#141530}
+html:root body #casinoModal .sp-rc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+html:root body #casinoModal .sp-rc-h i{font:900 11px/1 "Plus Jakarta Sans",system-ui,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.05em;padding:5px 9px;border-radius:999px;background:#FFF1E6;color:#C2410C}
+html:root body #casinoModal .sp-rc.won .sp-rc-h i{background:#DCFCE7;color:#15803D}
+html:root body #casinoModal .sp-rc.lost .sp-rc-h i{background:#FFE4E6;color:#BE123C}
+html:root body #casinoModal .sp-rc.void .sp-rc-h i{background:#F1F5F9;color:#475569}
+html:root body #casinoModal .sp-rc-h small{font:700 11.5px/1 "Plus Jakarta Sans",system-ui,sans-serif;color:#6B6F86}
+html:root body #casinoModal .sp-rc-s{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px dashed rgba(20,21,48,.12);font:700 13px/1.3 "Plus Jakarta Sans",system-ui,sans-serif}
+html:root body #casinoModal .sp-rc-s em{font-style:normal;color:#6B6F86;white-space:nowrap}
+html:root body #casinoModal .sp-rc-s.won em{color:#15803D}
+html:root body #casinoModal .sp-rc-s.lost em{color:#BE123C}
+html:root body #casinoModal .sp-rc-f{display:flex;align-items:flex-end;gap:14px;padding-top:8px;border-top:1px solid rgba(20,21,48,.1);font:600 12px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:#6B6F86}
+html:root body #casinoModal .sp-rc-f b{color:#141530;font-weight:800}
+html:root body #casinoModal .sp-rc-big{margin-inline-start:auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+html:root body #casinoModal .sp-rc-big b{font:900 18px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:#EA580C!important}
+html:root body #casinoModal .sp-rc.won .sp-rc-big b{color:#16A34A!important}
+html:root body #casinoModal .sp-rc.lost .sp-rc-big b{color:#BE123C!important}
+html:root body #casinoModal .sp-rc-id{margin-top:6px;font:700 10px/1 ui-monospace,Menlo,Consolas,monospace;color:#A3A6BA;text-align:end}
+html:root body #casinoModal .sp-mine-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:26px 10px;text-align:center}
+html:root body #casinoModal .sp-cta{height:44px;padding:0 22px;border:0;border-radius:12px;background:linear-gradient(180deg,#FDBA4D,#F97316);color:#fff;font:900 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}
+html:root body #casinoModal .sp-none{text-align:center;color:#6B6F86;font-weight:700;padding:20px 0}
+html body #toast#toast.toast.lux-msg:not(.micro) .lux-msg-ico{background:#8B5CF6!important;color:#fff!important;box-shadow:none!important}
+html body #toast#toast.toast.lux-msg.err:not(.micro) .lux-msg-ico{background:#F43F5E!important}
+html body #toast#toast.toast.lux-msg.ok:not(.micro) .lux-msg-ico{background:#22C55E!important}
+/* v2765 (propriétaire) : joueur CONNECTÉ — retour à la disposition d'avant : [Cadeaux Paris] à gauche · grande manette « Jeux » au milieu · [Social Profil] à droite, symétriques */
+@media (orientation:portrait),(min-height:561px){
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row.topbar-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;align-items:center!important;column-gap:6px!important;justify-content:stretch!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row > .tb-left{display:flex!important;justify-self:start!important;grid-column:1!important;grid-row:1!important;gap:clamp(4px,2.6vw,14px)!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row > #btnGames{grid-column:2!important;grid-row:1!important;justify-self:center!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row > .topbar-actions{display:flex!important;justify-self:end!important;grid-column:3!important;grid-row:1!important;gap:clamp(4px,2.6vw,14px)!important}
+html:not(.oro-guest) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row #btnGames{height:56px!important}
+html:not(.oro-guest) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row #btnGames .gb-ico{width:78px!important;height:44px!important}
+html:not(.oro-guest) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row #btnGames b{font-size:13px!important}}
+@media (orientation:portrait) and (max-width:340px){
+html:not(.oro-guest) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row #btnGames .gb-ico{width:62px!important;height:36px!important}}
+@media (min-width:700px){
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row.topbar-row{max-width:560px!important;margin-left:auto!important;margin-right:auto!important}}
+/* v2765 (propriétaire) : dans les jeux en direct, plus de mot rouge « LIVE » — la même petite antenne que dans la liste des jeux */
+html:root body #casinoModal .lv-head .lv-live.lv-onair{display:inline-flex!important;align-items:center;justify-content:center;width:26px;height:22px;padding:0!important;margin:0!important;background:rgba(255,59,92,.14)!important;border:0!important;border-radius:8px!important;box-shadow:none!important}
+html:root body #casinoModal .lv-head .lv-live.lv-onair > svg{width:18px;height:14px;overflow:visible}
+html:root body #casinoModal .lv-head .lv-live.lv-onair circle{fill:#FF3B5C}
+html:root body #casinoModal .lv-head .lv-live.lv-onair path{fill:none;stroke:#FF3B5C;stroke-width:1.6;stroke-linecap:round;animation:csOnAir 1.6s ease-in-out infinite}
+html.oro-lite body #casinoModal .lv-head .lv-live.lv-onair path{animation:none}
+/* v2765b (propriétaire) : le petit « LIVE » bien écrit — pastille rouge pleine, texte blanc net, point qui clignote */
+html:root body #casinoModal .lv-head .lv-live.lv-pill{display:inline-flex!important;align-items:center!important;gap:5px!important;height:22px!important;padding:0 9px 0 8px!important;border-radius:999px!important;background:#E11D48!important;border:0!important;box-shadow:0 2px 8px -2px rgba(225,29,72,.7)!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;font:900 11px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.08em!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+html:root body #casinoModal .lv-head .lv-live.lv-pill > i{width:6px!important;height:6px!important;border-radius:50%!important;background:#fff!important;animation:lvBlink 1s steps(2,start) infinite}
+html.oro-lite body #casinoModal .lv-head .lv-live.lv-pill > i{animation:none}
+/* v2765 (propriétaire) : « Derniers » résultats bien visibles dans les jeux en direct (logos entiers, plus grands) */
+html:root body #casinoModal .lv-last{display:flex!important;align-items:center!important;gap:6px!important;height:auto!important;min-height:34px!important;flex-wrap:nowrap!important;overflow:hidden}
+html:root body #casinoModal .lv-last > small{font:800 11px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:rgba(255,255,255,.75)!important;margin-inline-end:2px}
+html:root body #casinoModal .lv-last .lv-coin.mini{width:30px!important;height:30px!important;min-width:30px!important;padding:0!important;display:inline-grid!important;place-items:center!important;border-radius:50%!important;background:none!important;box-shadow:0 0 0 2px rgba(255,255,255,.18)!important;font-size:0!important}
+html:root body #casinoModal .lv-last .lv-coin.mini > svg{width:30px!important;height:30px!important;display:block!important}
+html:root body #casinoModal .lv-last .lv-coin.mini:first-of-type{box-shadow:0 0 0 2px #FBBF24!important}
+html:root body #casinoModal .lv-last .lv-rn,html:root body #casinoModal .lv-last .lv-silk{width:28px!important;height:28px!important;min-width:28px!important;border-radius:8px!important;font:900 12.5px/28px "Plus Jakarta Sans",system-ui,sans-serif!important;text-align:center}
+html:root body #casinoModal .lv-last .lv-rn:nth-child(2),html:root body #casinoModal .lv-last .lv-silk:nth-child(2){box-shadow:0 0 0 2px #FBBF24!important}
+html:root body #casinoModal .lv-last .lv-silk svg{width:100%!important;height:100%!important}
+html:root body #casinoModal .sp-rc-big small{color:#6B6F86!important;font:700 11px/1 "Plus Jakarta Sans",system-ui,sans-serif!important}

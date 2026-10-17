@@ -695,7 +695,7 @@
   function makeDraw(game) {
     return function (box, x) {
       var cfg = DRAW_CFG[game], lx = LX();
-      box.innerHTML = '<div class="cs-stage lv-stage lv-' + game + (game === 'roulette' ? ' rl-stage' : '') + '"><div class="lv-head"><span class="lv-live"><i></i>' + esc(lx.live) + '</span><b id="lvPhase"></b><em id="lvTime"></em></div>' +
+      box.innerHTML = '<div class="cs-stage lv-stage lv-' + game + (game === 'roulette' ? ' rl-stage' : '') + '"><div class="lv-head"><span class="lv-live lv-pill"><i></i>LIVE</span><b id="lvPhase"></b><em id="lvTime"></em></div>' +
         '<i class="lv-bar"><b id="lvBar"></b></i><div class="lv-scene">' + cfg.stage() + '</div><div class="lv-last" id="lvLast"></div></div><div class="cs-res"></div>' +
         (guest() ? '<div id="csNeed"></div>' : stakePanel(lx.betOn, cfg.picks(x)));
       if (guest()) { needAccount($('csNeed'), x); }

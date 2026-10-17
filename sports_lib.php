@@ -234,7 +234,7 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     $odd *= (float) $o['odd'];
     $maxStake = min($maxStake, (float) ($e['maxStake'] ?? SP_DEFAULT_MAX_STAKE));
   }
-  $odd = floor($odd * 100) / 100;
+  $odd = floor($odd * 100 + 1e-6) / 100; // v2765 : 2,30 reste 2,30 (avant : 2,29 à cause de l arrondi)
   if ($mode === 'real' && $stake > $maxStake + 1e-9) return ['ok' => false, 'reason' => 'max', 'maxStake' => $maxStake];
   if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin'];
   $ref = 'sp_' . bin2hex(random_bytes(9));
@@ -300,7 +300,7 @@ function sp_resolve(array $db): array {
       }
       if ($lost) { $s['b'][$i]['status'] = 'lost'; $s['b'][$i]['win'] = 0.0; $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => 0.0, 's' => $b['stake']]; continue; }
       if (!$ready) continue;
-      $win = casino_money(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100) / 100)));
+      $win = casino_money(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100 + 1e-6) / 100)));
       $s['b'][$i]['status'] = 'won'; $s['b'][$i]['win'] = $win;
       $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake']];
     }

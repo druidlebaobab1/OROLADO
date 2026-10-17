@@ -5,17 +5,20 @@
   var $ = function (id) { return document.getElementById(id); };
   var T = {
     fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Coupon', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
-      placed: '✅ Pari enregistré ! Gain possible : {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
+      placed: '✅ Pari enregistré · gain possible {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
+      betsTab: 'Paris', guestMine: 'Crée ton compte pour parier : tous tes paris s’afficheront ici, avec leur résultat.', guestBtn: 'Créer mon compte', seeBets: 'Voir les paris', stakeL: 'Mise', oddL: 'Cote', potL: 'Gain possible', wonL: 'Gagné', lostL: 'Perdu', voidL: 'Remboursé', loading: 'Un instant…',
       all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
     en: { none: 'No match right now. Big matches are coming here soon.', coupon: 'Bet slip', sel: '{n} selection(s)', odd: 'Odds', stake: 'Stake', pot: 'Potential win', bet: 'Place bet', clear: 'Clear',
       placed: '✅ Bet placed! Potential win: ${p}', mine: 'My bets', noBets: 'No bet yet.', open: 'Open', won: 'Won', lost: 'Lost', void: 'Void',
       closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 10 matches in a slip.',
       e_min: 'Minimum stake $0.10.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
+      betsTab: 'Bets', guestMine: 'Create your account to bet: all your bets will show here, with their result.', guestBtn: 'Create my account', seeBets: 'See the bets', stakeL: 'Stake', oddL: 'Odds', potL: 'Potential win', wonL: 'Won', lostL: 'Lost', voidL: 'Refunded', loading: 'One moment…',
       all: 'All', drawCode: 'X', sport: { foot: 'Football', basket: 'Basketball', boxe: 'Boxing', tennis: 'Tennis', mma: 'MMA', event: 'Predictions', crypto: 'Crypto', politique: 'Politics', autre: 'Sport' } }
   };
   T.zh = Object.assign({}, T.en, { none: '暂无比赛，重大赛事即将上线。', coupon: '投注单', sel: '已选 {n} 场', odd: '赔率', stake: '投注', pot: '可赢', bet: '确认投注', clear: '清空',
+    betsTab: '投注', guestMine: '注册后即可投注：你的所有投注和结果都会显示在这里。', guestBtn: '创建账户', seeBets: '查看投注', stakeL: '投注', oddL: '赔率', potL: '可赢', wonL: '已赢', lostL: '输', voidL: '已退款', loading: '请稍候…',
     placed: '✅ 投注成功！可赢：{p} 美元', mine: '我的投注', noBets: '暂无投注。', open: '进行中', won: '赢', lost: '输', void: '取消', closed: '已停止投注', result: '结果', starts: '开始', today: '今天', tomorrow: '明天', draw: '平局',
     sport: { foot: '足球', basket: '篮球', boxe: '拳击', tennis: '网球', mma: '综合格斗', event: '预测', crypto: '加密货币', politique: '政治', autre: '体育' } });
   (D6.LIVE_T = D6.LIVE_T || {}).sports = T;
@@ -98,7 +101,7 @@
     return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + hm;
   }
   function inSlip(ev, k) { return slip.some(function (s) { return s.ev === ev && s.k === k; }); }
-  function totalOdd() { return Math.floor(slip.reduce(function (a, s) { return a * s.odd; }, 1) * 100) / 100; }
+  function totalOdd() { return Math.floor(slip.reduce(function (a, s) { return a * s.odd; }, 1) * 100 + 1e-6) / 100; } // v2765 : 2,30 reste 2,30
 
   async function paint(container, c) {
     box = container; ctx = c || {};
@@ -125,17 +128,57 @@
   }
   // pré-chargement discret, 4 s après l'ouverture du site (une seule petite lecture)
   setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); } }); }, 4000);
+  // v2765 (propriétaire) : deux onglets en HAUT de la page — « Paris » (les matchs) et « Mes paris » (mes reçus)
+  var view = 'list', mineCache = null;
+  function tabs() {
+    var x = X();
+    return '<div class="sp-tabs"><button type="button" data-sv="list" class="' + (view === 'list' ? 'on' : '') + '">' + esc(x.betsTab) + '</button>' +
+      '<button type="button" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '">' + esc(x.mine) + '</button></div>';
+  }
+  function bindTabs() {
+    box.querySelectorAll('.sp-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); if (v === view) return; view = v; render(); }); });
+  }
+  function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function receipts(bets) {
+    var x = X();
+    if (!bets.length) return '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.noBets) + '</b><button type="button" class="sp-cta" data-sv="list">' + esc(x.seeBets) + '</button></div>';
+    var ST = { open: x.open, won: x.won, lost: x.lost, void: x.voidL };
+    return bets.map(function (bt) {
+      var big = bt.status === 'won' ? '+' + m2(bt.win) + ' $' : bt.status === 'lost' ? '−' + m2(bt.stake) + ' $' : m2(bt.status === 'void' ? bt.stake : bt.pot) + ' $';
+      var lab = bt.status === 'won' ? x.wonL : bt.status === 'lost' ? x.lostL : bt.status === 'void' ? x.voidL : x.potL;
+      return '<div class="sp-rc ' + esc(bt.status) + '"><div class="sp-rc-h"><i>' + esc(ST[bt.status] || bt.status) + '</i><small>' + esc(bt.at ? when2(bt.at) : '') + '</small></div>' +
+        bt.sel.map(function (s) { return '<div class="sp-rc-s ' + (s.r || '') + '"><span>' + esc(s.t) + '</span><em>' + esc(s.l) + ' · ' + Number(s.odd).toFixed(2) + '</em></div>'; }).join('') +
+        '<div class="sp-rc-f"><span>' + esc(x.stakeL) + ' <b>' + m2(bt.stake) + ' $</b></span><span>' + esc(x.oddL) + ' <b>' + Number(bt.odd).toFixed(2) + '</b></span><span class="sp-rc-big"><small>' + esc(lab) + '</small><b>' + big + '</b></span></div>' +
+        '<div class="sp-rc-id">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '</div></div>';
+    }).join('');
+  }
+  async function renderMine() {
+    var x = X();
+    if (ctx.guest) {
+      box.innerHTML = tabs() + '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.guestMine) + '</b><button type="button" class="sp-cta" id="spMineSign">' + esc(x.guestBtn) + '</button></div>';
+      bindTabs(); if ($('spMineSign')) $('spMineSign').addEventListener('click', function () { if (ctx.signup) ctx.signup(); });
+      return;
+    }
+    box.innerHTML = tabs() + '<div class="sp-rcs" id="spRcs">' + (mineCache ? receipts(mineCache) : '<p class="sp-none">' + esc(x.loading) + '</p>') + '</div>';
+    bindTabs(); bindRc();
+    var r = null; try { r = await D6.Api.post('spMine', {}, 15000); } catch (e) { r = null; }
+    if (view !== 'mine' || !$('spRcs')) return;
+    if (r && r.ok) { mineCache = r.bets || []; $('spRcs').innerHTML = receipts(mineCache); bindRc(); }
+    else if (!mineCache) $('spRcs').innerHTML = '<p class="sp-none">' + esc(x.e_unavailable) + '</p>';
+  }
+  function bindRc() { box.querySelectorAll('.sp-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); }); }
   function render() {
     if (!box) return;
     var x = X();
+    if (view === 'mine') { renderMine(); return; }
     if (!events.length) {
-      box.innerHTML = '<div class="sp-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.none) + '</b></div>' + mineBtn(); bindMine(); return;
+      box.innerHTML = tabs() + '<div class="sp-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.none) + '</b></div>'; bindTabs(); return;
     }
     // pastilles de sport (seulement les sports qui ont des matchs)
     var kinds = []; events.forEach(function (e) { var k = EVK[e.sport] ? 'event' : (e.sport || 'autre'); if (kinds.indexOf(k) < 0) kinds.push(k); });
     flt = 'all';
     var chips = ''; // v2747 (propriétaire) : plus de filtres foot / basket… — toutes les prédictions ensemble
-    box.innerHTML = chips + events.filter(function (e) { return flt === 'all' || (EVK[e.sport] ? 'event' : (e.sport || 'autre')) === flt; }).map(function (e) {
+    box.innerHTML = tabs() + chips + events.filter(function (e) { return flt === 'all' || (EVK[e.sport] ? 'event' : (e.sport || 'autre')) === flt; }).map(function (e) {
       var three = e.opts.length === 3;
       var opts = e.opts.map(function (o, i) {
         var on = inSlip(e.id, o.k), res = e.status === 'settled' && e.result === o.k;
@@ -143,11 +186,11 @@
         return '<button type="button" class="sp-o' + (on ? ' on' : '') + (res ? ' res' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '"' + (e.open ? '' : ' disabled') + '><small>' + esc(code || o.label) + '</small><b>' + o.odd.toFixed(2) + '</b></button>';
       }).join('');
       var tm = EVK[e.sport] ? null : teams(e.title);
-      var qImg = EVK[e.sport] && e.logos ? logoHtml(e.logos[0] || '', 'sp-qimg') : '';
+      var qImg = EVK[e.sport] && e.logos && e.logos[0] !== 'q:ball' ? logoHtml(e.logos[0] || '', 'sp-qimg') : ''; // v2765 : plus de gros ballon
       var head = tm ? '<div class="sp-teams"><p>' + crest(tm[0], (e.logos || [])[0]) + '<span>' + esc(tm[0]) + '</span></p><p>' + crest(tm[1], (e.logos || [])[1]) + '<span>' + esc(tm[1]) + '</span></p></div>' : '<b class="sp-t">' + qImg + esc(e.title) + '</b>';
       return '<div class="sp-ev' + (e.open ? '' : ' shut') + '"><div class="sp-top"><span>' + sico(qKind(e)) + esc((x.sport[qKind(e)] || x.sport.autre) + (e.league ? ' · ' + e.league : '')) + '</span><em>' + esc(e.open ? when(e.start) : (e.status === 'settled' ? x.result : x.closed)) + '</em></div>' +
         head + '<div class="sp-os n' + e.opts.length + (EVK[e.sport] ? ' q' : '') + '">' + opts + '</div></div>';
-    }).join('') + mineBtn() + slipBar();
+    }).join('') + slipBar();
     box.querySelectorAll('.sp-chips [data-f]').forEach(function (b) { b.addEventListener('click', function () { flt = b.getAttribute('data-f'); render(); }); });
     box.querySelectorAll('.sp-o').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -160,7 +203,7 @@
         render();
       });
     });
-    bindMine(); bindSlip();
+    bindTabs(); bindSlip();
   }
   function mineBtn() { return '<button type="button" class="sp-mine" id="spMineBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>' + esc(X().mine) + '</button><div id="spMine"></div>'; }
   function bindMine() {
@@ -202,7 +245,7 @@
       if (!r || !r.ok) { if (ctx.toast) ctx.toast(x['e_' + ((r && r.reason) || 'unavailable')] || x.e_unavailable); return; }
       if (ctx.toast) ctx.toast(fmt(x.placed, { p: m2(r.bet.pot) }), 'ok');
       if (ctx.afterPlay) ctx.afterPlay({ mode: 'real', bal: r.bal, win: 0, stake: r.bet.stake });
-      slip = []; render();
+      slip = []; mineCache = null; render();
     });
   }
   D6.Sports = { paint: paint };
