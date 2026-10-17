@@ -1074,46 +1074,61 @@
     var P = { 1: [[12, 12]], 2: [[7, 7], [17, 17]], 3: [[6, 6], [12, 12], [18, 18]], 4: [[7, 7], [17, 7], [7, 17], [17, 17]], 5: [[6, 6], [18, 6], [12, 12], [6, 18], [18, 18]], 6: [[7, 6], [17, 6], [7, 12], [17, 12], [7, 18], [17, 18]] }[n] || [];
     return '<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/><rect x="2" y="2" width="20" height="8" rx="4" fill="#fff" opacity=".5"/>' + P.map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="2.2" fill="' + (n === 1 || n === 4 ? '#e11d48' : '#1f2937') + '"/>'; }).join('') + '</svg>';
   }
-  /* Sic Bo : gobelet doré, dôme en verre qui se soulève, 3 dés */
+  /* v2725 (propriétaire) : SIC BO simple — un GOBELET doré (opaque) descend sur les 3 dés, secoue, puis se relève :
+     on ne voit pas les dés changer, on découvre le résultat d'un coup. Petit (4–10) en bleu, Grand (11–17) en rouge. */
   GAMES.sicbo = function (box, x) {
     var bet = 'small';
-    box.innerHTML = '<div class="cs-stage sb-stage"><div class="sb-shaker" id="csSbSh"><i class="sb-dome"></i><div class="sb" id="csSb">' + [1, 2, 3].map(function (n) { return '<span class="die">' + dieSvg(n * 2) + '</span>'; }).join('') + '</div><i class="sb-base"></i></div><b class="sb-sum" id="csSbS"></b></div><div class="cs-res"></div>' +
-      stakePanel(x.bet, '<div class="cs-opts two"><button type="button" data-b="small" class="on">' + esc(x.small) + ' (4–10)<small>×2</small></button><button type="button" data-b="big">' + esc(x.big) + ' (11–17)<small>×2</small></button></div>');
+    box.innerHTML = '<div class="cs-stage sb-stage"><div class="sb-shaker open" id="csSbSh"><i class="sb-dome"></i><div class="sb" id="csSb">' + [1, 2, 3].map(function (n) { return '<span class="die">' + dieSvg(n * 2) + '</span>'; }).join('') + '</div><i class="sb-base"></i></div><b class="sb-sum" id="csSbS"></b></div><div class="cs-res"></div>' +
+      stakePanel(x.bet, '<div class="cs-opts two sb-pick"><button type="button" data-b="small" class="on sb-s">' + esc(x.small) + ' (4–10)<small>×2</small></button><button type="button" data-b="big" class="sb-g">' + esc(x.big) + ' (11–17)<small>×2</small></button></div>');
     bindStake(box);
     box.querySelectorAll('[data-b]').forEach(function (b) { b.addEventListener('click', function () { bet = b.getAttribute('data-b'); box.querySelectorAll('[data-b]').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
-      var r = await play('sicbo', { bet: bet }); if (!r) return;
-      var sh = $('csSbSh'), d = box.querySelectorAll('#csSb .die');
-      sh.classList.remove('open'); sh.classList.add('shake'); $('csSbS').textContent = '';
-      for (var t = 0; t < 9; t++) { d.forEach(function (e) { e.innerHTML = dieSvg(1 + Math.floor(Math.random() * 6)); }); await sleep(80); }
-      d.forEach(function (e, i) { e.innerHTML = dieSvg(r.view.dice[i]); });
-      sh.classList.remove('shake'); sh.classList.add('open');
-      await sleep(350);
-      $('csSbS').textContent = r.view.sum + (r.view.triple ? ' · ' + x.triple : '');
-      resultLine(box, r);
+      var g = this; if (g.disabled) return;
+      g.disabled = true;
+      var sh = $('csSbSh'), d = box.querySelectorAll('#csSb .die'), sum = $('csSbS');
+      sh.classList.remove('open'); sum.textContent = ''; sum.className = 'sb-sum';
+      var r = await play('sicbo', { bet: bet });
+      if (!r) { sh.classList.add('open'); g.disabled = false; return; }
+      await sleep(380);
+      sh.classList.add('shake'); await sleep(900); sh.classList.remove('shake');
+      d.forEach(function (e, i) { e.innerHTML = dieSvg(r.view.dice[i]); }); // changés SOUS le gobelet
+      await sleep(150); sh.classList.add('open'); await sleep(420);
+      var small = r.view.sum <= 10;
+      sum.textContent = r.view.sum + ' · ' + (r.view.triple ? x.triple : (small ? x.small : x.big));
+      sum.className = 'sb-sum ' + (r.view.triple ? 'tr' : small ? 'sm' : 'bg');
+      resultLine(box, r, r.view.sum + (r.view.triple ? ' · ' + x.triple : ''));
+      g.disabled = false;
     });
   };
-  function chestSvg(open, gold) {
-    return '<svg viewBox="0 0 64 56"><path d="M6 24h52v26a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z" fill="#92400e"/><path d="M6 24h52v6H6z" fill="#78350f"/>' +
-      (open ? '<path d="M8 22L14 4h36l6 18z" fill="#b45309"/>' + (gold ? '<circle cx="24" cy="24" r="6" fill="#facc15"/><circle cx="34" cy="22" r="6" fill="#fde047"/><circle cx="42" cy="25" r="5" fill="#facc15"/><path d="M30 10l2 4 4 .5-3 3 .8 4-3.8-2-3.8 2 .8-4-3-3 4-.5z" fill="#fff" opacity=".9"/>' : '<path d="M20 28h24" stroke="#1c1917" stroke-width="2" opacity=".5"/>')
-        : '<path d="M6 24c0-10 6-16 14-16h24c8 0 14 6 14 16z" fill="#b45309"/>') +
-      '<path d="M6 24h52" stroke="#facc15" stroke-width="3"/><path d="M32 8v46" stroke="#facc15" stroke-width="3" opacity=".7"/><rect x="27" y="26" width="10" height="10" rx="2" fill="#facc15"/></svg>';
+  /* v2725 (propriétaire) : TREASURE — le coffre choisi tremble puis S'OUVRE (couvercle qui bascule) ; s'il y a l'or, il brille
+     et les pièces sautent ; les deux autres s'ouvrent ensuite pour montrer où était l'or. */
+  function chestHtml() {
+    return '<span class="tch"><i class="tch-glow"></i><svg class="tch-gold" viewBox="0 0 64 30"><circle cx="20" cy="20" r="7" fill="#FACC15" stroke="#B45309"/><circle cx="32" cy="15" r="8" fill="#FDE047" stroke="#B45309"/><circle cx="44" cy="20" r="7" fill="#FACC15" stroke="#B45309"/><path d="M32 2l1.5 3.4 3.7.4-2.8 2.5.8 3.6L32 10l-3.2 1.9.8-3.6-2.8-2.5 3.7-.4z" fill="#fff"/><text x="32" y="19" text-anchor="middle" font-size="8" font-weight="900" font-family="system-ui" fill="#92400E">$</text></svg>' +
+      '<svg class="tch-body" viewBox="0 0 64 34"><path d="M4 2h56v26a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" fill="#92400E"/><path d="M4 2h56v5H4z" fill="#3B1D0A" class="tch-in"/><path d="M4 9h56" stroke="#FACC15" stroke-width="3"/><path d="M32 7v25" stroke="#FACC15" stroke-width="3" opacity=".7"/><rect x="27" y="12" width="10" height="11" rx="2" fill="#FACC15"/><circle cx="32" cy="17" r="1.8" fill="#78350F"/></svg>' +
+      '<svg class="tch-lid" viewBox="0 0 64 24"><path d="M4 24c0-12 7-20 16-20h24c9 0 16 8 16 20z" fill="#B45309"/><path d="M4 24h56" stroke="#FACC15" stroke-width="3"/><path d="M32 4v20" stroke="#FACC15" stroke-width="3" opacity=".7"/><path d="M12 14c4-5 10-7 16-7" stroke="#fff" stroke-width="2" opacity=".35" fill="none" stroke-linecap="round"/></svg></span>';
   }
-  /* Trésor : 3 coffres sur une plage */
   GAMES.chests = function (box, x) {
     var pick = 1;
-    box.innerHTML = '<div class="cs-stage ch-stage"><div class="ch" id="csCh">' + [0, 1, 2].map(function (i) { return '<button type="button" data-c="' + i + '" class="' + (i === 1 ? 'on' : '') + '">' + chestSvg(false) + '</button>'; }).join('') + '</div><small class="cs-lbl">' + esc(x.pickChest) + ' · ×2,85</small></div><div class="cs-res"></div>' + stakePanel(x.bet);
+    box.innerHTML = '<div class="cs-stage ch-stage"><div class="ch" id="csCh">' + [0, 1, 2].map(function (i) { return '<button type="button" data-c="' + i + '" class="' + (i === 1 ? 'on' : '') + '">' + chestHtml() + '</button>'; }).join('') + '</div><small class="cs-lbl">' + esc(x.pickChest) + ' · ×2,85</small></div><div class="cs-res"></div>' + stakePanel(x.bet);
     bindStake(box);
-    box.querySelectorAll('#csCh button').forEach(function (b) { b.addEventListener('click', function () { pick = +b.getAttribute('data-c'); box.querySelectorAll('#csCh button').forEach(function (z) { z.classList.toggle('on', z === b); z.innerHTML = chestSvg(false); }); }); });
+    var bs = box.querySelectorAll('#csCh button'), busy = false;
+    var reset = function () { bs.forEach(function (z) { z.classList.remove('open', 'gold', 'shake', 'dim'); }); };
+    bs.forEach(function (b) { b.addEventListener('click', function () { if (busy) return; pick = +b.getAttribute('data-c'); reset(); bs.forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('csGo').addEventListener('click', async function () {
-      var r = await play('chests', { pick: pick }); if (!r) return;
-      var bs = box.querySelectorAll('#csCh button');
-      bs[r.view.pick].innerHTML = chestSvg(true, r.view.gold === r.view.pick); await sleep(450);
-      bs.forEach(function (b, i) { if (i !== r.view.pick) b.innerHTML = chestSvg(true, i === r.view.gold); });
+      var g = this; if (g.disabled) return;
+      g.disabled = true; busy = true; reset();
+      var r = await play('chests', { pick: pick });
+      if (!r) { g.disabled = false; busy = false; return; }
+      var me = bs[r.view.pick];
+      me.classList.add('shake'); await sleep(650); me.classList.remove('shake');
+      me.classList.add('open'); if (r.view.gold === r.view.pick) me.classList.add('gold');
+      await sleep(700);
+      bs.forEach(function (b, i) { if (i !== r.view.pick) { b.classList.add('open', 'dim'); if (i === r.view.gold) b.classList.add('gold'); } });
       resultLine(box, r);
+      g.disabled = false; busy = false;
     });
   };
-  /* La Tour : immeuble dans la ville, on monte étage par étage (3 fenêtres, 1 piège) */
+  /* La Tour : 8 étages, 3 portes, 1 piège par étage */
   GAMES.tower = function (box, x) {
     var g = null, rows = '';
     var mult = function (k) { return k < 1 ? 0 : Math.floor(0.97 / Math.pow(2 / 3, k) * 100) / 100; };
