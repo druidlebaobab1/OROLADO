@@ -11496,3 +11496,11 @@ html:root body #casinoModal #csView,html:root body #casinoModal #csBody{min-widt
 html:root body #casinoModal .sp-chips{max-width:100%!important;min-width:0!important;overflow-x:auto!important;flex-wrap:nowrap!important;scrollbar-width:none}
 html:root body #casinoModal .sp-chips::-webkit-scrollbar{display:none}
 html:root body #casinoModal .modal-box{max-width:100vw!important}
+/* v2747 (propriétaire) : jeux en direct = point rouge qui émet des ondes, au coin du logo (plus de badge écrit « LIVE ») */
+html:root body #casinoModal .cs-g{position:relative}
+html:root body #casinoModal .cs-g .cs-live{position:absolute;top:2px;right:calc(50% - min(38px,9.5vw,5.25vh) - 2px);width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FF8A9B,#E11D48 60%,#9F1239);box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 10px rgba(225,29,72,.9);z-index:3;pointer-events:none}
+html:root body #casinoModal .cs-g .cs-live::before,html:root body #casinoModal .cs-g .cs-live::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid rgba(255,77,109,.85);animation:csLiveWave 1.8s ease-out infinite}
+html:root body #casinoModal .cs-g .cs-live::after{animation-delay:.9s}
+@keyframes csLiveWave{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.6);opacity:0}}
+html.oro-lite body #casinoModal .cs-g .cs-live::before,html.oro-lite body #casinoModal .cs-g .cs-live::after{animation:none;opacity:0}
+html:root body #casinoModal .cs-g .cs-livetag{display:none!important}

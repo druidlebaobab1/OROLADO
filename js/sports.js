@@ -4,7 +4,7 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var T = {
-    fr: { none: 'Pas de pari pour le moment. Les grands matchs et événements arrivent bientôt ici.', coupon: 'Coupon', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
+    fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Coupon', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
       placed: '✅ Pari enregistré ! Gain possible : {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
       closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
@@ -76,8 +76,8 @@
     }
     // pastilles de sport (seulement les sports qui ont des matchs)
     var kinds = []; events.forEach(function (e) { var k = EVK[e.sport] ? 'event' : (e.sport || 'autre'); if (kinds.indexOf(k) < 0) kinds.push(k); });
-    if (flt !== 'all' && kinds.indexOf(flt) < 0) flt = 'all';
-    var chips = kinds.length > 1 ? '<div class="sp-chips"><button type="button" data-f="all" class="' + (flt === 'all' ? 'on' : '') + '">' + esc(x.all || 'Tous') + '</button>' + kinds.map(function (k) { return '<button type="button" data-f="' + k + '" class="' + (flt === k ? 'on' : '') + '">' + sico(k) + esc(x.sport[k] || x.sport.autre) + '</button>'; }).join('') + '</div>' : '';
+    flt = 'all';
+    var chips = ''; // v2747 (propriétaire) : plus de filtres foot / basket… — toutes les prédictions ensemble
     box.innerHTML = chips + events.filter(function (e) { return flt === 'all' || (EVK[e.sport] ? 'event' : (e.sport || 'autre')) === flt; }).map(function (e) {
       var three = e.opts.length === 3;
       var opts = e.opts.map(function (o, i) {

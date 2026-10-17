@@ -181,8 +181,8 @@
     var x = X(), m = $('casinoModal');
     m.classList.remove('in-game'); m.removeAttribute('data-g'); $('csSheet').hidden = true; $('csHelp').hidden = true;
     paintBal();
-    $('csBody').innerHTML = '<div class="cs-tabs2"><button type="button" data-v="games" class="' + (S.view === 'games' ? 'on' : '') + '">' + padIcon() + '<span>' + esc(x.gamesTab) + '</span></button>' +
-      '<button type="button" data-v="sports" class="' + (S.view === 'sports' ? 'on' : '') + '">' + gicon('sports', 'sm') + '<span>' + esc(x.sports) + '</span></button></div><div id="csView"></div>';
+    $('csBody').innerHTML = '<div class="cs-tabs2"><button type="button" data-v="games" class="' + (S.view === 'games' ? 'on' : '') + '">' + padIcon() + '<span>' + esc(tabWord(GAMES_WORD)) + '</span></button>' +
+      '<button type="button" data-v="sports" class="' + (S.view === 'sports' ? 'on' : '') + '">' + ballIcon() + '<span>' + esc(tabWord(PRED_WORD)) + '</span></button></div><div id="csView"></div>';
     $('csBody').querySelectorAll('[data-v]').forEach(function (b) { b.addEventListener('click', function () { home(b.getAttribute('data-v')); }); });
     var v = $('csView');
     if (S.view === 'sports') {
@@ -191,13 +191,22 @@
     } else {
       v.className = 'cs-grid';
       v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).map(function (k) {
-        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b>' + (LIVE_GAMES[k] ? '<i class="cs-livetag"><i></i>LIVE</i>' : '') + '</button>';
+        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b>' + (LIVE_GAMES[k] ? '<i class="cs-live" aria-label="live"></i>' : '') + '</button>';
       }).join('');
       v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
   }
   function name(k) { return NAMES[k] || k; }
+  // v2747 (propriétaire) : 2e onglet = « Prédictions » (boule de cristal) — toutes les questions et tous les matchs ensemble
+  var GAMES_WORD = {}; var PRED_WORD = { fr: 'Prédictions', en: 'Predictions', es: 'Predicciones', pt: 'Previsões', ar: 'توقعات', tr: 'Tahminler', vi: 'Dự đoán', id: 'Prediksi', ru: 'Прогнозы', de: 'Prognosen', hi: 'भविष्यवाणी', zh: '预测' };
+  function tabWord(m) { var l = (document.documentElement.lang || 'fr').slice(0, 2); return m[l] || m.en; }
+  function ballIcon() {
+    var id = 'cb' + (++gn);
+    return '<svg class="cs-padico" viewBox="0 0 64 52" aria-hidden="true"><defs><radialGradient id="' + id + '" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#F5D0FE"/><stop offset=".45" stop-color="#A78BFA"/><stop offset="1" stop-color="#5B21B6"/></radialGradient></defs>' +
+      '<ellipse cx="32" cy="46" rx="15" ry="4" fill="#B45309"/><path d="M19 46l3-6h20l3 6z" fill="#F59E0B"/><circle cx="32" cy="22" r="17" fill="url(#' + id + ')" stroke="#F472B6" stroke-width="1.6"/>' +
+      '<circle cx="26" cy="15" r="4.5" fill="#fff" opacity=".55"/><path d="M36 22l1.4 3 3.2.4-2.4 2.2.6 3.2-2.8-1.6-2.8 1.6.6-3.2-2.4-2.2 3.2-.4z" fill="#FDE68A"/></svg>';
+  }
   // v2742 (propriétaire) : la manette transparente violet-rose (le logo « Jeux » du bouton du haut)
   function padIcon() {
     var id = 'pd' + (++gn);
@@ -1319,7 +1328,7 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   D6.Casino = { open: open, close: close, home: home };
   // v2740 (propriétaire) : bouton du haut = manette + « Jeux », traduit en un seul mot dans chaque langue
-  var GAMES_WORD = { fr: 'Jeux', en: 'Games', es: 'Juegos', pt: 'Jogos', ar: 'ألعاب', tr: 'Oyunlar', vi: 'Trò chơi', id: 'Game', ru: 'Игры', de: 'Spiele', hi: 'गेम्स', zh: '游戏' };
+  GAMES_WORD = { fr: 'Jeux', en: 'Games', es: 'Juegos', pt: 'Jogos', ar: 'ألعاب', tr: 'Oyunlar', vi: 'Trò chơi', id: 'Game', ru: 'Игры', de: 'Spiele', hi: 'गेम्स', zh: '游戏' };
   function paintGamesBtn() {
     var l = (document.documentElement.lang || 'fr').slice(0, 2), w = GAMES_WORD[l] || GAMES_WORD.en, e = $('cbLbl'), b = $('btnCasino');
     if (e && e.textContent !== w) e.textContent = w;
