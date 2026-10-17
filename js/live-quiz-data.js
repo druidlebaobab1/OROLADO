@@ -13,12 +13,12 @@
       ['Après 3 pertes de suite, le mieux est de…', ['Faire une pause', 'Doubler la mise', 'Tout miser']],
       ['Le prix des marchés OROLADO est calculé par…', ['Le serveur', 'Ton téléphone', 'Les autres joueurs']],
       ['Un trade dure…', ['La durée que tu choisis', 'Toujours 1 heure', 'Jusqu’à minuit']],
-      ['Où retrouves-tu tes anciens trades ?', ['Dans l’historique', 'Dans Live', 'Dans Cadeaux']],
+      ['Où retrouves-tu tes anciens trades ?', ['Dans l’historique', 'Dans Social', 'Dans Cadeaux']],
       ['Une bougie verte veut dire…', ['Le prix a monté', 'Le prix a baissé', 'Le marché est fermé']],
       ['Une bougie rouge veut dire…', ['Le prix a baissé', 'Le prix a monté', 'Le marché est fermé']],
       ['Le Défi du jour demande de gagner…', ['5 fois de suite', '2 fois', '100 fois']],
       ['Le Tournoi démo récompense…', ['Les meilleurs de la semaine', 'Tout le monde', 'Personne']],
-      ['Ton identifiant Live sert à…', ['Ajouter des amis', 'Retirer de l’argent', 'Changer ton mot de passe']],
+      ['Ton identifiant Social sert à…', ['Ajouter des amis', 'Retirer de l’argent', 'Changer ton mot de passe']],
       ['Quelqu’un dit être de l’équipe et demande ton mot de passe :', ['Je ne le donne jamais', 'Je le donne', 'Je le donne par SMS']],
       ['L’indicateur MA montre…', ['La moyenne des prix', 'Le montant du dépôt', 'Le mode automatique']],
       ['Quand la courbe monte longtemps, on parle de…', ['Tendance haussière', 'Tendance baissière', 'Marché fermé']],
@@ -27,7 +27,7 @@
       ['Le plein écran sert à…', ['Mieux voir la courbe', 'Gagner plus', 'Changer de marché']],
       ['Le compte démo contient…', ['De l’argent virtuel', 'De l’argent réel', 'Des bonus retirables']],
       ['« Défie ton ami » se joue…', ['En démo', 'En réel', 'Hors ligne']],
-      ['Ton dépôt n’apparaît pas. Que faire ?', ['Écrire à l’équipe dans Live', 'Refaire 10 dépôts', 'Supprimer ton compte']],
+      ['Ton dépôt n’apparaît pas. Que faire ?', ['Écrire à l’équipe dans Social', 'Refaire 10 dépôts', 'Supprimer ton compte']],
       ['Le prix d’entrée d’un trade est…', ['Le prix au moment du clic', 'Le prix de la veille', 'Un prix au hasard']],
       ['Une série de gains…', ['Ne garantit pas le prochain gain', 'Garantit le prochain gain', 'Bloque le compte']],
       ['Pourquoi commencer en démo ?', ['Pour apprendre sans risque', 'Pour gagner de l’argent réel', 'Ça ne sert à rien']],
@@ -53,7 +53,7 @@
       ['Perdre fait partie du trading :', ['Vrai', 'Faux', 'Seulement en démo']],
       ['Pour une même mise, un payout plus haut veut dire…', ['Un gain plus grand si tu gagnes', 'Une perte plus petite', 'Rien']],
       ['Après un gros gain, le bon réflexe :', ['Mettre une partie de côté', 'Tout remiser d’un coup', 'Doubler la mise']],
-      ['OROLADO Live sert à…', ['Discuter, défier et suivre les nouvelles', 'Seulement retirer', 'Changer la langue']]
+      ['OROLADO Social sert à…', ['Discuter, défier et suivre les nouvelles', 'Seulement retirer', 'Changer la langue']]
     ],
     en: [
       ['What does BUY mean?', ['You think the price will go up', 'You think the price will go down', 'You think the price will not move']],
@@ -65,12 +65,12 @@
       ['After 3 losses in a row, the best is to…', ['Take a break', 'Double the stake', 'Stake everything']],
       ['OROLADO market prices are calculated by…', ['The server', 'Your phone', 'Other players']],
       ['A trade lasts…', ['The duration you choose', 'Always 1 hour', 'Until midnight']],
-      ['Where do you find your past trades?', ['In the history', 'In Live', 'In Gifts']],
+      ['Where do you find your past trades?', ['In the history', 'In Social', 'In Gifts']],
       ['A green candle means…', ['The price went up', 'The price went down', 'The market is closed']],
       ['A red candle means…', ['The price went down', 'The price went up', 'The market is closed']],
       ['The daily challenge asks you to win…', ['5 times in a row', '2 times', '100 times']],
       ['The demo tournament rewards…', ['The best of the week', 'Everyone', 'Nobody']],
-      ['Your Live ID is used to…', ['Add friends', 'Withdraw money', 'Change your password']],
+      ['Your Social ID is used to…', ['Add friends', 'Withdraw money', 'Change your password']],
       ['Someone says they are from the team and asks for your password:', ['I never give it', 'I give it', 'I give it by SMS']],
       ['The MA indicator shows…', ['The average price', 'The deposit amount', 'Automatic mode']],
       ['When the chart rises for a long time, it is called…', ['An uptrend', 'A downtrend', 'A closed market']],
@@ -79,7 +79,7 @@
       ['Full screen is used to…', ['See the chart better', 'Win more', 'Change market']],
       ['The demo account contains…', ['Virtual money', 'Real money', 'Withdrawable bonuses']],
       ['“Challenge a friend” is played…', ['In demo', 'In real', 'Offline']],
-      ['Your deposit does not show. What to do?', ['Write to the team in Live', 'Make 10 more deposits', 'Delete your account']],
+      ['Your deposit does not show. What to do?', ['Write to the team in Social', 'Make 10 more deposits', 'Delete your account']],
       ['The entry price of a trade is…', ['The price when you tap', 'Yesterday’s price', 'A random price']],
       ['A winning streak…', ['Does not guarantee the next win', 'Guarantees the next win', 'Locks the account']],
       ['Why start in demo?', ['To learn without risk', 'To win real money', 'It is useless']],
@@ -105,7 +105,7 @@
       ['Losing is part of trading:', ['True', 'False', 'Only in demo']],
       ['For the same stake, a higher payout means…', ['A bigger win if you win', 'A smaller loss', 'Nothing']],
       ['After a big win, the right move:', ['Put part of it aside', 'Restake it all at once', 'Double the stake']],
-      ['OROLADO Live is for…', ['Chatting, challenging and following news', 'Only withdrawing', 'Changing language']]
+      ['OROLADO Social is for…', ['Chatting, challenging and following news', 'Only withdrawing', 'Changing language']]
     ],
     zh: [
       ['「买入」是什么意思？', ['你认为价格会上涨', '你认为价格会下跌', '你认为价格不会变']],
@@ -117,12 +117,12 @@
       ['连续亏损 3 次后，最好…', ['休息一下', '加倍投注', '全部押上']],
       ['OROLADO 的市场价格由谁计算？', ['服务器', '你的手机', '其他玩家']],
       ['一笔交易持续…', ['你选择的时长', '总是 1 小时', '直到午夜']],
-      ['在哪里查看以前的交易？', ['历史记录', 'Live', '礼物']],
+      ['在哪里查看以前的交易？', ['历史记录', '社交', '礼物']],
       ['绿色蜡烛表示…', ['价格上涨了', '价格下跌了', '市场关闭']],
       ['红色蜡烛表示…', ['价格下跌了', '价格上涨了', '市场关闭']],
       ['每日挑战要求你…', ['连赢 5 次', '赢 2 次', '赢 100 次']],
       ['模拟锦标赛奖励…', ['本周最佳玩家', '所有人', '没有人']],
-      ['你的 Live ID 用来…', ['添加好友', '提现', '修改密码']],
+      ['你的社交 ID 用来…', ['添加好友', '提现', '修改密码']],
       ['有人自称是团队成员并索要你的密码：', ['我绝不给', '我给他', '我用短信发给他']],
       ['MA 指标显示…', ['价格的平均值', '充值金额', '自动模式']],
       ['曲线长时间上涨，称为…', ['上升趋势', '下降趋势', '市场关闭']],
@@ -131,7 +131,7 @@
       ['全屏模式用来…', ['更清楚地看曲线', '赢得更多', '切换市场']],
       ['模拟账户里是…', ['虚拟资金', '真实资金', '可提现的奖励']],
       ['「挑战好友」在哪里进行？', ['模拟账户', '真实账户', '离线']],
-      ['充值没有到账，怎么办？', ['在 Live 联系团队', '再充值 10 次', '删除账户']],
+      ['充值没有到账，怎么办？', ['在社交里联系团队', '再充值 10 次', '删除账户']],
       ['交易的入场价是…', ['点击时的价格', '昨天的价格', '随机价格']],
       ['连续获胜…', ['不能保证下一次也赢', '保证下一次赢', '会锁定账户']],
       ['为什么先用模拟账户？', ['无风险地学习', '赚取真钱', '没有用']],
@@ -157,7 +157,7 @@
       ['亏损是交易的一部分：', ['对', '错', '只在模拟账户']],
       ['同样的投注，赔付率越高意味着…', ['赢时收益更大', '亏损更小', '没有区别']],
       ['大赚一笔后，正确的做法：', ['留出一部分', '一次全部再投入', '加倍投注']],
-      ['OROLADO Live 用来…', ['聊天、挑战、看动态', '只能提现', '切换语言']]
+      ['OROLADO 社交用来…', ['聊天、挑战、看动态', '只能提现', '切换语言']]
     ]
   };
   // Ordre affiché : même mélange que le serveur (live_quiz_perm).

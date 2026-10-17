@@ -6,7 +6,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var TXT = {
     fr: { sub: 'En ligne · l’équipe te répond ici', news: 'Actualités', chat: 'Écris-nous', ph: 'Écris ton message…', views: 'vues',
-      welcomeNews: 'Bienvenue sur OROLADO Live ! 👋\nIci, tu trouves nos nouvelles : nouveautés, moyens de paiement, marchés qui bougent… Et dans « Écris-nous », tu peux parler directement à l’équipe.',
+      welcomeNews: 'Bienvenue sur OROLADO Social ! 👋\nIci, tu trouves nos nouvelles : nouveautés, moyens de paiement, marchés qui bougent… Et dans « Écris-nous », tu peux parler directement à l’équipe.',
       welcomeChat: 'Bonjour 👋 Écris-nous ici, on te répond dans cette conversation.\nTu peux aussi envoyer une photo 📷 (par exemple la capture d’un paiement).',
       q1: '💳 Mon dépôt', q1t: 'Bonjour, j’ai un souci avec mon dépôt : ', q2: '💸 Mon retrait', q2t: 'Bonjour, j’ai une question sur mon retrait : ',
       q3: '📈 Comment jouer ?', q3t: 'Bonjour, comment bien jouer sur OROLADO ?', q4: '🔐 Mon compte', q4t: 'Bonjour, j’ai un souci avec mon compte : ',
@@ -20,7 +20,7 @@
       safety: '🔒 Ne donne jamais ton mot de passe ni tes codes. OROLADO ne te les demandera jamais.',
       duelBtn: 'Défier', duelPick: 'Défie ton ami en démo', duelPickS: 'Choisis la durée. Celui qui gagne le plus en démo remporte le défi.', duelSent: 'Défi envoyé · {m} min · en attente de {n}…', duelInvite: '{n} te défie !', duelInviteS: '{m} minutes en démo : celui qui gagne le plus remporte le défi.', accept: 'Accepter', refuse: 'Refuser', duelStartIn: 'Le défi commence dans {s} s', duelLive: 'Défi en cours', duelLeft: 'reste {t}', duelPlay: 'Jouer en démo', duelWin: '🏆 Tu as gagné le défi !', duelLose: '{n} a gagné le défi', duelTie: 'Égalité !', duelAgain: 'Revanche', duelRefused: '{n} a refusé le défi.', duelExpired: 'Le défi n’a pas été accepté à temps.', duelBusy: 'Un défi est déjà en cours avec cet ami.', duelGone: 'Ce défi n’est plus disponible.', duelRecord: 'Tes défis : {w} gagnés · {l} perdus', duelTrades: '{n} trades', duelWait: 'Résultat dans un instant…', duelPromoT: 'Défie ton ami en démo', duelPromoS: 'Invite ton ami : vous tradez en même temps en démo (3, 5 ou 10 min) et on voit qui est le plus fort. Montre-lui qui est le boss !', duelPromoBtn: 'Défier un ami', inviteBadge: 'défi', emptyT: 'Ajoute ton premier ami', emptyS: 'Envoie-lui ton identifiant, ou colle le sien juste au-dessus.', share: 'Envoyer mon identifiant', shareTxt: 'Ajoute-moi sur OROLADO Live ! Mon identifiant : {id}' },
     en: { sub: 'Online · the team answers you here', news: 'News', chat: 'Write to us', ph: 'Write your message…', views: 'views',
-      welcomeNews: 'Welcome to OROLADO Live! 👋\nHere you find our news: new features, payment methods, markets on the move… And in “Write to us”, you can talk directly to the team.',
+      welcomeNews: 'Welcome to OROLADO Social! 👋\nHere you find our news: new features, payment methods, markets on the move… And in “Write to us”, you can talk directly to the team.',
       welcomeChat: 'Hello 👋 Write to us here, we answer in this conversation.\nYou can also send a photo 📷 (for example a payment screenshot).',
       q1: '💳 My deposit', q1t: 'Hello, I have an issue with my deposit: ', q2: '💸 My withdrawal', q2t: 'Hello, I have a question about my withdrawal: ',
       q3: '📈 How to play?', q3t: 'Hello, how do I play well on OROLADO?', q4: '🔐 My account', q4t: 'Hello, I have an issue with my account: ',
@@ -36,7 +36,7 @@
   };
   // v2682 — chinois
   TXT.zh = Object.assign({}, TXT.en, { sub: '在线 · 团队在这里回复你', news: '动态', chat: '联系我们', ph: '输入消息…', views: '次浏览',
-    welcomeNews: '欢迎来到 OROLADO Live！👋\n这里有我们的最新消息：新功能、支付方式、正在波动的市场…… 在「联系我们」里，你可以直接和团队对话。',
+    welcomeNews: '欢迎来到 OROLADO 社交！👋\n这里有我们的最新消息：新功能、支付方式、正在波动的市场…… 在「联系我们」里，你可以直接和团队对话。',
     welcomeChat: '你好 👋 在这里给我们留言，我们会在此对话中回复你。\n你也可以发送照片 📷（例如付款截图）。',
     q1: '💳 我的充值', q1t: '你好，我的充值有问题：', q2: '💸 我的提现', q2t: '你好，我想咨询提现：', q3: '📈 怎么交易？', q3t: '你好，在 OROLADO 上怎么交易更好？', q4: '🔐 我的账户', q4t: '你好，我的账户有问题：',
     guestT: '注册后即可联系团队', guestB: '有了账户，你就能给我们留言并发送照片，我们会在这里回复你。', guestBtn: '创建账户', guestMail: '通过邮件联系',
@@ -82,7 +82,7 @@
         '<footer><button type="button" class="lv-like' + (on ? ' on' : '') + '" data-id="' + esc(p.id) + '">' + (on ? '❤️' : '🤍') + ' <span>' + (p.likes + (on && fresh.indexOf(p.id) < 0 ? 0 : 0)) + '</span></button><span class="lv-views">👁 ' + p.views + ' ' + x.views + '</span></footer></article>';
     });
     html += '<article class="lv-post lv-duelpromo"><div class="lv-dp-ico">⚔️</div><b>' + esc(x.duelPromoT) + '</b><p>' + esc(x.duelPromoS) + '</p><button type="button" class="lv-btn" id="lvDuelGo">' + esc(x.duelPromoBtn) + '</button></article>';
-    html += '<article class="lv-post lv-welcome"><header>' + LOGO + '<div><b>' + x.team + ' <i class="lv-tick" aria-hidden="true"></i></b><small>OROLADO Live</small></div></header><p>' + linkify(x.welcomeNews) + '</p></article>';
+    html += '<article class="lv-post lv-welcome"><header>' + LOGO + '<div><b>' + x.team + ' <i class="lv-tick" aria-hidden="true"></i></b><small>OROLADO Social</small></div></header><p>' + linkify(x.welcomeNews) + '</p></article>';
     html += '<div class="lv-legal"><button type="button" id="lvTerms">' + x.terms + '</button> · <button type="button" id="lvPriv">' + x.privacy + '</button></div>';
     $('liveFeed').innerHTML = html;
     if (fresh.length) { store('oro_live_seen', seen.slice(-200)); call('seen', { ids: fresh }); }
