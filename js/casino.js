@@ -1306,4 +1306,14 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   D6.Casino = { open: open, close: close, home: home };
+  // v2740 (propriétaire) : bouton du haut = manette + « Jeux », traduit en un seul mot dans chaque langue
+  var GAMES_WORD = { fr: 'Jeux', en: 'Games', es: 'Juegos', pt: 'Jogos', ar: 'ألعاب', tr: 'Oyunlar', vi: 'Trò chơi', id: 'Game', ru: 'Игры', de: 'Spiele', hi: 'गेम्स', zh: '游戏' };
+  function paintGamesBtn() {
+    var l = (document.documentElement.lang || 'fr').slice(0, 2), w = GAMES_WORD[l] || GAMES_WORD.en, e = $('cbLbl'), b = $('btnCasino');
+    if (e && e.textContent !== w) e.textContent = w;
+    if (b) b.setAttribute('aria-label', w);
+  }
+  paintGamesBtn();
+  document.addEventListener('oro:lang', paintGamesBtn);
+  if (window.MutationObserver) new MutationObserver(paintGamesBtn).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 })(window.D6 = window.D6 || {});

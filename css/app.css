@@ -11447,3 +11447,8 @@ html body #casinoModal .rps-pick{display:grid!important;grid-template-columns:re
 html body #casinoModal .rps-pick button{min-height:66px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 html body #casinoModal .rps-pick button svg{width:36px;height:36px}
 html body #casinoModal .rps-pick button.on{box-shadow:inset 0 0 0 2px #A5B4FC,0 0 14px rgba(99,102,241,.5)!important;background:rgba(99,102,241,.22)!important}
+/* v2740 (propriétaire) : bouton « Jeux » = manette transparente violet-rose, dans le même cadre de verre que Cadeaux / Social */
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-pad{width:46px!important;height:34px!important;border-radius:11px!important;background:rgba(255,255,255,.07)!important;box-shadow:none!important;border:0!important;padding:2px 3px!important;box-sizing:border-box!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-pad svg{overflow:visible}
+/* v2740 : petits téléphones (≤ 345 px) — Connexion / Inscription plus compacts, ne recouvrent plus le bouton Social */
+@media (max-width:345px){html:root body .auth-quick{gap:4px!important}html:root body .auth-quick #btnGoLogin{padding-left:10px!important;padding-right:10px!important;font-size:12.5px!important}html:root body .auth-quick #btnGoRegister{padding-left:4px!important;padding-right:4px!important;font-size:12.5px!important}}
