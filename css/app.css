@@ -11482,3 +11482,17 @@ html:root body #casinoModal .whl-leg{grid-template-columns:repeat(3,minmax(0,1fr
 html:root body #casinoModal .whl2{width:min(250px,66vw,38vh)!important;height:auto!important;aspect-ratio:1}
 html:root body #casinoModal .whl-leg{margin-bottom:6px!important}
 html:root body #casinoModal .whl-leg span{min-height:28px}
+
+/* v2745 (propriétaire) : le solde des jeux = la MÊME carte que « Compte réel » du trading (même argent, même dessin) */
+html:root body #casinoModal .cs-wallet.cw-same,html:root body #casinoModal.in-game .cs-wallet.cw-same{display:inline-flex!important;align-items:center;gap:8px;min-height:44px;padding:4px 5px 4px 8px!important;border-radius:16px!important;
+  border:1px solid rgba(60,245,166,.70)!important;background:linear-gradient(180deg,rgba(34,212,127,.12),rgba(70,90,200,.10))!important;
+  box-shadow:inset 0 0 14px rgba(34,212,127,.14),0 0 18px rgba(34,212,127,.32)!important}
+html:root body #casinoModal .cs-wallet.cw-same .cw-wal{width:26px;height:26px;flex:none;border-radius:8px;display:grid;place-items:center;background:rgba(34,212,127,.22);color:#5CF7B5}
+html:root body #casinoModal .cs-wallet.cw-same .cw-wal svg{width:16px;height:16px;fill:none;stroke:#5CF7B5;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html:root body #casinoModal .cs-wallet.cw-same .cw-t small{font:800 10px/1.15 system-ui!important;letter-spacing:.3px!important;text-transform:uppercase;color:#5CF7B5!important}
+html:root body #casinoModal .cs-wallet.cw-same .cw-t b{font:800 17px/1.1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:#D6E0FF!important;letter-spacing:-.15px}
+/* v2745 : la ligne des filtres de Paris ne peut plus élargir la fenêtre (téléphone couché) : elle défile dans la largeur */
+html:root body #casinoModal #csView,html:root body #casinoModal #csBody{min-width:0!important;max-width:100%!important}
+html:root body #casinoModal .sp-chips{max-width:100%!important;min-width:0!important;overflow-x:auto!important;flex-wrap:nowrap!important;scrollbar-width:none}
+html:root body #casinoModal .sp-chips::-webkit-scrollbar{display:none}
+html:root body #casinoModal .modal-box{max-width:100vw!important}
