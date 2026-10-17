@@ -25,7 +25,11 @@
       pickNone: '你还没有联系人。先在“我的好友”里给好友发消息，或用“邀请”发送链接。', addN: '添加（{n}）', added: '已添加 {n} 人 ✓', sysAdd: '{a} 添加了 {b}', inGrp: '已在群组中', gNoneAdded: '没有人被添加。', search: '搜索联系人' }
   };
   (D6.LIVE_T = D6.LIVE_T || {}).groups = T;
-  function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, T.en, T[l] || {}); }
+  // v2790 (propriétaire) : seul le créateur publie ; invitations à accepter (identifiant R… ou e-mail) — 12 langues
+  var G2 = {"fr":{"onlyOwner":"Ici, seul le créateur du groupe publie. Tu reçois tout ce qu’il écrit 🙂","invPh":"Identifiant (R…) ou e-mail","invGo":"Inviter","invSent":"{n} invitation(s) envoyée(s) ✓","invNf":"Identifiant ou e-mail introuvable.","invTitle":"Invitations","invFrom":"{a} t’invite","yes":"Accepter","no":"Refuser","tooManyG":"Tu as créé plusieurs groupes ces derniers temps. Tu pourras en créer un autre un peu plus tard 🙂","gOwnerOnly":"Ici, seul le créateur du groupe publie.","invN":"Inviter ({n})","invHint":"La personne reçoit une invitation et choisit d’entrer ou non."},"en":{"onlyOwner":"Here, only the group creator posts. You receive everything they write 🙂","invPh":"ID (R…) or email","invGo":"Invite","invSent":"{n} invitation(s) sent ✓","invNf":"ID or email not found.","invTitle":"Invitations","invFrom":"{a} invites you","yes":"Accept","no":"Decline","tooManyG":"You created several groups recently. You can create another one a bit later 🙂","gOwnerOnly":"Here, only the group creator posts.","invN":"Invite ({n})","invHint":"The person gets an invitation and chooses to join or not."},"es":{"onlyOwner":"Aquí solo publica el creador del grupo. Recibes todo lo que escribe 🙂","invPh":"ID (R…) o correo","invGo":"Invitar","invSent":"{n} invitación(es) enviada(s) ✓","invNf":"ID o correo no encontrado.","invTitle":"Invitaciones","invFrom":"{a} te invita","yes":"Aceptar","no":"Rechazar","tooManyG":"Has creado varios grupos últimamente. Podrás crear otro un poco más tarde 🙂","gOwnerOnly":"Aquí solo publica el creador del grupo.","invN":"Invitar ({n})","invHint":"La persona recibe una invitación y decide si entra o no."},"pt":{"onlyOwner":"Aqui só o criador do grupo publica. Recebes tudo o que ele escreve 🙂","invPh":"ID (R…) ou e-mail","invGo":"Convidar","invSent":"{n} convite(s) enviado(s) ✓","invNf":"ID ou e-mail não encontrado.","invTitle":"Convites","invFrom":"{a} convida-te","yes":"Aceitar","no":"Recusar","tooManyG":"Criaste vários grupos recentemente. Poderás criar outro um pouco mais tarde 🙂","gOwnerOnly":"Aqui só o criador do grupo publica.","invN":"Convidar ({n})","invHint":"A pessoa recebe um convite e escolhe se entra ou não."},"ar":{"onlyOwner":"هنا ينشر منشئ المجموعة فقط. ستصلك كل رسائله 🙂","invPh":"المعرّف (R…) أو البريد","invGo":"دعوة","invSent":"تم إرسال {n} دعوة ✓","invNf":"المعرّف أو البريد غير موجود.","invTitle":"الدعوات","invFrom":"{a} يدعوك","yes":"قبول","no":"رفض","tooManyG":"لقد أنشأت عدة مجموعات مؤخرًا. يمكنك إنشاء أخرى لاحقًا 🙂","gOwnerOnly":"هنا ينشر منشئ المجموعة فقط.","invN":"دعوة ({n})","invHint":"يتلقى الشخص دعوة ويختار الانضمام أو لا."},"tr":{"onlyOwner":"Burada sadece grubu kuran paylaşım yapar. Yazdığı her şey sana gelir 🙂","invPh":"Kimlik (R…) veya e-posta","invGo":"Davet et","invSent":"{n} davet gönderildi ✓","invNf":"Kimlik veya e-posta bulunamadı.","invTitle":"Davetler","invFrom":"{a} seni davet ediyor","yes":"Kabul et","no":"Reddet","tooManyG":"Son zamanlarda birkaç grup kurdun. Biraz sonra yenisini kurabilirsin 🙂","gOwnerOnly":"Burada sadece grubu kuran paylaşım yapar.","invN":"Davet et ({n})","invHint":"Kişi bir davet alır ve katılıp katılmamayı seçer."},"vi":{"onlyOwner":"Ở đây chỉ người tạo nhóm đăng bài. Bạn nhận mọi tin họ viết 🙂","invPh":"ID (R…) hoặc email","invGo":"Mời","invSent":"Đã gửi {n} lời mời ✓","invNf":"Không tìm thấy ID hoặc email.","invTitle":"Lời mời","invFrom":"{a} mời bạn","yes":"Đồng ý","no":"Từ chối","tooManyG":"Gần đây bạn đã tạo nhiều nhóm. Bạn có thể tạo thêm sau ít lâu 🙂","gOwnerOnly":"Ở đây chỉ người tạo nhóm đăng bài.","invN":"Mời ({n})","invHint":"Người đó nhận lời mời và tự chọn tham gia hay không."},"id":{"onlyOwner":"Di sini hanya pembuat grup yang memposting. Kamu menerima semua tulisannya 🙂","invPh":"ID (R…) atau email","invGo":"Undang","invSent":"{n} undangan terkirim ✓","invNf":"ID atau email tidak ditemukan.","invTitle":"Undangan","invFrom":"{a} mengundangmu","yes":"Terima","no":"Tolak","tooManyG":"Kamu baru membuat beberapa grup. Kamu bisa membuat lagi nanti 🙂","gOwnerOnly":"Di sini hanya pembuat grup yang memposting.","invN":"Undang ({n})","invHint":"Orang itu menerima undangan dan memilih bergabung atau tidak."},"ru":{"onlyOwner":"Здесь пишет только создатель группы. Вы получаете всё, что он пишет 🙂","invPh":"ID (R…) или e-mail","invGo":"Пригласить","invSent":"Отправлено приглашений: {n} ✓","invNf":"ID или e-mail не найден.","invTitle":"Приглашения","invFrom":"{a} приглашает вас","yes":"Принять","no":"Отклонить","tooManyG":"Вы недавно создали несколько групп. Новую можно будет создать чуть позже 🙂","gOwnerOnly":"Здесь пишет только создатель группы.","invN":"Пригласить ({n})","invHint":"Человек получает приглашение и сам решает, вступать ли."},"de":{"onlyOwner":"Hier postet nur der Gründer der Gruppe. Du bekommst alles, was er schreibt 🙂","invPh":"ID (R…) oder E-Mail","invGo":"Einladen","invSent":"{n} Einladung(en) gesendet ✓","invNf":"ID oder E-Mail nicht gefunden.","invTitle":"Einladungen","invFrom":"{a} lädt dich ein","yes":"Annehmen","no":"Ablehnen","tooManyG":"Du hast in letzter Zeit mehrere Gruppen erstellt. Etwas später kannst du eine neue erstellen 🙂","gOwnerOnly":"Hier postet nur der Gründer der Gruppe.","invN":"Einladen ({n})","invHint":"Die Person bekommt eine Einladung und entscheidet selbst."},"zh":{"onlyOwner":"这里只有群主可以发言。你会收到他发的所有内容 🙂","invPh":"ID（R…）或邮箱","invGo":"邀请","invSent":"已发送 {n} 个邀请 ✓","invNf":"找不到该 ID 或邮箱。","invTitle":"邀请","invFrom":"{a} 邀请你","yes":"接受","no":"拒绝","tooManyG":"你最近创建了好几个群组，稍后可以再创建 🙂","gOwnerOnly":"这里只有群主可以发言。","invN":"邀请（{n}）","invHint":"对方会收到邀请，自己决定是否加入。"},"hi":{"onlyOwner":"यहाँ केवल ग्रुप बनाने वाला पोस्ट करता है। उसकी हर बात आपको मिलती है 🙂","invPh":"ID (R…) या ईमेल","invGo":"आमंत्रित करें","invSent":"{n} आमंत्रण भेजे गए ✓","invNf":"ID या ईमेल नहीं मिला।","invTitle":"आमंत्रण","invFrom":"{a} आपको आमंत्रित करते हैं","yes":"स्वीकार","no":"अस्वीकार","tooManyG":"आपने हाल में कई ग्रुप बनाए हैं। थोड़ी देर बाद नया बना सकेंगे 🙂","gOwnerOnly":"यहाँ केवल ग्रुप बनाने वाला पोस्ट करता है।","invN":"आमंत्रित करें ({n})","invHint":"व्यक्ति को आमंत्रण मिलता है और वह खुद चुनता है।"}};
+  function X() { var l = (document.documentElement.lang || 'fr').slice(0, 2); return Object.assign({}, T.en, G2.en, T[l] || {}, G2[l] || {}); }
+  // petit message doux montré au plus 3 fois (puis plus jamais)
+  function soft(k) { var n = 0; try { n = +(localStorage.getItem('oro_soft_' + k) || 0); if (n < 3) localStorage.setItem('oro_soft_' + k, String(n + 1)); } catch (e) { n = 0; } return n < 3; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function guest() { return document.documentElement.classList.contains('oro-guest') || !(D6.Api && D6.Api.token && D6.Api.token()); }
   function toast(m, k) { if (D6.App && D6.App.toast) D6.App.toast(m, k || 'ok'); }
@@ -70,16 +74,31 @@
     var pend = ''; try { pend = sessionStorage.getItem('oro_gjoin') || ''; sessionStorage.removeItem('oro_gjoin'); } catch (e) { pend = ''; }
     if (pend) { var jr = await call('gJoin', { tok: pend }); if (jr && jr.ok) { toast(x.joined.replace('{n}', jr.g.name)); openGroup(jr.g.id); return; } }
     var j = await call('groups', {});
+    var invs = (j && j.ok && j.inv) || [];
+    var invHtml = invs.length ? '<div class="lg-invs"><p class="lgi-h">' + esc(x.invTitle) + '</p>' + invs.map(function (v) {
+      return '<div class="lg-inv"><span class="lf-av lg-emo">' + esc(v.emoji) + '</span><span class="lf-ct"><b>' + esc(v.name) + '</b><small>' + esc(x.invFrom.replace('{a}', v.by)) + ' · ' + esc(v.n === 1 ? x.n1 : x.n.replace('{n}', v.n)) + '</small></span>' +
+        '<button type="button" class="lg-inv-no" data-ia="0" data-ig="' + esc(v.gid) + '">' + esc(x.no) + '</button><button type="button" class="lg-inv-ok" data-ia="1" data-ig="' + esc(v.gid) + '">' + esc(x.yes) + '</button></div>';
+    }).join('') + '</div>' : '';
     var items = (j && j.ok && j.list.length) ? j.list.map(function (g) {
       return '<button type="button" class="lf-c" data-g="' + esc(g.id) + '"><span class="lf-av lg-emo">' + esc(g.emoji) + '</span><span class="lf-ct"><b>' + esc(g.name) + '</b><small>' + esc(g.last || (g.n === 1 ? x.n1 : x.n.replace('{n}', g.n))) + '</small></span><span class="lf-t">' + ago(g.at) + '</span></button>';
     }).join('') : '<p class="lf-empty">' + esc(x.none) + '</p>';
     box.innerHTML = '<div class="lg-new"><b>' + esc(x.create) + '</b><div class="lg-emos">' + EMO.map(function (e) { return '<button type="button" class="' + (e === pick ? 'on' : '') + '" data-e="' + e + '">' + e + '</button>'; }).join('') + '</div>' +
-      '<form class="lf-find" id="lgForm" autocomplete="off"><input id="lgName" maxlength="40" placeholder="' + esc(x.namePh) + '"><button type="submit">' + esc(x.go) + '</button></form><p class="lf-msg" id="lgMsg"></p></div><div class="lf-convs">' + items + '</div>';
+      '<form class="lf-find" id="lgForm" autocomplete="off"><input id="lgName" maxlength="40" placeholder="' + esc(x.namePh) + '"><button type="submit">' + esc(x.go) + '</button></form><p class="lf-msg" id="lgMsg"></p></div>' + invHtml + '<div class="lf-convs">' + items + '</div>';
+    box.querySelectorAll('[data-ig]').forEach(function (b) {
+      b.addEventListener('click', async function () {
+        var yes = b.getAttribute('data-ia') === '1';
+        b.disabled = true;
+        var r = await call('gAnswer', { gid: b.getAttribute('data-ig'), yes: yes ? 1 : 0 });
+        if (yes && r && r.ok && r.g) { toast(x.joined.replace('{n}', r.g.name)); openGroup(r.g.id); return; }
+        if (r && !r.ok) toast(x[r.reason] || x.fail, 'err');
+        list();
+      });
+    });
     box.querySelectorAll('.lg-emos button').forEach(function (b) { b.addEventListener('click', function () { pick = b.getAttribute('data-e'); box.querySelectorAll('.lg-emos button').forEach(function (z) { z.classList.toggle('on', z === b); }); }); });
     $('lgForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       var r = await call('gCreate', { name: $('lgName').value, emoji: pick });
-      if (r && r.ok) openGroup(r.g.id); else $('lgMsg').textContent = x[(r && r.reason) || 'fail'] || x.fail;
+      if (r && r.ok) openGroup(r.g.id); else $('lgMsg').textContent = x[(r && r.reason) || 'fail'] || x.fail; // tooManyG = message doux, jamais de chiffre
     });
     box.querySelectorAll('[data-g]').forEach(function (b) { b.addEventListener('click', function () { openGroup(b.getAttribute('data-g')); }); });
   }
@@ -91,11 +110,12 @@
     cur = j.g;
     box.innerHTML = '<div class="lf-top"><button type="button" class="lf-back" id="lgBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="lg-head" id="lgHead"><span class="lf-av lg-emo">' + esc(cur.emoji) + '</span><span class="lf-who"><b>' + esc(cur.name) + '</b><small>' + esc(x.tapInfo) + '</small></span></button></div>' +
       '<div class="lg-info" id="lgInfo" hidden></div><div class="live-msgs" id="lgMsgs"></div>' +
-      '<form class="live-send" id="lgSend" autocomplete="off"><label class="live-cam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg><input type="file" id="lgFile" accept="image/*" hidden></label>' +
-      '<div class="live-in-wrap"><div class="live-prev" id="lgPrev" hidden></div><textarea id="lgText" rows="1" maxlength="1000" placeholder="' + esc(x.ph) + '"></textarea></div><button type="submit" class="live-go" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg></button></form>';
+      (cur.canWrite === false ? (soft('gread') ? '<p class="lg-only">' + esc(x.onlyOwner) + '</p>' : '') : '<form class="live-send" id="lgSend" autocomplete="off"><label class="live-cam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.4"/></svg><input type="file" id="lgFile" accept="image/*" hidden></label>' +
+      '<div class="live-in-wrap"><div class="live-prev" id="lgPrev" hidden></div><textarea id="lgText" rows="1" maxlength="1000" placeholder="' + esc(x.ph) + '"></textarea></div><button type="submit" class="live-go" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg></button></form>');
     paintMsgs(cur.msgs);
     $('lgBack').addEventListener('click', list);
     $('lgHead').addEventListener('click', info);
+    if ($('lgSend')) {
     $('lgText').addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(110, this.scrollHeight) + 'px'; });
     $('lgFile').addEventListener('change', async function () {
       var f = this.files && this.files[0]; this.value = ''; if (!f) return;
@@ -109,6 +129,7 @@
       if (r && r.ok) { t.value = ''; t.style.height = 'auto'; img = ''; $('lgPrev').hidden = true; $('lgPrev').innerHTML = ''; refresh(); }
       else toast(x[(r && r.reason) || 'fail'] || x.fail, 'err');
     });
+    }
     stop();
     // gros groupe = lecture moins fréquente (protège le serveur)
     poll = setInterval(function () { if (!document.hidden) refresh(); }, cur && cur.n > 200 ? 12000 : 6000);
@@ -159,16 +180,30 @@
     var fr = (j && j.ok ? j.list : []).filter(function (f) { return !f.blocked; });
     var sel = {};
     el.innerHTML = '<div class="lgi-top"><button type="button" class="lf-back" id="lgaBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b class="lga-t">' + esc(x.addMem) + '</b></div>' +
+      '<form class="lf-find lga-id" id="lgaIdF" autocomplete="off"><input id="lgaId" maxlength="80" inputmode="email" autocapitalize="characters" spellcheck="false" placeholder="' + esc(x.invPh) + '"><button type="submit">' + esc(x.invGo) + '</button></form>' +
+      (soft('ginv') ? '<p class="lga-hint">' + esc(x.invHint) + '</p>' : '') +
       (fr.length ? '<input class="lga-q" id="lgaQ" placeholder="' + esc(x.search) + '" autocomplete="off"><div class="lga-list" id="lgaList">' + fr.map(function (f) {
         var on = !!inG[f.id];
         return '<button type="button" class="lgi-row lga-r' + (on ? ' in' : '') + '" data-id="' + esc(f.id) + '" data-n="' + esc(String(f.name || '').toLowerCase()) + '"' + (on ? ' disabled' : '') + '><i style="--av:' + avc(f.name) + '">' + esc((f.name || '?').charAt(0).toUpperCase()) + '</i><b>' + esc(f.name || f.id) + (on ? '<small>' + esc(x.inGrp) + '</small>' : '') + '</b><span class="lga-ck"></span></button>';
-      }).join('') + '</div><button type="button" class="lga-go" id="lgaGo" disabled>' + esc(x.addN.replace('{n}', 0)) + '</button>'
+      }).join('') + '</div><button type="button" class="lga-go" id="lgaGo" disabled>' + esc(x.invN.replace('{n}', 0)) + '</button>'
         : '<p class="lf-empty">' + esc(x.pickNone) + '</p><button type="button" class="lga-go" id="lgaInv">' + esc(x.invite) + '</button>');
     el.hidden = false;
     $('lgaBack').addEventListener('click', info);
     if ($('lgaInv')) $('lgaInv').addEventListener('click', function () { shareLink(false); });
+    var done = function (r) {
+      if (r && r.ok && r.n) toast(x.invSent.replace('{n}', r.n));
+      else if (r && r.ok && r.in) toast(x.inGrp, 'err');
+      else if (r && r.ok && r.nf) toast(x.invNf, 'err');
+      else toast(x[(r && r.reason) || 'gNoneAdded'] || x.fail, 'err');
+    };
+    $('lgaIdF').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var v = $('lgaId').value.trim(); if (v.length < 7) { toast(x.invNf, 'err'); return; }
+      var r = await call('gInvite', { gid: cur.id, ids: [v] });
+      done(r); if (r && r.ok && r.n) $('lgaId').value = '';
+    });
     if (!fr.length) return;
-    var paint = function () { var n = Object.keys(sel).length; $('lgaGo').disabled = !n; $('lgaGo').textContent = x.addN.replace('{n}', n); };
+    var paint = function () { var n = Object.keys(sel).length; $('lgaGo').disabled = !n; $('lgaGo').textContent = x.invN.replace('{n}', n); };
     el.querySelectorAll('.lga-r:not(.in)').forEach(function (b) {
       b.addEventListener('click', function () { var id = b.getAttribute('data-id'); if (sel[id]) delete sel[id]; else sel[id] = 1; b.classList.toggle('on', !!sel[id]); paint(); });
     });
@@ -176,9 +211,9 @@
     $('lgaGo').addEventListener('click', async function () {
       var ids = Object.keys(sel); if (!ids.length) return;
       this.disabled = true;
-      var r = await call('gAdd', { gid: cur.id, ids: ids });
-      if (r && r.ok) { cur = r.g; paintMsgs(cur.msgs); toast(x.added.replace('{n}', r.n)); info(); }
-      else { toast(x[(r && r.reason) || 'fail'] || x.fail, 'err'); paint(); }
+      var r = await call('gInvite', { gid: cur.id, ids: ids });
+      done(r);
+      if (r && r.ok) info(); else paint();
     });
   }
   async function refresh() { if (!cur) return; var j = await call('gGet', { gid: cur.id }); if (j && j.ok) { cur = j.g; paintMsgs(cur.msgs); } }

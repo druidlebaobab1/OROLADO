@@ -47,11 +47,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['live_img'])) {
   require_once __DIR__ . '/live_lib.php';
   $f = admin_me() ? live_img_path((string) $_GET['live_img'], 'img') : '';
   if ($f === '') { http_response_code(404); exit; }
-  header('Content-Type: ' . (str_ends_with($f, '.png') ? 'image/png' : (str_ends_with($f, '.webp') ? 'image/webp' : 'image/jpeg')));
-  header('Cache-Control: private, max-age=86400');
-  header('X-Content-Type-Options: nosniff');
-  readfile($f);
-  exit;
+  live_send_media($f, 'private, max-age=86400'); // v2790 : photos ET notes vocales
 }
 
 // v2777 (propriétaire) — identifiant unique R… des joueurs : table « numéro interne ORO-… → R… » pour l'affichage admin.
@@ -3218,7 +3214,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   async function open(uid) {
     cur = uid; const j = await ajax({action:'live_thread', uid}); if (!j.ok) return;
     $l('lvHead').textContent = (j.publicId || '') + ' ' + (j.name || '') + (j.email ? ' · ' + j.email : '');
-    $l('lvMsgs').innerHTML = j.msgs.map(m => '<div class="lvA-m '+(m.f==='a'?'a':'u')+'">'+(m.img?'<img src="'+esc(m.img)+'" alt="" onclick="window.open(this.src)">':'')+esc(m.t)+'<small>'+when(m.at)+'</small></div>').join('');
+    $l('lvMsgs').innerHTML = j.msgs.map(m => '<div class="lvA-m '+(m.f==='a'?'a':'u')+'">'+(m.img?(/\.(webm|m4a|ogg)$/.test(m.img)?'<audio controls preload="none" src="'+esc(m.img)+'" style="display:block;max-width:240px;margin-bottom:4px"></audio>':'<img src="'+esc(m.img)+'" alt="" onclick="window.open(this.src)">'):'')+esc(m.t)+'<small>'+when(m.at)+'</small></div>').join('');
     $l('lvMsgs').scrollTop = 1e9; list();
   }
   async function send() {

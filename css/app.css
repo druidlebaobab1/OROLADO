@@ -12508,3 +12508,45 @@ html:root body #casinoModal#casinoModal .cs-wallet .cw-t small{text-align:center
 html, body { overscroll-behavior: none; }
 button, a, [role="button"], .mode-btn, .sp-o, .gh-p, .lh-f { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 button, [role="button"] { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+/* v2790 (propriétaire) : une page ouverte = un monde à elle seule — le trading derrière ne réagit plus au toucher */
+html.oro-modal-lock body #screenTrade, html.oro-shield body #screenTrade { pointer-events: none !important; }
+html.oro-modal-lock body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4):not(#c5),
+html.oro-shield body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4):not(#c5){pointer-events:none!important}
+/* v2790 (propriétaire) : Mes paris — recherche par état et par période */
+html body #casinoModal .sp-mf{display:flex;flex-direction:column;gap:8px;margin:4px 0 10px}
+html body #casinoModal .sp-mf-st{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+html body #casinoModal .sp-mf-st::-webkit-scrollbar{display:none}
+html body #casinoModal .sp-mf-st button{flex:0 0 auto;height:32px;padding:0 12px;border-radius:99px;border:1px solid #E2E8F0;background:#fff;color:#334155;font:700 12.5px/1 inherit;white-space:nowrap}
+html body #casinoModal .sp-mf-st button.on{background:#0F172A;border-color:#0F172A;color:#fff}
+html body #casinoModal .sp-mf-per{display:flex;gap:6px}
+html body #casinoModal .sp-mf-per select,html body #casinoModal .sp-mf-per input{flex:1;min-width:0;height:36px;border-radius:12px;border:1px solid #E2E8F0;background:#fff;color:#0F172A;font:600 13px/1 inherit;padding:0 10px}
+
+/* v2790 : bouton « Télécharger / Partager » du reçu de pari (icône) */
+html body .sp-rcpt-share { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+html body .sp-rcpt-share .sp-rcpt-dli svg { width: 18px; height: 18px; display: block; }
+
+/* v2790 (propriétaire) : NOTE VOCALE dans « Écris-nous » — bouton micro (rouge + chrono pendant l'enregistrement), lecteur dans la bulle */
+#liveModal .live-mic{position:relative;width:40px;height:40px;flex:0 0 40px;border-radius:12px;border:0;padding:0;display:grid;place-items:center;background:rgba(255,255,255,.07);cursor:pointer;color:inherit}
+#liveModal .live-mic svg{width:22px;height:22px;fill:none;stroke:#7DD3FC;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#liveModal .live-mic em{position:absolute;left:50%;top:-18px;transform:translateX(-50%);font:800 11px/1 system-ui,sans-serif;font-style:normal;color:#FCA5A5;white-space:nowrap}
+#liveModal .live-mic.on{background:linear-gradient(180deg,#F87171,#DC2626);animation:lvMicP 1s ease-in-out infinite}
+#liveModal .live-mic.on svg{stroke:#fff}
+@keyframes lvMicP{50%{transform:scale(1.08)}}
+html.oro-lite #liveModal .live-mic.on{animation:none}
+#liveModal .live-prev audio{display:block;width:210px;max-width:100%;height:36px}
+#liveModal .live-prev audio + button{left:auto;right:-4px}
+#liveModal .lv-m .lv-aud{display:block;width:220px;max-width:100%;height:38px;margin:2px 0 4px}
+
+/* v2790 (propriétaire) : GROUPES — invitations reçues (Accepter / Refuser), note « seul le créateur publie », inviter par identifiant ou e-mail */
+#liveModal .lg-invs{margin:10px 0 4px}
+#liveModal .lg-inv{display:flex;align-items:center;gap:9px;padding:9px 10px;margin-bottom:7px;border-radius:13px;background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(139,92,246,.10));border:1px solid rgba(251,191,36,.35);color:#E8ECF8}
+#liveModal .lg-inv .lf-ct{flex:1;min-width:0}
+#liveModal .lg-inv .lf-ct b,#liveModal .lg-inv .lf-ct small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveModal .lg-inv .lf-ct small{opacity:.75;font-size:12px}
+#liveModal .lg-inv button{flex:0 0 auto;height:34px;padding:0 12px;border-radius:11px;border:0;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+#liveModal .lg-inv .lg-inv-ok{background:linear-gradient(135deg,#22C55E,#15803D);color:#fff}
+#liveModal .lg-inv .lg-inv-no{background:rgba(255,255,255,.08);color:#CBD5E1}
+#liveModal .lg-only{margin:8px 12px 12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);color:#A7B0D0;font-size:13px;text-align:center}
+#liveModal .lga-id{margin:10px 12px 4px}
+#liveModal .lga-id input{text-transform:none}
+#liveModal .lga-hint{margin:4px 14px 8px;color:#A7B0D0;font-size:12.5px}

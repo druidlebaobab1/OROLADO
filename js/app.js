@@ -7072,6 +7072,45 @@
   window.addEventListener('resize', function () { clearTimeout(fitSheets._t); fitSheets._t = setTimeout(fitSheets, 200); });
   function lockBehind() {
     if (document.querySelector('#depositModal.active, #withdrawModal.active')) { setTimeout(fitSheets, 60); setTimeout(fitSheets, 400); } try { document.documentElement.classList.toggle('oro-modal-lock', !!document.querySelector('.modal-backdrop.active')); } catch (e) { /* ignore */ } }
+  // v2790 (propriétaire) — chaque page (Jeux, Paris, Social, Cadeaux, Profil…) est un MONDE À ELLE SEULE : tant qu'elle est
+  // ouverte, rien derrière ne réagit ; et juste après sa fermeture, un toucher ne « traverse » plus vers le trading (0,4 s de bouclier).
+  (function () {
+    var shieldT = 0, asleep = false;
+    function sleepTrade(v) {
+      var st = $('screenTrade'); if (!st) return;
+      asleep = v;
+      try { st.inert = v; } catch (e) { /* ignore */ }
+      if (v) st.setAttribute('aria-hidden', 'true'); else st.removeAttribute('aria-hidden');
+    }
+    function shield() {
+      document.documentElement.classList.add('oro-shield');
+      clearTimeout(shieldT);
+      shieldT = setTimeout(function () { document.documentElement.classList.remove('oro-shield'); if (!document.documentElement.classList.contains('oro-modal-lock')) sleepTrade(false); }, 400);
+    }
+    function sync() {
+      var narrow = window.innerWidth < 860;
+      var on = !!document.querySelector('.modal-backdrop.active') || (narrow && !!document.querySelector('#drawerProfile.on, #drawerProfile.open'));
+      var was = asleep;
+      document.documentElement.classList.toggle('oro-modal-lock', on || !!document.querySelector('.modal-backdrop.active'));
+      if (on) { clearTimeout(shieldT); sleepTrade(true); }
+      else if (was) shield(); // le trading se réveille 0,4 s après (un toucher ne « traverse » pas)
+    }
+    var mo = null;
+    function watch() {
+      try {
+        if (!mo) mo = new MutationObserver(sync);
+        var added = false;
+        document.querySelectorAll('.modal-backdrop, #drawerProfile').forEach(function (el) { if (el._oroW) return; el._oroW = 1; added = true; mo.observe(el, { attributes: true, attributeFilter: ['class'] }); });
+        if (added) setTimeout(sync, 0); // une fenêtre créée et ouverte au même moment (1re ouverture des Jeux)
+      } catch (e) { /* ignore */ }
+    }
+    function start() {
+      watch();
+      // fenêtres créées plus tard (Jeux / Paris…) : surveillées dès qu'elles arrivent (seulement les enfants directs de la page)
+      try { new MutationObserver(watch).observe(document.body, { childList: true }); } catch (e) { /* ignore */ }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  })();
   function closeModal(id) {
     var el = $(id);
     if (el) {

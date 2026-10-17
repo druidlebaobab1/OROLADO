@@ -33,22 +33,12 @@ function live_me(string $tok): ?array {
   } catch (Throwable $e) { return null; }
 }
 
-function live_send_image_file(string $f): void {
-  $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
-  header('Content-Type: ' . ($ext === 'png' ? 'image/png' : ($ext === 'webp' ? 'image/webp' : 'image/jpeg')));
-  header('X-Content-Type-Options: nosniff');
-  header('Content-Length: ' . (string) filesize($f));
-  readfile($f);
-  exit;
-}
-
 // Photos : publiques (publications) pour tout le monde ; privées (conversation) seulement pour leur joueur.
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
   if (isset($_GET['p'])) {
     $f = live_img_path((string) $_GET['p'], 'pub');
     if ($f === '') { http_response_code(404); exit; }
-    header('Cache-Control: public, max-age=2592000, immutable');
-    live_send_image_file($f);
+    live_send_media($f, 'public, max-age=2592000, immutable');
   }
   if (isset($_GET['i'])) {
     $name = (string) $_GET['i'];
@@ -57,8 +47,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     // v2680 : photo d'une conversation du joueur (équipe ou ami), jamais celle des autres.
     $mine = $f !== '' && $me && (live_img_allowed((string) $me['id'], $name) || live_img_in_groups((string) $me['id'], $name));
     if (!$mine) { http_response_code(404); exit; }
-    header('Cache-Control: private, max-age=86400');
-    live_send_image_file($f);
+    live_send_media($f, 'private, max-age=86400');
   }
   http_response_code(404);
   exit;
@@ -104,13 +93,18 @@ if ($action === 'send') {
   $uid = (string) $me['id'];
   $text = live_clean_text((string) ($req['text'] ?? ''));
   $imgData = (string) ($req['img'] ?? '');
-  if ($text === '' && $imgData === '') live_out(['ok' => false, 'reason' => 'empty']);
+  $audData = (string) ($req['aud'] ?? ''); // v2790 : note vocale (10 s max)
+  if ($text === '' && $imgData === '' && $audData === '') live_out(['ok' => false, 'reason' => 'empty']);
   if (!live_quota_ok($uid, 'msg', LIVE_MSG_HOUR, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
   $img = '';
   if ($imgData !== '') {
     if (!live_quota_ok($uid, 'img', LIVE_IMG_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyImg']);
     $img = live_save_image($imgData, 'img');
     if ($img === '') live_out(['ok' => false, 'reason' => 'badImg']);
+  } elseif ($audData !== '') {
+    if (!live_quota_ok($uid, 'aud', LIVE_AUD_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyAud']);
+    $img = live_save_audio($audData);
+    if ($img === '') live_out(['ok' => false, 'reason' => 'badAud']);
   }
   $r = live_add_msg($me, 'u', $text, $img);
   if (empty($r['ok'])) live_out(['ok' => false, 'reason' => 'fail']);
@@ -129,7 +123,7 @@ if ($action === 'send') {
     try {
       require_once __DIR__ . '/push_lib.php';
       $who = trim((string) ($me['publicId'] ?? '') . ' ' . (string) ($me['displayName'] ?? ''));
-      push_notify_admin('💬 Live · ' . ($who !== '' ? $who : 'Joueur'), $text !== '' ? $text : '📷 Photo', '/admin.php');
+      push_notify_admin('💬 Live · ' . ($who !== '' ? $who : 'Joueur'), live_media_label($m), '/admin.php');
     } catch (Throwable $e) { /* jamais bloquant */ }
   }
   exit;
@@ -262,14 +256,14 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
 }
 
 /* ---------- v2688 — GROUPES ---------- */
-if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 'gKick', 'gAdd'], true)) {
+if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 'gKick', 'gAdd', 'gInvite', 'gAnswer'], true)) {
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
   $uid = (string) $me['id'];
   live_oro_id($me); // le joueur a un identifiant (nom visible dans les groupes)
   $gOut = static function (array $g, string $uid, bool $withMsgs) {
     $o = ['id' => (string) $g['id'], 'name' => (string) $g['name'], 'emoji' => (string) ($g['emoji'] ?? '💬'), 'n' => count((array) $g['members']),
-      'owner' => (string) $g['owner'] === $uid, 'at' => (int) ($g['at'] ?? 0), 'link' => 'https://orolado.com/?g=' . rawurlencode((string) $g['tok'])];
+      'owner' => (string) $g['owner'] === $uid, 'canWrite' => (string) $g['owner'] === $uid, 'at' => (int) ($g['at'] ?? 0), 'link' => 'https://orolado.com/?g=' . rawurlencode((string) $g['tok'])];
     $last = $g['msgs'] ? end($g['msgs']) : null;
     if (is_array($last) && empty($last['sys'])) { $w = live_who_uid((string) $last['f']); $o['last'] = ((string) $last['f'] === $uid ? '✓ ' : (($w['name'] ?? '') . ' : ')) . ((string) ($last['t'] ?? '') !== '' ? (string) $last['t'] : '📷'); }
     if ($withMsgs) {
@@ -288,7 +282,15 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
     $list = [];
     foreach (live_ugroups($uid) as $gid) { $g = live_group_get((string) $gid); if ($g && in_array($uid, (array) $g['members'], true)) $list[] = $gOut($g, $uid, false); }
     usort($list, static fn($a, $b) => $b['at'] <=> $a['at']);
-    live_out(['ok' => true, 'list' => $list]);
+    // v2790 : invitations reçues (Accepter / Refuser)
+    $inv = [];
+    foreach (live_group_invites($uid) as $i) {
+      $gg = live_group_get((string) ($i['g'] ?? ''));
+      if (!$gg || in_array($uid, (array) $gg['members'], true)) continue;
+      $w = live_who_uid((string) ($i['by'] ?? ''));
+      $inv[] = ['gid' => (string) $gg['id'], 'name' => (string) $gg['name'], 'emoji' => (string) ($gg['emoji'] ?? '💬'), 'n' => count((array) $gg['members']), 'by' => (string) ($w['name'] ?? 'Joueur'), 'at' => (int) ($i['at'] ?? 0)];
+    }
+    live_out(['ok' => true, 'list' => $list, 'inv' => $inv]);
   }
   if ($action === 'gCreate') {
     $r = live_group_create($uid, (string) ($req['name'] ?? ''), (string) ($req['emoji'] ?? ''));
@@ -299,22 +301,30 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
     live_out(empty($r['ok']) ? $r : ['ok' => true, 'g' => $gOut($r['g'], $uid, false)]);
   }
   $gid = live_safe_id((string) ($req['gid'] ?? ''));
+  if ($action === 'gAnswer') {
+    $r = live_group_answer($uid, $gid, !empty($req['yes']));
+    live_out(empty($r['ok']) || empty($r['g']) ? $r : ['ok' => true, 'g' => $gOut($r['g'], $uid, false)]);
+  }
   $g = $gid !== '' ? live_group_get($gid) : null;
   if (!$g || !in_array($uid, (array) $g['members'], true)) live_out(['ok' => false, 'reason' => 'gGone']);
   if ($action === 'gGet') live_out(['ok' => true, 'g' => $gOut($g, $uid, true)]);
   if ($action === 'gLeave') live_out(live_group_leave($uid, $gid));
-  if ($action === 'gAdd') {
-    // v2706 : ajouter ses contacts (identifiants des amis) directement dans le groupe
-    if (!live_quota_ok($uid, 'gadd', 100, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
-    $peers = [];
-    foreach (array_slice((array) ($req['ids'] ?? []), 0, 30) as $oid) { $w = live_who(live_norm_oro_id((string) $oid)); if ($w) $peers[] = (string) $w['uid']; }
-    $r = live_group_add($uid, $gid, $peers);
-    if (empty($r['ok'])) live_out($r);
-    echo json_encode(['ok' => true, 'n' => count($r['added']), 'g' => $gOut($r['g'], $uid, true)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    if ($r['added']) {
+  if ($action === 'gAdd' || $action === 'gInvite') {
+    // v2790 (propriétaire) : plus d'ajout forcé — le joueur reçoit une INVITATION (identifiant R…, e-mail ou un contact) et choisit
+    $ids = array_slice((array) ($req['ids'] ?? []), 0, 30);
+    if (!live_quota_ok($uid, 'ginv', 40, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
+    $sent = []; $nf = 0; $in = 0;
+    foreach ($ids as $oid) {
+      $w = live_who(live_norm_oro_id((string) $oid));
+      if (!$w) { $nf++; continue; }
+      $st = live_group_invite($uid, $gid, (string) $w['uid']);
+      if ($st === 'ok') $sent[] = (string) $w['uid']; elseif ($st === 'in') $in++;
+    }
+    echo json_encode(['ok' => true, 'n' => count($sent), 'nf' => $nf, 'in' => $in], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($sent) {
       if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
       $fromW = live_who_uid($uid);
-      foreach ($r['added'] as $p) $pushTo($p, '👪 ' . (string) $r['g']['name'], (string) ($fromW['name'] ?? 'Un ami') . ' t’a ajouté au groupe');
+      foreach ($sent as $pp) $pushTo($pp, '👪 ' . (string) $g['name'], (string) ($fromW['name'] ?? 'Un ami') . ' t’invite dans le groupe');
     }
     exit;
   }

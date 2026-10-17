@@ -7,7 +7,7 @@
   var TXT = {
     fr: { sub: 'En ligne · l’équipe te répond ici', news: 'Actualités', chat: 'Écris-nous', ph: 'Écris ton message…', views: 'vues',
       welcomeNews: 'Bienvenue sur OROLADO Social ! 👋\nIci, tu trouves nos nouvelles : nouveautés, moyens de paiement, marchés qui bougent… Et dans « Écris-nous », tu peux parler directement à l’équipe.',
-      welcomeChat: 'Bonjour 👋 Écris-nous ici, on te répond dans cette conversation.\nTu peux aussi envoyer une photo 📷 (par exemple la capture d’un paiement).',
+      welcomeChat: 'Bonjour 👋 Écris-nous ici, on te répond dans cette conversation.\nTu peux aussi envoyer une photo 📷 (par exemple la capture d’un paiement) ou une note vocale 🎤.',
       q1: '💳 Mon dépôt', q1t: 'Bonjour, j’ai un souci avec mon dépôt : ', q2: '💸 Mon retrait', q2t: 'Bonjour, j’ai une question sur mon retrait : ',
       q3: '📈 Comment jouer ?', q3t: 'Bonjour, comment bien jouer sur OROLADO ?', q4: '🔐 Mon compte', q4t: 'Bonjour, j’ai un souci avec mon compte : ',
       guestT: 'Inscris-toi pour écrire à l’équipe', guestB: 'Avec ton compte, tu peux nous écrire et envoyer des photos. On te répond ici.', guestBtn: 'Créer mon compte', guestMail: 'Écrire par e-mail',
@@ -21,7 +21,7 @@
       duelBtn: 'Défier', duelPick: 'Défie ton ami en démo', duelPickS: 'Choisis la durée. Celui qui gagne le plus en démo remporte le défi.', duelSent: 'Défi envoyé · {m} min · en attente de {n}…', duelInvite: '{n} te défie !', duelInviteS: '{m} minutes en démo : celui qui gagne le plus remporte le défi.', accept: 'Accepter', refuse: 'Refuser', duelStartIn: 'Le défi commence dans {s} s', duelLive: 'Défi en cours', duelLeft: 'reste {t}', duelPlay: 'Jouer en démo', duelWin: '🏆 Tu as gagné le défi !', duelLose: '{n} a gagné le défi', duelTie: 'Égalité !', duelAgain: 'Revanche', duelRefused: '{n} a refusé le défi.', duelExpired: 'Le défi n’a pas été accepté à temps.', duelBusy: 'Un défi est déjà en cours avec cet ami.', duelGone: 'Ce défi n’est plus disponible.', duelRecord: 'Tes défis : {w} gagnés · {l} perdus', duelTrades: '{n} trades', duelWait: 'Résultat dans un instant…', duelPromoT: 'Défie ton ami en démo', duelPromoS: 'Invite ton ami : vous tradez en même temps en démo (3, 5 ou 10 min) et on voit qui est le plus fort. Montre-lui qui est le boss !', duelPromoBtn: 'Défier un ami', inviteBadge: 'défi', emptyT: 'Ajoute ton premier ami', emptyS: 'Envoie-lui ton identifiant, ou colle le sien juste au-dessus.', share: 'Envoyer mon identifiant', shareTxt: 'Ajoute-moi sur OROLADO Live ! Mon identifiant : {id}' },
     en: { sub: 'Online · the team answers you here', news: 'News', chat: 'Write to us', ph: 'Write your message…', views: 'views',
       welcomeNews: 'Welcome to OROLADO Social! 👋\nHere you find our news: new features, payment methods, markets on the move… And in “Write to us”, you can talk directly to the team.',
-      welcomeChat: 'Hello 👋 Write to us here, we answer in this conversation.\nYou can also send a photo 📷 (for example a payment screenshot).',
+      welcomeChat: 'Hello 👋 Write to us here, we answer in this conversation.\nYou can also send a photo 📷 (for example a payment screenshot) or a voice note 🎤.',
       q1: '💳 My deposit', q1t: 'Hello, I have an issue with my deposit: ', q2: '💸 My withdrawal', q2t: 'Hello, I have a question about my withdrawal: ',
       q3: '📈 How to play?', q3t: 'Hello, how do I play well on OROLADO?', q4: '🔐 My account', q4t: 'Hello, I have an issue with my account: ',
       guestT: 'Sign up to write to the team', guestB: 'With your account, you can write to us and send photos. We answer you here.', guestBtn: 'Create my account', guestMail: 'Write by e-mail',
@@ -109,7 +109,7 @@
     var html = '<div class="lv-m a lv-hello">' + linkify(x.welcomeChat) + '</div>';
     lastMsgs = (me && me.msgs) || [];
     lastMsgs.forEach(function (m) {
-      html += '<div class="lv-m ' + (m.f === 'a' ? 'a' : 'u') + '">' + (m.img ? '<img src="' + esc(m.img) + '" alt="" loading="lazy">' : '') + (m.t ? linkify(m.t) : '') + '<small>' + (m.f === 'a' ? x.team + ' · ' : '') + ago(m.at) + '</small></div>';
+      html += '<div class="lv-m ' + (m.f === 'a' ? 'a' : 'u') + (isAud(m.img) ? ' lv-voice' : '') + '">' + (m.img ? media(m.img) : '') + (m.t ? linkify(m.t) : '') + '<small>' + (m.f === 'a' ? x.team + ' · ' : '') + ago(m.at) + '</small></div>';
     });
     $('liveMsgs').innerHTML = html;
     $('liveMsgs').scrollTop = 1e9;
@@ -520,16 +520,73 @@
     });
   }
 
+  /* v2790 (propriétaire) — NOTE VOCALE pour l'équipe : on touche le micro, on parle (10 s max, arrêt tout seul),
+     on écoute avant d'envoyer, ✕ pour effacer. Son léger (32 kbit/s ≈ 40 Ko). Rien ne tourne quand on n'enregistre pas. */
+  var AUD = {
+    fr: ['Parle… touche pour arrêter', 'Micro refusé : autorise le micro dans ton navigateur.', 'Limite de notes vocales atteinte pour aujourd’hui.', 'Note vocale refusée, réessaie.', 'Ton téléphone ne permet pas d’enregistrer ici.'],
+    en: ['Speak… tap to stop', 'Microphone blocked: allow it in your browser.', 'Voice note limit reached for today.', 'Voice note refused, try again.', 'Your phone cannot record here.'],
+    es: ['Habla… toca para parar', 'Micrófono bloqueado: permítelo en tu navegador.', 'Límite de notas de voz alcanzado hoy.', 'Nota de voz rechazada, inténtalo de nuevo.', 'Tu teléfono no puede grabar aquí.'],
+    pt: ['Fala… toca para parar', 'Microfone bloqueado: permite-o no navegador.', 'Limite de notas de voz atingido hoje.', 'Nota de voz recusada, tenta de novo.', 'O teu telemóvel não pode gravar aqui.'],
+    ar: ['تكلم… اضغط للإيقاف', 'الميكروفون محظور: اسمح به في المتصفح.', 'تم بلوغ حد الرسائل الصوتية لليوم.', 'تم رفض الرسالة الصوتية، حاول مجددًا.', 'لا يمكن لهاتفك التسجيل هنا.'],
+    tr: ['Konuş… durdurmak için dokun', 'Mikrofon engelli: tarayıcıda izin ver.', 'Bugünkü sesli not sınırına ulaşıldı.', 'Sesli not reddedildi, tekrar dene.', 'Telefonun burada kayıt yapamıyor.'],
+    vi: ['Nói… chạm để dừng', 'Micro bị chặn: hãy cho phép trong trình duyệt.', 'Đã đạt giới hạn ghi âm hôm nay.', 'Ghi âm bị từ chối, thử lại.', 'Điện thoại của bạn không ghi âm được ở đây.'],
+    id: ['Bicara… ketuk untuk berhenti', 'Mikrofon diblokir: izinkan di browser.', 'Batas pesan suara hari ini tercapai.', 'Pesan suara ditolak, coba lagi.', 'Ponselmu tidak bisa merekam di sini.'],
+    ru: ['Говорите… нажмите, чтобы остановить', 'Микрофон запрещён: разрешите его в браузере.', 'Лимит голосовых на сегодня исчерпан.', 'Голосовое отклонено, попробуйте снова.', 'Ваш телефон не может записывать здесь.'],
+    de: ['Sprich… tippen zum Stoppen', 'Mikrofon blockiert: im Browser erlauben.', 'Limit für Sprachnachrichten heute erreicht.', 'Sprachnachricht abgelehnt, nochmal versuchen.', 'Dein Handy kann hier nicht aufnehmen.'],
+    zh: ['请说话… 点击停止', '麦克风被禁止：请在浏览器中允许。', '今天的语音消息已达上限。', '语音消息发送失败，请重试。', '你的手机无法在此录音。'],
+    hi: ['बोलें… रोकने के लिए टैप करें', 'माइक्रोफ़ोन बंद है: ब्राउज़र में अनुमति दें।', 'आज की वॉइस नोट सीमा पूरी हो गई।', 'वॉइस नोट अस्वीकार, फिर कोशिश करें।', 'आपका फ़ोन यहाँ रिकॉर्ड नहीं कर सकता।']
+  };
+  function A(i) { var l = (document.documentElement.lang || 'fr').slice(0, 2); return (AUD[l] || AUD.en)[i]; }
+  var pendingAud = '', rec = null, recT = 0, recAt = 0;
+  function isAud(u) { return /\.(webm|m4a|ogg)$/.test(String(u || '')); }
+  function media(u) { return isAud(u) ? '<audio class="lv-aud" controls preload="none" src="' + esc(u) + '"></audio>' : '<img src="' + esc(u) + '" alt="" loading="lazy">'; }
+  function clearAud() { pendingAud = ''; if (!pendingImg) { $('livePrev').hidden = true; $('livePrev').innerHTML = ''; } }
+  function micStop() { if (rec && rec.state === 'recording') { try { rec.stop(); } catch (e) { /* ignore */ } } }
+  async function micStart() {
+    var toast = function (m) { if (D6.App && D6.App.toast) D6.App.toast(m, 'err'); };
+    if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast(A(4)); return; }
+    var stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { toast(A(1)); return; }
+    var type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'].filter(function (t) { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } })[0] || '';
+    var parts = [];
+    try { rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 }); } catch (e) { stream.getTracks().forEach(function (t) { t.stop(); }); toast(A(4)); return; }
+    rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) parts.push(ev.data); };
+    rec.onstop = function () {
+      clearInterval(recT); stream.getTracks().forEach(function (t) { t.stop(); });
+      $('liveMic').classList.remove('on'); $('liveMicT').textContent = ''; $('liveForm').classList.remove('lv-rec'); $('liveText').placeholder = L().ph;
+      var blob = new Blob(parts, { type: (rec.mimeType || type || 'audio/webm').split(';')[0] });
+      rec = null;
+      if (Date.now() - recAt < 700 || blob.size < 400) return; // touché par erreur
+      var fr = new FileReader();
+      fr.onload = function () {
+        pendingAud = String(fr.result || '');
+        pendingImg = '';
+        $('livePrev').innerHTML = '<audio controls src="' + URL.createObjectURL(blob) + '"></audio><button type="button" aria-label="x">✕</button>';
+        $('livePrev').hidden = false;
+        $('livePrev').querySelector('button').addEventListener('click', clearAud);
+      };
+      fr.readAsDataURL(blob);
+    };
+    recAt = Date.now();
+    rec.start();
+    $('liveMic').classList.add('on'); $('liveForm').classList.add('lv-rec');
+    $('liveText').placeholder = A(0);
+    var tick = function () { var s = Math.min(10, Math.floor((Date.now() - recAt) / 1000)); $('liveMicT').textContent = '0:' + (s < 10 ? '0' : '') + s; if (Date.now() - recAt >= 10000) micStop(); };
+    tick(); recT = setInterval(tick, 250);
+  }
+
   async function send(e) {
     if (e) e.preventDefault();
     if (busy) return;
+    micStop();
     var x = L(), t = $('liveText'), text = t.value.trim();
-    if (!text && !pendingImg) return;
+    if (!text && !pendingImg && !pendingAud) return;
     busy = true; $('liveGo').disabled = true;
-    var j = await call('send', { text: text, img: pendingImg, lang: (document.documentElement.lang || 'fr').slice(0, 2) });
+    var j = await call('send', { text: text, img: pendingImg, aud: pendingImg ? '' : pendingAud, lang: (document.documentElement.lang || 'fr').slice(0, 2) });
     busy = false; $('liveGo').disabled = false;
+    if (j && !j.ok && (j.reason === 'tooManyAud' || j.reason === 'badAud')) { if (D6.App && D6.App.toast) D6.App.toast(A(j.reason === 'tooManyAud' ? 2 : 3), 'err'); return; }
     if (j && j.ok) {
-      t.value = ''; grow(); pendingImg = ''; $('livePrev').hidden = true; $('livePrev').innerHTML = '';
+      t.value = ''; grow(); pendingImg = ''; pendingAud = ''; $('livePrev').hidden = true; $('livePrev').innerHTML = '';
       // v2694 : jamais deux fois le même message (la lecture automatique peut l'avoir déjà apporté)
       var add = function (m) { if (m && !lastMsgs.some(function (z) { return z.id && z.id === m.id; })) lastMsgs.push(m); paintChat({ msgs: lastMsgs }); };
       add(j.msg);
@@ -562,11 +619,12 @@
     document.addEventListener('oro:lang', function () { if (document.documentElement.lang === lastLang) return; lastLang = document.documentElement.lang; if ($('liveModal').classList.contains('active') && tab === 'home') paintHome(); });
     $('liveForm').addEventListener('submit', send);
     $('liveText').addEventListener('input', grow);
+    if ($('liveMic')) $('liveMic').addEventListener('click', function () { if (rec) micStop(); else micStart(); });
     $('liveFile').addEventListener('change', async function () {
       var f = this.files && this.files[0]; this.value = '';
       if (!f) return;
       try {
-        pendingImg = await shrink(f);
+        pendingImg = await shrink(f); pendingAud = '';
         $('livePrev').innerHTML = '<img src="' + pendingImg + '" alt=""><button type="button" aria-label="x">✕</button>';
         $('livePrev').hidden = false;
         $('livePrev').querySelector('button').addEventListener('click', function () { pendingImg = ''; $('livePrev').hidden = true; $('livePrev').innerHTML = ''; });
