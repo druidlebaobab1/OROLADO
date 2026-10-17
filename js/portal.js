@@ -517,7 +517,7 @@
   function affN(r) { return r.n != null ? Number(r.n) || 0 : (Number(r.deposit || 0) > 0 ? 1 : 0); }
   function affRowHtml(r) {
     var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
-    return '<div class="aff-row"><div class="ar-id"><b>' + esc(r.id) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
+    return '<div class="aff-row"><div class="ar-id"><b>' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
       '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
       // v2489 — nombre de dépôts de l'ami.
       '<div class="ar-n"><b>' + affN(r) + '</b><span>' + esc(t('affColN')) + '</span></div>' +
@@ -697,7 +697,7 @@
     $('topPodium').innerHTML = pod.map(function (r, i) {
       var place = [2, 1, 3][i];
       if (!r) return '<div class="tp tp' + place + ' empty"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>—</b><span>&nbsp;</span><div class="tp-step"></div></div>';
-      return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(r.id) + '</b>' +
+      return '<div class="tp tp' + place + (r.me ? ' me' : '') + '"><div class="tp-medal">' + ICO_MEDAL + '<em>' + place + '</em></div><b>' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</b>' +
         oroAmt(r.points) + '<div class="tp-step"></div></div>';
     }).join('');
     var rest = list.slice(3);
@@ -712,7 +712,7 @@
           lastTier = tier;
           head = '<div class="tr-tier tt' + tier + '"><span>' + ['', 'TOP 10', '11 – 20', '21 – 30', '31 – 50'][tier] + '</span></div>';
         }
-        return head + '<div class="tr tt' + tier + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(r.id) + '</b>' + oroAmt(r.points) + '</div>';
+        return head + '<div class="tr tt' + tier + (r.me ? ' me' : '') + '"><em>' + r.rank + '</em><b>' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</b>' + oroAmt(r.points) + '</div>';
       }).join('');
     }
     var me = top.me || {};

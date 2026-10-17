@@ -3313,22 +3313,8 @@
     loadRecvCache(u);
     $('profName').textContent = isGuest(u) ? t('m_guest') : (u.displayName || 'Trader');
     $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
-    // v2772 (propriétaire) : UN SEUL identifiant, unique à OROLADO — « ORO-XXXX-XXXX » (le même que dans Social, défis, envois)
-    if ($('profPublicId')) {
-      var pidEl = $('profPublicId');
-      if (isGuest(u)) pidEl.textContent = '—';
-      else {
-        if (!pidEl.getAttribute('data-code')) pidEl.textContent = '…';
-        else pidEl.textContent = pidEl.getAttribute('data-code');
-        try {
-          var tk = D6.Api && D6.Api.token ? D6.Api.token() : '';
-          fetch('live.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'myid', token: tk }) })
-            .then(function (r) { return r.json(); })
-            .then(function (j) { if (j && j.ok && j.id) { pidEl.textContent = j.id; pidEl.setAttribute('data-code', j.id); } else if (!pidEl.getAttribute('data-code')) pidEl.textContent = '—'; })
-            .catch(function () { if (!pidEl.getAttribute('data-code')) pidEl.textContent = '—'; });
-        } catch (eId) { pidEl.textContent = '—'; }
-      }
-    }
+    // v2773 (propriétaire) : UN SEUL identifiant partout — « ORO159978 » (le numéro du profil, sans tiret)
+    if ($('profPublicId')) $('profPublicId').textContent = oroIdShow(u.publicId) || '—';
     $('profEmail').textContent = u.email;
     if ($('profSince')) $('profSince').textContent = fmtMemberSince(u.createdAt || u.created_at);
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
@@ -3935,9 +3921,12 @@
     return '<span class="admin-email" title="' + e + '">' + e + '</span>';
   }
 
+  // v2773 (propriétaire) : l'identifiant s'affiche partout « ORO159978 » (sans tiret) ; la recherche marche avec ou sans tiret
+  function oroIdShow(s) { return String(s || '').replace(/^ORO-(\d+)$/, 'ORO$1'); }
+  D6.oroIdShow = oroIdShow;
   function adminMatchQ(blob, q) {
     if (!q) return true;
-    return String(blob || '').toLowerCase().indexOf(q) >= 0;
+    return String(blob || '').toLowerCase().replace(/-/g, '').indexOf(String(q).replace(/-/g, '')) >= 0;
   }
 
   function adminUserBlob(u) {
@@ -4074,7 +4063,7 @@
         var acts = msg.status === 'ouvert'
           ? '<button class="mini ok" data-msg="' + adminEsc(msg.id) + '">Résoudre</button>'
           : adminEsc(msg.status || 'resolu');
-        return '<tr><td>' + adminEsc(msg.publicId || '') + '<div class="h-time">' + adminEmailCell(msg.email) + '</div></td><td>' + adminEsc(msg.subject || '') +
+        return '<tr><td>' + adminEsc(oroIdShow(msg.publicId || '')) + '<div class="h-time">' + adminEmailCell(msg.email) + '</div></td><td>' + adminEsc(msg.subject || '') +
           '<div class="h-time">' + adminEsc(msg.message || '') + '</div></td><td>' + acts + '</td></tr>';
       }).join('');
       box.innerHTML = '<table class="admin-table"><thead><tr><th>User</th><th>Message</th><th></th></tr></thead><tbody>' + mrows + '</tbody></table>';
@@ -4148,7 +4137,7 @@
         var drows = deps.map(function (d) {
           var acts = '<button class="mini ok" data-dep="' + adminEsc(d.ref) + '" data-amt="' + Number(d.amount || 0) + '" data-ok="1">' + t('approve') + '</button>' +
             ' <button class="mini bad" data-dep="' + adminEsc(d.ref) + '" data-ok="0">' + t('reject') + '</button>';
-          return '<tr><td>' + adminEsc(d.publicId || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
+          return '<tr><td>' + adminEsc(oroIdShow(d.publicId) || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
             '</td><td>' + adminEsc(d.operator || '') + '<div class="h-time">' + adminEsc(d.txid || d.ref) + '</div></td><td>' + acts + '</td></tr>';
         }).join('');
         html = '<table class="admin-table"><thead><tr><th>Joueur</th><th>Montant</th><th>Référence</th><th></th></tr></thead><tbody>' + drows + '</tbody></table>';
@@ -4194,7 +4183,7 @@
       else {
         html = '<table class="admin-table"><thead><tr><th>User</th><th>Montant</th><th>Opérateur</th><th>Date</th><th>Réf</th></tr></thead><tbody>' +
           paid.map(function (d) {
-            return '<tr><td>' + adminEsc(d.publicId || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
+            return '<tr><td>' + adminEsc(oroIdShow(d.publicId) || d.name || '') + '<div class="h-time">' + adminEmailCell(d.email) + '</div></td><td>' + D6.fmtFCFA(d.amount) +
               '</td><td>' + adminEsc(d.operator || '') + '</td><td>' + adminEsc(String(d.at || '').slice(0, 19)) + '</td><td>' + adminEsc(d.ref) + '</td></tr>';
           }).join('') + '</tbody></table>';
       }
@@ -4220,7 +4209,7 @@
     if (adminView === 'online') {
       html = '<table class="admin-table"><thead><tr><th>ID</th><th>Pseudo</th><th>Tél</th><th>Solde réel</th><th>Dernière action</th></tr></thead><tbody>' +
         list.map(function (u) {
-          return '<tr data-user="' + adminEsc(u.id) + '"><td>' + adminEsc(u.publicId || '') + '</td><td>' + adminEsc(u.displayName || '') +
+          return '<tr data-user="' + adminEsc(u.id) + '"><td>' + adminEsc(oroIdShow(u.publicId || '')) + '</td><td>' + adminEsc(u.displayName || '') +
             '</td><td>' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) + '</td><td>' + D6.fmtFCFA(u.realBalance) +
             '</td><td>' + adminEsc(String(u.lastAction || u.lastSeen || '').slice(0, 19)) + '</td></tr>';
         }).join('') + '</tbody></table>';
@@ -4234,7 +4223,7 @@
         list.map(function (u, i) {
           return '<tr data-user="' + adminEsc(u.id) + '">' +
             (adminView === 'top' ? '<td>' + (i + 1) + '</td>' : '') +
-            '<td>' + adminEsc(u.publicId || '') + '</td><td>' + adminEsc(u.displayName || '') +
+            '<td>' + adminEsc(oroIdShow(u.publicId || '')) + '</td><td>' + adminEsc(u.displayName || '') +
             '</td><td>' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) +
             '</td><td>' + D6.fmtFCFA(u.totalDeposited || 0) + '</td><td>' + D6.fmtFCFA(u.totalWithdrawn || 0) +
             '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td>' +
@@ -4246,7 +4235,7 @@
       html = '<table class="admin-table"><thead><tr><th>ID</th><th>Pseudo</th><th>E-mail</th><th>Tél</th><th>Date</th><th>Solde réel</th></tr></thead><tbody>' +
         list.map(function (u) {
           var d = (u.createdAt || '').slice(0, 10);
-          return '<tr data-user="' + adminEsc(u.id) + '"><td>' + adminEsc(u.publicId || '') + '</td><td>' + adminEsc(u.displayName || '') +
+          return '<tr data-user="' + adminEsc(u.id) + '"><td>' + adminEsc(oroIdShow(u.publicId || '')) + '</td><td>' + adminEsc(u.displayName || '') +
             '</td><td>' + adminEmailCell(u.email) + '</td><td>' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) +
             '</td><td>' + adminEsc(d) + '</td><td>' + D6.fmtFCFA(u.realBalance) + '</td></tr>';
         }).join('') + '</tbody></table>';
@@ -4392,7 +4381,7 @@
     var u = (adminCache.users || []).find(function (x) { return x.id === uid; });
     var box = $('adminUserDetail');
     if (!u || !box) return;
-    box.innerHTML = '<div class="convert-title">' + adminEsc(u.publicId || '') + ' · ' + adminEsc(u.displayName || '') + '</div>' +
+    box.innerHTML = '<div class="convert-title">' + adminEsc(oroIdShow(u.publicId || '')) + ' · ' + adminEsc(u.displayName || '') + '</div>' +
       '<div class="h-time">' + adminEsc(u.email) + ' · ' + adminEsc((u.countryCode || '') + ' ' + (u.phone || '')) + ' · inscrit ' + adminEsc((u.createdAt || '').slice(0, 10)) + '</div>' +
       '<div class="list-row"><span>Réel</span><strong>' + D6.fmtFCFA(u.realBalance) + '</strong></div>' +
       '<div class="list-row"><span>Démo</span><strong>' + D6.fmtFCFA(u.demoBalance) + '</strong></div>' +

@@ -3536,5 +3536,29 @@ setInterval(() => {
 })();
 </script>
 <?php endif; ?>
+<script>
+/* v2773 (propriétaire) — AFFICHAGE seulement : l'identifiant d'un joueur se montre « ORO159978 » (sans tiret), comme sur
+   tout le site. Les données ne changent pas (les clés internes gardent leur forme). */
+(function () {
+  var RX = /\bORO-(\d{4,9})\b/g;
+  function fix(root) {
+    try {
+      var w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, null), n;
+      while ((n = w.nextNode())) { if (n.nodeValue.indexOf('ORO-') >= 0) n.nodeValue = n.nodeValue.replace(RX, 'ORO$1'); }
+    } catch (e) { /* ignore */ }
+  }
+  var t = 0;
+  function later() { clearTimeout(t); t = setTimeout(function () { fix(document.body); }, 120); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { fix(document.body); }); else fix(document.body);
+  try { new MutationObserver(later).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) { /* ignore */ }
+  // la recherche trouve aussi « ORO159978 » tapé sans tiret
+  document.addEventListener('input', function (e) {
+    var el = e.target;
+    if (!el || el.tagName !== 'INPUT' || !/search/i.test((el.id || '') + ' ' + (el.type || ''))) return;
+    var v = el.value, m = /^\s*[oO0][rR][oO0]\s*(\d{4,9})\s*$/.exec(v);
+    if (m && v !== 'ORO-' + m[1]) { el.value = 'ORO-' + m[1]; }
+  }, true);
+})();
+</script>
 </body>
 </html>

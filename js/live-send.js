@@ -7,7 +7,7 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var T = {
-    fr: { title: 'Envoyer de l’argent', sub: 'À un ami, en un instant', can: 'Disponible à envoyer', to: 'À qui ?', toPh: 'Identifiant de ton ami (OR…)', amount: 'Montant',
+    fr: { title: 'Envoyer de l’argent', sub: 'À un ami, en un instant', can: 'Disponible à envoyer', to: 'À qui ?', toPh: 'Identifiant de ton ami (ORO…)', amount: 'Montant',
       go: 'Continuer', confirm: 'Envoyer maintenant', cancel: 'Modifier', sure: 'Vérifie avant d’envoyer', sending: 'Envoi…', done: '✅ {a} $ envoyés à {n} !',
       hist: 'Mes envois et réceptions', sent: 'Envoyé à {n}', got: 'Reçu de {n}', none: 'Aucun envoi pour l’instant.', myFriends: 'Mes amis',
       e_min: 'Minimum 1 $.', e_tooMuch: 'Montant trop élevé : tu peux envoyer jusqu’à {c} $.', e_dayMax: 'Envoi impossible pour aujourd’hui. Réessaie demain.',
@@ -16,7 +16,7 @@
       fee0: '0 % de frais', sumTo: 'À', sumAmt: 'Montant', sumFee: 'Frais', sumTot: 'Total', okT: 'Envoyé !', okS: '{a} $ sont partis chez {n}', seeR: 'Voir le reçu', fin: 'Terminé',
       rT: 'Reçu de transfert', rOk: 'Réussi', rPend: 'En cours', rFrom: 'De', rTo: 'À', rId: 'Identifiant', rDate: 'Date', rRef: 'Référence', rFee: 'Frais', rSt: 'Statut',
       share: 'Partager le reçu', copied: 'Reçu copié', today: 'Aujourd’hui', yday: 'Hier', me: 'Moi' },
-    en: { title: 'Send money', sub: 'To a friend, in an instant', can: 'Available to send', to: 'To whom?', toPh: 'Your friend’s ID (OR…)', amount: 'Amount',
+    en: { title: 'Send money', sub: 'To a friend, in an instant', can: 'Available to send', to: 'To whom?', toPh: 'Your friend’s ID (ORO…)', amount: 'Amount',
       go: 'Continue', confirm: 'Send now', cancel: 'Edit', sure: 'Check before sending', sending: 'Sending…', done: '✅ ${a} sent to {n}!',
       hist: 'My transfers', sent: 'Sent to {n}', got: 'Received from {n}', none: 'No transfer yet.', myFriends: 'My friends',
       e_min: 'Minimum $1.', e_tooMuch: 'Amount too high: you can send up to ${c}.', e_dayMax: 'Sending not possible today. Try again tomorrow.',
@@ -26,7 +26,7 @@
       rT: 'Transfer receipt', rOk: 'Successful', rPend: 'Processing', rFrom: 'From', rTo: 'To', rId: 'ID', rDate: 'Date', rRef: 'Reference', rFee: 'Fees', rSt: 'Status',
       share: 'Share receipt', copied: 'Receipt copied', today: 'Today', yday: 'Yesterday', me: 'Me' }
   };
-  T.zh = Object.assign({}, T.en, { title: '转账给好友', sub: '即时到账', can: '可转金额', to: '转给谁？', toPh: '好友 ID（OR…）', amount: '金额',
+  T.zh = Object.assign({}, T.en, { title: '转账给好友', sub: '即时到账', can: '可转金额', to: '转给谁？', toPh: '好友 ID（ORO…）', amount: '金额',
     go: '继续', confirm: '立即转账', cancel: '修改', sure: '转账前请确认', sending: '转账中…', done: '✅ 已向 {n} 转账 {a} 美元！',
     hist: '我的转账记录', sent: '转给 {n}', got: '收到 {n}', none: '暂无转账。', myFriends: '我的好友',
     e_min: '最低 1 美元。', e_tooMuch: '金额过高：你最多可转 {c} 美元。', e_dayMax: '今天无法再转账，请明天再试。',
