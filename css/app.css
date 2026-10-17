@@ -11541,3 +11541,158 @@ html:root body #casinoModal .cs-toast small{white-space:nowrap!important;overflo
 html:root body #casinoModal .cs-toast span{min-width:0;flex-wrap:nowrap!important}
 html:root body #casinoModal .cs-toast b{white-space:nowrap}
 html:root body #casinoModal .bl-stage .bl{transform-origin:50% 96%!important}
+html body #casinoModal .sp-t .sp-qsvg{display:inline-block;width:34px;height:34px;float:left;margin-inline-end:8px;border-radius:8px;overflow:hidden}
+html body #casinoModal .sp-t .sp-qsvg svg{width:100%;height:100%;display:block}
+html body #casinoModal .sp-predictions .sp-t .sp-qsvg{width:40px;height:40px}
+
+/* ================= v2756 (propriétaire) : NOUVELLE BARRE DU HAUT =================
+   [Cadeaux][Prédictions]  ·  [ grande manette JEUX ]  ·  [Social][Profil]   (visiteur : un seul « S'inscrire » à côté de Jeux)
+   Plus de cadres carrés lumineux autour des icônes : tout est léger. Recharger = le « + » au milieu de la carte des comptes. */
+html:root body .topbar-row #topbarCta{display:none!important}
+html:root body .topbar-row #btnPortal svg,html:root body .topbar-row #btnHelp svg,html:root body .topbar-row #btnProfile svg{background:none!important;box-shadow:none!important;border:0!important}
+html:root body .topbar-row #btnPortal,html:root body .topbar-row #btnHelp,html:root body .topbar-row #btnProfile{background:none!important;box-shadow:none!important;border:0!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{width:40px!important;height:34px!important;background:none!important;box-shadow:none!important;border:0!important;padding:0!important;border-radius:0!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball svg{width:100%!important;height:100%!important;overflow:visible;filter:drop-shadow(0 0 6px rgba(240,171,252,.45))}
+html:root body .topbar-row #btnCasino .cb-lbl b{font-size:10.5px!important;white-space:nowrap}
+/* la grande manette « Jeux » au centre */
+html:root body .topbar-row #btnGames{margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 6px;border:0;background:none;color:#fff;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none}
+html:root body .topbar-row #btnGames .gb-ico{display:block;width:62px;height:40px;filter:drop-shadow(0 0 8px rgba(244,114,182,.45)) drop-shadow(0 0 2px rgba(167,139,250,.6))}
+html:root body .topbar-row #btnGames .gb-ico svg{width:100%;height:100%;overflow:visible}
+html:root body .topbar-row #btnGames b{font:800 11.5px/1.1 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.02em}
+html:root body .topbar-row #btnGames:active .gb-ico{transform:scale(.94)}
+html.oro-lite body .topbar-row #btnGames .gb-ico,html.oro-lite body .topbar-row #btnCasino .cb-ico.cb-ball svg{filter:none}
+/* visiteur : un seul bouton « Inscription » (la connexion est dans la même page) */
+html:root body .topbar-row #authQuick #btnGoLogin{display:none!important}
+html:root body .topbar-row #authQuick{margin:0!important}
+html:root body .topbar-row #authQuick #btnGoRegister{padding:8px 12px!important;border-radius:12px!important;font-size:13px!important;white-space:nowrap}
+/* « + » au milieu de la carte Compte réel / Démo → Recharger */
+html:root body #modeSwitcher{position:relative!important}
+html:root body #modeSwitcher .ms-plus{position:absolute;left:50%;top:50%;z-index:5;width:30px;height:30px;margin:-15px 0 0 -15px;padding:0;border:0;border-radius:9px;display:grid;place-items:center;cursor:pointer;
+  background:linear-gradient(180deg,#FDBA4D,#F97316);color:#fff;box-shadow:0 0 0 3px rgba(12,8,30,.9),inset 0 -2px 0 rgba(0,0,0,.18),0 4px 10px -3px rgba(249,115,22,.85)}
+html:root body #modeSwitcher .ms-plus span{font:800 22px/1 system-ui;margin-top:-2px}
+html:root body #modeSwitcher .ms-plus:active{transform:scale(.92)}
+html:root body.oro-guest #modeSwitcher .ms-plus,html.oro-guest body #modeSwitcher .ms-plus{display:none}
+/* page « Prédictions » seule (sans les onglets Jeux / Prédictions) */
+html:root body #casinoModal.pred-only .cs-tabs2{display:none!important}
+html:root body .topbar .topbar-row #btnPortal#btnPortal#btnPortal svg,html:root body .topbar .topbar-row #btnHelp#btnHelp#btnHelp svg,html:root body .topbar .topbar-row #btnProfile#btnProfile#btnProfile svg{background:none!important;box-shadow:none!important;border:0!important}
+
+/* ================= v2757 (propriétaire) : barre du haut SOBRE — seule la manette « Jeux » est en couleur =================
+   Cadeaux / Prédictions / Social / Profil : icônes blanches fines, sans carré ni lueur. Le « + » est rangé au bout de « Compte réel ». */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal#btnPortal > svg,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal#btnPortal > svg,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp#btnHelp > svg,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp#btnHelp > svg{background:none!important;box-shadow:none!important;border:0!important;filter:none!important;width:30px!important;height:30px!important;padding:2px!important;border-radius:0!important;animation:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal#btnPortal > svg *{fill:none!important;stroke:#EDEBFF!important;stroke-width:1.7!important;stroke-linecap:round;stroke-linejoin:round;filter:none!important;animation:none!important;opacity:1!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnPortal#btnPortal#btnPortal > svg .ph-glow{display:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp#btnHelp > svg .lv-w{stroke:#EDEBFF!important;stroke-width:1.8!important;fill:none!important;animation:none!important;opacity:1!important}
+/* le point du milieu de « Social » : une petite touche verte (en ligne) */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnHelp#btnHelp#btnHelp > svg .lv-c{fill:#34D399!important;stroke:none!important;animation:none!important}
+/* les mots : tous pareils, blancs, sobres */
+html:root body #screenTrade .topbar-row #btnPortal .pw-lbl,html:root body #screenTrade .topbar-row #btnHelp .hb-txt,html:root body #screenTrade .topbar-row #btnCasino .cb-lbl b{font:700 10px/1.1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:rgba(237,235,255,.88)!important;letter-spacing:0!important;text-shadow:none!important;background:none!important;-webkit-text-fill-color:currentColor!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{width:34px!important;height:30px!important}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball svg{filter:none!important}
+/* la grande manette « Jeux » : plus large, plus belle, le seul élément en couleur */
+html:root body .topbar-row #btnGames .gb-ico{width:80px!important;height:46px!important;filter:drop-shadow(0 4px 10px rgba(192,38,211,.45))!important}
+html:root body .topbar-row #btnGames b{font:800 13px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.04em!important;color:#fff!important;margin-top:1px}
+html.oro-lite body .topbar-row #btnGames .gb-ico{filter:none!important}
+/* « + » : petit carré orange au bout de « Compte réel », sans cercle noir */
+html:root body #modeSwitcher .ms-plus{width:28px!important;height:28px!important;margin:-14px 0 0 0!important;border-radius:9px!important;box-shadow:inset 0 -2px 0 rgba(0,0,0,.16),0 3px 8px -3px rgba(249,115,22,.75)!important}
+html:root body #modeSwitcher .ms-plus span{font:700 21px/1 system-ui!important}
+/* visiteur : « Connexion » léger + « Inscription » plein, petits et propres (comme les grandes plateformes) */
+html:root body .topbar-row #authQuick #btnGoLogin{display:inline-flex!important}
+html:root body .topbar-row #authQuick{display:flex!important;flex-direction:column;gap:5px!important;align-items:stretch}
+html:root body .topbar-row #authQuick .btn-auth-link{padding:5px 10px!important;min-height:0!important;height:auto!important;border-radius:9px!important;font:700 11.5px/1.1 "Plus Jakarta Sans",system-ui,sans-serif!important;white-space:nowrap;justify-content:center;box-shadow:none!important;text-shadow:none!important}
+html:root body .topbar-row #authQuick #btnGoLogin{background:transparent!important;color:#fff!important;border:1px solid rgba(255,255,255,.4)!important}
+html:root body .topbar-row #authQuick #btnGoRegister{background:linear-gradient(180deg,#FDBA4D,#F97316)!important;color:#fff!important;border:0!important}
+
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{width:30px!important;height:34px!important;margin-bottom:1px}
+
+/* v2757 (propriétaire) : grille des 24 jeux SANS défiler — taille des logos calculée par fitGrid() (js/casino.js) */
+html:root body #casinoModal #csView.cs-grid{row-gap:8px!important;padding-bottom:4px!important}
+html:root body #casinoModal #csView.cs-grid .cs-g .cs-pl{width:var(--cs-pl,min(76px,19vw,10.5vh))!important}
+html:root body #casinoModal #csView.cs-grid .cs-g{gap:3px!important}
+html:root body #casinoModal #csView.cs-grid .cs-g b{font-size:11.5px!important;line-height:1.12!important;min-height:2.24em!important;display:block!important;text-align:center!important}
+@media (min-width:600px){html:root body #casinoModal #csView.cs-grid .cs-g b{font-size:13px!important}}
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal #csView.cs-grid .cs-g b{font-size:10px!important;min-height:2.24em!important}}
+html:root body #casinoModal .modal-box{overscroll-behavior:contain}
+/* signe « en direct » : petite antenne rouge juste devant le nom (comme les grandes plateformes), sans texte */
+html:root body #casinoModal .cs-g .cs-live{display:none!important}
+html:root body #casinoModal .cs-g .cs-onair{display:inline-block;width:1.25em;height:.95em;margin:0 .22em -.08em 0;vertical-align:baseline;font-style:normal}
+html[dir=rtl]:root body #casinoModal .cs-g .cs-onair{margin:0 0 -.08em .22em}
+html:root body #casinoModal .cs-g .cs-onair svg{display:block;width:100%;height:100%;overflow:visible}
+html:root body #casinoModal .cs-g .cs-onair circle{fill:#FF3B5C}
+html:root body #casinoModal .cs-g .cs-onair path{fill:none;stroke:#FF3B5C;stroke-width:1.6;stroke-linecap:round;animation:csOnAir 1.6s ease-in-out infinite}
+@keyframes csOnAir{0%,100%{opacity:1}50%{opacity:.25}}
+html.oro-lite body #casinoModal .cs-g .cs-onair path{animation:none}
+/* v2757 (propriétaire) : visiteur dans les jeux — « Connexion » léger + « Inscription » orange, sans cadre autour */
+html:root body #casinoModal .cs-top #csBal.cs-guestw{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;min-width:0!important;outline:0}
+html:root body #casinoModal .cs-top #csBal.cs-guestw::before,html:root body #casinoModal .cs-top #csBal.cs-guestw::after{display:none!important}
+html:root body #casinoModal .cs-guestw .cs-auth{display:flex;gap:8px;align-items:center}
+html:root body #casinoModal .cs-guestw .cs-in,html:root body #casinoModal .cs-guestw .cs-join{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 15px!important;border-radius:11px!important;font:800 13px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;white-space:nowrap;cursor:pointer;box-shadow:none!important;text-shadow:none!important;-webkit-tap-highlight-color:transparent}
+html:root body #casinoModal .cs-guestw .cs-in{background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important}
+html:root body #casinoModal .cs-guestw .cs-join{background:linear-gradient(180deg,#FDBA4D,#F97316)!important;border:0!important;color:#fff!important}
+html:root body #casinoModal .cs-guestw .cs-in:active,html:root body #casinoModal .cs-guestw .cs-join:active{transform:scale(.95)}
+/* v2757 (propriétaire) : barre du VISITEUR sur une seule ligne — [Cadeaux Paris] · [grande manette Jeux] · [Connexion / Inscription] · [Social] */
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto!important;grid-template-rows:auto!important;grid-template-areas:none!important;align-items:center!important;column-gap:4px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .tb-left{grid-column:1!important;grid-row:1!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #btnGames{grid-column:2!important;grid-row:1!important;justify-self:center!important;margin:0!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick#authQuick{grid-column:3!important;grid-row:1!important;display:flex!important;flex-direction:column!important;gap:5px!important;width:auto!important;margin:0!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .topbar-actions{grid-column:4!important;grid-row:1!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick .btn-auth-link{width:auto!important;min-width:84px!important;height:26px!important;min-height:0!important;padding:0 10px!important;border-radius:9px!important;font:800 11.5px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;display:inline-flex!important;align-items:center;justify-content:center;gap:0!important;box-shadow:none!important;text-shadow:none!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick .btn-auth-link::before,html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick .btn-auth-link svg{display:none!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoLogin{background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.38)!important;color:#fff!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoRegister{background:linear-gradient(180deg,#FDBA4D,#F97316)!important;border:0!important;color:#fff!important}
+@media (max-width:340px){html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick .btn-auth-link{min-width:74px!important;font-size:10.5px!important;padding:0 7px!important}html.oro-guest body .topbar-row #btnGames .gb-ico{width:66px!important;height:40px!important}}
+/* v2757b : visiteur — tout sur UNE ligne, rien l'un sur l'autre : [Cadeaux][Paris] · [Jeux] · [Connexion][Inscription] · [Social] */
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick#authQuick#authQuick{flex-direction:row!important;gap:5px!important;align-items:center!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{height:32px!important;min-height:0!important;min-width:0!important;width:auto!important;padding:0 9px!important;border-radius:10px!important;font:800 11.5px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:0!important;background-image:none!important;opacity:1!important;filter:none!important;animation:none!important;box-shadow:none!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin{background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.38)!important;color:#fff!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{background:linear-gradient(180deg,#FDBA4D,#F97316)!important;border:0!important;color:#fff!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row .tb-left{gap:2px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:62px!important;height:38px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames b{font-size:12px!important}
+@media (max-width:370px){
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{padding:0 7px!important;font-size:10.5px!important;height:30px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:54px!important;height:34px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row{column-gap:2px!important;padding-left:4px!important;padding-right:4px!important}}
+/* page des JEUX : plus d'onglet « Paris » (Paris a son propre bouton en haut) */
+html:root body #casinoModal .cs-tabs2{display:none!important}
+/* v2757c (propriétaire) : VISITEUR — la ligne du haut = celle du joueur connecté (Cadeaux · Paris · grande manette Jeux · Social) ;
+   « Connexion » + « Inscription » prennent la place de « Compte réel » dans la carte (js/casino.js les y range). Rien l'un sur l'autre. */
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;column-gap:4px!important;padding-left:revert-layer;padding-right:revert-layer}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .tb-left{grid-column:1!important;justify-self:start!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #btnGames{grid-column:2!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .topbar-actions{grid-column:3!important;justify-self:end!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames .gb-ico{width:80px!important;height:46px!important}
+html.oro-guest:not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row #btnGames b{font-size:13px!important}
+html:root body #modeSwitcher#modeSwitcher > #authQuick#authQuick{position:absolute!important;top:0!important;bottom:0!important;z-index:6!important;margin:0!important;padding:0 6px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:6px!important;background:none!important;border:0!important;box-shadow:none!important}
+html:root body #modeSwitcher#modeSwitcher > #authQuick#authQuick.hidden{display:none!important}
+html.oro-guest body #modeSwitcher#modeSwitcher > #modeReal{visibility:hidden!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:1 1 0!important;min-width:0!important;width:auto!important;height:32px!important;min-height:0!important;margin:0!important;padding:0 6px!important;border-radius:10px!important;font:800 12px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:0!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;background-image:none!important;box-shadow:none!important;text-shadow:none!important;opacity:1!important;filter:none!important;animation:none!important;-webkit-text-fill-color:#fff!important;color:#fff!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin{background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.38)!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{background:linear-gradient(180deg,#FDBA4D,#F97316)!important;border:0!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick .btn-auth-link::before,html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick .btn-auth-link::after{display:none!important;content:none!important}
+/* v2757d : le « + » aussi pour le VISITEUR (il voit les moyens de recharge ; toucher un moyen = inscription) */
+html.oro-guest body #modeSwitcher#modeSwitcher .ms-plus,html:root body.oro-guest #modeSwitcher#modeSwitcher .ms-plus{display:grid!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick{padding:0 2px 0 6px!important;gap:5px!important}
+@media (max-width:350px){html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick #btnGoLogin#btnGoLogin#btnGoLogin,html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick #btnGoRegister#btnGoRegister#btnGoRegister{font-size:10px!important;padding:0 2px!important;letter-spacing:-.2px!important;height:30px!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #modeSwitcher#modeSwitcher > #authQuick{padding:0 1px 0 4px!important;gap:3px!important}}
+/* v2757e : « Profil » sans carré (comme Cadeaux / Social) + manette « Jeux » pile au milieu pour le joueur connecté (téléphone debout) */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile#btnProfile > svg,
+html.portal-on:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile#btnProfile > svg{background:none!important;box-shadow:none!important;border:0!important;filter:none!important;border-radius:0!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade .topbar-row #btnProfile#btnProfile#btnProfile > svg *{stroke:#EDEBFF!important}
+@media (orientation:portrait),(min-height:501px){
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row.topbar-row.topbar-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;grid-template-rows:auto!important;grid-template-areas:none!important;align-items:center!important;column-gap:4px!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .tb-left{grid-column:1!important;grid-row:1!important;justify-self:start!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #btnGames{grid-column:2!important;grid-row:1!important;justify-self:center!important;margin:0!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > .topbar-actions{grid-column:3!important;grid-row:1!important;justify-self:end!important}
+html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #authQuick,html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #topbarCta,html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade#screenTrade .topbar-row > #brandLockup{display:none!important}}
+/* v2757f : téléphone COUCHÉ — manette « Jeux » compacte (mot à côté), rien ne dépasse de la barre */
+@media (orientation:landscape) and (max-height:500px){
+html:root body #screenTrade .topbar-row #btnGames#btnGames{flex-direction:row!important;gap:5px!important;padding:0 4px!important;height:36px!important;align-self:center!important}
+html:root body #screenTrade .topbar-row #btnGames#btnGames .gb-ico{width:46px!important;height:28px!important}
+html:root body #screenTrade .topbar-row #btnGames#btnGames b{font-size:12px!important}
+html:root body #screenTrade .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{width:22px!important;height:24px!important}}

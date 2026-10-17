@@ -4770,8 +4770,30 @@
     return amt;
   }
 
+  // v2757 (propriétaire) : le VISITEUR peut voir les moyens de recharge (Wave, crypto…) ;
+  // dès qu'il touche quelque chose dans la page, il part vers l'inscription (rien n'est envoyé, aucun paiement possible).
+  var depositPeekBound = false;
+  function bindDepositPeek() {
+    if (depositPeekBound || !$('depositModal')) return;
+    depositPeekBound = true;
+    var stop = function (e) {
+      var m = $('depositModal');
+      if (!m || !m.classList.contains('dep-peek') || !isGuest()) return;
+      var t = e.target;
+      if (!t || !t.closest || t.closest('#closeDeposit') || t === m) return;
+      if (!t.closest('button, input, select, textarea, label, a, [role="radio"], [role="button"], .pay-method-card')) return;
+      e.preventDefault(); e.stopPropagation();
+      if (t.blur) t.blur();
+      closeModal('depositModal');
+      showAuthScreen('register', { fromReal: true });
+    };
+    $('depositModal').addEventListener('click', stop, true);
+    $('depositModal').addEventListener('focusin', stop, true);
+  }
   function openDeposit(preMsg, method) {
-    if (!requireAccount()) return;
+    var peek = isGuest();
+    if (peek) { bindDepositPeek(); preMsg = ''; }
+    if ($('depositModal')) $('depositModal').classList.toggle('dep-peek', peek);
     depositSendConfirmed = false;
     closeLangMenus();
     depositOp = 'wave';

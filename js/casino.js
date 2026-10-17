@@ -75,7 +75,8 @@
   // v2706 (propriétaire) : ordre mélangé — les 3 jeux en tour commun (crash, jet, rocket) ne sont plus côte à côte
   // v2718 (propriétaire) : Keno, Cascade, Darts et Colors retirés ; Crypto Live et Horse Race ajoutés ; jeux en direct séparés
   // v2738 (propriétaire) : 24 jeux = 6 lignes de 4, bien droites ; nouveau : Rock Paper Scissors
-  var ORDER = ['crash', 'cryptox', 'mines', 'roulette', 'penalty', 'jet', 'rps', 'horses', 'apple', 'slots', 'wheel', 'dragon', 'rocket', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'chests'];
+  // v2757 (propriétaire) : les 6 jeux en direct sont répartis (un par rangée, jamais dans la même colonne)
+  var ORDER = ['crash', 'mines', 'penalty', 'apple', 'slots', 'rps', 'cryptox', 'wheel', 'dragon', 'roulette', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'jet', 'horses', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'rocket', 'chests'];
   // v2693 (propriétaire) : la mise de départ est toujours 0,10 $ à l'ouverture du Casino.
   var S = { mode: 'real', stake: 0.1, game: '', view: 'games', bal: { real: null, demo: null }, busy: false, timer: 0 };
   function save() { /* la mise n'est plus gardée : 0,10 $ à chaque ouverture */ }
@@ -88,7 +89,15 @@
   /* solde au milieu de la barre, avec un petit « + » pour recharger */
   function paintBal() {
     var b = $('csBal'); if (!b) return;
-    if (guest()) { b.innerHTML = '<button type="button" class="cs-join" id="csJoin">' + esc(X().signup) + '</button>'; b.className = 'cs-wallet'; $('csJoin').addEventListener('click', signup); return; }
+    // v2757 (propriétaire) : visiteur = « Connexion » (léger) + « Inscription » (orange), comme en haut du site
+    if (guest()) {
+      var tl = ($('btnGoLogin') || {}).textContent || 'Connexion', tr = ($('btnGoRegister') || {}).textContent || X().signup;
+      b.innerHTML = '<span class="cs-auth"><span role="button" tabindex="0" class="cs-in" id="csLogin">' + esc(tl) + '</span><span role="button" tabindex="0" class="cs-join" id="csJoin">' + esc(tr) + '</span></span>';
+      b.className = 'cs-wallet cs-guestw';
+      $('csJoin').addEventListener('click', function (e) { e.stopPropagation(); signup(); });
+      $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('login'); });
+      return;
+    }
     var md = S.adminTest ? 'demo' : 'real';
     // v2745 (propriétaire) : EXACTEMENT la carte « Compte réel » du trading (icône portefeuille verte, libellé vert, « $ » devant)
     var realLbl = (document.querySelector('#modeReal .mb-lbl') || {}).textContent || X().realAcc;
@@ -162,12 +171,16 @@
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
   }
   function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
-  function open(game) {
+  // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
+  function open(game, view) {
     ensure(); readBal();
     S.stake = 0.1;
+    var pm = view === 'pred';
+    if ($('casinoModal')) $('casinoModal').classList.toggle('pred-only', pm);
     if (D6.App && D6.App.openModal) D6.App.openModal('casinoModal');
-    if (game && NAMES[game]) go(game); else home();
+    if (game && NAMES[game]) go(game); else home(pm ? 'sports' : 'games');
   }
+  function openPred() { open(null, 'pred'); }
   function close() {
     stopAll();
     S.game = '';
@@ -191,21 +204,38 @@
     } else {
       v.className = 'cs-grid';
       v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).map(function (k) {
-        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + esc(name(k)) + '</b>' + (LIVE_GAMES[k] ? '<i class="cs-live" aria-label="live"></i>' : '') + '</button>';
+        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + (LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : '') + '<span>' + esc(name(k)) + '</span></b></button>';
       }).join('');
+      fitGrid();
       v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
   }
+  // v2757 : les 24 jeux tiennent dans l'écran, sans défiler (téléphone, iPhone, PC, télé) : la taille des logos s'adapte
+  function fitGrid() {
+    var v = $('csView'), m = $('casinoModal'), mb = m && m.querySelector('.modal-box');
+    if (!v || !mb || v.className.indexOf('cs-grid') < 0 || !v.firstChild) return;
+    v.style.removeProperty('--cs-pl');
+    var cols = getComputedStyle(v).gridTemplateColumns.split(' ').length || 4, n = v.children.length, rows = Math.ceil(n / cols);
+    var top = v.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
+    var avail = mb.clientHeight - top - 10, gap = parseFloat(getComputedStyle(v).rowGap) || 8;
+    var lbl = v.querySelector('.cs-g b'), lh = lbl ? lbl.offsetHeight + 4 : 30;
+    var colw = v.clientWidth / cols;
+    var px = Math.floor(Math.min(colw * 0.86, (avail - gap * (rows - 1)) / rows - lh, 96));
+    v.style.setProperty('--cs-pl', Math.max(34, px) + 'px');
+    var over = mb.scrollHeight - mb.clientHeight; // reste un petit dépassement (marges) : on réduit encore un peu
+    if (over > 0 && px > 34) v.style.setProperty('--cs-pl', Math.max(34, px - Math.ceil(over / rows) - 1) + 'px');
+  }
+  window.addEventListener('resize', function () { if (!S.game && S.view === 'games') fitGrid(); });
   function name(k) { return NAMES[k] || k; }
   // v2747 (propriétaire) : 2e onglet = « Prédictions » (boule de cristal) — toutes les questions et tous les matchs ensemble
-  var GAMES_WORD = {}; var PRED_WORD = { fr: 'Prédictions', en: 'Predictions', es: 'Predicciones', pt: 'Previsões', ar: 'توقعات', tr: 'Tahminler', vi: 'Dự đoán', id: 'Prediksi', ru: 'Прогнозы', de: 'Prognosen', hi: 'भविष्यवाणी', zh: '预测' };
+  var GAMES_WORD = {}; var PRED_WORD = { fr: 'Paris', en: 'Bets', es: 'Apuestas', pt: 'Apostas', ar: 'رهانات', tr: 'Bahisler', vi: 'Cược', id: 'Taruhan', ru: 'Ставки', de: 'Wetten', hi: 'दांव', zh: '投注' };
   function tabWord(m) { var l = (document.documentElement.lang || 'fr').slice(0, 2); return m[l] || m.en; }
   function ballIcon() {
     var id = 'cb' + (++gn);
-    return '<svg class="cs-padico" viewBox="0 0 64 52" aria-hidden="true"><defs><radialGradient id="' + id + '" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#F5D0FE"/><stop offset=".45" stop-color="#A78BFA"/><stop offset="1" stop-color="#5B21B6"/></radialGradient></defs>' +
-      '<ellipse cx="32" cy="46" rx="15" ry="4" fill="#B45309"/><path d="M19 46l3-6h20l3 6z" fill="#F59E0B"/><circle cx="32" cy="22" r="17" fill="url(#' + id + ')" stroke="#F472B6" stroke-width="1.6"/>' +
-      '<circle cx="26" cy="15" r="4.5" fill="#fff" opacity=".55"/><path d="M36 22l1.4 3 3.2.4-2.4 2.2.6 3.2-2.8-1.6-2.8 1.6.6-3.2-2.4-2.2 3.2-.4z" fill="#FDE68A"/></svg>';
+    return '<svg class="cs-padico" viewBox="0 0 64 52" aria-hidden="true"><defs><radialGradient id="' + id + '" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".55" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".04"/></radialGradient></defs>' +
+      '<path d="M19 47l4-7.5h18l4 7.5z" fill="rgba(255,255,255,.1)" stroke="#EDEBFF" stroke-width="2.4" stroke-linejoin="round"/><circle cx="32" cy="22" r="16" fill="url(#' + id + ')" stroke="#EDEBFF" stroke-width="2.6"/>' +
+      '<path d="M23.5 14a10.5 10.5 0 0 1 6-3.4" stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".85"/><path d="M37 20.5l1.3 2.8 3 .4-2.2 2 .6 3-2.7-1.5-2.7 1.5.6-3-2.2-2 3-.4z" fill="#fff" opacity=".9"/></svg>';
   }
   // v2742 (propriétaire) : la manette transparente violet-rose (le logo « Jeux » du bouton du haut)
   function padIcon() {
@@ -1342,7 +1372,35 @@
   /* ---------- bouton « Casino » de la barre du haut ---------- */
   function boot() {
     var b = $('btnCasino');
-    if (b) b.addEventListener('click', function () { open(); });
+    if (b) b.addEventListener('click', function () { openPred(); });
+    var gb = $('btnGames');
+    if (gb) gb.addEventListener('click', function () { open(null, 'games'); });
+    // « + » au milieu de la carte Compte réel / Démo → page Recharger
+    var ms = $('modeSwitcher');
+    if (ms && !$('msPlus')) {
+      var p = document.createElement('button'); p.type = 'button'; p.id = 'msPlus'; p.className = 'ms-plus'; p.setAttribute('aria-label', 'Recharger'); p.innerHTML = '<span>+</span>';
+      p.addEventListener('click', function (e) { e.stopPropagation(); e.preventDefault(); try { if (window.oroUi && window.oroUi.deposit) window.oroUi.deposit(); else if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); } catch (x) { /* ignore */ } }, true);
+      ms.appendChild(p);
+      // v2757 : le « + » se range au bout de « Compte réel » (côté de la séparation), dans toutes les langues
+      var place = function () {
+        var r = $('modeReal'), d = $('modeDemo');
+        if (!r || !d || !r.offsetWidth) return;
+        var x = r.offsetLeft < d.offsetLeft ? r.offsetLeft + r.offsetWidth - 34 : r.offsetLeft + 6;
+        p.style.left = x + 'px';
+        var ltr = r.offsetLeft < d.offsetLeft;
+        r.style.removeProperty(ltr ? 'padding-left' : 'padding-right');
+        r.style.setProperty(ltr ? 'padding-right' : 'padding-left', '38px', 'important');
+        // visiteur : « Connexion » + « Inscription » à la place de « Compte réel » (rien l'un sur l'autre)
+        var aq = $('authQuick');
+        if (aq) { aq.style.left = (r.offsetLeft + (ltr ? 0 : 36)) + 'px'; aq.style.width = (r.offsetWidth - 36) + 'px'; }
+      };
+      var aq0 = $('authQuick');
+      if (aq0 && aq0.parentNode !== ms) ms.appendChild(aq0);
+      place();
+      if (window.ResizeObserver) new ResizeObserver(place).observe(ms); else window.addEventListener('resize', place);
+      document.addEventListener('oro:lang', function () { setTimeout(place, 60); setTimeout(place, 400); });
+      document.addEventListener('oro:auth', function () { setTimeout(place, 60); });
+    }
     try { if (/[?&]casino=1/.test(location.search)) setTimeout(function () { open(); }, 1500); } catch (e) { /* ignore */ }
     // seulement si la langue a VRAIMENT changé (le site renvoie cet événement aussi après une mise à jour du compte)
     var lastLang = document.documentElement.lang;
@@ -1353,13 +1411,16 @@
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  D6.Casino = { open: open, close: close, home: home };
+  D6.Casino = { open: open, close: close, home: home, openPred: openPred };
   // v2740 (propriétaire) : bouton du haut = manette + « Jeux », traduit en un seul mot dans chaque langue
   GAMES_WORD = { fr: 'Jeux', en: 'Games', es: 'Juegos', pt: 'Jogos', ar: 'ألعاب', tr: 'Oyunlar', vi: 'Trò chơi', id: 'Game', ru: 'Игры', de: 'Spiele', hi: 'गेम्स', zh: '游戏' };
   function paintGamesBtn() {
-    var l = (document.documentElement.lang || 'fr').slice(0, 2), w = GAMES_WORD[l] || GAMES_WORD.en, e = $('cbLbl'), b = $('btnCasino');
-    if (e && e.textContent !== w) e.textContent = w;
-    if (b) b.setAttribute('aria-label', w);
+    var l = (document.documentElement.lang || 'fr').slice(0, 2), w = GAMES_WORD[l] || GAMES_WORD.en, pw = PRED_WORD[l] || PRED_WORD.en;
+    var e = $('cbLbl'), b = $('btnCasino'), g = $('gamesLbl'), gb = $('btnGames');
+    if (e && e.textContent !== pw) e.textContent = pw;
+    if (b) b.setAttribute('aria-label', pw);
+    if (g && g.textContent !== w) g.textContent = w;
+    if (gb) gb.setAttribute('aria-label', w);
   }
   paintGamesBtn();
   document.addEventListener('oro:lang', paintGamesBtn);

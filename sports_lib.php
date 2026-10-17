@@ -33,6 +33,8 @@ function sp_clean(string $s, int $max): string { $s = trim(preg_replace('/\s+/u'
 /** Vue joueur : matchs ouverts (et ceux réglés depuis moins de 3 jours, pour voir le résultat). */
 function sp_public_events(int $now = 0): array {
   $now = $now ?: time();
+  sp_autoseed_once();
+  sp_remind_admin($now);
   $out = [];
   foreach (sp_events() as $e) {
     $open = $e['status'] === 'open' && $now < (int) $e['start'];
@@ -64,7 +66,9 @@ function sp_admin_save(array $in): array {
   // v2713 : logos des 2 équipes (sports d'équipe seulement ; jamais bloquant)
   $logos = [];
   $sportK = sp_clean((string) ($in['sport'] ?? 'foot'), 12);
-  if (!in_array($sportK, ['event', 'crypto', 'politique'], true) && ($tm = sp_title_teams($title))) {
+  $given = array_values(array_filter(array_map('strval', (array) ($in['logos'] ?? [])), static fn($l) => (bool) preg_match('#^(img/teams/[a-z0-9-]{2,30}\.png|q:(btc|us|ball|vote|fire|star))$#', $l)));
+  if ($given) $logos = $given; // v2755 : logos fournis (suggestions) — pas de recherche sur internet
+  elseif (!in_array($sportK, ['event', 'crypto', 'politique'], true) && ($tm = sp_title_teams($title))) {
     try { $logos = [sp_team_logo($tm[0]), sp_team_logo($tm[1])]; } catch (Throwable $e) { $logos = []; }
   }
   // v2734 : images mises par l'admin (prioritaires sur les logos trouvés tout seuls)
@@ -110,7 +114,7 @@ function sp_team_logo(string $name): string {
   $miss = sp_logo_dir() . DIRECTORY_SEPARATOR . $k . '.miss';
   if (is_file($miss) && filemtime($miss) > time() - 7 * 86400) return ''; // pas trouvé récemment : on ne redemande pas
   // 2 essais au plus : le nom tel quel, puis sans « FC / AS / AC… » et avec quelques noms français → anglais
-  $alt = trim(preg_replace('/\b(FC|AS|AC|CF|SC|SS|US|RC|OGC|CA)\b\.?/u', '', strtr($name, ['Barcelone' => 'Barcelona', 'Munich' => 'Munich', 'Séville' => 'Sevilla', 'Naples' => 'Napoli', 'Milan AC' => 'AC Milan', 'Inter Milan' => 'Inter', 'Atlético Madrid' => 'Atletico Madrid', 'Tottenham' => 'Tottenham', 'PSG' => 'Paris SG', 'Paris Saint-Germain' => 'Paris SG'])) ?? $name);
+  $alt = trim(preg_replace('/\b(FC|AS|AC|CF|SC|SS|US|RC|OGC|CA)\b\.?/u', '', strtr($name, ['Barcelone' => 'Barcelona', 'Munich' => 'Munich', 'Séville' => 'Sevilla', 'Naples' => 'Napoli', 'Milan AC' => 'AC Milan', 'Inter Milan' => 'Inter', 'Atlético Madrid' => 'Atletico Madrid', 'Tottenham' => 'Tottenham'])) ?? $name);
   $u = '';
   foreach (array_values(array_unique([$name, $alt])) as $q) {
     if ($q === '') continue;
@@ -146,26 +150,54 @@ function sp_admin_img(string $dataUrl): string {
 function sp_suggestions(): array {
   $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
   return [
-    ['PSG - FC Barcelona', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['PSG', 2.30], ['Nul', 3.40], ['Barcelona', 2.75]]],
-    ['Liverpool - Villarreal', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['Liverpool', 1.45], ['Nul', 4.30], ['Villarreal', 6.00]]],
-    ['Bayern Munich - Arsenal', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Bayern', 2.25], ['Nul', 3.50], ['Arsenal', 2.80]]],
-    ['Real Madrid - RB Leipzig', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Real Madrid', 1.50], ['Nul', 4.20], ['Leipzig', 5.50]]],
-    ['Aston Villa - Manchester City', 'Premier League', 'foot', $t('2026-10-24 11:30'), [['Aston Villa', 3.00], ['Nul', 3.50], ['Man City', 2.20]]],
-    ['Chelsea - Tottenham', 'Premier League', 'foot', $t('2026-10-24 16:30'), [['Chelsea', 2.05], ['Nul', 3.50], ['Tottenham', 3.30]]],
-    ['Combien de buts dans PSG – Barcelone ?', 'Ligue des champions', 'event', $t('2026-10-20 19:00'), [['0 à 2 buts', 2.00], ['3 buts ou plus', 1.75]]],
-    ['Le Bitcoin sera-t-il au-dessus de 85 000 $ le dimanche 25 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-24 20:00'), [['Oui', 2.90], ['Non', 1.38]]],
-    ['Le Bitcoin sera-t-il au-dessus de 80 000 $ le samedi 31 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-29 20:00'), [['Oui', 1.70], ['Non', 2.00]]],
-    ['Élections américaines (3 nov.) : qui gagnera la Chambre ?', 'Élections américaines', 'event', $t('2026-11-03 12:00'), [['Démocrates', 1.05], ['Républicains', 7.00]]],
+    ['PSG - FC Barcelona', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['PSG', 2.30], ['Nul', 3.40], ['Barcelona', 2.75]], ['img/teams/psg.png', 'img/teams/barcelona.png']],
+    ['Liverpool - Villarreal', 'Ligue des champions', 'foot', $t('2026-10-20 19:00'), [['Liverpool', 1.45], ['Nul', 4.30], ['Villarreal', 6.00]], ['img/teams/liverpool.png', 'img/teams/villarreal.png']],
+    ['Bayern Munich - Arsenal', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Bayern', 2.25], ['Nul', 3.50], ['Arsenal', 2.80]], ['img/teams/bayern.png', 'img/teams/arsenal.png']],
+    ['Real Madrid - RB Leipzig', 'Ligue des champions', 'foot', $t('2026-10-21 19:00'), [['Real Madrid', 1.50], ['Nul', 4.20], ['Leipzig', 5.50]], ['img/teams/real-madrid.png', 'img/teams/leipzig.png']],
+    ['Aston Villa - Manchester City', 'Premier League', 'foot', $t('2026-10-24 11:30'), [['Aston Villa', 3.00], ['Nul', 3.50], ['Man City', 2.20]], ['img/teams/aston-villa.png', 'img/teams/man-city.png']],
+    ['Chelsea - Tottenham', 'Premier League', 'foot', $t('2026-10-24 16:30'), [['Chelsea', 2.05], ['Nul', 3.50], ['Tottenham', 3.30]], ['img/teams/chelsea.png', 'img/teams/tottenham.png']],
+    ['Combien de buts dans PSG – Barcelone ?', 'Ligue des champions', 'event', $t('2026-10-20 19:00'), [['0 à 2 buts', 2.00], ['3 buts ou plus', 1.75]], ['q:ball']],
+    ['Le Bitcoin sera-t-il au-dessus de 85 000 $ le dimanche 25 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-24 20:00'), [['Oui', 2.90], ['Non', 1.38]], ['q:btc']],
+    ['Le Bitcoin sera-t-il au-dessus de 80 000 $ le samedi 31 octobre à 20 h (UTC) ?', 'Bitcoin', 'event', $t('2026-10-29 20:00'), [['Oui', 1.70], ['Non', 2.00]], ['q:btc']],
+    ['Élections américaines (3 nov.) : qui gagnera la Chambre ?', 'Élections américaines', 'event', $t('2026-11-03 12:00'), [['Démocrates', 1.05], ['Républicains', 7.00]], ['q:us']],
   ];
+}
+/** v2755 : les suggestions se publient toutes seules la 1re fois que la page des prédictions est ouverte (une seule fois). */
+function sp_autoseed_once(): void {
+  $flag = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10.done';
+  if (is_file($flag)) return;
+  @file_put_contents($flag, (string) time()); // posé AVANT : jamais deux fois, même si deux joueurs ouvrent en même temps
+  try { sp_admin_seed(); } catch (Throwable $e) { /* jamais bloquant */ }
+}
+/** v2755 : notification sur le téléphone de l'admin quand un événement est fini et attend son résultat
+ *  (match : 2 h 15 après le coup d'envoi ; question : à l'heure de fin). Une seule fois par événement. */
+function sp_remind_admin(int $now): void {
+  $due = sp_with('events.json', static function (array &$s) use ($now) {
+    $list = [];
+    foreach ((array) ($s['e'] ?? []) as $i => $e) {
+      if (($e['status'] ?? '') !== 'open' && ($e['status'] ?? '') !== 'closed') continue;
+      if (!empty($e['askedAt'])) continue;
+      $wait = in_array((string) ($e['sport'] ?? ''), ['event', 'crypto', 'politique'], true) ? 0 : 8100;
+      if ($now < (int) $e['start'] + $wait) continue;
+      $s['e'][$i]['askedAt'] = $now;
+      $list[] = (string) $e['title'];
+    }
+    return $list;
+  }) ?: [];
+  if (!$due || !is_file(__DIR__ . '/push_lib.php')) return;
+  try {
+    require_once __DIR__ . '/push_lib.php';
+    foreach (array_slice($due, 0, 5) as $t) push_notify_admin('🔮 Résultat à donner', $t . ' — touche pour valider', '/admin.php');
+  } catch (Throwable $e) { /* jamais bloquant */ }
 }
 /** Admin : publie les suggestions qui ne sont pas encore en ligne (et pas encore commencées). */
 function sp_admin_seed(): array {
   $have = [];
   foreach (sp_events() as $e) $have[mb_strtolower((string) $e['title'])] = 1;
   $added = 0; $skipped = 0;
-  foreach (sp_suggestions() as [$title, $league, $sport, $start, $opts]) {
+  foreach (sp_suggestions() as [$title, $league, $sport, $start, $opts, $logos]) {
     if (isset($have[mb_strtolower($title)]) || $start < time() + 120) { $skipped++; continue; }
-    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 20,
+    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 20, 'logos' => $logos,
       'opts' => array_map(static fn($o) => ['label' => $o[0], 'odd' => $o[1]], $opts)]);
     if (!empty($r['ok'])) $added++; else $skipped++;
   }
