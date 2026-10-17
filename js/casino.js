@@ -83,8 +83,11 @@
   function mode() { return 'real'; } // v2690b : argent réel seulement (pas de démo ni d'essai)
   function readBal() {
     var num = function (id) { var e = $(id); if (!e) return null; var v = parseFloat(String(e.textContent).replace(/[^0-9.]/g, '')); return isFinite(v) ? v : null; };
-    if (S.bal.real == null) S.bal.real = num('modeRealAmt');
-    if (S.bal.demo == null) S.bal.demo = num('modeDemoAmt');
+    // v2760 (propriétaire) : relu à CHAQUE ouverture (avant : lu une seule fois → les jeux pouvaient rester à 0 $
+    // alors que le Compte réel du trading affichait le bon montant). C'est le même compte, le même argent.
+    var r = num('modeRealAmt'), d = num('modeDemoAmt');
+    if (r != null) S.bal.real = r;
+    if (d != null) S.bal.demo = d;
   }
   /* solde au milieu de la barre, avec un petit « + » pour recharger */
   function paintBal() {
