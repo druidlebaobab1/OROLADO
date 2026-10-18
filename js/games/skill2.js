@@ -1,4 +1,5 @@
-/* v2805 — "You're in control" group 2 (owner request): Star Archer, Fruit Slicer, Chicken Road, Hamster Run, Asteroid Dodge,
+/* v2805/v2807 — "You're in control" group 2 (owner request; v2807: obvious on phones — hand hint until the first move,
+   ripple on every touch, idle touch points to BET, Star Archer = tap the target, taps never lost): Star Archer, Fruit Slicer, Chicken Road, Hamster Run, Asteroid Dodge,
    Darts Pro — MIXED MODE like Aviator, but the player plays. One gesture each (drag / swipe / tap), canvas 2D at 60 fps.
    The multiplier follows the SERVER clock (×e^(rate·s), casino_ext.php 'skill'); the player cashes out with the gold button,
    or loses on a mistake (K.multi 'fail'); the server's secret end shows an unavoidable event (meteor, comet, supernova…).
@@ -239,6 +240,7 @@
         flash: function (a) { flash = Math.max(flash, a); }
       };
       var g = mk(A);
+      box._s2 = g; // read-only hook for the touch tests (scripts in /tmp); nothing reads it in the app
 
       function say(t, cls) { K.setText(msgEl, t || ''); mEl.classList.remove('won', 'lost', 'idle'); if (cls) mEl.classList.add(cls); }
       function tx(el, s) { if (el.textContent === s) return; if (el.textContent.length !== s.length) K.setText(el, s); else el.textContent = s; }
@@ -411,25 +413,29 @@
 
   /* ================================================================== 1. STAR ARCHER — drag back, release, hit the moving target */
   boot('archer', function (A) {
-    var W, H, u, dpr, T, bg, tgS, man, tg = {}, wind = 0, aim = null, arrow = null, stuck = null, clock = 0, lim = 6, met = null, dead = false, won = 0, t = 0, streaks = [];
+    // v2807 (owner: "pull back and release" was confusing) — ONE simple gesture: TAP THE TARGET. The bow turns to it by
+    // itself and the arrow flies there; a tap beside the target is a miss. No wind (it confused players).
+    var W, H, u, dpr, T, bg, tgS, man, tg = {}, arrow = null, stuck = null, clock = 0, lim = 6, met = null, dead = false, won = 0, t = 0, streaks = [], aimA = -Math.PI / 2;
     function newTarget(first) {
       var lv = A.lv();
-      tg.r = Math.max(14, (8.6 - 2.6 * lv) * u);
-      tg.y = Math.max(T + tg.r + 6, H * 0.34);
+      tg.r = Math.max(18, (10 - 3 * lv) * u);   // big at the start, smaller very slowly
+      tg.y = Math.max(T + tg.r + 8, H * 0.36);
       tg.x = first ? W / 2 : (Math.random() < 0.5 ? -tg.r : W + tg.r);
-      tg.v = W * (0.12 + 0.2 * lv) * (Math.random() < 0.5 ? -1 : 1);
+      tg.v = W * (0.1 + 0.18 * lv) * (Math.random() < 0.5 ? -1 : 1);
       if (!first) tg.v = Math.abs(tg.v) * (tg.x < 0 ? 1 : -1);
       tg.in = first ? 1 : 0;
-      wind = (Math.random() * 2 - 1) * (0.25 + 0.75 * lv);
-      lim = 6.2 - 1.8 * lv; clock = lim;
+      lim = 6.5 - 2 * lv; clock = lim;
     }
     function bow() { return [W / 2, H - Math.max(40, 16 * u) * 0.75 - 6]; }
-    function aimAng() { if (!aim || !aim.ok) return -Math.PI / 2; return aim.a; }
+    function apos() { // flying arrow: position + angle
+      var p = ease(arrow.p), ex = arrow.hit ? tg.x + arrow.dx : arrow.ex, ey = arrow.hit ? tg.yy + arrow.dy : arrow.ey;
+      return [arrow.sx + (ex - arrow.sx) * p, arrow.sy + (ey - arrow.sy) * p, Math.atan2(ey - arrow.sy, ex - arrow.sx)];
+    }
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; u = uu; dpr = d; T = top;
         bg = bgSprite(W, H, dpr, [[0.2, 0.25, 0.5, 'rgba(139,92,246,.30)'], [0.85, 0.7, 0.45, 'rgba(236,72,153,.16)']], A.lite ? 40 : 90);
-        var r = Math.max(14, 8.6 * u);
+        var r = Math.max(18, 10 * u);
         tgS = mkc(r * 2 + 4, r * 2 + 4, dpr, function (c) {
           var cx = r + 2, cols = ['#FDE68A', '#F43F5E', '#FFF7ED', '#F43F5E', '#FBBF24'];
           circ(c, cx, cx + 1.5, r, 'rgba(0,0,0,.35)');
@@ -446,7 +452,7 @@
         streaks = []; for (var i = 0; i < (A.lite ? 6 : 14); i++) streaks.push({ x: Math.random() * W, y: rnd(T, H * 0.75), l: rnd(10, 26) });
         if (tg.r == null) newTarget(true);
       },
-      reset: function (live) { aim = null; arrow = null; stuck = null; met = null; dead = false; won = 0; tg = {}; newTarget(true); if (!live) { wind = 0.4; clock = lim; } },
+      reset: function () { arrow = null; stuck = null; met = null; dead = false; won = 0; tg = {}; newTarget(true); },
       step: function (dt, live) {
         t += dt;
         var lv = A.lv();
@@ -455,90 +461,71 @@
         if (tg.x < tg.r && tg.v < 0 && tg.in >= 1) tg.v = -tg.v;
         if (tg.x > W - tg.r && tg.v > 0 && tg.in >= 1) tg.v = -tg.v;
         tg.yy = tg.y + Math.sin(t * 1.7) * 3 * u * lv;
-        for (var i = 0; i < streaks.length; i++) { var s = streaks[i]; s.x += wind * W * 0.35 * dt + (wind >= 0 ? 8 : -8) * dt; if (s.x > W + 30) s.x = -30; if (s.x < -30) s.x = W + 30; }
+        for (var i = 0; i < streaks.length; i++) { var s = streaks[i]; s.x += 10 * dt; if (s.x > W + 30) s.x = -30; }
+        var b = bow(), want = arrow ? apos()[2] : Math.atan2(tg.yy - b[1], tg.x - b[0]); // the bow follows the target
+        aimA += (clamp(want, -Math.PI * 0.94, -Math.PI * 0.06) - aimA) * Math.min(1, dt * 10);
         if (arrow) {
-          arrow.vx += wind * W * 0.9 * dt; arrow.x += arrow.vx * dt; arrow.y += arrow.vy * dt;
-          if (arrow.y <= tg.yy) {
-            var dx = arrow.x - tg.x;
-            if (Math.abs(dx) <= tg.r * 1.02 && !dead) {
-              stuck = { dx: dx, a: Math.atan2(arrow.vy, arrow.vx), t: 0.45 };
-              A.burst(arrow.x, tg.yy, 16, ['#FDE68A', '#FFF7ED', '#F43F5E'], 160, 0.5, 3); A.ring(tg.x, tg.yy, tg.r * 1.6, '#FDE68A');
-              arrow = null;
-            } else if (arrow.y < -20 || arrow.x < -20 || arrow.x > W + 20 || arrow.y < tg.yy - tg.r * 2) {
-              if (live && A.fail(A.l.fail)) { dead = 2; } arrow = null;
+          arrow.p += dt / arrow.T;
+          if (arrow.p >= 1) {
+            if (arrow.hit) {
+              var hx = tg.x + arrow.dx, hy = tg.yy + arrow.dy;
+              stuck = { dx: arrow.dx, dy: arrow.dy, a: apos()[2], t: 0.45 };
+              A.burst(hx, hy, 16, ['#FDE68A', '#FFF7ED', '#F43F5E'], 160, 0.5, 3); A.ring(tg.x, tg.yy, tg.r * 1.6, '#FDE68A');
             }
-          } else if (arrow.x < -20 || arrow.x > W + 20) { if (live && A.fail(A.l.fail)) dead = 2; arrow = null; }
+            arrow = null;
+          }
         }
         if (stuck) { stuck.t -= dt; if (stuck.t <= 0) { stuck = null; if (live) newTarget(false); } }
         if (live && !arrow && !stuck && !dead && !met && tg.in >= 1) { clock -= dt; if (clock <= 0 && A.fail(A.l.late)) dead = 2; }
         if (met) {
           met.x += met.vx * dt; met.y += met.vy * dt;
-          var b = bow();
           if (!met.hit && met.y >= b[1] - 4 * u) { met.hit = 1; dead = 1; A.explode(b[0], b[1] - 4 * u, 1.6); }
         }
         if (won) won += dt;
       },
       draw: function (c) {
         A.bg(bg);
-        // wind streaks + wind gauge (arrow + strength, numbers only)
-        c.strokeStyle = 'rgba(196,181,253,.35)'; c.lineWidth = 1.2; c.beginPath();
-        var wl = Math.abs(wind) * 1.6 + 0.4;
-        for (var i = 0; i < streaks.length; i++) { var s = streaks[i]; c.moveTo(s.x, s.y); c.lineTo(s.x - Math.sign(wind || 1) * s.l * wl, s.y); }
+        c.strokeStyle = 'rgba(196,181,253,.25)'; c.lineWidth = 1.2; c.beginPath();
+        for (var i = 0; i < streaks.length; i++) { var s = streaks[i]; c.moveTo(s.x, s.y); c.lineTo(s.x - s.l, s.y); }
         c.stroke();
-        var gx = 50, gy = H - 22; // wind gauge: bottom-left corner, clear of every text
-        c.fillStyle = 'rgba(10,6,30,.6)'; c.beginPath(); c.roundRect ? c.roundRect(gx - 34, gy - 13, 76, 26, 13) : c.rect(gx - 34, gy - 13, 76, 26); c.fill();
-        c.save(); c.translate(gx - 14, gy); if (wind < 0) c.scale(-1, 1);
-        c.strokeStyle = '#7DD3FC'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(-12, 0); c.lineTo(10, 0); c.moveTo(4, -6); c.lineTo(11, 0); c.lineTo(4, 6); c.stroke(); c.restore();
-        c.fillStyle = '#E0F2FE'; c.font = '900 13px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText((Math.abs(wind) * 5).toFixed(1), gx + 22, gy + 1);
-        // target + shot clock ring
         var ty = tg.yy == null ? tg.y : tg.yy;
         c.globalAlpha = tg.in; c.drawImage(tgS, tg.x - tg.r - 2, ty - tg.r - 2, tg.r * 2 + 4, tg.r * 2 + 4); c.globalAlpha = 1;
-        if (A.live() && !stuck && !dead) {
+        if (A.live() && !stuck && !dead) { // shot clock around the target
           var k = clamp(clock / lim, 0, 1);
           c.strokeStyle = k < 0.3 ? '#F43F5E' : '#FBBF24'; c.lineWidth = 3.5; c.lineCap = 'round';
           c.beginPath(); c.arc(tg.x, ty, tg.r + 7, -Math.PI / 2, -Math.PI / 2 + TAU * k); c.stroke();
         }
-        if (stuck) { var ax = tg.x + stuck.dx; c.save(); c.translate(ax, ty); c.rotate(stuck.a); arrowPath(c, -22, 0); c.restore(); }
-        // aim preview (straight line, wind not included)
-        var b = bow(), a = aimAng();
-        if (aim && aim.ok && !arrow && !dead) {
-          c.strokeStyle = 'rgba(253,230,138,.85)'; c.lineWidth = 2.4; c.setLineDash([6, 8]); c.beginPath();
-          var len = Math.min((b[1] - ty) * 0.75 / Math.max(0.3, -Math.sin(a)), H);
-          c.moveTo(b[0], b[1]); c.lineTo(b[0] + Math.cos(a) * len, b[1] + Math.sin(a) * len); c.stroke(); c.setLineDash([]);
-        }
-        if (arrow) { c.save(); c.translate(arrow.x, arrow.y); c.rotate(Math.atan2(arrow.vy, arrow.vx)); arrowPath(c, 0, 0); c.restore(); }
+        if (stuck) { c.save(); c.translate(tg.x + stuck.dx, ty + stuck.dy); c.rotate(stuck.a); arrowPath(c, -22, 0); c.restore(); }
+        if (arrow) { var q = apos(); c.save(); c.translate(q[0], q[1]); c.rotate(q[2]); arrowPath(c, 0, 0); c.restore(); }
+        var b = bow();
         if (dead !== 1) {
           var mw = Math.max(40, 16 * u), mh = mw * 1.17, jy = won ? -Math.abs(Math.sin(won * 9)) * 5 * u : 0;
           c.drawImage(man, b[0] - mw / 2, b[1] - mh * 0.55 + jy, mw, mh);
-          // bow (rotates with the aim), string pulled while aiming
-          c.save(); c.translate(b[0], b[1] - 2 * u + jy); c.rotate(a + Math.PI / 2);
-          var br = Math.max(24, 9 * u), pull = aim && aim.ok ? Math.min(aim.d, 60) / 60 * 3.5 * u : 0;
+          c.save(); c.translate(b[0], b[1] - 2 * u + jy); c.rotate(aimA + Math.PI / 2);
+          var br = Math.max(24, 9 * u);
           c.strokeStyle = '#FBBF24'; c.lineWidth = Math.max(2.5, 1.1 * u); c.lineCap = 'round';
           c.beginPath(); c.arc(0, br * 0.55, br, -Math.PI * 0.82, -Math.PI * 0.18); c.stroke();
           var ex = Math.cos(-Math.PI * 0.82) * br, ey = br * 0.55 + Math.sin(-Math.PI * 0.82) * br;
-          c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(ex, ey); c.lineTo(0, ey + pull); c.lineTo(-ex, ey); c.stroke();
-          if (!arrow && !stuck && !dead) { c.rotate(-Math.PI / 2); arrowPath(c, -(ey + pull) + 26, 0); }
+          c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(ex, ey); c.lineTo(0, ey); c.lineTo(-ex, ey); c.stroke();
+          if (!arrow && !stuck && !dead) { c.rotate(-Math.PI / 2); arrowPath(c, -ey + 26, 0); }
           c.restore();
         }
         if (met) meteor(c, met.x, met.y, met.r, Math.atan2(met.vy, met.vx));
       },
-      down: function (x, y) { if (arrow || stuck || dead) return; aim = { sx: x, sy: y, ok: false, a: -Math.PI / 2, d: 0 }; },
-      move: function (x, y) {
-        if (!aim) return;
-        var vx = aim.sx - x, vy = aim.sy - y, d = Math.hypot(vx, vy);
-        aim.d = d; aim.ok = d > 10 && vy < -2;
-        if (aim.ok) aim.a = clamp(Math.atan2(vy, vx), -Math.PI * 0.94, -Math.PI * 0.06);
+      down: function (x, y) {
+        if (arrow || stuck || dead || met || tg.in < 1) return;
+        var b = bow(), sx = b[0], sy = b[1] - 2 * u, d = Math.hypot(x - tg.x, y - tg.yy);
+        if (d <= tg.r * 1.3 + 10) { // generous: a finger is wide
+          arrow = { sx: sx, sy: sy, hit: 1, dx: clamp((x - tg.x) * 0.5, -tg.r * 0.5, tg.r * 0.5), dy: clamp((y - tg.yy) * 0.5, -tg.r * 0.5, tg.r * 0.5), p: 0, T: 0.2 };
+        } else { // beside the target: the arrow flies past, off the screen — decided now
+          var a = Math.atan2(y - sy, x - sx), far = Math.max(W, H) * 1.3;
+          arrow = { sx: sx, sy: sy, hit: 0, ex: sx + Math.cos(a) * far, ey: sy + Math.sin(a) * far, p: 0, T: 0.45 };
+          if (A.fail(A.l.fail)) dead = 2;
+        }
       },
-      up: function (x, y, live) {
-        if (!aim) return;
-        var ok = aim.ok && aim.d > 14 && live && !arrow && !stuck && !dead, a = aim.a; aim = null;
-        if (!ok) return;
-        var b = bow(), V = Math.max(260, (b[1] - tg.y) / 0.42);
-        arrow = { x: b[0] + Math.cos(a) * 20, y: b[1] - 2 * u + Math.sin(a) * 20, vx: Math.cos(a) * V, vy: Math.sin(a) * V };
-      },
-      boom: function () { var b = bow(); aim = null; met = { x: W * 1.1, y: T - 20, r: Math.max(16, 9 * u), vx: 0, vy: 0 }; met.vx = (b[0] - met.x) / 0.7; met.vy = (b[1] - met.y) / 0.7; },
-      win: function () { won = 0.001; aim = null; }
+      boom: function () { var b = bow(); arrow = null; met = { x: W * 1.1, y: T - 20, r: Math.max(16, 9 * u), vx: 0, vy: 0 }; met.vx = (b[0] - met.x) / 0.7; met.vy = (b[1] - met.y) / 0.7; },
+      dbg: function () { return { x: tg.x, y: tg.yy, ready: !arrow && !stuck && tg.in >= 1 }; },
+      win: function () { won = 0.001; }
     };
     function arrowPath(c, x0, y0) {
       c.strokeStyle = '#E2E8F0'; c.lineWidth = 2.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(x0 - 26, y0); c.lineTo(x0 + 2, y0); c.stroke();
@@ -689,6 +676,7 @@
           ob.splice(i, 1); cut(o, a);
         }
       },
+      practice: true,
       up: function () { down = false; },
       boom: function () { down = false; var r = FR * 2.2; nova = { x: W / 2, y: H + r, r: r, vy: -Math.sqrt(2 * gv * (H * 0.55)) }; },
       win: function () { for (var i = 0; i < ob.length; i++) if (ob[i].k >= 0) A.burst(ob[i].x, ob[i].y, 6, ['#FDE68A', '#FFFFFF'], 120, 0.5, 2.6); ob = ob.filter(function (o) { return o.k < 0; }); }
@@ -765,7 +753,7 @@
         });
         lanes = {};
       },
-      reset: function () { lanes = {}; j = 0; hop = null; queued = false; cam = 0; dead = 0; fall = 0; comet = null; won = 0; lim = 4.2; tmr = lim; },
+      reset: function () { lanes = {}; j = 0; hop = null; queued = false; cam = 0; dead = 0; fall = 0; comet = null; won = 0; lim = 5; tmr = lim; },
       step: function (dt, live) {
         t += dt;
         var lo = Math.floor((cam - H * 0.3) / rowH) - 1, hi = Math.ceil((cam + H) / rowH) + 1, i, k, L, s;
@@ -783,7 +771,7 @@
             for (k = 0; k < L0.ships.length; k++) { s = L0.ships[k]; if (Math.abs(s.x - W / 2) < s.l * 0.45 + cw * 0.28) { if (A.fail(A.l.fail)) { dead = 1; A.explode(W / 2, Y(wy) - ch * 0.4, 1.2); } break; } }
           }
           if (hop.p >= 1 && !dead) {
-            hop = null; j++; tmr = lim = Math.max(2.4, 4.2 - 1.6 * A.lv());
+            hop = null; j++; tmr = lim = Math.max(2.6, 5 - 2 * A.lv());
             A.burst(W / 2, Y(j * rowH), 6, ['#C4B5FD', '#FDE68A'], 60, 0.4, 2.4);
             if (queued) { queued = false; hop = { p: 0 }; }
           }
@@ -840,7 +828,7 @@
         }
         if (comet) meteor(c, comet.x, comet.y, comet.r, 0);
       },
-      down: function () { if (dead || comet) return; if (hop) { if (hop.p > 0.5) queued = true; return; } hop = { p: 0 }; },
+      down: function () { if (dead || comet) return; if (hop) { queued = true; return; } hop = { p: 0 }; }, // a tap during a hop is kept (no lost touch)
       boom: function () { comet = { x: -W * 0.5, y: Y(cy()) - ch * 0.45, r: Math.max(18, rowH * 0.42), v: W * 2.4 }; hop = null; queued = false; },
       win: function () { won = 0.001; queued = false; }
     };
@@ -1044,7 +1032,7 @@
         }
         if (big) meteor(c, big.x, big.y, big.r, Math.PI / 2);
       },
-      down: function (x) { drag = { o: s.tx - x }; },
+      down: function (x) { drag = { o: 0 }; if (!dead && !won) s.tx = clamp(x, sw * 0.6, W - sw * 0.6); }, // the ship follows the finger (a simple tap moves it too)
       move: function (x) { if (drag && !dead && !won) s.tx = clamp(x + drag.o, sw * 0.6, W - sw * 0.6); },
       up: function () { drag = null; },
       boom: function () { drag = null; big = { x: s.x, y: -W * 0.3, r: Math.max(W * 0.2, 40), v: H * 1.9 }; },
@@ -1093,7 +1081,7 @@
         bg = bgSprite(W, H, dpr, [[0.5, 0.5, 0.5, 'rgba(139,92,246,.32)'], [0.1, 0.1, 0.4, 'rgba(251,191,36,.10)']], A.lite ? 40 : 90);
         boardS = boardSprite();
       },
-      reset: function (live) { darts = []; fly = null; met = null; dead = false; won = 0; lim = 4.5; clock = lim; aimT = 0; ph = rnd(0, TAU); },
+      reset: function (live) { darts = []; fly = null; met = null; dead = false; won = 0; lim = 5.5; clock = lim; aimT = 0; ph = rnd(0, TAU); },
       step: function (dt, live) {
         t += dt;
         var lv = A.lv(), sp = (live ? 1 + 0.9 * lv : 0.6);
@@ -1108,7 +1096,7 @@
               darts.push({ x: fly.x, y: fly.y }); if (darts.length > 3) darts.shift();
               A.burst(fly.x, fly.y, 10, ['#FDE68A', '#FFFFFF'], 120, 0.4, 2.4);
               if (d < R * 0.1) A.ring(fly.x, fly.y, R * 0.5, '#4ADE80');
-              clock = lim = Math.max(2.8, 4.5 - 1.5 * A.lv());
+              clock = lim = Math.max(3, 5.5 - 2 * A.lv());
             } else if (A.fail(A.l.fail)) { dead = true; A.burst(fly.x, fly.y, 12, ['#94A3B8', '#F43F5E'], 140, 0.5, 2.6); }
             fly = null;
           }
@@ -1143,6 +1131,7 @@
         if (met) meteor(c, met.x, met.y, met.r, Math.atan2(met.vy, met.vx));
       },
       down: function () { if (fly || dead || met || won) return; fly = { sx: W / 2, sy: H + 30, x: ax, y: ay, p: 0 }; },
+      dbg: function () { return { on: Math.hypot(ax - cx, ay - cy) <= R * 0.86, ready: !fly }; },
       boom: function () { fly = null; met = { x: -W * 0.2, y: T - 30, r: Math.max(18, R * 0.3), vx: 0, vy: 0 }; met.vx = (cx - met.x) / 0.65; met.vy = (cy - met.y) / 0.65; },
       win: function () { won = 0.001; }
     };

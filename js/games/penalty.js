@@ -88,7 +88,7 @@
     var stars = '';
     for (var s = 0; s < 34; s++) stars += '<circle cx="' + (-180 + K.seeded(s, 1) * 720).toFixed(0) + '" cy="' + (-260 + K.seeded(s, 2) * 290).toFixed(0) + '" r="' + (0.4 + K.seeded(s, 3) * 0.9).toFixed(1) + '"/>';
     var ads = '';
-    for (var a = -4; a < 8; a++) ads += '<text x="' + (a * 120 + 60) + '" y="160.2" text-anchor="middle">OROLADO</text>';
+    [-420, -230, -40, 400, 590, 780].forEach(function (ax) { ads += '<text x="' + ax + '" y="160.2" text-anchor="middle">OROLADO</text>'; }); // jamais derrière le but
     var zones = ZONES.map(function (z, j) {
       return '<g class="pk-z" data-z="' + j + '"><rect x="' + (z[2] - 31) + '" y="' + (z[3] - 21) + '" width="62" height="42" rx="9"/>' +
         '<g class="pk-ret" transform="translate(' + z[2] + ' ' + z[3] + ')"><circle r="9"/><circle r="2.2" class="pk-dot"/><path d="M0-14v5M0 9v5M-14 0h5M9 0h5"/></g></g>';
@@ -107,10 +107,10 @@
         '<linearGradient id="pkLed" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FDE68A"/><stop offset=".5" stop-color="#F59E0B"/><stop offset="1" stop-color="#FDE68A"/></linearGradient>' +
         '<linearGradient id="pkPost" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#CBD5E1"/><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#94A3B8"/></linearGradient>' +
         '<linearGradient id="pkBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#94A3B8"/></linearGradient>' +
-        '<linearGradient id="pkNetBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0720" stop-opacity=".55"/><stop offset="1" stop-color="#0B0720" stop-opacity=".2"/></linearGradient>' +
+        '<linearGradient id="pkNetBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0720" stop-opacity=".7"/><stop offset="1" stop-color="#0B0720" stop-opacity=".45"/></linearGradient>' +
         '<linearGradient id="pkShirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE047"/><stop offset="1" stop-color="#F59E0B"/></linearGradient>' +
         '<radialGradient id="pkSkin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#D9A066"/><stop offset="1" stop-color="#A86A35"/></radialGradient>' +
-        '<radialGradient id="pkBall" cx="36%" cy="30%" r="72%"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#E5E7EB"/><stop offset="1" stop-color="#8B95A5"/></radialGradient>' +
+        '<radialGradient id="pkGBall" cx="36%" cy="30%" r="72%"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#E5E7EB"/><stop offset="1" stop-color="#8B95A5"/></radialGradient>' +
         '<radialGradient id="pkPl" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FDE68A"/><stop offset=".6" stop-color="#F59E0B"/><stop offset="1" stop-color="#7C2D12"/></radialGradient>' +
       '</defs>' +
       // ciel, étoiles, planète
@@ -150,7 +150,7 @@
       // ballon + ombre + traînée
       '<g id="pkBShadow" transform="translate(' + SPOT[0] + ' ' + (SPOT[1] + 10) + ')"><ellipse rx="11" ry="3" fill="#000" opacity=".4"/></g>' +
       '<g id="pkTrail" opacity="0"><circle r="' + BR + '" fill="#fff" opacity=".18"/><circle r="' + BR + '" fill="#fff" opacity=".1"/><circle r="' + BR + '" fill="#fff" opacity=".05"/></g>' +
-      '<g id="pkBall" transform="translate(' + SPOT[0] + ' ' + SPOT[1] + ')"><circle r="' + BR + '" fill="url(#pkBall)"/><g id="pkSpin">' +
+      '<g id="pkBall" transform="translate(' + SPOT[0] + ' ' + SPOT[1] + ')"><circle r="' + BR + '" fill="url(#pkGBall)"/><g id="pkSpin">' +
         '<path d="M0-4.6l4.4 3.2-1.7 5.2h-5.4l-1.7-5.2z" fill="#1F2937"/><path d="M0-4.6V-11.4M4.4-1.4l6.4-2.2M2.7 3.8l3.9 5.8M-2.7 3.8l-3.9 5.8M-4.4-1.4l-6.4-2.2" stroke="#1F2937" stroke-width="1.3"/>' +
         '<path d="M-7.5-9.5l3-2.4M7.5-9.5l-3-2.4M11.6 2l-.6 3.8M-11.6 2l.6 3.8M-3 11.6h6" stroke="#1F2937" stroke-width="2.6" stroke-linecap="round"/></g>' +
         '<circle r="' + BR + '" fill="none" stroke="#000" stroke-opacity=".25"/><ellipse cx="-4" cy="-5" rx="4" ry="2.6" fill="#fff" opacity=".55"/></g>' +
@@ -196,7 +196,7 @@
     function fitView() {
       if (!svg.isConnected) return;
       var w = svg.clientWidth, h = svg.clientHeight; if (!w || !h) return;
-      var cx = 26, cy = 16, cw = 308, ch = 270, ar = w / h, vx, vy, vw, vh;
+      var cx = 50, cy = 30, cw = 260, ch = 256, ar = w / h, vx, vy, vw, vh;
       if (ar > cw / ch) { vh = ch; vw = ch * ar; vx = 180 - vw / 2; vy = cy; }
       else { vw = cw; vh = cw / ar; vx = cx; vy = cy + ch - vh + (vh - ch) * 0.35; }
       svg.setAttribute('viewBox', vx.toFixed(1) + ' ' + vy.toFixed(1) + ' ' + vw.toFixed(1) + ' ' + vh.toFixed(1));
@@ -306,7 +306,7 @@
           var s1 = Math.min(1, k * 4), bx = tx + (tx - 180) * 0.07 * s1, by = ty + 5 * s1 + (k > 0.25 ? (150 - ty) * easeIn((k - 0.25) / 0.75) : 0);
           setBall(bx, Math.min(by, 150), endS - 0.05 * s1, 900 + k * 200);
           setBShadow(bx, 154, endS, 0.5);
-          if (!fast) { var d = Math.exp(-k * 4.2) * Math.cos(k * 26), sc = 1 + 0.045 * d; net.setAttribute('transform', 'translate(' + ix + ' ' + iy + ') scale(' + sc.toFixed(4) + ') translate(' + -ix + ' ' + -iy + ') translate(0 ' + (2.4 * d).toFixed(2) + ')'); }
+          if (!fast) { var d = Math.exp(-k * 4.2) * Math.cos(k * 26); net.setAttribute('transform', 'translate(' + ((ix - 180) * 0.02 * d).toFixed(2) + ' ' + (2.6 * d).toFixed(2) + ')'); }
         });
         net.removeAttribute('transform');
       } else {
