@@ -31,9 +31,9 @@ html:root body #casinoModal .cg-dice .dc-handle i{width:3px;height:14px;border-r
 /* repère du résultat (au-dessus de la barre) */
 html:root body #casinoModal .cg-dice .dc-run{opacity:0;transition:transform .52s cubic-bezier(.2,.8,.2,1),opacity .2s;z-index:3}
 html:root body #casinoModal .cg-dice .dc-run.on{opacity:1}
-html:root body #casinoModal .cg-dice .dc-mark{position:absolute;left:0;bottom:24px;transform:translateX(-50%);min-width:58px;padding:6px 8px;border-radius:10px;text-align:center;
-  background:#2E2760;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25),0 6px 16px rgba(0,0,0,.5);transition:background .2s}
-html:root body #casinoModal .cg-dice .dc-mark::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#2E2760;transition:border-color .2s}
+html:root body #casinoModal .cg-dice .dc-mark{--p:50;position:absolute;left:0;bottom:24px;transform:translateX(calc(var(--p) * -1%));transition:transform .52s cubic-bezier(.2,.8,.2,1),background .2s;min-width:58px;padding:6px 8px;border-radius:10px;text-align:center;
+  background:#2E2760;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.25),0 6px 16px rgba(0,0,0,.5)}
+html:root body #casinoModal .cg-dice .dc-mark::after{content:"";position:absolute;left:calc(var(--p) * 1%);bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#2E2760;transition:border-color .2s}
 html:root body #casinoModal .cg-dice .dc-mark b{display:block;color:#fff;font:900 14px/1 var(--cg-font);font-variant-numeric:tabular-nums;white-space:nowrap}
 html:root body #casinoModal .cg-dice .dc-mark.w{background:#16A34A}
 html:root body #casinoModal .cg-dice .dc-mark.w::after{border-top-color:#16A34A}

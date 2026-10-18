@@ -96,7 +96,7 @@
       num.className = 'dc-num fit'; mark.className = 'dc-mark';
       // le repère glisse jusqu'au nombre tiré, le grand nombre défile
       run.classList.add('on');
-      run.style.transform = 'translateX(' + roll + '%)';
+      run.style.transform = 'translateX(' + roll + '%)'; mark.style.setProperty('--p', (50 + (roll - 50) * 0.8).toFixed(1));
       var t0 = performance.now(), from = lastRoll == null ? 50 : lastRoll, dur = document.documentElement.classList.contains('oro-lite') ? 200 : 520;
       await new Promise(function (res) {
         (function step(now) {
@@ -118,7 +118,7 @@
     paint(); paintHist();
     if (lastRoll == null && HIST.length) lastRoll = HIST[0][0];
     if (HIST.length) {
-      var h = HIST[0]; run.classList.add('on'); run.style.transform = 'translateX(' + h[0] + '%)';
+      var h = HIST[0]; run.classList.add('on'); run.style.transform = 'translateX(' + h[0] + '%)'; mark.style.setProperty('--p', (50 + (h[0] - 50) * 0.8).toFixed(1));
       K.setText(num, nf(h[0], 2)); K.setText($('dcMarkN'), nf(h[0], 2)); num.className = 'dc-num fit ' + (h[1] ? 'w' : 'l'); mark.className = 'dc-mark ' + (h[1] ? 'w' : 'l');
     }
   }, { rules: {

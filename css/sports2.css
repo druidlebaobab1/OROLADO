@@ -260,3 +260,7 @@ html.oro-lite body #casinoModal .sp2 *,html.oro-lite body #casinoModal .sp2 *::b
 /* textes de la barre du coupon : toujours foncés sur l'or (les anciennes règles « small » ne passent pas devant) */
 html:root body #casinoModal .sp2 .sp2-bar b,html:root body #casinoModal .sp2 .sp2-bar small{color:#2A1800!important;-webkit-text-fill-color:#2A1800}
 html:root body #casinoModal .sp2 .sp2-bar small{opacity:.72}
+/* titres venant de l'admin (souvent en français / latin) dans une page en arabe : alignés comme la page */
+html[dir=rtl] body #casinoModal .sp2 .sp2-o > span,html[dir=rtl] body #casinoModal .sp2 .sp2-qt b,html[dir=rtl] body #casinoModal .sp2 .sp2-bst > *,html[dir=rtl] body #casinoModal .sp2 .sp2-sel-t > *{text-align:right}
+/* en-tête du coupon : le titre garde la place, « Tout supprimer » rapetisse */
+html:root body #casinoModal .sp2 .sp2-clear{max-width:40%}

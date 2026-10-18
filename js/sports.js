@@ -172,12 +172,12 @@
   function loc() { var l = lg(); return l === 'ar' ? 'ar-u-nu-latn' : l; }
   function when(t) {
     var x = X(), d = new Date(t * 1000), now = new Date(), tm = new Date(now.getTime() + 86400000);
-    var hm = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var hm = d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
     if (d.toDateString() === now.toDateString()) return x.today + ' · ' + hm;
     if (d.toDateString() === tm.toDateString()) return x.tomorrow + ' · ' + hm;
     return d.toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + hm;
   }
-  function hm(t) { return new Date(t * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function hm(t) { return new Date(t * 1000).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }); }
   function dayLabel(t) {
     var x = X(), d = new Date(t * 1000), now = new Date(), tm = new Date(now.getTime() + 86400000);
     if (d.toDateString() === now.toDateString()) return x.today;
@@ -208,7 +208,7 @@
     return [t.slice(0, best).trim(), t.slice(best).trim()].filter(Boolean);
   }
   function lines(t, max) { var out = []; split2(t).forEach(function (p) { if (p.length > (max || 34)) out = out.concat(split2(p)); else out.push(p); }); return out; }
-  function linesHtml(t, tag, max) { return lines(t, max).map(function (p) { return '<' + tag + ' class="fit">' + esc(p) + '</' + tag + '>'; }).join(''); }
+  function linesHtml(t, tag, max, auto) { return lines(t, max).map(function (p) { return '<' + tag + ' class="fit"' + (auto ? ' dir="auto"' : '') + '>' + esc(p) + '</' + tag + '>'; }).join(''); }
   // textes élastiques (même règle que le casino : D6.CasinoKit.fitEl)
   function fitEl(el) {
     var K = D6.CasinoKit; if (K && K.fitEl) { K.fitEl(el); return; }
@@ -330,17 +330,17 @@
       var lbl = trO(o.label);
       if (three && i === 1 && /^(nul|draw|x|n|match nul)$/i.test(String(o.label).trim())) lbl = x.draw;
       return '<button type="button" class="sp2-o' + (on ? ' on' : '') + (win ? ' win' : '') + (lose ? ' lose' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '" aria-pressed="' + on + '"' + (e.open ? '' : ' disabled') + '>' +
-        '<span class="fit">' + esc(lbl) + '</span><b>' + (win ? IC.ok : '') + Number(o.odd).toFixed(2) + '</b></button>';
+        '<span class="fit" dir="auto">' + esc(lbl) + '</span><b>' + (win ? IC.ok : '') + Number(o.odd).toFixed(2) + '</b></button>';
     }).join('');
     var head;
     if (tm) {
-      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="fit">' + esc(tm[0]) + '</span></div>' +
+      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="fit" dir="auto">' + esc(tm[0]) + '</span></div>' +
         '<div class="sp2-mid"><b class="fit">' + esc(hm(e.start)) + '</b><small class="fit">' + esc(dayLabel(e.start)) + '</small></div>' +
-        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="fit">' + esc(tm[1]) + '</span></div></div>';
+        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="fit" dir="auto">' + esc(tm[1]) + '</span></div></div>';
     } else {
       var img = q ? logoHtml((e.logos || [])[0] || '', 'sp2-qimg') : '';
       if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';
-      head = '<div class="sp2-q">' + img + '<div class="sp2-qt">' + linesHtml(trT(e), 'b', 40) + '</div></div>';
+      head = '<div class="sp2-q">' + img + '<div class="sp2-qt">' + linesHtml(trT(e), 'b', 40, true) + '</div></div>';
     }
     var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e);
     return '<article class="sp2-ev' + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
@@ -419,7 +419,7 @@
   }
 
   // ---------- MES PARIS ----------
-  function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }); }
   function selRow(s) {
     var x = XX(), r = s.r || 'open', e = evByTitle(s.t), right = '';
     if (r === 'open' && e) {
@@ -427,7 +427,7 @@
       else if (e.status !== 'settled') right = '<span class="sp2-cd gone"><span class="fit">' + esc(x.inPlay) + '</span></span>';
     }
     var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
-    return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit">' + esc(e ? trT(e) : s.t) + '</small><b class="fit">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
+    return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(e ? trT(e) : s.t) + '</small><b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
   function receipts(bets) {
     var x = XX();
@@ -602,7 +602,7 @@
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = evById(z.ev);
       return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t"><small class="fit">' + esc(e ? trT(e) : z.t) + '</small><b class="fit">' + esc(z.closed ? x.closed : z.l) + '</b></div>' +
+        '<div class="sp2-sel-t"><small class="fit" dir="auto">' + esc(e ? trT(e) : z.t) + '</small><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b></div>' +
         '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>';
     }).join('') + '</div>';
     var tot = '<div class="sp2-tot"><div><small class="fit">' + esc(x.totalOdd) + '</small><b class="fit" id="spOdd">' + odd.toFixed(2) + '</b></div>' +

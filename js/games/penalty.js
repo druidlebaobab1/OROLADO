@@ -82,8 +82,7 @@
     box.classList.add('cg-game', 'cg-penalty');
     box.innerHTML = '<div class="cg-stage pn-stage">' +
         '<div class="pn-lad" id="pnLad">' + LADDER.map(function (m, k) { return '<span data-k="' + k + '"><b class="fit">×' + nf(m, 2) + '</b></span>'; }).join('') + '</div>' +
-        '<div class="pn-field">' + scene() + '</div>' +
-        '<div class="pn-tip"><b class="fit" id="pnTip"></b></div>' +
+        '<div class="pn-field">' + scene() + '<div class="pn-tip"><b class="fit" id="pnTip"></b></div></div>' +
       '</div>' + K.stakePanel(l.bet);
     K.bindStake(box);
     var go = $('csGo'), kp = $('pnKp'), ball = $('pnBall'), net = box.querySelector('.pn-net');

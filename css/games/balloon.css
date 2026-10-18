@@ -1,0 +1,54 @@
+/* v2795 — Balloon (SmartSoft-style) : ballon doré gonflé par une pompe, au-dessus d'une planète. Préfixe html:root body #casinoModal .cg-balloon */
+html:root body #casinoModal .cg-balloon > .cg-stage{display:flex;flex-direction:column;gap:4px;padding:8px 10px 0;min-height:230px}
+html:root body #casinoModal .cg-balloon .bl-hist{flex:0 0 auto}
+html:root body #casinoModal .cg-balloon .bl-hist i.pop{color:#FDA4AF;background:rgba(244,63,94,.18)}
+html:root body #casinoModal .cg-balloon .bl-sky{position:relative;flex:1 1 auto;min-height:0;container-type:size;overflow:hidden;margin:0 -10px}
+/* planète en bas */
+html:root body #casinoModal .cg-balloon .bl-planet{position:absolute;left:-30%;right:-30%;top:calc(100% - 12cqh);height:140cqw;border-radius:50%;pointer-events:none;
+  background:radial-gradient(60% 40% at 50% 0%,rgba(167,139,250,.55),transparent 70%),linear-gradient(180deg,#4C3D9E,#1E1650 30%);box-shadow:0 -6px 40px rgba(139,92,246,.45),inset 0 3px 0 rgba(196,181,253,.35)}
+/* multiplicateur en grand */
+html:root body #casinoModal .cg-balloon .bl-mul{position:absolute;left:8px;right:8px;top:3cqh;z-index:3;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
+html:root body #casinoModal .cg-balloon .bl-mul b{display:block;max-width:100%;color:#fff;font:900 clamp(30px,13cqh,64px)/1 var(--cg-font);font-variant-numeric:tabular-nums;letter-spacing:.01em;text-shadow:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+html:root body #casinoModal .cg-balloon .bl-mul small{display:block;max-width:100%;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(251,191,36,.4);color:#FDE68A;font:800 13px/1.1 var(--cg-font);font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cg-balloon .bl-sky.won .bl-mul b{color:#4ADE80}
+html:root body #casinoModal .cg-balloon .bl-sky.lost .bl-mul b{color:#FB7185}
+html:root body #casinoModal .cg-balloon .bl-sky.pumped .bl-mul b{animation:blTick .25s ease-out}
+@keyframes blTick{0%{transform:scale(1.12)}100%{transform:none}}
+/* ballon : grandit depuis l'embout (en bas) */
+html:root body #casinoModal .cg-balloon .bl-anchor{position:absolute;left:50%;bottom:calc(12cqh + 13.5cqh);width:min(62cqh,78cqw);height:min(80cqh,101cqw);margin-left:calc(min(62cqh,78cqw) / -2);z-index:2;pointer-events:none}
+html:root body #casinoModal .cg-balloon .bl-wob{position:absolute;inset:0;transform-origin:50% 100%}
+html:root body #casinoModal .cg-balloon .bl-wob.on{animation:blWob 2.6s ease-in-out infinite}
+@keyframes blWob{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
+html:root body #casinoModal .cg-balloon .bl-ball{position:absolute;inset:0;transform-origin:50% 100%;transition:transform .32s cubic-bezier(.3,1.5,.5,1)}
+html:root body #casinoModal .cg-balloon .bl-ball svg{display:block;width:100%;height:100%;filter:drop-shadow(0 10px 22px rgba(245,158,11,.35))}
+html:root body #casinoModal .cg-balloon .bl-ball.pop{transition:transform .14s ease-out,opacity .14s ease-out;opacity:0;transform:scale(1.18)!important}
+html:root body #casinoModal .cg-balloon .bl-burst{position:absolute;left:50%;top:42%;width:0;height:0}
+html:root body #casinoModal .cg-balloon .bl-burst i{position:absolute;left:-7px;top:-4px;width:14px;height:8px;border-radius:4px;background:#F59E0B;opacity:0}
+html:root body #casinoModal .cg-balloon .bl-burst i:nth-child(odd){background:#FDE68A;width:10px}
+html:root body #casinoModal .cg-balloon .bl-burst.go i{animation:blShard .6s cubic-bezier(.1,.7,.3,1) both}
+@keyframes blShard{0%{opacity:1;transform:rotate(var(--a)) translateX(0) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateX(min(30cqh,140px)) rotate(120deg) scale(.6)}}
+/* pompe */
+html:root body #casinoModal .cg-balloon .bl-base{position:absolute;left:50%;bottom:calc(12cqh - 2px);width:min(20cqh,96px);margin-left:calc(min(20cqh,96px) / -2);z-index:2;pointer-events:none}
+html:root body #casinoModal .cg-balloon .bl-pump{display:block;width:100%;height:auto;overflow:visible}
+html:root body #casinoModal .cg-balloon .bl-h{transition:transform .12s}
+html:root body #casinoModal .cg-balloon .bl-sky.pumping .bl-h{transform:translateY(12px)}
+/* bouton POMPE (maintenir) */
+html:root body #casinoModal .cg-balloon .bl-opts{display:flex}
+html:root body #casinoModal .cg-balloon .bl-pb{flex:1;min-width:0;height:46px!important;min-height:0!important;padding:0 14px!important;margin:0!important;border:0!important;border-radius:16px!important;cursor:pointer;
+  display:flex!important;align-items:center;justify-content:center;gap:8px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  background:linear-gradient(180deg,#8B5CF6,#6D28D9)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.2),0 8px 20px -10px rgba(139,92,246,.9)!important;
+  color:#fff!important;font:900 15px/1.1 var(--cg-font)!important;text-transform:uppercase;letter-spacing:.03em}
+html:root body #casinoModal .cg-balloon .bl-pb:active{transform:scale(.97);filter:brightness(1.15)}
+html:root body #casinoModal .cg-balloon .bl-pb svg{flex:none;width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+html:root body #casinoModal .cg-balloon .bl-pb span{flex:0 1 auto}
+/* bouton : « ENCAISSER » + montant */
+html:root body #casinoModal .cg-balloon .cs-go.cg-go{flex-direction:column;gap:3px}
+html:root body #casinoModal .cg-balloon .cs-go .bl-b1,html:root body #casinoModal .cg-balloon .cs-go .bl-b2{display:block;width:100%;text-align:center}
+html:root body #casinoModal .cg-balloon .cs-go .bl-b2{font-size:.82em;font-variant-numeric:tabular-nums;text-transform:none}
+html:root body #casinoModal .cg-balloon .cs-go.wait{font-size:clamp(13px,4vw,18px)!important}
+@media (max-height:640px){html:root body #casinoModal .cg-balloon .bl-pb{height:40px!important}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal.in-game .cg-balloon > .cg-stage{min-height:0!important;height:calc(100dvh - 104px);padding-top:4px}
+  html:root body #casinoModal .cg-balloon .bl-pb{height:38px!important}
+}
+html.oro-lite body #casinoModal .cg-balloon .bl-wob.on,html.oro-lite body #casinoModal .cg-balloon .bl-burst.go i{animation:none}
