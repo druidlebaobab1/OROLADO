@@ -1,0 +1,106 @@
+/* v2795 (propriétaire) — CASINO OROLADO, nouvelle base commune à tous les jeux refaits.
+   - Terminal de mise comme les grands jeux (Aviator / JetX) : montant − / + (petite croix dans la case), 4 montants rapides,
+     grand bouton de mise à droite. Aucun mot dans le terminal.
+   - Textes élastiques (.fit) : toujours sur UNE ligne, ils rapetissent seuls (js : fitEl) — jamais de débordement.
+   - Base des scènes refaites (.cg-stage) : carte « univers » sombre, bord fin, coins ronds.
+   Toutes les règles sont préfixées « html:root body #casinoModal » pour passer devant les anciennes couches de app.css. */
+:root{--cg-ink:#F5F3FF;--cg-mute:#A9A3CF;--cg-line:rgba(255,255,255,.12);--cg-card:rgba(13,9,34,.72);--cg-gold:#FBBF24;--cg-gold2:#F59E0B;
+  --cg-green:#22C55E;--cg-green2:#15803D;--cg-red:#F43F5E;--cg-violet:#8B5CF6;--cg-font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+/* ---------- textes élastiques ---------- */
+html:root body #casinoModal .fit{white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;min-width:0}
+html:root body #casinoModal .cs-gname b.fit{display:block;max-width:100%}
+
+/* ---------- chargement d'un jeu (fichier à la demande) ---------- */
+html:root body #casinoModal .cg-load{flex:1;display:grid;place-items:center;min-height:200px}
+html:root body #casinoModal .cg-load i{width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--cg-gold);animation:cgSpin .8s linear infinite}
+@keyframes cgSpin{to{transform:rotate(360deg)}}
+
+/* ---------- terminal de mise ---------- */
+html:root body #casinoModal .cs-panel.cg-panel{display:flex!important;flex-direction:column!important;gap:8px!important;padding:8px!important;border-radius:20px!important;
+  background:var(--cg-card)!important;box-shadow:inset 0 0 0 1px var(--cg-line),0 10px 30px -18px rgba(0,0,0,.9)!important;flex:0 0 auto}
+html:root body #casinoModal .cg-term{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:8px;align-items:stretch}
+html:root body #casinoModal .cg-tl{display:flex;flex-direction:column;gap:6px;min-width:0}
+html:root body #casinoModal .cg-amt{display:flex;align-items:center;gap:4px;height:44px;padding:0 5px;border-radius:999px;background:rgba(0,0,0,.42);box-shadow:inset 0 0 0 1px var(--cg-line)}
+html:root body #casinoModal .cg-step{width:34px!important;height:34px!important;min-width:34px;min-height:0!important;flex:0 0 34px!important;padding:0!important;border:0!important;border-radius:50%!important;
+  display:grid!important;place-items:center;background:rgba(255,255,255,.12)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)!important;color:#fff!important;cursor:pointer}
+html:root body #casinoModal .cg-step svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.8;stroke-linecap:round}
+html:root body #casinoModal .cg-step:active{transform:scale(.9);background:rgba(255,255,255,.22)!important}
+html:root body #casinoModal .cg-in{position:relative;flex:1 1 auto;min-width:0;height:100%;display:flex;align-items:center}
+html:root body #casinoModal .cg-in input{width:100%!important;min-width:0!important;height:100%!important;padding:0 22px 0 4px!important;border:0!important;outline:0;background:transparent!important;
+  box-shadow:none!important;text-align:center;color:#fff!important;font:900 clamp(15px,4.6vw,19px)/1 var(--cg-font)!important;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+html:root body #casinoModal .cg-clr{position:absolute;right:0;top:50%;width:20px!important;height:20px!important;min-height:0!important;margin-top:-10px;padding:0!important;border:0!important;border-radius:50%!important;
+  display:grid!important;place-items:center;background:rgba(255,255,255,.14)!important;box-shadow:none!important;cursor:pointer}
+html:root body #casinoModal .cg-clr svg{width:11px;height:11px;fill:none;stroke:rgba(255,255,255,.85);stroke-width:3;stroke-linecap:round}
+html:root body #casinoModal .cg-quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-quick button{min-width:0;height:30px!important;min-height:0!important;padding:0 2px!important;border:0!important;border-radius:999px!important;cursor:pointer;
+  background:rgba(255,255,255,.08)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important;color:#E9E5FF!important;font:800 clamp(11px,3.3vw,13px)/1 var(--cg-font)!important;white-space:nowrap}
+html:root body #casinoModal .cg-quick button:active{transform:scale(.94);background:rgba(251,191,36,.25)!important}
+html:root body #casinoModal .cs-go.cg-go{min-height:80px!important;height:auto!important;margin:0!important;padding:0 10px!important;border:0!important;border-radius:16px!important;
+  display:flex!important;align-items:center;justify-content:center;width:100%!important;cursor:pointer;
+  color:#fff!important;font:900 clamp(16px,5vw,22px)/1.05 var(--cg-font)!important;letter-spacing:.02em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.3);
+  background:linear-gradient(180deg,#4ADE80 0%,#22C55E 45%,#16A34A 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.18),0 10px 24px -12px rgba(34,197,94,.9)!important;transition:transform .1s,filter .15s}
+html:root body #casinoModal .cs-go.cg-go:active{transform:scale(.97)}
+html:root body #casinoModal .cs-go.cg-go:disabled{filter:saturate(.35) brightness(.8);opacity:1!important}
+html:root body #casinoModal .cs-go.cg-go.cash{color:#3B2300!important;text-shadow:none;background:linear-gradient(180deg,#FDE68A 0%,#FBBF24 45%,#F59E0B 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -3px 0 rgba(0,0,0,.15),0 10px 24px -12px rgba(245,158,11,.95)!important}
+html:root body #casinoModal .cs-go.cg-go.placed,html:root body #casinoModal .cs-go.cg-go.wait{color:#FDE68A!important;background:linear-gradient(180deg,#3F3A66,#2A2550)!important;
+  box-shadow:inset 0 0 0 1.5px rgba(253,230,138,.45)!important;filter:none}
+html:root body #casinoModal .cs-go.cg-go.stop{background:linear-gradient(180deg,#FB7185,#E11D48)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 24px -12px rgba(225,29,72,.9)!important}
+/* petits écrans : terminal plus bas, rien ne disparaît */
+@media (max-height:640px){
+  html:root body #casinoModal .cg-amt{height:38px}
+  html:root body #casinoModal .cg-step{width:30px!important;height:30px!important;min-width:30px;flex-basis:30px!important}
+  html:root body #casinoModal .cg-quick button{height:26px!important}
+  html:root body #casinoModal .cs-go.cg-go{min-height:68px!important}
+}
+/* visiteur : le terminal laisse la place à « Créer mon compte » */
+html:root body #casinoModal .cs-panel.cg-panel.cs-guestpanel > .cg-term{display:none!important}
+
+/* ---------- base des scènes refaites ---------- */
+html:root body #casinoModal .cg-game{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
+html:root body #casinoModal .cg-stage{position:relative;flex:1 1 auto;min-height:180px;border-radius:20px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.28),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26);
+  box-shadow:inset 0 0 0 1px var(--cg-line),0 12px 30px -20px rgba(0,0,0,.9)}
+html:root body #casinoModal .cg-stage::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.55;
+  background-image:radial-gradient(1px 1px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 72% 12%,#fff,transparent),radial-gradient(1.4px 1.4px at 38% 62%,#fff,transparent),
+    radial-gradient(1px 1px at 86% 70%,#fff,transparent),radial-gradient(1.2px 1.2px at 22% 84%,#fff,transparent),radial-gradient(1px 1px at 58% 36%,#fff,transparent),radial-gradient(1px 1px at 94% 44%,#fff,transparent)}
+/* bandeau d'historique (derniers résultats) commun */
+html:root body #casinoModal .cg-hist{display:flex;gap:5px;overflow:hidden;min-height:24px;align-items:center;mask-image:linear-gradient(90deg,#000 85%,transparent)}
+html:root body #casinoModal .cg-hist i{flex:none;padding:3px 8px;border-radius:999px;font:800 11.5px/1.2 var(--cg-font);font-style:normal;white-space:nowrap;background:rgba(255,255,255,.08);color:#C4B5FD}
+html:root body #casinoModal .cg-hist i.lo{color:#93C5FD}
+html:root body #casinoModal .cg-hist i.mid{color:#C4B5FD;background:rgba(139,92,246,.18)}
+html:root body #casinoModal .cg-hist i.hi{color:#FDE68A;background:rgba(251,191,36,.18)}
+/* choix (options) au-dessus du terminal : boutons ronds, élastiques */
+html:root body #casinoModal .cg-opts{display:grid;gap:6px;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+html:root body #casinoModal .cg-opts > button{min-width:0;min-height:44px!important;padding:4px 6px!important;border:0!important;border-radius:14px!important;cursor:pointer;
+  display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:rgba(255,255,255,.07)!important;box-shadow:inset 0 0 0 1px var(--cg-line)!important;color:#fff!important;font:800 13px/1.1 var(--cg-font)!important}
+html:root body #casinoModal .cg-opts > button small{font:800 11px/1 var(--cg-font);color:var(--cg-gold)}
+html:root body #casinoModal .cg-opts > button.on{background:linear-gradient(180deg,rgba(251,191,36,.3),rgba(245,158,11,.18))!important;box-shadow:inset 0 0 0 2px var(--cg-gold),0 0 16px -4px rgba(251,191,36,.7)!important}
+html.oro-lite body #casinoModal .cg-stage::before{display:none}
+
+/* ---------- cadre du casino ---------- */
+/* téléphone couché : la page du jeu tient exactement dans l'écran (avant : 34 px coupés à droite) */
+@media (max-width:859px){
+  html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{left:0!important;right:0!important;width:auto!important;max-width:none!important}
+}
+/* télé : le casino prend presque tout l'écran (avant : petite fenêtre au milieu) */
+/* le site entier est réduit à 62 % sur télé (zoom de html) : le casino est agrandi ×1,6 pour retrouver une vraie taille */
+html.is-tv:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{zoom:1.6;width:960px!important;max-width:none!important;height:880px!important;max-height:none!important}
+/* montant : toujours de gauche à droite (arabe compris), marges égales → jamais coupé */
+html:root body #casinoModal .cg-in input{direction:ltr!important;unicode-bidi:isolate;padding:0 22px!important}
+html:root body #casinoModal .cg-quick button,html:root body #casinoModal .cg-amt{direction:ltr}
+/* téléphone couché : la scène d'un jeu refait garde toute la hauteur (comme .cs-stage dans app.css) */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal.in-game .cs-game > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}
+}
+/* barre du haut : le solde (même 1 000 000,00 $) ne pousse jamais le bouton « ? » hors de l'écran */
+html:root body #casinoModal .cs-top{grid-template-columns:40px minmax(0,1fr) 40px!important}
+html:root body #casinoModal .cs-top #csBal{min-width:0;max-width:100%;justify-self:center}
+html:root body #casinoModal .cs-top #csBal b{white-space:nowrap;overflow:hidden;text-overflow:clip}
+/* arabe : jamais d'espacement entre les lettres (il casse l'écriture liée) */
+html[lang="ar"]:root body #casinoModal *,html.lang-ar:root body #casinoModal *{letter-spacing:0!important}
+/* montant : une marge seulement du côté de la petite croix (plus de place pour les chiffres) */
+html:root body #casinoModal .cg-in input{padding:0 20px 0 2px!important;font-size:clamp(14px,4.4vw,19px)!important}

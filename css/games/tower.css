@@ -1,0 +1,77 @@
+/* v2795 — Tower (BGaming / Evoplay-style) : tour spatiale de 8 étages, multiplicateurs sur le côté. Préfixe html:root body #casinoModal .cg-tower */
+html:root body #casinoModal .cg-tower > .cg-stage{display:flex;flex-direction:column;gap:6px;padding:8px 10px 10px;min-height:220px}
+html:root body #casinoModal .cg-tower .tw-bar{flex:0 0 auto;display:flex;justify-content:center;min-height:28px}
+html:root body #casinoModal .cg-tower .tw-bar b{display:block;max-width:100%;padding:6px 14px;border-radius:999px;background:linear-gradient(180deg,rgba(251,191,36,.22),rgba(245,158,11,.1));
+  box-shadow:inset 0 0 0 1px rgba(251,191,36,.45);color:#FDE68A;font:900 14px/1.1 var(--cg-font);font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cg-tower .tw-bar b:empty{visibility:hidden}
+html:root body #casinoModal .cg-tower .tw-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;width:100%;max-width:520px;margin:0 auto}
+/* sommet : antenne + planète dorée ; base : socle */
+html:root body #casinoModal .cg-tower .tw-top{flex:0 0 auto;width:34%;height:14px;margin-top:20px;border-radius:14px 14px 0 0;position:relative;
+  background:linear-gradient(180deg,#5B4BB8,#3A2E86);box-shadow:inset 0 2px 0 rgba(255,255,255,.2)}
+html:root body #casinoModal .cg-tower .tw-top::before{content:"";position:absolute;left:50%;bottom:100%;width:3px;height:10px;margin-left:-1.5px;background:#A78BFA}
+html:root body #casinoModal .cg-tower .tw-top::after{content:"";position:absolute;left:50%;bottom:calc(100% + 8px);width:12px;height:12px;margin-left:-6px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#FEF3C7,#FBBF24 55%,#B45309);box-shadow:0 0 14px 3px rgba(251,191,36,.6)}
+html:root body #casinoModal .cg-tower .tw-base{flex:0 0 auto;width:calc(100% + 12px);height:9px;border-radius:0 0 12px 12px;background:linear-gradient(180deg,#2B2266,#140E38);box-shadow:0 8px 18px -8px rgba(139,92,246,.8)}
+html:root body #casinoModal .cg-tower .tw{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(76,61,158,.55),rgba(38,28,94,.75));box-shadow:inset 0 0 0 1px rgba(196,181,253,.22),inset 0 0 30px rgba(0,0,0,.35)}
+html:root body #casinoModal .cg-tower .tw-row{flex:1 1 0;min-height:0;max-height:64px;display:grid;grid-template-columns:minmax(52px,22%) minmax(0,1fr);gap:6px;align-items:stretch;border-radius:10px;padding:2px;transition:background .25s,box-shadow .25s}
+html:root body #casinoModal .cg-tower .tw-m{display:flex;align-items:center;justify-content:center;min-width:0;border-radius:8px;background:rgba(0,0,0,.28)}
+html:root body #casinoModal .cg-tower .tw-m b{display:block;max-width:100%;padding:0 4px;color:#C4B5FD;font:900 clamp(11px,3.3vw,14px)/1 var(--cg-font);font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cg-tower .tw-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:0}
+html:root body #casinoModal .cg-tower .tw-d{position:relative;min-width:0;min-height:0!important;height:100%;padding:0!important;margin:0!important;border:0!important;border-radius:10px 10px 6px 6px!important;cursor:pointer;overflow:hidden;
+  display:grid!important;place-items:center;background:linear-gradient(180deg,#3E3290 0%,#2A2070 100%)!important;
+  box-shadow:inset 0 0 0 1.5px rgba(196,181,253,.25),inset 0 2px 0 rgba(255,255,255,.15),inset 0 -3px 0 rgba(0,0,0,.25)!important;transition:transform .12s,filter .15s,opacity .25s}
+/* hublot de la porte fermée */
+html:root body #casinoModal .cg-tower .tw-d::before{content:"";position:absolute;height:min(52%,22px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(165,243,252,.55),rgba(30,20,80,.9) 70%);box-shadow:0 0 0 2px rgba(196,181,253,.35)}
+html:root body #casinoModal .cg-tower .tw-f{position:absolute;inset:0;overflow:hidden;display:grid;place-items:center;font-style:normal;pointer-events:none}
+html:root body #casinoModal .cg-tower .tw-ico{height:82%;max-width:70%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+/* étages au-dessus : sombres ; étage en cours : doré qui respire ; étages passés : verts */
+html:root body #casinoModal .cg-tower .tw.on .tw-row.up{opacity:.55}
+html:root body #casinoModal .cg-tower .tw-row.cur{background:rgba(251,191,36,.12);box-shadow:inset 0 0 0 1.5px rgba(251,191,36,.7),0 0 18px -6px rgba(251,191,36,.8)}
+html:root body #casinoModal .cg-tower .tw-row.cur .tw-m{background:linear-gradient(180deg,#FDE68A,#F59E0B)}
+html:root body #casinoModal .cg-tower .tw-row.cur .tw-m b{color:#3B2300}
+html:root body #casinoModal .cg-tower .tw-row.cur .tw-d{animation:twGlow 1.4s ease-in-out infinite alternate}
+@keyframes twGlow{to{filter:brightness(1.3)}}
+html:root body #casinoModal .cg-tower .tw-row.cur .tw-d:active{transform:scale(.93)}
+@media (hover:hover){html:root body #casinoModal .cg-tower .tw-row.cur .tw-d:hover{filter:brightness(1.45);transform:translateY(-1px)}}
+html:root body #casinoModal .cg-tower .tw-row.past .tw-m b{color:#86EFAC}
+html:root body #casinoModal .cg-tower .tw-row.won{box-shadow:inset 0 0 0 1.5px #4ADE80,0 0 18px -6px rgba(74,222,128,.9)}
+html:root body #casinoModal .cg-tower .tw-row.lost{box-shadow:inset 0 0 0 1.5px #FB7185,0 0 18px -6px rgba(244,63,94,.9)}
+html:root body #casinoModal .cg-tower .tw-d.busy{animation:twBusy .45s ease-in-out infinite alternate}
+@keyframes twBusy{to{transform:scale(.92);filter:brightness(1.6)}}
+/* porte ouverte */
+html:root body #casinoModal .cg-tower .tw-d.good,html:root body #casinoModal .cg-tower .tw-d.trap{cursor:default;animation:none;background:radial-gradient(80% 90% at 50% 50%,#1D1650,#0B0722)!important;box-shadow:inset 0 0 0 1.5px rgba(251,191,36,.55)!important}
+html:root body #casinoModal .cg-tower .tw-d.trap{box-shadow:inset 0 0 0 1.5px rgba(244,63,94,.55)!important}
+html:root body #casinoModal .cg-tower .tw-d.good::before,html:root body #casinoModal .cg-tower .tw-d.trap::before{display:none}
+html:root body #casinoModal .cg-tower .tw-d.new .tw-f{animation:twOpen .45s cubic-bezier(.2,.8,.3,1.3) both}
+@keyframes twOpen{0%{transform:scaleX(.1);opacity:.2}60%{transform:scale(1.15)}100%{transform:none}}
+html:root body #casinoModal .cg-tower .tw-d.boom{background:radial-gradient(80% 90% at 50% 50%,#9F1239,#3B0A1E)!important;box-shadow:inset 0 0 0 2px #FB7185,0 0 18px rgba(244,63,94,.8)!important}
+html:root body #casinoModal .cg-tower .tw-d.boom .tw-f{animation:twSuck .6s cubic-bezier(.2,.9,.3,1.4) both}
+@keyframes twSuck{0%{transform:scale(.2) rotate(-90deg)}100%{transform:none}}
+html:root body #casinoModal .cg-tower .tw-d.dim{opacity:.5}
+html:root body #casinoModal .cg-tower .tw-d.dim .tw-f{animation:twFade .35s ease-out both}
+@keyframes twFade{from{opacity:0}to{opacity:1}}
+html:root body #casinoModal .cg-tower .tw.boom{animation:twShake .45s ease-in-out}
+@keyframes twShake{0%,100%{transform:none}25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+/* bouton : « ENCAISSER » + montant */
+html:root body #casinoModal .cg-tower .cs-go.cg-go{flex-direction:column;gap:3px}
+html:root body #casinoModal .cg-tower .cs-go .tw-b1,html:root body #casinoModal .cg-tower .cs-go .tw-b2{display:block;width:100%;text-align:center}
+html:root body #casinoModal .cg-tower .cs-go .tw-b2{font-size:.82em;font-variant-numeric:tabular-nums;text-transform:none}
+html:root body #casinoModal .cg-tower .cs-go.wait{font-size:clamp(13px,4vw,18px)!important}
+html:root body #casinoModal .cg-tower .cs-go.nudge{animation:twNudge .4s ease-in-out}
+@keyframes twNudge{0%,100%{transform:none}30%{transform:scale(1.05)}60%{transform:scale(.97)}}
+html[dir="rtl"] body #casinoModal .cg-tower .tw-row{direction:rtl}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal.in-game .cg-tower > .cg-stage{min-height:0!important;height:calc(100dvh - 104px);padding:4px 8px 6px;gap:3px}
+  html:root body #casinoModal .cg-tower .tw-bar{min-height:22px}
+  html:root body #casinoModal .cg-tower .tw-bar b{padding:3px 10px;font-size:12px}
+  html:root body #casinoModal .cg-tower .tw{gap:2px;padding:4px}
+  html:root body #casinoModal .cg-tower .tw-top{height:8px}
+  html:root body #casinoModal .cg-tower .tw-top::after,html:root body #casinoModal .cg-tower .tw-top::before{display:none}
+}
+html.oro-lite body #casinoModal .cg-tower .tw-row.cur .tw-d{animation:none}
+html.oro-lite body #casinoModal .cg-tower .tw.boom,html.oro-lite body #casinoModal .cg-tower .tw-d.new .tw-f{animation:none}
+/* neutralise les anciennes règles .tw / .tw-row de app.css (même noms de classes) */
+html:root body #casinoModal .cg-tower .tw{max-width:none;z-index:auto}
+html:root body #casinoModal .cg-tower .tw-row{opacity:1}
+html:root body #casinoModal .cg-tower .tw.on .tw-row.up{opacity:.55}

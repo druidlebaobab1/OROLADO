@@ -1,0 +1,137 @@
+/* v2795 — Sky Rush / Jet Man / Rocket (js/games/crash.js) : scène « Aviator / JetX / Spaceman » dans l'univers OROLADO.
+   Tout est préfixé « html:root body #casinoModal .cg-crash ». Animations : transform / opacity seulement. */
+html:root body #casinoModal .cg-crash{--cr:#FF3B5C}
+html:root body #casinoModal .cg-crash [hidden]{display:none!important}
+
+/* ---------- historique (derniers tours) ---------- */
+html:root body #casinoModal .cg-crash .cr-hist{flex:0 0 auto;min-height:24px;height:24px;gap:4px;padding:0 2px}
+html:root body #casinoModal .cg-crash .cr-hist i{padding:3px 8px;font:800 11.5px/1.2 var(--cg-font);font-variant-numeric:tabular-nums;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+html:root body #casinoModal .cg-crash .cr-hist i.lo{color:#38BDF8}
+html:root body #casinoModal .cg-crash .cr-hist i.mid{color:#A78BFA;background:rgba(139,92,246,.16)}
+html:root body #casinoModal .cg-crash .cr-hist i.hi{color:#F472B6;background:rgba(236,72,153,.16);box-shadow:inset 0 0 0 1px rgba(251,191,36,.35)}
+html:root body #casinoModal .cg-crash .cr-hist i.new{animation:crChip .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes crChip{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- scène ---------- */
+html:root body #casinoModal .cg-crash .cr-stage{min-height:170px;background:radial-gradient(90% 70% at 50% 110%,rgba(91,33,182,.45),transparent 70%),linear-gradient(180deg,#140E36 0%,#0B0722 100%)}
+html:root body #casinoModal .cg-crash .cr-stage > i{position:absolute;pointer-events:none}
+html:root body #casinoModal .cg-crash .cr-glow{inset:0;z-index:-1;background:radial-gradient(70% 60% at 8% 92%,color-mix(in srgb,var(--cr) 34%,transparent),transparent 70%);opacity:.9;transition:opacity .6s}
+html:root body #casinoModal .cg-crash .cr-rays{left:5%;top:90%;width:240%;aspect-ratio:1;margin:-120% 0 0 -120%;z-index:-1;border-radius:50%;opacity:.13;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.9) 0deg 5deg,transparent 5deg 15deg);
+  -webkit-mask-image:radial-gradient(closest-side,#000 10%,transparent 75%);mask-image:radial-gradient(closest-side,#000 10%,transparent 75%);animation:crSpin 70s linear infinite}
+@keyframes crSpin{to{transform:rotate(360deg)}}
+/* étoiles en deux plans (parallaxe) : elles défilent pendant le vol */
+html:root body #casinoModal .cg-crash .cr-sky{top:0;left:0;bottom:0;width:200%;z-index:-1;animation:crDrift 46s linear infinite;animation-play-state:paused}
+html:root body #casinoModal .cg-crash .cr-sky.s1{opacity:.55;background:radial-gradient(1px 1px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 110px,#fff,transparent),radial-gradient(1.2px 1.2px at 150px 60px,#E9D5FF,transparent),radial-gradient(1px 1px at 60px 160px,#fff,transparent);background-size:180px 190px}
+html:root body #casinoModal .cg-crash .cr-sky.s2{opacity:.85;animation-duration:18s;background:radial-gradient(1.8px 1.8px at 40px 70px,#fff,transparent),radial-gradient(1.5px 1.5px at 200px 20px,#FDE68A,transparent),radial-gradient(2px 2px at 300px 150px,#fff,transparent);background-size:360px 210px}
+html:root body #casinoModal .cg-crash .cr-stage.flying .cr-sky{animation-play-state:running}
+@keyframes crDrift{to{transform:translate3d(-50%,0,0)}}
+/* planète OROLADO en fond */
+html:root body #casinoModal .cg-crash .cr-planet{right:-7%;top:5%;width:28%;max-width:150px;aspect-ratio:1;z-index:-1;border-radius:50%;opacity:.6;
+  background:radial-gradient(circle at 70% 75%,rgba(12,6,30,.85),transparent 55%),repeating-linear-gradient(-20deg,transparent 0 9px,rgba(124,45,18,.35) 9px 14px),radial-gradient(circle at 32% 30%,#FDE68A 0%,#F59E0B 22%,#7C2D12 62%,#1C0A2E 100%);box-shadow:0 0 40px -6px rgba(245,158,11,.45);animation:crFloat 60s linear infinite}
+html:root body #casinoModal .cg-crash.cr-jet .cr-planet{background:radial-gradient(circle at 32% 30%,#F5D0FE 0%,#C026D3 25%,#4C1D95 65%,#12082E 100%);box-shadow:0 0 40px -6px rgba(192,38,211,.5)}
+html:root body #casinoModal .cg-crash.cr-rocket .cr-planet{width:34%;max-width:170px;top:4%;background:radial-gradient(circle at 32% 30%,#CFFAFE 0%,#22D3EE 22%,#155E75 60%,#071A2E 100%);box-shadow:0 0 44px -6px rgba(34,211,238,.45)}
+html:root body #casinoModal .cg-crash.cr-rocket .cr-planet::after{content:"";position:absolute;left:-30%;right:-30%;top:44%;height:14%;border-radius:50%;box-shadow:0 0 0 2px rgba(165,243,252,.55),0 0 0 5px rgba(34,211,238,.18);transform:rotate(-16deg)}
+@keyframes crFloat{50%{transform:translate3d(-14px,8px,0)}}
+html:root body #casinoModal .cg-crash .cr-stage.flying .cr-planet{animation-duration:14s}
+
+/* courbe */
+html:root body #casinoModal .cg-crash .cr-plot{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+html:root body #casinoModal .cg-crash .cr-line{filter:drop-shadow(0 0 6px var(--cr))}
+html:root body #casinoModal .cg-crash .cr-stage.ended .cr-plot{opacity:.35;transition:opacity .8s}
+/* axes en pointillés qui défilent */
+html:root body #casinoModal .cg-crash .cr-axis{overflow:hidden;opacity:.55}
+html:root body #casinoModal .cg-crash .cr-axis.x{left:5%;right:0;top:90%;height:2px;margin-top:3px}
+html:root body #casinoModal .cg-crash .cr-axis.y{left:5%;top:8%;bottom:10%;width:2px;margin-left:-5px}
+html:root body #casinoModal .cg-crash .cr-axis::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.7) 1px,transparent 1.5px) 0 0/22px 2px}
+html:root body #casinoModal .cg-crash .cr-axis.x::before{right:-22px;animation:crDots .7s linear infinite;animation-play-state:paused}
+html:root body #casinoModal .cg-crash .cr-axis.y::before{background-size:2px 22px;bottom:-22px;animation:crDotsY .7s linear infinite;animation-play-state:paused}
+html:root body #casinoModal .cg-crash .cr-stage.flying .cr-axis::before{animation-play-state:running}
+@keyframes crDots{to{transform:translateX(-22px)}}
+@keyframes crDotsY{to{transform:translateY(22px)}}
+
+/* l'avion / Jet Man / la fusée */
+html:root body #casinoModal .cg-crash .cr-craft{position:absolute;left:0;top:0;width:80px;height:40px;z-index:2;will-change:transform;transform-origin:62% 50%;pointer-events:none}
+html:root body #casinoModal .cg-crash .cr-bob{display:block;width:100%;height:100%;animation:crBob 1.6s ease-in-out infinite}
+html:root body #casinoModal .cg-crash .cr-bob svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+html:root body #casinoModal .cg-crash .cr-stage.flying .cr-bob{animation-duration:.9s}
+@keyframes crBob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(-2.5deg)}}
+html:root body #casinoModal .cg-crash .cr-prop{transform-box:fill-box;transform-origin:center;animation:crProp .12s linear infinite}
+@keyframes crProp{50%{transform:scaleY(.25)}}
+html:root body #casinoModal .cg-crash .cr-flame{transform-box:fill-box;transform-origin:100% 50%;animation:crFlame .14s ease-in-out infinite alternate;opacity:.55}
+html:root body #casinoModal .cg-crash .cr-stage.flying .cr-flame{opacity:1}
+@keyframes crFlame{from{transform:scaleX(.75) scaleY(.9)}to{transform:scaleX(1.15)}}
+/* explosion de la fusée */
+html:root body #casinoModal .cg-crash .cr-boom{left:0;top:0;width:130px;height:130px;margin:-65px 0 0 -65px;z-index:3;border-radius:50%;opacity:0;
+  background:radial-gradient(circle,#FFF7D6 0%,#FDE68A 18%,#FB923C 38%,rgba(244,63,94,.6) 56%,transparent 70%)}
+html:root body #casinoModal .cg-crash .cr-boom.go{animation:crBoom .8s ease-out forwards}
+@keyframes crBoom{0%{opacity:1;scale:.15}60%{opacity:.9}100%{opacity:0;scale:1.9}}
+/* mon multiplicateur encaissé, posé sur la courbe */
+html:root body #casinoModal .cg-crash .cr-out{visibility:hidden;display:block;flex:none;padding:4px 12px;border-radius:999px;opacity:0;pointer-events:none;
+  background:linear-gradient(180deg,#FDE68A,#F59E0B);color:#3B2300;font:900 clamp(13px,3.8vw,16px)/1.2 var(--cg-font);white-space:nowrap;box-shadow:0 4px 14px -4px rgba(245,158,11,.9)}
+html:root body #casinoModal .cg-crash .cr-out.in{visibility:visible;animation:crOut 2.4s ease-out forwards}
+@keyframes crOut{0%{opacity:0;transform:scale(.5)}12%{opacity:1;transform:scale(1.08)}20%{transform:none}80%{opacity:1}100%{opacity:0}}
+
+/* centre : gros multiplicateur / en attente */
+html:root body #casinoModal .cg-crash .cr-mid{position:absolute;left:8px;right:8px;top:12%;bottom:24%;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;pointer-events:none;text-align:center}
+html:root body #casinoModal .cg-crash .cr-m{display:block;max-width:100%;color:#fff;padding:.12em .3em;font:900 clamp(40px,min(17vw,11vh),92px)/1 var(--cg-font);font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  text-shadow:0 0 14px color-mix(in srgb,var(--cr) 60%,transparent),0 3px 0 rgba(0,0,0,.25)}
+html:root body #casinoModal .cg-crash .cr-flew{display:block;max-width:100%;min-height:1.2em;color:#FF4D6D;font:900 clamp(15px,4.6vw,24px)/1.2 var(--cg-font);text-transform:uppercase;letter-spacing:.06em}
+html:root body #casinoModal .cg-crash .cr-stage.ended .cr-m{color:#FF4D6D;text-shadow:0 0 14px rgba(244,63,94,.6);animation:crShake .45s}
+html:root body #casinoModal .cg-crash .cr-stage.ended .cr-flew{animation:crChip .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes crShake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+html:root body #casinoModal .cg-crash .cr-wait{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(78%,300px)}
+html:root body #casinoModal .cg-crash .cr-wait small{display:block;max-width:100%;color:#fff;font:800 clamp(13px,4vw,17px)/1.2 var(--cg-font);text-transform:uppercase;letter-spacing:.05em}
+html:root body #casinoModal .cg-crash .cr-spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:var(--cr);border-right-color:var(--cr);animation:crSpin .9s linear infinite}
+html:root body #casinoModal .cg-crash .cr-bar{display:block;width:100%;height:6px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.12)}
+html:root body #casinoModal .cg-crash .cr-bar b{display:block;height:100%;border-radius:inherit;background:var(--cr);transform-origin:0 50%;box-shadow:0 0 10px var(--cr)}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-bar b{transform-origin:100% 50%}
+
+/* ---------- options : encaissement automatique (compact) ---------- */
+html:root body #casinoModal .cg-crash .cr-opts{display:grid;grid-template-columns:minmax(0,1fr) minmax(86px,.6fr);gap:6px;margin-bottom:0}
+html:root body #casinoModal .cg-crash .cr-auto{display:flex!important;align-items:center;gap:8px;min-width:0;height:36px!important;min-height:0!important;padding:0 10px!important;border:0!important;border-radius:999px!important;cursor:pointer;
+  background:rgba(0,0,0,.35)!important;box-shadow:inset 0 0 0 1px var(--cg-line)!important;color:var(--cg-mute)!important;font:800 13px/1 var(--cg-font)!important}
+html:root body #casinoModal .cg-crash .cr-auto span{flex:1 1 auto;text-align:start}
+html:root body #casinoModal .cg-crash .cr-auto.on{color:#fff!important;box-shadow:inset 0 0 0 1.5px rgba(34,197,94,.7)!important}
+html:root body #casinoModal .cg-crash .cr-sw{flex:none;position:relative;width:34px;height:20px;border-radius:999px;background:rgba(255,255,255,.18);transition:background .2s}
+html:root body #casinoModal .cg-crash .cr-sw b{position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+html:root body #casinoModal .cg-crash .cr-auto.on .cr-sw{background:var(--cg-green)}
+html:root body #casinoModal .cg-crash .cr-auto.on .cr-sw b{transform:translateX(14px)}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-auto.on .cr-sw b{transform:translateX(-14px)}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-sw b{left:auto;right:2px}
+html:root body #casinoModal .cg-crash .cr-tg{display:flex;align-items:center;min-width:0;height:36px;padding:0 12px 0 6px;border-radius:999px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px var(--cg-line);opacity:.45;transition:opacity .2s}
+html:root body #casinoModal .cg-crash .cr-tg.on{opacity:1;box-shadow:inset 0 0 0 1.5px rgba(251,191,36,.6)}
+html:root body #casinoModal .cg-crash .cr-tg input{flex:1 1 auto;width:100%!important;min-width:0!important;height:100%!important;padding:0!important;border:0!important;outline:0;background:transparent!important;box-shadow:none!important;
+  text-align:center;color:#fff!important;font:900 15px/1 var(--cg-font)!important;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cg-crash .cr-tg em{flex:none;color:var(--cg-gold);font:900 14px/1 var(--cg-font);font-style:normal}
+html:root body #casinoModal .cg-crash .cs-extra{margin:0!important}
+
+/* ---------- petits écrans ---------- */
+@media (max-height:640px){
+  html:root body #casinoModal .cg-crash .cr-auto,html:root body #casinoModal .cg-crash .cr-tg{height:32px!important}
+  html:root body #casinoModal .cg-crash .cr-hist{height:22px;min-height:22px}
+  html:root body #casinoModal .cg-crash .cr-stage{min-height:150px}
+}
+/* téléphone couché : la scène à gauche (hauteur de l'écran), la mise à droite */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal.in-game .cg-crash > .cr-stage{min-height:0!important;height:calc(100dvh - 128px)!important;margin:0!important}
+  html:root body #casinoModal .cg-crash .cr-m{font-size:clamp(34px,15vh,64px)}
+}
+
+/* ---------- mode léger (vieux téléphones) : décor immobile ---------- */
+html.oro-lite body #casinoModal .cg-crash .cr-rays,html.oro-lite body #casinoModal .cg-crash .cr-sky,html.oro-lite body #casinoModal .cg-crash .cr-planet,
+html.oro-lite body #casinoModal .cg-crash .cr-bob,html.oro-lite body #casinoModal .cg-crash .cr-prop,html.oro-lite body #casinoModal .cg-crash .cr-flame,
+html.oro-lite body #casinoModal .cg-crash .cr-axis::before{animation:none!important}
+html.oro-lite body #casinoModal .cg-crash .cr-line{filter:none}
+html.oro-lite body #casinoModal .cg-crash .cr-rays{display:none}
+
+/* ---------- bouton du terminal : « ENCAISSER » + montant sur deux lignes (chacune sur UNE ligne) ---------- */
+html:root body #casinoModal .cg-crash .cs-go.cg-go{flex-direction:column;gap:2px;overflow:hidden}
+html:root body #casinoModal .cg-crash .cg-go .cr-b1{display:block;max-width:100%;font:inherit;line-height:1.05}
+html:root body #casinoModal .cg-crash .cg-go .cr-b2{display:none;max-width:100%;font:900 clamp(17px,5.6vw,26px)/1.05 var(--cg-font);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}
+html:root body #casinoModal .cg-crash .cg-go.two .cr-b1{font-size:clamp(13px,3.8vw,17px)}
+html:root body #casinoModal .cg-crash .cg-go.two .cr-b2{display:block}
+/* chiffres toujours de gauche à droite (arabe) ; bandeau d'historique : le plus récent reste visible */
+html:root body #casinoModal .cg-crash .cr-m,html:root body #casinoModal .cg-crash .cr-hist i,html:root body #casinoModal .cg-crash .cr-out,html:root body #casinoModal .cg-crash .cg-go .cr-b2{direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-hist{-webkit-mask-image:linear-gradient(270deg,#000 85%,transparent);mask-image:linear-gradient(270deg,#000 85%,transparent)}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-plot,html[dir="rtl"] body #casinoModal .cg-crash .cr-craft{direction:ltr}

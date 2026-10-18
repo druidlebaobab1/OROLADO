@@ -123,7 +123,8 @@ function casino_round_advance(array &$r, float $now): void {
   }
   while ($now >= (float) $r['end']) {
     $t0 = (float) $r['end'] + CASINO_ROUND_BET;
-    $r = ['i' => (int) $r['i'] + 1, 't0' => $t0, 'c' => (float) $r['nc'], 'nc' => casino_crash_point()];
+    $h = array_slice(array_merge([(float) $r['c']], (array) ($r['h'] ?? [])), 0, 24); // v2795 : derniers points d'explosion (bandeau d'historique)
+    $r = ['i' => (int) $r['i'] + 1, 't0' => $t0, 'c' => (float) $r['nc'], 'nc' => casino_crash_point(), 'h' => $h];
     $r['end'] = $t0 + casino_crash_secs((float) $r['c']) + CASINO_ROUND_SHOW;
   }
 }
@@ -141,7 +142,7 @@ function casino_round_public(string $game, float $now): array {
   if (!$r) return [];
   $crashAt = (float) $r['t0'] + casino_crash_secs((float) $r['c']);
   $phase = $now < (float) $r['t0'] ? 'bet' : ($now < $crashAt ? 'fly' : 'end');
-  $o = ['i' => (int) $r['i'], 't0' => (float) $r['t0'], 'phase' => $phase, 'next' => (float) $r['end'] + CASINO_ROUND_BET, 'bet' => CASINO_ROUND_BET];
+  $o = ['i' => (int) $r['i'], 't0' => (float) $r['t0'], 'phase' => $phase, 'next' => (float) $r['end'] + CASINO_ROUND_BET, 'bet' => CASINO_ROUND_BET, 'h' => array_values((array) ($r['h'] ?? []))]; // v2795 : historique public (tours finis)
   if ($phase === 'end') $o['c'] = (float) $r['c'];
   return $o;
 }
@@ -434,6 +435,7 @@ function casino_crash_point(): float { return min(1000.0, max(1.0, floor(CASINO_
 /** Mines : multiplicateur après $k cases sûres avec $m mines sur 25. */
 function casino_mines_mult(int $m, int $k): float {
   $x = CASINO_EDGE;
+  if ($k > 25 - $m) return 0.0; // v2795 : plus aucune case sûre (« suivante » après la dernière) : jamais de division par zéro
   for ($j = 0; $j < $k; $j++) $x *= (25 - $j) / (25 - $m - $j);
   return floor($x * 100) / 100;
 }
@@ -680,7 +682,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $n = 0; while ($n < 60 && random_int(1, 1000) > CASINO_BALLOON_POP * 1000) $n++;
       $g['pop'] = $n; $g['k'] = 0;
     } elseif ($game === 'mines') {
-      $m = max(1, min(10, (int) ($p['mines'] ?? 3)));
+      $m = max(1, min(24, (int) ($p['mines'] ?? 3))); // v2795 : 1 à 24 mines comme Spribe (même calcul ×0,94)
       $cells = range(0, 24);
       for ($i = 24; $i > 0; $i--) { $j = random_int(0, $i); [$cells[$i], $cells[$j]] = [$cells[$j], $cells[$i]]; }
       $g['m'] = $m; $g['mines'] = array_slice($cells, 0, $m); $g['open'] = [];
@@ -823,7 +825,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         if (in_array($cell, $g['mines'], true)) { $g['done'] = 1; $g['boom'] = $cell; $g['win'] = 0.0; }
         else {
           $g['open'][] = $cell;
-          if (count($g['open']) >= 25 - $g['m']) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_mines_mult($g['m'], count($g['open'])))); }
+          if (count($g['open']) >= 25 - $g['m'] || $g['stake'] * casino_mines_mult($g['m'], count($g['open'])) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_mines_mult($g['m'], count($g['open'])))); }
         }
         $st['g'][$game] = $g;
         return $g;
@@ -843,6 +845,18 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
     }
   }
   if ($game === 'hilo') {
+    // v2795 (comme Spribe Hi-Lo) : « Passer » — nouvelle carte sans pari, le multiplicateur ne bouge pas (30 fois max par partie)
+    if ($act === 'skip') {
+      $r = casino_with($file, static function (array &$st) use ($game) {
+        $g = $st['g'][$game];
+        if (!empty($g['done']) || count($g['sk'] ?? []) >= 30) return null;
+        $g['card'] = random_int(1, 13); $g['cards'][] = $g['card']; $g['sk'][] = count($g['cards']) - 1;
+        $st['g'][$game] = $g;
+        return $g;
+      });
+      if (!is_array($r)) return ['ok' => false, 'reason' => 'param'];
+      return ['ok' => true] + casino_public($game, $r, $now);
+    }
     if ($act === 'guess') {
       $hi = !empty($p['hi']);
       $r = casino_with($file, static function (array &$st) use ($game, $hi) {
@@ -996,6 +1010,7 @@ function casino_public(string $game, array $g, float $now): array {
   } else {
     $o['card'] = (int) $g['card']; $o['cards'] = $g['cards']; $o['k'] = (int) $g['k']; $o['mult'] = (float) $g['mult'];
     $o['hiMult'] = casino_hilo_mult((int) $g['card'], true); $o['loMult'] = casino_hilo_mult((int) $g['card'], false);
+    $o['sk'] = array_values($g['sk'] ?? []); // v2795 : rangs des cartes passées (« Passer »)
   }
   return $o;
 }

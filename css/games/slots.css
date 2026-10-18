@@ -1,0 +1,73 @@
+/* v2795 — Lucky 777 (classic 3-reel slot). Every rule is prefixed to win over the old app.css layers. */
+html:root body #casinoModal .cg-slots .cg-stage{display:flex;flex-direction:column;gap:6px;padding:8px;min-height:0}
+html:root body #casinoModal .cg-slots .sl-defs{position:absolute;width:0;height:0;overflow:hidden}
+html:root body #casinoModal .cg-slots .sl-host{position:relative;flex:1 1 auto;min-height:0}
+html:root body #casinoModal .cg-slots .sl-mach{--u:3px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;
+  padding:calc(var(--u)*2.4) calc(var(--u)*3) calc(var(--u)*2);border-radius:calc(var(--u)*6);box-sizing:border-box;
+  background:linear-gradient(180deg,#3B1C7A 0%,#22104F 38%,#170A38 100%);
+  box-shadow:inset 0 0 0 calc(var(--u)*.9) #F5C451,inset 0 0 0 calc(var(--u)*1.6) #7A4A06,inset 0 calc(var(--u)*1.4) calc(var(--u)*3) rgba(255,255,255,.18),0 calc(var(--u)*3) calc(var(--u)*8) -2px rgba(0,0,0,.75),0 0 calc(var(--u)*10) -2px rgba(168,85,247,.45)}
+/* enseigne lumineuse */
+html:root body #casinoModal .cg-slots .sl-top{position:relative;height:calc(var(--u)*15);flex:none;display:grid;place-items:center;margin-bottom:calc(var(--u)*2);border-radius:calc(var(--u)*4);
+  background:radial-gradient(80% 120% at 50% 0%,#7C2D12 0%,#450A0A 70%);box-shadow:inset 0 0 0 calc(var(--u)*.6) #FCD34D,inset 0 -6px 14px rgba(0,0,0,.45)}
+html:root body #casinoModal .cg-slots .sl-top b{position:relative;z-index:1;font:900 calc(var(--u)*8.4)/1 var(--cg-font);letter-spacing:.06em;white-space:nowrap;
+  color:#FFE9A8;text-shadow:0 0 calc(var(--u)*2) rgba(251,191,36,.9),0 calc(var(--u)*.5) 0 #92400E}
+html:root body #casinoModal .cg-slots .sl-top b em{font-style:normal;color:#FF5A5A;text-shadow:0 0 calc(var(--u)*2) rgba(255,60,60,.9),0 calc(var(--u)*.5) 0 #7F1D1D}
+html:root body #casinoModal .cg-slots .sl-bulbs{position:absolute;inset:calc(var(--u)*1.3);display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+html:root body #casinoModal .cg-slots .sl-bulbs i{width:calc(var(--u)*1.6);height:calc(var(--u)*1.6);border-radius:50%;background:#FFF3C4;box-shadow:0 0 calc(var(--u)*1.4) #FBBF24;
+  animation:slBulb 1.2s steps(1) infinite;animation-delay:calc(var(--k) * -.17s)}
+@keyframes slBulb{0%{opacity:1}50%{opacity:.25}}
+/* fenêtre des rouleaux */
+html:root body #casinoModal .cg-slots .sl-win{position:relative;flex:1 1 auto;min-height:0;border-radius:calc(var(--u)*3.5);padding:calc(var(--u)*1.2);
+  background:linear-gradient(180deg,#0B0620,#1A0F3D);box-shadow:inset 0 0 0 calc(var(--u)*.7) #B7791F,0 0 0 calc(var(--u)*.6) #2E1065}
+html:root body #casinoModal .cg-slots .sl-reels{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*1.2);height:100%}
+html:root body #casinoModal .cg-slots .sl-reel{position:relative;overflow:hidden;border-radius:calc(var(--u)*2.2);
+  background:linear-gradient(90deg,#CFC7E8 0%,#FFFFFF 22%,#FFFFFF 78%,#CFC7E8 100%)}
+html:root body #casinoModal .cg-slots .sl-reel.thud .sl-strip{animation:none}
+html:root body #casinoModal .cg-slots .sl-strip{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;will-change:transform}
+html:root body #casinoModal .cg-slots .sl-c{flex:1 1 0;min-height:0;display:grid;place-items:center;font-style:normal;position:relative}
+html:root body #casinoModal .cg-slots .sl-c .sy{width:76%;height:76%;display:block;filter:drop-shadow(0 calc(var(--u)*.5) calc(var(--u)*.4) rgba(40,20,80,.35))}
+html:root body #casinoModal .cg-slots .sl-strip.blur .sy{filter:url(#slMb)}
+html:root body #casinoModal .cg-slots .sl-strip.blur{opacity:.92}
+/* ombre du haut et du bas (effet cylindre) */
+html:root body #casinoModal .cg-slots .sl-shade{position:absolute;inset:calc(var(--u)*1.2);pointer-events:none;border-radius:calc(var(--u)*2.2);
+  background:linear-gradient(180deg,rgba(20,8,50,.62) 0%,rgba(20,8,50,0) 26%,rgba(20,8,50,0) 74%,rgba(20,8,50,.62) 100%)}
+/* ligne gagnante (rangée du milieu) */
+html:root body #casinoModal .cg-slots .sl-line{position:absolute;left:calc(var(--u)*.4);right:calc(var(--u)*.4);top:50%;height:calc(var(--u)*.7);margin-top:calc(var(--u)*-.35);pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(251,191,36,.55) 8%,rgba(251,191,36,.55) 92%,transparent);opacity:.55;transition:opacity .25s}
+html:root body #casinoModal .cg-slots .sl-arr{position:absolute;top:50%;width:0;height:0;margin-top:calc(var(--u)*-2.4);border:calc(var(--u)*2.4) solid transparent;pointer-events:none}
+html:root body #casinoModal .cg-slots .sl-arr.a1{left:calc(var(--u)*-2.6);border-left-color:#FBBF24}
+html:root body #casinoModal .cg-slots .sl-arr.a2{right:calc(var(--u)*-2.6);border-right-color:#FBBF24}
+html:root body #casinoModal .cg-slots .sl-foot{flex:none;height:calc(var(--u)*3.6);margin-top:calc(var(--u)*1.6);display:flex;justify-content:center;gap:calc(var(--u)*4);align-items:center}
+html:root body #casinoModal .cg-slots .sl-foot i{width:calc(var(--u)*9);height:calc(var(--u)*1.6);border-radius:9px;background:linear-gradient(90deg,#B7791F,#FDE68A,#B7791F);opacity:.7}
+/* gain */
+html:root body #casinoModal .cg-slots .sl-mach.won .sl-line{opacity:1;background:linear-gradient(90deg,transparent,#FDE68A 6%,#FBBF24 50%,#FDE68A 94%,transparent);box-shadow:0 0 calc(var(--u)*2.5) #FBBF24}
+html:root body #casinoModal .cg-slots .sl-c.win::before{content:"";position:absolute;inset:6%;border-radius:calc(var(--u)*2);background:radial-gradient(circle,rgba(251,191,36,.55),rgba(251,191,36,0) 70%);
+  box-shadow:inset 0 0 0 calc(var(--u)*.6) #F59E0B;animation:slGlow .7s ease-in-out infinite alternate}
+html:root body #casinoModal .cg-slots .sl-c.win .sy{animation:slPop .7s ease-in-out infinite alternate;position:relative}
+@keyframes slPop{from{transform:scale(1)}to{transform:scale(1.13)}}
+@keyframes slGlow{from{opacity:.55}to{opacity:1}}
+html:root body #casinoModal .cg-slots .sl-mach.big{animation:slShake .5s ease-in-out 2}
+@keyframes slShake{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(calc(-50% - 3px),-50%) rotate(-.6deg)}75%{transform:translate(calc(-50% + 3px),-50%) rotate(.6deg)}}
+html:root body #casinoModal .cg-slots .sl-mach.big .sl-bulbs i{animation-duration:.3s}
+html:root body #casinoModal .cg-slots .sl-coins{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+html:root body #casinoModal .cg-slots .sl-coins i{position:absolute;top:-24px;width:18px;height:18px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#FFF6C8,#FBBF24 55%,#B7791F);box-shadow:inset 0 0 0 2px #D97706;
+  animation:slCoin var(--d) cubic-bezier(.4,.1,.8,.6) var(--w) forwards;opacity:0}
+@keyframes slCoin{0%{opacity:1;transform:translateY(0) rotateY(0) rotate(0)}100%{opacity:1;transform:translateY(110vh) rotateY(1080deg) rotate(var(--r))}}
+/* stop rapide : le bouton devient rouge avec un carré */
+html:root body #casinoModal .cg-slots .cs-go .sl-sq{width:30px;height:30px;fill:#fff}
+/* tableau des gains */
+html:root body #casinoModal .cg-slots .sl-pay{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-slots .sl-p{min-width:0;height:30px;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 6px;border-radius:10px;
+  background:rgba(8,4,26,.55);box-shadow:inset 0 0 0 1px var(--cg-line);transition:background .2s,box-shadow .2s}
+html:root body #casinoModal .cg-slots .sl-p > i{display:flex;flex:none;font-style:normal}
+html:root body #casinoModal .cg-slots .sl-p .sy{width:16px;height:16px;display:block;margin:0 -1px}
+html:root body #casinoModal .cg-slots .sl-p b{flex:0 1 auto;font:900 13px/1 var(--cg-font);color:var(--cg-gold)}
+html:root body #casinoModal .cg-slots .sl-p.on{background:linear-gradient(180deg,rgba(251,191,36,.42),rgba(245,158,11,.2));box-shadow:inset 0 0 0 2px var(--cg-gold),0 0 14px -2px rgba(251,191,36,.8)}
+html:root body #casinoModal .cg-slots .sl-p.on b{color:#fff}
+@media (min-aspect-ratio:1/1){html:root body #casinoModal .cg-slots .sl-pay{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media (max-height:640px){html:root body #casinoModal .cg-slots .sl-p{height:26px}html:root body #casinoModal .cg-slots .sl-p .sy{width:13px;height:13px}}
+html.oro-lite body #casinoModal .cg-slots .sl-bulbs i,html.oro-lite body #casinoModal .cg-slots .sl-c.win .sy,html.oro-lite body #casinoModal .cg-slots .sl-mach.big{animation:none}
+/* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-slots > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}
+@media (min-width:900px) and (min-height:700px){html:root body #casinoModal .cg-slots .sl-p{height:36px}html:root body #casinoModal .cg-slots .sl-p .sy{width:20px;height:20px}html:root body #casinoModal .cg-slots .sl-p b{font-size:15px}}

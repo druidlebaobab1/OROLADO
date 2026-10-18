@@ -1,0 +1,42 @@
+/* v2795 — Treasure (pick one of three chests on a space island). */
+html:root body #casinoModal .cg-chests .cg-stage{display:flex;flex-direction:column;gap:6px;padding:8px;min-height:0;
+  background:radial-gradient(60% 40% at 50% 52%,rgba(139,92,246,.35),transparent 70%),radial-gradient(140% 50% at 50% 118%,#3B1C7A 0%,#22104F 45%,transparent 46%),
+    radial-gradient(70% 30% at 20% 20%,rgba(236,72,153,.18),transparent 70%),linear-gradient(180deg,#1B1442,#0E0A26)}
+html:root body #casinoModal .cg-chests .ch-top{flex:none;display:flex;align-items:center;gap:8px;min-width:0}
+html:root body #casinoModal .cg-chests .ch-hist{flex:1 1 auto;min-width:0}
+html:root body #casinoModal .cg-chests .ch-x{flex:none;padding:4px 12px;border-radius:999px;font:900 14px/1.2 var(--cg-font);color:#3B2300;
+  background:linear-gradient(180deg,#FDE68A,#F59E0B);box-shadow:0 0 14px -3px rgba(251,191,36,.8)}
+html:root body #casinoModal .cg-chests .ch-scene{position:relative;flex:1 1 auto;min-height:0}
+html:root body #casinoModal .cg-chests .ch-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+html:root body #casinoModal .cg-chests .ch-isl{animation:chFloat 5s ease-in-out infinite}
+@keyframes chFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+html:root body #casinoModal .cg-chests .ch-c{cursor:pointer;outline:none}
+html:root body #casinoModal .cg-chests .ch-c .ch-in{transform-box:fill-box;transform-origin:50% 100%;transition:transform .25s}
+html:root body #casinoModal .cg-chests .ch-ring{fill:none;stroke:#FBBF24;stroke-width:3;opacity:0;transition:opacity .25s}
+html:root body #casinoModal .cg-chests .ch-c.sel .ch-ring{opacity:1;filter:drop-shadow(0 0 6px #FBBF24)}
+html:root body #casinoModal .cg-chests .ch-c.sel .ch-in{transform:scale(1.07)}
+html:root body #casinoModal .cg-chests .ch-c.hop .ch-in{animation:chHop .35s ease-out}
+@keyframes chHop{0%{transform:scale(1.07) translateY(0)}45%{transform:scale(1.07) translateY(-8px)}100%{transform:scale(1.07) translateY(0)}}
+html:root body #casinoModal .cg-chests .ch-c.shake .ch-in{animation:chShake .14s linear infinite}
+@keyframes chShake{0%,100%{transform:scale(1.07) rotate(0)}25%{transform:scale(1.07) rotate(-4deg)}75%{transform:scale(1.07) rotate(4deg)}}
+html:root body #casinoModal .cg-chests .ch-lid{transform-box:fill-box;transform-origin:50% 100%;transition:transform .16s ease-in .0s}
+html:root body #casinoModal .cg-chests .ch-c.open .ch-lid{transform:scaleY(0)}
+html:root body #casinoModal .cg-chests .ch-olid{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);transition:transform .14s ease-in}
+html:root body #casinoModal .cg-chests .ch-c.open .ch-olid{transform:scaleY(1);transition:transform .38s cubic-bezier(.3,1.6,.5,1) .14s}
+html:root body #casinoModal .cg-chests .ch-gold,html:root body #casinoModal .cg-chests .ch-dust,html:root body #casinoModal .cg-chests .ch-rays{opacity:0;transition:opacity .35s}
+html:root body #casinoModal .cg-chests .ch-c.open.gold .ch-gold{opacity:1}
+html:root body #casinoModal .cg-chests .ch-c.open.gold.mine .ch-rays{opacity:1;animation:chRays 1.6s ease-in-out infinite alternate}
+@keyframes chRays{from{opacity:.55}to{opacity:1}}
+html:root body #casinoModal .cg-chests .ch-c.open.empty.mine .ch-dust{opacity:1;animation:chDust 1s ease-out forwards}
+@keyframes chDust{from{transform:translateY(0);opacity:1}to{transform:translateY(-14px);opacity:0}}
+html:root body #casinoModal .cg-chests .ch-c.dim .ch-in{filter:brightness(.6) saturate(.7);transform:scale(.96)}
+html:root body #casinoModal .cg-chests .ch-c.dim.gold .ch-in{filter:brightness(.9)}
+html:root body #casinoModal .cg-chests .ch-fx{position:absolute;inset:0;pointer-events:none;overflow:visible}
+html:root body #casinoModal .cg-chests .ch-fx i{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#FFF6C8,#FBBF24 55%,#B45309);animation:chCoin var(--t) cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes chCoin{0%{transform:translate(0,0) scale(.4);opacity:1}70%{opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1);opacity:0}}
+html:root body #casinoModal .cg-chests .ch-st{flex:none;display:flex;justify-content:center;min-width:0;min-height:22px}
+html:root body #casinoModal .cg-chests .ch-st b{display:block;max-width:100%;font:800 14px/1.4 var(--cg-font);color:#FDE68A;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+html.oro-lite body #casinoModal .cg-chests .ch-isl,html.oro-lite body #casinoModal .cg-chests .ch-rays{animation:none}
+/* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-chests > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}
