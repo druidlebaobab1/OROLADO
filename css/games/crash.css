@@ -135,3 +135,6 @@ html:root body #casinoModal .cg-crash .cg-go.two .cr-b2{display:block}
 html:root body #casinoModal .cg-crash .cr-m,html:root body #casinoModal .cg-crash .cr-hist i,html:root body #casinoModal .cg-crash .cr-out,html:root body #casinoModal .cg-crash .cg-go .cr-b2{direction:ltr;unicode-bidi:isolate}
 html[dir="rtl"] body #casinoModal .cg-crash .cr-hist{-webkit-mask-image:linear-gradient(270deg,#000 85%,transparent);mask-image:linear-gradient(270deg,#000 85%,transparent)}
 html[dir="rtl"] body #casinoModal .cg-crash .cr-plot,html[dir="rtl"] body #casinoModal .cg-crash .cr-craft{direction:ltr}
+/* v2802 (propriétaire) : la case de l'encaissement auto est toujours lisible (avant : grisée → on croyait « bloqué sur ×2 ») */
+html:root body #casinoModal .cg-crash .cr-tg{opacity:1!important}
+html:root body #casinoModal .cg-crash .cr-tg:not(.on) input{color:rgba(255,255,255,.7)!important}

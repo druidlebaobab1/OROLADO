@@ -110,8 +110,11 @@
         if (me && !me.done) return; // locked while a bet is open (the server keeps the target given at bet time)
         autoOn = !autoOn; this.classList.toggle('on', autoOn); $('crTgW').classList.toggle('on', autoOn);
       });
+      // v2802 (propriétaire) : le joueur écrit LE multiplicateur qu'il veut (×1,01 à ×1000) ; toucher la case active l'auto
+      var turnOn = function () { if ((me && !me.done) || autoOn) return; autoOn = true; $('crAuto').classList.add('on'); $('crTgW').classList.add('on'); };
       tg.addEventListener('change', function () { setAuto(tg.value); });
-      tg.addEventListener('focus', function () { try { tg.select(); } catch (e) { /* ignore */ } });
+      tg.addEventListener('input', function () { var v = Number(String(tg.value).replace(',', '.')); if (v >= 1.01 && v <= 1000) autoVal = Math.round(v * 100) / 100; });
+      tg.addEventListener('focus', function () { turnOn(); try { tg.select(); } catch (e) { /* ignore */ } });
 
       /* ---- scene geometry ---- */
       var measure = function () {
@@ -241,7 +244,7 @@
           var c = await K.multi(game, 'cash');
           if (c) { if (pre && c.done && Number(c.out) === 1) cancelRef = c.ref; me = c; showMine(c); }
         } else {
-          setAuto(tg.value);
+          setAuto(tg.value); // la valeur écrite, même sans avoir quitté la case
           var r = await K.multi(game, 'start', autoOn ? { auto: autoVal } : {});
           if (r) { me = r; if (r.done) showMine(r); else K.afterPlay(r); }
         }
