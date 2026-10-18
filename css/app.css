@@ -12633,3 +12633,17 @@ html:root body #casinoModal .lv-track .lv-horse{top:0!important;bottom:0!importa
 html:root body #casinoModal .lv-track{overflow:hidden}
 html:root body #casinoModal .lv-track .lv-lane{min-height:0!important;flex:1 1 0!important}
 html:root body #casinoModal .lv-track .lv-no{font-size:max(7px,min(9px,1.4vh))}
+
+/* ================= v2794 (propriétaire) : NOTIFICATION DES JEUX — montant seul, vert (gagné) / rouge (+$ 0), plus de fond noir ================= */
+html:root body #casinoModal .cs-toast.cs-toast.cs-toast{gap:7px!important;padding:7px 16px!important;border-radius:14px!important;min-width:0!important;max-width:none!important;
+  font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html:root body #casinoModal .cs-toast.cs-toast.cs-toast b{font-size:19px!important;font-weight:900!important;letter-spacing:.01em;white-space:nowrap;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+html:root body #casinoModal .cs-toast.cs-toast.cs-toast.win{padding-left:8px!important;background:linear-gradient(180deg,#34D399,#059669)!important;
+  box-shadow:0 0 22px rgba(52,211,153,.55),0 6px 16px -6px rgba(5,150,105,.9),inset 0 1px 0 rgba(255,255,255,.45),inset 0 0 0 1px rgba(255,255,255,.25)!important}
+html:root body #casinoModal .cs-toast.cs-toast.cs-toast.lose{background:linear-gradient(180deg,#FB7185,#E11D48)!important;
+  box-shadow:0 0 18px rgba(244,63,94,.45),0 6px 16px -6px rgba(190,18,60,.9),inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 0 1px rgba(255,255,255,.2)!important}
+html:root body #casinoModal .cs-toast .ct-coin{width:24px;height:24px;flex:none;border-radius:50%;display:block;
+  background:radial-gradient(circle at 35% 30%,#FFFBEB 0,#FDE68A 28%,#F59E0B 70%,#B45309);box-shadow:0 0 0 2px rgba(255,255,255,.55),0 0 10px rgba(253,224,71,.8)}
+html:root body #casinoModal .cs-toast.win.in{animation:csWinPop .45s cubic-bezier(.2,1.5,.4,1)}
+@keyframes csWinPop{0%{transform:translate(-50%,-14px) scale(.7)}100%{transform:translate(-50%,0) scale(1)}}
+html.oro-lite body #casinoModal .cs-toast.win.in{animation:none}
