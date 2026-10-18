@@ -17,7 +17,7 @@
       takeoff: 'Départ dans {s} s — mise maintenant', placed: 'Pari placé ✓ attends le départ', betNext: 'Miser (prochain tour)', cancel: 'Pari annulé : mise rendue', cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
       heads: 'Pile', tails: 'Face', rock: 'Pierre', paper: 'Feuille', scissors: 'Ciseaux', you: 'Toi', rpsRule: 'Gagné ×1,91 · égalité = mise rendue', ddRule: 'Le plus grand dé gagne ×1,92 · égalité = mise rendue', tieBack: 'égalité, mise rendue', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
-      lotPick: 'Choisis 1 à 10 numéros', lotRand: 'Hasard', lotClear: 'Effacer', lotHits: '{h} bon(s) sur {k}', lotPay: 'Bons numéros', lotDraw: 'Tirage', pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
+      skClear: 'Effacer la mise', lotPick: 'Choisis 1 à 10 numéros', lotRand: 'Hasard', lotClear: 'Effacer', lotHits: '{h} bon(s) sur {k}', lotPay: 'Bons numéros', lotDraw: 'Tirage', pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
       shoot: 'Choisis où tirer dans le but', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
     en: { title: 'Casino', sub: '18 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
       win: 'You win! +${w}', lose: 'Lost', tryNote: 'Create your account and top up to play for real money, from $0.10.', signup: 'Create my account', gamesTab: 'Games', realAcc: 'Real account', bet: 'Bet', gotIt: 'Got it', revealAll: 'Reveal all', dragonN: 'Dragon', tigerN: 'Tiger', tie: 'Tie', player: 'Player', banker: 'Banker', small: 'Small', big: 'Big', triple: 'triple', pickChest: 'Pick a chest', pump: 'Pump', pumpFirst: 'Pump the balloon', level: 'Rotten apples',
@@ -31,7 +31,7 @@
       takeoff: 'Take-off in {s} s — bet now', placed: 'Bet placed ✓ wait for take-off', betNext: 'Bet (next round)', cancel: 'Bet cancelled: stake returned', cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
       heads: 'Heads', tails: 'Tails', rock: 'Rock', paper: 'Paper', scissors: 'Scissors', you: 'You', rpsRule: 'Win ×1.91 · tie = stake back', ddRule: 'Higher die wins ×1.92 · tie = stake back', tieBack: 'tie, stake back', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
-      lotPick: 'Pick 1 to 10 numbers', lotRand: 'Random', lotClear: 'Clear', lotHits: '{h} hit(s) out of {k}', lotPay: 'Hits', lotDraw: 'Draw', pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
+      skClear: 'Clear stake', lotPick: 'Pick 1 to 10 numbers', lotRand: 'Random', lotClear: 'Clear', lotHits: '{h} hit(s) out of {k}', lotPay: 'Hits', lotDraw: 'Draw', pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
       shoot: 'Pick where to shoot in the goal', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Bets', sportsSoon: 'Big matches are coming here soon.' }
   };
   T.zh = Object.assign({}, T.en, { lotPick: '选择 1 到 10 个号码', lotRand: '随机', lotClear: '清除', lotHits: '{k} 中 {h}', lotPay: '命中', lotDraw: '开奖', title: '娱乐场', sub: '18 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
@@ -258,19 +258,32 @@
   function modeSwitch() { return ''; }
   function bindMode() { /* plus de choix réel / démo */ }
   /* panneau de mise compact, en bas de l'écran */
+  // v2791 (propriétaire) : TERMINAL DE MISE simple — case du montant plus courte ; ✕ efface (retour à 0,10 $), ½, ×2 et
+  // « +1 $ » toujours visibles ; dessous, des « + » qui AJOUTENT (+0,10 · +0,50 · +1 · +5 · +10 · +50). Après ✕, le 1er « + » remplace 0,10.
   function stakePanel(btnLabel, extra) {
     var x = X();
     return '<div class="cs-panel">' + (extra ? '<div class="cs-extra">' + extra + '</div>' : '') +
-      '<div class="cs-stake"><button type="button" data-s="half">½</button><input id="csStake" inputmode="decimal" value="' + m2(S.stake) + '" aria-label="' + esc(x.stake) + '"><button type="button" data-s="dbl">×2</button></div>' +
-      '<div class="cs-chips">' + [0.1, 0.5, 1, 5, 10, 50].map(function (v) { return '<button type="button" data-v="' + v + '">' + (v < 1 ? m2(v) : v) + ' $</button>'; }).join('') + '</div>' +
+      '<div class="cs-stake sk2"><button type="button" data-s="clr" class="sk-clr" aria-label="' + esc(x.skClear || 'Clear') + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>' +
+        '<button type="button" data-s="half">½</button><input id="csStake" inputmode="decimal" value="' + m2(S.stake) + '" aria-label="' + esc(x.stake) + '"><button type="button" data-s="dbl">×2</button>' +
+        '<button type="button" data-s="p1" class="sk-p1">+1 $</button></div>' +
+      '<div class="cs-chips sk-add">' + [0.1, 0.5, 1, 5, 10, 50].map(function (v) { return '<button type="button" data-v="' + v + '">+' + (v < 1 ? m2(v).replace('.', dec()) : v) + ' $</button>'; }).join('') + '</div>' +
       '<button type="button" class="cs-go" id="csGo">' + esc(btnLabel || x.bet) + '</button></div>';
   }
+  function dec() { return ['en', 'zh', 'hi', 'ar'].indexOf((document.documentElement.lang || 'fr').slice(0, 2)) >= 0 ? '.' : ','; }
   function bindStake(box) {
-    var inp = $('csStake');
+    var inp = $('csStake'), fresh = S.stake <= 0.1;
     var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); box.dispatchEvent(new Event('stake')); };
-    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
-    box.querySelectorAll('[data-s]').forEach(function (b) { b.addEventListener('click', function () { set(b.getAttribute('data-s') === 'half' ? S.stake / 2 : S.stake * 2); }); });
-    box.querySelectorAll('.cs-chips [data-v]').forEach(function (b) { b.addEventListener('click', function () { set(+b.getAttribute('data-v')); }); });
+    var add = function (v) { set(fresh ? v : S.stake + v); fresh = false; };
+    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); fresh = false; });
+    box.querySelectorAll('[data-s]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-s');
+        if (k === 'clr') { set(0.1); fresh = true; return; }
+        if (k === 'p1') { add(1); return; }
+        set(k === 'half' ? S.stake / 2 : S.stake * 2); fresh = false;
+      });
+    });
+    box.querySelectorAll('.cs-chips.sk-add [data-v]').forEach(function (b) { b.addEventListener('click', function () { add(+b.getAttribute('data-v')); }); });
   }
   function go(k) {
     stopAll();
