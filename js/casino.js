@@ -263,7 +263,7 @@
   /* v2795 (propriétaire) — TERMINAL DE MISE comme les grands jeux (Aviator / JetX) : à gauche le montant avec « − » et « + »
      (petite croix DANS la case pour revenir à 0,10 $) et 4 montants rapides ; à droite le GRAND bouton de mise.
      Aucun mot dans le terminal. Les textes du bouton s'adaptent seuls à la place (fit). */
-  var QUICK = [0.1, 1, 5, 10]; // v2802 (propriétaire) : « 0,10 » remet la mise au minimum (plus de petite croix, elle se confondait avec le +)
+  var QUICK = [0.5, 1, 5, 10];
   function stakePanel(btnLabel, extra) {
     var x = X();
     return '<div class="cs-panel cg-panel">' + (extra ? '<div class="cs-extra">' + extra + '</div>' : '') +
@@ -315,7 +315,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2802';
+  var MOD_V = '2803';
   var modState = {};
   function loadMod(k) {
     var f = String(MODS[k] || k).replace(/[^a-z0-9_-]/gi, '');
