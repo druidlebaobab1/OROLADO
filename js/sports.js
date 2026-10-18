@@ -194,8 +194,8 @@
     return s.replace(/\s/g, ' ');
   }
   // une longue phrase → 2 (ou 3) lignes équilibrées, chacune sur UNE ligne élastique (jamais de retour à la ligne automatique)
-  function split2(t) {
-    t = String(t || '').trim(); if (t.length < 26) return [t];
+  function split2(t, min) {
+    t = String(t || '').trim(); if (t.length < (min || 26)) return [t];
     var mid = t.length / 2, best = -1, bd = 1e9;
     for (var i = 1; i < t.length - 1; i++) {
       var c = t.charAt(i), pen;
@@ -207,7 +207,7 @@
     if (best < 0) { if (/\s/.test(t)) return [t]; best = Math.round(mid); }
     return [t.slice(0, best).trim(), t.slice(best).trim()].filter(Boolean);
   }
-  function lines(t, max) { var out = []; split2(t).forEach(function (p) { if (p.length > (max || 34)) out = out.concat(split2(p)); else out.push(p); }); return out; }
+  function lines(t, max) { var mn = max && max < 26 ? max : 26, out = []; split2(t, mn).forEach(function (p) { if (p.length > (max || 34)) out = out.concat(split2(p, mn)); else out.push(p); }); return out; }
   function linesHtml(t, tag, max, auto) { return lines(t, max).map(function (p) { return '<' + tag + ' class="fit"' + (auto ? ' dir="auto"' : '') + '>' + esc(p) + '</' + tag + '>'; }).join(''); }
   // textes élastiques (même règle que le casino : D6.CasinoKit.fitEl)
   function fitEl(el) {
@@ -294,7 +294,7 @@
     var i = b.querySelector('.sp2-badge'), n = openCount();
     if (!n) { if (i) i.remove(); return; }
     if (!i) { i = document.createElement('i'); i.className = 'sp2-badge'; b.appendChild(i); }
-    i.textContent = String(n);
+    i.textContent = String(n); fitEl(b.querySelector('.fit'));
   }
   function layoutVars() {
     // les onglets restent collés sous l'en-tête fixe (sa hauteur change : visiteur / connecté) ; bords alignés sur la marge de la page
@@ -321,7 +321,7 @@
     if (!e.open) return '<em class="sp2-chip shut">' + IC.lock + '<span class="fit">' + esc(x.closed) + '</span></em>';
     var s = e.start - nowS();
     if (s < 86400) return '<em class="sp2-chip cd' + (s < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(s) + '</span></em>';
-    return '<em class="sp2-chip">' + IC.cal + '<span class="fit">' + esc(when(e.start)) + '</span></em>';
+    return '<em class="sp2-chip">' + IC.cal + '<span class="fit">' + esc(when2(e.start)) + '</span></em>';
   }
   function card(e) {
     var x = XX(), q = !!EVK[e.sport], tm = q ? null : teams(e.title), settled = e.status === 'settled', three = e.opts.length === 3;
@@ -334,18 +334,20 @@
     }).join('');
     var head;
     if (tm) {
-      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="fit" dir="auto">' + esc(tm[0]) + '</span></div>' +
+      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="sp2-tn">' + linesHtml(tm[0], 'span', 13, true) + '</span></div>' +
         '<div class="sp2-mid"><b class="fit">' + esc(hm(e.start)) + '</b><small class="fit">' + esc(dayLabel(e.start)) + '</small></div>' +
-        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="fit" dir="auto">' + esc(tm[1]) + '</span></div></div>';
+        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="sp2-tn">' + linesHtml(tm[1], 'span', 13, true) + '</span></div></div>';
     } else {
       var img = q ? logoHtml((e.logos || [])[0] || '', 'sp2-qimg') : '';
       if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';
       head = '<div class="sp2-q">' + img + '<div class="sp2-qt">' + linesHtml(trT(e), 'b', 40, true) + '</div></div>';
     }
     var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e);
+    // « Ligue 1 · nul = remboursé » : le nom de la ligue en haut, la petite règle (« nul = remboursé ») en dessous des équipes
+    var lgAll = e.league ? trW(e.league) : '', cut = lgAll.indexOf(' · '), lgName = cut > 0 ? lgAll.slice(0, cut) : lgAll, note = cut > 0 ? lgAll.slice(cut + 3) : '';
     return '<article class="sp2-ev' + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
-      '<div class="sp2-meta"><span class="sp2-lg">' + sico(qKind(e)) + '<span class="fit">' + esc((x.sport[qKind(e)] || x.sport.autre) + (e.league ? ' · ' + trW(e.league) : '')) + '</span></span>' + chip + '</div>' +
-      head + '<div class="sp2-odds n' + e.opts.length + '">' + opts + '</div></article>';
+      '<div class="sp2-meta"><span class="sp2-lg">' + sico(qKind(e)) + '<span class="fit">' + esc(lgName || (x.sport[qKind(e)] || x.sport.autre)) + '</span></span>' + chip + '</div>' +
+      head + (note ? '<p class="sp2-note"><span class="fit">' + esc(note) + '</span></p>' : '') + '<div class="sp2-odds n' + e.opts.length + '">' + opts + '</div></article>';
   }
   function renderList() {
     var x = XX();
@@ -427,7 +429,7 @@
       else if (e.status !== 'settled') right = '<span class="sp2-cd gone"><span class="fit">' + esc(x.inPlay) + '</span></span>';
     }
     var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
-    return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(e ? trT(e) : s.t) + '</small><b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
+    return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
   function receipts(bets) {
     var x = XX();

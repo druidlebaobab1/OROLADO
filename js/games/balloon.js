@@ -33,7 +33,7 @@
     '<rect x="28" y="22" width="24" height="30" rx="5" fill="#6D5BD0"/><rect x="28" y="22" width="9" height="30" rx="4" fill="#fff" opacity=".18"/><rect x="18" y="50" width="44" height="8" rx="4" fill="#3B2F7A"/><path d="M28 30h24M28 38h24" stroke="#4C3D9E" stroke-width="2"/></svg>';
 
   K.register('balloon', function (box) {
-    var l = L(), g = null, busy = false, holding = false, hist = [];
+    var l = L(), g = null, busy = false, holding = false, wantCash = false, hist = [];
     try { hist = JSON.parse(localStorage.getItem('cg_balloon_h') || '[]').slice(0, 12); } catch (e) { hist = []; }
     box.classList.add('cg-game', 'cg-balloon');
     var shards = ''; for (var i = 0; i < 10; i++) shards += '<i style="--a:' + (i * 36) + 'deg"></i>';
@@ -97,7 +97,7 @@
       var r = await K.multi('balloon', 'start');
       busy = false; if (btn) btn.disabled = false;
       if (!r || !box.isConnected) return false;
-      ball.classList.remove('pop'); $('blBurst').classList.remove('go');
+      ball.classList.remove('pop'); $('blBurst').classList.remove('go'); wantCash = false;
       paint(r);
       return live();
     }
@@ -109,6 +109,7 @@
       sky.classList.remove('pumping');
       if (!r) { holding = false; info(); return false; }
       paint(r, true);
+      if (wantCash && live()) { await cash(); return false; }
       return live();
     }
     async function hold() {
@@ -131,14 +132,16 @@
     pumpB.addEventListener('keydown', function (e) { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); hold(); } });
     pumpB.addEventListener('keyup', function (e) { if (e.key === ' ' || e.key === 'Enter') release(); });
     pumpB.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-    if (btn) btn.addEventListener('click', async function () {
+    async function cash() {
+      wantCash = false; holding = false;
+      if (!live() || !g.k) return;
+      busy = true; var c = await K.multi('balloon', 'cash'); busy = false;
+      if (c && box.isConnected) paint(c);
+    }
+    if (btn) btn.addEventListener('click', function () {
+      if (live() && busy) { if (g.k || holding) { wantCash = true; holding = false; } return; } // un souffle est en route : on encaisse juste après
       if (busy) return;
-      if (live()) {
-        if (!g.k) return;
-        holding = false; busy = true; var c = await K.multi('balloon', 'cash'); busy = false;
-        if (c && box.isConnected) paint(c); return;
-      }
-      start();
+      if (live()) cash(); else start();
     });
     paintHist(); grow(0); info(); setBtn(l.bet);
     K.multi('balloon', 'state', null, true).then(function (r) { if (r && !r.done && box.isConnected) paint(r); });

@@ -74,6 +74,7 @@ html:root body #casinoModal .tb-stage .tb-spot.win::after{opacity:1;animation:tb
 html:root body #casinoModal .tb-stage .tb-spot > b{display:block;width:100%;font:900 14px/1.2 var(--cg-font);letter-spacing:.06em;text-transform:uppercase;text-align:center}
 html:root body #casinoModal .tb-stage .tb-spot > small{display:block;width:100%;font:800 11px/1.2 var(--cg-font);color:#FDE68A;text-align:center}
 html:root body #casinoModal .tb-stage .tb-felt.busy .tb-spot{cursor:default}
+html:root body #casinoModal .tb-stage .tb-spot > small,html:root body #casinoModal .tb-stage .tb-chip b,html:root body #casinoModal .tb-stage .tb-band,html:root body #casinoModal .tb-stage .tb-bub{direction:ltr;unicode-bidi:isolate}
 /* jeton */
 html:root body #casinoModal .tb-stage .tb-chip{--ch:22px;position:absolute;left:50%;bottom:4px;width:var(--ch);height:var(--ch);margin-left:calc(var(--ch)*-.5);border-radius:50%;display:grid;place-items:center;z-index:2;
   background:repeating-conic-gradient(#FFF7E0 0 14deg,#7C3AED 14deg 45deg);box-shadow:0 2px 6px rgba(0,0,0,.55);transition:transform .35s,opacity .35s}
@@ -115,19 +116,23 @@ html:root body #casinoModal .tb-stage.tb-sicbo .tb-spot{flex:1 1 0}
 @supports (container-type:size){
   html:root body #casinoModal .tb-stage .tb-felt{container-type:size}
   html:root body #casinoModal .tb-stage .tb-deal,html:root body #casinoModal .tb-stage .tb-sb{container-type:size}
-  html:root body #casinoModal .tb-stage .tb-deal{--cw:min(calc((100cqw - 70px)/2.7),calc((100cqh - 30px)/1.4),150px)}
-  html:root body #casinoModal .tb-stage.tb-baccarat .tb-deal{--cw:min(calc((100cqw - 62px)/7.7),calc((100cqh - 30px)/1.4),96px)}
+  html:root body #casinoModal .tb-stage .tb-deal{--cw:min(calc((100cqw - 70px)/2.7),calc((92cqh - 28px)/1.4),150px)}
+  html:root body #casinoModal .tb-stage.tb-baccarat .tb-deal{--cw:min(calc((100cqw - 62px)/7.7),calc((92cqh - 28px)/1.4),96px)}
   html:root body #casinoModal .tb-stage .tb-sb{--dm:min(74cqh,46cqw,300px)}
   html:root body #casinoModal .tb-stage .tb-spots{height:clamp(58px,25cqh,124px)}
   html:root body #casinoModal .tb-stage .tb-chip{--ch:clamp(20px,10.5cqh,44px)}
   html:root body #casinoModal .tb-stage .tb-spot > b{font-size:clamp(12px,6cqh,22px)}
   html:root body #casinoModal .tb-stage .tb-spot > small{font-size:clamp(10.5px,4.2cqh,16px)}
   html:root body #casinoModal .tb-stage .tb-band i{height:clamp(18px,8cqh,30px);font-size:clamp(10px,4cqh,15px)}
-  html:root body #casinoModal .tb-stage .tb-hh b{font-size:clamp(11px,4.6cqh,18px)}
+  html:root body #casinoModal .tb-stage .tb-sb .tb-sum{height:clamp(30px,calc(var(--dm)*.24),64px);min-width:clamp(36px,calc(var(--dm)*.3),80px);margin-top:calc(clamp(30px,calc(var(--dm)*.24),64px)*-.5);font-size:clamp(17px,calc(var(--dm)*.13),34px)}
+  html:root body #casinoModal .tb-stage .tb-hh b{font-size:clamp(11px,5cqh,22px)}
+  html:root body #casinoModal .tb-stage .tb-hh{height:clamp(22px,7cqh,34px)}
+  html:root body #casinoModal .tb-stage .tb-bub{height:clamp(22px,7cqh,34px);min-width:clamp(24px,7cqh,36px);font-size:clamp(13px,4.6cqh,20px)}
 }
-@media (min-height:860px){html:root body #casinoModal .tb-stage{--rr:6;--bd:14px}}
+@media (min-height:860px){html:root body #casinoModal .tb-stage{--rr:6;--bd:15px}html:root body #casinoModal .tb-stage .tb-cnt span{font-size:12px;line-height:15px}html:root body #casinoModal .tb-stage .tb-cnt i{width:10px;height:10px}}
 @media (max-height:520px){html:root body #casinoModal .tb-stage{--rr:2;--bd:12px}}
-html.is-tv:root body #casinoModal .tb-stage{--rr:6;--bd:13px}
+html.is-tv:root body #casinoModal .tb-stage{--rr:6;--bd:15px}
+html.is-tv:root body #casinoModal .tb-stage .tb-cnt span{font-size:12px;line-height:15px}
 /* téléphones anciens : pas d'animations décoratives */
 html.oro-lite:root body #casinoModal .tb-stage .tb-spot.win::after{animation:none}
 html.oro-lite:root body #casinoModal .tb-stage .tb-dome.shake,html.oro-lite:root body #casinoModal .tb-stage .tb-dome.shake .tb-die{animation:none}

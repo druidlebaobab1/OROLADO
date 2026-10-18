@@ -51,7 +51,8 @@ html:root body #casinoModal .sp2 .sp2-chip.shut,html:root body #casinoModal .sp2
 /* deux équipes face à face, l'heure au milieu */
 html:root body #casinoModal .sp2 .sp2-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,auto) minmax(0,1fr);align-items:center;gap:6px}
 html:root body #casinoModal .sp2 .sp2-tm{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
-html:root body #casinoModal .sp2 .sp2-tm > span{max-width:100%;color:#fff;font:800 15px/1.15 var(--sp2-font);text-align:center}
+html:root body #casinoModal .sp2 .sp2-tn{max-width:100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px}
+html:root body #casinoModal .sp2 .sp2-tn > span{max-width:100%;color:#fff;font:800 15px/1.15 var(--sp2-font);text-align:center}
 html:root body #casinoModal .sp2 .sp2-tm .sp-crest{width:44px!important;height:44px!important;flex:none;margin:0!important;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
 html:root body #casinoModal .sp2 .sp2-tm i.sp-crest{display:grid;place-items:center;border-radius:50%;background:var(--cc,#7C3AED);color:#fff;font:900 19px/1 var(--sp2-font);font-style:normal;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 html:root body #casinoModal .sp2 .sp2-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:6px 8px;border-radius:12px;background:rgba(0,0,0,.25)}
@@ -176,8 +177,8 @@ html:root body #casinoModal .sp2 .sp2-done-b .sp2-cta,html:root body #casinoModa
 
 /* ---------- MES PARIS ---------- */
 html:root body #casinoModal .sp2 .sp2-mf{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
-html:root body #casinoModal .sp2 .sp2-st{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
-html:root body #casinoModal .sp2 .sp2-st button{--c:#C4B5FD;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 4px;border:0;border-radius:12px;
+html:root body #casinoModal .sp2 .sp2-st{display:grid;grid-template-columns:minmax(0,.62fr) repeat(3,minmax(0,1fr)) minmax(0,1.22fr);gap:4px}
+html:root body #casinoModal .sp2 .sp2-st button{--c:#C4B5FD;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 3px;border:0;border-radius:12px;
   background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);color:var(--sp2-mute)}
 html:root body #casinoModal .sp2 .sp2-st button b{color:var(--c);font:900 17px/1 var(--sp2-font);font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .sp2-st button span{max-width:100%;font:700 11.5px/1 var(--sp2-font)}
@@ -238,7 +239,7 @@ html:root body #casinoModal .sp2 .sp2-bid em{flex:0 1 auto;font:800 12px/1 var(-
 /* petits écrans (iPhone SE) */
 @media (max-width:360px){
   html:root body #casinoModal .sp2 .sp2-tm .sp-crest{width:38px!important;height:38px!important}
-  html:root body #casinoModal .sp2 .sp2-tm > span{font-size:14px}
+  html:root body #casinoModal .sp2 .sp2-tn > span{font-size:14px}
   html:root body #casinoModal .sp2 .sp2-o{height:46px;padding:0 10px}
   html:root body #casinoModal .sp2 .sp2-st button{height:48px}
 }
@@ -249,7 +250,7 @@ html:root body #casinoModal .sp2 .sp2-bid em{flex:0 1 auto;font:800 12px/1 var(-
 }
 /* PC et télé : textes un peu plus grands */
 @media (min-width:1600px){
-  html:root body #casinoModal .sp2 .sp2-tm > span,html:root body #casinoModal .sp2 .sp2-qt b{font-size:17px}
+  html:root body #casinoModal .sp2 .sp2-tn > span,html:root body #casinoModal .sp2 .sp2-qt b{font-size:17px}
   html:root body #casinoModal .sp2 .sp2-o{height:54px}
   html:root body #casinoModal .sp2 .sp2-o > b{font-size:19px}
   html:root body #casinoModal .sp2 .sp2-tabs button{height:46px;font-size:17px}
@@ -264,3 +265,6 @@ html:root body #casinoModal .sp2 .sp2-bar small{opacity:.72}
 html[dir=rtl] body #casinoModal .sp2 .sp2-o > span,html[dir=rtl] body #casinoModal .sp2 .sp2-qt b,html[dir=rtl] body #casinoModal .sp2 .sp2-bst > *,html[dir=rtl] body #casinoModal .sp2 .sp2-sel-t > *{text-align:right}
 /* en-tête du coupon : le titre garde la place, « Tout supprimer » rapetisse */
 html:root body #casinoModal .sp2 .sp2-clear{max-width:40%}
+/* petite règle du match (« nul = remboursé ») sous les équipes */
+html:root body #casinoModal .sp2 .sp2-note{display:flex;justify-content:center;margin:-4px 0 -2px;min-width:0}
+html:root body #casinoModal .sp2 .sp2-note span{max-width:100%;padding:3px 10px;border-radius:999px;color:#C4B5FD;background:rgba(139,92,246,.12);font:700 11px/1.1 var(--sp2-font)}

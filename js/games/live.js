@@ -398,7 +398,7 @@
       for (var h = 0; h < 10; h++) {
         var rank = o.indexOf(h); if (rank < 0) rank = 9;
         pl.T[h] = TW + rank * GAP + (rnd(R.i, h + 20) - 0.5) * 0.12;
-        pl.a[h] = (rnd(R.i, h + 40) - 0.5) * 0.36; pl.b[h] = (rnd(R.i, h + 60) - 0.5) * 0.1;
+        pl.a[h] = (rnd(R.i, h + 40) - 0.5) * 0.2; pl.b[h] = (rnd(R.i, h + 60) - 0.5) * 0.08;
         pl.v[h] = D / pl.T[h] * HP1 * (1 - pl.a[h] * Math.PI + 2 * pl.b[h] * Math.PI);
       }
       pl.last = TW + 9 * GAP + 0.1; st.pl = pl; st.planI = R.i; return true;
@@ -487,7 +487,7 @@
         if (st.oddsKey !== ok) { st.oddsKey = ok; st.box.querySelectorAll('[data-o]').forEach(function (b) { K.setText(b, oddTxt((R.odds || [])[+b.getAttribute('data-o')])); }); st.mk = ''; }
         var has = e >= 0 && plan(st, R), pl = st.pl, p = [], lead = 0, last = 1e9, h;
         for (h = 0; h < 10; h++) { p[h] = has ? posAt(pl, h, e) : 0; if (p[h] > lead) lead = p[h]; if (p[h] < last) last = p[h]; }
-        var spread = lead - last, VW = clamp(spread * 1.35 + D * 0.03, D * 0.08, D * 0.24);
+        var spread = lead - last, VW = clamp(spread * 1.3 + D * 0.03, D * 0.08, D * 0.3);
         var cam = Math.min(Math.max(lead - 0.66 * VW, -0.5 * VW), D - 0.6 * VW), ppm = st.W / VW;
         var run = has && e < pl.last + 0.6;
         for (h = 0; h < 10; h++) {
@@ -514,14 +514,14 @@
           order.sort(function (a, b) { var fa = p[a] >= D, fb = p[b] >= D; if (fa && fb) return pl.T[a] - pl.T[b]; return p[b] - p[a]; });
         }
         var okey = order.join(',');
-        if (st.okey !== okey) { st.okey = okey; for (var r = 0; r < 10; r++) $('rcP' + order[r]).style.transform = 'translate3d(' + (r * st.cw * 1.04).toFixed(1) + 'px,0,0)'; }
+        if (st.okey !== okey && (!st.okAt || t - st.okAt > 0.25 || !okey)) { st.okey = okey; st.okAt = t; for (var r = 0; r < 10; r++) $('rcP' + order[r]).style.transform = 'translate3d(' + (r * st.cw * 1.04).toFixed(1) + 'px,0,0)'; }
         var togo = Math.max(0, Math.ceil((D - lead) / 10) * 10), dt = togo + ' ' + st.l.m;
         var de = $('rcDist'); if (de.textContent !== dt) de.textContent = dt;
         // podium 1-2-3 once everybody is home
         var showPod = has && e >= pl.last + 0.5 && rev;
         if (showPod && st.podI !== R.i) {
           st.podI = R.i; var o = R.res.order, pd = $('rcPod');
-          pd.innerHTML = [[o[1], 2], [o[0], 1], [o[2], 3]].map(function (x) { return '<div class="lz-pd p' + x[1] + '"><span class="lz-pd-r">' + (horses ? horseSvg(x[0]) : carSvg(x[0])) + '</span>' + badge(x[0], kind) + '<i class="lz-pd-s"><b>' + x[1] + '</b></i></div>'; }).join('');
+          pd.innerHTML = [[o[1], 2], [o[0], 1], [o[2], 3]].map(function (x) { return '<div class="lz-pd p' + x[1] + '"><i class="lz-pd-r">' + (horses ? horseSvg(x[0]) : carSvg(x[0])).replace('<svg ', '<svg preserveAspectRatio="xMidYMax meet" ') + '</i>' + badge(x[0], kind) + '<i class="lz-pd-s"><b>' + x[1] + '</b></i></div>'; }).join('');
           requestAnimationFrame(function () { pd.classList.add('on'); });
         }
         st.box.querySelector('.lz-rc').classList.toggle('pod', !!showPod);

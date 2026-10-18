@@ -204,11 +204,12 @@
         lock(true); clearWin();
         box.querySelectorAll('.tb-band i').forEach(function (e) { e.classList.remove('on'); });
         K.setText(st, l.closed);
+        var r = null, shown = false;
         try {
           if (!sb) await clearCards(); else { $('tbSum').classList.remove('on'); }
-          var r = await K.play(g, { bet: bet });
+          r = await K.play(g, { bet: bet });
           if (!r) { lock(false); K.setText(st, l.place); return; }
-          if (!alive()) return;
+          if (!alive()) { K.afterPlay(r); return; }
           var v = r.view, win = '', code = '';
           if (g === 'dragon') {
             await dealCard('a', 0, v.d); bub('a', v.d);
@@ -244,14 +245,14 @@
             chip.parentNode.appendChild(pay);
           } else if (!(r.win > 0)) chip.classList.add('gone');
           addRoad(sb ? { s: v.sum, t: v.triple ? 1 : 0 } : code);
-          K.resultLine(box, r);
+          K.resultLine(box, r); shown = true;
           win = code;
           await wait(lite() ? 300 : 700);
           chip.classList.remove('gone');
           K.setText(st, l.place);
           lock(false);
           return win;
-        } catch (e) { /* left the game mid-round */ if (alive()) { lock(false); K.setText(st, l.place); } }
+        } catch (e) { /* left the game mid-round */ if (alive()) { lock(false); K.setText(st, l.place); } else if (r && !shown) K.afterPlay(r); }
       });
     };
   }
