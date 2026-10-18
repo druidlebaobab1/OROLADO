@@ -122,7 +122,7 @@
       };
       var geo = function (s, m) {
         var x0 = W * 0.05, y0 = H * 0.9, wp = W * 0.86, hp = H * 0.68;
-        var ts = Math.max(9, s * 1.12), ms = Math.max(1.9, 1 + (Math.exp(0.08 * s) - 1) * 1.16);
+        var ts = Math.max(9, s * 1.12), ms = Math.max(2.2, 1 + (Math.exp(0.08 * s) - 1) * 1.16);
         var px = function (t) { return x0 + wp * t / ts; }, py = function (t) { return y0 - hp * (Math.exp(0.08 * t) - 1) / (ms - 1); };
         return { x0: x0, y0: y0, px: px, py: py };
       };
@@ -131,8 +131,8 @@
         var g = geo(s), X = g.px(s), Y = g.py(s), cx = g.x0 + (X - g.x0) * 0.58, cy = g.y0;
         var d = 'M' + g.x0.toFixed(1) + ' ' + g.y0.toFixed(1) + 'Q' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ' ' + X.toFixed(1) + ' ' + Y.toFixed(1);
         line.setAttribute('d', d); area.setAttribute('d', d + 'L' + X.toFixed(1) + ' ' + g.y0.toFixed(1) + 'Z');
-        var a = Math.atan2(Y - cy, Math.max(0.01, X - cx)) * 180 / Math.PI; a = Math.max(-40, Math.min(0, a));
-        craft.style.transform = 'translate(' + (X - cw * 0.62).toFixed(1) + 'px,' + (Y - cw * 0.3).toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)';
+        var a = Math.atan2(Y - cy, Math.max(0.01, X - cx)) * 180 / Math.PI; a = Math.max(-34, Math.min(0, a));
+        craft.style.transform = 'translate(' + Math.max(cw * 0.12, X - cw * 0.62).toFixed(1) + 'px,' + (Y - cw * 0.3).toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)';
         return [X, Y];
       };
       var park = function () {

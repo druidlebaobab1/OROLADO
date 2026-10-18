@@ -52,3 +52,4 @@ html:root body #casinoModal .cg-balloon .cs-go.wait{font-size:clamp(13px,4vw,18p
   html:root body #casinoModal .cg-balloon .bl-pb{height:38px!important}
 }
 html.oro-lite body #casinoModal .cg-balloon .bl-wob.on,html.oro-lite body #casinoModal .cg-balloon .bl-burst.go i{animation:none}
+html[dir="rtl"] body #casinoModal .cg-balloon .bl-hist{-webkit-mask-image:linear-gradient(270deg,#000 85%,transparent);mask-image:linear-gradient(270deg,#000 85%,transparent)}

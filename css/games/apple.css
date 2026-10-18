@@ -87,3 +87,7 @@ html[dir="rtl"] body #casinoModal .cg-apple .ap-trunk{left:auto;right:calc(22% +
 }
 html.oro-lite body #casinoModal .cg-apple .ap-row.cur .ap-c,html.oro-lite body #casinoModal .cg-apple .ap.boom{animation:none}
 html.oro-lite body #casinoModal .cg-apple .ap-sp{display:none}
+/* neutralise les anciennes règles .ap / .ap-row de app.css (même noms de classes) */
+html:root body #casinoModal .cg-apple .ap{max-width:none}
+html:root body #casinoModal .cg-apple .ap-row{opacity:1}
+html:root body #casinoModal .cg-apple .ap.on .ap-row.up{opacity:.55}

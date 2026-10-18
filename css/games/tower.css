@@ -71,3 +71,7 @@ html[dir="rtl"] body #casinoModal .cg-tower .tw-row{direction:rtl}
 }
 html.oro-lite body #casinoModal .cg-tower .tw-row.cur .tw-d{animation:none}
 html.oro-lite body #casinoModal .cg-tower .tw.boom,html.oro-lite body #casinoModal .cg-tower .tw-d.new .tw-f{animation:none}
+/* neutralise les anciennes règles .tw / .tw-row de app.css (même noms de classes) */
+html:root body #casinoModal .cg-tower .tw{max-width:none;z-index:auto}
+html:root body #casinoModal .cg-tower .tw-row{opacity:1}
+html:root body #casinoModal .cg-tower .tw.on .tw-row.up{opacity:.55}
