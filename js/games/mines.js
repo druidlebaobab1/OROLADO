@@ -58,9 +58,9 @@
       else { btn.innerHTML = ''; K.setText(btn, main); }
     }
     function info() {
-      var m = g ? g.m : mines, open = g ? g.open.length : 0;
+      var m = live() ? g.m : mines, open = live() ? g.open.length : 0;
       K.setText($('mnM'), String(m)); K.setText($('mnGc'), String(25 - m - open));
-      var nx = live() ? g.next : (g && g.done ? 0 : mm(mines, 1));
+      var nx = live() ? g.next : mm(mines, 1);
       K.setText($('mnNext'), nx ? l.next + ' ×' + num(nx) : '');
       K.setText($('mnCntT'), l.mines + ': ' + m);
       box.querySelectorAll('.mn-st-b, #mnCnt').forEach(function (b) { b.disabled = !!live(); });

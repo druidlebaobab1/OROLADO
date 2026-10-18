@@ -45,3 +45,5 @@ html:root body #casinoModal .cg-scratch .sc-p.on{background:linear-gradient(180d
 html:root body #casinoModal .cg-scratch .sc-p.on b{color:#fff}
 @media (max-height:640px){html:root body #casinoModal .cg-scratch .sc-p{height:26px}html:root body #casinoModal .cg-scratch .sc-status b{font-size:12px;padding:3px 12px}}
 html.oro-lite body #casinoModal .cg-scratch .sc-cell.win,html.oro-lite body #casinoModal .cg-scratch .sc-card.fresh,html.oro-lite body #casinoModal .cg-scratch .sc-cell.op .sy{animation:none}
+/* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-scratch > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}

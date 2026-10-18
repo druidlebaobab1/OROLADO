@@ -68,3 +68,5 @@ html:root body #casinoModal .cg-slots .sl-p.on b{color:#fff}
 @media (min-aspect-ratio:1/1){html:root body #casinoModal .cg-slots .sl-pay{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media (max-height:640px){html:root body #casinoModal .cg-slots .sl-p{height:26px}html:root body #casinoModal .cg-slots .sl-p .sy{width:13px;height:13px}}
 html.oro-lite body #casinoModal .cg-slots .sl-bulbs i,html.oro-lite body #casinoModal .cg-slots .sl-c.win .sy,html.oro-lite body #casinoModal .cg-slots .sl-mach.big{animation:none}
+/* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-slots > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}

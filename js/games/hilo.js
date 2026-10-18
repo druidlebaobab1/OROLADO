@@ -28,6 +28,15 @@
     var s = suitOf(i, c), red = s === 1 || s === 2;
     return '<span class="hl-f ' + (red ? 'red' : 'blk') + '"><b class="hl-tl">' + RANK[c] + '<i>' + SUIT[s] + '</i></b><em>' + SUIT[s] + '</em><b class="hl-br">' + RANK[c] + '<i>' + SUIT[s] + '</i></b></span>';
   }
+  function mini(c, i) { var s = suitOf(i, c); return '<span class="hl-f ' + (s === 1 || s === 2 ? 'red' : 'blk') + '"><b>' + RANK[c] + '</b><em>' + SUIT[s] + '</em></span>'; }
+  // le grand bouton a une taille de police « !important » (cg.css) : on le rétrécit nous-mêmes, en « important » aussi
+  function fitGo(el) {
+    if (!el || !el.isConnected) return;
+    el.style.removeProperty('font-size');
+    var fs = parseFloat(getComputedStyle(el).fontSize) || 20, min = fs * 0.5, n = 0;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 30) { fs *= 0.93; el.style.setProperty('font-size', fs.toFixed(1) + 'px', 'important'); }
+  }
+  window.addEventListener('resize', function () { setTimeout(function () { if (document.querySelector('.cg-hilo')) fitGo($('csGo')); }, 200); });
   function back() { return '<span class="hl-bk"><i></i></span>'; }
 
   K.register('hilo', function (box, x) {
@@ -54,7 +63,7 @@
       var cs = r.cards || [], sk = r.sk || [], n = cs.length, html = '';
       for (var i = Math.max(0, n - 1 - 12); i < n - 1; i++) {
         var tag = i === 0 ? '' : sk.indexOf(i) >= 0 ? '<i class="sk">»</i>' : '<i class="ok">' + (dirs[i] === 'lo' ? '▼' : dirs[i] === 'hi' ? '▲' : '✓') + '</i>';
-        html += '<span class="hl-mini">' + face(cs[i], i) + tag + '</span>';
+        html = '<span class="hl-mini">' + mini(cs[i], i) + tag + '</span>' + html;
       }
       $('hlRow').innerHTML = html;
     }
@@ -71,6 +80,7 @@
         go.classList.add('cash'); go.disabled = busy || !(g.k > 0);
         K.setText(go, g.k > 0 ? l.cash + ' $ ' + K.m2(g.stake * g.mult) : l.cash);
       } else { go.classList.remove('cash'); go.disabled = busy; K.setText(go, l.bet); }
+      fitGo(go);
       box.classList.toggle('in-play', !!live());
     }
     function paintTot() { var m = g ? g.mult : 1; K.setText($('hlTot'), '×' + nf(m, 2)); $('hlTot').parentNode.classList.toggle('up', !!(g && g.k > 0 && !(g.done && !(g.win > 0)))); }

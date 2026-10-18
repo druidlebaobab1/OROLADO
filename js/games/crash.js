@@ -200,6 +200,7 @@
             st.classList.toggle('flying', phase === 'fly'); st.classList.toggle('ended', phase === 'end'); st.classList.toggle('betting', phase === 'bet');
             wait.hidden = phase !== 'bet'; mEl.hidden = phase === 'bet';
             K.setText(flew, phase === 'end' ? (game === 'rocket' ? l.lost : l.flew) : '');
+            K.fitEl(mEl); K.fitEl(wait.querySelector('small'));
             if (phase === 'end') {
               craft.style.transition = game === 'rocket' ? 'opacity .25s' : 'transform 1s cubic-bezier(.55,0,.9,.45), opacity 1s';
               if (game === 'rocket') { var bm = $('crBoom'); bm.style.transform = 'translate(' + lastXY[0].toFixed(0) + 'px,' + lastXY[1].toFixed(0) + 'px)'; bm.classList.remove('go'); void bm.offsetWidth; bm.classList.add('go'); craft.style.opacity = '0'; }

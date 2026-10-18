@@ -19,6 +19,9 @@
     return '<g class="ch-c" data-c="' + i + '" transform="translate(' + XS[i] + ' 176)" role="button" tabindex="0" aria-label="' + (i + 1) + '"><g class="ch-in">' +
       '<ellipse class="ch-ring" cx="0" cy="2" rx="52" ry="10"/><ellipse cx="0" cy="2" rx="44" ry="7" fill="rgba(0,0,0,.45)"/>' +
       '<g class="ch-rays"><path d="M0 -50L-40 -150H40z" fill="url(#chRay)"/><path d="M0 -50L-90 -130L-60 -150z" fill="url(#chRay)" opacity=".6"/><path d="M0 -50L90 -130L60 -150z" fill="url(#chRay)" opacity=".6"/></g>' +
+      '<g class="ch-olid"><path d="M-46 -52L-40 -96Q0 -104 40 -96L46 -52z" fill="#4A1F05" stroke="#3B1B06" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<path d="M-40 -96Q0 -104 40 -96" stroke="url(#chMet)" stroke-width="6" fill="none"/><path d="M-44 -60L-38 -94M44 -60L38 -94" stroke="url(#chMet)" stroke-width="5"/>' +
+      '<path d="M-36 -62Q0 -68 36 -62" stroke="#2A0F02" stroke-width="3" fill="none"/></g>' +
       '<rect x="-40" y="-56" width="80" height="14" rx="4" fill="#1A0B02"/>' +
       '<g class="ch-gold"><ellipse cx="0" cy="-50" rx="36" ry="9" fill="#F59E0B"/><circle cx="-18" cy="-55" r="8" fill="url(#chCoin)"/><circle cx="0" cy="-60" r="9" fill="url(#chCoin)"/><circle cx="17" cy="-55" r="8" fill="url(#chCoin)"/><circle cx="-6" cy="-52" r="7" fill="url(#chCoin)"/><path d="M8 -70l3 6 6 1-5 4 1 6-5-3-5 3 1-6-5-4 6-1z" fill="#fff"/></g>' +
       '<g class="ch-dust"><circle cx="-14" cy="-62" r="7" fill="#A8A3C4" opacity=".5"/><circle cx="6" cy="-68" r="9" fill="#A8A3C4" opacity=".4"/><circle cx="20" cy="-60" r="6" fill="#A8A3C4" opacity=".45"/></g>' +
@@ -32,8 +35,8 @@
       '</g></g>';
   }
   function scene() {
-    var stars = ''; for (var i = 0; i < 40; i++) stars += '<circle cx="' + ((i * 89.7) % 360).toFixed(1) + '" cy="' + ((i * 37.3) % 150).toFixed(1) + '" r="' + (0.5 + (i % 3) * 0.45) + '" fill="#fff" opacity="' + (0.35 + (i % 4) * 0.15) + '"/>';
-    return '<svg class="ch-svg" viewBox="0 0 360 260" preserveAspectRatio="xMidYMid meet" aria-hidden="false"><defs>' +
+    var stars = ''; for (var i = 0; i < 40; i++) stars += '<circle cx="' + (K.seeded(i, 3) * 360).toFixed(1) + '" cy="' + (K.seeded(i, 7) * 150).toFixed(1) + '" r="' + (0.5 + (i % 3) * 0.45) + '" fill="#fff" opacity="' + (0.35 + (i % 4) * 0.15) + '"/>';
+    return '<svg class="ch-svg" viewBox="10 20 340 240" preserveAspectRatio="xMidYMid meet" aria-hidden="false"><defs>' +
       '<linearGradient id="chWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B45309"/><stop offset="1" stop-color="#6B2E07"/></linearGradient>' +
       '<linearGradient id="chWood2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706"/><stop offset="1" stop-color="#8A3A0A"/></linearGradient>' +
       '<linearGradient id="chMet" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#B7791F"/><stop offset=".5" stop-color="#FDE68A"/><stop offset="1" stop-color="#B7791F"/></linearGradient>' +
