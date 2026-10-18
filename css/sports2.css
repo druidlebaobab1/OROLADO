@@ -53,6 +53,8 @@ html:root body #casinoModal .sp2 .sp2-match{display:grid;grid-template-columns:m
 html:root body #casinoModal .sp2 .sp2-tm{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 html:root body #casinoModal .sp2 .sp2-tn{max-width:100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px}
 html:root body #casinoModal .sp2 .sp2-tn > span{max-width:100%;color:#fff;font:800 15px/1.15 var(--sp2-font);text-align:center}
+/* v2797 (propriétaire) : nom d'équipe sur UNE ligne, il rapetisse seul (plus de « Stade / Rennais ») */
+html:root body #casinoModal .sp2 .sp2-tn > span.fit{display:block;width:100%}
 html:root body #casinoModal .sp2 .sp2-tm .sp-crest{width:44px!important;height:44px!important;flex:none;margin:0!important;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
 html:root body #casinoModal .sp2 .sp2-tm i.sp-crest{display:grid;place-items:center;border-radius:50%;background:var(--cc,#7C3AED);color:#fff;font:900 19px/1 var(--sp2-font);font-style:normal;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 html:root body #casinoModal .sp2 .sp2-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:6px 8px;border-radius:12px;background:rgba(0,0,0,.25)}

@@ -96,3 +96,11 @@ html:root body #casinoModal .cg-quick button,html:root body #casinoModal .cg-amt
 @media (orientation:landscape) and (max-height:500px){
   html:root body #casinoModal.in-game .cs-game > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}
 }
+/* barre du haut : le solde (même 1 000 000,00 $) ne pousse jamais le bouton « ? » hors de l'écran */
+html:root body #casinoModal .cs-top{grid-template-columns:40px minmax(0,1fr) 40px!important}
+html:root body #casinoModal .cs-top #csBal{min-width:0;max-width:100%;justify-self:center}
+html:root body #casinoModal .cs-top #csBal b{white-space:nowrap;overflow:hidden;text-overflow:clip}
+/* arabe : jamais d'espacement entre les lettres (il casse l'écriture liée) */
+html[lang="ar"]:root body #casinoModal *,html.lang-ar:root body #casinoModal *{letter-spacing:0!important}
+/* montant : une marge seulement du côté de la petite croix (plus de place pour les chiffres) */
+html:root body #casinoModal .cg-in input{padding:0 20px 0 2px!important;font-size:clamp(14px,4.4vw,19px)!important}

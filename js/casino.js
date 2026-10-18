@@ -298,9 +298,10 @@
      de place (toutes les langues, tous les écrans) ; il reprend sa taille quand la place revient. */
   function fitEl(el) {
     if (!el || !el.isConnected) return;
-    el.style.fontSize = '';
+    el.style.removeProperty('font-size');
     var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = Math.max(7, fs * 0.5), n = 0;
-    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.93); el.style.fontSize = fs.toFixed(1) + 'px'; }
+    // « important » : passe devant les tailles !important des feuilles de style (sinon le bouton ne rapetissait pas)
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.93); el.style.setProperty('font-size', fs.toFixed(1) + 'px', 'important'); }
   }
   function fitAll(root) { (root || document).querySelectorAll('.fit').forEach(fitEl); }
   function setText(el, t) { if (!el) return; t = String(t == null ? '' : t); if (el.textContent !== t) { el.textContent = t; fitEl(el); } }
@@ -309,9 +310,12 @@
 
   /* v2795 — chaque jeu refait vit dans son propre fichier (js/games/<jeu>.js + css/games/<jeu>.css), chargé SEULEMENT
      quand on ouvre ce jeu : le site reste léger. Sans réseau, l'ancien jeu prend le relais. */
-  var MODS = {};      // jeux refaits disponibles : { clé du jeu: nom du fichier } (plusieurs jeux peuvent partager un fichier)
+  // jeux refaits disponibles : { clé du jeu: nom du fichier } (plusieurs jeux peuvent partager un fichier)
+  var MODS = { crash: 'crash', jet: 'crash', rocket: 'crash', mines: 'mines', tower: 'tower', apple: 'apple', balloon: 'balloon',
+    cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
+    dragon: 'tables', baccarat: 'tables', sicbo: 'tables' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2795';
+  var MOD_V = '2800';
   var modState = {};
   function loadMod(k) {
     var f = String(MODS[k] || k).replace(/[^a-z0-9_-]/gi, '');

@@ -336,9 +336,9 @@
     }).join('');
     var head;
     if (tm) {
-      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="sp2-tn">' + linesHtml(tm[0], 'span', 13, true) + '</span></div>' +
+      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[0]) + '</span>' + '</span></div>' +
         '<div class="sp2-mid"><b class="fit">' + esc(hm(e.start)) + '</b><small class="fit">' + esc(dayLabel(e.start)) + '</small></div>' +
-        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="sp2-tn">' + linesHtml(tm[1], 'span', 13, true) + '</span></div></div>';
+        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[1]) + '</span>' + '</span></div></div>';
     } else {
       var img = q ? logoHtml((e.logos || [])[0] || '', 'sp2-qimg') : '';
       if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';
