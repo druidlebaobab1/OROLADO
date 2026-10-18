@@ -876,6 +876,12 @@
       ]
     ],
     casino: {
+      lotPick: 'Chọn từ 1 đến 10 số',
+      lotRand: 'Ngẫu nhiên',
+      lotClear: 'Xóa',
+      lotHits: 'Trúng {h}/{k}',
+      lotPay: 'Trúng',
+      lotDraw: 'Quay số',
     "title": "Casino",
     "sub": "15 trò · từ $0,10",
     "real": "Thật",

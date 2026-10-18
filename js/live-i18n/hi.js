@@ -876,6 +876,12 @@
       ]
     ],
   casino: {
+    lotPick: '1 से 10 नंबर चुनें',
+    lotRand: 'रैंडम',
+    lotClear: 'साफ़ करें',
+    lotHits: '{k} में से {h} सही',
+    lotPay: 'सही',
+    lotDraw: 'ड्रॉ',
     "title": "कैसीनो",
     "sub": "15 गेम · $0.10 से",
     "real": "असली",

@@ -876,6 +876,12 @@
       ]
     ],
     casino: {
+      lotPick: 'Escolha de 1 a 10 números',
+      lotRand: 'Aleatório',
+      lotClear: 'Limpar',
+      lotHits: '{h} acerto(s) de {k}',
+      lotPay: 'Acertos',
+      lotDraw: 'Sorteio',
       title: 'Cassino',
       sub: '15 jogos · a partir de $0.10',
       real: 'Real',

@@ -876,6 +876,12 @@
       ]
     ],
   casino: {
+    lotPick: 'Wähle 1 bis 10 Zahlen',
+    lotRand: 'Zufall',
+    lotClear: 'Löschen',
+    lotHits: '{h} Treffer von {k}',
+    lotPay: 'Treffer',
+    lotDraw: 'Ziehung',
     "title": "Casino",
     "sub": "15 Spiele · ab $0.10",
     "real": "Echt",

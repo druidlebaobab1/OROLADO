@@ -16,8 +16,8 @@ const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000.0;
 const CASINO_MAX_WIN = 10000.0;
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
-  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps'];
-const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette']; // jeux en plusieurs étapes (état gardé par le serveur)
+  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps', 'lotto'];
+const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette', 'race']; // jeux en plusieurs étapes (état gardé par le serveur)
 /*
  * v2718 (propriétaire) — JEUX EN DIRECT À TIRAGE : le serveur fait un tirage commun à heure fixe, tout le monde voit le même.
  *  - période P secondes ; tour n° i = floor(maintenant / P) ; mises ouvertes de i·P à i·P + B ; à i·P + B le résultat est
@@ -26,7 +26,45 @@ const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower
  *  - Crypto Live : 15 cryptos, la bonne paie ×14,4 (retour 96 %). Chevaux Live : 10 chevaux, le gagnant paie ×9,6 (96 %).
  *    Roulette Live : roulette européenne (rouge / noir / pair / impair ×2, douzaine ×3, numéro ×36 — retour 97,3 %).
  */
-const CASINO_DRAW = ['cryptox' => [60, 45], 'horses' => [60, 33], 'roulette' => [40, 28]]; // [période P, mises ouvertes B]
+const CASINO_DRAW = ['cryptox' => [60, 45], 'horses' => [60, 33], 'roulette' => [40, 28], 'race' => [60, 33]]; // [période P, mises ouvertes B]
+/*
+ * v2792 (propriétaire, comme les courses virtuelles des grands sites) — RACING devient EN DIRECT (10 voitures) et HORSE RACE
+ * reçoit des COTES : à chaque tour, chaque coureur a sa chance p (favoris → outsiders), tirée par le serveur et montrée
+ * AVANT la fermeture des mises ; sa cote = 0,94 ÷ p (arrondie vers le bas) → marge maison 6 % quel que soit le choix.
+ * L'arrivée suit ces chances (le 1er tiré selon p, puis le 2e parmi les autres, etc.) et reste SECRÈTE jusqu'à la fermeture.
+ * Chevaux : « Gagnant » (1 cheval, sa cote) ou « Couplé » (2 chevaux = les 2 premiers, dans n'importe quel ordre, sa cote).
+ */
+const CASINO_RUNNERS = 10;
+const CASINO_ODDS_MAX = 500.0;
+/** Chances des 10 coureurs d'un tour : de ~3 % (outsider) à ~30 % (favori), total 1. */
+function casino_runner_probs(): array {
+  $w = [];
+  for ($i = 0; $i < CASINO_RUNNERS; $i++) { $g = sqrt(-2 * log(casino_rand())) * cos(2 * M_PI * casino_rand()); $w[] = exp(0.6 * $g); }
+  for ($k = 0; $k < 8; $k++) { $t = array_sum($w); foreach ($w as $i => $v) $w[$i] = max(0.03, min(0.30, $v / $t)); }
+  $t = array_sum($w);
+  return array_map(static fn($v) => round($v / $t, 6), $w);
+}
+/** Cote affichée et payée pour une chance $p (marge 6 %). */
+function casino_odds(float $p): float { return $p <= 0 ? 0.0 : min(CASINO_ODDS_MAX, max(1.01, floor(CASINO_EDGE / $p * 100) / 100)); }
+/** Arrivée complète tirée selon les chances (1er selon p, puis le suivant parmi ceux qui restent). */
+function casino_runner_order(array $p): array {
+  $left = array_keys($p); $order = [];
+  while ($left) {
+    $tot = 0.0; foreach ($left as $i) $tot += $p[$i];
+    $r = random_int(1, 1000000000) / 1000000000 * $tot; $acc = 0.0; $pick = end($left);
+    foreach ($left as $i) { $acc += $p[$i]; if ($r <= $acc) { $pick = $i; break; } }
+    $order[] = $pick; $left = array_values(array_diff($left, [$pick]));
+  }
+  return $order;
+}
+/** Couplé : chance que $a et $b finissent 1er et 2e (n'importe quel ordre). */
+function casino_pair_p(array $p, int $a, int $b): float { return $p[$a] * $p[$b] / max(1e-9, 1 - $p[$a]) + $p[$b] * $p[$a] / max(1e-9, 1 - $p[$b]); }
+/** Carte des cotes d'un tour : 'o' = gagnant par coureur ; chevaux : 'c' = couplé « a-b » (a < b). */
+function casino_runner_card(string $g, array $p): array {
+  $c = ['p' => $p, 'o' => array_map('casino_odds', $p)];
+  if ($g === 'horses') { $c['c'] = []; for ($a = 0; $a < CASINO_RUNNERS; $a++) for ($b = $a + 1; $b < CASINO_RUNNERS; $b++) $c['c'][$a . '-' . $b] = casino_odds(casino_pair_p($p, $a, $b)); }
+  return $c;
+}
 const CASINO_CRYPTOX_N = 15;
 const CASINO_CRYPTOX_MULT = 14.4; // v2781 : jeu où la chance se voit → gain des grands sites (retour 96 %)
 const CASINO_HORSES_N = 10;
@@ -122,6 +160,17 @@ const CASINO_WHEEL = [[0.5, 600], [1.2, 500], [0, 680], [1.5, 550], [0.5, 600], 
 const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.33, 0.6, 1.4, 3, 12];                                     // 8 rangées, retour 94 % (v2780)
 const CASINO_KENO = [0, 0.6, 3.37, 25];                                                              // 3 numéros choisis sur 20, 5 tirés : retour 94 % (v2780)
 const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 % (v2781 : chance visible)
+// v2791 (propriétaire) : ORO LOTTO remplace Pierre-Feuille-Ciseaux — loterie comme les grands sites : le joueur choisit 1 à 10
+// numéros sur 40, le serveur tire 10 boules. CASINO_LOTTO[k][h] = gain ÷ mise pour h bons numéros sur k choisis.
+// Chaque ligne est calculée (loi hypergéométrique) pour un retour aux joueurs de 93,8 à 94 % : marge maison 6 %, comme les autres jeux.
+const CASINO_LOTTO_N = 40;
+const CASINO_LOTTO_DRAW = 10;
+const CASINO_LOTTO = [
+  1 => [0, 3.76], 2 => [0, 1.45, 6.61], 3 => [0, 0, 4.25, 29.5], 4 => [0, 0, 2.07, 8.03, 78],
+  5 => [0, 0, 0, 5.92, 32.1, 422], 6 => [0, 0, 0, 3.24, 12.3, 90.8, 1000], 7 => [0, 0, 0, 2.07, 6.09, 31.4, 309, 1000],
+  8 => [0, 0, 0, 0, 5.56, 22.1, 153, 1000, 1000], 9 => [0, 0, 0, 0, 3.39, 10.9, 58.4, 546, 1000, 1000],
+  10 => [0, 0, 0, 0, 2.35, 6.36, 27.5, 198, 1000, 1000, 1000],
+];
 const CASINO_RPS_MULT = 1.91;                                                                         // Pierre-Feuille-Ciseaux (égalité = mise rendue) : retour 97 % (v2781 : chance visible)
 const CASINO_DICE_DUEL = 1.92;                                                                         // dé rouge contre dé noir (égalité = mise rendue) : retour 96,7 % (v2781 : chance visible)
 const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 % (v2781 : chance visible)
@@ -157,7 +206,7 @@ function casino_draw_outcome(string $g, int $i): array {
     $k = (string) $i;
     if (!isset($s[$k])) {
       if ($g === 'cryptox') $s[$k] = ['n' => random_int(0, CASINO_CRYPTOX_N - 1)];
-      elseif ($g === 'horses') { $o = range(0, CASINO_HORSES_N - 1); for ($j = CASINO_HORSES_N - 1; $j > 0; $j--) { $r = random_int(0, $j); [$o[$j], $o[$r]] = [$o[$r], $o[$j]]; } $s[$k] = ['order' => $o]; }
+      elseif ($g === 'horses' || $g === 'race') { $pr = casino_runner_probs(); $s[$k] = casino_runner_card($g, $pr) + ['order' => casino_runner_order($pr)]; }
       else $s[$k] = ['n' => random_int(0, 36)];
       if (count($s) > 60) { $ks = array_map('intval', array_keys($s)); sort($ks); foreach (array_slice($ks, 0, count($ks) - 60) as $old) unset($s[(string) $old]); }
     }
@@ -167,7 +216,18 @@ function casino_draw_outcome(string $g, int $i): array {
 /** Gain ÷ mise d'une sélection pour un résultat ; null = sélection invalide. Sans résultat ($out vide) : vérifie seulement la sélection. */
 function casino_draw_mult(string $g, string $sel, array $out): ?float {
   if ($g === 'cryptox') { if (!preg_match('/^\d{1,2}$/', $sel) || (int) $sel >= CASINO_CRYPTOX_N) return null; return $out ? ((int) $sel === (int) $out['n'] ? CASINO_CRYPTOX_MULT : 0.0) : 0.0; }
-  if ($g === 'horses') { if (!preg_match('/^\d$/', $sel)) return null; return $out ? ((int) $sel === (int) $out['order'][0] ? CASINO_HORSES_MULT : 0.0) : 0.0; }
+  if ($g === 'race') { if (!preg_match('/^\d$/', $sel)) return null; return $out ? ((int) $sel === (int) $out['order'][0] ? (float) ($out['o'][(int) $sel] ?? 0) : 0.0) : 0.0; }
+  if ($g === 'horses') {
+    // ancien format (pari posé avant v2792, tour sans cotes) : « 3 » = cheval gagnant ×9,6
+    if (preg_match('/^\d$/', $sel)) return $out ? ((int) $sel === (int) $out['order'][0] ? (isset($out['o']) ? (float) $out['o'][(int) $sel] : CASINO_HORSES_MULT) : 0.0) : 0.0;
+    if (preg_match('/^w(\d)$/', $sel, $mm)) return $out ? ((int) $mm[1] === (int) $out['order'][0] ? (float) ($out['o'][(int) $mm[1]] ?? 0) : 0.0) : 0.0;
+    if (preg_match('/^c(\d)-(\d)$/', $sel, $mm) && (int) $mm[1] < (int) $mm[2]) {
+      if (!$out) return 0.0;
+      $top = [(int) $out['order'][0], (int) $out['order'][1]]; sort($top);
+      return $top === [(int) $mm[1], (int) $mm[2]] ? (float) ($out['c'][$mm[1] . '-' . $mm[2]] ?? 0) : 0.0;
+    }
+    return null;
+  }
   $m = casino_roulette_mult($sel, $out ? (int) $out['n'] : 0);
   return $m === null ? null : ($out ? $m : 0.0);
 }
@@ -176,9 +236,10 @@ function casino_draw_public(string $g, float $now): array {
   [$P, $B] = CASINO_DRAW[$g];
   $i = (int) floor($now / $P); $t0 = $i * $P;
   $o = ['i' => $i, 't0' => (float) $t0, 'close' => (float) ($t0 + $B), 'end' => (float) ($t0 + $P), 'phase' => $now < $t0 + $B ? 'bet' : 'show', 'P' => $P, 'B' => $B];
-  if ($now >= $t0 + $B) $o['res'] = casino_draw_outcome($g, $i);
+  if ($g === 'horses' || $g === 'race') { $cur = casino_draw_outcome($g, $i); if (isset($cur['o'])) { $o['odds'] = $cur['o']; if (isset($cur['c'])) $o['pair'] = $cur['c']; } } // v2792 : cotes visibles, arrivée secrète
+  if ($now >= $t0 + $B) { $o['res'] = casino_draw_outcome($g, $i); unset($o['res']['p'], $o['res']['c']); }
   $last = [];
-  for ($k = 1; $k <= 6; $k++) { $r = casino_draw_outcome($g, $i - $k); $last[] = $g === 'horses' ? (int) $r['order'][0] : (int) $r['n']; }
+  for ($k = 1; $k <= 6; $k++) { $r = casino_draw_outcome($g, $i - $k); $last[] = isset($r['order']) ? (int) $r['order'][0] : (int) $r['n']; }
   $o['last'] = $last;
   return $o;
 }
@@ -235,11 +296,6 @@ function casino_instant(string $game, array $p, float $stake): array {
       $r = random_int(1, 10000); $acc = 0; $i = 0;
       foreach (CASINO_WHEEL as $j => [$x, $w]) { $acc += $w; if ($r <= $acc) { $i = $j; break; } }
       return ['mult' => (float) CASINO_WHEEL[$i][0], 'view' => ['i' => $i]];
-    case 'race':
-      $pick = max(0, min(5, (int) ($p['car'] ?? 0)));
-      $order = [0, 1, 2, 3, 4, 5];
-      for ($i = 5; $i > 0; $i--) { $j = random_int(0, $i); [$order[$i], $order[$j]] = [$order[$j], $order[$i]]; }
-      return ['mult' => $order[0] === $pick ? CASINO_RACE_MULT : 0.0, 'view' => ['order' => $order]];
     case 'roulette':
       $bet = (string) ($p['bet'] ?? 'red');
       $n = random_int(0, 36);
@@ -319,6 +375,16 @@ function casino_instant(string $game, array $p, float $stake): array {
       $bot = random_int(0, 2);
       $m = $me === $bot ? 1.0 : (($me - $bot + 3) % 3 === 1 ? CASINO_RPS_MULT : 0.0);
       return ['mult' => $m, 'view' => ['me' => $me, 'bot' => $bot]];
+    case 'lotto':
+      $picks = array_values(array_unique(array_map('intval', (array) ($p['picks'] ?? []))));
+      $picks = array_values(array_filter($picks, static fn($x) => $x >= 1 && $x <= CASINO_LOTTO_N));
+      $k = count($picks);
+      if ($k < 1 || $k > 10) return ['err' => 'param'];
+      $all = range(1, CASINO_LOTTO_N);
+      for ($i = CASINO_LOTTO_N - 1; $i > 0; $i--) { $j = random_int(0, $i); [$all[$i], $all[$j]] = [$all[$j], $all[$i]]; }
+      $draw = array_slice($all, 0, CASINO_LOTTO_DRAW);
+      $hits = count(array_intersect($picks, $draw));
+      return ['mult' => (float) CASINO_LOTTO[$k][$hits], 'view' => ['draw' => $draw, 'hits' => $hits, 'k' => $k]];
     case 'darts':
       $r = random_int(1, 10000); $acc = 0; $z = 4;
       foreach (CASINO_DARTS as $j => [$x, $w]) { $acc += $w; if ($r <= $acc) { $z = $j; break; } }
@@ -837,6 +903,7 @@ function casino_draw_settle(array $db, string $uid, string $file, float $now, st
     $out = casino_draw_outcome($game, (int) $g['round']);
     if (!$out) return $g;
     $m = (float) (casino_draw_mult($game, (string) $g['sel'], $out) ?? 0.0);
+    unset($out['p'], $out['c']); // v2792 : le résultat gardé avec le pari reste léger (arrivée + cotes gagnant)
     $g['done'] = 1; $g['out'] = $m; $g['res'] = $out; $g['win'] = casino_money(min(CASINO_MAX_WIN, (float) $g['stake'] * $m));
     $st['g'][$game] = $g;
     return $g;

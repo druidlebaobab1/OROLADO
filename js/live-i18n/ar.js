@@ -876,6 +876,12 @@
       ]
     ],
     casino: {
+      lotPick: 'اختر من 1 إلى 10 أرقام',
+      lotRand: 'عشوائي',
+      lotClear: 'مسح',
+      lotHits: '{h} صحيح من {k}',
+      lotPay: 'صحيح',
+      lotDraw: 'السحب',
       title: 'الكازينو',
       sub: '15 لعبة · من $0.10',
       real: 'حقيقي',
