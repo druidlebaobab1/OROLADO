@@ -1,0 +1,33 @@
+/* v2795 — Coin Flip: 3D coin (gold heads / silver tails). */
+html:root body #casinoModal .cg-coin .cn-stage{display:flex;flex-direction:column;padding:10px 12px;container-type:size;
+  background:radial-gradient(50% 42% at 50% 52%,rgba(251,191,36,.16),transparent 70%),radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.3),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26)}
+html:root body #casinoModal .cg-coin .cn-hist{flex:0 0 auto;gap:4px}
+html:root body #casinoModal .cg-coin .cn-hist i{width:20px;height:20px;padding:0;border-radius:50%}
+html:root body #casinoModal .cg-coin .cn-hist i.h{background:radial-gradient(circle at 35% 30%,#FFF4C2,#FBBF24 55%,#B45309);box-shadow:inset 0 0 0 2px rgba(124,45,18,.35)}
+html:root body #casinoModal .cg-coin .cn-hist i.t{background:radial-gradient(circle at 35% 30%,#fff,#CBD5E1 55%,#64748B);box-shadow:inset 0 0 0 2px rgba(30,41,59,.35)}
+html:root body #casinoModal .cg-coin .cn-scene{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;perspective:900px}
+html:root body #casinoModal .cg-coin .cn-scene::before{content:"";position:absolute;left:50%;top:50%;width:min(86cqw,76cqh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  border:1px dashed rgba(251,191,36,.18);box-shadow:0 0 0 18px rgba(139,92,246,.05),0 0 0 40px rgba(139,92,246,.03)}
+html:root body #casinoModal .cg-coin .cn-toss{position:relative;z-index:2;width:min(56cqw,52cqh);aspect-ratio:1;transform-style:preserve-3d}
+html:root body #casinoModal .cg-coin .cn-coin{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+html:root body #casinoModal .cg-coin .cn-face{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  box-shadow:0 10px 30px -6px rgba(0,0,0,.6)}
+html:root body #casinoModal .cg-coin .cn-face svg{display:block;width:100%;height:100%}
+html:root body #casinoModal .cg-coin .cn-t{transform:rotateX(180deg)}
+html:root body #casinoModal .cg-coin .cn-coin.w .cn-face{animation:cnWin 1s ease-out}
+html:root body #casinoModal .cg-coin .cn-coin.l .cn-face{animation:cnLose .6s ease-out}
+@keyframes cnWin{0%{box-shadow:0 0 0 0 rgba(34,197,94,.9)}100%{box-shadow:0 0 0 30px rgba(34,197,94,0)}}
+@keyframes cnLose{0%{box-shadow:0 0 0 0 rgba(244,63,94,.8)}100%{box-shadow:0 0 0 22px rgba(244,63,94,0)}}
+html:root body #casinoModal .cg-coin .cn-shadow{position:absolute;left:50%;bottom:6%;width:min(40cqw,36cqh);height:12px;margin-left:calc(min(40cqw,36cqh) / -2);border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent)}
+/* choix Face / Pile */
+html:root body #casinoModal .cg-coin .cn-pick > button{flex-direction:row;gap:8px;min-height:52px!important;padding:5px 10px!important}
+html:root body #casinoModal .cg-coin .cn-mini{flex:0 0 34px;width:34px;height:34px;border-radius:50%;box-shadow:0 3px 8px rgba(0,0,0,.45)}
+html:root body #casinoModal .cg-coin .cn-mini svg{display:block;width:100%;height:100%}
+html:root body #casinoModal .cg-coin .cn-lbl{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+html:root body #casinoModal .cg-coin .cn-lbl b{display:block;max-width:100%;font:900 16px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .cg-coin .cn-lbl small{display:block;max-width:100%;font:800 12px/1 var(--cg-font);color:var(--cg-gold)}
+html:root body #casinoModal .cg-coin .cn-b.t.on{background:linear-gradient(180deg,rgba(226,232,240,.28),rgba(148,163,184,.14))!important;box-shadow:inset 0 0 0 2px #E2E8F0,0 0 16px -4px rgba(226,232,240,.6)!important}
+html:root body #casinoModal .cg-coin.flipping .cn-pick{pointer-events:none}
+@media (max-height:640px){html:root body #casinoModal .cg-coin .cn-pick > button{min-height:46px!important}html:root body #casinoModal .cg-coin .cn-mini{flex-basis:28px;width:28px;height:28px}}
+html:root body #casinoModal .cg-coin .cn-lbl small{direction:ltr;unicode-bidi:isolate}

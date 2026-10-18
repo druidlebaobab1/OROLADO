@@ -1,0 +1,52 @@
+/* v2795 — Target (limbo): big multiplier racing to the result, target / chance / win cells, quick targets. */
+html:root body #casinoModal .cg-limbo .lb-stage{display:flex;flex-direction:column;padding:10px 12px;container-type:size;
+  background:radial-gradient(60% 50% at 50% 55%,rgba(251,191,36,.12),transparent 70%),radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.32),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26)}
+html:root body #casinoModal .cg-limbo .lb-hist{flex:0 0 auto}
+html:root body #casinoModal .cg-limbo .lb-hist i.w{color:#86EFAC;background:rgba(34,197,94,.16)}
+html:root body #casinoModal .cg-limbo .lb-hist i.l{color:#FDA4AF;background:rgba(244,63,94,.14)}
+html:root body #casinoModal .cg-limbo .lb-core{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;isolation:isolate}
+html:root body #casinoModal .cg-limbo .lb-ring{position:absolute;left:50%;top:50%;aspect-ratio:1;border-radius:50%;z-index:-1;pointer-events:none}
+html:root body #casinoModal .cg-limbo .lb-ring.r1{width:min(90cqw,82cqh);transform:translate(-50%,-50%);border:1px solid rgba(196,181,253,.14);box-shadow:inset 0 0 60px rgba(139,92,246,.18)}
+html:root body #casinoModal .cg-limbo .lb-ring.r2{width:min(64cqw,58cqh);transform:translate(-50%,-50%) rotate(0);border:2px dashed rgba(251,191,36,.22)}
+html:root body #casinoModal .cg-limbo.running .lb-ring.r2{animation:lbSpin 1.2s linear infinite}
+@keyframes lbSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+html:root body #casinoModal .cg-limbo .lb-planet{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;z-index:-1;
+  background:radial-gradient(circle at 35% 30%,#FDE68A,#F59E0B 60%,#92400E);box-shadow:0 0 14px rgba(251,191,36,.7);transform:rotate(-40deg) translateX(min(32cqw,29cqh))}
+html:root body #casinoModal .cg-limbo.running .lb-planet{animation:lbOrb 1.2s linear infinite}
+@keyframes lbOrb{from{transform:rotate(-40deg) translateX(min(32cqw,29cqh))}to{transform:rotate(320deg) translateX(min(32cqw,29cqh))}}
+html:root body #casinoModal .cg-limbo .lb-num{max-width:96%;min-width:0;filter:drop-shadow(0 6px 22px rgba(139,92,246,.55));transition:filter .2s}
+html:root body #casinoModal .cg-limbo .lb-core.w .lb-num{filter:drop-shadow(0 0 26px rgba(34,197,94,.55))}
+html:root body #casinoModal .cg-limbo .lb-core.l .lb-num{filter:drop-shadow(0 0 22px rgba(244,63,94,.45))}
+html:root body #casinoModal .cg-limbo .lb-num b{display:block;max-width:100%;text-align:center;color:#F5F3FF;font:900 64px/1.05 var(--cg-font);font-size:clamp(34px,min(20cqw,28cqh),120px);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+html:root body #casinoModal .cg-limbo .lb-num b em{font-style:normal;font-size:.6em;margin-inline-start:.04em;opacity:.85}
+html:root body #casinoModal .cg-limbo .lb-num b.w{color:#4ADE80}
+html:root body #casinoModal .cg-limbo .lb-num b.l{color:#FB7185}
+/* cases cible / chance / gain */
+html:root body #casinoModal .cg-limbo .lb-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:6px}
+html:root body #casinoModal .cg-limbo .lb-cell{min-width:0;height:50px;padding:4px 6px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:rgba(0,0,0,.32);box-shadow:inset 0 0 0 1px var(--cg-line)}
+html:root body #casinoModal .cg-limbo .lb-cell small{display:block;max-width:100%;font:700 10.5px/1.1 var(--cg-font);color:var(--cg-mute);text-align:center}
+html:root body #casinoModal .cg-limbo .lb-cell b{display:block;max-width:100%;font:900 16px/1.1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums;text-align:center}
+html:root body #casinoModal .cg-limbo .lb-cell b.lb-pay{color:var(--cg-gold)}
+html:root body #casinoModal .cg-limbo .lb-tg{background:linear-gradient(180deg,rgba(139,92,246,.3),rgba(139,92,246,.12));box-shadow:inset 0 0 0 1.5px rgba(167,139,250,.6)}
+html:root body #casinoModal .cg-limbo .lb-tg small{color:#DDD6FE}
+html:root body #casinoModal .cg-limbo .lb-in{width:100%;display:flex;align-items:center;gap:3px}
+html:root body #casinoModal .cg-limbo .lb-in label{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center}
+html:root body #casinoModal .cg-limbo .lb-in em{font:900 15px/1 var(--cg-font);font-style:normal;color:var(--cg-gold)}
+html:root body #casinoModal .cg-limbo .lb-in input{width:100%!important;min-width:0!important;height:24px!important;padding:0!important;border:0!important;outline:0;background:transparent!important;box-shadow:none!important;
+  text-align:center;color:#fff!important;font:900 17px/1 var(--cg-font)!important;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cg-limbo .lb-st{flex:0 0 22px;width:22px!important;height:22px!important;min-height:0!important;padding:0!important;border:0!important;border-radius:50%!important;display:grid!important;place-items:center;cursor:pointer;
+  background:rgba(255,255,255,.14)!important;box-shadow:none!important}
+html:root body #casinoModal .cg-limbo .lb-st svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round}
+html:root body #casinoModal .cg-limbo .lb-st:active{background:rgba(251,191,36,.35)!important}
+html:root body #casinoModal .cg-limbo .lb-quick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-limbo .lb-quick button{min-width:0;height:30px!important;min-height:0!important;padding:0 2px!important;border:0!important;border-radius:999px!important;cursor:pointer;white-space:nowrap;
+  background:rgba(255,255,255,.08)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)!important;color:#E9E5FF!important;font:800 clamp(11px,3.3vw,13px)/1 var(--cg-font)!important}
+html:root body #casinoModal .cg-limbo .lb-quick button.on{background:linear-gradient(180deg,rgba(251,191,36,.3),rgba(245,158,11,.18))!important;box-shadow:inset 0 0 0 1.5px var(--cg-gold)!important;color:#FDE68A!important}
+html:root body #casinoModal .cg-limbo.running .cs-extra{pointer-events:none;opacity:.75}
+@media (max-height:640px){
+  html:root body #casinoModal .cg-limbo .lb-cell{height:44px}
+  html:root body #casinoModal .cg-limbo .lb-quick button{height:26px!important}
+}
+html.oro-lite body #casinoModal .cg-limbo .lb-ring.r2,html.oro-lite body #casinoModal .cg-limbo .lb-planet{animation:none!important}
+html:root body #casinoModal .cg-limbo .lb-num b,html:root body #casinoModal .cg-limbo .lb-in,html:root body #casinoModal .cg-limbo .lb-cell b,html:root body #casinoModal .cg-limbo .cg-hist i,html:root body #casinoModal .cg-limbo .lb-quick button{direction:ltr;unicode-bidi:isolate}

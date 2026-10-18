@@ -435,6 +435,7 @@ function casino_crash_point(): float { return min(1000.0, max(1.0, floor(CASINO_
 /** Mines : multiplicateur après $k cases sûres avec $m mines sur 25. */
 function casino_mines_mult(int $m, int $k): float {
   $x = CASINO_EDGE;
+  if ($k > 25 - $m) return 0.0; // v2795 : plus aucune case sûre (« suivante » après la dernière) : jamais de division par zéro
   for ($j = 0; $j < $k; $j++) $x *= (25 - $j) / (25 - $m - $j);
   return floor($x * 100) / 100;
 }

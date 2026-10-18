@@ -128,33 +128,135 @@
     var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return '<i class="sp-crest" style="--cc:' + CREST[h % CREST.length] + '">' + esc(String(n || '?').trim().charAt(0).toUpperCase()) + '</i>'; }
   // « Équipe A - Équipe B » / « A vs B » → deux lignes ; sinon le titre tel quel
   function teams(t) { var m = String(t || '').split(/\s+(?:-|–|—|vs\.?|VS|contre)\s+/); return m.length === 2 ? m : null; }
+  /* v2798 (propriétaire) — PARIS façon grande appli de paris (1xBet / Betway / Bet365) aux couleurs OROLADO (violet
+     nuit, or) : matchs groupés par jour, compte à rebours, grosses cotes nettes, COUPON avec le même terminal de mise que
+     le casino (− montant + et montants rapides), « Mes paris » avec couleurs d'état. Textes sur UNE ligne qui rapetissent.
+     Styles : css/sports2.css (chargé ici si la page ne l'a pas déjà). Le serveur et les formats de données ne changent pas. */
   var flt = 'all';
   var ctx = null, events = [], slip = [], stake = 1, box = null;
   try { stake = Math.max(0.1, +(localStorage.getItem('oro_sp_stake') || 1)); } catch (e) { /* ignore */ }
-
+  (function () {
+    try {
+      if (document.querySelector('link[href*="sports2.css"]')) return;
+      var v = ((document.currentScript && /[?&]v=(\d+)/.exec(document.currentScript.src)) || [])[1] || '2798';
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'css/sports2.css?v=' + v; document.head.appendChild(l);
+    } catch (e) { /* ignore */ }
+  })();
+  // nouveaux petits textes (12 langues)
+  var NT = {
+    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…' },
+    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…' },
+    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…' },
+    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…' },
+    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…' },
+    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…' },
+    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…' },
+    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…' },
+    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…' },
+    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…' },
+    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…' },
+    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…' }
+  };
+  function XX() { var l = lg(); return Object.assign(X(), NT.en, NT[l] || {}); }
+  // petites icônes
+  var IC = {
+    clock: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    lock: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    ok: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    cal: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
+    x: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+    back: '<svg class="sp2-i sp2-flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    slip: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>',
+    trash: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>'
+  };
+  function loc() { var l = lg(); return l === 'ar' ? 'ar-u-nu-latn' : l; }
   function when(t) {
     var x = X(), d = new Date(t * 1000), now = new Date(), tm = new Date(now.getTime() + 86400000);
     var hm = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     if (d.toDateString() === now.toDateString()) return x.today + ' · ' + hm;
     if (d.toDateString() === tm.toDateString()) return x.tomorrow + ' · ' + hm;
-    return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + hm;
+    return d.toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + hm;
   }
+  function hm(t) { return new Date(t * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function dayLabel(t) {
+    var x = X(), d = new Date(t * 1000), now = new Date(), tm = new Date(now.getTime() + 86400000);
+    if (d.toDateString() === now.toDateString()) return x.today;
+    if (d.toDateString() === tm.toDateString()) return x.tomorrow;
+    return d.toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function nowS() { return Date.now() / 1000; }
+  function ufmt(u, v) { try { return new Intl.NumberFormat(loc(), { style: 'unit', unit: u, unitDisplay: 'narrow' }).format(v); } catch (e) { return v + { day: 'd', hour: 'h', minute: 'm' }[u]; } }
+  // compte à rebours court : « 2h 15m », « 3d 4h », « 12m » (unités de la langue du joueur)
+  function cd(sec) {
+    sec = Math.max(0, sec);
+    var d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
+    var s = d ? ufmt('day', d) + ' ' + ufmt('hour', h) : h ? ufmt('hour', h) + ' ' + ufmt('minute', m) : ufmt('minute', Math.max(1, m));
+    return s.replace(/\s/g, ' ');
+  }
+  // une longue phrase → 2 (ou 3) lignes équilibrées, chacune sur UNE ligne élastique (jamais de retour à la ligne automatique)
+  function split2(t) {
+    t = String(t || '').trim(); if (t.length < 26) return [t];
+    var mid = t.length / 2, best = -1, bd = 1e9;
+    for (var i = 1; i < t.length - 1; i++) {
+      var c = t.charAt(i), pen;
+      if (c === ' ') pen = Math.abs(i - mid) - (/[.!?:;,،]/.test(t.charAt(i - 1)) ? t.length * 0.18 : 0);
+      else if (/[，。、！？：；]/.test(c)) pen = Math.abs(i + 1 - mid) - t.length * 0.18;
+      else continue;
+      if (pen < bd) { bd = pen; best = c === ' ' ? i : i + 1; }
+    }
+    if (best < 0) { if (/\s/.test(t)) return [t]; best = Math.round(mid); }
+    return [t.slice(0, best).trim(), t.slice(best).trim()].filter(Boolean);
+  }
+  function lines(t, max) { var out = []; split2(t).forEach(function (p) { if (p.length > (max || 34)) out = out.concat(split2(p)); else out.push(p); }); return out; }
+  function linesHtml(t, tag, max) { return lines(t, max).map(function (p) { return '<' + tag + ' class="fit">' + esc(p) + '</' + tag + '>'; }).join(''); }
+  // textes élastiques (même règle que le casino : D6.CasinoKit.fitEl)
+  function fitEl(el) {
+    var K = D6.CasinoKit; if (K && K.fitEl) { K.fitEl(el); return; }
+    if (!el || !el.isConnected) return;
+    el.style.fontSize = '';
+    var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = Math.max(7, fs * 0.5), n = 0;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.93); el.style.fontSize = fs.toFixed(1) + 'px'; }
+  }
+  function fitAll(root) { if (root) root.querySelectorAll('.fit').forEach(fitEl); }
+  function setTx(el, t) { if (el && el.textContent !== t) { el.textContent = t; fitEl(el); } }
   function inSlip(ev, k) { return slip.some(function (s) { return s.ev === ev && s.k === k; }); }
   function totalOdd() { return Math.floor(slip.reduce(function (a, s) { return a * s.odd; }, 1) * 100 + 1e-6) / 100; } // v2765 : 2,30 reste 2,30
+  function evById(id) { for (var i = 0; i < events.length; i++) if (events[i].id === id) return events[i]; return null; }
+  function evByTitle(t) { for (var i = 0; i < events.length; i++) if (events[i].title === t) return events[i]; return null; }
+  function money(v) { return m2(v) + ' $'; }
+  // le coupon suit la liste : match fermé → marqué « Paris fermés » ; cote changée par l'admin → nouvelle cote affichée
+  function syncSlip() {
+    var chg = false, n = nowS();
+    slip.forEach(function (s) {
+      var e = evById(s.ev), o = e && e.opts.filter(function (z) { return z.k === s.k; })[0];
+      if (!e || !o || !e.open || n >= e.start) { if (!s.closed) { s.closed = true; chg = true; } return; }
+      if (Math.abs(o.odd - s.odd) > 1e-9) { s.odd = o.odd; s.chg = true; chg = true; }
+      s.t = trT(e); s.l = trO(o.label);
+    });
+    return chg;
+  }
 
+  var lastList = null, lastJson = '', fetching = null;
   async function paint(container, c) {
     box = container; ctx = c || {};
     if (!box) return;
+    box.classList.add('sp2');
+    if (lastBet && view === 'slip') { lastBet = null; view = 'list'; }
     // v2763 (propriétaire) : Paris s'affiche TOUT DE SUITE (dernière liste gardée en mémoire), puis se met à jour en silence
-    if (lastList) { events = lastList; render(); }
+    if (lastList) { events = lastList; syncSlip(); render(); }
+    else if (view === 'list') { box.innerHTML = tabs() + skeleton(); bindTabs(); }
+    else render();
     var r = await fetchList();
-    if (!r) { if (!lastList) { events = []; render(); } return; }
+    if (box !== container || !box.isConnected) return;
+    if (!r) { if (!lastList) { events = []; if (view === 'list') render(); } return; }
     var same = lastJson === JSON.stringify(r);
     lastList = r; lastJson = JSON.stringify(r);
-    if (box !== container || !box.isConnected) return;
-    if (!same || !events.length) { events = r; render(); }
+    events = r;
+    var chg = syncSlip();
+    if (view === 'list' && (!same || !box.querySelector('.sp2-list'))) render();
+    else if (view === 'slip' && chg && !sending && !lastBet) { render(); if (ctx.toast) ctx.toast(XX().oddsChg, 'info'); }
+    if (!ctx.guest && mineCache === null) loadMine().then(function (m) { if (m) { mineCache = m; paintBadge(); } });
   }
-  var lastList = null, lastJson = '', fetching = null;
   function fetchList() {
     if (fetching) return fetching;
     fetching = (async function () {
@@ -165,75 +267,228 @@
     })();
     return fetching;
   }
+  var mining = null;
+  function loadMine() {
+    if (mining) return mining;
+    mining = (async function () {
+      var r = null;
+      try { r = await D6.Api.post('spMine', {}, 15000); } catch (e) { r = null; }
+      mining = null;
+      return r && r.ok ? (r.bets || []) : null;
+    })();
+    return mining;
+  }
   // pré-chargement discret, 4 s après l'ouverture du site (une seule petite lecture)
   setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); } }); }, 4000);
+
   // v2765 (propriétaire) : deux onglets en HAUT de la page — « Paris » (les matchs) et « Mes paris » (mes reçus)
   var view = 'list', mineCache = null;
+  function openCount() { return (mineCache || []).filter(function (b) { return b.status === 'open'; }).length; }
   function tabs() {
-    var x = X();
-    return '<div class="sp-tabs"><button type="button" data-sv="list" class="' + (view === 'list' ? 'on' : '') + '">' + esc(x.betsTab) + '</button>' +
-      '<button type="button" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '">' + esc(x.mine) + '</button></div>';
+    var x = X(), n = openCount();
+    return '<div class="sp2-tabs" role="tablist"><button type="button" role="tab" data-sv="list" class="' + (view !== 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.betsTab) + '</span></button>' +
+      '<button type="button" role="tab" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.mine) + '</span>' + (n ? '<i class="sp2-badge">' + n + '</i>' : '') + '</button></div>';
+  }
+  function paintBadge() {
+    var b = box && box.querySelector('.sp2-tabs [data-sv="mine"]'); if (!b) return;
+    var i = b.querySelector('.sp2-badge'), n = openCount();
+    if (!n) { if (i) i.remove(); return; }
+    if (!i) { i = document.createElement('i'); i.className = 'sp2-badge'; b.appendChild(i); }
+    i.textContent = String(n);
+  }
+  function layoutVars() {
+    // les onglets restent collés sous l'en-tête fixe (sa hauteur change : visiteur / connecté) ; bords alignés sur la marge de la page
+    try {
+      var tp = document.querySelector('#casinoModal .cs-top'), mb = box.closest('.modal-box');
+      if (tp) box.style.setProperty('--sp-top', Math.max(40, tp.offsetHeight - 6) + 'px');
+      if (mb) { var cs = getComputedStyle(mb); box.style.setProperty('--sp2-px', (parseFloat(cs.paddingLeft) || 14) + 'px'); box.style.setProperty('--sp2-pb', (parseFloat(cs.paddingBottom) || 18) + 'px'); }
+    } catch (e) { /* ignore */ }
   }
   function bindTabs() {
-    // v2768 : les onglets restent collés juste sous l'en-tête fixe (sa hauteur change : visiteur / connecté)
-    try { var tp = document.querySelector('#casinoModal .cs-top'); if (tp && box) box.style.setProperty('--sp-top', Math.max(40, tp.offsetHeight - 6) + 'px'); } catch (e) { /* ignore */ }
-    box.querySelectorAll('.sp-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); if (v === view) return; view = v; render(); }); });
+    layoutVars();
+    box.querySelectorAll('.sp2-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); if (v === view) return; view = v; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; }); });
   }
-  function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-  function receipts(bets) {
+  function skeleton() { var s = ''; for (var i = 0; i < 4; i++) s += '<div class="sp2-ev sp2-skel"><i></i><i></i><i></i></div>'; return '<div class="sp2-list">' + s + '</div>'; }
+  function empty(msg, btn, id, sv) {
+    return '<div class="sp2-empty"><span class="sp2-empty-ball">' + CRYSTAL + '</span><div class="sp2-empty-t">' + linesHtml(msg, 'b', 30) + '</div>' +
+      (btn ? '<button type="button" class="sp2-cta"' + (id ? ' id="' + id + '"' : '') + (sv ? ' data-sv="' + sv + '"' : '') + '><span class="fit">' + esc(btn) + '</span></button>' : '') + '</div>';
+  }
+
+  // ---------- liste des matchs ----------
+  function timeChip(e) {
+    var x = XX();
+    if (e.status === 'settled') return '<em class="sp2-chip res">' + IC.ok + '<span class="fit">' + esc(x.result) + '</span></em>';
+    if (!e.open) return '<em class="sp2-chip shut">' + IC.lock + '<span class="fit">' + esc(x.closed) + '</span></em>';
+    var s = e.start - nowS();
+    if (s < 86400) return '<em class="sp2-chip cd' + (s < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(s) + '</span></em>';
+    return '<em class="sp2-chip">' + IC.cal + '<span class="fit">' + esc(when(e.start)) + '</span></em>';
+  }
+  function card(e) {
+    var x = XX(), q = !!EVK[e.sport], tm = q ? null : teams(e.title), settled = e.status === 'settled', three = e.opts.length === 3;
+    var opts = e.opts.map(function (o, i) {
+      var on = inSlip(e.id, o.k), win = settled && e.result === o.k, lose = settled && e.result && e.result !== 'void' && e.result !== o.k;
+      var lbl = trO(o.label);
+      if (three && i === 1 && /^(nul|draw|x|n|match nul)$/i.test(String(o.label).trim())) lbl = x.draw;
+      return '<button type="button" class="sp2-o' + (on ? ' on' : '') + (win ? ' win' : '') + (lose ? ' lose' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '" aria-pressed="' + on + '"' + (e.open ? '' : ' disabled') + '>' +
+        '<span class="fit">' + esc(lbl) + '</span><b>' + (win ? IC.ok : '') + Number(o.odd).toFixed(2) + '</b></button>';
+    }).join('');
+    var head;
+    if (tm) {
+      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="fit">' + esc(tm[0]) + '</span></div>' +
+        '<div class="sp2-mid"><b class="fit">' + esc(hm(e.start)) + '</b><small class="fit">' + esc(dayLabel(e.start)) + '</small></div>' +
+        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="fit">' + esc(tm[1]) + '</span></div></div>';
+    } else {
+      var img = q ? logoHtml((e.logos || [])[0] || '', 'sp2-qimg') : '';
+      if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';
+      head = '<div class="sp2-q">' + img + '<div class="sp2-qt">' + linesHtml(trT(e), 'b', 40) + '</div></div>';
+    }
+    var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e);
+    return '<article class="sp2-ev' + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
+      '<div class="sp2-meta"><span class="sp2-lg">' + sico(qKind(e)) + '<span class="fit">' + esc((x.sport[qKind(e)] || x.sport.autre) + (e.league ? ' · ' + trW(e.league) : '')) + '</span></span>' + chip + '</div>' +
+      head + '<div class="sp2-odds n' + e.opts.length + '">' + opts + '</div></article>';
+  }
+  function renderList() {
+    var x = XX();
+    if (!events.length) { box.innerHTML = tabs() + empty(x.none); bindTabs(); fitAll(box); return; }
+    var key = function (e) { return e.status === 'settled' ? 'res' : new Date(e.start * 1000).toDateString(); };
+    var cnt = {}; events.forEach(function (e) { cnt[key(e)] = (cnt[key(e)] || 0) + 1; });
+    var html = '', last = '';
+    events.forEach(function (e) {
+      var k = key(e);
+      if (k !== last) { last = k; html += '<h4 class="sp2-day"><span class="fit">' + esc(k === 'res' ? x.results : dayLabel(e.start)) + '</span><i>' + cnt[k] + '</i></h4>'; }
+      html += card(e);
+    });
+    box.innerHTML = tabs() + '<div class="sp2-list">' + html + '</div>' + slipBar();
+    box.querySelector('.sp2-list').addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.sp2-o'); if (b && !b.disabled) pick(b); });
+    bindTabs(); bindSlip(); fitAll(box); startTick();
+  }
+  // toucher une cote : on l'ajoute / l'enlève du coupon SANS redessiner toute la liste (rapide, la page ne saute pas)
+  function pick(b) {
+    var x = X(), ev = b.getAttribute('data-ev'), k = b.getAttribute('data-k'), e = evById(ev);
+    if (!e || !e.open || nowS() >= e.start) return;
+    var o = e.opts.filter(function (z) { return z.k === k; })[0]; if (!o) return;
+    var had = inSlip(ev, k), n0 = slip.length;
+    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 10) { if (ctx.toast) ctx.toast(x.max10); return; }
+    slip = slip.filter(function (s) { return s.ev !== ev; }); // un seul choix par match
+    if (!had) slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trO(o.label) });
+    var c = b.closest('.sp2-ev');
+    if (c) c.querySelectorAll('.sp2-o').forEach(function (z) { var on = inSlip(ev, z.getAttribute('data-k')); z.classList.toggle('on', on); z.setAttribute('aria-pressed', String(on)); });
+    paintBar(slip.length > n0);
+  }
+
+  /* v2766 (propriétaire) — COUPON comme les grands sites : une barre en bas « Coupon · n choix · cote » qui s'ouvre en
+     GRANDE PAGE. v2798 : la barre reste collée en bas de l'écran pendant qu'on fait défiler les matchs. */
+  var lastBet = null, clearArm = 0, sending = false;
+  function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
+  function slipBar() {
+    if (!slip.length || view !== 'list') return '';
     var x = X();
-    if (!bets.length) return '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.noBets) + '</b><button type="button" class="sp-cta" data-sv="list">' + esc(x.seeBets) + '</button></div>';
-    var ST = { open: x.open, won: x.won, lost: x.lost, void: x.voidL };
+    return '<button type="button" class="sp2-bar" id="spSbar"><span class="sp2-bar-n">' + slip.length + '</span><span class="sp2-bar-t"><b class="fit">' + esc(x.coupon) + '</b><small class="fit">' + esc(fmt(x.sel, { n: slip.length })) + '</small></span>' +
+      '<span class="sp2-bar-o"><small class="fit">' + esc(x.totalOdd) + '</small><b>' + totalOdd().toFixed(2) + '</b></span><em class="sp2-bar-go">' + IC.back + '</em></button>';
+  }
+  function paintBar(bump) {
+    var old = $('spSbar'); if (old) old.remove();
+    var html = slipBar(); if (!html || !box) return;
+    box.insertAdjacentHTML('beforeend', html);
+    var nb = $('spSbar'); bindSlip(); fitAll(nb);
+    if (bump && nb) nb.classList.add('bump');
+  }
+  function bindSlip() {
+    var b = $('spSbar'); if (b) b.addEventListener('click', function () { view = 'slip'; render(); });
+  }
+
+  // ---------- compte à rebours (un seul minuteur, arrêté dès qu'on quitte la page) ----------
+  var tick = 0;
+  function startTick() {
+    clearInterval(tick);
+    tick = setInterval(function () {
+      if (!box || !box.isConnected || !box.classList.contains('sp2')) { clearInterval(tick); tick = 0; return; }
+      var n = nowS(), x = XX();
+      box.querySelectorAll('[data-ts]').forEach(function (el) {
+        var s = +el.getAttribute('data-ts') - n, sp = el.querySelector('span');
+        if (s <= 0) {
+          el.removeAttribute('data-ts'); el.classList.add('gone'); el.classList.remove('soon'); setTx(sp, x.inPlay);
+          var c = el.closest('[data-card]');
+          if (c) { c.classList.add('shut'); c.querySelectorAll('.sp2-o').forEach(function (b) { b.disabled = true; }); var e = evById(c.getAttribute('data-card')); if (e) e.open = false; }
+          return;
+        }
+        el.classList.toggle('soon', s < 3600); setTx(sp, cd(s));
+      });
+      if (view === 'slip' && !sending && !lastBet && slip.some(function (s) { var e = evById(s.ev); return !s.closed && e && n >= e.start; })) { syncSlip(); render(); }
+    }, 20000);
+  }
+
+  // ---------- MES PARIS ----------
+  function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function selRow(s) {
+    var x = XX(), r = s.r || 'open', e = evByTitle(s.t), right = '';
+    if (r === 'open' && e) {
+      if (e.open && e.start > nowS()) right = '<span class="sp2-cd' + (e.start - nowS() < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(e.start - nowS()) + '</span></span>';
+      else if (e.status !== 'settled') right = '<span class="sp2-cd gone"><span class="fit">' + esc(x.inPlay) + '</span></span>';
+    }
+    var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
+    return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit">' + esc(e ? trT(e) : s.t) + '</small><b class="fit">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
+  }
+  function receipts(bets) {
+    var x = XX();
+    if (!bets.length) return empty(x.noBets, x.seeBets, null, 'list');
+    var ST = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL };
     return bets.map(function (bt, bi) {
-      var big = bt.status === 'won' ? '+' + m2(bt.win) + ' $' : bt.status === 'lost' ? '−' + m2(bt.stake) + ' $' : m2(bt.status === 'void' ? bt.stake : bt.pot) + ' $';
-      var lab = bt.status === 'won' ? x.wonL : bt.status === 'lost' ? x.lostL : bt.status === 'void' ? x.voidL : x.potL;
-      return '<div class="sp-rc ' + esc(bt.status) + '" data-rc="' + bi + '" role="button" tabindex="0"><div class="sp-rc-h"><i>' + esc(ST[bt.status] || bt.status) + '</i><small>' + esc(bt.at ? when2(bt.at) : '') + '</small></div>' +
-        bt.sel.map(function (s) { return '<div class="sp-rc-s ' + (s.r || '') + '"><span>' + esc(s.t) + '</span><em>' + esc(s.l) + ' · ' + Number(s.odd).toFixed(2) + '</em></div>'; }).join('') +
-        '<div class="sp-rc-f"><span>' + esc(x.stakeL) + ' <b>' + m2(bt.stake) + ' $</b></span><span>' + esc(x.oddL) + ' <b>' + Number(bt.odd).toFixed(2) + '</b></span><span class="sp-rc-big"><small>' + esc(lab) + '</small><b>' + big + '</b></span></div>' +
-        '<div class="sp-rc-id">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '<em>' + esc(x.rcOpen) + ' ›</em></div></div>';
+      var st = bt.status || 'open';
+      var big = st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake) : money(st === 'void' ? bt.stake : bt.pot);
+      var lab = st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
+      var kind = bt.sel.length > 1 ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
+      return '<div class="sp2-bet st-' + esc(st) + '" data-rc="' + bi + '" role="button" tabindex="0">' +
+        '<div class="sp2-bh"><em class="sp2-pill"><span class="fit">' + esc(ST[st] || st) + '</span></em><span class="fit sp2-kind">' + esc(kind) + '</span><small class="fit">' + esc(bt.at ? when2(bt.at) : '') + '</small></div>' +
+        bt.sel.map(selRow).join('') +
+        '<div class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
+        '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span></div>' +
+        '<div class="sp2-bid"><span class="fit">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '</span><em class="fit">' + esc(x.rcOpen) + ' ›</em></div></div>';
     }).join('');
   }
   async function renderMine() {
-    var x = X();
+    var x = XX();
     if (ctx.guest) {
-      box.innerHTML = tabs() + '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.guestMine) + '</b><button type="button" class="sp-cta" id="spMineSign">' + esc(x.guestBtn) + '</button></div>';
-      bindTabs(); if ($('spMineSign')) $('spMineSign').addEventListener('click', function () { if (ctx.signup) ctx.signup(); });
+      box.innerHTML = tabs() + empty(x.guestMine, x.guestBtn, 'spMineSign');
+      bindTabs(); fitAll(box); if ($('spMineSign')) $('spMineSign').addEventListener('click', function () { if (ctx.signup) ctx.signup(); });
       return;
     }
-    box.innerHTML = tabs() + mineBar() + '<div class="sp-rcs" id="spRcs">' + (mineCache ? receipts(shown = filt(mineCache)) : '<p class="sp-none">' + esc(x.loading) + '</p>') + '</div>';
-    bindTabs(); bindRc(); bindMine();
-    var r = null; try { r = await D6.Api.post('spMine', {}, 15000); } catch (e) { r = null; }
+    box.innerHTML = tabs() + mineBar() + '<div class="sp2-bets" id="spRcs">' + (mineCache ? receipts(shown = filt(mineCache)) : '<div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div><div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div>') + '</div>';
+    bindTabs(); bindRc(); bindMine(); fitAll(box); startTick();
+    var r = await loadMine();
     if (view !== 'mine' || !$('spRcs')) return;
-    if (r && r.ok) { mineCache = r.bets || []; paintMine(); }
-    else if (!mineCache) $('spRcs').innerHTML = '<p class="sp-none">' + esc(x.e_unavailable) + '</p>';
+    if (r) { mineCache = r; paintMine(); paintBadge(); }
+    else if (!mineCache) $('spRcs').innerHTML = '<p class="sp2-none fit">' + esc(x.e_unavailable) + '</p>';
   }
   /* v2790 (propriétaire) — MES PARIS : recherche par état (en cours, gagnés, perdus, remboursés) et par période
      (aujourd'hui, 7 jours, ce mois, cette année, un jour précis). Tout se fait sur le téléphone, la liste ne recharge pas. */
   var MF = { st: 'all', per: 'all', day: '' }, shown = [];
-  function filt(list) {
+  function filt(list, anySt) {
     var now = new Date(), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
     var from = MF.per === 'today' ? d0 : MF.per === '7' ? d0 - 6 * 86400 : MF.per === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1).getTime() / 1000 : MF.per === 'year' ? new Date(now.getFullYear(), 0, 1).getTime() / 1000 : 0;
     var dayFrom = 0, dayTo = 0;
     if (MF.per === 'day' && MF.day) { var p = MF.day.split('-'); dayFrom = new Date(+p[0], +p[1] - 1, +p[2]).getTime() / 1000; dayTo = dayFrom + 86400; }
     return (list || []).filter(function (b) {
-      if (MF.st !== 'all' && b.status !== MF.st) return false;
+      if (!anySt && MF.st !== 'all' && b.status !== MF.st) return false;
       if (from && b.at < from) return false;
       if (dayFrom && (b.at < dayFrom || b.at >= dayTo)) return false;
       return true;
     });
   }
+  function counts() { var c = { all: 0, open: 0, won: 0, lost: 0, void: 0 }; filt(mineCache || [], true).forEach(function (b) { c.all++; c[b.status] = (c[b.status] || 0) + 1; }); return c; }
   function mineBar() {
-    var x = X(), st = [['all', x.fAll], ['open', x.fOpen], ['won', x.fWon], ['lost', x.fLost], ['void', x.fVoid]];
+    var x = X(), st = [['all', x.fAll], ['open', x.fOpen], ['won', x.fWon], ['lost', x.fLost], ['void', x.fVoid]], c = counts();
     var per = [['all', x.pAll], ['today', x.pToday], ['7', x.p7], ['month', x.pMonth], ['year', x.pYear], ['day', x.pDay]];
-    return '<div class="sp-mf"><div class="sp-mf-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="' + (MF.st === o[0] ? 'on' : '') + '">' + esc(o[1]) + '</button>'; }).join('') + '</div>' +
-      '<div class="sp-mf-per"><select id="spMfPer">' + per.map(function (o) { return '<option value="' + o[0] + '"' + (MF.per === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>' +
+    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '"><b>' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
+      '<div class="sp2-per"><label class="sp2-selw">' + IC.cal + '<select id="spMfPer" aria-label="' + esc(x.pAll) + '">' + per.map(function (o) { return '<option value="' + o[0] + '"' + (MF.per === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></label>' +
       '<input type="date" id="spMfDay" value="' + esc(MF.day) + '"' + (MF.per === 'day' ? '' : ' hidden') + '></div></div>';
   }
   function paintMine() {
     if (!$('spRcs')) return;
-    var x = X(); shown = filt(mineCache);
-    $('spRcs').innerHTML = shown.length || !(mineCache && mineCache.length) ? receipts(shown) : '<p class="sp-none">' + esc(x.fNone) + '</p>';
-    bindRc();
+    var x = X(), c = counts(); shown = filt(mineCache);
+    box.querySelectorAll('[data-mst]').forEach(function (b) { var n = b.querySelector('b'); if (n) n.textContent = String(c[b.getAttribute('data-mst')] || 0); });
+    $('spRcs').innerHTML = shown.length || !(mineCache && mineCache.length) ? receipts(shown) : '<p class="sp2-none"><span class="fit">' + esc(x.fNone) + '</span></p>';
+    bindRc(); fitAll($('spRcs'));
   }
   function bindMine() {
     box.querySelectorAll('[data-mst]').forEach(function (b) { b.addEventListener('click', function () { MF.st = b.getAttribute('data-mst'); box.querySelectorAll('[data-mst]').forEach(function (z) { z.classList.toggle('on', z === b); }); paintMine(); }); });
@@ -242,8 +497,12 @@
     if (day) day.addEventListener('change', function () { MF.day = day.value; paintMine(); });
   }
   function bindRc() {
-    box.querySelectorAll('.sp-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); });
-    box.querySelectorAll('.sp-rc[data-rc]').forEach(function (c) { c.addEventListener('click', function () { var bt = (shown && shown.length ? shown : (mineCache || []))[+c.getAttribute('data-rc')]; if (bt) showReceipt(bt); }); });
+    box.querySelectorAll('.sp2-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); });
+    box.querySelectorAll('.sp2-bet[data-rc]').forEach(function (c) {
+      var go = function () { var bt = (shown && shown.length ? shown : (mineCache || []))[+c.getAttribute('data-rc')]; if (bt) showReceipt(bt); };
+      c.addEventListener('click', go);
+      c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
   }
   /* v2779 (propriétaire) — LE REÇU D'UN PARI, comme un vrai ticket : en-tête OROLADO.com, état (en cours / gagné / perdu /
      remboursé), le montant en grand, chaque match avec son résultat, mise, cote, gain, date et numéro du reçu. */
@@ -287,119 +546,149 @@
   }
   function render() {
     if (!box) return;
-    var x = X();
+    box.classList.add('sp2');
     if (view === 'mine') { renderMine(); return; }
     if (view === 'slip') { renderSlip(); return; }
-    if (!events.length) {
-      box.innerHTML = tabs() + '<div class="sp-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.none) + '</b></div>'; bindTabs(); return;
-    }
-    // pastilles de sport (seulement les sports qui ont des matchs)
-    var kinds = []; events.forEach(function (e) { var k = EVK[e.sport] ? 'event' : (e.sport || 'autre'); if (kinds.indexOf(k) < 0) kinds.push(k); });
-    flt = 'all';
-    var chips = ''; // v2747 (propriétaire) : plus de filtres foot / basket… — toutes les prédictions ensemble
-    box.innerHTML = tabs() + chips + events.filter(function (e) { return flt === 'all' || (EVK[e.sport] ? 'event' : (e.sport || 'autre')) === flt; }).map(function (e) {
-      var three = e.opts.length === 3;
-      var opts = e.opts.map(function (o, i) {
-        var on = inSlip(e.id, o.k), res = e.status === 'settled' && e.result === o.k;
-        var code = EVK[e.sport] ? '' : (three ? ['1', x.drawCode || 'N', '2'][i] : ''); // v2787 : à 2 choix, le NOM de l'équipe est écrit sur le bouton
-        return '<button type="button" class="sp-o' + (on ? ' on' : '') + (res ? ' res' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '"' + (e.open ? '' : ' disabled') + '><small>' + esc(code || trO(o.label)) + '</small><b>' + o.odd.toFixed(2) + '</b></button>';
-      }).join('');
-      var tm = EVK[e.sport] ? null : teams(e.title);
-      var qImg = EVK[e.sport] && e.logos && e.logos[0] !== 'q:ball' ? logoHtml(e.logos[0] || '', 'sp-qimg') : ''; // v2765 : plus de gros ballon
-      var head = tm ? '<div class="sp-teams"><p>' + crest(tm[0], (e.logos || [])[0]) + '<span>' + esc(tm[0]) + '</span></p><p>' + crest(tm[1], (e.logos || [])[1]) + '<span>' + esc(tm[1]) + '</span></p></div>' : '<b class="sp-t">' + qImg + esc(trT(e)) + '</b>';
-      return '<div class="sp-ev' + (e.open ? '' : ' shut') + '"><div class="sp-top"><span>' + sico(qKind(e)) + esc((x.sport[qKind(e)] || x.sport.autre) + (e.league ? ' · ' + trW(e.league) : '')) + '</span><em>' + esc(e.open ? when(e.start) : (e.status === 'settled' ? x.result : x.closed)) + '</em></div>' +
-        head + '<div class="sp-os n' + e.opts.length + (EVK[e.sport] ? ' q' : '') + '">' + opts + '</div></div>';
-    }).join('') + slipBar();
-    box.querySelectorAll('.sp-chips [data-f]').forEach(function (b) { b.addEventListener('click', function () { flt = b.getAttribute('data-f'); render(); }); });
-    box.querySelectorAll('.sp-o').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var ev = b.getAttribute('data-ev'), k = b.getAttribute('data-k'), e = events.filter(function (z) { return z.id === ev; })[0];
-        if (!e || !e.open) return;
-        var o = e.opts.filter(function (z) { return z.k === k; })[0];
-        var had = inSlip(ev, k);
-        slip = slip.filter(function (s) { return s.ev !== ev; }); // un seul choix par match
-        if (!had) { if (slip.length >= 10) { if (ctx.toast) ctx.toast(x.max10); return; } slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trO(o.label) }); }
-        render();
-      });
-    });
-    bindTabs(); bindSlip();
+    renderList();
   }
-  /* v2766 (propriétaire) — COUPON comme les grands sites : une barre en bas « Coupon · n choix · cote », qui s'ouvre
-     en GRANDE PAGE : chaque choix avec sa croix, « Tout supprimer » (avec confirmation), simple / combiné expliqué,
-     mises rapides, gain possible en grand, puis un REÇU après le pari. Mise minimum 1 $ (vérifiée aussi par le serveur). */
-  var lastBet = null, clearArm = 0;
-  function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
-  function slipBar() {
-    if (!slip.length || view !== 'list') return '';
+
+  // ---------- COUPON (grande page) : choix, cote totale, terminal de mise du casino, gain possible, « Parier » ----------
+  var QUICK = [1, 5, 10, 50];
+  function stepOf(v, up) { return up ? (v < 1 ? 0.1 : v < 10 ? 1 : v < 100 ? 5 : 50) : (v <= 1 ? 0.1 : v <= 10 ? 1 : v <= 100 ? 5 : 50); }
+  // la page du coupon tient dans l'écran (seule la liste des choix défile s'il y en a beaucoup)
+  function fitPage() {
+    try {
+      var mb = box.closest('.modal-box'); if (!mb) return;
+      mb.scrollTop = 0;
+      var top = box.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
+      var pb = parseFloat(getComputedStyle(mb).paddingBottom) || 18;
+      box.style.setProperty('--sp2-h', Math.max(300, Math.floor(mb.clientHeight - top - pb)) + 'px');
+    } catch (e) { /* ignore */ }
+  }
+  function slipHead() {
     var x = X();
-    return '<button type="button" class="sp-sbar" id="spSbar"><span class="sp-sbar-n">' + slip.length + '</span><span class="sp-sbar-t"><b>' + esc(x.coupon) + '</b><small>' + esc(fmt(x.sel, { n: slip.length })) + '</small></span>' +
-      '<span class="sp-sbar-o"><small>' + esc(x.totalOdd) + '</small><b>' + totalOdd().toFixed(2) + '</b></span><em>' + esc(x.see) + ' ›</em></button>';
+    return '<div class="sp2-sh"><button type="button" class="sp2-back" id="spCpBack" aria-label="‹">' + IC.back + '</button><b class="fit">' + esc(x.myCoupon) + '</b>' +
+      (slip.length && !lastBet ? '<i class="sp2-badge">' + slip.length + '</i><button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
   }
-  function bindSlip() {
-    var b = $('spSbar'); if (b) b.addEventListener('click', function () { view = 'slip'; render(); });
-  }
+  function backToList() { lastBet = null; view = 'list'; render(); }
   function renderSlip() {
-    var x = X();
-    var head = '<div class="sp-cp-h"><button type="button" class="sp-cp-back" id="spCpBack" aria-label="‹">‹</button><b>' + esc(x.myCoupon) + (slip.length ? ' <i>' + slip.length + '</i>' : '') + '</b>' +
-      (slip.length ? '<button type="button" class="sp-cp-clear" id="spCpClear">' + esc(x.clearAll) + '</button>' : '<span></span>') + '</div>';
+    var x = XX();
+    layoutVars();
     if (lastBet) {
       var lb = lastBet;
-      box.innerHTML = head + '<div class="sp-done"><span class="sp-done-ok">✓</span><b>' + esc(x.done) + '</b><div class="sp-done-r"><span>' + esc(x.stakeL) + ' <b>' + m2(lb.stake) + ' $</b></span><span>' + esc(x.oddL) + ' <b>' + Number(lb.odd).toFixed(2) + '</b></span><span>' + esc(x.potL) + ' <b>' + m2(lb.pot) + ' $</b></span></div>' +
-        '<small class="sp-done-id">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small><button type="button" class="sp-cta" id="spSeeRc">' + esc(x.rcSee) + '</button><button type="button" class="sp-cta2" id="spSeeMine">' + esc(x.mine) + '</button><button type="button" class="sp-cta2" id="spCont">' + esc(x.cont) + '</button></div>';
+      box.innerHTML = '<div class="sp2-page sp2-donep">' + slipHead() + '<div class="sp2-done"><span class="sp2-done-ok">' + IC.ok + '</span><b class="fit sp2-done-t">' + esc(x.done) + '</b>' +
+        '<div class="sp2-done-c"><p><span class="fit">' + esc(x.stakeL) + '</span><b class="fit">' + money(lb.stake) + '</b></p><p><span class="fit">' + esc(x.oddL) + '</span><b class="fit">' + Number(lb.odd).toFixed(2) + '</b></p>' +
+        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b class="fit">' + money(lb.pot) + '</b></p></div>' +
+        '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>' +
+        '<div class="sp2-done-b"><button type="button" class="sp2-cta" id="spSeeRc"><span class="fit">' + esc(x.rcSee) + '</span></button>' +
+        '<div><button type="button" class="sp2-cta2" id="spSeeMine"><span class="fit">' + esc(x.mine) + '</span></button><button type="button" class="sp2-cta2" id="spCont"><span class="fit">' + esc(x.cont) + '</span></button></div></div></div></div>';
+      fitPage(); fitAll(box);
       $('spSeeRc').addEventListener('click', function () { showReceipt(lb); });
-      $('spCpBack').addEventListener('click', function () { lastBet = null; view = 'list'; render(); });
+      $('spCpBack').addEventListener('click', backToList);
       $('spSeeMine').addEventListener('click', function () { lastBet = null; view = 'mine'; render(); });
-      $('spCont').addEventListener('click', function () { lastBet = null; view = 'list'; render(); });
+      $('spCont').addEventListener('click', backToList);
       return;
     }
     if (!slip.length) {
-      box.innerHTML = head + '<div class="sp-empty sp-mine-empty"><span class="sp-empty-ball">' + CRYSTAL + '</span><b>' + esc(x.emptySlip) + '</b><button type="button" class="sp-cta" id="spCont">' + esc(x.seeBets) + '</button></div>';
-      $('spCpBack').addEventListener('click', function () { view = 'list'; render(); });
-      $('spCont').addEventListener('click', function () { view = 'list'; render(); });
+      box.innerHTML = '<div class="sp2-page">' + slipHead() + empty(x.emptySlip, x.seeBets, 'spCont') + '</div>';
+      fitPage(); fitAll(box);
+      $('spCpBack').addEventListener('click', backToList);
+      $('spCont').addEventListener('click', backToList);
       return;
     }
-    var odd = totalOdd();
-    box.innerHTML = head +
-      '<p class="sp-cp-type ' + (slip.length > 1 ? 'combo' : 'single') + '"><b>' + esc(slip.length > 1 ? x.comboT : x.singleT) + '</b> ' + esc(slip.length > 1 ? x.combo : x.single) + '</p>' +
-      (ctx.guest ? '<p class="sp-cp-guest">' + esc(x.guestBet) + '</p>' : '') + // v2787 : le visiteur comprend tout de suite qu'il doit s'inscrire pour valider
-      '<div class="sp-cp-list">' + slip.map(function (z, i) {
-        return '<div class="sp-cp-s"><div><small>' + esc(z.t) + '</small><b>' + esc(z.l) + '</b></div><em>' + Number(z.odd).toFixed(2) + '</em><button type="button" class="sp-cp-x" data-i="' + i + '" aria-label="×">×</button></div>';
-      }).join('') + '</div>' +
-      '<div class="sp-cp-tot"><span>' + esc(x.totalOdd) + '</span><b>' + odd.toFixed(2) + '</b></div>' +
-      '<div class="sp-cp-stake"><label>' + esc(x.stakeL) + '</label><div class="sp-cp-in"><input id="spStake" inputmode="decimal" value="' + m2(stake) + '"><span>$</span></div>' +
-      '<div class="sp-cp-chips">' + [1, 5, 10, 25, 50, 100].map(function (v) { return '<button type="button" data-v="' + v + '" class="' + (stake === v ? 'on' : '') + '">' + v + ' $</button>'; }).join('') + '</div>' +
-      '</div>' + // v2779 (propriétaire) : aucune limite affichée à l'avance
-
-      '<div class="sp-cp-pot"><span>' + esc(x.potL) + '</span><b id="spPot">' + m2(stake * odd) + ' $</b></div>' +
-      '<button type="button" class="sp-cp-go" id="spGo">' + esc(x.bet) + ' · <span id="spGoAmt">' + m2(stake) + ' $</span></button>';
-    $('spCpBack').addEventListener('click', function () { view = 'list'; render(); });
+    var odd = totalOdd(), multi = slip.length > 1, anyClosed = slip.some(function (z) { return z.closed; });
+    var type = '<div class="sp2-type ' + (multi ? 'combo' : 'single') + '"><em><span class="fit">' + esc(multi ? x.rcCombo : x.rcSingle) + '</span></em>' +
+      (multi ? '<div class="sp2-type-t">' + linesHtml(x.combo, 'span', 30) + '</div>' : '<div class="sp2-type-t"><span class="fit">' + esc(x.single) + '</span></div>') + '</div>';
+    var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
+      var e = evById(z.ev);
+      return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
+        '<div class="sp2-sel-t"><small class="fit">' + esc(e ? trT(e) : z.t) + '</small><b class="fit">' + esc(z.closed ? x.closed : z.l) + '</b></div>' +
+        '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>';
+    }).join('') + '</div>';
+    var tot = '<div class="sp2-tot"><div><small class="fit">' + esc(x.totalOdd) + '</small><b class="fit" id="spOdd">' + odd.toFixed(2) + '</b></div>' +
+      '<div class="win"><small class="fit">' + esc(x.potL) + '</small><b class="fit" id="spPot">' + money(stake * odd) + '</b></div></div>';
+    var term = '<div class="cs-panel cg-panel sp2-term"><div class="cg-term"><div class="cg-tl">' +
+      '<div class="cg-amt"><button type="button" class="cg-step" data-sk="dn" aria-label="−"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>' +
+      '<label class="cg-in"><input id="spStake" inputmode="decimal" autocomplete="off" value="' + m2(stake) + '" aria-label="' + esc(x.stakeL) + '">' +
+      '<button type="button" class="cg-clr" data-sk="clr" aria-label="0.10"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg></button></label>' +
+      '<button type="button" class="cg-step" data-sk="up" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></div>' +
+      '<div class="cg-quick">' + QUICK.map(function (v) { return '<button type="button" data-q="' + v + '">' + v + '</button>'; }).join('') + '</div></div>' +
+      '<button type="button" class="cs-go cg-go sp2-go' + (ctx.guest ? ' cash' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? x.guestBtn : x.bet) + '</span>' +
+      (ctx.guest ? '' : '<small class="fit" id="spGoAmt">' + money(stake) + '</small>') + '</button></div></div>';
+    box.innerHTML = '<div class="sp2-page">' + slipHead() + type + (ctx.guest ? '<p class="sp2-guest"><span class="fit">' + esc(x.guestBet) + '</span></p>' : '') + list + tot + term + '</div>';
+    fitPage(); fitAll(box); startTick();
+    slip.forEach(function (z) { z.chg = false; });
+    $('spCpBack').addEventListener('click', function () { if (sending) return; view = 'list'; render(); });
     $('spCpClear').addEventListener('click', function () {
+      if (sending) return;
       var bt = this;
-      if (Date.now() - clearArm > 3000) { clearArm = Date.now(); bt.textContent = x.confirmClear; bt.classList.add('arm'); return; }
+      if (Date.now() - clearArm > 3000) { clearArm = Date.now(); setTx(bt.querySelector('span'), x.confirmClear); bt.classList.add('arm'); return; }
       clearArm = 0; slip = []; view = 'list'; render();
     });
-    box.querySelectorAll('.sp-cp-x').forEach(function (bt) { bt.addEventListener('click', function () { slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
+    box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
+    var inp = $('spStake');
     var upd = function () {
-      $('spPot').textContent = m2(stake * totalOdd()) + ' $'; $('spGoAmt').textContent = m2(stake) + ' $';
-      box.querySelectorAll('.sp-cp-chips [data-v]').forEach(function (c) { c.classList.toggle('on', +c.getAttribute('data-v') === stake); });
+      setTx($('spPot'), money(stake * totalOdd()));
+      if ($('spGoAmt')) setTx($('spGoAmt'), money(stake));
     };
-    $('spStake').addEventListener('input', function () {
-      var v = parseFloat(String(this.value).replace(',', '.')); if (!(v > 0)) return;
-      stake = Math.round(v * 100) / 100; try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ }
-      upd();
+    var save = function () { try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } };
+    var set = function (v) { v = Math.round((Number(v) || 0) * 100) / 100; if (!(v >= 0.1)) v = 0.1; if (v > 100000) v = 100000; stake = v; inp.value = m2(v); save(); upd(); };
+    inp.addEventListener('input', function () { var v = parseFloat(String(inp.value).replace(',', '.')); if (!(v > 0)) return; stake = Math.round(v * 100) / 100; save(); upd(); });
+    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
+    inp.addEventListener('focus', function () { try { inp.select(); } catch (e) { /* ignore */ } });
+    box.querySelectorAll('.sp2-term [data-sk]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); if (sending) return;
+        var k = b.getAttribute('data-sk');
+        if (k === 'clr') set(0.1); else if (k === 'up') set(stake + stepOf(stake, true)); else set(stake - stepOf(stake, false));
+      });
     });
-    box.querySelectorAll('.sp-cp-chips [data-v]').forEach(function (c) { c.addEventListener('click', function () { stake = +c.getAttribute('data-v'); $('spStake').value = m2(stake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } upd(); }); });
-    $('spGo').addEventListener('click', async function () {
-      // v2768 (propriétaire) : le visiteur reçoit un petit message (pas d'envoi direct vers l'inscription)
-      if (ctx.guest) { guestNote(); return; }
-      if (stake < 0.1) { if (ctx.toast) ctx.toast(x.e_min); return; }
-      var bt = this; if (bt.disabled) return; bt.disabled = true;
-      var r = null; try { r = await D6.Api.post('spBet', { mode: 'real', stake: stake, sel: slip.map(function (z) { return { ev: z.ev, k: z.k }; }) }, 15000); } catch (e) { r = null; }
-      bt.disabled = false;
-      if (!r || !r.ok) { if (ctx.toast) ctx.toast(x['e_' + ((r && r.reason) || 'unavailable')] || x.e_unavailable); return; }
-      if (ctx.afterPlay) ctx.afterPlay({ mode: (r.bet && r.bet.mode) || 'real', bal: r.bal, win: 0, stake: r.bet.stake });
-      slip = []; mineCache = null; lastBet = r.bet; render();
-    });
+    box.querySelectorAll('.sp2-term .cg-quick [data-q]').forEach(function (b) { b.addEventListener('click', function () { if (!sending) set(+b.getAttribute('data-q')); }); });
+    if (sending) busy(true);
+    $('spGo').addEventListener('click', place);
+  }
+  // pendant l'envoi : tout est bloqué (pas de double pari, pas de choix retiré en route)
+  function busy(on) {
+    var g = $('spGo'), x = XX(); if (!g) return;
+    g.disabled = on; g.classList.toggle('wait', on);
+    setTx($('spGoT'), on ? x.sending : x.bet);
+    box.querySelectorAll('.sp2-page button:not(#spGo), .sp2-page input').forEach(function (b) { b.disabled = on; });
+  }
+  // pas de réponse (réseau coupé, délai dépassé) : on regarde si le pari a quand même été enregistré avant de dire « échec »
+  async function recover(sentAt, st, titles, known) {
+    var m = await loadMine(); if (!m) return null;
+    mineCache = m;
+    return m.filter(function (b) {
+      return !known[b.id] && b.at >= sentAt - 120 && Math.abs(b.stake - st) < 0.005 && b.sel.map(function (s) { return s.t; }).sort().join('|') === titles;
+    })[0] || null;
+  }
+  async function place() {
+    var x = XX();
+    if (ctx.guest) { guestNote(); if (ctx.signup) ctx.signup(); return; }
+    if (sending || !slip.length) return;
+    if (slip.some(function (z) { return z.closed; })) { if (ctx.toast) ctx.toast(x.e_closed); return; }
+    if (stake < 0.1) { if (ctx.toast) ctx.toast(x.e_min); return; }
+    sending = true; busy(true);
+    var st = stake, sel = slip.map(function (z) { return { ev: z.ev, k: z.k }; });
+    var titles = slip.map(function (z) { var e = evById(z.ev); return e ? e.title : ''; }).sort().join('|');
+    var known = {}; (mineCache || []).forEach(function (b) { known[b.id] = 1; });
+    var sentAt = nowS(), r = null;
+    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel }, 20000); } catch (e) { r = null; }
+    if (!r) { var found = await recover(sentAt, st, titles, known); if (found) r = { ok: true, bet: found, bal: null }; }
+    sending = false;
+    if (!box || !box.isConnected) { if (r && r.ok) { slip = []; mineCache = null; } return; }
+    if (!r || !r.ok) {
+      busy(false);
+      var why = (r && r.reason) || 'unavailable';
+      if (why === 'maxWin' && r.maxStake > 0) { stake = Math.max(0.1, r.maxStake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } render(); }
+      if (why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); if (view === 'slip') render(); } }
+      if (ctx.toast) ctx.toast(x['e_' + why] || x.e_unavailable);
+      return;
+    }
+    if (ctx.afterPlay) ctx.afterPlay({ mode: (r.bet && r.bet.mode) || 'real', bal: r.bal, win: 0, stake: r.bet.stake });
+    slip = []; lastBet = r.bet;
+    if (mineCache) mineCache = [r.bet].concat(mineCache.filter(function (b) { return b.id !== r.bet.id; }));
+    if (view === 'slip') render();
   }
   D6.Sports = { paint: paint, receipt: showReceipt };
 })(window.D6 = window.D6 || {});

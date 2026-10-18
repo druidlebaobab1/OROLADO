@@ -1,0 +1,47 @@
+/* v2795 — Scratch Card (Hacksaw-style scratch ticket). */
+html:root body #casinoModal .cg-scratch .cg-stage{display:flex;flex-direction:column;gap:6px;padding:8px;min-height:0}
+html:root body #casinoModal .cg-scratch .sc-defs{position:absolute;width:0;height:0;overflow:hidden}
+html:root body #casinoModal .cg-scratch .sc-status{flex:none;display:flex;justify-content:center;min-width:0}
+html:root body #casinoModal .cg-scratch .sc-status b{display:block;max-width:100%;padding:4px 14px;border-radius:999px;background:rgba(8,4,26,.55);box-shadow:inset 0 0 0 1px var(--cg-line);
+  font:800 13px/1.2 var(--cg-font);color:#FDE68A;letter-spacing:.02em}
+html:root body #casinoModal .cg-scratch .sc-host{position:relative;flex:1 1 auto;min-height:0}
+html:root body #casinoModal .cg-scratch .sc-card{--u:3px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;box-sizing:border-box;
+  padding:calc(var(--u)*3);border-radius:calc(var(--u)*5);
+  background:radial-gradient(120% 70% at 50% 0%,#6D28D9 0%,#3B1C7A 45%,#1E1048 100%);
+  box-shadow:inset 0 0 0 calc(var(--u)*.8) #FBBF24,inset 0 0 0 calc(var(--u)*1.6) rgba(122,74,6,.9),0 calc(var(--u)*3) calc(var(--u)*7) -2px rgba(0,0,0,.75)}
+html:root body #casinoModal .cg-scratch .sc-card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(1px 1px at 10% 8%,#fff,transparent),radial-gradient(1.3px 1.3px at 88% 6%,#fff,transparent),radial-gradient(1px 1px at 70% 94%,#fff,transparent),radial-gradient(1px 1px at 6% 90%,#fff,transparent)}
+html:root body #casinoModal .cg-scratch .sc-head{flex:none;height:calc(var(--u)*11);display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*2);margin-bottom:calc(var(--u)*2.5)}
+html:root body #casinoModal .cg-scratch .sc-head b{font:900 calc(var(--u)*6.4)/1 var(--cg-font);letter-spacing:.08em;white-space:nowrap;color:#FFE9A8;text-shadow:0 0 calc(var(--u)*2) rgba(251,191,36,.7),0 calc(var(--u)*.5) 0 #7A4A06}
+html:root body #casinoModal .cg-scratch .sc-head em{font-style:normal;color:#F472B6}
+html:root body #casinoModal .cg-scratch .sc-head i{flex:1;height:calc(var(--u)*.6);border-radius:9px;background:linear-gradient(90deg,transparent,#FBBF24)}
+html:root body #casinoModal .cg-scratch .sc-head i:last-child{background:linear-gradient(90deg,#FBBF24,transparent)}
+html:root body #casinoModal .cg-scratch .sc-gw{position:relative;flex:1 1 auto;min-height:0;border-radius:calc(var(--u)*3);background:#FFF8E7;
+  box-shadow:inset 0 0 0 calc(var(--u)*.6) #D4A017,0 0 0 calc(var(--u)*.8) rgba(0,0,0,.25)}
+html:root body #casinoModal .cg-scratch .sc-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:calc(var(--u)*1.6);height:100%;box-sizing:border-box;padding:calc(var(--u)*2)}
+html:root body #casinoModal .cg-scratch .sc-cell{min-width:0;min-height:0;display:grid;place-items:center;border-radius:calc(var(--u)*2.6);background:linear-gradient(180deg,#FFFFFF,#F3E8FF);
+  box-shadow:inset 0 0 0 1px rgba(109,40,217,.18);transition:opacity .3s,transform .3s}
+html:root body #casinoModal .cg-scratch .sc-cell .sy{width:70%;height:70%;display:block;filter:drop-shadow(0 calc(var(--u)*.6) calc(var(--u)*.6) rgba(60,20,120,.3))}
+html:root body #casinoModal .cg-scratch .sc-cell.op .sy{animation:scPop .35s ease-out}
+@keyframes scPop{from{transform:scale(.6)}70%{transform:scale(1.1)}to{transform:scale(1)}}
+html:root body #casinoModal .cg-scratch .sc-cell.dim{opacity:.45}
+html:root body #casinoModal .cg-scratch .sc-cell.win{background:radial-gradient(circle,#FEF3C7,#FCD34D);box-shadow:inset 0 0 0 calc(var(--u)*.9) #F59E0B,0 0 calc(var(--u)*4) rgba(251,191,36,.9);animation:scWin .7s ease-in-out infinite alternate}
+@keyframes scWin{from{transform:scale(1)}to{transform:scale(1.06)}}
+html:root body #casinoModal .cg-scratch .sc-cv{position:absolute;inset:0;width:100%;height:100%;border-radius:calc(var(--u)*3);touch-action:none;cursor:crosshair;transition:opacity .4s}
+html:root body #casinoModal .cg-scratch .sc-cv.gone{opacity:0;transition:opacity .4s}
+html:root body #casinoModal .cg-scratch .sc-cv:not(.gone){transition:none}
+html:root body #casinoModal .cg-scratch .sc-card.fresh{animation:scIn .45s ease-out}
+@keyframes scIn{from{transform:translate(-50%,-46%) scale(.94);opacity:.4}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+html:root body #casinoModal .cg-scratch .sc-card.nudge{animation:scNudge .4s ease-in-out}
+@keyframes scNudge{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(calc(-50% - 5px),-50%)}75%{transform:translate(calc(-50% + 5px),-50%)}}
+html:root body #casinoModal .cg-scratch .sc-card.won{box-shadow:inset 0 0 0 calc(var(--u)*.8) #FDE68A,inset 0 0 0 calc(var(--u)*1.6) rgba(122,74,6,.9),0 0 calc(var(--u)*8) rgba(251,191,36,.6)}
+/* tableau des gains */
+html:root body #casinoModal .cg-scratch .sc-pay{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-scratch .sc-p{min-width:0;height:30px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 5px;border-radius:10px;background:rgba(8,4,26,.55);box-shadow:inset 0 0 0 1px var(--cg-line)}
+html:root body #casinoModal .cg-scratch .sc-p > i{display:flex;flex:none}
+html:root body #casinoModal .cg-scratch .sc-p .sy{width:14px;height:14px;display:block;margin:0 -1.5px}
+html:root body #casinoModal .cg-scratch .sc-p b{flex:0 1 auto;font:900 13px/1 var(--cg-font);color:var(--cg-gold)}
+html:root body #casinoModal .cg-scratch .sc-p.on{background:linear-gradient(180deg,rgba(251,191,36,.42),rgba(245,158,11,.2));box-shadow:inset 0 0 0 2px var(--cg-gold),0 0 14px -2px rgba(251,191,36,.8)}
+html:root body #casinoModal .cg-scratch .sc-p.on b{color:#fff}
+@media (max-height:640px){html:root body #casinoModal .cg-scratch .sc-p{height:26px}html:root body #casinoModal .cg-scratch .sc-status b{font-size:12px;padding:3px 12px}}
+html.oro-lite body #casinoModal .cg-scratch .sc-cell.win,html.oro-lite body #casinoModal .cg-scratch .sc-card.fresh,html.oro-lite body #casinoModal .cg-scratch .sc-cell.op .sy{animation:none}
