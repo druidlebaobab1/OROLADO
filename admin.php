@@ -2053,7 +2053,7 @@ if ($isAjax) {
     require_once __DIR__ . '/sports_lib.php';
     if ($action === 'cs_stats') {
       $st = casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static fn(array &$s) => $s) ?: [];
-      admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => CASINO_GAMES]);
+      admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => array_merge(CASINO_GAMES, casino_ext_keys()), 'names' => function_exists('casino_ext_names') ? casino_ext_names() : []]); // v2804 : nouveaux jeux
     }
     // v2698 — joueurs du casino : liste (nom, e-mail, ID public) et détail d'un joueur (parties + paris sportifs)
     if ($action === 'cs_players' || $action === 'cs_player') {
@@ -3497,7 +3497,7 @@ setInterval(() => {
     });
   }
   async function stats() {
-    const j = await ajax({action:'cs_stats'}); if (!j.ok) return;
+    const j = await ajax({action:'cs_stats'}); if (!j.ok) return; Object.keys(j.names || {}).forEach(k => { if (!GN[k]) GN[k] = j.names[k]; }); // v2804 : noms des nouveaux jeux
     const table = (o, title) => {
       const rows = Object.entries((o && o.real) || {}).map(([g, v]) => ({g, n:v.n, i:v.in, o:v.out, p:(v.in - v.out)})).sort((a, b) => b.i - a.i);
       const t = rows.reduce((a, r) => ({n:a.n + r.n, i:a.i + r.i, o:a.o + r.o, p:a.p + r.p}), {n:0, i:0, o:0, p:0});

@@ -462,5 +462,7 @@
     var p = PAL[k] || PAL.coin;
     return '<span class="cs-pl' + (cls ? ' ' + cls : '') + '" style="--p1:' + p[0] + ';--p2:' + p[1] + '"><i></i>' + obj(k) + '</span>';
   }
-  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car, rps: function (i) { return rpsSvg(i, true); } };
+  // v2804 : les nouveaux jeux apportent leur logo (SVG 64×64, sans balise <svg>) et leurs couleurs — js/games/cat-*.js
+  function addObj(k, svgInner, pal) { if (!k || OBJ[k]) return; OBJ[k] = function () { return String(svgInner || ''); }; if (pal && !PAL[k]) PAL[k] = pal; }
+  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car, addObj: addObj, rps: function (i) { return rpsSvg(i, true); } };
 })(window.D6 = window.D6 || {});
