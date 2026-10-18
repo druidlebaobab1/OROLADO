@@ -36,10 +36,10 @@ html:root body #casinoModal .cg-hilo .hl-deck{justify-self:end;position:relative
 html:root body #casinoModal .cg-hilo .hl-deck .hl-bk{box-shadow:inset 0 0 0 2px rgba(251,191,36,.55),0 4px 10px rgba(0,0,0,.45)}
 html:root body #casinoModal .cg-hilo .hl-deck .hl-bk:nth-child(1){transform:translate(-6px,6px)}
 html:root body #casinoModal .cg-hilo .hl-deck .hl-bk:nth-child(2){transform:translate(-3px,3px)}
-html:root body #casinoModal .cg-hilo .hl-skip{justify-self:start;width:min(74px,100%)!important;height:auto!important;min-height:0!important;padding:8px 2px!important;border:0!important;border-radius:16px!important;cursor:pointer;
+html:root body #casinoModal .cg-hilo .hl-skip{justify-self:start;width:min(88px,100%)!important;height:auto!important;min-height:0!important;padding:8px 2px!important;border:0!important;border-radius:16px!important;cursor:pointer;
   display:flex!important;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.08)!important;box-shadow:inset 0 0 0 1px var(--cg-line)!important;color:#E9E5FF!important}
 html:root body #casinoModal .cg-hilo .hl-skip svg{width:24px;height:24px;fill:var(--cg-gold)}
-html:root body #casinoModal .cg-hilo .hl-skip small{display:block;max-width:100%;font:800 11px/1 var(--cg-font)}
+html:root body #casinoModal .cg-hilo .hl-skip small{display:block;max-width:100%;font:800 12px/1 var(--cg-font)}
 html:root body #casinoModal .cg-hilo .hl-skip:disabled{opacity:.35;cursor:default}
 html:root body #casinoModal .cg-hilo .hl-skip:not(:disabled):active{transform:scale(.94)}
 html:root body #casinoModal .cg-hilo .hl-tot{flex:0 0 auto;display:flex;justify-content:center}

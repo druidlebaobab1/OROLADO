@@ -92,3 +92,7 @@ html.is-tv:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{zoom:1.6;wi
 /* montant : toujours de gauche à droite (arabe compris), marges égales → jamais coupé */
 html:root body #casinoModal .cg-in input{direction:ltr!important;unicode-bidi:isolate;padding:0 22px!important}
 html:root body #casinoModal .cg-quick button,html:root body #casinoModal .cg-amt{direction:ltr}
+/* téléphone couché : la scène d'un jeu refait garde toute la hauteur (comme .cs-stage dans app.css) */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal.in-game .cs-game > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}
+}

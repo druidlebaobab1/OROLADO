@@ -269,8 +269,8 @@ html:root body #casinoModal .sp2 .sp2-clear{max-width:40%}
 /* petite règle du match (« nul = remboursé ») sous les équipes */
 html:root body #casinoModal .sp2 .sp2-note{display:flex;justify-content:center;margin:-4px 0 -2px;min-width:0}
 html:root body #casinoModal .sp2 .sp2-note span{max-width:100%;padding:3px 10px;border-radius:999px;color:#C4B5FD;background:rgba(139,92,246,.12);font:700 11px/1.1 var(--sp2-font)}
-/* téléphone couché (large mais peu haut) : le coupon passe sur deux colonnes — choix à gauche, mise à droite */
-@media (min-width:640px) and (max-height:600px){
+/* écran large (téléphone couché, tablette, PC, télé) : le coupon passe sur deux colonnes — choix à gauche, mise à droite */
+@media (min-width:640px){
   html:root body #casinoModal .sp2 .sp2-page:not(.sp2-donep){max-width:none;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);
     grid-template-areas:"sh sh" "type tot" "guest term" "sels term";column-gap:12px;row-gap:8px}
   html:root body #casinoModal .sp2 .sp2-page > .sp2-sh{grid-area:sh}
@@ -281,3 +281,12 @@ html:root body #casinoModal .sp2 .sp2-note span{max-width:100%;padding:3px 10px;
   html:root body #casinoModal .sp2 .sp2-page > .sp2-term{grid-area:term;align-self:start}
   html:root body #casinoModal .sp2 .sp2-page > .sp2-empty{grid-column:1/-1}
 }
+@media (min-width:1600px){
+  html:root body #casinoModal .sp2 .sp2-sel-t b,html:root body #casinoModal .sp2 .sp2-bst b{font-size:16.5px}
+  html:root body #casinoModal .sp2 .sp2-sel-t small,html:root body #casinoModal .sp2 .sp2-bst small,html:root body #casinoModal .sp2 .sp2-type-t{font-size:13.5px}
+  html:root body #casinoModal .sp2 .sp2-tot b{font-size:24px}
+  html:root body #casinoModal .sp2 .sp2-sh > b{font-size:21px}
+  html:root body #casinoModal .sp2 .sp2-lg,html:root body #casinoModal .sp2 .sp2-chip{font-size:13.5px}
+}
+/* rien ne dépasse sous la barre du coupon (elle masque le bas de la liste qui défile) */
+html:root body #casinoModal .sp2 .sp2-bar::after{content:"";position:absolute;left:calc(-1 * var(--sp2-px));right:calc(-1 * var(--sp2-px));top:100%;height:calc(var(--sp2-pb) + 4px);background:#0E0A26;pointer-events:none}
