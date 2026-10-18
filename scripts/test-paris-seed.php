@@ -40,10 +40,12 @@ check('ancien événement pas serré AVEC un pari : gardé (honnête)', in_array
 check('événement serré déjà là : gardé', in_array($r3['id'], $ids, true));
 $new = array_values(array_filter(sp_events(), static fn($e) => isset($e['endAt'])));
 check('nouveaux événements publiés tout seuls', count($new) >= 20, (string) count($new));
-$loose = array_filter($new, static fn($e) => !sp_is_tight($e));
-check('tous les nouveaux sont SERRÉS (cotes entre 1,55 et 2,30)', !$loose, implode(' | ', array_column($loose, 'title')));
-$two = array_filter($new, static fn($e) => count($e['opts']) !== 2);
-check('tous les nouveaux ont 2 choix', !$two);
+// v2802 (propriétaire) : le foot sans pari reçoit le NUL (1 · N · 2, cotes plus hautes) ; les autres sports restent serrés à 2 choix
+$foot3 = static fn($e) => ($e['sport'] ?? '') === 'foot' && count($e['opts']) === 3 && $e['opts'][1]['label'] === 'Nul';
+$loose = array_filter($new, static fn($e) => !$foot3($e) && !sp_is_tight($e));
+check('les nouveaux hors foot sont SERRÉS (cotes entre 1,55 et 2,30)', !$loose, implode(' | ', array_column($loose, 'title')));
+$bad = array_filter($new, static fn($e) => ($e['sport'] ?? '') === 'foot' ? !$foot3($e) : count($e['opts']) !== 2);
+check('foot : 3 choix avec le Nul · autres sports : 2 choix', !$bad, implode(' | ', array_column($bad, 'title')));
 $btc = array_values(array_filter(sp_public_events(), static fn($e) => str_starts_with((string) $e['title'], 'Bitcoin')));
 check('questions Bitcoin traduites (anglais, chinois…)', $btc && isset(((array) $btc[0]['i18n'])['en'], ((array) $btc[0]['i18n'])['zh']), $btc ? json_encode($btc[0]['i18n'], JSON_UNESCAPED_UNICODE) : '');
 $badEnd = array_filter($new, static fn($e) => (int) $e['endAt'] <= (int) $e['start']);

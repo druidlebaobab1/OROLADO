@@ -253,6 +253,47 @@ function sp_autoseed_once(): void {
     @file_put_contents($flag2, (string) time());
     try { sp_remove_loose(); sp_admin_seed(sp_suggestions2()); } catch (Throwable $e) { @unlink($flag2); }
   }
+  sp_draw_once(); // v2802 : le nul revient au football (matchs encore sans pari)
+}
+/**
+ * v2802 (propriétaire) : le NUL revient au football. Les matchs de foot ouverts « nul = remboursé » (2 choix) sur lesquels
+ * PERSONNE n'a encore parié reçoivent le choix « Nul » avec sa cote, comme les grands sites (1 · N · 2) ; la règle
+ * « nul = remboursé » est retirée de ces matchs-là seulement. Un match qui a déjà des paris garde sa règle (promise aux joueurs).
+ * Cotes : chances des 2 équipes reprises des anciennes cotes, nul 27 %, cote = 0,94 ÷ chance (marge maison 6 %).
+ * Les paris gardent la clé du choix (o0, o1) : rien ne bouge pour eux ; le nul a sa propre clé « oD ».
+ */
+const SP_DRAW_P = 0.27;
+function sp_add_draw(array $e): array {
+  if (($e['sport'] ?? '') !== 'foot' || count((array) ($e['opts'] ?? [])) !== 2) return $e;
+  $a = (float) $e['opts'][0]['odd']; $b = (float) $e['opts'][1]['odd'];
+  if ($a <= 1 || $b <= 1) return $e;
+  $p1 = 1 / $a; $p2 = 1 / $b; $t = $p1 + $p2;
+  $odd = static fn(float $p): float => max(1.01, floor(0.94 / $p * 100) / 100);
+  $o1 = $e['opts'][0]; $o2 = $e['opts'][1];
+  $o1['odd'] = $odd($p1 / $t * (1 - SP_DRAW_P)); $o2['odd'] = $odd($p2 / $t * (1 - SP_DRAW_P));
+  $e['opts'] = [$o1, ['k' => 'oD', 'label' => 'Nul', 'odd' => $odd(SP_DRAW_P)], $o2];
+  $e['league'] = trim((string) preg_replace('/\s*·\s*nul = remboursé\s*$/u', '', (string) ($e['league'] ?? '')));
+  return $e;
+}
+function sp_draw_once(): int {
+  $flag = sp_dir() . DIRECTORY_SEPARATOR . 'draw-2026-10.done';
+  if (is_file($flag)) return 0;
+  @file_put_contents($flag, (string) time()); // une seule fois, même si deux joueurs ouvrent en même temps
+  try {
+    $bets = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+    $used = [];
+    foreach ($bets as $bt) foreach ((array) ($bt['sel'] ?? []) as $sel) $used[(string) ($sel['ev'] ?? '')] = 1;
+    return (int) sp_with('events.json', static function (array &$s) use ($used) {
+      $n = 0;
+      foreach ((array) ($s['e'] ?? []) as $i => $e) {
+        if (($e['status'] ?? '') !== 'open' || isset($used[(string) $e['id']])) continue;
+        if (strpos((string) ($e['league'] ?? ''), 'nul = remboursé') === false) continue;
+        $ne = sp_add_draw($e);
+        if ($ne !== $e) { $s['e'][$i] = $ne; $n++; }
+      }
+      return $n;
+    });
+  } catch (Throwable $ex) { @unlink($flag); return 0; }
 }
 /** v2787 : logos des équipes cherchés PETIT À PETIT (au plus 1 équipe par ouverture de page, jamais d'attente pour personne). */
 function sp_logo_fill_one(): void {

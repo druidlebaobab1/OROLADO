@@ -104,3 +104,18 @@ html:root body #casinoModal .cs-top #csBal b{white-space:nowrap;overflow:hidden;
 html[lang="ar"]:root body #casinoModal *,html.lang-ar:root body #casinoModal *{letter-spacing:0!important}
 /* montant : une marge seulement du côté de la petite croix (plus de place pour les chiffres) */
 html:root body #casinoModal .cg-in input{padding:0 20px 0 2px!important;font-size:clamp(14px,4.4vw,19px)!important}
+
+/* ===== v2803 (propriétaire) : terminal inchangé (− · montant · ✕ · +), seulement plus lisible : le + est un gros bouton doré,
+   la ✕ reste une petite pastille rouge DANS la case, bien à l'écart du + (on ne les confond plus) ===== */
+html:root body #casinoModal .cg-amt{gap:6px;padding:0 4px}
+html:root body #casinoModal .cg-step{width:38px!important;height:38px!important;min-width:38px;flex:0 0 38px!important}
+html:root body #casinoModal .cg-step[data-sk="up"]{background:linear-gradient(180deg,#FDE68A,#F59E0B)!important;box-shadow:0 2px 8px rgba(245,158,11,.45),inset 0 1px 0 rgba(255,255,255,.5)!important}
+html:root body #casinoModal .cg-step[data-sk="up"] svg{stroke:#3B2300;stroke-width:3.4}
+html:root body #casinoModal .cg-step[data-sk="dn"]{background:rgba(255,255,255,.16)!important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)!important}
+html:root body #casinoModal .cg-step[data-sk="dn"] svg{stroke-width:3.4}
+html:root body #casinoModal .cg-clr{right:4px!important;width:18px!important;height:18px!important;margin-top:-9px!important;background:rgba(244,63,94,.28)!important;box-shadow:inset 0 0 0 1px rgba(251,113,133,.6)!important}
+html:root body #casinoModal .cg-clr svg{width:9px!important;height:9px!important;stroke:#FECDD3!important}
+html:root body #casinoModal .cg-in input{padding:0 24px 0 2px!important}
+@media (max-height:640px){html:root body #casinoModal .cg-step{width:34px!important;height:34px!important;min-width:34px;flex-basis:34px!important}}
+@media (max-width:380px){html:root body #casinoModal .cg-in input{font-size:15px!important;padding:0 20px 0 0!important;letter-spacing:-.02em}
+  html:root body #casinoModal .cg-amt{gap:4px;padding:0 3px}}
