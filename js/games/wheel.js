@@ -93,7 +93,7 @@
       });
       if (!box.isConnected) return;
       R = ((R % 360) + 360) % 360; rot.style.transform = 'rotate(' + R + 'deg)';
-      K.setText(hub, mx(r.mult)); hub.style.color = COL[r.mult] ? COL[r.mult][0] : '#fff';
+      K.setText(hub, mx(r.mult)); hub.style.color = r.mult === 0 ? '#A9A3CF' : COL[r.mult] ? COL[r.mult][0] : '#fff';
       var le = box.querySelector('.wh-leg span[data-m="' + r.mult + '"]'); if (le) le.classList.add('on');
       wrap.classList.add(r.win > 0 ? 'won' : 'lost');
       hist.unshift(r.mult); hist = hist.slice(0, 16); paintHist();

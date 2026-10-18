@@ -14,8 +14,9 @@ html:root body #casinoModal .cg-lotto .lo-globe.mix i{animation:loMix .5s ease-i
 @keyframes loMix{0%{transform:translate(0,0)}33%{transform:translate(6px,-18px)}66%{transform:translate(-8px,-10px)}100%{transform:translate(4px,-24px)}}
 html:root body #casinoModal .cg-lotto .lo-tube{flex:1 1 auto;min-width:0;height:34px;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;padding:3px;border-radius:999px;
   background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04) 45%,rgba(0,0,0,.3));box-shadow:inset 0 0 0 1.5px rgba(253,230,138,.45),inset 0 2px 6px rgba(0,0,0,.5)}
-html:root body #casinoModal .cg-lotto .lo-slot{position:relative;min-width:0;border-radius:50%;font-style:normal;background:rgba(0,0,0,.25);aspect-ratio:1;align-self:center;max-height:100%}
-html:root body #casinoModal .cg-lotto .lo-ball{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;font:900 clamp(8px,2.7vmin,13px)/1 var(--cg-font);color:#1F1147;letter-spacing:-.03em;
+html:root body #casinoModal .cg-lotto .lo-slot{--b:28px;position:relative;min-width:0;height:100%;font-style:normal}
+html:root body #casinoModal .cg-lotto .lo-slot::before{content:"";position:absolute;inset:0;margin:auto;width:min(100%,var(--b));aspect-ratio:1;height:auto;border-radius:50%;background:rgba(0,0,0,.25)}
+html:root body #casinoModal .cg-lotto .lo-ball{position:absolute;inset:0;margin:auto;width:min(100%,var(--b));height:auto;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font:900 clamp(8px,2.7vmin,13px)/1 var(--cg-font);color:#1F1147;letter-spacing:-.03em;
   background:radial-gradient(circle at 35% 30%,#fff 0%,#E9E5FF 30%,#A78BFA 75%,#6D28D9 100%);box-shadow:0 1px 3px rgba(0,0,0,.5)}
 html:root body #casinoModal .cg-lotto .lo-ball.h{color:#3B2300;background:radial-gradient(circle at 35% 30%,#fff 0%,#FEF3C7 30%,#FBBF24 70%,#B45309 100%);box-shadow:0 0 10px rgba(251,191,36,.9)}
 html:root body #casinoModal .cg-lotto .lo-ball.fly{animation:loFly .33s cubic-bezier(.3,.6,.4,1) both}
@@ -61,7 +62,7 @@ html:root body #casinoModal .cg-lotto .lo-k.nudge{animation:loNudge .4s;color:#F
 @keyframes loNudge{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media (max-height:640px){
   html:root body #casinoModal .cg-lotto .lo-mach{height:32px}html:root body #casinoModal .cg-lotto .lo-globe{width:32px;height:32px}
-  html:root body #casinoModal .cg-lotto .lo-tube{height:30px}html:root body #casinoModal .cg-lotto .lo-pay{height:34px}
+  html:root body #casinoModal .cg-lotto .lo-tube{height:30px}html:root body #casinoModal .cg-lotto .lo-slot{--b:24px}html:root body #casinoModal .cg-lotto .lo-pay{height:34px}
   html:root body #casinoModal .cg-lotto .lo-grid{gap:4px}html:root body #casinoModal .cg-lotto .lo-n{border-radius:9px!important}
   html:root body #casinoModal .cg-lotto .lo-tools{height:32px}html:root body #casinoModal .cg-lotto .lo-ib{height:30px!important}
 }
@@ -73,8 +74,17 @@ html:root body #casinoModal .cg-lotto .lo-k.nudge{animation:loNudge .4s;color:#F
   html:root body #casinoModal .cg-lotto .lo-mach{height:auto}
   html:root body #casinoModal .cg-lotto .lo-globe{width:46px;height:46px}
   html:root body #casinoModal .cg-lotto .lo-tube{height:auto;grid-template-columns:repeat(5,minmax(0,1fr));border-radius:18px;padding:4px 6px;gap:4px}
-  html:root body #casinoModal .cg-lotto .lo-slot{height:auto;width:100%;max-width:30px;justify-self:center}
+  html:root body #casinoModal .cg-lotto .lo-slot{height:30px;--b:30px}
 }
 html.oro-lite body #casinoModal .cg-lotto .lo-globe.mix i,html.oro-lite body #casinoModal .cg-lotto .lo-n.pop,html.oro-lite body #casinoModal .cg-lotto .lo-n.pk.hit{animation:none}
 /* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
 @media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-lotto > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}
+/* grands écrans : machine, boules et tableau plus grands */
+@media (min-width:900px) and (min-height:700px){
+  html:root body #casinoModal .cg-lotto .lo-mach{height:54px}html:root body #casinoModal .cg-lotto .lo-globe{width:54px;height:54px}
+  html:root body #casinoModal .cg-lotto .lo-globe i{width:12px;height:12px}
+  html:root body #casinoModal .cg-lotto .lo-tube{height:50px;padding:4px 6px}html:root body #casinoModal .cg-lotto .lo-slot{--b:42px}
+  html:root body #casinoModal .cg-lotto .lo-ball{font-size:16px}
+  html:root body #casinoModal .cg-lotto .lo-pay{height:52px}html:root body #casinoModal .cg-lotto .lo-pc{max-width:110px}
+  html:root body #casinoModal .cg-lotto .lo-pc em{font-size:13px}html:root body #casinoModal .cg-lotto .lo-pc b{font-size:17px}
+}

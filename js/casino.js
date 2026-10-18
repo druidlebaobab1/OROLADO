@@ -156,7 +156,7 @@
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
-    t.innerHTML = (win ? '<i class="ct-coin" aria-hidden="true"></i>' : '') + '<b>+$\u00a0' + (win ? m2(r.win) : '0') + '</b>';
+    t.innerHTML = (win ? '<i class="ct-coin" aria-hidden="true"></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
     setTimeout(function () { t.classList.remove('in'); t.classList.add('out'); }, 2800);
